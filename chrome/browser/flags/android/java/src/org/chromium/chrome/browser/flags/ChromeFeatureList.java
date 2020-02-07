@@ -173,7 +173,6 @@ public abstract class ChromeFeatureList {
             "AndroidNightModeTabReparenting";
     public static final String ANDROID_PAY_INTEGRATION_V1 = "AndroidPayIntegrationV1";
     public static final String ANDROID_PAY_INTEGRATION_V2 = "AndroidPayIntegrationV2";
-    public static final String ANDROID_PAYMENT_APPS = "AndroidPaymentApps";
     public static final String ANDROID_SEARCH_ENGINE_CHOICE_NOTIFICATION =
             "AndroidSearchEngineChoiceNotification";
     public static final String ANDROID_SETUP_SEARCH_ENGINE = "AndroidSetupSearchEngine";
@@ -283,7 +282,6 @@ public abstract class ChromeFeatureList {
     public static final String NEW_PHOTO_PICKER = "NewPhotoPicker";
     public static final String NOTIFICATION_SUSPENDER = "NotificationSuspender";
     public static final String NTP_ARTICLE_SUGGESTIONS = "NTPArticleSuggestions";
-    public static final String NTP_LAUNCH_AFTER_INACTIVITY = "NTPLaunchAfterInactivity";
     public static final String OFFLINE_INDICATOR = "OfflineIndicator";
     public static final String OFFLINE_INDICATOR_ALWAYS_HTTP_PROBE =
             "OfflineIndicatorAlwaysHttpProbe";

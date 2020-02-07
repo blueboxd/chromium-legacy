@@ -20,6 +20,7 @@
 #include "third_party/skia/include/gpu/GrBackendSurface.h"
 #include "third_party/skia/include/gpu/GrContext.h"
 #include "third_party/skia/include/gpu/gl/GrGLTypes.h"
+#include "ui/gfx/buffer_format_util.h"
 #include "ui/gl/dc_renderer_layer_params.h"
 #include "ui/gl/gl_bindings.h"
 #include "ui/gl/gl_context.h"
@@ -91,16 +92,20 @@ SkiaOutputDeviceGL::SkiaOutputDeviceGL(
   supports_alpha_ = alpha_bits > 0;
 }
 
-SkiaOutputDeviceGL::~SkiaOutputDeviceGL() = default;
+SkiaOutputDeviceGL::~SkiaOutputDeviceGL() {
+  // gl_surface_ will be destructed soon.
+  memory_type_tracker_->TrackMemFree(backbuffer_estimated_size_);
+}
 
 bool SkiaOutputDeviceGL::Reshape(const gfx::Size& size,
                                  float device_scale_factor,
                                  const gfx::ColorSpace& color_space,
-                                 bool has_alpha,
+                                 gfx::BufferFormat buffer_format,
                                  gfx::OverlayTransform transform) {
   DCHECK_EQ(transform, gfx::OVERLAY_TRANSFORM_NONE);
 
-  if (!gl_surface_->Resize(size, device_scale_factor, color_space, has_alpha)) {
+  if (!gl_surface_->Resize(size, device_scale_factor, color_space,
+                           gfx::AlphaBitsForBufferFormat(buffer_format))) {
     DLOG(ERROR) << "Failed to resize.";
     return false;
   }
@@ -111,6 +116,8 @@ bool SkiaOutputDeviceGL::Reshape(const gfx::Size& size,
   framebuffer_info.fFBOID = gl_surface_->GetBackingFramebufferObject();
 
   SkColorType color_type;
+  // TODO(https://crbug.com/1049334): The pixel format should be determined by
+  // |buffer_format|, not |color_space|, and not |supports_alpha_|.
   if (color_space.IsHDR()) {
     framebuffer_info.fFormat = GL_RGBA16F;
     color_type = kRGBA_F16_SkColorType;
@@ -139,6 +146,19 @@ bool SkiaOutputDeviceGL::Reshape(const gfx::Size& size,
                << framebuffer_info.fFormat << " " << color_space.ToString()
                << " " << size.ToString();
   }
+
+  memory_type_tracker_->TrackMemFree(backbuffer_estimated_size_);
+  GLenum format = gpu::gles2::TextureManager::ExtractFormatFromStorageFormat(
+      framebuffer_info.fFormat);
+  GLenum type = gpu::gles2::TextureManager::ExtractTypeFromStorageFormat(
+      framebuffer_info.fFormat);
+  uint32_t estimated_size;
+  gpu::gles2::GLES2Util::ComputeImageDataSizes(
+      size.width(), size.height(), 1 /* depth */, format, type,
+      4 /* alignment */, &estimated_size, nullptr, nullptr);
+  backbuffer_estimated_size_ = estimated_size * gl_surface_->GetBufferCount();
+  memory_type_tracker_->TrackMemAlloc(backbuffer_estimated_size_);
+
   return !!sk_surface_;
 }
 

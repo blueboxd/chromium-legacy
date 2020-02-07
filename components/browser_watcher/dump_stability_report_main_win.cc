@@ -14,7 +14,7 @@
 #include "base/files/scoped_file.h"
 #include "base/logging.h"
 #include "base/strings/stringprintf.h"
-#include "components/browser_watcher/stability_report.pb.h"
+#include "components/browser_watcher/activity_report.pb.h"
 
 namespace {
 
@@ -237,8 +237,8 @@ bool GetStabilityStreamRvaAndSize(RVA directory_rva,
                                stream_count, file));
 
   for (const MINIDUMP_DIRECTORY& entry : directory) {
-    constexpr ULONG32 kStabilityStream = static_cast<ULONG32>(0x4B6B0002);
-    if (entry.StreamType == kStabilityStream) {
+    constexpr ULONG32 kActivityStream = static_cast<ULONG32>(0x4B6B0002);
+    if (entry.StreamType == kActivityStream) {
       *report_rva = entry.Location.Rva;
       *report_size_bytes = entry.Location.DataSize;
       return true;

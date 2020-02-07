@@ -39,7 +39,7 @@
 #include "build/build_config.h"
 #include "skia/ext/image_operations.h"
 #include "third_party/skia/include/core/SkBitmap.h"
-#include "third_party/skia/include/core/SkPostConfig.h"
+#include "third_party/skia/include/core/SkTypes.h"
 #include "ui/base/x/x11_menu_list.h"
 #include "ui/base/x/x11_util_internal.h"
 #include "ui/events/devices/x11/device_data_manager_x11.h"

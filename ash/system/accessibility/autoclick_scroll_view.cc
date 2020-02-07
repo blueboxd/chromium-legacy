@@ -155,7 +155,7 @@ class AutoclickScrollButton : public CustomShapeButton,
     }
     SetPreferredSize(size_);
 
-    set_clip_path(CreateCustomShapePath(gfx::Rect(GetPreferredSize())));
+    SetClipPath(CreateCustomShapePath(gfx::Rect(GetPreferredSize())));
     SetEventTargeter(std::make_unique<views::ViewTargeter>(this));
   }
 

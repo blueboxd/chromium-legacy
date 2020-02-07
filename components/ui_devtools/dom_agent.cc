@@ -10,6 +10,7 @@
 #include <utility>
 
 #include "base/containers/adapters.h"
+#include "base/strings/string_number_conversions.h"
 #include "components/ui_devtools/devtools_server.h"
 #include "components/ui_devtools/root_element.h"
 #include "components/ui_devtools/ui_element.h"

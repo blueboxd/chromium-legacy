@@ -310,7 +310,8 @@ TEST_F(DisplayPrefsTest, BasicStores) {
   display::test::ScopedSetInternalDisplayId set_internal(display_manager(),
                                                          id1);
   UpdateDisplay("200x200*2, 400x300#400x400|300x200*1.25");
-  int64_t id2 = display_manager()->GetSecondaryDisplay().id();
+  display::test::DisplayManagerTestApi display_manager_test(display_manager());
+  int64_t id2 = display_manager_test.GetSecondaryDisplay().id();
   int64_t dummy_id = id2 + 1;
   ASSERT_NE(id1, dummy_id);
 
@@ -569,7 +570,7 @@ TEST_F(DisplayPrefsTest, BasicStores) {
   UpdateDisplay("200x200*2, 600x500#600x500|500x400");
 
   // Update key as the 2nd display gets new id.
-  id2 = display_manager()->GetSecondaryDisplay().id();
+  id2 = display_manager_test.GetSecondaryDisplay().id();
   key = base::NumberToString(id1) + "," + base::NumberToString(id2);
   EXPECT_TRUE(displays->GetDictionary(key, &layout_value));
   EXPECT_TRUE(layout_value->GetString(kPositionKey, &position));
@@ -592,7 +593,7 @@ TEST_F(DisplayPrefsTest, BasicStores) {
   UpdateDisplay("200x200*2");
   UpdateDisplay("200x200*2, 500x400#600x500|500x400%60.0f");
   // Update key as the 2nd display gets new id.
-  id2 = display_manager()->GetSecondaryDisplay().id();
+  id2 = display_manager_test.GetSecondaryDisplay().id();
   key = base::NumberToString(id1) + "," + base::NumberToString(id2);
   EXPECT_TRUE(displays->GetDictionary(key, &layout_value));
   EXPECT_TRUE(layout_value->GetString(kPositionKey, &position));
@@ -654,13 +655,14 @@ TEST_F(DisplayPrefsTest, PreventStore) {
 
 TEST_F(DisplayPrefsTest, StoreForSwappedDisplay) {
   UpdateDisplay("100x100,200x200");
+  display::test::DisplayManagerTestApi display_manager_test(display_manager());
   int64_t id1 = display::Screen::GetScreen()->GetPrimaryDisplay().id();
-  int64_t id2 = display_manager()->GetSecondaryDisplay().id();
+  int64_t id2 = display_manager_test.GetSecondaryDisplay().id();
 
   LoggedInAsUser();
 
   SwapPrimaryDisplay();
-  ASSERT_EQ(id1, display_manager()->GetSecondaryDisplay().id());
+  ASSERT_EQ(id1, display_manager_test.GetSecondaryDisplay().id());
 
   std::string key = base::NumberToString(id1) + "," + base::NumberToString(id2);
   const base::DictionaryValue* displays =
@@ -730,7 +732,9 @@ TEST_F(DisplayPrefsTestGuest, DisplayPrefsTestGuest) {
   int64_t id1 = display::Screen::GetScreen()->GetPrimaryDisplay().id();
   display::test::ScopedSetInternalDisplayId set_internal(
       Shell::Get()->display_manager(), id1);
-  int64_t id2 = display_manager()->GetSecondaryDisplay().id();
+  int64_t id2 = display::test::DisplayManagerTestApi(display_manager())
+                    .GetSecondaryDisplay()
+                    .id();
   display_manager()->SetLayoutForCurrentDisplays(
       display::test::CreateDisplayLayout(display_manager(),
                                          display::DisplayPlacement::TOP, 10));
@@ -1234,7 +1238,9 @@ TEST_F(DisplayPrefsTest, LegacyTouchCalibrationDataSupport) {
   EXPECT_EQ(association_map.at(fallback_identifier).at(id).calibration_data,
             data);
 
-  int64_t id_2 = display_manager()->GetSecondaryDisplay().id();
+  int64_t id_2 = display::test::DisplayManagerTestApi(display_manager())
+                     .GetSecondaryDisplay()
+                     .id();
   gfx::Size touch_size_2(300, 300);
   display::TouchCalibrationData data_2(point_pair_quad, touch_size_2);
 

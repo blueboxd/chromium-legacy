@@ -85,6 +85,7 @@ class NoopLoaderFactory final : public ResourceFetcher::LoaderFactory {
         int requestor_id,
         bool download_to_network_cache_only,
         bool pass_response_pipe_to_client,
+        bool no_mime_sniffing,
         base::TimeDelta timeout_interval,
         WebURLLoaderClient*,
         WebURLResponse&,
@@ -100,6 +101,7 @@ class NoopLoaderFactory final : public ResourceFetcher::LoaderFactory {
         scoped_refptr<WebURLRequest::ExtraData> request_extra_data,
         int requestor_id,
         bool download_to_network_cache_only,
+        bool no_mime_sniffing,
         WebURLLoaderClient*) override {}
     void SetDefersLoading(bool) override {}
     void DidChangePriority(WebURLRequest::Priority, int) override {

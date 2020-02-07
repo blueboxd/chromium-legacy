@@ -12,11 +12,11 @@
 #include "chrome/browser/renderer_context_menu/render_view_context_menu_browsertest_util.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_window.h"
-#include "chrome/browser/ui/javascript_dialogs/javascript_dialog_tab_helper.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/test/base/in_process_browser_test.h"
 #include "chrome/test/base/interactive_test_utils.h"
 #include "chrome/test/base/ui_test_utils.h"
+#include "components/javascript_dialogs/tab_modal_dialog_manager.h"
 #include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/test/browser_test_utils.h"
@@ -180,16 +180,17 @@ IN_PROC_BROWSER_TEST_F(MouseEventsTest, MAYBE_ModalDialog) {
   EXPECT_NO_FATAL_FAILURE(NavigateAndWaitForMouseOver());
 
   content::WebContents* tab = GetActiveWebContents();
-  JavaScriptDialogTabHelper* js_helper =
-      JavaScriptDialogTabHelper::FromWebContents(tab);
+  auto* js_dialog_manager =
+      javascript_dialogs::TabModalDialogManager::FromWebContents(tab);
   base::RunLoop dialog_wait;
-  js_helper->SetDialogShownCallbackForTesting(dialog_wait.QuitClosure());
+  js_dialog_manager->SetDialogShownCallbackForTesting(
+      dialog_wait.QuitClosure());
   tab->GetMainFrame()->ExecuteJavaScriptForTests(base::UTF8ToUTF16("alert()"),
                                                  base::NullCallback());
   dialog_wait.Run();
 
   // Cancel the dialog.
-  js_helper->HandleJavaScriptDialog(tab, false, nullptr);
+  js_dialog_manager->HandleJavaScriptDialog(tab, false, nullptr);
 
   tab->GetMainFrame()->ExecuteJavaScriptForTests(base::ASCIIToUTF16("done()"),
                                                  base::NullCallback());

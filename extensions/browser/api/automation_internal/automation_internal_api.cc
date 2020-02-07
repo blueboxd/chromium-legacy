@@ -313,6 +313,11 @@ ExtensionFunction::ResponseAction AutomationInternalEnableFrameFunction::Run() {
     action_handler->PerformAction(action);
   }
 
+  AutomationInternalApiDelegate* automation_api_delegate =
+      ExtensionsAPIClient::Get()->GetAutomationInternalApiDelegate();
+  if (automation_api_delegate->EnableTree(ax_tree_id))
+    return RespondNow(NoArguments());
+
   content::RenderFrameHost* rfh =
       content::RenderFrameHost::FromAXTreeID(ax_tree_id);
   if (!rfh)

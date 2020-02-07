@@ -49,6 +49,7 @@ class VideoFrame;
 
 namespace gpu {
 struct Capabilities;
+class GLHelper;
 struct GpuFeatureInfo;
 class InterfaceBase;
 class SharedImageInterface;
@@ -64,10 +65,6 @@ class RasterInterface;
 namespace webgpu {
 class WebGPUInterface;
 }
-}
-
-namespace viz {
-class GLHelper;
 }
 
 namespace blink {
@@ -100,9 +97,9 @@ class WebGraphicsContext3DProvider {
   virtual const gpu::Capabilities& GetCapabilities() const = 0;
   virtual const gpu::GpuFeatureInfo& GetGpuFeatureInfo() const = 0;
   virtual const WebglPreferences& GetWebglPreferences() const = 0;
-  // Creates a viz::GLHelper after first call and returns that instance. This
+  // Creates a gpu::GLHelper after first call and returns that instance. This
   // method cannot return null.
-  virtual viz::GLHelper* GetGLHelper() = 0;
+  virtual gpu::GLHelper* GetGLHelper() = 0;
 
   virtual void SetLostContextCallback(base::RepeatingClosure) = 0;
   virtual void SetErrorMessageCallback(

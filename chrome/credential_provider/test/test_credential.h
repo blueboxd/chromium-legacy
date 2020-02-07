@@ -53,6 +53,7 @@ class DECLSPEC_UUID("3710aa3a-13c7-44c2-bc38-09ba137804d8") ITestCredential
   virtual bool STDMETHODCALLTYPE IsGlsRunning() = 0;
   virtual bool STDMETHODCALLTYPE IsAdJoinedUser() = 0;
   virtual bool STDMETHODCALLTYPE ContainsIsAdJoinedUser() = 0;
+  virtual base::CommandLine STDMETHODCALLTYPE GetTestUserGlsCommandline() = 0;
   virtual std::string STDMETHODCALLTYPE GetShowTosFromCmdLine() = 0;
 };
 
@@ -95,6 +96,7 @@ class ATL_NO_VTABLE CTestCredentialBase : public T, public ITestCredential {
   bool STDMETHODCALLTYPE IsGlsRunning() override;
   bool STDMETHODCALLTYPE IsAdJoinedUser() override;
   bool STDMETHODCALLTYPE ContainsIsAdJoinedUser() override;
+  base::CommandLine STDMETHODCALLTYPE GetTestUserGlsCommandline() override;
   std::string STDMETHODCALLTYPE GetShowTosFromCmdLine() override;
 
   void SignalGlsCompletion();
@@ -266,6 +268,13 @@ bool CTestCredentialBase<T>::ContainsIsAdJoinedUser() {
 template <class T>
 std::string CTestCredentialBase<T>::GetShowTosFromCmdLine() {
   return show_tos_command_line_;
+}
+
+template <class T>
+base::CommandLine CTestCredentialBase<T>::GetTestUserGlsCommandline() {
+  base::CommandLine command_line(base::CommandLine::NO_PROGRAM);
+  T::GetUserGlsCommandline(&command_line);
+  return command_line;
 }
 
 template <class T>

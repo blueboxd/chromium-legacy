@@ -380,6 +380,11 @@ class CONTENT_EXPORT WebBluetoothServiceImpl
   // Clears all state (maps, sets, etc).
   void ClearState();
 
+  bool IsAllowedToAccessAtLeastOneService(
+      const blink::WebBluetoothDeviceId& device_id);
+  bool IsAllowedToAccessService(const blink::WebBluetoothDeviceId& device_id,
+                                const device::BluetoothUUID& service);
+
   // Used to open a BluetoothChooser and start a device discovery session.
   std::unique_ptr<BluetoothDeviceChooserController> device_chooser_controller_;
 

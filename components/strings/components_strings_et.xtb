@@ -690,6 +690,7 @@
 <translation id="3987940399970879459">Alla 1 MB</translation>
 <translation id="3990250421422698716">Astme nihe</translation>
 <translation id="40103911065039147">{URL_count,plural, =1{Läheduses on 1 veebileht}other{Läheduses on # veebilehte}}</translation>
+<translation id="4014128326099193693">{COUNT,plural, =1{PDF-dokument sisaldab {COUNT} lehte}other{PDF-dokument sisaldab {COUNT} lehte}}</translation>
 <translation id="4030383055268325496">&amp;Võta lisamine tagasi</translation>
 <translation id="4032320456957708163">Teie brauserit haldab <ph name="ENROLLMENT_DOMAIN" /></translation>
 <translation id="4058922952496707368">Võti „<ph name="SUBKEY" />”: <ph name="ERROR" /></translation>
@@ -718,6 +719,7 @@
 <translation id="4142935452406587478">Salv 10</translation>
 <translation id="4148925816941278100">American Express</translation>
 <translation id="4151403195736952345">Kasuta üldist vaikevalikut (tuvasta)</translation>
+<translation id="4152318981910038897">{COUNT,plural, =1{Leht 1}other{Leht {COUNT}}}</translation>
 <translation id="4159784952369912983">Lilla</translation>
 <translation id="4165986682804962316">Saidi seaded</translation>
 <translation id="4171400957073367226">Sobimatu kinnitusallkiri</translation>
@@ -1395,6 +1397,7 @@
 <translation id="7201591969684833065">Teie administraator näeb järgmist.</translation>
 <translation id="7202346780273620635">Letter-Extra</translation>
 <translation id="7210863904660874423">Host <ph name="HOST_NAME" /> ei pea turvastandarditest kinni.</translation>
+<translation id="7210993021468939304">Saab vaadata Linuxi tegevusi konteineris ning installida ja käitada konteineris Linuxi rakendusi</translation>
 <translation id="721197778055552897"><ph name="BEGIN_LINK" />Lisateave<ph name="END_LINK" /> selle probleemi kohta.</translation>
 <translation id="7219179957768738017">Ühendus kasutab protokolli <ph name="SSL_VERSION" />.</translation>
 <translation id="7220786058474068424">Töötlemine</translation>
@@ -1558,6 +1561,7 @@ Lisateave:
 <translation id="7878562273885520351">Teie parool võib olla ohus</translation>
 <translation id="7882421473871500483">Pruun</translation>
 <translation id="7887683347370398519">Kontrollige CVC-d ja proovige uuesti</translation>
+<translation id="7887885240995164102">Aktiveeri režiim Pilt pildis</translation>
 <translation id="7888575728750733395">Prindirenderduse kavatsus</translation>
 <translation id="7904208859782148177">C3 (ümbrik)</translation>
 <translation id="7932579305932748336">Kate</translation>

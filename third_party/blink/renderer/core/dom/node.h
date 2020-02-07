@@ -269,12 +269,16 @@ class CORE_EXPORT Node : public EventTarget {
   void SetComputedStyle(scoped_refptr<const ComputedStyle> computed_style);
 
   // Other methods (not part of DOM)
-  bool IsTextNode() const { return GetDOMNodeType() == DOMNodeType::kText; }
-  bool IsContainerNode() const { return GetFlag(kIsContainerFlag); }
-  bool IsElementNode() const {
+  ALWAYS_INLINE bool IsTextNode() const {
+    return GetDOMNodeType() == DOMNodeType::kText;
+  }
+  ALWAYS_INLINE bool IsContainerNode() const {
+    return GetFlag(kIsContainerFlag);
+  }
+  ALWAYS_INLINE bool IsElementNode() const {
     return GetDOMNodeType() == DOMNodeType::kElement;
   }
-  bool IsDocumentFragment() const {
+  ALWAYS_INLINE bool IsDocumentFragment() const {
     return GetDOMNodeType() == DOMNodeType::kDocumentFragment;
   }
 
@@ -845,10 +849,6 @@ class CORE_EXPORT Node : public EventTarget {
   }
   virtual void PostDispatchEventHandler(Event&, EventDispatchHandlingState*) {}
 
-  // TODO(crbug.com/1013385): Remove DidPreventDefault. It is here as a
-  //   temporary fix for form double-submit.
-  virtual void DidPreventDefault(const Event&) {}
-
   void DispatchScopedEvent(Event&);
 
   virtual void HandleLocalEvents(Event&);
@@ -975,7 +975,9 @@ class CORE_EXPORT Node : public EventTarget {
     // 4 bits remaining.
   };
 
-  bool GetFlag(NodeFlags mask) const { return node_flags_ & mask; }
+  ALWAYS_INLINE bool GetFlag(NodeFlags mask) const {
+    return node_flags_ & mask;
+  }
   void SetFlag(bool f, NodeFlags mask) {
     node_flags_ = (node_flags_ & ~mask) | (-(int32_t)f & mask);
   }
@@ -983,12 +985,12 @@ class CORE_EXPORT Node : public EventTarget {
   void ClearFlag(NodeFlags mask) { node_flags_ &= ~mask; }
 
   enum class DOMNodeType : uint32_t {
-    kOther = 0,
+    kElement = 0,
     kText = 1 << kDOMNodeTypeShift,
-    kElement = 2 << kDOMNodeTypeShift,
-    kDocumentFragment = 3 << kDOMNodeTypeShift,
+    kDocumentFragment = 2 << kDOMNodeTypeShift,
+    kOther = 3 << kDOMNodeTypeShift,
   };
-  DOMNodeType GetDOMNodeType() const {
+  ALWAYS_INLINE DOMNodeType GetDOMNodeType() const {
     return static_cast<DOMNodeType>(node_flags_ & kDOMNodeTypeMask);
   }
 
@@ -1012,12 +1014,15 @@ class CORE_EXPORT Node : public EventTarget {
                   static_cast<NodeFlags>(DOMNodeType::kText) |
                   static_cast<NodeFlags>(ElementNamespaceType::kOther),
     kCreateContainer = kDefaultNodeFlags | kIsContainerFlag |
+                       static_cast<NodeFlags>(DOMNodeType::kOther) |
                        static_cast<NodeFlags>(ElementNamespaceType::kOther),
-    kCreateElement =
-        kCreateContainer | static_cast<NodeFlags>(DOMNodeType::kElement),
+    kCreateElement = kDefaultNodeFlags | kIsContainerFlag |
+                     static_cast<NodeFlags>(DOMNodeType::kElement) |
+                     static_cast<NodeFlags>(ElementNamespaceType::kOther),
     kCreateDocumentFragment =
-        kCreateContainer |
-        static_cast<NodeFlags>(DOMNodeType::kDocumentFragment),
+        kDefaultNodeFlags | kIsContainerFlag |
+        static_cast<NodeFlags>(DOMNodeType::kDocumentFragment) |
+        static_cast<NodeFlags>(ElementNamespaceType::kOther),
     kCreateShadowRoot = kCreateDocumentFragment | kIsInShadowTreeFlag,
     kCreateHTMLElement = kDefaultNodeFlags | kIsContainerFlag |
                          static_cast<NodeFlags>(DOMNodeType::kElement) |

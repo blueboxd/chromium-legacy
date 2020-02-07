@@ -9,6 +9,7 @@
 #include "base/debug/alias.h"
 #include "third_party/khronos/EGL/egl.h"
 #include "third_party/khronos/EGL/eglext.h"
+#include "ui/gfx/buffer_format_util.h"
 #include "ui/gl/gl_angle_util_win.h"
 #include "ui/gl/gl_bindings.h"
 #include "ui/gl/gl_image.h"
@@ -39,15 +40,7 @@ bool SupportedBindFormat(gfx::BufferFormat format) {
 
 bool HasAlpha(gfx::BufferFormat format) {
   DCHECK(SupportedBindFormat(format));
-  switch (format) {
-    case gfx::BufferFormat::RGBA_8888:
-      return true;
-    case gfx::BufferFormat::RGBX_8888:
-      return false;
-    default:
-      NOTREACHED();
-      return false;
-  };
+  return gfx::AlphaBitsForBufferFormat(format) > 0;
 }
 
 EGLConfig ChooseCompatibleConfig(gfx::BufferFormat format) {

@@ -6,6 +6,8 @@
 #define ANDROID_WEBVIEW_BROWSER_GFX_AW_GL_SURFACE_H_
 
 #include "base/macros.h"
+#include "ui/gfx/geometry/rect.h"
+#include "ui/gfx/transform.h"
 #include "ui/gl/gl_surface.h"
 
 namespace android_webview {
@@ -33,6 +35,10 @@ class AwGLSurface : public gl::GLSurface {
 
   void SetSize(const gfx::Size& size);
   void MaybeDidPresent(gfx::PresentationFeedback feedback);
+
+  virtual void RecalculateClipAndTransform(gfx::Size* viewport,
+                                           gfx::Rect* clip_rect,
+                                           gfx::Transform* transform) {}
 
  protected:
   ~AwGLSurface() override;

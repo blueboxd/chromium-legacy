@@ -827,6 +827,11 @@ class CONTENT_EXPORT RenderFrameHostImpl
   const mojo::AssociatedRemote<blink::mojom::LocalFrame>&
   GetAssociatedLocalFrame();
 
+  // Returns associated remote for the blink::mojom::LocalMainFrame Mojo
+  // interface.
+  const mojo::AssociatedRemote<blink::mojom::LocalMainFrame>&
+  GetAssociatedLocalMainFrame();
+
   // Resets the loading state. Following this call, the RenderFrameHost will be
   // in a non-loading state.
   void ResetLoadingState();
@@ -2275,8 +2280,12 @@ class CONTENT_EXPORT RenderFrameHostImpl
   // Holder of Mojo connection with FindInPage service in Blink.
   mojo::AssociatedRemote<blink::mojom::FindInPage> find_in_page_;
 
-  // Holder of Mojo connection with the Frame service in Blink.
+  // Holder of Mojo connection with the LocalFrame in Blink.
   mojo::AssociatedRemote<blink::mojom::LocalFrame> local_frame_;
+
+  // Holder of Mojo connection with the LocalMainFrame in Blink. This
+  // remote will be valid when the frame is a swapped in main frame.
+  mojo::AssociatedRemote<blink::mojom::LocalMainFrame> local_main_frame_;
 
   // Holds a NavigationRequest when it's about to commit, ie. after
   // OnCrossDocumentCommitProcessed has returned a positive answer for this

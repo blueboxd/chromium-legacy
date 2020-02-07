@@ -4,26 +4,66 @@
 
 module chrome.mojom;
 
+import "third_party/blink/public/mojom/referrer.mojom";
+import "ui/gfx/geometry/mojom/geometry.mojom";
+import "url/mojom/origin.mojom";
 import "url/mojom/url.mojom";
 
+// This interface is provided to a renderer that is used for prerendering. It
+// enables the renderer to detect and respond to cases that should cause the
+// prerendering to be cancelled.
 interface PrerenderCanceler {
   // Cancels prerendering because of an unsupported scheme.
   CancelPrerenderForUnsupportedScheme(url.mojom.Url url);
 };
 
-// PrerenderDispatcher Messages
 // These are messages sent from the browser to the renderer in relation to
 // running prerenders.
-interface PrerenderDispatcher {
+interface PrerenderHandleClient {
   // Signals to launcher that a prerender is running.
-  PrerenderStart(int32 prerender_id);
+  OnPrerenderStart();
 
-  // Signals to launcher that a prerender is running.
-  PrerenderStopLoading(int32 prerender_id);
+  // Signals to launcher that a prerender has stopped loading.
+  OnPrerenderStopLoading();
 
   // Signals to launcher that a prerender has had it's 'domcontentloaded' event.
-  PrerenderDomContentLoaded(int32 prerender_id);
+  OnPrerenderDomContentLoaded();
 
   // Signals to a launcher that a prerender is no longer running.
-  PrerenderStop(int32 prerender_id);
+  OnPrerenderStop();
+};
+
+// A handle to a requested prerender. Dropping a connection to the handle is
+// treated equivalently to calling the Abandon method.
+interface PrerenderHandle {
+  // Notifies on removal of a <link rel=prerender> element from the document.
+  // This method does not trigger an OnPrerenderStop() call.
+  Cancel();
+
+  // A prerender is abandoned when it's navigated away from or suspended in the
+  // page cache. This is a weaker signal than Cancel(), since the launcher
+  // hasn't indicated that the prerender isn't wanted, and we may end up using
+  // it after, for instance, a short redirect chain.
+  Abandon();
+};
+
+struct PrerenderAttributes {
+  url.mojom.Url url;
+  uint32 rel_types;
+  blink.mojom.Referrer referrer;
+  url.mojom.Origin initiator_origin;
+  gfx.mojom.Size view_size;
+};
+
+// Used by a renderer that is loading a web page to process prerender /
+// prefetch requests, that are generally in the form of <link rel> tags that
+// the web page author provided as hints.
+interface PrerenderProcessor {
+  // Called to add a prerender request to the queue for processing. The
+  // |prerender_handle_client| will be notified as the prerendering makes
+  // progress, and |prerender_handle| provides the caller with the ability to
+  // further control the prerender.
+  AddPrerender(PrerenderAttributes prerender_attribute,
+               pending_remote<PrerenderHandleClient> prerender_handle_client,
+               pending_receiver<PrerenderHandle> prerender_handle);
 };

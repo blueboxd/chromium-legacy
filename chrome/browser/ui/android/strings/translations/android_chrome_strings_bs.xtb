@@ -115,6 +115,7 @@
 <translation id="1919950603503897840">Odaberite kontakte</translation>
 <translation id="1922076542920281912">Da dozvolite da Chrome pristupa vašoj lokaciji, uključite lokaciju i u <ph name="BEGIN_LINK" />Postavkama Androida<ph name="END_LINK" />.</translation>
 <translation id="1923695749281512248"><ph name="BYTES_DOWNLOADED_WITH_UNITS" />/<ph name="FILE_SIZE_WITH_UNITS" /></translation>
+<translation id="1925021887439448749">Unesite prilagođenu web adresu</translation>
 <translation id="1928696683969751773">Ažuriranja</translation>
 <translation id="19288952978244135">Ponovo otvori Chrome.</translation>
 <translation id="1933845786846280168">Odabrana kartica</translation>
@@ -279,6 +280,7 @@
 <translation id="3123473560110926937">Blokirano na nekim web lokacijama</translation>
 <translation id="3123734510202723619">Najave</translation>
 <translation id="3137521801621304719">Napusti anonimni načina rada</translation>
+<translation id="3140134512074889489">Omogućite kameri da skenira QR kôd</translation>
 <translation id="3143515551205905069">Otkaži sinhronizaciju</translation>
 <translation id="3157842584138209013">Pogledajte količinu podataka koju ste uštedjeli koristeći dugme Više opcija</translation>
 <translation id="3166827708714933426">Kartice i prečice prozora</translation>
@@ -449,6 +451,9 @@
 <translation id="4521489764227272523">Odabrani podaci su uklonjeni iz Chromea i vaših sinhroniziranih uređaja.
 
 Vaš Google račun može imati druge oblike historije pregledanja kao što su pretraživanja i aktivnosti s drugih Googleovih usluga na <ph name="BEGIN_LINK" />myactivity.google.com<ph name="END_LINK" />.</translation>
+<translation id="4527374721149092498">Saznajte više o temama na web lokacijama bez napuštanja stranice. Kada dodirnete Pretraživanje, poslat ćete riječ i njen kontekst u Google Pretraživanje, a dobit ćete definicije, slike, rezultate pretraživanja i druge detalje.
+
+Dodirnite bilo koju riječ da za nju kreirate pretraživanje. Da prilagodite pojam za pretraživanje, pritisnite i zadržite za odabir. Za fino podešavanje pretraživanja, kliznite ploču da je otvorite, dodirnite ikonu za proširivanje da kreirate novu karticu, a zatim dodirnite okvir za pretraživanje.</translation>
 <translation id="4532845899244822526">Izaberite folder</translation>
 <translation id="4538018662093857852">Uključi jednostavni način rada</translation>
 <translation id="4550003330909367850">Da prikažete ili kopirate lozinku ovdje, postavite zaključavanje ekrana na ovom uređaju.</translation>
@@ -690,6 +695,9 @@ Da biste promijenili tu postavku, <ph name="BEGIN_LINK" />poništite sinkronizac
 <translation id="6232535412751077445">Ako omogućite "Bez praćenja", taj će se zahtjev slati uz vaš saobraćaj pregledanja. Efikasnost zavisi od toga reagira li web lokacija na zahtjev i na koji način se taj zahtjev tumači.
 
 Naprimjer, neke web lokacije mogu reagirati na ovaj zahtjev prikazivanjem oglasa koji se ne zasnivaju na drugim web lokacijama koje ste posjetili. Mnoge web lokacije će i dalje prikupljati i koristiti vaše podatke o pregledanju kako bi, naprimjer, poboljšale sigurnost, pružale sadržaje, oglase i preporuke te generirale statističke podatke za izvještaje.</translation>
+<translation id="6238003486329291387">Saznajte više o temama na web lokacijama bez napuštanja stranice. Kada dodirnete Pretraživanje, poslat ćete riječ i njen kontekst u Google Pretraživanje, a dobit ćete definicije, slike, rezultate pretraživanja i druge detalje.
+
+Dugo pritisnite bilo koju riječ da za nju kreirate pretraživanje. Za fino podešavanje pretraživanja, podesite odabir. Također možete kliznuti ploču da je otvorite, dodirnuti ikonu za proširivanje da kreirate novu karticu, a zatim dodirnuti okvir za pretraživanje.</translation>
 <translation id="624789221780392884">Ažuriranje je spremno</translation>
 <translation id="6255999984061454636">Prijedlozi sadržaja</translation>
 <translation id="6270391203985052864">Web lokacije mogu tražiti da šalju obavještenja</translation>

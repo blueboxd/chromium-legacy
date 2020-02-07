@@ -41,14 +41,14 @@ base::string16 CachedElementContentsAsString(IUIAutomationElement* element) {
   base::win::ScopedBstr value;
   result = element->get_CachedLocalizedControlType(value.Receive());
   if (SUCCEEDED(result))
-    contents.append(STRING16_LITERAL("type: ")).append(value);
+    contents.append(STRING16_LITERAL("type: ")).append(value.Get());
 
   value.Reset();
   result = element->get_CachedName(value.Receive());
   if (SUCCEEDED(result)) {
     if (!contents.empty())
       contents.append(STRING16_LITERAL(", "));
-    contents.append(STRING16_LITERAL("name: ")).append(value);
+    contents.append(STRING16_LITERAL("name: ")).append(value.Get());
   }
 
   return contents;

@@ -162,10 +162,6 @@ viz_component("common") {
     "frame_sinks/delay_based_time_source.h",
     "frame_timing_details.h",
     "frame_timing_details_map.h",
-    "gl_helper.cc",
-    "gl_helper.h",
-    "gl_helper_scaling.cc",
-    "gl_helper_scaling.h",
     "gl_i420_converter.cc",
     "gl_i420_converter.h",
     "gl_scaler.cc",
@@ -340,7 +336,6 @@ viz_source_set("unit_tests") {
     "frame_sinks/begin_frame_source_unittest.cc",
     "frame_sinks/copy_output_util_unittest.cc",
     "frame_sinks/delay_based_time_source_unittest.cc",
-    "gl_helper_unittest.cc",
     "gl_i420_converter_pixeltest.cc",
     "gl_i420_converter_unittest.cc",
     "gl_scaler_overscan_pixeltest.cc",
@@ -378,34 +373,6 @@ viz_source_set("unit_tests") {
     "//ui/gfx:color_space",
     "//ui/gfx/geometry",
   ]
-}
-
-# Microbenchmark to measure performance of GLHelper code, for use in
-# debugging, profiling, and optimizing.
-viz_test("viz_benchmark") {
-  sources = [ "gl_helper_benchmark.cc" ]
-
-  configs = [
-    "//build/config/compiler:no_size_t_to_int_warning",
-    "//third_party/khronos:khronos_headers",
-  ]
-
-  deps = [
-    ":common",
-    "//base",
-    "//base/test:test_support",
-    "//components/test:run_all_unittests",
-    "//components/viz/test:test_support",
-    "//gpu/command_buffer/client",
-    "//gpu/command_buffer/client:gles2_implementation",
-    "//gpu/ipc:gl_in_process_context",
-    "//gpu/ipc:gpu_thread_holder",
-    "//testing/gmock",
-    "//testing/gtest",
-    "//ui/gfx",
-  ]
-
-  data_deps = [ "//third_party/mesa_headers" ]
 }
 
 viz_source_set("perf_tests") {

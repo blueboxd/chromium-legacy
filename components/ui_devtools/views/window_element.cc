@@ -4,6 +4,7 @@
 
 #include "components/ui_devtools/views/window_element.h"
 
+#include "base/strings/string_number_conversions.h"
 #include "components/ui_devtools/Protocol.h"
 #include "components/ui_devtools/ui_element_delegate.h"
 #include "components/ui_devtools/views/element_utility.h"

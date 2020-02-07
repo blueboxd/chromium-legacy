@@ -35,12 +35,12 @@
 #include "base/metrics/persistent_memory_allocator.h"
 #include "base/win/pe_image.h"
 #include "chrome/install_static/install_util.h"
+#include "components/browser_watcher/activity_data_names.h"
+#include "components/browser_watcher/activity_report.pb.h"
 #include "components/browser_watcher/activity_tracker_annotation.h"
+#include "components/browser_watcher/extended_crash_reporting.h"
+#include "components/browser_watcher/extended_crash_reporting_metrics.h"
 #include "components/browser_watcher/features.h"
-#include "components/browser_watcher/stability_data_names.h"
-#include "components/browser_watcher/stability_debugging.h"
-#include "components/browser_watcher/stability_metrics.h"
-#include "components/browser_watcher/stability_report.pb.h"
 #endif
 
 #if defined(OS_WIN)
@@ -141,8 +141,8 @@ void SetupExtendedCrashReporting() {
   // Record the main DLL module info for easier symbolization.
   RecordChromeModuleInfo(global_tracker);
 
-  browser_watcher::LogStabilityRecordEvent(
-      browser_watcher::StabilityRecordEvent::kGotTracker);
+  browser_watcher::LogActivityRecordEvent(
+      browser_watcher::ActivityRecordEvent::kGotTracker);
   // Record product, version, channel, special build and platform.
   wchar_t exe_file[MAX_PATH] = {};
   CHECK(::GetModuleFileName(nullptr, exe_file, base::size(exe_file)));
@@ -155,22 +155,22 @@ void SetupExtendedCrashReporting() {
       exe_file, &product_name, &version_number, &special_build, &channel_name);
 
   base::debug::ActivityUserData& proc_data = global_tracker->process_data();
-  proc_data.SetString(browser_watcher::kStabilityProduct, product_name);
-  proc_data.SetString(browser_watcher::kStabilityVersion, version_number);
-  proc_data.SetString(browser_watcher::kStabilityChannel, channel_name);
-  proc_data.SetString(browser_watcher::kStabilitySpecialBuild, special_build);
+  proc_data.SetString(browser_watcher::kActivityProduct, product_name);
+  proc_data.SetString(browser_watcher::kActivityVersion, version_number);
+  proc_data.SetString(browser_watcher::kActivityChannel, channel_name);
+  proc_data.SetString(browser_watcher::kActivitySpecialBuild, special_build);
 #if defined(ARCH_CPU_X86)
-  proc_data.SetString(browser_watcher::kStabilityPlatform, "Win32");
+  proc_data.SetString(browser_watcher::kActivityPlatform, "Win32");
 #elif defined(ARCH_CPU_X86_64)
-  proc_data.SetString(browser_watcher::kStabilityPlatform, "Win64");
+  proc_data.SetString(browser_watcher::kActivityPlatform, "Win64");
 #endif
   proc_data.SetInt(
-      browser_watcher::kStabilityStartTimestamp,
+      browser_watcher::kActivityStartTimestamp,
       base::Time::Now().ToDeltaSinceWindowsEpoch().InMicroseconds());
-  proc_data.SetInt(browser_watcher::kStabilityProcessType,
+  proc_data.SetInt(browser_watcher::kActivityProcessType,
                    browser_watcher::ProcessState::BROWSER_PROCESS);
 
-  browser_watcher::RegisterStabilityVEH();
+  browser_watcher::ExtendedCrashReporting::RegisterVEH();
 }
 #endif  // defined(OS_WIN)
 

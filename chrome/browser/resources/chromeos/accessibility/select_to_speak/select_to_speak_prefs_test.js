@@ -12,38 +12,33 @@ GEN_INCLUDE(['mock_storage.js']);
 /**
  * Browser tests for select-to-speak's feature to speak text
  * at the press of a keystroke.
- * @constructor
- * @extends {SelectToSpeakE2ETest}
  */
-function SelectToSpeakPrefsTest() {
-  SelectToSpeakE2ETest.call(this);
+SelectToSpeakPrefsTest = class extends SelectToSpeakE2ETest {
+  constructor() {
+    super();
+    this.mockStorage_ = MockStorage;
+    chrome.storage = this.mockStorage_;
 
-  this.mockStorage_ = MockStorage;
-  chrome.storage = this.mockStorage_;
+    this.mockSettingsPrivate_ = new settings.FakeSettingsPrivate([
+      {type: 'number', key: 'settings.tts.speech_rate', value: 1.0},
+      {type: 'number', key: 'settings.tts.speech_pitch', value: 1.0}
+    ]);
+    this.mockSettingsPrivate_.allowSetPref();
+    chrome.settingsPrivate = this.mockSettingsPrivate_;
 
-  this.mockSettingsPrivate_ = new settings.FakeSettingsPrivate([
-    {type: 'number', key: 'settings.tts.speech_rate', value: 1.0},
-    {type: 'number', key: 'settings.tts.speech_pitch', value: 1.0}
-  ]);
-  this.mockSettingsPrivate_.allowSetPref();
-  chrome.settingsPrivate = this.mockSettingsPrivate_;
+    chrome.i18n = {
+      getMessage(msgid) {
+        return msgid;
+      }
+    };
 
-  chrome.i18n = {
-    getMessage(msgid) {
-      return msgid;
-    }
-  };
-
-  this.resetStorage();
-}
-
-SelectToSpeakPrefsTest.prototype = {
-  __proto__: SelectToSpeakE2ETest.prototype,
+    this.resetStorage();
+  }
 
   resetStorage() {
     this.mockStorage_.clear();
     selectToSpeak.prefsManager_.initPreferences();
-  },
+  }
 
   // This must be done before setting STS rate and pitch for tests to work
   // properly.
@@ -53,12 +48,12 @@ SelectToSpeakPrefsTest.prototype = {
         'settings.tts.speech_rate', rate, '', unused);
     this.mockSettingsPrivate_.setPref(
         'settings.tts.speech_pitch', pitch, '', unused);
-  },
+  }
 
   setStsRateAndPitch(rate, pitch) {
     this.mockStorage_.sync.set({rate});
     this.mockStorage_.sync.set({pitch});
-  },
+  }
 
   ensurePrefsRemovedAndGlobalSetTo(rate, pitch) {
     const onPrefsRemovedFromStorage = this.newCallback(() => {

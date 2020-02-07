@@ -82,6 +82,7 @@ class BuildConfigGenerator extends DefaultTask {
 
     @TaskAction
     void main() {
+        skipLicenses = skipLicenses || project.hasProperty("skipLicenses")
         def graph = new ChromiumDepGraph(project: project, skipLicenses: skipLicenses)
         def normalisedRepoPath = normalisePath(repositoryPath)
         def rootDirPath = normalisePath(".")
@@ -125,7 +126,7 @@ class BuildConfigGenerator extends DefaultTask {
                     downloadFile(dependency.id, dependency.licenseUrl, destFile)
                     if (destFile.text.contains("<html")) {
                         throw new RuntimeException("Found HTML in LICENSE file. Please add an "
-                                + "override to ChromiumDepGraph.groovy for ${dependency.name}.")
+                                + "override to ChromiumDepGraph.groovy for ${dependency.id}.")
                     }
                 }
             }
@@ -527,7 +528,11 @@ class BuildConfigGenerator extends DefaultTask {
 
     static void downloadFile(String id, String sourceUrl, File destinationFile) {
         destinationFile.withOutputStream { out ->
-            out << connectAndFollowRedirects(id, sourceUrl).getInputStream()
+            try {
+                out << connectAndFollowRedirects(id, sourceUrl).getInputStream()
+            } catch (Exception e) {
+                throw new RuntimeException("Failed to fetch license for " + id + " url: " + sourceUrl, e)
+            }
         }
     }
 

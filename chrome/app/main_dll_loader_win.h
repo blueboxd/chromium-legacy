@@ -20,8 +20,8 @@ class FilePath;
 }
 
 // Implements the common aspects of loading the main dll for both chrome and
-// chromium scenarios, which are in charge of implementing two abstract
-// methods: OnBeforeLaunch() and OnBeforeExit().
+// chromium scenarios, which are in charge of implementing one abstract
+// method: OnBeforeLaunch()
 class MainDllLoader {
  public:
   MainDllLoader();
@@ -47,10 +47,6 @@ class MainDllLoader {
   virtual void OnBeforeLaunch(const base::CommandLine& cmd_line,
                               const std::string& process_type,
                               const base::FilePath& dll_path) = 0;
-
-  // Called after the chrome.dll entry point returns and before terminating this
-  // process. |dll_path| refers to the path of the Chrome dll that was loaded.
-  virtual void OnBeforeExit(const base::FilePath& dll_path) = 0;
 
  private:
   // Loads the appropriate DLL for the process type |process_type_|. Populates

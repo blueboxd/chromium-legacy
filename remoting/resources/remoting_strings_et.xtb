@@ -256,6 +256,7 @@ Kui ruut teenuse „<ph name="SERVICE_SCRIPT_NAME" />” juures on juba märgitu
 <translation id="6939719207673461467">Kuva/peida klaviatuur.</translation>
 <translation id="6944854424004126054">Akna taastamine</translation>
 <translation id="6948905685698011662">Chrome Remote Desktop on nüüd veebis! Vaadake meie <ph name="LINK_BEGIN" />tasuta veebirakendust<ph name="LINK_END" />.</translation>
+<translation id="6956835181934226419">Olen selle loa juba andnud.</translation>
 <translation id="6963936880795878952">Ühendused kaugarvutiga on ajutiselt blokeeritud, sest keegi püüdis luua ühendust vale PIN-koodiga. Proovige hiljem uuesti.</translation>
 <translation id="6965382102122355670">OK</translation>
 <translation id="6985691951107243942">Kas olete kindel, et soovite keelata kaugühenduse hostiga <ph name="HOSTNAME" />? Kui mõtlete ümber, peate selles arvutis ühendused uuesti lubama.</translation>

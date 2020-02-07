@@ -85,7 +85,7 @@ scoped_refptr<VideoFrame> VideoFramePool::PoolImpl::CreateFrame(
   DCHECK(!is_shutdown_);
 
   scoped_refptr<VideoFrame> frame;
-  while (!frame && !frames_.empty()) {
+  while (!frames_.empty()) {
     scoped_refptr<VideoFrame> pool_frame = std::move(frames_.back().frame);
     frames_.pop_back();
 

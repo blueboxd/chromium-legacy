@@ -49,8 +49,11 @@ constexpr char kWebBluetoothDeviceIdKey[] = "web-bluetooth-device-id";
 // |options->filters| and |options->optional_services|.
 // https://webbluetoothcg.github.io/web-bluetooth/#bluetooth
 void AddUnionOfServicesTo(
-    const blink::mojom::WebBluetoothRequestDeviceOptionsPtr& options,
+    const blink::mojom::WebBluetoothRequestDeviceOptions* options,
     base::Value* permission_object) {
+  if (!options)
+    return;
+
   DCHECK(!!permission_object->FindDictKey(kServicesKey));
   auto& services_dict = *permission_object->FindDictKey(kServicesKey);
   if (options->filters) {
@@ -70,7 +73,7 @@ void AddUnionOfServicesTo(
 
 base::Value DeviceInfoToDeviceObject(
     const device::BluetoothDevice* device,
-    const blink::mojom::WebBluetoothRequestDeviceOptionsPtr& options,
+    const blink::mojom::WebBluetoothRequestDeviceOptions* options,
     const WebBluetoothDeviceId& device_id) {
   base::Value device_value(base::Value::Type::DICTIONARY);
   device_value.SetStringKey(kDeviceAddressKey, device->GetAddress());
@@ -172,7 +175,7 @@ WebBluetoothDeviceId BluetoothChooserContext::GrantServiceAccessPermission(
     const url::Origin& requesting_origin,
     const url::Origin& embedding_origin,
     const device::BluetoothDevice* device,
-    const blink::mojom::WebBluetoothRequestDeviceOptionsPtr& options) {
+    const blink::mojom::WebBluetoothRequestDeviceOptions* options) {
   // If |requesting_origin| and |embedding_origin| already have permission to
   // access the device with |device_address|, update the allowed GATT services
   // by performing a union of |services|.

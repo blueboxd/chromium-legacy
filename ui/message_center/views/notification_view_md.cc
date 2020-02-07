@@ -618,8 +618,8 @@ void NotificationViewMD::Layout() {
     bounds.set_height(bounds.height() * 2);
     path.addRoundRect(gfx::RectToSkRect(bounds), kCornerRadius, kCornerRadius);
 
-    action_buttons_row_->set_clip_path(path);
-    inline_reply_->set_clip_path(path);
+    action_buttons_row_->SetClipPath(path);
+    inline_reply_->SetClipPath(path);
   }
 
   // The animation is needed to run inside of the border.

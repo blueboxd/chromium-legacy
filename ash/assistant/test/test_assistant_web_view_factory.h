@@ -21,8 +21,8 @@ class TestAssistantWebViewFactory : public AssistantWebViewFactory {
   ~TestAssistantWebViewFactory() override;
 
   // AssistantWebViewFactory:
-  std::unique_ptr<AssistantWebView2> Create(
-      const AssistantWebView2::InitParams& params) override;
+  std::unique_ptr<AssistantWebView> Create(
+      const AssistantWebView::InitParams& params) override;
 };
 
 }  // namespace ash

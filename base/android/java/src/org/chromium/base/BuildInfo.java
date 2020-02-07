@@ -84,6 +84,7 @@ public class BuildInfo {
                 buildInfo.resourcesVersion,
                 buildInfo.extractedFileSuffix,
                 isAtLeastQ() ? "1" : "0",
+                targetsAtLeastR() ? "1" : "0",
                 isDebugAndroid() ? "1" : "0",
         };
     }

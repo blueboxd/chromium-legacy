@@ -78,10 +78,6 @@ Model ModelForType(RankingItemType type) {
   switch (type) {
     case RankingItemType::kFile:
     case RankingItemType::kOmniboxGeneric:
-    case RankingItemType::kOmniboxBookmark:
-    case RankingItemType::kOmniboxDocument:
-    case RankingItemType::kOmniboxHistory:
-    case RankingItemType::kOmniboxSearch:
     case RankingItemType::kZeroStateFile:
     case RankingItemType::kDriveQuickAccess:
       return Model::MIXED_TYPES;
@@ -127,10 +123,6 @@ std::string NormalizeId(const std::string& id, RankingItemType type) {
   // Put any further normalizations here.
   switch (type) {
     case RankingItemType::kOmniboxGeneric:
-    case RankingItemType::kOmniboxBookmark:
-    case RankingItemType::kOmniboxDocument:
-    case RankingItemType::kOmniboxHistory:
-    case RankingItemType::kOmniboxSearch:
       // Heuristically check if the URL points to a Drive file. If so, strip
       // some extra information from it.
       if (GURL(id).host() == "docs.google.com")
@@ -663,8 +655,7 @@ void SearchResultRanker::SaveQueryMixedRankerAfterDelete() {
 void SearchResultRanker::LogZeroStateResultScore(RankingItemType type,
                                                  float score) {
   const auto& now = Time::Now();
-  if (type == RankingItemType::kOmniboxGeneric ||
-      type == RankingItemType::kOmniboxSearch) {
+  if (type == RankingItemType::kOmniboxGeneric) {
     if (now - time_of_last_omnibox_log_ < kMinTimeBetweenLogs)
       return;
     time_of_last_omnibox_log_ = now;

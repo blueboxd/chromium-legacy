@@ -12,7 +12,7 @@ namespace ash {
 
 // AssistantCardElement::Processor ---------------------------------------------
 
-class AssistantCardElement::Processor : public AssistantWebView2::Observer {
+class AssistantCardElement::Processor : public AssistantWebView::Observer {
  public:
   Processor(AssistantCardElement& card_element, ProcessingCallback callback)
       : card_element_(card_element), callback_(std::move(callback)) {}
@@ -34,7 +34,7 @@ class AssistantCardElement::Processor : public AssistantWebView2::Observer {
         kPreferredWidthDip - 2 * kUiElementHorizontalMarginDip;
 
     // Configure parameters for the card.
-    AssistantWebView2::InitParams contents_params;
+    AssistantWebView::InitParams contents_params;
     contents_params.enable_auto_resize = true;
     contents_params.min_size = gfx::Size(width_dip, 1);
     contents_params.max_size = gfx::Size(width_dip, INT_MAX);
@@ -59,7 +59,7 @@ class AssistantCardElement::Processor : public AssistantWebView2::Observer {
   }
 
  private:
-  // AssistantWebView2::Observer:
+  // AssistantWebView::Observer:
   void DidStopLoading() override {
     contents_view_->RemoveObserver(this);
 
@@ -72,7 +72,7 @@ class AssistantCardElement::Processor : public AssistantWebView2::Observer {
   AssistantCardElement& card_element_;
   ProcessingCallback callback_;
 
-  std::unique_ptr<AssistantWebView2> contents_view_;
+  std::unique_ptr<AssistantWebView> contents_view_;
 };
 
 // AssistantCardElement --------------------------------------------------------

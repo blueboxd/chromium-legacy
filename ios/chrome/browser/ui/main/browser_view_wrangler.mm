@@ -15,6 +15,7 @@
 #import "ios/chrome/browser/main/browser_list.h"
 #import "ios/chrome/browser/main/browser_list_factory.h"
 #import "ios/chrome/browser/sessions/session_ios.h"
+#import "ios/chrome/browser/sessions/session_restoration_browser_agent.h"
 #import "ios/chrome/browser/sessions/session_service_ios.h"
 #import "ios/chrome/browser/sessions/session_window_ios.h"
 #import "ios/chrome/browser/tabs/tab_model.h"
@@ -127,12 +128,12 @@
 @property(nonatomic, strong, readwrite)
     DeviceSharingManager* deviceSharingManager;
 
-// Sets up the given |tabModel| for use.  If |restorePersistedState| is YES,
-// then any existing tabs that have been saved for |browserState| will be
-// loaded; otherwise, the tab model will be left empty.
-- (void)setUpTabModel:(TabModel*)tabModel
-         withBrowserState:(ChromeBrowserState*)browserState
-    restorePersistedState:(BOOL)restorePersistedState;
+// Restore session to the given |browser|, any existing tabs that have been
+// saved for the |browser| will be loaded.
+- (void)restoreSessionToBrowser:(Browser*)browser;
+
+// Add the common observers to the browser's |webStateList|.
+- (void)addObserversToWebStateList:(WebStateList*)webStateList;
 
 // Setters for the main and otr Browsers.
 - (void)setMainBrowser:(std::unique_ptr<Browser>)browser;
@@ -182,9 +183,8 @@
   BrowserList* browserList =
       BrowserListFactory::GetForBrowserState(_mainBrowser->GetBrowserState());
   browserList->AddBrowser(_mainBrowser.get());
-  [self setUpTabModel:_mainBrowser->GetTabModel()
-           withBrowserState:_browserState
-      restorePersistedState:YES];
+  [self restoreSessionToBrowser:_mainBrowser.get()];
+  [self addObserversToWebStateList:_mainBrowser->GetWebStateList()];
 
   // Follow loaded URLs in the main tab model to send those in case of
   // crashes.
@@ -445,40 +445,12 @@
   BrowserList* browserList =
       BrowserListFactory::GetForBrowserState(browser->GetBrowserState());
   browserList->AddIncognitoBrowser(browser.get());
+  if (restorePersistedState)
+    [self restoreSessionToBrowser:browser.get()];
 
-  [self setUpTabModel:browser->GetTabModel()
-           withBrowserState:otrBrowserState
-      restorePersistedState:restorePersistedState];
+  [self addObserversToWebStateList:browser->GetWebStateList()];
+
   return browser;
-}
-
-- (void)setUpTabModel:(TabModel*)tabModel
-         withBrowserState:(ChromeBrowserState*)browserState
-    restorePersistedState:(BOOL)restorePersistedState {
-  DCHECK_EQ(0U, tabModel.count);
-  SessionWindowIOS* sessionWindow = nil;
-  if (restorePersistedState) {
-    // Load existing saved tab model state.
-    NSString* statePath =
-        base::SysUTF8ToNSString(browserState->GetStatePath().AsUTF8Unsafe());
-    SessionIOS* session =
-        [[SessionServiceIOS sharedService] loadSessionFromDirectory:statePath];
-    if (session) {
-      DCHECK_EQ(session.sessionWindows.count, 1u);
-      sessionWindow = session.sessionWindows[0];
-    }
-
-    [tabModel restoreSessionWindow:sessionWindow forInitialRestore:YES];
-  }
-
-  // Add observers.
-  _activeWebStateObservationForwarders[tabModel.webStateList] =
-      std::make_unique<ActiveWebStateObservationForwarder>(
-          tabModel.webStateList, _activeWebStateObserver.get());
-  tabModel.webStateList->AddObserver(_webStateListObserver.get());
-  tabModel.webStateList->AddObserver(_webStateListForwardingObserver.get());
-
-  breakpad::MonitorTabStateForWebStateList(tabModel.webStateList);
 }
 
 - (BrowserCoordinator*)coordinatorForBrowser:(Browser*)browser {
@@ -489,6 +461,29 @@
   coordinator.browsingDataCommandHandler = _browsingDataCommandEndpoint;
   coordinator.appURLLoadingService = _appURLLoadingService;
   return coordinator;
+}
+
+- (void)restoreSessionToBrowser:(Browser*)browser {
+  SessionWindowIOS* sessionWindow = nil;
+  NSString* statePath = base::SysUTF8ToNSString(
+      browser->GetBrowserState()->GetStatePath().AsUTF8Unsafe());
+  SessionIOS* session =
+      [[SessionServiceIOS sharedService] loadSessionFromDirectory:statePath];
+  if (session) {
+    DCHECK_EQ(session.sessionWindows.count, 1u);
+    sessionWindow = session.sessionWindows[0];
+  }
+  SessionRestorationBrowserAgent::FromBrowser(browser)->RestoreSessionWindow(
+      sessionWindow);
+}
+
+- (void)addObserversToWebStateList:(WebStateList*)webStateList {
+  _activeWebStateObservationForwarders[webStateList] =
+      std::make_unique<ActiveWebStateObservationForwarder>(
+          webStateList, _activeWebStateObserver.get());
+  webStateList->AddObserver(_webStateListObserver.get());
+  webStateList->AddObserver(_webStateListForwardingObserver.get());
+  breakpad::MonitorTabStateForWebStateList(webStateList);
 }
 
 @end

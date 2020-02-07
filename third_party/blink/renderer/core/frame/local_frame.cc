@@ -82,6 +82,7 @@
 #include "third_party/blink/renderer/core/frame/local_dom_window.h"
 #include "third_party/blink/renderer/core/frame/local_frame_client.h"
 #include "third_party/blink/renderer/core/frame/local_frame_view.h"
+#include "third_party/blink/renderer/core/frame/page_scale_constraints_set.h"
 #include "third_party/blink/renderer/core/frame/performance_monitor.h"
 #include "third_party/blink/renderer/core/frame/picture_in_picture_controller.h"
 #include "third_party/blink/renderer/core/frame/report.h"
@@ -394,6 +395,7 @@ void LocalFrame::DetachImpl(FrameDetachType type) {
   supplements_.clear();
   frame_scheduler_.reset();
   receiver_.reset();
+  main_frame_receiver_.reset();
   WeakIdentifierMap<LocalFrame>::NotifyObjectDestroyed(this);
 }
 
@@ -1847,8 +1849,24 @@ SystemClipboard* LocalFrame::GetSystemClipboard() {
   return system_clipboard_.Get();
 }
 
+void LocalFrame::WasAttachedAsLocalMainFrame() {
+  GetInterfaceRegistry()->AddAssociatedInterface(WTF::BindRepeating(
+      &LocalFrame::BindToMainFrameReceiver, WrapWeakPersistent(this)));
+}
+
 void LocalFrame::EvictFromBackForwardCache() {
   GetLocalFrameHostRemote().EvictFromBackForwardCache();
+}
+
+void LocalFrame::SetScaleFactor(float scale_factor) {
+  DCHECK(IsMainFrame());
+
+  const PageScaleConstraints& constraints =
+      GetPage()->GetPageScaleConstraintsSet().FinalConstraints();
+  scale_factor = constraints.ClampToConstraints(scale_factor);
+  if (scale_factor == GetPage()->GetVisualViewport().Scale())
+    return;
+  GetPage()->GetVisualViewport().SetScale(scale_factor);
 }
 
 HitTestResult LocalFrame::HitTestResultForVisualViewportPos(
@@ -2132,6 +2150,15 @@ void LocalFrame::BindToReceiver(
     mojo::PendingAssociatedReceiver<mojom::blink::LocalFrame> receiver) {
   DCHECK(frame);
   frame->receiver_.Bind(
+      std::move(receiver),
+      frame->GetTaskRunner(blink::TaskType::kInternalDefault));
+}
+
+void LocalFrame::BindToMainFrameReceiver(
+    blink::LocalFrame* frame,
+    mojo::PendingAssociatedReceiver<mojom::blink::LocalMainFrame> receiver) {
+  DCHECK(frame);
+  frame->main_frame_receiver_.Bind(
       std::move(receiver),
       frame->GetTaskRunner(blink::TaskType::kInternalDefault));
 }

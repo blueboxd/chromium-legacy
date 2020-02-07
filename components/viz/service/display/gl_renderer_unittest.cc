@@ -2164,7 +2164,7 @@ class MockOutputSurface : public OutputSurface {
                void(const gfx::Size& size,
                     float scale_factor,
                     const gfx::ColorSpace& color_space,
-                    bool has_alpha,
+                    gfx::BufferFormat format,
                     bool use_stencil));
   MOCK_METHOD0(BindFramebuffer, void());
   MOCK_METHOD1(SetDrawRectangle, void(const gfx::Rect&));
@@ -2222,6 +2222,8 @@ class MockOutputSurfaceTest : public GLRendererTest {
   void DrawFrame(float device_scale_factor,
                  const gfx::Size& viewport_size,
                  bool transparent) {
+    gfx::BufferFormat format = transparent ? gfx::BufferFormat::RGBA_8888
+                                           : gfx::BufferFormat::RGBX_8888;
     int render_pass_id = 1;
     RenderPass* render_pass = cc::AddRenderPass(
         &render_passes_in_draw_order_, render_pass_id, gfx::Rect(viewport_size),
@@ -2232,7 +2234,7 @@ class MockOutputSurfaceTest : public GLRendererTest {
     EXPECT_CALL(*output_surface_, EnsureBackbuffer()).WillRepeatedly(Return());
 
     EXPECT_CALL(*output_surface_,
-                Reshape(viewport_size, device_scale_factor, _, transparent, _))
+                Reshape(viewport_size, device_scale_factor, _, format, _))
         .Times(1);
 
     EXPECT_CALL(*output_surface_, BindFramebuffer()).Times(1);

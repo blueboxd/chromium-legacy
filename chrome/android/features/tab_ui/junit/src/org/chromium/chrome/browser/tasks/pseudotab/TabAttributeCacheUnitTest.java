@@ -8,6 +8,8 @@ import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.doNothing;
 import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.never;
+import static org.mockito.Mockito.verify;
 
 import org.junit.After;
 import org.junit.Assert;
@@ -19,12 +21,14 @@ import org.junit.runner.RunWith;
 import org.mockito.ArgumentCaptor;
 import org.mockito.Captor;
 import org.mockito.Mock;
+import org.mockito.Mockito;
 import org.mockito.MockitoAnnotations;
 import org.robolectric.annotation.Config;
 
 import org.chromium.base.metrics.RecordHistogram;
 import org.chromium.base.metrics.RecordUserAction;
 import org.chromium.base.test.BaseRobolectricTestRunner;
+import org.chromium.chrome.browser.search_engines.TemplateUrlServiceFactory;
 import org.chromium.chrome.browser.tab.TabImpl;
 import org.chromium.chrome.browser.tab.TabObserver;
 import org.chromium.chrome.browser.tabmodel.TabModel;
@@ -33,7 +37,14 @@ import org.chromium.chrome.browser.tabmodel.TabModelFilterProvider;
 import org.chromium.chrome.browser.tabmodel.TabModelObserver;
 import org.chromium.chrome.browser.tabmodel.TabModelSelectorImpl;
 import org.chromium.chrome.browser.tabmodel.TabModelSelectorObserver;
+import org.chromium.chrome.browser.tasks.pseudotab.TabAttributeCache.LastSearchTermProvider;
 import org.chromium.chrome.test.util.browser.Features;
+import org.chromium.components.search_engines.TemplateUrlService;
+import org.chromium.content_public.browser.NavigationController;
+import org.chromium.content_public.browser.NavigationEntry;
+import org.chromium.content_public.browser.NavigationHandle;
+import org.chromium.content_public.browser.NavigationHistory;
+import org.chromium.content_public.browser.WebContents;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -110,6 +121,7 @@ public class TabAttributeCacheUnitTest {
         RecordUserAction.setDisabledForTests(false);
         RecordHistogram.setDisabledForTests(false);
         mCache.destroy();
+        TabAttributeCache.setLastSearchTermMockForTesting(null);
         TabAttributeCache.clearAllForTesting();
     }
 
@@ -189,6 +201,135 @@ public class TabAttributeCacheUnitTest {
     }
 
     @Test
+    public void updateLastSearchTerm() {
+        String searchTerm = "chromium";
+
+        LastSearchTermProvider lastSearchTermProvider = mock(LastSearchTermProvider.class);
+        TabAttributeCache.setLastSearchTermMockForTesting(lastSearchTermProvider);
+        NavigationHandle navigationHandle = mock(NavigationHandle.class);
+        doReturn(true).when(navigationHandle).isInMainFrame();
+
+        Assert.assertNull(TabAttributeCache.getLastSearchTerm(TAB1_ID));
+
+        doReturn(searchTerm).when(lastSearchTermProvider).getLastSearchTerm(mTab1);
+        WebContents webContents = mock(WebContents.class);
+        doReturn(webContents).when(mTab1).getWebContents();
+
+        mTabObserverCaptor.getValue().onDidFinishNavigation(mTab1, navigationHandle);
+        Assert.assertEquals(searchTerm, TabAttributeCache.getLastSearchTerm(TAB1_ID));
+
+        // Non-main frame should not propagate.
+        doReturn("another").when(lastSearchTermProvider).getLastSearchTerm(mTab1);
+        doReturn(false).when(navigationHandle).isInMainFrame();
+        mTabObserverCaptor.getValue().onDidFinishNavigation(mTab1, navigationHandle);
+        Assert.assertEquals(searchTerm, TabAttributeCache.getLastSearchTerm(TAB1_ID));
+        doReturn(true).when(navigationHandle).isInMainFrame();
+
+        // Empty strings should propagate.
+        doReturn("").when(lastSearchTermProvider).getLastSearchTerm(mTab1);
+        mTabObserverCaptor.getValue().onDidFinishNavigation(mTab1, navigationHandle);
+        Assert.assertEquals("", TabAttributeCache.getLastSearchTerm(TAB1_ID));
+
+        // Null should also propagate.
+        doReturn(null).when(lastSearchTermProvider).getLastSearchTerm(mTab1);
+        mTabObserverCaptor.getValue().onDidFinishNavigation(mTab1, navigationHandle);
+        Assert.assertNull(TabAttributeCache.getLastSearchTerm(TAB1_ID));
+
+        mTabModelSelectorObserverCaptor.getValue().onTabStateInitialized();
+        mTabModelObserverCaptor.getValue().tabClosureCommitted(mTab1);
+        Assert.assertNull(TabAttributeCache.getLastSearchTerm(TAB1_ID));
+    }
+
+    @Test
+    public void updateLastSearchTerm_incognito() {
+        String searchTerm = "chromium";
+        doReturn(true).when(mTab1).isIncognito();
+
+        LastSearchTermProvider lastSearchTermProvider = mock(LastSearchTermProvider.class);
+        TabAttributeCache.setLastSearchTermMockForTesting(lastSearchTermProvider);
+        doReturn(searchTerm).when(lastSearchTermProvider).getLastSearchTerm(mTab1);
+
+        mTabObserverCaptor.getValue().onDidFinishNavigation(mTab1, null);
+        Assert.assertNull(TabAttributeCache.getLastSearchTerm(TAB1_ID));
+    }
+
+    @Test
+    public void findLastSearchTerm() {
+        String otherUrl = "https://example.com";
+        String searchUrl = "https://www.google.com/search?q=test";
+        String searchTerm = "test";
+        String searchUrl2 = "https://www.google.com/search?q=query";
+        String searchTerm2 = "query";
+
+        TemplateUrlService service = Mockito.mock(TemplateUrlService.class);
+        doReturn(null).when(service).getSearchQueryForUrl(otherUrl);
+        doReturn(searchTerm).when(service).getSearchQueryForUrl(searchUrl);
+        doReturn(searchTerm2).when(service).getSearchQueryForUrl(searchUrl2);
+        TemplateUrlServiceFactory.setInstanceForTesting(service);
+
+        WebContents webContents = mock(WebContents.class);
+        doReturn(webContents).when(mTab1).getWebContents();
+        NavigationController navigationController = mock(NavigationController.class);
+        doReturn(navigationController).when(webContents).getNavigationController();
+        NavigationHistory navigationHistory = mock(NavigationHistory.class);
+        doReturn(navigationHistory).when(navigationController).getNavigationHistory();
+        doReturn(2).when(navigationHistory).getCurrentEntryIndex();
+        NavigationEntry navigationEntry1 = mock(NavigationEntry.class);
+        NavigationEntry navigationEntry0 = mock(NavigationEntry.class);
+        doReturn(navigationEntry1).when(navigationHistory).getEntryAtIndex(1);
+        doReturn(navigationEntry0).when(navigationHistory).getEntryAtIndex(0);
+        doReturn(otherUrl).when(mTab1).getUrl();
+
+        // No searches.
+        doReturn(otherUrl).when(navigationEntry1).getOriginalUrl();
+        doReturn(otherUrl).when(navigationEntry0).getOriginalUrl();
+        Assert.assertNull(TabAttributeCache.findLastSearchTerm(mTab1));
+
+        // Has SRP.
+        doReturn(searchUrl).when(navigationEntry1).getOriginalUrl();
+        doReturn(otherUrl).when(navigationEntry0).getOriginalUrl();
+        Assert.assertEquals(searchTerm, TabAttributeCache.findLastSearchTerm(mTab1));
+
+        // Has earlier SRP.
+        doReturn(otherUrl).when(navigationEntry1).getOriginalUrl();
+        doReturn(searchUrl2).when(navigationEntry0).getOriginalUrl();
+        Assert.assertEquals(searchTerm2, TabAttributeCache.findLastSearchTerm(mTab1));
+
+        // Latest one wins.
+        doReturn(searchUrl).when(navigationEntry1).getOriginalUrl();
+        doReturn(searchUrl2).when(navigationEntry0).getOriginalUrl();
+        Assert.assertEquals(searchTerm, TabAttributeCache.findLastSearchTerm(mTab1));
+
+        // Only care about previous ones.
+        doReturn(1).when(navigationHistory).getCurrentEntryIndex();
+        Assert.assertEquals(searchTerm2, TabAttributeCache.findLastSearchTerm(mTab1));
+
+        // Skip if the SRP is showing.
+        doReturn(2).when(navigationHistory).getCurrentEntryIndex();
+        doReturn(searchUrl).when(mTab1).getUrl();
+        Assert.assertNull(TabAttributeCache.findLastSearchTerm(mTab1));
+
+        // Reset current SRP.
+        doReturn(otherUrl).when(mTab1).getUrl();
+        Assert.assertEquals(searchTerm, TabAttributeCache.findLastSearchTerm(mTab1));
+
+        verify(navigationHistory, never()).getEntryAtIndex(eq(2));
+    }
+
+    @Test
+    public void removeEscapedCodePoints() {
+        Assert.assertEquals("", TabAttributeCache.removeEscapedCodePoints(""));
+        Assert.assertEquals("", TabAttributeCache.removeEscapedCodePoints("%0a"));
+        Assert.assertEquals("", TabAttributeCache.removeEscapedCodePoints("%0A"));
+        Assert.assertEquals("AB", TabAttributeCache.removeEscapedCodePoints("A%FE%FFB"));
+        Assert.assertEquals("a%0", TabAttributeCache.removeEscapedCodePoints("a%0"));
+        Assert.assertEquals("%", TabAttributeCache.removeEscapedCodePoints("%%00"));
+        Assert.assertEquals("%0G", TabAttributeCache.removeEscapedCodePoints("%0G"));
+        Assert.assertEquals("abcc", TabAttributeCache.removeEscapedCodePoints("abc%abc"));
+        Assert.assertEquals("a%a", TabAttributeCache.removeEscapedCodePoints("a%bc%a%bc"));
+    }
+
+    @Test
     public void onTabStateInitialized() {
         String url1 = "url 1";
         doReturn(url1).when(mTab1).getUrl();
@@ -204,13 +345,22 @@ public class TabAttributeCacheUnitTest {
         int rootId2 = 42;
         doReturn(rootId2).when(mTab2).getRootId();
 
+        String searchTerm = "chromium";
+        LastSearchTermProvider lastSearchTermProvider = mock(LastSearchTermProvider.class);
+        TabAttributeCache.setLastSearchTermMockForTesting(lastSearchTermProvider);
+        doReturn(searchTerm).when(lastSearchTermProvider).getLastSearchTerm(mTab1);
+        WebContents webContents = mock(WebContents.class);
+        doReturn(webContents).when(mTab1).getWebContents();
+
         doReturn(mTab1).when(mTabModelFilter).getTabAt(0);
         doReturn(mTab2).when(mTabModelFilter).getTabAt(1);
         doReturn(2).when(mTabModelFilter).getCount();
+        doReturn(mTab1).when(mTabModelSelector).getCurrentTab();
 
         Assert.assertNotEquals(url1, TabAttributeCache.getUrl(TAB1_ID));
         Assert.assertNotEquals(title1, TabAttributeCache.getTitle(TAB1_ID));
         Assert.assertNotEquals(rootId1, TabAttributeCache.getRootId(TAB1_ID));
+        Assert.assertNotEquals(searchTerm, TabAttributeCache.getLastSearchTerm(TAB1_ID));
 
         Assert.assertNotEquals(url2, TabAttributeCache.getUrl(TAB2_ID));
         Assert.assertNotEquals(title2, TabAttributeCache.getTitle(TAB2_ID));
@@ -221,6 +371,7 @@ public class TabAttributeCacheUnitTest {
         Assert.assertEquals(url1, TabAttributeCache.getUrl(TAB1_ID));
         Assert.assertEquals(title1, TabAttributeCache.getTitle(TAB1_ID));
         Assert.assertEquals(rootId1, TabAttributeCache.getRootId(TAB1_ID));
+        Assert.assertEquals(searchTerm, TabAttributeCache.getLastSearchTerm(TAB1_ID));
 
         Assert.assertEquals(url2, TabAttributeCache.getUrl(TAB2_ID));
         Assert.assertEquals(title2, TabAttributeCache.getTitle(TAB2_ID));

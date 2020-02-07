@@ -647,7 +647,7 @@ class OncMojo {
       case mojom.NetworkType.kVPN:
         networkState.typeState.vpn.providerName =
             properties.typeProperties.vpn.providerName;
-        networkState.typeState.vpn.vpnType = properties.typeProperties.vpn.type;
+        networkState.typeState.vpn.type = properties.typeProperties.vpn.type;
         break;
       case mojom.NetworkType.kWiFi:
         const wifiProperties = properties.typeProperties.wifi;
@@ -690,8 +690,6 @@ class OncMojo {
           cellular: {
             activationState: mojom.ActivationStateType.kUnknown,
             allowRoaming: false,
-            prlVersion: 0,
-            scanning: false,
             signalStrength: 0,
             supportNetworkScan: false,
           }
@@ -717,7 +715,6 @@ class OncMojo {
           vpn: {
             providerName: '',
             type: mojom.VpnType.kOpenVPN,
-            openVpn: {},
           }
         };
         break;
@@ -794,7 +791,8 @@ class OncMojo {
    *         !chromeos.networkConfig.mojom.ManagedInt32|
    *         !chromeos.networkConfig.mojom.ManagedString|
    *         !chromeos.networkConfig.mojom.ManagedStringList|
-   *         !chromeos.networkConfig.mojom.ManagedApnList|undefined} property
+   *         !chromeos.networkConfig.mojom.ManagedApnList|
+   *         null|undefined} property
    * @return {boolean|number|string|!Array<string>|
    *          !Array<!chromeos.networkConfig.mojom.ApnProperties>|undefined}
    */
@@ -806,7 +804,7 @@ class OncMojo {
   }
 
   /**
-   * @param {!chromeos.networkConfig.mojom.ManagedString|undefined} property
+   * @param {?chromeos.networkConfig.mojom.ManagedString|undefined} property
    * @return {string}
    */
   static getActiveString(property) {
@@ -874,33 +872,27 @@ class OncMojo {
   }
 
   /**
-   * Compares the IP config properties of a new unmanaged dictionary to the
-   * corresponding IP properties in an existing managed dictionary. Returns true
-   * if all properties specified in the new dictionary match the values in the
-   * existing dictionary.
-   * @param {!chromeos.networkConfig.mojom.ManagedIPConfigProperties}
-   *     staticValue
+   * Compares two IP config property dictionaries. Returns true if all
+   * properties specified in the new dictionary match the values in the existing
+   * dictionary.
+   * @param {!chromeos.networkConfig.mojom.IPConfigProperties} staticValue
    * @param {!chromeos.networkConfig.mojom.IPConfigProperties} newValue
    * @return {boolean} True if all properties set in |newValue| are equal to
    *     the corresponding properties in |staticValue|.
    */
   static ipConfigPropertiesMatch(staticValue, newValue) {
-    // If the existing type is unset, or the types do not match, return false.
-    if (!staticValue.type || staticValue.type.activeValue !== newValue.type) {
+    if (staticValue.type !== newValue.type) {
       return false;
     }
     if (newValue.gateway !== undefined &&
-        (!staticValue.gateway ||
-         staticValue.gateway.activeValue !== newValue.gateway)) {
+        (staticValue.gateway !== newValue.gateway)) {
       return false;
     }
     if (newValue.ipAddress !== undefined &&
-        (!staticValue.ipAddress ||
-         staticValue.ipAddress.activeValue !== newValue.ipAddress)) {
+        staticValue.ipAddress !== newValue.ipAddress) {
       return false;
     }
-    if (!staticValue.routingPrefix ||
-        staticValue.routingPrefix.activeValue !== newValue.routingPrefix) {
+    if (staticValue.routingPrefix !== newValue.routingPrefix) {
       return false;
     }
     return true;
@@ -1006,7 +998,7 @@ class OncMojo {
 
   /**
    * @param {string} s
-   * @return {chromeos.networkConfig.mojom.ManagedString}
+   * @return {!chromeos.networkConfig.mojom.ManagedString}
    */
   static createManagedString(s) {
     return {
@@ -1018,7 +1010,7 @@ class OncMojo {
 
   /**
    * @param {number} n
-   * @return {chromeos.networkConfig.mojom.ManagedInt32}
+   * @return {!chromeos.networkConfig.mojom.ManagedInt32}
    */
   static createManagedInt(n) {
     return {
@@ -1030,7 +1022,7 @@ class OncMojo {
 
   /**
    * @param {boolean} b
-   * @return {chromeos.networkConfig.mojom.ManagedBoolean}
+   * @return {!chromeos.networkConfig.mojom.ManagedBoolean}
    */
   static createManagedBool(b) {
     return {

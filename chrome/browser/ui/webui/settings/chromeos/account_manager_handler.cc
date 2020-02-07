@@ -23,6 +23,7 @@
 #include "chrome/browser/ui/webui/signin/inline_login_handler_dialog_chromeos.h"
 #include "chrome/grit/generated_resources.h"
 #include "chromeos/components/account_manager/account_manager_factory.h"
+#include "components/signin/public/identity_manager/consent_level.h"
 #include "components/user_manager/user.h"
 #include "google_apis/gaia/gaia_auth_util.h"
 #include "google_apis/gaia/google_service_auth_error.h"
@@ -273,7 +274,9 @@ void AccountManagerUIHandler::OnGetAccounts(
           GetEnterpriseDomainFromUsername(user->GetDisplayEmail()));
     } else if (profile_->GetProfilePolicyConnector()->IsManaged()) {
       device_account.SetOrganization(GetEnterpriseDomainFromUsername(
-          identity_manager_->GetUnconsentedPrimaryAccountInfo().email));
+          identity_manager_
+              ->GetPrimaryAccountInfo(signin::ConsentLevel::kNotRequired)
+              .email));
     }
 
     // Device account must show up at the top.

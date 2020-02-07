@@ -19,4 +19,7 @@ message OAuth2MintTokenConsentResult {
   // Opaque data to be passed to the IssueToken.
   // Absent if `approved` is false.
   optional bytes encrypted_approval_data = 2;
+
+  // The obfuscated gaia ID of the user that was shown the consent page.
+  optional string obfuscated_id = 3;
 }

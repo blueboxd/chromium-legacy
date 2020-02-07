@@ -135,17 +135,16 @@ LegacyRenderWidgetHostHWND::~LegacyRenderWidgetHostHWND() {
   DCHECK(!::IsWindow(hwnd()));
 }
 
-bool LegacyRenderWidgetHostHWND::Init() {
+void LegacyRenderWidgetHostHWND::Init() {
   // Only register a touch window if we are using WM_TOUCH.
   if (!features::IsUsingWMPointerForTouch())
     RegisterTouchWindow(hwnd(), TWF_WANTPALM);
 
-  HRESULT hr;
-  hr = ::CreateStdAccessibleObject(hwnd(), OBJID_WINDOW,
-                                   IID_PPV_ARGS(&window_accessible_));
-
-  if (FAILED(hr))
-    return false;
+  // Ignore failure from this call. Some SKUs of Windows such as Hololens do not
+  // support MSAA, and this call failing should not stop us from initializing
+  // UI Automation support.
+  ::CreateStdAccessibleObject(hwnd(), OBJID_WINDOW,
+                              IID_PPV_ARGS(&window_accessible_));
 
   if (::switches::IsExperimentalAccessibilityPlatformUIAEnabled()) {
     // The usual way for UI Automation to obtain a fragment root is through
@@ -169,8 +168,6 @@ bool LegacyRenderWidgetHostHWND::Init() {
 
   // Disable pen flicks (http://crbug.com/506977)
   base::win::DisableFlicks(hwnd());
-
-  return true;
 }
 
 // static

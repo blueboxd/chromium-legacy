@@ -62,6 +62,7 @@
 #include "services/network/public/mojom/url_loader.mojom.h"
 #include "services/network/public/mojom/url_response_head.mojom.h"
 #include "third_party/blink/public/common/features.h"
+#include "third_party/blink/public/common/loader/mime_sniffing_throttle.h"
 #include "third_party/blink/public/common/loader/resource_type_util.h"
 #include "third_party/blink/public/common/mime_util/mime_util.h"
 #include "third_party/blink/public/common/security/security_style.h"
@@ -374,6 +375,7 @@ class WebURLLoaderImpl::Context : public base::RefCounted<Context> {
              int requestor_id,
              bool download_to_network_cache_only,
              bool pass_response_pipe_to_client,
+             bool no_mime_sniffing,
              base::TimeDelta timeout_interval,
              SyncLoadResponse* sync_load_response);
 
@@ -592,6 +594,7 @@ void WebURLLoaderImpl::Context::Start(
     int requestor_id,
     bool download_to_network_cache_only,
     bool pass_response_pipe_to_client,
+    bool no_mime_sniffing,
     base::TimeDelta timeout_interval,
     SyncLoadResponse* sync_load_response) {
   DCHECK(request_id_ == -1);
@@ -702,8 +705,18 @@ void WebURLLoaderImpl::Context::Start(
       throttles.push_back(std::move(throttle));
   }
 
+  uint32_t loader_options = network::mojom::kURLLoadOptionNone;
+  if (!no_mime_sniffing) {
+    loader_options |= network::mojom::kURLLoadOptionSniffMimeType;
+    throttles.push_back(
+        std::make_unique<blink::MimeSniffingThrottle>(task_runner_));
+  }
+
   if (sync_load_response) {
     DCHECK(defers_loading_ == NOT_DEFERRING);
+
+    loader_options |= network::mojom::kURLLoadOptionSynchronous;
+    request->load_flags |= net::LOAD_IGNORE_LIMITS;
 
     mojo::PendingRemote<blink::mojom::BlobRegistry> download_to_blob_registry;
     if (pass_response_pipe_to_client) {
@@ -712,9 +725,10 @@ void WebURLLoaderImpl::Context::Start(
     }
     resource_dispatcher_->StartSync(
         std::move(request), requestor_id,
-        GetTrafficAnnotationTag(request_context_type), sync_load_response,
-        url_loader_factory_, std::move(throttles), timeout_interval,
-        std::move(download_to_blob_registry), std::move(peer));
+        GetTrafficAnnotationTag(request_context_type), loader_options,
+        sync_load_response, url_loader_factory_, std::move(throttles),
+        timeout_interval, std::move(download_to_blob_registry),
+        std::move(peer));
     return;
   }
 
@@ -722,7 +736,7 @@ void WebURLLoaderImpl::Context::Start(
                          TRACE_EVENT_FLAG_FLOW_OUT);
   request_id_ = resource_dispatcher_->StartAsync(
       std::move(request), requestor_id, task_runner_,
-      GetTrafficAnnotationTag(request_context_type), false /* is_sync */,
+      GetTrafficAnnotationTag(request_context_type), loader_options,
       std::move(peer), url_loader_factory_, std::move(throttles),
       std::move(response_override));
 
@@ -1044,6 +1058,7 @@ void WebURLLoaderImpl::LoadSynchronously(
     int requestor_id,
     bool download_to_network_cache_only,
     bool pass_response_pipe_to_client,
+    bool no_mime_sniffing,
     base::TimeDelta timeout_interval,
     WebURLLoaderClient* client,
     WebURLResponse& response,
@@ -1061,8 +1076,8 @@ void WebURLLoaderImpl::LoadSynchronously(
   const bool report_raw_headers = request->report_raw_headers;
   context_->Start(std::move(request), std::move(request_extra_data),
                   requestor_id, download_to_network_cache_only,
-                  pass_response_pipe_to_client, timeout_interval,
-                  &sync_load_response);
+                  pass_response_pipe_to_client, no_mime_sniffing,
+                  timeout_interval, &sync_load_response);
 
   const GURL& final_url = sync_load_response.url;
 
@@ -1108,6 +1123,7 @@ void WebURLLoaderImpl::LoadAsynchronously(
     scoped_refptr<blink::WebURLRequest::ExtraData> request_extra_data,
     int requestor_id,
     bool download_to_network_cache_only,
+    bool no_mime_sniffing,
     WebURLLoaderClient* client) {
   TRACE_EVENT_WITH_FLOW0("loading", "WebURLLoaderImpl::loadAsynchronously",
                          this, TRACE_EVENT_FLAG_FLOW_OUT);
@@ -1116,8 +1132,8 @@ void WebURLLoaderImpl::LoadAsynchronously(
   context_->set_client(client);
   context_->Start(std::move(request), std::move(request_extra_data),
                   requestor_id, download_to_network_cache_only,
-                  /*pass_response_pipe_to_client=*/false, base::TimeDelta(),
-                  nullptr);
+                  /*pass_response_pipe_to_client=*/false, no_mime_sniffing,
+                  base::TimeDelta(), nullptr);
 }
 
 void WebURLLoaderImpl::Cancel() {

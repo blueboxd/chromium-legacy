@@ -561,7 +561,7 @@ void HTMLFrameOwnerElement::ParseAttribute(
   }
 }
 
-void HTMLFrameOwnerElement::FrameCrossOriginStatusChanged() {
+void HTMLFrameOwnerElement::FrameCrossOriginToParentFrameChanged() {
   if (base::FeatureList::IsEnabled(
           blink::features::kCompositeCrossOriginIframes)) {
     SetNeedsCompositingUpdate();

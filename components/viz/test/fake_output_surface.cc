@@ -10,6 +10,7 @@
 #include "components/viz/service/display/output_surface_client.h"
 #include "components/viz/test/begin_frame_args_test.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "ui/gfx/buffer_format_util.h"
 #include "ui/gfx/presentation_feedback.h"
 #include "ui/gfx/swap_result.h"
 
@@ -32,12 +33,12 @@ FakeOutputSurface::~FakeOutputSurface() = default;
 void FakeOutputSurface::Reshape(const gfx::Size& size,
                                 float device_scale_factor,
                                 const gfx::ColorSpace& color_space,
-                                bool has_alpha,
+                                gfx::BufferFormat format,
                                 bool use_stencil) {
   if (context_provider()) {
     context_provider()->ContextGL()->ResizeCHROMIUM(
         size.width(), size.height(), device_scale_factor,
-        color_space.AsGLColorSpace(), has_alpha);
+        color_space.AsGLColorSpace(), gfx::AlphaBitsForBufferFormat(format));
   } else {
     software_device()->Resize(size, device_scale_factor);
   }

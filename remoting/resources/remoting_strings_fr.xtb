@@ -256,6 +256,7 @@ Si la case "<ph name="SERVICE_SCRIPT_NAME" />" est déjà cochée, décochez-la,
 <translation id="6939719207673461467">Afficher/Masquer le clavier</translation>
 <translation id="6944854424004126054">Restaurer la fenêtre</translation>
 <translation id="6948905685698011662">L'application Bureau à distance Chrome est maintenant disponible sur le Web ! Découvrez la nouvelle <ph name="LINK_BEGIN" />application gratuite<ph name="LINK_END" />.</translation>
+<translation id="6956835181934226419">J'ai déjà accordé cette autorisation.</translation>
 <translation id="6963936880795878952">Les connexions à l'ordinateur à distance sont momentanément bloquées, car un utilisateur a tenté de s'y connecter en utilisant un code erroné. Veuillez réessayer ultérieurement.</translation>
 <translation id="6965382102122355670">OK</translation>
 <translation id="6985691951107243942">Voulez-vous vraiment désactiver les connexions à distance à <ph name="HOSTNAME" /> ? Si vous changez d'avis, vous devrez réactiver les connexions depuis cet ordinateur.</translation>

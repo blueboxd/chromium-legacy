@@ -101,4 +101,13 @@ void WebTestClientImpl::ResetPermissions() {
       ->ResetPermissions();
 }
 
+void WebTestClientImpl::InitiateCaptureDump(bool capture_navigation_history,
+                                            bool capture_pixels) {
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
+  if (BlinkTestController::Get()) {
+    BlinkTestController::Get()->OnInitiateCaptureDump(
+        capture_navigation_history, capture_pixels);
+  }
+}
+
 }  // namespace content

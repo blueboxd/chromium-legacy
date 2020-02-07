@@ -31,7 +31,7 @@ class ChromePolicyConversionsClient : public PolicyConversionsClient {
 
   // PolicyConversionsClient.
   PolicyService* GetPolicyService() const override;
-  SchemaRegistryService* GetPolicySchemaRegistryService() const override;
+  SchemaRegistry* GetPolicySchemaRegistry() const override;
   const ConfigurationPolicyHandlerList* GetHandlerList() const override;
   bool HasUserPolicies() const override;
   base::Value GetExtensionPolicies(PolicyDomain policy_domain) override;

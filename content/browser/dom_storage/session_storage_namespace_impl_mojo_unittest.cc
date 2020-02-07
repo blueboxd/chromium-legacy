@@ -195,6 +195,12 @@ class SessionStorageNamespaceImplMojoTest
     return it->second;
   }
 
+  ChildProcessSecurityPolicyImpl::Handle CreateSecurityPolicyHandle(
+      int process_id) {
+    return ChildProcessSecurityPolicyImpl::GetInstance()->CreateHandle(
+        process_id);
+  }
+
  protected:
   BrowserTaskEnvironment task_environment_;
   TestBrowserContext browser_context_;
@@ -230,7 +236,7 @@ TEST_F(SessionStorageNamespaceImplMojoTest, MetadataLoad) {
 
   mojo::Remote<blink::mojom::SessionStorageNamespace> ss_namespace;
   namespace_impl->Bind(ss_namespace.BindNewPipeAndPassReceiver(),
-                       kTestProcessIdOrigin1);
+                       CreateSecurityPolicyHandle(kTestProcessIdOrigin1));
 
   mojo::Remote<blink::mojom::StorageArea> leveldb_1;
   ss_namespace->OpenArea(test_origin1_, leveldb_1.BindNewPipeAndPassReceiver());
@@ -263,7 +269,7 @@ TEST_F(SessionStorageNamespaceImplMojoTest, MetadataLoadWithMapOperations) {
 
   mojo::Remote<blink::mojom::SessionStorageNamespace> ss_namespace;
   namespace_impl->Bind(ss_namespace.BindNewPipeAndPassReceiver(),
-                       kTestProcessIdOrigin1);
+                       CreateSecurityPolicyHandle(kTestProcessIdOrigin1));
 
   mojo::Remote<blink::mojom::StorageArea> leveldb_1;
   ss_namespace->OpenArea(test_origin1_, leveldb_1.BindNewPipeAndPassReceiver());
@@ -309,7 +315,7 @@ TEST_F(SessionStorageNamespaceImplMojoTest, CloneBeforeBind) {
 
   mojo::Remote<blink::mojom::SessionStorageNamespace> ss_namespace1;
   namespace_impl1->Bind(ss_namespace1.BindNewPipeAndPassReceiver(),
-                        kTestProcessIdOrigin1);
+                        CreateSecurityPolicyHandle(kTestProcessIdOrigin1));
   ss_namespace1->Clone(test_namespace_id2_);
   ss_namespace1.FlushForTesting();
 
@@ -317,7 +323,7 @@ TEST_F(SessionStorageNamespaceImplMojoTest, CloneBeforeBind) {
 
   mojo::Remote<blink::mojom::SessionStorageNamespace> ss_namespace2;
   namespace_impl2->Bind(ss_namespace2.BindNewPipeAndPassReceiver(),
-                        kTestProcessIdOrigin1);
+                        CreateSecurityPolicyHandle(kTestProcessIdOrigin1));
   mojo::Remote<blink::mojom::StorageArea> leveldb_2;
   ss_namespace2->OpenArea(test_origin1_,
                           leveldb_2.BindNewPipeAndPassReceiver());
@@ -372,7 +378,7 @@ TEST_F(SessionStorageNamespaceImplMojoTest, CloneAfterBind) {
 
   mojo::Remote<blink::mojom::SessionStorageNamespace> ss_namespace1;
   namespace_impl1->Bind(ss_namespace1.BindNewPipeAndPassReceiver(),
-                        kTestProcessIdOrigin1);
+                        CreateSecurityPolicyHandle(kTestProcessIdOrigin1));
 
   // Set that we are waiting for clone, so binding is possible.
   namespace_impl2->SetPendingPopulationFromParentNamespace(test_namespace_id1_);
@@ -383,7 +389,7 @@ TEST_F(SessionStorageNamespaceImplMojoTest, CloneAfterBind) {
   // Get a new area.
   mojo::Remote<blink::mojom::SessionStorageNamespace> ss_namespace2;
   namespace_impl2->Bind(ss_namespace2.BindNewPipeAndPassReceiver(),
-                        kTestProcessIdAllOrigins);
+                        CreateSecurityPolicyHandle(kTestProcessIdAllOrigins));
   mojo::Remote<blink::mojom::StorageArea> leveldb_n2_o1;
   mojo::Remote<blink::mojom::StorageArea> leveldb_n2_o2;
   ss_namespace2->OpenArea(test_origin1_,
@@ -441,7 +447,7 @@ TEST_F(SessionStorageNamespaceImplMojoTest, RemoveOriginData) {
 
   mojo::Remote<blink::mojom::SessionStorageNamespace> ss_namespace;
   namespace_impl->Bind(ss_namespace.BindNewPipeAndPassReceiver(),
-                       kTestProcessIdOrigin1);
+                       CreateSecurityPolicyHandle(kTestProcessIdOrigin1));
 
   mojo::Remote<blink::mojom::StorageArea> leveldb_1;
   ss_namespace->OpenArea(test_origin1_, leveldb_1.BindNewPipeAndPassReceiver());
@@ -514,7 +520,7 @@ TEST_F(SessionStorageNamespaceImplMojoTest, ProcessLockedToOtherOrigin) {
 
   mojo::Remote<blink::mojom::SessionStorageNamespace> ss_namespace;
   namespace_impl->Bind(ss_namespace.BindNewPipeAndPassReceiver(),
-                       kTestProcessIdOrigin1);
+                       CreateSecurityPolicyHandle(kTestProcessIdOrigin1));
   mojo::Remote<blink::mojom::StorageArea> leveldb_1;
   ss_namespace->OpenArea(test_origin3_, leveldb_1.BindNewPipeAndPassReceiver());
   ss_namespace.FlushForTesting();
@@ -541,7 +547,7 @@ TEST_F(SessionStorageNamespaceImplMojoTest, PurgeUnused) {
 
   mojo::Remote<blink::mojom::SessionStorageNamespace> ss_namespace;
   namespace_impl->Bind(ss_namespace.BindNewPipeAndPassReceiver(),
-                       kTestProcessIdOrigin1);
+                       CreateSecurityPolicyHandle(kTestProcessIdOrigin1));
 
   mojo::Remote<blink::mojom::StorageArea> leveldb_1;
   ss_namespace->OpenArea(test_origin1_, leveldb_1.BindNewPipeAndPassReceiver());
@@ -574,7 +580,7 @@ TEST_F(SessionStorageNamespaceImplMojoTest, NamespaceBindingPerOrigin) {
 
   mojo::Remote<blink::mojom::SessionStorageNamespace> ss_namespace_o1;
   namespace_impl->Bind(ss_namespace_o1.BindNewPipeAndPassReceiver(),
-                       kTestProcessIdOrigin1);
+                       CreateSecurityPolicyHandle(kTestProcessIdOrigin1));
   mojo::Remote<blink::mojom::StorageArea> leveldb_1;
   ss_namespace_o1->OpenArea(test_origin1_,
                             leveldb_1.BindNewPipeAndPassReceiver());
@@ -587,7 +593,7 @@ TEST_F(SessionStorageNamespaceImplMojoTest, NamespaceBindingPerOrigin) {
 
   mojo::Remote<blink::mojom::SessionStorageNamespace> ss_namespace_o2;
   namespace_impl->Bind(ss_namespace_o2.BindNewPipeAndPassReceiver(),
-                       kTestProcessIdOrigin3);
+                       CreateSecurityPolicyHandle(kTestProcessIdOrigin3));
   mojo::Remote<blink::mojom::StorageArea> leveldb_2;
   ss_namespace_o2->OpenArea(test_origin3_,
                             leveldb_2.BindNewPipeAndPassReceiver());
@@ -619,7 +625,7 @@ TEST_F(SessionStorageNamespaceImplMojoTest, ReopenClonedAreaAfterPurge) {
 
   mojo::Remote<blink::mojom::SessionStorageNamespace> ss_namespace;
   namespace_impl->Bind(ss_namespace.BindNewPipeAndPassReceiver(),
-                       kTestProcessIdOrigin1);
+                       CreateSecurityPolicyHandle(kTestProcessIdOrigin1));
 
   mojo::Remote<blink::mojom::StorageArea> leveldb_1;
   ss_namespace->OpenArea(test_origin1_, leveldb_1.BindNewPipeAndPassReceiver());

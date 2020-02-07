@@ -15,6 +15,7 @@
 #include "chrome/browser/ui/views/passwords/password_generation_confirmation_view.h"
 #include "chrome/browser/ui/views/passwords/password_items_view.h"
 #include "chrome/browser/ui/views/passwords/password_save_update_view.h"
+#include "chrome/browser/ui/views/passwords/password_save_update_with_account_store_view.h"
 #include "chrome/browser/ui/views/toolbar/toolbar_view.h"
 #include "components/autofill/core/common/autofill_payments_features.h"
 #include "components/password_manager/core/common/password_manager_features.h"
@@ -71,7 +72,14 @@ PasswordBubbleViewBase* PasswordBubbleViewBase::CreateBubble(
   } else if (model_state ==
                  password_manager::ui::PENDING_PASSWORD_UPDATE_STATE ||
              model_state == password_manager::ui::PENDING_PASSWORD_STATE) {
-    view = new PasswordSaveUpdateView(web_contents, anchor_view, reason);
+    if (base::FeatureList::IsEnabled(
+            password_manager::features::
+                kEnablePasswordsAccountStorageSavingUi)) {
+      view = new PasswordSaveUpdateWithAccountStoreView(web_contents,
+                                                        anchor_view, reason);
+    } else {
+      view = new PasswordSaveUpdateView(web_contents, anchor_view, reason);
+    }
   } else {
     NOTREACHED();
   }
@@ -137,10 +145,11 @@ void PasswordBubbleViewBase::OnWidgetClosing(views::Widget* widget) {
     return;
   mouse_handler_.reset();
   // It can be the case that a password bubble is being closed while another
-  // password bubble is being opened. The metrics recorder can be shared between
-  // them and it doesn't understand the sequence [open1, open2, close1, close2].
-  // Therefore, we reset the model early (before the bubble destructor) to get
-  // the following sequence of events [open1, close1, open2, close2].
+  // password bubble is being opened. The metrics recorder can be shared
+  // between them and it doesn't understand the sequence [open1, open2,
+  // close1, close2]. Therefore, we reset the model early (before the bubble
+  // destructor) to get the following sequence of events [open1, close1,
+  // open2, close2].
   PasswordBubbleControllerBase* controller = GetController();
   DCHECK(controller);
   controller->OnBubbleClosing();

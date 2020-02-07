@@ -18,6 +18,7 @@
 #include "chromeos/components/account_manager/account_manager_factory.h"
 #include "chromeos/constants/chromeos_features.h"
 #include "chromeos/constants/chromeos_pref_names.h"
+#include "components/signin/public/identity_manager/consent_level.h"
 #include "components/user_manager/scoped_user_manager.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -170,7 +171,9 @@ IN_PROC_BROWSER_TEST_P(
                 ->GetUserByProfile(profile())
                 ->GetAccountId()
                 .GetGaiaId(),
-            identity_manager()->GetUnconsentedPrimaryAccountInfo().gaia);
+            identity_manager()
+                ->GetPrimaryAccountInfo(signin::ConsentLevel::kNotRequired)
+                .gaia);
   EXPECT_EQ(ProfileHelper::Get()
                 ->GetUserByProfile(profile())
                 ->GetAccountId()
@@ -205,7 +208,9 @@ IN_PROC_BROWSER_TEST_P(
                 ->GetUserByProfile(profile())
                 ->GetAccountId()
                 .GetGaiaId(),
-            identity_manager()->GetUnconsentedPrimaryAccountInfo().gaia);
+            identity_manager()
+                ->GetPrimaryAccountInfo(signin::ConsentLevel::kNotRequired)
+                .gaia);
   EXPECT_EQ(ProfileHelper::Get()
                 ->GetUserByProfile(profile())
                 ->GetAccountId()

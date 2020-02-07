@@ -248,8 +248,7 @@ void AutomationPosition::MoveToPositionAtEndOfDocument(
 }
 
 void AutomationPosition::MoveToParentPosition(gin::Arguments* arguments) {
-  position_ = position_->CreateParentPosition()->AsUnignoredPosition(
-      ui::AXPositionAdjustmentBehavior::kMoveBackwards);
+  position_ = position_->CreateParentPosition();
 }
 
 void AutomationPosition::MoveToNextLeafTreePosition(gin::Arguments* arguments) {

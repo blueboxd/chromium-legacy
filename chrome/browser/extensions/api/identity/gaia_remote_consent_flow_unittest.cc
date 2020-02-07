@@ -18,7 +18,8 @@
 namespace extensions {
 
 const char kWindowKey[] = "window_key";
-const char kConsentResult[] = "CAESCUVOQ1JZUFRFRA";
+const char kGaiaId[] = "fake_gaia_id";
+const char kConsentResult[] = "CAESCUVOQ1JZUFRFRBoMZmFrZV9nYWlhX2lk";
 
 class FakeWebAuthFlowWithWindowKey : public WebAuthFlow {
  public:
@@ -60,8 +61,9 @@ class MockGaiaRemoteConsentFlowDelegate
  public:
   MOCK_METHOD1(OnGaiaRemoteConsentFlowFailed,
                void(GaiaRemoteConsentFlow::Failure failure));
-  MOCK_METHOD1(OnGaiaRemoteConsentFlowApproved,
-               void(const std::string& consent_result));
+  MOCK_METHOD2(OnGaiaRemoteConsentFlowApproved,
+               void(const std::string& consent_result,
+                    const std::string& gaia_id));
 };
 
 class IdentityGaiaRemoteConsentFlowTest : public testing::Test {
@@ -99,7 +101,8 @@ class IdentityGaiaRemoteConsentFlowTest : public testing::Test {
 
 TEST_F(IdentityGaiaRemoteConsentFlowTest, ConsentResult) {
   std::unique_ptr<TestGaiaRemoteConsentFlow> flow = CreateTestFlow(kWindowKey);
-  EXPECT_CALL(delegate_, OnGaiaRemoteConsentFlowApproved(kConsentResult));
+  EXPECT_CALL(delegate_,
+              OnGaiaRemoteConsentFlowApproved(kConsentResult, kGaiaId));
   flow->OnConsentResultSet(kConsentResult, kWindowKey);
 }
 
@@ -117,10 +120,11 @@ TEST_F(IdentityGaiaRemoteConsentFlowTest, ConsentResult_TwoWindows) {
       CreateTestFlow(kWindowKey2, &delegate2);
 
   const char kConsentResult2[] = "CAESCkVOQ1JZUFRFRDI";
-  EXPECT_CALL(delegate2, OnGaiaRemoteConsentFlowApproved(kConsentResult2));
+  EXPECT_CALL(delegate2, OnGaiaRemoteConsentFlowApproved(kConsentResult2, ""));
   flow2->OnConsentResultSet(kConsentResult2, kWindowKey2);
 
-  EXPECT_CALL(delegate_, OnGaiaRemoteConsentFlowApproved(kConsentResult));
+  EXPECT_CALL(delegate_,
+              OnGaiaRemoteConsentFlowApproved(kConsentResult, kGaiaId));
   flow->OnConsentResultSet(kConsentResult, kWindowKey);
 }
 

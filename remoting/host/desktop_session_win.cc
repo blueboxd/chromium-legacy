@@ -308,10 +308,9 @@ bool RdpSession::Initialize(const ScreenResolution& resolution) {
       new EventHandler(weak_factory_.GetWeakPtr()));
   terminal_id_ = base::GenerateGUID();
   base::win::ScopedBstr terminal_id(base::UTF8ToUTF16(terminal_id_));
-  result = rdp_desktop_session_->Connect(host_size.width(), host_size.height(),
-                                         kDefaultRdpDpi, kDefaultRdpDpi,
-                                         terminal_id, server_port,
-                                         event_handler.Get());
+  result = rdp_desktop_session_->Connect(
+      host_size.width(), host_size.height(), kDefaultRdpDpi, kDefaultRdpDpi,
+      terminal_id.Get(), server_port, event_handler.Get());
   if (FAILED(result)) {
     LOG(ERROR) << "RdpSession::Create() failed, 0x"
                << std::hex << result << std::dec << ".";

@@ -64,6 +64,11 @@ public class CastAudioFocusRequest {
 
     void setAudioFocusChangeListener(AudioManager.OnAudioFocusChangeListener l) {
         mAudioFocusChangeListener = l;
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O && mAudioFocusRequest != null) {
+            mAudioFocusRequest = new AudioFocusRequest.Builder(mAudioFocusRequest)
+                                         .setOnAudioFocusChangeListener(mAudioFocusChangeListener)
+                                         .build();
+        }
     }
 
     int request(AudioManager audioManager) {

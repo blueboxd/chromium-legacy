@@ -161,6 +161,7 @@ CastContentBrowserClient::CastContentBrowserClient(
 #if defined(OS_ANDROID)
   cast_feature_list_creator_->SetExtraDisableFeatures({
       ::media::kAudioFocusLossSuspendMediaSession,
+      ::media::kRequestSystemAudioFocus,
   });
 #endif
 }

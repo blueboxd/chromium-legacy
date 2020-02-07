@@ -115,6 +115,7 @@
 <translation id="1919950603503897840">Välj kontakter</translation>
 <translation id="1922076542920281912">Om du vill ge Chrome åtkomst till din plats måste du även aktivera plats i <ph name="BEGIN_LINK" />inställningarna för Android<ph name="END_LINK" />.</translation>
 <translation id="1923695749281512248"><ph name="BYTES_DOWNLOADED_WITH_UNITS" />/<ph name="FILE_SIZE_WITH_UNITS" /></translation>
+<translation id="1925021887439448749">Ange en anpassad webbadress</translation>
 <translation id="1928696683969751773">Uppdateringar</translation>
 <translation id="19288952978244135">Öppna Chrome igen.</translation>
 <translation id="1933845786846280168">Vald flik</translation>
@@ -279,6 +280,7 @@
 <translation id="3123473560110926937">Blockeras på vissa webbplatser</translation>
 <translation id="3123734510202723619">Meddelanden</translation>
 <translation id="3137521801621304719">Inaktivera inkognitoläge</translation>
+<translation id="3140134512074889489">Aktivera kameran så att den kan läsa av en QR-kod</translation>
 <translation id="3143515551205905069">Avbryt synkronisering</translation>
 <translation id="3157842584138209013">Under Fler alternativ kan du se hur mycket data du har sparat</translation>
 <translation id="3166827708714933426">Kortkommandon för flikar och fönster</translation>
@@ -449,6 +451,9 @@
 <translation id="4521489764227272523">Markerad data har tagits bort från Chrome och från synkroniserade enheter.
 
 Det kan finnas andra former av webbhistorik i Google-kontot på <ph name="BEGIN_LINK" />myactivity.google.com<ph name="END_LINK" />, t.ex. sökningar och aktivitet på andra tjänster från Google.</translation>
+<translation id="4527374721149092498">Läs om olika ämnen på webbplatser utan att lämna sidan. Med funktionen Tryck för att söka skickas ett ord och dess kontext till Google Sök. Sedan visas definitioner, bilder, sökresultat och annan information.
+
+Tryck på ett ord du vill söka efter. Om du vill ändra söktermen trycker du länge för att markera. Om du vill finjustera sökningen öppnar du panelen genom att dra den uppåt. Tryck på expanderingsikonen och skapa en ny flik och tryck sedan på sökrutan.</translation>
 <translation id="4532845899244822526">Välj mapp</translation>
 <translation id="4538018662093857852">Aktivera begränsat läge</translation>
 <translation id="4550003330909367850">Ange ett skärmlås på enheten om du vill visa eller kopiera lösenordet här.</translation>
@@ -690,6 +695,9 @@ Det kan finnas andra former av webbhistorik i Google-kontot på <ph name="BEGIN_
 <translation id="6232535412751077445">Om du aktiverar Do Not Track inkluderas en begäran i din surftrafik. Eventuella effekter beror på om webbplatsen svarar på begäran och hur begäran tolkas.
 
 Vissa webbplatser kan till exempel svara på begäran genom att visa annonser som inte baseras på andra webbplatser du har besökt. Många webbplatser samlar ändå in och använder din webbinformation – till exempel för att förbättra säkerheten, tillhandahålla innehåll, annonser och rekommendationer samt generera rapportstatistik.</translation>
+<translation id="6238003486329291387">Läs om olika ämnen på webbplatser utan att lämna sidan. Med funktionen Tryck för att söka skickas ett ord och dess kontext till Google Sök. Sedan visas definitioner, bilder, sökresultat och annan information.
+
+Tryck länge på ett ord för att söka efter det. Om du vill finjustera sökningen ändrar du markeringen. Du kan också öppna panelen genom att dra den uppåt. Tryck på expanderingsikonen för att skapa en ny flik och tryck sedan på sökrutan.</translation>
 <translation id="624789221780392884">Uppdateringen är klar</translation>
 <translation id="6255999984061454636">Förslag på innehåll</translation>
 <translation id="6270391203985052864">Webbplatser får be om tillåtelse att skicka aviseringar</translation>

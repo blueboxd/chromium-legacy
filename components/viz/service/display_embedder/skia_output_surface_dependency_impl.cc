@@ -171,4 +171,8 @@ SkiaOutputSurfaceDependencyImpl::GetGpuBlockedTimeSinceLastSwap() {
   return gpu_service_impl_->GetGpuScheduler()->TakeTotalBlockingTime();
 }
 
+bool SkiaOutputSurfaceDependencyImpl::NeedsSupportForExternalStencil() {
+  return false;
+}
+
 }  // namespace viz

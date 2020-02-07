@@ -115,6 +115,7 @@
 <translation id="1919950603503897840">Kontaktlarni tanlash</translation>
 <translation id="1922076542920281912">Chrome joylashuvingizni aniqlay olishi uchun <ph name="BEGIN_LINK" />Android sozlamalari<ph name="END_LINK" /> orqali Joylashuvni aniqlash xizmatini yoqing.</translation>
 <translation id="1923695749281512248"><ph name="BYTES_DOWNLOADED_WITH_UNITS" /> / <ph name="FILE_SIZE_WITH_UNITS" /></translation>
+<translation id="1925021887439448749">Boshqa veb-manzilni kiriting</translation>
 <translation id="1928696683969751773">Yangilanishlar</translation>
 <translation id="19288952978244135">Chromeni qaytadan oching.</translation>
 <translation id="1933845786846280168">Tanlangan sahifa</translation>
@@ -279,6 +280,7 @@
 <translation id="3123473560110926937">Ayrim saytlarda bloklangan</translation>
 <translation id="3123734510202723619">Xabarnomalar</translation>
 <translation id="3137521801621304719">Inkognito rejimidan chiqish</translation>
+<translation id="3140134512074889489">QR kodni skanerlash uchun kamerani yoqing</translation>
 <translation id="3143515551205905069">Sinxronizatsiyani bekor qilish</translation>
 <translation id="3157842584138209013">Tejalgan trafik miqdorini bilish uchun “Boshqa parametrlar” tugmasini bosing</translation>
 <translation id="3166827708714933426">Varaq va oynalar bilan ishlash</translation>
@@ -449,6 +451,9 @@
 <translation id="4521489764227272523">Tanlangan ma’lumotlar Chrome va sinxronlangan qurilmalardan o‘chirildi.
 
 Google hisobingiz orqali amalga oshirgan qidiruvlaringiz, brauzer tarixi va boshqa internetdagi faoliyatingizni <ph name="BEGIN_LINK" />myactivity.google.com<ph name="END_LINK" /> sahifasi orqali ko‘rishingiz mumkin.</translation>
+<translation id="4527374721149092498">Tasvirlar, mavzular va boshqa ma’lumotlarni belgilangan sahifani tark etmasdan qidiring. Buning uchun soʻz tanlang va u Google qidiruv serverlariga kontekst bilan birga yuboriladi.
+
+Qidirish uchun istalgan soʻz ustiga bosing. Qidiruv soʻrovini tahrirlash uchun ustiga biroz bosib turing. Soʻrovni aniqlashtirish uchun panelni yuqoriga tortib oching, yangi varaq ochish uchun yoyish belgisini bosing va qidiruv oynasini bosing.</translation>
 <translation id="4532845899244822526">Jildni tanlang</translation>
 <translation id="4538018662093857852">Lite rejimini yoqish</translation>
 <translation id="4550003330909367850">Bu yerda parolni ko‘rish yoki nusxalash uchun qurilmaga ekran qulfini tayinlang.</translation>
@@ -690,6 +695,9 @@ Bu sozlamani almashtirish uchun <ph name="BEGIN_LINK" />sinxronizatsiyani tiklan
 <translation id="6232535412751077445">Agar “Kuzatilmasin” parametri yoniq bo‘lsa, brauzer so‘rovlariga maxsus buyruq qo‘shiladi. Natijasi sayt so‘rovga javob berishi va so‘rov qanday ma’noda tushunilganligiga bog‘liq bo‘ladi.
 
 Masalan, qaysi sahifalarga kirganligingizdan qat’i nazar, ba’zi saytlarda reklama e’lonlari ko‘rsatilishi mumkin. Boshqa saytlar esa brauzer faoliyati haqidagi ma’lumotlarni (m-n, xavfsizlikni mustahkamlash, kontent ko‘rsatish, reklama taqdimoti, statistik hisobotlar yasash kabi) to‘plashda va bu ma’lumotlardan foydalanishda davom etmoqda.</translation>
+<translation id="6238003486329291387">Tasvirlar, mavzular va boshqa ma’lumotlarni belgilangan sahifani tark etmasdan qidiring. Buning uchun soʻz tanlang va u Google qidiruv serverlariga kontekst bilan birga yuboriladi.
+
+Yangi soʻrov ochish yoki qidiruv soʻrovini tahrirlash uchun kerakli soʻz ustiga biroz bosib turing. Soʻrovni aniqlashtirish uchun panelni yuqoriga tortib oching, yangi varaq ochish uchun yoyish belgisini bosing va qidiruv oynasini bosing.</translation>
 <translation id="624789221780392884">Yangilanish tayyor</translation>
 <translation id="6255999984061454636">Kontent takliflari</translation>
 <translation id="6270391203985052864">Saytlar bildirishnoma chiqarishga ruxsat soʻray oladi</translation>

@@ -369,7 +369,7 @@ void DOMStorageContextWrapper::OpenLocalStorage(
 }
 
 void DOMStorageContextWrapper::OpenSessionStorage(
-    int process_id,
+    ChildProcessSecurityPolicyImpl::Handle handle,
     const std::string& namespace_id,
     mojo::ReportBadMessageCallback bad_message_callback,
     mojo::PendingReceiver<blink::mojom::SessionStorageNamespace> receiver) {
@@ -391,7 +391,7 @@ void DOMStorageContextWrapper::OpenSessionStorage(
   mojo_task_runner_->PostTask(
       FROM_HERE,
       base::BindOnce(&SessionStorageContextMojo::OpenSessionStorage,
-                     base::Unretained(mojo_session_state_), process_id,
+                     base::Unretained(mojo_session_state_), std::move(handle),
                      namespace_id, std::move(wrapped_bad_message_callback),
                      std::move(receiver)));
 }

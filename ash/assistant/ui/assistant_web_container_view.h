@@ -5,7 +5,7 @@
 #ifndef ASH_ASSISTANT_UI_ASSISTANT_WEB_CONTAINER_VIEW_H_
 #define ASH_ASSISTANT_UI_ASSISTANT_WEB_CONTAINER_VIEW_H_
 
-#include "ash/public/cpp/assistant/assistant_web_view_2.h"
+#include "ash/public/cpp/assistant/assistant_web_view.h"
 #include "base/component_export.h"
 #include "base/macros.h"
 #include "ui/views/widget/widget_delegate.h"
@@ -18,7 +18,7 @@ class AssistantWebViewDelegate;
 // The container for hosting standalone WebContents in Assistant.
 class COMPONENT_EXPORT(ASSISTANT_UI) AssistantWebContainerView
     : public views::WidgetDelegateView,
-      public AssistantWebView2::Observer {
+      public AssistantWebView::Observer {
  public:
   AssistantWebContainerView(
       AssistantViewDelegate* assistant_view_delegate,
@@ -30,7 +30,7 @@ class COMPONENT_EXPORT(ASSISTANT_UI) AssistantWebContainerView
   gfx::Size CalculatePreferredSize() const override;
   void ChildPreferredSizeChanged(views::View* child) override;
 
-  // AssistantWebView2::Observer:
+  // AssistantWebView::Observer:
   void DidStopLoading() override;
   void DidSuppressNavigation(const GURL& url,
                              WindowOpenDisposition disposition,
@@ -52,7 +52,7 @@ class COMPONENT_EXPORT(ASSISTANT_UI) AssistantWebContainerView
   AssistantViewDelegate* const assistant_view_delegate_;
   AssistantWebViewDelegate* const web_container_view_delegate_;
 
-  std::unique_ptr<AssistantWebView2> contents_view_;
+  std::unique_ptr<AssistantWebView> contents_view_;
 
   DISALLOW_COPY_AND_ASSIGN(AssistantWebContainerView);
 };

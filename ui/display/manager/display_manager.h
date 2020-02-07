@@ -484,12 +484,6 @@ class DISPLAY_MANAGER_EXPORT DisplayManager
   void AddObserver(DisplayObserver* observer);
   void RemoveObserver(DisplayObserver* observer);
 
-  // Returns a Display object for a secondary display if it exists or returns
-  // invalid display if there is no secondary display.  TODO(rjkroege): Display
-  // swapping is an obsolete feature pre-dating multi-display support so remove
-  // it.
-  const Display& GetSecondaryDisplay() const;
-
  private:
   friend class test::DisplayManagerTestApi;
 

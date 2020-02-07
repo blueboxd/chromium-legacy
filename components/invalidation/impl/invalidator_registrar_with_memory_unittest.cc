@@ -186,8 +186,8 @@ TEST(InvalidatorRegistrarWithMemoryTest, MultipleRegistrations) {
   auto invalidator = std::make_unique<InvalidatorRegistrarWithMemory>(
       &pref_service, "sender_id", /*migrate_old_prefs=*/false);
 
-  FakeInvalidationHandler handler1;
-  FakeInvalidationHandler handler2;
+  FakeInvalidationHandler handler1("owner1");
+  FakeInvalidationHandler handler2("owner2");
 
   invalidator->RegisterHandler(&handler1);
   invalidator->RegisterHandler(&handler2);
@@ -198,6 +198,11 @@ TEST(InvalidatorRegistrarWithMemoryTest, MultipleRegistrations) {
       &handler1, ConvertIdsToTopics({id1}, &handler1)));
   EXPECT_FALSE(invalidator->UpdateRegisteredTopics(
       &handler2, ConvertIdsToTopics({id1}, &handler2)));
+
+  // |handler1| should still own subscription to the topic and deregistration
+  // of its topics should update subscriptions.
+  EXPECT_TRUE(invalidator->UpdateRegisteredTopics(&handler1, /*topics=*/{}));
+  EXPECT_TRUE(invalidator->GetAllSubscribedTopics().empty());
 
   invalidator->UnregisterHandler(&handler2);
   invalidator->UnregisterHandler(&handler1);

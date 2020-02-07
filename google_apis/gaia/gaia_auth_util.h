@@ -68,11 +68,13 @@ bool ParseListAccountsData(const std::string& data,
                            std::vector<ListedAccount>* signed_out_accounts);
 
 // Parses base64url encoded protobuf message returned by the remote consent
-// flow, returning whether the consent was approved.
+// flow, returning whether the consent was approved and the gaia id of the user
+// that was shown the consent page.
 // Returns false if the method failed to decode the protobuf.
-// |approved| must not be null.
+// |approved| and |gaia_id| must not be null.
 bool ParseOAuth2MintTokenConsentResult(const std::string& consent_result,
-                                       bool* approved);
+                                       bool* approved,
+                                       std::string* gaia_id);
 
 }  // namespace gaia
 

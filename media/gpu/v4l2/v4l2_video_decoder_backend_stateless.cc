@@ -264,7 +264,7 @@ V4L2StatelessVideoDecoderBackend::CreateSurface() {
     base::Optional<V4L2RequestRef> request_ref =
         requests_queue_->GetFreeRequest();
     if (!request_ref) {
-      DVLOGF(3) << "Could not get free request.";
+      DVLOGF(1) << "Could not get free request.";
       return nullptr;
     }
 

@@ -52,15 +52,10 @@ class SettingsClickAction : public SettingsUserAction {
 // A navigation action taken by a user in Chrome OS settings.
 class SettingsNavigationAction : public SettingsUserAction {
  public:
-  explicit SettingsNavigationAction(mojom::SettingsSectionName section_name);
+  SettingsNavigationAction();
   SettingsNavigationAction(const SettingsNavigationAction& other);
   SettingsNavigationAction& operator=(const SettingsNavigationAction& other);
   ~SettingsNavigationAction();
-
-  mojom::SettingsSectionName section_name() const { return section_name_; }
-
- private:
-  mojom::SettingsSectionName section_name_;
 };
 
 // A visibility change action taken by a user in Chrome OS settings.

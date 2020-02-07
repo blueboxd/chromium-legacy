@@ -59,7 +59,7 @@ void ParentOutputSurface::SetDrawRectangle(const gfx::Rect& rect) {}
 void ParentOutputSurface::Reshape(const gfx::Size& size,
                                   float scale_factor,
                                   const gfx::ColorSpace& color_space,
-                                  bool has_alpha,
+                                  gfx::BufferFormat format,
                                   bool use_stencil) {}
 
 void ParentOutputSurface::SwapBuffers(viz::OutputSurfaceFrame frame) {

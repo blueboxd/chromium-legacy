@@ -89,6 +89,7 @@ source_set("components") {
 
   if (is_mac) {
     sources += [
+      "web_app_file_handler_registration_mac.cc",
       "web_app_shortcut_mac.h",
       "web_app_shortcut_mac.mm",
     ]

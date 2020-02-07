@@ -37,6 +37,14 @@ class Error(Exception):
   pass
 
 
+class OtoolError(Error):
+  """OTool non-zero error code"""
+
+  def __init__(self, code):
+    super(OtoolError,
+          self).__init__('otool returned a non-zero return code: %s' % code)
+
+
 class TestRunnerError(Error):
   """Base class for TestRunner-related errors."""
   pass

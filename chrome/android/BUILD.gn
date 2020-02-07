@@ -28,7 +28,6 @@ import("//third_party/icu/config.gni")
 import("//third_party/protobuf/proto_library.gni")
 import("//tools/resources/generate_resource_whitelist.gni")
 import("//tools/v8_context_snapshot/v8_context_snapshot.gni")
-import("//ui/android/features.gni")
 import("//weblayer/variables.gni")
 import("channel.gni")
 import("java_sources.gni")
@@ -140,10 +139,6 @@ android_resources("chrome_app_java_resources") {
     "java/res",
     "//chrome/android/java/res_chromium",
   ]
-
-  if (enable_android_night_mode) {
-    resource_dirs += [ "//chrome/android/java/res_night" ]
-  }
 
   deps = [
     ":ui_locale_string_resources",
@@ -2569,6 +2564,7 @@ generate_jni("chrome_jni_headers") {
     "java/src/org/chromium/chrome/browser/autofill/CreditCardScannerBridge.java",
     "java/src/org/chromium/chrome/browser/autofill/PersonalDataManager.java",
     "java/src/org/chromium/chrome/browser/autofill/PhoneNumberUtil.java",
+    "java/src/org/chromium/chrome/browser/autofill/settings/AutofillProfileBridge.java",
     "java/src/org/chromium/chrome/browser/background_sync/BackgroundSyncBackgroundTask.java",
     "java/src/org/chromium/chrome/browser/background_sync/BackgroundSyncBackgroundTaskScheduler.java",
     "java/src/org/chromium/chrome/browser/background_sync/BackgroundSyncPwaDetector.java",
@@ -2592,7 +2588,6 @@ generate_jni("chrome_jni_headers") {
     "java/src/org/chromium/chrome/browser/compositor/layouts/content/TabContentManager.java",
     "java/src/org/chromium/chrome/browser/compositor/resources/ResourceFactory.java",
     "java/src/org/chromium/chrome/browser/compositor/scene_layer/ContextualSearchSceneLayer.java",
-    "java/src/org/chromium/chrome/browser/compositor/scene_layer/EphemeralTabSceneLayer.java",
     "java/src/org/chromium/chrome/browser/compositor/scene_layer/SceneLayer.java",
     "java/src/org/chromium/chrome/browser/compositor/scene_layer/ScrollingBottomViewSceneLayer.java",
     "java/src/org/chromium/chrome/browser/compositor/scene_layer/StaticTabSceneLayer.java",
@@ -2684,7 +2679,6 @@ generate_jni("chrome_jni_headers") {
     "java/src/org/chromium/chrome/browser/init/NativeStartupBridge.java",
     "java/src/org/chromium/chrome/browser/installedapp/PackageHash.java",
     "java/src/org/chromium/chrome/browser/instantapps/InstantAppsSettings.java",
-    "java/src/org/chromium/chrome/browser/jsdialog/JavascriptTabModalDialog.java",
     "java/src/org/chromium/chrome/browser/locale/LocaleManager.java",
     "java/src/org/chromium/chrome/browser/locale/LocaleTemplateUrlLoader.java",
     "java/src/org/chromium/chrome/browser/login/ChromeHttpAuthHandler.java",
@@ -2783,7 +2777,6 @@ generate_jni("chrome_jni_headers") {
     "java/src/org/chromium/chrome/browser/send_tab_to_self/TargetDeviceInfo.java",
     "java/src/org/chromium/chrome/browser/settings/NfcSystemLevelSetting.java",
     "java/src/org/chromium/chrome/browser/settings/about/AboutSettingsBridge.java",
-    "java/src/org/chromium/chrome/browser/settings/autofill/AutofillProfileBridge.java",
     "java/src/org/chromium/chrome/browser/settings/password/PasswordEditingBridge.java",
     "java/src/org/chromium/chrome/browser/settings/password/PasswordUIView.java",
     "java/src/org/chromium/chrome/browser/settings/privacy/BrowsingDataBridge.java",

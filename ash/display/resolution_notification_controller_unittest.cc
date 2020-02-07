@@ -19,6 +19,7 @@
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/l10n/time_format.h"
 #include "ui/display/manager/display_manager.h"
+#include "ui/display/test/display_manager_test_api.h"
 #include "ui/gfx/geometry/size.h"
 #include "ui/message_center/message_center.h"
 #include "ui/message_center/notification_list.h"
@@ -217,12 +218,13 @@ class ResolutionNotificationControllerTest
 // Basic behaviors and verifies it doesn't cause crashes.
 TEST_P(ResolutionNotificationControllerTest, Basic) {
   UpdateDisplay("300x300#300x300%57|200x200%58,250x250#250x250%59|200x200%60");
-  int64_t id2 = display_manager()->GetSecondaryDisplay().id();
+  display::test::DisplayManagerTestApi display_manager_test(display_manager());
+  int64_t id2 = display_manager_test.GetSecondaryDisplay().id();
   ASSERT_EQ(0, accept_count());
   EXPECT_FALSE(IsNotificationVisible());
 
   // Changes the resolution and apply the result.
-  SetDisplayResolutionAndNotify(display_manager()->GetSecondaryDisplay(),
+  SetDisplayResolutionAndNotify(display_manager_test.GetSecondaryDisplay(),
                                 gfx::Size(200, 200));
   EXPECT_TRUE(IsNotificationVisible());
   EXPECT_FALSE(IsScreenLayoutObserverNotificationVisible());
@@ -248,12 +250,13 @@ TEST_P(ResolutionNotificationControllerTest, Basic) {
 // Check that notification is not shown when changes are forced by policy.
 TEST_P(ResolutionNotificationControllerTest, ForcedByPolicy) {
   UpdateDisplay("300x300#300x300%57|200x200%58,250x250#250x250%59|200x200%60");
-  int64_t id2 = display_manager()->GetSecondaryDisplay().id();
+  display::test::DisplayManagerTestApi display_manager_test(display_manager());
+  int64_t id2 = display_manager_test.GetSecondaryDisplay().id();
   ASSERT_EQ(0, accept_count());
   EXPECT_FALSE(IsNotificationVisible());
 
   // Changes the resolution and apply the result.
-  SetDisplayResolutionAndNotify(display_manager()->GetSecondaryDisplay(),
+  SetDisplayResolutionAndNotify(display_manager_test.GetSecondaryDisplay(),
                                 gfx::Size(200, 200),
                                 mojom::DisplayConfigSource::kPolicy);
   EXPECT_FALSE(IsNotificationVisible());
@@ -266,12 +269,13 @@ TEST_P(ResolutionNotificationControllerTest, ForcedByPolicy) {
 
 TEST_P(ResolutionNotificationControllerTest, ClickMeansAccept) {
   UpdateDisplay("300x300#300x300%57|200x200%58,250x250#250x250%59|200x200%60");
-  int64_t id2 = display_manager()->GetSecondaryDisplay().id();
+  display::test::DisplayManagerTestApi display_manager_test(display_manager());
+  int64_t id2 = display_manager_test.GetSecondaryDisplay().id();
   ASSERT_EQ(0, accept_count());
   EXPECT_FALSE(IsNotificationVisible());
 
   // Changes the resolution and apply the result.
-  SetDisplayResolutionAndNotify(display_manager()->GetSecondaryDisplay(),
+  SetDisplayResolutionAndNotify(display_manager_test.GetSecondaryDisplay(),
                                 gfx::Size(200, 200));
   EXPECT_TRUE(IsNotificationVisible());
   EXPECT_FALSE(IsScreenLayoutObserverNotificationVisible());
@@ -343,12 +347,13 @@ TEST_P(ResolutionNotificationControllerTest, AcceptButton) {
 
 TEST_P(ResolutionNotificationControllerTest, Close) {
   UpdateDisplay("100x100,150x150#150x150%59|200x200%60");
-  int64_t id2 = display_manager()->GetSecondaryDisplay().id();
+  display::test::DisplayManagerTestApi display_manager_test(display_manager());
+  int64_t id2 = display_manager_test.GetSecondaryDisplay().id();
   ASSERT_EQ(0, accept_count());
   EXPECT_FALSE(IsNotificationVisible());
 
   // Changes the resolution and apply the result.
-  SetDisplayResolutionAndNotify(display_manager()->GetSecondaryDisplay(),
+  SetDisplayResolutionAndNotify(display_manager_test.GetSecondaryDisplay(),
                                 gfx::Size(200, 200));
   EXPECT_TRUE(IsNotificationVisible());
   EXPECT_FALSE(IsScreenLayoutObserverNotificationVisible());
@@ -378,8 +383,8 @@ TEST_P(ResolutionNotificationControllerTest, Timeout) {
           ? DisplayChangeDialog::kDefaultTimeoutInSeconds
           : ResolutionNotificationController::kTimeoutInSec;
   for (int i = 0; i < timeout_in_seconds; ++i) {
-    EXPECT_TRUE(IsNotificationVisible()) << "notification is closed after " << i
-                                         << "-th timer tick";
+    EXPECT_TRUE(IsNotificationVisible())
+        << "notification is closed after " << i << "-th timer tick";
     TickTimer();
     base::RunLoop().RunUntilIdle();
   }
@@ -397,8 +402,9 @@ TEST_P(ResolutionNotificationControllerTest, DisplayDisconnected) {
   UpdateDisplay(
       "300x300#300x300%56|200x200%57,"
       "200x200#250x250%58|200x200%59|100x100%60");
-  int64_t id2 = display_manager()->GetSecondaryDisplay().id();
-  SetDisplayResolutionAndNotify(display_manager()->GetSecondaryDisplay(),
+  display::test::DisplayManagerTestApi display_manager_test(display_manager());
+  int64_t id2 = display_manager_test.GetSecondaryDisplay().id();
+  SetDisplayResolutionAndNotify(display_manager_test.GetSecondaryDisplay(),
                                 gfx::Size(100, 100));
   ASSERT_TRUE(IsNotificationVisible());
   EXPECT_FALSE(IsScreenLayoutObserverNotificationVisible());
@@ -419,9 +425,10 @@ TEST_P(ResolutionNotificationControllerTest, MultipleResolutionChange) {
   UpdateDisplay(
       "300x300#300x300%56|200x200%57,"
       "250x250#250x250%58|200x200%59");
-  int64_t id2 = display_manager()->GetSecondaryDisplay().id();
+  display::test::DisplayManagerTestApi display_manager_test(display_manager());
+  int64_t id2 = display_manager_test.GetSecondaryDisplay().id();
 
-  SetDisplayResolutionAndNotify(display_manager()->GetSecondaryDisplay(),
+  SetDisplayResolutionAndNotify(display_manager_test.GetSecondaryDisplay(),
                                 gfx::Size(200, 200));
   EXPECT_TRUE(IsNotificationVisible());
   EXPECT_FALSE(IsScreenLayoutObserverNotificationVisible());
@@ -433,7 +440,7 @@ TEST_P(ResolutionNotificationControllerTest, MultipleResolutionChange) {
 
   // Invokes SetDisplayResolutionAndNotify during the previous notification is
   // visible.
-  SetDisplayResolutionAndNotify(display_manager()->GetSecondaryDisplay(),
+  SetDisplayResolutionAndNotify(display_manager_test.GetSecondaryDisplay(),
                                 gfx::Size(250, 250));
   EXPECT_FALSE(IsScreenLayoutObserverNotificationVisible());
   EXPECT_TRUE(display_manager()->GetSelectedModeForDisplayId(id2, &mode));
@@ -457,13 +464,14 @@ TEST_P(ResolutionNotificationControllerTest, Fallback) {
   UpdateDisplay(
       "300x300#300x300%56|200x200%57,"
       "250x250#250x250%58|220x220%59|200x200%60");
-  int64_t id2 = display_manager()->GetSecondaryDisplay().id();
+  display::test::DisplayManagerTestApi display_manager_test(display_manager());
+  int64_t id2 = display_manager_test.GetSecondaryDisplay().id();
   ASSERT_EQ(0, accept_count());
   EXPECT_FALSE(IsNotificationVisible());
 
   // Changes the resolution and apply the result.
   SetDisplayResolutionAndNotifyWithResolution(
-      display_manager()->GetSecondaryDisplay(), gfx::Size(220, 220),
+      display_manager_test.GetSecondaryDisplay(), gfx::Size(220, 220),
       gfx::Size(200, 200));
   EXPECT_TRUE(IsNotificationVisible());
   EXPECT_FALSE(IsScreenLayoutObserverNotificationVisible());

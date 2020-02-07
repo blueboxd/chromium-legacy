@@ -29,6 +29,7 @@
 
 #include "base/feature_list.h"
 #include "base/memory/ptr_util.h"
+#include "base/memory/scoped_refptr.h"
 #include "base/metrics/histogram_macros.h"
 #include "mojo/public/cpp/bindings/pending_remote.h"
 #include "third_party/blink/public/common/features.h"
@@ -101,14 +102,16 @@ scoped_refptr<CachedStorageArea> StorageNamespace::GetCachedArea(
     mojo::PendingRemote<mojom::blink::StorageArea> area_remote;
     EnsureConnected();
     namespace_->OpenArea(origin, area_remote.InitWithNewPipeAndPassReceiver());
-    result = CachedStorageArea::CreateForSessionStorage(
-        origin, std::move(area_remote), controller_->IPCTaskRunner(), this);
+    result = base::MakeRefCounted<CachedStorageArea>(
+        CachedStorageArea::AreaType::kSessionStorage, origin,
+        std::move(area_remote), controller_->IPCTaskRunner(), this);
   } else {
     mojo::PendingRemote<mojom::blink::StorageArea> area_remote;
     controller_->storage_partition_service()->OpenLocalStorage(
         origin, area_remote.InitWithNewPipeAndPassReceiver());
-    result = CachedStorageArea::CreateForLocalStorage(
-        origin, std::move(area_remote), controller_->IPCTaskRunner(), this);
+    result = base::MakeRefCounted<CachedStorageArea>(
+        CachedStorageArea::AreaType::kLocalStorage, origin,
+        std::move(area_remote), controller_->IPCTaskRunner(), this);
   }
   cached_areas_.insert(std::move(origin), result);
   return result;

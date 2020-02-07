@@ -1,6 +1,56 @@
+<!-- Structured metrics is under development and isn't available for use yet. -->
+
 <structured-metrics-configuration>
 
-<!-- Structured metrics is under development and isn't available for use yet. -->
+<event name="LauncherUsage">
+  <owner>tby@chromium.org</owner>
+  <summary>
+    Records information about the launch of an item (such as an app or a file)
+    from the ChromeOS launcher. One event is recorded for every launch
+    originating from any launcher UI component, and this is the only
+    circumstance that records events.
+  </summary>
+  <metric name="App" kind="hashed-string">
+    <summary>
+      App ID of the most-recently-opened app when this launch occured. This can
+      be an app ID of a Chrome app, Arc++ app, or PWA.
+    </summary>
+  </metric>
+  <metric name="Domain" kind="hashed-string">
+    <summary>
+      The most-recently-visited domain when this launch ocurred.
+    </summary>
+  </metric>
+  <metric name="Hour" kind="int">
+    <summary>
+      The hour of launch. This is the user's local time rounded to the nearest
+      hour, 0 to 23 inclusive.
+    </summary>
+  </metric>
+  <metric name="ProviderType" kind="int">
+    <summary>
+      Which kind of search provider the launched result was created by. This
+      comes from the RankingItemType enum.
+    </summary>
+  </metric>
+  <metric name="SearchQuery" kind="hashed-string">
+    <summary>
+      The search query associated with this launch. Before hashing, the query is
+      the empty string if there was no search query.
+    </summary>
+  </metric>
+  <metric name="SearchQueryLength" kind="int">
+    <summary>
+      String length of the search query associated with this launch. If there
+      was no query, this is zero.
+    </summary>
+  </metric>
+  <metric name="Target" kind="hashed-string">
+    <summary>
+      The target item of this launch, eg. an app ID, filepath, or omnibox URL.
+    </summary>
+  </metric>
+</event>
 
 <event name="TestEventOne">
   <owner>tby@chromium.org</owner>

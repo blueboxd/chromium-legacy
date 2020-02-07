@@ -138,7 +138,6 @@ void SaveUpdateWithAccountStoreBubbleControllerTest::SetUpWithState(
   GURL origin(kSiteOrigin);
   EXPECT_CALL(*delegate(), GetOrigin()).WillOnce(ReturnRef(origin));
   EXPECT_CALL(*delegate(), GetState()).WillRepeatedly(Return(state));
-  EXPECT_CALL(*delegate(), OnBubbleShown());
   EXPECT_CALL(*delegate(), GetWebContents())
       .WillRepeatedly(Return(test_web_contents_.get()));
   controller_.reset(new SaveUpdateWithAccountStoreBubbleController(
@@ -222,6 +221,19 @@ SaveUpdateWithAccountStoreBubbleControllerTest::GetCurrentForms() const {
   forms.push_back(std::make_unique<autofill::PasswordForm>(form));
   forms.push_back(std::make_unique<autofill::PasswordForm>(preferred_form));
   return forms;
+}
+
+// Tests that the controller reads the value of
+// ArePasswordsRevealedWhenBubbleIsOpened() before invoking OnBubbleShown()
+// since the latter resets the value returned by the former. (crbug.com/1049085)
+TEST_F(SaveUpdateWithAccountStoreBubbleControllerTest,
+       ArePasswordsRevealedWhenBubbleIsOpenedBeforeOnBubbleShown) {
+  {
+    testing::InSequence s;
+    EXPECT_CALL(*delegate(), ArePasswordsRevealedWhenBubbleIsOpened());
+    EXPECT_CALL(*delegate(), OnBubbleShown());
+  }
+  PretendPasswordWaiting();
 }
 
 TEST_F(SaveUpdateWithAccountStoreBubbleControllerTest,

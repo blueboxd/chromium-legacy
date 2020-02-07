@@ -6449,7 +6449,8 @@ TEST_P(SplitViewOverviewSessionInClamshellTestMultiDisplayOnly,
   overview_session()->InitiateDrag(item, item->target_bounds().CenterPoint(),
                                    /*is_touch_dragging=*/false);
   Shell::Get()->cursor_manager()->SetDisplay(
-      display_manager()->GetSecondaryDisplay());
+      display::test::DisplayManagerTestApi(display_manager())
+          .GetSecondaryDisplay());
   overview_session()->Drag(item, gfx::PointF(1200.f, 0.f));
   OverviewItem* drop_target = GetDropTarget(1);
   ASSERT_TRUE(drop_target);
@@ -6471,13 +6472,15 @@ TEST_P(SplitViewOverviewSessionInClamshellTestMultiDisplayOnly,
   const auto root1_drop_target_bounds = [this](OverviewItem* item) {
     wm::CursorManager* cursor_manager = Shell::Get()->cursor_manager();
     const gfx::PointF drag_starting_point = item->target_bounds().CenterPoint();
-    cursor_manager->SetDisplay(display_manager()->GetSecondaryDisplay());
+    display::test::DisplayManagerTestApi display_manager_test(
+        display_manager());
+    cursor_manager->SetDisplay(display_manager_test.GetSecondaryDisplay());
     overview_session()->InitiateDrag(item, drag_starting_point,
                                      /*is_touch_dragging=*/false);
     cursor_manager->SetDisplay(
         display::Screen::GetScreen()->GetPrimaryDisplay());
     overview_session()->Drag(item, gfx::PointF(300.f, 0.f));
-    cursor_manager->SetDisplay(display_manager()->GetSecondaryDisplay());
+    cursor_manager->SetDisplay(display_manager_test.GetSecondaryDisplay());
     overview_session()->Drag(item, drag_starting_point);
     DCHECK(GetDropTarget(0));
     const gfx::RectF result = GetDropTarget(0)->target_bounds();

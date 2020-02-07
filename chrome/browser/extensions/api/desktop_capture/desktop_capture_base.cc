@@ -184,7 +184,7 @@ void DesktopCaptureChooseDesktopMediaFunctionBase::OnPickerDialogResults(
 
   Options options;
   options.can_request_audio_track = source.audio_share;
-  results_ = Create(result, options);
+  SetResultList(Create(result, options));
   SendResponse(true);
 }
 

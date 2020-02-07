@@ -196,7 +196,7 @@ void SkiaOutputSurfaceImpl::RecreateRootRecorder() {
 void SkiaOutputSurfaceImpl::Reshape(const gfx::Size& size,
                                     float device_scale_factor,
                                     const gfx::ColorSpace& color_space,
-                                    bool has_alpha,
+                                    gfx::BufferFormat format,
                                     bool use_stencil) {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
   DCHECK(!size.IsEmpty());
@@ -235,7 +235,7 @@ void SkiaOutputSurfaceImpl::Reshape(const gfx::Size& size,
   // SkiaOutputSurfaceImpl::dtor. So it is safe to use base::Unretained.
   auto task = base::BindOnce(&SkiaOutputSurfaceImplOnGpu::Reshape,
                              base::Unretained(impl_on_gpu_.get()), size,
-                             device_scale_factor, color_space, has_alpha,
+                             device_scale_factor, color_space, format,
                              use_stencil, pre_transform_, characterization,
                              initialize_waitable_event_.get());
   ScheduleGpuTask(std::move(task), {});
@@ -596,8 +596,6 @@ void SkiaOutputSurfaceImpl::CopyOutput(
     const gfx::ColorSpace& color_space,
     std::unique_ptr<CopyOutputRequest> request) {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
-  // TODO(crbug.com/1048251): Remove after finding source of null requests.
-  CHECK(request);
   if (!request->has_result_task_runner())
     request->set_result_task_runner(base::ThreadTaskRunnerHandle::Get());
 

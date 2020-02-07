@@ -180,8 +180,10 @@ bool ParseListAccountsData(const std::string& data,
 }
 
 bool ParseOAuth2MintTokenConsentResult(const std::string& consent_result,
-                                       bool* approved) {
+                                       bool* approved,
+                                       std::string* gaia_id) {
   DCHECK(approved);
+  DCHECK(gaia_id);
 
   std::string decoded_result;
   if (!base::Base64UrlDecode(consent_result,
@@ -198,6 +200,7 @@ bool ParseOAuth2MintTokenConsentResult(const std::string& consent_result,
   }
 
   *approved = parsed_result.approved();
+  *gaia_id = parsed_result.obfuscated_id();
   return true;
 }
 

@@ -766,7 +766,7 @@ void AccessibilityTreeFormatterUia::AddValueProperties(
 
     base::win::ScopedBstr value;
     if (SUCCEEDED(value_pattern->get_CachedValue(value.Receive())))
-      dict->SetString("Value.Value", BstrToUTF8(value));
+      dict->SetString("Value.Value", BstrToUTF8(value.Get()));
   }
 }
 
@@ -936,7 +936,7 @@ void AccessibilityTreeFormatterUia::WriteElementArray(
       if (name.empty()) {
         base::win::ScopedBstr role;
         element->get_CurrentAriaRole(role.Receive());
-        name = L"{" + base::string16(role) + L"}";
+        name = L"{" + base::string16(role.Get()) + L"}";
       }
       element_list += name;
     }

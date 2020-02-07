@@ -411,6 +411,23 @@ void EventRewriterChromeOS::RewriteMouseButtonEventForTesting(
   RewriteMouseButtonEvent(event, rewritten_event);
 }
 
+ui::EventDispatchDetails EventRewriterChromeOS::RewriteEvent(
+    const ui::Event& event,
+    const Continuation continuation) {
+  if ((event.type() == ui::ET_TOUCH_PRESSED) ||
+      (event.type() == ui::ET_TOUCH_RELEASED)) {
+    return RewriteTouchEvent(static_cast<const ui::TouchEvent&>(event),
+                             continuation);
+  }
+  if (event.IsScrollEvent()) {
+    return RewriteScrollEvent(static_cast<const ui::ScrollEvent&>(event),
+                              continuation);
+  }
+
+  // The default implementation calls the old RewriteEvent() method below.
+  return ui::EventRewriter::RewriteEvent(event, continuation);
+}
+
 ui::EventRewriteStatus EventRewriterChromeOS::RewriteEvent(
     const ui::Event& event,
     std::unique_ptr<ui::Event>* rewritten_event) {
@@ -430,15 +447,6 @@ ui::EventRewriteStatus EventRewriterChromeOS::RewriteEvent(
   if (event.type() == ui::ET_MOUSEWHEEL) {
     return RewriteMouseWheelEvent(
         static_cast<const ui::MouseWheelEvent&>(event), rewritten_event);
-  }
-  if ((event.type() == ui::ET_TOUCH_PRESSED) ||
-      (event.type() == ui::ET_TOUCH_RELEASED)) {
-    return RewriteTouchEvent(static_cast<const ui::TouchEvent&>(event),
-                             rewritten_event);
-  }
-  if (event.IsScrollEvent()) {
-    return RewriteScrollEvent(static_cast<const ui::ScrollEvent&>(event),
-                              rewritten_event);
   }
   return ui::EVENT_REWRITE_CONTINUE;
 }
@@ -949,29 +957,45 @@ ui::EventRewriteStatus EventRewriterChromeOS::RewriteMouseWheelEvent(
   return status;
 }
 
-ui::EventRewriteStatus EventRewriterChromeOS::RewriteTouchEvent(
+ui::EventDispatchDetails EventRewriterChromeOS::RewriteTouchEvent(
     const ui::TouchEvent& touch_event,
-    std::unique_ptr<ui::Event>* rewritten_event) {
+    const Continuation continuation) {
   int flags = touch_event.flags();
   RewriteLocatedEvent(touch_event, &flags);
   if (touch_event.flags() == flags)
-    return ui::EVENT_REWRITE_CONTINUE;
-  ui::TouchEvent* rewritten_touch_event = new ui::TouchEvent(touch_event);
-  rewritten_event->reset(rewritten_touch_event);
-  rewritten_touch_event->set_flags(flags);
-  return ui::EVENT_REWRITE_REWRITTEN;
+    return SendEvent(continuation, &touch_event);
+  ui::TouchEvent rewritten_touch_event(touch_event);
+  rewritten_touch_event.set_flags(flags);
+  return SendEventFinally(continuation, &rewritten_touch_event);
 }
 
-ui::EventRewriteStatus EventRewriterChromeOS::RewriteScrollEvent(
+// TODO(yhanada): Clean up this method once StickyKeysController migrates to the
+// new API.
+ui::EventDispatchDetails EventRewriterChromeOS::RewriteScrollEvent(
     const ui::ScrollEvent& scroll_event,
-    std::unique_ptr<ui::Event>* rewritten_event) {
+    const Continuation continuation) {
   if (!sticky_keys_controller_)
-    return ui::EVENT_REWRITE_CONTINUE;
+    return SendEvent(continuation, &scroll_event);
+
+  std::unique_ptr<ui::Event> rewritten_event;
   ui::EventRewriteStatus status =
-      sticky_keys_controller_->RewriteEvent(scroll_event, rewritten_event);
+      sticky_keys_controller_->RewriteEvent(scroll_event, &rewritten_event);
   // Scroll event shouldn't be discarded.
   DCHECK_NE(status, ui::EVENT_REWRITE_DISCARD);
-  return status;
+  if (status == ui::EVENT_REWRITE_CONTINUE)
+    return SendEvent(continuation, &scroll_event);
+
+  ui::EventDispatchDetails details =
+      SendEventFinally(continuation, rewritten_event.get());
+  while (status == ui::EVENT_REWRITE_DISPATCH_ANOTHER &&
+         !details.dispatcher_destroyed) {
+    std::unique_ptr<ui::Event> new_event;
+    status = sticky_keys_controller_->NextDispatchEvent(*rewritten_event,
+                                                        &new_event);
+    details = SendEventFinally(continuation, new_event.get());
+    rewritten_event = std::move(new_event);
+  }
+  return details;
 }
 
 void EventRewriterChromeOS::RewriteNumPadKeys(const ui::KeyEvent& key_event,

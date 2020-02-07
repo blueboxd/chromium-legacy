@@ -12,8 +12,8 @@ TestAssistantWebViewFactory::TestAssistantWebViewFactory() = default;
 
 TestAssistantWebViewFactory::~TestAssistantWebViewFactory() = default;
 
-std::unique_ptr<AssistantWebView2> TestAssistantWebViewFactory::Create(
-    const AssistantWebView2::InitParams& params) {
+std::unique_ptr<AssistantWebView> TestAssistantWebViewFactory::Create(
+    const AssistantWebView::InitParams& params) {
   return std::make_unique<TestAssistantWebView>();
 }
 

@@ -25,6 +25,7 @@
 #include "components/services/storage/dom_storage/dom_storage_database.h"
 #include "components/services/storage/dom_storage/session_storage_data_map.h"
 #include "components/services/storage/dom_storage/session_storage_metadata.h"
+#include "content/browser/child_process_security_policy_impl.h"
 #include "content/browser/dom_storage/session_storage_namespace_impl_mojo.h"
 #include "content/common/content_export.h"
 #include "content/public/browser/session_storage_usage_info.h"
@@ -84,7 +85,7 @@ class CONTENT_EXPORT SessionStorageContextMojo
       std::string leveldb_name);
 
   void OpenSessionStorage(
-      int process_id,
+      ChildProcessSecurityPolicyImpl::Handle handle,
       const std::string& namespace_id,
       mojo::ReportBadMessageCallback bad_message_callback,
       mojo::PendingReceiver<blink::mojom::SessionStorageNamespace> receiver);

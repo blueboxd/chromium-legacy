@@ -4,25 +4,18 @@
 
 /**
  * Test fixture for node_utils.js.
- * @constructor
- * @extends {testing.Test}
  */
-function SelectToSpeakNodeUtilsUnitTest() {
-  testing.Test.call(this);
-}
+SelectToSpeakNodeUtilsUnitTest = class extends testing.Test {};
 
-SelectToSpeakNodeUtilsUnitTest.prototype = {
-  __proto__: testing.Test.prototype,
+/** @override */
+SelectToSpeakNodeUtilsUnitTest.prototype.extraLibraries = [
+  'test_support.js',
+  'paragraph_utils.js',
+  'node_utils.js',
+  'word_utils.js',
+  'rect_utils.js',
+];
 
-  /** @override */
-  extraLibraries: [
-    'test_support.js',
-    'paragraph_utils.js',
-    'node_utils.js',
-    'word_utils.js',
-    'rect_utils.js',
-  ]
-};
 
 TEST_F('SelectToSpeakNodeUtilsUnitTest', 'GetNodeVisibilityState', function() {
   const nodeWithoutRoot1 = {root: null};

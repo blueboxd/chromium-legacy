@@ -9,7 +9,6 @@ include_rules = [
   "+chrome/android/public/profiles/jni_headers",
   "+chrome/android/test_support_jni_headers",
   "+chrome/app",
-  "+chrome/chrome_watcher",
   "+chrome/credential_provider/common",
   "+chrome/grit",
   "+chrome/install_static",

@@ -37,7 +37,7 @@ class TestClient : public PDFEngine::Client {
   pp::Instance* GetPluginInstance() override;
   bool IsPrintPreview() override;
   uint32_t GetBackgroundColor() override;
-  float GetToolbarHeightInScreenCoords() const override;
+  float GetToolbarHeightInScreenCoords() override;
 
  private:
   // Not owned. Expected to dangle briefly, as the engine usually is destroyed

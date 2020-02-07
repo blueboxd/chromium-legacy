@@ -14,9 +14,12 @@ namespace gaia {
 
 namespace {
 
+const char kGaiaId[] = "fake_gaia_id";
+
 std::string GenerateOAuth2MintTokenConsentResult(
     base::Optional<bool> approved,
     const base::Optional<std::string>& encrypted_approval_data,
+    const base::Optional<std::string>& obfuscated_id,
     base::Base64UrlEncodePolicy encode_policy =
         base::Base64UrlEncodePolicy::OMIT_PADDING) {
   OAuth2MintTokenConsentResult consent_result;
@@ -24,6 +27,8 @@ std::string GenerateOAuth2MintTokenConsentResult(
     consent_result.set_approved(approved.value());
   if (encrypted_approval_data.has_value())
     consent_result.set_encrypted_approval_data(encrypted_approval_data.value());
+  if (obfuscated_id.has_value())
+    consent_result.set_obfuscated_id(obfuscated_id.value());
   std::string serialized_consent = consent_result.SerializeAsString();
   std::string encoded_consent;
   base::Base64UrlEncode(serialized_consent, encode_policy, &encoded_consent);
@@ -345,64 +350,93 @@ TEST(GaiaAuthUtilTest, ParseListAccountsAcceptsNull) {
 }
 
 TEST(GaiaAuthUtilTest, ParseConsentResultApproved) {
-  const char kApprovedConsent[] = "CAESCUVOQ1JZUFRFRA";
+  const char kApprovedConsent[] = "CAESCUVOQ1JZUFRFRBoMZmFrZV9nYWlhX2lk";
   EXPECT_EQ(kApprovedConsent,
-            GenerateOAuth2MintTokenConsentResult(true, "ENCRYPTED"));
+            GenerateOAuth2MintTokenConsentResult(true, "ENCRYPTED", kGaiaId));
   bool approved = false;
-  ASSERT_TRUE(ParseOAuth2MintTokenConsentResult(kApprovedConsent, &approved));
+  std::string gaia_id;
+  ASSERT_TRUE(
+      ParseOAuth2MintTokenConsentResult(kApprovedConsent, &approved, &gaia_id));
   EXPECT_TRUE(approved);
+  EXPECT_EQ(gaia_id, kGaiaId);
 }
 
 TEST(GaiaAuthUtilTest, ParseConsentResultApprovedEmptyData) {
-  const char kApprovedConsent[] = "CAE";
+  const char kApprovedConsent[] = "CAEaDGZha2VfZ2FpYV9pZA";
   EXPECT_EQ(kApprovedConsent,
-            GenerateOAuth2MintTokenConsentResult(true, base::nullopt));
+            GenerateOAuth2MintTokenConsentResult(true, base::nullopt, kGaiaId));
   bool approved = false;
-  ASSERT_TRUE(ParseOAuth2MintTokenConsentResult(kApprovedConsent, &approved));
+  std::string gaia_id;
+  ASSERT_TRUE(
+      ParseOAuth2MintTokenConsentResult(kApprovedConsent, &approved, &gaia_id));
   EXPECT_TRUE(approved);
+  EXPECT_EQ(gaia_id, kGaiaId);
+}
+
+TEST(GaiaAuthUtilTest, ParseConsentResultApprovedEmptyGaiaId) {
+  const char kApprovedConsent[] = "CAESCUVOQ1JZUFRFRA";
+  EXPECT_EQ(kApprovedConsent, GenerateOAuth2MintTokenConsentResult(
+                                  true, "ENCRYPTED", base::nullopt));
+  bool approved = false;
+  std::string gaia_id;
+  ASSERT_TRUE(
+      ParseOAuth2MintTokenConsentResult(kApprovedConsent, &approved, &gaia_id));
+  EXPECT_TRUE(approved);
+  EXPECT_TRUE(gaia_id.empty());
 }
 
 TEST(GaiaAuthUtilTest, ParseConsentResultNotApproved) {
-  const char kNoGrantConsent[] = "CAA";
-  EXPECT_EQ(kNoGrantConsent,
-            GenerateOAuth2MintTokenConsentResult(false, base::nullopt));
+  const char kNoGrantConsent[] = "CAAaDGZha2VfZ2FpYV9pZA";
+  EXPECT_EQ(kNoGrantConsent, GenerateOAuth2MintTokenConsentResult(
+                                 false, base::nullopt, kGaiaId));
   bool approved = false;
-  ASSERT_TRUE(ParseOAuth2MintTokenConsentResult(kNoGrantConsent, &approved));
+  std::string gaia_id;
+  ASSERT_TRUE(
+      ParseOAuth2MintTokenConsentResult(kNoGrantConsent, &approved, &gaia_id));
   EXPECT_FALSE(approved);
+  EXPECT_EQ(gaia_id, kGaiaId);
 }
 
 TEST(GaiaAuthUtilTest, ParseConsentResultEmpty) {
-  EXPECT_EQ("",
-            GenerateOAuth2MintTokenConsentResult(base::nullopt, base::nullopt));
+  EXPECT_EQ("", GenerateOAuth2MintTokenConsentResult(
+                    base::nullopt, base::nullopt, base::nullopt));
   bool approved = false;
-  ASSERT_TRUE(ParseOAuth2MintTokenConsentResult("", &approved));
+  std::string gaia_id;
+  ASSERT_TRUE(ParseOAuth2MintTokenConsentResult("", &approved, &gaia_id));
   // false is the default value for a bool in proto.
   EXPECT_FALSE(approved);
+  // String is empty in proto by default.
+  EXPECT_TRUE(gaia_id.empty());
 }
 
 TEST(GaiaAuthUtilTest, ParseConsentResultBase64UrlDisallowedPadding) {
   const char kApprovedConsentWithPadding[] = "CAE=";
-  EXPECT_EQ(
-      kApprovedConsentWithPadding,
-      GenerateOAuth2MintTokenConsentResult(
-          true, base::nullopt, base::Base64UrlEncodePolicy::INCLUDE_PADDING));
+  EXPECT_EQ(kApprovedConsentWithPadding,
+            GenerateOAuth2MintTokenConsentResult(
+                true, base::nullopt, base::nullopt,
+                base::Base64UrlEncodePolicy::INCLUDE_PADDING));
   bool approved = false;
+  std::string gaia_id;
   EXPECT_FALSE(ParseOAuth2MintTokenConsentResult(kApprovedConsentWithPadding,
-                                                 &approved));
+                                                 &approved, &gaia_id));
 }
 
 TEST(GaiaAuthUtilTest, ParseConsentResultInvalidBase64Url) {
   const char kMalformedConsent[] =
       "+/";  // '+' and '/' are disallowed in base64url alphabet.
   bool approved = false;
-  EXPECT_FALSE(ParseOAuth2MintTokenConsentResult(kMalformedConsent, &approved));
+  std::string gaia_id;
+  EXPECT_FALSE(ParseOAuth2MintTokenConsentResult(kMalformedConsent, &approved,
+                                                 &gaia_id));
 }
 
 TEST(GaiaAuthUtilTest, ParseConsentResultInvalidProto) {
   const char kMalformedConsent[] =
       "ab";  // Valid base64url string but invalid proto.
   bool approved = false;
-  EXPECT_FALSE(ParseOAuth2MintTokenConsentResult(kMalformedConsent, &approved));
+  std::string gaia_id;
+  EXPECT_FALSE(ParseOAuth2MintTokenConsentResult(kMalformedConsent, &approved,
+                                                 &gaia_id));
 }
 
 }  // namespace gaia

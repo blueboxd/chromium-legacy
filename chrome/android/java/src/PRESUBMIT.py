@@ -90,6 +90,7 @@ def _CheckAlertDialogBuilder(input_api, output_api):
       BROWSER_ROOT + 'signin/ConfirmSyncDataStateMachineDelegate.java',
       BROWSER_ROOT + 'signin/SigninFragmentBase.java',
       BROWSER_ROOT + 'signin/SignOutDialogFragment.java',
+      BROWSER_ROOT + 'sync/settings/SyncAndServicesSettings.java',
       BROWSER_ROOT + 'sync/ui/PassphraseCreationDialogFragment.java',
       BROWSER_ROOT + 'sync/ui/PassphraseDialogFragment.java',
       BROWSER_ROOT + 'sync/ui/PassphraseTypeDialogFragment.java',

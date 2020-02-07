@@ -17,6 +17,7 @@ namespace syncer {
 class FakeInvalidationHandler : public InvalidationHandler {
  public:
   FakeInvalidationHandler();
+  explicit FakeInvalidationHandler(const std::string& owner);
   ~FakeInvalidationHandler() override;
 
   InvalidatorState GetInvalidatorState() const;
@@ -34,6 +35,7 @@ class FakeInvalidationHandler : public InvalidationHandler {
   InvalidatorState state_;
   ObjectIdInvalidationMap last_invalidation_map_;
   int invalidation_count_;
+  std::string owner_name_;
 
   DISALLOW_COPY_AND_ASSIGN(FakeInvalidationHandler);
 };

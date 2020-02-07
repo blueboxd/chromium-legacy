@@ -61,13 +61,6 @@ class GoogleMdmEnrolledStatusForTesting {
   ~GoogleMdmEnrolledStatusForTesting();
 };
 
-// Class used in tests to set registration data for testing.
-class GoogleRegistrationDataForTesting {
- public:
-  explicit GoogleRegistrationDataForTesting(base::string16 serial_number);
-  ~GoogleRegistrationDataForTesting();
-};
-
 // Class used in tests to force password escrow service availability when not
 // in a Google Chrome build (where the service is disabled).
 class GoogleMdmEscrowServiceEnablerForTesting {
@@ -91,9 +84,6 @@ bool NeedsToEnrollWithMdm();
 // Checks user properties to determine whether last upload device details
 // attempt succeeded for the given user.
 bool UploadDeviceDetailsNeeded(const base::string16& sid);
-
-// Gets the bios serial number of the windows device.
-base::string16 GetSerialNumber();
 
 // Checks whether the |kRegMdmUrl| is set on this machine and points
 // to a valid URL. Returns false otherwise.

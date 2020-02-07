@@ -1068,6 +1068,64 @@ TEST_F(AXPositionTest, GetMaxTextOffsetUpdate) {
   AssertTextLengthEquals(new_tree.get(), root_data.id, 24);
 }
 
+TEST_F(AXPositionTest, GetMaxTextOffsetAndGetTextWithGeneratedContent) {
+  // ++1 kRootWebArea
+  // ++++2 kTextField
+  // ++++++3 kStaticText
+  // ++++++++4 kInlineTextBox
+  // ++++++5 kStaticText
+  // ++++++++6 kInlineTextBox
+  AXNodeData root_1;
+  AXNodeData text_field_2;
+  AXNodeData static_text_3;
+  AXNodeData inline_box_4;
+  AXNodeData static_text_5;
+  AXNodeData inline_box_6;
+
+  root_1.id = 1;
+  text_field_2.id = 2;
+  static_text_3.id = 3;
+  inline_box_4.id = 4;
+  static_text_5.id = 5;
+  inline_box_6.id = 6;
+
+  root_1.role = ax::mojom::Role::kRootWebArea;
+  root_1.child_ids = {text_field_2.id};
+
+  text_field_2.role = ax::mojom::Role::kTextField;
+  text_field_2.SetValue("3.14");
+  text_field_2.child_ids = {static_text_3.id, static_text_5.id};
+
+  static_text_3.role = ax::mojom::Role::kStaticText;
+  static_text_3.SetName("Placeholder from generated content");
+  static_text_3.child_ids = {inline_box_4.id};
+
+  inline_box_4.role = ax::mojom::Role::kInlineTextBox;
+  inline_box_4.SetName("Placeholder from generated content");
+
+  static_text_5.role = ax::mojom::Role::kStaticText;
+  static_text_5.SetName("3.14");
+  static_text_5.child_ids = {inline_box_6.id};
+
+  inline_box_6.role = ax::mojom::Role::kInlineTextBox;
+  inline_box_6.SetName("3.14");
+
+  std::unique_ptr<AXTree> new_tree =
+      CreateAXTree({root_1, text_field_2, static_text_3, inline_box_4,
+                    static_text_5, inline_box_6});
+
+  AXNodePosition::SetTree(new_tree.get());
+
+  TestPositionType text_position = AXNodePosition::CreateTextPosition(
+      tree_.data().tree_id, text_field_2.id, 0 /* text_offset */,
+      ax::mojom::TextAffinity::kDownstream);
+  ASSERT_NE(nullptr, text_position);
+  EXPECT_TRUE(text_position->IsTextPosition());
+  EXPECT_EQ(38, text_position->MaxTextOffset());
+  EXPECT_EQ(base::WideToUTF16(L"Placeholder from generated content3.14"),
+            text_position->GetText());
+}
+
 TEST_F(AXPositionTest, AtStartOfAnchorWithNullPosition) {
   TestPositionType null_position = AXNodePosition::CreateNullPosition();
   ASSERT_NE(nullptr, null_position);

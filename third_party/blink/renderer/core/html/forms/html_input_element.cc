@@ -1299,8 +1299,6 @@ EventDispatchHandlingState* HTMLInputElement::PreDispatchEventHandler(
       ToMouseEvent(event).button() !=
           static_cast<int16_t>(WebPointerProperties::Button::kLeft))
     return nullptr;
-  if (formOwner() && CanBeSuccessfulSubmitButton())
-    formOwner()->WillActivateSubmitButton(this);
   return input_type_view_->WillDispatchClick();
 }
 
@@ -1313,19 +1311,7 @@ void HTMLInputElement::PostDispatchEventHandler(
                                      *static_cast<ClickHandlingState*>(state));
 }
 
-void HTMLInputElement::DidPreventDefault(const Event& event) {
-  if (auto* form = formOwner())
-    form->DidActivateSubmitButton(this);
-}
-
-void HTMLInputElement::DefaultEventHandler(Event& event) {
-  DefaultEventHandlerInternal(event);
-
-  if (event.type() == event_type_names::kDOMActivate && formOwner())
-    formOwner()->DidActivateSubmitButton(this);
-}
-
-void HTMLInputElement::DefaultEventHandlerInternal(Event& evt) {
+void HTMLInputElement::DefaultEventHandler(Event& evt) {
   if (evt.IsMouseEvent() && evt.type() == event_type_names::kClick &&
       ToMouseEvent(evt).button() ==
           static_cast<int16_t>(WebPointerProperties::Button::kLeft)) {

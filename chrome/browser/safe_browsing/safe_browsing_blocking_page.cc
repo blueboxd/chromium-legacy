@@ -296,9 +296,11 @@ SafeBrowsingBlockingPage::CreateControllerClient(
   DCHECK(profile);
 
   std::unique_ptr<ChromeMetricsHelper> metrics_helper =
-      std::make_unique<ChromeMetricsHelper>(web_contents,
-                                            unsafe_resources[0].url,
-                                            GetReportingInfo(unsafe_resources));
+      std::make_unique<ChromeMetricsHelper>(
+          HistoryServiceFactory::GetForProfile(
+              Profile::FromBrowserContext(web_contents->GetBrowserContext()),
+              ServiceAccessType::EXPLICIT_ACCESS),
+          unsafe_resources[0].url, GetReportingInfo(unsafe_resources));
 
   return std::make_unique<ChromeControllerClient>(
       web_contents, std::move(metrics_helper), profile->GetPrefs(),

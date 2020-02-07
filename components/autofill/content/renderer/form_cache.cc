@@ -204,7 +204,8 @@ bool IsFormInteresting(const FormData& form, size_t num_editable_elements) {
 FormCache::FormCache(WebLocalFrame* frame) : frame_(frame) {}
 FormCache::~FormCache() = default;
 
-std::vector<FormData> FormCache::ExtractNewForms() {
+std::vector<FormData> FormCache::ExtractNewForms(
+    const FieldDataManager* field_data_manager) {
   std::vector<FormData> forms;
   WebDocument document = frame_->GetDocument();
   if (document.IsNull())
@@ -237,7 +238,8 @@ std::vector<FormData> FormCache::ExtractNewForms() {
 
     FormData form;
     if (!WebFormElementToFormData(form_element, WebFormControlElement(),
-                                  nullptr, extract_mask, &form, nullptr)) {
+                                  field_data_manager, extract_mask, &form,
+                                  nullptr)) {
       continue;
     }
 
@@ -280,8 +282,8 @@ std::vector<FormData> FormCache::ExtractNewForms() {
 
   FormData synthetic_form;
   if (!UnownedCheckoutFormElementsAndFieldSetsToFormData(
-          fieldsets, control_elements, nullptr, document, extract_mask,
-          &synthetic_form, nullptr)) {
+          fieldsets, control_elements, nullptr, document, field_data_manager,
+          extract_mask, &synthetic_form, nullptr)) {
     PruneInitialValueCaches(observed_unique_renderer_ids);
     return forms;
   }

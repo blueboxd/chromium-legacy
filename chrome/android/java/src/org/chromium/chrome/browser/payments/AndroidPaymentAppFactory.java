@@ -10,26 +10,23 @@ import android.graphics.drawable.Drawable;
 import android.text.TextUtils;
 import android.util.Pair;
 
-import org.chromium.chrome.browser.flags.ChromeFeatureList;
-import org.chromium.chrome.browser.payments.PaymentAppFactory.PaymentAppCreatedCallback;
-import org.chromium.chrome.browser.payments.PaymentAppFactory.PaymentAppFactoryAddition;
 import org.chromium.components.payments.PaymentManifestDownloader;
 import org.chromium.components.payments.PaymentManifestParser;
-import org.chromium.content_public.browser.WebContents;
-import org.chromium.payments.mojom.PaymentMethodData;
 
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-/** Builds instances of payment apps based on installed third party Android payment apps. */
-public class AndroidPaymentAppFactory implements PaymentAppFactoryAddition {
+/** Looks up installed third party Android payment apps. */
+public class AndroidPaymentAppFactory implements PaymentAppFactoryInterface {
+    // PaymentAppFactoryInterface implementation.
     @Override
-    public void create(WebContents webContents, Map<String, PaymentMethodData> methodData,
-            boolean mayCrawlUnused, PaymentAppCreatedCallback callback) {
-        AndroidPaymentAppFinder.find(webContents, methodData.keySet(),
-                new PaymentManifestWebDataService(), new PaymentManifestDownloader(),
-                new PaymentManifestParser(), new PackageManagerDelegate(), callback);
+    public void create(PaymentAppFactoryDelegate delegate) {
+        AndroidPaymentAppFinder finder =
+                new AndroidPaymentAppFinder(new PaymentManifestWebDataService(),
+                        new PaymentManifestDownloader(), new PaymentManifestParser(),
+                        new PackageManagerDelegate(), delegate, /*factory=*/this);
+        finder.findAndroidPaymentApps();
     }
 
     /**
@@ -38,8 +35,6 @@ public class AndroidPaymentAppFactory implements PaymentAppFactoryAddition {
      * @return True if there are Android payment apps on device.
      */
     public static boolean hasAndroidPaymentApps() {
-        if (!ChromeFeatureList.isEnabled(ChromeFeatureList.ANDROID_PAYMENT_APPS)) return false;
-
         PackageManagerDelegate packageManagerDelegate = new PackageManagerDelegate();
         // Note that all Android payment apps must support org.chromium.intent.action.PAY action
         // without additional data to be detected.
@@ -55,10 +50,6 @@ public class AndroidPaymentAppFactory implements PaymentAppFactoryAddition {
      */
     public static Map<String, Pair<String, Drawable>> getAndroidPaymentAppsInfo() {
         Map<String, Pair<String, Drawable>> paymentAppsInfo = new HashMap<>();
-
-        if (!ChromeFeatureList.isEnabled(ChromeFeatureList.ANDROID_PAYMENT_APPS)) {
-            return paymentAppsInfo;
-        }
 
         PackageManagerDelegate packageManagerDelegate = new PackageManagerDelegate();
         Intent payIntent = new Intent(AndroidPaymentApp.ACTION_PAY);

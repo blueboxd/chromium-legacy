@@ -42,9 +42,6 @@ class EnterpriseStartupDialogView : public views::DialogDelegateView {
   void RunDialogCallback(bool was_accepted);
 
   // override views::DialogDelegateView
-  bool Accept() override;
-  bool Cancel() override;
-  bool Close() override;
   bool ShouldShowWindowTitle() const override;
   ui::ModalType GetModalType() const override;
 

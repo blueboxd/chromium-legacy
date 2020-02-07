@@ -1829,14 +1829,15 @@ bool UnownedCheckoutFormElementsAndFieldSetsToFormData(
     const std::vector<blink::WebFormControlElement>& control_elements,
     const blink::WebFormControlElement* element,
     const blink::WebDocument& document,
+    const FieldDataManager* field_data_manager,
     ExtractMask extract_mask,
     FormData* form,
     FormFieldData* field) {
   if (!base::FeatureList::IsEnabled(
           features::kAutofillRestrictUnownedFieldsToFormlessCheckout)) {
     return UnownedFormElementsAndFieldSetsToFormData(
-        fieldsets, control_elements, element, document, nullptr, extract_mask,
-        form, field);
+        fieldsets, control_elements, element, document, field_data_manager,
+        extract_mask, form, field);
   }
 
   // Only attempt formless Autofill on checkout flows. This avoids the many
@@ -1853,8 +1854,8 @@ bool UnownedCheckoutFormElementsAndFieldSetsToFormData(
   if (!lang.empty() &&
       !base::StartsWith(lang, "en", base::CompareCase::INSENSITIVE_ASCII)) {
     return UnownedFormElementsAndFieldSetsToFormData(
-        fieldsets, control_elements, element, document, nullptr, extract_mask,
-        form, field);
+        fieldsets, control_elements, element, document, field_data_manager,
+        extract_mask, form, field);
   }
 
   // A potential problem is that this only checks document.title(), but should
@@ -1888,8 +1889,8 @@ bool UnownedCheckoutFormElementsAndFieldSetsToFormData(
       form->is_formless_checkout = true;
       // Found a keyword: treat this as an unowned form.
       return UnownedFormElementsAndFieldSetsToFormData(
-          fieldsets, control_elements, element, document, nullptr, extract_mask,
-          form, field);
+          fieldsets, control_elements, element, document, field_data_manager,
+          extract_mask, form, field);
     }
   }
 
@@ -1919,8 +1920,8 @@ bool UnownedCheckoutFormElementsAndFieldSetsToFormData(
     return false;
 
   return UnownedFormElementsAndFieldSetsToFormData(
-      fieldsets, elements_with_autocomplete, element, document, nullptr,
-      extract_mask, form, field);
+      fieldsets, elements_with_autocomplete, element, document,
+      field_data_manager, extract_mask, form, field);
 }
 
 bool UnownedPasswordFormElementsAndFieldSetsToFormData(
@@ -1937,10 +1938,11 @@ bool UnownedPasswordFormElementsAndFieldSetsToFormData(
       extract_mask, form, field);
 }
 
-
-bool FindFormAndFieldForFormControlElement(const WebFormControlElement& element,
-                                           FormData* form,
-                                           FormFieldData* field) {
+bool FindFormAndFieldForFormControlElement(
+    const WebFormControlElement& element,
+    const FieldDataManager* field_data_manager,
+    FormData* form,
+    FormFieldData* field) {
   DCHECK(!element.IsNull());
 
   if (!IsAutofillableElement(element))
@@ -1956,12 +1958,12 @@ bool FindFormAndFieldForFormControlElement(const WebFormControlElement& element,
     std::vector<WebFormControlElement> control_elements =
         GetUnownedAutofillableFormFieldElements(document.All(), &fieldsets);
     return UnownedCheckoutFormElementsAndFieldSetsToFormData(
-        fieldsets, control_elements, &element, document, extract_mask,
-        form, field);
+        fieldsets, control_elements, &element, document, field_data_manager,
+        extract_mask, form, field);
   }
 
-  return WebFormElementToFormData(form_element, element, nullptr, extract_mask,
-                                  form, field);
+  return WebFormElementToFormData(form_element, element, field_data_manager,
+                                  extract_mask, form, field);
 }
 
 void FillForm(const FormData& form, const WebFormControlElement& element) {

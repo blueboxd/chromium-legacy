@@ -66,7 +66,7 @@ class LoopbackConnection : public MixerConnection,
 
   // MixerSocket::Delegate implementation:
   bool HandleMetadata(const Generic& message) override;
-  bool HandleAudioData(char* data, int size, int64_t timestamp) override;
+  bool HandleAudioData(char* data, size_t size, int64_t timestamp) override;
 
   Delegate* const delegate_;
 

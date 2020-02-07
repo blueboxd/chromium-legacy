@@ -17,10 +17,6 @@
 #include "media/media_buildflags.h"
 #include "ppapi/buildflags/buildflags.h"
 
-#if defined(OS_ANDROID)
-#include "ui/android/buildflags.h"
-#endif  // defined(OS_ANDROID)
-
 #if defined(OS_LINUX)
 #include "base/allocator/buildflags.h"
 #endif  // defined(OS_LINUX)
@@ -257,9 +253,6 @@ extern const char kDebugShortcutsDescription[];
 
 extern const char kDeviceDiscoveryNotificationsName[];
 extern const char kDeviceDiscoveryNotificationsDescription[];
-
-extern const char kDevtoolsExperimentsName[];
-extern const char kDevtoolsExperimentsDescription[];
 
 extern const char kDisableBestEffortTasksName[];
 extern const char kDisableBestEffortTasksDescription[];
@@ -598,6 +591,9 @@ extern const char kGlobalMediaControlsDescription[];
 
 extern const char kGlobalMediaControlsForCastName[];
 extern const char kGlobalMediaControlsForCastDescription[];
+
+extern const char kGlobalMediaControlsPictureInPictureName[];
+extern const char kGlobalMediaControlsPictureInPictureDescription[];
 
 extern const char kGpuRasterizationName[];
 extern const char kGpuRasterizationDescription[];
@@ -1192,6 +1188,9 @@ extern const char kV8VmFutureDescription[];
 extern const char kWalletServiceUseSandboxName[];
 extern const char kWalletServiceUseSandboxDescription[];
 
+extern const char kWebBluetoothNewPermissionsBackendName[];
+extern const char kWebBluetoothNewPermissionsBackendDescription[];
+
 extern const char kWebBundlesName[];
 extern const char kWebBundlesDescription[];
 
@@ -1545,15 +1544,8 @@ extern const char kUsageStatsName[];
 extern const char kInlineUpdateFlowName[];
 extern const char kInlineUpdateFlowDescription[];
 
-#if BUILDFLAG(ENABLE_ANDROID_NIGHT_MODE)
-
-extern const char kAndroidNightModeName[];
-extern const char kAndroidNightModeDescription[];
-
 extern const char kAndroidNightModeTabReparentingName[];
 extern const char kAndroidNightModeTabReparentingDescription[];
-
-#endif  // BUILDFLAG(ENABLE_ANDROID_NIGHT_MODE)
 
 // Non-Android ----------------------------------------------------------------
 

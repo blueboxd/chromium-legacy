@@ -20,6 +20,7 @@
 #include "base/optional.h"
 #include "base/sequence_checker.h"
 #include "base/time/time.h"
+#include "components/services/storage/public/mojom/service_worker_database.mojom.h"
 #include "content/common/content_export.h"
 #include "services/network/public/mojom/cross_origin_embedder_policy.mojom.h"
 #include "third_party/blink/public/mojom/service_worker/navigation_preload_state.mojom.h"
@@ -52,19 +53,8 @@ class CONTENT_EXPORT ServiceWorkerDatabase {
   explicit ServiceWorkerDatabase(const base::FilePath& path);
   ~ServiceWorkerDatabase();
 
-  // Used in UMA. A new value must be appended only.
-  // TODO(bashi): Change this enum to a mojo enum and update corresponding
-  // UMAs. See //tools/metrics/histograms/README.md
-  enum Status {
-    STATUS_OK,
-    STATUS_ERROR_NOT_FOUND,
-    STATUS_ERROR_IO_ERROR,
-    STATUS_ERROR_CORRUPTED,
-    STATUS_ERROR_FAILED,
-    STATUS_ERROR_NOT_SUPPORTED,
-    STATUS_ERROR_DISABLED,
-    STATUS_ERROR_MAX,
-  };
+  using Status = storage::mojom::ServiceWorkerDatabaseStatus;
+
   static const char* StatusToString(Status status);
 
   using FeatureToTokensMap = std::map<std::string /* feature_name */,

@@ -137,7 +137,6 @@
 <translation id="2718395828230677721">Luz nocturna</translation>
 <translation id="2727977024730340865">Conexión a un cargador de baja potencia. Es posible que la carga de la batería no sea confiable.</translation>
 <translation id="2792498699870441125">Alt+tecla de búsqueda</translation>
-<translation id="2803734122639935495">Para desbloquear el dispositivo, vuelve a escribir la contraseña</translation>
 <translation id="2819276065543622893">Saldrás de la sesión ahora.</translation>
 <translation id="2825619548187458965">Biblioteca</translation>
 <translation id="2844169650293029770">Dispositivo USB-C (puerto lateral izquierdo delantero)</translation>
@@ -202,6 +201,7 @@
 <translation id="3604801046548457007">Se creó el escritorio <ph name="DESK_TITILE" /></translation>
 <translation id="3606978283550408104">Dispositivo braille conectado</translation>
 <translation id="3621202678540785336">Entrada</translation>
+<translation id="3621712662352432595">Configuración de audio</translation>
 <translation id="3626281679859535460">Brillo</translation>
 <translation id="3631369015426612114">Permitir notificaciones de las siguientes fuentes</translation>
 <translation id="3705722231355495246">-</translation>
@@ -545,6 +545,7 @@ Todos los usuarios deben salir de sus cuentas para continuar.</translation>
 <translation id="8477270416194247200">Presiona Alt y la tecla de búsqueda o mayúscula para cancelarlo.</translation>
 <translation id="8513108775083588393">Giro automático</translation>
 <translation id="8517041960877371778">Tu <ph name="DEVICE_TYPE" /> podría no cargarse si el dispositivo está encendido.</translation>
+<translation id="8563862697512465947">Configuración de notificación</translation>
 <translation id="8627191004499078455">Conectado a <ph name="DEVICE_NAME" /></translation>
 <translation id="8637598503828012618"><ph name="CONNECTION_STATUS" />, intensidad de la señal: <ph name="SIGNAL_STRENGTH" />, administrada por tu administrador</translation>
 <translation id="8639760480004882931"><ph name="PERCENTAGE" /> restante</translation>

@@ -82,7 +82,7 @@ class SkiaOutputDevice {
   virtual bool Reshape(const gfx::Size& size,
                        float device_scale_factor,
                        const gfx::ColorSpace& color_space,
-                       bool has_alpha,
+                       gfx::BufferFormat format,
                        gfx::OverlayTransform transform) = 0;
 
   // Presents the back buffer.

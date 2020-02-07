@@ -78,6 +78,7 @@ class HintCache {
   void UpdateFetchedHints(
       std::unique_ptr<proto::GetHintsResponse> get_hints_response,
       base::Time update_time,
+      base::Optional<GURL> navigation_url,
       base::OnceClosure callback);
 
   // Purges fetched hints from the owned |optimization_guide_store| that have
@@ -113,6 +114,10 @@ class HintCache {
   // become invalid if any additional URL-keyed hints are added to the cache
   // that evicts the returned hint.
   proto::Hint* GetURLKeyedHint(const GURL& url);
+
+  // Returns true if the url-keyed cache contains an entry for |url|, even if
+  // the entry is empty. If a hint exists but is expired, it returns false.
+  bool HasURLKeyedEntryForURL(const GURL& url);
 
   // Verifies and processes |hints| and moves the ones it supports into
   // |update_data| and caches any valid URL keyed hints.

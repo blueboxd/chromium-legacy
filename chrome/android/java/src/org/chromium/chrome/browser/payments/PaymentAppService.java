@@ -31,6 +31,7 @@ public class PaymentAppService implements PaymentAppFactoryInterface {
         if (ChromeFeatureList.isEnabled(ChromeFeatureList.SERVICE_WORKER_PAYMENT_APPS)) {
             mFactories.add(new ServiceWorkerPaymentAppBridge());
         }
+        mFactories.add(new AndroidPaymentAppFactory());
     }
 
     /** @param factory The factory to add. */

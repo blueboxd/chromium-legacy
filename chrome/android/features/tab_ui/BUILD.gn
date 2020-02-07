@@ -133,6 +133,7 @@ android_library("java") {
     "//components/embedder_support/android:web_contents_delegate_java",
     "//components/feature_engagement:feature_engagement_java",
     "//components/policy/android:policy_java",
+    "//components/search_engines/android:java",
     "//content/public/android:content_java",
     "//content/public/android:content_java_resources",
     "//third_party/android_deps:android_arch_lifecycle_common_java",

@@ -4,6 +4,7 @@
 
 #include "android_webview/browser/gfx/output_surface_provider_webview.h"
 
+#include "android_webview/browser/gfx/aw_gl_surface_external_stencil.h"
 #include "android_webview/browser/gfx/aw_render_thread_context_provider.h"
 #include "android_webview/browser/gfx/aw_vulkan_context_provider.h"
 #include "android_webview/browser/gfx/deferred_gpu_command_service.h"
@@ -59,7 +60,13 @@ OutputSurfaceProviderWebview::~OutputSurfaceProviderWebview() = default;
 
 void OutputSurfaceProviderWebview::InitializeContext() {
   DCHECK(!gl_surface_) << "InitializeContext() called twice";
-  gl_surface_ = base::MakeRefCounted<AwGLSurface>();
+
+  if (renderer_settings_.use_skia_renderer && !enable_vulkan_) {
+    // We need to draw to FBO for External Stencil support with SkiaRenderer
+    gl_surface_ = base::MakeRefCounted<AwGLSurfaceExternalStencil>();
+  } else {
+    gl_surface_ = base::MakeRefCounted<AwGLSurface>();
+  }
 
   if (renderer_settings_.use_skia_renderer) {
     auto share_group = base::MakeRefCounted<gl::GLShareGroup>();

@@ -97,9 +97,12 @@ PolicyService* ChromePolicyConversionsClient::GetPolicyService() const {
   return profile_->GetProfilePolicyConnector()->policy_service();
 }
 
-SchemaRegistryService*
-ChromePolicyConversionsClient::GetPolicySchemaRegistryService() const {
-  return profile_->GetPolicySchemaRegistryService();
+SchemaRegistry* ChromePolicyConversionsClient::GetPolicySchemaRegistry() const {
+  auto* schema_registry_service = profile_->GetPolicySchemaRegistryService();
+  if (schema_registry_service) {
+    return schema_registry_service->registry();
+  }
+  return nullptr;
 }
 
 const ConfigurationPolicyHandlerList*

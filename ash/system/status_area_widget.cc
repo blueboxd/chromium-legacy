@@ -139,33 +139,7 @@ void StatusAreaWidget::SetSystemTrayVisibility(bool visible) {
 }
 
 void StatusAreaWidget::UpdateCollapseState() {
-  // The status area is only collapsible in tablet mode. Otherwise, we just show
-  // all trays.
-  if (!Shell::Get()->tablet_mode_controller())
-    return;
-
-  // An update may occur during initialization of the shelf, so just skip it.
-  if (!initialized_)
-    return;
-
-  bool is_collapsible =
-      chromeos::switches::ShouldShowShelfHotseat() &&
-      Shell::Get()->tablet_mode_controller()->InTabletMode() &&
-      ShelfConfig::Get()->is_in_app();
-
-  bool force_collapsible = base::CommandLine::ForCurrentProcess()->HasSwitch(
-      switches::kAshForceStatusAreaCollapsible);
-
-  is_collapsible |= force_collapsible;
-  if (is_collapsible) {
-    // Update the collapse state based on the previous overflow button state.
-    collapse_state_ = overflow_button_tray_->state() ==
-                              StatusAreaOverflowButtonTray::CLICK_TO_EXPAND
-                          ? CollapseState::COLLAPSED
-                          : CollapseState::EXPANDED;
-  } else {
-    collapse_state_ = CollapseState::NOT_COLLAPSIBLE;
-  }
+  collapse_state_ = CalculateCollapseState();
 
   if (collapse_state_ == CollapseState::COLLAPSED) {
     CalculateButtonVisibilityForCollapsedState();
@@ -242,15 +216,18 @@ void StatusAreaWidget::UpdateTargetBoundsForGesture() {
 }
 
 void StatusAreaWidget::CalculateButtonVisibilityForCollapsedState() {
+  if (!initialized_)
+    return;
+
   DCHECK(collapse_state_ == CollapseState::COLLAPSED);
 
   bool force_collapsible = base::CommandLine::ForCurrentProcess()->HasSwitch(
       switches::kAshForceStatusAreaCollapsible);
 
   // We update visibility of each tray button based on the available width.
-  int shelf_width =
+  const int shelf_width =
       shelf_->shelf_widget()->GetClientAreaBoundsInScreen().width();
-  int available_width =
+  const int available_width =
       force_collapsible ? kStatusAreaForceCollapseAvailableWidth
                         : shelf_width / 2 - kStatusAreaLeftPaddingForOverflow;
 
@@ -265,12 +242,6 @@ void StatusAreaWidget::CalculateButtonVisibilityForCollapsedState() {
   bool show_overflow_button = false;
   int used_width = 0;
   for (TrayBackgroundView* tray : base::Reversed(tray_buttons_)) {
-    // If we reach the final overflow tray button, then all the tray buttons fit
-    // and there is no need for a collapse state.
-    if (tray == overflow_button_tray_.get()) {
-      collapse_state_ = CollapseState::NOT_COLLAPSIBLE;
-      break;
-    }
 
     // Skip non-enabled tray buttons.
     if (!tray->visible_preferred())
@@ -298,6 +269,65 @@ void StatusAreaWidget::CalculateButtonVisibilityForCollapsedState() {
   overflow_button_tray_->UpdateAfterStatusAreaCollapseChange();
   for (TrayBackgroundView* tray_button : tray_buttons_)
     tray_button->UpdateAfterStatusAreaCollapseChange();
+}
+
+StatusAreaWidget::CollapseState StatusAreaWidget::CalculateCollapseState()
+    const {
+  // The status area is only collapsible in tablet mode. Otherwise, we just show
+  // all trays.
+  if (!Shell::Get()->tablet_mode_controller())
+    return CollapseState::NOT_COLLAPSIBLE;
+
+  // An update may occur during initialization of the shelf, so just skip it.
+  if (!initialized_)
+    return CollapseState::NOT_COLLAPSIBLE;
+
+  bool is_collapsible =
+      chromeos::switches::ShouldShowShelfHotseat() &&
+      Shell::Get()->tablet_mode_controller()->InTabletMode() &&
+      ShelfConfig::Get()->is_in_app();
+
+  bool force_collapsible = base::CommandLine::ForCurrentProcess()->HasSwitch(
+      switches::kAshForceStatusAreaCollapsible);
+
+  is_collapsible |= force_collapsible;
+  CollapseState state = CollapseState::NOT_COLLAPSIBLE;
+  if (is_collapsible) {
+    // Update the collapse state based on the previous overflow button state.
+    state = overflow_button_tray_->state() ==
+                    StatusAreaOverflowButtonTray::CLICK_TO_EXPAND
+                ? CollapseState::COLLAPSED
+                : CollapseState::EXPANDED;
+  } else {
+    state = CollapseState::NOT_COLLAPSIBLE;
+  }
+
+  if (state == CollapseState::COLLAPSED) {
+    // We might not need to be collapsed, if there is enough space for all the
+    // buttons.
+    const int shelf_width =
+        shelf_->shelf_widget()->GetClientAreaBoundsInScreen().width();
+    const int available_width =
+        force_collapsible ? kStatusAreaForceCollapseAvailableWidth
+                          : shelf_width / 2 - kStatusAreaLeftPaddingForOverflow;
+    int used_width = 0;
+    for (TrayBackgroundView* tray : base::Reversed(tray_buttons_)) {
+      // If we reach the final overflow tray button, then all the tray buttons
+      // fit and there is no need for a collapse state.
+      if (tray == overflow_button_tray_.get())
+        return CollapseState::NOT_COLLAPSIBLE;
+
+      // Skip non-enabled tray buttons.
+      if (!tray->visible_preferred())
+        continue;
+      int tray_width = tray->tray_container()->GetPreferredSize().width();
+      if (used_width + tray_width > available_width)
+        break;
+
+      used_width += tray_width;
+    }
+  }
+  return state;
 }
 
 TrayBackgroundView* StatusAreaWidget::GetSystemTrayAnchor() const {

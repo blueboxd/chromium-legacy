@@ -37,6 +37,7 @@
 #include "chromeos/services/device_sync/software_feature_manager_impl.h"
 #include "components/prefs/pref_registry_simple.h"
 #include "components/prefs/pref_service.h"
+#include "components/signin/public/identity_manager/consent_level.h"
 #include "components/signin/public/identity_manager/identity_manager.h"
 #include "services/network/public/cpp/shared_url_loader_factory.h"
 
@@ -391,8 +392,8 @@ DeviceSyncImpl::DeviceSyncImpl(
   DCHECK(profile_prefs_);
   PA_LOG(VERBOSE) << "DeviceSyncImpl: Initializing.";
   // "Unconsented" because this feature is not tied to browser sync consent.
-  CoreAccountInfo primary_account =
-      identity_manager_->GetUnconsentedPrimaryAccountInfo();
+  CoreAccountInfo primary_account = identity_manager_->GetPrimaryAccountInfo(
+      signin::ConsentLevel::kNotRequired);
   if (primary_account.account_id.empty()) {
     // Primary profile not loaded yet. This happens when adding a new account.
     PA_LOG(VERBOSE) << "DeviceSyncImpl: Waiting for primary account info";

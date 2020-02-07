@@ -64,6 +64,11 @@ ChromecastAutomationInternalApiDelegate::GetActiveWebContents(
   return nullptr;
 }
 
+bool ChromecastAutomationInternalApiDelegate::EnableTree(
+    const ui::AXTreeID& tree_id) {
+  return false;
+}
+
 void ChromecastAutomationInternalApiDelegate::EnableDesktop() {
   AutomationManagerAura::GetInstance()->Enable();
 }

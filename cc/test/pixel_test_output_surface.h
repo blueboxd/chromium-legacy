@@ -28,7 +28,7 @@ class PixelTestOutputSurface : public viz::OutputSurface {
   void Reshape(const gfx::Size& size,
                float device_scale_factor,
                const gfx::ColorSpace& color_space,
-               bool has_alpha,
+               gfx::BufferFormat format,
                bool use_stencil) override;
   bool HasExternalStencilTest() const override;
   void ApplyExternalStencil() override;

@@ -5464,7 +5464,7 @@ interface Navigator
     getter webkitTemporaryStorage
     getter xr
     method canShare
-    method clearExperimentalAppBadge
+    method clearAppBadge
     method constructor
     method getBattery
     method getGamepads
@@ -5476,7 +5476,7 @@ interface Navigator
     method requestMIDIAccess
     method requestMediaKeySystemAccess
     method sendBeacon
-    method setExperimentalAppBadge
+    method setAppBadge
     method share
     method unregisterProtocolHandler
     method vibrate

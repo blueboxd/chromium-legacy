@@ -32,7 +32,6 @@
   "enable-autofill-credit-card-upload",
   "enable-command-line-on-non-rooted-devices",
   "enable-data-reduction-proxy-server-experiment",
-  "enable-devtools-experiments",
   "enable-experimental-web-platform-features",
   "enable-experimental-webassembly-features",
   "enable-future-v8-vm-features",

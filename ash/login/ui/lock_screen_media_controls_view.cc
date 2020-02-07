@@ -800,7 +800,7 @@ void LockScreenMediaControlsView::SetArtwork(
   session_artwork_->SetImage(*img);
 
   Layout();
-  session_artwork_->set_clip_path(GetArtworkClipPath());
+  session_artwork_->SetClipPath(GetArtworkClipPath());
 }
 
 SkPath LockScreenMediaControlsView::GetArtworkClipPath() const {

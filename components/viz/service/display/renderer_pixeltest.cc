@@ -3112,7 +3112,8 @@ class ExternalStencilPixelTest : public RendererPixelTest<RendererType> {
     GLES2Interface* gl = this->output_surface_->context_provider()->ContextGL();
     this->output_surface_->EnsureBackbuffer();
     this->output_surface_->Reshape(this->device_viewport_size_, 1,
-                                   gfx::ColorSpace(), true, false);
+                                   gfx::ColorSpace(),
+                                   gfx::BufferFormat::RGBA_8888, false);
     gl->ClearColor(0.f, 1.f, 0.f, 1.f);
     gl->Clear(GL_COLOR_BUFFER_BIT);
   }
@@ -3122,7 +3123,8 @@ class ExternalStencilPixelTest : public RendererPixelTest<RendererType> {
     GLES2Interface* gl = this->output_surface_->context_provider()->ContextGL();
     this->output_surface_->EnsureBackbuffer();
     this->output_surface_->Reshape(this->device_viewport_size_, 1,
-                                   gfx::ColorSpace(), true, false);
+                                   gfx::ColorSpace(),
+                                   gfx::BufferFormat::RGBA_8888, false);
     gl->ClearStencil(0);
     gl->Clear(GL_STENCIL_BUFFER_BIT);
     gl->Enable(GL_SCISSOR_TEST);

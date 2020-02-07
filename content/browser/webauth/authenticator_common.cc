@@ -1475,11 +1475,16 @@ void AuthenticatorCommon::SignalFailureToRequestDelegate(
     blink::mojom::AuthenticatorStatus status) {
   error_awaiting_user_acknowledgement_ = status;
 
+  // The request has failed, but the UI may delay resolution of the request
+  // callback and cleanup of the FidoRequestHandler and its associated
+  // discoveries and authenticators. Tell them to stop processing the request in
+  // the meantime.
+  request_->StopDiscoveries();
+  request_->CancelActiveAuthenticators();
+
   // If WebAuthnUi is enabled, this error blocks until after receiving user
   // acknowledgement. Otherwise, the error is returned right away.
   if (request_delegate_->DoesBlockRequestOnFailure(reason)) {
-    // Cancel pending authenticator requests before the error dialog is shown.
-    request_->CancelActiveAuthenticators();
     return;
   }
   CancelWithStatus(error_awaiting_user_acknowledgement_);

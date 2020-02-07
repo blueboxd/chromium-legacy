@@ -90,7 +90,6 @@ extern const char kEnableAutoReload[];
 extern const char kEnableBookmarkUndo[];
 extern const char kEnableCloudPrintProxy[];
 extern const char kEnableDeviceDiscoveryNotifications[];
-extern const char kEnableDevToolsExperiments[];
 extern const char kEnableDomainReliability[];
 extern const char kEnableExtensionActivityLogging[];
 extern const char kEnableExtensionActivityLogTesting[];
@@ -247,7 +246,6 @@ extern const char kPrefetchArgumentBrowserBackground[];
 extern const char kPrefetchArgumentWatcher[];
 extern const char kShowIcons[];
 extern const char kUninstall[];
-extern const char kWatcherProcess[];
 #endif  // defined(OS_WIN)
 
 #if BUILDFLAG(ENABLE_PRINT_PREVIEW) && !defined(OFFICIAL_BUILD)

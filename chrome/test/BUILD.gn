@@ -14,6 +14,7 @@ import("//build/toolchain/toolchain.gni")
 import("//build/util/version.gni")
 import("//chrome/browser/buildflags.gni")
 import("//chrome/browser/downgrade/buildflags.gni")
+import("//chrome/browser/page_load_metrics/integration_tests/jsdeps.gni")
 import("//chrome/common/features.gni")
 import("//chrome/test/base/js2gtest.gni")
 import("//chromeos/assistant/assistant.gni")
@@ -816,6 +817,7 @@ if (!is_android) {
       "//ui/webui/resources/",
     ]
     data += js2gtest_js_libraries
+    data += metric_integration_jsdeps
 
     sources = [
       "../../apps/app_restore_service_browsertest.cc",
@@ -1053,6 +1055,7 @@ if (!is_android) {
       "../browser/optimization_guide/hints_fetcher_browsertest.cc",
       "../browser/optimization_guide/optimization_guide_keyed_service_browsertest.cc",
       "../browser/optimization_guide/prediction/prediction_manager_browsertest.cc",
+      "../browser/page_load_metrics/integration_tests/metric_browsertest.cc",
       "../browser/page_load_metrics/observers/ad_metrics/ads_page_load_metrics_observer_browsertest.cc",
       "../browser/page_load_metrics/observers/amp_page_load_metrics_observer_browsertest.cc",
       "../browser/page_load_metrics/observers/data_saver_site_breakdown_metrics_observer_browsertest.cc",
@@ -1347,6 +1350,7 @@ if (!is_android) {
       "../browser/ui/views/webauthn/authenticator_qr_code_test.cc",
       "../browser/ui/views/webview_accessibility_browsertest.cc",
       "../browser/ui/web_applications/app_browser_controller_browsertest.cc",
+      "../browser/ui/web_applications/create_shortcut_browsertest.cc",
       "../browser/ui/web_applications/pwa_mixed_content_browsertest.cc",
       "../browser/ui/web_applications/web_app_badging_browsertest.cc",
       "../browser/ui/web_applications/web_app_browsertest.cc",
@@ -4089,6 +4093,7 @@ test("unit_tests") {
       "../browser/ui/content_settings/content_setting_media_image_model_unittest.mm",
       "../browser/ui/exclusive_access/fullscreen_controller_state_unittest.cc",
       "../browser/ui/extensions/extension_action_view_controller_unittest.cc",
+      "../browser/ui/extensions/extension_installed_bubble_model_unittest.cc",
       "../browser/ui/extensions/extension_installed_waiter_unittest.cc",
       "../browser/ui/extensions/extension_message_bubble_bridge_unittest.cc",
       "../browser/ui/global_error/global_error_service_unittest.cc",
@@ -4156,6 +4161,7 @@ test("unit_tests") {
       "../browser/ui/webui/history/browsing_history_handler_unittest.cc",
       "../browser/ui/webui/managed_ui_handler_unittest.cc",
       "../browser/ui/webui/management_ui_handler_unittest.cc",
+      "../browser/ui/webui/recent_site_settings_helper_unittest.cc",
       "../browser/ui/webui/settings/downloads_handler_unittest.cc",
       "../browser/ui/webui/settings/metrics_reporting_handler_unittest.cc",
       "../browser/ui/webui/settings/on_startup_handler_unittest.cc",
@@ -4477,6 +4483,20 @@ test("unit_tests") {
       "../browser/spellchecker/spellcheck_custom_dictionary_unittest.cc",
       "../browser/spellchecker/spellcheck_service_unittest.cc",
       "../tools/convert_dict/convert_dict_unittest.cc",
+    ]
+
+    if (!is_mac) {
+      sources += [ "../tools/convert_dict/aff_reader_unittest.cc" ]
+    }
+
+    data += [
+      "data/convert_dict/affix-flags.aff",
+      "data/convert_dict/empty.aff",
+      "data/convert_dict/indexed-affix.aff",
+      "data/convert_dict/leading-comment.aff",
+      "data/convert_dict/other-commands.aff",
+      "data/convert_dict/prefix-suffix.aff",
+      "data/convert_dict/rep.aff",
     ]
 
     if (use_renderer_spellchecker) {
@@ -5307,7 +5327,6 @@ test("unit_tests") {
       "../browser/ui/views/frame/test_with_browser_view.h",
       "../browser/ui/views/frame/web_contents_close_handler_unittest.cc",
       "../browser/ui/views/fullscreen_control/fullscreen_control_popup_unittest.cc",
-      "../browser/ui/views/global_error_bubble_view_unittest.cc",
       "../browser/ui/views/global_media_controls/media_notification_container_impl_view_unittest.cc",
       "../browser/ui/views/global_media_controls/media_notification_list_view_unittest.cc",
       "../browser/ui/views/hover_button_unittest.cc",
@@ -6065,10 +6084,6 @@ test("chrome_app_unittests") {
     "../app/android/chrome_main_delegate_android_unittest.cc",
     "../app/chrome_main_delegate.cc",
     "../app/chrome_main_delegate.h",
-    "../app/chrome_watcher_client_unittest_win.cc",
-    "../app/chrome_watcher_client_win.cc",
-    "../app/chrome_watcher_command_line_win.cc",
-    "../app/chrome_watcher_command_line_win_unittest.cc",
     "../app/resources/resources_unittest.cc",
   ]
   deps = [

@@ -339,4 +339,10 @@ public class ServiceWorkerPaymentApp extends PaymentInstrument {
     public String accountBalance() {
         return "18.00"; // TODO(https://crbug.com/1000432): Implement microtransactions.
     }
+
+    @Override
+    @Nullable
+    public Set<String> getApplicationIdentifiersThatHideThisApp() {
+        return mPreferredRelatedApplicationIds;
+    }
 }

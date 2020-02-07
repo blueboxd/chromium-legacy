@@ -308,7 +308,7 @@ LRESULT RdpClientWindow::OnCreate(CREATESTRUCT* create_struct) {
   }
 
   // Set the server name to connect to.
-  result = client_->put_Server(server_name);
+  result = client_->put_Server(server_name.Get());
   if (FAILED(result))
     return LogOnCreateError(result);
 
@@ -386,7 +386,7 @@ LRESULT RdpClientWindow::OnCreate(CREATESTRUCT* create_struct) {
   // match the RDP connection with the session it is attached to.
   //
   // This code should be in sync with WtsTerminalMonitor::LookupTerminalId().
-  result = secured_settings->put_WorkDir(terminal_id);
+  result = secured_settings->put_WorkDir(terminal_id.Get());
   if (FAILED(result))
     return LogOnCreateError(result);
 
@@ -475,8 +475,8 @@ HRESULT RdpClientWindow::OnDisconnected(long reason) {
       error_message.Reset();
   }
 
-  LOG(ERROR) << "RDP: disconnected from " << server_endpoint_.ToString()
-             << ": " << error_message << " (reason=" << reason
+  LOG(ERROR) << "RDP: disconnected from " << server_endpoint_.ToString() << ": "
+             << error_message.Get() << " (reason=" << reason
              << ", extended_code=" << extended_code << ")";
 
   NotifyDisconnected();

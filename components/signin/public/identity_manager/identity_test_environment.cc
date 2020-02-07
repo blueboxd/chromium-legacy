@@ -25,6 +25,7 @@
 #include "components/signin/internal/identity_manager/primary_account_policy_manager_impl.h"
 #include "components/signin/public/base/test_signin_client.h"
 #include "components/signin/public/identity_manager/accounts_mutator.h"
+#include "components/signin/public/identity_manager/consent_level.h"
 #include "components/signin/public/identity_manager/device_accounts_synchronizer.h"
 #include "components/signin/public/identity_manager/identity_manager.h"
 #include "components/signin/public/identity_manager/identity_test_utils.h"
@@ -293,8 +294,9 @@ AccountInfo IdentityTestEnvironment::MakeUnconsentedPrimaryAccountAvailable(
   base::RunLoop().RunUntilIdle();
 #endif
   DCHECK(identity_manager()->HasUnconsentedPrimaryAccount());
-  DCHECK_EQ(email,
-            identity_manager()->GetUnconsentedPrimaryAccountInfo().email);
+  DCHECK_EQ(email, identity_manager()
+                       ->GetPrimaryAccountInfo(ConsentLevel::kNotRequired)
+                       .email);
   return account_info;
 }
 

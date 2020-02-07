@@ -219,8 +219,7 @@ polymer_modulizer("search_engines_page") {
   js_file = "search_engines_page.js"
   html_file = "search_engines_page.html"
   html_type = "dom-module"
-  namespace_rewrites =
-      settings_namespace_rewrites + [ "settings.routes|routes" ]
+  namespace_rewrites = settings_namespace_rewrites
   auto_imports = settings_auto_imports + [
                    "chrome/browser/resources/settings/search_engines_page/search_engines_browser_proxy.html|SearchEnginesBrowserProxyImpl,SearchEngine,SearchEnginesInfo",
                    "chrome/browser/resources/settings/route.html|routes",

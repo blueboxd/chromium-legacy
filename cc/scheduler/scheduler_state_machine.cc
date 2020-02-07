@@ -1134,6 +1134,11 @@ bool SchedulerStateMachine::ProactiveBeginFrameWanted() const {
   if (last_commit_had_no_updates_)
     return true;
 
+  // If there is active interaction happening (e.g. scroll/pinch), then keep
+  // reqeusting frames.
+  if (tree_priority_ == SMOOTHNESS_TAKES_PRIORITY)
+    return true;
+
   return false;
 }
 

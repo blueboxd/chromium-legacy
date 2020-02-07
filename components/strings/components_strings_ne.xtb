@@ -674,6 +674,7 @@
 <translation id="3987940399970879459">१ एम.बि. भन्दा कम</translation>
 <translation id="3990250421422698716">जग अफसेट</translation>
 <translation id="40103911065039147">{URL_count,plural, =1{नजिकमा १ वेब पृष्ठ छ}other{नजिकमा # वेब पृष्ठहरू छन्}}</translation>
+<translation id="4014128326099193693">{COUNT,plural, =1{{COUNT} पृष्ठ भएको PDF कागजात}other{{COUNT} पृष्ठहरू भएको PDF कागजात}}</translation>
 <translation id="4030383055268325496">थप्ने कार्यलाई &amp;पूर्ववत गर्नुहोस्</translation>
 <translation id="4032320456957708163"><ph name="ENROLLMENT_DOMAIN" /> ले तपाईंको ब्राउजरको व्यवस्थापन गर्छ</translation>
 <translation id="4058922952496707368">कुञ्जी "<ph name="SUBKEY" />": <ph name="ERROR" /></translation>
@@ -702,6 +703,7 @@
 <translation id="4142935452406587478">ट्रे १०</translation>
 <translation id="4148925816941278100">अमेरिकन एक्सप्रेस</translation>
 <translation id="4151403195736952345">विश्वव्यापी पूर्वनिर्धारित (पत्ता लगाउनुहोस्) प्रयोग गर्नुहोस्</translation>
+<translation id="4152318981910038897">{COUNT,plural, =1{पृष्ठ १}other{पृष्ठ {COUNT}}}</translation>
 <translation id="4159784952369912983">बैजनी</translation>
 <translation id="4165986682804962316">साइट सेटिङहरू</translation>
 <translation id="4171400957073367226">खराब रूजू हस्ताक्षर।</translation>
@@ -1378,6 +1380,7 @@
 <translation id="7201591969684833065">तपाईंका प्रशासक निम्न कुरा हेर्न सक्नुहुन्छ:</translation>
 <translation id="7202346780273620635">Letter-Extra</translation>
 <translation id="7210863904660874423"><ph name="HOST_NAME" /> ले सुरक्षा मानहरूको पालना गर्दैन।</translation>
+<translation id="7210993021468939304">कन्टेनर भित्र Linux का क्रियाकलाप र कन्टेनरभित्र Linux अनुप्रयोगहरू स्थापना गर्न र चलाउन सक्छ</translation>
 <translation id="721197778055552897">यो समस्याको बारे <ph name="BEGIN_LINK" />थप जान्नुहोस्<ph name="END_LINK" />।</translation>
 <translation id="7219179957768738017">जडानले <ph name="SSL_VERSION" /> प्रयोग गर्छ।</translation>
 <translation id="7220786058474068424">प्रशोधन गर्दै</translation>
@@ -1541,6 +1544,7 @@
 <translation id="7878562273885520351">तपाईंको पासवर्ड जोखिममा पर्न सक्छ</translation>
 <translation id="7882421473871500483">खैरो</translation>
 <translation id="7887683347370398519">तपाईँको CVC जाँच गर्नुहोस् र फेरि प्रयास गर्नुहोस्</translation>
+<translation id="7887885240995164102">picture-in-picture मोडमा प्रविष्टि गर्नुहोस्‌</translation>
 <translation id="7888575728750733395">मुद्रण रेन्डर गर्ने प्रक्रियाको उद्देश्य</translation>
 <translation id="7904208859782148177">C3 (Envelope)</translation>
 <translation id="7932579305932748336">कोट</translation>

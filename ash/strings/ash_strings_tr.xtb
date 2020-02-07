@@ -137,7 +137,6 @@
 <translation id="2718395828230677721">Gece Işığı</translation>
 <translation id="2727977024730340865">Düşük güçlü bir şarj cihazına takıldı. Şarj durumu güvenilir olmayabilir.</translation>
 <translation id="2792498699870441125">Alt+Arama</translation>
-<translation id="2803734122639935495">Kilidi açmak için şifrenizi girin</translation>
 <translation id="2819276065543622893">Şimdi çıkış yapacaksınız.</translation>
 <translation id="2825619548187458965">Raf</translation>
 <translation id="2844169650293029770">USB-C cihaz (sol ön bağlantı noktası)</translation>
@@ -202,6 +201,7 @@
 <translation id="3604801046548457007">Masa <ph name="DESK_TITILE" /> oluşturuldu</translation>
 <translation id="3606978283550408104">Braille ekranı bağlandı.</translation>
 <translation id="3621202678540785336">Giriş</translation>
+<translation id="3621712662352432595">Ses Ayarları</translation>
 <translation id="3626281679859535460">Parlaklık</translation>
 <translation id="3631369015426612114">Şunlardan gelen bildirimlere izin ver:</translation>
 <translation id="3705722231355495246">-</translation>
@@ -545,6 +545,7 @@
 <translation id="8477270416194247200">İptal etmek için Alt+Ara veya Üst Karakter tuşuna basın.</translation>
 <translation id="8513108775083588393">Otomatik döndür</translation>
 <translation id="8517041960877371778"><ph name="DEVICE_TYPE" /> cihazınız açıkken şarj olmayabilir.</translation>
+<translation id="8563862697512465947">Bildirim Ayarları</translation>
 <translation id="8627191004499078455"><ph name="DEVICE_NAME" /> cihazına bağlandı</translation>
 <translation id="8637598503828012618"><ph name="CONNECTION_STATUS" />, <ph name="SIGNAL_STRENGTH" /> Sinyal Gücü, Yöneticiniz tarafından yönetiliyor</translation>
 <translation id="8639760480004882931"><ph name="PERCENTAGE" /> kaldı</translation>

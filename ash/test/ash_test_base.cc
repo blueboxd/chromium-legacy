@@ -539,7 +539,9 @@ void AshTestBase::SwapPrimaryDisplay() {
   if (display::Screen::GetScreen()->GetNumDisplays() <= 1)
     return;
   Shell::Get()->window_tree_host_manager()->SetPrimaryDisplayId(
-      display_manager()->GetSecondaryDisplay().id());
+      display::test::DisplayManagerTestApi(display_manager())
+          .GetSecondaryDisplay()
+          .id());
 }
 
 display::Display AshTestBase::GetPrimaryDisplay() const {

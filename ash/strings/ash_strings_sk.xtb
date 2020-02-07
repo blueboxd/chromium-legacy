@@ -118,6 +118,7 @@
 <translation id="2413728805700750528"><ph name="DISPLAY_NAME" /> je spravovaná relácia riadená doménou <ph name="DOMAIN" /></translation>
 <translation id="2427507373259914951">Kliknutie ľavým tlačidlom myši</translation>
 <translation id="2429753432712299108">Zariadenie Bluetooth s názvom <ph name="DEVICE_NAME" /> žiada o povolenie párovania. Skôr ako žiadosti vyhoviete, overte, či sa na danom zariadení zobrazuje nasledujúci prístupový kľúč: <ph name="PASSKEY" /></translation>
+<translation id="2473177541599297363">Potvrdenie rozlíšenia</translation>
 <translation id="2482878487686419369">Upozornenia</translation>
 <translation id="2484513351006226581">Stlačením klávesov <ph name="KEYBOARD_SHORTCUT" /> zmeníte rozloženie klávesnice.</translation>
 <translation id="2501920221385095727">Funkcia sticky keys</translation>
@@ -137,8 +138,8 @@
 <translation id="2718395828230677721">Nočný režim</translation>
 <translation id="2727977024730340865">Batéria je zapojená do nabíjačky s nízkym výkonom. Nabíjanie batérie nemusí byť spoľahlivé.</translation>
 <translation id="2792498699870441125">Alt + Hľadať</translation>
-<translation id="2803734122639935495">Odomknite zadaním hesla</translation>
 <translation id="2819276065543622893">Teraz prebehne odhlásenie.</translation>
+<translation id="2825224105325558319"><ph name="DISPLAY_NAME" /> nepodporuje rozlíšenie <ph name="SPECIFIED_RESOLUTION" />. Preto bolo zmenené na <ph name="FALLBACK_RESOLUTION" />.</translation>
 <translation id="2825619548187458965">Polička</translation>
 <translation id="2844169650293029770">Zariadenie USB-C (port vľavo vpredu)</translation>
 <translation id="2865888419503095837">Informácie o sieti</translation>
@@ -158,6 +159,12 @@
 <translation id="3009178788565917040">Výstup</translation>
 <translation id="3051128274746680507">Váš profil kontrolovaného používateľa bude čoskoro odstránený. Ak chcete získať ďalšie informácie, prihláste sa.</translation>
 <translation id="3055162170959710888">Toto zariadenie si dnes používal(a) <ph name="USED_TIME" /></translation>
+<translation id="3076778413190775903">Stavový panel, čas <ph name="TIME" />,
+        <ph name="BATTERY" />
+        <ph name="NETWORK" />,
+        <ph name="NOTIFICATION" />,
+        <ph name="IME" />
+        <ph name="LOCALE" /></translation>
 <translation id="3077734595579995578">shift</translation>
 <translation id="3081696990447829002">Rozbaliť ponuku</translation>
 <translation id="3087734570205094154">Spodok</translation>
@@ -168,6 +175,7 @@
 <translation id="3151786313568798007">Orientácia</translation>
 <translation id="3153444934357957346">V rámci viacnásobného prihlásenia môžete mať maximálne nasledujúci počet účtov: <ph name="MULTI_PROFILE_USER_LIMIT" />.</translation>
 <translation id="3154351730702813399">Správca zariadenia môže sledovať vašu aktivitu prehliadania.</translation>
+<translation id="3181441307743005334">Reštart môže chvíľu trvať</translation>
 <translation id="3202010236269062730">{NUM_DEVICES,plural, =1{Pripojené k zariadeniu}few{Pripojené k # zariadeniam}many{Connected to # devices}other{Pripojené k # zariadeniam}}</translation>
 <translation id="3217205077783620295">Zvuk je zapnutý. Ak ho chcete vypnúť, prepnite tlačidlo.</translation>
 <translation id="3226991577105957773">a ďalšie (<ph name="COUNT" />)</translation>
@@ -202,6 +210,7 @@
 <translation id="3604801046548457007">Bola vytvorená plocha <ph name="DESK_TITILE" /></translation>
 <translation id="3606978283550408104">Bola pripojená Braillova obrazovka.</translation>
 <translation id="3621202678540785336">Vstup</translation>
+<translation id="3621712662352432595">Nastavenia zvuku</translation>
 <translation id="3626281679859535460">Jas</translation>
 <translation id="3631369015426612114">Povoliť prijímanie upozornení od</translation>
 <translation id="3705722231355495246">-</translation>
@@ -316,6 +325,7 @@
 <translation id="5331975486040154427">Zariadenie USB-C (port vľavo vzadu)</translation>
 <translation id="5379115545237091094">Príliš veľa pokusov</translation>
 <translation id="5397578532367286026">Aktivitu a históriu tohto používateľa môže skontrolovať správca (<ph name="MANAGER_EMAIL" />) na adrese chrome.com.</translation>
+<translation id="5400461572260843123">Rýchle nastavenia, do centra upozornení prejdete stlačením klávesa vyhľadávania + šípky doľava</translation>
 <translation id="5430931332414098647">Dynamický tethering</translation>
 <translation id="5431825016875453137">OpenVPN / L2TP</translation>
 <translation id="544691375626129091">Do tejto relácie už boli pridaní všetci dostupní používatelia</translation>
@@ -397,6 +407,7 @@
 <translation id="6490471652906364588">Zariadenie USB-C (port vpravo)</translation>
 <translation id="649452524636452238">PIN inteligentnej karty</translation>
 <translation id="6501401484702599040">Prenášanie obrazovky do zariadenia <ph name="RECEIVER_NAME" /></translation>
+<translation id="652139407789908527">Počas tejto aktualizácie bude vaša obrazovka prázdna dlhšie ako zvyčajne (maximálne minútu). V priebehu aktualizácie nestláčajte vypínač.</translation>
 <translation id="6521655319214113338">Vstup ručného písania</translation>
 <translation id="6528179044667508675">Nerušiť</translation>
 <translation id="6537270692134705506">Nasnímať obrazovku</translation>
@@ -542,8 +553,10 @@
 <translation id="847056008324733326">Nastavenia hustoty zobrazenia</translation>
 <translation id="8473301994082929012"><ph name="ORGANIZATION_NAME" /> má <ph name="FEATURE_STATE" /> <ph name="FEATURE_NAME" />.</translation>
 <translation id="8477270416194247200">Ak to chcete zrušiť, stlačte klávesy Alt+Hľadať alebo Shift.</translation>
+<translation id="8492573885090281069"><ph name="DISPLAY_NAME" /> nepodporuje rozlíšenie <ph name="SPECIFIED_RESOLUTION" />. Preto bolo zmenené na <ph name="FALLBACK_RESOLUTION" />. Zmeny ponecháte kliknutím na Potvrdiť. Predchádzajúce nastavenia budú obnovené o <ph name="TIMEOUT_SECONDS" />.</translation>
 <translation id="8513108775083588393">Automatické otáčanie</translation>
 <translation id="8517041960877371778">Vaše zariadenie <ph name="DEVICE_TYPE" /> sa nemusí nabíjať, keď je zapnuté.</translation>
+<translation id="8563862697512465947">Nastavenia upozornení</translation>
 <translation id="8627191004499078455">Pripojené k zariadeniu <ph name="DEVICE_NAME" /></translation>
 <translation id="8637598503828012618"><ph name="CONNECTION_STATUS" />, sila signálu <ph name="SIGNAL_STRENGTH" />, ovládané správcom</translation>
 <translation id="8639760480004882931">Zostávajúca kapacita: <ph name="PERCENTAGE" /></translation>
@@ -596,6 +609,7 @@
 <translation id="9183456764293710005">Lupa na celú obrazovku</translation>
 <translation id="9193626018745640770">Prebieha prenášanie do neznámeho prijímača</translation>
 <translation id="9194617393863864469">Prihlásiť ďalšieho používateľa...</translation>
+<translation id="9198992156681343238">Rozlíšenie obrazovky <ph name="DISPLAY_NAME" /> bolo zmenené na <ph name="RESOLUTION" />. Zmeny ponecháte kliknutím na Potvrdiť. Predchádzajúce nastavenia budú obnovené o <ph name="TIMEOUT_SECONDS" />.</translation>
 <translation id="9201374708878217446"><ph name="CONNECTION_STATUS" />, ovládané správcom</translation>
 <translation id="9210037371811586452">Ukončuje sa režim jednotnej pracovnej plochy</translation>
 <translation id="9211681782751733685">Zostávajúci čas do úplného nabitia batérie: <ph name="TIME_REMAINING" /></translation>

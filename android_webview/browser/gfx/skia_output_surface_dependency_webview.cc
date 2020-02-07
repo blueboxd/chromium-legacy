@@ -153,4 +153,8 @@ void SkiaOutputSurfaceDependencyWebView::ScheduleDelayedGPUTaskFromGPUThread(
   task_queue_->ScheduleIdleTask(std::move(task));
 }
 
+bool SkiaOutputSurfaceDependencyWebView::NeedsSupportForExternalStencil() {
+  return true;
+}
+
 }  // namespace android_webview

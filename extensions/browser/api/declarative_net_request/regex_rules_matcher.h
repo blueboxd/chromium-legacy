@@ -5,6 +5,8 @@
 #ifndef EXTENSIONS_BROWSER_API_DECLARATIVE_NET_REQUEST_REGEX_RULES_MATCHER_H_
 #define EXTENSIONS_BROWSER_API_DECLARATIVE_NET_REQUEST_REGEX_RULES_MATCHER_H_
 
+#include <memory>
+
 #include "base/macros.h"
 #include "components/url_matcher/substring_set_matcher.h"
 #include "extensions/browser/api/declarative_net_request/ruleset_matcher_base.h"
@@ -31,8 +33,7 @@ struct RegexRuleInfo {
 // Initialization:
 // 1. During initialization, we add each regex to the FilteredRE2 class.
 // 2. We compile the FilteredRE2 object which returns us a set of substrings.
-//    These are stored in |filtered_re2_strings_to_match_| below. These are also
-//    added to |substring_matcher_| for use in #3 below.
+//    These are added to |substring_matcher_| for use in #3 below.
 //
 // Matching
 // 3. Given a request url, we find the set of strings from #2. that are
@@ -74,6 +75,9 @@ class RegexRulesMatcher final : public RulesetMatcherBase {
   // Helper to build the necessary data structures for matching.
   void InitializeMatcher();
 
+  // Returns true if this matcher doesn't correspond to any rules.
+  bool IsEmpty() const;
+
   // Returns the potentially matching rules for the given request. A potentially
   // matching rule is one whose metadata matches the given request |params| and
   // which is not ruled out as a potential match by the |filtered_re2_| object.
@@ -104,15 +108,11 @@ class RegexRulesMatcher final : public RulesetMatcherBase {
   // |regex_list_|.
   std::map<int, const flat::RegexRule*> re2_id_to_rules_map_;
 
-  // Candidate strings to match for each request, for pre-filtering. The ID of
-  // each url_matcher::StringPattern is its index within the vector. All the
-  // strings are lower-cased.
-  std::vector<url_matcher::StringPattern> filtered_re2_strings_to_match_;
-
   // Structure for fast substring matching. Given a string S and a set of
   // candidate strings, returns the sub-set of candidate strings that are a
-  // substring of S. Uses the Aho-Corasick algorithm internally.
-  url_matcher::SubstringSetMatcher substring_matcher_;
+  // substring of S. Uses the Aho-Corasick algorithm internally. Will be null
+  // iff IsEmpty() returns false.
+  std::unique_ptr<url_matcher::SubstringSetMatcher> substring_matcher_;
 
   DISALLOW_COPY_AND_ASSIGN(RegexRulesMatcher);
 };

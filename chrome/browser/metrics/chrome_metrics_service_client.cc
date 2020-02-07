@@ -146,11 +146,9 @@
 
 #include "chrome/browser/metrics/antivirus_metrics_provider_win.h"
 #include "chrome/browser/metrics/google_update_metrics_provider_win.h"
-#include "chrome/common/metrics_constants_util_win.h"
 #include "chrome/install_static/install_util.h"
 #include "chrome/installer/util/util_constants.h"
 #include "chrome/notification_helper/notification_helper_constants.h"
-#include "components/browser_watcher/watcher_metrics_provider_win.h"
 #include "content/public/browser/system_connector.h"
 #endif
 
@@ -341,24 +339,6 @@ std::unique_ptr<metrics::FileMetricsProvider> CreateFileMetricsProvider(
 
   return file_metrics_provider;
 }
-
-#if defined(OS_WIN)
-void GetExecutableVersionDetails(base::string16* product_name,
-                                 base::string16* version_number,
-                                 base::string16* channel_name) {
-  DCHECK_NE(nullptr, product_name);
-  DCHECK_NE(nullptr, version_number);
-  DCHECK_NE(nullptr, channel_name);
-
-  wchar_t exe_file[MAX_PATH] = {};
-  CHECK(::GetModuleFileName(nullptr, exe_file, base::size(exe_file)));
-
-  base::string16 unused_special_build;
-  install_static::GetExecutableVersionDetails(
-      exe_file, product_name, version_number, &unused_special_build,
-      channel_name);
-}
-#endif  // OS_WIN
 
 ChromeMetricsServiceClient::IsProcessRunningFunction g_is_process_running =
     nullptr;
@@ -690,20 +670,6 @@ void ChromeMetricsServiceClient::RegisterMetricsServiceProviders() {
 #if defined(OS_WIN)
   metrics_service_->RegisterMetricsProvider(
       std::make_unique<GoogleUpdateMetricsProviderWin>());
-
-  base::FilePath user_data_dir;
-  base::FilePath crash_dir;
-  if (!base::PathService::Get(chrome::DIR_USER_DATA, &user_data_dir) ||
-      !base::PathService::Get(chrome::DIR_CRASH_DUMPS, &crash_dir)) {
-    // If either call fails, then clear both.
-    user_data_dir = base::FilePath();
-    crash_dir = base::FilePath();
-  }
-  metrics_service_->RegisterMetricsProvider(
-      std::make_unique<browser_watcher::WatcherMetricsProviderWin>(
-          chrome::GetBrowserExitCodesRegistryPath(), user_data_dir, crash_dir,
-          base::Bind(&GetExecutableVersionDetails)));
-
   metrics_service_->RegisterMetricsProvider(
       std::make_unique<AntiVirusMetricsProvider>());
 #endif  // defined(OS_WIN)

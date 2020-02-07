@@ -3298,11 +3298,9 @@ TEST_P(ShelfLayoutManagerTest, ShelfBoundsUpdateAfterOverviewAnimation) {
   {
     OverviewAnimationWaiter overview_waiter;
     overview_controller->StartOverview();
-    ShelfAnimationWaiter shelf_waiter(left_shelf_bounds);
+    // When setting the shelf alignment, bounds aren't expected to animate.
     shelf->SetAlignment(ShelfAlignment::kLeft);
     overview_waiter.Wait();
-    shelf_waiter.WaitForAnimation();
-    EXPECT_TRUE(shelf_waiter.WasValidAnimation());
   }
   EXPECT_EQ(left_shelf_bounds, GetShelfWidget()->GetWindowBoundsInScreen());
 
@@ -3310,11 +3308,9 @@ TEST_P(ShelfLayoutManagerTest, ShelfBoundsUpdateAfterOverviewAnimation) {
   {
     OverviewAnimationWaiter overview_waiter;
     overview_controller->EndOverview();
-    ShelfAnimationWaiter shelf_waiter(bottom_shelf_bounds);
+    // When setting the shelf alignment, bounds aren't expected to animate.
     shelf->SetAlignment(ShelfAlignment::kBottom);
     overview_waiter.Wait();
-    shelf_waiter.WaitForAnimation();
-    EXPECT_TRUE(shelf_waiter.WasValidAnimation());
   }
   EXPECT_EQ(bottom_shelf_bounds, GetShelfWidget()->GetWindowBoundsInScreen());
 }

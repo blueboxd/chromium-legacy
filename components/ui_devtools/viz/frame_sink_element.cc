@@ -4,6 +4,7 @@
 
 #include "components/ui_devtools/viz/frame_sink_element.h"
 
+#include "base/strings/string_number_conversions.h"
 #include "base/strings/string_piece.h"
 #include "components/ui_devtools/Protocol.h"
 #include "components/ui_devtools/ui_element_delegate.h"

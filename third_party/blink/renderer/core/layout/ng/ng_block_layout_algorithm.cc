@@ -31,7 +31,6 @@
 #include "third_party/blink/renderer/core/layout/ng/ng_positioned_float.h"
 #include "third_party/blink/renderer/core/layout/ng/ng_space_utils.h"
 #include "third_party/blink/renderer/core/layout/ng/ng_unpositioned_float.h"
-#include "third_party/blink/renderer/core/layout/text_autosizer.h"
 #include "third_party/blink/renderer/core/paint/ng/ng_paint_fragment.h"
 #include "third_party/blink/renderer/core/style/computed_style.h"
 
@@ -199,8 +198,8 @@ void NGBlockLayoutAlgorithm::SetBoxType(NGPhysicalFragment::NGBoxType type) {
 
 base::Optional<MinMaxSize> NGBlockLayoutAlgorithm::ComputeMinMaxSize(
     const MinMaxSizeInput& input) const {
-  base::Optional<MinMaxSize> sizes = CalculateMinMaxSizesIgnoringChildren(
-      node_, border_scrollbar_padding_, input.size_type);
+  base::Optional<MinMaxSize> sizes =
+      CalculateMinMaxSizesIgnoringChildren(node_, border_scrollbar_padding_);
   if (sizes)
     return sizes;
 
@@ -333,8 +332,7 @@ base::Optional<MinMaxSize> NGBlockLayoutAlgorithm::ComputeMinMaxSize(
   DCHECK_GE(sizes->min_size, LayoutUnit());
   DCHECK_LE(sizes->min_size, sizes->max_size) << Node().ToString();
 
-  if (input.size_type == NGMinMaxSizeType::kBorderBoxSize)
-    *sizes += border_scrollbar_padding_.InlineSum();
+  *sizes += border_scrollbar_padding_.InlineSum();
   return sizes;
 }
 
@@ -537,12 +535,6 @@ inline scoped_refptr<const NGLayoutResult> NGBlockLayoutAlgorithm::Layout(
   // quirky, and we only consider <div>'s 10px margin.
   if (node_.IsQuirkyContainer())
     previous_inflow_position.margin_strut.is_quirky_container_start = true;
-
-  // Before we descend into children (but after we have determined our inline
-  // size), give the autosizer an opportunity to adjust the font size on the
-  // children.
-  TextAutosizer::NGLayoutScope text_autosizer_layout_scope(
-      Node(), border_box_size.inline_size);
 
   // Try to reuse line box fragments from cached fragments if possible.
   // When possible, this adds fragments to |container_builder_| and update
@@ -2287,7 +2279,7 @@ NGBoxStrut NGBlockLayoutAlgorithm::CalculateMargins(
     NGConstraintSpace space = builder.ToConstraintSpace();
 
     NGBoxStrut child_border_padding =
-        ComputeBorders(space, child) + ComputePadding(space, child.Style());
+        ComputeBorders(space, child_style) + ComputePadding(space, child_style);
     LayoutUnit child_inline_size =
         ComputeInlineSizeForFragment(space, child, child_border_padding);
 

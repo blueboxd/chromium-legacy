@@ -51,6 +51,7 @@
 #include "components/security_interstitials/content/unsafe_resource_util.h"
 #include "components/security_interstitials/core/unsafe_resource.h"
 #include "components/signin/public/identity_manager/account_info.h"
+#include "components/signin/public/identity_manager/consent_level.h"
 #include "components/signin/public/identity_manager/identity_manager.h"
 #include "components/strings/grit/components_strings.h"
 #include "components/sync/driver/sync_service.h"
@@ -720,7 +721,8 @@ void ChromePasswordProtectionService::
         profile_->GetOriginalProfile());
     if (identity_manager) {
       CoreAccountInfo unconsented_primary_account_info =
-          identity_manager->GetUnconsentedPrimaryAccountInfo();
+          identity_manager->GetPrimaryAccountInfo(
+              signin::ConsentLevel::kNotRequired);
       // SecurityEventRecorder only supports unconsented primary accounts.
       if (gaia::AreEmailsSame(unconsented_primary_account_info.email,
                               username_for_last_shown_warning())) {

@@ -28,6 +28,7 @@ goog.require('ValueSelectionSpan');
 goog.require('ValueSpan');
 goog.require('goog.i18n.MessageFormat');
 goog.require('LanguageSwitching');
+goog.require('UserAnnotationHandler');
 
 goog.scope(function() {
 const AutomationNode = chrome.automation.AutomationNode;
@@ -767,13 +768,11 @@ Output = class {
                 node, 'name',
                 appendStringWithLanguage.bind(this, buff, options));
           } else {
-            // Append entire node name.
-            // TODO(akihiroota): Follow-up with dtseng about why we append
-            // empty string.
-            this.append_(buff, node.name || '', options);
+            const nameOrAnnotation =
+                UserAnnotationHandler.getAnnotationForNode(node) || node.name;
+            this.append_(buff, nameOrAnnotation || '', options);
           }
           ruleStr.writeTokenWithValue(token, node.name);
-
         } else if (token == 'description') {
           if (node.name == node.description) {
             return;

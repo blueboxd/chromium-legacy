@@ -12,7 +12,7 @@ AssistantWebViewFactoryImpl::AssistantWebViewFactoryImpl(Profile* profile)
 
 AssistantWebViewFactoryImpl::~AssistantWebViewFactoryImpl() = default;
 
-std::unique_ptr<ash::AssistantWebView2> AssistantWebViewFactoryImpl::Create(
-    const ash::AssistantWebView2::InitParams& params) {
+std::unique_ptr<ash::AssistantWebView> AssistantWebViewFactoryImpl::Create(
+    const ash::AssistantWebView::InitParams& params) {
   return std::make_unique<AssistantWebViewImpl>(profile_, params);
 }

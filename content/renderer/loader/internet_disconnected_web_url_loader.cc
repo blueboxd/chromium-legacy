@@ -36,6 +36,7 @@ void InternetDisconnectedWebURLLoader::LoadSynchronously(
     int requestor_id,
     bool download_to_network_cache_only,
     bool pass_response_pipe_to_client,
+    bool no_mime_sniffing,
     base::TimeDelta timeout_interval,
     blink::WebURLLoaderClient*,
     blink::WebURLResponse&,
@@ -52,6 +53,7 @@ void InternetDisconnectedWebURLLoader::LoadAsynchronously(
     scoped_refptr<blink::WebURLRequest::ExtraData> request_extra_data,
     int requestor_id,
     bool download_to_network_cache_only,
+    bool no_mime_sniffing,
     blink::WebURLLoaderClient* client) {
   DCHECK(task_runner_handle_);
   task_runner_handle_->GetTaskRunner()->PostTask(

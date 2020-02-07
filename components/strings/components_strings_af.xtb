@@ -690,6 +690,7 @@
 <translation id="3987940399970879459">Minder as 1 MB</translation>
 <translation id="3990250421422698716">Gelykskudafwyking</translation>
 <translation id="40103911065039147">{URL_count,plural, =1{1 webbladsy in die omtrek}other{# webbladsye in die omtrek}}</translation>
+<translation id="4014128326099193693">{COUNT,plural, =1{PDF-dokument met {COUNT} bladsy}other{PDF-dokument met {COUNT} bladsye}}</translation>
 <translation id="4030383055268325496">Ontdoen voeg by</translation>
 <translation id="4032320456957708163">Jou blaaier word bestuur deur <ph name="ENROLLMENT_DOMAIN" /></translation>
 <translation id="4058922952496707368">Sleutel "<ph name="SUBKEY" />": <ph name="ERROR" /></translation>
@@ -718,6 +719,7 @@
 <translation id="4142935452406587478">Laai 10</translation>
 <translation id="4148925816941278100">American Express</translation>
 <translation id="4151403195736952345">Gebruik globale verstek (Bespeur)</translation>
+<translation id="4152318981910038897">{COUNT,plural, =1{Bladsy 1}other{Bladsy {COUNT}}}</translation>
 <translation id="4159784952369912983">Pers</translation>
 <translation id="4165986682804962316">Werfinstellings</translation>
 <translation id="4171400957073367226">Swak verifiëringhandtekening</translation>
@@ -1395,6 +1397,7 @@
 <translation id="7201591969684833065">Jou administrateur kan sien:</translation>
 <translation id="7202346780273620635">Letter-Extra</translation>
 <translation id="7210863904660874423"><ph name="HOST_NAME" /> kom nie sekuriteitstandaarde na nie.</translation>
+<translation id="7210993021468939304">Linux-aktiwiteit binne die houer, en kan Linux-programme binne die houer installeer en laat loop</translation>
 <translation id="721197778055552897"><ph name="BEGIN_LINK" />Kom meer te wete<ph name="END_LINK" /> oor hierdie probleem.</translation>
 <translation id="7219179957768738017">Die verbinding gebruik <ph name="SSL_VERSION" />.</translation>
 <translation id="7220786058474068424">Verwerk tans</translation>
@@ -1558,6 +1561,7 @@ om uit te vind hoe om die sagteware permanent van jou rekenaar te verwyder&lt;/o
 <translation id="7878562273885520351">Jou wagwoord is dalk in gevaar</translation>
 <translation id="7882421473871500483">Bruin</translation>
 <translation id="7887683347370398519">Gaan jou CVC na en probeer weer</translation>
+<translation id="7887885240995164102">Gaan na prent-in-prent</translation>
 <translation id="7888575728750733395">Drukleweringvoorneme</translation>
 <translation id="7904208859782148177">C3 (Envelope)</translation>
 <translation id="7932579305932748336">Bestryk</translation>

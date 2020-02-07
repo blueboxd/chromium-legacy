@@ -20,6 +20,7 @@
 #include "gpu/command_buffer/common/swap_buffers_complete_params.h"
 #include "gpu/command_buffer/common/swap_buffers_flags.h"
 #include "gpu/config/gpu_feature_info.h"
+#include "ui/gfx/buffer_format_util.h"
 #include "ui/gfx/overlay_transform_utils.h"
 
 namespace viz {
@@ -94,14 +95,14 @@ void GLOutputSurface::SetDrawRectangle(const gfx::Rect& rect) {
 void GLOutputSurface::Reshape(const gfx::Size& size,
                               float device_scale_factor,
                               const gfx::ColorSpace& color_space,
-                              bool has_alpha,
+                              gfx::BufferFormat format,
                               bool use_stencil) {
   size_ = size;
   has_set_draw_rectangle_since_last_resize_ = false;
   set_draw_rectangle_for_frame_ = false;
   context_provider()->ContextGL()->ResizeCHROMIUM(
       size.width(), size.height(), device_scale_factor,
-      color_space.AsGLColorSpace(), has_alpha);
+      color_space.AsGLColorSpace(), gfx::AlphaBitsForBufferFormat(format));
 }
 
 void GLOutputSurface::SwapBuffers(OutputSurfaceFrame frame) {

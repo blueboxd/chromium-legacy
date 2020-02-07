@@ -48,6 +48,17 @@ void OpenLoginPage(content::WebContents* web_contents) {
 #endif
 }
 
+std::unique_ptr<security_interstitials::MetricsHelper> CreateMetricsHelper(
+    const GURL& request_url,
+    const std::string& metric_prefix) {
+  security_interstitials::MetricsHelper::ReportDetails report_details;
+  report_details.metric_prefix = metric_prefix;
+  auto metrics_helper = std::make_unique<security_interstitials::MetricsHelper>(
+      request_url, report_details, /*history_service=*/nullptr);
+
+  return metrics_helper;
+}
+
 }  // namespace
 
 std::unique_ptr<SSLBlockingPage>
@@ -62,15 +73,10 @@ WebLayerSecurityBlockingPageFactory::CreateSSLPage(
     std::unique_ptr<SSLCertReporter> ssl_cert_reporter) {
   bool overridable = SSLBlockingPage::IsOverridable(options_mask);
 
-  security_interstitials::MetricsHelper::ReportDetails report_details;
-  report_details.metric_prefix =
-      overridable ? "ssl_overridable" : "ssl_nonoverridable";
-  auto metrics_helper = std::make_unique<security_interstitials::MetricsHelper>(
-      request_url, report_details, /*history_service=*/nullptr);
-
   auto controller_client = std::make_unique<SSLErrorControllerClient>(
       web_contents, cert_error, ssl_info, request_url,
-      std::move(metrics_helper));
+      CreateMetricsHelper(
+          request_url, overridable ? "ssl_overridable" : "ssl_nonoverridable"));
 
   auto interstitial_page = std::make_unique<SSLBlockingPage>(
       web_contents, cert_error, ssl_info, request_url, options_mask,
@@ -88,14 +94,9 @@ WebLayerSecurityBlockingPageFactory::CreateCaptivePortalBlockingPage(
     std::unique_ptr<SSLCertReporter> ssl_cert_reporter,
     const net::SSLInfo& ssl_info,
     int cert_error) {
-  security_interstitials::MetricsHelper::ReportDetails report_details;
-  report_details.metric_prefix = "captive_portal";
-  auto metrics_helper = std::make_unique<security_interstitials::MetricsHelper>(
-      request_url, report_details, /*history_service=*/nullptr);
-
   auto controller_client = std::make_unique<SSLErrorControllerClient>(
       web_contents, cert_error, ssl_info, request_url,
-      std::move(metrics_helper));
+      CreateMetricsHelper(request_url, "captive_portal"));
 
   auto interstitial_page = std::make_unique<CaptivePortalBlockingPage>(
       web_contents, request_url, login_url, std::move(ssl_cert_reporter),
@@ -114,14 +115,9 @@ WebLayerSecurityBlockingPageFactory::CreateBadClockBlockingPage(
     const base::Time& time_triggered,
     ssl_errors::ClockState clock_state,
     std::unique_ptr<SSLCertReporter> ssl_cert_reporter) {
-  security_interstitials::MetricsHelper::ReportDetails report_details;
-  report_details.metric_prefix = "bad_clock";
-  auto metrics_helper = std::make_unique<security_interstitials::MetricsHelper>(
-      request_url, report_details, /*history_service=*/nullptr);
-
   auto controller_client = std::make_unique<SSLErrorControllerClient>(
       web_contents, cert_error, ssl_info, request_url,
-      std::move(metrics_helper));
+      CreateMetricsHelper(request_url, "bad_clock"));
 
   auto interstitial_page = std::make_unique<BadClockBlockingPage>(
       web_contents, cert_error, ssl_info, request_url,
@@ -138,14 +134,9 @@ WebLayerSecurityBlockingPageFactory::CreateLegacyTLSBlockingPage(
     const GURL& request_url,
     std::unique_ptr<SSLCertReporter> ssl_cert_reporter,
     const net::SSLInfo& ssl_info) {
-  security_interstitials::MetricsHelper::ReportDetails report_details;
-  report_details.metric_prefix = "legacy_tls";
-  auto metrics_helper = std::make_unique<security_interstitials::MetricsHelper>(
-      request_url, report_details, /*history_service=*/nullptr);
-
   auto controller_client = std::make_unique<SSLErrorControllerClient>(
       web_contents, cert_error, ssl_info, request_url,
-      std::move(metrics_helper));
+      CreateMetricsHelper(request_url, "legacy_tls"));
 
   auto interstitial_page = std::make_unique<LegacyTLSBlockingPage>(
       web_contents, cert_error, request_url, std::move(ssl_cert_reporter),
@@ -162,14 +153,9 @@ WebLayerSecurityBlockingPageFactory::CreateMITMSoftwareBlockingPage(
     std::unique_ptr<SSLCertReporter> ssl_cert_reporter,
     const net::SSLInfo& ssl_info,
     const std::string& mitm_software_name) {
-  security_interstitials::MetricsHelper::ReportDetails report_details;
-  report_details.metric_prefix = "mitm_software";
-  auto metrics_helper = std::make_unique<security_interstitials::MetricsHelper>(
-      request_url, report_details, /*history_service=*/nullptr);
-
   auto controller_client = std::make_unique<SSLErrorControllerClient>(
       web_contents, cert_error, ssl_info, request_url,
-      std::move(metrics_helper));
+      CreateMetricsHelper(request_url, "mitm_software"));
 
   auto interstitial_page = std::make_unique<MITMSoftwareBlockingPage>(
       web_contents, cert_error, request_url, std::move(ssl_cert_reporter),
@@ -186,14 +172,9 @@ WebLayerSecurityBlockingPageFactory::CreateBlockedInterceptionBlockingPage(
     const GURL& request_url,
     std::unique_ptr<SSLCertReporter> ssl_cert_reporter,
     const net::SSLInfo& ssl_info) {
-  security_interstitials::MetricsHelper::ReportDetails report_details;
-  report_details.metric_prefix = "blocked_interception";
-  auto metrics_helper = std::make_unique<security_interstitials::MetricsHelper>(
-      request_url, report_details, /*history_service=*/nullptr);
-
   auto controller_client = std::make_unique<SSLErrorControllerClient>(
       web_contents, cert_error, ssl_info, request_url,
-      std::move(metrics_helper));
+      CreateMetricsHelper(request_url, "blocked_interception"));
 
   auto interstitial_page = std::make_unique<BlockedInterceptionBlockingPage>(
       web_contents, cert_error, request_url, std::move(ssl_cert_reporter),

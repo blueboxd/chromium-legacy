@@ -8,7 +8,6 @@ import("//chrome/process_version_rc_template.gni")
 
 message_compiler("eventlog_messages") {
   visibility = [
-    "//chrome/chrome_watcher:chrome_watcher",
     "//chrome/common",
     ":eventlog_provider",
   ]

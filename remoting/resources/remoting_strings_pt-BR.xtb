@@ -256,6 +256,7 @@ Se "<ph name="SERVICE_SCRIPT_NAME" />" já estiver marcada, desmarque-a e marque
 <translation id="6939719207673461467">Mostrar/ocultar teclado</translation>
 <translation id="6944854424004126054">Restaurar janela</translation>
 <translation id="6948905685698011662">A Área de trabalho remota do Google Chrome agora está na Web. Confira nosso <ph name="LINK_BEGIN" />app da Web gratuito<ph name="LINK_END" />.</translation>
+<translation id="6956835181934226419">Já concedi essa permissão.</translation>
 <translation id="6963936880795878952">As conexões com o computador remoto estão temporariamente bloqueadas porque alguém estava tentando se conectar a ele com um PIN inválido. Tente novamente mais tarde.</translation>
 <translation id="6965382102122355670">OK</translation>
 <translation id="6985691951107243942">Tem certeza que quer desativar conexões remotas para <ph name="HOSTNAME" />? Se mudar de idéia, precisará visitar este computador para reativar as conexões.</translation>

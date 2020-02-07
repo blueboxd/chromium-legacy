@@ -82,7 +82,8 @@ class CONTENT_EXPORT ServiceWorkerNewScriptLoader final
       mojo::PendingRemote<network::mojom::URLLoaderClient> client,
       scoped_refptr<ServiceWorkerVersion> version,
       scoped_refptr<network::SharedURLLoaderFactory> loader_factory,
-      const net::MutableNetworkTrafficAnnotationTag& traffic_annotation);
+      const net::MutableNetworkTrafficAnnotationTag& traffic_annotation,
+      int64_t cache_resource_id);
 
   ~ServiceWorkerNewScriptLoader() override;
 
@@ -124,7 +125,8 @@ class CONTENT_EXPORT ServiceWorkerNewScriptLoader final
       mojo::PendingRemote<network::mojom::URLLoaderClient> client,
       scoped_refptr<ServiceWorkerVersion> version,
       scoped_refptr<network::SharedURLLoaderFactory> loader_factory,
-      const net::MutableNetworkTrafficAnnotationTag& traffic_annotation);
+      const net::MutableNetworkTrafficAnnotationTag& traffic_annotation,
+      int64_t cache_resource_id);
 
   // Writes the given headers into the service worker script storage.
   void WriteHeaders(scoped_refptr<HttpResponseInfoIOBuffer> info_buffer);

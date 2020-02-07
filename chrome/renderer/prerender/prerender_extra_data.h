@@ -7,6 +7,8 @@
 
 #include "base/compiler_specific.h"
 #include "base/macros.h"
+#include "chrome/common/prerender.mojom.h"
+#include "mojo/public/cpp/bindings/remote.h"
 #include "third_party/blink/public/platform/web_prerender.h"
 #include "ui/gfx/geometry/size.h"
 
@@ -14,22 +16,25 @@ namespace prerender {
 
 class PrerenderExtraData : public blink::WebPrerender::ExtraData {
  public:
-  PrerenderExtraData(int prerender_id,
-                     int render_view_route_id,
-                     const gfx::Size& size);
+  explicit PrerenderExtraData(int render_view_id);
   ~PrerenderExtraData() override;
 
-  int prerender_id() const { return prerender_id_; }
-  int render_view_route_id() const { return render_view_route_id_; }
-  const gfx::Size& size() const { return size_; }
+  void set_prerender_handle(
+      mojo::Remote<chrome::mojom::PrerenderHandle> prerender_handle) {
+    prerender_handle_ = std::move(prerender_handle);
+  }
+  chrome::mojom::PrerenderHandle* prerender_handle() {
+    return prerender_handle_.get();
+  }
 
-  static const PrerenderExtraData& FromPrerender(
+  int render_view_id() const { return render_view_id_; }
+
+  static PrerenderExtraData* FromPrerender(
       const blink::WebPrerender& prerender);
 
  private:
-  const int prerender_id_;
-  const int render_view_route_id_;
-  const gfx::Size size_;
+  mojo::Remote<chrome::mojom::PrerenderHandle> prerender_handle_;
+  const int render_view_id_;
 
   DISALLOW_COPY_AND_ASSIGN(PrerenderExtraData);
 };

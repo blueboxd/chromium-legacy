@@ -8,7 +8,7 @@
 #include <string>
 
 #include "ash/assistant/ui/main_stage/assistant_ui_element_view.h"
-#include "ash/public/cpp/assistant/assistant_web_view_2.h"
+#include "ash/public/cpp/assistant/assistant_web_view.h"
 #include "base/component_export.h"
 #include "base/macros.h"
 
@@ -21,7 +21,7 @@ class AssistantViewDelegate;
 // AssistantCardElement. It is a child view of UiElementContainerView.
 class COMPONENT_EXPORT(ASSISTANT_UI) AssistantCardElementView
     : public AssistantUiElementView,
-      public AssistantWebView2::Observer {
+      public AssistantWebView::Observer {
  public:
   AssistantCardElementView(AssistantViewDelegate* delegate,
                            const AssistantCardElement* card_element);
@@ -36,7 +36,7 @@ class COMPONENT_EXPORT(ASSISTANT_UI) AssistantCardElementView
   void OnGestureEvent(ui::GestureEvent* event) override;
   void ScrollRectToVisible(const gfx::Rect& rect) override;
 
-  // AssistantWebView2::Observer:
+  // AssistantWebView::Observer:
   void DidSuppressNavigation(const GURL& url,
                              WindowOpenDisposition disposition,
                              bool from_user_gesture) override;
@@ -51,7 +51,7 @@ class COMPONENT_EXPORT(ASSISTANT_UI) AssistantCardElementView
  private:
   void InitLayout(const AssistantCardElement* card_element);
 
-  AssistantWebView2* contents_view();
+  AssistantWebView* contents_view();
 
   AssistantViewDelegate* const delegate_;
   const AssistantCardElement* const card_element_;

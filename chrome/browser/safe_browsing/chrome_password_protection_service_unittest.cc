@@ -101,10 +101,10 @@ namespace {
 const char kPhishingURL[] = "http://phishing.com/";
 const char kTestEmail[] = "foo@example.com";
 const char kUserName[] = "username";
+const char kRedirectURL[] = "http://redirect.com";
 #if !defined(OS_ANDROID)
 const char kPasswordReuseURL[] = "http://login.example.com/";
 const char kTestGmail[] = "foo@gmail.com";
-const char kRedirectURL[] = "http://redirect.com";
 #endif
 
 BrowserContextKeyedServiceFactory::TestingFactory
@@ -319,7 +319,8 @@ class ChromePasswordProtectionServiceTest
                 trigger_type);
       request_ = new PasswordProtectionRequest(
           web_contents(), GURL(kPhishingURL), GURL(), GURL(), kUserName,
-          reused_password_type, std::vector<std::string>(), trigger_type,
+          reused_password_type, std::vector<std::string>({"somedomain.com"}),
+          trigger_type,
           /* password_field_exists*/ true, service_.get(),
           /*request_timeout_in_ms=*/0);
     }
@@ -779,8 +780,8 @@ TEST_F(ChromePasswordProtectionServiceTest,
       "verdict_token");
 }
 
-// TODO(crbug.com/1046910): Figure out why these tests crash and enable them on
-// Android.
+// The following tests are disabled on Android, because password capture events
+// are not enabled on Android.
 #if !defined(OS_ANDROID)
 // Check that the PasswordCapturedEvent timer is set for 1 min if password
 // hash is saved and no timer pref is set yet.
@@ -890,6 +891,7 @@ TEST_F(ChromePasswordProtectionServiceTest,
   EXPECT_GT(29, cur_delay.InDays());
   EXPECT_LT(23, cur_delay.InDays());
 }
+#endif
 
 TEST_F(ChromePasswordProtectionServiceTest,
        VerifyPasswordReuseLookupUserEventRecorded) {
@@ -1000,11 +1002,14 @@ TEST_F(ChromePasswordProtectionServiceTest,
   NavigateAndCommit(trigger_url);
   service_->SetIsSyncing(true);
   service_->SetIsAccountSignedIn(true);
+  base::test::ScopedFeatureList feature_list;
+  feature_list.InitAndEnableFeature(
+      safe_browsing::kPasswordProtectionForSavedPasswords);
 
   // Simulate a on-going password reuse request that hasn't received
   // verdict yet.
   PrepareRequest(LoginReputationClientRequest::PASSWORD_REUSE_EVENT,
-                 PasswordType::PRIMARY_ACCOUNT_PASSWORD,
+                 PasswordType::SAVED_PASSWORD,
                  /*is_warning_showing=*/false);
 
   GURL redirect_url(kRedirectURL);
@@ -1060,10 +1065,13 @@ TEST_F(ChromePasswordProtectionServiceTest,
   NavigateAndCommit(trigger_url);
   service_->SetIsSyncing(true);
   service_->SetIsAccountSignedIn(true);
+  base::test::ScopedFeatureList feature_list;
+  feature_list.InitAndEnableFeature(
+      safe_browsing::kPasswordProtectionForSavedPasswords);
   // Simulate a on-going password reuse request that hasn't received
   // verdict yet.
   PrepareRequest(LoginReputationClientRequest::PASSWORD_REUSE_EVENT,
-                 PasswordType::PRIMARY_ACCOUNT_PASSWORD,
+                 PasswordType::SAVED_PASSWORD,
                  /*is_warning_showing=*/false);
 
   GURL redirect_url(kRedirectURL);
@@ -1087,7 +1095,6 @@ TEST_F(ChromePasswordProtectionServiceTest,
   SimulateRequestFinished(LoginReputationClientResponse::SAFE);
   base::RunLoop().RunUntilIdle();
 }
-#endif
 
 TEST_F(ChromePasswordProtectionServiceTest,
        VerifyUnhandledSyncPasswordReuseUponClearHistoryDeletion) {

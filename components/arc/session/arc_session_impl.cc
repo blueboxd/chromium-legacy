@@ -398,6 +398,10 @@ void ArcSessionImpl::DoStartMiniInstance(size_t num_cores_disabled) {
     }
   }
 
+  params.arc_disable_system_default_app =
+      base::CommandLine::ForCurrentProcess()->HasSwitch(
+          chromeos::switches::kArcDisableSystemDefaultApps);
+
   VLOG(1) << "Starting ARC mini instance with lcd_density="
           << params.lcd_density
           << ", num_cores_disabled=" << params.num_cores_disabled;

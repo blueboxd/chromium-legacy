@@ -115,6 +115,7 @@
 <translation id="1919950603503897840">Seleziona contatti</translation>
 <translation id="1922076542920281912">Per consentire a Chrome di accedere alla tua posizione, devi attivare la posizione anche nelle <ph name="BEGIN_LINK" />Impostazioni Android<ph name="END_LINK" />.</translation>
 <translation id="1923695749281512248"><ph name="BYTES_DOWNLOADED_WITH_UNITS" /> di <ph name="FILE_SIZE_WITH_UNITS" /></translation>
+<translation id="1925021887439448749">Inserisci l'indirizzo web personalizzato</translation>
 <translation id="1928696683969751773">Aggiornamenti</translation>
 <translation id="19288952978244135">Riapri Chrome.</translation>
 <translation id="1933845786846280168">Scheda selezionata</translation>
@@ -279,6 +280,7 @@
 <translation id="3123473560110926937">Bloccati su alcuni siti</translation>
 <translation id="3123734510202723619">Annunci</translation>
 <translation id="3137521801621304719">Esci dalla modalità di navigazione in incognito</translation>
+<translation id="3140134512074889489">Consenti l'uso della fotocamera per scansionare un codice QR</translation>
 <translation id="3143515551205905069">Annulla sincronizzazione</translation>
 <translation id="3157842584138209013">Scopri la quantità di dati risparmiata usando il pulsante Altre opzioni</translation>
 <translation id="3166827708714933426">Scorciatoie di finestre e schede</translation>
@@ -449,6 +451,9 @@
 <translation id="4521489764227272523">I dati selezionati sono stati rimossi da Chrome e dai dispositivi sincronizzati.
 
 Il tuo Account Google potrebbe avere altre forme di cronologia di navigazione, ad esempio ricerche e attività, di altri servizi Google alla pagina <ph name="BEGIN_LINK" />myactivity.google.com<ph name="END_LINK" />.</translation>
+<translation id="4527374721149092498">Scopri gli argomenti dei siti web senza lasciare la pagina. La funzionalità Tocca per cercare consente di inviare una parola e il relativo contesto alla Ricerca Google; vengono restituiti risultati di ricerca, immagini, definizioni e altri dettagli.
+
+Tocca qualsiasi parola per creare una ricerca associata. Per modificare il termine di ricerca, premi a lungo per selezionare. Per perfezionare la ricerca, fai scorrere il riquadro per aprirlo, tocca l'icona di espansione per creare una nuova scheda e tocca la casella di ricerca.</translation>
 <translation id="4532845899244822526">Scegli cartella</translation>
 <translation id="4538018662093857852">Attiva la modalità Lite</translation>
 <translation id="4550003330909367850">Per visualizzare o copiare la password qui, imposta il blocco schermo sul dispositivo.</translation>
@@ -690,6 +695,9 @@ Per cambiare questa impostazione, <ph name="BEGIN_LINK" />reimposta la sincroniz
 <translation id="6232535412751077445">Se attivi l'opzione "Non tenere traccia", verrà inclusa una richiesta nel tuo traffico di navigazione. Gli effetti dipendono dall'eventuale risposta dei siti web alla richiesta e dall'interpretazione di quest'ultima.
 
 Ad esempio, alcuni siti web potrebbero rispondere alla richiesta mostrando annunci non basati su altri siti web visitati. Molti siti web continueranno tuttavia a raccogliere e a utilizzare i dati di navigazione, ad esempio per aumentare la sicurezza, fornire contenuti, annunci e consigli, nonché per generare statistiche sui rapporti.</translation>
+<translation id="6238003486329291387">Scopri gli argomenti dei siti web senza lasciare la pagina. La funzionalità Tocca per cercare consente di inviare una parola e il relativo contesto alla Ricerca Google; vengono restituiti risultati di ricerca, immagini, definizioni e altri dettagli.
+
+Premi a lungo qualsiasi parola per creare una ricerca associata. Per perfezionare la ricerca regola la selezione. Puoi anche far scorrere il riquadro per aprirlo, toccare l'icona di espansione per creare una nuova scheda e toccare la casella di ricerca.</translation>
 <translation id="624789221780392884">Aggiornamento pronto</translation>
 <translation id="6255999984061454636">Contenuti suggeriti</translation>
 <translation id="6270391203985052864">I siti possono chiedere di inviare notifiche</translation>

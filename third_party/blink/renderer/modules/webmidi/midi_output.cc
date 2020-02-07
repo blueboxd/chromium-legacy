@@ -307,19 +307,19 @@ void MIDIOutput::send(Vector<unsigned> unsigned_data,
 }
 
 void MIDIOutput::DidOpen(bool opened) {
-  if (!opened) {
+  if (!opened)
     pending_data_.clear();
-    return;
-  }
 
-  while (!pending_data_.empty()) {
-    auto& front = pending_data_.front();
+  HeapVector<std::pair<Member<DOMUint8Array>, base::TimeTicks>> queued_data;
+  queued_data.swap(pending_data_);
+  for (auto& data : queued_data) {
     midiAccess()->SendMIDIData(
-        port_index_, front.first->Data(),
-        base::checked_cast<wtf_size_t>(front.first->lengthAsSizeT()),
-        front.second);
-    pending_data_.TakeFirst();
+        port_index_, data.first->Data(),
+        base::checked_cast<wtf_size_t>(data.first->lengthAsSizeT()),
+        data.second);
   }
+  queued_data.clear();
+  DCHECK(pending_data_.IsEmpty());
 }
 
 void MIDIOutput::Trace(blink::Visitor* visitor) {

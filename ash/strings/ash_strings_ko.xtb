@@ -137,7 +137,6 @@
 <translation id="2718395828230677721">야간 조명</translation>
 <translation id="2727977024730340865">저출력 충전기에 연결되었습니다. 배터리 충전 상태가 불안정합니다.</translation>
 <translation id="2792498699870441125">Alt+검색 키</translation>
-<translation id="2803734122639935495">잠금 해제하려면 비밀번호를 입력하세요.</translation>
 <translation id="2819276065543622893">지금 로그아웃됩니다.</translation>
 <translation id="2825619548187458965">임시보관함</translation>
 <translation id="2844169650293029770">USB-C 기기(좌측 전면 포트)</translation>
@@ -202,6 +201,7 @@
 <translation id="3604801046548457007"><ph name="DESK_TITILE" /> 데스크가 생성되었습니다.</translation>
 <translation id="3606978283550408104">점자 디스플레이가 연결되었습니다.</translation>
 <translation id="3621202678540785336">입력</translation>
+<translation id="3621712662352432595">오디오 설정</translation>
 <translation id="3626281679859535460">밝기</translation>
 <translation id="3631369015426612114">다음 항목에 알림 허용:</translation>
 <translation id="3705722231355495246">-</translation>
@@ -544,6 +544,7 @@
 <translation id="8477270416194247200">취소하려면 Alt+검색 또는 Shift 키를 누르세요.</translation>
 <translation id="8513108775083588393">자동 회전</translation>
 <translation id="8517041960877371778"><ph name="DEVICE_TYPE" />이(가) 켜져 있는 동안에는 충전되지 않을 수 있습니다.</translation>
+<translation id="8563862697512465947">알림 설정</translation>
 <translation id="8627191004499078455"><ph name="DEVICE_NAME" />에 연결됨</translation>
 <translation id="8637598503828012618"><ph name="CONNECTION_STATUS" />, 신호 강도 <ph name="SIGNAL_STRENGTH" />, 관리자가 관리함</translation>
 <translation id="8639760480004882931"><ph name="PERCENTAGE" /> 남음</translation>

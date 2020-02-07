@@ -7,6 +7,7 @@
 #include <vector>
 
 #include "components/signin/public/identity_manager/accounts_in_cookie_jar_info.h"
+#include "components/signin/public/identity_manager/consent_level.h"
 #include "components/signin/public/identity_manager/identity_manager.h"
 #include "google_apis/gaia/gaia_auth_util.h"
 #include "google_apis/gaia/google_service_auth_error.h"
@@ -21,7 +22,8 @@ SyncAccountInfo::SyncAccountInfo(const CoreAccountInfo& account_info,
 
 SyncAccountInfo DetermineAccountToUse(
     signin::IdentityManager* identity_manager) {
-  return SyncAccountInfo(identity_manager->GetUnconsentedPrimaryAccountInfo(),
+  return SyncAccountInfo(identity_manager->GetPrimaryAccountInfo(
+                             signin::ConsentLevel::kNotRequired),
                          /*is_primary=*/identity_manager->HasPrimaryAccount());
 }
 

@@ -901,9 +901,6 @@ public class ChromeTabbedActivity extends ChromeActivity {
 
             super.onNewIntentWithNative(intent);
             if (isMainIntentFromLauncher(intent)) {
-                if (IntentHandler.getUrlFromIntent(intent) == null) {
-                    maybeLaunchNtpOrResetBottomSheetFromMainIntent(intent);
-                }
                 logMainIntentBehavior(intent);
             }
 
@@ -1024,62 +1021,6 @@ public class ChromeTabbedActivity extends ChromeActivity {
         return mInactivityTracker;
     }
 
-    /**
-     * Determines if the intent should trigger an NTP and launches it if applicable. If Chrome Home
-     * is enabled, we reset the bottom sheet state to half after some time being backgrounded.
-     *
-     * @param intent The intent to check whether an NTP should be triggered.
-     * @return Whether an NTP was triggered as a result of this intent.
-     */
-    private boolean maybeLaunchNtpOrResetBottomSheetFromMainIntent(Intent intent) {
-        assert isMainIntentFromLauncher(intent);
-
-        if (!IntentHandler.isIntentUserVisible()) return false;
-
-        if (!mInactivityTracker.inactivityThresholdPassed()) return false;
-
-        if (isInOverviewMode() && !isTablet()) {
-            mOverviewModeController.hideOverview(false);
-        }
-
-        if (!reuseOrCreateNewNtp()) return false;
-        RecordUserAction.record("MobileStartup.MainIntent.NTPCreatedDueToInactivity");
-        return true;
-    }
-
-    /**
-     * Creates or reuses an existing NTP and displays it to the user.
-     *
-     * @return Whether an NTP was reused/created. This returns false if the currently selected
-     * tab is an NTP, and no action is taken.
-     */
-    private boolean reuseOrCreateNewNtp() {
-        // In cases where the tab model is initialized, attempt to reuse an existing NTP if
-        // available before attempting to create a new one.
-        TabModel normalTabModel = getTabModelSelector().getModel(false);
-        Tab ntpToRefocus = null;
-        for (int i = 0; i < normalTabModel.getCount(); i++) {
-            Tab tab = normalTabModel.getTabAt(i);
-
-            if (NewTabPage.isNTPUrl(tab.getUrl()) && !tab.canGoBack() && !tab.canGoForward()) {
-                // If the currently selected tab is an NTP, then take no action.
-                if (getActivityTab().equals(tab)) return false;
-                ntpToRefocus = tab;
-                break;
-            }
-        }
-
-        if (ntpToRefocus != null) {
-            normalTabModel.moveTab(ntpToRefocus.getId(), normalTabModel.getCount());
-            normalTabModel.setIndex(
-                    TabModelUtils.getTabIndexById(normalTabModel, ntpToRefocus.getId()),
-                    TabSelectionType.FROM_USER);
-        } else {
-            getTabCreator(false).launchUrl(UrlConstants.NTP_URL, TabLaunchType.FROM_EXTERNAL_APP);
-        }
-        return true;
-    }
-
     @Override
     public void initializeState() {
         // This method goes through 3 steps:
@@ -1128,11 +1069,6 @@ public class ChromeTabbedActivity extends ChromeActivity {
                 }
 
                 if (isMainIntentFromLauncher(intent)) {
-                    if (IntentHandler.getUrlFromIntent(intent) == null) {
-                        assert !mIntentWithEffect
-                                : "ACTION_MAIN should not have triggered any prior action";
-                        mIntentWithEffect = maybeLaunchNtpOrResetBottomSheetFromMainIntent(intent);
-                    }
                     logMainIntentBehavior(intent);
                 }
             }

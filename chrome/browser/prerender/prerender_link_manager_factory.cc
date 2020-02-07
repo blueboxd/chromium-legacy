@@ -14,10 +14,10 @@
 namespace prerender {
 
 // static
-PrerenderLinkManager* PrerenderLinkManagerFactory::GetForProfile(
-    Profile* profile) {
+PrerenderLinkManager* PrerenderLinkManagerFactory::GetForBrowserContext(
+    content::BrowserContext* browser_context) {
   return static_cast<PrerenderLinkManager*>(
-      GetInstance()->GetServiceForBrowserContext(profile, true));
+      GetInstance()->GetServiceForBrowserContext(browser_context, true));
 }
 
 // static

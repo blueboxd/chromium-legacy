@@ -559,7 +559,7 @@ scoped_refptr<const NGLayoutResult> NGOutOfFlowLayoutPart::Layout(
   LogicalSize container_content_size_in_candidate_writing_mode =
       container_physical_content_size.ConvertToLogical(candidate_writing_mode);
   NGBoxStrut border_padding =
-      ComputeBorders(candidate_constraint_space, node) +
+      ComputeBorders(candidate_constraint_space, candidate_style) +
       ComputePadding(candidate_constraint_space, candidate_style);
 
   // The |block_estimate| is wrt. the candidate's writing mode.

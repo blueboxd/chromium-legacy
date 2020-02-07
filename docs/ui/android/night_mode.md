@@ -26,7 +26,7 @@ In [//src/ui/android/java/res/values/colors.xml](https://cs.chromium.org/chromiu
 <color name="new_bg_color">@color/new_bg_color_light</color>
 ```
 
-In [//src/ui/android/java/res_night/values-night/colors.xml](https://cs.chromium.org/chromium/src/ui/android/java/res_night/values-night/colors.xml), add
+In [//src/ui/android/java/res/values-night/colors.xml](https://cs.chromium.org/chromium/src/ui/android/java/res/values-night/colors.xml), add
 ```xml
 <color name="new_bg_color">@color/new_bg_color_dark</color>
 ```

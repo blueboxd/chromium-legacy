@@ -58,6 +58,13 @@ Polymer({
     activationUnavailable: Boolean,
 
     /**
+     * DeviceState associated with the type of |networks| listed, or undefined
+     * if none was provided.
+     * @private {!OncMojo.DeviceStateProperties|undefined} deviceState
+     */
+    deviceState: Object,
+
+    /**
      * Contains |networks| + |customItems|.
      * @private {!Array<!NetworkList.NetworkListItemType>}
      */

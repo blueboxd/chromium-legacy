@@ -10,6 +10,10 @@
 #include "chrome/browser/autocomplete/autocomplete_classifier_factory.h"
 #include "chrome/browser/bookmarks/bookmark_model_factory.h"
 #include "chrome/browser/browser_process.h"
+#include "chrome/browser/extensions/extension_action_test_util.h"
+#include "chrome/browser/extensions/extension_service.h"
+#include "chrome/browser/extensions/load_error_reporter.h"
+#include "chrome/browser/extensions/test_extension_system.h"
 #include "chrome/browser/search_engines/template_url_service_factory.h"
 #include "chrome/browser/signin/chrome_signin_client_factory.h"
 #include "chrome/browser/signin/chrome_signin_client_test_util.h"
@@ -25,6 +29,7 @@
 #include "components/signin/public/base/list_accounts_test_utils.h"
 #include "components/sync_preferences/pref_service_syncable.h"
 #include "content/public/test/browser_task_environment.h"
+#include "extensions/browser/extension_system.h"
 #include "ui/views/test/widget_test.h"
 
 CocoaProfileTest::CocoaProfileTest()
@@ -81,6 +86,15 @@ void CocoaProfileTest::SetUp() {
 
   // Configure the GaiaCookieManagerService to return no accounts.
   signin::SetListAccountsResponseHttpNotFound(&test_url_loader_factory_);
+
+  extensions::LoadErrorReporter::Init(false);
+  extensions::TestExtensionSystem* extension_system =
+      static_cast<extensions::TestExtensionSystem*>(
+          extensions::ExtensionSystem::Get(profile_));
+  extension_system->CreateExtensionService(
+      base::CommandLine::ForCurrentProcess(), base::FilePath(), false);
+  extensions::extension_action_test_util::CreateToolbarModelForProfile(
+      profile_);
 
   profile_->CreateBookmarkModel(true);
   bookmarks::test::WaitForBookmarkModelToLoad(

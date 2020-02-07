@@ -13,6 +13,8 @@
 #include "components/crash/core/common/crash_key.h"
 
 #if BUILDFLAG(ENABLE_CDM_HOST_VERIFICATION)
+#include "base/feature_list.h"
+#include "media/base/media_switches.h"
 #include "media/cdm/cdm_host_files.h"
 #endif  // BUILDFLAG(ENABLE_CDM_HOST_VERIFICATION)
 
@@ -180,7 +182,8 @@ bool CdmModule::Initialize(const base::FilePath& cdm_path) {
 #endif  // defined(OS_WIN)
 
 #if BUILDFLAG(ENABLE_CDM_HOST_VERIFICATION)
-  InitCdmHostVerification(library_.get(), cdm_path_, cdm_host_file_paths);
+  if (base::FeatureList::IsEnabled(media::kCdmHostVerification))
+    InitCdmHostVerification(library_.get(), cdm_path_, cdm_host_file_paths);
 #endif  // BUILDFLAG(ENABLE_CDM_HOST_VERIFICATION)
 
   ReportLoadResult(LoadResult::kLoadSuccess);

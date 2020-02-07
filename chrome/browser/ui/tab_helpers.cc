@@ -73,7 +73,6 @@
 #include "chrome/browser/ui/blocked_content/popup_opener_tab_helper.h"
 #include "chrome/browser/ui/find_bar/find_bar_state.h"
 #include "chrome/browser/ui/focus_tab_after_navigation_helper.h"
-#include "chrome/browser/ui/javascript_dialogs/javascript_dialog_tab_helper.h"
 #include "chrome/browser/ui/navigation_correction_tab_observer.h"
 #include "chrome/browser/ui/passwords/manage_passwords_ui_controller.h"
 #include "chrome/browser/ui/pdf/chrome_pdf_web_contents_helper_client.h"
@@ -97,6 +96,7 @@
 #include "components/download/content/public/download_navigation_observer.h"
 #include "components/history/content/browser/web_contents_top_sites_observer.h"
 #include "components/history/core/browser/top_sites.h"
+#include "components/javascript_dialogs/tab_modal_dialog_manager.h"
 #include "components/offline_pages/buildflags/buildflags.h"
 #include "components/password_manager/core/browser/password_manager.h"
 #include "components/performance_manager/embedder/performance_manager_registry.h"
@@ -116,14 +116,14 @@
 #include "chrome/browser/flags/android/chrome_feature_list.h"
 #include "chrome/browser/ui/android/context_menu_helper.h"
 #include "chrome/browser/ui/android/view_android_helper.h"
-#include "chrome/browser/ui/javascript_dialogs/javascript_dialog_tab_helper_delegate_android.h"
+#include "chrome/browser/ui/javascript_dialogs/javascript_tab_modal_dialog_manager_delegate_android.h"
 #else
 #include "chrome/browser/banners/app_banner_manager_desktop.h"
 #include "chrome/browser/safe_browsing/safe_browsing_tab_observer.h"
 #include "chrome/browser/tab_contents/form_interaction_tab_helper.h"
 #include "chrome/browser/ui/bookmarks/bookmark_tab_helper.h"
 #include "chrome/browser/ui/intent_picker_tab_helper.h"
-#include "chrome/browser/ui/javascript_dialogs/javascript_dialog_tab_helper_delegate_desktop.h"
+#include "chrome/browser/ui/javascript_dialogs/javascript_tab_modal_dialog_manager_delegate_desktop.h"
 #include "chrome/browser/ui/sad_tab_helper.h"
 #include "chrome/browser/ui/search/search_tab_helper.h"
 #include "chrome/browser/ui/sync/browser_synced_tab_delegate.h"
@@ -308,9 +308,10 @@ void TabHelpers::AttachTabHelpers(WebContents* web_contents) {
     banners::AppBannerManagerAndroid::CreateForWebContents(web_contents);
   }
   ContextMenuHelper::CreateForWebContents(web_contents);
-  JavaScriptDialogTabHelper::CreateForWebContents(
+  javascript_dialogs::TabModalDialogManager::CreateForWebContents(
       web_contents,
-      std::make_unique<JavaScriptDialogTabHelperDelegateAndroid>(web_contents));
+      std::make_unique<JavaScriptTabModalDialogManagerDelegateAndroid>(
+          web_contents));
   if (OomInterventionTabHelper::IsEnabled()) {
     OomInterventionTabHelper::CreateForWebContents(web_contents);
   }
@@ -328,9 +329,10 @@ void TabHelpers::AttachTabHelpers(WebContents* web_contents) {
   FormInteractionTabHelper::CreateForWebContents(web_contents);
   FramebustBlockTabHelper::CreateForWebContents(web_contents);
   IntentPickerTabHelper::CreateForWebContents(web_contents);
-  JavaScriptDialogTabHelper::CreateForWebContents(
+  javascript_dialogs::TabModalDialogManager::CreateForWebContents(
       web_contents,
-      std::make_unique<JavaScriptDialogTabHelperDelegateDesktop>(web_contents));
+      std::make_unique<JavaScriptTabModalDialogManagerDelegateDesktop>(
+          web_contents));
   ManagePasswordsUIController::CreateForWebContents(web_contents);
   pdf::PDFWebContentsHelper::CreateForWebContentsWithClient(
       web_contents, std::make_unique<ChromePDFWebContentsHelperClient>());

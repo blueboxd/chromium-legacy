@@ -675,6 +675,7 @@
 <translation id="3987940399970879459">Menys d'1 MB</translation>
 <translation id="3990250421422698716">Jog offset</translation>
 <translation id="40103911065039147">{URL_count,plural, =1{Hi ha 1 pàgina web a prop}other{Hi ha # pàgines web a prop}}</translation>
+<translation id="4014128326099193693">{COUNT,plural, =1{Document PDF que conté {COUNT} pàgina}other{Document PDF que conté {COUNT} pàgines}}</translation>
 <translation id="4030383055268325496">&amp;Desfés l'addició</translation>
 <translation id="4032320456957708163"><ph name="ENROLLMENT_DOMAIN" /> gestiona el teu navegador</translation>
 <translation id="4058922952496707368">Tecla "<ph name="SUBKEY" />": <ph name="ERROR" /></translation>
@@ -703,6 +704,7 @@
 <translation id="4142935452406587478">Safata 10</translation>
 <translation id="4148925816941278100">American Express</translation>
 <translation id="4151403195736952345">Utilitza el valor predeterminat global (detecta)</translation>
+<translation id="4152318981910038897">{COUNT,plural, =1{Pàgina 1}other{Pàgina {COUNT}}}</translation>
 <translation id="4159784952369912983">Porpra</translation>
 <translation id="4165986682804962316">Configuració del lloc web</translation>
 <translation id="4171400957073367226">La signatura de verificació és incorrecta</translation>
@@ -1379,6 +1381,7 @@
 <translation id="7201591969684833065">L'administrador pot veure el següent:</translation>
 <translation id="7202346780273620635">Letter-Extra</translation>
 <translation id="7210863904660874423"><ph name="HOST_NAME" /> no compleix la normativa de seguretat.</translation>
+<translation id="7210993021468939304">Els administradors poden veure l'activitat de Linux al contenidor i poden instal·lar-hi i executar-hi aplicacions de Linux</translation>
 <translation id="721197778055552897"><ph name="BEGIN_LINK" />Més informació<ph name="END_LINK" /> sobre aquest problema.</translation>
 <translation id="7219179957768738017">La connexió utilitza <ph name="SSL_VERSION" />.</translation>
 <translation id="7220786058474068424">S'està processant</translation>
@@ -1542,6 +1545,7 @@ Detalls addicionals:
 <translation id="7878562273885520351">La teva contrasenya pot estar en perill</translation>
 <translation id="7882421473871500483">Marró</translation>
 <translation id="7887683347370398519">Comproveu el CVC i torneu-ho a provar</translation>
+<translation id="7887885240995164102">Activa el mode de pantalla en pantalla</translation>
 <translation id="7888575728750733395">Intent de renderització d'impressió</translation>
 <translation id="7904208859782148177">C3 (sobre)</translation>
 <translation id="7932579305932748336">Recobriment</translation>

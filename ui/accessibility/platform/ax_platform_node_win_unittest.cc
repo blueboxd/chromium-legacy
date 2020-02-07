@@ -361,7 +361,7 @@ void AXPlatformNodeWinTest::CheckVariantHasName(const ScopedVariant& variant,
       V_DISPATCH(variant.ptr())->QueryInterface(IID_PPV_ARGS(&accessible)));
   ScopedBstr name;
   EXPECT_EQ(S_OK, accessible->get_accName(SELF, name.Receive()));
-  EXPECT_STREQ(expected_name, name);
+  EXPECT_STREQ(expected_name, name.Get());
 }
 
 void AXPlatformNodeWinTest::CheckIUnknownHasName(ComPtr<IUnknown> unknown,
@@ -371,7 +371,7 @@ void AXPlatformNodeWinTest::CheckIUnknownHasName(ComPtr<IUnknown> unknown,
 
   ScopedBstr name;
   EXPECT_EQ(S_OK, accessible->get_accName(SELF, name.Receive()));
-  EXPECT_STREQ(expected_name, name);
+  EXPECT_STREQ(expected_name, name.Get());
 }
 
 ComPtr<IAccessibleTableCell> AXPlatformNodeWinTest::GetCellInTable() {
@@ -470,7 +470,7 @@ TEST_F(AXPlatformNodeWinTest, TestIAccessibleDetachedObject) {
   ComPtr<IAccessible> root_obj(GetRootIAccessible());
   ScopedBstr name;
   EXPECT_EQ(S_OK, root_obj->get_accName(SELF, name.Receive()));
-  EXPECT_STREQ(L"Name", name);
+  EXPECT_STREQ(L"Name", name.Get());
 
   tree_ = std::make_unique<AXTree>();
   ScopedBstr name2;
@@ -526,7 +526,7 @@ TEST_F(AXPlatformNodeWinTest, TestIAccessibleName) {
   ComPtr<IAccessible> root_obj(GetRootIAccessible());
   ScopedBstr name;
   EXPECT_EQ(S_OK, root_obj->get_accName(SELF, name.Receive()));
-  EXPECT_STREQ(L"Name", name);
+  EXPECT_STREQ(L"Name", name.Get());
 
   EXPECT_EQ(E_INVALIDARG, root_obj->get_accName(SELF, nullptr));
   ScopedVariant bad_id(999);
@@ -544,7 +544,7 @@ TEST_F(AXPlatformNodeWinTest, TestIAccessibleDescription) {
   ComPtr<IAccessible> root_obj(GetRootIAccessible());
   ScopedBstr description;
   EXPECT_EQ(S_OK, root_obj->get_accDescription(SELF, description.Receive()));
-  EXPECT_STREQ(L"Description", description);
+  EXPECT_STREQ(L"Description", description.Get());
 
   EXPECT_EQ(E_INVALIDARG, root_obj->get_accDescription(SELF, nullptr));
   ScopedVariant bad_id(999);
@@ -561,7 +561,7 @@ TEST_F(AXPlatformNodeWinTest, TestIAccessibleValue) {
   ComPtr<IAccessible> root_obj(GetRootIAccessible());
   ScopedBstr value;
   EXPECT_EQ(S_OK, root_obj->get_accValue(SELF, value.Receive()));
-  EXPECT_STREQ(L"Value", value);
+  EXPECT_STREQ(L"Value", value.Get());
 
   EXPECT_EQ(E_INVALIDARG, root_obj->get_accValue(SELF, nullptr));
   ScopedVariant bad_id(999);
@@ -579,7 +579,7 @@ TEST_F(AXPlatformNodeWinTest, TestIAccessibleShortcut) {
   ComPtr<IAccessible> root_obj(GetRootIAccessible());
   ScopedBstr shortcut;
   EXPECT_EQ(S_OK, root_obj->get_accKeyboardShortcut(SELF, shortcut.Receive()));
-  EXPECT_STREQ(L"Shortcut", shortcut);
+  EXPECT_STREQ(L"Shortcut", shortcut.Get());
 
   EXPECT_EQ(E_INVALIDARG, root_obj->get_accKeyboardShortcut(SELF, nullptr));
   ScopedVariant bad_id(999);
@@ -705,7 +705,7 @@ TEST_F(AXPlatformNodeWinTest,
             ->QueryInterface(IID_PPV_ARGS(accessible.GetAddressOf())));
     ScopedBstr name;
     EXPECT_EQ(S_OK, accessible->get_accName(SELF, name.Receive()));
-    EXPECT_STREQ(L"Name1", name);
+    EXPECT_STREQ(L"Name1", name.Get());
   }
 
   // And the second selected element.
@@ -720,7 +720,7 @@ TEST_F(AXPlatformNodeWinTest,
             ->QueryInterface(IID_PPV_ARGS(accessible.GetAddressOf())));
     ScopedBstr name;
     EXPECT_EQ(S_OK, accessible->get_accName(SELF, name.Receive()));
-    EXPECT_STREQ(L"Name2", name);
+    EXPECT_STREQ(L"Name2", name.Get());
   }
 
   // There shouldn't be any more selected.
@@ -865,7 +865,7 @@ TEST_F(AXPlatformNodeWinTest, TestIAccessibleSelectionTableCellOneSelected) {
 
   ScopedBstr name;
   EXPECT_EQ(S_OK, cell->get_accName(SELF, name.Receive()));
-  EXPECT_STREQ(L"1", name);
+  EXPECT_STREQ(L"1", name.Get());
 }
 
 TEST_F(AXPlatformNodeWinTest,
@@ -912,7 +912,7 @@ TEST_F(AXPlatformNodeWinTest,
             ->QueryInterface(IID_PPV_ARGS(accessible.GetAddressOf())));
     ScopedBstr name;
     EXPECT_EQ(S_OK, accessible->get_accName(SELF, name.Receive()));
-    EXPECT_STREQ(L"3", name);
+    EXPECT_STREQ(L"3", name.Get());
   }
 
   // And the second selected cell.
@@ -927,7 +927,7 @@ TEST_F(AXPlatformNodeWinTest,
             ->QueryInterface(IID_PPV_ARGS(accessible.GetAddressOf())));
     ScopedBstr name;
     EXPECT_EQ(S_OK, accessible->get_accName(SELF, name.Receive()));
-    EXPECT_STREQ(L"4", name);
+    EXPECT_STREQ(L"4", name.Get());
   }
 
   // There shouldn't be any more selected.
@@ -1513,13 +1513,13 @@ TEST_F(AXPlatformNodeWinTest, TestIAccessibleTableGetColumnDescription) {
   {
     ScopedBstr name;
     EXPECT_EQ(S_OK, result->get_columnDescription(1, name.Receive()));
-    EXPECT_STREQ(L"column header 1", name);
+    EXPECT_STREQ(L"column header 1", name.Get());
   }
 
   {
     ScopedBstr name;
     EXPECT_EQ(S_OK, result->get_columnDescription(2, name.Receive()));
-    EXPECT_STREQ(L"column header 2", name);
+    EXPECT_STREQ(L"column header 2", name.Get());
   }
 }
 
@@ -1604,13 +1604,13 @@ TEST_F(AXPlatformNodeWinTest, TestIAccessibleTableGetRowDescription) {
   {
     ScopedBstr name;
     EXPECT_EQ(S_OK, result->get_rowDescription(1, name.Receive()));
-    EXPECT_STREQ(L"row header 1", name);
+    EXPECT_STREQ(L"row header 1", name.Get());
   }
 
   {
     ScopedBstr name;
     EXPECT_EQ(S_OK, result->get_rowDescription(2, name.Receive()));
-    EXPECT_STREQ(L"row header 2", name);
+    EXPECT_STREQ(L"row header 2", name.Get());
   }
 }
 
@@ -1860,7 +1860,7 @@ TEST_F(AXPlatformNodeWinTest, TestIAccessible2GetNRelations) {
 
   EXPECT_HRESULT_SUCCEEDED(
       describedby_relation->get_relationType(relation_type.Receive()));
-  EXPECT_EQ(L"describedBy", base::string16(relation_type));
+  EXPECT_EQ(L"describedBy", base::string16(relation_type.Get()));
 
   relation_type.Reset();
 
@@ -1885,7 +1885,7 @@ TEST_F(AXPlatformNodeWinTest, TestIAccessible2GetNRelations) {
       ax_child1->get_relation(0, description_for_relation.GetAddressOf()));
   EXPECT_HRESULT_SUCCEEDED(
       description_for_relation->get_relationType(relation_type.Receive()));
-  EXPECT_EQ(L"descriptionFor", base::string16(relation_type));
+  EXPECT_EQ(L"descriptionFor", base::string16(relation_type.Get()));
   relation_type.Reset();
 
   EXPECT_HRESULT_SUCCEEDED(description_for_relation->get_nTargets(&n_targets));
@@ -1903,7 +1903,7 @@ TEST_F(AXPlatformNodeWinTest, TestIAccessible2GetNRelations) {
       ax_child2->get_relation(0, description_for_relation.GetAddressOf()));
   EXPECT_HRESULT_SUCCEEDED(
       description_for_relation->get_relationType(relation_type.Receive()));
-  EXPECT_EQ(L"descriptionFor", base::string16(relation_type));
+  EXPECT_EQ(L"descriptionFor", base::string16(relation_type.Get()));
   relation_type.Reset();
 
   EXPECT_HRESULT_SUCCEEDED(description_for_relation->get_nTargets(&n_targets));
@@ -1972,7 +1972,7 @@ TEST_F(AXPlatformNodeWinTest, DISABLED_TestRelationTargetsOfType) {
     IUnknown** targets;
     LONG n_targets;
     EXPECT_EQ(S_OK, root_iaccessible2->get_relationTargetsOfType(
-                        type, 0, &targets, &n_targets));
+                        type.Get(), 0, &targets, &n_targets));
     ASSERT_EQ(1, n_targets);
     EXPECT_EQ(ax_child1.Get(), targets[0]);
     CoTaskMemFree(targets);
@@ -1982,8 +1982,8 @@ TEST_F(AXPlatformNodeWinTest, DISABLED_TestRelationTargetsOfType) {
     ScopedBstr type(IA2_RELATION_LABELLED_BY);
     IUnknown** targets;
     LONG n_targets;
-    EXPECT_EQ(S_OK, ax_child2->get_relationTargetsOfType(type, 0, &targets,
-                                                         &n_targets));
+    EXPECT_EQ(S_OK, ax_child2->get_relationTargetsOfType(type.Get(), 0,
+                                                         &targets, &n_targets));
     ASSERT_EQ(2, n_targets);
     EXPECT_EQ(root_iaccessible2.Get(), targets[0]);
     EXPECT_EQ(ax_child3.Get(), targets[1]);
@@ -1994,8 +1994,8 @@ TEST_F(AXPlatformNodeWinTest, DISABLED_TestRelationTargetsOfType) {
     ScopedBstr type(L"detailsFor");
     IUnknown** targets;
     LONG n_targets;
-    EXPECT_EQ(S_OK, ax_child1->get_relationTargetsOfType(type, 0, &targets,
-                                                         &n_targets));
+    EXPECT_EQ(S_OK, ax_child1->get_relationTargetsOfType(type.Get(), 0,
+                                                         &targets, &n_targets));
     ASSERT_EQ(2, n_targets);
     EXPECT_EQ(root_iaccessible2.Get(), targets[0]);
     EXPECT_EQ(ax_child3.Get(), targets[1]);
@@ -2670,7 +2670,7 @@ TEST_F(AXPlatformNodeWinTest, TestIAccessible2GetLocalizedExtendedRole) {
   ComPtr<IAccessible2> iaccessible2 = ToIAccessible2(root_obj);
   ScopedBstr role;
   EXPECT_EQ(S_OK, iaccessible2->get_localizedExtendedRole(role.Receive()));
-  EXPECT_STREQ(L"extended role", role);
+  EXPECT_STREQ(L"extended role", role.Get());
 }
 
 TEST_F(AXPlatformNodeWinTest, TestUnlabeledImageRoleDescription) {
@@ -2705,7 +2705,7 @@ TEST_F(AXPlatformNodeWinTest, TestUnlabeledImageRoleDescription) {
     ScopedBstr role_description;
     ASSERT_EQ(S_OK,
               ia2_child->get_localizedExtendedRole(role_description.Receive()));
-    EXPECT_STREQ(L"Unlabeled image", role_description);
+    EXPECT_STREQ(L"Unlabeled image", role_description.Get());
   }
 }
 
@@ -2740,7 +2740,7 @@ TEST_F(AXPlatformNodeWinTest, TestUnlabeledImageAttributes) {
 
     ScopedBstr attributes_bstr;
     ASSERT_EQ(S_OK, ia2_child->get_attributes(attributes_bstr.Receive()));
-    base::string16 attributes(attributes_bstr);
+    base::string16 attributes(attributes_bstr.Get());
 
     std::vector<base::string16> attribute_vector = base::SplitString(
         attributes, L";", base::KEEP_WHITESPACE, base::SPLIT_WANT_ALL);
@@ -2886,7 +2886,7 @@ TEST_F(AXPlatformNodeWinTest, TestAnnotatedImageName) {
 
     ScopedBstr name;
     EXPECT_EQ(S_OK, child->get_accName(SELF, name.Receive()));
-    EXPECT_STREQ(expected_names[child_index], name);
+    EXPECT_STREQ(expected_names[child_index], name.Get());
   }
 }
 
@@ -3667,16 +3667,16 @@ TEST_F(AXPlatformNodeWinTest, TestIA2GetAttribute) {
 
   ScopedBstr roledescription(L"roledescription");
   ScopedVariant result;
-  ASSERT_EQ(S_OK,
-            iaccessible2->get_attribute(roledescription, result.Receive()));
+  ASSERT_EQ(S_OK, iaccessible2->get_attribute(roledescription.Get(),
+                                              result.Receive()));
   ScopedBstr expected_bstr(L"Potato");
   ASSERT_EQ(VT_BSTR, result.type());
-  EXPECT_STREQ(expected_bstr, result.ptr()->bstrVal);
+  EXPECT_STREQ(expected_bstr.Get(), result.ptr()->bstrVal);
 
   ScopedBstr smoothness(L"smoothness");
   ScopedVariant result2;
   EXPECT_EQ(S_FALSE,
-            iaccessible2->get_attribute(smoothness, result2.Receive()));
+            iaccessible2->get_attribute(smoothness.Get(), result2.Receive()));
 
   EXPECT_EQ(E_INVALIDARG, iaccessible2->get_attribute(nullptr, nullptr));
 }
@@ -6167,19 +6167,19 @@ TEST_F(AXPlatformNodeWinTest, TestIValueProvider_GetValue) {
   EXPECT_HRESULT_SUCCEEDED(
       QueryInterfaceFromNode<IValueProvider>(GetRootNode()->children()[0])
           ->get_Value(bstr_value.Receive()));
-  EXPECT_STREQ(L"3", bstr_value);
+  EXPECT_STREQ(L"3", bstr_value.Get());
   bstr_value.Reset();
 
   EXPECT_HRESULT_SUCCEEDED(
       QueryInterfaceFromNode<IValueProvider>(GetRootNode()->children()[1])
           ->get_Value(bstr_value.Receive()));
-  EXPECT_STREQ(L"test", bstr_value);
+  EXPECT_STREQ(L"test", bstr_value.Get());
   bstr_value.Reset();
 
   EXPECT_HRESULT_SUCCEEDED(
       QueryInterfaceFromNode<IValueProvider>(GetRootNode()->children()[2])
           ->get_Value(bstr_value.Receive()));
-  EXPECT_STREQ(L"test", bstr_value);
+  EXPECT_STREQ(L"test", bstr_value.Get());
   bstr_value.Reset();
 }
 
@@ -6226,17 +6226,17 @@ TEST_F(AXPlatformNodeWinTest, TestIValueProvider_SetValue) {
 
   EXPECT_UIA_ELEMENTNOTENABLED(provider1->SetValue(L"2"));
   EXPECT_HRESULT_SUCCEEDED(provider1->get_Value(bstr_value.Receive()));
-  EXPECT_STREQ(L"3", bstr_value);
+  EXPECT_STREQ(L"3", bstr_value.Get());
   bstr_value.Reset();
 
   EXPECT_HRESULT_SUCCEEDED(provider2->SetValue(L"changed"));
   EXPECT_HRESULT_SUCCEEDED(provider2->get_Value(bstr_value.Receive()));
-  EXPECT_STREQ(L"changed", bstr_value);
+  EXPECT_STREQ(L"changed", bstr_value.Get());
   bstr_value.Reset();
 
   EXPECT_UIA_ELEMENTNOTENABLED(provider3->SetValue(L"changed"));
   EXPECT_HRESULT_SUCCEEDED(provider3->get_Value(bstr_value.Receive()));
-  EXPECT_STREQ(L"test", bstr_value);
+  EXPECT_STREQ(L"test", bstr_value.Get());
   bstr_value.Reset();
 }
 

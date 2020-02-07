@@ -11,22 +11,27 @@
   display: inline-grid;
   border: 1px solid black;
   grid-template-columns: repeat(auto-fit, 100px);
+  height: 40px;
 }
 .one {
   contain-intrinsic-width: 100px;
+  contain: size;
   min-width: 200px;
 }
 .two {
   contain-intrinsic-width: 200px;
+  contain: size;
   min-width: 100px;
 }
 .three {
   contain-intrinsic-width: 100px;
+  contain: size;
   min-width: 200px;
   max-width: 150px;
 }
 .four {
   contain-intrinsic-width: 200px;
+  contain: size;
   min-width: 100px;
   max-width: 150px;
 }

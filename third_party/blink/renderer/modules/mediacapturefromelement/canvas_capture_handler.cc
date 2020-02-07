@@ -10,7 +10,7 @@
 #include "base/bind_helpers.h"
 #include "base/macros.h"
 #include "base/rand_util.h"
-#include "components/viz/common/gl_helper.h"
+#include "gpu/command_buffer/client/gl_helper.h"
 #include "media/base/limits.h"
 #include "third_party/blink/public/platform/web_graphics_context_3d_provider.h"
 #include "third_party/blink/public/platform/web_media_stream_source.h"
@@ -312,12 +312,23 @@ void CanvasCaptureHandler::ReadARGBPixelsAsync(
   GrGLTextureInfo texture_info;
   const bool result = backend_texture.getGLTextureInfo(&texture_info);
   DCHECK(result);
+
+  static_assert(kN32_SkColorType == kRGBA_8888_SkColorType ||
+                    kN32_SkColorType == kBGRA_8888_SkColorType,
+                "CanvasCaptureHandler::ReadARGBPixelsAsync supports only "
+                "kRGBA_8888_SkColorType and kBGRA_8888_SkColorType.");
+  GLenum format;
+  if (kN32_SkColorType == kRGBA_8888_SkColorType)
+    format = GL_RGBA;
+  else
+    format = GL_BGRA_EXT;
+
   DCHECK(context_provider->GetGLHelper());
 
   IncrementOngoingAsyncPixelReadouts();
   context_provider->GetGLHelper()->ReadbackTextureAsync(
       texture_info.fID, texture_info.fTarget, image_size,
-      temp_argb_frame->visible_data(VideoFrame::kARGBPlane), kN32_SkColorType,
+      temp_argb_frame->visible_data(VideoFrame::kARGBPlane), format,
       WTF::Bind(&CanvasCaptureHandler::OnARGBPixelsReadAsync,
                 weak_ptr_factory_.GetWeakPtr(), image, temp_argb_frame,
                 timestamp, surface_origin != kTopLeft_GrSurfaceOrigin));
@@ -371,7 +382,7 @@ void CanvasCaptureHandler::ReadYUVPixelsAsync(
   }
 
   DCHECK(context_provider->ContextProvider()->GetGLHelper());
-  viz::ReadbackYUVInterface* const yuv_reader =
+  gpu::ReadbackYUVInterface* const yuv_reader =
       context_provider->ContextProvider()
           ->GetGLHelper()
           ->GetReadbackPipelineYUV(surface_origin != kTopLeft_GrSurfaceOrigin);

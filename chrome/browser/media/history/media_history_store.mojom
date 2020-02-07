@@ -4,10 +4,26 @@
 
 module media_history.mojom;
 
+import "mojo/public/mojom/base/time.mojom";
+import "url/mojom/origin.mojom";
+
 struct MediaHistoryStats {
   // The row count of the different tables. The key is the table name and the
   // value is the row count.
   map<string, int32> table_row_counts;
+};
+
+struct MediaHistoryOriginRow {
+  url.mojom.Origin origin;
+
+  // The total audio+video watchtime for the origin. The cached value is cached
+  // on the origin row for speed and the actual is calculated by adding up
+  // the playback rows.
+  mojo_base.mojom.TimeDelta cached_audio_video_watchtime;
+  mojo_base.mojom.TimeDelta actual_audio_video_watchtime;
+
+  // The last updated time of the row in JS time.
+  double last_updated_time;
 };
 
 // MediaHistoryStore allows the Media History WebUI to access data from the
@@ -15,4 +31,7 @@ struct MediaHistoryStats {
 interface MediaHistoryStore {
   // Gets stats about the Media History database.
   GetMediaHistoryStats() => (MediaHistoryStats stats);
+
+  // Returns the rows from the origin table.
+  GetMediaHistoryOriginRows() => (array<MediaHistoryOriginRow> rows);
 };

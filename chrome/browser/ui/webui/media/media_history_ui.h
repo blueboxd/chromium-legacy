@@ -30,6 +30,8 @@ class MediaHistoryUI : public ui::MojoWebUIController,
 
   // media::mojom::MediaHistoryStore:
   void GetMediaHistoryStats(GetMediaHistoryStatsCallback callback) override;
+  void GetMediaHistoryOriginRows(
+      GetMediaHistoryOriginRowsCallback callback) override;
 
  private:
   media_history::MediaHistoryStore* GetMediaHistoryStore();

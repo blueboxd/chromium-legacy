@@ -1174,7 +1174,9 @@ void DownloadItemView::ShowWarningDialog() {
       model_->GetDangerType() !=
           download::DOWNLOAD_DANGER_TYPE_BLOCKED_TOO_LARGE &&
       model_->GetDangerType() !=
-          download::DOWNLOAD_DANGER_TYPE_SENSITIVE_CONTENT_BLOCK) {
+          download::DOWNLOAD_DANGER_TYPE_SENSITIVE_CONTENT_BLOCK &&
+      model_->GetDangerType() !=
+          download::DOWNLOAD_DANGER_TYPE_PROMPT_FOR_SCANNING) {
     auto discard_button = views::MdTextButton::Create(
         this, l10n_util::GetStringUTF16(IDS_DISCARD_DOWNLOAD));
     discard_button_ = AddChildView(std::move(discard_button));

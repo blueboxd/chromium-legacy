@@ -2642,7 +2642,9 @@ interface WorkerNavigator
     getter storage
     getter usb
     getter userAgent
+    method clearAppBadge
     method constructor
+    method setAppBadge
 interface WritableStream
     attribute @@toStringTag
     getter locked

@@ -55,7 +55,7 @@ class AutofillPopupBaseView : public views::WidgetDelegateView,
 
   // Ensure the child views are not rendered beyond the bubble border
   // boundaries. Should be overridden together with CreateBorder.
-  void SetClipPath();
+  void UpdateClipPath();
 
   // Update size of popup and paint (virtual for testing).
   virtual void DoUpdateBoundsAndRedrawPopup();

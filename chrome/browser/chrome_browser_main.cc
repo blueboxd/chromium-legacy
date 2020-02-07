@@ -1532,14 +1532,6 @@ int ChromeBrowserMainParts::PreMainMessageLoopRunImpl() {
   language_usage_metrics::LanguageUsageMetrics::RecordApplicationLanguage(
       browser_process_->GetApplicationLocale());
 
-// StartupTimeBomb is disabled on Android, see https://crbug.com/366699.
-#if !defined(OS_ANDROID)
-  // Start watching for hangs during startup. We disarm this hang detector when
-  // ThreadWatcher takes over or when browser is shutdown or when
-  // startup_watcher_ is deleted.
-  startup_watcher_->Arm(base::TimeDelta::FromSeconds(600));
-#endif  // !defined(OS_ANDROID)
-
 // On mobile, need for clean shutdown arises only when the application comes
 // to foreground (i.e. MetricsService::OnAppEnterForeground is called).
 // http://crbug.com/179143

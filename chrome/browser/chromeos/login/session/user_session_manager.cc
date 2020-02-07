@@ -148,6 +148,7 @@
 #include "components/quirks/quirks_manager.h"
 #include "components/session_manager/core/session_manager.h"
 #include "components/signin/public/identity_manager/accounts_mutator.h"
+#include "components/signin/public/identity_manager/consent_level.h"
 #include "components/signin/public/identity_manager/identity_manager.h"
 #include "components/signin/public/identity_manager/primary_account_mutator.h"
 #include "components/user_manager/known_user.h"
@@ -963,7 +964,8 @@ void UserSessionManager::OnSessionRestoreStateChanged(
         // token.
         DCHECK(
             !identity_manager->HasAccountWithRefreshTokenInPersistentErrorState(
-                identity_manager->GetUnconsentedPrimaryAccountInfo()
+                identity_manager
+                    ->GetPrimaryAccountInfo(signin::ConsentLevel::kNotRequired)
                     .account_id));
       }
       user_status = user_manager::User::OAUTH2_TOKEN_STATUS_VALID;
@@ -1428,7 +1430,9 @@ void UserSessionManager::InitProfilePreferences(
           }
         }
         CHECK(identity_manager->HasUnconsentedPrimaryAccount());
-        CHECK_EQ(identity_manager->GetUnconsentedPrimaryAccountInfo().gaia,
+        CHECK_EQ(identity_manager
+                     ->GetPrimaryAccountInfo(signin::ConsentLevel::kNotRequired)
+                     .gaia,
                  gaia_id);
       } else {
         // Set a primary account here because the profile might have been

@@ -445,12 +445,6 @@ body[type='open-multi-file'].check-select .dialog-header {
   flex: auto;
 }
 
-/* TODO(adanilo) Move this to common.css */
-cr-button {
-  --active-bg: none;  /* prevent dark-mode activation color */
-  box-shadow: none;
-}
-
 .dialog-header cr-button,
 .dialog-header button {
   --text-color: white;

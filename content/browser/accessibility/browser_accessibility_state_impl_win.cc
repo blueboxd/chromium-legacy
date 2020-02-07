@@ -25,6 +25,7 @@ namespace {
 
 static bool g_jaws = false;
 static bool g_nvda = false;
+static bool g_supernova = false;
 static bool g_zoomtext = false;
 
 // Enables accessibility based on three possible clues that indicate
@@ -163,6 +164,8 @@ void BrowserAccessibilityStateImpl::
       g_nvda = true;
     if (base::LowerCaseEqualsASCII(module_name, "stsaw32.dll"))
       satogo = true;
+    if (base::LowerCaseEqualsASCII(module_name, "dolwinhk.dll"))
+      g_supernova = true;
     if (base::LowerCaseEqualsASCII(module_name, "zslhook.dll") ||
         base::LowerCaseEqualsASCII(module_name, "zslhook64.dll"))
       g_zoomtext = true;
@@ -171,6 +174,7 @@ void BrowserAccessibilityStateImpl::
   UMA_HISTOGRAM_BOOLEAN("Accessibility.WinJAWS", g_jaws);
   UMA_HISTOGRAM_BOOLEAN("Accessibility.WinNVDA", g_nvda);
   UMA_HISTOGRAM_BOOLEAN("Accessibility.WinSAToGo", satogo);
+  UMA_HISTOGRAM_BOOLEAN("Accessibility.WinSupernova", g_supernova);
   UMA_HISTOGRAM_BOOLEAN("Accessibility.WinZoomText", g_zoomtext);
 }
 
@@ -180,6 +184,7 @@ void BrowserAccessibilityStateImpl::UpdateUniqueUserHistograms() {
                         mode.has_mode(ui::AXMode::kScreenReader));
   UMA_HISTOGRAM_BOOLEAN("Accessibility.WinJAWS.EveryReport", g_jaws);
   UMA_HISTOGRAM_BOOLEAN("Accessibility.WinNVDA.EveryReport", g_nvda);
+  UMA_HISTOGRAM_BOOLEAN("Accessibility.WinSupernova.EveryReport", g_supernova);
   UMA_HISTOGRAM_BOOLEAN("Accessibility.WinZoomText.EveryReport", g_zoomtext);
 }
 

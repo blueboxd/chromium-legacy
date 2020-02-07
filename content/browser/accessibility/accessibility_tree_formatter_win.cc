@@ -390,7 +390,8 @@ void AccessibilityTreeFormatterWin::RecursiveBuildAccessibilityTree(
         }
         base::win::ScopedBstr temp_bstr;
         if (S_OK == node->get_accName(child_variant, temp_bstr.Receive())) {
-          base::string16 name = base::string16(temp_bstr, temp_bstr.Length());
+          base::string16 name =
+              base::string16(temp_bstr.Get(), temp_bstr.Length());
           child_dict->SetString("name", name);
         }
       }
@@ -490,7 +491,7 @@ void AccessibilityTreeFormatterWin::AddMSAAProperties(
 
   // If S_FALSE it means there is no name
   if (S_OK == node->get_accName(variant_self, temp_bstr.Receive())) {
-    base::string16 name = base::string16(temp_bstr, temp_bstr.Length());
+    base::string16 name = base::string16(temp_bstr.Get(), temp_bstr.Length());
     dict->SetString("name", name);
   }
   temp_bstr.Reset();
@@ -525,7 +526,8 @@ void AccessibilityTreeFormatterWin::AddMSAAProperties(
   }
 
   if (SUCCEEDED(node->get_accValue(variant_self, temp_bstr.Receive())))
-    dict->SetString("value", base::string16(temp_bstr, temp_bstr.Length()));
+    dict->SetString("value",
+                    base::string16(temp_bstr.Get(), temp_bstr.Length()));
   temp_bstr.Reset();
 
   int32_t ia_state = 0;
@@ -542,7 +544,7 @@ void AccessibilityTreeFormatterWin::AddMSAAProperties(
 
   if (SUCCEEDED(node->get_accDescription(variant_self, temp_bstr.Receive()))) {
     dict->SetString("description",
-                    base::string16(temp_bstr, temp_bstr.Length()));
+                    base::string16(temp_bstr.Get(), temp_bstr.Length()));
   }
   temp_bstr.Reset();
 
@@ -550,19 +552,20 @@ void AccessibilityTreeFormatterWin::AddMSAAProperties(
   if (SUCCEEDED(
           node->get_accDefaultAction(variant_self, temp_bstr.Receive()))) {
     dict->SetString("default_action",
-                    base::string16(temp_bstr, temp_bstr.Length()));
+                    base::string16(temp_bstr.Get(), temp_bstr.Length()));
   }
   temp_bstr.Reset();
 
   if (SUCCEEDED(
           node->get_accKeyboardShortcut(variant_self, temp_bstr.Receive()))) {
     dict->SetString("keyboard_shortcut",
-                    base::string16(temp_bstr, temp_bstr.Length()));
+                    base::string16(temp_bstr.Get(), temp_bstr.Length()));
   }
   temp_bstr.Reset();
 
   if (SUCCEEDED(node->get_accHelp(variant_self, temp_bstr.Receive())))
-    dict->SetString("help", base::string16(temp_bstr, temp_bstr.Length()));
+    dict->SetString("help",
+                    base::string16(temp_bstr.Get(), temp_bstr.Length()));
 
   temp_bstr.Reset();
 
@@ -592,7 +595,7 @@ void AccessibilityTreeFormatterWin::AddSimpleDOMNodeProperties(
 
   if (SUCCEEDED(simple_dom_node->get_innerHTML(temp_bstr.Receive()))) {
     dict->SetString("inner_html",
-                    base::string16(temp_bstr, temp_bstr.Length()));
+                    base::string16(temp_bstr.Get(), temp_bstr.Length()));
   }
   temp_bstr.Reset();
 }
@@ -629,8 +632,8 @@ bool AccessibilityTreeFormatterWin::AddIA2Properties(
     // get_attributes() returns a semicolon delimited string. Turn it into a
     // ListValue
     std::vector<base::string16> ia2_attributes = base::SplitString(
-        base::string16(temp_bstr, temp_bstr.Length()), base::string16(1, ';'),
-        base::KEEP_WHITESPACE, base::SPLIT_WANT_ALL);
+        base::string16(temp_bstr.Get(), temp_bstr.Length()),
+        base::string16(1, ';'), base::KEEP_WHITESPACE, base::SPLIT_WANT_ALL);
 
     std::unique_ptr<base::ListValue> attributes(new base::ListValue());
     attributes->AppendStrings(ia2_attributes);
@@ -658,7 +661,7 @@ bool AccessibilityTreeFormatterWin::AddIA2Properties(
 
   if (SUCCEEDED(ia2->get_localizedExtendedRole(temp_bstr.Receive()))) {
     dict->SetString("localized_extended_role",
-                    base::string16(temp_bstr, temp_bstr.Length()));
+                    base::string16(temp_bstr.Get(), temp_bstr.Length()));
   }
   temp_bstr.Reset();
 
@@ -678,7 +681,7 @@ void AccessibilityTreeFormatterWin::AddIA2ActionProperties(
   if (SUCCEEDED(
           ia2action->get_name(0 /* action_index */, temp_bstr.Receive()))) {
     dict->SetString("action_name",
-                    base::string16(temp_bstr, temp_bstr.Length()));
+                    base::string16(temp_bstr.Get(), temp_bstr.Length()));
   }
 }
 
@@ -696,7 +699,7 @@ void AccessibilityTreeFormatterWin::AddIA2HypertextProperties(
   if (FAILED(hr))
     return;
 
-  base::string16 ia2_hypertext(text_bstr, text_bstr.Length());
+  base::string16 ia2_hypertext(text_bstr.Get(), text_bstr.Length());
   // IA2 Spec calls embedded objects hyperlinks. We stick to embeds for clarity.
   LONG number_of_embeds;
   hr = ia2hyper->get_nHyperlinks(&number_of_embeds);
@@ -781,7 +784,7 @@ static base::string16 ProcessAccessiblesArray(IUnknown** accessibles,
     if (SUCCEEDED(unknown.CopyTo(accessible.GetAddressOf()))) {
       base::win::ScopedBstr temp_bstr;
       if (S_OK == accessible->get_accName(variant_self, temp_bstr.Receive()))
-        related_accessibles_string += temp_bstr;
+        related_accessibles_string += temp_bstr.Get();
       else
         related_accessibles_string += L"no name";
     }
@@ -869,14 +872,14 @@ void AccessibilityTreeFormatterWin::AddIA2TextProperties(
     if (FAILED(hr) || start_offset < current_offset)
       break;
     // DCHECK(start_offset == current_offset);  // Always at text range start.
-    if (hr == S_OK && temp_bstr && wcslen(temp_bstr)) {
+    if (hr == S_OK && temp_bstr.Get() && wcslen(temp_bstr.Get())) {
       // Append offset:<number>.
       base::string16 offset_str =
           base::ASCIIToUTF16("offset:") + base::NumberToString16(start_offset);
       text_attributes->AppendString(offset_str);
       // Append name:value pairs.
       std::vector<base::string16> name_val_pairs =
-          SplitString(base::string16(temp_bstr), base::ASCIIToUTF16(";"),
+          SplitString(base::string16(temp_bstr.Get()), base::ASCIIToUTF16(";"),
                       base::KEEP_WHITESPACE, base::SPLIT_WANT_ALL);
       text_attributes->AppendStrings(name_val_pairs);
     }

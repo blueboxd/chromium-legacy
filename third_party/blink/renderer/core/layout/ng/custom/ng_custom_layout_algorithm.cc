@@ -77,9 +77,6 @@ base::Optional<MinMaxSize> NGCustomLayoutAlgorithm::ComputeMinMaxSize(
       sizes.max_size, LayoutUnit::FromDoubleRound(
                           intrinsic_sizes_result_options->minContentSize()));
 
-  if (input.size_type == NGMinMaxSizeType::kContentBoxSize)
-    sizes -= border_scrollbar_padding_.InlineSum();
-
   sizes.min_size.ClampNegativeToZero();
   sizes.max_size.ClampNegativeToZero();
 

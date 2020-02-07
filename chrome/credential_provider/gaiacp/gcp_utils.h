@@ -85,6 +85,13 @@ struct StdParentHandles {
   base::win::ScopedHandle hstderr_read;
 };
 
+// Class used in tests to set registration data for testing.
+class GoogleRegistrationDataForTesting {
+ public:
+  explicit GoogleRegistrationDataForTesting(base::string16 serial_number);
+  ~GoogleRegistrationDataForTesting();
+};
+
 // Process startup options that allows customization of stdin/stdout/stderr
 // handles.
 class ScopedStartupInfo {
@@ -315,6 +322,18 @@ bool ExtractKeysFromDict(
     const base::Value& dict,
     const std::vector<std::pair<std::string, std::string*>>& needed_outputs);
 
+// Gets the bios serial number of the windows device.
+base::string16 GetSerialNumber();
+
+// Gets the obfuscated device_id that is a combination of multiple device
+// identifiers.
+HRESULT GenerateDeviceId(std::string* device_id);
+
+// Overrides the gaia_url and gcpw_endpoint_path that is used to load GLS.
+HRESULT SetGaiaEndpointCommandLineIfNeeded(const wchar_t* override_registry_key,
+                                           const std::string& default_endpoint,
+                                           bool provide_deviceid,
+                                           base::CommandLine* command_line);
 }  // namespace credential_provider
 
 #endif  // CHROME_CREDENTIAL_PROVIDER_GAIACP_GCP_UTILS_H_

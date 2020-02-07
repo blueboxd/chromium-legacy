@@ -18,6 +18,7 @@
 #include "third_party/skia/include/core/SkSurface.h"
 #include "third_party/skia/include/core/SkSurfaceProps.h"
 #include "ui/display/types/display_snapshot.h"
+#include "ui/gfx/buffer_format_util.h"
 #include "ui/gfx/geometry/rect_conversions.h"
 #include "ui/gl/gl_fence.h"
 #include "ui/gl/gl_surface.h"
@@ -494,9 +495,10 @@ void SkiaOutputDeviceBufferQueue::DoFinishSwapBuffers(
 bool SkiaOutputDeviceBufferQueue::Reshape(const gfx::Size& size,
                                           float device_scale_factor,
                                           const gfx::ColorSpace& color_space,
-                                          bool has_alpha,
+                                          gfx::BufferFormat format,
                                           gfx::OverlayTransform transform) {
-  if (!gl_surface_->Resize(size, device_scale_factor, color_space, has_alpha)) {
+  if (!gl_surface_->Resize(size, device_scale_factor, color_space,
+                           gfx::AlphaBitsForBufferFormat(format))) {
     DLOG(ERROR) << "Failed to resize.";
     return false;
   }

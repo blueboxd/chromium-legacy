@@ -616,7 +616,7 @@ void DebuggerSendCommandFunction::SendResponseBody(
   if (response->GetDictionary("result", &result_body))
     result.additional_properties.Swap(result_body);
 
-  results_ = SendCommand::Results::Create(result);
+  SetResultList(SendCommand::Results::Create(result));
   SendResponse(true);
 }
 

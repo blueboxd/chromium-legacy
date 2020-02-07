@@ -193,6 +193,7 @@ bool UnownedCheckoutFormElementsAndFieldSetsToFormData(
     const std::vector<blink::WebFormControlElement>& control_elements,
     const blink::WebFormControlElement* element,
     const blink::WebDocument& document,
+    const FieldDataManager* field_data_manager,
     ExtractMask extract_mask,
     FormData* form,
     FormFieldData* field);
@@ -216,6 +217,7 @@ bool UnownedPasswordFormElementsAndFieldSetsToFormData(
 // Returns false if the form is not found or cannot be serialized.
 bool FindFormAndFieldForFormControlElement(
     const blink::WebFormControlElement& element,
+    const FieldDataManager* field_data_manager,
     FormData* form,
     FormFieldData* field);
 

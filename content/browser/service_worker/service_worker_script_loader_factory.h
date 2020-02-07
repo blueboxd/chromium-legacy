@@ -98,6 +98,16 @@ class CONTENT_EXPORT ServiceWorkerScriptLoaderFactory
       int64_t new_resource_id,
       net::Error error);
 
+  void OnResourceIdAssignedForNewScriptLoader(
+      mojo::PendingReceiver<network::mojom::URLLoader> receiver,
+      int32_t routing_id,
+      int32_t request_id,
+      uint32_t options,
+      const network::ResourceRequest& resource_request,
+      mojo::PendingRemote<network::mojom::URLLoaderClient> client,
+      const net::MutableNetworkTrafficAnnotationTag& traffic_annotation,
+      int64_t resource_id);
+
   base::WeakPtr<ServiceWorkerContextCore> context_;
   base::WeakPtr<ServiceWorkerProviderHost> provider_host_;
   // Can be null if this factory is for an installed service worker.

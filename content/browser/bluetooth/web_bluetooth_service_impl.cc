@@ -27,6 +27,7 @@
 #include "content/browser/permissions/permission_controller_impl.h"
 #include "content/browser/renderer_host/render_process_host_impl.h"
 #include "content/browser/storage_partition_impl.h"
+#include "content/public/browser/bluetooth_delegate.h"
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/navigation_handle.h"
@@ -34,6 +35,7 @@
 #include "content/public/browser/web_contents.h"
 #include "content/public/browser/web_contents_delegate.h"
 #include "content/public/common/content_client.h"
+#include "content/public/common/content_features.h"
 #include "device/bluetooth/bluetooth_adapter_factory_wrapper.h"
 #include "device/bluetooth/bluetooth_remote_gatt_characteristic.h"
 #include "device/bluetooth/bluetooth_remote_gatt_descriptor.h"
@@ -286,6 +288,13 @@ WebBluetoothServiceImpl::GetBluetoothAllowed() {
 
 bool WebBluetoothServiceImpl::IsDevicePaired(
     const std::string& device_address) {
+  BluetoothDelegate* delegate =
+      GetContentClient()->browser()->GetBluetoothDelegate();
+  if (delegate && base::FeatureList::IsEnabled(
+                      features::kWebBluetoothNewPermissionsBackend)) {
+    return delegate->GetWebBluetoothDeviceId(render_frame_host_, device_address)
+        .IsValid();
+  }
   return allowed_devices().GetDeviceId(device_address) != nullptr;
 }
 
@@ -527,7 +536,15 @@ void WebBluetoothServiceImpl::DeviceAdvertisementReceived(
   auto client = scanning_clients_.begin();
   while (client != scanning_clients_.end()) {
     auto device = blink::mojom::WebBluetoothDevice::New();
-    device->id = allowed_devices().AddDevice(device_address);
+    BluetoothDelegate* delegate =
+        GetContentClient()->browser()->GetBluetoothDelegate();
+    if (delegate && base::FeatureList::IsEnabled(
+                        features::kWebBluetoothNewPermissionsBackend)) {
+      device->id =
+          delegate->AddScannedDevice(render_frame_host_, device_address);
+    } else {
+      device->id = allowed_devices().AddDevice(device_address);
+    }
     device->name = device_name;
 
     auto result = blink::mojom::WebBluetoothScanResult::New();
@@ -690,7 +707,17 @@ void WebBluetoothServiceImpl::RemoteServerConnect(
     RemoteServerConnectCallback callback) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
-  if (!allowed_devices().IsAllowedToGATTConnect(device_id)) {
+  bool is_connect_allowed;
+  BluetoothDelegate* delegate =
+      GetContentClient()->browser()->GetBluetoothDelegate();
+  if (delegate && base::FeatureList::IsEnabled(
+                      features::kWebBluetoothNewPermissionsBackend)) {
+    is_connect_allowed =
+        delegate->HasDevicePermission(render_frame_host_, device_id);
+  } else {
+    is_connect_allowed = allowed_devices().IsAllowedToGATTConnect(device_id);
+  }
+  if (!is_connect_allowed) {
     std::move(callback).Run(
         blink::mojom::WebBluetoothResult::GATT_NOT_AUTHORIZED);
     return;
@@ -755,18 +782,18 @@ void WebBluetoothServiceImpl::RemoteServerGetPrimaryServices(
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   RecordGetPrimaryServicesServices(quantity, services_uuid);
 
-  if (!allowed_devices().IsAllowedToAccessAtLeastOneService(device_id)) {
+  if (!IsAllowedToAccessAtLeastOneService(device_id)) {
     std::move(callback).Run(
         blink::mojom::WebBluetoothResult::NOT_ALLOWED_TO_ACCESS_ANY_SERVICE,
-        base::nullopt /* service */);
+        /*service=*/base::nullopt);
     return;
   }
 
-  if (services_uuid && !allowed_devices().IsAllowedToAccessService(
-                           device_id, services_uuid.value())) {
+  if (services_uuid &&
+      !IsAllowedToAccessService(device_id, services_uuid.value())) {
     std::move(callback).Run(
         blink::mojom::WebBluetoothResult::NOT_ALLOWED_TO_ACCESS_SERVICE,
-        base::nullopt /* service */);
+        /*service=*/base::nullopt);
     return;
   }
 
@@ -1414,10 +1441,9 @@ void WebBluetoothServiceImpl::RemoteServerGetPrimaryServicesImpl(
 
   std::vector<blink::mojom::WebBluetoothRemoteGATTServicePtr> response_services;
   for (device::BluetoothRemoteGattService* service : services) {
-    if (!allowed_devices().IsAllowedToAccessService(device_id,
-                                                    service->GetUUID())) {
+    if (!IsAllowedToAccessService(device_id, service->GetUUID()))
       continue;
-    }
+
     std::string service_instance_id = service->GetIdentifier();
     const std::string& device_address = device->GetAddress();
     auto insert_result = service_id_to_device_address_.insert(
@@ -1473,13 +1499,19 @@ void WebBluetoothServiceImpl::OnGetDeviceSuccess(
     return;
   }
 
-  const blink::WebBluetoothDeviceId device_id =
-      allowed_devices().AddDevice(device_address, options);
-
   DVLOG(1) << "Device: " << device->GetNameForDisplay();
 
   auto web_bluetooth_device = blink::mojom::WebBluetoothDevice::New();
-  web_bluetooth_device->id = device_id;
+  BluetoothDelegate* delegate =
+      GetContentClient()->browser()->GetBluetoothDelegate();
+  if (delegate && base::FeatureList::IsEnabled(
+                      features::kWebBluetoothNewPermissionsBackend)) {
+    web_bluetooth_device->id = delegate->GrantServiceAccessPermission(
+        render_frame_host_, device, options.get());
+  } else {
+    web_bluetooth_device->id =
+        allowed_devices().AddDevice(device_address, options);
+  }
   web_bluetooth_device->name = device->GetName();
 
   RecordRequestDeviceOutcome(UMARequestDeviceOutcome::SUCCESS);
@@ -1628,8 +1660,16 @@ void WebBluetoothServiceImpl::OnDescriptorWriteValueFailed(
 
 CacheQueryResult WebBluetoothServiceImpl::QueryCacheForDevice(
     const blink::WebBluetoothDeviceId& device_id) {
-  const std::string& device_address =
-      allowed_devices().GetDeviceAddress(device_id);
+  std::string device_address;
+  BluetoothDelegate* delegate =
+      GetContentClient()->browser()->GetBluetoothDelegate();
+  if (delegate && base::FeatureList::IsEnabled(
+                      features::kWebBluetoothNewPermissionsBackend)) {
+    device_address = delegate->GetDeviceAddress(render_frame_host_, device_id);
+  } else {
+    device_address = allowed_devices().GetDeviceAddress(device_id);
+  }
+
   if (device_address.empty()) {
     CrashRendererAndClosePipe(bad_message::BDH_DEVICE_NOT_ALLOWED_FOR_ORIGIN);
     return CacheQueryResult(CacheQueryOutcome::BAD_RENDERER);
@@ -1657,24 +1697,36 @@ CacheQueryResult WebBluetoothServiceImpl::QueryCacheForService(
     return CacheQueryResult(CacheQueryOutcome::BAD_RENDERER);
   }
 
-  const blink::WebBluetoothDeviceId* device_id =
-      allowed_devices().GetDeviceId(device_iter->second);
+  blink::WebBluetoothDeviceId device_id;
+  BluetoothDelegate* delegate =
+      GetContentClient()->browser()->GetBluetoothDelegate();
+  if (delegate && base::FeatureList::IsEnabled(
+                      features::kWebBluetoothNewPermissionsBackend)) {
+    device_id = delegate->GetWebBluetoothDeviceId(render_frame_host_,
+                                                  device_iter->second);
+  } else {
+    const blink::WebBluetoothDeviceId* device_id_ptr =
+        allowed_devices().GetDeviceId(device_iter->second);
+    if (device_id_ptr)
+      device_id = *device_id_ptr;
+  }
   // Kill the renderer if origin is not allowed to access the device.
-  if (device_id == nullptr) {
+  if (!device_id.IsValid()) {
     CrashRendererAndClosePipe(bad_message::BDH_DEVICE_NOT_ALLOWED_FOR_ORIGIN);
     return CacheQueryResult(CacheQueryOutcome::BAD_RENDERER);
   }
 
-  CacheQueryResult result = QueryCacheForDevice(*device_id);
-  if (result.outcome != CacheQueryOutcome::SUCCESS) {
+  CacheQueryResult result = QueryCacheForDevice(device_id);
+  if (result.outcome != CacheQueryOutcome::SUCCESS)
     return result;
-  }
 
   result.service = result.device->GetGattService(service_instance_id);
   if (result.service == nullptr) {
     result.outcome = CacheQueryOutcome::NO_SERVICE;
-  } else if (!allowed_devices().IsAllowedToAccessService(
-                 *device_id, result.service->GetUUID())) {
+    return result;
+  }
+
+  if (!IsAllowedToAccessService(device_id, result.service->GetUUID())) {
     CrashRendererAndClosePipe(bad_message::BDH_SERVICE_NOT_ALLOWED_FOR_ORIGIN);
     return CacheQueryResult(CacheQueryOutcome::BAD_RENDERER);
   }
@@ -1844,6 +1896,33 @@ void WebBluetoothServiceImpl::ClearState() {
   allowed_scan_filters_.clear();
   accept_all_advertisements_ = false;
   BluetoothAdapterFactoryWrapper::Get().ReleaseAdapter(this);
+}
+
+bool WebBluetoothServiceImpl::IsAllowedToAccessAtLeastOneService(
+    const blink::WebBluetoothDeviceId& device_id) {
+  BluetoothDelegate* delegate =
+      GetContentClient()->browser()->GetBluetoothDelegate();
+  if (delegate && base::FeatureList::IsEnabled(
+                      features::kWebBluetoothNewPermissionsBackend)) {
+    return delegate->IsAllowedToAccessAtLeastOneService(render_frame_host_,
+                                                        device_id);
+  } else {
+    return allowed_devices().IsAllowedToAccessAtLeastOneService(device_id);
+  }
+}
+
+bool WebBluetoothServiceImpl::IsAllowedToAccessService(
+    const blink::WebBluetoothDeviceId& device_id,
+    const device::BluetoothUUID& service) {
+  BluetoothDelegate* delegate =
+      GetContentClient()->browser()->GetBluetoothDelegate();
+  if (delegate && base::FeatureList::IsEnabled(
+                      features::kWebBluetoothNewPermissionsBackend)) {
+    return delegate->IsAllowedToAccessService(render_frame_host_, device_id,
+                                              service);
+  } else {
+    return allowed_devices().IsAllowedToAccessService(device_id, service);
+  }
 }
 
 }  // namespace content

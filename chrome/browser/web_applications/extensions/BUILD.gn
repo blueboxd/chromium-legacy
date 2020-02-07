@@ -59,6 +59,7 @@ source_set("unit_tests") {
   deps = [
     ":extensions",
     "//chrome/browser",
+    "//chrome/browser/web_applications:common",
     "//chrome/browser/web_applications:web_app_test_group",
     "//chrome/browser/web_applications:web_applications",
     "//chrome/browser/web_applications:web_applications_on_extensions",

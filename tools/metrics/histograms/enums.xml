@@ -37743,6 +37743,7 @@ from previous Chrome versions.
   <int value="-998255750" label="ExperimentalKeyboardLockUI:enabled"/>
   <int value="-996673716" label="enable-web-app-frame"/>
   <int value="-994558985" label="EnableNotificationIndicator:disabled"/>
+  <int value="-994219683" label="WebBluetoothNewPermissionsBackend:disabled"/>
   <int value="-994088375" label="VrBrowsingExperimentalRendering:enabled"/>
   <int value="-994044484" label="TemporaryUnexpireFlagsM76:disabled"/>
   <int value="-993476089" label="AutoScreenBrightness:disabled"/>
@@ -38403,6 +38404,7 @@ from previous Chrome versions.
   <int value="-170986053" label="EnableManualFallbacksFilling:enabled"/>
   <int value="-169745744" label="SyncPseudoUSSPreferences:enabled"/>
   <int value="-167744090" label="EnableHomeLauncher:enabled"/>
+  <int value="-167420098" label="WebBluetoothNewPermissionsBackend:enabled"/>
   <int value="-165756594" label="enable-touch-feedback"/>
   <int value="-165006916" label="EnableNeuralPalmDetectionFilter:enabled"/>
   <int value="-164539906"
@@ -39289,6 +39291,7 @@ from previous Chrome versions.
   <int value="952558794" label="enable-remote-assistance"/>
   <int value="955340765" label="ChromeHomeOptOutSnackbar:enabled"/>
   <int value="955425932" label="EnterpriseReportingInChromeOS:enabled"/>
+  <int value="956716414" label="GlobalMediaControlsPictureInPicture:disabled"/>
   <int value="963457392" label="ChromeHomeModernLayout:disabled"/>
   <int value="963671232" label="DrawOcclusion:disabled"/>
   <int value="964613807" label="ContextualSearchTranslationModel:disabled"/>
@@ -39733,6 +39736,7 @@ from previous Chrome versions.
   <int value="1473838479" label="EnableVirtualKeyboardMdUi:disabled"/>
   <int value="1473967338" label="OmniboxShortBookmarkSuggestions:enabled"/>
   <int value="1474861626" label="disable-multi-mirroring"/>
+  <int value="1478461926" label="GlobalMediaControlsPictureInPicture:enabled"/>
   <int value="1479248574" label="disable-voice-input"/>
   <int value="1480607006" label="MixBrowserTypeTabs:enabled"/>
   <int value="1481562816" label="disable-password-link"/>
@@ -51319,6 +51323,12 @@ Called by update_net_trust_anchors.py.-->
   <int value="5" label="Unthrottled by Omnibox icon"/>
 </enum>
 
+<enum name="PluginVmDlcUseResult">
+  <int value="0" label="PluginVM DLC installed successfully."/>
+  <int value="1" label="PluginVM DLC not supported."/>
+  <int value="2" label="PluginVM DLC internal error within dlcservice."/>
+</enum>
+
 <enum name="PluginVmLaunchResult">
   <int value="0" label="Success"/>
   <int value="1" label="Error"/>
@@ -52786,6 +52796,17 @@ Called by update_net_trust_anchors.py.-->
   <int value="1943061727" label="fiddler.exe"/>
   <int value="1976535553" label="jsvmail.exe"/>
   <int value="2011028983" label="pcman.exe"/>
+</enum>
+
+<enum name="ProcessorFamily">
+<!-- These are the first three values from a very long list of values.
+The Full list of enums is in section 7.5.2 in the SMBios spec.
+https://www.dmtf.org/sites/default/files/standards/documents/DSP0134_2.7.1.pdf
+-->
+
+  <int value="0" label="Error"/>
+  <int value="1" label="Other"/>
+  <int value="2" label="Unknown"/>
 </enum>
 
 <enum name="ProcessType">
@@ -57707,8 +57728,11 @@ Called by update_net_trust_anchors.py.-->
       label="Cookie was not marked as 'Secure', so no URL-modification was
              performed"/>
   <int value="4"
-      label="The URL's scheme was fixed up 'HTTPS' for backwards
-             compatibility"/>
+      label="The URL's scheme was fixed up to 'HTTPS' for backwards
+             compatibility (app targets &lt; Android R)"/>
+  <int value="5"
+      label="The cookie was rejected because it uses both 'HTTP' scheme and
+             'Secure' directive (app targets &gt;= Android R)"/>
 </enum>
 
 <enum name="SecurityInterstitialDecision">

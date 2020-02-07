@@ -1,0 +1,17 @@
+// Copyright 2020 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
+
+module storage.mojom;
+
+// Status code of service worker database operations.
+// This is used in UMA. A new value must be appended only.
+enum ServiceWorkerDatabaseStatus {
+  kOk = 0,
+  kErrorNotFound = 1,
+  kErrorIOError = 2,
+  kErrorCorrupted = 3,
+  kErrorFailed = 4,
+  kErrorNotSupported = 5,
+  kErrorDisabled = 6,
+};

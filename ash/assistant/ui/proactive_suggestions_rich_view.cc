@@ -43,7 +43,7 @@ void ProactiveSuggestionsRichView::InitLayout() {
           GetProactiveSuggestionsRichEntryPointCornerRadius());
 
   // Initialize |contents_view_| params.
-  AssistantWebView2::InitParams params;
+  AssistantWebView::InitParams params;
   params.enable_auto_resize = true;
   params.min_size = gfx::Size(1, 1);
   params.max_size = gfx::Size(INT_MAX, INT_MAX);

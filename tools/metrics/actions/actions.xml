@@ -5996,6 +5996,15 @@ should be able to be added at any place in this file.
   <description>Please enter the description of this user action.</description>
 </action>
 
+<action name="Extensions.NtpPromoClicked">
+  <owner>archanasimha@chromium.org</owner>
+  <owner>extensions-core@chromium.org</owner>
+  <description>
+    Records every time the user clicks on the extensions checkup middle slot
+    promo link.
+  </description>
+</action>
+
 <action name="Extensions.RemovedDefaultInstalledExtension">
   <owner>archanasimha@chromium.org</owner>
   <description>
@@ -13574,6 +13583,7 @@ should be able to be added at any place in this file.
 </action>
 
 <action name="MobileStartup.MainIntent.NTPCreatedDueToInactivity">
+  <obsolete>Deprecated as of 02/2019</obsolete>
   <owner>tedchoc@chromium.org</owner>
   <description>
     An ACTION_MAIN intent was received by Chrome and an NTP was created due to
@@ -22283,6 +22293,14 @@ should be able to be added at any place in this file.
   <owner>yusufo@chromium.org</owner>
   <owner>wychen@chromium.org</owner>
   <description>User drags a tab to reorder it.</description>
+</action>
+
+<action name="TabGrid.TabSearchChipTapped">
+  <owner>yusufo@chromium.org</owner>
+  <owner>wychen@chromium.org</owner>
+  <description>
+    User tapped on the search term chip on a tab card in the TabGrid.
+  </description>
 </action>
 
 <action name="TabGridDialog">

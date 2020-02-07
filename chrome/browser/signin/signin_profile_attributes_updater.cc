@@ -12,6 +12,7 @@
 #include "chrome/browser/signin/signin_util.h"
 #include "chrome/common/pref_names.h"
 #include "components/signin/public/identity_manager/account_info.h"
+#include "components/signin/public/identity_manager/consent_level.h"
 #include "google_apis/gaia/gaia_auth_util.h"
 
 SigninProfileAttributesUpdater::SigninProfileAttributesUpdater(
@@ -51,8 +52,8 @@ void SigninProfileAttributesUpdater::UpdateProfileAttributes() {
     return;
   }
 
-  CoreAccountInfo account_info =
-      identity_manager_->GetUnconsentedPrimaryAccountInfo();
+  CoreAccountInfo account_info = identity_manager_->GetPrimaryAccountInfo(
+      signin::ConsentLevel::kNotRequired);
 
   bool clear_profile = account_info.IsEmpty();
 

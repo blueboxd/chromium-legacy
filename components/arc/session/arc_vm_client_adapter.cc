@@ -110,6 +110,8 @@ std::vector<std::string> GenerateKernelCmdline(
                          start_params.arc_custom_tabs_experiment),
       base::StringPrintf("androidboot.arc_print_spooler=%d",
                          start_params.arc_print_spooler_experiment),
+      base::StringPrintf("androidboot.disable_system_default_app=%d",
+                         start_params.arc_disable_system_default_app),
       "androidboot.chromeos_channel=" + channel,
       "androidboot.boottime_offset=" + MonotonicTimestamp(),
       // TODO(yusukes): remove this once arcvm supports SELinux.

@@ -10,8 +10,8 @@
 #include "components/keep_alive_registry/keep_alive_types.h"
 
 #if defined(OS_WIN)
-#include "components/browser_watcher/stability_data_names.h"
-#include "components/browser_watcher/stability_debugging.h"
+#include "components/browser_watcher/activity_data_names.h"
+#include "components/browser_watcher/extended_crash_reporting.h"
 #endif
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -159,8 +159,8 @@ void KeepAliveRegistry::OnKeepAliveStateChanged(bool new_keeping_alive) {
   DVLOG(1) << "Notifying KeepAliveStateObservers: KeepingAlive changed to: "
            << new_keeping_alive;
 #if defined(OS_WIN)
-  browser_watcher::SetStabilityDataBool(browser_watcher::kStabilityKeepAlive,
-                                        new_keeping_alive);
+  browser_watcher::ExtendedCrashReporting::SetDataBool(
+      browser_watcher::kActivityKeepAlive, new_keeping_alive);
 #endif
   for (KeepAliveStateObserver& observer : observers_)
     observer.OnKeepAliveStateChanged(new_keeping_alive);
@@ -170,8 +170,8 @@ void KeepAliveRegistry::OnRestartAllowedChanged(bool new_restart_allowed) {
   DVLOG(1) << "Notifying KeepAliveStateObservers: Restart changed to: "
            << new_restart_allowed;
 #if defined(OS_WIN)
-  browser_watcher::SetStabilityDataBool(
-      browser_watcher::kStabilityRestartAllowed, new_restart_allowed);
+  browser_watcher::ExtendedCrashReporting::SetDataBool(
+      browser_watcher::kActivityRestartAllowed, new_restart_allowed);
 #endif
   for (KeepAliveStateObserver& observer : observers_)
     observer.OnKeepAliveRestartStateChanged(new_restart_allowed);

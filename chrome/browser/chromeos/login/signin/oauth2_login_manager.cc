@@ -21,6 +21,7 @@
 #include "chromeos/constants/chromeos_switches.h"
 #include "components/signin/public/base/signin_metrics.h"
 #include "components/signin/public/identity_manager/accounts_mutator.h"
+#include "components/signin/public/identity_manager/consent_level.h"
 #include "components/signin/public/identity_manager/identity_manager.h"
 #include "components/user_manager/user_manager.h"
 #include "google_apis/gaia/gaia_auth_util.h"
@@ -102,7 +103,9 @@ void OAuth2LoginManager::RestoreSessionFromSavedTokens() {
     // token.
     user_manager::UserManager::Get()->SaveUserOAuthStatus(
         AccountId::FromUserEmail(
-            identity_manager->GetUnconsentedPrimaryAccountInfo().email),
+            identity_manager
+                ->GetPrimaryAccountInfo(signin::ConsentLevel::kNotRequired)
+                .email),
         user_manager::User::OAUTH_TOKEN_STATUS_UNKNOWN);
   }
 }
@@ -183,7 +186,8 @@ void OAuth2LoginManager::StoreOAuth2Token() {
   // The primary account must be already set at this point.
   DCHECK(identity_manager->HasUnconsentedPrimaryAccount());
   const CoreAccountInfo primary_account_info =
-      identity_manager->GetUnconsentedPrimaryAccountInfo();
+      identity_manager->GetPrimaryAccountInfo(
+          signin::ConsentLevel::kNotRequired);
 
   // We already have the refresh token at this
   // point, and will not get any additional callbacks from Account Manager or

@@ -185,3 +185,15 @@ var CrSettingsSearchEnginesV3Test = class extends CrSettingsV3BrowserTest {
 TEST_F('CrSettingsSearchEnginesV3Test', 'All', function() {
   mocha.run();
 });
+
+// eslint-disable-next-line no-var
+var CrSettingsSearchPageV3Test = class extends CrSettingsV3BrowserTest {
+  /** @override */
+  get browsePreload() {
+    return 'chrome://settings/test_loader.html?module=settings/search_page_test.m.js';
+  }
+};
+
+TEST_F('CrSettingsSearchPageV3Test', 'All', function() {
+  mocha.run();
+});

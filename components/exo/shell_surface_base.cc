@@ -408,8 +408,10 @@ void ShellSurfaceBase::SetStartupId(const char* startup_id) {
 }
 
 void ShellSurfaceBase::SetChildAxTreeId(ui::AXTreeID child_ax_tree_id) {
-  child_ax_tree_id_ = child_ax_tree_id;
+  if (child_ax_tree_id_ == child_ax_tree_id)
+    return;
 
+  child_ax_tree_id_ = child_ax_tree_id;
   this->NotifyAccessibilityEvent(ax::mojom::Event::kChildrenChanged, false);
 }
 

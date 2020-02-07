@@ -427,7 +427,6 @@ class CONTENT_EXPORT RenderViewImpl : public blink::WebViewClient,
   void OnSuppressDialogsUntilSwapOut();
   void OnUpdateTargetURLAck();
   void OnUpdateWebPreferences(const WebPreferences& prefs);
-  void OnSetPageScale(float page_scale_factor);
   void OnAudioStateChanged(bool is_audio_playing);
   void OnSetBackgroundOpaque(bool opaque);
 

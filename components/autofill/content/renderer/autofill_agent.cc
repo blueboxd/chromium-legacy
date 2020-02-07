@@ -83,6 +83,8 @@ using blink::WebVector;
 
 namespace autofill {
 
+using form_util::FindFormAndFieldForFormControlElement;
+using form_util::UnownedCheckoutFormElementsAndFieldSetsToFormData;
 using mojom::SubmissionSource;
 
 namespace {
@@ -216,8 +218,8 @@ void AutofillAgent::DidChangeScrollOffsetImpl(
 
   FormData form;
   FormFieldData field;
-  if (form_util::FindFormAndFieldForFormControlElement(element_, &form,
-                                                       &field)) {
+  if (FindFormAndFieldForFormControlElement(element_, field_data_manager_.get(),
+                                            &form, &field)) {
     GetAutofillDriver()->TextFieldDidScroll(
         form, field, render_frame()->ElementBoundsInWindow(element_));
   }
@@ -265,8 +267,8 @@ void AutofillAgent::FocusedElementChanged(const WebElement& element) {
 
   FormData form;
   FormFieldData field;
-  if (form_util::FindFormAndFieldForFormControlElement(element_, &form,
-                                                       &field)) {
+  if (FindFormAndFieldForFormControlElement(element_, field_data_manager_.get(),
+                                            &form, &field)) {
     GetAutofillDriver()->FocusOnFormField(
         form, field, render_frame()->ElementBoundsInWindow(element_));
   }
@@ -345,8 +347,8 @@ void AutofillAgent::OnTextFieldDidChange(const WebInputElement& element) {
 
   FormData form;
   FormFieldData field;
-  if (form_util::FindFormAndFieldForFormControlElement(element, &form,
-                                                       &field)) {
+  if (FindFormAndFieldForFormControlElement(element, field_data_manager_.get(),
+                                            &form, &field)) {
     GetAutofillDriver()->TextFieldDidChange(
         form, field, render_frame()->ElementBoundsInWindow(element),
         AutofillTickClock::NowTicks());
@@ -423,8 +425,8 @@ void AutofillAgent::TriggerRefillIfNeeded(const FormData& form) {
 
   FormFieldData field;
   FormData updated_form;
-  if (form_util::FindFormAndFieldForFormControlElement(element_, &updated_form,
-                                                       &field) &&
+  if (FindFormAndFieldForFormControlElement(element_, field_data_manager_.get(),
+                                            &updated_form, &field) &&
       (!element_.IsAutofilled() || !form.DynamicallySameFormAs(updated_form))) {
     base::TimeTicks forms_seen_timestamp = AutofillTickClock::NowTicks();
     WebLocalFrame* frame = render_frame()->GetWebFrame();
@@ -600,9 +602,9 @@ bool AutofillAgent::CollectFormlessElements(FormData* output) {
       static_cast<form_util::ExtractMask>(form_util::EXTRACT_VALUE |
                                           form_util::EXTRACT_OPTIONS);
 
-  return form_util::UnownedCheckoutFormElementsAndFieldSetsToFormData(
-      fieldsets, control_elements, nullptr, document, extract_mask, output,
-      nullptr);
+  return UnownedCheckoutFormElementsAndFieldSetsToFormData(
+      fieldsets, control_elements, nullptr, document, field_data_manager_.get(),
+      extract_mask, output, nullptr);
 }
 
 void AutofillAgent::ShowSuggestions(const WebFormControlElement& element,
@@ -693,8 +695,8 @@ void AutofillAgent::GetElementFormAndFieldData(
 
   blink::WebFormControlElement target_form_control_element =
       target_element.To<blink::WebFormControlElement>();
-  bool success = form_util::FindFormAndFieldForFormControlElement(
-      target_form_control_element, &form, &field);
+  bool success = FindFormAndFieldForFormControlElement(
+      target_form_control_element, field_data_manager_.get(), &form, &field);
   if (success) {
     // Remember this element so as to autofill the form without focusing the
     // field for Autofill Assistant.
@@ -755,8 +757,8 @@ void AutofillAgent::QueryAutofillSuggestions(
 
   FormData form;
   FormFieldData field;
-  if (!form_util::FindFormAndFieldForFormControlElement(element, &form,
-                                                        &field)) {
+  if (!FindFormAndFieldForFormControlElement(element, field_data_manager_.get(),
+                                             &form, &field)) {
     // If we didn't find the cached form, at least let autocomplete have a shot
     // at providing suggestions.
     WebFormControlElementToFormField(element, nullptr, form_util::EXTRACT_VALUE,
@@ -813,7 +815,8 @@ void AutofillAgent::ProcessForms() {
   base::TimeTicks forms_seen_timestamp = AutofillTickClock::NowTicks();
 
   WebLocalFrame* frame = render_frame()->GetWebFrame();
-  std::vector<FormData> forms = form_cache_.ExtractNewForms();
+  std::vector<FormData> forms =
+      form_cache_.ExtractNewForms(field_data_manager_.get());
 
   // Always communicate to browser process for topmost frame.
   if (!forms.empty() || !frame->Parent()) {
@@ -911,8 +914,8 @@ void AutofillAgent::SelectWasUpdated(
   // found, notify the driver that the the form was modified dynamically.
   FormData form;
   FormFieldData field;
-  if (form_util::FindFormAndFieldForFormControlElement(element, &form,
-                                                       &field) &&
+  if (FindFormAndFieldForFormControlElement(element_, field_data_manager_.get(),
+                                            &form, &field) &&
       !field.option_values.empty()) {
     GetAutofillDriver()->SelectFieldOptionsDidChange(form);
   }
@@ -1006,8 +1009,8 @@ void AutofillAgent::OnProvisionallySaveForm(
     else {
       FormData form;
       FormFieldData field;
-      if (form_util::FindFormAndFieldForFormControlElement(element, &form,
-                                                           &field)) {
+      if (FindFormAndFieldForFormControlElement(
+              element, field_data_manager_.get(), &form, &field)) {
         GetAutofillDriver()->SelectControlDidChange(
             form, field, render_frame()->ElementBoundsInWindow(element));
       }

@@ -276,8 +276,10 @@
 <translation id="138784436342154190">डिफ़ॉल्ट स्टार्टअप पेज को बहाल करना चाहते हैं?</translation>
 <translation id="1390548061267426325">नियमित टैब के रूप में खोलें</translation>
 <translation id="1393283411312835250">सूरज और बादल</translation>
+<translation id="1393787139683794508">इससे <ph name="ORIGIN_NAME" /> का सेव किया गया पूरा डेटा और कुकी मिट जाएंगी.</translation>
 <translation id="1395730723686586365">अपडेटर प्रारंभ हुआ</translation>
 <translation id="1396139853388185343">प्रिंटर सेट अप करने में गड़बड़ी हुई</translation>
+<translation id="1396259464226642517">क्या आपको इस नतीजे की उम्मीद नहीं थी? <ph name="BEGIN_LINK" />सुझाव भेजें<ph name="END_LINK" /></translation>
 <translation id="1396963298126346194">आपने जो उपयोगकर्ता नाम और पासवर्ड डाला है, वो मेल नहीं खाते हैं</translation>
 <translation id="1397500194120344683">कनेक्ट हो सकने वाला कोई डिवाइस नहीं है. <ph name="LINK_BEGIN" />ज़्यादा जानें<ph name="LINK_END" /></translation>
 <translation id="1398853756734560583">बड़ा करें</translation>
@@ -550,6 +552,7 @@
 <translation id="1758018619400202187">EAP-TLS</translation>
 <translation id="17584710573359123">Chrome वेब स्टोर में देखें</translation>
 <translation id="176193854664720708">पावर बटन में फ़िंगरप्रिंट सेंसर मौजूद होता है. किसी भी उंगली से इसे हल्के से छुएं.</translation>
+<translation id="176273057789108760">सुरक्षा की पुष्टि करने के लिए आपका संगठन, खींचकर छोड़ी गई फ़ाइलों को स्कैन कर रहा है.</translation>
 <translation id="1763046204212875858">ऐप्स  शॉर्टकट बनाएं</translation>
 <translation id="1763108912552529023">एक्सप्लोर करते रहें</translation>
 <translation id="1763808908432309942">नए टैब में खुलता है</translation>
@@ -588,6 +591,7 @@
 <translation id="1805472176602625930">'सुरक्षा कुंजी' पर बटन दबाएं</translation>
 <translation id="1805738995123446102">बैकग्राउंड टैब आपके माइक्रोफ़ोन का इस्तेमाल कर रहा है</translation>
 <translation id="1805822111539868586">व्यू का निरीक्षण करें</translation>
+<translation id="1805888043020974594">प्रिंट सर्वर</translation>
 <translation id="1805967612549112634">पिन की पुष्टि करें</translation>
 <translation id="1809734401532861917">मेरे बुकमार्क, इतिहास, पासवर्ड और अन्य सेटिंग को <ph name="USER_EMAIL_ADDRESS" /> में जोड़ें</translation>
 <translation id="1813278315230285598">सेवाएं</translation>
@@ -734,6 +738,7 @@
 <translation id="202352106777823113">डाउनलोड बहुत ज़्यादा समय ले रहा था और उसे नेटवर्क द्वारा रोक दिया गया था.</translation>
 <translation id="2025632980034333559"><ph name="APP_NAME" /> बंद हो गया. एक्सटेंशन को फिर से लोड करने के लिए इस गुब्बारे के निशान पर क्लिक करें.</translation>
 <translation id="2025891858974379949">असुरक्षित सामग्री</translation>
+<translation id="202918510990975568">सुरक्षा और साइन-इन की प्रक्रिया को कॉन्फ़िगर करने के लिए पासवर्ड डालें</translation>
 <translation id="2034346955588403444">अन्य वाई-फ़ाई नेटवर्क जोड़ें</translation>
 <translation id="203574396658008164">लॉक स्क्रीन से नोट लेना चालू करें</translation>
 <translation id="2037445849770872822">इस Google खाते के लिए निगरानी की सुविधा सेट अप कर दी गई है. ज़्यादा 'माता-पिता के नियंत्रण में' सुविधा को सेट अप करने के लिए, 'जारी रखें' चुनें.
@@ -884,6 +889,7 @@
 <translation id="2224444042887712269">यह सेटिंग <ph name="OWNER_EMAIL" /> से संबंधित है.</translation>
 <translation id="2224551243087462610">फ़ोल्डर के नाम में बदलाव करें</translation>
 <translation id="2226449515541314767">इस साइट को MIDI डिवाइस का पूरा नियंत्रण रखने से ब्लॉक कर दिया गया है.</translation>
+<translation id="222704500187107962">आपके मौजूदा गुप्त सेशन से बाहर आने के बाद यह अपवाद अपने-आप हट जाएगा</translation>
 <translation id="2227179592712503583">सुझाव हटाएं</translation>
 <translation id="2229161054156947610">1 घंटा से ज़्यादा शेष है</translation>
 <translation id="222931766245975952">फ़ाइल छोटी हो गई</translation>
@@ -937,6 +943,7 @@
 <translation id="2300383962156589922"><ph name="APP_NAME" /> को पसंद के मुताबिक बनाएं और नियंत्रित करें</translation>
 <translation id="2301382460326681002">एक्‍सटेंशन मूल निर्देशिका अमान्य है.</translation>
 <translation id="23030561267973084">"<ph name="EXTENSION_NAME" />" ने अतिरिक्त अनुमतियों का अनुरोध किया है.</translation>
+<translation id="23055578400314116">कोई उपयोगकर्ता नाम चुनें</translation>
 <translation id="2307462900900812319">नेटवर्क कॉन्फ़िगर करें</translation>
 <translation id="230927227160767054">यह पेज सेवा हैंडलर इंस्टॉल करना चाहता है.</translation>
 <translation id="2309620859903500144">इस साइट को आपके डिवाइस के गति या रोशनी के सेंसर ऐक्सेस करने से ब्लॉक कर दिया गया है.</translation>
@@ -976,6 +983,7 @@
 <translation id="2353297238722298836">कैमरे और माइक्रोफ़ोन की अनुमति है</translation>
 <translation id="2356070529366658676">पूछें</translation>
 <translation id="2357330829548294574"><ph name="USER_NAME" /> हटाएं</translation>
+<translation id="235798134753548762">आपके ऐप्लिकेशन, सेटिंग, और वाई-फ़ाई की सेटिंग सिंक होंगी. बदलाव करने के लिए, सेट अप करने के बाद किसी भी समय 'सेटिंग' में जाएं.</translation>
 <translation id="2359345697448000899">टूल मेन्यू में एक्सटेंशन क्लिक करके अपने एक्सटेंशन प्रबंधित करें.</translation>
 <translation id="2359808026110333948">जारी रखें</translation>
 <translation id="236117173274098341">ऑप्टिमाइज़ करें</translation>
@@ -1027,6 +1035,7 @@
 <translation id="2436720498717686157">आपके संगठन के लिए इस डिवाइस को तुरंत अपडेट करना ज़रूरी है</translation>
 <translation id="2439545803278355377">अपना नया पिन डालें. पिन में कम से कम चार वर्ण होने चाहिए और इसमें अक्षर, संख्याएं, और दूसरे वर्ण भी डाले जा सकते हैं.</translation>
 <translation id="2440604414813129000">स्रोत देखें</translation>
+<translation id="244231003699905658">अमान्य पता. कृपया पते की जांच करें और फिर से कोशिश करें.</translation>
 <translation id="2442916515643169563">टेक्स्ट शैडो</translation>
 <translation id="2445081178310039857">एक्‍सटेंशन मूल निर्देशिका आवश्यक है.</translation>
 <translation id="2445484935443597917">नई प्रोफ़ाइल बनाएं</translation>
@@ -1081,6 +1090,7 @@
 <translation id="2501278716633472235">वापस जाएं</translation>
 <translation id="2501797496290880632">कोई शॉर्टकट लिखें</translation>
 <translation id="2502441965851148920">अपने आप अपडेट सक्षम किए गए हैं. मैन्युअल अपडेट आपके व्यवस्थापक के द्वारा अक्षम किए गए हैं.</translation>
+<translation id="2502719318159902502">पूरा ऐक्सेस</translation>
 <translation id="2505127913256479918">निगरानी में रखे गए इस उपयोगकर्ता खाते को जल्द ही हटा दिया जाएगा</translation>
 <translation id="2505324914378689427">{SCREEN_INDEX,plural, =1{स्क्रीन #}one{स्क्रीन #}other{स्क्रीन #}}</translation>
 <translation id="2505402373176859469"><ph name="TOTAL_SIZE" /> में से <ph name="RECEIVED_AMOUNT" /></translation>
@@ -1351,6 +1361,7 @@
 <translation id="2865919525181940183">इस समय, स्क्रीन पर मौजूद प्रोग्राम का स्क्रीनशॉट</translation>
 <translation id="286674810810214575">पावर के स्रोतों की जांच की जा रही है...</translation>
 <translation id="2867768963760577682">छोटे टैब के रूप में खोलें</translation>
+<translation id="2868184003987917410">साइटों को अपने वर्चुअल रिएलिटी वाले डिवाइस/डेटा को ऐक्सेस करने की अनुमति न दें</translation>
 <translation id="2868746137289129307">यह एक्‍सटेंशन पुराना हो चुका है और एंटरप्राइज़ नीति द्वारा अक्षम कर दिया गया है. ज़्यादा नया वर्शन उपलब्‍ध हो जाने पर वह अपने आप सक्षम हो सकता है.</translation>
 <translation id="2870560284913253234">साइट</translation>
 <translation id="2870909136778269686">अपडेट हो रहे हैं...</translation>
@@ -1396,6 +1407,7 @@
 <translation id="2916745397441987255">एक्सटेंशन खोजें</translation>
 <translation id="2921081876747860777">कृपया अपने स्थानीय डेटा की सुरक्षा करने के लिए एक पासवर्ड बनाएं.</translation>
 <translation id="2923234477033317484">यह खाता हटाएं</translation>
+<translation id="2925054096976782003">सुरक्षा की पुष्टि करने के लिए आपका संगठन, चिपकाए गए डेटा को स्कैन कर रहा है.</translation>
 <translation id="2926085873880284723">डिफ़ॉल्ट शॉर्टकट बहाल करें</translation>
 <translation id="2927017729816812676">कैश मेमोरी</translation>
 <translation id="2931157624143513983">जिस जगह पर प्रिंट किया जाना है उसके हिसाब से फ़िट करें</translation>
@@ -1419,6 +1431,7 @@
 <translation id="2956070239128776395">सेक्शन समूह के अंदर मौजूद है: <ph name="ERROR_LINE" /></translation>
 <translation id="2957117904572187936">किसी भी वेबसाइट को अपने डिवाइस की फ़ाइल या फ़ोल्डर में बदलाव न करने दें</translation>
 <translation id="2958721676848865875">पैक एक्‍सटेंशन चेतावनी</translation>
+<translation id="2959127025785722291">कोई गड़बड़ी हुई. स्कैन करने की प्रक्रिया पूरी नहीं हो सकी. कृपया फिर से कोशिश करें.</translation>
 <translation id="2959842337402130152">स्टोरेज के लिए कम जगह बची है, इसलिए कंटेनर बहाल नहीं किया जा सका. डिवाइस से <ph name="SPACE_REQUIRED" /> खाली करके फिर से कोशिश करें.</translation>
 <translation id="296026337010986570">हो गया! नुकसान पहुंचाने वाला सॉफ़्टवेयर हटा दिया गया है. एक्सटेंशन वापस चालू करने के लिए &lt;a href="chrome://extensions"&gt;एक्सटेंशन&lt;/a&gt; पर जाएं.</translation>
 <translation id="2961090598421146107"><ph name="CERTIFICATE_NAME" /> (एक्सटेंशन दिया गया)</translation>
@@ -1676,6 +1689,7 @@
 <translation id="3348038390189153836">निकालने योग्‍य डिवाइस का पता चला</translation>
 <translation id="3349933790966648062">मेमोरी फ़ुटप्रिंट</translation>
 <translation id="3350117557200012647">दूसरे डिवाइस से जोड़ने के मोड में जाएं</translation>
+<translation id="3350244554415289209">जब कोई साइट आपके कैमरे की स्थिति को ऐक्सेस करना या आपके कमरे को मैप करना चाहे, तो इसके लिए पूछें (सुझाया गया)</translation>
 <translation id="3355936511340229503">कनेक्शन गड़बड़ी</translation>
 <translation id="3356580349448036450">पूरा हुआ</translation>
 <translation id="3359256513598016054">प्रमाणपत्र नीति बाध्यताएं</translation>
@@ -1739,6 +1753,7 @@
 <translation id="3448492834076427715">खाता अपडेट करें</translation>
 <translation id="3449839693241009168">आदेशों को <ph name="EXTENSION_NAME" /> पर भेजने के लिए <ph name="SEARCH_KEY" /> दबाएं</translation>
 <translation id="3450157232394774192">निष्क्रिय स्थिति उपयोग प्रतिशत</translation>
+<translation id="3451332697983754369">मेरा <ph name="DEVICE_TYPE" /> सिंक करें</translation>
 <translation id="3453612417627951340">अनुमति की ज़रुरत है</translation>
 <translation id="3454157711543303649">चालू करना पूरा हुआ</translation>
 <translation id="3454213325559396544">यह इस <ph name="DEVICE_TYPE" /> के लिए अपने आप होने वाला आखिरी साॅफ़्टवेयर और सुरक्षा अपडेट था. आने वाले समय में और अपडेट पाने के लिए, नए माॅडल पर अपग्रेड करें.</translation>
@@ -1761,6 +1776,7 @@
 <translation id="347785443197175480"><ph name="HOST" /> को अपने कैमरे और माइक्रोफ़ोन को एक्सेस करते रहने दें</translation>
 <translation id="3478685642445675458">कृपया किसी व्यक्ति को निकालने से पहले अपनी प्रोफ़ाइल अनलॉक करें.</translation>
 <translation id="3479552764303398839">अभी नहीं</translation>
+<translation id="3479685872808224578">प्रिंट सर्वर नहीं मिला. कृपया पते की जांच करें और फिर से कोशिश करें.</translation>
 <translation id="3481268647794498892"><ph name="ALTERNATIVE_BROWSER_NAME" /> पर <ph name="COUNTDOWN_SECONDS" /> सेकंड में खाेला जा रहा है</translation>
 <translation id="3484273680291419129">नुकसान पहुंचाने वाला सॉफ़्टवेयर निकाला जा रहा है...</translation>
 <translation id="3484869148456018791">नया प्रमाणपत्र पाएं</translation>
@@ -1876,6 +1892,7 @@
 <translation id="3630132874740063857">आपका फ़ोन</translation>
 <translation id="3630995161997703415">इस साइट को अपनी अलमारी में जोड़ें ताकि आप किसी भी समय इसका उपयोग कर सकें</translation>
 <translation id="3634507049637220048"><ph name="NETWORK_COUNT" /> में से <ph name="NETWORK_INDEX" /> नेटवर्क, <ph name="NETWORK_NAME" />, <ph name="CONNECTION_STATUS" />, आपका एडमिन प्रबंधित करता है, जानकारी</translation>
+<translation id="3635241501480133979">यह डेटा आपके संगठन की सुरक्षा नीतियों का उल्लंघन करता है. इसलिए, इसे अपलोड नहीं किया जा सकता.</translation>
 <translation id="3635353578505343390">Google को सुझाव भेजें</translation>
 <translation id="3636096452488277381">कैसे हैं, <ph name="USER_GIVEN_NAME" />.</translation>
 <translation id="3636766455281737684"><ph name="PERCENTAGE" />% - <ph name="TIME" /> बाकी</translation>
@@ -1910,6 +1927,7 @@
 <translation id="3677657024345889897">सबसे कम</translation>
 <translation id="3677911431265050325">मोबाइल साइट के लिए अनुरोध करें</translation>
 <translation id="3678156199662914018">एक्‍सटेंशन: <ph name="EXTENSION_NAME" /></translation>
+<translation id="3678613690490567106">अपने सभी डिवाइस पर मनमुताबिक अनुभव पाने के लिए सिंक करें</translation>
 <translation id="3681311097828166361">आपके फ़ीडबैक के लिए धन्यवाद. आप अब ऑफ़लाइन हैं और आपकी रिपोर्ट बाद में भेज दी जाएगी.</translation>
 <translation id="3682824389861648626">माउस की गति की सीमा</translation>
 <translation id="3683524264665795342"><ph name="APP_NAME" /> स्क्रीन शेयर करने का अनुरोध</translation>
@@ -2416,6 +2434,7 @@
 <translation id="4400632832271803360">शीर्ष-पंक्ति वाली कुंजियों का व्यवहार स्विच करने के लिए Launcher कुंजी दबाए रखें</translation>
 <translation id="4400963414856942668">टैब को बुकमार्क करने के लिए आप स्टार के निशान पर क्लिक कर सकते हैं</translation>
 <translation id="4403775189117163360">कोई दूसरा फ़ोल्डर चुनें</translation>
+<translation id="4404136731284211429">फिर से स्कैन करें</translation>
 <translation id="4405117686468554883">*.jpeg, *.jpg, *.png</translation>
 <translation id="4408599188496843485">स&amp;हायता</translation>
 <translation id="4409697491990005945">मार्जिन</translation>
@@ -2434,6 +2453,7 @@
 <translation id="4421932782753506458">फ्लफ़ी</translation>
 <translation id="4423376891418188461">सेटिंग फिर से स्थापित करें</translation>
 <translation id="442397852638519243"><ph name="USER_NAME" />, आपके व्यवस्थापक के लिए ज़रूरी है कि आप अपना पासवर्ड बदलें.</translation>
+<translation id="4429030830601238961">यह डेटा आपके संगठन की सुरक्षा नीतियों का उल्लंघन करता है. इसलिए, इसे चिपकाया नहीं जा सकता.</translation>
 <translation id="4430019312045809116">मात्रा</translation>
 <translation id="4430369329743628066">बुकमार्क जोड़ा गया</translation>
 <translation id="4434045419905280838">पॉप-अप और रीडायरेक्ट</translation>
@@ -2480,9 +2500,11 @@
 <translation id="4501530680793980440">हटाने की पुष्टि करें</translation>
 <translation id="4502423230170890588">इस डिवाइस से हटाएं</translation>
 <translation id="4504940961672722399">इस आइकॉन पर क्लिक करके या <ph name="EXTENSION_SHORTCUT" /> को दबाकर यह एक्सटेंशन चालू करें.</translation>
+<translation id="4507164039066603071">साइटों को अपने कैमरे की स्थिति को ऐक्सेस करने या अपने कमरे को मैप करने की अनुमति न दें</translation>
 <translation id="4508051413094283164">सभी को गुप्त विंडो में खोलें</translation>
 <translation id="4508265954913339219">सक्रियण विफल</translation>
 <translation id="4508765956121923607">स्रोत देखें</translation>
+<translation id="4510614391273086606">Linux फ़ाइलों और ऐप्लिकेशन को उनकी बैक अप की गई स्थिति में वापस लाया जा रहा है.</translation>
 <translation id="451407183922382411"><ph name="COMPANY_NAME" /> के उपयोग से</translation>
 <translation id="4514610446763173167">वीडियो को 'चलाएं' या 'रोकें' पर टॉगल करें</translation>
 <translation id="451515744433878153">निकालें</translation>
@@ -2679,6 +2701,7 @@
 <translation id="480990236307250886">होम पेज खोलें</translation>
 <translation id="4813136279048157860">मेरी इमेज</translation>
 <translation id="4813512666221746211">नेटवर्क गड़बड़ी</translation>
+<translation id="4814378367953456825">इस फ़िंगरप्रिंट के लिए कोई नाम डालें</translation>
 <translation id="4820236583224459650">चालू टिकट के तौर पर सेट करें</translation>
 <translation id="4821935166599369261">&amp;प्रोफ़ाइलिंग सक्षम</translation>
 <translation id="4823484602432206655">उपयोगकर्ता और डिवाइस सेटिंग पढ़ें और उसमें बदलाव करें</translation>
@@ -2725,6 +2748,7 @@
 <translation id="4876895919560854374">स्क्रीन लॉक करना और अनलॉक करना</translation>
 <translation id="4877276003880815204">एलिमेंट जाँचें</translation>
 <translation id="4878653975845355462">आपके एडमिन ने बैकग्राउंड को पसंद के मुताबिक बनाने की सुविधा बंद कर दी है</translation>
+<translation id="4878718769565915065">इस सुरक्षा कुंजी में फ़िंगरप्रिंट नहीं जोड़ा जा सका</translation>
 <translation id="4879491255372875719">अपने आप (डिफ़ॉल्ट)</translation>
 <translation id="4880328057631981605">एक्सेस पॉइंट नाम</translation>
 <translation id="4880827082731008257">खोज इतिहास</translation>
@@ -2854,6 +2878,7 @@
 <translation id="5065775832226780415">Smart Lock</translation>
 <translation id="5067399438976153555">हमेशा चालू</translation>
 <translation id="5067867186035333991">अगर <ph name="HOST" /> आपका कैमरा एक्सेस करना चाहे, तो इसके लिए पूछें</translation>
+<translation id="5068377946749700758">सुरक्षा की पुष्टि करने के लिए आपका संगठन, खींचकर छोड़े गए डेटा को स्कैन कर रहा है.</translation>
 <translation id="5068918910148307423">हाल ही में बंद की गई साइट को डेटा भेजने और पाने की प्रकिया को पूरा करने की अनुमति न दें</translation>
 <translation id="5068919226082848014">पिज़्ज़ा</translation>
 <translation id="5072052264945641674">कर्सर का आकार एडजस्ट करें</translation>
@@ -3046,6 +3071,7 @@
 <translation id="5341793073192892252">इन कुकी को ब्लॉक कर दिया गया था (तृतीय पक्ष की कुकी बिना किसी अपवाद के ब्लॉक की जा रही हैं)</translation>
 <translation id="5341980496415249280">कृपया इंतज़ार करें, पैक किया जा रहा है...</translation>
 <translation id="5342091991439452114">पिन कम से कम <ph name="MINIMUM" /> अंकों का होना चाहिए</translation>
+<translation id="5344036115151554031">Linux को पहले जैसा किया जा रहा है</translation>
 <translation id="5352033265844765294">समय स्टैंपिंग</translation>
 <translation id="5353252989841766347">Chrome से पासवर्ड निर्यात करें</translation>
 <translation id="5355099869024327351">Assistant को आपको सूचनाएं दिखाने दें</translation>
@@ -3099,6 +3125,7 @@
 <translation id="5427459444770871191">&amp;घड़ी की दिशा में घुमाएं</translation>
 <translation id="542872847390508405">आप एक मेहमान के रूप में ब्राउज़ कर रहे हैं</translation>
 <translation id="5428850089342283580"><ph name="ACCNAME_APP" /> (अपडेट उपलब्‍ध है)</translation>
+<translation id="542948651837270806">भरोसेमंद प्लैटफ़ॉर्म मॉड्यूल फ़र्मवेयर के लिए अपडेट इंस्टॉल करने की ज़रूरत है. <ph name="TPM_FIRMWARE_UPDATE_LINK" /> देखें</translation>
 <translation id="5430931332414098647">इंस्टैंट टेदरिंग</translation>
 <translation id="5431318178759467895">रंग</translation>
 <translation id="5431825016875453137">OpenVPN / L2TP</translation>
@@ -3278,6 +3305,7 @@
 <translation id="5659593005791499971">ईमेल</translation>
 <translation id="5659833766619490117">इस पेज का अनुवाद नहीं किया जा सका</translation>
 <translation id="5660204307954428567"><ph name="DEVICE_NAME" /> से जोड़ें</translation>
+<translation id="5662513737565158057">Linux ऐप्लिकेशन के काम करने का तरीका बदलें.</translation>
 <translation id="5667546120811588575">Google Play सेट अप किया जा रहा है...</translation>
 <translation id="5669267381087807207">सक्रिय कर रहा है</translation>
 <translation id="5669691691057771421">नया पिन डालें</translation>
@@ -3683,6 +3711,7 @@
 <translation id="6238923052227198598">सबसे नया नोट लॉक स्क्रीन पर रखें</translation>
 <translation id="6239558157302047471">फ़्रेम को फिर लोड करें</translation>
 <translation id="6241530762627360640">अपने सिस्टम के साथ जोड़ी हुई ब्लूटूथ डिवाइस से संबंधित जानकारी एक्सेस करें और आस-पास के ब्लूटूथ डिवाइस की खोज करें.</translation>
+<translation id="6241844896329831164">ऐक्सेस की ज़रूरत नहीं है</translation>
 <translation id="6242589501614145408">अपनी सुरक्षा कुंजी रीसेट करें</translation>
 <translation id="6242852299490624841">इस टैब पर फ़ोकस करें</translation>
 <translation id="6243280677745499710">इस समय सेट है</translation>
@@ -3882,6 +3911,8 @@
 <translation id="6531282281159901044">खतरनाक फ़ाइल रखें</translation>
 <translation id="6532101170117367231">Google डिस्क में सेव करें</translation>
 <translation id="6532106788206463496">बदलाव सेव करें</translation>
+<translation id="6532206849875187177">सुरक्षा और साइन-इन</translation>
+<translation id="6532527800157340614">आपका ऐक्सेस टोकन नहीं मिल पाने की वजह से साइन-इन नहीं किया जा सका. कृपया अपना नेटवर्क कनेक्शन जांचें और फिर से कोशिश करें.</translation>
 <translation id="6532663472409656417">एंटरप्राइज़ दर्ज किया गया है</translation>
 <translation id="654039047105555694"><ph name="BEGIN_BOLD" />ध्यान दें:<ph name="END_BOLD" /> सिर्फ़ तभी चालू करें जब आपको पता हो कि आप क्या कर रहे हैं या अगर आप से ऐसा करने के लिए कहा गया हो, क्योंकि डेटा के संग्रह से परफ़ॉर्मेंस में कमी आ सकती है.</translation>
 <translation id="6541638731489116978">इस साइट को आपके हलचल पकड़ने वाले सेंसर ऐक्सेस करने से रोक दिया गया है.</translation>
@@ -3889,6 +3920,7 @@
 <translation id="6545864417968258051">ब्लूटूथ स्कैन करना</translation>
 <translation id="6545867563032584178">Mac सिस्टम प्राथमिकताओं में माइक्रोफ़ोन बंद किया गया है</translation>
 <translation id="6547354035488017500">डिवाइस की मेमोरी से कम से कम 512 एमबी जगह खाली करें. ऐसा न करने पर आपका डिवाइस काम नहीं करेगा. जगह खाली करने के लिए, डिवाइस की मेमोरी से फ़ाइलें मिटाएं.</translation>
+<translation id="6549966385318247177">व्यस्क सामग्री होने की वजह से इसे ब्लॉक किया गया.</translation>
 <translation id="6550675742724504774">विकल्प</translation>
 <translation id="6551508934388063976">निर्देश मौजूद नहीं है. नई विंडों खोलने के लिए control-N दबाएं.</translation>
 <translation id="6551612971599078809">साइट 'यूएसबी' का इस्तेमाल कर रही है</translation>
@@ -4220,6 +4252,7 @@
 <translation id="703001695939087067">विंडो की खास जानकारी वाले मोड में प्रवेश किया. नेविगेट करने के लिए टैब दबाएं.</translation>
 <translation id="7031608529463141342"><ph name="WINDOW_TITLE" /> - सीरियल पोर्ट कनेक्ट है</translation>
 <translation id="7031962166228839643">TPM तैयार हो रहा है, कृपया प्रतीक्षा करें (इसमें कुछ मिनट लग सकते हैं)...</translation>
+<translation id="7034615910652881882">जब कोई साइट आपके वर्चुअल रिएलिटी वाले डिवाइस/डेटा को ऐक्सेस करना चाहे, तो इसके लिए पूछें</translation>
 <translation id="7037509989619051237">वह लेख जिसकी झलक देखी जानी है</translation>
 <translation id="7039326228527141150"><ph name="VENDOR_NAME" /> के USB डिवाइस ऐक्‍सेस करें</translation>
 <translation id="7039912931802252762">Microsoft Smart Card Logon</translation>
@@ -4259,6 +4292,7 @@
 <translation id="7081952801286122383">आप गुप्त मोड में हैं</translation>
 <translation id="708278670402572152">स्कैन करना चालू करने के लिए डिसकनेक्ट करें</translation>
 <translation id="7085389578340536476">Chrome को ऑडियो रिकॉर्ड करने दें?</translation>
+<translation id="7086467953285486445">ये फ़ाइलें आपके संगठन की सुरक्षा नीतियों का उल्लंघन करती हैं. इसलिए, इन्हें अपलोड नहीं किया जा सकता.</translation>
 <translation id="7088434364990739311">अपडेट की जाँच शुरू नहीं की जा सकी (गड़बड़ी कोड <ph name="ERROR" />).</translation>
 <translation id="7088561041432335295">Zip Archiver - Files ऐप्लिकेशन में ZIP फ़ाइलें खोलें और पैक करें.</translation>
 <translation id="7088674813905715446">इस डिवाइस को एडमिन ने इस्तेमाल से बाहर रखे जाने की स्थिति में रखा है. नाम दर्ज करने के लिए इसे चालू करने के लिए, कृपया अपने एडमिन से डिवाइस को 'मंज़ूरी बाकी' स्थिति में रहने दें.</translation>
@@ -4372,6 +4406,7 @@
 <translation id="7241389281993241388">क्लाइंट प्रमाणपत्र लेकर आने के लिए, कृपया <ph name="TOKEN_NAME" /> में साइन इन करें.</translation>
 <translation id="7241443820034350811">अगर आपकी 'सुरक्षा चाबी' सूची में नहीं है, तो उस पर दिए गए बटन को पाँच सेकंड तक दबाकर रखें.</translation>
 <translation id="7243632151880336635">साफ़ करें और प्रस्थान करें</translation>
+<translation id="7243784282103630670">Linux को अपग्रेड नहीं किया जा सका. हम आपके बैक अप का इस्तेमाल करके कंटेनर को पहले जैसा करेंगे.</translation>
 <translation id="7245628041916450754"><ph name="WIDTH" /> x <ph name="HEIGHT" /> (श्रेष्ठ)</translation>
 <translation id="7246230585855757313">अपनी सुरक्षा कुंजी फिर से लगाएं और दोबारा कोशिश करें</translation>
 <translation id="7246947237293279874">FTP प्रॉक्सी</translation>
@@ -4458,6 +4493,7 @@
 <translation id="7360233684753165754"><ph name="PRINTER_NAME" /> पर <ph name="PAGE_NUMBER" /> पेज हैं</translation>
 <translation id="7361297102842600584"><ph name="PLUGIN_NAME" /> चलाने के लिए राइट-क्लिक करें</translation>
 <translation id="7363117941401515667"><ph name="HOURS" /> घंटे पहले अपडेट किया गया</translation>
+<translation id="7364591875953874521">डेटा को ऐक्सेस करने का अनुरोध किया गया</translation>
 <translation id="7364796246159120393">फ़ाइल चुनें</translation>
 <translation id="7366415735885268578">साइट जोड़ें</translation>
 <translation id="7366909168761621528">ब्राउज़िंग डेटा</translation>
@@ -4483,6 +4519,7 @@
 <translation id="740624631517654988">पॉप-अप अवरोधित</translation>
 <translation id="7407430846095439694">आयात करें और आबद्ध करें</translation>
 <translation id="7407504355934009739">ज़्यादातर लोग इस साइट को सूचनाएं दिखाने से रोकते हैं</translation>
+<translation id="740810853557944681">प्रिंट सर्वर जोड़ें</translation>
 <translation id="7409549334477097887">बहुत ज़्यादा</translation>
 <translation id="7409836189476010449">Flash चलाएं</translation>
 <translation id="7410344089573941623">अगर <ph name="HOST" /> आपके कैमरे और माइक्रोफ़ोन को एक्सेस करना चाहे, तो पूछें</translation>
@@ -4503,6 +4540,7 @@
 <translation id="7433692219247014412">{COUNT,plural, =0{सभी को &amp;नई विंडो में खोलें}=1{&amp;नई विंडो में खोलें}one{सभी (#) को &amp;नई विंडो में खोलें}other{सभी (#) को &amp;नई विंडो में खोलें}}</translation>
 <translation id="7434509671034404296">डेवलपर</translation>
 <translation id="7434635829372401939">अपनी सेटिंग सिंक करें</translation>
+<translation id="7434969625063495310">प्रिंट सर्वर नहीं जोड़ा जा सका. कृपया सर्वर का कॉन्फ़िगरेशन जांचें और फिर से कोशिश करें.</translation>
 <translation id="7436921188514130341">हे भगवान! नाम बदलने के दौरान गड़बड़ी हुई.</translation>
 <translation id="7438976808740265764">दिसंबर, 2020 के बाद Flash Player बंद कर दिया जाएगा.</translation>
 <translation id="7441736921018636843">यह सेटिंग बदलने के लिए, <ph name="BEGIN_LINK" />सिंक रीसेट करें<ph name="END_LINK" /> ताकि आपका सिंक करने का लंबा पासवर्ड हटाया जा सके</translation>
@@ -4512,8 +4550,10 @@
 <translation id="7443806024147773267">अपने Google खाते में साइन इन करके जब चाहें अपने पासवर्ड को ऐक्सेस करें</translation>
 <translation id="7444983668544353857"><ph name="NETWORKDEVICE" /> बंद करें</translation>
 <translation id="7448430327655618736">ऐप्लिकेशन को अपने आप इंस्टॉल करें</translation>
+<translation id="7448625729116931228">जब कोई साइट आपके वर्चुअल रिएलिटी वाले डिवाइस/डेटा को ऐक्सेस करना चाहे, तो इसके लिए पूछें (सुझाया गया)</translation>
 <translation id="7450761244949417357">अभी <ph name="ALTERNATIVE_BROWSER_NAME" /> में खुल रहा है</translation>
 <translation id="7453008956351770337">इस प्रिंटर को चुनकर, आप नीचे दिए गए एक्सटेंशन को अपने प्रिंटर के लिए एक्सेस करने की अनुमति दे रहे हैं:</translation>
+<translation id="7454548535253569100">पोर्टल: <ph name="SUBFRAME_SITE" /></translation>
 <translation id="7456142309650173560">डेव</translation>
 <translation id="7456847797759667638">स्थान खोलें...</translation>
 <translation id="7458168200501453431">वर्तनी जांचने के लिए उसी सुविधा का इस्तेमाल करती है जिसका इस्तेमाल 'Google सर्च' में किया जाता है. आप ब्राउज़र में जो कुछ भी लिखते हैं उसे Google को भेजा जाता है.</translation>
@@ -4559,6 +4599,7 @@
 <translation id="7513029293694390567">स्टोर किए गए क्रेडेंशियल के ज़रिए वेबसाइट में अपने आप साइन इन करें. बंद होने पर, आपसे किसी वेबसाइट में साइन इन करने से पहले हर बार पुष्टि करने के लिए कहा जाएगा.</translation>
 <translation id="7514239104543605883">अपने डिवाइस में कॉपी करें</translation>
 <translation id="7514365320538308">डाउनलोड करें</translation>
+<translation id="7520766081042531487">गुप्त पोर्टल: <ph name="SUBFRAME_SITE" /></translation>
 <translation id="7521387064766892559">JavaScript</translation>
 <translation id="7522255036471229694">"Ok Google" बोलें</translation>
 <translation id="7525067979554623046">बनाएं</translation>
@@ -4647,6 +4688,7 @@
 <translation id="7652808307838961528">व्यक्ति की जानकारी, <ph name="PROFILE_NAME" />, में बदलाव करें</translation>
 <translation id="765293928828334535">इस वेबसाइट से ऐप्लिकेशन, एक्सटेंशन और उपयोगकर्ता स्क्रिप्ट नहीं जोड़े जा सकते हैं</translation>
 <translation id="7652954539215530680">एक पिन बनाएं</translation>
+<translation id="7653295403398566475">जब कोई साइट आपके कैमरे की स्थिति को ऐक्सेस करना या आपके कमरे को मैप करना चाहे, तो इसके लिए पूछें</translation>
 <translation id="7654941827281939388">यह खाता पहले से ही इस कंप्‍यूटर पर उपयोग किया जा रहा है.</translation>
 <translation id="7658239707568436148">अभी नहीं</translation>
 <translation id="7659584679870740384">इस डिवाइस का इस्तेमाल करने का आपको अधिकार नहीं है. कृपया साइन इन की अनुमति के लिए एडमिन से संपर्क करें.</translation>
@@ -4798,6 +4840,7 @@
 <translation id="783214144752121388">साइट को Flash चलाने से रोकें (सुझाव है)</translation>
 <translation id="7833720883933317473">सेव किए गए कस्टम शब्द यहां दिखाई देंगे</translation>
 <translation id="7835178595033117206">बुकमार्क हटाया गया</translation>
+<translation id="7836850009646241041">अपनी सुरक्षा कुंजी को फिर से छुएं</translation>
 <translation id="7837776265184002579">आपका होमपेज <ph name="URL" /> में बदल दिया गया था.</translation>
 <translation id="7839051173341654115">मीडिया देखें/बैकअप लें</translation>
 <translation id="7839192898639727867">प्रमाणपत्र विषय कुंजी आईडी</translation>
@@ -5113,7 +5156,9 @@
 <translation id="8260864402787962391">माउस</translation>
 <translation id="8261378640211443080">यह एक्सटेंशन <ph name="IDS_EXTENSION_WEB_STORE_TITLE" /> में सूचीबद्ध नहीं है और यह आपकी जानकारी के बिना जोड़ा गया हो सकता है.</translation>
 <translation id="8261506727792406068">मिटाएं</translation>
+<translation id="8263336784344783289">इस ग्रुप को नाम दें</translation>
 <translation id="8263744495942430914"><ph name="FULLSCREEN_ORIGIN" /> ने आपका माउस कर्सर अक्षम कर दिया है.</translation>
+<translation id="8264024885325823677">इस सेटिंग को आपका एडमिन प्रबंधित करता है.</translation>
 <translation id="8264718194193514834">"<ph name="EXTENSION_NAME" />" ने पूरी स्क्रीन ट्रिगर की है.</translation>
 <translation id="8267961145111171918"><ph name="BEGIN_PARAGRAPH1" />यह इस डिवाइस और इसके इस्तेमाल के तरीके के बारे में सामान्य जानकारी है (जैसे कि बैटरी लेवल, सिस्टम और ऐप्लिकेशन गतिविधि और गड़बड़ियां). इस डेटा का इस्तेमाल Android को बेहतर बनाने के लिए किया जाएगा. इकट्ठी की गई कुछ जानकारी से Google ऐप्लिकेशन और 'Android डेवलपर' जैसे पार्टनर को भी मदद मिलेगी और वे अपने ऐप्लिकेशन और उत्पादों को बेहतर बना सकेंगे.<ph name="END_PARAGRAPH1" />
     <ph name="BEGIN_PARAGRAPH2" />इस सुविधा को बंद करने के बाद भी यह डिवाइस, सिस्टम अपडेट और सुरक्षा जैसी ज़रूरी सेवाएं पाने के लिए जानकारी भेज सकेगा.<ph name="END_PARAGRAPH2" />
@@ -5369,6 +5414,7 @@
 <translation id="8650543407998814195">हालांकि अब आप अपनी पुरानी प्रोफ़ाइल एक्सेस नहीं कर सकते हैं, लेकिन फिर भी आप उसे हटा सकते हैं.</translation>
 <translation id="8651585100578802546">इस पेज को ज़बरदस्ती फिर से लोड करें</translation>
 <translation id="8652400352452647993">पैक एक्‍सटेंशन गड़बड़ी</translation>
+<translation id="8653578191563425126">Crostini के लिए डिस्क में जगह (आप इसे बाद में बदल सकते हैं).</translation>
 <translation id="8654151524613148204">फ़ाइल आपके कंप्‍यूटर द्वारा संभाले जाने के लिए बहुत बड़ी है. क्षमा करें.</translation>
 <translation id="8655295600908251630">चैनल</translation>
 <translation id="8655319619291175901">ओह, कुछ गड़बड़ी हो गई है.</translation>
@@ -5633,6 +5679,7 @@
 <translation id="8985264973231822211"><ph name="DEVICE_LAST_ACTIVATED_TIME" /> दिन पहले चालू था</translation>
 <translation id="8986362086234534611">भूल जाएं</translation>
 <translation id="8986494364107987395">इस्तेमाल के आंकड़े और खराबी रिपोर्ट अपने आप Google को भेजें</translation>
+<translation id="8986651757229422279">इससे <ph name="ORIGIN_NAME" /> का सेव किया गया पूरा डेटा, कुकी, और इंस्टॉल किया गया ऐप्लिकेशन मिट जाएगा.</translation>
 <translation id="8987927404178983737">माह</translation>
 <translation id="8991520179165052608">साइट आपके माइक्रोफ़ोन का इस्तेमाल कर सकती है</translation>
 <translation id="899403249577094719">Netscape प्रमाणपत्र आधार URL</translation>
@@ -5784,6 +5831,7 @@
 <translation id="932508678520956232">प्रिंटिंग आरंभ नहीं कर सका.</translation>
 <translation id="93343527085570547">कानूनी वजहों से सामग्री में बदलाव का अनुरोध करने के लिए <ph name="BEGIN_LINK1" />कानूनी मदद पेज<ph name="END_LINK1" /> पर जाएं.  खाते और सिस्टम की कुछ जानकारी Google को भेजी जा सकती है.  हम आपसे मिलने वाली जानकारी का इस्तेमाल तकनीकी समस्याएं ठीक करने और अपनी सेवाओं को बेहतर बनाने के लिए करेंगे. यह हमारी <ph name="BEGIN_LINK2" />निजता नीति<ph name="END_LINK2" /> और <ph name="BEGIN_LINK3" />सेवा की शर्तों<ph name="END_LINK3" /> के तहत किया जाएगा.</translation>
 <translation id="93393615658292258">केवल पासवर्ड</translation>
+<translation id="934244546219308557">इस ग्रुप को नाम दें</translation>
 <translation id="934503638756687833">ऐसे आइटम जिनके नाम यहां शामिल नहीं हैं, ज़रूरत पड़ने पर उन्हें भी हटाया जा सकता है. Chrome निजता श्वेत पत्र में &lt;a href="<ph name="URL" />"&gt;अनचाहे सॉफ़्टवेयर से सुरक्षा&lt;/a&gt; के बारे में ज़्यादा जानें.</translation>
 <translation id="935490618240037774">आपके बुकमार्क, इतिहास, पासवर्ड और अन्य सेटिंग को आपके Google खाते में समन्वयित किया जाएगा ताकि आप उनका उपयोग अपने सभी डिवाइस पर कर सकें.</translation>
 <translation id="935854577147268200">Smart Lock वाला फ़ोन बदल गया है. Smart Lock अपडेट करने के लिए अपना पासवर्ड डालें. अगली बार, आपका फ़ोन आपके <ph name="DEVICE_TYPE" /> को अनलॉक कर देगा. आप सेटिंग में जाकर Smart Lock को बंद कर सकते हैं</translation>

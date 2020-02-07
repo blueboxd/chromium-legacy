@@ -950,9 +950,7 @@ if (enable_java_templates) {
     } else {
       _sources_build_rel = []
 
-      # Speed up "gn gen" by short-circuiting the empty directory.
-      if (invoker.resource_dirs != [ "//build/android/empty" ] &&
-          invoker.resource_dirs != []) {
+      if (invoker.resource_dirs != []) {
         _sources_build_rel +=
             exec_script("//build/android/gyp/find.py",
                         rebase_path(invoker.resource_dirs, root_build_dir),
@@ -960,7 +958,6 @@ if (enable_java_templates) {
       }
       _resource_files = rebase_path(_sources_build_rel, ".", root_build_dir)
     }
-
     _rebased_resource_files = rebase_path(_resource_files, root_build_dir)
     write_file(_res_sources_path, _rebased_resource_files)
 

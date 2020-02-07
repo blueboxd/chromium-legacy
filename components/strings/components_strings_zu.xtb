@@ -687,6 +687,7 @@
 <translation id="3987940399970879459">Ngaphansi kunokungu-1 MB</translation>
 <translation id="3990250421422698716">I-Jog offset</translation>
 <translation id="40103911065039147">{URL_count,plural, =1{1 ikhasi lewebhu eliseduze}one{# amakhasi ewebhu aseduze}other{# amakhasi ewebhu aseduze}}</translation>
+<translation id="4014128326099193693">{COUNT,plural, =1{Idokhumenti le-PDF eliqukethe ikhasi elingu-{COUNT}}one{Idokhumenti le-PDF eliqukethe amakhasi angu-{COUNT}}other{Idokhumenti le-PDF eliqukethe amakhasi angu-{COUNT}}}</translation>
 <translation id="4030383055268325496">&amp;Hlelisa ukungeza</translation>
 <translation id="4032320456957708163">Isiphequluli sakho siphethwe i-<ph name="ENROLLMENT_DOMAIN" /></translation>
 <translation id="4058922952496707368">Ukhiye we-"<ph name="SUBKEY" />": <ph name="ERROR" /></translation>
@@ -715,6 +716,7 @@
 <translation id="4142935452406587478">Ithileyi elingu-10</translation>
 <translation id="4148925816941278100">I-American Express</translation>
 <translation id="4151403195736952345">Sebenzisa okuzenzakalelayo komhlaba wonke (Ukuthola)</translation>
+<translation id="4152318981910038897">{COUNT,plural, =1{Ikhasi 1}one{Ikhasi {COUNT}}other{Ikhasi {COUNT}}}</translation>
 <translation id="4159784952369912983">Okuphephuli</translation>
 <translation id="4165986682804962316">Izilungiselelo zesayithi</translation>
 <translation id="4171400957073367226">Isiginesha embi yokuqinisekisa</translation>
@@ -1392,6 +1394,7 @@
 <translation id="7201591969684833065">Umlawuli wakho angabona:</translation>
 <translation id="7202346780273620635">Letter-Extra</translation>
 <translation id="7210863904660874423">I-<ph name="HOST_NAME" /> ayithobeli amazinga ezokuvikela.</translation>
+<translation id="7210993021468939304">Umsebenzi we-Linux ungaphakathi kwesiqukathi, futhi ungafaka uphinde uqalise izinhlelo zokusebenza ze-Linux ngaphakathi kwesiqukathi</translation>
 <translation id="721197778055552897"><ph name="BEGIN_LINK" />Funda kabanzi<ph name="END_LINK" /> mayelana nale nkinga.</translation>
 <translation id="7219179957768738017">Ukuxhumeka kusebenzisa i-<ph name="SSL_VERSION" />.</translation>
 <translation id="7220786058474068424">Iyacubungula</translation>
@@ -1555,6 +1558,7 @@ Imininingwane engeziwe:
 <translation id="7878562273885520351">Iphasiwedi yakho ingafakwa engozini</translation>
 <translation id="7882421473871500483">Mpofu</translation>
 <translation id="7887683347370398519">Hlola i-CVC yakho uphinde uzame futhi</translation>
+<translation id="7887885240995164102">Faka isithombe-esithombeni</translation>
 <translation id="7888575728750733395">Phrinta inhloso yokunikezela</translation>
 <translation id="7904208859782148177">C3 (Envelope)</translation>
 <translation id="7932579305932748336">Ibhantshi</translation>

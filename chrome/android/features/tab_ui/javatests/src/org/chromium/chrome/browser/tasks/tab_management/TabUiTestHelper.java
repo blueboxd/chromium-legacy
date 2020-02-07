@@ -9,6 +9,7 @@ import static android.support.test.espresso.action.ViewActions.click;
 import static android.support.test.espresso.assertion.ViewAssertions.matches;
 import static android.support.test.espresso.matcher.RootMatchers.withDecorView;
 import static android.support.test.espresso.matcher.ViewMatchers.isDisplayed;
+import static android.support.test.espresso.matcher.ViewMatchers.isRoot;
 import static android.support.test.espresso.matcher.ViewMatchers.withId;
 import static android.support.test.espresso.matcher.ViewMatchers.withParent;
 
@@ -163,7 +164,41 @@ public class TabUiTestHelper {
 
                     @Override
                     public String getDescription() {
-                        return "close first tab";
+                        return "close tab with index " + String.valueOf(index);
+                    }
+
+                    @Override
+                    public void perform(UiController uiController, View view) {
+                        RecyclerView recyclerView = (RecyclerView) view;
+                        RecyclerView.ViewHolder viewHolder =
+                                recyclerView.findViewHolderForAdapterPosition(index);
+                        assert viewHolder != null;
+                        viewHolder.itemView.findViewById(R.id.action_button).performClick();
+                    }
+                });
+    }
+
+    /** Close the first tab in grid tab switcher. */
+    public static void closeFirstTabInTabSwitcher() {
+        closeNthTabInTabSwitcher(0);
+    }
+
+    /**
+     * Close the Nth tab in grid tab switcher.
+     * @param index The index of the target tab to close.
+     */
+    static void closeNthTabInTabSwitcher(int index) {
+        onView(withId(R.id.tab_list_view))
+                .inRoot(withDecorView(isRoot()))
+                .perform(new ViewAction() {
+                    @Override
+                    public Matcher<View> getConstraints() {
+                        return isDisplayed();
+                    }
+
+                    @Override
+                    public String getDescription() {
+                        return "close tab with index " + String.valueOf(index);
                     }
 
                     @Override
@@ -296,7 +331,7 @@ public class TabUiTestHelper {
     /**
      * Create a {@link OverviewModeBehaviorWatcher} to inspect overview hide.
      */
-    static OverviewModeBehaviorWatcher createOverviewHideWatcher(ChromeTabbedActivity cta) {
+    public static OverviewModeBehaviorWatcher createOverviewHideWatcher(ChromeTabbedActivity cta) {
         return new OverviewModeBehaviorWatcher(cta.getLayoutManager(), false, true);
     }
 

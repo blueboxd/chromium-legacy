@@ -33,6 +33,7 @@ import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.browser.tabmodel.TabCreatorManager;
 import org.chromium.chrome.browser.tabmodel.TabList;
 import org.chromium.chrome.browser.tabmodel.TabModelSelector;
+import org.chromium.chrome.browser.tasks.pseudotab.TabAttributeCache;
 import org.chromium.chrome.browser.tasks.tab_management.suggestions.TabSuggestionsOrchestrator;
 import org.chromium.chrome.browser.ui.messages.snackbar.SnackbarManager;
 import org.chromium.chrome.tab_ui.R;
@@ -68,6 +69,7 @@ public class TabSwitcherCoordinator
     private final MessageCardProviderCoordinator mMessageCardProviderCoordinator;
     private TabSuggestionsOrchestrator mTabSuggestionsOrchestrator;
     private NewTabTileCoordinator mNewTabTileCoordinator;
+    private TabAttributeCache mTabAttributeCache;
 
     private final MenuOrKeyboardActionController
             .MenuOrKeyboardActionHandler mTabSwitcherMenuActionHandler =
@@ -185,6 +187,11 @@ public class TabSwitcherCoordinator
                             R.layout.new_tab_tile_card_item, container, false);
                 }, NewTabTileViewBinder::bind);
             }
+        }
+
+        if (TabUiFeatureUtilities.isSearchTermChipEnabled()
+                && mode != TabListCoordinator.TabListMode.CAROUSEL) {
+            mTabAttributeCache = new TabAttributeCache(mTabModelSelector);
         }
 
         mMenuOrKeyboardActionController = menuOrKeyboardActionController;
@@ -387,5 +394,8 @@ public class TabSwitcherCoordinator
         mTabSelectionEditorCoordinator.destroy();
         mMediator.destroy();
         mLifecycleDispatcher.unregister(this);
+        if (mTabAttributeCache != null) {
+            mTabAttributeCache.destroy();
+        }
     }
 }

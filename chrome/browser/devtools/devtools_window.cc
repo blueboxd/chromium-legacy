@@ -221,8 +221,6 @@ GURL DecorateFrontendURL(const GURL& base_url) {
       ((frontend_url.find("?") == std::string::npos) ? "?" : "&") +
       "dockSide=undocked");  // TODO(dgozman): remove this support in M38.
   base::CommandLine* command_line = base::CommandLine::ForCurrentProcess();
-  if (command_line->HasSwitch(switches::kEnableDevToolsExperiments))
-    url_string += "&experiments=true";
 
   if (command_line->HasSwitch(switches::kDevToolsFlags)) {
     url_string += "&" + command_line->GetSwitchValueASCII(

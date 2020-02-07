@@ -15,11 +15,22 @@ StyleRuleUsageTracker::RuleListByStyleSheet StyleRuleUsageTracker::TakeDelta() {
   return result;
 }
 
+bool StyleRuleUsageTracker::InsertToUsedRulesMap(
+    const CSSStyleSheet* parent_sheet,
+    const StyleRule* rule) {
+  HeapHashSet<Member<const StyleRule>>* set =
+      used_rules_
+          .insert(parent_sheet,
+                  MakeGarbageCollected<HeapHashSet<Member<const StyleRule>>>())
+          .stored_value->value;
+  return set->insert(rule).is_new_entry;
+}
+
 void StyleRuleUsageTracker::Track(const CSSStyleSheet* parent_sheet,
                                   const StyleRule* rule) {
   if (!parent_sheet)
     return;
-  if (!used_rules_.insert(std::make_pair(parent_sheet, rule)).is_new_entry)
+  if (!InsertToUsedRulesMap(parent_sheet, rule))
     return;
   auto it = used_rules_delta_.find(parent_sheet);
   if (it != used_rules_delta_.end()) {

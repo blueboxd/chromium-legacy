@@ -65,7 +65,7 @@ public class CastAudioManager {
     public Observable<AudioFocusLoss> requestAudioFocusWhen(
             Observable<CastAudioFocusRequest> event) {
         Controller<AudioFocusLoss> audioFocusLossState = new Controller<>();
-        audioFocusLossState.set(AudioFocusLoss.NORMAL);
+        audioFocusLossState.set(AudioFocusLoss.NOT_REQUESTED);
         event.subscribe(focusRequest -> {
             focusRequest.setAudioFocusChangeListener((int focusChange) -> {
                 audioFocusLossState.set(AudioFocusLoss.from(focusChange));
@@ -139,7 +139,8 @@ public class CastAudioManager {
     public enum AudioFocusLoss {
         NORMAL,
         TRANSIENT,
-        TRANSIENT_CAN_DUCK;
+        TRANSIENT_CAN_DUCK,
+        NOT_REQUESTED;
 
         private static @Nullable AudioFocusLoss from(int focusChange) {
             switch (focusChange) {

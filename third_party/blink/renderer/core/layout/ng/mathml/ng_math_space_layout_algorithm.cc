@@ -36,8 +36,7 @@ scoped_refptr<const NGLayoutResult> NGMathSpaceLayoutAlgorithm::Layout() {
 
 base::Optional<MinMaxSize> NGMathSpaceLayoutAlgorithm::ComputeMinMaxSize(
     const MinMaxSizeInput& input) const {
-  return CalculateMinMaxSizesIgnoringChildren(Node(), border_padding_,
-                                              input.size_type);
+  return CalculateMinMaxSizesIgnoringChildren(Node(), border_padding_);
 }
 
 }  // namespace blink

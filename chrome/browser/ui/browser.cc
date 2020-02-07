@@ -128,7 +128,6 @@
 #include "chrome/browser/ui/global_error/global_error.h"
 #include "chrome/browser/ui/global_error/global_error_service.h"
 #include "chrome/browser/ui/global_error/global_error_service_factory.h"
-#include "chrome/browser/ui/javascript_dialogs/javascript_dialog_tab_helper.h"
 #include "chrome/browser/ui/location_bar/location_bar.h"
 #include "chrome/browser/ui/page_action/page_action_icon_type.h"
 #include "chrome/browser/ui/permission_bubble/chooser_bubble_delegate.h"
@@ -167,6 +166,7 @@
 #include "components/content_settings/core/browser/host_content_settings_map.h"
 #include "components/favicon/content/content_favicon_driver.h"
 #include "components/find_in_page/find_tab_helper.h"
+#include "components/javascript_dialogs/tab_modal_dialog_manager.h"
 #include "components/keep_alive_registry/keep_alive_registry.h"
 #include "components/keep_alive_registry/keep_alive_types.h"
 #include "components/keep_alive_registry/scoped_keep_alive.h"
@@ -1017,6 +1017,7 @@ bool Browser::CanSaveContents(content::WebContents* web_contents) const {
 
 void Browser::UpdateUIForNavigationInTab(WebContents* contents,
                                          ui::PageTransition transition,
+                                         NavigateParams::WindowAction action,
                                          bool user_initiated) {
   tab_strip_model_->TabNavigating(contents, transition);
 
@@ -1039,6 +1040,17 @@ void Browser::UpdateUIForNavigationInTab(WebContents* contents,
   // the throbber will show the default favicon for a split second when
   // navigating away from the new tab page.
   ScheduleUIUpdate(contents, content::INVALIDATE_TYPE_URL);
+
+  // Navigating contents can take focus (potentially taking it away from other,
+  // currently-focused UI element like the omnibox) if the navigation was
+  // initiated by the user (e.g., via omnibox, bookmarks, etc.).
+  //
+  // Note that focusing contents of NTP-initiated navigations is taken care of
+  // elsewhere - see FocusTabAfterNavigationHelper.
+  if (user_initiated && contents_is_selected &&
+      (window()->IsActive() || action == NavigateParams::SHOW_WINDOW)) {
+    contents->SetInitialFocus();
+  }
 }
 
 void Browser::RegisterKeepAlive() {
@@ -1783,7 +1795,7 @@ void Browser::DidNavigateMainFramePostCommit(WebContents* web_contents) {
 
 content::JavaScriptDialogManager* Browser::GetJavaScriptDialogManager(
     WebContents* source) {
-  return JavaScriptDialogTabHelper::FromWebContents(source);
+  return javascript_dialogs::TabModalDialogManager::FromWebContents(source);
 }
 
 bool Browser::GuestSaveFrame(content::WebContents* guest_web_contents) {

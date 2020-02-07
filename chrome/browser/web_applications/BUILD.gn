@@ -20,6 +20,8 @@ source_set("common") {
     "manifest_update_manager.h",
     "manifest_update_task.cc",
     "manifest_update_task.h",
+    "system_web_app_manager.cc",
+    "system_web_app_manager.h",
     "web_app_tab_helper.cc",
     "web_app_tab_helper.h",
   ]
@@ -30,9 +32,19 @@ source_set("common") {
     "//chrome/browser/web_applications/components",
     "//chrome/common",
     "//components/content_settings/core/browser",
+    "//components/pref_registry",
     "//content/public/browser",
     "//skia",
   ]
+
+  if (is_chromeos) {
+    deps += [
+      "//ash/public/cpp",
+      "//chromeos/components/help_app_ui",
+      "//chromeos/components/media_app_ui",
+      "//chromeos/constants",
+    ]
+  }
 }
 
 source_set("web_applications") {
@@ -47,8 +59,6 @@ source_set("web_applications") {
     "pending_app_manager_impl.h",
     "pending_app_registration_task.cc",
     "pending_app_registration_task.h",
-    "system_web_app_manager.cc",
-    "system_web_app_manager.h",
     "web_app.cc",
     "web_app.h",
     "web_app_database.cc",
@@ -81,7 +91,6 @@ source_set("web_applications") {
     ":web_app_group",
     "//chrome/browser/web_applications/components",
     "//chrome/common",
-    "//components/pref_registry",
     "//components/sync",
     "//content/public/browser",
     "//skia",
@@ -89,10 +98,6 @@ source_set("web_applications") {
 
   if (is_chromeos) {
     deps += [
-      "//ash/public/cpp:cpp",
-      "//chromeos/components/help_app_ui",
-      "//chromeos/components/media_app_ui",
-      "//chromeos/constants",
       "//components/arc:arc_base",
       "//components/arc/mojom",
     ]
@@ -149,6 +154,7 @@ source_set("web_applications_test_support") {
   ]
 
   deps = [
+    ":common",
     ":web_app_test_group",
     ":web_applications",
     "//base/test:test_support",
@@ -178,6 +184,7 @@ source_set("web_applications_unit_tests") {
   ]
 
   deps = [
+    ":common",
     ":web_app_test_group",
     ":web_applications",
     ":web_applications_on_extensions_test_support",
@@ -275,6 +282,7 @@ source_set("web_applications_on_extensions_test_support") {
   ]
 
   deps = [
+    ":common",
     ":web_app_test_group",
     ":web_applications",
     ":web_applications_on_extensions",
@@ -290,6 +298,7 @@ group("unit_tests") {
   testonly = true
 
   deps = [
+    ":common",
     ":web_app_test_group",
     ":web_applications_unit_tests",
     "//chrome/browser/web_applications/components:unit_tests",

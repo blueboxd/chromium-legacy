@@ -6052,6 +6052,14 @@ RenderFrameHostImpl::GetAssociatedLocalFrame() {
   return local_frame_;
 }
 
+const mojo::AssociatedRemote<blink::mojom::LocalMainFrame>&
+RenderFrameHostImpl::GetAssociatedLocalMainFrame() {
+  DCHECK(frame_tree_node_->IsMainFrame());
+  if (!local_main_frame_)
+    GetRemoteAssociatedInterfaces()->GetInterface(&local_main_frame_);
+  return local_main_frame_;
+}
+
 void RenderFrameHostImpl::ResetLoadingState() {
   if (is_loading()) {
     // When pending deletion, just set the loading state to not loading.

@@ -38,7 +38,6 @@ class PageHandler : public protocol::Page::Backend,
  private:
   static void GotInstallabilityErrors(
       std::unique_ptr<GetInstallabilityErrorsCallback> callback,
-      std::vector<std::string> errors,
       std::vector<content::InstallabilityError> installability_errors);
 
   static void GotManifestIcons(

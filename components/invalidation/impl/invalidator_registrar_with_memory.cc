@@ -126,21 +126,16 @@ bool InvalidatorRegistrarWithMemory::UpdateRegisteredTopics(
   CHECK(handler);
   CHECK(handlers_.HasObserver(handler));
 
-  Topics old_topics = GetRegisteredTopics(handler);
-
-  bool success = !HasDuplicateTopicRegistration(handler, topics);
-
-  if (success) {
-    if (topics.empty()) {
-      registered_handler_to_topics_map_.erase(handler);
-    } else {
-      registered_handler_to_topics_map_[handler] = topics;
-    }
+  if (HasDuplicateTopicRegistration(handler, topics)) {
+    return false;
   }
 
-  // TODO(crbug.com/1020117): This seems inconsistent - if there's a duplicate,
-  // we don't update |registered_handler_to_topics_map_| but we *do* still
-  // update |handler_name_to_subscribed_topics_map_| and the prefs?!
+  Topics old_topics = GetRegisteredTopics(handler);
+  if (topics.empty()) {
+    registered_handler_to_topics_map_.erase(handler);
+  } else {
+    registered_handler_to_topics_map_[handler] = topics;
+  }
 
   DictionaryPrefUpdate update(prefs_, kTopicsToHandler);
   base::Value* pref_data = update->FindDictKey(sender_id_);
@@ -161,7 +156,7 @@ bool InvalidatorRegistrarWithMemory::UpdateRegisteredTopics(
     handler_pref.SetBoolKey(kIsPublic, topic.second.is_public);
     pref_data->SetKey(topic.first, std::move(handler_pref));
   }
-  return success;
+  return true;
 }
 
 Topics InvalidatorRegistrarWithMemory::GetRegisteredTopics(

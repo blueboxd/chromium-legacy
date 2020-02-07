@@ -13,6 +13,7 @@ settings_namespace_rewrites = [
   "Settings.PrefUtil.prefToString|prefToString",
   "Settings.PrefUtil.stringToPrefValue|stringToPrefValue",
   "settings.Route|Route",
+  "settings.routes|routes",
   "settings.SearchEnginesBrowserProxy|SearchEnginesBrowserProxy",
   "settings.DefaultBrowserBrowserProxy|DefaultBrowserBrowserProxy",
 

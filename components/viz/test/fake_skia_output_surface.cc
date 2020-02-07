@@ -67,7 +67,7 @@ void FakeSkiaOutputSurface::SetDrawRectangle(const gfx::Rect& draw_rectangle) {
 void FakeSkiaOutputSurface::Reshape(const gfx::Size& size,
                                     float device_scale_factor,
                                     const gfx::ColorSpace& color_space,
-                                    bool has_alpha,
+                                    gfx::BufferFormat format,
                                     bool use_stencil) {
   auto& sk_surface = sk_surfaces_[0];
   SkColorType color_type = kRGBA_8888_SkColorType;

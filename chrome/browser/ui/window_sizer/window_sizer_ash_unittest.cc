@@ -20,6 +20,7 @@
 #include "ui/display/display.h"
 #include "ui/display/manager/display_manager.h"
 #include "ui/display/screen.h"
+#include "ui/display/test/display_manager_test_api.h"
 #include "ui/wm/public/activation_client.h"
 
 class WindowSizerAshTest : public ChromeAshTestBase {
@@ -482,10 +483,11 @@ TEST_F(WindowSizerAshTest, PlaceNewWindowsOnMultipleDisplays) {
   UpdateDisplay("1600x1200,1600x1200");
   display::Display primary_display =
       display::Screen::GetScreen()->GetPrimaryDisplay();
-  display::Display second_display = display_manager()->GetSecondaryDisplay();
+  display::Display second_display =
+      display::test::DisplayManagerTestApi(display_manager())
+          .GetSecondaryDisplay();
   gfx::Rect primary_bounds = primary_display.bounds();
   gfx::Rect secondary_bounds = second_display.bounds();
-
 
   // Create browser windows that are used as reference.
   Browser::CreateParams params(&profile_, true);
@@ -731,7 +733,10 @@ TEST_F(WindowSizerAshTest, DefaultBoundsInTargetDisplay) {
   {
     // When the second display is active new windows are placed there.
     aura::Window* second_root = ash::Shell::GetAllRootWindows()[1];
-    int64_t second_display_id = display_manager()->GetSecondaryDisplay().id();
+    int64_t second_display_id =
+        display::test::DisplayManagerTestApi(display_manager())
+            .GetSecondaryDisplay()
+            .id();
     display::Screen::GetScreen()->SetDisplayForNewWindows(second_display_id);
     gfx::Rect bounds;
     ui::WindowShowState show_state;

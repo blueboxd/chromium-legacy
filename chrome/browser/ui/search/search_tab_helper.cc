@@ -510,9 +510,6 @@ void SearchTabHelper::OnResultChanged(bool default_result_changed) {
     return;
   }
 
-  if (!autocomplete_controller_->done())
-    return;
-
   if (!search::DefaultSearchProviderIsGoogle(profile())) {
     return;
   }
@@ -802,6 +799,7 @@ void SearchTabHelper::OpenExtensionsPage(double button,
                                          bool shift_key) {
   if (!search::DefaultSearchProviderIsGoogle(profile()))
     return;
+  base::RecordAction(base::UserMetricsAction("Extensions.NtpPromoClicked"));
   UMA_HISTOGRAM_ENUMERATION(
       "Extensions.Checkup.NtpPromoClicked",
       static_cast<extensions::CheckupMessage>(

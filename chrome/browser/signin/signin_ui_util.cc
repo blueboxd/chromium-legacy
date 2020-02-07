@@ -31,6 +31,7 @@
 #include "components/signin/public/base/signin_pref_names.h"
 #include "components/signin/public/identity_manager/account_info.h"
 #include "components/signin/public/identity_manager/accounts_in_cookie_jar_info.h"
+#include "components/signin/public/identity_manager/consent_level.h"
 #include "components/signin/public/identity_manager/identity_manager.h"
 #include "components/signin/public/identity_manager/identity_utils.h"
 #include "third_party/re2/src/re2/re2.h"
@@ -294,8 +295,8 @@ base::string16 GetShortProfileIdentityToDisplay(
   DCHECK(profile);
   signin::IdentityManager* identity_manager =
       IdentityManagerFactory::GetForProfile(profile);
-  CoreAccountInfo core_info =
-      identity_manager->GetUnconsentedPrimaryAccountInfo();
+  CoreAccountInfo core_info = identity_manager->GetPrimaryAccountInfo(
+      signin::ConsentLevel::kNotRequired);
   // If there's no unconsented primary account, simply return the name of the
   // profile according to profile attributes.
   if (core_info.IsEmpty())

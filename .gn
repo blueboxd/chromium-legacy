@@ -219,7 +219,6 @@ check_targets = [
   "//chrome/chrome_elf/*",
   "//chrome/chrome_cleaner/*",
 
-  #"//chrome/chrome_watcher/*",  # 3 errors on Windows
   "//chrome/common/*",
 
   #"//chrome/elevation_service/*",  # 1 error on Windows

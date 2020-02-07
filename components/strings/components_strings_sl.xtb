@@ -690,6 +690,7 @@
 <translation id="3987940399970879459">Manj kot 1 MB</translation>
 <translation id="3990250421422698716">Zamik v načinu dela »jog«</translation>
 <translation id="40103911065039147">{URL_count,plural, =1{1 spletna stran v bližini}one{# spletna stran v bližini}two{# spletni strani v bližini}few{# spletne strani v bližini}other{# spletnih strani v bližini}}</translation>
+<translation id="4014128326099193693">{COUNT,plural, =1{Dokument PDF, ki vsebuje {COUNT} stran}one{Dokument PDF, ki vsebuje {COUNT} stran}two{Dokument PDF, ki vsebuje {COUNT} strani}few{Dokument PDF, ki vsebuje {COUNT} strani}other{Dokument PDF, ki vsebuje {COUNT} strani}}</translation>
 <translation id="4030383055268325496">&amp;Razveljavi dodajanje</translation>
 <translation id="4032320456957708163">Brskalnik upravlja domena <ph name="ENROLLMENT_DOMAIN" /></translation>
 <translation id="4058922952496707368">Ključ »<ph name="SUBKEY" />«: <ph name="ERROR" /></translation>
@@ -718,6 +719,7 @@
 <translation id="4142935452406587478">Pladenj 10</translation>
 <translation id="4148925816941278100">American Express</translation>
 <translation id="4151403195736952345">Globalno uporabi privzete nastavitve (zaznavanje)</translation>
+<translation id="4152318981910038897">{COUNT,plural, =1{1. stran}one{{COUNT}. stran}two{{COUNT}. stran}few{{COUNT}. stran}other{{COUNT}. stran}}</translation>
 <translation id="4159784952369912983">Vijolična</translation>
 <translation id="4165986682804962316">Nastavitve spletnega mesta</translation>
 <translation id="4171400957073367226">Neveljavni podpis za preverjanje</translation>
@@ -1395,6 +1397,7 @@
 <translation id="7201591969684833065">Skrbniku je prikazano to:</translation>
 <translation id="7202346780273620635">Letter-Extra</translation>
 <translation id="7210863904660874423">Spletno mesto <ph name="HOST_NAME" /> ne upošteva varnostnih standardov.</translation>
+<translation id="7210993021468939304">Dejavnost Linuxa v vsebniku in omogočeno nameščeanje ter izvajanje aplikacij za Linux v vsebniku</translation>
 <translation id="721197778055552897"><ph name="BEGIN_LINK" />Več o<ph name="END_LINK" /> tej težavi.</translation>
 <translation id="7219179957768738017">Povezava uporablja <ph name="SSL_VERSION" />.</translation>
 <translation id="7220786058474068424">Obdelovanje</translation>
@@ -1558,6 +1561,7 @@ Dodatne podrobnosti:
 <translation id="7878562273885520351">Geslo je morda ogroženo</translation>
 <translation id="7882421473871500483">Rjava</translation>
 <translation id="7887683347370398519">Preverite CVC in poskusite znova</translation>
+<translation id="7887885240995164102">Odpri način slike v sliki</translation>
 <translation id="7888575728750733395">Namen upodabljanja tiskanja</translation>
 <translation id="7904208859782148177">C3 (Envelope)</translation>
 <translation id="7932579305932748336">Prevleka</translation>

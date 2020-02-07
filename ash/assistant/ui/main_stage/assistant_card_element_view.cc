@@ -214,8 +214,8 @@ void AssistantCardElementView::InitLayout(
   GetViewAccessibility().OverrideName(card_element->fallback());
 }
 
-AssistantWebView2* AssistantCardElementView::contents_view() {
-  return const_cast<AssistantWebView2*>(card_element_->contents_view());
+AssistantWebView* AssistantCardElementView::contents_view() {
+  return const_cast<AssistantWebView*>(card_element_->contents_view());
 }
 
 }  // namespace ash

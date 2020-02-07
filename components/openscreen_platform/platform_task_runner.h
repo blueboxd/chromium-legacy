@@ -26,6 +26,7 @@ class PlatformTaskRunner final : public openscreen::TaskRunner {
   void PostPackagedTask(openscreen::TaskRunner::Task task) final;
   void PostPackagedTaskWithDelay(openscreen::TaskRunner::Task task,
                                  openscreen::Clock::duration delay) final;
+  bool IsRunningOnTaskRunner() final;
 
  private:
   scoped_refptr<base::SequencedTaskRunner> task_runner_;

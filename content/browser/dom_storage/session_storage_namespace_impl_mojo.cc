@@ -123,16 +123,17 @@ void SessionStorageNamespaceImplMojo::Reset() {
 
 void SessionStorageNamespaceImplMojo::Bind(
     mojo::PendingReceiver<blink::mojom::SessionStorageNamespace> receiver,
-    int process_id) {
+    ChildProcessSecurityPolicyImpl::Handle handle) {
   if (!IsPopulated()) {
     bind_waiting_on_population_ = true;
     run_after_population_.push_back(base::BindOnce(
         &SessionStorageNamespaceImplMojo::Bind, base::Unretained(this),
-        std::move(receiver), process_id));
+        std::move(receiver), std::move(handle)));
     return;
   }
   DCHECK(IsPopulated());
-  receivers_.Add(this, std::move(receiver), process_id);
+  receivers_.Add(this, std::move(receiver),
+                 std::make_unique<SecurityPolicyHandle>(std::move(handle)));
   bind_waiting_on_population_ = false;
 }
 
@@ -176,16 +177,8 @@ void SessionStorageNamespaceImplMojo::OpenArea(
     mojo::PendingReceiver<blink::mojom::StorageArea> receiver) {
   DCHECK(IsPopulated());
   DCHECK(!receivers_.empty());
-  int process_id = receivers_.current_context();
-  // TODO(943887): Replace HasSecurityState() call with something that can
-  // preserve security state after process shutdown. The security state check
-  // is a temporary solution to avoid crashes when this method is run after the
-  // process associated with |process_id| has been destroyed.
-  // It temporarily restores the old behavior of always allowing access if the
-  // process is gone.
-  auto* policy = ChildProcessSecurityPolicyImpl::GetInstance();
-  if (!policy->CanAccessDataForOrigin(process_id, origin) &&
-      policy->HasSecurityState(process_id)) {
+  const auto& security_policy_handle = receivers_.current_context();
+  if (!security_policy_handle->CanAccessDataForOrigin(origin)) {
     receivers_.ReportBadMessage("Access denied for sessionStorage request");
     return;
   }

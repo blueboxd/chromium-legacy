@@ -210,7 +210,6 @@ class SafeBrowsingService : public SafeBrowsingServiceInterface,
   friend class extensions::SafeBrowsingPrivateApiUnitTest;
   friend class SafeBrowsingServerTest;
   friend class SafeBrowsingUIManagerTest;
-  friend class SafeBrowsingURLRequestContextGetter;
   friend class TestSafeBrowsingService;
   friend class TestSafeBrowsingServiceFactory;
   friend class V4SafeBrowsingServiceTest;

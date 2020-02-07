@@ -85,6 +85,10 @@ const base::FeatureParam<int>
         &kRecentCreationTimeGrantsLegacyCookieSemantics,
         "RecentCreationTimeGrantsLegacyCookieSemanticsMilliseconds", 0};
 
+const base::Feature kBlockExternalRequestsFromNonSecureInitiators{
+    "BlockExternalRequestsFromNonSecureInitiators",
+    base::FEATURE_DISABLED_BY_DEFAULT};
+
 #if BUILDFLAG(BUILTIN_CERT_VERIFIER_FEATURE_SUPPORTED)
 const base::Feature kCertVerifierBuiltinFeature {
   "CertVerifierBuiltin",

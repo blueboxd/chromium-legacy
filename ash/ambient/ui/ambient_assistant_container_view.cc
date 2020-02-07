@@ -123,7 +123,7 @@ void AmbientAssistantContainerView::InitLayout() {
   constexpr int kClipCircleRadius = kAvatarImageSizeDip / 2;
   circular_mask.addCircle(kClipCircleRadius, kClipCircleRadius,
                           kClipCircleRadius);
-  avatar_view_->set_clip_path(circular_mask);
+  avatar_view_->SetClipPath(circular_mask);
 }
 
 }  // namespace ash

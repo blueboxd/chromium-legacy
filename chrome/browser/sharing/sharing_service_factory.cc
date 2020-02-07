@@ -67,6 +67,7 @@ SharingServiceHost* MaybeRegisterSharingServiceHost(
     SharingMessageSender* sharing_message_sender,
     gcm::GCMDriver* gcm_driver,
     SharingSyncPreference* sync_prefs,
+    SharingDeviceSource* device_source,
     content::BrowserContext* context) {
 #if defined(OS_ANDROID)
   // Sending via WebRTC is not supported on Android.
@@ -76,7 +77,8 @@ SharingServiceHost* MaybeRegisterSharingServiceHost(
       content::BrowserContext::GetDefaultStoragePartition(context)
           ->GetURLLoaderFactoryForBrowserProcess();
   auto sharing_service_host = std::make_unique<SharingServiceHost>(
-      sharing_message_sender, gcm_driver, sync_prefs, url_loader_factory);
+      sharing_message_sender, gcm_driver, sync_prefs, device_source,
+      url_loader_factory);
 
   // Get pointer as |sharing_message_sender| takes ownership.
   SharingServiceHost* sharing_service_host_ptr = sharing_service_host.get();
@@ -175,7 +177,8 @@ KeyedService* SharingServiceFactory::BuildServiceInstanceFor(
   content::SmsFetcher* sms_fetcher = content::SmsFetcher::Get(context);
   SharingServiceHost* sharing_service_host_ptr =
       MaybeRegisterSharingServiceHost(sharing_message_sender.get(), gcm_driver,
-                                      sync_prefs.get(), context);
+                                      sync_prefs.get(), device_source.get(),
+                                      context);
   auto handler_registry = std::make_unique<SharingHandlerRegistryImpl>(
       profile, sharing_device_registration.get(), sharing_message_sender.get(),
       device_source.get(), sms_fetcher, sharing_service_host_ptr);

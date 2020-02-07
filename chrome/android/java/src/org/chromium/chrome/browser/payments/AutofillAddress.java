@@ -17,8 +17,8 @@ import org.chromium.chrome.R;
 import org.chromium.chrome.browser.autofill.PersonalDataManager;
 import org.chromium.chrome.browser.autofill.PersonalDataManager.AutofillProfile;
 import org.chromium.chrome.browser.autofill.prefeditor.EditableOption;
-import org.chromium.chrome.browser.settings.autofill.AutofillProfileBridge;
-import org.chromium.chrome.browser.settings.autofill.AutofillProfileBridge.AddressField;
+import org.chromium.chrome.browser.autofill.settings.AutofillProfileBridge;
+import org.chromium.chrome.browser.autofill.settings.AutofillProfileBridge.AddressField;
 import org.chromium.payments.mojom.PaymentAddress;
 
 import java.lang.annotation.Retention;

@@ -11,29 +11,29 @@
 <body>
 <script>
 
-badge_test(() => navigator.setExperimentalAppBadge(), 'flag');
+badge_test(() => navigator.setAppBadge(), 'flag');
 
-badge_test(() => navigator.setExperimentalAppBadge(undefined), 'flag');
+badge_test(() => navigator.setAppBadge(undefined), 'flag');
 
-badge_test(() => navigator.setExperimentalAppBadge(1), 'number:1');
+badge_test(() => navigator.setAppBadge(1), 'number:1');
 
 // Non-whole number should round down to nearest integer.
-badge_test(() => navigator.setExperimentalAppBadge(10.6), 'number:10');
+badge_test(() => navigator.setAppBadge(10.6), 'number:10');
 
 // Maximum allowed value (2^53 - 1).
-badge_test(() => navigator.setExperimentalAppBadge(Number.MAX_SAFE_INTEGER),
+badge_test(() => navigator.setAppBadge(Number.MAX_SAFE_INTEGER),
            'number:' + Number.MAX_SAFE_INTEGER);
 
 // Setting the Badge to 0 should be equivalent to clearing the badge.
-badge_test(() => navigator.setExperimentalAppBadge(0), 'clear');
+badge_test(() => navigator.setAppBadge(0), 'clear');
 
-badge_test(() => navigator.clearExperimentalAppBadge(), 'clear');
+badge_test(() => navigator.clearAppBadge(), 'clear');
 
 // Non-numeric values that convert to integer.
-badge_test(() => navigator.setExperimentalAppBadge(null), 'clear');
-badge_test(() => navigator.setExperimentalAppBadge(false), 'clear');
-badge_test(() => navigator.setExperimentalAppBadge(true), 'number:1');
-badge_test(() => navigator.setExperimentalAppBadge('3'), 'number:3');
+badge_test(() => navigator.setAppBadge(null), 'clear');
+badge_test(() => navigator.setAppBadge(false), 'clear');
+badge_test(() => navigator.setAppBadge(true), 'number:1');
+badge_test(() => navigator.setAppBadge('3'), 'number:3');
 
 </script>
 </body>

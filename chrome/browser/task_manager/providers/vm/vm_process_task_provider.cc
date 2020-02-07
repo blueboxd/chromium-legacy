@@ -102,22 +102,28 @@ bool CrostiniExtractVmNameAndOwnerId(const std::string& arg,
 }
 
 // We are looking for argument like this:
-// /run/pvm-images/<cryptohome id>/UHZtRGVmYXVsdA==.pvm/...
+// --params=/run/pvm-images/<cryptohome id>/UHZtRGVmYXVsdA==.pvm/...
 bool PluginVmExtractVmNameAndOwnerId(const std::string& arg,
                                      std::string* vm_name_out,
                                      std::string* owner_id_out) {
   DCHECK(vm_name_out);
   DCHECK(owner_id_out);
 
+  constexpr char kParamPrefix[] = "--params=";
+  if (!base::StartsWith(arg, kParamPrefix, base::CompareCase::SENSITIVE)) {
+    return false;
+  }
+  base::StringPiece param(arg.begin() + strlen(kParamPrefix), arg.end());
+
   // All VM disk images are mounted at this path.
   constexpr char kVmDiskRoot[] = "/run/pvm-images/";
 
   // Skip paths that don't start with the correct prefix.
-  if (!base::StartsWith(arg, kVmDiskRoot, base::CompareCase::SENSITIVE)) {
+  if (!base::StartsWith(param, kVmDiskRoot, base::CompareCase::SENSITIVE)) {
     return false;
   }
 
-  const base::FilePath vm_disk_path(arg);
+  const base::FilePath vm_disk_path(param);
 
   std::vector<std::string> components;
   vm_disk_path.GetComponents(&components);

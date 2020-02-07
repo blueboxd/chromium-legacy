@@ -6,7 +6,7 @@
 
 #include "base/android/jni_android.h"
 #include "base/bind.h"
-#include "components/javascript_dialogs/android/javascript_app_modal_dialog_android.h"
+#include "components/javascript_dialogs/android/app_modal_dialog_view_android.h"
 #include "components/javascript_dialogs/app_modal_dialog_controller.h"
 #include "components/javascript_dialogs/app_modal_dialog_manager.h"
 #include "content/public/browser/web_contents.h"
@@ -14,11 +14,10 @@
 void InstallChromeJavaScriptAppModalDialogViewFactory() {
   javascript_dialogs::AppModalDialogManager::GetInstance()
       ->SetNativeDialogFactory(base::BindRepeating(
-          [](javascript_dialogs::AppModalDialogController* controller) {
-            javascript_dialogs::AppModalDialogView* view =
-                new javascript_dialogs::JavascriptAppModalDialogAndroid(
-                    base::android::AttachCurrentThread(), controller,
-                    controller->web_contents()->GetTopLevelNativeWindow());
-            return view;
+          [](javascript_dialogs::AppModalDialogController* controller)
+              -> javascript_dialogs::AppModalDialogView* {
+            return new javascript_dialogs::AppModalDialogViewAndroid(
+                base::android::AttachCurrentThread(), controller,
+                controller->web_contents()->GetTopLevelNativeWindow());
           }));
 }

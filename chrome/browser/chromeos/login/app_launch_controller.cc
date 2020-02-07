@@ -298,7 +298,7 @@ void AppLaunchController::OnNetworkConfigFinished() {
   DCHECK(network_config_requested_);
   network_config_requested_ = false;
   app_launch_splash_screen_view_->UpdateAppLaunchState(
-      AppLaunchSplashScreenView::APP_LAUNCH_STATE_PREPARING_NETWORK);
+      AppLaunchSplashScreenView::APP_LAUNCH_STATE_PREPARING_PROFILE);
   startup_app_launcher_->RestartLauncher();
 }
 
@@ -466,8 +466,13 @@ void AppLaunchController::InitializeNetwork() {
       FROM_HERE, base::TimeDelta::FromSeconds(network_wait_time_in_seconds),
       this, &AppLaunchController::OnNetworkWaitTimedout);
 
-  app_launch_splash_screen_view_->UpdateAppLaunchState(
-      AppLaunchSplashScreenView::APP_LAUNCH_STATE_PREPARING_NETWORK);
+  // When there is noting to be configured, do not update the splash screen.
+  if (app_launch_splash_screen_view_->IsNetworkReady()){
+    OnNetworkStateChanged(/*online*/ true);
+  } else {
+    app_launch_splash_screen_view_->UpdateAppLaunchState(
+        AppLaunchSplashScreenView::APP_LAUNCH_STATE_PREPARING_NETWORK);
+  }
 }
 
 bool AppLaunchController::IsNetworkReady() {

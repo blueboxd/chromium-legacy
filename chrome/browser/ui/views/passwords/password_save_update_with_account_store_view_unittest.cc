@@ -53,6 +53,8 @@ TestManagePasswordsUIController::TestManagePasswordsUIController(
       .WillByDefault(ReturnRef(current_forms_));
   ON_CALL(model_delegate_mock_, GetWebContents)
       .WillByDefault(Return(web_contents));
+  ON_CALL(model_delegate_mock_, GetPasswordFeatureManager)
+      .WillByDefault(Return(&feature_manager_));
 
   ON_CALL(feature_manager_, GetDefaultPasswordStore)
       .WillByDefault(Return(autofill::PasswordForm::Store::kAccountStore));

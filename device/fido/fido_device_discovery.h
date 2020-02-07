@@ -32,6 +32,7 @@ class COMPONENT_EXPORT(DEVICE_FIDO) FidoDeviceDiscovery
     kIdle,
     kStarting,
     kRunning,
+    kStopped,
   };
 
   ~FidoDeviceDiscovery() override;
@@ -47,13 +48,12 @@ class COMPONENT_EXPORT(DEVICE_FIDO) FidoDeviceDiscovery
 
   // FidoDiscoveryBase:
   void Start() override;
+  bool MaybeStop() override;
 
  protected:
   FidoDeviceDiscovery(FidoTransportProtocol transport);
 
   void NotifyDiscoveryStarted(bool success);
-  void NotifyAuthenticatorAdded(FidoAuthenticator* authenticator);
-  void NotifyAuthenticatorRemoved(FidoAuthenticator* authenticator);
 
   bool AddDevice(std::unique_ptr<FidoDevice> device);
   bool RemoveDevice(base::StringPiece device_id);
@@ -73,6 +73,9 @@ class COMPONENT_EXPORT(DEVICE_FIDO) FidoDeviceDiscovery
       authenticators_;
 
  private:
+  void NotifyAuthenticatorAdded(FidoAuthenticator* authenticator);
+  void NotifyAuthenticatorRemoved(FidoAuthenticator* authenticator);
+
   State state_ = State::kIdle;
   base::WeakPtrFactory<FidoDeviceDiscovery> weak_factory_{this};
 

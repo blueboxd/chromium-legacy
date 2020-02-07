@@ -8,9 +8,11 @@
 #include <memory>
 
 #include "base/bind.h"
+#include "base/callback_helpers.h"
 #include "base/strings/sys_string_conversions.h"
 #include "base/time/time.h"
 #include "components/autofill/core/browser/personal_data_manager.h"
+#include "components/autofill/core/browser/webdata/autofill_webdata_service.h"
 #include "components/password_manager/core/browser/password_store_default.h"
 #include "components/signin/core/browser/signin_error_controller.h"
 #include "components/signin/public/identity_manager/account_info.h"
@@ -118,7 +120,9 @@ class WebViewSyncControllerObserverBridge
   SigninErrorController* _signinErrorController;
   std::unique_ptr<ios_web_view::WebViewSyncControllerObserverBridge> _observer;
   autofill::PersonalDataManager* _personalDataManager;
+  autofill::AutofillWebDataService* _autofillWebDataService;
   password_manager::PasswordStore* _passwordStore;
+  NSInteger _pendingCleanupTasksCount;
 }
 
 @synthesize currentIdentity = _currentIdentity;
@@ -138,17 +142,20 @@ __weak id<CWVSyncControllerDataSource> gSyncDataSource;
 }
 
 - (instancetype)
-      initWithSyncService:(syncer::SyncService*)syncService
-          identityManager:(signin::IdentityManager*)identityManager
-    signinErrorController:(SigninErrorController*)signinErrorController
-      personalDataManager:(autofill::PersonalDataManager*)personalDataManager
-            passwordStore:(password_manager::PasswordStore*)passwordStore {
+       initWithSyncService:(syncer::SyncService*)syncService
+           identityManager:(signin::IdentityManager*)identityManager
+     signinErrorController:(SigninErrorController*)signinErrorController
+       personalDataManager:(autofill::PersonalDataManager*)personalDataManager
+    autofillWebDataService:
+        (autofill::AutofillWebDataService*)autofillWebDataService
+             passwordStore:(password_manager::PasswordStore*)passwordStore {
   self = [super init];
   if (self) {
     _syncService = syncService;
     _identityManager = identityManager;
     _signinErrorController = signinErrorController;
     _personalDataManager = personalDataManager;
+    _autofillWebDataService = autofillWebDataService;
     _passwordStore = passwordStore;
     _observer =
         std::make_unique<ios_web_view::WebViewSyncControllerObserverBridge>(
@@ -192,6 +199,20 @@ __weak id<CWVSyncControllerDataSource> gSyncDataSource;
   DCHECK(!_currentIdentity)
       << "Already syncing! Call -stopSyncAndClearIdentity first.";
 
+  if (_pendingCleanupTasksCount > 0) {
+    NSError* error = [NSError
+        errorWithDomain:CWVSyncErrorDomain
+                   code:CWVSyncErrorCleanupPending
+               userInfo:@{
+                 NSLocalizedDescriptionKey : @"Sync is not fully stopped.",
+                 NSLocalizedFailureReasonErrorKey :
+                     @"Clean up tasks are still running.",
+                 NSLocalizedRecoverySuggestionErrorKey : @"Try again later."
+               }];
+    [self invokeDelegateDidFailWithError:error];
+    return;
+  }
+
   _currentIdentity = identity;
 
   const CoreAccountId accountId = _identityManager->PickAccountIdForAccount(
@@ -219,18 +240,29 @@ __weak id<CWVSyncControllerDataSource> gSyncDataSource;
       signin_metrics::ProfileSignout::USER_CLICKED_SIGNOUT_SETTINGS,
       signin_metrics::SignoutDelete::IGNORE_METRIC);
 
-  // Clear all data because we do not support data migration.
-  // It is important that this happens post logging out so that the deletions
-  // are only local to the device.
+  if (_pendingCleanupTasksCount > 0) {
+    // Already stopping
+    return;
+  }
+
+  // Remove all remaining autofill data. We do this because we don't support
+  // data migration between accounts.
+
+  // Clean up address and credit card data.
   _personalDataManager->ClearAllLocalData();
   // Clearing server data would usually result in data being deleted from the
   // user's data on sync servers, but because this is called after the user has
   // been logged out, this merely clears the left over, local copies.
   _personalDataManager->ClearAllServerData();
-  _passwordStore->RemoveLoginsCreatedBetween(base::Time(), base::Time::Max(),
-                                             base::Closure());
+  // Post an empty task with a callback which is guaranteed to be completed
+  // after the above tasks.
+  _autofillWebDataService->GetDBTaskRunner()->PostTaskAndReply(
+      FROM_HERE, base::DoNothing(), [self pendingCleanupTaskCallback]);
 
-  _currentIdentity = nil;
+  // Clean up password data.
+  _passwordStore->RemoveLoginsCreatedBetween(
+      base::Time::Min(), base::Time::Max(),
+      AdaptCallbackForRepeating([self pendingCleanupTaskCallback]));
 }
 
 - (BOOL)unlockWithPassphrase:(NSString*)passphrase {
@@ -258,11 +290,30 @@ __weak id<CWVSyncControllerDataSource> gSyncDataSource;
 
 #pragma mark - Internal Methods
 
-- (void)didClearPrimaryAccount {
-  if (![_delegate respondsToSelector:@selector(syncControllerDidStopSync:)]) {
-    return;
+// Create and return a callback that is used to notify when a clean up task
+// completes.
+- (base::OnceClosure)pendingCleanupTaskCallback {
+  _pendingCleanupTasksCount++;
+  __weak CWVSyncController* weakSelf = self;
+  return base::BindOnce(^{
+    CWVSyncController* strongSelf = weakSelf;
+    if (!strongSelf) {
+      return;
+    }
+    [strongSelf handlePendingTaskCallback];
+  });
+}
+
+- (void)handlePendingTaskCallback {
+  _pendingCleanupTasksCount--;
+  if (_pendingCleanupTasksCount == 0 &&
+      [_delegate respondsToSelector:@selector(syncControllerDidStopSync:)]) {
+    [_delegate syncControllerDidStopSync:self];
   }
-  [_delegate syncControllerDidStopSync:self];
+}
+
+- (void)didClearPrimaryAccount {
+  _currentIdentity = nil;
 }
 
 - (void)didUpdateAuthError {
@@ -270,12 +321,21 @@ __weak id<CWVSyncControllerDataSource> gSyncDataSource;
   CWVSyncError code =
       CWVConvertGoogleServiceAuthErrorStateToCWVSyncError(authError.state());
   if (code != CWVSyncErrorNone) {
-    if ([_delegate
-            respondsToSelector:@selector(syncController:didFailWithError:)]) {
-      NSError* error =
-          [NSError errorWithDomain:CWVSyncErrorDomain code:code userInfo:nil];
-      [_delegate syncController:self didFailWithError:error];
-    }
+    NSError* error =
+        [NSError errorWithDomain:CWVSyncErrorDomain
+                            code:code
+                        userInfo:@{
+                          NSLocalizedDescriptionKey :
+                              base::SysUTF8ToNSString(authError.ToString())
+                        }];
+    [self invokeDelegateDidFailWithError:error];
+  }
+}
+
+- (void)invokeDelegateDidFailWithError:(NSError*)error {
+  if ([_delegate respondsToSelector:@selector(syncController:
+                                            didFailWithError:)]) {
+    [_delegate syncController:self didFailWithError:error];
   }
 }
 

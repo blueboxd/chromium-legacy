@@ -98,6 +98,8 @@ class ArcContainerClientAdapter
     request.set_arc_custom_tabs_experiment(params.arc_custom_tabs_experiment);
     request.set_arc_print_spooler_experiment(
         params.arc_print_spooler_experiment);
+    request.set_disable_system_default_app(
+        params.arc_disable_system_default_app);
 
     chromeos::SessionManagerClient::Get()->StartArcMiniContainer(
         request, std::move(callback));

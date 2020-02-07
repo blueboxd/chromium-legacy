@@ -362,16 +362,6 @@ void PdfAccessibilityTree::SetAccessibilityViewportInfo(
   if (render_accessibility && tree_.size() > 1) {
     ui::AXNode* root = tree_.root();
     ui::AXNodeData root_data = root->data();
-    root_data.AddIntAttribute(ax::mojom::IntAttribute::kScrollXMin, 0);
-    root_data.AddIntAttribute(ax::mojom::IntAttribute::kScrollXMax,
-                              viewport_info.total_scrollable_size.width);
-    root_data.AddIntAttribute(ax::mojom::IntAttribute::kScrollX,
-                              viewport_info.current_scroll_position.x);
-    root_data.AddIntAttribute(ax::mojom::IntAttribute::kScrollYMin, 0);
-    root_data.AddIntAttribute(ax::mojom::IntAttribute::kScrollYMax,
-                              viewport_info.total_scrollable_size.height);
-    root_data.AddIntAttribute(ax::mojom::IntAttribute::kScrollY,
-                              viewport_info.current_scroll_position.y);
     root_data.relative_bounds.transform =
         base::WrapUnique(MakeTransformFromViewInfo());
     root->SetData(root_data);

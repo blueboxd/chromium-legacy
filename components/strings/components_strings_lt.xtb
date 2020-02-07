@@ -691,6 +691,7 @@
 <translation id="3987940399970879459">Mažiau nei 1 MB</translation>
 <translation id="3990250421422698716">Kopijų atskyrimas</translation>
 <translation id="40103911065039147">{URL_count,plural, =1{1 tinklalapis netoliese}one{# tinklalapis netoliese}few{# tinklalapiai netoliese}many{# tinklalapio netoliese}other{# tinklalapių netoliese}}</translation>
+<translation id="4014128326099193693">{COUNT,plural, =1{PDF dokumente yra {COUNT} puslapis}one{PDF dokumente yra {COUNT} puslapis}few{PDF dokumente yra {COUNT} puslapiai}many{PDF dokumente yra {COUNT} puslapio}other{PDF dokumente yra {COUNT} puslapių}}</translation>
 <translation id="4030383055268325496">&amp;Anuliuoti pridėjimą</translation>
 <translation id="4032320456957708163">Jūsų naršyklę tvarko <ph name="ENROLLMENT_DOMAIN" /></translation>
 <translation id="4058922952496707368">Raktas „<ph name="SUBKEY" />“: <ph name="ERROR" /></translation>
@@ -719,6 +720,7 @@
 <translation id="4142935452406587478">10 dėklas</translation>
 <translation id="4148925816941278100">American Express</translation>
 <translation id="4151403195736952345">Naudoti visuotinį numatytąjį nustatymą (nustatyti)</translation>
+<translation id="4152318981910038897">{COUNT,plural, =1{1 psl.}one{{COUNT} psl.}few{{COUNT} psl.}many{{COUNT} psl.}other{{COUNT} psl}}</translation>
 <translation id="4159784952369912983">Violetinė</translation>
 <translation id="4165986682804962316">Svetainės nustatymai</translation>
 <translation id="4171400957073367226">Netinkamas patvirtinimo parašas</translation>
@@ -1396,6 +1398,7 @@
 <translation id="7201591969684833065">Administratorius gali peržiūrėti:</translation>
 <translation id="7202346780273620635">Letter-Extra</translation>
 <translation id="7210863904660874423"><ph name="HOST_NAME" /> nesilaikoma saugos standartų.</translation>
+<translation id="7210993021468939304">„Linux“ veikla sudėtiniame rodinyje; ir gali įdiegti ir paleisti „Linux“ programas sudėtiniame rodinyje</translation>
 <translation id="721197778055552897"><ph name="BEGIN_LINK" />Sužinokite daugiau<ph name="END_LINK" /> apie šią problemą.</translation>
 <translation id="7219179957768738017">Ryšiui naudojama <ph name="SSL_VERSION" />.</translation>
 <translation id="7220786058474068424">Apdorojama</translation>
@@ -1559,6 +1562,7 @@ Papildoma išsami informacija:
 <translation id="7878562273885520351">Jūsų slaptažodis gali būti pažeistas</translation>
 <translation id="7882421473871500483">Ruda</translation>
 <translation id="7887683347370398519">Patikrinkite kortelės saugos kodą (CVC) ir bandykite dar kartą</translation>
+<translation id="7887885240995164102">Įeiti į vaizdo vaizde režimą</translation>
 <translation id="7888575728750733395">Spausdinimo pateikimo tikslas</translation>
 <translation id="7904208859782148177">C3 (vokas)</translation>
 <translation id="7932579305932748336">Danga</translation>

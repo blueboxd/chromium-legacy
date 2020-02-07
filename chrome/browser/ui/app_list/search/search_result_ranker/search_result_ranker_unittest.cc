@@ -387,11 +387,11 @@ TEST_F(SearchResultRankerTest, QueryMixedModelNormalizesUrlIds) {
 
   AppLaunchData app_launch_data_1;
   app_launch_data_1.id = url_1;
-  app_launch_data_1.ranking_item_type = RankingItemType::kOmniboxHistory;
+  app_launch_data_1.ranking_item_type = RankingItemType::kOmniboxGeneric;
   app_launch_data_1.query = "query";
   AppLaunchData app_launch_data_3;
   app_launch_data_3.id = url_3;
-  app_launch_data_3.ranking_item_type = RankingItemType::kOmniboxHistory;
+  app_launch_data_3.ranking_item_type = RankingItemType::kOmniboxGeneric;
   app_launch_data_3.query = "query";
 
   for (int i = 0; i < 5; ++i) {
@@ -477,7 +477,7 @@ TEST_F(SearchResultRankerTest, QueryMixedModelDeletesURLCorrectly) {
   const std::string url_1 = "http://www.google.com/testing";
   AppLaunchData url_1_data;
   url_1_data.id = url_1;
-  url_1_data.ranking_item_type = RankingItemType::kOmniboxHistory;
+  url_1_data.ranking_item_type = RankingItemType::kOmniboxGeneric;
   url_1_data.query = "query";
   ranker->Train(url_1_data);
   ranker->Train(url_1_data);
@@ -485,7 +485,7 @@ TEST_F(SearchResultRankerTest, QueryMixedModelDeletesURLCorrectly) {
   const std::string url_2 = "http://www.other.com";
   AppLaunchData url_2_data;
   url_2_data.id = url_2;
-  url_2_data.ranking_item_type = RankingItemType::kOmniboxHistory;
+  url_2_data.ranking_item_type = RankingItemType::kOmniboxGeneric;
   url_2_data.query = "query";
   ranker->Train(url_2_data);
 

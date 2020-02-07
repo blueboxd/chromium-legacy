@@ -4,6 +4,7 @@
 
 #include "third_party/blink/renderer/modules/storage/cached_storage_area.h"
 
+#include "base/memory/scoped_refptr.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/blink/public/platform/scheduler/test/renderer_scheduler_test_support.h"
 #include "third_party/blink/renderer/modules/storage/testing/fake_area_source.h"
@@ -29,15 +30,12 @@ class CachedStorageAreaTest : public testing::Test {
   const String kRemoteSource = kPageUrl2.GetString() + "\n" + kRemoteSourceId;
 
   void SetUp() override {
-    if (IsSessionStorage()) {
-      cached_area_ = CachedStorageArea::CreateForSessionStorage(
-          kOrigin, mock_storage_area_.GetInterfaceRemote(),
-          scheduler::GetSingleThreadTaskRunnerForTesting(), nullptr);
-    } else {
-      cached_area_ = CachedStorageArea::CreateForLocalStorage(
-          kOrigin, mock_storage_area_.GetInterfaceRemote(),
-          scheduler::GetSingleThreadTaskRunnerForTesting(), nullptr);
-    }
+    const CachedStorageArea::AreaType area_type =
+        IsSessionStorage() ? CachedStorageArea::AreaType::kSessionStorage
+                           : CachedStorageArea::AreaType::kLocalStorage;
+    cached_area_ = base::MakeRefCounted<CachedStorageArea>(
+        area_type, kOrigin, mock_storage_area_.GetInterfaceRemote(),
+        scheduler::GetSingleThreadTaskRunnerForTesting(), nullptr);
     source_area_ = MakeGarbageCollected<FakeAreaSource>(kPageUrl);
     source_area_id_ = cached_area_->RegisterSource(source_area_);
     source_ = kPageUrl.GetString() + "\n" + source_area_id_;

@@ -28,6 +28,7 @@
 #include "components/arc/session/arc_session_runner.h"
 #include "components/arc/test/fake_arc_session.h"
 #include "components/consent_auditor/fake_consent_auditor.h"
+#include "components/signin/public/identity_manager/consent_level.h"
 #include "components/signin/public/identity_manager/identity_manager.h"
 #include "components/sync_preferences/testing_pref_service_syncable.h"
 #include "components/user_manager/scoped_user_manager.h"
@@ -117,7 +118,9 @@ class ArcPlayStoreEnabledPreferenceHandlerTest : public testing::Test {
     auto* identity_manager =
         identity_test_env_profile_adaptor_->identity_test_env()
             ->identity_manager();
-    return identity_manager->GetUnconsentedPrimaryAccountInfo().account_id;
+    return identity_manager
+        ->GetPrimaryAccountInfo(signin::ConsentLevel::kNotRequired)
+        .account_id;
   }
 
  private:

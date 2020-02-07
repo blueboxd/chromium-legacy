@@ -16,8 +16,10 @@
 #include "base/logging.h"
 #include "base/path_service.h"
 #include "base/process/memory.h"
+#include "base/process/process.h"
 #include "base/stl_util.h"
 #include "base/strings/string16.h"
+#include "base/strings/string_number_conversions.h"
 #include "base/strings/string_split.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
@@ -34,12 +36,14 @@
 #include "chrome/install_static/initialize_from_primary_module.h"
 #include "chrome/install_static/install_util.h"
 #include "chrome/install_static/user_data_dir.h"
+#include "components/browser_watcher/exit_code_watcher_win.h"
 #include "components/crash/content/app/crash_switches.h"
 #include "components/crash/content/app/crashpad.h"
 #include "components/crash/content/app/fallback_crash_handling_win.h"
 #include "components/crash/content/app/run_as_crashpad_handler_win.h"
 #include "content/public/common/content_switches.h"
 #include "content/public/common/result_codes.h"
+#include "third_party/crashpad/crashpad/util/win/initial_client_data.h"
 
 namespace {
 
@@ -197,7 +201,33 @@ int main() {
          HasValidWindowsPrefetchArgument(*command_line));
 
   if (process_type == crash_reporter::switches::kCrashpadHandler) {
+    // Check if we should monitor the exit code of this process
+    std::unique_ptr<browser_watcher::ExitCodeWatcher> exit_code_watcher;
+
     crash_reporter::SetupFallbackCrashHandling(*command_line);
+    // no-periodic-tasks is specified for self monitoring crashpad instances.
+    // This is to ensure we are a crashpad process monitoring the browser
+    // process and not another crashpad process.
+    if (!command_line->HasSwitch("no-periodic-tasks")) {
+      // Retrieve the client process from the command line
+      crashpad::InitialClientData initial_client_data;
+      if (initial_client_data.InitializeFromString(
+              command_line->GetSwitchValueASCII("initial-client-data"))) {
+        // Setup exit code watcher to monitor the parent process
+        HANDLE duplicate_handle = INVALID_HANDLE_VALUE;
+        if (DuplicateHandle(
+                ::GetCurrentProcess(), initial_client_data.client_process(),
+                ::GetCurrentProcess(), &duplicate_handle,
+                PROCESS_QUERY_INFORMATION, FALSE, DUPLICATE_SAME_ACCESS)) {
+          base::Process parent_process(duplicate_handle);
+          exit_code_watcher =
+              std::make_unique<browser_watcher::ExitCodeWatcher>();
+          if (exit_code_watcher->Initialize(std::move(parent_process))) {
+            exit_code_watcher->StartWatching();
+          }
+        }
+      }
+    }
 
     // The handler process must always be passed the user data dir on the
     // command line.

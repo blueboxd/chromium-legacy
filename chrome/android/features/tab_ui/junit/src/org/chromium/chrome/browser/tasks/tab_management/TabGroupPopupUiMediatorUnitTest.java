@@ -41,6 +41,8 @@ import org.chromium.chrome.browser.tabmodel.TabModelObserver;
 import org.chromium.chrome.browser.tabmodel.TabModelSelectorImpl;
 import org.chromium.chrome.browser.tasks.tab_groups.TabGroupModelFilter;
 import org.chromium.chrome.browser.toolbar.top.ToolbarPhone;
+import org.chromium.chrome.browser.widget.bottomsheet.BottomSheetController;
+import org.chromium.chrome.browser.widget.bottomsheet.BottomSheetObserver;
 import org.chromium.chrome.tab_ui.R;
 import org.chromium.chrome.test.util.browser.Features;
 import org.chromium.testing.local.LocalRobolectricTestRunner;
@@ -89,6 +91,8 @@ public class TabGroupPopupUiMediatorUnitTest {
     ToolbarPhone mTopAnchorView;
     @Mock
     FrameLayout mBottomAnchorView;
+    @Mock
+    BottomSheetController mBottomSheetController;
     @Captor
     ArgumentCaptor<TabModelObserver> mTabModelObserverCaptor;
     @Captor
@@ -98,6 +102,8 @@ public class TabGroupPopupUiMediatorUnitTest {
     @Captor
     ArgumentCaptor<KeyboardVisibilityDelegate.KeyboardVisibilityListener>
             mKeyboardVisibilityListenerCaptor;
+    @Captor
+    ArgumentCaptor<BottomSheetObserver> mBottomSheetObserver;
 
     private TabImpl mTab1;
     private TabImpl mTab2;
@@ -129,11 +135,12 @@ public class TabGroupPopupUiMediatorUnitTest {
         doNothing()
                 .when(mKeyboardVisibilityDelegate)
                 .addKeyboardVisibilityListener(mKeyboardVisibilityListenerCaptor.capture());
+        doNothing().when(mBottomSheetController).addObserver(mBottomSheetObserver.capture());
 
         KeyboardVisibilityDelegate.setInstance(mKeyboardVisibilityDelegate);
         mModel = new PropertyModel(TabGroupPopupUiProperties.ALL_KEYS);
         mMediator = new TabGroupPopupUiMediator(mModel, mTabModelSelector, mOverviewModeBehavior,
-                mChromeFullscreenManager, mUpdater, mTabGroupUiController);
+                mChromeFullscreenManager, mUpdater, mTabGroupUiController, mBottomSheetController);
     }
 
     @After
@@ -466,6 +473,53 @@ public class TabGroupPopupUiMediatorUnitTest {
         // Hide the keyboard after showing it.
         mKeyboardVisibilityListenerCaptor.getValue().keyboardVisibilityChanged(true);
         mKeyboardVisibilityListenerCaptor.getValue().keyboardVisibilityChanged(false);
+
+        assertThat(mModel.get(TabGroupPopupUiProperties.IS_VISIBLE), equalTo(false));
+    }
+
+    @Test
+    public void testShowBottomSheet_HideStrip() {
+        // Mock that the strip is showing.
+        mModel.set(TabGroupPopupUiProperties.IS_VISIBLE, true);
+
+        // Show bottom sheet.
+        mBottomSheetObserver.getValue().onSheetStateChanged(BottomSheetController.SheetState.PEEK);
+
+        assertThat(mModel.get(TabGroupPopupUiProperties.IS_VISIBLE), equalTo(false));
+    }
+
+    @Test
+    public void testHideBottomSheet_ShowStrip() {
+        // Mock that the strip is showing before showing the bottom sheet. tab1 and tab2 are in the
+        // same group, and tab1 is the current tab.
+        mModel.set(TabGroupPopupUiProperties.IS_VISIBLE, true);
+        List<Tab> tabGroup = new ArrayList<>(Arrays.asList(mTab1, mTab2));
+        createTabGroup(tabGroup, TAB1_ID);
+        doReturn(mTab1).when(mTabModelSelector).getCurrentTab();
+
+        // Hide the bottom sheet after showing it.
+        mBottomSheetObserver.getValue().onSheetStateChanged(BottomSheetController.SheetState.PEEK);
+        assertThat(mModel.get(TabGroupPopupUiProperties.IS_VISIBLE), equalTo(false));
+        mBottomSheetObserver.getValue().onSheetStateChanged(
+                BottomSheetController.SheetState.HIDDEN);
+
+        assertThat(mModel.get(TabGroupPopupUiProperties.IS_VISIBLE), equalTo(true));
+    }
+
+    @Test
+    public void testHideBottomSheet_NotReshowStrip() {
+        // Mock that the strip is hidden before showing the bottom sheet. tab1 and tab2 are in the
+        // same group, and tab1 is the current tab.
+        mModel.set(TabGroupPopupUiProperties.IS_VISIBLE, false);
+        List<Tab> tabGroup = new ArrayList<>(Arrays.asList(mTab1, mTab2));
+        createTabGroup(tabGroup, TAB1_ID);
+        doReturn(mTab1).when(mTabModelSelector).getCurrentTab();
+
+        // Hide the bottom sheet after showing it.
+        mBottomSheetObserver.getValue().onSheetStateChanged(BottomSheetController.SheetState.PEEK);
+        assertThat(mModel.get(TabGroupPopupUiProperties.IS_VISIBLE), equalTo(false));
+        mBottomSheetObserver.getValue().onSheetStateChanged(
+                BottomSheetController.SheetState.HIDDEN);
 
         assertThat(mModel.get(TabGroupPopupUiProperties.IS_VISIBLE), equalTo(false));
     }

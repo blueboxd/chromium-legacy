@@ -19,9 +19,9 @@ import org.chromium.base.metrics.RecordHistogram;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.flags.ChromeFeatureList;
 import org.chromium.chrome.browser.settings.SettingsLauncher;
-import org.chromium.chrome.browser.settings.sync.SyncAndServicesSettings;
-import org.chromium.chrome.browser.settings.sync.SyncSettingsUtils;
-import org.chromium.chrome.browser.settings.sync.SyncSettingsUtils.SyncError;
+import org.chromium.chrome.browser.sync.settings.SyncAndServicesSettings;
+import org.chromium.chrome.browser.sync.settings.SyncSettingsUtils;
+import org.chromium.chrome.browser.sync.settings.SyncSettingsUtils.SyncError;
 import org.chromium.content_public.browser.WebContents;
 
 import java.lang.annotation.Retention;

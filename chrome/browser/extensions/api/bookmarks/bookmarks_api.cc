@@ -440,7 +440,7 @@ bool BookmarksGetFunction::RunOnReady() {
     bookmark_api_helpers::AddNode(managed, node, &nodes, false);
   }
 
-  results_ = api::bookmarks::Get::Results::Create(nodes);
+  SetResultList(api::bookmarks::Get::Results::Create(nodes));
   return true;
 }
 
@@ -459,7 +459,7 @@ bool BookmarksGetChildrenFunction::RunOnReady() {
                                   &nodes, false);
   }
 
-  results_ = api::bookmarks::GetChildren::Results::Create(nodes);
+  SetResultList(api::bookmarks::GetChildren::Results::Create(nodes));
   return true;
 }
 
@@ -481,7 +481,7 @@ bool BookmarksGetRecentFunction::RunOnReady() {
                                   &tree_nodes, false);
   }
 
-  results_ = api::bookmarks::GetRecent::Results::Create(tree_nodes);
+  SetResultList(api::bookmarks::GetRecent::Results::Create(tree_nodes));
   return true;
 }
 
@@ -491,7 +491,7 @@ bool BookmarksGetTreeFunction::RunOnReady() {
       BookmarkModelFactory::GetForBrowserContext(GetProfile())->root_node();
   bookmark_api_helpers::AddNode(GetManagedBookmarkService(), node, &nodes,
                                 true);
-  results_ = api::bookmarks::GetTree::Results::Create(nodes);
+  SetResultList(api::bookmarks::GetTree::Results::Create(nodes));
   return true;
 }
 
@@ -507,7 +507,7 @@ bool BookmarksGetSubTreeFunction::RunOnReady() {
   std::vector<BookmarkTreeNode> nodes;
   bookmark_api_helpers::AddNode(GetManagedBookmarkService(), node, &nodes,
                                 true);
-  results_ = api::bookmarks::GetSubTree::Results::Create(nodes);
+  SetResultList(api::bookmarks::GetSubTree::Results::Create(nodes));
   return true;
 }
 
@@ -547,7 +547,7 @@ bool BookmarksSearchFunction::RunOnReady() {
   for (const BookmarkNode* node : nodes)
     bookmark_api_helpers::AddNode(managed, node, &tree_nodes, false);
 
-  results_ = api::bookmarks::Search::Results::Create(tree_nodes);
+  SetResultList(api::bookmarks::Search::Results::Create(tree_nodes));
   return true;
 }
 
@@ -597,7 +597,7 @@ bool BookmarksCreateFunction::RunOnReady() {
 
   BookmarkTreeNode ret = bookmark_api_helpers::GetBookmarkTreeNode(
       GetManagedBookmarkService(), node, false, false);
-  results_ = api::bookmarks::Create::Results::Create(ret);
+  SetResultList(api::bookmarks::Create::Results::Create(ret));
 
   return true;
 }
@@ -651,7 +651,7 @@ bool BookmarksMoveFunction::RunOnReady() {
 
   BookmarkTreeNode tree_node = bookmark_api_helpers::GetBookmarkTreeNode(
       GetManagedBookmarkService(), node, false, false);
-  results_ = api::bookmarks::Move::Results::Create(tree_node);
+  SetResultList(api::bookmarks::Move::Results::Create(tree_node));
 
   return true;
 }
@@ -704,7 +704,7 @@ bool BookmarksUpdateFunction::RunOnReady() {
 
   BookmarkTreeNode tree_node = bookmark_api_helpers::GetBookmarkTreeNode(
       GetManagedBookmarkService(), node, false, false);
-  results_ = api::bookmarks::Update::Results::Create(tree_node);
+  SetResultList(api::bookmarks::Update::Results::Create(tree_node));
   return true;
 }
 

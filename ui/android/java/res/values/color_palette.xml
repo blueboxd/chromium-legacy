@@ -62,6 +62,7 @@
     <color name="google_blue_50" tools:ignore="UnusedResources">#E3F2FD</color>
 
     <!-- Warning: One off below, do not use for other purpose. -->
+    <color name="signin_header_animation_bg_dark" tools:ignore="UnusedResources">#28282B</color>
     <!-- TODO(https://crbug.com/1020436): Update the highlight colors to meet accessibility
         contrast ratio. -->
     <color name="highlight_color_on_light_text" tools:ignore="UnusedResources">#CC5595FE</color>

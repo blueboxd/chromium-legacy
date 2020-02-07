@@ -60,7 +60,7 @@ class WebGraphicsContext3DProviderForTests
   const WebglPreferences& GetWebglPreferences() const override {
     return webgl_preferences_;
   }
-  viz::GLHelper* GetGLHelper() override { return nullptr; }
+  gpu::GLHelper* GetGLHelper() override { return nullptr; }
   void SetLostContextCallback(base::RepeatingClosure) override {}
   void SetErrorMessageCallback(
       base::RepeatingCallback<void(const char*, int32_t id)>) override {}

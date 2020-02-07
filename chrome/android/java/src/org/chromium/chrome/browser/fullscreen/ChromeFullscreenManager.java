@@ -310,6 +310,8 @@ public class ChromeFullscreenManager extends FullscreenManager
 
                 TabBrowserControlsOffsetHelper offsetHelper =
                         TabBrowserControlsOffsetHelper.get(currentTab);
+                if (!offsetHelper.offsetInitialized()) return;
+
                 onOffsetsChanged(offsetHelper.topControlsOffset(),
                         offsetHelper.bottomControlsOffset(), offsetHelper.contentOffset(),
                         offsetHelper.topControlsMinHeightOffset(),

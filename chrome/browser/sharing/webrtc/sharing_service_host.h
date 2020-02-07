@@ -31,6 +31,7 @@ class SharedURLLoaderFactory;
 }  // namespace network
 
 enum class SharingChannelType;
+class SharingDeviceSource;
 class SharingHandlerRegistry;
 class SharingSyncPreference;
 class SharingWebRtcConnectionHost;
@@ -49,6 +50,7 @@ class SharingServiceHost : public SharingMessageSender::SendMessageDelegate {
       SharingMessageSender* message_sender,
       gcm::GCMDriver* gcm_driver,
       SharingSyncPreference* sync_prefs,
+      SharingDeviceSource* device_source,
       scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory);
   SharingServiceHost(const SharingServiceHost&) = delete;
   SharingServiceHost& operator=(const SharingServiceHost&) = delete;
@@ -90,6 +92,7 @@ class SharingServiceHost : public SharingMessageSender::SendMessageDelegate {
   SharingMessageSender* message_sender_;
   gcm::GCMDriver* gcm_driver_;
   SharingSyncPreference* sync_prefs_;
+  SharingDeviceSource* device_source_;
   IceConfigFetcher ice_config_fetcher_;
 
   mojo::Remote<sharing::mojom::Sharing> sharing_utility_service_;

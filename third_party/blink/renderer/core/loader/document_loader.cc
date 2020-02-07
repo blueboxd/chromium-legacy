@@ -1507,8 +1507,8 @@ void DocumentLoader::InstallNewDocument(
     previous_security_origin = frame_->GetDocument()->GetSecurityOrigin();
   }
 
-  bool was_cross_origin_to_main_frame =
-      previous_security_origin && frame_->IsCrossOriginToMainFrame();
+  bool was_cross_origin_to_parent_frame =
+      previous_security_origin && frame_->IsCrossOriginToParentFrame();
 
   // In some rare cases, we'll re-use a LocalDOMWindow for a new Document. For
   // example, when a script calls window.open("..."), the browser gives
@@ -1567,9 +1567,10 @@ void DocumentLoader::InstallNewDocument(
   if (!loading_url_as_javascript_)
     DidCommitNavigation();
 
-  if (was_cross_origin_to_main_frame != frame_->IsCrossOriginToMainFrame()) {
+  if (was_cross_origin_to_parent_frame !=
+      frame_->IsCrossOriginToParentFrame()) {
     if (auto* owner = frame_->DeprecatedLocalOwner())
-      owner->FrameCrossOriginStatusChanged();
+      owner->FrameCrossOriginToParentFrameChanged();
   }
 
   if (initiator_origin) {

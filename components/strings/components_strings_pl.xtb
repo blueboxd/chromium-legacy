@@ -690,6 +690,7 @@
 <translation id="3987940399970879459">Mniej niż 1 MB</translation>
 <translation id="3990250421422698716">Odsunięcie poszczególnych kopii</translation>
 <translation id="40103911065039147">{URL_count,plural, =1{1 strona w pobliżu}few{# strony w pobliżu}many{# stron w pobliżu}other{# strony w pobliżu}}</translation>
+<translation id="4014128326099193693">{COUNT,plural, =1{Dokument PDF zawierający {COUNT} stronę}few{Dokument PDF zawierający {COUNT} strony}many{Dokument PDF zawierający {COUNT} stron}other{Dokument PDF zawierający {COUNT} strony}}</translation>
 <translation id="4030383055268325496">&amp;Cofnij dodanie</translation>
 <translation id="4032320456957708163">Twoją przeglądarką zarządza <ph name="ENROLLMENT_DOMAIN" /></translation>
 <translation id="4058922952496707368">Klucz „<ph name="SUBKEY" />”: <ph name="ERROR" /></translation>
@@ -718,6 +719,7 @@
 <translation id="4142935452406587478">Taca 10</translation>
 <translation id="4148925816941278100">American Express</translation>
 <translation id="4151403195736952345">Użyj globalnego ustawienia domyślnego (Wykrywaj)</translation>
+<translation id="4152318981910038897">{COUNT,plural, =1{Strona 1}few{Strona {COUNT}}many{Strona {COUNT}}other{Strona {COUNT}}}</translation>
 <translation id="4159784952369912983">Purpurowy</translation>
 <translation id="4165986682804962316">Ustawienia witryn</translation>
 <translation id="4171400957073367226">Nieprawidłowy podpis weryfikujący</translation>
@@ -1395,6 +1397,7 @@
 <translation id="7201591969684833065">Administrator może zobaczyć:</translation>
 <translation id="7202346780273620635">Letter-Extra</translation>
 <translation id="7210863904660874423">Serwer <ph name="HOST_NAME" /> nie spełnia norm bezpieczeństwa.</translation>
+<translation id="7210993021468939304">Wyświetlanie aktywności Linuksa w kontenerze oraz instalowanie i uruchamianie aplikacji Linuksa w kontenerze</translation>
 <translation id="721197778055552897"><ph name="BEGIN_LINK" />Więcej informacji<ph name="END_LINK" /> na temat tego problemu.</translation>
 <translation id="7219179957768738017">Połączenie z szyfrowaniem <ph name="SSL_VERSION" />.</translation>
 <translation id="7220786058474068424">Przetwarzanie</translation>
@@ -1558,6 +1561,7 @@ Dodatkowe informacje:
 <translation id="7878562273885520351">Ktoś mógł poznać Twoje hasło</translation>
 <translation id="7882421473871500483">Brązowy</translation>
 <translation id="7887683347370398519">Sprawdź kod CVC i spróbuj ponownie</translation>
+<translation id="7887885240995164102">Włącz obraz w obrazie</translation>
 <translation id="7888575728750733395">Intencja renderowania wydruku</translation>
 <translation id="7904208859782148177">C3 (koperta)</translation>
 <translation id="7932579305932748336">Powłoka</translation>

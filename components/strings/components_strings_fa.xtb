@@ -689,6 +689,7 @@
 <translation id="3987940399970879459">کمتر از ۱ مگابایت</translation>
 <translation id="3990250421422698716">‏آفست Z شکل</translation>
 <translation id="40103911065039147">{URL_count,plural, =1{ ۱ صفحه وب در این نزدیکی است}one{ # صفحه وب در این نزدیکی است}other{ # صفحه وب در این نزدیکی است}}</translation>
+<translation id="4014128326099193693">{COUNT,plural, =1{‏سند PDF {COUNT} صفحه دارد}one{‏سند PDF {COUNT} صفحه دارد}other{‏سند PDF {COUNT} صفحه دارد}}</translation>
 <translation id="4030383055268325496">&amp;واگرد افزودن</translation>
 <translation id="4032320456957708163">مرورگرتان توسط <ph name="ENROLLMENT_DOMAIN" /> مدیریت می‌شود</translation>
 <translation id="4058922952496707368">کلید "<ph name="SUBKEY" />": <ph name="ERROR" /></translation>
@@ -717,6 +718,7 @@
 <translation id="4142935452406587478">سینی ۱۰</translation>
 <translation id="4148925816941278100">American Express</translation>
 <translation id="4151403195736952345">استفاده از پیش‌فرض کلی (تشخیص)</translation>
+<translation id="4152318981910038897">{COUNT,plural, =1{صفحه ۱}one{صفحه {COUNT}}other{صفحه {COUNT}}}</translation>
 <translation id="4159784952369912983">بنفش</translation>
 <translation id="4165986682804962316">تنظیمات سایت</translation>
 <translation id="4171400957073367226">امضای تأیید نامناسب</translation>
@@ -1394,6 +1396,7 @@
 <translation id="7201591969684833065">سرپرستتان می‌تواند این موارد را ببیند:</translation>
 <translation id="7202346780273620635">Letter-Extra</translation>
 <translation id="7210863904660874423"><ph name="HOST_NAME" /> از استانداردهای امنیتی پیروی نمی‌کند.</translation>
+<translation id="7210993021468939304">‏فعالیت Linux در محتوی و می‌توانید برنامه‌های Linux را در محتوی نصب و اجرا کنید</translation>
 <translation id="721197778055552897">دربارهٔ این مشکل <ph name="BEGIN_LINK" />بیشتر بیاموزید<ph name="END_LINK" />.</translation>
 <translation id="7219179957768738017">اتصال از <ph name="SSL_VERSION" /> استفاده می‌کند.</translation>
 <translation id="7220786058474068424">درحال پردازش</translation>
@@ -1557,6 +1560,7 @@
 <translation id="7878562273885520351">ممکن است گذرواژه‌تان درمعرض خطر باشد</translation>
 <translation id="7882421473871500483">قهوه‌ای</translation>
 <translation id="7887683347370398519">‏CVC را بررسی کرده و دوباره امتحان کنید</translation>
+<translation id="7887885240995164102">ورود به تصویر در تصویر</translation>
 <translation id="7888575728750733395">هدف پرداز چاپ</translation>
 <translation id="7904208859782148177">C3 (Envelope)</translation>
 <translation id="7932579305932748336">جلد</translation>

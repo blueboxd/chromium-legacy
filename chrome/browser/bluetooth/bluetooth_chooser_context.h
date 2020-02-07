@@ -7,6 +7,7 @@
 
 #include <map>
 #include <string>
+#include <utility>
 
 #include "base/containers/flat_set.h"
 #include "chrome/browser/permissions/chooser_context_base.h"
@@ -61,7 +62,7 @@ class BluetoothChooserContext : public ChooserContextBase {
       const url::Origin& requesting_origin,
       const url::Origin& embedding_origin,
       const device::BluetoothDevice* device,
-      const blink::mojom::WebBluetoothRequestDeviceOptionsPtr& options);
+      const blink::mojom::WebBluetoothRequestDeviceOptions* options);
   bool HasDevicePermission(const url::Origin& requesting_origin,
                            const url::Origin& embedding_origin,
                            const blink::WebBluetoothDeviceId& device_id);

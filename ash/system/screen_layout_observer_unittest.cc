@@ -104,7 +104,9 @@ base::string16 ScreenLayoutObserverTest::GetFirstDisplayName() {
 
 base::string16 ScreenLayoutObserverTest::GetSecondDisplayName() {
   return base::UTF8ToUTF16(display_manager()->GetDisplayNameForId(
-      display_manager()->GetSecondaryDisplay().id()));
+      display::test::DisplayManagerTestApi(display_manager())
+          .GetSecondaryDisplay()
+          .id()));
 }
 
 base::string16 ScreenLayoutObserverTest::GetMirroringDisplayNames() {
@@ -280,7 +282,9 @@ TEST_F(ScreenLayoutObserverTest, DisplayNotifications) {
   // Enters closed lid mode.
   UpdateDisplay("400x400@1.5,200x200");
   display::Display::SetInternalDisplayId(
-      display_manager()->GetSecondaryDisplay().id());
+      display::test::DisplayManagerTestApi(display_manager())
+          .GetSecondaryDisplay()
+          .id());
   UpdateDisplay("400x400@1.5");
   EXPECT_TRUE(GetDisplayNotificationText().empty());
 }
@@ -455,7 +459,10 @@ TEST_F(ScreenLayoutObserverTest, OverscanDisplay) {
 
   // Reset the overscan.
   Shell::Get()->display_manager()->SetOverscanInsets(
-      display_manager()->GetSecondaryDisplay().id(), gfx::Insets());
+      display::test::DisplayManagerTestApi(display_manager())
+          .GetSecondaryDisplay()
+          .id(),
+      gfx::Insets());
   EXPECT_FALSE(IsNotificationShown());
 }
 
@@ -466,7 +473,9 @@ TEST_F(ScreenLayoutObserverTest, ExitMirrorModeBecauseOfDockedModeMessage) {
       true);
   UpdateDisplay("400x400,200x200");
   display::Display::SetInternalDisplayId(
-      display_manager()->GetSecondaryDisplay().id());
+      display::test::DisplayManagerTestApi(display_manager())
+          .GetSecondaryDisplay()
+          .id());
 
   // Mirroring.
   UpdateDisplay("400x400,200x200");
@@ -491,7 +500,9 @@ TEST_F(ScreenLayoutObserverTest,
       true);
   UpdateDisplay("400x400,200x200");
   display::Display::SetInternalDisplayId(
-      display_manager()->GetSecondaryDisplay().id());
+      display::test::DisplayManagerTestApi(display_manager())
+          .GetSecondaryDisplay()
+          .id());
 
   // Mirroring.
   UpdateDisplay("400x400,200x200");

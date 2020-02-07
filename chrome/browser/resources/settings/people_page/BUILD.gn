@@ -12,6 +12,7 @@ js_type_check("closure_compile") {
     ":sync_account_control",
     ":sync_browser_proxy",
     ":sync_controls",
+    ":sync_encryption_options",
     ":sync_page",
   ]
 
@@ -98,6 +99,7 @@ js_library("sync_page") {
   deps = [
     ":sync_account_control",
     ":sync_browser_proxy",
+    ":sync_encryption_options",
     "..:page_visibility",
     "..:router",
     "../settings_page:settings_animated_pages",
@@ -143,6 +145,16 @@ js_library("sync_account_control") {
     "//ui/webui/resources/js:icon",
     "//ui/webui/resources/js:load_time_data",
     "//ui/webui/resources/js:web_ui_listener_behavior",
+  ]
+}
+
+js_library("sync_encryption_options") {
+  deps = [
+    ":sync_browser_proxy",
+    "//ui/webui/resources/cr_elements/cr_input",
+    "//ui/webui/resources/cr_elements/cr_radio_group",
+    "//ui/webui/resources/js:assert",
+    "//ui/webui/resources/js:i18n_behavior",
   ]
 }
 

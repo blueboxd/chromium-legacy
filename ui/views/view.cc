@@ -13,6 +13,7 @@
 #include "base/feature_list.h"
 #include "base/logging.h"
 #include "base/macros.h"
+#include "base/scoped_observer.h"
 #include "base/stl_util.h"
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
@@ -40,7 +41,6 @@
 #include "ui/gfx/geometry/point_conversions.h"
 #include "ui/gfx/interpolated_transform.h"
 #include "ui/gfx/scoped_canvas.h"
-#include "ui/gfx/skia_util.h"
 #include "ui/gfx/transform.h"
 #include "ui/native_theme/native_theme.h"
 #include "ui/views/accessibility/ax_event_manager.h"
@@ -116,6 +116,66 @@ class ScopedChildrenLock {
 #endif
 
 }  // namespace internal
+
+////////////////////////////////////////////////////////////////////////////////
+// ViewMaskLayer
+// This class is responsible for creating a masking layer for a view that paints
+// to a layer. It tracks the size of the layer it is masking.
+class VIEWS_EXPORT ViewMaskLayer : public ui::LayerDelegate,
+                                   public ViewObserver {
+ public:
+  // Note that |observed_view| must outlive the ViewMaskLayer instance.
+  ViewMaskLayer(const SkPath& path, View* observed_view);
+  ViewMaskLayer(const ViewMaskLayer& mask_layer) = delete;
+  ViewMaskLayer& operator=(const ViewMaskLayer& mask_layer) = delete;
+  ~ViewMaskLayer() override;
+
+  ui::Layer* layer() { return &layer_; }
+
+ private:
+  // ui::LayerDelegate:
+  void OnDeviceScaleFactorChanged(float old_device_scale_factor,
+                                  float new_device_scale_factor) override;
+  void OnPaintLayer(const ui::PaintContext& context) override;
+
+  // views::ViewObserver:
+  void OnViewBoundsChanged(View* observed_view) override;
+
+  ScopedObserver<View, ViewObserver> observed_view_{this};
+
+  SkPath path_;
+  ui::Layer layer_;
+};
+
+ViewMaskLayer::ViewMaskLayer(const SkPath& path, View* observed_view)
+    : path_{path} {
+  layer_.set_delegate(this);
+  layer_.SetFillsBoundsOpaquely(false);
+  layer_.SetName("ViewMaskLayer");
+  observed_view_.Add(observed_view);
+  OnViewBoundsChanged(observed_view);
+}
+
+ViewMaskLayer::~ViewMaskLayer() {
+  layer_.set_delegate(nullptr);
+}
+
+void ViewMaskLayer::OnDeviceScaleFactorChanged(float old_device_scale_factor,
+                                               float new_device_scale_factor) {}
+
+void ViewMaskLayer::OnPaintLayer(const ui::PaintContext& context) {
+  cc::PaintFlags flags;
+  flags.setAlpha(255);
+  flags.setStyle(cc::PaintFlags::kFill_Style);
+  flags.setAntiAlias(true);
+
+  ui::PaintRecorder recorder(context, layer()->size());
+  recorder.canvas()->DrawPath(path_, flags);
+}
+
+void ViewMaskLayer::OnViewBoundsChanged(View* observed_view) {
+  layer_.SetBounds(observed_view->GetLocalBounds());
+}
 
 ////////////////////////////////////////////////////////////////////////////////
 // View, public:
@@ -516,6 +576,12 @@ gfx::Transform View::GetTransform() const {
   return transform;
 }
 
+void View::SetClipPath(const SkPath& path) {
+  clip_path_ = path;
+  if (layer())
+    CreateMaskLayer();
+}
+
 void View::SetTransform(const gfx::Transform& transform) {
   if (transform.IsIdentity()) {
     if (layer())
@@ -548,6 +614,9 @@ void View::SetPaintToLayer(ui::LayerType layer_type) {
   // We directly call |CreateLayer()| here to pass |layer_type|. A call to
   // |CreateOrDestroyLayer()| is therefore not necessary.
   CreateLayer(layer_type);
+
+  if (!clip_path_.isEmpty() && !mask_layer_)
+    CreateMaskLayer();
 
   // Notify the parent chain about the layer change.
   NotifyParentsOfLayerChange();
@@ -1766,6 +1835,8 @@ void View::DestroyLayerImpl(LayerChangeNotifyBehavior notify_parents) {
       new_parent->Add(child);
   }
 
+  mask_layer_.reset();
+
   LayerOwner::DestroyLayer();
 
   if (new_parent)
@@ -2624,6 +2695,12 @@ void View::ReparentLayer(ui::Layer* parent_layer) {
   SetLayerBounds(size(), offset + GetMirroredBounds().OffsetFromOrigin());
   layer()->SchedulePaint(GetLocalBounds());
   MoveLayerToParent(layer(), LayerOffsetData(layer()->device_scale_factor()));
+}
+
+void View::CreateMaskLayer() {
+  DCHECK(layer());
+  mask_layer_ = std::make_unique<views::ViewMaskLayer>(clip_path_, this);
+  layer()->SetMaskLayer(mask_layer_->layer());
 }
 
 // Input -----------------------------------------------------------------------

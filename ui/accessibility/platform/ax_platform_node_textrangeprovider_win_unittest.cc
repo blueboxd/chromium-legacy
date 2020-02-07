@@ -119,32 +119,32 @@ namespace ui {
     base::win::ScopedBstr provider_content;                 \
     EXPECT_HRESULT_SUCCEEDED(                               \
         provider->GetText(-1, provider_content.Receive())); \
-    EXPECT_STREQ(expected_content, provider_content);       \
+    EXPECT_STREQ(expected_content, provider_content.Get()); \
   }
 
-#define EXPECT_UIA_FIND_TEXT(text_range_provider, search_term, ignore_case) \
-  {                                                                         \
-    base::win::ScopedBstr find_string(search_term);                         \
-    ComPtr<ITextRangeProvider> text_range_provider_found;                   \
-    EXPECT_HRESULT_SUCCEEDED(text_range_provider->FindText(                 \
-        find_string, false, ignore_case, &text_range_provider_found));      \
-    base::win::ScopedBstr found_content;                                    \
-    EXPECT_HRESULT_SUCCEEDED(                                               \
-        text_range_provider_found->GetText(-1, found_content.Receive()));   \
-    if (ignore_case)                                                        \
-      EXPECT_EQ(0, _wcsicmp(found_content, find_string));                   \
-    else                                                                    \
-      EXPECT_EQ(0, wcscmp(found_content, find_string));                     \
+#define EXPECT_UIA_FIND_TEXT(text_range_provider, search_term, ignore_case)  \
+  {                                                                          \
+    base::win::ScopedBstr find_string(search_term);                          \
+    ComPtr<ITextRangeProvider> text_range_provider_found;                    \
+    EXPECT_HRESULT_SUCCEEDED(text_range_provider->FindText(                  \
+        find_string.Get(), false, ignore_case, &text_range_provider_found)); \
+    base::win::ScopedBstr found_content;                                     \
+    EXPECT_HRESULT_SUCCEEDED(                                                \
+        text_range_provider_found->GetText(-1, found_content.Receive()));    \
+    if (ignore_case)                                                         \
+      EXPECT_EQ(0, _wcsicmp(found_content.Get(), find_string.Get()));        \
+    else                                                                     \
+      EXPECT_EQ(0, wcscmp(found_content.Get(), find_string.Get()));          \
   }
 
-#define EXPECT_UIA_FIND_TEXT_NO_MATCH(text_range_provider, search_term, \
-                                      ignore_case)                      \
-  {                                                                     \
-    base::win::ScopedBstr find_string(search_term);                     \
-    ComPtr<ITextRangeProvider> text_range_provider_found;               \
-    EXPECT_HRESULT_SUCCEEDED(text_range_provider->FindText(             \
-        find_string, false, ignore_case, &text_range_provider_found));  \
-    EXPECT_EQ(nullptr, text_range_provider_found);                      \
+#define EXPECT_UIA_FIND_TEXT_NO_MATCH(text_range_provider, search_term,      \
+                                      ignore_case)                           \
+  {                                                                          \
+    base::win::ScopedBstr find_string(search_term);                          \
+    ComPtr<ITextRangeProvider> text_range_provider_found;                    \
+    EXPECT_HRESULT_SUCCEEDED(text_range_provider->FindText(                  \
+        find_string.Get(), false, ignore_case, &text_range_provider_found)); \
+    EXPECT_EQ(nullptr, text_range_provider_found);                           \
   }
 
 #define EXPECT_UIA_MOVE_ENDPOINT_BY_UNIT(text_range_provider, endpoint, unit,  \
@@ -1633,27 +1633,27 @@ TEST_F(AXPlatformNodeTextRangeProviderTest, TestITextRangeProviderGetText) {
   base::win::ScopedBstr text_content;
   EXPECT_HRESULT_SUCCEEDED(
       text_range_provider->GetText(-1, text_content.Receive()));
-  EXPECT_STREQ(text_content, L"some text");
+  EXPECT_STREQ(text_content.Get(), L"some text");
   text_content.Reset();
 
   EXPECT_HRESULT_SUCCEEDED(
       text_range_provider->GetText(4, text_content.Receive()));
-  EXPECT_STREQ(text_content, L"some");
+  EXPECT_STREQ(text_content.Get(), L"some");
   text_content.Reset();
 
   EXPECT_HRESULT_SUCCEEDED(
       text_range_provider->GetText(0, text_content.Receive()));
-  EXPECT_STREQ(text_content, L"");
+  EXPECT_STREQ(text_content.Get(), L"");
   text_content.Reset();
 
   EXPECT_HRESULT_SUCCEEDED(
       text_range_provider->GetText(9, text_content.Receive()));
-  EXPECT_STREQ(text_content, L"some text");
+  EXPECT_STREQ(text_content.Get(), L"some text");
   text_content.Reset();
 
   EXPECT_HRESULT_SUCCEEDED(
       text_range_provider->GetText(10, text_content.Receive()));
-  EXPECT_STREQ(text_content, L"some text");
+  EXPECT_STREQ(text_content.Get(), L"some text");
   text_content.Reset();
 
   EXPECT_HRESULT_FAILED(text_range_provider->GetText(-1, nullptr));
@@ -1667,7 +1667,7 @@ TEST_F(AXPlatformNodeTextRangeProviderTest, TestITextRangeProviderGetText) {
 
   EXPECT_HRESULT_SUCCEEDED(
       document_textrange->GetText(-1, text_content.Receive()));
-  EXPECT_STREQ(text_content, L"some textmore text");
+  EXPECT_STREQ(text_content.Get(), L"some textmore text");
   text_content.Reset();
 }
 
@@ -4265,8 +4265,8 @@ TEST_F(AXPlatformNodeTextRangeProviderTest, TestITextRangeProviderFindText) {
   GetTextRangeProviderFromTextNode(range, root_node->children()[1]);
   base::win::ScopedBstr find_string(L"more text");
   Microsoft::WRL::ComPtr<ITextRangeProvider> text_range_provider_found;
-  EXPECT_HRESULT_SUCCEEDED(
-      range->FindText(find_string, false, false, &text_range_provider_found));
+  EXPECT_HRESULT_SUCCEEDED(range->FindText(find_string.Get(), false, false,
+                                           &text_range_provider_found));
   Microsoft::WRL::ComPtr<AXPlatformNodeTextRangeProviderWin>
       text_range_provider_win;
   text_range_provider_found->QueryInterface(
@@ -4298,8 +4298,8 @@ TEST_F(AXPlatformNodeTextRangeProviderTest,
 
   // Forward search finds the text_node1
   EXPECT_HRESULT_SUCCEEDED(root_range_provider->FindText(
-      find_string, false, false, &text_range_provider_found));
-  EXPECT_UIA_TEXTRANGE_EQ(text_range_provider_found, find_string);
+      find_string.Get(), false, false, &text_range_provider_found));
+  EXPECT_UIA_TEXTRANGE_EQ(text_range_provider_found, find_string.Get());
 
   range_equal = false;
   EXPECT_HRESULT_SUCCEEDED(
@@ -4308,8 +4308,8 @@ TEST_F(AXPlatformNodeTextRangeProviderTest,
 
   // Backwards search finds the text_node3
   EXPECT_HRESULT_SUCCEEDED(root_range_provider->FindText(
-      find_string, true, false, &text_range_provider_found));
-  EXPECT_UIA_TEXTRANGE_EQ(text_range_provider_found, find_string);
+      find_string.Get(), true, false, &text_range_provider_found));
+  EXPECT_UIA_TEXTRANGE_EQ(text_range_provider_found, find_string.Get());
 
   range_equal = false;
   EXPECT_HRESULT_SUCCEEDED(

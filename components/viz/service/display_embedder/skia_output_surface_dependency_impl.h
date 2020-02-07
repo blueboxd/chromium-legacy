@@ -61,6 +61,7 @@ class VIZ_SERVICE_EXPORT SkiaOutputSurfaceDependencyImpl
                       const GURL& active_url) override;
 
   base::TimeDelta GetGpuBlockedTimeSinceLastSwap() override;
+  bool NeedsSupportForExternalStencil() override;
 
  private:
   GpuServiceImpl* const gpu_service_impl_;

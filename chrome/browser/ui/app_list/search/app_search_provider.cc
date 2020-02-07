@@ -311,7 +311,8 @@ class AppServiceDataSource : public AppSearchProvider::DataSource,
           update.InstalledInternally() == apps::mojom::OptionalBool::kTrue));
       apps_vector->back()->set_recommendable(
           update.Recommendable() == apps::mojom::OptionalBool::kTrue &&
-          update.Paused() != apps::mojom::OptionalBool::kTrue);
+          update.Paused() != apps::mojom::OptionalBool::kTrue &&
+          update.Readiness() != apps::mojom::Readiness::kDisabledByPolicy);
       apps_vector->back()->set_searchable(update.Searchable() ==
                                           apps::mojom::OptionalBool::kTrue);
 

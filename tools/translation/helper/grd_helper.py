@@ -23,7 +23,14 @@ TAGS_TO_IGNORE = (
     # strings.
     'include',
     # <structure> tags point to image files.
-    'structure')
+    'structure',
+    # <part> tags point to .grdp files. Don't load included part files when
+    # loading a .grd or .grdp file. A grd file's contents can refer to deleted
+    # grdp files (e.g. if a grdp file was renamed). Trying to load it would
+    # fail. It's also unnecessary to load <part> files because grdp files are
+    # handled separately in GetGrdpMessagesFromString. Grdp files are also
+    # expected to not contain any <part> tags.
+    'part')
 
 
 def GetGrdMessages(grd_path_or_string, dir_path):

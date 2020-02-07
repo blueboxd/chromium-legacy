@@ -63,7 +63,6 @@ class TaskManagerView : public TableViewDelegate,
   gfx::ImageSkia GetWindowIcon() override;
   std::string GetWindowName() const override;
   bool Accept() override;
-  bool Close() override;
   bool IsDialogButtonEnabled(ui::DialogButton button) const override;
   void WindowClosing() override;
 

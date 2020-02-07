@@ -386,11 +386,6 @@ class CORE_EXPORT HTMLInputElement
 
   EventDispatchHandlingState* PreDispatchEventHandler(Event&) final;
   void PostDispatchEventHandler(Event&, EventDispatchHandlingState*) final;
-  // TODO(crbug.com/1013385): Remove DidPreventDefault and
-  //   DefaultEventHandlerInternal. They are here as a temporary fix for form
-  //   double-submit.
-  void DidPreventDefault(const Event&) final;
-  void DefaultEventHandlerInternal(Event& evt);
 
   bool IsURLAttribute(const Attribute&) const final;
   bool HasLegalLinkAttribute(const QualifiedName&) const final;

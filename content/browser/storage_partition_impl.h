@@ -23,6 +23,7 @@
 #include "content/browser/bluetooth/bluetooth_allowed_devices_map.h"
 #include "content/browser/broadcast_channel/broadcast_channel_provider.h"
 #include "content/browser/cache_storage/cache_storage_context_impl.h"
+#include "content/browser/child_process_security_policy_impl.h"
 #include "content/browser/content_index/content_index_context_impl.h"
 #include "content/browser/devtools/devtools_background_services_context_impl.h"
 #include "content/browser/dom_storage/dom_storage_context_wrapper.h"
@@ -466,10 +467,14 @@ class CONTENT_EXPORT StoragePartitionImpl
   scoped_refptr<ContentIndexContextImpl> content_index_context_;
   std::unique_ptr<ConversionManager> conversion_manager_;
 
-  // ReceiverSet for StoragePartitionService, using the process id as the
-  // binding context type. The process id can subsequently be used during
-  // interface method calls to enforce security checks.
-  mojo::ReceiverSet<blink::mojom::StoragePartitionService, int> receivers_;
+  // ReceiverSet for StoragePartitionService, using the
+  // ChildProcessSecurityPolicyImpl::Handle as the binding context type. The
+  // handle can subsequently be used during interface method calls to
+  // enforce security checks.
+  using SecurityPolicyHandle = ChildProcessSecurityPolicyImpl::Handle;
+  mojo::ReceiverSet<blink::mojom::StoragePartitionService,
+                    std::unique_ptr<SecurityPolicyHandle>>
+      receivers_;
 
   // This is the NetworkContext used to
   // make requests for the StoragePartition. When the network service is

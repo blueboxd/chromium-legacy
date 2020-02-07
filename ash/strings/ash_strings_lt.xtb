@@ -118,6 +118,7 @@
 <translation id="2413728805700750528"><ph name="DISPLAY_NAME" /> yra valdoma sesija, kurią valdo <ph name="DOMAIN" /></translation>
 <translation id="2427507373259914951">Spustelėti kairiuoju klavišu</translation>
 <translation id="2429753432712299108">„Bluetooth“ įrenginys „<ph name="DEVICE_NAME" />“ prašo leidimo susieti. Prieš sutikdami, patvirtinkite, kad šiame įrenginyje rodomas šis slaptasis raktas: <ph name="PASSKEY" /></translation>
+<translation id="2473177541599297363">Patvirtinkite skyrą</translation>
 <translation id="2482878487686419369">Pranešimai</translation>
 <translation id="2484513351006226581">Paspauskite <ph name="KEYBOARD_SHORTCUT" />, kad perjungtumėte klaviatūros išdėstymą.</translation>
 <translation id="2501920221385095727">Fiksuotos pozicijos klavišai</translation>
@@ -137,8 +138,8 @@
 <translation id="2718395828230677721">Nakties šviesa</translation>
 <translation id="2727977024730340865">Prijungtas mažos galios įkroviklis. Akumuliatoriaus įkrovimas gali būti nepatikimas.</translation>
 <translation id="2792498699870441125">„Alt“ + paieškos klavišas</translation>
-<translation id="2803734122639935495">Kad atrakintumėte, įveskite slaptažodį</translation>
 <translation id="2819276065543622893">Būsite atjungti.</translation>
+<translation id="2825224105325558319">„<ph name="DISPLAY_NAME" />“ nepalaiko <ph name="SPECIFIED_RESOLUTION" />. Skyra buvo pakeista į <ph name="FALLBACK_RESOLUTION" />.</translation>
 <translation id="2825619548187458965">Lentyna</translation>
 <translation id="2844169650293029770">USB-C įrenginys (prievadas kairėje, priekinėje dalyje)</translation>
 <translation id="2865888419503095837">Tinklo informacija</translation>
@@ -158,6 +159,12 @@
 <translation id="3009178788565917040">Išvestis</translation>
 <translation id="3051128274746680507">Jūsų prižiūrimo naudotojo profilis netrukus bus pašalintas. Prisijunkite, kad sužinotumėte daugiau.</translation>
 <translation id="3055162170959710888">Šį įrenginį šiandien naudojote <ph name="USED_TIME" /></translation>
+<translation id="3076778413190775903">Būsenos dėklas, laikas <ph name="TIME" />,
+        <ph name="BATTERY" />
+        <ph name="NETWORK" />,
+        <ph name="NOTIFICATION" />,
+        <ph name="IME" />
+        <ph name="LOCALE" /></translation>
 <translation id="3077734595579995578">shift</translation>
 <translation id="3081696990447829002">Išskleisti meniu</translation>
 <translation id="3087734570205094154">Apačia</translation>
@@ -168,6 +175,7 @@
 <translation id="3151786313568798007">Orientacija</translation>
 <translation id="3153444934357957346">Naudodami kelių paskyrų funkciją, galite turėti iki <ph name="MULTI_PROFILE_USER_LIMIT" /> paskyr.</translation>
 <translation id="3154351730702813399">Įrenginio administratorius gali stebėti jūsų naršymo veiklą.</translation>
+<translation id="3181441307743005334">Paleidimas iš naujo gali šiek tiek užtrukti</translation>
 <translation id="3202010236269062730">{NUM_DEVICES,plural, =1{Prisijungta prie įrenginio}one{Prisijungta prie # įrenginio}few{Prisijungta prie # įrenginių}many{Prisijungta prie # įrenginio}other{Prisijungta prie # įrenginių}}</translation>
 <translation id="3217205077783620295">Garsumas įjungtas; perjungiant garsas bus nutildytas.</translation>
 <translation id="3226991577105957773">Dar <ph name="COUNT" /></translation>
@@ -202,6 +210,7 @@
 <translation id="3604801046548457007">Sukurtas darbalaukis „<ph name="DESK_TITILE" />“</translation>
 <translation id="3606978283550408104">Brailio ekranas prijungtas.</translation>
 <translation id="3621202678540785336">Įvestis</translation>
+<translation id="3621712662352432595">Garso nustatymai</translation>
 <translation id="3626281679859535460">Šviesumas</translation>
 <translation id="3631369015426612114">Leisti pranešimus iš toliau nurodytų šaltinių.</translation>
 <translation id="3705722231355495246">-</translation>
@@ -316,6 +325,7 @@
 <translation id="5331975486040154427">USB-C įrenginys (prievadas kairėje, užpakalinėje dalyje)</translation>
 <translation id="5379115545237091094">Per daug bandymų</translation>
 <translation id="5397578532367286026">Šio naudotojo naudojimo duomenis ir istoriją valdytojas (<ph name="MANAGER_EMAIL" />) gali peržiūrėti adresu chrome.com.</translation>
+<translation id="5400461572260843123">Spartieji nustatymai: paspauskite „Ieškoti“ ir rodyklę kairėn, kad pasiektumėte pranešimų centrą.</translation>
 <translation id="5430931332414098647">Momentinis įrenginio kaip modemo naudojimas</translation>
 <translation id="5431825016875453137">„OpenVPN“ / L2TP</translation>
 <translation id="544691375626129091">Prie šio seanso jau pridėti visi galimi naudotojai.</translation>
@@ -397,6 +407,7 @@
 <translation id="6490471652906364588">USB-C įrenginys (prievadas dešinėje)</translation>
 <translation id="649452524636452238">Išmaniosios kortelės PIN kodas</translation>
 <translation id="6501401484702599040">Perduodamas ekranas į „<ph name="RECEIVER_NAME" />“</translation>
+<translation id="652139407789908527">Vykstant šiam atnaujinimui ekranas gali būti tuščias ilgiau nei įprastai (iki minutės). Nespauskite maitinimo mygtuko, kol vyksta atnaujinimas.</translation>
 <translation id="6521655319214113338">Įvestis ranka</translation>
 <translation id="6528179044667508675">Netrukdyti</translation>
 <translation id="6537270692134705506">Užfiksuoti ekrano vaizdą</translation>
@@ -542,8 +553,10 @@
 <translation id="847056008324733326">Ekrano mastelio nustatymai</translation>
 <translation id="8473301994082929012"><ph name="ORGANIZATION_NAME" />: <ph name="FEATURE_STATE" /> <ph name="FEATURE_NAME" />.</translation>
 <translation id="8477270416194247200">Jei norite atšaukti, paspauskite „Alt“ + paieškos klavišą arba „Alt“ + „Shift“.</translation>
+<translation id="8492573885090281069">„<ph name="DISPLAY_NAME" />“ nepalaiko <ph name="SPECIFIED_RESOLUTION" />. Skyra buvo pakeista į <ph name="FALLBACK_RESOLUTION" />. Spustelėkite „Patvirtinti“ ir išsaugokite pakeitimus. Ankstesni nustatymai bus atkurti už <ph name="TIMEOUT_SECONDS" />.</translation>
 <translation id="8513108775083588393">Automatiškai pasukti</translation>
 <translation id="8517041960877371778">„<ph name="DEVICE_TYPE" />“ gali nebūti kraunamas, kai yra įjungtas.</translation>
+<translation id="8563862697512465947">Pranešimų nustatymai</translation>
 <translation id="8627191004499078455">Prisijungta prie „<ph name="DEVICE_NAME" />“</translation>
 <translation id="8637598503828012618">„<ph name="CONNECTION_STATUS" />“, signalo stiprumas <ph name="SIGNAL_STRENGTH" />, tvarko administratorius</translation>
 <translation id="8639760480004882931">Liko <ph name="PERCENTAGE" /></translation>
@@ -596,6 +609,7 @@
 <translation id="9183456764293710005">Viso ekrano didinimas</translation>
 <translation id="9193626018745640770">Perduodama į nežinomą imtuvą</translation>
 <translation id="9194617393863864469">Prisijungti kaip kitas naudotojas...</translation>
+<translation id="9198992156681343238">„<ph name="DISPLAY_NAME" />“ skyra pakeista į <ph name="RESOLUTION" />. Spustelėkite „Patvirtinti“ ir išsaugokite pakeitimus. Ankstesni nustatymai bus atkurti už <ph name="TIMEOUT_SECONDS" />.</translation>
 <translation id="9201374708878217446"><ph name="CONNECTION_STATUS" />, tvarko administratorius</translation>
 <translation id="9210037371811586452">Išjungiamas sujungiamojo darbalaukio režimas</translation>
 <translation id="9211681782751733685">Iki akumuliatoriaus įkrovimo liko <ph name="TIME_REMAINING" />.</translation>

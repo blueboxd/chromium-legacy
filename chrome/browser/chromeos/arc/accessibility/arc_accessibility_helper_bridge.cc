@@ -79,6 +79,17 @@ void DispatchFocusChange(arc::mojom::AccessibilityNodeInfoData* node_data,
   accessibility_manager->OnViewFocusedInArc(bounds_in_screen);
 }
 
+void SetChildAxTreeIDForWindow(aura::Window* window,
+                               const ui::AXTreeID& treeID) {
+  DCHECK(window);
+  views::Widget* widget = views::Widget::GetWidgetForNativeWindow(window);
+  if (!widget)
+    return;
+
+  static_cast<exo::ShellSurfaceBase*>(widget->widget_delegate())
+      ->SetChildAxTreeId(treeID);
+}
+
 }  // namespace
 
 namespace arc {
@@ -280,18 +291,49 @@ void ArcAccessibilityHelperBridge::OnSetNativeChromeVoxArcSupportProcessed(
   int32_t task_id = arc::GetWindowTaskId(window);
   DCHECK_NE(task_id, kNoTaskId);
 
-  if (!enabled) {
+  if (enabled) {
+    talkback_enabled_task_ids_.erase(task_id);
+  } else {
     trees_.erase(KeyForTaskId(task_id));
-
-    exo::Surface* surface = exo::GetShellMainSurface(window);
-    if (surface) {
-      views::Widget* widget = views::Widget::GetWidgetForNativeWindow(window);
-      static_cast<exo::ShellSurfaceBase*>(widget->widget_delegate())
-          ->SetChildAxTreeId(ui::AXTreeIDUnknown());
-    }
+    talkback_enabled_task_ids_.insert(task_id);
   }
 
   UpdateWindowProperties(window);
+}
+
+bool ArcAccessibilityHelperBridge::RefreshTreeIfInActiveWindow(
+    const ui::AXTreeID& tree_id) {
+  aura::Window* active_window = GetActiveWindow();
+  if (!active_window)
+    return false;
+
+  auto task_id = arc::GetWindowTaskId(active_window);
+  if (task_id == kNoTaskId)
+    return false;
+
+  AXTreeSourceArc* tree_source = GetFromKey(KeyForTaskId(task_id));
+  if (!tree_source || tree_source->ax_tree_id() != tree_id)
+    return false;
+
+  arc::mojom::AccessibilityWindowKeyPtr window_key =
+      arc::mojom::AccessibilityWindowKey::New();
+  // TODO(hirokisato): At this moment, sometimes window_id from wayland hasn't
+  // been sent from Chrome. Add a listener for this.
+  if (exo::GetShellClientAccessibilityId(active_window).has_value()) {
+    window_key->set_window_id(
+        exo::GetShellClientAccessibilityId(active_window).value());
+  } else {
+    window_key->set_task_id(task_id);
+  }
+
+  auto* instance =
+      ARC_GET_INSTANCE_FOR_METHOD(arc_bridge_service_->accessibility_helper(),
+                                  RequestSendAccessibilityTree);
+  if (!instance)
+    return false;
+
+  instance->RequestSendAccessibilityTree(std::move(window_key));
+  return true;
 }
 
 void ArcAccessibilityHelperBridge::Shutdown() {
@@ -315,6 +357,7 @@ void ArcAccessibilityHelperBridge::Shutdown() {
 void ArcAccessibilityHelperBridge::OnConnectionReady() {
   UpdateEnabledFeature();
   UpdateCaptionSettings();
+  UpdateWindowProperties(GetActiveWindow());
 
   chromeos::AccessibilityManager* accessibility_manager =
       chromeos::AccessibilityManager::Get();
@@ -486,11 +529,10 @@ void ArcAccessibilityHelperBridge::InvokeUpdateEnabledFeatureForTesting() {
 }
 
 aura::Window* ArcAccessibilityHelperBridge::GetActiveWindow() {
-  exo::WMHelper* wm_helper = exo::WMHelper::GetInstance();
-  if (!wm_helper)
+  if (!exo::WMHelper::HasInstance())
     return nullptr;
 
-  return wm_helper->GetActiveWindow();
+  return exo::WMHelper::GetInstance()->GetActiveWindow();
 }
 
 extensions::EventRouter* ArcAccessibilityHelperBridge::GetEventRouter() const {
@@ -662,14 +704,27 @@ void ArcAccessibilityHelperBridge::UpdateWindowProperties(
   // Do a lookup for the tree source. A tree source may not exist because the
   // app isn't whitelisted Android side or no data has been received for the
   // app.
-  auto* tree = GetFromKey(KeyForTaskId(task_id));
-  bool use_talkback = !tree;
+  bool use_talkback = talkback_enabled_task_ids_.count(task_id) > 0;
 
   window->SetProperty(aura::client::kAccessibilityTouchExplorationPassThrough,
                       use_talkback);
   window->SetProperty(ash::kSearchKeyAcceleratorReservedKey, use_talkback);
   window->SetProperty(aura::client::kAccessibilityFocusFallsbackToWidgetKey,
                       !use_talkback);
+
+  if (use_talkback) {
+    SetChildAxTreeIDForWindow(window, ui::AXTreeIDUnknown());
+  } else if (GetFilterTypeForProfile(profile_) ==
+             arc::mojom::AccessibilityFilterType::ALL) {
+    TreeKey key = KeyForTaskId(task_id);
+    AXTreeSourceArc* tree = GetFromKey(key);
+    if (!tree)
+      tree = CreateFromKey(std::move(key));
+
+    // Just after the creation of window, widget has not been set yet and this
+    // is not dispatched to ShellSurfaceBase. Thus, call this every time.
+    SetChildAxTreeIDForWindow(window, tree->ax_tree_id());
+  }
 }
 
 void ArcAccessibilityHelperBridge::SetExploreByTouchEnabled(bool enabled) {
@@ -778,16 +833,7 @@ void ArcAccessibilityHelperBridge::HandleFilterTypeAllEvent(
 
     if (!tree_source) {
       tree_source = CreateFromKey(key);
-
-      ui::AXTreeData tree_data;
-      tree_source->GetTreeData(&tree_data);
-      exo::Surface* surface = exo::GetShellMainSurface(active_window);
-      if (surface) {
-        views::Widget* widget =
-            views::Widget::GetWidgetForNativeWindow(active_window);
-        static_cast<exo::ShellSurfaceBase*>(widget->widget_delegate())
-            ->SetChildAxTreeId(tree_data.tree_id);
-      }
+      SetChildAxTreeIDForWindow(active_window, tree_source->ax_tree_id());
     }
   }
 

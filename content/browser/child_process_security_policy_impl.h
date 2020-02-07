@@ -75,6 +75,10 @@ class CONTENT_EXPORT ChildProcessSecurityPolicyImpl
     Handle& operator=(const Handle&) = delete;
     Handle& operator=(Handle&&);
 
+    // Create a new instance of Handle, holding another reference to the same
+    // process ID as the current one.
+    Handle Duplicate();
+
     // Returns true if this object has a valid process ID.
     // Returns false if this object was created with the default constructor,
     // the contents of this object was transferred to another Handle via

@@ -688,6 +688,7 @@
 <translation id="3987940399970879459">Mai puțin de 1 MB</translation>
 <translation id="3990250421422698716">Decalaj de îndoire</translation>
 <translation id="40103911065039147">{URL_count,plural, =1{1 pagină web în apropiere}few{# pagini web în apropiere}other{# de pagini web în apropiere}}</translation>
+<translation id="4014128326099193693">{COUNT,plural, =1{Document PDF cu {COUNT} pagina}few{Document PDF cu {COUNT} pagini}other{Document PDF cu {COUNT} de pagini}}</translation>
 <translation id="4030383055268325496">&amp;Anulați adăugarea</translation>
 <translation id="4032320456957708163">Browserul este gestionat de <ph name="ENROLLMENT_DOMAIN" /></translation>
 <translation id="4058922952496707368">Cheie „<ph name="SUBKEY" />”: <ph name="ERROR" /></translation>
@@ -716,6 +717,7 @@
 <translation id="4142935452406587478">Tava 10</translation>
 <translation id="4148925816941278100">American Express</translation>
 <translation id="4151403195736952345">Folosește global în mod prestabilit (detectează)</translation>
+<translation id="4152318981910038897">{COUNT,plural, =1{Pagina 1}few{Pagina {COUNT}}other{Pagina {COUNT}}}</translation>
 <translation id="4159784952369912983">Mov</translation>
 <translation id="4165986682804962316">Setări pentru site-uri</translation>
 <translation id="4171400957073367226">Semnătură de verificare nevalidă</translation>
@@ -1393,6 +1395,7 @@
 <translation id="7201591969684833065">Administratorul tău poate să vadă:</translation>
 <translation id="7202346780273620635">Letter-Extra</translation>
 <translation id="7210863904660874423"><ph name="HOST_NAME" /> nu respectă standardele de securitate.</translation>
+<translation id="7210993021468939304">activitatea Linux din container și pot să instaleze și să ruleze aplicații Linux în container</translation>
 <translation id="721197778055552897"><ph name="BEGIN_LINK" />Află mai multe<ph name="END_LINK" /> despre această problemă.</translation>
 <translation id="7219179957768738017">Conexiunea utilizează <ph name="SSL_VERSION" />.</translation>
 <translation id="7220786058474068424">Se procesează</translation>
@@ -1556,6 +1559,7 @@ Detalii suplimentare:
 <translation id="7878562273885520351">Este posibil ca parola să fie compromisă</translation>
 <translation id="7882421473871500483">Maro</translation>
 <translation id="7887683347370398519">Verifică codul CVC și încearcă din nou</translation>
+<translation id="7887885240995164102">Intră în modul picture-in-picture</translation>
 <translation id="7888575728750733395">Intenția de redare a printării</translation>
 <translation id="7904208859782148177">C3 (Plic)</translation>
 <translation id="7932579305932748336">Acoperire</translation>

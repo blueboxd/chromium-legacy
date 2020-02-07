@@ -14,6 +14,7 @@
 #include "components/signin/internal/identity_manager/profile_oauth2_token_service.h"
 #include "components/signin/internal/identity_manager/profile_oauth2_token_service_delegate.h"
 #include "components/signin/public/base/list_accounts_test_utils.h"
+#include "components/signin/public/identity_manager/consent_level.h"
 #include "components/signin/public/identity_manager/identity_manager.h"
 #include "components/signin/public/identity_manager/test_identity_manager_observer.h"
 #include "google_apis/gaia/gaia_auth_util.h"
@@ -123,8 +124,11 @@ CoreAccountInfo SetUnconsentedPrimaryAccount(IdentityManager* identity_manager,
 
   DCHECK(identity_manager->HasUnconsentedPrimaryAccount());
   DCHECK_EQ(account_info.gaia,
-            identity_manager->GetUnconsentedPrimaryAccountInfo().gaia);
-  return identity_manager->GetUnconsentedPrimaryAccountInfo();
+            identity_manager
+                ->GetPrimaryAccountInfo(signin::ConsentLevel::kNotRequired)
+                .gaia);
+  return identity_manager->GetPrimaryAccountInfo(
+      signin::ConsentLevel::kNotRequired);
 }
 
 void SetRefreshTokenForPrimaryAccount(IdentityManager* identity_manager,

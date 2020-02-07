@@ -179,6 +179,8 @@ class VIZ_SERVICE_EXPORT DirectContextProvider
 
   GLuint framebuffer_id_ = 0;
 
+  THREAD_CHECKER(thread_checker_);
+
   base::ObserverList<ContextLostObserver>::Unchecked observers_;
 };
 

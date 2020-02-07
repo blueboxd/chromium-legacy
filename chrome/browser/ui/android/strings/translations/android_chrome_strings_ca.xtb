@@ -115,6 +115,7 @@
 <translation id="1919950603503897840">Selecciona contactes</translation>
 <translation id="1922076542920281912">Perquè Chrome pugui accedir a la teva ubicació, també l'has d'activar a la <ph name="BEGIN_LINK" />configuració d'Android<ph name="END_LINK" />.</translation>
 <translation id="1923695749281512248"><ph name="BYTES_DOWNLOADED_WITH_UNITS" />/<ph name="FILE_SIZE_WITH_UNITS" /></translation>
+<translation id="1925021887439448749">Introdueix l'adreça web personalitzada</translation>
 <translation id="1928696683969751773">Actualitzacions</translation>
 <translation id="19288952978244135">Torna a obrir Chrome.</translation>
 <translation id="1933845786846280168">Pestanya seleccionada</translation>
@@ -279,6 +280,7 @@
 <translation id="3123473560110926937">Bloquejat en alguns llocs web</translation>
 <translation id="3123734510202723619">Anuncis</translation>
 <translation id="3137521801621304719">Surt del mode d'incògnit</translation>
+<translation id="3140134512074889489">Activa la càmera per escanejar un codi QR</translation>
 <translation id="3143515551205905069">Cancel·la la sincronització</translation>
 <translation id="3157842584138209013">Consulta la quantitat de dades que has estalviat des del botó Més opcions</translation>
 <translation id="3166827708714933426">Dreceres per a pestanyes i finestres</translation>
@@ -449,6 +451,9 @@
 <translation id="4521489764227272523">Les dades seleccionades s'han suprimit de Chrome i dels dispositius sincronitzats.
 
 És possible que el teu compte de Google tingui altres formes de l'historial de navegació, com ara les cerques i l'activitat d'altres serveis de Google a <ph name="BEGIN_LINK" />myactivity.google.com<ph name="END_LINK" />.</translation>
+<translation id="4527374721149092498">Obtén informació sobre temes dels llocs web sense sortir de la pàgina. La funció Toca per cercar envia una paraula i el context que l'envolta a la Cerca de Google i torna definicions, imatges, resultats de la cerca i altres detalls.
+
+Toca qualsevol paraula per cercar-la. Per ajustar el terme de cerca, mantén-lo premut per seleccionar-lo. Per definir millor la cerca, fes lliscar el tauler per obrir-lo, toca la icona d'ampliar per crear una pestanya i, a continuació, toca el quadre de cerca.</translation>
 <translation id="4532845899244822526">Tria la carpeta</translation>
 <translation id="4538018662093857852">Activa el mode bàsic</translation>
 <translation id="4550003330909367850">Per veure o copiar la contrasenya aquí, configura el bloqueig de pantalla en aquest dispositiu.</translation>
@@ -546,7 +551,7 @@ Per canviar aquesta opció, <ph name="BEGIN_LINK" />restableix la sincronitzaci�
 <translation id="5184329579814168207">Obre a Chrome</translation>
 <translation id="5193988420012215838">S'ha copiat al porta-retalls</translation>
 <translation id="5197729504361054390">Els contactes que seleccionis es compartiran amb <ph name="BEGIN_BOLD" /><ph name="SITE" /><ph name="END_BOLD" />.</translation>
-<translation id="5199929503336119739">Perfil professional</translation>
+<translation id="5199929503336119739">Perfil de treball</translation>
 <translation id="5210286577605176222">Ves a la pestanya anterior</translation>
 <translation id="5210365745912300556">Tanca la pestanya</translation>
 <translation id="5224771365102442243">Amb vídeo</translation>
@@ -690,6 +695,9 @@ Per canviar aquesta opció, <ph name="BEGIN_LINK" />restableix la sincronitzaci�
 <translation id="6232535412751077445">Si actives l'opció No segueixis, s'inclourà una sol·licitud al trànsit de navegació. Que s'apliqui o no dependrà de si algun lloc web respon a la sol·licitud i de com s'interpreta.
 
 Per exemple, és possible que alguns llocs web responguin a aquesta sol·licitud mostrant-te anuncis que no estiguin basats en altres llocs web que hagis visitat. Molts llocs web continuaran recopilant i utilitzant les teves dades de navegació (per exemple, per millorar la seguretat, per proporcionar contingut, anuncis i recomanacions i per generar estadístiques).</translation>
+<translation id="6238003486329291387">Obtén informació sobre temes dels llocs web sense sortir de la pàgina. La funció Toca per cercar envia una paraula i el context que l'envolta a la Cerca de Google i torna definicions, imatges, resultats de la cerca i altres detalls.
+
+Mantén premuda qualsevol paraula per cercar-la. Per definir millor la cerca, ajusta la selecció. També pots fer lliscar el tauler per obrir-lo, tocar la icona d'ampliar per crear una pestanya i, a continuació, tocar el quadre de cerca.</translation>
 <translation id="624789221780392884">Actualització a punt.</translation>
 <translation id="6255999984061454636">Suggeriments de contingut</translation>
 <translation id="6270391203985052864">Els llocs web poden demanar-te permís per enviar-te notificacions</translation>

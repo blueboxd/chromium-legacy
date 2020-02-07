@@ -225,8 +225,8 @@ void SyncFileSystemGetFileStatusFunction::DidGetFileStatus(
   }
 
   // Convert from C++ to JavaScript enum.
-  results_ = sync_file_system::GetFileStatus::Results::Create(
-      SyncFileStatusToExtensionEnum(sync_file_status));
+  SetResultList(sync_file_system::GetFileStatus::Results::Create(
+      SyncFileStatusToExtensionEnum(sync_file_status)));
   SendResponse(true);
 }
 
@@ -369,7 +369,7 @@ void SyncFileSystemGetUsageAndQuotaFunction::DidGetUsageAndQuota(
   sync_file_system::StorageInfo info;
   info.usage_bytes = usage;
   info.quota_bytes = quota;
-  results_ = sync_file_system::GetUsageAndQuota::Results::Create(info);
+  SetResultList(sync_file_system::GetUsageAndQuota::Results::Create(info));
   SendResponse(true);
 }
 

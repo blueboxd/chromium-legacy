@@ -28,8 +28,6 @@ struct MinMaxSize;
 struct LogicalSize;
 struct PhysicalSize;
 
-enum class NGMinMaxSizeType { kContentBoxSize, kBorderBoxSize };
-
 // Input to the min/max inline size calculation algorithm for child nodes. Child
 // nodes within the same formatting context need to know which floats are beside
 // them.
@@ -49,9 +47,6 @@ struct MinMaxSizeInput {
   LayoutUnit float_left_inline_size;
   LayoutUnit float_right_inline_size;
   LayoutUnit percentage_resolution_block_size;
-
-  // Whether to return the size as a content-box size or border-box size.
-  NGMinMaxSizeType size_type = NGMinMaxSizeType::kBorderBoxSize;
 };
 
 // Represents the input to a layout algorithm for a given node. The layout

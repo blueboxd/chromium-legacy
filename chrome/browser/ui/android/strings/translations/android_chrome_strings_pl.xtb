@@ -115,6 +115,7 @@
 <translation id="1919950603503897840">Wybierz kontakty</translation>
 <translation id="1922076542920281912">Aby zezwolić Chrome na dostęp do lokalizacji, musisz ją też włączyć w <ph name="BEGIN_LINK" />Ustawieniach Androida<ph name="END_LINK" />.</translation>
 <translation id="1923695749281512248"><ph name="BYTES_DOWNLOADED_WITH_UNITS" /> / <ph name="FILE_SIZE_WITH_UNITS" /></translation>
+<translation id="1925021887439448749">Wpisz niestandardowy adres internetowy</translation>
 <translation id="1928696683969751773">Aktualizacje</translation>
 <translation id="19288952978244135">Uruchom ponownie Chrome.</translation>
 <translation id="1933845786846280168">Wybrana karta</translation>
@@ -279,6 +280,7 @@
 <translation id="3123473560110926937">Blokowane na niektórych stronach</translation>
 <translation id="3123734510202723619">Komunikaty</translation>
 <translation id="3137521801621304719">Wyłącz tryb incognito</translation>
+<translation id="3140134512074889489">Włącz kamerę, by zeskanować kod QR</translation>
 <translation id="3143515551205905069">Anuluj synchronizację</translation>
 <translation id="3157842584138209013">Sprawdź ilość zaoszczędzonych danych, używając przycisku Więcej opcji</translation>
 <translation id="3166827708714933426">Skróty kart i okien</translation>
@@ -449,6 +451,9 @@
 <translation id="4521489764227272523">Wybrane dane zostały usunięte z Chrome i ze zsynchronizowanych urządzeń.
 
 Na stronie <ph name="BEGIN_LINK" />myactivity.google.com<ph name="END_LINK" /> na Twoim koncie Google mogą być zapisane inne rodzaje historii przeglądania, takie jak wyszukiwania lub aktywność z innych usług Google.</translation>
+<translation id="4527374721149092498">Poznaj tematy omawiane w witrynach, nie opuszczając strony. Funkcja „Dotknij, by wyszukać” wysyła słowo i najbliższy kontekst do wyszukiwarki Google, a następnie zwraca definicje, zdjęcia, wyniki wyszukiwania i inne informacje.
+
+Kliknij dowolne słowo, by rozpocząć wyszukiwanie. Aby dostosować wyszukiwane słowo, przytrzymaj je. Aby doprecyzować wyszukiwanie, wysuń panel, kliknij ikonę rozwijania, by utworzyć nową kartę, a potem kliknij pole wyszukiwania.</translation>
 <translation id="4532845899244822526">Wybierz folder</translation>
 <translation id="4538018662093857852">Włącz wersję uproszczoną</translation>
 <translation id="4550003330909367850">Aby wyświetlić lub skopiować hasło, ustaw blokadę ekranu na urządzeniu.</translation>
@@ -690,6 +695,9 @@ Aby zmienić to ustawienie, <ph name="BEGIN_LINK" />zresetuj synchronizację<ph 
 <translation id="6232535412751077445">Włączenie opcji „Bez śledzenia” oznacza, że podczas przeglądania będzie wysyłane żądanie. Jego wynik zależy od tego, czy strona na nie odpowie oraz jak zostanie ono zinterpretowane.
 
 Na przykład niektóre strony mogą na nie zareagować, wyświetlając reklamy bez związku ze stronami odwiedzonymi przez Ciebie wcześniej. Wiele stron będzie nadal gromadzić dane przeglądania i używać ich na przykład do poprawy bezpieczeństwa, pokazywania treści, reklam i rekomendacji oraz do generowania statystyk.</translation>
+<translation id="6238003486329291387">Poznaj tematy omawiane w witrynach, nie opuszczając strony. Funkcja „Dotknij, by wyszukać” wysyła słowo i najbliższy kontekst do wyszukiwarki Google, a następnie zwraca definicje, zdjęcia, wyniki wyszukiwania i inne informacje.
+
+Przytrzymaj dowolne słowo, by rozpocząć wyszukiwanie. Jeśli chcesz je doprecyzować, dostosuj zakres zaznaczenia. Możesz też wysunąć panel, kliknąć ikonę rozwijania, by utworzyć nową kartę, a potem kliknąć pole wyszukiwania.</translation>
 <translation id="624789221780392884">Aktualizacja jest gotowa</translation>
 <translation id="6255999984061454636">Polecane treści</translation>
 <translation id="6270391203985052864">Strony mogą prosić o zgodę na wysyłanie powiadomień</translation>

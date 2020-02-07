@@ -109,7 +109,8 @@ class VIZ_SERVICE_EXPORT BufferQueue {
   // the buffers after that sync token passes. Otherwise, it's a no-op. Returns
   // true if there was a change of state, false otherwise.
   virtual bool Reshape(const gfx::Size& size,
-                       const gfx::ColorSpace& color_space);
+                       const gfx::ColorSpace& color_space,
+                       gfx::BufferFormat format);
 
   gfx::BufferFormat buffer_format() const { return format_; }
 

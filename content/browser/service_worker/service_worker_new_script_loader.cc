@@ -54,10 +54,11 @@ ServiceWorkerNewScriptLoader::CreateAndStart(
     mojo::PendingRemote<network::mojom::URLLoaderClient> client,
     scoped_refptr<ServiceWorkerVersion> version,
     scoped_refptr<network::SharedURLLoaderFactory> loader_factory,
-    const net::MutableNetworkTrafficAnnotationTag& traffic_annotation) {
+    const net::MutableNetworkTrafficAnnotationTag& traffic_annotation,
+    int64_t cache_resource_id) {
   return base::WrapUnique(new ServiceWorkerNewScriptLoader(
       routing_id, request_id, options, original_request, std::move(client),
-      version, loader_factory, traffic_annotation));
+      version, loader_factory, traffic_annotation, cache_resource_id));
 }
 
 // TODO(nhiroki): We're doing multiple things in the ctor. Consider factors out
@@ -70,7 +71,8 @@ ServiceWorkerNewScriptLoader::ServiceWorkerNewScriptLoader(
     mojo::PendingRemote<network::mojom::URLLoaderClient> client,
     scoped_refptr<ServiceWorkerVersion> version,
     scoped_refptr<network::SharedURLLoaderFactory> loader_factory,
-    const net::MutableNetworkTrafficAnnotationTag& traffic_annotation)
+    const net::MutableNetworkTrafficAnnotationTag& traffic_annotation,
+    int64_t cache_resource_id)
     : request_url_(original_request.url),
       resource_type_(static_cast<blink::mojom::ResourceType>(
           original_request.resource_type)),
@@ -81,13 +83,13 @@ ServiceWorkerNewScriptLoader::ServiceWorkerNewScriptLoader(
                        base::SequencedTaskRunnerHandle::Get()),
       loader_factory_(std::move(loader_factory)),
       client_(std::move(client)) {
+  DCHECK_NE(cache_resource_id,
+            ServiceWorkerConsts::kInvalidServiceWorkerResourceId);
+
   network::ResourceRequest resource_request(original_request);
 #if DCHECK_IS_ON()
   CheckVersionStatusBeforeLoad();
 #endif  // DCHECK_IS_ON()
-
-  // TODO(nhiroki): Handle the case where |cache_resource_id| is invalid.
-  int64_t cache_resource_id = version->context()->storage()->NewResourceId();
 
   // |incumbent_cache_resource_id| is valid if the incumbent service worker
   // exists and it's required to do the byte-for-byte check.

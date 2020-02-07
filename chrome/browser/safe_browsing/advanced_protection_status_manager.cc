@@ -15,6 +15,7 @@
 #include "components/safe_browsing/core/common/safe_browsing_prefs.h"
 #include "components/safe_browsing/core/features.h"
 #include "components/signin/public/identity_manager/accounts_mutator.h"
+#include "components/signin/public/identity_manager/consent_level.h"
 #include "components/signin/public/identity_manager/primary_account_access_token_fetcher.h"
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/browser_thread.h"
@@ -53,8 +54,8 @@ void AdvancedProtectionStatusManager::Initialize() {
 
 void AdvancedProtectionStatusManager::MaybeRefreshOnStartUp() {
   // Retrieves advanced protection service status from primary account's info.
-  CoreAccountInfo core_info =
-      identity_manager_->GetUnconsentedPrimaryAccountInfo();
+  CoreAccountInfo core_info = identity_manager_->GetPrimaryAccountInfo(
+      signin::ConsentLevel::kNotRequired);
   if (core_info.account_id.empty())
     return;
 

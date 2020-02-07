@@ -23,6 +23,7 @@
 #include "ui/display/display_switches.h"
 #include "ui/display/manager/display_manager.h"
 #include "ui/display/screen.h"
+#include "ui/display/test/display_manager_test_api.h"
 #include "ui/events/test/event_generator.h"
 
 namespace ash {
@@ -219,8 +220,10 @@ TEST_F(ScreenPositionControllerTest, ConvertHostPointToScreenRotate) {
   EXPECT_EQ("350,30", ConvertHostPointToScreen(30, 450));
 
   // Move |window_| to the 2nd.
-  window_->SetBoundsInScreen(gfx::Rect(300, 20, 50, 50),
-                             display_manager()->GetSecondaryDisplay());
+  window_->SetBoundsInScreen(
+      gfx::Rect(300, 20, 50, 50),
+      display::test::DisplayManagerTestApi(display_manager())
+          .GetSecondaryDisplay());
   aura::Window::Windows root_windows = Shell::Get()->GetAllRootWindows();
   EXPECT_EQ(root_windows[1], window_->GetRootWindow());
 
@@ -250,8 +253,10 @@ TEST_F(ScreenPositionControllerTest, ConvertHostPointToScreenZoomScale) {
   EXPECT_EQ("185,50", ConvertHostPointToScreen(60, 450));
 
   // Move |window_| to the 2nd.
-  window_->SetBoundsInScreen(gfx::Rect(300, 20, 50, 50),
-                             display_manager()->GetSecondaryDisplay());
+  window_->SetBoundsInScreen(
+      gfx::Rect(300, 20, 50, 50),
+      display::test::DisplayManagerTestApi(display_manager())
+          .GetSecondaryDisplay());
   aura::Window::Windows root_windows = Shell::Get()->GetAllRootWindows();
   EXPECT_EQ(root_windows[1], window_->GetRootWindow());
 
@@ -307,8 +312,10 @@ TEST_F(ScreenPositionControllerTest,
   base::RunLoop().RunUntilIdle();
 
   // Create a window on the secondary display.
-  window_->SetBoundsInScreen(gfx::Rect(600, 0, 400, 400),
-                             display_manager()->GetSecondaryDisplay());
+  window_->SetBoundsInScreen(
+      gfx::Rect(600, 0, 400, 400),
+      display::test::DisplayManagerTestApi(display_manager())
+          .GetSecondaryDisplay());
 
   // Move the mouse cursor over |window_|. Synthetic mouse moves are dispatched
   // asynchronously when a window which contains the mouse cursor is destroyed.

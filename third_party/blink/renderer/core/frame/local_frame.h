@@ -116,7 +116,8 @@ extern template class CORE_EXTERN_TEMPLATE_EXPORT Supplement<LocalFrame>;
 class CORE_EXPORT LocalFrame final : public Frame,
                                      public FrameScheduler::Delegate,
                                      public Supplementable<LocalFrame>,
-                                     public mojom::blink::LocalFrame {
+                                     public mojom::blink::LocalFrame,
+                                     public mojom::blink::LocalMainFrame {
   USING_GARBAGE_COLLECTED_MIXIN(LocalFrame);
 
  public:
@@ -497,7 +498,13 @@ class CORE_EXPORT LocalFrame final : public Frame,
       blink::mojom::blink::MediaPlayerActionPtr action) final;
   void AdvanceFocusInForm(mojom::blink::FocusType focus_type) final;
 
+  // blink::mojom::LocalMainFrame overrides:
+  void SetScaleFactor(float scale) override;
+
   SystemClipboard* GetSystemClipboard();
+
+  // Indicate that this frame was attached as a MainFrame.
+  void WasAttachedAsLocalMainFrame();
 
  private:
   friend class FrameNavigationDisabler;
@@ -555,6 +562,9 @@ class CORE_EXPORT LocalFrame final : public Frame,
   static void BindToReceiver(
       blink::LocalFrame* frame,
       mojo::PendingAssociatedReceiver<mojom::blink::LocalFrame> receiver);
+  static void BindToMainFrameReceiver(
+      blink::LocalFrame* frame,
+      mojo::PendingAssociatedReceiver<mojom::blink::LocalMainFrame> receiver);
 
   std::unique_ptr<FrameScheduler> frame_scheduler_;
 
@@ -638,6 +648,8 @@ class CORE_EXPORT LocalFrame final : public Frame,
 
   mojo::AssociatedRemote<mojom::blink::LocalFrameHost> local_frame_host_remote_;
   mojo::AssociatedReceiver<mojom::blink::LocalFrame> receiver_{this};
+  mojo::AssociatedReceiver<mojom::blink::LocalMainFrame> main_frame_receiver_{
+      this};
 
   // Access to the global system clipboard.
   Member<SystemClipboard> system_clipboard_;

@@ -10,12 +10,9 @@
 namespace web_app {
 
 // This block defines stub implementations of OS specific methods for
-// FileHandling. Currently, Windows and Desktop Linux (but not Chrome OS) have
-// their own implementations.
-//
-// Note: Because OS_LINUX includes OS_CHROMEOS be sure to use the stub on
-// OS_CHROMEOS.
-#if !defined(OS_WIN) && !(defined(OS_LINUX) && !defined(OS_CHROMEOS))
+// FileHandling. Currently, Windows, MacOSX and Desktop Linux (but not Chrome
+// OS) have their own implementations.
+#if defined(OS_CHROMEOS)
 bool ShouldRegisterFileHandlersWithOs() {
   return false;
 }

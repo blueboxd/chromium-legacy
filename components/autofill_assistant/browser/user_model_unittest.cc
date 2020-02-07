@@ -93,82 +93,41 @@ TEST_F(UserModelTest, InsertNewValues) {
                                                 Pair("value_c", value_c)));
 }
 
-TEST_F(UserModelTest, OverwriteExistingValue) {
+TEST_F(UserModelTest, OverwriteWithExistingValueFiresNoChangeEvent) {
   ValueProto value = CreateStringValue();
   EXPECT_CALL(mock_observer_, OnValueChanged("identifier", value)).Times(1);
   model_.SetValue("identifier", value);
 
-  value.mutable_strings()->add_values("new string");
-  EXPECT_CALL(mock_observer_, OnValueChanged("identifier", value)).Times(1);
-  model_.SetValue("identifier", value);
+  ValueProto same_value = CreateStringValue();
+  model_.SetValue("identifier", same_value);
 
   EXPECT_THAT(GetValues(), UnorderedElementsAre(Pair("identifier", value)));
 }
 
-TEST_F(UserModelTest, DifferentTypesComparison) {
+TEST_F(UserModelTest, OverwriteWithDifferentValueFiresChangeEvent) {
+  ValueProto value = CreateStringValue();
+  EXPECT_CALL(mock_observer_, OnValueChanged("identifier", _)).Times(2);
+  model_.SetValue("identifier", value);
+
+  ValueProto another_value = CreateStringValue();
+  another_value.mutable_strings()->add_values("tomato");
+  model_.SetValue("identifier", another_value);
+
+  EXPECT_THAT(GetValues(),
+              UnorderedElementsAre(Pair("identifier", another_value)));
+}
+
+TEST_F(UserModelTest, ForceNotificationAlwaysFiresChangeEvent) {
+  testing::InSequence seq;
   ValueProto value_a = CreateStringValue();
-  ValueProto value_b = CreateIntValue();
+  EXPECT_CALL(mock_observer_, OnValueChanged("a", value_a)).Times(1);
+  model_.SetValue("a", value_a);
 
-  EXPECT_CALL(mock_observer_, OnValueChanged("identifier", value_a)).Times(1);
-  EXPECT_CALL(mock_observer_, OnValueChanged("identifier", value_b)).Times(1);
-  model_.SetValue("identifier", value_a);
-  model_.SetValue("identifier", value_b);
+  EXPECT_CALL(mock_observer_, OnValueChanged("a", value_a)).Times(0);
+  model_.SetValue("a", value_a);
 
-  EXPECT_THAT(GetValues(), UnorderedElementsAre(Pair("identifier", value_b)));
-}
-
-TEST_F(UserModelTest, StringComparison) {
-  ValueProto value_a = CreateStringValue();
-  ValueProto value_b = value_a;
-
-  EXPECT_CALL(mock_observer_, OnValueChanged("identifier", value_a)).Times(1);
-  model_.SetValue("identifier", value_a);
-  model_.SetValue("identifier", value_b);
-
-  value_a.mutable_strings()->add_values("potato");
-  value_b.mutable_strings()->add_values("tomato");
-  EXPECT_CALL(mock_observer_, OnValueChanged("identifier", value_a)).Times(1);
-  EXPECT_CALL(mock_observer_, OnValueChanged("identifier", value_b)).Times(1);
-  model_.SetValue("identifier", value_a);
-  model_.SetValue("identifier", value_b);
-
-  EXPECT_THAT(GetValues(), UnorderedElementsAre(Pair("identifier", value_b)));
-}
-
-TEST_F(UserModelTest, IntComparison) {
-  ValueProto value_a = CreateIntValue();
-  ValueProto value_b = value_a;
-
-  EXPECT_CALL(mock_observer_, OnValueChanged("identifier", value_a)).Times(1);
-  model_.SetValue("identifier", value_a);
-  model_.SetValue("identifier", value_b);
-
-  value_a.mutable_ints()->add_values(1);
-  value_b.mutable_ints()->add_values(0);
-  EXPECT_CALL(mock_observer_, OnValueChanged("identifier", value_a)).Times(1);
-  EXPECT_CALL(mock_observer_, OnValueChanged("identifier", value_b)).Times(1);
-  model_.SetValue("identifier", value_a);
-  model_.SetValue("identifier", value_b);
-
-  EXPECT_THAT(GetValues(), UnorderedElementsAre(Pair("identifier", value_b)));
-}
-
-TEST_F(UserModelTest, BoolComparison) {
-  ValueProto value_a = CreateBoolValue();
-  ValueProto value_b = value_a;
-
-  EXPECT_CALL(mock_observer_, OnValueChanged("identifier", value_a)).Times(1);
-  model_.SetValue("identifier", value_a);
-  model_.SetValue("identifier", value_b);
-
-  value_a.mutable_booleans()->add_values(true);
-  value_b.mutable_booleans()->add_values(false);
-  EXPECT_CALL(mock_observer_, OnValueChanged("identifier", value_a)).Times(1);
-  EXPECT_CALL(mock_observer_, OnValueChanged("identifier", value_b)).Times(1);
-  model_.SetValue("identifier", value_a);
-  model_.SetValue("identifier", value_b);
-
-  EXPECT_THAT(GetValues(), UnorderedElementsAre(Pair("identifier", value_b)));
+  EXPECT_CALL(mock_observer_, OnValueChanged("a", value_a)).Times(1);
+  model_.SetValue("a", value_a, /* force_notification = */ true);
 }
 
 TEST_F(UserModelTest, MergeWithProto) {
@@ -258,19 +217,6 @@ TEST_F(UserModelTest, UpdateProto) {
                 Property(&ModelProto::ModelValue::value, Eq(ValueProto()))),
           AllOf(Property(&ModelProto::ModelValue::identifier, StrEq("c")),
                 Property(&ModelProto::ModelValue::value, Eq(value_c)))));
-}
-
-TEST_F(UserModelTest, ForceNotification) {
-  testing::InSequence seq;
-  ValueProto value_a = CreateStringValue();
-  EXPECT_CALL(mock_observer_, OnValueChanged("a", value_a)).Times(1);
-  model_.SetValue("a", value_a);
-
-  EXPECT_CALL(mock_observer_, OnValueChanged("a", value_a)).Times(0);
-  model_.SetValue("a", value_a);
-
-  EXPECT_CALL(mock_observer_, OnValueChanged("a", value_a)).Times(1);
-  model_.SetValue("a", value_a, /* force_notification = */ true);
 }
 
 }  // namespace autofill_assistant

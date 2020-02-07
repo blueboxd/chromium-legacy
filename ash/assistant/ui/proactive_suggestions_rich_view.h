@@ -8,7 +8,7 @@
 #include <memory>
 
 #include "ash/assistant/ui/proactive_suggestions_view.h"
-#include "ash/public/cpp/assistant/assistant_web_view_2.h"
+#include "ash/public/cpp/assistant/assistant_web_view.h"
 #include "mojo/public/cpp/bindings/remote.h"
 #include "ui/events/event_observer.h"
 
@@ -25,13 +25,14 @@ class ViewShadow;
 class COMPONENT_EXPORT(ASSISTANT_UI) ProactiveSuggestionsRichView
     : public ProactiveSuggestionsView,
       public ui::EventObserver,
-      public AssistantWebView2::Observer {
+      public AssistantWebView::Observer {
  public:
   explicit ProactiveSuggestionsRichView(AssistantViewDelegate* delegate);
-  explicit ProactiveSuggestionsRichView(ProactiveSuggestionsRichView&) = delete;
+  ~ProactiveSuggestionsRichView() override;
+
+  ProactiveSuggestionsRichView(ProactiveSuggestionsRichView&) = delete;
   ProactiveSuggestionsRichView& operator=(ProactiveSuggestionsRichView&) =
       delete;
-  ~ProactiveSuggestionsRichView() override;
 
   // ProactiveSuggestionsView:
   const char* GetClassName() const override;
@@ -49,14 +50,14 @@ class COMPONENT_EXPORT(ASSISTANT_UI) ProactiveSuggestionsRichView
   using views::View::OnEvent;  // Suppress clang warning.
   void OnEvent(const ui::Event& event) override;
 
-  // AssistantWebView2::Observer:
+  // AssistantWebView::Observer:
   void DidStopLoading() override;
   void DidSuppressNavigation(const GURL& url,
                              WindowOpenDisposition disposition,
                              bool from_user_gesture) override;
 
  private:
-  std::unique_ptr<AssistantWebView2> contents_view_;
+  std::unique_ptr<AssistantWebView> contents_view_;
   std::unique_ptr<views::EventMonitor> event_monitor_;
   std::unique_ptr<ViewShadow> view_shadow_;
 

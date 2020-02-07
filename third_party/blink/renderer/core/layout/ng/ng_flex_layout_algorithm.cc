@@ -355,7 +355,7 @@ void NGFlexLayoutAlgorithm::ConstructAndAppendFlexItems() {
     NGConstraintSpace flex_basis_space = BuildSpaceForFlexBasis(child);
 
     NGBoxStrut border_padding_in_child_writing_mode =
-        ComputeBorders(flex_basis_space, child) +
+        ComputeBorders(flex_basis_space, child_style) +
         ComputePadding(flex_basis_space, child_style);
 
     NGPhysicalBoxStrut physical_border_padding(
@@ -901,8 +901,8 @@ void NGFlexLayoutAlgorithm::PropagateBaselineFromChild(
 
 base::Optional<MinMaxSize> NGFlexLayoutAlgorithm::ComputeMinMaxSize(
     const MinMaxSizeInput& input) const {
-  base::Optional<MinMaxSize> sizes = CalculateMinMaxSizesIgnoringChildren(
-      Node(), border_scrollbar_padding_, input.size_type);
+  base::Optional<MinMaxSize> sizes =
+      CalculateMinMaxSizesIgnoringChildren(Node(), border_scrollbar_padding_);
   if (sizes)
     return sizes;
 
@@ -948,10 +948,7 @@ base::Optional<MinMaxSize> NGFlexLayoutAlgorithm::ComputeMinMaxSize(
   // Due to negative margins, it is possible that we calculated a negative
   // intrinsic width. Make sure that we never return a negative width.
   sizes->Encompass(LayoutUnit());
-
-  if (input.size_type == NGMinMaxSizeType::kBorderBoxSize)
-    *sizes += border_scrollbar_padding_.InlineSum();
-
+  *sizes += border_scrollbar_padding_.InlineSum();
   return sizes;
 }
 

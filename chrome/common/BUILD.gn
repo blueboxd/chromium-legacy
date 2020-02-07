@@ -648,20 +648,6 @@ static_library("constants") {
   }
 }
 
-if (is_win) {
-  source_set("metrics_constants_util_win") {
-    sources = [
-      "metrics_constants_util_win.cc",
-      "metrics_constants_util_win.h",
-    ]
-
-    deps = [
-      "//base",
-      "//chrome/install_static:install_static_util",
-    ]
-  }
-}
-
 # Use a static library here because many test binaries depend on this but don't
 # require many files from it. This makes linking more efficient.
 static_library("test_support") {

@@ -139,6 +139,7 @@ Per ulteriori informazioni sui contesti sicuri, visita il sito https://www.w3.or
       Consente di stabilire il periodo di tempo che deve trascorrere prima della visualizzazione del salvaschermo nella schermata di accesso dei dispositivi in modalità retail.
 
       Il valore della norma deve essere specificato in millisecondi.</translation>
+<translation id="1145702698069317184">Blocca caricamenti e download di tipi di file non supportati</translation>
 <translation id="1151353063931113432">Consenti immagini su questi siti</translation>
 <translation id="1152117524387175066">Consente di indicare lo stato dello switch dev del dispositivo all'avvio. Se la norma viene impostata su False, lo stato dello switch dev non viene indicato.</translation>
 <translation id="1160479894929412407">Consenti protocollo QUIC</translation>
@@ -737,6 +738,15 @@ Questa norma viene rispettata soltanto se la norma "DefaultSearchProviderEnabled
 <translation id="2168397434410358693">Ritardo inattività in caso di utilizzo di CA</translation>
 <translation id="217013996107840632">Parametri della riga di comando per cambiare il browser alternativo.</translation>
 <translation id="2170233653554726857">Attiva ottimizzazione WPAD</translation>
+<translation id="2171245625445050634">Il criterio è stato rimosso nella versione M82. Utilizza MinimumChromeVersionEnforced.
+
+      Consente di configurare il requisito della versione minima consentita di <ph name="PRODUCT_NAME" />. Le versioni indicate di seguito sono considerate obsolete e il dispositivo consentirà l'accesso da parte dell'utente solo dopo l'aggiornamento del sistema operativo.
+
+      Se la versione corrente diventa obsoleta durante la sessione utente, verrà forzata la disconnessione dell'utente.
+
+      Se questo criterio non viene impostato, non saranno applicate limitazioni e l'utente potrà accedere qualunque sia la versione di <ph name="PRODUCT_NAME" />.
+
+      Per "versione" si intende sia una versione esatta, ad esempio "61.0.3163.120", sia un prefisso di versione, ad esempio "61.0".  </translation>
 <translation id="2176565653304920879">Se questa norma viene impostata, il flusso di rilevamento automatico del fuso orario sarà uno dei seguenti, a seconda del valore dell'impostazione:
 
       Se la norma viene impostata su TimezoneAutomaticDetectionUsersDecide, gli utenti potranno controllare il rilevamento automatico del fuso orario tramite i normali controlli alla pagina chrome://settings.
@@ -817,6 +827,7 @@ Questa norma viene rispettata soltanto se la norma "DefaultSearchProviderEnabled
 
       Se HardwareAccelerationModeEnabled è impostato su false, Disable3DAPIs verrà ignorata ed equivale all'impostazione su true di Disable3DAPIs.</translation>
 <translation id="2258126710006312594">Consenti l'accesso remoto agli utenti per trasferire file da/verso l'host</translation>
+<translation id="2267288258868218403">Blocca il caricamento di tipi di file non supportati</translation>
 <translation id="2269319728625047531">Abilita la visualizzazione del consenso alla sincronizzazione durante l'accesso</translation>
 <translation id="2270747976331889601">Attiva una funzionalità di sicurezza TLS 1.3 per i trust anchor locali</translation>
 <translation id="2274864612594831715">Questa norma consente di configurare l'attivazione della tastiera virtuale come dispositivo di immissione su Chrome OS. Gli utenti non possono sostituire questa norma.
@@ -1272,6 +1283,13 @@ Se questa norma non viene impostata, l'utente potrà scegliere se utilizzare o m
 
       Tieni presente che, se <ph name="PRODUCT_NAME" /> è in esecuzione e la norma cambia, sarà applicata solo alle nuove schede aperte. Pertanto alcune schede potrebbero continuare a osservare il comportamento precedente.</translation>
 <translation id="284288632677954003">URL di un file XML che contiene URL che non devono mai attivare il cambio di browser.</translation>
+<translation id="2844404652289407061">Consente di attivare la disponibilità della funzionalità Tocca per cercare nella visualizzazione contenuti <ph name="PRODUCT_NAME" />.
+
+      Se questa impostazione viene attivata, la funzionalità Tocca per cercare sarà a disposizione degli utenti, che potranno scegliere se attivarla o disattivarla.
+
+      Se questa impostazione viene disattivata, la funzionalità Tocca per cercare verrà disattivata completamente.
+
+      Non impostare questo criterio equivale ad attivarlo; vedi la descrizione precedente.</translation>
 <translation id="285480231336205327">Attiva modalità ad alto contrasto</translation>
 <translation id="2854919890879212089">Consente di impostare in <ph name="PRODUCT_NAME" /> l'uso della stampante predefinita del sistema, anziché della stampante usata più di recente, come opzione predefinita della finestra Anteprima di stampa.
 
@@ -1712,6 +1730,7 @@ Questa norma viene rispettata soltanto se viene attivata la norma "DefaultSearch
 <translation id="3646859102161347133">Impostazione tipo di ingrandimento dello schermo</translation>
 <translation id="3653237928288822292">Icona del provider di ricerca predefinito</translation>
 <translation id="3654906736796256792">Consenti l'esecuzione della sandbox dell'audio</translation>
+<translation id="3657998022005237040">Blocca download di tipi di file non supportati</translation>
 <translation id="3660510274595679517">
         Se questo criterio viene impostato su true, la registrazione alla gestione della cloud è obbligatoria e blocca il processo di avvio di Chrome, qualora l'esito fosse negativo.
 
@@ -1892,6 +1911,7 @@ Per impostazione predefinita sono autorizzati tutti gli host di messaggi nativi 
       Se questa norma non viene impostata, verrà usata la normale directory predefinita (specifica della piattaforma) di <ph name="PRODUCT_NAME" />.
 
       Visita il sito https://www.chromium.org/administrators/policy-list-3/user-data-directory-variables per consultare un elenco di variabili utilizzabili.</translation>
+<translation id="3898795800259311780">Consenti o nega acquisizione schermo</translation>
 <translation id="3911737181201537215">Questa norma non influisce sulla registrazione effettuata da Android.</translation>
 <translation id="3912092044353890761">Consente di attivare la funzione di accessibilità della tastiera virtuale nella schermata di accesso.
 
@@ -2018,6 +2038,7 @@ Avviso. È consigliabile mantenere attivati gli aggiornamenti automatici per con
           Se questa norma viene impostata su "Conserva cookie per tutta la durata della sessione", i cookie vengono cancellati alla chiusura della sessione. Quando <ph name="PRODUCT_NAME" /> è in esecuzione in "modalità background", è possibile che la sessione non si chiuda quando viene chiusa l'ultima finestra. Leggere la norma "BackgroundModeEnabled" per avere ulteriori informazioni sulla configurazione di questo comportamento.
 
           Se questa norma non viene impostata, verrà utilizzata la norma "AllowCookies", che potrà essere modificata dall'utente.</translation>
+<translation id="4093716537292423758">Non bloccare i tipi di file non supportati</translation>
 <translation id="410068710490553233">Consenti l'accesso ad altri Account Google</translation>
 <translation id="4103289232974211388">Reindirizza a IdP SAML dopo la conferma dell'utente</translation>
 <translation id="4105884561459127998">Consente di configurare il tipo di autenticazione per gli accessi SAML.
@@ -2263,9 +2284,19 @@ Questa norma viene rispettata soltanto se la norma "DefaultSearchProviderEnabled
 <translation id="4482640907922304445">Consente di visualizzare il pulsante Pagina iniziale sulla barra degli strumenti di <ph name="PRODUCT_NAME" />. Se attivi questa impostazione il pulsante Pagina iniziale verrà sempre visualizzato, in caso contrario non verrà mai visualizzato. Se questa impostazione viene attivata o disattivata, gli utenti non potranno modificarla o sostituirla in <ph name="PRODUCT_NAME" />. Se non imposti questa norma gli utenti potranno scegliere se visualizzare o meno il pulsante Pagina iniziale.</translation>
 <translation id="4483649828988077221">Disattiva l'aggiornamento automatico</translation>
 <translation id="4485425108474077672">Configura l'URL per la pagina Nuova scheda</translation>
+<translation id="4487507711538762752">Questo criterio consente di forzare l'esecuzione del codice di networking nel processo del browser.
+
+      Questo criterio è disattivato per impostazione predefinita e, se attivato, rende gli utenti vulnerabili ai problemi di sicurezza dopo che il processo di networking viene limitato tramite sandbox.
+
+      Questo criterio è pensato per offrire alle aziende la possibilità di eseguire la migrazione a programmi software di terze parti che non dipendono dalla combinazione delle API di networking. È consigliabile usare i server proxy anziché LSP e patch di API Win32.
+
+      Se questo criterio non viene impostato, il codice di networking verrà eseguito per impostazione predefinita fuori dal processo del browser.
+
+      Questo criterio verrà rimosso nella versione 84 di <ph name="PRODUCT_NAME" />.</translation>
 <translation id="4492287494009043413">Disabilita l'acquisizione di screenshot</translation>
 <translation id="4494132853995232608">DTC wilco</translation>
 <translation id="449423975179525290">Imposta le norme relative a <ph name="PLUGIN_VM_NAME" />.</translation>
+<translation id="4498493270899294764">Pattern URL per cui non è necessario eseguire il controllo della presenza di malware nei contenuti scaricati</translation>
 <translation id="450537894712826981">Consente di configurare le dimensioni della cache che verranno utilizzate da <ph name="PRODUCT_NAME" /> per archiviare sul disco i file multimediali memorizzati nella cache.
 
 Se questa norma viene impostata, <ph name="PRODUCT_NAME" /> utilizzerà le dimensioni della cache indicate a prescindere dalla specifica o meno da parte dell'utente del flag "--media-cache-size". Il valore specificato in questa norma non è un limite rigido ma un suggerimento per il sistema di memorizzazione nella cache. I valori inferiori ad alcuni megabyte sono troppo piccoli e verranno arrotondati a un valore minimo ragionevole.
@@ -2505,6 +2536,9 @@ Questa norma viene rispettata soltanto se la norma "DefaultSearchProviderEnabled
 <translation id="4986560318567565414">Percorso a Chrome per cambiare il browser alternativo.</translation>
 <translation id="4988291787868618635">Azione da compiere a raggiungimento ritardo inattività</translation>
 <translation id="500149597848135831">Attiva tutte le varianti</translation>
+<translation id="5023555740504506178">Se il criterio è attivato o non configurato (impostazione predefinita), una pagina web può usare le API di condivisione schermo (ad esempio, getDisplayMedia() o l'API dell'estensione Desktop Capture) per richiedere all'utente di selezionare una scheda, una finestra o un desktop da acquisire.
+
+      Se questo criterio viene disattivato, le chiamate alle API di condivisione schermo restituiranno un errore.</translation>
 <translation id="5032164758660626397">Impedisci all'utente di trasferire file di grandi dimensioni</translation>
 <translation id="5047604665028708335">Consenti l'accesso ai siti non presenti nei pacchetti di contenuti</translation>
 <translation id="5052081091120171147">Se è attiva, questa norma impone l'importazione della cronologia di navigazione dal browser predefinito corrente. Se la norma è attiva incide anche sulla finestra di dialogo di importazione. Se non è attiva, la cronologia di navigazione non viene importata. Se non viene impostata, all'utente potrebbe essere chiesto se desidera effettuare l'importazione, oppure l'importazione potrebbe avvenire automaticamente.</translation>
@@ -2650,6 +2684,25 @@ Se questa norma non viene impostata viene utilizzata la riga di comando predefin
 
           Questa norma è disponibile esclusivamente per le istanze di Windows che fanno parte di un dominio <ph name="MS_AD_NAME" /> così come per le istanze di Windows 10 Pro o Enterprise registrate per la gestione dei dispositivi.</translation>
 <translation id="5208240613060747912">Consente di impostare un elenco di pattern URL che specificano i siti non autorizzati a visualizzare notifiche. Se questa norma non viene impostata, per tutti i siti verrà utilizzato il valore predefinito globale della norma "DefaultNotificationsSetting", se è impostata, oppure verrà utilizzata la configurazione personale dell'utente.</translation>
+<translation id="5210980743015047124">Consente di configurare il requisito della versione minima consentita di <ph name="PRODUCT_NAME" />.
+
+      Quando questo criterio è impostato su un elenco non vuoto :
+      Se nessuna voce ha una "chrome_version" successiva alla versione corrente del dispositivo, non saranno applicate limitazioni e le limitazioni esistenti verranno revocate.
+      Se almeno una voce ha una "chrome_version" successiva alla versione corrente, viene scelta la voce più forte la cui versione è la più vicina a quella corrente.
+      In caso di conflitto, la preferenza è assegnata a quella con il valore "warning_period" o "eol_warning_period" inferiore e il criterio viene applicato usando tale voce.
+
+      Se la versione corrente diventa obsoleta durante la sessione utente, sullo schermo appare una notifica che invita l'utente ad aggiornare il dispositivo entro il "warning_period" indicato in tale notifica.
+      Il "warning_period" parte dal momento in cui viene applicato il criterio.
+      Se il dispositivo non viene aggiornato prima che il "warning_period" scada, l'utente viene disconnesso dal sistema.
+      Se la versione corrente risulta obsoleta al momento dell'accesso con un "warning_period" scaduto, all'utente viene richiesto di aggiornare il dispositivo prima di accedere.
+
+      Se durante la sessione utente si raggiunge la fine del ciclo di vita, una notifica sullo schermo richiede all'utente di disconnettersi una volta che "l'eol_warning_period" scade.
+      Se il dispositivo raggiunge la fine del suo ciclo di vita al momento dell'accesso con un "eol_warning_period" scaduto, il dispositivo viene bloccato e nessun utente potrà accedervi.
+
+      Se questo criterio non è impostato o è impostato su vuoto, non vengono applicate limitazioni, vengono revocate quelle esistenti e l'utente può accedere qualunque sia la versione di <ph name="PRODUCT_NAME" />.
+
+      Per "chrome_version" si intende sia una versione esatta, ad esempio "61.0.3163.120", sia un prefisso di versione, ad esempio "61.0".
+      I valori "warning_period" ed "eol_warning_period" sono facoltativi e specificati in un numero di giorni. Il valore predefinito è 0 giorni, a indicare nessun periodo d'attesa. </translation>
 <translation id="5212118847531454979">Consente di stabilire per quanto tempo, in millisecondi, gli utenti riceveranno notifiche relative alla necessità di riavviare <ph name="PRODUCT_NAME" /> o un dispositivo <ph name="PRODUCT_OS_NAME" /> per applicare un aggiornamento in sospeso.
 
       Durante questo periodo di tempo l'utente verrà informato più volte della necessità di un aggiornamento. Per quanto riguarda i dispositivi <ph name="PRODUCT_OS_NAME" />, nella barra delle applicazioni viene mostrata una notifica relativa al riavvio in base al criterio <ph name="RELAUNCH_HEADS_UP_PERIOD_POLICY_NAME" />. Per quanto riguarda i browser <ph name="PRODUCT_NAME" />, il menu delle app cambia per indicare che è necessario il riavvio una volta trascorso un terzo del periodo di notifica. Questa notifica cambia colore una volta trascorsi due terzi del periodo di notifica e lo cambia di nuovo al termine dell'intero periodo di notifica. Le notifiche aggiuntive attivate in base al criterio <ph name="RELAUNCH_NOTIFICATION_POLICY_NAME" /> seguono questa stessa pianificazione.
@@ -2723,6 +2776,11 @@ Se la norma non viene impostata, <ph name="PRODUCT_NAME" /> caricherà tutti gli
       Se la norma viene impostata su True o non viene impostata, Crostini è abilitato per l'utente, a patto che anche le altre impostazioni lo permettano.
       Le tre norme, VirtualMachinesAllowed, CrostiniAllowed e DeviceUnaffiliatedCrostiniAllowed devono essere impostate su True affinché Crostini possa essere eseguito.
       Quando l'impostazione di questa norma viene modificata in False, la norma viene applicata all'avvio di nuovi contenitori Crostini, ma non determina l'arresto dei contenitori già in esecuzione.</translation>
+<translation id="5277914408935179830">Questo criterio consente di stabilire il trattamento dei contenuti misti (contenuti HTTP in siti HTTPS) nel browser.
+       Se il criterio viene impostato su true o non viene impostato, viene eseguito l'upgrade automatico a HTTPS dei contenuti misti di audio e video (vale a dire che l'URL viene riscritto come HTTPS, senza una riserva se la risorsa non è disponibile tramite HTTPS) e nella barra degli URL viene mostrato un avviso "Non sicuro" per i contenuti misti delle immagini.
+       Se il criterio viene impostato su false, vengono disattivati gli upgrade automatici di audio e video e non viene mostrato un avviso per le immagini.
+       Questo criterio non influisce su tipi di contenuti misti diversi da audio, video e immagini.
+       Questo criterio non avrà più effetto dalla versione 84 di <ph name="PRODUCT_NAME" />.</translation>
 <translation id="5278367296164377827">Questo criterio aziendale è finalizzato al periodo di transizione e verrà rimosso nella versione M82.
 
       Il criterio relativo al referrer predefinito di Chrome sarà rafforzato passando dal relativo valore corrente no-referrer-when-downgrade al più sicuro strict-origin-when-cross-origin tramite un rilascio graduale della release stabile di M80.
@@ -2739,6 +2797,7 @@ Se la norma non viene impostata, <ph name="PRODUCT_NAME" /> caricherà tutti gli
 <translation id="5306186200045823863">Considera attendibile l'infrastruttura PKI precedente di Symantec Corporation</translation>
 <translation id="5307432759655324440">Disponibilità della modalità di navigazione in incognito</translation>
 <translation id="5311275381462687162">Impostazione del comportamento precedente predefinito <ph name="ATTRIBUTE_SAMESITE_NAME" /> per i cookie</translation>
+<translation id="5313116350102437846">Questo criterio controlla se gli utenti iscritti al programma di protezione avanzata possono inviare i loro download a Google per la scansione di malware. Se il criterio viene impostato su true o non viene impostato, agli utenti registrati verrà richiesto di inviare i propri file a Google per la scansione approfondita. Se l'utente seleziona "Scansiona", il file scaricato verrà inviato a Google. Se il criterio viene impostato su false, agli utenti non verrà richiesto di inviare i file scaricati a Google.</translation>
 <translation id="5318185076587284965">Attiva l'utilizzo dei server relay per l'host di accesso remoto</translation>
 <translation id="5323128137188992869">Consente di trasmettere contenuti al dispositivo usando <ph name="PRODUCT_NAME" />.
 
@@ -2916,6 +2975,16 @@ Se questa impostazione viene disattivata o non viene impostata, sia gli utenti l
 
       Se la piattaforma supporta le notifiche relative ai criteri, il ritardo dell'aggiornamento verrà impostato su 24 ore (vengono ignorati tutti i valori predefiniti e il valore di questa norma) perché è previsto che le notifiche relative ai criteri forzino l'aggiornamento automatico quando cambiano i criteri, rendendo superflui aggiornamenti più frequenti.</translation>
 <translation id="5530347722229944744">Blocca download potenzialmente pericolosi</translation>
+<translation id="5534198977061777727">Consente di stabilire in che modo <ph name="PRODUCT_NAME" /> gestisce i dati caricati, scaricati, incollati dagli appunti o trascinati che contengono tipi di file non supportati in relazione alla scansione di DLP o malware.
+
+      Se questo criterio non è impostato o è impostato su "Non bloccare i tipi di file non supportati" (0), <ph name="PRODUCT_NAME" /> consente il caricamento o il download di dati che contengono tipi di file non supportati in relazione alla scansione di DLP o malware.
+
+      Se questo criterio è impostato su "Blocca i download di tipi di file non supportati" (1) e l'utente cerca di scaricare da un URL incluso nel criterio <ph name="DOMAINS_TO_CHECK_COMPLIANCE_OF_DOWNLOADED_CONTENT_POLICTY_NAME" /> un file di tipo non supportato per la scansione di DLP o malware, <ph name="PRODUCT_NAME" /> bloccherà i dati scaricati.
+
+      Se questo criterio è impostato su "Blocca i caricamenti di tipi di file non supportati" (2) e l'utente cerca di caricare su un dominio non incluso nel criterio <ph name="DOMAINS_TO_NOT_CHECK_COMPLIANCE_OF_UPLOADED_CONTENT_POLICY_NAME" /> un file non supportato per la scansione di DLP o malware, <ph name="PRODUCT_NAME" /> bloccherà il file caricato, i dati incollati dagli appunti o i dati trascinati.
+
+      Se questo criterio è impostato su "Blocca caricamenti e download di tipi di file non supportati" (3), <ph name="PRODUCT_NAME" /> si comporta secondo le regole descritte nelle impostazioni "Blocca i caricamenti di tipi di file non supportati" e "Blocca i download di tipi di file non supportati".
+      </translation>
 <translation id="5535973522252703021">Whitelist server di delega Kerberos</translation>
 <translation id="554903022911579950">Kerberos</translation>
 <translation id="555022085242359084">Attiva l'alto contrasto nella schermata di accesso</translation>
@@ -3074,6 +3143,12 @@ Se questa impostazione viene disattivata o non viene impostata, sia gli utenti l
           Quando la norma non è impostata, viene eseguita l'azione predefinita, ossia la sospensione.
 
           Se l'azione è la sospensione, è possibile configurare separatamente il blocco o meno dello schermo prima della sospensione di <ph name="PRODUCT_OS_NAME" />.</translation>
+<translation id="5746196829700407864">Elenco di pattern URL per i quali è necessario controllare la presenza di malware nei contenuti scaricati.  Questo criterio viene utilizzato solo se il criterio <ph name="SEND_FILES_FOR_MALWARE_CHECK_POLICY_NAME" /> viene impostato su un valore che consente o applica i controlli della presenza di malware per i download.
+
+      Se questo criterio non viene impostato o viene impostato su un elenco di pattern URL vuoto, non verrà controllata la presenza di malware nei contenuti scaricati.
+
+      I pattern URL hanno lo stesso formato del criterio "URLBlacklist" documentato all'indirizzo https://www.chromium.org/administrators/url-blacklist-filter-format.
+      </translation>
 <translation id="574983287620584622">Attiva le scorciatoie delle funzioni di accessibilità nella schermata di accesso</translation>
 <translation id="5755002458331714762"> Le API Web Components v0 (Shadow DOM v0, Custom Elements v0 e HTML Imports) sono state ritirate nel 2018 e sono state disattivate per impostazione predefinita a partire dalla versione M80. Questo criterio consente di riattivare selettivamente queste funzionalità fino alla versione M84.
 
@@ -3130,6 +3205,7 @@ Se questa impostazione viene disattivata o non viene impostata, sia gli utenti l
 <translation id="5861856285460256766">Configurazione codice di accesso genitori</translation>
 <translation id="5868414965372171132">Configurazione di rete a livello di utente</translation>
 <translation id="5879014913445067283">Consente di controllare la funzione Condivisioni file di rete tramite il protocollo <ph name="NETBIOS_NAME" /></translation>
+<translation id="588135807064822874">Attiva la funzione Tocca per cercare</translation>
 <translation id="5882345429632338713">Ritardo prima di avviare il browser alternativo (in millisecondi)</translation>
 <translation id="5883015257301027298">Impostazione cookie predefiniti</translation>
 <translation id="5887414688706570295">Consente di configurare il prefisso TalkGadget che verrà utilizzato dagli host di accesso remoto e impedisce agli utenti di modificarlo.
@@ -3194,7 +3270,6 @@ Se questa impostazione viene disattivata o non viene impostata, sia gli utenti l
 
       La disattivazione di questo criterio ha un effetto negativo sulla sicurezza e sulla stabilità di Chrome, in quanto verrà consentito il caricamento di codice sconosciuto e potenzialmente dannoso all'interno dei processi del renderer di Chrome. Per ulteriori informazioni, consulta la pagina https://chromium.googlesource.com/chromium/src/+/master/docs/design/sandbox.md#Process-mitigation-policies.</translation>
 <translation id="6048199181629830227">Attiva la gestione della variazione dei picchi energetici</translation>
-<translation id="605475635122964053">Consente di limitare la modalità di stampa PIN. Se il criterio non viene impostato non vengono applicate limitazioni. Se la modalità non è disponibile, questo criterio viene ignorato. Tieni presente che la funzionalità di stampa PIN viene attivata solo per le stampanti che usano uno dei protocolli IPPS, USB o IPP-over-USB. </translation>
 <translation id="6070667616071269965">Layout da tastiera della schermata di accesso del dispositivo</translation>
 <translation id="6074963268421707432">Non consentire la visualizzazione di notifiche desktop da parte dei siti</translation>
 <translation id="6074964551275531965">Imposta il periodo di tempo per le notifiche relative agli aggiornamenti</translation>
@@ -3355,6 +3430,7 @@ Il valore della norma deve essere specificato in millisecondi. I valori devono e
 <translation id="6315673513957120120">Chrome mostra una pagina di avviso quando gli utenti visitano siti che presentano errori SSL. Per impostazione predefinita, o se la norma viene impostata su true, gli utenti possono fare clic nelle pagine di avviso.
       Se questa norma viene impostata su false, gli utenti non possono fare clic nelle pagine di avviso.</translation>
 <translation id="6319198883324703402">Imposta il tempo della prima notifica del riavvio per l'utente</translation>
+<translation id="6342187235303612558">Consente di impedire agli utenti di caricare o scaricare file attualmente non supportati per la scansione di DLP o malware.</translation>
 <translation id="6352543686437322588">Un account locale del dispositivo a cui accedere automaticamente dopo un ritardo.
 
       Se questa norma è impostata, verrà eseguito l'accesso automatico alla sessione specificata dopo che è trascorso un periodo di tempo senza interazioni dell'utente nella schermata di accesso. L'account locale del dispositivo deve essere già configurato (vedi |DeviceLocalAccounts|).
@@ -4937,6 +5013,7 @@ https://www.w3.org/TR/secure-contexts/
 <translation id="8976248126101463034">Consenti l'autenticazione Gnubby per gli host di accesso remoto</translation>
 <translation id="8976531594979650914">Usa stampante di sistema come predefinita</translation>
 <translation id="8992176907758534924">Non consentire la visualizzazione di immagini nei siti</translation>
+<translation id="9010080992450148617">Attiva invio download a Google per scansione approfondita per utenti iscritti al programma di protezione avanzata</translation>
 <translation id="9013875414788074110">Durante l'accesso, <ph name="PRODUCT_OS_NAME" /> può eseguire l'autenticazione con un server (online) o utilizzando una password memorizzata nella cache (offline).
 
       Quando la norma è impostata sul valore -1, l'utente può eseguire per sempre l'autenticazione offline. Quando la norma è impostata su qualsiasi altro valore, questo specifica il periodo di tempo trascorso dall'ultima autenticazione online, dopo il quale l'utente dovrà eseguire nuovamente l'autenticazione.

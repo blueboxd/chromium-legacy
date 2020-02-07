@@ -351,7 +351,7 @@ MockFeedback = class {
   }
 
   /**
-   * Processes any feedback that has been received so far and treis to
+   * Processes any feedback that has been received so far and tries to
    * satisfy the registered expectations.  Any feedback that is received
    * after this call (via the installed mock objects) is processed immediately.
    * When all expectations are satisfied and registered callbacks called,

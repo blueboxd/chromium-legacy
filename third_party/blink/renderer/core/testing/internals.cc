@@ -111,7 +111,6 @@
 #include "third_party/blink/renderer/core/inspector/inspector_issue.h"
 #include "third_party/blink/renderer/core/inspector/main_thread_debugger.h"
 #include "third_party/blink/renderer/core/intersection_observer/intersection_observer.h"
-#include "third_party/blink/renderer/core/layout/layout_menu_list.h"
 #include "third_party/blink/renderer/core/layout/layout_object.h"
 #include "third_party/blink/renderer/core/layout/layout_tree_as_text.h"
 #include "third_party/blink/renderer/core/layout/layout_view.h"
@@ -2934,12 +2933,9 @@ void Internals::forceImageReload(Element* element,
 
 String Internals::selectMenuListText(HTMLSelectElement* select) {
   DCHECK(select);
-  LayoutObject* layout_object = select->GetLayoutObject();
-  if (!layout_object || !layout_object->IsMenuList())
+  if (!select->UsesMenuList())
     return String();
-
-  LayoutMenuList* menu_list = ToLayoutMenuList(layout_object);
-  return menu_list->GetText();
+  return select->InnerElement().innerText();
 }
 
 bool Internals::isSelectPopupVisible(Node* node) {

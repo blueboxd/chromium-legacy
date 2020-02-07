@@ -19,6 +19,7 @@ import org.chromium.base.task.PostTask;
 import org.chromium.base.task.TaskTraits;
 import org.chromium.chrome.browser.DefaultBrowserInfo;
 import org.chromium.chrome.browser.instantapps.InstantAppsHandler;
+import org.chromium.chrome.browser.policy.EnterpriseInfo;
 import org.chromium.chrome.browser.settings.privacy.PrivacyPreferencesManager;
 import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.browser.tabmodel.TabModel;
@@ -121,6 +122,7 @@ public class UmaSessionStats {
         updatePreferences();
         updateMetricsServiceState();
         DefaultBrowserInfo.logDefaultBrowserStats();
+        EnterpriseInfo.logDeviceEnterpriseInfo();
     }
 
     private static void ensureNativeInitialized() {

@@ -384,7 +384,9 @@ TEST_F(CrosDisplayConfigTest, GetDisplayUnitInfoListZoomFactor) {
 TEST_F(CrosDisplayConfigTest, SetDisplayPropertiesPrimary) {
   UpdateDisplay("1200x600,600x1000");
   int64_t primary_id = display::Screen::GetScreen()->GetPrimaryDisplay().id();
-  int64_t secondary_id = display_manager()->GetSecondaryDisplay().id();
+  int64_t secondary_id = display::test::DisplayManagerTestApi(display_manager())
+                             .GetSecondaryDisplay()
+                             .id();
   ASSERT_NE(primary_id, secondary_id);
 
   auto properties = mojom::DisplayConfigProperties::New();
@@ -400,7 +402,9 @@ TEST_F(CrosDisplayConfigTest, SetDisplayPropertiesPrimary) {
 
 TEST_F(CrosDisplayConfigTest, SetDisplayPropertiesOverscan) {
   UpdateDisplay("1200x600,600x1000*2");
-  const display::Display& secondary = display_manager()->GetSecondaryDisplay();
+  const display::Display& secondary =
+      display::test::DisplayManagerTestApi(display_manager())
+          .GetSecondaryDisplay();
 
   auto properties = mojom::DisplayConfigProperties::New();
   properties->overscan = gfx::Insets({199, 20, 51, 130});
@@ -418,7 +422,9 @@ TEST_F(CrosDisplayConfigTest, SetDisplayPropertiesOverscan) {
 
 TEST_F(CrosDisplayConfigTest, SetDisplayPropertiesRotation) {
   UpdateDisplay("1200x600,600x1000*2");
-  const display::Display& secondary = display_manager()->GetSecondaryDisplay();
+  const display::Display& secondary =
+      display::test::DisplayManagerTestApi(display_manager())
+          .GetSecondaryDisplay();
 
   mojom::DisplayConfigResult result;
 
@@ -457,7 +463,9 @@ TEST_F(CrosDisplayConfigTest, SetDisplayPropertiesRotation) {
 
 TEST_F(CrosDisplayConfigTest, SetDisplayPropertiesBoundsOrigin) {
   UpdateDisplay("1200x600,520x400");
-  const display::Display& secondary = display_manager()->GetSecondaryDisplay();
+  const display::Display& secondary =
+      display::test::DisplayManagerTestApi(display_manager())
+          .GetSecondaryDisplay();
 
   mojom::DisplayConfigResult result;
 

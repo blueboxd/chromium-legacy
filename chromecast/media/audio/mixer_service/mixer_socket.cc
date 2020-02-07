@@ -25,9 +25,9 @@ namespace mixer_service {
 
 namespace {
 
-bool ReceiveProto(const char* data, int size, Generic* message) {
+bool ReceiveProto(const char* data, size_t size, Generic* message) {
   int32_t padding_bytes;
-  if (size < static_cast<int>(sizeof(padding_bytes))) {
+  if (size < sizeof(padding_bytes)) {
     LOG(ERROR) << "Invalid metadata message size " << size;
     return false;
   }
@@ -41,7 +41,7 @@ bool ReceiveProto(const char* data, int size, Generic* message) {
     return false;
   }
 
-  if (size < padding_bytes) {
+  if (size < static_cast<size_t>(padding_bytes)) {
     LOG(ERROR) << "Size " << size << " is smaller than padding "
                << padding_bytes;
     return false;
@@ -61,7 +61,7 @@ bool MixerSocket::Delegate::HandleMetadata(const Generic& message) {
 }
 
 bool MixerSocket::Delegate::HandleAudioData(char* data,
-                                            int size,
+                                            size_t size,
                                             int64_t timestamp) {
   return true;
 }
@@ -69,7 +69,7 @@ bool MixerSocket::Delegate::HandleAudioData(char* data,
 bool MixerSocket::Delegate::HandleAudioBuffer(
     scoped_refptr<net::IOBuffer> buffer,
     char* data,
-    int size,
+    size_t size,
     int64_t timestamp) {
   return HandleAudioData(data, size, timestamp);
 }
@@ -200,7 +200,7 @@ void MixerSocket::SendProto(const google::protobuf::MessageLite& message) {
 }
 
 void MixerSocket::SendBuffer(scoped_refptr<net::IOBuffer> buffer,
-                             int buffer_size) {
+                             size_t buffer_size) {
   if (counterpart_task_runner_) {
     counterpart_task_runner_->PostTask(
         FROM_HERE,
@@ -244,9 +244,9 @@ void MixerSocket::OnEndOfStream() {
   delegate_->OnConnectionError();
 }
 
-bool MixerSocket::OnMessage(char* data, int size) {
+bool MixerSocket::OnMessage(char* data, size_t size) {
   int16_t type;
-  if (size < static_cast<int>(sizeof(type))) {
+  if (size < sizeof(type)) {
     LOG(ERROR) << "Invalid message size " << size << " from " << this;
     delegate_->OnConnectionError();
     return false;
@@ -267,8 +267,8 @@ bool MixerSocket::OnMessage(char* data, int size) {
 }
 
 bool MixerSocket::OnMessageBuffer(scoped_refptr<net::IOBuffer> buffer,
-                                  int size) {
-  if (size < static_cast<int>(sizeof(uint16_t) + sizeof(int16_t))) {
+                                  size_t size) {
+  if (size < sizeof(uint16_t) + sizeof(int16_t)) {
     LOG(ERROR) << "Invalid buffer size " << size << " from " << this;
     delegate_->OnConnectionError();
     return false;
@@ -291,7 +291,7 @@ bool MixerSocket::OnMessageBuffer(scoped_refptr<net::IOBuffer> buffer,
   }
 }
 
-bool MixerSocket::ParseMetadata(char* data, int size) {
+bool MixerSocket::ParseMetadata(char* data, size_t size) {
   Generic message;
   if (!ReceiveProto(data, size, &message)) {
     LOG(INFO) << "Invalid metadata message from " << this;
@@ -302,9 +302,9 @@ bool MixerSocket::ParseMetadata(char* data, int size) {
   return delegate_->HandleMetadata(message);
 }
 
-bool MixerSocket::ParseAudio(char* data, int size) {
+bool MixerSocket::ParseAudio(char* data, size_t size) {
   int64_t timestamp;
-  if (size < static_cast<int>(sizeof(timestamp))) {
+  if (size < sizeof(timestamp)) {
     LOG(ERROR) << "Invalid audio packet size " << size << " from " << this;
     delegate_->OnConnectionError();
     return false;
@@ -323,9 +323,9 @@ bool MixerSocket::ParseAudio(char* data, int size) {
 
 bool MixerSocket::ParseAudioBuffer(scoped_refptr<net::IOBuffer> buffer,
                                    char* data,
-                                   int size) {
+                                   size_t size) {
   int64_t timestamp;
-  if (size < static_cast<int>(sizeof(timestamp))) {
+  if (size < sizeof(timestamp)) {
     LOG(ERROR) << "Invalid audio buffer size " << size << " from " << this;
     delegate_->OnConnectionError();
     return false;

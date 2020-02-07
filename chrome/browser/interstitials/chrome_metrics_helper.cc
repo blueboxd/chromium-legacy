@@ -4,41 +4,32 @@
 
 #include "chrome/browser/interstitials/chrome_metrics_helper.h"
 
-#include "chrome/browser/browser_process.h"
-#include "chrome/browser/history/history_service_factory.h"
-#include "chrome/browser/profiles/profile.h"
 #include "components/captive_portal/core/buildflags.h"
 #include "components/history/core/browser/history_service.h"
 #include "content/public/browser/web_contents.h"
 
 #if BUILDFLAG(ENABLE_CAPTIVE_PORTAL_DETECTION)
-#include "chrome/browser/ssl/captive_portal_metrics_recorder.h"
+#include "components/security_interstitials/content/captive_portal_metrics_recorder.h"
 #endif
 
 ChromeMetricsHelper::ChromeMetricsHelper(
-    content::WebContents* web_contents,
+    history::HistoryService* history_service,
     const GURL& request_url,
     const security_interstitials::MetricsHelper::ReportDetails settings)
-    : security_interstitials::MetricsHelper(
-          request_url,
-          settings,
-          HistoryServiceFactory::GetForProfile(
-              Profile::FromBrowserContext(web_contents->GetBrowserContext()),
-              ServiceAccessType::EXPLICIT_ACCESS)),
-#if BUILDFLAG(ENABLE_CAPTIVE_PORTAL_DETECTION)
-      web_contents_(web_contents),
-#endif
-      request_url_(request_url) {
-}
+    : security_interstitials::MetricsHelper(request_url,
+                                            settings,
+                                            history_service) {}
 
-ChromeMetricsHelper::~ChromeMetricsHelper() {}
+ChromeMetricsHelper::~ChromeMetricsHelper() = default;
 
-void ChromeMetricsHelper::StartRecordingCaptivePortalMetrics(bool overridable) {
 #if BUILDFLAG(ENABLE_CAPTIVE_PORTAL_DETECTION)
+void ChromeMetricsHelper::StartRecordingCaptivePortalMetrics(
+    captive_portal::CaptivePortalService* captive_portal_service,
+    bool overridable) {
   captive_portal_recorder_.reset(
-      new CaptivePortalMetricsRecorder(web_contents_, overridable));
-#endif
+      new CaptivePortalMetricsRecorder(captive_portal_service, overridable));
 }
+#endif
 
 void ChromeMetricsHelper::RecordExtraShutdownMetrics() {
 #if BUILDFLAG(ENABLE_CAPTIVE_PORTAL_DETECTION)

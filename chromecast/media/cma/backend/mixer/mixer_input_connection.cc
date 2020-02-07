@@ -279,7 +279,7 @@ bool MixerInputConnection::HandleMetadata(
 }
 
 bool MixerInputConnection::HandleAudioData(char* data,
-                                           int size,
+                                           size_t size,
                                            int64_t timestamp) {
   DCHECK(io_task_runner_->RunsTasksInCurrentSequence());
   if (inactivity_timer_.IsRunning()) {
@@ -343,7 +343,7 @@ bool MixerInputConnection::HandleAudioData(char* data,
 bool MixerInputConnection::HandleAudioBuffer(
     scoped_refptr<net::IOBuffer> buffer,
     char* data,
-    int size,
+    size_t size,
     int64_t timestamp) {
   DCHECK(io_task_runner_->RunsTasksInCurrentSequence());
   if (inactivity_timer_.IsRunning()) {

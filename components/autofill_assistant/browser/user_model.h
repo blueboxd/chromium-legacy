@@ -12,7 +12,8 @@
 #include "base/memory/weak_ptr.h"
 #include "base/observer_list.h"
 #include "base/optional.h"
-#include "components/autofill_assistant/browser/service.pb.h"
+#include "components/autofill_assistant/browser/model.pb.h"
+#include "components/autofill_assistant/browser/value_util.h"
 
 namespace autofill_assistant {
 
@@ -68,17 +69,6 @@ class UserModel {
   base::WeakPtrFactory<UserModel> weak_ptr_factory_{this};
   DISALLOW_COPY_AND_ASSIGN(UserModel);
 };
-
-// Custom comparison operator for |ValueProto|, because we can't use
-// |MessageDifferencer| for protobuf lite and can't rely on serialization.
-bool operator==(const ValueProto& value_a, const ValueProto& value_b);
-
-// Custom comparison operator for |ModelValue|.
-bool operator==(const ModelProto::ModelValue& value_a,
-                const ModelProto::ModelValue& value_b);
-
-// Intended for debugging.
-std::ostream& operator<<(std::ostream& out, const ValueProto& value);
 
 }  //  namespace autofill_assistant
 

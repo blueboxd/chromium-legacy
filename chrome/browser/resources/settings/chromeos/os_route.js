@@ -5,8 +5,6 @@
 cr.define('settings', function() {
   /**
    * Creates Route objects for each path corresponding to CrOS settings content.
-   * Note that if any new routes are added here, they should also be added to
-   * //chrome/browser/ui/webui/settings/chromeos/search/search.mojom.
    * @return {!SettingsRoutes}
    */
   function createOSSettingsRoutes() {

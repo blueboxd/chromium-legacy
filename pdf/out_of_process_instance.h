@@ -149,7 +149,7 @@ class OutOfProcessInstance : public pp::Instance,
   void IsSelectingChanged(bool is_selecting) override;
   void SelectionChanged(const pp::Rect& left, const pp::Rect& right) override;
   void IsEditModeChanged(bool is_edit_mode) override;
-  float GetToolbarHeightInScreenCoords() const override;
+  float GetToolbarHeightInScreenCoords() override;
 
   // PreviewModeClient::Client implementation.
   void PreviewDocumentLoadComplete() override;
@@ -179,14 +179,6 @@ class OutOfProcessInstance : public pp::Instance,
   // device scale
   int GetDocumentPixelWidth() const;
   int GetDocumentPixelHeight() const;
-
-  // Computes total scrollable Width and Height of the document.
-  int GetTotalScrollableWidth() const;
-  int GetTotalScrollableHeight() const;
-
-  // Computes current horizontal and scroll position of the document.
-  int GetHorizontalScrollPosition() const;
-  int GetVerticalScrollPosition() const;
 
   // Draws a rectangle with the specified dimensions and color in our buffer.
   void FillRect(const pp::Rect& rect, uint32_t color);

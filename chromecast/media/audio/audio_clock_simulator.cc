@@ -152,6 +152,10 @@ AudioClockSimulator::FillResult AudioClockSimulator::FillDataLengthen(
   }
   int64_t timestamp = playout_timestamp + FramesToMicroseconds(offset);
   int provided = provider_->FillFrames(desired_fill, timestamp, channels);
+  if (provided == 0) {
+    return {false, 0};
+  }
+
   input_frames_ += provided;
   InterpolateLonger(provided, channel_data, offset);
 

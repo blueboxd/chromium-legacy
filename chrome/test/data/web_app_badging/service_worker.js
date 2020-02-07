@@ -20,15 +20,15 @@ addEventListener('message', async function (event) {
       case 'set-app-badge':
         const badgeValue = event.data.value;
         if (badgeValue !== undefined) {
-          await navigator.setExperimentalAppBadge(badgeValue);
+          await navigator.setAppBadge(badgeValue);
         } else {
-          await navigator.setExperimentalAppBadge();
+          await navigator.setAppBadge();
         }
         event.source.postMessage('OK');
         break;
 
       case 'clear-app-badge':
-        await navigator.clearExperimentalAppBadge();
+        await navigator.clearAppBadge();
         event.source.postMessage('OK');
         break;
 

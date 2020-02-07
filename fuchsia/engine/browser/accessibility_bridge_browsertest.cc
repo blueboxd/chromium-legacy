@@ -50,8 +50,13 @@ class FakeSemanticTree
 
   // fuchsia::accessibility::semantics::SemanticTree implementation.
   void UpdateSemanticNodes(std::vector<Node> nodes) final {
-    for (auto& node : nodes)
+    nodes_.reserve(nodes.size() + nodes_.size());
+    for (auto& node : nodes) {
+      // Delete an existing node that's being updated to avoid having duplicate
+      // nodes.
+      DeleteSemanticNodes({node.node_id()});
       nodes_.push_back(std::move(node));
+    }
   }
 
   void DeleteSemanticNodes(std::vector<uint32_t> node_ids) final {
@@ -67,10 +72,34 @@ class FakeSemanticTree
     callback();
     if (on_commit_updates_)
       on_commit_updates_.Run();
+    if (nodes_.size() > 0) {
+      size_t tree_size = 0;
+      EXPECT_TRUE(IsTreeValid(GetNodeWithId(0), &tree_size));
+      EXPECT_EQ(tree_size, nodes_.size());
+    }
   }
 
   void NotImplemented_(const std::string& name) final {
     NOTIMPLEMENTED() << name;
+  }
+
+  // Checks that the tree is complete and that there are no dangling nodes by
+  // traversing the tree starting at the root. Keeps track of how many nodes are
+  // visited to make sure there aren't dangling nodes in |nodes_|.
+  bool IsTreeValid(Node* node, size_t* tree_size) {
+    (*tree_size)++;
+
+    if (!node->has_child_ids())
+      return true;
+
+    bool is_valid = true;
+    for (auto c : node->child_ids()) {
+      Node* child = GetNodeWithId(c);
+      if (!child)
+        return false;
+      is_valid &= IsTreeValid(child, tree_size);
+    }
+    return is_valid;
   }
 
   void RunUntilNodeCountAtLeast(size_t count) {
@@ -89,24 +118,42 @@ class FakeSemanticTree
     run_loop.Run();
   }
 
-  bool HasNodeWithLabel(base::StringPiece name) {
+  Node* GetNodeWithId(uint32_t id) {
+    for (auto& node : nodes_) {
+      if (node.has_node_id() && node.node_id() == id) {
+        return &node;
+      }
+    }
+    return nullptr;
+  }
+
+  bool HasNodeWithLabel(base::StringPiece label) {
     for (auto& node : nodes_) {
       if (node.has_attributes() && node.attributes().has_label() &&
-          node.attributes().label() == name) {
+          node.attributes().label() == label) {
         return true;
       }
     }
     return false;
   }
 
-  Node* GetNodeFromLabel(base::StringPiece name) {
+  Node* GetNodeFromLabel(base::StringPiece label) {
+    Node* to_return = nullptr;
     for (auto& node : nodes_) {
       if (node.has_attributes() && node.attributes().has_label() &&
-          node.attributes().label() == name) {
-        return &node;
+          node.attributes().label() == label) {
+        // There are sometimes multiple semantic nodes with the same label. Hit
+        // testing should return the node with the smallest node ID so behaviour
+        // is consistent with the hit testing API being called.
+        if (!to_return) {
+          to_return = &node;
+        } else if (node.node_id() < to_return->node_id()) {
+          to_return = &node;
+        }
       }
     }
-    return nullptr;
+
+    return to_return;
   }
 
  private:

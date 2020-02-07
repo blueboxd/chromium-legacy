@@ -26,7 +26,10 @@ android_library("java") {
 }
 
 source_set("android") {
-  sources = [ "paint_preview_utils.cc" ]
+  sources = [
+    "paint_preview_utils.cc",
+    "paint_preview_utils.h",
+  ]
 
   deps = [
     ":jni_headers",
@@ -34,5 +37,26 @@ source_set("android") {
     "//components/paint_preview/browser",
     "//components/paint_preview/buildflags",
     "//content/public/browser",
+  ]
+}
+
+source_set("unit_tests") {
+  testonly = true
+
+  sources = [ "paint_preview_utils_unittest.cc" ]
+
+  deps = [
+    ":android",
+    "//base",
+    "//base/test:test_support",
+    "//components/paint_preview/common:test_utils",
+    "//components/paint_preview/common/mojom",
+    "//content/public/browser",
+    "//content/test:test_support",
+    "//testing/gmock",
+    "//testing/gtest",
+    "//third_party/blink/public:blink_headers",
+    "//third_party/blink/public/common",
+    "//third_party/zlib/google:zip",
   ]
 }

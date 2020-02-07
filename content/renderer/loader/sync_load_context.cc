@@ -91,6 +91,7 @@ void SyncLoadContext::StartAsyncWithWaitableEvent(
     int routing_id,
     scoped_refptr<base::SingleThreadTaskRunner> loading_task_runner,
     const net::NetworkTrafficAnnotationTag& traffic_annotation,
+    uint32_t loader_options,
     std::unique_ptr<network::PendingSharedURLLoaderFactory>
         pending_url_loader_factory,
     std::vector<std::unique_ptr<blink::URLLoaderThrottle>> throttles,
@@ -105,9 +106,9 @@ void SyncLoadContext::StartAsyncWithWaitableEvent(
       std::move(download_to_blob_registry), loading_task_runner);
   context->request_id_ = context->resource_dispatcher_->StartAsync(
       std::move(request), routing_id, std::move(loading_task_runner),
-      traffic_annotation, true /* is_sync */,
-      base::WrapUnique(context), context->url_loader_factory_,
-      std::move(throttles), nullptr /* navigation_response_override_params */);
+      traffic_annotation, loader_options, base::WrapUnique(context),
+      context->url_loader_factory_, std::move(throttles),
+      nullptr /* navigation_response_override_params */);
 }
 
 SyncLoadContext::SyncLoadContext(

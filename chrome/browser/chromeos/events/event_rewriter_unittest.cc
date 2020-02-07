@@ -40,11 +40,41 @@
 #include "ui/events/keycodes/dom/keycode_converter.h"
 #include "ui/events/test/events_test_utils.h"
 #include "ui/events/test/test_event_processor.h"
+#include "ui/events/test/test_event_rewriter_continuation.h"
 #include "ui/wm/core/window_util.h"
 
 namespace {
 
 constexpr int kKeyboardDeviceId = 123;
+
+class TestEventRewriterContinuation
+    : public ui::test::TestEventRewriterContinuation {
+ public:
+  TestEventRewriterContinuation() = default;
+  ~TestEventRewriterContinuation() override = default;
+  TestEventRewriterContinuation(const TestEventRewriterContinuation&) = delete;
+  TestEventRewriterContinuation& operator=(
+      const TestEventRewriterContinuation&) = delete;
+
+  ui::EventDispatchDetails SendEvent(const ui::Event* event) override {
+    passthrough_events.push_back(ui::Event::Clone(*event));
+    return ui::EventDispatchDetails();
+  }
+
+  ui::EventDispatchDetails SendEventFinally(const ui::Event* event) override {
+    rewritten_events.push_back(ui::Event::Clone(*event));
+    return ui::EventDispatchDetails();
+  }
+
+  ui::EventDispatchDetails DiscardEvent() override {
+    return ui::EventDispatchDetails();
+  }
+
+  std::vector<std::unique_ptr<ui::Event>> rewritten_events;
+  std::vector<std::unique_ptr<ui::Event>> passthrough_events;
+
+  base::WeakPtrFactory<TestEventRewriterContinuation> weak_ptr_factory_{this};
+};
 
 std::string GetExpectedResultAsString(ui::EventType ui_type,
                                       ui::KeyboardCode ui_keycode,
@@ -63,21 +93,20 @@ std::string GetKeyEventAsString(const ui::KeyEvent& keyevent) {
                                    keyevent.GetDomKey());
 }
 
-std::string GetRewrittenEventAsString(
-    const std::unique_ptr<ui::EventRewriterChromeOS>& rewriter,
-    ui::EventType ui_type,
-    ui::KeyboardCode ui_keycode,
-    ui::DomCode code,
-    int ui_flags,  // ui::EventFlags
-    ui::DomKey key,
-    int device_id = kKeyboardDeviceId) {
+std::string GetRewrittenEventAsString(ui::EventRewriter* const rewriter,
+                                      ui::EventType ui_type,
+                                      ui::KeyboardCode ui_keycode,
+                                      ui::DomCode code,
+                                      int ui_flags,  // ui::EventFlags
+                                      ui::DomKey key,
+                                      int device_id = kKeyboardDeviceId) {
   ui::KeyEvent event(ui_type, ui_keycode, code, ui_flags, key,
                      ui::EventTimeForNow());
   event.set_source_device_id(device_id);
-  std::unique_ptr<ui::Event> new_event;
-  rewriter->RewriteEvent(event, &new_event);
-  if (new_event)
-    return GetKeyEventAsString(*new_event->AsKeyEvent());
+  TestEventRewriterContinuation continuation;
+  rewriter->RewriteEvent(event, continuation.weak_ptr_factory_.GetWeakPtr());
+  if (!continuation.rewritten_events.empty())
+    return GetKeyEventAsString(*continuation.rewritten_events[0]->AsKeyEvent());
   return GetKeyEventAsString(event);
 }
 
@@ -100,9 +129,8 @@ std::string GetTestCaseAsString(ui::EventType ui_type,
 }
 
 // Tests a single stateless key rewrite operation.
-void CheckKeyTestCase(
-    const std::unique_ptr<ui::EventRewriterChromeOS>& rewriter,
-    const KeyTestCase& test) {
+void CheckKeyTestCase(ui::EventRewriter* const rewriter,
+                      const KeyTestCase& test) {
   SCOPED_TRACE("\nSource:    " + GetTestCaseAsString(test.type, test.input));
   std::string expected = GetTestCaseAsString(test.type, test.expected);
   EXPECT_EQ(expected,
@@ -138,6 +166,8 @@ class EventRewriterTest : public ChromeAshTestBase {
     // Shutdown() deletes the IME mock object.
     chromeos::input_method::Shutdown();
   }
+
+  ui::EventRewriter* rewriter() { return rewriter_.get(); }
 
  protected:
   void TestRewriteNumPadKeys();
@@ -218,7 +248,7 @@ TEST_F(EventRewriterTest, TestRewriteCommandToControl) {
   };
 
   for (const auto& test : pc_keyboard_tests)
-    CheckKeyTestCase(rewriter_, test);
+    CheckKeyTestCase(rewriter(), test);
 
   // An Apple keyboard reusing the ID, zero.
   rewriter_->KeyboardDeviceAddedForTesting(kKeyboardDeviceId, "Apple Keyboard");
@@ -266,7 +296,7 @@ TEST_F(EventRewriterTest, TestRewriteCommandToControl) {
   };
 
   for (const auto& test : apple_keyboard_tests)
-    CheckKeyTestCase(rewriter_, test);
+    CheckKeyTestCase(rewriter(), test);
 
   // Now simulate the user remapped the Command key back to Search.
   IntegerPrefMember command;
@@ -304,7 +334,7 @@ TEST_F(EventRewriterTest, TestRewriteCommandToControl) {
   };
 
   for (const auto& test : command_remapped_to_search_tests)
-    CheckKeyTestCase(rewriter_, test);
+    CheckKeyTestCase(rewriter(), test);
 }
 
 TEST_F(EventRewriterTest, TestRewriteExternalMetaKey) {
@@ -359,7 +389,7 @@ TEST_F(EventRewriterTest, TestRewriteExternalMetaKey) {
        kKeyboardDeviceId},
   };
   for (const auto& test : default_internal_search_tests)
-    CheckKeyTestCase(rewriter_, test);
+    CheckKeyTestCase(rewriter(), test);
 
   // Test external Keyboard.
   KeyTestCase default_external_meta_tests[] = {
@@ -397,7 +427,7 @@ TEST_F(EventRewriterTest, TestRewriteExternalMetaKey) {
   };
   rewriter_->set_last_keyboard_device_id_for_testing(kKeyboardDeviceId + 1);
   for (const auto& test : default_external_meta_tests)
-    CheckKeyTestCase(rewriter_, test);
+    CheckKeyTestCase(rewriter(), test);
 
   // Both preferences for internal Search and external Meta are independent,
   // even if one or both are modified.
@@ -448,7 +478,7 @@ TEST_F(EventRewriterTest, TestRewriteExternalMetaKey) {
   };
   rewriter_->set_last_keyboard_device_id_for_testing(kKeyboardDeviceId);
   for (const auto& test : remapped_internal_search_tests)
-    CheckKeyTestCase(rewriter_, test);
+    CheckKeyTestCase(rewriter(), test);
 
   // Test external keyboard.
   KeyTestCase remapped_external_search_tests[] = {
@@ -485,7 +515,7 @@ TEST_F(EventRewriterTest, TestRewriteExternalMetaKey) {
   };
   rewriter_->set_last_keyboard_device_id_for_testing(kKeyboardDeviceId + 1);
   for (const auto& test : remapped_external_search_tests)
-    CheckKeyTestCase(rewriter_, test);
+    CheckKeyTestCase(rewriter(), test);
 }
 
 // For crbug.com/133896.
@@ -509,7 +539,7 @@ TEST_F(EventRewriterTest, TestRewriteCommandToControlWithControlRemapped) {
   };
 
   for (const auto& test : pc_keyboard_tests)
-    CheckKeyTestCase(rewriter_, test);
+    CheckKeyTestCase(rewriter(), test);
 
   // An Apple keyboard reusing the ID, zero.
   rewriter_->KeyboardDeviceAddedForTesting(kKeyboardDeviceId, "Apple Keyboard");
@@ -534,7 +564,7 @@ TEST_F(EventRewriterTest, TestRewriteCommandToControlWithControlRemapped) {
   };
 
   for (const auto& test : apple_keyboard_tests)
-    CheckKeyTestCase(rewriter_, test);
+    CheckKeyTestCase(rewriter(), test);
 }
 
 void EventRewriterTest::TestRewriteNumPadKeys() {
@@ -707,7 +737,7 @@ void EventRewriterTest::TestRewriteNumPadKeys() {
   };
 
   for (const auto& test : tests)
-    CheckKeyTestCase(rewriter_, test);
+    CheckKeyTestCase(rewriter(), test);
 }
 
 TEST_F(EventRewriterTest, TestRewriteNumPadKeys) {
@@ -742,7 +772,7 @@ void EventRewriterTest::TestRewriteNumPadKeysOnAppleKeyboard() {
         ui::DomKey::Constant<'1'>::Character}}};
 
   for (const auto& test : tests)
-    CheckKeyTestCase(rewriter_, test);
+    CheckKeyTestCase(rewriter(), test);
 }
 
 TEST_F(EventRewriterTest, TestRewriteNumPadKeysOnAppleKeyboard) {
@@ -793,7 +823,7 @@ TEST_F(EventRewriterTest, TestRewriteModifiersNoRemap) {
   };
 
   for (const auto& test : tests)
-    CheckKeyTestCase(rewriter_, test);
+    CheckKeyTestCase(rewriter(), test);
 }
 
 TEST_F(EventRewriterTest, TestRewriteModifiersNoRemapMultipleKeys) {
@@ -852,7 +882,7 @@ TEST_F(EventRewriterTest, TestRewriteModifiersNoRemapMultipleKeys) {
   };
 
   for (const auto& test : tests)
-    CheckKeyTestCase(rewriter_, test);
+    CheckKeyTestCase(rewriter(), test);
 }
 
 TEST_F(EventRewriterTest, TestRewriteModifiersDisableSome) {
@@ -924,7 +954,7 @@ TEST_F(EventRewriterTest, TestRewriteModifiersDisableSome) {
   };
 
   for (const auto& test : disabled_modifier_tests)
-    CheckKeyTestCase(rewriter_, test);
+    CheckKeyTestCase(rewriter(), test);
 
   // Remap Alt to Control.
   IntegerPrefMember alt;
@@ -949,7 +979,7 @@ TEST_F(EventRewriterTest, TestRewriteModifiersDisableSome) {
   };
 
   for (const auto& test : tests)
-    CheckKeyTestCase(rewriter_, test);
+    CheckKeyTestCase(rewriter(), test);
 }
 
 TEST_F(EventRewriterTest, TestRewriteModifiersRemapToControl) {
@@ -971,7 +1001,7 @@ TEST_F(EventRewriterTest, TestRewriteModifiersRemapToControl) {
   };
 
   for (const auto& test : s_tests)
-    CheckKeyTestCase(rewriter_, test);
+    CheckKeyTestCase(rewriter(), test);
 
   // Remap Alt to Control too.
   IntegerPrefMember alt;
@@ -1022,7 +1052,7 @@ TEST_F(EventRewriterTest, TestRewriteModifiersRemapToControl) {
   };
 
   for (const auto& test : sa_tests)
-    CheckKeyTestCase(rewriter_, test);
+    CheckKeyTestCase(rewriter(), test);
 }
 
 TEST_F(EventRewriterTest, TestRewriteModifiersRemapToEscape) {
@@ -1043,7 +1073,7 @@ TEST_F(EventRewriterTest, TestRewriteModifiersRemapToEscape) {
   };
 
   for (const auto& test : tests)
-    CheckKeyTestCase(rewriter_, test);
+    CheckKeyTestCase(rewriter(), test);
 }
 
 TEST_F(EventRewriterTest, TestRewriteModifiersRemapEscapeToAlt) {
@@ -1067,7 +1097,7 @@ TEST_F(EventRewriterTest, TestRewriteModifiersRemapEscapeToAlt) {
   };
 
   for (const auto& test : e2a_tests)
-    CheckKeyTestCase(rewriter_, test);
+    CheckKeyTestCase(rewriter(), test);
 }
 
 TEST_F(EventRewriterTest, TestRewriteModifiersRemapAltToControl) {
@@ -1101,7 +1131,7 @@ TEST_F(EventRewriterTest, TestRewriteModifiersRemapAltToControl) {
   };
 
   for (const auto& test : a2c_tests)
-    CheckKeyTestCase(rewriter_, test);
+    CheckKeyTestCase(rewriter(), test);
 }
 
 TEST_F(EventRewriterTest, TestRewriteModifiersRemapUnderEscapeControlAlt) {
@@ -1162,7 +1192,7 @@ TEST_F(EventRewriterTest, TestRewriteModifiersRemapUnderEscapeControlAlt) {
   };
 
   for (const auto& test : c2s_tests)
-    CheckKeyTestCase(rewriter_, test);
+    CheckKeyTestCase(rewriter(), test);
 }
 
 TEST_F(EventRewriterTest,
@@ -1220,7 +1250,7 @@ TEST_F(EventRewriterTest,
   };
 
   for (const auto& test : s2b_tests)
-    CheckKeyTestCase(rewriter_, test);
+    CheckKeyTestCase(rewriter(), test);
 }
 
 TEST_F(EventRewriterTest, TestRewriteModifiersRemapBackspaceToEscape) {
@@ -1241,7 +1271,7 @@ TEST_F(EventRewriterTest, TestRewriteModifiersRemapBackspaceToEscape) {
   };
 
   for (const auto& test : b2e_tests)
-    CheckKeyTestCase(rewriter_, test);
+    CheckKeyTestCase(rewriter(), test);
 }
 
 TEST_F(EventRewriterTest, TestRewriteModifiersRemapToCapsLock) {
@@ -1260,7 +1290,7 @@ TEST_F(EventRewriterTest, TestRewriteModifiersRemapToCapsLock) {
   EXPECT_EQ(GetExpectedResultAsString(
                 ui::ET_KEY_PRESSED, ui::VKEY_CAPITAL, ui::DomCode::CAPS_LOCK,
                 ui::EF_MOD3_DOWN | ui::EF_CAPS_LOCK_ON, ui::DomKey::CAPS_LOCK),
-            GetRewrittenEventAsString(rewriter_, ui::ET_KEY_PRESSED,
+            GetRewrittenEventAsString(rewriter(), ui::ET_KEY_PRESSED,
                                       ui::VKEY_LWIN, ui::DomCode::META_LEFT,
                                       ui::EF_COMMAND_DOWN, ui::DomKey::META));
   EXPECT_FALSE(ime_keyboard.caps_lock_is_enabled_);
@@ -1269,7 +1299,7 @@ TEST_F(EventRewriterTest, TestRewriteModifiersRemapToCapsLock) {
   EXPECT_EQ(GetExpectedResultAsString(ui::ET_KEY_RELEASED, ui::VKEY_CAPITAL,
                                       ui::DomCode::CAPS_LOCK, ui::EF_NONE,
                                       ui::DomKey::CAPS_LOCK),
-            GetRewrittenEventAsString(rewriter_, ui::ET_KEY_RELEASED,
+            GetRewrittenEventAsString(rewriter(), ui::ET_KEY_RELEASED,
                                       ui::VKEY_LWIN, ui::DomCode::META_LEFT,
                                       ui::EF_NONE, ui::DomKey::META));
   EXPECT_TRUE(ime_keyboard.caps_lock_is_enabled_);
@@ -1278,7 +1308,7 @@ TEST_F(EventRewriterTest, TestRewriteModifiersRemapToCapsLock) {
   EXPECT_EQ(GetExpectedResultAsString(
                 ui::ET_KEY_PRESSED, ui::VKEY_CAPITAL, ui::DomCode::CAPS_LOCK,
                 ui::EF_CAPS_LOCK_ON | ui::EF_MOD3_DOWN, ui::DomKey::CAPS_LOCK),
-            GetRewrittenEventAsString(rewriter_, ui::ET_KEY_PRESSED,
+            GetRewrittenEventAsString(rewriter(), ui::ET_KEY_PRESSED,
                                       ui::VKEY_LWIN, ui::DomCode::META_LEFT,
                                       ui::EF_COMMAND_DOWN | ui::EF_CAPS_LOCK_ON,
                                       ui::DomKey::META));
@@ -1288,7 +1318,7 @@ TEST_F(EventRewriterTest, TestRewriteModifiersRemapToCapsLock) {
   EXPECT_EQ(GetExpectedResultAsString(ui::ET_KEY_RELEASED, ui::VKEY_CAPITAL,
                                       ui::DomCode::CAPS_LOCK, ui::EF_NONE,
                                       ui::DomKey::CAPS_LOCK),
-            GetRewrittenEventAsString(rewriter_, ui::ET_KEY_RELEASED,
+            GetRewrittenEventAsString(rewriter(), ui::ET_KEY_RELEASED,
                                       ui::VKEY_LWIN, ui::DomCode::META_LEFT,
                                       ui::EF_NONE, ui::DomKey::META));
   EXPECT_FALSE(ime_keyboard.caps_lock_is_enabled_);
@@ -1297,7 +1327,7 @@ TEST_F(EventRewriterTest, TestRewriteModifiersRemapToCapsLock) {
   EXPECT_EQ(GetExpectedResultAsString(
                 ui::ET_KEY_PRESSED, ui::VKEY_CAPITAL, ui::DomCode::CAPS_LOCK,
                 ui::EF_CAPS_LOCK_ON | ui::EF_MOD3_DOWN, ui::DomKey::CAPS_LOCK),
-            GetRewrittenEventAsString(rewriter_, ui::ET_KEY_PRESSED,
+            GetRewrittenEventAsString(rewriter(), ui::ET_KEY_PRESSED,
                                       ui::VKEY_CAPITAL, ui::DomCode::CAPS_LOCK,
                                       ui::EF_CAPS_LOCK_ON | ui::EF_MOD3_DOWN,
                                       ui::DomKey::CAPS_LOCK));
@@ -1307,7 +1337,7 @@ TEST_F(EventRewriterTest, TestRewriteModifiersRemapToCapsLock) {
   EXPECT_EQ(GetExpectedResultAsString(ui::ET_KEY_RELEASED, ui::VKEY_CAPITAL,
                                       ui::DomCode::CAPS_LOCK, ui::EF_NONE,
                                       ui::DomKey::CAPS_LOCK),
-            GetRewrittenEventAsString(rewriter_, ui::ET_KEY_RELEASED,
+            GetRewrittenEventAsString(rewriter(), ui::ET_KEY_RELEASED,
                                       ui::VKEY_CAPITAL, ui::DomCode::CAPS_LOCK,
                                       ui::EF_NONE, ui::DomKey::CAPS_LOCK));
   EXPECT_TRUE(ime_keyboard.caps_lock_is_enabled_);
@@ -1325,7 +1355,7 @@ TEST_F(EventRewriterTest, TestRewriteCapsLock) {
   EXPECT_EQ(GetExpectedResultAsString(
                 ui::ET_KEY_PRESSED, ui::VKEY_CAPITAL, ui::DomCode::CAPS_LOCK,
                 ui::EF_CAPS_LOCK_ON | ui::EF_MOD3_DOWN, ui::DomKey::CAPS_LOCK),
-            GetRewrittenEventAsString(rewriter_, ui::ET_KEY_PRESSED,
+            GetRewrittenEventAsString(rewriter(), ui::ET_KEY_PRESSED,
                                       ui::VKEY_CAPITAL, ui::DomCode::CAPS_LOCK,
                                       ui::EF_MOD3_DOWN, ui::DomKey::CAPS_LOCK));
   EXPECT_FALSE(ime_keyboard.caps_lock_is_enabled_);
@@ -1333,7 +1363,7 @@ TEST_F(EventRewriterTest, TestRewriteCapsLock) {
   EXPECT_EQ(GetExpectedResultAsString(ui::ET_KEY_RELEASED, ui::VKEY_CAPITAL,
                                       ui::DomCode::CAPS_LOCK, ui::EF_NONE,
                                       ui::DomKey::CAPS_LOCK),
-            GetRewrittenEventAsString(rewriter_, ui::ET_KEY_RELEASED,
+            GetRewrittenEventAsString(rewriter(), ui::ET_KEY_RELEASED,
                                       ui::VKEY_CAPITAL, ui::DomCode::CAPS_LOCK,
                                       ui::EF_MOD3_DOWN, ui::DomKey::CAPS_LOCK));
   EXPECT_TRUE(ime_keyboard.caps_lock_is_enabled_);
@@ -1347,7 +1377,7 @@ TEST_F(EventRewriterTest, TestRewriteCapsLock) {
   EXPECT_EQ(GetExpectedResultAsString(ui::ET_KEY_PRESSED, ui::VKEY_CONTROL,
                                       ui::DomCode::CONTROL_LEFT,
                                       ui::EF_CONTROL_DOWN, ui::DomKey::CONTROL),
-            GetRewrittenEventAsString(rewriter_, ui::ET_KEY_PRESSED,
+            GetRewrittenEventAsString(rewriter(), ui::ET_KEY_PRESSED,
                                       ui::VKEY_CAPITAL, ui::DomCode::CAPS_LOCK,
                                       ui::EF_CAPS_LOCK_ON | ui::EF_MOD3_DOWN,
                                       ui::DomKey::CAPS_LOCK));
@@ -1356,7 +1386,7 @@ TEST_F(EventRewriterTest, TestRewriteCapsLock) {
   EXPECT_EQ(GetExpectedResultAsString(ui::ET_KEY_RELEASED, ui::VKEY_CONTROL,
                                       ui::DomCode::CONTROL_LEFT, ui::EF_NONE,
                                       ui::DomKey::CONTROL),
-            GetRewrittenEventAsString(rewriter_, ui::ET_KEY_RELEASED,
+            GetRewrittenEventAsString(rewriter(), ui::ET_KEY_RELEASED,
                                       ui::VKEY_CAPITAL, ui::DomCode::CAPS_LOCK,
                                       ui::EF_NONE, ui::DomKey::CAPS_LOCK));
 }
@@ -1397,7 +1427,7 @@ TEST_F(EventRewriterTest, TestRewriteCapsLockToControl) {
   };
 
   for (const auto& test : tests)
-    CheckKeyTestCase(rewriter_, test);
+    CheckKeyTestCase(rewriter(), test);
 }
 
 TEST_F(EventRewriterTest, TestRewriteCapsLockMod3InUse) {
@@ -1415,9 +1445,9 @@ TEST_F(EventRewriterTest, TestRewriteCapsLockMod3InUse) {
   EXPECT_EQ(GetExpectedResultAsString(ui::ET_KEY_PRESSED, ui::VKEY_A,
                                       ui::DomCode::US_A, ui::EF_NONE,
                                       ui::DomKey::Constant<'a'>::Character),
-            GetRewrittenEventAsString(rewriter_, ui::ET_KEY_PRESSED, ui::VKEY_A,
-                                      ui::DomCode::US_A, ui::EF_NONE,
-                                      ui::DomKey::Constant<'a'>::Character));
+            GetRewrittenEventAsString(
+                rewriter(), ui::ET_KEY_PRESSED, ui::VKEY_A, ui::DomCode::US_A,
+                ui::EF_NONE, ui::DomKey::Constant<'a'>::Character));
 
   input_method_manager_mock_->set_mod3_used(false);
 }
@@ -1549,7 +1579,7 @@ TEST_F(EventRewriterTest, TestRewriteExtendedKeys) {
         ui::DomKey::INSERT}}};
 
   for (const auto& test : tests)
-    CheckKeyTestCase(rewriter_, test);
+    CheckKeyTestCase(rewriter(), test);
 }
 
 TEST_F(EventRewriterTest, TestRewriteFunctionKeys) {
@@ -1860,7 +1890,7 @@ TEST_F(EventRewriterTest, TestRewriteFunctionKeys) {
        {ui::VKEY_F12, ui::DomCode::F12, ui::EF_NONE, ui::DomKey::F12}}};
 
   for (const auto& test : tests)
-    CheckKeyTestCase(rewriter_, test);
+    CheckKeyTestCase(rewriter(), test);
 }
 
 TEST_F(EventRewriterTest, TestRewriteFunctionKeysLayout2) {
@@ -2022,7 +2052,7 @@ TEST_F(EventRewriterTest, TestRewriteFunctionKeysLayout2) {
        {ui::VKEY_F12, ui::DomCode::F12, ui::EF_ALT_DOWN, ui::DomKey::F12}}};
 
   for (const auto& test : tests)
-    CheckKeyTestCase(rewriter_, test);
+    CheckKeyTestCase(rewriter(), test);
 }
 
 TEST_F(EventRewriterTest, TestRewriteFunctionKeysWilcoLayouts) {
@@ -2332,10 +2362,10 @@ TEST_F(EventRewriterTest, TestRewriteFunctionKeysWilcoLayouts) {
       ui::EventRewriterChromeOS::kKbdTopRowLayoutWilco);
   // Standard key tests using Wilco 1.0 keyboard
   for (const auto& test : wilcoStandardTests)
-    CheckKeyTestCase(rewriter_, test);
+    CheckKeyTestCase(rewriter(), test);
   // Wilco 1.0 specific key tests
   for (const auto& test : wilco1Tests)
-    CheckKeyTestCase(rewriter_, test);
+    CheckKeyTestCase(rewriter(), test);
 
   // Run key test cases for Drallion (Wilco 1.5) keyboard layout
   rewriter_->KeyboardDeviceAddedForTesting(
@@ -2343,10 +2373,10 @@ TEST_F(EventRewriterTest, TestRewriteFunctionKeysWilcoLayouts) {
       ui::EventRewriterChromeOS::kKbdTopRowLayoutDrallion);
   // Standard key tests using Drallion keyboard layout
   for (const auto& test : wilcoStandardTests)
-    CheckKeyTestCase(rewriter_, test);
+    CheckKeyTestCase(rewriter(), test);
   // Drallion specific key tests
   for (const auto& test : drallionTests)
-    CheckKeyTestCase(rewriter_, test);
+    CheckKeyTestCase(rewriter(), test);
 }
 
 TEST_F(EventRewriterTest, TestRewriteActionKeysWilcoLayouts) {
@@ -2502,10 +2532,10 @@ TEST_F(EventRewriterTest, TestRewriteActionKeysWilcoLayouts) {
       ui::EventRewriterChromeOS::kKbdTopRowLayoutWilco);
   // Standard key tests using Wilco 1.0 keyboard
   for (const auto& test : wilcoStandardTests)
-    CheckKeyTestCase(rewriter_, test);
+    CheckKeyTestCase(rewriter(), test);
   // Wilco 1.0 specific key tests
   for (const auto& test : wilco1Tests)
-    CheckKeyTestCase(rewriter_, test);
+    CheckKeyTestCase(rewriter(), test);
 
   // Run key test cases for Drallion (Wilco 1.5) keyboard layout
   rewriter_->KeyboardDeviceAddedForTesting(
@@ -2513,10 +2543,10 @@ TEST_F(EventRewriterTest, TestRewriteActionKeysWilcoLayouts) {
       ui::EventRewriterChromeOS::kKbdTopRowLayoutDrallion);
   // Standard key tests using Drallion keyboard layout
   for (const auto& test : wilcoStandardTests)
-    CheckKeyTestCase(rewriter_, test);
+    CheckKeyTestCase(rewriter(), test);
   // Drallion specific key tests
   for (const auto& test : drallionTests)
-    CheckKeyTestCase(rewriter_, test);
+    CheckKeyTestCase(rewriter(), test);
 }
 
 TEST_F(EventRewriterTest, TestTopRowAsFnKeysForKeyboardWilcoLayouts) {
@@ -2679,10 +2709,10 @@ TEST_F(EventRewriterTest, TestTopRowAsFnKeysForKeyboardWilcoLayouts) {
       ui::EventRewriterChromeOS::kKbdTopRowLayoutWilco);
   // Standard key tests using Wilco 1.0 keyboard
   for (const auto& test : wilcoStandardTests)
-    CheckKeyTestCase(rewriter_, test);
+    CheckKeyTestCase(rewriter(), test);
   // Wilco 1.0 specific key tests
   for (const auto& test : wilco1Tests)
-    CheckKeyTestCase(rewriter_, test);
+    CheckKeyTestCase(rewriter(), test);
 
   // Run key test cases for Drallion (Wilco 1.5) keyboard layout
   rewriter_->KeyboardDeviceAddedForTesting(
@@ -2690,10 +2720,10 @@ TEST_F(EventRewriterTest, TestTopRowAsFnKeysForKeyboardWilcoLayouts) {
       ui::EventRewriterChromeOS::kKbdTopRowLayoutDrallion);
   // Standard key tests using Drallion keyboard layout
   for (const auto& test : wilcoStandardTests)
-    CheckKeyTestCase(rewriter_, test);
+    CheckKeyTestCase(rewriter(), test);
   // Drallion specific key tests
   for (const auto& test : drallionTests)
-    CheckKeyTestCase(rewriter_, test);
+    CheckKeyTestCase(rewriter(), test);
 }
 
 TEST_F(EventRewriterTest, TestRewriteFunctionKeysInvalidLayout) {
@@ -2725,7 +2755,7 @@ TEST_F(EventRewriterTest, TestRewriteFunctionKeysInvalidLayout) {
         ui::DomKey::BRIGHTNESS_UP}}};
 
   for (const auto& test : invalid_layout_tests)
-    CheckKeyTestCase(rewriter_, test);
+    CheckKeyTestCase(rewriter(), test);
 
   // Adding a keyboard with a valid layout will take effect.
   rewriter_->KeyboardDeviceAddedForTesting(
@@ -2754,7 +2784,7 @@ TEST_F(EventRewriterTest, TestRewriteFunctionKeysInvalidLayout) {
         ui::DomKey::MEDIA_PLAY_PAUSE}}};
 
   for (const auto& test : layout2_tests)
-    CheckKeyTestCase(rewriter_, test);
+    CheckKeyTestCase(rewriter(), test);
 }
 
 TEST_F(EventRewriterTest, TestRewriteExtendedKeysWithSearchRemapped) {
@@ -2782,7 +2812,7 @@ TEST_F(EventRewriterTest, TestRewriteExtendedKeysWithSearchRemapped) {
   };
 
   for (const auto& test : tests)
-    CheckKeyTestCase(rewriter_, test);
+    CheckKeyTestCase(rewriter(), test);
 }
 
 TEST_F(EventRewriterTest, TestRewriteKeyEventSentByXSendEvent) {
@@ -2799,11 +2829,15 @@ TEST_F(EventRewriterTest, TestRewriteKeyEventSentByXSendEvent) {
     ui::KeyEvent keyevent(ui::ET_KEY_PRESSED, ui::VKEY_CONTROL,
                           ui::DomCode::CONTROL_LEFT, ui::EF_FINAL,
                           ui::DomKey::CONTROL, ui::EventTimeForNow());
-    std::unique_ptr<ui::Event> new_event;
+    TestEventRewriterContinuation continuation;
     // Control should NOT be remapped to Alt if EF_FINAL is set.
-    EXPECT_EQ(ui::EVENT_REWRITE_CONTINUE,
-              rewriter_->RewriteEvent(keyevent, &new_event));
-    EXPECT_FALSE(new_event);
+    rewriter()->RewriteEvent(keyevent,
+                             continuation.weak_ptr_factory_.GetWeakPtr());
+    EXPECT_TRUE(continuation.rewritten_events.empty());
+    EXPECT_EQ(1u, continuation.passthrough_events.size());
+    EXPECT_TRUE(continuation.passthrough_events[0]->IsKeyEvent());
+    const auto* result = continuation.passthrough_events[0]->AsKeyEvent();
+    EXPECT_EQ(ui::VKEY_CONTROL, result->key_code());
   }
 }
 
@@ -2823,12 +2857,13 @@ TEST_F(EventRewriterTest, TestRewriteNonNativeEvent) {
       ui::PointerDetails(ui::EventPointerType::POINTER_TYPE_TOUCH, kTouchId));
   press.set_flags(ui::EF_CONTROL_DOWN);
 
-  std::unique_ptr<ui::Event> new_event;
-  rewriter_->RewriteEvent(press, &new_event);
-  EXPECT_TRUE(new_event);
+  TestEventRewriterContinuation continuation;
+  rewriter()->RewriteEvent(press, continuation.weak_ptr_factory_.GetWeakPtr());
+  EXPECT_TRUE(continuation.passthrough_events.empty());
+  EXPECT_EQ(1u, continuation.rewritten_events.size());
   // Control should be remapped to Alt.
-  EXPECT_EQ(ui::EF_ALT_DOWN,
-            new_event->flags() & (ui::EF_CONTROL_DOWN | ui::EF_ALT_DOWN));
+  EXPECT_EQ(ui::EF_ALT_DOWN, continuation.rewritten_events[0]->flags() &
+                                 (ui::EF_CONTROL_DOWN | ui::EF_ALT_DOWN));
 }
 
 // Keeps a buffer of handled events.
@@ -2876,11 +2911,6 @@ class EventRewriterAshTest : public ChromeAshTestBase {
         fake_user_manager_(new chromeos::FakeChromeUserManager),
         user_manager_enabler_(base::WrapUnique(fake_user_manager_)) {}
   ~EventRewriterAshTest() override {}
-
-  bool RewriteFunctionKeys(const ui::Event& event,
-                           std::unique_ptr<ui::Event>* rewritten_event) {
-    return rewriter_->RewriteEvent(event, rewritten_event);
-  }
 
   ui::EventDispatchDetails Send(ui::Event* event) {
     return source_.Send(event);
@@ -3333,6 +3363,61 @@ TEST_F(EventRewriterAshTest, KeyEventRewritingEdgeCases) {
   EXPECT_EQ(1u, events.size());
   EXPECT_EQ(ui::VKEY_UP,
             static_cast<ui::KeyEvent*>(events[0].get())->key_code());
+}
+
+TEST_F(EventRewriterAshTest, ScrollEventDispatchImpl) {
+  std::vector<std::unique_ptr<ui::Event>> events;
+
+  // Test scroll event is correctly modified.
+  SendActivateStickyKeyPattern(ui::VKEY_CONTROL, ui::DomCode::CONTROL_LEFT,
+                               ui::DomKey::CONTROL);
+  PopEvents(&events);
+  gfx::PointF location(0, 0);
+  ui::ScrollEvent scroll(ui::ET_SCROLL, location, location,
+                         ui::EventTimeForNow(), 0 /* flag */, 0 /* x_offset */,
+                         1 /* y_offset */, 0 /* x_offset_ordinal */,
+                         1 /* y_offset_ordinal */, 2 /* finger */);
+  ui::EventDispatchDetails details = Send(&scroll);
+  ASSERT_FALSE(details.dispatcher_destroyed);
+  PopEvents(&events);
+  EXPECT_EQ(1u, events.size());
+  EXPECT_TRUE(events[0]->IsScrollEvent());
+  EXPECT_TRUE(events[0]->flags() & ui::EF_CONTROL_DOWN);
+
+  // Test FLING_START event deactivates the sticky key, but is modified.
+  ui::ScrollEvent fling_start(
+      ui::ET_SCROLL_FLING_START, location, location, ui::EventTimeForNow(),
+      0 /* flag */, 0 /* x_offset */, 0 /* y_offset */,
+      0 /* x_offset_ordinal */, 0 /* y_offset_ordinal */, 2 /* finger */);
+  details = Send(&fling_start);
+  PopEvents(&events);
+  EXPECT_EQ(2u, events.size());
+  EXPECT_TRUE(events[0]->IsScrollEvent());
+  EXPECT_TRUE(events[0]->flags() & ui::EF_CONTROL_DOWN);
+  EXPECT_EQ(ui::ET_KEY_RELEASED, events[1]->type());
+  EXPECT_EQ(ui::VKEY_CONTROL,
+            static_cast<ui::KeyEvent*>(events[1].get())->key_code());
+
+  // Test scroll direction change causes that modifier release event is sent.
+  SendActivateStickyKeyPattern(ui::VKEY_CONTROL, ui::DomCode::CONTROL_LEFT,
+                               ui::DomKey::CONTROL);
+  details = Send(&scroll);
+  ASSERT_FALSE(details.dispatcher_destroyed);
+  PopEvents(&events);
+
+  ui::ScrollEvent scroll2(ui::ET_SCROLL, location, location,
+                          ui::EventTimeForNow(), 0 /* flag */, 0 /* x_offset */,
+                          -1 /* y_offset */, 0 /* x_offset_ordinal */,
+                          -1 /* y_offset_ordinal */, 2 /* finger */);
+  details = Send(&scroll2);
+  ASSERT_FALSE(details.dispatcher_destroyed);
+  PopEvents(&events);
+  EXPECT_EQ(2u, events.size());
+  EXPECT_TRUE(events[0]->IsScrollEvent());
+  EXPECT_FALSE(events[0]->flags() & ui::EF_CONTROL_DOWN);
+  EXPECT_EQ(ui::ET_KEY_RELEASED, events[1]->type());
+  EXPECT_EQ(ui::VKEY_CONTROL,
+            static_cast<ui::KeyEvent*>(events[1].get())->key_code());
 }
 
 class StickyKeysOverlayTest : public EventRewriterAshTest {

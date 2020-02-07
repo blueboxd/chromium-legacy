@@ -71,7 +71,7 @@ bool LoopbackConnection::HandleMetadata(const Generic& message) {
 }
 
 bool LoopbackConnection::HandleAudioData(char* data,
-                                         int size,
+                                         size_t size,
                                          int64_t timestamp) {
   if (format_ != kUnknownSampleFormat && size > 0) {
     delegate_->OnLoopbackAudio(timestamp, format_, sample_rate_, num_channels_,

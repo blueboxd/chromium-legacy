@@ -149,6 +149,10 @@ class ASH_EXPORT StatusAreaWidget : public ShelfComponent,
   // of each tray button.
   void CalculateButtonVisibilityForCollapsedState();
 
+  // Calculates and returns the appropriate collapse state depending on
+  // current conditions.
+  CollapseState CalculateCollapseState() const;
+
   StatusAreaWidgetDelegate* status_area_widget_delegate_;
 
   std::unique_ptr<StatusAreaOverflowButtonTray> overflow_button_tray_;

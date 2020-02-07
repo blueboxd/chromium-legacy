@@ -40,6 +40,7 @@
 #include "ui/compositor/test/direct_layer_tree_frame_sink.h"
 #include "ui/compositor/test/in_process_context_provider.h"
 #include "ui/display/display_switches.h"
+#include "ui/gfx/buffer_format_util.h"
 #include "ui/gfx/presentation_feedback.h"
 #include "ui/gfx/switches.h"
 #include "ui/gl/gl_implementation.h"
@@ -84,11 +85,11 @@ class DirectOutputSurface : public viz::OutputSurface {
   void Reshape(const gfx::Size& size,
                float device_scale_factor,
                const gfx::ColorSpace& color_space,
-               bool has_alpha,
+               gfx::BufferFormat format,
                bool use_stencil) override {
     context_provider()->ContextGL()->ResizeCHROMIUM(
         size.width(), size.height(), device_scale_factor,
-        color_space.AsGLColorSpace(), has_alpha);
+        color_space.AsGLColorSpace(), gfx::AlphaBitsForBufferFormat(format));
   }
   void SwapBuffers(viz::OutputSurfaceFrame frame) override {
     DCHECK(context_provider_.get());

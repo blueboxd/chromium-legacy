@@ -228,8 +228,7 @@
     },
     {
       name: "Badging",
-      origin_trial_feature_name: "BadgingV2",
-      status: "experimental",
+      status: "stable",
     },
     {
       name: "BidiCaretAffinity",
@@ -1406,7 +1405,6 @@
     },
     {
       name: "ReducedReferrerGranularity",
-      status: "experimental",
     },
     {
       name: "RemotePlayback",

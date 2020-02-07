@@ -65,6 +65,7 @@ let SiteGroup;
  *            incognito: boolean,
  *            origin: string,
  *            displayName: string,
+ *            type: string,
  *            setting: !settings.ContentSetting,
  *            source: !settings.SiteSettingSource}}
  */
@@ -84,6 +85,16 @@ let RawSiteException;
  *            showAndroidSmsNote: (boolean|undefined)}}
  */
 let SiteException;
+
+/**
+ * Represents a list of exceptions recently configured for a site, where recent
+ * is defined by the maximum number of sources parameter passed to
+ * GetRecentSiterPermissions.
+ * @typedef {{origin: string,
+ *            incognito: boolean,
+ *            recentPermissions: Array<RawSiteException>}}
+ */
+let RecentSitePermissions;
 
 /**
  * The chooser exception information passed from the C++ handler.
@@ -156,6 +167,18 @@ cr.define('settings', function() {
      * @return {!Promise<!Array<!SiteGroup>>}
      */
     getAllSites(contentTypes) {}
+
+    /**
+     * Gets most recently changed permissions grouped by host and limited to
+     * numSources different origin/profile (inconigto/regular) pairings.
+     * This includes permissions adjusted by embargo, but excludes any set
+     * via policy.
+     * @param {!Array<!settings.ContentSettingsTypes>} contentTypes A list of
+     *     the content types to retrieve sites with recently changed settings.
+     * @param {!number} numSources Maximum number of different sources to return
+     * @return {!Promise<!Array<!RecentSitePermissions>>}
+     */
+    getRecentSitePermissions(contentTypes, numSources) {}
 
     /**
      * Gets the chooser exceptions for a particular chooser type.
@@ -390,6 +413,12 @@ cr.define('settings', function() {
     /** @override */
     getAllSites(contentTypes) {
       return cr.sendWithPromise('getAllSites', contentTypes);
+    }
+
+    /** @override */
+    getRecentSitePermissions(contentTypes, numSources) {
+      return cr.sendWithPromise(
+          'getRecentSitePermissions', contentTypes, numSources);
     }
 
     /** @override */

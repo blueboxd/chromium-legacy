@@ -173,8 +173,6 @@ class PdfAccessibilityTreeTest : public content::RenderViewTest {
 
     viewport_info_.zoom = 1.0;
     viewport_info_.scale = 1.0;
-    viewport_info_.total_scrollable_size = {0, 0};
-    viewport_info_.current_scroll_position = {0, 0};
     viewport_info_.scroll = {0, 0};
     viewport_info_.offset = {0, 0};
     viewport_info_.selection_start_page_index = 0;

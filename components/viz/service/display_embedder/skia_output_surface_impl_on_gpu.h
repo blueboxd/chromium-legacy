@@ -124,7 +124,7 @@ class SkiaOutputSurfaceImplOnGpu : public gpu::ImageTransportSurfaceDelegate,
   void Reshape(const gfx::Size& size,
                float device_scale_factor,
                const gfx::ColorSpace& color_space,
-               bool has_alpha,
+               gfx::BufferFormat format,
                bool use_stencil,
                gfx::OverlayTransform transform,
                SkSurfaceCharacterization* characterization,
@@ -294,6 +294,7 @@ class SkiaOutputSurfaceImplOnGpu : public gpu::ImageTransportSurfaceDelegate,
   BufferPresentedCallback buffer_presented_callback_;
   ContextLostCallback context_lost_callback_;
   GpuVSyncCallback gpu_vsync_callback_;
+  bool use_gl_renderer_copier_ = false;
 
 #if defined(USE_OZONE)
   // This should outlive gl_surface_ and vulkan_surface_.

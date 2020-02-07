@@ -18,27 +18,33 @@ import org.chromium.base.test.util.CommandLineFlags;
 import org.chromium.base.test.util.Feature;
 import org.chromium.chrome.browser.ChromeActivity;
 import org.chromium.chrome.browser.ChromeSwitches;
-import org.chromium.chrome.browser.payments.PaymentAppFactory.PaymentAppCreatedCallback;
 import org.chromium.chrome.test.ChromeActivityTestRule;
 import org.chromium.chrome.test.ChromeJUnit4ClassRunner;
 import org.chromium.components.payments.PaymentManifestDownloader;
 import org.chromium.components.payments.PaymentManifestParser;
+import org.chromium.content_public.browser.WebContents;
 import org.chromium.content_public.browser.test.util.Criteria;
 import org.chromium.content_public.browser.test.util.CriteriaHelper;
 import org.chromium.net.test.EmbeddedTestServer;
+import org.chromium.payments.mojom.PaymentDetailsModifier;
+import org.chromium.payments.mojom.PaymentMethodData;
 import org.chromium.url.URI;
 
 import java.net.URISyntaxException;
 import java.util.ArrayList;
+import java.util.Collections;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 
 /** An integration test for the Android payment app finder. */
 @RunWith(ChromeJUnit4ClassRunner.class)
 @CommandLineFlags.Add({ChromeSwitches.DISABLE_FIRST_RUN_EXPERIENCE})
 @MediumTest
-public class AndroidPaymentAppFinderTest implements PaymentAppCreatedCallback {
+public class AndroidPaymentAppFinderTest
+        implements PaymentAppFactoryDelegate, PaymentAppFactoryParams {
     @Rule
     public ChromeActivityTestRule<ChromeActivity> mRule =
             new ChromeActivityTestRule<>(ChromeActivity.class);
@@ -83,23 +89,48 @@ public class AndroidPaymentAppFinderTest implements PaymentAppCreatedCallback {
     private final TestServerDownloader mDownloader = new TestServerDownloader();
 
     private EmbeddedTestServer mServer;
-    private List<PaymentApp> mPaymentApps;
+    private List<PaymentInstrument> mPaymentApps;
     private boolean mAllPaymentAppsCreated;
+    private Map<String, PaymentMethodData> mMethodData;
 
-    // PaymentAppCreatedCallback
+    // PaymentAppFactoryDelegate implementation.
     @Override
-    public void onPaymentAppCreated(PaymentApp paymentApp) {
+    public PaymentAppFactoryParams getParams() {
+        return this;
+    }
+
+    // PaymentAppFactoryDelegate implementation.
+    @Override
+    public void onPaymentAppCreated(PaymentInstrument paymentApp) {
         mPaymentApps.add(paymentApp);
     }
 
-    // PaymentAppCreatedCallback
+    // PaymentAppFactoryDelegate implementation.
     @Override
-    public void onGetPaymentAppsError(String errorMessage) {}
+    public void onPaymentAppCreationError(String errorMessage) {}
 
-    // PaymentAppCreatedCallback
+    // PaymentAppFactoryDelegate implementation.
     @Override
-    public void onAllPaymentAppsCreated() {
+    public void onDoneCreatingPaymentApps(PaymentAppFactoryInterface unusedFactory) {
         mAllPaymentAppsCreated = true;
+    }
+
+    // PaymentAppFactoryParams implementation.
+    @Override
+    public WebContents getWebContents() {
+        return mRule.getActivity().getCurrentWebContents();
+    }
+
+    // PaymentAppFactoryParams implementation.
+    @Override
+    public Map<String, PaymentDetailsModifier> getModifiers() {
+        return Collections.unmodifiableMap(new HashMap<String, PaymentDetailsModifier>());
+    }
+
+    // PaymentAppFactoryParams implementation.
+    @Override
+    public Map<String, PaymentMethodData> getMethodData() {
+        return mMethodData;
     }
 
     @Before
@@ -139,7 +170,8 @@ public class AndroidPaymentAppFinderTest implements PaymentAppCreatedCallback {
     public void testNoMetadata() throws Throwable {
         Set<String> methods = new HashSet<>();
         methods.add("basic-card");
-        mPackageManager.installPaymentApp("BobPay", "com.bobpay", null /* no metadata */, "01");
+        mPackageManager.installPaymentApp(
+                "BobPay", "com.bobpay", null /* no metadata */, /*signature=*/"01");
 
         findApps(methods);
 
@@ -163,16 +195,16 @@ public class AndroidPaymentAppFinderTest implements PaymentAppCreatedCallback {
         Set<String> methods = new HashSet<>();
         methods.add("basic-card");
         mPackageManager.installPaymentApp("AlicePay", "com.alicepay",
-                "" /* no default payment method name in metadata */, "AA");
+                "" /* no default payment method name in metadata */, /*signature=*/"AA");
         mPackageManager.setStringArrayMetaData("com.alicepay", new String[] {"basic-card"});
 
         findApps(methods);
 
         Assert.assertEquals("1 app should match the query", 1, mPaymentApps.size());
-        Assert.assertEquals("com.alicepay", mPaymentApps.get(0).getAppIdentifier());
-        Assert.assertEquals(1, mPaymentApps.get(0).getAppMethodNames().size());
+        Assert.assertEquals("com.alicepay", mPaymentApps.get(0).getIdentifier());
+        Assert.assertEquals(1, mPaymentApps.get(0).getInstrumentMethodNames().size());
         Assert.assertEquals(
-                "basic-card", mPaymentApps.get(0).getAppMethodNames().iterator().next());
+                "basic-card", mPaymentApps.get(0).getInstrumentMethodNames().iterator().next());
 
         mPaymentApps.clear();
         mAllPaymentAppsCreated = false;
@@ -180,10 +212,10 @@ public class AndroidPaymentAppFinderTest implements PaymentAppCreatedCallback {
         findApps(methods);
 
         Assert.assertEquals("1 app should still match the query", 1, mPaymentApps.size());
-        Assert.assertEquals("com.alicepay", mPaymentApps.get(0).getAppIdentifier());
-        Assert.assertEquals(1, mPaymentApps.get(0).getAppMethodNames().size());
+        Assert.assertEquals("com.alicepay", mPaymentApps.get(0).getIdentifier());
+        Assert.assertEquals(1, mPaymentApps.get(0).getInstrumentMethodNames().size());
         Assert.assertEquals(
-                "basic-card", mPaymentApps.get(0).getAppMethodNames().iterator().next());
+                "basic-card", mPaymentApps.get(0).getInstrumentMethodNames().iterator().next());
     }
 
     /**
@@ -197,17 +229,17 @@ public class AndroidPaymentAppFinderTest implements PaymentAppCreatedCallback {
         Set<String> methods = new HashSet<>();
         methods.add("https://frankpay.com/webpay");
         mPackageManager.installPaymentApp("AlicePay", "com.alicepay",
-                "" /* no default payment method name in metadata */, "AA");
+                "" /* no default payment method name in metadata */, /*signature=*/"AA");
         mPackageManager.setStringArrayMetaData(
                 "com.alicepay", new String[] {"https://frankpay.com/webpay"});
 
         findApps(methods);
 
         Assert.assertEquals("1 app should match the query", 1, mPaymentApps.size());
-        Assert.assertEquals("com.alicepay", mPaymentApps.get(0).getAppIdentifier());
-        Assert.assertEquals(1, mPaymentApps.get(0).getAppMethodNames().size());
+        Assert.assertEquals("com.alicepay", mPaymentApps.get(0).getIdentifier());
+        Assert.assertEquals(1, mPaymentApps.get(0).getInstrumentMethodNames().size());
         Assert.assertEquals("https://frankpay.com/webpay",
-                mPaymentApps.get(0).getAppMethodNames().iterator().next());
+                mPaymentApps.get(0).getInstrumentMethodNames().iterator().next());
 
         mPaymentApps.clear();
         mAllPaymentAppsCreated = false;
@@ -215,10 +247,10 @@ public class AndroidPaymentAppFinderTest implements PaymentAppCreatedCallback {
         findApps(methods);
 
         Assert.assertEquals("1 app should still match the query", 1, mPaymentApps.size());
-        Assert.assertEquals("com.alicepay", mPaymentApps.get(0).getAppIdentifier());
-        Assert.assertEquals(1, mPaymentApps.get(0).getAppMethodNames().size());
+        Assert.assertEquals("com.alicepay", mPaymentApps.get(0).getIdentifier());
+        Assert.assertEquals(1, mPaymentApps.get(0).getInstrumentMethodNames().size());
         Assert.assertEquals("https://frankpay.com/webpay",
-                mPaymentApps.get(0).getAppMethodNames().iterator().next());
+                mPaymentApps.get(0).getInstrumentMethodNames().iterator().next());
     }
 
     /** Payment apps without a human-readable name should be filtered out. */
@@ -227,8 +259,8 @@ public class AndroidPaymentAppFinderTest implements PaymentAppCreatedCallback {
     public void testEmptyLabel() throws Throwable {
         Set<String> methods = new HashSet<>();
         methods.add("basic-card");
-        mPackageManager.installPaymentApp(
-                "" /* empty label */, "com.bobpay", "basic-card", "01020304050607080900");
+        mPackageManager.installPaymentApp("" /* empty label */, "com.bobpay", "basic-card",
+                /*signature=*/"01020304050607080900");
 
         findApps(methods);
 
@@ -243,9 +275,9 @@ public class AndroidPaymentAppFinderTest implements PaymentAppCreatedCallback {
         methods.add("https://"); // Invalid URI.
         methods.add("../index.html"); // Relative URI.
         mPackageManager.installPaymentApp(
-                "BobPay", "com.bobpay", "https://", "01020304050607080900");
+                "BobPay", "com.bobpay", "https://", /*signature=*/"01020304050607080900");
         mPackageManager.installPaymentApp(
-                "AlicePay", "com.alicepay", "../index.html", "ABCDEFABCDEFABCDEFAB");
+                "AlicePay", "com.alicepay", "../index.html", /*signature=*/"ABCDEFABCDEFABCDEFAB");
 
         findApps(methods);
 
@@ -260,10 +292,10 @@ public class AndroidPaymentAppFinderTest implements PaymentAppCreatedCallback {
         methods.add("basic-card");
         methods.add("incorrect-method-name"); // Even if merchant supports it, Chrome filters out
         // unknown non-URL method names.
-        mPackageManager.installPaymentApp(
-                "BobPay", "com.bobpay", "incorrect-method-name", "01020304050607080900");
-        mPackageManager.installPaymentApp(
-                "AlicePay", "com.alicepay", "incorrect-method-name", "ABCDEFABCDEFABCDEFAB");
+        mPackageManager.installPaymentApp("BobPay", "com.bobpay", "incorrect-method-name",
+                /*signature=*/"01020304050607080900");
+        mPackageManager.installPaymentApp("AlicePay", "com.alicepay", "incorrect-method-name",
+                /*signature=*/"ABCDEFABCDEFABCDEFAB");
 
         findApps(methods);
 
@@ -281,14 +313,14 @@ public class AndroidPaymentAppFinderTest implements PaymentAppCreatedCallback {
         Set<String> methods = new HashSet<>();
         methods.add("basic-card");
         mPackageManager.installPaymentApp(
-                "BobPay", "com.bobpay", "basic-card", "01020304050607080900");
+                "BobPay", "com.bobpay", "basic-card", /*signature=*/"01020304050607080900");
         mPackageManager.addIsReadyToPayService("com.bobpay");
         mPackageManager.addIsReadyToPayService("com.alicepay");
 
         findApps(methods);
 
         Assert.assertEquals("1 app should match the query", 1, mPaymentApps.size());
-        Assert.assertEquals("com.bobpay", mPaymentApps.get(0).getAppIdentifier());
+        Assert.assertEquals("com.bobpay", mPaymentApps.get(0).getIdentifier());
     }
 
     /**
@@ -302,13 +334,13 @@ public class AndroidPaymentAppFinderTest implements PaymentAppCreatedCallback {
     public void testOneUrlMethodNameApp() throws Throwable {
         Set<String> methods = new HashSet<>();
         methods.add("https://bobpay.com/webpay");
-        mPackageManager.installPaymentApp(
-                "BobPay", "com.bobpay", "https://bobpay.com/webpay", "01020304050607080900");
+        mPackageManager.installPaymentApp("BobPay", "com.bobpay", "https://bobpay.com/webpay",
+                /*signature=*/"01020304050607080900");
 
         findApps(methods);
 
         Assert.assertEquals("1 app should match the query", 1, mPaymentApps.size());
-        Assert.assertEquals("com.bobpay", mPaymentApps.get(0).getAppIdentifier());
+        Assert.assertEquals("com.bobpay", mPaymentApps.get(0).getIdentifier());
     }
 
     /**
@@ -365,16 +397,16 @@ public class AndroidPaymentAppFinderTest implements PaymentAppCreatedCallback {
         Set<String> methods = new HashSet<>();
         methods.add("basic-card");
         mPackageManager.installPaymentApp(
-                "BobPay", "com.bobpay", "basic-card", "01020304050607080900");
+                "BobPay", "com.bobpay", "basic-card", /*signature=*/"01020304050607080900");
         mPackageManager.installPaymentApp(
-                "AlicePay", "com.alicepay", "basic-card", "ABCDEFABCDEFABCDEFAB");
+                "AlicePay", "com.alicepay", "basic-card", /*signature=*/"ABCDEFABCDEFABCDEFAB");
 
         findApps(methods);
 
         Assert.assertEquals("2 apps should match the query", 2, mPaymentApps.size());
         Set<String> appIdentifiers = new HashSet<>();
-        appIdentifiers.add(mPaymentApps.get(0).getAppIdentifier());
-        appIdentifiers.add(mPaymentApps.get(1).getAppIdentifier());
+        appIdentifiers.add(mPaymentApps.get(0).getIdentifier());
+        appIdentifiers.add(mPaymentApps.get(1).getIdentifier());
         Assert.assertTrue(appIdentifiers.contains("com.bobpay"));
         Assert.assertTrue(appIdentifiers.contains("com.alicepay"));
     }
@@ -391,16 +423,16 @@ public class AndroidPaymentAppFinderTest implements PaymentAppCreatedCallback {
         Set<String> methods = new HashSet<>();
         methods.add("https://davepay.com/webpay");
         mPackageManager.installPaymentApp("DavePay", "com.davepay.prod",
-                "https://davepay.com/webpay", "44444444442222222222");
+                "https://davepay.com/webpay", /*signature=*/"44444444442222222222");
         mPackageManager.installPaymentApp("DavePay Dev", "com.davepay.dev",
-                "https://davepay.com/webpay", "44444444441111111111");
+                "https://davepay.com/webpay", /*signature=*/"44444444441111111111");
 
         findApps(methods);
 
         Assert.assertEquals("2 apps should match the query", 2, mPaymentApps.size());
         Set<String> appIdentifiers = new HashSet<>();
-        appIdentifiers.add(mPaymentApps.get(0).getAppIdentifier());
-        appIdentifiers.add(mPaymentApps.get(1).getAppIdentifier());
+        appIdentifiers.add(mPaymentApps.get(0).getIdentifier());
+        appIdentifiers.add(mPaymentApps.get(1).getIdentifier());
         Assert.assertTrue(appIdentifiers.contains("com.davepay.prod"));
         Assert.assertTrue(appIdentifiers.contains("com.davepay.dev"));
 
@@ -411,8 +443,8 @@ public class AndroidPaymentAppFinderTest implements PaymentAppCreatedCallback {
 
         Assert.assertEquals("2 apps should match the query again", 2, mPaymentApps.size());
         appIdentifiers.clear();
-        appIdentifiers.add(mPaymentApps.get(0).getAppIdentifier());
-        appIdentifiers.add(mPaymentApps.get(1).getAppIdentifier());
+        appIdentifiers.add(mPaymentApps.get(0).getIdentifier());
+        appIdentifiers.add(mPaymentApps.get(1).getIdentifier());
         Assert.assertTrue(appIdentifiers.contains("com.davepay.prod"));
         Assert.assertTrue(appIdentifiers.contains("com.davepay.dev"));
     }
@@ -428,17 +460,17 @@ public class AndroidPaymentAppFinderTest implements PaymentAppCreatedCallback {
         Set<String> methods = new HashSet<>();
         methods.add("https://bobpay.com/webpay");
         methods.add("https://alicepay.com/webpay");
-        mPackageManager.installPaymentApp(
-                "BobPay", "com.bobpay", "https://bobpay.com/webpay", "01020304050607080900");
-        mPackageManager.installPaymentApp(
-                "AlicePay", "com.alicepay", "https://alicepay.com/webpay", "ABCDEFABCDEFABCDEFAB");
+        mPackageManager.installPaymentApp("BobPay", "com.bobpay", "https://bobpay.com/webpay",
+                /*signature=*/"01020304050607080900");
+        mPackageManager.installPaymentApp("AlicePay", "com.alicepay", "https://alicepay.com/webpay",
+                /*signature=*/"ABCDEFABCDEFABCDEFAB");
 
         findApps(methods);
 
         Assert.assertEquals("2 apps should match the query", 2, mPaymentApps.size());
         Set<String> appIdentifiers = new HashSet<>();
-        appIdentifiers.add(mPaymentApps.get(0).getAppIdentifier());
-        appIdentifiers.add(mPaymentApps.get(1).getAppIdentifier());
+        appIdentifiers.add(mPaymentApps.get(0).getIdentifier());
+        appIdentifiers.add(mPaymentApps.get(1).getIdentifier());
         Assert.assertTrue(appIdentifiers.contains("com.bobpay"));
         Assert.assertTrue(appIdentifiers.contains("com.alicepay"));
 
@@ -449,8 +481,8 @@ public class AndroidPaymentAppFinderTest implements PaymentAppCreatedCallback {
 
         Assert.assertEquals("2 apps should match the query again", 2, mPaymentApps.size());
         appIdentifiers.clear();
-        appIdentifiers.add(mPaymentApps.get(0).getAppIdentifier());
-        appIdentifiers.add(mPaymentApps.get(1).getAppIdentifier());
+        appIdentifiers.add(mPaymentApps.get(0).getIdentifier());
+        appIdentifiers.add(mPaymentApps.get(1).getIdentifier());
         Assert.assertTrue(appIdentifiers.contains("com.bobpay"));
         Assert.assertTrue(appIdentifiers.contains("com.alicepay"));
     }
@@ -466,15 +498,15 @@ public class AndroidPaymentAppFinderTest implements PaymentAppCreatedCallback {
         Set<String> methods = new HashSet<>();
         methods.add("https://bobpay.com/webpay");
         methods.add("https://not-valid.com/webpay");
-        mPackageManager.installPaymentApp(
-                "BobPay", "com.bobpay", "https://bobpay.com/webpay", "01020304050607080900");
+        mPackageManager.installPaymentApp("BobPay", "com.bobpay", "https://bobpay.com/webpay",
+                /*signature=*/"01020304050607080900");
         mPackageManager.installPaymentApp("NotValid", "com.not-valid",
-                "https://not-valid.com/webpay", "ABCDEFABCDEFABCDEFAB");
+                "https://not-valid.com/webpay", /*signature=*/"ABCDEFABCDEFABCDEFAB");
 
         findApps(methods);
 
         Assert.assertEquals("1 app should match the query", 1, mPaymentApps.size());
-        Assert.assertEquals("com.bobpay", mPaymentApps.get(0).getAppIdentifier());
+        Assert.assertEquals("com.bobpay", mPaymentApps.get(0).getIdentifier());
 
         mPaymentApps.clear();
         mAllPaymentAppsCreated = false;
@@ -482,7 +514,7 @@ public class AndroidPaymentAppFinderTest implements PaymentAppCreatedCallback {
         findApps(methods);
 
         Assert.assertEquals("1 app should match the query again", 1, mPaymentApps.size());
-        Assert.assertEquals("com.bobpay", mPaymentApps.get(0).getAppIdentifier());
+        Assert.assertEquals("com.bobpay", mPaymentApps.get(0).getIdentifier());
     }
 
     /**
@@ -495,17 +527,17 @@ public class AndroidPaymentAppFinderTest implements PaymentAppCreatedCallback {
         Set<String> methods = new HashSet<>();
         methods.add("https://bobpay.com/webpay");
         methods.add("https://alicepay.com/webpay");
-        mPackageManager.installPaymentApp(
-                "BobPay", "com.bobpay", "https://bobpay.com/webpay", "01020304050607080900");
-        mPackageManager.installPaymentApp(
-                "AlicePay", "com.alicepay", "https://alicepay.com/webpay", "ABCDEFABCDEFABCDEFAB");
+        mPackageManager.installPaymentApp("BobPay", "com.bobpay", "https://bobpay.com/webpay",
+                /*signature=*/"01020304050607080900");
+        mPackageManager.installPaymentApp("AlicePay", "com.alicepay", "https://alicepay.com/webpay",
+                /*signature=*/"ABCDEFABCDEFABCDEFAB");
 
         findApps(methods);
 
         Assert.assertEquals("2 apps should match the query", 2, mPaymentApps.size());
         Set<String> appIdentifiers = new HashSet<>();
-        appIdentifiers.add(mPaymentApps.get(0).getAppIdentifier());
-        appIdentifiers.add(mPaymentApps.get(1).getAppIdentifier());
+        appIdentifiers.add(mPaymentApps.get(0).getIdentifier());
+        appIdentifiers.add(mPaymentApps.get(1).getIdentifier());
         Assert.assertTrue(appIdentifiers.contains("com.bobpay"));
         Assert.assertTrue(appIdentifiers.contains("com.alicepay"));
 
@@ -516,8 +548,8 @@ public class AndroidPaymentAppFinderTest implements PaymentAppCreatedCallback {
 
         Assert.assertEquals("2 apps should still match the query", 2, mPaymentApps.size());
         appIdentifiers.clear();
-        appIdentifiers.add(mPaymentApps.get(0).getAppIdentifier());
-        appIdentifiers.add(mPaymentApps.get(1).getAppIdentifier());
+        appIdentifiers.add(mPaymentApps.get(0).getIdentifier());
+        appIdentifiers.add(mPaymentApps.get(1).getIdentifier());
         Assert.assertTrue(appIdentifiers.contains("com.bobpay"));
         Assert.assertTrue(appIdentifiers.contains("com.alicepay"));
     }
@@ -533,16 +565,16 @@ public class AndroidPaymentAppFinderTest implements PaymentAppCreatedCallback {
         Set<String> methods = new HashSet<>();
         methods.add("https://charliepay.com/webpay");
         mPackageManager.installPaymentApp("CharliePay", "com.charliepay.dev",
-                "https://charliepay.com/webpay", "33333333333111111111");
-        mPackageManager.installPaymentApp(
-                "BobPay", "com.bobpay", "https://bobpay.com/webpay", "01020304050607080900");
-        mPackageManager.installPaymentApp(
-                "AlicePay", "com.alicepay", "https://alicepay.com/webpay", "ABCDEFABCDEFABCDEFAB");
+                "https://charliepay.com/webpay", /*signature=*/"33333333333111111111");
+        mPackageManager.installPaymentApp("BobPay", "com.bobpay", "https://bobpay.com/webpay",
+                /*signature=*/"01020304050607080900");
+        mPackageManager.installPaymentApp("AlicePay", "com.alicepay", "https://alicepay.com/webpay",
+                /*signature=*/"ABCDEFABCDEFABCDEFAB");
 
         findApps(methods);
 
         Assert.assertEquals("1 app should match the query", 1, mPaymentApps.size());
-        Assert.assertEquals("com.charliepay.dev", mPaymentApps.get(0).getAppIdentifier());
+        Assert.assertEquals("com.charliepay.dev", mPaymentApps.get(0).getIdentifier());
 
         mPaymentApps.clear();
         mAllPaymentAppsCreated = false;
@@ -550,7 +582,7 @@ public class AndroidPaymentAppFinderTest implements PaymentAppCreatedCallback {
         findApps(methods);
 
         Assert.assertEquals("1 app should match the query again", 1, mPaymentApps.size());
-        Assert.assertEquals("com.charliepay.dev", mPaymentApps.get(0).getAppIdentifier());
+        Assert.assertEquals("com.charliepay.dev", mPaymentApps.get(0).getIdentifier());
     }
 
     /**
@@ -563,17 +595,17 @@ public class AndroidPaymentAppFinderTest implements PaymentAppCreatedCallback {
     public void testDavePayDev() throws Throwable {
         Set<String> methods = new HashSet<>();
         methods.add("https://davepay.com/webpay");
-        mPackageManager.installPaymentApp(
-                "DavePay", "com.davepay.dev", "https://davepay.com/webpay", "44444444441111111111");
-        mPackageManager.installPaymentApp(
-                "BobPay", "com.bobpay", "https://bobpay.com/webpay", "01020304050607080900");
-        mPackageManager.installPaymentApp(
-                "AlicePay", "com.alicepay", "https://alicepay.com/webpay", "ABCDEFABCDEFABCDEFAB");
+        mPackageManager.installPaymentApp("DavePay", "com.davepay.dev",
+                "https://davepay.com/webpay", /*signature=*/"44444444441111111111");
+        mPackageManager.installPaymentApp("BobPay", "com.bobpay", "https://bobpay.com/webpay",
+                /*signature=*/"01020304050607080900");
+        mPackageManager.installPaymentApp("AlicePay", "com.alicepay", "https://alicepay.com/webpay",
+                /*signature=*/"ABCDEFABCDEFABCDEFAB");
 
         findApps(methods);
 
         Assert.assertEquals("1 app should match the query", 1, mPaymentApps.size());
-        Assert.assertEquals("com.davepay.dev", mPaymentApps.get(0).getAppIdentifier());
+        Assert.assertEquals("com.davepay.dev", mPaymentApps.get(0).getIdentifier());
 
         mPaymentApps.clear();
         mAllPaymentAppsCreated = false;
@@ -581,7 +613,7 @@ public class AndroidPaymentAppFinderTest implements PaymentAppCreatedCallback {
         findApps(methods);
 
         Assert.assertEquals("1 app should match the query again", 1, mPaymentApps.size());
-        Assert.assertEquals("com.davepay.dev", mPaymentApps.get(0).getAppIdentifier());
+        Assert.assertEquals("com.davepay.dev", mPaymentApps.get(0).getIdentifier());
     }
 
     /**
@@ -595,13 +627,13 @@ public class AndroidPaymentAppFinderTest implements PaymentAppCreatedCallback {
     public void testValidEvePay1() throws Throwable {
         Set<String> methods = new HashSet<>();
         methods.add("https://evepay.com/webpay");
-        mPackageManager.installPaymentApp(
-                "EvePay", "com.evepay", "https://evepay.com/webpay", "55555555551111111111");
+        mPackageManager.installPaymentApp("EvePay", "com.evepay", "https://evepay.com/webpay",
+                /*signature=*/"55555555551111111111");
 
         findApps(methods);
 
         Assert.assertEquals("1 app should match the query", 1, mPaymentApps.size());
-        Assert.assertEquals("com.evepay", mPaymentApps.get(0).getAppIdentifier());
+        Assert.assertEquals("com.evepay", mPaymentApps.get(0).getIdentifier());
 
         mPaymentApps.clear();
         mAllPaymentAppsCreated = false;
@@ -609,7 +641,7 @@ public class AndroidPaymentAppFinderTest implements PaymentAppCreatedCallback {
         findApps(methods);
 
         Assert.assertEquals("1 app should match the query again", 1, mPaymentApps.size());
-        Assert.assertEquals("com.evepay", mPaymentApps.get(0).getAppIdentifier());
+        Assert.assertEquals("com.evepay", mPaymentApps.get(0).getIdentifier());
     }
 
     /**
@@ -623,13 +655,13 @@ public class AndroidPaymentAppFinderTest implements PaymentAppCreatedCallback {
     public void testValidEvePay2() throws Throwable {
         Set<String> methods = new HashSet<>();
         methods.add("https://evepay.com/webpay");
-        mPackageManager.installPaymentApp(
-                "EvePay", "com.evepay", "https://evepay.com/webpay", "55555555552222222222");
+        mPackageManager.installPaymentApp("EvePay", "com.evepay", "https://evepay.com/webpay",
+                /*signature=*/"55555555552222222222");
 
         findApps(methods);
 
         Assert.assertEquals("1 app should match the query", 1, mPaymentApps.size());
-        Assert.assertEquals("com.evepay", mPaymentApps.get(0).getAppIdentifier());
+        Assert.assertEquals("com.evepay", mPaymentApps.get(0).getIdentifier());
 
         mPaymentApps.clear();
         mAllPaymentAppsCreated = false;
@@ -637,7 +669,7 @@ public class AndroidPaymentAppFinderTest implements PaymentAppCreatedCallback {
         findApps(methods);
 
         Assert.assertEquals("1 app should match the query again", 1, mPaymentApps.size());
-        Assert.assertEquals("com.evepay", mPaymentApps.get(0).getAppIdentifier());
+        Assert.assertEquals("com.evepay", mPaymentApps.get(0).getIdentifier());
     }
 
     /**
@@ -651,7 +683,7 @@ public class AndroidPaymentAppFinderTest implements PaymentAppCreatedCallback {
         Set<String> methods = new HashSet<>();
         methods.add("https://evepay.com/webpay");
         mPackageManager.installPaymentApp(
-                "EvePay", "com.evepay", "https://evepay.com/webpay", "55");
+                "EvePay", "com.evepay", "https://evepay.com/webpay", /*signature=*/"55");
 
         findApps(methods);
 
@@ -675,10 +707,10 @@ public class AndroidPaymentAppFinderTest implements PaymentAppCreatedCallback {
         Set<String> methods = new HashSet<>();
         methods.add("https://frankpay.com/webpay");
         mPackageManager.installPaymentApp(
-                "AlicePay", "com.alicepay", "https://alicepay.com/webpay", "00");
-        mPackageManager.installPaymentApp("BobPay", "com.bobpay", "basic-card", "11");
+                "AlicePay", "com.alicepay", "https://alicepay.com/webpay", /*signature=*/"00");
+        mPackageManager.installPaymentApp("BobPay", "com.bobpay", "basic-card", /*signature=*/"11");
         mPackageManager.installPaymentApp(
-                "AlicePay", "com.charliepay", "invalid-payment-method-name", "22");
+                "AlicePay", "com.charliepay", "invalid-payment-method-name", /*signature=*/"22");
         mPackageManager.setStringArrayMetaData(
                 "com.alicepay", new String[] {"https://frankpay.com/webpay"});
         mPackageManager.setStringArrayMetaData(
@@ -690,9 +722,9 @@ public class AndroidPaymentAppFinderTest implements PaymentAppCreatedCallback {
 
         Assert.assertEquals("3 apps should match the query", 3, mPaymentApps.size());
         Set<String> appIdentifiers = new HashSet<>();
-        appIdentifiers.add(mPaymentApps.get(0).getAppIdentifier());
-        appIdentifiers.add(mPaymentApps.get(1).getAppIdentifier());
-        appIdentifiers.add(mPaymentApps.get(2).getAppIdentifier());
+        appIdentifiers.add(mPaymentApps.get(0).getIdentifier());
+        appIdentifiers.add(mPaymentApps.get(1).getIdentifier());
+        appIdentifiers.add(mPaymentApps.get(2).getIdentifier());
         Assert.assertTrue(appIdentifiers.contains("com.alicepay"));
         Assert.assertTrue(appIdentifiers.contains("com.bobpay"));
         Assert.assertTrue(appIdentifiers.contains("com.charliepay"));
@@ -704,9 +736,9 @@ public class AndroidPaymentAppFinderTest implements PaymentAppCreatedCallback {
 
         Assert.assertEquals("3 apps should still match the query", 3, mPaymentApps.size());
         appIdentifiers.clear();
-        appIdentifiers.add(mPaymentApps.get(0).getAppIdentifier());
-        appIdentifiers.add(mPaymentApps.get(1).getAppIdentifier());
-        appIdentifiers.add(mPaymentApps.get(2).getAppIdentifier());
+        appIdentifiers.add(mPaymentApps.get(0).getIdentifier());
+        appIdentifiers.add(mPaymentApps.get(1).getIdentifier());
+        appIdentifiers.add(mPaymentApps.get(2).getIdentifier());
         Assert.assertTrue(appIdentifiers.contains("com.alicepay"));
         Assert.assertTrue(appIdentifiers.contains("com.bobpay"));
         Assert.assertTrue(appIdentifiers.contains("com.charliepay"));
@@ -732,11 +764,11 @@ public class AndroidPaymentAppFinderTest implements PaymentAppCreatedCallback {
         findApps(methods);
 
         Assert.assertEquals("1 app should match the query", 1, mPaymentApps.size());
-        Assert.assertEquals("com.bobpay", mPaymentApps.get(0).getAppIdentifier());
+        Assert.assertEquals("com.bobpay", mPaymentApps.get(0).getIdentifier());
         Assert.assertEquals("1 payment method should be enabled", 1,
-                mPaymentApps.get(0).getAppMethodNames().size());
+                mPaymentApps.get(0).getInstrumentMethodNames().size());
         Assert.assertEquals("https://frankpay.com/webpay",
-                mPaymentApps.get(0).getAppMethodNames().iterator().next());
+                mPaymentApps.get(0).getInstrumentMethodNames().iterator().next());
 
         mPaymentApps.clear();
         mAllPaymentAppsCreated = false;
@@ -744,11 +776,11 @@ public class AndroidPaymentAppFinderTest implements PaymentAppCreatedCallback {
         findApps(methods);
 
         Assert.assertEquals("1 app should still match the query", 1, mPaymentApps.size());
-        Assert.assertEquals("com.bobpay", mPaymentApps.get(0).getAppIdentifier());
+        Assert.assertEquals("com.bobpay", mPaymentApps.get(0).getIdentifier());
         Assert.assertEquals("1 payment method should still be enabled", 1,
-                mPaymentApps.get(0).getAppMethodNames().size());
+                mPaymentApps.get(0).getInstrumentMethodNames().size());
         Assert.assertEquals("https://frankpay.com/webpay",
-                mPaymentApps.get(0).getAppMethodNames().iterator().next());
+                mPaymentApps.get(0).getInstrumentMethodNames().iterator().next());
     }
 
     /**
@@ -762,8 +794,8 @@ public class AndroidPaymentAppFinderTest implements PaymentAppCreatedCallback {
         Set<String> methods = new HashSet<>();
         methods.add("https://georgepay.com/webpay");
         // Valid AlicePay:
-        mPackageManager.installPaymentApp(
-                "AlicePay", "com.alicepay", "https://alicepay.com/webpay", "ABCDEFABCDEFABCDEFAB");
+        mPackageManager.installPaymentApp("AlicePay", "com.alicepay", "https://alicepay.com/webpay",
+                /*signature=*/"ABCDEFABCDEFABCDEFAB");
         mPackageManager.setStringArrayMetaData(
                 "com.alicepay", new String[] {"https://georgepay.com/webpay"});
         // Invalid AlicePay:
@@ -772,20 +804,20 @@ public class AndroidPaymentAppFinderTest implements PaymentAppCreatedCallback {
         mPackageManager.setStringArrayMetaData(
                 "com.fake-alicepay", new String[] {"https://georgepay.com/webpay"});
         // Valid BobPay:
-        mPackageManager.installPaymentApp(
-                "BobPay", "com.bobpay", "https://bobpay.com/webpay", "01020304050607080900");
+        mPackageManager.installPaymentApp("BobPay", "com.bobpay", "https://bobpay.com/webpay",
+                /*signature=*/"01020304050607080900");
         mPackageManager.setStringArrayMetaData(
                 "com.bobpay", new String[] {"https://georgepay.com/webpay"});
         // A "basic-card" app.
-        mPackageManager.installPaymentApp(
-                "CharliePay", "com.charliepay.dev", "basic-card", "33333333333111111111");
+        mPackageManager.installPaymentApp("CharliePay", "com.charliepay.dev", "basic-card",
+                /*signature=*/"33333333333111111111");
         mPackageManager.setStringArrayMetaData(
                 "com.charliepay.dev", new String[] {"https://georgepay.com/webpay"});
 
         findApps(methods);
 
         Assert.assertEquals("1 app should match the query", 1, mPaymentApps.size());
-        Assert.assertEquals("com.alicepay", mPaymentApps.get(0).getAppIdentifier());
+        Assert.assertEquals("com.alicepay", mPaymentApps.get(0).getIdentifier());
 
         mPaymentApps.clear();
         mAllPaymentAppsCreated = false;
@@ -793,7 +825,7 @@ public class AndroidPaymentAppFinderTest implements PaymentAppCreatedCallback {
         findApps(methods);
 
         Assert.assertEquals("1 app should still match the query", 1, mPaymentApps.size());
-        Assert.assertEquals("com.alicepay", mPaymentApps.get(0).getAppIdentifier());
+        Assert.assertEquals("com.alicepay", mPaymentApps.get(0).getIdentifier());
     }
 
     /**
@@ -835,19 +867,19 @@ public class AndroidPaymentAppFinderTest implements PaymentAppCreatedCallback {
         Set<String> methods = new HashSet<>();
         methods.add("https://bobpay.com/webpay");
         methods.add("https://georgepay.com/webpay");
-        mPackageManager.installPaymentApp(
-                "BobPay", "com.bobpay", "https://bobpay.com/webpay", "01020304050607080900");
+        mPackageManager.installPaymentApp("BobPay", "com.bobpay", "https://bobpay.com/webpay",
+                /*signature=*/"01020304050607080900");
         mPackageManager.setStringArrayMetaData(
                 "com.bobpay", new String[] {"https://georgepay.com/webpay"});
 
         findApps(methods);
 
         Assert.assertEquals("1 app should match the query", 1, mPaymentApps.size());
-        Assert.assertEquals("com.bobpay", mPaymentApps.get(0).getAppIdentifier());
+        Assert.assertEquals("com.bobpay", mPaymentApps.get(0).getIdentifier());
         Assert.assertEquals("1 payment method should be enabled", 1,
-                mPaymentApps.get(0).getAppMethodNames().size());
+                mPaymentApps.get(0).getInstrumentMethodNames().size());
         Assert.assertEquals("https://bobpay.com/webpay",
-                mPaymentApps.get(0).getAppMethodNames().iterator().next());
+                mPaymentApps.get(0).getInstrumentMethodNames().iterator().next());
 
         mPaymentApps.clear();
         mAllPaymentAppsCreated = false;
@@ -855,11 +887,11 @@ public class AndroidPaymentAppFinderTest implements PaymentAppCreatedCallback {
         findApps(methods);
 
         Assert.assertEquals("1 app should still match the query", 1, mPaymentApps.size());
-        Assert.assertEquals("com.bobpay", mPaymentApps.get(0).getAppIdentifier());
+        Assert.assertEquals("com.bobpay", mPaymentApps.get(0).getIdentifier());
         Assert.assertEquals("1 payment method should still be enabled", 1,
-                mPaymentApps.get(0).getAppMethodNames().size());
+                mPaymentApps.get(0).getInstrumentMethodNames().size());
         Assert.assertEquals("https://bobpay.com/webpay",
-                mPaymentApps.get(0).getAppMethodNames().iterator().next());
+                mPaymentApps.get(0).getInstrumentMethodNames().iterator().next());
     }
 
     /**
@@ -874,10 +906,10 @@ public class AndroidPaymentAppFinderTest implements PaymentAppCreatedCallback {
             throws Throwable {
         Set<String> methods = new HashSet<>();
         methods.add("https://henrypay.com/webpay");
-        mPackageManager.installPaymentApp(
-                "HenryPay", "com.henrypay", "https://henrypay.com/webpay", "55555555551111111111");
-        mPackageManager.installPaymentApp(
-                "BobPay", "com.bobpay", "https://bobpay.com/webpay", "01020304050607080900");
+        mPackageManager.installPaymentApp("HenryPay", "com.henrypay", "https://henrypay.com/webpay",
+                /*signature=*/"55555555551111111111");
+        mPackageManager.installPaymentApp("BobPay", "com.bobpay", "https://bobpay.com/webpay",
+                /*signature=*/"01020304050607080900");
         mPackageManager.setStringArrayMetaData(
                 "com.bobpay", new String[] {"https://henrypay.com/webpay"});
 
@@ -885,8 +917,8 @@ public class AndroidPaymentAppFinderTest implements PaymentAppCreatedCallback {
 
         Assert.assertEquals("2 apps should match the query", 2, mPaymentApps.size());
         Set<String> appIdentifiers = new HashSet<>();
-        appIdentifiers.add(mPaymentApps.get(0).getAppIdentifier());
-        appIdentifiers.add(mPaymentApps.get(1).getAppIdentifier());
+        appIdentifiers.add(mPaymentApps.get(0).getIdentifier());
+        appIdentifiers.add(mPaymentApps.get(1).getIdentifier());
         Assert.assertTrue(appIdentifiers.contains("com.henrypay"));
         Assert.assertTrue(appIdentifiers.contains("com.bobpay"));
 
@@ -897,8 +929,8 @@ public class AndroidPaymentAppFinderTest implements PaymentAppCreatedCallback {
 
         Assert.assertEquals("2 apps should still match the query", 2, mPaymentApps.size());
         appIdentifiers.clear();
-        appIdentifiers.add(mPaymentApps.get(0).getAppIdentifier());
-        appIdentifiers.add(mPaymentApps.get(1).getAppIdentifier());
+        appIdentifiers.add(mPaymentApps.get(0).getIdentifier());
+        appIdentifiers.add(mPaymentApps.get(1).getIdentifier());
         Assert.assertTrue(appIdentifiers.contains("com.henrypay"));
         Assert.assertTrue(appIdentifiers.contains("com.bobpay"));
     }
@@ -915,18 +947,18 @@ public class AndroidPaymentAppFinderTest implements PaymentAppCreatedCallback {
             throws Throwable {
         Set<String> methods = new HashSet<>();
         methods.add("https://henrypay.com/webpay");
-        mPackageManager.installPaymentApp("BobPay", "com.bobpay", "basic-card", "AA");
+        mPackageManager.installPaymentApp("BobPay", "com.bobpay", "basic-card", /*signature=*/"AA");
         mPackageManager.setStringArrayMetaData(
                 "com.bobpay", new String[] {"https://henrypay.com/webpay"});
 
         findApps(methods);
 
         Assert.assertEquals("1 app should match the query", 1, mPaymentApps.size());
-        Assert.assertEquals("com.bobpay", mPaymentApps.get(0).getAppIdentifier());
+        Assert.assertEquals("com.bobpay", mPaymentApps.get(0).getIdentifier());
         Assert.assertEquals("1 payment method should be enabled", 1,
-                mPaymentApps.get(0).getAppMethodNames().size());
+                mPaymentApps.get(0).getInstrumentMethodNames().size());
         Assert.assertEquals("https://henrypay.com/webpay",
-                mPaymentApps.get(0).getAppMethodNames().iterator().next());
+                mPaymentApps.get(0).getInstrumentMethodNames().iterator().next());
 
         mPaymentApps.clear();
         mAllPaymentAppsCreated = false;
@@ -934,11 +966,11 @@ public class AndroidPaymentAppFinderTest implements PaymentAppCreatedCallback {
         findApps(methods);
 
         Assert.assertEquals("1 app should still match the query", 1, mPaymentApps.size());
-        Assert.assertEquals("com.bobpay", mPaymentApps.get(0).getAppIdentifier());
+        Assert.assertEquals("com.bobpay", mPaymentApps.get(0).getIdentifier());
         Assert.assertEquals("1 payment method should still be enabled", 1,
-                mPaymentApps.get(0).getAppMethodNames().size());
+                mPaymentApps.get(0).getInstrumentMethodNames().size());
         Assert.assertEquals("https://henrypay.com/webpay",
-                mPaymentApps.get(0).getAppMethodNames().iterator().next());
+                mPaymentApps.get(0).getInstrumentMethodNames().iterator().next());
     }
 
     /**
@@ -953,14 +985,14 @@ public class AndroidPaymentAppFinderTest implements PaymentAppCreatedCallback {
     public void testUrlPaymentMethodWithDefaultApplicationAndOneSupportedOrigin() throws Throwable {
         Set<String> methods = new HashSet<>();
         methods.add("https://ikepay.com/webpay");
-        mPackageManager.installPaymentApp(
-                "IkePay", "com.ikepay", "https://ikepay.com/webpay", "66666666661111111111");
-        mPackageManager.installPaymentApp(
-                "AlicePay", "com.alicepay", "https://alicepay.com/webpay", "ABCDEFABCDEFABCDEFAB");
+        mPackageManager.installPaymentApp("IkePay", "com.ikepay", "https://ikepay.com/webpay",
+                /*signature=*/"66666666661111111111");
+        mPackageManager.installPaymentApp("AlicePay", "com.alicepay", "https://alicepay.com/webpay",
+                /*signature=*/"ABCDEFABCDEFABCDEFAB");
         mPackageManager.setStringArrayMetaData(
                 "com.alicepay", new String[] {"https://ikepay.com/webpay"});
-        mPackageManager.installPaymentApp(
-                "BobPay", "com.bobpay", "https://bobpay.com/webpay", "01020304050607080900");
+        mPackageManager.installPaymentApp("BobPay", "com.bobpay", "https://bobpay.com/webpay",
+                /*signature=*/"01020304050607080900");
         mPackageManager.setStringArrayMetaData(
                 "com.bobpay", new String[] {"https://ikepay.com/webpay"});
 
@@ -968,8 +1000,8 @@ public class AndroidPaymentAppFinderTest implements PaymentAppCreatedCallback {
 
         Assert.assertEquals("2 apps should match the query", 2, mPaymentApps.size());
         Set<String> appIdentifiers = new HashSet<>();
-        appIdentifiers.add(mPaymentApps.get(0).getAppIdentifier());
-        appIdentifiers.add(mPaymentApps.get(1).getAppIdentifier());
+        appIdentifiers.add(mPaymentApps.get(0).getIdentifier());
+        appIdentifiers.add(mPaymentApps.get(1).getIdentifier());
         Assert.assertTrue(appIdentifiers.contains("com.ikepay"));
         Assert.assertTrue(appIdentifiers.contains("com.alicepay"));
 
@@ -980,8 +1012,8 @@ public class AndroidPaymentAppFinderTest implements PaymentAppCreatedCallback {
 
         Assert.assertEquals("2 apps should still match the query", 2, mPaymentApps.size());
         appIdentifiers.clear();
-        appIdentifiers.add(mPaymentApps.get(0).getAppIdentifier());
-        appIdentifiers.add(mPaymentApps.get(1).getAppIdentifier());
+        appIdentifiers.add(mPaymentApps.get(0).getIdentifier());
+        appIdentifiers.add(mPaymentApps.get(1).getIdentifier());
         Assert.assertTrue(appIdentifiers.contains("com.ikepay"));
         Assert.assertTrue(appIdentifiers.contains("com.alicepay"));
     }
@@ -996,15 +1028,15 @@ public class AndroidPaymentAppFinderTest implements PaymentAppCreatedCallback {
     public void testDuplicateDefaultAndSupportedMethodAndAllOriginsSupported() throws Throwable {
         Set<String> methods = new HashSet<>();
         methods.add("https://henrypay.com/webpay");
-        mPackageManager.installPaymentApp(
-                "HenryPay", "com.henrypay", "https://henrypay.com/webpay", "55555555551111111111");
+        mPackageManager.installPaymentApp("HenryPay", "com.henrypay", "https://henrypay.com/webpay",
+                /*signature=*/"55555555551111111111");
         mPackageManager.setStringArrayMetaData(
                 "com.henrypay", new String[] {"https://henrypay.com/webpay"});
 
         findApps(methods);
 
         Assert.assertEquals("1 app should match the query", 1, mPaymentApps.size());
-        Assert.assertEquals("com.henrypay", mPaymentApps.get(0).getAppIdentifier());
+        Assert.assertEquals("com.henrypay", mPaymentApps.get(0).getIdentifier());
 
         mPaymentApps.clear();
         mAllPaymentAppsCreated = false;
@@ -1012,7 +1044,7 @@ public class AndroidPaymentAppFinderTest implements PaymentAppCreatedCallback {
         findApps(methods);
 
         Assert.assertEquals("1 app should still match the query", 1, mPaymentApps.size());
-        Assert.assertEquals("com.henrypay", mPaymentApps.get(0).getAppIdentifier());
+        Assert.assertEquals("com.henrypay", mPaymentApps.get(0).getIdentifier());
     }
 
     /**
@@ -1024,10 +1056,10 @@ public class AndroidPaymentAppFinderTest implements PaymentAppCreatedCallback {
     public void testTwoAppsFromDifferentOriginsWithTheSamePaymentMethod() throws Throwable {
         Set<String> methods = new HashSet<>();
         methods.add("https://jonpay.com/webpay");
-        mPackageManager.installPaymentApp(
-                "AlicePay", "com.alicepay", "https://alicepay.com/webpay", "ABCDEFABCDEFABCDEFAB");
-        mPackageManager.installPaymentApp(
-                "BobPay", "com.bobpay", "https://bobpay.com/webpay", "01020304050607080900");
+        mPackageManager.installPaymentApp("AlicePay", "com.alicepay", "https://alicepay.com/webpay",
+                /*signature=*/"ABCDEFABCDEFABCDEFAB");
+        mPackageManager.installPaymentApp("BobPay", "com.bobpay", "https://bobpay.com/webpay",
+                /*signature=*/"01020304050607080900");
         mPackageManager.setStringArrayMetaData(
                 "com.alicepay", new String[] {"https://jonpay.com/webpay"});
         mPackageManager.setStringArrayMetaData(
@@ -1037,8 +1069,8 @@ public class AndroidPaymentAppFinderTest implements PaymentAppCreatedCallback {
 
         Assert.assertEquals("2 apps should match the query", 2, mPaymentApps.size());
         Set<String> appIdentifiers = new HashSet<>();
-        appIdentifiers.add(mPaymentApps.get(0).getAppIdentifier());
-        appIdentifiers.add(mPaymentApps.get(1).getAppIdentifier());
+        appIdentifiers.add(mPaymentApps.get(0).getIdentifier());
+        appIdentifiers.add(mPaymentApps.get(1).getIdentifier());
         Assert.assertTrue(appIdentifiers.contains("com.alicepay"));
         Assert.assertTrue(appIdentifiers.contains("com.bobpay"));
 
@@ -1049,8 +1081,8 @@ public class AndroidPaymentAppFinderTest implements PaymentAppCreatedCallback {
 
         Assert.assertEquals("2 apps should still match the query", 2, mPaymentApps.size());
         appIdentifiers.clear();
-        appIdentifiers.add(mPaymentApps.get(0).getAppIdentifier());
-        appIdentifiers.add(mPaymentApps.get(1).getAppIdentifier());
+        appIdentifiers.add(mPaymentApps.get(0).getIdentifier());
+        appIdentifiers.add(mPaymentApps.get(1).getIdentifier());
         Assert.assertTrue(appIdentifiers.contains("com.alicepay"));
         Assert.assertTrue(appIdentifiers.contains("com.bobpay"));
     }
@@ -1069,7 +1101,7 @@ public class AndroidPaymentAppFinderTest implements PaymentAppCreatedCallback {
         methods.add("tokenized-card");
         methods.add("not-supported");
         mPackageManager.installPaymentApp("AlicePay", "com.alicepay",
-                "" /* no default payment method name in metadata */, "AA");
+                "" /* no default payment method name in metadata */, /*signature=*/"AA");
         mPackageManager.setStringArrayMetaData("com.alicepay",
                 new String[] {"basic-card", "interledger", "payee-credit-transfer",
                         "payer-credit-transfer", "tokenized-card", "not-supported"});
@@ -1077,16 +1109,16 @@ public class AndroidPaymentAppFinderTest implements PaymentAppCreatedCallback {
         findApps(methods);
 
         Assert.assertEquals("1 app should match the query", 1, mPaymentApps.size());
-        Assert.assertEquals("com.alicepay", mPaymentApps.get(0).getAppIdentifier());
-        Assert.assertEquals(5, mPaymentApps.get(0).getAppMethodNames().size());
-        Assert.assertTrue(mPaymentApps.get(0).getAppMethodNames().contains("basic-card"));
-        Assert.assertTrue(mPaymentApps.get(0).getAppMethodNames().contains("interledger"));
+        Assert.assertEquals("com.alicepay", mPaymentApps.get(0).getIdentifier());
+        Assert.assertEquals(5, mPaymentApps.get(0).getInstrumentMethodNames().size());
+        Assert.assertTrue(mPaymentApps.get(0).getInstrumentMethodNames().contains("basic-card"));
+        Assert.assertTrue(mPaymentApps.get(0).getInstrumentMethodNames().contains("interledger"));
         Assert.assertTrue(
-                mPaymentApps.get(0).getAppMethodNames().contains("payee-credit-transfer"));
+                mPaymentApps.get(0).getInstrumentMethodNames().contains("payee-credit-transfer"));
         Assert.assertTrue(
-                mPaymentApps.get(0).getAppMethodNames().contains("payer-credit-transfer"));
+                mPaymentApps.get(0).getInstrumentMethodNames().contains("payer-credit-transfer"));
         Assert.assertTrue(
-                mPaymentApps.get(0).getAppMethodNames().contains("tokenized-card"));
+                mPaymentApps.get(0).getInstrumentMethodNames().contains("tokenized-card"));
 
         mPaymentApps.clear();
         mAllPaymentAppsCreated = false;
@@ -1094,30 +1126,43 @@ public class AndroidPaymentAppFinderTest implements PaymentAppCreatedCallback {
         findApps(methods);
 
         Assert.assertEquals("1 app should still match the query", 1, mPaymentApps.size());
-        Assert.assertEquals("com.alicepay", mPaymentApps.get(0).getAppIdentifier());
-        Assert.assertEquals(5, mPaymentApps.get(0).getAppMethodNames().size());
-        Assert.assertTrue(mPaymentApps.get(0).getAppMethodNames().contains("basic-card"));
-        Assert.assertTrue(mPaymentApps.get(0).getAppMethodNames().contains("interledger"));
+        Assert.assertEquals("com.alicepay", mPaymentApps.get(0).getIdentifier());
+        Assert.assertEquals(5, mPaymentApps.get(0).getInstrumentMethodNames().size());
+        Assert.assertTrue(mPaymentApps.get(0).getInstrumentMethodNames().contains("basic-card"));
+        Assert.assertTrue(mPaymentApps.get(0).getInstrumentMethodNames().contains("interledger"));
         Assert.assertTrue(
-                mPaymentApps.get(0).getAppMethodNames().contains("payee-credit-transfer"));
+                mPaymentApps.get(0).getInstrumentMethodNames().contains("payee-credit-transfer"));
         Assert.assertTrue(
-                mPaymentApps.get(0).getAppMethodNames().contains("payer-credit-transfer"));
+                mPaymentApps.get(0).getInstrumentMethodNames().contains("payer-credit-transfer"));
         Assert.assertTrue(
-                mPaymentApps.get(0).getAppMethodNames().contains("tokenized-card"));
+                mPaymentApps.get(0).getInstrumentMethodNames().contains("tokenized-card"));
     }
 
     private void findApps(final Set<String> methodNames) throws Throwable {
-        mRule.runOnUiThread(
-                ()
-                        -> AndroidPaymentAppFinder.find(mRule.getActivity().getCurrentWebContents(),
-                                methodNames, new PaymentManifestWebDataService(), mDownloader,
-                                new PaymentManifestParser(), mPackageManager,
-                                AndroidPaymentAppFinderTest.this));
+        mMethodData = buildMethodData(methodNames);
+        mRule.runOnUiThread(() -> {
+            AndroidPaymentAppFinder finder =
+                    new AndroidPaymentAppFinder(new PaymentManifestWebDataService(), mDownloader,
+                            new PaymentManifestParser(), mPackageManager,
+                            /*delegate=*/AndroidPaymentAppFinderTest.this, /*factory=*/null);
+            finder.bypassIsReadyToPayServiceInTest();
+            finder.findAndroidPaymentApps();
+        });
         CriteriaHelper.pollInstrumentationThread(new Criteria() {
             @Override
             public boolean isSatisfied() {
                 return mAllPaymentAppsCreated;
             }
         });
+    }
+
+    private static Map<String, PaymentMethodData> buildMethodData(Set<String> methodNames) {
+        Map<String, PaymentMethodData> result = new HashMap<>();
+        for (String methodName : methodNames) {
+            PaymentMethodData methodData = new PaymentMethodData();
+            methodData.supportedMethod = methodName;
+            result.put(methodName, methodData);
+        }
+        return result;
     }
 }

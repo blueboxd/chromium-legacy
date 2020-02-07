@@ -31,7 +31,7 @@ import org.chromium.base.test.util.FlakyTest;
 import org.chromium.base.test.util.RetryOnFailure;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.ChromeSwitches;
-import org.chromium.chrome.browser.compositor.bottombar.ephemeraltab.EphemeralTabPanel;
+import org.chromium.chrome.browser.compositor.bottombar.ephemeraltab.EphemeralTabCoordinator;
 import org.chromium.chrome.browser.compositor.layouts.LayoutManager;
 import org.chromium.chrome.browser.download.DownloadTestRule;
 import org.chromium.chrome.browser.download.DownloadTestRule.CustomMainActivityStart;
@@ -428,7 +428,8 @@ public class ContextMenuTest implements CustomMainActivityStart {
                 R.id.contextmenu_copy_link_text, R.id.contextmenu_copy_link_address,
                 R.id.contextmenu_share_link};
         Integer[] featureItems = {R.id.contextmenu_open_in_ephemeral_tab};
-        expectedItems = addItemsIf(EphemeralTabPanel.isSupported(), expectedItems, featureItems);
+        expectedItems =
+                addItemsIf(EphemeralTabCoordinator.isSupported(), expectedItems, featureItems);
         assertMenuItemsAreEqual(menu, expectedItems);
     }
 
@@ -445,7 +446,8 @@ public class ContextMenuTest implements CustomMainActivityStart {
                 R.id.contextmenu_open_image_in_new_tab, R.id.contextmenu_search_by_image,
                 R.id.contextmenu_share_image};
         Integer[] featureItems = {R.id.contextmenu_open_image_in_ephemeral_tab};
-        expectedItems = addItemsIf(EphemeralTabPanel.isSupported(), expectedItems, featureItems);
+        expectedItems =
+                addItemsIf(EphemeralTabCoordinator.isSupported(), expectedItems, featureItems);
         assertMenuItemsAreEqual(menu, expectedItems);
     }
 
@@ -463,7 +465,8 @@ public class ContextMenuTest implements CustomMainActivityStart {
                 R.id.contextmenu_open_image_in_new_tab, R.id.contextmenu_search_with_google_lens,
                 R.id.contextmenu_share_image};
         Integer[] featureItems = {R.id.contextmenu_open_image_in_ephemeral_tab};
-        expectedItems = addItemsIf(EphemeralTabPanel.isSupported(), expectedItems, featureItems);
+        expectedItems =
+                addItemsIf(EphemeralTabCoordinator.isSupported(), expectedItems, featureItems);
         assertMenuItemsAreEqual(menu, expectedItems);
     }
 
@@ -483,7 +486,8 @@ public class ContextMenuTest implements CustomMainActivityStart {
                 R.id.contextmenu_open_image_in_new_tab, R.id.contextmenu_search_by_image,
                 R.id.contextmenu_share_image};
         Integer[] featureItems = {R.id.contextmenu_open_image_in_ephemeral_tab};
-        expectedItems = addItemsIf(EphemeralTabPanel.isSupported(), expectedItems, featureItems);
+        expectedItems =
+                addItemsIf(EphemeralTabCoordinator.isSupported(), expectedItems, featureItems);
         assertMenuItemsAreEqual(menu, expectedItems);
     }
 
@@ -501,7 +505,8 @@ public class ContextMenuTest implements CustomMainActivityStart {
         Integer[] expectedItems = {R.id.contextmenu_save_image,
                 R.id.contextmenu_open_image_in_new_tab, R.id.contextmenu_share_image};
         Integer[] featureItems = {R.id.contextmenu_open_image_in_ephemeral_tab};
-        expectedItems = addItemsIf(EphemeralTabPanel.isSupported(), expectedItems, featureItems);
+        expectedItems =
+                addItemsIf(EphemeralTabCoordinator.isSupported(), expectedItems, featureItems);
         assertMenuItemsAreEqual(menu, expectedItems);
     }
 
@@ -521,7 +526,8 @@ public class ContextMenuTest implements CustomMainActivityStart {
         Integer[] expectedItems = {R.id.contextmenu_save_image,
                 R.id.contextmenu_open_image_in_new_tab, R.id.contextmenu_share_image};
         Integer[] featureItems = {R.id.contextmenu_open_image_in_ephemeral_tab};
-        expectedItems = addItemsIf(EphemeralTabPanel.isSupported(), expectedItems, featureItems);
+        expectedItems =
+                addItemsIf(EphemeralTabCoordinator.isSupported(), expectedItems, featureItems);
         assertMenuItemsAreEqual(menu, expectedItems);
     }
 
@@ -540,7 +546,8 @@ public class ContextMenuTest implements CustomMainActivityStart {
                 R.id.contextmenu_share_image, R.id.contextmenu_share_link};
         Integer[] featureItems = {R.id.contextmenu_open_in_ephemeral_tab,
                 R.id.contextmenu_open_image_in_ephemeral_tab};
-        expectedItems = addItemsIf(EphemeralTabPanel.isSupported(), expectedItems, featureItems);
+        expectedItems =
+                addItemsIf(EphemeralTabCoordinator.isSupported(), expectedItems, featureItems);
         assertMenuItemsAreEqual(menu, expectedItems);
     }
 
@@ -562,7 +569,8 @@ public class ContextMenuTest implements CustomMainActivityStart {
                 R.id.contextmenu_share_image, R.id.contextmenu_share_link};
         Integer[] featureItems = {R.id.contextmenu_open_in_ephemeral_tab,
                 R.id.contextmenu_open_image_in_ephemeral_tab};
-        expectedItems = addItemsIf(EphemeralTabPanel.isSupported(), expectedItems, featureItems);
+        expectedItems =
+                addItemsIf(EphemeralTabCoordinator.isSupported(), expectedItems, featureItems);
         assertMenuItemsAreEqual(menu, expectedItems);
     }
 
@@ -588,7 +596,8 @@ public class ContextMenuTest implements CustomMainActivityStart {
                 R.id.contextmenu_share_image, R.id.contextmenu_share_link};
         Integer[] featureItems = {R.id.contextmenu_open_in_ephemeral_tab,
                 R.id.contextmenu_open_image_in_ephemeral_tab};
-        expectedItems = addItemsIf(EphemeralTabPanel.isSupported(), expectedItems, featureItems);
+        expectedItems =
+                addItemsIf(EphemeralTabCoordinator.isSupported(), expectedItems, featureItems);
         assertMenuItemsAreEqual(menu, expectedItems);
     }
 

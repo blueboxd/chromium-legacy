@@ -139,6 +139,8 @@ class FontMatchingMetrics;
 class FormController;
 class HTMLAllCollection;
 class HTMLBodyElement;
+class HTMLFormElement;
+class FrameScheduler;
 class HTMLCollection;
 class HTMLDialogElement;
 class HTMLElement;
@@ -1652,6 +1654,9 @@ class CORE_EXPORT Document : public ContainerNode,
   void MarkHasFindInPageRequest();
   void MarkHasFindInPageRenderSubtreeActiveMatch();
 
+  void ScheduleFormSubmission(HTMLFormElement* form_element);
+  void CancelFormSubmissions();
+
  protected:
   void ClearXMLVersion() { xml_version_ = String(); }
 
@@ -1803,6 +1808,8 @@ class CORE_EXPORT Document : public ContainerNode,
 
   void ProcessDisplayLockActivationObservation(
       const HeapVector<Member<IntersectionObserverEntry>>&);
+
+  void ExecuteFormSubmission(HTMLFormElement* form_element);
 
   DocumentLifecycle lifecycle_;
 
@@ -2199,6 +2206,8 @@ class CORE_EXPORT Document : public ContainerNode,
   // Records find-in-page metrics, which are sent to UKM on shutdown.
   bool had_find_in_page_request_ = false;
   bool had_find_in_page_render_subtree_active_match_ = false;
+
+  std::map<HTMLFormElement*, TaskHandle> form_to_pending_submission_;
 };
 
 extern template class CORE_EXTERN_TEMPLATE_EXPORT Supplement<Document>;

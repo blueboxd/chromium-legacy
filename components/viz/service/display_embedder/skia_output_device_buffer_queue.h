@@ -47,7 +47,7 @@ class VIZ_SERVICE_EXPORT SkiaOutputDeviceBufferQueue final
   bool Reshape(const gfx::Size& size,
                float device_scale_factor,
                const gfx::ColorSpace& color_space,
-               bool has_alpha,
+               gfx::BufferFormat format,
                gfx::OverlayTransform transform) override;
   SkSurface* BeginPaint() override;
   void EndPaint(const GrBackendSemaphore& semaphore) override;

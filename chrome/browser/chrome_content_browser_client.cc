@@ -40,6 +40,7 @@
 #include "chrome/browser/accessibility/accessibility_labels_service.h"
 #include "chrome/browser/accessibility/accessibility_labels_service_factory.h"
 #include "chrome/browser/after_startup_task_utils.h"
+#include "chrome/browser/bluetooth/chrome_bluetooth_delegate.h"
 #include "chrome/browser/browser_about_handler.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/browsing_data/browsing_data_helper.h"
@@ -1459,7 +1460,7 @@ void ChromeContentBrowserClient::RenderProcessWillLaunch(
 #if BUILDFLAG(ENABLE_PRINTING)
   host->AddFilter(new printing::PrintingMessageFilter(id, profile));
 #endif
-  host->AddFilter(new prerender::PrerenderMessageFilter(id, profile));
+  host->AddFilter(new prerender::PrerenderMessageFilter(id));
 
   WebRtcLoggingController::AttachToRenderProcessHost(
       host, g_browser_process->webrtc_log_uploader());
@@ -4782,6 +4783,12 @@ void ChromeContentBrowserClient::CreateWebUsbService(
   UsbTabHelper* tab_helper =
       UsbTabHelper::GetOrCreateForWebContents(web_contents);
   tab_helper->CreateWebUsbService(render_frame_host, std::move(receiver));
+}
+
+content::BluetoothDelegate* ChromeContentBrowserClient::GetBluetoothDelegate() {
+  if (!bluetooth_delegate_)
+    bluetooth_delegate_ = std::make_unique<ChromeBluetoothDelegate>();
+  return bluetooth_delegate_.get();
 }
 
 #if !defined(OS_ANDROID)

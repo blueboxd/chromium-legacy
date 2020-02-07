@@ -685,6 +685,7 @@
 <translation id="3987940399970879459">1 MBdan kam</translation>
 <translation id="3990250421422698716">Qogʻozlarni ajratib toʻplash</translation>
 <translation id="40103911065039147">{URL_count,plural, =1{1 ta veb-sahifa topildi}other{# ta veb-sahifa topildi}}</translation>
+<translation id="4014128326099193693">{COUNT,plural, =1{{COUNT} ta sahifadan iborat PDF hujjat}other{{COUNT} ta sahifadan iborat PDF hujjat}}</translation>
 <translation id="4030383055268325496">&amp;Qo‘shishni bekor qilish</translation>
 <translation id="4032320456957708163">Brauzeringiz <ph name="ENROLLMENT_DOMAIN" /> domeni tomonidan boshqariladi</translation>
 <translation id="4058922952496707368">“<ph name="SUBKEY" />” kaliti: <ph name="ERROR" /></translation>
@@ -713,6 +714,7 @@
 <translation id="4142935452406587478">Tarnov 10</translation>
 <translation id="4148925816941278100">American Express</translation>
 <translation id="4151403195736952345">Global birlamchi parametrdan foydalanish (Topilsin)</translation>
+<translation id="4152318981910038897">{COUNT,plural, =1{1-sahifa}other{{COUNT}-sahifa}}</translation>
 <translation id="4159784952369912983">Siyohrang</translation>
 <translation id="4165986682804962316">Sayt sozlamalari</translation>
 <translation id="4171400957073367226">Tasdiqlash imzosi noto‘g‘ri</translation>
@@ -1389,6 +1391,7 @@
 <translation id="7201591969684833065">Administratorga koʻrinadigan axborotlar:</translation>
 <translation id="7202346780273620635">Letter-Extra</translation>
 <translation id="7210863904660874423"><ph name="HOST_NAME" /> sayti xavfsizlik standartlariga muvofiq kelmadi.</translation>
+<translation id="7210993021468939304">Konteyner ichidagi Linux jarayonlari va Linux ilovalarining konteyner ichida oʻrnatilishi va ishga tushirilishi</translation>
 <translation id="721197778055552897">Bu muammo haqidagi <ph name="BEGIN_LINK" />tafsilotlar<ph name="END_LINK" />.</translation>
 <translation id="7219179957768738017">Bu ulanishda <ph name="SSL_VERSION" /> protokoli ishlatilmoqda.</translation>
 <translation id="7220786058474068424">Amalga oshirilmoqda</translation>
@@ -1552,6 +1555,7 @@ Batafsil axborot:
 <translation id="7878562273885520351">Parolingiz o‘g‘irlangan bo‘lishi mumkin</translation>
 <translation id="7882421473871500483">Jigarrang</translation>
 <translation id="7887683347370398519">CVC-kodni tekshiring va qayta urinib ko‘ring.</translation>
+<translation id="7887885240995164102">Tasvir ustida tasvir rejimiga kirish</translation>
 <translation id="7888575728750733395">Bosma uchun rangli renderlash usuli</translation>
 <translation id="7904208859782148177">C3 (Envelope)</translation>
 <translation id="7932579305932748336">Muqovalash</translation>

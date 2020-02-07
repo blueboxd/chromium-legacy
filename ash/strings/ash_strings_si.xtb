@@ -118,6 +118,7 @@
 <translation id="2413728805700750528"><ph name="DISPLAY_NAME" /> යනු <ph name="DOMAIN" /> විසින් කළමනා කරනු ලබන කළමනා කෙරන සැසියකි</translation>
 <translation id="2427507373259914951">වම්පස ක්ලික් කිරීම</translation>
 <translation id="2429753432712299108">"<ph name="DEVICE_NAME" />" බ්ලූටූත් උපාංගය යුගල කිරීමට අවසර පතයි. අනුමත කිරීමට පෙර, මෙම මුරවදන එම උපාංගයේ දිස් වූ බව තහවුරු කරගන්න: <ph name="PASSKEY" /></translation>
+<translation id="2473177541599297363">විභේදනය තහවුරු කරන්න</translation>
 <translation id="2482878487686419369">දැනුම්දීම්</translation>
 <translation id="2484513351006226581">යතුරු පුවරු පිරිසැලසුම මාරු කිරීමට <ph name="KEYBOARD_SHORTCUT" /> ඔබන්න.</translation>
 <translation id="2501920221385095727">ඇලෙන යතුරු</translation>
@@ -137,8 +138,8 @@
 <translation id="2718395828230677721">රාත්‍රී ආලෝකය</translation>
 <translation id="2727977024730340865">අඩු බල චාජරයකට ප්ලග් ඉන් කර ඇත. බැටරිය චාජ් කිරිම විශ්වාස නැති විය හැක.</translation>
 <translation id="2792498699870441125">Alt+සෙවීම</translation>
-<translation id="2803734122639935495">අඟුලු ඇරීමට, ඔබේ මුරපදය ඇතුළත් කරන්න</translation>
 <translation id="2819276065543622893">ඔබව දැන් වරනු ඇත.</translation>
+<translation id="2825224105325558319"><ph name="DISPLAY_NAME" /> <ph name="SPECIFIED_RESOLUTION" /> සඳහා සහය නොදක්වයි. විභේදනය <ph name="FALLBACK_RESOLUTION" /> ට වෙනස් කළා.</translation>
 <translation id="2825619548187458965">තට්ටුව</translation>
 <translation id="2844169650293029770">USB-C උපාංගය (වම් පස ඉදිරි තොට)</translation>
 <translation id="2865888419503095837">ජාල තොරතුරු</translation>
@@ -158,6 +159,12 @@
 <translation id="3009178788565917040">ප්‍රතිදානය</translation>
 <translation id="3051128274746680507">ඔබේ අධීක්‍ෂණ කෙරෙන පරිශීලක පැතිකඩ ඉක්මනින් ඉවත් කරනු ලැබේ. තවත් දැන ගැනීමට පුරන්න.</translation>
 <translation id="3055162170959710888">ඔබ මෙම උපාංගය අද <ph name="USED_TIME" />කට භාවිත කළා</translation>
+<translation id="3076778413190775903">තත්ත්‍ව තීරුව, වේලාව <ph name="TIME" />,
+        <ph name="BATTERY" />
+        <ph name="NETWORK" />,
+        <ph name="NOTIFICATION" />,
+        <ph name="IME" />
+        <ph name="LOCALE" /></translation>
 <translation id="3077734595579995578">shift</translation>
 <translation id="3081696990447829002">මෙනුව දිග හරින්න</translation>
 <translation id="3087734570205094154">පතුල</translation>
@@ -168,6 +175,7 @@
 <translation id="3151786313568798007">දිශානතිය</translation>
 <translation id="3153444934357957346">ඔබට බහුවිධ පිරීමෙහි ගිණුම් <ph name="MULTI_PROFILE_USER_LIMIT" />ක් දක්වා පමණක් තිබිය හැකිය.</translation>
 <translation id="3154351730702813399">උපාංග පරිපාලක ඔබේ බ්‍රවුස් කිරීමේ ක්‍රියාකාරකම් නිරීක්ෂණය කළ හැකිය:</translation>
+<translation id="3181441307743005334">යළි ඇරඹීමට කෙටි වේලාවක් ගත විය හැක</translation>
 <translation id="3202010236269062730">{NUM_DEVICES,plural, =1{උපාංගයකට සම්බන්ධ වී ඇත}one{උපාංග # කට සම්බන්ධ වී ඇත}other{උපාංග # කට සම්බන්ධ වී ඇත}}</translation>
 <translation id="3217205077783620295">ශබ්දය ක්‍රියාත්මකයි, ටොගල කිරීම ශ්‍රව්‍ය නිහඬ කරනු ඇත.</translation>
 <translation id="3226991577105957773">තවත් +<ph name="COUNT" /></translation>
@@ -202,6 +210,7 @@
 <translation id="3604801046548457007"><ph name="DESK_TITILE" /> මේසය සාදන ලදි</translation>
 <translation id="3606978283550408104">බ්‍රේල් ප්‍රදර්ශකය සම්බන්ධ කර ඇත.</translation>
 <translation id="3621202678540785336">ආදානය</translation>
+<translation id="3621712662352432595">ශ්‍රව්‍ය සැකසුම්</translation>
 <translation id="3626281679859535460">දීප්තිය</translation>
 <translation id="3631369015426612114">පහත ඒවායින් දැනුම්දීම්වලට ඉඩ දෙන්න</translation>
 <translation id="3705722231355495246">-</translation>
@@ -316,6 +325,7 @@
 <translation id="5331975486040154427">USB-C උපාංගය (වම්පස පසු තොට)</translation>
 <translation id="5379115545237091094">උත්සාහයන් විශාල ප්‍රමාණයකි</translation>
 <translation id="5397578532367286026">මෙම පරිශීලකගේ භාවිතය සහ ඉතිහාසය කළමනාකරු(<ph name="MANAGER_EMAIL" />) විසින් chrome.com මත සමාලෝචනය කළ හැක.</translation>
+<translation id="5400461572260843123">ක්‍ෂණික සැකසුම්, දැනුම්දීම් මධ්‍යස්ථානයට ප්‍රවේශ වීමට සෙවුම සහ + වම ඔබන්න.</translation>
 <translation id="5430931332414098647">ක්ෂණික ටෙදරින්</translation>
 <translation id="5431825016875453137">OpenVPN / L2TP</translation>
 <translation id="544691375626129091">සියළු පවත්නා පරිශීලකයන් මෙම වාරයට එක් කර ඇත.</translation>
@@ -397,6 +407,7 @@
 <translation id="6490471652906364588">USB-C උපාංගය (දකුණු තොට)</translation>
 <translation id="649452524636452238">ස්මාර්ට් කාඩ්පත් රහස් අංකය</translation>
 <translation id="6501401484702599040"><ph name="RECEIVER_NAME" /> වෙත තිරය විකාශය කරමින්</translation>
+<translation id="652139407789908527">මෙම යාවත්කාලීන සමයේ ඔබේ තිරය සාමාන්‍යයට වඩා දිග වේලාවකට (විනාඩියක් දක්වා) හිස් වෙයි. යාවත්කාලීනය සිදු වෙමින් පවතින විට බල බොත්තම නොඔබන්න.</translation>
 <translation id="6521655319214113338">අත් අකුරු ආදානය</translation>
 <translation id="6528179044667508675">බාධා නොකරන්න</translation>
 <translation id="6537270692134705506">තිරය ග්‍රහණය</translation>
@@ -542,6 +553,7 @@
 <translation id="847056008324733326">සංදර්ශන පරිමාණ සැකසීම්</translation>
 <translation id="8473301994082929012"><ph name="ORGANIZATION_NAME" /> හට <ph name="FEATURE_STATE" /> <ph name="FEATURE_NAME" /> ඇත.</translation>
 <translation id="8477270416194247200">අවලංගු කිරීමට Alt+සෙවීම හෝ Shift ඔබන්න.</translation>
+<translation id="8492573885090281069"><ph name="DISPLAY_NAME" /> <ph name="SPECIFIED_RESOLUTION" /> හට සහය නොදක්වයි. විභේදනය <ph name="FALLBACK_RESOLUTION" /> ට වෙනස් විය. වෙනස්කම් තබා ගැනීමට තහවුරු කිරීම ක්ලික් කරන්න. පෙර සැකසුම් <ph name="TIMEOUT_SECONDS" /> තුළ ප්‍රතිසාධන කෙරේ.</translation>
 <translation id="8513108775083588393">ස්වයංක්‍රීය කරකැවීම</translation>
 <translation id="8517041960877371778">ඔබගේ <ph name="DEVICE_TYPE" /> සක්‍රියව පවතින විට එය ආරෝපණය නොවනු ඇත.</translation>
 <translation id="8627191004499078455"><ph name="DEVICE_NAME" /> වෙත සම්බන්ධ විය</translation>
@@ -596,6 +608,7 @@
 <translation id="9183456764293710005">පූර්ණ තිර විශාලකය</translation>
 <translation id="9193626018745640770">නොදන්නා ග්‍රාහකයෙකු මත විකාශය කරමින්</translation>
 <translation id="9194617393863864469">වෙනත් පරිශීලකයකු පිවිසෙන්න...</translation>
+<translation id="9198992156681343238"><ph name="DISPLAY_NAME" /> විභේදනය <ph name="RESOLUTION" /> ට වෙනස් කළා. වෙනස්කම් තබා ගැනීමට තහවුරු කිරීම ක්ලික් කරන්න. පෙර සැකසුම් <ph name="TIMEOUT_SECONDS" /> තුළ ප්‍රතිසාධන කෙරේ.</translation>
 <translation id="9201374708878217446"><ph name="CONNECTION_STATUS" />, ඔබේ පරිපාලකයා විසින් කළමනාකරණය කරයි</translation>
 <translation id="9210037371811586452">එකාබද්ධ ඩෙස්ක්ටොප් ප්‍රකාරයෙන් ඉවත් වෙමින්</translation>
 <translation id="9211681782751733685">බැටරිය සම්පූර්ණයෙන් ආරෝපණ වන තෙක් <ph name="TIME_REMAINING" />ක් ඉතුරුයි.</translation>

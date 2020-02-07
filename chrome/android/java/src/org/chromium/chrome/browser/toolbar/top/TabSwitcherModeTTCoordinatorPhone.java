@@ -13,7 +13,12 @@ import androidx.annotation.Nullable;
 
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.flags.CachedFeatureFlags;
+import org.chromium.chrome.browser.flags.ChromeFeatureList;
 import org.chromium.chrome.browser.search_engines.TemplateUrlServiceFactory;
+import org.chromium.chrome.browser.tab.Tab;
+import org.chromium.chrome.browser.tabmodel.EmptyTabModelObserver;
+import org.chromium.chrome.browser.tabmodel.TabModel;
+import org.chromium.chrome.browser.tabmodel.TabModelObserver;
 import org.chromium.chrome.browser.tabmodel.TabModelSelector;
 import org.chromium.chrome.browser.toolbar.IncognitoStateProvider;
 import org.chromium.chrome.browser.toolbar.TabCountProvider;
@@ -47,6 +52,8 @@ class TabSwitcherModeTTCoordinatorPhone implements TemplateUrlServiceObserver {
     private IncognitoSwitchCoordinator mIncognitoSwitchCoordinator;
     @Nullable
     private View mLogo;
+    @Nullable
+    private TabModelObserver mTabModelObserver;
 
     TabSwitcherModeTTCoordinatorPhone(ViewStub tabSwitcherToolbarStub) {
         mTabSwitcherToolbarStub = tabSwitcherToolbarStub;
@@ -66,6 +73,9 @@ class TabSwitcherModeTTCoordinatorPhone implements TemplateUrlServiceObserver {
         }
         if (CachedFeatureFlags.isStartSurfaceEnabled()) {
             TemplateUrlServiceFactory.get().removeObserver(this);
+        }
+        if (mTabModelSelector != null && mTabModelObserver != null) {
+            mTabModelSelector.getModel(true).removeObserver(mTabModelObserver);
         }
     }
 
@@ -223,6 +233,35 @@ class TabSwitcherModeTTCoordinatorPhone implements TemplateUrlServiceObserver {
 
         assert mTabModelSelector != null;
         mTabSwitcherModeToolbar.setTabModelSelector(mTabModelSelector);
+        if (isNewTabVariationEnabled()) {
+            mTabModelObserver = new EmptyTabModelObserver() {
+                @Override
+                public void didAddTab(Tab tab, int type) {
+                    assert tab.isIncognito();
+                    updateIncognitoTabsCount();
+                }
+
+                @Override
+                public void didCloseTab(int tabId, boolean incognito) {
+                    assert incognito;
+                    updateIncognitoTabsCount();
+                }
+
+                @Override
+                public void tabRemoved(Tab tab) {
+                    assert tab.isIncognito();
+                    updateIncognitoTabsCount();
+                }
+
+                private void updateIncognitoTabsCount() {
+                    int incognitoTabsCount = mTabModelSelector.getModel(true).getCount();
+                    mTabSwitcherModeToolbar.onIncognitoTabsCountChanged(incognitoTabsCount);
+                }
+            };
+            TabModel incognitoTabModel = mTabModelSelector.getModel(true);
+            incognitoTabModel.addObserver(mTabModelObserver);
+            mTabSwitcherModeToolbar.onIncognitoTabsCountChanged(incognitoTabModel.getCount());
+        }
         if (CachedFeatureFlags.isStartSurfaceEnabled()) {
             mIncognitoSwitchCoordinator =
                     new IncognitoSwitchCoordinator(mTabSwitcherModeToolbar, mTabModelSelector);
@@ -240,5 +279,13 @@ class TabSwitcherModeTTCoordinatorPhone implements TemplateUrlServiceObserver {
             mTabSwitcherModeToolbar.onAccessibilityStatusChanged(mAccessibilityEnabled);
         }
         mTabSwitcherModeToolbar.onBottomToolbarVisibilityChanged(mIsBottomToolbarVisible);
+    }
+
+    private boolean isNewTabVariationEnabled() {
+        return CachedFeatureFlags.isGridTabSwitcherEnabled() && ChromeFeatureList.isInitialized()
+                && ChromeFeatureList
+                           .getFieldTrialParamByFeature(ChromeFeatureList.TAB_GRID_LAYOUT_ANDROID,
+                                   "tab_grid_layout_android_new_tab")
+                           .equals("NewTabVariation");
     }
 }

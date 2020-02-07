@@ -34,6 +34,7 @@
 #include "chrome/browser/ui/browser_list.h"
 #include "chrome/browser/ui/page_info/page_info_infobar_delegate.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
+#include "chrome/browser/ui/webui/recent_site_settings_helper.h"
 #include "chrome/browser/ui/webui/site_settings_helper.h"
 #include "chrome/browser/usb/usb_chooser_context.h"
 #include "chrome/browser/usb/usb_chooser_context_factory.h"
@@ -156,21 +157,6 @@ base::flat_set<web_app::AppId> GetInstalledApps(
       installed.insert(scope.value().GetOrigin().spec());
   }
   return installed;
-}
-
-// Whether |pattern| applies to a single origin.
-bool PatternAppliesToSingleOrigin(const ContentSettingPatternSource& pattern) {
-  const GURL url(pattern.primary_pattern.ToString());
-  // Default settings and other patterns apply to multiple origins.
-  if (url::Origin::Create(url).opaque())
-    return false;
-  // Embedded content settings only when |url| is embedded in another origin, so
-  // ignore non-wildcard secondary patterns that are different to the primary.
-  if (pattern.primary_pattern != pattern.secondary_pattern &&
-      pattern.secondary_pattern != ContentSettingsPattern::Wildcard()) {
-    return false;
-  }
-  return true;
 }
 
 // Groups |url| into sets of eTLD+1s in |site_group_map|, assuming |url| is an
@@ -366,6 +352,10 @@ void SiteSettingsHandler::RegisterMessages() {
   web_ui()->RegisterMessageCallback(
       "getAllSites",
       base::BindRepeating(&SiteSettingsHandler::HandleGetAllSites,
+                          base::Unretained(this)));
+  web_ui()->RegisterMessageCallback(
+      "getRecentSitePermissions",
+      base::BindRepeating(&SiteSettingsHandler::HandleGetRecentSitePermissions,
                           base::Unretained(this)));
   web_ui()->RegisterMessageCallback(
       "getFormattedBytes",
@@ -674,22 +664,14 @@ void SiteSettingsHandler::HandleGetDefaultValueForContentType(
 void SiteSettingsHandler::HandleGetAllSites(const base::ListValue* args) {
   AllowJavascript();
 
-  CHECK_EQ(2U, args->GetSize());
-  const base::Value* callback_id;
-  CHECK(args->Get(0, &callback_id));
-  const base::ListValue* types;
-  CHECK(args->GetList(1, &types));
+  CHECK_EQ(2U, args->GetList().size());
+  std::string callback_id = args->GetList()[0].GetString();
+  auto types = args->GetList()[1].GetList();
 
   all_sites_map_.clear();
   origin_permission_set_.clear();
-  // Convert |types| to a list of ContentSettingsTypes.
-  std::vector<ContentSettingsType> content_types;
-  for (size_t i = 0; i < types->GetSize(); ++i) {
-    std::string type;
-    types->GetString(i, &type);
-    content_types.push_back(
-        site_settings::ContentSettingsTypeFromGroupName(type));
-  }
+
+  auto content_types = site_settings::ContentSettingsTypesFromGroupNames(types);
 
   // Incognito contains incognito content settings plus non-incognito content
   // settings. Thus if it exists, just get exceptions for the incognito profile.
@@ -712,17 +694,14 @@ void SiteSettingsHandler::HandleGetAllSites(const base::ListValue* args) {
     origin_permission_set_.insert(url.spec());
   }
 
-  // Convert |types| to a list of ContentSettingsTypes.
-  for (ContentSettingsType content_type : content_types) {
-    ContentSettingsForOneType entries;
-    map->GetSettingsForOneType(content_type, std::string(), &entries);
-    for (const ContentSettingPatternSource& e : entries) {
-      if (PatternAppliesToSingleOrigin(e)) {
-        CreateOrAppendSiteGroupEntry(&all_sites_map_,
-                                     GURL(e.primary_pattern.ToString()));
-        origin_permission_set_.insert(
-            GURL(e.primary_pattern.ToString()).spec());
-      }
+  // Get permission exceptions which apply to a single site
+  for (auto content_type : content_types) {
+    auto exceptions =
+        site_settings::GetSiteExceptionsForContentType(map, content_type);
+    for (const auto& e : exceptions) {
+      GURL url = GURL(e.primary_pattern.ToString());
+      CreateOrAppendSiteGroupEntry(&all_sites_map_, url);
+      origin_permission_set_.insert(url.spec());
     }
   }
 
@@ -744,7 +723,54 @@ void SiteSettingsHandler::HandleGetAllSites(const base::ListValue* args) {
 
   send_sites_list_ = true;
 
-  ResolveJavascriptCallback(*callback_id, result);
+  ResolveJavascriptCallback(base::Value(callback_id), result);
+}
+
+void SiteSettingsHandler::HandleGetRecentSitePermissions(
+    const base::ListValue* args) {
+  AllowJavascript();
+
+  CHECK_EQ(3U, args->GetList().size());
+  std::string callback_id = args->GetList()[0].GetString();
+  auto types = args->GetList()[1].GetList();
+  size_t max_sources = base::checked_cast<size_t>(args->GetList()[2].GetInt());
+
+  auto content_types = site_settings::ContentSettingsTypesFromGroupNames(types);
+  auto recent_site_permissions = site_settings::GetRecentSitePermissions(
+      profile_, content_types, max_sources);
+
+  // Convert groups of TimestampedPermissions for consumption by JS
+  base::Value result(base::Value::Type::LIST);
+  for (const auto& site_permissions : recent_site_permissions) {
+    DCHECK(!site_permissions.settings.empty());
+    base::Value recent_site(base::Value::Type::DICTIONARY);
+    recent_site.SetKey(site_settings::kOrigin,
+                       base::Value(site_permissions.origin.spec()));
+    recent_site.SetKey(site_settings::kIncognito,
+                       base::Value(site_permissions.incognito));
+
+    base::Value permissions_list(base::Value::Type::LIST);
+    for (const auto& p : site_permissions.settings) {
+      base::Value recent_permission(base::Value::Type::DICTIONARY);
+      recent_permission.SetKey(
+          site_settings::kType,
+          base::Value(
+              site_settings::ContentSettingsTypeToGroupName(p.content_type)));
+      recent_permission.SetKey(
+          site_settings::kSetting,
+          base::Value(
+              content_settings::ContentSettingToString(p.content_setting)));
+      recent_permission.SetKey(
+          site_settings::kSource,
+          base::Value(
+              site_settings::SiteSettingSourceToString(p.setting_source)));
+      permissions_list.Append(std::move(recent_permission));
+    }
+    recent_site.SetKey(site_settings::kRecentPermissions,
+                       std::move(permissions_list));
+    result.Append(std::move(recent_site));
+  }
+  ResolveJavascriptCallback(base::Value(callback_id), result);
 }
 
 base::Value SiteSettingsHandler::PopulateCookiesAndUsageData(Profile* profile) {
@@ -774,13 +800,14 @@ base::Value SiteSettingsHandler::PopulateCookiesAndUsageData(Profile* profile) {
       const auto& size_info_it = origin_size_map.find(origin);
       if (size_info_it != origin_size_map.end())
         origin_info.SetKey("usage", base::Value(double(size_info_it->second)));
+      GURL origin_url(origin);
       const auto& origin_cookie_num_it =
-          origin_cookie_map.find(GURL(origin).host());
+          origin_cookie_map.find(origin_url.host());
       if (origin_cookie_num_it != origin_cookie_map.end()) {
         origin_info.SetKey(kNumCookies,
                            base::Value(origin_cookie_num_it->second));
         // Add cookies numbers for origins that isn't an eTLD+1.
-        if (GURL(origin).host() != etld_plus1)
+        if (origin_url.host() != etld_plus1)
           cookie_num += origin_cookie_num_it->second;
       }
     }

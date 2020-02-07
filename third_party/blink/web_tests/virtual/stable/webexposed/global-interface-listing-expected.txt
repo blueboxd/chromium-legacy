@@ -4506,6 +4506,7 @@ interface Navigator
     getter webkitPersistentStorage
     getter webkitTemporaryStorage
     getter xr
+    method clearAppBadge
     method constructor
     method getBattery
     method getGamepads
@@ -4516,6 +4517,7 @@ interface Navigator
     method requestMIDIAccess
     method requestMediaKeySystemAccess
     method sendBeacon
+    method setAppBadge
     method unregisterProtocolHandler
     method vibrate
     method webkitGetUserMedia

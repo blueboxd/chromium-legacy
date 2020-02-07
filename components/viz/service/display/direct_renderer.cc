@@ -374,9 +374,13 @@ void DirectRenderer::DrawFrame(RenderPassList* render_passes_in_draw_order,
     reshape_device_color_space_ = root_render_pass->color_space;
     reshape_has_alpha_ = frame_has_alpha;
     reshape_use_stencil_ = overdraw_feedback_;
-    output_surface_->Reshape(
-        reshape_surface_size_, reshape_device_scale_factor_,
-        reshape_device_color_space_, reshape_has_alpha_, reshape_use_stencil_);
+    output_surface_->Reshape(reshape_surface_size_,
+                             reshape_device_scale_factor_,
+                             reshape_device_color_space_,
+                             reshape_has_alpha_ ? gfx::BufferFormat::RGBA_8888
+                                                : gfx::BufferFormat::RGBX_8888,
+
+                             reshape_use_stencil_);
     // The entire surface has to be redrawn if reshape is requested.
     needs_full_frame_redraw = true;
   }

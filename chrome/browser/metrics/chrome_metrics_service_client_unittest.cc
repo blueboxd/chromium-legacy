@@ -163,9 +163,8 @@ TEST_F(ChromeMetricsServiceClientTest, TestRegisterMetricsServiceProviders) {
 #endif  // defined(OS_ANDROID)
 
 #if defined(OS_WIN)
-  // GoogleUpdateMetricsProviderWin, WatcherMetricsProviderWin and
-  // AntiVirusMetricsProvider.
-  expected_providers += 3;
+  // GoogleUpdateMetricsProviderWin and AntiVirusMetricsProvider.
+  expected_providers += 2;
 #endif  // defined(OS_WIN)
 
 #if BUILDFLAG(ENABLE_PLUGINS)

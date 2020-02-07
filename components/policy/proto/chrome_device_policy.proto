@@ -843,9 +843,9 @@ message AccessibilitySettingsProto {
   optional PolicyOptions login_screen_shortcuts_enabled_options = 35;
 }
 
-message SupervisedUsersSettingsProto {
+message OBSOLETE_SupervisedUsersSettingsProto {
   // Defines whether supervised users can be created on the device.
-  optional bool supervised_users_enabled = 1;
+  optional bool OBSOLETE_supervised_users_enabled = 1 [deprecated = true];
 }
 
 message LoginScreenPowerManagementProto {
@@ -1591,7 +1591,8 @@ message ChromeDeviceSettingsProto {
   optional VariationsParameterProto variations_parameter = 25;
   optional AttestationSettingsProto attestation_settings = 26;
   optional AccessibilitySettingsProto accessibility_settings = 27;
-  optional SupervisedUsersSettingsProto supervised_users_settings = 28;
+  optional OBSOLETE_SupervisedUsersSettingsProto supervised_users_settings = 28
+      [deprecated = true];
   optional LoginScreenPowerManagementProto login_screen_power_management = 29;
   optional SystemUse24HourClockProto use_24hour_clock = 30;
   optional AutoCleanupSettigsProto auto_clean_up_settings = 31;

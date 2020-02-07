@@ -115,6 +115,7 @@
 <translation id="1919950603503897840">Selectează persoane de contact</translation>
 <translation id="1922076542920281912">Pentru a permite Chrome să acceseze locația, activează locația și în <ph name="BEGIN_LINK" />Setările Android<ph name="END_LINK" />.</translation>
 <translation id="1923695749281512248"><ph name="BYTES_DOWNLOADED_WITH_UNITS" /> / <ph name="FILE_SIZE_WITH_UNITS" /></translation>
+<translation id="1925021887439448749">Introdu adresa web personalizată</translation>
 <translation id="1928696683969751773">Actualizări</translation>
 <translation id="19288952978244135">Redeschide Chrome.</translation>
 <translation id="1933845786846280168">Fila selectată</translation>
@@ -279,6 +280,7 @@
 <translation id="3123473560110926937">Blocate pe anumite site-uri</translation>
 <translation id="3123734510202723619">Anunțuri</translation>
 <translation id="3137521801621304719">Ieși din modul incognito</translation>
+<translation id="3140134512074889489">Activează camera pentru a scana un cod QR</translation>
 <translation id="3143515551205905069">Anulează sincronizarea</translation>
 <translation id="3157842584138209013">Vezi ce volum de date ai economisit folosind butonul Mai multe opțiuni</translation>
 <translation id="3166827708714933426">Comenzi rapide pentru file și ferestre</translation>
@@ -449,6 +451,9 @@
 <translation id="4521489764227272523">Datele selectate au fost eliminate din Chrome și de pe dispozitivele sincronizate.
 
 Contul Google poate să ofere alte forme ale istoricului de navigare, cum ar fi căutările și activitatea din alte servicii Google, la <ph name="BEGIN_LINK" />myactivity.google.com<ph name="END_LINK" />.</translation>
+<translation id="4527374721149092498">Află despre subiectele de pe site-uri fără să părăsești pagina. Funcția Atinge pentru a căuta trimite un cuvânt și contextul aferent către Căutarea Google și returnează definiții, imagini, rezultate ale căutării și alte detalii.
+
+Atinge orice cuvânt ca să creezi o căutare pentru acesta. Pentru a ajusta termenul de căutare, apasă lung pe acesta ca să îl selectezi. Pentru a rafina căutarea, deschide panoul prin glisare, atinge pictograma de extindere ca să creezi o filă nouă, apoi atinge caseta de căutare.</translation>
 <translation id="4532845899244822526">Alege dosarul</translation>
 <translation id="4538018662093857852">Activează modul Lite</translation>
 <translation id="4550003330909367850">Ca să vezi sau să copiezi parola aici, setează blocarea ecranului pe acest dispozitiv.</translation>
@@ -690,6 +695,9 @@ Pentru a modifica această setare, <ph name="BEGIN_LINK" />resetează sincroniza
 <translation id="6232535412751077445">Dacă activezi opțiunea „Nu urmări”, o solicitare va fi inclusă împreună cu traficul de navigare. Efectul variază în funcție de răspunsul site-ului la solicitare și în funcție de modul în care este interpretată solicitarea.
 
 De exemplu, unele site-uri pot răspunde la această solicitare afișând anunțuri care nu se bazează pe alte site-uri accesate de tine. Numeroase site-uri vor culege și vor utiliza în continuare datele de navigare. De exemplu, pentru a îmbunătăți securitatea, pentru a oferi conținut, anunțuri și recomandări și pentru a genera statistici de raportare.</translation>
+<translation id="6238003486329291387">Află despre subiectele de pe site-uri fără să părăsești pagina. Funcția Atinge pentru a căuta trimite un cuvânt și contextul aferent către Căutarea Google și returnează definiții, imagini, rezultate ale căutării și alte detalii.
+
+Apasă lung pe orice cuvânt ca să creezi o căutare pentru acesta. Pentru a rafina căutarea, ajustează selecția. În plus, poți să deschizi panoul prin glisare, să atingi pictograma de extindere ca să creezi o filă nouă, apoi să atingi caseta de căutare.</translation>
 <translation id="624789221780392884">Actualizarea este pregătită</translation>
 <translation id="6255999984061454636">Sugestii de conținut</translation>
 <translation id="6270391203985052864">Site-urile îți pot solicita să îți trimită notificări</translation>

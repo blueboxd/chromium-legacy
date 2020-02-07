@@ -398,6 +398,10 @@
   "ios/chrome/content_widget_extension/strings/ios_content_widget_extension_google_chrome_strings.grd": {
     "messages": [780],
   },
+  "ios/chrome/credential_provider_extension/strings/ios_credential_provider_extension_strings.grd": {
+    "META": {"join": 2},
+    "messages": [800],
+  },
 
   # END ios/ section.
 
@@ -406,7 +410,7 @@
   # App only use one file depending on whether it is iOS or other platform.
   "content/app/resources/content_resources.grd": {
     # Big alignment at start of section.
-    "META": {"join": 3, "align": 100},
+    "META": {"join": 2, "align": 100},
     "structures": [2900],
   },
   "content/content_resources.grd": {

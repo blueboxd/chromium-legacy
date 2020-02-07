@@ -220,6 +220,9 @@ class ServiceWorkerNewScriptLoaderTest : public testing::Test {
     int routing_id = 0;
     int request_id = 10;
     uint32_t options = 0;
+    // TODO(crbug.com/1046335): NewResourceId() will become async. Add a helper
+    // function that return a new resource ID synchronously.
+    int64_t resource_id = context()->storage()->NewResourceId();
 
     network::ResourceRequest request;
     request.url = url;
@@ -233,7 +236,8 @@ class ServiceWorkerNewScriptLoaderTest : public testing::Test {
     *out_loader = ServiceWorkerNewScriptLoader::CreateAndStart(
         routing_id, request_id, options, request, (*out_client)->CreateRemote(),
         version_, helper_->url_loader_factory_getter()->GetNetworkFactory(),
-        net::MutableNetworkTrafficAnnotationTag(TRAFFIC_ANNOTATION_FOR_TESTS));
+        net::MutableNetworkTrafficAnnotationTag(TRAFFIC_ANNOTATION_FOR_TESTS),
+        resource_id);
   }
 
   // Returns false if the entry for |url| doesn't exist in the storage.

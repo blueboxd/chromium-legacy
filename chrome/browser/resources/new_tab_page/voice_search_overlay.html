@@ -1,6 +1,16 @@
 <style>
   :host {
     --receiving-audio-color: var(--google-red-refresh-500);
+    --speak-shown-duration: 2s;
+  }
+
+  .display-stack {
+    display: grid;
+  }
+
+  .display-stack > * {
+    grid-column-start: 1;
+    grid-row-start: 1;
   }
 
   #dialog {
@@ -58,16 +68,9 @@
 
   #texts {
     color: var(--ntp-secondary-text-color);
-    display: grid;
     flex-grow: 1;
     font-size: 32px;
     text-align: start;
-  }
-
-  #texts > *,
-  #micContainer > * {
-    grid-column-start: 1;
-    grid-row-start: 1;
   }
 
   *[text] {
@@ -91,6 +94,20 @@
     visibility: visible;
   }
 
+  *[text='speak'][visible] #speak {
+    opacity: 0;
+    transition: opacity 0ms var(--speak-shown-duration);
+  }
+
+  *[text='speak'] #listening {
+    opacity: 0;
+  }
+
+  *[text='speak'][visible] #listening {
+    opacity: 1;
+    transition: opacity 750ms ease-out var(--speak-shown-duration);
+  }
+
   #finalResult {
     color: var(--ntp-primary-text-color);
   }
@@ -112,7 +129,6 @@
     --mic-button-size: 165px;
     --mic-container-size: 300px;
     align-items: center;
-    display: grid;
     flex-shrink: 0;
     height: var(--mic-container-size);
     justify-items: center;
@@ -174,14 +190,16 @@
 </style>
 <dialog id="dialog" on-close="onOverlayClose_" on-click="onOverlayClick_">
   <button id="closeButton" tabindex="0" title="$i18n{close}">×</button>
-  <!-- TODO(crbug.com/1042534): Add Listening state. -->
   <div id="content">
     <iron-selector id="texts" selected="[[getText_(state_)]]"
         attr-for-selected="text" fallback-selection="none" aria-live="polite"
-        selected-attribute="visible">
+        selected-attribute="visible" class="display-stack">
       <div text="none"></div>
       <div text="waiting">$i18n{waiting}</div>
-      <div text="speak">$i18n{speak}</div>
+      <div text="speak" class="display-stack">
+        <div id="speak">$i18n{speak}</div>
+        <div id="listening">$i18n{listening}</div>
+      </div>
       <div text="result">
         <span id="finalResult">[[finalResult_]]</span>
         <span>[[interimResult_]]</span>
@@ -213,7 +231,7 @@
         </iron-pages>
       </div>
     </iron-selector>
-    <div id="micContainer" class$="[[getMicClass_(state_)]]">
+    <div id="micContainer" class$="[[getMicClass_(state_)]] display-stack">
       <div id="micVolume"
           style="--mic-volume-level: [[micVolumeLevel_]];
                 --mic-volume-duration: [[micVolumeDuration_]]ms;">

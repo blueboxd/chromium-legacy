@@ -97,7 +97,8 @@ void AdvancedFirewallManager::DeleteRuleByName(
   for (size_t i = 0; i < rules.size(); ++i) {
     base::win::ScopedBstr name;
     HRESULT hr = rules[i]->get_Name(name.Receive());
-    if (SUCCEEDED(hr) && name && base::string16(name) == rule_name) {
+    if (SUCCEEDED(hr) && name.Get() &&
+        base::string16(name.Get()) == rule_name) {
       DeleteRule(rules[i]);
     }
   }
@@ -109,8 +110,8 @@ void AdvancedFirewallManager::DeleteRule(
   // rule by name. Multiple rules with the same name and different app are
   // possible.
   base::win::ScopedBstr unique_name(base::UTF8ToUTF16(base::GenerateGUID()));
-  rule->put_Name(unique_name);
-  firewall_rules_->Remove(unique_name);
+  rule->put_Name(unique_name.Get());
+  firewall_rules_->Remove(unique_name.Get());
 }
 
 void AdvancedFirewallManager::DeleteAllRules() {
@@ -134,15 +135,15 @@ Microsoft::WRL::ComPtr<INetFwRule> AdvancedFirewallManager::CreateUDPRule(
     return Microsoft::WRL::ComPtr<INetFwRule>();
   }
 
-  udp_rule->put_Name(base::win::ScopedBstr(rule_name));
-  udp_rule->put_Description(base::win::ScopedBstr(description));
-  udp_rule->put_ApplicationName(base::win::ScopedBstr(app_path_.value()));
+  udp_rule->put_Name(base::win::ScopedBstr(rule_name).Get());
+  udp_rule->put_Description(base::win::ScopedBstr(description).Get());
+  udp_rule->put_ApplicationName(base::win::ScopedBstr(app_path_.value()).Get());
   udp_rule->put_Protocol(NET_FW_IP_PROTOCOL_UDP);
   udp_rule->put_Direction(NET_FW_RULE_DIR_IN);
   udp_rule->put_Enabled(VARIANT_TRUE);
   udp_rule->put_LocalPorts(
-      base::win::ScopedBstr(base::StringPrintf(L"%u", port)));
-  udp_rule->put_Grouping(base::win::ScopedBstr(app_name_));
+      base::win::ScopedBstr(base::StringPrintf(L"%u", port)).Get());
+  udp_rule->put_Grouping(base::win::ScopedBstr(app_name_).Get());
   udp_rule->put_Profiles(NET_FW_PROFILE2_ALL);
   udp_rule->put_Action(NET_FW_ACTION_ALLOW);
 
@@ -190,9 +191,8 @@ void AdvancedFirewallManager::GetAllRules(
       continue;
     }
 
-    if (!path ||
-        !base::FilePath::CompareEqualIgnoreCase(static_cast<BSTR>(path),
-                                                app_path_.value())) {
+    if (!path.Get() || !base::FilePath::CompareEqualIgnoreCase(
+                           path.Get(), app_path_.value())) {
       continue;
     }
 

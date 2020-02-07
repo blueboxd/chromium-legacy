@@ -256,6 +256,7 @@ Om <ph name="SERVICE_SCRIPT_NAME" /> redan har markerats avmarkerar du rutan och
 <translation id="6939719207673461467">Visa/dölj tangentbordet.</translation>
 <translation id="6944854424004126054">Återställ fönstret</translation>
 <translation id="6948905685698011662">Nu finns Chrome Remote Desktop på webben! Kolla in vår <ph name="LINK_BEGIN" />kostnadsfria webbapp<ph name="LINK_END" />.</translation>
+<translation id="6956835181934226419">Jag har redan gett behörighet.</translation>
 <translation id="6963936880795878952">Anslutningar till fjärrdatorn är tillfälligt blockerade eftersom någon har försökt ansluta till fjärrdatorn med en ogiltig pinkod. Försök igen senare.</translation>
 <translation id="6965382102122355670">OK</translation>
 <translation id="6985691951107243942">Är du säker på att du vill inaktivera fjärranslutningar till <ph name="HOSTNAME" />? Om du ångrar dig måste du besöka datorn för att kunna aktivera anslutningar igen.</translation>

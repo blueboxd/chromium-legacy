@@ -735,7 +735,10 @@ void IdentityGetAuthTokenFunction::OnGaiaRemoteConsentFlowFailed(
 }
 
 void IdentityGetAuthTokenFunction::OnGaiaRemoteConsentFlowApproved(
-    const std::string& consent_result) {
+    const std::string& consent_result,
+    const std::string& gaia_id) {
+  // TODO(crbug.com/1026237): Reuse the same gaia id for this extension the next
+  // time.
   DCHECK(!consent_result.empty());
   consent_result_ = consent_result;
   should_prompt_for_scopes_ = false;

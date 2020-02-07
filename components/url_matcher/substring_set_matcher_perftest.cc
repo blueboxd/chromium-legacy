@@ -37,15 +37,6 @@ std::string GetString(size_t len) {
   return std::string(pattern.begin(), pattern.end());
 }
 
-std::vector<const StringPattern*> GetVectorOfPointers(
-    const std::vector<StringPattern>& patterns) {
-  std::vector<const StringPattern*> pointers;
-  for (const StringPattern& pattern : patterns)
-    pointers.push_back(&pattern);
-
-  return pointers;
-}
-
 // Tests performance of SubstringSetMatcher for hundred thousand keys each of
 // 100 characters.
 TEST(SubstringSetMatcherPerfTest, HundredThousandKeys) {
@@ -58,8 +49,7 @@ TEST(SubstringSetMatcherPerfTest, HundredThousandKeys) {
     patterns.emplace_back(GetString(kPatternLen), i);
 
   base::ElapsedTimer init_timer;
-  SubstringSetMatcher matcher;
-  matcher.RegisterPatterns(GetVectorOfPointers(patterns));
+  SubstringSetMatcher matcher(patterns);
   base::TimeDelta init_time = init_timer.Elapsed();
 
   // Match patterns against a string of 5000 characters.

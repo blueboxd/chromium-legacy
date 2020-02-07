@@ -137,7 +137,6 @@
 <translation id="2718395828230677721">الإضاءة الليلية</translation>
 <translation id="2727977024730340865">تمّ توصيل شاحن منخفض الطاقة. لذا قد لا تكون عملية شحن البطارية جديرة بالثقة.</translation>
 <translation id="2792498699870441125">‏Alt+مفتاح البحث</translation>
-<translation id="2803734122639935495">لفتح القفل، أدخِل كلمة مرورك</translation>
 <translation id="2819276065543622893">سيتم تسجيل خروجك الآن.</translation>
 <translation id="2825619548187458965">الرف</translation>
 <translation id="2844169650293029770">‏جهاز USB-C (المنفذ الأمامي الأيسر)</translation>
@@ -202,6 +201,7 @@
 <translation id="3604801046548457007">تم إنشاء سطح المكتب <ph name="DESK_TITILE" />.</translation>
 <translation id="3606978283550408104">تم توصيل شاشة برايل.</translation>
 <translation id="3621202678540785336">الإدخال</translation>
+<translation id="3621712662352432595">إعدادات الصوت</translation>
 <translation id="3626281679859535460">السطوع</translation>
 <translation id="3631369015426612114">السماح بالإشعارات من المصادر التالية</translation>
 <translation id="3705722231355495246">-</translation>
@@ -545,6 +545,7 @@
 <translation id="8477270416194247200">‏اضغط على Alt+مفتاح البحث، أو اضغط على المفتاح Shift للإلغاء.</translation>
 <translation id="8513108775083588393">التدوير تلقائي</translation>
 <translation id="8517041960877371778">قد يتعذر شحن <ph name="DEVICE_TYPE" /> أثناء التشغيل.</translation>
+<translation id="8563862697512465947">إعدادات الاشعارات</translation>
 <translation id="8627191004499078455">تم الاتصال بجهاز <ph name="DEVICE_NAME" /></translation>
 <translation id="8637598503828012618">حالة الاتصال <ph name="CONNECTION_STATUS" />، قوة الإشارة <ph name="SIGNAL_STRENGTH" />، يديرها المشرف</translation>
 <translation id="8639760480004882931">يتبقى <ph name="PERCENTAGE" /></translation>

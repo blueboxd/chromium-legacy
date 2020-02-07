@@ -621,6 +621,7 @@ class CORE_EXPORT LocalFrameView final
   void MapLocalToRemoteRootFrame(TransformState&);
 
   void CrossOriginToMainFrameChanged();
+  void CrossOriginToParentFrameChanged();
 
   // The visual viewport can supply scrollbars.
   void VisualViewportScrollbarsChanged();

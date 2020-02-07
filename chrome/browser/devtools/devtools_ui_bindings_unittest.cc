@@ -19,14 +19,14 @@ TEST_F(DevToolsUIBindingsTest, SanitizeFrontendURL) {
        "devtools://devtools/bundled/devtools.html#hash"},
       {"devtools://devtools/some/random/path",
        "devtools://devtools/some/random/path"},
-      {"devtools://devtools/bundled/devtools.html?experiments=true",
-       "devtools://devtools/bundled/devtools.html?experiments=true"},
+      {"devtools://devtools/bundled/devtools.html?debugFrontend=true",
+       "devtools://devtools/bundled/devtools.html?debugFrontend=true"},
       {"devtools://devtools/bundled/devtools.html"
-       "?some-flag=flag&v8only=true&experiments=false&debugFrontend=a"
+       "?some-flag=flag&v8only=true&debugFrontend=a"
        "&another-flag=another-flag&can_dock=false&isSharedWorker=notreally"
        "&remoteFrontend=sure",
        "devtools://devtools/bundled/devtools.html"
-       "?v8only=true&experiments=true&debugFrontend=true"
+       "?v8only=true&debugFrontend=true"
        "&can_dock=true&isSharedWorker=true&remoteFrontend=true"},
       {"devtools://devtools/?ws=any-value-is-fine",
        "devtools://devtools/?ws=any-value-is-fine"},
@@ -81,13 +81,13 @@ TEST_F(DevToolsUIBindingsTest, SanitizeFrontendURL) {
        "devtools://devtools/?remoteFrontendUrl="
        "https%3A%2F%2Fchrome-devtools-frontend.appspot.com%2Fserve_rev"
        "%2Frev%2Finspector.html#hash"},
-      {"devtools://devtools/?experiments=whatever&remoteFrontendUrl="
+      {"devtools://devtools/?remoteFrontendUrl="
        "https://chrome-devtools-frontend.appspot.com/serve_rev/"
-       "@12345/devtools.html%3Fws%3Danyvalue%26experiments%3Dlikely"
+       "@12345/devtools.html%3Fws%3Danyvalue"
        "&unencoded=value&debugFrontend=true",
-       "devtools://devtools/?experiments=true&remoteFrontendUrl="
+       "devtools://devtools/?remoteFrontendUrl="
        "https%3A%2F%2Fchrome-devtools-frontend.appspot.com%2Fserve_rev"
-       "%2F%4012345%2Fdevtools.html%3Fws%3Danyvalue%26experiments%3Dtrue"
+       "%2F%4012345%2Fdevtools.html%3Fws%3Danyvalue"
        "&debugFrontend=true"},
       {"devtools://devtools/?remoteFrontendUrl="
        "https://chrome-devtools-frontend.appspot.com/serve_rev/"

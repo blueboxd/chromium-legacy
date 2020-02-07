@@ -76,16 +76,24 @@ bool LaunchArgumentsAreEqual(NSArray<NSString*>* args1,
   BOOL gracefullyKill = (relaunchPolicy == ForceRelaunchByCleanShutdown);
   BOOL runResets = (relaunchPolicy == NoForceRelaunchAndResetState);
 
-  bool appNeedsLaunching =
-      forceRestart || !self.runningApplication ||
-      !LaunchArgumentsAreEqual(arguments, self.currentLaunchArgs);
+  // If app has crashed, |self.runningApplication| will be at
+  // |XCUIApplicationStateNotRunning| state and it should be relaunched with
+  // proper resets. The app also needs a relaunch if it's at
+  // |XCUIApplicationStateUnknown| state.
+  BOOL appIsRunning =
+      (self.runningApplication != nil) &&
+      (self.runningApplication.state != XCUIApplicationStateNotRunning) &&
+      (self.runningApplication.state != XCUIApplicationStateUnknown);
 
+  bool appNeedsLaunching =
+      forceRestart || !appIsRunning ||
+      !LaunchArgumentsAreEqual(arguments, self.currentLaunchArgs);
   if (!appNeedsLaunching) {
     [self.runningApplication activate];
     return;
   }
 
-  if (self.runningApplication) {
+  if (appIsRunning) {
     if (gracefullyKill) {
       GREYAssertTrue([EarlGrey backgroundApplication],
                      @"Failed to background application.");

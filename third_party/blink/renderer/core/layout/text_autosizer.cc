@@ -52,7 +52,6 @@
 #include "third_party/blink/renderer/core/layout/layout_table_cell.h"
 #include "third_party/blink/renderer/core/layout/layout_view.h"
 #include "third_party/blink/renderer/core/layout/ng/list/layout_ng_list_item.h"
-#include "third_party/blink/renderer/core/layout/ng/ng_block_node.h"
 #include "third_party/blink/renderer/core/layout/style_retain_scope.h"
 #include "third_party/blink/renderer/core/page/chrome_client.h"
 #include "third_party/blink/renderer/core/page/page.h"
@@ -1440,17 +1439,17 @@ TextAutosizer::DeferUpdatePageInfo::DeferUpdatePageInfo(Page* page)
   }
 }
 
-TextAutosizer::NGLayoutScope::NGLayoutScope(const NGBlockNode& node,
+TextAutosizer::NGLayoutScope::NGLayoutScope(LayoutBox* box,
                                             LayoutUnit inline_size)
-    : text_autosizer_(node.GetLayoutBox()->GetDocument().GetTextAutosizer()),
-      block_(To<LayoutBlockFlow>(node.GetLayoutBox())) {
+    : text_autosizer_(box->GetDocument().GetTextAutosizer()), box_(box) {
+  // Bail if:
+  //  - Text autosizing isn't enabled.
+  //  - If the chid isn't a LayoutBlock.
+  //  - If the child is a LayoutNGListMarker. (They are super-small blocks, and
+  //    using them to determine if we should autosize the text will typically
+  //    false, overriding whatever its parent has already correctly determined).
   if (!text_autosizer_ || !text_autosizer_->ShouldHandleLayout() ||
-      block_->IsLayoutNGListMarker()) {
-    // Bail if text autosizing isn't enabled, but also if this is a
-    // IsLayoutNGListMarker. They are super-small blocks, and using them to
-    // determine if we should autosize the text will typically always yield
-    // false, overriding whatever its parent (typically the list item) has
-    // already correctly determined.
+      box_->IsLayoutNGListMarker() || !box_->IsLayoutBlock()) {
     text_autosizer_ = nullptr;
     return;
   }
@@ -1459,14 +1458,14 @@ TextAutosizer::NGLayoutScope::NGLayoutScope(const NGBlockNode& node,
   // know the inline size of the block. So set it. LayoutNG normally writes back
   // to the legacy tree *after* layout, but this one must be set before, at
   // least if the autosizer is enabled.
-  block_->SetLogicalWidth(inline_size);
+  box_->SetLogicalWidth(inline_size);
 
-  text_autosizer_->BeginLayout(block_, nullptr);
+  text_autosizer_->BeginLayout(To<LayoutBlock>(box_), nullptr);
 }
 
 TextAutosizer::NGLayoutScope::~NGLayoutScope() {
   if (text_autosizer_)
-    text_autosizer_->EndLayout(block_);
+    text_autosizer_->EndLayout(To<LayoutBlock>(box_));
 }
 
 TextAutosizer::DeferUpdatePageInfo::~DeferUpdatePageInfo() {

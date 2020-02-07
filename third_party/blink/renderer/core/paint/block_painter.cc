@@ -210,19 +210,11 @@ void BlockPainter::PaintObject(const PaintInfo& paint_info,
   if (layout_block_.IsTruncated())
     return;
 
-  ScopedPaintTimingDetectorBlockPaintHook
-      scoped_paint_timing_detector_block_paint_hook;
-  if (paint_info.phase == PaintPhase::kForeground) {
-    scoped_paint_timing_detector_block_paint_hook.EmplaceIfNeeded(
-        layout_block_,
-        paint_info.context.GetPaintController().CurrentPaintChunkProperties());
-  }
   // If we're *printing or creating a paint preview of* the foreground, paint
   // the URL.
   if (paint_phase == PaintPhase::kForeground &&
-      paint_info.ShouldAddUrlMetadata()) {
+      paint_info.ShouldAddUrlMetadata())
     ObjectPainter(layout_block_).AddURLRectIfNeeded(paint_info, paint_offset);
-  }
 
   // If we're painting our background (either 1. kBlockBackground - background
   // of the current object and non-self-painting descendants, or 2.

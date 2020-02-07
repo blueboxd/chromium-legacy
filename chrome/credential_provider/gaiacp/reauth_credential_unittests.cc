@@ -7,13 +7,16 @@
 #include <atlcomcli.h>
 #include <wrl/client.h>
 
+#include "base/command_line.h"
 #include "base/json/json_writer.h"
+#include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/test/test_reg_util_win.h"
 #include "chrome/browser/ui/startup/credential_provider_signin_dialog_win_test_data.h"
 #include "chrome/credential_provider/common/gcp_strings.h"
 #include "chrome/credential_provider/gaiacp/gaia_credential_provider_i.h"
 #include "chrome/credential_provider/gaiacp/gaia_resources.h"
+#include "chrome/credential_provider/gaiacp/gcp_utils.h"
 #include "chrome/credential_provider/gaiacp/gcpw_strings.h"
 #include "chrome/credential_provider/gaiacp/mdm_utils.h"
 #include "chrome/credential_provider/gaiacp/reauth_credential.h"
@@ -22,6 +25,8 @@
 #include "chrome/credential_provider/test/gcp_fakes.h"
 #include "chrome/credential_provider/test/gls_runner_test_base.h"
 #include "chrome/credential_provider/test/test_credential.h"
+#include "content/public/common/content_switches.h"
+#include "google_apis/gaia/gaia_switches.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace credential_provider {
@@ -283,6 +288,90 @@ INSTANTIATE_TEST_SUITE_P(All,
                                             ::testing::Bool()));
 
 class GcpReauthCredentialGlsRunnerTest : public GlsRunnerTestBase {};
+
+// Tests the GetUserGlsCommandline method overridden by ReauthCredential.
+// Parameters are:
+// 1. Is gem features enabled / disabled.
+// 2. Is ep_url already set via registry.
+class GcpReauthCredentialGlsTest
+    : public GcpReauthCredentialGlsRunnerTest,
+      public ::testing::WithParamInterface<std::tuple<bool, bool>> {};
+
+TEST_P(GcpReauthCredentialGlsTest, GetUserGlsCommandLine) {
+  USES_CONVERSION;
+  CredentialProviderSigninDialogTestDataStorage test_data_storage;
+
+  const bool is_gem_features_enabled = std::get<0>(GetParam());
+  if (is_gem_features_enabled)
+    ASSERT_EQ(S_OK, SetGlobalFlagForTesting(kKeyEnableGemFeatures, 1u));
+  else
+    ASSERT_EQ(S_OK, SetGlobalFlagForTesting(kKeyEnableGemFeatures, 0u));
+
+  CComBSTR username = L"foo_bar";
+  CComBSTR full_name = A2COLE(test_data_storage.GetSuccessFullName().c_str());
+  CComBSTR password = A2COLE(test_data_storage.GetSuccessPassword().c_str());
+
+  // Create a fake user to reauth.
+  CComBSTR sid;
+  ASSERT_EQ(S_OK,
+            fake_os_user_manager()->CreateTestOSUser(
+                OLE2CW(username), OLE2CW(password), OLE2CW(full_name),
+                L"comment", base::UTF8ToUTF16(test_data_storage.GetSuccessId()),
+                base::string16(), &sid));
+
+  // Create provider and start logon.
+  Microsoft::WRL::ComPtr<ICredentialProviderCredential> cred;
+
+  // Create with invalid token handle response so that a reauth occurs.
+  SetDefaultTokenHandleResponse(kDefaultInvalidTokenHandleResponse);
+  ASSERT_EQ(S_OK, InitializeProviderAndGetCredential(1, &cred));
+
+  ASSERT_TRUE(!!cred);
+
+  Microsoft::WRL::ComPtr<IReauthCredential> ireauth;
+  ASSERT_EQ(S_OK, cred.As(&ireauth));
+  const CComBSTR kSid(W2COLE(L"sid"));
+  ASSERT_EQ(S_OK, ireauth->SetOSUserInfo(
+                      kSid, CComBSTR(OSUserManager::GetLocalDomain().c_str()),
+                      CComBSTR(W2COLE(L"username"))));
+  ASSERT_EQ(S_OK, ireauth->SetEmailForReauth(CComBSTR(
+                      A2COLE(test_data_storage.GetSuccessEmail().c_str()))));
+
+  // Get user gls command line and extract the kGaiaUrl &
+  // kGcpwEndpointPathSwitch switch from it.
+  Microsoft::WRL::ComPtr<ITestCredential> test_cred;
+  ASSERT_EQ(S_OK, cred.As(&test_cred));
+  std::string device_id;
+  ASSERT_EQ(S_OK, GenerateDeviceId(&device_id));
+
+  const bool is_ep_url_set = std::get<1>(GetParam());
+  if (is_ep_url_set) {
+    SetGlobalFlagForTesting(L"ep_reauth_url", L"http://login.com");
+  }
+
+  base::CommandLine command_line = test_cred->GetTestUserGlsCommandline();
+  std::string gcpw_path =
+      command_line.GetSwitchValueASCII(kGcpwEndpointPathSwitch);
+
+  if (is_ep_url_set) {
+    ASSERT_EQ("http://login.com/",
+              command_line.GetSwitchValueASCII(switches::kGaiaUrl));
+    ASSERT_TRUE(gcpw_path.empty());
+  } else if (is_gem_features_enabled) {
+    ASSERT_EQ(gcpw_path,
+              base::StringPrintf("embedded/setup/windows?device_id=%s",
+                                 device_id.c_str()));
+    ASSERT_TRUE(command_line.GetSwitchValueASCII(switches::kGaiaUrl).empty());
+  } else {
+    ASSERT_TRUE(command_line.GetSwitchValueASCII(switches::kGaiaUrl).empty());
+    ASSERT_TRUE(gcpw_path.empty());
+  }
+}
+
+INSTANTIATE_TEST_SUITE_P(All,
+                         GcpReauthCredentialGlsTest,
+                         ::testing::Combine(::testing::Bool(),
+                                            ::testing::Bool()));
 
 TEST_F(GcpReauthCredentialGlsRunnerTest, NoGaiaIdOrEmailAvailable) {
   USES_CONVERSION;

@@ -93,7 +93,7 @@ void GLOutputSurfaceOffscreen::BindFramebuffer() {
 void GLOutputSurfaceOffscreen::Reshape(const gfx::Size& size,
                                        float scale_factor,
                                        const gfx::ColorSpace& color_space,
-                                       bool alpha,
+                                       gfx::BufferFormat format,
                                        bool stencil) {
   size_ = size;
   color_space_ = color_space;

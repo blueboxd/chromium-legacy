@@ -55,16 +55,16 @@ class MODULES_EXPORT CachedStorageArea
         WebScopedVirtualTimePauser::VirtualTaskDuration duration) = 0;
   };
 
-  static scoped_refptr<CachedStorageArea> CreateForLocalStorage(
-      scoped_refptr<const SecurityOrigin> origin,
-      mojo::PendingRemote<mojom::blink::StorageArea> area,
-      scoped_refptr<base::SingleThreadTaskRunner> ipc_runner,
-      StorageNamespace* storage_namespace);
-  static scoped_refptr<CachedStorageArea> CreateForSessionStorage(
-      scoped_refptr<const SecurityOrigin> origin,
-      mojo::PendingRemote<mojom::blink::StorageArea> area,
-      scoped_refptr<base::SingleThreadTaskRunner> ipc_runner,
-      StorageNamespace* storage_namespace);
+  enum class AreaType {
+    kSessionStorage,
+    kLocalStorage,
+  };
+
+  CachedStorageArea(AreaType type,
+                    scoped_refptr<const SecurityOrigin> origin,
+                    mojo::PendingRemote<mojom::blink::StorageArea> area,
+                    scoped_refptr<base::SingleThreadTaskRunner> ipc_runner,
+                    StorageNamespace* storage_namespace);
 
   // These correspond to blink::Storage.
   unsigned GetLength();
@@ -92,17 +92,6 @@ class MODULES_EXPORT CachedStorageArea
   mojo::Remote<mojom::blink::StorageArea>& RemoteArea() { return remote_area_; }
 
  private:
-  enum class AreaType {
-    kSessionStorage,
-    kLocalStorage,
-  };
-
-  CachedStorageArea(AreaType type,
-                    scoped_refptr<const SecurityOrigin> origin,
-                    mojo::PendingRemote<mojom::blink::StorageArea> area,
-                    scoped_refptr<base::SingleThreadTaskRunner> ipc_runner,
-                    StorageNamespace* storage_namespace);
-
   friend class RefCounted<CachedStorageArea>;
   ~CachedStorageArea() override;
 

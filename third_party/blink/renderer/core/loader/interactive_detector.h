@@ -24,6 +24,10 @@ namespace base {
 class TickClock;
 }  // namespace base
 
+namespace ukm {
+class UkmRecorder;
+}  // namespace ukm
+
 namespace blink {
 
 class Document;
@@ -126,6 +130,10 @@ class CORE_EXPORT InteractiveDetector
   // The caller owns the |clock| which must outlive the InteractiveDetector.
   void SetTickClockForTesting(const base::TickClock* clock);
 
+  ukm::UkmRecorder* GetUkmRecorder() const;
+
+  void SetUkmRecorderForTesting(ukm::UkmRecorder* test_ukm_recorder);
+
  private:
   friend class InteractiveDetectorTest;
 
@@ -210,6 +218,8 @@ class CORE_EXPORT InteractiveDetector
   // The timestamp of a pending pointerdown event. Valid in the same cases as
   // pending_pointerdown_delay_.
   base::TimeTicks pending_pointerdown_timestamp_;
+
+  ukm::UkmRecorder* ukm_recorder_;
 
   DISALLOW_COPY_AND_ASSIGN(InteractiveDetector);
 };

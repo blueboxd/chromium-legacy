@@ -92,7 +92,6 @@ void HTMLFormElement::Trace(Visitor* visitor) {
   visitor->Trace(listed_elements_);
   visitor->Trace(image_elements_);
   visitor->Trace(planned_navigation_);
-  visitor->Trace(activated_submit_button_);
   HTMLElement::Trace(visitor);
 }
 
@@ -327,35 +326,12 @@ void HTMLFormElement::PrepareForSubmission(
     }
   }
   if (should_submit) {
-    planned_navigation_ = nullptr;
-    Submit(event, submit_button);
+    ScheduleFormSubmission(event, submit_button);
   }
-  if (!planned_navigation_ || activated_submit_button_)
-    return;
-  base::AutoReset<bool> submit_scope(&is_submitting_, true);
-  SubmitForm(planned_navigation_);
-  planned_navigation_ = nullptr;
-}
-
-void HTMLFormElement::WillActivateSubmitButton(
-    HTMLFormControlElement* element) {
-  if (!activated_submit_button_)
-    activated_submit_button_ = element;
-}
-
-void HTMLFormElement::DidActivateSubmitButton(HTMLFormControlElement* element) {
-  if (activated_submit_button_ != element)
-    return;
-  activated_submit_button_ = nullptr;
-  if (!planned_navigation_)
-    return;
-  base::AutoReset<bool> submit_scope(&is_submitting_, true);
-  SubmitForm(planned_navigation_);
-  planned_navigation_ = nullptr;
 }
 
 void HTMLFormElement::submitFromJavaScript() {
-  Submit(nullptr, nullptr);
+  ScheduleFormSubmission(nullptr, nullptr);
 }
 
 void HTMLFormElement::requestSubmit(ExceptionState& exception_state) {
@@ -400,8 +376,9 @@ void HTMLFormElement::SubmitDialog(FormSubmission* form_submission) {
   }
 }
 
-void HTMLFormElement::Submit(Event* event,
-                             HTMLFormControlElement* submit_button) {
+void HTMLFormElement::ScheduleFormSubmission(
+    Event* event,
+    HTMLFormControlElement* submit_button) {
   LocalFrameView* view = GetDocument().View();
   LocalFrame* frame = GetDocument().GetFrame();
   if (!view || !frame || !frame->GetPage())
@@ -454,6 +431,8 @@ void HTMLFormElement::Submit(Event* event,
 
   FormSubmission* form_submission =
       FormSubmission::Create(this, attributes_, event, submit_button);
+  Frame* target_frame = form_submission->TargetFrame();
+
   // 'formdata' event handlers might disconnect the form.
   if (!isConnected()) {
     GetDocument().AddConsoleMessage(ConsoleMessage::Create(
@@ -462,17 +441,49 @@ void HTMLFormElement::Submit(Event* event,
         "Form submission canceled because the form is not connected"));
     return;
   }
+
   if (form_submission->Method() == FormSubmission::kDialogMethod) {
     SubmitDialog(form_submission);
-  } else if (in_user_js_submit_event_ || activated_submit_button_) {
-    // Need to postpone the submission in order to make this cancelable by
-    // another submission request.
-    planned_navigation_ = form_submission;
-  } else {
-    // This runs JavaScript code if action attribute value is javascript:
-    // protocol.
-    SubmitForm(form_submission);
+    return;
   }
+
+  if (form_submission->Action().ProtocolIsJavaScript()) {
+    // For javascript urls, don't post a task to execute the form submission
+    // because we already get another task posted for it in
+    // Document::ProcessJavascriptUrl. If we post two tasks, the javascript will
+    // be run too late according to some tests.
+    planned_navigation_ = form_submission;
+    SubmitForm();
+    return;
+  }
+
+  if (!target_frame) {
+    // If we couldn't find a target frame, run through content security policy
+    // logic in SubmitForm anyway.
+    // TODO(1047489): Look a this more closely, consider refactoring
+    planned_navigation_ = form_submission;
+    SubmitForm();
+    return;
+  }
+
+  // According to [1], step 22, form submissions must "plan to navigate".
+  // This allows submissions to be canceled or superseded by later
+  // submission requests. See crbug.com/977882.
+  // [1] https://html.spec.whatwg.org/C/#form-submission-algorithm
+  planned_navigation_ = form_submission;
+
+  if (auto* target_local_frame = DynamicTo<LocalFrame>(target_frame)) {
+    if (!target_local_frame->IsNavigationAllowed())
+      return;
+
+    // Cancel parsing if the form submission is targeted at this frame.
+    if (target_local_frame == GetDocument().GetFrame() &&
+        !form_submission->Action().ProtocolIsJavaScript()) {
+      target_local_frame->GetDocument()->CancelParsing();
+    }
+  }
+
+  GetDocument().ScheduleFormSubmission(this);
 }
 
 FormData* HTMLFormElement::ConstructEntryList(
@@ -503,15 +514,13 @@ FormData* HTMLFormElement::ConstructEntryList(
   return &form_data;
 }
 
-// Actually submit the form - navigate now.
-void HTMLFormElement::SubmitForm(FormSubmission* submission) {
+void HTMLFormElement::SubmitForm() {
+  FormSubmission* submission = planned_navigation_;
   DCHECK(submission->Method() == FormSubmission::kPostMethod ||
          submission->Method() == FormSubmission::kGetMethod);
   DCHECK(submission->Data());
   DCHECK(submission->Form());
   if (submission->Action().IsEmpty())
-    return;
-  if (!GetDocument().IsActive())
     return;
   if (GetDocument().IsSandboxed(WebSandboxFlags::kForms)) {
     // FIXME: This message should be moved off the console once a solution to
@@ -616,11 +625,6 @@ void HTMLFormElement::Disassociate(ListedElement& e) {
   listed_elements_are_dirty_ = true;
   listed_elements_.clear();
   RemoveFromPastNamesMap(e.ToHTMLElement());
-
-  if (activated_submit_button_ != &e)
-    return;
-  activated_submit_button_ = nullptr;
-  planned_navigation_ = nullptr;
 }
 
 bool HTMLFormElement::IsURLAttribute(const Attribute& attribute) const {

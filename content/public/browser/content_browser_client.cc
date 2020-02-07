@@ -860,6 +860,10 @@ HidDelegate* ContentBrowserClient::GetHidDelegate() {
   return nullptr;
 }
 
+BluetoothDelegate* ContentBrowserClient::GetBluetoothDelegate() {
+  return nullptr;
+}
+
 bool ContentBrowserClient::ShowPaymentHandlerWindow(
     content::BrowserContext* browser_context,
     const GURL& url,

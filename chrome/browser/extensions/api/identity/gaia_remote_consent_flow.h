@@ -37,7 +37,8 @@ class GaiaRemoteConsentFlow
     // Called when the user gives the approval via the OAuth2 remote consent
     // screen.
     virtual void OnGaiaRemoteConsentFlowApproved(
-        const std::string& consent_result) = 0;
+        const std::string& consent_result,
+        const std::string& gaia_id) = 0;
   };
 
   GaiaRemoteConsentFlow(Delegate* delegate,

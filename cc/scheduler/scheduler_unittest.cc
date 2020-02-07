@@ -562,7 +562,8 @@ class SchedulerTest : public testing::Test {
 
   void AdvanceAndMissOneFrame();
   void CheckMainFrameSkippedAfterLateCommit(bool expect_send_begin_main_frame);
-  void ImplFrameSkippedAfterLateAck(bool receive_ack_before_deadline);
+  void ImplFrameSkippedAfterLateAck(bool is_already_receiving_begin_frames,
+                                    bool receive_ack_before_deadline);
   void ImplFrameNotSkippedAfterLateAck();
   void BeginFramesNotFromClient(BeginFrameSourceType bfs_type);
   void BeginFramesNotFromClient_IsDrawThrottled(BeginFrameSourceType bfs_type);
@@ -1770,6 +1771,7 @@ TEST_F(SchedulerTest, MainFrameNotSkippedWhenNoTimingHistory) {
 }
 
 void SchedulerTest::ImplFrameSkippedAfterLateAck(
+    bool is_already_receiving_begin_frames,
     bool receive_ack_before_deadline) {
   // To get into a high latency state, this test disables automatic swap acks.
   client_->SetAutomaticSubmitCompositorFrameAck(false);
@@ -1780,8 +1782,12 @@ void SchedulerTest::ImplFrameSkippedAfterLateAck(
   scheduler_->SetNeedsRedraw();
   EXPECT_FALSE(scheduler_->MainThreadMissedLastDeadline());
   SendNextBeginFrame();
-  EXPECT_ACTIONS("AddObserver(this)", "WillBeginImplFrame",
-                 "ScheduledActionSendBeginMainFrame");
+  if (is_already_receiving_begin_frames) {
+    EXPECT_ACTIONS("WillBeginImplFrame", "ScheduledActionSendBeginMainFrame");
+  } else {
+    EXPECT_ACTIONS("AddObserver(this)", "WillBeginImplFrame",
+                   "ScheduledActionSendBeginMainFrame");
+  }
 
   client_->Reset();
   scheduler_->NotifyBeginMainFrameStarted(task_runner_->NowTicks());
@@ -1843,8 +1849,10 @@ TEST_F(SchedulerTest,
   SetUpScheduler(EXTERNAL_BFS);
   fake_compositor_timing_history_->SetAllEstimatesTo(kFastDuration);
 
+  bool is_already_receiving_begin_frames = false;
   bool receive_ack_before_deadline = true;
-  EXPECT_SCOPED(ImplFrameSkippedAfterLateAck(receive_ack_before_deadline));
+  EXPECT_SCOPED(ImplFrameSkippedAfterLateAck(is_already_receiving_begin_frames,
+                                             receive_ack_before_deadline));
 }
 
 TEST_F(SchedulerTest,
@@ -1852,8 +1860,10 @@ TEST_F(SchedulerTest,
   SetUpScheduler(EXTERNAL_BFS);
   fake_compositor_timing_history_->SetAllEstimatesTo(kFastDuration);
 
+  bool is_already_receiving_begin_frames = false;
   bool receive_ack_before_deadline = false;
-  EXPECT_SCOPED(ImplFrameSkippedAfterLateAck(receive_ack_before_deadline));
+  EXPECT_SCOPED(ImplFrameSkippedAfterLateAck(is_already_receiving_begin_frames,
+                                             receive_ack_before_deadline));
 }
 
 TEST_F(SchedulerTest,
@@ -1863,8 +1873,10 @@ TEST_F(SchedulerTest,
   fake_compositor_timing_history_
       ->SetBeginMainFrameQueueDurationNotCriticalEstimate(kSlowDuration);
 
+  bool is_already_receiving_begin_frames = false;
   bool receive_ack_before_deadline = false;
-  EXPECT_SCOPED(ImplFrameSkippedAfterLateAck(receive_ack_before_deadline));
+  EXPECT_SCOPED(ImplFrameSkippedAfterLateAck(is_already_receiving_begin_frames,
+                                             receive_ack_before_deadline));
 }
 
 TEST_F(SchedulerTest, ImplFrameSkippedAfterLateAck_ImplLatencyTakesPriority) {
@@ -1873,14 +1885,18 @@ TEST_F(SchedulerTest, ImplFrameSkippedAfterLateAck_ImplLatencyTakesPriority) {
   // Even if every estimate related to the main thread is slow, we should
   // still expect to recover impl thread latency if the draw is fast and we
   // are in impl latency takes priority.
+  client_->Reset();
   scheduler_->SetTreePrioritiesAndScrollState(
       SMOOTHNESS_TAKES_PRIORITY,
       ScrollHandlerState::SCROLL_DOES_NOT_AFFECT_SCROLL_HANDLER);
   fake_compositor_timing_history_->SetAllEstimatesTo(kSlowDuration);
   fake_compositor_timing_history_->SetDrawDurationEstimate(kFastDuration);
+  EXPECT_ACTIONS("AddObserver(this)");
 
+  bool is_already_receiving_begin_frames = true;
   bool receive_ack_before_deadline = false;
-  EXPECT_SCOPED(ImplFrameSkippedAfterLateAck(receive_ack_before_deadline));
+  EXPECT_SCOPED(ImplFrameSkippedAfterLateAck(is_already_receiving_begin_frames,
+                                             receive_ack_before_deadline));
 }
 
 TEST_F(SchedulerTest,

@@ -524,7 +524,7 @@ void AccessibilityWinBrowserTest::FindNodeInAccessibilityTree(
   base::win::ScopedBstr name_bstr;
   base::win::ScopedVariant childid_self(CHILDID_SELF);
   node->get_accName(childid_self, name_bstr.Receive());
-  std::wstring name(name_bstr, name_bstr.Length());
+  std::wstring name(name_bstr.Get(), name_bstr.Length());
   base::win::ScopedVariant role;
   node->get_accRole(childid_self, role.Receive());
   ASSERT_EQ(VT_I4, role.type());
@@ -578,7 +578,7 @@ void AccessibilityWinBrowserTest::CheckTextAtOffset(
   EXPECT_EQ(S_OK, hr);
   EXPECT_EQ(expected_start_offset, start_offset);
   EXPECT_EQ(expected_end_offset, end_offset);
-  EXPECT_STREQ(expected_text.c_str(), text);
+  EXPECT_STREQ(expected_text.c_str(), text.Get());
 }
 
 std::vector<base::win::ScopedVariant>
@@ -739,7 +739,7 @@ void AccessibilityWinBrowserTest::AccessibleChecker::CheckAccessibleName(
   } else {
     // Test that the correct string was returned.
     EXPECT_EQ(S_OK, hr);
-    EXPECT_EQ(name_, std::wstring(name, name.Length()));
+    EXPECT_EQ(name_, std::wstring(name.Get(), name.Length()));
   }
 }
 
@@ -785,7 +785,7 @@ void AccessibilityWinBrowserTest::AccessibleChecker::CheckAccessibleValue(
   EXPECT_EQ(S_OK, hr);
 
   // Test that the correct string was returned.
-  EXPECT_EQ(value_, std::wstring(value, value.Length()));
+  EXPECT_EQ(value_, std::wstring(value.Get(), value.Length()));
 }
 
 void AccessibilityWinBrowserTest::AccessibleChecker::CheckAccessibleState(
@@ -1366,7 +1366,7 @@ IN_PROC_BROWSER_TEST_F(AccessibilityWinBrowserTest, SupportsISimpleDOM) {
                                          node_value.Receive(), &num_children,
                                          &unique_id, &node_type);
   ASSERT_EQ(S_OK, hr);
-  EXPECT_EQ(L"body", std::wstring(node_name, node_name.Length()));
+  EXPECT_EQ(L"body", std::wstring(node_name.Get(), node_name.Length()));
   EXPECT_EQ(NODETYPE_ELEMENT, node_type);
   EXPECT_EQ(1u, num_children);
   node_name.Reset();
@@ -1380,7 +1380,7 @@ IN_PROC_BROWSER_TEST_F(AccessibilityWinBrowserTest, SupportsISimpleDOM) {
       node_name.Receive(), &name_space_id, node_value.Receive(), &num_children,
       &unique_id, &node_type);
   ASSERT_EQ(S_OK, hr);
-  EXPECT_EQ(L"input", std::wstring(node_name, node_name.Length()));
+  EXPECT_EQ(L"input", std::wstring(node_name.Get(), node_name.Length()));
   EXPECT_EQ(NODETYPE_ELEMENT, node_type);
   EXPECT_EQ(0u, num_children);
 }
@@ -1482,7 +1482,7 @@ Option 3
   base::win::ScopedBstr option_name;
   EXPECT_HRESULT_SUCCEEDED(
       option->get_accName(childid_self, option_name.Receive()));
-  EXPECT_STREQ(L"Option 2", static_cast<BSTR>(option_name));
+  EXPECT_STREQ(L"Option 2", option_name.Get());
 }
 
 IN_PROC_BROWSER_TEST_F(AccessibilityWinBrowserTest,
@@ -1539,7 +1539,7 @@ Option 3
     base::win::ScopedBstr option_name;
     EXPECT_HRESULT_SUCCEEDED(
         option->get_accName(childid_self, option_name.Receive()));
-    EXPECT_STREQ(L"Option 1", static_cast<BSTR>(option_name));
+    EXPECT_STREQ(L"Option 1", option_name.Get());
   }
 
   selected.Release();
@@ -1556,7 +1556,7 @@ Option 3
     base::win::ScopedBstr option_name;
     EXPECT_HRESULT_SUCCEEDED(
         option->get_accName(childid_self, option_name.Receive()));
-    EXPECT_STREQ(L"Option 2", static_cast<BSTR>(option_name));
+    EXPECT_STREQ(L"Option 2", option_name.Get());
   }
 }
 
@@ -2412,13 +2412,13 @@ IN_PROC_BROWSER_TEST_F(AccessibilityWinBrowserTest,
   AccessibilityNotificationWaiter waiter(shell()->web_contents(),
                                          ui::kAXModeComplete,
                                          ax::mojom::Event::kValueChanged);
-  EXPECT_HRESULT_SUCCEEDED(input->put_accValue(childid_self, new_value));
+  EXPECT_HRESULT_SUCCEEDED(input->put_accValue(childid_self, new_value.Get()));
   waiter.WaitForNotification();
 
   base::win::ScopedBstr value;
   EXPECT_HRESULT_SUCCEEDED(input->get_accValue(childid_self, value.Receive()));
-  ASSERT_NE(nullptr, static_cast<BSTR>(value));
-  EXPECT_STREQ(static_cast<BSTR>(new_value), static_cast<BSTR>(value));
+  ASSERT_NE(nullptr, value.Get());
+  EXPECT_STREQ(new_value.Get(), value.Get());
 }
 
 IN_PROC_BROWSER_TEST_F(AccessibilityWinBrowserTest, TestPutAccValueInTextarea) {
@@ -2433,14 +2433,15 @@ IN_PROC_BROWSER_TEST_F(AccessibilityWinBrowserTest, TestPutAccValueInTextarea) {
   AccessibilityNotificationWaiter waiter(shell()->web_contents(),
                                          ui::kAXModeComplete,
                                          ax::mojom::Event::kValueChanged);
-  EXPECT_HRESULT_SUCCEEDED(textarea->put_accValue(childid_self, new_value));
+  EXPECT_HRESULT_SUCCEEDED(
+      textarea->put_accValue(childid_self, new_value.Get()));
   waiter.WaitForNotification();
 
   base::win::ScopedBstr value;
   EXPECT_HRESULT_SUCCEEDED(
       textarea->get_accValue(childid_self, value.Receive()));
-  ASSERT_NE(nullptr, static_cast<BSTR>(value));
-  EXPECT_STREQ(static_cast<BSTR>(new_value), static_cast<BSTR>(value));
+  ASSERT_NE(nullptr, value.Get());
+  EXPECT_STREQ(new_value.Get(), value.Get());
 }
 
 IN_PROC_BROWSER_TEST_F(AccessibilityWinBrowserTest, TestPutAccValueInEditable) {
@@ -2455,14 +2456,15 @@ IN_PROC_BROWSER_TEST_F(AccessibilityWinBrowserTest, TestPutAccValueInEditable) {
   AccessibilityNotificationWaiter waiter(shell()->web_contents(),
                                          ui::kAXModeComplete,
                                          ax::mojom::Event::kValueChanged);
-  EXPECT_HRESULT_SUCCEEDED(paragraph->put_accValue(childid_self, new_value));
+  EXPECT_HRESULT_SUCCEEDED(
+      paragraph->put_accValue(childid_self, new_value.Get()));
   waiter.WaitForNotification();
 
   base::win::ScopedBstr value;
   EXPECT_HRESULT_SUCCEEDED(
       paragraph->get_accValue(childid_self, value.Receive()));
-  ASSERT_NE(nullptr, static_cast<BSTR>(value));
-  EXPECT_STREQ(static_cast<BSTR>(new_value), static_cast<BSTR>(value));
+  ASSERT_NE(nullptr, value.Get());
+  EXPECT_STREQ(new_value.Get(), value.Get());
 }
 
 IN_PROC_BROWSER_TEST_F(AccessibilityWinBrowserTest, TestSetCaretOffset) {
@@ -2843,14 +2845,14 @@ IN_PROC_BROWSER_TEST_F(AccessibilityWinBrowserTest,
   EXPECT_EQ(E_INVALIDARG, hr);
   EXPECT_EQ(0, start_offset);
   EXPECT_EQ(0, end_offset);
-  EXPECT_EQ(nullptr, static_cast<BSTR>(text));
+  EXPECT_EQ(nullptr, text.Get());
   invalid_offset = InputContentsString().size() + 1;
   hr = input_text->get_textAtOffset(invalid_offset, IA2_TEXT_BOUNDARY_WORD,
                                     &start_offset, &end_offset, text.Receive());
   EXPECT_EQ(E_INVALIDARG, hr);
   EXPECT_EQ(0, start_offset);
   EXPECT_EQ(0, end_offset);
-  EXPECT_EQ(nullptr, static_cast<BSTR>(text));
+  EXPECT_EQ(nullptr, text.Get());
 
   // According to the IA2 Spec, only line boundaries should succeed when
   // the offset is one past the end of the text.
@@ -2860,32 +2862,32 @@ IN_PROC_BROWSER_TEST_F(AccessibilityWinBrowserTest,
   EXPECT_EQ(E_INVALIDARG, hr);
   EXPECT_EQ(0, start_offset);
   EXPECT_EQ(0, end_offset);
-  EXPECT_EQ(nullptr, static_cast<BSTR>(text));
+  EXPECT_EQ(nullptr, text.Get());
   hr = input_text->get_textAtOffset(invalid_offset, IA2_TEXT_BOUNDARY_WORD,
                                     &start_offset, &end_offset, text.Receive());
   EXPECT_EQ(E_INVALIDARG, hr);
   EXPECT_EQ(0, start_offset);
   EXPECT_EQ(0, end_offset);
-  EXPECT_EQ(nullptr, static_cast<BSTR>(text));
+  EXPECT_EQ(nullptr, text.Get());
   hr = input_text->get_textAtOffset(invalid_offset, IA2_TEXT_BOUNDARY_SENTENCE,
                                     &start_offset, &end_offset, text.Receive());
   EXPECT_EQ(S_FALSE, hr);
   EXPECT_EQ(0, start_offset);
   EXPECT_EQ(0, end_offset);
-  EXPECT_EQ(nullptr, static_cast<BSTR>(text));
+  EXPECT_EQ(nullptr, text.Get());
   hr = input_text->get_textAtOffset(invalid_offset, IA2_TEXT_BOUNDARY_LINE,
                                     &start_offset, &end_offset, text.Receive());
   EXPECT_EQ(S_OK, hr);
   EXPECT_EQ(0, start_offset);
   EXPECT_EQ(46, end_offset);
-  EXPECT_STREQ(L"Moz/5.0 (ST 6.x; WWW33) WebKit  \"KHTML, like\".", text);
+  EXPECT_STREQ(L"Moz/5.0 (ST 6.x; WWW33) WebKit  \"KHTML, like\".", text.Get());
   text.Reset();
   hr = input_text->get_textAtOffset(invalid_offset, IA2_TEXT_BOUNDARY_ALL,
                                     &start_offset, &end_offset, text.Receive());
   EXPECT_EQ(E_INVALIDARG, hr);
   EXPECT_EQ(0, start_offset);
   EXPECT_EQ(0, end_offset);
-  EXPECT_EQ(nullptr, static_cast<BSTR>(text));
+  EXPECT_EQ(nullptr, text.Get());
 
   // The same behavior should be observed when the special offset
   // IA2_TEXT_OFFSET_LENGTH is used.
@@ -2895,28 +2897,28 @@ IN_PROC_BROWSER_TEST_F(AccessibilityWinBrowserTest,
   EXPECT_EQ(E_INVALIDARG, hr);
   EXPECT_EQ(0, start_offset);
   EXPECT_EQ(0, end_offset);
-  EXPECT_EQ(nullptr, static_cast<BSTR>(text));
+  EXPECT_EQ(nullptr, text.Get());
   hr = input_text->get_textAtOffset(IA2_TEXT_OFFSET_LENGTH,
                                     IA2_TEXT_BOUNDARY_WORD, &start_offset,
                                     &end_offset, text.Receive());
   EXPECT_EQ(E_INVALIDARG, hr);
   EXPECT_EQ(0, start_offset);
   EXPECT_EQ(0, end_offset);
-  EXPECT_EQ(nullptr, static_cast<BSTR>(text));
+  EXPECT_EQ(nullptr, text.Get());
   hr = input_text->get_textAtOffset(IA2_TEXT_OFFSET_LENGTH,
                                     IA2_TEXT_BOUNDARY_SENTENCE, &start_offset,
                                     &end_offset, text.Receive());
   EXPECT_EQ(S_FALSE, hr);
   EXPECT_EQ(0, start_offset);
   EXPECT_EQ(0, end_offset);
-  EXPECT_EQ(nullptr, static_cast<BSTR>(text));
+  EXPECT_EQ(nullptr, text.Get());
   hr = input_text->get_textAtOffset(IA2_TEXT_OFFSET_LENGTH,
                                     IA2_TEXT_BOUNDARY_LINE, &start_offset,
                                     &end_offset, text.Receive());
   EXPECT_EQ(S_OK, hr);
   EXPECT_EQ(0, start_offset);
   EXPECT_EQ(46, end_offset);
-  EXPECT_STREQ(L"Moz/5.0 (ST 6.x; WWW33) WebKit  \"KHTML, like\".", text);
+  EXPECT_STREQ(L"Moz/5.0 (ST 6.x; WWW33) WebKit  \"KHTML, like\".", text.Get());
   text.Reset();
   hr = input_text->get_textAtOffset(IA2_TEXT_OFFSET_LENGTH,
                                     IA2_TEXT_BOUNDARY_ALL, &start_offset,
@@ -2924,7 +2926,7 @@ IN_PROC_BROWSER_TEST_F(AccessibilityWinBrowserTest,
   EXPECT_EQ(E_INVALIDARG, hr);
   EXPECT_EQ(0, start_offset);
   EXPECT_EQ(0, end_offset);
-  EXPECT_EQ(nullptr, static_cast<BSTR>(text));
+  EXPECT_EQ(nullptr, text.Get());
 }
 
 IN_PROC_BROWSER_TEST_F(AccessibilityWinBrowserTest,
@@ -2946,7 +2948,7 @@ IN_PROC_BROWSER_TEST_F(AccessibilityWinBrowserTest,
   EXPECT_EQ(E_INVALIDARG, hr);
   EXPECT_EQ(0, start_offset);
   EXPECT_EQ(0, end_offset);
-  EXPECT_EQ(nullptr, static_cast<BSTR>(text));
+  EXPECT_EQ(nullptr, text.Get());
   invalid_offset = InputContentsString().size() + 1;
   hr = textarea_text->get_textAtOffset(invalid_offset, IA2_TEXT_BOUNDARY_WORD,
                                        &start_offset, &end_offset,
@@ -2954,7 +2956,7 @@ IN_PROC_BROWSER_TEST_F(AccessibilityWinBrowserTest,
   EXPECT_EQ(E_INVALIDARG, hr);
   EXPECT_EQ(0, start_offset);
   EXPECT_EQ(0, end_offset);
-  EXPECT_EQ(nullptr, static_cast<BSTR>(text));
+  EXPECT_EQ(nullptr, text.Get());
 
   // According to the IA2 Spec, only line boundaries should succeed when
   // the offset is one past the end of the text.
@@ -2965,28 +2967,28 @@ IN_PROC_BROWSER_TEST_F(AccessibilityWinBrowserTest,
   EXPECT_EQ(E_INVALIDARG, hr);
   EXPECT_EQ(0, start_offset);
   EXPECT_EQ(0, end_offset);
-  EXPECT_EQ(nullptr, static_cast<BSTR>(text));
+  EXPECT_EQ(nullptr, text.Get());
   hr = textarea_text->get_textAtOffset(invalid_offset, IA2_TEXT_BOUNDARY_WORD,
                                        &start_offset, &end_offset,
                                        text.Receive());
   EXPECT_EQ(E_INVALIDARG, hr);
   EXPECT_EQ(0, start_offset);
   EXPECT_EQ(0, end_offset);
-  EXPECT_EQ(nullptr, static_cast<BSTR>(text));
+  EXPECT_EQ(nullptr, text.Get());
   hr = textarea_text->get_textAtOffset(
       invalid_offset, IA2_TEXT_BOUNDARY_SENTENCE, &start_offset, &end_offset,
       text.Receive());
   EXPECT_EQ(S_FALSE, hr);
   EXPECT_EQ(0, start_offset);
   EXPECT_EQ(0, end_offset);
-  EXPECT_EQ(nullptr, static_cast<BSTR>(text));
+  EXPECT_EQ(nullptr, text.Get());
   hr = textarea_text->get_textAtOffset(invalid_offset, IA2_TEXT_BOUNDARY_LINE,
                                        &start_offset, &end_offset,
                                        text.Receive());
   EXPECT_EQ(S_OK, hr);
   EXPECT_EQ(32, start_offset);
   EXPECT_EQ(46, end_offset);
-  EXPECT_STREQ(L"\"KHTML, like\".", text);
+  EXPECT_STREQ(L"\"KHTML, like\".", text.Get());
   text.Reset();
   hr = textarea_text->get_textAtOffset(invalid_offset, IA2_TEXT_BOUNDARY_ALL,
                                        &start_offset, &end_offset,
@@ -2994,7 +2996,7 @@ IN_PROC_BROWSER_TEST_F(AccessibilityWinBrowserTest,
   EXPECT_EQ(E_INVALIDARG, hr);
   EXPECT_EQ(0, start_offset);
   EXPECT_EQ(0, end_offset);
-  EXPECT_EQ(nullptr, static_cast<BSTR>(text));
+  EXPECT_EQ(nullptr, text.Get());
 
   // The same behavior should be observed when the special offset
   // IA2_TEXT_OFFSET_LENGTH is used.
@@ -3004,28 +3006,28 @@ IN_PROC_BROWSER_TEST_F(AccessibilityWinBrowserTest,
   EXPECT_EQ(E_INVALIDARG, hr);
   EXPECT_EQ(0, start_offset);
   EXPECT_EQ(0, end_offset);
-  EXPECT_EQ(nullptr, static_cast<BSTR>(text));
+  EXPECT_EQ(nullptr, text.Get());
   hr = textarea_text->get_textAtOffset(IA2_TEXT_OFFSET_LENGTH,
                                        IA2_TEXT_BOUNDARY_WORD, &start_offset,
                                        &end_offset, text.Receive());
   EXPECT_EQ(E_INVALIDARG, hr);
   EXPECT_EQ(0, start_offset);
   EXPECT_EQ(0, end_offset);
-  EXPECT_EQ(nullptr, static_cast<BSTR>(text));
+  EXPECT_EQ(nullptr, text.Get());
   hr = textarea_text->get_textAtOffset(
       IA2_TEXT_OFFSET_LENGTH, IA2_TEXT_BOUNDARY_SENTENCE, &start_offset,
       &end_offset, text.Receive());
   EXPECT_EQ(S_FALSE, hr);
   EXPECT_EQ(0, start_offset);
   EXPECT_EQ(0, end_offset);
-  EXPECT_EQ(nullptr, static_cast<BSTR>(text));
+  EXPECT_EQ(nullptr, text.Get());
   hr = textarea_text->get_textAtOffset(IA2_TEXT_OFFSET_LENGTH,
                                        IA2_TEXT_BOUNDARY_LINE, &start_offset,
                                        &end_offset, text.Receive());
   EXPECT_EQ(S_OK, hr);
   EXPECT_EQ(32, start_offset);
   EXPECT_EQ(46, end_offset);
-  EXPECT_STREQ(L"\"KHTML, like\".", text);
+  EXPECT_STREQ(L"\"KHTML, like\".", text.Get());
   text.Reset();
   hr = textarea_text->get_textAtOffset(IA2_TEXT_OFFSET_LENGTH,
                                        IA2_TEXT_BOUNDARY_ALL, &start_offset,
@@ -3033,7 +3035,7 @@ IN_PROC_BROWSER_TEST_F(AccessibilityWinBrowserTest,
   EXPECT_EQ(E_INVALIDARG, hr);
   EXPECT_EQ(0, start_offset);
   EXPECT_EQ(0, end_offset);
-  EXPECT_EQ(nullptr, static_cast<BSTR>(text));
+  EXPECT_EQ(nullptr, text.Get());
 }
 
 IN_PROC_BROWSER_TEST_F(AccessibilityWinBrowserTest,
@@ -3522,16 +3524,16 @@ IN_PROC_BROWSER_TEST_F(AccessibilityWinBrowserTest, TestIAccessibleAction) {
 
   base::win::ScopedBstr action_name;
   EXPECT_HRESULT_SUCCEEDED(image_action->get_name(0, action_name.Receive()));
-  EXPECT_EQ(L"click", std::wstring(action_name, action_name.Length()));
+  EXPECT_EQ(L"click", std::wstring(action_name.Get(), action_name.Length()));
   action_name.Release();
   EXPECT_HRESULT_FAILED(image_action->get_name(1, action_name.Receive()));
-  EXPECT_EQ(nullptr, static_cast<BSTR>(action_name));
+  EXPECT_EQ(nullptr, action_name.Get());
 
   base::win::ScopedVariant childid_self(CHILDID_SELF);
   base::win::ScopedBstr image_name;
   EXPECT_HRESULT_SUCCEEDED(
       image->get_accName(childid_self, image_name.Receive()));
-  EXPECT_EQ(L"image", std::wstring(image_name, image_name.Length()));
+  EXPECT_EQ(L"image", std::wstring(image_name.Get(), image_name.Length()));
   image_name.Release();
   // Cllicking the image will change its name.
   EXPECT_HRESULT_SUCCEEDED(image_action->doAction(0));
@@ -3541,7 +3543,7 @@ IN_PROC_BROWSER_TEST_F(AccessibilityWinBrowserTest, TestIAccessibleAction) {
   waiter.WaitForNotification();
   EXPECT_HRESULT_SUCCEEDED(
       image->get_accName(childid_self, image_name.Receive()));
-  EXPECT_EQ(L"image2", std::wstring(image_name, image_name.Length()));
+  EXPECT_EQ(L"image2", std::wstring(image_name.Get(), image_name.Length()));
   EXPECT_HRESULT_FAILED(image_action->doAction(1));
 }
 
@@ -3625,7 +3627,7 @@ IN_PROC_BROWSER_TEST_F(AccessibilityWinBrowserTest, TestAccNavigateInTables) {
   EXPECT_HRESULT_SUCCEEDED(cell1->role(&role));
   EXPECT_EQ(ROLE_SYSTEM_CELL, role);
   EXPECT_HRESULT_SUCCEEDED(cell1->get_accName(childid_self, name.Receive()));
-  EXPECT_STREQ(L"AD", static_cast<BSTR>(name));
+  EXPECT_STREQ(L"AD", name.Get());
   EXPECT_HRESULT_SUCCEEDED(cell1.CopyTo(accessible_cell.GetAddressOf()));
   EXPECT_HRESULT_SUCCEEDED(accessible_cell->get_rowIndex(&row_index));
   EXPECT_HRESULT_SUCCEEDED(accessible_cell->get_columnIndex(&column_index));
@@ -3651,7 +3653,7 @@ IN_PROC_BROWSER_TEST_F(AccessibilityWinBrowserTest, TestAccNavigateInTables) {
   EXPECT_HRESULT_SUCCEEDED(cell2->role(&role));
   EXPECT_EQ(ROLE_SYSTEM_CELL, role);
   EXPECT_HRESULT_SUCCEEDED(cell2->get_accName(childid_self, name.Receive()));
-  EXPECT_STREQ(L"BC", static_cast<BSTR>(name));
+  EXPECT_STREQ(L"BC", name.Get());
   EXPECT_HRESULT_SUCCEEDED(cell2.CopyTo(accessible_cell.GetAddressOf()));
   EXPECT_HRESULT_SUCCEEDED(accessible_cell->get_rowIndex(&row_index));
   EXPECT_HRESULT_SUCCEEDED(accessible_cell->get_columnIndex(&column_index));
@@ -3671,7 +3673,7 @@ IN_PROC_BROWSER_TEST_F(AccessibilityWinBrowserTest, TestAccNavigateInTables) {
   EXPECT_HRESULT_SUCCEEDED(cell3->role(&role));
   EXPECT_EQ(ROLE_SYSTEM_CELL, role);
   EXPECT_HRESULT_SUCCEEDED(cell3->get_accName(childid_self, name.Receive()));
-  EXPECT_STREQ(L"EF", static_cast<BSTR>(name));
+  EXPECT_STREQ(L"EF", name.Get());
   EXPECT_HRESULT_SUCCEEDED(cell3.CopyTo(accessible_cell.GetAddressOf()));
   EXPECT_HRESULT_SUCCEEDED(accessible_cell->get_rowIndex(&row_index));
   EXPECT_HRESULT_SUCCEEDED(accessible_cell->get_columnIndex(&column_index));
@@ -4158,7 +4160,7 @@ IN_PROC_BROWSER_TEST_F(AccessibilityWinUIABrowserTest,
   base::string16 window_text_str16(window_text);
   base::win::ScopedBstr name;
   ASSERT_HRESULT_SUCCEEDED(element->get_CurrentName(name.Receive()));
-  base::string16 name_str16(name, name.Length());
+  base::string16 name_str16(name.Get(), name.Length());
   EXPECT_EQ(window_text_str16, name_str16);
 }
 

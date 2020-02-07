@@ -675,6 +675,7 @@
 <translation id="3987940399970879459">Moins de 1 Mo</translation>
 <translation id="3990250421422698716">Décalage</translation>
 <translation id="40103911065039147">{URL_count,plural, =1{1 page Web à proximité}one{# page Web à proximité}other{# pages Web à proximité}}</translation>
+<translation id="4014128326099193693">{COUNT,plural, =1{Document PDF contenant {COUNT} page}one{PDF document containing {COUNT} pages}other{Document PDF contenant {COUNT} pages}}</translation>
 <translation id="4030383055268325496">&amp;Annuler l'ajout</translation>
 <translation id="4032320456957708163">Votre navigateur est géré par <ph name="ENROLLMENT_DOMAIN" /></translation>
 <translation id="4058922952496707368">Clé "<ph name="SUBKEY" />" : <ph name="ERROR" /></translation>
@@ -703,6 +704,7 @@
 <translation id="4142935452406587478">Bac 10</translation>
 <translation id="4148925816941278100">American Express</translation>
 <translation id="4151403195736952345">Utiliser la valeur par défaut globale (Détection)</translation>
+<translation id="4152318981910038897">{COUNT,plural, =1{Page 1}one{Page {COUNT}}other{Page {COUNT}}}</translation>
 <translation id="4159784952369912983">Violet</translation>
 <translation id="4165986682804962316">Paramètres de site</translation>
 <translation id="4171400957073367226">Signature de validation non valide.</translation>
@@ -1379,6 +1381,7 @@
 <translation id="7201591969684833065">Votre administrateur peut consulter les éléments suivants :</translation>
 <translation id="7202346780273620635">Letter-Extra</translation>
 <translation id="7210863904660874423"><ph name="HOST_NAME" /> ne respecte pas les normes de sécurité.</translation>
+<translation id="7210993021468939304">Activité Linux dans le conteneur, et peut installer et exécuter des applications Linux dans le conteneur</translation>
 <translation id="721197778055552897"><ph name="BEGIN_LINK" />En savoir plus<ph name="END_LINK" /> sur ce problème.</translation>
 <translation id="7219179957768738017">La connexion utilise <ph name="SSL_VERSION" />.</translation>
 <translation id="7220786058474068424">Traitement en cours</translation>
@@ -1542,6 +1545,7 @@ Informations supplémentaires :
 <translation id="7878562273885520351">Votre mot de passe a peut-être été piraté</translation>
 <translation id="7882421473871500483">Marron</translation>
 <translation id="7887683347370398519">Veuillez vérifier votre code CVC et réessayer.</translation>
+<translation id="7887885240995164102">Utiliser le mode Picture-in-picture</translation>
 <translation id="7888575728750733395">Intent de rendu d'impression</translation>
 <translation id="7904208859782148177">C3 (enveloppe)</translation>
 <translation id="7932579305932748336">Revêtement</translation>

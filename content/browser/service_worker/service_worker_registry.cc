@@ -679,8 +679,8 @@ void ServiceWorkerRegistry::DidFindRegistrationForClientUrl(
     std::unique_ptr<ServiceWorkerDatabase::RegistrationData> data,
     std::unique_ptr<ResourceList> resources,
     ServiceWorkerDatabase::Status database_status) {
-  if (database_status != ServiceWorkerDatabase::STATUS_OK &&
-      database_status != ServiceWorkerDatabase::STATUS_ERROR_NOT_FOUND) {
+  if (database_status != ServiceWorkerDatabase::Status::kOk &&
+      database_status != ServiceWorkerDatabase::Status::kErrorNotFound) {
     ScheduleDeleteAndStartOver();
   }
 
@@ -727,8 +727,8 @@ void ServiceWorkerRegistry::DidFindRegistrationForScope(
     std::unique_ptr<ServiceWorkerDatabase::RegistrationData> data,
     std::unique_ptr<ResourceList> resources,
     ServiceWorkerDatabase::Status database_status) {
-  if (database_status != ServiceWorkerDatabase::STATUS_OK &&
-      database_status != ServiceWorkerDatabase::STATUS_ERROR_NOT_FOUND) {
+  if (database_status != ServiceWorkerDatabase::Status::kOk &&
+      database_status != ServiceWorkerDatabase::Status::kErrorNotFound) {
     ScheduleDeleteAndStartOver();
   }
 
@@ -751,8 +751,8 @@ void ServiceWorkerRegistry::DidFindRegistrationForId(
     std::unique_ptr<ServiceWorkerDatabase::RegistrationData> data,
     std::unique_ptr<ResourceList> resources,
     ServiceWorkerDatabase::Status database_status) {
-  if (database_status != ServiceWorkerDatabase::STATUS_OK &&
-      database_status != ServiceWorkerDatabase::STATUS_ERROR_NOT_FOUND) {
+  if (database_status != ServiceWorkerDatabase::Status::kOk &&
+      database_status != ServiceWorkerDatabase::Status::kErrorNotFound) {
     ScheduleDeleteAndStartOver();
   }
 
@@ -975,8 +975,8 @@ void ServiceWorkerRegistry::DidDeleteRegistration(
 void ServiceWorkerRegistry::DidUpdateToActiveState(
     StatusCallback callback,
     ServiceWorkerDatabase::Status status) {
-  if (status != ServiceWorkerDatabase::STATUS_OK &&
-      status != ServiceWorkerDatabase::STATUS_ERROR_NOT_FOUND) {
+  if (status != ServiceWorkerDatabase::Status::kOk &&
+      status != ServiceWorkerDatabase::Status::kErrorNotFound) {
     ScheduleDeleteAndStartOver();
   }
   std::move(callback).Run(
@@ -985,14 +985,14 @@ void ServiceWorkerRegistry::DidUpdateToActiveState(
 
 void ServiceWorkerRegistry::DidWriteUncommittedResourceIds(
     ServiceWorkerDatabase::Status status) {
-  if (status != ServiceWorkerDatabase::STATUS_OK)
+  if (status != ServiceWorkerDatabase::Status::kOk)
     ScheduleDeleteAndStartOver();
 }
 
 void ServiceWorkerRegistry::DidDoomUncommittedResourceIds(
     const std::set<int64_t>& resource_ids,
     ServiceWorkerDatabase::Status status) {
-  if (status != ServiceWorkerDatabase::STATUS_OK) {
+  if (status != ServiceWorkerDatabase::Status::kOk) {
     ScheduleDeleteAndStartOver();
     return;
   }
@@ -1003,8 +1003,8 @@ void ServiceWorkerRegistry::DidGetUserData(
     GetUserDataCallback callback,
     const std::vector<std::string>& data,
     ServiceWorkerDatabase::Status status) {
-  if (status != ServiceWorkerDatabase::STATUS_OK &&
-      status != ServiceWorkerDatabase::STATUS_ERROR_NOT_FOUND) {
+  if (status != ServiceWorkerDatabase::Status::kOk &&
+      status != ServiceWorkerDatabase::Status::kErrorNotFound) {
     ScheduleDeleteAndStartOver();
   }
   std::move(callback).Run(
@@ -1015,8 +1015,8 @@ void ServiceWorkerRegistry::DidGetUserKeysAndData(
     GetUserKeysAndDataCallback callback,
     const base::flat_map<std::string, std::string>& data_map,
     ServiceWorkerDatabase::Status status) {
-  if (status != ServiceWorkerDatabase::STATUS_OK &&
-      status != ServiceWorkerDatabase::STATUS_ERROR_NOT_FOUND) {
+  if (status != ServiceWorkerDatabase::Status::kOk &&
+      status != ServiceWorkerDatabase::Status::kErrorNotFound) {
     ScheduleDeleteAndStartOver();
   }
   std::move(callback).Run(
@@ -1029,8 +1029,8 @@ void ServiceWorkerRegistry::DidStoreUserData(
   // |status| can be NOT_FOUND when the associated registration did not exist in
   // the database. In the case, we don't have to schedule the corruption
   // recovery.
-  if (status != ServiceWorkerDatabase::STATUS_OK &&
-      status != ServiceWorkerDatabase::STATUS_ERROR_NOT_FOUND) {
+  if (status != ServiceWorkerDatabase::Status::kOk &&
+      status != ServiceWorkerDatabase::Status::kErrorNotFound) {
     ScheduleDeleteAndStartOver();
   }
   std::move(callback).Run(
@@ -1040,7 +1040,7 @@ void ServiceWorkerRegistry::DidStoreUserData(
 void ServiceWorkerRegistry::DidClearUserData(
     StatusCallback callback,
     ServiceWorkerDatabase::Status status) {
-  if (status != ServiceWorkerDatabase::STATUS_OK)
+  if (status != ServiceWorkerDatabase::Status::kOk)
     ScheduleDeleteAndStartOver();
   std::move(callback).Run(
       ServiceWorkerStorage::DatabaseStatusToStatusCode(status));
@@ -1050,7 +1050,7 @@ void ServiceWorkerRegistry::DidGetUserDataForAllRegistrations(
     GetUserDataForAllRegistrationsCallback callback,
     const std::vector<std::pair<int64_t, std::string>>& user_data,
     ServiceWorkerDatabase::Status status) {
-  if (status != ServiceWorkerDatabase::STATUS_OK)
+  if (status != ServiceWorkerDatabase::Status::kOk)
     ScheduleDeleteAndStartOver();
   std::move(callback).Run(
       user_data, ServiceWorkerStorage::DatabaseStatusToStatusCode(status));

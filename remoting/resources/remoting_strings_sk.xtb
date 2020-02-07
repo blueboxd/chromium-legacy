@@ -256,6 +256,7 @@ Ak je políčko <ph name="SERVICE_SCRIPT_NAME" /> už začiarknuté, začiarknut
 <translation id="6939719207673461467">Zobraziť/skryť klávesnicu</translation>
 <translation id="6944854424004126054">Obnovenie okna</translation>
 <translation id="6948905685698011662">Vzdialená plocha Chrome je už na webe! Vyskúšajte našu <ph name="LINK_BEGIN" />bezplatnú webovú aplikáciu<ph name="LINK_END" />.</translation>
+<translation id="6956835181934226419">Toto povolenie som už udelil(a).</translation>
 <translation id="6963936880795878952">Pripojenia k vzdialenému počítaču sú dočasne zablokované, pretože sa k nemu niekto snažil pripojiť pomocou neplatného kódu PIN. Skúste to znova neskôr.</translation>
 <translation id="6965382102122355670">OK</translation>
 <translation id="6985691951107243942">Naozaj chcete zakázať vzdialené pripojenia k počítaču <ph name="HOSTNAME" />? Ak zmeníte názor, pripojenie budete musieť znova povoliť priamo z uvedeného počítača.</translation>

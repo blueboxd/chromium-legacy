@@ -35,7 +35,6 @@
 #include "content/browser/browser_main_loop.h"
 #include "content/browser/browsing_data/clear_site_data_handler.h"
 #include "content/browser/browsing_data/storage_partition_code_cache_data_remover.h"
-#include "content/browser/child_process_security_policy_impl.h"
 #include "content/browser/code_cache/generated_code_cache.h"
 #include "content/browser/code_cache/generated_code_cache_context.h"
 #include "content/browser/conversions/conversion_manager.h"
@@ -1723,16 +1722,8 @@ void StoragePartitionImpl::OpenLocalStorage(
     const url::Origin& origin,
     mojo::PendingReceiver<blink::mojom::StorageArea> receiver) {
   DCHECK(initialized_);
-  int process_id = receivers_.current_context();
-  // TODO(943887): Replace HasSecurityState() call with something that can
-  // preserve security state after process shutdown. The security state check
-  // is a temporary solution to avoid crashes when this method is run after the
-  // process associated with |process_id| has been destroyed.
-  // It temporarily restores the old behavior of always allowing access if the
-  // process is gone.
-  auto* policy = ChildProcessSecurityPolicyImpl::GetInstance();
-  if (!policy->CanAccessDataForOrigin(process_id, origin) &&
-      policy->HasSecurityState(process_id)) {
+  const auto& security_policy_handle = receivers_.current_context();
+  if (!security_policy_handle->CanAccessDataForOrigin(origin)) {
     SYSLOG(WARNING) << "Killing renderer: illegal localStorage request.";
     receivers_.ReportBadMessage("Access denied for localStorage request");
     return;
@@ -1744,10 +1735,11 @@ void StoragePartitionImpl::OpenSessionStorage(
     const std::string& namespace_id,
     mojo::PendingReceiver<blink::mojom::SessionStorageNamespace> receiver) {
   DCHECK(initialized_);
-  int process_id = receivers_.current_context();
-  dom_storage_context_->OpenSessionStorage(process_id, namespace_id,
-                                           receivers_.GetBadMessageCallback(),
-                                           std::move(receiver));
+  SecurityPolicyHandle cloned_handle =
+      receivers_.current_context()->Duplicate();
+  dom_storage_context_->OpenSessionStorage(
+      std::move(cloned_handle), namespace_id,
+      receivers_.GetBadMessageCallback(), std::move(receiver));
 }
 
 void StoragePartitionImpl::OnAuthRequired(
@@ -2380,7 +2372,11 @@ mojo::ReceiverId StoragePartitionImpl::Bind(
     int process_id,
     mojo::PendingReceiver<blink::mojom::StoragePartitionService> receiver) {
   DCHECK(initialized_);
-  return receivers_.Add(this, std::move(receiver), process_id);
+  auto handle =
+      ChildProcessSecurityPolicyImpl::GetInstance()->CreateHandle(process_id);
+  return receivers_.Add(
+      this, std::move(receiver),
+      std::make_unique<SecurityPolicyHandle>(std::move(handle)));
 }
 
 void StoragePartitionImpl::Unbind(mojo::ReceiverId receiver_id) {

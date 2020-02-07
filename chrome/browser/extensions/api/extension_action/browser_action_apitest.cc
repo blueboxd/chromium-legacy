@@ -113,6 +113,13 @@ class BrowserActionApiTest : public ExtensionApiTest {
     host_resolver()->AddRule("*", "127.0.0.1");
   }
 
+  void TearDownOnMainThread() override {
+    // Clean up the test util first, so that any created UI properly removes
+    // itself before profile destruction.
+    browser_action_test_util_ = nullptr;
+    ExtensionApiTest::TearDownOnMainThread();
+  }
+
  protected:
   ExtensionActionTestHelper* GetBrowserActionsBar() {
     if (!browser_action_test_util_)

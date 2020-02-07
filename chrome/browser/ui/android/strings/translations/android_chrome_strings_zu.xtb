@@ -115,6 +115,7 @@
 <translation id="1919950603503897840">Khetha oxhumana nabo</translation>
 <translation id="1922076542920281912">Ukuze uvumele i-Chrome ukufinyelela indawo yakho, vula futhi indawo <ph name="BEGIN_LINK" />kuzilungiselelo ze-Android<ph name="END_LINK" />.</translation>
 <translation id="1923695749281512248"><ph name="BYTES_DOWNLOADED_WITH_UNITS" /> / <ph name="FILE_SIZE_WITH_UNITS" /></translation>
+<translation id="1925021887439448749">Faka ikheli lewebhu langokwezifiso</translation>
 <translation id="1928696683969751773">Izibuyekezo</translation>
 <translation id="19288952978244135">Phinda uvule i-Chrome.</translation>
 <translation id="1933845786846280168">Ithebhu ekhethiwe</translation>
@@ -279,6 +280,7 @@
 <translation id="3123473560110926937">Kuvinjelwe kwamanye amasayithi</translation>
 <translation id="3123734510202723619">Izimemezelo</translation>
 <translation id="3137521801621304719">Shiya imodi ye-incognito</translation>
+<translation id="3140134512074889489">Sicela unike amandla ikhamera yakho ukuze iphequlule ikhodi ye-QR</translation>
 <translation id="3143515551205905069">Khansela ukuvumelanisa</translation>
 <translation id="3157842584138209013">Bona ukuthi wonge idatha engakanani kusuka kwinkinobho yezinketho eziningi</translation>
 <translation id="3166827708714933426">Izinqamuleli zethebhu nezewindi</translation>
@@ -449,6 +451,9 @@
 <translation id="4521489764227272523">Idatha ekhethiwe isusiwe kusukela ku-Chrome kanye namadivayisi akho avunyelanisiwe.
 
 I-akhawunti yakho ye-Google ingaba namanye amafomu omlando okuphequlula afana nosesho nomsebenzi kusukela kwamanye amasevisi e-Google ku-<ph name="BEGIN_LINK" />myactivity.google.com<ph name="END_LINK" />.</translation>
+<translation id="4527374721149092498">Funda mayelana nezihloko kumawebhusayithi ngaphandle kokushiya ikhasi. Ukuthinta ukuze Useshe kuthumela igama kanye nokuqukethwe kwayo okusibekele kokuthi Usesho lwe-Google, izincazelo ezibuyayo, izithombe, imiphumela yosesho, neminye imininingwane.
+
+Thepha noma iliphi igama ukuze udale usesho lwalo. Ukuze ulungise itemu lakho losesho, cindezela isikhathi eside ukuze ukhethe. Ukuze wenze ngcono isilayidi sosesho lwakho lokuvula iphaneli, thepha isithonjana sokunweba ukuze wenze ithebhu entsha, bese uthepha ibhokisi losesho.</translation>
 <translation id="4532845899244822526">Khetha ifolda</translation>
 <translation id="4538018662093857852">Vula imodi elula</translation>
 <translation id="4550003330909367850">Ukuze ubuke noma ukopishe iphasiwedi yakho lapha, setha ukukhiya kwesikrini kule divayisi.</translation>
@@ -690,6 +695,9 @@ Ukuze ushintshe lesi silungiselelo, <ph name="BEGIN_LINK" />setha kabusha ukuvum
 <translation id="6232535412751077445">Ukunika amandla "Ukungalandeleli" kusho ukuthi isicelo sizofakwa ngethrafikhi yakho yokudlulisa amehlo. Noma yimuphi umthelela uncike ekutheni iwebhusayithi iphendule isicelo, nokuthi isicelo sitolikwa kanjani.
 
 Isibonelo, amanye amawebhusayithi angaphendula lesi sicelo ngokukubonisa izikhangiso ezingasuselwa kwamanye amawebhusayithi owavakashele. Iningi lamawebhusayithi lisazoqoqa liphinde lisebenzise idatha yakho yokudlulisa amehlo - isibonelo ukuze athuthukise ukuvikela, ukuze anikeze okuqukethwe, izikhangiso nezincomo kumawebhusayithi azo, kanye nokukhiqiza izibalo zokubika.</translation>
+<translation id="6238003486329291387">Funda mayelana nezihloko kumawebhusayithi ngaphandle kokushiya ikhasi. Ukuthinta ukuze Useshe kuthumela igama kanye nokuqukethwe kwayo okusibekele kokuthi Usesho lwe-Google, izincazelo ezibuyayo, izithombe, imiphumela yosesho, neminye imininingwane.
+
+Cindezela isikhathi eside noma iliphi igama ukuze udale usesho lwalo. Ukuze wenze ngcono usesho lwakho lungisa ukhetho. Ungaphinda uslayide iphaneli ivuleke, uthephe isithonjana sokunweba ukuze wenze ithebhu entsha, bese uthepha ibhokisi losesho.</translation>
 <translation id="624789221780392884">Isibuyekezo sikulungele</translation>
 <translation id="6255999984061454636">Iziphakamiso zokuqukethwe</translation>
 <translation id="6270391203985052864">Amasayithi angacela ukuthumela izaziso</translation>

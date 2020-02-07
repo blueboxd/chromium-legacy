@@ -325,10 +325,14 @@ void NetworkResourcesData::MaybeDecodeDataToContent(const String& request_id) {
     return;
   if (!resource_data->HasData())
     return;
-  content_size_ += resource_data->DecodeDataToContent();
-  size_t data_length = resource_data->Content().CharactersSizeInBytes();
+  const size_t data_length_increment = resource_data->DecodeDataToContent();
+  const size_t data_length = resource_data->Content().CharactersSizeInBytes();
+  content_size_ += data_length_increment;
   if (data_length > maximum_single_resource_content_size_)
     content_size_ -= resource_data->EvictContent();
+  else
+    EnsureFreeSpace(data_length_increment);
+  CHECK_GE(maximum_resources_content_size_, content_size_);
 }
 
 void NetworkResourcesData::AddResource(const String& request_id,
@@ -452,7 +456,7 @@ bool NetworkResourcesData::EnsureFreeSpace(uint64_t size) {
   if (size > maximum_resources_content_size_)
     return false;
 
-  while (size > maximum_resources_content_size_ - content_size_) {
+  while (content_size_ + size > maximum_resources_content_size_) {
     String request_id = request_ids_deque_.TakeFirst();
     ResourceData* resource_data = ResourceDataForRequestId(request_id);
     if (resource_data)

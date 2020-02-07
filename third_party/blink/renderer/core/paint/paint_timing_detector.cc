@@ -335,21 +335,29 @@ ScopedPaintTimingDetectorBlockPaintHook*
     ScopedPaintTimingDetectorBlockPaintHook::top_ = nullptr;
 
 void ScopedPaintTimingDetectorBlockPaintHook::EmplaceIfNeeded(
-    const LayoutBoxModelObject& aggregator,
+    const LayoutBoxModelObject& layout_object,
     const PropertyTreeState& property_tree_state) {
-  // |reset_top_| is unset when |aggregator| is anonymous so that each
-  // aggregation corresponds to an element. See crbug.com/988593. When set,
-  // |top_| becomes |this|, and |top_| is restored to the previous value when
-  // the ScopedPaintTimingDetectorBlockPaintHook goes out of scope.
-  if (!aggregator.GetNode())
+  // Find our first non-anonymous parent.
+  const LayoutObject* object = &layout_object;
+  while (object && !object->GetNode())
+    object = object->Parent();
+
+  if (!object || !object->IsBoxModelObject())
     return;
 
+  const LayoutBoxModelObject& aggregator = To<LayoutBoxModelObject>(*object);
+  DCHECK(aggregator.GetNode());
+
+  // When set, |top_| becomes |this|, and |top_| is restored to the previous
+  // value when the ScopedPaintTimingDetectorBlockPaintHook goes out of scope.
   reset_top_.emplace(&top_, this);
+
   TextPaintTimingDetector* detector = aggregator.GetFrameView()
                                           ->GetPaintTimingDetector()
                                           .GetTextPaintTimingDetector();
+
   // Only set |data_| if we need to walk the object.
-  if (detector && detector->ShouldWalkObject(aggregator))
+  if (detector->ShouldWalkObject(aggregator))
     data_.emplace(aggregator, property_tree_state, detector);
 }
 

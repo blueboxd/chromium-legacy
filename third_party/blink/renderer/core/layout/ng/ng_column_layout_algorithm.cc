@@ -195,10 +195,7 @@ base::Optional<MinMaxSize> NGColumnLayoutAlgorithm::ComputeMinMaxSize(
   NGFragmentGeometry fragment_geometry =
       CalculateInitialMinMaxFragmentGeometry(space, Node());
   NGBlockLayoutAlgorithm algorithm({Node(), fragment_geometry, space});
-  MinMaxSizeInput child_input(input);
-  child_input.size_type = NGMinMaxSizeType::kContentBoxSize;
-  base::Optional<MinMaxSize> min_max_sizes =
-      algorithm.ComputeMinMaxSize(child_input);
+  base::Optional<MinMaxSize> min_max_sizes = algorithm.ComputeMinMaxSize(input);
   DCHECK(min_max_sizes.has_value());
   MinMaxSize sizes = *min_max_sizes;
 
@@ -221,10 +218,7 @@ base::Optional<MinMaxSize> NGColumnLayoutAlgorithm::ComputeMinMaxSize(
 
   // TODO(mstensho): Need to include spanners.
 
-  if (input.size_type == NGMinMaxSizeType::kBorderBoxSize) {
-    sizes += border_scrollbar_padding_.InlineSum();
-  }
-
+  sizes += border_scrollbar_padding_.InlineSum();
   return sizes;
 }
 

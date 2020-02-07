@@ -66,7 +66,10 @@ suite('NewTabPageVoiceSearchOverlayTest', () => {
     // Assert.
     assertTrue(isVisible(
         voiceSearchOverlay.shadowRoot.querySelector('#texts *[text=waiting]')));
-    assertEquals(voiceSearchOverlay.$.micContainer.className, '');
+    assertFalse(
+        voiceSearchOverlay.$.micContainer.classList.contains('listening'));
+    assertFalse(
+        voiceSearchOverlay.$.micContainer.classList.contains('receiving'));
     assertStyle(voiceSearchOverlay.$.micVolume, '--mic-volume-level', '0');
   });
 
@@ -156,7 +159,10 @@ suite('NewTabPageVoiceSearchOverlayTest', () => {
     // Assert.
     const href = await testProxy.whenCalled('navigate');
     assertEquals(href, `${googleBaseUrl}/search?q=hello+world&gs_ivs=1`);
-    assertEquals(voiceSearchOverlay.$.micContainer.className, '');
+    assertFalse(
+        voiceSearchOverlay.$.micContainer.classList.contains('listening'));
+    assertFalse(
+        voiceSearchOverlay.$.micContainer.classList.contains('receiving'));
     assertStyle(voiceSearchOverlay.$.micVolume, '--mic-volume-level', '0');
   });
 
@@ -169,7 +175,10 @@ suite('NewTabPageVoiceSearchOverlayTest', () => {
         voiceSearchOverlay.shadowRoot.querySelector('#texts *[text=error]')));
     assertTrue(isVisible(
         voiceSearchOverlay.shadowRoot.querySelector('#errors *[error="2"]')));
-    assertEquals(voiceSearchOverlay.$.micContainer.className, '');
+    assertFalse(
+        voiceSearchOverlay.$.micContainer.classList.contains('listening'));
+    assertFalse(
+        voiceSearchOverlay.$.micContainer.classList.contains('receiving'));
     assertStyle(voiceSearchOverlay.$.micVolume, '--mic-volume-level', '0');
   });
 

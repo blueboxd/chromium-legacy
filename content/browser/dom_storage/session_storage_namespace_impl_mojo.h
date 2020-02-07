@@ -15,6 +15,7 @@
 #include "components/services/storage/dom_storage/session_storage_area_impl.h"
 #include "components/services/storage/dom_storage/session_storage_data_map.h"
 #include "components/services/storage/dom_storage/session_storage_metadata.h"
+#include "content/browser/child_process_security_policy_impl.h"
 #include "content/common/content_export.h"
 #include "mojo/public/cpp/bindings/pending_receiver.h"
 #include "third_party/blink/public/mojom/dom_storage/session_storage_namespace.mojom.h"
@@ -158,7 +159,7 @@ class CONTENT_EXPORT SessionStorageNamespaceImplMojo final
   // eventually be called before the PendingReceiver can be bound.
   void Bind(
       mojo::PendingReceiver<blink::mojom::SessionStorageNamespace> receiver,
-      int process_id);
+      ChildProcessSecurityPolicyImpl::Handle handle);
 
   bool IsBound() const {
     return !receivers_.empty() || bind_waiting_on_population_;
@@ -225,8 +226,11 @@ class CONTENT_EXPORT SessionStorageNamespaceImplMojo final
   base::flat_set<std::string> child_namespaces_waiting_for_clone_call_;
 
   OriginAreas origin_areas_;
-  // The context is the process id.
-  mojo::ReceiverSet<blink::mojom::SessionStorageNamespace, int> receivers_;
+
+  using SecurityPolicyHandle = ChildProcessSecurityPolicyImpl::Handle;
+  mojo::ReceiverSet<blink::mojom::SessionStorageNamespace,
+                    std::unique_ptr<SecurityPolicyHandle>>
+      receivers_;
 };
 
 }  // namespace content

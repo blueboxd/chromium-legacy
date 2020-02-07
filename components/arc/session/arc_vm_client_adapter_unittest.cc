@@ -593,6 +593,21 @@ TEST_F(ArcVmClientAdapterTest, StartUpgradeArc_DemoMode) {
   EXPECT_TRUE(base::Contains(request.params(), "androidboot.arc_demo_mode=1"));
 }
 
+TEST_F(ArcVmClientAdapterTest, StartUpgradeArc_DisableSystemDefaultApp) {
+  StartParams start_params(GetPopulatedStartParams());
+  start_params.arc_disable_system_default_app = true;
+  SetValidUserInfo();
+  StartMiniArcWithParams(std::move(start_params));
+  UpgradeParams params(GetPopulatedUpgradeParams());
+  UpgradeArcWithParams(true, std::move(params));
+  EXPECT_TRUE(GetStartConciergeCalled());
+  EXPECT_TRUE(GetTestConciergeClient()->start_arc_vm_called());
+  EXPECT_FALSE(arc_instance_stopped_called());
+  EXPECT_TRUE(
+      base::Contains(GetTestConciergeClient()->start_arc_vm_request().params(),
+                     "androidboot.disable_system_default_app=1"));
+}
+
 // Tests that StartArcVm() is called with valid parameters.
 TEST_F(ArcVmClientAdapterTest, UpgradeArc_StartArcVmParams) {
   SetValidUserInfo();

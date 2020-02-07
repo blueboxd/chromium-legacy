@@ -155,7 +155,7 @@ class VIZ_SERVICE_EXPORT OutputSurface {
   virtual void Reshape(const gfx::Size& size,
                        float device_scale_factor,
                        const gfx::ColorSpace& color_space,
-                       bool has_alpha,
+                       gfx::BufferFormat format,
                        bool use_stencil) = 0;
 
   virtual bool HasExternalStencilTest() const = 0;

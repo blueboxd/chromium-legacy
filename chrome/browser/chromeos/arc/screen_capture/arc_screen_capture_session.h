@@ -11,7 +11,7 @@
 
 #include "base/macros.h"
 #include "components/arc/mojom/screen_capture.mojom.h"
-#include "components/viz/common/gl_helper.h"
+#include "gpu/command_buffer/client/gl_helper.h"
 #include "mojo/public/cpp/bindings/pending_remote.h"
 #include "mojo/public/cpp/bindings/receiver.h"
 #include "ui/compositor/compositor_animation_observer.h"
@@ -103,8 +103,8 @@ class ArcScreenCaptureSession : public mojom::ScreenCaptureSession,
   // well as never skip any output buffers.
   std::queue<std::unique_ptr<PendingBuffer>> buffer_queue_;
   std::queue<std::unique_ptr<DesktopTexture>> texture_queue_;
-  std::unique_ptr<viz::GLHelper> gl_helper_;
-  std::unique_ptr<viz::GLHelper::ScalerInterface> scaler_;
+  std::unique_ptr<gpu::GLHelper> gl_helper_;
+  std::unique_ptr<gpu::GLHelper::ScalerInterface> scaler_;
   std::unique_ptr<ScreenCaptureNotificationUI> notification_ui_;
   std::unique_ptr<gfx::ClientNativePixmapFactory> client_native_pixmap_factory_;
 

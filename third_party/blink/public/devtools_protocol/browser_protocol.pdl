@@ -1668,6 +1668,19 @@ domain DOM
       # Node description.
       Node node
 
+  # Scrolls the specified rect of the given node into view if not already visible.
+  experimental command scrollIntoViewIfNeeded
+    parameters
+      # Identifier of the node.
+      optional NodeId nodeId
+      # Identifier of the backend node.
+      optional BackendNodeId backendNodeId
+      # JavaScript object id of the node wrapper.
+      optional Runtime.RemoteObjectId objectId
+      # The rect to be scrolled into view, relative to the node's border box, in CSS pixels.
+      # When omitted, center of the node will be used, similar to Element.scrollIntoView.
+      optional Rect rect
+
   # Disables DOM agent for the given page.
   command disable
 
@@ -5478,8 +5491,7 @@ domain Page
 
   experimental command getInstallabilityErrors
     returns
-      deprecated array of string errors
-      experimental array of InstallabilityError installabilityErrors
+      array of InstallabilityError installabilityErrors
 
   experimental command getManifestIcons
     returns
@@ -6724,6 +6736,9 @@ domain Target
   # Creates a new empty BrowserContext. Similar to an incognito profile but you can have more than
   # one.
   experimental command createBrowserContext
+    parameters
+      # If specified, disposes this context when debugging session disconnects.
+      optional boolean disposeOnDetach
     returns
       # The id of the context created.
       Browser.BrowserContextID browserContextId

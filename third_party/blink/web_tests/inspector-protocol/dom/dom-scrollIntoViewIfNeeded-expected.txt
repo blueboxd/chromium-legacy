@@ -1,0 +1,8 @@
+Tests DOM.scrollIntoViewIfNeeded.
+0x0
+450x850
+450x2150
+202x1902
+600x2300
+423x2234
+

@@ -48,7 +48,7 @@ class MixerSocket : public SmallMessageSocket::Delegate {
 
     // Called when audio data is received from the other side of the connection.
     // Return |true| if the socket should continue to receive messages.
-    virtual bool HandleAudioData(char* data, int size, int64_t timestamp);
+    virtual bool HandleAudioData(char* data, size_t size, int64_t timestamp);
 
     // Called when audio data is received from the other side of the connection
     // using an IOBufferPool. The |buffer| reference may be held as long as
@@ -59,7 +59,7 @@ class MixerSocket : public SmallMessageSocket::Delegate {
     // Return |true| if the socket should continue to receive messages.
     virtual bool HandleAudioBuffer(scoped_refptr<net::IOBuffer> buffer,
                                    char* data,
-                                   int size,
+                                   size_t size,
                                    int64_t timestamp);
 
     // Called when the connection is lost; no further data will be sent or
@@ -122,20 +122,21 @@ class MixerSocket : public SmallMessageSocket::Delegate {
   void ReceiveMoreMessages();
 
  private:
-  void SendBuffer(scoped_refptr<net::IOBuffer> buffer, int buffer_size);
+  void SendBuffer(scoped_refptr<net::IOBuffer> buffer, size_t buffer_size);
 
   // SmallMessageSocket::Delegate implementation:
   void OnSendUnblocked() override;
   void OnError(int error) override;
   void OnEndOfStream() override;
-  bool OnMessage(char* data, int size) override;
-  bool OnMessageBuffer(scoped_refptr<net::IOBuffer> buffer, int size) override;
+  bool OnMessage(char* data, size_t size) override;
+  bool OnMessageBuffer(scoped_refptr<net::IOBuffer> buffer,
+                       size_t size) override;
 
-  bool ParseMetadata(char* data, int size);
-  bool ParseAudio(char* data, int size);
+  bool ParseMetadata(char* data, size_t size);
+  bool ParseAudio(char* data, size_t size);
   bool ParseAudioBuffer(scoped_refptr<net::IOBuffer> buffer,
                         char* data,
-                        int size);
+                        size_t size);
 
   Delegate* delegate_ = nullptr;
   const std::unique_ptr<SmallMessageSocket> socket_;

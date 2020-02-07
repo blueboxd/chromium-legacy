@@ -7,7 +7,10 @@
   <script src="chrome://resources/mojo/mojo/public/js/mojo_bindings_lite.js"></script>
   <script src="chrome://resources/js/promise_resolver.js"></script>
   <script src="chrome://resources/js/util.js"></script>
-
+  <script src="chrome://resources/mojo/mojo/public/mojom/base/unguessable_token.mojom-lite.js"></script>
+  <script src="chrome://resources/mojo/mojo/public/mojom/base/time.mojom-lite.js"></script>
+  <script src="chrome://resources/mojo/url/mojom/url.mojom-lite.js"></script>
+  <script src="chrome://resources/mojo/url/mojom/origin.mojom-lite.js"></script>
   <script src="chrome/browser/media/history/media_history_store.mojom-lite.js">
   </script>
 
@@ -46,6 +49,20 @@
     .name-cell {
       background-color: rgba(230, 230, 230, 0.5);
     }
+
+    th.sort-column {
+      padding-inline-end: 16px;
+    }
+
+    th.sort-column::after {
+      content: '▲';
+      position: absolute;
+    }
+
+    th[sort-reverse].sort-column::after {
+      content: '▼';
+      position: absolute;
+    }
   </style>
 </head>
 <body>
@@ -65,7 +82,35 @@
     <tbody id="stats-table-body">
     </tbody>
   </table>
+  <table>
+    <thead>
+      <tr id="data-table-header">
+        <th sort-key="origin">
+          Origin
+        </th>
+        <th sort-key="lastUpdatedTime" sort-reverse>
+          Last Updated
+        </th>
+        <th sort-key="cachedAudioVideoWatchtime" class="sort-column" sort-reverse>
+          Audio + Video Watchtime (secs, cached)
+        </th>
+        <th sort-key="actualAudioVideoWatchtime" sort-reverse>
+          Audio + Video Watchtime (secs, actual)
+        </th>
+      </tr>
+    </thead>
+    <tbody id="data-table-body">
+    </tbody>
+  </table>
 
+  <template id="data-row">
+    <tr>
+      <td class="origin-cell"></td>
+      <td class="last-updated-cell"></td>
+      <td class="cached-watchtime-cell"></td>
+      <td class="actual-watchtime-cell"></td>
+    </tr>
+  </template>
   <template id="stats-row">
     <tr>
       <td class="name-cell"></td>

@@ -31,6 +31,7 @@
 #include "ui/gfx/color_utils.h"
 #include "ui/gfx/paint_vector_icon.h"
 #include "ui/views/bubble/bubble_frame_view.h"
+#include "ui/views/controls/button/checkbox.h"
 #include "ui/views/controls/button/image_button.h"
 #include "ui/views/controls/button/md_text_button.h"
 #include "ui/views/controls/editable_combobox/editable_combobox.h"
@@ -39,12 +40,6 @@
 #include "ui/views/layout/grid_layout.h"
 #include "ui/views/layout/layout_provider.h"
 #include "ui/views/view.h"
-
-#if defined(PASSWORD_STORE_SELECT_ENABLED)
-#include "base/feature_list.h"
-#include "components/password_manager/core/common/password_manager_features.h"
-#include "ui/views/controls/button/checkbox.h"
-#endif  // defined(PASSWORD_STORE_SELECT_ENABLED)
 
 namespace {
 
@@ -222,16 +217,10 @@ std::unique_ptr<views::View> CreateHeaderImage(int image_id) {
   return image_view;
 }
 
-#if defined(PASSWORD_STORE_SELECT_ENABLED)
-views::Checkbox* MaybeAppendAccountCheckboxRow(
-    views::GridLayout* layout,
-    bool uses_account_store,
-    int height,
-    views::ButtonListener* listener) {
-  if (!base::FeatureList::IsEnabled(
-          password_manager::features::kEnablePasswordsAccountStorageSavingUi)) {
-    return nullptr;
-  }
+views::Checkbox* AppendAccountCheckboxRow(views::GridLayout* layout,
+                                          bool uses_account_store,
+                                          int height,
+                                          views::ButtonListener* listener) {
   auto account_store_checkbox = std::make_unique<views::Checkbox>(
       base::ASCIIToUTF16("Store passwords in account store?"), listener);
   account_store_checkbox->SetChecked(uses_account_store);
@@ -242,7 +231,6 @@ views::Checkbox* MaybeAppendAccountCheckboxRow(
                          views::GridLayout::FILL, views::GridLayout::FILL, 0,
                          height);
 }
-#endif  // defined(PASSWORD_STORE_SELECT_ENABLED)
 
 }  // namespace
 
@@ -304,11 +292,9 @@ PasswordSaveUpdateWithAccountStoreView::PasswordSaveUpdateWithAccountStoreView(
     BuildCredentialRows(layout, std::move(username_dropdown),
                         std::move(password_dropdown),
                         std::move(password_view_button));
-#if defined(PASSWORD_STORE_SELECT_ENABLED)
-    account_store_checkbox_ = MaybeAppendAccountCheckboxRow(
+    account_store_checkbox_ = AppendAccountCheckboxRow(
         layout, controller_.IsUsingAccountStore(),
         password_dropdown_->GetPreferredSize().height(), this);
-#endif  // defined(PASSWORD_STORE_SELECT_ENABLED)
   }
 
   DialogDelegate::SetFootnoteView(CreateFooterView());
@@ -351,13 +337,11 @@ bool PasswordSaveUpdateWithAccountStoreView::Close() {
 void PasswordSaveUpdateWithAccountStoreView::ButtonPressed(
     views::Button* sender,
     const ui::Event& event) {
-#if defined(PASSWORD_STORE_SELECT_ENABLED)
   DCHECK(sender);
   if (sender == account_store_checkbox_) {
     controller_.OnToggleAccountStore(account_store_checkbox_->GetChecked());
     return;
   }
-#endif  // defined(PASSWORD_STORE_SELECT_ENABLED)
   DCHECK(sender == password_view_button_);
   TogglePasswordVisibility();
 }

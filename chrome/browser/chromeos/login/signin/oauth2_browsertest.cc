@@ -37,7 +37,6 @@
 #include "chrome/browser/signin/identity_manager_factory.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_tabstrip.h"
-#include "chrome/browser/ui/javascript_dialogs/javascript_dialog_tab_helper.h"
 #include "chrome/browser/ui/scoped_tabbed_browser_displayer.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/browser/ui/webui/chromeos/login/gaia_screen_handler.h"
@@ -48,6 +47,7 @@
 #include "chromeos/login/auth/key.h"
 #include "chromeos/login/auth/user_context.h"
 #include "components/account_id/account_id.h"
+#include "components/javascript_dialogs/tab_modal_dialog_manager.h"
 #include "components/prefs/pref_service.h"
 #include "components/signin/public/identity_manager/identity_manager.h"
 #include "components/signin/public/identity_manager/identity_test_utils.h"
@@ -927,10 +927,11 @@ IN_PROC_BROWSER_TEST_P(MergeSessionTest, PageThrottle) {
   // JavaScript dialog wait setup.
   content::WebContents* tab =
       browser->tab_strip_model()->GetActiveWebContents();
-  JavaScriptDialogTabHelper* js_helper =
-      JavaScriptDialogTabHelper::FromWebContents(tab);
+  auto* js_dialog_manager =
+      javascript_dialogs::TabModalDialogManager::FromWebContents(tab);
   base::RunLoop dialog_wait;
-  js_helper->SetDialogShownCallbackForTesting(dialog_wait.QuitClosure());
+  js_dialog_manager->SetDialogShownCallbackForTesting(
+      dialog_wait.QuitClosure());
 
   // Wait until we get send merge session request.
   WaitForMergeSessionToStart();
@@ -955,7 +956,7 @@ IN_PROC_BROWSER_TEST_P(MergeSessionTest, PageThrottle) {
   // Check that real page is no longer blocked by the throttle and that the
   // real page pops up JS dialog.
   dialog_wait.Run();
-  js_helper->HandleJavaScriptDialog(tab, true, nullptr);
+  js_dialog_manager->HandleJavaScriptDialog(tab, true, nullptr);
 
   ui_test_utils::GetCurrentTabTitle(browser, &title);
   DVLOG(1) << "Loaded page at the end : " << title;

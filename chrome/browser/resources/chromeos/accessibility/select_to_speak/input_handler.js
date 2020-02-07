@@ -28,122 +28,123 @@ let SelectToSpeakCallbacks;
 
 /**
  * Class to handle user-input, from mouse, keyboard, and copy-paste events.
- * @param {SelectToSpeakCallbacks} callbacks
- * @constructor
  */
-const InputHandler = function(callbacks) {
-  /** @private {SelectToSpeakCallbacks} */
-  this.callbacks_ = callbacks;
-
-  /** @private {boolean} */
-  this.trackingMouse_ = false;
-
-  /** @private {boolean} */
-  this.didTrackMouse_ = false;
-
-  /** @private {boolean} */
-  this.isSearchKeyDown_ = false;
-
-  /** @private {boolean} */
-  this.isSelectionKeyDown_ = false;
-
-  /** @private {!Set<number>} */
-  this.keysCurrentlyDown_ = new Set();
-
-  /** @private {!Set<number>} */
-  this.keysPressedTogether_ = new Set();
-
-  /** @private {{x: number, y: number}} */
-  this.mouseStart_ = {x: 0, y: 0};
-
-  /** @private {{x: number, y: number}} */
-  this.mouseEnd_ = {x: 0, y: 0};
-
+class InputHandler {
   /**
-   * The timestamp at which clipboard data read was requested by the user
-   * doing a "read selection" keystroke on a Google Docs app. If a
-   * clipboard change event comes in within CLIPBOARD_READ_MAX_DELAY_MS,
-   * Select-to-Speak will read that text out loud.
-   * @private {Date}
+   * @param {SelectToSpeakCallbacks} callbacks
    */
-  this.lastReadClipboardDataTime_ = new Date(0);
+  constructor(callbacks) {
+    /** @private {SelectToSpeakCallbacks} */
+    this.callbacks_ = callbacks;
 
-  /**
-   * The timestamp at which the last clipboard data clear was requested.
-   * Used to make sure we don't clear the clipboard on a user's request,
-   * but only after the clipboard was used to read selected text.
-   * @private {Date}
-   */
-  this.lastClearClipboardDataTime_ = new Date(0);
+    /** @private {boolean} */
+    this.trackingMouse_ = false;
 
-  /**
-   * Called when the mouse is moved or dragged and the user is in a
-   * mode where select-to-speak is capturing mouse events (for example
-   * holding down Search).
-   *
-   * @param {!Event} evt The DOM event
-   * @return {boolean} True if the default action should be performed.
-   * @private
-   */
-  this.onMouseMove_ = function(evt) {
-    if (!this.trackingMouse_) {
+    /** @private {boolean} */
+    this.didTrackMouse_ = false;
+
+    /** @private {boolean} */
+    this.isSearchKeyDown_ = false;
+
+    /** @private {boolean} */
+    this.isSelectionKeyDown_ = false;
+
+    /** @private {!Set<number>} */
+    this.keysCurrentlyDown_ = new Set();
+
+    /** @private {!Set<number>} */
+    this.keysPressedTogether_ = new Set();
+
+    /** @private {{x: number, y: number}} */
+    this.mouseStart_ = {x: 0, y: 0};
+
+    /** @private {{x: number, y: number}} */
+    this.mouseEnd_ = {x: 0, y: 0};
+
+    /**
+     * The timestamp at which clipboard data read was requested by the user
+     * doing a "read selection" keystroke on a Google Docs app. If a
+     * clipboard change event comes in within CLIPBOARD_READ_MAX_DELAY_MS,
+     * Select-to-Speak will read that text out loud.
+     * @private {Date}
+     */
+    this.lastReadClipboardDataTime_ = new Date(0);
+
+    /**
+     * The timestamp at which the last clipboard data clear was requested.
+     * Used to make sure we don't clear the clipboard on a user's request,
+     * but only after the clipboard was used to read selected text.
+     * @private {Date}
+     */
+    this.lastClearClipboardDataTime_ = new Date(0);
+
+    /**
+     * Called when the mouse is moved or dragged and the user is in a
+     * mode where select-to-speak is capturing mouse events (for example
+     * holding down Search).
+     *
+     * @param {!Event} evt The DOM event
+     * @return {boolean} True if the default action should be performed.
+     * @private
+     */
+    this.onMouseMove_ = function(evt) {
+      if (!this.trackingMouse_) {
+        return false;
+      }
+
+      var rect = RectUtils.rectFromPoints(
+          this.mouseStart_.x, this.mouseStart_.y, evt.screenX, evt.screenY);
+      this.callbacks_.onSelectionChanged(rect);
       return false;
-    }
+    };
 
-    var rect = RectUtils.rectFromPoints(
-        this.mouseStart_.x, this.mouseStart_.y, evt.screenX, evt.screenY);
-    this.callbacks_.onSelectionChanged(rect);
-    return false;
-  };
+    /**
+     * @private
+     */
+    this.onClipboardDataChanged_ = function() {
+      if (new Date() - this.lastReadClipboardDataTime_ <
+          InputHandler.CLIPBOARD_READ_MAX_DELAY_MS) {
+        // The data has changed, and we are ready to read it.
+        // Get it using a paste.
+        document.execCommand('paste');
+      }
+    };
 
-  /**
-   * @private
-   */
-  this.onClipboardDataChanged_ = function() {
-    if (new Date() - this.lastReadClipboardDataTime_ <
-        InputHandler.CLIPBOARD_READ_MAX_DELAY_MS) {
-      // The data has changed, and we are ready to read it.
-      // Get it using a paste.
-      document.execCommand('paste');
-    }
-  };
+    /**
+     * @private
+     */
+    this.onClipboardCopy_ = function(evt) {
+      if (new Date() - this.lastClearClipboardDataTime_ <
+          InputHandler.CLIPBOARD_CLEAR_MAX_DELAY_MS) {
+        // onClipboardPaste has just completed reading the clipboard for speech.
+        // This is used to clear the clipboard.
+        evt.clipboardData.setData('text/plain', '');
+        evt.preventDefault();
+        this.lastClearClipboardDataTime_ = new Date(0);
+      }
+    };
 
-  /**
-   * @private
-   */
-  this.onClipboardCopy_ = function(evt) {
-    if (new Date() - this.lastClearClipboardDataTime_ <
-        InputHandler.CLIPBOARD_CLEAR_MAX_DELAY_MS) {
-      // onClipboardPaste has just completed reading the clipboard for speech.
-      // This is used to clear the clipboard.
-      evt.clipboardData.setData('text/plain', '');
-      evt.preventDefault();
-      this.lastClearClipboardDataTime_ = new Date(0);
-    }
-  };
+    /**
+     * @private
+     */
+    this.onClipboardPaste_ = function(evt) {
+      if (new Date() - this.lastReadClipboardDataTime_ <
+          InputHandler.CLIPBOARD_READ_MAX_DELAY_MS) {
+        // Read the current clipboard data.
+        evt.preventDefault();
+        this.callbacks_.onTextReceived(evt.clipboardData.getData('text/plain'));
+        this.lastReadClipboardDataTime_ = new Date(0);
+        // Clear the clipboard data by copying nothing (the current document).
+        // Do this in a timeout to avoid a recursive warning per
+        // https://crbug.com/363288.
+        setTimeout(() => {
+          this.lastClearClipboardDataTime_ = new Date();
+          document.execCommand('copy');
+        }, 0);
+      }
+    };
+  }
 
-  /**
-   * @private
-   */
-  this.onClipboardPaste_ = function(evt) {
-    if (new Date() - this.lastReadClipboardDataTime_ <
-        InputHandler.CLIPBOARD_READ_MAX_DELAY_MS) {
-      // Read the current clipboard data.
-      evt.preventDefault();
-      this.callbacks_.onTextReceived(evt.clipboardData.getData('text/plain'));
-      this.lastReadClipboardDataTime_ = new Date(0);
-      // Clear the clipboard data by copying nothing (the current document).
-      // Do this in a timeout to avoid a recursive warning per
-      // https://crbug.com/363288.
-      setTimeout(() => {
-        this.lastClearClipboardDataTime_ = new Date();
-        document.execCommand('copy');
-      }, 0);
-    }
-  };
-};
-
-InputHandler.prototype = {
   /**
    * Set up event listeners for mouse and keyboard events. These are
    * forwarded to us from the SelectToSpeakEventHandler so they should
@@ -161,7 +162,7 @@ InputHandler.prototype = {
         this.onClipboardDataChanged_.bind(this));
     document.addEventListener('paste', this.onClipboardPaste_.bind(this));
     document.addEventListener('copy', this.onClipboardCopy_.bind(this));
-  },
+  }
 
   /**
    * Change whether or not we are tracking the mouse.
@@ -171,7 +172,7 @@ InputHandler.prototype = {
    */
   setTrackingMouse(tracking) {
     this.trackingMouse_ = tracking;
-  },
+  }
 
   /**
    * Gets the rect that has been drawn by clicking and dragging the mouse.
@@ -181,7 +182,7 @@ InputHandler.prototype = {
     return RectUtils.rectFromPoints(
         this.mouseStart_.x, this.mouseStart_.y, this.mouseEnd_.x,
         this.mouseEnd_.y);
-  },
+  }
 
   /**
    * Sets the date at which we last wanted the clipboard data to be read.
@@ -189,7 +190,7 @@ InputHandler.prototype = {
    */
   onRequestReadClipboardData() {
     this.lastReadClipboardDataTime_ = new Date();
-  },
+  }
 
   /**
    * Called when the mouse is pressed and the user is in a mode where
@@ -220,7 +221,7 @@ InputHandler.prototype = {
     this.onMouseMove_(evt);
 
     return false;
-  },
+  }
 
   /**
    * Called when the mouse is released and the user is in a
@@ -252,7 +253,7 @@ InputHandler.prototype = {
         false /* is no longer selecting */, ctrX, ctrY);
 
     return false;
-  },
+  }
 
   /**
    * Visible for testing.
@@ -275,7 +276,7 @@ InputHandler.prototype = {
       // Some other key was pressed.
       this.isSearchKeyDown_ = false;
     }
-  },
+  }
 
   /**
    * Visible for testing.
@@ -316,8 +317,9 @@ InputHandler.prototype = {
       this.keysPressedTogether_.clear();
       this.didTrackMouse_ = false;
     }
-  },
-};
+  }
+}
+
 
 // Number of milliseconds to wait after requesting a clipboard read
 // before clipboard change and paste events are ignored.

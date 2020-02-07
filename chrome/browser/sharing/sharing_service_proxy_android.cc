@@ -46,17 +46,27 @@ void SharingServiceProxyAndroid::SendSharedClipboardMessage(
     const base::android::JavaParamRef<jstring>& j_text,
     const jint j_retries,
     const base::android::JavaParamRef<jobject>& j_runnable) {
+  auto callback =
+      base::BindOnce(base::android::RunIntCallbackAndroid,
+                     base::android::ScopedJavaGlobalRef<jobject>(j_runnable));
+
   std::string guid = base::android::ConvertJavaStringToUTF8(env, j_guid);
   DCHECK(!guid.empty());
+
+  std::unique_ptr<syncer::DeviceInfo> device =
+      sharing_service_->GetDeviceByGuid(guid);
+  LogSharingDeviceInfoAvailable(device != nullptr);
+
+  if (!device) {
+    std::move(callback).Run(
+        static_cast<int>(SharingSendMessageResult::kDeviceNotFound));
+    return;
+  }
 
   std::string text = base::android::ConvertJavaStringToUTF8(env, j_text);
   chrome_browser_sharing::SharingMessage sharing_message;
   sharing_message.mutable_shared_clipboard_message()->set_text(std::move(text));
 
-  auto device = sharing_service_->GetDeviceByGuid(guid);
-  auto callback =
-      base::BindOnce(base::android::RunIntCallbackAndroid,
-                     base::android::ScopedJavaGlobalRef<jobject>(j_runnable));
   sharing_service_->SendMessageToDevice(
       *device, base::TimeDelta::FromSeconds(kSharingMessageTTLSeconds.Get()),
       std::move(sharing_message),

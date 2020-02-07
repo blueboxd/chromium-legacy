@@ -23,16 +23,8 @@ ZeroStateResultType ZeroStateTypeFromRankingType(
     case RankingItemType::kFile:
     case RankingItemType::kApp:
     case RankingItemType::kArcAppShortcut:
-    case RankingItemType::kOmniboxBookmark:
-    case RankingItemType::kOmniboxDeprecated:
-    case RankingItemType::kOmniboxDocument:
-    case RankingItemType::kOmniboxHistory:
-    case RankingItemType::kOmniboxNavSuggest:
       return ZeroStateResultType::kUnanticipated;
-    // Omnibox search results could be classified as either of these two cases,
-    // depending on whether Omnibox results were expanded.
     case RankingItemType::kOmniboxGeneric:
-    case RankingItemType::kOmniboxSearch:
       return ZeroStateResultType::kOmniboxSearch;
     case RankingItemType::kZeroStateFile:
       return ZeroStateResultType::kZeroStateFile;

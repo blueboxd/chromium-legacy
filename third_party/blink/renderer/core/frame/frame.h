@@ -107,7 +107,7 @@ class CORE_EXPORT Frame : public GarbageCollected<Frame> {
   //
   // Important notes:
   // - This function is not appropriate for determining if a subframe is
-  //   cross-origin to its parent.
+  //   cross-origin to its parent (see: |IsCrossOriginToParentFrame|).
   // - The return value must NOT be cached. A frame can be reused across
   //   navigations, so the return value can change over time.
   // - The return value is inaccurate for a detached frame: it always
@@ -115,6 +115,9 @@ class CORE_EXPORT Frame : public GarbageCollected<Frame> {
   // TODO(dcheng): Move this to LocalDOMWindow and figure out the right
   // behavior for detached windows.
   bool IsCrossOriginToMainFrame() const;
+  // Returns true if this frame is a subframe and is cross-origin to the parent
+  // frame. See |IsCrossOriginToMainFrame| for important notes.
+  bool IsCrossOriginToParentFrame() const;
 
   FrameOwner* Owner() const;
   void SetOwner(FrameOwner*);

@@ -231,6 +231,21 @@ SiteSettingSource CalculateSiteSettingSource(
   return SiteSettingSource::kPreference;
 }
 
+// Whether |pattern| applies to a single origin.
+bool PatternAppliesToSingleOrigin(const ContentSettingPatternSource& pattern) {
+  const GURL url(pattern.primary_pattern.ToString());
+  // Default settings and other patterns apply to multiple origins.
+  if (url::Origin::Create(url).opaque())
+    return false;
+  // Embedded content settings only when |url| is embedded in another origin, so
+  // ignore non-wildcard secondary patterns that are different to the primary.
+  if (pattern.primary_pattern != pattern.secondary_pattern &&
+      pattern.secondary_pattern != ContentSettingsPattern::Wildcard()) {
+    return false;
+  }
+  return true;
+}
+
 // Retrieves the source of a chooser exception as a string. This method uses the
 // CalculateSiteSettingSource method above to calculate the correct string to
 // use.
@@ -315,6 +330,18 @@ std::string ContentSettingsTypeToGroupName(ContentSettingsType type) {
   NOTREACHED() << static_cast<int32_t>(type)
                << " is not a recognized content settings type.";
   return std::string();
+}
+
+std::vector<ContentSettingsType> ContentSettingsTypesFromGroupNames(
+    const base::Value::ConstListView types) {
+  std::vector<ContentSettingsType> content_types;
+  content_types.reserve(types.size());
+  for (const auto& value : types) {
+    const auto& type = value.GetString();
+    content_types.push_back(
+        site_settings::ContentSettingsTypeFromGroupName(type));
+  }
+  return content_types;
 }
 
 std::string SiteSettingSourceToString(const SiteSettingSource source) {
@@ -566,6 +593,19 @@ ContentSetting GetContentSettingForOrigin(
   *display_name = GetDisplayNameForGURL(origin, extension_registry);
 
   return result.content_setting;
+}
+
+std::vector<ContentSettingPatternSource> GetSiteExceptionsForContentType(
+    HostContentSettingsMap* map,
+    ContentSettingsType content_type) {
+  ContentSettingsForOneType entries;
+  map->GetSettingsForOneType(content_type, std::string(), &entries);
+  entries.erase(std::remove_if(entries.begin(), entries.end(),
+                               [](const ContentSettingPatternSource& e) {
+                                 return !PatternAppliesToSingleOrigin(e);
+                               }),
+                entries.end());
+  return entries;
 }
 
 void GetPolicyAllowedUrls(

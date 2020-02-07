@@ -137,7 +137,6 @@
 <translation id="2718395828230677721">Cahaya Malam</translation>
 <translation id="2727977024730340865">Dipasang ke pengisi daya rendah. Pengisian daya baterai mungkin tidak dapat diandalkan.</translation>
 <translation id="2792498699870441125">Alt+Telusuri</translation>
-<translation id="2803734122639935495">Untuk membuka kunci, masukkan sandi Anda</translation>
 <translation id="2819276065543622893">Anda akan dikeluarkan sekarang.</translation>
 <translation id="2825619548187458965">Rak</translation>
 <translation id="2844169650293029770">Perangkat USB-C (port depan sebelah kiri)</translation>
@@ -202,6 +201,7 @@
 <translation id="3604801046548457007">Desktop <ph name="DESK_TITILE" /> dibuat</translation>
 <translation id="3606978283550408104">Layar Braille tersambung.</translation>
 <translation id="3621202678540785336">Masukan</translation>
+<translation id="3621712662352432595">Setelan Audio</translation>
 <translation id="3626281679859535460">Kecerahan</translation>
 <translation id="3631369015426612114">Izinkan notifikasi dari sumber berikut</translation>
 <translation id="3705722231355495246">-</translation>
@@ -544,6 +544,7 @@
 <translation id="8477270416194247200">Tekan Alt+Search atau Shift untuk membatalkan.</translation>
 <translation id="8513108775083588393">Putar otomatis</translation>
 <translation id="8517041960877371778"><ph name="DEVICE_TYPE" /> Anda mungkin tidak diisi daya saat dinyalakan.</translation>
+<translation id="8563862697512465947">Setelan Notifikasi</translation>
 <translation id="8627191004499078455">Tersambung ke <ph name="DEVICE_NAME" /></translation>
 <translation id="8637598503828012618"><ph name="CONNECTION_STATUS" />, Kekuatan Sinyal <ph name="SIGNAL_STRENGTH" />, Dikelola oleh Administrator Anda</translation>
 <translation id="8639760480004882931">Sisa <ph name="PERCENTAGE" /></translation>

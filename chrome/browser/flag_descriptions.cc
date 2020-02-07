@@ -404,11 +404,6 @@ const char kDeviceDiscoveryNotificationsName[] =
 const char kDeviceDiscoveryNotificationsDescription[] =
     "Device discovery notifications on local network.";
 
-const char kDevtoolsExperimentsName[] = "Developer Tools experiments";
-const char kDevtoolsExperimentsDescription[] =
-    "Enables Developer Tools experiments. Use Settings panel in Developer "
-    "Tools to toggle individual experiments.";
-
 const char kDisableBestEffortTasksName[] = "Skip best effort tasks";
 const char kDisableBestEffortTasksDescription[] =
     "With this flag on, tasks of the lowest priority will not be executed "
@@ -1009,6 +1004,13 @@ const char kGlobalMediaControlsForCastDescription[] =
     "Shows Cast sessions in the Global Media Controls UI. Requires "
     "#global-media-controls and #cast-media-route-provider to also be enabled.";
 
+const char kGlobalMediaControlsPictureInPictureName[] =
+    "Global Media Controls Picture-in-Picture";
+const char kGlobalMediaControlsPictureInPictureDescription[] =
+    "Enables Picture-in-Picture controls in the Global Media Controls UI. "
+    "Requires "
+    "#global-media-controls to also be enabled.";
+
 const char kGpuRasterizationName[] = "GPU rasterization";
 const char kGpuRasterizationDescription[] =
     "Use GPU to rasterize web content. Requires impl-side painting.";
@@ -1153,8 +1155,7 @@ const char kMarkHttpAsDescription[] = "Change the UI treatment for HTTP pages";
 const char kMediaInspectorLoggingName[] = "Enable media log in developer tools";
 const char kMediaInspectorLoggingDescription[] =
     "Move media logging from chrome://media-internals into the developer tools "
-    "project; #enable-devtools-experiments must also be enabled as well on "
-    "desktop platforms";
+    "project.";
 
 const char kMediaRouterCastAllowAllIPsName[] =
     "Connect to Cast devices on all IP addresses";
@@ -2062,6 +2063,12 @@ const char kWalletServiceUseSandboxName[] =
 const char kWalletServiceUseSandboxDescription[] =
     "For developers: use the sandbox service for Google Payments API calls.";
 
+const char kWebBluetoothNewPermissionsBackendName[] =
+    "Use the new permissions backend for Web Bluetooth";
+const char kWebBluetoothNewPermissionsBackendDescription[] =
+    "Enables the new permissions backend for Web Bluetooth. This will enable "
+    "persistent storage of device permissions.";
+
 const char kWebBundlesName[] = "Web Bundles";
 const char kWebBundlesDescription[] =
     "Enables experimental supports for Web Bundles (Bundled HTTP Exchanges) "
@@ -2683,20 +2690,11 @@ const char kInlineUpdateFlowDescription[] =
     "flow where they do not have to leave Chrome until the update is ready "
     "to install.";
 
-#if BUILDFLAG(ENABLE_ANDROID_NIGHT_MODE)
-
-const char kAndroidNightModeName[] = "Android Chrome UI dark mode";
-const char kAndroidNightModeDescription[] =
-    "If enabled, user can enable Android Chrome UI dark mode through settings.";
-
 const char kAndroidNightModeTabReparentingName[] =
     "Android Chrome UI dark mode tab reparenting";
 const char kAndroidNightModeTabReparentingDescription[] =
     "If enabled, when the user changes themes the current tabs are reparented "
     "instead of reloaded.";
-
-#endif  // BUILDFLAG(ENABLE_ANDROID_NIGHT_MODE)
-
 // Non-Android -----------------------------------------------------------------
 
 #else  // !defined(OS_ANDROID)

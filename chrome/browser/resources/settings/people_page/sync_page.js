@@ -5,16 +5,6 @@
 (function() {
 
 /**
- * Names of the radio buttons which allow the user to choose their encryption
- * mechanism.
- * @enum {string}
- */
-const RadioButtonNames = {
-  ENCRYPT_WITH_GOOGLE: 'encrypt-with-google',
-  ENCRYPT_WITH_PASSPHRASE: 'encrypt-with-passphrase',
-};
-
-/**
  * All possible states for the sWAA bit.
  * @enum {string}
  */
@@ -85,33 +75,11 @@ Polymer({
       type: Object,
     },
 
-    /**
-     * Whether the "create passphrase" inputs should be shown. These inputs
-     * give the user the opportunity to use a custom passphrase instead of
-     * authenticating with their Google credentials.
-     * @private
-     */
-    creatingNewPassphrase_: {
+    /** @private */
+    encryptionExpanded_: {
       type: Boolean,
       value: false,
-    },
-
-    /**
-     * The passphrase input field value.
-     * @private
-     */
-    passphrase_: {
-      type: String,
-      value: '',
-    },
-
-    /**
-     * The passphrase confirmation input field value.
-     * @private
-     */
-    confirmation_: {
-      type: String,
-      value: '',
+      computed: 'computeEncryptionExpanded_(syncPrefs.encryptAllData)',
     },
 
     /**
@@ -151,12 +119,6 @@ Polymer({
     showSetupCancelDialog_: {
       type: Boolean,
       value: false,
-    },
-
-    disableEncryptionOptions_: {
-      type: Boolean,
-      computed: 'computeDisableEncryptionOptions_(' +
-          'syncPrefs, syncStatus)',
     },
 
     /**
@@ -592,15 +554,6 @@ Polymer({
     this.syncPrefs = syncPrefs;
     this.pageStatus_ = settings.PageStatus.CONFIGURE;
 
-    // Hide the new passphrase box if (a) full data encryption is enabled,
-    // (b) encrypting all data is not allowed (so far, only applies to
-    // supervised accounts), or (c) the user is a supervised account.
-    if (this.syncPrefs.encryptAllData ||
-        !this.syncPrefs.encryptAllDataAllowed ||
-        (this.syncStatus && this.syncStatus.supervisedUser)) {
-      this.creatingNewPassphrase_ = false;
-    }
-
     if (this.sWAA_ === sWAAState.FAILED) {
       this.fetchSWAA_();
     }
@@ -612,43 +565,24 @@ Polymer({
   },
 
   /**
-   * @param {string} passphrase The passphrase input field value
-   * @param {string} confirmation The passphrase confirmation input field value.
-   * @return {boolean} Whether the passphrase save button should be enabled.
+   * Whether the encryption dropdown should be expanded by default.
+   * @return {boolean}
    * @private
    */
-  isSaveNewPassphraseEnabled_(passphrase, confirmation) {
-    return passphrase !== '' && confirmation !== '';
+  computeEncryptionExpanded_() {
+    return !!this.syncPrefs && this.syncPrefs.encryptAllData;
   },
 
   /**
-   * Sends the newly created custom sync passphrase to the browser.
+   * @param {!Event} event
    * @private
-   * @param {!Event} e
    */
-  onSaveNewPassphraseTap_(e) {
-    assert(this.creatingNewPassphrase_);
-
-    // Ignore events on irrelevant elements or with irrelevant keys.
-    if (e.target.tagName != 'CR-BUTTON' && e.target.tagName != 'CR-INPUT') {
-      return;
+  onResetSyncClick_(event) {
+    if (event.target.tagName == 'A') {
+      // Stop the propagation of events as the |cr-expand-button|
+      // prevents the default which will prevent the navigation to the link.
+      event.stopPropagation();
     }
-    if (e.type == 'keypress' && e.key != 'Enter') {
-      return;
-    }
-
-    // If a new password has been entered but it is invalid, do not send the
-    // sync state to the API.
-    if (!this.validateCreatedPassphrases_()) {
-      return;
-    }
-
-    this.syncPrefs.encryptAllData = true;
-    this.syncPrefs.setNewPassphrase = true;
-    this.syncPrefs.passphrase = this.passphrase_;
-
-    this.browserProxy_.setSyncEncryption(this.syncPrefs)
-        .then(this.handlePageStatusChanged_.bind(this));
   },
 
   /**
@@ -661,8 +595,6 @@ Polymer({
       return;
     }
 
-    assert(!this.creatingNewPassphrase_);
-
     this.syncPrefs.setNewPassphrase = false;
 
     this.syncPrefs.passphrase = this.existingPassphrase_;
@@ -670,6 +602,15 @@ Polymer({
 
     this.browserProxy_.setSyncEncryption(this.syncPrefs)
         .then(this.handlePageStatusChanged_.bind(this));
+  },
+
+  /**
+   * @private
+   * @param {!CustomEvent<!settings.PageStatus>} e
+   */
+  onPassphraseChanged_(e) {
+    this.handlePageStatusChanged_(
+        /** @type {!settings.PageStatus} */ (e.detail));
   },
 
   /**
@@ -703,44 +644,6 @@ Polymer({
     }
 
     assertNotReached();
-  },
-
-  /**
-   * Called when the encryption
-   * @param {!Event} event
-   * @private
-   */
-  onEncryptionRadioSelectionChanged_(event) {
-    this.creatingNewPassphrase_ =
-        event.detail.value == RadioButtonNames.ENCRYPT_WITH_PASSPHRASE;
-  },
-
-  /**
-   * Computed binding returning the selected encryption radio button.
-   * @private
-   */
-  selectedEncryptionRadio_() {
-    return this.syncPrefs.encryptAllData || this.creatingNewPassphrase_ ?
-        RadioButtonNames.ENCRYPT_WITH_PASSPHRASE :
-        RadioButtonNames.ENCRYPT_WITH_GOOGLE;
-  },
-
-  /**
-   * Checks the supplied passphrases to ensure that they are not empty and that
-   * they match each other. Additionally, displays error UI if they are invalid.
-   * @return {boolean} Whether the check was successful (i.e., that the
-   *     passphrases were valid).
-   * @private
-   */
-  validateCreatedPassphrases_() {
-    const emptyPassphrase = !this.passphrase_;
-    const mismatchedPassphrase = this.passphrase_ != this.confirmation_;
-
-    this.$$('#passphraseInput').invalid = emptyPassphrase;
-    this.$$('#passphraseConfirmationInput').invalid =
-        !emptyPassphrase && mismatchedPassphrase;
-
-    return !emptyPassphrase && !mismatchedPassphrase;
   },
 
   /**
@@ -785,27 +688,6 @@ Polymer({
    */
   shouldShowExistingPassphraseBelowAccount_() {
     return this.syncPrefs !== undefined && !!this.syncPrefs.passphraseRequired;
-  },
-
-  /**
-   * Whether we should disable the radio buttons that allow choosing the
-   * encryption options for Sync.
-   * We disable the buttons if:
-   * (a) full data encryption is enabled, or,
-   * (b) full data encryption is not allowed (so far, only applies to
-   * supervised accounts), or,
-   * (c) current encryption keys are missing, or,
-   * (d) the user is a supervised account.
-   * @return {boolean}
-   * @private
-   */
-  computeDisableEncryptionOptions_() {
-    return !!(
-        (this.syncPrefs &&
-         (this.syncPrefs.encryptAllData ||
-          !this.syncPrefs.encryptAllDataAllowed ||
-          this.syncPrefs.trustedVaultKeysRequired)) ||
-        (this.syncStatus && this.syncStatus.supervisedUser));
   },
 
   /** @private */

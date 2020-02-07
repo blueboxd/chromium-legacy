@@ -161,12 +161,12 @@ void AutofillPopupBaseView::RemoveWidgetObservers() {
   views::WidgetFocusManager::GetInstance()->RemoveFocusChangeListener(this);
 }
 
-void AutofillPopupBaseView::SetClipPath() {
+void AutofillPopupBaseView::UpdateClipPath() {
   SkRect local_bounds = gfx::RectToSkRect(GetLocalBounds());
   SkScalar radius = SkIntToScalar(GetCornerRadius());
   SkPath clip_path;
   clip_path.addRoundRect(local_bounds, radius, radius);
-  set_clip_path(clip_path);
+  SetClipPath(clip_path);
 }
 
 void AutofillPopupBaseView::DoUpdateBoundsAndRedrawPopup() {
@@ -184,7 +184,7 @@ void AutofillPopupBaseView::DoUpdateBoundsAndRedrawPopup() {
   GetWidget()->SetBounds(popup_bounds);
 
   Layout();
-  SetClipPath();
+  UpdateClipPath();
   SchedulePaint();
 }
 

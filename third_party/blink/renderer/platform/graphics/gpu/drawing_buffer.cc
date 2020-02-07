@@ -397,6 +397,7 @@ bool DrawingBuffer::FinishPrepareTransferableResourceSoftware(
                              WTF::Passed(std::move(registered)));
   *out_release_callback = viz::SingleReleaseCallback::Create(std::move(func));
 
+  contents_changed_ = false;
   ResetBuffersToAutoClear();
   return true;
 }

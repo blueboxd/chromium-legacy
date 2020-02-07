@@ -61,7 +61,7 @@ class FakeWebGraphicsContext3DProvider : public WebGraphicsContext3DProvider {
     return webgl_preferences_;
   }
 
-  viz::GLHelper* GetGLHelper() override { return nullptr; }
+  gpu::GLHelper* GetGLHelper() override { return nullptr; }
 
   gpu::InterfaceBase* InterfaceBase() override { return gl_; }
   gpu::gles2::GLES2Interface* ContextGL() override { return gl_; }

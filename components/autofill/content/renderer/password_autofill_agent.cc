@@ -1397,7 +1397,8 @@ bool PasswordAutofillAgent::ShowSuggestionPopup(
 
   FormData form;
   FormFieldData field;
-  form_util::FindFormAndFieldForFormControlElement(user_input, &form, &field);
+  form_util::FindFormAndFieldForFormControlElement(
+      user_input, field_data_manager_.get(), &form, &field);
 
   int options = 0;
   if (show_all)

@@ -256,6 +256,7 @@ Si la casella <ph name="SERVICE_SCRIPT_NAME" /> ja està marcada, desmarca-la i 
 <translation id="6939719207673461467">Mostra o amaga el teclat</translation>
 <translation id="6944854424004126054">Restaura la finestra</translation>
 <translation id="6948905685698011662">Ara Escriptori remot de Chrome és al web. Dona un cop d'ull a la nostra <ph name="LINK_BEGIN" />aplicació web gratuïta<ph name="LINK_END" />.</translation>
+<translation id="6956835181934226419">Ja he concedit aquest permís.</translation>
 <translation id="6963936880795878952">Les connexions amb l'ordinador remot s'han bloquejat temporalment perquè algú ha provat de connectar-s'hi amb un PIN no vàlid. Torna-ho a provar més tard.</translation>
 <translation id="6965382102122355670">D'acord</translation>
 <translation id="6985691951107243942">Confirmeu que voleu desactivar les connexions remotes a <ph name="HOSTNAME" />? Si canvieu de parer, haureu de visitar aquest ordinador per tornar-les a activar.</translation>

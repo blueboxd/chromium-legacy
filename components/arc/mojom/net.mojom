@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-// Next MinVersion: 13
+// Next MinVersion: 14
 
 // This file defines the mojo interface between the ARC networking stack and
 // Chrome OS. There are three different groups of interactions:
@@ -205,7 +205,7 @@ struct NetworkConfiguration {
   // access through tethering on a metered network.
   [MinVersion=8] TetheringClientState tethering_client_state;
 
-  // The network interface associated with this network service.
+  // The name of the network interface on the host.
   [MinVersion=10] string? network_interface;
 
   // True if this network is the host default network.
@@ -213,6 +213,59 @@ struct NetworkConfiguration {
 
   // The name of the shill service associated with this network connection.
   [MinVersion=12] string? service_name;
+
+  // This is the network MTU value (device kIpConfigsProperty) or the
+  // native VPN MTU value (service property), or 0 if undefined.
+  [MinVersion=13] uint32 host_mtu;
+
+  // Prefix length of the host IPv4 subnet, or 0 for an IPv6 only network.
+  [MinVersion=13] uint32 host_ipv4_prefix_length;
+
+  // IPv4 address assigned to the host, or empty for an IPv6 only network.
+  [MinVersion=13] string? host_ipv4_address;
+
+  // IPv4 address of the local gateway, or empty for an IPv6 only network.
+  [MinVersion=13] string? host_ipv4_gateway;
+
+  // Prefix length of the host IPv6 subnet, or 0 for an IPv4 only network.
+  [MinVersion=13] uint32 host_ipv6_prefix_length;
+
+  // Global unicast IPv6 addresses assigned to the host, or empty for an IPv4
+  // only network. The link local address and unique local addresses are
+  // ignored.
+  [MinVersion=13] array<string>? host_ipv6_global_addresses;
+
+  // IPv6 address of the local gateway, or empty for an IPv4 only network.
+  [MinVersion=13] string? host_ipv6_gateway;
+
+  // All IPv4 and IPv6 addresses of name servers for the network,
+  // either obtained by DHCPv4, by IPv6 RA RDNSS, or set statically.
+  [MinVersion=13] array<string>? host_dns_addresses;
+
+  // All search domains set for the host for the network, either obtained by
+  // DHCPv4, by IPv6 RA DNSSL, or set statically. Search domains are set as an
+  // explicit array of strings instead of a comma separated list embedded into
+  // a single string.
+  [MinVersion=13] array<string>? host_search_domains;
+
+  // The following four fields specify the static IPv4 configuration for the
+  // virtual network exposed inside ARC environment by arc-networkd, and
+  // attached to this host network. These values are defined even if the
+  // host network is an IPv6 only network.
+
+  // Prefix length of the IPv4 subnet assigned to the ARC virtual network.
+  [MinVersion=13] uint32 arc_ipv4_prefix_length;
+
+  // IPv4 address assigned to the ARC guest.
+  [MinVersion=13] string? arc_ipv4_address;
+
+  // IPv4 address of the gateway for the ARC virtual network.
+  [MinVersion=13] string? arc_ipv4_gateway;
+
+  // The name of the network interface matching the virtual interface exposed
+  // to ARC and associated with the network service. This can be different
+  // from the name of the real physical interface managed by shill.
+  [MinVersion=13] string? arc_network_interface;
 };
 
 // Describes a Wifi network configuration that ARC has requested the host to

@@ -82,6 +82,7 @@ namespace version_info {
 enum class Channel;
 }
 
+class ChromeBluetoothDelegate;
 class ChromeHidDelegate;
 class ChromeSerialDelegate;
 
@@ -512,6 +513,7 @@ class ChromeContentBrowserClient : public content::ContentBrowserClient {
   void CreateWebUsbService(
       content::RenderFrameHost* render_frame_host,
       mojo::PendingReceiver<blink::mojom::WebUsbService> receiver) override;
+  content::BluetoothDelegate* GetBluetoothDelegate() override;
 #if !defined(OS_ANDROID)
   content::SerialDelegate* GetSerialDelegate() override;
   content::HidDelegate* GetHidDelegate() override;
@@ -733,6 +735,7 @@ class ChromeContentBrowserClient : public content::ContentBrowserClient {
   std::unique_ptr<ChromeSerialDelegate> serial_delegate_;
   std::unique_ptr<ChromeHidDelegate> hid_delegate_;
 #endif
+  std::unique_ptr<ChromeBluetoothDelegate> bluetooth_delegate_;
 
   // Returned from GetNetworkContextsParentDirectory() but created on the UI
   // thread because it needs to access the Local State prefs.

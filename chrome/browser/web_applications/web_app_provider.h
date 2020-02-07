@@ -79,8 +79,7 @@ class WebAppProvider : public WebAppProviderBase {
   FileHandlerManager& file_handler_manager() override;
   AppIconManager& icon_manager() override;
   AppShortcutManager& shortcut_manager() override;
-
-  SystemWebAppManager& system_web_app_manager();
+  SystemWebAppManager& system_web_app_manager() override;
 
   // KeyedService:
   void Shutdown() override;

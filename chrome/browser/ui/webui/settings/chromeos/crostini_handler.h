@@ -74,6 +74,8 @@ class CrostiniHandler : public ::settings::SettingsPageUIHandler,
   void HandleEnableArcAdbRequest(const base::ListValue* args);
   // Handle a request for disabling adb sideloading in ARC.
   void HandleDisableArcAdbRequest(const base::ListValue* args);
+  // Launch the Crostini terminal.
+  void LaunchTerminal();
   // Handle a request for showing the container upgrade view.
   void HandleRequestContainerUpgradeView(const base::ListValue* args);
   // Callback of HandleQueryArcAdbRequest.

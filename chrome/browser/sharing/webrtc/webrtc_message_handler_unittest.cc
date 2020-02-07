@@ -20,6 +20,7 @@ class MockSharingServiceHost : public SharingServiceHost {
             /*message_sender=*/nullptr,
             /*gcm_driver=*/nullptr,
             /*sync_prefs=*/nullptr,
+            /*device_source=*/nullptr,
             base::MakeRefCounted<network::WeakWrapperSharedURLLoaderFactory>(
                 &test_url_loader_factory_)) {}
   MockSharingServiceHost(const MockSharingServiceHost&) = delete;

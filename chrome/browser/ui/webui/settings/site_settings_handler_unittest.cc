@@ -719,6 +719,131 @@ TEST_F(SiteSettingsHandlerTest, MAYBE_GetAllSites) {
   run_loop.RunUntilIdle();
 }
 
+TEST_F(SiteSettingsHandlerTest, GetRecentSitePermissions) {
+  // Constants used only in this test.
+  std::string kAllowed = content_settings::ContentSettingToString(
+      ContentSetting::CONTENT_SETTING_ALLOW);
+  std::string kBlocked = content_settings::ContentSettingToString(
+      ContentSetting::CONTENT_SETTING_BLOCK);
+  std::string kEmbargo =
+      SiteSettingSourceToString(site_settings::SiteSettingSource::kEmbargo);
+  std::string kPreference =
+      SiteSettingSourceToString(site_settings::SiteSettingSource::kPreference);
+
+  base::ListValue get_recent_permissions_args;
+  get_recent_permissions_args.AppendString(kCallbackId);
+  base::Value category_list(base::Value::Type::LIST);
+  category_list.Append(kNotifications);
+  category_list.Append(kFlash);
+  get_recent_permissions_args.Append(std::move(category_list));
+  get_recent_permissions_args.Append(3);
+
+  // Configure prefs and auto blocker with a controllable clock.
+  base::SimpleTestClock clock;
+  clock.SetNow(base::Time::Now());
+  HostContentSettingsMap* map =
+      HostContentSettingsMapFactory::GetForProfile(profile());
+  map->SetClockForTesting(&clock);
+  permissions::PermissionDecisionAutoBlocker* auto_blocker =
+      PermissionDecisionAutoBlockerFactory::GetForProfile(profile());
+  auto_blocker->SetClockForTesting(&clock);
+  clock.Advance(base::TimeDelta::FromHours(1));
+
+  // Test recent permissions is empty when there are no preferences.
+  handler()->HandleGetRecentSitePermissions(&get_recent_permissions_args);
+  EXPECT_EQ(1U, web_ui()->call_data().size());
+
+  {
+    const content::TestWebUI::CallData& data = *web_ui()->call_data().back();
+    EXPECT_EQ("cr.webUIResponse", data.function_name());
+    EXPECT_EQ(kCallbackId, data.arg1()->GetString());
+    ASSERT_TRUE(data.arg2()->GetBool());
+
+    base::Value::ConstListView recent_permissions = data.arg3()->GetList();
+    EXPECT_EQ(0UL, recent_permissions.size());
+  }
+
+  // Add numerous permissions from different sources and confirm that the recent
+  // permissions are correctly transformed for usage by JS.
+  const GURL url1("https://example.com");
+  const GURL url2("http://example.com");
+  for (int i = 0; i < 3; ++i)
+    auto_blocker->RecordDismissAndEmbargo(
+        url1, ContentSettingsType::NOTIFICATIONS, false);
+
+  clock.Advance(base::TimeDelta::FromHours(2));
+  map->SetContentSettingDefaultScope(url2, url2, ContentSettingsType::PLUGINS,
+                                     std::string(), CONTENT_SETTING_ALLOW);
+  clock.Advance(base::TimeDelta::FromHours(1));
+  CreateIncognitoProfile();
+  HostContentSettingsMap* incognito_map =
+      HostContentSettingsMapFactory::GetForProfile(incognito_profile());
+  incognito_map->SetClockForTesting(&clock);
+  incognito_map->SetContentSettingDefaultScope(
+      url1, url1, ContentSettingsType::PLUGINS, std::string(),
+      CONTENT_SETTING_ALLOW);
+
+  clock.Advance(base::TimeDelta::FromHours(1));
+  permissions::PermissionDecisionAutoBlocker* incognito_auto_blocker =
+      PermissionDecisionAutoBlockerFactory::GetForProfile(incognito_profile());
+  incognito_auto_blocker->SetClockForTesting(&clock);
+  for (int i = 0; i < 3; ++i)
+    incognito_auto_blocker->RecordDismissAndEmbargo(
+        url1, ContentSettingsType::NOTIFICATIONS, false);
+
+  handler()->HandleGetRecentSitePermissions(&get_recent_permissions_args);
+  {
+    const content::TestWebUI::CallData& data = *web_ui()->call_data().back();
+    EXPECT_EQ("cr.webUIResponse", data.function_name());
+    EXPECT_EQ(kCallbackId, data.arg1()->GetString());
+    ASSERT_TRUE(data.arg2()->GetBool());
+
+    base::Value::ConstListView recent_permissions = data.arg3()->GetList();
+    EXPECT_EQ(3UL, recent_permissions.size());
+    EXPECT_EQ(url1.spec(),
+              recent_permissions[2].FindKey("origin")->GetString());
+    EXPECT_EQ(url2.spec(),
+              recent_permissions[1].FindKey("origin")->GetString());
+    EXPECT_EQ(url1.spec(),
+              recent_permissions[0].FindKey("origin")->GetString());
+
+    EXPECT_TRUE(recent_permissions[0].FindKey("incognito")->GetBool());
+    EXPECT_FALSE(recent_permissions[1].FindKey("incognito")->GetBool());
+    EXPECT_FALSE(recent_permissions[2].FindKey("incognito")->GetBool());
+
+    base::Value::ConstListView incognito_url1_permissions =
+        recent_permissions[0].FindKey("recentPermissions")->GetList();
+    base::Value::ConstListView url1_permissions =
+        recent_permissions[2].FindKey("recentPermissions")->GetList();
+    base::Value::ConstListView url2_permissions =
+        recent_permissions[1].FindKey("recentPermissions")->GetList();
+
+    EXPECT_EQ(2UL, incognito_url1_permissions.size());
+
+    EXPECT_EQ(kNotifications,
+              incognito_url1_permissions[0].FindKey("type")->GetString());
+    EXPECT_EQ(kBlocked,
+              incognito_url1_permissions[0].FindKey("setting")->GetString());
+    EXPECT_EQ(kEmbargo,
+              incognito_url1_permissions[0].FindKey("source")->GetString());
+
+    EXPECT_EQ(kFlash,
+              incognito_url1_permissions[1].FindKey("type")->GetString());
+    EXPECT_EQ(kAllowed,
+              incognito_url1_permissions[1].FindKey("setting")->GetString());
+    EXPECT_EQ(kPreference,
+              incognito_url1_permissions[1].FindKey("source")->GetString());
+
+    EXPECT_EQ(kNotifications, url1_permissions[0].FindKey("type")->GetString());
+    EXPECT_EQ(kBlocked, url1_permissions[0].FindKey("setting")->GetString());
+    EXPECT_EQ(kEmbargo, url1_permissions[0].FindKey("source")->GetString());
+
+    EXPECT_EQ(kFlash, url2_permissions[0].FindKey("type")->GetString());
+    EXPECT_EQ(kAllowed, url2_permissions[0].FindKey("setting")->GetString());
+    EXPECT_EQ(kPreference, url2_permissions[0].FindKey("source")->GetString());
+  }
+}
+
 TEST_F(SiteSettingsHandlerTest, OnStorageFetched) {
   SetUpCookiesTreeModel();
 

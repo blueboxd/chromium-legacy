@@ -69,6 +69,7 @@ class TestResourceDispatcher : public ResourceDispatcher {
       std::unique_ptr<network::ResourceRequest> request,
       int routing_id,
       const net::NetworkTrafficAnnotationTag& traffic_annotation,
+      uint32_t loader_options,
       SyncLoadResponse* response,
       scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory,
       std::vector<std::unique_ptr<blink::URLLoaderThrottle>> throttles,
@@ -83,7 +84,7 @@ class TestResourceDispatcher : public ResourceDispatcher {
       int routing_id,
       scoped_refptr<base::SingleThreadTaskRunner> loading_task_runner,
       const net::NetworkTrafficAnnotationTag& traffic_annotation,
-      bool is_sync,
+      uint32_t loader_options,
       std::unique_ptr<RequestPeer> peer,
       scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory,
       std::vector<std::unique_ptr<blink::URLLoaderThrottle>> throttles,
@@ -91,7 +92,7 @@ class TestResourceDispatcher : public ResourceDispatcher {
           navigation_response_override_params) override {
     EXPECT_FALSE(peer_);
     if (sync_load_response_.head->encoded_body_length != -1)
-      EXPECT_TRUE(is_sync);
+      EXPECT_TRUE(loader_options & network::mojom::kURLLoadOptionSynchronous);
     peer_ = std::move(peer);
     url_ = request->url;
     navigation_response_override_params_ =
@@ -312,7 +313,8 @@ class WebURLLoaderImplTest : public testing::Test {
     request->priority = net::IDLE;
     client()->loader()->LoadAsynchronously(
         std::move(request), /*extra_data=*/nullptr, /*requestor_id=*/0,
-        /*download_to_network_cache_only=*/false, client());
+        /*download_to_network_cache_only=*/false, /*no_mime_sniffing=*/false,
+        client());
     ASSERT_TRUE(peer());
   }
 
@@ -479,7 +481,8 @@ TEST_F(WebURLLoaderImplTest, ResponseOverride) {
 
   client()->loader()->LoadAsynchronously(
       std::move(request), std::move(extra_data), /*requestor_id=*/0,
-      /*download_to_network_cache_only=*/false, client());
+      /*download_to_network_cache_only=*/false, /*no_mime_sniffing=*/false,
+      client());
 
   ASSERT_TRUE(peer());
   EXPECT_EQ(kRequestURL, dispatcher()->url());
@@ -639,9 +642,9 @@ TEST_F(WebURLLoaderImplTest, SyncLengths) {
   client()->loader()->LoadSynchronously(
       std::move(request), /*extra_data=*/nullptr, /*requestor_id=*/0,
       /*download_to_network_cache_only=*/false,
-      /*pass_response_pipe_to_client=*/false, base::TimeDelta(), nullptr,
-      response, error, data, encoded_data_length, encoded_body_length,
-      downloaded_blob);
+      /*pass_response_pipe_to_client=*/false, /*no_mime_sniffing=*/false,
+      base::TimeDelta(), nullptr, response, error, data, encoded_data_length,
+      encoded_body_length, downloaded_blob);
 
   EXPECT_EQ(kEncodedBodyLength, encoded_body_length);
   EXPECT_EQ(kEncodedDataLength, encoded_data_length);

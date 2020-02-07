@@ -352,14 +352,16 @@ void ShelfAppButton::SetImage(const gfx::ImageSkia& image) {
   if (image.isNull()) {
     // TODO: need an empty image.
     icon_view_->SetImage(image);
+    icon_image_ = gfx::ImageSkia();
     return;
   }
+  icon_image_ = image;
 
-  const int icon_size = ShelfConfig::Get()->button_icon_size();
+  const int icon_size = ShelfConfig::Get()->button_icon_size() * icon_scale_;
 
   // Resize the image maintaining our aspect ratio.
-  float aspect_ratio =
-      static_cast<float>(image.width()) / static_cast<float>(image.height());
+  float aspect_ratio = static_cast<float>(icon_image_.width()) /
+                       static_cast<float>(icon_image_.height());
   int height = icon_size;
   int width = static_cast<int>(aspect_ratio * height);
   if (width > icon_size) {
@@ -367,13 +369,15 @@ void ShelfAppButton::SetImage(const gfx::ImageSkia& image) {
     height = static_cast<int>(width / aspect_ratio);
   }
 
-  if (width == image.width() && height == image.height()) {
+  const gfx::Size preferred_size(width, height);
+
+  if (image.size() == preferred_size) {
     SetShadowedImage(image);
     return;
   }
 
   SetShadowedImage(gfx::ImageSkiaOperations::CreateResizedImage(
-      image, skia::ImageOperations::RESIZE_BEST, gfx::Size(width, height)));
+      image, skia::ImageOperations::RESIZE_BEST, preferred_size));
 }
 
 const gfx::ImageSkia& ShelfAppButton::GetImage() const {
@@ -383,7 +387,7 @@ const gfx::ImageSkia& ShelfAppButton::GetImage() const {
 void ShelfAppButton::AddState(State state) {
   if (!(state_ & state)) {
     state_ |= state;
-    Layout();
+    InvalidateLayout();
     if (state & STATE_ATTENTION)
       indicator_->ShowAttention(true);
 
@@ -580,16 +584,13 @@ bool ShelfAppButton::OnMouseDragged(const ui::MouseEvent& event) {
   return true;
 }
 
-void ShelfAppButton::Layout() {
+gfx::Rect ShelfAppButton::GetIconViewBounds(float icon_scale) {
+  int icon_size = ShelfConfig::Get()->button_icon_size() * icon_scale;
   // TODO: Find out why there is an extra pixel of padding between each item
   // and the inner side of the shelf.
   // clang-format off
-  int icon_padding = (ShelfConfig::Get()->hotseat_size() -
-                      ShelfConfig::Get()->button_icon_size()) / 2 - 1;
+  int icon_padding = (ShelfConfig::Get()->hotseat_size() - icon_size) / 2;
   // clang-format on
-  const int icon_size = ShelfConfig::Get()->button_icon_size();
-  const int status_indicator_offet_from_shelf_edge =
-      ShelfConfig::Get()->status_indicator_offset_from_shelf_edge();
 
   const gfx::Rect button_bounds(GetContentsBounds());
   Shelf* shelf = shelf_view_->shelf();
@@ -605,20 +606,41 @@ void ShelfAppButton::Layout() {
   if (ShelfAlignment::kLeft == shelf->alignment())
     x_offset = button_bounds.width() - (icon_size + icon_padding);
 
-  // Center icon with respect to the secondary axis.
-  if (is_horizontal_shelf)
-    x_offset = std::max(0, button_bounds.width() - icon_width) / 2;
-  else
-    y_offset = std::max(0, button_bounds.height() - icon_height) / 2;
-
   // Expand bounds to include shadows.
   gfx::Insets insets_shadows = gfx::ShadowValue::GetMargin(icon_shadows_);
-  // Adjust offsets to center icon, not icon + shadow.
-  x_offset += (insets_shadows.left() - insets_shadows.right()) / 2;
-  y_offset += (insets_shadows.top() - insets_shadows.bottom()) / 2;
+  // Center icon with respect to the secondary axis.
+  if (is_horizontal_shelf) {
+    x_offset =
+        std::max(0, button_bounds.width() - icon_width + insets_shadows.left() -
+                        insets_shadows.right() + 1) /
+        2;
+  } else {
+    y_offset =
+        std::max(0, button_bounds.height() - icon_height +
+                        insets_shadows.top() - insets_shadows.bottom() + 1) /
+        2;
+  }
   gfx::Rect icon_view_bounds =
       gfx::Rect(button_bounds.x() + x_offset, button_bounds.y() + y_offset,
                 icon_width, icon_height);
+
+  icon_view_bounds.Inset(insets_shadows);
+  // Icon size has been incorrect when running
+  // PanelLayoutManagerTest.PanelAlignmentSecondDisplay on valgrind bot, see
+  // http://crbug.com/234854.
+  DCHECK_LE(icon_width, icon_size);
+  DCHECK_LE(icon_height, icon_size);
+  return icon_view_bounds;
+}
+
+void ShelfAppButton::Layout() {
+  Shelf* shelf = shelf_view_->shelf();
+  gfx::Rect icon_view_bounds = GetIconViewBounds(icon_scale_);
+  const gfx::Rect button_bounds(GetContentsBounds());
+  const int status_indicator_offet_from_shelf_edge =
+      ShelfConfig::Get()->status_indicator_offset_from_shelf_edge();
+
+  icon_view_->SetBoundsRect(icon_view_bounds);
 
   // The indicators should be aligned with the icon, not the icon + shadow.
   gfx::Point indicator_midpoint = icon_view_bounds.CenterPoint();
@@ -628,16 +650,6 @@ void ShelfAppButton::Layout() {
                   icon_view_bounds.y(), kNotificationIndicatorRadiusDip * 2,
                   kNotificationIndicatorRadiusDip * 2));
   }
-
-  icon_view_bounds.Inset(insets_shadows);
-  icon_view_bounds.AdjustToFit(gfx::Rect(size()));
-  icon_view_->SetBoundsRect(icon_view_bounds);
-
-  // Icon size has been incorrect when running
-  // PanelLayoutManagerTest.PanelAlignmentSecondDisplay on valgrind bot, see
-  // http://crbug.com/234854.
-  DCHECK_LE(icon_width, icon_size);
-  DCHECK_LE(icon_height, icon_size);
 
   switch (shelf->alignment()) {
     case ShelfAlignment::kBottom:
@@ -828,18 +840,37 @@ void ShelfAppButton::OnRippleTimer() {
   GetInkDrop()->AnimateToState(views::InkDropState::ACTIVATED);
 }
 
+gfx::Transform ShelfAppButton::GetScaleTransform(float icon_scale) {
+  gfx::RectF pre_scaling_bounds(GetIconViewBounds(1.0f));
+  gfx::RectF target_bounds(GetIconViewBounds(icon_scale));
+  return gfx::TransformBetweenRects(target_bounds, pre_scaling_bounds);
+}
+
 void ShelfAppButton::ScaleAppIcon(bool scale_up) {
+  StopObservingImplicitAnimations();
+
+  if (scale_up) {
+    icon_scale_ = kAppIconScale;
+    SetImage(icon_image_);
+    icon_view_->layer()->SetTransform(GetScaleTransform(kAppIconScale));
+  }
   ui::ScopedLayerAnimationSettings settings(icon_view_->layer()->GetAnimator());
   settings.SetTransitionDuration(
       base::TimeDelta::FromMilliseconds(kDragDropAppIconScaleTransitionMs));
-
   if (scale_up) {
-    icon_view_->layer()->SetTransform(gfx::GetScaleTransform(
-        gfx::Rect(icon_view_->layer()->bounds().size()).CenterPoint(),
-        kAppIconScale));
-  } else {
     icon_view_->layer()->SetTransform(gfx::Transform());
+  } else {
+    // To avoid poor quality icons, update icon image with the correct scale
+    // after the transform animation is completed.
+    settings.AddObserver(this);
+    icon_view_->layer()->SetTransform(GetScaleTransform(kAppIconScale));
   }
+}
+
+void ShelfAppButton::OnImplicitAnimationsCompleted() {
+  icon_scale_ = 1.0f;
+  SetImage(icon_image_);
+  icon_view_->layer()->SetTransform(gfx::Transform());
 }
 
 }  // namespace ash

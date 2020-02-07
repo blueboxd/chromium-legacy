@@ -112,6 +112,7 @@ class VIZ_SERVICE_EXPORT SkiaOutputSurfaceDependency {
                               const GURL& active_url) = 0;
 
   virtual base::TimeDelta GetGpuBlockedTimeSinceLastSwap() = 0;
+  virtual bool NeedsSupportForExternalStencil() = 0;
 };
 
 }  // namespace viz

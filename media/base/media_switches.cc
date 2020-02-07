@@ -253,6 +253,11 @@ const base::Feature kUseAndroidOverlayAggressively{
 const base::Feature kBackgroundVideoPauseOptimization{
     "BackgroundVideoPauseOptimization", base::FEATURE_ENABLED_BY_DEFAULT};
 
+// CDM host verification is enabled by default. Can be disabled for testing.
+// Has no effect if ENABLE_CDM_HOST_VERIFICATION buildflag is false.
+const base::Feature kCdmHostVerification{"CdmHostVerification",
+                                         base::FEATURE_ENABLED_BY_DEFAULT};
+
 // Make MSE garbage collection algorithm more aggressive when we are under
 // moderate or critical memory pressure. This will relieve memory pressure by
 // releasing stale data from MSE buffers.
@@ -523,6 +528,11 @@ const base::Feature kCanPlayHls{"CanPlayHls", base::FEATURE_ENABLED_BY_DEFAULT};
 // Enables the use of MediaPlayerRenderer for HLS playback. When disabled,
 // HLS manifests will fail to load (triggering source fallback or load error).
 const base::Feature kHlsPlayer{"HlsPlayer", base::FEATURE_ENABLED_BY_DEFAULT};
+
+// When enabled, Playing media sessions will request audio focus from the
+// Android system.
+const base::Feature kRequestSystemAudioFocus{"RequestSystemAudioFocus",
+                                             base::FEATURE_ENABLED_BY_DEFAULT};
 
 // Use the (hacky) AudioManager.getOutputLatency() call to get the estimated
 // hardware latency for a stream for OpenSLES playback.  This is normally not

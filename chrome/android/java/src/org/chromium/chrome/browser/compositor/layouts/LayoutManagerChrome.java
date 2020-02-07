@@ -14,7 +14,6 @@ import org.chromium.base.ObserverList;
 import org.chromium.base.metrics.RecordUserAction;
 import org.chromium.chrome.browser.accessibility_tab_switcher.OverviewListLayout;
 import org.chromium.chrome.browser.compositor.TitleCache;
-import org.chromium.chrome.browser.compositor.bottombar.OverlayPanel.StateChangeReason;
 import org.chromium.chrome.browser.compositor.layouts.components.LayoutTab;
 import org.chromium.chrome.browser.compositor.layouts.components.VirtualView;
 import org.chromium.chrome.browser.compositor.layouts.content.TabContentManager;
@@ -227,9 +226,6 @@ public class LayoutManagerChrome extends LayoutManager implements OverviewModeCo
         if (isOverviewLayout(layoutBeingShown) || layoutBeingShown == mToolbarSwipeLayout) {
             if (mContextualSearchDelegate != null) {
                 mContextualSearchDelegate.dismissContextualSearchBar();
-            }
-            if (getEphemeralTabPanel() != null) {
-                getEphemeralTabPanel().closePanel(StateChangeReason.UNKNOWN, false);
             }
         }
 

@@ -144,7 +144,7 @@ class TaskSchedulerV2 final : public TaskScheduler {
       PLOG(ERROR) << "Failed to connect to task service. " << std::hex << hr;
       return false;
     }
-    hr = task_service_->GetFolder(base::win::ScopedBstr(L"\\"),
+    hr = task_service_->GetFolder(base::win::ScopedBstr(L"\\").Get(),
                                   &root_task_folder_);
     if (FAILED(hr)) {
       LOG(ERROR) << "Can't get task service folder. " << std::hex << hr;
@@ -322,8 +322,8 @@ class TaskSchedulerV2 final : public TaskScheduler {
 
     VLOG(1) << "Delete Task '" << task_name << "'.";
 
-    HRESULT hr =
-        root_task_folder_->DeleteTask(base::win::ScopedBstr(task_name), 0);
+    HRESULT hr = root_task_folder_->DeleteTask(
+        base::win::ScopedBstr(task_name).Get(), 0);
     // This can happen, e.g., while running tests, when the file system stresses
     // quite a lot. Give it a few more chances to succeed.
     size_t num_retries_left = kNumDeleteTaskRetry;
@@ -334,7 +334,8 @@ class TaskSchedulerV2 final : public TaskScheduler {
              --num_retries_left && IsTaskRegistered(task_name)) {
         LOG(WARNING) << "Retrying delete task because transaction not active, "
                      << std::hex << hr << ".";
-        hr = root_task_folder_->DeleteTask(base::win::ScopedBstr(task_name), 0);
+        hr = root_task_folder_->DeleteTask(
+            base::win::ScopedBstr(task_name).Get(), 0);
         ::Sleep(kDeleteRetryDelayInMs);
       }
       if (!IsTaskRegistered(task_name))
@@ -382,7 +383,7 @@ class TaskSchedulerV2 final : public TaskScheduler {
         return false;
       }
 
-      hr = principal->put_UserId(user_name);
+      hr = principal->put_UserId(user_name.Get());
       if (FAILED(hr)) {
         PLOG(ERROR) << "Can't put user id. " << std::hex << hr;
         return false;
@@ -402,14 +403,14 @@ class TaskSchedulerV2 final : public TaskScheduler {
       return false;
     }
 
-    hr = registration_info->put_Author(user_name);
+    hr = registration_info->put_Author(user_name.Get());
     if (FAILED(hr)) {
       PLOG(ERROR) << "Can't set registration info author. " << std::hex << hr;
       return false;
     }
 
     base::win::ScopedBstr description(task_description);
-    hr = registration_info->put_Description(description);
+    hr = registration_info->put_Description(description.Get());
     if (FAILED(hr)) {
       PLOG(ERROR) << "Can't set description. " << std::hex << hr;
       return false;
@@ -431,7 +432,7 @@ class TaskSchedulerV2 final : public TaskScheduler {
 
     // TODO(csharp): Find a way to only set this for log upload retry.
     hr = task_settings->put_DeleteExpiredTaskAfter(
-        base::win::ScopedBstr(kZeroMinuteText));
+        base::win::ScopedBstr(kZeroMinuteText).Get());
     if (FAILED(hr)) {
       PLOG(ERROR) << "Can't put 'DeleteExpiredTaskAfter'. " << std::hex << hr;
       return false;
@@ -524,27 +525,27 @@ class TaskSchedulerV2 final : public TaskScheduler {
       // The duration is the time to keep repeating until the next daily
       // trigger.
       hr = repetition_pattern->put_Duration(
-          base::win::ScopedBstr(kTwentyFourHoursText));
+          base::win::ScopedBstr(kTwentyFourHoursText).Get());
       if (FAILED(hr)) {
         PLOG(ERROR) << "Can't put 'Duration' to " << kTwentyFourHoursText
                     << ". " << std::hex << hr;
         return false;
       }
 
-      hr = repetition_pattern->put_Interval(repetition_interval);
+      hr = repetition_pattern->put_Interval(repetition_interval.Get());
       if (FAILED(hr)) {
-        PLOG(ERROR) << "Can't put 'Interval' to " << repetition_interval << ". "
-                    << std::hex << hr;
+        PLOG(ERROR) << "Can't put 'Interval' to " << repetition_interval.Get()
+                    << ". " << std::hex << hr;
         return false;
       }
 
       // Start now.
       base::Time now(base::Time::NowFromSystemTime());
       base::win::ScopedBstr start_boundary(GetTimestampString(now));
-      hr = trigger->put_StartBoundary(start_boundary);
+      hr = trigger->put_StartBoundary(start_boundary.Get());
       if (FAILED(hr)) {
-        PLOG(ERROR) << "Can't put 'StartBoundary' to " << start_boundary << ". "
-                    << std::hex << hr;
+        PLOG(ERROR) << "Can't put 'StartBoundary' to " << start_boundary.Get()
+                    << ". " << std::hex << hr;
         return false;
       }
     }
@@ -558,7 +559,8 @@ class TaskSchedulerV2 final : public TaskScheduler {
         return false;
       }
 
-      hr = logon_trigger->put_Delay(base::win::ScopedBstr(kFifteenMinutesText));
+      hr = logon_trigger->put_Delay(
+          base::win::ScopedBstr(kFifteenMinutesText).Get());
       if (FAILED(hr)) {
         PLOG(ERROR) << "Can't put 'Delay'. " << std::hex << hr;
         return false;
@@ -569,9 +571,9 @@ class TaskSchedulerV2 final : public TaskScheduler {
     base::Time expiry_date(base::Time::NowFromSystemTime() +
                            base::TimeDelta::FromDays(kNumDaysBeforeExpiry));
     base::win::ScopedBstr end_boundary(GetTimestampString(expiry_date));
-    hr = trigger->put_EndBoundary(end_boundary);
+    hr = trigger->put_EndBoundary(end_boundary.Get());
     if (FAILED(hr)) {
-      PLOG(ERROR) << "Can't put 'EndBoundary' to " << end_boundary << ". "
+      PLOG(ERROR) << "Can't put 'EndBoundary' to " << end_boundary.Get() << ". "
                   << std::hex << hr;
       return false;
     }
@@ -598,25 +600,25 @@ class TaskSchedulerV2 final : public TaskScheduler {
     }
 
     base::win::ScopedBstr path(run_command.GetProgram().value());
-    hr = exec_action->put_Path(path);
+    hr = exec_action->put_Path(path.Get());
     if (FAILED(hr)) {
       PLOG(ERROR) << "Can't set path of exec action. " << std::hex << hr;
       return false;
     }
 
     base::win::ScopedBstr args(run_command.GetArgumentsString());
-    hr = exec_action->put_Arguments(args);
+    hr = exec_action->put_Arguments(args.Get());
     if (FAILED(hr)) {
       PLOG(ERROR) << "Can't set arguments of exec action. " << std::hex << hr;
       return false;
     }
 
     Microsoft::WRL::ComPtr<IRegisteredTask> registered_task;
-    base::win::ScopedVariant user(user_name);
+    base::win::ScopedVariant user(user_name.Get());
 
     DCHECK(root_task_folder_);
     hr = root_task_folder_->RegisterTaskDefinition(
-        base::win::ScopedBstr(task_name), task.Get(), TASK_CREATE,
+        base::win::ScopedBstr(task_name).Get(), task.Get(), TASK_CREATE,
         *user.AsInput(),  // Not really input, but API expect non-const.
         base::win::ScopedVariant::kEmptyVariant, TASK_LOGON_NONE,
         base::win::ScopedVariant::kEmptyVariant, &registered_task);
@@ -685,7 +687,7 @@ class TaskSchedulerV2 final : public TaskScheduler {
         Next();
         return;
       }
-      name_ = base::string16(task_name_bstr ? task_name_bstr : L"");
+      name_ = base::string16(task_name_bstr.Get() ? task_name_bstr.Get() : L"");
     }
 
     // Detach the currently active task and pass ownership to the caller.
@@ -734,7 +736,7 @@ class TaskSchedulerV2 final : public TaskScheduler {
     base::win::ScopedBstr task_name_bstr;
     HRESULT hr = task->get_Name(task_name_bstr.Receive());
     base::string16 task_name =
-        base::string16(task_name_bstr ? task_name_bstr : L"");
+        base::string16(task_name_bstr.Get() ? task_name_bstr.Get() : L"");
     if (FAILED(hr)) {
       LOG(ERROR) << "Failed to get task name";
     }
@@ -762,7 +764,8 @@ class TaskSchedulerV2 final : public TaskScheduler {
                  << logging::SystemErrorCodeToString(hr);
       return hr;
     }
-    *description = base::string16(raw_description ? raw_description : L"");
+    *description =
+        base::string16(raw_description.Get() ? raw_description.Get() : L"");
     return ERROR_SUCCESS;
   }
 
@@ -859,9 +862,10 @@ class TaskSchedulerV2 final : public TaskScheduler {
       }
 
       actions->push_back(
-          {base::FilePath(application_path ? application_path : L""),
-           base::FilePath(working_dir ? working_dir : L""),
-           base::string16(parameters ? parameters : L"")});
+          {base::FilePath(application_path.Get() ? application_path.Get()
+                                                 : L""),
+           base::FilePath(working_dir.Get() ? working_dir.Get() : L""),
+           base::string16(parameters.Get() ? parameters.Get() : L"")});
     }
     return success;
   }

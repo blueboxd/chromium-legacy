@@ -7,6 +7,8 @@
 #include "base/callback.h"
 #include "base/guid.h"
 #include "chrome/browser/sharing/sharing_constants.h"
+#include "chrome/browser/sharing/sharing_device_source.h"
+#include "chrome/browser/sharing/sharing_metrics.h"
 #include "chrome/browser/sharing/sharing_sync_preference.h"
 #include "chrome/browser/sharing/webrtc/sharing_mojo_service.h"
 #include "chrome/browser/sharing/webrtc/sharing_webrtc_connection_host.h"
@@ -84,19 +86,35 @@ SharingWebRtcConnectionHost::EncryptionInfo GetEncryptionInfo(
 // messages via FCMChannelConfiguration directly.
 std::unique_ptr<syncer::DeviceInfo> CreateDeviceInfo(
     const std::string& device_guid,
-    const chrome_browser_sharing::FCMChannelConfiguration& fcm_configuration) {
-  return std::make_unique<syncer::DeviceInfo>(
-      device_guid, /*client_name=*/std::string(),
-      /*chrome_version=*/std::string(), /*sync_user_agent=*/std::string(),
-      /*device_type=*/sync_pb::SyncEnums::TYPE_UNSET,
-      /*signin_scoped_device_id=*/std::string(),
-      /*hardware_info=*/base::SysInfo::HardwareInfo(),
-      /*last_updated_timestamp=*/base::Time(),
-      syncer::DeviceInfoUtil::GetPulseInterval(),
-      /*send_tab_to_self_receiving_enabled=*/true,
-      syncer::DeviceInfo::SharingInfo(GetVapidTargetInfo(fcm_configuration),
-                                      GetSenderIdTargetInfo(fcm_configuration),
-                                      /*enabled_features=*/{}));
+    const chrome_browser_sharing::FCMChannelConfiguration& fcm_configuration,
+    SharingDeviceSource* device_source) {
+  syncer::DeviceInfo::SharingInfo sharing_info(
+      GetVapidTargetInfo(fcm_configuration),
+      GetSenderIdTargetInfo(fcm_configuration),
+      /*enabled_features=*/{});
+
+  // Try to look up the device to get all data for the sending metrics.
+  auto device_info = device_source->GetDeviceByGuid(device_guid);
+  LogSharingDeviceInfoAvailable(device_info != nullptr);
+  if (!device_info) {
+    // Device is not available in the local DeviceInfoTracker but we know how to
+    // send a message to it via |fcm_configuration| so create an otherwise empty
+    // DeviceInfo object.
+    return std::make_unique<syncer::DeviceInfo>(
+        device_guid, /*client_name=*/std::string(),
+        /*chrome_version=*/std::string(), /*sync_user_agent=*/std::string(),
+        /*device_type=*/sync_pb::SyncEnums::TYPE_UNSET,
+        /*signin_scoped_device_id=*/std::string(),
+        /*hardware_info=*/base::SysInfo::HardwareInfo(),
+        /*last_updated_timestamp=*/base::Time(),
+        /*pulse_interval=*/base::TimeDelta(),
+        /*send_tab_to_self_receiving_enabled=*/true, std::move(sharing_info));
+  }
+
+  // We want to send to the passed |fcm_configuration| as it is the most up to
+  // date information we have for that device.
+  device_info->set_sharing_info(std::move(sharing_info));
+  return device_info;
 }
 
 template <typename T>
@@ -140,10 +158,12 @@ SharingServiceHost::SharingServiceHost(
     SharingMessageSender* message_sender,
     gcm::GCMDriver* gcm_driver,
     SharingSyncPreference* sync_prefs,
+    SharingDeviceSource* device_source,
     scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory)
     : message_sender_(message_sender),
       gcm_driver_(gcm_driver),
       sync_prefs_(sync_prefs),
+      device_source_(device_source),
       ice_config_fetcher_(url_loader_factory) {}
 
 SharingServiceHost::~SharingServiceHost() = default;
@@ -226,7 +246,7 @@ SharingWebRtcConnectionHost* SharingServiceHost::GetConnection(
   auto signalling_host = std::make_unique<WebRtcSignallingHostFCM>(
       std::move(pipes->signalling_sender.receiver),
       std::move(pipes->signalling_receiver.remote), message_sender_,
-      CreateDeviceInfo(device_guid, fcm_configuration));
+      CreateDeviceInfo(device_guid, fcm_configuration, device_source_));
 
   // base::Unretained is safe as the connection is owned by |this|.
   auto result = connections_.emplace(

@@ -1274,12 +1274,15 @@ void ResourceLoader::RequestSynchronously(const ResourceRequest& request) {
       data_out = WebData(std::move(data));
     }
   } else {
+    // Don't do mime sniffing for fetch (crbug.com/2016)
+    bool no_mime_sniffing =
+        request.GetRequestContext() == blink::mojom::RequestContextType::FETCH;
     loader_->LoadSynchronously(
         std::move(network_resource_request), request.GetExtraData(),
         request.RequestorID(), request.IsDownloadToNetworkCacheOnly(),
-        request.DownloadToBlob(), request.TimeoutInterval(), this, response_out,
-        error_out, data_out, encoded_data_length, encoded_body_length,
-        downloaded_blob);
+        request.DownloadToBlob(), no_mime_sniffing, request.TimeoutInterval(),
+        this, response_out, error_out, data_out, encoded_data_length,
+        encoded_body_length, downloaded_blob);
   }
   // A message dispatched while synchronously fetching the resource
   // can bring about the cancellation of this load.
@@ -1330,10 +1333,14 @@ void ResourceLoader::RequestAsynchronously(const ResourceRequest& request) {
   }
 
   auto network_resource_request = std::make_unique<network::ResourceRequest>();
+  // Don't do mime sniffing for fetch (crbug.com/2016)
+  bool no_mime_sniffing =
+      request.GetRequestContext() == blink::mojom::RequestContextType::FETCH;
   PopulateResourceRequest(request, network_resource_request.get());
   loader_->LoadAsynchronously(std::move(network_resource_request),
                               request.GetExtraData(), request.RequestorID(),
-                              request.IsDownloadToNetworkCacheOnly(), this);
+                              request.IsDownloadToNetworkCacheOnly(),
+                              no_mime_sniffing, this);
   if (code_cache_request_) {
     // Sets defers loading and initiates a fetch from code cache.
     code_cache_request_->FetchFromCodeCache(loader_.get(), this);

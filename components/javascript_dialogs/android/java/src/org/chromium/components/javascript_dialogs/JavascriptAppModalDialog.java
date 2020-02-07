@@ -109,9 +109,9 @@ public class JavascriptAppModalDialog extends JavascriptModalDialog {
 
     @NativeMethods
     interface Natives {
-        void didAcceptAppModalDialog(long nativeJavascriptAppModalDialogAndroid,
+        void didAcceptAppModalDialog(long nativeAppModalDialogViewAndroid,
                 JavascriptAppModalDialog caller, String prompt, boolean suppress);
-        void didCancelAppModalDialog(long nativeJavascriptAppModalDialogAndroid,
+        void didCancelAppModalDialog(long nativeAppModalDialogViewAndroid,
                 JavascriptAppModalDialog caller, boolean suppress);
         JavascriptAppModalDialog getCurrentModalDialog();
     }

@@ -73,16 +73,15 @@ class BLINK_COMMON_EXPORT MimeSniffingURLLoader
   CreateLoader(base::WeakPtr<MimeSniffingThrottle> throttle,
                const GURL& response_url,
                network::mojom::URLResponseHeadPtr response_head,
-               scoped_refptr<base::SingleThreadTaskRunner> task_runner);
+               scoped_refptr<base::SequencedTaskRunner> task_runner);
 
  private:
-  MimeSniffingURLLoader(
-      base::WeakPtr<MimeSniffingThrottle> throttle,
-      const GURL& response_url,
-      network::mojom::URLResponseHeadPtr response_head,
-      mojo::PendingRemote<network::mojom::URLLoaderClient>
-          destination_url_loader_client,
-      scoped_refptr<base::SingleThreadTaskRunner> task_runner);
+  MimeSniffingURLLoader(base::WeakPtr<MimeSniffingThrottle> throttle,
+                        const GURL& response_url,
+                        network::mojom::URLResponseHeadPtr response_head,
+                        mojo::PendingRemote<network::mojom::URLLoaderClient>
+                            destination_url_loader_client,
+                        scoped_refptr<base::SequencedTaskRunner> task_runner);
 
   // network::mojom::URLLoaderClient implementation (called from the source of
   // the response):
@@ -134,7 +133,7 @@ class BLINK_COMMON_EXPORT MimeSniffingURLLoader
   // mime type is decided.
   network::mojom::URLResponseHeadPtr response_head_;
 
-  scoped_refptr<base::SingleThreadTaskRunner> task_runner_;
+  scoped_refptr<base::SequencedTaskRunner> task_runner_;
 
   enum class State { kWaitForBody, kSniffing, kSending, kCompleted, kAborted };
   State state_ = State::kWaitForBody;

@@ -177,7 +177,6 @@
 #if defined(OS_ANDROID)
 #include "chrome/browser/android/explore_sites/explore_sites_feature.h"
 #include "chrome/browser/flags/android/chrome_feature_list.h"
-#include "ui/android/buildflags.h"
 #else  // OS_ANDROID
 #include "chrome/browser/media/router/media_router_feature.h"
 #include "components/mirroring/service/features.h"
@@ -1224,6 +1223,9 @@ const FeatureEntry::FeatureParam
 const FeatureEntry::FeatureParam kTabGridLayoutAndroid_DisableRefetch[] = {
     {"allow_to_refetch", "false"}};
 
+const FeatureEntry::FeatureParam kTabGridLayoutAndroid_SearchChip[] = {
+    {"enable_search_term_chip", "true"}};
+
 const FeatureEntry::FeatureVariation kTabGridLayoutAndroidVariations[] = {
     {"New Tab Variation", kTabGridLayoutAndroid_NewTabVariation,
      base::size(kTabGridLayoutAndroid_NewTabVariation), nullptr},
@@ -1241,6 +1243,8 @@ const FeatureEntry::FeatureVariation kTabGridLayoutAndroidVariations[] = {
      nullptr},
     {"Disable refetch", kTabGridLayoutAndroid_DisableRefetch,
      base::size(kTabGridLayoutAndroid_DisableRefetch), nullptr},
+    {"Search term chip", kTabGridLayoutAndroid_SearchChip,
+     base::size(kTabGridLayoutAndroid_SearchChip), nullptr},
 };
 
 const FeatureEntry::FeatureParam kStartSurfaceAndroid_SingleSurface[] = {
@@ -1322,11 +1326,6 @@ const FeatureEntry::Choice kNotificationSchedulerChoices[] = {
 };
 
 #if defined(OS_ANDROID)
-const FeatureEntry::FeatureParam kAndroidNightModeDefaultToLightConstant[] = {
-    {"default_light_theme", "true"}};
-const FeatureEntry::FeatureVariation kAndroidNightModeFeatureVariations[] = {
-    {"(default to light theme)", kAndroidNightModeDefaultToLightConstant,
-     base::size(kAndroidNightModeDefaultToLightConstant), nullptr}};
 
 const FeatureEntry::FeatureParam kOmniboxAssistantVoiceSearchGreyMic[] = {
     {"min_agsa_version", "10.95"},
@@ -1756,9 +1755,6 @@ const FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kAppNotificationStatusMessagingDescription, kOsAndroid,
      FEATURE_VALUE_TYPE(features::kAppNotificationStatusMessaging)},
 #endif  // OS_ANDROID
-    {"enable-devtools-experiments", flag_descriptions::kDevtoolsExperimentsName,
-     flag_descriptions::kDevtoolsExperimentsDescription, kOsDesktop,
-     SINGLE_VALUE_TYPE(switches::kEnableDevToolsExperiments)},
     {"silent-debugger-extension-api",
      flag_descriptions::kSilentDebuggerExtensionApiName,
      flag_descriptions::kSilentDebuggerExtensionApiDescription, kOsDesktop,
@@ -1958,6 +1954,11 @@ const FeatureEntry kFeatureEntries[] = {
          "1",
          autofill::switches::kWalletServiceUseSandbox,
          "0")},
+    {"enable-web-bluetooth-new-permissions-backend",
+     flag_descriptions::kWebBluetoothNewPermissionsBackendName,
+     flag_descriptions::kWebBluetoothNewPermissionsBackendDescription,
+     kOsAndroid | kOsDesktop,
+     FEATURE_VALUE_TYPE(features::kWebBluetoothNewPermissionsBackend)},
 #if defined(USE_AURA) || defined(OS_ANDROID)
     {"overscroll-history-navigation",
      flag_descriptions::kOverscrollHistoryNavigationName,
@@ -2539,17 +2540,10 @@ const FeatureEntry kFeatureEntries[] = {
                                     "ForceDarkVariations")},
 #endif  // !OS_CHROMEOS
 #if defined(OS_ANDROID)
-#if BUILDFLAG(ENABLE_ANDROID_NIGHT_MODE)
-    {"enable-android-night-mode", flag_descriptions::kAndroidNightModeName,
-     flag_descriptions::kAndroidNightModeDescription, kOsAndroid,
-     FEATURE_WITH_PARAMS_VALUE_TYPE(chrome::android::kAndroidNightMode,
-                                    kAndroidNightModeFeatureVariations,
-                                    "AndroidNightMode")},
     {"enable-android-night-mode-tab-reparenting",
      flag_descriptions::kAndroidNightModeTabReparentingName,
      flag_descriptions::kAndroidNightModeTabReparentingDescription, kOsAndroid,
      FEATURE_VALUE_TYPE(chrome::android::kAndroidNightModeTabReparenting)},
-#endif  // BUILDFLAG(ENABLE_ANDROID_NIGHT_MODE)
 #endif  // OS_ANDROID
     {"enable-experimental-accessibility-language-detection",
      flag_descriptions::kExperimentalAccessibilityLanguageDetectionName,
@@ -4420,6 +4414,12 @@ const FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kGlobalMediaControlsForCastDescription,
      kOsWin | kOsMac | kOsLinux,
      FEATURE_VALUE_TYPE(media::kGlobalMediaControlsForCast)},
+
+    {"global-media-controls-picture-in-picture",
+     flag_descriptions::kGlobalMediaControlsPictureInPictureName,
+     flag_descriptions::kGlobalMediaControlsPictureInPictureDescription,
+     kOsWin | kOsMac | kOsLinux | kOsCrOS,
+     FEATURE_VALUE_TYPE(media::kGlobalMediaControlsPictureInPicture)},
 #endif  // defined(OS_WIN) || defined(OS_MACOSX) || defined(OS_LINUX)
 
 #if BUILDFLAG(ENABLE_SPELLCHECK) && defined(OS_WIN)

@@ -13,8 +13,8 @@ function assert_function_on(object, function_name, explanation) {
 }
 
 test(t => {
-  assert_function_on(navigator, 'setExperimentalAppBadge', 'setExperimentalAppBadge is not defined on navigator');
-  assert_function_on(navigator, 'clearExperimentalAppBadge', 'clearExperimentalAppBadge is not defined on navigator');
+  assert_function_on(navigator, 'setAppBadge', 'setAppBadge is not defined on navigator');
+  assert_function_on(navigator, 'clearAppBadge', 'clearAppBadge is not defined on navigator');
 }, 'Badge API interfaces and properties in Origin-Trial enabled service worker.');
 
 done();

@@ -32,13 +32,20 @@ ui::EventRewriteStatus RewriteUpdate(
     std::unique_ptr<ui::Event>* rewritten_event) {
   if (consumed)
     return ui::EVENT_REWRITE_DISCARD;
+  const bool flags_rewritten = mod_down_flags & ~event.flags();
+
+  // If the flag is not changed and no need to send a release key event.
+  if (!released && !flags_rewritten)
+    return ui::EVENT_REWRITE_CONTINUE;
+
+  *rewritten_event = ui::Event::Clone(event);
   if (mod_down_flags & ~event.flags()) {
-    *rewritten_event = ui::Event::Clone(event);
     (*rewritten_event)->set_flags(event.flags() | mod_down_flags);
-    return released ? ui::EVENT_REWRITE_DISPATCH_ANOTHER
-                    : ui::EVENT_REWRITE_REWRITTEN;
   }
-  return ui::EVENT_REWRITE_CONTINUE;
+
+  if (released)
+    return ui::EVENT_REWRITE_DISPATCH_ANOTHER;
+  return ui::EVENT_REWRITE_REWRITTEN;
 }
 
 }  // namespace

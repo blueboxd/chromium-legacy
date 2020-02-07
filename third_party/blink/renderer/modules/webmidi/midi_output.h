@@ -70,7 +70,7 @@ class MIDIOutput final : public MIDIPort {
   void SendInternal(DOMUint8Array*, base::TimeTicks timestamp, ExceptionState&);
 
   unsigned port_index_;
-  HeapDeque<std::pair<Member<DOMUint8Array>, base::TimeTicks>> pending_data_;
+  HeapVector<std::pair<Member<DOMUint8Array>, base::TimeTicks>> pending_data_;
 };
 
 }  // namespace blink

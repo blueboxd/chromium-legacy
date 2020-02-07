@@ -30,9 +30,7 @@
 #include "chrome/browser/ui/app_list/search/search_result_ranker/histogram_util.h"
 #include "chrome/browser/ui/app_list/search/search_result_ranker/ranking_item_util.h"
 #include "chrome/browser/ui/app_list/search/search_result_ranker/search_result_ranker.h"
-#include "third_party/metrics_proto/chrome_os_app_list_launch_event.pb.h"
-
-using metrics::ChromeOSAppListLaunchEventProto;
+#include "components/metrics/structured/structured_events.h"
 
 namespace app_list {
 
@@ -216,7 +214,19 @@ int SearchController::GetLastQueryLength() const {
 
 void SearchController::Train(AppLaunchData&& app_launch_data) {
   if (app_list_features::IsAppListLaunchRecordingEnabled()) {
-    // TODO(crbug.com/951287): Add hashed logging once framework is done.
+    // Record a structured metrics event.
+    const base::Time now = base::Time::Now();
+    base::Time::Exploded now_exploded;
+    now.LocalExplode(&now_exploded);
+
+    metrics::structured::events::LauncherUsage()
+        .SetTarget(NormalizeId(app_launch_data.id))
+        .SetApp(last_launched_app_id_)
+        .SetSearchQuery(base::UTF16ToUTF8(last_query_))
+        .SetSearchQueryLength(last_query_.size())
+        .SetProviderType(static_cast<int>(app_launch_data.ranking_item_type))
+        .SetHour(now_exploded.hour)
+        .Record();
 
     // Only record the last launched app if the hashed logging feature flag is
     // enabled, because it is only used by hashed logging.

@@ -15,16 +15,15 @@ etc., where each group organizes related histograms.
 
 ## Coding (Emitting to Histograms)
 
-Generally you should be using the
+Prefer the helper functions defined in
 [histogram_functions.h](https://cs.chromium.org/chromium/src/base/metrics/histogram_functions.h).
-You can also use the macros in
-[histogram_macros.h](https://cs.chromium.org/chromium/src/base/metrics/histogram_macros.h).
-The macros are best used in code where efficiency matters--when the histogram is
-emitted frequently (i.e., on any regular basis resulting in more than about ten
-calls per hour) or on a critical path.  The macros cache a pointer to the
-histogram object for efficiency, though this comes at the cost of increased
-binary size. (130 bytes/macro sounds small but could and does easily add up.)
-If efficiency isn't a concern, prefer the histogram_functions.h methods.
+These functions take a lock and perform a map lookup, but the overhead is
+generally insignificant. However, when recording metrics on the critical path
+(e.g. called in a loop or logged multiple times per second), use the macros in
+[histogram_macros.h](https://cs.chromium.org/chromium/src/base/metrics/histogram_macros.h)
+instead. These macros cache a pointer to the histogram object for efficiency,
+though this comes at the cost of increased binary size: 130 bytes/macro usage
+sounds small but quickly adds up.
 
 ### Don't Use the Same Histogram Logging Call in Multiple Places
 

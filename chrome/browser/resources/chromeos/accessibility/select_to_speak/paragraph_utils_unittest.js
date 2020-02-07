@@ -4,19 +4,13 @@
 
 /**
  * Test fixture for paragraph_utils.js.
- * @constructor
- * @extends {testing.Test}
  */
-function SelectToSpeakParagraphUnitTest() {
-  testing.Test.call(this);
-}
+SelectToSpeakParagraphUnitTest = class extends testing.Test {};
 
-SelectToSpeakParagraphUnitTest.prototype = {
-  __proto__: testing.Test.prototype,
+/** @override */
+SelectToSpeakParagraphUnitTest.prototype.extraLibraries =
+    ['test_support.js', 'paragraph_utils.js'];
 
-  /** @override */
-  extraLibraries: ['test_support.js', 'paragraph_utils.js']
-};
 
 TEST_F('SelectToSpeakParagraphUnitTest', 'GetFirstBlockAncestor', function() {
   const root = {role: 'rootWebArea'};

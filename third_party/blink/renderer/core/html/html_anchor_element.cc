@@ -454,8 +454,13 @@ void HTMLAnchorElement::HandleClick(Event& event) {
                       WebFeature::kHTMLAnchorElementHrefTranslateAttribute);
   }
 
-  if (target_frame)
+  if (target_frame) {
+    // If we also have a pending form submission, make sure this anchor
+    // navigation takes precedence over it.
+    GetDocument().CancelFormSubmissions();
+
     target_frame->Navigate(frame_request, WebFrameLoadType::kStandard);
+  }
 }
 
 bool IsEnterKeyKeydownEvent(Event& event) {

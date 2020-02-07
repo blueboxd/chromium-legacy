@@ -629,7 +629,8 @@ TEST_F(ToplevelWindowEventHandlerTest, TwoFingerDragDifferentDelta) {
       gfx::Point(55, 5),  // Within caption.
   };
   gfx::Vector2d delta[kTouchPoints] = {
-      gfx::Vector2d(80, 80), gfx::Vector2d(20, 20),
+      gfx::Vector2d(80, 80),
+      gfx::Vector2d(20, 20),
   };
   int delay_adding_finger_ms[kTouchPoints] = {0, 0};
   int delay_releasing_finger_ms[kTouchPoints] = {150, 150};
@@ -657,7 +658,8 @@ TEST_F(ToplevelWindowEventHandlerTest, TwoFingerDragDelayAddFinger) {
       gfx::Point(55, 5),  // Within caption.
   };
   gfx::Vector2d delta[kTouchPoints] = {
-      gfx::Vector2d(50, 50), gfx::Vector2d(50, 50),
+      gfx::Vector2d(50, 50),
+      gfx::Vector2d(50, 50),
   };
   int delay_adding_finger_ms[kTouchPoints] = {0, 90};
   int delay_releasing_finger_ms[kTouchPoints] = {150, 150};
@@ -684,7 +686,8 @@ TEST_F(ToplevelWindowEventHandlerTest, TwoFingerDragDelayReleaseFinger) {
       gfx::Point(55, 5),  // Within caption.
   };
   gfx::Vector2d delta[kTouchPoints] = {
-      gfx::Vector2d(50, 50), gfx::Vector2d(50, 50),
+      gfx::Vector2d(50, 50),
+      gfx::Vector2d(50, 50),
   };
   int delay_adding_finger_ms[kTouchPoints] = {0, 0};
   int delay_releasing_finger_ms[kTouchPoints] = {150, 90};
@@ -712,7 +715,8 @@ TEST_F(ToplevelWindowEventHandlerTest,
       gfx::Point(55, 5),  // Within caption.
   };
   gfx::Vector2d delta[kTouchPoints] = {
-      gfx::Vector2d(50, 50), gfx::Vector2d(50, 50),
+      gfx::Vector2d(50, 50),
+      gfx::Vector2d(50, 50),
   };
   int delay_adding_finger_ms[kTouchPoints] = {0, 30};
   int delay_releasing_finger_ms[kTouchPoints] = {150, 120};
@@ -741,7 +745,8 @@ TEST_F(ToplevelWindowEventHandlerTest,
       gfx::Point(55, 5),  // Within caption.
   };
   gfx::Vector2d delta[kTouchPoints] = {
-      gfx::Vector2d(50, 50), gfx::Vector2d(50, 50),
+      gfx::Vector2d(50, 50),
+      gfx::Vector2d(50, 50),
   };
   int delay_adding_finger_ms[kTouchPoints] = {0, 30};
   int delay_releasing_finger_ms[kTouchPoints] = {120, 150};
@@ -1068,8 +1073,9 @@ TEST_F(ToplevelWindowEventHandlerTest, GestureDragCaptureLoss) {
 // window's bounds correctly.
 TEST_F(ToplevelWindowEventHandlerTest, DragSnappedWindowToExternalDisplay) {
   UpdateDisplay("940x550,940x550");
+  display::test::DisplayManagerTestApi display_manager_test(display_manager());
   int64_t primary_id = display::Screen::GetScreen()->GetPrimaryDisplay().id();
-  int64_t secondary_id = display_manager()->GetSecondaryDisplay().id();
+  int64_t secondary_id = display_manager_test.GetSecondaryDisplay().id();
   display::DisplayLayoutBuilder builder(primary_id);
   builder.SetSecondaryPlacement(secondary_id, display::DisplayPlacement::TOP,
                                 0);
@@ -1097,7 +1103,7 @@ TEST_F(ToplevelWindowEventHandlerTest, DragSnappedWindowToExternalDisplay) {
   EXPECT_EQ(initial_window_size.ToString(), w1->bounds().size().ToString());
 
   // The window is now fully contained in the secondary display.
-  EXPECT_TRUE(display_manager()->GetSecondaryDisplay().bounds().Contains(
+  EXPECT_TRUE(display_manager_test.GetSecondaryDisplay().bounds().Contains(
       w1->GetBoundsInScreen()));
 }
 

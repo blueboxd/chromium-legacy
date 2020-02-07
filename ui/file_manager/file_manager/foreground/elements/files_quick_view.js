@@ -14,6 +14,12 @@ const FilesQuickView = Polymer({
     // True if there is a file task that can open the file type.
     hasTask: Boolean,
 
+    /**
+     * True if the entry shown in Quick View can be deleted.
+     * @type {boolean}
+     */
+    canDelete: Boolean,
+
     // URLs should be accessible from the <webview> since their content is
     // rendered inside the <wevbiew>. Hint: use URL.createObjectURL.
     contentUrl: String,
@@ -75,6 +81,7 @@ const FilesQuickView = Polymer({
         subtype: '',
         filePath: '',
         hasTask: false,
+        canDelete: false,
         contentUrl: '',
         videoPoster: '',
         audioArtwork: '',
@@ -146,6 +153,17 @@ const FilesQuickView = Polymer({
    */
   shouldShowOpenButton_: function(hasTask, isModal) {
     return hasTask && !isModal;
+  },
+
+  /**
+   * @param {boolean} canDelete
+   * @param {boolean} isModal
+   * @return {boolean}
+   *
+   * @private
+   */
+  shouldShowDeleteButton_: function(canDelete, isModal) {
+    return canDelete && !isModal;
   },
 
   /**

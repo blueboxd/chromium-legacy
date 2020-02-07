@@ -482,7 +482,8 @@ _CONFIG = [
     },
     {
         'paths': [
-            'third_party/blink/renderer/core/animation_frame', 'third_party/blink/renderer/core/offscreencanvas',
+            'third_party/blink/renderer/core/animation_frame',
+            'third_party/blink/renderer/core/offscreencanvas',
             'third_party/blink/renderer/core/html/canvas'
         ],
         'allowed': [
@@ -700,6 +701,9 @@ _CONFIG = [
             'third_party/blink/renderer/modules/mediacapturefromelement/',
         ],
         'allowed': [
+            # TODO(crbug.com/1023262): Remove once ReadbackYUVInterface is used by
+            # RasterImplementation
+            'gpu::ReadbackYUVInterface',
             'media::.+',
             'libyuv::.+',
         ]

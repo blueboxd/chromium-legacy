@@ -186,6 +186,8 @@ void AppsNavigationThrottle::ShowIntentPickerBubbleForApps(
   Browser* browser = chrome::FindBrowserWithWebContents(web_contents);
   if (!browser)
     return;
+
+  IntentPickerTabHelper::SetShouldShowIcon(web_contents, true);
   browser->window()->ShowIntentPickerBubble(
       std::move(apps), show_stay_in_chrome, show_remember_selection,
       PageActionIconType::kIntentPicker, base::nullopt, std::move(callback));

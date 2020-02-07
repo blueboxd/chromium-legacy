@@ -256,6 +256,7 @@ Ako je okvir "<ph name="SERVICE_SCRIPT_NAME" />" već potvrđen, uklonite kvači
 <translation id="6939719207673461467">Prikaži/sakrij tipkovnicu.</translation>
 <translation id="6944854424004126054">Vraćanje prozora</translation>
 <translation id="6948905685698011662">Udaljena radna površina Chrome sada je na webu! Isprobajte našu <ph name="LINK_BEGIN" />besplatnu web-aplikaciju<ph name="LINK_END" />.</translation>
+<translation id="6956835181934226419">Već sam dao to dopuštenje.</translation>
 <translation id="6963936880795878952">Veze s udaljenim računalom privremeno su blokirane jer se pokušao spojiti korisnik s nevažećim PIN-om. Pokušajte ponovo kasnije.</translation>
 <translation id="6965382102122355670">U redu</translation>
 <translation id="6985691951107243942">Jeste li sigurni da želite onemogućiti daljinske veze s hostom <ph name="HOSTNAME" />? Ako se predomislite, morat ćete se spojiti na to računalo da biste ponovo omogućili veze.</translation>

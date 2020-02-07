@@ -97,6 +97,7 @@ source_set("main") {
     "//ios/chrome/browser/main",
     "//ios/chrome/browser/reading_list",
     "//ios/chrome/browser/sessions",
+    "//ios/chrome/browser/sessions:restoration_agent",
     "//ios/chrome/browser/sessions:serialisation",
     "//ios/chrome/browser/sessions:session_service",
     "//ios/chrome/browser/store_kit",

@@ -4,23 +4,16 @@
 
 /**
  * Test fixture for word_utils.js.
- * @constructor
- * @extends {testing.Test}
  */
-function SelectToSpeakWordUtilsUnitTest() {
-  testing.Test.call(this);
-}
+SelectToSpeakWordUtilsUnitTest = class extends testing.Test {};
 
-SelectToSpeakWordUtilsUnitTest.prototype = {
-  __proto__: testing.Test.prototype,
+/** @override */
+SelectToSpeakWordUtilsUnitTest.prototype.extraLibraries = [
+  'test_support.js',
+  'paragraph_utils.js',
+  'word_utils.js',
+];
 
-  /** @override */
-  extraLibraries: [
-    'test_support.js',
-    'paragraph_utils.js',
-    'word_utils.js',
-  ]
-};
 
 TEST_F(
     'SelectToSpeakWordUtilsUnitTest', 'getNextWordStartWithoutWordStarts',

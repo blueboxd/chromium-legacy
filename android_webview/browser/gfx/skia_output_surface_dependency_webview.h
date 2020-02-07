@@ -55,6 +55,7 @@ class SkiaOutputSurfaceDependencyWebView
                       const GURL& active_url) override;
 
   base::TimeDelta GetGpuBlockedTimeSinceLastSwap() override;
+  bool NeedsSupportForExternalStencil() override;
 
  private:
   gl::GLSurface* const gl_surface_;

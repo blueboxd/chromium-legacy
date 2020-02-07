@@ -5,20 +5,21 @@
 #ifndef ASH_ASSISTANT_TEST_TEST_ASSISTANT_WEB_VIEW_H_
 #define ASH_ASSISTANT_TEST_TEST_ASSISTANT_WEB_VIEW_H_
 
-#include "ash/public/cpp/assistant/assistant_web_view_2.h"
+#include "ash/public/cpp/assistant/assistant_web_view.h"
 #include "base/observer_list.h"
 
 namespace ash {
 
-// An implementation of AssistantWebView2 for use in unittests.
-class TestAssistantWebView : public AssistantWebView2 {
+// An implementation of AssistantWebView for use in unittests.
+class TestAssistantWebView : public AssistantWebView {
  public:
   TestAssistantWebView();
-  TestAssistantWebView(const TestAssistantWebView& copy) = delete;
-  TestAssistantWebView& operator=(const TestAssistantWebView& assign) = delete;
   ~TestAssistantWebView() override;
 
-  // AssistantWebView2:
+  TestAssistantWebView(const TestAssistantWebView&) = delete;
+  TestAssistantWebView& operator=(const TestAssistantWebView&) = delete;
+
+  // AssistantWebView:
   void AddObserver(Observer* observer) override;
   void RemoveObserver(Observer* observer) override;
   gfx::NativeView GetNativeView() override;

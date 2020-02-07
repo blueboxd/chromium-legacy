@@ -1039,8 +1039,9 @@ TEST_F(DisplayManagerTest, OverscanInsetsTest) {
   EXPECT_EQ("378x376", updated_display_info2.size_in_pixel().ToString());
   EXPECT_EQ("13,12,11,10",
             updated_display_info2.overscan_insets_in_dip().ToString());
+  display::test::DisplayManagerTestApi display_manager_test(display_manager());
   EXPECT_EQ("500,0 378x376",
-            display_manager()->GetSecondaryDisplay().bounds().ToString());
+            display_manager_test.GetSecondaryDisplay().bounds().ToString());
 
   // Make sure that SetOverscanInsets() is idempotent.
   display_manager()->SetOverscanInsets(display_info1.id(), gfx::Insets());
@@ -1099,11 +1100,11 @@ TEST_F(DisplayManagerTest, OverscanInsetsTest) {
 
   // Make sure switching primary display applies the overscan offset only once.
   Shell::Get()->window_tree_host_manager()->SetPrimaryDisplayId(
-      display_manager()->GetSecondaryDisplay().id());
+      display_manager_test.GetSecondaryDisplay().id());
   EXPECT_EQ("-500,0 500x500",
-            display_manager()->GetSecondaryDisplay().bounds().ToString());
+            display_manager_test.GetSecondaryDisplay().bounds().ToString());
   EXPECT_EQ("0,0 500x500",
-            GetDisplayInfo(display_manager()->GetSecondaryDisplay())
+            GetDisplayInfo(display_manager_test.GetSecondaryDisplay())
                 .bounds_in_native()
                 .ToString());
   EXPECT_EQ("0,501 400x400",
@@ -1659,8 +1660,9 @@ TEST_F(DisplayManagerTest, TestNativeDisplaysChanged) {
 TEST_F(DisplayManagerTest, DisplayAddRemoveAtTheSameTime) {
   UpdateDisplay("100+0-500x500,0+501-400x400");
 
+  display::test::DisplayManagerTestApi display_manager_test(display_manager());
   const int64_t primary_id = WindowTreeHostManager::GetPrimaryDisplayId();
-  const int64_t secondary_id = display_manager()->GetSecondaryDisplay().id();
+  const int64_t secondary_id = display_manager_test.GetSecondaryDisplay().id();
 
   display::ManagedDisplayInfo primary_info =
       display_manager()->GetDisplayInfo(primary_id);
@@ -1680,7 +1682,7 @@ TEST_F(DisplayManagerTest, DisplayAddRemoveAtTheSameTime) {
 
   // Secondary seconary_id becomes the primary as it has smaller output index.
   EXPECT_EQ(secondary_id, WindowTreeHostManager::GetPrimaryDisplayId());
-  EXPECT_EQ(third_id, display_manager()->GetSecondaryDisplay().id());
+  EXPECT_EQ(third_id, display_manager_test.GetSecondaryDisplay().id());
   EXPECT_EQ("600x600", GetDisplayForId(third_id).size().ToString());
 }
 
@@ -2447,12 +2449,13 @@ TEST_F(DisplayManagerTest, UnifiedDesktopBasic) {
   // Switch back to extended desktop.
   display_manager()->SetUnifiedDesktopEnabled(false);
   EXPECT_EQ(gfx::Size(500, 300), screen->GetPrimaryDisplay().size());
+  display::test::DisplayManagerTestApi display_manager_test(display_manager());
   EXPECT_EQ(gfx::Size(400, 500),
-            display_manager()->GetSecondaryDisplay().size());
+            display_manager_test.GetSecondaryDisplay().size());
   EXPECT_EQ(
       gfx::Size(500, 300),
       display_manager()
-          ->GetDisplayForId(display_manager()->GetSecondaryDisplay().id() + 1)
+          ->GetDisplayForId(display_manager_test.GetSecondaryDisplay().id() + 1)
           .size());
 }
 
@@ -3359,8 +3362,8 @@ TEST_F(DisplayManagerTest, GuessDisplayIdFieldsInDisplayLayout) {
 }
 
 TEST_F(DisplayManagerTest, AccelerometerSupport) {
-  display::test::DisplayManagerTestApi(display_manager())
-      .SetFirstDisplayAsInternalDisplay();
+  display::test::DisplayManagerTestApi display_manager_test(display_manager());
+  display_manager_test.SetFirstDisplayAsInternalDisplay();
   display::Screen* screen = display::Screen::GetScreen();
   EXPECT_EQ(display::Display::AccelerometerSupport::UNAVAILABLE,
             screen->GetPrimaryDisplay().accelerometer_support());
@@ -3374,13 +3377,13 @@ TEST_F(DisplayManagerTest, AccelerometerSupport) {
   EXPECT_EQ(display::Display::AccelerometerSupport::AVAILABLE,
             screen->GetPrimaryDisplay().accelerometer_support());
   EXPECT_EQ(display::Display::AccelerometerSupport::UNAVAILABLE,
-            display_manager()->GetSecondaryDisplay().accelerometer_support());
+            display_manager_test.GetSecondaryDisplay().accelerometer_support());
 
   // Secondary is now primary and should not have accelerometer support.
   std::vector<display::ManagedDisplayInfo> display_info_list;
-  display_info_list.push_back(
-      display::CreateDisplayInfo(display_manager()->GetSecondaryDisplay().id(),
-                                 gfx::Rect(1, 1, 100, 100)));
+  display_info_list.push_back(display::CreateDisplayInfo(
+      display_manager_test.GetSecondaryDisplay().id(),
+      gfx::Rect(1, 1, 100, 100)));
   display_manager()->OnNativeDisplaysChanged(display_info_list);
   EXPECT_EQ(display::Display::AccelerometerSupport::UNAVAILABLE,
             screen->GetPrimaryDisplay().accelerometer_support());

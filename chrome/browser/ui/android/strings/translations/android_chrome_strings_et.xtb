@@ -115,6 +115,7 @@
 <translation id="1919950603503897840">Kontaktide valimine</translation>
 <translation id="1922076542920281912">Selleks et anda Chrome'ile juurdepääs teie asukohale, lülitage funktsioon Asukoht sisse ka <ph name="BEGIN_LINK" />Androidi seadetes<ph name="END_LINK" />.</translation>
 <translation id="1923695749281512248"><ph name="BYTES_DOWNLOADED_WITH_UNITS" /> / <ph name="FILE_SIZE_WITH_UNITS" /></translation>
+<translation id="1925021887439448749">Sisestage kohandatud veebiaadress</translation>
 <translation id="1928696683969751773">Värskendused</translation>
 <translation id="19288952978244135">Avage Chrome uuesti.</translation>
 <translation id="1933845786846280168">Valitud vaheleht</translation>
@@ -279,6 +280,7 @@
 <translation id="3123473560110926937">Blokeeritud teatud saitidel</translation>
 <translation id="3123734510202723619">Teadaanded</translation>
 <translation id="3137521801621304719">Inkognito režiimist väljumine</translation>
+<translation id="3140134512074889489">QR-koodi skannimiseks lubage oma kaamera</translation>
 <translation id="3143515551205905069">Tühista sünkroonimine</translation>
 <translation id="3157842584138209013">Nupu Rohkem valikuid abil saate vaadata, kui palju andmemahtu olete säästnud</translation>
 <translation id="3166827708714933426">Vahelehe ja akna otseteed</translation>
@@ -449,6 +451,9 @@
 <translation id="4521489764227272523">Valitud andmed eemaldati Chrome'ist ja teie sünkroonitud seadmetest.
 
 Veebisaidil <ph name="BEGIN_LINK" />myactivity.google.com<ph name="END_LINK" /> võib teie Google'i kontol olla muus vormis sirvimisajalugu, nt otsingud ja tegevused muudes Google'i teenustes.</translation>
+<translation id="4527374721149092498">Vaadake lisateavet veebisaitide teemade kohta ilma lehelt lahkumata. Funktsioon Puuduta otsimiseks saadab sõna ja seda ümbritseva konteksti Google'i otsingule, saates tagasi definitsioonid, pildid, otsingutulemused ja muud üksikasjad.
+
+Puudutage mis tahes sõna, et seda otsida. Otsingutermini kohandamiseks vajutage selle valimiseks pikalt. Otsingu täpsustamiseks avage libistades paneel, puudutage uue vahelehe loomiseks laiendamisikooni ja siis otsingukasti.</translation>
 <translation id="4532845899244822526">Kausta valimine</translation>
 <translation id="4538018662093857852">Lülita lihtsustatud režiim sisse</translation>
 <translation id="4550003330909367850">Parooli vaatamiseks või siia kleepimiseks määrake selles seadmes ekraanilukk.</translation>
@@ -690,6 +695,9 @@ Seade muutmiseks <ph name="BEGIN_LINK" />lähtestage sünkroonimine<ph name="END
 <translation id="6232535412751077445">Kui lubate funktsiooni „Ära jälgi”, kaasatakse see taotlus teie sirvimisliiklusesse. Mõju oleneb sellest, kas veebisait reageerib taotlusele ja kuidas seda tõlgendatakse.
 
 Näiteks võivad mõned veebisaidid taotlusele reageerida nii, et näitavad teile reklaame, mis ei põhine muudel külastatud veebisaitidel. Paljud veebisaidid koguvad ning kasutavad endiselt teie sirvimisandmeid, näiteks turvalisuse parandamiseks, sisu, reklaamide ja soovituste pakkumiseks ning aruandlusstatistika loomiseks.</translation>
+<translation id="6238003486329291387">Vaadake lisateavet veebisaitide teemade kohta ilma lehelt lahkumata. Funktsioon Puuduta otsimiseks saadab sõna ja seda ümbritseva konteksti Google'i otsingule, saates tagasi definitsioonid, pildid, otsingutulemused ja muud üksikasjad.
+
+Puudutage pikalt mis tahes sõnal, et seda otsida. Otsingu täpsustamiseks kohandage valikut. Saate ka paneeli libistades avada, puudutada uue vahelehe loomiseks laiendamisikooni ja siis otsingukasti.</translation>
 <translation id="624789221780392884">Värskendus on valmis</translation>
 <translation id="6255999984061454636">Sisu soovitused</translation>
 <translation id="6270391203985052864">Saidid saavad küsida luba märguannete saatmiseks</translation>

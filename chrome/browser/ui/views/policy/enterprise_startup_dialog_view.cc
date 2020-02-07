@@ -95,6 +95,15 @@ EnterpriseStartupDialogView::EnterpriseStartupDialogView(
   DialogDelegate::set_draggable(true);
   DialogDelegate::set_buttons(ui::DIALOG_BUTTON_OK);
   DialogDelegate::SetExtraView(CreateLogoView());
+  DialogDelegate::set_accept_callback(
+      base::BindOnce(&EnterpriseStartupDialogView::RunDialogCallback,
+                     base::Unretained(this), true));
+  DialogDelegate::set_cancel_callback(
+      base::BindOnce(&EnterpriseStartupDialogView::RunDialogCallback,
+                     base::Unretained(this), false));
+  DialogDelegate::set_close_callback(
+      base::BindOnce(&EnterpriseStartupDialogView::RunDialogCallback,
+                     base::Unretained(this), false));
   SetBorder(views::CreateEmptyBorder(GetDialogInsets()));
   CreateDialogWidget(this, nullptr, nullptr)->Show();
 #if defined(OS_MACOSX)
@@ -175,19 +184,6 @@ void EnterpriseStartupDialogView::RunDialogCallback(bool was_accepted) {
 #else
   std::move(callback_).Run(was_accepted, can_show_browser_window_);
 #endif
-}
-
-bool EnterpriseStartupDialogView::Accept() {
-  RunDialogCallback(true);
-  return true;
-}
-bool EnterpriseStartupDialogView::Cancel() {
-  RunDialogCallback(false);
-  return true;
-}
-
-bool EnterpriseStartupDialogView::Close() {
-  return Cancel();
 }
 
 bool EnterpriseStartupDialogView::ShouldShowWindowTitle() const {

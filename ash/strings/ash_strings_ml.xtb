@@ -137,7 +137,6 @@
 <translation id="2718395828230677721">നൈറ്റ് ലൈറ്റ്</translation>
 <translation id="2727977024730340865">കുറഞ്ഞ തോതിൽ വൈദ്യുതി പ്രവഹിക്കുന്ന ചാർജ്ജറിലേക്ക് പ്ലഗ് ചെയ്‌തിരിക്കുന്നു. ബാറ്ററി ചാർജുചെയ്യൽ വിശ്വസനീയമാകണമെന്നില്ല.</translation>
 <translation id="2792498699870441125">Alt+തിരയൽ</translation>
-<translation id="2803734122639935495">അൺലോക്ക് ചെയ്യാൻ, നിങ്ങളുടെ പാസ്‌വേഡ് നൽകുക</translation>
 <translation id="2819276065543622893">നിങ്ങൾ ഇപ്പോൾ സൈൻ ഔട്ട് ചെയ്യും.</translation>
 <translation id="2825619548187458965">ഷെൽഫ്</translation>
 <translation id="2844169650293029770">USB-C ഉപകരണം (ഇടത് വശത്ത് മുൻഭാഗത്തെ പോർട്ട്)</translation>
@@ -202,6 +201,7 @@
 <translation id="3604801046548457007">ഡെസ്‌ക് <ph name="DESK_TITILE" /> സൃഷ്‌ടിച്ചു</translation>
 <translation id="3606978283550408104">ബ്രെയ്‌ലി ഡിസ്‌പ്ലേ കണക്‌റ്റ് ചെയ്‌തു.</translation>
 <translation id="3621202678540785336">ഇൻപുട്ട്</translation>
+<translation id="3621712662352432595">ഓഡിയോ ക്രമീകരണങ്ങൾ</translation>
 <translation id="3626281679859535460">മിഴിവ്</translation>
 <translation id="3631369015426612114">ഇനിപ്പറയുന്നതിൽ നിന്നുള്ള അറിയിപ്പുകൾ അനുവദിക്കുക</translation>
 <translation id="3705722231355495246">-</translation>
@@ -544,6 +544,7 @@
 <translation id="8477270416194247200">റദ്ദാക്കാൻ Alt+തിരയൽ അല്ലെങ്കിൽ Shift അമർത്തുക.</translation>
 <translation id="8513108775083588393">സ്വയം തിരിയുക</translation>
 <translation id="8517041960877371778">നിങ്ങളുടെ <ph name="DEVICE_TYPE" /> ഓണായിരിക്കുമ്പോൾ അത് ചാർജ്ജാകാതിരിക്കാം.</translation>
+<translation id="8563862697512465947">വിജ്ഞാപന ക്രമീകരണങ്ങള്‍‌</translation>
 <translation id="8627191004499078455"><ph name="DEVICE_NAME" /> ഉപകരണത്തിലേക്ക് കണക്റ്റ് ചെയ്‌തു</translation>
 <translation id="8637598503828012618"><ph name="CONNECTION_STATUS" />, സിഗ്‌നൽ ശക്തി <ph name="SIGNAL_STRENGTH" />, നിങ്ങളുടെ അഡ്‌മിൻ മാനേജ് ചെയ്യുന്നത്</translation>
 <translation id="8639760480004882931"><ph name="PERCENTAGE" /> ശേഷിക്കുന്നു</translation>

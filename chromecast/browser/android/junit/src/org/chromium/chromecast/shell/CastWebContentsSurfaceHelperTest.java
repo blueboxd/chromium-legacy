@@ -333,6 +333,6 @@ public class CastWebContentsSurfaceHelperTest {
         when(mWebContentsView.open(webContents)).thenReturn(scope);
         mSurfaceHelper.onNewStartParams(params);
         mSurfaceHelper.onDestroy();
-        verify(scope, never()).close();
+        verify(scope).close();
     }
 }

@@ -9,9 +9,9 @@
 #include "build/build_config.h"
 #include "cc/paint/paint_image.h"
 #include "cc/tiles/gpu_image_decode_cache.h"
-#include "components/viz/common/gl_helper.h"
 #include "content/public/common/content_switches.h"
 #include "gpu/command_buffer/client/context_support.h"
+#include "gpu/command_buffer/client/gl_helper.h"
 #include "gpu/config/gpu_feature_info.h"
 #include "media/renderers/paint_canvas_video_renderer.h"
 #include "services/viz/public/cpp/gpu/context_provider_command_buffer.h"
@@ -136,9 +136,9 @@ WebGraphicsContext3DProviderImpl::GetWebglPreferences() const {
   return prefs;
 }
 
-viz::GLHelper* WebGraphicsContext3DProviderImpl::GetGLHelper() {
+gpu::GLHelper* WebGraphicsContext3DProviderImpl::GetGLHelper() {
   if (!gl_helper_) {
-    gl_helper_ = std::make_unique<viz::GLHelper>(provider_->ContextGL(),
+    gl_helper_ = std::make_unique<gpu::GLHelper>(provider_->ContextGL(),
                                                  provider_->ContextSupport());
   }
   return gl_helper_.get();

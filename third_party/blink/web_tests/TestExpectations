@@ -850,7 +850,6 @@ crbug.com/591099 virtual/layout_ng_block_frag/fast/multicol/border-radius-clippe
 crbug.com/591099 editing/selection/paint-hyphen.html [ Failure Pass ]
 crbug.com/591099 external/wpt/dom/ranges/Range-compareBoundaryPoints.html [ Timeout Failure Pass ]
 crbug.com/591099 external/wpt/dom/ranges/Range-set.html [ Failure Timeout ]
-crbug.com/591099 external/wpt/encoding/legacy-mb-korean/euc-kr/euckr-decode-ksc_5601.html [ Timeout Failure Pass ]
 crbug.com/591099 [ Mac ] virtual/text-antialias/international/shape-across-elements-simple.html [ Failure ]
 crbug.com/591099 [ Win ] virtual/text-antialias/international/shape-across-elements-simple.html [ Failure ]
 crbug.com/591099 [ Mac ] virtual/text-antialias/word-space-monospace.html [ Failure ]
@@ -1962,8 +1961,6 @@ crbug.com/410974 virtual/threaded-prefer-compositing/fast/scroll-behavior/scroll
 crbug.com/410974 virtual/threaded-prefer-compositing/fast/scroll-behavior/scroll-customization/scrollstate-distribute-to-scroll-chain-descendant.html [ Pass Failure ]
 crbug.com/410974 virtual/threaded-prefer-compositing/fast/scroll-behavior/scroll-customization/touch-scroll-customization.html [ Pass Failure ]
 
-crbug.com/390452 http/tests/security/isolatedWorld/media-query-wrapper-leaks.html [ Failure Pass Timeout ]
-crbug.com/390452 virtual/isolated_world_csp/http/tests/security/isolatedWorld/media-query-wrapper-leaks.html [ Failure Pass Timeout ]
 crbug.com/518987 http/tests/xmlhttprequest/navigation-abort-detaches-frame.html [ Pass Timeout ]
 
 # These performance-sensitive user-timing tests are flaky in debug on all platforms, and flaky on all configurations of windows.
@@ -2181,6 +2178,14 @@ crbug.com/991413 external/wpt/css/css-text/white-space/trailing-other-space-sepa
 crbug.com/991413 external/wpt/css/css-text/white-space/trailing-other-space-separators-break-spaces-012.html [ Skip ]
 crbug.com/991413 external/wpt/css/css-text/white-space/trailing-other-space-separators-break-spaces-014.html [ Skip ]
 crbug.com/991413 external/wpt/css/css-text/white-space/trailing-other-space-separators-break-spaces-015.html [ Skip ]
+
+# Sheriff 2020-02-06
+# Flaking on Linux Leak
+crbug.com/1049599 [ Linux ] virtual/threaded-prefer-compositing/fast/scrolling/events/overscroll-event-fired-to-element-with-overscroll-behavior.html [ Pass Failure ]
+crbug.com/1049641 [ Debug ] http/tests/devtools/sources/debugger/js-with-inline-stylesheets.js [ Pass Failure ]
+crbug.com/1049641 [ Debug ] http/tests/devtools/sources/debugger-breakpoints/set-breakpoint.js [ Pass Failure ]
+crbug.com/1049641 [ Debug ] http/tests/devtools/sources/debugger-breakpoints/set-conditional-breakpoint.js [ Pass Failure ]
+crbug.com/1049641 http/tests/devtools/sources/debugger/debugger-disable-enable.js [ Pass Timeout ]
 
 # Sheriff 2019-08-19
 crbug.com/626703 [ Win7 ] external/wpt/xhr/responsexml-document-properties.htm [ Failure ]
@@ -2954,7 +2959,6 @@ crbug.com/626703 [ Mac10.10 ] external/wpt/upgrade-insecure-requests/gen/srcdoc-
 crbug.com/626703 [ Mac10.10 ] external/wpt/upgrade-insecure-requests/gen/iframe-blank-inherit.meta/upgrade/iframe-tag/same-https.downgrade.https.html [ Timeout ]
 crbug.com/626703 [ Mac10.10 ] external/wpt/requestidlecallback/callback-invoked.html [ Timeout ]
 crbug.com/626703 [ Mac10.10 ] external/wpt/upgrade-insecure-requests/gen/srcdoc-inherit.meta/unset/worklet-audio/cross-http-downgrade.downgrade.https.html [ Timeout ]
-crbug.com/626703 [ Mac10.10 ] external/wpt/cookie-store/cookieStoreManager_getSubscriptions_single.tentative.https.any.html [ Failure Timeout ]
 crbug.com/626703 [ Mac10.10 ] external/wpt/referrer-policy/gen/worker-module.http-rp/unsafe-url/fetch/same-http.swap-origin.http.html [ Timeout ]
 crbug.com/626703 [ Mac10.10 ] external/wpt/service-workers/service-worker/registration-schedule-job.https.html [ Timeout ]
 crbug.com/626703 [ Mac10.10 ] external/wpt/referrer-policy/gen/top.meta/unset/worker-module/same-http.keep-origin.http.html [ Timeout ]
@@ -6319,9 +6323,6 @@ crbug.com/1034789 [ Mac ] http/tests/security/frameNavigation/xss-ALLOWED-parent
 crbug.com/1034789 [ Mac10.13 ] virtual/threaded/fast/scroll-snap/snap-to-target-on-layout-change.html [ Pass Timeout ]
 crbug.com/1034789 [ Mac10.13 ] external/wpt/pointerevents/pointerevent_coalesced_events_attributes.html [ Pass Failure ]
 
-# Sheriff 2019-12-18
-crbug.com/859169 http/tests/devtools/layers/layer-compositing-reasons.js [ Pass Failure ]
-
 # Sheriff 2019-12-23
 crbug.com/1036626 http/tests/devtools/tracing/tracing-record-input-events.js [ Pass Failure ]
 crbug.com/1036626 virtual/threaded/http/tests/devtools/tracing/tracing-record-input-events.js [ Pass Failure ]
@@ -6628,6 +6629,7 @@ crbug.com/1048149 [ Mac ] virtual/form-controls-refresh-disabled/fast/forms/cale
 crbug.com/1048149 [ Mac ] virtual/form-controls-refresh-disabled/fast/forms/calendar-picker/date-picker-choose-default-value-after-set-value.html [ Pass Crash ]
 crbug.com/1048149 [ Mac ] virtual/form-controls-refresh-disabled/fast/forms/calendar-picker/date-picker-events.html [ Pass Crash ]
 crbug.com/1048149 [ Mac ] virtual/form-controls-refresh-disabled/fast/forms/calendar-picker/month-picker-appearance-step.html [ Pass Crash ]
+crbug.com/1048149 [ Mac ] virtual/form-controls-refresh-disabled/fast/forms/calendar-picker/month-picker-appearance.html [ Pass Crash ]
 crbug.com/1048149 [ Mac ] virtual/form-controls-refresh-disabled/fast/forms/calendar-picker/month-picker-choose-default-value-after-set-value.html [ Pass Crash ]
 crbug.com/1048149 [ Mac ] virtual/form-controls-refresh-disabled/fast/forms/calendar-picker/month-picker-key-operations.html [ Pass Crash ]
 crbug.com/1048149 [ Mac ] virtual/form-controls-refresh-disabled/fast/forms/calendar-picker/month-picker-mouse-operations.html [ Pass Crash ]
@@ -6636,3 +6638,9 @@ crbug.com/1048149 [ Mac ] virtual/form-controls-refresh-disabled/fast/forms/cale
 # Upcoming DevTools change
 crbug.com/1006759 http/tests/devtools/profiler/cpu-profiler-save-load.js [ Pass Failure ]
 crbug.com/1006759 http/tests/devtools/profiler/heap-snapshot-loader.js [ Pass Failure ]
+
+# Flaky tests blocking WPT import
+crbug.com/1049607 external/wpt/fetch/api/response/response-error-from-stream.html [ Pass Failure ]
+crbug.com/1049607 virtual/omt-worker-fetch/external/wpt/fetch/api/response/response-error-from-stream.html [ Pass Failure ]
+crbug.com/1049607 [ Linux ] external/wpt/js-self-profiling/idlharness.any.html [ Pass Failure ]
+crbug.com/1049607 [ Linux ] external/wpt/js-self-profiling/idlharness.any.worker.html [ Pass Failure ]

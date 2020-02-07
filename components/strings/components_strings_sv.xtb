@@ -690,6 +690,7 @@
 <translation id="3987940399970879459">Mindre än 1 MB</translation>
 <translation id="3990250421422698716">Stötvis förskjutning</translation>
 <translation id="40103911065039147">{URL_count,plural, =1{1 webbsida i närheten}other{# webbsidor i närheten}}</translation>
+<translation id="4014128326099193693">{COUNT,plural, =1{PDF-dokument som innehåller {COUNT} sida}other{PDF-dokument som innehåller {COUNT} sidor}}</translation>
 <translation id="4030383055268325496">&amp;Ångra Lägg till</translation>
 <translation id="4032320456957708163">Din webbläsare hanteras av <ph name="ENROLLMENT_DOMAIN" /></translation>
 <translation id="4058922952496707368">Nyckel <ph name="SUBKEY" />: <ph name="ERROR" /></translation>
@@ -718,6 +719,7 @@
 <translation id="4142935452406587478">Fack 10</translation>
 <translation id="4148925816941278100">American Express</translation>
 <translation id="4151403195736952345">Använd global standardinställning (Upptäck)</translation>
+<translation id="4152318981910038897">{COUNT,plural, =1{Sida 1}other{Sida {COUNT}}}</translation>
 <translation id="4159784952369912983">Lila</translation>
 <translation id="4165986682804962316">Platsinställningar</translation>
 <translation id="4171400957073367226">Felaktig verifieringssignatur</translation>
@@ -1395,6 +1397,7 @@
 <translation id="7201591969684833065">Administratören kan se</translation>
 <translation id="7202346780273620635">Letter-Extra</translation>
 <translation id="7210863904660874423"><ph name="HOST_NAME" /> följer inte säkerhetsstandarderna.</translation>
+<translation id="7210993021468939304">Linux-aktivitet i behållaren och kan installera och köra Linux-appar i behållaren</translation>
 <translation id="721197778055552897"><ph name="BEGIN_LINK" />Läs mer<ph name="END_LINK" /> om problemet.</translation>
 <translation id="7219179957768738017">För anslutningen används <ph name="SSL_VERSION" />.</translation>
 <translation id="7220786058474068424">Bearbetning pågår</translation>
@@ -1558,6 +1561,7 @@ Mer information.
 <translation id="7878562273885520351">Lösenordet kan vara utsatt för risk</translation>
 <translation id="7882421473871500483">Brun</translation>
 <translation id="7887683347370398519">Kontrollera CVC-koden och försök igen</translation>
+<translation id="7887885240995164102">Öppna bild-i-bild-läge</translation>
 <translation id="7888575728750733395">Renderingsmetod för utskrifter</translation>
 <translation id="7904208859782148177">C3 (kuvert)</translation>
 <translation id="7932579305932748336">Beläggning</translation>

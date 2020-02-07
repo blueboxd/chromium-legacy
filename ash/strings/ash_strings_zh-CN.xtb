@@ -137,7 +137,6 @@
 <translation id="2718395828230677721">夜间模式</translation>
 <translation id="2727977024730340865">已插入低功率充电器；可能无法保证充电成功。</translation>
 <translation id="2792498699870441125">Alt + 搜索键</translation>
-<translation id="2803734122639935495">要解锁此设备，请输入您的密码</translation>
 <translation id="2819276065543622893">您将立即退出。</translation>
 <translation id="2825619548187458965">任务栏</translation>
 <translation id="2844169650293029770">USB-C 设备（左侧前端端口）</translation>
@@ -202,6 +201,7 @@
 <translation id="3604801046548457007">已创建桌面“<ph name="DESK_TITILE" />”</translation>
 <translation id="3606978283550408104">已连接盲文显示屏。</translation>
 <translation id="3621202678540785336">输入</translation>
+<translation id="3621712662352432595">音频设置</translation>
 <translation id="3626281679859535460">亮度</translation>
 <translation id="3631369015426612114">允许显示来自以下来源的通知</translation>
 <translation id="3705722231355495246">-</translation>
@@ -544,6 +544,7 @@
 <translation id="8477270416194247200">按 Alt+搜索键或按 Shift 键可取消。</translation>
 <translation id="8513108775083588393">自动旋转屏幕</translation>
 <translation id="8517041960877371778">您的 <ph name="DEVICE_TYPE" /> 在开启时可能无法充电。</translation>
+<translation id="8563862697512465947">通知设置</translation>
 <translation id="8627191004499078455">已连接到<ph name="DEVICE_NAME" /></translation>
 <translation id="8637598503828012618"><ph name="CONNECTION_STATUS" />，信号强度为 <ph name="SIGNAL_STRENGTH" />，由您的管理员管理</translation>
 <translation id="8639760480004882931">剩余电量：<ph name="PERCENTAGE" /></translation>

@@ -2021,6 +2021,8 @@ WebLocalFrameImpl* WebViewImpl::MainFrameImpl() const {
 void WebViewImpl::DidAttachLocalMainFrame() {
   DCHECK(MainFrameImpl());
 
+  MainFrameImpl()->GetFrame()->WasAttachedAsLocalMainFrame();
+
   if (does_composite_) {
     WebWidgetClient* widget_client =
         MainFrameImpl()->FrameWidgetImpl()->Client();
@@ -2410,12 +2412,9 @@ void WebViewImpl::SetPageScaleFactorAndLocation(float scale_factor,
 
 void WebViewImpl::SetPageScaleFactor(float scale_factor) {
   DCHECK(GetPage());
+  DCHECK(MainFrameImpl());
 
-  scale_factor = ClampPageScaleFactorToLimits(scale_factor);
-  if (scale_factor == PageScaleFactor())
-    return;
-
-  GetPage()->GetVisualViewport().SetScale(scale_factor);
+  MainFrameImpl()->GetFrame()->SetScaleFactor(scale_factor);
 }
 
 void WebViewImpl::SetDeviceScaleFactor(float scale_factor) {

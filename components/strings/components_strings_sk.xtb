@@ -671,6 +671,7 @@
 <translation id="3987940399970879459">Menej ako 1 MB</translation>
 <translation id="3990250421422698716">Odsadenie zarovnania okrajov</translation>
 <translation id="40103911065039147">{URL_count,plural, =1{1 webová stránka v okolí}few{# webové stránky v okolí}many{# webovej stránky v okolí}other{# webových stránok v okolí}}</translation>
+<translation id="4014128326099193693">{COUNT,plural, =1{Dokument PDF s {COUNT} stranou}few{Dokument PDF s {COUNT} stranami}many{Dokument PDF s {COUNT} strany}other{Dokument PDF s {COUNT} stranami}}</translation>
 <translation id="4030383055268325496">&amp;Vrátiť späť pridanie</translation>
 <translation id="4032320456957708163">Váš prehliadač spravuje doména <ph name="ENROLLMENT_DOMAIN" /></translation>
 <translation id="4058922952496707368">Kľúč <ph name="SUBKEY" />: <ph name="ERROR" /></translation>
@@ -699,6 +700,7 @@
 <translation id="4142935452406587478">Priehradka č. 10</translation>
 <translation id="4148925816941278100">American Express</translation>
 <translation id="4151403195736952345">Použiť globálne predvolené nastavenie (zistiť)</translation>
+<translation id="4152318981910038897">{COUNT,plural, =1{1. strana}few{{COUNT}. strany}many{{COUNT}. strany}other{{COUNT}. strán}}</translation>
 <translation id="4159784952369912983">Purpurová</translation>
 <translation id="4165986682804962316">Nastavenia webu</translation>
 <translation id="4171400957073367226">Nesprávny overovací podpis</translation>
@@ -1374,6 +1376,7 @@
 <translation id="7201591969684833065">Váš správca uvidí:</translation>
 <translation id="7202346780273620635">Letter-Extra</translation>
 <translation id="7210863904660874423">Web <ph name="HOST_NAME" /> nespĺňa bezpečnostné štandardy.</translation>
+<translation id="7210993021468939304">Aktivita Linux v rámci kontajnera. Môže inštalovať a spúšťať aplikácie pre systém LInux v kontajneri</translation>
 <translation id="721197778055552897"><ph name="BEGIN_LINK" />Ďalšie informácie<ph name="END_LINK" /> o tomto probléme.</translation>
 <translation id="7219179957768738017">Spojenie používa protokol <ph name="SSL_VERSION" />.</translation>
 <translation id="7220786058474068424">Spracováva sa</translation>
@@ -1537,6 +1540,7 @@
 <translation id="7878562273885520351">Vaše heslo mohlo byť napadnuté</translation>
 <translation id="7882421473871500483">Hnedá</translation>
 <translation id="7887683347370398519">Skontrolujte svoj kód CVC a skúste to znova</translation>
+<translation id="7887885240995164102">Spustiť obraz v obraze</translation>
 <translation id="7888575728750733395">Vykresľovacia intencia tlače</translation>
 <translation id="7904208859782148177">C3 (obálka)</translation>
 <translation id="7932579305932748336">Naniesť povrchovú vrstvu</translation>

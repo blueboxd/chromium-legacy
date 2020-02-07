@@ -12,6 +12,7 @@
 #include "components/viz/service/display/output_surface_frame.h"
 #include "gpu/command_buffer/client/gles2_interface.h"
 #include "third_party/khronos/GLES2/gl2.h"
+#include "ui/gfx/buffer_format_util.h"
 #include "ui/gfx/presentation_feedback.h"
 #include "ui/gfx/swap_result.h"
 #include "ui/gfx/transform.h"
@@ -51,11 +52,12 @@ void PixelTestOutputSurface::SetDrawRectangle(const gfx::Rect& rect) {}
 void PixelTestOutputSurface::Reshape(const gfx::Size& size,
                                      float device_scale_factor,
                                      const gfx::ColorSpace& color_space,
-                                     bool has_alpha,
+                                     gfx::BufferFormat format,
                                      bool use_stencil) {
   // External stencil test cannot be tested at the same time as |use_stencil|.
   DCHECK(!use_stencil || !external_stencil_test_);
   if (context_provider()) {
+    const bool has_alpha = gfx::AlphaBitsForBufferFormat(format);
     context_provider()->ContextGL()->ResizeCHROMIUM(
         size.width(), size.height(), device_scale_factor,
         color_space.AsGLColorSpace(), has_alpha);

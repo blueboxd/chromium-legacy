@@ -2307,6 +2307,69 @@ TEST_F(OptimizationGuideHintsManagerFetchingTest,
 }
 
 TEST_F(OptimizationGuideHintsManagerFetchingTest,
+       URLWithNoHintsNotRefetchedAtNavigationTime) {
+  base::CommandLine::ForCurrentProcess()->AppendSwitch(
+      optimization_guide::switches::kDisableCheckingUserPermissionsForTesting);
+  hints_manager()->RegisterOptimizationTypes(
+      {optimization_guide::proto::DEFER_ALL_SCRIPT});
+  InitializeWithDefaultConfig("1.0.0.0");
+  hints_manager()->SetHintsFetcherFactoryForTesting(
+      BuildTestHintsFetcherFactory(
+          {HintsFetcherEndState::kFetchSuccessWithHostHints}));
+
+  // Set ECT estimate so fetch is activated.
+  hints_manager()->OnEffectiveConnectionTypeChanged(
+      net::EffectiveConnectionType::EFFECTIVE_CONNECTION_TYPE_SLOW_2G);
+
+  base::HistogramTester histogram_tester;
+  {
+    std::unique_ptr<content::MockNavigationHandle> navigation_handle =
+        CreateMockNavigationHandleWithOptimizationGuideWebContentsObserver(
+            url_without_hints());
+
+    base::RunLoop run_loop;
+    hints_manager()->OnNavigationStartOrRedirect(navigation_handle.get(),
+                                                 run_loop.QuitClosure());
+    run_loop.Run();
+    histogram_tester.ExpectTotalCount(
+        "OptimizationGuide.HintsFetcher.GetHintsRequest.HostCount", 0);
+
+    // Make sure navigation data is populated correctly.
+    OptimizationGuideNavigationData* navigation_data =
+        OptimizationGuideNavigationData::GetFromNavigationHandle(
+            navigation_handle.get());
+    EXPECT_TRUE(navigation_data->was_hint_for_host_attempted_to_be_fetched()
+                    .has_value());
+
+    histogram_tester.ExpectBucketCount(
+        "OptimizationGuide.HintsManager.RaceNavigationFetchAttemptStatus",
+        optimization_guide::RaceNavigationFetchAttemptStatus::
+            kRaceNavigationFetchHostAndURL,
+        1);
+    RunUntilIdle();
+  }
+
+  {
+    std::unique_ptr<content::MockNavigationHandle> navigation_handle =
+        CreateMockNavigationHandleWithOptimizationGuideWebContentsObserver(
+            url_without_hints());
+    base::RunLoop run_loop;
+    navigation_handle =
+        CreateMockNavigationHandleWithOptimizationGuideWebContentsObserver(
+            url_without_hints());
+    hints_manager()->OnNavigationStartOrRedirect(navigation_handle.get(),
+                                                 base::DoNothing());
+    RunUntilIdle();
+
+    histogram_tester.ExpectBucketCount(
+        "OptimizationGuide.HintsManager.RaceNavigationFetchAttemptStatus",
+        optimization_guide::RaceNavigationFetchAttemptStatus::
+            kRaceNavigationFetchHost,
+        1);
+  }
+}
+
+TEST_F(OptimizationGuideHintsManagerFetchingTest,
        HintsNotFetchedAtNavigationTime_ECT_4G) {
   base::CommandLine::ForCurrentProcess()->AppendSwitch(
       optimization_guide::switches::kDisableCheckingUserPermissionsForTesting);
@@ -2702,7 +2765,7 @@ TEST_F(OptimizationGuideHintsManagerFetchingTest,
     histogram_tester.ExpectUniqueSample(
         "OptimizationGuide.HintsManager.RaceNavigationFetchAttemptStatus",
         optimization_guide::RaceNavigationFetchAttemptStatus::
-            kRaceNavigationFetchHostAndURL,
+            kRaceNavigationFetchHost,
         1);
     histogram_tester.ExpectUniqueSample(
         "OptimizationGuide.HintsManager.ConcurrentPageNavigationFetches", 1, 1);

@@ -137,7 +137,6 @@
 <translation id="2718395828230677721">नाइट लाइट</translation>
 <translation id="2727977024730340865">कम-शक्ति वाले चार्जर में प्लग इन करें. बैटरी चार्ज करना संभवत: विश्वसनीय नहीं होगा.</translation>
 <translation id="2792498699870441125">Alt+Search</translation>
-<translation id="2803734122639935495">अनलॉक करने के लिए, अपना पासवर्ड डालें</translation>
 <translation id="2819276065543622893">अब आप प्रस्थान कर जाएंगे.</translation>
 <translation id="2825619548187458965">अलमारी</translation>
 <translation id="2844169650293029770">USB-C डिवाइस (बायां सामने वाला पोर्ट)</translation>
@@ -202,6 +201,7 @@
 <translation id="3604801046548457007">डेस्क <ph name="DESK_TITILE" /> बनाया गया</translation>
 <translation id="3606978283550408104">ब्रेल डिसप्ले कनेक्ट हो गया.</translation>
 <translation id="3621202678540785336">इनपुट</translation>
+<translation id="3621712662352432595">ऑडियो सेटिंग</translation>
 <translation id="3626281679859535460">स्क्रीन की रोशनी</translation>
 <translation id="3631369015426612114">इनसे आने वाली सूचनाओं की अनुमति दें</translation>
 <translation id="3705722231355495246">-</translation>
@@ -335,6 +335,7 @@
 <translation id="5669267381087807207">सक्रिय कर रहा है</translation>
 <translation id="5673434351075758678">अपनी सेटिंग सिंक करने के बाद "<ph name="FROM_LOCALE" />" से "<ph name="TO_LOCALE" />".</translation>
 <translation id="5682642926269496722">मौजूदा उपयोगकर्ता खाते के लिए Google Assistant की सुविधा उपलब्ध नहीं है.</translation>
+<translation id="5689633613396158040">'नाइट लाइट' की मदद से कम रोशनी में स्क्रीन को देखना और पढ़ना आसान हो जाता है. 'नाइट लाइट' के चालू होने के समय में बदलाव करने या इसे बंद करने के लिए टैप करें.</translation>
 <translation id="5691772641933328258">फ़िंगरप्रिंट नहीं पहचाना गया</translation>
 <translation id="5710450975648804523">'परेशान न करें' मोड चालू है</translation>
 <translation id="573413375004481890">यह डिवाइस आपके सभी डिसप्ले के साथ काम नहीं कर सकता. इसलिए, एक डिसप्ले को डिसकनेक्ट किया गया है</translation>
@@ -512,6 +513,7 @@
 <translation id="8142441511840089262">दो बार क्लिक करें</translation>
 <translation id="8142699993796781067">निजी नेटवर्क</translation>
 <translation id="8152092012181020186">बंद करने के लिए Ctrl + W दबाएं.</translation>
+<translation id="8155007568264258537"><ph name="FEATURE_NAME" /> इस सेटिंग को आपका एडमिन प्रबंधित करता है.</translation>
 <translation id="8167567890448493835"><ph name="LOCALE_NAME" /> का इस्तेमाल किया जा रहा है</translation>
 <translation id="8190698733819146287">भाषा और इनपुट को पसंद के मुताबिक बनाएं...</translation>
 <translation id="8192202700944119416">सूचनाएं छिपी हुई हैं.</translation>
@@ -541,6 +543,7 @@
 <translation id="8477270416194247200">रद्द करने के लिए Alt+Search या Shift दबाएं.</translation>
 <translation id="8513108775083588393">स्क्रीन का अपने आप दिशा बदलना (ऑटो-रोटेट)</translation>
 <translation id="8517041960877371778">हो सकता है आपका <ph name="DEVICE_TYPE" /> चालू होने पर चार्ज नहीं होता हो.</translation>
+<translation id="8563862697512465947">सूचना सेटिंग</translation>
 <translation id="8627191004499078455"><ph name="DEVICE_NAME" /> से कनेक्ट है</translation>
 <translation id="8637598503828012618"><ph name="CONNECTION_STATUS" />, सिग्नल की क्षमता <ph name="SIGNAL_STRENGTH" />, आपका एडमिन प्रबंधित करता है</translation>
 <translation id="8639760480004882931"><ph name="PERCENTAGE" /> बाकी</translation>

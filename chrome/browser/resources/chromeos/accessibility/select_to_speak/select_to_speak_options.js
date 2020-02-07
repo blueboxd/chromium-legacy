@@ -2,14 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-/**
- * @constructor
- */
-const SelectToSpeakOptionsPage = function() {
-  this.init_();
-};
+class SelectToSpeakOptionsPage {
+  constructor() {
+    this.init_();
+  }
 
-SelectToSpeakOptionsPage.prototype = {
   /**
    * Translate the page and sync all of the control values to the
    * values loaded from chrome.storage.
@@ -39,7 +36,7 @@ SelectToSpeakOptionsPage.prototype = {
     this.setUpTtsButtonClickListener_();
     chrome.metricsPrivate.recordUserAction(
         'Accessibility.CrosSelectToSpeak.LoadSettings');
-  },
+  }
 
   /**
    * Processes an HTML DOM, replacing text content with translated text messages
@@ -64,7 +61,7 @@ SelectToSpeakOptionsPage.prototype = {
       }
       elts[i].classList.add('i18n-processed');
     }
-  },
+  }
 
   /**
    * Populate a select element with the list of TTS voices.
@@ -108,7 +105,7 @@ SelectToSpeakOptionsPage.prototype = {
         select.updateFunction();
       }
     });
-  },
+  }
 
   /**
    * Populate a checkbox with its current setting.
@@ -149,7 +146,7 @@ SelectToSpeakOptionsPage.prototype = {
     checkbox.updateFunction = updateFromPref;
     updateFromPref();
     chrome.storage.onChanged.addListener(updateFromPref);
-  },
+  }
 
   /**
    * Given the id of an HTML select element and the name of a chrome.storage
@@ -189,7 +186,7 @@ SelectToSpeakOptionsPage.prototype = {
     element.updateFunction = updateFromPref;
     updateFromPref();
     chrome.storage.onChanged.addListener(updateFromPref);
-  },
+  }
 
   /**
    * Sets up the highlight listeners and preferences.
@@ -215,7 +212,7 @@ SelectToSpeakOptionsPage.prototype = {
             checkbox.click();
           }
         });
-  },
+  }
 
   /**
    * Sets up a listener on the TTS settings button.
@@ -228,6 +225,7 @@ SelectToSpeakOptionsPage.prototype = {
           'manageAccessibility/tts');
     });
   }
-};
+}
+
 
 new SelectToSpeakOptionsPage();

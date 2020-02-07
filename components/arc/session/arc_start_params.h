@@ -43,6 +43,9 @@ struct StartParams {
   // Experiment flag for ARC Print Spooler.
   bool arc_print_spooler_experiment = false;
 
+  // Flag to disable system default apps.
+  bool arc_disable_system_default_app = false;
+
   // The number of logical CPU cores that are currently disabled on the host.
   // This parameter is used only for starting ARCVM.
   uint32_t num_cores_disabled = 0;

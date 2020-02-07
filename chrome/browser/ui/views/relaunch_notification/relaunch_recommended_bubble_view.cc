@@ -75,12 +75,6 @@ bool RelaunchRecommendedBubbleView::Accept() {
   return false;
 }
 
-bool RelaunchRecommendedBubbleView::Close() {
-  base::RecordAction(base::UserMetricsAction("RelaunchRecommended_Close"));
-
-  return true;
-}
-
 base::string16 RelaunchRecommendedBubbleView::GetWindowTitle() const {
   return relaunch_recommended_timer_.GetWindowTitle();
 }
@@ -155,6 +149,10 @@ RelaunchRecommendedBubbleView::RelaunchRecommendedBubbleView(
   DialogDelegate::set_button_label(
       ui::DIALOG_BUTTON_OK,
       l10n_util::GetStringUTF16(IDS_RELAUNCH_ACCEPT_BUTTON));
+
+  DialogDelegate::set_close_callback(
+      base::BindOnce(&base::RecordAction,
+                     base::UserMetricsAction("RelaunchRecommended_Close")));
 
   chrome::RecordDialogCreation(chrome::DialogIdentifier::RELAUNCH_RECOMMENDED);
   set_margins(ChromeLayoutProvider::Get()->GetDialogInsetsForContentType(

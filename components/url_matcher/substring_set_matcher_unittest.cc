@@ -22,11 +22,9 @@ void TestOnePattern(const std::string& test_string,
   std::string test =
       "TestOnePattern(" + test_string + ", " + pattern + ", " +
       (is_match ? "1" : "0") + ")";
-  std::vector<const StringPattern*> patterns;
-  StringPattern substring_pattern(pattern, 1);
-  patterns.push_back(&substring_pattern);
-  SubstringSetMatcher matcher;
-  matcher.RegisterPatterns(patterns);
+  std::vector<StringPattern> patterns;
+  patterns.emplace_back(pattern, 1);
+  SubstringSetMatcher matcher(patterns);
   std::set<int> matches;
   matcher.Match(test_string, &matches);
 
@@ -56,8 +54,7 @@ void TestTwoPatterns(const std::string& test_string,
       patterns.push_back(&substring_pattern_2);
       patterns.push_back(&substring_pattern_1);
     }
-    SubstringSetMatcher matcher;
-    matcher.RegisterPatterns(patterns);
+    SubstringSetMatcher matcher(patterns);
     std::set<int> matches;
     matcher.Match(test_string, &matches);
 
@@ -123,50 +120,42 @@ TEST(SubstringSetMatcherTest, TestMatcher) {
   TestTwoPatterns("abcde", std::string(), "abcdef", true, false);
 }
 
-TEST(SubstringSetMatcherTest, RegisterAndRemove) {
-  SubstringSetMatcher matcher;
-
+TEST(SubstringSetMatcherTest, TestMatcher2) {
   StringPattern pattern_1("a", 1);
   StringPattern pattern_2("b", 2);
   StringPattern pattern_3("c", 3);
 
-  std::vector<const StringPattern*> patterns;
-  patterns.push_back(&pattern_1);
-  matcher.RegisterPatterns(patterns);
-
-  patterns.clear();
-  patterns.push_back(&pattern_2);
-  patterns.push_back(&pattern_3);
-  matcher.RegisterPatterns(patterns);
+  std::vector<const StringPattern*> patterns = {&pattern_1, &pattern_2,
+                                                &pattern_3};
+  auto matcher = std::make_unique<SubstringSetMatcher>(patterns);
 
   std::set<int> matches;
-  matcher.Match("abd", &matches);
+  matcher->Match("abd", &matches);
   EXPECT_EQ(2u, matches.size());
   EXPECT_TRUE(matches.end() != matches.find(1));
   EXPECT_TRUE(matches.end() != matches.find(2));
 
-  patterns.clear();
-  patterns.push_back(&pattern_2);
-  matcher.UnregisterPatterns(patterns);
+  patterns = {&pattern_1, &pattern_3};
+  matcher = std::make_unique<SubstringSetMatcher>(patterns);
 
   matches.clear();
-  matcher.Match("abd", &matches);
+  matcher->Match("abd", &matches);
   EXPECT_EQ(1u, matches.size());
   EXPECT_TRUE(matches.end() != matches.find(1));
   EXPECT_TRUE(matches.end() == matches.find(2));
 
-  patterns.clear();
-  patterns.push_back(&pattern_1);
-  patterns.push_back(&pattern_3);
-  matcher.UnregisterPatterns(patterns);
-  EXPECT_TRUE(matcher.IsEmpty());
+  matcher = std::make_unique<SubstringSetMatcher>(
+      std::vector<const StringPattern*>());
+  EXPECT_TRUE(matcher->IsEmpty());
 }
 
 TEST(SubstringSetMatcherTest, TestEmptyMatcher) {
-  SubstringSetMatcher matcher;
+  std::vector<StringPattern> patterns;
+  SubstringSetMatcher matcher(patterns);
   std::set<int> matches;
   matcher.Match("abd", &matches);
   EXPECT_TRUE(matches.empty());
+  EXPECT_TRUE(matcher.IsEmpty());
 }
 
 }  // namespace url_matcher

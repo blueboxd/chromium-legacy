@@ -46,12 +46,10 @@ class ChromeAsyncExtensionFunction : public ExtensionFunction {
   // Sets multiple Values as the results of the function.
   void SetResultList(std::unique_ptr<base::ListValue> results);
 
-  // Exposed versions of ExtensionFunction::results_ and
-  // ExtensionFunction::error_ that are curried into the response.
-  // These need to keep the same name to avoid breaking existing
-  // implementations, but this should be temporary with crbug.com/648275
-  // and crbug.com/634140.
-  std::unique_ptr<base::ListValue> results_;
+  // Exposed version of ExtensionFunction::error_ that is curried into the
+  // response. This needs to keep the same name to avoid breaking existing
+  // implementations, but this should be temporary with crbug.com/648275 and
+  // crbug.com/634140.
   std::string error_;
 
  private:
@@ -61,6 +59,11 @@ class ChromeAsyncExtensionFunction : public ExtensionFunction {
   ResponseAction Run() final;
 
   ChromeExtensionFunctionDetails chrome_details_;
+
+  // The result of the API, set by calling SetResult() or SetResultList().
+  // Should be set before calling SendResponse() if a result value is being
+  // returned.
+  std::unique_ptr<base::ListValue> results_;
 
   DISALLOW_COPY_AND_ASSIGN(ChromeAsyncExtensionFunction);
 };

@@ -115,6 +115,7 @@
 <translation id="1919950603503897840">Hautatu kontaktuak</translation>
 <translation id="1922076542920281912">Chrome-ri kokapena atzitzeko baimena emateko, kokapena aktibatu behar duzu <ph name="BEGIN_LINK" />Android-en ezarpenetan<ph name="END_LINK" />.</translation>
 <translation id="1923695749281512248"><ph name="BYTES_DOWNLOADED_WITH_UNITS" /> / <ph name="FILE_SIZE_WITH_UNITS" /></translation>
+<translation id="1925021887439448749">Idatzi web-helbide pertsonalizatua</translation>
 <translation id="1928696683969751773">Eguneratzeak</translation>
 <translation id="19288952978244135">Ireki berriro Chrome.</translation>
 <translation id="1933845786846280168">Hautatutako fitxa</translation>
@@ -279,6 +280,7 @@
 <translation id="3123473560110926937">Webgune batzuetan blokeatu dira iragarkiak</translation>
 <translation id="3123734510202723619">Iragarpenak</translation>
 <translation id="3137521801621304719">Irten ezkutuko modutik</translation>
+<translation id="3140134512074889489">Gaitu kamera QR kode bat eskaneatzeko</translation>
 <translation id="3143515551205905069">Utzi sinkronizazioa bertan behera</translation>
 <translation id="3157842584138209013">Sakatu "Aukera gehiago" botoia zenbat datu aurreztu dituzun ikusteko</translation>
 <translation id="3166827708714933426">Fitxetarako eta leihoetarako lasterbideak</translation>
@@ -449,6 +451,9 @@
 <translation id="4521489764227272523">Kendu dira hautatutako datuak Chrome-tik eta sinkronizatutako gailuetatik.
 
 Baliteke Google kontuak arakatze-historiako bestelako datu batzuk (adibidez, bilaketak eta beste Google-ren zerbitzu batzuetako jarduerak) edukitzea <ph name="BEGIN_LINK" />history.google.com<ph name="END_LINK" /> webgunean.</translation>
+<translation id="4527374721149092498">Lortu informazio gehiago beste webgune batzuetan, uneko orria utzi gabe. "Ukitu bilatzeko" eginbideak hitz bat eta haren testuingurua Google Bilaketa zerbitzura bidaltzen ditu eta definizioak, irudiak, bilaketa-emaitzak eta beste zenbait xehetasun eskaintzen ditu.
+
+Sakatu edozein hitz harekin erlazionatutako bilaketa bat sortzeko. Bilaketa-hitza doitu nahi baduzu, sakatu luze hura hautatzeko. Bilaketa mugatzeko, lerratu panela hura irekitzeko, sakatu zabaltze-ikonoa fitxa bat sortzeko eta, gero, sakatu bilaketa-koadroa.</translation>
 <translation id="4532845899244822526">Aukeratu karpeta</translation>
 <translation id="4538018662093857852">Aktibatu oinarrizko modua</translation>
 <translation id="4550003330909367850">Pasahitza hemen ikusteko edo kopiatzeko, ezarri pantaila-blokeoa gailu honetan.</translation>
@@ -690,6 +695,9 @@ Ezarpena aldatzeko, <ph name="BEGIN_LINK" />berrezarri sinkronizazioa<ph name="E
 <translation id="6232535412751077445">"Ez jarraitu" eginbidea gaitzen baduzu, arakatze-trafikoan gehituko da horretarako eskaera. Aukeraren eragina faktore hauen araberakoa da: webguneek eskaerari erantzuten dioten ala ez eta eskaera nola interpretatzen den.
 
 Esaterako, bisitatu dituzun webguneetan oinarritzen ez diren iragarkiak bidalita erantzun lezakete webgune batzuek. Dena den, webgune askok arakatze-datuak bilduko dituzte, besteak beste, segurtasuna hobetzeko; edukia, iragarkiak eta gomendioak hornitzeko; eta txostenak egiteko estatistikak sortzeko.</translation>
+<translation id="6238003486329291387">Lortu informazio gehiago beste webgune batzuetan, uneko orria utzi gabe. "Ukitu bilatzeko" eginbideak hitz bat eta haren testuingurua Google Bilaketa zerbitzura bidaltzen ditu eta definizioak, irudiak, bilaketa-emaitzak eta beste zenbait xehetasun eskaintzen ditu.
+
+Sakatu luze edozein hitz harekin erlazionatutako bilaketa bat sortzeko. Bilaketa mugatzeko, doitu hautapena. Lerratu panela hura irekitzeko, sakatu zabaltze-ikonoa fitxa bat sortzeko eta, gero, sakatu bilaketa-koadroa.</translation>
 <translation id="624789221780392884">Eguneratzea prest dago</translation>
 <translation id="6255999984061454636">Eduki-iradokizunak</translation>
 <translation id="6270391203985052864">Webguneek jakinarazpenak bidaltzea eska dezakete</translation>

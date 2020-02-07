@@ -8,9 +8,15 @@ namespace syncer {
 
 FakeInvalidationHandler::FakeInvalidationHandler()
     : state_(DEFAULT_INVALIDATION_ERROR),
-      invalidation_count_(0) {}
+      invalidation_count_(0),
+      owner_name_("Fake") {}
 
-FakeInvalidationHandler::~FakeInvalidationHandler() {}
+FakeInvalidationHandler::FakeInvalidationHandler(const std::string& owner_name)
+    : FakeInvalidationHandler() {
+  owner_name_ = owner_name;
+}
+
+FakeInvalidationHandler::~FakeInvalidationHandler() = default;
 
 InvalidatorState FakeInvalidationHandler::GetInvalidatorState() const {
   return state_;
@@ -35,7 +41,9 @@ void FakeInvalidationHandler::OnIncomingInvalidation(
   ++invalidation_count_;
 }
 
-std::string FakeInvalidationHandler::GetOwnerName() const { return "Fake"; }
+std::string FakeInvalidationHandler::GetOwnerName() const {
+  return owner_name_;
+}
 
 bool FakeInvalidationHandler::IsPublicTopic(const syncer::Topic& topic) const {
   return topic == "PREFERENCE";

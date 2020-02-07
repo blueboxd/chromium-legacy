@@ -2,19 +2,11 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
-import("//build/buildflag_header.gni")
 import("//build/config/android/rules.gni")
 import("//build/config/locales.gni")
 import("//testing/test.gni")
-import("//ui/android/features.gni")
 
 assert(is_android)
-
-# Generate a buildflag header for compile-time checking of android night mode support.
-buildflag_header("buildflags") {
-  header = "buildflags.h"
-  flags = [ "ENABLE_ANDROID_NIGHT_MODE=$enable_android_night_mode" ]
-}
 
 component("android") {
   output_name = "ui_android"
@@ -63,7 +55,6 @@ component("android") {
   defines = [ "UI_ANDROID_IMPLEMENTATION" ]
 
   deps = [
-    ":buildflags",
     ":java_enums_srcjar",
     ":ui_android_jni_headers",
     "//base",
@@ -189,10 +180,6 @@ java_strings_grd("ui_strings_grd") {
 android_resources("ui_java_resources") {
   custom_package = "org.chromium.ui"
   resource_dirs = [ "java/res" ]
-
-  if (enable_android_night_mode) {
-    resource_dirs += [ "//ui/android/java/res_night" ]
-  }
 
   deps = [ ":ui_strings_grd" ]
 }

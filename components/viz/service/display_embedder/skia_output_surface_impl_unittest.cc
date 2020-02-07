@@ -151,7 +151,7 @@ INSTANTIATE_TEST_SUITE_P(SkiaOutputSurfaceImplTest,
 
 TEST_P(SkiaOutputSurfaceImplTest, SubmitPaint) {
   output_surface_->Reshape(kSurfaceRect.size(), 1, gfx::ColorSpace(),
-                           /*has_alpha=*/false, /*use_stencil=*/false);
+                           gfx::BufferFormat::RGBX_8888, /*use_stencil=*/false);
   constexpr gfx::Rect output_rect(0, 0, 10, 10);
 
   bool on_finished_called = false;
@@ -194,7 +194,8 @@ TEST_P(SkiaOutputSurfaceImplTest, SubmitPaint) {
 TEST_P(SkiaOutputSurfaceImplTest, SupportsColorSpaceChange) {
   for (auto& color_space : {gfx::ColorSpace(), gfx::ColorSpace::CreateSRGB()}) {
     output_surface_->Reshape(kSurfaceRect.size(), 1, color_space,
-                             /*has_alpha=*/false, /*use_stencil=*/false);
+                             gfx::BufferFormat::RGBX_8888,
+                             /*use_stencil=*/false);
 
     // Draw something, it's not important what.
     base::RunLoop run_loop;

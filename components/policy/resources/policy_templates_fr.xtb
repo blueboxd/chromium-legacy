@@ -149,6 +149,7 @@
        Détermine pour les appareils en mode Point de vente la durée d'inactivité préalable à l'affichage de l'économiseur d'écran sur l'écran de connexion.
 
        La valeur de cette règle est définie en millisecondes.</translation>
+<translation id="1145702698069317184">Bloquer l'importation et le téléchargement des types de fichiers non acceptés</translation>
 <translation id="1151353063931113432">Autoriser les images sur ces sites</translation>
 <translation id="1152117524387175066">Indiquer l'état de l'interrupteur du mode développeur au moment du démarrage.
 
@@ -783,6 +784,15 @@ Si ce paramètre n'est pas défini, les utilisateurs peuvent choisir d'utiliser 
 <translation id="2168397434410358693">Délai d'inactivité (secteur)</translation>
 <translation id="217013996107840632">Paramètres de ligne de commande pour basculer vers Chrome à partir du navigateur secondaire.</translation>
 <translation id="2170233653554726857">Activer l'optimisation WPAD</translation>
+<translation id="2171245625445050634">Cette règle étant supprimée dans la version M82, veuillez utiliser la règle "MinimumChromeVersionEnforced" à la place.
+
+      Permet de configurer la version minimale autorisée requise de <ph name="PRODUCT_NAME" />. Les versions ci-dessous étant considérées comme obsolètes, l'appareil ne permet pas à l'utilisateur de se connecter avant la mise à jour du système d'exploitation.
+
+      Si la version actuelle devient obsolète pendant une session utilisateur, cet utilisateur est déconnecté de manière forcée.
+
+      Si cette règle n'est pas configurée, aucune restriction n'est appliquée, et l'utilisateur peut se connecter quelle que soit la version de <ph name="PRODUCT_NAME" />.
+
+      Dans le cas présent, le terme "version" peut désigner une version exacte telle que "61.0.3163.120" ou le préfixe d'une version tel que "61.0".  </translation>
 <translation id="2176565653304920879">Lorsque cette règle est configurée, le mode de détection automatique du fuseau horaire dépend de la valeur définie :
 
       TimezoneAutomaticDetectionUsersDecide : les utilisateurs peuvent contrôler la détection automatique du fuseau horaire à l'aide des commandes classiques disponibles dans chrome://settings
@@ -866,6 +876,7 @@ Si cette règle n'est pas configurée, le paramètre "BlockPopups" est utilisé 
 
       Si la règle HardwareAccelerationModeEnabled est définie sur "False", la règle Disable3DAPIs est ignorée, ce qui équivaut à définir Disable3DAPIs sur "True".</translation>
 <translation id="2258126710006312594">Autoriser le transfert de fichiers vers et depuis l'hôte pour les utilisateurs connectés à distance</translation>
+<translation id="2267288258868218403">Bloquer l'importation des types de fichiers non acceptés</translation>
 <translation id="2269319728625047531">Activer l'affichage de l'autorisation de synchronisation lors de la connexion</translation>
 <translation id="2270747976331889601">Activer une fonctionnalité de sécurité TLS 1.3 pour les ancres d'approbation locales.</translation>
 <translation id="2274864612594831715">Cette règle configure l'activation du clavier virtuel en tant que périphérique d'entrée sur Chrome OS. Les utilisateurs ne peuvent pas la modifier.
@@ -1333,6 +1344,13 @@ Si cette règle est définie sur "False", les utilisateurs ne pourront pas jouer
 
       Sachez que si <ph name="PRODUCT_NAME" /> est en cours d'exécution lorsque cette règle est modifiée, la modification n'affectera que les nouveaux onglets ouverts. Certains onglets observeront donc toujours le même comportement.</translation>
 <translation id="284288632677954003">URL d'un fichier XML qui contient des URL qui ne doivent jamais déclencher un changement de navigateur.</translation>
+<translation id="2844404652289407061">Permet de proposer ou non la fonctionnalité Appuyer pour rechercher, dans l'affichage du contenu de <ph name="PRODUCT_NAME" />.
+
+      Si vous activez cette règle, cette fonctionnalité est proposée à l'utilisateur, lequel peut ensuite choisir de l'activer ou non.
+
+      Si vous désactivez cette règle, cette fonctionnalité n'est pas proposée.
+
+      Si cette règle n'est pas configurée, cela revient à ce qu'elle soit activée (voir la description ci-dessus).</translation>
 <translation id="285480231336205327">Activer le mode Contraste élevé</translation>
 <translation id="2854919890879212089">Avec cette option, <ph name="PRODUCT_NAME" /> utilise l'imprimante par défaut du système dans l'aperçu avant impression, plutôt que l'imprimante qui a servi le plus récemment.
 
@@ -1778,6 +1796,7 @@ Si elle n'est pas configurée, l'utilisateur peut être invité à effectuer l'i
 <translation id="3646859102161347133">Définir le type de loupe</translation>
 <translation id="3653237928288822292">Icône du moteur de recherche par défaut</translation>
 <translation id="3654906736796256792">Autoriser l'exécution en bac à sable du processus audio</translation>
+<translation id="3657998022005237040">Bloquer le téléchargement des types de fichiers non acceptés</translation>
 <translation id="3660510274595679517">
         Si cette règle est définie sur "True", il est indispensable d'activer la gestion cloud. Dans le cas contraire, le processus de lancement de Chrome s'interrompt.
 
@@ -1963,6 +1982,7 @@ Si cette règle n'est pas configurée, la valeur par défaut globale sera utilis
       Si vous ne configurez pas cette règle, <ph name="PRODUCT_NAME" /> utilise le répertoire par défaut habituel (spécifique à la plate-forme).
 
       Vous pouvez consulter la liste des variables utilisables à l'adresse https://www.chromium.org/administrators/policy-list-3/user-data-directory-variables.</translation>
+<translation id="3898795800259311780">Autoriser ou interdire la capture d'écran</translation>
 <translation id="3911737181201537215">Cette règle n'a aucun effet sur l'enregistrement effectué par Android.</translation>
 <translation id="3912092044353890761">Permet d'activer la fonctionnalité d'accessibilité de clavier virtuel sur l'écran de connexion.
 
@@ -2097,6 +2117,7 @@ Cette option est habituellement désactivée dans le cadre de la protection cont
           Si la règle est définie sur "Conserver les cookies pendant toute la durée de la session", les cookies seront supprimés à la fermeture de la session. Notez que si <ph name="PRODUCT_NAME" /> s'exécute en arrière-plan, il se peut que la session ne se termine pas à la fermeture de la dernière fenêtre. Veuillez consulter la règle BackgroundModeEnabled pour en savoir plus sur cette configuration.
 
           Si cette règle n'est pas définie, la règle AllowCookies sera activée, et l'utilisateur sera autorisé à la modifier.</translation>
+<translation id="4093716537292423758">Ne pas bloquer les types de fichiers non acceptés</translation>
 <translation id="410068710490553233">Autoriser la connexion à d'autres comptes Google</translation>
 <translation id="4103289232974211388">Rediriger vers le fournisseur d'identité SAML après confirmation de l'utilisateur</translation>
 <translation id="4105884561459127998">Configure le type d'authentification pour les connexions SAML.
@@ -2355,9 +2376,19 @@ Dans les deux cas, les utilisateurs ne peuvent pas le modifier, ni le remplacer 
 Si cette règle n'est pas configurée, l'utilisateur peut décider d'afficher ou non le bouton Accueil.</translation>
 <translation id="4483649828988077221">Désactiver les mises à jour automatiques</translation>
 <translation id="4485425108474077672">Configurer l'URL de la page "Nouvel onglet"</translation>
+<translation id="4487507711538762752">Cette règle force le code réseau à s'exécuter dans le processus du navigateur.
+
+      Cette règle est désactivée par défaut. Si elle est activée, elle expose les utilisateurs à des problèmes de sécurité une fois le processus de mise en réseau envoyé dans le bac à sable.
+
+      Cette règle est destinée à donner aux entreprises la possibilité de migrer vers un logiciel tiers qui ne dépend pas de la connexion des API de mise en réseau. Il est recommandé d'utiliser des serveurs proxy plutôt que des LSP ou des correctifs de l'API Win32.
+
+      Si cette règle n'est pas configurée, le code réseau s'exécute, par défaut, en dehors du processus du navigateur.
+
+      Cette règle sera supprimée dans la version 84 de <ph name="PRODUCT_NAME" />.</translation>
 <translation id="4492287494009043413">Désactiver les captures d'écran</translation>
 <translation id="4494132853995232608">Dispositif DTC de Wilco</translation>
 <translation id="449423975179525290">Configurer les règles liées à <ph name="PLUGIN_VM_NAME" />.</translation>
+<translation id="4498493270899294764">Formats d'URL pour lesquels il n'est pas nécessaire de vérifier si les contenus téléchargés contiennent des logiciels malveillants</translation>
 <translation id="450537894712826981">Cette règle permet de définir la taille du cache utilisé par <ph name="PRODUCT_NAME" /> pour stocker les fichiers multimédias en cache sur le disque.
 
       Si vous définissez cette règle, <ph name="PRODUCT_NAME" /> utilise le cache en fonction de la taille indiquée, que l'utilisateur ait spécifié l'indicateur "--media-cache-size" ou non. La valeur définie dans cette règle ne constitue pas une limite absolue, il s'agit plutôt d'une suggestion pour le système de mise en cache. En effet, toute valeur inférieure à quelques mégaoctets est trop faible et est arrondie pour atteindre un minimum acceptable.
@@ -2598,6 +2629,12 @@ Si cette règle n'est pas configurée, l'utilisateur peut décider d'afficher ou
 <translation id="4986560318567565414">Chemin d'accès pour basculer vers Chrome à partir du navigateur secondaire.</translation>
 <translation id="4988291787868618635">Action à effectuer au terme du délai d'inactivité</translation>
 <translation id="500149597848135831">Activer toutes les variantes</translation>
+<translation id="5023555740504506178">Si cette règle est activée ou si elle n'est pas configurée (par défaut), une page Web peut utiliser
+      des API de partage d'écran (par exemple, getDisplayMedia() ou l'API Desktop Capture Extension)
+      pour inviter l'utilisateur à sélectionner un onglet, une fenêtre ou un écran dont il souhaite faire une capture.
+
+      Si cette règle est désactivée, l'appel d'API de partage d'écran échoue systématiquement
+      et génère une erreur.</translation>
 <translation id="5032164758660626397">Empêcher l'utilisateur de transférer des fichiers volumineux</translation>
 <translation id="5047604665028708335">Autoriser l'accès aux sites en dehors des packs de contenu</translation>
 <translation id="5052081091120171147">Lorsqu'elle est activée, cette règle force l'importation de l'historique de navigation à partir du navigateur par défaut actuel. Si elle est activée, elle affecte également la boîte de dialogue d'importation. 
@@ -2760,6 +2797,25 @@ Si cette règle n'est pas configurée, ce paramètre est activé, mais l'utilisa
 <translation id="5208240613060747912">Permet de définir une liste de formats d'URL spécifiant les sites qui ne sont pas autorisés à afficher des notifications. 
 
 Si cette règle n'est pas configurée, la valeur par défaut globale sera utilisée pour tous les sites à partir de la règle "DefaultNotificationsSetting", si elle est définie, ou à défaut, à partir de la configuration personnelle de l'utilisateur.</translation>
+<translation id="5210980743015047124">Permet de configurer la version minimale autorisée requise de <ph name="PRODUCT_NAME" />.
+
+      Lorsque cette règle est définie sur une entrée de la liste :
+      Si aucune des entrées de la liste ne possède une "chrome_version" ultérieure à la version actuelle de l'appareil, aucune restriction n'est alors appliquée, et les restrictions existantes sont révoquées.
+      Si au moins une entrée possède une "chrome_version" ultérieure à la version actuelle, l'entrée choisie est celle qui est la plus performante et dont la version est la plus proche de la version actuelle.
+      En cas de conflit, la préférence est donnée à celle dont la "warning_period" ou la "eol_warning_period" est la plus réduite. En outre, la règle est appliquée avec cette entrée.
+
+      Si la version actuelle devient obsolète pendant la session utilisateur, une notification s'affiche à l'écran pour inviter l'utilisateur à mettre à jour l'appareil dans la "warning_period" qui lui est indiquée.
+      La "warning_period" commence à partir de l'application la règle.
+      Si l'appareil n'est pas mis à jour avant la fin de la "warning_period", l'utilisateur est déconnecté du système.
+      Si la version actuelle s'avère obsolète au moment de la connexion, et si la "warning_period" est arrivée à expiration, l'utilisateur doit mettre à jour l'appareil avant de se connecter.
+
+      Si la fin de vie de l'appareil est atteinte pendant la session utilisateur, une notification s'affiche à l'écran pour déconnecter l'utilisateur une fois la "eol_warning_period" arrivée à expiration.
+      Si l'appareil atteint la fin de sa durée de vie au moment de la connexion, et si la "eol_warning_period" est arrivée à expiration, aucun utilisateur ne peut se connecter avec l'appareil.
+
+      Si cette règle n'est pas configurée ou si aucune entrée ne figure dans la liste, aucune restriction n'est appliquée, les restrictions existantes sont révoquées, et l'utilisateur peut se connecter quelle que soit la version de <ph name="PRODUCT_NAME" />.
+
+      Dans le cas présent, "chrome_version" peut désigner une version exacte telle que "61.0.3163.120" ou le préfixe d'une version tel que "61.0".
+      Les "warning_period" et "eol_warning_period" sont des valeurs facultatives exprimées en nombre de jours. Elles sont définies par défaut sur 0 jour, ce qui signifie qu'il n'y a pas de délai d'attente. </translation>
 <translation id="5212118847531454979">Permet de définir la période, en millisecondes, pendant laquelle les utilisateurs sont avertis que <ph name="PRODUCT_NAME" /> doit être relancé ou qu'un appareil <ph name="PRODUCT_OS_NAME" /> doit être redémarré pour l'application d'une mise à jour en attente.
 
       Au cours de cette période, l'utilisateur est régulièrement informé de la nécessité d'appliquer la mise à jour. Pour les appareils <ph name="PRODUCT_OS_NAME" />, une notification de redémarrage s'affiche dans la barre d'état système conformément à la règle <ph name="RELAUNCH_HEADS_UP_PERIOD_POLICY_NAME" />. Pour les navigateurs <ph name="PRODUCT_NAME" />, lorsqu'un tiers de la période de notification s'est écoulé, le menu d'application change pour indiquer qu'il est nécessaire de redémarrer le navigateur. La notification change de couleur une première fois lorsque les deux tiers de la période de notification se sont écoulés, et une deuxième fois à l'issue de cette période. Les notifications supplémentaires activées par la règle <ph name="RELAUNCH_NOTIFICATION_POLICY_NAME" /> pour les navigateurs suivent le même calendrier.
@@ -2833,6 +2889,11 @@ Si cette règle n'est pas configurée, la valeur par défaut globale sera utilis
       Lorsque cette règle n'est pas définie ou est définie sur True, l'utilisateur est autorisé à utiliser Crostini tant que les autres paramètres le permettent.
       Les trois règles, VirtualMachinesAllowed, CrostiniAllowed et DeviceUnaffiliatedCrostiniAllowed doivent être définies sur True lorsqu'elles s'appliquent pour que Crostini puisse être exécuté.
       Si vous modifiez cette règle en la définissant sur False, elle est appliquée aux conteneurs Crostini qui vont être lancés, mais elle n'arrête pas ceux qui le sont déjà.</translation>
+<translation id="5277914408935179830">Permet de contrôler le traitement du contenu mixte (contenu HTTP sur les sites HTTPS) dans le navigateur.
+       Si cette règle est définie sur "True" ou si elle n'est pas configurée, le contenu mixte audio et vidéo est mis à niveau automatiquement vers HTTPS (c'est-à-dire que l'URL est réécrite pour apparaître sous la forme HTTPS, sans aucune solution de remplacement si la ressource n'est pas disponible via HTTPS). En outre, un avertissement "Non sécurisé" s'affiche dans la barre d'URL pour les images.
+       Si cette règle est définie sur "False", le contenu audio et vidéo n'est pas mis à niveau automatiquement, et aucun avertissement ne s'affiche pour les images.
+       Cette règle n'influe pas sur les types de contenus mixtes autres que les images et les contenus audio/vidéo.
+       Notez également qu'elle ne sera plus applicable à compter de la version 84 de <ph name="PRODUCT_NAME" />.</translation>
 <translation id="5278367296164377827">Cette règle permet d'assurer la transition vers la version M82, de laquelle elle sera supprimée.
 
       La règle par défaut de Chrome en matière d'URL de provenance est renforcée. L'objectif est de favoriser une transition progressive de sa valeur actuelle (no-referrer-when-downgrade) à une nouvelle valeur plus sécurisée (strict-origin-when-cross-origin) afin d'obtenir une version M80 stable.
@@ -2849,6 +2910,7 @@ Si cette règle n'est pas configurée, la valeur par défaut globale sera utilis
 <translation id="5306186200045823863">Faire confiance à l'ancienne infrastructure PKI de Symantec Corporation</translation>
 <translation id="5307432759655324440">Disponibilité du mode navigation privée</translation>
 <translation id="5311275381462687162">Rétablir l'ancien comportement <ph name="ATTRIBUTE_SAMESITE_NAME" /> pour tous les cookies</translation>
+<translation id="5313116350102437846">Permet de contrôler si les utilisateurs inscrits au Programme Protection Avancée sont autorisés ou non à envoyer leurs téléchargements à Google pour les faire analyser afin de détecter d'éventuels logiciels malveillants. Si cette règle est définie sur "True" ou si elle n'est pas configurée, ces utilisateurs sont invités à envoyer leurs téléchargements à Google pour une analyse approfondie. Si ces utilisateurs sélectionnent l'option d'analyse, leurs téléchargements sont envoyés à Google. Si cette règle est définie sur "False", aucune invite ne s'affiche, et les téléchargements des utilisateurs ne sont pas envoyés à Google.</translation>
 <translation id="5318185076587284965">Autoriser l'hôte d'accès à distance à utiliser des serveurs de relais</translation>
 <translation id="5323128137188992869">Permet de caster du contenu sur l'appareil avec <ph name="PRODUCT_NAME" />.
 
@@ -3031,6 +3093,16 @@ Lorsque cette règle n'est pas configurée, le paramètre par défaut utilisé c
 
       Notez que si la plate-forme est compatible avec les notifications relatives aux règles, le délai d'actualisation sera défini sur 24 heures (ignorant ainsi toutes les valeurs par défaut et celle de cette règle). En effet, les notifications relatives aux règles forceront une actualisation automatique chaque fois qu'une règle est modifiée, ce qui rend inutile toute actualisation supplémentaire.</translation>
 <translation id="5530347722229944744">Bloquer les téléchargements potentiellement dangereux</translation>
+<translation id="5534198977061777727">Permet de contrôler comment <ph name="PRODUCT_NAME" /> traite les données importées, téléchargées, collées à partir du presse-papiers ou glissées-déposées, pour lesquelles les types de fichiers ne sont pas acceptés (que ce soit dans le cadre de la Protection contre la perte de données ou d'une analyse pour détecter d'éventuels logiciels malveillants).
+
+      Si cette règle n'est pas configurée ou si elle est définie sur "Ne pas bloquer les types de fichiers non acceptés" (0), <ph name="PRODUCT_NAME" /> autorise l'importation ou le téléchargement des données pour lesquelles les types de fichiers ne sont pas acceptés dans le cadre susmentionné.
+
+      Si cette règle est définie sur "Bloquer le téléchargement des types de fichiers non acceptés" (1), et si l'utilisateur tente de télécharger un fichier depuis une URL (tel que décrit dans la règle <ph name="DOMAINS_TO_CHECK_COMPLIANCE_OF_DOWNLOADED_CONTENT_POLICTY_NAME" />) et dont le type n'est pas accepté dans le cadre susmentionné, <ph name="PRODUCT_NAME" /> bloque alors les données téléchargées.
+
+      Si cette règle est définie sur "Bloquer l'importation des types de fichiers non acceptés" (2), et si l'utilisateur tente d'importer un fichier vers un domaine qui a) ne figure pas dans la règle <ph name="DOMAINS_TO_NOT_CHECK_COMPLIANCE_OF_UPLOADED_CONTENT_POLICY_NAME" /> et b) dont le type n'est pas accepté dans le cadre susmentionné, <ph name="PRODUCT_NAME" /> bloque alors le fichier importé, les données collées à partir du presse-papiers ou les données glissées-déposées
+
+      Si cette règle est définie sur "Bloquer l'importation et le téléchargement des types de fichiers non acceptés" (3), <ph name="PRODUCT_NAME" /> agit comme indiqué ci-dessus pour les options "Bloquer l'importation des types de fichiers non acceptés" et "Bloquer le téléchargement des types de fichiers non acceptés".
+      </translation>
 <translation id="5535973522252703021">Liste blanche des serveurs de délégation Kerberos</translation>
 <translation id="554903022911579950">Kerberos</translation>
 <translation id="555022085242359084">Activer le contraste élevé sur l'écran de connexion</translation>
@@ -3189,6 +3261,12 @@ Lorsque cette règle n'est pas configurée, le paramètre par défaut utilisé c
           Si cette règle n'est pas définie, l'action par défaut est effectuée, à savoir l'arrêt.
 
           Dans ce cas, <ph name="PRODUCT_OS_NAME" /> peut être configuré séparément pour verrouiller ou non l'écran avant l'arrêt.</translation>
+<translation id="5746196829700407864">Liste des formats d'URL pour lesquels il n'est pas nécessaire de vérifier si les contenus téléchargés contiennent des logiciels malveillants.  Cette règle n'est utilisée que si la règle <ph name="SEND_FILES_FOR_MALWARE_CHECK_POLICY_NAME" /> est définie sur une valeur autorisant ou imposant la vérification des téléchargements à la recherche d'éventuels logiciels malveillants.
+
+      Si cette règle n'est pas configurée ou si aucun format d'URL n'est indiqué dans la liste, tous les contenus téléchargés sont analysés afin de détecter d'éventuels logiciels malveillants.
+
+      Les formats d'URL suivent le modèle de la règle "URLBlacklist", décrit sur la page https://www.chromium.org/administrators/url-blacklist-filter-format.
+      </translation>
 <translation id="574983287620584622">Activer les raccourcis des fonctionnalités d'accessibilité sur l'écran de connexion</translation>
 <translation id="5755002458331714762"> Les API Web Components v0 (Shadow DOM v0, Custom Elements v0 et HTML Imports) sont obsolètes depuis 2018 et ont été désactivées par défaut à partir de la version M80. Cette règle offre la possibilité de réactiver ces fonctionnalités pour certains sites en particulier jusqu'à la version M84.
 
@@ -3245,6 +3323,7 @@ Lorsque cette règle n'est pas configurée, le paramètre par défaut utilisé c
 <translation id="5861856285460256766">Configuration du code d'accès parental</translation>
 <translation id="5868414965372171132">Configuration réseau au niveau de l'utilisateur</translation>
 <translation id="5879014913445067283">Contrôler la détection des partages de fichiers sur le réseau via <ph name="NETBIOS_NAME" /></translation>
+<translation id="588135807064822874">Activer la fonctionnalité Appuyer pour rechercher</translation>
 <translation id="5882345429632338713">Délai avant le lancement du navigateur secondaire (en millisecondes)</translation>
 <translation id="5883015257301027298">Paramètre de cookies par défaut</translation>
 <translation id="5887414688706570295">Configure le préfixe TalkGadget utilisé par les hôtes d'accès à distance et empêche les utilisateurs de le modifier.
@@ -3312,7 +3391,6 @@ Lorsque cette règle n'est pas configurée, le paramètre par défaut utilisé c
 
       Désactiver cette règle affectera la sécurité et la stabilité de Chrome, car des codes inconnus et potentiellement dangereux pourront être chargés dans les processus de son moteur de rendu. Consultez la page https://chromium.googlesource.com/chromium/src/+/master/docs/design/sandbox.md#Process-mitigation-policies pour en savoir plus.</translation>
 <translation id="6048199181629830227">Activer l'alimentation alternée en heures pleines</translation>
-<translation id="605475635122964053">Limite le mode d'impression par code. Si cette règle n'est pas définie, aucune limite ne s'applique. Si le mode est indisponible, cette règle est ignorée. Notez que la fonctionnalité d'impression par code n'est activée que pour les imprimantes utilisant l'un des protocoles IPPS, USB ou IPP sur USB. </translation>
 <translation id="6070667616071269965">Dispositions de clavier de l'écran de connexion de l'appareil</translation>
 <translation id="6074963268421707432">Interdire à tous les sites d'afficher des notifications sur le bureau</translation>
 <translation id="6074964551275531965">Définir la période d'affichage des notifications de mise à jour</translation>
@@ -3478,6 +3556,7 @@ Si vous désactivez ce paramètre ou si vous ne le configurez pas, le SPN Kerber
 <translation id="6315673513957120120">Chrome affiche une page d'avertissement lorsque les utilisateurs naviguent vers des sites présentant des erreurs SSL. Par défaut, ou quand cette règle est définie sur "True", les utilisateurs sont autorisés à poursuivre leur navigation vers la page concernée.
       Définir cette règle sur "False" empêche les utilisateurs de poursuivre leur navigation au-delà de la page d'avertissement.</translation>
 <translation id="6319198883324703402">Définir l'heure de la première notification de redémarrage adressée à l'utilisateur</translation>
+<translation id="6342187235303612558">Empêcher les utilisateurs d'importer ou de télécharger des fichiers qui ne sont actuellement pas acceptés dans le cadre de la Protection contre la perte de données ou d'une analyse pour détecter d'éventuels logiciels malveillants.</translation>
 <translation id="6352543686437322588">Compte local de l'appareil auquel le système se connecte automatiquement après l'expiration du délai d'inactivité de l'utilisateur.
 
       Si cette règle est définie, le système se connecte automatiquement à la session spécifiée après expiration du délai d'inactivité. Le compte local de l'appareil doit être configuré au préalable (voir |DeviceLocalAccounts|).
@@ -5111,6 +5190,7 @@ indique uniquement les imprimantes qui peuvent être choisies.
 <translation id="8976248126101463034">Autoriser l'authentification gnubby pour les hôtes d'accès à distance</translation>
 <translation id="8976531594979650914">Utiliser l'imprimante système par défaut</translation>
 <translation id="8992176907758534924">Interdire à tous les sites d'afficher des images</translation>
+<translation id="9010080992450148617">Autoriser les utilisateurs inscrits au Programme Protection Avancée à envoyer leurs téléchargements à Google pour une analyse approfondie</translation>
 <translation id="9013875414788074110">Lors de la connexion, l'authentification dans <ph name="PRODUCT_OS_NAME" /> peut être effectuée sur un serveur (en ligne) ou à l'aide d'un mot de passe en cache (hors connexion).
 
       Si cette règle est définie sur la valeur -1, l'utilisateur peut s'authentifier hors connexion sans limite de temps. Si elle est définie sur une autre valeur, celle-ci indique le délai suite à une authentification en ligne après lequel l'utilisateur doit à nouveau procéder à cette authentification.

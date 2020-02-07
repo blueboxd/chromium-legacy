@@ -16,6 +16,7 @@
 #include "chrome/browser/sync/profile_sync_service_factory.h"
 #include "chrome/browser/sync/sync_ui_util.h"
 #include "chrome/browser/ui/browser_list.h"
+#include "components/signin/public/identity_manager/consent_level.h"
 
 namespace {
 
@@ -227,8 +228,8 @@ void AvatarToolbarButtonDelegate::ShowIdentityAnimation(
 
   // Check that the user is still signed in. See https://crbug.com/1025674
   CoreAccountInfo user_identity =
-      IdentityManagerFactory::GetForProfile(profile_)
-          ->GetUnconsentedPrimaryAccountInfo();
+      IdentityManagerFactory::GetForProfile(profile_)->GetPrimaryAccountInfo(
+          signin::ConsentLevel::kNotRequired);
   if (user_identity.IsEmpty()) {
     identity_animation_state_ = IdentityAnimationState::kNotShowing;
     return;
@@ -325,8 +326,9 @@ void AvatarToolbarButtonDelegate::OnRefreshTokensLoaded() {
           GetProfileAttributesStorage(), profile_)) {
     return;
   }
-  CoreAccountInfo account = IdentityManagerFactory::GetForProfile(profile_)
-                                ->GetUnconsentedPrimaryAccountInfo();
+  CoreAccountInfo account =
+      IdentityManagerFactory::GetForProfile(profile_)->GetPrimaryAccountInfo(
+          signin::ConsentLevel::kNotRequired);
   if (account.IsEmpty())
     return;
   OnUserIdentityChanged();

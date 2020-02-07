@@ -211,9 +211,10 @@ TEST_F(PrintPreviewDialogControllerUnitTest, ClearInitiatorDetails) {
 // (typed + address bar) to an existing page as occurs in gmail does not cause
 // the dialogs to close.
 TEST_F(PrintPreviewDialogControllerUnitTest, CloseDialogOnNavigation) {
-  // Two similar URLs (same webpage, different URL fragments)
-  GURL tiger_barb("https://www.google.com/#q=tiger+barb");
+  // Two similar URLs (same webpage, different URL fragment/query)
+  // Gmail navigates from fragment to query when opening an email to print.
   GURL tiger("https://www.google.com/#q=tiger");
+  GURL tiger_barb("https://www.google.com/?q=tiger+barb");
 
   // Set up by opening a new tab and getting web contents
   EXPECT_EQ(1u, chrome::GetTotalBrowserCount());

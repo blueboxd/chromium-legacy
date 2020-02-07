@@ -369,7 +369,8 @@ id<GREYMatcher> SearchCopiedTextButton() {
 // Focus the omnibox and hit "cmd+X". This should remove all text from the
 // omnibox and put it in the clipboard. This had been broken before because of
 // the preedit state complexity. Paste to verify that the URL was indeed copied.
-- (void)testCutInPreedit {
+// TODO(crbug.com/1049603): Re-enable this test.
+- (void)DISABLED_testCutInPreedit {
   [self openPage1];
 
   [ChromeEarlGreyUI focusOmnibox];

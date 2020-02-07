@@ -17,6 +17,7 @@
 #include "base/thread_annotations.h"
 #include "base/threading/sequence_bound.h"
 #include "components/services/storage/public/mojom/local_storage_control.mojom.h"
+#include "content/browser/child_process_security_policy_impl.h"
 #include "content/common/content_export.h"
 #include "content/public/browser/dom_storage_context.h"
 #include "mojo/public/cpp/bindings/message.h"
@@ -101,7 +102,7 @@ class CONTENT_EXPORT DOMStorageContextWrapper
       const url::Origin& origin,
       mojo::PendingReceiver<blink::mojom::StorageArea> receiver);
   void OpenSessionStorage(
-      int process_id,
+      ChildProcessSecurityPolicyImpl::Handle handle,
       const std::string& namespace_id,
       mojo::ReportBadMessageCallback bad_message_callback,
       mojo::PendingReceiver<blink::mojom::SessionStorageNamespace> receiver);

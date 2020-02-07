@@ -7,31 +7,17 @@ GEN_INCLUDE(['mock_accessibility_private.js']);
 
 /**
  * Base class for browser tests for automatic clicks extension.
- * @constructor
  */
-function AutoclickE2ETest() {
-  this.callbackHelper_ = new CallbackHelper(this);
-  this.mockAccessibilityPrivate = MockAccessibilityPrivate;
-  chrome.accessibilityPrivate = this.mockAccessibilityPrivate;
+AutoclickE2ETest = class extends testing.Test {
+  constructor() {
+    super();
+    this.callbackHelper_ = new CallbackHelper(this);
+    this.mockAccessibilityPrivate = MockAccessibilityPrivate;
+    chrome.accessibilityPrivate = this.mockAccessibilityPrivate;
 
-  // Re-initialize Autoclick with mock AccessibilityPrivate API.
-  autoclick = new Autoclick(false /* do not blink focus rings */);
-}
-
-AutoclickE2ETest.prototype = {
-  __proto__: testing.Test.prototype,
-
-  /**
-   * @override
-   * No UI in the background context.
-   */
-  runAccessibilityChecks: false,
-
-  /** @override */
-  isAsync: true,
-
-  /** @override */
-  browsePreload: null,
+    // Re-initialize Autoclick with mock AccessibilityPrivate API.
+    autoclick = new Autoclick(false /* do not blink focus rings */);
+  }
 
   /** @override */
   testGenCppIncludes() {
@@ -43,7 +29,7 @@ AutoclickE2ETest.prototype = {
 #include "chrome/browser/chromeos/accessibility/accessibility_manager.h"
 #include "chrome/common/extensions/extension_constants.h"
     `);
-  },
+  }
 
   /** @override */
   testGenPreamble() {
@@ -55,7 +41,7 @@ AutoclickE2ETest.prototype = {
   chromeos::AccessibilityManager::Get()->EnableAutoclick(true);
   WaitForExtension(extension_misc::kAutoclickExtensionId, load_cb);
     `);
-  },
+  }
 
   /**
    * Creates a callback that optionally calls {@code opt_callback} when
@@ -67,7 +53,7 @@ AutoclickE2ETest.prototype = {
    */
   newCallback(opt_callback) {
     return this.callbackHelper_.wrap(opt_callback);
-  },
+  }
 
   /**
    * From chromevox_next_e2e_test_base.js
@@ -88,7 +74,7 @@ AutoclickE2ETest.prototype = {
       var createParams = {active: true, url};
       chrome.tabs.create(createParams, function(unused_tab) {
         chrome.automation.getTree(function(returnedRootNode) {
-          rootNode = returnedRootNode;
+          const rootNode = returnedRootNode;
           if (rootNode.docLoaded) {
             callback && callback(desktopRootNode);
             callback = null;
@@ -104,7 +90,7 @@ AutoclickE2ETest.prototype = {
         });
       });
     }.bind(this));
-  },
+  }
 
   /**
    * Asserts that two rects are the same.
@@ -116,28 +102,44 @@ AutoclickE2ETest.prototype = {
     assertEquals(first.top, second.top);
     assertEquals(first.width, second.width);
     assertEquals(first.height, second.height);
-  },
+  }
 };
 
-TEST_F('AutoclickE2ETest', 'HighlightsRootWebAreaIfNotScrollable', function() {
-  this.runWithLoadedTree(
-      'data:text/html;charset=utf-8,<p>Cats rock!</p>', function(desktop) {
-        const node = desktop.find(
-            {role: 'staticText', attributes: {name: 'Cats rock!'}});
-        this.mockAccessibilityPrivate.callFindScrollableBoundsForPoint(
-            // Offset slightly into the node to ensure the hittest happens
-            // within the node.
-            node.location.left + 1, node.location.top + 1,
-            this.newCallback(() => {
-              const expected = node.root.location;
-              this.assertSameRect(
-                  this.mockAccessibilityPrivate.getScrollableBounds(),
-                  expected);
-              this.assertSameRect(
-                  this.mockAccessibilityPrivate.getFocusRings()[0], expected);
-            }));
-      });
-});
+/**
+ * @override
+ * No UI in the background context.
+ */
+AutoclickE2ETest.prototype.runAccessibilityChecks = false,
+
+    /** @override */
+    AutoclickE2ETest.prototype.isAsync = true,
+
+    /** @override */
+    AutoclickE2ETest.prototype.browsePreload = null,
+
+
+    TEST_F(
+        'AutoclickE2ETest', 'HighlightsRootWebAreaIfNotScrollable', function() {
+          this.runWithLoadedTree(
+              'data:text/html;charset=utf-8,<p>Cats rock!</p>',
+              function(desktop) {
+                const node = desktop.find(
+                    {role: 'staticText', attributes: {name: 'Cats rock!'}});
+                this.mockAccessibilityPrivate.callFindScrollableBoundsForPoint(
+                    // Offset slightly into the node to ensure the hittest
+                    // happens within the node.
+                    node.location.left + 1, node.location.top + 1,
+                    this.newCallback(() => {
+                      const expected = node.root.location;
+                      this.assertSameRect(
+                          this.mockAccessibilityPrivate.getScrollableBounds(),
+                          expected);
+                      this.assertSameRect(
+                          this.mockAccessibilityPrivate.getFocusRings()[0],
+                          expected);
+                    }));
+              });
+        });
 
 TEST_F('AutoclickE2ETest', 'HighlightsScrollableDiv', function() {
   this.runWithLoadedTree(

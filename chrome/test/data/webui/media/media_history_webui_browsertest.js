@@ -39,10 +39,9 @@ TEST_F('MediaHistoryWebUIBrowserTest', 'MAYBE_All', function() {
     return whenPageIsPopulatedForTest();
   });
 
-  test('check stats table is loaded', function() {
+  test('check stats table is loaded', () => {
     let statsRows =
         Array.from(document.getElementById('stats-table-body').children);
-    assertEquals(4, statsRows.length);
 
     assertDeepEquals(
         [
@@ -51,6 +50,18 @@ TEST_F('MediaHistoryWebUIBrowserTest', 'MAYBE_All', function() {
         ],
         statsRows.map(
             x => [x.children[0].textContent, x.children[1].textContent]));
+  });
+
+  test('check data table is loaded', () => {
+    let dataHeaderRows =
+        Array.from(document.getElementById('data-table-header').children);
+
+    assertDeepEquals(
+        [
+          'Origin', 'Last Updated', 'Audio + Video Watchtime (secs, cached)',
+          'Audio + Video Watchtime (secs, actual)'
+        ],
+        dataHeaderRows.map(x => x.textContent.trim()));
   });
 
   mocha.run();

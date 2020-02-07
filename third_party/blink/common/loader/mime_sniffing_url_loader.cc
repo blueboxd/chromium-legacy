@@ -23,7 +23,7 @@ MimeSniffingURLLoader::CreateLoader(
     base::WeakPtr<MimeSniffingThrottle> throttle,
     const GURL& response_url,
     network::mojom::URLResponseHeadPtr response_head,
-    scoped_refptr<base::SingleThreadTaskRunner> task_runner) {
+    scoped_refptr<base::SequencedTaskRunner> task_runner) {
   mojo::PendingRemote<network::mojom::URLLoader> url_loader;
   mojo::PendingRemote<network::mojom::URLLoaderClient> url_loader_client;
   mojo::PendingReceiver<network::mojom::URLLoaderClient>
@@ -46,7 +46,7 @@ MimeSniffingURLLoader::MimeSniffingURLLoader(
     network::mojom::URLResponseHeadPtr response_head,
     mojo::PendingRemote<network::mojom::URLLoaderClient>
         destination_url_loader_client,
-    scoped_refptr<base::SingleThreadTaskRunner> task_runner)
+    scoped_refptr<base::SequencedTaskRunner> task_runner)
     : throttle_(throttle),
       destination_url_loader_client_(std::move(destination_url_loader_client)),
       response_url_(response_url),

@@ -677,6 +677,7 @@
 <translation id="3987940399970879459">Less than 1 MB</translation>
 <translation id="3990250421422698716">Jog offset</translation>
 <translation id="40103911065039147">{URL_count,plural, =1{1 web page nearby}other{# web pages nearby}}</translation>
+<translation id="4014128326099193693">{COUNT,plural, =1{PDF document containing {COUNT} page}other{PDF document containing {COUNT} pages}}</translation>
 <translation id="4030383055268325496">&amp;Undo add</translation>
 <translation id="4032320456957708163">Your browser is managed by <ph name="ENROLLMENT_DOMAIN" /></translation>
 <translation id="4058922952496707368">Key "<ph name="SUBKEY" />": <ph name="ERROR" /></translation>
@@ -705,6 +706,7 @@
 <translation id="4142935452406587478">Tray 10</translation>
 <translation id="4148925816941278100">American Express</translation>
 <translation id="4151403195736952345">Use global default (Detect)</translation>
+<translation id="4152318981910038897">{COUNT,plural, =1{Page 1}other{Page {COUNT}}}</translation>
 <translation id="4159784952369912983">Purple</translation>
 <translation id="4165986682804962316">Site settings</translation>
 <translation id="4171400957073367226">Bad verification signature</translation>
@@ -1381,6 +1383,7 @@
 <translation id="7201591969684833065">Your administrator can see:</translation>
 <translation id="7202346780273620635">Letter-Extra</translation>
 <translation id="7210863904660874423"><ph name="HOST_NAME" /> doesn't adhere to security standards.</translation>
+<translation id="7210993021468939304">Linux activity within the container, and can install and run Linux apps within the container</translation>
 <translation id="721197778055552897"><ph name="BEGIN_LINK" />Learn more<ph name="END_LINK" /> about this problem.</translation>
 <translation id="7219179957768738017">The connection uses <ph name="SSL_VERSION" />.</translation>
 <translation id="7220786058474068424">Processing</translation>
@@ -1544,6 +1547,7 @@ Additional details:
 <translation id="7878562273885520351">Your password may be compromised</translation>
 <translation id="7882421473871500483">Brown</translation>
 <translation id="7887683347370398519">Check your CVC and try again</translation>
+<translation id="7887885240995164102">Enter picture-in-picture</translation>
 <translation id="7888575728750733395">Print rendering intent</translation>
 <translation id="7904208859782148177">C3 (Envelope)</translation>
 <translation id="7932579305932748336">Coat</translation>

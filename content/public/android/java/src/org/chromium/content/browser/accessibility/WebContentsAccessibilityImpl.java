@@ -132,7 +132,9 @@ public class WebContentsAccessibilityImpl extends AccessibilityNodeProvider
     private static class Factory implements UserDataFactory<WebContentsAccessibilityImpl> {
         @Override
         public WebContentsAccessibilityImpl create(WebContents webContents) {
-            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.P) {
+                return new PieWebContentsAccessibility(webContents);
+            } else if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
                 return new OWebContentsAccessibility(webContents);
             } else if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
                 return new LollipopWebContentsAccessibility(webContents);
@@ -1443,6 +1445,11 @@ public class WebContentsAccessibilityImpl extends AccessibilityNodeProvider
     protected void setAccessibilityNodeInfoOAttributes(
             AccessibilityNodeInfo node, boolean hasCharacterLocations) {
         // Requires O or higher.
+    }
+
+    @CalledByNative
+    protected void setAccessibilityNodeInfoPaneTitle(AccessibilityNodeInfo node, String title) {
+        // Requires P or higher.
     }
 
     @CalledByNative

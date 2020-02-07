@@ -89,7 +89,7 @@ class ReceiverCma::Stream : public MixerSocket::Delegate,
     return true;
   }
 
-  bool HandleAudioData(char* data, int size, int64_t timestamp) override {
+  bool HandleAudioData(char* data, size_t size, int64_t timestamp) override {
     last_receive_time_ = base::TimeTicks::Now();
     inactivity_timer_.Reset();
 

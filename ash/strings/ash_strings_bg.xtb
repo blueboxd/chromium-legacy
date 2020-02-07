@@ -137,7 +137,6 @@
 <translation id="2718395828230677721">Нощно осветление</translation>
 <translation id="2727977024730340865">Използва се зарядно устройство с малка мощност. Зареждането на батерията може да не е надеждно.</translation>
 <translation id="2792498699870441125">Alt + търсене</translation>
-<translation id="2803734122639935495">За да отключите, въведете паролата си</translation>
 <translation id="2819276065543622893">Ще излезете сега.</translation>
 <translation id="2825619548187458965">Лавица</translation>
 <translation id="2844169650293029770">Устройство с USB-C (предният ляв порт)</translation>
@@ -202,6 +201,7 @@
 <translation id="3604801046548457007">Работен кът <ph name="DESK_TITILE" /> е създаден</translation>
 <translation id="3606978283550408104">Брайловият дисплей е свързан.</translation>
 <translation id="3621202678540785336">Вход</translation>
+<translation id="3621712662352432595">Настройки за звука</translation>
 <translation id="3626281679859535460">Яркост</translation>
 <translation id="3631369015426612114">Разрешаване на известията от следните източници</translation>
 <translation id="3705722231355495246">-</translation>
@@ -544,6 +544,7 @@
 <translation id="8477270416194247200">Натиснете Alt + клавиша „търсене“ или само Shift, за да анулирате.</translation>
 <translation id="8513108775083588393">Автоматична ориентация</translation>
 <translation id="8517041960877371778">Възможно е вашият <ph name="DEVICE_TYPE" /> да не се зарежда, докато е включен.</translation>
+<translation id="8563862697512465947">Настройки за известия</translation>
 <translation id="8627191004499078455">Установена е връзка (<ph name="DEVICE_NAME" />)</translation>
 <translation id="8637598503828012618"><ph name="CONNECTION_STATUS" />, сила на сигнала <ph name="SIGNAL_STRENGTH" />, управлява се от администратора ви</translation>
 <translation id="8639760480004882931">Батерия: <ph name="PERCENTAGE" /></translation>

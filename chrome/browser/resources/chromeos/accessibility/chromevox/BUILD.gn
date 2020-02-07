@@ -93,7 +93,8 @@ chromevox_modules = [
   "background/media_automation_handler.js",
   "background/mouse_handler.js",
   "background/next_earcons.js",
-  "background/node_identifier.js",
+  "background/annotation/node_identifier.js",
+  "background/annotation/user_annotation_handler.js",
   "background/notifications.js",
   "background/output.js",
   "background/logging/output_logger.js",
@@ -434,6 +435,8 @@ if (is_chromeos) {
   js2gtest("chromevox_extjs_tests") {
     test_type = "extension"
     sources = [
+      "background/annotation/node_identifier_test.js",
+      "background/annotation/user_annotation_handler_test.js",
       "background/automation_util_test.js",
       "background/background_test.js",
       "background/braille_command_data_test.js",
@@ -445,7 +448,6 @@ if (is_chromeos) {
       "background/language_switching_test.js",
       "background/live_regions_test.js",
       "background/logging/log_store_test.js",
-      "background/node_identifier_test.js",
       "background/output_test.js",
       "background/panel/i_search_test.js",
       "background/panel/panel_test.js",

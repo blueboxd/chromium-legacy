@@ -22,7 +22,10 @@ class StyleRuleUsageTracker : public GarbageCollected<StyleRuleUsageTracker> {
   void Trace(blink::Visitor*);
 
  private:
-  HeapHashSet<std::pair<Member<const CSSStyleSheet>, Member<const StyleRule>>>
+  bool InsertToUsedRulesMap(const CSSStyleSheet*, const StyleRule*);
+
+  HeapHashMap<Member<const CSSStyleSheet>,
+              Member<HeapHashSet<Member<const StyleRule>>>>
       used_rules_;
   RuleListByStyleSheet used_rules_delta_;
 };

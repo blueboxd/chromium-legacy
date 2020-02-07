@@ -7,6 +7,11 @@
   display: none !important;
 }
 
+cr-button {
+  --active-bg: none;  /* prevent dark-mode activation color */
+  box-shadow: none;
+}
+
 /* "chrome-menu" class overrides some standard menu.css styles, to make custom
    menus in FileBrowser look like native ChromeOS menus. */
 

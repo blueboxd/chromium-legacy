@@ -148,6 +148,7 @@
       Permite determinar el tiempo que debe transcurrir antes de que se muestre el protector de pantalla en la página de inicio de sesión para dispositivos que se encuentren en el modo de venta.
 
       El valor de la política debe especificarse en milisegundos.</translation>
+<translation id="1145702698069317184">No permitir cargas ni descargas de tipos de archivo no admitidos</translation>
 <translation id="1151353063931113432">Permitir imágenes en estos sitios</translation>
 <translation id="1152117524387175066">Informa sobre el estado del conmutador de dispositivo cuando este se inicia.
 
@@ -756,6 +757,15 @@
 <translation id="2168397434410358693">Demora de inactividad con alimentación de CA</translation>
 <translation id="217013996107840632">Parámetros de la línea de comandos para cambiar del navegador alternativo</translation>
 <translation id="2170233653554726857">Habilitar optimización de WPAD</translation>
+<translation id="2171245625445050634">A partir de M82, esta política no estará disponible. En su lugar, utiliza MinimumChromeVersionEnforced.
+
+      Configura el requisito de la versión mínima permitida de <ph name="PRODUCT_NAME" />. Las versiones que se describen a continuación se consideran obsoletas, y el dispositivo no permitirá que el usuario acceda sin antes actualizar el SO.
+
+      Si la versión actual se vuelve obsoleta durante la sesión de usuario, se lo forzará al usuario a salir.
+
+      Si no se establece esta política, no se aplicarán restricciones, y el usuario podrá acceder independientemente de la versión de <ph name="PRODUCT_NAME" />.
+
+      Aquí, la "versión" puede ser una exacta, como "61.0.3163.120" o el prefijo de una versión, como "61.0".  </translation>
 <translation id="2176565653304920879">Cuando se establece esta política, la detección automática de la zona horaria se llevará a cabo de las siguientes formas, según el valor de la configuración:
 
       Si se establece el valor TimezoneAutomaticDetectionUsersDecide, los usuarios podrán cambiar la detección automática de la zona horaria con los controles normales en chrome://settings.
@@ -833,6 +843,7 @@ Esta política no se aplica a las aplicaciones de kiosko; estas se migran de for
 
       Si se configura como falsa la política HardwareAccelerationModeEnabled, Disable3DAPIs se ignorará y actuará como si Disable3DAPIs fuera verdadera.</translation>
 <translation id="2258126710006312594">Permite que los usuarios con acceso remoto transfieran archivos hacia y desde el host</translation>
+<translation id="2267288258868218403">No permitir que se carguen tipos de archivo no admitidos</translation>
 <translation id="2269319728625047531">Habilitar que se muestre el consentimiento de sincronización durante el acceso</translation>
 <translation id="2270747976331889601">Habilita una función de seguridad TLS 1.3 para los anclajes de confianza locales</translation>
 <translation id="2274864612594831715">Esta política configura la habilitación del teclado virtual como dispositivo de entrada en el Sistema operativo Chrome. Los usuarios no pueden anular esta política
@@ -1288,6 +1299,13 @@ Esta política no se aplica a las aplicaciones de kiosko; estas se migran de for
 
       Si cambias esta política cuando <ph name="PRODUCT_NAME" /> se está ejecutando, solo se aplicará a las pestañas abiertas nuevas. Por lo tanto, es posible que algunas pestañas todavía muestren el comportamiento anterior.</translation>
 <translation id="284288632677954003">URL de un archivo XML que contiene URL que nunca deben abrirse en otro navegador</translation>
+<translation id="2844404652289407061">Habilita la disponibilidad de Tocar para buscar en la vista de contenido de <ph name="PRODUCT_NAME" />.
+
+      Si se habilita esta configuración, Tocar para buscar estará disponible para el usuario, quien podrá elegir activar o desactivar la función.
+
+      Si se inhabilita esta configuración, Tocar para buscar se inhabilitará completamente.
+
+      Si esta política se deja sin establecer, es equivalente a que esté habilitada; para obtener más información, se puede consultar la descripción más arriba.</translation>
 <translation id="285480231336205327">Habilitar el modo de contraste alto</translation>
 <translation id="2854919890879212089">Hace que <ph name="PRODUCT_NAME" /> use la impresora predeterminada del sistema como la opción predeterminada en Vista previa de impresión, en lugar de la impresora que se usó de forma más reciente.
 
@@ -1726,6 +1744,7 @@ Esta política no se aplica a las aplicaciones de kiosko; estas se migran de for
 <translation id="3646859102161347133">Establece el tipo de lupa.</translation>
 <translation id="3653237928288822292">Ícono del proveedor de búsqueda predeterminado</translation>
 <translation id="3654906736796256792">Permite que se ejecute la zona de pruebas de audio</translation>
+<translation id="3657998022005237040">No permitir la descarga de tipos de archivo no admitidos</translation>
 <translation id="3660510274595679517">
         Si se configura esta política como verdadera, la inscripción en la administración de nube será obligatoria y bloqueará el proceso de ejecución de Chrome en caso de que falle.
 
@@ -1909,6 +1928,7 @@ Esta política no se aplica a las aplicaciones de kiosko; estas se migran de for
       Si no se establece esta política, <ph name="PRODUCT_NAME" /> usará el directorio predeterminado (específico de cada plataforma).
 
       Ingresa a https://www.chromium.org/administrators/policy-list-3/user-data-directory-variables para ver una lista de las variables que se pueden usar.</translation>
+<translation id="3898795800259311780">Permite o rechaza la captura de pantalla</translation>
 <translation id="3911737181201537215">Si Android accede a una cuenta, esta política no tendrá efecto en esta acción.</translation>
 <translation id="3912092044353890761">Habilita la función de accesibilidad de teclado virtual en la pantalla de acceso.
 
@@ -2044,6 +2064,7 @@ Esta política no se aplica a las aplicaciones de kiosko; estas se migran de for
           Si esta política se establece en "Guardar las cookies durante la sesión", las cookies se borrarán cuando se cierre la sesión. Se debe tener en cuenta que si <ph name="PRODUCT_NAME" /> se está ejecutando en "modo en segundo plano", es posible que la sesión no se cierre cuando se cierre la última ventana. Para obtener más información sobre cómo configurar este comportamiento, se debe consultar la política "BackgroundModeEnabled". 
 
           Si esta política no se establece, se usará "AllowCookies" y el usuario podrá modificarlo.</translation>
+<translation id="4093716537292423758">Permitir tipos de archivo no admitidos</translation>
 <translation id="410068710490553233">Permite acceder en más Cuentas de Google</translation>
 <translation id="4103289232974211388">Redireccionar al IdP de SAML después de la confirmación del usuario</translation>
 <translation id="4105884561459127998">Configura el tipo de autenticación para los accesos SAML.
@@ -2293,9 +2314,19 @@ Esta política no se aplica a las aplicaciones de kiosko; estas se migran de for
 <translation id="4482640907922304445">Muestra el botón de la Página principal en la barra de herramientas de <ph name="PRODUCT_NAME" />. Si se habilita esta configuración, el botón Página principal se mostrará siempre. Si se inhabilita esta configuración, el botón Página principal no se mostrará nunca. Si se habilita o inhabilita esta configuración, los usuarios no podrán cambiarla ni anularla en <ph name="PRODUCT_NAME" />. Si esta política no se configura, el usuario podrá elegir si desea mostrar el botón.</translation>
 <translation id="4483649828988077221">Inhabilitar la actualización automática</translation>
 <translation id="4485425108474077672">Configurar la URL de la página Nueva pestaña</translation>
+<translation id="4487507711538762752">Esta política fuerza la ejecución del código de red en el proceso de navegación.
+
+      Está inhabilitada de forma predeterminada, pero, si se habilita, deja a los usuarios desprotegidos frente a problemas de seguridad una vez que el proceso de red se encuentre en la zona de pruebas.
+
+      Esta política permite que las empresas migren a software de terceros sin necesidad de modificar las API de red. Se recomiendan los servidores Proxy antes que los LSP y la aplicación de parches de API Win32.
+
+      Si no se establece esta política, el código de red se ejecutará de forma predeterminada por fuera del proceso del navegador.
+
+      En la versión 84 de <ph name="PRODUCT_NAME" />, se quitará esta política.</translation>
 <translation id="4492287494009043413">Inhabilitar la toma de capturas de pantalla</translation>
 <translation id="4494132853995232608">DTC wilco</translation>
 <translation id="449423975179525290">Configura las políticas relacionadas con <ph name="PLUGIN_VM_NAME" />.</translation>
+<translation id="4498493270899294764">Patrones de URL en los que no es necesario comprobar si hay software malicioso en las descargas</translation>
 <translation id="450537894712826981">Configura el tamaño de caché que utilizará <ph name="PRODUCT_NAME" /> para almacenar archivos multimedia en caché en el disco.
 
       Si esta política se establece, <ph name="PRODUCT_NAME" /> utilizará el tamaño de caché disponible aunque el usuario haya especificado la marca "--media-cache-size". El valor indicado en esta política no es un límite rígido, sino un valor recomendado para el sistema de almacenamiento en caché; cualquier valor que sea menor por algunos megabytes se redondeará hasta alcanzar un mínimo aceptable.
@@ -2533,6 +2564,12 @@ Esta política no se aplica a las aplicaciones de kiosko; estas se migran de for
 <translation id="4986560318567565414">Ruta a Chrome para el cambio desde el navegador alternativo</translation>
 <translation id="4988291787868618635">Acción que se realiza cuando se alcanza la demora de inactividad</translation>
 <translation id="500149597848135831">Habilitar todas las variaciones</translation>
+<translation id="5023555740504506178">Si se habilita o no se configura (predeterminado), una página web podrá utilizar
+      las API para compartir pantalla (p. ej., getDisplayMedia() o la API de la extensión Captura del escritorio)
+      para solicitarle al usuario que seleccione una pestaña, una ventana o un escritorio para capturar.
+
+      Si se inhabilita esta política, fallarán las llamadas a las API para compartir pantalla
+      y se mostrará un error.</translation>
 <translation id="5032164758660626397">Evita que el usuario transfiera archivos grandes</translation>
 <translation id="5047604665028708335">Permite el acceso a sitios fuera de los paquetes de contenido.</translation>
 <translation id="5052081091120171147">Esta política, si se habilita, fuerza la importación del historial de navegación del navegador predeterminado actual. Si se la habilita, esta política también afecta el cuadro de diálogo de importación. Si se la inhabilita, no se importa ningún historial de navegación. Si no se configura, se le puede preguntar al usuario si desea importar el historial de navegación o la importación puede realizarse de forma automática.</translation>
@@ -2677,6 +2714,25 @@ Esta política no se aplica a las aplicaciones de kiosko; estas se migran de for
 
           Esta política está disponible en instancias de Windows vinculadas a un dominio de <ph name="MS_AD_NAME" /> o instancias de Windows 10 Pro o Enterprise habilitadas para la administración de dispositivos.</translation>
 <translation id="5208240613060747912">Te permite configurar una lista de patrones de URL que especifican los sitios que no están autorizados a mostrar notificaciones. Si esta política no se configura, se usará el valor global predeterminado para todos los sitios ya sea de la política "DefaultNotificationsSetting", si está configurada, o de otro tipo de configuración personal del usuario.</translation>
+<translation id="5210980743015047124">Configura el requisito de la versión mínima permitida de <ph name="PRODUCT_NAME" />.
+
+      Cuando se configura esta política con una lista no vacía:
+      Si ninguna de las entradas tiene un valor de "chrome_version" mayor que la versión actual del dispositivo, no se aplicarán restricciones y se revocarán las restricciones existentes.
+      Si al menos una de las entradas tiene un valor de "chrome_version" mayor que la versión actual, se seleccionará la entrada más resistente, cuya versión es la más cercana a la actual.
+      En caso de conflicto, se le da preferencia a la versión con un valor de "warning_period" o "eol_warning_period" menor, y se aplicará la política conforme a esa entrada.
+
+      Si la versión actual se vuelve obsoleta durante la sesión de usuario, se mostrará una notificación en pantalla para actualizar el dispositivo mientras se muestre el valor de "warning_period" en la notificación.
+      El valor de "warning_period" comienza a partir de que se aplica la política.
+      Si no se actualiza el dispositivo para cuando caduca el valor de "warning_period", se forzará al usuario a salir del sistema.
+      Si al momento de acceder la versión actual es obsoleta, y el valor de "warning_period" caducó, el usuario deberá actualizar el dispositivo para poder acceder.
+
+      Si finaliza el período durante la sesión del usuario, se mostrará una notificación en pantalla para indicar que se forzará al usuario a salir cuando caduque el valor de "eol_warning_period".
+      Si al momento de acceder el dispositivo es obsoleto, y el valor de "eol_warning_period" caducó, ningún usuario podrá acceder al dispositivo.
+
+      Si no se establece esta política o se establece como vacía, no se aplicarán restricciones, se revocarán las existentes, y el usuario podrá acceder independientemente de la versión de <ph name="PRODUCT_NAME" />.
+
+      Aquí, el valor de "chrome_version" puede ser exacto, como "61.0.3163.120" o el prefijo de una versión, como "61.0".
+      Los valores "warning_period" y "eol_warning_period" son opcionales y se especifican en número de días. El valor predeterminado de esos valores es 0 días, lo que significa que no hay un período de espera. </translation>
 <translation id="5212118847531454979">Te permite establecer el período, en milisegundos, en el que se notifica a los usuarios que deben reiniciar <ph name="PRODUCT_NAME" /> o un dispositivo <ph name="PRODUCT_OS_NAME" /> para aplicar una actualización pendiente.
 
       En este período, se le informará reiteradamente al usuario acerca de la necesidad de la actualización. En dispositivos <ph name="PRODUCT_OS_NAME" />, se muestra una notificación de reinicio en la bandeja del sistema, en conformidad con la política <ph name="RELAUNCH_HEADS_UP_PERIOD_POLICY_NAME" />. En navegadores <ph name="PRODUCT_NAME" />, el menú de la app indica que se debe reiniciar después de transcurrido un tercio del período de la notificación. Esta notificación cambia de color tras dos tercios del período de la notificación y una vez más cuando finaliza este período. Las notificaciones adicionales que habilita la política <ph name="RELAUNCH_NOTIFICATION_POLICY_NAME" /> siguen el mismo patrón.
@@ -2750,6 +2806,11 @@ Esta política no se aplica a las aplicaciones de kiosko; estas se migran de for
       Si se establece como verdadera, o no se establece, el usuario podrá utilizar Crostini, siempre que otras opciones de configuración también lo permitan.
       Para que pueda ejecutarse Crostini, deben establecerse las tres políticas (VirtualMachinesAllowed, CrostiniAllowed y DeviceUnaffiliatedCrostiniAllowed) como verdaderas.
       Si se cambia esta política a falsa, se aplicará a contenedores nuevos de Crostini, pero no se apagarán los que ya estén en ejecución.</translation>
+<translation id="5277914408935179830">Esta política controla el tratamiento del contenido mixto (contenido HTTP en sitios HTTPS) en el navegador.
+       Si se establece la política como verdadera o no se establece, se actualizará de forma automática el contenido mixto de audio y video a HTTPS (p. ej., se reescribirá la URL como HTTPS, sin un resguardo si el recurso no está disponible en HTTPS) y se mostrará la advertencia "No seguro" en la barra de URL para el contenido mixto con imágenes.
+       Si se establece la política como falsa, se inhabilitarán las actualizaciones automáticas para el audio y el video y no se mostrarán advertencias para las imágenes.
+       Esta política no afecta otros tipos de contenido mixto que no sean imágenes, audio y video.
+       A partir de <ph name="PRODUCT_NAME" /> 84, esta política dejará de tener efecto.</translation>
 <translation id="5278367296164377827">Esta política es una adaptación por corto plazo y se quitará en M82.
 
       Para fortalecer la política del referente predeterminado de Chrome, su valor actual de "sin referente cuando cambia a una versión inferior" cambia al valor más seguro "origen estricto cuando el origen es cruzado" mediante un lanzamiento gradual que apunta a la versión M80 estable.
@@ -2766,6 +2827,7 @@ Esta política no se aplica a las aplicaciones de kiosko; estas se migran de for
 <translation id="5306186200045823863">Habilitar la confianza en la infraestructura de PKI heredada de Symantec Corporation</translation>
 <translation id="5307432759655324440">Disponibilidad del modo incógnito</translation>
 <translation id="5311275381462687162">Configuración predeterminada del atributo heredado <ph name="ATTRIBUTE_SAMESITE_NAME" /> para el comportamiento de las cookies</translation>
+<translation id="5313116350102437846">Esta política controla si los usuarios inscritos en el Programa de protección avanzada pueden enviar sus descargas a Google para comprobar que no incluyan software malicioso. Si se establece como verdadera o no se establece, se les pedirá a los usuarios inscritos que envíen sus archivos a Google para analizarlos en profundidad. Si el usuario selecciona "Analizar", se enviará la descarga a Google. Si se establece como falsa, no se les pedirá a los usuarios que realicen ninguna acción y no se enviarán sus descargas a Google.</translation>
 <translation id="5318185076587284965">Habilitar el uso de servidores de retransmisión por parte del host de acceso remoto</translation>
 <translation id="5323128137188992869">Permite que se transmita contenido al dispositivo que esté usando <ph name="PRODUCT_NAME" />.
 
@@ -2936,6 +2998,16 @@ Esta política no se aplica a las aplicaciones de kiosko; estas se migran de for
 
       Ten en cuenta que, si la plataforma es compatible con las notificaciones de política, el retraso de actualización se establecerá en 24 horas (se ignoran todos los valores predeterminados y el valor de esta política), ya que se espera que las notificaciones de política fuercen una actualización de forma automática cada vez que la política cambie. Esto hace que las actualizaciones frecuentes no sean necesarias.</translation>
 <translation id="5530347722229944744">Bloquear las descargas potencialmente peligrosas</translation>
+<translation id="5534198977061777727">Controla cómo maneja <ph name="PRODUCT_NAME" /> los datos que se cargan, descargan, pegan del portapapeles o arrastran y sueltan con tipos de archivo que no admitan el análisis de DLP o software malicioso.
+
+      Si no se establece esta política o se establece como "No permitir ningún tipo de archivo no admitido" (0), <ph name="PRODUCT_NAME" /> permitirá la carga o descarga de datos con tipos de archivo que no admitan el análisis de DLP o software malicioso.
+
+      Si se establece esta política como "No permitir descargas de tipos de archivo no admitidos" (1), el usuario intenta descargar un archivo de una URL que se encuentra en la política <ph name="DOMAINS_TO_CHECK_COMPLIANCE_OF_DOWNLOADED_CONTENT_POLICTY_NAME" />, y el archivo es de un tipo que no admite el análisis de DLP o software malicioso, <ph name="PRODUCT_NAME" /> no permitirá la descarga de datos.
+
+      Si se establece esta política como "No permitir cargas de tipos de archivos no admitidos" (2), el usuario intenta cargar un archivo a un dominio que no se encuentra en la política <ph name="DOMAINS_TO_NOT_CHECK_COMPLIANCE_OF_UPLOADED_CONTENT_POLICY_NAME" />, y el archivo es de un tipo que no admite el análisis de DLP o software malicioso, <ph name="PRODUCT_NAME" /> no permitirá la carga del archivo, los datos pegados del portapapeles ni los datos arrastrados y soltados.
+
+      Si se establece esta política como "No permitir cargas y descargas de tipos de archivo no admitidos" (3), <ph name="PRODUCT_NAME" /> se comportará conforme a las reglas descritas en "No permitir cargas de tipos de archivo no admitidos" y "No permitir descargas de tipos de archivo no admitidos".
+      </translation>
 <translation id="5535973522252703021">Lista blanca de servidores de delegación de Kerberos</translation>
 <translation id="554903022911579950">Kerberos</translation>
 <translation id="555022085242359084">Habilita el contraste alto en la pantalla de acceso</translation>
@@ -3096,6 +3168,12 @@ Esta política no se aplica a las aplicaciones de kiosko; estas se migran de for
           Si no se configura esta política, se implementará la acción predeterminada, es decir, la suspensión.
 
           Si la acción es la suspensión, <ph name="PRODUCT_OS_NAME" /> se podrá configurar por separado para que la pantalla se bloquee o no antes de la suspensión.</translation>
+<translation id="5746196829700407864">Es una lista de patrones de URL en los que no es necesario revisar el contenido descargado para detectar software malicioso.  Se utiliza esta política únicamente si se establece <ph name="SEND_FILES_FOR_MALWARE_CHECK_POLICY_NAME" /> con un valor que permite la revisión de las descargas para detectar software malicioso o si se la aplica de manera forzosa.
+
+      Si no se establece esta política o se establece como una lista vacía de patrones de URL, se revisarán todas las descargas para detectar si hay software malicioso.
+
+      Los patrones de URL deben tener un formato conforme a lo especificado en la política "URLBlacklist", documentada en https://www.chromium.org/administrators/url-blacklist-filter-format.
+      </translation>
 <translation id="574983287620584622">Habilita las combinaciones de teclas para las funciones de accesibilidad en la pantalla de acceso</translation>
 <translation id="5755002458331714762"> En 2018, las API de Web Components v0 (Shadow DOM v0, Custom Elements v0 y HTML Imports) dejaron de estar disponibles. Además, se inhabilitaron de forma predeterminada a partir de la versión M80. Esta política permite volver a habilitar estas funciones de forma selectiva hasta la versión M84.
 
@@ -3152,6 +3230,7 @@ Esta política no se aplica a las aplicaciones de kiosko; estas se migran de for
 <translation id="5861856285460256766">Configuración del código de acceso superior</translation>
 <translation id="5868414965372171132">Configuración de red de usuario</translation>
 <translation id="5879014913445067283">Controla la detección de archivos compartidos en la red a través de <ph name="NETBIOS_NAME" /></translation>
+<translation id="588135807064822874">Habilita Tocar para buscar</translation>
 <translation id="5882345429632338713">Retraso antes de ejecutar otro navegador (milisegundos)</translation>
 <translation id="5883015257301027298">Configuración de cookies predeterminada</translation>
 <translation id="5887414688706570295">Configura el prefijo TalkGadget que será utilizado por los hosts de acceso remoto y que evita que los usuarios lo cambien.
@@ -3218,7 +3297,6 @@ Esta política no se aplica a las aplicaciones de kiosko; estas se migran de for
 
       Inhabilitar esta política reduce la estabilidad y la seguridad de Chrome, ya que se permitirá cargar código desconocido y potencialmente hostil en los procesos del renderizador de Chrome. Para obtener más información, consulta el siguiente vínculo: https://chromium.googlesource.com/chromium/src/+/master/docs/design/sandbox.md#Process-mitigation-policies.</translation>
 <translation id="6048199181629830227">Habilita la administración de carga fuera del horario pico</translation>
-<translation id="605475635122964053">Restringe el modo de impresión con PIN. Si no se configura la política, no se aplicará ninguna restricción. Si el modo no está disponible, se ignorará esta política. Ten en cuenta que la función de impresión con PIN solo se habilitará para impresoras que usen uno de los protocolos IPPS, USB o IPP-over-USB </translation>
 <translation id="6070667616071269965">Diseños de teclado de la pantalla de acceso del dispositivo</translation>
 <translation id="6074963268421707432">No permitir que los sitios muestren notificaciones de escritorio.</translation>
 <translation id="6074964551275531965">Establecer el período para las notificaciones de actualización</translation>
@@ -3381,6 +3459,7 @@ Esta política no se aplica a las aplicaciones de kiosko; estas se migran de for
 <translation id="6315673513957120120">Chrome muestra una página de advertencia cuando los usuarios visitan sitios que tienen errores de SSL. De forma predeterminada o cuando esta política se establece en true, los usuarios pueden hacer clic en estas páginas de advertencia.
       Al establecer esta política en false, los usuarios no pueden hacer clic en ninguna página de advertencia.</translation>
 <translation id="6319198883324703402">Establece la hora de la primera notificación de reinicio del usuario</translation>
+<translation id="6342187235303612558">No permite que los usuarios carguen o descarguen archivos que no admitan el análisis de DLP o software malicioso</translation>
 <translation id="6352543686437322588">Se establece una cuenta local del dispositivo con acceso automático después de un retraso.
 
       Si se establece esta política, se accederá automáticamente a la sesión especificada después de un período determinado en la pantalla de acceso sin necesidad de que el usuario interactúe. La cuenta local del dispositivo ya debe estar configurada (consulta |DeviceLocalAccounts|).
@@ -5015,6 +5094,7 @@ Si se selecciona "U2F_EXTENDED", el segundo factor integrado proporcionará func
 <translation id="8976248126101463034">Permitir autenticación gnubby para hosts de acceso remoto</translation>
 <translation id="8976531594979650914">Usar la impresora predeterminada del sistema como predeterminada</translation>
 <translation id="8992176907758534924">No permitir que ningún sitio muestre imágenes.</translation>
+<translation id="9010080992450148617">Permite que los usuarios inscritos en el Programa de protección avanzada envíen descargas a Google para que las analice en profundidad</translation>
 <translation id="9013875414788074110">Durante el acceso, <ph name="PRODUCT_OS_NAME" /> podrá realizar la autenticación a través de un servidor (en línea) o de una contraseña en caché (sin conexión).
 
       Cuando esta política se establezca con un valor de -1, el usuario podrá autenticarse sin conexión indefinidamente. Si se configura esta política con cualquier otro valor, indicará el tiempo que debe transcurrir desde la última autenticación en línea para que el usuario use la autenticación en línea otra vez.

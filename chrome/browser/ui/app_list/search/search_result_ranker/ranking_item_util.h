@@ -12,23 +12,18 @@ class ChromeSearchResult;
 
 namespace app_list {
 
-// Warning: this enum may change, should not be serialised, and should not
-// persist to logs.
+// A simplified value describing what kind a search result should be treated as
+// for the purposes of ranking. These values are persisted to logs. Entries
+// should not be renumbered and numeric values should never be reused.
 enum class RankingItemType {
-  kUnknown,
-  kIgnored,
-  kFile,
-  kApp,
-  kOmniboxGeneric,
-  kArcAppShortcut,
-  kOmniboxBookmark,
-  kOmniboxDeprecated,
-  kOmniboxDocument,
-  kOmniboxHistory,
-  kOmniboxNavSuggest,
-  kOmniboxSearch,
-  kZeroStateFile,
-  kDriveQuickAccess
+  kUnknown = 0,
+  kIgnored = 1,
+  kFile = 2,
+  kApp = 3,
+  kOmniboxGeneric = 4,
+  kArcAppShortcut = 5,
+  kZeroStateFile = 6,
+  kDriveQuickAccess = 7,
 };
 
 // Convert a |ChromeSearchResult| into its |RankingItemType|.

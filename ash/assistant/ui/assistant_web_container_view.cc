@@ -123,7 +123,7 @@ bool AssistantWebContainerView::GoBack() {
 void AssistantWebContainerView::OpenUrl(const GURL& url) {
   RemoveContents();
 
-  AssistantWebView2::InitParams contents_params;
+  AssistantWebView::InitParams contents_params;
   contents_params.suppress_navigation = true;
 
   contents_view_ = AssistantWebViewFactory::Get()->Create(contents_params);

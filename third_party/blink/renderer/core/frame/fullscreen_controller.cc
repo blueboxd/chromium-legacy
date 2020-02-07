@@ -61,8 +61,12 @@ void FullscreenController::DidEnterFullscreen() {
     return;
 
   UpdatePageScaleConstraints(false);
-  web_view_base_->SetPageScaleFactor(1.0f);
-  web_view_base_->SetVisualViewportOffset(FloatPoint());
+
+  // Only reset the scale for the local main frame.
+  if (web_view_base_->MainFrameImpl()) {
+    web_view_base_->SetPageScaleFactor(1.0f);
+    web_view_base_->SetVisualViewportOffset(FloatPoint());
+  }
 
   state_ = State::kFullscreen;
 

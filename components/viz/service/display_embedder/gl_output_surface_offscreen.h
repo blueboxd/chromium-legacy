@@ -31,7 +31,7 @@ class VIZ_SERVICE_EXPORT GLOutputSurfaceOffscreen : public GLOutputSurface {
   void Reshape(const gfx::Size& size,
                float scale_factor,
                const gfx::ColorSpace& color_space,
-               bool alpha,
+               gfx::BufferFormat format,
                bool stencil) override;
   void SwapBuffers(OutputSurfaceFrame frame) override;
 

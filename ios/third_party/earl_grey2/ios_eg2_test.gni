@@ -75,6 +75,7 @@ template("ios_eg2_test") {
                              "xctest_bundle_principal_class",
                              "bundle_deps",
                              "deps",
+                             "data_deps",
                            ])
 
     if (!defined(deps)) {

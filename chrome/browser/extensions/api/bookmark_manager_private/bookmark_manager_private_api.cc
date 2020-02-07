@@ -513,7 +513,7 @@ bool BookmarkManagerPrivateGetSubtreeFunction::RunOnReady() {
     bookmark_api_helpers::AddNodeFoldersOnly(managed, node, &nodes, true);
   else
     bookmark_api_helpers::AddNode(managed, node, &nodes, true);
-  results_ = GetSubtree::Results::Create(nodes);
+  SetResultList(GetSubtree::Results::Create(nodes));
   return true;
 }
 

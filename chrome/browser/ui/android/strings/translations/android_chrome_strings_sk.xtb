@@ -115,6 +115,7 @@
 <translation id="1919950603503897840">Výber kontaktov</translation>
 <translation id="1922076542920281912">Ak chcete povoliť Chromu používať vašu polohu, zapnite ju aj v <ph name="BEGIN_LINK" />Nastaveniach Androidu<ph name="END_LINK" />.</translation>
 <translation id="1923695749281512248"><ph name="BYTES_DOWNLOADED_WITH_UNITS" /> / <ph name="FILE_SIZE_WITH_UNITS" /></translation>
+<translation id="1925021887439448749">Zadajte vlastnú webovú adresu</translation>
 <translation id="1928696683969751773">Aktualizácie</translation>
 <translation id="19288952978244135">Znova otvorte Chrome.</translation>
 <translation id="1933845786846280168">Vybratá karta</translation>
@@ -279,6 +280,7 @@
 <translation id="3123473560110926937">Blokované na niektorých weboch</translation>
 <translation id="3123734510202723619">Oznámenia</translation>
 <translation id="3137521801621304719">Ukončiť režim inkognito</translation>
+<translation id="3140134512074889489">Ak chcete skenovať QR kód, povoľte svoj fotoaparát</translation>
 <translation id="3143515551205905069">Zrušiť synchronizáciu</translation>
 <translation id="3157842584138209013">Ak chcete zistiť, koľko dát ste ušetrili, klepnite na tlačidlo Ďalšie možnosti</translation>
 <translation id="3166827708714933426">Skratky pre karty a okná</translation>
@@ -449,6 +451,9 @@
 <translation id="4521489764227272523">Vybrané údaje boli odstránené z Chromu a vašich synchronizovaných zariadení.
 
 Váš účet Google môže mať na adrese <ph name="BEGIN_LINK" />myactivity.google.com<ph name="END_LINK" /> ďalšie formy histórie prehliadania, ako napríklad vyhľadávania a aktivity v iných službách Googlu.</translation>
+<translation id="4527374721149092498">Zistite viac o témach na weboch bez toho, aby ste museli opustiť stránku. Funkcia Vyhľadávanie klepnutím odošle slovo a súvisiaci kontext do Vyhľadávania Google a vráti definície, obrázky, výsledky vyhľadávania a ďalšie podrobnosti.
+
+Ak chcete nejaké slovo vyhľadať, klepnite naň. Ak chcete hľadaný výraz upraviť, vyberte ho dlhým stlačením. Ak chcete spresniť vyhľadávanie, prejdením prstom otvorte panel, klepnutím na ikonu rozbalenia načítajte novú kartu a potom klepnite na vyhľadávacie pole.</translation>
 <translation id="4532845899244822526">Vyberte priečinok</translation>
 <translation id="4538018662093857852">Zapnúť zjednodušený režim</translation>
 <translation id="4550003330909367850">Ak si tu chcete zobraziť heslo alebo ho sem chcete skopírovať, nastavte v tomto zariadení zámku obrazovky.</translation>
@@ -690,6 +695,9 @@ Ak chcete toto nastavenie zmeniť, <ph name="BEGIN_LINK" />resetujte synchroniz�
 <translation id="6232535412751077445">Ak povolíte možnosť Nesledovať, k odosielaným dátam prehliadania sa pridá žiadosť. Akýkoľvek účinok závisí od toho, či bude web na žiadosť reagovať, a tiež od interpretácie žiadosti.
 
 Niektoré weby môžu napríklad na túto žiadosť reagovať tak, že vám zobrazia reklamy, ktoré nie sú založené na ostatných weboch, ktoré ste navštívili. Mnoho webov bude stále zhromažďovať a používať vaše dáta prehliadania, napríklad na zlepšenie zabezpečenia, poskytovanie obsahu, reklám a odporúčaní a na generovanie štatistík prehľadov.</translation>
+<translation id="6238003486329291387">Zistite viac o témach na weboch bez toho, aby ste museli opustiť stránku. Funkcia Vyhľadávanie klepnutím odošle slovo a súvisiaci kontext do Vyhľadávania Google a vráti definície, obrázky, výsledky vyhľadávania a ďalšie podrobnosti.
+
+Ak chcete vyhľadať nejaké slovo, dlho ho stlačte. Ak chcete vyhľadávanie spresniť, upravte výber. Môžete tiež prejdením prstom otvoriť panel, klepnutím na ikonu rozbalenia načítať novú kartu a potom klepnúť na vyhľadávacie pole.</translation>
 <translation id="624789221780392884">Aktualizácia je pripravená</translation>
 <translation id="6255999984061454636">Návrhy obsahu</translation>
 <translation id="6270391203985052864">Weby môžu žiadať o odosielanie upozornení</translation>

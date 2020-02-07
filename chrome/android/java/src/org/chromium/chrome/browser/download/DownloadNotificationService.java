@@ -10,7 +10,6 @@ import static org.chromium.chrome.browser.download.DownloadSnackbarController.IN
 import android.app.Notification;
 import android.content.Context;
 import android.content.Intent;
-import android.content.SharedPreferences;
 import android.content.res.Resources;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
@@ -33,6 +32,8 @@ import org.chromium.chrome.browser.flags.CachedFeatureFlags;
 import org.chromium.chrome.browser.notifications.NotificationManagerProxy;
 import org.chromium.chrome.browser.notifications.NotificationManagerProxyImpl;
 import org.chromium.chrome.browser.notifications.NotificationUmaTracker;
+import org.chromium.chrome.browser.preferences.ChromePreferenceKeys;
+import org.chromium.chrome.browser.preferences.SharedPreferencesManager;
 import org.chromium.chrome.browser.profiles.Profile;
 import org.chromium.components.offline_items_collection.ContentId;
 import org.chromium.components.offline_items_collection.FailState;
@@ -90,10 +91,7 @@ public class DownloadNotificationService {
     /** Notification Id starting value, to avoid conflicts from IDs used in prior versions. */
     private static final int STARTING_NOTIFICATION_ID = 1000000;
 
-    private static final String KEY_NEXT_DOWNLOAD_NOTIFICATION_ID = "NextDownloadNotificationId";
-
     private static final int MAX_RESUMPTION_ATTEMPT_LEFT = 5;
-    private static final String KEY_AUTO_RESUMPTION_ATTEMPT_LEFT = "ResumptionAttemptLeft";
 
     @VisibleForTesting
     final List<ContentId> mDownloadsInProgress = new ArrayList<ContentId>();
@@ -581,15 +579,15 @@ public class DownloadNotificationService {
      * @return notificationId that is next based on stored value.
      */
     private static int getNextNotificationId() {
-        SharedPreferences sharedPreferences = ContextUtils.getAppSharedPreferences();
-        int nextNotificationId = sharedPreferences.getInt(
-                KEY_NEXT_DOWNLOAD_NOTIFICATION_ID, STARTING_NOTIFICATION_ID);
+        int nextNotificationId = SharedPreferencesManager.getInstance().readInt(
+                ChromePreferenceKeys.DOWNLOAD_NEXT_DOWNLOAD_NOTIFICATION_ID,
+                STARTING_NOTIFICATION_ID);
         int nextNextNotificationId = nextNotificationId == Integer.MAX_VALUE
                 ? STARTING_NOTIFICATION_ID
                 : nextNotificationId + 1;
-        SharedPreferences.Editor editor = sharedPreferences.edit();
-        editor.putInt(KEY_NEXT_DOWNLOAD_NOTIFICATION_ID, nextNextNotificationId);
-        editor.apply();
+        SharedPreferencesManager.getInstance().writeInt(
+                ChromePreferenceKeys.DOWNLOAD_NEXT_DOWNLOAD_NOTIFICATION_ID,
+                nextNextNotificationId);
         return nextNotificationId;
     }
 
@@ -613,30 +611,26 @@ public class DownloadNotificationService {
 
     /**
      * Helper method to update the remaining number of background resumption attempts left.
+     *
+     * @param numAutoResumptionAttemptLeft the number of auto resumption attempts left.
      */
     private static void updateResumptionAttemptLeft(int numAutoResumptionAttemptLeft) {
-        ContextUtils.getAppSharedPreferences()
-                .edit()
-                .putInt(KEY_AUTO_RESUMPTION_ATTEMPT_LEFT, numAutoResumptionAttemptLeft)
-                .apply();
+        SharedPreferencesManager.getInstance().writeInt(
+                ChromePreferenceKeys.DOWNLOAD_AUTO_RESUMPTION_ATTEMPT_LEFT,
+                numAutoResumptionAttemptLeft);
     }
 
-    /**
-     * Helper method to get the remaining number of background resumption attempts left.
-     */
+    /** Helper method to get the remaining number of background resumption attempts left. */
     private static int getResumptionAttemptLeft() {
-        SharedPreferences sharedPrefs = ContextUtils.getAppSharedPreferences();
-        return sharedPrefs.getInt(KEY_AUTO_RESUMPTION_ATTEMPT_LEFT, MAX_RESUMPTION_ATTEMPT_LEFT);
+        return SharedPreferencesManager.getInstance().readInt(
+                ChromePreferenceKeys.DOWNLOAD_AUTO_RESUMPTION_ATTEMPT_LEFT,
+                MAX_RESUMPTION_ATTEMPT_LEFT);
     }
 
-    /**
-     * Helper method to clear the remaining number of background resumption attempts left.
-     */
+    /** Helper method to clear the remaining number of background resumption attempts left. */
     static void clearResumptionAttemptLeft() {
-        ContextUtils.getAppSharedPreferences()
-                .edit()
-                .remove(KEY_AUTO_RESUMPTION_ATTEMPT_LEFT)
-                .apply();
+        SharedPreferencesManager.getInstance().removeKey(
+                ChromePreferenceKeys.DOWNLOAD_AUTO_RESUMPTION_ATTEMPT_LEFT);
     }
 
     void onForegroundServiceRestarted(int pinnedNotificationId) {

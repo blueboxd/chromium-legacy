@@ -13,6 +13,7 @@
 #include "android_webview/browser/aw_browser_context.h"
 #include "android_webview/browser/aw_cookie_access_policy.h"
 #include "android_webview/browser_jni_headers/AwCookieManager_jni.h"
+#include "base/android/build_info.h"
 #include "base/android/callback_android.h"
 #include "base/android/jni_string.h"
 #include "base/android/path_utils.h"
@@ -88,7 +89,8 @@ enum class SecureCookieAction {
   kInvalidCookie = 2,
   kNotASecureCookie = 3,
   kFixedUp = 4,
-  kMaxValue = kFixedUp,
+  kDisallowedAndroidR = 5,
+  kMaxValue = kDisallowedAndroidR,
 };
 
 // Since this function parses the set-cookie line into a ParsedCookie, it is
@@ -97,12 +99,16 @@ enum class SecureCookieAction {
 GURL MaybeFixUpSchemeForSecureCookieAndGetSameSite(
     const GURL& host,
     const std::string& value,
-    net::CookieSameSiteString* samesite_out) {
+    bool workaround_http_secure_cookies,
+    net::CookieSameSiteString* samesite_out,
+    bool* should_allow_cookie) {
   net::ParsedCookie parsed_cookie(value);
 
   // Grab the SameSite value for histogramming.
   DCHECK(samesite_out);
   parsed_cookie.SameSite(samesite_out);
+
+  *should_allow_cookie = true;
 
   // Log message for catching strict secure cookies related bugs.
   // TODO(ntfschr): try to remove this, based on UMA stats
@@ -128,9 +134,20 @@ GURL MaybeFixUpSchemeForSecureCookieAndGetSameSite(
     return host;
   }
 
-  LOG(WARNING) << "Strict Secure Cookie policy does not allow setting a "
-                  "secure cookie for "
-               << host.spec();
+  LOG(ERROR) << "Strict Secure Cookie policy does not allow setting a "
+                "secure cookie for "
+             << host.spec()
+             << " for apps targeting >= R. Please either use the 'https:' "
+                "scheme for this URL or omit the 'Secure' directive in the "
+                "cookie value.";
+  if (!workaround_http_secure_cookies) {
+    // Don't allow setting this cookie if we target >= R.
+    *should_allow_cookie = false;
+    base::UmaHistogramEnumeration(kSecureCookieHistogramName,
+                                  SecureCookieAction::kDisallowedAndroidR);
+    return host;
+  }
+
   base::UmaHistogramEnumeration(kSecureCookieHistogramName,
                                 SecureCookieAction::kFixedUp);
   GURL::Replacements replace_host;
@@ -185,6 +202,8 @@ base::FilePath GetPathInAppDirectory(std::string path) {
 CookieManager::CookieManager()
     : allow_file_scheme_cookies_(kDefaultFileSchemeAllowed),
       cookie_store_created_(false),
+      workaround_http_secure_cookies_(
+          base::android::BuildInfo::GetInstance()->targets_at_least_r()),
       cookie_store_client_thread_("CookieMonsterClient"),
       cookie_store_backend_thread_("CookieMonsterBackend"),
       setting_new_mojo_cookie_manager_(false) {
@@ -385,6 +404,23 @@ void CookieManager::SwapMojoCookieManagerAsync(
   RunPendingCookieTasks();
 }
 
+void CookieManager::SetWorkaroundHttpSecureCookiesForTesting(
+    JNIEnv* env,
+    const JavaParamRef<jobject>& obj,
+    jboolean allow) {
+  ExecCookieTaskSync(
+      base::BindOnce(&CookieManager::SetWorkaroundHttpSecureCookiesAsyncHelper,
+                     base::Unretained(this), allow));
+}
+
+void CookieManager::SetWorkaroundHttpSecureCookiesAsyncHelper(
+    bool allow,
+    base::OnceClosure complete) {
+  DCHECK(cookie_store_task_runner_->RunsTasksInCurrentSequence());
+  workaround_http_secure_cookies_ = allow;
+  std::move(complete).Run();
+}
+
 void CookieManager::SetShouldAcceptCookies(JNIEnv* env,
                                            const JavaParamRef<jobject>& obj,
                                            jboolean accept) {
@@ -429,9 +465,13 @@ void CookieManager::SetCookieSync(JNIEnv* env,
 void CookieManager::SetCookieHelper(const GURL& host,
                                     const std::string& value,
                                     base::OnceCallback<void(bool)> callback) {
+  DCHECK(cookie_store_task_runner_->RunsTasksInCurrentSequence());
+
   net::CookieSameSiteString samesite = net::CookieSameSiteString::kUnspecified;
-  const GURL& new_host =
-      MaybeFixUpSchemeForSecureCookieAndGetSameSite(host, value, &samesite);
+  bool should_allow_cookie = true;
+  const GURL& new_host = MaybeFixUpSchemeForSecureCookieAndGetSameSite(
+      host, value, workaround_http_secure_cookies_, &samesite,
+      &should_allow_cookie);
 
   UMA_HISTOGRAM_ENUMERATION(
       "Android.WebView.CookieManager.SameSiteAttributeValue", samesite);
@@ -441,7 +481,7 @@ void CookieManager::SetCookieHelper(const GURL& host,
       net::CanonicalCookie::Create(new_host, value, base::Time::Now(),
                                    base::nullopt /* server_time */, &status));
 
-  if (!cc) {
+  if (!cc || !should_allow_cookie) {
     MaybeRunCookieCallback(std::move(callback), false);
     return;
   }

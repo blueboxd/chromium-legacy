@@ -188,8 +188,8 @@ internal::ResultCode FillAntiVirusProductsFromWSC(
     result = product->get_ProductName(product_name.Receive());
     if (FAILED(result))
       return internal::ResultCode::kFailedToGetProductName;
-    std::string name = internal::TrimVersionOfAvProductName(
-        base::SysWideToUTF8(std::wstring(product_name, product_name.Length())));
+    std::string name = internal::TrimVersionOfAvProductName(base::SysWideToUTF8(
+        std::wstring(product_name.Get(), product_name.Length())));
     product_name.Release();
     if (report_full_names)
       av_product.set_product_name(name);
@@ -199,7 +199,7 @@ internal::ResultCode FillAntiVirusProductsFromWSC(
     result = product->get_RemediationPath(remediation_path.Receive());
     if (FAILED(result))
       return internal::ResultCode::kFailedToGetRemediationPath;
-    std::wstring path_str(remediation_path, remediation_path.Length());
+    std::wstring path_str(remediation_path.Get(), remediation_path.Length());
     remediation_path.Release();
 
     std::string product_version;
@@ -237,7 +237,7 @@ internal::ResultCode FillAntiVirusProductsFromWMI(
 
   Microsoft::WRL::ComPtr<IWbemServices> wmi_services;
   hr = wmi_locator->ConnectServer(
-      base::win::ScopedBstr(L"ROOT\\SecurityCenter2"), nullptr, nullptr,
+      base::win::ScopedBstr(L"ROOT\\SecurityCenter2").Get(), nullptr, nullptr,
       nullptr, 0, nullptr, nullptr, &wmi_services);
   if (FAILED(hr))
     return internal::ResultCode::kFailedToConnectToWMI;
@@ -255,7 +255,7 @@ internal::ResultCode FillAntiVirusProductsFromWMI(
   Microsoft::WRL::ComPtr<IEnumWbemClassObject> enumerator;
 
   hr = wmi_services->ExecQuery(
-      query_language, query,
+      query_language.Get(), query.Get(),
       WBEM_FLAG_FORWARD_ONLY | WBEM_FLAG_RETURN_IMMEDIATELY, nullptr,
       &enumerator);
   if (FAILED(hr))

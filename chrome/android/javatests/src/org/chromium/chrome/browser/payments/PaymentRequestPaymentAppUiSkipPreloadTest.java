@@ -39,7 +39,6 @@ import java.util.concurrent.TimeoutException;
 @CommandLineFlags.Add({
         ChromeSwitches.DISABLE_FIRST_RUN_EXPERIENCE,
         // Speed up the test by not looking up actual apps installed on the device.
-        "disable-features=" + ChromeFeatureList.ANDROID_PAYMENT_APPS,
         "disable-features=" + ChromeFeatureList.SERVICE_WORKER_PAYMENT_APPS,
 })
 public class PaymentRequestPaymentAppUiSkipPreloadTest {

@@ -7,6 +7,8 @@
 
 namespace media {
 
+// NOTE: These numbers are still subject to change.  Do not use for things like
+// UMA yet!
 enum class ErrorCode : uint32_t {
   kOk = 0,
   kCodeOnlyForTesting = std::numeric_limits<uint32_t>::max(),

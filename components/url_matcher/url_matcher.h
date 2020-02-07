@@ -417,12 +417,10 @@ class URL_MATCHER_EXPORT URLMatcher {
       StringPatternTriggers;
   StringPatternTriggers substring_match_triggers_;
 
-  SubstringSetMatcher full_url_matcher_;
-  SubstringSetMatcher url_component_matcher_;
+  std::unique_ptr<SubstringSetMatcher> full_url_matcher_;
+  std::unique_ptr<SubstringSetMatcher> url_component_matcher_;
   RegexSetMatcher regex_set_matcher_;
   RegexSetMatcher origin_and_path_regex_set_matcher_;
-  std::set<const StringPattern*> registered_full_url_patterns_;
-  std::set<const StringPattern*> registered_url_component_patterns_;
 
   DISALLOW_COPY_AND_ASSIGN(URLMatcher);
 };

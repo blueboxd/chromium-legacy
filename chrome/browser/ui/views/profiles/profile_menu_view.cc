@@ -48,6 +48,7 @@
 #include "components/signin/core/browser/signin_error_controller.h"
 #include "components/signin/public/base/signin_pref_names.h"
 #include "components/signin/public/identity_manager/accounts_mutator.h"
+#include "components/signin/public/identity_manager/consent_level.h"
 #include "components/signin/public/identity_manager/primary_account_mutator.h"
 #include "components/strings/grit/components_strings.h"
 #include "components/sync/driver/sync_service_utils.h"
@@ -166,7 +167,9 @@ void ProfileMenuView::OnManageGoogleAccountButtonClicked() {
   DCHECK(identity_manager->HasUnconsentedPrimaryAccount());
 
   NavigateToGoogleAccountPage(
-      profile, identity_manager->GetUnconsentedPrimaryAccountInfo().email);
+      profile, identity_manager
+                   ->GetPrimaryAccountInfo(signin::ConsentLevel::kNotRequired)
+                   .email);
 }
 
 void ProfileMenuView::OnPasswordsButtonClicked() {
@@ -340,8 +343,8 @@ void ProfileMenuView::BuildIdentity() {
   Profile* profile = browser()->profile();
   signin::IdentityManager* identity_manager =
       IdentityManagerFactory::GetForProfile(profile);
-  CoreAccountInfo account =
-      identity_manager->GetUnconsentedPrimaryAccountInfo();
+  CoreAccountInfo account = identity_manager->GetPrimaryAccountInfo(
+      signin::ConsentLevel::kNotRequired);
   base::Optional<AccountInfo> account_info =
       identity_manager->FindExtendedAccountInfoForAccountWithRefreshToken(
           account);
@@ -485,8 +488,8 @@ void ProfileMenuView::BuildSyncInfo() {
   }
 
   // Show sync promos.
-  CoreAccountInfo unconsented_account =
-      identity_manager->GetUnconsentedPrimaryAccountInfo();
+  CoreAccountInfo unconsented_account = identity_manager->GetPrimaryAccountInfo(
+      signin::ConsentLevel::kNotRequired);
   base::Optional<AccountInfo> account_info =
       identity_manager->FindExtendedAccountInfoForAccountWithRefreshToken(
           unconsented_account);

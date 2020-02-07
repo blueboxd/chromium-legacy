@@ -1,0 +1,53 @@
+// Copyright 2019 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
+
+#include "chrome/browser/web_applications/components/web_app_file_handler_registration.h"
+
+#include "base/bind.h"
+#include "base/bind_helpers.h"
+#include "chrome/browser/web_applications/components/app_registrar.h"
+#include "chrome/browser/web_applications/components/app_shortcut_manager.h"
+#include "chrome/browser/web_applications/components/web_app_provider_base.h"
+#include "chrome/browser/web_applications/components/web_app_shortcut.h"
+
+namespace web_app {
+
+namespace {
+
+void UpdateFileHandlerRegistrationInOs(const AppId& app_id, Profile* profile) {
+  // On OSX, file associations are managed through app shims in the Applications
+  // directory, so after enabling or disabling file handling for an app its shim
+  // needs to be updated.
+  AppShortcutManager& shortcut_manager =
+      WebAppProviderBase::GetProviderBase(profile)->shortcut_manager();
+  shortcut_manager.CreateShortcuts(app_id, /*add_to_desktop=*/false,
+                                   base::DoNothing());
+}
+
+}  // namespace
+
+bool ShouldRegisterFileHandlersWithOs() {
+  return true;
+}
+
+void RegisterFileHandlersWithOs(const AppId& app_id,
+                                const std::string& app_name,
+                                Profile* profile,
+                                const std::set<std::string>& file_extensions,
+                                const std::set<std::string>& mime_types) {
+  UpdateFileHandlerRegistrationInOs(app_id, profile);
+}
+
+void UnregisterFileHandlersWithOs(const AppId& app_id, Profile* profile) {
+  // If this was triggered as part of the uninstallation process, nothing more
+  // is needed. Uninstalling already cleans up app shims (and thus, file
+  // handlers).
+  auto* provider = WebAppProviderBase::GetProviderBase(profile);
+  if (!provider->registrar().IsInstalled(app_id))
+    return;
+
+  UpdateFileHandlerRegistrationInOs(app_id, profile);
+}
+
+}  // namespace web_app

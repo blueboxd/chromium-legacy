@@ -102,7 +102,7 @@ std::string SharingSendMessageResultToString(SharingSendMessageResult result) {
     case SharingSendMessageResult::kInternalError:
       return "InternalError";
     case SharingSendMessageResult::kEncryptionError:
-      return "kEncryptionError";
+      return "EncryptionError";
   }
 }
 
@@ -390,9 +390,13 @@ void LogSendSharingMessageResult(
           {metric_prefix, ".", SharingChannelTypeToString(channel_type)}),
       result);
 
-  base::UmaHistogramEnumeration(
-      base::StrCat({metric_prefix, ".", PulseIntervalToString(pulse_interval)}),
-      result);
+  // There is no "invalid" bucket so only log valid pulse intervals.
+  if (!pulse_interval.is_zero()) {
+    base::UmaHistogramEnumeration(
+        base::StrCat(
+            {metric_prefix, ".", PulseIntervalToString(pulse_interval)}),
+        result);
+  }
 }
 
 void LogSendSharingAckMessageResult(
@@ -481,4 +485,8 @@ void LogRemoteCopyWriteImageTime(base::TimeDelta time) {
 
 void LogRemoteCopyWriteTextTime(base::TimeDelta time) {
   base::UmaHistogramMediumTimes("Sharing.RemoteCopyWriteTextTime", time);
+}
+
+void LogSharingDeviceInfoAvailable(bool available) {
+  base::UmaHistogramBoolean("Sharing.DeviceInfoAvailable", available);
 }

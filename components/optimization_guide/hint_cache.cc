@@ -80,9 +80,14 @@ void HintCache::UpdateComponentHints(
 void HintCache::UpdateFetchedHints(
     std::unique_ptr<proto::GetHintsResponse> get_hints_response,
     base::Time update_time,
+    base::Optional<GURL> navigation_url,
     base::OnceClosure callback) {
   std::unique_ptr<StoreUpdateData> fetched_hints_update_data =
       CreateUpdateDataForFetchedHints(update_time);
+
+  if (navigation_url && IsValidURLForURLKeyedHint(*navigation_url))
+    url_keyed_hint_cache_.Put(navigation_url->spec(), nullptr);
+
   ProcessAndCacheHints(get_hints_response.get()->mutable_hints(),
                        fetched_hints_update_data.get());
   optimization_guide_store_->UpdateFetchedHints(
@@ -173,6 +178,9 @@ proto::Hint* HintCache::GetURLKeyedHint(const GURL& url) {
   if (hint_it == url_keyed_hint_cache_.end())
     return nullptr;
 
+  if (!hint_it->second)
+    return nullptr;
+
   MemoryHint* hint = hint_it->second.get();
   DCHECK(hint->expiry_time().has_value());
   if (*hint->expiry_time() > clock_->Now())
@@ -181,6 +189,31 @@ proto::Hint* HintCache::GetURLKeyedHint(const GURL& url) {
   // The hint is expired so remove it from the cache.
   url_keyed_hint_cache_.Erase(hint_it);
   return nullptr;
+}
+
+bool HintCache::HasURLKeyedEntryForURL(const GURL& url) {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+
+  if (!IsValidURLForURLKeyedHint(url))
+    return false;
+
+  auto hint_it = url_keyed_hint_cache_.Get(url.spec());
+  if (hint_it == url_keyed_hint_cache_.end())
+    return false;
+
+  // The url-keyed hint for the URL was requested but no hint was returned so
+  // return true.
+  if (!hint_it->second)
+    return true;
+
+  MemoryHint* hint = hint_it->second.get();
+  DCHECK(hint->expiry_time().has_value());
+  if (*hint->expiry_time() > clock_->Now())
+    return true;
+
+  // The hint is expired so remove it from the cache.
+  url_keyed_hint_cache_.Erase(hint_it);
+  return false;
 }
 
 base::Time HintCache::GetFetchedHintsUpdateTime() const {

@@ -303,7 +303,7 @@ void AccessibilityEventRecorderWin::OnWinEventHook(HWINEVENTHOOK handle,
     base::win::ScopedBstr attributes_bstr;
     if (S_OK == iaccessible2->get_attributes(attributes_bstr.Receive())) {
       std::vector<base::string16> ia2_attributes = base::SplitString(
-          base::string16(attributes_bstr, attributes_bstr.Length()),
+          base::string16(attributes_bstr.Get(), attributes_bstr.Length()),
           base::string16(1, ';'), base::KEEP_WHITESPACE, base::SPLIT_WANT_ALL);
       for (base::string16& attr : ia2_attributes) {
         if (base::StringPiece16(attr).starts_with(L"class:"))
@@ -334,8 +334,8 @@ void AccessibilityEventRecorderWin::OnWinEventHook(HWINEVENTHOOK handle,
 
   log += base::StringPrintf(" role=%s", RoleVariantToString(role).c_str());
   if (name_bstr.Length() > 0)
-    log +=
-        base::StringPrintf(" name=\"%s\"", BstrToPrettyUTF8(name_bstr).c_str());
+    log += base::StringPrintf(" name=\"%s\"",
+                              BstrToPrettyUTF8(name_bstr.Get()).c_str());
   if (value_bstr.Length() > 0) {
     bool is_document =
         role.type() == VT_I4 && ROLE_SYSTEM_DOCUMENT == V_I4(role.ptr());
@@ -344,7 +344,7 @@ void AccessibilityEventRecorderWin::OnWinEventHook(HWINEVENTHOOK handle,
     log += is_document
                ? " value~=[doc-url]"
                : base::StringPrintf(" value=\"%s\"",
-                                    BstrToPrettyUTF8(value_bstr).c_str());
+                                    BstrToPrettyUTF8(value_bstr.Get()).c_str());
   }
   log += " ";
   log += base::UTF16ToUTF8(IAccessibleStateToString(ia_state));

@@ -137,7 +137,6 @@
 <translation id="2718395828230677721">Yövalo</translation>
 <translation id="2727977024730340865">Pienitehoinen laturi kytketty. Akku ei ehkä lataudu luotettavasti.</translation>
 <translation id="2792498699870441125">Alt + haku</translation>
-<translation id="2803734122639935495">Avaa lukitus antamalla salasana</translation>
 <translation id="2819276065543622893">Sinut kirjataan ulos nyt.</translation>
 <translation id="2825619548187458965">Hylly</translation>
 <translation id="2844169650293029770">C-tyypin USB-laite (vasemman sivun etummainen portti)</translation>
@@ -202,6 +201,7 @@
 <translation id="3604801046548457007">Työpöytä <ph name="DESK_TITILE" /> luotu</translation>
 <translation id="3606978283550408104">Pistekirjoitusnäyttö on yhdistetty.</translation>
 <translation id="3621202678540785336">Äänitulo:</translation>
+<translation id="3621712662352432595">Ääniasetukset</translation>
 <translation id="3626281679859535460">Kirkkaus</translation>
 <translation id="3631369015426612114">Salli ilmoitukset seuraavista:</translation>
 <translation id="3705722231355495246">-</translation>
@@ -546,6 +546,7 @@
 <translation id="8477270416194247200">Peruuta painamalla Alt+haku tai vaihto.</translation>
 <translation id="8513108775083588393">Automaattinen kääntö</translation>
 <translation id="8517041960877371778"><ph name="DEVICE_TYPE" /> ei välttämättä lataudu, kun se on käynnissä.</translation>
+<translation id="8563862697512465947">Ilmoitusasetukset</translation>
 <translation id="8627191004499078455">Yhdistetty: <ph name="DEVICE_NAME" /></translation>
 <translation id="8637598503828012618"><ph name="CONNECTION_STATUS" />, signaalin vahvuus <ph name="SIGNAL_STRENGTH" />, järjestelmänvalvojan hallinnoima</translation>
 <translation id="8639760480004882931"><ph name="PERCENTAGE" /> jäljellä</translation>

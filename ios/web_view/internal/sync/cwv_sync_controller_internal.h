@@ -10,6 +10,7 @@
 NS_ASSUME_NONNULL_BEGIN
 
 namespace autofill {
+class AutofillWebDataService;
 class PersonalDataManager;
 }  // autofill
 
@@ -31,11 +32,13 @@ class SigninErrorController;
 
 // All dependencies must out live this class.
 - (instancetype)
-      initWithSyncService:(syncer::SyncService*)syncService
-          identityManager:(signin::IdentityManager*)identityManager
-    signinErrorController:(SigninErrorController*)signinErrorController
-      personalDataManager:(autofill::PersonalDataManager*)personalDataManager
-            passwordStore:(password_manager::PasswordStore*)passwordStore
+       initWithSyncService:(syncer::SyncService*)syncService
+           identityManager:(signin::IdentityManager*)identityManager
+     signinErrorController:(SigninErrorController*)signinErrorController
+       personalDataManager:(autofill::PersonalDataManager*)personalDataManager
+    autofillWebDataService:
+        (autofill::AutofillWebDataService*)autofillWebDataService
+             passwordStore:(password_manager::PasswordStore*)passwordStore
     NS_DESIGNATED_INITIALIZER;
 
 @end

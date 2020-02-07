@@ -23,23 +23,11 @@ namespace url_matcher {
 // which string patterns occur in S.
 class URL_MATCHER_EXPORT SubstringSetMatcher {
  public:
-  SubstringSetMatcher();
+  // Registers all |patterns|. The same pattern cannot be registered twice and
+  // each pattern needs to have a unique ID.
+  SubstringSetMatcher(const std::vector<StringPattern>& patterns);
+  SubstringSetMatcher(std::vector<const StringPattern*> patterns);
   ~SubstringSetMatcher();
-
-  // Registers all |patterns|. The ownership remains with the caller.
-  // The same pattern cannot be registered twice and each pattern needs to have
-  // a unique ID.
-  // Ownership of the patterns remains with the caller.
-  void RegisterPatterns(const std::vector<const StringPattern*>& patterns);
-
-  // Unregisters the passed |patterns|.
-  void UnregisterPatterns(const std::vector<const StringPattern*>& patterns);
-
-  // Analogous to RegisterPatterns and UnregisterPatterns but executes both
-  // operations in one step, which is cheaper in the execution.
-  void RegisterAndUnregisterPatterns(
-      const std::vector<const StringPattern*>& to_register,
-      const std::vector<const StringPattern*>& to_unregister);
 
   // Matches |text| against all registered StringPatterns. Stores the IDs
   // of matching patterns in |matches|. |matches| is not cleared before adding
@@ -47,8 +35,8 @@ class URL_MATCHER_EXPORT SubstringSetMatcher {
   bool Match(const std::string& text,
              std::set<StringPattern::ID>* matches) const;
 
-  // Returns true if this object retains no allocated data. Only for debugging.
-  bool IsEmpty() const;
+  // Returns true if this object retains no allocated data.
+  bool IsEmpty() const { return is_empty_; }
 
   // Returns the estimated memory usage in bytes.
   size_t EstimateMemoryUsage() const;
@@ -86,23 +74,21 @@ class URL_MATCHER_EXPORT SubstringSetMatcher {
   // It will make sense. Eventually.
   class AhoCorasickNode {
    public:
-    // Key: label of the edge, value: node index in |tree_| of parent class.
-    typedef std::map<char, uint32_t> Edges;
+    // Key: label of the edge, value: pointer to child node.
+    typedef std::map<char, AhoCorasickNode*> Edges;
     typedef std::set<StringPattern::ID> Matches;
-
-    static const uint32_t kNoSuchEdge;  // Represents an invalid node index.
 
     AhoCorasickNode();
     ~AhoCorasickNode();
-    AhoCorasickNode(const AhoCorasickNode& other);
-    AhoCorasickNode& operator=(const AhoCorasickNode& other);
+    AhoCorasickNode(AhoCorasickNode&& other);
+    AhoCorasickNode& operator=(AhoCorasickNode&& other);
 
-    uint32_t GetEdge(char c) const;
-    void SetEdge(char c, uint32_t node);
+    AhoCorasickNode* GetEdge(char c) const;
+    void SetEdge(char c, AhoCorasickNode* node);
     const Edges& edges() const { return edges_; }
 
-    uint32_t failure() const { return failure_; }
-    void set_failure(uint32_t failure) { failure_ = failure; }
+    const AhoCorasickNode* failure() const { return failure_; }
+    void SetFailure(const AhoCorasickNode* failure);
 
     void AddMatch(StringPattern::ID id);
     void AddMatches(const Matches& matches);
@@ -114,31 +100,26 @@ class URL_MATCHER_EXPORT SubstringSetMatcher {
     // Outgoing edges of current node.
     Edges edges_;
 
-    // Node index that failure edge leads to.
-    uint32_t failure_;
+    // Node that failure edge leads to. Null when uninitialized.
+    const AhoCorasickNode* failure_ = nullptr;
 
     // Identifiers of matches.
     Matches matches_;
   };
 
-  typedef std::map<StringPattern::ID, const StringPattern*> SubstringPatternMap;
   typedef std::vector<const StringPattern*> SubstringPatternVector;
 
-  // |sorted_patterns| is a copy of |patterns_| sorted by the pattern string.
-  void RebuildAhoCorasickTree(const SubstringPatternVector& sorted_patterns);
+  void BuildAhoCorasickTree(const SubstringPatternVector& patterns);
 
   // Inserts a path for |pattern->pattern()| into the tree and adds
-  // |pattern->id()| to the set of matches. Ownership of |pattern| remains with
-  // the caller.
+  // |pattern->id()| to the set of matches.
   void InsertPatternIntoAhoCorasickTree(const StringPattern* pattern);
   void CreateFailureEdges();
 
-  // Set of all registered StringPatterns. Used to regenerate the
-  // Aho-Corasick tree in case patterns are registered or unregistered.
-  SubstringPatternMap patterns_;
-
   // The nodes of a Aho-Corasick tree.
   std::vector<AhoCorasickNode> tree_;
+
+  bool is_empty_ = true;
 
   DISALLOW_COPY_AND_ASSIGN(SubstringSetMatcher);
 };

@@ -61,7 +61,9 @@ void HeadlessBrowserImpl::Shutdown() {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
 
   weak_ptr_factory_.InvalidateWeakPtrs();
-  browser_contexts_.clear();
+  // Make sure GetAllBrowserContexts is sane if called after this point.
+  auto tmp = std::move(browser_contexts_);
+  tmp.clear();
   if (system_request_context_manager_) {
     base::DeleteSoon(FROM_HERE, {content::BrowserThread::IO},
                      system_request_context_manager_.release());

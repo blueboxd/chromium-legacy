@@ -7,6 +7,7 @@
 #include <inttypes.h>
 
 #include "base/bind_helpers.h"
+#include "base/memory/scoped_refptr.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/numerics/safe_conversions.h"
 #include "base/rand_util.h"
@@ -59,28 +60,6 @@ base::OnceCallback<void(bool)> MakeSuccessCallback(
 }
 
 }  // namespace
-
-// static
-scoped_refptr<CachedStorageArea> CachedStorageArea::CreateForLocalStorage(
-    scoped_refptr<const SecurityOrigin> origin,
-    mojo::PendingRemote<mojom::blink::StorageArea> area,
-    scoped_refptr<base::SingleThreadTaskRunner> ipc_runner,
-    StorageNamespace* storage_namespace) {
-  return base::AdoptRef(new CachedStorageArea(
-      AreaType::kLocalStorage, std::move(origin), std::move(area),
-      std::move(ipc_runner), storage_namespace));
-}
-
-// static
-scoped_refptr<CachedStorageArea> CachedStorageArea::CreateForSessionStorage(
-    scoped_refptr<const SecurityOrigin> origin,
-    mojo::PendingRemote<mojom::blink::StorageArea> area,
-    scoped_refptr<base::SingleThreadTaskRunner> ipc_runner,
-    StorageNamespace* storage_namespace) {
-  return base::AdoptRef(new CachedStorageArea(
-      AreaType::kSessionStorage, std::move(origin), std::move(area),
-      std::move(ipc_runner), storage_namespace));
-}
 
 unsigned CachedStorageArea::GetLength() {
   EnsureLoaded();

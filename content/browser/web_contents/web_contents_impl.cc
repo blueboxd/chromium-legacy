@@ -4176,9 +4176,8 @@ int WebContentsImpl::GetMaximumZoomPercent() {
   return maximum_zoom_percent_;
 }
 
-void WebContentsImpl::SetPageScale(float page_scale_factor) {
-  GetRenderViewHost()->Send(new ViewMsg_SetPageScale(
-      GetRenderViewHost()->GetRoutingID(), page_scale_factor));
+void WebContentsImpl::SetPageScale(float scale_factor) {
+  GetMainFrame()->GetAssociatedLocalMainFrame()->SetScaleFactor(scale_factor);
 }
 
 gfx::Size WebContentsImpl::GetPreferredSize() {

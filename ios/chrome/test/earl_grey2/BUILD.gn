@@ -29,18 +29,21 @@ chrome_ios_eg2_test("ios_chrome_autofill_automation_eg2tests_module") {
   xcode_test_application_name = "ios_chrome_eg2tests"
 
   deps = [ "//ios/chrome/browser/autofill/automation:eg2_tests" ]
+  data_deps = [ ":ios_chrome_eg2tests" ]
 }
 
 chrome_ios_eg2_test("ios_chrome_bookmarks_eg2tests_module") {
   xcode_test_application_name = "ios_chrome_eg2tests"
 
   deps = [ "//ios/chrome/browser/ui/bookmarks:eg2_tests" ]
+  data_deps = [ ":ios_chrome_eg2tests" ]
 }
 
 chrome_ios_eg2_test("ios_chrome_device_check_eg2tests_module") {
   xcode_test_application_name = "ios_chrome_eg2tests"
 
   deps = [ "//ios/chrome/test/earl_grey:device_check_eg2_tests" ]
+  data_deps = [ ":ios_chrome_eg2tests" ]
 }
 
 chrome_ios_eg2_test("ios_chrome_integration_eg2tests_module") {
@@ -62,12 +65,14 @@ chrome_ios_eg2_test("ios_chrome_integration_eg2tests_module") {
     "//ios/chrome/browser/ui/content_suggestions:eg2_tests",
     "//ios/chrome/browser/ui/integration_tests:eg2_tests",
   ]
+  data_deps = [ ":ios_chrome_eg2tests" ]
 }
 
 chrome_ios_eg2_test("ios_chrome_smoke_eg2tests_module") {
   xcode_test_application_name = "ios_chrome_eg2tests"
 
   deps = [ "//ios/chrome/test/earl_grey2:eg2_tests" ]
+  data_deps = [ ":ios_chrome_eg2tests" ]
 }
 
 chrome_ios_eg2_test("ios_chrome_settings_eg2tests_module") {
@@ -80,12 +85,14 @@ chrome_ios_eg2_test("ios_chrome_settings_eg2tests_module") {
     "//ios/chrome/browser/ui/settings/language:eg2_tests",
     "//ios/chrome/browser/ui/settings/password:eg2_tests",
   ]
+  data_deps = [ ":ios_chrome_eg2tests" ]
 }
 
 chrome_ios_eg2_test("ios_chrome_signin_eg2tests_module") {
   xcode_test_application_name = "ios_chrome_eg2tests"
 
   deps = [ "//ios/chrome/browser/ui/signin_interaction:eg2_tests" ]
+  data_deps = [ ":ios_chrome_eg2tests" ]
 }
 
 chrome_ios_eg2_test("ios_chrome_ui_eg2tests_module") {
@@ -121,12 +128,14 @@ chrome_ios_eg2_test("ios_chrome_ui_eg2tests_module") {
     "//ios/chrome/browser/ui/toolbar:eg2_tests",
     "//ios/chrome/browser/ui/webui:eg2_tests",
   ]
+  data_deps = [ ":ios_chrome_eg2tests" ]
 }
 
 chrome_ios_eg2_test("ios_chrome_web_eg2tests_module") {
   xcode_test_application_name = "ios_chrome_eg2tests"
 
   deps = [ "//ios/chrome/browser/web:eg2_tests" ]
+  data_deps = [ ":ios_chrome_eg2tests" ]
 }
 
 source_set("eg2_tests") {

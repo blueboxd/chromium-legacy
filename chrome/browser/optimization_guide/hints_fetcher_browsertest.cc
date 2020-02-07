@@ -30,6 +30,7 @@
 #include "components/optimization_guide/hints_component_info.h"
 #include "components/optimization_guide/hints_component_util.h"
 #include "components/optimization_guide/optimization_guide_constants.h"
+#include "components/optimization_guide/optimization_guide_enums.h"
 #include "components/optimization_guide/optimization_guide_features.h"
 #include "components/optimization_guide/optimization_guide_prefs.h"
 #include "components/optimization_guide/optimization_guide_service.h"
@@ -1199,6 +1200,91 @@ IN_PROC_BROWSER_TEST_F(
         "OptimizationGuide.HintsFetcher.NavigationHostCoveredByFetch."
         "AtCommit",
         false, 1);
+  }
+}
+
+// Test that the hints are fetched at the time of the navigation.
+IN_PROC_BROWSER_TEST_F(HintsFetcherBrowserTest,
+                       DISABLE_ON_WIN_MAC_CHROMEOS(
+                           HintsFetcher_NavigationFetch_URLKeyedNotRefetched)) {
+  const base::HistogramTester* histogram_tester = GetHistogramTester();
+
+  // Whitelist NoScript for https_url()'s' host.
+  SetUpComponentUpdateHints(https_url());
+
+  RetryForHistogramUntilCountReached(
+      histogram_tester,
+      optimization_guide::kComponentHintsUpdatedResultHistogramString, 1);
+
+  // Expect that the browser initialization will record at least one sample
+  // in each of the following histograms as One Platform Hints are enabled.
+  EXPECT_GE(RetryForHistogramUntilCountReached(
+                histogram_tester,
+                "OptimizationGuide.HintsFetcher.GetHintsRequest.HostCount", 1),
+            1);
+
+  EXPECT_GE(RetryForHistogramUntilCountReached(
+                histogram_tester,
+                "OptimizationGuide.HintsFetcher.GetHintsRequest.Status", 1),
+            1);
+
+  histogram_tester->ExpectUniqueSample(
+      "OptimizationGuide.HintsFetcher.GetHintsRequest.Status", net::HTTP_OK, 1);
+  histogram_tester->ExpectUniqueSample(
+      "OptimizationGuide.HintsFetcher.GetHintsRequest.NetErrorCode", net::OK,
+      1);
+  histogram_tester->ExpectUniqueSample(
+      "OptimizationGuide.HintsFetcher.GetHintsRequest.HintCount", 1, 1);
+  EXPECT_EQ(1u, count_hints_requests_received());
+
+  // Setting the connection type to be slow so the page navigation race fetch
+  // is initiated.
+  g_browser_process->network_quality_tracker()
+      ->ReportEffectiveConnectionTypeForTesting(
+          net::EFFECTIVE_CONNECTION_TYPE_2G);
+  std::string full_url("https://foo.com/test/");
+  {
+    // Navigate to a host not in the seeded site engagement service; it
+    // should be recorded as a race for both the host and the URL.
+    base::flat_set<std::string> expected_request;
+    expected_request.insert(GURL(full_url).host());
+    expected_request.insert(GURL(full_url).spec());
+    SetExpectedHintsRequestForHostsAndUrls(expected_request);
+    ui_test_utils::NavigateToURL(browser(), GURL(full_url));
+
+    EXPECT_EQ(2u, count_hints_requests_received());
+    RetryForHistogramUntilCountReached(
+        histogram_tester, optimization_guide::kLoadedHintLocalHistogramString,
+        2);
+    histogram_tester->ExpectUniqueSample(
+        "OptimizationGuide.HintsManager.RaceNavigationFetchAttemptStatus",
+        optimization_guide::RaceNavigationFetchAttemptStatus::
+            kRaceNavigationFetchHostAndURL,
+        1);
+  }
+
+  // Navigate again to the same webpage, no race should occur.
+  {
+    // Navigate to a host that was recently fetched. It
+    // should be recorded as covered by the hints fetcher.
+    base::flat_set<std::string> expected_request;
+    SetExpectedHintsRequestForHostsAndUrls(expected_request);
+    ui_test_utils::NavigateToURL(browser(), GURL(full_url));
+
+    // With URL-keyed Hints, every unique URL navigated to will result in a
+    // hints fetch if racing is enabled and allowed.
+    EXPECT_EQ(2u, count_hints_requests_received());
+    RetryForHistogramUntilCountReached(
+        histogram_tester, optimization_guide::kLoadedHintLocalHistogramString,
+        2);
+
+    // Only the host will be attempted to race, the fetcher should block the
+    // host from being fetched.
+    histogram_tester->ExpectBucketCount(
+        "OptimizationGuide.HintsManager.RaceNavigationFetchAttemptStatus",
+        optimization_guide::RaceNavigationFetchAttemptStatus::
+            kRaceNavigationFetchHost,
+        1);
   }
 }
 

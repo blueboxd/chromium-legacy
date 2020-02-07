@@ -142,6 +142,10 @@ void SpeechSynthesisUtterance::Start(SpeechSynthesis* synthesis) {
       &SpeechSynthesisUtterance::OnDisconnected, WrapWeakPersistent(this)));
 }
 
+void SpeechSynthesisUtterance::Dispose() {
+  receiver_.reset();
+}
+
 void SpeechSynthesisUtterance::OnDisconnected() {
   // If the remote end disconnects, just simulate that we finished normally.
   if (!finished_)

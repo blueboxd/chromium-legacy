@@ -70,6 +70,7 @@ class WebURLLoader {
       int requestor_id,
       bool download_to_network_cache_only,
       bool pass_response_pipe_to_client,
+      bool no_mime_sniffing,
       base::TimeDelta timeout_interval,
       WebURLLoaderClient*,
       WebURLResponse&,
@@ -87,6 +88,7 @@ class WebURLLoader {
       scoped_refptr<WebURLRequest::ExtraData> request_extra_data,
       int requestor_id,
       bool download_to_network_cache_only,
+      bool no_mime_sniffing,
       WebURLLoaderClient*) = 0;
 
   // Suspends/resumes an asynchronous load.

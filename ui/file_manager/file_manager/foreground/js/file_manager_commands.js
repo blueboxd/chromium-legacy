@@ -1048,6 +1048,20 @@ CommandHandler.COMMANDS_['delete'] = new class extends Command {
   }
 
   /**
+   * Returns True if entries can be deleted.
+   * @param {!Array<!Entry>} entries
+   * @param {!CommandHandlerDeps} fileManager
+   * @return {!Promise<!boolean>}
+   * @public
+   */
+  canDeleteEntries(entries, fileManager) {
+    // Question: Now that we use this as a public method, in canDeleteEntries_
+    // should we now check for the condition
+    // !entries.every(CommandUtil.shouldShowMenuItemsForEntry?
+    return Promise.resolve(this.canDeleteEntries_(entries, fileManager));
+  }
+
+  /**
    * Returns true if any entry belongs to a read-only volume or is
    * forced to be read-only like MyFiles>Downloads.
    * @param {!Array<!Entry>} entries

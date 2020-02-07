@@ -97,8 +97,9 @@ void CrxUpdateService::Start() {
   scheduler_->Schedule(
       base::TimeDelta::FromSeconds(config_->InitialDelay()),
       base::TimeDelta::FromSeconds(config_->NextCheckDelay()),
-      base::Bind(base::IgnoreResult(&CrxUpdateService::CheckForUpdates),
-                 base::Unretained(this)),
+      base::BindRepeating(
+          base::IgnoreResult(&CrxUpdateService::CheckForUpdates),
+          base::Unretained(this)),
       base::DoNothing());
 }
 

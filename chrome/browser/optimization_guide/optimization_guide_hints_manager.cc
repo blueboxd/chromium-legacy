@@ -571,7 +571,7 @@ void OptimizationGuideHintsManager::OnTopHostsHintsFetched(
   if (get_hints_response) {
     hint_cache_->UpdateFetchedHints(
         std::move(*get_hints_response),
-        clock_->Now() + kUpdateFetchedHintsDelay,
+        clock_->Now() + kUpdateFetchedHintsDelay, base::nullopt,
         base::BindOnce(
             &OptimizationGuideHintsManager::OnFetchedTopHostsHintsStored,
             ui_weak_ptr_factory_.GetWeakPtr()));
@@ -601,6 +601,7 @@ void OptimizationGuideHintsManager::OnPageNavigationHintsFetched(
 
   hint_cache_->UpdateFetchedHints(
       std::move(*get_hints_response), clock_->Now() + kUpdateFetchedHintsDelay,
+      navigation_url,
       base::BindOnce(
           &OptimizationGuideHintsManager::OnFetchedPageNavigationHintsStored,
           ui_weak_ptr_factory_.GetWeakPtr(), navigation_url,
@@ -1123,7 +1124,7 @@ void OptimizationGuideHintsManager::MaybeFetchHintsForNavigation(
             kRaceNavigationFetchHost);
   }
 
-  if (!hint_cache_->GetURLKeyedHint(url)) {
+  if (!hint_cache_->HasURLKeyedEntryForURL(url)) {
     urls.push_back(url);
     race_navigation_recorder.set_race_attempt_status(
         optimization_guide::RaceNavigationFetchAttemptStatus::

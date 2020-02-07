@@ -31,7 +31,10 @@ TEST_F(PersistentWindowControllerTest, DisconnectDisplay) {
   EXPECT_EQ(gfx::Rect(501, 0, 200, 100), w2->GetBoundsInScreen());
 
   const int64_t primary_id = WindowTreeHostManager::GetPrimaryDisplayId();
-  const int64_t secondary_id = display_manager()->GetSecondaryDisplay().id();
+  const int64_t secondary_id =
+      display::test::DisplayManagerTestApi(display_manager())
+          .GetSecondaryDisplay()
+          .id();
 
   display::ManagedDisplayInfo primary_info =
       display_manager()->GetDisplayInfo(primary_id);
@@ -256,7 +259,10 @@ TEST_F(PersistentWindowControllerTest, WindowMovedByAccel) {
   EXPECT_EQ(gfx::Rect(501, 0, 200, 100), w2->GetBoundsInScreen());
 
   const int64_t primary_id = WindowTreeHostManager::GetPrimaryDisplayId();
-  const int64_t secondary_id = display_manager()->GetSecondaryDisplay().id();
+  const int64_t secondary_id =
+      display::test::DisplayManagerTestApi(display_manager())
+          .GetSecondaryDisplay()
+          .id();
 
   display::ManagedDisplayInfo primary_info =
       display_manager()->GetDisplayInfo(primary_id);
@@ -309,7 +315,10 @@ TEST_F(PersistentWindowControllerTest, ReconnectOnLockScreen) {
   EXPECT_EQ(gfx::Rect(501, 0, 200, 100), w2->GetBoundsInScreen());
 
   const int64_t primary_id = WindowTreeHostManager::GetPrimaryDisplayId();
-  const int64_t secondary_id = display_manager()->GetSecondaryDisplay().id();
+  const int64_t secondary_id =
+      display::test::DisplayManagerTestApi(display_manager())
+          .GetSecondaryDisplay()
+          .id();
 
   display::ManagedDisplayInfo primary_info =
       display_manager()->GetDisplayInfo(primary_id);
@@ -349,7 +358,10 @@ TEST_F(PersistentWindowControllerTest, RecordNumOfWindowsRestored) {
   EXPECT_EQ(gfx::Rect(501, 0, 200, 100), w2->GetBoundsInScreen());
 
   const int64_t primary_id = WindowTreeHostManager::GetPrimaryDisplayId();
-  const int64_t secondary_id = display_manager()->GetSecondaryDisplay().id();
+  const int64_t secondary_id =
+      display::test::DisplayManagerTestApi(display_manager())
+          .GetSecondaryDisplay()
+          .id();
 
   display::ManagedDisplayInfo primary_info =
       display_manager()->GetDisplayInfo(primary_id);

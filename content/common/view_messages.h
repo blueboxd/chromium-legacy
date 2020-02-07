@@ -124,9 +124,6 @@ IPC_MESSAGE_ROUTED2(ViewMsg_PluginActionAt,
                     gfx::Point, /* location */
                     blink::PluginAction)
 
-// Sets the page scale for the current main frame to the given page scale.
-IPC_MESSAGE_ROUTED1(ViewMsg_SetPageScale, float /* page_scale_factor */)
-
 // Used to notify the render-view that we have received a target URL. Used
 // to prevent target URLs spamming the browser.
 IPC_MESSAGE_ROUTED0(ViewMsg_UpdateTargetURL_ACK)

@@ -67,7 +67,9 @@ void BufferQueue::SwapBuffers(const gfx::Rect& damage) {
 }
 
 bool BufferQueue::Reshape(const gfx::Size& size,
-                          const gfx::ColorSpace& color_space) {
+                          const gfx::ColorSpace& color_space,
+                          gfx::BufferFormat format) {
+  // TODO(https://crbug.com/1049334): Update |format_| here.
   if (size == size_ && color_space == color_space_) {
     return false;
   }

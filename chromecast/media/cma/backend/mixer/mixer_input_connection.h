@@ -82,10 +82,10 @@ class MixerInputConnection : public mixer_service::MixerSocket::Delegate,
 
   // mixer_service::MixerSocket::Delegate implementation:
   bool HandleMetadata(const mixer_service::Generic& message) override;
-  bool HandleAudioData(char* data, int size, int64_t timestamp) override;
+  bool HandleAudioData(char* data, size_t size, int64_t timestamp) override;
   bool HandleAudioBuffer(scoped_refptr<net::IOBuffer> buffer,
                          char* data,
-                         int size,
+                         size_t size,
                          int64_t timestamp) override;
   void OnConnectionError() override;
 

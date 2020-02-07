@@ -118,6 +118,7 @@
 <translation id="2413728805700750528"><ph name="DISPLAY_NAME" /> भनेको <ph name="DOMAIN" /> ले व्यवस्थापन गर्ने कुनै सत्रको नाम हो</translation>
 <translation id="2427507373259914951">बायाँ क्लिक गर्नुहोस्</translation>
 <translation id="2429753432712299108">ब्लुतुथ यन्त्र "<ph name="DEVICE_NAME" />" ले मेल गर्न अनुमति चाहन्छ। स्वीकार गर्नु अघि, कृपया पक्का गर्नुहोस् की यो पासकुञ्जी त्यो यन्त्रमा देखाइएको छ: <ph name="PASSKEY" /></translation>
+<translation id="2473177541599297363">रिजोल्युसन पुष्टि गर्नुहोस्</translation>
 <translation id="2482878487686419369">सूचनाहरू</translation>
 <translation id="2484513351006226581">किबोर्डको लेआउट स्विच गर्न <ph name="KEYBOARD_SHORTCUT" /> मा थिच्नुहोस्।</translation>
 <translation id="2501920221385095727">स्टिकी कुञ्जीहरू</translation>
@@ -137,8 +138,8 @@
 <translation id="2718395828230677721">रात्रि प्रकाश</translation>
 <translation id="2727977024730340865">कम शक्ति भएको चार्जरमा प्लग इन गरिएको छ। ब्याट्री चार्जिङ भरपर्दो नहुन सक्छ।</translation>
 <translation id="2792498699870441125">Alt + खोज</translation>
-<translation id="2803734122639935495">अनलक गर्न, आफ्नो पासवर्ड प्रविष्टि गर्नुहोस्</translation>
 <translation id="2819276065543622893">तपाइँलाई अब साइन आउट गराइनेछ।</translation>
+<translation id="2825224105325558319"><ph name="DISPLAY_NAME" /> ले <ph name="SPECIFIED_RESOLUTION" /> समर्थन गर्दैन। रिजोल्युसन परिवर्तन गरी <ph name="FALLBACK_RESOLUTION" /> पारियो।</translation>
 <translation id="2825619548187458965">तख</translation>
 <translation id="2844169650293029770">USB-C यन्त्र (अगाडिको बायाँ पोर्ट)</translation>
 <translation id="2865888419503095837">नेटवर्क सम्बन्धी जानकारी</translation>
@@ -158,6 +159,12 @@
 <translation id="3009178788565917040">निर्गत</translation>
 <translation id="3051128274746680507">तपाईंको सुपरिवेक्षण गरिएको प्रयोगकर्ताको प्रोफाइल चाँडै नै हटाइने छ। थप जान्न साइन इन गर्नुहोस्।</translation>
 <translation id="3055162170959710888">तपाईंले आज यो यन्त्र <ph name="USED_TIME" /> प्रयोग गर्नुभयो</translation>
+<translation id="3076778413190775903">वस्तुस्थिति ट्रे, समय <ph name="TIME" />,
+        <ph name="BATTERY" />
+        <ph name="NETWORK" />,
+        <ph name="NOTIFICATION" />,
+        <ph name="IME" />
+        <ph name="LOCALE" /></translation>
 <translation id="3077734595579995578">शिफ्ट</translation>
 <translation id="3081696990447829002">मेनु विस्तृत गर्नुहोस्</translation>
 <translation id="3087734570205094154">तल</translation>
@@ -168,6 +175,7 @@
 <translation id="3151786313568798007">अभिमुखीकरण</translation>
 <translation id="3153444934357957346">तपाईंसँग बहुविध साइन-इनमा <ph name="MULTI_PROFILE_USER_LIMIT" /> सम्म खाताहरू मात्रै हुन सक्छ।</translation>
 <translation id="3154351730702813399">यन्त्रको प्रशासकले तपाईंको ब्राउजिङ सम्बन्धी गतिविधिको अनुगमन गर्न सक्छ।</translation>
+<translation id="3181441307743005334">पुन: सुरु हुन केही बेर लाग्छ</translation>
 <translation id="3202010236269062730">{NUM_DEVICES,plural, =1{एउटा यन्त्रमा जोडियो}other{# यन्त्रहरूमा जोडियो}}</translation>
 <translation id="3217205077783620295">भोल्युम सक्रिय छ, टगल गर्नुले अडियो म्युट गर्ने छ।</translation>
 <translation id="3226991577105957773">+<ph name="COUNT" /> थप</translation>
@@ -202,6 +210,7 @@
 <translation id="3604801046548457007">डेस्क <ph name="DESK_TITILE" /> सिर्जना गरियो</translation>
 <translation id="3606978283550408104">ब्रेल प्रदर्शन जडित छ।</translation>
 <translation id="3621202678540785336">आगत</translation>
+<translation id="3621712662352432595">अडियो सेटिङहरू</translation>
 <translation id="3626281679859535460">चम्किलोपना</translation>
 <translation id="3631369015426612114">निम्न स्रोतहरूबाट सूचनाहरूलाई अनुमति दिनुहोस्</translation>
 <translation id="3705722231355495246">-</translation>
@@ -316,6 +325,7 @@
 <translation id="5331975486040154427">USB-C यन्त्र (पछाडिको पोर्टको बायाँ)</translation>
 <translation id="5379115545237091094">अत्यधिक प्रयासहरू भए</translation>
 <translation id="5397578532367286026">यो प्रयोगकर्ताको उपयोग र इतिहासलाई व्यवस्थापक (<ph name="MANAGER_EMAIL" />) ले chrome.com मा पुनरीक्षण गर्न सक्छ।</translation>
+<translation id="5400461572260843123">द्रुत सेटिङहरू, सूचना केन्द्रमाथि पहुँच राख्न search + left बटन थिच्नुहोस्।</translation>
 <translation id="5430931332414098647">तात्कालिक टेदरिङ</translation>
 <translation id="5431825016875453137">OpenVPN/L2TP</translation>
 <translation id="544691375626129091">सबै उपलब्ध प्रयोगकर्ताहरू यस सत्रमा पहिले नै थपिएका छन्।</translation>
@@ -397,6 +407,7 @@
 <translation id="6490471652906364588">USB-C यन्त्र (दायाँ पोर्ट)</translation>
 <translation id="649452524636452238">स्मार्ट कार्डको PIN</translation>
 <translation id="6501401484702599040">स्क्रिन <ph name="RECEIVER_NAME" /> मा cast गर्दै</translation>
+<translation id="652139407789908527">यो अद्यावधिक गर्दै गर्दा तपाईंको यन्त्रको स्क्रिन सामान्यभन्दा बढी समय (एक मिनेटसम्म) खाली हुन सक्छ। अद्यावधिक हुँदै गर्दा कृपया पावर बटन नथिच्नुहोस्।</translation>
 <translation id="6521655319214113338">हस्तलेखन मार्फत इनपुट</translation>
 <translation id="6528179044667508675">बाधा नगर्नुहोस्</translation>
 <translation id="6537270692134705506">स्क्रिन कैद गर्नुहोस्</translation>
@@ -542,6 +553,7 @@
 <translation id="847056008324733326">प्रदर्शनको स्केलका सेटिङहरू</translation>
 <translation id="8473301994082929012"><ph name="ORGANIZATION_NAME" /> सँग <ph name="FEATURE_STATE" /> <ph name="FEATURE_NAME" /> छ।</translation>
 <translation id="8477270416194247200">रद्द गर्न Alt+Search वा Shift बटनमा थिच्नुहोस्।</translation>
+<translation id="8492573885090281069"><ph name="DISPLAY_NAME" /> ले <ph name="SPECIFIED_RESOLUTION" /> समर्थन गर्दैन। रिजोल्युसन परिवर्तन गरी<ph name="FALLBACK_RESOLUTION" /> पारियो। परिवर्तनहरू सुरक्षित गर्न पुष्टि गर्नुहोस् नामक बटनमा क्लिक गर्नुहोस्। अघिल्ला सेटिङहरूलाई <ph name="TIMEOUT_SECONDS" /> भित्र पुनर्स्थापना गरिने छ।</translation>
 <translation id="8513108775083588393">स्वतः परिक्रमा</translation>
 <translation id="8517041960877371778">खुला हुँदा तपाईँको <ph name="DEVICE_TYPE" /> चार्ज नहुन सक्छ।</translation>
 <translation id="8627191004499078455"><ph name="DEVICE_NAME" /> मा जोडियो</translation>
@@ -596,6 +608,7 @@
 <translation id="9183456764293710005">पूर्ण स्क्रिन म्याग्निफायर</translation>
 <translation id="9193626018745640770">कुनै अज्ञात प्रापकमा cast गर्दै</translation>
 <translation id="9194617393863864469">अर्को प्रयोगकर्तालाई साइन इन गर्नुहोस् ...</translation>
+<translation id="9198992156681343238"><ph name="DISPLAY_NAME" /> रिजोल्युसन परिवर्तन गरी <ph name="RESOLUTION" /> पारियो। परिवर्तनहरू सुरक्षित गर्न पुष्टि गर्नुहोस् नामक बटनमा क्लिक गर्नुहोस्। अघिल्ला सेटिङहरूलाई <ph name="TIMEOUT_SECONDS" /> भित्र पुनर्स्थापना गरिने छ।</translation>
 <translation id="9201374708878217446"><ph name="CONNECTION_STATUS" />, तपाईंका प्रशासकले व्यवस्थित गर्नुभएको छ</translation>
 <translation id="9210037371811586452">एकीकृत डेस्कटप मोडबाट बाहिर निस्कँदै</translation>
 <translation id="9211681782751733685">ब्याट्री पूर्ण रूपमा चार्ज हुन <ph name="TIME_REMAINING" /> बाँकी छ।</translation>

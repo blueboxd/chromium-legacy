@@ -25,11 +25,14 @@
 #include <iomanip>
 #include <memory>
 
+#include "base/base64.h"
 #include "base/command_line.h"
 #include "base/files/file.h"
 #include "base/files/file_enumerator.h"
+#include "base/files/file_path.h"
 #include "base/files/file_util.h"
 #include "base/json/json_reader.h"
+#include "base/json/json_writer.h"
 #include "base/macros.h"
 #include "base/no_destructor.h"
 #include "base/path_service.h"
@@ -39,16 +42,25 @@
 #include "base/strings/utf_string_conversions.h"
 #include "base/win/current_module.h"
 #include "base/win/embedded_i18n/language_selector.h"
+#include "base/win/win_util.h"
+#include "base/win/wmi.h"
 #include "build/branding_buildflags.h"
 #include "chrome/common/chrome_version.h"
 #include "chrome/credential_provider/common/gcp_strings.h"
 #include "chrome/credential_provider/gaiacp/gaia_resources.h"
 #include "chrome/credential_provider/gaiacp/logging.h"
 #include "chrome/credential_provider/gaiacp/reg_utils.h"
+#include "google_apis/gaia/gaia_auth_util.h"
+#include "google_apis/gaia/gaia_switches.h"
+#include "google_apis/gaia/gaia_urls.h"
 
 namespace credential_provider {
 
 const wchar_t kDefaultProfilePictureFileExtension[] = L".jpg";
+
+// Overridden in tests to fake serial number extraction.
+bool g_use_test_serial_number = false;
+base::string16 g_test_serial_number = L"";
 
 namespace {
 
@@ -140,6 +152,21 @@ void DeleteVersionDirectory(const base::FilePath& version_path) {
 }
 
 }  // namespace
+
+// GoogleRegistrationDataForTesting //////////////////////////////////////////
+
+GoogleRegistrationDataForTesting::GoogleRegistrationDataForTesting(
+    base::string16 serial_number) {
+  g_use_test_serial_number = true;
+  g_test_serial_number = serial_number;
+}
+
+GoogleRegistrationDataForTesting::~GoogleRegistrationDataForTesting() {
+  g_use_test_serial_number = false;
+  g_test_serial_number = L"";
+}
+
+// GoogleRegistrationDataForTesting //////////////////////////////////////////
 
 base::FilePath GetInstallDirectory() {
   base::FilePath dest_path;
@@ -852,6 +879,73 @@ bool ExtractKeysFromDict(
     *output.second = *output_value;
   }
   return true;
+}
+
+base::string16 GetSerialNumber() {
+  if (g_use_test_serial_number)
+    return g_test_serial_number;
+  return base::win::WmiComputerSystemInfo::Get().serial_number();
+}
+
+HRESULT GenerateDeviceId(std::string* device_id) {
+  // Build the json data encapsulating different device ids.
+  base::Value device_ids_dict(base::Value::Type::DICTIONARY);
+
+  // Add the serial number to the dictionary.
+  base::string16 serial_number = GetSerialNumber();
+  if (!serial_number.empty()) {
+    device_ids_dict.SetStringKey("serial_number", serial_number);
+  }
+
+  // Add machine_guid to the dictionary.
+  base::string16 machine_guid;
+  HRESULT hr = GetMachineGuid(&machine_guid);
+  if (SUCCEEDED(hr) && !machine_guid.empty()) {
+    device_ids_dict.SetStringKey("machine_guid", machine_guid);
+  }
+
+  std::string device_id_str;
+  bool json_write_result =
+      base::JSONWriter::Write(device_ids_dict, &device_id_str);
+  if (!json_write_result) {
+    LOGFN(ERROR) << "JSONWriter::Write(device_ids_dict)";
+    return E_FAIL;
+  }
+
+  // Store the base64encoded device id json blob in the output.
+  base::Base64Encode(device_id_str, device_id);
+  return S_OK;
+}
+
+HRESULT SetGaiaEndpointCommandLineIfNeeded(const wchar_t* override_registry_key,
+                                           const std::string& default_endpoint,
+                                           bool provide_deviceid,
+                                           base::CommandLine* command_line) {
+  // Registry specified endpoint.
+  wchar_t endpoint_url_setting[256];
+  ULONG endpoint_url_length = base::size(endpoint_url_setting);
+  if (SUCCEEDED(GetGlobalFlag(override_registry_key, endpoint_url_setting,
+                              &endpoint_url_length)) &&
+      endpoint_url_setting[0]) {
+    GURL endpoint_url(endpoint_url_setting);
+    if (endpoint_url.is_valid()) {
+      command_line->AppendSwitchASCII(switches::kGaiaUrl,
+                                      endpoint_url.GetWithEmptyPath().spec());
+      command_line->AppendSwitchASCII(kGcpwEndpointPathSwitch,
+                                      endpoint_url.path().substr(1));
+    }
+  } else if (provide_deviceid) {
+    std::string device_id;
+    HRESULT hr = GenerateDeviceId(&device_id);
+    if (SUCCEEDED(hr)) {
+      command_line->AppendSwitchASCII(
+          kGcpwEndpointPathSwitch,
+          base::StringPrintf("%s?device_id=%s", default_endpoint.c_str(),
+                             device_id.c_str()));
+      return S_OK;
+    }
+  }
+  return S_OK;
 }
 
 FakesForTesting::FakesForTesting() {}

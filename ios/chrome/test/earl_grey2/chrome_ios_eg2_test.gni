@@ -139,6 +139,7 @@ template("chrome_ios_eg2_test") {
                            [
                              "xcode_test_application_name",
                              "deps",
+                             "data_deps",
                            ])
 
     xctest_bundle_principal_class = "ChromeEGTestBundleMain"

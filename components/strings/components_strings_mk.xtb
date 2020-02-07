@@ -690,6 +690,7 @@
 <translation id="3987940399970879459">Помалку од 1 МБ</translation>
 <translation id="3990250421422698716">Офсет превиткување</translation>
 <translation id="40103911065039147">{URL_count,plural, =1{1 веб-страница во близина}one{# веб-страница во близина}other{# веб-страници во близина}}</translation>
+<translation id="4014128326099193693">{COUNT,plural, =1{PDF-документ со {COUNT} страница}one{PDF-документ со {COUNT} страница}other{PDF-документ со {COUNT} страници}}</translation>
 <translation id="4030383055268325496">&amp;Врати додавање</translation>
 <translation id="4032320456957708163">Прелистувачот е управуван од <ph name="ENROLLMENT_DOMAIN" /></translation>
 <translation id="4058922952496707368">Клуч „<ph name="SUBKEY" />“: <ph name="ERROR" /></translation>
@@ -718,6 +719,7 @@
 <translation id="4142935452406587478">Фиока 10</translation>
 <translation id="4148925816941278100">American Express</translation>
 <translation id="4151403195736952345">Користи глобално стандардно (откривај)</translation>
+<translation id="4152318981910038897">{COUNT,plural, =1{Страница 1}one{Страница {COUNT}}other{Страница {COUNT}}}</translation>
 <translation id="4159784952369912983">Пурпурна</translation>
 <translation id="4165986682804962316">Поставки на локација</translation>
 <translation id="4171400957073367226">Лош потпис за проверка</translation>
@@ -1395,6 +1397,7 @@
 <translation id="7201591969684833065">Администраторот може да гледа:</translation>
 <translation id="7202346780273620635">Letter-Extra</translation>
 <translation id="7210863904660874423"><ph name="HOST_NAME" /> не се придржува до стандардите за безбедност.</translation>
+<translation id="7210993021468939304">Активноста на Linux во рамките на контејнерот и може да инсталира и извршува апликации на Linux во рамките на контејнерот</translation>
 <translation id="721197778055552897"><ph name="BEGIN_LINK" />Дознај повеќе<ph name="END_LINK" /> за овој проблем.</translation>
 <translation id="7219179957768738017">Оваа врска користи <ph name="SSL_VERSION" />.</translation>
 <translation id="7220786058474068424">Се обработува</translation>
@@ -1558,6 +1561,7 @@
 <translation id="7878562273885520351">Можно е да ви е компромитирана лозинката</translation>
 <translation id="7882421473871500483">Кафеава</translation>
 <translation id="7887683347370398519">Проверете го КВК и обидете се повторно.</translation>
+<translation id="7887885240995164102">Влези во „Слика во слика“</translation>
 <translation id="7888575728750733395">Намера за прикажување на печатењето</translation>
 <translation id="7904208859782148177">C3 (плик)</translation>
 <translation id="7932579305932748336">Омот</translation>

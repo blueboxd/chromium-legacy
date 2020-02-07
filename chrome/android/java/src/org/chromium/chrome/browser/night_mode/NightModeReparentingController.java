@@ -14,9 +14,15 @@ import org.chromium.chrome.browser.tab.TabLaunchType;
 import org.chromium.chrome.browser.tab_activity_glue.ReparentingTask;
 import org.chromium.chrome.browser.tabmodel.AsyncTabParams;
 import org.chromium.chrome.browser.tabmodel.AsyncTabParamsManager;
+import org.chromium.chrome.browser.tabmodel.TabList;
 import org.chromium.chrome.browser.tabmodel.TabModel;
 import org.chromium.chrome.browser.tabmodel.TabModelSelector;
 import org.chromium.chrome.browser.tabmodel.TabReparentingParams;
+
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
 // TODO(wylieb): Write unittests for this class.
 /** Controls the reparenting of tabs when the theme is swapped. */
@@ -93,31 +99,55 @@ public class NightModeReparentingController implements NightModeStateProvider.Ob
 
     @Override
     public void onNightModeStateChanged() {
-        ActivityTabProvider tabProvider = mDelegate.getActivityTabProvider();
+        Tab foregroundTab = mDelegate.getActivityTabProvider().get();
+        Map<TabModel, List<Tab>> tabsAndModels = getTabModelAndTabs();
 
-        boolean isForegroundTab = true;
-        while (tabProvider.get() != null) {
-            Tab tabToDetach = tabProvider.get();
-            TabModel tabModel = mDelegate.getTabModelSelector().getModel(tabToDetach.isIncognito());
-            if (tabModel == null) continue;
+        for (final TabModel model : tabsAndModels.keySet()) {
+            List<Tab> tabs = tabsAndModels.get(model);
+            for (int i = 0; i < tabs.size(); i++) {
+                Tab tab = tabs.get(i);
+                TabReparentingParams params = new TabReparentingParams(tab, null, null);
+                params.setFromNightModeReparenting(true);
 
-            TabReparentingParams params = new TabReparentingParams(tabToDetach, null, null);
-            params.setFromNightModeReparenting(true);
+                // Only the first tab is considered foreground and that is the only one for which
+                // we need an index. It will be reattached at the end. All remaining tabs will be
+                // reattached in reverse order, therefore we can ignore the index.
+                if (tab == foregroundTab) {
+                    params.setIsForegroundTab(true);
+                    params.setTabIndex(i);
+                } else {
+                    params.setIsForegroundTab(false);
+                }
 
-            // Only the first tab is considered foreground and that is the only one for which
-            // we need an index. It will be reattached at the end. All remaining tabs will be
-            // reattached in reverse order, therefore we can ignore the index.
-            if (isForegroundTab) {
-                params.setIsForegroundTab(true);
-                params.setTabIndex(tabModel.indexOf(tabToDetach));
-                isForegroundTab = false;
-            } else {
-                params.setIsForegroundTab(false);
+                AsyncTabParamsManager.add(tab.getId(), params);
+                model.removeTab(tab);
+                ReparentingTask.from(tab).detach();
             }
-
-            AsyncTabParamsManager.add(tabToDetach.getId(), params);
-            tabModel.removeTab(tabToDetach);
-            ReparentingTask.from(tabToDetach).detach();
         }
+    }
+
+    /** @return Mapping from TabModel to all the Tabs in that model. */
+    Map<TabModel, List<Tab>> getTabModelAndTabs() {
+        Map<TabModel, List<Tab>> tabsAndModels = new HashMap<>();
+
+        TabModel model = mDelegate.getTabModelSelector().getModel(false);
+        tabsAndModels.put(model, getTabsForModel(model));
+        model = mDelegate.getTabModelSelector().getModel(true);
+        tabsAndModels.put(model, getTabsForModel(model));
+
+        return tabsAndModels;
+    }
+
+    /** @return All of a model's Tabs as a List. */
+    List<Tab> getTabsForModel(TabModel model) {
+        List<Tab> tabs = new ArrayList<>();
+        if (model == null) return tabs;
+
+        TabList tabList = model.getComprehensiveModel();
+        for (int i = 0; i < tabList.getCount(); i++) {
+            tabs.add(tabList.getTabAt(i));
+        }
+
+        return tabs;
     }
 }

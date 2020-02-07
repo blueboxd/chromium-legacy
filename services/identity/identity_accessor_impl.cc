@@ -10,6 +10,7 @@
 #include "base/time/time.h"
 #include "components/signin/public/identity_manager/access_token_info.h"
 #include "components/signin/public/identity_manager/account_info.h"
+#include "components/signin/public/identity_manager/consent_level.h"
 #include "google_apis/gaia/core_account_id.h"
 #include "google_apis/gaia/google_service_auth_error.h"
 #include "services/identity/public/cpp/account_state.h"
@@ -45,8 +46,8 @@ IdentityAccessorImpl::~IdentityAccessorImpl() {
 
 void IdentityAccessorImpl::GetUnconsentedPrimaryAccountInfo(
     GetUnconsentedPrimaryAccountInfoCallback callback) {
-  CoreAccountInfo account_info =
-      identity_manager_->GetUnconsentedPrimaryAccountInfo();
+  CoreAccountInfo account_info = identity_manager_->GetPrimaryAccountInfo(
+      signin::ConsentLevel::kNotRequired);
   AccountState account_state = GetStateOfAccount(account_info);
   std::move(callback).Run(account_info.account_id, account_info.gaia,
                           account_info.email, account_state);
@@ -54,8 +55,8 @@ void IdentityAccessorImpl::GetUnconsentedPrimaryAccountInfo(
 
 void IdentityAccessorImpl::GetUnconsentedPrimaryAccountWhenAvailable(
     GetUnconsentedPrimaryAccountWhenAvailableCallback callback) {
-  CoreAccountInfo account_info =
-      identity_manager_->GetUnconsentedPrimaryAccountInfo();
+  CoreAccountInfo account_info = identity_manager_->GetPrimaryAccountInfo(
+      signin::ConsentLevel::kNotRequired);
   AccountState account_state = GetStateOfAccount(account_info);
 
   if (!account_state.has_refresh_token ||

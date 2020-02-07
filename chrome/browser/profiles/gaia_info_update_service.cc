@@ -22,6 +22,7 @@
 #include "components/signin/public/base/avatar_icon_util.h"
 #include "components/signin/public/base/signin_pref_names.h"
 #include "components/signin/public/identity_manager/account_info.h"
+#include "components/signin/public/identity_manager/consent_level.h"
 #include "content/public/browser/notification_details.h"
 #include "content/public/browser/storage_partition.h"
 #include "third_party/skia/include/core/SkBitmap.h"
@@ -58,7 +59,8 @@ void GAIAInfoUpdateService::Update() {
     return;
 
   auto unconsented_primary_account_info =
-      identity_manager_->GetUnconsentedPrimaryAccountInfo();
+      identity_manager_->GetPrimaryAccountInfo(
+          signin::ConsentLevel::kNotRequired);
 
   if (!gaia_id_of_profile_attribute_entry_.empty() &&
       unconsented_primary_account_info.gaia !=
@@ -144,7 +146,9 @@ void GAIAInfoUpdateService::OnPrimaryAccountCleared(
     ClearProfileEntry();
     return;
   }
-  DCHECK_EQ(identity_manager_->GetUnconsentedPrimaryAccountInfo().gaia,
+  DCHECK_EQ(identity_manager_
+                ->GetPrimaryAccountInfo(signin::ConsentLevel::kNotRequired)
+                .gaia,
             previous_primary_account_info.gaia);
 }
 
@@ -165,8 +169,8 @@ void GAIAInfoUpdateService::OnExtendedAccountInfoUpdated(
   if (!ShouldUpdate())
     return;
 
-  CoreAccountInfo account_info =
-      identity_manager_->GetUnconsentedPrimaryAccountInfo();
+  CoreAccountInfo account_info = identity_manager_->GetPrimaryAccountInfo(
+      signin::ConsentLevel::kNotRequired);
 
   if (info.account_id != account_info.account_id)
     return;

@@ -177,10 +177,10 @@ void ActivityLogPrivateGetExtensionActivitiesFunction::OnLookupCompleted(
     result_arr.push_back(activity->ConvertToExtensionActivity());
 
   // Populate the return object.
-  std::unique_ptr<ActivityResultSet> result_set(new ActivityResultSet);
-  result_set->activities = std::move(result_arr);
-  results_ = activity_log_private::GetExtensionActivities::Results::Create(
-      *result_set);
+  ActivityResultSet result_set;
+  result_set.activities = std::move(result_arr);
+  SetResultList(activity_log_private::GetExtensionActivities::Results::Create(
+      result_set));
 
   SendResponse(true);
 }

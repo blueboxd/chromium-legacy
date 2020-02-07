@@ -234,9 +234,9 @@ class BackgroundLoaderOfflinerTest : public testing::Test {
     return base::BindOnce(&BackgroundLoaderOfflinerTest::OnCancel,
                           base::Unretained(this));
   }
-  base::Callback<void(bool)> const can_download_callback() {
-    return base::Bind(&BackgroundLoaderOfflinerTest::OnCanDownload,
-                      base::Unretained(this));
+  base::OnceCallback<void(bool)> can_download_callback() {
+    return base::BindOnce(&BackgroundLoaderOfflinerTest::OnCanDownload,
+                          base::Unretained(this));
   }
   Profile* profile() { return &profile_; }
   bool completion_callback_called() { return completion_callback_called_; }

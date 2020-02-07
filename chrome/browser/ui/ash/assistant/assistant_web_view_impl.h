@@ -5,7 +5,7 @@
 #ifndef CHROME_BROWSER_UI_ASH_ASSISTANT_ASSISTANT_WEB_VIEW_IMPL_H_
 #define CHROME_BROWSER_UI_ASH_ASSISTANT_ASSISTANT_WEB_VIEW_IMPL_H_
 
-#include "ash/public/cpp/assistant/assistant_web_view_2.h"
+#include "ash/public/cpp/assistant/assistant_web_view.h"
 #include "base/observer_list.h"
 #include "content/public/browser/web_contents_delegate.h"
 #include "content/public/browser/web_contents_observer.h"
@@ -20,18 +20,19 @@ namespace views {
 class WebView;
 }  // namespace views
 
-// Implements AssistantWebView2 used by Ash to work around dependency
+// Implements AssistantWebView used by Ash to work around dependency
 // restrictions.
-class AssistantWebViewImpl : public ash::AssistantWebView2,
+class AssistantWebViewImpl : public ash::AssistantWebView,
                              public content::WebContentsDelegate,
                              public content::WebContentsObserver {
  public:
   explicit AssistantWebViewImpl(Profile* profile, const InitParams& params);
-  AssistantWebViewImpl(AssistantWebViewImpl& copy) = delete;
-  AssistantWebViewImpl& operator=(AssistantWebViewImpl& assign) = delete;
   ~AssistantWebViewImpl() override;
 
-  // ash::AssistantWebView2:
+  AssistantWebViewImpl(AssistantWebViewImpl&) = delete;
+  AssistantWebViewImpl& operator=(AssistantWebViewImpl&) = delete;
+
+  // ash::AssistantWebView:
   const char* GetClassName() const override;
   gfx::NativeView GetNativeView() override;
   void ChildPreferredSizeChanged(views::View* child) override;

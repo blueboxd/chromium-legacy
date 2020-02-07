@@ -8,7 +8,6 @@ import android.support.v4.util.ArrayMap;
 
 import androidx.annotation.VisibleForTesting;
 
-import org.chromium.chrome.browser.flags.ChromeFeatureList;
 import org.chromium.chrome.browser.payments.PaymentApp.InstrumentsCallback;
 import org.chromium.content_public.browser.WebContents;
 import org.chromium.payments.mojom.PaymentMethodData;
@@ -73,10 +72,6 @@ public class PaymentAppFactory implements PaymentAppFactoryInterface {
 
     private PaymentAppFactory() {
         mAdditionalFactories = new ArrayList<>();
-
-        if (ChromeFeatureList.isEnabled(ChromeFeatureList.ANDROID_PAYMENT_APPS)) {
-            mAdditionalFactories.add(new AndroidPaymentAppFactory());
-        }
     }
 
     /**

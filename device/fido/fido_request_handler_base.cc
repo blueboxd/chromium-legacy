@@ -352,4 +352,10 @@ void FidoRequestHandlerBase::ConstructBleAdapterPowerManager() {
   bluetooth_adapter_manager_ = std::make_unique<BleAdapterManager>(this);
 }
 
+void FidoRequestHandlerBase::StopDiscoveries() {
+  for (const auto& discovery : discoveries_) {
+    discovery->MaybeStop();
+  }
+}
+
 }  // namespace device

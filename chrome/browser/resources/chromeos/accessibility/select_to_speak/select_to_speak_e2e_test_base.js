@@ -6,53 +6,39 @@ GEN_INCLUDE(['../chromevox/testing/callback_helper.js']);
 
 /**
  * Base class for browser tests for select-to-speak.
- * @constructor
  */
-function SelectToSpeakE2ETest() {
-  this.callbackHelper_ = new CallbackHelper(this);
-}
-
-SelectToSpeakE2ETest.prototype = {
-  __proto__: testing.Test.prototype,
-
-  /**
-   * @override
-   * No UI in the background context.
-   */
-  runAccessibilityChecks: false,
-
-  /** @override */
-  isAsync: true,
-
-  /** @override */
-  browsePreload: null,
+SelectToSpeakE2ETest = class extends testing.Test {
+  constructor() {
+    super();
+    this.callbackHelper_ = new CallbackHelper(this);
+  }
 
   /** @override */
   testGenCppIncludes() {
     GEN(`
-#include "ash/accessibility/accessibility_delegate.h"
-#include "ash/shell.h"
-#include "base/bind.h"
-#include "base/callback.h"
-#include "chrome/browser/chromeos/accessibility/accessibility_manager.h"
-#include "chrome/common/extensions/extension_constants.h"
-#include "ash/keyboard/ui/keyboard_util.h"
-    `);
-  },
+  #include "ash/accessibility/accessibility_delegate.h"
+  #include "ash/shell.h"
+  #include "base/bind.h"
+  #include "base/callback.h"
+  #include "chrome/browser/chromeos/accessibility/accessibility_manager.h"
+  #include "chrome/common/extensions/extension_constants.h"
+  #include "ash/keyboard/ui/keyboard_util.h"
+      `);
+  }
 
   /** @override */
   testGenPreamble() {
     GEN(`
-  //keyboard::SetRequestedKeyboardState(keyboard::KEYBOARD_STATE_ENABLED);
-  //ash::Shell::Get()->CreateKeyboard();
-  base::Closure load_cb =
-      base::Bind(&chromeos::AccessibilityManager::SetSelectToSpeakEnabled,
-          base::Unretained(chromeos::AccessibilityManager::Get()),
-          true);
-  chromeos::AccessibilityManager::Get()->SetSelectToSpeakEnabled(true);
-  WaitForExtension(extension_misc::kSelectToSpeakExtensionId, load_cb);
-    `);
-  },
+    //keyboard::SetRequestedKeyboardState(keyboard::KEYBOARD_STATE_ENABLED);
+    //ash::Shell::Get()->CreateKeyboard();
+    base::Closure load_cb =
+        base::Bind(&chromeos::AccessibilityManager::SetSelectToSpeakEnabled,
+            base::Unretained(chromeos::AccessibilityManager::Get()),
+            true);
+    chromeos::AccessibilityManager::Get()->SetSelectToSpeakEnabled(true);
+    WaitForExtension(extension_misc::kSelectToSpeakExtensionId, load_cb);
+      `);
+  }
 
   /**
    * Creates a callback that optionally calls {@code opt_callback} when
@@ -64,7 +50,7 @@ SelectToSpeakE2ETest.prototype = {
    */
   newCallback(opt_callback) {
     return this.callbackHelper_.wrap(opt_callback);
-  },
+  }
 
   /**
    * Asserts that two strings are equal, collapsing repeated spaces and
@@ -76,7 +62,7 @@ SelectToSpeakE2ETest.prototype = {
     assertEquals(
         first.replace(/\s+/g, ' ').replace(/^\s/, '').replace(/\s$/, ''),
         second.replace(/\s+/g, ' ').replace(/^\s/, '').replace(/\s$/, ''));
-  },
+  }
 
   /**
    * From chromevox_next_e2e_test_base.js
@@ -97,7 +83,7 @@ SelectToSpeakE2ETest.prototype = {
       var createParams = {active: true, url};
       chrome.tabs.create(createParams, function(unused_tab) {
         chrome.automation.getTree(function(returnedRootNode) {
-          rootNode = returnedRootNode;
+          const rootNode = returnedRootNode;
           if (rootNode.docLoaded) {
             callback && callback(desktopRootNode);
             callback = null;
@@ -113,7 +99,7 @@ SelectToSpeakE2ETest.prototype = {
         });
       });
     }.bind(this));
-  },
+  }
 
   /**
    * Helper function to find a staticText node from a root
@@ -123,5 +109,17 @@ SelectToSpeakE2ETest.prototype = {
    */
   findTextNode(root, text) {
     return root.find({role: 'staticText', attributes: {name: text}});
-  },
+  }
 };
+
+/**
+ * @override
+ * No UI in the background context.
+ */
+SelectToSpeakE2ETest.prototype.runAccessibilityChecks = false;
+
+/** @override */
+SelectToSpeakE2ETest.prototype.isAsync = true;
+
+/** @override */
+SelectToSpeakE2ETest.prototype.browsePreload = null;

@@ -65,10 +65,6 @@ enum class EnrolledStatus {
 };
 EnrolledStatus g_enrolled_status = EnrolledStatus::kDontForce;
 
-// Overriden in tests to fake serial number extraction.
-bool g_use_test_serial_number = false;
-base::string16 g_test_serial_number = L"";
-
 #if !BUILDFLAG(GOOGLE_CHROME_BRANDING)
 enum class EscrowServiceStatus {
   kDisabled,
@@ -382,12 +378,6 @@ bool UploadDeviceDetailsNeeded(const base::string16& sid) {
   return status != 1;
 }
 
-base::string16 GetSerialNumber() {
-  if (g_use_test_serial_number)
-    return g_test_serial_number;
-  return base::win::WmiComputerSystemInfo::Get().serial_number();
-}
-
 bool MdmEnrollmentEnabled() {
   base::string16 mdm_url = GetMdmUrl();
   return !mdm_url.empty();
@@ -472,21 +462,6 @@ GoogleMdmEnrolledStatusForTesting::~GoogleMdmEnrolledStatusForTesting() {
 }
 
 // GoogleMdmEnrolledStatusForTesting //////////////////////////////////////////
-
-// GoogleRegistrationDataForTesting //////////////////////////////////////////
-
-GoogleRegistrationDataForTesting::GoogleRegistrationDataForTesting(
-    base::string16 serial_number) {
-  g_use_test_serial_number = true;
-  g_test_serial_number = serial_number;
-}
-
-GoogleRegistrationDataForTesting::~GoogleRegistrationDataForTesting() {
-  g_use_test_serial_number = false;
-  g_test_serial_number = L"";
-}
-
-// GoogleSerialNumberForTesting //////////////////////////////////////////
 
 // GoogleUploadDeviceDetailsNeededForTesting //////////////////////////////////
 

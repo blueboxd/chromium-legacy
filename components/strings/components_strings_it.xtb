@@ -687,6 +687,7 @@
 <translation id="3987940399970879459">Meno di 1 MB</translation>
 <translation id="3990250421422698716">Offset jog</translation>
 <translation id="40103911065039147">{URL_count,plural, =1{Una pagina web nelle vicinanze}other{# pagine web nelle vicinanze}}</translation>
+<translation id="4014128326099193693">{COUNT,plural, =1{Documento PDF contenente {COUNT} pagina}other{Documento PDF contenente {COUNT} pagine}}</translation>
 <translation id="4030383055268325496">&amp;Annulla aggiunta</translation>
 <translation id="4032320456957708163">Il browser in uso è gestito da <ph name="ENROLLMENT_DOMAIN" /></translation>
 <translation id="4058922952496707368">Chiave "<ph name="SUBKEY" />": <ph name="ERROR" /></translation>
@@ -715,6 +716,7 @@
 <translation id="4142935452406587478">Vassoio 10</translation>
 <translation id="4148925816941278100">American Express</translation>
 <translation id="4151403195736952345">Utilizza impostazioni predefinite globali (Rileva)</translation>
+<translation id="4152318981910038897">{COUNT,plural, =1{Pagina 1}other{Pagina {COUNT}}}</translation>
 <translation id="4159784952369912983">Viola</translation>
 <translation id="4165986682804962316">Impostazioni sito</translation>
 <translation id="4171400957073367226">Firma di verifica non valida</translation>
@@ -1391,6 +1393,7 @@
 <translation id="7201591969684833065">L'amministratore è in grado di vedere:</translation>
 <translation id="7202346780273620635">Letter-Extra</translation>
 <translation id="7210863904660874423"><ph name="HOST_NAME" /> non è conforme agli standard di sicurezza.</translation>
+<translation id="7210993021468939304">Attività Linux all'interno del contenitore; possono installare ed eseguire app Linux all'interno del contenitore</translation>
 <translation id="721197778055552897"><ph name="BEGIN_LINK" />Ulteriori informazioni<ph name="END_LINK" /> su questo problema.</translation>
 <translation id="7219179957768738017">La connessione utilizza <ph name="SSL_VERSION" />.</translation>
 <translation id="7220786058474068424">Elaborazione in corso</translation>
@@ -1554,6 +1557,7 @@ Ulteriori dettagli:
 <translation id="7878562273885520351">La tua password potrebbe essere stata compromessa</translation>
 <translation id="7882421473871500483">Marrone</translation>
 <translation id="7887683347370398519">Controlla il tuo codice CVC e riprova</translation>
+<translation id="7887885240995164102">Attiva Picture in picture</translation>
 <translation id="7888575728750733395">Stampa intent di rendering</translation>
 <translation id="7904208859782148177">C3 (Envelope)</translation>
 <translation id="7932579305932748336">Rivestimento</translation>

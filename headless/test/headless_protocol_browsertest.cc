@@ -274,6 +274,9 @@ HEADLESS_PROTOCOL_TEST(MAYBE_VirtualTimeTimerSuspend,
 HEADLESS_PROTOCOL_TEST(HeadlessSessionBasicsTest,
                        "sessions/headless-session-basics.js")
 
+HEADLESS_PROTOCOL_TEST(HeadlessSessionCreateContextDisposeOnDetach,
+                       "sessions/headless-createContext-disposeOnDetach.js")
+
 class HeadlessProtocolCompositorBrowserTest
     : public HeadlessProtocolBrowserTest {
  public:

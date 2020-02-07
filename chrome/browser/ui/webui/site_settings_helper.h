@@ -12,6 +12,7 @@
 #include <utility>
 #include <vector>
 
+#include "base/values.h"
 #include "components/content_settings/core/common/content_settings.h"
 #include "components/content_settings/core/common/content_settings_pattern.h"
 #include "components/content_settings/core/common/content_settings_types.h"
@@ -21,12 +22,6 @@
 class ChooserContextBase;
 class HostContentSettingsMap;
 class Profile;
-
-namespace base {
-class DictionaryValue;
-class ListValue;
-class Value;
-}  // namespace base
 
 namespace extensions {
 class ExtensionRegistry;
@@ -63,9 +58,11 @@ constexpr char kIncognito[] = "incognito";
 constexpr char kObject[] = "object";
 constexpr char kOrigin[] = "origin";
 constexpr char kOriginForFavicon[] = "originForFavicon";
+constexpr char kRecentPermissions[] = "recentPermissions";
 constexpr char kSetting[] = "setting";
 constexpr char kSites[] = "sites";
 constexpr char kSource[] = "source";
+constexpr char kType[] = "type";
 
 enum class SiteSettingSource {
   kAdsFilterBlacklist,
@@ -86,6 +83,10 @@ bool HasRegisteredGroupName(ContentSettingsType type);
 // Converts a ContentSettingsType to/from its group name identifier.
 ContentSettingsType ContentSettingsTypeFromGroupName(const std::string& name);
 std::string ContentSettingsTypeToGroupName(ContentSettingsType type);
+
+// Converts a ListValue of group names to a list of ContentSettingsTypes
+std::vector<ContentSettingsType> ContentSettingsTypesFromGroupNames(
+    const base::Value::ConstListView types);
 
 // Converts a SiteSettingSource to its string identifier.
 std::string SiteSettingSourceToString(const SiteSettingSource source);
@@ -144,6 +145,11 @@ void GetPolicyAllowedUrls(
     const extensions::ExtensionRegistry* extension_registry,
     content::WebUI* web_ui,
     bool incognito);
+
+// Returns all site permission exceptions for a given content type
+std::vector<ContentSettingPatternSource> GetSiteExceptionsForContentType(
+    HostContentSettingsMap* map,
+    ContentSettingsType content_type);
 
 // This struct facilitates lookup of a chooser context factory function by name
 // for a given content settings type and is declared early so that it can used

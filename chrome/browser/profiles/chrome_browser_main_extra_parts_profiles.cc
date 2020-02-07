@@ -318,7 +318,6 @@ void ChromeBrowserMainExtraPartsProfiles::
   predictors::LoadingPredictorFactory::GetInstance();
   prerender::PrerenderLinkManagerFactory::GetInstance();
   prerender::PrerenderManagerFactory::GetInstance();
-  prerender::PrerenderMessageFilter::EnsureShutdownNotifierFactoryBuilt();
   ProfileSyncServiceFactory::GetInstance();
   ProtocolHandlerRegistryFactory::GetInstance();
 #if !defined(OS_ANDROID)

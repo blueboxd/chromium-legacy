@@ -10,7 +10,6 @@
 #include "base/optional.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
-#include "chrome/browser/policy/schema_registry_service.h"
 #include "components/policy/core/browser/configuration_policy_handler_list.h"
 #include "components/policy/core/browser/policy_error_map.h"
 #include "components/policy/core/common/policy_details.h"
@@ -71,15 +70,13 @@ base::Value PolicyConversionsClient::GetChromePolicies() {
   PolicyService* policy_service = GetPolicyService();
   PolicyMap map;
 
-  auto* schema_registry_service = GetPolicySchemaRegistryService();
-  if (!schema_registry_service || !schema_registry_service->registry()) {
-    LOG(ERROR) << "Cannot dump Chrome policies, no schema registry service";
+  auto* schema_registry = GetPolicySchemaRegistry();
+  if (!schema_registry) {
+    LOG(ERROR) << "Cannot dump Chrome policies, no schema registry";
     return Value(Value::Type::DICTIONARY);
   }
 
-  const scoped_refptr<SchemaMap> schema_map =
-      schema_registry_service->registry()->schema_map();
-
+  const scoped_refptr<SchemaMap> schema_map = schema_registry->schema_map();
   PolicyNamespace policy_namespace =
       PolicyNamespace(POLICY_DOMAIN_CHROME, std::string());
 

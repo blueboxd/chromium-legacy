@@ -128,10 +128,6 @@ void QRCodeGeneratorBubble::WindowClosing() {
   }
 }
 
-bool QRCodeGeneratorBubble::Close() {
-  return Cancel();
-}
-
 const char* QRCodeGeneratorBubble::GetClassName() const {
   return "QRCodeGeneratorBubble";
 }

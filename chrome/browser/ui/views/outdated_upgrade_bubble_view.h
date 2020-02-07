@@ -26,8 +26,6 @@ class OutdatedUpgradeBubbleView : public views::BubbleDialogDelegateView {
   void WindowClosing() override;
   base::string16 GetWindowTitle() const override;
   bool ShouldShowCloseButton() const override;
-  bool Accept() override;
-  bool Close() override;
   void Init() override;
 
  private:
@@ -36,9 +34,7 @@ class OutdatedUpgradeBubbleView : public views::BubbleDialogDelegateView {
                             bool auto_update_enabled);
   ~OutdatedUpgradeBubbleView() override;
 
-  // Since Accept() may synchronously open a URL and deactivate the bubble
-  // (which calls Close()), this prevents Close() recording UMA a second time.
-  bool uma_recorded_ = false;
+  void OnDialogAccepted();
 
   // Identifies if auto-update is enabled or not.
   const bool auto_update_enabled_;

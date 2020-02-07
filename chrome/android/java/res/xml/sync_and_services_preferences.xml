@@ -11,7 +11,7 @@
     <PreferenceCategory
         android:key="user_category"
         android:title="@string/user"/>
-    <org.chromium.chrome.browser.settings.sync.SignInPreference
+    <org.chromium.chrome.browser.sync.settings.SignInPreference
         android:key="sign_in"
         android:title="@string/sign_in_to_chrome"/>
 
@@ -38,7 +38,7 @@
         <org.chromium.chrome.browser.settings.ChromeBasePreference
             android:key="manage_sync"
             android:title="@string/manage_sync_title"
-            android:fragment="org.chromium.chrome.browser.settings.sync.ManageSyncSettings"/>
+            android:fragment="org.chromium.chrome.browser.sync.settings.ManageSyncSettings"/>
     </PreferenceCategory>
 
     <PreferenceCategory

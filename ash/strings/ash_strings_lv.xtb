@@ -137,7 +137,6 @@
 <translation id="2718395828230677721">Nakts režīms</translation>
 <translation id="2727977024730340865">Pievienots lādētājs ar mazu strāvas padevi. Akumulatora uzlāde var nebūt uzticama.</translation>
 <translation id="2792498699870441125">Alt+Meklēt</translation>
-<translation id="2803734122639935495">Lai atbloķētu, ievadiet paroli</translation>
 <translation id="2819276065543622893">Jūs tagad tiksiet izrakstīts.</translation>
 <translation id="2825619548187458965">Plaukts</translation>
 <translation id="2844169650293029770">USB-C ierīce (pieslēgvieta kreisajā pusē priekšā)</translation>
@@ -202,6 +201,7 @@
 <translation id="3604801046548457007">Darbvirsma <ph name="DESK_TITILE" /> ir izveidota</translation>
 <translation id="3606978283550408104">Savienojums ar Braila displeju ir izveidots.</translation>
 <translation id="3621202678540785336">Ievade</translation>
+<translation id="3621712662352432595">Audio iestatījumi</translation>
 <translation id="3626281679859535460">Spilgtums</translation>
 <translation id="3631369015426612114">Atļaut paziņojumu saņemšanu no:</translation>
 <translation id="3705722231355495246">-</translation>
@@ -544,6 +544,7 @@
 <translation id="8477270416194247200">Lai atceltu, nospiediet alternēšanas taustiņu + meklēšanas vai pārslēgšanas taustiņu.</translation>
 <translation id="8513108775083588393">Automātiska pagriešana</translation>
 <translation id="8517041960877371778"><ph name="DEVICE_TYPE" /> ierīce, iespējams, netiks uzlādēta, kamēr tā būs ieslēgta.</translation>
+<translation id="8563862697512465947">Paziņojumu iestatījumi</translation>
 <translation id="8627191004499078455">Izveidots savienojums ar ierīci (<ph name="DEVICE_NAME" />)</translation>
 <translation id="8637598503828012618"><ph name="CONNECTION_STATUS" />, signāla stiprums: <ph name="SIGNAL_STRENGTH" />, pārvalda jūsu administrators</translation>
 <translation id="8639760480004882931">Atlicis: <ph name="PERCENTAGE" />%</translation>

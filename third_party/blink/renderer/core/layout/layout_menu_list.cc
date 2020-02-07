@@ -133,10 +133,6 @@ void LayoutMenuList::UpdateOptionsWidth() const {
   options_width_ = static_cast<int>(ceilf(max_option_width));
 }
 
-String LayoutMenuList::GetText() const {
-  return SelectElement()->InnerElement().innerText();
-}
-
 PhysicalRect LayoutMenuList::ControlClipRect(
     const PhysicalOffset& additional_offset) const {
   // Clip to the intersection of the content box and the content box for the
@@ -184,14 +180,6 @@ void LayoutMenuList::ComputeLogicalHeight(
     logical_height = inner_block_height + BorderAndPaddingHeight();
   }
   LayoutBox::ComputeLogicalHeight(logical_height, logical_top, computed_values);
-}
-
-LayoutUnit LayoutMenuList::ClientPaddingLeft() const {
-  return PaddingLeft() + InnerBlock()->PaddingLeft();
-}
-
-LayoutUnit LayoutMenuList::ClientPaddingRight() const {
-  return PaddingRight() + InnerBlock()->PaddingRight();
 }
 
 }  // namespace blink

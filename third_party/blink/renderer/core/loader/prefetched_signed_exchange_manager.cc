@@ -67,6 +67,7 @@ class PrefetchedSignedExchangeManager::PrefetchedSignedExchangeLoader
       int requestor_id,
       bool download_to_network_cache_only,
       bool pass_response_pipe_to_client,
+      bool no_mime_sniffing,
       base::TimeDelta timeout_interval,
       WebURLLoaderClient* client,
       WebURLResponse& response,
@@ -82,11 +83,12 @@ class PrefetchedSignedExchangeManager::PrefetchedSignedExchangeLoader
       scoped_refptr<WebURLRequest::ExtraData> request_extra_data,
       int requestor_id,
       bool download_to_network_cache_only,
+      bool no_mime_sniffing,
       WebURLLoaderClient* client) override {
     if (url_loader_) {
       url_loader_->LoadAsynchronously(
           std::move(request), std::move(request_extra_data), requestor_id,
-          download_to_network_cache_only, client);
+          download_to_network_cache_only, no_mime_sniffing, client);
       return;
     }
     // It is safe to use Unretained(client), because |client| is a
@@ -95,7 +97,8 @@ class PrefetchedSignedExchangeManager::PrefetchedSignedExchangeLoader
     pending_method_calls_.push(WTF::Bind(
         &PrefetchedSignedExchangeLoader::LoadAsynchronously, GetWeakPtr(),
         std::move(request), std::move(request_extra_data), requestor_id,
-        download_to_network_cache_only, WTF::Unretained(client)));
+        download_to_network_cache_only, no_mime_sniffing,
+        WTF::Unretained(client)));
   }
   void SetDefersLoading(bool value) override {
     if (url_loader_) {

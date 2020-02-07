@@ -27,7 +27,6 @@
 
 #include "third_party/blink/renderer/core/dom/attribute.h"
 #include "third_party/blink/renderer/core/events/keyboard_event.h"
-#include "third_party/blink/renderer/core/events/mouse_event.h"
 #include "third_party/blink/renderer/core/html/forms/form_data.h"
 #include "third_party/blink/renderer/core/html/forms/html_form_element.h"
 #include "third_party/blink/renderer/core/html_names.h"
@@ -45,8 +44,15 @@ void HTMLButtonElement::setType(const AtomicString& type) {
   setAttribute(html_names::kTypeAttr, type);
 }
 
-LayoutObject* HTMLButtonElement::CreateLayoutObject(const ComputedStyle&,
-                                                    LegacyLayout) {
+LayoutObject* HTMLButtonElement::CreateLayoutObject(const ComputedStyle& style,
+                                                    LegacyLayout legacy) {
+  // https://html.spec.whatwg.org/C/#button-layout
+  EDisplay display = style.Display();
+  if (display == EDisplay::kInlineGrid || display == EDisplay::kGrid ||
+      display == EDisplay::kInlineFlex || display == EDisplay::kFlex ||
+      display == EDisplay::kInlineLayoutCustom ||
+      display == EDisplay::kLayoutCustom)
+    return HTMLFormControlElement::CreateLayoutObject(style, legacy);
   return new LayoutButton(this);
 }
 
@@ -101,13 +107,6 @@ void HTMLButtonElement::ParseAttribute(
 }
 
 void HTMLButtonElement::DefaultEventHandler(Event& event) {
-  DefaultEventHandlerInternal(event);
-
-  if (event.type() == event_type_names::kDOMActivate && formOwner())
-    formOwner()->DidActivateSubmitButton(this);
-}
-
-void HTMLButtonElement::DefaultEventHandlerInternal(Event& event) {
   if (event.type() == event_type_names::kDOMActivate &&
       !IsDisabledFormControl()) {
     if (Form() && type_ == SUBMIT) {
@@ -196,18 +195,6 @@ Node::InsertionNotificationRequest HTMLButtonElement::InsertedInto(
                                             html_names::kFormmethodAttr,
                                             html_names::kFormactionAttr);
   return request;
-}
-
-EventDispatchHandlingState* HTMLButtonElement::PreDispatchEventHandler(
-    Event& event) {
-  if (Form() && CanBeSuccessfulSubmitButton())
-    Form()->WillActivateSubmitButton(this);
-  return nullptr;
-}
-
-void HTMLButtonElement::DidPreventDefault(const Event& event) {
-  if (auto* form = formOwner())
-    form->DidActivateSubmitButton(this);
 }
 
 }  // namespace blink

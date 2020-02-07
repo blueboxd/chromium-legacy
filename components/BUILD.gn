@@ -320,6 +320,7 @@ test("components_unittests") {
       "//components/invalidation/impl",
       "//components/invalidation/impl:java",
       "//components/paint_preview/browser/android:java",
+      "//components/paint_preview/browser/android:unit_tests",
       "//components/paint_preview/player/android:unit_tests",
       "//components/policy/android:policy_java",
       "//components/signin/core/browser",

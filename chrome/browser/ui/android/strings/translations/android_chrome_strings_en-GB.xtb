@@ -115,6 +115,7 @@
 <translation id="1919950603503897840">Select contacts</translation>
 <translation id="1922076542920281912">To let Chrome access your location, also turn on location in <ph name="BEGIN_LINK" />Android Settings<ph name="END_LINK" />.</translation>
 <translation id="1923695749281512248"><ph name="BYTES_DOWNLOADED_WITH_UNITS" />/<ph name="FILE_SIZE_WITH_UNITS" /></translation>
+<translation id="1925021887439448749">Enter custom web address</translation>
 <translation id="1928696683969751773">Updates</translation>
 <translation id="19288952978244135">Reopen Chrome.</translation>
 <translation id="1933845786846280168">Selected Tab</translation>
@@ -279,6 +280,7 @@
 <translation id="3123473560110926937">Blocked on some sites</translation>
 <translation id="3123734510202723619">Announcements</translation>
 <translation id="3137521801621304719">Leave incognito mode</translation>
+<translation id="3140134512074889489">Please enable your camera to scan a QR code</translation>
 <translation id="3143515551205905069">Cancel sync</translation>
 <translation id="3157842584138209013">See how much data you've saved from the More Options button</translation>
 <translation id="3166827708714933426">Tab and window shortcuts</translation>
@@ -449,6 +451,9 @@
 <translation id="4521489764227272523">The selected data has been removed from Chrome and your synced devices.
 
 Your Google Account may have other forms of browsing history such as searches and activity from other Google services at <ph name="BEGIN_LINK" />myactivity.google.com<ph name="END_LINK" />.</translation>
+<translation id="4527374721149092498">Learn about topics on websites without leaving the page. Touch to search sends a word and its surrounding context to Google Search, returning definitions, pictures, search results and other details.
+
+Tap any word to create a search for it. To adjust your search term, long-press to select. To refine your search, slide the panel open, tap the expand icon to make a new tab, and then tap the search box.</translation>
 <translation id="4532845899244822526">Choose folder</translation>
 <translation id="4538018662093857852">Turn on Lite mode</translation>
 <translation id="4550003330909367850">To view or copy your password here, set screen lock on this device.</translation>
@@ -690,6 +695,9 @@ To change this setting, <ph name="BEGIN_LINK" />reset sync<ph name="END_LINK" />
 <translation id="6232535412751077445">Enabling ‘Do Not Track’ means that a request will be included with your browsing traffic. Any effect depends on whether a website responds to the request and how the request is interpreted.
 
 For example, some websites may respond to this request by showing you ads that aren’t based on other websites that you’ve visited. Many websites will still collect and use your browsing data – for example to improve security, to provide content, ads and recommendations and to generate reporting statistics.</translation>
+<translation id="6238003486329291387">Learn about topics on websites without leaving the page. Touch to search sends a word and its surrounding context to Google Search, returning definitions, pictures, search results and other details.
+
+Long-press any word to create a search for it. To refine your search adjust the selection. You can also slide the panel open, tap the expand icon to make a new tab, and then tap the search box.</translation>
 <translation id="624789221780392884">Update ready</translation>
 <translation id="6255999984061454636">Content suggestions</translation>
 <translation id="6270391203985052864">Sites can ask to send notifications</translation>

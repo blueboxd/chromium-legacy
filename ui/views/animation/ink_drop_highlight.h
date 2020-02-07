@@ -57,8 +57,10 @@ class VIEWS_EXPORT InkDropHighlight {
                    SkColor color);
 
   // Creates a highlight that is drawn with a solid color layer. It's shape will
-  // be determined by the mask or clip applied to the parent layer.
-  InkDropHighlight(const gfx::SizeF& size, SkColor color);
+  // be determined by the mask or clip applied to the parent layer. Note that
+  // this still uses the default highlight opacity. Users who supply a
+  // |base_color| with alpha will also want to call set_visible_opacity(1.f);.
+  InkDropHighlight(const gfx::SizeF& size, SkColor base_color);
 
   virtual ~InkDropHighlight();
 
@@ -128,7 +130,7 @@ class VIEWS_EXPORT InkDropHighlight {
   gfx::PointF center_point_;
 
   // The opacity for the fully visible state of the highlight.
-  float visible_opacity_;
+  float visible_opacity_ = 0.128f;
 
   // True if the last animation to be initiated was a FADE_IN, and false
   // otherwise.

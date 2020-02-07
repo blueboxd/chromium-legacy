@@ -150,7 +150,7 @@ if (is_win) {
 
     deps = [
       "//base",
-      "//components/browser_watcher:crash_stability",
+      "//components/browser_watcher:activity_report",
       "//components/gwp_asan/buildflags",
       "//third_party/crashpad/crashpad/client",
       "//third_party/crashpad/crashpad/handler",

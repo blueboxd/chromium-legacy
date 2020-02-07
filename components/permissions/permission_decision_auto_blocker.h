@@ -20,7 +20,12 @@ class GURL;
 
 namespace settings {
 FORWARD_DECLARE_TEST(SiteSettingsHandlerTest, GetAllSites);
+FORWARD_DECLARE_TEST(SiteSettingsHandlerTest, GetRecentSitePermissions);
 }  // namespace settings
+
+namespace site_settings {
+FORWARD_DECLARE_TEST(RecentSiteSettingsHelperTest, CheckRecentSitePermissions);
+}  // namespace site_settings
 
 namespace permissions {
 
@@ -111,7 +116,11 @@ class PermissionDecisionAutoBlocker : public KeyedService {
 
  private:
   friend class PermissionDecisionAutoBlockerUnitTest;
+  FRIEND_TEST_ALL_PREFIXES(site_settings::RecentSiteSettingsHelperTest,
+                           CheckRecentSitePermissions);
   FRIEND_TEST_ALL_PREFIXES(settings::SiteSettingsHandlerTest, GetAllSites);
+  FRIEND_TEST_ALL_PREFIXES(settings::SiteSettingsHandlerTest,
+                           GetRecentSitePermissions);
 
   void PlaceUnderEmbargo(const GURL& request_origin,
                          ContentSettingsType permission,

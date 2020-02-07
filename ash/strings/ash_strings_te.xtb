@@ -137,7 +137,6 @@
 <translation id="2718395828230677721">రాత్రి కాంతి</translation>
 <translation id="2727977024730340865">తక్కువ-పవర్ గల ఛార్జర్‌కు ప్లగిన్ చేయబడింది. బ్యాటరీ ఛార్జింగ్ విశ్వసనీయంగా ఉండకపోవచ్చు.</translation>
 <translation id="2792498699870441125">Alt+Search</translation>
-<translation id="2803734122639935495">అన్‌లాక్ చేయడానికి, మీ పాస్‌వర్డ్‌ని నమోదు చేయండి</translation>
 <translation id="2819276065543622893">మీరు ఇప్పుడు సైన్ అవుట్ చేయబడతారు.</translation>
 <translation id="2825619548187458965">అర</translation>
 <translation id="2844169650293029770">USB-C పరికరం (ఎడమవైపు ముందు పోర్ట్)</translation>
@@ -202,6 +201,7 @@
 <translation id="3604801046548457007">"<ph name="DESK_TITILE" />" డెస్క్ సృష్టించబడింది</translation>
 <translation id="3606978283550408104">బ్రెయిలీ డిస్‌ప్లే కనెక్ట్ చేయబడింది.</translation>
 <translation id="3621202678540785336">ఇన్‌పుట్</translation>
+<translation id="3621712662352432595">ఆడియో సెట్టింగ్‌‍లు</translation>
 <translation id="3626281679859535460">ప్రకాశం</translation>
 <translation id="3631369015426612114">క్రింది వాటి నుండి నోటిఫికేషన్‌లను అనుమతించు</translation>
 <translation id="3705722231355495246">-</translation>
@@ -545,6 +545,7 @@
 <translation id="8477270416194247200">రద్దు చేయడానికి Alt+Search లేదా Shiftను నొక్కండి.</translation>
 <translation id="8513108775083588393">ఆటో-రొటేట్‌లో ఉంది</translation>
 <translation id="8517041960877371778">మీ <ph name="DEVICE_TYPE" /> ఆన్‌లో ఉన్నప్పుడు ఛార్జ్ కాకపోవచ్చు.</translation>
+<translation id="8563862697512465947">నోటిఫికేషన్ సెట్టింగ్‌లు</translation>
 <translation id="8627191004499078455"><ph name="DEVICE_NAME" />కి కనెక్ట్ చేయబడింది</translation>
 <translation id="8637598503828012618"><ph name="CONNECTION_STATUS" />, సిగ్నల్ సామర్థ్యం <ph name="SIGNAL_STRENGTH" />, మీ అడ్మినిస్ట్రేటర్ ద్వారా నిర్వహించబడుతోంది</translation>
 <translation id="8639760480004882931"><ph name="PERCENTAGE" /> మిగిలి ఉంది</translation>

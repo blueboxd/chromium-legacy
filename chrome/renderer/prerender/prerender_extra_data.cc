@@ -8,23 +8,17 @@
 
 namespace prerender {
 
-PrerenderExtraData::PrerenderExtraData(
-    int prerender_id,
-    int render_view_route_id,
-    const gfx::Size& size)
-    : prerender_id_(prerender_id),
-      render_view_route_id_(render_view_route_id),
-      size_(size) {
-}
+PrerenderExtraData::PrerenderExtraData(int render_view_id)
+    : render_view_id_(render_view_id) {}
 
-PrerenderExtraData::~PrerenderExtraData() {
-}
+PrerenderExtraData::~PrerenderExtraData() = default;
 
 // static
-const PrerenderExtraData& PrerenderExtraData::FromPrerender(
+PrerenderExtraData* PrerenderExtraData::FromPrerender(
     const blink::WebPrerender& prerender) {
   DCHECK(prerender.GetExtraData());
-  return static_cast<const PrerenderExtraData&>(*prerender.GetExtraData());
+  return const_cast<PrerenderExtraData*>(
+      static_cast<const PrerenderExtraData*>(prerender.GetExtraData()));
 }
 
 }  // namespace prerender

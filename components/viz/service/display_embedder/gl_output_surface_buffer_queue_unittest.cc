@@ -60,7 +60,10 @@ class MockBufferQueue : public BufferQueue {
   MOCK_METHOD1(SwapBuffers, void(const gfx::Rect&));
   MOCK_METHOD0(PageFlipComplete, void());
   MOCK_METHOD0(FreeAllSurfaces, void());
-  MOCK_METHOD2(Reshape, bool(const gfx::Size&, const gfx::ColorSpace&));
+  MOCK_METHOD3(Reshape,
+               bool(const gfx::Size&,
+                    const gfx::ColorSpace&,
+                    gfx::BufferFormat));
 
   MOCK_METHOD0(DoSetSyncTokenProvider, void());
   void SetSyncTokenProvider(SyncTokenProvider* sync_token_provider) override {

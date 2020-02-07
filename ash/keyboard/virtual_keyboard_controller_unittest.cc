@@ -21,6 +21,7 @@
 #include "ash/wm/tablet_mode/tablet_mode_controller.h"
 #include "ash/wm/tablet_mode/tablet_mode_controller_test_api.h"
 #include "base/command_line.h"
+#include "ui/display/test/display_manager_test_api.h"
 #include "ui/events/devices/device_data_manager_test_api.h"
 #include "ui/events/devices/input_device.h"
 #include "ui/events/devices/touchscreen_device.h"
@@ -47,7 +48,8 @@ class VirtualKeyboardControllerTest : public AshTestBase {
   }
 
   display::Display GetSecondaryDisplay() {
-    return Shell::Get()->display_manager()->GetSecondaryDisplay();
+    return display::test::DisplayManagerTestApi(Shell::Get()->display_manager())
+        .GetSecondaryDisplay();
   }
 
   keyboard::KeyboardUIController* keyboard_ui_controller() {

@@ -256,6 +256,7 @@ Jeśli opcja „<ph name="SERVICE_SCRIPT_NAME" />” jest już zaznaczona, odzna
 <translation id="6939719207673461467">Pokaż/ukryj klawiaturę.</translation>
 <translation id="6944854424004126054">Przywróć okno</translation>
 <translation id="6948905685698011662">Pulpit zdalny Chrome jest teraz dostępny w internecie. Wypróbuj naszą <ph name="LINK_BEGIN" />bezpłatną aplikację internetową<ph name="LINK_END" />.</translation>
+<translation id="6956835181934226419">Już przyznałem(am) to uprawnienie.</translation>
 <translation id="6963936880795878952">Połączenia z komputerem zdalnym są chwilowo zablokowane, bo ktoś próbował się z nim połączyć, podając nieprawidłowy kod PIN. Spróbuj ponownie później.</translation>
 <translation id="6965382102122355670">OK</translation>
 <translation id="6985691951107243942">Na pewno chcesz wyłączyć połączenia zdalne z: <ph name="HOSTNAME" />? Jeśli zmienisz zdanie, połączenia będzie trzeba włączyć na tamtym komputerze.</translation>

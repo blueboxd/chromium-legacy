@@ -447,4 +447,24 @@ TEST_F(DialogDelegateCloseTest, AnyCallbackInhibitsDefaultClose) {
   EXPECT_FALSE(accepted);
 }
 
+TEST_F(DialogDelegateCloseTest,
+       RecursiveCloseFromAcceptCallbackDoesNotTriggerSecondCallback) {
+  DialogDelegateView dialog;
+
+  bool closed = false;
+  bool accepted = false;
+
+  dialog.set_close_callback(
+      base::BindLambdaForTesting([&]() { closed = true; }));
+  dialog.set_accept_callback(base::BindLambdaForTesting([&]() {
+    accepted = true;
+    dialog.Close();
+  }));
+
+  EXPECT_TRUE(dialog.Accept());
+
+  EXPECT_TRUE(accepted);
+  EXPECT_FALSE(closed);
+}
+
 }  // namespace views

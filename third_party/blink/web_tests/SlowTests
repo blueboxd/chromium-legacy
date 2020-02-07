@@ -677,6 +677,3 @@ crbug.com/1048204 external/wpt/selection/idlharness.window.html [ Slow ]
 # Reaching the stack size limit makes for a consistently slow test with
 # occasional timeouts on Win7
 crbug.com/937546 [ Win7 ] http/tests/security/xss-DENIED-cross-origin-stack-overflow.html [ Slow ]
-
-crbug.com/1049138 virtual/android/url-bar/bottom-fixed-adjusted-when-showing-url-bar.html [ Slow ]
-crbug.com/1049138 virtual/android/fullscreen/video-scrolled-iframe.html [ Slow ]

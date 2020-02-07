@@ -92,6 +92,14 @@ class CookieManager {
   void SetMojoCookieManager(
       mojo::PendingRemote<network::mojom::CookieManager> cookie_manager_remote);
 
+  // Configure whether or not this CookieManager should workaround cookies
+  // specified for insecure URLs with the 'Secure' directive. See
+  // |workaround_http_secure_cookies_| for the default behavior. This should not
+  // be needed in production, as the default is the desirable behavior.
+  void SetWorkaroundHttpSecureCookiesForTesting(
+      JNIEnv* env,
+      const base::android::JavaParamRef<jobject>& obj,
+      jboolean allow);
   void SetShouldAcceptCookies(JNIEnv* env,
                               const base::android::JavaParamRef<jobject>& obj,
                               jboolean accept);
@@ -183,6 +191,9 @@ class CookieManager {
                        const std::string& value,
                        base::OnceCallback<void(bool)> callback);
 
+  void SetWorkaroundHttpSecureCookiesAsyncHelper(bool allow,
+                                                 base::OnceClosure complete);
+
   void GotCookies(const std::vector<net::CanonicalCookie>& cookies);
   void GetCookieListAsyncHelper(const GURL& host,
                                 net::CookieList* result,
@@ -231,6 +242,12 @@ class CookieManager {
   // |allow_file_scheme_cookies_| can no longer be modified. Only accessed on
   // |cookie_store_task_runner_|.
   bool cookie_store_created_;
+
+  // Whether or not to workaround 'Secure' cookies set on insecure URLs. See
+  // MaybeFixUpSchemeForSecureCookieAndGetSameSite. Only accessed on
+  // |cookie_store_task_runner_|. Defaults to false starting for apps targeting
+  // >= R.
+  bool workaround_http_secure_cookies_;
 
   base::Thread cookie_store_client_thread_;
   base::Thread cookie_store_backend_thread_;

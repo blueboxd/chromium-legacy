@@ -115,6 +115,7 @@
 <translation id="1919950603503897840">Kies kontakte</translation>
 <translation id="1922076542920281912">Vir Chrome om toegang tot jou ligging te kry, moet jy ligging ook in <ph name="BEGIN_LINK" />Android-instellings<ph name="END_LINK" /> aanskakel.</translation>
 <translation id="1923695749281512248"><ph name="BYTES_DOWNLOADED_WITH_UNITS" /> van <ph name="FILE_SIZE_WITH_UNITS" /></translation>
+<translation id="1925021887439448749">Voer gepasmaakte webadres in</translation>
 <translation id="1928696683969751773">Opdaterings</translation>
 <translation id="19288952978244135">Maak Chrome weer oop.</translation>
 <translation id="1933845786846280168">Gekose oortjie</translation>
@@ -279,6 +280,7 @@
 <translation id="3123473560110926937">Geblokkeer op sommige werwe</translation>
 <translation id="3123734510202723619">Aankondigings</translation>
 <translation id="3137521801621304719">Verlaat incognitomodus</translation>
+<translation id="3140134512074889489">Aktiveer asseblief jou kamera om 'n QR-kode te skandeer</translation>
 <translation id="3143515551205905069">Kanselleer sinkronisering</translation>
 <translation id="3157842584138209013">Sien deur die Meer Opsies-knoppie hoeveel data jy bespaar het</translation>
 <translation id="3166827708714933426">Oortjie- en vensterkortpaaie</translation>
@@ -449,6 +451,9 @@
 <translation id="4521489764227272523">Die gekose data is van Chrome en jou gesinkroniseerde toestelle verwyder.
 
 Jou Google-rekening het dalk ander vorme van blaaigeskiedenis, soos soektogte en aktiwiteit van ander Google-dienste af, by <ph name="BEGIN_LINK" />myactivity.google.com<ph name="END_LINK" />.</translation>
+<translation id="4527374721149092498">Kom meer te wete oor onderwerpe op webwerwe sonder om die bladsy te verlaat. Raak om te soek stuur 'n woord en sy omringende konteks na Google Search toe en wys definisies, prente, soekresultate en ander besonderhede.
+
+Tik op enige woord om 'n soektog daarvoor te skep. Langdruk om te kies as jy jou soekterm wil aanpas. Skuif die paneel oop, tik op die uitvou-ikoon om 'n nuwe oortjie oop te maak, en tik dan in die soekkassie om jou soektog te verfyn.</translation>
 <translation id="4532845899244822526">Kies vouer</translation>
 <translation id="4538018662093857852">Skakel Ligte Modus aan</translation>
 <translation id="4550003330909367850">Stel skermslot op hierdie toestel op om jou wagwoord hier te bekyk of te kopieer.</translation>
@@ -690,6 +695,9 @@ Jou Google-rekening het dalk ander vorme van blaaigeskiedenis, soos soektogte en
 <translation id="6232535412751077445">As “Moenie naspoor nie” geaktiveer word, beteken dit dat 'n versoek by jou blaaiverkeer ingesluit sal word. Enige uitwerking sal afhang van of 'n webwerf op die versoek reageer en hoe die versoek geïnterpreteer word.
 
 Byvoorbeeld, sommige webwerwe kan op hierdie versoek reageer deur vir jou advertensies te wys wat nie gegrond is op ander webwerwe wat jy besoek het nie. Baie webwerwe sal steeds jou blaaidata insamel en gebruik – byvoorbeeld om sekuriteit te verbeter, om inhoud, advertensies en aanbevelings te verskaf en om verslagdoeningstatistiek te genereer.</translation>
+<translation id="6238003486329291387">Kom meer te wete oor onderwerpe op webwerwe sonder om die bladsy te verlaat. Raak om te soek stuur 'n woord en sy omringende konteks na Google Search toe en wys definisies, prente, soekresultate en ander besonderhede.
+
+Langdruk enige woord om 'n soektog daarvoor te skep. Pas die seleksie aan om jou soektog te verfyn. Jy kan ook die paneel oopskuif, op die uitvou-ikoon tik om 'n nuwe oortjie oop te maak, en dan in die soekkassie tik.</translation>
 <translation id="624789221780392884">Opdatering gereed</translation>
 <translation id="6255999984061454636">Inhoudvoorstelle</translation>
 <translation id="6270391203985052864">Werwe kan vra om kennisgewings te stuur</translation>

@@ -565,9 +565,6 @@ void MainControllerAuthenticationServiceDelegate::ClearBrowsingData(
     [self.restoreHelper moveAsideSessionInformation];
   }
 
-  self.appURLLoadingService = new AppUrlLoadingService();
-  self.appURLLoadingService->SetDelegate(self.sceneController);
-
   // Initialize and set the main browser state.
   [self initializeBrowserState:chromeBrowserState];
   self.mainBrowserState = chromeBrowserState;
@@ -577,14 +574,6 @@ void MainControllerAuthenticationServiceDelegate::ClearBrowsingData(
         BreadcrumbManagerKeyedServiceFactory::GetForBrowserState(
             self.mainBrowserState));
   }
-
-  [self.browserViewWrangler shutdown];
-  self.browserViewWrangler = [[BrowserViewWrangler alloc]
-             initWithBrowserState:self.mainBrowserState
-             webStateListObserver:self.sceneController
-       applicationCommandEndpoint:self.sceneController
-      browsingDataCommandEndpoint:self
-             appURLLoadingService:self.appURLLoadingService];
 
   // Force an obvious initialization of the AuthenticationService. This must
   // be done before creation of the UI to ensure the service is initialised
@@ -601,15 +590,46 @@ void MainControllerAuthenticationServiceDelegate::ClearBrowsingData(
   feature_engagement::TrackerFactory::GetForBrowserState(chromeBrowserState)
       ->NotifyEvent(feature_engagement::events::kChromeOpened);
 
-  // Ensure the main tab model is created. This also creates the BVC.
-  [self.browserViewWrangler createMainBrowser];
-
   _spotlightManager =
       [SpotlightManager spotlightManagerWithBrowserState:self.mainBrowserState];
 
   ShareExtensionService* service =
       ShareExtensionServiceFactory::GetForBrowserState(self.mainBrowserState);
   service->Initialize();
+
+  if ([PreviousSessionInfo sharedInstance].isFirstSessionAfterLanguageChange) {
+    IOSChromeContentSuggestionsServiceFactory::GetForBrowserState(
+        chromeBrowserState)
+        ->ClearAllCachedSuggestions();
+  }
+
+  // This is per-window code.
+
+  DCHECK(!self.browserViewWrangler);
+
+  self.appURLLoadingService = new AppUrlLoadingService();
+  self.appURLLoadingService->SetDelegate(self.sceneController);
+
+  self.browserViewWrangler = [[BrowserViewWrangler alloc]
+             initWithBrowserState:self.mainBrowserState
+             webStateListObserver:self.sceneController
+       applicationCommandEndpoint:self.sceneController
+      browsingDataCommandEndpoint:self
+             appURLLoadingService:self.appURLLoadingService];
+
+  // Ensure the main tab model is created. This also creates the BVC.
+  [self.browserViewWrangler createMainBrowser];
+
+  // "Low priority" tasks
+  [_startupTasks registerForApplicationWillResignActiveNotification];
+  [self registerForOrientationChangeNotifications];
+
+  [self.sceneController openTabFromLaunchOptions:_launchOptions
+                              startupInformation:self
+                                        appState:self.appState];
+  _launchOptions = nil;
+
+  [self scheduleTasksRequiringBVCWithBrowserState];
 
   // Before bringing up the UI, make sure the launch mode is correct, and
   // check for previous crashes.
@@ -625,14 +645,24 @@ void MainControllerAuthenticationServiceDelegate::ClearBrowsingData(
   if (switchFromIncognito)
     startInIncognito = NO;
 
-  if ([PreviousSessionInfo sharedInstance].isFirstSessionAfterLanguageChange) {
-    IOSChromeContentSuggestionsServiceFactory::GetForBrowserState(
-        chromeBrowserState)
-        ->ClearAllCachedSuggestions();
-  }
-
   [self createInitialUI:(startInIncognito ? ApplicationMode::INCOGNITO
                                           : ApplicationMode::NORMAL)];
+
+  [self.browserViewWrangler updateDeviceSharingManager];
+
+  if (!self.startupParameters) {
+    // The startup parameters may create new tabs or navigations. If the restore
+    // infobar is displayed now, it may be dismissed immediately and the user
+    // will never be able to restore the session.
+    TabModel* currentTabModel = [self currentTabModel];
+    [self.restoreHelper
+        showRestoreIfNeededUsingWebState:currentTabModel.webStateList
+                                             ->GetActiveWebState()
+                         sessionRestorer:currentTabModel];
+    self.restoreHelper = nil;
+  }
+
+  // End of per-window code.
 
   [self scheduleStartupCleanupTasks];
   [MetricsMediator
@@ -648,27 +678,6 @@ void MainControllerAuthenticationServiceDelegate::ClearBrowsingData(
   ios::GetChromeBrowserProvider()->GetOverridesProvider()->InstallOverrides();
 
   [self scheduleLowPriorityStartupTasks];
-
-  [self.browserViewWrangler updateDeviceSharingManager];
-
-  [self.sceneController openTabFromLaunchOptions:_launchOptions
-                              startupInformation:self
-                                        appState:self.appState];
-  _launchOptions = nil;
-
-  if (!self.startupParameters) {
-    // The startup parameters may create new tabs or navigations. If the restore
-    // infobar is displayed now, it may be dismissed immediately and the user
-    // will never be able to restore the session.
-    TabModel* currentTabModel = [self currentTabModel];
-    [self.restoreHelper
-        showRestoreIfNeededUsingWebState:currentTabModel.webStateList
-                                             ->GetActiveWebState()
-                         sessionRestorer:currentTabModel];
-    self.restoreHelper = nil;
-  }
-
-  [self scheduleTasksRequiringBVCWithBrowserState];
 
   // Now that everything is properly set up, run the tests.
   tests_hook::RunTestsIfPresent();
@@ -1070,8 +1079,7 @@ void MainControllerAuthenticationServiceDelegate::ClearBrowsingData(
 - (void)scheduleLowPriorityStartupTasks {
   [_startupTasks initializeOmaha];
   [_startupTasks donateIntents];
-  [_startupTasks registerForApplicationWillResignActiveNotification];
-  [self registerForOrientationChangeNotifications];
+
   [self registerBatteryMonitoringNotifications];
 
   // Deferred tasks.

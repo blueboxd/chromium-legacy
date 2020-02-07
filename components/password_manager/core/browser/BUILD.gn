@@ -31,16 +31,6 @@ config("password_reuse_detection_config") {
   }
 }
 
-# Support the store select for debug builds only.
-password_store_select_supported = is_debug
-
-config("password_store_select_config") {
-  defines = []
-  if (password_store_select_supported) {
-    defines += [ "PASSWORD_STORE_SELECT_ENABLED" ]
-  }
-}
-
 jumbo_static_library("browser") {
   sources = [
     "android_affiliation/affiliated_match_helper.cc",
@@ -230,10 +220,7 @@ jumbo_static_library("browser") {
     "votes_uploader.h",
   ]
 
-  all_dependent_configs = [
-    ":password_reuse_detection_config",
-    ":password_store_select_config",
-  ]
+  all_dependent_configs = [ ":password_reuse_detection_config" ]
 
   if (password_reuse_detection_support) {
     sources += [

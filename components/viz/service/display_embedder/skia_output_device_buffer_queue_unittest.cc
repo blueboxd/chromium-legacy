@@ -311,10 +311,12 @@ namespace {
 
 const gfx::Size screen_size = gfx::Size(30, 30);
 
+const gfx::BufferFormat kDefaultFormat = gfx::BufferFormat::RGBA_8888;
+
 TEST_F_GPU(SkiaOutputDeviceBufferQueueTest, MultipleGetCurrentBufferCalls) {
   // Check that multiple bind calls do not create or change surfaces.
 
-  output_device_->Reshape(screen_size, 1.0f, gfx::ColorSpace(), false,
+  output_device_->Reshape(screen_size, 1.0f, gfx::ColorSpace(), kDefaultFormat,
                           gfx::OVERLAY_TRANSFORM_NONE);
   EXPECT_EQ(0U, memory_tracker().GetSize());
   EXPECT_NE(PaintAndSchedulePrimaryPlane(), nullptr);
@@ -329,7 +331,7 @@ TEST_F_GPU(SkiaOutputDeviceBufferQueueTest, MultipleGetCurrentBufferCalls) {
 
 TEST_F_GPU(SkiaOutputDeviceBufferQueueTest, CheckDoubleBuffering) {
   // Check buffer flow through double buffering path.
-  output_device_->Reshape(screen_size, 1.0f, gfx::ColorSpace(), false,
+  output_device_->Reshape(screen_size, 1.0f, gfx::ColorSpace(), kDefaultFormat,
                           gfx::OVERLAY_TRANSFORM_NONE);
   EXPECT_EQ(0U, memory_tracker().GetSize());
   EXPECT_EQ(0, CountBuffers());
@@ -370,7 +372,7 @@ TEST_F_GPU(SkiaOutputDeviceBufferQueueTest, CheckDoubleBuffering) {
 
 TEST_F_GPU(SkiaOutputDeviceBufferQueueTest, CheckTripleBuffering) {
   // Check buffer flow through triple buffering path.
-  output_device_->Reshape(screen_size, 1.0f, gfx::ColorSpace(), false,
+  output_device_->Reshape(screen_size, 1.0f, gfx::ColorSpace(), kDefaultFormat,
                           gfx::OVERLAY_TRANSFORM_NONE);
   EXPECT_EQ(0U, memory_tracker().GetSize());
 
@@ -406,7 +408,7 @@ TEST_F_GPU(SkiaOutputDeviceBufferQueueTest, CheckTripleBuffering) {
 TEST_F_GPU(SkiaOutputDeviceBufferQueueTest, CheckEmptySwap) {
   // Check empty swap flow, in which the damage is empty and BindFramebuffer
   // might not be called.
-  output_device_->Reshape(screen_size, 1.0f, gfx::ColorSpace(), false,
+  output_device_->Reshape(screen_size, 1.0f, gfx::ColorSpace(), kDefaultFormat,
                           gfx::OVERLAY_TRANSFORM_NONE);
 
   EXPECT_EQ(0, CountBuffers());
@@ -446,7 +448,7 @@ TEST_F_GPU(SkiaOutputDeviceBufferQueueTest, CheckEmptySwap) {
 }
 
 TEST_F_GPU(SkiaOutputDeviceBufferQueueTest, CheckCorrectBufferOrdering) {
-  output_device_->Reshape(screen_size, 1.0f, gfx::ColorSpace(), false,
+  output_device_->Reshape(screen_size, 1.0f, gfx::ColorSpace(), kDefaultFormat,
                           gfx::OVERLAY_TRANSFORM_NONE);
   const size_t kSwapCount = 5;
 
@@ -472,7 +474,7 @@ TEST_F_GPU(SkiaOutputDeviceBufferQueueTest, CheckCorrectBufferOrdering) {
 }
 
 TEST_F_GPU(SkiaOutputDeviceBufferQueueTest, ReshapeWithInFlightSurfaces) {
-  output_device_->Reshape(screen_size, 1.0f, gfx::ColorSpace(), false,
+  output_device_->Reshape(screen_size, 1.0f, gfx::ColorSpace(), kDefaultFormat,
                           gfx::OVERLAY_TRANSFORM_NONE);
 
   const size_t kSwapCount = 5;
@@ -486,7 +488,7 @@ TEST_F_GPU(SkiaOutputDeviceBufferQueueTest, ReshapeWithInFlightSurfaces) {
 
   SwapBuffers();
 
-  output_device_->Reshape(screen_size, 1.0f, gfx::ColorSpace(), false,
+  output_device_->Reshape(screen_size, 1.0f, gfx::ColorSpace(), kDefaultFormat,
                           gfx::OVERLAY_TRANSFORM_NONE);
 
   // swap completion callbacks should not be cleared.

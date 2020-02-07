@@ -90,11 +90,13 @@ class MainSixtyImplZero(ThroughputMetricStory):
   URL = ('file://../../../../chrome/test/data/perf/throughput_test_cases/'
          'main-animations-throughput.html#60')
 
+
 class MainFifteenWithJankImplZero(ThroughputMetricStory):
   BASE_NAME = 'main_15fps_with_jank_impl_0fps'
   SUPPORTED_PLATFORMS = platforms.ALL_PLATFORMS
   URL = ('file://../../../../chrome/test/data/perf/throughput_test_cases/'
          'main-animations-throughput.html?jank#15')
+
 
 class MainSixtyWithJankImplZero(ThroughputMetricStory):
   BASE_NAME = 'main_60fps_with_jank_impl_0fps'
@@ -102,17 +104,20 @@ class MainSixtyWithJankImplZero(ThroughputMetricStory):
   URL = ('file://../../../../chrome/test/data/perf/throughput_test_cases/'
          'main-animations-throughput.html?jank#60')
 
+
 class MainZeroWithJankImplZero(ThroughputMetricStory):
   BASE_NAME = 'main_0fps_with_jank_impl_0fps'
   SUPPORTED_PLATFORMS = platforms.ALL_PLATFORMS
   URL = ('file://../../../../chrome/test/data/perf/throughput_test_cases/'
          'main-animations-throughput.html?jank#0')
 
+
 class OffScreenMainSixty(ThroughputMetricStory):
   BASE_NAME = 'off_screen_main_60fps'
   SUPPORTED_PLATFORMS = platforms.ALL_PLATFORMS
   URL = ('file://../../../../chrome/test/data/perf/throughput_test_cases/'
          'main-animations-throughput.html?offscreen#60')
+
 
 class OffScreenMainSixtyJank(ThroughputMetricStory):
   BASE_NAME = 'off_screen_main_60fps_jank'

@@ -243,25 +243,6 @@ class InstallableManagerBrowserTest : public InProcessBrowserTest {
     RunInstallableManager(browser, tester, params);
   }
 
-  std::vector<std::string> NavigateAndGetAllErrors(Browser* browser,
-                                                   const std::string& url) {
-    GURL test_url = embedded_test_server()->GetURL(url);
-    ui_test_utils::NavigateToURL(browser, test_url);
-    InstallableManager* manager = GetManager(browser);
-
-    base::RunLoop run_loop;
-    std::vector<std::string> result;
-
-    manager->GetAllErrors(base::BindLambdaForTesting(
-        [&](std::vector<std::string> errors,
-            std::vector<content::InstallabilityError> installability_errors) {
-          result = std::move(errors);
-          run_loop.Quit();
-        }));
-    run_loop.Run();
-    return result;
-  }
-
   std::vector<content::InstallabilityError>
   NavigateAndGetAllInstallabilityErrors(Browser* browser,
                                         const std::string& url) {
@@ -273,8 +254,7 @@ class InstallableManagerBrowserTest : public InProcessBrowserTest {
     std::vector<content::InstallabilityError> result;
 
     manager->GetAllErrors(base::BindLambdaForTesting(
-        [&](std::vector<std::string> errors,
-            std::vector<content::InstallabilityError> installability_errors) {
+        [&](std::vector<content::InstallabilityError> installability_errors) {
           result = std::move(installability_errors);
           run_loop.Quit();
         }));
@@ -1509,32 +1489,6 @@ IN_PROC_BROWSER_TEST_F(InstallableManagerBrowserTest,
                  MANIFEST_DISPLAY_NOT_SUPPORTED, MANIFEST_MISSING_SUITABLE_ICON,
                  NO_ACCEPTABLE_ICON}),
             tester->errors());
-}
-
-IN_PROC_BROWSER_TEST_F(InstallableManagerBrowserTest, GetAllErrorsNoErrors) {
-  EXPECT_EQ(
-      std::vector<std::string>{},
-      NavigateAndGetAllErrors(browser(), "/banners/manifest_test_page.html"));
-}
-
-IN_PROC_BROWSER_TEST_F(InstallableManagerBrowserTest,
-                       GetAllErrorsWithNoManifest) {
-  EXPECT_EQ(std::vector<std::string>{GetErrorMessage(NO_MANIFEST)},
-            NavigateAndGetAllErrors(browser(),
-                                    "/banners/no_manifest_test_page.html"));
-}
-
-IN_PROC_BROWSER_TEST_F(InstallableManagerBrowserTest,
-                       GetAllErrorsWithPlayAppManifest) {
-  EXPECT_EQ(std::vector<std::string>(
-                {GetErrorMessage(START_URL_NOT_VALID),
-                 GetErrorMessage(MANIFEST_MISSING_NAME_OR_SHORT_NAME),
-                 GetErrorMessage(MANIFEST_DISPLAY_NOT_SUPPORTED),
-                 GetErrorMessage(MANIFEST_MISSING_SUITABLE_ICON),
-                 GetErrorMessage(NO_ACCEPTABLE_ICON)}),
-            NavigateAndGetAllErrors(browser(),
-                                    GetURLOfPageWithServiceWorkerAndManifest(
-                                        "/banners/play_app_manifest.json")));
 }
 
 IN_PROC_BROWSER_TEST_F(InstallableManagerBrowserTest,

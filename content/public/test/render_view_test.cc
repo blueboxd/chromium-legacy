@@ -124,6 +124,7 @@ class FakeWebURLLoader : public blink::WebURLLoader {
       int requestor_id,
       bool download_to_network_cache_only,
       bool pass_response_pipe_to_client,
+      bool no_mime_sniffing,
       base::TimeDelta timeout_interval,
       blink::WebURLLoaderClient* client,
       blink::WebURLResponse&,
@@ -140,6 +141,7 @@ class FakeWebURLLoader : public blink::WebURLLoader {
       scoped_refptr<WebURLRequest::ExtraData> request_extra_data,
       int requestor_id,
       bool download_to_network_cache_only,
+      bool no_mime_sniffing,
       blink::WebURLLoaderClient* client) override {
     DCHECK(task_runner_handle_);
     async_client_ = client;

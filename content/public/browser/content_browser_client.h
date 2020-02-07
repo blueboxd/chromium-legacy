@@ -172,6 +172,7 @@ class FileSystemBackend;
 namespace content {
 enum class PermissionType;
 class AuthenticatorRequestClientDelegate;
+class BluetoothDelegate;
 class BrowserChildProcessHost;
 class BrowserContext;
 class BrowserMainParts;
@@ -1532,6 +1533,9 @@ class CONTENT_EXPORT ContentBrowserClient {
 
   // Allows the embedder to provide an implementation of the WebHID API.
   virtual HidDelegate* GetHidDelegate();
+
+  // Allows the embedder to provide an implementation of the Web Bluetooth API.
+  virtual BluetoothDelegate* GetBluetoothDelegate();
 
   // Attempt to open the Payment Handler window inside its corresponding
   // PaymentRequest UI surface. Returns true if the ContentBrowserClient

@@ -81,7 +81,7 @@ class TestSocket : public SmallMessageSocket::Delegate {
  private:
   void OnError(int error) override { NOTREACHED(); }
 
-  bool OnMessage(char* data, int size) override {
+  bool OnMessage(char* data, size_t size) override {
     message_history_.push_back(size);
     CheckData(data, size);
     if (swap_pool_use_) {
@@ -90,7 +90,8 @@ class TestSocket : public SmallMessageSocket::Delegate {
     return true;
   }
 
-  bool OnMessageBuffer(scoped_refptr<net::IOBuffer> buffer, int size) override {
+  bool OnMessageBuffer(scoped_refptr<net::IOBuffer> buffer,
+                       size_t size) override {
     uint16_t message_size;
     base::ReadBigEndian(buffer->data(), &message_size);
     DCHECK_EQ(message_size, size - sizeof(uint16_t));

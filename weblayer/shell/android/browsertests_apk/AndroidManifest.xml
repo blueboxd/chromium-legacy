@@ -24,7 +24,8 @@
                   android:launchMode="singleTask"
                   android:theme="@android:style/Theme.Holo.Light.NoActionBar"
                   android:configChanges="orientation|keyboardHidden|keyboard|screenSize"
-                  android:windowSoftInputMode="adjustPan|stateUnspecified">
+                  android:windowSoftInputMode="adjustPan|stateUnspecified"
+                  android:process=":test_process">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN"/>
                 <category android:name="android.intent.category.LAUNCHER"/>
@@ -37,6 +38,5 @@
 
     <instrumentation android:name="org.chromium.native_test.NativeTestInstrumentationTestRunner"
             android:label="WebLayerBrowserTests"
-            android:targetPackage="org.chromium.weblayer_browsertests_apk"
-            chromium-junit3="true"/>
+            android:targetPackage="org.chromium.weblayer_browsertests_apk"/>
 </manifest>

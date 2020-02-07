@@ -41,7 +41,6 @@
 #include "services/network/public/cpp/resource_request.h"
 #include "services/network/public/cpp/url_loader_completion_status.h"
 #include "services/network/public/mojom/url_response_head.mojom.h"
-#include "third_party/blink/public/common/loader/mime_sniffing_throttle.h"
 #include "third_party/blink/public/common/loader/throttling_url_loader.h"
 #include "third_party/blink/public/mojom/loader/resource_load_info.mojom-shared.h"
 
@@ -421,6 +420,7 @@ void ResourceDispatcher::StartSync(
     std::unique_ptr<network::ResourceRequest> request,
     int routing_id,
     const net::NetworkTrafficAnnotationTag& traffic_annotation,
+    uint32_t loader_options,
     SyncLoadResponse* response,
     scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory,
     std::vector<std::unique_ptr<blink::URLLoaderThrottle>> throttles,
@@ -428,6 +428,9 @@ void ResourceDispatcher::StartSync(
     mojo::PendingRemote<blink::mojom::BlobRegistry> download_to_blob_registry,
     std::unique_ptr<RequestPeer> peer) {
   CheckSchemeForReferrerPolicy(*request);
+
+  DCHECK(loader_options & network::mojom::kURLLoadOptionSynchronous);
+  DCHECK(request->load_flags & net::LOAD_IGNORE_LIMITS);
 
   std::unique_ptr<network::PendingSharedURLLoaderFactory> pending_factory =
       url_loader_factory->Clone();
@@ -449,8 +452,9 @@ void ResourceDispatcher::StartSync(
       FROM_HERE,
       base::BindOnce(&SyncLoadContext::StartAsyncWithWaitableEvent,
                      std::move(request), routing_id, task_runner,
-                     traffic_annotation, std::move(pending_factory),
-                     std::move(throttles), base::Unretained(response),
+                     traffic_annotation, loader_options,
+                     std::move(pending_factory), std::move(throttles),
+                     base::Unretained(response),
                      base::Unretained(&redirect_or_response_event),
                      base::Unretained(terminate_sync_load_event_), timeout,
                      std::move(download_to_blob_registry)));
@@ -484,7 +488,7 @@ int ResourceDispatcher::StartAsync(
     int routing_id,
     scoped_refptr<base::SingleThreadTaskRunner> loading_task_runner,
     const net::NetworkTrafficAnnotationTag& traffic_annotation,
-    bool is_sync,
+    uint32_t loader_options,
     std::unique_ptr<RequestPeer> peer,
     scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory,
     std::vector<std::unique_ptr<blink::URLLoaderThrottle>> throttles,
@@ -542,26 +546,11 @@ int ResourceDispatcher::StartAsync(
       request_id, this, loading_task_runner,
       url_loader_factory->BypassRedirectChecks(), request->url));
 
-  uint32_t options = network::mojom::kURLLoadOptionNone;
-  // TODO(jam): use this flag for ResourceDispatcherHost code path once
-  // MojoLoading is the only IPC code path.
-  if (request->fetch_request_context_type !=
-      static_cast<int>(blink::mojom::RequestContextType::FETCH)) {
-    // MIME sniffing should be disabled for a request initiated by fetch().
-    options |= network::mojom::kURLLoadOptionSniffMimeType;
-    throttles.push_back(
-        std::make_unique<blink::MimeSniffingThrottle>(loading_task_runner));
-  }
-  if (is_sync) {
-    options |= network::mojom::kURLLoadOptionSynchronous;
-    request->load_flags |= net::LOAD_IGNORE_LIMITS;
-  }
-
   std::unique_ptr<blink::ThrottlingURLLoader> url_loader =
       blink::ThrottlingURLLoader::CreateLoaderAndStart(
           std::move(url_loader_factory), std::move(throttles), routing_id,
-          request_id, options, request.get(), client.get(), traffic_annotation,
-          std::move(loading_task_runner));
+          request_id, loader_options, request.get(), client.get(),
+          traffic_annotation, std::move(loading_task_runner));
   pending_request->url_loader = std::move(url_loader);
   pending_request->url_loader_client = std::move(client);
 

@@ -1271,6 +1271,7 @@ def main(argv):
         resource_dirs = resource_utils.ExtractResourceDirsFromFileList(
             resource_files)
         owned_resource_dirs.update(resource_dirs)
+        all_inputs.append(c['res_sources_path'])
       else:
         owned_resource_zips.add(c['resources_zip'])
       srcjar = c.get('srcjar')

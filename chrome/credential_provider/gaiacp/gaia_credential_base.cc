@@ -1086,21 +1086,6 @@ HRESULT CGaiaCredentialBase::GetBaseGlsCommandline(
 
   command_line->AppendSwitch(kGcpwSigninSwitch);
 
-  // Registry specified endpoint.
-  wchar_t endpoint_url_setting[256];
-  ULONG endpoint_url_length = base::size(endpoint_url_setting);
-  if (SUCCEEDED(GetGlobalFlag(L"ep_url", endpoint_url_setting,
-                              &endpoint_url_length)) &&
-      endpoint_url_setting[0]) {
-    GURL endpoint_url(endpoint_url_setting);
-    if (endpoint_url.is_valid()) {
-      command_line->AppendSwitchASCII(switches::kGaiaUrl,
-                                      endpoint_url.GetWithEmptyPath().spec());
-      command_line->AppendSwitchASCII(kGcpwEndpointPathSwitch,
-                                      endpoint_url.path().substr(1));
-    }
-  }
-
   // Get the language selected by the LanguageSelector and pass it onto Chrome.
   // The language will depend on if it is currently a SYSTEM logon (initial
   // logon) or a lock screen logon (from a user). If the user who locked the

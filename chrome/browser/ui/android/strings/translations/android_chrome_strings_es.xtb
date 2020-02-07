@@ -115,6 +115,7 @@
 <translation id="1919950603503897840">Seleccionar contactos</translation>
 <translation id="1922076542920281912">Para que Chrome tenga acceso a tu ubicación, activa la ubicación en los <ph name="BEGIN_LINK" />ajustes de Android<ph name="END_LINK" />.</translation>
 <translation id="1923695749281512248"><ph name="BYTES_DOWNLOADED_WITH_UNITS" />/<ph name="FILE_SIZE_WITH_UNITS" /></translation>
+<translation id="1925021887439448749">Introduce una dirección web personalizada</translation>
 <translation id="1928696683969751773">Actualizaciones</translation>
 <translation id="19288952978244135">Vuelve a abrir Chrome.</translation>
 <translation id="1933845786846280168">Pestaña seleccionada</translation>
@@ -279,6 +280,7 @@
 <translation id="3123473560110926937">Bloqueados en algunos sitios web</translation>
 <translation id="3123734510202723619">Anuncios</translation>
 <translation id="3137521801621304719">Salir del modo de incógnito</translation>
+<translation id="3140134512074889489">Habilita la cámara para escanear un código QR</translation>
 <translation id="3143515551205905069">Cancelar sincronización</translation>
 <translation id="3157842584138209013">Consulta la cantidad de datos que has ahorrado con el botón Más opciones</translation>
 <translation id="3166827708714933426">Combinaciones de teclas de pestañas y ventanas</translation>
@@ -449,6 +451,9 @@
 <translation id="4521489764227272523">Los datos seleccionados se han quitado de Chrome y de los dispositivos sincronizados.
 
 Es posible que tu cuenta de Google tenga otros tipos de historial de navegación, como búsquedas o actividad de otros servicios de Google, en la página <ph name="BEGIN_LINK" />myactivity.google.com<ph name="END_LINK" />.</translation>
+<translation id="4527374721149092498">Consigue información sobre los temas en sitios web sin salir de la página. La función Tocar para buscar envía una palabra y su contexto a la Búsqueda de Google y te muestra definiciones, imágenes, resultados de búsqueda y otros datos.
+
+Toca cualquier palabra para hacer una búsqueda. Para ajustar el término de búsqueda, mantén pulsado el texto para seleccionarlo. Para acotar la búsqueda, desliza el panel para abrirlo, toca el icono de ampliación para crear una pestaña nueva y luego toca el cuadro de búsqueda.</translation>
 <translation id="4532845899244822526">Seleccionar carpeta</translation>
 <translation id="4538018662093857852">Activar el modo básico</translation>
 <translation id="4550003330909367850">Para ver o copiar tu contraseña aquí, configura el bloqueo de pantalla en este dispositivo.</translation>
@@ -690,6 +695,9 @@ Para cambiar esta opción, <ph name="BEGIN_LINK" />restablece la sincronización
 <translation id="6232535412751077445">Al habilitar la opción No hacer seguimiento, se incluirá una solicitud con el tráfico de navegación. El efecto dependerá de si algún sitio web responde a la solicitud y de cómo se interpreta.
 
 Por ejemplo, algunos sitios web pueden responder a la solicitud mostrándote anuncios no basados en otros sitios web que hayas visitado. Muchos sitios web seguirán recopilando y utilizando tus datos de navegación (por ejemplo, para mejorar la seguridad, para proporcionar contenido, anuncios y recomendaciones, o para generar estadísticas de informes).</translation>
+<translation id="6238003486329291387">Consigue información sobre los temas en sitios web sin salir de la página. La función Tocar para buscar envía una palabra y su contexto a la Búsqueda de Google y te muestra definiciones, imágenes, resultados de búsqueda y otros datos.
+
+Mantén pulsada cualquier palabra para hacer una búsqueda. Para acotar la búsqueda, ajusta el contenido seleccionado. También puedes deslizar el panel para abrirlo, tocar el icono de ampliación para crear una pestaña nueva y luego tocar el cuadro de búsqueda.</translation>
 <translation id="624789221780392884">Actualización lista</translation>
 <translation id="6255999984061454636">Sugerencias de contenido</translation>
 <translation id="6270391203985052864">Los sitios web pueden preguntarte si quieres que te envíen notificaciones</translation>

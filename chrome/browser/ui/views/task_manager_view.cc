@@ -205,10 +205,6 @@ bool TaskManagerView::Accept() {
   return false;
 }
 
-bool TaskManagerView::Close() {
-  return true;
-}
-
 bool TaskManagerView::IsDialogButtonEnabled(ui::DialogButton button) const {
   const ui::ListSelectionModel::SelectedIndices& selections(
       tab_table_->selection_model().selected_indices());
@@ -292,6 +288,12 @@ TaskManagerView::TaskManagerView()
   DialogDelegate::set_buttons(ui::DIALOG_BUTTON_OK);
   DialogDelegate::set_button_label(
       ui::DIALOG_BUTTON_OK, l10n_util::GetStringUTF16(IDS_TASK_MANAGER_KILL));
+
+  // Avoid calling Accept() when closing the dialog, since Accept() here means
+  // "kill task" (!).
+  // TODO(ellyjones): Remove this once the Accept() override is removed from
+  // this class.
+  DialogDelegate::set_close_callback(base::DoNothing());
 
   Init();
   chrome::RecordDialogCreation(chrome::DialogIdentifier::TASK_MANAGER);

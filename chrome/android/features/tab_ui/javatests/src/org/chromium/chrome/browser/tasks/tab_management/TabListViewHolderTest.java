@@ -29,6 +29,7 @@ import org.junit.runner.RunWith;
 
 import org.chromium.base.Callback;
 import org.chromium.chrome.browser.flags.CachedFeatureFlags;
+import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.tab_ui.R;
 import org.chromium.chrome.test.ChromeJUnit4ClassRunner;
 import org.chromium.components.browser_ui.widget.selectable_list.SelectionDelegate;
@@ -38,6 +39,7 @@ import org.chromium.ui.modelutil.PropertyModel;
 import org.chromium.ui.modelutil.PropertyModelChangeProcessor;
 import org.chromium.ui.test.util.DummyUiActivityTestCase;
 import org.chromium.ui.widget.ButtonCompat;
+import org.chromium.ui.widget.ChipView;
 
 import java.lang.ref.WeakReference;
 import java.util.concurrent.atomic.AtomicBoolean;
@@ -118,6 +120,7 @@ public class TabListViewHolderTest extends DummyUiActivityTestCase {
     public void setUpTest() throws Exception {
         super.setUpTest();
         CachedFeatureFlags.enableTabThumbnailAspectRatioForTesting(false);
+        TabUiFeatureUtilities.setSearchTermChipEnabledForTesting(true);
         ViewGroup view = new LinearLayout(getActivity());
         FrameLayout.LayoutParams params = new FrameLayout.LayoutParams(
                 ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT);
@@ -482,12 +485,55 @@ public class TabListViewHolderTest extends DummyUiActivityTestCase {
         Assert.assertEquals(View.GONE, actionButton.getVisibility());
     }
 
+    @Test
+    @MediumTest
+    @UiThreadTest
+    public void testSearchTermChip() {
+        String searchTerm = "hello world";
+
+        testGridSelected(mTabGridView, mGridModel);
+        ChipView searchButton = mTabGridView.findViewById(R.id.search_button);
+
+        mGridModel.set(TabProperties.SEARCH_QUERY, searchTerm);
+        Assert.assertEquals(View.VISIBLE, searchButton.getVisibility());
+        Assert.assertEquals(searchTerm, searchButton.getPrimaryTextView().getText());
+
+        mGridModel.set(TabProperties.SEARCH_QUERY, null);
+        Assert.assertEquals(View.GONE, searchButton.getVisibility());
+
+        mGridModel.set(TabProperties.SEARCH_QUERY, searchTerm);
+        Assert.assertEquals(View.VISIBLE, searchButton.getVisibility());
+
+        mGridModel.set(TabProperties.SEARCH_QUERY, null);
+        Assert.assertEquals(View.GONE, searchButton.getVisibility());
+    }
+
+    @Test
+    @MediumTest
+    @UiThreadTest
+    public void testSearchListener() {
+        ChipView searchButton = mTabGridView.findViewById(R.id.search_button);
+
+        AtomicInteger clickedTabId = new AtomicInteger(Tab.INVALID_TAB_ID);
+        TabListMediator.TabActionListener searchListener = clickedTabId::set;
+        mGridModel.set(TabProperties.SEARCH_LISTENER, searchListener);
+
+        searchButton.performClick();
+        Assert.assertEquals(TAB1_ID, clickedTabId.get());
+
+        clickedTabId.set(Tab.INVALID_TAB_ID);
+        mGridModel.set(TabProperties.SEARCH_LISTENER, null);
+        searchButton.performClick();
+        Assert.assertEquals(Tab.INVALID_TAB_ID, clickedTabId.get());
+    }
+
     @Override
     public void tearDownTest() throws Exception {
         mStripMCP.destroy();
         mGridMCP.destroy();
         mSelectableMCP.destroy();
         CachedFeatureFlags.enableTabThumbnailAspectRatioForTesting(null);
+        TabUiFeatureUtilities.setSearchTermChipEnabledForTesting(null);
         super.tearDownTest();
     }
 }

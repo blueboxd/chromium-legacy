@@ -128,14 +128,14 @@ void GLOutputSurfaceBufferQueue::BindFramebuffer() {
 void GLOutputSurfaceBufferQueue::Reshape(const gfx::Size& size,
                                          float device_scale_factor,
                                          const gfx::ColorSpace& color_space,
-                                         bool has_alpha,
+                                         gfx::BufferFormat format,
                                          bool use_stencil) {
   reshape_size_ = size;
   use_stencil_ = use_stencil;
-  GLOutputSurface::Reshape(size, device_scale_factor, color_space, has_alpha,
+  GLOutputSurface::Reshape(size, device_scale_factor, color_space, format,
                            use_stencil);
   DCHECK(buffer_queue_);
-  const bool freed_buffers = buffer_queue_->Reshape(size, color_space);
+  const bool freed_buffers = buffer_queue_->Reshape(size, color_space, format);
   if (freed_buffers || (stencil_buffer_ && !use_stencil)) {
     auto* gl = context_provider_->ContextGL();
     gl->BindFramebuffer(GL_FRAMEBUFFER, fbo_);

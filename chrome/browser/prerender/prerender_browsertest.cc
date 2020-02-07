@@ -605,7 +605,7 @@ class PrerenderBrowserTest : public test_utils::PrerenderInProcessBrowserTest {
 
   const PrerenderLinkManager* GetPrerenderLinkManager() const {
     PrerenderLinkManager* prerender_link_manager =
-        PrerenderLinkManagerFactory::GetForProfile(
+        PrerenderLinkManagerFactory::GetForBrowserContext(
             current_browser()->profile());
     return prerender_link_manager;
   }

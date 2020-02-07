@@ -142,20 +142,24 @@ bool DialogDelegate::IsDialogButtonEnabled(ui::DialogButton button) const {
 
 bool DialogDelegate::Cancel() {
   if (cancel_callback_)
-    std::move(cancel_callback_).Run();
+    RunCloseCallback(std::move(cancel_callback_));
   return true;
 }
 
 bool DialogDelegate::Accept() {
   if (accept_callback_)
-    std::move(accept_callback_).Run();
+    RunCloseCallback(std::move(accept_callback_));
   return true;
 }
 
 bool DialogDelegate::Close() {
-  if (close_callback_ || cancel_callback_ || accept_callback_) {
+  // Test for callback_delivered_ here, because it indicates that:
+  // 1) A new-style callback used to be present in one of these slots
+  // 2) It has already been invoked and therefore the slot is now empty
+  if (callback_delivered_ || close_callback_ || cancel_callback_ ||
+      accept_callback_) {
     if (close_callback_)
-      std::move(close_callback_).Run();
+      RunCloseCallback(std::move(close_callback_));
     return true;
   } else {
     return DefaultClose();
@@ -172,6 +176,18 @@ bool DialogDelegate::DefaultClose() {
     return Cancel();
   }
   return Accept();
+}
+
+void DialogDelegate::RunCloseCallback(base::OnceClosure callback) {
+  // TODO(ellyjones): It would be better if this instead was:
+  //   DCHECK(!callback_delivered_);
+  // i.e., it was enforced by Views that client code does not cause the
+  // DialogDelegate to be closed from within a closure handler. Unfortunately a
+  // lot of client code does not behave that way right now.
+  if (callback_delivered_)
+    return;
+  callback_delivered_ = true;
+  std::move(callback).Run();
 }
 
 View* DialogDelegate::GetInitiallyFocusedView() {

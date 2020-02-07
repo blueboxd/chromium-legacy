@@ -56,6 +56,11 @@ class DISPLAY_EXPORT DisplayManagerTestApi {
   // Sets the touch support for |display_id|.
   void SetTouchSupport(int64_t display_id, Display::TouchSupport touch_support);
 
+  // Returns a Display object for a secondary display. If multiple displays
+  // exist, returns a Display object that is next to the current primary
+  // display in active_display_list_
+  const Display& GetSecondaryDisplay() const;
+
  private:
   friend class ScopedSetInternalDisplayId;
   // Sets the display id for internal display and

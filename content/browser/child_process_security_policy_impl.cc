@@ -177,6 +177,11 @@ ChildProcessSecurityPolicyImpl::Handle::Handle(Handle&& rhs)
   rhs.child_id_ = ChildProcessHost::kInvalidUniqueID;
 }
 
+ChildProcessSecurityPolicyImpl::Handle
+ChildProcessSecurityPolicyImpl::Handle::Duplicate() {
+  return Handle(child_id_);
+}
+
 ChildProcessSecurityPolicyImpl::Handle::~Handle() {
   if (child_id_ != ChildProcessHost::kInvalidUniqueID) {
     auto* policy = ChildProcessSecurityPolicyImpl::GetInstance();

@@ -167,11 +167,12 @@ struct PerUserTopicSubscriptionManager::SubscriptionEntry {
                     SubscriptionFinishedCallback completion_callback,
                     PerUserTopicSubscriptionRequest::RequestType type,
                     bool topic_is_public = false);
+
+  // Destruction of this object causes cancellation of the request.
   ~SubscriptionEntry();
 
   void SubscriptionFinished(const Status& code,
                             const std::string& private_topic_name);
-  void Cancel();
 
   // The object for which this is the status.
   const Topic topic;
@@ -206,11 +207,6 @@ void PerUserTopicSubscriptionManager::SubscriptionEntry::SubscriptionFinished(
     const Status& code,
     const std::string& topic_name) {
   completion_callback.Run(topic, code, topic_name, type);
-}
-
-void PerUserTopicSubscriptionManager::SubscriptionEntry::Cancel() {
-  request_retry_timer_.Stop();
-  request.reset();
 }
 
 PerUserTopicSubscriptionManager::PerUserTopicSubscriptionManager(
@@ -283,11 +279,8 @@ void PerUserTopicSubscriptionManager::UpdateSubscribedTopics(
     // If the topic isn't subscribed yet, schedule the subscription.
     if (topic_to_private_topic_.find(topic.first) ==
         topic_to_private_topic_.end()) {
-      // If there's already a pending request for this topic, cancel it first.
-      auto it = pending_subscriptions_.find(topic.first);
-      if (it != pending_subscriptions_.end())
-        it->second->Cancel();
-
+      // If there was already a pending request for this topic, it'll get
+      // destroyed and replaced by the new one.
       pending_subscriptions_[topic.first] = std::make_unique<SubscriptionEntry>(
           topic.first,
           base::BindRepeating(
@@ -304,8 +297,8 @@ void PerUserTopicSubscriptionManager::UpdateSubscribedTopics(
        it != topic_to_private_topic_.end();) {
     Topic topic = it->first;
     if (topics.find(topic) == topics.end()) {
-      // TODO(crbug.com/1020117): If there's already a pending request for this
-      // topic, we should probably cancel it first?
+      // If there was already a pending request for this topic, it'll get
+      // destroyed and replaced by the new one.
       pending_subscriptions_[topic] = std::make_unique<SubscriptionEntry>(
           topic,
           base::BindRepeating(
@@ -352,10 +345,11 @@ void PerUserTopicSubscriptionManager::StartPendingSubscriptionRequest(
                  << " which is not in the registration map";
     return;
   }
+  // If retry was scheduled, it will end up in this function and redundant
+  // request cancellation.
+  it->second->request_retry_timer_.Stop();
+
   PerUserTopicSubscriptionRequest::Builder builder;
-  // Resetting request in case it's running.
-  // TODO(crbug.com/1020117): Should probably call it->second->Cancel() instead.
-  it->second->request.reset();
   it->second->request = builder.SetInstanceIdToken(instance_id_token_)
                             .SetScope(kInvalidationRegistrationScope)
                             .SetPublicTopicName(topic)
@@ -573,10 +567,6 @@ PerUserTopicSubscriptionManager::DropAllSavedSubscriptionsOnTokenChangeImpl() {
   *update = base::Value(base::Value::Type::DICTIONARY);
   topic_to_private_topic_.clear();
   private_topic_to_topic_.clear();
-  // Also cancel any pending subscription requests.
-  for (const auto& pending_subscription : pending_subscriptions_) {
-    pending_subscription.second->Cancel();
-  }
   pending_subscriptions_.clear();
   return instance_id_token_.empty()
              ? TokenStateOnSubscriptionRequest::kTokenCleared

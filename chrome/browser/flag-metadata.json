@@ -1249,12 +1249,6 @@
     "expiry_milestone": 84
   },
   {
-    "name": "enable-devtools-experiments",
-    "owners": [ "//third_party/devtools-frontend/src/OWNERS" ],
-    // This is a catch-all for ongoing devtools experiments.
-    "expiry_milestone": -1
-  },
-  {
     "name": "enable-display-locking",
     "owners": [ "//third_party/blink/renderer/core/display_lock/OWNERS" ],
     "expiry_milestone": 82
@@ -2032,6 +2026,11 @@
     "expiry_milestone": -1
   },
   {
+    "name": "enable-web-bluetooth-new-permissions-backend",
+    "owners": [ "web-bluetooth@google.com" ],
+    "expiry_milestone": 90
+  },
+  {
     "name": "enable-web-payments-experimental-features",
     "owners": [ "danyao", "rouslan", "paymentrequest@google.com" ],
     // This flag is used by early adoption partners to test new Web Payments
@@ -2363,6 +2362,11 @@
   {
     "name": "global-media-controls-for-cast",
     "owners": [ "takumif", "openscreen-eng@google.com" ],
+    "expiry_milestone": 90
+  },
+  {
+    "name": "global-media-controls-picture-in-picture",
+    "owners": [ "jazzhsu", "steimel", "media-dev" ],
     "expiry_milestone": 90
   },
   {

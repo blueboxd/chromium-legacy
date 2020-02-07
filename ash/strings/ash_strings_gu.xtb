@@ -137,7 +137,6 @@
 <translation id="2718395828230677721">રાત્રિ પ્રકાશ</translation>
 <translation id="2727977024730340865">નિમ્ન-પાવર ચાર્જરમાં પ્લગ કરેલું છે. બૅટરી ચાર્જિંગ વિશ્વસનીય હશે નહીં.</translation>
 <translation id="2792498699870441125">Alt+Search</translation>
-<translation id="2803734122639935495">અનલૉક કરવા માટે, તમારો પાસવર્ડ દાખલ કરો</translation>
 <translation id="2819276065543622893">તમે હવે સાઇન આઉટ થશો.</translation>
 <translation id="2825619548187458965">શેલ્ફ</translation>
 <translation id="2844169650293029770">USB-C ઉપકરણ (ડાબી બાજુનું આગળનું પોર્ટ)</translation>
@@ -202,6 +201,7 @@
 <translation id="3604801046548457007">ડેસ્ક <ph name="DESK_TITILE" /> બનાવ્યું</translation>
 <translation id="3606978283550408104">બ્રેઇલ ડિસ્પ્લે કનેક્ટ થયું.</translation>
 <translation id="3621202678540785336">ઇનપુટ</translation>
+<translation id="3621712662352432595">ઑડિઓ સેટિંગ્સ</translation>
 <translation id="3626281679859535460">તેજ</translation>
 <translation id="3631369015426612114">નીચેના પરથી સૂચનાઓને મંજૂરી આપો</translation>
 <translation id="3705722231355495246">-</translation>
@@ -544,6 +544,7 @@
 <translation id="8477270416194247200">રદ કરવા માટે Alt+શોધો અથવા Shift દબાવો.</translation>
 <translation id="8513108775083588393">ઑટો રોટેટ</translation>
 <translation id="8517041960877371778">તમારું <ph name="DEVICE_TYPE" /> ચાલુ હોય ત્યારે તે ચાર્જ ન થાય તેવું બની શકે.</translation>
+<translation id="8563862697512465947">સૂચના સેટિંગ્સ</translation>
 <translation id="8627191004499078455"><ph name="DEVICE_NAME" /> સાથે કનેક્ટ થયા</translation>
 <translation id="8637598503828012618"><ph name="CONNECTION_STATUS" />, સિગ્નલની સશક્તતા <ph name="SIGNAL_STRENGTH" />, તમારા વ્યવસ્થાપક દ્વારા મેનેજ કરવામાં આવે છે</translation>
 <translation id="8639760480004882931"><ph name="PERCENTAGE" /> બાકી</translation>

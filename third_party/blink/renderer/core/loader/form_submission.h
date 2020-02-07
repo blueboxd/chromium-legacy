@@ -33,6 +33,7 @@
 
 #include "base/macros.h"
 #include "third_party/blink/public/common/navigation/triggering_event_info.h"
+#include "third_party/blink/public/web/web_frame_load_type.h"
 #include "third_party/blink/renderer/core/loader/frame_load_request.h"
 #include "third_party/blink/renderer/core/loader/navigation_policy.h"
 #include "third_party/blink/renderer/platform/heap/handle.h"
@@ -44,6 +45,7 @@ namespace blink {
 
 class EncodedFormData;
 class Event;
+class Frame;
 class HTMLFormControlElement;
 class HTMLFormElement;
 
@@ -104,8 +106,13 @@ class FormSubmission final : public GarbageCollected<FormSubmission> {
                  const AtomicString& content_type,
                  HTMLFormElement*,
                  scoped_refptr<EncodedFormData>,
-                 const String& boundary,
-                 Event*);
+                 Event*,
+                 NavigationPolicy navigation_policy,
+                 TriggeringEventInfo triggering_event_info,
+                 ClientNavigationReason reason,
+                 std::unique_ptr<ResourceRequest> resource_request,
+                 Frame* target_frame,
+                 WebFrameLoadType load_type);
   // FormSubmission for DialogMethod
   explicit FormSubmission(const String& result);
 
@@ -122,6 +129,8 @@ class FormSubmission final : public GarbageCollected<FormSubmission> {
 
   const String& Result() const { return result_; }
 
+  Frame* TargetFrame() const { return target_frame_; }
+
  private:
   // FIXME: Hold an instance of Attributes instead of individual members.
   SubmitMethod method_;
@@ -130,10 +139,13 @@ class FormSubmission final : public GarbageCollected<FormSubmission> {
   AtomicString content_type_;
   Member<HTMLFormElement> form_;
   scoped_refptr<EncodedFormData> form_data_;
-  String boundary_;
   NavigationPolicy navigation_policy_;
   TriggeringEventInfo triggering_event_info_;
   String result_;
+  ClientNavigationReason reason_;
+  std::unique_ptr<ResourceRequest> resource_request_;
+  Member<Frame> target_frame_;
+  WebFrameLoadType load_type_;
 };
 
 }  // namespace blink

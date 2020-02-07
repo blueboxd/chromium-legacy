@@ -46,10 +46,10 @@ SkiaOutputDeviceX11::~SkiaOutputDeviceX11() {
 bool SkiaOutputDeviceX11::Reshape(const gfx::Size& size,
                                   float device_scale_factor,
                                   const gfx::ColorSpace& color_space,
-                                  bool has_alpha,
+                                  gfx::BufferFormat format,
                                   gfx::OverlayTransform transform) {
   if (!SkiaOutputDeviceOffscreen::Reshape(size, device_scale_factor,
-                                          color_space, has_alpha, transform)) {
+                                          color_space, format, transform)) {
     return false;
   }
   auto ii =

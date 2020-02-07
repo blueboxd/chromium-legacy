@@ -30,10 +30,6 @@ class CompositorTimingHistory::UMAReporter {
 
   // Latency measurements
   virtual void AddBeginImplFrameLatency(base::TimeDelta delta) = 0;
-  virtual void AddBeginMainFrameQueueDurationCriticalDuration(
-      base::TimeDelta duration) = 0;
-  virtual void AddBeginMainFrameQueueDurationNotCriticalDuration(
-      base::TimeDelta duration) = 0;
   virtual void AddBeginMainFrameStartToCommitDuration(
       base::TimeDelta duration) = 0;
   virtual void AddCommitToReadyToActivateDuration(base::TimeDelta duration,
@@ -344,18 +340,6 @@ class RendererUMAReporter : public CompositorTimingHistory::UMAReporter {
         "Scheduling.Renderer.BeginImplFrameLatency", delta);
   }
 
-  void AddBeginMainFrameQueueDurationCriticalDuration(
-      base::TimeDelta duration) override {
-    UMA_HISTOGRAM_CUSTOM_TIMES_DURATION(
-        "Scheduling.Renderer.BeginMainFrameQueueDurationCritical", duration);
-  }
-
-  void AddBeginMainFrameQueueDurationNotCriticalDuration(
-      base::TimeDelta duration) override {
-    UMA_HISTOGRAM_CUSTOM_TIMES_DURATION(
-        "Scheduling.Renderer.BeginMainFrameQueueDurationNotCritical", duration);
-  }
-
   void AddBeginMainFrameStartToCommitDuration(
       base::TimeDelta duration) override {
     UMA_HISTOGRAM_CUSTOM_TIMES_DURATION(
@@ -450,15 +434,6 @@ class BrowserUMAReporter : public CompositorTimingHistory::UMAReporter {
         "Scheduling.Browser.BeginImplFrameLatency", delta);
   }
 
-  void AddBeginMainFrameQueueDurationCriticalDuration(
-      base::TimeDelta duration) override {
-    UMA_HISTOGRAM_CUSTOM_TIMES_DURATION(
-        "Scheduling.Browser.BeginMainFrameQueueDurationCritical", duration);
-  }
-
-  void AddBeginMainFrameQueueDurationNotCriticalDuration(
-      base::TimeDelta duration) override {}
-
   void AddBeginMainFrameStartToCommitDuration(
       base::TimeDelta duration) override {
     UMA_HISTOGRAM_CUSTOM_TIMES_DURATION(
@@ -523,10 +498,6 @@ class NullUMAReporter : public CompositorTimingHistory::UMAReporter {
   void AddDrawIntervalWithCustomPropertyAnimations(
       base::TimeDelta inverval) override {}
   void AddBeginImplFrameLatency(base::TimeDelta delta) override {}
-  void AddBeginMainFrameQueueDurationCriticalDuration(
-      base::TimeDelta duration) override {}
-  void AddBeginMainFrameQueueDurationNotCriticalDuration(
-      base::TimeDelta duration) override {}
   void AddBeginMainFrameStartToCommitDuration(
       base::TimeDelta duration) override {}
   void AddCommitToReadyToActivateDuration(base::TimeDelta duration,
@@ -829,16 +800,6 @@ void CompositorTimingHistory::DidBeginMainFrame(
 
   rendering_stats_instrumentation_->AddBeginMainFrameToCommitDuration(
       begin_main_frame_sent_to_commit_duration);
-
-  if (begin_main_frame_start_time_is_valid) {
-    if (begin_main_frame_on_critical_path_) {
-      uma_reporter_->AddBeginMainFrameQueueDurationCriticalDuration(
-          begin_main_frame_queue_duration);
-    } else {
-      uma_reporter_->AddBeginMainFrameQueueDurationNotCriticalDuration(
-          begin_main_frame_queue_duration);
-    }
-  }
 
   uma_reporter_->AddBeginMainFrameStartToCommitDuration(
       begin_main_frame_start_to_commit_duration);

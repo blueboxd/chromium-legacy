@@ -11,6 +11,8 @@ import android.util.Pair;
 
 import androidx.annotation.IntDef;
 
+import com.google.common.util.concurrent.SettableFuture;
+
 import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
@@ -375,19 +377,45 @@ public class CookieManagerTest {
     @Test
     @MediumTest
     @Feature({"AndroidWebView", "Privacy"})
-    public void testSetSecureCookieForHttpUrl() {
+    public void testSetSecureCookieForHttpUrlNotTargetingAndroidR() {
+        mCookieManager.setWorkaroundHttpSecureCookiesForTesting(true);
         Assert.assertEquals(
                 0, RecordHistogram.getHistogramTotalCountForTesting(SECURE_COOKIE_HISTOGRAM_NAME));
         String url = "http://www.example.com";
         String secureUrl = "https://www.example.com";
         String cookie = "name=test";
-        mCookieManager.setCookie(url, cookie + ";secure");
+        boolean success = setCookieOnUiThreadSync(url, cookie + ";secure");
+
+        Assert.assertTrue("Setting the cookie should succeed", success);
         assertCookieEquals(cookie, secureUrl);
         Assert.assertEquals(
                 1, RecordHistogram.getHistogramTotalCountForTesting(SECURE_COOKIE_HISTOGRAM_NAME));
         Assert.assertEquals(1,
                 RecordHistogram.getHistogramValueCountForTesting(
                         SECURE_COOKIE_HISTOGRAM_NAME, 4 /* kFixedUp */));
+    }
+
+    @Test
+    @MediumTest
+    @Feature({"AndroidWebView", "Privacy"})
+    public void testSetSecureCookieForHttpUrlTargetingAndroidR() {
+        mCookieManager.setWorkaroundHttpSecureCookiesForTesting(false);
+        Assert.assertEquals(
+                0, RecordHistogram.getHistogramTotalCountForTesting(SECURE_COOKIE_HISTOGRAM_NAME));
+        String url = "http://www.example.com";
+        String secureUrl = "https://www.example.com";
+        String cookie = "name=test";
+        boolean success = setCookieOnUiThreadSync(url, cookie + ";secure");
+
+        Assert.assertFalse("Setting the cookie should fail", success);
+        assertNoCookies(url);
+        assertNoCookies(secureUrl);
+
+        Assert.assertEquals(
+                1, RecordHistogram.getHistogramTotalCountForTesting(SECURE_COOKIE_HISTOGRAM_NAME));
+        Assert.assertEquals(1,
+                RecordHistogram.getHistogramValueCountForTesting(
+                        SECURE_COOKIE_HISTOGRAM_NAME, 5 /* kDisallowedAndroidR */));
     }
 
     @Test
@@ -1181,6 +1209,17 @@ public class CookieManagerTest {
             final String url, final String cookie, final Callback<Boolean> callback) {
         InstrumentationRegistry.getInstrumentation().runOnMainSync(
                 () -> mCookieManager.setCookie(url, cookie, callback));
+    }
+
+    private boolean setCookieOnUiThreadSync(final String url, final String cookie) {
+        final SettableFuture<Boolean> cookieResultFuture = SettableFuture.create();
+        InstrumentationRegistry.getInstrumentation().runOnMainSync(
+                () -> mCookieManager.setCookie(url, cookie, cookieResultFuture::set));
+        Boolean success = AwActivityTestRule.waitForFuture(cookieResultFuture);
+        if (success == null) {
+            throw new RuntimeException("setCookie() should never return null in its callback");
+        }
+        return success;
     }
 
     private void removeSessionCookiesOnUiThread(final Callback<Boolean> callback) {

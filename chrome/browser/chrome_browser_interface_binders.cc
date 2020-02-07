@@ -19,6 +19,7 @@
 #include "chrome/browser/navigation_predictor/navigation_predictor.h"
 #include "chrome/browser/predictors/network_hints_handler_impl.h"
 #include "chrome/browser/prerender/prerender_contents.h"
+#include "chrome/browser/prerender/prerender_processor_impl.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ssl/insecure_sensitive_input_driver_factory.h"
 #include "chrome/browser/ui/webui/bluetooth_internals/bluetooth_internals.mojom.h"
@@ -335,6 +336,9 @@ void PopulateChromeFrameBinders(
 
   map->Add<mojom::PrerenderCanceler>(
       base::BindRepeating(&BindPrerenderCanceler));
+
+  map->Add<mojom::PrerenderProcessor>(
+      base::BindRepeating(&prerender::PrerenderProcessorImpl::Create));
 
   map->Add<performance_manager::mojom::DocumentCoordinationUnit>(
       base::BindRepeating(&BindDocumentCoordinationUnit));

@@ -151,6 +151,10 @@ def main():
   parser.add_argument('--target-os', default='detect', help='gn target_os')
   parser.add_argument('--arch', '-a', default='detect',
                       help='CPU architecture of the test binary.')
+  parser.add_argument( '--build', dest='build', action='store_true',
+                      help='Build before isolating (default).')
+  parser.add_argument( '--no-build', dest='build', action='store_false',
+                      help='Do not build, just isolate.')
   parser.add_argument('--copies', '-n', type=int, default=1,
                       help='Number of copies to spawn.')
   parser.add_argument('--device-os', default='M',
@@ -164,6 +168,9 @@ def main():
                            'default filter file, if any.')
   parser.add_argument('out_dir', type=str, help='Build directory.')
   parser.add_argument('target_name', type=str, help='Name of target to run.')
+
+  # TODO(thakis): Should this default to false?
+  parser.set_defaults(build=True)
 
   args = parser.parse_args()
 
@@ -190,6 +197,10 @@ def main():
       'fuchsia': 'Linux'
     }[args.target_os]
 
+  if args.target_os == 'win' and args.target_name.endswith('.exe'):
+    # The machinery expects not to have a '.exe' suffix.
+    args.target_name = os.path.splitext(args.target_name)[0]
+
   # Determine the CPU architecture of the test binary, if not specified.
   if args.arch == 'detect' and args.target_os == 'fuchsia':
     executable_info = subprocess.check_output(
@@ -199,8 +210,11 @@ def main():
     else:
       args.arch = 'x86-64'
 
-  subprocess.check_call([sys.executable, 'tools/mb/mb.py',
-      'isolate', '//' + args.out_dir, args.target_name])
+  mb_cmd = [sys.executable, 'tools/mb/mb.py', 'isolate']
+  if not args.build:
+    mb_cmd.append('--no-build')
+  mb_cmd += ['//' + args.out_dir, args.target_name]
+  subprocess.check_call(mb_cmd)
 
   print('If you get authentication errors, follow:')
   print(

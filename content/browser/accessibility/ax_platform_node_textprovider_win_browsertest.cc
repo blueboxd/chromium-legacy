@@ -42,7 +42,7 @@ namespace content {
     base::win::ScopedBstr provider_content;                 \
     ASSERT_HRESULT_SUCCEEDED(                               \
         provider->GetText(-1, provider_content.Receive())); \
-    EXPECT_STREQ(expected_content, provider_content);       \
+    EXPECT_STREQ(expected_content, provider_content.Get()); \
   }
 
 class AXPlatformNodeTextProviderWinBrowserTest : public ContentBrowserTest {

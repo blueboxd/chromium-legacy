@@ -256,6 +256,7 @@ Se la casella "<ph name="SERVICE_SCRIPT_NAME" />" è già selezionata, deselezio
 <translation id="6939719207673461467">Mostra/nascondi tastiera.</translation>
 <translation id="6944854424004126054">Ripristina finestra</translation>
 <translation id="6948905685698011662">Chrome Remote Desktop è finalmente sul Web! Scopri la nostra <ph name="LINK_BEGIN" />app web gratuita<ph name="LINK_END" />.</translation>
+<translation id="6956835181934226419">Ho già concesso questa autorizzazione.</translation>
 <translation id="6963936880795878952">Le connessioni al computer remoto sono temporaneamente bloccate perché qualcuno stava cercando di collegarsi al computer con un PIN non valido. Riprova più tardi.</translation>
 <translation id="6965382102122355670">OK</translation>
 <translation id="6985691951107243942">Vuoi disattivare le connessioni remote a <ph name="HOSTNAME" />? Se cambi idea, dovrai utilizzare il computer in questione per riattivare le connessioni.</translation>

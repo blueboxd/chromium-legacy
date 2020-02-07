@@ -14,18 +14,27 @@ static_library("javascript_dialogs") {
     "app_modal_dialog_queue.h",
     "app_modal_dialog_view.h",
     "extensions_client.h",
+    "tab_modal_dialog_manager.cc",
+    "tab_modal_dialog_manager.h",
+    "tab_modal_dialog_manager_delegate.h",
+    "tab_modal_dialog_view.h",
   ]
 
   deps = [
     "//base",
     "//base:i18n",
+    "//components/navigation_metrics/",
     "//components/strings",
+    "//components/ukm/content",
     "//components/url_formatter",
     "//content/public/browser",
     "//content/public/common",
     "//net",
+    "//services/metrics/public/cpp:metrics_cpp",
+    "//services/metrics/public/cpp:ukm_builders",
     "//skia",
     "//ui/base",
+    "//ui/gfx",
   ]
 
   if (use_aura) {
@@ -43,8 +52,10 @@ static_library("javascript_dialogs") {
 
   if (is_android) {
     sources += [
-      "android/javascript_app_modal_dialog_android.cc",
-      "android/javascript_app_modal_dialog_android.h",
+      "android/app_modal_dialog_view_android.cc",
+      "android/app_modal_dialog_view_android.h",
+      "android/tab_modal_dialog_view_android.cc",
+      "android/tab_modal_dialog_view_android.h",
     ]
 
     deps += [

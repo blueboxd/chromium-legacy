@@ -115,6 +115,7 @@
 <translation id="1919950603503897840">Contacten selecteren</translation>
 <translation id="1922076542920281912">Als je Chrome toegang wilt geven tot je locatie, moet je locatie ook inschakelen via de <ph name="BEGIN_LINK" />Android-instellingen<ph name="END_LINK" />.</translation>
 <translation id="1923695749281512248"><ph name="BYTES_DOWNLOADED_WITH_UNITS" /> van <ph name="FILE_SIZE_WITH_UNITS" /></translation>
+<translation id="1925021887439448749">Aangepast webadres opgeven</translation>
 <translation id="1928696683969751773">Updates</translation>
 <translation id="19288952978244135">Open Chrome opnieuw.</translation>
 <translation id="1933845786846280168">Geselecteerd tabblad</translation>
@@ -279,6 +280,7 @@
 <translation id="3123473560110926937">Geblokkeerd op bepaalde sites</translation>
 <translation id="3123734510202723619">Aankondigingen</translation>
 <translation id="3137521801621304719">Incognitomodus verlaten</translation>
+<translation id="3140134512074889489">Schakel je camera in om een QR-code te scannen</translation>
 <translation id="3143515551205905069">Synchronisatie annuleren</translation>
 <translation id="3157842584138209013">Via de knop 'Meer opties' kun je zien hoeveel data je hebt bespaard</translation>
 <translation id="3166827708714933426">Sneltoetsen voor tabbladen en vensters</translation>
@@ -449,6 +451,9 @@
 <translation id="4521489764227272523">De geselecteerde gegevens zijn verwijderd uit Chrome en van je gesynchroniseerde apparaten.
 
 Voor je Google-account kunnen andere vormen van browsegeschiedenis (zoals zoekopdrachten en activiteit uit andere Google-services) beschikbaar zijn via <ph name="BEGIN_LINK" />myactivity.google.com<ph name="END_LINK" />.</translation>
+<translation id="4527374721149092498">Bekijk informatie over onderwerpen op websites zonder de pagina te verlaten. 'Tikken om te zoeken' stuurt een woord en contextuele informatie voor het woord naar Google Zoeken, waarna er definities, afbeeldingen, zoekresultaten en andere gegevens worden weergegeven.
+
+Tik op een woord om er een zoekopdracht voor te maken. Als je de zoekterm wilt aanpassen, selecteer je deze door er lang op te drukken. Als je je zoekopdracht wilt verfijnen, schuif je het deelvenster open, tik je op het uitvouwicoon om een nieuw tabblad te maken en tik je daarna op het zoekvak.</translation>
 <translation id="4532845899244822526">Map kiezen</translation>
 <translation id="4538018662093857852">Lite-versie inschakelen</translation>
 <translation id="4550003330909367850">Als je hier je wachtwoord wilt bekijken of kopiëren, stel je schermvergrendeling in op dit apparaat.</translation>
@@ -690,6 +695,9 @@ Voor je Google-account kunnen andere vormen van browsegeschiedenis (zoals zoekop
 <translation id="6232535412751077445">Als je 'Niet bijhouden' inschakelt, wordt hiervoor een verzoek opgenomen in je browseverkeer. Het resultaat daarvan hangt af van of een website reageert op het verzoek en hoe het verzoek wordt geïnterpreteerd.
 
 Zo kunnen sommige websites op dit verzoek reageren door advertenties weer te geven die niet zijn gebaseerd op andere websites die je hebt bezocht. Toch blijven veel websites je browsegegevens nog verzamelen en gebruiken, bijvoorbeeld om de beveiliging te verbeteren, om content, services, advertenties en aanbevelingen te leveren en om rapportagestatistieken te genereren.</translation>
+<translation id="6238003486329291387">Bekijk informatie over onderwerpen op websites zonder de pagina te verlaten. 'Tikken om te zoeken' stuurt een woord en contextuele informatie voor het woord naar Google Zoeken, waarna er definities, afbeeldingen, zoekresultaten en andere gegevens worden weergegeven.
+
+Druk lang op een woord om er een zoekopdracht voor te maken. Pas de selectie aan om je zoekopdracht te verfijnen. Je kunt het deelvenster ook open schuiven, op het uitvouwicoon tikken om een nieuw tabblad te maken en daarna op het zoekvak tikken.</translation>
 <translation id="624789221780392884">Update gereed</translation>
 <translation id="6255999984061454636">Contentsuggesties</translation>
 <translation id="6270391203985052864">Sites kunnen vragen of ze je meldingen mogen sturen</translation>

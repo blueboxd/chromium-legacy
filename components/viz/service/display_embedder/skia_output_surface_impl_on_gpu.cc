@@ -32,6 +32,7 @@
 #include "components/viz/service/display_embedder/skia_output_device_buffer_queue.h"
 #include "components/viz/service/display_embedder/skia_output_device_gl.h"
 #include "components/viz/service/display_embedder/skia_output_device_offscreen.h"
+#include "components/viz/service/display_embedder/skia_output_device_webview.h"
 #include "components/viz/service/display_embedder/skia_output_surface_dependency.h"
 #include "gpu/command_buffer/common/shared_image_usage.h"
 #include "gpu/command_buffer/common/swap_buffers_complete_params.h"
@@ -119,10 +120,7 @@ struct ReadPixelsContext {
       : request(std::move(request)),
         result_rect(result_rect),
         color_space(color_space),
-        impl_on_gpu(impl_on_gpu) {
-    // TODO(crbug.com/1048251): Remove after finding source of null requests.
-    CHECK(this->request);
-  }
+        impl_on_gpu(impl_on_gpu) {}
 
   std::unique_ptr<CopyOutputRequest> request;
   gfx::Rect result_rect;
@@ -257,9 +255,6 @@ void OnRGBAReadbackDone(
     // This will automatically send an empty result.
     return;
   }
-
-  // TODO(crbug.com/1048251): Remove after finding source of null requests.
-  CHECK(context->request);
 
   DCHECK_EQ(1, async_result->count());
 
@@ -837,7 +832,7 @@ void SkiaOutputSurfaceImplOnGpu::Reshape(
     const gfx::Size& size,
     float device_scale_factor,
     const gfx::ColorSpace& color_space,
-    bool has_alpha,
+    gfx::BufferFormat format,
     bool use_stencil,
     gfx::OverlayTransform transform,
     SkSurfaceCharacterization* characterization,
@@ -857,8 +852,8 @@ void SkiaOutputSurfaceImplOnGpu::Reshape(
 
   size_ = size;
   color_space_ = color_space;
-  if (!output_device_->Reshape(size_, device_scale_factor, color_space,
-                               has_alpha, transform)) {
+  if (!output_device_->Reshape(size_, device_scale_factor, color_space, format,
+                               transform)) {
     MarkContextLost();
     return;
   }
@@ -1146,22 +1141,17 @@ void SkiaOutputSurfaceImplOnGpu::CopyOutput(
   // TODO(crbug.com/898595): Do this on the GPU instead of CPU with Vulkan.
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
 
-  // TODO(crbug.com/1048251): Remove after finding source of null requests.
-  CHECK(request);
-
   // Clear |destroy_after_swap_| if we CopyOutput without SwapBuffers.
   base::ScopedClosureRunner cleanup(
       base::BindOnce([](std::vector<std::unique_ptr<SkDeferredDisplayList>>) {},
                      std::move(destroy_after_swap_)));
 
-  bool use_gl_renderer_copier = !is_using_vulkan() && !is_using_dawn() &&
-                                !features::IsUsingSkiaForGLReadback();
-  if (use_gl_renderer_copier)
+  if (use_gl_renderer_copier_)
     gpu::ContextUrl::SetActiveUrl(copier_active_url_);
 
   // Lazy initialize GLRendererCopier before draw because
   // DirectContextProvider ctor the backbuffer.
-  if (use_gl_renderer_copier && !copier_) {
+  if (use_gl_renderer_copier_ && !copier_) {
     if (!MakeCurrent(true /* need_fbo0 */))
       return;
     auto client = std::make_unique<DirectContextProviderDelegateImpl>(
@@ -1227,7 +1217,7 @@ void SkiaOutputSurfaceImplOnGpu::CopyOutput(
     surface->flush();
   }
 
-  if (use_gl_renderer_copier) {
+  if (use_gl_renderer_copier_) {
     surface->flush();
 
     GLuint gl_id = 0;
@@ -1278,18 +1268,40 @@ void SkiaOutputSurfaceImplOnGpu::CopyOutput(
   SkFilterQuality filter_quality = is_downscale_in_both_dimensions
                                        ? kMedium_SkFilterQuality
                                        : kHigh_SkFilterQuality;
-  SkIRect src_rect = SkIRect::MakeXYWH(
-      geometry.sampling_bounds.x(), geometry.sampling_bounds.y(),
-      geometry.sampling_bounds.width(), geometry.sampling_bounds.height());
+
+  // Compute |source_selection| as a workaround to support |result_selection|
+  // with Skia readback. |result_selection| is a clip rect specified in the
+  // destination pixel space. By transforming |result_selection| back to the
+  // source pixel space we can compute what rectangle to sample from.
+  //
+  // This might introduce some rounding error if destination pixel space is
+  // scaled up from the source pixel space. When scaling |result_selection| back
+  // down it might not be pixel aligned.
+  gfx::Rect source_selection = geometry.sampling_bounds;
+  if (request->has_result_selection()) {
+    gfx::Rect sampling_selection = request->result_selection();
+    if (request->is_scaled()) {
+      // Invert the scaling.
+      sampling_selection = copy_output::ComputeResultRect(
+          sampling_selection, request->scale_to(), request->scale_from());
+    }
+    sampling_selection.Offset(source_selection.OffsetFromOrigin());
+    source_selection.Intersect(sampling_selection);
+  }
+
+  SkIRect src_rect =
+      SkIRect::MakeXYWH(source_selection.x(), source_selection.y(),
+                        source_selection.width(), source_selection.height());
 
   if (request->result_format() ==
       CopyOutputRequest::ResultFormat::I420_PLANES) {
     std::unique_ptr<ReadPixelsContext> context =
-        std::make_unique<ReadPixelsContext>(
-            std::move(request), geometry.result_bounds, color_space, weak_ptr_);
+        std::make_unique<ReadPixelsContext>(std::move(request),
+                                            geometry.result_selection,
+                                            color_space, weak_ptr_);
     surface->asyncRescaleAndReadPixelsYUV420(
         kRec709_SkYUVColorSpace, SkColorSpace::MakeSRGB(), src_rect,
-        {geometry.result_bounds.width(), geometry.result_bounds.height()},
+        {geometry.result_selection.width(), geometry.result_selection.height()},
         SkSurface::RescaleGamma::kSrc, filter_quality, &OnYUVReadbackDone,
         context.release());
   } else if (request->result_format() ==
@@ -1297,12 +1309,13 @@ void SkiaOutputSurfaceImplOnGpu::CopyOutput(
     // Perform swizzle during readback.
     const bool skbitmap_is_bgra = (kN32_SkColorType == kBGRA_8888_SkColorType);
     SkImageInfo dst_info = SkImageInfo::Make(
-        geometry.result_bounds.width(), geometry.result_bounds.height(),
+        geometry.result_selection.width(), geometry.result_selection.height(),
         skbitmap_is_bgra ? kBGRA_8888_SkColorType : kRGBA_8888_SkColorType,
         kPremul_SkAlphaType);
     std::unique_ptr<ReadPixelsContext> context =
-        std::make_unique<ReadPixelsContext>(
-            std::move(request), geometry.result_bounds, color_space, weak_ptr_);
+        std::make_unique<ReadPixelsContext>(std::move(request),
+                                            geometry.result_selection,
+                                            color_space, weak_ptr_);
     surface->asyncRescaleAndReadPixels(
         dst_info, src_rect, SkSurface::RescaleGamma::kSrc, filter_quality,
         &OnRGBAReadbackDone, context.release());
@@ -1453,6 +1466,8 @@ bool SkiaOutputSurfaceImplOnGpu::Initialize() {
     if (!InitializeForGL())
       return false;
   }
+  use_gl_renderer_copier_ = !is_using_vulkan() && !is_using_dawn() &&
+                            !features::IsUsingSkiaForGLReadback();
   max_resource_cache_bytes_ =
       context_state_->gr_context()->getResourceCacheLimit();
   return true;
@@ -1503,13 +1518,22 @@ bool SkiaOutputSurfaceImplOnGpu::InitializeForGL() {
         output_device_ = std::move(onscreen_device);
 
       } else {
-        std::unique_ptr<SkiaOutputDeviceGL> onscreen_device =
-            std::make_unique<SkiaOutputDeviceGL>(
-                dependency_->GetMailboxManager(), context_state_.get(),
-                gl_surface_, feature_info_, memory_tracker_.get(),
-                did_swap_buffer_complete_callback_);
-        supports_alpha_ = onscreen_device->supports_alpha();
-        output_device_ = std::move(onscreen_device);
+        if (dependency_->NeedsSupportForExternalStencil()) {
+          std::unique_ptr<SkiaOutputDeviceWebView> onscreen_device =
+              std::make_unique<SkiaOutputDeviceWebView>(
+                  context_state_.get(), gl_surface_, memory_tracker_.get(),
+                  did_swap_buffer_complete_callback_);
+          supports_alpha_ = onscreen_device->supports_alpha();
+          output_device_ = std::move(onscreen_device);
+        } else {
+          std::unique_ptr<SkiaOutputDeviceGL> onscreen_device =
+              std::make_unique<SkiaOutputDeviceGL>(
+                  dependency_->GetMailboxManager(), context_state_.get(),
+                  gl_surface_, feature_info_, memory_tracker_.get(),
+                  did_swap_buffer_complete_callback_);
+          supports_alpha_ = onscreen_device->supports_alpha();
+          output_device_ = std::move(onscreen_device);
+        }
       }
     } else {
       gl_surface_ = nullptr;

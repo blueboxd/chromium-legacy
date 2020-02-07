@@ -10,7 +10,7 @@
         android:key="account_section"
         android:order="0"
         android:title="@string/prefs_section_account"/>
-    <org.chromium.chrome.browser.settings.sync.SignInPreference
+    <org.chromium.chrome.browser.sync.settings.SignInPreference
         android:key="sign_in"
         android:order="1"
         android:title="@string/sign_in_to_chrome"/>
@@ -19,7 +19,7 @@
         android:order="2"
         android:layout="@layout/account_management_account_row"
         android:title="@string/prefs_sync_and_services"
-        android:fragment="org.chromium.chrome.browser.settings.sync.SyncAndServicesSettings"/>
+        android:fragment="org.chromium.chrome.browser.sync.settings.SyncAndServicesSettings"/>
 
     <PreferenceCategory
         android:key="basics_section"
@@ -36,12 +36,12 @@
         android:order="5"
         android:title="@string/password_settings_title"/>
     <org.chromium.chrome.browser.settings.ChromeBasePreference
-        android:fragment="org.chromium.chrome.browser.settings.autofill.AutofillPaymentMethodsFragment"
+        android:fragment="org.chromium.chrome.browser.autofill.settings.AutofillPaymentMethodsFragment"
         android:key="autofill_payment_methods"
         android:order="6"
         android:title="@string/autofill_payment_methods"/>
     <org.chromium.chrome.browser.settings.ChromeBasePreference
-        android:fragment="org.chromium.chrome.browser.settings.autofill.AutofillProfilesFragment"
+        android:fragment="org.chromium.chrome.browser.autofill.settings.AutofillProfilesFragment"
         android:key="autofill_addresses"
         android:order="7"
         android:title="@string/autofill_addresses_settings_title"/>

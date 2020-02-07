@@ -230,8 +230,9 @@ std::string GetAccountName(Profile* profile) {
   switch (GetAccountType(profile)) {
     case mojom::ChromeAccountType::USER_ACCOUNT:
     case mojom::ChromeAccountType::CHILD_ACCOUNT:
-      // IdentityManager::GetUnconsentedPrimaryAccountInfo().email might be more
-      // appropriate here, but this is what we have done historically.
+      // IdentityManager::GetPrimaryAccountInfo(
+      //    signin::ConsentLevel::kNotRequired).email might be more appropriate
+      // here, but this is what we have done historically.
       return chromeos::ProfileHelper::Get()
           ->GetUserByProfile(profile)
           ->GetDisplayEmail();

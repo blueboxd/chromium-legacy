@@ -118,6 +118,7 @@
 <translation id="2413728805700750528"><ph name="DISPLAY_NAME" /> é uma sessão gerenciada por <ph name="DOMAIN" /></translation>
 <translation id="2427507373259914951">Clicar com o botão esquerdo</translation>
 <translation id="2429753432712299108">O dispositivo Bluetooth "<ph name="DEVICE_NAME" />" deseja permissão para realizar o pareamento. Antes de aceitar, verifique se esta senha aparece no dispositivo: <ph name="PASSKEY" /></translation>
+<translation id="2473177541599297363">Confirmar resolução</translation>
 <translation id="2482878487686419369">Notificações</translation>
 <translation id="2484513351006226581">Pressione <ph name="KEYBOARD_SHORTCUT" /> para alterar o layout do teclado.</translation>
 <translation id="2501920221385095727">Teclas aderentes</translation>
@@ -137,8 +138,8 @@
 <translation id="2718395828230677721">Modo noturno</translation>
 <translation id="2727977024730340865">Conectado a um carregador de baixa potência. O carregamento da bateria pode não ser confiável.</translation>
 <translation id="2792498699870441125">Alt + Pesquisar</translation>
-<translation id="2803734122639935495">Para desbloquear, digite sua senha</translation>
 <translation id="2819276065543622893">Você sairá agora.</translation>
+<translation id="2825224105325558319"><ph name="DISPLAY_NAME" /> não é compatível com <ph name="SPECIFIED_RESOLUTION" />. A resolução foi modificada para <ph name="FALLBACK_RESOLUTION" />.</translation>
 <translation id="2825619548187458965">Estante</translation>
 <translation id="2844169650293029770">Dispositivo USB-C (porta frontal da esquerda)</translation>
 <translation id="2865888419503095837">Informações de rede</translation>
@@ -158,6 +159,12 @@
 <translation id="3009178788565917040">Saída</translation>
 <translation id="3051128274746680507">Seu perfil de usuário supervisionado será removido em breve. Faça login para saber mais.</translation>
 <translation id="3055162170959710888">Você usou este dispositivo por <ph name="USED_TIME" /> hoje</translation>
+<translation id="3076778413190775903">Bandeja de status, horário <ph name="TIME" />,
+        <ph name="BATTERY" />
+        <ph name="NETWORK" />,
+        <ph name="NOTIFICATION" />,
+        <ph name="IME" />
+        <ph name="LOCALE" /></translation>
 <translation id="3077734595579995578">shift</translation>
 <translation id="3081696990447829002">Expandir menu</translation>
 <translation id="3087734570205094154">Parte inferior</translation>
@@ -168,6 +175,7 @@
 <translation id="3151786313568798007">Orientação</translation>
 <translation id="3153444934357957346">Só é possível ter até <ph name="MULTI_PROFILE_USER_LIMIT" /> contas em login múltiplo.</translation>
 <translation id="3154351730702813399">O administrador do dispositivo pode monitorar sua atividade de navegação.</translation>
+<translation id="3181441307743005334">A reinicialização pode demorar um pouco</translation>
 <translation id="3202010236269062730">{NUM_DEVICES,plural, =1{Conectado a um dispositivo}one{Conectado a # dispositivo}other{Conectado a # dispositivos}}</translation>
 <translation id="3217205077783620295">O som está ativado. Alterná-lo desativará o som.</translation>
 <translation id="3226991577105957773">Mais <ph name="COUNT" /></translation>
@@ -202,6 +210,7 @@
 <translation id="3604801046548457007">Área de trabalho <ph name="DESK_TITILE" /> criada</translation>
 <translation id="3606978283550408104">Display em braille conectado.</translation>
 <translation id="3621202678540785336">Entrada</translation>
+<translation id="3621712662352432595">Configurações de áudio</translation>
 <translation id="3626281679859535460">Brilho</translation>
 <translation id="3631369015426612114">Permitir as seguintes notificações</translation>
 <translation id="3705722231355495246">-</translation>
@@ -316,6 +325,7 @@
 <translation id="5331975486040154427">Dispositivo USB-C (porta traseira da esquerda)</translation>
 <translation id="5379115545237091094">Muitas tentativas</translation>
 <translation id="5397578532367286026">O uso e o histórico deste usuário podem ser analisados pelo administrador (<ph name="MANAGER_EMAIL" />) em chrome.com.</translation>
+<translation id="5400461572260843123">Configurações rápidas, pressione "Pesquisa" + seta para a esquerda para acessar a central de notificações.</translation>
 <translation id="5430931332414098647">Tethering instantâneo</translation>
 <translation id="5431825016875453137">OpenVPN / L2TP</translation>
 <translation id="544691375626129091">Todos os usuários disponíveis já foram adicionados a esta sessão.</translation>
@@ -398,6 +408,7 @@ permanentemente excluídos assim que esse usuário for removido. Os websites vis
 <translation id="6490471652906364588">Dispositivo USB-C (porta da direita)</translation>
 <translation id="649452524636452238">PIN do cartão inteligente</translation>
 <translation id="6501401484702599040">Transmitindo tela para <ph name="RECEIVER_NAME" /></translation>
+<translation id="652139407789908527">Sua tela ficará desligada por mais tempo que o normal (até um minuto) durante a atualização. Não pressione o botão liga/desliga enquanto a atualização está em andamento.</translation>
 <translation id="6521655319214113338">Entrada de texto manuscrito</translation>
 <translation id="6528179044667508675">Não perturbe</translation>
 <translation id="6537270692134705506">Capturar tela</translation>
@@ -543,8 +554,10 @@ permanentemente excluídos assim que esse usuário for removido. Os websites vis
 <translation id="847056008324733326">Exibir configurações de escala</translation>
 <translation id="8473301994082929012"><ph name="ORGANIZATION_NAME" /> <ph name="FEATURE_STATE" /> o recurso <ph name="FEATURE_NAME" />.</translation>
 <translation id="8477270416194247200">Pressione Alt+Pesquisar ou Shift para cancelar.</translation>
+<translation id="8492573885090281069">O <ph name="DISPLAY_NAME" /> não é compatível com <ph name="SPECIFIED_RESOLUTION" />. A resolução foi modificada para <ph name="FALLBACK_RESOLUTION" />. Clique em "Confirmar" para manter as mudanças. As configurações anteriores serão restauradas em <ph name="TIMEOUT_SECONDS" />.</translation>
 <translation id="8513108775083588393">Girar automaticamente</translation>
 <translation id="8517041960877371778">Seu <ph name="DEVICE_TYPE" /> pode não ser carregado enquanto estiver ligado.</translation>
+<translation id="8563862697512465947">Configurações de notificação</translation>
 <translation id="8627191004499078455">Conectado a <ph name="DEVICE_NAME" /></translation>
 <translation id="8637598503828012618"><ph name="CONNECTION_STATUS" />, intensidade do sinal em <ph name="SIGNAL_STRENGTH" />, gerenciada pelo seu administrador</translation>
 <translation id="8639760480004882931"><ph name="PERCENTAGE" /> restante(s)</translation>
@@ -597,6 +610,7 @@ permanentemente excluídos assim que esse usuário for removido. Os websites vis
 <translation id="9183456764293710005">Lupa de tela cheia</translation>
 <translation id="9193626018745640770">Transmitindo para um destinatário desconhecido</translation>
 <translation id="9194617393863864469">Fazer login com outro usuário...</translation>
+<translation id="9198992156681343238">A resolução de <ph name="DISPLAY_NAME" /> foi modificada para <ph name="RESOLUTION" />. Clique em "Confirmar" para manter as mudanças. As configurações anteriores serão restauradas em <ph name="TIMEOUT_SECONDS" />.</translation>
 <translation id="9201374708878217446"><ph name="CONNECTION_STATUS" />, gerenciada pelo seu administrador</translation>
 <translation id="9210037371811586452">Saindo do modo de área de trabalho unificada</translation>
 <translation id="9211681782751733685">Tempo restante até que a bateria esteja totalmente carregada: <ph name="TIME_REMAINING" />.</translation>

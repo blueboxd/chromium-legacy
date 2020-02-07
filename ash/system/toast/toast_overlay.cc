@@ -24,9 +24,10 @@
 #include "ui/gfx/canvas.h"
 #include "ui/gfx/font_list.h"
 #include "ui/gfx/geometry/insets.h"
-#include "ui/views/animation/ink_drop_mask.h"
+#include "ui/views/animation/ink_drop_highlight.h"
 #include "ui/views/border.h"
 #include "ui/views/controls/button/label_button.h"
+#include "ui/views/controls/highlight_path_generator.h"
 #include "ui/views/controls/label.h"
 #include "ui/views/layout/box_layout.h"
 #include "ui/views/view.h"
@@ -130,15 +131,19 @@ class ToastOverlayButton : public views::LabelButton {
         std::max((kToastHeight - GetPreferredSize().height()) / 2, 0);
     SetBorder(views::CreateEmptyBorder(
         gfx::Insets(vertical_spacing, kToastHorizontalSpacing)));
+
+    views::InstallRoundRectHighlightPathGenerator(this, gfx::Insets(),
+                                                  kToastCornerRounding);
   }
 
   ~ToastOverlayButton() override = default;
 
  protected:
   // views::LabelButton:
-  std::unique_ptr<views::InkDropMask> CreateInkDropMask() const override {
-    return std::make_unique<views::RoundRectInkDropMask>(size(), gfx::Insets(),
-                                                         kToastCornerRounding);
+  std::unique_ptr<views::InkDropHighlight> CreateInkDropHighlight()
+      const override {
+    return std::make_unique<views::InkDropHighlight>(
+        gfx::SizeF(GetLocalBounds().size()), GetInkDropBaseColor());
   }
 
  private:

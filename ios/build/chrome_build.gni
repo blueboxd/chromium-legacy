@@ -14,6 +14,9 @@ declare_args() {
   # Enable share extension.
   ios_enable_share_extension = true
 
+  # Enable credential provider extension.
+  ios_enable_credential_provider_extension = false
+
   # Enable multi-window configuration in Info.plist
   ios_enable_multi_window = false
 

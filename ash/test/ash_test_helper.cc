@@ -68,8 +68,7 @@
 namespace ash {
 
 AshTestHelper::AshTestHelper()
-    : command_line_(std::make_unique<base::test::ScopedCommandLine>()) {
-}
+    : command_line_(std::make_unique<base::test::ScopedCommandLine>()) {}
 
 AshTestHelper::~AshTestHelper() {
   // Ensure the next test starts with a null display::Screen. Done here because
@@ -299,7 +298,8 @@ aura::Window* AshTestHelper::CurrentContext() {
 }
 
 display::Display AshTestHelper::GetSecondaryDisplay() const {
-  return Shell::Get()->display_manager()->GetSecondaryDisplay();
+  return display::test::DisplayManagerTestApi(Shell::Get()->display_manager())
+      .GetSecondaryDisplay();
 }
 
 void AshTestHelper::CreateShell(base::Optional<ShellInitParams> init_params,

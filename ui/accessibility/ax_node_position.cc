@@ -173,10 +173,14 @@ base::string16 AXNodePosition::GetText() const {
 
   const AXNode* anchor = GetAnchor();
   DCHECK(anchor);
-  text = GetAnchor()->data().GetString16Attribute(
-      ax::mojom::StringAttribute::kValue);
-  if (!text.empty())
-    return text;
+  // TODO(nektar): Replace with PlatformChildCount when AXNodePosition and
+  // BrowserAccessibilityPosition will make one.
+  if (!AnchorChildCount()) {
+    text =
+        anchor->data().GetString16Attribute(ax::mojom::StringAttribute::kValue);
+    if (!text.empty())
+      return text;
+  }
 
   if (anchor->IsText()) {
     return anchor->data().GetString16Attribute(
@@ -225,10 +229,14 @@ int AXNodePosition::MaxTextOffset() const {
 
   const AXNode* anchor = GetAnchor();
   DCHECK(anchor);
-  base::string16 value = GetAnchor()->data().GetString16Attribute(
-      ax::mojom::StringAttribute::kValue);
-  if (!value.empty())
-    return value.length();
+  // TODO(nektar): Replace with PlatformChildCount when AXNodePosition and
+  // BrowserAccessibilityPosition will make one.
+  if (!AnchorChildCount()) {
+    base::string16 value =
+        anchor->data().GetString16Attribute(ax::mojom::StringAttribute::kValue);
+    if (!value.empty())
+      return value.length();
+  }
 
   if (anchor->IsText()) {
     return anchor->data()

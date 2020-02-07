@@ -18,6 +18,9 @@ namespace gfx {
 // Returns a vector containing all buffer formats.
 GFX_EXPORT std::vector<BufferFormat> GetBufferFormatsForTesting();
 
+// Returns the number of bits of alpha for the specified format.
+GFX_EXPORT size_t AlphaBitsForBufferFormat(BufferFormat format);
+
 // Returns the number of planes for |format|.
 GFX_EXPORT size_t NumberOfPlanesForLinearBufferFormat(BufferFormat format);
 

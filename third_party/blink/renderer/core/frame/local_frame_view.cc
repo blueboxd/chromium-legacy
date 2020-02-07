@@ -3985,9 +3985,6 @@ void LocalFrameView::DeliverSynchronousIntersectionObservations() {
 }
 
 void LocalFrameView::CrossOriginToMainFrameChanged() {
-  if (auto* owner = frame_->DeprecatedLocalOwner())
-    owner->FrameCrossOriginStatusChanged();
-
   // If any of these conditions hold, then a change in cross-origin status does
   // not affect throttling.
   if (lifecycle_updates_throttled_ || IsSubtreeThrottled() ||
@@ -4002,6 +3999,11 @@ void LocalFrameView::CrossOriginToMainFrameChanged() {
   // Immediately propagate changes to children.
   UpdateRenderThrottlingStatus(IsHiddenForThrottling(), IsSubtreeThrottled(),
                                true);
+}
+
+void LocalFrameView::CrossOriginToParentFrameChanged() {
+  if (auto* owner = frame_->DeprecatedLocalOwner())
+    owner->FrameCrossOriginToParentFrameChanged();
 }
 
 void LocalFrameView::VisibilityForThrottlingChanged() {

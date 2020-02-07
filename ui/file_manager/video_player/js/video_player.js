@@ -888,6 +888,7 @@ function initVolumeManager(callback) {
 const initPromise = Promise.all([
   new Promise(initStrings.wrap(null)),
   new Promise(initVolumeManager.wrap(null)),
+  new Promise(resolve => window.HTMLImports.whenReady(resolve)),
 ]);
 
 /**

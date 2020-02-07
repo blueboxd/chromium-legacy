@@ -137,6 +137,12 @@ NET_EXPORT extern const base::Feature
 NET_EXPORT extern const base::FeatureParam<int>
     kRecentCreationTimeGrantsLegacyCookieSemanticsMilliseconds;
 
+// When enabled, blocks external requests coming from non-secure contexts. An
+// external request is a request that crosses a network boundary from a more
+// public address space into a less public address space.
+NET_EXPORT extern const base::Feature
+    kBlockExternalRequestsFromNonSecureInitiators;
+
 #if BUILDFLAG(BUILTIN_CERT_VERIFIER_FEATURE_SUPPORTED)
 // When enabled, use the builtin cert verifier instead of the platform verifier.
 NET_EXPORT extern const base::Feature kCertVerifierBuiltinFeature;

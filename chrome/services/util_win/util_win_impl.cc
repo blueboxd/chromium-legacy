@@ -24,6 +24,7 @@
 #include "chrome/browser/win/conflicts/module_info_util.h"
 #include "chrome/installer/util/install_util.h"
 #include "chrome/services/util_win/av_products.h"
+#include "chrome/services/util_win/processor_metrics.h"
 #include "mojo/public/cpp/bindings/strong_binding.h"
 #include "third_party/metrics_proto/system_profile.pb.h"
 #include "ui/shell_dialogs/execute_select_file_win.h"
@@ -113,7 +114,7 @@ bool IsPinnedToTaskbarHelper::ShortcutHasUnpinToTaskbarVerb(
 
   Microsoft::WRL::ComPtr<FolderItem> item;
   hresult = folder->ParseName(
-      base::win::ScopedBstr(shortcut.BaseName().value()), &item);
+      base::win::ScopedBstr(shortcut.BaseName().value()).Get(), &item);
   if (FAILED(hresult) || !item) {
     error_occured_ = true;
     return false;
@@ -147,7 +148,7 @@ bool IsPinnedToTaskbarHelper::ShortcutHasUnpinToTaskbarVerb(
       error_count++;
       continue;
     }
-    if (base::StringPiece16(name, name.Length()) == verb_name)
+    if (base::StringPiece16(name.Get(), name.Length()) == verb_name)
       return true;
   }
 
@@ -239,6 +240,8 @@ void UtilWinImpl::CallExecuteSelectFile(
     CallExecuteSelectFileCallback callback) {
   base::win::ScopedCOMInitializer scoped_com_initializer;
 
+  base::win::EnableHighDPISupport();
+
   ui::ExecuteSelectFile(
       type, title, default_path, filter, file_type_index, default_extension,
       reinterpret_cast<HWND>(base::win::Uint32ToHandle(owner)),
@@ -254,4 +257,13 @@ void UtilWinImpl::GetAntiVirusProducts(bool report_full_names,
                                        GetAntiVirusProductsCallback callback) {
   base::win::ScopedCOMInitializer scoped_com_initializer;
   std::move(callback).Run(::GetAntiVirusProducts(report_full_names));
+}
+
+void UtilWinImpl::RecordProcessorMetrics(
+    RecordProcessorMetricsCallback callback) {
+  // TODO(sebmarchand): Check if we should move the ScopedCOMInitializer to the
+  // UtilWinImpl class.
+  base::win::ScopedCOMInitializer scoped_com_initializer;
+  ::RecordProcessorMetrics();
+  std::move(callback).Run();
 }

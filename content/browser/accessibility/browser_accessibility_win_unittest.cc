@@ -41,7 +41,7 @@ namespace content {
                                          &actual_end, actual_text.Receive())); \
     EXPECT_EQ(start, actual_start);                                            \
     EXPECT_EQ(end, actual_end);                                                \
-    EXPECT_STREQ(text, actual_text);                                           \
+    EXPECT_STREQ(text, actual_text.Get());                                     \
   }
 
 #define EXPECT_IA2_TEXT_BEFORE_OFFSET(provider, index, text_boundary, \
@@ -55,7 +55,7 @@ namespace content {
                                &actual_end, actual_text.Receive()));  \
     EXPECT_EQ(start, actual_start);                                   \
     EXPECT_EQ(end, actual_end);                                       \
-    EXPECT_STREQ(text, actual_text);                                  \
+    EXPECT_STREQ(text, actual_text.Get());                            \
   }
 
 #define EXPECT_IA2_TEXT_AFTER_OFFSET(provider, index, text_boundary, \
@@ -69,7 +69,7 @@ namespace content {
                                &actual_end, actual_text.Receive())); \
     EXPECT_EQ(start, actual_start);                                  \
     EXPECT_EQ(end, actual_end);                                      \
-    EXPECT_STREQ(text, actual_text);                                 \
+    EXPECT_STREQ(text, actual_text.Get());                           \
   }
 
 // BrowserAccessibilityWinTest ------------------------------------------------
@@ -207,7 +207,7 @@ TEST_F(BrowserAccessibilityWinTest, TestChildrenChange) {
   base::win::ScopedBstr name;
   hr = text_accessible->get_accName(childid_self, name.Receive());
   ASSERT_EQ(S_OK, hr);
-  EXPECT_EQ(L"old text", base::string16(name));
+  EXPECT_EQ(L"old text", base::string16(name.Get()));
   name.Reset();
 
   text_dispatch.Reset();
@@ -235,7 +235,7 @@ TEST_F(BrowserAccessibilityWinTest, TestChildrenChange) {
 
   hr = text_accessible->get_accName(childid_self, name.Receive());
   ASSERT_EQ(S_OK, hr);
-  EXPECT_EQ(L"new text", base::string16(name));
+  EXPECT_EQ(L"new text", base::string16(name.Get()));
 
   text_dispatch.Reset();
   text_accessible.Reset();
@@ -419,11 +419,11 @@ TEST_F(BrowserAccessibilityWinTest, TestTextBoundaries) {
 
   base::win::ScopedBstr text;
   EXPECT_EQ(S_OK, text_field_obj->get_text(0, text_len, text.Receive()));
-  EXPECT_EQ(text_value, base::UTF16ToUTF8(base::string16(text)));
+  EXPECT_EQ(text_value, base::UTF16ToUTF8(base::string16(text.Get())));
   text.Reset();
 
   EXPECT_EQ(S_OK, text_field_obj->get_text(0, 4, text.Receive()));
-  EXPECT_STREQ(L"One ", text);
+  EXPECT_STREQ(L"One ", text.Get());
   text.Reset();
 
   EXPECT_IA2_TEXT_AT_OFFSET(text_field_obj, 1, IA2_TEXT_BOUNDARY_CHAR,
@@ -575,7 +575,7 @@ TEST_F(BrowserAccessibilityWinTest, TestTextBoundaries) {
 
   EXPECT_EQ(S_OK, text_field_obj->get_text(0, IA2_TEXT_OFFSET_LENGTH,
                                            text.Receive()));
-  EXPECT_EQ(text_value, base::UTF16ToUTF8(base::string16(text)));
+  EXPECT_EQ(text_value, base::UTF16ToUTF8(base::string16(text.Get())));
 
   // Delete the manager and test that all BrowserAccessibility instances are
   // deleted.
@@ -618,7 +618,8 @@ TEST_F(BrowserAccessibilityWinTest, TestSimpleHypertext) {
 
   base::win::ScopedBstr text;
   EXPECT_EQ(S_OK, root_obj->get_text(0, text_name_len, text.Receive()));
-  EXPECT_EQ(text1_name + text2_name, base::UTF16ToUTF8(base::string16(text)));
+  EXPECT_EQ(text1_name + text2_name,
+            base::UTF16ToUTF8(base::string16(text.Get())));
 
   LONG hyperlink_count;
   EXPECT_EQ(S_OK, root_obj->get_nHyperlinks(&hyperlink_count));
@@ -732,7 +733,7 @@ TEST_F(BrowserAccessibilityWinTest, TestComplexHypertext) {
 
   base::win::ScopedBstr text;
   EXPECT_EQ(S_OK, root_obj->get_text(0, root_hypertext_len, text.Receive()));
-  EXPECT_STREQ(root_hypertext.c_str(), text);
+  EXPECT_STREQ(root_hypertext.c_str(), text.Get());
   text.Reset();
 
   LONG hyperlink_count;
@@ -751,7 +752,7 @@ TEST_F(BrowserAccessibilityWinTest, TestComplexHypertext) {
   EXPECT_EQ(S_OK, hyperlink.CopyTo(hypertext.GetAddressOf()));
   EXPECT_EQ(S_OK,
             hypertext->get_text(0, IA2_TEXT_OFFSET_LENGTH, text.Receive()));
-  EXPECT_STREQ(combo_box_value.c_str(), text);
+  EXPECT_STREQ(combo_box_value.c_str(), text.Get());
   text.Reset();
   hyperlink.Reset();
   hypertext.Reset();
@@ -762,7 +763,7 @@ TEST_F(BrowserAccessibilityWinTest, TestComplexHypertext) {
   EXPECT_EQ(S_OK, hyperlink.CopyTo(hypertext.GetAddressOf()));
   EXPECT_EQ(S_OK,
             hypertext->get_text(0, IA2_TEXT_OFFSET_LENGTH, text.Receive()));
-  EXPECT_STREQ(check_box_name.c_str(), text);
+  EXPECT_STREQ(check_box_name.c_str(), text.Get());
   text.Reset();
   hyperlink.Reset();
   hypertext.Reset();
@@ -772,7 +773,7 @@ TEST_F(BrowserAccessibilityWinTest, TestComplexHypertext) {
   EXPECT_EQ(S_OK, hyperlink.CopyTo(hypertext.GetAddressOf()));
   EXPECT_EQ(S_FALSE,
             hypertext->get_text(0, IA2_TEXT_OFFSET_LENGTH, text.Receive()));
-  EXPECT_EQ(nullptr, text);
+  EXPECT_EQ(nullptr, text.Get());
   text.Reset();
   hyperlink.Reset();
   hypertext.Reset();
@@ -781,7 +782,7 @@ TEST_F(BrowserAccessibilityWinTest, TestComplexHypertext) {
   EXPECT_EQ(S_OK, root_obj->get_hyperlink(3, hyperlink.GetAddressOf()));
   EXPECT_EQ(S_OK, hyperlink.CopyTo(hypertext.GetAddressOf()));
   EXPECT_EQ(S_OK, hypertext->get_text(0, 4, text.Receive()));
-  EXPECT_STREQ(link_text_name.c_str(), text);
+  EXPECT_STREQ(link_text_name.c_str(), text.Get());
   text.Reset();
   hyperlink.Reset();
   hypertext.Reset();
@@ -956,8 +957,8 @@ TEST_F(BrowserAccessibilityWinTest, TestIA2Attributes) {
   HRESULT hr =
       pseudo_accessible->GetCOM()->get_attributes(attributes.Receive());
   EXPECT_EQ(S_OK, hr);
-  EXPECT_NE(nullptr, static_cast<BSTR>(attributes));
-  std::wstring attributes_str(attributes, attributes.Length());
+  EXPECT_NE(nullptr, attributes.Get());
+  std::wstring attributes_str(attributes.Get(), attributes.Length());
   EXPECT_EQ(L"display:none;tag:<pseudo\\:before>;", attributes_str);
 
   BrowserAccessibilityWin* checkbox_accessible =
@@ -967,8 +968,8 @@ TEST_F(BrowserAccessibilityWinTest, TestIA2Attributes) {
   attributes.Reset();
   hr = checkbox_accessible->GetCOM()->get_attributes(attributes.Receive());
   EXPECT_EQ(S_OK, hr);
-  EXPECT_NE(nullptr, static_cast<BSTR>(attributes));
-  attributes_str = std::wstring(attributes, attributes.Length());
+  EXPECT_NE(nullptr, attributes.Get());
+  attributes_str = std::wstring(attributes.Get(), attributes.Length());
   EXPECT_EQ(L"checkable:true;", attributes_str);
 
   manager.reset();
@@ -1087,17 +1088,17 @@ TEST_F(BrowserAccessibilityWinTest, TestValueAttributeInTextControls) {
   HRESULT hr = combo_box_accessible->GetCOM()->get_accValue(childid_self,
                                                             value.Receive());
   EXPECT_EQ(S_OK, hr);
-  EXPECT_STREQ(L"Combo box text", value);
+  EXPECT_STREQ(L"Combo box text", value.Get());
   value.Reset();
   hr = search_box_accessible->GetCOM()->get_accValue(childid_self,
                                                      value.Receive());
   EXPECT_EQ(S_OK, hr);
-  EXPECT_STREQ(L"Search box text\n", value);
+  EXPECT_STREQ(L"Search box text\n", value.Get());
   value.Reset();
   hr = text_field_accessible->GetCOM()->get_accValue(childid_self,
                                                      value.Receive());
   EXPECT_EQ(S_OK, hr);
-  EXPECT_STREQ(L"Text field text", value);
+  EXPECT_STREQ(L"Text field text", value.Get());
   value.Reset();
 
   // Other controls, such as links, should not use their inner text as their
@@ -1112,7 +1113,7 @@ TEST_F(BrowserAccessibilityWinTest, TestValueAttributeInTextControls) {
   // Also, try accessing the slider via its child number instead of directly.
   hr = root_accessible->GetCOM()->get_accValue(childid_slider, value.Receive());
   EXPECT_EQ(S_OK, hr);
-  EXPECT_STREQ(L"5", value);
+  EXPECT_STREQ(L"5", value.Get());
   value.Reset();
 
   manager.reset();
@@ -1254,7 +1255,7 @@ TEST_F(BrowserAccessibilityWinTest, TestWordBoundariesInTextControls) {
     LONG space_offset = static_cast<LONG>(text.find(' ', offset));
     EXPECT_EQ(space_offset + 1, end);
     LONG length = end - start;
-    EXPECT_STREQ(text.substr(start, length).c_str(), word);
+    EXPECT_STREQ(text.substr(start, length).c_str(), word.Get());
     word.Reset();
     offset = end;
   }
@@ -1271,7 +1272,7 @@ TEST_F(BrowserAccessibilityWinTest, TestWordBoundariesInTextControls) {
     LONG space_offset = static_cast<LONG>(line1.find(' ', offset));
     EXPECT_EQ(space_offset + 1, end);
     LONG length = end - start;
-    EXPECT_STREQ(text.substr(start, length).c_str(), word);
+    EXPECT_STREQ(text.substr(start, length).c_str(), word.Get());
     word.Reset();
     offset = end;
   }
@@ -2164,7 +2165,7 @@ TEST_F(BrowserAccessibilityWinTest, TestIAccessibleHyperlink) {
   EXPECT_EQ(S_OK, hr);
   EXPECT_EQ(VT_BSTR, anchor.type());
   bstr.Reset(V_BSTR(anchor.ptr()));
-  EXPECT_STREQ(div_hypertext.c_str(), bstr);
+  EXPECT_STREQ(div_hypertext.c_str(), bstr.Get());
   bstr.Reset();
   anchor.Reset();
   EXPECT_HRESULT_FAILED(
@@ -2174,7 +2175,7 @@ TEST_F(BrowserAccessibilityWinTest, TestIAccessibleHyperlink) {
   EXPECT_EQ(S_OK, hr);
   EXPECT_EQ(VT_BSTR, anchor.type());
   bstr.Reset(V_BSTR(anchor.ptr()));
-  EXPECT_STREQ(L"here", bstr);
+  EXPECT_STREQ(L"here", bstr.Get());
   bstr.Reset();
   anchor.Reset();
   EXPECT_HRESULT_FAILED(
@@ -2192,7 +2193,7 @@ TEST_F(BrowserAccessibilityWinTest, TestIAccessibleHyperlink) {
   EXPECT_EQ(VT_BSTR, anchor_target.type());
   bstr.Reset(V_BSTR(anchor_target.ptr()));
   // Target should be empty.
-  EXPECT_STREQ(L"", bstr);
+  EXPECT_STREQ(L"", bstr.Get());
   bstr.Reset();
   anchor_target.Reset();
   EXPECT_HRESULT_FAILED(
@@ -2202,7 +2203,7 @@ TEST_F(BrowserAccessibilityWinTest, TestIAccessibleHyperlink) {
   EXPECT_EQ(S_OK, hr);
   EXPECT_EQ(VT_BSTR, anchor_target.type());
   bstr.Reset(V_BSTR(anchor_target.ptr()));
-  EXPECT_STREQ(L"example.com", bstr);
+  EXPECT_STREQ(L"example.com", bstr.Get());
   bstr.Reset();
   anchor_target.Reset();
   EXPECT_HRESULT_FAILED(
@@ -2345,8 +2346,9 @@ TEST_F(BrowserAccessibilityWinTest, TestTextAttributesInContentEditables) {
   EXPECT_EQ(S_OK, hr);
   EXPECT_EQ(0, start_offset);
   EXPECT_EQ(1, end_offset);
-  EXPECT_NE(base::string16::npos,
-            base::string16(text_attributes).find(L"font-family:Helvetica"));
+  EXPECT_NE(
+      base::string16::npos,
+      base::string16(text_attributes.Get()).find(L"font-family:Helvetica"));
   text_attributes.Reset();
 
   // Test the style of text_before.
@@ -2356,7 +2358,7 @@ TEST_F(BrowserAccessibilityWinTest, TestTextAttributesInContentEditables) {
     EXPECT_EQ(S_OK, hr);
     EXPECT_EQ(0, start_offset);
     EXPECT_EQ(7, end_offset);
-    base::string16 attributes(text_attributes);
+    base::string16 attributes(text_attributes.Get());
     EXPECT_NE(base::string16::npos, attributes.find(L"font-family:Helvetica"));
     EXPECT_NE(base::string16::npos, attributes.find(L"font-weight:bold"));
     EXPECT_NE(base::string16::npos, attributes.find(L"font-style:italic"));
@@ -2369,21 +2371,22 @@ TEST_F(BrowserAccessibilityWinTest, TestTextAttributesInContentEditables) {
   EXPECT_EQ(S_OK, hr);
   EXPECT_EQ(0, start_offset);
   EXPECT_EQ(3, end_offset);
-  EXPECT_NE(base::string16::npos,
-            base::string16(text_attributes).find(L"font-family:Helvetica"));
-  EXPECT_EQ(base::string16::npos,
-            base::string16(text_attributes).find(L"font-weight:"));
-  EXPECT_EQ(base::string16::npos,
-            base::string16(text_attributes).find(L"font-style:"));
   EXPECT_NE(
       base::string16::npos,
-      base::string16(text_attributes).find(L"text-underline-style:solid"));
+      base::string16(text_attributes.Get()).find(L"font-family:Helvetica"));
   EXPECT_EQ(base::string16::npos,
-            base::string16(text_attributes).find(L"text-underline-type:"));
+            base::string16(text_attributes.Get()).find(L"font-weight:"));
+  EXPECT_EQ(base::string16::npos,
+            base::string16(text_attributes.Get()).find(L"font-style:"));
+  EXPECT_NE(base::string16::npos, base::string16(text_attributes.Get())
+                                      .find(L"text-underline-style:solid"));
+  EXPECT_EQ(
+      base::string16::npos,
+      base::string16(text_attributes.Get()).find(L"text-underline-type:"));
   // For compatibility with Firefox, spelling attributes should also be
   // propagated to the parent of static text leaves.
   EXPECT_NE(base::string16::npos,
-            base::string16(text_attributes).find(L"invalid:spelling"));
+            base::string16(text_attributes.Get()).find(L"invalid:spelling"));
   text_attributes.Reset();
 
   hr = ax_link_text->GetCOM()->get_attributes(2, &start_offset, &end_offset,
@@ -2391,19 +2394,20 @@ TEST_F(BrowserAccessibilityWinTest, TestTextAttributesInContentEditables) {
   EXPECT_EQ(S_OK, hr);
   EXPECT_EQ(0, start_offset);
   EXPECT_EQ(3, end_offset);
-  EXPECT_NE(base::string16::npos,
-            base::string16(text_attributes).find(L"font-family:Helvetica"));
-  EXPECT_EQ(base::string16::npos,
-            base::string16(text_attributes).find(L"font-weight:"));
-  EXPECT_EQ(base::string16::npos,
-            base::string16(text_attributes).find(L"font-style:"));
   EXPECT_NE(
       base::string16::npos,
-      base::string16(text_attributes).find(L"text-underline-style:solid"));
+      base::string16(text_attributes.Get()).find(L"font-family:Helvetica"));
   EXPECT_EQ(base::string16::npos,
-            base::string16(text_attributes).find(L"text-underline-type:"));
+            base::string16(text_attributes.Get()).find(L"font-weight:"));
+  EXPECT_EQ(base::string16::npos,
+            base::string16(text_attributes.Get()).find(L"font-style:"));
+  EXPECT_NE(base::string16::npos, base::string16(text_attributes.Get())
+                                      .find(L"text-underline-style:solid"));
+  EXPECT_EQ(
+      base::string16::npos,
+      base::string16(text_attributes.Get()).find(L"text-underline-type:"));
   EXPECT_NE(base::string16::npos,
-            base::string16(text_attributes).find(L"invalid:spelling"));
+            base::string16(text_attributes.Get()).find(L"invalid:spelling"));
   text_attributes.Reset();
 
   // Test the style of text_after.
@@ -2413,15 +2417,15 @@ TEST_F(BrowserAccessibilityWinTest, TestTextAttributesInContentEditables) {
     EXPECT_EQ(S_OK, hr);
     EXPECT_EQ(8, start_offset);
     EXPECT_EQ(15, end_offset);
-    base::string16 attributes(text_attributes);
+    base::string16 attributes(text_attributes.Get());
     EXPECT_NE(base::string16::npos, attributes.find(L"font-family:Helvetica"));
     EXPECT_EQ(base::string16::npos, attributes.find(L"font-weight:"));
     EXPECT_EQ(base::string16::npos, attributes.find(L"font-style:"));
+    EXPECT_EQ(base::string16::npos, base::string16(text_attributes.Get())
+                                        .find(L"text-underline-style:solid"));
     EXPECT_EQ(
         base::string16::npos,
-        base::string16(text_attributes).find(L"text-underline-style:solid"));
-    EXPECT_EQ(base::string16::npos,
-              base::string16(text_attributes).find(L"text-underline-type:"));
+        base::string16(text_attributes.Get()).find(L"text-underline-type:"));
     EXPECT_EQ(base::string16::npos, attributes.find(L"invalid:spelling"));
     text_attributes.Reset();
   }
@@ -2432,14 +2436,15 @@ TEST_F(BrowserAccessibilityWinTest, TestTextAttributesInContentEditables) {
   EXPECT_EQ(S_OK, hr);
   EXPECT_EQ(0, start_offset);
   EXPECT_EQ(7, end_offset);
+  EXPECT_NE(
+      base::string16::npos,
+      base::string16(text_attributes.Get()).find(L"font-family:Helvetica"));
   EXPECT_NE(base::string16::npos,
-            base::string16(text_attributes).find(L"font-family:Helvetica"));
+            base::string16(text_attributes.Get()).find(L"font-weight:bold"));
   EXPECT_NE(base::string16::npos,
-            base::string16(text_attributes).find(L"font-weight:bold"));
-  EXPECT_NE(base::string16::npos,
-            base::string16(text_attributes).find(L"font-style:italic"));
+            base::string16(text_attributes.Get()).find(L"font-style:italic"));
   EXPECT_EQ(base::string16::npos,
-            base::string16(text_attributes).find(L"invalid:spelling"));
+            base::string16(text_attributes.Get()).find(L"invalid:spelling"));
   text_attributes.Reset();
 
   hr = ax_after->GetCOM()->get_attributes(6, &start_offset, &end_offset,
@@ -2447,18 +2452,21 @@ TEST_F(BrowserAccessibilityWinTest, TestTextAttributesInContentEditables) {
   EXPECT_EQ(S_OK, hr);
   EXPECT_EQ(0, start_offset);
   EXPECT_EQ(7, end_offset);
-  EXPECT_NE(base::string16::npos,
-            base::string16(text_attributes).find(L"font-family:Helvetica"));
+  EXPECT_NE(
+      base::string16::npos,
+      base::string16(text_attributes.Get()).find(L"font-family:Helvetica"));
   EXPECT_EQ(base::string16::npos,
-            base::string16(text_attributes).find(L"font-weight:"));
+            base::string16(text_attributes.Get()).find(L"font-weight:"));
   EXPECT_EQ(base::string16::npos,
-            base::string16(text_attributes).find(L"font-style:"));
+            base::string16(text_attributes.Get()).find(L"font-style:"));
+  EXPECT_EQ(
+      base::string16::npos,
+      base::string16(text_attributes.Get()).find(L"text-underline-style:"));
+  EXPECT_EQ(
+      base::string16::npos,
+      base::string16(text_attributes.Get()).find(L"text-underline-type:"));
   EXPECT_EQ(base::string16::npos,
-            base::string16(text_attributes).find(L"text-underline-style:"));
-  EXPECT_EQ(base::string16::npos,
-            base::string16(text_attributes).find(L"text-underline-type:"));
-  EXPECT_EQ(base::string16::npos,
-            base::string16(text_attributes).find(L"invalid:spelling"));
+            base::string16(text_attributes.Get()).find(L"invalid:spelling"));
   text_attributes.Reset();
 
   manager.reset();
@@ -2547,7 +2555,7 @@ TEST_F(BrowserAccessibilityWinTest,
   for (LONG offset = 0; offset < value1_length; ++offset) {
     hr = ax_combo_box->GetCOM()->get_attributes(
         offset, &start_offset, &end_offset, text_attributes.Receive());
-    EXPECT_TRUE(base::string16(text_attributes).empty());
+    EXPECT_TRUE(base::string16(text_attributes.Get()).empty());
     EXPECT_EQ(0, start_offset);
     EXPECT_EQ(value1_length, end_offset);
     text_attributes.Reset();
@@ -2561,7 +2569,7 @@ TEST_F(BrowserAccessibilityWinTest,
     EXPECT_EQ(value1_length, start_offset);
     EXPECT_EQ(value1_length + 4, end_offset);
     EXPECT_NE(base::string16::npos,
-              base::string16(text_attributes).find(L"invalid:spelling"));
+              base::string16(text_attributes.Get()).find(L"invalid:spelling"));
     text_attributes.Reset();
   }
 
@@ -2570,7 +2578,7 @@ TEST_F(BrowserAccessibilityWinTest,
        ++offset) {
     hr = ax_combo_box->GetCOM()->get_attributes(
         offset, &start_offset, &end_offset, text_attributes.Receive());
-    EXPECT_TRUE(base::string16(text_attributes).empty());
+    EXPECT_TRUE(base::string16(text_attributes.Get()).empty());
     EXPECT_EQ(value1_length + 4, start_offset);
     EXPECT_EQ(combo_box_value_length, end_offset);
     text_attributes.Reset();
@@ -2647,7 +2655,7 @@ TEST_F(BrowserAccessibilityWinTest, TestNewMisspellingsInSimpleTextFields) {
   for (LONG offset = 0; offset < combo_box_value_length; ++offset) {
     hr = ax_combo_box->GetCOM()->get_attributes(
         offset, &start_offset, &end_offset, text_attributes.Receive());
-    EXPECT_TRUE(base::string16(text_attributes).empty());
+    EXPECT_TRUE(base::string16(text_attributes.Get()).empty());
     EXPECT_EQ(0, start_offset);
     EXPECT_EQ(combo_box_value_length, end_offset);
     text_attributes.Reset();
@@ -2672,7 +2680,7 @@ TEST_F(BrowserAccessibilityWinTest, TestNewMisspellingsInSimpleTextFields) {
   for (LONG offset = 0; offset < value1_length; ++offset) {
     hr = ax_combo_box->GetCOM()->get_attributes(
         offset, &start_offset, &end_offset, text_attributes.Receive());
-    EXPECT_TRUE(base::string16(text_attributes).empty());
+    EXPECT_TRUE(base::string16(text_attributes.Get()).empty());
     EXPECT_EQ(0, start_offset);
     EXPECT_EQ(value1_length, end_offset);
     text_attributes.Reset();
@@ -2686,7 +2694,7 @@ TEST_F(BrowserAccessibilityWinTest, TestNewMisspellingsInSimpleTextFields) {
     EXPECT_EQ(value1_length, start_offset);
     EXPECT_EQ(value1_length + 4, end_offset);
     EXPECT_NE(base::string16::npos,
-              base::string16(text_attributes).find(L"invalid:spelling"));
+              base::string16(text_attributes.Get()).find(L"invalid:spelling"));
     text_attributes.Reset();
   }
 
@@ -2695,7 +2703,7 @@ TEST_F(BrowserAccessibilityWinTest, TestNewMisspellingsInSimpleTextFields) {
        ++offset) {
     hr = ax_combo_box->GetCOM()->get_attributes(
         offset, &start_offset, &end_offset, text_attributes.Receive());
-    EXPECT_TRUE(base::string16(text_attributes).empty());
+    EXPECT_TRUE(base::string16(text_attributes.Get()).empty());
     EXPECT_EQ(value1_length + 4, start_offset);
     EXPECT_EQ(combo_box_value_length, end_offset);
     text_attributes.Reset();
@@ -3006,7 +3014,7 @@ TEST_F(BrowserAccessibilityWinTest, DISABLED_TestIAccessible2Relations) {
       ax_root->GetCOM()->get_relation(0, describedby_relation.GetAddressOf()));
   EXPECT_HRESULT_SUCCEEDED(
       describedby_relation->get_relationType(relation_type.Receive()));
-  EXPECT_EQ(L"describedBy", base::string16(relation_type));
+  EXPECT_EQ(L"describedBy", base::string16(relation_type.Get()));
   relation_type.Reset();
 
   EXPECT_HRESULT_SUCCEEDED(describedby_relation->get_nTargets(&n_targets));
@@ -3037,7 +3045,7 @@ TEST_F(BrowserAccessibilityWinTest, DISABLED_TestIAccessible2Relations) {
       0, description_for_relation.GetAddressOf()));
   EXPECT_HRESULT_SUCCEEDED(
       description_for_relation->get_relationType(relation_type.Receive()));
-  EXPECT_EQ(L"descriptionFor", base::string16(relation_type));
+  EXPECT_EQ(L"descriptionFor", base::string16(relation_type.Get()));
   relation_type.Reset();
 
   EXPECT_HRESULT_SUCCEEDED(description_for_relation->get_nTargets(&n_targets));
@@ -3059,7 +3067,7 @@ TEST_F(BrowserAccessibilityWinTest, DISABLED_TestIAccessible2Relations) {
       0, description_for_relation.GetAddressOf()));
   EXPECT_HRESULT_SUCCEEDED(
       description_for_relation->get_relationType(relation_type.Receive()));
-  EXPECT_EQ(L"descriptionFor", base::string16(relation_type));
+  EXPECT_EQ(L"descriptionFor", base::string16(relation_type.Get()));
   relation_type.Reset();
 
   EXPECT_HRESULT_SUCCEEDED(description_for_relation->get_nTargets(&n_targets));

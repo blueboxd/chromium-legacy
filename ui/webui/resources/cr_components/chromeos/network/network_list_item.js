@@ -88,7 +88,14 @@ Polymer({
     activationUnavailable: {
       type: Boolean,
       value: false,
-    }
+    },
+
+    /**
+     * DeviceState associated with the network item type, or undefined if none
+     * was provided.
+     * @private {!OncMojo.DeviceStateProperties|undefined} deviceState
+     */
+    deviceState: Object,
   },
 
   /** @override */
@@ -267,18 +274,20 @@ Polymer({
     if (!this.networkState) {
       return '';
     }
-    const connectionState = this.networkState.connectionState;
+
     if (this.networkState.type === mojom.NetworkType.kCellular) {
       if (this.shouldShowNotAvailableText_()) {
         return this.i18n('networkListItemNotAvailable');
       }
-      if (this.networkState.typeState.cellular.scanning) {
+      if (this.deviceState && this.deviceState.scanning) {
         return this.i18n('networkListItemScanning');
       }
       if (this.networkState.typeState.cellular.simLocked) {
         return this.i18n('networkListItemSimCardLocked');
       }
     }
+
+    const connectionState = this.networkState.connectionState;
     if (OncMojo.connectionStateIsConnected(connectionState)) {
       // TODO(khorimoto): Consider differentiating between Portal, Connected,
       // and Online.

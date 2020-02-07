@@ -67,7 +67,7 @@ bool MixerLoopbackConnection::HandleMetadata(
 }
 
 bool MixerLoopbackConnection::HandleAudioData(char* data,
-                                              int size,
+                                              size_t size,
                                               int64_t timestamp) {
   return true;
 }

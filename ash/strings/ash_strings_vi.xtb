@@ -137,7 +137,6 @@
 <translation id="2718395828230677721">Ánh sáng đêm</translation>
 <translation id="2727977024730340865">Được cắm vào bộ sạc công suất thấp. Việc sạc pin có thể không được đảm bảo.</translation>
 <translation id="2792498699870441125">Alt+Search</translation>
-<translation id="2803734122639935495">Nhập mật khẩu để mở khóa</translation>
 <translation id="2819276065543622893">Bạn sẽ bị đăng xuất bây giờ.</translation>
 <translation id="2825619548187458965">Giá</translation>
 <translation id="2844169650293029770">Thiết bị USB-C (cổng phía trước, bên trái)</translation>
@@ -202,6 +201,7 @@
 <translation id="3604801046548457007">Đã tạo Không gian làm việc <ph name="DESK_TITILE" /></translation>
 <translation id="3606978283550408104">Đã kết nối màn hình Braille.</translation>
 <translation id="3621202678540785336">Thiết bị vào</translation>
+<translation id="3621712662352432595">Cài đặt âm thanh</translation>
 <translation id="3626281679859535460">Độ sáng</translation>
 <translation id="3631369015426612114">Cho phép thông báo từ các nguồn sau</translation>
 <translation id="3705722231355495246">-</translation>
@@ -544,6 +544,7 @@
 <translation id="8477270416194247200">Nhấn phím Alt+Search hoặc Shift để hủy.</translation>
 <translation id="8513108775083588393">Tự động xoay</translation>
 <translation id="8517041960877371778"><ph name="DEVICE_TYPE" /> của bạn có thể không sạc khi được bật.</translation>
+<translation id="8563862697512465947">Cài đặt Thông báo</translation>
 <translation id="8627191004499078455">Đã kết nối với <ph name="DEVICE_NAME" /></translation>
 <translation id="8637598503828012618"><ph name="CONNECTION_STATUS" />, Cường độ tín hiệu <ph name="SIGNAL_STRENGTH" />, Do quản trị viên của bạn quản lý</translation>
 <translation id="8639760480004882931">Còn <ph name="PERCENTAGE" /></translation>

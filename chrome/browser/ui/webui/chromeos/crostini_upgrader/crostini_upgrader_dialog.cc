@@ -5,6 +5,7 @@
 #include "chrome/browser/ui/webui/chromeos/crostini_upgrader/crostini_upgrader_dialog.h"
 
 #include "chrome/browser/chromeos/crostini/crostini_manager.h"
+#include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/webui/chromeos/crostini_upgrader/crostini_upgrader_ui.h"
 #include "chrome/common/webui_url_constants.h"
 
@@ -62,6 +63,10 @@ bool CrostiniUpgraderDialog::CanCloseDialog() const {
 void CrostiniUpgraderDialog::OnDialogShown(content::WebUI* webui) {
   upgrader_ui_ = static_cast<CrostiniUpgraderUI*>(webui->GetController());
   upgrader_ui_->set_launch_closure(std::move(launch_closure_));
+  crostini::CrostiniManager::GetForProfile(Profile::FromWebUI(webui))
+      ->UpgradePromptShown(
+          crostini::ContainerId(crostini::kCrostiniDefaultVmName,
+                                crostini::kCrostiniDefaultContainerName));
   return SystemWebDialogDelegate::OnDialogShown(webui);
 }
 

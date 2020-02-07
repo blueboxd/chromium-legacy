@@ -137,7 +137,6 @@
 <translation id="2718395828230677721">নাইট লাইট</translation>
 <translation id="2727977024730340865">একটি নিম্ন শক্তির চার্জার প্লাগইন করা হয়েছে৷ বিশ্বস্ত ব্যাটারি চার্জ নাও হতে পারে৷</translation>
 <translation id="2792498699870441125">Alt+Search</translation>
-<translation id="2803734122639935495">আনলক করতে আপনার পাসওয়ার্ড লিখুন</translation>
 <translation id="2819276065543622893">আপনি এখনই প্রস্থান করুন হবেন৷</translation>
 <translation id="2825619548187458965">তাক</translation>
 <translation id="2844169650293029770">USB-C ডিভাইস (বাঁ দিকের সামনের পোর্ট)</translation>
@@ -202,6 +201,7 @@
 <translation id="3604801046548457007">ডেস্ক <ph name="DESK_TITILE" /> তৈরি করা হয়েছে</translation>
 <translation id="3606978283550408104">ব্রেইল প্রদর্শন সংযুক্ত হয়েছে৷</translation>
 <translation id="3621202678540785336">ইনপুট</translation>
+<translation id="3621712662352432595">অডিও সেটিংস</translation>
 <translation id="3626281679859535460">উজ্জ্বলতা</translation>
 <translation id="3631369015426612114">নিম্নলিখিত থেকে বিজ্ঞপ্তি অনুমতি দিন</translation>
 <translation id="3705722231355495246">-</translation>
@@ -545,6 +545,7 @@
 <translation id="8477270416194247200">Alt+Search টিপুন বা বাতিল করতে Shift টিপুন</translation>
 <translation id="8513108775083588393">নিজে থেকে ঘুরবে</translation>
 <translation id="8517041960877371778">আপনার <ph name="DEVICE_TYPE" /> চালু থাকা অবস্থায় চার্জ নাও হতে পারে।</translation>
+<translation id="8563862697512465947">বিজ্ঞপ্তি সেটিংস</translation>
 <translation id="8627191004499078455"><ph name="DEVICE_NAME" />-এর সাথে কানেক্ট হয়েছে</translation>
 <translation id="8637598503828012618"><ph name="CONNECTION_STATUS" />, সিগন্যাল: <ph name="SIGNAL_STRENGTH" />, আপনার অ্যাডমিনিস্ট্রেটর ম্যানেজ করে</translation>
 <translation id="8639760480004882931"><ph name="PERCENTAGE" /> বাকি আছে</translation>

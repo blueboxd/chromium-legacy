@@ -79,6 +79,7 @@
 <translation id="129553762522093515">हाल ही में बंद किए गए</translation>
 <translation id="1298536327547837046">मैलवेयर स्कैनिंग</translation>
 <translation id="129863573139666797"><ph name="BEGIN_LINK" />अपनी कुकी साफ़ करके देखें<ph name="END_LINK" /></translation>
+<translation id="1301324364792935241">अपने सुरक्षित डीएनएस की सेटिंग की जांच करें</translation>
 <translation id="1307966114820526988">बंद की गई सुविधाएं</translation>
 <translation id="1314509827145471431">दाईं ओर बाइंड</translation>
 <translation id="1320233736580025032">पीआरसी1 (एन्वेलप)</translation>
@@ -152,6 +153,7 @@
 <translation id="1569487616857761740">खत्म होने की तारीख डालें</translation>
 <translation id="1581080074034554886">CVC</translation>
 <translation id="1583429793053364125">इस वेबपेज को दिखाने के दौरान कुछ गड़बड़ी हुई है.</translation>
+<translation id="1586541204584340881">आपने कौनसे एक्सटेंशन इंस्टॉल किए हैं</translation>
 <translation id="1588438908519853928">सामान्य</translation>
 <translation id="1592005682883173041">स्थानीय डेटा एक्सेस</translation>
 <translation id="1594030484168838125">चुनें</translation>
@@ -362,6 +364,7 @@
 <translation id="2544644783021658368">एक दस्तावेज़</translation>
 <translation id="254947805923345898">नीति का मान मान्य नहीं है.</translation>
 <translation id="255002559098805027"><ph name="HOST_NAME" /> ने एक गलत जवाब भेजा है.</translation>
+<translation id="2553853292994445426">अपने सुरक्षित डीएनएस की सेटिंग की जांच करें. शायद आपने सुरक्षित डीएनएस सर्वर को कॉन्फ़िगर किया होगा, जिससे आप कनेक्ट नहीं हो पा रहे.</translation>
 <translation id="2556876185419854533">&amp;बदलाव को पहले जैसा करें</translation>
 <translation id="257674075312929031">समूह</translation>
 <translation id="2586657967955657006">क्लिपबोर्ड</translation>
@@ -481,6 +484,7 @@
 <translation id="3095940652251934233">जानकारी</translation>
 <translation id="3096100844101284527">पिकअप का पता जोड़ें</translation>
 <translation id="3105172416063519923">एसेट आईडी:</translation>
+<translation id="3107591622054137333"><ph name="BEGIN_LINK" />सुरक्षित डीएनएस कॉन्फ़िगरेशन की जांच करना<ph name="END_LINK" /></translation>
 <translation id="3109728660330352905">आपके पास इस पेज को देखने की अनुमति नहीं है.</translation>
 <translation id="3113284927548439113">तीसरी शिफ़्ट</translation>
 <translation id="3116158981186517402">लैमनेट</translation>
@@ -783,6 +787,7 @@
 <translation id="4390472908992056574">ब्रिम</translation>
 <translation id="4406896451731180161">खोज नतीजे</translation>
 <translation id="4408413947728134509"><ph name="NUM_COOKIES" /> कुकी</translation>
+<translation id="4414290883293381923">आपने अभी जिस साइट पर अपना पासवर्ड डाला है वह सुरक्षित नहीं है. Chrome, <ph name="WEBSITE_1" />, <ph name="WEBSITE_2" />, <ph name="WEBSITE_3" />, और उन साइटों पर जाकर पासवर्ड बदलने का सुझाव देता है जिन पर आपने इसका इस्तेमाल किया था.</translation>
 <translation id="4415426530740016218">पिकअप का पता</translation>
 <translation id="4424024547088906515">यह सर्वर यह नहीं प्रमाणित कर सका कि यह <ph name="DOMAIN" /> है; इसका सुरक्षा प्रमाणपत्र Chrome द्वारा विश्वसनीय नहीं है. ऐसा गलत कॉन्फ़िगरेशन या किसी आक्रमणकर्ता द्वारा आपके कनेक्शन में अवरोध डालने के कारण हो सकता है.</translation>
 <translation id="443121186588148776">सीरियल पोर्ट</translation>
@@ -1211,6 +1216,7 @@
 <translation id="6353505687280762741">{COUNT,plural, =0{कोई पासवर्ड नहीं है}=1{(<ph name="DOMAIN_LIST" /> के लिए, सिंक किया गया) 1 पासवर्ड}=2{(<ph name="DOMAIN_LIST" /> के लिए, सिंक किए गए) 2 पासवर्ड}one{(<ph name="DOMAIN_LIST" /> के लिए, सिंक किए गए) # पासवर्ड}other{(<ph name="DOMAIN_LIST" /> के लिए, सिंक किए गए) # पासवर्ड}}</translation>
 <translation id="6358450015545214790">इनका क्‍या अर्थ है?</translation>
 <translation id="6361757823711327522">बी7</translation>
+<translation id="6364095313648930329"><ph name="BEGIN_LINK" />प्रॉक्सी, फ़ायरवॉल, और सुरक्षित डीएनएस कॉन्फ़िगरेशन की जांच करें<ph name="END_LINK" /></translation>
 <translation id="6366710531182496394">बाईं ओर ड्युएल स्टेपल</translation>
 <translation id="6377268785556383139">'<ph name="SEARCH_TEXT" />' के लिए एक नतीजा मिला है</translation>
 <translation id="6380497234672085559">ए0</translation>
@@ -1233,6 +1239,7 @@
 <translation id="6433595998831338502"><ph name="HOST_NAME" /> ने कनेक्ट करने से मना कर दिया है.</translation>
 <translation id="6434309073475700221">खारिज करें</translation>
 <translation id="6440503408713884761">अनदेखा किया गया</translation>
+<translation id="6443406338865242315">आपने कौनसे एक्सटेंशन और प्लग इन इंस्टॉल किए हैं</translation>
 <translation id="6446163441502663861">काहू (एन्वेलप)</translation>
 <translation id="6446608382365791566">और जानकारी जोड़ें</translation>
 <translation id="6447842834002726250">कुकी</translation>
@@ -1341,6 +1348,7 @@
 <translation id="7012363358306927923">China UnionPay</translation>
 <translation id="7016992613359344582">ये शुल्क एक बार लगने वाले या बार-बार लगने वाले हो सकते हैं और हो सकता है कि इनके बारे में स्पष्ट जानकारी न दी जाए.</translation>
 <translation id="7029809446516969842">पासवर्ड</translation>
+<translation id="7031646650991750659">आपने Google Play के कौनसे ऐप्लिकेशन इंस्टॉल किए हैं</translation>
 <translation id="7050187094878475250">आपने <ph name="DOMAIN" /> तक पहुंचने का प्रयास किया था, लेकिन सर्वर ने ऐसा प्रमाणपत्र प्रस्‍तुत किया जिसकी मान्‍यता अवधि विश्‍वसनीय होने के लिए बहुत लंबी है.</translation>
 <translation id="705310974202322020">{NUM_CARDS,plural, =1{यह कार्ड इस समय सेव नहीं किया जा सकता}one{ये कार्ड इस समय सेव नहीं किए जा सकते}other{ये कार्ड इस समय सेव नहीं किए जा सकते}}</translation>
 <translation id="7053983685419859001">ब्लॉक करें</translation>
@@ -1400,6 +1408,7 @@
 <translation id="7319430975418800333">ए3</translation>
 <translation id="7320336641823683070">कनेक्शन संबंधी सहायता</translation>
 <translation id="733354035281974745">डिवाइस का स्थानीय खाता बदलें</translation>
+<translation id="7333654844024768166">आपने अभी जिस साइट पर अपना पासवर्ड डाला है वह सुरक्षित नहीं है. क्रोमियम, <ph name="WEBSITE_1" />, <ph name="WEBSITE_2" />, <ph name="WEBSITE_3" />, और उन साइटों पर जाकर पासवर्ड बदलने का सुझाव देता है जिन पर आपने इसका इस्तेमाल किया था.</translation>
 <translation id="7334320624316649418">&amp;पुन: क्रमित करना फिर से करें</translation>
 <translation id="7337706099755338005">आपके प्लेटफ़ॉर्म पर उपलब्ध नहीं है.</translation>
 <translation id="733923710415886693">प्रमाणपत्र पारदर्शिता के माध्यम से सर्वर के प्रमाणपत्र को प्रकट नहीं किया गया.</translation>

@@ -334,6 +334,9 @@ void HardwareRendererViz::DrawAndSwap(HardwareRendererDrawParams* params) {
                  params->clip_right - params->clip_left,
                  params->clip_bottom - params->clip_top);
 
+  output_surface_provider_.gl_surface()->RecalculateClipAndTransform(
+      &viewport, &clip, &transform);
+
   DCHECK(output_surface_provider_.shared_context_state());
   output_surface_provider_.shared_context_state()
       ->PessimisticallyResetGrContext();

@@ -86,6 +86,7 @@
 #include "components/signin/public/base/signin_buildflags.h"
 #include "components/signin/public/base/signin_metrics.h"
 #include "components/signin/public/base/signin_pref_names.h"
+#include "components/signin/public/identity_manager/consent_level.h"
 #include "components/signin/public/identity_manager/identity_manager.h"
 #include "components/signin/public/identity_manager/primary_account_mutator.h"
 #include "components/sync/base/stop_source.h"
@@ -1597,8 +1598,8 @@ void ProfileManager::AddProfileToStorage(Profile* profile) {
   signin::IdentityManager* identity_manager =
       IdentityManagerFactory::GetForProfile(profile);
   bool is_consented_primary_account = identity_manager->HasPrimaryAccount();
-  CoreAccountInfo account_info =
-      identity_manager->GetUnconsentedPrimaryAccountInfo();
+  CoreAccountInfo account_info = identity_manager->GetPrimaryAccountInfo(
+      signin::ConsentLevel::kNotRequired);
 
   base::string16 username = base::UTF8ToUTF16(account_info.email);
 

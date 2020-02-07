@@ -689,6 +689,7 @@
 <translation id="3987940399970879459">၁ MB ထက်နည်းပါသည်</translation>
 <translation id="3990250421422698716">လည်ပတ်မှု ချိန်ညှိရန်</translation>
 <translation id="40103911065039147">{URL_count,plural, =1{အနီးတဝိုက်တွင် ဝဘ်စာမျက်နှာ ၁ ခုရှိသည်}other{အနီးတဝိုက်တွင် ဝဘ်စာမျက်နှာ # ခုရှိသည်}}</translation>
+<translation id="4014128326099193693">{COUNT,plural, =1{စာမျက်နှာ {COUNT} မျက်နှာ ပါဝင်သော PDF မှတ်တမ်း}other{စာမျက်နှာ {COUNT} မျက်နှာ ပါဝင်သော PDF မှတ်တမ်း}}</translation>
 <translation id="4030383055268325496">&amp;ထည့်ပေးမှုကို ပြန်လုပ်ရန်</translation>
 <translation id="4032320456957708163">သင့်ဘရောင်ဇာကို <ph name="ENROLLMENT_DOMAIN" /> က စီမံခန့်ခွဲထားသည်</translation>
 <translation id="4058922952496707368">သော့ "<ph name="SUBKEY" />": <ph name="ERROR" /></translation>
@@ -717,6 +718,7 @@
 <translation id="4142935452406587478">ဗန်း ၁၀</translation>
 <translation id="4148925816941278100">American Express</translation>
 <translation id="4151403195736952345">အလုံးစုံဆိုင်ရာ မူလပုံစံကို အသုံးပြုပါ (ထောက်လှမ်းပါ)</translation>
+<translation id="4152318981910038897">{COUNT,plural, =1{စာမျက်နှာ ၁}other{စာမျက်နှာ {COUNT}}}</translation>
 <translation id="4159784952369912983">ခရမ်း</translation>
 <translation id="4165986682804962316">ဝက်ဆိုက် ဆက်တင်များ</translation>
 <translation id="4171400957073367226">ဆိုးရွားသည့် အတည်ပြု လက်မှတ်</translation>
@@ -1394,6 +1396,7 @@
 <translation id="7201591969684833065">သင့်စီမံခန့်ခွဲသူများက အောက်ပါတို့ကို မြင်နိုင်သည်-</translation>
 <translation id="7202346780273620635">Letter-Extra</translation>
 <translation id="7210863904660874423"><ph name="HOST_NAME" /> သည်လုံခြုံရေး စံနှုန်းများကို လိုက်နာမှုမရှိပါ။</translation>
+<translation id="7210993021468939304">ကွန်တိန်နာအတွင်းရှိ Linux လုပ်ဆောင်ချက်ကို ကြည့်နိုင်ပြီး ကွန်တိန်နာအတွင်းတွင် Linux အက်ပ်များကို ထည့်သွင်းနိုင်၊ လုပ်ဆောင်နိုင်သည်</translation>
 <translation id="721197778055552897">ဒီပြဿနာ အကြောင်းကို <ph name="BEGIN_LINK" />ပိုမို လေ့လာရန်<ph name="END_LINK" />။</translation>
 <translation id="7219179957768738017">ချိတ်ဆက်မှုက <ph name="SSL_VERSION" />ကို သုံးသည်။</translation>
 <translation id="7220786058474068424">ဆောင်ရွက်နေသည်</translation>
@@ -1558,6 +1561,7 @@
 <translation id="7878562273885520351">သင့်စကားဝှက် အခိုးခံထားရနိုင်သည်</translation>
 <translation id="7882421473871500483">အညို</translation>
 <translation id="7887683347370398519">သင့် CVC အားစစ်ဆေးပြီး ထပ်မံကြိုးစားပါ</translation>
+<translation id="7887885240995164102">တစ်ခုပေါ်တစ်ခုထပ်၍ ဖွင့်သည့်မုဒ်သို့ ဝင်ရန်</translation>
 <translation id="7888575728750733395">ပုံနှိပ်မှုဆိုင်ရာ ပြင်ဆင်မှု ရည်ရွယ်ချက်</translation>
 <translation id="7904208859782148177">C3 (စာအိတ်)</translation>
 <translation id="7932579305932748336">အလွှာအုပ်ရန်</translation>

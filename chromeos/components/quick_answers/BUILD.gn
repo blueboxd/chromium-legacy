@@ -39,6 +39,7 @@ source_set("unit_tests") {
 
   sources = [
     "quick_answers_client_unittest.cc",
+    "search_result_loader_unittest.cc",
     "search_result_parsers/definition_result_parser_unittest.cc",
     "search_result_parsers/result_parser_unittest.cc",
     "search_result_parsers/search_response_parser_unittest.cc",

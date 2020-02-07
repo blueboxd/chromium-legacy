@@ -115,6 +115,11 @@ GURL WebAppControllerBrowserTest::GetInstallableAppURL() {
   return https_server()->GetURL("/banners/manifest_test_page.html");
 }
 
+// static
+const char* WebAppControllerBrowserTest::GetInstallableAppName() {
+  return "Manifest test app";
+}
+
 void WebAppControllerBrowserTest::SetUpInProcessBrowserTestFixture() {
   extensions::ExtensionBrowserTest::SetUpInProcessBrowserTestFixture();
   cert_verifier_.SetUpInProcessBrowserTestFixture();

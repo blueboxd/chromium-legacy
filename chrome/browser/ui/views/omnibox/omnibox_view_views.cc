@@ -719,6 +719,11 @@ bool OmniboxViewViews::TextAndUIDirectionMatch() const {
 }
 
 views::Button* OmniboxViewViews::GetSecondaryButtonForSelectedLine() const {
+  // TODO(tommycli): If we have a WebUI omnibox popup, we should move the
+  // secondary button logic out of the View and into the OmniboxPopupModel.
+  if (base::FeatureList::IsEnabled(omnibox::kWebUIOmniboxPopup))
+    return nullptr;
+
   OmniboxPopupModel* popup_model = model()->popup_model();
   if (!popup_model)
     return nullptr;
@@ -758,6 +763,11 @@ bool OmniboxViewViews::MaybeUnfocusSecondaryButton() {
 }
 
 bool OmniboxViewViews::MaybeTriggerSecondaryButton(const ui::KeyEvent& event) {
+  // TODO(tommycli): If we have a WebUI omnibox popup, we should move the
+  // secondary button logic out of the View and into the OmniboxPopupModel.
+  if (base::FeatureList::IsEnabled(omnibox::kWebUIOmniboxPopup))
+    return false;
+
   if (model()->popup_model()->selected_line_state() !=
       OmniboxPopupModel::BUTTON_FOCUSED)
     return false;
@@ -867,9 +877,13 @@ void OmniboxViewViews::ClearAccessibilityLabel() {
 void OmniboxViewViews::SetAccessibilityLabel(const base::string16& display_text,
                                              const AutocompleteMatch& match) {
   size_t selected_line = model()->popup_model()->selected_line();
-  if (selected_line != OmniboxPopupModel::kNoMatch && popup_view_) {
+  if (selected_line != OmniboxPopupModel::kNoMatch && popup_view_ &&
+      !base::FeatureList::IsEnabled(omnibox::kWebUIOmniboxPopup)) {
     // Although it feels bad to ask a whole different view for the accessibility
     // text, only the OmniboxResultView knows which secondary button is shown.
+    //
+    // TODO(tommycli): If we have a WebUI omnibox popup, we should move the
+    // secondary button logic out of the View and into the OmniboxPopupModel.
     OmniboxResultView* result_view = popup_view_->result_view_at(selected_line);
     friendly_suggestion_text_ =
         result_view->ToAccessibilityLabelWithSecondaryButton(

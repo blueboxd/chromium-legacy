@@ -2268,6 +2268,11 @@ This file contains the strings for ash.
       <message name="IDS_ASH_VIRTUAL_DESKS_ALERT_WINDOW_MOVED_FROM_ACTIVE_DESK" desc="A window in active desk got be moved to another virtual desk.">
         Window <ph name="WINDOW_TITLE">$1<ex>Files</ex></ph> moved from Desk <ph name="ACTIVE_DESK">$2</ph> to Desk <ph name="TARGET_DESK">$3</ph>
       </message>
+
+      <!-- Back gesture -->
+      <message name="IDS_ASH_BACK_GESTURE_CONTEXTUAL_NUDGE" desc="Information shown in the suggestion label for the contextual nudge of the back gesture in tablet mode">
+        Swipe from the left to go back
+      </message>
     </messages>
   </release>
 </grit>

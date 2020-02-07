@@ -115,6 +115,7 @@
 <translation id="1919950603503897840">Kontaktų pasirinkimas</translation>
 <translation id="1922076542920281912">Norėdami leisti „Chrome“ pasiekti jūsų vietovę, taip pat įjunkite ją <ph name="BEGIN_LINK" />„Android“ nustatymuose<ph name="END_LINK" />.</translation>
 <translation id="1923695749281512248"><ph name="BYTES_DOWNLOADED_WITH_UNITS" /> iš <ph name="FILE_SIZE_WITH_UNITS" /></translation>
+<translation id="1925021887439448749">Įveskite tinkintą žiniatinklio adresą</translation>
 <translation id="1928696683969751773">Atnaujinimas</translation>
 <translation id="19288952978244135">Iš naujo atidarykite „Chrome“.</translation>
 <translation id="1933845786846280168">Pasirinktas skirtukas</translation>
@@ -279,6 +280,7 @@
 <translation id="3123473560110926937">Užblokuota kai kuriose svetainėse</translation>
 <translation id="3123734510202723619">Pranešimai</translation>
 <translation id="3137521801621304719">Išjungti inkognito režimą</translation>
+<translation id="3140134512074889489">Įjunkite fotoaparatą, kad galėtumėte nuskaityti QR kodą</translation>
 <translation id="3143515551205905069">Atšaukti sinchronizavimą</translation>
 <translation id="3157842584138209013">Žr., kiek duomenų sutaupėte, spustelėję mygtuką „Daugiau parinkčių“</translation>
 <translation id="3166827708714933426">Skirtukų ir langų spartieji klavišai</translation>
@@ -449,6 +451,9 @@
 <translation id="4521489764227272523">Pasirinkti duomenys pašalinti iš „Chrome“ ir sinchronizuojamų įrenginių.
 
 Adresu <ph name="BEGIN_LINK" />myactivity.google.com<ph name="END_LINK" /> gali būti pateikta kitų formų jūsų „Google“ paskyros naršymo istorija, pvz., paieškos ir veikla kitose „Google“ paslaugose.</translation>
+<translation id="4527374721149092498">Sužinokite apie temas svetainėse neišėję iš puslapio. Naudojant Paiešką palietus, žodis ir jo kontekstas siunčiami „Google“ paieškai, kuri pateikia apibrėžimų, nuotraukų, paieškos rezultatų ir kitos išsamios informacijos.
+
+Palieskite bet kurį žodį, kad sukurtumėte jo paiešką. Jei norite koreguoti paieškos terminą, palaikykite paspaudę ir pasirinkite. Jei norite patikslinti paiešką, atidarykite skydelį, palieskite išskleidimo piktogramą, kad būtų sukurtas naujas skirtukas, ir palieskite paieškos laukelį.</translation>
 <translation id="4532845899244822526">Pasirinkti aplanką</translation>
 <translation id="4538018662093857852">Įjungti supaprastintąjį režimą</translation>
 <translation id="4550003330909367850">Jei norite čia peržiūrėti ar nukopijuoti slaptažodį, nustatykite ekrano užraktą šiame įrenginyje.</translation>
@@ -690,6 +695,9 @@ Jei norite pakeisti šį nustatymą, <ph name="BEGIN_LINK" />iš naujo nustatyki
 <translation id="6232535412751077445">Įgalinus funkciją „Nestebėti“, užklausa bus įtraukta į naršymo srautą. Poveikis priklauso nuo to, ar svetainė atsako į užklausą ir kaip užklausa interpretuojama.
 
 Pavyzdžiui, kai kurios svetainės gali atsakyti į šią užklausą rodydamos jums skelbimus, nepagrįstus kitomis svetainėmis, kuriose lankėtės. Daugelis svetainių vis tiek rinks ir naudos jūsų naršymo duomenis, kad, pvz., patobulintų saugą, teiktų turinį, skelbimus bei rekomendacijas ir sugeneruotų ataskaitų teikimo statistiką.</translation>
+<translation id="6238003486329291387">Sužinokite apie temas svetainėse neišėję iš puslapio. Naudojant Paiešką palietus, žodis ir jo kontekstas siunčiami „Google“ paieškai, kuri pateikia apibrėžimų, nuotraukų, paieškos rezultatų ir kitos išsamios informacijos.
+
+Palaikykite paspaudę bet kurį žodį, kad sukurtumėte jo paiešką. Jei norite patikslinti paiešką, pakoreguokite pasirinkimą. Taip pat galite atidaryti skydelį, paliesti išskleidimo piktogramą, kad būtų sukurtas naujas skirtukas, ir paliesti paieškos laukelį.</translation>
 <translation id="624789221780392884">Naujinys paruoštas</translation>
 <translation id="6255999984061454636">Turinio pasiūlymai</translation>
 <translation id="6270391203985052864">Svetainės gali prašyti siųsti pranešimus</translation>

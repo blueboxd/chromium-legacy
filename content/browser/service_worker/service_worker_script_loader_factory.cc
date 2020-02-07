@@ -141,12 +141,13 @@ void ServiceWorkerScriptLoaderFactory::CreateLoaderAndStart(
   }
 
   // Case D.3:
-  mojo::MakeSelfOwnedReceiver(
-      ServiceWorkerNewScriptLoader::CreateAndStart(
-          routing_id, request_id, options, resource_request, std::move(client),
-          provider_host_->running_hosted_version(),
-          loader_factory_for_new_scripts_, traffic_annotation),
-      std::move(receiver));
+  // Assign a new resource ID for the script from network.
+  int64_t new_resource_id = context_->storage()->NewResourceId();
+  // TODO(crbug.com/1046335): Make this async once NewResourceId() becomes
+  // async.
+  OnResourceIdAssignedForNewScriptLoader(
+      std::move(receiver), routing_id, request_id, options, resource_request,
+      std::move(client), traffic_annotation, new_resource_id);
 }
 
 void ServiceWorkerScriptLoaderFactory::Clone(
@@ -259,4 +260,28 @@ void ServiceWorkerScriptLoaderFactory::OnCopyScriptFinished(
           resource_request.url),
       std::move(receiver));
 }
+
+void ServiceWorkerScriptLoaderFactory::OnResourceIdAssignedForNewScriptLoader(
+    mojo::PendingReceiver<network::mojom::URLLoader> receiver,
+    int32_t routing_id,
+    int32_t request_id,
+    uint32_t options,
+    const network::ResourceRequest& resource_request,
+    mojo::PendingRemote<network::mojom::URLLoaderClient> client,
+    const net::MutableNetworkTrafficAnnotationTag& traffic_annotation,
+    int64_t resource_id) {
+  if (resource_id == ServiceWorkerConsts::kInvalidServiceWorkerResourceId) {
+    mojo::Remote<network::mojom::URLLoaderClient>(std::move(client))
+        ->OnComplete(network::URLLoaderCompletionStatus(net::ERR_ABORTED));
+    return;
+  }
+
+  mojo::MakeSelfOwnedReceiver(
+      ServiceWorkerNewScriptLoader::CreateAndStart(
+          routing_id, request_id, options, resource_request, std::move(client),
+          provider_host_->running_hosted_version(),
+          loader_factory_for_new_scripts_, traffic_annotation, resource_id),
+      std::move(receiver));
+}
+
 }  // namespace content

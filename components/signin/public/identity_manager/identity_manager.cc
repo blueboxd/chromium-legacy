@@ -114,7 +114,7 @@ void IdentityManager::RemoveObserver(Observer* observer) {
 CoreAccountInfo IdentityManager::GetPrimaryAccountInfo(
     ConsentLevel consent) const {
   if (consent == ConsentLevel::kNotRequired) {
-    return GetUnconsentedPrimaryAccountInfo();
+    return primary_account_manager_->GetUnconsentedPrimaryAccountInfo();
   }
   return primary_account_manager_->GetAuthenticatedAccountInfo();
 }
@@ -131,11 +131,7 @@ bool IdentityManager::HasPrimaryAccount(ConsentLevel consent) const {
 }
 
 CoreAccountId IdentityManager::GetUnconsentedPrimaryAccountId() const {
-  return GetUnconsentedPrimaryAccountInfo().account_id;
-}
-
-CoreAccountInfo IdentityManager::GetUnconsentedPrimaryAccountInfo() const {
-  return primary_account_manager_->GetUnconsentedPrimaryAccountInfo();
+  return GetPrimaryAccountInfo(ConsentLevel::kNotRequired).account_id;
 }
 
 bool IdentityManager::HasUnconsentedPrimaryAccount() const {

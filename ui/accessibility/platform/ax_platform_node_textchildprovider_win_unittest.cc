@@ -278,7 +278,7 @@ TEST_F(AXPlatformNodeTextChildProviderTest,
       text_range_provider->GetText(-1, text_content.Receive()));
   EXPECT_EQ(
       0,
-      wcscmp(static_cast<BSTR>(text_content),
+      wcscmp(text_content.Get(),
              (kEmbeddedCharacterAsString + L"text child of nontext.").c_str()));
 
   ComPtr<IRawElementProviderSimple> enclosing_element;
@@ -297,7 +297,7 @@ TEST_F(AXPlatformNodeTextChildProviderTest,
   base::win::ScopedBstr text_content;
   EXPECT_HRESULT_SUCCEEDED(
       text_range_provider->GetText(-1, text_content.Receive()));
-  EXPECT_EQ(0, wcscmp(static_cast<BSTR>(text_content), L"text child of text."));
+  EXPECT_EQ(0, wcscmp(text_content.Get(), L"text child of text."));
 
   ComPtr<IRawElementProviderSimple> enclosing_element;
   text_range_provider->GetEnclosingElement(&enclosing_element);
@@ -316,8 +316,7 @@ TEST_F(AXPlatformNodeTextChildProviderTest,
   base::win::ScopedBstr text_content;
   EXPECT_HRESULT_SUCCEEDED(
       text_range_provider->GetText(-1, text_content.Receive()));
-  EXPECT_EQ(0, wcscmp(static_cast<BSTR>(text_content),
-                      kEmbeddedCharacterAsString.c_str()));
+  EXPECT_EQ(0, wcscmp(text_content.Get(), kEmbeddedCharacterAsString.c_str()));
 
   ComPtr<IRawElementProviderSimple> enclosing_element;
   text_range_provider->GetEnclosingElement(&enclosing_element);
@@ -336,8 +335,7 @@ TEST_F(AXPlatformNodeTextChildProviderTest,
   base::win::ScopedBstr text_content;
   EXPECT_HRESULT_SUCCEEDED(
       text_range_provider->GetText(-1, text_content.Receive()));
-  EXPECT_EQ(0,
-            wcscmp(static_cast<BSTR>(text_content), L"text child of nontext."));
+  EXPECT_EQ(0, wcscmp(text_content.Get(), L"text child of nontext."));
 
   ComPtr<IRawElementProviderSimple> enclosing_element;
   text_range_provider->GetEnclosingElement(&enclosing_element);
@@ -356,7 +354,7 @@ TEST_F(AXPlatformNodeTextChildProviderTest,
   base::win::ScopedBstr text_content;
   EXPECT_HRESULT_SUCCEEDED(
       text_range_provider->GetText(-1, text_content.Receive()));
-  EXPECT_EQ(0, wcscmp(static_cast<BSTR>(text_content), L"text child of text."));
+  EXPECT_EQ(0, wcscmp(text_content.Get(), L"text child of text."));
 
   ComPtr<IRawElementProviderSimple> enclosing_element;
   text_range_provider->GetEnclosingElement(&enclosing_element);

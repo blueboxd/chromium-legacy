@@ -7,6 +7,7 @@
 #include "base/command_line.h"
 #include "chrome/credential_provider/common/gcp_strings.h"
 #include "chrome/credential_provider/gaiacp/gaia_resources.h"
+#include "chrome/credential_provider/gaiacp/gcp_utils.h"
 #include "chrome/credential_provider/gaiacp/gcpw_strings.h"
 #include "chrome/credential_provider/gaiacp/logging.h"
 #include "chrome/credential_provider/gaiacp/mdm_utils.h"
@@ -14,6 +15,10 @@
 #include "chrome/credential_provider/gaiacp/reg_utils.h"
 
 namespace credential_provider {
+
+// TODO(rakeshsoma): Change the path from "setup" to "reauth" once
+// identity team has the URL ready for consumption.
+constexpr char kGaiaReauthPath[] = "embedded/setup/windows";
 
 CReauthCredential::CReauthCredential() = default;
 
@@ -77,6 +82,14 @@ HRESULT CReauthCredential::GetUserGlsCommandline(
     get_cmd_line_status = true;
     command_line->AppendSwitchNative(kPrefillEmailSwitch,
                                      OLE2CW(email_for_reauth_));
+  }
+
+  HRESULT hr = SetGaiaEndpointCommandLineIfNeeded(
+      L"ep_reauth_url", kGaiaReauthPath, IsGemEnabled(), command_line);
+  if (FAILED(hr)) {
+    LOGFN(ERROR) << "Setting gaia url for reauth credential on user="
+                 << os_username_ << " failed";
+    return E_FAIL;
   }
 
   if (get_cmd_line_status) {

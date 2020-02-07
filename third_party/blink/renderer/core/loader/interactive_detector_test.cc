@@ -51,7 +51,6 @@ class InteractiveDetectorTest : public testing::Test {
         IntSize(), nullptr, nullptr, base::NullCallback(), tick_clock);
 
     Document* document = &dummy_page_holder_->GetDocument();
-
     detector_ = MakeGarbageCollected<InteractiveDetector>(
         *document, new NetworkActivityCheckerForTest(document));
     detector_->SetTaskRunnerForTesting(test_task_runner);
@@ -604,7 +603,6 @@ TEST_F(InteractiveDetectorTest, LongTaskAfterTTIDoesNothing) {
 }
 
 TEST_F(InteractiveDetectorTest, RecordInputDelayUKM) {
-  ukm::TestAutoSetUkmRecorder test_ukm_recorder;
   base::TimeDelta delay = base::TimeDelta::FromMilliseconds(10);
   Event event;
   event.SetTrusted(true);
@@ -612,6 +610,8 @@ TEST_F(InteractiveDetectorTest, RecordInputDelayUKM) {
   base::TimeTicks processing_start = Now() + delay;
   base::TimeTicks event_platform_timestamp = Now();
 
+  ukm::TestAutoSetUkmRecorder test_ukm_recorder;
+  GetDetector()->SetUkmRecorderForTesting(&test_ukm_recorder);
   GetDetector()->HandleForInputDelay(event, event_platform_timestamp,
                                      processing_start);
   auto entries = test_ukm_recorder.GetEntriesByName(InputEvent::kEntryName);

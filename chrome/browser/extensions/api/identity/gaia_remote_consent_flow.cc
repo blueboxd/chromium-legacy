@@ -108,8 +108,9 @@ void GaiaRemoteConsentFlow::OnConsentResultSet(
   identity_api_set_consent_result_subscription_.reset();
 
   bool consent_approved = false;
+  std::string gaia_id;
   if (!gaia::ParseOAuth2MintTokenConsentResult(consent_result,
-                                               &consent_approved)) {
+                                               &consent_approved, &gaia_id)) {
     delegate_->OnGaiaRemoteConsentFlowFailed(
         GaiaRemoteConsentFlow::INVALID_CONSENT_RESULT);
     return;
@@ -120,7 +121,7 @@ void GaiaRemoteConsentFlow::OnConsentResultSet(
     return;
   }
 
-  delegate_->OnGaiaRemoteConsentFlowApproved(consent_result);
+  delegate_->OnGaiaRemoteConsentFlowApproved(consent_result, gaia_id);
 }
 
 void GaiaRemoteConsentFlow::OnAuthFlowFailure(WebAuthFlow::Failure failure) {

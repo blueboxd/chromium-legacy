@@ -1698,6 +1698,7 @@ template("ios_xctest_bundle") {
     create_signed_bundle(_target_name) {
       forward_variables_from(invoker,
                              [
+                               "data_deps",
                                "enable_code_signing",
                                "product_type",
                                "xcode_test_application_name",
@@ -1788,6 +1789,7 @@ template("ios_xctest_test") {
   }
 
   ios_xctest_bundle(_xctest_target) {
+    forward_variables_from(invoker, [ "data_deps" ])
     output_name = _xctest_output
     product_type = _ios_xcode_xctest_bundle_id
     host_target = _host_target
@@ -1996,6 +1998,7 @@ template("ios_xcuitest_test") {
                            [
                              "xcode_test_application_name",
                              "xctest_bundle_principal_class",
+                             "data_deps",
                            ])
 
     product_type = _ios_xcode_xcuitest_bundle_id

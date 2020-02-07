@@ -798,6 +798,12 @@ jboolean WebContentsAccessibilityAndroid::PopulateAccessibilityNodeInfo(
         node->RangeMax(), node->RangeCurrentValue());
   }
 
+  if (ui::IsDialog(node->GetRole())) {
+    Java_WebContentsAccessibilityImpl_setAccessibilityNodeInfoPaneTitle(
+        env, obj, info,
+        base::android::ConvertUTF16ToJavaString(env, node->GetInnerText()));
+  }
+
   return true;
 }
 

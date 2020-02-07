@@ -140,7 +140,7 @@ TEST_F(AXPlatformNodeTextProviderTest, ITextProviderRangeFromChild) {
   base::win::ScopedBstr text_content;
   EXPECT_HRESULT_SUCCEEDED(
       text_range_provider->GetText(-1, text_content.Receive()));
-  EXPECT_EQ(0, wcscmp(static_cast<BSTR>(text_content), L"some text"));
+  EXPECT_EQ(0, wcscmp(text_content.Get(), L"some text"));
 
   // Now test that the reverse relation doesn't return a valid
   // ITextRangeProvider, and instead returns E_INVALIDARG.
@@ -160,7 +160,7 @@ TEST_F(AXPlatformNodeTextProviderTest, ITextProviderRangeFromChild) {
   base::win::ScopedBstr empty_text_content;
   EXPECT_HRESULT_SUCCEEDED(
       text_range_provider->GetText(-1, empty_text_content.Receive()));
-  EXPECT_EQ(0, wcscmp(static_cast<BSTR>(empty_text_content), L""));
+  EXPECT_EQ(0, wcscmp(empty_text_content.Get(), L""));
 
   // Test that passing in an object from a different instance of
   // IRawElementProviderSimple than that of the valid text provider
@@ -260,12 +260,11 @@ TEST_F(AXPlatformNodeTextProviderTest,
   base::win::ScopedBstr text_content;
   EXPECT_HRESULT_SUCCEEDED(
       text_range_provider->GetText(-1, text_content.Receive()));
-  EXPECT_EQ(0, wcscmp(static_cast<BSTR>(text_content),
-                      (L"Dialog label.Dialog description." +
-                       kEmbeddedCharacterAsString +
-                       "ok.Some more detail "
-                       L"about dialog.")
-                          .c_str()));
+  EXPECT_EQ(0, wcscmp(text_content.Get(), (L"Dialog label.Dialog description." +
+                                           kEmbeddedCharacterAsString +
+                                           "ok.Some more detail "
+                                           L"about dialog.")
+                                              .c_str()));
 
   // Check the reverse relationship that GetEnclosingElement on the text range
   // gives back the dialog.
@@ -487,7 +486,7 @@ TEST_F(AXPlatformNodeTextProviderTest, ITextProviderGetSelection) {
   base::win::ScopedBstr text_content;
   EXPECT_HRESULT_SUCCEEDED(
       text_range_provider->GetText(-1, text_content.Receive()));
-  EXPECT_EQ(0, wcscmp(text_content, L"some"));
+  EXPECT_EQ(0, wcscmp(text_content.Get(), L"some"));
   text_content.Reset();
   selections.Reset();
   text_range_provider.Reset();
@@ -512,7 +511,7 @@ TEST_F(AXPlatformNodeTextProviderTest, ITextProviderGetSelection) {
 
   EXPECT_HRESULT_SUCCEEDED(
       text_range_provider->GetText(-1, text_content.Receive()));
-  EXPECT_EQ(0, wcscmp(text_content, L"some"));
+  EXPECT_EQ(0, wcscmp(text_content.Get(), L"some"));
   text_content.Reset();
   selections.Reset();
   text_range_provider.Reset();
@@ -550,7 +549,7 @@ TEST_F(AXPlatformNodeTextProviderTest, ITextProviderGetSelection) {
 
   EXPECT_HRESULT_SUCCEEDED(
       text_edit_range_provider->GetText(-1, text_content.Receive()));
-  EXPECT_EQ(0U, SysStringLen(text_content));
+  EXPECT_EQ(0U, text_content.Length());
   text_content.Reset();
   selections.Reset();
   text_edit_range_provider.Reset();
@@ -574,7 +573,7 @@ TEST_F(AXPlatformNodeTextProviderTest, ITextProviderGetSelection) {
 
   EXPECT_HRESULT_SUCCEEDED(
       text_range_provider->GetText(-1, text_content.Receive()));
-  EXPECT_EQ(0, wcscmp(text_content, L"some texttextbox text"));
+  EXPECT_EQ(0, wcscmp(text_content.Get(), L"some texttextbox text"));
   text_content.Reset();
   selections.Reset();
   text_range_provider.Reset();

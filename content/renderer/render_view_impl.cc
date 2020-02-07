@@ -1189,7 +1189,6 @@ bool RenderViewImpl::OnMessageReceived(const IPC::Message& message) {
 
   bool handled = true;
   IPC_BEGIN_MESSAGE_MAP(RenderViewImpl, message)
-    IPC_MESSAGE_HANDLER(ViewMsg_SetPageScale, OnSetPageScale)
     IPC_MESSAGE_HANDLER(ViewMsg_SetInitialFocus, OnSetInitialFocus)
     IPC_MESSAGE_HANDLER(ViewMsg_UpdateTargetURL_ACK, OnUpdateTargetURLAck)
     IPC_MESSAGE_HANDLER(ViewMsg_UpdateWebPreferences, OnUpdateWebPreferences)
@@ -1732,12 +1731,6 @@ blink::WebView* RenderViewImpl::GetWebView() {
 
 bool RenderViewImpl::GetContentStateImmediately() {
   return send_content_state_immediately_;
-}
-
-void RenderViewImpl::OnSetPageScale(float page_scale_factor) {
-  if (!webview())
-    return;
-  webview()->SetPageScaleFactor(page_scale_factor);
 }
 
 void RenderViewImpl::ApplyPageVisibilityState(

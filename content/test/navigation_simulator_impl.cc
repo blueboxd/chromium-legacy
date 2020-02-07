@@ -604,7 +604,7 @@ void NavigationSimulatorImpl::Commit() {
   }
 
   auto params = BuildDidCommitProvisionalLoadParams(
-      false /* same_document */, false /* failed_navigation */);
+      same_document_ /* same_document */, false /* failed_navigation */);
   render_frame_host_->SimulateCommitProcessed(
       request_, std::move(params), std::move(interface_provider_receiver_),
       std::move(browser_interface_broker_receiver_), same_document_);

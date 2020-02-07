@@ -35,9 +35,8 @@ SettingsClickAction::~SettingsClickAction() = default;
 
 // SettingsNavigationAction:
 
-SettingsNavigationAction::SettingsNavigationAction(
-    mojom::SettingsSectionName section_name)
-    : SettingsUserAction(Type::kNavigation), section_name_(section_name) {}
+SettingsNavigationAction::SettingsNavigationAction()
+    : SettingsUserAction(Type::kNavigation) {}
 
 SettingsNavigationAction::SettingsNavigationAction(
     const SettingsNavigationAction& other) = default;

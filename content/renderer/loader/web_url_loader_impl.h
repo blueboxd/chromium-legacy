@@ -72,6 +72,7 @@ class CONTENT_EXPORT WebURLLoaderImpl : public blink::WebURLLoader {
       int requestor_id,
       bool download_to_network_cache_only,
       bool pass_response_pipe_to_client,
+      bool no_mime_sniffing,
       base::TimeDelta timeout_interval,
       blink::WebURLLoaderClient* client,
       blink::WebURLResponse& response,
@@ -85,6 +86,7 @@ class CONTENT_EXPORT WebURLLoaderImpl : public blink::WebURLLoader {
       scoped_refptr<blink::WebURLRequest::ExtraData> request_extra_data,
       int requestor_id,
       bool download_to_network_cache_only,
+      bool no_mime_sniffing,
       blink::WebURLLoaderClient* client) override;
   void SetDefersLoading(bool value) override;
   void DidChangePriority(blink::WebURLRequest::Priority new_priority,

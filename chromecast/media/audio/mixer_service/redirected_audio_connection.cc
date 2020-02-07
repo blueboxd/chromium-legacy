@@ -94,7 +94,7 @@ bool RedirectedAudioConnection::HandleMetadata(const Generic& message) {
 }
 
 bool RedirectedAudioConnection::HandleAudioData(char* data,
-                                                int size,
+                                                size_t size,
                                                 int64_t timestamp) {
   if (sample_rate_ != 0) {
     int frames = size / (sizeof(float) * config_.num_output_channels);

@@ -145,6 +145,9 @@ class EventRewriterChromeOS : public ui::EventRewriter {
   }
 
   // EventRewriter overrides:
+  ui::EventDispatchDetails RewriteEvent(
+      const ui::Event& event,
+      const Continuation continuation) override;
   ui::EventRewriteStatus RewriteEvent(
       const ui::Event& event,
       std::unique_ptr<ui::Event>* rewritten_event) override;
@@ -230,12 +233,11 @@ class EventRewriterChromeOS : public ui::EventRewriter {
   ui::EventRewriteStatus RewriteMouseWheelEvent(
       const ui::MouseWheelEvent& mouse_event,
       std::unique_ptr<ui::Event>* rewritten_event);
-  ui::EventRewriteStatus RewriteTouchEvent(
-      const ui::TouchEvent& touch_event,
-      std::unique_ptr<ui::Event>* rewritten_event);
-  ui::EventRewriteStatus RewriteScrollEvent(
+  ui::EventDispatchDetails RewriteTouchEvent(const ui::TouchEvent& touch_event,
+                                             const Continuation continuation);
+  ui::EventDispatchDetails RewriteScrollEvent(
       const ui::ScrollEvent& scroll_event,
-      std::unique_ptr<ui::Event>* rewritten_event);
+      const Continuation continuation);
 
   // Rewriter phases. These can inspect the original |event|, but operate using
   // the current |state|, which may have been modified by previous phases.

@@ -89,6 +89,10 @@ static_library("security_interstitial_page") {
   ]
 
   if (enable_captive_portal_detection) {
+    sources += [
+      "captive_portal_metrics_recorder.cc",
+      "captive_portal_metrics_recorder.h",
+    ]
     deps += [ "//components/captive_portal/content" ]
   }
 

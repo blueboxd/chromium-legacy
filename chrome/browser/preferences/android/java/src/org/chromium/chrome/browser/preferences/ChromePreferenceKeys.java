@@ -243,8 +243,11 @@ public final class ChromePreferenceKeys {
     public static final String DATA_REDUCTION_SITE_BREAKDOWN_ALLOWED_DATE =
             "data_reduction_site_breakdown_allowed_date";
 
+    public static final String DOWNLOAD_AUTO_RESUMPTION_ATTEMPT_LEFT = "ResumptionAttemptLeft";
     public static final String DOWNLOAD_IS_DOWNLOAD_HOME_ENABLED =
             "org.chromium.chrome.browser.download.IS_DOWNLOAD_HOME_ENABLED";
+    public static final String DOWNLOAD_NEXT_DOWNLOAD_NOTIFICATION_ID =
+            "NextDownloadNotificationId";
     public static final String DOWNLOAD_PENDING_DOWNLOAD_NOTIFICATIONS =
             "PendingDownloadNotifications";
     public static final String DOWNLOAD_PENDING_OMA_DOWNLOADS = "PendingOMADownloads";
@@ -804,7 +807,9 @@ public final class ChromePreferenceKeys {
                 DATA_REDUCTION_FIRST_ENABLED_TIME,
                 DATA_REDUCTION_FRE_PROMO_OPT_OUT,
                 DATA_REDUCTION_SITE_BREAKDOWN_ALLOWED_DATE,
+                DOWNLOAD_AUTO_RESUMPTION_ATTEMPT_LEFT,
                 DOWNLOAD_IS_DOWNLOAD_HOME_ENABLED,
+                DOWNLOAD_NEXT_DOWNLOAD_NOTIFICATION_ID,
                 DOWNLOAD_PENDING_DOWNLOAD_NOTIFICATIONS,
                 DOWNLOAD_PENDING_OMA_DOWNLOADS,
                 DOWNLOAD_UMA_ENTRY,

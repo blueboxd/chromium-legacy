@@ -489,3 +489,15 @@ interface RemoteFrame {
   // when the browser receives a WidgetHostMsg_IntrinsicSizingInfoChanged.
   IntrinsicSizingInfoOfChildChanged(IntrinsicSizingInfo sizing_info);
 };
+
+// Implemented in Blink, this interface defines main-frame-specific methods that
+// will be invoked from the browser process (e.g. content::WebContentsImpl).
+//
+// There is only ever one local main frame for a given tab in all renderer
+// processes.
+//
+// This interface will only be provided when the LocalFrame is a main frame.
+interface LocalMainFrame {
+  // Scales the view without affecting layout by using the visual viewport.
+  SetScaleFactor(float scale);
+};

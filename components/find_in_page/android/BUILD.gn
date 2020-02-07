@@ -4,7 +4,6 @@
 
 import("//build/config/android/rules.gni")
 import("//build/config/locales.gni")
-import("//ui/android/features.gni")
 
 android_library("java") {
   sources = [

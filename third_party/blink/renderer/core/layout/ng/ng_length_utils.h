@@ -493,7 +493,7 @@ CORE_EXPORT NGBoxStrut ComputeMinMaxMargins(const ComputedStyle& parent_style,
                                             NGLayoutInputNode child);
 
 CORE_EXPORT NGBoxStrut ComputeBorders(const NGConstraintSpace&,
-                                      const NGLayoutInputNode);
+                                      const ComputedStyle&);
 
 CORE_EXPORT NGBoxStrut ComputeBordersForInline(const ComputedStyle& style);
 
@@ -611,9 +611,7 @@ LayoutUnit ClampIntrinsicBlockSize(
 // itself.
 base::Optional<MinMaxSize> CalculateMinMaxSizesIgnoringChildren(
     const NGBlockNode&,
-    const NGBoxStrut& border_scrollbar_padding,
-    NGMinMaxSizeType);
-
+    const NGBoxStrut& border_scrollbar_padding);
 
 }  // namespace blink
 

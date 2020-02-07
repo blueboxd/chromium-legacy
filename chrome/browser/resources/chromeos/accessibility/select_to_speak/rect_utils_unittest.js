@@ -4,21 +4,14 @@
 
 /**
  * Test fixture for rect_utils.js.
- * @constructor
- * @extends {testing.Test}
  */
-function SelectToSpeakRectUtilsUnitTest() {
-  testing.Test.call(this);
-}
+SelectToSpeakRectUtilsUnitTest = class extends testing.Test {};
 
-SelectToSpeakRectUtilsUnitTest.prototype = {
-  __proto__: testing.Test.prototype,
+/** @override */
+SelectToSpeakRectUtilsUnitTest.prototype.extraLibraries = [
+  'rect_utils.js',
+];
 
-  /** @override */
-  extraLibraries: [
-    'rect_utils.js',
-  ]
-};
 
 TEST_F('SelectToSpeakRectUtilsUnitTest', 'Overlaps', function() {
   var rect1 = {left: 0, top: 0, width: 100, height: 100};

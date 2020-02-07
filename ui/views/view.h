@@ -80,8 +80,9 @@ class DragController;
 class FocusManager;
 class FocusTraversable;
 class LayoutManager;
-class ViewAccessibility;
 class ScrollView;
+class ViewAccessibility;
+class ViewMaskLayer;
 class ViewObserver;
 class Widget;
 class WordLookupClient;
@@ -596,7 +597,8 @@ class VIEWS_EXPORT View : public ui::LayerDelegate,
   gfx::Transform GetTransform() const;
 
   // Clipping is done relative to the view's local bounds.
-  void set_clip_path(const SkPath& path) { clip_path_ = path; }
+  void SetClipPath(const SkPath& path);
+  const SkPath& clip_path() const { return clip_path_; }
 
   // Sets the transform to the supplied transform.
   void SetTransform(const gfx::Transform& transform);
@@ -1787,6 +1789,9 @@ class VIEWS_EXPORT View : public ui::LayerDelegate,
   void SetLayerBounds(const gfx::Size& size_in_dip,
                       const LayerOffsetData& layer_offset_data);
 
+  // Creates a mask layer for the current view using |clip_path_|.
+  void CreateMaskLayer();
+
   // Input ---------------------------------------------------------------------
 
   bool ProcessMousePressed(const ui::MouseEvent& event);
@@ -1922,8 +1927,7 @@ class VIEWS_EXPORT View : public ui::LayerDelegate,
 
   // Transformations -----------------------------------------------------------
 
-  // Painting will be clipped to this path. TODO(estade): this doesn't work for
-  // layers.
+  // Painting will be clipped to this path.
   SkPath clip_path_;
 
   // Layout --------------------------------------------------------------------
@@ -1978,6 +1982,10 @@ class VIEWS_EXPORT View : public ui::LayerDelegate,
   // layers are maintained as siblings of this View's layer and are stacked
   // beneath.
   std::vector<ui::Layer*> layers_beneath_;
+
+  // If painting to a layer |mask_layer_| will mask the current layer and all
+  // child layers to within the |clip_path_|.
+  std::unique_ptr<views::ViewMaskLayer> mask_layer_;
 
   // Accelerators --------------------------------------------------------------
 

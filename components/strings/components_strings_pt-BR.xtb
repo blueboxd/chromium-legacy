@@ -675,6 +675,7 @@
 <translation id="3987940399970879459">Menos de 1 MB</translation>
 <translation id="3990250421422698716">Ajustar desvio</translation>
 <translation id="40103911065039147">{URL_count,plural, =1{1 página da Web por perto}one{# página da Web por perto}other{# páginas da Web por perto}}</translation>
+<translation id="4014128326099193693">{COUNT,plural, =1{Documento PDF com {COUNT} página}one{Documento PDF com {COUNT} página}other{Documento PDF com {COUNT} páginas}}</translation>
 <translation id="4030383055268325496">&amp;Desfazer adicionar</translation>
 <translation id="4032320456957708163">Seu navegador é gerenciado por <ph name="ENROLLMENT_DOMAIN" /></translation>
 <translation id="4058922952496707368">Chave "<ph name="SUBKEY" />": <ph name="ERROR" /></translation>
@@ -703,6 +704,7 @@
 <translation id="4142935452406587478">Bandeja 10</translation>
 <translation id="4148925816941278100">American Express</translation>
 <translation id="4151403195736952345">Usar padrão global (Detectar)</translation>
+<translation id="4152318981910038897">{COUNT,plural, =1{Página 1}one{Página {COUNT}}other{Página {COUNT}}}</translation>
 <translation id="4159784952369912983">Roxo</translation>
 <translation id="4165986682804962316">Configurações do site</translation>
 <translation id="4171400957073367226">Assinatura de verificação inválida</translation>
@@ -1379,6 +1381,7 @@
 <translation id="7201591969684833065">O administrador pode ver:</translation>
 <translation id="7202346780273620635">Letter Extra</translation>
 <translation id="7210863904660874423"><ph name="HOST_NAME" /> não adere aos padrões de segurança.</translation>
+<translation id="7210993021468939304">A atividade do Linux fica no contêiner, e é possível instalar e executar apps do Linux no contêiner</translation>
 <translation id="721197778055552897"><ph name="BEGIN_LINK" />Saiba mais<ph name="END_LINK" /> sobre este problema.</translation>
 <translation id="7219179957768738017">A conexão usa a <ph name="SSL_VERSION" />.</translation>
 <translation id="7220786058474068424">Processando</translation>
@@ -1542,6 +1545,7 @@ Mais detalhes:
 <translation id="7878562273885520351">Sua senha pode estar comprometida</translation>
 <translation id="7882421473871500483">Marrom</translation>
 <translation id="7887683347370398519">Verifique seu CVC e tente novamente</translation>
+<translation id="7887885240995164102">Entrar no modo picture-in-picture</translation>
 <translation id="7888575728750733395">Intent de renderização da impressão</translation>
 <translation id="7904208859782148177">C3 (Envelope)</translation>
 <translation id="7932579305932748336">Revestir</translation>

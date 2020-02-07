@@ -145,7 +145,7 @@ void SmallMessageSocket::RemoveBufferPool() {
   buffer_pool_.reset();
 }
 
-void* SmallMessageSocket::PrepareSend(int message_size) {
+void* SmallMessageSocket::PrepareSend(size_t message_size) {
   DCHECK_LE(message_size, std::numeric_limits<uint16_t>::max());
   if (write_buffer_->remaining()) {
     send_blocked_ = true;
@@ -153,8 +153,9 @@ void* SmallMessageSocket::PrepareSend(int message_size) {
   }
 
   write_storage_->set_offset(0);
-  const int total_size = sizeof(uint16_t) + message_size;
-  if (write_storage_->capacity() < total_size) {
+  const size_t total_size = sizeof(uint16_t) + message_size;
+  // TODO(lethalantidote): Remove cast once capacity converted to size_t.
+  if (static_cast<size_t>(write_storage_->capacity()) < total_size) {
     write_storage_->SetCapacity(total_size);
   }
 
@@ -165,7 +166,7 @@ void* SmallMessageSocket::PrepareSend(int message_size) {
 }
 
 bool SmallMessageSocket::SendBuffer(scoped_refptr<net::IOBuffer> data,
-                                    int size) {
+                                    size_t size) {
   if (write_buffer_->remaining()) {
     send_blocked_ = true;
     return false;
@@ -411,7 +412,7 @@ bool SmallMessageSocket::HandleCompletedMessageBuffers() {
 
 bool SmallMessageSocket::Delegate::OnMessageBuffer(
     scoped_refptr<net::IOBuffer> buffer,
-    int size) {
+    size_t size) {
   return OnMessage(buffer->data() + sizeof(uint16_t), size - sizeof(uint16_t));
 }
 

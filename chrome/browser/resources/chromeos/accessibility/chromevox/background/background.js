@@ -41,6 +41,7 @@ goog.require('ChromeVoxEditableTextBase');
 goog.require('ExtensionBridge');
 goog.require('NavBraille');
 goog.require('NodeIdentifier');
+goog.require('UserAnnotationHandler');
 
 goog.scope(function() {
 const AutomationNode = chrome.automation.AutomationNode;
@@ -143,6 +144,7 @@ Background = class extends ChromeVoxState {
     DownloadHandler.init();
     LanguageSwitching.init();
     PhoneticData.init();
+    UserAnnotationHandler.init();
 
     Notifications.onStartup();
 

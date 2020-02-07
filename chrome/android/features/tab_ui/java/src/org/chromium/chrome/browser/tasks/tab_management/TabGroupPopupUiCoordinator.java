@@ -51,7 +51,7 @@ public class TabGroupPopupUiCoordinator
                 model, mTabGroupPopupUiParent, TabGroupPopupUiViewBinder::bind);
         mMediator = new TabGroupPopupUiMediator(model, activity.getTabModelSelector(),
                 activity.getOverviewModeBehavior(), activity.getFullscreenManager(), this,
-                mTabGroupUiCoordinator);
+                mTabGroupUiCoordinator, activity.getBottomSheetController());
         mMediator.onAnchorViewChanged(mAnchorView, mAnchorView.getId());
     }
 

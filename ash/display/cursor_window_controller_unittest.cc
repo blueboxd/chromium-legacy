@@ -88,7 +88,10 @@ TEST_F(CursorWindowControllerTest, MoveToDifferentDisplay) {
   WindowTreeHostManager* window_tree_host_manager =
       Shell::Get()->window_tree_host_manager();
   int64_t primary_display_id = window_tree_host_manager->GetPrimaryDisplayId();
-  int64_t secondary_display_id = display_manager()->GetSecondaryDisplay().id();
+  int64_t secondary_display_id =
+      display::test::DisplayManagerTestApi(display_manager())
+          .GetSecondaryDisplay()
+          .id();
   aura::Window* primary_root =
       window_tree_host_manager->GetRootWindowForDisplayId(primary_display_id);
   aura::Window* secondary_root =

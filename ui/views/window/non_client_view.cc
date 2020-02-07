@@ -251,7 +251,7 @@ void NonClientView::Layout() {
 
   SkPath client_clip;
   if (frame_view_->GetClientMask(client_view_->size(), &client_clip))
-    client_view_->set_clip_path(client_clip);
+    client_view_->SetClipPath(client_clip);
 
   if (overlay_view_)
     overlay_view_->SetBoundsRect(GetLocalBounds());

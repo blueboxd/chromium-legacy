@@ -22,6 +22,7 @@ chrome_ios_eg2_test("ios_cwt_chromedriver_tests_module") {
   xcode_test_application_name = "ios_cwt_chromedriver_tests"
 
   deps = [ ":cwt_chromedriver_tests" ]
+  data_deps = [ ":ios_cwt_chromedriver_tests" ]
 }
 
 source_set("shared_helper_headers") {

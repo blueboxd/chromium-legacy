@@ -38,7 +38,7 @@ class ParentOutputSurface : public viz::OutputSurface {
   void Reshape(const gfx::Size& size,
                float scale_factor,
                const gfx::ColorSpace& color_space,
-               bool has_alpha,
+               gfx::BufferFormat format,
                bool use_stencil) override;
   void SwapBuffers(viz::OutputSurfaceFrame frame) override;
   bool HasExternalStencilTest() const override;

@@ -119,7 +119,7 @@ std::unique_ptr<NGExclusionShapeData> CreateExclusionShapeData(
     case CSSBoxType::kContent:
       const NGConstraintSpace space =
           CreateConstraintSpaceForFloat(unpositioned_float);
-      NGBoxStrut strut = ComputeBorders(space, unpositioned_float.node);
+      NGBoxStrut strut = ComputeBorders(space, style);
       if (style.ShapeOutside()->CssBox() == CSSBoxType::kContent)
         strut += ComputePadding(space, style);
       shape_insets =

@@ -46,7 +46,6 @@
 #include "chrome/browser/ui/blocked_content/popup_tracker.h"
 #include "chrome/browser/ui/browser_navigator_params.h"
 #include "chrome/browser/ui/interventions/framebust_block_message_delegate.h"
-#include "chrome/browser/ui/javascript_dialogs/javascript_dialog_tab_helper.h"
 #include "chrome/browser/ui/tab_helpers.h"
 #include "chrome/browser/vr/vr_tab_helper.h"
 #include "chrome/common/chrome_switches.h"
@@ -55,6 +54,7 @@
 #include "components/find_in_page/find_tab_helper.h"
 #include "components/infobars/core/infobar.h"
 #include "components/javascript_dialogs/app_modal_dialog_manager.h"
+#include "components/javascript_dialogs/tab_modal_dialog_manager.h"
 #include "components/navigation_interception/intercept_navigation_delegate.h"
 #include "components/paint_preview/buildflags/buildflags.h"
 #include "components/security_state/content/content_utils.h"
@@ -286,7 +286,7 @@ TabWebContentsDelegateAndroid::GetJavaScriptDialogManager(
     WebContents* source) {
   // For VR, we use app modal since the dialog view will cover the location bar.
   if (!vr::VrTabHelper::IsInVr(source)) {
-    return JavaScriptDialogTabHelper::FromWebContents(source);
+    return javascript_dialogs::TabModalDialogManager::FromWebContents(source);
   }
   return javascript_dialogs::AppModalDialogManager::GetInstance();
 }

@@ -137,7 +137,6 @@
 <translation id="2718395828230677721">แสงตอนกลางคืน</translation>
 <translation id="2727977024730340865">เสียบอยู่กับที่ชาร์จพลังงานต่ำ การชาร์จแบตเตอรี่อาจไม่น่าเชื่อถือ</translation>
 <translation id="2792498699870441125">Alt+ค้นหา</translation>
-<translation id="2803734122639935495">ป้อนรหัสผ่านเพื่อปลดล็อก</translation>
 <translation id="2819276065543622893">คุณจะออกจากระบบในตอนนี้</translation>
 <translation id="2825619548187458965">ชั้นวาง</translation>
 <translation id="2844169650293029770">อุปกรณ์ USB-C (พอร์ตด้านหน้าซ้าย)</translation>
@@ -202,6 +201,7 @@
 <translation id="3604801046548457007">สร้างเดสก์ <ph name="DESK_TITILE" /> แล้ว</translation>
 <translation id="3606978283550408104">เชื่อมต่ออุปกรณ์แสดงผลอักษรเบรลล์แล้ว</translation>
 <translation id="3621202678540785336">อินพุต</translation>
+<translation id="3621712662352432595">การตั้งค่าเสียง</translation>
 <translation id="3626281679859535460">ความสว่าง</translation>
 <translation id="3631369015426612114">อนุญาตให้มีการแจ้งเตือนจากรายการต่อไปนี้</translation>
 <translation id="3705722231355495246">-</translation>
@@ -544,6 +544,7 @@
 <translation id="8477270416194247200">กด Alt + Search หรือ Shift เพื่อยกเลิก</translation>
 <translation id="8513108775083588393">หมุนอัตโนมัติ</translation>
 <translation id="8517041960877371778"><ph name="DEVICE_TYPE" /> ของคุณอาจไม่ชาร์จเมื่อเครื่องเปิดอยู่</translation>
+<translation id="8563862697512465947">การตั้งค่าการแจ้งเตือน</translation>
 <translation id="8627191004499078455">เชื่อมต่อ<ph name="DEVICE_NAME" />แล้ว</translation>
 <translation id="8637598503828012618"><ph name="CONNECTION_STATUS" />, ความแรงสัญญาณ <ph name="SIGNAL_STRENGTH" />, จัดการโดยผู้ดูแลระบบ</translation>
 <translation id="8639760480004882931">เหลือ <ph name="PERCENTAGE" />%</translation>

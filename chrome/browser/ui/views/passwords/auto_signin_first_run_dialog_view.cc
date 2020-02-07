@@ -27,6 +27,21 @@ AutoSigninFirstRunDialogView::AutoSigninFirstRunDialogView(
       l10n_util::GetStringUTF16(IDS_AUTO_SIGNIN_FIRST_RUN_OK));
   DialogDelegate::set_button_label(ui::DIALOG_BUTTON_CANCEL,
                                    l10n_util::GetStringUTF16(IDS_TURN_OFF));
+
+  using ControllerCallbackFn = void (CredentialManagerDialogController::*)();
+  auto call_controller = [](AutoSigninFirstRunDialogView* dialog,
+                            ControllerCallbackFn func) {
+    if (dialog->controller_) {
+      (dialog->controller_->*func)();
+    }
+  };
+  DialogDelegate::set_accept_callback(
+      base::BindOnce(call_controller, base::Unretained(this),
+                     &CredentialManagerDialogController::OnAutoSigninOK));
+  DialogDelegate::set_cancel_callback(
+      base::BindOnce(call_controller, base::Unretained(this),
+                     &CredentialManagerDialogController::OnAutoSigninTurnOff));
+
   chrome::RecordDialogCreation(chrome::DialogIdentifier::AUTO_SIGNIN_FIRST_RUN);
 }
 
@@ -67,27 +82,6 @@ gfx::Size AutoSigninFirstRunDialogView::CalculatePreferredSize() const {
 void AutoSigninFirstRunDialogView::WindowClosing() {
   if (controller_)
     controller_->OnCloseDialog();
-}
-
-bool AutoSigninFirstRunDialogView::Cancel() {
-  // On Mac the button click event may be dispatched after the dialog was
-  // hidden. Thus, the controller can be NULL.
-  if (controller_)
-    controller_->OnAutoSigninTurnOff();
-  return true;
-}
-
-bool AutoSigninFirstRunDialogView::Accept() {
-  // On Mac the button click event may be dispatched after the dialog was
-  // hidden. Thus, the controller can be NULL.
-  if (controller_)
-    controller_->OnAutoSigninOK();
-  return true;
-}
-
-bool AutoSigninFirstRunDialogView::Close() {
-  // Do nothing rather than running Cancel(), which would turn off auto-signin.
-  return true;
 }
 
 void AutoSigninFirstRunDialogView::InitWindow() {

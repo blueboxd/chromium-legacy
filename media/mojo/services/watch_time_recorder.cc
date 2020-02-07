@@ -50,6 +50,7 @@ enum class VideoDecoderName : int {
   kDav1d = 7,        // Dav1dVideoDecoder
   kFuchsia = 8,      // FuchsiaVideoDecoder
   kMediaPlayer = 9,  // MediaPlayer
+  kLibgav1 = 10,     // Gav1VideoDecoder
 };
 
 static AudioDecoderName ConvertAudioDecoderNameToEnum(const std::string& name) {
@@ -94,6 +95,8 @@ static VideoDecoderName ConvertVideoDecoderNameToEnum(const std::string& name) {
       return VideoDecoderName::kFuchsia;
     case 0x667dc202:
       return VideoDecoderName::kMediaPlayer;
+    case 0x0cd14d5b:
+      return VideoDecoderName::kLibgav1;
     default:
       DLOG_IF(WARNING, !name.empty())
           << "Unknown decoder name encountered; metrics need updating: "

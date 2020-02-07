@@ -1,4 +1,5 @@
 include_rules = [
+  "+components/embedder_support",
   "+components/metrics",
   "+content/public/android",
   "+content/public/app",

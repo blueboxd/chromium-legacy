@@ -42,6 +42,8 @@ COMPONENT_EXPORT(CHROMEOS_CONSTANTS)
 extern const char kArcDisableGmsCoreCache[];
 COMPONENT_EXPORT(CHROMEOS_CONSTANTS) extern const char kArcDisableLocaleSync[];
 COMPONENT_EXPORT(CHROMEOS_CONSTANTS)
+extern const char kArcDisableSystemDefaultApps[];
+COMPONENT_EXPORT(CHROMEOS_CONSTANTS)
 extern const char kArcDisablePlayAutoInstall[];
 COMPONENT_EXPORT(CHROMEOS_CONSTANTS) extern const char kArcForceCacheAppIcons[];
 COMPONENT_EXPORT(CHROMEOS_CONSTANTS) extern const char kArcForceShowOptInUi[];

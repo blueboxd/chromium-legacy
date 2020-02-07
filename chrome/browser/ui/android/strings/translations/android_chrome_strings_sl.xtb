@@ -115,6 +115,7 @@
 <translation id="1919950603503897840">Izbira stikov</translation>
 <translation id="1922076542920281912">Če želite Chromu omogočiti dostop do lokacije, lokacijo vklopite tudi v <ph name="BEGIN_LINK" />nastavitvah za Android<ph name="END_LINK" />.</translation>
 <translation id="1923695749281512248"><ph name="BYTES_DOWNLOADED_WITH_UNITS" />/<ph name="FILE_SIZE_WITH_UNITS" /></translation>
+<translation id="1925021887439448749">Vnesite spletni naslov po meri</translation>
 <translation id="1928696683969751773">Posodobitve</translation>
 <translation id="19288952978244135">Znova odprite Chrome.</translation>
 <translation id="1933845786846280168">Izbrani zavihek</translation>
@@ -279,6 +280,7 @@
 <translation id="3123473560110926937">Blokirano na nekaterih spletnih mestih</translation>
 <translation id="3123734510202723619">Obvestila</translation>
 <translation id="3137521801621304719">Izklop načina brez beleženja zgodovine</translation>
+<translation id="3140134512074889489">Omogočite fotoaparat, če želite optično prebrati kodo QR</translation>
 <translation id="3143515551205905069">Prekliči sinhronizacijo</translation>
 <translation id="3157842584138209013">Če pritisnete gumb za več možnosti, si lahko ogledate, koliko prenosa podatkov ste prihranili</translation>
 <translation id="3166827708714933426">Bližnjice za zavihke in okna</translation>
@@ -449,6 +451,9 @@
 <translation id="4521489764227272523">Izbrani podatki so bili odstranjeni iz Chroma in sinhroniziranih naprav.
 
 V Google Računu so morda druge vrste zgodovine brskanja, kot so iskanja in dejavnosti iz drugih Googlovih storitev, na <ph name="BEGIN_LINK" />history.google.com<ph name="END_LINK" />.</translation>
+<translation id="4527374721149092498">Preberite več o temah na spletnih mestih, ne da bi vam bilo treba zapustiti stran. Funkcija »Iskanje z dotikom« pošlje besedo in njeno sobesedilo Iskanju Google in vrne definicije, slike, rezultate iskanja in druge podrobnosti.
+
+Dotaknite se poljubne besede, če želite ustvariti iskanje zanjo. Če želite prilagoditi iskalno poizvedbo, jo za dalj časa pritisnite, da jo izberete. Če želite izboljšati iskanje, s podrsanjem odprite podokno, dotaknite se ikone za razširitev, da odprete nov zavihek, nato pa se dotaknite iskalnega polja.</translation>
 <translation id="4532845899244822526">Izbira mape</translation>
 <translation id="4538018662093857852">Vklop lahkega načina</translation>
 <translation id="4550003330909367850">Če si želite ogledati geslo ali ga kopirati sem, v napravi nastavite zaklepanje zaslona.</translation>
@@ -690,6 +695,9 @@ V Google Računu so morda druge vrste zgodovine brskanja, kot so iskanja in deja
 <translation id="6232535412751077445">Če omogočite možnost »Ne sledi«, bo zahteva vključena v vaš promet brskanja. Učinek je odvisen od odziva spletnega mesta na zahtevo in od tega, kako si zahtevo razlaga.
 
 Nekatera spletna mesta se lahko na primer na zahtevo odzovejo tako, da prikažejo oglase, ki ne temeljijo na drugih spletnih mestih, ki ste jih obiskali. Veliko spletnih mest bo še vedno zbiralo in uporabljalo vaše podatke o brskanju, na primer za izboljšanje varnosti, zagotavljanje vsebine, oglasov in priporočil ter za pridobivanje statističnih podatkov za poročanje.</translation>
+<translation id="6238003486329291387">Preberite več o temah na spletnih mestih, ne da bi vam bilo treba zapustiti stran. Funkcija »Iskanje z dotikom« pošlje besedo in njeno sobesedilo Iskanju Google in vrne definicije, slike, rezultate iskanja in druge podrobnosti.
+
+Za dalj časa pritisnite poljubno besedo, če želite ustvariti iskanje zanjo. Če želite izboljšati iskanje, prilagodite izbor. Prav tako lahko s podrsanjem odprete podokno, se dotaknete ikone za razširitev, da odprete nov zavihek, nato pa se dotaknete iskalnega polja.</translation>
 <translation id="624789221780392884">Posodobitev je pripravljena</translation>
 <translation id="6255999984061454636">Predlogi za vsebino</translation>
 <translation id="6270391203985052864">Spletna mesta vas lahko vprašajo, ali želite, da vam pošiljajo obvestila</translation>

@@ -647,7 +647,7 @@ void AddCrostiniStrings(content::WebUIDataSource* html_source,
   html_source->AddBoolean("isEnterpriseManaged",
                           IsDeviceManaged() || IsProfileManaged(profile));
   html_source->AddBoolean("showCrostiniContainerUpgrade",
-                          crostini::ShouldAllowContainerUpgrade());
+                          crostini::ShouldAllowContainerUpgrade(profile));
 }
 
 void AddPluginVmStrings(content::WebUIDataSource* html_source,

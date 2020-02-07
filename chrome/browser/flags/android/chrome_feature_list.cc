@@ -103,7 +103,6 @@ const base::Feature* kFeaturesExposedToJava[] = {
     &kAndroidNightModeTabReparenting,
     &kAndroidPayIntegrationV1,
     &kAndroidPayIntegrationV2,
-    &kAndroidPaymentApps,
     &kAndroidSearchEngineChoiceNotification,
     &kAndroidSetupSearchEngine,
     &kAndroidSiteSettingsUIRefresh,
@@ -167,7 +166,6 @@ const base::Feature* kFeaturesExposedToJava[] = {
     &kKitKatSupported,
     &kNewPhotoPicker,
     &kNotificationSuspender,
-    &kNTPLaunchAfterInactivity,
     &kOfflineIndicatorV2,
     &kOmniboxSpareRenderer,
     &kOverlayNewLayout,
@@ -298,10 +296,6 @@ const base::Feature kAllowRemoteContextForNotifications{
 // TODO(rouslan): Remove this.
 const base::Feature kAndroidPayIntegrationV2{"AndroidPayIntegrationV2",
                                              base::FEATURE_ENABLED_BY_DEFAULT};
-
-// TODO(rouslan): Remove this.
-const base::Feature kAndroidPaymentApps{"AndroidPaymentApps",
-                                        base::FEATURE_ENABLED_BY_DEFAULT};
 
 const base::Feature kAndroidSearchEngineChoiceNotification{
     "AndroidSearchEngineChoiceNotification", base::FEATURE_ENABLED_BY_DEFAULT};
@@ -505,9 +499,6 @@ const base::Feature kNewPhotoPicker{"NewPhotoPicker",
 // okay about leaving it on.
 const base::Feature kNotificationSuspender{"NotificationSuspender",
                                            base::FEATURE_ENABLED_BY_DEFAULT};
-
-const base::Feature kNTPLaunchAfterInactivity{
-    "NTPLaunchAfterInactivity", base::FEATURE_DISABLED_BY_DEFAULT};
 
 const base::Feature kOfflineIndicatorV2{"OfflineIndicatorV2",
                                         base::FEATURE_DISABLED_BY_DEFAULT};

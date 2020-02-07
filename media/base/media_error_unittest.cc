@@ -64,6 +64,13 @@ class MediaErrorTest : public testing::Test {
     me.WithData("data", "Hey you! psst! Help me outta here! I'm trapped!");
     return me;
   }
+
+  // Make sure that the typical usage of ErrorOr actually compiles.
+  ErrorOr<std::unique_ptr<int>> TypicalErrorOrUsage(bool succeed) {
+    if (succeed)
+      return std::make_unique<int>(123);
+    return MediaError(ErrorCode::kCodeOnlyForTesting);
+  }
 };
 
 TEST_F(MediaErrorTest, StaticOKMethodGivesCorrectSerialization) {
@@ -183,6 +190,57 @@ TEST_F(MediaErrorTest, CanCopyEasily) {
   ASSERT_EQ(actual.FindListPath("stack")->GetList().size(), 1ul);
   ASSERT_EQ(actual.FindListPath("causes")->GetList().size(), 0ul);
   ASSERT_EQ(actual.FindDictPath("data")->DictSize(), 1ul);
+}
+
+TEST_F(MediaErrorTest, ErrorOrTypicalUsage) {
+  // Mostly so we have some code coverage on the default usage.
+  EXPECT_TRUE(TypicalErrorOrUsage(true).has_value());
+  EXPECT_FALSE(TypicalErrorOrUsage(true).has_error());
+  EXPECT_FALSE(TypicalErrorOrUsage(false).has_value());
+  EXPECT_TRUE(TypicalErrorOrUsage(false).has_error());
+}
+
+TEST_F(MediaErrorTest, ErrorOrWithMoveOnlyType) {
+  ErrorOr<std::unique_ptr<int>> error_or(std::make_unique<int>(123));
+  EXPECT_TRUE(error_or.has_value());
+  EXPECT_FALSE(error_or.has_error());
+  std::unique_ptr<int> result = std::move(error_or.value());
+  EXPECT_EQ(error_or.value(), nullptr);
+  EXPECT_NE(result.get(), nullptr);
+  EXPECT_EQ(*result, 123);
+}
+
+TEST_F(MediaErrorTest, ErrorOrWithCopyableType) {
+  ErrorOr<int> error_or(123);
+  EXPECT_TRUE(error_or.has_value());
+  EXPECT_FALSE(error_or.has_error());
+  int result = std::move(error_or.value());
+  EXPECT_EQ(result, 123);
+  // Should be unaffected by the move.
+  EXPECT_EQ(error_or.value(), 123);
+}
+
+TEST_F(MediaErrorTest, ErrorOrMoveConstructionAndAssignment) {
+  // Make sure that we can move-construct and move-assign a move-only value.
+  ErrorOr<std::unique_ptr<int>> error_or_0(std::make_unique<int>(123));
+
+  ErrorOr<std::unique_ptr<int>> error_or_1(std::move(error_or_0));
+  EXPECT_EQ(error_or_0.value(), nullptr);
+
+  ErrorOr<std::unique_ptr<int>> error_or_2 = std::move(error_or_1);
+  EXPECT_EQ(error_or_1.value(), nullptr);
+
+  // |error_or_2| should have gotten the original.
+  std::unique_ptr<int> value = std::move(error_or_2.value());
+  EXPECT_EQ(*value, 123);
+}
+
+TEST_F(MediaErrorTest, ErrorOrCopyWorks) {
+  // Make sure that we can move-construct and move-assign a move-only value.
+  ErrorOr<int> error_or_0(123);
+  ErrorOr<int> error_or_1(std::move(error_or_0));
+  ErrorOr<int> error_or_2 = std::move(error_or_1);
+  EXPECT_EQ(error_or_2.value(), 123);
 }
 
 }  // namespace media

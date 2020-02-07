@@ -370,7 +370,8 @@ TEST_F(KeyboardControllerImplTest, VisualBoundsInMultipleDisplays) {
 
   // Show the keyboard in the second display.
   keyboard_ui_controller()->ShowKeyboardInDisplay(
-      Shell::Get()->display_manager()->GetSecondaryDisplay());
+      display::test::DisplayManagerTestApi(Shell::Get()->display_manager())
+          .GetSecondaryDisplay());
   ASSERT_TRUE(keyboard::WaitUntilShown());
 
   gfx::Rect root_bounds = keyboard_ui_controller()->visual_bounds_in_root();
@@ -387,7 +388,8 @@ TEST_F(KeyboardControllerImplTest, OccludedBoundsInMultipleDisplays) {
 
   // Show the keyboard in the second display.
   keyboard_ui_controller()->ShowKeyboardInDisplay(
-      Shell::Get()->display_manager()->GetSecondaryDisplay());
+      display::test::DisplayManagerTestApi(Shell::Get()->display_manager())
+          .GetSecondaryDisplay());
   ASSERT_TRUE(keyboard::WaitUntilShown());
 
   gfx::Rect screen_bounds =

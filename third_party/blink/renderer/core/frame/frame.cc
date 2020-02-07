@@ -136,6 +136,22 @@ bool Frame::IsCrossOriginToMainFrame() const {
       Tree().Top().GetSecurityContext()->GetSecurityOrigin());
 }
 
+bool Frame::IsCrossOriginToParentFrame() const {
+  DCHECK(GetSecurityContext());
+  if (IsMainFrame())
+    return false;
+  Frame* parent = Tree().Parent();
+  const SecurityOrigin* parent_security_origin =
+      parent->GetSecurityContext()->GetSecurityOrigin();
+  // TODO(dcheng, crbug.com/1049612): The parent security origin should not be
+  // null.
+  if (!parent_security_origin)
+    return true;
+  const SecurityOrigin* security_origin =
+      GetSecurityContext()->GetSecurityOrigin();
+  return !security_origin->CanAccess(parent_security_origin);
+}
+
 HTMLFrameOwnerElement* Frame::DeprecatedLocalOwner() const {
   return DynamicTo<HTMLFrameOwnerElement>(owner_.Get());
 }

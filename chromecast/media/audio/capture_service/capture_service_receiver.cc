@@ -50,7 +50,7 @@ class CaptureServiceReceiver::Socket : public SmallMessageSocket::Delegate {
   void OnSendUnblocked() override;
   void OnError(int error) override;
   void OnEndOfStream() override;
-  bool OnMessage(char* data, int size) override;
+  bool OnMessage(char* data, size_t size) override;
 
   bool SendRequest();
   void OnInactivityTimeout();
@@ -136,10 +136,7 @@ void CaptureServiceReceiver::Socket::OnEndOfStream() {
   ReportErrorAndStop();
 }
 
-bool CaptureServiceReceiver::Socket::OnMessage(char* data, int size) {
-  // TODO(https://crbug.com/982014): Remove the DCHECK once using unsigned
-  // |size|.
-  DCHECK_GT(size, 0);
+bool CaptureServiceReceiver::Socket::OnMessage(char* data, size_t size) {
   capture_service::PacketInfo info;
   if (!capture_service::ReadHeader(data, size, &info)) {
     ReportErrorAndStop();

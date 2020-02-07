@@ -13,7 +13,6 @@
 #include "media/base/video_decoder.h"
 #include "media/base/video_decoder_config.h"
 #include "media/base/video_frame.h"
-#include "media/base/video_frame_pool.h"
 #include "media/filters/offloading_video_decoder.h"
 
 struct Dav1dContext;

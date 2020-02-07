@@ -681,6 +681,7 @@
 <translation id="3987940399970879459">1 MBට වඩා අඩු</translation>
 <translation id="3990250421422698716">අනුලම්බයේ සෙමින් දුවන්න</translation>
 <translation id="40103911065039147">{URL_count,plural, =1{වෙබ් පිටු 1ක් අවට ඇත}one{වෙබ් පිටු #ක් අවට ඇත}other{වෙබ් පිටු #ක් අවට ඇත}}</translation>
+<translation id="4014128326099193693">{COUNT,plural, =1{{COUNT} පිටුවක් ඇති PDF ලේඛනය}one{පිටු {COUNT} ක් ඇති PDF ලේඛනය}other{පිටු {COUNT} ක් ඇති PDF ලේඛනය}}</translation>
 <translation id="4030383055268325496">&amp;එක් කිරීම පසුගමනය කිරීම</translation>
 <translation id="4032320456957708163">ඔබේ බ්‍රවුසරය <ph name="ENROLLMENT_DOMAIN" /> විසින් කළමනා කෙරේ</translation>
 <translation id="4058922952496707368">යතුර "<ph name="SUBKEY" />": <ph name="ERROR" /></translation>
@@ -709,6 +710,7 @@
 <translation id="4142935452406587478">බඳුන 10</translation>
 <translation id="4148925816941278100">ඇමරිකන් එක්ස්ප්‍රස්</translation>
 <translation id="4151403195736952345">ගෝලීය පෙරනිමිය භාවිත කරන්න (හඳුනාගන්න)</translation>
+<translation id="4152318981910038897">{COUNT,plural, =1{1 වෙනි පිටුව}one{{COUNT} වෙනි පිටුව}other{{COUNT} වෙනි පිටුව}}</translation>
 <translation id="4159784952369912983">දම්</translation>
 <translation id="4165986682804962316">අඩවි සැකසුම්</translation>
 <translation id="4171400957073367226">වැරදි සත්‍යාපන සන් කිරීමකි</translation>
@@ -1386,6 +1388,7 @@
 <translation id="7201591969684833065">ඔබේ පරිපාලකයාට බැලිය හැක්කේ:</translation>
 <translation id="7202346780273620635">Letter-Extra</translation>
 <translation id="7210863904660874423"><ph name="HOST_NAME" /> ආරක්ෂක සම්මත අනුගමනය නොකරයි.</translation>
+<translation id="7210993021468939304">බඳුන තුළ ලිනක්ස් ක්‍රියාව, සහ බඳුන තුළ ලිනක්ස් යෙදුම් ස්ථාපන කර ධාවන කළ හැක</translation>
 <translation id="721197778055552897">මෙම ගැටළුව පිළිබඳ <ph name="BEGIN_LINK" />තවත් දැනගන්න<ph name="END_LINK" />.</translation>
 <translation id="7219179957768738017">සම්බන්ධතාවය විසින් <ph name="SSL_VERSION" /> භාවිතා කරයි.</translation>
 <translation id="7220786058474068424">සකසමින්</translation>
@@ -1549,6 +1552,7 @@
 <translation id="7878562273885520351">ඔබේ මුරපදය අන් සතු වී තිබිය හැකිය</translation>
 <translation id="7882421473871500483">දුඹුරු</translation>
 <translation id="7887683347370398519">ඔබේ CVC පරීක්ෂා කර නැවත උත්සාහ කරන්න</translation>
+<translation id="7887885240995164102">පින්තූරය-තුළ-පින්තූරයට ඇතුළු වන්න</translation>
 <translation id="7888575728750733395">මුද්‍රණ විදහීමේ යෙදීම</translation>
 <translation id="7904208859782148177">C3 (ලියුම් කවරය)</translation>
 <translation id="7932579305932748336">කබාය</translation>

@@ -49,7 +49,7 @@ TEST_F(FormCacheBrowserTest, ExtractForms) {
   )");
 
   FormCache form_cache(GetMainFrame());
-  std::vector<FormData> forms = form_cache.ExtractNewForms();
+  std::vector<FormData> forms = form_cache.ExtractNewForms(nullptr);
 
   const FormData* form1 = GetFormByName(forms, "form1");
   ASSERT_TRUE(form1);
@@ -71,9 +71,9 @@ TEST_F(FormCacheBrowserTest, ExtractFormsTwice) {
   )");
 
   FormCache form_cache(GetMainFrame());
-  std::vector<FormData> forms = form_cache.ExtractNewForms();
+  std::vector<FormData> forms = form_cache.ExtractNewForms(nullptr);
 
-  forms = form_cache.ExtractNewForms();
+  forms = form_cache.ExtractNewForms(nullptr);
   // As nothing has changed, there are no new forms and |forms| should be empty.
   EXPECT_TRUE(forms.empty());
 }
@@ -89,7 +89,7 @@ TEST_F(FormCacheBrowserTest, ExtractFormsAfterModification) {
   )");
 
   FormCache form_cache(GetMainFrame());
-  std::vector<FormData> forms = form_cache.ExtractNewForms();
+  std::vector<FormData> forms = form_cache.ExtractNewForms(nullptr);
 
   // Append an input element to the form and to the list of unowned inputs.
   ExecuteJavaScriptForTests(R"(
@@ -106,7 +106,7 @@ TEST_F(FormCacheBrowserTest, ExtractFormsAfterModification) {
     document.body.appendChild(new_input_2);
   )");
 
-  forms = form_cache.ExtractNewForms();
+  forms = form_cache.ExtractNewForms(nullptr);
 
   const FormData* form1 = GetFormByName(forms, "form1");
   ASSERT_TRUE(form1);
@@ -128,7 +128,7 @@ TEST_F(FormCacheBrowserTest, FillAndClear) {
   )");
 
   FormCache form_cache(GetMainFrame());
-  std::vector<FormData> forms = form_cache.ExtractNewForms();
+  std::vector<FormData> forms = form_cache.ExtractNewForms(nullptr);
 
   ASSERT_EQ(1u, forms.size());
   FormData values_to_fill = forms[0];
@@ -173,7 +173,7 @@ TEST_F(FormCacheBrowserTest, FreeDataOnElementRemoval) {
   )");
 
   FormCache form_cache(GetMainFrame());
-  form_cache.ExtractNewForms();
+  form_cache.ExtractNewForms(nullptr);
 
   EXPECT_EQ(1u, form_cache.initial_select_values_.size());
   EXPECT_EQ(1u, form_cache.initial_checked_state_.size());
@@ -185,7 +185,7 @@ TEST_F(FormCacheBrowserTest, FreeDataOnElementRemoval) {
     }
   )");
 
-  std::vector<FormData> forms = form_cache.ExtractNewForms();
+  std::vector<FormData> forms = form_cache.ExtractNewForms(nullptr);
   EXPECT_EQ(0u, forms.size());
   EXPECT_EQ(0u, form_cache.initial_select_values_.size());
   EXPECT_EQ(0u, form_cache.initial_checked_state_.size());

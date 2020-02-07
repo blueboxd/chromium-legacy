@@ -63,6 +63,8 @@ class MediaHistoryStoreInternal
   mojom::MediaHistoryStatsPtr GetMediaHistoryStats();
   int GetTableRowCount(const std::string& table_name);
 
+  std::vector<mojom::MediaHistoryOriginRowPtr> GetOriginRowsForDebug();
+
   void SavePlaybackSession(
       const GURL& url,
       const media_session::MediaMetadata& metadata,
@@ -220,6 +222,46 @@ mojom::MediaHistoryStatsPtr MediaHistoryStoreInternal::GetMediaHistoryStats() {
   return stats;
 }
 
+std::vector<mojom::MediaHistoryOriginRowPtr>
+MediaHistoryStoreInternal::GetOriginRowsForDebug() {
+  std::vector<mojom::MediaHistoryOriginRowPtr> origins;
+
+  DCHECK(db_task_runner_->RunsTasksInCurrentSequence());
+  if (!initialization_successful_)
+    return origins;
+
+  sql::Statement statement(DB()->GetUniqueStatement(
+      base::StringPrintf(
+          "SELECT O.origin, O.last_updated_time_s, "
+          "O.aggregate_watchtime_audio_video_s,  "
+          "(SELECT SUM(watch_time_s) FROM %s WHERE origin_id = O.id AND "
+          "has_video = 1 AND has_audio = 1) AS accurate_watchtime "
+          "FROM %s O",
+          MediaHistoryPlaybackTable::kTableName,
+          MediaHistoryOriginTable::kTableName)
+          .c_str()));
+
+  std::vector<std::string> table_names;
+  while (statement.Step()) {
+    mojom::MediaHistoryOriginRowPtr origin(mojom::MediaHistoryOriginRow::New());
+
+    origin->origin = url::Origin::Create(GURL(statement.ColumnString(0)));
+    origin->last_updated_time =
+        base::Time::FromDeltaSinceWindowsEpoch(
+            base::TimeDelta::FromSeconds(statement.ColumnInt64(1)))
+            .ToJsTime();
+    origin->cached_audio_video_watchtime =
+        base::TimeDelta::FromSeconds(statement.ColumnInt64(2));
+    origin->actual_audio_video_watchtime =
+        base::TimeDelta::FromSeconds(statement.ColumnInt64(3));
+
+    origins.push_back(std::move(origin));
+  }
+
+  DCHECK(statement.Succeeded());
+  return origins;
+}
+
 int MediaHistoryStoreInternal::GetTableRowCount(const std::string& table_name) {
   DCHECK(db_task_runner_->RunsTasksInCurrentSequence());
   if (!initialization_successful_)
@@ -325,6 +367,20 @@ void MediaHistoryStore::GetMediaHistoryStats(
   base::PostTaskAndReplyWithResult(
       db_->db_task_runner_.get(), FROM_HERE,
       base::BindOnce(&MediaHistoryStoreInternal::GetMediaHistoryStats, db_),
+      std::move(callback));
+}
+
+void MediaHistoryStore::GetOriginRowsForDebug(
+    base::OnceCallback<void(std::vector<mojom::MediaHistoryOriginRowPtr>)>
+        callback) {
+  if (!db_->initialization_successful_) {
+    return std::move(callback).Run(
+        std::vector<mojom::MediaHistoryOriginRowPtr>());
+  }
+
+  base::PostTaskAndReplyWithResult(
+      db_->db_task_runner_.get(), FROM_HERE,
+      base::BindOnce(&MediaHistoryStoreInternal::GetOriginRowsForDebug, db_),
       std::move(callback));
 }
 

@@ -41,7 +41,7 @@ SkiaOutputDeviceOffscreen::~SkiaOutputDeviceOffscreen() {
 bool SkiaOutputDeviceOffscreen::Reshape(const gfx::Size& size,
                                         float device_scale_factor,
                                         const gfx::ColorSpace& color_space,
-                                        bool has_alpha,
+                                        gfx::BufferFormat format,
                                         gfx::OverlayTransform transform) {
   DCHECK_EQ(transform, gfx::OVERLAY_TRANSFORM_NONE);
 

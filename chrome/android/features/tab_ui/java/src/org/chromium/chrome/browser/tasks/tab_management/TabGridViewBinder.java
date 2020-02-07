@@ -15,6 +15,7 @@ import android.support.graphics.drawable.AnimatedVectorDrawableCompat;
 import android.support.v4.content.res.ResourcesCompat;
 import android.support.v4.graphics.drawable.DrawableCompat;
 import android.support.v4.view.ViewCompat;
+import android.text.TextUtils;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ImageView;
@@ -31,6 +32,7 @@ import org.chromium.chrome.tab_ui.R;
 import org.chromium.ui.modelutil.PropertyKey;
 import org.chromium.ui.modelutil.PropertyModel;
 import org.chromium.ui.widget.ButtonCompat;
+import org.chromium.ui.widget.ChipView;
 import org.chromium.ui.widget.ChromeImageView;
 import org.chromium.ui.widget.ViewLookupCachingFrameLayout;
 
@@ -123,6 +125,14 @@ class TabGridViewBinder {
                         (int) res.getDimension(R.dimen.tab_list_selected_inset));
                 view.setForeground(model.get(TabProperties.IS_SELECTED) ? drawable : null);
             }
+            if (TabUiFeatureUtilities.isSearchTermChipEnabled()) {
+                ChipView searchButton = (ChipView) view.fastFindViewById(R.id.search_button);
+                searchButton.getPrimaryTextView().setTextAlignment(View.TEXT_ALIGNMENT_VIEW_START);
+                searchButton.getPrimaryTextView().setEllipsize(TextUtils.TruncateAt.END);
+                // TODO(crbug.com/1048255): The selected state of ChipView doesn't look elevated.
+                //  Fix the elevation in style instead.
+                searchButton.setSelected(false);
+            }
         } else if (TabProperties.FAVICON == propertyKey) {
             Drawable favicon = model.get(TabProperties.FAVICON);
             ImageView faviconView = (ImageView) view.fastFindViewById(R.id.tab_favicon);
@@ -182,6 +192,29 @@ class TabGridViewBinder {
             updateColor(view, model.get(TabProperties.IS_INCOGNITO), TabProperties.UiType.CLOSABLE);
         } else if (TabProperties.ACCESSIBILITY_DELEGATE == propertyKey) {
             view.setAccessibilityDelegate(model.get(TabProperties.ACCESSIBILITY_DELEGATE));
+        } else if (TabUiFeatureUtilities.isSearchTermChipEnabled()
+                && TabProperties.SEARCH_QUERY == propertyKey) {
+            String query = model.get(TabProperties.SEARCH_QUERY);
+            ChipView searchButton = (ChipView) view.fastFindViewById(R.id.search_button);
+            if (TextUtils.isEmpty(query)) {
+                searchButton.setVisibility(View.GONE);
+            } else {
+                searchButton.setVisibility(View.VISIBLE);
+                searchButton.getPrimaryTextView().setText(query);
+                searchButton.setIcon(R.drawable.ic_search, true);
+            }
+        } else if (TabUiFeatureUtilities.isSearchTermChipEnabled()
+                && TabProperties.SEARCH_LISTENER == propertyKey) {
+            TabListMediator.TabActionListener listener = model.get(TabProperties.SEARCH_LISTENER);
+            ChipView searchButton = (ChipView) view.fastFindViewById(R.id.search_button);
+            if (listener == null) {
+                searchButton.setOnClickListener(null);
+                return;
+            }
+            searchButton.setOnClickListener(v -> {
+                int tabId = model.get(TabProperties.TAB_ID);
+                listener.run(tabId);
+            });
         }
     }
 

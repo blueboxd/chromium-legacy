@@ -8,17 +8,13 @@ GEN_INCLUDE(['mock_tts.js']);
 /**
  * Browser tests for select-to-speak's feature to speak text
  * by holding down a key and clicking or dragging with the mouse.
- * @constructor
- * @extends {SelectToSpeakE2ETest}
  */
-function SelectToSpeakMouseSelectionTest() {
-  SelectToSpeakE2ETest.call(this);
-  this.mockTts = new MockTts();
-  chrome.tts = this.mockTts;
-}
-
-SelectToSpeakMouseSelectionTest.prototype = {
-  __proto__: SelectToSpeakE2ETest.prototype,
+SelectToSpeakMouseSelectionTest = class extends SelectToSpeakE2ETest {
+  constructor() {
+    super();
+    this.mockTts = new MockTts();
+    chrome.tts = this.mockTts;
+  }
 
   /**
    * Triggers speech using the search key and clicking with the mouse.
@@ -31,7 +27,7 @@ SelectToSpeakMouseSelectionTest.prototype = {
     selectToSpeak.fireMockMouseDownEvent(downEvent);
     selectToSpeak.fireMockMouseUpEvent(upEvent);
     selectToSpeak.fireMockKeyUpEvent({keyCode: SelectToSpeak.SEARCH_KEY_CODE});
-  },
+  }
 
   tapTrayButton(desktop, callback) {
     const button = desktop.find({
@@ -45,7 +41,7 @@ SelectToSpeakMouseSelectionTest.prototype = {
           callback();
         });
     button.doDefault();
-  },
+  }
 };
 
 TEST_F('SelectToSpeakMouseSelectionTest', 'SpeaksNodeWhenClicked', function() {

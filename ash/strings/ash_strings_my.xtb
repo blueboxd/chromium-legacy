@@ -118,6 +118,7 @@
 <translation id="2413728805700750528"><ph name="DISPLAY_NAME" /> သည် <ph name="DOMAIN" /> ကကြီးကြပ်ထားသည့် စက်ရှင်ဖြစ်သည်</translation>
 <translation id="2427507373259914951">ဘယ်ဘက်ခလုတ်ကို နှိပ်ရန်</translation>
 <translation id="2429753432712299108">"<ph name="DEVICE_NAME" />" ဘလူးတုရှ် စက်ပစ္စည်းသည် တွဲရန်ခွင့်ပြုချက် လိုသည်။ လက်မခံမှီ၊ ဤလျှို့ဝှက်ကီးသည် ၎င်း၏မျက်နှာပြင်ပေါ်တွင် ပေါ်မပေါ် ကျေးဇူးပြု၍ အတည်ပြုပါ: <ph name="PASSKEY" /></translation>
+<translation id="2473177541599297363">ပုံရိပ်ပြတ်သားကိန်း အတည်ပြုခြင်း</translation>
 <translation id="2482878487686419369">အကြောင်းကြားချက်များ</translation>
 <translation id="2484513351006226581">ကီးဘုတ်လက်ကွက် ပြောင်းရန် <ph name="KEYBOARD_SHORTCUT" /> ကို နှိပ်ပါ။</translation>
 <translation id="2501920221385095727">Sticky keys</translation>
@@ -137,8 +138,8 @@
 <translation id="2718395828230677721">ညအလင်းရောင်</translation>
 <translation id="2727977024730340865">ပါဝါနည်းသည့် အားသွင်းကိရိယာသို့ ချိတ်ဆက်ထားသည်။ ဘတ်ထရီအားသွင်းခြင်း အားကိုး၍ရမည် မဟုတ်ပါ။</translation>
 <translation id="2792498699870441125">Alt+Search</translation>
-<translation id="2803734122639935495">လော့ခ်ဖွင့်ရန် သင့်စကားဝှက်ကို ထည့်ပါ</translation>
 <translation id="2819276065543622893">သင်ယခု ထွက်ပါမည်။</translation>
+<translation id="2825224105325558319"><ph name="DISPLAY_NAME" /> က <ph name="SPECIFIED_RESOLUTION" /> ကို မပံ့ပိုးပါ။ ပုံရိပ်ပြတ်သားကိန်းကို <ph name="FALLBACK_RESOLUTION" /> သို့ ပြောင်းထားသည်။</translation>
 <translation id="2825619548187458965">စင်</translation>
 <translation id="2844169650293029770">USB-C ကိရိယာ (အရှေ့ပိုင်း ဘယ် ပို့တ်)</translation>
 <translation id="2865888419503095837">ကွန်ရက် အချက်အလက်</translation>
@@ -158,6 +159,12 @@
 <translation id="3009178788565917040">အထွက်</translation>
 <translation id="3051128274746680507">သင်၏ ကြီးကြပ်ခံအသုံးပြုသူပရိုဖိုင်ကို မကြာမီ ဖယ်ရှားလိုက်ပါမည်။ ပိုမိုလေ့လာရန် လက်မှတ်ထိုးဝင်ပါ။</translation>
 <translation id="3055162170959710888">သင်သည် ယနေ့အဖို့ ဤစက်ကို <ph name="USED_TIME" /> သုံးထားပါသည်</translation>
+<translation id="3076778413190775903">အခြေအနေပြ ဗန်း၊ အချိန် <ph name="TIME" />၊
+        <ph name="BATTERY" />
+        <ph name="NETWORK" />၊
+        <ph name="NOTIFICATION" />၊
+        <ph name="IME" />
+        <ph name="LOCALE" /></translation>
 <translation id="3077734595579995578">shift ကီး</translation>
 <translation id="3081696990447829002">မီနူးကို ချဲ့ရန်</translation>
 <translation id="3087734570205094154">အောက်ခြေပိုင်း</translation>
@@ -168,6 +175,7 @@
 <translation id="3151786313568798007">အနေအထား</translation>
 <translation id="3153444934357957346">အကောင့်တစ်ခုထက်ပိုဝင်ခြင်းစနစ်တွင် အကောင့် <ph name="MULTI_PROFILE_USER_LIMIT" /> ခု အထိသာ အများဆုံးထားနိုင်ပါသည်။</translation>
 <translation id="3154351730702813399">စက်ပစ္စည်းစီမံခန့်ခွဲသူသည် သင့်အင်တာနက် အသုံးပြုမှုများကို စောင့်ကြည့်နိုင်ပါသည်။</translation>
+<translation id="3181441307743005334">ပြန်စရန် အချိန်အနည်းငယ် ကြာနိုင်သည်</translation>
 <translation id="3202010236269062730">{NUM_DEVICES,plural, =1{စက်ပစ္စည်းတစ်ခုသို့ ချိတ်ထားသည်}other{စက်ပစ္စည်း # ခုသို့ ချိတ်ထားသည်}}</translation>
 <translation id="3217205077783620295">အသံဖွင့်ထားသည်၊ ပိတ်လိုက်ခြင်းဖြင့် အသံကိုတိတ်လိုက်ပါမည်။</translation>
 <translation id="3226991577105957773">+နောက်ထပ် <ph name="COUNT" /> ခု</translation>
@@ -202,6 +210,7 @@
 <translation id="3604801046548457007">'မြင်ကွင်း <ph name="DESK_TITILE" />' ကို ပြုလုပ်လိုက်သည်</translation>
 <translation id="3606978283550408104">မျက်မမြင်စာ ဖော်ပြချက် ချိတ်ဆက်ထားသည်။</translation>
 <translation id="3621202678540785336">ထည့်သွင်းမှု</translation>
+<translation id="3621712662352432595">အသံဆက်တင်များ</translation>
 <translation id="3626281679859535460">တောက်ပမှု</translation>
 <translation id="3631369015426612114">အောက်ပါတို့ထံမှ အကြောင်းကြားချက်များကို ခွင့်ပြုရန်</translation>
 <translation id="3705722231355495246">-</translation>
@@ -316,6 +325,7 @@
 <translation id="5331975486040154427">USB-C ကိရိယာ (ကျောဘက် ဘယ် ပို့တ်)</translation>
 <translation id="5379115545237091094">စမ်းသပ်သည့်အကြိမ်ရေ အလွန်များနေပါပြီ</translation>
 <translation id="5397578532367286026">ဒီ အသုံးပြုသူ၏ သုံးစွဲမှု နှင့် မှတ်တမ်းကို chrome.com ရှိ (<ph name="MANAGER_EMAIL" />)၏ မန်နေဂျာက ဆန်းစစ် ကြည့်ရှု နိုင်သည်။</translation>
+<translation id="5400461572260843123">အမြန် ဆက်တင်များ၊ အကြောင်းကြားချက်စင်တာကို ဝင်ကြည့်ရန် 'ရှာဖွေရန် + ဘယ်ဘက်' ကို နှိပ်ပါ။</translation>
 <translation id="5430931332414098647">အမြန်ချိတ်ဆက်မျှဝေခြင်း</translation>
 <translation id="5431825016875453137">OpenVPN / L2TP</translation>
 <translation id="544691375626129091">အသုံးပြုနိုင်သူ အားလုံးအား ဤ ကဏ္ဍသို့ ပေါင်းထည့်ပြီး ဖြစ်၏။</translation>
@@ -397,6 +407,7 @@
 <translation id="6490471652906364588">USB-C ကိရိယာ (ညာ ပို့တ်)</translation>
 <translation id="649452524636452238">အဆင့်မြင့်ကတ် ပင်နံပါတ်</translation>
 <translation id="6501401484702599040"><ph name="RECEIVER_NAME" />သို့ မျက်နှာပြင်ကို ကာစ်တ် လုပ်နေသည်</translation>
+<translation id="652139407789908527">ဤအပ်ဒိတ်အတွင်း သင့်ဖန်သားပြင်သည် ပုံမှန်ထက်ပိုမိုကြာမြင့်စွာ (တစ်မိနစ်အထိ) ဗလာဖြစ်သွားပါမည်။ အပ်ဒိတ်လုပ်နေစဉ် ဖွင့်ပိတ်ခလုတ်ကို မနှိပ်ပါနှင့်။</translation>
 <translation id="6521655319214113338">လက်ရေးဖြင့် ထည့်သွင်းစနစ်</translation>
 <translation id="6528179044667508675">မနှောင့်ယှက်ရ</translation>
 <translation id="6537270692134705506">မျက်နှာပြင်ကို ပုံဖမ်းပါ</translation>
@@ -542,6 +553,7 @@
 <translation id="847056008324733326">မြင်ကွင်းစကေး ဆက်တင်များ</translation>
 <translation id="8473301994082929012"><ph name="ORGANIZATION_NAME" /> က <ph name="FEATURE_NAME" /> ကို <ph name="FEATURE_STATE" />။</translation>
 <translation id="8477270416194247200">ပယ်ဖျက်ရန် Alt+Search သို့မဟုတ် Shift ကို နှိပ်ပါ။</translation>
+<translation id="8492573885090281069"><ph name="DISPLAY_NAME" /> က <ph name="SPECIFIED_RESOLUTION" /> ကို မပံ့ပိုးပါ။ ပုံရိပ်ပြတ်သားကိန်းကို <ph name="FALLBACK_RESOLUTION" /> သို့ ပြောင်းထားသည်။ အပြောင်းအလဲများသိမ်းရန် 'အတည်ပြုရန်' ကို နှိပ်ပါ။ ယခင်ဆက်တင်များကို <ph name="TIMEOUT_SECONDS" /> အကြာတွင် ပြန်ထားရှိပါမည်။</translation>
 <translation id="8513108775083588393">အလိုအလျောက် လှည့်ရန်</translation>
 <translation id="8517041960877371778">သင်၏ <ph name="DEVICE_TYPE" /> ကိရိယာမှာ ဖွင့်ထားလျှင် အားသွင်း၍ ရချင်မှရမည်.</translation>
 <translation id="8627191004499078455"><ph name="DEVICE_NAME" /> သို့ ချိတ်ဆက်ထားသည်</translation>
@@ -596,6 +608,7 @@
 <translation id="9183456764293710005">မျက်နှာပြင်အပြည့် မှန်ဘီလူး</translation>
 <translation id="9193626018745640770">အမည်မသိလက်ခံစက်တွင် ကာ့စ်လုပ်နေသည်</translation>
 <translation id="9194617393863864469">အခြားသူ အနေဖြင့် လက်မှတ်ထိုးဝင်ပါ...</translation>
+<translation id="9198992156681343238"><ph name="DISPLAY_NAME" /> ပုံရိပ်ပြတ်သားကိန်းကို <ph name="RESOLUTION" /> သို့ ပြောင်းလိုက်သည်။ အပြောင်းအလဲများသိမ်းရန် 'အတည်ပြုရန်' ကို နှိပ်ပါ။ ယခင်ဆက်တင်များကို <ph name="TIMEOUT_SECONDS" /> အကြာတွင် ပြန်ထားရှိပါမည်။</translation>
 <translation id="9201374708878217446"><ph name="CONNECTION_STATUS" />၊ သင့် 'စီမံခန့်ခွဲသူ' က ကြီးကြပ်ထားသည်</translation>
 <translation id="9210037371811586452">ပေါင်းစည်းထားသည့် ကွန်ပျူတာမျက်နှာပြင်မုဒ်မှ ထွက်နေသည်</translation>
 <translation id="9211681782751733685">ဘက်ထရီ အားအပြည့်သွင်းရန် <ph name="TIME_REMAINING" /> လိုသေးသည်။</translation>

@@ -137,7 +137,6 @@
 <translation id="2718395828230677721">תאורת לילה</translation>
 <translation id="2727977024730340865">מחובר למטען בעל מתח נמוך. ייתכן שטעינת הסוללה לא תהיה אמינה.</translation>
 <translation id="2792498699870441125">‏Alt + חיפוש</translation>
-<translation id="2803734122639935495">כדי לבטל את הנעילה, צריך להזין את הסיסמה שלך</translation>
 <translation id="2819276065543622893">תצא עכשיו מהחשבון.</translation>
 <translation id="2825619548187458965">מדף</translation>
 <translation id="2844169650293029770">‏מכשיר עם יציאת USB-C (יציאה שמאלית-קדמית)</translation>
@@ -202,6 +201,7 @@
 <translation id="3604801046548457007">שולחן העבודה <ph name="DESK_TITILE" /> נוצר</translation>
 <translation id="3606978283550408104">צג ברייל מחובר</translation>
 <translation id="3621202678540785336">קלט</translation>
+<translation id="3621712662352432595">הגדרות אודיו</translation>
 <translation id="3626281679859535460">בהירות</translation>
 <translation id="3631369015426612114">המקורות הבאים יכולים להציג התראות</translation>
 <translation id="3705722231355495246">-</translation>
@@ -546,6 +546,7 @@
 <translation id="8477270416194247200">‏הקש על Alt+Search או על Shift כדי לבטל.</translation>
 <translation id="8513108775083588393">סיבוב אוטומטי</translation>
 <translation id="8517041960877371778">ייתכן שה-<ph name="DEVICE_TYPE" /> לא ייטען כשהוא פועל.</translation>
+<translation id="8563862697512465947">הגדרות התראה</translation>
 <translation id="8627191004499078455">יש חיבור אל <ph name="DEVICE_NAME" /></translation>
 <translation id="8637598503828012618"><ph name="CONNECTION_STATUS" />, עוצמת האות: <ph name="SIGNAL_STRENGTH" />, הרשת מנוהלת על ידי מנהל המערכת</translation>
 <translation id="8639760480004882931">שיעור טעינה נותר - <ph name="PERCENTAGE" /></translation>

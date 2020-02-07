@@ -115,6 +115,7 @@
 <translation id="1919950603503897840">Sélectionner des contacts</translation>
 <translation id="1922076542920281912">Pour autoriser Chrome à accéder à votre position, activez également la localisation dans les <ph name="BEGIN_LINK" />paramètres Android<ph name="END_LINK" />.</translation>
 <translation id="1923695749281512248"><ph name="BYTES_DOWNLOADED_WITH_UNITS" />/<ph name="FILE_SIZE_WITH_UNITS" /></translation>
+<translation id="1925021887439448749">Saisissez une adresse Web personnalisée</translation>
 <translation id="1928696683969751773">Mises à jour</translation>
 <translation id="19288952978244135">Rouvrez Chrome.</translation>
 <translation id="1933845786846280168">Onglet sélectionné</translation>
@@ -279,6 +280,7 @@
 <translation id="3123473560110926937">Bloqué sur certains sites</translation>
 <translation id="3123734510202723619">Annonces</translation>
 <translation id="3137521801621304719">Désactiver le mode navigation privée</translation>
+<translation id="3140134512074889489">Veuillez activer votre appareil photo pour scanner un code QR</translation>
 <translation id="3143515551205905069">Annuler la synchronisation</translation>
 <translation id="3157842584138209013">Découvrez la quantité de données économisées en cliquant sur le bouton "Plus d'options"</translation>
 <translation id="3166827708714933426">Raccourcis liés aux onglets et aux fenêtres</translation>
@@ -449,6 +451,9 @@
 <translation id="4521489764227272523">Les données sélectionnées ont été supprimées de Chrome et des appareils synchronisés.
 
 Votre compte Google conserve peut-être d'autres contenus d'historique de navigation sur la page <ph name="BEGIN_LINK" />myactivity.google.com<ph name="END_LINK" /> concernant, par exemple, vos recherches ou vos activités via d'autres services Google.</translation>
+<translation id="4527374721149092498">Découvrez les thèmes abordés sur les pages Web que vous consultez sans quitter celles-ci. La fonctionnalité "Appuyer pour rechercher" transmet un mot et son contexte à la recherche Google, qui renvoie à son tour des définitions, des images, des résultats de recherche et d'autres informations.
+
+Appuyez sur n'importe quel mot pour lancer une recherche. Pour modifier le terme de recherche, appuyez dessus de manière prolongée afin de le sélectionner. Pour affiner la recherche, faites glisser le panneau pour l'ouvrir, puis appuyer sur l'icône pour créer un nouvel onglet et utiliser le champ de recherche.</translation>
 <translation id="4532845899244822526">Sélectionner un dossier</translation>
 <translation id="4538018662093857852">Activer le mode simplifié</translation>
 <translation id="4550003330909367850">Pour afficher ou copier votre mot de passe ici, définissez le verrouillage de l'écran sur cet appareil.</translation>
@@ -690,6 +695,9 @@ Pour modifier ce paramètre, <ph name="BEGIN_LINK" />réinitialisez la synchroni
 <translation id="6232535412751077445">Si vous interdisez le suivi, une demande sera incluse dans le trafic lié à votre navigation. Les résultats obtenus dépendent de la réponse du site (s'il répond ou non) et de la manière dont il interprète la demande.
 
 Par exemple, certains sites Web peuvent répondre à cette demande en diffusant des annonces qui ne sont pas déterminées en fonction des autres sites Web que vous avez consultés. Toutefois, nombre d'entre eux recueillent et utilisent vos données de navigation afin, par exemple, d'améliorer la sécurité ou d'afficher du contenu, des services, des annonces et des recommandations, ou encore pour générer des rapports statistiques.</translation>
+<translation id="6238003486329291387">Découvrez les thèmes abordés sur les pages Web que vous consultez sans quitter celles-ci. La fonctionnalité "Appuyer pour rechercher" transmet un mot et son contexte à la recherche Google, qui renvoie à son tour des définitions, des images, des résultats de recherche et d'autres informations.
+
+Pour sélectionner un mot, appuyez dessus de manière prolongée. Vous pouvez ensuite ajuster votre sélection. Vous pouvez aussi faire glisser le panneau pour l'ouvrir, puis appuyer sur l'icône pour créer un nouvel onglet et utiliser le champ de recherche.</translation>
 <translation id="624789221780392884">Mise à jour prête</translation>
 <translation id="6255999984061454636">Recommandations de contenus</translation>
 <translation id="6270391203985052864">Les sites peuvent vous demander l'autorisation d'envoyer des notifications</translation>

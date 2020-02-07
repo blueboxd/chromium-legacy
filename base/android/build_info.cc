@@ -77,7 +77,8 @@ BuildInfo::BuildInfo(const std::vector<std::string>& params)
       resources_version_(StrDupParam(params, 20)),
       extracted_file_suffix_(params[21]),
       is_at_least_q_(GetIntParam(params, 22)),
-      is_debug_android_(GetIntParam(params, 23)) {}
+      targets_at_least_r_(GetIntParam(params, 23)),
+      is_debug_android_(GetIntParam(params, 24)) {}
 
 // static
 BuildInfo* BuildInfo::GetInstance() {

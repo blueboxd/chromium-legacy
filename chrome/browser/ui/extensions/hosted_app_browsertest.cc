@@ -357,15 +357,6 @@ class HostedAppTest : public extensions::ExtensionBrowserTest,
     return app_id;
   }
 
-  web_app::AppId InstallShortcutAppForCurrentUrl() {
-    chrome::SetAutoAcceptBookmarkAppDialogForTesting(true, false);
-    web_app::WebAppInstallObserver observer(profile());
-    CHECK(chrome::ExecuteCommand(browser(), IDC_CREATE_SHORTCUT));
-    web_app::AppId app_id = observer.AwaitNextInstall();
-    chrome::SetAutoAcceptBookmarkAppDialogForTesting(false, false);
-    return app_id;
-  }
-
   Browser* NavigateInNewWindowAndAwaitInstallabilityCheck(const GURL& url) {
     Browser* new_browser = new Browser(
         Browser::CreateParams(Browser::TYPE_NORMAL, profile(), true));
@@ -1182,36 +1173,6 @@ IN_PROC_BROWSER_TEST_P(SharedPWATest, InstallInstallableSite) {
   EXPECT_EQ(0, user_action_tester.GetActionCount("CreateShortcut"));
 }
 
-IN_PROC_BROWSER_TEST_P(SharedPWATest, CreateShortcutForInstallableSite) {
-  base::UserActionTester user_action_tester;
-  ASSERT_TRUE(https_server()->Start());
-  NavigateToURLAndWait(browser(), GetInstallableAppURL());
-
-  web_app::AppId app_id = InstallShortcutAppForCurrentUrl();
-  EXPECT_EQ(registrar().GetAppShortName(app_id), GetInstallableAppName());
-  // Bookmark apps to PWAs should launch in a tab.
-  EXPECT_EQ(registrar().GetAppUserDisplayMode(app_id),
-            blink::mojom::DisplayMode::kBrowser);
-
-  EXPECT_EQ(0, user_action_tester.GetActionCount("InstallWebAppFromMenu"));
-  EXPECT_EQ(1, user_action_tester.GetActionCount("CreateShortcut"));
-}
-
-IN_PROC_BROWSER_TEST_P(SharedPWATest, CanInstallOverTabShortcutApp) {
-  ASSERT_TRUE(https_server()->Start());
-
-  NavigateToURLAndWait(browser(), GetInstallableAppURL());
-  InstallShortcutAppForCurrentUrl();
-
-  Browser* new_browser =
-      NavigateInNewWindowAndAwaitInstallabilityCheck(GetInstallableAppURL());
-
-  EXPECT_EQ(GetAppMenuCommandState(IDC_CREATE_SHORTCUT, new_browser), kEnabled);
-  EXPECT_EQ(GetAppMenuCommandState(IDC_INSTALL_PWA, new_browser), kEnabled);
-  EXPECT_EQ(GetAppMenuCommandState(IDC_OPEN_IN_PWA_WINDOW, new_browser),
-            kNotPresent);
-}
-
 IN_PROC_BROWSER_TEST_P(SharedPWATest, CanInstallOverTabPwa) {
   ASSERT_TRUE(https_server()->Start());
 
@@ -1228,24 +1189,6 @@ IN_PROC_BROWSER_TEST_P(SharedPWATest, CanInstallOverTabPwa) {
   EXPECT_EQ(GetAppMenuCommandState(IDC_INSTALL_PWA, new_browser), kEnabled);
   EXPECT_EQ(GetAppMenuCommandState(IDC_OPEN_IN_PWA_WINDOW, new_browser),
             kNotPresent);
-}
-
-IN_PROC_BROWSER_TEST_P(SharedPWATest, CannotInstallOverWindowShortcutApp) {
-  ASSERT_TRUE(https_server()->Start());
-
-  NavigateToURLAndWait(browser(), GetInstallableAppURL());
-  web_app::AppId app_id = InstallShortcutAppForCurrentUrl();
-  // Change launch container to open in window.
-  registry_controller().SetAppUserDisplayMode(
-      app_id, blink::mojom::DisplayMode::kStandalone);
-
-  Browser* new_browser =
-      NavigateInNewWindowAndAwaitInstallabilityCheck(GetInstallableAppURL());
-
-  EXPECT_EQ(GetAppMenuCommandState(IDC_CREATE_SHORTCUT, new_browser), kEnabled);
-  EXPECT_EQ(GetAppMenuCommandState(IDC_INSTALL_PWA, new_browser), kNotPresent);
-  EXPECT_EQ(GetAppMenuCommandState(IDC_OPEN_IN_PWA_WINDOW, new_browser),
-            kEnabled);
 }
 
 IN_PROC_BROWSER_TEST_P(SharedPWATest, CannotInstallOverWindowPwa) {

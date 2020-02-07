@@ -47,11 +47,11 @@ class Document;
 class Frame;
 class IntSize;
 class LayoutBlock;
+class LayoutBox;
 class LayoutNGTableInterface;
 class LayoutObject;
 class LayoutText;
 class LocalFrame;
-class NGBlockNode;
 class Page;
 class SubtreeLayoutScope;
 
@@ -105,12 +105,12 @@ class CORE_EXPORT TextAutosizer final : public GarbageCollected<TextAutosizer> {
     STACK_ALLOCATED();
 
    public:
-    explicit NGLayoutScope(const NGBlockNode& node, LayoutUnit inline_size);
+    explicit NGLayoutScope(LayoutBox*, LayoutUnit inline_size);
     ~NGLayoutScope();
 
    protected:
     TextAutosizer* text_autosizer_;
-    LayoutBlock* block_;
+    LayoutBox* box_;
   };
 
   class CORE_EXPORT DeferUpdatePageInfo {

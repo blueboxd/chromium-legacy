@@ -48,8 +48,6 @@ public class CastWebContentsActivity extends Activity {
     private final Controller<Unit> mResumedState = new Controller<>();
     // Tracks whether this Activity is between onStart() and onStop().
     private final Controller<Unit> mStartedState = new Controller<>();
-    // Tracks whether the user has left according to onUserLeaveHint().
-    private final Controller<Unit> mUserLeftState = new Controller<>();
     // Tracks the most recent Intent for the Activity.
     private final Controller<Intent> mGotIntentState = new Controller<>();
     // Set this to cause the Activity to finish.
@@ -128,6 +126,17 @@ public class CastWebContentsActivity extends Activity {
                     audioManager.releaseStreamMuteIfNecessary(AudioManager.STREAM_MUSIC);
                 }));
 
+        final Observable<CastAudioFocusRequest> audioFocusRequestState = mCreatedState.map(x
+                -> new CastAudioFocusRequest.Builder()
+                           .setFocusGain(AudioManager.AUDIOFOCUS_GAIN)
+                           .build());
+
+        mAudioManagerState.subscribe((CastAudioManager audioManager) -> {
+            return audioManager.requestAudioFocusWhen(audioFocusRequestState)
+                    .filter(state -> state == CastAudioManager.AudioFocusLoss.NORMAL)
+                    .subscribe(Observers.onEnter(x -> mIsFinishingState.set("Lost audio focus.")));
+        });
+
         // Handle each new Intent.
         Controller<CastWebContentsSurfaceHelper.StartParams> startParamsState = new Controller<>();
         mGotIntentState.and(Observable.not(mIsFinishingState))
@@ -154,11 +163,6 @@ public class CastWebContentsActivity extends Activity {
             intent.setFlags(flags);
             startActivity(intent);
         }));
-
-        Observable<?> stoppingBecauseUserLeftState =
-                Observable.not(mStartedState).and(mUserLeftState);
-        stoppingBecauseUserLeftState.subscribe(
-                Observers.onEnter(x -> mIsFinishingState.set("User left and activity stopped.")));
     }
 
     @Override
@@ -213,12 +217,6 @@ public class CastWebContentsActivity extends Activity {
         if (DEBUG) Log.d(TAG, "onDestroy");
         mCreatedState.reset();
         super.onDestroy();
-    }
-
-    @Override
-    protected void onUserLeaveHint() {
-        mUserLeftState.set(Unit.unit());
-        super.onUserLeaveHint();
     }
 
     @Override

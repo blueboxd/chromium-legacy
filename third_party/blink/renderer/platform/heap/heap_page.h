@@ -181,28 +181,6 @@ static_assert(
 
 namespace internal {
 
-// This is needed due to asan complaining deep from std::atomic<>::load/store
-// stacktraces.
-class AsanUnpoisonScope {
- public:
-  AsanUnpoisonScope(const void* addr, size_t size)
-      : addr_(addr), size_(size), was_poisoned_(false) {
-    if (!ASAN_REGION_IS_POISONED(const_cast<void*>(addr_), size_))
-      return;
-    ASAN_UNPOISON_MEMORY_REGION(addr_, size_);
-    was_poisoned_ = true;
-  }
-  ~AsanUnpoisonScope() {
-    if (was_poisoned_)
-      ASAN_POISON_MEMORY_REGION(addr_, size_);
-  }
-
- private:
-  const void* addr_;
-  size_t size_;
-  bool was_poisoned_;
-};
-
 NO_SANITIZE_ADDRESS constexpr uint16_t EncodeSize(size_t size) {
   // Essentially, gets optimized to >> 1.
   return static_cast<uint16_t>((size << kHeaderSizeShift) /
@@ -1158,8 +1136,8 @@ NO_SANITIZE_ADDRESS inline size_t HeapObjectHeader::size() const {
     // mode == AccessMode::kAtomic
     // Relaxed load as size is immutable after construction while either
     // marking or sweeping is running
-    internal::AsanUnpoisonScope unpoison_scope(
-        static_cast<const void*>(&encoded_low_), sizeof(encoded_low_));
+    AsanUnpoisonScope unpoison_scope(static_cast<const void*>(&encoded_low_),
+                                     sizeof(encoded_low_));
     encoded_low_value =
         WTF::AsAtomicPtr(&encoded_low_)->load(std::memory_order_relaxed);
   }
@@ -1184,8 +1162,8 @@ NO_SANITIZE_ADDRESS inline bool HeapObjectHeader::IsLargeObject() const {
   if (mode == AccessMode::kNonAtomic) {
     encoded_low_value = encoded_low_;
   } else {
-    internal::AsanUnpoisonScope unpoison_scope(
-        static_cast<const void*>(&encoded_low_), sizeof(encoded_low_));
+    AsanUnpoisonScope unpoison_scope(static_cast<const void*>(&encoded_low_),
+                                     sizeof(encoded_low_));
     encoded_low_value =
         WTF::AsAtomicPtr(&encoded_low_)->load(std::memory_order_relaxed);
   }
@@ -1254,8 +1232,8 @@ NO_SANITIZE_ADDRESS inline bool HeapObjectHeader::TryMark() {
     encoded_low_ |= kHeaderMarkBitMask;
     return true;
   }
-  internal::AsanUnpoisonScope unpoison_scope(
-      static_cast<const void*>(&encoded_low_), sizeof(encoded_low_));
+  AsanUnpoisonScope unpoison_scope(static_cast<const void*>(&encoded_low_),
+                                   sizeof(encoded_low_));
   auto* atomic_encoded = WTF::AsAtomicPtr(&encoded_low_);
   uint16_t old_value = atomic_encoded->load(std::memory_order_relaxed);
   if (old_value & kHeaderMarkBitMask)
@@ -1394,8 +1372,8 @@ template <HeapObjectHeader::AccessMode mode, HeapObjectHeader::EncodedHalf part>
 NO_SANITIZE_ADDRESS inline uint16_t HeapObjectHeader::LoadEncoded() const {
   const uint16_t& half =
       (part == EncodedHalf::kLow ? encoded_low_ : encoded_high_);
-  internal::AsanUnpoisonScope unpoison_scope(static_cast<const void*>(&half),
-                                             sizeof(half));
+  AsanUnpoisonScope unpoison_scope(static_cast<const void*>(&half),
+                                   sizeof(half));
   if (mode == AccessMode::kNonAtomic)
     return half;
   return WTF::AsAtomicPtr(&half)->load(std::memory_order_acquire);
@@ -1408,8 +1386,7 @@ NO_SANITIZE_ADDRESS inline void HeapObjectHeader::StoreEncoded(uint16_t bits,
                                                                uint16_t mask) {
   DCHECK_EQ(static_cast<uint16_t>(0u), bits & ~mask);
   uint16_t* half = (part == EncodedHalf::kLow ? &encoded_low_ : &encoded_high_);
-  internal::AsanUnpoisonScope unpoison_scope(static_cast<void*>(half),
-                                             sizeof(&half));
+  AsanUnpoisonScope unpoison_scope(static_cast<void*>(half), sizeof(&half));
   if (mode == AccessMode::kNonAtomic) {
     *half = (*half & ~mask) | bits;
     return;

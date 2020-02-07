@@ -68,7 +68,6 @@ void PageHandler::GetInstallabilityErrors(
 // static
 void PageHandler::GotInstallabilityErrors(
     std::unique_ptr<GetInstallabilityErrorsCallback> callback,
-    std::vector<std::string> errors,
     std::vector<content::InstallabilityError> installability_errors) {
   auto result_installability_errors =
       std::make_unique<protocol::Array<protocol::Page::InstallabilityError>>();
@@ -90,7 +89,6 @@ void PageHandler::GotInstallabilityErrors(
             .Build());
   }
   callback->sendSuccess(
-      std::make_unique<protocol::Array<std::string>>(std::move(errors)),
       std::move(result_installability_errors));
 }
 

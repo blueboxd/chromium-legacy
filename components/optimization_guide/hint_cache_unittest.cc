@@ -95,10 +95,11 @@ class HintCacheTest : public ProtoDatabaseProviderTestBase {
 
   void UpdateFetchedHintsAndWait(
       std::unique_ptr<proto::GetHintsResponse> get_hints_response,
-      base::Time stored_time) {
+      base::Time stored_time,
+      base::Optional<GURL> navigation_url) {
     are_fetched_hints_updated_ = false;
     hint_cache_->UpdateFetchedHints(
-        std::move(get_hints_response), stored_time,
+        std::move(get_hints_response), stored_time, navigation_url,
         base::BindOnce(&HintCacheTest::OnHintsUpdated, base::Unretained(this)));
 
     while (!are_fetched_hints_updated_)
@@ -543,7 +544,8 @@ TEST_F(HintCacheTest, StoreValidFetchedHints) {
   page_hint->set_page_pattern("page pattern");
 
   base::Time stored_time = base::Time().Now();
-  UpdateFetchedHintsAndWait(std::move(get_hints_response), stored_time);
+  UpdateFetchedHintsAndWait(std::move(get_hints_response), stored_time,
+                            base::nullopt);
   EXPECT_TRUE(are_fetched_hints_updated());
 
   // Next update time for hints should be updated.
@@ -558,7 +560,8 @@ TEST_F(HintCacheTest, ParseEmptyFetchedHints) {
   std::unique_ptr<proto::GetHintsResponse> get_hints_response =
       std::make_unique<proto::GetHintsResponse>();
 
-  UpdateFetchedHintsAndWait(std::move(get_hints_response), stored_time);
+  UpdateFetchedHintsAndWait(std::move(get_hints_response), stored_time,
+                            base::nullopt);
   // Empty Fetched Hints causes the metadata entry to be updated.
   EXPECT_TRUE(are_fetched_hints_updated());
   EXPECT_EQ(hint_cache()->GetFetchedHintsUpdateTime(), stored_time);
@@ -585,7 +588,9 @@ TEST_F(HintCacheTest, StoreValidFetchedHintsWithServerProvidedExpiryTime) {
   page_hint->set_page_pattern("page pattern");
 
   base::Time stored_time = base::Time().Now();
-  UpdateFetchedHintsAndWait(std::move(get_hints_response), stored_time);
+  GURL navigation_url("https://foo.com");
+  UpdateFetchedHintsAndWait(std::move(get_hints_response), stored_time,
+                            navigation_url);
   EXPECT_TRUE(are_fetched_hints_updated());
 
   // Next update time for hints should be updated.
@@ -596,6 +601,7 @@ TEST_F(HintCacheTest, StoreValidFetchedHintsWithServerProvidedExpiryTime) {
   histogram_tester.ExpectTimeBucketCount(
       "OptimizationGuide.HintCache.FetchedHint.TimeToExpiration",
       base::TimeDelta::FromSeconds(kFetchedHintExpirationSecs), 1);
+  EXPECT_FALSE(hint_cache()->GetURLKeyedHint(navigation_url));
 }
 
 TEST_F(HintCacheTest, StoreValidFetchedHintsWithDefaultExpiryTime) {
@@ -616,7 +622,8 @@ TEST_F(HintCacheTest, StoreValidFetchedHintsWithDefaultExpiryTime) {
   page_hint->set_page_pattern("page pattern");
 
   base::Time stored_time = base::Time().Now();
-  UpdateFetchedHintsAndWait(std::move(get_hints_response), stored_time);
+  UpdateFetchedHintsAndWait(std::move(get_hints_response), stored_time,
+                            base::nullopt);
   EXPECT_TRUE(are_fetched_hints_updated());
 
   // Next update time for hints should be updated.
@@ -701,7 +708,8 @@ TEST_F(HintCacheTest, PurgeExpiredFetchedHints) {
   page_hint2->set_page_pattern("page pattern");
 
   base::Time stored_time = base::Time().Now();
-  UpdateFetchedHintsAndWait(std::move(get_hints_response), stored_time);
+  UpdateFetchedHintsAndWait(std::move(get_hints_response), stored_time,
+                            base::nullopt);
   EXPECT_TRUE(are_fetched_hints_updated());
   EXPECT_TRUE(hint_cache()->HasHint("shouldpurge.com"));
   EXPECT_TRUE(hint_cache()->HasHint("notpurged.com"));
@@ -740,7 +748,8 @@ TEST_F(HintCacheTest, ClearFetchedHints) {
   page_hint->set_page_pattern("page pattern");
 
   base::Time stored_time = base::Time().Now();
-  UpdateFetchedHintsAndWait(std::move(get_hints_response), stored_time);
+  UpdateFetchedHintsAndWait(std::move(get_hints_response), stored_time,
+                            base::nullopt);
   EXPECT_TRUE(are_fetched_hints_updated());
   LoadHint(host);
 
@@ -786,6 +795,51 @@ TEST_F(HintCacheTest, UnsupportedURLsForURLKeyedHints) {
   EXPECT_FALSE(hint_cache()->GetURLKeyedHint(file_url));
   EXPECT_FALSE(hint_cache()->GetURLKeyedHint(chrome_url));
   EXPECT_FALSE(hint_cache()->GetURLKeyedHint(auth_url));
+}
+
+TEST_F(HintCacheTest, URLsWithNoURLKeyedHints) {
+  const int kMemoryCacheSize = 5;
+  CreateAndInitializeHintCache(kMemoryCacheSize);
+
+  std::unique_ptr<StoreUpdateData> update_data =
+      hint_cache()->CreateUpdateDataForFetchedHints(base::Time());
+  ASSERT_TRUE(update_data);
+
+  GURL https_url_without_hint("https://whatever.com/r/nohint");
+  GURL https_url_with_hint("https://whatever.com/r/hint");
+  GURL https_url_unseen("https://unseen.com/new");
+  GURL file_url("file://dog.png");
+  GURL chrome_url("chrome://dog.png");
+  GURL auth_url("https://username:password@www.example.com/");
+
+  google::protobuf::RepeatedPtrField<proto::Hint> hints;
+  *(hints.Add()) = CreateHintForURL(https_url_with_hint);
+
+  // Only URL-keyed hint included so there are no hints to store within the
+  // update data.
+  EXPECT_FALSE(hint_cache()->ProcessAndCacheHints(&hints, update_data.get()));
+
+  // Add the url without hint to the url-keyed cache via UpdateFetchedHints.
+  std::unique_ptr<proto::GetHintsResponse> get_hints_response =
+      std::make_unique<proto::GetHintsResponse>();
+
+  std::string host = "host.com";
+  proto::Hint* hint = get_hints_response->add_hints();
+  hint->set_key_representation(proto::HOST_SUFFIX);
+  hint->set_key(host);
+  proto::PageHint* page_hint = hint->add_page_hints();
+  page_hint->set_page_pattern("page pattern");
+
+  base::Time stored_time = base::Time().Now();
+  UpdateFetchedHintsAndWait(std::move(get_hints_response), stored_time,
+                            https_url_without_hint);
+
+  EXPECT_TRUE(hint_cache()->HasURLKeyedEntryForURL(https_url_with_hint));
+  EXPECT_TRUE(hint_cache()->HasURLKeyedEntryForURL(https_url_with_hint));
+  EXPECT_FALSE(hint_cache()->HasURLKeyedEntryForURL(file_url));
+  EXPECT_FALSE(hint_cache()->HasURLKeyedEntryForURL(chrome_url));
+  EXPECT_FALSE(hint_cache()->HasURLKeyedEntryForURL(auth_url));
+  EXPECT_FALSE(hint_cache()->HasURLKeyedEntryForURL(https_url_unseen));
 }
 
 TEST_F(HintCacheTest, ProcessHintsNoUpdateData) {

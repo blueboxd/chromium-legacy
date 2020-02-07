@@ -2327,7 +2327,6 @@ bool LayerTreeHostImpl::DrawLayers(FrameData* frame) {
         frame->begin_frame_ack, frame->origin_begin_main_frame_args);
   }
 
-
   if (!mutator_host_->NextFrameHasPendingRAF())
     frame_trackers_.StopSequence(FrameSequenceTrackerType::kRAF);
 

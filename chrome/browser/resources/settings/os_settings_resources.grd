@@ -801,6 +801,12 @@
                  type="chrome_html"
                  preprocess="true" />
       <!-- TODO(jamescook): Remove when SplitSettingsSync is the default. -->
+      <structure name="IDR_OS_SETTINGS_SYNC_ENCRYPTION_OPTIONS_JS"
+                 file="people_page/sync_encryption_options.js"
+                 type="chrome_html" />
+      <structure name="IDR_OS_SETTINGS_SYNC_ENCRYPTION_OPTIONS_HTML"
+                 file="people_page/sync_encryption_options.html"
+                 type="chrome_html" />
       <structure name="IDR_OS_SETTINGS_SYNC_PAGE_JS"
                  file="people_page/sync_page.js"
                  type="chrome_html"

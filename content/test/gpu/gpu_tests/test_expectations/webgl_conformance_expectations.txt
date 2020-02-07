@@ -73,6 +73,10 @@ crbug.com/867718 [ win d3d9 ] WebglExtension_EXT_disjoint_timer_query [ Failure 
 [ android qualcomm-adreno-(tm)-420 ] WebglExtension_EXT_sRGB [ Failure ]
 [ android qualcomm-adreno-(tm)-430 ] WebglExtension_EXT_sRGB [ Failure ]
 
+# Fails on Android Nvidia Tegra driver version 343, passes on 361
+# We don't have tags for specific driver version so just skip all
+[ android nvidia ] WebglExtension_EXT_texture_compression_bptc [ Skip ]
+
 # ========================
 # Conformance expectations
 # ========================

@@ -690,6 +690,7 @@
 <translation id="3987940399970879459">Manje od 1 MB</translation>
 <translation id="3990250421422698716">Odvajanje dokumenata</translation>
 <translation id="40103911065039147">{URL_count,plural, =1{1 web stranica u blizini}one{# web stranica u blizini}few{# web stranice u blizini}other{# web stranica u blizini}}</translation>
+<translation id="4014128326099193693">{COUNT,plural, =1{PDF dokument sadrži {COUNT} stranicu}one{PDF dokument sadrži {COUNT} stranicu}few{PDF dokument sadrži {COUNT} stranice}other{PDF dokument sadrži {COUNT} stranica}}</translation>
 <translation id="4030383055268325496">&amp;Opozovi dodavanje</translation>
 <translation id="4032320456957708163">Vašim preglednikom upravlja <ph name="ENROLLMENT_DOMAIN" /></translation>
 <translation id="4058922952496707368">Ključ "<ph name="SUBKEY" />": <ph name="ERROR" /></translation>
@@ -718,6 +719,7 @@
 <translation id="4142935452406587478">Ladica 10</translation>
 <translation id="4148925816941278100">American Express</translation>
 <translation id="4151403195736952345">Koristi globalnu zadanu postavku (otkrij)</translation>
+<translation id="4152318981910038897">{COUNT,plural, =1{1. stranica}one{{COUNT}. stranica}few{{COUNT}. stranica}other{{COUNT}. stranica}}</translation>
 <translation id="4159784952369912983">Ljubičasta</translation>
 <translation id="4165986682804962316">Postavke web-lokacije</translation>
 <translation id="4171400957073367226">Nevažeći potpis za potvrdu</translation>
@@ -1191,7 +1193,7 @@
 <translation id="6234122620015464377">Skraćivanje nakon svakog dokumenta</translation>
 <translation id="6240447795304464094">Logotip Google Pay</translation>
 <translation id="6241121617266208201">Sakrij prijedloge</translation>
-<translation id="624499991300733384">Usluga Print Compositor</translation>
+<translation id="624499991300733384">Usluga slaganja za štampu</translation>
 <translation id="6251924700383757765">Pravila privatnosti</translation>
 <translation id="6254436959401408446">Nema dovoljno memorije za otvaranje ove stranice</translation>
 <translation id="625755898061068298">Odlučili ste da onemogućite sigurnosna upozorenja za ovu web lokaciju.</translation>
@@ -1395,6 +1397,7 @@
 <translation id="7201591969684833065">Administrator može vidjeti:</translation>
 <translation id="7202346780273620635">Letter-Extra</translation>
 <translation id="7210863904660874423"><ph name="HOST_NAME" /> se ne pridržava sigurnosnih standarda.</translation>
+<translation id="7210993021468939304">Aktivnost Linuxa se nalazi u spremniku i moguće je instalirati i pokrenuti Linux aplikacije unutar spremnika</translation>
 <translation id="721197778055552897"><ph name="BEGIN_LINK" />Saznajte više<ph name="END_LINK" /> o ovom problemu.</translation>
 <translation id="7219179957768738017">Veza koristi <ph name="SSL_VERSION" />.</translation>
 <translation id="7220786058474068424">Obrada</translation>
@@ -1558,6 +1561,7 @@ Dodatni detalji:
 <translation id="7878562273885520351">Moguće je da je vaša lozinka ugrožena</translation>
 <translation id="7882421473871500483">Smeđa</translation>
 <translation id="7887683347370398519">Provjerite CVC i pokušajte ponovo</translation>
+<translation id="7887885240995164102">Pokreni način rada slika u slici</translation>
 <translation id="7888575728750733395">Štampanje namjere iscrtavanja</translation>
 <translation id="7904208859782148177">C3 (koverta)</translation>
 <translation id="7932579305932748336">Premaz</translation>

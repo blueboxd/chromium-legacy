@@ -2066,14 +2066,20 @@ const ComputedStyle* HTMLSelectElement::ItemComputedStyle(
 }
 
 LayoutUnit HTMLSelectElement::ClientPaddingLeft() const {
-  if (GetLayoutObject() && GetLayoutObject()->IsMenuList())
-    return ToLayoutMenuList(GetLayoutObject())->ClientPaddingLeft();
+  DCHECK(UsesMenuList());
+  auto* this_box = GetLayoutBox();
+  auto* inner_box = InnerElement().GetLayoutBox();
+  if (this_box && inner_box)
+    return this_box->PaddingLeft() + inner_box->PaddingLeft();
   return LayoutUnit();
 }
 
 LayoutUnit HTMLSelectElement::ClientPaddingRight() const {
-  if (GetLayoutObject() && GetLayoutObject()->IsMenuList())
-    return ToLayoutMenuList(GetLayoutObject())->ClientPaddingRight();
+  DCHECK(UsesMenuList());
+  auto* this_box = GetLayoutBox();
+  auto* inner_box = InnerElement().GetLayoutBox();
+  if (this_box && inner_box)
+    return this_box->PaddingRight() + inner_box->PaddingRight();
   return LayoutUnit();
 }
 

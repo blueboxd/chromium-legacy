@@ -439,6 +439,7 @@ class GLPixelBufferRGBAResult : public CopyOutputResult {
     if (cached_bitmap()->readyToDraw())
       return *cached_bitmap();
 
+    DCHECK(context_provider_);
     SkBitmap result_bitmap;
     // size() was clamped to render pass or framebuffer size. If we can't
     // allocate it then OOM.
@@ -454,12 +455,18 @@ class GLPixelBufferRGBAResult : public CopyOutputResult {
     // anymore.
     context_provider_->ContextGL()->DeleteBuffers(1, &transfer_buffer_);
     transfer_buffer_ = 0;
+
+    // We don't need context provider anymore. If these CopyOutputResults will
+    // be sent to different thread we might end holding last reference to
+    // context provider, so drop it now.
+    context_provider_.reset();
+
     return *cached_bitmap();
   }
 
  private:
   const gfx::ColorSpace color_space_;
-  const scoped_refptr<ContextProvider> context_provider_;
+  mutable scoped_refptr<ContextProvider> context_provider_;
   mutable GLuint transfer_buffer_;
   const bool is_upside_down_;
   const bool swap_red_and_blue_;

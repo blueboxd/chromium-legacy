@@ -23,7 +23,6 @@ import org.chromium.chrome.browser.flags.CachedFeatureFlags;
 import org.chromium.chrome.browser.flags.ChromeFeatureList;
 import org.chromium.chrome.browser.incognito.IncognitoUtils;
 import org.chromium.chrome.browser.tab.TabFeatureUtilities;
-import org.chromium.chrome.browser.tabmodel.TabModel;
 import org.chromium.chrome.browser.tabmodel.TabModelSelector;
 import org.chromium.chrome.browser.toolbar.IncognitoStateProvider;
 import org.chromium.chrome.browser.toolbar.IncognitoToggleTabLayout;
@@ -253,7 +252,6 @@ public class TabSwitcherModeTTPhone extends OptimizedFrameLayout
     public void onIncognitoStateChanged(boolean isIncognito) {
         mIsIncognito = isIncognito;
         updatePrimaryColorAndTint();
-        updateIncognitoToggleTabsVisibility();
     }
 
     /** Called when accessibility status changes. */
@@ -266,6 +264,20 @@ public class TabSwitcherModeTTPhone extends OptimizedFrameLayout
         }
 
         updatePrimaryColorAndTint();
+    }
+
+    /** Called when incognito tab count changes. */
+    void onIncognitoTabsCountChanged(int incognitoTabsCount) {
+        boolean shouldShowNewTabVariation = incognitoTabsCount == 0;
+        if (shouldShowNewTabVariation == mShouldShowNewTabVariation) return;
+        mShouldShowNewTabVariation = shouldShowNewTabVariation;
+
+        // TODO(crbug.com/1012014): Address the empty top toolbar issue when adaptive toolbar and
+        // new tab variation are both on.
+        // Show new tab variation when there are no incognito tabs.
+        assert mIncognitoToggleTabLayout != null;
+        mIncognitoToggleTabLayout.setVisibility(mShouldShowNewTabVariation ? GONE : VISIBLE);
+        setNewTabButtonVisibility(mShouldShowNewTabButton);
     }
 
     /**
@@ -401,33 +413,5 @@ public class TabSwitcherModeTTPhone extends OptimizedFrameLayout
     private boolean shouldShowIncognitoToggle() {
         return (usingHorizontalTabSwitcher() || CachedFeatureFlags.isGridTabSwitcherEnabled())
                 && IncognitoUtils.isIncognitoModeEnabled();
-    }
-
-    private void updateIncognitoToggleTabsVisibility() {
-        // TODO(yuezhanggg): Add a regression test for this "New Tab" variation. (crbug: 977546)
-        if (!CachedFeatureFlags.isGridTabSwitcherEnabled() || !ChromeFeatureList.isInitialized()
-                || !ChromeFeatureList
-                            .getFieldTrialParamByFeature(ChromeFeatureList.TAB_GRID_LAYOUT_ANDROID,
-                                    "tab_grid_layout_android_new_tab")
-                            .equals("NewTabVariation")
-                || mIncognitoToggleTabLayout == null) {
-            mShouldShowNewTabVariation = false;
-            return;
-        }
-        // TODO(crbug.com/1012014): Address the empty top toolbar issue when adaptive toolbar and
-        // new tab variation are both on.
-        // Show new tab variation when there are no incognito tabs.
-        mShouldShowNewTabVariation = !hasIncognitoTabs();
-        mIncognitoToggleTabLayout.setVisibility(mShouldShowNewTabVariation ? GONE : VISIBLE);
-        setNewTabButtonVisibility(mShouldShowNewTabButton);
-    }
-
-    private boolean hasIncognitoTabs() {
-        // Check if there is no incognito tab, or all the incognito tabs are being closed.
-        TabModel incognitoTabModel = mTabModelSelector.getModel(true);
-        for (int i = 0; i < incognitoTabModel.getCount(); i++) {
-            if (!incognitoTabModel.getTabAt(i).isClosing()) return true;
-        }
-        return false;
     }
 }

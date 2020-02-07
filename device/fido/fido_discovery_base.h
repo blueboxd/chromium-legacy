@@ -56,6 +56,9 @@ class COMPONENT_EXPORT(DEVICE_FIDO) FidoDiscoveryBase {
   // this method.
   virtual void Start() = 0;
 
+  // Attempts to stop discovery and returns whether stopping was successful.
+  virtual bool MaybeStop();
+
   Observer* observer() const { return observer_; }
   void set_observer(Observer* observer) {
     DCHECK(!observer_ || !observer) << "Only one observer is supported.";

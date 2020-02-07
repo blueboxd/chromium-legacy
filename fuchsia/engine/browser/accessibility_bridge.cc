@@ -194,13 +194,11 @@ void AccessibilityBridge::DeleteSubtree(ui::AXTree* tree, ui::AXNode* node) {
 void AccessibilityBridge::OnNodeWillBeDeleted(ui::AXTree* tree,
                                               ui::AXNode* node) {
   DeleteSubtree(tree, node);
-  TryCommit();
 }
 
 void AccessibilityBridge::OnSubtreeWillBeDeleted(ui::AXTree* tree,
                                                  ui::AXNode* node) {
   DeleteSubtree(tree, node);
-  TryCommit();
 }
 
 void AccessibilityBridge::OnAtomicUpdateFinished(

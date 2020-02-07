@@ -137,7 +137,6 @@
 <translation id="2718395828230677721">Mwanga wa Usiku</translation>
 <translation id="2727977024730340865">Imechomekwa katika chaja ya kawi ya chini. Huenda kuchaji kwa betri hakutakuwa kuzuri.</translation>
 <translation id="2792498699870441125">Alt + Utafutaji</translation>
-<translation id="2803734122639935495">Weka nenosiri lako ili ufungue</translation>
 <translation id="2819276065543622893">Utaondolewa kwenye akaunti sasa hivi.</translation>
 <translation id="2825619548187458965">Rafu</translation>
 <translation id="2844169650293029770">Kifaa cha USB-C (mlango wa upande wa kushoto mbele)</translation>
@@ -202,6 +201,7 @@
 <translation id="3604801046548457007">Kiolesura cha <ph name="DESK_TITILE" /> kimeanzishwa</translation>
 <translation id="3606978283550408104">Onyesho la breli limeunganishwa.</translation>
 <translation id="3621202678540785336">Ingizo</translation>
+<translation id="3621712662352432595">Mipangilio ya Sauti</translation>
 <translation id="3626281679859535460">Ung'aavu</translation>
 <translation id="3631369015426612114">Ruhusu arifa kutoka vyanzo hivi</translation>
 <translation id="3705722231355495246">-</translation>
@@ -545,6 +545,7 @@ Arifa, madirisha na vidirisha vya baadaye vitagawanywa kati ya maeneo-kazi.</tra
 <translation id="8477270416194247200">Bonyeza Alt+Search au Shift ili ughairi.</translation>
 <translation id="8513108775083588393">Zungusha kiotomatiki</translation>
 <translation id="8517041960877371778">Huenda kifaa chako cha <ph name="DEVICE_TYPE" /> kisichaji kikiwa kimewashwa.</translation>
+<translation id="8563862697512465947">Mipangilio ya Arifa</translation>
 <translation id="8627191004499078455">Imeunganishwa kwenye <ph name="DEVICE_NAME" /></translation>
 <translation id="8637598503828012618"><ph name="CONNECTION_STATUS" />, Uthabiti wa Mtandao <ph name="SIGNAL_STRENGTH" />, Unadhibitiwa na Msimamizi wako</translation>
 <translation id="8639760480004882931">Imebaki <ph name="PERCENTAGE" />%</translation>

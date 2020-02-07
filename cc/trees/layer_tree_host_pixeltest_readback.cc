@@ -421,7 +421,7 @@ ReadbackTestConfig const kTestConfigs[] = {
     ReadbackTestConfig{LayerTreeTest::RENDERER_GL, READBACK_TEXTURE},
     ReadbackTestConfig{LayerTreeTest::RENDERER_GL, READBACK_BITMAP},
 #if defined(GL_ON_PLATFORM)
-#if !defined(OS_WIN)
+#if !defined(OS_WIN) && !defined(OS_LINUX)
     // TODO(crbug.com/1046788): The skia readback path doesn't support
     // RGBA_TEXTURE readback requests yet. Don't run these tests on platforms
     // that have UseSkiaForGLReadback enabled by default.
@@ -445,7 +445,7 @@ ReadbackTestConfig const kMaybeVulkanTestConfigs[] = {
     ReadbackTestConfig{LayerTreeTest::RENDERER_GL, READBACK_TEXTURE},
     ReadbackTestConfig{LayerTreeTest::RENDERER_GL, READBACK_BITMAP},
 #if defined(GL_ON_PLATFORM)
-#if !defined(OS_WIN)
+#if !defined(OS_WIN) && !defined(OS_LINUX)
     // TODO(crbug.com/1046788): The skia readback path doesn't support
     // RGBA_TEXTURE readback requests yet. Don't run these tests on platforms
     // that have UseSkiaForGLReadback enabled by default.

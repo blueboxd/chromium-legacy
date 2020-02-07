@@ -1104,6 +1104,34 @@ TEST_P(CompositingSimTest, PromoteCrossOriginIframeAfterLoading) {
   EXPECT_TRUE(CcLayerByDOMElementId("iframe"));
 }
 
+// An iframe that is cross-origin to the parent should be composited. This test
+// sets up nested frames with domains A -> B -> A. Both the child and grandchild
+// frames should be composited because they are cross-origin to their parent.
+TEST_P(CompositingSimTest, PromoteCrossOriginToParent) {
+  base::test::ScopedFeatureList feature_list;
+  feature_list.InitWithFeatureState(
+      blink::features::kCompositeCrossOriginIframes, true);
+
+  SimRequest main_resource("https://origin-a.com/a.html", "text/html");
+  SimRequest child_resource("https://origin-b.com/b.html", "text/html");
+  SimRequest grandchild_resource("https://origin-a.com/c.html", "text/html");
+
+  LoadURL("https://origin-a.com/a.html");
+  main_resource.Complete(R"HTML(
+      <!DOCTYPE html>
+      <iframe id="main_iframe" src="https://origin-b.com/b.html"></iframe>
+  )HTML");
+  child_resource.Complete(R"HTML(
+      <!DOCTYPE html>
+      <iframe id="child_iframe" src="https://origin-a.com/c.html"></iframe>
+  )HTML");
+  grandchild_resource.Complete("<!DOCTYPE html>");
+  Compositor().BeginFrame();
+
+  EXPECT_TRUE(CcLayerByDOMElementId("main_iframe"));
+  EXPECT_TRUE(CcLayerByDOMElementId("child_iframe"));
+}
+
 // Initially the iframe is cross-origin and should be composited. After changing
 // to same-origin, the frame should no longer be composited.
 TEST_P(CompositingSimTest, PromoteCrossOriginIframeAfterDomainChange) {
@@ -1135,6 +1163,53 @@ TEST_P(CompositingSimTest, PromoteCrossOriginIframeAfterDomainChange) {
   UpdateAllLifecyclePhases();
 
   EXPECT_FALSE(CcLayerByDOMElementId("iframe"));
+}
+
+// This test sets up nested frames with domains A -> B -> A. Initially, the
+// child frame and grandchild frame should be composited. After changing the
+// child frame to A (same-origin), both child and grandchild frames should no
+// longer be composited.
+TEST_P(CompositingSimTest, PromoteCrossOriginToParentIframeAfterDomainChange) {
+  base::test::ScopedFeatureList feature_list;
+  feature_list.InitWithFeatureState(
+      blink::features::kCompositeCrossOriginIframes, true);
+
+  SimRequest main_resource("https://origin-a.com/a.html", "text/html");
+  SimRequest child_resource("https://sub.origin-a.com/b.html", "text/html");
+  SimRequest grandchild_resource("https://origin-a.com/c.html", "text/html");
+
+  LoadURL("https://origin-a.com/a.html");
+  main_resource.Complete(R"HTML(
+      <!DOCTYPE html>
+      <iframe id="main_iframe" src="https://sub.origin-a.com/b.html"></iframe>
+  )HTML");
+  child_resource.Complete(R"HTML(
+      <!DOCTYPE html>
+      <iframe id="child_iframe" src="https://origin-a.com/c.html"></iframe>
+  )HTML");
+  grandchild_resource.Complete("<!DOCTYPE html>");
+  Compositor().BeginFrame();
+
+  EXPECT_TRUE(CcLayerByDOMElementId("main_iframe"));
+  EXPECT_TRUE(CcLayerByDOMElementId("child_iframe"));
+
+  auto* main_iframe_element =
+      To<HTMLIFrameElement>(GetDocument().getElementById("main_iframe"));
+  NonThrowableExceptionState exception_state;
+  GetDocument().setDomain(String("origin-a.com"), exception_state);
+  auto* child_iframe_element = To<HTMLIFrameElement>(
+      main_iframe_element->contentDocument()->getElementById("child_iframe"));
+  child_iframe_element->contentDocument()->setDomain(String("origin-a.com"),
+                                                     exception_state);
+  main_iframe_element->contentDocument()->setDomain(String("origin-a.com"),
+                                                    exception_state);
+
+  // We may not have scheduled a visual update so force an update instead of
+  // using BeginFrame.
+  UpdateAllLifecyclePhases();
+
+  EXPECT_FALSE(CcLayerByDOMElementId("main_iframe"));
+  EXPECT_FALSE(CcLayerByDOMElementId("child_iframe"));
 }
 
 }  // namespace blink

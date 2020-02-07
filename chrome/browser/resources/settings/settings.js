@@ -15,6 +15,7 @@ import './search_engines_page/omnibox_extension_entry.m.js';
 import './search_engines_page/search_engine_dialog.m.js';
 import './search_engines_page/search_engine_entry.m.js';
 import './search_engines_page/search_engines_page.m.js';
+import './search_page/search_page.m.js';
 import './settings_page/settings_subpage.m.js';
 import './settings_page/settings_animated_pages.m.js';
 

@@ -122,8 +122,11 @@ Polymer({
     }
 
     // Update the 'nameserversType' property.
-    const configType =
-        OncMojo.getActiveValue(this.managedProperties.nameServersConfigType);
+    let configType;
+    if (this.managedProperties.nameServersConfigType) {
+      configType =
+          OncMojo.getActiveValue(this.managedProperties.nameServersConfigType);
+    }
     let type;
     if (configType === 'Static') {
       if (this.isGoogleNameservers_(nameservers)) {

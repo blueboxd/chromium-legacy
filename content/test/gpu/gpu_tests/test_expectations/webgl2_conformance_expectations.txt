@@ -469,7 +469,6 @@ crbug.com/751254 [ mac amd ] deqp/functional/gles3/shaderindexing/mat_00.html [ 
 crbug.com/636648 [ mac amd ] deqp/functional/gles3/shaderindexing/mat_01.html [ RetryOnFailure ]
 crbug.com/644360 [ mac amd ] deqp/functional/gles3/shaderindexing/mat_02.html [ RetryOnFailure ]
 crbug.com/659871 [ mac amd ] deqp/functional/gles3/shaderindexing/tmp.html [ RetryOnFailure ]
-crbug.com/928989 [ mac amd ] deqp/functional/gles3/shaderindexing/varying.html [ RetryOnFailure ]
 
 # These seem to be provoking intermittent GPU process crashes on
 # the MacBook Pros with AMD GPUs.

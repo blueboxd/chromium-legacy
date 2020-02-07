@@ -9,6 +9,7 @@
 #include "ash/shelf/shelf_button.h"
 #include "base/macros.h"
 #include "base/timer/timer.h"
+#include "ui/compositor/layer_animation_observer.h"
 #include "ui/gfx/shadow_value.h"
 #include "ui/views/animation/ink_drop_observer.h"
 #include "ui/views/animation/ink_drop_state.h"
@@ -23,7 +24,8 @@ class ShelfView;
 
 // Button used for app shortcuts on the shelf..
 class ASH_EXPORT ShelfAppButton : public ShelfButton,
-                                  public views::InkDropObserver {
+                                  public views::InkDropObserver,
+                                  public ui::ImplicitAnimationObserver {
  public:
   static const char kViewClassName[];
 
@@ -113,6 +115,9 @@ class ASH_EXPORT ShelfAppButton : public ShelfButton,
   std::unique_ptr<views::InkDropRipple> CreateInkDropRipple() const override;
   std::unique_ptr<views::InkDropMask> CreateInkDropMask() const override;
 
+  // ui::ImplicitAnimationObserver:
+  void OnImplicitAnimationsCompleted() override;
+
   // Sets the icon image with a shadow.
   void SetShadowedImage(const gfx::ImageSkia& bitmap);
 
@@ -136,6 +141,13 @@ class ASH_EXPORT ShelfAppButton : public ShelfButton,
   // Scales up app icon if |scale_up| is true, otherwise scales it back to
   // normal size.
   void ScaleAppIcon(bool scale_up);
+
+  // Calculates the icon bounds for an icon scaled by |icon_scale|.
+  gfx::Rect GetIconViewBounds(float icon_scale);
+
+  // Calculates the transform between the icon scaled by |icon_scale| and the
+  // normal size icon.
+  gfx::Transform GetScaleTransform(float icon_scale);
 
   // The icon part of a button can be animated independently of the rest.
   views::ImageView* icon_view_;
@@ -162,6 +174,12 @@ class ASH_EXPORT ShelfAppButton : public ShelfButton,
 
   // Whether the notification indicator is enabled.
   const bool is_notification_indicator_enabled_;
+
+  // The bitmap image for this app button.
+  gfx::ImageSkia icon_image_;
+
+  // The scaling factor for displaying the app icon.
+  float icon_scale_ = 1.0f;
 
   // A timer to defer showing drag UI when the shelf button is pressed.
   base::OneShotTimer drag_timer_;

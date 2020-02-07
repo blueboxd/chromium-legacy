@@ -14,8 +14,8 @@
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/trace_event/trace_event.h"
 #include "build/build_config.h"
-#include "components/viz/common/gl_helper.h"
 #include "components/viz/test/test_gpu_service_holder.h"
+#include "gpu/command_buffer/client/gl_helper.h"
 #include "gpu/command_buffer/client/gles2_implementation.h"
 #include "gpu/command_buffer/client/shared_memory_limits.h"
 #include "gpu/ipc/common/surface_handle.h"
@@ -61,7 +61,7 @@ class YUVReadbackTest : public testing::Test {
     gl_ = context_->GetImplementation();
     gpu::ContextSupport* support = context_->GetImplementation();
 
-    helper_ = std::make_unique<GLHelper>(gl_, support);
+    helper_ = std::make_unique<gpu::GLHelper>(gl_, support);
   }
 
   void TearDown() override {
@@ -319,7 +319,7 @@ class YUVReadbackTest : public testing::Test {
                        int test_pattern,
                        bool flip,
                        bool use_mrt,
-                       GLHelper::ScalerQuality quality) {
+                       gpu::GLHelper::ScalerQuality quality) {
     GLuint src_texture;
     gl_->GenTextures(1, &src_texture);
     SkBitmap input_pixels;
@@ -361,7 +361,7 @@ class YUVReadbackTest : public testing::Test {
         "pattern: %d %s %s",
         xsize, ysize, output_xsize, output_ysize, xmargin, ymargin,
         test_pattern, flip ? "flip" : "noflip", use_mrt ? "mrt" : "nomrt");
-    std::unique_ptr<ReadbackYUVInterface> yuv_reader =
+    std::unique_ptr<gpu::ReadbackYUVInterface> yuv_reader =
         helper_->CreateReadbackPipelineYUV(flip, use_mrt);
 
     scoped_refptr<media::VideoFrame> output_frame =
@@ -469,7 +469,7 @@ class YUVReadbackTest : public testing::Test {
 
   std::unique_ptr<gpu::GLInProcessContext> context_;
   gpu::gles2::GLES2Interface* gl_;
-  std::unique_ptr<GLHelper> helper_;
+  std::unique_ptr<gpu::GLHelper> helper_;
   gl::DisableNullDrawGLBindings enable_pixel_output_;
 };
 
@@ -482,7 +482,7 @@ TEST_F(YUVReadbackTest, YUVReadbackOptTest) {
 
     // Run a test with no size scaling, just planerization.
     TestYUVReadback(800, 400, 800, 400, 0, 0, 1, false, use_mrt == 1,
-                    GLHelper::SCALER_QUALITY_FAST);
+                    gpu::GLHelper::SCALER_QUALITY_FAST);
 
     std::map<std::string, int> event_counts;
     EndTracing(&event_counts);
@@ -533,7 +533,7 @@ TEST_P(YUVReadbackPixelTest, Test) {
                 kYUVReadbackSizes[ox], kYUVReadbackSizes[oy],
                 compute_margin(kYUVReadbackSizes[x], kYUVReadbackSizes[ox], xm),
                 compute_margin(kYUVReadbackSizes[y], kYUVReadbackSizes[oy], ym),
-                pattern, flip, use_mrt, GLHelper::SCALER_QUALITY_GOOD);
+                pattern, flip, use_mrt, gpu::GLHelper::SCALER_QUALITY_GOOD);
             if (HasFailure()) {
               return;
             }

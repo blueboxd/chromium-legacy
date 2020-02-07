@@ -121,7 +121,7 @@ ArcScreenCaptureSession::Initialize(content::DesktopMediaID desktop_id,
   }
 
   auto context_provider = GetContextProvider();
-  gl_helper_ = std::make_unique<viz::GLHelper>(
+  gl_helper_ = std::make_unique<gpu::GLHelper>(
       context_provider->ContextGL(), context_provider->ContextSupport());
 
   display::Display display =
@@ -131,7 +131,7 @@ ArcScreenCaptureSession::Initialize(content::DesktopMediaID desktop_id,
   gfx::Size desktop_size = display.GetSizeInPixel();
 
   scaler_ = gl_helper_->CreateScaler(
-      viz::GLHelper::ScalerQuality::SCALER_QUALITY_GOOD,
+      gpu::GLHelper::ScalerQuality::SCALER_QUALITY_GOOD,
       gfx::Vector2d(desktop_size.width(), desktop_size.height()),
       gfx::Vector2d(size_.width(), size_.height()), false, true, false);
 

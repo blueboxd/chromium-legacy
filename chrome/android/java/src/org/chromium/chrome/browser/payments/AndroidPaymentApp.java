@@ -16,6 +16,7 @@ import android.os.Handler;
 import android.os.IBinder;
 import android.os.Parcelable;
 import android.os.RemoteException;
+import android.support.annotation.VisibleForTesting;
 import android.util.JsonWriter;
 
 import androidx.annotation.Nullable;
@@ -38,7 +39,6 @@ import org.chromium.payments.mojom.PaymentOptions;
 import org.chromium.payments.mojom.PaymentShippingOption;
 import org.chromium.ui.UiUtils;
 import org.chromium.ui.base.WindowAndroid;
-import org.chromium.url.URI;
 
 import java.io.IOException;
 import java.io.StringWriter;
@@ -53,10 +53,9 @@ import java.util.Set;
 
 /**
  * The point of interaction with a locally installed 3rd party native Android payment app.
- * https://docs.google.com/document/d/1izV4uC-tiRJG3JLooqY3YRLU22tYOsLTNq0P_InPJeE
+ * https://developers.google.com/web/fundamentals/payments/payment-apps-developer-guide/android-payment-apps
  */
-public class AndroidPaymentApp
-        extends PaymentInstrument implements PaymentApp, WindowAndroid.IntentCallback {
+public class AndroidPaymentApp extends PaymentInstrument implements WindowAndroid.IntentCallback {
     /** The action name for the Pay Intent. */
     public static final String ACTION_PAY = "org.chromium.intent.action.PAY";
 
@@ -97,45 +96,54 @@ public class AndroidPaymentApp
 
     private final Handler mHandler;
     private final WebContents mWebContents;
-    private final Intent mIsReadyToPayIntent;
     private final Intent mPayIntent;
     private final Set<String> mMethodNames;
     private final boolean mIsIncognito;
-    private InstrumentsCallback mInstrumentsCallback;
+    private Intent mIsReadyToPayIntent;
+    private IsReadyToPayCallback mIsReadyToPayCallback;
     private InstrumentDetailsCallback mInstrumentDetailsCallback;
     private ServiceConnection mServiceConnection;
     @Nullable
-    private URI mCanDedupedApplicationId;
+    private String mApplicationIdentifierToHide;
     private boolean mIsReadyToPayQueried;
     private boolean mIsServiceBindingInitiated;
+    private boolean mBypassIsReadyToPayServiceInTest;
 
     /**
      * Builds the point of interaction with a locally installed 3rd party native Android payment
      * app.
      *
-     * @param webContents             The web contents.
-     * @param packageName             The name of the package of the payment app.
-     * @param activity                The name of the payment activity in the payment app.
-     * @param label                   The UI label to use for the payment app.
-     * @param icon                    The icon to use in UI for the payment app.
-     * @param isIncognito             Whether the user is in incognito mode.
-     * @param canDedupedApplicationId The corresponding app Id this app can deduped.
+     * @param webContents         The web contents.
+     * @param packageName         The name of the package of the payment app.
+     * @param activity            The name of the payment activity in the payment app.
+     * @param isReadyToPayService The name of the service that can answer "is ready to pay" query,
+     *                            or null of none.
+     * @param label               The UI label to use for the payment app.
+     * @param icon                The icon to use in UI for the payment app.
+     * @param isIncognito         Whether the user is in incognito mode.
+     * @param appToHide           The identifier of the application that this app can hide.
      */
     public AndroidPaymentApp(WebContents webContents, String packageName, String activity,
-            String label, Drawable icon, boolean isIncognito,
-            @Nullable URI canDedupedApplicationId) {
+            @Nullable String isReadyToPayService, String label, Drawable icon, boolean isIncognito,
+            @Nullable String appToHide) {
         super(packageName, label, null, icon);
         ThreadUtils.assertOnUiThread();
         mHandler = new Handler();
         mWebContents = webContents;
+
         mPayIntent = new Intent();
-        mIsReadyToPayIntent = new Intent();
-        mIsReadyToPayIntent.setPackage(packageName);
         mPayIntent.setClassName(packageName, activity);
         mPayIntent.setAction(ACTION_PAY);
+
+        if (isReadyToPayService != null) {
+            assert !isIncognito;
+            mIsReadyToPayIntent = new Intent();
+            mIsReadyToPayIntent.setClassName(packageName, isReadyToPayService);
+        }
+
         mMethodNames = new HashSet<>();
         mIsIncognito = isIncognito;
-        mCanDedupedApplicationId = canDedupedApplicationId;
+        mApplicationIdentifierToHide = appToHide;
     }
 
     /** @param methodName A payment method that this app supports, e.g., "https://bobpay.com". */
@@ -143,22 +151,27 @@ public class AndroidPaymentApp
         mMethodNames.add(methodName);
     }
 
-    /** @param className The class name of the "is ready to pay" service in the payment app. */
-    public void setIsReadyToPayAction(String className) {
-        mIsReadyToPayIntent.setClassName(mIsReadyToPayIntent.getPackage(), className);
+    /** Callback for receiving responses to IS_READY_TO_PAY queries. */
+    /* package */ interface IsReadyToPayCallback {
+        /**
+         * Called after it is known whether the given app is ready to pay.
+         * @param app          The app that has been queried.
+         * @param isReadyToPay Whether the app is ready to pay.
+         */
+        void onIsReadyToPayResponse(AndroidPaymentApp app, boolean isReadyToPay);
     }
 
-    @Override
-    public void getInstruments(String unusedId, Map<String, PaymentMethodData> methodDataMap,
+    /** Queries the IS_READY_TO_PAY service. */
+    /* package */ void maybeQueryIsReadyToPayService(Map<String, PaymentMethodData> methodDataMap,
             String origin, String iframeOrigin, @Nullable byte[][] certificateChain,
-            Map<String, PaymentDetailsModifier> modifiers, InstrumentsCallback callback) {
+            Map<String, PaymentDetailsModifier> modifiers, IsReadyToPayCallback callback) {
         assert mMethodNames.containsAll(methodDataMap.keySet());
-        assert mInstrumentsCallback
+        assert mIsReadyToPayCallback
                 == null : "Have not responded to previous request for instruments yet";
 
-        mInstrumentsCallback = callback;
-        if (mIsReadyToPayIntent.getComponent() == null) {
-            respondToGetInstrumentsQuery(AndroidPaymentApp.this);
+        mIsReadyToPayCallback = callback;
+        if (mIsReadyToPayIntent == null) {
+            respondToIsReadyToPayQuery(true);
             return;
         }
 
@@ -169,7 +182,7 @@ public class AndroidPaymentApp
                 IsReadyToPayService isReadyToPayService =
                         IsReadyToPayService.Stub.asInterface(service);
                 if (isReadyToPayService == null) {
-                    respondToGetInstrumentsQuery(null);
+                    respondToIsReadyToPayQuery(false);
                 } else {
                     sendIsReadyToPayIntentToPaymentApp(isReadyToPayService);
                 }
@@ -184,13 +197,19 @@ public class AndroidPaymentApp
             @Override
             public void onServiceDisconnected(ComponentName name) {
                 // Do not wait for the service to restart.
-                respondToGetInstrumentsQuery(null);
+                respondToIsReadyToPayQuery(false);
             }
         };
 
         mIsReadyToPayIntent.putExtras(buildExtras(null /* id */, null /* merchantName */,
                 removeUrlScheme(origin), removeUrlScheme(iframeOrigin), certificateChain,
                 methodDataMap, null /* total */, null /* displayItems */, null /* modifiers */));
+
+        if (mBypassIsReadyToPayServiceInTest) {
+            respondToIsReadyToPayQuery(true);
+            return;
+        }
+
         try {
             // This method returns "true if the system is in the process of bringing up a service
             // that your client has permission to bind to; false if the system couldn't find the
@@ -205,16 +224,21 @@ public class AndroidPaymentApp
         }
 
         if (!mIsServiceBindingInitiated) {
-            respondToGetInstrumentsQuery(null);
+            respondToIsReadyToPayQuery(false);
             return;
         }
 
         mHandler.postDelayed(() -> {
-            if (!mIsReadyToPayQueried) respondToGetInstrumentsQuery(null);
+            if (!mIsReadyToPayQueried) respondToIsReadyToPayQuery(false);
         }, SERVICE_CONNECTION_TIMEOUT_MS);
     }
 
-    private void respondToGetInstrumentsQuery(final PaymentInstrument instrument) {
+    @VisibleForTesting
+    /* package */ void bypassIsReadyToPayServiceInTest() {
+        mBypassIsReadyToPayServiceInTest = true;
+    }
+
+    private void respondToIsReadyToPayQuery(boolean isReadyToPay) {
         if (mServiceConnection != null) {
             if (mIsServiceBindingInitiated) {
                 // mServiceConnection "parameter must not be null."
@@ -225,31 +249,18 @@ public class AndroidPaymentApp
             mServiceConnection = null;
         }
 
-        if (mInstrumentsCallback == null) return;
-        mHandler.post(() -> {
-            ThreadUtils.assertOnUiThread();
-            if (mInstrumentsCallback == null) return;
-            List<PaymentInstrument> instruments = null;
-            if (instrument != null) {
-                instruments = new ArrayList<>();
-                instruments.add(instrument);
-            }
-            mInstrumentsCallback.onInstrumentsReady(AndroidPaymentApp.this, instruments);
-            mInstrumentsCallback = null;
-        });
+        if (mIsReadyToPayCallback == null) return;
+        mIsReadyToPayCallback.onIsReadyToPayResponse(/*app=*/this, isReadyToPay);
+        mIsReadyToPayCallback = null;
     }
 
     private void sendIsReadyToPayIntentToPaymentApp(IsReadyToPayService isReadyToPayService) {
-        if (mInstrumentsCallback == null) return;
+        if (mIsReadyToPayCallback == null) return;
         mIsReadyToPayQueried = true;
         IsReadyToPayServiceCallback.Stub callback = new IsReadyToPayServiceCallback.Stub() {
             @Override
             public void handleIsReadyToPay(boolean isReadyToPay) throws RemoteException {
-                if (isReadyToPay) {
-                    respondToGetInstrumentsQuery(AndroidPaymentApp.this);
-                } else {
-                    respondToGetInstrumentsQuery(null);
-                }
+                respondToIsReadyToPayQuery(isReadyToPay);
             }
         };
         try {
@@ -257,38 +268,21 @@ public class AndroidPaymentApp
         } catch (Throwable e) {
             // Many undocumented exceptions are not caught in the remote Service but passed on to
             // the Service caller, see writeException in Parcel.java.
-            respondToGetInstrumentsQuery(null);
+            respondToIsReadyToPayQuery(false);
             return;
         }
-        mHandler.postDelayed(() -> respondToGetInstrumentsQuery(null), READY_TO_PAY_TIMEOUT_MS);
+        mHandler.postDelayed(() -> respondToIsReadyToPayQuery(false), READY_TO_PAY_TIMEOUT_MS);
     }
 
     @Override
-    public boolean supportsMethodsAndData(Map<String, PaymentMethodData> methodsAndData) {
-        assert methodsAndData != null;
-        Set<String> methodNames = new HashSet<>(methodsAndData.keySet());
-        methodNames.retainAll(getAppMethodNames());
-        return !methodNames.isEmpty();
-    }
-
-    @Override
-    public URI getCanDedupedApplicationId() {
-        return mCanDedupedApplicationId;
-    }
-
-    @Override
-    public String getAppIdentifier() {
-        return getIdentifier();
-    }
-
-    @Override
-    public Set<String> getAppMethodNames() {
-        return Collections.unmodifiableSet(mMethodNames);
+    @Nullable
+    public String getApplicationIdentifierToHide() {
+        return mApplicationIdentifierToHide;
     }
 
     @Override
     public Set<String> getInstrumentMethodNames() {
-        return getAppMethodNames();
+        return Collections.unmodifiableSet(mMethodNames);
     }
 
     @Override
@@ -502,8 +496,7 @@ public class AndroidPaymentApp
         return stringWriter.toString();
     }
 
-    private static void serializeTotal(PaymentItem item, JsonWriter json)
-            throws IOException {
+    private static void serializeTotal(PaymentItem item, JsonWriter json) throws IOException {
         // item {{{
         json.beginObject();
         // Sanitize the total name, because the payment app does not need it to complete the

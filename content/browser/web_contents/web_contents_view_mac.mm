@@ -513,7 +513,8 @@ bool WebContentsViewMac::DraggingUpdated(DraggingInfoPtr dragging_info,
 
 bool WebContentsViewMac::PerformDragOperation(DraggingInfoPtr dragging_info,
                                               bool* out_result) {
-  *out_result = [drag_dest_ performDragOperation:dragging_info.get()];
+  *out_result = [drag_dest_ performDragOperation:dragging_info.get()
+                     withWebContentsViewDelegate:delegate_.get()];
   return true;
 }
 

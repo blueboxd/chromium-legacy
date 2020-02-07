@@ -57,12 +57,47 @@ class LinkedHashSetReverseIterator;
 template <typename LinkedHashSet>
 class LinkedHashSetConstReverseIterator;
 
-template <typename Value, typename HashFunctions, typename Allocator>
+template <typename Value, typename HashFunctions>
 struct LinkedHashSetTranslator;
-template <typename Value, typename Allocator>
+template <typename Value>
 struct LinkedHashSetExtractor;
 template <typename Value, typename ValueTraits, typename Allocator>
 struct LinkedHashSetTraits;
+class LinkedHashSetNodeBase;
+
+class LinkedHashSetNodeBasePointer {
+ public:
+  LinkedHashSetNodeBasePointer(LinkedHashSetNodeBase* node) : node_(node) {}
+
+  LinkedHashSetNodeBasePointer& operator=(
+      const LinkedHashSetNodeBasePointer& other) {
+    SetSafe(other);
+    return *this;
+  }
+
+  LinkedHashSetNodeBasePointer& operator=(LinkedHashSetNodeBase* other) {
+    SetSafe(other);
+    return *this;
+  }
+
+  LinkedHashSetNodeBasePointer& operator=(std::nullptr_t) {
+    SetSafe(nullptr);
+    return *this;
+  }
+
+  LinkedHashSetNodeBase* Get() const { return node_; }
+  explicit operator bool() const { return Get(); }
+  operator LinkedHashSetNodeBase*() const { return Get(); }
+  LinkedHashSetNodeBase* operator->() const { return Get(); }
+  LinkedHashSetNodeBase& operator*() const { return *Get(); }
+
+ private:
+  void SetSafe(LinkedHashSetNodeBase* node) {
+    AsAtomicPtr(&node_)->store(node, std::memory_order_relaxed);
+  }
+
+  LinkedHashSetNodeBase* node_ = nullptr;
+};
 
 class LinkedHashSetNodeBase {
   DISALLOW_NEW();
@@ -75,10 +110,16 @@ class LinkedHashSetNodeBase {
     if (!next_)
       return;
     DCHECK(prev_);
-    DCHECK(next_->prev_ == this);
-    DCHECK(prev_->next_ == this);
-    next_->prev_ = prev_;
-    prev_->next_ = next_;
+    {
+      AsanUnpoisonScope unpoison_scope(next_, sizeof(LinkedHashSetNodeBase));
+      DCHECK(next_->prev_ == this);
+      next_->prev_ = prev_;
+    }
+    {
+      AsanUnpoisonScope unpoison_scope(prev_, sizeof(LinkedHashSetNodeBase));
+      DCHECK(prev_->next_ == this);
+      prev_->next_ = next_;
+    }
   }
 
   ~LinkedHashSetNodeBase() { Unlink(); }
@@ -111,8 +152,8 @@ class LinkedHashSetNodeBase {
     DCHECK((prev && next) || (!prev && !next));
   }
 
-  LinkedHashSetNodeBase* prev_;
-  LinkedHashSetNodeBase* next_;
+  LinkedHashSetNodeBasePointer prev_;
+  LinkedHashSetNodeBasePointer next_;
 
  protected:
   // If we take a copy of a node we can't copy the next and prev pointers,
@@ -177,8 +218,7 @@ class LinkedHashSet {
   typedef TraitsArg Traits;
   typedef LinkedHashSetNode<Value> Node;
   typedef LinkedHashSetNodeBase NodeBase;
-  typedef LinkedHashSetTranslator<Value, HashFunctions, Allocator>
-      NodeHashFunctions;
+  typedef LinkedHashSetTranslator<Value, HashFunctions> NodeHashFunctions;
   typedef LinkedHashSetTraits<Value, Traits, Allocator> NodeHashTraits;
 
   typedef HashTable<Node,
@@ -345,13 +385,13 @@ class LinkedHashSet {
  private:
   Node* Anchor() { return reinterpret_cast<Node*>(&anchor_); }
   const Node* Anchor() const { return reinterpret_cast<const Node*>(&anchor_); }
-  Node* FirstNode() { return reinterpret_cast<Node*>(anchor_.next_); }
+  Node* FirstNode() { return reinterpret_cast<Node*>(anchor_.next_.Get()); }
   const Node* FirstNode() const {
-    return reinterpret_cast<const Node*>(anchor_.next_);
+    return reinterpret_cast<const Node*>(anchor_.next_.Get());
   }
-  Node* LastNode() { return reinterpret_cast<Node*>(anchor_.prev_); }
+  Node* LastNode() { return reinterpret_cast<Node*>(anchor_.prev_.Get()); }
   const Node* LastNode() const {
-    return reinterpret_cast<const Node*>(anchor_.prev_);
+    return reinterpret_cast<const Node*>(anchor_.prev_.Get());
   }
 
   iterator MakeIterator(const Node* position) {
@@ -371,7 +411,7 @@ class LinkedHashSet {
   NodeBase anchor_;
 };
 
-template <typename Value, typename HashFunctions, typename Allocator>
+template <typename Value, typename HashFunctions>
 struct LinkedHashSetTranslator {
   STATIC_ONLY(LinkedHashSetTranslator);
   typedef LinkedHashSetNode<Value> Node;
@@ -404,7 +444,7 @@ struct LinkedHashSetTranslator {
   static const bool safe_to_compare_to_empty_or_deleted = false;
 };
 
-template <typename Value, typename Allocator>
+template <typename Value>
 struct LinkedHashSetExtractor {
   STATIC_ONLY(LinkedHashSetExtractor);
   static const Value& Extract(const LinkedHashSetNode<Value>& node) {
@@ -473,7 +513,7 @@ struct LinkedHashSetTraits
       if (HashTable::IsEmptyOrDeletedBucket(node))
         continue;
       if (node.next_ >= from_start && node.next_ < from_end) {
-        const size_t diff = reinterpret_cast<uintptr_t>(node.next_) -
+        const size_t diff = reinterpret_cast<uintptr_t>(node.next_.Get()) -
                             reinterpret_cast<uintptr_t>(from);
         node.next_ =
             reinterpret_cast<NodeBase*>(reinterpret_cast<uintptr_t>(to) + diff);
@@ -482,7 +522,7 @@ struct LinkedHashSetTraits
         anchor_node = node.next_;
       }
       if (node.prev_ >= from_start && node.prev_ < from_end) {
-        const size_t diff = reinterpret_cast<uintptr_t>(node.prev_) -
+        const size_t diff = reinterpret_cast<uintptr_t>(node.prev_.Get()) -
                             reinterpret_cast<uintptr_t>(from);
         node.prev_ =
             reinterpret_cast<NodeBase*>(reinterpret_cast<uintptr_t>(to) + diff);
@@ -499,15 +539,17 @@ struct LinkedHashSetTraits
     }
     {
       DCHECK(anchor_node->prev_ >= from_start && anchor_node->prev_ < from_end);
-      const size_t diff = reinterpret_cast<uintptr_t>(anchor_node->prev_) -
-                          reinterpret_cast<uintptr_t>(from);
+      const size_t diff =
+          reinterpret_cast<uintptr_t>(anchor_node->prev_.Get()) -
+          reinterpret_cast<uintptr_t>(from);
       anchor_node->prev_ =
           reinterpret_cast<NodeBase*>(reinterpret_cast<uintptr_t>(to) + diff);
     }
     {
       DCHECK(anchor_node->next_ >= from_start && anchor_node->next_ < from_end);
-      const size_t diff = reinterpret_cast<uintptr_t>(anchor_node->next_) -
-                          reinterpret_cast<uintptr_t>(from);
+      const size_t diff =
+          reinterpret_cast<uintptr_t>(anchor_node->next_.Get()) -
+          reinterpret_cast<uintptr_t>(from);
       anchor_node->next_ =
           reinterpret_cast<NodeBase*>(reinterpret_cast<uintptr_t>(to) + diff);
     }
@@ -806,7 +848,7 @@ inline const T& LinkedHashSet<T, U, V, W>::front() const {
 template <typename T, typename U, typename V, typename W>
 inline void LinkedHashSet<T, U, V, W>::RemoveFirst() {
   DCHECK(!IsEmpty());
-  impl_.erase(static_cast<Node*>(anchor_.next_));
+  impl_.erase(static_cast<Node*>(anchor_.next_.Get()));
 }
 
 template <typename T, typename U, typename V, typename W>
@@ -824,7 +866,7 @@ inline const T& LinkedHashSet<T, U, V, W>::back() const {
 template <typename T, typename U, typename V, typename W>
 inline void LinkedHashSet<T, U, V, W>::pop_back() {
   DCHECK(!IsEmpty());
-  impl_.erase(static_cast<Node*>(anchor_.prev_));
+  impl_.erase(static_cast<Node*>(anchor_.prev_.Get()));
 }
 
 template <typename T, typename U, typename V, typename W>
@@ -973,14 +1015,14 @@ inline void LinkedHashSet<T, U, V, W>::erase(ValuePeekInType value) {
 
 template <typename T, typename Allocator>
 inline void swap(LinkedHashSetNode<T>& a, LinkedHashSetNode<T>& b) {
-  typedef LinkedHashSetNodeBase Base;
   // The key and value cannot be swapped atomically, and it would be
   // wrong to have a GC when only one was swapped and the other still
   // contained garbage (eg. from a previous use of the same slot).
   // Therefore we forbid a GC until both the key and the value are
   // swapped.
   Allocator::EnterGCForbiddenScope();
-  swap(static_cast<Base&>(a), static_cast<Base&>(b));
+  swap(static_cast<LinkedHashSetNodeBase&>(a),
+       static_cast<LinkedHashSetNodeBase&>(b));
   swap(a.value_, b.value_);
   Allocator::LeaveGCForbiddenScope();
 }

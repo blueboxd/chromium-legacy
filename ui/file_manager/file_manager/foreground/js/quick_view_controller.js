@@ -381,12 +381,15 @@ class QuickViewController {
     return Promise
         .all([
           this.metadataModel_.get([entry], ['thumbnailUrl']),
-          this.taskController_.getEntryFileTasks(entry)
+          this.taskController_.getEntryFileTasks(entry),
+          CommandHandler.getCommand('delete').canDeleteEntries(
+              [entry], this.fileManager_)
         ])
         .then(values => {
           const items = (/**@type{Array<MetadataItem>}*/ (values[0]));
           const tasks = (/**@type{!FileTasks}*/ (values[1]));
-          return this.onMetadataLoaded_(entry, items, tasks);
+          const canDelete = ((values[2]));
+          return this.onMetadataLoaded_(entry, items, tasks, canDelete);
         })
         .catch(error => {
           if (error) {
@@ -404,43 +407,52 @@ class QuickViewController {
    * @param {!FileEntry} entry
    * @param {Array<MetadataItem>} items
    * @param {!FileTasks} fileTasks
+   * @param {boolean} canDelete
    * @private
    */
-  onMetadataLoaded_(entry, items, fileTasks) {
+  onMetadataLoaded_(entry, items, fileTasks, canDelete) {
+    // Question: Now that canDelete is in the typedef of QuickViewParams,
+    // closure will complain unless I add canDelete to the params object
+    // that is returned by getQuickViewParameters. This means that I am passing
+    // canDelete into getQuickViewParameters_ unnecessarily. Is this okay, or
+    // is there another way to make it so that this does not happen?
     const tasks = fileTasks.getTaskItems();
 
-    return this.getQuickViewParameters_(entry, items, tasks).then(params => {
-      if (this.quickViewModel_.getSelectedEntry() != entry) {
-        return;  // Bail: there's no point drawing a stale selection.
-      }
+    return this.getQuickViewParameters_(entry, items, tasks, canDelete)
+        .then(params => {
+          if (this.quickViewModel_.getSelectedEntry() != entry) {
+            return;  // Bail: there's no point drawing a stale selection.
+          }
 
-      this.quickView_.setProperties({
-        type: params.type || '',
-        subtype: params.subtype || '',
-        filePath: params.filePath || '',
-        hasTask: params.hasTask || false,
-        contentUrl: params.contentUrl || '',
-        videoPoster: params.videoPoster || '',
-        audioArtwork: params.audioArtwork || '',
-        autoplay: params.autoplay || false,
-        browsable: params.browsable || false,
-      });
+          this.quickView_.setProperties({
+            type: params.type || '',
+            subtype: params.subtype || '',
+            filePath: params.filePath || '',
+            hasTask: params.hasTask || false,
+            canDelete: params.canDelete || false,
+            contentUrl: params.contentUrl || '',
+            videoPoster: params.videoPoster || '',
+            audioArtwork: params.audioArtwork || '',
+            autoplay: params.autoplay || false,
+            browsable: params.browsable || false,
+          });
 
-      if (params.hasTask) {
-        this.tasks_ = fileTasks;
-      }
-    });
+          if (params.hasTask) {
+            this.tasks_ = fileTasks;
+          }
+        });
   }
 
   /**
    * @param {!FileEntry} entry
    * @param {Array<MetadataItem>} items
    * @param {!Array<!chrome.fileManagerPrivate.FileTask>} tasks
+   * @param {boolean} canDelete
    * @return !Promise<!QuickViewParams>
    *
    * @private
    */
-  getQuickViewParameters_(entry, items, tasks) {
+  getQuickViewParameters_(entry, items, tasks, canDelete) {
     const item = items[0];
     const typeInfo = FileType.getType(entry);
     const type = typeInfo.type;
@@ -453,6 +465,7 @@ class QuickViewController {
       subtype: typeInfo.subtype,
       filePath: label,
       hasTask: tasks.length > 0,
+      canDelete: canDelete,
     };
 
     const volumeInfo = this.volumeManager_.getVolumeInfo(entry);
@@ -639,6 +652,7 @@ QuickViewController.UNSUPPORTED_IMAGE_SUBTYPES_ = [
  *   subtype: string,
  *   filePath: string,
  *   hasTask: boolean,
+ *   canDelete: boolean,
  *   contentUrl: (string|undefined),
  *   videoPoster: (string|undefined),
  *   audioArtwork: (string|undefined),

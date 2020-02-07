@@ -3162,7 +3162,6 @@
 
       停用此政策会对 Chrome 的安全性和稳定性产生不利影响，因为在这种情况下，系统会允许未知的潜在恶意代码在 Chrome 的渲染程序进程中加载。如需了解详情，请参阅 https://chromium.googlesource.com/chromium/src/+/master/docs/design/sandbox.md#Process-mitigation-policies。</translation>
 <translation id="6048199181629830227">启用用电高峰转移电源管理</translation>
-<translation id="605475635122964053">限制 PIN 码打印模式。如果此政策未设置，则会被视为无限制。如果这种模式不适用，系统会忽略此政策。请注意，PIN 码打印功能仅针对使用 IPPS、USB 或 IPP-over-USB 协议之一的打印机启用。 </translation>
 <translation id="6070667616071269965">设备登录屏幕键盘布局</translation>
 <translation id="6074963268421707432">不允许任何网站显示桌面通知</translation>
 <translation id="6074964551275531965">设置一个时间段以用于显示更新通知</translation>

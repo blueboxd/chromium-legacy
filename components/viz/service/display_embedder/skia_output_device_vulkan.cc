@@ -67,7 +67,7 @@ SkiaOutputDeviceVulkan::~SkiaOutputDeviceVulkan() {
 bool SkiaOutputDeviceVulkan::Reshape(const gfx::Size& size,
                                      float device_scale_factor,
                                      const gfx::ColorSpace& color_space,
-                                     bool has_alpha,
+                                     gfx::BufferFormat format,
                                      gfx::OverlayTransform transform) {
   DCHECK(!scoped_write_);
 

@@ -159,7 +159,7 @@ void WebrtcAudioPrivateGetSinksFunction::ReceiveOutputDeviceDescriptions(
     // TODO(joi): Add other parameters.
     results->push_back(std::move(info));
   }
-  results_ = wap::GetSinks::Results::Create(*results);
+  SetResultList(wap::GetSinks::Results::Create(*results));
   SendResponse(true);
 }
 
@@ -226,9 +226,9 @@ void WebrtcAudioPrivateGetAssociatedSinkFunction::Reply(
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   if (associated_sink_id == media::AudioDeviceDescription::kDefaultDeviceId) {
     DVLOG(2) << "Got default ID, replacing with empty ID.";
-    results_ = wap::GetAssociatedSink::Results::Create("");
+    SetResult(std::make_unique<base::Value>(""));
   } else {
-    results_ = wap::GetAssociatedSink::Results::Create(associated_sink_id);
+    SetResult(std::make_unique<base::Value>(associated_sink_id));
   }
   SendResponse(true);
 }

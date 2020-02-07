@@ -11,6 +11,7 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.reset;
 import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
 
 import android.app.Activity;
 import android.content.Intent;
@@ -35,6 +36,7 @@ import org.robolectric.annotation.Implements;
 import org.robolectric.shadow.api.Shadow;
 import org.robolectric.shadows.ShadowActivity;
 
+import org.chromium.chromecast.base.Observable;
 import org.chromium.content_public.browser.WebContents;
 import org.chromium.testing.local.LocalRobolectricTestRunner;
 
@@ -109,6 +111,8 @@ public class CastWebContentsActivityTest {
     @Test
     public void testReleasesStreamMuteIfNecessaryOnPause() {
         CastAudioManager mockAudioManager = mock(CastAudioManager.class);
+        when(mockAudioManager.requestAudioFocusWhen(anyObject()))
+                .thenReturn(mock(Observable.class));
         mActivity.setAudioManagerForTesting(mockAudioManager);
         mActivityLifecycle.create().start().resume();
         mActivityLifecycle.pause();
@@ -237,22 +241,6 @@ public class CastWebContentsActivityTest {
         mActivityLifecycle.create().start().resume();
         mActivityLifecycle.pause().stop();
         Assert.assertFalse(mShadowActivity.isFinishing());
-    }
-
-    @Test
-    public void testUserLeaveAndStopCausesFinish() {
-        mActivityLifecycle.create().start().resume();
-        mActivityLifecycle.pause().userLeaving().stop();
-        Assert.assertTrue(mShadowActivity.isFinishing());
-    }
-
-    @Test
-    public void testUserLeaveAndStopDestroysSurfaceHelper() {
-        CastWebContentsSurfaceHelper surfaceHelper = mock(CastWebContentsSurfaceHelper.class);
-        mActivity.setSurfaceHelperForTesting(surfaceHelper);
-        mActivityLifecycle.create().start().resume();
-        mActivityLifecycle.pause().userLeaving().stop();
-        verify(surfaceHelper).onDestroy();
     }
 
     @Test

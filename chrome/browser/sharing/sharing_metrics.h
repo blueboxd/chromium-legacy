@@ -198,4 +198,7 @@ void LogRemoteCopyWriteImageTime(base::TimeDelta time);
 // Logs to UMA the time to write text to the clipboard for Remote Copy.
 void LogRemoteCopyWriteTextTime(base::TimeDelta time);
 
+// Logs to UMA if the DeviceInfo for a guid was available locally.
+void LogSharingDeviceInfoAvailable(bool available);
+
 #endif  // CHROME_BROWSER_SHARING_SHARING_METRICS_H_

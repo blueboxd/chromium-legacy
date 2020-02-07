@@ -670,6 +670,7 @@
 <translation id="3987940399970879459">Minder dan 1 MB</translation>
 <translation id="3990250421422698716">Sorteren</translation>
 <translation id="40103911065039147">{URL_count,plural, =1{1 webpagina in de buurt}other{# webpagina's in de buurt}}</translation>
+<translation id="4014128326099193693">{COUNT,plural, =1{Pdf-document met {COUNT} pagina}other{Pdf-document met {COUNT} pagina's}}</translation>
 <translation id="4030383055268325496">&amp;Toevoegen ongedaan maken</translation>
 <translation id="4032320456957708163">Je browser wordt beheerd door <ph name="ENROLLMENT_DOMAIN" /></translation>
 <translation id="4058922952496707368">Sleutel '<ph name="SUBKEY" />': <ph name="ERROR" /></translation>
@@ -698,6 +699,7 @@
 <translation id="4142935452406587478">Lade 10</translation>
 <translation id="4148925816941278100">American Express</translation>
 <translation id="4151403195736952345">Algemene standaard gebruiken (detecteren)</translation>
+<translation id="4152318981910038897">{COUNT,plural, =1{Pagina 1}other{Pagina {COUNT}}}</translation>
 <translation id="4159784952369912983">Paars</translation>
 <translation id="4165986682804962316">Site-instellingen</translation>
 <translation id="4171400957073367226">Onjuiste verificatiehandtekening</translation>
@@ -1373,6 +1375,7 @@
 <translation id="7201591969684833065">De beheerder kan het volgende zien:</translation>
 <translation id="7202346780273620635">Letter-Extra</translation>
 <translation id="7210863904660874423"><ph name="HOST_NAME" /> voldoet niet aan de beveiligingsnormen.</translation>
+<translation id="7210993021468939304">Linux-activiteit in de container, en kan Linux-apps in de container installeren en uitvoeren</translation>
 <translation id="721197778055552897"><ph name="BEGIN_LINK" />Meer informatie<ph name="END_LINK" /> over dit probleem.</translation>
 <translation id="7219179957768738017">De verbinding maakt gebruik van <ph name="SSL_VERSION" />.</translation>
 <translation id="7220786058474068424">Verwerken</translation>
@@ -1536,6 +1539,7 @@ Aanvullende informatie:
 <translation id="7878562273885520351">Je wachtwoord is mogelijk gehackt</translation>
 <translation id="7882421473871500483">Bruin</translation>
 <translation id="7887683347370398519">Controleer je CVC-code en probeer het opnieuw</translation>
+<translation id="7887885240995164102">Scherm-in-scherm openen</translation>
 <translation id="7888575728750733395">Weergave-intentie voor afdrukken</translation>
 <translation id="7904208859782148177">C3 (envelop)</translation>
 <translation id="7932579305932748336">Coaten</translation>

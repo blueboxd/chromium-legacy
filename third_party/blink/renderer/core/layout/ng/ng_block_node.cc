@@ -45,6 +45,7 @@
 #include "third_party/blink/renderer/core/layout/ng/ng_simplified_layout_algorithm.h"
 #include "third_party/blink/renderer/core/layout/ng/ng_space_utils.h"
 #include "third_party/blink/renderer/core/layout/shapes/shape_outside_info.h"
+#include "third_party/blink/renderer/core/layout/text_autosizer.h"
 #include "third_party/blink/renderer/core/mathml/mathml_element.h"
 #include "third_party/blink/renderer/core/mathml/mathml_space_element.h"
 #include "third_party/blink/renderer/core/paint/paint_layer_scrollable_area.h"
@@ -152,7 +153,7 @@ void UpdateLegacyMultiColumnFlowThread(
 
   // Stitch the columns together.
   NGBoxStrut border_scrollbar_padding =
-      ComputeBorders(constraint_space, node) +
+      ComputeBorders(constraint_space, node.Style()) +
       ComputeScrollbars(constraint_space, node) +
       ComputePadding(constraint_space, node.Style());
   NGFragment logical_multicol_fragment(writing_mode, fragment);
@@ -345,6 +346,9 @@ scoped_refptr<const NGLayoutResult> NGBlockNode::Layout(
     fragment_geometry =
         CalculateInitialFragmentGeometry(constraint_space, *this);
   }
+
+  TextAutosizer::NGLayoutScope text_autosizer_layout_scope(
+      box_, fragment_geometry->border_box_size.inline_size);
 
   PrepareForLayout();
 
@@ -656,12 +660,6 @@ MinMaxSize NGBlockNode::ComputeMinMaxSize(
         TextDirection::kLtr,  // irrelevant here
         To<NGPhysicalBoxFragment>(layout_result->PhysicalFragment()));
     sizes.min_size = sizes.max_size = fragment.Size().inline_size;
-    if (input.size_type == NGMinMaxSizeType::kContentBoxSize) {
-      sizes -= fragment.Borders().InlineSum() + fragment.Padding().InlineSum() +
-               box_->ScrollbarLogicalWidth();
-      DCHECK_GE(sizes.min_size, LayoutUnit());
-      DCHECK_GE(sizes.max_size, LayoutUnit());
-    }
     return sizes;
   }
 
@@ -704,13 +702,6 @@ MinMaxSize NGBlockNode::ComputeMinMaxSize(
       TextDirection::kLtr,  // irrelevant here
       To<NGPhysicalBoxFragment>(layout_result->PhysicalFragment()));
   sizes.max_size = max_fragment.Size().inline_size;
-
-  if (input.size_type == NGMinMaxSizeType::kContentBoxSize) {
-    sizes -= max_fragment.Borders().InlineSum() +
-             max_fragment.Padding().InlineSum() + box_->ScrollbarLogicalWidth();
-    DCHECK_GE(sizes.min_size, LayoutUnit());
-    DCHECK_GE(sizes.max_size, LayoutUnit());
-  }
   return sizes;
 }
 
@@ -726,13 +717,7 @@ MinMaxSize NGBlockNode::ComputeMinMaxSizeFromLegacy(
   MinMaxSize sizes;
   // ComputeIntrinsicLogicalWidths returns content-box + scrollbar.
   box_->ComputeIntrinsicLogicalWidths(sizes.min_size, sizes.max_size);
-  if (input.size_type == NGMinMaxSizeType::kContentBoxSize) {
-    sizes -= LayoutUnit(box_->ScrollbarLogicalWidth());
-    DCHECK_GE(sizes.min_size, LayoutUnit());
-    DCHECK_GE(sizes.max_size, LayoutUnit());
-  } else {
-    sizes += box_->BorderAndPaddingLogicalWidth();
-  }
+  sizes += box_->BorderAndPaddingLogicalWidth();
 
   if (needs_size_reset)
     box_->ClearOverrideContainingBlockContentSize();

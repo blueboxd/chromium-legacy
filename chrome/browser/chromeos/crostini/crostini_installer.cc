@@ -628,7 +628,7 @@ void CrostiniInstaller::OnCrostiniRestartFinished(CrostiniResult result) {
   restart_id_ = CrostiniManager::kUninitializedRestartId;
 
   if (result != CrostiniResult::SUCCESS) {
-    if (state_ != State::ERROR) {
+    if (state_ != State::ERROR && result != CrostiniResult::RESTART_ABORTED) {
       DCHECK_EQ(state_, State::INSTALLING);
       LOG(ERROR) << "Failed to restart Crostini with error code: "
                  << static_cast<int>(result);

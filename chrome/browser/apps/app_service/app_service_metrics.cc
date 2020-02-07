@@ -6,7 +6,6 @@
 
 #include "ash/public/cpp/app_list/internal_app_id_constants.h"
 #include "base/metrics/histogram_functions.h"
-#include "base/metrics/histogram_macros.h"
 #include "base/time/time.h"
 #include "chrome/browser/chromeos/extensions/default_web_app_ids.h"
 #include "chrome/browser/chromeos/file_manager/app_id.h"
@@ -45,45 +44,45 @@ void RecordDefaultAppLaunch(DefaultAppName default_app_name,
     case apps::mojom::LaunchSource::kFromParentalControls:
       return;
     case apps::mojom::LaunchSource::kFromAppListGrid:
-      UMA_HISTOGRAM_ENUMERATION("Apps.DefaultAppLaunch.FromAppListGrid",
-                                default_app_name);
+      base::UmaHistogramEnumeration("Apps.DefaultAppLaunch.FromAppListGrid",
+                                    default_app_name);
       break;
     case apps::mojom::LaunchSource::kFromAppListGridContextMenu:
-      UMA_HISTOGRAM_ENUMERATION(
+      base::UmaHistogramEnumeration(
           "Apps.DefaultAppLaunch.FromAppListGridContextMenu", default_app_name);
       break;
     case apps::mojom::LaunchSource::kFromAppListQuery:
-      UMA_HISTOGRAM_ENUMERATION("Apps.DefaultAppLaunch.FromAppListQuery",
-                                default_app_name);
+      base::UmaHistogramEnumeration("Apps.DefaultAppLaunch.FromAppListQuery",
+                                    default_app_name);
       break;
     case apps::mojom::LaunchSource::kFromAppListQueryContextMenu:
-      UMA_HISTOGRAM_ENUMERATION(
+      base::UmaHistogramEnumeration(
           "Apps.DefaultAppLaunch.FromAppListQueryContextMenu",
           default_app_name);
       break;
     case apps::mojom::LaunchSource::kFromAppListRecommendation:
-      UMA_HISTOGRAM_ENUMERATION(
+      base::UmaHistogramEnumeration(
           "Apps.DefaultAppLaunch.FromAppListRecommendation", default_app_name);
       break;
     case apps::mojom::LaunchSource::kFromShelf:
-      UMA_HISTOGRAM_ENUMERATION("Apps.DefaultAppLaunch.FromShelf",
-                                default_app_name);
+      base::UmaHistogramEnumeration("Apps.DefaultAppLaunch.FromShelf",
+                                    default_app_name);
       break;
     case apps::mojom::LaunchSource::kFromFileManager:
-      UMA_HISTOGRAM_ENUMERATION("Apps.DefaultAppLaunch.FromFileManager",
-                                default_app_name);
+      base::UmaHistogramEnumeration("Apps.DefaultAppLaunch.FromFileManager",
+                                    default_app_name);
       break;
     case apps::mojom::LaunchSource::kFromLink:
-      UMA_HISTOGRAM_ENUMERATION("Apps.DefaultAppLaunch.FromLink",
-                                default_app_name);
+      base::UmaHistogramEnumeration("Apps.DefaultAppLaunch.FromLink",
+                                    default_app_name);
       break;
     case apps::mojom::LaunchSource::kFromOmnibox:
-      UMA_HISTOGRAM_ENUMERATION("Apps.DefaultAppLaunch.FromOmnibox",
-                                default_app_name);
+      base::UmaHistogramEnumeration("Apps.DefaultAppLaunch.FromOmnibox",
+                                    default_app_name);
       break;
     case apps::mojom::LaunchSource::kFromChromeInternal:
-      UMA_HISTOGRAM_ENUMERATION("Apps.DefaultAppLaunch.FromChromeInternal",
-                                default_app_name);
+      base::UmaHistogramEnumeration("Apps.DefaultAppLaunch.FromChromeInternal",
+                                    default_app_name);
       break;
   }
 }
@@ -96,14 +95,14 @@ void RecordBuiltInAppLaunch(apps::BuiltInAppName built_in_app_name,
       break;
     case apps::mojom::LaunchSource::kFromAppListGrid:
     case apps::mojom::LaunchSource::kFromAppListGridContextMenu:
-      UMA_HISTOGRAM_ENUMERATION("Apps.AppListInternalApp.Activate",
-                                built_in_app_name);
+      base::UmaHistogramEnumeration("Apps.AppListInternalApp.Activate",
+                                    built_in_app_name);
       break;
     case apps::mojom::LaunchSource::kFromAppListQuery:
     case apps::mojom::LaunchSource::kFromAppListQueryContextMenu:
     case apps::mojom::LaunchSource::kFromAppListRecommendation:
-      UMA_HISTOGRAM_ENUMERATION("Apps.AppListSearchResultInternalApp.Open",
-                                built_in_app_name);
+      base::UmaHistogramEnumeration("Apps.AppListSearchResultInternalApp.Open",
+                                    built_in_app_name);
       break;
     case apps::mojom::LaunchSource::kFromShelf:
     case apps::mojom::LaunchSource::kFromFileManager:
@@ -159,25 +158,25 @@ void RecordAppLaunch(const std::string& app_id,
 
 void RecordBuiltInAppSearchResult(const std::string& app_id) {
   if (app_id == ash::kInternalAppIdKeyboardShortcutViewer) {
-    UMA_HISTOGRAM_ENUMERATION("Apps.AppListSearchResultInternalApp.Show",
-                              BuiltInAppName::kKeyboardShortcutViewer);
+    base::UmaHistogramEnumeration("Apps.AppListSearchResultInternalApp.Show",
+                                  BuiltInAppName::kKeyboardShortcutViewer);
   } else if (app_id == ash::kInternalAppIdSettings) {
-    UMA_HISTOGRAM_ENUMERATION("Apps.AppListSearchResultInternalApp.Show",
-                              BuiltInAppName::kSettings);
+    base::UmaHistogramEnumeration("Apps.AppListSearchResultInternalApp.Show",
+                                  BuiltInAppName::kSettings);
   } else if (app_id == ash::kInternalAppIdContinueReading) {
-    UMA_HISTOGRAM_ENUMERATION("Apps.AppListSearchResultInternalApp.Show",
-                              BuiltInAppName::kContinueReading);
+    base::UmaHistogramEnumeration("Apps.AppListSearchResultInternalApp.Show",
+                                  BuiltInAppName::kContinueReading);
   } else if (app_id == ash::kInternalAppIdDiscover) {
-    UMA_HISTOGRAM_ENUMERATION("Apps.AppListSearchResultInternalApp.Show",
-                              BuiltInAppName::kDiscover);
+    base::UmaHistogramEnumeration("Apps.AppListSearchResultInternalApp.Show",
+                                  BuiltInAppName::kDiscover);
 #if defined(OS_CHROMEOS)
   } else if (app_id == plugin_vm::kPluginVmAppId) {
-    UMA_HISTOGRAM_ENUMERATION("Apps.AppListSearchResultInternalApp.Show",
-                              BuiltInAppName::kPluginVm);
+    base::UmaHistogramEnumeration("Apps.AppListSearchResultInternalApp.Show",
+                                  BuiltInAppName::kPluginVm);
 #endif  // OS_CHROMEOS
   } else if (app_id == ash::kReleaseNotesAppId) {
-    UMA_HISTOGRAM_ENUMERATION("Apps.AppListSearchResultInternalApp.Show",
-                              BuiltInAppName::kReleaseNotes);
+    base::UmaHistogramEnumeration("Apps.AppListSearchResultInternalApp.Show",
+                                  BuiltInAppName::kReleaseNotes);
   }
 }
 

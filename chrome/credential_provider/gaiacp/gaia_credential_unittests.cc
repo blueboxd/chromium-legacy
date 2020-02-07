@@ -9,17 +9,22 @@
 
 #include "base/json/json_writer.h"
 #include "base/strings/string_number_conversions.h"
+#include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/ui/startup/credential_provider_signin_dialog_win_test_data.h"
 #include "chrome/credential_provider/common/gcp_strings.h"
 #include "chrome/credential_provider/gaiacp/gaia_credential.h"
 #include "chrome/credential_provider/gaiacp/gaia_credential_provider_i.h"
 #include "chrome/credential_provider/gaiacp/gaia_resources.h"
+#include "chrome/credential_provider/gaiacp/gcp_utils.h"
+#include "chrome/credential_provider/gaiacp/gcpw_strings.h"
 #include "chrome/credential_provider/gaiacp/reg_utils.h"
 #include "chrome/credential_provider/test/com_fakes.h"
 #include "chrome/credential_provider/test/gcp_fakes.h"
 #include "chrome/credential_provider/test/gls_runner_test_base.h"
 #include "chrome/credential_provider/test/test_credential.h"
+#include "content/public/common/content_switches.h"
+#include "google_apis/gaia/gaia_switches.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace credential_provider {
@@ -65,6 +70,7 @@ TEST_F(GcpGaiaCredentialTest, OnUserAuthenticated) {
 
   CComBSTR error;
   ASSERT_EQ(S_OK, gaia_cred->OnUserAuthenticated(signin_result(), &error));
+
   Microsoft::WRL::ComPtr<ITestCredentialProvider> test_provider;
   ASSERT_EQ(S_OK, created_provider().As(&test_provider));
   EXPECT_TRUE(test_provider->credentials_changed_fired());
@@ -141,6 +147,66 @@ TEST_F(GcpGaiaCredentialTest, OnUserAuthenticated_DiffPassword) {
 }
 
 class GcpGaiaCredentialGlsRunnerTest : public GlsRunnerTestBase {};
+
+// Tests the GetUserGlsCommandline method overridden by IGaiaCredential.
+// Parameters are:
+// 1. Is gem features enabled / disabled.
+// 2. Is ep_url already set via registry.
+class GcpGaiaCredentialGlsTest
+    : public GcpGaiaCredentialGlsRunnerTest,
+      public ::testing::WithParamInterface<std::tuple<bool, bool>> {};
+
+TEST_P(GcpGaiaCredentialGlsTest, GetUserGlsCommandLine) {
+  USES_CONVERSION;
+  CredentialProviderSigninDialogTestDataStorage test_data_storage;
+
+  const bool is_gem_features_enabled = std::get<0>(GetParam());
+  if (is_gem_features_enabled)
+    ASSERT_EQ(S_OK, SetGlobalFlagForTesting(kKeyEnableGemFeatures, 1u));
+  else
+    ASSERT_EQ(S_OK, SetGlobalFlagForTesting(kKeyEnableGemFeatures, 0u));
+
+  // Create provider and start logon.
+  Microsoft::WRL::ComPtr<ICredentialProviderCredential> cred;
+  ASSERT_EQ(S_OK, InitializeProviderAndGetCredential(0, &cred));
+
+  ASSERT_TRUE(!!cred);
+
+  // Get user gls command line and extract the kGaiaUrl &
+  // kGcpwEndpointPathSwitch switch from it.
+  Microsoft::WRL::ComPtr<ITestCredential> test_cred;
+  ASSERT_EQ(S_OK, cred.As(&test_cred));
+  std::string device_id;
+  ASSERT_EQ(S_OK, GenerateDeviceId(&device_id));
+
+  const bool is_ep_url_set = std::get<1>(GetParam());
+  if (is_ep_url_set) {
+    SetGlobalFlagForTesting(L"ep_setup_url", L"http://login.com");
+  }
+
+  base::CommandLine command_line = test_cred->GetTestUserGlsCommandline();
+  std::string gcpw_path =
+      command_line.GetSwitchValueASCII(kGcpwEndpointPathSwitch);
+
+  if (is_ep_url_set) {
+    ASSERT_EQ("http://login.com/",
+              command_line.GetSwitchValueASCII(switches::kGaiaUrl));
+    ASSERT_TRUE(gcpw_path.empty());
+  } else if (is_gem_features_enabled) {
+    ASSERT_EQ(gcpw_path,
+              base::StringPrintf("embedded/setup/windows?device_id=%s",
+                                 device_id.c_str()));
+    ASSERT_TRUE(command_line.GetSwitchValueASCII(switches::kGaiaUrl).empty());
+  } else {
+    ASSERT_TRUE(command_line.GetSwitchValueASCII(switches::kGaiaUrl).empty());
+    ASSERT_TRUE(gcpw_path.empty());
+  }
+}
+
+INSTANTIATE_TEST_SUITE_P(All,
+                         GcpGaiaCredentialGlsTest,
+                         ::testing::Combine(::testing::Bool(),
+                                            ::testing::Bool()));
 
 TEST_F(GcpGaiaCredentialGlsRunnerTest,
        AssociateToExistingAssociatedUser_LongUsername) {

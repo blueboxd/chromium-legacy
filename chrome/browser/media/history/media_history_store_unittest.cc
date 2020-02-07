@@ -25,6 +25,14 @@
 
 namespace media_history {
 
+namespace {
+
+// The error margin for double time comparison. It is 10 seconds because it
+// might be equal but it might be close too.
+const int kTimeErrorMargin = 10000;
+
+}  // namespace
+
 class MediaHistoryStoreUnitTest : public testing::Test {
  public:
   MediaHistoryStoreUnitTest() = default;
@@ -67,6 +75,20 @@ class MediaHistoryStoreUnitTest : public testing::Test {
 
     run_loop.Run();
     return stats_out;
+  }
+
+  std::vector<mojom::MediaHistoryOriginRowPtr> GetOriginRowsSync() {
+    base::RunLoop run_loop;
+    std::vector<mojom::MediaHistoryOriginRowPtr> out;
+
+    GetMediaHistoryStore()->GetOriginRowsForDebug(base::BindLambdaForTesting(
+        [&](std::vector<mojom::MediaHistoryOriginRowPtr> rows) {
+          out = std::move(rows);
+          run_loop.Quit();
+        }));
+
+    run_loop.Run();
+    return out;
   }
 
   MediaHistoryStore* GetMediaHistoryStore() {
@@ -234,6 +256,8 @@ TEST_F(MediaHistoryStoreUnitTest, SavePlayback_IncrementAggregateWatchtime) {
   GURL url("http://google.com/test");
   GURL url_alt("http://example.org/test");
 
+  const auto url_now_before = base::Time::Now().ToJsTime();
+
   {
     // Record a watchtime for audio/video for 30 seconds.
     content::MediaPlayerWatchTime watch_time(
@@ -261,9 +285,6 @@ TEST_F(MediaHistoryStoreUnitTest, SavePlayback_IncrementAggregateWatchtime) {
     content::RunAllTasksUntilIdle();
   }
 
-  const int64_t url_now_in_seconds_before =
-      base::Time::Now().ToDeltaSinceWindowsEpoch().InSeconds();
-
   {
     // Record a video-only watchtime for 30 seconds.
     content::MediaPlayerWatchTime watch_time(
@@ -273,8 +294,7 @@ TEST_F(MediaHistoryStoreUnitTest, SavePlayback_IncrementAggregateWatchtime) {
     content::RunAllTasksUntilIdle();
   }
 
-  const int64_t url_now_in_seconds_after =
-      base::Time::Now().ToDeltaSinceWindowsEpoch().InSeconds();
+  const auto url_now_after = base::Time::Now().ToJsTime();
 
   {
     // Record a watchtime for audio/video for 60 seconds on a different origin.
@@ -285,8 +305,7 @@ TEST_F(MediaHistoryStoreUnitTest, SavePlayback_IncrementAggregateWatchtime) {
     content::RunAllTasksUntilIdle();
   }
 
-  const int64_t url_alt_now_in_seconds_after =
-      base::Time::Now().ToDeltaSinceWindowsEpoch().InSeconds();
+  const auto url_alt_after = base::Time::Now().ToJsTime();
 
   {
     // Check the playbacks were recorded.
@@ -296,26 +315,24 @@ TEST_F(MediaHistoryStoreUnitTest, SavePlayback_IncrementAggregateWatchtime) {
               stats->table_row_counts[MediaHistoryPlaybackTable::kTableName]);
   }
 
-  // Verify that the origin table has the correct aggregate watchtime in
-  // minutes.
-  sql::Statement s(GetDB().GetUniqueStatement(
-      "SELECT origin, aggregate_watchtime_audio_video_s, last_updated_time_s "
-      "FROM origin"));
-  ASSERT_TRUE(s.is_valid());
+  std::vector<mojom::MediaHistoryOriginRowPtr> origins = GetOriginRowsSync();
+  EXPECT_EQ(2u, origins.size());
 
-  EXPECT_TRUE(s.Step());
-  EXPECT_EQ("http://google.com/", s.ColumnString(0));
-  EXPECT_EQ(90, s.ColumnInt64(1));
-  EXPECT_LE(url_now_in_seconds_before, s.ColumnInt64(2));
-  EXPECT_GE(url_now_in_seconds_after, s.ColumnInt64(2));
+  EXPECT_EQ("http://google.com", origins[0]->origin.Serialize());
+  EXPECT_EQ(base::TimeDelta::FromSeconds(90),
+            origins[0]->cached_audio_video_watchtime);
+  EXPECT_NEAR(url_now_before, origins[0]->last_updated_time, kTimeErrorMargin);
+  EXPECT_GE(url_now_after, origins[0]->last_updated_time);
+  EXPECT_EQ(origins[0]->cached_audio_video_watchtime,
+            origins[0]->actual_audio_video_watchtime);
 
-  EXPECT_TRUE(s.Step());
-  EXPECT_EQ("http://example.org/", s.ColumnString(0));
-  EXPECT_EQ(30, s.ColumnInt64(1));
-  EXPECT_LE(url_now_in_seconds_after, s.ColumnInt64(2));
-  EXPECT_GE(url_alt_now_in_seconds_after, s.ColumnInt64(2));
-
-  EXPECT_FALSE(s.Step());
+  EXPECT_EQ("http://example.org", origins[1]->origin.Serialize());
+  EXPECT_EQ(base::TimeDelta::FromSeconds(30),
+            origins[1]->cached_audio_video_watchtime);
+  EXPECT_NEAR(url_now_before, origins[1]->last_updated_time, kTimeErrorMargin);
+  EXPECT_GE(url_alt_after, origins[1]->last_updated_time);
+  EXPECT_EQ(origins[1]->cached_audio_video_watchtime,
+            origins[1]->actual_audio_video_watchtime);
 }
 
 }  // namespace media_history

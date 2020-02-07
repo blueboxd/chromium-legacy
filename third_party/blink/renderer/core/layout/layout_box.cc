@@ -784,6 +784,9 @@ void LayoutBox::UpdateAfterLayout() {
 }
 
 bool LayoutBox::HasOverrideIntrinsicContentWidth() const {
+  if (!ShouldApplySizeContainment())
+    return false;
+
   const auto& style = StyleRef();
   const IntrinsicLength& intrinsic_length = style.ContainIntrinsicWidth();
   if (intrinsic_length.IsLegacy())
@@ -800,6 +803,9 @@ bool LayoutBox::HasOverrideIntrinsicContentWidth() const {
 }
 
 bool LayoutBox::HasOverrideIntrinsicContentHeight() const {
+  if (!ShouldApplySizeContainment())
+    return false;
+
   const auto& style = StyleRef();
   const IntrinsicLength& intrinsic_length = style.ContainIntrinsicHeight();
   if (intrinsic_length.IsLegacy())

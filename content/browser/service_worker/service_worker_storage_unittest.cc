@@ -540,7 +540,7 @@ class ServiceWorkerStorageTest : public testing::Test {
         FROM_HERE, base::BindLambdaForTesting([&]() {
           RegistrationData deleted_version;
           std::vector<int64_t> newly_purgeable_resources;
-          ASSERT_EQ(ServiceWorkerDatabase::STATUS_OK,
+          ASSERT_EQ(ServiceWorkerDatabase::Status::kOk,
                     database_raw->WriteRegistration(
                         registration, resources, &deleted_version,
                         &newly_purgeable_resources));
@@ -555,7 +555,7 @@ class ServiceWorkerStorageTest : public testing::Test {
     ServiceWorkerDatabase* database_raw = database();
     storage()->database_task_runner_->PostTask(
         FROM_HERE, base::BindLambdaForTesting([&]() {
-          EXPECT_EQ(ServiceWorkerDatabase::STATUS_OK,
+          EXPECT_EQ(ServiceWorkerDatabase::Status::kOk,
                     database_raw->GetPurgeableResourceIds(&ids));
           loop.Quit();
         }));
@@ -569,7 +569,7 @@ class ServiceWorkerStorageTest : public testing::Test {
     ServiceWorkerDatabase* database_raw = database();
     storage()->database_task_runner_->PostTask(
         FROM_HERE, base::BindLambdaForTesting([&]() {
-          EXPECT_EQ(ServiceWorkerDatabase::STATUS_OK,
+          EXPECT_EQ(ServiceWorkerDatabase::Status::kOk,
                     database_raw->GetUncommittedResourceIds(&ids));
           loop.Quit();
         }));

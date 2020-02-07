@@ -74,7 +74,7 @@ Polymer({
     if (typeof curValue === 'object' && !Array.isArray(curValue)) {
       // Extract the property from an ONC managed dictionary.
       curValue = OncMojo.getActiveValue(
-          /** @type{OncMojo.ManagedProperty} */ (curValue));
+          /** @type{!OncMojo.ManagedProperty} */ (curValue));
     }
     const newValue = this.getValueFromEditField_(key, event.target.value);
     if (newValue === curValue) {

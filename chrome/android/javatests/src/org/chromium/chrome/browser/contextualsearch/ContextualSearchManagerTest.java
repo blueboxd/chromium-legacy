@@ -3228,11 +3228,15 @@ public class ContextualSearchManagerTest {
     }
 
     @Test
-    @DisabledTest(message = "See https://crbug.com/1048827")
     @SmallTest
-    @Feature({"ContextualSearch"})
-    @Features.EnableFeatures("ContextualSearchLongpressResolve")
-    public void testLongpressExtendinSelectionExactResolve() throws TimeoutException {
+    @Restriction(UiRestriction.RESTRICTION_TYPE_PHONE)
+    @DisableIf
+            .Build(sdk_is_less_than = Build.VERSION_CODES.M,
+                    message = "Flaky < M, https://crbug.com/1048827")
+            @Feature({"ContextualSearch"})
+            @Features.EnableFeatures("ContextualSearchLongpressResolve")
+            public void
+            testLongpressExtendinSelectionExactResolve() throws TimeoutException {
         // First test regular long-press.  It should not require an exact resolve.
         longPressNode("search");
         fakeAResponse();

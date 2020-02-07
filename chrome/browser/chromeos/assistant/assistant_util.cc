@@ -19,6 +19,7 @@
 #include "components/language/core/browser/pref_names.h"
 #include "components/prefs/pref_service.h"
 #include "components/signin/public/identity_manager/account_info.h"
+#include "components/signin/public/identity_manager/consent_level.h"
 #include "components/signin/public/identity_manager/identity_manager.h"
 #include "components/user_manager/user_manager.h"
 #include "google_apis/gaia/gaia_auth_util.h"
@@ -109,7 +110,9 @@ ash::mojom::AssistantAllowedState IsAssistantAllowedForProfile(
       // This function doesn't care about browser sync consent. We don't
       // DCHECK that an account exists because some tests don't have one.
       const std::string email =
-          identity_manager->GetUnconsentedPrimaryAccountInfo().email;
+          identity_manager
+              ->GetPrimaryAccountInfo(signin::ConsentLevel::kNotRequired)
+              .email;
       if (!email.empty() &&
           (gaia::ExtractDomainName(email) == "gmail.com" ||
            gaia::ExtractDomainName(email) == "googlemail.com" ||

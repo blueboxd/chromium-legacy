@@ -4,10 +4,57 @@
 
 // Utilities for UMA metrics.
 
-/**
- * @constructor
- */
-const MetricsUtils = function() {};
+class MetricsUtils {
+  constructor() {}
+
+  /**
+   * Records a cancel event if speech was in progress.
+   * @param {boolean} speaking Whether speech was in progress
+   * @public
+   */
+  static recordCancelIfSpeaking(speaking) {
+    if (speaking) {
+      MetricsUtils.recordCancelEvent_();
+    }
+  }
+
+  /**
+   * Records an event that Select-to-Speak has begun speaking.
+   * @param {number} method The CrosSelectToSpeakStartSpeechMethod enum
+   *    that reflects how this event was triggered by the user.
+   * @param {PrefsManager} prefsManager A PrefsManager with the users's current
+   *    preferences.
+   * @public
+   */
+  static recordStartEvent(method, prefsManager) {
+    chrome.metricsPrivate.recordUserAction(MetricsUtils.START_SPEECH_METRIC);
+    chrome.metricsPrivate.recordBoolean(
+        MetricsUtils.WORD_HIGHLIGHTING_METRIC,
+        prefsManager.wordHighlightingEnabled());
+    chrome.metricsPrivate.recordEnumerationValue(
+        MetricsUtils.START_SPEECH_METHOD_METRIC.METRIC_NAME, method,
+        MetricsUtils.START_SPEECH_METHOD_METRIC.EVENT_COUNT);
+  }
+
+  /**
+   * Records an event that Select-to-Speak speech has been canceled.
+   * @private
+   */
+  static recordCancelEvent_() {
+    chrome.metricsPrivate.recordUserAction(MetricsUtils.CANCEL_SPEECH_METRIC);
+  }
+
+  /**
+   * Records a user-requested state change event from a given state.
+   * @param {number} changeType
+   * @public
+   */
+  static recordSelectToSpeakStateChangeEvent(changeType) {
+    chrome.metricsPrivate.recordEnumerationValue(
+        MetricsUtils.STATE_CHANGE_METRIC.METRIC_NAME, changeType,
+        MetricsUtils.STATE_CHANGE_METRIC.EVENT_COUNT);
+  }
+}
 
 /**
  * Defines an enumeration metric. The |EVENT_COUNT| must be kept in sync
@@ -79,52 +126,3 @@ MetricsUtils.CANCEL_SPEECH_METRIC =
  */
 MetricsUtils.WORD_HIGHLIGHTING_METRIC =
     'Accessibility.CrosSelectToSpeak.WordHighlighting';
-
-
-/**
- * Records a cancel event if speech was in progress.
- * @param {boolean} speaking Whether speech was in progress
- * @public
- */
-MetricsUtils.recordCancelIfSpeaking = function(speaking) {
-  if (speaking) {
-    MetricsUtils.recordCancelEvent_();
-  }
-};
-
-/**
- * Records an event that Select-to-Speak has begun speaking.
- * @param {number} method The CrosSelectToSpeakStartSpeechMethod enum
- *    that reflects how this event was triggered by the user.
- * @param {PrefsManager} prefsManager A PrefsManager with the users's current
- *    preferences.
- * @public
- */
-MetricsUtils.recordStartEvent = function(method, prefsManager) {
-  chrome.metricsPrivate.recordUserAction(MetricsUtils.START_SPEECH_METRIC);
-  chrome.metricsPrivate.recordBoolean(
-      MetricsUtils.WORD_HIGHLIGHTING_METRIC,
-      prefsManager.wordHighlightingEnabled());
-  chrome.metricsPrivate.recordEnumerationValue(
-      MetricsUtils.START_SPEECH_METHOD_METRIC.METRIC_NAME, method,
-      MetricsUtils.START_SPEECH_METHOD_METRIC.EVENT_COUNT);
-};
-
-/**
- * Records an event that Select-to-Speak speech has been canceled.
- * @private
- */
-MetricsUtils.recordCancelEvent_ = function() {
-  chrome.metricsPrivate.recordUserAction(MetricsUtils.CANCEL_SPEECH_METRIC);
-};
-
-/**
- * Records a user-requested state change event from a given state.
- * @param {number} changeType
- * @public
- */
-MetricsUtils.recordSelectToSpeakStateChangeEvent = function(changeType) {
-  chrome.metricsPrivate.recordEnumerationValue(
-      MetricsUtils.STATE_CHANGE_METRIC.METRIC_NAME, changeType,
-      MetricsUtils.STATE_CHANGE_METRIC.EVENT_COUNT);
-};

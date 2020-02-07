@@ -458,14 +458,6 @@ void OwnerSettingsServiceChromeOS::UpdateDeviceSettings(
       guest->set_guest_mode_enabled(guest_value);
     else
       NOTREACHED();
-  } else if (path == kAccountsPrefSupervisedUsersEnabled) {
-    em::SupervisedUsersSettingsProto* supervised =
-        settings.mutable_supervised_users_settings();
-    bool supervised_value;
-    if (value.GetAsBoolean(&supervised_value))
-      supervised->set_supervised_users_enabled(supervised_value);
-    else
-      NOTREACHED();
   } else if (path == kAccountsPrefShowUserNamesOnSignIn) {
     em::ShowUserNamesOnSigninProto* show = settings.mutable_show_user_names();
     bool show_value;
@@ -639,6 +631,7 @@ void OwnerSettingsServiceChromeOS::UpdateDeviceSettings(
   } else {
     // The remaining settings don't support Set(), since they are not
     // intended to be customizable by the user:
+    //   kAccountsPrefSupervisedUsersEnabled
     //   kAccountsPrefTransferSAMLCookies
     //   kDeviceAttestationEnabled
     //   kDeviceOwner

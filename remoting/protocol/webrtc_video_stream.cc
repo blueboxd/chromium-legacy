@@ -268,7 +268,9 @@ void WebrtcVideoStream::OnFrameEncoded(
   // frame.
   // TODO(crbug.com/891571): Remove |quantizer| from the WebrtcVideoEncoder
   // interface, and move this logic to the encoders.
-  current_frame_stats_->frame_quality = (63 - frame->quantizer) * 100 / 63;
+  if (frame) {
+    current_frame_stats_->frame_quality = (63 - frame->quantizer) * 100 / 63;
+  }
 
   HostFrameStats stats;
   scheduler_->OnFrameEncoded(frame.get(), &stats);

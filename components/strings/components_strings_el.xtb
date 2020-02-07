@@ -690,6 +690,7 @@
 <translation id="3987940399970879459">Λιγότερα από 1 MB</translation>
 <translation id="3990250421422698716">Μετατόπιση στοίβας</translation>
 <translation id="40103911065039147">{URL_count,plural, =1{1 ιστοσελίδα σε κοντινή απόσταση}other{# ιστοσελίδες σε κοντινή απόσταση}}</translation>
+<translation id="4014128326099193693">{COUNT,plural, =1{Έγγραφο PDF που περιέχει {COUNT} σελίδα}other{Έγγραφο PDF που περιέχει {COUNT} σελίδες}}</translation>
 <translation id="4030383055268325496">&amp;Αναίρεση προσθήκης</translation>
 <translation id="4032320456957708163">Το πρόγραμμα περιήγησής σας είναι διαχειριζόμενο από τον τομέα <ph name="ENROLLMENT_DOMAIN" /></translation>
 <translation id="4058922952496707368">Κλειδί "<ph name="SUBKEY" />": <ph name="ERROR" /></translation>
@@ -718,6 +719,7 @@
 <translation id="4142935452406587478">Δίσκος 10</translation>
 <translation id="4148925816941278100">American Express</translation>
 <translation id="4151403195736952345">Χρήση καθολικής προεπιλογής (Εντοπισμός)</translation>
+<translation id="4152318981910038897">{COUNT,plural, =1{Σελίδα 1}other{Σελίδα {COUNT}}}</translation>
 <translation id="4159784952369912983">Μοβ</translation>
 <translation id="4165986682804962316">Ρυθμίσεις ιστότοπου</translation>
 <translation id="4171400957073367226">Εσφαλμένη υπογραφή επαλήθευσης</translation>
@@ -1396,6 +1398,7 @@
 <translation id="7201591969684833065">Ο διαχειριστής σας μπορεί να βλέπει:</translation>
 <translation id="7202346780273620635">Letter-Extra</translation>
 <translation id="7210863904660874423">Ο κεντρικός υπολογιστής <ph name="HOST_NAME" /> δεν συμμορφώνεται με τα πρότυπα ασφάλειας.</translation>
+<translation id="7210993021468939304">Δραστηριότητα Linux εντός του κοντέινερ καθώς και δυνατότητα εγκατάστασης και εκτέλεσης εφαρμογών Linux εντός του κοντέινερ.</translation>
 <translation id="721197778055552897"><ph name="BEGIN_LINK" />Μάθετε περισσότερα<ph name="END_LINK" /> σχετικά με αυτό το πρόβλημα.</translation>
 <translation id="7219179957768738017">Στη σύνδεση χρησιμοποιείται <ph name="SSL_VERSION" />.</translation>
 <translation id="7220786058474068424">Επεξεργασία</translation>
@@ -1559,6 +1562,7 @@
 <translation id="7878562273885520351">Ο κωδικός πρόσβασής σας μπορεί να έχει παραβιαστεί</translation>
 <translation id="7882421473871500483">Καφέ</translation>
 <translation id="7887683347370398519">Ελέγξτε τον κωδικό σας CVC και δοκιμάστε ξανά</translation>
+<translation id="7887885240995164102">Είσοδος στη λειτουργία picture-in-picture</translation>
 <translation id="7888575728750733395">Εκτύπωση intent απόδοσης</translation>
 <translation id="7904208859782148177">C3 (Φάκελος)</translation>
 <translation id="7932579305932748336">Επικάλυψη</translation>

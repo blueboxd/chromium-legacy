@@ -4,6 +4,7 @@
 
 #include "components/ui_devtools/css_agent.h"
 
+#include "base/strings/string_number_conversions.h"
 #include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
 #include "base/test/task_environment.h"

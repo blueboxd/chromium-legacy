@@ -137,7 +137,6 @@
 <translation id="2718395828230677721">Night Light</translation>
 <translation id="2727977024730340865">Naka-saksak sa isang low-power charger. Maaaring hindi maging tiyak ang pag-charge ng baterya.</translation>
 <translation id="2792498699870441125">Alt+Search</translation>
-<translation id="2803734122639935495">Para i-unlock, ilagay ang iyong password</translation>
 <translation id="2819276065543622893">Masa-sign out ka ngayon.</translation>
 <translation id="2825619548187458965">Shelf</translation>
 <translation id="2844169650293029770">USB-C device (port sa kaliwang bahagi sa harap)</translation>
@@ -202,6 +201,7 @@
 <translation id="3604801046548457007">Ginawa ang Desk <ph name="DESK_TITILE" /></translation>
 <translation id="3606978283550408104">Nagkonekta ng braille display.</translation>
 <translation id="3621202678540785336">Input</translation>
+<translation id="3621712662352432595">Mga Setting ng Audio</translation>
 <translation id="3626281679859535460">Tingkad</translation>
 <translation id="3631369015426612114">Payagan ang mga notification mula sa mga sumusunod</translation>
 <translation id="3705722231355495246">-</translation>
@@ -544,6 +544,7 @@
 <translation id="8477270416194247200">Pindutin ang Alt+Search o Shift upang kanselahin.</translation>
 <translation id="8513108775083588393">I-auto rotate</translation>
 <translation id="8517041960877371778">Maaaring hindi mag-charge ang iyong <ph name="DEVICE_TYPE" /> habang naka-on ito.</translation>
+<translation id="8563862697512465947">Mga Setting sa Abiso</translation>
 <translation id="8627191004499078455">Nakakonekta sa <ph name="DEVICE_NAME" /></translation>
 <translation id="8637598503828012618"><ph name="CONNECTION_STATUS" />, Lakas ng Signal <ph name="SIGNAL_STRENGTH" />, Pinapamahalaan ng iyong Administrator</translation>
 <translation id="8639760480004882931"><ph name="PERCENTAGE" /> na lang ang natitira</translation>

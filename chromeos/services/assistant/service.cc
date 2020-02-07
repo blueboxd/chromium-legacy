@@ -34,6 +34,7 @@
 #include "chromeos/services/assistant/service_context.h"
 #include "components/signin/public/identity_manager/access_token_fetcher.h"
 #include "components/signin/public/identity_manager/access_token_info.h"
+#include "components/signin/public/identity_manager/consent_level.h"
 #include "components/signin/public/identity_manager/identity_manager.h"
 #include "components/user_manager/known_user.h"
 #include "google_apis/gaia/google_service_auth_error.h"
@@ -447,8 +448,8 @@ void Service::RequestAccessToken() {
   }
 
   VLOG(1) << "Start requesting access token.";
-  CoreAccountInfo account_info =
-      identity_manager_->GetUnconsentedPrimaryAccountInfo();
+  CoreAccountInfo account_info = identity_manager_->GetPrimaryAccountInfo(
+      signin::ConsentLevel::kNotRequired);
   CHECK(!account_info.account_id.empty());
   CHECK(!account_info.gaia.empty());
 

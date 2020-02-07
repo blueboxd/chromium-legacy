@@ -9,7 +9,7 @@
         android:key="server_profile_description"
         android:selectable="false" />
 
-    <org.chromium.chrome.browser.settings.autofill.AutofillEditLinkPreference
+    <org.chromium.chrome.browser.autofill.settings.AutofillEditLinkPreference
         android:key="server_profile_edit_link" />
 
 </PreferenceScreen>

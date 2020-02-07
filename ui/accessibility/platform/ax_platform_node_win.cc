@@ -754,7 +754,7 @@ void AXPlatformNodeWin::FireUiaTextEditTextChangedEvent(
 
   long index = 0;
   HRESULT hr =
-      SafeArrayPutElement(changed_data.Get(), &index, composition_text);
+      SafeArrayPutElement(changed_data.Get(), &index, composition_text.Get());
 
   if (FAILED(hr)) {
     return;

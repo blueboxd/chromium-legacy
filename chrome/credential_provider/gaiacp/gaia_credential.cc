@@ -5,11 +5,17 @@
 #include "chrome/credential_provider/gaiacp/gaia_credential.h"
 
 #include "base/command_line.h"
+#include "base/strings/stringprintf.h"
 #include "chrome/credential_provider/common/gcp_strings.h"
+#include "chrome/credential_provider/gaiacp/gaia_credential_base.h"
+#include "chrome/credential_provider/gaiacp/gcp_utils.h"
 #include "chrome/credential_provider/gaiacp/logging.h"
 #include "chrome/credential_provider/gaiacp/mdm_utils.h"
+#include "content/public/common/content_switches.h"
+#include "google_apis/gaia/gaia_switches.h"
 
 namespace credential_provider {
+constexpr char kGaiaSetupPath[] = "embedded/setup/windows";
 
 CGaiaCredential::CGaiaCredential() = default;
 
@@ -33,6 +39,12 @@ HRESULT CGaiaCredential::GetUserGlsCommandline(
     command_line->AppendSwitchASCII(kShowTosSwitch, "1");
   }
 
+  HRESULT hr = SetGaiaEndpointCommandLineIfNeeded(
+      L"ep_setup_url", kGaiaSetupPath, IsGemEnabled(), command_line);
+  if (FAILED(hr)) {
+    LOGFN(ERROR) << "Setting gaia url for gaia credential failed";
+    return E_FAIL;
+  }
   return S_OK;
 }
 

@@ -256,6 +256,7 @@ If '<ph name="SERVICE_SCRIPT_NAME" />' is already ticked, untick it and then tic
 <translation id="6939719207673461467">Show/hide keyboard.</translation>
 <translation id="6944854424004126054">Restore window</translation>
 <translation id="6948905685698011662">Chrome Remote Desktop is now on the web! Check out our <ph name="LINK_BEGIN" />free web app<ph name="LINK_END" />.</translation>
+<translation id="6956835181934226419">I have already granted this permission.</translation>
 <translation id="6963936880795878952">Connections to the remote computer are temporarily blocked because somebody was trying to connect to it with an invalid PIN. Please try again later.</translation>
 <translation id="6965382102122355670">OK</translation>
 <translation id="6985691951107243942">Are you sure you want to disable remote connections to <ph name="HOSTNAME" />? If you change your mind, you'll need to visit that computer to re-enable connections.</translation>

@@ -20,7 +20,7 @@ class PolicyErrorMap;
 class PolicyService;
 class Schema;
 class SchemaMap;
-class SchemaRegistryService;
+class SchemaRegistry;
 
 // PolicyConversionsClient supplies embedder-specific information that is needed
 // by the PolicyConversions class.  It also provides common utilities and
@@ -82,8 +82,8 @@ class PolicyConversionsClient {
   // Returns the embedder's PolicyService.
   virtual PolicyService* GetPolicyService() const = 0;
 
-  // Returns the embedder's PolicySchemaRegistryService.
-  virtual SchemaRegistryService* GetPolicySchemaRegistryService() const = 0;
+  // Returns the embedder's SchemaRegistry.
+  virtual SchemaRegistry* GetPolicySchemaRegistry() const = 0;
 
   // Returns the embedder's ConfigurationPolicyHandlerList.
   virtual const ConfigurationPolicyHandlerList* GetHandlerList() const = 0;

@@ -3,7 +3,6 @@
 // found in the LICENSE file.
 
 #include "third_party/blink/renderer/core/loader/interactive_detector.h"
-
 #include "base/time/default_tick_clock.h"
 #include "services/metrics/public/cpp/ukm_builders.h"
 #include "services/metrics/public/cpp/ukm_recorder.h"
@@ -57,7 +56,8 @@ InteractiveDetector::InteractiveDetector(
           document.GetTaskRunner(TaskType::kInternalDefault),
           this,
           &InteractiveDetector::TimeToInteractiveTimerFired),
-      initially_hidden_(document.hidden()) {}
+      initially_hidden_(document.hidden()),
+      ukm_recorder_(document.UkmRecorder()) {}
 
 void InteractiveDetector::SetNavigationStartTime(
     base::TimeTicks navigation_start_time) {
@@ -235,7 +235,7 @@ void InteractiveDetector::HandleForInputDelay(
   DCHECK_NE(source_id, ukm::kInvalidSourceId);
   ukm::builders::InputEvent(source_id)
       .SetInteractiveTiming_InputDelay(delay.InMilliseconds())
-      .Record(ukm::UkmRecorder::Get());
+      .Record(GetUkmRecorder());
 
   UMA_HISTOGRAM_CUSTOM_TIMES(kHistogramInputDelay, delay,
                              base::TimeDelta::FromMilliseconds(1),
@@ -553,4 +553,12 @@ void InteractiveDetector::SetTaskRunnerForTesting(
   time_to_interactive_timer_.MoveToNewTaskRunner(task_runner_for_testing);
 }
 
+ukm::UkmRecorder* InteractiveDetector::GetUkmRecorder() const {
+  return ukm_recorder_;
+}
+
+void InteractiveDetector::SetUkmRecorderForTesting(
+    ukm::UkmRecorder* test_ukm_recorder) {
+  ukm_recorder_ = test_ukm_recorder;
+}
 }  // namespace blink

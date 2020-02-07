@@ -8,17 +8,13 @@ GEN_INCLUDE(['mock_tts.js']);
 /**
  * Browser tests for select-to-speak's feature to speak text
  * at the press of a keystroke.
- * @constructor
- * @extends {SelectToSpeakE2ETest}
  */
-function SelectToSpeakKeystrokeSelectionTest() {
-  SelectToSpeakE2ETest.call(this);
-  this.mockTts = new MockTts();
-  chrome.tts = this.mockTts;
-}
-
-SelectToSpeakKeystrokeSelectionTest.prototype = {
-  __proto__: SelectToSpeakE2ETest.prototype,
+SelectToSpeakKeystrokeSelectionTest = class extends SelectToSpeakE2ETest {
+  constructor() {
+    super();
+    this.mockTts = new MockTts();
+    chrome.tts = this.mockTts;
+  }
 
   /**
    * Function to trigger select-to-speak to read selected text at a
@@ -35,7 +31,7 @@ SelectToSpeakKeystrokeSelectionTest.prototype = {
     selectToSpeak.fireMockKeyUpEvent(
         {keyCode: SelectToSpeak.READ_SELECTION_KEY_CODE});
     selectToSpeak.fireMockKeyUpEvent({keyCode: SelectToSpeak.SEARCH_KEY_CODE});
-  },
+  }
 
   /**
    * Function to load a simple webpage, select some of the single text
@@ -63,7 +59,7 @@ SelectToSpeakKeystrokeSelectionTest.prototype = {
         focusOffset
       });
     }, expected);
-  },
+  }
 
   /**
    * Function to load given html using a data url, have the caller set a
@@ -98,7 +94,7 @@ SelectToSpeakKeystrokeSelectionTest.prototype = {
               false);
           setFocusCallback(desktop);
         });
-  },
+  }
 
   generateHtmlWithSelection(selectionCode, bodyHtml) {
     return 'data:text/html;charset=utf-8,' +

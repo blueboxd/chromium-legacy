@@ -24,6 +24,7 @@ import os
 import sys
 import traceback
 
+import shard_util
 import test_runner
 import wpr_runner
 import xcodebuild_runner
@@ -51,6 +52,19 @@ class Runner():
     Main coordinating function.
     """
     self.parse_args(args)
+
+    # GTEST_SHARD_INDEX and GTEST_TOTAL_SHARDS are additional test environment
+    # variables, set by Swarming, that are only set for a swarming task
+    # shard count is > 1.
+    #
+    # For a given test on a given run, otool should return the same total
+    # counts and thus, should generate the same sublists. With the shard index,
+    # each shard would then know the exact test case to run.
+    gtest_shard_index = os.getenv('GTEST_SHARD_INDEX', 0)
+    gtest_total_shards = os.getenv('GTEST_TOTAL_SHARDS', 0)
+    if gtest_shard_index and gtest_total_shards:
+      self.args.test_cases = shard_util.shard_test_cases(
+          self.args, gtest_shard_index, gtest_total_shards)
 
     summary = {}
     tr = None

@@ -68,7 +68,7 @@ Polymer({
     isScanOngoing_: {type: Boolean, value: false},
 
     /**
-     * Cached Cellular Device state or undefined if there is no Cellular device.
+     * The cellular DeviceState, or undefined if there is no Cellular device.
      * @private {!OncMojo.DeviceStateProperties|undefined} deviceState
      */
     cellularDeviceState_: Object,
@@ -258,10 +258,6 @@ Polymer({
       return;  // No Cellular network
     }
 
-    const cellular =
-        OncMojo.getDefaultNetworkState(mojom.NetworkType.kCellular);
-    cellular.typeState.cellular.scanning = this.cellularDeviceState_.scanning;
-
     // Note: the default connectionState is kNotConnected.
     // TODO(khorimoto): Maybe set an 'initializing' CellularState property if
     // the device state is initializing, see TODO in network_list_item.js.
@@ -271,7 +267,8 @@ Polymer({
                  networkStates[0].type === mojom.NetworkType.kEthernet) ?
         1 :
         0;
-    networkStates.splice(idx, 0, cellular);
+    networkStates.splice(
+        idx, 0, OncMojo.getDefaultNetworkState(mojom.NetworkType.kCellular));
   },
 
   /**

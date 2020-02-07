@@ -8,20 +8,20 @@
 #include <memory>
 
 #include "ash/public/cpp/ash_public_export.h"
-#include "ash/public/cpp/assistant/assistant_web_view_2.h"
+#include "ash/public/cpp/assistant/assistant_web_view.h"
 
 namespace ash {
 
 // A factory implemented in Browser which is responsible for creating instances
-// of AssistantWebView2 to work around dependency restrictions in Ash.
+// of AssistantWebView to work around dependency restrictions in Ash.
 class ASH_PUBLIC_EXPORT AssistantWebViewFactory {
  public:
   // Returns the singleton factory instance.
   static AssistantWebViewFactory* Get();
 
-  // Creates a new AssistantWebView2 instance with the given |params|.
-  virtual std::unique_ptr<AssistantWebView2> Create(
-      const AssistantWebView2::InitParams& params) = 0;
+  // Creates a new AssistantWebView instance with the given |params|.
+  virtual std::unique_ptr<AssistantWebView> Create(
+      const AssistantWebView::InitParams& params) = 0;
 
  protected:
   AssistantWebViewFactory();

@@ -147,6 +147,8 @@ jumbo_static_library("browser") {
     "user_data_util.h",
     "user_model.cc",
     "user_model.h",
+    "value_util.cc",
+    "value_util.h",
     "viewport_mode.h",
     "web/element_finder.cc",
     "web/element_finder.h",
@@ -244,6 +246,7 @@ source_set("unit_tests") {
     "trigger_context_unittest.cc",
     "user_data_util_unittest.cc",
     "user_model_unittest.cc",
+    "value_util_unittest.cc",
   ]
 
   deps = [

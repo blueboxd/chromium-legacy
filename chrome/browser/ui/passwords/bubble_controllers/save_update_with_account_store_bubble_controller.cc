@@ -14,6 +14,7 @@
 #include "chrome/grit/generated_resources.h"
 #include "chrome/grit/theme_resources.h"
 #include "components/password_manager/core/browser/password_bubble_experiment.h"
+#include "components/password_manager/core/browser/password_feature_manager.h"
 #include "components/password_manager/core/browser/password_form_metrics_recorder.h"
 #include "components/password_manager/core/browser/password_manager_metrics_util.h"
 #include "components/password_manager/core/browser/password_store.h"
@@ -23,10 +24,6 @@
 #include "components/sync/driver/sync_service.h"
 #include "content/public/browser/web_contents.h"
 #include "ui/base/l10n/l10n_util.h"
-
-#if defined(PASSWORD_STORE_SELECT_ENABLED)
-#include "components/password_manager/core/browser/password_feature_manager.h"
-#endif  // defined(PASSWORD_STORE_SELECT_ENABLED)
 
 namespace {
 
@@ -98,7 +95,6 @@ SaveUpdateWithAccountStoreBubbleController::
       display_disposition_(
           ComputeDisplayDisposition(display_reason, delegate->GetState())),
       password_revealing_requires_reauth_(false),
-      are_passwords_revealed_when_bubble_is_opened_(false),
       enable_editing_(false),
       dismissal_reason_(metrics_util::NO_DIRECT_INTERACTION),
       clock_(base::DefaultClock::GetInstance()) {
@@ -119,8 +115,7 @@ SaveUpdateWithAccountStoreBubbleController::
       interaction_stats_.dismissal_count = stats->dismissal_count;
     }
   }
-  if (delegate_->ArePasswordsRevealedWhenBubbleIsOpened()) {
-    are_passwords_revealed_when_bubble_is_opened_ = true;
+  if (are_passwords_revealed_when_bubble_is_opened_) {
     delegate_->OnPasswordsRevealed();
   }
   // The condition for the password reauth:
@@ -211,22 +206,21 @@ bool SaveUpdateWithAccountStoreBubbleController::ShouldShowFooter() const {
 
 int SaveUpdateWithAccountStoreBubbleController::GetTopIllustration(
     bool dark_mode) const {
-  if (state_ == password_manager::ui::PENDING_PASSWORD_UPDATE_STATE ||
-      state_ == password_manager::ui::PENDING_PASSWORD_STATE) {
-    int image = base::GetFieldTrialParamByFeatureAsInt(
-        password_manager::features::kPasswordSaveIllustration, "image", 0);
-    switch (image) {
-      case 1:
-        return dark_mode ? IDR_SAVE_PASSWORD1_DARK : IDR_SAVE_PASSWORD1;
-      case 2:
-        return dark_mode ? IDR_SAVE_PASSWORD2_DARK : IDR_SAVE_PASSWORD2;
-      case 3:
-        return dark_mode ? IDR_SAVE_PASSWORD3_DARK : IDR_SAVE_PASSWORD3;
-      default:
-        return 0;
-    }
+  DCHECK(state_ == password_manager::ui::PENDING_PASSWORD_UPDATE_STATE ||
+         state_ == password_manager::ui::PENDING_PASSWORD_STATE);
+  int image = base::GetFieldTrialParamByFeatureAsInt(
+      password_manager::features::kPasswordSaveIllustration, "image", 1);
+  switch (image) {
+    case 1:
+      return dark_mode ? IDR_SAVE_PASSWORD1_DARK : IDR_SAVE_PASSWORD1;
+    case 2:
+      return dark_mode ? IDR_SAVE_PASSWORD2_DARK : IDR_SAVE_PASSWORD2;
+    case 3:
+      return dark_mode ? IDR_SAVE_PASSWORD3_DARK : IDR_SAVE_PASSWORD3;
+    default:
+      NOTREACHED();
+      return 0;
   }
-  return 0;
 }
 
 bool SaveUpdateWithAccountStoreBubbleController::RevealPasswords() {
@@ -237,7 +231,6 @@ bool SaveUpdateWithAccountStoreBubbleController::RevealPasswords() {
   return reveal_immediately;
 }
 
-#if defined(PASSWORD_STORE_SELECT_ENABLED)
 void SaveUpdateWithAccountStoreBubbleController::OnToggleAccountStore(
     bool is_checked) {
   delegate_->GetPasswordFeatureManager()->SetDefaultPasswordStore(
@@ -248,7 +241,6 @@ bool SaveUpdateWithAccountStoreBubbleController::IsUsingAccountStore() {
   return delegate_->GetPasswordFeatureManager()->GetDefaultPasswordStore() ==
          Store::kAccountStore;
 }
-#endif  // defined(PASSWORD_STORE_SELECT_ENABLED)
 
 void SaveUpdateWithAccountStoreBubbleController::ReportInteractions() {
   DCHECK(state_ == password_manager::ui::PENDING_PASSWORD_UPDATE_STATE ||

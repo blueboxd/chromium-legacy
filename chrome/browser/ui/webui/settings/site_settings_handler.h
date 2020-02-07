@@ -110,6 +110,7 @@ class SiteSettingsHandler : public SettingsPageUIHandler,
   FRIEND_TEST_ALL_PREFIXES(SiteSettingsHandlerTest, ExceptionHelpers);
   FRIEND_TEST_ALL_PREFIXES(SiteSettingsHandlerTest, ExtensionDisplayName);
   FRIEND_TEST_ALL_PREFIXES(SiteSettingsHandlerTest, GetAllSites);
+  FRIEND_TEST_ALL_PREFIXES(SiteSettingsHandlerTest, GetRecentSitePermissions);
   FRIEND_TEST_ALL_PREFIXES(SiteSettingsHandlerTest, OnStorageFetched);
   FRIEND_TEST_ALL_PREFIXES(SiteSettingsHandlerTest, GetAndSetDefault);
   FRIEND_TEST_ALL_PREFIXES(SiteSettingsHandlerTest, GetAndSetForInvalidURLs);
@@ -162,6 +163,13 @@ class SiteSettingsHandler : public SettingsPageUIHandler,
   // data, which will send the list of sites with cookies or usage data to
   // the front end when fetching finished.
   void HandleGetAllSites(const base::ListValue* args);
+
+  // Returns a list containing the most recent permission changes for the
+  // provided content types grouped by origin/profile (incognito, regular)
+  // combinations, limited to N origin/profile pairings. This includes
+  // permission changes made by embargo, but does not include permissions
+  // enforced via policy.
+  void HandleGetRecentSitePermissions(const base::ListValue* args);
 
   // Called when the list of origins using storage has been fetched, and sends
   // this list back to the front end.

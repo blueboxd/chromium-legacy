@@ -503,6 +503,22 @@ Response TargetHandler::Disable() {
   SetDiscoverTargets(false);
   auto_attached_sessions_.clear();
   attached_sessions_.clear();
+
+  DevToolsManagerDelegate* delegate =
+      DevToolsManager::GetInstance()->delegate();
+  if (!delegate)
+    return Response::OK();
+
+  if (dispose_on_detach_context_ids_.size()) {
+    for (auto* context : delegate->GetBrowserContexts()) {
+      if (!dispose_on_detach_context_ids_.contains(context->UniqueId()))
+        continue;
+      delegate->DisposeBrowserContext(
+          context,
+          base::BindOnce([](bool success, const std::string& error) {}));
+    }
+    dispose_on_detach_context_ids_.clear();
+  }
   return Response::OK();
 }
 
@@ -825,6 +841,7 @@ void TargetHandler::DevToolsAgentHostCrashed(DevToolsAgentHost* host,
 // ----------------- More protocol methods -------------------
 
 protocol::Response TargetHandler::CreateBrowserContext(
+    Maybe<bool> dispose_on_detach,
     std::string* out_context_id) {
   if (access_mode_ != AccessMode::kBrowser)
     return Response::Error(kNotAllowedError);
@@ -836,6 +853,8 @@ protocol::Response TargetHandler::CreateBrowserContext(
   if (!context)
     return Response::Error("Failed to create browser context.");
   *out_context_id = context->UniqueId();
+  if (dispose_on_detach.fromMaybe(false))
+    dispose_on_detach_context_ids_.insert(*out_context_id);
   return Response::OK();
 }
 
@@ -881,6 +900,7 @@ void TargetHandler::DisposeBrowserContext(
         Response::Error("Failed to find context with id " + context_id));
     return;
   }
+  dispose_on_detach_context_ids_.erase(context_id);
   delegate->DisposeBrowserContext(
       *context_it,
       base::BindOnce(

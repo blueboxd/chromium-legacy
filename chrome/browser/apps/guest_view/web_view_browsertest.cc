@@ -510,7 +510,7 @@ class WebViewTest : public extensions::PlatformAppBrowserTest {
   void TearDown() override {
     if (UsesFakeSpeech()) {
       // SpeechRecognition test specific TearDown.
-      content::SpeechRecognitionManager::SetManagerForTesting(NULL);
+      content::SpeechRecognitionManager::SetManagerForTesting(nullptr);
     }
 
     extensions::PlatformAppBrowserTest::TearDown();
@@ -843,7 +843,8 @@ class WebViewTest : public extensions::PlatformAppBrowserTest {
     return manager;
   }
 
-  WebViewTest() : guest_web_contents_(NULL), embedder_web_contents_(NULL) {
+  WebViewTest()
+      : guest_web_contents_(nullptr), embedder_web_contents_(nullptr) {
     GuestViewManager::set_factory_for_testing(&factory_);
   }
 
@@ -1916,12 +1917,12 @@ IN_PROC_BROWSER_TEST_F(WebViewTest, NoPrerenderer) {
       LoadGuest(
           "/extensions/platform_apps/web_view/noprerenderer/guest.html",
           "web_view/noprerenderer");
-  ASSERT_TRUE(guest_web_contents != NULL);
+  ASSERT_TRUE(guest_web_contents != nullptr);
 
   PrerenderLinkManager* prerender_link_manager =
-      PrerenderLinkManagerFactory::GetForProfile(
-          Profile::FromBrowserContext(guest_web_contents->GetBrowserContext()));
-  ASSERT_TRUE(prerender_link_manager != NULL);
+      PrerenderLinkManagerFactory::GetForBrowserContext(
+          guest_web_contents->GetBrowserContext());
+  ASSERT_TRUE(prerender_link_manager != nullptr);
   EXPECT_TRUE(prerender_link_manager->IsEmpty());
 }
 
@@ -2417,7 +2418,7 @@ IN_PROC_BROWSER_TEST_F(WebViewTest, ScreenCoordinates) {
 IN_PROC_BROWSER_TEST_F(WebViewTest, TearDownTest) {
   const extensions::Extension* extension =
       LoadAndLaunchPlatformApp("web_view/simple", "WebViewTest.LAUNCHED");
-  extensions::AppWindow* window = NULL;
+  extensions::AppWindow* window = nullptr;
   if (!GetAppWindowCount())
     window = CreateAppWindow(browser()->profile(), extension);
   else

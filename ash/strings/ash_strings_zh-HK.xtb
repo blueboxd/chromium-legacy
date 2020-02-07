@@ -137,7 +137,6 @@
 <translation id="2718395828230677721">夜燈模式</translation>
 <translation id="2727977024730340865">使用低功率充電器，可能導致充電狀態不穩定。</translation>
 <translation id="2792498699870441125">Alt + 搜尋鍵</translation>
-<translation id="2803734122639935495">如要解鎖，請輸入您的密碼</translation>
 <translation id="2819276065543622893">現在即將登出。</translation>
 <translation id="2825619548187458965">檔案櫃</translation>
 <translation id="2844169650293029770">USB-C 裝置 (左側前方連接埠)</translation>
@@ -202,6 +201,7 @@
 <translation id="3604801046548457007">已建立桌面 <ph name="DESK_TITILE" /></translation>
 <translation id="3606978283550408104">已連接點字顯示器。</translation>
 <translation id="3621202678540785336">輸入</translation>
+<translation id="3621712662352432595">音效檔案設定</translation>
 <translation id="3626281679859535460">亮度</translation>
 <translation id="3631369015426612114">允許顯示來自以下來源的通知</translation>
 <translation id="3705722231355495246">-</translation>
@@ -346,7 +346,7 @@
 <translation id="576453121877257266">「夜燈模式」已開啟。</translation>
 <translation id="5777841717266010279">停止共用畫面？</translation>
 <translation id="5820394555380036790">Chromium 作業系統</translation>
-<translation id="5837036133683224804">停止喺<ph name="RECEIVER_NAME" />投放 <ph name="ROUTE_TITLE" />﻿</translation>
+<translation id="5837036133683224804">停止喺<ph name="RECEIVER_NAME" />投放 <ph name="ROUTE_TITLE" /></translation>
 <translation id="5895138241574237353">重新啟動</translation>
 <translation id="5901316534475909376">Shift + Esc 鍵</translation>
 <translation id="5911909173233110115"><ph name="USERNAME" /> (<ph name="MAIL" />)</translation>
@@ -544,6 +544,7 @@
 <translation id="8477270416194247200">按下 Alt + 搜尋鍵或 Shift 鍵即可取消。</translation>
 <translation id="8513108775083588393">自動旋轉</translation>
 <translation id="8517041960877371778">您的 <ph name="DEVICE_TYPE" /> 在開啟時可能無法充電。</translation>
+<translation id="8563862697512465947">通知設定</translation>
 <translation id="8627191004499078455">已連接<ph name="DEVICE_NAME" /></translation>
 <translation id="8637598503828012618"><ph name="CONNECTION_STATUS" />，訊號強度係 <ph name="SIGNAL_STRENGTH" />，由管理員管理</translation>
 <translation id="8639760480004882931">剩餘電量：<ph name="PERCENTAGE" /></translation>

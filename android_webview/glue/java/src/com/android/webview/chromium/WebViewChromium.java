@@ -77,6 +77,7 @@ import org.chromium.components.embedder_support.application.ClassLoaderContextWr
 import org.chromium.content_public.browser.NavigationHistory;
 import org.chromium.content_public.browser.SmartClipProvider;
 import org.chromium.content_public.browser.UiThreadTaskTraits;
+import org.chromium.url.GURL;
 
 import java.io.BufferedWriter;
 import java.io.File;
@@ -1096,7 +1097,8 @@ class WebViewChromium implements WebViewProvider, WebViewProvider.ScrollDelegate
             return ret;
         }
         sWebViewApiCallSample.record(ApiCall.GET_URL);
-        return mAwContents.getUrl().getSpec();
+        GURL url = mAwContents.getUrl();
+        return url == null ? null : url.getSpec();
     }
 
     @Override

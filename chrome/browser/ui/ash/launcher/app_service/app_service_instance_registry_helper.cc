@@ -11,6 +11,7 @@
 #include "base/time/time.h"
 #include "chrome/browser/apps/app_service/app_service_proxy.h"
 #include "chrome/browser/apps/app_service/app_service_proxy_factory.h"
+#include "chrome/browser/chromeos/crostini/crostini_util.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/ui/ash/launcher/app_service/app_service_app_window_launcher_controller.h"
@@ -305,6 +306,11 @@ apps::InstanceState AppServiceInstanceRegistryHelper::CalculateActivatedState(
 bool AppServiceInstanceRegistryHelper::IsOpenedInBrowser(
     const std::string& app_id,
     aura::Window* window) const {
+  // Crostini Terminal App with the app_id kCrostiniTerminalSystemAppId is a
+  // System Web App.
+  if (app_id == crostini::kCrostiniTerminalSystemAppId)
+    return true;
+
   apps::mojom::AppType app_type = proxy_->AppRegistryCache().GetAppType(app_id);
   if (app_type != apps::mojom::AppType::kExtension &&
       app_type != apps::mojom::AppType::kWeb) {

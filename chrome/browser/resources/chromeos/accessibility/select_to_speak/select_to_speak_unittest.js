@@ -4,19 +4,13 @@
 
 /**
  * Test fixture for select_to_speak.js.
- * @constructor
- * @extends {testing.Test}
  */
-function SelectToSpeakUnitTest() {
-  testing.Test.call(this);
-}
+SelectToSpeakUnitTest = class extends testing.Test {};
 
-SelectToSpeakUnitTest.prototype = {
-  __proto__: testing.Test.prototype,
+/** @override */
+SelectToSpeakUnitTest.prototype.extraLibraries =
+    ['test_support.js', 'select_to_speak.js'];
 
-  /** @override */
-  extraLibraries: ['test_support.js', 'select_to_speak.js']
-};
 
 TEST_F('SelectToSpeakUnitTest', 'getGSuiteAppRoot', function() {
   const root = {url: 'https://docs.google.com/presentation/p/cats_r_awesome'};

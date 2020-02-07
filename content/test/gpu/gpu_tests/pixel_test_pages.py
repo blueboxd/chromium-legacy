@@ -690,6 +690,73 @@ class PixelTestPages(object):
           },
         ]),
 
+        PixelTestPage(
+          'pixel_webgl_read_pixels_tab_switch.html',
+          base_name + '_WebGLReadPixelsTabSwitch',
+          test_rect=[0, 0, 100, 100],
+          optional_action='SwitchTabs',
+          tolerance=3,
+          expected_colors=[
+            {
+              'comment': 'top left, red',
+              'location': [5, 5],
+              'size': [40, 40],
+              'color': [255, 0, 0],
+            },
+            {
+              'comment': 'bottom right, red',
+              'location': [55, 55],
+              'size': [40, 40],
+              'color': [255, 0, 0],
+            },
+            {
+              'comment': 'top right, blue',
+              'location': [55, 5],
+              'size': [40, 40],
+              'color': [0, 0, 255],
+            },
+            {
+              'comment': 'bottom left, green',
+              'location': [5, 55],
+              'size': [40, 40],
+              'color': [0, 255, 0],
+            },
+        ]),
+
+        PixelTestPage(
+          'pixel_webgl_read_pixels_tab_switch.html',
+          base_name + '_WebGLReadPixelsTabSwitch_SoftwareCompositing',
+          test_rect=[0, 0, 100, 100],
+          browser_args=sw_compositing_args,
+          optional_action='SwitchTabs',
+          tolerance=3,
+          expected_colors=[
+            {
+              'comment': 'top left, red',
+              'location': [5, 5],
+              'size': [40, 40],
+              'color': [255, 0, 0],
+            },
+            {
+              'comment': 'bottom right, red',
+              'location': [55, 55],
+              'size': [40, 40],
+              'color': [255, 0, 0],
+            },
+            {
+              'comment': 'top right, blue',
+              'location': [55, 5],
+              'size': [40, 40],
+              'color': [0, 0, 255],
+            },
+            {
+              'comment': 'bottom left, green',
+              'location': [5, 55],
+              'size': [40, 40],
+              'color': [0, 255, 0],
+            },
+        ]),
+
     ]
 
 

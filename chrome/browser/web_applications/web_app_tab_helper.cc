@@ -6,6 +6,7 @@
 
 #include "base/unguessable_token.h"
 #include "chrome/browser/profiles/profile.h"
+#include "chrome/browser/web_applications/components/file_handler_manager.h"
 #include "chrome/browser/web_applications/components/policy/web_app_policy_manager.h"
 #include "chrome/browser/web_applications/components/web_app_audio_focus_id_map.h"
 #include "chrome/browser/web_applications/components/web_app_provider_base.h"
@@ -72,6 +73,8 @@ void WebAppTabHelper::DidFinishNavigation(
   if (!navigation_handle->IsInMainFrame() || !navigation_handle->HasCommitted())
     return;
 
+  is_error_page_ = navigation_handle->IsErrorPage();
+
   const GURL& url = navigation_handle->GetURL();
   const AppId app_id = FindAppIdWithUrlInScope(url);
   SetAppId(app_id);
@@ -79,6 +82,25 @@ void WebAppTabHelper::DidFinishNavigation(
   provider_->manifest_update_manager().MaybeUpdate(url, app_id, web_contents());
 
   ReinstallPlaceholderAppIfNecessary(navigation_handle->GetURL());
+}
+
+void WebAppTabHelper::DOMContentLoaded(
+    content::RenderFrameHost* render_frame_host) {
+  if (render_frame_host != web_contents()->GetMainFrame())
+    return;
+
+  // Don't try and update the expiry time if this is an error page.
+  if (is_error_page_)
+    return;
+
+  // Don't try and manage file handlers unless this page is for an installed
+  // app.
+  if (app_id_.empty())
+    return;
+
+  // Update when the file handling origin trial expires for this app.
+  provider_->file_handler_manager().UpdateFileHandlingOriginTrialExpiry(
+      web_contents(), app_id_);
 }
 
 void WebAppTabHelper::DidCloneToNewWebContents(
@@ -100,8 +122,15 @@ bool WebAppTabHelper::IsInAppWindow() const {
 void WebAppTabHelper::OnWebAppInstalled(const AppId& installed_app_id) {
   // Check if current web_contents url is in scope for the newly installed app.
   AppId app_id = FindAppIdWithUrlInScope(web_contents()->GetURL());
-  if (app_id == installed_app_id)
-    SetAppId(app_id);
+  if (app_id != installed_app_id)
+    return;
+
+  SetAppId(app_id);
+
+  // When the app is installed record when its File Handling origin trial
+  // expires, so it can be removed.
+  provider_->file_handler_manager().UpdateFileHandlingOriginTrialExpiry(
+      web_contents(), installed_app_id);
 }
 
 void WebAppTabHelper::OnWebAppUninstalled(const AppId& uninstalled_app_id) {

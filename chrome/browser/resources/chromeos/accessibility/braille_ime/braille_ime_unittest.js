@@ -8,13 +8,12 @@
 
 /**
  * Mock Chrome event supporting one listener.
- * @constructor
  */
-function MockEvent() {}
-
-MockEvent.prototype = {
-  /** @type {Function?} */
-  listener: null,
+class MockEvent {
+  constructor() {
+    /** @type {Function?} */
+    this.listener = null;
+  }
 
   /**
    * @param {Function} listener
@@ -22,7 +21,7 @@ MockEvent.prototype = {
   addListener(listener) {
     assertTrue(this.listener === null);
     this.listener = listener;
-  },
+  }
 
   /**
    * Dispatches an event to the listener if any.
@@ -35,21 +34,21 @@ MockEvent.prototype = {
       return this.listener.apply(null, arguments);
     }
   }
-};
+}
+
 
 /**
  * Mock port that supports the {@code onMessage} and {@code onDisconnect}
  * events as well as {@code postMessage}.
- * @constructor.
  */
-function MockPort() {
-  this.onMessage = new MockEvent();
-  this.onDisconnect = new MockEvent();
-  /** @type {Array<Object>} */
-  this.messages = [];
-}
+class MockPort {
+  constructor() {
+    this.onMessage = new MockEvent();
+    this.onDisconnect = new MockEvent();
+    /** @type {Array<Object>} */
+    this.messages = [];
+  }
 
-MockPort.prototype = {
   /**
    * Stores {@code message} in this object.
    * @param {Object} message Message to store.
@@ -57,7 +56,8 @@ MockPort.prototype = {
   postMessage(message) {
     this.messages.push(message);
   }
-};
+}
+
 
 /**
  * Engine ID as specified in manifest.
@@ -69,19 +69,8 @@ var localStorage;
 
 /**
  * Test fixture for the braille IME unit test.
- * @constructor
- * @extends {testing.Test}
  */
-function BrailleImeUnitTest() {
-  testing.Test.call(this);
-}
-
-BrailleImeUnitTest.prototype = {
-  __proto__: testing.Test.prototype,
-
-  /** @Override */
-  extraLibraries: ['braille_ime.js'],
-
+BrailleImeUnitTest = class extends testing.Test {
   /** @Override */
   setUp() {
     chrome = chrome || {};
@@ -97,7 +86,7 @@ BrailleImeUnitTest.prototype = {
       this.lastHandledKeyResult_ = result;
     }.bind(this);
     this.createIme();
-  },
+  }
 
   createIme() {
     var IME_EVENTS = [
@@ -118,14 +107,14 @@ BrailleImeUnitTest.prototype = {
     this.port = null;
     this.ime = new BrailleIme();
     this.ime.init();
-  },
+  }
 
   activateIme() {
     this.onActivate.dispatch(ENGINE_ID);
     assertThat(
         this.port.messages, eqJSON([{type: 'activeState', active: true}]));
     this.port.messages.length = 0;
-  },
+  }
 
   sendKeyEvent_(type, code, extra) {
     var event = {type, code, requestId: (++this.lastSentKeyRequestId_) + ''};
@@ -136,16 +125,20 @@ BrailleImeUnitTest.prototype = {
     if (this.lastSentKeyRequestId_ === this.lastHandledKeyRequestId_) {
       return this.lastHandledKeyResult_;
     }
-  },
+  }
 
   sendKeyDown(code, extra) {
     return this.sendKeyEvent_('keydown', code, extra);
-  },
+  }
 
   sendKeyUp(code, extra) {
     return this.sendKeyEvent_('keyup', code, extra);
-  },
+  }
 };
+
+/** @Override */
+BrailleImeUnitTest.prototype.extraLibraries = ['braille_ime.js'];
+
 
 TEST_F('BrailleImeUnitTest', 'KeysWhenStandardKeyboardDisabled', function() {
   this.activateIme();

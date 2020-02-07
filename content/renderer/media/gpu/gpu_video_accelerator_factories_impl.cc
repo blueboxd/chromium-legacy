@@ -32,7 +32,7 @@
 #include "media/video/video_encode_accelerator.h"
 #include "mojo/public/cpp/base/shared_memory_utils.h"
 #include "services/viz/public/cpp/gpu/context_provider_command_buffer.h"
-#include "third_party/skia/include/core/SkPostConfig.h"
+#include "third_party/skia/include/core/SkTypes.h"
 
 namespace content {
 

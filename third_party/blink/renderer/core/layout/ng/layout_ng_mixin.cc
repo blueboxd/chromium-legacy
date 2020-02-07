@@ -11,6 +11,7 @@
 #include "third_party/blink/renderer/core/layout/ng/layout_box_utils.h"
 #include "third_party/blink/renderer/core/layout/ng/ng_box_fragment_builder.h"
 #include "third_party/blink/renderer/core/layout/ng/ng_constraint_space.h"
+#include "third_party/blink/renderer/core/layout/ng/ng_constraint_space_builder.h"
 #include "third_party/blink/renderer/core/layout/ng/ng_layout_result.h"
 #include "third_party/blink/renderer/core/layout/ng/ng_length_utils.h"
 #include "third_party/blink/renderer/core/layout/ng/ng_out_of_flow_layout_part.h"
@@ -75,11 +76,21 @@ void LayoutNGMixin<Base>::ComputeIntrinsicLogicalWidths(
 
   LayoutUnit available_logical_height =
       LayoutBoxUtils::AvailableLogicalHeight(*this, Base::ContainingBlock());
-  MinMaxSizeInput input(available_logical_height);
+
+  const ComputedStyle& style = node.Style();
+  WritingMode writing_mode = style.GetWritingMode();
+
+  MinMaxSize sizes = node.ComputeMinMaxSize(
+      writing_mode, MinMaxSizeInput(available_logical_height));
+
+  NGConstraintSpace space = NGConstraintSpaceBuilder(writing_mode, writing_mode,
+                                                     /* is_new_fc */ true)
+                                .ToConstraintSpace();
+  NGBoxStrut border_padding =
+      ComputeBorders(space, style) + ComputePadding(space, style);
+
   // This function returns content-box plus scrollbar.
-  input.size_type = NGMinMaxSizeType::kContentBoxSize;
-  MinMaxSize sizes =
-      node.ComputeMinMaxSize(node.Style().GetWritingMode(), input);
+  sizes -= border_padding.InlineSum();
 
   if (Base::IsTableCell()) {
     // If a table cell, or the column that it belongs to, has a specified fixed
@@ -95,7 +106,6 @@ void LayoutNGMixin<Base>::ComputeIntrinsicLogicalWidths(
     }
   }
 
-  sizes += LayoutUnit(Base::ScrollbarLogicalWidth());
   min_logical_width = sizes.min_size;
   max_logical_width = sizes.max_size;
 }
@@ -125,7 +135,7 @@ void LayoutNGMixin<Base>::UpdateOutOfFlowBlockLayout() {
       container_node.CreatesNewFormattingContext());
 
   NGFragmentGeometry fragment_geometry;
-  fragment_geometry.border = ComputeBorders(constraint_space, container_node);
+  fragment_geometry.border = ComputeBorders(constraint_space, *container_style);
   fragment_geometry.scrollbar =
       ComputeScrollbars(constraint_space, container_node);
   fragment_geometry.padding =

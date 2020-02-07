@@ -44,4 +44,8 @@ void PlatformTaskRunner::PostPackagedTaskWithDelay(TaskRunner::Task task,
       FROM_HERE, base::BindOnce(ExecuteTask, std::move(task)), time_delta);
 }
 
+bool PlatformTaskRunner::IsRunningOnTaskRunner() {
+  return task_runner_->RunsTasksInCurrentSequence();
+}
+
 }  // namespace openscreen_platform

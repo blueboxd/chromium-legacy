@@ -256,6 +256,7 @@ Se "<ph name="SERVICE_SCRIPT_NAME" />" já estiver selecionado, desselecione-o e
 <translation id="6939719207673461467">Mostrar/ocultar teclado.</translation>
 <translation id="6944854424004126054">Restaurar janela</translation>
 <translation id="6948905685698011662">O Ambiente de Trabalho Remoto do Chrome já está disponível na Web! Experimente a nossa <ph name="LINK_BEGIN" />aplicação Web gratuita<ph name="LINK_END" />.</translation>
+<translation id="6956835181934226419">Já concedi esta autorização.</translation>
 <translation id="6963936880795878952">As ligações ao computador remoto estão temporariamente bloqueadas porque alguém tentou estabelecer ligação com um PIN inválido. Tente novamente mais tarde.</translation>
 <translation id="6965382102122355670">OK</translation>
 <translation id="6985691951107243942">Tem a certeza de que pretende desativar as ligações remotas a <ph name="HOSTNAME" />? Se mudar de ideias, será necessário aceder a esse computador e voltar a ativar as ligações.</translation>

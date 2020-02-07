@@ -14,14 +14,14 @@ class Profile;
 class AssistantWebViewFactoryImpl : public ash::AssistantWebViewFactory {
  public:
   explicit AssistantWebViewFactoryImpl(Profile* profile);
-  AssistantWebViewFactoryImpl(AssistantWebViewFactoryImpl& copy) = delete;
-  AssistantWebViewFactoryImpl& operator=(AssistantWebViewFactoryImpl& assign) =
-      delete;
   ~AssistantWebViewFactoryImpl() override;
 
+  AssistantWebViewFactoryImpl(AssistantWebViewFactoryImpl&) = delete;
+  AssistantWebViewFactoryImpl& operator=(AssistantWebViewFactoryImpl&) = delete;
+
   // ash::AssistantWebViewFactory:
-  std::unique_ptr<ash::AssistantWebView2> Create(
-      const ash::AssistantWebView2::InitParams& params) override;
+  std::unique_ptr<ash::AssistantWebView> Create(
+      const ash::AssistantWebView::InitParams& params) override;
 
  private:
   Profile* const profile_;

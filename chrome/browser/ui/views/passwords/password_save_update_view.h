@@ -57,8 +57,6 @@ class PasswordSaveUpdateView : public PasswordBubbleViewBase,
   bool ShouldShowWindowIcon() const override;
   bool ShouldShowCloseButton() const override;
   bool Accept() override;
-  bool Cancel() override;
-  bool Close() override;
 
   // View:
   void AddedToWidget() override;
@@ -69,6 +67,7 @@ class PasswordSaveUpdateView : public PasswordBubbleViewBase,
   void ReplaceWithPromo();
   void UpdateDialogButtons();
   std::unique_ptr<views::View> CreateFooterView();
+  void OnDialogCancelled();
 
   SaveUpdateBubbleController controller_;
 

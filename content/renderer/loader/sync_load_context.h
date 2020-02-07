@@ -58,6 +58,7 @@ class CONTENT_EXPORT SyncLoadContext : public RequestPeer {
       int routing_id,
       scoped_refptr<base::SingleThreadTaskRunner> loading_task_runner,
       const net::NetworkTrafficAnnotationTag& traffic_annotation,
+      uint32_t loader_options,
       std::unique_ptr<network::PendingSharedURLLoaderFactory>
           pending_url_loader_factory,
       std::vector<std::unique_ptr<blink::URLLoaderThrottle>> throttles,

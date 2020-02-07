@@ -20,12 +20,12 @@
 #include "chrome/browser/search/search.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_navigator.h"
-#include "chrome/browser/ui/javascript_dialogs/javascript_dialog_tab_helper.h"
 #include "chrome/browser/ui/search/local_ntp_test_utils.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/webui_url_constants.h"
 #include "chrome/test/base/ui_test_utils.h"
+#include "components/javascript_dialogs/tab_modal_dialog_manager.h"
 #include "components/policy/core/browser/browser_policy_connector.h"
 #include "content/public/browser/javascript_dialog_manager.h"
 #include "content/public/browser/notification_service.h"
@@ -545,10 +545,11 @@ IN_PROC_BROWSER_TEST_F(ContentScriptApiTest, ContentScriptBlockingScript) {
 
   content::WebContents* web_contents =
       browser()->tab_strip_model()->GetActiveWebContents();
-  JavaScriptDialogTabHelper* js_helper =
-      JavaScriptDialogTabHelper::FromWebContents(web_contents);
+  auto* js_dialog_manager =
+      javascript_dialogs::TabModalDialogManager::FromWebContents(web_contents);
   base::RunLoop dialog_wait;
-  js_helper->SetDialogShownCallbackForTesting(dialog_wait.QuitClosure());
+  js_dialog_manager->SetDialogShownCallbackForTesting(
+      dialog_wait.QuitClosure());
 
   ExtensionTestMessageListener listener("done", false);
   listener.set_extension_id(ext2->id());
@@ -562,7 +563,7 @@ IN_PROC_BROWSER_TEST_F(ContentScriptApiTest, ContentScriptBlockingScript) {
   // Right now, the alert dialog is showing and blocking injection of anything
   // after it, so the listener shouldn't be satisfied.
   EXPECT_FALSE(listener.was_satisfied());
-  js_helper->HandleJavaScriptDialog(web_contents, true, nullptr);
+  js_dialog_manager->HandleJavaScriptDialog(web_contents, true, nullptr);
 
   // After closing the dialog, the rest of the scripts should be able to
   // inject.
@@ -598,10 +599,11 @@ IN_PROC_BROWSER_TEST_F(ContentScriptApiTest,
 
   content::WebContents* web_contents =
       browser()->tab_strip_model()->GetActiveWebContents();
-  JavaScriptDialogTabHelper* js_helper =
-      JavaScriptDialogTabHelper::FromWebContents(web_contents);
+  auto* js_dialog_manager =
+      javascript_dialogs::TabModalDialogManager::FromWebContents(web_contents);
   base::RunLoop dialog_wait;
-  js_helper->SetDialogShownCallbackForTesting(dialog_wait.QuitClosure());
+  js_dialog_manager->SetDialogShownCallbackForTesting(
+      dialog_wait.QuitClosure());
 
   ExtensionTestMessageListener listener("done", false);
   listener.set_extension_id(ext2->id());
@@ -643,10 +645,11 @@ IN_PROC_BROWSER_TEST_F(ContentScriptApiTest,
 
   content::WebContents* web_contents =
       browser()->tab_strip_model()->GetActiveWebContents();
-  JavaScriptDialogTabHelper* js_helper =
-      JavaScriptDialogTabHelper::FromWebContents(web_contents);
+  auto* js_dialog_manager =
+      javascript_dialogs::TabModalDialogManager::FromWebContents(web_contents);
   base::RunLoop dialog_wait;
-  js_helper->SetDialogShownCallbackForTesting(dialog_wait.QuitClosure());
+  js_dialog_manager->SetDialogShownCallbackForTesting(
+      dialog_wait.QuitClosure());
 
   // Navigate!
   ui_test_utils::NavigateToURLWithDisposition(
@@ -656,9 +659,9 @@ IN_PROC_BROWSER_TEST_F(ContentScriptApiTest,
   dialog_wait.Run();
 
   // The extension will have injected at idle, but it should only inject once.
-  js_helper->HandleJavaScriptDialog(web_contents, true, nullptr);
+  js_dialog_manager->HandleJavaScriptDialog(web_contents, true, nullptr);
   EXPECT_TRUE(RunAllPending(web_contents));
-  EXPECT_FALSE(js_helper->IsShowingDialogForTesting());
+  EXPECT_FALSE(js_dialog_manager->IsShowingDialogForTesting());
 }
 
 // Bug fix for crbug.com/507461.

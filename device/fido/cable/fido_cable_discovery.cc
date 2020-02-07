@@ -304,10 +304,11 @@ FidoCableDiscovery::FidoCableDiscovery(
 #endif
 }
 
-// This is a workaround for https://crbug.com/846522
 FidoCableDiscovery::~FidoCableDiscovery() {
-  for (auto advertisement : advertisements_)
+  // Work around dangling advertisement references. (crbug/846522)
+  for (auto advertisement : advertisements_) {
     advertisement.second->Unregister(base::DoNothing(), base::DoNothing());
+  }
 }
 
 base::Optional<std::unique_ptr<FidoCableHandshakeHandler>>
@@ -462,17 +463,27 @@ void FidoCableDiscovery::StartAdvertisement() {
         base::AdaptCallbackForRepeating(
             base::BindOnce(&FidoCableDiscovery::OnAdvertisementRegistered,
                            weak_factory_.GetWeakPtr(), data.v1->client_eid)),
-        base::AdaptCallbackForRepeating(
-            base::BindOnce(&FidoCableDiscovery::OnAdvertisementRegisterError,
-                           weak_factory_.GetWeakPtr())));
+        base::BindRepeating([](BluetoothAdvertisement::ErrorCode error_code) {
+          FIDO_LOG(ERROR) << "Failed to register advertisement: " << error_code;
+        }));
   }
 }
 
 void FidoCableDiscovery::StopAdvertisements(base::OnceClosure callback) {
+  // Destructing a BluetoothAdvertisement invokes its Unregister() method, but
+  // there may be references to the advertisement outside this
+  // FidoCableDiscovery (see e.g. crbug/846522). Hence, merely clearing
+  // |advertisements_| is not sufficient; we need to manually invoke
+  // Unregister() for every advertisement in order to stop them. On the other
+  // hand, |advertisements_| must not be cleared before the Unregister()
+  // callbacks return either, in case we do hold the only reference to a
+  // BluetoothAdvertisement.
   FIDO_LOG(DEBUG) << "Stopping " << advertisements_.size()
                   << " caBLE advertisements";
-  auto barrier_closure =
-      base::BarrierClosure(advertisements_.size(), std::move(callback));
+  auto barrier_closure = base::BarrierClosure(
+      advertisements_.size(),
+      base::BindOnce(&FidoCableDiscovery::OnAdvertisementsStopped,
+                     weak_factory_.GetWeakPtr(), std::move(callback)));
   auto error_closure = base::BindRepeating(
       [](base::RepeatingClosure cb, BluetoothAdvertisement::ErrorCode code) {
         FIDO_LOG(ERROR) << "BluetoothAdvertisement::Unregister() failed: "
@@ -483,25 +494,19 @@ void FidoCableDiscovery::StopAdvertisements(base::OnceClosure callback) {
   for (auto advertisement : advertisements_) {
     advertisement.second->Unregister(barrier_closure, error_closure);
   }
+}
 
-#if !defined(OS_WIN)
-  // On Windows the discovery is the only owner of the advertisements, meaning
-  // the advertisements would be destroyed before |barrier_closure| could be
-  // invoked.
+void FidoCableDiscovery::OnAdvertisementsStopped(base::OnceClosure callback) {
+  FIDO_LOG(DEBUG) << "Advertisements stopped";
   advertisements_.clear();
-#endif  // !defined(OS_WIN)
+  std::move(callback).Run();
 }
 
 void FidoCableDiscovery::OnAdvertisementRegistered(
     const CableEidArray& client_eid,
     scoped_refptr<BluetoothAdvertisement> advertisement) {
-  FIDO_LOG(DEBUG) << "Advertisement registered.";
+  FIDO_LOG(DEBUG) << "Advertisement registered";
   advertisements_.emplace(client_eid, std::move(advertisement));
-}
-
-void FidoCableDiscovery::OnAdvertisementRegisterError(
-    BluetoothAdvertisement::ErrorCode error_code) {
-  FIDO_LOG(ERROR) << "Failed to register advertisement: " << error_code;
 }
 
 void FidoCableDiscovery::CableDeviceFound(BluetoothAdapter* adapter,
@@ -782,6 +787,14 @@ std::string FidoCableDiscovery::ResultDebugString(
   }
 
   return ret;
+}
+
+bool FidoCableDiscovery::MaybeStop() {
+  if (!FidoBleDiscoveryBase::MaybeStop()) {
+    NOTREACHED();
+  }
+  StopAdvertisements(base::DoNothing());
+  return true;
 }
 
 }  // namespace device

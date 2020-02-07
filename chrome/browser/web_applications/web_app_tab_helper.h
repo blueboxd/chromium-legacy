@@ -43,6 +43,7 @@ class WebAppTabHelper : public WebAppTabHelperBase,
   // content::WebContentsObserver:
   void DidFinishNavigation(
       content::NavigationHandle* navigation_handle) override;
+  void DOMContentLoaded(content::RenderFrameHost* render_frame_host) override;
   void DidCloneToNewWebContents(
       content::WebContents* old_web_contents,
       content::WebContents* new_web_contents) override;
@@ -75,6 +76,11 @@ class WebAppTabHelper : public WebAppTabHelperBase,
 
   // WebApp associated with this tab. Empty string if no app associated.
   AppId app_id_;
+
+  // Indicates if the current page is an error page (e.g. the page failed to
+  // load). We store this because it isn't accessible off a |WebContents| or a
+  // |RenderFrameHost|.
+  bool is_error_page_ = false;
 
   // The audio focus group id is used to group media sessions together for apps.
   // We store the applied group id locally on the helper for testing.

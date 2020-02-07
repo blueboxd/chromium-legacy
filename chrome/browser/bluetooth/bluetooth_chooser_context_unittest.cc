@@ -178,7 +178,7 @@ TEST_F(BluetoothChooserContextTest, CheckGrantAndRevokePermission) {
                   ContentSettingsType::BLUETOOTH_CHOOSER_DATA));
 
   blink::WebBluetoothDeviceId device_id = context->GrantServiceAccessPermission(
-      foo_origin_, foo_origin_, fake_device1_.get(), options);
+      foo_origin_, foo_origin_, fake_device1_.get(), options.get());
 
   EXPECT_TRUE(
       context->HasDevicePermission(foo_origin_, foo_origin_, device_id));
@@ -259,7 +259,7 @@ TEST_F(BluetoothChooserContextTest, GrantPermissionInIncognito) {
                   ContentSettingsType::BLUETOOTH_GUARD,
                   ContentSettingsType::BLUETOOTH_CHOOSER_DATA));
   blink::WebBluetoothDeviceId device_id = context->GrantServiceAccessPermission(
-      foo_origin_, foo_origin_, fake_device1_.get(), options);
+      foo_origin_, foo_origin_, fake_device1_.get(), options.get());
 
   EXPECT_TRUE(
       context->HasDevicePermission(foo_origin_, foo_origin_, device_id));
@@ -289,7 +289,7 @@ TEST_F(BluetoothChooserContextTest, GrantPermissionInIncognito) {
                   ContentSettingsType::BLUETOOTH_CHOOSER_DATA));
   blink::WebBluetoothDeviceId incognito_device_id =
       incognito_context->GrantServiceAccessPermission(
-          foo_origin_, foo_origin_, fake_device1_.get(), options);
+          foo_origin_, foo_origin_, fake_device1_.get(), options.get());
 
   EXPECT_FALSE(context->HasDevicePermission(foo_origin_, foo_origin_,
                                             incognito_device_id));
@@ -350,8 +350,8 @@ TEST_F(BluetoothChooserContextTest, CheckGrantWithServiceUpdates) {
                   ContentSettingsType::BLUETOOTH_GUARD,
                   ContentSettingsType::BLUETOOTH_CHOOSER_DATA));
   blink::WebBluetoothDeviceId device_id1 =
-      context->GrantServiceAccessPermission(foo_origin_, foo_origin_,
-                                            fake_device1_.get(), options1);
+      context->GrantServiceAccessPermission(
+          foo_origin_, foo_origin_, fake_device1_.get(), options1.get());
   EXPECT_TRUE(context->IsAllowedToAccessAtLeastOneService(
       foo_origin_, foo_origin_, device_id1));
   for (const auto& service : services1) {
@@ -370,8 +370,8 @@ TEST_F(BluetoothChooserContextTest, CheckGrantWithServiceUpdates) {
                   ContentSettingsType::BLUETOOTH_GUARD,
                   ContentSettingsType::BLUETOOTH_CHOOSER_DATA));
   blink::WebBluetoothDeviceId device_id2 =
-      context->GrantServiceAccessPermission(foo_origin_, foo_origin_,
-                                            fake_device1_.get(), options2);
+      context->GrantServiceAccessPermission(
+          foo_origin_, foo_origin_, fake_device1_.get(), options2.get());
   EXPECT_EQ(device_id2, device_id1);
 
   base::flat_set<BluetoothUUID> services_set(services1);
@@ -397,7 +397,7 @@ TEST_F(BluetoothChooserContextTest, CheckGrantWithOptionalServices) {
                   ContentSettingsType::BLUETOOTH_GUARD,
                   ContentSettingsType::BLUETOOTH_CHOOSER_DATA));
   blink::WebBluetoothDeviceId device_id = context->GrantServiceAccessPermission(
-      foo_origin_, foo_origin_, fake_device1_.get(), options);
+      foo_origin_, foo_origin_, fake_device1_.get(), options.get());
 
   EXPECT_TRUE(context->IsAllowedToAccessAtLeastOneService(
       foo_origin_, foo_origin_, device_id));
@@ -434,17 +434,17 @@ TEST_F(BluetoothChooserContextTest, BluetoothGuardPermission) {
       .Times(4);
 
   blink::WebBluetoothDeviceId foo_device_id1 =
-      context->GrantServiceAccessPermission(foo_origin_, foo_origin_,
-                                            fake_device1_.get(), options1);
+      context->GrantServiceAccessPermission(
+          foo_origin_, foo_origin_, fake_device1_.get(), options1.get());
   blink::WebBluetoothDeviceId foo_device_id2 =
-      context->GrantServiceAccessPermission(foo_origin_, foo_origin_,
-                                            fake_device1_.get(), options2);
+      context->GrantServiceAccessPermission(
+          foo_origin_, foo_origin_, fake_device1_.get(), options2.get());
   blink::WebBluetoothDeviceId bar_device_id1 =
-      context->GrantServiceAccessPermission(bar_origin_, bar_origin_,
-                                            fake_device1_.get(), options1);
+      context->GrantServiceAccessPermission(
+          bar_origin_, bar_origin_, fake_device1_.get(), options1.get());
   blink::WebBluetoothDeviceId bar_device_id2 =
-      context->GrantServiceAccessPermission(bar_origin_, bar_origin_,
-                                            fake_device2_.get(), options2);
+      context->GrantServiceAccessPermission(
+          bar_origin_, bar_origin_, fake_device2_.get(), options2.get());
 
   {
     std::vector<std::unique_ptr<ChooserContextBase::Object>> origin_objects =
@@ -509,7 +509,7 @@ TEST_F(BluetoothChooserContextTest, BluetoothLEScannedDevices) {
                   ContentSettingsType::BLUETOOTH_CHOOSER_DATA));
   blink::WebBluetoothDeviceId granted_id =
       context->GrantServiceAccessPermission(foo_origin_, foo_origin_,
-                                            fake_device1_.get(), options);
+                                            fake_device1_.get(), options.get());
 
   EXPECT_EQ(scanned_id, granted_id);
 }
@@ -526,7 +526,7 @@ TEST_F(BluetoothChooserContextTest, BluetoothLEScanWithGrantedDevices) {
 
   blink::WebBluetoothDeviceId granted_id =
       context->GrantServiceAccessPermission(foo_origin_, foo_origin_,
-                                            fake_device1_.get(), options);
+                                            fake_device1_.get(), options.get());
   blink::WebBluetoothDeviceId scanned_id = context->AddScannedDevice(
       foo_origin_, foo_origin_, fake_device1_->GetAddress());
   EXPECT_EQ(granted_id, scanned_id);

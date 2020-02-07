@@ -145,6 +145,7 @@ Wenn diese Richtlinie nicht konfiguriert wird, so wird das standardmäßige Cach
       Legt fest, wie lange es dauert, bis für Geräte im Händlermodus der Bildschirmschoner auf der Anmeldeseite erscheint.
 
       Der Wert für die Richtlinie sollte in Millisekunden angegeben werden.</translation>
+<translation id="1145702698069317184">Hochladen und Herunterladen von nicht unterstützten Dateitypen blockieren</translation>
 <translation id="1151353063931113432">Bilder auf diesen Websites zulassen</translation>
 <translation id="1152117524387175066">Meldet den Status des Entwicklerschalters des Geräts beim Start
 
@@ -765,6 +766,15 @@ Wenn die Richtlinie "EnableMediaRouter" auf "false" gesetzt ist, hat der Wert di
 <translation id="2168397434410358693">Inaktivitätsverzögerung im Netzbetrieb</translation>
 <translation id="217013996107840632">Befehlszeilenparameter für den Wechsel vom alternativen Browser.</translation>
 <translation id="2170233653554726857">WPAD-Optimierung aktivieren</translation>
+<translation id="2171245625445050634">Diese Richtlinie wurde in M82 entfernt. Verwenden Sie stattdessen bitte "MinimumChromeVersionEnforced".
+
+      Mit dieser Richtlinie wird die Anforderung an die zulässige Mindestversion von <ph name="PRODUCT_NAME" /> konfiguriert. Versionen unter dem angegebenen Wert werden als veraltet angesehen und der Nutzer kann sich erst anmelden, nachdem das Betriebssystem aktualisiert wurde.
+
+      Wenn die aktuelle Version sich während einer Nutzersitzung als veraltet herausstellt, wird die Abmeldung des Nutzers erzwungen.
+
+      Wenn diese Richtlinie nicht konfiguriert ist, gelten keine Einschränkungen und der Nutzer kann sich unabhängig von der <ph name="PRODUCT_NAME" />-Version anmelden.
+
+      Mit "Version" ist entweder eine exakte Versionsangabe wie "61.0.3163.120" oder ein Versionspräfix wie "61.0" gemeint.  </translation>
 <translation id="2176565653304920879">Wenn diese Richtlinie aktiviert wird, hängt die automatische Erkennung der Zeitzone folgendermaßen vom Wert der Einstellung ab:
 
       Ist "TimezoneAutomaticDetectionUsersDecide" aktiviert, können Nutzer die automatische Zeitzonenerkennung über die normalen Steuerelemente unter chrome://settings verwalten.
@@ -847,6 +857,7 @@ Diese Richtlinie gilt auch für Komponentenerweiterungen, zum Beispiel die Hango
 
       Wenn "HardwareAccelerationModeEnabled" auf "false" gesetzt ist, wird "Disable3DAPIs" ignoriert, als ob "Disable3DAPIs" auf "true" gesetzt wäre.</translation>
 <translation id="2258126710006312594">Nutzern mit Remotezugriff die Übertragung von Dateien vom/zum Host gestatten</translation>
+<translation id="2267288258868218403">Hochladen von nicht unterstützten Dateitypen blockieren</translation>
 <translation id="2269319728625047531">Einwilligung zur Synchronisierung beim Anmelden anzeigen</translation>
 <translation id="2270747976331889601">Mit dieser Richtlinie kann eine Sicherheitsfunktion von TLS 1.3 für lokale Vertrauensanker aktiviert werden.</translation>
 <translation id="2274864612594831715">Diese Richtlinie konfiguriert die Aktivierung der Bildschirmtastatur als Eingabegerät unter Chrome OS. Diese Richtlinie kann nicht von Nutzern überschrieben werden.
@@ -1302,6 +1313,13 @@ Wenn Sie "Letzte Sitzung wiederherstellen" wählen, werden die URLs, die beim le
 
       Hinweis: Wenn <ph name="PRODUCT_NAME" /> ausgeführt wird, während Sie diese Richtlinie ändern, wird sie nur auf neue Tabs angewendet. Deshalb folgen einige Tabs möglicherweise noch der vorherigen Einstellung.</translation>
 <translation id="284288632677954003">Die URL einer XML-Datei mit URLs, die grundsätzlich keinen Browserwechsel auslösen sollen.</translation>
+<translation id="2844404652289407061">Mit dieser Richtlinie wird die Verfügbarkeit von "Zum Suchen tippen" in der Inhaltsansicht von <ph name="PRODUCT_NAME" /> aktiviert.
+
+      Wenn Sie diese Einstellung aktivieren, steht dem Nutzer "Zum Suchen tippen" zur Verfügung und er kann die Funktion aktivieren oder deaktivieren.
+
+      Wenn Sie sie deaktivieren, wird "Zum Suchen tippen" vollständig deaktiviert.
+
+      Wird die Richtlinie nicht konfiguriert, entspricht dies einer Aktivierung (siehe Beschreibung oben).</translation>
 <translation id="285480231336205327">Modus mit hohem Kontrast aktivieren</translation>
 <translation id="2854919890879212089">Hiermit wird festgelegt, dass <ph name="PRODUCT_NAME" /> den Standarddrucker des Betriebssystems als Standarddrucker für die Druckvorschau verwendet, nicht den zuletzt genutzten Drucker.
 
@@ -1741,6 +1759,7 @@ Wenn diese Einstellung auf "Aus" oder kein Wert festgelegt wird, wird der einges
 <translation id="3646859102161347133">Lupentyp festlegen</translation>
 <translation id="3653237928288822292">Symbol der Standardsuchmaschine</translation>
 <translation id="3654906736796256792">Ausführen der Audio-Sandbox zulassen</translation>
+<translation id="3657998022005237040">Herunterladen von nicht unterstützten Dateitypen blockieren</translation>
 <translation id="3660510274595679517">
         Wenn diese Richtlinie auf "true" gesetzt ist, ist die Registrierung für Cloud Management erforderlich und blockiert bei Nichterfüllung den Startprozess von Chrome.
 
@@ -1919,6 +1938,7 @@ Falls die Richtlinie nicht festgelegt wird, bleibt die Varianten-Seed-URL unver�
       Sollten Sie diese Richtlinie nicht festlegen, wird für <ph name="PRODUCT_NAME" /> das jeweilige plattformspezifische Verzeichnis verwendet.
 
       Unter https://www.chromium.org/administrators/policy-list-3/user-data-directory-variables finden Sie eine Liste mit allen Variablen, die verwendet werden können.</translation>
+<translation id="3898795800259311780">Bildschirmaufnahme gestatten oder ablehnen</translation>
 <translation id="3911737181201537215">Diese Richtlinie hat keine Auswirkung auf die Protokollierung durch Android.</translation>
 <translation id="3912092044353890761">Hiermit wird die Bedienungshilfe "Bildschirmtastatur" auf dem Anmeldebildschirm aktiviert.
 
@@ -2047,6 +2067,7 @@ Diese Richtlinie hat keine Auswirkungen darauf, ob die lokalen Nutzerdaten auf d
           Wenn für diese Richtlinie "Cookies für die Dauer der Sitzung beibehalten" festgelegt wurde, werden die Cookies nach Beenden der Sitzung wieder entfernt. Hinweis: Wenn <ph name="PRODUCT_NAME" /> im Hintergrundmodus ausgeführt wird, wird die Sitzung beim Schließen des letzten Fensters möglicherweise nicht beendet. Rufen Sie für weitere Informationen zum Konfigurieren dieses Verhaltens die Richtlinie "BackgroundModeEnabled" auf.
 
           Wenn diese Richtlinie nicht konfiguriert wird, kommt "AllowCookies" zum Einsatz. Nutzer können sie dann ändern.</translation>
+<translation id="4093716537292423758">Nicht unterstützte Dateitypen nicht blockieren</translation>
 <translation id="410068710490553233">Anmeldung in zusätzlichen Google-Konten zulassen</translation>
 <translation id="4103289232974211388">Nach Bestätigung durch Nutzer an SAML-IdP weiterleiten</translation>
 <translation id="4105884561459127998">Hiermit wird der Typ der Authentifizierung für SAML-Anmeldungen konfiguriert.
@@ -2296,9 +2317,19 @@ Diese Richtlinie hat keine Auswirkungen darauf, ob die lokalen Nutzerdaten auf d
 <translation id="4482640907922304445">Zeigt die Schaltfläche "Startseite" in der Symbolleiste von <ph name="PRODUCT_NAME" /> an. Wenn Sie diese Einstellung aktivieren, so wird die Schaltfläche "Startseite" immer angezeigt. Sollten Sie sie deaktivieren, erscheint die Schaltfläche nicht. Ist diese Einstellung aktiviert oder deaktiviert, können Nutzer sie in <ph name="PRODUCT_NAME" /> nicht ändern oder außer Kraft setzen. Ist die Richtlinie nicht konfiguriert, so kann der Nutzer selbst bestimmen, ob die Schaltfläche "Startseite" zur Verfügung stehen soll.</translation>
 <translation id="4483649828988077221">Automatische Updates deaktivieren</translation>
 <translation id="4485425108474077672">URL für "Neuer Tab"-Seite konfigurieren</translation>
+<translation id="4487507711538762752">Mit dieser Richtlinie wird erzwungen, dass der Netzwerkcode im Browserprozess ausgeführt wird.
+
+      Sie ist standardmäßig deaktiviert. Ist sie aktiviert, so ist der Nutzer nicht mehr vor den Sicherheitsproblemen geschützt, sobald der Netzwerkprozess in einer Sandbox ausgeführt wird.
+
+      Diese Richtlinie soll Unternehmen ermöglichen, zu Drittanbietersoftware zu migrieren, die nicht auf Hooking von Netzwerk-APIs angewiesen ist. Proxyserver werden anstelle von LSPs und Win32 API-Patching empfohlen.
+
+      Wenn diese Richtlinie nicht konfiguriert ist, wird der Netzwerkcode standardmäßig außerhalb des Browserprozesses ausgeführt.
+
+      Diese Richtlinie wird in <ph name="PRODUCT_NAME" /> 84 entfernt.</translation>
 <translation id="4492287494009043413">Aufnahme von Screenshots deaktivieren</translation>
 <translation id="4494132853995232608">Wilco DTC</translation>
 <translation id="449423975179525290">Richtlinien für <ph name="PLUGIN_VM_NAME" /> konfigurieren.</translation>
+<translation id="4498493270899294764">URL-Muster, für die heruntergeladene Inhalte nicht auf Malware geprüft werden sollen</translation>
 <translation id="450537894712826981">Konfiguriert die Cache-Größe, die <ph name="PRODUCT_NAME" /> zum Speichern von Mediendateien im Cache auf dem Datenträger verwendet.
 
       Wenn Sie diese Richtlinie festlegen, verwendet <ph name="PRODUCT_NAME" /> die angegebene Cache-Größe unabhängig davon, ob der Nutzer den Parameter "--media-cache-size" angegeben hat oder nicht. Der in dieser Richtlinie angegebene Wert ist keine festgelegte Grenze, sondern mehr ein Richtwert für das Caching-System. Werte, die unter wenigen Megabytes liegen, sind zu klein und werden auf einen sinnvollen Minimalwert aufgerundet.
@@ -2538,6 +2569,12 @@ Wenn die Richtlinie auf "FALSE" gesetzt oder nicht festgelegt wird, führt die T
 <translation id="4986560318567565414">Pfad, um vom alternativen Browser zu Chrome zu wechseln.</translation>
 <translation id="4988291787868618635">Auszuführende Aktion bei Erreichen der Inaktivitätsverzögerung</translation>
 <translation id="500149597848135831">Alle Variationen aktivieren</translation>
+<translation id="5023555740504506178">Wenn diese Richtlinie aktiviert oder nicht konfiguriert ist (Standard), können Webseiten
+      Bildschirmfreigabe-APIs (z. B. "getDisplayMedia()" oder die Desktop Capture-Erweiterungs-API) verwenden,
+      um den Nutzer aufzufordern, einen Tab, ein Fenster oder einen Desktop für die Aufnahme auszuwählen.
+
+      Wenn diese Richtlinie deaktiviert ist, treten beim Aufrufen von Bildschirmfreigabe-APIs
+      Fehler auf.</translation>
 <translation id="5032164758660626397">Verhindern, dass Nutzer große Dateien übertragen</translation>
 <translation id="5047604665028708335">Zugriff auf Websites außerhalb von Inhaltspaketen erlauben</translation>
 <translation id="5052081091120171147">Diese Richtlinie erzwingt, sofern aktiv, den Import des Browserverlaufs aus dem aktuellen Standardbrowser. Ist die Richtlinie aktiviert, wirkt sie sich auch auf den Importdialog aus. Wenn sie deaktiviert ist, erfolgt kein Import des Browserverlaufs. Sollte sie nicht konfiguriert sein, so wird der Nutzer möglicherweise gefragt, ob ein Import erfolgen soll, oder der Import findet automatisch statt.</translation>
@@ -2686,6 +2723,25 @@ neues Fenster geöffnet wird.
 
           Diese Richtlinie steht nur bei Windows-Instanzen zur Verfügung, die Teil einer "<ph name="MS_AD_NAME" />"-Domain sind, oder bei Windows 10 Pro- oder Enterprise-Instanzen, für die eine Geräteverwaltung eingerichtet ist.</translation>
 <translation id="5208240613060747912">Ermöglicht Ihnen die Zusammenstellung einer Liste mit URL-Mustern, die Websites angeben, denen es nicht gestattet ist, Benachrichtigungen anzuzeigen. Wenn diese Richtlinie nicht konfiguriert ist, kommt für alle Websites entweder der globale Standardwert der Richtlinie "DefaultNotificationsSetting", sofern konfiguriert, oder der persönlichen Konfiguration des Nutzers zum Einsatz.</translation>
+<translation id="5210980743015047124">Mit dieser Richtlinie wird die Anforderung an die zulässige Mindestversion von <ph name="PRODUCT_NAME" /> konfiguriert.
+
+      Wenn diese Richtlinie auf eine nicht leere Liste festgelegt wird, passiert Folgendes:
+      Wenn der Wert für "chrome_version" bei keinem Eintrag höher als die aktuelle Version auf dem Gerät ist, gelten keine Einschränkungen und bestehende Einschränkungen werden aufgehoben.
+      Wenn der Wert für "chrome_version" bei mindestens einem Eintrag höher als die aktuelle Version ist, wird der Eintrag ausgewählt, dessen Version der aktuellen Version am nächsten kommt.
+      Falls ein Konflikt auftritt, wird der Eintrag mit dem niedrigeren Wert für "warning_period" oder "eol_warning_period" bevorzugt und die Richtlinie wird unter Verwendung dieses Eintrags angewendet.
+
+      Wenn die aktuelle Version sich während einer Nutzersitzung als veraltet herausstellt, erscheint auf dem Bildschirm eine Benachrichtigung, dass das Gerät innerhalb der angezeigten "warning_period"-Frist aktualisiert werden muss.
+      Die "warning_period"-Frist beginnt zu dem Zeitpunkt, an dem die Richtlinie angewendet wird.
+      Wenn das Gerät bis zum Ablauf der "warning_period"-Frist nicht aktualisiert wird, wird der Nutzer abgemeldet.
+      Wenn die "warning_period"-Frist abgelaufen ist und sich herausstellt, dass die aktuelle Version veraltet ist, muss der Nutzer das Gerät vor der Anmeldung aktualisieren.
+
+      Wenn während einer Nutzersitzung das End of Life erreicht wird, erscheint auf dem Bildschirm eine Benachrichtigung, die den Nutzer darüber informiert, dass er nach Ablauf der "eol_warning_period"-Frist abgemeldet wird.
+      Wenn die "eol_warning_period"-Frist abgelaufen ist und sich herausstellt, dass das Gerät das End of Life erreicht hat, können sich auf dem Gerät keine Nutzer mehr anmelden.
+
+      Wenn diese Richtlinie nicht konfiguriert oder eine leere Liste festgelegt ist, gelten keine Einschränkungen, bestehende Einschränkungen werden aufgehoben und der Nutzer kann sich unabhängig von der <ph name="PRODUCT_NAME" />-Version anmelden.
+
+      Mit "chrome_version" ist entweder eine exakte Versionsangabe wie "61.0.3163.120" oder ein Versionspräfix wie "61.0" gemeint.
+      Die Werte für "warning_period" und "eol_warning_period" sind optional und werden in Tagen angegeben. Der Standardwert liegt bei 0 Tagen. </translation>
 <translation id="5212118847531454979">Mit dieser Richtlinie kann der Zeitraum in Millisekunden festgelegt werden, in dem Nutzer eine Benachrichtigung erhalten, dass <ph name="PRODUCT_NAME" /> oder ein Gerät mit <ph name="PRODUCT_OS_NAME" /> für ein Update neu gestartet werden muss.
 
       In diesem Zeitraum werden Nutzer wiederholt darüber informiert, dass ein Update erforderlich ist. Auf <ph name="PRODUCT_OS_NAME" />-Geräten erscheint entsprechend der Richtlinie "<ph name="RELAUNCH_HEADS_UP_PERIOD_POLICY_NAME" />" eine Neustartbenachrichtigung in der Taskleiste. In <ph name="PRODUCT_NAME" />-Browsern ändert sich das App-Menü, sobald ein Drittel des Benachrichtigungszeitraums abgelaufen ist, um zu zeigen, dass ein Neustart nötig ist. Die Farbe dieser Benachrichtigung ändert sich, sobald zwei Drittel des Benachrichtigungszeitraums vergangen sind. Wenn der ganze Zeitraum abgelaufen ist, ändert sich die Farbe erneut. Für die zusätzlichen Benachrichtigungen, die über die Richtlinie "<ph name="RELAUNCH_NOTIFICATION_POLICY_NAME" />" aktiviert werden, gilt derselbe Zeitplan.
@@ -2759,6 +2815,11 @@ Ist die Richtlinie auf "false" gesetzt, wird Crostini nicht für den Nutzer akti
 Ist die Richtlinie auf "true" gesetzt oder nicht festgelegt, ist Crostini für den Nutzer aktiviert, sofern dies nicht durch andere Einstellungen verhindert wird.
 Alle drei Richtlinien (VirtualMachinesAllowed, CrostiniAllowed und DeviceUnaffiliatedCrostiniAllowed) müssen auf "true" gesetzt sein, wenn sie angewendet werden, damit Crostini ausgeführt werden darf.
 Wenn diese Richtlinie zu "false" geändert wird, wirkt sich dies auf den Start neuer Crostini-Container aus. Container, die bereits laufen, werden aber nicht beendet.</translation>
+<translation id="5277914408935179830">Mit dieser Richtlinie wird festgelegt, wie gemischte Inhalte (HTTP-Inhalte auf HTTPS-Websites) im Browser gehandhabt werden.
+       Wenn die Richtlinie auf "true" gesetzt oder nicht konfiguriert ist, werden gemischte Audio- und Videoinhalte automatisch auf HTTPS aktualisiert. Das bedeutet, dass die URL in HTTPS umbenannt wird und kein Fallback vorhanden ist, falls keine Ressource über HTTPS verfügbar ist. Außerdem wird in der URL-Leiste für gemischte Bildinhalte der Warnhinweis "Nicht sicher" angezeigt.
+       Wenn die Richtlinie auf "false" gesetzt ist, wird die automatische Aktualisierung für Audio- und Videoinhalte deaktiviert. Außerdem werden für Bilder keine Warnhinweise angezeigt.
+       Diese Richtlinie wirkt sich nur auf Audio-, Video- und Bildinhalte aus, nicht auf andere Arten gemischter Inhalte.
+       Ab <ph name="PRODUCT_NAME" /> 84 wird sie nicht mehr angewendet.</translation>
 <translation id="5278367296164377827">Diese Unternehmensrichtlinie kann nur übergangsweise verwendet werden und wird in M82 entfernt.
 
       Die standardmäßige Verweisrichtlinie in Chrome wird verschärft. Hierzu wird der Standardwert von "no-referrer-when-downgrade" zum sichereren Wert "strict-origin-when-cross-origin" geändert. Die Umstellung erfolgt graduell und soll mit M80 (stabil) abgeschlossen sein.
@@ -2775,6 +2836,7 @@ Wenn diese Richtlinie zu "false" geändert wird, wirkt sich dies auf den Start n
 <translation id="5306186200045823863">Der veralteten Symantec-PKI vertrauen</translation>
 <translation id="5307432759655324440">Inkognitomodus - Verfügbarkeit</translation>
 <translation id="5311275381462687162">Einstellung für das alte Standardverhalten des "<ph name="ATTRIBUTE_SAMESITE_NAME" />"-Cookies</translation>
+<translation id="5313116350102437846">Mit dieser Richtlinie wird festgelegt, ob Nutzer, die am erweiterten Sicherheitsprogramm teilnehmen, ihre heruntergeladenen Dateien für einen Malware-Scan an Google senden können. Wird die Richtlinie auf "true" gesetzt oder nicht konfiguriert, werden Nutzer dazu aufgefordert, ihre heruntergeladenen Dateien für einen Tiefenscan an Google zu senden. Wenn der Nutzer "Suchen" auswählt, wird der Download an Google gesendet. Wird diese Richtlinie auf "false" gesetzt, werden Nutzer nicht dazu aufgefordert, ihre heruntergeladenen Dateien an Google zu senden.</translation>
 <translation id="5318185076587284965">Verwendung von Relayservern durch den Host für den Remotezugriff gestatten</translation>
 <translation id="5323128137188992869">Hiermit wird das Streamen von Inhalten an das Gerät über <ph name="PRODUCT_NAME" /> erlaubt.
 
@@ -2953,6 +3015,16 @@ Wenn diese Richtlinie zu "false" geändert wird, wirkt sich dies auf den Start n
 
       Hinweis: Wenn die Plattform Richtlinienbenachrichtigungen unterstützt, wird für die Verzögerung der Aktualisierung 24 Stunden festgelegt und alle Standardwerte der Richtlinie werden ignoriert, da davon ausgegangen wird, dass diese Benachrichtigungen bei jeglichen Richtlinienänderungen automatisch eine Aktualisierung erzwingen. Daher ist ein kürzeres Intervall zwischen den Aktualisierungen nicht erforderlich.</translation>
 <translation id="5530347722229944744">Potenziell gefährliche Downloads blockieren</translation>
+<translation id="5534198977061777727">Mit dieser Richtlinie wird festgelegt, wie <ph name="PRODUCT_NAME" /> mit Dateien umgeht, die hochgeladen, heruntergeladen oder aus der Zwischenablage bzw. per Drag-and-drop eingefügt werden und bei deren Dateitypen der Schutz vor Datenverlust oder der Malware-Scan nicht unterstützt wird.
+
+      Wenn diese Richtlinie nicht konfiguriert oder auf "Nicht unterstützte Dateitypen nicht blockieren"' (0) gesetzt ist, erlaubt <ph name="PRODUCT_NAME" /> das Hoch- und Herunterladen von Dateien mit Dateitypen, bei denen der Schutz vor Datenverlust oder der Malware-Scan nicht unterstützt wird.
+
+      Wenn diese Richtlinie auf "Herunterladen von nicht unterstützten Dateitypen blockieren" (1) gesetzt ist und der Nutzer versucht, eine Datei von einer URL herunterzuladen, die in der Richtlinie "<ph name="DOMAINS_TO_CHECK_COMPLIANCE_OF_DOWNLOADED_CONTENT_POLICTY_NAME" />" enthalten ist, und bei deren Dateityp der Schutz vor Datenverlust oder der Malware-Scan nicht unterstützt wird, wird <ph name="PRODUCT_NAME" /> den Download blockieren.
+
+      Wenn die Richtlinie auf "Hochladen von nicht unterstützten Dateitypen blockieren" (2) gesetzt ist und der Nutzer versucht, eine Datei auf eine Domain hochzuladen, die nicht in der Richtlinie "<ph name="DOMAINS_TO_NOT_CHECK_COMPLIANCE_OF_UPLOADED_CONTENT_POLICY_NAME" />" enthalten ist, und bei deren Dateityp der Schutz vor Datenverlust oder der Malware-Scan nicht unterstützt wird, wird <ph name="PRODUCT_NAME" /> den Upload oder das Einfügen aus der Zwischenablage bzw. per Drag-and-drop blockieren.
+
+      Wenn die Richtlinie auf "Hochladen und Herunterladen von nicht unterstützten Dateitypen blockieren" (3) gesetzt ist, werden in <ph name="PRODUCT_NAME" /> die Regeln angewendet, die unter "Hochladen von nicht unterstützten Dateitypen blockieren" und "Herunterladen von nicht unterstützten Dateitypen blockieren" beschrieben sind.
+      </translation>
 <translation id="5535973522252703021">Weiße Liste für Kerberos-Bevollmächtigungs-Server</translation>
 <translation id="554903022911579950">Kerberos</translation>
 <translation id="555022085242359084">Hohen Kontrast auf dem Anmeldebildschirm aktivieren</translation>
@@ -3107,6 +3179,12 @@ Wenn diese Richtlinie zu "false" geändert wird, wirkt sich dies auf den Start n
           Wenn die Richtlinie nicht konfiguriert ist, wird das Gerät standardmäßig gesperrt.
 
           Falls das Gerät gesperrt werden soll, kann separat konfiguriert werden, ob <ph name="PRODUCT_OS_NAME" /> den Bildschirm vorher sperren soll oder nicht.</translation>
+<translation id="5746196829700407864">Eine Liste mit URL-Mustern, für die heruntergeladene Inhalte nicht auf Malware gescannt werden müssen.  Diese Richtlinie wird nur verwendet, wenn "<ph name="SEND_FILES_FOR_MALWARE_CHECK_POLICY_NAME" />" ein Wert ist, mit dem Malware-Scans für Downloads zugelassen oder erzwungen werden.
+
+      Wenn sie nicht konfiguriert oder eine leere Liste festgelegt ist, werden alle Downloads auf Malware gescannt.
+
+      Die URL-Muster haben das gleiche Format wie die Richtlinie "URLBlacklist", die unter https://www.chromium.org/administrators/url-blacklist-filter-format beschrieben ist.
+      </translation>
 <translation id="574983287620584622">Tastenkombinationen für Bedienungshilfen auf dem Anmeldebildschirm aktivieren</translation>
 <translation id="5755002458331714762"> Die Web Components v0 APIs (Shadow DOM v0, Custom Elements v0 und HTML Imports) wurden 2018 eingestellt und ab M80 standardmäßig deaktiviert. Mit dieser Richtlinie lassen sich die Funktionen selektiv bis M84 wieder aktivieren.
 
@@ -3163,6 +3241,7 @@ Wenn diese Richtlinie zu "false" geändert wird, wirkt sich dies auf den Start n
 <translation id="5861856285460256766">Konfiguration von Elternzugriffscodes</translation>
 <translation id="5868414965372171132">Netzwerkkonfiguration auf Nutzerebene</translation>
 <translation id="5879014913445067283">Steuerung der Erkennung von Netzwerkfreigaben über <ph name="NETBIOS_NAME" /></translation>
+<translation id="588135807064822874">"Zum Suchen tippen" aktivieren</translation>
 <translation id="5882345429632338713">Verzögerung vor dem Starten eines alternativen Browsers (Millisekunden)</translation>
 <translation id="5883015257301027298">Standardeinstellungen für Cookies</translation>
 <translation id="5887414688706570295">Konfiguriert das TalkGadget-Präfix, das von Remotezugriff-Hosts verwendet wird, und verhindert, dass dieses von Nutzern geändert werden kann.
@@ -3228,7 +3307,6 @@ Wenn diese Einstellung deaktiviert oder nicht konfiguriert ist, wird kein Proxy 
 
       Eine Deaktivierung hat negative Auswirkungen auf die Sicherheit und Stabilität von Chrome, da dann unbekannter und potenziell schädlicher Code in den Rendererprozessen von Chrome geladen werden kann. Weitere Informationen finden Sie unter: https://chromium.googlesource.com/chromium/src/+/master/docs/design/sandbox.md#Process-mitigation-policies.</translation>
 <translation id="6048199181629830227">Energieverwaltung zum Umschalten bei Leistungsspitzen aktivieren</translation>
-<translation id="605475635122964053">Hiermit wird der PIN-Druckmodus eingeschränkt. Wenn die Richtlinie nicht konfiguriert ist, gelten keine Einschränkungen. Ist der Modus nicht verfügbar, wird diese Richtlinie ignoriert. Der PIN-Druckmodus wird nur für Drucker angewendet, die das IPPS- oder USB-Protokoll bzw. IPP über USB verwenden. </translation>
 <translation id="6070667616071269965">Tastaturlayouts der Anmeldeseite</translation>
 <translation id="6074963268421707432">Anzeige von Desktop-Benachrichtigungen für keine Website zulassen</translation>
 <translation id="6074964551275531965">Zeitraum für Updatebenachrichtigungen festlegen</translation>
@@ -3378,6 +3456,7 @@ Wenn diese Einstellung deaktiviert oder nicht konfiguriert ist, wird kein Proxy 
 <translation id="6315673513957120120">Chrome zeigt eine Seite mit einer Warnmeldung an, wenn Nutzer Websites aufrufen, die SSL-Fehler aufweisen. Standardmäßig oder bei Festlegung von "true" für diese Richtlinie ist es Nutzern gestattet, durch diese Seiten mit Warnmeldung zu klicken.
       Wenn für die Richtlinie "false" festgelegt wird, können Nutzer nicht mehr durch diese Seiten klicken.</translation>
 <translation id="6319198883324703402">Zeitpunkt der ersten Nutzerbenachrichtigung zum Neustart festlegen</translation>
+<translation id="6342187235303612558">Nutzer am Hoch- oder Herunterladen von Dateien hindern, bei denen der Schutz vor Datenverlust oder der Malware-Scan nicht unterstützt wird.</translation>
 <translation id="6352543686437322588">Hiermit geben Sie ein lokales Gerätekonto an, in dem ein Nutzer nach Ablauf einer bestimmten Zeit automatisch angemeldet wird.
 
 Ist diese Richtlinie festgelegt, wird der Nutzer automatisch in dem festgelegten Konto angemeldet, wenn er für eine bestimmte Zeit keine Eingabe auf der Anmeldeseite macht. Das lokale Gerätekonto muss bereits konfiguriert sein (siehe |DeviceLocalAccounts|).
@@ -4979,6 +5058,7 @@ Nutzer können diese Einstellung weder ändern noch überschreiben.</translation
 <translation id="8976248126101463034">Gnubby-Authentifizierung für Remotezugriff-Hosts zulassen</translation>
 <translation id="8976531594979650914">Standarddrucker des Betriebssystems als Standardeinstellung verwenden</translation>
 <translation id="8992176907758534924">Anzeige von Bildern für alle Websites blockieren</translation>
+<translation id="9010080992450148617">Mitgliedern des erweiterten Sicherheitsprogramms das Senden von Downloads für einen Tiefenscan an Google erlauben</translation>
 <translation id="9013875414788074110">Bei der Anmeldung kann <ph name="PRODUCT_OS_NAME" /> die Authentifizierung über einen Server (online) oder über ein Passwort im Cache (offline) ausführen.
 
       Wenn für diese Richtlinie der Wert -1 festgelegt ist, kann sich der Nutzer ohne Zeitlimit offline authentifizieren. Wird ein anderer Wert festgelegt, gibt dieser den Zeitraum ab der letzten Online-Authentifizierung an, nach dem der Nutzer sich noch einmal online authentifizieren muss.

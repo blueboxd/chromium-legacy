@@ -67,7 +67,6 @@
 #include "third_party/blink/renderer/core/layout/layout_inline.h"
 #include "third_party/blink/renderer/core/layout/layout_list_item.h"
 #include "third_party/blink/renderer/core/layout/layout_list_marker.h"
-#include "third_party/blink/renderer/core/layout/layout_menu_list.h"
 #include "third_party/blink/renderer/core/layout/layout_replaced.h"
 #include "third_party/blink/renderer/core/layout/layout_table.h"
 #include "third_party/blink/renderer/core/layout/layout_table_cell.h"
@@ -1439,11 +1438,12 @@ String AXLayoutObject::StringValue() const {
 
   LayoutBoxModelObject* css_box = GetLayoutBoxModelObject();
 
-  if (css_box && css_box->IsMenuList()) {
+  auto* select_element =
+      DynamicTo<HTMLSelectElement>(layout_object_->GetNode());
+  if (css_box && select_element && select_element->UsesMenuList()) {
     // LayoutMenuList will go straight to the text() of its selected item.
     // This has to be overridden in the case where the selected item has an ARIA
     // label.
-    auto* select_element = To<HTMLSelectElement>(layout_object_->GetNode());
     int selected_index = select_element->SelectedListIndex();
     const HeapVector<Member<HTMLElement>>& list_items =
         select_element->GetListItems();
@@ -1455,7 +1455,7 @@ String AXLayoutObject::StringValue() const {
       if (!overridden_description.IsNull())
         return overridden_description;
     }
-    return ToLayoutMenuList(layout_object_)->GetText();
+    return select_element->InnerElement().innerText();
   }
 
   if (IsWebArea()) {

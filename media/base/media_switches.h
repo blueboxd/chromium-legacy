@@ -106,6 +106,7 @@ MEDIA_EXPORT extern const base::Feature kAutoplayDisableSettings;
 MEDIA_EXPORT extern const base::Feature kAutoplayWhitelistSettings;
 MEDIA_EXPORT extern const base::Feature kBackgroundVideoPauseOptimization;
 MEDIA_EXPORT extern const base::Feature kBresenhamCadence;
+MEDIA_EXPORT extern const base::Feature kCdmHostVerification;
 MEDIA_EXPORT extern const base::Feature kD3D11PrintCodecOnCrash;
 MEDIA_EXPORT extern const base::Feature kD3D11VideoDecoder;
 MEDIA_EXPORT extern const base::Feature kD3D11VideoDecoderIgnoreWorkarounds;
@@ -179,6 +180,7 @@ MEDIA_EXPORT extern const base::Feature kDisableSurfaceLayerForVideo;
 MEDIA_EXPORT extern const base::Feature kCanPlayHls;
 MEDIA_EXPORT extern const base::Feature kPictureInPictureAPI;
 MEDIA_EXPORT extern const base::Feature kHlsPlayer;
+MEDIA_EXPORT extern const base::Feature kRequestSystemAudioFocus;
 MEDIA_EXPORT extern const base::Feature kUseAudioLatencyFromHAL;
 MEDIA_EXPORT extern const base::Feature kUsePooledSharedImageVideoProvider;
 #endif  // defined(OS_ANDROID)

@@ -96,6 +96,36 @@
             ]
         }
     ],
+    "AmpBackgroundTab": [
+        {
+            "platforms": [
+                "android"
+            ],
+            "experiments": [
+                {
+                    "name": "AmpBackgroundTab",
+                    "enable_features": [
+                        "CCTBackgroundTab"
+                    ]
+                }
+            ]
+        }
+    ],
+    "AndroidAIAFetching": [
+        {
+            "platforms": [
+                "android"
+            ],
+            "experiments": [
+                {
+                    "name": "Enabled",
+                    "enable_features": [
+                        "AndroidAIAFetching"
+                    ]
+                }
+            ]
+        }
+    ],
     "AndroidClipboardSuggestionsRemoval": [
         {
             "platforms": [
@@ -558,6 +588,21 @@
                     "name": "Enabled",
                     "enable_features": [
                         "AppendFrameOriginToNetworkIsolationKey"
+                    ]
+                }
+            ]
+        }
+    ],
+    "AppleScriptExecuteJavaScript": [
+        {
+            "platforms": [
+                "mac"
+            ],
+            "experiments": [
+                {
+                    "name": "Disabled",
+                    "disable_features": [
+                        "AppleScriptExecuteJavaScript"
                     ]
                 }
             ]
@@ -2641,6 +2686,24 @@
             ]
         }
     ],
+    "ForwardMemoryPressureEventsToGpuProcess": [
+        {
+            "platforms": [
+                "chromeos",
+                "linux",
+                "mac",
+                "windows"
+            ],
+            "experiments": [
+                {
+                    "name": "Enabled",
+                    "enable_features": [
+                        "ForwardMemoryPressureEventsToGpuProcess"
+                    ]
+                }
+            ]
+        }
+    ],
     "FreezeBackgroundTabOnNetworkIdle": [
         {
             "platforms": [
@@ -3013,6 +3076,21 @@
                     "name": "Enabled",
                     "enable_features": [
                         "EmbedderBlockRestoreUrl"
+                    ]
+                }
+            ]
+        }
+    ],
+    "IOSSSLCommittedInterstitials": [
+        {
+            "platforms": [
+                "ios"
+            ],
+            "experiments": [
+                {
+                    "name": "Enabled",
+                    "enable_features": [
+                        "SSLCommittedInterstitials"
                     ]
                 }
             ]
@@ -3725,24 +3803,6 @@
             ]
         }
     ],
-    "NTPLaunchAfterInactivity": [
-        {
-            "platforms": [
-                "android"
-            ],
-            "experiments": [
-                {
-                    "name": "OneHourDelay",
-                    "params": {
-                        "delay_in_mins": "60"
-                    },
-                    "enable_features": [
-                        "NTPLaunchAfterInactivity"
-                    ]
-                }
-            ]
-        }
-    ],
     "NTPPopularSites": [
         {
             "platforms": [
@@ -3936,21 +3996,6 @@
                     "name": "Enabled",
                     "enable_features": [
                         "OmniboxNewAnswerLayout"
-                    ]
-                }
-            ]
-        }
-    ],
-    "NewClearBrowsingDataUI": [
-        {
-            "platforms": [
-                "ios"
-            ],
-            "experiments": [
-                {
-                    "name": "NewClearBrowsingDataUI",
-                    "enable_features": [
-                        "NewClearBrowsingDataUI"
                     ]
                 }
             ]
@@ -4606,6 +4651,24 @@
                     "name": "Enabled",
                     "enable_features": [
                         "PassiveMixedContentWarning"
+                    ]
+                }
+            ]
+        }
+    ],
+    "PasswordManagerStickyBubble": [
+        {
+            "platforms": [
+                "chromeos",
+                "linux",
+                "mac",
+                "windows"
+            ],
+            "experiments": [
+                {
+                    "name": "Enabled",
+                    "enable_features": [
+                        "PasswordManagerStickyBubble"
                     ]
                 }
             ]
@@ -5323,25 +5386,6 @@
                 },
                 {
                     "name": "Disabled"
-                }
-            ]
-        }
-    ],
-    "ReducedReferrerGranularity": [
-        {
-            "platforms": [
-                "android",
-                "chromeos",
-                "linux",
-                "mac",
-                "windows"
-            ],
-            "experiments": [
-                {
-                    "name": "Enabled",
-                    "enable_features": [
-                        "ReducedReferrerGranularity"
-                    ]
                 }
             ]
         }

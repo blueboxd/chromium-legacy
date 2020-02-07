@@ -51,9 +51,9 @@ public class CastAudioManagerTest {
         Observable<CastAudioManager.AudioFocusLoss> lostAudioFocusState =
                 audioManager.requestAudioFocusWhen(requestAudioFocusState);
         ReactiveRecorder lostAudioFocusRecorder = ReactiveRecorder.record(lostAudioFocusState);
-        lostAudioFocusRecorder.verify().opened(CastAudioManager.AudioFocusLoss.NORMAL).end();
+        lostAudioFocusRecorder.verify().opened(CastAudioManager.AudioFocusLoss.NOT_REQUESTED).end();
         requestAudioFocusState.set(buildFocusRequest());
-        lostAudioFocusRecorder.verify().closed(CastAudioManager.AudioFocusLoss.NORMAL).end();
+        lostAudioFocusRecorder.verify().closed(CastAudioManager.AudioFocusLoss.NOT_REQUESTED).end();
     }
 
     @Test
@@ -66,11 +66,11 @@ public class CastAudioManagerTest {
         Observable<CastAudioManager.AudioFocusLoss> lostAudioFocusState =
                 audioManager.requestAudioFocusWhen(requestAudioFocusState);
         ReactiveRecorder lostAudioFocusRecorder = ReactiveRecorder.record(lostAudioFocusState);
-        lostAudioFocusRecorder.verify().opened(CastAudioManager.AudioFocusLoss.NORMAL).end();
+        lostAudioFocusRecorder.verify().opened(CastAudioManager.AudioFocusLoss.NOT_REQUESTED).end();
         requestAudioFocusState.set(buildFocusRequest());
         shadowAudioManager.getLastAudioFocusRequest().listener.onAudioFocusChange(
                 AudioManager.AUDIOFOCUS_GAIN);
-        lostAudioFocusRecorder.verify().closed(CastAudioManager.AudioFocusLoss.NORMAL).end();
+        lostAudioFocusRecorder.verify().closed(CastAudioManager.AudioFocusLoss.NOT_REQUESTED).end();
         requestAudioFocusState.reset();
         lostAudioFocusRecorder.verify().opened(CastAudioManager.AudioFocusLoss.NORMAL).end();
     }
@@ -85,12 +85,12 @@ public class CastAudioManagerTest {
         Observable<CastAudioManager.AudioFocusLoss> lostAudioFocusState =
                 audioManager.requestAudioFocusWhen(requestAudioFocusState);
         ReactiveRecorder lostAudioFocusRecorder = ReactiveRecorder.record(lostAudioFocusState);
-        lostAudioFocusRecorder.verify().opened(CastAudioManager.AudioFocusLoss.NORMAL).end();
+        lostAudioFocusRecorder.verify().opened(CastAudioManager.AudioFocusLoss.NOT_REQUESTED).end();
         requestAudioFocusState.set(buildFocusRequest());
         AudioManager.OnAudioFocusChangeListener listener =
                 shadowAudioManager.getLastAudioFocusRequest().listener;
         listener.onAudioFocusChange(AudioManager.AUDIOFOCUS_GAIN);
-        lostAudioFocusRecorder.verify().closed(CastAudioManager.AudioFocusLoss.NORMAL).end();
+        lostAudioFocusRecorder.verify().closed(CastAudioManager.AudioFocusLoss.NOT_REQUESTED).end();
         listener.onAudioFocusChange(AudioManager.AUDIOFOCUS_LOSS);
         lostAudioFocusRecorder.verify().opened(CastAudioManager.AudioFocusLoss.NORMAL).end();
     }
@@ -105,12 +105,12 @@ public class CastAudioManagerTest {
         Observable<CastAudioManager.AudioFocusLoss> lostAudioFocusState =
                 audioManager.requestAudioFocusWhen(requestAudioFocusState);
         ReactiveRecorder lostAudioFocusRecorder = ReactiveRecorder.record(lostAudioFocusState);
-        lostAudioFocusRecorder.verify().opened(CastAudioManager.AudioFocusLoss.NORMAL).end();
+        lostAudioFocusRecorder.verify().opened(CastAudioManager.AudioFocusLoss.NOT_REQUESTED).end();
         requestAudioFocusState.set(buildFocusRequest());
         AudioManager.OnAudioFocusChangeListener listener =
                 shadowAudioManager.getLastAudioFocusRequest().listener;
         listener.onAudioFocusChange(AudioManager.AUDIOFOCUS_GAIN);
-        lostAudioFocusRecorder.verify().closed(CastAudioManager.AudioFocusLoss.NORMAL).end();
+        lostAudioFocusRecorder.verify().closed(CastAudioManager.AudioFocusLoss.NOT_REQUESTED).end();
         listener.onAudioFocusChange(AudioManager.AUDIOFOCUS_LOSS);
         lostAudioFocusRecorder.verify().opened(CastAudioManager.AudioFocusLoss.NORMAL).end();
         listener.onAudioFocusChange(AudioManager.AUDIOFOCUS_GAIN);
@@ -126,7 +126,7 @@ public class CastAudioManagerTest {
         Observable<CastAudioManager.AudioFocusLoss> lostAudioFocusState =
                 audioManager.requestAudioFocusWhen(requestAudioFocusState);
         ReactiveRecorder lostAudioFocusRecorder = ReactiveRecorder.record(lostAudioFocusState);
-        lostAudioFocusRecorder.verify().opened(CastAudioManager.AudioFocusLoss.NORMAL).end();
+        lostAudioFocusRecorder.verify().opened(CastAudioManager.AudioFocusLoss.NOT_REQUESTED).end();
     }
 
     @Test

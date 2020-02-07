@@ -27,6 +27,7 @@
 #include "components/prefs/pref_service.h"
 #include "components/user_manager/user_manager.h"
 #include "content/public/browser/browser_thread.h"
+#include "ui/display/screen.h"
 
 namespace chromeos {
 namespace settings {
@@ -298,23 +299,6 @@ void CrostiniHandler::OnCrostiniInstallerViewStatusChanged(bool status) {
   }
 }
 
-void CrostiniHandler::OnCrostiniExportImportOperationStatusChanged(
-    bool in_progress) {
-  // Other side listens with cr.addWebUIListener
-  FireWebUIListener("crostini-export-import-operation-status-changed",
-                    base::Value(in_progress));
-}
-
-void CrostiniHandler::HandleQueryArcAdbRequest(const base::ListValue* args) {
-  AllowJavascript();
-  CHECK_EQ(0U, args->GetSize());
-
-  chromeos::SessionManagerClient* client =
-      chromeos::SessionManagerClient::Get();
-  client->QueryAdbSideload(base::Bind(&CrostiniHandler::OnQueryAdbSideload,
-                                      weak_ptr_factory_.GetWeakPtr()));
-}
-
 void CrostiniHandler::OnQueryAdbSideload(
     SessionManagerClient::AdbSideloadResponseCode response_code,
     bool enabled) {
@@ -384,10 +368,34 @@ bool CrostiniHandler::CheckEligibilityToChangeArcAdbSideloading() const {
   return true;
 }
 
+void CrostiniHandler::LaunchTerminal() {
+  crostini::LaunchCrostiniApp(
+      profile_, crostini::GetTerminalId(),
+      display::Screen::GetScreen()->GetPrimaryDisplay().id());
+}
+
 void CrostiniHandler::HandleRequestContainerUpgradeView(
     const base::ListValue* args) {
   CHECK_EQ(0U, args->GetSize());
-  chromeos::CrostiniUpgraderDialog::Show(base::DoNothing());
+  chromeos::CrostiniUpgraderDialog::Show(base::BindOnce(
+      &CrostiniHandler::LaunchTerminal, weak_ptr_factory_.GetWeakPtr()));
+}
+
+void CrostiniHandler::OnCrostiniExportImportOperationStatusChanged(
+    bool in_progress) {
+  // Other side listens with cr.addWebUIListener
+  FireWebUIListener("crostini-export-import-operation-status-changed",
+                    base::Value(in_progress));
+}
+
+void CrostiniHandler::HandleQueryArcAdbRequest(const base::ListValue* args) {
+  AllowJavascript();
+  CHECK_EQ(0U, args->GetSize());
+
+  chromeos::SessionManagerClient* client =
+      chromeos::SessionManagerClient::Get();
+  client->QueryAdbSideload(base::Bind(&CrostiniHandler::OnQueryAdbSideload,
+                                      weak_ptr_factory_.GetWeakPtr()));
 }
 
 }  // namespace settings

@@ -75,6 +75,7 @@ class WebAppControllerBrowserTest : public WebAppControllerBrowserTestBase {
   net::EmbeddedTestServer* https_server() { return &https_server_; }
 
   GURL GetInstallableAppURL();
+  static const char* GetInstallableAppName();
 
   // ExtensionBrowserTest:
   void SetUpInProcessBrowserTestFixture() override;

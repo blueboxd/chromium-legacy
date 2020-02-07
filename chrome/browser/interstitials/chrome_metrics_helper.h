@@ -12,8 +12,12 @@
 #include "components/security_interstitials/core/metrics_helper.h"
 #include "url/gurl.h"
 
-namespace content {
-class WebContents;
+namespace captive_portal {
+class CaptivePortalService;
+}
+
+namespace history {
+class HistoryService;
 }
 
 class CaptivePortalMetricsRecorder;
@@ -26,22 +30,22 @@ class CaptivePortalMetricsRecorder;
 class ChromeMetricsHelper : public security_interstitials::MetricsHelper {
  public:
   ChromeMetricsHelper(
-      content::WebContents* web_contents,
+      history::HistoryService* history_service,
       const GURL& url,
       const security_interstitials::MetricsHelper::ReportDetails settings);
   ~ChromeMetricsHelper() override;
 
-  void StartRecordingCaptivePortalMetrics(bool overridable);
+#if BUILDFLAG(ENABLE_CAPTIVE_PORTAL_DETECTION)
+  void StartRecordingCaptivePortalMetrics(
+      captive_portal::CaptivePortalService* captive_portal_service,
+      bool overridable);
+#endif
 
  protected:
   // security_interstitials::MetricsHelper methods:
   void RecordExtraShutdownMetrics() override;
 
  private:
-#if BUILDFLAG(ENABLE_CAPTIVE_PORTAL_DETECTION)
-  content::WebContents* web_contents_;
-#endif
-  const GURL request_url_;
 #if BUILDFLAG(ENABLE_CAPTIVE_PORTAL_DETECTION)
   std::unique_ptr<CaptivePortalMetricsRecorder> captive_portal_recorder_;
 #endif

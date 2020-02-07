@@ -8,6 +8,8 @@ source_set("lib") {
   sources = [
     "av_products.cc",
     "av_products.h",
+    "processor_metrics.cc",
+    "processor_metrics.h",
     "util_win_impl.cc",
     "util_win_impl.h",
   ]
@@ -29,7 +31,10 @@ source_set("lib") {
 
 source_set("unit_tests") {
   testonly = true
-  sources = [ "av_products_unittest.cc" ]
+  sources = [
+    "av_products_unittest.cc",
+    "processor_metrics_unittest.cc",
+  ]
 
   deps = [
     ":lib",

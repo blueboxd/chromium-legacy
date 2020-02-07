@@ -137,6 +137,68 @@ class MEDIA_EXPORT MediaError {
 
 #define MEDIA_ERROR_INTERNAL(...) ::media::MediaError(__VA_ARGS__)
 
+// Helper class to allow returning a |T| or a MediaError.  Typical usage:
+//
+// ErrorOr<std::unique_ptr<MyObject>> FactoryFn() {
+//   if (success)
+//     return std::make_unique<MyObject>();
+//   return MediaError(ErrorCodes::kSomethingBadHappened);
+// }
+//
+// auto result = FactoryFn();
+// if (result.has_error())  return std::move(result.error());
+// my_object_ = std::move(result.value());
+//
+// Also useful if one would like to get an enum class return value, unless an
+// error occurs:
+//
+// enum class ResultType { kNeedMoreInput, kOutputIsReady, kFormatChanged };
+//
+// ErrorOr<ResultType> Foo() { ... }
+//
+// auto result = Foo();
+// if (result.has_error()) return std::move(result.error());
+// switch (result.value()) {
+//  case ResultType::kNeedMoreInput:
+//   ...
+// }
+template <typename T>
+class ErrorOr {
+ public:
+  // All of these may be implicit, so that one may just return MediaError or
+  // the value in question.
+  ErrorOr(MediaError&& error) : error_(std::move(error)) {}
+  ErrorOr(const MediaError& error) : error_(error) {}
+  ErrorOr(T&& value) : value_(std::move(value)) {}
+  ErrorOr(const T& value) : value_(value) {}
+
+  ~ErrorOr() = default;
+
+  // Move- and copy- construction and assignment are okay.
+  ErrorOr(const ErrorOr&) = default;
+  ErrorOr(ErrorOr&&) = default;
+  ErrorOr& operator=(ErrorOr&) = default;
+  ErrorOr& operator=(ErrorOr&&) = default;
+
+  // Do we have a value?
+  bool has_value() const { return value_.has_value(); }
+
+  // Since we often test for errors, provide this too.
+  bool has_error() const { return !has_value(); }
+
+  // Return the error, if we have one.  Up to the caller to make sure that we
+  // have one via |!has_value()|.
+  MediaError& error() { return *error_; }
+
+  // Return a ref to the value.  It's up to the caller to verify that we have a
+  // value before calling this.
+  T& value() { return *value_; }
+
+ private:
+  base::Optional<MediaError> error_;
+  base::Optional<T> value_;
+};
+
 }  // namespace media
 
 #endif  // MEDIA_BASE_MEDIA_ERROR_H_

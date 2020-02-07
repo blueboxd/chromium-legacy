@@ -853,6 +853,3 @@ transforms/transformed-caret.html
 transforms/transformed-scroller-snapping-crash.html
 transforms/translate.html
 transforms/webkit-perspective-origin-csstext.html
-
-# Also cover the Android related tests
-virtual/android

@@ -50,7 +50,7 @@ namespace content {
     base::win::ScopedBstr provider_content;                 \
     ASSERT_HRESULT_SUCCEEDED(                               \
         provider->GetText(-1, provider_content.Receive())); \
-    EXPECT_STREQ(expected_content, provider_content);       \
+    EXPECT_STREQ(expected_content, provider_content.Get()); \
   }
 
 #define EXPECT_UIA_MOVE_ENDPOINT_BY_UNIT(text_range_provider, endpoint, unit,  \

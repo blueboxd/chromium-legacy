@@ -3771,9 +3771,9 @@ interface WorkerNavigator
     getter usb
     getter userAgent
     getter wakeLock
-    method clearExperimentalAppBadge
+    method clearAppBadge
     method constructor
-    method setExperimentalAppBadge
+    method setAppBadge
 interface WritableStream
     attribute @@toStringTag
     getter locked

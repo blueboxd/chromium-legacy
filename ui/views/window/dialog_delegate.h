@@ -281,6 +281,10 @@ class VIEWS_EXPORT DialogDelegate : public WidgetDelegate {
   // Close() above.
   bool DefaultClose();
 
+  // Runs a close callback, ensuring that at most one close callback is ever
+  // run.
+  void RunCloseCallback(base::OnceClosure callback);
+
   // The margins between the content and the inside of the border.
   // TODO(crbug.com/733040): Most subclasses assume they must set their own
   // margins explicitly, so we set them to 0 here for now to avoid doubled
@@ -306,6 +310,9 @@ class VIEWS_EXPORT DialogDelegate : public WidgetDelegate {
   base::OnceClosure accept_callback_;
   base::OnceClosure cancel_callback_;
   base::OnceClosure close_callback_;
+
+  // Whether any of the three callbacks just above has been delivered yet.
+  bool callback_delivered_ = false;
 
   DISALLOW_COPY_AND_ASSIGN(DialogDelegate);
 };

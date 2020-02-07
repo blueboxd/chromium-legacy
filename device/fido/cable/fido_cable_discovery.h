@@ -39,6 +39,14 @@ class COMPONENT_EXPORT(DEVICE_FIDO) FidoCableDiscovery
           pairing_callback);
   ~FidoCableDiscovery() override;
 
+  // FidoDeviceDiscovery:
+  bool MaybeStop() override;
+
+  const std::map<CableEidArray, scoped_refptr<BluetoothAdvertisement>>&
+  AdvertisementsForTesting() const {
+    return advertisements_;
+  }
+
  protected:
   virtual base::Optional<std::unique_ptr<FidoCableHandshakeHandler>>
   CreateHandshakeHandler(FidoCableDevice* device,
@@ -78,11 +86,6 @@ class COMPONENT_EXPORT(DEVICE_FIDO) FidoCableDiscovery
     std::vector<CableEidArray> uuids;
   };
 
-  FRIEND_TEST_ALL_PREFIXES(FidoCableDiscoveryTest,
-                           TestDiscoveryWithAdvertisementFailures);
-  FRIEND_TEST_ALL_PREFIXES(FidoCableDiscoveryTest,
-                           TestUnregisterAdvertisementUponDestruction);
-
   // BluetoothAdapter::Observer:
   void DeviceAdded(BluetoothAdapter* adapter, BluetoothDevice* device) override;
   void DeviceChanged(BluetoothAdapter* adapter,
@@ -101,12 +104,12 @@ class COMPONENT_EXPORT(DEVICE_FIDO) FidoCableDiscovery
   void OnAdvertisementRegistered(
       const CableEidArray& client_eid,
       scoped_refptr<BluetoothAdvertisement> advertisement);
-  void OnAdvertisementRegisterError(
-      BluetoothAdvertisement::ErrorCode error_code);
+
   // Attempt to stop all on-going advertisements in best-effort basis.
   // Once all the callbacks for Unregister() function is received, invoke
   // |callback|.
   void StopAdvertisements(base::OnceClosure callback);
+  void OnAdvertisementsStopped(base::OnceClosure callback);
   void CableDeviceFound(BluetoothAdapter* adapter, BluetoothDevice* device);
   void ConductEncryptionHandshake(std::unique_ptr<FidoCableDevice> cable_device,
                                   Result discovery_data);
@@ -138,8 +141,12 @@ class COMPONENT_EXPORT(DEVICE_FIDO) FidoCableDiscovery
   // not completely effective.
   std::set<std::string> active_devices_;
   base::Optional<QRGeneratorKey> qr_generator_key_;
+
+  // Note that on Windows, |advertisements_| is the only reference holder of
+  // BluetoothAdvertisement.
   std::map<CableEidArray, scoped_refptr<BluetoothAdvertisement>>
       advertisements_;
+
   std::vector<std::unique_ptr<FidoCableHandshakeHandler>>
       cable_handshake_handlers_;
   base::Optional<

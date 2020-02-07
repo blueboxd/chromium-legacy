@@ -30,14 +30,6 @@ var Manager = (function() {
 
     const directions = createChild(newContents, 'ol');
 
-    const devtoolsExperiments = createChild(directions, 'li');
-    devtoolsExperiments.createTextNode(
-        'Ensure Devtools Experiments is enabled.  ');
-
-    const experimentsLink = createChild(devtoolsExperiments, 'a');
-    experimentsLink.href = 'chrome://flags/#enable-devtools-experiments';
-    experimentsLink.createTextNode('Enable Flag Here');
-
     createChild(directions, 'li')
         .createTextNode('In devtools (F12) press F1 (open settings).');
     createChild(directions, 'li')

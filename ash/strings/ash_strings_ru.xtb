@@ -118,6 +118,7 @@
 <translation id="2413728805700750528">Управляемый сеанс "<ph name="DISPLAY_NAME" />" выполняется в домене <ph name="DOMAIN" /></translation>
 <translation id="2427507373259914951">Нажатие на левую кнопку мыши</translation>
 <translation id="2429753432712299108">Устройству <ph name="DEVICE_NAME" /> требуется разрешение на подключение через Bluetooth. Проверьте, отображается ли на нем код: <ph name="PASSKEY" />.</translation>
+<translation id="2473177541599297363">Разрешение экрана было изменено</translation>
 <translation id="2482878487686419369">Уведомления</translation>
 <translation id="2484513351006226581">Чтобы переключить раскладку клавиатуры, нажмите клавиши <ph name="KEYBOARD_SHORTCUT" />.</translation>
 <translation id="2501920221385095727">Залипание клавиш</translation>
@@ -137,8 +138,8 @@
 <translation id="2718395828230677721">Ночной режим</translation>
 <translation id="2727977024730340865">Подключено маломощное зарядное устройство. Возможны проблемы при зарядке.</translation>
 <translation id="2792498699870441125">Alt + Search</translation>
-<translation id="2803734122639935495">Чтобы разблокировать устройство, введите пароль</translation>
 <translation id="2819276065543622893">Сеанс завершен.</translation>
+<translation id="2825224105325558319"><ph name="DISPLAY_NAME" /> не поддерживает разрешение <ph name="SPECIFIED_RESOLUTION" />. Установлено разрешение <ph name="FALLBACK_RESOLUTION" />.</translation>
 <translation id="2825619548187458965">Полка</translation>
 <translation id="2844169650293029770">Устройство USB-C (ближний порт слева)</translation>
 <translation id="2865888419503095837">Информация о сети</translation>
@@ -158,6 +159,12 @@
 <translation id="3009178788565917040">Выход</translation>
 <translation id="3051128274746680507">Скоро будет удален ваш контролируемый профиль. Войдите в аккаунт, чтобы получить подробную информацию.</translation>
 <translation id="3055162170959710888">Сегодня вы уже использовали это устройство <ph name="USED_TIME" />.</translation>
+<translation id="3076778413190775903">Строка состояния, время – <ph name="TIME" />,
+        <ph name="BATTERY" />
+        <ph name="NETWORK" />,
+        <ph name="NOTIFICATION" />,
+        <ph name="IME" />
+        <ph name="LOCALE" /></translation>
 <translation id="3077734595579995578">shift</translation>
 <translation id="3081696990447829002">Развернуть меню</translation>
 <translation id="3087734570205094154">Снизу</translation>
@@ -168,6 +175,7 @@
 <translation id="3151786313568798007">Ориентация</translation>
 <translation id="3153444934357957346">Для множественного входа можно использовать не более <ph name="MULTI_PROFILE_USER_LIMIT" /> аккаунтов.</translation>
 <translation id="3154351730702813399">Администратору устройства доступна информация о том, какие страницы вы просматриваете в браузере.</translation>
+<translation id="3181441307743005334">Перезапуск может занять несколько минут</translation>
 <translation id="3202010236269062730">{NUM_DEVICES,plural, =1{Подключено одно устройство}one{Подключено # устройство}few{Подключено # устройства}many{Подключено # устройств}other{Подключено # устройства}}</translation>
 <translation id="3217205077783620295">Звук включен. Нажмите эту кнопку, чтобы отключить его.</translation>
 <translation id="3226991577105957773">Ещё <ph name="COUNT" /></translation>
@@ -202,6 +210,7 @@
 <translation id="3604801046548457007">Создан рабочий стол "<ph name="DESK_TITILE" />".</translation>
 <translation id="3606978283550408104">Брайлевский дисплей подключен</translation>
 <translation id="3621202678540785336">Вход</translation>
+<translation id="3621712662352432595">Настройки звука</translation>
 <translation id="3626281679859535460">Яркость</translation>
 <translation id="3631369015426612114">Разрешить уведомления из следующих источников</translation>
 <translation id="3705722231355495246">-</translation>
@@ -316,6 +325,7 @@
 <translation id="5331975486040154427">Устройство USB-C (дальний порт слева)</translation>
 <translation id="5379115545237091094">Слишком много попыток</translation>
 <translation id="5397578532367286026">Менеджер (<ph name="MANAGER_EMAIL" />) может просматривать данные об использовании и историю этого профиля на сайте chrome.com.</translation>
+<translation id="5400461572260843123">Быстрые настройки: чтобы открыть центр уведомлений, нажмите Поиск + Стрелка влево.</translation>
 <translation id="5430931332414098647">Мгновенная точка доступа</translation>
 <translation id="5431825016875453137">OpenVPN / L2TP</translation>
 <translation id="544691375626129091">В этот сеанс уже добавлены все доступные пользователи.</translation>
@@ -397,6 +407,7 @@
 <translation id="6490471652906364588">Устройство USB-C (порт справа)</translation>
 <translation id="649452524636452238">PIN-код для смарт-карты</translation>
 <translation id="6501401484702599040">Трансляция содержимого экрана: <ph name="RECEIVER_NAME" /></translation>
+<translation id="652139407789908527">Экран будет оставаться выключенным дольше, чем обычно (до одной минуты). Не нажимайте кнопку питания, пока обновление не завершится.</translation>
 <translation id="6521655319214113338">Рукописный ввод</translation>
 <translation id="6528179044667508675">Не беспокоить</translation>
 <translation id="6537270692134705506">Снимок экрана</translation>
@@ -542,8 +553,10 @@
 <translation id="847056008324733326">Настройки масштаба экрана</translation>
 <translation id="8473301994082929012">Организация <ph name="ORGANIZATION_NAME" /> <ph name="FEATURE_STATE" /> функцию "<ph name="FEATURE_NAME" />".</translation>
 <translation id="8477270416194247200">Для отмены нажмите ALT + SEARCH или SHIFT.</translation>
+<translation id="8492573885090281069"><ph name="DISPLAY_NAME" /> не поддерживает разрешение <ph name="SPECIFIED_RESOLUTION" />. Установлено разрешение <ph name="FALLBACK_RESOLUTION" />. Чтобы сохранить изменения, нажмите "Подтвердить". Предыдущие настройки восстановятся через <ph name="TIMEOUT_SECONDS" />.</translation>
 <translation id="8513108775083588393">Автоповорот</translation>
 <translation id="8517041960877371778">Не удается зарядить устройство <ph name="DEVICE_TYPE" />, пока оно включено.</translation>
+<translation id="8563862697512465947">Настройки оповещений</translation>
 <translation id="8627191004499078455">Подключено устройство "<ph name="DEVICE_NAME" />"</translation>
 <translation id="8637598503828012618">Статус подключения – "<ph name="CONNECTION_STATUS" />", уровень сигнала – <ph name="SIGNAL_STRENGTH" />, под управлением администратора</translation>
 <translation id="8639760480004882931">Батарея заряжена на <ph name="PERCENTAGE" /></translation>
@@ -596,6 +609,7 @@
 <translation id="9183456764293710005">Полноэкранная лупа</translation>
 <translation id="9193626018745640770">Трансляция на неизвестное устройство</translation>
 <translation id="9194617393863864469">Войти в другой аккаунт...</translation>
+<translation id="9198992156681343238">У экрана <ph name="DISPLAY_NAME" /> установлено разрешение <ph name="RESOLUTION" />. Чтобы сохранить изменения, нажмите "Подтвердить". Предыдущие настройки восстановятся через <ph name="TIMEOUT_SECONDS" />.</translation>
 <translation id="9201374708878217446">Статус подключения – "<ph name="CONNECTION_STATUS" />", под управлением администратора</translation>
 <translation id="9210037371811586452">Выход из режима единого рабочего стола…</translation>
 <translation id="9211681782751733685">Оставшееся время до полной зарядки батареи: <ph name="TIME_REMAINING" />.</translation>

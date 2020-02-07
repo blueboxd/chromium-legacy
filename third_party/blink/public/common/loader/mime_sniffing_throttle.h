@@ -20,10 +20,11 @@ class BLINK_COMMON_EXPORT MimeSniffingThrottle : public URLLoaderThrottle {
   // IPC in MimeSniffingLoader. |task_runner| is supposed to be bound to the
   // current sequence.
   explicit MimeSniffingThrottle(
-      scoped_refptr<base::SingleThreadTaskRunner> task_runner);
+      scoped_refptr<base::SequencedTaskRunner> task_runner);
   ~MimeSniffingThrottle() override;
 
   // Implements blink::URLLoaderThrottle.
+  void DetachFromCurrentSequence() override;
   void WillProcessResponse(const GURL& response_url,
                            network::mojom::URLResponseHead* response_head,
                            bool* defer) override;
@@ -33,7 +34,7 @@ class BLINK_COMMON_EXPORT MimeSniffingThrottle : public URLLoaderThrottle {
       network::mojom::URLResponseHeadPtr new_response_head);
 
  private:
-  scoped_refptr<base::SingleThreadTaskRunner> task_runner_;
+  scoped_refptr<base::SequencedTaskRunner> task_runner_;
   base::WeakPtrFactory<MimeSniffingThrottle> weak_factory_{this};
 };
 

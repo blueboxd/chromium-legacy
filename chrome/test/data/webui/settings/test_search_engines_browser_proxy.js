@@ -80,7 +80,8 @@ cr.define('settings_search', function() {
    * @param {boolean} canBeRemoved
    * @return {!SearchEngine}
    */
-  function createSampleSearchEngine(canBeDefault, canBeEdited, canBeRemoved) {
+  /* #export */ function createSampleSearchEngine(
+      canBeDefault, canBeEdited, canBeRemoved) {
     return {
       canBeDefault: canBeDefault,
       canBeEdited: canBeEdited,

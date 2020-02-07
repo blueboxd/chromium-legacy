@@ -731,6 +731,12 @@ const base::Feature kWebAuthCable {
 #endif
 };
 
+// Controls whether Web Bluetooth should use the new permissions backend. The
+// new permissions backend uses ChooserContextBase, which is used by other
+// device APIs, such as WebUSB.
+const base::Feature kWebBluetoothNewPermissionsBackend{
+    "WebBluetoothNewPermissionsBackend", base::FEATURE_DISABLED_BY_DEFAULT};
+
 // Controls whether Web Bundles (Bundled HTTP Exchanges) is enabled.
 // https://wicg.github.io/webpackage/draft-yasskin-wpack-bundled-exchanges.html
 // When this feature is enabled, Chromium can load unsigned Web Bundles local

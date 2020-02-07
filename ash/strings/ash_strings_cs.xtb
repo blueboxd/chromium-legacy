@@ -137,7 +137,6 @@
 <translation id="2718395828230677721">Noční režim</translation>
 <translation id="2727977024730340865">Byla připojena nabíječka s nízkým výkonem. Nabíjení baterie nemusí probíhat spolehlivě.</translation>
 <translation id="2792498699870441125">Alt + Vyhledávání</translation>
-<translation id="2803734122639935495">Chcete-li zařízení odemknout, zadejte heslo</translation>
 <translation id="2819276065543622893">Nyní budete odhlášeni.</translation>
 <translation id="2825619548187458965">Polička</translation>
 <translation id="2844169650293029770">Zařízení USB Type-C (levý přední port)</translation>
@@ -202,6 +201,7 @@
 <translation id="3604801046548457007">Byla vytvořena plocha <ph name="DESK_TITILE" /></translation>
 <translation id="3606978283550408104">Je připojen hmatový displej.</translation>
 <translation id="3621202678540785336">Vstup</translation>
+<translation id="3621712662352432595">Nastavení zvuku</translation>
 <translation id="3626281679859535460">Jas</translation>
 <translation id="3631369015426612114">Povolit oznámení z následujících zdrojů</translation>
 <translation id="3705722231355495246">-</translation>
@@ -544,6 +544,7 @@
 <translation id="8477270416194247200">Vypnete jej stisknutím kombinace kláves Alt + Hledat nebo klávesy Shift.</translation>
 <translation id="8513108775083588393">Automatické otáčení</translation>
 <translation id="8517041960877371778">Je možné, že když bude zařízení <ph name="DEVICE_TYPE" /> zapnuté, nebude se nabíjet.</translation>
+<translation id="8563862697512465947">Nastavení oznámení</translation>
 <translation id="8627191004499078455">Připojeno k zařízení <ph name="DEVICE_NAME" /></translation>
 <translation id="8637598503828012618"><ph name="CONNECTION_STATUS" />, síla signálu: <ph name="SIGNAL_STRENGTH" />, spravováno administrátorem</translation>
 <translation id="8639760480004882931">Zbývá <ph name="PERCENTAGE" /> %</translation>

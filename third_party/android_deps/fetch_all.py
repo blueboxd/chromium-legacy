@@ -447,6 +447,8 @@ def main():
     ]
     if args.debug:
       gradle_cmd.append('--debug')
+    if args.ignore_licenses:
+      gradle_cmd.append('-PskipLicenses=true')
 
     RunCommand(gradle_cmd, print_stdout=args.debug)
 

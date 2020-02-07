@@ -2166,13 +2166,6 @@ void DisplayManager::RemoveObserver(DisplayObserver* observer) {
   observers_.RemoveObserver(observer);
 }
 
-const Display& DisplayManager::GetSecondaryDisplay() const {
-  CHECK_LE(2U, GetNumDisplays());
-  return GetDisplayAt(0).id() == Screen::GetScreen()->GetPrimaryDisplay().id()
-             ? GetDisplayAt(1)
-             : GetDisplayAt(0);
-}
-
 void DisplayManager::UpdateInfoForRestoringMirrorMode() {
   if (num_connected_displays_ <= 1)
     return;

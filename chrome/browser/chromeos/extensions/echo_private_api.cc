@@ -171,7 +171,7 @@ bool EchoPrivateGetOobeTimestampFunction::GetOobeTimestampOnFileSequence() {
                                     ctime.month,
                                     ctime.day_of_month);
   }
-  results_ = echo_api::GetOobeTimestamp::Results::Create(timestamp);
+  SetResult(std::make_unique<base::Value>(timestamp));
   return true;
 }
 
@@ -302,7 +302,7 @@ void EchoPrivateGetUserConsentFunction::OnRedeemOffersAllowedChecked(
 void EchoPrivateGetUserConsentFunction::Finalize(bool consent) {
   // Consent should not be true if offers redeeming is disabled.
   CHECK(redeem_offers_allowed_ || !consent);
-  results_ = echo_api::GetUserConsent::Results::Create(consent);
+  SetResult(std::make_unique<base::Value>(consent));
   SendResponse(true);
 
   // Release the reference added in |OnRedeemOffersAllowedChecked|, before

@@ -164,6 +164,7 @@ android_library("content_java") {
     "java/src/org/chromium/content/browser/accessibility/KitKatWebContentsAccessibility.java",
     "java/src/org/chromium/content/browser/accessibility/LollipopWebContentsAccessibility.java",
     "java/src/org/chromium/content/browser/accessibility/OWebContentsAccessibility.java",
+    "java/src/org/chromium/content/browser/accessibility/PieWebContentsAccessibility.java",
     "java/src/org/chromium/content/browser/accessibility/WebContentsAccessibilityImpl.java",
     "java/src/org/chromium/content/browser/accessibility/captioning/CaptioningBridgeFactory.java",
     "java/src/org/chromium/content/browser/accessibility/captioning/CaptioningChangeDelegate.java",

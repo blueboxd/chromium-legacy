@@ -7,6 +7,7 @@
 #include <stddef.h>
 
 #include <memory>
+#include <utility>
 
 #include "base/logging.h"
 #include "base/strings/string_util.h"
@@ -16,11 +17,8 @@
 
 namespace url_matcher {
 
-RegexSetMatcher::RegexSetMatcher() {}
-
-RegexSetMatcher::~RegexSetMatcher() {
-  DeleteSubstringPatterns();
-}
+RegexSetMatcher::RegexSetMatcher() = default;
+RegexSetMatcher::~RegexSetMatcher() = default;
 
 void RegexSetMatcher::AddPatterns(
     const std::vector<const StringPattern*>& regex_list) {
@@ -97,22 +95,15 @@ void RegexSetMatcher::RebuildMatcher() {
   std::vector<std::string> strings_to_match;
   filtered_re2_->Compile(&strings_to_match);
 
-  substring_matcher_.reset(new SubstringSetMatcher);
-  DeleteSubstringPatterns();
-  // Build SubstringSetMatcher from |strings_to_match|.
-  // SubstringSetMatcher doesn't own its strings.
-  for (size_t i = 0; i < strings_to_match.size(); ++i) {
-    substring_patterns_.push_back(
-        std::make_unique<StringPattern>(strings_to_match[i], i));
-  }
-  std::vector<const StringPattern*> patterns;
-  for (const auto& pattern : substring_patterns_)
-    patterns.push_back(pattern.get());
-  substring_matcher_->RegisterPatterns(patterns);
-}
+  std::vector<url_matcher::StringPattern> substring_patterns;
+  substring_patterns.reserve(strings_to_match.size());
 
-void RegexSetMatcher::DeleteSubstringPatterns() {
-  substring_patterns_.clear();
+  // Build SubstringSetMatcher from |strings_to_match|.
+  for (size_t i = 0; i < strings_to_match.size(); ++i)
+    substring_patterns.emplace_back(std::move(strings_to_match[i]), i);
+
+  substring_matcher_ =
+      std::make_unique<SubstringSetMatcher>(substring_patterns);
 }
 
 }  // namespace url_matcher

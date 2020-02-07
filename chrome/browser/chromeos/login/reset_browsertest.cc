@@ -173,6 +173,7 @@ class ResetOobeTest : public OobeBaseTest {
   // Simulates reset screen request from OOBE UI.
   void InvokeResetScreen() {
     test::ExecuteOobeJS("cr.ui.Oobe.handleAccelerator('reset');");
+    OobeScreenWaiter(ResetView::kScreenId).Wait();
   }
 
   FakeUpdateEngineClient* update_engine_client_ = nullptr;

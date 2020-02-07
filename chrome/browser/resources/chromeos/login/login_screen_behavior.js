@@ -81,6 +81,15 @@ var LoginScreenBehavior = {
   },
 
   /**
+   * Returns UI state to be used when showing this screen. Default
+   * implementation returns OOBE_UI_STATE.HIDDEN.
+   * @return number} The state (see OOBE_UI_STATE) of the OOBE UI.
+   */
+  getOobeUIInitialState() {
+    return OOBE_UI_STATE.HIDDEN;
+  },
+
+  /**
    * Screen will ignore accelerators when true.
    * @type {boolean}
    */

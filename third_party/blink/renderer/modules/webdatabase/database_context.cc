@@ -175,7 +175,7 @@ void DatabaseContext::StopDatabases() {
 }
 
 bool DatabaseContext::AllowDatabaseAccess() const {
-  return To<Document>(GetExecutionContext())->IsActive();
+  return Document::From(GetExecutionContext())->IsActive();
 }
 
 const SecurityOrigin* DatabaseContext::GetSecurityOrigin() const {

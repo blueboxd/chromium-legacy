@@ -149,6 +149,7 @@ class PolicyRecommendationRestorer;
 class PowerButtonController;
 class PowerEventObserver;
 class PowerPrefs;
+class PrivacyScreenController;
 class ProjectingObserver;
 class ResizeShadowController;
 class ResolutionNotificationController;
@@ -405,6 +406,9 @@ class ASH_EXPORT Shell : public SessionObserver,
   NightLightControllerImpl* night_light_controller() {
     return night_light_controller_.get();
   }
+  PrivacyScreenController* privacy_screen_controller() {
+    return privacy_screen_controller_.get();
+  }
   OverlayEventFilter* overlay_filter() { return overlay_filter_.get(); }
   PartialMagnificationController* partial_magnification_controller() {
     return partial_magnification_controller_.get();
@@ -654,6 +658,7 @@ class ASH_EXPORT Shell : public SessionObserver,
   std::unique_ptr<AshColorProvider> ash_color_provider_;
   std::unique_ptr<SessionControllerImpl> session_controller_;
   std::unique_ptr<NightLightControllerImpl> night_light_controller_;
+  std::unique_ptr<PrivacyScreenController> privacy_screen_controller_;
   std::unique_ptr<PolicyRecommendationRestorer> policy_recommendation_restorer_;
   std::unique_ptr<ScreenSwitchCheckController> screen_switch_check_controller_;
   std::unique_ptr<ShelfConfig> shelf_config_;

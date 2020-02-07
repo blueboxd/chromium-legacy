@@ -37,7 +37,8 @@ void NavigatorHID::Trace(blink::Visitor* visitor) {
 NavigatorHID::NavigatorHID(Navigator& navigator) {
   if (navigator.GetFrame()) {
     DCHECK(navigator.GetFrame()->GetDocument());
-    hid_ = MakeGarbageCollected<HID>(*navigator.GetFrame()->GetDocument());
+    hid_ = MakeGarbageCollected<HID>(
+        *navigator.GetFrame()->GetDocument()->ToExecutionContext());
   }
 }
 

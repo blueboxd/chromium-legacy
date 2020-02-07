@@ -13,7 +13,7 @@
 #include "base/test/bind_test_util.h"
 #include "components/autofill/core/browser/test_personal_data_manager.h"
 #include "components/autofill/core/browser/webdata/autofill_webdata_service.h"
-#include "components/password_manager/core/browser/test_password_store.h"
+#include "components/password_manager/core/browser/mock_password_store.h"
 #include "components/signin/core/browser/signin_error_controller.h"
 #include "components/signin/public/base/account_consistency_method.h"
 #include "components/signin/public/base/signin_pref_names.h"
@@ -92,7 +92,7 @@ class CWVSyncControllerTest : public TestWithLocaleAndResources {
         base::ThreadTaskRunnerHandle::Get(),
         base::ThreadTaskRunnerHandle::Get());
 
-    password_store_ = new password_manager::TestPasswordStore();
+    password_store_ = new password_manager::MockPasswordStore;
     password_store_->Init(base::RepeatingCallback<void(syncer::ModelType)>(),
                           nullptr);
 
@@ -132,7 +132,7 @@ class CWVSyncControllerTest : public TestWithLocaleAndResources {
   web::WebTaskEnvironment task_environment_;
   web::ScopedTestingWebClient web_client_;
   ios_web_view::WebViewBrowserState browser_state_;
-  scoped_refptr<password_manager::TestPasswordStore> password_store_;
+  scoped_refptr<password_manager::MockPasswordStore> password_store_;
   std::unique_ptr<autofill::TestPersonalDataManager> personal_data_manager_;
   autofill::AutofillWebDataService* autofill_web_data_service_;
   CWVSyncController* sync_controller_ = nil;
@@ -225,6 +225,10 @@ TEST_F(CWVSyncControllerTest, CurrentIdentity) {
   EXPECT_NSEQ(identity.gaiaID, currentIdentity.gaiaID);
 
   EXPECT_CALL(*mock_sync_service(), StopAndClear());
+  EXPECT_CALL(*password_store_, RemoveLoginsCreatedBetweenImpl);
+  EXPECT_CALL(*password_store_, BeginTransaction);
+  EXPECT_CALL(*password_store_, NotifyLoginsChanged);
+  EXPECT_CALL(*password_store_, CommitTransaction);
   [sync_controller_ stopSyncAndClearIdentity];
   EXPECT_FALSE(sync_controller_.currentIdentity);
 }

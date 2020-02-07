@@ -29,6 +29,11 @@ CORE_EXPORT extern const WrapperTypeInfo v8_array_buffer_wrapper_type_info;
 class V8ArrayBuffer {
   STATIC_ONLY(V8ArrayBuffer);
  public:
+  // Migration adapter
+  CORE_EXPORT static bool HasInstance(v8::Isolate*, v8::Local<v8::Value> value) {
+    return value->IsArrayBuffer();
+  }
+
   CORE_EXPORT static TestArrayBuffer* ToImpl(v8::Local<v8::Object> object);
   CORE_EXPORT static TestArrayBuffer* ToImplWithTypeCheck(v8::Isolate*, v8::Local<v8::Value>);
 

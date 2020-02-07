@@ -115,7 +115,9 @@ class BackgroundFetchIconLoaderTest : public PageTestBase {
         maximum_size);
   }
 
-  ExecutionContext* GetContext() const { return &GetDocument(); }
+  ExecutionContext* GetContext() const {
+    return GetDocument().ToExecutionContext();
+  }
 
  protected:
   ScopedTestingPlatformSupport<TestingPlatformSupport> platform_;

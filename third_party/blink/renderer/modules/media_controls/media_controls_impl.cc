@@ -262,7 +262,7 @@ class MediaControlsImpl::MediaElementMutationCallback
   }
 
   ExecutionContext* GetExecutionContext() const override {
-    return &controls_->GetDocument();
+    return controls_->GetDocument().ToExecutionContext();
   }
 
   void Deliver(const MutationRecordVector& records,

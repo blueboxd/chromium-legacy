@@ -4891,6 +4891,12 @@ const FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kLegacyTLSEnforcedDescription, kOsDesktop | kOsAndroid,
      FEATURE_VALUE_TYPE(net::features::kLegacyTLSEnforced)},
 
+#if !defined(OS_ANDROID)
+    {"password-check", flag_descriptions::kPasswordCheckName,
+     flag_descriptions::kPasswordCheckDescription, kOsDesktop,
+     FEATURE_VALUE_TYPE(password_manager::features::kPasswordCheck)},
+#endif  // !defined(OS_ANDROID)
+
     // NOTE: Adding a new flag requires adding a corresponding entry to enum
     // "LoginCustomFlags" in tools/metrics/histograms/enums.xml. See "Flag
     // Histograms" in tools/metrics/histograms/README.md (run the

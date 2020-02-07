@@ -108,7 +108,7 @@ ServiceWorkerContainer* NavigatorServiceWorker::GetOrCreateContainer(
   }
 
   return ServiceWorkerContainer::From(
-      To<Document>(frame->DomWindow()->GetExecutionContext()));
+      Document::From(frame->DomWindow()->GetExecutionContext()));
 }
 
 void NavigatorServiceWorker::Trace(blink::Visitor* visitor) {

@@ -52,6 +52,15 @@ String GetStringFromTrustedHTML(const String&,
                                 const ExecutionContext*,
                                 ExceptionState&);
 
+// TODO(crbug.com/1029822): Temporary helpers to ease migrating ExecutionContext
+// to LocalDOMWindow.
+String CORE_EXPORT GetStringFromTrustedHTML(StringOrTrustedHTML,
+                                            const Document*,
+                                            ExceptionState&);
+String GetStringFromTrustedHTML(const String&,
+                                const Document*,
+                                ExceptionState&);
+
 String CORE_EXPORT GetStringFromTrustedScript(StringOrTrustedScript,
                                               const ExecutionContext*,
                                               ExceptionState&);

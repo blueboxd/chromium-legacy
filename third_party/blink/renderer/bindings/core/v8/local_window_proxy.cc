@@ -229,7 +229,8 @@ void LocalWindowProxy::CreateContext() {
   CHECK(IsMainThread());
 
   v8::ExtensionConfiguration extension_configuration =
-      ScriptController::ExtensionsFor(GetFrame()->GetDocument());
+      ScriptController::ExtensionsFor(
+          GetFrame()->GetDocument()->ToExecutionContext());
 
   v8::Local<v8::Context> context;
   {

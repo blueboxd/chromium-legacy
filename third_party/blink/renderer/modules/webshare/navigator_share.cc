@@ -159,7 +159,7 @@ const char NavigatorShare::kSupplementName[] = "NavigatorShare";
 
 bool NavigatorShare::canShare(ScriptState* script_state,
                               const ShareData* share_data) {
-  Document* doc = To<Document>(ExecutionContext::From(script_state));
+  Document* doc = Document::From(ExecutionContext::From(script_state));
   KURL full_url;
   return CheckForTypeError(*doc, *share_data, &full_url).IsEmpty();
 }
@@ -173,7 +173,7 @@ bool NavigatorShare::canShare(ScriptState* script_state,
 ScriptPromise NavigatorShare::share(ScriptState* script_state,
                                     const ShareData* share_data,
                                     ExceptionState& exception_state) {
-  Document* doc = To<Document>(ExecutionContext::From(script_state));
+  Document* doc = Document::From(ExecutionContext::From(script_state));
   KURL full_url;
   String error_message = CheckForTypeError(*doc, *share_data, &full_url);
   if (!error_message.IsEmpty()) {

@@ -624,9 +624,8 @@ void BlinkTestRunner::SetPermission(const std::string& name,
                                     const std::string& value,
                                     const GURL& origin,
                                     const GURL& embedding_origin) {
-  Send(new WebTestHostMsg_SetPermission(routing_id(), name,
-                                        blink::ToPermissionStatus(value),
-                                        origin, embedding_origin));
+  GetWebTestClientRemote().SetPermission(name, blink::ToPermissionStatus(value),
+                                         origin, embedding_origin);
 }
 
 void BlinkTestRunner::ResetPermissions() {

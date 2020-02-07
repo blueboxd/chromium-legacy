@@ -304,7 +304,7 @@ XMLHttpRequest::~XMLHttpRequest() {
 }
 
 Document* XMLHttpRequest::GetDocument() const {
-  return To<Document>(GetExecutionContext());
+  return Document::From(GetExecutionContext());
 }
 
 XMLHttpRequest::State XMLHttpRequest::readyState() const {

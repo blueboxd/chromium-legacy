@@ -27,6 +27,11 @@ login.createScreen(
           return $('encryption-migration-element');
         },
 
+        /** Initial UI State for screen */
+        getOobeUIInitialState() {
+          return OOBE_UI_STATE.MIGRATION;
+        },
+
         /*
          * Executed on language change.
          */
@@ -55,13 +60,6 @@ login.createScreen(
               'openFeedbackDialog', function() {
                 chrome.send('openFeedbackDialog');
               });
-        },
-
-        /**
-         * Event handler that is invoked just before the screen in shown.
-         */
-        onBeforeShow() {
-          Oobe.getInstance().setSigninUIState(SIGNIN_UI_STATE.HIDDEN);
         },
 
         /**

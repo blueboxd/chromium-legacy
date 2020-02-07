@@ -128,7 +128,10 @@ void RemoteFrame::Navigate(FrameLoadRequest& frame_request,
                           : nullptr;
   MixedContentChecker::UpgradeInsecureRequest(
       frame_request.GetResourceRequest(), fetch_client_settings_object,
-      frame_request.OriginDocument(), frame_request.GetFrameType(),
+      frame_request.OriginDocument()
+          ? frame_request.OriginDocument()->ToExecutionContext()
+          : nullptr,
+      frame_request.GetFrameType(),
       frame ? frame->GetContentSettingsClient() : nullptr);
 
   // Navigations in portal contexts do not create back/forward entries.

@@ -22,18 +22,46 @@ namespace extensions {
 TestContentVerifySingleJobObserver::TestContentVerifySingleJobObserver(
     const ExtensionId& extension_id,
     const base::FilePath& relative_path)
-    : extension_id_(extension_id), relative_path_(relative_path) {
-  ContentVerifyJob::SetObserverForTests(this);
+    : client_(
+          base::MakeRefCounted<ObserverClient>(extension_id, relative_path)) {
+  ContentVerifyJob::SetObserverForTests(client_);
 }
 
 TestContentVerifySingleJobObserver::~TestContentVerifySingleJobObserver() {
   ContentVerifyJob::SetObserverForTests(nullptr);
 }
 
-void TestContentVerifySingleJobObserver::JobFinished(
+ContentVerifyJob::FailureReason
+TestContentVerifySingleJobObserver::WaitForJobFinished() {
+  return client_->WaitForJobFinished();
+}
+
+void TestContentVerifySingleJobObserver::WaitForOnHashesReady() {
+  client_->WaitForOnHashesReady();
+}
+
+TestContentVerifySingleJobObserver::ObserverClient::ObserverClient(
+    const ExtensionId& extension_id,
+    const base::FilePath& relative_path)
+    : extension_id_(extension_id), relative_path_(relative_path) {
+  EXPECT_TRUE(
+      content::BrowserThread::GetCurrentThreadIdentifier(&creation_thread_));
+}
+
+TestContentVerifySingleJobObserver::ObserverClient::~ObserverClient() = default;
+
+void TestContentVerifySingleJobObserver::ObserverClient::JobFinished(
     const ExtensionId& extension_id,
     const base::FilePath& relative_path,
     ContentVerifyJob::FailureReason reason) {
+  if (!content::BrowserThread::CurrentlyOn(creation_thread_)) {
+    base::PostTask(
+        FROM_HERE, {creation_thread_},
+        base::BindOnce(
+            &TestContentVerifySingleJobObserver::ObserverClient::JobFinished,
+            this, extension_id, relative_path, reason));
+    return;
+  }
   if (extension_id != extension_id_ || relative_path != relative_path_)
     return;
   EXPECT_FALSE(failure_reason_.has_value());
@@ -41,10 +69,18 @@ void TestContentVerifySingleJobObserver::JobFinished(
   job_finished_run_loop_.Quit();
 }
 
-void TestContentVerifySingleJobObserver::OnHashesReady(
+void TestContentVerifySingleJobObserver::ObserverClient::OnHashesReady(
     const ExtensionId& extension_id,
     const base::FilePath& relative_path,
     bool success) {
+  if (!content::BrowserThread::CurrentlyOn(creation_thread_)) {
+    base::PostTask(
+        FROM_HERE, {creation_thread_},
+        base::BindOnce(
+            &TestContentVerifySingleJobObserver::ObserverClient::OnHashesReady,
+            this, extension_id, relative_path, success));
+    return;
+  }
   if (extension_id != extension_id_ || relative_path != relative_path_)
     return;
   EXPECT_FALSE(seen_on_hashes_ready_);
@@ -53,60 +89,57 @@ void TestContentVerifySingleJobObserver::OnHashesReady(
 }
 
 ContentVerifyJob::FailureReason
-TestContentVerifySingleJobObserver::WaitForJobFinished() {
+TestContentVerifySingleJobObserver::ObserverClient::WaitForJobFinished() {
   // Run() returns immediately if Quit() has already been called.
   job_finished_run_loop_.Run();
   EXPECT_TRUE(failure_reason_.has_value());
   return failure_reason_.value_or(ContentVerifyJob::FAILURE_REASON_MAX);
 }
 
-void TestContentVerifySingleJobObserver::WaitForOnHashesReady() {
+void TestContentVerifySingleJobObserver::ObserverClient::
+    WaitForOnHashesReady() {
   // Run() returns immediately if Quit() has already been called.
   on_hashes_ready_run_loop_.Run();
 }
 
 // TestContentVerifyJobObserver ------------------------------------------------
-void TestContentVerifyJobObserver::ExpectJobResult(
-    const ExtensionId& extension_id,
-    const base::FilePath& relative_path,
-    Result expected_result) {
-  expectations_.push_back(
-      ExpectedResult(extension_id, relative_path, expected_result));
-}
-
-TestContentVerifyJobObserver::TestContentVerifyJobObserver() {
-  EXPECT_TRUE(
-      content::BrowserThread::GetCurrentThreadIdentifier(&creation_thread_));
-  ContentVerifyJob::SetObserverForTests(this);
+TestContentVerifyJobObserver::TestContentVerifyJobObserver()
+    : client_(base::MakeRefCounted<ObserverClient>()) {
+  ContentVerifyJob::SetObserverForTests(client_);
 }
 
 TestContentVerifyJobObserver::~TestContentVerifyJobObserver() {
   ContentVerifyJob::SetObserverForTests(nullptr);
 }
 
-bool TestContentVerifyJobObserver::WaitForExpectedJobs() {
-  EXPECT_TRUE(content::BrowserThread::CurrentlyOn(creation_thread_));
-  if (!expectations_.empty()) {
-    base::RunLoop run_loop;
-    job_quit_closure_ = run_loop.QuitClosure();
-    run_loop.Run();
-  }
-  return expectations_.empty();
+void TestContentVerifyJobObserver::ExpectJobResult(
+    const ExtensionId& extension_id,
+    const base::FilePath& relative_path,
+    Result expected_result) {
+  client_->ExpectJobResult(extension_id, relative_path, expected_result);
 }
 
-void TestContentVerifyJobObserver::JobStarted(
-    const ExtensionId& extension_id,
-    const base::FilePath& relative_path) {}
+bool TestContentVerifyJobObserver::WaitForExpectedJobs() {
+  return client_->WaitForExpectedJobs();
+}
 
-void TestContentVerifyJobObserver::JobFinished(
+TestContentVerifyJobObserver::ObserverClient::ObserverClient() {
+  EXPECT_TRUE(
+      content::BrowserThread::GetCurrentThreadIdentifier(&creation_thread_));
+}
+
+TestContentVerifyJobObserver::ObserverClient::~ObserverClient() = default;
+
+void TestContentVerifyJobObserver::ObserverClient::JobFinished(
     const ExtensionId& extension_id,
     const base::FilePath& relative_path,
     ContentVerifyJob::FailureReason failure_reason) {
   if (!content::BrowserThread::CurrentlyOn(creation_thread_)) {
-    base::PostTask(FROM_HERE, {creation_thread_},
-                   base::BindOnce(&TestContentVerifyJobObserver::JobFinished,
-                                  base::Unretained(this), extension_id,
-                                  relative_path, failure_reason));
+    base::PostTask(
+        FROM_HERE, {creation_thread_},
+        base::BindOnce(
+            &TestContentVerifyJobObserver::ObserverClient::JobFinished, this,
+            extension_id, relative_path, failure_reason));
     return;
   }
   Result result = failure_reason == ContentVerifyJob::NONE ? Result::SUCCESS
@@ -128,6 +161,24 @@ void TestContentVerifyJobObserver::JobFinished(
                  << relative_path.value()
                  << " failure_reason:" << failure_reason;
   }
+}
+
+void TestContentVerifyJobObserver::ObserverClient::ExpectJobResult(
+    const ExtensionId& extension_id,
+    const base::FilePath& relative_path,
+    Result expected_result) {
+  expectations_.push_back(
+      ExpectedResult(extension_id, relative_path, expected_result));
+}
+
+bool TestContentVerifyJobObserver::ObserverClient::WaitForExpectedJobs() {
+  EXPECT_TRUE(content::BrowserThread::CurrentlyOn(creation_thread_));
+  if (!expectations_.empty()) {
+    base::RunLoop run_loop;
+    job_quit_closure_ = run_loop.QuitClosure();
+    run_loop.Run();
+  }
+  return expectations_.empty();
 }
 
 // MockContentVerifierDelegate ------------------------------------------------

@@ -49,6 +49,7 @@
 #include "content/test/data/mojo_web_test_helper_test.mojom.h"
 #include "device/bluetooth/public/mojom/test/fake_bluetooth.mojom.h"
 #include "media/mojo/buildflags.h"
+#include "media/mojo/mojom/media_service.mojom.h"
 #include "mojo/public/cpp/bindings/remote.h"
 #include "net/ssl/client_cert_identity.h"
 #include "services/network/public/mojom/network_service.mojom.h"

@@ -22,20 +22,10 @@ class PermissionPromptBubbleView : public views::BubbleDialogDelegateView {
   // bubble_anchor_util::GetPageInfoAnchorConfiguration.
   void UpdateAnchorPosition();
 
-  // Closes the bubble without notifying |delegate_|. Called when the
-  // controlling PermissionPrompt is removed from the permission system, and so
-  // the delegate will have lost the relevant reference. This can happen when
-  // the user changes tabs or initiates a navigation without interacting with
-  // the UI.
-  void CloseWithoutNotifyingDelegate();
-
   // views::BubbleDialogDelegateView:
   void AddedToWidget() override;
   bool ShouldShowCloseButton() const override;
   base::string16 GetWindowTitle() const override;
-  bool Cancel() override;
-  bool Accept() override;
-  bool Close() override;
 
  private:
   void AddPermissionRequestLine(permissions::PermissionRequest* request);
@@ -47,10 +37,6 @@ class PermissionPromptBubbleView : public views::BubbleDialogDelegateView {
 
   // The requesting domain's name or origin.
   const PermissionPrompt::DisplayNameOrOrigin name_or_origin_;
-
-  // Whether to notify |delegate_| of a decision. Set to false when
-  // CloseWithNotifyingDelegate is called; see the comment on that method.
-  bool notify_delegate_ = true;
 
   DISALLOW_COPY_AND_ASSIGN(PermissionPromptBubbleView);
 };

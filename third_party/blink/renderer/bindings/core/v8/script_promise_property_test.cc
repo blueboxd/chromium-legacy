@@ -146,8 +146,8 @@ class ScriptPromisePropertyTestBase {
   template <typename T>
   ScriptValue Wrap(DOMWrapperWorld& world, const T& value) {
     v8::HandleScope handle_scope(GetIsolate());
-    ScriptState* script_state =
-        ScriptState::From(ToV8Context(&GetDocument(), world));
+    ScriptState* script_state = ScriptState::From(
+        ToV8Context(GetDocument().ToExecutionContext(), world));
     ScriptState::Scope scope(script_state);
     return ScriptValue(
         GetIsolate(),
@@ -169,7 +169,8 @@ class ScriptPromisePropertyGarbageCollectedTest
   typedef GarbageCollectedHolder::Property Property;
 
   ScriptPromisePropertyGarbageCollectedTest()
-      : holder_(MakeGarbageCollected<GarbageCollectedHolder>(&GetDocument())) {}
+      : holder_(MakeGarbageCollected<GarbageCollectedHolder>(
+            GetDocument().ToExecutionContext())) {}
 
   void ClearHolder() { holder_.Clear(); }
   GarbageCollectedHolder* Holder() { return holder_; }
@@ -191,7 +192,8 @@ class ScriptPromisePropertyNonScriptWrappableResolutionTargetTest
   template <typename T>
   void Test(const T& value, const char* expected, const char* file, int line) {
     typedef ScriptPromiseProperty<T, ToV8UndefinedGenerator> Property;
-    Property* property = MakeGarbageCollected<Property>(&GetDocument());
+    Property* property =
+        MakeGarbageCollected<Property>(GetDocument().ToExecutionContext());
     size_t n_resolve_calls = 0;
     ScriptValue actual_value;
     String actual;
@@ -229,7 +231,7 @@ TEST_F(ScriptPromisePropertyGarbageCollectedTest,
   {
     ScriptState::Scope scope(MainScriptState());
     EXPECT_EQ(v.V8Value().As<v8::Object>()->CreationContext(),
-              ToV8Context(&GetDocument(), MainWorld()));
+              ToV8Context(GetDocument().ToExecutionContext(), MainWorld()));
   }
   EXPECT_EQ(Property::kPending, GetProperty()->GetState());
 }
@@ -248,12 +250,12 @@ TEST_F(ScriptPromisePropertyGarbageCollectedTest,
   {
     ScriptState::Scope scope(OtherScriptState());
     EXPECT_EQ(u.V8Value().As<v8::Object>()->CreationContext(),
-              ToV8Context(&GetDocument(), OtherWorld()));
+              ToV8Context(GetDocument().ToExecutionContext(), OtherWorld()));
   }
   {
     ScriptState::Scope scope(MainScriptState());
     EXPECT_EQ(v.V8Value().As<v8::Object>()->CreationContext(),
-              ToV8Context(&GetDocument(), MainWorld()));
+              ToV8Context(GetDocument().ToExecutionContext(), MainWorld()));
   }
   EXPECT_EQ(Property::kPending, GetProperty()->GetState());
 }

@@ -38,7 +38,8 @@
 namespace blink {
 
 Navigator::Navigator(LocalFrame* frame)
-    : NavigatorLanguage(frame ? frame->GetDocument() : nullptr),
+    : NavigatorLanguage(frame ? frame->GetDocument()->ToExecutionContext()
+                              : nullptr),
       DOMWindowClient(frame) {}
 
 String Navigator::productSub() const {

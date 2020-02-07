@@ -78,7 +78,7 @@ SharedWorker* SharedWorker::Create(ExecutionContext* context,
 
   // We don't currently support nested workers, so workers can only be created
   // from documents.
-  Document* document = To<Document>(context);
+  Document* document = Document::From(context);
   DCHECK(document);
 
   RecordSharedWorkerUsage(document);

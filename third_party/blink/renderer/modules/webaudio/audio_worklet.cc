@@ -17,7 +17,7 @@
 namespace blink {
 
 AudioWorklet::AudioWorklet(BaseAudioContext* context)
-    : Worklet(To<Document>(context->GetExecutionContext())),
+    : Worklet(Document::From(context->GetExecutionContext())),
       context_(context) {}
 
 void AudioWorklet::CreateProcessor(

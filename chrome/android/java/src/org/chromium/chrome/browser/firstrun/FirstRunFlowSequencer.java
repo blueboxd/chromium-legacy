@@ -75,7 +75,8 @@ public abstract class FirstRunFlowSequencer  {
      */
     public void start() {
         if (CommandLine.getInstance().hasSwitch(ChromeSwitches.DISABLE_FIRST_RUN_EXPERIENCE)
-                || ApiCompatibilityUtils.isDemoUser()) {
+                || ApiCompatibilityUtils.isDemoUser()
+                || ApiCompatibilityUtils.isRunningInUserTestHarness()) {
             onFlowIsKnown(null);
             return;
         }
@@ -245,7 +246,8 @@ public abstract class FirstRunFlowSequencer  {
             Intent fromIntent, boolean preferLightweightFre) {
         // If FRE is disabled (e.g. in tests), proceed directly to the intent handling.
         if (CommandLine.getInstance().hasSwitch(ChromeSwitches.DISABLE_FIRST_RUN_EXPERIENCE)
-                || ApiCompatibilityUtils.isDemoUser()) {
+                || ApiCompatibilityUtils.isDemoUser()
+                || ApiCompatibilityUtils.isRunningInUserTestHarness()) {
             return false;
         }
 

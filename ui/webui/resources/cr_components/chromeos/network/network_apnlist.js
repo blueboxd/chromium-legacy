@@ -156,7 +156,7 @@ Polymer({
   },
 
   /**
-   * @param {!chromeos.networkConfig.mojom.ApnProperties|undefined=}
+   * @param {chromeos.networkConfig.mojom.ApnProperties=}
    *     apnProperties
    * @return {!chromeos.networkConfig.mojom.ApnProperties} A new APN object with
    *     properties from |apnProperties| if provided.

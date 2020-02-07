@@ -14,7 +14,8 @@ ContextClient::ContextClient(ExecutionContext* execution_context)
     : execution_context_(execution_context) {}
 
 ContextClient::ContextClient(LocalFrame* frame)
-    : execution_context_(frame ? frame->GetDocument() : nullptr) {}
+    : execution_context_(frame ? frame->GetDocument()->ToExecutionContext()
+                               : nullptr) {}
 
 ExecutionContext* ContextClient::GetExecutionContext() const {
   return execution_context_ && !execution_context_->IsContextDestroyed()
@@ -24,7 +25,7 @@ ExecutionContext* ContextClient::GetExecutionContext() const {
 
 Document* ContextClient::GetDocument() const {
   return execution_context_
-             ? DynamicTo<Document>(
+             ? Document::DynamicFrom(
                    static_cast<ExecutionContext*>(execution_context_))
              : nullptr;
 }
@@ -38,8 +39,13 @@ void ContextClient::Trace(Visitor* visitor) {
   visitor->Trace(execution_context_);
 }
 
+ContextLifecycleObserver::ContextLifecycleObserver(Document* document,
+                                                   Type type)
+    : LifecycleObserver(document ? document->ToExecutionContext() : nullptr),
+      observer_type_(type) {}
+
 LocalFrame* ContextLifecycleObserver::GetFrame() const {
-  auto* document = DynamicTo<Document>(GetExecutionContext());
+  auto* document = Document::DynamicFrom(GetExecutionContext());
   return document ? document->GetFrame() : nullptr;
 }
 

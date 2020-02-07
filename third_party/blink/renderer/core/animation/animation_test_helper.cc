@@ -89,7 +89,8 @@ void EnsureInterpolatedValueCached(const ActiveInterpolations& interpolations,
     auto type = cssvalue::CSSPendingInterpolationValue::Type::kCSSProperty;
     auto* pending = cssvalue::CSSPendingInterpolationValue::Create(type);
     auto origin = StyleCascade::Origin::kAuthor;
-    cascade.Add(*CSSPropertyName::From(&state.GetDocument(), "--unused"),
+    cascade.Add(*CSSPropertyName::From(state.GetDocument().ToExecutionContext(),
+                                       "--unused"),
                 pending, origin);
 
     TestAnimator animator(state, cascade, map, interpolations);

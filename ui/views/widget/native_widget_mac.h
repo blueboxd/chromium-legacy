@@ -268,6 +268,8 @@ class VIEWS_EXPORT NativeWidgetMac : public internal::NativeWidgetPrivate,
   FocusManager* focus_manager_ = nullptr;
   std::unique_ptr<ui::InputMethod> input_method_;
   std::unique_ptr<ZoomFocusMonitor> zoom_focus_monitor_;
+  // Held while this widget is active if it's a child.
+  std::unique_ptr<Widget::PaintAsActiveLock> parent_key_lock_;
 
   DISALLOW_COPY_AND_ASSIGN(NativeWidgetMac);
 };

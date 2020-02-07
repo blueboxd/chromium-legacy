@@ -200,14 +200,14 @@ void MediaElementEventListener::Invoke(ExecutionContext* context,
 
   if (media_element_->HasVideo()) {
     CreateHTMLVideoElementCapturer(
-        To<Document>(context)->GetFrame(), &web_stream,
+        Document::From(context)->GetFrame(), &web_stream,
         media_element_->GetWebMediaPlayer(),
         media_element_->GetExecutionContext()->GetTaskRunner(
             TaskType::kInternalMediaRealTime));
   }
   if (media_element_->HasAudio()) {
     CreateHTMLAudioElementCapturer(
-        To<Document>(context)->GetFrame(), &web_stream,
+        Document::From(context)->GetFrame(), &web_stream,
         media_element_->GetWebMediaPlayer(),
         media_element_->GetExecutionContext()->GetTaskRunner(
             TaskType::kInternalMediaRealTime));

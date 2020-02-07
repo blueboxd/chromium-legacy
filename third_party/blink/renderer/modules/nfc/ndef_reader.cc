@@ -75,7 +75,7 @@ ScriptPromise NDEFReader::scan(ScriptState* script_state,
                                const NDEFScanOptions* options,
                                ExceptionState& exception_state) {
   ExecutionContext* execution_context = GetExecutionContext();
-  Document* document = To<Document>(execution_context);
+  Document* document = Document::From(execution_context);
   // https://w3c.github.io/web-nfc/#security-policies
   // WebNFC API must be only accessible from top level browsing context.
   if (!execution_context || !document->IsInMainFrame()) {
@@ -206,7 +206,7 @@ void NDEFReader::Abort(ScriptPromiseResolver* resolver) {
 
 NFCProxy* NDEFReader::GetNfcProxy() const {
   DCHECK(GetExecutionContext());
-  return NFCProxy::From(*To<Document>(GetExecutionContext()));
+  return NFCProxy::From(*Document::From(GetExecutionContext()));
 }
 
 }  // namespace blink

@@ -116,6 +116,9 @@ SSLClientAuthHandler::SSLClientAuthHandler(
 }
 
 SSLClientAuthHandler::~SSLClientAuthHandler() {
+  // Invalidate our WeakPtrs in case invoking the cancellation callback would
+  // cause |this| to be destructed again.
+  weak_factory_.InvalidateWeakPtrs();
   if (cancellation_callback_) {
     std::move(cancellation_callback_).Run();
   }

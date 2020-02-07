@@ -456,5 +456,10 @@ const base::Feature kForceExtraRenderingToTrackStickyFrame{
 const base::Feature kCSSReducedFontLoadingInvalidations{
     "CSSReducedFontLoadingInvalidations", base::FEATURE_DISABLED_BY_DEFAULT};
 
+// When enabled, frees up CachedMetadata after consumption by script resources
+// and modules. Needed for the experiment in http://crbug.com/1045052.
+const base::Feature kDiscardCodeCacheAfterFirstUse{
+    "DiscardCodeCacheAfterFirstUse", base::FEATURE_DISABLED_BY_DEFAULT};
+
 }  // namespace features
 }  // namespace blink

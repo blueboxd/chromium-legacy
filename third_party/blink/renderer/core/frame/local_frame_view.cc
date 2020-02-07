@@ -2129,11 +2129,12 @@ void LocalFrameView::NotifyResizeObservers() {
     resize_controller.ClearObservations();
     ErrorEvent* error = ErrorEvent::Create(
         "ResizeObserver loop limit exceeded",
-        SourceLocation::Capture(frame_->GetDocument()), nullptr);
+        SourceLocation::Capture(frame_->GetDocument()->ToExecutionContext()),
+        nullptr);
     // We're using |SanitizeScriptErrors::kDoNotSanitize| as the error is made
     // by blink itself.
     // TODO(yhirano): Reconsider this.
-    frame_->GetDocument()->DispatchErrorEvent(
+    frame_->GetDocument()->ToExecutionContext()->DispatchErrorEvent(
         error, SanitizeScriptErrors::kDoNotSanitize);
     // Ensure notifications will get delivered in next cycle.
     ScheduleAnimation();

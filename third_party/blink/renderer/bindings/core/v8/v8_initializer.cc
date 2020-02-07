@@ -454,7 +454,7 @@ static bool WasmCodeGenerationCheckCallbackInMainThread(
     v8::Local<v8::String> source) {
   if (ExecutionContext* execution_context = ToExecutionContext(context)) {
     if (ContentSecurityPolicy* policy =
-            To<Document>(execution_context)->GetContentSecurityPolicy()) {
+            Document::From(execution_context)->GetContentSecurityPolicy()) {
       v8::String::Value source_str(context->GetIsolate(), source);
       UChar snippet[ContentSecurityPolicy::kMaxSampleLength + 1];
       size_t len = std::min((sizeof(snippet) / sizeof(UChar)) - 1,

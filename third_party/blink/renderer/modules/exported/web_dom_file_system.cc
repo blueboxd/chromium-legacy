@@ -70,8 +70,11 @@ WebDOMFileSystem WebDOMFileSystem::Create(WebLocalFrame* frame,
   DCHECK(frame);
   DCHECK(To<WebLocalFrameImpl>(frame)->GetFrame());
   auto* dom_file_system = MakeGarbageCollected<DOMFileSystem>(
-      To<WebLocalFrameImpl>(frame)->GetFrame()->GetDocument(), name,
-      static_cast<mojom::blink::FileSystemType>(type), root_url);
+      To<WebLocalFrameImpl>(frame)
+          ->GetFrame()
+          ->GetDocument()
+          ->ToExecutionContext(),
+      name, static_cast<mojom::blink::FileSystemType>(type), root_url);
   if (serializable_type == kSerializableTypeSerializable)
     dom_file_system->MakeClonable();
   return WebDOMFileSystem(dom_file_system);

@@ -80,7 +80,7 @@ void MockCacheHandler::Set(const uint8_t* data, size_t size) {
 }
 
 void MockCacheHandler::ClearCachedMetadata(
-    CachedMetadataHandler::CacheType cache_type) {
+    CachedMetadataHandler::ClearCacheType cache_type) {
   if (cache_type == CachedMetadataHandler::kSendToPlatform) {
     Send();
   }

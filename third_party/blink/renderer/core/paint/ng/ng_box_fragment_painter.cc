@@ -2001,11 +2001,14 @@ bool NGBoxFragmentPainter::HitTestBlockChildren(
 
     const PhysicalOffset child_offset = accumulated_offset + child.offset;
 
-    // TODO(mstensho): If we hit a child that is an anonymous block, we need to
-    // provide the hit test result with the node here.
     if (NodeAtPointInFragment(block_child, hit_test_location, child_offset,
-                              action, &result))
+                              action, &result)) {
+      if (const LayoutObject* child_object = block_child.GetLayoutObject()) {
+        child_object->UpdateHitTestResult(
+            result, hit_test_location.Point() - accumulated_offset);
+      }
       return true;
+    }
   }
 
   return false;
@@ -2118,7 +2121,7 @@ bool NGBoxFragmentPainter::HitTestFloatingChildren(
       continue;
     }
 
-    if (child_fragment.IsBlockFormattingContextRoot())
+    if (child_fragment.IsPaintedAtomically())
       continue;
 
     if (const auto* child_container =

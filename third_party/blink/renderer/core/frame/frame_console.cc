@@ -58,7 +58,8 @@ bool FrameConsole::AddMessageToStorage(ConsoleMessage* console_message,
   if (!frame_->GetDocument() || !frame_->GetPage())
     return false;
   return frame_->GetPage()->GetConsoleMessageStorage().AddConsoleMessage(
-      frame_->GetDocument(), console_message, discard_duplicates);
+      frame_->GetDocument()->ToExecutionContext(), console_message,
+      discard_duplicates);
 }
 
 void FrameConsole::ReportMessageToClient(mojom::ConsoleMessageSource source,

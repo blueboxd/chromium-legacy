@@ -157,45 +157,42 @@ void WebGLRenderingContext::RegisterContextExtensions() {
       "", "WEBKIT_", nullptr,
   };
 
-  RegisterExtension<ANGLEInstancedArrays>(angle_instanced_arrays_);
-  RegisterExtension<EXTBlendMinMax>(ext_blend_min_max_);
-  RegisterExtension<EXTColorBufferHalfFloat>(ext_color_buffer_half_float_);
-  RegisterExtension<EXTDisjointTimerQuery>(ext_disjoint_timer_query_);
-  RegisterExtension<EXTFloatBlend>(ext_float_blend_);
-  RegisterExtension<EXTFragDepth>(ext_frag_depth_);
-  RegisterExtension<EXTShaderTextureLOD>(ext_shader_texture_lod_);
-  RegisterExtension<EXTTextureCompressionBPTC>(ext_texture_compression_bptc_);
-  RegisterExtension<EXTTextureFilterAnisotropic>(
-      ext_texture_filter_anisotropic_, kApprovedExtension, kBothPrefixes);
-  RegisterExtension<EXTsRGB>(exts_rgb_);
-  RegisterExtension<KHRParallelShaderCompile>(khr_parallel_shader_compile_);
-  RegisterExtension<OESElementIndexUint>(oes_element_index_uint_);
-  RegisterExtension<OESFboRenderMipmap>(oes_fbo_render_mipmap_);
-  RegisterExtension<OESStandardDerivatives>(oes_standard_derivatives_);
-  RegisterExtension<OESTextureFloat>(oes_texture_float_);
-  RegisterExtension<OESTextureFloatLinear>(oes_texture_float_linear_);
-  RegisterExtension<OESTextureHalfFloat>(oes_texture_half_float_);
-  RegisterExtension<OESTextureHalfFloatLinear>(oes_texture_half_float_linear_);
-  RegisterExtension<OESVertexArrayObject>(oes_vertex_array_object_);
-  RegisterExtension<WebGLColorBufferFloat>(webgl_color_buffer_float_);
-  RegisterExtension<WebGLCompressedTextureASTC>(webgl_compressed_texture_astc_);
-  RegisterExtension<WebGLCompressedTextureETC>(webgl_compressed_texture_etc_);
-  RegisterExtension<WebGLCompressedTextureETC1>(webgl_compressed_texture_etc1_);
-  RegisterExtension<WebGLCompressedTexturePVRTC>(
-      webgl_compressed_texture_pvrtc_, kApprovedExtension, kBothPrefixes);
-  RegisterExtension<WebGLCompressedTextureS3TC>(
-      webgl_compressed_texture_s3tc_, kApprovedExtension, kBothPrefixes);
-  RegisterExtension<WebGLCompressedTextureS3TCsRGB>(
-      webgl_compressed_texture_s3tc_srgb_);
-  RegisterExtension<WebGLDebugRendererInfo>(webgl_debug_renderer_info_);
-  RegisterExtension<WebGLDebugShaders>(webgl_debug_shaders_);
-  RegisterExtension<WebGLDepthTexture>(webgl_depth_texture_, kApprovedExtension,
-                                       kBothPrefixes);
-  RegisterExtension<WebGLDrawBuffers>(webgl_draw_buffers_);
-  RegisterExtension<WebGLLoseContext>(webgl_lose_context_, kApprovedExtension,
-                                      kBothPrefixes);
-  RegisterExtension<WebGLMultiDraw>(webgl_multi_draw_, kDraftExtension);
-  RegisterExtension<WebGLVideoTexture>(webgl_video_texture_, kDraftExtension);
+  RegisterExtension(angle_instanced_arrays_);
+  RegisterExtension(ext_blend_min_max_);
+  RegisterExtension(ext_color_buffer_half_float_);
+  RegisterExtension(ext_disjoint_timer_query_);
+  RegisterExtension(ext_float_blend_);
+  RegisterExtension(ext_frag_depth_);
+  RegisterExtension(ext_shader_texture_lod_);
+  RegisterExtension(ext_texture_compression_bptc_);
+  RegisterExtension(ext_texture_filter_anisotropic_, kApprovedExtension,
+                    kBothPrefixes);
+  RegisterExtension(exts_rgb_);
+  RegisterExtension(khr_parallel_shader_compile_);
+  RegisterExtension(oes_element_index_uint_);
+  RegisterExtension(oes_fbo_render_mipmap_);
+  RegisterExtension(oes_standard_derivatives_);
+  RegisterExtension(oes_texture_float_);
+  RegisterExtension(oes_texture_float_linear_);
+  RegisterExtension(oes_texture_half_float_);
+  RegisterExtension(oes_texture_half_float_linear_);
+  RegisterExtension(oes_vertex_array_object_);
+  RegisterExtension(webgl_color_buffer_float_);
+  RegisterExtension(webgl_compressed_texture_astc_);
+  RegisterExtension(webgl_compressed_texture_etc_);
+  RegisterExtension(webgl_compressed_texture_etc1_);
+  RegisterExtension(webgl_compressed_texture_pvrtc_, kApprovedExtension,
+                    kBothPrefixes);
+  RegisterExtension(webgl_compressed_texture_s3tc_, kApprovedExtension,
+                    kBothPrefixes);
+  RegisterExtension(webgl_compressed_texture_s3tc_srgb_);
+  RegisterExtension(webgl_debug_renderer_info_);
+  RegisterExtension(webgl_debug_shaders_);
+  RegisterExtension(webgl_depth_texture_, kApprovedExtension, kBothPrefixes);
+  RegisterExtension(webgl_draw_buffers_);
+  RegisterExtension(webgl_lose_context_, kApprovedExtension, kBothPrefixes);
+  RegisterExtension(webgl_multi_draw_, kDraftExtension);
+  RegisterExtension(webgl_video_texture_, kDraftExtension);
 }
 
 void WebGLRenderingContext::Trace(blink::Visitor* visitor) {

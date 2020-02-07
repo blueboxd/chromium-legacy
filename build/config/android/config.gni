@@ -71,33 +71,28 @@ if (is_android || is_chromeos) {
     assert(defined(default_android_ndk_major_version))
   }
 
+  public_android_sdk_root = "//third_party/android_sdk/public"
+  android_sdk_tools = "${public_android_sdk_root}/tools"
+  android_sdk_tools_version_suffix = "-26.0.0-dev"
   if (android_sdk_release == "q") {
-    default_android_sdk_root = "//third_party/android_sdk/public"
+    default_android_sdk_root = public_android_sdk_root
     default_android_sdk_version = 29
     default_android_sdk_build_tools_version = "29.0.2"
-    default_android_sdk_tools_version_suffix = "-26.0.0-dev"
     public_android_sdk = true
   }
 
   if (!defined(default_lint_android_sdk_root)) {
     # Purposefully repeated so that downstream can change
     # default_android_sdk_root without changing lint version.
-    default_lint_android_sdk_root = "//third_party/android_sdk/public"
+    default_lint_android_sdk_root = public_android_sdk_root
     default_lint_android_sdk_version = 26
-  }
-
-  if (!defined(manifest_merger_sdk_root)) {
-    # Purposefully repeated so that downstream can change
-    # default_android_sdk_root without changing manifest merger version.
-    manifest_merger_sdk_root = "//third_party/android_sdk/public"
-    manifest_merger_sdk_version = "-26.0.0-dev"
   }
 
   if (!defined(default_extras_android_sdk_root)) {
     # Purposefully repeated so that downstream can change
     # default_android_sdk_root without changing where we load the SDK extras
     # from. (Google Play services, etc.)
-    default_extras_android_sdk_root = "//third_party/android_sdk/public"
+    default_extras_android_sdk_root = public_android_sdk_root
   }
 
   if (!defined(default_android_keystore_path)) {
@@ -137,7 +132,6 @@ if (is_android || is_chromeos) {
     android_sdk_root = default_android_sdk_root
     android_sdk_version = default_android_sdk_version
     android_sdk_build_tools_version = default_android_sdk_build_tools_version
-    android_sdk_tools_version_suffix = default_android_sdk_tools_version_suffix
 
     lint_android_sdk_root = default_lint_android_sdk_root
     lint_android_sdk_version = default_lint_android_sdk_version
@@ -265,7 +259,6 @@ if (is_android || is_chromeos) {
 
   android_sdk =
       "${android_sdk_root}/platforms/android-${android_sdk_platform_version}"
-  android_sdk_tools = "${android_sdk_root}/tools"
   android_sdk_build_tools =
       "${android_sdk_root}/build-tools/$android_sdk_build_tools_version"
 

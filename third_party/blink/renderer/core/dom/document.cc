@@ -591,7 +591,7 @@ class Document::NetworkStateObserver final
   void OnLineStateChange(bool on_line) override {
     AtomicString event_name =
         on_line ? event_type_names::kOnline : event_type_names::kOffline;
-    Document* document = To<Document>(GetExecutionContext());
+    Document* document = Document::From(GetExecutionContext());
     if (!document->domWindow())
       return;
     document->domWindow()->DispatchEvent(*Event::Create(event_name));
@@ -964,6 +964,103 @@ ContentSecurityPolicy* Document::GetContentSecurityPolicyForWorld() {
 
   isolated_world_csp_map_->insert(world_id, policy);
   return policy;
+}
+
+SecurityContext& Document::GetSecurityContext() {
+  return ExecutionContext::GetSecurityContext();
+}
+
+const SecurityContext& Document::GetSecurityContext() const {
+  return ExecutionContext::GetSecurityContext();
+}
+
+const SecurityOrigin* Document::GetSecurityOrigin() const {
+  return GetSecurityContext().GetSecurityOrigin();
+}
+
+SecurityOrigin* Document::GetMutableSecurityOrigin() {
+  return GetSecurityContext().GetMutableSecurityOrigin();
+}
+
+ContentSecurityPolicy* Document::GetContentSecurityPolicy() const {
+  return GetSecurityContext().GetContentSecurityPolicy();
+}
+
+WebSandboxFlags Document::GetSandboxFlags() const {
+  return GetSecurityContext().GetSandboxFlags();
+}
+
+bool Document::IsSandboxed(WebSandboxFlags mask) const {
+  return GetSecurityContext().IsSandboxed(mask);
+}
+
+PublicURLManager& Document::GetPublicURLManager() {
+  return ExecutionContext::GetPublicURLManager();
+}
+
+bool Document::IsContextPaused() const {
+  return ExecutionContext::IsContextPaused();
+}
+
+bool Document::IsContextDestroyed() const {
+  return ExecutionContext::IsContextDestroyed();
+}
+
+ContentSecurityPolicyDelegate& Document::GetContentSecurityPolicyDelegate() {
+  return ExecutionContext::GetContentSecurityPolicyDelegate();
+}
+
+SecureContextMode Document::GetSecureContextMode() const {
+  return ExecutionContext::GetSecureContextMode();
+}
+
+bool Document::IsSecureContext() const {
+  return ExecutionContext::IsSecureContext();
+}
+
+bool Document::IsSecureContext(String& error_message) const {
+  return ExecutionContext::IsSecureContext(error_message);
+}
+
+void Document::SetReferrerPolicy(network::mojom::ReferrerPolicy policy) {
+  ExecutionContext::SetReferrerPolicy(policy);
+}
+
+v8::Isolate* Document::GetIsolate() const {
+  return ExecutionContext::GetIsolate();
+}
+
+Agent* Document::GetAgent() const {
+  return ExecutionContext::GetAgent();
+}
+
+OriginTrialContext* Document::GetOriginTrialContext() const {
+  return ExecutionContext::GetOriginTrialContext();
+}
+
+void Document::SetSecureContextModeForTesting(SecureContextMode mode) {
+  ExecutionContext::SetSecureContextModeForTesting(mode);
+}
+
+bool Document::IsFeatureEnabled(mojom::blink::FeaturePolicyFeature feature,
+                                ReportOptions report_on_failure,
+                                const String& message,
+                                const String& source_file) const {
+  return ExecutionContext::IsFeatureEnabled(feature, report_on_failure, message,
+                                            source_file);
+}
+
+bool Document::IsFeatureEnabled(mojom::blink::FeaturePolicyFeature feature,
+                                PolicyValue threshold_value,
+                                ReportOptions report_on_failure,
+                                const String& message,
+                                const String& source_file) const {
+  return ExecutionContext::IsFeatureEnabled(
+      feature, threshold_value, report_on_failure, message, source_file);
+}
+
+String Document::addressSpaceForBindings() const {
+  return ExecutionContext::addressSpaceForBindings();
 }
 
 void Document::ChildrenChanged(const ChildrenChange& change) {
@@ -6939,11 +7036,11 @@ ResizeObserverController& Document::EnsureResizeObserverController() {
 static void RunAddConsoleMessageTask(mojom::ConsoleMessageSource source,
                                      mojom::ConsoleMessageLevel level,
                                      const String& message,
-                                     ExecutionContext* context,
+                                     Document* document,
                                      bool discard_duplicates) {
   ConsoleMessage* console_message =
       ConsoleMessage::Create(source, level, message);
-  context->AddConsoleMessage(console_message, discard_duplicates);
+  document->AddConsoleMessage(console_message, discard_duplicates);
 }
 
 void Document::AddConsoleMessageImpl(ConsoleMessage* console_message,
@@ -6984,6 +7081,14 @@ void Document::AddConsoleMessageImpl(ConsoleMessage* console_message,
   }
 
   frame_->Console().AddMessage(console_message, discard_duplicates);
+}
+
+void Document::AddConsoleMessageImpl(mojom::ConsoleMessageSource source,
+                                     mojom::ConsoleMessageLevel level,
+                                     const String& message,
+                                     bool discard_duplicates) {
+  AddConsoleMessageImpl(ConsoleMessage::Create(source, level, message),
+                        discard_duplicates);
 }
 
 void Document::AddInspectorIssue(InspectorIssue* issue) {

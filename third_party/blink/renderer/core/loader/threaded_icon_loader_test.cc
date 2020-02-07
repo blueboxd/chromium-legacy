@@ -60,7 +60,7 @@ class ThreadedIconLoaderTest : public PageTestBase {
     double resize_scale;
     base::RunLoop run_loop;
     icon_loader->Start(
-        &GetDocument(), resource_request, resize_dimensions,
+        GetDocument().ToExecutionContext(), resource_request, resize_dimensions,
         WTF::Bind(&ThreadedIconLoaderTest::DidGetIcon, WTF::Unretained(this),
                   run_loop.QuitClosure(), WTF::Unretained(&icon),
                   WTF::Unretained(&resize_scale)));

@@ -6984,7 +6984,7 @@
             ]
         }
     ],
-    "UnidoOnSignIn": [
+    "UnidoOnSignInV2": [
         {
             "platforms": [
                 "android",
@@ -6995,13 +6995,29 @@
             ],
             "experiments": [
                 {
-                    "name": "UseDeviceInfoEnabled",
+                    "name": "Enabled_2020-02-06",
+                    "enable_features": [
+                        "SharingSendViaSync",
+                        "SyncDeviceInfoInTransportMode"
+                    ]
+                }
+            ]
+        }
+    ],
+    "UnidoUseDeviceInfo": [
+        {
+            "platforms": [
+                "android",
+                "chromeos",
+                "linux",
+                "mac",
+                "windows"
+            ],
+            "experiments": [
+                {
+                    "name": "Enabled",
                     "enable_features": [
                         "SharingUseDeviceInfo"
-                    ],
-                    "disable_features": [
-                        "SharingDeriveVapidKey",
-                        "SyncDeviceInfoInTransportMode"
                     ]
                 }
             ]

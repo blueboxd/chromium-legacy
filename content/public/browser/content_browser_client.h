@@ -31,8 +31,8 @@
 #include "content/public/common/window_container_type.mojom-forward.h"
 #include "media/base/video_codecs.h"
 #include "media/cdm/cdm_proxy.h"
-#include "media/mojo/mojom/media_service.mojom.h"
-#include "media/mojo/mojom/remoting.mojom.h"
+#include "media/mojo/mojom/media_service.mojom-forward.h"
+#include "media/mojo/mojom/remoting.mojom-forward.h"
 #include "mojo/public/cpp/bindings/generic_pending_receiver.h"
 #include "mojo/public/cpp/bindings/pending_receiver.h"
 #include "mojo/public/cpp/bindings/pending_remote.h"
@@ -57,10 +57,6 @@
 
 #if defined(OS_POSIX) || defined(OS_FUCHSIA)
 #include "content/public/browser/posix_file_descriptor_info.h"
-#endif
-
-#if BUILDFLAG(ENABLE_PLUGINS)
-#include "content/public/common/pepper_plugin_info.h"
 #endif
 
 namespace net {
@@ -213,6 +209,7 @@ struct GlobalRequestID;
 struct MainFunctionParams;
 struct NavigationDownloadPolicy;
 struct OpenURLParams;
+struct PepperPluginInfo;
 struct Referrer;
 struct SocketPermissionRequest;
 struct WebPreferences;

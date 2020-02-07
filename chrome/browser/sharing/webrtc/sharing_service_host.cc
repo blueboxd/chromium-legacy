@@ -180,8 +180,7 @@ void SharingServiceHost::DoSendMessageToDevice(
 
   // TODO(crbug.com/1044539): support multiple messages over the same connection
   // or queue messages instead of rejecting them here.
-  auto connection_iter = connections_.find(device.guid());
-  if (connection_iter != connections_.end()) {
+  if (connections_.find(device.guid()) != connections_.end()) {
     std::move(callback).Run(SharingSendMessageResult::kInternalError,
                             /*message_id=*/base::nullopt,
                             SharingChannelType::kWebRtc);
@@ -198,7 +197,7 @@ void SharingServiceHost::DoSendMessageToDevice(
     return;
   }
 
-  GetConnection(device.guid(), *fcm_configuration)
+  CreateConnection(device.guid(), *fcm_configuration)
       ->SendMessage(std::move(webrtc_message),
                     base::BindOnce(&OnMessageSent, std::move(callback),
                                    std::move(message_guid)));
@@ -217,7 +216,14 @@ void SharingServiceHost::OnOfferReceived(
     const chrome_browser_sharing::FCMChannelConfiguration& fcm_configuration,
     const std::string& offer,
     base::OnceCallback<void(const std::string&)> callback) {
-  GetConnection(device_guid, fcm_configuration)
+  // TODO(crbug.com/1044539): support multiple messages over the same connection
+  // or queue messages instead of rejecting them here.
+  if (connections_.find(device_guid) != connections_.end()) {
+    std::move(callback).Run(/*answer=*/std::string());
+    return;
+  }
+
+  CreateConnection(device_guid, fcm_configuration)
       ->OnOfferReceived(offer, std::move(callback));
 }
 
@@ -225,8 +231,13 @@ void SharingServiceHost::OnIceCandidatesReceived(
     const std::string& device_guid,
     const chrome_browser_sharing::FCMChannelConfiguration& fcm_configuration,
     std::vector<sharing::mojom::IceCandidatePtr> ice_candidates) {
-  GetConnection(device_guid, fcm_configuration)
-      ->OnIceCandidatesReceived(std::move(ice_candidates));
+  // IceCandidates should only be received to already open connections. Ignore
+  // all other ones as we don't want to start a new process here.
+  auto connection_iter = connections_.find(device_guid);
+  if (connection_iter == connections_.end())
+    return;
+
+  connection_iter->second->OnIceCandidatesReceived(std::move(ice_candidates));
 }
 
 void SharingServiceHost::SetSharingHandlerRegistry(
@@ -234,13 +245,20 @@ void SharingServiceHost::SetSharingHandlerRegistry(
   handler_registry_ = handler_registry;
 }
 
-SharingWebRtcConnectionHost* SharingServiceHost::GetConnection(
+SharingServiceHost::Connections&
+SharingServiceHost::GetConnectionsForTesting() {
+  return connections_;
+}
+
+void SharingServiceHost::BindSharingServiceForTesting(
+    mojo::PendingRemote<sharing::mojom::Sharing> service) {
+  sharing_utility_service_.Bind(std::move(service));
+  sharing_utility_service_.reset_on_disconnect();
+}
+
+SharingWebRtcConnectionHost* SharingServiceHost::CreateConnection(
     const std::string& device_guid,
     const chrome_browser_sharing::FCMChannelConfiguration& fcm_configuration) {
-  auto connection_iter = connections_.find(device_guid);
-  if (connection_iter != connections_.end())
-    return connection_iter->second.get();
-
   auto pipes = std::make_unique<SharingWebRtcMojoPipes>();
 
   auto signalling_host = std::make_unique<WebRtcSignallingHostFCM>(

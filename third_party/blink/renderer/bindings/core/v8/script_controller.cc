@@ -129,8 +129,8 @@ v8::Local<v8::Value> ScriptController::ExecuteScriptAndReturnValue(
       return result;
 
     v8::MaybeLocal<v8::Value> maybe_result;
-    maybe_result = V8ScriptRunner::RunCompiledScript(GetIsolate(), script,
-                                                     GetFrame()->GetDocument());
+    maybe_result = V8ScriptRunner::RunCompiledScript(
+        GetIsolate(), script, GetFrame()->GetDocument()->ToExecutionContext());
     probe::ProduceCompilationCache(frame_, source, script);
     V8CodeCache::ProduceCache(GetIsolate(), script, source,
                               produce_cache_options);
@@ -241,7 +241,8 @@ void ScriptController::ExecuteJavaScriptURL(
 
   bool should_bypass_main_world_content_security_policy =
       check_main_world_csp == network::mojom::CSPDisposition::DO_NOT_CHECK ||
-      ContentSecurityPolicy::ShouldBypassMainWorld(GetFrame()->GetDocument());
+      ContentSecurityPolicy::ShouldBypassMainWorld(
+          GetFrame()->GetDocument()->ToExecutionContext());
   if (!GetFrame()->GetPage())
     return;
 

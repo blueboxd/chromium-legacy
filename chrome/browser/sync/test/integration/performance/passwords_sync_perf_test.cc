@@ -11,16 +11,33 @@
 #include "chrome/browser/sync/test/integration/profile_sync_service_harness.h"
 #include "chrome/browser/sync/test/integration/sync_test.h"
 #include "components/password_manager/core/browser/password_store.h"
+#include "testing/perf/perf_result_reporter.h"
 
 using passwords_helper::AddLogin;
 using passwords_helper::CreateTestPasswordForm;
 using passwords_helper::GetPasswordCount;
 using passwords_helper::GetPasswordStore;
 using passwords_helper::UpdateLogin;
-using sync_timing_helper::PrintResult;
 using sync_timing_helper::TimeUntilQuiescence;
 
 static const int kNumPasswords = 150;
+
+namespace {
+
+constexpr char kMetricPrefixPasswords[] = "Passwords.";
+constexpr char kMetricAddPasswordsSyncTime[] = "add_passwords_sync_time";
+constexpr char kMetricUpdatePasswordsSyncTime[] = "update_passwords_sync_time";
+constexpr char kMetricDeletePasswordsSyncTime[] = "delete_passwords_sync_time";
+
+perf_test::PerfResultReporter SetUpReporter(const std::string& story) {
+  perf_test::PerfResultReporter reporter(kMetricPrefixPasswords, story);
+  reporter.RegisterImportantMetric(kMetricAddPasswordsSyncTime, "ms");
+  reporter.RegisterImportantMetric(kMetricUpdatePasswordsSyncTime, "ms");
+  reporter.RegisterImportantMetric(kMetricDeletePasswordsSyncTime, "ms");
+  return reporter;
+}
+
+}  // namespace
 
 class PasswordsSyncPerfTest : public SyncTest {
  public:
@@ -76,18 +93,20 @@ std::string PasswordsSyncPerfTest::NextPassword() {
 IN_PROC_BROWSER_TEST_F(PasswordsSyncPerfTest, P0) {
   ASSERT_TRUE(SetupSync()) << "SetupSync() failed.";
 
+  auto reporter =
+      SetUpReporter(base::NumberToString(kNumPasswords) + "_passwords");
   AddLogins(0, kNumPasswords);
   base::TimeDelta dt = TimeUntilQuiescence(GetSyncClients());
   ASSERT_EQ(kNumPasswords, GetPasswordCount(1));
-  PrintResult("passwords", "add_passwords", dt);
+  reporter.AddResult(kMetricAddPasswordsSyncTime, dt);
 
   UpdateLogins(0);
   dt = TimeUntilQuiescence(GetSyncClients());
   ASSERT_EQ(kNumPasswords, GetPasswordCount(1));
-  PrintResult("passwords", "update_passwords", dt);
+  reporter.AddResult(kMetricUpdatePasswordsSyncTime, dt);
 
   RemoveLogins(0);
   dt = TimeUntilQuiescence(GetSyncClients());
   ASSERT_EQ(0, GetPasswordCount(1));
-  PrintResult("passwords", "delete_passwords", dt);
+  reporter.AddResult(kMetricDeletePasswordsSyncTime, dt);
 }

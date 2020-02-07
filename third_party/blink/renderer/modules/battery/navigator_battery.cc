@@ -25,7 +25,7 @@ ScriptPromise NavigatorBattery::getBattery(ScriptState* script_state) {
 
   // Check to see if this request would be blocked according to the Battery
   // Status API specification.
-  if (auto* document = To<Document>(context)) {
+  if (auto* document = Document::From(context)) {
     LocalFrame* frame = document->GetFrame();
     if (frame) {
       if (!context->IsSecureContext())

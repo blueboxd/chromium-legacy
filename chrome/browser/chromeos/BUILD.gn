@@ -2717,6 +2717,8 @@ source_set("unit_tests") {
     "child_accounts/time_limits/app_activity_registry_unittest.cc",
     "child_accounts/time_limits/app_service_wrapper_unittest.cc",
     "child_accounts/time_limits/app_time_controller_unittest.cc",
+    "child_accounts/time_limits/app_time_test_utils.cc",
+    "child_accounts/time_limits/app_time_test_utils.h",
     "child_accounts/time_limits/app_types_unittest.cc",
     "child_accounts/usage_time_limit_processor_unittest.cc",
     "child_accounts/usage_time_state_notifier_unittest.cc",

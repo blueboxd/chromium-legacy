@@ -1357,7 +1357,8 @@ void DocumentLoader::DidInstallNewDocument(Document* document) {
       response_.HttpHeaderField(http_names::kReferrerPolicy);
   if (!referrer_policy_header.IsNull()) {
     UseCounter::Count(*document, WebFeature::kReferrerPolicyHeader);
-    document->ParseAndSetReferrerPolicy(referrer_policy_header);
+    document->ToExecutionContext()->ParseAndSetReferrerPolicy(
+        referrer_policy_header);
   }
 
   if (response_.IsSignedExchangeInnerResponse()) {
@@ -1672,7 +1673,7 @@ void DocumentLoader::CreateParserPostCommit() {
 #endif
 
     OriginTrialContext::ActivateNavigationFeaturesFromInitiator(
-        document, &initiator_origin_trial_features_);
+        document->ToExecutionContext(), &initiator_origin_trial_features_);
   }
 
   ParserSynchronizationPolicy parsing_policy = kAllowAsynchronousParsing;

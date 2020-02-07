@@ -33,11 +33,6 @@ IPC_MESSAGE_ROUTED3(WebTestHostMsg_SimulateWebNotificationClick,
                     base::Optional<int> /* action_index */,
                     base::Optional<base::string16> /* reply */)
 IPC_MESSAGE_ROUTED0(WebTestHostMsg_DeleteAllCookies)
-IPC_MESSAGE_ROUTED4(WebTestHostMsg_SetPermission,
-                    std::string /* name */,
-                    blink::mojom::PermissionStatus /* status */,
-                    GURL /* origin */,
-                    GURL /* embedding_origin */)
 IPC_MESSAGE_ROUTED2(WebTestHostMsg_InitiateCaptureDump,
                     bool /* should dump navigation history */,
                     bool /* should dump pixels */)

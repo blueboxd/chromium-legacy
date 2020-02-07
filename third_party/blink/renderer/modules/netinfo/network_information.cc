@@ -25,7 +25,7 @@ Settings* GetSettings(ExecutionContext* execution_context) {
   if (!execution_context)
     return nullptr;
 
-  auto* document = DynamicTo<Document>(execution_context);
+  auto* document = Document::DynamicFrom(execution_context);
   if (!document)
     return nullptr;
 

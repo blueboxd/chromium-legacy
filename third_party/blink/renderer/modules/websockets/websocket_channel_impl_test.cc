@@ -265,8 +265,8 @@ class WebSocketChannelImplTest : public PageTestBase {
     const KURL page_url("http://example.com/");
     NavigateTo(page_url);
     channel_ = WebSocketChannelImpl::CreateForTesting(
-        &GetDocument(), channel_client_.Get(), SourceLocation::Capture(),
-        std::move(handshake_throttle_));
+        GetDocument().ToExecutionContext(), channel_client_.Get(),
+        SourceLocation::Capture(), std::move(handshake_throttle_));
   }
 
   void TearDown() override {

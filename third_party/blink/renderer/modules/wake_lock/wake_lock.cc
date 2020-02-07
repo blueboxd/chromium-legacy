@@ -28,10 +28,11 @@ using mojom::blink::PermissionStatus;
 WakeLock::WakeLock(Document& document)
     : ContextLifecycleObserver(&document),
       PageVisibilityObserver(document.GetPage()),
-      managers_{MakeGarbageCollected<WakeLockManager>(&document,
-                                                      WakeLockType::kScreen),
-                MakeGarbageCollected<WakeLockManager>(&document,
-                                                      WakeLockType::kSystem)} {
+      managers_{
+          MakeGarbageCollected<WakeLockManager>(document.ToExecutionContext(),
+                                                WakeLockType::kScreen),
+          MakeGarbageCollected<WakeLockManager>(document.ToExecutionContext(),
+                                                WakeLockType::kSystem)} {
   document.GetScheduler()->RegisterStickyFeature(
       SchedulingPolicy::Feature::kWakeLock,
       {SchedulingPolicy::RecordMetricsForBackForwardCache()});
@@ -84,7 +85,7 @@ ScriptPromise WakeLock::request(ScriptState* script_state,
   } else if (context->IsDocument()) {
     // 2. Let document be the responsible document of the current settings
     // object.
-    auto* document = To<Document>(context);
+    auto* document = Document::From(context);
 
     // 4. Otherwise, if the current global object is the Window object:
     // 4.1. If the document's browsing context is null, reject promise with a
@@ -242,7 +243,7 @@ void WakeLock::ObtainPermission(
       "WakeLockType and mojom::blink::WakeLockType must have identical values");
 
   auto* local_frame = GetExecutionContext()->IsDocument()
-                          ? To<Document>(GetExecutionContext())->GetFrame()
+                          ? Document::From(GetExecutionContext())->GetFrame()
                           : nullptr;
   GetPermissionService()->RequestPermission(
       CreateWakeLockPermissionDescriptor(

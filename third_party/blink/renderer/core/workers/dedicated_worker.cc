@@ -255,7 +255,7 @@ BeginFrameProviderParams DedicatedWorker::CreateBeginFrameProviderParams() {
   // won't be initialized. If that's the case, the Worker will initialize it by
   // itself later.
   BeginFrameProviderParams begin_frame_provider_params;
-  if (auto* document = DynamicTo<Document>(GetExecutionContext())) {
+  if (auto* document = Document::DynamicFrom(GetExecutionContext())) {
     LocalFrame* frame = document->GetFrame();
     if (frame) {
       WebFrameWidgetBase* widget =
@@ -319,7 +319,7 @@ void DedicatedWorker::DispatchErrorEventForScriptFetchFailure() {
 std::unique_ptr<WebContentSettingsClient>
 DedicatedWorker::CreateWebContentSettingsClient() {
   std::unique_ptr<WebContentSettingsClient> content_settings_client;
-  if (auto* document = DynamicTo<Document>(GetExecutionContext())) {
+  if (auto* document = Document::DynamicFrom(GetExecutionContext())) {
     LocalFrame* frame = document->GetFrame();
     return frame->Client()->CreateWorkerContentSettingsClient();
   } else if (GetExecutionContext()->IsWorkerGlobalScope()) {
@@ -387,7 +387,7 @@ DedicatedWorker::CreateGlobalScopeCreationParams(
     base::Optional<network::mojom::IPAddressSpace> response_address_space) {
   base::UnguessableToken parent_devtools_token;
   std::unique_ptr<WorkerSettings> settings;
-  if (auto* document = DynamicTo<Document>(GetExecutionContext())) {
+  if (auto* document = Document::DynamicFrom(GetExecutionContext())) {
     if (document->GetFrame())
       parent_devtools_token = document->GetFrame()->GetDevToolsFrameToken();
     settings = std::make_unique<WorkerSettings>(document->GetSettings());
@@ -423,7 +423,7 @@ DedicatedWorker::CreateGlobalScopeCreationParams(
 scoped_refptr<WebWorkerFetchContext>
 DedicatedWorker::CreateWebWorkerFetchContext() {
   // This worker is being created by the document.
-  if (auto* document = DynamicTo<Document>(GetExecutionContext())) {
+  if (auto* document = Document::DynamicFrom(GetExecutionContext())) {
     scoped_refptr<WebWorkerFetchContext> web_worker_fetch_context;
     LocalFrame* frame = document->GetFrame();
     if (base::FeatureList::IsEnabled(features::kPlzDedicatedWorker)) {

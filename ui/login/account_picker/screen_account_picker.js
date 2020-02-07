@@ -100,7 +100,7 @@ login.createScreen('AccountPickerScreen', 'account-picker', function() {
      onBeforeShow: function(data) {
        this.showing_ = true;
        chrome.send('loginUIStateChanged', ['account-picker', true]);
-       $('login-header-bar').signinUIState = SIGNIN_UI_STATE.ACCOUNT_PICKER;
+       $('login-header-bar').signinUIState = OOBE_UI_STATE.ACCOUNT_PICKER;
        // Header bar should be always visible on Account Picker screen.
        chrome.send('hideCaptivePortal');
        var podRow = $('pod-row');
@@ -141,7 +141,7 @@ login.createScreen('AccountPickerScreen', 'account-picker', function() {
        $('pod-row').clearFocusedPod();
        this.showing_ = false;
        chrome.send('loginUIStateChanged', ['account-picker', false]);
-       $('login-header-bar').signinUIState = SIGNIN_UI_STATE.HIDDEN;
+       $('login-header-bar').signinUIState = OOBE_UI_STATE.HIDDEN;
        $('pod-row').handleHide();
      },
 

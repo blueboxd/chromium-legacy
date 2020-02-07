@@ -117,7 +117,7 @@ void SetSinkIdResolver::DoSetSinkId() {
   }
 
   // This is associated with an HTML element, so the context must be a Document.
-  auto& document = To<Document>(*context);
+  auto& document = Document::From(*context);
   WebLocalFrameImpl* web_frame =
       WebLocalFrameImpl::FromFrame(document.GetFrame());
   if (web_frame && web_frame->Client()) {

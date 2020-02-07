@@ -170,7 +170,7 @@ WindowPerformance::~WindowPerformance() = default;
 ExecutionContext* WindowPerformance::GetExecutionContext() const {
   if (!GetFrame())
     return nullptr;
-  return GetFrame()->GetDocument();
+  return GetFrame()->GetDocument()->ToExecutionContext();
 }
 
 PerformanceTiming* WindowPerformance::timing() const {
@@ -259,7 +259,7 @@ std::pair<AtomicString, DOMWindow*> WindowPerformance::SanitizedAttribution(
     return std::make_pair(kAmbiguousAttribution, nullptr);
   }
 
-  Document* document = DynamicTo<Document>(task_context);
+  Document* document = Document::DynamicFrom(task_context);
   if (!document || !document->GetFrame()) {
     // Unable to attribute as no script was involved.
     DEFINE_STATIC_LOCAL(const AtomicString, kUnknownAttribution, ("unknown"));

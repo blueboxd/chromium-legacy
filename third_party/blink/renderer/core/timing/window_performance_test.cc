@@ -54,7 +54,7 @@ class WindowPerformanceTest : public testing::Test {
 
   void SimulateDidProcessLongTask() {
     auto* monitor = GetFrame()->GetPerformanceMonitor();
-    monitor->WillExecuteScript(GetDocument());
+    monitor->WillExecuteScript(GetDocument()->ToExecutionContext());
     monitor->DidExecuteScript();
     monitor->DidProcessTask(
         base::TimeTicks(), base::TimeTicks() + base::TimeDelta::FromSeconds(1));
@@ -119,11 +119,13 @@ TEST_F(WindowPerformanceTest, SanitizedLongTaskName) {
   EXPECT_EQ("unknown", SanitizedAttribution(nullptr, false, GetFrame()));
 
   // Attribute for same context (and same origin).
-  EXPECT_EQ("self", SanitizedAttribution(GetDocument(), false, GetFrame()));
+  EXPECT_EQ("self", SanitizedAttribution(GetDocument()->ToExecutionContext(),
+                                         false, GetFrame()));
 
   // Unable to attribute, when multiple script execution contents are involved.
   EXPECT_EQ("multiple-contexts",
-            SanitizedAttribution(GetDocument(), true, GetFrame()));
+            SanitizedAttribution(GetDocument()->ToExecutionContext(), true,
+                                 GetFrame()));
 }
 
 TEST_F(WindowPerformanceTest, SanitizedLongTaskName_CrossOrigin) {
@@ -137,7 +139,8 @@ TEST_F(WindowPerformanceTest, SanitizedLongTaskName_CrossOrigin) {
   // Attribute for same context (and same origin).
   EXPECT_EQ(
       "cross-origin-unreachable",
-      SanitizedAttribution(&another_page.GetDocument(), false, GetFrame()));
+      SanitizedAttribution(another_page.GetDocument().ToExecutionContext(),
+                           false, GetFrame()));
 }
 
 // https://crbug.com/706798: Checks that after navigation that have replaced the

@@ -44,8 +44,8 @@ class ChromeRLZTrackerDelegate : public rlz::RLZTrackerDelegate,
   bool GetLanguage(base::string16* language) override;
   bool GetReferral(base::string16* referral) override;
   bool ClearReferral() override;
-  void SetOmniboxSearchCallback(const base::Closure& callback) override;
-  void SetHomepageSearchCallback(const base::Closure& callback) override;
+  void SetOmniboxSearchCallback(base::OnceClosure callback) override;
+  void SetHomepageSearchCallback(base::OnceClosure callback) override;
   bool ShouldUpdateExistingAccessPointRlz() override;
 
   // content::NotificationObserver implementation:
@@ -57,8 +57,8 @@ class ChromeRLZTrackerDelegate : public rlz::RLZTrackerDelegate,
   void OnURLOpenedFromOmnibox(OmniboxLog* log);
 
   content::NotificationRegistrar registrar_;
-  base::Closure on_omnibox_search_callback_;
-  base::Closure on_homepage_search_callback_;
+  base::OnceClosure on_omnibox_search_callback_;
+  base::OnceClosure on_homepage_search_callback_;
 
   // Subscription for receiving callbacks that a URL was opened from the
   // omnibox.

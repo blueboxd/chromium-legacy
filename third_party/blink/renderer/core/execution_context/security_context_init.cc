@@ -89,7 +89,7 @@ void SecurityContextInit::ApplyPendingDataToDocument(Document& document) const {
   for (auto feature : feature_count_)
     UseCounter::Count(document, feature);
   for (auto feature : parsed_feature_policies_)
-    document.FeaturePolicyFeatureObserved(feature);
+    document.ToExecutionContext()->FeaturePolicyFeatureObserved(feature);
   for (const auto& message : feature_policy_parse_messages_) {
     document.AddConsoleMessage(
         ConsoleMessage::Create(mojom::ConsoleMessageSource::kSecurity,

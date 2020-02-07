@@ -16,9 +16,6 @@
 #include "content/public/browser/browser_thread.h"
 #include "mojo/public/cpp/bindings/remote.h"
 #include "services/network/public/mojom/cookie_manager.mojom.h"
-#include "third_party/blink/public/mojom/permissions/permission_status.mojom-forward.h"
-
-class GURL;
 
 namespace base {
 class DictionaryValue;
@@ -69,10 +66,6 @@ class WebTestMessageFilter : public BrowserMessageFilter {
       const base::Optional<int>& action_index,
       const base::Optional<base::string16>& reply);
   void OnDeleteAllCookies();
-  void OnSetPermission(const std::string& name,
-                       blink::mojom::PermissionStatus status,
-                       const GURL& origin,
-                       const GURL& embedding_origin);
   void OnWebTestRuntimeFlagsChanged(
       const base::DictionaryValue& changed_web_test_runtime_flags);
   void OnInitiateCaptureDump(bool capture_navigation_history,

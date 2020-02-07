@@ -69,9 +69,9 @@ Database* DOMWindowWebDatabase::openDatabase(
       UseCounter::Count(window.document(), WebFeature::kFileAccessedDatabase);
 
     String error_message;
-    database = db_manager.OpenDatabase(window.document(), name, version,
-                                       display_name, estimated_size,
-                                       creation_callback, error, error_message);
+    database = db_manager.OpenDatabase(
+        window.document()->ToExecutionContext(), name, version, display_name,
+        estimated_size, creation_callback, error, error_message);
     DCHECK(database || error != DatabaseError::kNone);
     if (error != DatabaseError::kNone)
       DatabaseManager::ThrowExceptionForDatabaseError(error, error_message,

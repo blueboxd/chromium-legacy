@@ -467,6 +467,7 @@ void V4L2VideoDecodeAccelerator::AssignPictureBuffersTask(
 }
 
 void V4L2VideoDecodeAccelerator::CreateEGLImageFor(
+    scoped_refptr<V4L2Device> egl_device,
     size_t buffer_index,
     int32_t picture_buffer_id,
     gfx::NativePixmapHandle handle,
@@ -492,8 +493,6 @@ void V4L2VideoDecodeAccelerator::CreateEGLImageFor(
 
   gl::ScopedTextureBinder bind_restore(GL_TEXTURE_EXTERNAL_OES, 0);
 
-  V4L2Device* egl_device =
-      image_processor_device_ ? image_processor_device_.get() : device_.get();
   EGLImageKHR egl_image = egl_device->CreateEGLImage(
       egl_display_, gl_context->GetHandle(), texture_id, visible_size,
       buffer_index, fourcc, std::move(handle));
@@ -719,7 +718,7 @@ void V4L2VideoDecodeAccelerator::ImportBufferForPictureTask(
       child_task_runner_->PostTask(
           FROM_HERE,
           base::BindOnce(&V4L2VideoDecodeAccelerator::CreateEGLImageFor,
-                         weak_this_, index, picture_buffer_id,
+                         weak_this_, device_, index, picture_buffer_id,
                          std::move(handle), iter->texture_id, visible_size_,
                          *egl_image_format_fourcc_));
 
@@ -2706,7 +2705,8 @@ void V4L2VideoDecodeAccelerator::FrameProcessed(
         FROM_HERE,
         base::BindOnce(
             &V4L2VideoDecodeAccelerator::CreateEGLImageFor, weak_this_,
-            ip_buffer_index, ip_output_record.picture_id,
+            image_processor_device_, ip_buffer_index,
+            ip_output_record.picture_id,
             CreateGpuMemoryBufferHandle(frame.get()).native_pixmap_handle,
             ip_output_record.texture_id, visible_size_,
             *egl_image_format_fourcc_));

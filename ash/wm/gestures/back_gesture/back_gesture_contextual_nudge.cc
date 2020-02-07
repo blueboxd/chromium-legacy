@@ -9,6 +9,7 @@
 #include "ash/strings/grit/ash_strings.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/compositor/paint_recorder.h"
+#include "ui/compositor/scoped_layer_animation_settings.h"
 #include "ui/gfx/canvas.h"
 #include "ui/gfx/color_palette.h"
 #include "ui/gfx/skia_paint_util.h"
@@ -44,6 +45,10 @@ constexpr SkColor kLabelColor = gfx::kGoogleGrey200;
 constexpr int kLabelWidth = 80;
 constexpr int kLabelHeight = 80;
 
+// Duration to show the nudge from off screen to start position.
+constexpr base::TimeDelta kShowingDuration =
+    base::TimeDelta::FromMilliseconds(600);
+
 std::unique_ptr<views::Widget> CreateWidget() {
   auto widget = std::make_unique<views::Widget>();
   views::Widget::InitParams params(
@@ -60,9 +65,10 @@ std::unique_ptr<views::Widget> CreateWidget() {
 
   // TODO(crbug.com/1009005): Get the bounds of the display that should show the
   // nudge, which may based on the conditions to show the nudge.
-  gfx::Rect widget_bounds =
+  const gfx::Rect display_bounds =
       display::Screen::GetScreen()->GetPrimaryDisplay().bounds();
-  widget_bounds.set_width(kBackgroundWidth);
+  gfx::Rect widget_bounds(-kBackgroundWidth, display_bounds.y(),
+                          kBackgroundWidth, display_bounds.height());
   widget->SetBounds(widget_bounds);
   return widget;
 }
@@ -118,6 +124,14 @@ class ContextualNudgeView : public views::View {
     label_->SetFontList(
         gfx::FontList().DeriveWithWeight(gfx::Font::Weight::MEDIUM));
     AddChildView(label_);
+
+    // Showing contextual nudge from off screen to its start position.
+    gfx::Transform transform;
+    transform.Translate(kBackgroundWidth, 0);
+    ui::ScopedLayerAnimationSettings animation(layer()->GetAnimator());
+    animation.SetTransitionDuration(kShowingDuration);
+    animation.SetTweenType(gfx::Tween::EASE_IN);
+    layer()->SetTransform(transform);
   }
 
   ~ContextualNudgeView() override = default;

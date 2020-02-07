@@ -34,8 +34,8 @@ TEST(ServiceWorkerResponseTest, FromFetchResponseData) {
   Vector<KURL> url_list;
   url_list.push_back(url);
   fetch_response_data->SetURLList(url_list);
-  Response* response =
-      Response::Create(&page->GetDocument(), fetch_response_data);
+  Response* response = Response::Create(
+      page->GetDocument().ToExecutionContext(), fetch_response_data);
   DCHECK(response);
   EXPECT_EQ(url, response->url());
 }

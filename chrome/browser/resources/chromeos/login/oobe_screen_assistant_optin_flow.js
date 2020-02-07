@@ -14,6 +14,11 @@ login.createScreen(
           'onVoiceMatchUpdate'
         ],
 
+        /** Initial UI State for screen */
+        getOobeUIInitialState() {
+          return OOBE_UI_STATE.ONBOARDING;
+        },
+
         /** @Override */
         onBeforeShow(data) {
           $('assistant-optin-flow-card').onShow();

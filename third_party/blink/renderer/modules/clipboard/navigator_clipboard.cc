@@ -40,9 +40,10 @@ NavigatorClipboard::NavigatorClipboard(Navigator& navigator)
   SystemClipboard* system_clipboard =
       GetSupplementable()->GetFrame()->GetSystemClipboard();
   clipboard_ = MakeGarbageCollected<Clipboard>(
-      system_clipboard, GetSupplementable()->GetFrame()
-                            ? GetSupplementable()->GetFrame()->GetDocument()
-                            : nullptr);
+      system_clipboard,
+      GetSupplementable()->GetFrame()
+          ? GetSupplementable()->GetFrame()->GetDocument()->ToExecutionContext()
+          : nullptr);
 }
 
 }  // namespace blink

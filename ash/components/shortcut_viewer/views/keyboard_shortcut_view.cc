@@ -15,11 +15,13 @@
 #include "ash/components/shortcut_viewer/views/keyboard_shortcut_item_view.h"
 #include "ash/components/shortcut_viewer/views/ksv_search_box_view.h"
 #include "ash/components/strings/grit/ash_components_strings.h"
+#include "ash/display/privacy_screen_controller.h"
 #include "ash/public/cpp/app_list/internal_app_id_constants.h"
 #include "ash/public/cpp/app_types.h"
 #include "ash/public/cpp/resources/grit/ash_public_unscaled_resources.h"
 #include "ash/public/cpp/shelf_item.h"
 #include "ash/public/cpp/window_properties.h"
+#include "ash/shell.h"
 #include "base/bind.h"
 #include "base/i18n/string_search.h"
 #include "base/metrics/histogram_macros.h"
@@ -139,8 +141,12 @@ void UpdateAXNodeDataPosition(
 // certain shortcuts can be associated with a disabled feature behind a flag,
 // or specific device property, e.g. keyboard layout.
 bool ShouldExcludeItem(const KeyboardShortcutItem& item) {
-  if (item.description_message_id == IDS_KSV_DESCRIPTION_OPEN_GOOGLE_ASSISTANT)
-    return ui::DeviceKeyboardHasAssistantKey();
+  switch (item.description_message_id) {
+    case IDS_KSV_DESCRIPTION_OPEN_GOOGLE_ASSISTANT:
+      return ui::DeviceKeyboardHasAssistantKey();
+    case IDS_KSV_DESCRIPTION_PRIVACY_SCREEN_TOGGLE:
+      return !ash::Shell::Get()->privacy_screen_controller()->IsSupported();
+  }
 
   return false;
 }

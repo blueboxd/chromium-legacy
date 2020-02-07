@@ -69,7 +69,7 @@ ScriptPromise Permissions::request(ScriptState* script_state,
   ScriptPromise promise = resolver->Promise();
 
   PermissionDescriptorPtr descriptor_copy = descriptor->Clone();
-  Document* doc = DynamicTo<Document>(context);
+  Document* doc = Document::DynamicFrom(context);
   LocalFrame* frame = doc ? doc->GetFrame() : nullptr;
   GetService(ExecutionContext::From(script_state))
       ->RequestPermission(
@@ -142,7 +142,7 @@ ScriptPromise Permissions::requestAll(
   for (const auto& descriptor : internal_permissions)
     internal_permissions_copy.push_back(descriptor->Clone());
 
-  Document* doc = DynamicTo<Document>(context);
+  Document* doc = Document::DynamicFrom(context);
   LocalFrame* frame = doc ? doc->GetFrame() : nullptr;
   GetService(ExecutionContext::From(script_state))
       ->RequestPermissions(

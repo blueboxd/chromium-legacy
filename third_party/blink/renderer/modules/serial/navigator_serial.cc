@@ -35,8 +35,8 @@ NavigatorSerial::NavigatorSerial(Navigator& navigator)
     : Supplement<Navigator>(navigator) {
   if (navigator.GetFrame()) {
     DCHECK(navigator.GetFrame()->GetDocument());
-    serial_ =
-        MakeGarbageCollected<Serial>(*navigator.GetFrame()->GetDocument());
+    serial_ = MakeGarbageCollected<Serial>(
+        *navigator.GetFrame()->GetDocument()->ToExecutionContext());
   }
 }
 

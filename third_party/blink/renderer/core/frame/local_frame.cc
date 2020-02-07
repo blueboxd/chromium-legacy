@@ -1723,14 +1723,15 @@ void LocalFrame::DidResume() {
 
 void LocalFrame::PauseContext() {
   GetDocument()->Fetcher()->SetDefersLoading(true);
-  GetDocument()->SetLifecycleState(lifecycle_state_);
+  GetDocument()->ToExecutionContext()->SetLifecycleState(lifecycle_state_);
   Loader().SetDefersLoading(true);
   GetFrameScheduler()->SetPaused(true);
 }
 
 void LocalFrame::UnpauseContext() {
   GetDocument()->Fetcher()->SetDefersLoading(false);
-  GetDocument()->SetLifecycleState(mojom::FrameLifecycleState::kRunning);
+  GetDocument()->ToExecutionContext()->SetLifecycleState(
+      mojom::FrameLifecycleState::kRunning);
   Loader().SetDefersLoading(false);
   GetFrameScheduler()->SetPaused(false);
 }

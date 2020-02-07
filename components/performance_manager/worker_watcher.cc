@@ -47,21 +47,27 @@ void RemoveWorkersFromFrameNode(
 
 WorkerWatcher::WorkerWatcher(
     const std::string& browser_context_id,
+    content::DedicatedWorkerService* dedicated_worker_service,
     content::SharedWorkerService* shared_worker_service,
     ProcessNodeSource* process_node_source,
     FrameNodeSource* frame_node_source)
     : browser_context_id_(browser_context_id),
+      dedicated_worker_service_observer_(this),
       shared_worker_service_observer_(this),
       process_node_source_(process_node_source),
       frame_node_source_(frame_node_source) {
+  DCHECK(dedicated_worker_service);
   DCHECK(shared_worker_service);
   DCHECK(process_node_source_);
   DCHECK(frame_node_source_);
+  dedicated_worker_service_observer_.Add(dedicated_worker_service);
   shared_worker_service_observer_.Add(shared_worker_service);
 }
 
 WorkerWatcher::~WorkerWatcher() {
   DCHECK(frame_node_child_workers_.empty());
+  DCHECK(dedicated_worker_nodes_.empty());
+  DCHECK(!dedicated_worker_service_observer_.IsObservingSources());
   DCHECK(shared_worker_nodes_.empty());
   DCHECK(!shared_worker_service_observer_.IsObservingSources());
 }
@@ -87,14 +93,52 @@ void WorkerWatcher::TearDown() {
 
   // Then clean all the worker nodes.
   std::vector<std::unique_ptr<NodeBase>> nodes;
-  nodes.reserve(shared_worker_nodes_.size());
+  nodes.reserve(dedicated_worker_nodes_.size() + shared_worker_nodes_.size());
+  for (auto& node : dedicated_worker_nodes_)
+    nodes.push_back(std::move(node.second));
+  dedicated_worker_nodes_.clear();
   for (auto& node : shared_worker_nodes_)
     nodes.push_back(std::move(node.second));
   shared_worker_nodes_.clear();
 
   PerformanceManagerImpl::GetInstance()->BatchDeleteNodes(std::move(nodes));
 
+  dedicated_worker_service_observer_.RemoveAll();
   shared_worker_service_observer_.RemoveAll();
+}
+
+void WorkerWatcher::OnWorkerStarted(
+    content::DedicatedWorkerId dedicated_worker_id,
+    int worker_process_id,
+    content::GlobalFrameRoutingId ancestor_render_frame_host_id) {
+  // TODO(https://crbug.com/993029): Plumb through the URL and the DevTools
+  // token.
+  auto worker_node = PerformanceManagerImpl::GetInstance()->CreateWorkerNode(
+      browser_context_id_, WorkerNode::WorkerType::kDedicated,
+      process_node_source_->GetProcessNode(worker_process_id),
+      base::UnguessableToken::Create());
+  bool inserted = dedicated_worker_nodes_
+                      .emplace(dedicated_worker_id, std::move(worker_node))
+                      .second;
+  DCHECK(inserted);
+
+  // TODO(pmonette): Connect |worker_node| to its client frame.
+}
+
+void WorkerWatcher::OnBeforeWorkerTerminated(
+    content::DedicatedWorkerId dedicated_worker_id,
+    content::GlobalFrameRoutingId ancestor_render_frame_host_id) {
+  auto it = dedicated_worker_nodes_.find(dedicated_worker_id);
+  DCHECK(it != dedicated_worker_nodes_.end());
+
+  auto worker_node = std::move(it->second);
+  // TODO(pmonette): Disconnect |worker_node| from its client frame.
+#if DCHECK_IS_ON()
+  DCHECK(!base::Contains(clients_to_remove_, worker_node.get()));
+#endif  // DCHECK_IS_ON()
+  PerformanceManagerImpl::GetInstance()->DeleteNode(std::move(worker_node));
+
+  dedicated_worker_nodes_.erase(it);
 }
 
 void WorkerWatcher::OnWorkerStarted(
@@ -126,31 +170,41 @@ void WorkerWatcher::OnBeforeWorkerTerminated(
 void WorkerWatcher::OnClientAdded(
     const content::SharedWorkerInstance& instance,
     content::GlobalFrameRoutingId render_frame_host_id) {
-  FrameNodeImpl* frame_node =
-      frame_node_source_->GetFrameNode(render_frame_host_id);
-  DCHECK(frame_node);
-
-  // Connect the nodes in the PM graph.
-  WorkerNodeImpl* worker_node = GetSharedWorkerNode(instance);
-  PerformanceManagerImpl::CallOnGraphImpl(
-      FROM_HERE,
-      base::BindOnce(&AddWorkerToFrameNode, frame_node, worker_node));
-
-  // Keep track of the shared workers that this frame is a client to.
-  if (AddChildWorker(render_frame_host_id, worker_node)) {
-    frame_node_source_->SubscribeToFrameNode(
-        render_frame_host_id,
-        base::BindOnce(&WorkerWatcher::OnBeforeFrameNodeRemoved,
-                       base::Unretained(this), render_frame_host_id));
-  }
+  AddClientFrame(GetSharedWorkerNode(instance), render_frame_host_id);
 }
 
 void WorkerWatcher::OnClientRemoved(
     const content::SharedWorkerInstance& instance,
     content::GlobalFrameRoutingId render_frame_host_id) {
-  WorkerNodeImpl* worker_node = GetSharedWorkerNode(instance);
+  RemoveClientFrame(GetSharedWorkerNode(instance), render_frame_host_id);
+}
+
+void WorkerWatcher::AddClientFrame(
+    WorkerNodeImpl* worker_node,
+    content::GlobalFrameRoutingId client_render_frame_host_id) {
   FrameNodeImpl* frame_node =
-      frame_node_source_->GetFrameNode(render_frame_host_id);
+      frame_node_source_->GetFrameNode(client_render_frame_host_id);
+  DCHECK(frame_node);
+
+  // Connect the nodes in the PM graph.
+  PerformanceManagerImpl::CallOnGraphImpl(
+      FROM_HERE,
+      base::BindOnce(&AddWorkerToFrameNode, frame_node, worker_node));
+
+  // Keep track of the shared workers that this frame is a client to.
+  if (AddChildWorker(client_render_frame_host_id, worker_node)) {
+    frame_node_source_->SubscribeToFrameNode(
+        client_render_frame_host_id,
+        base::BindOnce(&WorkerWatcher::OnBeforeFrameNodeRemoved,
+                       base::Unretained(this), client_render_frame_host_id));
+  }
+}
+
+void WorkerWatcher::RemoveClientFrame(
+    WorkerNodeImpl* worker_node,
+    content::GlobalFrameRoutingId client_render_frame_host_id) {
+  FrameNodeImpl* frame_node =
+      frame_node_source_->GetFrameNode(client_render_frame_host_id);
 
   // It's possible that the frame was destroyed before receiving the
   // OnClientRemoved() for all of its child shared worker. Nothing to do in
@@ -180,8 +234,8 @@ void WorkerWatcher::OnClientRemoved(
 
   // Remove |worker_node| from the set of workers that this frame is a client
   // of.
-  if (RemoveChildWorker(render_frame_host_id, worker_node))
-    frame_node_source_->UnsubscribeFromFrameNode(render_frame_host_id);
+  if (RemoveChildWorker(client_render_frame_host_id, worker_node))
+    frame_node_source_->UnsubscribeFromFrameNode(client_render_frame_host_id);
 }
 
 void WorkerWatcher::OnBeforeFrameNodeRemoved(
@@ -239,6 +293,16 @@ bool WorkerWatcher::RemoveChildWorker(
     return true;
   }
   return false;
+}
+
+WorkerNodeImpl* WorkerWatcher::GetDedicatedWorkerNode(
+    content::DedicatedWorkerId dedicated_worker_id) {
+  auto it = dedicated_worker_nodes_.find(dedicated_worker_id);
+  if (it == dedicated_worker_nodes_.end()) {
+    NOTREACHED();
+    return nullptr;
+  }
+  return it->second.get();
 }
 
 WorkerNodeImpl* WorkerWatcher::GetSharedWorkerNode(

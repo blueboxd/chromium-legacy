@@ -47,12 +47,12 @@
 @interface ProfileMenuTarget : NSObject {
   AppShimController* _controller;
 }
-- (id)initWithController:(AppShimController*)controller;
+- (instancetype)initWithController:(AppShimController*)controller;
 - (void)clearController;
 @end
 
 @implementation ProfileMenuTarget
-- (id)initWithController:(AppShimController*)controller {
+- (instancetype)initWithController:(AppShimController*)controller {
   if (self = [super init])
     _controller = controller;
   return self;

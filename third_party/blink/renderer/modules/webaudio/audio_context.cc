@@ -486,7 +486,7 @@ bool AudioContext::IsAllowedToStart() const {
   if (!user_gesture_required_)
     return true;
 
-  Document* document = To<Document>(GetExecutionContext());
+  Document* document = Document::From(GetExecutionContext());
   DCHECK(document);
 
   switch (GetAutoplayPolicy()) {

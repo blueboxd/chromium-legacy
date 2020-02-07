@@ -674,6 +674,9 @@ crbug.com/1040450 http/tests/devtools/persistence/persistence-external-change-br
 
 crbug.com/1048204 external/wpt/selection/idlharness.window.html [ Slow ]
 
+# This test contains a slow loading image that results in timeouts.
+crbug.com/853360 [ Mac ] http/tests/misc/slow-loading-image-in-pattern.html [ Slow ]
+
 # Reaching the stack size limit makes for a consistently slow test with
 # occasional timeouts on Win7
 crbug.com/937546 [ Win7 ] http/tests/security/xss-DENIED-cross-origin-stack-overflow.html [ Slow ]

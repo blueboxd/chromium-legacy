@@ -218,7 +218,8 @@ class PLATFORM_EXPORT HeapObjectHeader {
 
   template <AccessMode mode = AccessMode::kNonAtomic>
   NO_SANITIZE_ADDRESS uint32_t GcInfoIndex() const {
-    const uint16_t encoded = LoadEncoded<mode, EncodedHalf::kHigh>();
+    const uint16_t encoded =
+        LoadEncoded<mode, EncodedHalf::kHigh, std::memory_order_acquire>();
     return (encoded & kHeaderGCInfoIndexMask) >> kHeaderGCInfoIndexShift;
   }
 
@@ -231,8 +232,6 @@ class PLATFORM_EXPORT HeapObjectHeader {
 
   template <AccessMode = AccessMode::kNonAtomic>
   bool IsMarked() const;
-  template <AccessMode = AccessMode::kNonAtomic>
-  void Mark();
   template <AccessMode = AccessMode::kNonAtomic>
   void Unmark();
   template <AccessMode = AccessMode::kNonAtomic>
@@ -261,9 +260,13 @@ class PLATFORM_EXPORT HeapObjectHeader {
  private:
   enum class EncodedHalf : uint8_t { kLow, kHigh };
 
-  template <AccessMode, EncodedHalf>
+  template <AccessMode,
+            EncodedHalf part,
+            std::memory_order = std::memory_order_seq_cst>
   uint16_t LoadEncoded() const;
-  template <AccessMode mode, EncodedHalf>
+  template <AccessMode mode,
+            EncodedHalf part,
+            std::memory_order = std::memory_order_seq_cst>
   void StoreEncoded(uint16_t bits, uint16_t mask);
 
 #if defined(ARCH_CPU_64_BITS)
@@ -1129,18 +1132,10 @@ inline void HeapObjectHeader::CheckFromPayload(const void* payload) {
 
 template <HeapObjectHeader::AccessMode mode>
 NO_SANITIZE_ADDRESS inline size_t HeapObjectHeader::size() const {
-  uint16_t encoded_low_value;
-  if (mode == AccessMode::kNonAtomic) {
-    encoded_low_value = encoded_low_;
-  } else {
-    // mode == AccessMode::kAtomic
-    // Relaxed load as size is immutable after construction while either
-    // marking or sweeping is running
-    AsanUnpoisonScope unpoison_scope(static_cast<const void*>(&encoded_low_),
-                                     sizeof(encoded_low_));
-    encoded_low_value =
-        WTF::AsAtomicPtr(&encoded_low_)->load(std::memory_order_relaxed);
-  }
+  // Size is immutable after construction while either marking or sweeping
+  // is running so relaxed load (if mode == kAtomic) is enough.
+  uint16_t encoded_low_value =
+      LoadEncoded<mode, EncodedHalf::kLow, std::memory_order_relaxed>();
   const size_t result = internal::DecodeSize(encoded_low_value);
   // Large objects should not refer to header->size() but use
   // LargeObjectPage::PayloadSize().
@@ -1158,29 +1153,22 @@ NO_SANITIZE_ADDRESS inline void HeapObjectHeader::SetSize(size_t size) {
 
 template <HeapObjectHeader::AccessMode mode>
 NO_SANITIZE_ADDRESS inline bool HeapObjectHeader::IsLargeObject() const {
-  uint16_t encoded_low_value;
-  if (mode == AccessMode::kNonAtomic) {
-    encoded_low_value = encoded_low_;
-  } else {
-    AsanUnpoisonScope unpoison_scope(static_cast<const void*>(&encoded_low_),
-                                     sizeof(encoded_low_));
-    encoded_low_value =
-        WTF::AsAtomicPtr(&encoded_low_)->load(std::memory_order_relaxed);
-  }
+  uint16_t encoded_low_value =
+      LoadEncoded<mode, EncodedHalf::kLow, std::memory_order_relaxed>();
   return internal::DecodeSize(encoded_low_value) == kLargeObjectSizeInHeader;
 }
 
 template <HeapObjectHeader::AccessMode mode>
 NO_SANITIZE_ADDRESS inline bool HeapObjectHeader::IsInConstruction() const {
-  return (LoadEncoded<mode, EncodedHalf::kHigh>() &
+  return (LoadEncoded<mode, EncodedHalf::kHigh, std::memory_order_acquire>() &
           kHeaderIsInConstructionMask) == 0;
 }
 
 template <HeapObjectHeader::AccessMode mode>
 NO_SANITIZE_ADDRESS inline void HeapObjectHeader::MarkFullyConstructed() {
   DCHECK(IsInConstruction());
-  StoreEncoded<mode, EncodedHalf::kHigh>(kHeaderIsInConstructionMask,
-                                         kHeaderIsInConstructionMask);
+  StoreEncoded<mode, EncodedHalf::kHigh, std::memory_order_release>(
+      kHeaderIsInConstructionMask, kHeaderIsInConstructionMask);
 }
 
 inline Address HeapObjectHeader::Payload() const {
@@ -1206,20 +1194,21 @@ NO_SANITIZE_ADDRESS inline size_t HeapObjectHeader::PayloadSize() const {
 
 template <HeapObjectHeader::AccessMode mode>
 NO_SANITIZE_ADDRESS inline bool HeapObjectHeader::IsMarked() const {
-  const uint16_t encoded = LoadEncoded<mode, EncodedHalf::kLow>();
+  const uint16_t encoded =
+      LoadEncoded<mode, EncodedHalf::kLow, std::memory_order_relaxed>();
   return encoded & kHeaderMarkBitMask;
 }
 
 template <HeapObjectHeader::AccessMode mode>
-NO_SANITIZE_ADDRESS inline void HeapObjectHeader::Mark() {
-  DCHECK(!IsMarked<mode>());
-  StoreEncoded<mode, EncodedHalf::kLow>(kHeaderMarkBitMask, kHeaderMarkBitMask);
-}
-
-template <HeapObjectHeader::AccessMode mode>
 NO_SANITIZE_ADDRESS inline void HeapObjectHeader::Unmark() {
+  DCHECK(!ASAN_REGION_IS_POISONED(&encoded_low_, sizeof(encoded_low_)));
   DCHECK(IsMarked<mode>());
-  StoreEncoded<mode, EncodedHalf::kLow>(0u, kHeaderMarkBitMask);
+  StoreEncoded<mode, EncodedHalf::kLow, std::memory_order_relaxed>(
+      0u, kHeaderMarkBitMask);
+  // HeapObjectHeader of live objects was left unpoisoned for the duration of
+  // GC. Repoison the header until and for the next GC.
+  ASAN_POISON_MEMORY_REGION(&encoded_low_, sizeof(encoded_low_));
+  ASAN_POISON_MEMORY_REGION(&encoded_high_, sizeof(encoded_high_));
 }
 
 // The function relies on size bits being unmodified when the function is
@@ -1232,15 +1221,13 @@ NO_SANITIZE_ADDRESS inline bool HeapObjectHeader::TryMark() {
     encoded_low_ |= kHeaderMarkBitMask;
     return true;
   }
-  AsanUnpoisonScope unpoison_scope(static_cast<const void*>(&encoded_low_),
-                                   sizeof(encoded_low_));
+  ASAN_UNPOISON_MEMORY_REGION(&encoded_low_, sizeof(encoded_low_));
   auto* atomic_encoded = WTF::AsAtomicPtr(&encoded_low_);
   uint16_t old_value = atomic_encoded->load(std::memory_order_relaxed);
   if (old_value & kHeaderMarkBitMask)
     return false;
   const uint16_t new_value = old_value | kHeaderMarkBitMask;
   return atomic_encoded->compare_exchange_strong(old_value, new_value,
-                                                 std::memory_order_acq_rel,
                                                  std::memory_order_relaxed);
 }
 
@@ -1368,35 +1355,38 @@ NO_SANITIZE_ADDRESS inline HeapObjectHeader::HeapObjectHeader(
   DCHECK(IsInConstruction());
 }
 
-template <HeapObjectHeader::AccessMode mode, HeapObjectHeader::EncodedHalf part>
+template <HeapObjectHeader::AccessMode mode,
+          HeapObjectHeader::EncodedHalf part,
+          std::memory_order memory_order>
 NO_SANITIZE_ADDRESS inline uint16_t HeapObjectHeader::LoadEncoded() const {
   const uint16_t& half =
-      (part == EncodedHalf::kLow ? encoded_low_ : encoded_high_);
-  AsanUnpoisonScope unpoison_scope(static_cast<const void*>(&half),
-                                   sizeof(half));
+      part == EncodedHalf::kLow ? encoded_low_ : encoded_high_;
   if (mode == AccessMode::kNonAtomic)
     return half;
-  return WTF::AsAtomicPtr(&half)->load(std::memory_order_acquire);
+  ASAN_UNPOISON_MEMORY_REGION(&half, sizeof(half));
+  return WTF::AsAtomicPtr(&half)->load(memory_order);
 }
 
 // Sets bits selected by the mask to the given value. Please note that atomicity
 // of the whole operation is not guaranteed.
-template <HeapObjectHeader::AccessMode mode, HeapObjectHeader::EncodedHalf part>
+template <HeapObjectHeader::AccessMode mode,
+          HeapObjectHeader::EncodedHalf part,
+          std::memory_order memory_order>
 NO_SANITIZE_ADDRESS inline void HeapObjectHeader::StoreEncoded(uint16_t bits,
                                                                uint16_t mask) {
   DCHECK_EQ(static_cast<uint16_t>(0u), bits & ~mask);
-  uint16_t* half = (part == EncodedHalf::kLow ? &encoded_low_ : &encoded_high_);
-  AsanUnpoisonScope unpoison_scope(static_cast<void*>(half), sizeof(&half));
+  uint16_t& half = part == EncodedHalf::kLow ? encoded_low_ : encoded_high_;
   if (mode == AccessMode::kNonAtomic) {
-    *half = (*half & ~mask) | bits;
+    half = (half & ~mask) | bits;
     return;
   }
+  ASAN_UNPOISON_MEMORY_REGION(&half, sizeof(half));
   // We don't perform CAS loop here assuming that the data is constant and no
   // one except for us can change this half concurrently.
-  auto* atomic_encoded = WTF::AsAtomicPtr(half);
+  auto* atomic_encoded = WTF::AsAtomicPtr(&half);
   uint16_t value = atomic_encoded->load(std::memory_order_relaxed);
   value = (value & ~mask) | bits;
-  atomic_encoded->store(value, std::memory_order_release);
+  atomic_encoded->store(value, memory_order);
 }
 
 template <HeapObjectHeader::AccessMode mode>

@@ -192,7 +192,7 @@ class ThreadedWorkletMessagingProxyForTest
   ~ThreadedWorkletMessagingProxyForTest() override = default;
 
   void Start() {
-    Document* document = To<Document>(GetExecutionContext());
+    Document* document = Document::From(GetExecutionContext());
     std::unique_ptr<Vector<char>> cached_meta_data = nullptr;
     WorkerClients* worker_clients = nullptr;
     std::unique_ptr<WorkerSettings> worker_settings = nullptr;
@@ -206,7 +206,7 @@ class ThreadedWorkletMessagingProxyForTest
             document->IsSecureContext(), document->GetHttpsState(),
             worker_clients, nullptr /* content_settings_client */,
             document->GetSecurityContext().AddressSpace(),
-            OriginTrialContext::GetTokens(document).get(),
+            OriginTrialContext::GetTokens(document->ToExecutionContext()).get(),
             base::UnguessableToken::Create(), std::move(worker_settings),
             kV8CacheOptionsDefault,
             MakeGarbageCollected<WorkletModuleResponsesMap>()),
@@ -234,7 +234,7 @@ class ThreadedWorkletTest : public testing::Test {
 
     messaging_proxy_ =
         MakeGarbageCollected<ThreadedWorkletMessagingProxyForTest>(
-            &page_->GetDocument());
+            page_->GetDocument().ToExecutionContext());
     ThreadedWorkletThreadForTest::EnsureSharedBackingThread();
   }
 

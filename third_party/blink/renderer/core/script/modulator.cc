@@ -35,7 +35,7 @@ Modulator* Modulator::From(ScriptState* script_state) {
   if (modulator)
     return modulator;
   ExecutionContext* execution_context = ExecutionContext::From(script_state);
-  if (auto* document = DynamicTo<Document>(execution_context)) {
+  if (auto* document = Document::DynamicFrom(execution_context)) {
     modulator = MakeGarbageCollected<DocumentModulatorImpl>(script_state);
     Modulator::SetModulator(script_state, modulator);
 

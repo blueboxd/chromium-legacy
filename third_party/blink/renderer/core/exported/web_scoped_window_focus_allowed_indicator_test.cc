@@ -41,17 +41,17 @@ TEST(WebScopedWindowFocusAllowedIndicatorTest, Basic) {
   Persistent<Document> document = MakeGarbageCollected<Document>();
   WebDocument web_document(document);
 
-  EXPECT_FALSE(document->IsWindowInteractionAllowed());
+  EXPECT_FALSE(document->ToExecutionContext()->IsWindowInteractionAllowed());
   {
     WebScopedWindowFocusAllowedIndicator indicator1(&web_document);
-    EXPECT_TRUE(document->IsWindowInteractionAllowed());
+    EXPECT_TRUE(document->ToExecutionContext()->IsWindowInteractionAllowed());
     {
       WebScopedWindowFocusAllowedIndicator indicator2(&web_document);
-      EXPECT_TRUE(document->IsWindowInteractionAllowed());
+      EXPECT_TRUE(document->ToExecutionContext()->IsWindowInteractionAllowed());
     }
-    EXPECT_TRUE(document->IsWindowInteractionAllowed());
+    EXPECT_TRUE(document->ToExecutionContext()->IsWindowInteractionAllowed());
   }
-  EXPECT_FALSE(document->IsWindowInteractionAllowed());
+  EXPECT_FALSE(document->ToExecutionContext()->IsWindowInteractionAllowed());
 }
 
 }  // namespace blink

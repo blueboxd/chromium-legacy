@@ -98,7 +98,7 @@ CSSFunctionValue* ConsumeFilterFunction(CSSParserTokenRange& range,
 
   if (filter_type == CSSValueID::kDropShadow) {
     parsed_value = css_parsing_utils::ParseSingleShadow(
-        args, context.Mode(), css_parsing_utils::AllowInsetAndSpread::kForbid);
+        args, context, css_parsing_utils::AllowInsetAndSpread::kForbid);
   } else {
     if (args.AtEnd()) {
       context.Count(WebFeature::kCSSFilterFunctionNoArguments);
@@ -106,8 +106,8 @@ CSSFunctionValue* ConsumeFilterFunction(CSSParserTokenRange& range,
     }
     if (filter_type == CSSValueID::kBrightness) {
       // FIXME (crbug.com/397061): Support calc expressions like calc(10% + 0.5)
-      parsed_value =
-          css_property_parser_helpers::ConsumePercent(args, kValueRangeAll);
+      parsed_value = css_property_parser_helpers::ConsumePercent(
+          args, context, kValueRangeAll);
       if (!parsed_value) {
         parsed_value = css_property_parser_helpers::ConsumeNumber(
             args, kValueRangeNonNegative);
@@ -116,12 +116,14 @@ CSSFunctionValue* ConsumeFilterFunction(CSSParserTokenRange& range,
       parsed_value = css_property_parser_helpers::ConsumeAngle(
           args, &context, WebFeature::kUnitlessZeroAngleFilter);
     } else if (filter_type == CSSValueID::kBlur) {
+      CSSParserContext::ParserModeOverridingScope scope(context,
+                                                        kHTMLStandardMode);
       parsed_value = css_property_parser_helpers::ConsumeLength(
-          args, kHTMLStandardMode, kValueRangeNonNegative);
+          args, context, kValueRangeNonNegative);
     } else {
       // FIXME (crbug.com/397061): Support calc expressions like calc(10% + 0.5)
       parsed_value = css_property_parser_helpers::ConsumePercent(
-          args, kValueRangeNonNegative);
+          args, context, kValueRangeNonNegative);
       if (!parsed_value) {
         parsed_value = css_property_parser_helpers::ConsumeNumber(
             args, kValueRangeNonNegative);
@@ -375,14 +377,14 @@ inline bool ShouldAcceptUnitlessLength(double value,
 }
 
 CSSPrimitiveValue* ConsumeLength(CSSParserTokenRange& range,
-                                 CSSParserMode css_parser_mode,
+                                 const CSSParserContext& context,
                                  ValueRange value_range,
                                  UnitlessQuirk unitless) {
   const CSSParserToken& token = range.Peek();
   if (token.GetType() == kDimensionToken) {
     switch (token.GetUnitType()) {
       case CSSPrimitiveValue::UnitType::kQuirkyEms:
-        if (css_parser_mode != kUASheetMode)
+        if (context.Mode() != kUASheetMode)
           return nullptr;
         FALLTHROUGH;
       case CSSPrimitiveValue::UnitType::kEms:
@@ -411,26 +413,27 @@ CSSPrimitiveValue* ConsumeLength(CSSParserTokenRange& range,
         range.ConsumeIncludingWhitespace().NumericValue(), token.GetUnitType());
   }
   if (token.GetType() == kNumberToken) {
-    if (!ShouldAcceptUnitlessLength(token.NumericValue(), css_parser_mode,
+    if (!ShouldAcceptUnitlessLength(token.NumericValue(), context.Mode(),
                                     unitless) ||
         (value_range == kValueRangeNonNegative && token.NumericValue() < 0))
       return nullptr;
     CSSPrimitiveValue::UnitType unit_type =
         CSSPrimitiveValue::UnitType::kPixels;
-    if (css_parser_mode == kSVGAttributeMode)
+    if (context.Mode() == kSVGAttributeMode)
       unit_type = CSSPrimitiveValue::UnitType::kUserUnits;
     return CSSNumericLiteralValue::Create(
         range.ConsumeIncludingWhitespace().NumericValue(), unit_type);
   }
-  if (css_parser_mode == kSVGAttributeMode)
+  if (context.Mode() == kSVGAttributeMode)
     return nullptr;
-  MathFunctionParser math_parser(range, value_range);
+  MathFunctionParser math_parser(range, &context, value_range);
   if (math_parser.Value() && math_parser.Value()->Category() == kCalcLength)
     return math_parser.ConsumeValue();
   return nullptr;
 }
 
 CSSPrimitiveValue* ConsumePercent(CSSParserTokenRange& range,
+                                  const CSSParserContext& context,
                                   ValueRange value_range) {
   const CSSParserToken& token = range.Peek();
   if (token.GetType() == kPercentageToken) {
@@ -440,7 +443,7 @@ CSSPrimitiveValue* ConsumePercent(CSSParserTokenRange& range,
         range.ConsumeIncludingWhitespace().NumericValue(),
         CSSPrimitiveValue::UnitType::kPercentage);
   }
-  MathFunctionParser math_parser(range, value_range);
+  MathFunctionParser math_parser(range, &context, value_range);
   if (const CSSMathFunctionValue* calculation = math_parser.Value()) {
     if (calculation->Category() == kCalcPercent)
       return math_parser.ConsumeValue();
@@ -448,11 +451,13 @@ CSSPrimitiveValue* ConsumePercent(CSSParserTokenRange& range,
   return nullptr;
 }
 
-CSSPrimitiveValue* ConsumeAlphaValue(CSSParserTokenRange& range) {
+CSSPrimitiveValue* ConsumeAlphaValue(CSSParserTokenRange& range,
+                                     const CSSParserContext& context) {
   if (CSSPrimitiveValue* value = ConsumeNumber(range, kValueRangeAll)) {
     return value;
   }
-  if (CSSPrimitiveValue* value = ConsumePercent(range, kValueRangeAll)) {
+  if (CSSPrimitiveValue* value =
+          ConsumePercent(range, context, kValueRangeAll)) {
     return CSSNumericLiteralValue::Create(value->GetDoubleValue() / 100.0,
                                           CSSPrimitiveValue::UnitType::kNumber);
   }
@@ -476,17 +481,17 @@ bool CanConsumeCalcValue(CalculationCategory category,
 }
 
 CSSPrimitiveValue* ConsumeLengthOrPercent(CSSParserTokenRange& range,
-                                          CSSParserMode css_parser_mode,
+                                          const CSSParserContext& context,
                                           ValueRange value_range,
                                           UnitlessQuirk unitless) {
   const CSSParserToken& token = range.Peek();
   if (token.GetType() == kDimensionToken || token.GetType() == kNumberToken)
-    return ConsumeLength(range, css_parser_mode, value_range, unitless);
+    return ConsumeLength(range, context, value_range, unitless);
   if (token.GetType() == kPercentageToken)
-    return ConsumePercent(range, value_range);
-  MathFunctionParser math_parser(range, value_range);
+    return ConsumePercent(range, context, value_range);
+  MathFunctionParser math_parser(range, &context, value_range);
   if (const CSSMathFunctionValue* calculation = math_parser.Value()) {
-    if (CanConsumeCalcValue(calculation->Category(), css_parser_mode))
+    if (CanConsumeCalcValue(calculation->Category(), context.Mode()))
       return math_parser.ConsumeValue();
   }
   return nullptr;
@@ -521,8 +526,9 @@ CSSPrimitiveValue* ConsumeSVGGeometryPropertyLength(
     CSSParserTokenRange& range,
     const CSSParserContext& context,
     ValueRange value_range) {
-  CSSPrimitiveValue* value = ConsumeLengthOrPercent(
-      range, kSVGAttributeMode, value_range, UnitlessQuirk::kForbid);
+  CSSParserContext::ParserModeOverridingScope scope(context, kSVGAttributeMode);
+  CSSPrimitiveValue* value = ConsumeLengthOrPercent(range, context, value_range,
+                                                    UnitlessQuirk::kForbid);
   if (IsNonZeroUserUnitsValue(value))
     context.Count(WebFeature::kSVGGeometryPropertyHasNonZeroUnitlessValue);
   return value;
@@ -533,7 +539,7 @@ CSSPrimitiveValue* ConsumeGradientLengthOrPercent(
     const CSSParserContext& context,
     ValueRange value_range,
     UnitlessQuirk unitless) {
-  return ConsumeLengthOrPercent(range, context.Mode(), value_range, unitless);
+  return ConsumeLengthOrPercent(range, context, value_range, unitless);
 }
 
 CSSPrimitiveValue* ConsumeAngle(
@@ -730,13 +736,15 @@ static int ClampRGBComponent(const CSSPrimitiveValue& value) {
   return clampTo<int>(round(result), 0, 255);
 }
 
-static bool ParseRGBParameters(CSSParserTokenRange& range, RGBA32& result) {
+static bool ParseRGBParameters(CSSParserTokenRange& range,
+                               const CSSParserContext& context,
+                               RGBA32& result) {
   DCHECK(range.Peek().FunctionId() == CSSValueID::kRgb ||
          range.Peek().FunctionId() == CSSValueID::kRgba);
   CSSParserTokenRange args = ConsumeFunction(range);
   CSSPrimitiveValue* color_parameter = ConsumeNumber(args, kValueRangeAll);
   if (!color_parameter)
-    color_parameter = ConsumePercent(args, kValueRangeAll);
+    color_parameter = ConsumePercent(args, context, kValueRangeAll);
   if (!color_parameter)
     return false;
   const bool is_percent = color_parameter->IsPercentage();
@@ -751,7 +759,7 @@ static bool ParseRGBParameters(CSSParserTokenRange& range, RGBA32& result) {
     } else if (requires_commas || args.AtEnd()) {
       return false;
     }
-    color_parameter = is_percent ? ConsumePercent(args, kValueRangeAll)
+    color_parameter = is_percent ? ConsumePercent(args, context, kValueRangeAll)
                                  : ConsumeNumber(args, kValueRangeAll);
     if (!color_parameter)
       return false;
@@ -766,7 +774,8 @@ static bool ParseRGBParameters(CSSParserTokenRange& range, RGBA32& result) {
   if (comma_consumed || slash_consumed) {
     double alpha;
     if (!ConsumeNumberRaw(args, alpha)) {
-      CSSPrimitiveValue* alpha_percent = ConsumePercent(args, kValueRangeAll);
+      CSSPrimitiveValue* alpha_percent =
+          ConsumePercent(args, context, kValueRangeAll);
       if (!alpha_percent)
         return false;
       else
@@ -783,7 +792,9 @@ static bool ParseRGBParameters(CSSParserTokenRange& range, RGBA32& result) {
   return args.AtEnd();
 }
 
-static bool ParseHSLParameters(CSSParserTokenRange& range, RGBA32& result) {
+static bool ParseHSLParameters(CSSParserTokenRange& range,
+                               const CSSParserContext& context,
+                               RGBA32& result) {
   DCHECK(range.Peek().FunctionId() == CSSValueID::kHsl ||
          range.Peek().FunctionId() == CSSValueID::kHsla);
   CSSParserTokenRange args = ConsumeFunction(range);
@@ -808,7 +819,7 @@ static bool ParseHSLParameters(CSSParserTokenRange& range, RGBA32& result) {
     } else if (requires_commas || args.AtEnd()) {
       return false;
     }
-    hsl_value = ConsumePercent(args, kValueRangeAll);
+    hsl_value = ConsumePercent(args, context, kValueRangeAll);
     if (!hsl_value)
       return false;
     double double_value = hsl_value->GetDoubleValue();
@@ -824,7 +835,8 @@ static bool ParseHSLParameters(CSSParserTokenRange& range, RGBA32& result) {
     return false;
   if (comma_consumed || slash_consumed) {
     if (!ConsumeNumberRaw(args, alpha)) {
-      CSSPrimitiveValue* alpha_percent = ConsumePercent(args, kValueRangeAll);
+      CSSPrimitiveValue* alpha_percent =
+          ConsumePercent(args, context, kValueRangeAll);
       if (!alpha_percent)
         return false;
       else
@@ -872,42 +884,47 @@ static bool ParseHexColor(CSSParserTokenRange& range,
   return true;
 }
 
-static bool ParseColorFunction(CSSParserTokenRange& range, RGBA32& result) {
+static bool ParseColorFunction(CSSParserTokenRange& range,
+                               const CSSParserContext& context,
+                               RGBA32& result) {
   CSSValueID function_id = range.Peek().FunctionId();
   if (function_id < CSSValueID::kRgb || function_id > CSSValueID::kHsla)
     return false;
   CSSParserTokenRange color_range = range;
   if ((function_id <= CSSValueID::kRgba &&
-       !ParseRGBParameters(color_range, result)) ||
+       !ParseRGBParameters(color_range, context, result)) ||
       (function_id >= CSSValueID::kHsl &&
-       !ParseHSLParameters(color_range, result)))
+       !ParseHSLParameters(color_range, context, result)))
     return false;
   range = color_range;
   return true;
 }
 
-static CSSLightDarkColorPair* ParseLightDarkColor(CSSParserTokenRange& range,
-                                                  CSSParserMode mode) {
+static CSSLightDarkColorPair* ParseLightDarkColor(
+    CSSParserTokenRange& range,
+    const CSSParserContext& context) {
   if (range.Peek().FunctionId() != CSSValueID::kInternalLightDarkColor)
     return nullptr;
-  if (!isValueAllowedInMode(CSSValueID::kInternalLightDarkColor, mode))
+  if (!isValueAllowedInMode(CSSValueID::kInternalLightDarkColor,
+                            context.Mode()))
     return nullptr;
+  CSSParserContext::ParserModeOverridingScope scope(context, kUASheetMode);
   CSSParserTokenRange args = ConsumeFunction(range);
-  CSSValue* light_color = ConsumeColor(args, kUASheetMode);
+  CSSValue* light_color = ConsumeColor(args, context);
   if (!light_color || !ConsumeCommaIncludingWhitespace(args))
     return nullptr;
-  CSSValue* dark_color = ConsumeColor(args, kUASheetMode);
+  CSSValue* dark_color = ConsumeColor(args, context);
   if (!dark_color || !args.AtEnd())
     return nullptr;
   return MakeGarbageCollected<CSSLightDarkColorPair>(light_color, dark_color);
 }
 
 CSSValue* ConsumeColor(CSSParserTokenRange& range,
-                       CSSParserMode css_parser_mode,
+                       const CSSParserContext& context,
                        bool accept_quirky_colors) {
   CSSValueID id = range.Peek().Id();
   if (StyleColor::IsColorKeyword(id)) {
-    if (!isValueAllowedInMode(id, css_parser_mode))
+    if (!isValueAllowedInMode(id, context.Mode()))
       return nullptr;
     CSSIdentifierValue* color = ConsumeIdent(range);
     if (!RuntimeEnabledFeatures::LinkSystemColorsEnabled() &&
@@ -923,31 +940,29 @@ CSSValue* ConsumeColor(CSSParserTokenRange& range,
   }
   RGBA32 color = Color::kTransparent;
   if (!ParseHexColor(range, color, accept_quirky_colors) &&
-      !ParseColorFunction(range, color)) {
-    return ParseLightDarkColor(range, css_parser_mode);
+      !ParseColorFunction(range, context, color)) {
+    return ParseLightDarkColor(range, context);
   }
   return cssvalue::CSSColorValue::Create(color);
 }
 
 CSSValue* ConsumeLineWidth(CSSParserTokenRange& range,
-                           CSSParserMode css_parser_mode,
+                           const CSSParserContext& context,
                            UnitlessQuirk unitless) {
   CSSValueID id = range.Peek().Id();
   if (id == CSSValueID::kThin || id == CSSValueID::kMedium ||
       id == CSSValueID::kThick)
     return ConsumeIdent(range);
-  return ConsumeLength(range, css_parser_mode, kValueRangeNonNegative,
-                       unitless);
+  return ConsumeLength(range, context, kValueRangeNonNegative, unitless);
 }
 
 static CSSValue* ConsumePositionComponent(CSSParserTokenRange& range,
-                                          CSSParserMode css_parser_mode,
+                                          const CSSParserContext& context,
                                           UnitlessQuirk unitless,
                                           bool& horizontal_edge,
                                           bool& vertical_edge) {
   if (range.Peek().GetType() != kIdentToken)
-    return ConsumeLengthOrPercent(range, css_parser_mode, kValueRangeAll,
-                                  unitless);
+    return ConsumeLengthOrPercent(range, context, kValueRangeAll, unitless);
 
   CSSValueID id = range.Peek().Id();
   if (id == CSSValueID::kLeft || id == CSSValueID::kRight) {
@@ -1058,7 +1073,7 @@ bool ConsumePosition(CSSParserTokenRange& range,
                      CSSValue*& result_y) {
   bool horizontal_edge = false;
   bool vertical_edge = false;
-  CSSValue* value1 = ConsumePositionComponent(range, context.Mode(), unitless,
+  CSSValue* value1 = ConsumePositionComponent(range, context, unitless,
                                               horizontal_edge, vertical_edge);
   if (!value1)
     return false;
@@ -1066,7 +1081,7 @@ bool ConsumePosition(CSSParserTokenRange& range,
     horizontal_edge = true;
 
   CSSParserTokenRange range_after_first_consume = range;
-  CSSValue* value2 = ConsumePositionComponent(range, context.Mode(), unitless,
+  CSSValue* value2 = ConsumePositionComponent(range, context, unitless,
                                               horizontal_edge, vertical_edge);
   if (!value2) {
     PositionFromOneValue(value1, result_x, result_y);
@@ -1083,9 +1098,10 @@ bool ConsumePosition(CSSParserTokenRange& range,
       !!identifier_value2 != (range.Peek().GetType() == kIdentToken) &&
       (identifier_value2
            ? identifier_value2->GetValueID()
-           : identifier_value1->GetValueID()) != CSSValueID::kCenter)
-    value3 = ConsumePositionComponent(range, context.Mode(), unitless,
-                                      horizontal_edge, vertical_edge);
+           : identifier_value1->GetValueID()) != CSSValueID::kCenter) {
+    value3 = ConsumePositionComponent(range, context, unitless, horizontal_edge,
+                                      vertical_edge);
+  }
   if (!value3) {
     if (vertical_edge && !value2->IsIdentifierValue()) {
       range = range_after_first_consume;
@@ -1100,9 +1116,10 @@ bool ConsumePosition(CSSParserTokenRange& range,
   auto* identifier_value3 = DynamicTo<CSSIdentifierValue>(value3);
   if (identifier_value3 &&
       identifier_value3->GetValueID() != CSSValueID::kCenter &&
-      range.Peek().GetType() != kIdentToken)
-    value4 = ConsumePositionComponent(range, context.Mode(), unitless,
-                                      horizontal_edge, vertical_edge);
+      range.Peek().GetType() != kIdentToken) {
+    value4 = ConsumePositionComponent(range, context, unitless, horizontal_edge,
+                                      vertical_edge);
+  }
 
   if (!value4) {
     if (!three_value_position) {
@@ -1146,25 +1163,25 @@ CSSValuePair* ConsumePosition(CSSParserTokenRange& range,
 }
 
 bool ConsumeOneOrTwoValuedPosition(CSSParserTokenRange& range,
-                                   CSSParserMode css_parser_mode,
+                                   const CSSParserContext& context,
                                    UnitlessQuirk unitless,
                                    CSSValue*& result_x,
                                    CSSValue*& result_y) {
   bool horizontal_edge = false;
   bool vertical_edge = false;
-  CSSValue* value1 = ConsumePositionComponent(range, css_parser_mode, unitless,
+  CSSValue* value1 = ConsumePositionComponent(range, context, unitless,
                                               horizontal_edge, vertical_edge);
   if (!value1)
     return false;
   if (!value1->IsIdentifierValue())
     horizontal_edge = true;
 
-  if (vertical_edge && ConsumeLengthOrPercent(range, css_parser_mode,
-                                              kValueRangeAll, unitless)) {
+  if (vertical_edge &&
+      ConsumeLengthOrPercent(range, context, kValueRangeAll, unitless)) {
     // <length-percentage> is not permitted after top | bottom.
     return false;
   }
-  CSSValue* value2 = ConsumePositionComponent(range, css_parser_mode, unitless,
+  CSSValue* value2 = ConsumePositionComponent(range, context, unitless,
                                               horizontal_edge, vertical_edge);
   if (!value2) {
     PositionFromOneValue(value1, result_x, result_y);
@@ -1182,8 +1199,7 @@ bool ConsumeBorderShorthand(CSSParserTokenRange& range,
   while (!result_width || !result_style || !result_color) {
     if (!result_width) {
       result_width = css_property_parser_helpers::ConsumeLineWidth(
-          range, context.Mode(),
-          css_property_parser_helpers::UnitlessQuirk::kForbid);
+          range, context, css_property_parser_helpers::UnitlessQuirk::kForbid);
       if (result_width)
         continue;
     }
@@ -1195,8 +1211,7 @@ bool ConsumeBorderShorthand(CSSParserTokenRange& range,
         continue;
     }
     if (!result_color) {
-      result_color =
-          css_property_parser_helpers::ConsumeColor(range, context.Mode());
+      result_color = css_property_parser_helpers::ConsumeColor(range, context);
       if (result_color)
         continue;
     }
@@ -1218,6 +1233,7 @@ bool ConsumeBorderShorthand(CSSParserTokenRange& range,
 // This should go away once we drop support for -webkit-gradient
 static CSSPrimitiveValue* ConsumeDeprecatedGradientPoint(
     CSSParserTokenRange& args,
+    const CSSParserContext& context,
     bool horizontal) {
   if (args.Peek().GetType() == kIdentToken) {
     if ((horizontal && ConsumeIdent<CSSValueID::kLeft>(args)) ||
@@ -1233,7 +1249,7 @@ static CSSPrimitiveValue* ConsumeDeprecatedGradientPoint(
           50., CSSPrimitiveValue::UnitType::kPercentage);
     return nullptr;
   }
-  CSSPrimitiveValue* result = ConsumePercent(args, kValueRangeAll);
+  CSSPrimitiveValue* result = ConsumePercent(args, context, kValueRangeAll);
   if (!result)
     result = ConsumeNumber(args, kValueRangeAll);
   return result;
@@ -1242,16 +1258,16 @@ static CSSPrimitiveValue* ConsumeDeprecatedGradientPoint(
 // Used to parse colors for -webkit-gradient(...).
 static CSSValue* ConsumeDeprecatedGradientStopColor(
     CSSParserTokenRange& args,
-    CSSParserMode css_parser_mode) {
+    const CSSParserContext& context) {
   if (args.Peek().Id() == CSSValueID::kCurrentcolor)
     return nullptr;
-  return ConsumeColor(args, css_parser_mode);
+  return ConsumeColor(args, context);
 }
 
 static bool ConsumeDeprecatedGradientColorStop(
     CSSParserTokenRange& range,
     cssvalue::CSSGradientColorStop& stop,
-    CSSParserMode css_parser_mode) {
+    const CSSParserContext& context) {
   CSSValueID id = range.Peek().FunctionId();
   if (id != CSSValueID::kFrom && id != CSSValueID::kTo &&
       id != CSSValueID::kColorStop)
@@ -1263,7 +1279,8 @@ static bool ConsumeDeprecatedGradientColorStop(
     position = (id == CSSValueID::kFrom) ? 0 : 1;
   } else {
     DCHECK(id == CSSValueID::kColorStop);
-    if (CSSPrimitiveValue* percent_value = ConsumePercent(args, kValueRangeAll))
+    if (CSSPrimitiveValue* percent_value =
+            ConsumePercent(args, context, kValueRangeAll))
       position = percent_value->GetDoubleValue() / 100.0;
     else if (!ConsumeNumberRaw(args, position))
       return false;
@@ -1274,12 +1291,12 @@ static bool ConsumeDeprecatedGradientColorStop(
 
   stop.offset_ = CSSNumericLiteralValue::Create(
       position, CSSPrimitiveValue::UnitType::kNumber);
-  stop.color_ = ConsumeDeprecatedGradientStopColor(args, css_parser_mode);
+  stop.color_ = ConsumeDeprecatedGradientStopColor(args, context);
   return stop.color_ && args.AtEnd();
 }
 
 static CSSValue* ConsumeDeprecatedGradient(CSSParserTokenRange& args,
-                                           CSSParserMode css_parser_mode) {
+                                           const CSSParserContext& context) {
   CSSValueID id = args.ConsumeIncludingWhitespace().Id();
   if (id != CSSValueID::kRadial && id != CSSValueID::kLinear)
     return nullptr;
@@ -1287,11 +1304,12 @@ static CSSValue* ConsumeDeprecatedGradient(CSSParserTokenRange& args,
   if (!ConsumeCommaIncludingWhitespace(args))
     return nullptr;
 
-  const CSSPrimitiveValue* first_x = ConsumeDeprecatedGradientPoint(args, true);
+  const CSSPrimitiveValue* first_x =
+      ConsumeDeprecatedGradientPoint(args, context, true);
   if (!first_x)
     return nullptr;
   const CSSPrimitiveValue* first_y =
-      ConsumeDeprecatedGradientPoint(args, false);
+      ConsumeDeprecatedGradientPoint(args, context, false);
   if (!first_y)
     return nullptr;
   if (!ConsumeCommaIncludingWhitespace(args))
@@ -1306,11 +1324,11 @@ static CSSValue* ConsumeDeprecatedGradient(CSSParserTokenRange& args,
   }
 
   const CSSPrimitiveValue* second_x =
-      ConsumeDeprecatedGradientPoint(args, true);
+      ConsumeDeprecatedGradientPoint(args, context, true);
   if (!second_x)
     return nullptr;
   const CSSPrimitiveValue* second_y =
-      ConsumeDeprecatedGradientPoint(args, false);
+      ConsumeDeprecatedGradientPoint(args, context, false);
   if (!second_y)
     return nullptr;
 
@@ -1336,7 +1354,7 @@ static CSSValue* ConsumeDeprecatedGradient(CSSParserTokenRange& args,
   }
   cssvalue::CSSGradientColorStop stop;
   while (ConsumeCommaIncludingWhitespace(args)) {
-    if (!ConsumeDeprecatedGradientColorStop(args, stop, css_parser_mode))
+    if (!ConsumeDeprecatedGradientColorStop(args, stop, context))
       return nullptr;
     result->AddStop(stop);
   }
@@ -1355,7 +1373,7 @@ static CSSPrimitiveValue* ConsumeGradientAngleOrPercent(
                         WebFeature::kUnitlessZeroAngleGradient);
   }
   if (token.GetType() == kPercentageToken)
-    return ConsumePercent(range, value_range);
+    return ConsumePercent(range, context, value_range);
   MathFunctionParser math_parser(range, &context, value_range);
   if (const CSSMathFunctionValue* calculation = math_parser.Value()) {
     CalculationCategory category = calculation->Category();
@@ -1384,7 +1402,7 @@ static bool ConsumeGradientColorStops(CSSParserTokenRange& range,
   bool previous_stop_was_color_hint = true;
   do {
     cssvalue::CSSGradientColorStop stop;
-    stop.color_ = ConsumeColor(range, context.Mode());
+    stop.color_ = ConsumeColor(range, context);
     // Two hints in a row are not allowed.
     if (!stop.color_ && (!supports_color_hints || previous_stop_was_color_hint))
       return false;
@@ -1419,8 +1437,8 @@ static CSSValue* ConsumeDeprecatedRadialGradient(
     cssvalue::CSSGradientRepeat repeating) {
   CSSValue* center_x = nullptr;
   CSSValue* center_y = nullptr;
-  ConsumeOneOrTwoValuedPosition(args, context.Mode(), UnitlessQuirk::kForbid,
-                                center_x, center_y);
+  ConsumeOneOrTwoValuedPosition(args, context, UnitlessQuirk::kForbid, center_x,
+                                center_y);
   if ((center_x || center_y) && !ConsumeCommaIncludingWhitespace(args))
     return nullptr;
 
@@ -1438,10 +1456,10 @@ static CSSValue* ConsumeDeprecatedRadialGradient(
   const CSSPrimitiveValue* vertical_size = nullptr;
   if (!shape && !size_keyword) {
     horizontal_size =
-        ConsumeLengthOrPercent(args, context.Mode(), kValueRangeNonNegative);
+        ConsumeLengthOrPercent(args, context, kValueRangeNonNegative);
     if (horizontal_size) {
       vertical_size =
-          ConsumeLengthOrPercent(args, context.Mode(), kValueRangeNonNegative);
+          ConsumeLengthOrPercent(args, context, kValueRangeNonNegative);
       if (!vertical_size)
         return nullptr;
       ConsumeCommaIncludingWhitespace(args);
@@ -1491,14 +1509,13 @@ static CSSValue* ConsumeRadialGradient(CSSParserTokenRange& args,
       }
     } else {
       CSSPrimitiveValue* center =
-          ConsumeLengthOrPercent(args, context.Mode(), kValueRangeNonNegative);
+          ConsumeLengthOrPercent(args, context, kValueRangeNonNegative);
       if (!center)
         break;
       if (horizontal_size)
         return nullptr;
       horizontal_size = center;
-      center =
-          ConsumeLengthOrPercent(args, context.Mode(), kValueRangeNonNegative);
+      center = ConsumeLengthOrPercent(args, context, kValueRangeNonNegative);
       if (center) {
         vertical_size = center;
         ++i;
@@ -1654,16 +1671,17 @@ CSSValue* ConsumeAxis(CSSParserTokenRange& range) {
 }
 
 static CSSValue* ConsumeCrossFade(CSSParserTokenRange& args,
-                                  const CSSParserContext* context) {
-  CSSValue* from_image_value = ConsumeImageOrNone(args, context);
+                                  const CSSParserContext& context) {
+  CSSValue* from_image_value = ConsumeImageOrNone(args, &context);
   if (!from_image_value || !ConsumeCommaIncludingWhitespace(args))
     return nullptr;
-  CSSValue* to_image_value = ConsumeImageOrNone(args, context);
+  CSSValue* to_image_value = ConsumeImageOrNone(args, &context);
   if (!to_image_value || !ConsumeCommaIncludingWhitespace(args))
     return nullptr;
 
   CSSPrimitiveValue* percentage = nullptr;
-  if (CSSPrimitiveValue* percent_value = ConsumePercent(args, kValueRangeAll))
+  if (CSSPrimitiveValue* percent_value =
+          ConsumePercent(args, context, kValueRangeAll))
     percentage = CSSNumericLiteralValue::Create(
         clampTo<double>(percent_value->GetDoubleValue() / 100.0, 0, 1),
         CSSPrimitiveValue::UnitType::kNumber);
@@ -1720,6 +1738,8 @@ static CSSValue* ConsumePaint(CSSParserTokenRange& args,
   return MakeGarbageCollected<CSSPaintValue>(name, variable_data);
 }
 
+// TODO(xiaochengh): |context| is always non-null. Turn it into a reference to
+// avoid confusions.
 static CSSValue* ConsumeGeneratedImage(CSSParserTokenRange& range,
                                        const CSSParserContext* context) {
   CSSValueID id = range.Peek().FunctionId();
@@ -1746,7 +1766,7 @@ static CSSValue* ConsumeGeneratedImage(CSSParserTokenRange& range,
                                    cssvalue::kCSSLinearGradient);
   } else if (id == CSSValueID::kWebkitGradient) {
     context->Count(WebFeature::kDeprecatedWebKitGradient);
-    result = ConsumeDeprecatedGradient(args, context->Mode());
+    result = ConsumeDeprecatedGradient(args, *context);
   } else if (id == CSSValueID::kWebkitRadialGradient) {
     context->Count(WebFeature::kDeprecatedWebKitRadialGradient);
     result = ConsumeDeprecatedRadialGradient(args, *context,
@@ -1760,7 +1780,7 @@ static CSSValue* ConsumeGeneratedImage(CSSParserTokenRange& range,
   } else if (id == CSSValueID::kRepeatingConicGradient) {
     result = ConsumeConicGradient(args, *context, cssvalue::kRepeating);
   } else if (id == CSSValueID::kWebkitCrossFade) {
-    result = ConsumeCrossFade(args, context);
+    result = ConsumeCrossFade(args, *context);
   } else if (id == CSSValueID::kPaint) {
     result = context->IsSecureContext() ? ConsumePaint(args, context) : nullptr;
   }

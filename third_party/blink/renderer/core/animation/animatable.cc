@@ -38,7 +38,8 @@ void ReportFeaturePolicyViolationsIfNecessary(
     const auto& css_property = property_handle.GetCSSProperty();
     if (LayoutAnimationsPolicy::AffectedCSSProperties().Contains(
             &css_property)) {
-      LayoutAnimationsPolicy::ReportViolation(css_property, document);
+      LayoutAnimationsPolicy::ReportViolation(css_property,
+                                              *document.ToExecutionContext());
     }
   }
 }

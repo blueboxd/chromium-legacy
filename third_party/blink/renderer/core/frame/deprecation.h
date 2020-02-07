@@ -45,6 +45,10 @@ class CORE_EXPORT Deprecation final {
   static void CountDeprecation(const Document&, WebFeature);
   static void CountDeprecation(DocumentLoader*, WebFeature);
 
+  // TODO(crbug.com/1029822): Temporary helpers to ease migrating
+  // ExecutionContext to LocalDOMWindow.
+  static void CountDeprecation(Document*, WebFeature);
+
   // Count only features if they're being used in an iframe which does not
   // have script access into the top level document.
   static void CountDeprecationCrossOriginIframe(const Document&, WebFeature);

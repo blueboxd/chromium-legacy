@@ -32,6 +32,7 @@
 #include "third_party/blink/renderer/core/css/css_math_expression_node.h"
 #include "third_party/blink/renderer/core/css/css_math_function_value.h"
 #include "third_party/blink/renderer/core/css/css_numeric_literal_value.h"
+#include "third_party/blink/renderer/core/css/parser/css_parser_context.h"
 #include "third_party/blink/renderer/core/css/parser/css_parser_token_range.h"
 #include "third_party/blink/renderer/core/css/parser/css_property_parser_helpers.h"
 #include "third_party/blink/renderer/core/html/parser/html_parser_idioms.h"
@@ -272,7 +273,13 @@ MediaQueryExp MediaQueryExp::Create(const String& media_feature,
                                                        kValueRangeNonNegative);
   }
   if (!value) {
-    value = css_property_parser_helpers::ConsumeLength(range, kHTMLStandardMode,
+    // TODO(crbug.com/1047784): This is a fake CSSParserContext that only passes
+    // down the CSSParserMode. Plumb the real CSSParserContext through, so that
+    // web features can be counted correctly.
+    const CSSParserContext* fake_context =
+        MakeGarbageCollected<CSSParserContext>(
+            kHTMLStandardMode, SecureContextMode::kInsecureContext);
+    value = css_property_parser_helpers::ConsumeLength(range, *fake_context,
                                                        kValueRangeNonNegative);
   }
   if (!value)

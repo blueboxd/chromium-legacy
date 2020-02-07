@@ -318,9 +318,9 @@ TEST_F(OomInterventionImplTest, V2DetectionV8PurgeMemory) {
   WebViewImpl* web_view = web_view_helper_.InitializeAndLoad("about:blank");
   Page* page = web_view->MainFrameImpl()->GetFrame()->GetPage();
   auto* frame = To<LocalFrame>(page->MainFrame());
-  EXPECT_FALSE(frame->GetDocument()->ExecutionContext::IsContextDestroyed());
+  EXPECT_FALSE(frame->GetDocument()->IsContextDestroyed());
   RunDetection(true, true, true);
-  EXPECT_TRUE(frame->GetDocument()->ExecutionContext::IsContextDestroyed());
+  EXPECT_TRUE(frame->GetDocument()->IsContextDestroyed());
 }
 
 TEST_F(OomInterventionImplTest, ReducedMemoryMetricReporting) {

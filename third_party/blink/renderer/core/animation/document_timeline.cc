@@ -67,7 +67,7 @@ const double DocumentTimeline::kMinimumDelay = 0.04;
 DocumentTimeline* DocumentTimeline::Create(
     ExecutionContext* execution_context,
     const DocumentTimelineOptions* options) {
-  Document* document = To<Document>(execution_context);
+  Document* document = Document::From(execution_context);
   return MakeGarbageCollected<DocumentTimeline>(
       document, base::TimeDelta::FromMillisecondsD(options->originTime()),
       nullptr);

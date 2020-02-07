@@ -695,6 +695,10 @@ Polymer({
         GAIA_ANIMATION_GUARD_MILLISEC);
   },
 
+  getOobeUIInitialState() {
+    return OOBE_UI_STATE.GAIA_SIGNIN;
+  },
+
   /**
    * Event handler that is invoked just before the frame is shown.
    */
@@ -707,7 +711,6 @@ Polymer({
     this.screenMode_ = AuthMode.DEFAULT;
     this.loadingFrameContents_ = true;
     chrome.send('loginUIStateChanged', ['gaia-signin', true]);
-    Oobe.getInstance().setSigninUIState(SIGNIN_UI_STATE.GAIA_SIGNIN);
 
     // Ensure that GAIA signin (or loading UI) is actually visible.
     window.requestAnimationFrame(function() {
@@ -768,7 +771,6 @@ Polymer({
    */
   onBeforeHide() {
     chrome.send('loginUIStateChanged', ['gaia-signin', false]);
-    Oobe.getInstance().setSigninUIState(SIGNIN_UI_STATE.HIDDEN);
     this.$['offline-gaia'].switchToEmailCard(false /* animated */);
   },
 
@@ -1275,7 +1277,7 @@ Polymer({
     this.authenticator_.resetStates();
     if (takeFocus) {
       if (!forceOnline && this.isOffline_()) {
-        Oobe.getInstance().setSigninUIState(SIGNIN_UI_STATE.GAIA_SIGNIN);
+        Oobe.getInstance().setOobeUIState(OOBE_UI_STATE.GAIA_SIGNIN);
         // Do nothing, since offline version is reloaded after an error comes.
       } else {
         Oobe.showSigninUI();

@@ -722,9 +722,6 @@ void GaiaScreenHandler::RegisterMessages() {
   AddRawCallback("showAddUser", &GaiaScreenHandler::HandleShowAddUser);
   AddCallback("getIsSamlUserPasswordless",
               &GaiaScreenHandler::HandleGetIsSamlUserPasswordless);
-  AddCallback("hideOobeDialog", &GaiaScreenHandler::HandleHideOobeDialog);
-  AddCallback("updateSigninUIState",
-              &GaiaScreenHandler::HandleUpdateSigninUIState);
   AddCallback("showGuestInOobe", &GaiaScreenHandler::HandleShowGuestInOobe);
   AddCallback("samlStateChanged", &GaiaScreenHandler::HandleSamlStateChanged);
   AddCallback("securityTokenPinEntered",
@@ -1055,11 +1052,6 @@ void GaiaScreenHandler::HandleGaiaUIReady() {
   }
 }
 
-void GaiaScreenHandler::HandleHideOobeDialog() {
-  if (LoginDisplayHost::default_host())
-    LoginDisplayHost::default_host()->HideOobeDialog();
-}
-
 void GaiaScreenHandler::HandleShowAddUser(const base::ListValue* args) {
   // TODO(xiaoyinh): Add trace event for gaia webui in views login screen.
   TRACE_EVENT_ASYNC_STEP_INTO0("ui", "ShowLoginWebUI",
@@ -1085,13 +1077,6 @@ void GaiaScreenHandler::HandleGetIsSamlUserPasswordless(
       extension_provided_client_cert_usage_observer_->ClientCertsWereUsed();
   ResolveJavascriptCallback(base::Value(callback_id),
                             base::Value(is_saml_user_passwordless));
-}
-
-void GaiaScreenHandler::HandleUpdateSigninUIState(int state) {
-  if (LoginDisplayHost::default_host()) {
-    auto dialog_state = static_cast<ash::OobeDialogState>(state);
-    LoginDisplayHost::default_host()->UpdateOobeDialogState(dialog_state);
-  }
 }
 
 void GaiaScreenHandler::HandleShowGuestInOobe(bool show) {

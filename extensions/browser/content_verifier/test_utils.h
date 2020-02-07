@@ -24,21 +24,11 @@ class Extension;
 // Test class to observe *a particular* extension resource's ContentVerifyJob
 // lifetime.  Provides a way to wait for a job to finish and return
 // the job's result.
-class TestContentVerifySingleJobObserver : ContentVerifyJob::TestObserver {
+class TestContentVerifySingleJobObserver {
  public:
   TestContentVerifySingleJobObserver(const ExtensionId& extension_id,
                                      const base::FilePath& relative_path);
   ~TestContentVerifySingleJobObserver();
-
-  // ContentVerifyJob::TestObserver:
-  void JobStarted(const ExtensionId& extension_id,
-                  const base::FilePath& relative_path) override {}
-  void JobFinished(const ExtensionId& extension_id,
-                   const base::FilePath& relative_path,
-                   ContentVerifyJob::FailureReason reason) override;
-  void OnHashesReady(const ExtensionId& extension_id,
-                     const base::FilePath& relative_path,
-                     bool success) override;
 
   // Waits for a ContentVerifyJob to finish and returns job's status.
   ContentVerifyJob::FailureReason WaitForJobFinished() WARN_UNUSED_RESULT;
@@ -47,22 +37,55 @@ class TestContentVerifySingleJobObserver : ContentVerifyJob::TestObserver {
   void WaitForOnHashesReady();
 
  private:
-  base::RunLoop job_finished_run_loop_;
-  base::RunLoop on_hashes_ready_run_loop_;
+  class ObserverClient : public ContentVerifyJob::TestObserver {
+   public:
+    ObserverClient(const ExtensionId& extension_id,
+                   const base::FilePath& relative_path);
 
-  ExtensionId extension_id_;
-  base::FilePath relative_path_;
-  base::Optional<ContentVerifyJob::FailureReason> failure_reason_;
-  bool seen_on_hashes_ready_ = false;
+    // ContentVerifyJob::TestObserver:
+    void JobStarted(const ExtensionId& extension_id,
+                    const base::FilePath& relative_path) override {}
+    void JobFinished(const ExtensionId& extension_id,
+                     const base::FilePath& relative_path,
+                     ContentVerifyJob::FailureReason reason) override;
+    void OnHashesReady(const ExtensionId& extension_id,
+                       const base::FilePath& relative_path,
+                       bool success) override;
 
-  DISALLOW_COPY_AND_ASSIGN(TestContentVerifySingleJobObserver);
+    // Passed methods from ContentVerifySingleJobObserver:
+    ContentVerifyJob::FailureReason WaitForJobFinished() WARN_UNUSED_RESULT;
+    void WaitForOnHashesReady();
+
+   private:
+    ~ObserverClient() override;
+
+    ObserverClient(const ObserverClient&) = delete;
+    ObserverClient& operator=(const ObserverClient&) = delete;
+
+    content::BrowserThread::ID creation_thread_;
+
+    base::RunLoop job_finished_run_loop_;
+    base::RunLoop on_hashes_ready_run_loop_;
+
+    ExtensionId extension_id_;
+    base::FilePath relative_path_;
+    base::Optional<ContentVerifyJob::FailureReason> failure_reason_;
+    bool seen_on_hashes_ready_ = false;
+  };
+
+  TestContentVerifySingleJobObserver(
+      const TestContentVerifySingleJobObserver&) = delete;
+  TestContentVerifySingleJobObserver& operator=(
+      const TestContentVerifySingleJobObserver&) = delete;
+
+  scoped_refptr<ObserverClient> client_;
 };
 
 // Test class to observe expected set of ContentVerifyJobs.
-class TestContentVerifyJobObserver : public ContentVerifyJob::TestObserver {
+class TestContentVerifyJobObserver {
  public:
   TestContentVerifyJobObserver();
-  virtual ~TestContentVerifyJobObserver();
+  ~TestContentVerifyJobObserver();
 
   enum class Result { SUCCESS, FAILURE };
 
@@ -75,34 +98,56 @@ class TestContentVerifyJobObserver : public ContentVerifyJob::TestObserver {
   // finish, or false if there was an error or timeout.
   bool WaitForExpectedJobs();
 
-  // ContentVerifyJob::TestObserver interface
-  void JobStarted(const ExtensionId& extension_id,
-                  const base::FilePath& relative_path) override;
-  void JobFinished(const ExtensionId& extension_id,
-                   const base::FilePath& relative_path,
-                   ContentVerifyJob::FailureReason failure_reason) override;
-  void OnHashesReady(const ExtensionId& extension_id,
-                     const base::FilePath& relative_path,
-                     bool success) override {}
-
  private:
-  struct ExpectedResult {
+  class ObserverClient : public ContentVerifyJob::TestObserver {
    public:
-    ExtensionId extension_id;
-    base::FilePath path;
-    Result result;
+    ObserverClient();
 
-    ExpectedResult(const ExtensionId& extension_id,
-                   const base::FilePath& path,
-                   Result result)
-        : extension_id(extension_id), path(path), result(result) {}
+    // ContentVerifyJob::TestObserver:
+    void JobStarted(const ExtensionId& extension_id,
+                    const base::FilePath& relative_path) override {}
+    void JobFinished(const ExtensionId& extension_id,
+                     const base::FilePath& relative_path,
+                     ContentVerifyJob::FailureReason failure_reason) override;
+    void OnHashesReady(const ExtensionId& extension_id,
+                       const base::FilePath& relative_path,
+                       bool success) override {}
+
+    // Passed methods from TestContentVerifyJobObserver:
+    void ExpectJobResult(const ExtensionId& extension_id,
+                         const base::FilePath& relative_path,
+                         Result expected_result);
+    bool WaitForExpectedJobs();
+
+   private:
+    struct ExpectedResult {
+     public:
+      ExtensionId extension_id;
+      base::FilePath path;
+      Result result;
+
+      ExpectedResult(const ExtensionId& extension_id,
+                     const base::FilePath& path,
+                     Result result)
+          : extension_id(extension_id), path(path), result(result) {}
+    };
+
+    ~ObserverClient() override;
+
+    ObserverClient(const ObserverClient&) = delete;
+    ObserverClient& operator=(const ObserverClient&) = delete;
+
+    std::list<ExpectedResult> expectations_;
+    content::BrowserThread::ID creation_thread_;
+    // Accessed on |creation_thread_|.
+    base::OnceClosure job_quit_closure_;
   };
-  std::list<ExpectedResult> expectations_;
-  content::BrowserThread::ID creation_thread_;
-  // Accessed on |creation_thread_|.
-  base::OnceClosure job_quit_closure_;
 
-  DISALLOW_COPY_AND_ASSIGN(TestContentVerifyJobObserver);
+  TestContentVerifyJobObserver(const TestContentVerifyJobObserver&) = delete;
+  TestContentVerifyJobObserver& operator=(const TestContentVerifyJobObserver&) =
+      delete;
+
+  scoped_refptr<ObserverClient> client_;
 };
 
 // An extensions/ implementation of ContentVerifierDelegate for using in tests.

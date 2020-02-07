@@ -26,7 +26,7 @@ bool DocumentModulatorImpl::IsDynamicImportForbidden(String* reason) {
 }
 
 V8CacheOptions DocumentModulatorImpl::GetV8CacheOptions() const {
-  Document* document = To<Document>(GetExecutionContext());
+  Document* document = Document::From(GetExecutionContext());
   const Settings* settings = document->GetFrame()->GetSettings();
   if (settings)
     return settings->GetV8CacheOptions();

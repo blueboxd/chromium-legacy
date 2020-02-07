@@ -373,6 +373,11 @@ void TrayBackgroundView::UpdateAfterStatusAreaCollapseChange() {
   views::View::SetVisible(GetEffectiveVisibility());
 }
 
+void TrayBackgroundView::UpdateAfterColorModeChange() {
+  UpdateBackground();
+  SchedulePaint();
+}
+
 void TrayBackgroundView::BubbleResized(const TrayBubbleView* bubble_view) {}
 
 void TrayBackgroundView::OnImplicitAnimationsCompleted() {

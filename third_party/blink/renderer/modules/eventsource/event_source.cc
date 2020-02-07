@@ -79,7 +79,7 @@ EventSource* EventSource::Create(ExecutionContext* context,
                                  const String& url,
                                  const EventSourceInit* event_source_init,
                                  ExceptionState& exception_state) {
-  UseCounter::Count(context, IsA<Document>(context)
+  UseCounter::Count(context, context->IsDocument()
                                  ? WebFeature::kEventSourceDocument
                                  : WebFeature::kEventSourceWorker);
 

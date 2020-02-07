@@ -12,8 +12,9 @@ namespace blink {
 
 TEST(StereoPannerNodeTest, StereoPannerLifetime) {
   auto page = std::make_unique<DummyPageHolder>();
-  OfflineAudioContext* context = OfflineAudioContext::Create(
-      &page->GetDocument(), 2, 1, 48000, ASSERT_NO_EXCEPTION);
+  OfflineAudioContext* context =
+      OfflineAudioContext::Create(page->GetDocument().ToExecutionContext(), 2,
+                                  1, 48000, ASSERT_NO_EXCEPTION);
   StereoPannerNode* node = context->createStereoPanner(ASSERT_NO_EXCEPTION);
   StereoPannerHandler& handler =
       static_cast<StereoPannerHandler&>(node->Handler());

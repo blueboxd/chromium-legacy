@@ -78,7 +78,9 @@ class CORE_EXPORT CSSFontSelector : public FontSelector {
   void RegisterForInvalidationCallbacks(FontSelectorClient*) override;
   void UnregisterForInvalidationCallbacks(FontSelectorClient*) override;
 
-  ExecutionContext* GetExecutionContext() const override { return document_; }
+  ExecutionContext* GetExecutionContext() const override {
+    return document_->ToExecutionContext();
+  }
   FontFaceCache* GetFontFaceCache() override { return &font_face_cache_; }
 
   const GenericFontFamilySettings& GetGenericFontFamilySettings() const {

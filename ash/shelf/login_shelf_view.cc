@@ -239,13 +239,16 @@ void StartAddUser() {
 }
 
 bool DialogStateGuestAllowed(OobeDialogState state) {
-  // Temp solution until https://crbug.com/981544 is fixed.
-  if (state == OobeDialogState::HIDDEN)
-    return true;
+  return state == OobeDialogState::GAIA_SIGNIN ||
+         state == OobeDialogState::ERROR || state == OobeDialogState::HIDDEN;
+}
 
-  return state == OobeDialogState::NONE ||
-         state == OobeDialogState::GAIA_SIGNIN ||
-         state == OobeDialogState::ERROR;
+bool ShutdownButtonHidden(OobeDialogState state) {
+  return state == OobeDialogState::MIGRATION ||
+         state == OobeDialogState::ENROLLMENT ||
+         state == OobeDialogState::ONBOARDING ||
+         state == OobeDialogState::KIOSK_LAUNCH ||
+         state == OobeDialogState::PASSWORD_CHANGED;
 }
 
 }  // namespace
@@ -694,11 +697,12 @@ void LoginShelfView::UpdateUi() {
        tray_action_state == mojom::TrayActionState::kLaunching) &&
       !LockScreenActionBackgroundAnimating();
 
-  // TODO: https://crbug.com/935849
   GetViewByID(kShutdown)->SetVisible(!show_reboot &&
-                                     !is_lock_screen_note_in_foreground);
+                                     !is_lock_screen_note_in_foreground &&
+                                     !ShutdownButtonHidden(dialog_state_));
   GetViewByID(kRestart)->SetVisible(show_reboot &&
-                                    !is_lock_screen_note_in_foreground);
+                                    !is_lock_screen_note_in_foreground &&
+                                    !ShutdownButtonHidden(dialog_state_));
   GetViewByID(kSignOut)->SetVisible(is_locked &&
                                     !is_lock_screen_note_in_foreground);
   GetViewByID(kCloseNote)

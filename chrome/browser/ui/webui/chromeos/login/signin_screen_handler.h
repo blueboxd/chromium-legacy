@@ -414,10 +414,6 @@ class SigninScreenHandler
   // Callback invoked after the feedback is finished.
   void OnFeedbackFinished();
 
-  // Callback invoked after the feedback sent from the unrecoverable cryptohome
-  // page is finished.
-  void OnUnrecoverableCryptohomeFeedbackFinished();
-
   // Called when the cros property controlling allowed input methods changes.
   void OnAllowedInputMethodsChanged();
 

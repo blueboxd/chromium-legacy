@@ -11,10 +11,12 @@
 #include "base/feature_list.h"
 #include "base/optional.h"
 #include "build/build_config.h"
+#include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/views/location_bar/location_bar_view.h"
 #include "chrome/browser/ui/views/omnibox/omnibox_result_view.h"
 #include "chrome/browser/ui/views/omnibox/omnibox_view_views.h"
 #include "chrome/browser/ui/views/omnibox/rounded_omnibox_results_frame.h"
+#include "chrome/browser/ui/views/omnibox/webui_omnibox_popup_view.h"
 #include "chrome/browser/ui/views/theme_copying_widget.h"
 #include "components/omnibox/common/omnibox_features.h"
 #include "ui/accessibility/ax_node_data.h"
@@ -278,7 +280,10 @@ void OmniboxPopupContentsView::UpdatePopupAppearance() {
   // we have enough row views.
   const size_t result_size = model_->result().size();
   if (base::FeatureList::IsEnabled(omnibox::kWebUIOmniboxPopup)) {
-    // TODO(tommycli): Not implemented yet for WebUI.
+    if (!webui_view_) {
+      AddChildView(webui_view_ = new WebUIOmniboxPopupView(
+                       location_bar_view_->profile()));
+    }
   } else {
     for (size_t i = 0; i < result_size; ++i) {
       // Create child views lazily.  Since especially the first result view may
@@ -390,7 +395,9 @@ gfx::Rect OmniboxPopupContentsView::GetTargetBounds() {
   int popup_height = 0;
 
   if (base::FeatureList::IsEnabled(omnibox::kWebUIOmniboxPopup)) {
-    // TODO(tommycli): Not implemented yet for WebUI.
+    if (webui_view_) {
+      popup_height += webui_view_->GetPreferredSize().height();
+    }
   } else {
     DCHECK_GE(children().size(), model_->result().size());
     popup_height = std::accumulate(

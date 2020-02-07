@@ -1315,7 +1315,7 @@ IN_PROC_BROWSER_TEST_F(BrowserNavigatorTest,
 IN_PROC_BROWSER_TEST_F(BrowserNavigatorTest,
                        Disposition_SingletonTabExisting_IgnoreQuery) {
   int initial_tab_count = browser()->tab_strip_model()->count();
-  const GURL singleton_url_current("chrome://settings/internet");
+  const GURL singleton_url_current(GetContentSettingsURL());
   chrome::AddSelectedTabWithURL(browser(), singleton_url_current,
                                 ui::PAGE_TRANSITION_LINK);
 
@@ -1323,9 +1323,7 @@ IN_PROC_BROWSER_TEST_F(BrowserNavigatorTest,
   EXPECT_EQ(initial_tab_count, browser()->tab_strip_model()->active_index());
 
   // Navigate to a different settings path.
-  const GURL singleton_url_target(
-      "chrome://settings/internet?"
-      "guid=ethernet_00aa00aa00aa&networkType=1");
+  const GURL singleton_url_target(GetClearBrowsingDataURL());
   NavigateParams params(MakeNavigateParams());
   params.disposition = WindowOpenDisposition::SINGLETON_TAB;
   params.url = singleton_url_target;

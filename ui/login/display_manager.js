@@ -60,21 +60,6 @@
 /** @const */ var ACCELERATOR_DEMO_MODE = "demo_mode";
 /** @const */ var ACCELERATOR_SEND_FEEDBACK = "send_feedback";
 
-/* Signin UI state constants. Used to control header bar UI. */
-/* TODO(https://crbug.com/981544): Sync with login_types.h */
-/** @const */ var SIGNIN_UI_STATE = {
-  HIDDEN: 0,
-  GAIA_SIGNIN: 1,
-  ACCOUNT_PICKER: 2,
-  WRONG_HWID_WARNING: 3,
-  DEPRECATED_SUPERVISED_USER_CREATION_FLOW: 4,
-  SAML_PASSWORD_CONFIRM: 5,
-  PASSWORD_CHANGED: 6,
-  ENROLLMENT: 7,
-  ERROR: 8,
-  SYNC_CONSENT: 9,
-};
-
 /* Possible UI states of the error screen. */
 /** @const */ var ERROR_SCREEN_UI_STATE = {
   UNKNOWN: 'ui-state-unknown',
@@ -544,6 +529,12 @@ cr.define('cr.ui.login', function() {
       // is back in DOM tree and has correct offsetHeight / offsetWidth.
       newStep.hidden = false;
 
+      if (newStep.getOobeUIInitialState) {0
+        this.setOobeUIState(newStep.getOobeUIInitialState());
+      } else {
+        this.setOobeUIState(OOBE_UI_STATE.HIDDEN);
+      }
+
       if (newStep.onBeforeShow)
         newStep.onBeforeShow(screenData);
 
@@ -1007,11 +998,10 @@ cr.define('cr.ui.login', function() {
      * Notifies the C++ handler in views login that the OOBE signin state has
      * been updated. This information is primarily used by the login shelf to
      * update button visibility state.
-     * @param {number} state The state (see SIGNIN_UI_STATE) of the OOBE UI.
+     * @param {number} state The state (see OOBE_UI_STATE) of the OOBE UI.
      */
-    setSigninUIState: function(state) {
-      if (Oobe.getInstance().showingViewsLogin)
-        chrome.send('updateSigninUIState', [state]);
+    setOobeUIState: function(state) {
+      chrome.send('updateOobeUIState', [state]);
     },
 
   };
@@ -1091,7 +1081,7 @@ cr.define('cr.ui.login', function() {
   DisplayManager.showSigninUI = function(opt_email) {
     var currentScreenId = Oobe.getInstance().currentScreen.id;
     if (currentScreenId == SCREEN_GAIA_SIGNIN)
-      Oobe.getInstance().setSigninUIState(SIGNIN_UI_STATE.GAIA_SIGNIN);
+      Oobe.getInstance().setOobeUIState(OOBE_UI_STATE.GAIA_SIGNIN);
     chrome.send('showAddUser', [opt_email]);
   };
 

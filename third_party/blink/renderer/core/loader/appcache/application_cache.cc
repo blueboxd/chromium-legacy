@@ -119,7 +119,7 @@ const AtomicString& ApplicationCache::InterfaceName() const {
 }
 
 ExecutionContext* ApplicationCache::GetExecutionContext() const {
-  return GetFrame() ? GetFrame()->GetDocument() : nullptr;
+  return GetFrame() ? GetFrame()->GetDocument()->ToExecutionContext() : nullptr;
 }
 
 const AtomicString& ApplicationCache::ToEventType(mojom::AppCacheEventID id) {

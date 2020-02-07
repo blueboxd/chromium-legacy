@@ -393,7 +393,7 @@ void WebAssociatedURLLoaderImpl::LoadAsynchronously(
   // ClientAdapterDone gets called between creating the loader and
   // calling LoadAsynchronously.
   if (observer_) {
-    task_runner = To<Document>(observer_->LifecycleContext())
+    task_runner = Document::From(observer_->LifecycleContext())
                       ->GetTaskRunner(TaskType::kInternalLoading);
   } else {
     task_runner = Thread::Current()->GetTaskRunner();
@@ -438,9 +438,10 @@ void WebAssociatedURLLoaderImpl::LoadAsynchronously(
     }
 
     if (observer_) {
-      Document& document = To<Document>(*observer_->LifecycleContext());
+      Document& document = Document::From(*observer_->LifecycleContext());
       loader_ = MakeGarbageCollected<ThreadableLoader>(
-          document, client_adapter_, resource_loader_options);
+          *document.ToExecutionContext(), client_adapter_,
+          resource_loader_options);
       loader_->Start(webcore_request);
     }
   }

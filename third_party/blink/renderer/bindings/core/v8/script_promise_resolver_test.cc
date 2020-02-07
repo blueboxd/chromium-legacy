@@ -61,7 +61,7 @@ class ScriptPromiseResolverTest : public testing::Test {
     return ToScriptStateForMainWorld(&page_holder_->GetFrame());
   }
   ExecutionContext* GetExecutionContext() const {
-    return &page_holder_->GetDocument();
+    return page_holder_->GetDocument().ToExecutionContext();
   }
   v8::Isolate* GetIsolate() const { return GetScriptState()->GetIsolate(); }
 };

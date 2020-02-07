@@ -6,6 +6,7 @@
 #include <string>
 #include <utility>
 
+#include "ash/public/cpp/login_screen_test_api.h"
 #include "base/bind.h"
 #include "base/callback.h"
 #include "base/macros.h"
@@ -115,6 +116,15 @@ class PasswordChangeTest : public LoginManagerTest {
                                                         SigninSpecifics());
   }
 
+  void WaitForPasswordChangeScreen() {
+    OobeScreenWaiter(OobeScreen::SCREEN_PASSWORD_CHANGED).Wait();
+    OobeWindowVisibilityWaiter(true).Wait();
+
+    EXPECT_FALSE(ash::LoginScreenTestApi::IsShutdownButtonShown());
+    EXPECT_FALSE(ash::LoginScreenTestApi::IsGuestButtonShown());
+    EXPECT_FALSE(ash::LoginScreenTestApi::IsAddUserButtonShown());
+  }
+
  protected:
   AccountId test_account_id_;
   StubAuthenticator::DataRecoveryStatus data_recovery_status_ =
@@ -136,8 +146,8 @@ IN_PROC_BROWSER_TEST_F(PasswordChangeTest, PRE_MigrateOldCryptohome) {
 
 IN_PROC_BROWSER_TEST_F(PasswordChangeTest, MigrateOldCryptohome) {
   SetUpStubAuthentcatorAndAttemptLogin("old user password");
-  OobeScreenWaiter(OobeScreen::SCREEN_PASSWORD_CHANGED).Wait();
-  OobeWindowVisibilityWaiter(true).Wait();
+  WaitForPasswordChangeScreen();
+
   test::OobeJS()
       .CreateVisibilityWaiter(true,
                               {"gaia-password-changed", "oldPasswordCard"})
@@ -164,8 +174,7 @@ IN_PROC_BROWSER_TEST_F(PasswordChangeTest, PRE_RetryOnWrongPassword) {
 
 IN_PROC_BROWSER_TEST_F(PasswordChangeTest, RetryOnWrongPassword) {
   SetUpStubAuthentcatorAndAttemptLogin("old user password");
-  OobeScreenWaiter(OobeScreen::SCREEN_PASSWORD_CHANGED).Wait();
-  OobeWindowVisibilityWaiter(true).Wait();
+  WaitForPasswordChangeScreen();
   test::OobeJS()
       .CreateVisibilityWaiter(true,
                               {"gaia-password-changed", "oldPasswordCard"})
@@ -212,8 +221,7 @@ IN_PROC_BROWSER_TEST_F(PasswordChangeTest, PRE_SkipDataRecovery) {
 
 IN_PROC_BROWSER_TEST_F(PasswordChangeTest, SkipDataRecovery) {
   SetUpStubAuthentcatorAndAttemptLogin("old user password");
-  OobeScreenWaiter(OobeScreen::SCREEN_PASSWORD_CHANGED).Wait();
-  OobeWindowVisibilityWaiter(true).Wait();
+  WaitForPasswordChangeScreen();
   test::OobeJS()
       .CreateVisibilityWaiter(true,
                               {"gaia-password-changed", "oldPasswordCard"})
@@ -249,8 +257,7 @@ IN_PROC_BROWSER_TEST_F(PasswordChangeTest, PRE_TryAgainAfterForgetLinkClick) {
 
 IN_PROC_BROWSER_TEST_F(PasswordChangeTest, TryAgainAfterForgetLinkClick) {
   SetUpStubAuthentcatorAndAttemptLogin("old user password");
-  OobeScreenWaiter(OobeScreen::SCREEN_PASSWORD_CHANGED).Wait();
-  OobeWindowVisibilityWaiter(true).Wait();
+  WaitForPasswordChangeScreen();
   test::OobeJS()
       .CreateDisplayedWaiter(true, {"gaia-password-changed", "oldPasswordCard"})
       ->Wait();
@@ -295,7 +302,7 @@ IN_PROC_BROWSER_TEST_F(PasswordChangeTest, PRE_ClosePasswordChangedDialog) {
 
 IN_PROC_BROWSER_TEST_F(PasswordChangeTest, ClosePasswordChangedDialog) {
   SetUpStubAuthentcatorAndAttemptLogin("old user password");
-  OobeScreenWaiter(OobeScreen::SCREEN_PASSWORD_CHANGED).Wait();
+  WaitForPasswordChangeScreen();
   test::OobeJS()
       .CreateVisibilityWaiter(true,
                               {"gaia-password-changed", "oldPasswordCard"})

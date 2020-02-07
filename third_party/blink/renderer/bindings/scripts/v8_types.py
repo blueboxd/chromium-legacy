@@ -245,7 +245,7 @@ def cpp_type(idl_type, extended_attributes=None, raw_type=False, used_as_rvalue_
     if base_idl_type == 'ArrayBufferView' and 'FlexibleArrayBufferView' in extended_attributes:
         return 'FlexibleArrayBufferView'
     if base_idl_type in TYPED_ARRAY_TYPES and 'FlexibleArrayBufferView' in extended_attributes:
-        return 'Flexible' + base_idl_type + 'View'
+        return 'Flexible' + base_idl_type
     if base_idl_type in ARRAY_BUFFER_VIEW_AND_TYPED_ARRAY_TYPES:
         if not used_in_cpp_sequence:
             if 'AllowShared' in extended_attributes:
@@ -578,7 +578,7 @@ V8_VALUE_TO_CPP_VALUE = {
     # Basic
     'DOMString': '{v8_value}',
     # Interface types
-    'FlexibleArrayBufferView': 'ToFlexibleArrayBufferView({isolate}, {v8_value}, {variable_name}, allocateFlexibleArrayBufferViewStorage({v8_value}))',
+    'FlexibleArrayBufferView': 'ToFlexibleArrayBufferView({isolate}, {v8_value}, {variable_name})',
     'Promise': 'ScriptPromise::Cast(ScriptState::Current({isolate}), {v8_value})',
     'ScriptValue': 'ScriptValue({isolate}, {v8_value})',
     'Window': 'ToDOMWindow({isolate}, {v8_value})',

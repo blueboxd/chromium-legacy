@@ -887,7 +887,7 @@ std::unique_ptr<TracedValue> inspector_mark_resource_cached_event::Data(
 }
 
 static LocalFrame* FrameForExecutionContext(ExecutionContext* context) {
-  if (auto* document = DynamicTo<Document>(context))
+  if (auto* document = Document::DynamicFrom(context))
     return document->GetFrame();
   return nullptr;
 }
@@ -932,7 +932,7 @@ std::unique_ptr<TracedValue> inspector_animation_frame_event::Data(
     int callback_id) {
   auto value = std::make_unique<TracedValue>();
   value->SetInteger("id", callback_id);
-  if (auto* document = DynamicTo<Document>(context)) {
+  if (auto* document = Document::DynamicFrom(context)) {
     value->SetString("frame",
                      IdentifiersFactory::FrameId(document->GetFrame()));
   } else if (auto* scope = DynamicTo<WorkerGlobalScope>(context)) {

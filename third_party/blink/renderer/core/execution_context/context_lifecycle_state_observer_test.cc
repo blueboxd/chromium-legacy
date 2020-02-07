@@ -73,45 +73,49 @@ ContextLifecycleStateObserverTest::ContextLifecycleStateObserverTest()
     : src_page_holder_(std::make_unique<DummyPageHolder>(IntSize(800, 600))),
       dest_page_holder_(std::make_unique<DummyPageHolder>(IntSize(800, 600))),
       observer_(MakeGarbageCollected<MockContextLifecycleStateObserver>(
-          &src_page_holder_->GetDocument())) {
+          src_page_holder_->GetDocument().ToExecutionContext())) {
   observer_->UpdateStateIfNeeded();
 }
 
 TEST_F(ContextLifecycleStateObserverTest, NewContextObserved) {
   unsigned initial_src_count =
-      SrcDocument().ContextLifecycleStateObserverCount();
+      SrcDocument().ToExecutionContext()->ContextLifecycleStateObserverCount();
   unsigned initial_dest_count =
-      DestDocument().ContextLifecycleStateObserverCount();
+      DestDocument().ToExecutionContext()->ContextLifecycleStateObserverCount();
 
   EXPECT_CALL(Observer(), ContextLifecycleStateChanged(
                               mojom::FrameLifecycleState::kRunning));
-  Observer().DidMoveToNewExecutionContext(&DestDocument());
+  Observer().DidMoveToNewExecutionContext(DestDocument().ToExecutionContext());
 
-  EXPECT_EQ(initial_src_count - 1,
-            SrcDocument().ContextLifecycleStateObserverCount());
-  EXPECT_EQ(initial_dest_count + 1,
-            DestDocument().ContextLifecycleStateObserverCount());
+  EXPECT_EQ(
+      initial_src_count - 1,
+      SrcDocument().ToExecutionContext()->ContextLifecycleStateObserverCount());
+  EXPECT_EQ(initial_dest_count + 1, DestDocument()
+                                        .ToExecutionContext()
+                                        ->ContextLifecycleStateObserverCount());
 }
 
 TEST_F(ContextLifecycleStateObserverTest, MoveToActiveDocument) {
   EXPECT_CALL(Observer(), ContextLifecycleStateChanged(
                               mojom::FrameLifecycleState::kRunning));
-  Observer().DidMoveToNewExecutionContext(&DestDocument());
+  Observer().DidMoveToNewExecutionContext(DestDocument().ToExecutionContext());
 }
 
 TEST_F(ContextLifecycleStateObserverTest, MoveToSuspendedDocument) {
-  DestDocument().SetLifecycleState(mojom::FrameLifecycleState::kFrozen);
+  DestDocument().ToExecutionContext()->SetLifecycleState(
+      mojom::FrameLifecycleState::kFrozen);
 
   EXPECT_CALL(Observer(), ContextLifecycleStateChanged(
                               mojom::FrameLifecycleState::kFrozen));
-  Observer().DidMoveToNewExecutionContext(&DestDocument());
+  Observer().DidMoveToNewExecutionContext(DestDocument().ToExecutionContext());
 }
 
 TEST_F(ContextLifecycleStateObserverTest, MoveToStoppedDocument) {
   DestDocument().Shutdown();
 
-  EXPECT_CALL(Observer(), ContextDestroyed(&DestDocument()));
-  Observer().DidMoveToNewExecutionContext(&DestDocument());
+  EXPECT_CALL(Observer(),
+              ContextDestroyed(DestDocument().ToExecutionContext()));
+  Observer().DidMoveToNewExecutionContext(DestDocument().ToExecutionContext());
 }
 
 }  // namespace blink

@@ -178,7 +178,7 @@ bool IsDocumentDestination(mojom::RequestContextType context_type) {
 DOMHighResTimeStamp PerformanceResourceTiming::workerStart() const {
   ResourceLoadTiming* timing = GetResourceLoadTiming();
   if (!timing || timing->WorkerStart().is_null() ||
-      (!allow_timing_details_ && IsDocumentDestination(context_type_))) {
+      (!AllowTimingDetails() && IsDocumentDestination(context_type_))) {
     return 0.0;
   }
 

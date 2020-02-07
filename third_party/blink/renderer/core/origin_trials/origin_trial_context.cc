@@ -235,7 +235,7 @@ void OriginTrialContext::ActivateNavigationFeaturesFromInitiator(
 void OriginTrialContext::InitializePendingFeatures() {
   if (!enabled_features_.size() && !navigation_activated_features_.size())
     return;
-  auto* document = DynamicTo<Document>(context_.Get());
+  auto* document = Document::DynamicFrom(context_.Get());
   if (!document)
     return;
   LocalFrame* frame = document->GetFrame();
@@ -280,7 +280,7 @@ bool OriginTrialContext::IsFeatureEnabled(OriginTrialFeature feature) const {
   // For the purposes of origin trials, we consider imported documents to be
   // part of the master document. Thus, check if the trial is enabled in the
   // master document and use that result.
-  auto* document = DynamicTo<Document>(context_.Get());
+  auto* document = Document::DynamicFrom(context_.Get());
   if (!document || !document->IsHTMLImport())
     return false;
 

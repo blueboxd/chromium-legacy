@@ -68,7 +68,7 @@ ScriptPromise MediaDevices::enumerateDevices(ScriptState* script_state,
                                              ExceptionState& exception_state) {
   UpdateWebRTCMethodCount(RTCAPIName::kEnumerateDevices);
   LocalFrame* frame =
-      To<Document>(ExecutionContext::From(script_state))->GetFrame();
+      Document::From(ExecutionContext::From(script_state))->GetFrame();
   if (!frame) {
     exception_state.ThrowDOMException(DOMExceptionCode::kNotSupportedError,
                                       "Current frame is detached.");
@@ -108,7 +108,7 @@ ScriptPromise MediaDevices::SendUserMediaRequest(
   auto* resolver = MakeGarbageCollected<ScriptPromiseResolver>(script_state);
   auto* callbacks = MakeGarbageCollected<PromiseResolverCallbacks>(resolver);
 
-  Document* document = To<Document>(ExecutionContext::From(script_state));
+  Document* document = Document::From(ExecutionContext::From(script_state));
   UserMediaController* user_media =
       UserMediaController::From(document->GetFrame());
   if (!user_media) {
@@ -119,8 +119,9 @@ ScriptPromise MediaDevices::SendUserMediaRequest(
   }
 
   MediaErrorState error_state;
-  UserMediaRequest* request = UserMediaRequest::Create(
-      document, user_media, media_type, options, callbacks, error_state);
+  UserMediaRequest* request =
+      UserMediaRequest::Create(document->ToExecutionContext(), user_media,
+                               media_type, options, callbacks, error_state);
   if (!request) {
     DCHECK(error_state.HadException());
     if (error_state.CanGenerateException()) {
@@ -201,7 +202,7 @@ void MediaDevices::ContextDestroyed(ExecutionContext*) {
 void MediaDevices::OnDevicesChanged(
     mojom::blink::MediaDeviceType type,
     Vector<mojom::blink::MediaDeviceInfoPtr> device_infos) {
-  Document* document = To<Document>(GetExecutionContext());
+  Document* document = Document::From(GetExecutionContext());
   DCHECK(document);
 
   if (RuntimeEnabledFeatures::OnDeviceChangeEnabled())
@@ -237,7 +238,7 @@ void MediaDevices::StartObserving() {
   if (receiver_.is_bound() || stopped_)
     return;
 
-  Document* document = To<Document>(GetExecutionContext());
+  Document* document = Document::From(GetExecutionContext());
   if (!document || !document->GetFrame())
     return;
 

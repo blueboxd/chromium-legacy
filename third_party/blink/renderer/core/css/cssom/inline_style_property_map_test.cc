@@ -29,7 +29,7 @@ TEST(InlineStylePropertyMapTest, PendingSubstitutionValueCrash) {
     div->SetInlineStyleProperty(property_id, "var(--dummy)");
     const StylePropertyShorthand& longhands = shorthandForProperty(property_id);
     for (unsigned i = 0; i < longhands.length(); i++) {
-      map.get(document,
+      map.get(document->ToExecutionContext(),
               longhands.properties()[i]->GetCSSPropertyName().ToAtomicString(),
               ASSERT_NO_EXCEPTION);
     }

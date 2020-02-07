@@ -11,6 +11,7 @@
 #include "base/scoped_observer.h"
 #import "ios/chrome/browser/browser_state/chrome_browser_state.h"
 #include "ios/chrome/browser/main/browser.h"
+#include "ios/chrome/browser/main/browser_observer.h"
 #import "ios/chrome/browser/snapshots/snapshot_cache.h"
 #import "ios/chrome/browser/snapshots/snapshot_cache_factory.h"
 #import "ios/chrome/browser/snapshots/snapshot_tab_helper.h"
@@ -43,6 +44,8 @@ NSString* const kSideSwipeWillStartNotification =
 NSString* const kSideSwipeDidStopNotification =
     @"kSideSwipeDidStopNotification";
 
+class SideSwipeControllerBrowserRemover;
+
 namespace {
 
 enum class SwipeType { NONE, CHANGE_TAB, CHANGE_PAGE };
@@ -62,8 +65,8 @@ const NSUInteger kIpadGreySwipeTabCount = 8;
                                    WebStateListObserving> {
  @private
 
-  // Browser passed on the initializer.
-  Browser* _browser;
+  // Zeroes out |_browser| when it is destroyed.
+  std::unique_ptr<SideSwipeControllerBrowserRemover> _browserRemover;
 
   // Side swipe view for tab navigation.
   CardSideSwipeView* _tabSideSwipeView;
@@ -107,6 +110,8 @@ const NSUInteger kIpadGreySwipeTabCount = 8;
   std::unique_ptr<AnimatedScopedFullscreenDisabler> _animatedFullscreenDisabler;
 }
 
+// Browser passed on the initializer.
+@property(nonatomic, assign) Browser* browser;
 // Whether to allow navigating from the leading edge.
 @property(nonatomic, assign) BOOL leadingEdgeNavigationEnabled;
 // Whether to allow navigating from the trailing edge.
@@ -140,6 +145,21 @@ const NSUInteger kIpadGreySwipeTabCount = 8;
 - (void)dismissCurtain;
 @end
 
+// A browser observer that nullifies SideSwipeController's pointer to browser
+// when the browser is destroyed.
+class SideSwipeControllerBrowserRemover : public BrowserObserver {
+ public:
+  SideSwipeControllerBrowserRemover(SideSwipeController* controller)
+      : side_swipe_controller_(controller) {}
+
+  void BrowserDestroyed(Browser* browser) override {
+    side_swipe_controller_.browser = nullptr;
+  }
+
+ private:
+  __weak SideSwipeController* side_swipe_controller_;
+};
+
 @implementation SideSwipeController
 
 @synthesize inSwipe = _inSwipe;
@@ -156,6 +176,9 @@ const NSUInteger kIpadGreySwipeTabCount = 8;
   self = [super init];
   if (self) {
     _browser = browser;
+    _browserRemover = std::make_unique<SideSwipeControllerBrowserRemover>(self);
+    _browser->AddObserver(_browserRemover.get());
+
     _webStateListObserver = std::make_unique<WebStateListObserverBridge>(self);
     _browser->GetWebStateList()->AddObserver(_webStateListObserver.get());
     _webStateObserverBridge =
@@ -172,6 +195,11 @@ const NSUInteger kIpadGreySwipeTabCount = 8;
 - (void)dealloc {
   if (self.webStateList) {
     self.webStateList->RemoveObserver(_webStateListObserver.get());
+  }
+
+  if (self.browser) {
+    self.browser->RemoveObserver(_browserRemover.get());
+    self.browser = nullptr;
   }
 
   _scopedWebStateObserver.reset();
@@ -203,10 +231,16 @@ const NSUInteger kIpadGreySwipeTabCount = 8;
 }
 
 - (ChromeBrowserState*)browserState {
+  if (!_browser) {
+    return nullptr;
+  }
   return _browser->GetBrowserState();
 }
 
 - (WebStateList*)webStateList {
+  if (!_browser) {
+    return nullptr;
+  }
   return _browser->GetWebStateList();
 }
 

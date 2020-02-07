@@ -6,6 +6,8 @@
 
 #include <string>
 
+#include "base/bind.h"
+#include "base/callback.h"
 #include "base/optional.h"
 #include "chrome/browser/apps/app_service/app_service_proxy.h"
 #include "chrome/browser/apps/app_service/app_service_proxy_factory.h"
@@ -16,6 +18,7 @@
 #include "chrome/services/app_service/public/cpp/instance_update.h"
 #include "chrome/services/app_service/public/mojom/types.mojom.h"
 #include "extensions/common/constants.h"
+#include "ui/gfx/image/image_skia.h"
 
 namespace chromeos {
 namespace app_time {
@@ -89,6 +92,33 @@ std::string AppServiceWrapper::GetAppName(const AppId& app_id) const {
       app_service_id,
       [&app_name](const apps::AppUpdate& update) { app_name = update.Name(); });
   return app_name;
+}
+
+void AppServiceWrapper::GetAppIcon(
+    const AppId& app_id,
+    int size_hint_in_dp,
+    base::OnceCallback<void(base::Optional<gfx::ImageSkia>)> on_icon_ready)
+    const {
+  apps::AppServiceProxy* proxy =
+      apps::AppServiceProxyFactory::GetForProfile(profile_);
+  DCHECK(proxy);
+
+  proxy->LoadIcon(
+      app_id.app_type(), app_id.app_id(),
+      apps::mojom::IconCompression::kUncompressed, size_hint_in_dp,
+      /* allow_placeholder_icon */ false,
+      base::BindOnce(
+          [](base::OnceCallback<void(base::Optional<gfx::ImageSkia>)> callback,
+             apps::mojom::IconValuePtr icon_value) {
+            if (!icon_value ||
+                icon_value->icon_compression !=
+                    apps::mojom::IconCompression::kUncompressed) {
+              std::move(callback).Run(base::nullopt);
+            } else {
+              std::move(callback).Run(icon_value->uncompressed);
+            }
+          },
+          std::move(on_icon_ready)));
 }
 
 std::string AppServiceWrapper::GetAppServiceId(const AppId& app_id) const {

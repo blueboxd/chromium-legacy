@@ -82,7 +82,8 @@ bool CheckForUnoptimizedImagePolicy(const Document& document,
   // well-compressed, according to the unoptimized image feature policies on
   // |document|.
   if (RuntimeEnabledFeatures::UnoptimizedImagePoliciesEnabled(&document) &&
-      !new_image->IsAcceptableCompressionRatio(document)) {
+      !new_image->IsAcceptableCompressionRatio(
+          *document.ToExecutionContext())) {
     return true;
   }
 
@@ -96,7 +97,7 @@ static ImageLoader::BypassMainWorldBehavior ShouldBypassMainWorldCSP(
   DCHECK(loader);
   DCHECK(loader->GetElement());
   if (ContentSecurityPolicy::ShouldBypassMainWorld(
-          &loader->GetElement()->GetDocument())) {
+          loader->GetElement()->GetDocument().ToExecutionContext())) {
     return ImageLoader::kBypassMainWorldCSP;
   }
   return ImageLoader::kDoNotBypassMainWorldCSP;
@@ -113,8 +114,9 @@ class ImageLoader::Task {
         update_behavior_(update_behavior),
         referrer_policy_(referrer_policy),
         request_url_(request_url) {
-    ExecutionContext& context = loader_->GetElement()->GetDocument();
-    probe::AsyncTaskScheduled(&context, "Image", &async_task_id_);
+    ExecutionContext* context =
+        loader_->GetElement()->GetDocument().ToExecutionContext();
+    probe::AsyncTaskScheduled(context, "Image", &async_task_id_);
     v8::Isolate* isolate = V8PerIsolateData::MainThreadIsolate();
     v8::HandleScope scope(isolate);
     // If we're invoked from C++ without a V8 context on the stack, we should
@@ -131,8 +133,9 @@ class ImageLoader::Task {
   void Run() {
     if (!loader_)
       return;
-    ExecutionContext& context = loader_->GetElement()->GetDocument();
-    probe::AsyncTask async_task(&context, &async_task_id_);
+    ExecutionContext* context =
+        loader_->GetElement()->GetDocument().ToExecutionContext();
+    probe::AsyncTask async_task(context, &async_task_id_);
     if (script_state_ && script_state_->ContextIsValid()) {
       ScriptState::Scope scope(script_state_);
       loader_->DoUpdateFromElement(should_bypass_main_world_csp_,

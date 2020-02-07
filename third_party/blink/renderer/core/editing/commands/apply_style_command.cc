@@ -216,8 +216,8 @@ void ApplyStyleCommand::DoApply(EditingState* editing_state) {
   switch (property_level_) {
     case kPropertyDefault: {
       // Apply the block-centric properties of the style.
-      EditingStyle* block_style =
-          style_->ExtractAndRemoveBlockProperties(&GetDocument());
+      EditingStyle* block_style = style_->ExtractAndRemoveBlockProperties(
+          GetDocument().ToExecutionContext());
       if (!block_style->IsEmpty()) {
         ApplyBlockStyle(block_style, editing_state);
         if (editing_state->IsAborted())

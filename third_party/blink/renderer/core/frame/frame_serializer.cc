@@ -638,11 +638,12 @@ void FrameSerializer::RetrieveResourcesForCSSValue(const CSSValue& css_value,
         // context document for getting origin and ResourceFetcher to use the
         // main Document's origin, while using the element document for
         // CompleteURL() to use imported Documents' base URLs.
-        AddFontToResources(
-            font_face_src_value->Fetch(context_document, nullptr));
+        AddFontToResources(font_face_src_value->Fetch(
+            context_document->ToExecutionContext(), nullptr));
       }
     } else {
-      AddFontToResources(font_face_src_value->Fetch(&document, nullptr));
+      AddFontToResources(
+          font_face_src_value->Fetch(document.ToExecutionContext(), nullptr));
     }
   } else if (const auto* css_value_list = DynamicTo<CSSValueList>(css_value)) {
     for (unsigned i = 0; i < css_value_list->length(); i++)

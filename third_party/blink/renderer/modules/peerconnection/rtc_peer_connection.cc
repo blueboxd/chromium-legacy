@@ -746,7 +746,7 @@ RTCPeerConnection::RTCPeerConnection(
       blink_webrtc_time_diff_(
           base::TimeTicks::Now() - base::TimeTicks() -
           base::TimeDelta::FromMicroseconds(rtc::TimeMicros())) {
-  Document* document = To<Document>(GetExecutionContext());
+  Document* document = Document::From(GetExecutionContext());
 
   InstanceCounters::IncrementCounter(
       InstanceCounters::kRTCPeerConnectionCounter);
@@ -1126,7 +1126,7 @@ void RTCPeerConnection::MaybeWarnAboutUnsafeSdp(
   if (!complex_sdp_category)
     return;
 
-  Document* document = To<Document>(GetExecutionContext());
+  Document* document = Document::From(GetExecutionContext());
   RTCPeerConnectionController::From(*document).MaybeReportComplexSdp(
       *complex_sdp_category);
 
@@ -1263,7 +1263,7 @@ void RTCPeerConnection::GenerateCertificateCompleted(
 
 bool RTCPeerConnection::HasDocumentMedia() const {
   UserMediaController* user_media_controller = UserMediaController::From(
-      To<Document>(GetExecutionContext())->GetFrame());
+      Document::From(GetExecutionContext())->GetFrame());
   return user_media_controller &&
          user_media_controller->HasRequestedUserMedia();
 }
@@ -2246,6 +2246,20 @@ RTCRtpTransceiver* RTCPeerConnection::addTransceiver(
   if (ThrowExceptionIfSignalingStateClosed(signaling_state_, &exception_state))
     return nullptr;
   auto webrtc_init = ToRtpTransceiverInit(init);
+  // Validate sendEncodings.
+  for (auto& encoding : webrtc_init.send_encodings) {
+    if (encoding.rid.length() > 16) {
+      exception_state.ThrowTypeError("Illegal length of rid");
+      return nullptr;
+    }
+    // Allowed characters: a-z 0-9 _ and -
+    if (encoding.rid.find_first_not_of("abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLM"
+                                       "NOPQRSTUVWXYZ012456789-_") !=
+        std::string::npos) {
+      exception_state.ThrowTypeError("Illegal character in rid");
+      return nullptr;
+    }
+  }
   webrtc::RTCErrorOr<std::unique_ptr<RTCRtpTransceiverPlatform>> result =
       webrtc::RTCError(webrtc::RTCErrorType::UNSUPPORTED_OPERATION);
   if (track_or_kind.IsMediaStreamTrack()) {
@@ -3128,7 +3142,7 @@ void RTCPeerConnection::DidAddRemoteDataChannel(
 }
 
 void RTCPeerConnection::DidNoteInterestingUsage(int usage_pattern) {
-  Document* document = To<Document>(GetExecutionContext());
+  Document* document = Document::From(GetExecutionContext());
   ukm::SourceId source_id = document->UkmSourceID();
   ukm::builders::WebRTC_AddressHarvesting(source_id)
       .SetUsagePattern(usage_pattern)
@@ -3344,7 +3358,7 @@ void RTCPeerConnection::CloseInternal() {
     dtls_transport_iter.value->Close();
   }
 
-  Document* document = To<Document>(GetExecutionContext());
+  Document* document = Document::From(GetExecutionContext());
   HostsUsingFeatures::CountAnyWorld(
       *document, HostsUsingFeatures::Feature::kRTCPeerConnectionUsed);
 

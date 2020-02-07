@@ -55,7 +55,7 @@ std::unique_ptr<SctpTransportProxy> CreateProxy(
     scoped_refptr<base::SingleThreadTaskRunner> worker_thread) {
   DCHECK(main_thread);
   DCHECK(worker_thread);
-  LocalFrame* frame = To<Document>(context)->GetFrame();
+  LocalFrame* frame = Document::From(context)->GetFrame();
   DCHECK(frame);
   return SctpTransportProxy::Create(*frame, main_thread, worker_thread,
                                     native_transport, delegate);
@@ -68,7 +68,7 @@ RTCSctpTransport::RTCSctpTransport(
     rtc::scoped_refptr<webrtc::SctpTransportInterface> native_transport)
     : RTCSctpTransport(context,
                        native_transport,
-                       To<Document>(context)->GetFrame()->GetTaskRunner(
+                       Document::From(context)->GetFrame()->GetTaskRunner(
                            TaskType::kNetworking),
                        PeerConnectionDependencyFactory::GetInstance()
                            ->GetWebRtcWorkerTaskRunner()) {}

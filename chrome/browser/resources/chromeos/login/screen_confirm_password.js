@@ -38,10 +38,9 @@ login.createScreen('ConfirmPasswordScreen', 'confirm-password', function() {
       return $('saml-confirm-password');
     },
 
-    /** @override */
-    onBeforeShow(data) {
-      Oobe.getInstance().setSigninUIState(
-          SIGNIN_UI_STATE.SAML_PASSWORD_CONFIRM);
+    /** Initial UI State for screen */
+    getOobeUIInitialState() {
+      return OOBE_UI_STATE.SAML_PASSWORD_CONFIRM;
     },
 
     /** @override */

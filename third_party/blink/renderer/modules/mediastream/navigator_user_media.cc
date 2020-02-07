@@ -15,8 +15,9 @@ namespace blink {
 NavigatorUserMedia::NavigatorUserMedia(Navigator& navigator)
     : Supplement<Navigator>(navigator),
       media_devices_(MakeGarbageCollected<MediaDevices>(
-          navigator.GetFrame() ? navigator.GetFrame()->GetDocument()
-                               : nullptr)) {}
+          navigator.GetFrame()
+              ? navigator.GetFrame()->GetDocument()->ToExecutionContext()
+              : nullptr)) {}
 
 const char NavigatorUserMedia::kSupplementName[] = "NavigatorUserMedia";
 

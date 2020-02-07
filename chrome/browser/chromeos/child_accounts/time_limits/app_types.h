@@ -52,6 +52,9 @@ enum class AppNotification {
 
   // Application's time limit reached.
   kTimeLimitReached,
+
+  // Application's time limit has been updated by parents.
+  kTimeLimitChanged
 };
 
 enum class ChromeAppActivityState {

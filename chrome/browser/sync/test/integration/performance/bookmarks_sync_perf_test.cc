@@ -3,11 +3,13 @@
 // found in the LICENSE file.
 
 #include "base/macros.h"
+#include "base/strings/string_number_conversions.h"
 #include "chrome/browser/sync/test/integration/bookmarks_helper.h"
 #include "chrome/browser/sync/test/integration/performance/sync_timing_helper.h"
 #include "chrome/browser/sync/test/integration/profile_sync_service_harness.h"
 #include "chrome/browser/sync/test/integration/sync_test.h"
 #include "components/bookmarks/browser/bookmark_node.h"
+#include "testing/perf/perf_result_reporter.h"
 
 using bookmarks_helper::AddURL;
 using bookmarks_helper::AllModelsMatch;
@@ -16,10 +18,26 @@ using bookmarks_helper::IndexedURL;
 using bookmarks_helper::IndexedURLTitle;
 using bookmarks_helper::Remove;
 using bookmarks_helper::SetURL;
-using sync_timing_helper::PrintResult;
 using sync_timing_helper::TimeMutualSyncCycle;
 
 static const size_t kNumBookmarks = 150;
+
+namespace {
+
+constexpr char kMetricPrefixBookmarks[] = "Bookmarks.";
+constexpr char kMetricAddBookmarksSyncTime[] = "add_bookmarks_sync_time";
+constexpr char kMetricUpdateBookmarksSyncTime[] = "update_bookmarks_sync_time";
+constexpr char kMetricDeleteBookmarksSyncTime[] = "delete_bookmarks_sync_time";
+
+perf_test::PerfResultReporter SetUpReporter(const std::string& story) {
+  perf_test::PerfResultReporter reporter(kMetricPrefixBookmarks, story);
+  reporter.RegisterImportantMetric(kMetricAddBookmarksSyncTime, "ms");
+  reporter.RegisterImportantMetric(kMetricUpdateBookmarksSyncTime, "ms");
+  reporter.RegisterImportantMetric(kMetricDeleteBookmarksSyncTime, "ms");
+  return reporter;
+}
+
+}  // namespace
 
 class BookmarksSyncPerfTest : public SyncTest {
  public:
@@ -82,18 +100,20 @@ std::string BookmarksSyncPerfTest::NextIndexedURLTitle() {
 IN_PROC_BROWSER_TEST_F(BookmarksSyncPerfTest, P0) {
   ASSERT_TRUE(SetupSync()) << "SetupSync() failed.";
 
+  auto reporter =
+      SetUpReporter(base::NumberToString(kNumBookmarks) + "_bookmarks");
   AddURLs(0, kNumBookmarks);
   base::TimeDelta dt = TimeMutualSyncCycle(GetClient(0), GetClient(1));
   ASSERT_EQ(kNumBookmarks, GetURLCount(1));
-  PrintResult("bookmarks", "add_bookmarks", dt);
+  reporter.AddResult(kMetricAddBookmarksSyncTime, dt);
 
   UpdateURLs(0);
   dt = TimeMutualSyncCycle(GetClient(0), GetClient(1));
   ASSERT_EQ(kNumBookmarks, GetURLCount(1));
-  PrintResult("bookmarks", "update_bookmarks", dt);
+  reporter.AddResult(kMetricUpdateBookmarksSyncTime, dt);
 
   RemoveURLs(0);
   dt = TimeMutualSyncCycle(GetClient(0), GetClient(1));
   ASSERT_EQ(0u, GetURLCount(1));
-  PrintResult("bookmarks", "delete_bookmarks", dt);
+  reporter.AddResult(kMetricDeleteBookmarksSyncTime, dt);
 }

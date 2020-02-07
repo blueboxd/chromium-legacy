@@ -19,6 +19,7 @@
 #include "third_party/blink/renderer/bindings/core/v8/v8_uint32_array.h"
 #include "third_party/blink/renderer/bindings/core/v8/v8_uint8_array.h"
 #include "third_party/blink/renderer/bindings/core/v8/v8_uint8_clamped_array.h"
+#include "third_party/blink/renderer/core/typed_arrays/typed_flexible_array_buffer_view.h"
 #include "third_party/blink/renderer/platform/bindings/exception_messages.h"
 
 namespace blink {
@@ -98,36 +99,187 @@ ScriptWrappable* NativeValueTraitsInterfaceOrNullArgumentValue(
 }  // namespace bindings
 
 // Buffer source types
-#define DEFINE_NATIVE_VALUE_TRAITS_BUFFER_SOURCE_TYPE(T, V8T)             \
-  T* NativeValueTraits<T>::NativeValue(v8::Isolate* isolate,              \
-                                       v8::Local<v8::Value> value,        \
-                                       ExceptionState& exception_state) { \
-    T* native_value = V8T::ToImplWithTypeCheck(isolate, value);           \
-    if (!native_value) {                                                  \
-      exception_state.ThrowTypeError(                                     \
-          ExceptionMessages::FailedToConvertJSValue(                      \
-              V8T::GetWrapperTypeInfo()->interface_name));                \
-    }                                                                     \
-    return native_value;                                                  \
+
+namespace {
+
+template <typename T, typename V8T>
+T* NativeValueTraitsBufferSourcePtrNativeValue(
+    v8::Isolate* isolate,
+    v8::Local<v8::Value> value,
+    ExceptionState& exception_state) {
+  T* native_value = V8T::ToImplWithTypeCheck(isolate, value);
+  if (!native_value) {
+    exception_state.ThrowTypeError(ExceptionMessages::FailedToConvertJSValue(
+        V8T::GetWrapperTypeInfo()->interface_name));
   }
-DEFINE_NATIVE_VALUE_TRAITS_BUFFER_SOURCE_TYPE(DOMArrayBuffer, V8ArrayBuffer)
-DEFINE_NATIVE_VALUE_TRAITS_BUFFER_SOURCE_TYPE(DOMArrayBufferView,
-                                              V8ArrayBufferView)
-DEFINE_NATIVE_VALUE_TRAITS_BUFFER_SOURCE_TYPE(DOMInt8Array, V8Int8Array)
-DEFINE_NATIVE_VALUE_TRAITS_BUFFER_SOURCE_TYPE(DOMInt16Array, V8Int16Array)
-DEFINE_NATIVE_VALUE_TRAITS_BUFFER_SOURCE_TYPE(DOMInt32Array, V8Int32Array)
-DEFINE_NATIVE_VALUE_TRAITS_BUFFER_SOURCE_TYPE(DOMUint8Array, V8Uint8Array)
-DEFINE_NATIVE_VALUE_TRAITS_BUFFER_SOURCE_TYPE(DOMUint8ClampedArray,
-                                              V8Uint8ClampedArray)
-DEFINE_NATIVE_VALUE_TRAITS_BUFFER_SOURCE_TYPE(DOMUint16Array, V8Uint16Array)
-DEFINE_NATIVE_VALUE_TRAITS_BUFFER_SOURCE_TYPE(DOMUint32Array, V8Uint32Array)
-DEFINE_NATIVE_VALUE_TRAITS_BUFFER_SOURCE_TYPE(DOMBigInt64Array, V8BigInt64Array)
-DEFINE_NATIVE_VALUE_TRAITS_BUFFER_SOURCE_TYPE(DOMBigUint64Array,
-                                              V8BigUint64Array)
-DEFINE_NATIVE_VALUE_TRAITS_BUFFER_SOURCE_TYPE(DOMFloat32Array, V8Float32Array)
-DEFINE_NATIVE_VALUE_TRAITS_BUFFER_SOURCE_TYPE(DOMFloat64Array, V8Float64Array)
-DEFINE_NATIVE_VALUE_TRAITS_BUFFER_SOURCE_TYPE(DOMDataView, V8DataView)
-#undef DEFINE_NATIVE_VALUE_TRAITS_BUFFER_SOURCE_TYPE
+  return native_value;
+}
+
+template <typename T, typename V8T>
+T* NativeValueTraitsBufferSourcePtrArgumentValue(
+    v8::Isolate* isolate,
+    int argument_index,
+    v8::Local<v8::Value> value,
+    ExceptionState& exception_state) {
+  T* native_value = V8T::ToImplWithTypeCheck(isolate, value);
+  if (!native_value) {
+    exception_state.ThrowTypeError(ExceptionMessages::ArgumentNotOfType(
+        argument_index, V8T::GetWrapperTypeInfo()->interface_name));
+  }
+  return native_value;
+}
+
+template <typename T, typename V8T>
+NotShared<T> NativeValueTraitsBufferSourceNotSharedNativeValue(
+    v8::Isolate* isolate,
+    v8::Local<v8::Value> value,
+    ExceptionState& exception_state) {
+  T* native_value = NativeValueTraitsBufferSourcePtrNativeValue<T, V8T>(
+      isolate, value, exception_state);
+  if (!native_value)
+    return NotShared<T>();
+  if (native_value->IsShared()) {
+    exception_state.ThrowTypeError(
+        "The provided ArrayBufferView value must not be shared.");
+    return NotShared<T>();
+  }
+  return NotShared<T>(native_value);
+}
+
+template <typename T, typename V8T>
+NotShared<T> NativeValueTraitsBufferSourceNotSharedArgumentValue(
+    v8::Isolate* isolate,
+    int argument_index,
+    v8::Local<v8::Value> value,
+    ExceptionState& exception_state) {
+  T* native_value = NativeValueTraitsBufferSourcePtrArgumentValue<T, V8T>(
+      isolate, argument_index, value, exception_state);
+  if (!native_value)
+    return NotShared<T>();
+  if (native_value->IsShared()) {
+    exception_state.ThrowTypeError(
+        "The provided ArrayBufferView value must not be shared.");
+    return NotShared<T>();
+  }
+  return NotShared<T>(native_value);
+}
+
+template <typename T, typename V8T>
+MaybeShared<T> NativeValueTraitsBufferSourceMaybeSharedNativeValue(
+    v8::Isolate* isolate,
+    v8::Local<v8::Value> value,
+    ExceptionState& exception_state) {
+  return MaybeShared<T>(NativeValueTraitsBufferSourcePtrNativeValue<T, V8T>(
+      isolate, value, exception_state));
+}
+
+template <typename T, typename V8T>
+MaybeShared<T> NativeValueTraitsBufferSourceMaybeSharedArgumentValue(
+    v8::Isolate* isolate,
+    int argument_index,
+    v8::Local<v8::Value> value,
+    ExceptionState& exception_state) {
+  return MaybeShared<T>(NativeValueTraitsBufferSourcePtrArgumentValue<T, V8T>(
+      isolate, argument_index, value, exception_state));
+}
+
+template <typename T, typename V8T, typename FLEXIBLE>
+FLEXIBLE NativeValueTraitsBufferSourceFlexibleArgumentValue(
+    v8::Isolate* isolate,
+    int argument_index,
+    v8::Local<v8::Value> value,
+    ExceptionState& exception_state) {
+  if (!V8T::HasInstance(isolate, value)) {
+    exception_state.ThrowTypeError(ExceptionMessages::ArgumentNotOfType(
+        argument_index, V8T::GetWrapperTypeInfo()->interface_name));
+    return FLEXIBLE();
+  }
+  return FLEXIBLE(value.As<v8::ArrayBufferView>());
+}
+
+}  // namespace
+
+DOMArrayBuffer* NativeValueTraits<DOMArrayBuffer>::NativeValue(
+    v8::Isolate* isolate,
+    v8::Local<v8::Value> value,
+    ExceptionState& exception_state) {
+  return NativeValueTraitsBufferSourcePtrNativeValue<DOMArrayBuffer,
+                                                     V8ArrayBuffer>(
+      isolate, value, exception_state);
+}
+
+DOMArrayBuffer* NativeValueTraits<DOMArrayBuffer>::ArgumentValue(
+    v8::Isolate* isolate,
+    int argument_index,
+    v8::Local<v8::Value> value,
+    ExceptionState& exception_state) {
+  return NativeValueTraitsBufferSourcePtrArgumentValue<DOMArrayBuffer,
+                                                       V8ArrayBuffer>(
+      isolate, argument_index, value, exception_state);
+}
+
+#define DEFINE_NATIVE_VALUE_TRAITS_BUFFER_SOURCE_TYPE_NOT_SHARED(T, V8T)    \
+  template <>                                                               \
+  CORE_EXPORT NotShared<T> NativeValueTraits<NotShared<T>>::NativeValue(    \
+      v8::Isolate* isolate, v8::Local<v8::Value> value,                     \
+      ExceptionState& exception_state) {                                    \
+    return NativeValueTraitsBufferSourceNotSharedNativeValue<T, V8T>(       \
+        isolate, value, exception_state);                                   \
+  }                                                                         \
+  template <>                                                               \
+  CORE_EXPORT NotShared<T> NativeValueTraits<NotShared<T>>::ArgumentValue(  \
+      v8::Isolate* isolate, int argument_index, v8::Local<v8::Value> value, \
+      ExceptionState& exception_state) {                                    \
+    return NativeValueTraitsBufferSourceNotSharedArgumentValue<T, V8T>(     \
+        isolate, argument_index, value, exception_state);                   \
+  }
+#define DEFINE_NATIVE_VALUE_TRAITS_BUFFER_SOURCE_TYPE_MAYBE_SHARED(T, V8T)     \
+  template <>                                                                  \
+  CORE_EXPORT MaybeShared<T> NativeValueTraits<MaybeShared<T>>::NativeValue(   \
+      v8::Isolate* isolate, v8::Local<v8::Value> value,                        \
+      ExceptionState& exception_state) {                                       \
+    return NativeValueTraitsBufferSourceMaybeSharedNativeValue<T, V8T>(        \
+        isolate, value, exception_state);                                      \
+  }                                                                            \
+  template <>                                                                  \
+  CORE_EXPORT MaybeShared<T> NativeValueTraits<MaybeShared<T>>::ArgumentValue( \
+      v8::Isolate* isolate, int argument_index, v8::Local<v8::Value> value,    \
+      ExceptionState& exception_state) {                                       \
+    return NativeValueTraitsBufferSourceMaybeSharedArgumentValue<T, V8T>(      \
+        isolate, argument_index, value, exception_state);                      \
+  }
+#define DEFINE_NATIVE_VALUE_TRAITS_BUFFER_SOURCE_TYPE_FLEXIBLE(T, V8T,      \
+                                                               FLEXIBLE)    \
+  template <>                                                               \
+  CORE_EXPORT FLEXIBLE NativeValueTraits<FLEXIBLE>::ArgumentValue(          \
+      v8::Isolate* isolate, int argument_index, v8::Local<v8::Value> value, \
+      ExceptionState& exception_state) {                                    \
+    return NativeValueTraitsBufferSourceFlexibleArgumentValue<T, V8T,       \
+                                                              FLEXIBLE>(    \
+        isolate, argument_index, value, exception_state);                   \
+  }
+#define DEFINE_NATIVE_VALUE_TRAITS_TYPED_ARRAY(T)                           \
+  DEFINE_NATIVE_VALUE_TRAITS_BUFFER_SOURCE_TYPE_NOT_SHARED(DOM##T, V8##T)   \
+  DEFINE_NATIVE_VALUE_TRAITS_BUFFER_SOURCE_TYPE_MAYBE_SHARED(DOM##T, V8##T) \
+  DEFINE_NATIVE_VALUE_TRAITS_BUFFER_SOURCE_TYPE_FLEXIBLE(DOM##T, V8##T,     \
+                                                         Flexible##T)
+#define DEFINE_NATIVE_VALUE_TRAITS_DATA_VIEW(T)                           \
+  DEFINE_NATIVE_VALUE_TRAITS_BUFFER_SOURCE_TYPE_NOT_SHARED(DOM##T, V8##T) \
+  DEFINE_NATIVE_VALUE_TRAITS_BUFFER_SOURCE_TYPE_MAYBE_SHARED(DOM##T, V8##T)
+
+DEFINE_NATIVE_VALUE_TRAITS_TYPED_ARRAY(ArrayBufferView)
+DEFINE_NATIVE_VALUE_TRAITS_TYPED_ARRAY(Int8Array)
+DEFINE_NATIVE_VALUE_TRAITS_TYPED_ARRAY(Int16Array)
+DEFINE_NATIVE_VALUE_TRAITS_TYPED_ARRAY(Int32Array)
+DEFINE_NATIVE_VALUE_TRAITS_TYPED_ARRAY(Uint8Array)
+DEFINE_NATIVE_VALUE_TRAITS_TYPED_ARRAY(Uint8ClampedArray)
+DEFINE_NATIVE_VALUE_TRAITS_TYPED_ARRAY(Uint16Array)
+DEFINE_NATIVE_VALUE_TRAITS_TYPED_ARRAY(Uint32Array)
+DEFINE_NATIVE_VALUE_TRAITS_TYPED_ARRAY(BigInt64Array)
+DEFINE_NATIVE_VALUE_TRAITS_TYPED_ARRAY(BigUint64Array)
+DEFINE_NATIVE_VALUE_TRAITS_TYPED_ARRAY(Float32Array)
+DEFINE_NATIVE_VALUE_TRAITS_TYPED_ARRAY(Float64Array)
+DEFINE_NATIVE_VALUE_TRAITS_DATA_VIEW(DataView)
 
 // EventHandler
 EventListener* NativeValueTraits<IDLEventHandler>::NativeValue(

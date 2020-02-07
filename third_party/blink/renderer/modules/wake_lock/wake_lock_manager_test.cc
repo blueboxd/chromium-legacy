@@ -20,7 +20,8 @@ namespace {
 
 WakeLockManager* MakeManager(WakeLockTestingContext& context,
                              WakeLockType type) {
-  return MakeGarbageCollected<WakeLockManager>(context.GetDocument(), type);
+  return MakeGarbageCollected<WakeLockManager>(
+      context.GetDocument()->ToExecutionContext(), type);
 }
 
 }  // namespace

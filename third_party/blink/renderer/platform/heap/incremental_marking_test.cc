@@ -53,7 +53,7 @@ class BackingVisitor : public Visitor {
     HeapObjectHeader* const header =
         HeapObjectHeader::FromPayload(desc.base_object_payload);
     if (!header->IsMarked())
-      header->Mark();
+      EXPECT_TRUE(header->TryMark());
   }
 
   bool VisitEphemeronKeyValuePair(
@@ -328,7 +328,7 @@ TEST_F(IncrementalMarkingTest, MemberSetUnmarkedObject) {
 TEST_F(IncrementalMarkingTest, MemberSetMarkedObjectNoBarrier) {
   auto* parent = MakeGarbageCollected<Object>();
   auto* child = MakeGarbageCollected<Object>();
-  HeapObjectHeader::FromPayload(child)->Mark();
+  EXPECT_TRUE(HeapObjectHeader::FromPayload(child)->TryMark());
   {
     ExpectNoWriteBarrierFires scope(ThreadState::Current(), {child});
     parent->set_next(child);
@@ -460,7 +460,7 @@ TEST_F(IncrementalMarkingTest, NoWriteBarrierOnMarkedMixinApplication) {
   ParentWithMixinPointer* parent =
       MakeGarbageCollected<ParentWithMixinPointer>();
   auto* child = MakeGarbageCollected<Child>();
-  HeapObjectHeader::FromPayload(child)->Mark();
+  EXPECT_TRUE(HeapObjectHeader::FromPayload(child)->TryMark());
   Mixin* mixin = static_cast<Mixin*>(child);
   EXPECT_NE(static_cast<void*>(child), static_cast<void*>(mixin));
   {

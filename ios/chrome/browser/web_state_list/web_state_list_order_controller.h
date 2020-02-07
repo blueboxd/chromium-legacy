@@ -24,7 +24,11 @@ class WebStateListOrderController {
   int DetermineInsertionIndex(web::WebState* opener) const;
 
   // Determines where to shift the active index after a WebState is closed.
-  int DetermineNewActiveIndex(int removing_index) const;
+  // The returned index will either be WebStateList::kInvalidIndex or in be
+  // in range for the WebStateList once the element has been removed (i.e.
+  // this function accounts for the fact that the element at |removing_index|
+  // will be removed from the WebStateList).
+  int DetermineNewActiveIndex(int active_index, int removing_index) const;
 
  private:
   // Returns a valid index to be selected after the WebState at |removing_index|

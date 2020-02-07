@@ -218,7 +218,7 @@ void MediaKeySystemAccessInitializerBase::CheckVideoCapabilityRobustness()
   if (!IsExecutionContextValid())
     return;
 
-  Document* document = To<Document>(GetExecutionContext());
+  Document* document = Document::From(GetExecutionContext());
   if (!document)
     return;
 

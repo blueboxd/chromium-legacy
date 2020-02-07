@@ -2775,8 +2775,8 @@ cr.define('login', function() {
         $('pod-row').classList.remove('images-loading');
       }, POD_ROW_IMAGES_LOAD_TIMEOUT_MS);
 
-      var isAccountPicker = $('login-header-bar').signinUIState ==
-          SIGNIN_UI_STATE.ACCOUNT_PICKER;
+      var isAccountPicker =
+          $('login-header-bar').signinUIState == OOBE_UI_STATE.ACCOUNT_PICKER;
 
       // Immediately recalculate pods layout only when current UI is account
       // picker. Otherwise postpone it.

@@ -147,7 +147,7 @@ class HTMLMediaElementTest : public testing::TestWithParam<MediaTestParam> {
   }
 
   ExecutionContext* GetExecutionContext() const {
-    return &dummy_page_holder_->GetDocument();
+    return dummy_page_holder_->GetDocument().ToExecutionContext();
   }
 
  private:

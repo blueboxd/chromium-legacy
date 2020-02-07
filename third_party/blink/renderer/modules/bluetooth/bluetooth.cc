@@ -211,7 +211,7 @@ ScriptPromise Bluetooth::requestDevice(ScriptState* script_state,
 
   // If the algorithm is not allowed to show a popup, reject promise with a
   // SecurityError and abort these steps.
-  auto& doc = *To<Document>(context);
+  auto& doc = *Document::From(context);
   auto* frame = doc.GetFrame();
   if (!frame) {
     exception_state.ThrowTypeError(kInactiveDocumentError);
@@ -323,7 +323,7 @@ ScriptPromise Bluetooth::requestLEScan(ScriptState* script_state,
 
   // If the algorithm is not allowed to show a popup, reject promise with a
   // SecurityError and abort these steps.
-  auto& doc = *To<Document>(context);
+  auto& doc = *Document::From(context);
   auto* frame = doc.GetFrame();
   if (!frame) {
     exception_state.ThrowTypeError(kInactiveDocumentError);
@@ -431,7 +431,7 @@ void Bluetooth::Trace(blink::Visitor* visitor) {
 
 Bluetooth::Bluetooth(ExecutionContext* context)
     : ContextLifecycleObserver(context),
-      PageVisibilityObserver(To<Document>(context)->GetPage()) {}
+      PageVisibilityObserver(Document::From(context)->GetPage()) {}
 
 Bluetooth::~Bluetooth() {
   DCHECK(client_receivers_.empty());

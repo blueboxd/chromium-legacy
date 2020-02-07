@@ -38,7 +38,8 @@ void NavigatorUSB::Trace(blink::Visitor* visitor) {
 NavigatorUSB::NavigatorUSB(Navigator& navigator) {
   if (navigator.GetFrame()) {
     DCHECK(navigator.GetFrame()->GetDocument());
-    usb_ = MakeGarbageCollected<USB>(*navigator.GetFrame()->GetDocument());
+    usb_ = MakeGarbageCollected<USB>(
+        *navigator.GetFrame()->GetDocument()->ToExecutionContext());
   }
 }
 

@@ -163,7 +163,7 @@ ServiceWorker* ServiceWorker::From(ExecutionContext* context,
     return scope->GetOrCreateServiceWorker(std::move(info));
   }
 
-  return ServiceWorkerContainer::From(To<Document>(context))
+  return ServiceWorkerContainer::From(Document::From(context))
       ->GetOrCreateServiceWorker(std::move(info));
 }
 

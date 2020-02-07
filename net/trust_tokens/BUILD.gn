@@ -13,7 +13,11 @@ source_set("trust_tokens") {
 
   public = [ "trust_token_store.h" ]
 
-  friend = [ ":tests" ]
+  friend = [
+    ":tests",
+    "//net:extras",  # Friend //net:extras so that SQLiteTrustTokenPersister
+                     # can implement TrustTokenPersister.
+  ]
 
   sources = [
     "in_memory_trust_token_persister.cc",
@@ -48,6 +52,7 @@ source_set("tests") {
     ":trust_tokens",
     "//base",
     "//base/test:test_support",
+    "//net:extras",  # for SQLiteTrustTokenPersister
     "//testing/gmock",
     "//testing/gtest",
     "//url",
@@ -67,6 +72,7 @@ proto_library("storage_proto") {
   visibility = [
     ":trust_tokens",
     ":tests",
+    "//net:extras",
   ]
   sources = [ "proto/storage.proto" ]
   deps = [ ":public_proto" ]

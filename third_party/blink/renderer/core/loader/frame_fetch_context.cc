@@ -847,7 +847,7 @@ bool FrameFetchContext::ShouldBypassMainWorldCSP() const {
     return false;
 
   return ContentSecurityPolicy::ShouldBypassMainWorld(
-      GetFrame()->GetDocument());
+      GetFrame()->GetDocument()->ToExecutionContext());
 }
 
 bool FrameFetchContext::IsSVGImageChromeClient() const {
@@ -1053,8 +1053,8 @@ bool FrameFetchContext::CalculateIfAdSubresource(
   // The AdTracker needs to know about the request as well, and may also mark it
   // as an ad.
   return GetFrame()->GetAdTracker()->CalculateIfAdSubresource(
-      &frame_or_imported_document_->GetDocument(), resource_request, type,
-      known_ad);
+      frame_or_imported_document_->GetDocument().ToExecutionContext(),
+      resource_request, type, known_ad);
 }
 
 mojo::PendingReceiver<mojom::blink::WorkerTimingContainer>

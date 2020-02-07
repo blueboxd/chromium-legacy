@@ -151,6 +151,9 @@ std::unique_ptr<FontPlatformData> FontPlatformDataFromNSFont(
   if (!valid_configured_axes && optical_sizing == kNoneOpticalSizing)
     return make_typeface_fontplatformdata();
 
+  if (!typeface)
+    return nullptr;
+
   int existing_axes = typeface->getVariationDesignPosition(nullptr, 0);
   // Don't apply variation parameters if the font does not have axes or we
   // fail to retrieve the existing ones.
@@ -196,9 +199,14 @@ std::unique_ptr<FontPlatformData> FontPlatformDataFromNSFont(
   SkFontArguments::VariationPosition variation_design_position{
       coordinates_to_set.data(), coordinates_to_set.size()};
 
-  typeface = typeface->makeClone(
-      SkFontArguments().setVariationDesignPosition(variation_design_position));
+  sk_sp<SkTypeface> cloned_typeface(typeface->makeClone(
+      SkFontArguments().setVariationDesignPosition(variation_design_position)));
 
+  if (!cloned_typeface) {
+    // Applying varition parameters failed, return original typeface.
+    return make_typeface_fontplatformdata();
+  }
+  typeface = cloned_typeface;
   return make_typeface_fontplatformdata();
 }
 

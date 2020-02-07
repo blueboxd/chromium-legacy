@@ -1007,7 +1007,7 @@ void CSSParserImpl::ConsumeDeclaration(CSSParserTokenRange range,
                                         parsed_properties_);
   } else {
     unresolved_property = lhs.ParseAsUnresolvedCSSPropertyID(
-        context_->GetDocument(), context_->Mode());
+        context_->GetDocument()->ToExecutionContext(), context_->Mode());
   }
 
   // @rules other than FontFace still handled with legacy code.

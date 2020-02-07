@@ -73,7 +73,7 @@ class MainThreadWorkletTest : public PageTestBase {
         document->IsSecureContext(), document->GetHttpsState(),
         nullptr /* worker_clients */, nullptr /* content_settings_client */,
         document->GetSecurityContext().AddressSpace(),
-        OriginTrialContext::GetTokens(document).get(),
+        OriginTrialContext::GetTokens(document->ToExecutionContext()).get(),
         base::UnguessableToken::Create(), nullptr /* worker_settings */,
         kV8CacheOptionsDefault,
         MakeGarbageCollected<WorkletModuleResponsesMap>());

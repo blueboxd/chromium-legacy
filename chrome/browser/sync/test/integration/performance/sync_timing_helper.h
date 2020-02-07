@@ -29,13 +29,6 @@ base::TimeDelta TimeMutualSyncCycle(ProfileSyncServiceHarness* client,
 base::TimeDelta TimeUntilQuiescence(
     const std::vector<ProfileSyncServiceHarness*>& clients);
 
-// Print a timing measurement in a format appropriate for the chromium perf
-// dashboard.  Simplified version of methods defined in
-// chrome/test/ui/ui_perf_test.{h,cc}.
-void PrintResult(const std::string& measurement,
-                 const std::string& trace,
-                 const base::TimeDelta& dt);
-
 }  // namespace sync_timing_helper
 
 #endif  // CHROME_BROWSER_SYNC_TEST_INTEGRATION_PERFORMANCE_SYNC_TIMING_HELPER_H_

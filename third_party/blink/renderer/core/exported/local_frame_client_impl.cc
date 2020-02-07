@@ -628,8 +628,9 @@ void LocalFrameClientImpl::BeginNavigation(
   // stack is not available here.
   std::unique_ptr<SourceLocation> source_location =
       origin_document
-          ? SourceLocation::Capture(origin_document)
-          : SourceLocation::Capture(web_frame_->GetFrame()->GetDocument());
+          ? SourceLocation::Capture(origin_document->ToExecutionContext())
+          : SourceLocation::Capture(
+                web_frame_->GetFrame()->GetDocument()->ToExecutionContext());
   if (source_location && !source_location->IsUnknown()) {
     navigation_info->source_location.url = source_location->Url();
     navigation_info->source_location.line_number =
@@ -640,7 +641,7 @@ void LocalFrameClientImpl::BeginNavigation(
 
   std::unique_ptr<Vector<OriginTrialFeature>> initiator_origin_trial_features =
       OriginTrialContext::GetEnabledNavigationFeatures(
-          web_frame_->GetFrame()->GetDocument());
+          web_frame_->GetFrame()->GetDocument()->ToExecutionContext());
   if (initiator_origin_trial_features) {
     navigation_info->initiator_origin_trial_features.reserve(
         initiator_origin_trial_features->size());

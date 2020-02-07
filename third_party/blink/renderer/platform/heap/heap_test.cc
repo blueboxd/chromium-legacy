@@ -602,7 +602,7 @@ TEST_F(HeapTest, IsHeapObjectAliveForConstPointer) {
   // See http://crbug.com/661363.
   auto* object = MakeGarbageCollected<SimpleObject>();
   HeapObjectHeader* header = HeapObjectHeader::FromPayload(object);
-  header->Mark();
+  EXPECT_TRUE(header->TryMark());
   EXPECT_TRUE(ThreadHeap::IsHeapObjectAlive(object));
   const SimpleObject* const_object = const_cast<const SimpleObject*>(object);
   EXPECT_TRUE(ThreadHeap::IsHeapObjectAlive(const_object));

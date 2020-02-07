@@ -49,14 +49,14 @@ namespace blink {
 const char FontFaceSetDocument::kSupplementName[] = "FontFaceSetDocument";
 
 FontFaceSetDocument::FontFaceSetDocument(Document& document)
-    : FontFaceSet(document), Supplement<Document>(document) {
-}
+    : FontFaceSet(*document.ToExecutionContext()),
+      Supplement<Document>(document) {}
 
 FontFaceSetDocument::~FontFaceSetDocument() = default;
 
 bool FontFaceSetDocument::InActiveContext() const {
   ExecutionContext* context = GetExecutionContext();
-  return context && To<Document>(context)->IsActive();
+  return context && Document::From(context)->IsActive();
 }
 
 

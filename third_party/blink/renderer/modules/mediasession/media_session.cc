@@ -310,7 +310,7 @@ mojom::blink::MediaSessionService* MediaSession::GetService() {
   if (!GetExecutionContext())
     return nullptr;
 
-  Document* document = To<Document>(GetExecutionContext());
+  Document* document = Document::From(GetExecutionContext());
   LocalFrame* frame = document->GetFrame();
   if (!frame)
     return nullptr;
@@ -329,7 +329,7 @@ mojom::blink::MediaSessionService* MediaSession::GetService() {
 void MediaSession::DidReceiveAction(
     media_session::mojom::blink::MediaSessionAction action,
     mojom::blink::MediaSessionActionDetailsPtr details) {
-  Document* document = To<Document>(GetExecutionContext());
+  Document* document = Document::From(GetExecutionContext());
   LocalFrame::NotifyUserActivation(document ? document->GetFrame() : nullptr);
 
   auto& name = MojomActionToActionName(action);

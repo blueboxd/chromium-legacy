@@ -270,7 +270,8 @@ jboolean TemplateUrlServiceAndroid::SetPlayAPISearchEngine(
     const base::android::JavaParamRef<jstring>& jkeyword,
     const base::android::JavaParamRef<jstring>& jsearch_url,
     const base::android::JavaParamRef<jstring>& jsuggest_url,
-    const base::android::JavaParamRef<jstring>& jfavicon_url) {
+    const base::android::JavaParamRef<jstring>& jfavicon_url,
+    jboolean set_as_default) {
   // Check if there is already a search engine created from Play API.
   TemplateURLService::TemplateURLVector template_urls =
       template_url_service_->GetTemplateURLs();
@@ -297,7 +298,7 @@ jboolean TemplateUrlServiceAndroid::SetPlayAPISearchEngine(
       template_url_service_->CreateOrUpdateTemplateURLFromPlayAPIData(
           name, keyword, search_url, suggest_url, favicon_url);
 
-  if (template_url_service_->CanMakeDefault(t_url))
+  if (set_as_default && template_url_service_->CanMakeDefault(t_url))
     template_url_service_->SetUserSelectedDefaultSearchProvider(t_url);
   return true;
 }

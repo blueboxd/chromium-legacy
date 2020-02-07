@@ -40,7 +40,7 @@
 namespace blink {
 
 SpeechRecognition* SpeechRecognition::Create(ExecutionContext* context) {
-  Document& document = To<Document>(*context);
+  Document& document = Document::From(*context);
   return MakeGarbageCollected<SpeechRecognition>(document.GetFrame(), context);
 }
 

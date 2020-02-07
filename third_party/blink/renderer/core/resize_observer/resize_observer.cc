@@ -30,7 +30,7 @@ ResizeObserver* ResizeObserver::Create(Document& document, Delegate* delegate) {
 
 ResizeObserver::ResizeObserver(V8ResizeObserverCallback* callback,
                                Document& document)
-    : ContextClient(&document),
+    : ContextClient(document.ToExecutionContext()),
       callback_(callback),
       skipped_observations_(false),
       element_size_changed_(false) {
@@ -40,7 +40,7 @@ ResizeObserver::ResizeObserver(V8ResizeObserverCallback* callback,
 }
 
 ResizeObserver::ResizeObserver(Delegate* delegate, Document& document)
-    : ContextClient(&document),
+    : ContextClient(document.ToExecutionContext()),
       delegate_(delegate),
       skipped_observations_(false),
       element_size_changed_(false) {

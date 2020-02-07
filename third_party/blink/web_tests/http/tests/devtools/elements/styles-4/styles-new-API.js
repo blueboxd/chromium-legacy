@@ -34,6 +34,17 @@ body:hover {
 </body>
     `);
 
+  await (() => {
+    // TODO(crbug.com/1046354): This is a workaround for loadHTML() resolving
+    // before parsing is finished. In this case the link stylesheet is blocking
+    // html parsing with BlockHTMLParsingOnStyleSheets enabled and mainBody is
+    // not  found by selectNodeWithId below.
+    let resolve;
+    const promise = new Promise(r => resolve = r);
+    TestRunner.waitForPageLoad(() => resolve());
+    return promise;
+  })();
+
   var bodyId;
   TestRunner.runTestSuite([
     function test_styles(next) {

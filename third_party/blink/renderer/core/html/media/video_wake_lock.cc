@@ -37,7 +37,7 @@ VideoWakeLock::VideoWakeLock(HTMLVideoElement& video)
 
 void VideoWakeLock::ElementDidMoveToNewDocument() {
   ContextLifecycleStateObserver::DidMoveToNewExecutionContext(
-      &VideoElement().GetDocument());
+      VideoElement().GetDocument().ToExecutionContext());
 }
 
 void VideoWakeLock::PageVisibilityChanged() {

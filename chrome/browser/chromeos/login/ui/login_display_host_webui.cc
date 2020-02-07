@@ -9,6 +9,8 @@
 
 #include "ash/accessibility/focus_ring_controller.h"
 #include "ash/public/cpp/ash_features.h"
+#include "ash/public/cpp/login_screen.h"
+#include "ash/public/cpp/login_screen_model.h"
 #include "ash/public/cpp/multi_user_window_manager.h"
 #include "ash/public/cpp/shell_window_ids.h"
 #include "ash/shell.h"
@@ -953,7 +955,7 @@ void LoginDisplayHostWebUI::HideOobeDialog() {
 }
 
 void LoginDisplayHostWebUI::UpdateOobeDialogState(ash::OobeDialogState state) {
-  NOTREACHED();
+  ash::LoginScreen::Get()->GetModel()->NotifyOobeDialogState(state);
 }
 
 const user_manager::UserList LoginDisplayHostWebUI::GetUsers() {

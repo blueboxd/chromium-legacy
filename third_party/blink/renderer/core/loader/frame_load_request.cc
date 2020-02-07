@@ -55,8 +55,8 @@ FrameLoadRequest::FrameLoadRequest(Document* origin_document,
     SetInputStartTime(input_event->TimeStamp());
 
   should_check_main_world_content_security_policy_ =
-      origin_document &&
-              ContentSecurityPolicy::ShouldBypassMainWorld(origin_document)
+      origin_document && ContentSecurityPolicy::ShouldBypassMainWorld(
+                             origin_document->ToExecutionContext())
           ? network::mojom::CSPDisposition::DO_NOT_CHECK
           : network::mojom::CSPDisposition::CHECK;
 

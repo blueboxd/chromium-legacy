@@ -99,7 +99,8 @@ def blink_type_info(idl_type):
             const_ref_fmt="const {}&",
             has_null_value=True)
 
-    if real_type.is_buffer_source_type:
+    if real_type.is_array_buffer:
+        assert "AllowShared" not in real_type.extended_attributes
         return TypeInfo(
             'DOM{}'.format(real_type.keyword_typename),
             member_fmt="Member<{}>",
@@ -107,6 +108,33 @@ def blink_type_info(idl_type):
             const_ref_fmt="const {}*",
             value_fmt="{}*",
             has_null_value=True)
+
+    if real_type.is_buffer_source_type:
+        if "FlexibleArrayBufferView" in real_type.extended_attributes:
+            assert "AllowShared" in real_type.extended_attributes
+            return TypeInfo(
+                "Flexible{}".format(real_type.keyword_typename),
+                member_fmt="void",
+                ref_fmt="{}",
+                const_ref_fmt="const {}",
+                value_fmt="{}",
+                has_null_value=True)
+        elif "AllowShared" in real_type.extended_attributes:
+            return TypeInfo(
+                "DOM{}".format(real_type.keyword_typename),
+                member_fmt="Member<{}>",
+                ref_fmt="MaybeShared<{}>",
+                const_ref_fmt="const MaybeShared<{}>",
+                value_fmt="MaybeShared<{}>",
+                has_null_value=True)
+        else:
+            return TypeInfo(
+                "DOM{}".format(real_type.keyword_typename),
+                member_fmt="Member<{}>",
+                ref_fmt="NotShared<{}>",
+                const_ref_fmt="const NotShared<{}>",
+                value_fmt="NotShared<{}>",
+                has_null_value=True)
 
     if real_type.is_symbol:
         assert False, "Blink does not support/accept IDL symbol type."
@@ -194,6 +222,9 @@ def native_value_tag(idl_type):
 
     if real_type.is_string:
         return "IDL{}V2".format(real_type.type_name)
+
+    if real_type.is_array_buffer:
+        return blink_type_info(real_type).typename
 
     if real_type.is_buffer_source_type:
         return blink_type_info(real_type).value_t
@@ -367,26 +398,26 @@ def make_v8_to_blink_value(blink_var_name,
 
     def create_definition(symbol_node):
         if argument_index is None:
+            arguments = ["${isolate}", v8_value_expr, "${exception_state}"]
             blink_value_expr = _format(
                 "NativeValueTraits<{_1}>::NativeValue({_2})",
                 _1=native_value_tag(idl_type),
-                _2=", ".join(
-                    ["${isolate}", v8_value_expr, "${exception_state}"]))
+                _2=", ".join(arguments))
         else:
+            arguments = [
+                "${isolate}",
+                str(argument_index),
+                v8_value_expr,
+                "${exception_state}",
+            ]
             blink_value_expr = _format(
                 "NativeValueTraits<{_1}>::ArgumentValue({_2})",
                 _1=native_value_tag(idl_type),
-                _2=", ".join([
-                    "${isolate}",
-                    str(argument_index),
-                    v8_value_expr,
-                    "${exception_state}",
-                ]))
+                _2=", ".join(arguments))
 
         if default_value is None:
             return SymbolDefinitionNode(symbol_node, [
-                F("const auto& ${{{}}} = {};", blink_var_name,
-                  blink_value_expr),
+                F("auto ${{{}}} = {};", blink_var_name, blink_value_expr),
                 CxxUnlikelyIfNode(
                     cond="${exception_state}.HadException()",
                     body=T("return;")),
@@ -437,7 +468,7 @@ def make_v8_to_blink_value_variadic(blink_var_name, v8_array,
     assert isinstance(v8_array_start_index, (int, long))
     assert isinstance(idl_type, web_idl.IdlType)
 
-    pattern = "const auto& ${{{_1}}} = ToImplArguments<{_2}>({_3});"
+    pattern = "auto ${{{_1}}} = ToImplArguments<{_2}>({_3});"
     _1 = blink_var_name
     _2 = native_value_tag(idl_type.element_type)
     _3 = [v8_array, str(v8_array_start_index), "${exception_state}"]

@@ -1615,8 +1615,9 @@ void NormalPage::SweepAndCompact(CompactionContext& context) {
       // store object, let go of the container annotations.
       // Do that by unpoisoning the payload entirely.
       ASAN_UNPOISON_MEMORY_REGION(header, sizeof(HeapObjectHeader));
-      if (is_vector_arena)
+      if (is_vector_arena) {
         ASAN_UNPOISON_MEMORY_REGION(payload, payload_size);
+      }
 #endif
       // Use a non-overlapping copy, if possible.
       if (current_page == this)
@@ -1716,8 +1717,9 @@ void NormalPage::PoisonUnmarkedObjects() {
       header_address += header->size();
       continue;
     }
-    if (!header->IsMarked())
+    if (!header->IsMarked()) {
       ASAN_POISON_MEMORY_REGION(header->Payload(), header->PayloadSize());
+    }
     header_address += header->size();
   }
 }
@@ -1890,8 +1892,9 @@ void LargeObjectPage::FinalizeSweep(SweepResult action) {
 #if defined(ADDRESS_SANITIZER)
 void LargeObjectPage::PoisonUnmarkedObjects() {
   HeapObjectHeader* header = ObjectHeader();
-  if (!header->IsMarked())
+  if (!header->IsMarked()) {
     ASAN_POISON_MEMORY_REGION(header->Payload(), header->PayloadSize());
+  }
 }
 #endif
 

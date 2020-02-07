@@ -16,7 +16,6 @@
 #include "ui/views/view.h"
 
 namespace views {
-class EditableCombobox;
 class Label;
 }  // namespace views
 
@@ -27,8 +26,6 @@ std::unique_ptr<views::Label> CreatePasswordLabel(
     const autofill::PasswordForm& form,
     int federation_message_id,
     bool is_password_visible);
-std::unique_ptr<views::EditableCombobox> CreateUsernameEditableCombobox(
-    const autofill::PasswordForm& form);
 
 // A dialog for managing stored password and federated login information for a
 // specific site. A user can remove managed credentials for the site via this

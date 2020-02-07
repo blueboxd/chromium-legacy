@@ -2527,7 +2527,7 @@ void WebGL2RenderingContextBase::uniform4ui(
 
 void WebGL2RenderingContextBase::uniform1fv(
     const WebGLUniformLocation* location,
-    const FlexibleFloat32ArrayView& v,
+    const FlexibleFloat32Array& v,
     GLuint src_offset,
     GLuint src_length) {
   if (isContextLost() || !ValidateUniformParameters("uniform1fv", location, v,
@@ -2558,7 +2558,7 @@ void WebGL2RenderingContextBase::uniform1fv(
 
 void WebGL2RenderingContextBase::uniform2fv(
     const WebGLUniformLocation* location,
-    const FlexibleFloat32ArrayView& v,
+    const FlexibleFloat32Array& v,
     GLuint src_offset,
     GLuint src_length) {
   if (isContextLost() || !ValidateUniformParameters("uniform2fv", location, v,
@@ -2592,7 +2592,7 @@ void WebGL2RenderingContextBase::uniform2fv(
 
 void WebGL2RenderingContextBase::uniform3fv(
     const WebGLUniformLocation* location,
-    const FlexibleFloat32ArrayView& v,
+    const FlexibleFloat32Array& v,
     GLuint src_offset,
     GLuint src_length) {
   if (isContextLost() || !ValidateUniformParameters("uniform3fv", location, v,
@@ -2626,7 +2626,7 @@ void WebGL2RenderingContextBase::uniform3fv(
 
 void WebGL2RenderingContextBase::uniform4fv(
     const WebGLUniformLocation* location,
-    const FlexibleFloat32ArrayView& v,
+    const FlexibleFloat32Array& v,
     GLuint src_offset,
     GLuint src_length) {
   if (isContextLost() || !ValidateUniformParameters("uniform4fv", location, v,
@@ -2660,7 +2660,7 @@ void WebGL2RenderingContextBase::uniform4fv(
 
 void WebGL2RenderingContextBase::uniform1iv(
     const WebGLUniformLocation* location,
-    const FlexibleInt32ArrayView& v,
+    const FlexibleInt32Array& v,
     GLuint src_offset,
     GLuint src_length) {
   if (isContextLost() || !ValidateUniformParameters("uniform1iv", location, v,
@@ -2691,7 +2691,7 @@ void WebGL2RenderingContextBase::uniform1iv(
 
 void WebGL2RenderingContextBase::uniform2iv(
     const WebGLUniformLocation* location,
-    const FlexibleInt32ArrayView& v,
+    const FlexibleInt32Array& v,
     GLuint src_offset,
     GLuint src_length) {
   if (isContextLost() || !ValidateUniformParameters("uniform2iv", location, v,
@@ -2725,7 +2725,7 @@ void WebGL2RenderingContextBase::uniform2iv(
 
 void WebGL2RenderingContextBase::uniform3iv(
     const WebGLUniformLocation* location,
-    const FlexibleInt32ArrayView& v,
+    const FlexibleInt32Array& v,
     GLuint src_offset,
     GLuint src_length) {
   if (isContextLost() || !ValidateUniformParameters("uniform3iv", location, v,
@@ -2759,7 +2759,7 @@ void WebGL2RenderingContextBase::uniform3iv(
 
 void WebGL2RenderingContextBase::uniform4iv(
     const WebGLUniformLocation* location,
-    const FlexibleInt32ArrayView& v,
+    const FlexibleInt32Array& v,
     GLuint src_offset,
     GLuint src_length) {
   if (isContextLost() || !ValidateUniformParameters("uniform4iv", location, v,
@@ -2793,7 +2793,7 @@ void WebGL2RenderingContextBase::uniform4iv(
 
 void WebGL2RenderingContextBase::uniform1uiv(
     const WebGLUniformLocation* location,
-    const FlexibleUint32ArrayView& v,
+    const FlexibleUint32Array& v,
     GLuint src_offset,
     GLuint src_length) {
   if (isContextLost() || !ValidateUniformParameters("uniform1uiv", location, v,
@@ -2825,7 +2825,7 @@ void WebGL2RenderingContextBase::uniform1uiv(
 
 void WebGL2RenderingContextBase::uniform2uiv(
     const WebGLUniformLocation* location,
-    const FlexibleUint32ArrayView& v,
+    const FlexibleUint32Array& v,
     GLuint src_offset,
     GLuint src_length) {
   if (isContextLost() || !ValidateUniformParameters("uniform2uiv", location, v,
@@ -2859,7 +2859,7 @@ void WebGL2RenderingContextBase::uniform2uiv(
 
 void WebGL2RenderingContextBase::uniform3uiv(
     const WebGLUniformLocation* location,
-    const FlexibleUint32ArrayView& v,
+    const FlexibleUint32Array& v,
     GLuint src_offset,
     GLuint src_length) {
   if (isContextLost() || !ValidateUniformParameters("uniform3uiv", location, v,
@@ -2893,7 +2893,7 @@ void WebGL2RenderingContextBase::uniform3uiv(
 
 void WebGL2RenderingContextBase::uniform4uiv(
     const WebGLUniformLocation* location,
-    const FlexibleUint32ArrayView& v,
+    const FlexibleUint32Array& v,
     GLuint src_offset,
     GLuint src_length) {
   if (isContextLost() || !ValidateUniformParameters("uniform4uiv", location, v,
@@ -3248,7 +3248,7 @@ void WebGL2RenderingContextBase::uniformMatrix4x3fv(
 
 void WebGL2RenderingContextBase::uniform1fv(
     const WebGLUniformLocation* location,
-    const FlexibleFloat32ArrayView& v) {
+    const FlexibleFloat32Array& v) {
   WebGLRenderingContextBase::uniform1fv(location, v);
 }
 
@@ -3260,7 +3260,7 @@ void WebGL2RenderingContextBase::uniform1fv(
 
 void WebGL2RenderingContextBase::uniform2fv(
     const WebGLUniformLocation* location,
-    const FlexibleFloat32ArrayView& v) {
+    const FlexibleFloat32Array& v) {
   WebGLRenderingContextBase::uniform2fv(location, v);
 }
 
@@ -3272,7 +3272,7 @@ void WebGL2RenderingContextBase::uniform2fv(
 
 void WebGL2RenderingContextBase::uniform3fv(
     const WebGLUniformLocation* location,
-    const FlexibleFloat32ArrayView& v) {
+    const FlexibleFloat32Array& v) {
   WebGLRenderingContextBase::uniform3fv(location, v);
 }
 
@@ -3284,7 +3284,7 @@ void WebGL2RenderingContextBase::uniform3fv(
 
 void WebGL2RenderingContextBase::uniform4fv(
     const WebGLUniformLocation* location,
-    const FlexibleFloat32ArrayView& v) {
+    const FlexibleFloat32Array& v) {
   WebGLRenderingContextBase::uniform4fv(location, v);
 }
 
@@ -3296,7 +3296,7 @@ void WebGL2RenderingContextBase::uniform4fv(
 
 void WebGL2RenderingContextBase::uniform1iv(
     const WebGLUniformLocation* location,
-    const FlexibleInt32ArrayView& v) {
+    const FlexibleInt32Array& v) {
   WebGLRenderingContextBase::uniform1iv(location, v);
 }
 
@@ -3308,7 +3308,7 @@ void WebGL2RenderingContextBase::uniform1iv(
 
 void WebGL2RenderingContextBase::uniform2iv(
     const WebGLUniformLocation* location,
-    const FlexibleInt32ArrayView& v) {
+    const FlexibleInt32Array& v) {
   WebGLRenderingContextBase::uniform2iv(location, v);
 }
 
@@ -3320,7 +3320,7 @@ void WebGL2RenderingContextBase::uniform2iv(
 
 void WebGL2RenderingContextBase::uniform3iv(
     const WebGLUniformLocation* location,
-    const FlexibleInt32ArrayView& v) {
+    const FlexibleInt32Array& v) {
   WebGLRenderingContextBase::uniform3iv(location, v);
 }
 
@@ -3332,7 +3332,7 @@ void WebGL2RenderingContextBase::uniform3iv(
 
 void WebGL2RenderingContextBase::uniform4iv(
     const WebGLUniformLocation* location,
-    const FlexibleInt32ArrayView& v) {
+    const FlexibleInt32Array& v) {
   WebGLRenderingContextBase::uniform4iv(location, v);
 }
 

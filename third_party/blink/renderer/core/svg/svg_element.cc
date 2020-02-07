@@ -737,16 +737,16 @@ bool SVGElement::IsAnimatableCSSProperty(const QualifiedName& attr_name) {
 bool SVGElement::IsPresentationAttribute(const QualifiedName& name) const {
   if (const SVGAnimatedPropertyBase* property = PropertyFromAttribute(name))
     return property->HasPresentationAttributeMapping();
-  return CssPropertyIdForSVGAttributeName(&GetDocument(), name) >
-         CSSPropertyID::kInvalid;
+  return CssPropertyIdForSVGAttributeName(GetDocument().ToExecutionContext(),
+                                          name) > CSSPropertyID::kInvalid;
 }
 
 void SVGElement::CollectStyleForPresentationAttribute(
     const QualifiedName& name,
     const AtomicString& value,
     MutableCSSPropertyValueSet* style) {
-  CSSPropertyID property_id =
-      CssPropertyIdForSVGAttributeName(&GetDocument(), name);
+  CSSPropertyID property_id = CssPropertyIdForSVGAttributeName(
+      GetDocument().ToExecutionContext(), name);
   if (property_id > CSSPropertyID::kInvalid)
     AddPropertyToPresentationAttributeStyle(style, property_id, value);
 }
@@ -879,8 +879,8 @@ void SVGElement::AttributeChanged(const AttributeModificationParams& params) {
 }
 
 void SVGElement::SvgAttributeChanged(const QualifiedName& attr_name) {
-  CSSPropertyID prop_id =
-      SVGElement::CssPropertyIdForSVGAttributeName(&GetDocument(), attr_name);
+  CSSPropertyID prop_id = SVGElement::CssPropertyIdForSVGAttributeName(
+      GetDocument().ToExecutionContext(), attr_name);
   if (prop_id > CSSPropertyID::kInvalid) {
     InvalidateInstances();
     return;

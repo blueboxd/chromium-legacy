@@ -132,7 +132,8 @@ void HTMLScriptElement::setInnerText(
     const StringOrTrustedScript& string_or_trusted_script,
     ExceptionState& exception_state) {
   String value = GetStringFromTrustedScript(string_or_trusted_script,
-                                            &GetDocument(), exception_state);
+                                            GetDocument().ToExecutionContext(),
+                                            exception_state);
   if (!exception_state.HadException()) {
     // https://w3c.github.io/webappsec-trusted-types/dist/spec/#setting-slot-values
     // On setting, the innerText [...] perform the regular steps, and then set
@@ -146,7 +147,8 @@ void HTMLScriptElement::setTextContent(
     const StringOrTrustedScript& string_or_trusted_script,
     ExceptionState& exception_state) {
   String value = GetStringFromTrustedScript(string_or_trusted_script,
-                                            &GetDocument(), exception_state);
+                                            GetDocument().ToExecutionContext(),
+                                            exception_state);
   if (!exception_state.HadException()) {
     // https://w3c.github.io/webappsec-trusted-types/dist/spec/#setting-slot-values
     // On setting, [..] textContent [..] perform the regular steps, and then set

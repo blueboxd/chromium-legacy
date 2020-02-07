@@ -96,7 +96,7 @@ ScriptPromise StorageManager::persist(ScriptState* script_state) {
     return promise;
   }
 
-  Document* doc = To<Document>(execution_context);
+  Document* doc = Document::From(execution_context);
   GetPermissionService(ExecutionContext::From(script_state))
       ->RequestPermission(
           CreatePermissionDescriptor(PermissionName::DURABLE_STORAGE),

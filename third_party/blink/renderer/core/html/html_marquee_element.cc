@@ -354,10 +354,11 @@ HTMLMarqueeElement::Metrics HTMLMarqueeElement::GetMetrics() {
   }
 
   if (IsHorizontal()) {
-    mover_->style()->setProperty(&GetDocument(), "width", "-webkit-max-content",
-                                 "important", ASSERT_NO_EXCEPTION);
+    mover_->style()->setProperty(GetDocument().ToExecutionContext(), "width",
+                                 "-webkit-max-content", "important",
+                                 ASSERT_NO_EXCEPTION);
   } else {
-    mover_->style()->setProperty(&GetDocument(), "height",
+    mover_->style()->setProperty(GetDocument().ToExecutionContext(), "height",
                                  "-webkit-max-content", "important",
                                  ASSERT_NO_EXCEPTION);
   }

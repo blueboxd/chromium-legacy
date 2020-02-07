@@ -15,7 +15,7 @@ import "extension_install.proto";
 
 // Stores information about the user's brower and system configuration.
 // The system configuration fields are recorded once per client session.
-// Next tag: 33
+// Next tag: 34
 message SystemProfileProto {
   // The time when the client was compiled/linked, in seconds since the epoch.
   optional int64 build_timestamp = 1;
@@ -750,6 +750,11 @@ message SystemProfileProto {
   // Seed version from variations_seed.proto used to instantiate FieldTrials
   // for this session.
   optional string variations_seed_version = 28;
+
+  // TODO(b/148689907): Deprecate this field once the analysis has been done.
+  // Whether the client_id in the log matches the client_id we used to assign
+  // field trials.
+  optional bool client_id_was_used_for_trial_assignment = 33;
 
   // Information about the A/V output device(s) (typically just a TV).
   // However, a configuration may have one or more intermediate A/V devices

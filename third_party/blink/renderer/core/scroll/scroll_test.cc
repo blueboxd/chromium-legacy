@@ -477,10 +477,10 @@ class ScrollInfacesUseCounterSimTest : public SimTest {
         )HTML");
     auto& document = GetDocument();
     auto* style = document.getElementById("scroller")->style();
-    style->setProperty(&document, "direction", direction, String(),
-                       ASSERT_NO_EXCEPTION);
-    style->setProperty(&document, "writing-mode", writing_mode, String(),
-                       ASSERT_NO_EXCEPTION);
+    style->setProperty(document.ToExecutionContext(), "direction", direction,
+                       String(), ASSERT_NO_EXCEPTION);
+    style->setProperty(document.ToExecutionContext(), "writing-mode",
+                       writing_mode, String(), ASSERT_NO_EXCEPTION);
     Compositor().BeginFrame();
     EXPECT_FALSE(document.IsUseCounted(
         WebFeature::

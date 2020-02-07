@@ -49,7 +49,7 @@ to being one message for the whole menu.'''
           msg.append(part[1])
       if len(msg):
         xtb[msg_id] = ''.join(msg)
-    with open(xtb_file) as f:
+    with open(xtb_file, 'rb') as f:
       xtb_reader.Parse(f, Callback)
 
     translations = []  # list of translations as per transl2tc.WriteTranslations

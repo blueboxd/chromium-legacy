@@ -80,7 +80,7 @@ void MaybeRecordThirdPartyServiceWorkerUsage(
     ExecutionContext* execution_context) {
   DCHECK(execution_context);
   // ServiceWorkerContainer is only supported on documents.
-  Document* document = To<Document>(execution_context);
+  Document* document = Document::From(execution_context);
   DCHECK(document);
 
   if (document->IsCrossSiteSubframe())
@@ -143,7 +143,7 @@ class ServiceWorkerContainer::DomContentLoadedListener final
   void Invoke(ExecutionContext* execution_context, Event* event) override {
     DCHECK_EQ(event->type(), "DOMContentLoaded");
 
-    Document& document = *To<Document>(execution_context);
+    Document& document = *Document::From(execution_context);
     DCHECK(HasFiredDomContentLoaded(document));
 
     auto* container =
@@ -511,7 +511,7 @@ void ServiceWorkerContainer::ReceiveMessage(WebServiceWorkerObjectInfo source,
   if (!context || !context->ExecutingWindow())
     return;
   // ServiceWorkerContainer is only supported on documents.
-  auto* document = DynamicTo<Document>(context);
+  auto* document = Document::DynamicFrom(context);
   DCHECK(document);
 
   if (!is_client_message_queue_enabled_) {
@@ -555,7 +555,7 @@ void ServiceWorkerContainer::CountFeature(mojom::WebFeature feature) {
 }
 
 ExecutionContext* ServiceWorkerContainer::GetExecutionContext() const {
-  return GetSupplementable();
+  return GetSupplementable()->ToExecutionContext();
 }
 
 const AtomicString& ServiceWorkerContainer::InterfaceName() const {
@@ -588,7 +588,7 @@ ServiceWorkerContainer::GetOrCreateServiceWorkerRegistration(
   }
 
   registration = MakeGarbageCollected<ServiceWorkerRegistration>(
-      GetSupplementable(), std::move(info));
+      GetSupplementable()->ToExecutionContext(), std::move(info));
   service_worker_registration_objects_.Set(info.registration_id, registration);
   return registration;
 }
@@ -599,7 +599,8 @@ ServiceWorker* ServiceWorkerContainer::GetOrCreateServiceWorker(
     return nullptr;
   ServiceWorker* worker = service_worker_objects_.at(info.version_id);
   if (!worker) {
-    worker = ServiceWorker::Create(GetSupplementable(), std::move(info));
+    worker = ServiceWorker::Create(GetSupplementable()->ToExecutionContext(),
+                                   std::move(info));
     service_worker_objects_.Set(info.version_id, worker);
   }
   return worker;
@@ -678,7 +679,7 @@ void ServiceWorkerContainer::OnGetRegistrationForReady(
       !ready_->GetExecutionContext()->IsContextDestroyed()) {
     ready_->Resolve(
         ServiceWorkerContainer::From(
-            To<Document>(ready_->GetExecutionContext()))
+            Document::From(ready_->GetExecutionContext()))
             ->GetOrCreateServiceWorkerRegistration(std::move(info)));
   }
 }

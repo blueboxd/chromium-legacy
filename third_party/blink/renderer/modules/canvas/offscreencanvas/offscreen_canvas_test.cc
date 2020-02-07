@@ -92,7 +92,7 @@ void OffscreenCanvasTest::SetUp() {
 
   DummyExceptionStateForTesting exception_state;
   offscreen_canvas_ = HTMLCanvasElementModule::transferControlToOffscreen(
-      &GetDocument(), *canvas_element, exception_state);
+      GetDocument().ToExecutionContext(), *canvas_element, exception_state);
   // |offscreen_canvas_| should inherit the FrameSinkId from |canvas_element|s
   // SurfaceLayerBridge, but in tests this id is zero; fill it up by hand.
   offscreen_canvas_->SetFrameSinkId(kClientId, kSinkId);
@@ -103,8 +103,8 @@ void OffscreenCanvasTest::SetUp() {
     attrs.desynchronized = GetParam().desynchronized;
   }
   context_ = static_cast<OffscreenCanvasRenderingContext2D*>(
-      offscreen_canvas_->GetCanvasRenderingContext(&GetDocument(), String("2d"),
-                                                   attrs));
+      offscreen_canvas_->GetCanvasRenderingContext(
+          GetDocument().ToExecutionContext(), String("2d"), attrs));
 }
 
 void OffscreenCanvasTest::TearDown() {

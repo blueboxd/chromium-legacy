@@ -20,10 +20,8 @@ include_rules = [
   "+ui/gfx",
   "+ui/views",
 
-  # Components may not directly access ash, except through public mojo
-  # IPC interfaces.
-  "-ash",
-  "+ash/public",
+  # Components may directly access ash.
+  "+ash",
 
   # Individual components must explicitly declare their dependencies
   # on other components. Cycles in the dependency graph within

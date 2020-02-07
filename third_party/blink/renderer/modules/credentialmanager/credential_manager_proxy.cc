@@ -40,7 +40,7 @@ CredentialManagerProxy* CredentialManagerProxy::From(Document& document) {
 CredentialManagerProxy* CredentialManagerProxy::From(
     ScriptState* script_state) {
   DCHECK(script_state->ContextIsValid());
-  return From(To<Document>(*ExecutionContext::From(script_state)));
+  return From(Document::From(*ExecutionContext::From(script_state)));
 }
 
 // static

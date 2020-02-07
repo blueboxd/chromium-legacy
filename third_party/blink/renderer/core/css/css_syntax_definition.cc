@@ -40,6 +40,8 @@ bool CouldConsumeReservedKeyword(CSSParserTokenRange range) {
   return false;
 }
 
+// TODO(xiaochengh): |context| is never nullptr in this function. Change
+// parameter type to |const CSSParserContext&| to avoid confusion.
 const CSSValue* ConsumeSingleType(const CSSSyntaxComponent& syntax,
                                   CSSParserTokenRange& range,
                                   const CSSParserContext* context) {
@@ -52,21 +54,29 @@ const CSSValue* ConsumeSingleType(const CSSSyntaxComponent& syntax,
             AtomicString(syntax.GetString()));
       }
       return nullptr;
-    case CSSSyntaxType::kLength:
+    case CSSSyntaxType::kLength: {
+      CSSParserContext::ParserModeOverridingScope scope(*context,
+                                                        kHTMLStandardMode);
       return css_property_parser_helpers::ConsumeLength(
-          range, kHTMLStandardMode, ValueRange::kValueRangeAll);
+          range, *context, ValueRange::kValueRangeAll);
+    }
     case CSSSyntaxType::kNumber:
       return css_property_parser_helpers::ConsumeNumber(
           range, ValueRange::kValueRangeAll);
     case CSSSyntaxType::kPercentage:
       return css_property_parser_helpers::ConsumePercent(
-          range, ValueRange::kValueRangeAll);
-    case CSSSyntaxType::kLengthPercentage:
+          range, *context, ValueRange::kValueRangeAll);
+    case CSSSyntaxType::kLengthPercentage: {
+      CSSParserContext::ParserModeOverridingScope scope(*context,
+                                                        kHTMLStandardMode);
       return css_property_parser_helpers::ConsumeLengthOrPercent(
-          range, kHTMLStandardMode, ValueRange::kValueRangeAll);
-    case CSSSyntaxType::kColor:
-      return css_property_parser_helpers::ConsumeColor(range,
-                                                       kHTMLStandardMode);
+          range, *context, ValueRange::kValueRangeAll);
+    }
+    case CSSSyntaxType::kColor: {
+      CSSParserContext::ParserModeOverridingScope scope(*context,
+                                                        kHTMLStandardMode);
+      return css_property_parser_helpers::ConsumeColor(range, *context);
+    }
     case CSSSyntaxType::kImage:
       return css_property_parser_helpers::ConsumeImage(range, context);
     case CSSSyntaxType::kUrl:

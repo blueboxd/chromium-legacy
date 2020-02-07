@@ -203,8 +203,8 @@ IDBFactory::IDBFactory(std::unique_ptr<WebIDBFactory> web_idb_factory)
     : web_idb_factory_(std::move(web_idb_factory)) {}
 
 static bool IsContextValid(ExecutionContext* context) {
-  DCHECK(IsA<Document>(context) || context->IsWorkerGlobalScope());
-  if (auto* document = DynamicTo<Document>(context))
+  DCHECK(context->IsDocument() || context->IsWorkerGlobalScope());
+  if (auto* document = Document::DynamicFrom(context))
     return document->GetFrame() && document->GetPage();
   return true;
 }
@@ -467,7 +467,7 @@ bool IDBFactory::AllowIndexedDB(ScriptState* script_state) {
   DCHECK(execution_context->IsContextThread());
   SECURITY_DCHECK(execution_context->IsDocument() ||
                   execution_context->IsWorkerGlobalScope());
-  if (auto* document = DynamicTo<Document>(execution_context)) {
+  if (auto* document = Document::DynamicFrom(execution_context)) {
     LocalFrame* frame = document->GetFrame();
     if (!frame)
       return false;

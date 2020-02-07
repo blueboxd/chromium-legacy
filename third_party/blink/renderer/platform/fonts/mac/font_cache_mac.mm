@@ -224,6 +224,9 @@ scoped_refptr<SimpleFontData> FontCache::PlatformFallbackFontForCharacter(
       platform_data.Orientation(), font_description.FontOpticalSizing(),
       nullptr);  // No variation paramaters in fallback.
 
+  if (!alternate_font)
+    return nullptr;
+
   return FontDataFromFontPlatformData(alternate_font.get(), kDoNotRetain);
 }
 
@@ -297,7 +300,7 @@ std::unique_ptr<FontPlatformData> FontCache::CreateFontPlatformData(
       platform_font, size, synthetic_bold, synthetic_italic,
       font_description.Orientation(), font_description.FontOpticalSizing(),
       font_description.VariationSettings());
-  if (!platform_data->Typeface()) {
+  if (!platform_data || !platform_data->Typeface()) {
     return nullptr;
   }
   return platform_data;

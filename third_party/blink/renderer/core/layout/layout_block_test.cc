@@ -54,7 +54,8 @@ TEST_F(LayoutBlockTest, WidthAvailableToChildrenChanged) {
             150 - list_box->VerticalScrollbarWidth());
 
   DummyExceptionStateForTesting exception_state;
-  list_element->style()->setCSSText(&GetDocument(), "width:150px;height:100px;",
+  list_element->style()->setCSSText(GetDocument().ToExecutionContext(),
+                                    "width:150px;height:100px;",
                                     exception_state);
   ASSERT_FALSE(exception_state.HadException());
   UpdateAllLifecyclePhasesForTest();

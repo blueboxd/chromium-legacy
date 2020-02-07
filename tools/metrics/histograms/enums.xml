@@ -7754,6 +7754,13 @@ Unknown properties are collapsed to zero. -->
   <int value="31" label="Chooser Permissions Bubble"/>
 </enum>
 
+<enum name="CachedMetadataHandlerState">
+  <int value="0" label="Present"/>
+  <int value="1" label="DataType mismatch"/>
+  <int value="2" label="Was never present"/>
+  <int value="3" label="Was discarded"/>
+</enum>
+
 <enum name="CacheResult">
   <int value="0" label="MEMORY_CACHE_HIT"/>
   <int value="1" label="DISK_CACHE_HIT"/>
@@ -36986,6 +36993,7 @@ from previous Chrome versions.
   <int value="-1899715534" label="GamepadPollingInterval:enabled"/>
   <int value="-1899409297"
       label="ProcessSharingWithStrictSiteInstances:disabled"/>
+  <int value="-1898386671" label="PasswordCheck:enabled"/>
   <int value="-1895719323" label="VrBrowsingTabsView:enabled"/>
   <int value="-1894699049" label="AudioFocusEnforcement:disabled"/>
   <int value="-1894054576" label="FontAccess:enabled"/>
@@ -40267,6 +40275,7 @@ from previous Chrome versions.
   <int value="2126203058" label="force-show-update-menu-badge"/>
   <int value="2127648677" label="OmniboxExperimentalSuggestScoring:disabled"/>
   <int value="2129184006" label="NTPOfflinePageDownloadSuggestions:enabled"/>
+  <int value="2129524809" label="PasswordCheck:disabled"/>
   <int value="2129929643" label="enable-use-zoom-for-dsf"/>
   <int value="2132595171" label="OmniboxSearchEngineLogo:enabled"/>
   <int value="2133594095" label="CryptAuthV2DeviceActivityStatus:disabled"/>

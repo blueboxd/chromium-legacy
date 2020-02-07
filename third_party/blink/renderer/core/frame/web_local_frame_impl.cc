@@ -815,8 +815,10 @@ void WebLocalFrameImpl::SetIsolatedWorldInfo(int32_t world_id,
       info.security_origin.Get()
           ? info.security_origin.Get()
                 ->IsolatedCopy()
-                ->GetOriginForAgentCluster(
-                    GetFrame()->GetDocument()->GetAgentClusterID())
+                ->GetOriginForAgentCluster(GetFrame()
+                                               ->GetDocument()
+                                               ->ToExecutionContext()
+                                               ->GetAgentClusterID())
           : nullptr;
 
   CHECK(info.content_security_policy.IsNull() || security_origin);
@@ -930,7 +932,7 @@ v8::MaybeLocal<v8::Value> WebLocalFrameImpl::CallFunctionEvenIfScriptDisabled(
     v8::Local<v8::Value> argv[]) {
   DCHECK(GetFrame());
   return V8ScriptRunner::CallFunction(
-      function, GetFrame()->GetDocument(), receiver, argc,
+      function, GetFrame()->GetDocument()->ToExecutionContext(), receiver, argc,
       static_cast<v8::Local<v8::Value>*>(argv), ToIsolate(GetFrame()));
 }
 
@@ -2499,7 +2501,7 @@ void WebLocalFrameImpl::OnPortalActivated(
       << "portal activation is always cross-agent-cluster and should be "
          "diagnosed early";
   MessagePortArray* ports = MessagePort::EntanglePorts(
-      *window->document(), std::move(blink_data.ports));
+      *window->document()->ToExecutionContext(), std::move(blink_data.ports));
 
   PortalActivateEvent* event = PortalActivateEvent::Create(
       frame_.Get(), portal_token,

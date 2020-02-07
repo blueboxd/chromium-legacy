@@ -25,7 +25,7 @@ BatteryManager::~BatteryManager() = default;
 
 BatteryManager::BatteryManager(ExecutionContext* context)
     : ContextLifecycleStateObserver(context),
-      PlatformEventController(To<Document>(context)) {}
+      PlatformEventController(Document::From(context)) {}
 
 ScriptPromise BatteryManager::StartRequest(ScriptState* script_state) {
   if (!battery_property_) {
@@ -71,7 +71,7 @@ void BatteryManager::DidUpdateData() {
     return;
   }
 
-  Document* document = To<Document>(GetExecutionContext());
+  Document* document = Document::From(GetExecutionContext());
   DCHECK(document);
   if (document->IsContextPaused() || document->IsContextDestroyed())
     return;

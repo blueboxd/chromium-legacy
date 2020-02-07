@@ -19,7 +19,7 @@ class AppShimController;
  @private
   AppShimController* _appShimController;  // Weak, owns |this|
 }
-- (id)initWithController:(AppShimController*)controller;
+- (instancetype)initWithController:(AppShimController*)controller;
 @end
 
 #endif  // CHROME_APP_SHIM_APP_SHIM_DELEGATE_H_

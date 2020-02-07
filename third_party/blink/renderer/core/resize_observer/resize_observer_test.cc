@@ -32,7 +32,9 @@ class TestResizeObserverDelegate : public ResizeObserver::Delegate {
       const HeapVector<Member<ResizeObserverEntry>>& entries) override {
     call_count_++;
   }
-  ExecutionContext* GetExecutionContext() const { return document_; }
+  ExecutionContext* GetExecutionContext() const {
+    return document_->ToExecutionContext();
+  }
   int CallCount() const { return call_count_; }
 
   void Trace(blink::Visitor* visitor) override {

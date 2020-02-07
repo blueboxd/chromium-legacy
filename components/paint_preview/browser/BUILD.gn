@@ -68,11 +68,14 @@ source_set("test_support") {
   sources = [
     "paint_preview_base_service_test_factory.cc",
     "paint_preview_base_service_test_factory.h",
+    "test_paint_preview_policy.cc",
+    "test_paint_preview_policy.h",
   ]
 
   deps = [
     "//base",
     "//components/keyed_service/core",
+    "//content/public/browser",
   ]
 
   public_deps = [ ":browser" ]

@@ -625,42 +625,6 @@ using plugins::ChromeContentBrowserClientPluginsPart;
 
 namespace {
 
-#if BUILDFLAG(ENABLE_PLUGINS)
-// TODO(teravest): Add renderer-side API-specific checking for these APIs so
-// that blanket permission isn't granted to all dev channel APIs for these.
-// http://crbug.com/386743
-const char* const kPredefinedAllowedDevChannelOrigins[] = {
-    "6EAED1924DB611B6EEF2A664BD077BE7EAD33B8F",  // see crbug.com/383937
-    "4EB74897CB187C7633357C2FE832E0AD6A44883A"   // see crbug.com/383937
-};
-
-const char* const kPredefinedAllowedFileHandleOrigins[] = {
-    "6EAED1924DB611B6EEF2A664BD077BE7EAD33B8F",  // see crbug.com/234789
-    "4EB74897CB187C7633357C2FE832E0AD6A44883A"   // see crbug.com/234789
-};
-
-const char* const kPredefinedAllowedSocketOrigins[] = {
-    "okddffdblfhhnmhodogpojmfkjmhinfp",  // Secure Shell App (dev)
-    "pnhechapfaindjhompbnflcldabbghjo",  // Secure Shell App (stable)
-    "algkcnfjnajfhgimadimbjhmpaeohhln",  // Secure Shell Extension (dev)
-    "iodihamcpbpeioajjeobimgagajmlibd",  // Secure Shell Extension (stable)
-    "bglhmjfplikpjnfoegeomebmfnkjomhe",  // see crbug.com/122126
-    "cbkkbcmdlboombapidmoeolnmdacpkch",  // see crbug.com/129089
-    "hhnbmknkdabfoieppbbljkhkfjcmcbjh",  // see crbug.com/134099
-    "mablfbjkhmhkmefkjjacnbaikjkipphg",  // see crbug.com/134099
-    "pdeelgamlgannhelgoegilelnnojegoh",  // see crbug.com/134099
-    "cabapfdbkniadpollkckdnedaanlciaj",  // see crbug.com/134099
-    "mapljbgnjledlpdmlchihnmeclmefbba",  // see crbug.com/134099
-    "ghbfeebgmiidnnmeobbbaiamklmpbpii",  // see crbug.com/134099
-    "jdfhpkjeckflbbleddjlpimecpbjdeep",  // see crbug.com/142514
-    "iabmpiboiopbgfabjmgeedhcmjenhbla",  // see crbug.com/165080
-    "B7CF8A292249681AF81771650BA4CEEAF19A4560",  // see crbug.com/165080
-    "7525AF4F66763A70A883C4700529F647B470E4D2",  // see crbug.com/238084
-    "0B549507088E1564D672F7942EB87CA4DAD73972",  // see crbug.com/238084
-    "864288364E239573E777D3E0E36864E590E95C74"   // see crbug.com/238084
-};
-#endif
-
 #if defined(OS_WIN) && !defined(COMPONENT_BUILD) && !defined(ADDRESS_SANITIZER)
 // Enables pre-launch Code Integrity Guard (CIG) for Chrome renderers, when
 // running on Windows 10 1511 and above. See
@@ -1171,13 +1135,6 @@ ChromeContentBrowserClient::ChromeContentBrowserClient(
     StartupData* startup_data)
     : startup_data_(startup_data) {
 #if BUILDFLAG(ENABLE_PLUGINS)
-  for (size_t i = 0; i < base::size(kPredefinedAllowedDevChannelOrigins); ++i)
-    allowed_dev_channel_origins_.insert(kPredefinedAllowedDevChannelOrigins[i]);
-  for (size_t i = 0; i < base::size(kPredefinedAllowedFileHandleOrigins); ++i)
-    allowed_file_handle_origins_.insert(kPredefinedAllowedFileHandleOrigins[i]);
-  for (size_t i = 0; i < base::size(kPredefinedAllowedSocketOrigins); ++i)
-    allowed_socket_origins_.insert(kPredefinedAllowedSocketOrigins[i]);
-
   extra_parts_.push_back(new ChromeContentBrowserClientPluginsPart);
 #endif
 
@@ -3474,7 +3431,7 @@ bool ChromeContentBrowserClient::AllowPepperSocketAPI(
     const content::SocketPermissionRequest* params) {
 #if BUILDFLAG(ENABLE_PLUGINS) && BUILDFLAG(ENABLE_EXTENSIONS)
   return ChromeContentBrowserClientPluginsPart::AllowPepperSocketAPI(
-      browser_context, url, private_api, params, allowed_socket_origins_);
+      browser_context, url, private_api, params);
 #else
   return false;
 #endif
@@ -4097,8 +4054,7 @@ bool ChromeContentBrowserClient::IsPluginAllowedToCallRequestOSFileHandle(
     const GURL& url) {
 #if BUILDFLAG(ENABLE_PLUGINS) && BUILDFLAG(ENABLE_EXTENSIONS)
   return ChromeContentBrowserClientPluginsPart::
-      IsPluginAllowedToCallRequestOSFileHandle(browser_context, url,
-                                               allowed_file_handle_origins_);
+      IsPluginAllowedToCallRequestOSFileHandle(browser_context, url);
 #else
   return false;
 #endif
@@ -4109,8 +4065,7 @@ bool ChromeContentBrowserClient::IsPluginAllowedToUseDevChannelAPIs(
     const GURL& url) {
 #if BUILDFLAG(ENABLE_PLUGINS) && BUILDFLAG(ENABLE_EXTENSIONS)
   return ChromeContentBrowserClientPluginsPart::
-      IsPluginAllowedToUseDevChannelAPIs(browser_context, url,
-                                         allowed_dev_channel_origins_);
+      IsPluginAllowedToUseDevChannelAPIs(browser_context, url);
 #else
   return false;
 #endif

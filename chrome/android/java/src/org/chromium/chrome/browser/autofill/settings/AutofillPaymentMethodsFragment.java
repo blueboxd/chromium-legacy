@@ -7,7 +7,10 @@ package org.chromium.chrome.browser.autofill.settings;
 import android.content.Context;
 import android.graphics.PorterDuff;
 import android.graphics.drawable.Drawable;
+import android.hardware.biometrics.BiometricManager;
+import android.os.Build;
 import android.os.Bundle;
+import android.support.v4.hardware.fingerprint.FingerprintManagerCompat;
 import android.support.v7.content.res.AppCompatResources;
 import android.support.v7.preference.Preference;
 import android.support.v7.preference.PreferenceFragmentCompat;
@@ -79,8 +82,8 @@ public class AutofillPaymentMethodsFragment extends PreferenceFragmentCompat
         });
         getPreferenceScreen().addPreference(autofillSwitch);
 
-        if (PersonalDataManager.getInstance().isFidoAuthenticationAvailable()) {
-            // TODO(crbug.com/949269): Add FingerPrint availability check.
+        if (isBiometricAvailable()
+                && PersonalDataManager.getInstance().isFidoAuthenticationAvailable()) {
             ChromeSwitchPreference fidoAuthSwitch =
                     new ChromeSwitchPreference(getStyledContext(), null);
             fidoAuthSwitch.setTitle(R.string.enable_credit_card_fido_auth_label);
@@ -167,6 +170,23 @@ public class AutofillPaymentMethodsFragment extends PreferenceFragmentCompat
         } else {
             pref.setSummary(R.string.payment_no_apps_summary);
             pref.setEnabled(false);
+        }
+    }
+
+    private boolean isBiometricAvailable() {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
+            BiometricManager biometricManager =
+                    getStyledContext().getSystemService(BiometricManager.class);
+            return biometricManager != null
+                    && biometricManager.canAuthenticate() == BiometricManager.BIOMETRIC_SUCCESS;
+        } else {
+            // For API level < Q, we will use FingerprintManagerCompat to check enrolled
+            // fingerprints. Note that for API level lower than 23, FingerprintManagerCompat behaves
+            // like no fingerprint hardware and no enrolled fingerprints.
+            FingerprintManagerCompat fingerprintManager =
+                    FingerprintManagerCompat.from(getStyledContext());
+            return fingerprintManager != null && fingerprintManager.isHardwareDetected()
+                    && fingerprintManager.hasEnrolledFingerprints();
         }
     }
 

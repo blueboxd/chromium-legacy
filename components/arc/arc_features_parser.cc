@@ -15,11 +15,14 @@
 #include "base/task/post_task.h"
 #include "base/threading/scoped_blocking_call.h"
 #include "base/values.h"
+#include "components/arc/arc_util.h"
 
 namespace arc {
 
 namespace {
 
+constexpr const base::FilePath::CharType kArcVmFeaturesJsonFile[] =
+    FILE_PATH_LITERAL("/etc/arcvm/features.json");
 constexpr const base::FilePath::CharType kArcFeaturesJsonFile[] =
     FILE_PATH_LITERAL("/etc/arc/features.json");
 
@@ -141,10 +144,12 @@ ArcFeatures& ArcFeatures::operator=(ArcFeatures&& other) = default;
 
 void ArcFeaturesParser::GetArcFeatures(
     base::OnceCallback<void(base::Optional<ArcFeatures>)> callback) {
+  const auto* json_file =
+      arc::IsArcVmEnabled() ? kArcVmFeaturesJsonFile : kArcFeaturesJsonFile;
   base::PostTaskAndReplyWithResult(
       FROM_HERE,
       {base::ThreadPool(), base::MayBlock(), base::TaskPriority::BEST_EFFORT},
-      base::BindOnce(&ReadOnFileThread, base::FilePath(kArcFeaturesJsonFile)),
+      base::BindOnce(&ReadOnFileThread, base::FilePath(json_file)),
       std::move(callback));
 }
 

@@ -19,6 +19,7 @@
 #include "chrome/services/sharing/public/mojom/sharing.mojom.h"
 #include "chrome/services/sharing/public/mojom/webrtc.mojom.h"
 #include "components/sync_device_info/device_info.h"
+#include "mojo/public/cpp/bindings/pending_remote.h"
 #include "mojo/public/cpp/bindings/remote.h"
 #include "services/network/public/mojom/network_context.mojom.h"
 
@@ -45,6 +46,9 @@ class SharingServiceHost : public SharingMessageSender::SendMessageDelegate {
       base::OnceCallback<void(SharingSendMessageResult result,
                               base::Optional<std::string> message_id,
                               SharingChannelType channel_type)>;
+  using Connections =
+      std::unordered_map<std::string,
+                         std::unique_ptr<SharingWebRtcConnectionHost>>;
 
   SharingServiceHost(
       SharingMessageSender* message_sender,
@@ -75,10 +79,14 @@ class SharingServiceHost : public SharingMessageSender::SendMessageDelegate {
 
   void SetSharingHandlerRegistry(SharingHandlerRegistry* handler_registry);
 
+  Connections& GetConnectionsForTesting();
+  void BindSharingServiceForTesting(
+      mojo::PendingRemote<sharing::mojom::Sharing> service);
+
  private:
   void OnPeerConnectionClosed(const std::string& device_guid);
 
-  SharingWebRtcConnectionHost* GetConnection(
+  SharingWebRtcConnectionHost* CreateConnection(
       const std::string& device_guid,
       const chrome_browser_sharing::FCMChannelConfiguration& fcm_configuration);
 
@@ -100,8 +108,7 @@ class SharingServiceHost : public SharingMessageSender::SendMessageDelegate {
 
   // Map of device_guid to SharingWebRtcConnectionHost containing all currently
   // active connections.
-  std::unordered_map<std::string, std::unique_ptr<SharingWebRtcConnectionHost>>
-      connections_;
+  Connections connections_;
 
   // Will be set when a message handler for this is registered. Owned by the
   // SharingService KeyedService.

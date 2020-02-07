@@ -65,7 +65,7 @@ namespace {
 bool IsCacheStorageAllowed(ScriptState* script_state) {
   ExecutionContext* context = ExecutionContext::From(script_state);
 
-  if (auto* document = DynamicTo<Document>(context)) {
+  if (auto* document = Document::DynamicFrom(context)) {
     LocalFrame* frame = document->GetFrame();
     if (!frame)
       return false;

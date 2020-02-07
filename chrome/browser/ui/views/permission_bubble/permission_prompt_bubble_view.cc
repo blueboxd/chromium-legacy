@@ -46,6 +46,13 @@ PermissionPromptBubbleView::PermissionPromptBubbleView(
       ui::DIALOG_BUTTON_CANCEL, l10n_util::GetStringUTF16(IDS_PERMISSION_DENY));
   set_close_on_deactivate(false);
 
+  DialogDelegate::set_accept_callback(base::BindOnce(
+      &PermissionPrompt::Delegate::Accept, base::Unretained(delegate)));
+  DialogDelegate::set_cancel_callback(base::BindOnce(
+      &PermissionPrompt::Delegate::Deny, base::Unretained(delegate)));
+  DialogDelegate::set_close_callback(base::BindOnce(
+      &PermissionPrompt::Delegate::Closing, base::Unretained(delegate)));
+
   SetLayoutManager(std::make_unique<views::BoxLayout>(
       views::BoxLayout::Orientation::kVertical, gfx::Insets(),
       ChromeLayoutProvider::Get()->GetDistanceMetric(
@@ -99,11 +106,6 @@ void PermissionPromptBubbleView::UpdateAnchorPosition() {
   SetArrow(configuration.bubble_arrow);
 }
 
-void PermissionPromptBubbleView::CloseWithoutNotifyingDelegate() {
-  notify_delegate_ = false;
-  GetWidget()->CloseWithReason(views::Widget::ClosedReason::kUnspecified);
-}
-
 void PermissionPromptBubbleView::AddedToWidget() {
   if (name_or_origin_.is_origin) {
     // There is a risk of URL spoofing from origins that are too wide to fit in
@@ -120,24 +122,6 @@ bool PermissionPromptBubbleView::ShouldShowCloseButton() const {
 base::string16 PermissionPromptBubbleView::GetWindowTitle() const {
   return l10n_util::GetStringFUTF16(IDS_PERMISSIONS_BUBBLE_PROMPT,
                                     name_or_origin_.name_or_origin);
-}
-
-bool PermissionPromptBubbleView::Cancel() {
-  if (notify_delegate_)
-    delegate_->Deny();
-  return true;
-}
-
-bool PermissionPromptBubbleView::Accept() {
-  if (notify_delegate_)
-    delegate_->Accept();
-  return true;
-}
-
-bool PermissionPromptBubbleView::Close() {
-  if (notify_delegate_)
-    delegate_->Closing();
-  return true;
 }
 
 void PermissionPromptBubbleView::Show() {

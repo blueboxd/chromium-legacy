@@ -725,8 +725,8 @@ void Editor::ComputeAndSetTypingStyle(CSSPropertyValueSet* style,
       EditingStyle::kPreserveWritingDirection);
 
   // Handle block styles, substracting these from the typing style.
-  EditingStyle* block_style =
-      typing_style_->ExtractAndRemoveBlockProperties(GetFrame().GetDocument());
+  EditingStyle* block_style = typing_style_->ExtractAndRemoveBlockProperties(
+      GetFrame().GetDocument()->ToExecutionContext());
   if (!block_style->IsEmpty()) {
     DCHECK(GetFrame().GetDocument());
     MakeGarbageCollected<ApplyStyleCommand>(*GetFrame().GetDocument(),

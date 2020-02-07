@@ -7,6 +7,11 @@
 #include <string>
 #include <utility>
 
+#include "base/test/bind_test_util.h"
+#include "base/test/task_environment.h"
+#include "base/threading/thread_task_runner_handle.h"
+#include "net/extras/sqlite/sqlite_trust_token_persister.h"
+#include "net/extras/sqlite/trust_token_database_owner.h"
 #include "net/trust_tokens/in_memory_trust_token_persister.h"
 #include "net/trust_tokens/proto/public.pb.h"
 #include "net/trust_tokens/proto/storage.pb.h"
@@ -37,24 +42,82 @@ class InMemoryTrustTokenPersisterFactory {
   }
 };
 
+class NoDatabaseSqliteTrustTokenPersisterFactory {
+ public:
+  static std::unique_ptr<TrustTokenPersister> Create() {
+    std::unique_ptr<TrustTokenDatabaseOwner> owner;
+    TrustTokenDatabaseOwner::Create(
+        /*db_opener=*/base::BindOnce([](sql::Database*) { return false; }),
+        base::ThreadTaskRunnerHandle::Get(),
+        /*flush_delay_for_writes=*/base::TimeDelta(),
+        base::BindLambdaForTesting(
+            [&owner](std::unique_ptr<TrustTokenDatabaseOwner> created) {
+              owner = std::move(created);
+              base::RunLoop().Quit();
+            }));
+    base::RunLoop().RunUntilIdle();
+    CHECK(owner);
+    return std::make_unique<SQLiteTrustTokenPersister>(std::move(owner));
+  }
+};
+
+class EndToEndSqliteTrustTokenPersisterFactory {
+ public:
+  static std::unique_ptr<TrustTokenPersister> Create() {
+    std::unique_ptr<TrustTokenDatabaseOwner> owner;
+    TrustTokenDatabaseOwner::Create(
+        /*db_opener=*/base::BindOnce(
+            [](sql::Database* db) { return db->OpenInMemory(); }),
+        base::ThreadTaskRunnerHandle::Get(),
+        /*flush_delay_for_writes=*/base::TimeDelta(),
+        base::BindLambdaForTesting(
+            [&owner](std::unique_ptr<TrustTokenDatabaseOwner> created) {
+              owner = std::move(created);
+              base::RunLoop().Quit();
+            }));
+    base::RunLoop().RunUntilIdle();
+    CHECK(owner);
+    return std::make_unique<SQLiteTrustTokenPersister>(std::move(owner));
+  }
+};
+
 }  // namespace
 
 template <typename Factory>
 class TrustTokenPersisterTest : public ::testing::Test {};
 
-TYPED_TEST_SUITE(TrustTokenPersisterTest, InMemoryTrustTokenPersisterFactory);
+typedef ::testing::Types<InMemoryTrustTokenPersisterFactory,
+                         NoDatabaseSqliteTrustTokenPersisterFactory,
+                         EndToEndSqliteTrustTokenPersisterFactory>
+    TrustTokenPersisterFactoryTypes;
+TYPED_TEST_SUITE(TrustTokenPersisterTest, TrustTokenPersisterFactoryTypes);
 
 TYPED_TEST(TrustTokenPersisterTest, NegativeResults) {
+  base::test::TaskEnvironment env;
   std::unique_ptr<TrustTokenPersister> persister = TypeParam::Create();
+  env.RunUntilIdle();  // Give implementations with asynchronous initialization
+                       // time to initialize.
 
   auto origin = url::Origin::Create(GURL("https://a.com/"));
   EXPECT_THAT(persister->GetIssuerConfig(origin), IsNull());
   EXPECT_THAT(persister->GetToplevelConfig(origin), IsNull());
   EXPECT_THAT(persister->GetIssuerToplevelPairConfig(origin, origin), IsNull());
+
+  // Some implementations of TrustTokenPersister may release resources
+  // asynchronously at destruction time; manually free the persister and allow
+  // this asynchronous release to occur, if any.
+  persister.reset();
+  env.RunUntilIdle();
 }
 
 TYPED_TEST(TrustTokenPersisterTest, StoresIssuerConfigs) {
+  base::test::TaskEnvironment env;
   std::unique_ptr<TrustTokenPersister> persister = TypeParam::Create();
+  env.RunUntilIdle();  // Give implementations with asynchronous initialization
+                       // time to initialize.
+
+  VLOG(1) << "Loaded the persister";
+
   TrustTokenIssuerConfig config;
   config.set_batch_size(5);
 
@@ -62,27 +125,53 @@ TYPED_TEST(TrustTokenPersisterTest, StoresIssuerConfigs) {
   auto origin = url::Origin::Create(GURL("https://a.com/"));
   persister->SetIssuerConfig(origin, std::move(config_to_store));
 
+  VLOG(1) << "Set the issuer config";
+  env.RunUntilIdle();  // Give implementations with asynchronous write
+                       // operations time to complete the operation.
+
   auto result = persister->GetIssuerConfig(origin);
 
   EXPECT_THAT(result, Pointee(EqualsProto(config)));
+
+  // Some implementations of TrustTokenPersister may release resources
+  // asynchronously at destruction time; manually free the persister and allow
+  // this asynchronous release to occur, if any.
+  persister.reset();
+  env.RunUntilIdle();
 }
 
 TYPED_TEST(TrustTokenPersisterTest, StoresToplevelConfigs) {
+  base::test::TaskEnvironment env;
   std::unique_ptr<TrustTokenPersister> persister = TypeParam::Create();
+  env.RunUntilIdle();  // Give implementations with asynchronous initialization
+                       // time to initialize.
+
   TrustTokenToplevelConfig config;
   *config.add_associated_issuers() = "an issuer";
 
   auto config_to_store = std::make_unique<TrustTokenToplevelConfig>(config);
   auto origin = url::Origin::Create(GURL("https://a.com/"));
   persister->SetToplevelConfig(origin, std::move(config_to_store));
+  env.RunUntilIdle();  // Give implementations with asynchronous write
+                       // operations time to complete the operation.
 
   auto result = persister->GetToplevelConfig(origin);
 
   EXPECT_THAT(result, Pointee(EqualsProto(config)));
+
+  // Some implementations of TrustTokenPersister may release resources
+  // asynchronously at destruction time; manually free the persister and allow
+  // this asynchronous release to occur, if any.
+  persister.reset();
+  env.RunUntilIdle();
 }
 
 TYPED_TEST(TrustTokenPersisterTest, StoresIssuerToplevelPairConfigs) {
+  base::test::TaskEnvironment env;
   std::unique_ptr<TrustTokenPersister> persister = TypeParam::Create();
+  env.RunUntilIdle();  // Give implementations with asynchronous initialization
+                       // time to initialize.
+
   TrustTokenIssuerToplevelPairConfig config;
   config.set_last_redemption("five o'clock");
 
@@ -92,10 +181,18 @@ TYPED_TEST(TrustTokenPersisterTest, StoresIssuerToplevelPairConfigs) {
   auto issuer = url::Origin::Create(GURL("https://issuer.com/"));
   persister->SetIssuerToplevelPairConfig(issuer, toplevel,
                                          std::move(config_to_store));
+  env.RunUntilIdle();  // Give implementations with asynchronous write
+                       // operations time to complete the operation.
 
   auto result = persister->GetIssuerToplevelPairConfig(issuer, toplevel);
 
   EXPECT_THAT(result, Pointee(EqualsProto(config)));
+
+  // Some implementations of TrustTokenPersister may release resources
+  // asynchronously at destruction time; manually free the persister and allow
+  // this asynchronous release to occur, if any.
+  persister.reset();
+  env.RunUntilIdle();
 }
 
 }  // namespace net

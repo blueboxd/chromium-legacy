@@ -126,6 +126,8 @@ class SharingWebRtcConnection : public mojom::SignallingReceiver,
 
   void MaybeSendQueuedMessages();
 
+  void HandlePendingIceCandidates();
+
   void OnStatsReceived(
       const rtc::scoped_refptr<const webrtc::RTCStatsReport>& report);
 
@@ -144,7 +146,8 @@ class SharingWebRtcConnection : public mojom::SignallingReceiver,
   // being initiated.
   base::queue<PendingMessage> queued_messages_;
   size_t queued_messages_total_size_ = 0;
-  std::vector<mojom::IceCandidatePtr> ice_candidates_;
+  std::vector<mojom::IceCandidatePtr> remote_ice_candidates_;
+  std::vector<mojom::IceCandidatePtr> local_ice_candidates_;
 
   base::OnceCallback<void(SharingWebRtcConnection*)> on_disconnect_;
   SharingWebRtcTimingRecorder timing_recorder_;

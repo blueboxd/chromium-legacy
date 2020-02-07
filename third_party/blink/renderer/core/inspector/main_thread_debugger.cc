@@ -78,7 +78,7 @@ Mutex& CreationMutex() {
 LocalFrame* ToFrame(ExecutionContext* context) {
   if (!context)
     return nullptr;
-  if (auto* document = DynamicTo<Document>(context))
+  if (auto* document = Document::DynamicFrom(context))
     return document->GetFrame();
   if (context->IsMainThreadWorkletGlobalScope())
     return To<WorkletGlobalScope>(context)->GetFrame();
@@ -172,7 +172,7 @@ void MainThreadDebugger::ExceptionThrown(ExecutionContext* context,
                                          ErrorEvent* event) {
   LocalFrame* frame = nullptr;
   ScriptState* script_state = nullptr;
-  if (auto* document = DynamicTo<Document>(context)) {
+  if (auto* document = Document::DynamicFrom(context)) {
     frame = document->GetFrame();
     if (!frame)
       return;
@@ -386,7 +386,7 @@ static Node* SecondArgumentAsNode(
   }
   ExecutionContext* execution_context =
       ToExecutionContext(info.GetIsolate()->GetCurrentContext());
-  return DynamicTo<Document>(execution_context);
+  return Document::DynamicFrom(execution_context);
 }
 
 void MainThreadDebugger::QuerySelectorCallback(

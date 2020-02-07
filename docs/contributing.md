@@ -233,8 +233,8 @@ list of the reviewers you picked.
 
 In the same dialog, you can include an optional message to your reviewers. This
 space can be used for specific questions or instructions. Once you're done,
-make sure to click **Send**, which notifies the requested reviewers that they
-should review your change.
+make sure to click **Start Review**, which notifies the requested reviewers that
+they should review your change.
 
 **IMPORTANT: UNTIL YOU SEND THE REVIEW REQUEST, NO ONE WILL LOOK AT THE REVIEW**
 

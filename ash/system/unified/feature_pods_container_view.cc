@@ -42,7 +42,7 @@ void FeaturePodsContainerView::SetExpandedAmount(double expanded_amount) {
     // When collapsing from page > 1, each row of buttons fades out one by one
     // and once expanded_amount is less than kCollapseThreshold we begin to
     // fade in the single row of buttons for the collapsed state.
-    if (expanded_amount_ < kCollapseThreshold &&
+    if (expanded_amount_ > 0.0 && expanded_amount_ < kCollapseThreshold &&
         pagination_model_->selected_page() > 0) {
       button->SetExpandedAmount(1.0 - expanded_amount,
                                 true /* fade_icon_button */);

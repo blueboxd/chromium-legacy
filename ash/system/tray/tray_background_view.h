@@ -77,6 +77,9 @@ class ASH_EXPORT TrayBackgroundView : public ActionableView,
   // Called whenever the status area's collapse state changes.
   virtual void UpdateAfterStatusAreaCollapseChange();
 
+  // Called whenever the system color mode changes.
+  virtual void UpdateAfterColorModeChange();
+
   // Called when the anchor (tray or bubble) may have moved or changed.
   virtual void AnchorUpdated() {}
 

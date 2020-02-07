@@ -98,6 +98,7 @@ void StatusAreaWidget::Initialize() {
       Shell::Get()->session_controller()->login_status());
 
   ShelfConfig::Get()->AddObserver(this);
+  Shell::Get()->session_controller()->AddObserver(this);
 
   // NOTE: Container may be hidden depending on login/display state.
   Show();
@@ -107,6 +108,7 @@ void StatusAreaWidget::Initialize() {
 
 StatusAreaWidget::~StatusAreaWidget() {
   ShelfConfig::Get()->RemoveObserver(this);
+  Shell::Get()->session_controller()->RemoveObserver(this);
 }
 
 void StatusAreaWidget::UpdateAfterShelfAlignmentChange() {
@@ -136,6 +138,11 @@ void StatusAreaWidget::SetSystemTrayVisibility(bool visible) {
     tray->CloseBubble();
     Hide();
   }
+}
+
+void StatusAreaWidget::OnSessionStateChanged(
+    session_manager::SessionState state) {
+  UpdateAfterColorModeChange();
 }
 
 void StatusAreaWidget::UpdateCollapseState() {
@@ -414,6 +421,11 @@ void StatusAreaWidget::OnShelfConfigUpdated() {
   for (TrayBackgroundView* tray_button : tray_buttons_)
     tray_button->UpdateAfterShelfChange();
   UpdateCollapseState();
+}
+
+void StatusAreaWidget::UpdateAfterColorModeChange() {
+  for (TrayBackgroundView* tray_button : tray_buttons_)
+    tray_button->UpdateAfterColorModeChange();
 }
 
 void StatusAreaWidget::AddTrayButton(TrayBackgroundView* tray_button) {

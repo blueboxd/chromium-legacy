@@ -24,7 +24,7 @@ FrameResourceFetcherProperties::FrameResourceFetcherProperties(
     : frame_or_imported_document_(frame_or_imported_document),
       fetch_client_settings_object_(
           MakeGarbageCollected<FetchClientSettingsObjectImpl>(
-              frame_or_imported_document.GetDocument())),
+              *frame_or_imported_document.GetDocument().ToExecutionContext())),
       web_bundle_physical_url_(
           frame_or_imported_document_->GetMasterDocumentLoader()
               .WebBundlePhysicalUrl()) {}

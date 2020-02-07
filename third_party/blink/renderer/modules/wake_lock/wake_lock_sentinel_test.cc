@@ -54,8 +54,8 @@ TEST(WakeLockSentinelTest, MultipleReleaseCalls) {
   MockWakeLockService wake_lock_service;
   WakeLockTestingContext context(&wake_lock_service);
 
-  auto* manager = MakeGarbageCollected<WakeLockManager>(context.GetDocument(),
-                                                        WakeLockType::kScreen);
+  auto* manager = MakeGarbageCollected<WakeLockManager>(
+      context.GetDocument()->ToExecutionContext(), WakeLockType::kScreen);
   auto* resolver =
       MakeGarbageCollected<ScriptPromiseResolver>(context.GetScriptState());
   ScriptPromise promise = resolver->Promise();
@@ -122,8 +122,8 @@ TEST(WakeLockSentinelTest, HasPendingActivityConditions) {
   MockWakeLockService wake_lock_service;
   WakeLockTestingContext context(&wake_lock_service);
 
-  auto* manager = MakeGarbageCollected<WakeLockManager>(context.GetDocument(),
-                                                        WakeLockType::kScreen);
+  auto* manager = MakeGarbageCollected<WakeLockManager>(
+      context.GetDocument()->ToExecutionContext(), WakeLockType::kScreen);
   auto* resolver =
       MakeGarbageCollected<ScriptPromiseResolver>(context.GetScriptState());
   ScriptPromise promise = resolver->Promise();

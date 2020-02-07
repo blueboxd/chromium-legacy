@@ -510,7 +510,7 @@ bool UserMediaRequest::IsSecureContextUse(String& error_message) {
 }
 
 Document* UserMediaRequest::OwnerDocument() {
-  return To<Document>(GetExecutionContext());
+  return Document::From(GetExecutionContext());
 }
 
 void UserMediaRequest::Start() {

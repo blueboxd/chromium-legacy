@@ -25,6 +25,10 @@ login.createScreen('ArcTermsOfServiceScreen', 'arc-tos', function() {
       this.termsOfServiceHostName_ = 'https://play.google.com';
     },
 
+    /** Initial UI State for screen */
+    getOobeUIInitialState() {
+      return OOBE_UI_STATE.ONBOARDING;
+    },
 
     /**
      * Returns current language that can be updated in OOBE flow. If OOBE flow

@@ -95,7 +95,7 @@ ScriptPromise NavigatorWebMIDI::requestMIDIAccess(
     return ScriptPromise();
   }
 
-  Document& document = *To<Document>(ExecutionContext::From(script_state));
+  Document& document = *Document::From(ExecutionContext::From(script_state));
   if (options->hasSysex() && options->sysex()) {
     UseCounter::Count(
         document,

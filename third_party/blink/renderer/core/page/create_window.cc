@@ -242,7 +242,7 @@ Frame* CreateNewWindow(LocalFrame& opener_frame,
   if (url.ProtocolIsJavaScript() &&
       opener_frame.GetDocument()->GetContentSecurityPolicy() &&
       !ContentSecurityPolicy::ShouldBypassMainWorld(
-          opener_frame.GetDocument())) {
+          opener_frame.GetDocument()->ToExecutionContext())) {
     String script_source = DecodeURLEscapeSequences(
         url.GetString(), DecodeURLMode::kUTF8OrIsomorphic);
 

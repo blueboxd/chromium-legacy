@@ -22,6 +22,7 @@ class LocationBarView;
 class OmniboxEditModel;
 class OmniboxResultView;
 class OmniboxViewViews;
+class WebUIOmniboxPopupView;
 
 // A view representing the contents of the autocomplete popup.
 class OmniboxPopupContentsView : public views::View,
@@ -123,6 +124,10 @@ class OmniboxPopupContentsView : public views::View,
   OmniboxViewViews* omnibox_view_;
 
   LocationBarView* location_bar_view_;
+
+  // The child WebView for the suggestions. This only exists if the
+  // omnibox::kWebUIOmniboxPopup flag is on.
+  WebUIOmniboxPopupView* webui_view_ = nullptr;
 
   DISALLOW_COPY_AND_ASSIGN(OmniboxPopupContentsView);
 };

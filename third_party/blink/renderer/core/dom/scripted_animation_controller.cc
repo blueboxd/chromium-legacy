@@ -59,7 +59,8 @@ void ScriptedAnimationController::EraseFromPerFrameEventsMap(
 }
 
 ScriptedAnimationController::ScriptedAnimationController(Document* document)
-    : ContextLifecycleStateObserver(document), callback_collection_(document) {
+    : ContextLifecycleStateObserver(document),
+      callback_collection_(document->ToExecutionContext()) {
   UpdateStateIfNeeded();
 }
 
@@ -291,6 +292,10 @@ void ScriptedAnimationController::ScheduleAnimationIfNeeded() {
       !GetDocument()->GetPage()->Animator().IsServicingAnimations()) {
     GetDocument()->View()->ScheduleAnimation();
   }
+}
+
+Document* ScriptedAnimationController::GetDocument() const {
+  return Document::From(GetExecutionContext());
 }
 
 }  // namespace blink

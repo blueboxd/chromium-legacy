@@ -381,7 +381,7 @@ void DOMWindow::focus(v8::Isolate* isolate) {
     DCHECK(IsMainThread());
     allow_focus =
         opener() && (opener() != this) &&
-        (To<Document>(incumbent_execution_context)->domWindow() == opener());
+        (Document::From(incumbent_execution_context)->domWindow() == opener());
   }
 
   // If we're a top level window, bring the window to the front.

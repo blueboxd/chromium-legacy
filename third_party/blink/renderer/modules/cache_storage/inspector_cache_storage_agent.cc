@@ -95,7 +95,7 @@ ProtocolResponse GetExecutionContext(InspectedFrames* frames,
   if (!document)
     return ProtocolResponse::Error("No execution context found");
 
-  *context = document;
+  *context = document->ToExecutionContext();
 
   return ProtocolResponse::OK();
 }

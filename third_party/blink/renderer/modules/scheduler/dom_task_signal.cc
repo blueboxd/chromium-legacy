@@ -19,7 +19,7 @@
 namespace blink {
 
 DOMTaskSignal::DOMTaskSignal(Document* document, WebSchedulingPriority priority)
-    : AbortSignal(document),
+    : AbortSignal(document->ToExecutionContext()),
       ContextLifecycleObserver(document),
       priority_(priority),
       web_scheduling_task_queue_(document->GetScheduler()

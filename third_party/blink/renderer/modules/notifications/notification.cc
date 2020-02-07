@@ -97,7 +97,7 @@ Notification* Notification::Create(ExecutionContext* context,
     return nullptr;
   }
 
-  auto* document = DynamicTo<Document>(context);
+  auto* document = Document::DynamicFrom(context);
   if (context->IsSecureContext()) {
     UseCounter::Count(context, WebFeature::kNotificationSecureOrigin);
     if (document) {
@@ -246,7 +246,7 @@ void Notification::OnShow() {
 
 void Notification::OnClick(OnClickCallback completed_closure) {
   ExecutionContext* context = GetExecutionContext();
-  Document* document = DynamicTo<Document>(context);
+  Document* document = Document::DynamicFrom(context);
   if (document && document->GetFrame())
     LocalFrame::NotifyUserActivation(document->GetFrame());
   ScopedWindowFocusAllowedIndicator window_focus_allowed(GetExecutionContext());
@@ -419,7 +419,7 @@ String Notification::permission(ExecutionContext* context) {
   // TODO(crbug.com/758603): Move this check to the browser process when the
   // NotificationService connection becomes frame-bound.
   if (status == mojom::blink::PermissionStatus::ASK) {
-    auto* document = DynamicTo<Document>(context);
+    auto* document = Document::DynamicFrom(context);
     LocalFrame* frame = document ? document->GetFrame() : nullptr;
     if (!frame || frame->IsCrossOriginToMainFrame())
       status = mojom::blink::PermissionStatus::DENIED;
@@ -432,7 +432,7 @@ ScriptPromise Notification::requestPermission(
     ScriptState* script_state,
     V8NotificationPermissionCallback* deprecated_callback) {
   ExecutionContext* context = ExecutionContext::From(script_state);
-  Document* doc = DynamicTo<Document>(context);
+  Document* doc = Document::DynamicFrom(context);
 
   probe::BreakableLocation(context, "Notification.requestPermission");
   if (!LocalFrame::HasTransientUserActivation(doc ? doc->GetFrame()
@@ -451,7 +451,7 @@ ScriptPromise Notification::requestPermission(
 
   // Sites cannot request notification permission from cross-origin iframes,
   // but they can use notifications if permission had already been granted.
-  if (auto* document = DynamicTo<Document>(context)) {
+  if (auto* document = Document::DynamicFrom(context)) {
     LocalFrame* frame = document->GetFrame();
     if (!frame || frame->IsCrossOriginToMainFrame()) {
       Deprecation::CountDeprecation(

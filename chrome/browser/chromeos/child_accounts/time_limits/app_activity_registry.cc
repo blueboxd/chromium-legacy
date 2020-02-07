@@ -500,10 +500,14 @@ void AppActivityRegistry::CheckTimeLimitForApp(const AppId& app_id) {
   if (!time_left.has_value())
     return;
 
+  DCHECK(details.limit.has_value());
+  DCHECK(details.limit->daily_limit().has_value());
+  const base::TimeDelta time_limit = details.limit->daily_limit().value();
+
   if (time_left <= kFiveMinutes && time_left > kOneMinute &&
       last_notification != AppNotification::kFiveMinutes) {
     notification_delegate_->ShowAppTimeLimitNotification(
-        app_id, AppNotification::kFiveMinutes);
+        app_id, time_limit, AppNotification::kFiveMinutes);
     details.activity.set_last_notification(AppNotification::kFiveMinutes);
     ScheduleTimeLimitCheckForApp(app_id);
     return;
@@ -512,7 +516,7 @@ void AppActivityRegistry::CheckTimeLimitForApp(const AppId& app_id) {
   if (time_left <= kOneMinute && time_left > kZeroMinutes &&
       last_notification != AppNotification::kOneMinute) {
     notification_delegate_->ShowAppTimeLimitNotification(
-        app_id, AppNotification::kOneMinute);
+        app_id, time_limit, AppNotification::kOneMinute);
     details.activity.set_last_notification(AppNotification::kOneMinute);
     ScheduleTimeLimitCheckForApp(app_id);
     return;
@@ -532,7 +536,7 @@ void AppActivityRegistry::CheckTimeLimitForApp(const AppId& app_id) {
     }
 
     notification_delegate_->ShowAppTimeLimitNotification(
-        app_id, AppNotification::kTimeLimitReached);
+        app_id, time_limit, AppNotification::kTimeLimitReached);
   }
 }
 

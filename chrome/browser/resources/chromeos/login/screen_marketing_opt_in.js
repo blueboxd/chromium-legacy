@@ -15,6 +15,11 @@ login.createScreen('MarketingOptInScreen', 'marketing-opt-in', function() {
       return $('marketing-opt-in-impl');
     },
 
+    /** Initial UI State for screen */
+    getOobeUIInitialState() {
+      return OOBE_UI_STATE.ONBOARDING;
+    },
+
     /*
      * Executed on language change.
      */

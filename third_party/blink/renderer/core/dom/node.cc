@@ -827,8 +827,8 @@ static Node* NodeOrStringToNode(
                             ? node_or_string.GetAsString()
                             : node_or_string.GetAsNode()->textContent();
 
-  string_value =
-      GetStringFromTrustedScript(string_value, &document, exception_state);
+  string_value = GetStringFromTrustedScript(
+      string_value, document.ToExecutionContext(), exception_state);
   if (exception_state.HadException())
     return nullptr;
   return Text::Create(document, string_value);
@@ -2613,7 +2613,9 @@ const AtomicString& Node::InterfaceName() const {
 }
 
 ExecutionContext* Node::GetExecutionContext() const {
-  return GetDocument().ContextDocument();
+  if (auto* document = GetDocument().ContextDocument())
+    return document->ToExecutionContext();
+  return nullptr;
 }
 
 void Node::WillMoveToNewDocument(Document& old_document,

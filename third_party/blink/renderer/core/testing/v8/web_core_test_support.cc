@@ -128,7 +128,7 @@ void ResetInternalsObject(v8::Local<v8::Context> context) {
 
   ScriptState* script_state = ScriptState::From(context);
   ScriptState::Scope scope(script_state);
-  Document* document = To<Document>(ExecutionContext::From(script_state));
+  Document* document = Document::From(ExecutionContext::From(script_state));
   DCHECK(document);
   LocalFrame* frame = document->GetFrame();
   // Should the document have been detached, the page is assumed being destroyed

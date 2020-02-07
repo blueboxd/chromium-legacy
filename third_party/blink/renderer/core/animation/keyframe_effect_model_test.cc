@@ -151,8 +151,8 @@ const PropertySpecificKeyframeVector& ConstructEffectAndGetKeyframes(
   StringKeyframeVector keyframes =
       KeyframesAtZeroAndOne(property_name, zero_value, one_value);
 
-  element->style()->setProperty(document, property_name, zero_value,
-                                g_empty_string, exception_state);
+  element->style()->setProperty(document->ToExecutionContext(), property_name,
+                                zero_value, g_empty_string, exception_state);
 
   auto* effect = MakeGarbageCollected<StringKeyframeEffectModel>(keyframes);
 
@@ -713,8 +713,9 @@ TEST_F(AnimationKeyframeEffectModel, CompositorUpdateColorProperty) {
   ScopedOffMainThreadCSSPaintForTest off_main_thread_css_paint(true);
   DummyExceptionStateForTesting exception_state;
 
-  element->style()->setProperty(&GetDocument(), "color", "rgb(0, 255, 0)",
-                                g_empty_string, exception_state);
+  element->style()->setProperty(GetDocument().ToExecutionContext(), "color",
+                                "rgb(0, 255, 0)", g_empty_string,
+                                exception_state);
 
   // Compositor keyframe value available after snapshot
   const CompositorKeyframeValue* value_rgb =

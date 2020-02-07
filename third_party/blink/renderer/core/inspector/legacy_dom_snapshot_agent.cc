@@ -124,7 +124,8 @@ Response LegacyDOMSnapshotAgent::GetSnapshot(
 
   // Look up the CSSPropertyIDs for each entry in |style_filter|.
   for (const String& entry : *style_filter) {
-    CSSPropertyID property_id = cssPropertyID(document, entry);
+    CSSPropertyID property_id =
+        cssPropertyID(document->ToExecutionContext(), entry);
     if (property_id == CSSPropertyID::kInvalid)
       continue;
     css_property_filter_->emplace_back(entry, property_id);

@@ -40,7 +40,7 @@ void Intervention::GenerateReport(const LocalFrame* frame,
 
   // Send the intervention report to the Reporting API and any
   // ReportingObservers.
-  ReportingContext::From(document)->QueueReport(report);
+  ReportingContext::From(document->ToExecutionContext())->QueueReport(report);
 }
 
 }  // namespace blink

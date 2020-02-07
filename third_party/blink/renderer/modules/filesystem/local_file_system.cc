@@ -108,7 +108,7 @@ void LocalFileSystem::RequestFileSystemAccessInternal(
     base::OnceCallback<void(bool)> callback) {
   if (context->IsDocument()) {
     auto* client =
-        To<Document>(context)->GetFrame()->GetContentSettingsClient();
+        Document::From(context)->GetFrame()->GetContentSettingsClient();
     if (!client) {
       std::move(callback).Run(true);
     } else {
@@ -188,7 +188,7 @@ void LocalFileSystem::Trace(blink::Visitor* visitor) {
 const char LocalFileSystem::kSupplementName[] = "LocalFileSystem";
 
 LocalFileSystem* LocalFileSystem::From(ExecutionContext& context) {
-  if (auto* document = DynamicTo<Document>(context)) {
+  if (auto* document = Document::DynamicFrom(context)) {
     LocalFileSystem* file_system =
         Supplement<LocalFrame>::From<LocalFileSystem>(document->GetFrame());
     DCHECK(file_system);

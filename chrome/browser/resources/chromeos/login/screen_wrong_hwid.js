@@ -16,11 +16,9 @@ login.createScreen('WrongHWIDScreen', 'wrong-hwid', function() {
       this.updateLocalizedContent();
     },
 
-    /**
-     * Updates state of login shelf so that necessary buttons are displayed.
-     */
-    onBeforeShow(data) {
-      Oobe.getInstance().setSigninUIState(SIGNIN_UI_STATE.WRONG_HWID_WARNING);
+    /** Initial UI State for screen */
+    getOobeUIInitialState() {
+      return OOBE_UI_STATE.WRONG_HWID_WARNING;
     },
 
     /**

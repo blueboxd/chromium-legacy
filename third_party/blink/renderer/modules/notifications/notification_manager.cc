@@ -84,7 +84,7 @@ ScriptPromise NotificationManager::RequestPermission(
   auto* resolver = MakeGarbageCollected<ScriptPromiseResolver>(script_state);
   ScriptPromise promise = resolver->Promise();
 
-  Document* doc = DynamicTo<Document>(context);
+  Document* doc = Document::DynamicFrom(context);
   permission_service_->RequestPermission(
       CreatePermissionDescriptor(mojom::blink::PermissionName::NOTIFICATIONS),
       LocalFrame::HasTransientUserActivation(doc ? doc->GetFrame() : nullptr),

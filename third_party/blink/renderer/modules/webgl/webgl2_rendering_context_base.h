@@ -617,7 +617,7 @@ class WebGL2RenderingContextBase : public WebGLRenderingContextBase {
   void uniform3ui(const WebGLUniformLocation*, GLuint, GLuint, GLuint);
   void uniform4ui(const WebGLUniformLocation*, GLuint, GLuint, GLuint, GLuint);
   void uniform1fv(const WebGLUniformLocation*,
-                  const FlexibleFloat32ArrayView&,
+                  const FlexibleFloat32Array&,
                   GLuint,
                   GLuint);
   void uniform1fv(const WebGLUniformLocation*,
@@ -625,7 +625,7 @@ class WebGL2RenderingContextBase : public WebGLRenderingContextBase {
                   GLuint,
                   GLuint);
   void uniform2fv(const WebGLUniformLocation*,
-                  const FlexibleFloat32ArrayView&,
+                  const FlexibleFloat32Array&,
                   GLuint,
                   GLuint);
   void uniform2fv(const WebGLUniformLocation*,
@@ -633,7 +633,7 @@ class WebGL2RenderingContextBase : public WebGLRenderingContextBase {
                   GLuint,
                   GLuint);
   void uniform3fv(const WebGLUniformLocation*,
-                  const FlexibleFloat32ArrayView&,
+                  const FlexibleFloat32Array&,
                   GLuint,
                   GLuint);
   void uniform3fv(const WebGLUniformLocation*,
@@ -641,7 +641,7 @@ class WebGL2RenderingContextBase : public WebGLRenderingContextBase {
                   GLuint,
                   GLuint);
   void uniform4fv(const WebGLUniformLocation*,
-                  const FlexibleFloat32ArrayView&,
+                  const FlexibleFloat32Array&,
                   GLuint,
                   GLuint);
   void uniform4fv(const WebGLUniformLocation*,
@@ -649,27 +649,27 @@ class WebGL2RenderingContextBase : public WebGLRenderingContextBase {
                   GLuint,
                   GLuint);
   void uniform1iv(const WebGLUniformLocation*,
-                  const FlexibleInt32ArrayView&,
+                  const FlexibleInt32Array&,
                   GLuint,
                   GLuint);
   void uniform1iv(const WebGLUniformLocation*, Vector<GLint>&, GLuint, GLuint);
   void uniform2iv(const WebGLUniformLocation*,
-                  const FlexibleInt32ArrayView&,
+                  const FlexibleInt32Array&,
                   GLuint,
                   GLuint);
   void uniform2iv(const WebGLUniformLocation*, Vector<GLint>&, GLuint, GLuint);
   void uniform3iv(const WebGLUniformLocation*,
-                  const FlexibleInt32ArrayView&,
+                  const FlexibleInt32Array&,
                   GLuint,
                   GLuint);
   void uniform3iv(const WebGLUniformLocation*, Vector<GLint>&, GLuint, GLuint);
   void uniform4iv(const WebGLUniformLocation*,
-                  const FlexibleInt32ArrayView&,
+                  const FlexibleInt32Array&,
                   GLuint,
                   GLuint);
   void uniform4iv(const WebGLUniformLocation*, Vector<GLint>&, GLuint, GLuint);
   void uniform1uiv(const WebGLUniformLocation*,
-                   const FlexibleUint32ArrayView&,
+                   const FlexibleUint32Array&,
                    GLuint,
                    GLuint);
   void uniform1uiv(const WebGLUniformLocation*,
@@ -677,7 +677,7 @@ class WebGL2RenderingContextBase : public WebGLRenderingContextBase {
                    GLuint,
                    GLuint);
   void uniform2uiv(const WebGLUniformLocation*,
-                   const FlexibleUint32ArrayView&,
+                   const FlexibleUint32Array&,
                    GLuint,
                    GLuint);
   void uniform2uiv(const WebGLUniformLocation*,
@@ -685,7 +685,7 @@ class WebGL2RenderingContextBase : public WebGLRenderingContextBase {
                    GLuint,
                    GLuint);
   void uniform3uiv(const WebGLUniformLocation*,
-                   const FlexibleUint32ArrayView&,
+                   const FlexibleUint32Array&,
                    GLuint,
                    GLuint);
   void uniform3uiv(const WebGLUniformLocation*,
@@ -693,7 +693,7 @@ class WebGL2RenderingContextBase : public WebGLRenderingContextBase {
                    GLuint,
                    GLuint);
   void uniform4uiv(const WebGLUniformLocation*,
-                   const FlexibleUint32ArrayView&,
+                   const FlexibleUint32Array&,
                    GLuint,
                    GLuint);
   void uniform4uiv(const WebGLUniformLocation*,
@@ -793,21 +793,21 @@ class WebGL2RenderingContextBase : public WebGLRenderingContextBase {
   // Have to re-declare/re-define the following uniform*()
   // functions from the base class. This is because the above
   // uniform*() hide the name from base class.
-  void uniform1fv(const WebGLUniformLocation*, const FlexibleFloat32ArrayView&);
+  void uniform1fv(const WebGLUniformLocation*, const FlexibleFloat32Array&);
   void uniform1fv(const WebGLUniformLocation*, Vector<GLfloat>&);
-  void uniform2fv(const WebGLUniformLocation*, const FlexibleFloat32ArrayView&);
+  void uniform2fv(const WebGLUniformLocation*, const FlexibleFloat32Array&);
   void uniform2fv(const WebGLUniformLocation*, Vector<GLfloat>&);
-  void uniform3fv(const WebGLUniformLocation*, const FlexibleFloat32ArrayView&);
+  void uniform3fv(const WebGLUniformLocation*, const FlexibleFloat32Array&);
   void uniform3fv(const WebGLUniformLocation*, Vector<GLfloat>&);
-  void uniform4fv(const WebGLUniformLocation*, const FlexibleFloat32ArrayView&);
+  void uniform4fv(const WebGLUniformLocation*, const FlexibleFloat32Array&);
   void uniform4fv(const WebGLUniformLocation*, Vector<GLfloat>&);
-  void uniform1iv(const WebGLUniformLocation*, const FlexibleInt32ArrayView&);
+  void uniform1iv(const WebGLUniformLocation*, const FlexibleInt32Array&);
   void uniform1iv(const WebGLUniformLocation*, Vector<GLint>&);
-  void uniform2iv(const WebGLUniformLocation*, const FlexibleInt32ArrayView&);
+  void uniform2iv(const WebGLUniformLocation*, const FlexibleInt32Array&);
   void uniform2iv(const WebGLUniformLocation*, Vector<GLint>&);
-  void uniform3iv(const WebGLUniformLocation*, const FlexibleInt32ArrayView&);
+  void uniform3iv(const WebGLUniformLocation*, const FlexibleInt32Array&);
   void uniform3iv(const WebGLUniformLocation*, Vector<GLint>&);
-  void uniform4iv(const WebGLUniformLocation*, const FlexibleInt32ArrayView&);
+  void uniform4iv(const WebGLUniformLocation*, const FlexibleInt32Array&);
   void uniform4iv(const WebGLUniformLocation*, Vector<GLint>&);
   void uniformMatrix2fv(const WebGLUniformLocation*,
                         GLboolean transpose,

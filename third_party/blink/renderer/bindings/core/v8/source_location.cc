@@ -56,7 +56,7 @@ std::unique_ptr<SourceLocation> SourceLocation::Capture(
     return SourceLocation::CreateFromNonEmptyV8StackTrace(
         std::move(stack_trace), 0);
 
-  if (Document* document = DynamicTo<Document>(execution_context)) {
+  if (Document* document = Document::DynamicFrom(execution_context)) {
     unsigned line_number = 0;
     if (document->GetScriptableDocumentParser() &&
         !document->IsInDocumentWrite()) {

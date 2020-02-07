@@ -213,7 +213,23 @@ class MediaStreamConstraintsUtilAudioTestBase {
     }
     if (!Contains(exclude_audio_properties,
                   &AudioProcessingProperties::goog_auto_gain_control)) {
-      EXPECT_TRUE(properties.goog_auto_gain_control);
+      EXPECT_EQ(properties.goog_auto_gain_control,
+                properties.goog_experimental_auto_gain_control);
+      if (!Contains(exclude_audio_properties,
+                    &AudioProcessingProperties::
+                        goog_experimental_auto_gain_control)) {
+        EXPECT_TRUE(properties.goog_auto_gain_control);
+      }
+    }
+    if (!Contains(
+            exclude_audio_properties,
+            &AudioProcessingProperties::goog_experimental_auto_gain_control)) {
+      EXPECT_EQ(properties.goog_auto_gain_control,
+                properties.goog_experimental_auto_gain_control);
+      if (!Contains(exclude_audio_properties,
+                    &AudioProcessingProperties::goog_auto_gain_control)) {
+        EXPECT_TRUE(properties.goog_experimental_auto_gain_control);
+      }
     }
     if (!Contains(
             exclude_audio_properties,
@@ -232,11 +248,6 @@ class MediaStreamConstraintsUtilAudioTestBase {
     if (!Contains(exclude_audio_properties,
                   &AudioProcessingProperties::goog_highpass_filter)) {
       EXPECT_TRUE(properties.goog_highpass_filter);
-    }
-    if (!Contains(
-            exclude_audio_properties,
-            &AudioProcessingProperties::goog_experimental_auto_gain_control)) {
-      EXPECT_TRUE(properties.goog_experimental_auto_gain_control);
     }
   }
 
@@ -261,7 +272,23 @@ class MediaStreamConstraintsUtilAudioTestBase {
     }
     if (!Contains(exclude_audio_properties,
                   &AudioProcessingProperties::goog_auto_gain_control)) {
-      EXPECT_FALSE(properties.goog_auto_gain_control);
+      EXPECT_EQ(properties.goog_auto_gain_control,
+                properties.goog_experimental_auto_gain_control);
+      if (!Contains(exclude_audio_properties,
+                    &AudioProcessingProperties::
+                        goog_experimental_auto_gain_control)) {
+        EXPECT_FALSE(properties.goog_auto_gain_control);
+      }
+    }
+    if (!Contains(
+            exclude_audio_properties,
+            &AudioProcessingProperties::goog_experimental_auto_gain_control)) {
+      EXPECT_EQ(properties.goog_auto_gain_control,
+                properties.goog_experimental_auto_gain_control);
+      if (!Contains(exclude_audio_properties,
+                    &AudioProcessingProperties::goog_auto_gain_control)) {
+        EXPECT_FALSE(properties.goog_experimental_auto_gain_control);
+      }
     }
     if (!Contains(
             exclude_audio_properties,
@@ -280,11 +307,6 @@ class MediaStreamConstraintsUtilAudioTestBase {
     if (!Contains(exclude_audio_properties,
                   &AudioProcessingProperties::goog_highpass_filter)) {
       EXPECT_FALSE(properties.goog_highpass_filter);
-    }
-    if (!Contains(
-            exclude_audio_properties,
-            &AudioProcessingProperties::goog_experimental_auto_gain_control)) {
-      EXPECT_FALSE(properties.goog_experimental_auto_gain_control);
     }
   }
 
@@ -1446,6 +1468,23 @@ TEST_P(MediaStreamConstraintsUtilAudioTest, ContradictoryEchoCancellation) {
   }
 }
 
+// Test that having differing mandatory values for googAutoGainControl and
+// googAutoGainControl2 fails. This test is valid to correctly support the
+// old syntax.
+TEST_P(MediaStreamConstraintsUtilAudioTest, ContradictoryAutoGainControl) {
+  // TODO(armax): fix this.
+  for (bool value : kBoolValues) {
+    constraint_factory_.basic().goog_auto_gain_control.SetExact(value);
+    constraint_factory_.basic().goog_experimental_auto_gain_control.SetExact(
+        !value);
+    auto result = SelectSettings();
+    EXPECT_FALSE(result.HasValue());
+    EXPECT_EQ(result.failed_constraint_name(),
+              constraint_factory_.basic()
+                  .goog_experimental_auto_gain_control.GetName());
+  }
+}
+
 // Tests that individual boolean audio-processing constraints override the
 // default value set by the echoCancellation constraint.
 TEST_P(MediaStreamConstraintsUtilAudioTest,
@@ -1488,6 +1527,15 @@ TEST_P(MediaStreamConstraintsUtilAudioTest,
         for (size_t j = 0; j < kAudioProcessingProperties.size(); ++j) {
           if (i == j)
             continue;
+          // goog_auto_gain_control and goog_experimental_auto_gain_control
+          // should always match in value.
+          if ((i == 1 && j == 6) || (i == 6 && j == 1)) {
+            EXPECT_EQ(result.audio_processing_properties().*
+                          kAudioProcessingProperties[i],
+                      result.audio_processing_properties().*
+                          kAudioProcessingProperties[j]);
+            continue;
+          }
           EXPECT_FALSE(result.audio_processing_properties().*
                        kAudioProcessingProperties[j]);
         }

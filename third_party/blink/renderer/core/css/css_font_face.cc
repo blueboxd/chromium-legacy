@@ -214,7 +214,8 @@ void CSSFontFace::SetLoadStatus(FontFace::LoadStatusType new_status) {
   if (segmented_font_faces_.IsEmpty() || !font_face_->GetExecutionContext())
     return;
 
-  if (auto* document = DynamicTo<Document>(font_face_->GetExecutionContext())) {
+  if (auto* document =
+          Document::DynamicFrom(font_face_->GetExecutionContext())) {
     if (new_status == FontFace::kLoading)
       FontFaceSetDocument::From(*document)->BeginFontLoading(font_face_);
   } else if (auto* scope = DynamicTo<WorkerGlobalScope>(

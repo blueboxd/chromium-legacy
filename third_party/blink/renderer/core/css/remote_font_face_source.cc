@@ -120,7 +120,7 @@ void RemoteFontFaceSource::NotifyFinished(Resource* resource) {
   // Prevent promise rejection while shutting down the document.
   // See crbug.com/960290
   if (execution_context->IsDocument() &&
-      To<Document>(execution_context)->IsDetached())
+      Document::From(execution_context)->IsDetached())
     return;
 
   FontResource* font = ToFontResource(resource);
@@ -208,7 +208,7 @@ FontDisplay RemoteFontFaceSource::GetFontDisplayWithFeaturePolicyCheck(
   ExecutionContext* context = font_selector->GetExecutionContext();
   if (display != kFontDisplayFallback && display != kFontDisplayOptional &&
       context && context->IsDocument() &&
-      !To<Document>(context)->IsFeatureEnabled(
+      !Document::From(context)->IsFeatureEnabled(
           mojom::blink::FeaturePolicyFeature::kFontDisplay, report)) {
     return kFontDisplayOptional;
   }
@@ -217,7 +217,7 @@ FontDisplay RemoteFontFaceSource::GetFontDisplayWithFeaturePolicyCheck(
 
 bool RemoteFontFaceSource::ShouldTriggerWebFontsIntervention() {
   const auto* document =
-      DynamicTo<Document>(font_selector_->GetExecutionContext());
+      Document::DynamicFrom(font_selector_->GetExecutionContext());
   if (!document)
     return false;
 

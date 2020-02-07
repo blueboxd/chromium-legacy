@@ -122,6 +122,10 @@ class CORE_EXPORT ContextLifecycleObserver
   Type ObserverType() const { return observer_type_; }
 
  protected:
+  // TODO(crbug.com/1029822): This is a shim to enable migrating
+  // ExecutionContext to LocalDOMWindow.
+  explicit ContextLifecycleObserver(Document*, Type type = kGenericType);
+
   explicit ContextLifecycleObserver(ExecutionContext* execution_context,
                                     Type type = kGenericType)
       : LifecycleObserver(execution_context), observer_type_(type) {}

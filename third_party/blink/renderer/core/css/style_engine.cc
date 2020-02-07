@@ -865,7 +865,8 @@ void StyleEngine::FontsNeedUpdate(FontSelector*) {
         StyleChangeReasonForTracing::Create(style_change_reason::kFonts));
   }
 
-  probe::FontsUpdated(document_, nullptr, String(), nullptr);
+  probe::FontsUpdated(document_->ToExecutionContext(), nullptr, String(),
+                      nullptr);
 }
 
 void StyleEngine::SetFontSelector(CSSFontSelector* font_selector) {

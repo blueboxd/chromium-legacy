@@ -112,7 +112,7 @@ ScriptPromise NavigatorRequestMediaKeySystemAccess::requestMediaKeySystemAccess(
   DVLOG(3) << __func__;
 
   ExecutionContext* execution_context = ExecutionContext::From(script_state);
-  Document* document = To<Document>(execution_context);
+  Document* document = Document::From(execution_context);
 
   if (!document->IsFeatureEnabled(
           mojom::blink::FeaturePolicyFeature::kEncryptedMedia,

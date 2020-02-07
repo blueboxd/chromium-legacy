@@ -219,6 +219,9 @@ void CoreOobeHandler::RegisterMessages() {
   AddCallback("setupDemoMode", &CoreOobeHandler::HandleSetupDemoMode);
   AddCallback("startDemoModeSetupForTesting",
               &CoreOobeHandler::HandleStartDemoModeSetupForTesting);
+
+  AddCallback("hideOobeDialog", &CoreOobeHandler::HandleHideOobeDialog);
+  AddCallback("updateOobeUIState", &CoreOobeHandler::HandleUpdateOobeUIState);
 }
 
 void CoreOobeHandler::ShowSignInError(
@@ -375,6 +378,11 @@ void CoreOobeHandler::HandleEnableDockedMagnifier(bool enabled) {
   // setting is changed so just toggle Select to Speak here.
   DCHECK(MagnificationManager::Get());
   MagnificationManager::Get()->SetDockedMagnifierEnabled(enabled);
+}
+
+void CoreOobeHandler::HandleHideOobeDialog() {
+  if (LoginDisplayHost::default_host())
+    LoginDisplayHost::default_host()->HideOobeDialog();
 }
 
 void CoreOobeHandler::HandleSetDeviceRequisition(
@@ -659,6 +667,13 @@ void CoreOobeHandler::HandleStartDemoModeSetupForTesting(
   if (wizard_controller && !wizard_controller->login_screen_started()) {
     wizard_controller->SimulateDemoModeSetupForTesting(config);
     wizard_controller->AdvanceToScreen(DemoSetupScreenView::kScreenId);
+  }
+}
+
+void CoreOobeHandler::HandleUpdateOobeUIState(int state) {
+  if (LoginDisplayHost::default_host()) {
+    auto dialog_state = static_cast<ash::OobeDialogState>(state);
+    LoginDisplayHost::default_host()->UpdateOobeDialogState(dialog_state);
   }
 }
 

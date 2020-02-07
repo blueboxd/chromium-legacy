@@ -23,7 +23,7 @@ class MockCacheHandler : public CachedMetadataHandler {
   MockCacheHandler(std::unique_ptr<CachedMetadataSender> send_callback);
 
   void Set(const uint8_t* data, size_t);
-  void ClearCachedMetadata(CachedMetadataHandler::CacheType) override;
+  void ClearCachedMetadata(CachedMetadataHandler::ClearCacheType) override;
   void Send();
 
   String Encoding() const override { return "mock encoding"; }

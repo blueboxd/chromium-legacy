@@ -4,6 +4,8 @@
 
 #include "components/performance_manager/performance_manager_registry_impl.h"
 
+#include <utility>
+
 #include "base/stl_util.h"
 #include "components/performance_manager/performance_manager_tab_helper.h"
 #include "components/performance_manager/public/performance_manager.h"
@@ -90,12 +92,14 @@ void PerformanceManagerRegistryImpl::CreateProcessNodeForRenderProcessHost(
 
 void PerformanceManagerRegistryImpl::NotifyBrowserContextAdded(
     content::BrowserContext* browser_context) {
+  content::StoragePartition* storage_partition =
+      content::BrowserContext::GetDefaultStoragePartition(browser_context);
   std::unique_ptr<WorkerWatcher> worker_watcher =
       std::make_unique<WorkerWatcher>(
           browser_context->UniqueId(),
-          content::BrowserContext::GetDefaultStoragePartition(browser_context)
-              ->GetSharedWorkerService(),
-          &process_node_source_, &frame_node_source_);
+          storage_partition->GetDedicatedWorkerService(),
+          storage_partition->GetSharedWorkerService(), &process_node_source_,
+          &frame_node_source_);
   auto result = browser_contexts_with_worker_watcher_.insert(
       {browser_context->UniqueId(), std::move(worker_watcher)});
   DCHECK(result.second);

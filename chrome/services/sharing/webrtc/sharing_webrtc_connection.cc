@@ -287,18 +287,10 @@ void SharingWebRtcConnection::OnIceCandidatesReceived(
 
   timing_recorder_.LogEvent(WebRtcTimingEvent::kIceCandidateReceived);
 
-  // Store received ICE candidates until the signalling state is stable and
-  // there is no offer / answer exchange in progress anymore.
-  if (!peer_connection_->local_description() ||
-      peer_connection_->signaling_state() !=
-          webrtc::PeerConnectionInterface::SignalingState::kStable) {
-    ice_candidates_.insert(ice_candidates_.end(),
-                           std::make_move_iterator(ice_candidates.begin()),
-                           std::make_move_iterator(ice_candidates.end()));
-    return;
-  }
-
-  AddIceCandidates(std::move(ice_candidates));
+  remote_ice_candidates_.insert(remote_ice_candidates_.end(),
+                                std::make_move_iterator(ice_candidates.begin()),
+                                std::make_move_iterator(ice_candidates.end()));
+  HandlePendingIceCandidates();
 }
 
 void SharingWebRtcConnection::SendMessage(const std::vector<uint8_t>& message,
@@ -368,8 +360,11 @@ void SharingWebRtcConnection::SendMessage(const std::vector<uint8_t>& message,
 
 void SharingWebRtcConnection::OnSignalingChange(
     webrtc::PeerConnectionInterface::SignalingState new_state) {
-  if (new_state == webrtc::PeerConnectionInterface::SignalingState::kStable)
-    timing_recorder_.LogEvent(WebRtcTimingEvent::kSignalingStable);
+  if (new_state != webrtc::PeerConnectionInterface::SignalingState::kStable)
+    return;
+
+  timing_recorder_.LogEvent(WebRtcTimingEvent::kSignalingStable);
+  HandlePendingIceCandidates();
 }
 
 void SharingWebRtcConnection::OnDataChannel(
@@ -406,11 +401,10 @@ void SharingWebRtcConnection::OnIceCandidate(
     return;
   }
 
-  std::vector<mojom::IceCandidatePtr> ice_candidates;
-  ice_candidates.push_back(mojom::IceCandidate::New(
+  local_ice_candidates_.push_back(mojom::IceCandidate::New(
       candidate_string, candidate->sdp_mid(), candidate->sdp_mline_index()));
 
-  signalling_sender_->SendIceCandidates(std::move(ice_candidates));
+  HandlePendingIceCandidates();
 }
 
 void SharingWebRtcConnection::OnStateChange() {
@@ -511,8 +505,7 @@ void SharingWebRtcConnection::OnAnswerCreated(OnOfferReceivedCallback callback,
 
   timing_recorder_.LogEvent(WebRtcTimingEvent::kAnswerCreated);
 
-  AddIceCandidates(std::move(ice_candidates_));
-  ice_candidates_.clear();
+  HandlePendingIceCandidates();
   std::move(callback).Run(sdp);
 }
 
@@ -592,8 +585,7 @@ void SharingWebRtcConnection::OnRemoteDescriptionSet(webrtc::RTCError error) {
     return;
   }
 
-  AddIceCandidates(std::move(ice_candidates_));
-  ice_candidates_.clear();
+  HandlePendingIceCandidates();
 }
 
 void SharingWebRtcConnection::AddIceCandidates(
@@ -698,6 +690,28 @@ void SharingWebRtcConnection::MaybeSendQueuedMessages() {
     }
   }
   queued_messages_total_size_ = 0;
+}
+
+void SharingWebRtcConnection::HandlePendingIceCandidates() {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+
+  // Store received ICE candidates until the signalling state is stable and
+  // there is no offer / answer exchange in progress anymore.
+  if (!peer_connection_->local_description() ||
+      peer_connection_->signaling_state() !=
+          webrtc::PeerConnectionInterface::SignalingState::kStable) {
+    return;
+  }
+
+  if (!remote_ice_candidates_.empty()) {
+    AddIceCandidates(std::move(remote_ice_candidates_));
+    remote_ice_candidates_.clear();
+  }
+
+  if (!local_ice_candidates_.empty()) {
+    signalling_sender_->SendIceCandidates(std::move(local_ice_candidates_));
+    local_ice_candidates_.clear();
+  }
 }
 
 void SharingWebRtcConnection::OnStatsReceived(

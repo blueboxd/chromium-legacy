@@ -199,15 +199,21 @@ TEST_F(NativeWidgetMacInteractiveUITest, ParentWindowTrafficLights) {
   EXPECT_TRUE(button);
   NSData* active_button_image = ViewAsTIFF(button);
   EXPECT_TRUE(active_button_image);
+  EXPECT_TRUE(parent_widget->ShouldPaintAsActive());
 
-  // Pop open a bubble on the parent Widget. When the visibility of Bubbles with
-  // an anchor View changes, BubbleDialogDelegateView::HandleVisibilityChanged()
-  // updates Widget::ShouldPaintAsActive() accordingly.
-  ShowKeyWindow(BubbleDialogDelegateView::CreateBubble(
-      new TestBubbleView(parent_widget)));
+  // If a child widget is key, the parent should paint as active.
+  Widget* child_widget = new Widget;
+  Widget::InitParams params =
+      CreateParams(Widget::InitParams::TYPE_WINDOW_FRAMELESS);
+  params.parent = parent_widget->GetNativeView();
+  child_widget->Init(std::move(params));
+  child_widget->SetContentsView(new View);
+  child_widget->Show();
+  NSWindow* child = child_widget->GetNativeWindow().GetNativeNSWindow();
 
   // Ensure the button instance is still valid.
   EXPECT_EQ(button, [parent standardWindowButton:NSWindowCloseButton]);
+  EXPECT_TRUE(parent_widget->ShouldPaintAsActive());
 
   // Parent window should still be main, and have its traffic lights active.
   EXPECT_TRUE([parent isMainWindow]);
@@ -226,10 +232,18 @@ TEST_F(NativeWidgetMacInteractiveUITest, ParentWindowTrafficLights) {
   ShowKeyWindow(other_widget);
   EXPECT_FALSE([parent isMainWindow]);
   EXPECT_FALSE([parent isKeyWindow]);
+  EXPECT_FALSE(parent_widget->ShouldPaintAsActive());
   EXPECT_TRUE([button isEnabled]);
   NSData* inactive_button_image = ViewAsTIFF(button);
   EXPECT_FALSE([active_button_image isEqualToData:inactive_button_image]);
 
+  // Focus the child again and assert the parent once again paints as active.
+  [child makeKeyWindow];
+  EXPECT_TRUE(parent_widget->ShouldPaintAsActive());
+  EXPECT_TRUE([child isKeyWindow]);
+  EXPECT_FALSE([parent isKeyWindow]);
+
+  child_widget->CloseNow();
   other_widget->CloseNow();
   parent_widget->CloseNow();
 }

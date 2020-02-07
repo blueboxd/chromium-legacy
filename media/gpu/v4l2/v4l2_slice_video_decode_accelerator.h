@@ -270,12 +270,13 @@ class MEDIA_GPU_EXPORT V4L2SliceVideoDecodeAccelerator
                                            VideoPixelFormat pixel_format,
                                            gfx::NativePixmapHandle handle);
 
-  // Create a GLImage for the buffer associated with V4L2 |buffer_index| and
-  // for |picture_buffer_id|, backed by |handle|.
+  // Create a GLImage on |gl_device| for the buffer associated with V4L2
+  // |buffer_index| and |picture_buffer_id|, backed by |handle|.
   // The GLImage will be associated |client_texture_id| in gles2 decoder and is
   // of format |fourcc|. |visible_size| is the size in pixels that the GL device
   // will be able to see.
-  void CreateGLImageFor(size_t buffer_index,
+  void CreateGLImageFor(scoped_refptr<V4L2Device> gl_device,
+                        size_t buffer_index,
                         int32_t picture_buffer_id,
                         gfx::NativePixmapHandle handle,
                         GLuint client_texture_id,

@@ -3031,6 +3031,11 @@
     "expiry_milestone": 83
   },
   {
+    "name": "password-check",
+    "owners": [ "jdoerrie", "vasilii" ],
+    "expiry_milestone": 84
+  },
+  {
     "name": "password-editing-android",
     "owners": [ "fhorschig" ],
     "expiry_milestone": 83

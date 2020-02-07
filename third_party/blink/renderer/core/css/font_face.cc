@@ -76,8 +76,8 @@ const CSSValue* ParseCSSValue(const ExecutionContext* context,
                               const String& value,
                               AtRuleDescriptorID descriptor_id) {
   CSSParserContext* parser_context =
-      IsA<Document>(context)
-          ? MakeGarbageCollected<CSSParserContext>(*To<Document>(context))
+      context->IsDocument()
+          ? MakeGarbageCollected<CSSParserContext>(*Document::From(context))
           : MakeGarbageCollected<CSSParserContext>(*context);
   return AtRuleDescriptorParser::ParseFontFaceDescriptor(descriptor_id, value,
                                                          *parser_context);
@@ -171,7 +171,8 @@ FontFace* FontFace::Create(Document* document,
   if (!src || !src->IsValueList())
     return nullptr;
 
-  FontFace* font_face = MakeGarbageCollected<FontFace>(document);
+  FontFace* font_face =
+      MakeGarbageCollected<FontFace>(document->ToExecutionContext());
 
   if (font_face->SetFamilyValue(*family) &&
       font_face->SetPropertyFromStyle(properties,
@@ -190,7 +191,7 @@ FontFace* FontFace::Create(Document* document,
                                       AtRuleDescriptorID::FontDisplay) &&
       font_face->GetFontSelectionCapabilities().IsValid() &&
       !font_face->family().IsEmpty()) {
-    font_face->InitCSSFontFace(document, *src);
+    font_face->InitCSSFontFace(document->ToExecutionContext(), *src);
     return font_face;
   }
   return nullptr;
@@ -683,7 +684,7 @@ bool ContextAllowsDownload(ExecutionContext* context) {
   if (!context) {
     return false;
   }
-  if (const Document* document = DynamicTo<Document>(context)) {
+  if (const Document* document = Document::DynamicFrom(context)) {
     const Settings* settings = document->GetSettings();
     return settings && settings->GetDownloadableBinaryFontsEnabled();
   }
@@ -708,7 +709,7 @@ void FontFace::InitCSSFontFace(ExecutionContext* context, const CSSValue& src) {
     const CSSFontFaceSrcValue& item = To<CSSFontFaceSrcValue>(src_list.Item(i));
 
     FontSelector* font_selector = nullptr;
-    if (auto* document = DynamicTo<Document>(context)) {
+    if (auto* document = Document::DynamicFrom(context)) {
       font_selector = document->GetStyleEngine().GetFontSelector();
     } else if (auto* scope = DynamicTo<WorkerGlobalScope>(context)) {
       font_selector = scope->GetFontSelector();

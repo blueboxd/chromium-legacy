@@ -56,8 +56,7 @@ namespace blink {
 static bool IsAllowed(ExecutionContext* execution_context,
                       bool is_eval,
                       const String& source) {
-  if (execution_context->IsDocument()) {
-    Document* document = static_cast<Document*>(execution_context);
+  if (Document* document = Document::DynamicFrom(execution_context)) {
     if (!document->GetFrame())
       return false;
     if (is_eval && !document->GetContentSecurityPolicy()->AllowEval(
@@ -157,11 +156,8 @@ int WindowOrWorkerGlobalScope::setTimeout(
     const HeapVector<ScriptValue>& arguments,
     ExceptionState& exception_state) {
   ExecutionContext* execution_context = event_target.GetExecutionContext();
-  Document* document = execution_context->IsDocument()
-                           ? static_cast<Document*>(execution_context)
-                           : nullptr;
-  String handler = GetStringFromTrustedScript(string_or_trusted_script,
-                                              document, exception_state);
+  String handler = GetStringFromTrustedScript(
+      string_or_trusted_script, execution_context, exception_state);
   if (exception_state.HadException())
     return 0;
   return setTimeoutFromString(script_state, event_target, handler, timeout,
@@ -215,11 +211,8 @@ int WindowOrWorkerGlobalScope::setInterval(
     const HeapVector<ScriptValue>& arguments,
     ExceptionState& exception_state) {
   ExecutionContext* execution_context = event_target.GetExecutionContext();
-  Document* document = execution_context->IsDocument()
-                           ? static_cast<Document*>(execution_context)
-                           : nullptr;
-  String handler = GetStringFromTrustedScript(string_or_trusted_script,
-                                              document, exception_state);
+  String handler = GetStringFromTrustedScript(
+      string_or_trusted_script, execution_context, exception_state);
   if (exception_state.HadException())
     return 0;
   return setIntervalFromString(script_state, event_target, handler, timeout,

@@ -140,7 +140,8 @@ TEST_F(CacheAwareFontResourceTest, CacheAwareFontLoading) {
   // a "cache hit" in ResourceFetcher's view.
   Persistent<MockFontResourceClient> client =
       MakeGarbageCollected<MockFontResourceClient>();
-  FontResource& resource = src_value->Fetch(&document, client);
+  FontResource& resource =
+      src_value->Fetch(document.ToExecutionContext(), client);
 
   fetcher->StartLoad(&resource);
   EXPECT_TRUE(resource.Loader()->IsCacheAwareLoadingActivated());
@@ -162,7 +163,8 @@ TEST_F(CacheAwareFontResourceTest, CacheAwareFontLoading) {
   // Add client now, FontLoadShortLimitExceeded() should be called.
   Persistent<MockFontResourceClient> client2 =
       MakeGarbageCollected<MockFontResourceClient>();
-  FontResource& resource2 = src_value->Fetch(&document, client2);
+  FontResource& resource2 =
+      src_value->Fetch(document.ToExecutionContext(), client2);
   EXPECT_EQ(&resource, &resource2);
   EXPECT_TRUE(client2->FontLoadShortLimitExceededCalled());
   EXPECT_FALSE(client2->FontLoadLongLimitExceededCalled());
@@ -174,7 +176,8 @@ TEST_F(CacheAwareFontResourceTest, CacheAwareFontLoading) {
   // Add client now, both callbacks should be called.
   Persistent<MockFontResourceClient> client3 =
       MakeGarbageCollected<MockFontResourceClient>();
-  FontResource& resource3 = src_value->Fetch(&document, client3);
+  FontResource& resource3 =
+      src_value->Fetch(document.ToExecutionContext(), client3);
   EXPECT_EQ(&resource, &resource3);
   EXPECT_TRUE(client3->FontLoadShortLimitExceededCalled());
   EXPECT_TRUE(client3->FontLoadLongLimitExceededCalled());

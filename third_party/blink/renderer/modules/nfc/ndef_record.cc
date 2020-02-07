@@ -136,7 +136,7 @@ String getDocumentLanguage(const ExecutionContext* execution_context) {
   DCHECK(execution_context);
   String document_language;
   Element* document_element =
-      To<Document>(execution_context)->documentElement();
+      Document::From(execution_context)->documentElement();
   if (document_element) {
     document_language = document_element->getAttribute(html_names::kLangAttr);
   }

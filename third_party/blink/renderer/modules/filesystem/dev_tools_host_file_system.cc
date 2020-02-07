@@ -18,7 +18,8 @@ DOMFileSystem* DevToolsHostFileSystem::isolatedFileSystem(
     DevToolsHost& host,
     const String& file_system_name,
     const String& root_url) {
-  ExecutionContext* context = host.FrontendFrame()->GetDocument();
+  ExecutionContext* context =
+      host.FrontendFrame()->GetDocument()->ToExecutionContext();
   return MakeGarbageCollected<DOMFileSystem>(
       context, file_system_name, mojom::blink::FileSystemType::kIsolated,
       KURL(root_url));

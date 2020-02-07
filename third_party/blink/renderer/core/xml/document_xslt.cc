@@ -34,7 +34,7 @@ class DOMContentLoadedListener final
     DCHECK(RuntimeEnabledFeatures::XSLTEnabled());
     DCHECK_EQ(event->type(), "DOMContentLoaded");
 
-    Document& document = *To<Document>(execution_context);
+    Document& document = *Document::From(execution_context);
     DCHECK(!document.Parsing());
 
     // Processing instruction (XML documents only).

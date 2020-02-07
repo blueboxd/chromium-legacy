@@ -221,7 +221,7 @@ ControllerPresentationConnection* ControllerPresentationConnection::Take(
   DCHECK(resolver);
   DCHECK(request);
 
-  Document* document = To<Document>(resolver->GetExecutionContext());
+  Document* document = Document::From(resolver->GetExecutionContext());
   if (!document->GetFrame())
     return nullptr;
 
@@ -389,7 +389,7 @@ const AtomicString& PresentationConnection::InterfaceName() const {
 ExecutionContext* PresentationConnection::GetExecutionContext() const {
   if (!GetFrame())
     return nullptr;
-  return GetFrame()->GetDocument();
+  return GetFrame()->GetDocument()->ToExecutionContext();
 }
 
 void PresentationConnection::AddedEventListener(

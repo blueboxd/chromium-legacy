@@ -64,7 +64,8 @@ void DOMWindowFileSystem::webkitRequestFileSystem(
     UseCounter::Count(document, WebFeature::kRequestFileSystemNonWebbyOrigin);
 
   if (!document->GetSecurityOrigin()->CanAccessFileSystem()) {
-    DOMFileSystem::ReportError(document, std::move(error_callback_wrapper),
+    DOMFileSystem::ReportError(document->ToExecutionContext(),
+                               std::move(error_callback_wrapper),
                                base::File::FILE_ERROR_SECURITY);
     return;
   } else if (document->GetSecurityOrigin()->IsLocal()) {
@@ -74,7 +75,8 @@ void DOMWindowFileSystem::webkitRequestFileSystem(
   mojom::blink::FileSystemType file_system_type =
       static_cast<mojom::blink::FileSystemType>(type);
   if (!DOMFileSystemBase::IsValidType(file_system_type)) {
-    DOMFileSystem::ReportError(document, std::move(error_callback_wrapper),
+    DOMFileSystem::ReportError(document->ToExecutionContext(),
+                               std::move(error_callback_wrapper),
                                base::File::FILE_ERROR_INVALID_OPERATION);
     return;
   }
@@ -88,12 +90,14 @@ void DOMWindowFileSystem::webkitRequestFileSystem(
   auto success_callback_wrapper =
       AsyncCallbackHelper::SuccessCallback<DOMFileSystem>(success_callback);
 
-  LocalFileSystem::From(*document)->RequestFileSystem(
-      document, file_system_type, size,
-      std::make_unique<FileSystemCallbacks>(std::move(success_callback_wrapper),
-                                            std::move(error_callback_wrapper),
-                                            document, file_system_type),
-      LocalFileSystem::kAsynchronous);
+  LocalFileSystem::From(*document->ToExecutionContext())
+      ->RequestFileSystem(document->ToExecutionContext(), file_system_type,
+                          size,
+                          std::make_unique<FileSystemCallbacks>(
+                              std::move(success_callback_wrapper),
+                              std::move(error_callback_wrapper),
+                              document->ToExecutionContext(), file_system_type),
+                          LocalFileSystem::kAsynchronous);
 }
 
 void DOMWindowFileSystem::webkitResolveLocalFileSystemURL(
@@ -115,7 +119,8 @@ void DOMWindowFileSystem::webkitResolveLocalFileSystemURL(
   KURL completed_url = document->CompleteURL(url);
   if (!security_origin->CanAccessFileSystem() ||
       !security_origin->CanRequest(completed_url)) {
-    DOMFileSystem::ReportError(document, std::move(error_callback_wrapper),
+    DOMFileSystem::ReportError(document->ToExecutionContext(),
+                               std::move(error_callback_wrapper),
                                base::File::FILE_ERROR_SECURITY);
     return;
   } else if (document->GetSecurityOrigin()->IsLocal()) {
@@ -123,7 +128,8 @@ void DOMWindowFileSystem::webkitResolveLocalFileSystemURL(
   }
 
   if (!completed_url.IsValid()) {
-    DOMFileSystem::ReportError(document, std::move(error_callback_wrapper),
+    DOMFileSystem::ReportError(document->ToExecutionContext(),
+                               std::move(error_callback_wrapper),
                                base::File::FILE_ERROR_INVALID_URL);
     return;
   }
@@ -131,12 +137,13 @@ void DOMWindowFileSystem::webkitResolveLocalFileSystemURL(
   auto success_callback_wrapper =
       AsyncCallbackHelper::SuccessCallback<Entry>(success_callback);
 
-  LocalFileSystem::From(*document)->ResolveURL(
-      document, completed_url,
-      std::make_unique<ResolveURICallbacks>(std::move(success_callback_wrapper),
-                                            std::move(error_callback_wrapper),
-                                            document),
-      LocalFileSystem::kAsynchronous);
+  LocalFileSystem::From(*document->ToExecutionContext())
+      ->ResolveURL(document->ToExecutionContext(), completed_url,
+                   std::make_unique<ResolveURICallbacks>(
+                       std::move(success_callback_wrapper),
+                       std::move(error_callback_wrapper),
+                       document->ToExecutionContext()),
+                   LocalFileSystem::kAsynchronous);
 }
 
 static_assert(

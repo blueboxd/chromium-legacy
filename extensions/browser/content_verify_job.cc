@@ -7,6 +7,7 @@
 #include <algorithm>
 
 #include "base/bind.h"
+#include "base/lazy_instance.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/stl_util.h"
 #include "base/task/post_task.h"
@@ -23,7 +24,15 @@ namespace extensions {
 namespace {
 
 bool g_ignore_verification_for_tests = false;
-ContentVerifyJob::TestObserver* g_content_verify_job_test_observer = NULL;
+
+base::LazyInstance<scoped_refptr<ContentVerifyJob::TestObserver>>::Leaky
+    g_content_verify_job_test_observer = LAZY_INSTANCE_INITIALIZER;
+
+scoped_refptr<ContentVerifyJob::TestObserver> GetTestObserver() {
+  if (!g_content_verify_job_test_observer.IsCreated())
+    return nullptr;
+  return g_content_verify_job_test_observer.Get();
+}
 
 class ScopedElapsedTimer {
  public:
@@ -86,9 +95,9 @@ void ContentVerifyJob::DidGetContentHashOnIO(
     scoped_refptr<const ContentHash> content_hash) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::IO);
   base::AutoLock auto_lock(lock_);
-  if (g_content_verify_job_test_observer)
-    g_content_verify_job_test_observer->JobStarted(extension_id_,
-                                                   relative_path_);
+  scoped_refptr<TestObserver> test_observer = GetTestObserver();
+  if (test_observer)
+    test_observer->JobStarted(extension_id_, relative_path_);
   // Build |hash_reader_|.
   base::PostTaskAndReplyWithResult(
       FROM_HERE,
@@ -119,10 +128,9 @@ void ContentVerifyJob::Done() {
 
   const bool can_proceed = has_ignorable_read_error_ || FinishBlock();
   if (can_proceed) {
-    if (g_content_verify_job_test_observer) {
-      g_content_verify_job_test_observer->JobFinished(extension_id_,
-                                                      relative_path_, NONE);
-    }
+    scoped_refptr<TestObserver> test_observer = GetTestObserver();
+    if (test_observer)
+      test_observer->JobFinished(extension_id_, relative_path_, NONE);
   } else {
     DispatchFailureCallback(HASH_MISMATCH);
   }
@@ -214,10 +222,9 @@ void ContentVerifyJob::OnHashesReady(
 
   if (g_ignore_verification_for_tests)
     return;
-  if (g_content_verify_job_test_observer) {
-    g_content_verify_job_test_observer->OnHashesReady(extension_id_,
-                                                      relative_path_, success);
-  }
+  scoped_refptr<TestObserver> test_observer = GetTestObserver();
+  if (test_observer)
+    test_observer->OnHashesReady(extension_id_, relative_path_, success);
   if (!success) {
     if (!hash_reader_->has_content_hashes()) {
       DispatchFailureCallback(MISSING_ALL_HASHES);
@@ -226,10 +233,9 @@ void ContentVerifyJob::OnHashesReady(
 
     if (hash_reader_->file_missing_from_verified_contents()) {
       // Ignore verification of non-existent resources.
-      if (g_content_verify_job_test_observer) {
-        g_content_verify_job_test_observer->JobFinished(extension_id_,
-                                                        relative_path_, NONE);
-      }
+      scoped_refptr<TestObserver> test_observer = GetTestObserver();
+      if (test_observer)
+        test_observer->JobFinished(extension_id_, relative_path_, NONE);
       return;
     }
     DispatchFailureCallback(NO_HASHES_FOR_FILE);
@@ -250,9 +256,10 @@ void ContentVerifyJob::OnHashesReady(
     ScopedElapsedTimer timer(&time_spent_);
     if (!has_ignorable_read_error_ && !FinishBlock()) {
       DispatchFailureCallback(HASH_MISMATCH);
-    } else if (g_content_verify_job_test_observer) {
-      g_content_verify_job_test_observer->JobFinished(extension_id_,
-                                                      relative_path_, NONE);
+    } else {
+      scoped_refptr<TestObserver> test_observer = GetTestObserver();
+      if (test_observer)
+        test_observer->JobFinished(extension_id_, relative_path_, NONE);
     }
   }
 }
@@ -264,11 +271,13 @@ void ContentVerifyJob::SetIgnoreVerificationForTests(bool value) {
 }
 
 // static
-void ContentVerifyJob::SetObserverForTests(TestObserver* observer) {
-  DCHECK(observer == nullptr || g_content_verify_job_test_observer == nullptr)
+void ContentVerifyJob::SetObserverForTests(
+    scoped_refptr<TestObserver> observer) {
+  DCHECK(observer == nullptr ||
+         g_content_verify_job_test_observer.Get() == nullptr)
       << "SetObserverForTests does not support interleaving. Observers should "
       << "be set and then cleared one at a time.";
-  g_content_verify_job_test_observer = observer;
+  g_content_verify_job_test_observer.Get() = std::move(observer);
 }
 
 void ContentVerifyJob::DispatchFailureCallback(FailureReason reason) {
@@ -279,10 +288,9 @@ void ContentVerifyJob::DispatchFailureCallback(FailureReason reason) {
             << relative_path_.MaybeAsASCII() << " reason:" << reason;
     std::move(failure_callback_).Run(reason);
   }
-  if (g_content_verify_job_test_observer) {
-    g_content_verify_job_test_observer->JobFinished(extension_id_,
-                                                    relative_path_, reason);
-  }
+  scoped_refptr<TestObserver> test_observer = GetTestObserver();
+  if (test_observer)
+    test_observer->JobFinished(extension_id_, relative_path_, reason);
 }
 
 }  // namespace extensions

@@ -75,6 +75,7 @@ class AppTimeController : public SystemClockClient::Observer,
 
   // AppTimeNotificationDelegate:
   void ShowAppTimeLimitNotification(const AppId& app_id,
+                                    base::TimeDelta time_limit,
                                     AppNotification notification) override;
 
   const WebTimeLimitEnforcer* web_time_enforcer() const {
@@ -110,6 +111,9 @@ class AppTimeController : public SystemClockClient::Observer,
 
   // Called when the system time or timezone may have changed.
   bool HasTimeCrossedResetBoundary() const;
+
+  // Profile
+  Profile* const profile_;
 
   // The time of the day when app time limits should be reset.
   // Defaults to 6am local time.

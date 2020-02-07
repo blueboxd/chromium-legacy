@@ -817,6 +817,7 @@ android_library("chrome_test_java") {
     "//components/offline_items_collection/core:core_java",
     "//components/offline_pages/core/prefetch:offline_prefetch_proto_java",
     "//components/omnibox/browser:browser_java",
+    "//components/paint_preview/player/android:javatests",
     "//components/payments/content/android:java",
     "//components/payments/mojom:mojom_java",
     "//components/policy/android:policy_java",
@@ -1179,6 +1180,7 @@ chrome_common_shared_library("libchromefortest") {
     "//components/autofill_assistant/browser:test_support",
     "//components/crash/android:crash_android",
     "//components/minidump_uploader",
+    "//components/paint_preview/player/android:test_support",
     "//components/sync",
     "//components/sync/test/fake_server:fake_server_android",
     "//content/public/test/android:content_native_test_support",
@@ -1500,6 +1502,7 @@ java_group("chrome_public_base_module_java_for_test") {
     "//chrome/browser/subresource_filter:subresource_filter_java_test_support",
     "//chrome/browser/thumbnail:thumbnail_java_test_support",
     "//components/minidump_uploader:minidump_uploader_java",
+    "//components/paint_preview/player/android:javatests",
     "//content/public/test/android:content_java_test_support",
   ]
 }

@@ -80,7 +80,8 @@ class CORE_EXPORT JSModuleScript final : public ModuleScript,
 
   const TextPosition start_position_;
 
-  // Only for ProduceCache(). JSModuleScript keeps |produce_cache_data| because:
+  // Only for ProduceCache(). JSModuleScript keeps |produce_cache_data_|
+  // because:
   // - CompileModule() and ProduceCache() should be called at different
   //   timings, and
   // - There are no persistent object that can hold this in

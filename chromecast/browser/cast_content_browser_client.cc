@@ -516,6 +516,11 @@ void CastContentBrowserClient::OverrideWebkitPrefs(
 
   prefs->hide_scrollbars = true;
 
+  // Disable images rendering in Cast for Audio configuration
+#if BUILDFLAG(IS_CAST_AUDIO_ONLY)
+  prefs->images_enabled = false;
+#endif
+
 #if defined(OS_ANDROID)
   // Enable the television style for viewport so that all cast apps have a
   // 1280px wide layout viewport by default.

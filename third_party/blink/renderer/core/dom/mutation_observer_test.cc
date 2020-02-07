@@ -19,7 +19,9 @@ class EmptyMutationCallback : public MutationObserver::Delegate {
  public:
   explicit EmptyMutationCallback(Document& document) : document_(document) {}
 
-  ExecutionContext* GetExecutionContext() const override { return document_; }
+  ExecutionContext* GetExecutionContext() const override {
+    return document_->ToExecutionContext();
+  }
 
   void Deliver(const MutationRecordVector&, MutationObserver&) override {}
 

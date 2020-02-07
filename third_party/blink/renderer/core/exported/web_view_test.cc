@@ -5279,8 +5279,9 @@ TEST_F(WebViewTest, DetachPluginInLayout) {
       To<HTMLObjectElement>(main_frame->GetDocument()->body()->firstChild());
   EXPECT_TRUE(plugin_element->OwnedPlugin());
 
-  plugin_element->style()->setCSSText(main_frame->GetDocument(),
-                                      "display: none", ASSERT_NO_EXCEPTION);
+  plugin_element->style()->setCSSText(
+      main_frame->GetDocument()->ToExecutionContext(), "display: none",
+      ASSERT_NO_EXCEPTION);
   EXPECT_TRUE(plugin_element->OwnedPlugin());
   UpdateAllLifecyclePhases();
   EXPECT_FALSE(plugin_element->OwnedPlugin());

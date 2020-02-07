@@ -139,7 +139,7 @@ static DataTransfer* CreateDraggingDataTransfer(DataTransferAccessPolicy policy,
 }
 
 DragController::DragController(Page* page)
-    : ContextLifecycleObserver(nullptr),
+    : ContextLifecycleObserver(static_cast<ExecutionContext*>(nullptr)),
       page_(page),
       document_under_mouse_(nullptr),
       drag_initiator_(nullptr),
@@ -995,7 +995,7 @@ bool DragController::PopulateDragDataTransfer(LocalFrame* src,
 
   // Observe context related to source to allow dropping drag_state_ when the
   // Document goes away.
-  SetContext(src->GetDocument());
+  SetContext(src->GetDocument()->ToExecutionContext());
 
   return true;
 }
@@ -1300,7 +1300,7 @@ void DragController::DoSystemDrag(DragImage* image,
                                   bool for_link) {
   did_initiate_drag_ = true;
   drag_initiator_ = frame->GetDocument();
-  SetContext(drag_initiator_);
+  SetContext(drag_initiator_->ToExecutionContext());
 
   // TODO(pdr): |drag_location| and |event_pos| should be passed in as
   // FloatPoints and we should calculate these adjusted values in floating

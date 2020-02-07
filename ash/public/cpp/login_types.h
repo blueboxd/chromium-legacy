@@ -18,7 +18,7 @@ namespace ash {
 
 // State of the Oobe UI dialog, which is used to update the visibility of login
 // shelf buttons.
-// This comes from SIGNIN_UI_STATE defined in display_manager.js, with an
+// This comes from OOBE_UI_STATE defined in display_manager_types.js, with an
 // additional value HIDDEN to indicate the visibility of the oobe ui dialog.
 enum class OobeDialogState {
   // Showing other screen, which does not impact the visibility of login shelf
@@ -48,15 +48,24 @@ enum class OobeDialogState {
   // Showing error screen.
   ERROR = 8,
 
-  // Showing sync consent screen.
-  SYNC_CONSENT = 9,
+  // Showing any of post-login onboarding screens.
+  ONBOARDING = 9,
+
+  // Screen that blocks device usage for some reason.
+  BLOCKING = 10,
+
+  // Showing any of kiosk launch screens.
+  KIOSK_LAUNCH = 11,
+
+  // Showing data migration screen.
+  MIGRATION = 12,
 
   // Oobe UI dialog is currently hidden.
-  HIDDEN = 10,
+  HIDDEN = 13,
 
   // Showing login UI provided by a Chrome extension using chrome.loginScreenUi
   // API.
-  EXTENSION_LOGIN = 11,
+  EXTENSION_LOGIN = 14,
 };
 
 // Supported multi-profile user behavior values.

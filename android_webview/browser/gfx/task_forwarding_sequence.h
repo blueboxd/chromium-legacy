@@ -10,7 +10,6 @@
 #include <memory>
 #include <utility>
 
-#include "base/memory/weak_ptr.h"
 #include "gpu/ipc/single_task_sequence.h"
 
 namespace gpu {
@@ -49,15 +48,17 @@ class TaskForwardingSequence : public gpu::SingleTaskSequence {
  private:
   // Method to wrap scheduled task with the order number processing required for
   // sync tokens.
-  void RunTask(base::OnceClosure task,
-               std::vector<gpu::SyncToken> sync_token_fences,
-               uint32_t order_num);
+  static void RunTask(
+      base::OnceClosure task,
+      std::vector<gpu::SyncToken> sync_token_fences,
+      uint32_t order_num,
+      gpu::SyncPointManager* sync_point_manager,
+      scoped_refptr<gpu::SyncPointOrderData> sync_point_order_data);
 
   // Raw pointer refer to the global instance.
   TaskQueueWebView* const task_queue_;
   gpu::SyncPointManager* const sync_point_manager_;
   scoped_refptr<gpu::SyncPointOrderData> sync_point_order_data_;
-  base::WeakPtrFactory<TaskForwardingSequence> weak_ptr_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(TaskForwardingSequence);
 };

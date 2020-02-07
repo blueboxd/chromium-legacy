@@ -6,29 +6,48 @@
 #define THIRD_PARTY_BLINK_RENDERER_CORE_TYPED_ARRAYS_FLEXIBLE_ARRAY_BUFFER_VIEW_H_
 
 #include "base/macros.h"
+#include "third_party/blink/renderer/bindings/core/v8/v8_array_buffer_view.h"
 #include "third_party/blink/renderer/core/core_export.h"
 #include "third_party/blink/renderer/core/typed_arrays/dom_array_buffer_view.h"
 #include "third_party/blink/renderer/platform/heap/handle.h"
 
 namespace blink {
 
+// FlexibleArrayBufferView is a performance hack to avoid overhead to
+// instantiate DOMArrayBufferView and DOMArrayBuffer when the contents are
+// very small.  Otherwise, FlexibleArrayBufferView is a thin wrapper to
+// DOMArrayBufferView.
 class CORE_EXPORT FlexibleArrayBufferView {
   STACK_ALLOCATED();
 
  public:
-  FlexibleArrayBufferView()
-      : full_(nullptr), small_data_(nullptr), small_length_(0) {}
-
-  void SetFull(DOMArrayBufferView* full) { full_ = full; }
-  void SetSmall(void* data, size_t length) {
-    small_data_ = data;
-    small_length_ = length;
+  FlexibleArrayBufferView() = default;
+  FlexibleArrayBufferView(const FlexibleArrayBufferView&) = default;
+  FlexibleArrayBufferView(FlexibleArrayBufferView&&) = default;
+  FlexibleArrayBufferView(v8::Local<v8::ArrayBufferView> array_buffer_view) {
+    SetContents(array_buffer_view);
   }
+  ~FlexibleArrayBufferView() = default;
+
+  FlexibleArrayBufferView& operator=(const FlexibleArrayBufferView&) = delete;
+  FlexibleArrayBufferView& operator=(FlexibleArrayBufferView&&) = delete;
 
   void Clear() {
     full_ = nullptr;
     small_data_ = nullptr;
     small_length_ = 0;
+  }
+
+  void SetContents(v8::Local<v8::ArrayBufferView> array_buffer_view) {
+    DCHECK(IsEmpty());
+    size_t size = array_buffer_view->ByteLength();
+    if (size <= sizeof small_buffer_) {
+      array_buffer_view->CopyContents(small_buffer_, size);
+      small_data_ = small_buffer_;
+      small_length_ = size;
+    } else {
+      full_ = V8ArrayBufferView::ToImpl(array_buffer_view);
+    }
   }
 
   bool IsEmpty() const { return !full_ && !small_data_; }
@@ -61,11 +80,15 @@ class CORE_EXPORT FlexibleArrayBufferView {
   operator bool() const { return !IsEmpty(); }
 
  private:
-  DOMArrayBufferView* full_;
+  DOMArrayBufferView* full_ = nullptr;
 
-  void* small_data_;
-  size_t small_length_;
-  DISALLOW_COPY_AND_ASSIGN(FlexibleArrayBufferView);
+  // If the contents of the given v8::ArrayBufferView are small enough to fit
+  // within |small_buffer_|, the contents are directly copied into
+  // |small_buffer_| to which accesses are much faster than to a maybe-shared
+  // buffer in a DOMArrayBufferView.
+  void* small_data_ = nullptr;  // Non null iff |small_buffer_| is used
+  size_t small_length_ = 0;     // The size actually used of |small_buffer_|
+  uint8_t small_buffer_[64];
 };
 
 }  // namespace blink

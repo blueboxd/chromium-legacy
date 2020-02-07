@@ -433,6 +433,8 @@ def _make_blink_api_call(code_node, cg_context, num_of_args=None):
         arguments.append("${script_state}")
     if "ExecutionContext" in values:
         arguments.append("${execution_context}")
+    if "Document" in values:
+        arguments.append("*To<Document>(${execution_context})")
 
     code_generator_info = cg_context.member_like.code_generator_info
     is_partial = code_generator_info.defined_in_partial
@@ -514,11 +516,8 @@ def bind_return_value(code_node, cg_context):
             elif cg_context.is_return_by_argument:
                 nodes.append(F("{} ${return_value};", return_type))
                 nodes.append(F("{};", api_call))
-            elif cg_context.is_return_value_mutable:
-                nodes.append(
-                    F("{} ${return_value} = {};", return_type, api_call))
             else:
-                nodes.append(F("const auto& ${return_value} = {};", api_call))
+                nodes.append(F("auto ${return_value} = {};", api_call))
         else:
             branches = SequenceNode()
             for index, api_call in api_calls:
@@ -3258,5 +3257,5 @@ def generate_interface(interface):
 
 
 def generate_interfaces(web_idl_database):
-    interface = web_idl_database.find("URL")
+    interface = web_idl_database.find("WebGLRenderingContext")
     generate_interface(interface)

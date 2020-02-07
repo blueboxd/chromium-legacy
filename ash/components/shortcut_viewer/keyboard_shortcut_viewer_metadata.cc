@@ -200,6 +200,8 @@ const gfx::VectorIcon* GetVectorIconForKeyboardCode(ui::KeyboardCode key_code) {
       return &kKsvArrowLeftIcon;
     case ui::VKEY_RIGHT:
       return &kKsvArrowRightIcon;
+    case ui::VKEY_PRIVACY_SCREEN_TOGGLE:
+      return &kKsvPrivacyScreenToggleIcon;
     default:
       return nullptr;
   }
@@ -1407,6 +1409,13 @@ const std::vector<KeyboardShortcutItem>& GetKeyboardShortcutItemList() {
        // |shortcut_key_codes|
        {ui::VKEY_CONTROL, ui::VKEY_UNKNOWN, ui::VKEY_SHIFT, ui::VKEY_LEFT,
         ui::VKEY_RIGHT, ui::VKEY_UP, ui::VKEY_DOWN}},
+
+      {// |categories|
+       {ShortcutCategory::kSystemAndDisplay},
+       IDS_KSV_DESCRIPTION_PRIVACY_SCREEN_TOGGLE,
+       IDS_KSV_SHORTCUT_ONE_KEY,
+       // |accelerator_ids|
+       {{ui::VKEY_PRIVACY_SCREEN_TOGGLE, ui::EF_NONE}}},
   });
 
   static bool is_initialized = false;

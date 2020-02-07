@@ -49,7 +49,7 @@ LayoutWorkletGlobalScopeProxy::LayoutWorkletGlobalScopeProxy(
       nullptr /* worker_clients */,
       frame->Client()->CreateWorkerContentSettingsClient(),
       document->GetSecurityContext().AddressSpace(),
-      OriginTrialContext::GetTokens(document).get(),
+      OriginTrialContext::GetTokens(document->ToExecutionContext()).get(),
       base::UnguessableToken::Create(), nullptr /* worker_settings */,
       kV8CacheOptionsDefault, module_responses_map,
       mojo::NullRemote() /* browser_interface_broker */,

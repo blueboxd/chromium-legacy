@@ -9,7 +9,7 @@
 
 @implementation AppShimDelegate
 
-- (id)initWithController:(AppShimController*)controller {
+- (instancetype)initWithController:(AppShimController*)controller {
   if (self = [super init])
     _appShimController = controller;
   return self;

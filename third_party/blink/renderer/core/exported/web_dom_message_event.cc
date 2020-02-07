@@ -57,7 +57,8 @@ WebDOMMessageEvent::WebDOMMessageEvent(
   MessagePortArray* ports = nullptr;
   if (!target_document.IsNull()) {
     Document* core_document = target_document;
-    ports = MessagePort::EntanglePorts(*core_document, std::move(channels));
+    ports = MessagePort::EntanglePorts(*core_document->ToExecutionContext(),
+                                       std::move(channels));
   }
   // TODO(esprehn): Chromium always passes empty string for lastEventId, is that
   // right?
@@ -79,7 +80,8 @@ WebDOMMessageEvent::WebDOMMessageEvent(TransferableMessage message,
   MessagePortArray* ports = nullptr;
   if (!target_document.IsNull()) {
     Document* core_document = target_document;
-    ports = MessagePort::EntanglePorts(*core_document, std::move(msg.ports));
+    ports = MessagePort::EntanglePorts(*core_document->ToExecutionContext(),
+                                       std::move(msg.ports));
   }
 
   UserActivation* user_activation = nullptr;

@@ -20,6 +20,7 @@
 
 #include "base/bind.h"
 #include "base/command_line.h"
+#include "base/debug/crash_logging.h"
 #include "base/location.h"
 #include "base/logging.h"
 #include "base/memory/singleton.h"
@@ -1322,10 +1323,15 @@ SkColorType ColorTypeForVisual(void* visual) {
       return color_info.color_type;
     }
   }
-  LOG(FATAL) << "Unsupported visual with rgb mask 0x" << std::hex
-             << vis->red_mask << ", 0x" << vis->green_mask << ", 0x"
-             << vis->blue_mask
-             << ".  Please report this to https://crbug.com/1025266";
+  char visual_masks[static_cast<size_t>(base::debug::CrashKeySize::Size64)];
+  snprintf(visual_masks, sizeof(visual_masks), "0x%08lx, 0x%08lx, 0x%08lx",
+           vis->red_mask, vis->green_mask, vis->blue_mask);
+  static auto* crash_key_string = base::debug::AllocateCrashKeyString(
+      "visual_masks", base::debug::CrashKeySize::Size64);
+  base::debug::ScopedCrashKeyString scoped_crash_key(crash_key_string,
+                                                     visual_masks);
+  LOG(FATAL) << "Unsupported visual with rgb masks " << visual_masks
+             << ".  Please report this to https://crbug.com/1048386";
   return kUnknown_SkColorType;
 }
 

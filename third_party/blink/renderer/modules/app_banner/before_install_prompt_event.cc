@@ -28,8 +28,8 @@ BeforeInstallPromptEvent::BeforeInstallPromptEvent(
                 std::move(event_receiver),
                 frame.GetTaskRunner(TaskType::kApplicationLifeCycle)),
       platforms_(platforms),
-      user_choice_(
-          MakeGarbageCollected<UserChoiceProperty>(frame.GetDocument())) {
+      user_choice_(MakeGarbageCollected<UserChoiceProperty>(
+          frame.GetDocument()->ToExecutionContext())) {
   DCHECK(banner_service_remote_);
   DCHECK(receiver_.is_bound());
   UseCounter::Count(frame.GetDocument(), WebFeature::kBeforeInstallPromptEvent);
@@ -82,7 +82,7 @@ ScriptPromise BeforeInstallPromptEvent::prompt(
   }
 
   ExecutionContext* context = ExecutionContext::From(script_state);
-  Document* doc = To<Document>(context);
+  Document* doc = Document::From(context);
 
   if (!LocalFrame::ConsumeTransientUserActivation(doc ? doc->GetFrame()
                                                       : nullptr)) {

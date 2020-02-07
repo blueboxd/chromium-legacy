@@ -92,7 +92,7 @@ ScriptPromise PushManager::subscribe(
   // user for permission to use the Push API. The embedder should persist the
   // permission so that later calls in different contexts can succeed.
   if (auto* document =
-          DynamicTo<Document>(ExecutionContext::From(script_state))) {
+          Document::DynamicFrom(ExecutionContext::From(script_state))) {
     LocalFrame* frame = document->GetFrame();
     if (!document->domWindow() || !frame) {
       exception_state.ThrowDOMException(DOMExceptionCode::kInvalidStateError,
@@ -131,7 +131,7 @@ ScriptPromise PushManager::permissionState(
     const PushSubscriptionOptionsInit* options,
     ExceptionState& exception_state) {
   if (auto* document =
-          DynamicTo<Document>(ExecutionContext::From(script_state))) {
+          Document::DynamicFrom(ExecutionContext::From(script_state))) {
     if (!document->domWindow() || !document->GetFrame()) {
       exception_state.ThrowDOMException(DOMExceptionCode::kInvalidStateError,
                                         "Document is detached from window.");

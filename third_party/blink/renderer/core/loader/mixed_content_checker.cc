@@ -839,8 +839,7 @@ void MixedContentChecker::UpgradeInsecureRequest(
             fetch_client_settings_object->GetHttpsState(), context,
             settings_client, fetch_client_settings_object->GlobalObjectUrl())) {
       if (execution_context_for_logging->IsDocument()) {
-        Document* document =
-            static_cast<Document*>(execution_context_for_logging);
+        Document* document = Document::From(execution_context_for_logging);
         document->AddConsoleMessage(
             MixedContentChecker::CreateConsoleMessageAboutFetchAutoupgrade(
                 fetch_client_settings_object->GlobalObjectUrl(),

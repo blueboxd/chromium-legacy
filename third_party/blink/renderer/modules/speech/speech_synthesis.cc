@@ -104,7 +104,7 @@ bool SpeechSynthesis::paused() const {
 
 void SpeechSynthesis::speak(SpeechSynthesisUtterance* utterance) {
   DCHECK(utterance);
-  Document* document = To<Document>(GetExecutionContext());
+  Document* document = Document::From(GetExecutionContext());
   if (!document)
     return;
 
@@ -300,7 +300,7 @@ void SpeechSynthesis::Trace(blink::Visitor* visitor) {
 bool SpeechSynthesis::GetElapsedTimeMillis(double* millis) {
   if (!GetExecutionContext())
     return false;
-  Document* delegate_document = To<Document>(GetExecutionContext());
+  Document* delegate_document = Document::From(GetExecutionContext());
   if (!delegate_document || delegate_document->IsStopped())
     return false;
   LocalDOMWindow* delegate_dom_window = delegate_document->domWindow();
@@ -312,7 +312,7 @@ bool SpeechSynthesis::GetElapsedTimeMillis(double* millis) {
 }
 
 bool SpeechSynthesis::IsAllowedToStartByAutoplay() const {
-  Document* document = To<Document>(GetExecutionContext());
+  Document* document = Document::From(GetExecutionContext());
   DCHECK(document);
 
   // Note: could check the utterance->volume here, but that could be overriden

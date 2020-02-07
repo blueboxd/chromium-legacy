@@ -4,6 +4,7 @@
 
 #include <string>
 
+#include "ash/public/cpp/login_screen_test_api.h"
 #include "base/command_line.h"
 #include "base/optional.h"
 #include "base/strings/string_piece.h"
@@ -208,6 +209,10 @@ class EncryptionMigrationTest : public MixinBasedInProcessBrowserTest {
 IN_PROC_BROWSER_TEST_F(EncryptionMigrationTest, SkipWithNoPolicySet) {
   SetUpStubAuthenticatorAndAttemptLogin(false /* has_incomplete_migration */);
   OobeScreenWaiter(EncryptionMigrationScreenView::kScreenId).Wait();
+
+  EXPECT_FALSE(ash::LoginScreenTestApi::IsShutdownButtonShown());
+  EXPECT_FALSE(ash::LoginScreenTestApi::IsGuestButtonShown());
+  EXPECT_FALSE(ash::LoginScreenTestApi::IsAddUserButtonShown());
 
   WaitForElementCreation("ready-dialog");
   VerifyUiElementVisible("ready-dialog");

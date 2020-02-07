@@ -120,25 +120,21 @@ ImageBitmap* WebGL2ComputeRenderingContext::TransferToImageBitmap(
 
 void WebGL2ComputeRenderingContext::RegisterContextExtensions() {
   // Register extensions.
-  RegisterExtension<EXTColorBufferFloat>(ext_color_buffer_float_);
-  RegisterExtension<EXTDisjointTimerQueryWebGL2>(
-      ext_disjoint_timer_query_web_gl2_);
-  RegisterExtension<EXTFloatBlend>(ext_float_blend_);
-  RegisterExtension<EXTTextureFilterAnisotropic>(
-      ext_texture_filter_anisotropic_);
-  RegisterExtension<OESTextureFloatLinear>(oes_texture_float_linear_);
-  RegisterExtension<WebGLCompressedTextureASTC>(webgl_compressed_texture_astc_);
-  RegisterExtension<WebGLCompressedTextureETC>(webgl_compressed_texture_etc_);
-  RegisterExtension<WebGLCompressedTextureETC1>(webgl_compressed_texture_etc1_);
-  RegisterExtension<WebGLCompressedTexturePVRTC>(
-      webgl_compressed_texture_pvrtc_);
-  RegisterExtension<WebGLCompressedTextureS3TC>(webgl_compressed_texture_s3tc_);
-  RegisterExtension<WebGLCompressedTextureS3TCsRGB>(
-      webgl_compressed_texture_s3tc_srgb_);
-  RegisterExtension<WebGLDebugRendererInfo>(webgl_debug_renderer_info_);
-  RegisterExtension<WebGLDebugShaders>(webgl_debug_shaders_);
-  RegisterExtension<WebGLLoseContext>(webgl_lose_context_);
-  RegisterExtension<WebGLVideoTexture>(webgl_video_texture_, kDraftExtension);
+  RegisterExtension(ext_color_buffer_float_);
+  RegisterExtension(ext_disjoint_timer_query_web_gl2_);
+  RegisterExtension(ext_float_blend_);
+  RegisterExtension(ext_texture_filter_anisotropic_);
+  RegisterExtension(oes_texture_float_linear_);
+  RegisterExtension(webgl_compressed_texture_astc_);
+  RegisterExtension(webgl_compressed_texture_etc_);
+  RegisterExtension(webgl_compressed_texture_etc1_);
+  RegisterExtension(webgl_compressed_texture_pvrtc_);
+  RegisterExtension(webgl_compressed_texture_s3tc_);
+  RegisterExtension(webgl_compressed_texture_s3tc_srgb_);
+  RegisterExtension(webgl_debug_renderer_info_);
+  RegisterExtension(webgl_debug_shaders_);
+  RegisterExtension(webgl_lose_context_);
+  RegisterExtension(webgl_video_texture_, kDraftExtension);
 }
 
 void WebGL2ComputeRenderingContext::Trace(blink::Visitor* visitor) {

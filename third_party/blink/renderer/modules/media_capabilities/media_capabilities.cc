@@ -694,7 +694,7 @@ ScriptPromise MediaCapabilities::GetEmeSupport(
 
   ExecutionContext* execution_context = ExecutionContext::From(script_state);
   DCHECK(execution_context);
-  Document* document = To<Document>(execution_context);
+  Document* document = Document::From(execution_context);
 
   // See context here:
   // https://sites.google.com/a/chromium.org/dev/Home/chromium-security/deprecating-permissions-in-cross-origin-iframes

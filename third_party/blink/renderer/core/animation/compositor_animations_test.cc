@@ -300,8 +300,8 @@ class AnimationCompositorAnimationsTest : public PaintTestConfigurations,
 
   void SetCustomProperty(const String& name, const String& value) {
     DummyExceptionStateForTesting exception_state;
-    element_->style()->setProperty(&GetDocument(), name, value, g_empty_string,
-                                   exception_state);
+    element_->style()->setProperty(GetDocument().ToExecutionContext(), name,
+                                   value, g_empty_string, exception_state);
     EXPECT_FALSE(exception_state.HadException());
     EXPECT_TRUE(element_->style()->getPropertyValue(name));
   }

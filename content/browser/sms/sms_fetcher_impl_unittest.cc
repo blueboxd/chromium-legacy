@@ -99,7 +99,7 @@ TEST_F(SmsFetcherImplTest, ReceiveFromRemoteProvider) {
   StrictMock<MockSubscriber> subscriber;
   SmsFetcherImpl fetcher(nullptr, base::WrapUnique(provider()));
 
-  const std::string& sms = "For: https://a.com?otp=123";
+  const std::string& sms = "@a.com #123";
 
   EXPECT_CALL(*client(), FetchRemoteSms(_, _, _))
       .WillOnce(Invoke(
@@ -139,7 +139,7 @@ TEST_F(SmsFetcherImplTest, ReceiveFromOtherOrigin) {
       .WillOnce(Invoke(
           [&](BrowserContext*, const url::Origin&,
               base::OnceCallback<void(base::Optional<std::string>)> callback) {
-            std::move(callback).Run("For: https://b.com?otp=123");
+            std::move(callback).Run("@b.com #123");
           }));
 
   EXPECT_CALL(subscriber, OnReceive(_, _)).Times(0);
@@ -151,7 +151,7 @@ TEST_F(SmsFetcherImplTest, ReceiveFromBothProviders) {
   StrictMock<MockSubscriber> subscriber;
   SmsFetcherImpl fetcher(nullptr, base::WrapUnique(provider()));
 
-  const std::string& sms = "hello \nFor: https://a.com?otp=123";
+  const std::string& sms = "hello\n@a.com #123";
 
   EXPECT_CALL(*client(), FetchRemoteSms(_, _, _))
       .WillOnce(Invoke(

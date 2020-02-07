@@ -426,7 +426,7 @@ bool LockManager::AllowLocks(ScriptState* script_state) {
     DCHECK(execution_context->IsContextThread());
     SECURITY_DCHECK(execution_context->IsDocument() ||
                     execution_context->IsWorkerGlobalScope());
-    if (auto* document = DynamicTo<Document>(execution_context)) {
+    if (auto* document = Document::DynamicFrom(execution_context)) {
       LocalFrame* frame = document->GetFrame();
       if (!frame) {
         cached_allowed_ = false;

@@ -101,9 +101,9 @@ bool RLZTrackerDelegateImpl::ClearReferral() {
 }
 
 void RLZTrackerDelegateImpl::SetOmniboxSearchCallback(
-    const base::Closure& callback) {
+    base::OnceClosure callback) {
   DCHECK(!callback.is_null());
-  on_omnibox_search_callback_ = callback;
+  on_omnibox_search_callback_ = std::move(callback);
   on_omnibox_url_opened_subscription_ =
       OmniboxEventGlobalTracker::GetInstance()->RegisterCallback(
           base::Bind(&RLZTrackerDelegateImpl::OnURLOpenedFromOmnibox,
@@ -111,7 +111,7 @@ void RLZTrackerDelegateImpl::SetOmniboxSearchCallback(
 }
 
 void RLZTrackerDelegateImpl::SetHomepageSearchCallback(
-    const base::Closure& callback) {
+    base::OnceClosure callback) {
   NOTREACHED();
 }
 
@@ -130,9 +130,6 @@ void RLZTrackerDelegateImpl::OnURLOpenedFromOmnibox(OmniboxLog* log) {
 
   on_omnibox_url_opened_subscription_.reset();
 
-  using std::swap;
-  base::Closure callback_to_run;
-  swap(callback_to_run, on_omnibox_search_callback_);
-  if (!callback_to_run.is_null())
-    callback_to_run.Run();
+  if (!on_omnibox_search_callback_.is_null())
+    std::move(on_omnibox_search_callback_).Run();
 }

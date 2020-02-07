@@ -45,7 +45,7 @@ PresentationController* PresentationController::FromContext(
   if (!execution_context)
     return nullptr;
 
-  Document* document = To<Document>(execution_context);
+  Document* document = Document::From(execution_context);
   if (!document->GetFrame())
     return nullptr;
 

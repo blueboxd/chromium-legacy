@@ -420,13 +420,9 @@ CORE_EXPORT ScriptState* ToScriptStateForMainWorld(LocalFrame*);
 // a context, if the window is currently being displayed in a Frame.
 CORE_EXPORT LocalFrame* ToLocalFrameIfNotDetached(v8::Local<v8::Context>);
 
-// If 'storage' is non-null, it must be large enough to copy all bytes in the
-// array buffer view into it.  Use allocateFlexibleArrayBufferStorage(v8Value)
-// to allocate it using alloca() in the callers stack frame.
 CORE_EXPORT void ToFlexibleArrayBufferView(v8::Isolate*,
                                            v8::Local<v8::Value>,
-                                           FlexibleArrayBufferView&,
-                                           void* storage = nullptr);
+                                           FlexibleArrayBufferView&);
 
 CORE_EXPORT bool IsValidEnum(const String& value,
                              const char* const* valid_values,

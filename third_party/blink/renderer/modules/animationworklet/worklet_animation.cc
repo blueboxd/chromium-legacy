@@ -212,7 +212,7 @@ WorkletAnimation* WorkletAnimation::Create(
     return nullptr;
   }
 
-  Document& document = *To<Document>(ExecutionContext::From(script_state));
+  Document& document = *Document::From(ExecutionContext::From(script_state));
   if (!document.GetWorkletAnimationController().IsAnimatorRegistered(
           animator_name)) {
     exception_state.ThrowDOMException(

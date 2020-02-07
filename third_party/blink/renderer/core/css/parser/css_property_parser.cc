@@ -289,7 +289,7 @@ bool CSSPropertyParser::ConsumeCSSWideKeyword(CSSPropertyID unresolved_property,
 static CSSValue* ConsumeSingleViewportDescriptor(
     CSSParserTokenRange& range,
     CSSPropertyID prop_id,
-    CSSParserMode css_parser_mode) {
+    const CSSParserContext& context) {
   CSSValueID id = range.Peek().Id();
   switch (prop_id) {
     case CSSPropertyID::kMinWidth:
@@ -299,7 +299,7 @@ static CSSValue* ConsumeSingleViewportDescriptor(
       if (id == CSSValueID::kAuto || id == CSSValueID::kInternalExtendToZoom)
         return ConsumeIdent(range);
       return css_property_parser_helpers::ConsumeLengthOrPercent(
-          range, css_parser_mode, kValueRangeNonNegative);
+          range, context, kValueRangeNonNegative);
     case CSSPropertyID::kMinZoom:
     case CSSPropertyID::kMaxZoom:
     case CSSPropertyID::kZoom: {
@@ -310,7 +310,7 @@ static CSSValue* ConsumeSingleViewportDescriptor(
       if (parsed_value)
         return parsed_value;
       return css_property_parser_helpers::ConsumePercent(
-          range, kValueRangeNonNegative);
+          range, context, kValueRangeNonNegative);
     }
     case CSSPropertyID::kUserZoom:
       return ConsumeIdent<CSSValueID::kZoom, CSSValueID::kFixed>(range);
@@ -337,13 +337,13 @@ bool CSSPropertyParser::ParseViewportDescriptor(CSSPropertyID prop_id,
   switch (prop_id) {
     case CSSPropertyID::kWidth: {
       CSSValue* min_width = ConsumeSingleViewportDescriptor(
-          range_, CSSPropertyID::kMinWidth, context_->Mode());
+          range_, CSSPropertyID::kMinWidth, *context_);
       if (!min_width)
         return false;
       CSSValue* max_width = min_width;
       if (!range_.AtEnd()) {
         max_width = ConsumeSingleViewportDescriptor(
-            range_, CSSPropertyID::kMaxWidth, context_->Mode());
+            range_, CSSPropertyID::kMaxWidth, *context_);
       }
       if (!max_width || !range_.AtEnd())
         return false;
@@ -357,13 +357,13 @@ bool CSSPropertyParser::ParseViewportDescriptor(CSSPropertyID prop_id,
     }
     case CSSPropertyID::kHeight: {
       CSSValue* min_height = ConsumeSingleViewportDescriptor(
-          range_, CSSPropertyID::kMinHeight, context_->Mode());
+          range_, CSSPropertyID::kMinHeight, *context_);
       if (!min_height)
         return false;
       CSSValue* max_height = min_height;
       if (!range_.AtEnd()) {
         max_height = ConsumeSingleViewportDescriptor(
-            range_, CSSPropertyID::kMaxHeight, context_->Mode());
+            range_, CSSPropertyID::kMaxHeight, *context_);
       }
       if (!max_height || !range_.AtEnd())
         return false;
@@ -386,7 +386,7 @@ bool CSSPropertyParser::ParseViewportDescriptor(CSSPropertyID prop_id,
     case CSSPropertyID::kUserZoom:
     case CSSPropertyID::kOrientation: {
       CSSValue* parsed_value =
-          ConsumeSingleViewportDescriptor(range_, prop_id, context_->Mode());
+          ConsumeSingleViewportDescriptor(range_, prop_id, *context_);
       if (!parsed_value || !range_.AtEnd())
         return false;
       AddProperty(prop_id, CSSPropertyID::kInvalid, *parsed_value, important,

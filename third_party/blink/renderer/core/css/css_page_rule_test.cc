@@ -38,19 +38,23 @@ TEST(CSSPageRule, selectorText) {
   EXPECT_EQ(":left", page_rule->selectorText());
 
   // set invalid page selector.
-  page_rule->setSelectorText(&sheet.GetDocument(), ":hover");
+  page_rule->setSelectorText(sheet.GetDocument().ToExecutionContext(),
+                             ":hover");
   EXPECT_EQ(":left", page_rule->selectorText());
 
   // set invalid page selector.
-  page_rule->setSelectorText(&sheet.GetDocument(), "right { bla");
+  page_rule->setSelectorText(sheet.GetDocument().ToExecutionContext(),
+                             "right { bla");
   EXPECT_EQ(":left", page_rule->selectorText());
 
   // set page pseudo class selector.
-  page_rule->setSelectorText(&sheet.GetDocument(), ":right");
+  page_rule->setSelectorText(sheet.GetDocument().ToExecutionContext(),
+                             ":right");
   EXPECT_EQ(":right", page_rule->selectorText());
 
   // set page type selector.
-  page_rule->setSelectorText(&sheet.GetDocument(), "namedpage");
+  page_rule->setSelectorText(sheet.GetDocument().ToExecutionContext(),
+                             "namedpage");
   EXPECT_EQ("namedpage", page_rule->selectorText());
 }
 

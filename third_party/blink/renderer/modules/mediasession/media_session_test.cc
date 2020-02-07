@@ -54,7 +54,8 @@ class MediaSessionTest : public PageTestBase {
 
     mock_service_ = std::make_unique<MockMediaSessionService>();
 
-    media_session_ = MakeGarbageCollected<MediaSession>(&GetDocument());
+    media_session_ =
+        MakeGarbageCollected<MediaSession>(GetDocument().ToExecutionContext());
     media_session_->service_ = mock_service_->CreateRemoteAndBind();
   }
 

@@ -34,6 +34,11 @@ login.createScreen('UpdateRequiredScreen', 'update-required', function() {
       'setEnterpriseAndDeviceName'
     ],
 
+    /** Initial UI State for screen */
+    getOobeUIInitialState() {
+      return OOBE_UI_STATE.BLOCKING;
+    },
+
     /** @param {string} domain Enterprise domain name */
     /** @param {string} device Device name */
     setEnterpriseAndDeviceName(enterpriseDomain, device) {

@@ -2231,7 +2231,7 @@ class HTMLSelectElement::PopupUpdater : public MutationObserver::Delegate {
   }
 
   ExecutionContext* GetExecutionContext() const override {
-    return &select_->GetDocument();
+    return select_->GetDocument().ToExecutionContext();
   }
 
   void Deliver(const MutationRecordVector& records,

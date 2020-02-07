@@ -26,7 +26,7 @@ namespace blink {
 PresentationReceiver::PresentationReceiver(LocalFrame* frame)
     : ContextLifecycleObserver(frame->GetDocument()),
       connection_list_(MakeGarbageCollected<PresentationConnectionList>(
-          frame->GetDocument())) {
+          frame->GetDocument()->ToExecutionContext())) {
   frame->GetBrowserInterfaceBroker().GetInterface(
       presentation_service_remote_.BindNewPipeAndPassReceiver());
   scoped_refptr<base::SingleThreadTaskRunner> task_runner =

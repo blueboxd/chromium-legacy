@@ -101,4 +101,55 @@ void WebTestClientImpl::ResetPermissions() {
       ->ResetPermissions();
 }
 
+void WebTestClientImpl::SetPermission(const std::string& name,
+                                      blink::mojom::PermissionStatus status,
+                                      const GURL& origin,
+                                      const GURL& embedding_origin) {
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
+
+  content::PermissionType type;
+  if (name == "midi") {
+    type = PermissionType::MIDI;
+  } else if (name == "midi-sysex") {
+    type = PermissionType::MIDI_SYSEX;
+  } else if (name == "push-messaging" || name == "notifications") {
+    type = PermissionType::NOTIFICATIONS;
+  } else if (name == "geolocation") {
+    type = PermissionType::GEOLOCATION;
+  } else if (name == "protected-media-identifier") {
+    type = PermissionType::PROTECTED_MEDIA_IDENTIFIER;
+  } else if (name == "background-sync") {
+    type = PermissionType::BACKGROUND_SYNC;
+  } else if (name == "accessibility-events") {
+    type = PermissionType::ACCESSIBILITY_EVENTS;
+  } else if (name == "clipboard-read-write") {
+    type = PermissionType::CLIPBOARD_READ_WRITE;
+  } else if (name == "clipboard-sanitized-write") {
+    type = PermissionType::CLIPBOARD_SANITIZED_WRITE;
+  } else if (name == "payment-handler") {
+    type = PermissionType::PAYMENT_HANDLER;
+  } else if (name == "accelerometer" || name == "gyroscope" ||
+             name == "magnetometer" || name == "ambient-light-sensor") {
+    type = PermissionType::SENSORS;
+  } else if (name == "background-fetch") {
+    type = PermissionType::BACKGROUND_FETCH;
+  } else if (name == "periodic-background-sync") {
+    type = PermissionType::PERIODIC_BACKGROUND_SYNC;
+  } else if (name == "wake-lock-screen") {
+    type = PermissionType::WAKE_LOCK_SCREEN;
+  } else if (name == "wake-lock-system") {
+    type = PermissionType::WAKE_LOCK_SYSTEM;
+  } else if (name == "nfc") {
+    type = PermissionType::NFC;
+  } else {
+    NOTREACHED();
+    type = PermissionType::NOTIFICATIONS;
+  }
+
+  WebTestContentBrowserClient::Get()
+      ->GetWebTestBrowserContext()
+      ->GetWebTestPermissionManager()
+      ->SetPermission(type, status, origin, embedding_origin);
+}
+
 }  // namespace content

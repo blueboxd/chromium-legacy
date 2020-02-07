@@ -81,7 +81,8 @@ class PerformanceManagerTabHelper
 
   void SetUkmSourceIdForTesting(ukm::SourceId id) { ukm_source_id_ = id; }
 
-  // Retrieves the frame node associated with |render_frame_host|.
+  // Retrieves the frame node associated with |render_frame_host|. Returns
+  // nullptr if none exist for that frame.
   FrameNodeImpl* GetFrameNode(content::RenderFrameHost* render_frame_host);
 
   class Observer : public base::CheckedObserver {

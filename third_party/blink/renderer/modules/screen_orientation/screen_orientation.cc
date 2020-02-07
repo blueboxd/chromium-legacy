@@ -128,7 +128,7 @@ const WTF::AtomicString& ScreenOrientation::InterfaceName() const {
 ExecutionContext* ScreenOrientation::GetExecutionContext() const {
   if (!GetFrame())
     return nullptr;
-  return GetFrame()->GetDocument();
+  return GetFrame()->GetDocument()->ToExecutionContext();
 }
 
 String ScreenOrientation::type() const {

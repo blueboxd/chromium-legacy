@@ -183,9 +183,11 @@ TEST_F(AudioContextTest, ExecutionContextPaused) {
 
   audio_context->set_was_audible_for_testing(true);
   EXPECT_FALSE(web_audio_device_paused_);
-  GetDocument().SetLifecycleState(mojom::FrameLifecycleState::kFrozen);
+  GetDocument().ToExecutionContext()->SetLifecycleState(
+      mojom::FrameLifecycleState::kFrozen);
   EXPECT_TRUE(web_audio_device_paused_);
-  GetDocument().SetLifecycleState(mojom::FrameLifecycleState::kRunning);
+  GetDocument().ToExecutionContext()->SetLifecycleState(
+      mojom::FrameLifecycleState::kRunning);
   EXPECT_FALSE(web_audio_device_paused_);
 }
 

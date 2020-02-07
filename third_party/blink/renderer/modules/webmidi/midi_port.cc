@@ -200,7 +200,7 @@ void MIDIPort::OpenAsynchronously(ScriptPromiseResolver* resolver) {
   if (!GetExecutionContext())
     return;
 
-  UseCounter::Count(*To<Document>(GetExecutionContext()),
+  UseCounter::Count(*Document::From(GetExecutionContext()),
                     WebFeature::kMIDIPortOpen);
   DCHECK_NE(0u, running_open_count_);
   running_open_count_--;

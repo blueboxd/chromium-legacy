@@ -1791,12 +1791,19 @@ component("extras") {
     "extras/sqlite/sqlite_persistent_cookie_store.h",
     "extras/sqlite/sqlite_persistent_store_backend_base.cc",
     "extras/sqlite/sqlite_persistent_store_backend_base.h",
+    "extras/sqlite/sqlite_trust_token_persister.cc",
+    "extras/sqlite/sqlite_trust_token_persister.h",
+    "extras/sqlite/trust_token_database_owner.cc",
+    "extras/sqlite/trust_token_database_owner.h",
   ]
   defines = [ "IS_NET_EXTRAS_IMPL" ]
   configs += [ "//build/config/compiler:wexit_time_destructors" ]
   deps = [
     ":net",
     "//base",
+    "//components/sqlite_proto",
+    "//net/trust_tokens",
+    "//net/trust_tokens:storage_proto",
     "//sql:sql",
   ]
 
@@ -4226,6 +4233,8 @@ test("net_unittests") {
     "disk_cache/simple/simple_util_unittest.cc",
     "disk_cache/simple/simple_version_upgrade_unittest.cc",
     "extras/sqlite/sqlite_persistent_cookie_store_unittest.cc",
+    "extras/sqlite/sqlite_trust_token_persister_unittest.cc",
+    "extras/sqlite/trust_token_database_owner_unittest.cc",
     "filter/filter_source_stream_unittest.cc",
     "filter/gzip_source_stream_unittest.cc",
     "http/alternative_service_unittest.cc",
@@ -4504,6 +4513,7 @@ test("net_unittests") {
     "//base",
     "//base:i18n",
     "//base/third_party/dynamic_annotations",
+    "//components/sqlite_proto",
     "//crypto",
     "//crypto:platform",
     "//crypto:test_support",

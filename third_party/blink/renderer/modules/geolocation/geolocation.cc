@@ -92,7 +92,7 @@ static void ReportGeolocationViolation(Document* doc) {
   if (!LocalFrame::HasTransientUserActivation(doc ? doc->GetFrame()
                                                   : nullptr)) {
     PerformanceMonitor::ReportGenericViolation(
-        doc, PerformanceMonitor::kDiscouragedAPIUse,
+        doc->ToExecutionContext(), PerformanceMonitor::kDiscouragedAPIUse,
         "Only request geolocation information in response to a user gesture.",
         base::TimeDelta(), nullptr);
   }
@@ -123,7 +123,7 @@ void Geolocation::Trace(blink::Visitor* visitor) {
 }
 
 Document* Geolocation::GetDocument() const {
-  return To<Document>(GetExecutionContext());
+  return Document::From(GetExecutionContext());
 }
 
 LocalFrame* Geolocation::GetFrame() const {
@@ -185,7 +185,8 @@ void Geolocation::getCurrentPosition(V8PositionCallback* success_callback,
   if (!GetFrame())
     return;
 
-  probe::BreakableLocation(GetDocument(), "Geolocation.getCurrentPosition");
+  probe::BreakableLocation(GetDocument()->ToExecutionContext(),
+                           "Geolocation.getCurrentPosition");
 
   auto* notifier = MakeGarbageCollected<GeoNotifier>(this, success_callback,
                                                      error_callback, options);
@@ -201,7 +202,8 @@ int Geolocation::watchPosition(V8PositionCallback* success_callback,
   if (!GetFrame())
     return 0;
 
-  probe::BreakableLocation(GetDocument(), "Geolocation.watchPosition");
+  probe::BreakableLocation(GetDocument()->ToExecutionContext(),
+                           "Geolocation.watchPosition");
 
   auto* notifier = MakeGarbageCollected<GeoNotifier>(this, success_callback,
                                                      error_callback, options);

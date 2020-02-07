@@ -17,7 +17,9 @@ namespace blink {
 
 CustomProperty::CustomProperty(const AtomicString& name,
                                const Document& document)
-    : CustomProperty(name, PropertyRegistration::From(&document, name)) {}
+    : CustomProperty(
+          name,
+          PropertyRegistration::From(document.ToExecutionContext(), name)) {}
 
 CustomProperty::CustomProperty(const AtomicString& name,
                                const PropertyRegistry* registry)

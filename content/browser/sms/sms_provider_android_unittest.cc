@@ -83,8 +83,8 @@ class SmsProviderAndroidTest : public RenderViewHostTestHarness {
 }  // namespace
 
 TEST_F(SmsProviderAndroidTest, Retrieve) {
-  std::string test_url = "https://www.google.com?otp=123";
-  std::string expected_sms = "Hi \nFor: " + test_url;
+  std::string test_url = "https://google.com";
+  std::string expected_sms = "Hi\n@google.com #123";
 
   EXPECT_CALL(*observer(),
               OnReceive(Origin::Create(GURL(test_url)), _, expected_sms));
@@ -93,9 +93,9 @@ TEST_F(SmsProviderAndroidTest, Retrieve) {
 }
 
 TEST_F(SmsProviderAndroidTest, IgnoreBadSms) {
-  std::string test_url = "https://www.google.com?otp=123";
-  std::string good_sms = "Hi \nFor: " + test_url;
-  std::string bad_sms = "Hi \nFor: http://b.com";
+  std::string test_url = "https://google.com";
+  std::string good_sms = "Hi\n@google.com #123";
+  std::string bad_sms = "Hi\n@b.com";
 
   EXPECT_CALL(*observer(),
               OnReceive(Origin::Create(GURL(test_url)), _, good_sms));
@@ -106,16 +106,14 @@ TEST_F(SmsProviderAndroidTest, IgnoreBadSms) {
 }
 
 TEST_F(SmsProviderAndroidTest, TaskTimedOut) {
-  std::string test_url = "https://www.google.com?otp=123";
-
   EXPECT_CALL(*observer(), OnReceive(_, _, _)).Times(0);
   provider().Retrieve();
   TriggerTimeout();
 }
 
 TEST_F(SmsProviderAndroidTest, OneObserverTwoTasks) {
-  std::string test_url = "https://www.google.com?otp=123";
-  std::string expected_sms = "Hi \nFor: " + test_url;
+  std::string test_url = "https://google.com";
+  std::string expected_sms = "Hi\n@google.com #123";
 
   EXPECT_CALL(*observer(),
               OnReceive(Origin::Create(GURL(test_url)), _, expected_sms));

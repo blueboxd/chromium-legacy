@@ -149,6 +149,8 @@ BLINK_COMMON_EXPORT extern const base::Feature
 BLINK_COMMON_EXPORT extern const base::Feature
     kCSSReducedFontLoadingInvalidations;
 
+BLINK_COMMON_EXPORT extern const base::Feature kDiscardCodeCacheAfterFirstUse;
+
 }  // namespace features
 }  // namespace blink
 

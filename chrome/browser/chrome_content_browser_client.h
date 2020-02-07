@@ -703,16 +703,6 @@ class ChromeContentBrowserClient : public content::ContentBrowserClient {
   scoped_refptr<safe_browsing::UrlCheckerDelegate>
   GetSafeBrowsingUrlCheckerDelegate(bool safe_browsing_enabled_for_profile);
 
-#if BUILDFLAG(ENABLE_PLUGINS)
-  // Set of origins that can use TCP/UDP private APIs from NaCl.
-  std::set<std::string> allowed_socket_origins_;
-  // Set of origins that can get a handle for FileIO from NaCl.
-  std::set<std::string> allowed_file_handle_origins_;
-  // Set of origins that can use "dev chanel" APIs from NaCl, even on stable
-  // versions of Chrome.
-  std::set<std::string> allowed_dev_channel_origins_;
-#endif
-
   // Vector of additional ChromeContentBrowserClientParts.
   // Parts are deleted in the reverse order they are added.
   std::vector<ChromeContentBrowserClientParts*> extra_parts_;

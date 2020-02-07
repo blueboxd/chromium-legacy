@@ -164,7 +164,8 @@ String GetStringFromScriptHelper(
     const char* attribute_name_for_exception,
     TrustedTypeViolationKind violation_kind,
     TrustedTypeViolationKind violation_kind_when_default_policy_failed) {
-  bool require_trusted_type = RequireTrustedTypesCheck(doc);
+  bool require_trusted_type =
+      RequireTrustedTypesCheck(doc->ToExecutionContext());
   if (!require_trusted_type)
     return script;
 
@@ -192,9 +193,11 @@ String GetStringFromScriptHelper(
       doc->GetIsolate(), ExceptionState::kUnknownContext,
       element_name_for_exception, attribute_name_for_exception);
 
-  TrustedTypePolicy* default_policy = GetDefaultPolicy(doc);
+  TrustedTypePolicy* default_policy =
+      GetDefaultPolicy(doc->ToExecutionContext());
   if (!default_policy) {
-    if (TrustedTypeFail(violation_kind, doc, exception_state, script)) {
+    if (TrustedTypeFail(violation_kind, doc->ToExecutionContext(),
+                        exception_state, script)) {
       exception_state.ClearException();
       return String();
     }
@@ -209,8 +212,8 @@ String GetStringFromScriptHelper(
   }
 
   if (result->toString().IsNull()) {
-    if (TrustedTypeFail(violation_kind_when_default_policy_failed, doc,
-                        exception_state, script)) {
+    if (TrustedTypeFail(violation_kind_when_default_policy_failed,
+                        doc->ToExecutionContext(), exception_state, script)) {
       exception_state.ClearException();
       return String();
     }
@@ -378,6 +381,22 @@ String GetStringFromTrustedHTML(const String& string,
   }
 
   return result->toString();
+}
+
+String GetStringFromTrustedHTML(StringOrTrustedHTML string_or_trusted_html,
+                                const Document* document,
+                                ExceptionState& exception_state) {
+  return GetStringFromTrustedHTML(
+      string_or_trusted_html,
+      document ? document->ToExecutionContext() : nullptr, exception_state);
+}
+
+String GetStringFromTrustedHTML(const String& string,
+                                const Document* document,
+                                ExceptionState& exception_state) {
+  return GetStringFromTrustedHTML(
+      string, document ? document->ToExecutionContext() : nullptr,
+      exception_state);
 }
 
 String GetStringFromTrustedScript(

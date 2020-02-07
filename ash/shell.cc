@@ -37,6 +37,7 @@
 #include "ash/display/event_transformation_handler.h"
 #include "ash/display/mouse_cursor_event_filter.h"
 #include "ash/display/persistent_window_controller.h"
+#include "ash/display/privacy_screen_controller.h"
 #include "ash/display/projecting_observer.h"
 #include "ash/display/resolution_notification_controller.h"
 #include "ash/display/screen_ash.h"
@@ -777,6 +778,8 @@ Shell::~Shell() {
   night_light_controller_ = nullptr;
   // Similarly for DockedMagnifierControllerImpl.
   docked_magnifier_controller_ = nullptr;
+  // Similarly for PrivacyScreenController.
+  privacy_screen_controller_ = nullptr;
 
   // Stop observing window activation changes before closing all windows.
   focus_controller_->RemoveObserver(this);
@@ -930,6 +933,10 @@ void Shell::Init(
   // Night Light depends on the display manager, the display color manager, and
   // aura::Env, so initialize it after all have been initialized.
   night_light_controller_ = std::make_unique<NightLightControllerImpl>();
+
+  // Privacy Screen depends on the display manager, so initialize it after
+  // display manager was properly initialized.
+  privacy_screen_controller_ = std::make_unique<PrivacyScreenController>();
 
   // The WindowModalityController needs to be at the front of the input event
   // pretarget handler list to ensure that it processes input events when modal

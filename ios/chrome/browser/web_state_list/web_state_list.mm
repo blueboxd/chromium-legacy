@@ -53,7 +53,7 @@ class WebStateList::WebStateWrapper {
   // Gets and sets information about this WebState opener. The navigation index
   // is used to detect navigation changes during the same session.
   WebStateOpener opener() const { return opener_; }
-  void set_opener(WebStateOpener opener) { opener_ = opener; }
+  void SetOpener(WebStateOpener opener);
 
   // Returns whether |opener| spawned the wrapped WebState. If |use_group| is
   // true, also use the opener navigation index to detect navigation changes
@@ -92,6 +92,11 @@ std::unique_ptr<web::WebState> WebStateList::WebStateWrapper::ReplaceWebState(
   std::swap(web_state, web_state_);
   opener_ = WebStateOpener();
   return web_state;
+}
+
+void WebStateList::WebStateWrapper::SetOpener(WebStateOpener opener) {
+  DCHECK_NE(web_state_.get(), opener.opener);
+  opener_ = opener;
 }
 
 bool WebStateList::WebStateWrapper::WasOpenedBy(const web::WebState* opener,
@@ -179,7 +184,7 @@ void WebStateList::SetOpenerOfWebStateAt(int index, WebStateOpener opener) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   DCHECK(ContainsIndex(index));
   DCHECK(ContainsIndex(GetIndexOfWebState(opener.opener)));
-  web_state_wrappers_[index]->set_opener(opener);
+  web_state_wrappers_[index]->SetOpener(opener);
 }
 
 int WebStateList::GetIndexOfNextWebStateOpenedBy(const web::WebState* opener,
@@ -241,6 +246,7 @@ void WebStateList::CloseAllWebStates(int close_flags) {
 
 void WebStateList::ActivateWebStateAt(int index) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  DCHECK(ContainsIndex(index));
   auto lock = LockForMutation();
   return ActivateWebStateAtImpl(index);
 }
@@ -356,32 +362,24 @@ std::unique_ptr<web::WebState> WebStateList::DetachWebStateAtImpl(int index) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   DCHECK(locked_);
   DCHECK(ContainsIndex(index));
-  int new_active_index = order_controller_->DetermineNewActiveIndex(index);
-
   web::WebState* web_state = web_state_wrappers_[index]->web_state();
   for (auto& observer : observers_)
     observer.WillDetachWebStateAt(this, web_state, index);
+
+  // Update the active index to prevent observer from seeing an invalid WebState
+  // as the active one but only send the WebStateActivatedAt notification after
+  // the WebStateDetachedAt one.
+  const bool active_web_state_was_closed = (index == active_index_);
+  active_index_ =
+      order_controller_->DetermineNewActiveIndex(active_index_, index);
 
   ClearOpenersReferencing(index);
   std::unique_ptr<web::WebState> detached_web_state =
       web_state_wrappers_[index]->ReleaseWebState();
   web_state_wrappers_.erase(web_state_wrappers_.begin() + index);
 
-  // Update the active index to prevent observer from seeing an invalid WebState
-  // as the active one but only send the WebStateActivatedAt notification after
-  // the WebStateDetachedAt one.
-  bool active_web_state_was_closed = (index == active_index_);
-  if (active_index_ > index) {
-    --active_index_;
-  } else if (active_index_ == index) {
-    if (new_active_index != kInvalidIndex && !ContainsIndex(new_active_index)) {
-      // TODO(crbug.com/877792): This is a speculative fix for 877792 and short
-      // term fix for 960628.
-      active_index_ = count() - 1;
-    } else {
-      active_index_ = new_active_index;
-    }
-  }
+  // Check that the active element (if there is one) is valid.
+  DCHECK(active_index_ == kInvalidIndex || ContainsIndex(active_index_));
 
   for (auto& observer : observers_)
     observer.WebStateDetachedAt(this, web_state, index);
@@ -412,8 +410,16 @@ void WebStateList::CloseWebStateAtImpl(int index, int close_flags) {
 void WebStateList::CloseAllWebStatesImpl(int close_flags) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   DCHECK(locked_);
+
   PerformBatchOperation(base::BindOnce(
       [](int close_flags, WebStateList* web_state_list) {
+        // Since all the WebStates will be closed, notify that the active
+        // WebState is de-activated before closing them. This avoid sending
+        // one notification per WebState in the worst case (when the active
+        // WebState is the last one and no opener is set to any WebState).
+        web_state_list->ActivateWebStateAtImpl(kInvalidIndex);
+
+        // Close the WebStates from last to first.
         while (!web_state_list->empty())
           web_state_list->CloseWebStateAtImpl(web_state_list->count() - 1,
                                               close_flags);
@@ -424,7 +430,7 @@ void WebStateList::CloseAllWebStatesImpl(int close_flags) {
 void WebStateList::ActivateWebStateAtImpl(int index) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   DCHECK(locked_);
-  DCHECK(ContainsIndex(index));
+  DCHECK(ContainsIndex(index) || index == kInvalidIndex);
   web::WebState* old_web_state = GetActiveWebState();
   active_index_ = index;
   NotifyIfActiveWebStateChanged(
@@ -457,7 +463,7 @@ void WebStateList::ClearOpenersReferencing(int index) {
   web::WebState* old_web_state = web_state_wrappers_[index]->web_state();
   for (auto& web_state_wrapper : web_state_wrappers_) {
     if (web_state_wrapper->opener().opener == old_web_state)
-      web_state_wrapper->set_opener(WebStateOpener());
+      web_state_wrapper->SetOpener(WebStateOpener());
   }
 }
 
@@ -480,7 +486,7 @@ int WebStateList::GetIndexOfNthWebStateOpenedBy(const web::WebState* opener,
                                                 int n) const {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   DCHECK_GT(n, 0);
-  if (!opener || !ContainsIndex(start_index) || start_index == INT_MAX)
+  if (!opener || !ContainsIndex(start_index))
     return kInvalidIndex;
 
   const int opener_navigation_index =
@@ -488,14 +494,18 @@ int WebStateList::GetIndexOfNthWebStateOpenedBy(const web::WebState* opener,
                 : -1;
 
   int found_index = kInvalidIndex;
-  for (int index = start_index + 1; index < count() && n; ++index) {
-    if (web_state_wrappers_[index]->WasOpenedBy(opener, opener_navigation_index,
-                                                use_group)) {
-      found_index = index;
-      --n;
-    } else if (found_index != kInvalidIndex) {
-      return found_index;
-    }
+  const int list_length = count();
+  for (int i = 1; i < list_length; ++i) {
+    const int index = (start_index + i) % list_length;
+    DCHECK_NE(index, start_index);
+
+    const auto& wrapper = web_state_wrappers_[index];
+    if (!wrapper->WasOpenedBy(opener, opener_navigation_index, use_group))
+      continue;
+
+    found_index = index;
+    if (--n == 0)
+      break;
   }
 
   return found_index;

@@ -35,7 +35,7 @@ class PLATFORM_EXPORT ScriptCachedMetadataHandler final
   ~ScriptCachedMetadataHandler() override = default;
   void Trace(blink::Visitor*) override;
   void SetCachedMetadata(uint32_t, const uint8_t*, size_t) override;
-  void ClearCachedMetadata(CacheType) override;
+  void ClearCachedMetadata(ClearCacheType) override;
   scoped_refptr<CachedMetadata> GetCachedMetadata(uint32_t) const override;
 
   // This returns the encoding at the time of ResponseReceived(). Therefore this
@@ -56,12 +56,29 @@ class PLATFORM_EXPORT ScriptCachedMetadataHandler final
   size_t GetCodeCacheSize() const override;
 
  private:
+  friend class ModuleScriptTest;
+
   void SendToPlatform();
 
   scoped_refptr<CachedMetadata> cached_metadata_;
+  bool cached_metadata_discarded_ = false;
   std::unique_ptr<CachedMetadataSender> sender_;
 
   const WTF::TextEncoding encoding_;
+};
+
+// Describes a few interesting states of the ScriptCachedMetadataHandler when
+// GetCachedMetadata() is called. These values are written to logs. New enum
+// values can be added, but existing enums must never be renumbered or deleted
+// and reused.
+enum class StateOnGet : int {
+  kPresent = 0,
+  kDataTypeMismatch = 1,
+  kWasNeverPresent = 2,
+  kWasDiscarded = 3,
+
+  // Must be equal to the greatest among enumeraiton values.
+  kMaxValue = kWasDiscarded
 };
 
 }  // namespace blink

@@ -199,10 +199,10 @@ void MediaControlPopupMenuElement::SetPosition() {
                           bounding_client_rect->right() + kPopupMenuMarginPx) +
       kPx;
 
-  style()->setProperty(&GetDocument(), "bottom", bottom_str_value, kImportant,
-                       ASSERT_NO_EXCEPTION);
-  style()->setProperty(&GetDocument(), "right", right_str_value, kImportant,
-                       ASSERT_NO_EXCEPTION);
+  style()->setProperty(GetDocument().ToExecutionContext(), "bottom",
+                       bottom_str_value, kImportant, ASSERT_NO_EXCEPTION);
+  style()->setProperty(GetDocument().ToExecutionContext(), "right",
+                       right_str_value, kImportant, ASSERT_NO_EXCEPTION);
 }
 
 Element* MediaControlPopupMenuElement::PopupAnchor() const {

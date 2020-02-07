@@ -332,7 +332,7 @@ MinMaxSize ComputeMinAndMaxContentContribution(
     // sized different. So we just always let the table code handle this.
     // Replaced elements may size themselves using aspect ratios and block
     // sizes, so we pass that on as well.
-    if (box->IsTable() || box->IsTablePart() || box->IsLayoutReplaced()) {
+    if (box->IsTable() || box->IsLayoutReplaced()) {
       bool needs_size_reset = false;
       if (!box->HasOverrideContainingBlockContentLogicalHeight()) {
         box->SetOverrideContainingBlockContentLogicalHeight(

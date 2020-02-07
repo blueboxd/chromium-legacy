@@ -303,7 +303,7 @@ void ClipboardPromise::RequestPermission(
 
   ExecutionContext* context = ExecutionContext::From(script_state_);
   DCHECK(context);
-  const Document& document = *To<Document>(context);
+  const Document& document = *Document::From(context);
   DCHECK(document.IsSecureContext());  // [SecureContext] in IDL
 
   if (!document.hasFocus()) {

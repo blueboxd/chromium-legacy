@@ -61,14 +61,17 @@ TEST_F(CSSPropertyNameTest, OperatorEquals) {
 }
 
 TEST_F(CSSPropertyNameTest, From) {
-  EXPECT_TRUE(CSSPropertyName::From(&GetDocument(), "color"));
-  EXPECT_TRUE(CSSPropertyName::From(&GetDocument(), "--x"));
-  EXPECT_FALSE(CSSPropertyName::From(&GetDocument(), "notaproperty"));
-  EXPECT_FALSE(CSSPropertyName::From(&GetDocument(), "-not-a-property"));
+  EXPECT_TRUE(
+      CSSPropertyName::From(GetDocument().ToExecutionContext(), "color"));
+  EXPECT_TRUE(CSSPropertyName::From(GetDocument().ToExecutionContext(), "--x"));
+  EXPECT_FALSE(CSSPropertyName::From(GetDocument().ToExecutionContext(),
+                                     "notaproperty"));
+  EXPECT_FALSE(CSSPropertyName::From(GetDocument().ToExecutionContext(),
+                                     "-not-a-property"));
 
-  EXPECT_EQ(*CSSPropertyName::From(&GetDocument(), "color"),
+  EXPECT_EQ(*CSSPropertyName::From(GetDocument().ToExecutionContext(), "color"),
             CSSPropertyName(CSSPropertyID::kColor));
-  EXPECT_EQ(*CSSPropertyName::From(&GetDocument(), "--x"),
+  EXPECT_EQ(*CSSPropertyName::From(GetDocument().ToExecutionContext(), "--x"),
             CSSPropertyName("--x"));
 }
 

@@ -53,7 +53,7 @@ std::unique_ptr<DtlsTransportProxy> CreateProxy(
     ExecutionContext* context,
     webrtc::DtlsTransportInterface* native_transport,
     DtlsTransportProxy::Delegate* delegate) {
-  LocalFrame* frame = To<Document>(context)->GetFrame();
+  LocalFrame* frame = Document::From(context)->GetFrame();
   scoped_refptr<base::SingleThreadTaskRunner> proxy_thread =
       frame->GetTaskRunner(TaskType::kNetworking);
   scoped_refptr<base::SingleThreadTaskRunner> host_thread =

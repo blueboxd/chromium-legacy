@@ -216,7 +216,8 @@ void PictureInPictureControllerImpl::OnEnteredPictureInPicture(
   picture_in_picture_element_->OnEnteredPictureInPicture();
 
   picture_in_picture_window_ = MakeGarbageCollected<PictureInPictureWindow>(
-      GetSupplementable(), picture_in_picture_window_size);
+      GetSupplementable()->ToExecutionContext(),
+      picture_in_picture_window_size);
 
   picture_in_picture_element_->DispatchEvent(
       *EnterPictureInPictureEvent::Create(

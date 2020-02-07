@@ -176,7 +176,8 @@ public class TabSuggestionsOrchestrator implements TabSuggestions, Destroyable {
         }
         int numChanged = tabSuggestionFeedback.tabSuggestion.getTabsInfo().size()
                 - numSelectFromSuggestion + numSelectOutsideSuggestion;
+        // This was previously TabsSuggestions.Close.NumSuggestionsChanged
         RecordHistogram.recordCount100Histogram(
-                "TabsSuggestions.Close.NumSuggestionsChanged", numChanged);
+                "Tabs.Suggestions.Close.NumSuggestionsChanged", numChanged);
     }
 }

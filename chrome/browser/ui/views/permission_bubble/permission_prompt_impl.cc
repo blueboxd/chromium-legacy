@@ -47,7 +47,7 @@ PermissionPromptImpl::PermissionPromptImpl(Browser* browser,
 
 PermissionPromptImpl::~PermissionPromptImpl() {
   if (prompt_bubble_)
-    prompt_bubble_->CloseWithoutNotifyingDelegate();
+    prompt_bubble_->GetWidget()->Close();
 
   if (showing_quiet_prompt_) {
     // Hides the quiet prompt.

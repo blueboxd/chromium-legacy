@@ -5009,7 +5009,7 @@ static void VoidMethodFlexibleArrayBufferViewArgMethod(const v8::FunctionCallbac
   }
 
   FlexibleArrayBufferView array_buffer_view_arg;
-  ToFlexibleArrayBufferView(info.GetIsolate(), info[0], array_buffer_view_arg, allocateFlexibleArrayBufferViewStorage(info[0]));
+  ToFlexibleArrayBufferView(info.GetIsolate(), info[0], array_buffer_view_arg);
   if (!array_buffer_view_arg) {
     exception_state.ThrowTypeError(ExceptionMessages::ArgumentNotOfType(0, "ArrayBufferView"));
     return;
@@ -5028,8 +5028,8 @@ static void VoidMethodFlexibleArrayBufferViewTypedArgMethod(const v8::FunctionCa
     return;
   }
 
-  FlexibleFloat32ArrayView typed_array_buffer_view_arg;
-  ToFlexibleArrayBufferView(info.GetIsolate(), info[0], typed_array_buffer_view_arg, allocateFlexibleArrayBufferViewStorage(info[0]));
+  FlexibleFloat32Array typed_array_buffer_view_arg;
+  ToFlexibleArrayBufferView(info.GetIsolate(), info[0], typed_array_buffer_view_arg);
   if (!typed_array_buffer_view_arg) {
     exception_state.ThrowTypeError(ExceptionMessages::ArgumentNotOfType(0, "Float32Array"));
     return;

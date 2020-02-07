@@ -171,8 +171,9 @@ void ExecutionContextCSPDelegate::PostViolationReport(
   auto* body = MakeGarbageCollected<CSPViolationReportBody>(violation_data);
   Report* observed_report = MakeGarbageCollected<Report>(
       ReportType::kCSPViolation, Url().GetString(), body);
-  ReportingContext::From(document)->QueueReport(
-      observed_report, use_reporting_api ? report_endpoints : Vector<String>());
+  ReportingContext::From(document->ToExecutionContext())
+      ->QueueReport(observed_report,
+                    use_reporting_api ? report_endpoints : Vector<String>());
 
   if (use_reporting_api)
     return;
@@ -236,7 +237,7 @@ SecurityContext& ExecutionContextCSPDelegate::GetSecurityContext() {
 }
 
 Document* ExecutionContextCSPDelegate::GetDocument() {
-  return DynamicTo<Document>(execution_context_.Get());
+  return Document::DynamicFrom(execution_context_.Get());
 }
 
 void ExecutionContextCSPDelegate::DispatchViolationEventInternal(

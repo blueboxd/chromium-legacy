@@ -16,6 +16,7 @@
 #include "base/test/scoped_feature_list.h"
 #include "base/values.h"
 #include "chrome/browser/apps/app_service/app_service_test.h"
+#include "chrome/browser/chromeos/child_accounts/time_limits/app_time_test_utils.h"
 #include "chrome/browser/chromeos/child_accounts/time_limits/app_types.h"
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/extensions/test_extension_system.h"
@@ -53,52 +54,6 @@ constexpr char kWebAppUrl1[] = "https://webappone.com/";
 constexpr char kWebAppName1[] = "WebApp1";
 constexpr char kWebAppUrl2[] = "https://webapptwo.com/";
 constexpr char kWebAppName2[] = "WebApp2";
-
-arc::mojom::ArcPackageInfoPtr CreateArcAppPackage(
-    const std::string& package_name) {
-  auto package = arc::mojom::ArcPackageInfo::New();
-  package->package_name = package_name;
-  package->package_version = 1;
-  package->last_backup_android_id = 1;
-  package->last_backup_time = 1;
-  package->sync = false;
-  package->system = false;
-  package->permissions = base::flat_map<::arc::mojom::AppPermission, bool>();
-  return package;
-}
-
-arc::mojom::AppInfo CreateArcAppInfo(const std::string& package_name,
-                                     const std::string& name) {
-  arc::mojom::AppInfo app;
-  app.package_name = package_name;
-  app.name = name;
-  app.activity = base::StrCat({name, "Activity"});
-  app.sticky = true;
-  return app;
-}
-
-scoped_refptr<extensions::Extension> CreateExtension(
-    const std::string& extension_id,
-    const std::string& name,
-    const std::string& url,
-    bool is_bookmark_app = false) {
-  base::Value manifest(base::Value::Type::DICTIONARY);
-  manifest.SetStringPath(extensions::manifest_keys::kName, name);
-  manifest.SetStringPath(extensions::manifest_keys::kVersion, "1");
-  manifest.SetIntPath(extensions::manifest_keys::kManifestVersion, 2);
-  manifest.SetStringPath(extensions::manifest_keys::kLaunchWebURL, url);
-
-  std::string error;
-  extensions::Extension::InitFromValueFlags flags =
-      is_bookmark_app ? extensions::Extension::FROM_BOOKMARK
-                      : extensions::Extension::NO_FLAGS;
-  scoped_refptr<extensions::Extension> extension =
-      extensions::Extension::Create(
-          base::FilePath(), extensions::Manifest::UNPACKED,
-          static_cast<base::DictionaryValue&>(manifest), flags, extension_id,
-          &error);
-  return extension;
-}
 
 }  // namespace
 

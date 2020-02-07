@@ -33,7 +33,7 @@ ValueWrapperSyntheticModuleScript::CreateCSSWrapperSyntheticModuleScript(
                                  "ModuleScriptLoader",
                                  "CreateCSSWrapperSyntheticModuleScript");
   ExecutionContext* execution_context = ExecutionContext::From(script_state);
-  Document* context_document = DynamicTo<Document>(execution_context);
+  Document* context_document = Document::DynamicFrom(execution_context);
   if (!context_document) {
     v8::Local<v8::Value> error = V8ThrowException::CreateTypeError(
         isolate, "Cannot create CSS Module in non-document context");

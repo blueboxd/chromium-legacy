@@ -538,7 +538,7 @@ void FetchManager::Loader::DidFailRedirectCheck() {
 }
 
 Document* FetchManager::Loader::GetDocument() const {
-  return DynamicTo<Document>(execution_context_.Get());
+  return Document::DynamicFrom(execution_context_.Get());
 }
 
 void FetchManager::Loader::Start(ExceptionState& exception_state) {

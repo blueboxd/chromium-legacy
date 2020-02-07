@@ -17,8 +17,9 @@ namespace blink {
 
 TEST(AudioNodeInputTest, InputDestroyedBeforeOutput) {
   auto page = std::make_unique<DummyPageHolder>();
-  OfflineAudioContext* context = OfflineAudioContext::Create(
-      &page->GetDocument(), 2, 1, 48000, ASSERT_NO_EXCEPTION);
+  OfflineAudioContext* context =
+      OfflineAudioContext::Create(page->GetDocument().ToExecutionContext(), 2,
+                                  1, 48000, ASSERT_NO_EXCEPTION);
   DelayNode* node1 = context->createDelay(ASSERT_NO_EXCEPTION);
   auto& handler1 = node1->Handler();
   DelayNode* node2 = context->createDelay(ASSERT_NO_EXCEPTION);
@@ -41,8 +42,9 @@ TEST(AudioNodeInputTest, InputDestroyedBeforeOutput) {
 
 TEST(AudioNodeInputTest, OutputDestroyedBeforeInput) {
   auto page = std::make_unique<DummyPageHolder>();
-  OfflineAudioContext* context = OfflineAudioContext::Create(
-      &page->GetDocument(), 2, 1, 48000, ASSERT_NO_EXCEPTION);
+  OfflineAudioContext* context =
+      OfflineAudioContext::Create(page->GetDocument().ToExecutionContext(), 2,
+                                  1, 48000, ASSERT_NO_EXCEPTION);
   DelayNode* node1 = context->createDelay(ASSERT_NO_EXCEPTION);
   auto& handler1 = node1->Handler();
   DelayNode* node2 = context->createDelay(ASSERT_NO_EXCEPTION);

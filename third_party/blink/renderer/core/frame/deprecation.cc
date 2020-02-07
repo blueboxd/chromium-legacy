@@ -737,6 +737,13 @@ void Deprecation::CountDeprecation(const Document& document,
   Deprecation::CountDeprecation(document.Loader(), feature);
 }
 
+void Deprecation::CountDeprecation(Document* document, WebFeature feature) {
+  if (!document)
+    return;
+
+  Deprecation::CountDeprecation(document->ToExecutionContext(), feature);
+}
+
 void Deprecation::CountDeprecation(DocumentLoader* loader, WebFeature feature) {
   if (!loader)
     return;
@@ -799,7 +806,7 @@ void Deprecation::GenerateReport(const LocalFrame* frame, WebFeature feature) {
 
   // Send the deprecation report to the Reporting API and any
   // ReportingObservers.
-  ReportingContext::From(document)->QueueReport(report);
+  ReportingContext::From(document->ToExecutionContext())->QueueReport(report);
 }
 
 // static

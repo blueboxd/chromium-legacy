@@ -1700,7 +1700,11 @@ class MetaBuildWrapper(object):
         # Probably the right thing here is for ninja to support response
         # files as input on the command line
         # (see https://github.com/ninja-build/ninja/issues/1355).
-        if len(' '.join(outp['compile_targets'])) > 7*1024:
+        # Android targets use a lot of templates and often exceed 7kb.
+        # https://crbug.com/946266
+        max_cmd_length_kb = 64 if platform.system() == 'Linux' else 7
+
+        if len(' '.join(outp['compile_targets'])) > max_cmd_length_kb * 1024:
           self.Print('WARNING: Too many compile targets were affected.')
           self.Print('WARNING: Building everything instead to avoid '
                      'command-line length issues.')

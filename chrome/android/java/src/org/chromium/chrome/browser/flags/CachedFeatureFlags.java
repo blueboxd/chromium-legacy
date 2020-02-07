@@ -6,14 +6,12 @@ package org.chromium.chrome.browser.flags;
 
 import android.content.Intent;
 import android.content.pm.ResolveInfo;
-import android.os.Build;
 import android.speech.RecognizerIntent;
 
 import androidx.annotation.Nullable;
 import androidx.annotation.VisibleForTesting;
 
 import org.chromium.base.BuildInfo;
-import org.chromium.base.CommandLine;
 import org.chromium.base.ContextUtils;
 import org.chromium.base.FieldTrialList;
 import org.chromium.base.PackageManagerUtils;
@@ -22,7 +20,6 @@ import org.chromium.base.ThreadUtils;
 import org.chromium.base.annotations.CalledByNative;
 import org.chromium.base.annotations.NativeMethods;
 import org.chromium.base.library_loader.LibraryLoader;
-import org.chromium.chrome.browser.ChromeSwitches;
 import org.chromium.chrome.browser.device.DeviceClassManager;
 import org.chromium.chrome.browser.preferences.ChromePreferenceKeys;
 import org.chromium.chrome.browser.preferences.SharedPreferencesManager;
@@ -236,16 +233,6 @@ public class CachedFeatureFlags {
         // LibraryLoader itself because it lives in //base and can't depend on ChromeFeatureList.
         LibraryLoader.setReachedCodeProfilerEnabledOnNextRuns(
                 ChromeFeatureList.isEnabled(ChromeFeatureList.REACHED_CODE_PROFILER));
-    }
-
-    /**
-     * @return True if tab model merging for Android N+ is enabled.
-     */
-    public static boolean isTabModelMergingEnabled() {
-        if (CommandLine.getInstance().hasSwitch(ChromeSwitches.DISABLE_TAB_MERGING_FOR_TESTING)) {
-            return false;
-        }
-        return Build.VERSION.SDK_INT > Build.VERSION_CODES.M;
     }
 
     /**

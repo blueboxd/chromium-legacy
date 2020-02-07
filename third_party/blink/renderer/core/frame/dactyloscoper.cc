@@ -21,7 +21,7 @@ void Dactyloscoper::Record(ExecutionContext* context, WebFeature feature) {
   // TODO: Workers.
   if (!context)
     return;
-  if (auto* document = DynamicTo<Document>(context)) {
+  if (auto* document = Document::DynamicFrom(context)) {
     if (DocumentLoader* loader = document->Loader())
       loader->GetDactyloscoper().Record(feature);
   }

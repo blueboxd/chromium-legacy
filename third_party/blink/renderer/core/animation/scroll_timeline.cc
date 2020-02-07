@@ -6,6 +6,7 @@
 
 #include "third_party/blink/renderer/bindings/core/v8/v8_scroll_timeline_options.h"
 #include "third_party/blink/renderer/core/css/css_to_length_conversion_data.h"
+#include "third_party/blink/renderer/core/css/parser/css_parser_context.h"
 #include "third_party/blink/renderer/core/css/parser/css_tokenizer.h"
 #include "third_party/blink/renderer/core/css/properties/css_parsing_utils.h"
 #include "third_party/blink/renderer/core/dom/node_computed_style.h"
@@ -47,11 +48,13 @@ bool StringToScrollDirection(String scroll_direction,
   return false;
 }
 
-bool StringToScrollOffset(String scroll_offset, CSSPrimitiveValue** result) {
+bool StringToScrollOffset(String scroll_offset,
+                          const CSSParserContext& context,
+                          CSSPrimitiveValue** result) {
   CSSTokenizer tokenizer(scroll_offset);
   const auto tokens = tokenizer.TokenizeToEOF();
   CSSParserTokenRange range(tokens);
-  CSSValue* value = css_parsing_utils::ConsumeScrollOffset(range);
+  CSSValue* value = css_parsing_utils::ConsumeScrollOffset(range, context);
   if (!value)
     return false;
 
@@ -80,6 +83,10 @@ ScrollTimeline* ScrollTimeline::Create(Document& document,
                                ? options->scrollSource()
                                : document.scrollingElement();
 
+  // TODO(xiaochengh): Try reusing an existing context in document.
+  const CSSParserContext* context =
+      MakeGarbageCollected<CSSParserContext>(document);
+
   ScrollDirection orientation;
   if (!StringToScrollDirection(options->orientation(), orientation)) {
     exception_state.ThrowDOMException(DOMExceptionCode::kNotSupportedError,
@@ -88,14 +95,15 @@ ScrollTimeline* ScrollTimeline::Create(Document& document,
   }
 
   CSSPrimitiveValue* start_scroll_offset = nullptr;
-  if (!StringToScrollOffset(options->startScrollOffset(),
+  if (!StringToScrollOffset(options->startScrollOffset(), *context,
                             &start_scroll_offset)) {
     exception_state.ThrowTypeError("Invalid startScrollOffset");
     return nullptr;
   }
 
   CSSPrimitiveValue* end_scroll_offset = nullptr;
-  if (!StringToScrollOffset(options->endScrollOffset(), &end_scroll_offset)) {
+  if (!StringToScrollOffset(options->endScrollOffset(), *context,
+                            &end_scroll_offset)) {
     exception_state.ThrowTypeError("Invalid endScrollOffset");
     return nullptr;
   }

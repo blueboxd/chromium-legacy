@@ -183,9 +183,10 @@ class FrameFetchContextSubresourceFilterTest : public FrameFetchContextTest {
                        bool is_associated_with_ad_subframe = false) {
     document->Loader()->SetSubresourceFilter(
         MakeGarbageCollected<SubresourceFilter>(
-            document, std::make_unique<FixedPolicySubresourceFilter>(
-                          policy, &filtered_load_callback_counter_,
-                          is_associated_with_ad_subframe)));
+            document->ToExecutionContext(),
+            std::make_unique<FixedPolicySubresourceFilter>(
+                policy, &filtered_load_callback_counter_,
+                is_associated_with_ad_subframe)));
   }
 
   base::Optional<ResourceRequestBlockedReason> CanRequest() {
@@ -214,12 +215,12 @@ class FrameFetchContextSubresourceFilterTest : public FrameFetchContextTest {
 
   void AppendExecutingScriptToAdTracker(const String& url) {
     AdTracker* ad_tracker = document->GetFrame()->GetAdTracker();
-    ad_tracker->WillExecuteScript(document, url);
+    ad_tracker->WillExecuteScript(document->ToExecutionContext(), url);
   }
 
   void AppendAdScriptToAdTracker(const KURL& ad_script_url) {
     AdTracker* ad_tracker = document->GetFrame()->GetAdTracker();
-    ad_tracker->AppendToKnownAdScripts(*(document.Get()),
+    ad_tracker->AppendToKnownAdScripts(*document->ToExecutionContext(),
                                        ad_script_url.GetString());
   }
 

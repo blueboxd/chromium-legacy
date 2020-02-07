@@ -48,7 +48,9 @@ class NotificationResourcesLoaderTest : public PageTestBase {
   void SetUp() override { PageTestBase::SetUp(IntSize()); }
 
  protected:
-  ExecutionContext* GetExecutionContext() const { return &GetDocument(); }
+  ExecutionContext* GetExecutionContext() const {
+    return GetDocument().ToExecutionContext();
+  }
 
   NotificationResourcesLoader* Loader() const { return loader_.Get(); }
 

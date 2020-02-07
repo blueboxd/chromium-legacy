@@ -38,8 +38,9 @@ class AppTimeNotificationDelegateMock
 
   ~AppTimeNotificationDelegateMock() = default;
 
-  MOCK_METHOD2(ShowAppTimeLimitNotification,
+  MOCK_METHOD3(ShowAppTimeLimitNotification,
                void(const chromeos::app_time::AppId&,
+                    base::TimeDelta,
                     chromeos::app_time::AppNotification));
 };
 
@@ -179,9 +180,10 @@ TEST_F(AppActivityRegistryTest, AppTimeLimitReachedActiveApp) {
   app_activity_registry().OnAppActive(kApp1, app1_window, start);
 
   // Expect 5 minute left notification.
-  EXPECT_CALL(notification_delegate_mock(),
-              ShowAppTimeLimitNotification(
-                  kApp1, chromeos::app_time::AppNotification::kFiveMinutes))
+  EXPECT_CALL(
+      notification_delegate_mock(),
+      ShowAppTimeLimitNotification(
+          kApp1, testing::_, chromeos::app_time::AppNotification::kFiveMinutes))
       .Times(1);
   task_environment().FastForwardBy(base::TimeDelta::FromMinutes(5));
   EXPECT_EQ(base::TimeDelta::FromMinutes(5),
@@ -189,19 +191,20 @@ TEST_F(AppActivityRegistryTest, AppTimeLimitReachedActiveApp) {
   EXPECT_TRUE(app_activity_registry().IsAppActive(kApp1));
 
   // Expect One minute left notification.
-  EXPECT_CALL(notification_delegate_mock(),
-              ShowAppTimeLimitNotification(
-                  kApp1, chromeos::app_time::AppNotification::kOneMinute))
+  EXPECT_CALL(
+      notification_delegate_mock(),
+      ShowAppTimeLimitNotification(
+          kApp1, testing::_, chromeos::app_time::AppNotification::kOneMinute))
       .Times(1);
   task_environment().FastForwardBy(base::TimeDelta::FromMinutes(4));
   EXPECT_EQ(base::TimeDelta::FromMinutes(9),
             app_activity_registry().GetActiveTime(kApp1));
 
   // Expect time limit reached notification.
-  EXPECT_CALL(
-      notification_delegate_mock(),
-      ShowAppTimeLimitNotification(
-          kApp1, chromeos::app_time::AppNotification::kTimeLimitReached))
+  EXPECT_CALL(notification_delegate_mock(),
+              ShowAppTimeLimitNotification(
+                  kApp1, testing::_,
+                  chromeos::app_time::AppNotification::kTimeLimitReached))
       .Times(1);
   task_environment().FastForwardBy(base::TimeDelta::FromMinutes(1));
   EXPECT_EQ(base::TimeDelta::FromMinutes(10),
@@ -230,9 +233,10 @@ TEST_F(AppActivityRegistryTest, SkippedFiveMinuteNotification) {
       kApp1, base::TimeDelta::FromMinutes(14), start + active_time);
 
   // Notice that the 5 minute notification is jumped.
-  EXPECT_CALL(notification_delegate_mock(),
-              ShowAppTimeLimitNotification(
-                  kApp1, chromeos::app_time::AppNotification::kOneMinute))
+  EXPECT_CALL(
+      notification_delegate_mock(),
+      ShowAppTimeLimitNotification(
+          kApp1, testing::_, chromeos::app_time::AppNotification::kOneMinute))
       .Times(1);
   task_environment().FastForwardBy(base::TimeDelta::FromMinutes(3));
 }
@@ -362,18 +366,20 @@ TEST_F(AppActivityRegistryTest, SharedTimeLimitForChromeAndWebApps) {
 
   // Make |kApp2| active for 30 minutes. Expect that it reaches its time limit.
   app_activity_registry().OnAppActive(kApp2, app2_window, start + kHalfHour);
-  EXPECT_CALL(notification_delegate_mock(),
-              ShowAppTimeLimitNotification(
-                  kApp2, chromeos::app_time::AppNotification::kFiveMinutes))
-      .Times(1);
-  EXPECT_CALL(notification_delegate_mock(),
-              ShowAppTimeLimitNotification(
-                  kApp2, chromeos::app_time::AppNotification::kOneMinute))
+  EXPECT_CALL(
+      notification_delegate_mock(),
+      ShowAppTimeLimitNotification(
+          kApp2, testing::_, chromeos::app_time::AppNotification::kFiveMinutes))
       .Times(1);
   EXPECT_CALL(
       notification_delegate_mock(),
       ShowAppTimeLimitNotification(
-          kApp2, chromeos::app_time::AppNotification::kTimeLimitReached))
+          kApp2, testing::_, chromeos::app_time::AppNotification::kOneMinute))
+      .Times(1);
+  EXPECT_CALL(notification_delegate_mock(),
+              ShowAppTimeLimitNotification(
+                  kApp2, testing::_,
+                  chromeos::app_time::AppNotification::kTimeLimitReached))
       .Times(1);
 
   task_environment().FastForwardBy(kHalfHour);

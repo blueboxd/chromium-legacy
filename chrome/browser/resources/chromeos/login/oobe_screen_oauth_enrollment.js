@@ -5,12 +5,8 @@
 login.createScreen('OAuthEnrollmentScreen', 'oauth-enrollment', function() {
   return {
     EXTERNAL_API: [
-      'showStep',
-      'showError',
-      'doReload',
-      'showAttributePromptStep',
-      'setAdJoinParams',
-      'setAdJoinConfiguration',
+      'showStep', 'showError', 'doReload', 'showAttributePromptStep',
+      'setAdJoinParams', 'setAdJoinConfiguration',
       'setEnterpriseDomainAndDeviceType'
     ],
 
@@ -19,6 +15,11 @@ login.createScreen('OAuthEnrollmentScreen', 'oauth-enrollment', function() {
      */
     get defaultControl() {
       return $('enterprise-enrollment');
+    },
+
+    /** Initial UI State for screen */
+    getOobeUIInitialState() {
+      return OOBE_UI_STATE.ENROLLMENT;
     },
 
     /**

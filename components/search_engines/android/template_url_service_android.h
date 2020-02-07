@@ -80,7 +80,8 @@ class TemplateUrlServiceAndroid : public TemplateURLServiceObserver {
       const base::android::JavaParamRef<jstring>& jkeyword,
       const base::android::JavaParamRef<jstring>& jsearch_url,
       const base::android::JavaParamRef<jstring>& jsuggest_url,
-      const base::android::JavaParamRef<jstring>& jfavicon_url);
+      const base::android::JavaParamRef<jstring>& jfavicon_url,
+      jboolean set_as_default);
 
   // Adds a custom search engine, sets |jkeyword| as its short_name and keyword,
   // and sets its date_created as |age_in_days| days before the current time.

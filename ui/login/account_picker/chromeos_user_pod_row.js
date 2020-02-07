@@ -2888,7 +2888,7 @@ cr.define('login', function() {
     showPodBackground_: false,
 
     // Current UI state of the sign-in screen.
-    signinUIState_: SIGNIN_UI_STATE.HIDDEN,
+    signinUIState_: OOBE_UI_STATE.HIDDEN,
 
     /** @override */
     decorate: function() {
@@ -3116,7 +3116,7 @@ cr.define('login', function() {
      * Current header bar UI / sign in state.
      *
      * @type {number} state Current state of the sign-in screen (see
-     *       SIGNIN_UI_STATE).
+     *       OOBE_UI_STATE).
      */
     get signinUIState() {
       return this.signinUIState_;
@@ -3161,8 +3161,7 @@ cr.define('login', function() {
         this.bottomMask.classList.remove('images-loading');
       }.bind(this), POD_ROW_IMAGES_LOAD_TIMEOUT_MS);
 
-      var isAccountPicker =
-          this.signinUIState_ == SIGNIN_UI_STATE.ACCOUNT_PICKER;
+      var isAccountPicker = this.signinUIState_ == OOBE_UI_STATE.ACCOUNT_PICKER;
 
       // Immediately recalculate pods layout only when current UI is account
       // picker. Otherwise postpone it.
@@ -3474,8 +3473,7 @@ cr.define('login', function() {
      * screen orientation and showing the virtual keyboard.
      */
     onWindowResize: function() {
-      var isAccountPicker =
-          this.signinUIState_ == SIGNIN_UI_STATE.ACCOUNT_PICKER;
+      var isAccountPicker = this.signinUIState_ == OOBE_UI_STATE.ACCOUNT_PICKER;
       if (isAccountPicker) {
         // Redo pod placement if account picker is the current screen.
         this.placePods_();

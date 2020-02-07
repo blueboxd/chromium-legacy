@@ -7464,8 +7464,10 @@ TEST_F(WebFrameTest, IPAddressSpace) {
     frame_test_helpers::PumpPendingRequestsForFrameToLoad(
         web_view_helper.LocalMainFrame());
 
-    ExecutionContext* context =
-        web_view->MainFrameImpl()->GetFrame()->GetDocument();
+    ExecutionContext* context = web_view->MainFrameImpl()
+                                    ->GetFrame()
+                                    ->GetDocument()
+                                    ->ToExecutionContext();
     EXPECT_EQ(value, context->GetSecurityContext().AddressSpace());
   }
 }

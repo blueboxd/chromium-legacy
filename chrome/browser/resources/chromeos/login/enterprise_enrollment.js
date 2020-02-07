@@ -310,7 +310,6 @@ Polymer({
 
     this.authenticator_.setWebviewPartition(data.webviewPartitionName);
 
-    Oobe.getInstance().setSigninUIState(SIGNIN_UI_STATE.ENROLLMENT);
     this.classList.remove('saml');
 
     var gaiaParams = {};
@@ -341,10 +340,6 @@ Polymer({
       if (behavior.onBeforeShow)
         behavior.onBeforeShow.call(this);
     });
-  },
-
-  onBeforeHide() {
-    Oobe.getInstance().setSigninUIState(SIGNIN_UI_STATE.HIDDEN);
   },
 
   /*

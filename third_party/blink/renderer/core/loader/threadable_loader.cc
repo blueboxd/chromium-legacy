@@ -1067,7 +1067,7 @@ const SecurityOrigin* ThreadableLoader::GetSecurityOrigin() const {
 }
 
 Document* ThreadableLoader::GetDocument() const {
-  return DynamicTo<Document>(execution_context_.Get());
+  return Document::DynamicFrom(execution_context_.Get());
 }
 
 void ThreadableLoader::Trace(blink::Visitor* visitor) {

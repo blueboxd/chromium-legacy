@@ -269,9 +269,16 @@ using ExplicitlySetAttrElementsMap =
 // of a tree of DOM nodes, generally resulting from the parsing of an markup
 // (typically, HTML) resource. It provides both the content to be displayed to
 // the user in a frame and an execution context for JavaScript code.
+// TODO(crbug.com/1029822): Virtual inheritance is used here temporarily to
+// enable moving ExecutionContext from Document to LocalDOMWindow. This allows
+// Document's inheritance of ExecutionContext to be hidden, while still allowing
+// Document to inherit from some of ExecutionContext's parent classes publicly.
 class CORE_EXPORT Document : public ContainerNode,
                              public TreeScope,
-                             public ExecutionContext,
+                             public virtual ConsoleLogger,
+                             public virtual UseCounter,
+                             public virtual FeaturePolicyParserDelegate,
+                             private ExecutionContext,
                              public DocumentShutdownNotifier,
                              public SynchronousMutationNotifier,
                              public Supplementable<Document> {
@@ -308,6 +315,76 @@ class CORE_EXPORT Document : public ContainerNode,
   bool IsDocument() const final { return true; }
   bool ShouldInstallV8Extensions() const final;
   ContentSecurityPolicy* GetContentSecurityPolicyForWorld() override;
+
+  // TODO(crbug.com/1029822): Temporary cast helpers while ExecutionContext is
+  // migrating to LocalDOMWindow. Callsite that permanently need to convert a
+  // Document to an ExecutionContext should use either GetExecutionContext() as
+  // inherited from Node, or domWindow().
+  // Downcasts will cast to a LocalDOMWindow, then use
+  // LocalDOMWindow::document() if the Document is what is actually needed.
+  ExecutionContext* ToExecutionContext() { return this; }
+  const ExecutionContext* ToExecutionContext() const { return this; }
+  static Document* From(ExecutionContext* context) {
+    return context ? &From(*context) : nullptr;
+  }
+  static Document& From(ExecutionContext& context) {
+    SECURITY_DCHECK(context.IsDocument());
+    return static_cast<Document&>(context);
+  }
+  static const Document* From(const ExecutionContext* context) {
+    return context ? &From(*context) : nullptr;
+  }
+  static const Document& From(const ExecutionContext& context) {
+    SECURITY_DCHECK(context.IsDocument());
+    return static_cast<const Document&>(context);
+  }
+  static Document* DynamicFrom(ExecutionContext* context) {
+    return context && context->IsDocument() ? From(context) : nullptr;
+  }
+  static Document* DynamicFrom(ExecutionContext& context) {
+    return context.IsDocument() ? &From(context) : nullptr;
+  }
+  static const Document* DynamicFrom(const ExecutionContext* context) {
+    return context && context->IsDocument() ? From(context) : nullptr;
+  }
+  static const Document* DynamicFrom(const ExecutionContext& context) {
+    return context.IsDocument() ? &From(context) : nullptr;
+  }
+
+  // TODO(crbug.com/1029822): Temporary helpers to access ExecutionContext
+  // methods. These will need to be audited. Some might be useful permanent
+  // helpers.
+  SecurityContext& GetSecurityContext();
+  const SecurityContext& GetSecurityContext() const;
+  const SecurityOrigin* GetSecurityOrigin() const;
+  SecurityOrigin* GetMutableSecurityOrigin();
+  ContentSecurityPolicy* GetContentSecurityPolicy() const;
+  WebSandboxFlags GetSandboxFlags() const;
+  bool IsSandboxed(WebSandboxFlags mask) const;
+  PublicURLManager& GetPublicURLManager();
+  bool IsContextPaused() const;
+  bool IsContextDestroyed() const;
+  ContentSecurityPolicyDelegate& GetContentSecurityPolicyDelegate();
+  SecureContextMode GetSecureContextMode() const;
+  bool IsSecureContext() const;
+  bool IsSecureContext(String& error_message) const;
+  void SetSecureContextModeForTesting(SecureContextMode);
+  void SetReferrerPolicy(network::mojom::ReferrerPolicy);
+  v8::Isolate* GetIsolate() const;
+  Agent* GetAgent() const;
+  OriginTrialContext* GetOriginTrialContext() const;
+  bool IsFeatureEnabled(
+      mojom::blink::FeaturePolicyFeature,
+      ReportOptions report_on_failure = ReportOptions::kDoNotReport,
+      const String& message = g_empty_string,
+      const String& source_file = g_empty_string) const;
+  bool IsFeatureEnabled(
+      mojom::blink::FeaturePolicyFeature,
+      PolicyValue threshold_value,
+      ReportOptions report_on_failure = ReportOptions::kDoNotReport,
+      const String& message = g_empty_string,
+      const String& source_file = g_empty_string) const;
+  String addressSpaceForBindings() const;
 
   bool CanContainRangeEndPoint() const override { return true; }
 
@@ -1333,7 +1410,15 @@ class CORE_EXPORT Document : public ContainerNode,
   // for controls outside of forms as well.
   void DidAssociateFormControl(Element*);
 
+  void AddConsoleMessage(ConsoleMessage* message,
+                         bool discard_duplicates = false) {
+    AddConsoleMessageImpl(message, discard_duplicates);
+  }
   void AddConsoleMessageImpl(ConsoleMessage*, bool discard_duplicates) final;
+  void AddConsoleMessageImpl(mojom::ConsoleMessageSource,
+                             mojom::ConsoleMessageLevel,
+                             const String& message,
+                             bool discard_duplicates) final;
   void AddInspectorIssue(InspectorIssue*);
 
   LocalDOMWindow* ExecutingWindow() const final;
@@ -2239,9 +2324,6 @@ Node* EventTargetNodeForDocument(Document*);
 
 template <>
 struct DowncastTraits<Document> {
-  static bool AllowFrom(const ExecutionContext& context) {
-    return context.IsDocument();
-  }
   static bool AllowFrom(const Node& node) { return node.IsDocumentNode(); }
 };
 

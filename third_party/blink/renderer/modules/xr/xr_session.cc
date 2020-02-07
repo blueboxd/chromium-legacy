@@ -680,7 +680,7 @@ void XRSession::cancelAnimationFrame(int id) {
 }
 
 XRInputSourceArray* XRSession::inputSources() const {
-  Document* doc = To<Document>(GetExecutionContext());
+  Document* doc = Document::From(GetExecutionContext());
   if (!did_log_getInputSources_ && doc) {
     ukm::builders::XR_WebXR(xr_->GetSourceId())
         .SetDidGetXRInputSources(1)
@@ -1578,7 +1578,7 @@ void XRSession::OnFrame(
 }
 
 void XRSession::LogGetPose() const {
-  Document* doc = To<Document>(GetExecutionContext());
+  Document* doc = Document::From(GetExecutionContext());
   if (!did_log_getViewerPose_ && doc) {
     did_log_getViewerPose_ = true;
 

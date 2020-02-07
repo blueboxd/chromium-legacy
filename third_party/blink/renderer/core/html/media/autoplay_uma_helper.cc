@@ -49,12 +49,11 @@ int64_t GetUserGestureStatusForUkmMetric(LocalFrame* frame) {
 }  // namespace
 
 AutoplayUmaHelper::AutoplayUmaHelper(HTMLMediaElement* element)
-    : ContextLifecycleObserver(nullptr),
+    : ContextLifecycleObserver(static_cast<ExecutionContext*>(nullptr)),
       element_(element),
       muted_video_play_method_intersection_observer_(nullptr),
       is_visible_(false),
-      muted_video_offscreen_duration_intersection_observer_(nullptr) {
-}
+      muted_video_offscreen_duration_intersection_observer_(nullptr) {}
 
 AutoplayUmaHelper::~AutoplayUmaHelper() = default;
 
@@ -161,7 +160,7 @@ void AutoplayUmaHelper::DidMoveToNewDocument(Document& old_document) {
   if (!ShouldListenToContextDestroyed())
     return;
 
-  SetContext(&element_->GetDocument());
+  SetContext(element_->GetDocument().ToExecutionContext());
 }
 
 void AutoplayUmaHelper::
@@ -232,7 +231,7 @@ void AutoplayUmaHelper::MaybeStartRecordingMutedVideoPlayMethodBecomeVisible() {
               OnIntersectionChangedForMutedVideoPlayMethodBecomeVisible,
           WrapWeakPersistent(this)));
   muted_video_play_method_intersection_observer_->observe(element_);
-  SetContext(&element_->GetDocument());
+  SetContext(element_->GetDocument().ToExecutionContext());
 }
 
 void AutoplayUmaHelper::MaybeStopRecordingMutedVideoPlayMethodBecomeVisible(
@@ -267,7 +266,7 @@ void AutoplayUmaHelper::MaybeStartRecordingMutedVideoOffscreenDuration() {
               WrapWeakPersistent(this)));
   muted_video_offscreen_duration_intersection_observer_->observe(element_);
   element_->addEventListener(event_type_names::kPause, this, false);
-  SetContext(&element_->GetDocument());
+  SetContext(element_->GetDocument().ToExecutionContext());
 }
 
 void AutoplayUmaHelper::MaybeStopRecordingMutedVideoOffscreenDuration() {

@@ -136,9 +136,27 @@ class CORE_EXPORT CSSParserContext final
 
   bool IsForMarkupSanitization() const;
 
+  // Overrides |mode_| of a CSSParserContext within the scope, allowing us to
+  // switching parsing mode while parsing different parts of a style sheet.
+  // TODO(xiaochengh): This isn't the right approach, as it breaks the
+  // immutability of CSSParserContext. We should introduce some local context.
+  class ParserModeOverridingScope {
+    STACK_ALLOCATED();
+
+   public:
+    ParserModeOverridingScope(const CSSParserContext& context,
+                              CSSParserMode mode)
+        : mode_reset_(const_cast<CSSParserMode*>(&context.mode_), mode) {}
+
+   private:
+    base::AutoReset<CSSParserMode> mode_reset_;
+  };
+
   void Trace(blink::Visitor*);
 
  private:
+  friend class ParserModeOverridingScope;
+
   KURL base_url_;
 
   network::mojom::CSPDisposition should_check_content_security_policy_;

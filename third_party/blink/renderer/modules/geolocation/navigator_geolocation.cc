@@ -52,8 +52,8 @@ Geolocation* NavigatorGeolocation::geolocation(Navigator& navigator) {
 
 Geolocation* NavigatorGeolocation::geolocation() {
   if (!geolocation_ && GetSupplementable()->GetFrame()) {
-    geolocation_ =
-        Geolocation::Create(GetSupplementable()->GetFrame()->GetDocument());
+    geolocation_ = Geolocation::Create(
+        GetSupplementable()->GetFrame()->GetDocument()->ToExecutionContext());
   }
   return geolocation_;
 }

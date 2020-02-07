@@ -122,7 +122,7 @@ login.createScreen('AccountPickerScreen', 'account-picker', function() {
 
       chrome.send('hideCaptivePortal');
       var podRow = $('pod-row');
-      podRow.signinUIState = SIGNIN_UI_STATE.ACCOUNT_PICKER;
+      podRow.signinUIState = OOBE_UI_STATE.ACCOUNT_PICKER;
       podRow.handleBeforeShow();
 
       // In case of the preselected pod onShow will be called once pod
@@ -163,7 +163,7 @@ login.createScreen('AccountPickerScreen', 'account-picker', function() {
       this.showing_ = false;
       chrome.send('loginUIStateChanged', ['account-picker', false]);
       var podRow = $('pod-row');
-      podRow.signinUIState = SIGNIN_UI_STATE.HIDDEN;
+      podRow.signinUIState = OOBE_UI_STATE.HIDDEN;
       podRow.handleHide();
     },
 

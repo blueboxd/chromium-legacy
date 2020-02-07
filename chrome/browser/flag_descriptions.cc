@@ -2847,6 +2847,10 @@ const char kOmniboxTabSwitchSuggestionsDedicatedRowDescription[] =
     "Put each tab switch suggestion in a separate suggestion, immediately "
     "following the original suggestion.";
 
+const char kPasswordCheckName[] = "Bulk Password Check";
+const char kPasswordCheckDescription[] =
+    "Enables the Bulk Password Check feature for signed-in users.";
+
 const char kTabFreezeName[] = "Tab Freeze";
 const char kTabFreezeDescription[] =
     "Enables freezing eligible tabs when they have been backgrounded for 5 "

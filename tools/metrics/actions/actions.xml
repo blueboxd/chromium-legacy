@@ -1172,6 +1172,14 @@ should be able to be added at any place in this file.
   <description>Please enter the description of this user action.</description>
 </action>
 
+<action name="Accel_Toggle_Privacy_Screen">
+  <owner>gildekel@chromium.org</owner>
+  <description>
+    Metric recorded when the user toggles the privacy screen when using the
+    accelerator.
+  </description>
+</action>
+
 <action name="Accel_Toggle_Spoken_Feedback">
   <owner>dmazzoni@chromium.org</owner>
   <description>Toggles Spoken Feedback (ChromeVox)</description>

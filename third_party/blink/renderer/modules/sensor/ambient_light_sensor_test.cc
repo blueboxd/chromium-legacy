@@ -103,7 +103,7 @@ TEST(AmbientLightSensorTest, IlluminanceRounding) {
   // the order that each observer is notified is arbitrary, we know that by the
   // time we get to the next call here all observers will have been called.
   auto* sensor_proxy =
-      SensorProviderProxy::From(To<Document>(context.GetExecutionContext()))
+      SensorProviderProxy::From(Document::From(context.GetExecutionContext()))
           ->GetSensorProxy(device::mojom::blink::SensorType::AMBIENT_LIGHT);
   ASSERT_NE(sensor_proxy, nullptr);
   auto* mock_observer = MakeGarbageCollected<MockSensorProxyObserver>();
@@ -175,7 +175,7 @@ TEST(AmbientLightSensorTest, PlatformSensorReadingsBeforeActivation) {
   sensor->start();
 
   auto* sensor_proxy =
-      SensorProviderProxy::From(To<Document>(context.GetExecutionContext()))
+      SensorProviderProxy::From(Document::From(context.GetExecutionContext()))
           ->GetSensorProxy(device::mojom::blink::SensorType::AMBIENT_LIGHT);
   ASSERT_NE(sensor_proxy, nullptr);
   auto* mock_observer = MakeGarbageCollected<MockSensorProxyObserver>();

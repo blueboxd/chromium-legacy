@@ -22,15 +22,13 @@ class ChromeContentBrowserClientPluginsPart
   // Corresponding to the ChromeContentBrowserClient function of the same name.
   static bool IsPluginAllowedToUseDevChannelAPIs(
       content::BrowserContext* browser_context,
-      const GURL& url,
-      const std::set<std::string>& allowed_dev_channel_origins);
+      const GURL& url);
 
   static bool AllowPepperSocketAPI(
       content::BrowserContext* browser_context,
       const GURL& url,
       bool private_api,
-      const content::SocketPermissionRequest* params,
-      const std::set<std::string>& allowed_socket_origin);
+      const content::SocketPermissionRequest* params);
 
   static bool IsPepperVpnProviderAPIAllowed(
       content::BrowserContext* browser_context,
@@ -38,8 +36,7 @@ class ChromeContentBrowserClientPluginsPart
 
   static bool IsPluginAllowedToCallRequestOSFileHandle(
       content::BrowserContext* browser_context,
-      const GURL& url,
-      const std::set<std::string>& allowed_file_handle_origins);
+      const GURL& url);
 
   static void DidCreatePpapiPlugin(content::BrowserPpapiHost* browser_host);
 

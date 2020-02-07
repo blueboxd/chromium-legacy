@@ -203,15 +203,6 @@ class CodeGenContext(object):
         return self.return_type.unwrap().is_union
 
     @property
-    def is_return_value_mutable(self):
-        if (self.attribute_get
-                and "ReflectOnly" in self.attribute.extended_attributes):
-            return True
-        if self.constructor:
-            return True
-        return False
-
-    @property
     def may_throw_exception(self):
         if not self.member_like:
             return None

@@ -1390,6 +1390,7 @@ void V4L2SliceVideoDecodeAccelerator::AssignPictureBuffersTask(
 }
 
 void V4L2SliceVideoDecodeAccelerator::CreateGLImageFor(
+    scoped_refptr<V4L2Device> gl_device,
     size_t buffer_index,
     int32_t picture_buffer_id,
     gfx::NativePixmapHandle handle,
@@ -1414,8 +1415,6 @@ void V4L2SliceVideoDecodeAccelerator::CreateGLImageFor(
     return;
   }
 
-  V4L2Device* gl_device =
-      image_processor_device_ ? image_processor_device_.get() : device_.get();
   scoped_refptr<gl::GLImage> gl_image =
       gl_device->CreateGLImage(visible_size, fourcc, std::move(handle));
   if (!gl_image) {
@@ -1583,9 +1582,9 @@ void V4L2SliceVideoDecodeAccelerator::ImportBufferForPictureTask(
     child_task_runner_->PostTask(
         FROM_HERE,
         base::BindOnce(&V4L2SliceVideoDecodeAccelerator::CreateGLImageFor,
-                       weak_this_, index, picture_buffer_id, std::move(handle),
-                       iter->client_texture_id, iter->texture_id,
-                       decoder_->GetVisibleRect().size(),
+                       weak_this_, device_, index, picture_buffer_id,
+                       std::move(handle), iter->client_texture_id,
+                       iter->texture_id, decoder_->GetVisibleRect().size(),
                        *gl_image_format_fourcc_));
   }
 
@@ -2245,7 +2244,8 @@ void V4L2SliceVideoDecodeAccelerator::FrameProcessed(
         FROM_HERE,
         base::BindOnce(
             &V4L2SliceVideoDecodeAccelerator::CreateGLImageFor, weak_this_,
-            ip_buffer_index, ip_output_record.picture_id,
+            image_processor_device_, ip_buffer_index,
+            ip_output_record.picture_id,
             CreateGpuMemoryBufferHandle(frame.get()).native_pixmap_handle,
             ip_output_record.client_texture_id, ip_output_record.texture_id,
             decoder_->GetVisibleRect().size(), *gl_image_format_fourcc_));

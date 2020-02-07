@@ -455,7 +455,7 @@ bool OffscreenCanvas::ShouldAccelerate2dContext() const {
 }
 
 FontSelector* OffscreenCanvas::GetFontSelector() {
-  if (auto* document = DynamicTo<Document>(GetExecutionContext())) {
+  if (auto* document = Document::DynamicFrom(GetExecutionContext())) {
     return document->GetStyleEngine().GetFontSelector();
   }
   return To<WorkerGlobalScope>(GetExecutionContext())->GetFontSelector();

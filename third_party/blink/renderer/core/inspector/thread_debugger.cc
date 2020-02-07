@@ -154,7 +154,7 @@ void ThreadDebugger::PromiseRejectionRevoked(v8::Local<v8::Context> context,
 // TODO(mustaq): Fix the caller in v8/src.
 void ThreadDebugger::beginUserGesture() {
   ExecutionContext* ec = CurrentExecutionContext(isolate_);
-  Document* document = DynamicTo<Document>(ec);
+  Document* document = Document::DynamicFrom(ec);
   LocalFrame::NotifyUserActivation(document ? document->GetFrame() : nullptr);
 }
 

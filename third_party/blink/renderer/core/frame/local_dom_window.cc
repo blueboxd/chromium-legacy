@@ -407,7 +407,7 @@ void LocalDOMWindow::Dispose() {
 }
 
 ExecutionContext* LocalDOMWindow::GetExecutionContext() const {
-  return document_.Get();
+  return document_->ToExecutionContext();
 }
 
 const LocalDOMWindow* LocalDOMWindow::ToLocalDOMWindow() const {
@@ -578,14 +578,16 @@ void LocalDOMWindow::SchedulePostMessage(
   // Allowing unbounded amounts of messages to build up for a suspended context
   // is problematic; consider imposing a limit or other restriction if this
   // surfaces often as a problem (see crbug.com/587012).
-  std::unique_ptr<SourceLocation> location = SourceLocation::Capture(source);
+  std::unique_ptr<SourceLocation> location =
+      SourceLocation::Capture(source->ToExecutionContext());
   document_->GetTaskRunner(TaskType::kPostedMessage)
-      ->PostTask(
-          FROM_HERE,
-          WTF::Bind(&LocalDOMWindow::DispatchPostMessage, WrapPersistent(this),
-                    WrapPersistent(event), std::move(target),
-                    std::move(location), source->GetAgentClusterID()));
-  probe::AsyncTaskScheduled(document(), "postMessage", event->async_task_id());
+      ->PostTask(FROM_HERE,
+                 WTF::Bind(&LocalDOMWindow::DispatchPostMessage,
+                           WrapPersistent(this), WrapPersistent(event),
+                           std::move(target), std::move(location),
+                           source->ToExecutionContext()->GetAgentClusterID()));
+  probe::AsyncTaskScheduled(document()->ToExecutionContext(), "postMessage",
+                            event->async_task_id());
 }
 
 void LocalDOMWindow::DispatchPostMessage(
@@ -593,11 +595,12 @@ void LocalDOMWindow::DispatchPostMessage(
     scoped_refptr<const SecurityOrigin> intended_target_origin,
     std::unique_ptr<SourceLocation> location,
     const base::UnguessableToken& source_agent_cluster_id) {
-  probe::AsyncTask async_task(document(), event->async_task_id());
+  probe::AsyncTask async_task(document()->ToExecutionContext(),
+                              event->async_task_id());
   if (!IsCurrentlyDisplayedInFrame())
     return;
 
-  event->EntangleMessagePorts(document());
+  event->EntangleMessagePorts(document()->ToExecutionContext());
 
   DispatchMessageEventWithOriginCheck(intended_target_origin.get(), event,
                                       std::move(location),
@@ -650,7 +653,8 @@ void LocalDOMWindow::DispatchMessageEventWithOriginCheck(
     }
   }
   if (event->IsLockedToAgentCluster()) {
-    if (!document()->IsSameAgentCluster(source_agent_cluster_id)) {
+    if (!document()->ToExecutionContext()->IsSameAgentCluster(
+            source_agent_cluster_id)) {
       UseCounter::Count(
           document(),
           WebFeature::kMessageEventSharedArrayBufferDifferentAgentCluster);

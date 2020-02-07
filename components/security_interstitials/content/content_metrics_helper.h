@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_INTERSTITIALS_CHROME_METRICS_HELPER_H_
-#define CHROME_BROWSER_INTERSTITIALS_CHROME_METRICS_HELPER_H_
+#ifndef COMPONENTS_SECURITY_INTERSTITIALS_CONTENT_CONTENT_METRICS_HELPER_H_
+#define COMPONENTS_SECURITY_INTERSTITIALS_CONTENT_CONTENT_METRICS_HELPER_H_
 
 #include <string>
 
@@ -22,18 +22,18 @@ class HistoryService;
 
 class CaptivePortalMetricsRecorder;
 
-// This class adds desktop-Chrome-specific metrics to the
+// This class adds metrics specific to the usage of CaptivePortalService to the
 // security_interstitials::MetricsHelper.
 // TODO(crbug.com/812808): Refactor out the use of this class if possible.
 
 // This class is meant to be used on the UI thread for captive portal metrics.
-class ChromeMetricsHelper : public security_interstitials::MetricsHelper {
+class ContentMetricsHelper : public security_interstitials::MetricsHelper {
  public:
-  ChromeMetricsHelper(
+  ContentMetricsHelper(
       history::HistoryService* history_service,
       const GURL& url,
       const security_interstitials::MetricsHelper::ReportDetails settings);
-  ~ChromeMetricsHelper() override;
+  ~ContentMetricsHelper() override;
 
 #if BUILDFLAG(ENABLE_CAPTIVE_PORTAL_DETECTION)
   void StartRecordingCaptivePortalMetrics(
@@ -50,7 +50,7 @@ class ChromeMetricsHelper : public security_interstitials::MetricsHelper {
   std::unique_ptr<CaptivePortalMetricsRecorder> captive_portal_recorder_;
 #endif
 
-  DISALLOW_COPY_AND_ASSIGN(ChromeMetricsHelper);
+  DISALLOW_COPY_AND_ASSIGN(ContentMetricsHelper);
 };
 
-#endif  // CHROME_BROWSER_INTERSTITIALS_CHROME_METRICS_HELPER_H_
+#endif  // COMPONENTS_SECURITY_INTERSTITIALS_CONTENT_CONTENT_METRICS_HELPER_H_

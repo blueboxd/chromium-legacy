@@ -57,7 +57,7 @@ void RemoteFrameOwner::AddResourceTiming(const ResourceTimingInfo& info) {
   mojom::blink::ResourceTimingInfoPtr resource_timing =
       Performance::GenerateResourceTiming(
           *frame->Tree().Parent()->GetSecurityContext()->GetSecurityOrigin(),
-          info, *frame->GetDocument());
+          info, *frame->GetDocument()->ToExecutionContext());
   frame->GetLocalFrameHostRemote().ForwardResourceTimingToParent(
       std::move(resource_timing));
 }

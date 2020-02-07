@@ -75,7 +75,7 @@ HeapVector<Member<RTCRtpSynchronizationSource>>
 RTCRtpReceiver::getSynchronizationSources() {
   UpdateSourcesIfNeeded();
 
-  Document* document = To<Document>(pc_->GetExecutionContext());
+  Document* document = Document::From(pc_->GetExecutionContext());
   DocumentLoadTiming& time_converter = document->Loader()->GetTiming();
 
   HeapVector<Member<RTCRtpSynchronizationSource>> synchronization_sources;
@@ -102,7 +102,7 @@ HeapVector<Member<RTCRtpContributingSource>>
 RTCRtpReceiver::getContributingSources() {
   UpdateSourcesIfNeeded();
 
-  Document* document = To<Document>(pc_->GetExecutionContext());
+  Document* document = Document::From(pc_->GetExecutionContext());
   DocumentLoadTiming& time_converter = document->Loader()->GetTiming();
 
   HeapVector<Member<RTCRtpContributingSource>> contributing_sources;

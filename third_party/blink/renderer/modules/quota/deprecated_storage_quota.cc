@@ -187,7 +187,7 @@ void DeprecatedStorageQuota::requestQuota(
       WTF::Bind(&RequestStorageQuotaCallback, WrapPersistent(success_callback),
                 WrapPersistent(error_callback));
 
-  Document& document = To<Document>(*execution_context);
+  Document& document = Document::From(*execution_context);
   const SecurityOrigin* security_origin = document.GetSecurityOrigin();
   if (security_origin->IsOpaque()) {
     // Unique origins cannot store persistent state.

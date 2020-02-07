@@ -125,7 +125,8 @@ CSSParserContext::CSSParserContext(
                     ->GetUseLegacyBackgroundSizeShorthandBehavior()
               : false,
           document.GetSecureContextMode(),
-          ContentSecurityPolicy::ShouldBypassMainWorld(&document)
+          ContentSecurityPolicy::ShouldBypassMainWorld(
+              document.ToExecutionContext())
               ? network::mojom::CSPDisposition::DO_NOT_CHECK
               : network::mojom::CSPDisposition::CHECK,
           &document,
@@ -146,7 +147,7 @@ CSSParserContext::CSSParserContext(const ExecutionContext& context)
                        ContentSecurityPolicy::ShouldBypassMainWorld(&context)
                            ? network::mojom::CSPDisposition::DO_NOT_CHECK
                            : network::mojom::CSPDisposition::CHECK,
-                       DynamicTo<Document>(context),
+                       Document::DynamicFrom(context),
                        ResourceFetchRestriction::kNone) {}
 
 CSSParserContext::CSSParserContext(
@@ -257,7 +258,8 @@ void CSSParserContext::ReportLayoutAnimationsViolationIfNeeded(
     const CSSProperty& property = rule.Properties().PropertyAt(i).Property();
     if (!LayoutAnimationsPolicy::AffectedCSSProperties().Contains(&property))
       continue;
-    LayoutAnimationsPolicy::ReportViolation(property, *document_);
+    LayoutAnimationsPolicy::ReportViolation(property,
+                                            *document_->ToExecutionContext());
   }
 }
 

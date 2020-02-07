@@ -698,7 +698,7 @@ StringKeyframeVector EffectInput::ParseKeyframesArgument(
   // TODO(crbug.com/816934): Get spec to specify what parsing context to use.
   Document& document =
       element ? element->GetDocument()
-              : *To<Document>(ExecutionContext::From(script_state));
+              : *Document::From(ExecutionContext::From(script_state));
 
   StringKeyframeVector parsed_keyframes;
   if (script_iterator.IsNull()) {

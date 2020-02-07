@@ -167,13 +167,14 @@ Animation* Animation::Create(AnimationEffect* effect,
   DCHECK(IsA<DocumentTimeline>(timeline) || timeline->IsScrollTimeline());
 
   return MakeGarbageCollected<Animation>(
-      timeline->GetDocument()->ContextDocument(), timeline, effect);
+      timeline->GetDocument()->ContextDocument()->ToExecutionContext(),
+      timeline, effect);
 }
 
 Animation* Animation::Create(ExecutionContext* execution_context,
                              AnimationEffect* effect,
                              ExceptionState& exception_state) {
-  Document* document = To<Document>(execution_context);
+  Document* document = Document::From(execution_context);
   return Create(effect, &document->Timeline(), exception_state);
 }
 
@@ -222,7 +223,7 @@ Animation::Animation(ExecutionContext* execution_context,
     content_->Attach(this);
   }
   document_ =
-      timeline_ ? timeline_->GetDocument() : To<Document>(execution_context);
+      timeline_ ? timeline_->GetDocument() : Document::From(execution_context);
   DCHECK(document_);
 
   if (timeline_)
@@ -2178,7 +2179,7 @@ void Animation::commitStyles(ExceptionState& exception_state) {
     CSSPropertyRef ref(property.GetCSSPropertyName(), target->GetDocument());
     const CSSValue* value = ref.GetProperty().CSSValueFromComputedStyle(
        *style, nullptr, false);
-    inline_style->setProperty(&target->GetDocument(),
+    inline_style->setProperty(target->GetDocument().ToExecutionContext(),
                               property.GetCSSPropertyName().ToAtomicString(),
                               value->CssText(), "", ASSERT_NO_EXCEPTION);
   }

@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/interstitials/chrome_metrics_helper.h"
+#include "components/security_interstitials/content/content_metrics_helper.h"
 
 #include "components/captive_portal/core/buildflags.h"
 #include "components/history/core/browser/history_service.h"
@@ -12,7 +12,7 @@
 #include "components/security_interstitials/content/captive_portal_metrics_recorder.h"
 #endif
 
-ChromeMetricsHelper::ChromeMetricsHelper(
+ContentMetricsHelper::ContentMetricsHelper(
     history::HistoryService* history_service,
     const GURL& request_url,
     const security_interstitials::MetricsHelper::ReportDetails settings)
@@ -20,10 +20,10 @@ ChromeMetricsHelper::ChromeMetricsHelper(
                                             settings,
                                             history_service) {}
 
-ChromeMetricsHelper::~ChromeMetricsHelper() = default;
+ContentMetricsHelper::~ContentMetricsHelper() = default;
 
 #if BUILDFLAG(ENABLE_CAPTIVE_PORTAL_DETECTION)
-void ChromeMetricsHelper::StartRecordingCaptivePortalMetrics(
+void ContentMetricsHelper::StartRecordingCaptivePortalMetrics(
     captive_portal::CaptivePortalService* captive_portal_service,
     bool overridable) {
   captive_portal_recorder_.reset(
@@ -31,7 +31,7 @@ void ChromeMetricsHelper::StartRecordingCaptivePortalMetrics(
 }
 #endif
 
-void ChromeMetricsHelper::RecordExtraShutdownMetrics() {
+void ContentMetricsHelper::RecordExtraShutdownMetrics() {
 #if BUILDFLAG(ENABLE_CAPTIVE_PORTAL_DETECTION)
   // The captive portal metrics should be recorded when the interstitial is
   // closing (or destructing).
@@ -39,4 +39,3 @@ void ChromeMetricsHelper::RecordExtraShutdownMetrics() {
     captive_portal_recorder_->RecordCaptivePortalUMAStatistics();
 #endif
 }
-

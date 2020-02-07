@@ -23,7 +23,7 @@ namespace {
 
 bool IsKnownAdExecutionContext(ExecutionContext* execution_context) {
   // TODO(jkarlin): Do the same check for worker contexts.
-  if (auto* document = DynamicTo<Document>(execution_context)) {
+  if (auto* document = Document::DynamicFrom(execution_context)) {
     LocalFrame* frame = document->GetFrame();
     if (frame && frame->IsAdSubframe())
       return true;
@@ -50,7 +50,7 @@ AdTracker* AdTracker::FromExecutionContext(
     ExecutionContext* execution_context) {
   if (!execution_context)
     return nullptr;
-  if (auto* document = DynamicTo<Document>(execution_context)) {
+  if (auto* document = Document::DynamicFrom(execution_context)) {
     LocalFrame* frame = document->GetFrame();
     if (frame) {
       return frame->GetAdTracker();

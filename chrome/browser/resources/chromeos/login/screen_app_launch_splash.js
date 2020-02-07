@@ -14,6 +14,11 @@ login.createScreen('AppLaunchSplashScreen', 'app-launch-splash', function() {
       'updateMessage',
     ],
 
+    /** Initial UI State for screen */
+    getOobeUIInitialState() {
+      return OOBE_UI_STATE.KIOSK;
+    },
+
     /** @override */
     decorate() {
       $('splash-config-network').addEventListener('click', function(e) {

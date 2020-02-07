@@ -609,18 +609,22 @@ TEST(ComputedStyleTest, ApplyInternalLightDarkColor) {
     ScopedCSSCascadeForTest scoped_cascade_enabled(true);
 
     StyleCascade cascade1(state);
-    cascade1.Add(*CSSPropertyName::From(&state.GetDocument(), "color"),
+    cascade1.Add(*CSSPropertyName::From(
+                     state.GetDocument().ToExecutionContext(), "color"),
                  internal_light_dark, origin);
-    cascade1.Add(*CSSPropertyName::From(&state.GetDocument(), "color-scheme"),
+    cascade1.Add(*CSSPropertyName::From(
+                     state.GetDocument().ToExecutionContext(), "color-scheme"),
                  dark_value, origin);
     cascade1.Apply();
     EXPECT_EQ(Color::kWhite,
               style->VisitedDependentColor(GetCSSPropertyColor()));
 
     StyleCascade cascade2(state);
-    cascade2.Add(*CSSPropertyName::From(&state.GetDocument(), "color"),
+    cascade2.Add(*CSSPropertyName::From(
+                     state.GetDocument().ToExecutionContext(), "color"),
                  internal_light_dark, origin);
-    cascade2.Add(*CSSPropertyName::From(&state.GetDocument(), "color-scheme"),
+    cascade2.Add(*CSSPropertyName::From(
+                     state.GetDocument().ToExecutionContext(), "color-scheme"),
                  light_value, origin);
     cascade2.Apply();
     EXPECT_EQ(Color::kBlack,

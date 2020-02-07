@@ -5,6 +5,7 @@
 #include <memory>
 
 #include "ash/public/cpp/ash_switches.h"
+#include "ash/public/cpp/login_screen_test_api.h"
 #include "ash/public/cpp/test/shell_test_api.h"
 #include "base/bind.h"
 #include "base/command_line.h"
@@ -102,12 +103,20 @@ void RunWelcomeScreenChecks() {
       "$('connect').$.welcomeScreen.root.querySelectorAll('video')) "
       "{  cnt += v.paused ? 0 : 1; }; return cnt; })()",
       kNumberOfVideosPlaying);
+
+  EXPECT_TRUE(ash::LoginScreenTestApi::IsShutdownButtonShown());
+  EXPECT_FALSE(ash::LoginScreenTestApi::IsGuestButtonShown());
+  EXPECT_FALSE(ash::LoginScreenTestApi::IsAddUserButtonShown());
 }
 
 void RunNetworkSelectionScreenChecks() {
   test::OobeJS().ExpectTrue(
       "!$('oobe-network-md').$.networkDialog.querySelector('oobe-next-button'"
       ").disabled");
+
+  EXPECT_TRUE(ash::LoginScreenTestApi::IsShutdownButtonShown());
+  EXPECT_FALSE(ash::LoginScreenTestApi::IsGuestButtonShown());
+  EXPECT_FALSE(ash::LoginScreenTestApi::IsAddUserButtonShown());
 }
 
 #if BUILDFLAG(GOOGLE_CHROME_BRANDING)
@@ -117,6 +126,10 @@ void RunEulaScreenChecks() {
       .CreateVisibilityWaiter(true, {"oobe-eula-md", "eulaDialog"})
       ->Wait();
   test::OobeJS().ExpectTrue("!$('oobe-eula-md').$.acceptButton.disabled");
+
+  EXPECT_TRUE(ash::LoginScreenTestApi::IsShutdownButtonShown);
+  EXPECT_FALSE(ash::LoginScreenTestApi::IsGuestButtonShown());
+  EXPECT_FALSE(ash::LoginScreenTestApi::IsAddUserButtonShown());
 }
 #endif
 
@@ -163,6 +176,10 @@ void RunFingerprintScreenChecks() {
   test::OobeJS()
       .CreateVisibilityWaiter(true, {"fingerprint-setup-impl", "placeFinger"})
       ->Wait();
+
+  EXPECT_FALSE(ash::LoginScreenTestApi::IsShutdownButtonShown());
+  EXPECT_FALSE(ash::LoginScreenTestApi::IsGuestButtonShown());
+  EXPECT_FALSE(ash::LoginScreenTestApi::IsAddUserButtonShown());
 }
 
 void RunDiscoverScreenChecks() {
@@ -174,6 +191,10 @@ void RunDiscoverScreenChecks() {
   test::OobeJS().ExpectTrue(
       "!$('discover-impl').root.querySelector('discover-pin-setup-module').$."
       "setup.hidden");
+
+  EXPECT_FALSE(ash::LoginScreenTestApi::IsShutdownButtonShown());
+  EXPECT_FALSE(ash::LoginScreenTestApi::IsGuestButtonShown());
+  EXPECT_FALSE(ash::LoginScreenTestApi::IsAddUserButtonShown());
 }
 
 // Waits for the ARC terms of service screen to be shown, it accepts or
@@ -182,6 +203,10 @@ void RunDiscoverScreenChecks() {
 void HandleArcTermsOfServiceScreen(bool accept_terms) {
   OobeScreenWaiter(ArcTermsOfServiceScreenView::kScreenId).Wait();
   LOG(INFO) << "OobeInteractiveUITest: Switched to 'arc-tos' screen.";
+
+  EXPECT_FALSE(ash::LoginScreenTestApi::IsShutdownButtonShown());
+  EXPECT_FALSE(ash::LoginScreenTestApi::IsGuestButtonShown());
+  EXPECT_FALSE(ash::LoginScreenTestApi::IsAddUserButtonShown());
 
   test::OobeJS()
       .CreateEnabledWaiter(true, {"arc-tos-root", "arc-tos-next-button"})
@@ -211,6 +236,10 @@ void HandleArcTermsOfServiceScreen(bool accept_terms) {
 void HandleRecommendAppsScreen() {
   OobeScreenWaiter(RecommendAppsScreenView::kScreenId).Wait();
   LOG(INFO) << "OobeInteractiveUITest: Switched to 'recommend-apps' screen.";
+
+  EXPECT_FALSE(ash::LoginScreenTestApi::IsShutdownButtonShown());
+  EXPECT_FALSE(ash::LoginScreenTestApi::IsGuestButtonShown());
+  EXPECT_FALSE(ash::LoginScreenTestApi::IsAddUserButtonShown());
 
   test::OobeJS()
       .CreateDisplayedWaiter(true, {"recommend-apps-screen", "app-list-view"})
@@ -269,6 +298,10 @@ void HandleAppDownloadingScreen() {
   OobeScreenWaiter(AppDownloadingScreenView::kScreenId).Wait();
   LOG(INFO) << "OobeInteractiveUITest: Switched to 'app-downloading' screen.";
 
+  EXPECT_FALSE(ash::LoginScreenTestApi::IsShutdownButtonShown());
+  EXPECT_FALSE(ash::LoginScreenTestApi::IsGuestButtonShown());
+  EXPECT_FALSE(ash::LoginScreenTestApi::IsAddUserButtonShown());
+
   const std::initializer_list<base::StringPiece> continue_button = {
       "app-downloading-screen", "app-downloading-continue-setup-button"};
   test::OobeJS().TapOnPath(continue_button);
@@ -291,6 +324,10 @@ void HandleAssistantOptInScreen() {
 
   OobeScreenWaiter(AssistantOptInFlowScreenView::kScreenId).Wait();
   LOG(INFO) << "OobeInteractiveUITest: Switched to 'assistant-optin' screen.";
+
+  EXPECT_FALSE(ash::LoginScreenTestApi::IsShutdownButtonShown());
+  EXPECT_FALSE(ash::LoginScreenTestApi::IsGuestButtonShown());
+  EXPECT_FALSE(ash::LoginScreenTestApi::IsAddUserButtonShown());
 
   test::OobeJS()
       .CreateVisibilityWaiter(true, {"assistant-optin-flow-card", "loading"})

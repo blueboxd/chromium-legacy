@@ -151,7 +151,7 @@ AtomicString PerformanceNavigationTiming::initiatorType() const {
 
 bool PerformanceNavigationTiming::GetAllowRedirectDetails() const {
   blink::ExecutionContext* context =
-      GetFrame() ? GetFrame()->GetDocument() : nullptr;
+      GetFrame() ? GetFrame()->GetDocument()->ToExecutionContext() : nullptr;
   const blink::SecurityOrigin* security_origin = nullptr;
   if (context)
     security_origin = context->GetSecurityOrigin();

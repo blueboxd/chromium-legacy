@@ -670,7 +670,7 @@ bool BorderRadius::ParseShorthand(
   CSSValue* vertical_radii[4] = {nullptr};
 
   if (!css_parsing_utils::ConsumeRadii(horizontal_radii, vertical_radii, range,
-                                       context.Mode(),
+                                       context,
                                        local_context.UseAliasParsing()))
     return false;
 
@@ -739,14 +739,14 @@ bool BorderSpacing::ParseShorthand(
     const CSSParserLocalContext&,
     HeapVector<CSSPropertyValue, 256>& properties) const {
   CSSValue* horizontal_spacing =
-      ConsumeLength(range, context.Mode(), kValueRangeNonNegative,
+      ConsumeLength(range, context, kValueRangeNonNegative,
                     css_property_parser_helpers::UnitlessQuirk::kAllow);
   if (!horizontal_spacing)
     return false;
   CSSValue* vertical_spacing = horizontal_spacing;
   if (!range.AtEnd()) {
     vertical_spacing =
-        ConsumeLength(range, context.Mode(), kValueRangeNonNegative,
+        ConsumeLength(range, context, kValueRangeNonNegative,
                       css_property_parser_helpers::UnitlessQuirk::kAllow);
   }
   if (!vertical_spacing || !range.AtEnd())
@@ -854,15 +854,15 @@ const CSSValue* ColumnRule::CSSValueFromComputedStyleInternal(
 bool Columns::ParseShorthand(
     bool important,
     CSSParserTokenRange& range,
-    const CSSParserContext&,
+    const CSSParserContext& context,
     const CSSParserLocalContext&,
     HeapVector<CSSPropertyValue, 256>& properties) const {
   CSSValue* column_width = nullptr;
   CSSValue* column_count = nullptr;
-  if (!css_parsing_utils::ConsumeColumnWidthOrCount(range, column_width,
-                                                    column_count))
+  if (!css_parsing_utils::ConsumeColumnWidthOrCount(range, context,
+                                                    column_width, column_count))
     return false;
-  css_parsing_utils::ConsumeColumnWidthOrCount(range, column_width,
+  css_parsing_utils::ConsumeColumnWidthOrCount(range, context, column_width,
                                                column_count);
   if (!range.AtEnd())
     return false;
@@ -930,7 +930,7 @@ bool Flex::ParseShorthand(bool important,
           flex_basis = css_property_parser_helpers::ConsumeIdent(range);
         if (!flex_basis) {
           flex_basis = css_property_parser_helpers::ConsumeLengthOrPercent(
-              range, context.Mode(), kValueRangeNonNegative);
+              range, context, kValueRangeNonNegative);
         }
         if (index == 2 && !range.AtEnd())
           return false;
@@ -1182,7 +1182,7 @@ bool ConsumeFont(bool important,
 
   if (css_property_parser_helpers::ConsumeSlashIncludingWhitespace(range)) {
     CSSValue* line_height =
-        css_parsing_utils::ConsumeLineHeight(range, context.Mode());
+        css_parsing_utils::ConsumeLineHeight(range, context);
     if (!line_height)
       return false;
     css_property_parser_helpers::AddProperty(
@@ -1628,23 +1628,22 @@ bool Grid::ParseShorthand(bool important,
       auto_rows_value = CSSInitialValue::Create();
     } else {
       auto_rows_value = css_parsing_utils::ConsumeGridTrackList(
-          range, context, context.Mode(),
-          css_parsing_utils::TrackListType::kGridAuto);
+          range, context, css_parsing_utils::TrackListType::kGridAuto);
       if (!auto_rows_value)
         return false;
       if (!css_property_parser_helpers::ConsumeSlashIncludingWhitespace(range))
         return false;
     }
     if (!(template_columns =
-              css_parsing_utils::ConsumeGridTemplatesRowsOrColumns(
-                  range, context, context.Mode())))
+              css_parsing_utils::ConsumeGridTemplatesRowsOrColumns(range,
+                                                                   context)))
       return false;
     template_rows = CSSInitialValue::Create();
     auto_columns_value = CSSInitialValue::Create();
   } else {
     // 3- <grid-template-rows> / [ auto-flow && dense? ] <grid-auto-columns>?
-    template_rows = css_parsing_utils::ConsumeGridTemplatesRowsOrColumns(
-        range, context, context.Mode());
+    template_rows =
+        css_parsing_utils::ConsumeGridTemplatesRowsOrColumns(range, context);
     if (!template_rows)
       return false;
     if (!css_property_parser_helpers::ConsumeSlashIncludingWhitespace(range))
@@ -1657,8 +1656,7 @@ bool Grid::ParseShorthand(bool important,
       auto_columns_value = CSSInitialValue::Create();
     } else {
       auto_columns_value = css_parsing_utils::ConsumeGridTrackList(
-          range, context, context.Mode(),
-          css_parsing_utils::TrackListType::kGridAuto);
+          range, context, css_parsing_utils::TrackListType::kGridAuto);
       if (!auto_columns_value)
         return false;
     }
@@ -2166,11 +2164,11 @@ bool Offset::ParseShorthand(
   const CSSValue* offset_rotate = nullptr;
   if (offset_path) {
     offset_distance = css_property_parser_helpers::ConsumeLengthOrPercent(
-        range, context.Mode(), kValueRangeAll);
+        range, context, kValueRangeAll);
     offset_rotate = css_parsing_utils::ConsumeOffsetRotate(range, context);
     if (offset_rotate && !offset_distance) {
       offset_distance = css_property_parser_helpers::ConsumeLengthOrPercent(
-          range, context.Mode(), kValueRangeAll);
+          range, context, kValueRangeAll);
     }
   }
   const CSSValue* offset_anchor = nullptr;

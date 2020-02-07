@@ -242,10 +242,11 @@ class WebStateList {
   void NotifyIfActiveWebStateChanged(web::WebState* old_web_state, int reason);
 
   // Returns the index of the |n|-th WebState (with n > 0) in the sequence of
-  // WebStates opened from the specified WebState after |start_index|, or
-  // kInvalidIndex if there are no such WebState. If |use_group| is true, the
-  // opener's navigation index is used to detect navigation changes within the
-  // same session.
+  // WebStates opened from the specified WebState starting the search from
+  // |start_index| (the returned index may be smaller than |start_index| if
+  // the element have been rearranged), or kInvalidIndex if there are no such
+  // WebState. If |use_group| is true, the opener's navigation index is used
+  // to detect navigation changes within the same session.
   int GetIndexOfNthWebStateOpenedBy(const web::WebState* opener,
                                     int start_index,
                                     bool use_group,

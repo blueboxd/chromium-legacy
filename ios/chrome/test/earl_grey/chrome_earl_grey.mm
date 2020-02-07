@@ -61,6 +61,11 @@ GREY_STUB_CLASS_IN_APP_MAIN_QUEUE(ChromeEarlGreyAppInterface)
 // induced.
 - (void)waitForRestoreSessionToFinish;
 
+// Perform a tap with a timeout, or a GREYAssert is induced. Occasionally EG
+// doesn't sync up properly to the animations of tab switcher, so it is
+// necessary to poll.
+- (void)waitForAndTapButton:(id<GREYMatcher>)button;
+
 @end
 
 @implementation ChromeEarlGreyImpl
@@ -371,22 +376,29 @@ GREY_STUB_CLASS_IN_APP_MAIN_QUEUE(ChromeEarlGreyAppInterface)
   return [ChromeEarlGreyAppInterface nextTabID];
 }
 
-- (void)showTabSwitcher {
-  id<GREYMatcher> matcher = chrome_test_util::TabGridOpenButton();
+- (void)waitForAndTapButton:(id<GREYMatcher>)button {
+  NSString* errorDescription =
+      [NSString stringWithFormat:@"Waiting to tap on button %@", button];
   // Perform a tap with a timeout. Occasionally EG doesn't sync up properly to
   // the animations of tab switcher, so it is necessary to poll here.
-  GREYCondition* tapTabSwitcher =
-      [GREYCondition conditionWithName:@"Tap tab switcher button"
+  // TODO(crbug.com/1050052): Fix the underlying issue in EarlGrey and remove
+  // this workaround.
+  GREYCondition* tapButton =
+      [GREYCondition conditionWithName:errorDescription
                                  block:^BOOL {
                                    NSError* error;
-                                   [[EarlGrey selectElementWithMatcher:matcher]
+                                   [[EarlGrey selectElementWithMatcher:button]
                                        performAction:grey_tap()
                                                error:&error];
                                    return error == nil;
                                  }];
-  // Wait until 2 seconds for the tap.
-  BOOL hasClicked = [tapTabSwitcher waitWithTimeout:2];
-  EG_TEST_HELPER_ASSERT_TRUE(hasClicked, @"Tab switcher could not be clicked.");
+  // Wait for the tap.
+  BOOL hasClicked = [tapButton waitWithTimeout:kWaitForUIElementTimeout];
+  EG_TEST_HELPER_ASSERT_TRUE(hasClicked, errorDescription);
+}
+
+- (void)showTabSwitcher {
+  [ChromeEarlGrey waitForAndTapButton:chrome_test_util::TabGridOpenButton()];
 }
 
 #pragma mark - Cookie Utilities (EG2)
@@ -571,13 +583,11 @@ GREY_STUB_CLASS_IN_APP_MAIN_QUEUE(ChromeEarlGreyAppInterface)
 
 - (void)triggerRestoreViaTabGridRemoveAllUndo {
   [ChromeEarlGrey showTabSwitcher];
-  [[EarlGrey selectElementWithMatcher:chrome_test_util::TabGridCloseAllButton()]
-      performAction:grey_tap()];
-  [[EarlGrey
-      selectElementWithMatcher:chrome_test_util::TabGridUndoCloseAllButton()]
-      performAction:grey_tap()];
-  [[EarlGrey selectElementWithMatcher:chrome_test_util::TabGridDoneButton()]
-      performAction:grey_tap()];
+  [ChromeEarlGrey
+      waitForAndTapButton:chrome_test_util::TabGridCloseAllButton()];
+  [ChromeEarlGrey
+      waitForAndTapButton:chrome_test_util::TabGridUndoCloseAllButton()];
+  [ChromeEarlGrey waitForAndTapButton:chrome_test_util::TabGridDoneButton()];
   [self waitForRestoreSessionToFinish];
   [self waitForPageToFinishLoading];
 }

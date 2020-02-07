@@ -687,11 +687,11 @@ bool ContentVerifier::ShouldVerifyAnyPaths(
   const std::set<base::FilePath>& background_or_content_paths =
       *(data->background_or_content_paths);
 
-  base::FilePath locales_dir = extension_root.Append(kLocaleFolder);
   std::unique_ptr<std::set<std::string>> all_locales;
 
   const base::FilePath manifest_file(kManifestFilename);
   const base::FilePath messages_file(kMessagesFilename);
+  const base::FilePath locales_relative_dir(kLocaleFolder);
   for (const base::FilePath& relative_unix_path : relative_unix_paths) {
     if (relative_unix_path.empty())
       continue;
@@ -713,13 +713,13 @@ bool ContentVerifier::ShouldVerifyAnyPaths(
     if (base::Contains(browser_images, relative_unix_path))
       continue;
 
-    base::FilePath full_path =
-        extension_root.Append(relative_unix_path.NormalizePathSeparators());
+    base::FilePath relative_path = relative_unix_path.NormalizePathSeparators();
+    base::FilePath full_path = extension_root.Append(relative_path);
 
     if (full_path == file_util::GetIndexedRulesetPath(extension_root))
       continue;
 
-    if (locales_dir.IsParent(full_path)) {
+    if (locales_relative_dir.IsParent(relative_path)) {
       if (!all_locales) {
         // TODO(asargent) - see if we can cache this list longer to avoid
         // having to fetch it more than once for a given run of the
@@ -732,10 +732,10 @@ bool ContentVerifier::ShouldVerifyAnyPaths(
       // Since message catalogs get transcoded during installation, we want
       // to skip those paths. See if this path looks like
       // _locales/<some locale>/messages.json - if so then skip it.
-      if (full_path.BaseName() == messages_file &&
-          full_path.DirName().DirName() == locales_dir &&
+      if (relative_path.BaseName() == messages_file &&
+          relative_path.DirName().DirName() == locales_relative_dir &&
           base::Contains(*all_locales,
-                         full_path.DirName().BaseName().MaybeAsASCII())) {
+                         relative_path.DirName().BaseName().MaybeAsASCII())) {
         continue;
       }
     }

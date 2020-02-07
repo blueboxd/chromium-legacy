@@ -51,7 +51,7 @@ OfflineAudioContext* OfflineAudioContext::Create(
     float sample_rate,
     ExceptionState& exception_state) {
   // FIXME: add support for workers.
-  auto* document = DynamicTo<Document>(context);
+  auto* document = Document::DynamicFrom(context);
   if (!document) {
     exception_state.ThrowDOMException(DOMExceptionCode::kNotSupportedError,
                                       "Workers are not supported.");

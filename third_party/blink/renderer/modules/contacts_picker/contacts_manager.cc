@@ -132,7 +132,7 @@ ScriptPromise ContactsManager::select(ScriptState* script_state,
                                       const Vector<String>& properties,
                                       ContactsSelectOptions* options,
                                       ExceptionState& exception_state) {
-  Document* document = To<Document>(ExecutionContext::From(script_state));
+  Document* document = Document::From(ExecutionContext::From(script_state));
 
   if (document->ParentDocument()) {
     exception_state.ThrowDOMException(

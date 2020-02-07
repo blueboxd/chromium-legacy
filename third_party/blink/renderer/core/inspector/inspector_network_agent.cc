@@ -1189,8 +1189,9 @@ InspectorNetworkAgent::BuildInitiatorObject(
 
   std::unique_ptr<v8_inspector::protocol::Runtime::API::StackTrace>
       current_stack_trace =
-          SourceLocation::Capture(document)->BuildInspectorObject(
-              max_async_depth);
+          SourceLocation::Capture(document ? document->ToExecutionContext()
+                                           : nullptr)
+              ->BuildInspectorObject(max_async_depth);
   if (current_stack_trace) {
     std::unique_ptr<protocol::Network::Initiator> initiator_object =
         protocol::Network::Initiator::create()
@@ -1777,7 +1778,7 @@ ExecutionContext* InspectorNetworkAgent::GetTargetExecutionContext() const {
   if (worker_global_scope_)
     return worker_global_scope_;
   DCHECK(inspected_frames_);
-  return inspected_frames_->Root()->GetDocument();
+  return inspected_frames_->Root()->GetDocument()->ToExecutionContext();
 }
 
 }  // namespace blink

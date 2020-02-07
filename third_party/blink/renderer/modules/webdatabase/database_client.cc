@@ -51,14 +51,14 @@ DatabaseClient* DatabaseClient::FromPage(Page* page) {
 }
 
 DatabaseClient* DatabaseClient::From(ExecutionContext* context) {
-  return DatabaseClient::FromPage(To<Document>(context)->GetPage());
+  return DatabaseClient::FromPage(Document::From(context)->GetPage());
 }
 
 const char DatabaseClient::kSupplementName[] = "DatabaseClient";
 
 bool DatabaseClient::AllowDatabase(ExecutionContext* context) {
   DCHECK(context->IsContextThread());
-  Document* document = To<Document>(context);
+  Document* document = Document::From(context);
   if (auto* client = document->GetFrame()->GetContentSettingsClient())
     return client->AllowDatabase();
   return true;

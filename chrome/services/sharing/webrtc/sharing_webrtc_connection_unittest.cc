@@ -105,11 +105,18 @@ class MockSessionDescriptionInterface
   MOCK_CONST_METHOD1(ToString, bool(std::string* out));
 };
 
+std::unique_ptr<webrtc::IceCandidateInterface> CreateIceCandidate(int index) {
+  const int base_port = 1234;
+  rtc::SocketAddress address("127.0.0.1", base_port + index);
+  cricket::Candidate candidate(cricket::ICE_CANDIDATE_COMPONENT_RTP, "udp",
+                               address, 1, "", "", "local", 0, "1");
+  return webrtc::CreateIceCandidate("mid", index, candidate);
+}
+
 std::vector<sharing::mojom::IceCandidatePtr> GenerateIceCandidates(
     int invalid_candidates,
     int valid_candidates) {
   std::vector<sharing::mojom::IceCandidatePtr> ice_candidates;
-  int port = 1234;
 
   // Add invalid ice candidate first;
   for (int i = 0; i < invalid_candidates; i++) {
@@ -123,12 +130,7 @@ std::vector<sharing::mojom::IceCandidatePtr> GenerateIceCandidates(
 
   // Add valid ice candidates;
   for (int i = 0; i < valid_candidates; i++) {
-    rtc::SocketAddress address("127.0.0.1", port++);
-    cricket::Candidate candidate(cricket::ICE_CANDIDATE_COMPONENT_RTP, "udp",
-                                 address, 1, "", "", "local", 0, "1");
-    std::unique_ptr<webrtc::IceCandidateInterface> ice_candidate =
-        webrtc::CreateIceCandidate("mid", i, candidate);
-
+    auto ice_candidate = CreateIceCandidate(i);
     sharing::mojom::IceCandidatePtr ice_candidate_ptr(
         sharing::mojom::IceCandidate::New());
     ice_candidate->ToString(&ice_candidate_ptr->candidate);
@@ -295,6 +297,75 @@ TEST_F(SharingWebRtcConnectionTest, AddIceCandidates_RTCError) {
   histograms_.ExpectBucketCount(
       histogram_name, 1,
       valid_ice_candidates_count - valid_ice_candidates_internal_error);
+}
+
+TEST_F(SharingWebRtcConnectionTest, AddIceCandidates_BeforeSignaling) {
+  // Local description not ready
+  EXPECT_CALL(*mock_webrtc_pc_, local_description())
+      .WillOnce(testing::Return(nullptr));
+
+  EXPECT_CALL(*mock_webrtc_pc_, AddIceCandidate).Times(0);
+  connection_->OnIceCandidatesReceived(GenerateIceCandidates(
+      /*invalid_count=*/0, /*valid_count=*/1));
+
+  // Signaling state not ready
+  MockSessionDescriptionInterface local_description;
+  EXPECT_CALL(*mock_webrtc_pc_, local_description())
+      .WillOnce(testing::Return(&local_description));
+  EXPECT_CALL(*mock_webrtc_pc_, signaling_state())
+      .WillOnce(testing::Return(
+          webrtc::PeerConnectionInterface::SignalingState::kHaveRemoteOffer));
+
+  EXPECT_CALL(*mock_webrtc_pc_, AddIceCandidate).Times(0);
+  connection_->OnIceCandidatesReceived(GenerateIceCandidates(
+      /*invalid_count=*/0, /*valid_count=*/1));
+
+  // Local description and signaling state ready
+  EXPECT_CALL(*mock_webrtc_pc_, local_description())
+      .WillOnce(testing::Return(&local_description));
+  EXPECT_CALL(*mock_webrtc_pc_, signaling_state())
+      .WillOnce(testing::Return(
+          webrtc::PeerConnectionInterface::SignalingState::kStable));
+
+  EXPECT_CALL(*mock_webrtc_pc_, AddIceCandidate).Times(3);
+  connection_->OnIceCandidatesReceived(GenerateIceCandidates(
+      /*invalid_count=*/0, /*valid_count=*/1));
+}
+
+TEST_F(SharingWebRtcConnectionTest, OnIceCandidate_BeforeSignaling) {
+  auto ice_candidate = CreateIceCandidate(/*index=*/0);
+
+  // Local description not ready
+  EXPECT_CALL(*mock_webrtc_pc_, local_description())
+      .WillOnce(testing::Return(nullptr));
+
+  EXPECT_CALL(connection_host_, SendIceCandidates(testing::_)).Times(0);
+  connection_->OnIceCandidate(ice_candidate.get());
+
+  // Signaling state not ready
+  MockSessionDescriptionInterface local_description;
+  EXPECT_CALL(*mock_webrtc_pc_, local_description())
+      .WillOnce(testing::Return(&local_description));
+  EXPECT_CALL(*mock_webrtc_pc_, signaling_state())
+      .WillOnce(testing::Return(
+          webrtc::PeerConnectionInterface::SignalingState::kHaveRemoteOffer));
+
+  EXPECT_CALL(connection_host_, SendIceCandidates(testing::_)).Times(0);
+  connection_->OnIceCandidate(ice_candidate.get());
+
+  // Local description and signaling state ready
+  EXPECT_CALL(*mock_webrtc_pc_, local_description())
+      .WillOnce(testing::Return(&local_description));
+  EXPECT_CALL(*mock_webrtc_pc_, signaling_state())
+      .WillOnce(testing::Return(
+          webrtc::PeerConnectionInterface::SignalingState::kStable));
+
+  EXPECT_CALL(connection_host_, SendIceCandidates(testing::_))
+      .WillOnce(testing::Invoke(
+          [](std::vector<mojom::IceCandidatePtr> ice_candidates) {
+            EXPECT_EQ(3u, ice_candidates.size());
+          }));
+  connection_->OnIceCandidate(ice_candidate.get());
 }
 
 }  // namespace sharing

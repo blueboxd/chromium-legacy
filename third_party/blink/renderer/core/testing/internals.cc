@@ -312,7 +312,7 @@ void Internals::ResetToConsistentState(Page* page) {
 
 Internals::Internals(ExecutionContext* context)
     : runtime_flags_(InternalRuntimeFlags::create()),
-      document_(To<Document>(context)) {
+      document_(Document::From(context)) {
   document_->Fetcher()->EnableIsPreloadedForTest();
 }
 
@@ -1755,7 +1755,7 @@ unsigned Internals::mediaKeySessionCount() {
 unsigned Internals::contextLifecycleStateObserverObjectCount(
     Document* document) {
   DCHECK(document);
-  return document->ContextLifecycleStateObserverCount();
+  return document->ToExecutionContext()->ContextLifecycleStateObserverCount();
 }
 
 static unsigned EventHandlerCount(
@@ -3228,13 +3228,13 @@ bool Internals::isUseCounted(Document* document, uint32_t feature) {
 bool Internals::isCSSPropertyUseCounted(Document* document,
                                         const String& property_name) {
   return document->IsPropertyCounted(
-      unresolvedCSSPropertyID(document, property_name));
+      unresolvedCSSPropertyID(document->ToExecutionContext(), property_name));
 }
 
 bool Internals::isAnimatedCSSPropertyUseCounted(Document* document,
                                                 const String& property_name) {
   return document->IsAnimatedPropertyCounted(
-      unresolvedCSSPropertyID(document, property_name));
+      unresolvedCSSPropertyID(document->ToExecutionContext(), property_name));
 }
 
 void Internals::clearUseCounter(Document* document, uint32_t feature) {

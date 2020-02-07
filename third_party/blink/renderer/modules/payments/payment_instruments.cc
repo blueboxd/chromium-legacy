@@ -249,7 +249,7 @@ ScriptPromise PaymentInstruments::set(ScriptState* script_state,
 
   auto* resolver = MakeGarbageCollected<ScriptPromiseResolver>(script_state);
   ExecutionContext* context = ExecutionContext::From(script_state);
-  Document* doc = DynamicTo<Document>(context);
+  Document* doc = Document::DynamicFrom(context);
 
   // Should move this permission check to browser process.
   // Please see http://crbug.com/795929

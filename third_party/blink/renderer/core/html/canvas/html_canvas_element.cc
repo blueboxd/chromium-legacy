@@ -973,7 +973,7 @@ void HTMLCanvasElement::toBlob(V8BlobCallback* callback,
     async_creator = MakeGarbageCollected<CanvasAsyncBlobCreator>(
         image_bitmap, options,
         CanvasAsyncBlobCreator::kHTMLCanvasToBlobCallback, callback, start_time,
-        &GetDocument());
+        GetDocument().ToExecutionContext());
   }
 
   if (async_creator) {
@@ -1200,7 +1200,7 @@ void HTMLCanvasElement::LayoutObjectDestroyed() {
 }
 
 void HTMLCanvasElement::DidMoveToNewDocument(Document& old_document) {
-  ContextLifecycleObserver::SetContext(&GetDocument());
+  ContextLifecycleObserver::SetContext(GetDocument().ToExecutionContext());
   PageVisibilityObserver::SetContext(GetDocument().GetPage());
   HTMLElement::DidMoveToNewDocument(old_document);
 }

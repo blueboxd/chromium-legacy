@@ -76,7 +76,7 @@ v8::Local<v8::Value> JSEventHandlerForContentAttribute::GetCompiledHandler(
     window = event_target.ToLocalDOMWindow();
     DCHECK(window);
     document = window->document();
-    DCHECK_EQ(document, To<Document>(execution_context_of_event_target));
+    DCHECK_EQ(document, Document::From(execution_context_of_event_target));
   }
   DCHECK(document);
 

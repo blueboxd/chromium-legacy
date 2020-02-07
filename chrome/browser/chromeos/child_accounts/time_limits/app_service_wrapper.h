@@ -7,6 +7,7 @@
 
 #include <vector>
 
+#include "base/callback_forward.h"
 #include "base/observer_list.h"
 #include "base/observer_list_types.h"
 #include "base/time/time.h"
@@ -19,6 +20,10 @@ namespace apps {
 class AppUpdate;
 class InstanceUpdate;
 }  // namespace apps
+
+namespace gfx {
+class ImageSkia;
+}
 
 namespace chromeos {
 namespace app_time {
@@ -83,6 +88,13 @@ class AppServiceWrapper : public apps::AppRegistryCache::Observer,
   // Returns short name of the app identified by |app_id|.
   // Might return empty string.
   std::string GetAppName(const AppId& app_id) const;
+
+  // Returns the uncompressed image icon for app identified by |app_id| with
+  // size |size_hint_in_dp|.
+  void GetAppIcon(const AppId& app_id,
+                  int size_hint_in_dp,
+                  base::OnceCallback<void(base::Optional<gfx::ImageSkia>)>
+                      on_icon_ready) const;
 
   // Returns app service id for the app identified by |app_id|.
   // App service id will be only different from app_id.app_id() for ARC++ apps.

@@ -366,9 +366,27 @@ TEST_F(LoginShelfViewTest, ShouldUpdateUiAfterDialogStateChange) {
   EXPECT_TRUE(
       ShowsShelfButtons({LoginShelfView::kShutdown, LoginShelfView::kAddUser}));
 
+  login_shelf_view_->SetAllowLoginAsGuest(true /*allow_guest*/);
+
   // Only shutdown button is visible when state ==
   // OobeDialogState::EXTENSION_LOGIN.
   login_shelf_view_->SetLoginDialogState(OobeDialogState::EXTENSION_LOGIN);
+  EXPECT_TRUE(ShowsShelfButtons({LoginShelfView::kShutdown}));
+
+  // Hide shutdown button during enrollment.
+  login_shelf_view_->SetLoginDialogState(OobeDialogState::ENROLLMENT);
+  EXPECT_TRUE(ShowsShelfButtons({}));
+
+  // Shutdown button is hidden during user onboarding, as well as during
+  // any data migration steps.
+  login_shelf_view_->SetLoginDialogState(OobeDialogState::ONBOARDING);
+  EXPECT_TRUE(ShowsShelfButtons({}));
+  login_shelf_view_->SetLoginDialogState(OobeDialogState::MIGRATION);
+  EXPECT_TRUE(ShowsShelfButtons({}));
+
+  // Only Shutdown button should be available if some device blocking
+  // screen is shown (e.g. Device Disabled, or Update Required).
+  login_shelf_view_->SetLoginDialogState(OobeDialogState::BLOCKING);
   EXPECT_TRUE(ShowsShelfButtons({LoginShelfView::kShutdown}));
 }
 

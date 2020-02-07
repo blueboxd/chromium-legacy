@@ -19,6 +19,8 @@
 #include "build/build_config.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/signin/identity_manager_factory.h"
+#include "chrome/browser/ui/hats/hats_service.h"
+#include "chrome/browser/ui/hats/hats_service_factory.h"
 #include "chrome/browser/ui/passwords/manage_passwords_view_utils.h"
 #include "chrome/browser/ui/ui_features.h"
 #include "chrome/browser/ui/webui/favicon_source.h"
@@ -128,6 +130,14 @@ namespace settings {
 constexpr char kGeneratedPath[] =
     "@out_folder@/gen/chrome/browser/resources/settings/";
 #endif
+
+// static
+int SettingsUI::hats_timeout_ms_ = 10000;
+
+// static
+void SettingsUI::SetHatsTimeoutForTesting(int timeout) {
+  hats_timeout_ms_ = timeout;
+}
 
 // static
 void SettingsUI::RegisterProfilePrefs(
@@ -319,6 +329,12 @@ SettingsUI::SettingsUI(content::WebUI* web_ui)
   content::URLDataSource::Add(
       profile, std::make_unique<FaviconSource>(
                    profile, chrome::FaviconUrlFormat::kFavicon2));
+
+  base::SequencedTaskRunnerHandle::Get()->PostDelayedTask(
+      FROM_HERE,
+      base::BindOnce(&SettingsUI::LaunchSettingsSurveyIfAppropriate,
+                     weak_ptr_factory_.GetWeakPtr()),
+      base::TimeDelta::FromMilliseconds(hats_timeout_ms_));
 }
 
 SettingsUI::~SettingsUI() = default;
@@ -369,6 +385,17 @@ void SettingsUI::AddSettingsPageUIHandler(
     std::unique_ptr<content::WebUIMessageHandler> handler) {
   DCHECK(handler);
   web_ui()->AddMessageHandler(std::move(handler));
+}
+
+void SettingsUI::LaunchSettingsSurveyIfAppropriate() {
+  HatsService* hats_service =
+      HatsServiceFactory::GetForProfile(Profile::FromWebUI(web_ui()),
+                                        /* create_if_necessary = */ true);
+  auto* web_contents = web_ui()->GetWebContents();
+  if (web_contents->GetVisibility() == content::Visibility::VISIBLE &&
+      hats_service) {
+    hats_service->LaunchSurvey(kHatsSurveyTriggerSettings);
+  }
 }
 
 }  // namespace settings

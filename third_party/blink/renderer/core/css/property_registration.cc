@@ -30,7 +30,7 @@ namespace blink {
 const PropertyRegistration* PropertyRegistration::From(
     const ExecutionContext* execution_context,
     const AtomicString& property_name) {
-  const auto* document = DynamicTo<Document>(execution_context);
+  const auto* document = Document::DynamicFrom(execution_context);
   if (!document)
     return nullptr;
   const PropertyRegistry* registry = document->GetPropertyRegistry();
@@ -167,7 +167,7 @@ void PropertyRegistration::registerProperty(
     return;
   }
   AtomicString atomic_name(name);
-  Document* document = To<Document>(execution_context);
+  Document* document = Document::From(execution_context);
   PropertyRegistry& registry = *document->GetPropertyRegistry();
   if (registry.Registration(atomic_name)) {
     exception_state.ThrowDOMException(

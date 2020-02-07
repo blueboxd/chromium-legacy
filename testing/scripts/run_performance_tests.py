@@ -103,6 +103,7 @@ GTEST_CONVERSION_WHITELIST = [
   'net_perftests',
   'browser_tests',
   'services_perftests',
+  'sync_performance_tests',
   'tracing_perftests',
   'views_perftests',
   'viz_perftests',

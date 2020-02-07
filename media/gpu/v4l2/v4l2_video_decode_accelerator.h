@@ -250,12 +250,13 @@ class MEDIA_GPU_EXPORT V4L2VideoDecodeAccelerator
                                            VideoPixelFormat pixel_format,
                                            gfx::NativePixmapHandle handle);
 
-  // Create an EGLImage for the buffer associated with V4L2 |buffer_index| and
-  // for |picture_buffer_id|, and backed by |handle|.
+  // Create an EGLImage on |egl_device| for the buffer associated with V4L2
+  // |buffer_index| and |picture_buffer_id|, backed by |handle|.
   // The buffer should be bound to |texture_id| and is of format described by
   // |fourcc|. |visible_size| is the size in pixels that the EGL device will be
   // able to see.
-  void CreateEGLImageFor(size_t buffer_index,
+  void CreateEGLImageFor(scoped_refptr<V4L2Device> egl_device,
+                         size_t buffer_index,
                          int32_t picture_buffer_id,
                          gfx::NativePixmapHandle handle,
                          GLuint texture_id,

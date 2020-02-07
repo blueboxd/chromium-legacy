@@ -75,7 +75,8 @@ void LinkStyle::NotifyFinished(Resource* resource) {
         cached_style_sheet->IntegrityDisposition();
 
     SubresourceIntegrityHelper::DoReport(
-        GetDocument(), cached_style_sheet->IntegrityReportInfo());
+        *GetDocument().ToExecutionContext(),
+        cached_style_sheet->IntegrityReportInfo());
 
     if (disposition == ResourceIntegrityDisposition::kFailed) {
       loading_ = false;

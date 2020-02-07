@@ -6,6 +6,7 @@
 
 #include <algorithm>
 
+#include "base/auto_reset.h"
 #include "base/bind.h"
 #include "base/command_line.h"
 #include "base/containers/circular_deque.h"
@@ -330,6 +331,8 @@ PermissionRequestManager::GetDisplayNameOrOrigin() {
 }
 
 void PermissionRequestManager::Accept() {
+  if (deleting_bubble_)
+    return;
   DCHECK(view_);
   std::vector<permissions::PermissionRequest*>::iterator requests_iter;
   for (requests_iter = requests_.begin(); requests_iter != requests_.end();
@@ -340,6 +343,8 @@ void PermissionRequestManager::Accept() {
 }
 
 void PermissionRequestManager::Deny() {
+  if (deleting_bubble_)
+    return;
   DCHECK(view_);
 
   // Suppress any further prompts in this WebContents, from any origin, until
@@ -365,6 +370,8 @@ void PermissionRequestManager::Deny() {
 }
 
 void PermissionRequestManager::Closing() {
+  if (deleting_bubble_)
+    return;
   DCHECK(view_);
   std::vector<permissions::PermissionRequest*>::iterator requests_iter;
   for (requests_iter = requests_.begin();
@@ -465,7 +472,10 @@ void PermissionRequestManager::ShowBubble() {
 
 void PermissionRequestManager::DeleteBubble() {
   DCHECK(view_);
-  view_.reset();
+  {
+    base::AutoReset<bool> deleting(&deleting_bubble_, true);
+    view_.reset();
+  }
   NotifyBubbleRemoved();
 }
 

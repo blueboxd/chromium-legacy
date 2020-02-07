@@ -383,7 +383,7 @@ void MediaStreamTrack::stopTrack(ExecutionContext* execution_context) {
     return;
 
   ready_state_ = MediaStreamSource::kReadyStateEnded;
-  Document* document = To<Document>(execution_context);
+  Document* document = Document::From(execution_context);
   UserMediaController* user_media =
       UserMediaController::From(document->GetFrame());
   if (user_media)
@@ -692,7 +692,7 @@ ScriptPromise MediaStreamTrack::applyConstraints(
     return promise;
   }
 
-  Document* document = To<Document>(execution_context);
+  Document* document = Document::From(execution_context);
   UserMediaController* user_media =
       UserMediaController::From(document->GetFrame());
   if (!user_media) {

@@ -151,7 +151,7 @@ base::Optional<CanonicalCookie> ToCanonicalCookie(
 const KURL DefaultCookieURL(ExecutionContext* execution_context) {
   DCHECK(execution_context);
 
-  if (auto* document = DynamicTo<Document>(execution_context))
+  if (auto* document = Document::DynamicFrom(execution_context))
     return document->CookieURL();
 
   return KURL(To<ServiceWorkerGlobalScope>(execution_context)
@@ -172,7 +172,7 @@ KURL CookieUrlForRead(const CookieStoreGetOptions* options,
   KURL cookie_url = KURL(default_cookie_url, options->url());
 
   if (context->IsDocument()) {
-    DCHECK_EQ(default_cookie_url, To<Document>(context)->CookieURL());
+    DCHECK_EQ(default_cookie_url, Document::From(context)->CookieURL());
 
     if (cookie_url.GetString() != default_cookie_url.GetString()) {
       exception_state.ThrowTypeError("URL must match the document URL");
@@ -196,7 +196,7 @@ KURL CookieUrlForRead(const CookieStoreGetOptions* options,
 net::SiteForCookies DefaultSiteForCookies(ExecutionContext* execution_context) {
   DCHECK(execution_context);
 
-  if (auto* document = DynamicTo<Document>(execution_context))
+  if (auto* document = Document::DynamicFrom(execution_context))
     return document->SiteForCookies();
 
   auto* scope = To<ServiceWorkerGlobalScope>(execution_context);
@@ -207,7 +207,7 @@ scoped_refptr<SecurityOrigin> DefaultTopFrameOrigin(
     ExecutionContext* execution_context) {
   DCHECK(execution_context);
 
-  if (auto* document = DynamicTo<Document>(execution_context)) {
+  if (auto* document = Document::DynamicFrom(execution_context)) {
     // Can we avoid the copy? TopFrameOrigin is returned as const& but we need
     // a scoped_refptr.
     return document->TopFrameOrigin()->IsolatedCopy();

@@ -16,9 +16,6 @@ import xml.etree.ElementTree as ElementTree
 from util import build_utils
 from util import manifest_utils
 
-# Tools library directory - relative to Android SDK root
-_SDK_TOOLS_LIB_DIR = os.path.join('tools', 'lib')
-
 _MANIFEST_MERGER_MAIN_CLASS = 'com.android.manifmerger.Merger'
 _MANIFEST_MERGER_JARS = [
     'common{suffix}.jar',
@@ -48,10 +45,10 @@ def _ProcessManifest(manifest_path, min_sdk_version, target_sdk_version,
     yield patched_manifest.name, manifest_utils.GetPackage(manifest)
 
 
-def _BuildManifestMergerClasspath(android_sdk_root,
+def _BuildManifestMergerClasspath(android_sdk_tools,
                                   android_sdk_tools_version_suffix):
   return ':'.join([
-      os.path.join(android_sdk_root, _SDK_TOOLS_LIB_DIR,
+      os.path.join(android_sdk_tools, 'lib',
                    jar.format(suffix=android_sdk_tools_version_suffix))
       for jar in _MANIFEST_MERGER_JARS
   ])
@@ -62,7 +59,7 @@ def main(argv):
   parser = argparse.ArgumentParser(description=__doc__)
   build_utils.AddDepfileOption(parser)
   parser.add_argument(
-      '--android-sdk-root',
+      '--android-sdk-tools',
       help='Path to root of SDK providing the manifest merger tool.',
       required=True)
   parser.add_argument(
@@ -91,7 +88,7 @@ def main(argv):
   args = parser.parse_args(argv)
 
   classpath = _BuildManifestMergerClasspath(
-      args.android_sdk_root, args.android_sdk_tools_version_suffix)
+      args.android_sdk_tools, args.android_sdk_tools_version_suffix)
 
   with build_utils.AtomicOutput(args.output) as output:
     cmd = [

@@ -189,17 +189,21 @@ bool LayoutListItem::PrepareForBlockDirectionAlign(
   LayoutObject* marker_parent = marker_->Parent();
   // Deal with the situation of layout tree changed.
   if (marker_parent && marker_parent->IsAnonymous()) {
+    bool marker_parent_has_lines =
+        line_box_parent && line_box_parent->IsDescendantOf(marker_parent);
     // When list-position-style change from outside to inside, we need to
     // restore LogicalHeight to auto. So add IsInside().
-    if (marker_->IsInside() || marker_->NextSibling()) {
+    if (marker_->IsInside() || marker_parent_has_lines) {
       // Set marker_container's LogicalHeight to auto.
       if (marker_parent->StyleRef().LogicalHeight().IsZero())
         ForceLogicalHeight(*marker_parent, Length());
 
-      // If marker_parent isn't the ancestor of line_box_parent, marker might
-      // generate a new empty line. We need to remove marker here.E.g:
-      // <li><span><div>text<div><span></li>
-      if (line_box_parent && !line_box_parent->IsDescendantOf(marker_parent)) {
+      // If marker_parent_has_lines and the marker is outside, we need to move
+      // the marker into another parent with 'height: 0' to avoid generating a
+      // new empty line in cases like <li><span><div>text<div><span></li>
+      // If the marker is inside and there are inline contents, we want them to
+      // share the same block container to avoid a line break between them.
+      if (marker_->IsInside() != marker_parent_has_lines) {
         marker_->Remove();
         marker_parent = nullptr;
       }

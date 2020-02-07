@@ -104,7 +104,7 @@ class CORE_EXPORT ScriptedAnimationController
 
   bool HasScheduledFrameTasks() const;
 
-  Document* GetDocument() const { return To<Document>(GetExecutionContext()); }
+  Document* GetDocument() const;
 
   ALWAYS_INLINE bool InsertToPerFrameEventsMap(const Event* event);
   ALWAYS_INLINE void EraseFromPerFrameEventsMap(const Event* event);

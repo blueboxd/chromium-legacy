@@ -28,7 +28,7 @@ class ServiceWorkerScriptCachedMetadataHandler
   void SetCachedMetadata(uint32_t data_type_id,
                          const uint8_t*,
                          size_t) override;
-  void ClearCachedMetadata(CacheType) override;
+  void ClearCachedMetadata(ClearCacheType) override;
   scoped_refptr<CachedMetadata> GetCachedMetadata(
       uint32_t data_type_id) const override;
   String Encoding() const override;

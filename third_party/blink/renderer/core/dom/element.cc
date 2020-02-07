@@ -2249,8 +2249,8 @@ void Element::setAttribute(const AtomicString& local_name,
   std::tie(index, q_name) = LookupAttributeQNameInternal(local_name);
 
   String trusted_value = GetStringFromSpecificTrustedType(
-      value, ExpectedTrustedTypeForAttribute(q_name), &GetDocument(),
-      exception_state);
+      value, ExpectedTrustedTypeForAttribute(q_name),
+      GetDocument().ToExecutionContext(), exception_state);
   if (exception_state.HadException())
     return;
 
@@ -2282,8 +2282,8 @@ void Element::setAttribute(const QualifiedName& name,
                          : kNotFound;
 
   String trusted_value = GetStringFromSpecificTrustedType(
-      value, ExpectedTrustedTypeForAttribute(name), &GetDocument(),
-      exception_state);
+      value, ExpectedTrustedTypeForAttribute(name),
+      GetDocument().ToExecutionContext(), exception_state);
   if (exception_state.HadException())
     return;
 
@@ -2315,8 +2315,8 @@ void Element::setAttribute(
   QualifiedName q_name = QualifiedName::Null();
   std::tie(index, q_name) = LookupAttributeQNameInternal(local_name);
   String value = GetStringFromSpecificTrustedType(
-      string_or_TT, ExpectedTrustedTypeForAttribute(q_name), &GetDocument(),
-      exception_state);
+      string_or_TT, ExpectedTrustedTypeForAttribute(q_name),
+      GetDocument().ToExecutionContext(), exception_state);
   if (exception_state.HadException())
     return;
   SetAttributeInternal(index, q_name, AtomicString(value),
@@ -2371,7 +2371,7 @@ void Element::setAttribute(const QualifiedName& name,
                            const StringOrTrustedScript& stringOrScript,
                            ExceptionState& exception_state) {
   String valueString = GetStringFromTrustedScript(
-      stringOrScript, &GetDocument(), exception_state);
+      stringOrScript, GetDocument().ToExecutionContext(), exception_state);
   if (!exception_state.HadException()) {
     setAttribute(name, AtomicString(valueString));
   }
@@ -2381,7 +2381,7 @@ void Element::setAttribute(const QualifiedName& name,
                            const StringOrTrustedScriptURL& stringOrURL,
                            ExceptionState& exception_state) {
   String valueString = GetStringFromTrustedScriptURL(
-      stringOrURL, &GetDocument(), exception_state);
+      stringOrURL, GetDocument().ToExecutionContext(), exception_state);
   if (!exception_state.HadException()) {
     setAttribute(name, AtomicString(valueString));
   }
@@ -3922,7 +3922,7 @@ Attr* Element::setAttributeNode(Attr* attr_node,
   String value = GetStringFromSpecificTrustedType(
       attr_node->value(),
       ExpectedTrustedTypeForAttribute(attr_node->GetQualifiedName()),
-      &GetDocument(), exception_state);
+      GetDocument().ToExecutionContext(), exception_state);
   if (exception_state.HadException())
     return nullptr;
 
@@ -4042,7 +4042,7 @@ void Element::setAttributeNS(
 
   String value = GetStringFromSpecificTrustedType(
       string_or_TT, ExpectedTrustedTypeForAttribute(parsed_name),
-      &GetDocument(), exception_state);
+      GetDocument().ToExecutionContext(), exception_state);
   if (exception_state.HadException())
     return;
 
@@ -4658,7 +4658,8 @@ void Element::outerHTML(StringOrTrustedHTML& result) const {
 
 void Element::SetInnerHTMLFromString(const String& html,
                                      ExceptionState& exception_state) {
-  probe::BreakableLocation(&GetDocument(), "Element.setInnerHTML");
+  probe::BreakableLocation(GetDocument().ToExecutionContext(),
+                           "Element.setInnerHTML");
   if (html.IsEmpty() && !HasNonInBodyInsertionMode()) {
     setTextContent(html);
   } else {

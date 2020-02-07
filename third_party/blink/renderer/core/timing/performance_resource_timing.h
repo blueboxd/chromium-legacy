@@ -133,6 +133,8 @@ class CORE_EXPORT PerformanceResourceTiming
   uint64_t encoded_body_size_ = 0;
   uint64_t decoded_body_size_ = 0;
   bool did_reuse_connection_ = false;
+  // Do not access allow_timing_details_ directly.  Instead use the
+  // AllowTimingDetails() method which is overridden by some sub-classes.
   bool allow_timing_details_ = false;
   bool allow_redirect_details_ = false;
   bool allow_negative_value_ = false;

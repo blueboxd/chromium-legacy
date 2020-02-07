@@ -184,7 +184,8 @@ TEST_F(NFCProxyTest, SuccessfulPath) {
   auto* nfc_proxy = NFCProxy::From(document);
   auto* scan_options = NDEFScanOptions::Create();
   scan_options->setId(kFakeRecordId);
-  auto* reader = MakeGarbageCollected<MockNDEFReader>(&document);
+  auto* reader =
+      MakeGarbageCollected<MockNDEFReader>(document.ToExecutionContext());
 
   {
     base::RunLoop loop;
@@ -237,7 +238,8 @@ TEST_F(NFCProxyTest, ErrorPath) {
   auto* nfc_proxy = NFCProxy::From(document);
   auto* scan_options = NDEFScanOptions::Create();
   scan_options->setId(kFakeRecordId);
-  auto* reader = MakeGarbageCollected<MockNDEFReader>(&document);
+  auto* reader =
+      MakeGarbageCollected<MockNDEFReader>(document.ToExecutionContext());
 
   // Make the fake NFC service return an error for the incoming watch request.
   nfc_service()->set_watch_error(device::mojom::blink::NDEFError::New(

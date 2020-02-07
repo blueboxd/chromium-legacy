@@ -716,20 +716,12 @@ LocalFrame* ToLocalFrameIfNotDetached(v8::Local<v8::Context> context) {
 
 void ToFlexibleArrayBufferView(v8::Isolate* isolate,
                                v8::Local<v8::Value> value,
-                               FlexibleArrayBufferView& result,
-                               void* storage) {
+                               FlexibleArrayBufferView& result) {
   if (!value->IsArrayBufferView()) {
     result.Clear();
     return;
   }
-  v8::Local<v8::ArrayBufferView> buffer = value.As<v8::ArrayBufferView>();
-  if (!storage) {
-    result.SetFull(V8ArrayBufferView::ToImpl(buffer));
-    return;
-  }
-  size_t length = buffer->ByteLength();
-  buffer->CopyContents(storage, length);
-  result.SetSmall(storage, SafeCast<uint32_t>(length));
+  result.SetContents(value.As<v8::ArrayBufferView>());
 }
 
 static ScriptState* ToScriptStateImpl(LocalFrame* frame,
@@ -749,7 +741,7 @@ static ScriptState* ToScriptStateImpl(LocalFrame* frame,
 v8::Local<v8::Context> ToV8Context(ExecutionContext* context,
                                    DOMWrapperWorld& world) {
   DCHECK(context);
-  if (auto* document = DynamicTo<Document>(context)) {
+  if (auto* document = Document::DynamicFrom(context)) {
     if (LocalFrame* frame = document->GetFrame())
       return ToV8Context(frame, world);
   } else if (auto* scope = DynamicTo<WorkerOrWorkletGlobalScope>(context)) {
@@ -785,7 +777,7 @@ v8::Local<v8::Context> ToV8ContextEvenIfDetached(LocalFrame* frame,
 
 ScriptState* ToScriptState(ExecutionContext* context, DOMWrapperWorld& world) {
   DCHECK(context);
-  if (auto* document = DynamicTo<Document>(context)) {
+  if (auto* document = Document::DynamicFrom(context)) {
     if (LocalFrame* frame = document->GetFrame())
       return ToScriptState(frame, world);
   } else if (auto* scope = DynamicTo<WorkerOrWorkletGlobalScope>(context)) {

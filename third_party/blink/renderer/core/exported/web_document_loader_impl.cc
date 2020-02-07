@@ -143,14 +143,16 @@ void WebDocumentLoaderImpl::DetachFromFrame(bool flush_microtask_queue) {
 void WebDocumentLoaderImpl::SetSubresourceFilter(
     WebDocumentSubresourceFilter* subresource_filter) {
   DocumentLoader::SetSubresourceFilter(MakeGarbageCollected<SubresourceFilter>(
-      GetFrame()->GetDocument(), base::WrapUnique(subresource_filter)));
+      GetFrame()->GetDocument()->ToExecutionContext(),
+      base::WrapUnique(subresource_filter)));
 }
 
 void WebDocumentLoaderImpl::SetLoadingHintsProvider(
     std::unique_ptr<blink::WebLoadingHintsProvider> loading_hints_provider) {
   DocumentLoader::SetPreviewsResourceLoadingHints(
       PreviewsResourceLoadingHints::CreateFromLoadingHintsProvider(
-          *GetFrame()->GetDocument(), std::move(loading_hints_provider)));
+          *GetFrame()->GetDocument()->ToExecutionContext(),
+          std::move(loading_hints_provider)));
 }
 
 void WebDocumentLoaderImpl::SetServiceWorkerNetworkProvider(

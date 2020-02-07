@@ -10,6 +10,11 @@ login.createScreen('AppDownloadingScreen', 'app-downloading', function() {
   return {
     EXTERNAL_API: ['updateNumberOfSelectedApps'],
 
+    /** Initial UI State for screen */
+    getOobeUIInitialState() {
+      return OOBE_UI_STATE.ONBOARDING;
+    },
+
     /**
      * Returns the control which should receive initial focus.
      */

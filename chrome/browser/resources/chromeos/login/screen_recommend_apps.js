@@ -11,6 +11,11 @@ login.createScreen('RecommendAppsScreen', 'recommend-apps', function() {
     EXTERNAL_API:
         ['loadAppList', 'setThrobberVisible', 'setWebview', 'showError'],
 
+    /** Initial UI State for screen */
+    getOobeUIInitialState() {
+      return OOBE_UI_STATE.ONBOARDING;
+    },
+
     /**
      * Returns the control which should receive initial focus.
      */

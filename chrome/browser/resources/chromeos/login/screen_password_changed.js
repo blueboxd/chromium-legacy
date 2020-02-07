@@ -38,6 +38,11 @@ login.createScreen('PasswordChangedScreen', 'password-changed', function() {
       }
     },
 
+    /** Initial UI State for screen */
+    getOobeUIInitialState() {
+      return OOBE_UI_STATE.PASSWORD_CHANGED;
+    },
+
     onAfterShow(data) {
       this.gaiaPasswordChanged_.focus();
     },
@@ -55,7 +60,6 @@ login.createScreen('PasswordChangedScreen', 'password-changed', function() {
 
       // We'll get here after the successful online authentication.
       Oobe.showScreen({id: SCREEN_PASSWORD_CHANGED});
-      Oobe.getInstance().setSigninUIState(SIGNIN_UI_STATE.PASSWORD_CHANGED);
     },
 
     /**

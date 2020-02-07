@@ -34,6 +34,10 @@ class WebTestClientImpl : public mojom::WebTestClient {
   void SimulateWebContentIndexDelete(const std::string& id) override;
   void BlockThirdPartyCookies(bool block) override;
   void ResetPermissions() override;
+  void SetPermission(const std::string& name,
+                     blink::mojom::PermissionStatus status,
+                     const GURL& origin,
+                     const GURL& embedding_origin) override;
 };
 
 }  // namespace content

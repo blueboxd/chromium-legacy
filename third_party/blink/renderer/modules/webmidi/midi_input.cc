@@ -95,7 +95,7 @@ void MIDIInput::DidReceiveMIDIData(unsigned port_index,
       DOMUint8Array::Create(data, SafeCast<unsigned>(length));
   DispatchEvent(*MakeGarbageCollected<MIDIMessageEvent>(time_stamp, array));
 
-  UseCounter::Count(*To<Document>(GetExecutionContext()),
+  UseCounter::Count(*Document::From(GetExecutionContext()),
                     WebFeature::kMIDIMessageEvent);
 }
 

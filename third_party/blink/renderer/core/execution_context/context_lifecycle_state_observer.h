@@ -55,6 +55,9 @@ class CORE_EXPORT ContextLifecycleStateObserver
     : public ContextLifecycleObserver {
  public:
   explicit ContextLifecycleStateObserver(ExecutionContext*);
+  // TODO(crbug.com/1029822): This is a shim to enable migrating
+  // ExecutionContext to LocalDOMWindow.
+  explicit ContextLifecycleStateObserver(Document*);
 
   // UpdateStateIfNeeded() should be called exactly once after object
   // construction to synchronize the suspend state with that in

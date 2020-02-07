@@ -247,6 +247,11 @@ class PermissionRequestManager
   // |notification_permission_ui_selector_| or we are using the normal UI.
   base::Optional<QuietUiReason> current_request_quiet_ui_reason_;
 
+  // Whether the bubble is being destroyed by this class, rather than in
+  // response to a UI event. In this case, callbacks from the bubble itself
+  // should be ignored.
+  bool deleting_bubble_ = false;
+
   base::WeakPtrFactory<PermissionRequestManager> weak_factory_{this};
   WEB_CONTENTS_USER_DATA_KEY_DECL();
 };

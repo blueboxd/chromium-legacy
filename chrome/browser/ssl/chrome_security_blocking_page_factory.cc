@@ -9,7 +9,6 @@
 #include "base/time/time.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/history/history_service_factory.h"
-#include "chrome/browser/interstitials/chrome_metrics_helper.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/renderer_preferences_util.h"
 #include "chrome/browser/ssl/chrome_ssl_host_state_delegate.h"
@@ -17,6 +16,7 @@
 #include "chrome/browser/ssl/ssl_error_controller_client.h"
 #include "chrome/common/channel_info.h"
 #include "chrome/common/url_constants.h"
+#include "components/security_interstitials/content/content_metrics_helper.h"
 #include "components/security_interstitials/content/ssl_blocking_page.h"
 #include "components/security_interstitials/core/controller_client.h"
 #include "components/security_interstitials/core/metrics_helper.h"
@@ -106,15 +106,15 @@ void OpenLoginPage(content::WebContents* web_contents) {
 #endif  // !BUILDFLAG(ENABLE_CAPTIVE_PORTAL_DETECTION)
 }
 
-std::unique_ptr<ChromeMetricsHelper> CreateMetricsHelperWithRecording(
+std::unique_ptr<ContentMetricsHelper> CreateMetricsHelperAndStartRecording(
     content::WebContents* web_contents,
     const GURL& request_url,
     const std::string& metric_prefix,
     bool overridable) {
   security_interstitials::MetricsHelper::ReportDetails reporting_info;
   reporting_info.metric_prefix = metric_prefix;
-  std::unique_ptr<ChromeMetricsHelper> metrics_helper =
-      std::make_unique<ChromeMetricsHelper>(
+  std::unique_ptr<ContentMetricsHelper> metrics_helper =
+      std::make_unique<ContentMetricsHelper>(
           HistoryServiceFactory::GetForProfile(
               Profile::FromBrowserContext(web_contents->GetBrowserContext()),
               ServiceAccessType::EXPLICIT_ACCESS),
@@ -141,8 +141,8 @@ ChromeSecurityBlockingPageFactory::CreateSSLPage(
     const GURL& support_url,
     std::unique_ptr<SSLCertReporter> ssl_cert_reporter) {
   bool overridable = SSLBlockingPage::IsOverridable(options_mask);
-  std::unique_ptr<ChromeMetricsHelper> metrics_helper(
-      CreateMetricsHelperWithRecording(
+  std::unique_ptr<ContentMetricsHelper> metrics_helper(
+      CreateMetricsHelperAndStartRecording(
           web_contents, request_url,
           overridable ? "ssl_overridable" : "ssl_nonoverridable", overridable));
 
@@ -206,8 +206,8 @@ ChromeSecurityBlockingPageFactory::CreateCaptivePortalBlockingPage(
       ssl_info,
       std::make_unique<SSLErrorControllerClient>(
           web_contents, ssl_info, cert_error, request_url,
-          CreateMetricsHelperWithRecording(web_contents, request_url,
-                                           "captive_portal", false)),
+          CreateMetricsHelperAndStartRecording(web_contents, request_url,
+                                               "captive_portal", false)),
       base::BindRepeating(&OpenLoginPage));
 
   DoChromeSpecificSetup(page.get());
@@ -228,8 +228,8 @@ ChromeSecurityBlockingPageFactory::CreateBadClockBlockingPage(
       clock_state, std::move(ssl_cert_reporter),
       std::make_unique<SSLErrorControllerClient>(
           web_contents, ssl_info, cert_error, request_url,
-          CreateMetricsHelperWithRecording(web_contents, request_url,
-                                           "bad_clock", false)));
+          CreateMetricsHelperAndStartRecording(web_contents, request_url,
+                                               "bad_clock", false)));
 
   ChromeSecurityBlockingPageFactory::DoChromeSpecificSetup(page.get());
   return page;
@@ -247,8 +247,8 @@ ChromeSecurityBlockingPageFactory::CreateLegacyTLSBlockingPage(
       ssl_info,
       std::make_unique<SSLErrorControllerClient>(
           web_contents, ssl_info, cert_error, request_url,
-          CreateMetricsHelperWithRecording(web_contents, request_url,
-                                           "legacy_tls", false)));
+          CreateMetricsHelperAndStartRecording(web_contents, request_url,
+                                               "legacy_tls", false)));
 
   DoChromeSpecificSetup(page.get());
   return page;
@@ -267,8 +267,8 @@ ChromeSecurityBlockingPageFactory::CreateMITMSoftwareBlockingPage(
       ssl_info, mitm_software_name, IsEnterpriseManaged(),
       std::make_unique<SSLErrorControllerClient>(
           web_contents, ssl_info, cert_error, request_url,
-          CreateMetricsHelperWithRecording(web_contents, request_url,
-                                           "mitm_software", false)));
+          CreateMetricsHelperAndStartRecording(web_contents, request_url,
+                                               "mitm_software", false)));
 
   DoChromeSpecificSetup(page.get());
   return page;
@@ -286,8 +286,8 @@ ChromeSecurityBlockingPageFactory::CreateBlockedInterceptionBlockingPage(
       ssl_info,
       std::make_unique<SSLErrorControllerClient>(
           web_contents, ssl_info, cert_error, request_url,
-          CreateMetricsHelperWithRecording(web_contents, request_url,
-                                           "blocked_interception", false)));
+          CreateMetricsHelperAndStartRecording(web_contents, request_url,
+                                               "blocked_interception", false)));
 
   ChromeSecurityBlockingPageFactory::DoChromeSpecificSetup(page.get());
   return page;

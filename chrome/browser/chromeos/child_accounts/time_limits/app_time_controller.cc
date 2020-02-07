@@ -4,24 +4,42 @@
 
 #include "chrome/browser/chromeos/child_accounts/time_limits/app_time_controller.h"
 
+#include "ash/public/cpp/notification_utils.h"
+#include "ash/public/cpp/vector_icons/vector_icons.h"
 #include "base/bind.h"
 #include "base/feature_list.h"
 #include "base/logging.h"
 #include "base/optional.h"
+#include "base/strings/strcat.h"
+#include "base/strings/string16.h"
+#include "base/strings/string_util.h"
+#include "base/strings/utf_string_conversions.h"
 #include "base/values.h"
 #include "chrome/browser/chromeos/child_accounts/time_limits/app_activity_registry.h"
 #include "chrome/browser/chromeos/child_accounts/time_limits/app_service_wrapper.h"
+#include "chrome/browser/chromeos/child_accounts/time_limits/app_time_limit_utils.h"
 #include "chrome/browser/chromeos/child_accounts/time_limits/app_time_limits_whitelist_policy_wrapper.h"
 #include "chrome/browser/chromeos/child_accounts/time_limits/app_time_policy_helpers.h"
 #include "chrome/browser/chromeos/child_accounts/time_limits/app_types.h"
 #include "chrome/browser/chromeos/child_accounts/time_limits/web_time_activity_provider.h"
 #include "chrome/browser/chromeos/child_accounts/time_limits/web_time_limit_enforcer.h"
+#include "chrome/browser/notifications/notification_display_service.h"
+#include "chrome/browser/notifications/notification_handler.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/common/chrome_features.h"
 #include "chrome/common/pref_names.h"
+#include "chrome/grit/generated_resources.h"
 #include "components/prefs/pref_change_registrar.h"
 #include "components/prefs/pref_registry_simple.h"
 #include "components/prefs/pref_service.h"
+#include "ui/base/l10n/l10n_util.h"
+#include "ui/base/l10n/time_format.h"
+#include "ui/gfx/image/image.h"
+#include "ui/gfx/image/image_skia.h"
+#include "ui/gfx/vector_icon_types.h"
+#include "ui/message_center/public/cpp/notification.h"
+#include "ui/message_center/public/cpp/notification_delegate.h"
+#include "ui/message_center/public/cpp/notifier_id.h"
 
 namespace chromeos {
 namespace app_time {
@@ -29,6 +47,135 @@ namespace app_time {
 namespace {
 
 constexpr base::TimeDelta kDay = base::TimeDelta::FromHours(24);
+
+// Family link notifier id.
+constexpr char kFamilyLinkSourceId[] = "family-link";
+
+// Time limit reaching id. This id will be appended by the application name. The
+// 5 minute and one minute notifications for the same app will have the same id.
+constexpr char kAppTimeLimitReachingNotificationId[] =
+    "time-limit-reaching-id-";
+
+// Time limit updated id. This id will be appended by the application name.
+constexpr char kAppTimeLimitUpdateNotificationId[] = "time-limit-updated-id-";
+
+// Used to convert |time_limit| to string. |cutoff| specifies whether the
+// formatted result will be one value or two values: for example if the time
+// delta is 2 hours 30 minutes: |cutoff| of <2 will result in "2 hours" and
+// |cutoff| of 3 will result in "2 hours and 30 minutes".
+base::string16 GetTimeLimitMessage(base::TimeDelta time_limit, int cutoff) {
+  return ui::TimeFormat::Detailed(ui::TimeFormat::Format::FORMAT_DURATION,
+                                  ui::TimeFormat::Length::LENGTH_LONG, cutoff,
+                                  time_limit);
+}
+
+base::string16 GetNotificationTitleFor(
+    const base::string16& app_name,
+    chromeos::app_time::AppNotification notification) {
+  switch (notification) {
+    case chromeos::app_time::AppNotification::kFiveMinutes:
+    case chromeos::app_time::AppNotification::kOneMinute:
+      return l10n_util::GetStringFUTF16(
+          IDS_APP_TIME_LIMIT_APP_WILL_PAUSE_SYSTEM_NOTIFICATION_TITLE,
+          app_name);
+    case chromeos::app_time::AppNotification::kTimeLimitChanged:
+      return l10n_util::GetStringUTF16(
+          IDS_APP_TIME_LIMIT_APP_TIME_LIMIT_SET_SYSTEM_NOTIFICATION_TITLE);
+    default:
+      NOTREACHED();
+      return base::EmptyString16();
+  }
+}
+
+base::string16 GetNotificationMessageFor(
+    const base::string16& app_name,
+    chromeos::app_time::AppNotification notification,
+    base::TimeDelta time_limit) {
+  switch (notification) {
+    case chromeos::app_time::AppNotification::kFiveMinutes:
+      return l10n_util::GetStringFUTF16(
+          IDS_APP_TIME_LIMIT_APP_WILL_PAUSE_SYSTEM_NOTIFICATION_MESSAGE,
+          GetTimeLimitMessage(base::TimeDelta::FromMinutes(5), /* cutoff */ 1));
+    case chromeos::app_time::AppNotification::kOneMinute:
+      return l10n_util::GetStringFUTF16(
+          IDS_APP_TIME_LIMIT_APP_WILL_PAUSE_SYSTEM_NOTIFICATION_MESSAGE,
+          GetTimeLimitMessage(base::TimeDelta::FromMinutes(1), /* cutoff */ 1));
+    case chromeos::app_time::AppNotification::kTimeLimitChanged:
+      return l10n_util::GetStringFUTF16(
+          IDS_APP_TIME_LIMIT_APP_TIME_LIMIT_SET_SYSTEM_NOTIFICATION_MESSAGE,
+          GetTimeLimitMessage(time_limit, /* cutoff */ 3), app_name);
+    default:
+      NOTREACHED();
+      return base::EmptyString16();
+  }
+}
+
+std::string GetNotificationIdFor(
+    const std::string& app_name,
+    chromeos::app_time::AppNotification notification) {
+  std::string notification_id;
+  switch (notification) {
+    case chromeos::app_time::AppNotification::kFiveMinutes:
+    case chromeos::app_time::AppNotification::kOneMinute:
+      notification_id = kAppTimeLimitReachingNotificationId;
+      break;
+    case chromeos::app_time::AppNotification::kTimeLimitChanged:
+      notification_id = kAppTimeLimitUpdateNotificationId;
+      break;
+    default:
+      NOTREACHED();
+      notification_id = "";
+      break;
+  }
+  return base::StrCat({notification_id, app_name});
+}
+
+void ShowNotificationForApp(const std::string& app_name,
+                            chromeos::app_time::AppNotification notification,
+                            base::TimeDelta time_limit,
+                            Profile* profile,
+                            base::Optional<gfx::ImageSkia> icon) {
+  DCHECK(notification == chromeos::app_time::AppNotification::kFiveMinutes ||
+         notification == chromeos::app_time::AppNotification::kOneMinute ||
+         notification ==
+             chromeos::app_time::AppNotification::kTimeLimitChanged);
+
+  // Alright we have all the messages that we want.
+  const base::string16 app_name_16 = base::UTF8ToUTF16(app_name);
+  const base::string16 title =
+      GetNotificationTitleFor(app_name_16, notification);
+  const base::string16 message =
+      GetNotificationMessageFor(app_name_16, notification, time_limit);
+  // Family link display source.
+  const base::string16 notification_source =
+      l10n_util::GetStringUTF16(IDS_TIME_LIMIT_NOTIFICATION_DISPLAY_SOURCE);
+
+  std::string notification_id = GetNotificationIdFor(app_name, notification);
+
+  std::unique_ptr<message_center::Notification> message_center_notification =
+      ash::CreateSystemNotification(
+          message_center::NOTIFICATION_TYPE_SIMPLE, notification_id, title,
+          message, notification_source, GURL(),
+          message_center::NotifierId(
+              message_center::NotifierType::SYSTEM_COMPONENT,
+              kFamilyLinkSourceId),
+          message_center::RichNotificationData(),
+          base::MakeRefCounted<message_center::NotificationDelegate>(),
+          ash::kNotificationSupervisedUserIcon,
+          message_center::SystemNotificationWarningLevel::NORMAL);
+
+  if (icon.has_value())
+    message_center_notification->set_icon(gfx::Image(icon.value()));
+
+  auto* notification_display_service =
+      NotificationDisplayService::GetForProfile(profile);
+  if (!notification_display_service)
+    return;
+
+  notification_display_service->Display(NotificationHandler::Type::TRANSIENT,
+                                        *message_center_notification,
+                                        /*metadata=*/nullptr);
+}
 
 }  // namespace
 
@@ -69,7 +216,8 @@ void AppTimeController::RegisterProfilePrefs(PrefRegistrySimple* registry) {
 }
 
 AppTimeController::AppTimeController(Profile* profile)
-    : app_service_wrapper_(std::make_unique<AppServiceWrapper>(profile)),
+    : profile_(profile),
+      app_service_wrapper_(std::make_unique<AppServiceWrapper>(profile)),
       app_registry_(
           std::make_unique<AppActivityRegistry>(app_service_wrapper_.get(),
                                                 this)),
@@ -185,9 +333,26 @@ void AppTimeController::TimeLimitsWhitelistPolicyUpdated(
 
 void AppTimeController::ShowAppTimeLimitNotification(
     const AppId& app_id,
+    base::TimeDelta time_limit,
     AppNotification notification) {
-  // TODO(1015658): Show the notification.
-  NOTIMPLEMENTED_LOG_ONCE();
+  switch (notification) {
+    case AppNotification::kFiveMinutes:
+    case AppNotification::kOneMinute:
+    case AppNotification::kTimeLimitChanged: {
+      std::string app_name = app_service_wrapper_->GetAppName(app_id);
+      int size_hint_in_dp = 48;
+      app_service_wrapper_->GetAppIcon(
+          app_id, size_hint_in_dp,
+          base::BindOnce(&ShowNotificationForApp, app_name, notification,
+                         time_limit, profile_));
+      return;
+    }
+    case AppNotification::kTimeLimitReached:
+      // TODO(1015658)
+      return;
+    default:
+      return;
+  }
 }
 
 base::Time AppTimeController::GetNextResetTime() const {

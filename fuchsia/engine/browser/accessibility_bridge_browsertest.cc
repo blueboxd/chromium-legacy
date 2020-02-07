@@ -379,7 +379,8 @@ IN_PROC_BROWSER_TEST_F(AccessibilityBridgeTest, TestNavigation) {
 }
 
 // Checks that the correct node ID is returned when performing hit testing.
-IN_PROC_BROWSER_TEST_F(AccessibilityBridgeTest, HitTest) {
+// TODO(https://crbug.com/1050049): Re-enable once flake is fixed.
+IN_PROC_BROWSER_TEST_F(AccessibilityBridgeTest, DISABLED_HitTest) {
   fuchsia::web::NavigationControllerPtr controller;
   frame_ptr_->GetNavigationController(controller.NewRequest());
   ASSERT_TRUE(embedded_test_server()->Start());

@@ -115,7 +115,7 @@ Vector<v8::Local<v8::Value>> V8FunctionExecutor::Execute(LocalFrame* frame) {
     args.push_back(args_.Get(i));
   {
     if (V8ScriptRunner::CallFunction(function_.NewLocal(isolate),
-                                     frame->GetDocument(),
+                                     frame->GetDocument()->ToExecutionContext(),
                                      receiver_.NewLocal(isolate), args.size(),
                                      args.data(), ToIsolate(frame))
             .ToLocal(&single_result))
@@ -218,7 +218,7 @@ void PausableScriptExecutor::RunAsync(BlockingOption blocking) {
   DCHECK(context);
   blocking_option_ = blocking;
   if (blocking_option_ == kOnloadBlocking)
-    To<Document>(GetExecutionContext())->IncrementLoadEventDelayCount();
+    Document::From(GetExecutionContext())->IncrementLoadEventDelayCount();
 
   task_handle_ = PostCancellableTask(
       *context->GetTaskRunner(TaskType::kJavascriptTimer), FROM_HERE,
@@ -234,7 +234,7 @@ void PausableScriptExecutor::ExecuteAndDestroySelf() {
 
   ScriptState::Scope script_scope(script_state_);
   Vector<v8::Local<v8::Value>> results =
-      executor_->Execute(To<Document>(GetExecutionContext())->GetFrame());
+      executor_->Execute(Document::From(GetExecutionContext())->GetFrame());
 
   // The script may have removed the frame, in which case contextDestroyed()
   // will have handled the disposal/callback.
@@ -242,7 +242,7 @@ void PausableScriptExecutor::ExecuteAndDestroySelf() {
     return;
 
   if (blocking_option_ == kOnloadBlocking)
-    To<Document>(GetExecutionContext())->DecrementLoadEventDelayCount();
+    Document::From(GetExecutionContext())->DecrementLoadEventDelayCount();
 
   if (callback_)
     callback_->Completed(results);

@@ -63,24 +63,27 @@ TEST_F(PrepopulatedComputedStylePropertyMapTest, NativePropertyAccessors) {
 
   DummyExceptionStateForTesting exception_state;
 
-  map->get(&GetDocument(), "color", exception_state);
+  map->get(GetDocument().ToExecutionContext(), "color", exception_state);
   EXPECT_FALSE(exception_state.HadException());
 
-  map->has(&GetDocument(), "color", exception_state);
+  map->has(GetDocument().ToExecutionContext(), "color", exception_state);
   EXPECT_FALSE(exception_state.HadException());
 
-  map->getAll(&GetDocument(), "color", exception_state);
+  map->getAll(GetDocument().ToExecutionContext(), "color", exception_state);
   EXPECT_FALSE(exception_state.HadException());
 
-  map->get(&GetDocument(), "align-contents", exception_state);
+  map->get(GetDocument().ToExecutionContext(), "align-contents",
+           exception_state);
   EXPECT_TRUE(exception_state.HadException());
   exception_state.ClearException();
 
-  map->has(&GetDocument(), "align-contents", exception_state);
+  map->has(GetDocument().ToExecutionContext(), "align-contents",
+           exception_state);
   EXPECT_TRUE(exception_state.HadException());
   exception_state.ClearException();
 
-  map->getAll(&GetDocument(), "align-contents", exception_state);
+  map->getAll(GetDocument().ToExecutionContext(), "align-contents",
+              exception_state);
   EXPECT_TRUE(exception_state.HadException());
   exception_state.ClearException();
 }
@@ -99,29 +102,34 @@ TEST_F(PrepopulatedComputedStylePropertyMapTest, CustomPropertyAccessors) {
 
   DummyExceptionStateForTesting exception_state;
 
-  const CSSStyleValue* foo = map->get(&GetDocument(), "--foo", exception_state);
+  const CSSStyleValue* foo =
+      map->get(GetDocument().ToExecutionContext(), "--foo", exception_state);
   ASSERT_NE(nullptr, foo);
   ASSERT_EQ(CSSStyleValue::kUnparsedType, foo->GetType());
   EXPECT_FALSE(exception_state.HadException());
 
-  EXPECT_EQ(true, map->has(&GetDocument(), "--foo", exception_state));
+  EXPECT_EQ(true, map->has(GetDocument().ToExecutionContext(), "--foo",
+                           exception_state));
   EXPECT_FALSE(exception_state.HadException());
 
   CSSStyleValueVector fooAll =
-      map->getAll(&GetDocument(), "--foo", exception_state);
+      map->getAll(GetDocument().ToExecutionContext(), "--foo", exception_state);
   EXPECT_EQ(1U, fooAll.size());
   ASSERT_NE(nullptr, fooAll[0]);
   ASSERT_EQ(CSSStyleValue::kUnparsedType, fooAll[0]->GetType());
   EXPECT_FALSE(exception_state.HadException());
 
-  EXPECT_EQ(nullptr, map->get(&GetDocument(), "--quix", exception_state));
+  EXPECT_EQ(nullptr, map->get(GetDocument().ToExecutionContext(), "--quix",
+                              exception_state));
   EXPECT_FALSE(exception_state.HadException());
 
-  EXPECT_EQ(false, map->has(&GetDocument(), "--quix", exception_state));
+  EXPECT_EQ(false, map->has(GetDocument().ToExecutionContext(), "--quix",
+                            exception_state));
   EXPECT_FALSE(exception_state.HadException());
 
   EXPECT_EQ(CSSStyleValueVector(),
-            map->getAll(&GetDocument(), "--quix", exception_state));
+            map->getAll(GetDocument().ToExecutionContext(), "--quix",
+                        exception_state));
   EXPECT_FALSE(exception_state.HadException());
 }
 

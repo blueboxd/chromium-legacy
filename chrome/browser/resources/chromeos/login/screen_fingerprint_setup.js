@@ -10,6 +10,11 @@ login.createScreen('FingerprintSetupScreen', 'fingerprint-setup', function() {
   return {
     EXTERNAL_API: ['onEnrollScanDone', 'enableAddAnotherFinger'],
 
+    /** Initial UI State for screen */
+    getOobeUIInitialState() {
+      return OOBE_UI_STATE.ONBOARDING;
+    },
+
     /**
      * Fingerprint setup module.
      * @private

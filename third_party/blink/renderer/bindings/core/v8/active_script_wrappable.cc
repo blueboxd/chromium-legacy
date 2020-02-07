@@ -18,7 +18,7 @@ bool IsContextDestroyedForActiveScriptWrappable(
   if (execution_context->IsContextDestroyed())
     return true;
 
-  if (const auto* doc = DynamicTo<Document>(execution_context)) {
+  if (const auto* doc = Document::DynamicFrom(execution_context)) {
     // Not all Document objects have an ExecutionContext that is actually
     // destroyed. In such cases we defer to the ContextDocument if possible.
     // If no such Document exists we consider the ExecutionContext as

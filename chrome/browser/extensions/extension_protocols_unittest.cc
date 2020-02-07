@@ -573,7 +573,7 @@ TEST_F(ExtensionProtocolsTest, VerificationSeenForFileAccessErrors) {
 
   // chmod -r 1024.js.
   {
-    TestContentVerifySingleJobObserver observer(extension->id(), kRelativePath);
+    TestContentVerifySingleJobObserver observer(extension_id, kRelativePath);
     base::FilePath file_path = unzipped_path.AppendASCII(kJs);
     ASSERT_TRUE(base::MakeFileUnreadable(file_path));
     EXPECT_EQ(net::ERR_ACCESS_DENIED, DoRequestOrLoad(extension, kJs).result());
@@ -637,7 +637,7 @@ TEST_F(ExtensionProtocolsTest, VerificationSeenForZeroByteFile) {
   // current behavior of ContentVerifyJob.
   // TODO(lazyboy): The behavior is probably incorrect.
   {
-    TestContentVerifySingleJobObserver observer(extension->id(), kRelativePath);
+    TestContentVerifySingleJobObserver observer(extension_id, kRelativePath);
     base::FilePath file_path = unzipped_path.AppendASCII(kEmptyJs);
     ASSERT_TRUE(base::MakeFileUnreadable(file_path));
     EXPECT_EQ(net::ERR_ACCESS_DENIED,

@@ -241,7 +241,7 @@ CSSComputedStyleDeclaration::CSSComputedStyleDeclaration(
     Node* n,
     bool allow_visited_style,
     const String& pseudo_element_name)
-    : CSSStyleDeclaration(n ? &n->GetDocument() : nullptr),
+    : CSSStyleDeclaration(n ? n->GetDocument().ToExecutionContext() : nullptr),
       node_(n),
       pseudo_element_specifier_(
           CSSSelector::ParsePseudoId(pseudo_element_name)),

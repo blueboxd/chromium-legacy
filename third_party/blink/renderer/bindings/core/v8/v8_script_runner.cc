@@ -25,7 +25,9 @@
 
 #include "third_party/blink/renderer/bindings/core/v8/v8_script_runner.h"
 
+#include "base/feature_list.h"
 #include "build/build_config.h"
+#include "third_party/blink/public/common/features.h"
 #include "third_party/blink/renderer/bindings/core/v8/binding_security.h"
 #include "third_party/blink/renderer/bindings/core/v8/referrer_script_info.h"
 #include "third_party/blink/renderer/bindings/core/v8/script_source_code.h"
@@ -56,6 +58,11 @@ namespace {
 // Used to throw an exception before we exceed the C++ stack and crash.
 // This limit was arrived at arbitrarily. crbug.com/449744
 const int kMaxRecursionDepth = 44;
+
+bool InDiscardExperiment() {
+  return base::FeatureList::IsEnabled(
+      blink::features::kDiscardCodeCacheAfterFirstUse);
+}
 
 // In order to make sure all pending messages to be processed in
 // v8::Function::Call, we don't call throwStackOverflowException
@@ -149,6 +156,11 @@ v8::MaybeLocal<v8::Script> CompileScriptInternal(
       if (cached_data->rejected) {
         cache_handler->ClearCachedMetadata(
             CachedMetadataHandler::kSendToPlatform);
+      } else if (InDiscardExperiment()) {
+        // Experimentally free code cache from memory after first use. See
+        // http://crbug.com/1045052.
+        cache_handler->ClearCachedMetadata(
+            CachedMetadataHandler::kDiscardLocally);
       }
       if (cache_result) {
         cache_result->consume_result = base::make_optional(
@@ -282,6 +294,11 @@ v8::MaybeLocal<v8::Module> V8ScriptRunner::CompileModule(
       if (cached_data->rejected) {
         cache_handler->ClearCachedMetadata(
             CachedMetadataHandler::kSendToPlatform);
+      } else if (InDiscardExperiment()) {
+        // Experimentally free code cache from memory after first use. See
+        // http://crbug.com/1045052.
+        cache_handler->ClearCachedMetadata(
+            CachedMetadataHandler::kDiscardLocally);
       }
       cache_result.consume_result = base::make_optional(
           inspector_compile_script_event::V8CacheResult::ConsumeResult(
@@ -303,8 +320,8 @@ v8::MaybeLocal<v8::Value> V8ScriptRunner::RunCompiledScript(
     v8::Local<v8::Script> script,
     ExecutionContext* context) {
   DCHECK(!script.IsEmpty());
-  ScopedFrameBlamer frame_blamer(
-      IsA<Document>(context) ? To<Document>(context)->GetFrame() : nullptr);
+  Document* document = Document::DynamicFrom(context);
+  ScopedFrameBlamer frame_blamer(document ? document->GetFrame() : nullptr);
 
   v8::Local<v8::Value> script_name =
       script->GetUnboundScript()->GetScriptName();
@@ -437,8 +454,8 @@ v8::MaybeLocal<v8::Value> V8ScriptRunner::CallFunction(
     int argc,
     v8::Local<v8::Value> args[],
     v8::Isolate* isolate) {
-  LocalFrame* frame =
-      IsA<Document>(context) ? To<Document>(context)->GetFrame() : nullptr;
+  Document* document = Document::DynamicFrom(context);
+  LocalFrame* frame = document ? document->GetFrame() : nullptr;
   ScopedFrameBlamer frame_blamer(frame);
   TRACE_EVENT0("v8", "v8.callFunction");
   RuntimeCallStatsScopedTracer rcs_scoped_tracer(isolate);

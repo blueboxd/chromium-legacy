@@ -48,7 +48,7 @@ void ServiceWorkerScriptCachedMetadataHandler::SetCachedMetadata(
 }
 
 void ServiceWorkerScriptCachedMetadataHandler::ClearCachedMetadata(
-    CacheType type) {
+    ClearCacheType type) {
   cached_metadata_ = nullptr;
   if (type != kSendToPlatform)
     return;

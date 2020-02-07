@@ -886,7 +886,7 @@ void Resource::OnPurgeMemory() {
   Prune();
   if (!cache_handler_)
     return;
-  cache_handler_->ClearCachedMetadata(CachedMetadataHandler::kCacheLocally);
+  cache_handler_->ClearCachedMetadata(CachedMetadataHandler::kClearLocally);
 }
 
 void Resource::OnMemoryDump(WebMemoryDumpLevelOfDetail level_of_detail,

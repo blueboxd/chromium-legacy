@@ -41,7 +41,7 @@ GetThreadSpecificProvider() {
 BroadcastChannel* BroadcastChannel::Create(ExecutionContext* execution_context,
                                            const String& name,
                                            ExceptionState& exception_state) {
-  Document* document = DynamicTo<Document>(execution_context);
+  Document* document = Document::DynamicFrom(execution_context);
   if (document && document->IsCrossSiteSubframe())
     UseCounter::Count(document, WebFeature::kThirdPartyBroadcastChannel);
 

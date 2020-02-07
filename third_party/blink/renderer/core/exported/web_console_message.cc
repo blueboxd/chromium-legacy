@@ -19,7 +19,7 @@ void WebConsoleMessage::LogWebConsoleMessage(v8::Local<v8::Context> context,
     return;
 
   LocalFrame* frame = nullptr;
-  if (auto* document = DynamicTo<Document>(execution_context))
+  if (auto* document = Document::DynamicFrom(execution_context))
     frame = document->GetFrame();
   execution_context->AddConsoleMessage(
       ConsoleMessage::CreateFromWebConsoleMessage(message, frame));

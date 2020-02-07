@@ -4,6 +4,13 @@
 
 #include "content/public/browser/content_browser_client.h"
 
+// content_browser_client.h is a widely included header and its size impacts
+// build time significantly. If you run into this limit, try using forward
+// declarations instead of including more headers. If that is infeasible, adjust
+// the limit. For more info, see
+// https://chromium.googlesource.com/chromium/src/+/HEAD/docs/wmax_tokens.md
+#pragma clang max_tokens_here 820000
+
 #include <utility>
 
 #include "base/feature_list.h"
@@ -30,6 +37,7 @@
 #include "content/public/common/url_utils.h"
 #include "media/audio/audio_manager.h"
 #include "media/media_buildflags.h"
+#include "media/mojo/mojom/media_service.mojom.h"
 #include "mojo/public/cpp/bindings/associated_interface_ptr.h"
 #include "net/ssl/client_cert_identity.h"
 #include "net/ssl/client_cert_store.h"

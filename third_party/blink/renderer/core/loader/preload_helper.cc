@@ -312,7 +312,9 @@ Resource* PreloadHelper::PreloadIfNeeded(
     if (!integrity_attr.IsEmpty()) {
       IntegrityMetadataSet metadata_set;
       SubresourceIntegrity::ParseIntegrityAttribute(
-          integrity_attr, SubresourceIntegrityHelper::GetFeatures(&document),
+          integrity_attr,
+          SubresourceIntegrityHelper::GetFeatures(
+              document.ToExecutionContext()),
           metadata_set);
       link_fetch_params.SetIntegrityMetadata(metadata_set);
       link_fetch_params.MutableResourceRequest().SetFetchIntegrity(
@@ -435,11 +437,12 @@ void PreloadHelper::ModulePreloadIfNeeded(
   IntegrityMetadataSet integrity_metadata;
   if (!params.integrity.IsEmpty()) {
     SubresourceIntegrity::IntegrityFeatures integrity_features =
-        SubresourceIntegrityHelper::GetFeatures(&document);
+        SubresourceIntegrityHelper::GetFeatures(document.ToExecutionContext());
     SubresourceIntegrity::ReportInfo report_info;
     SubresourceIntegrity::ParseIntegrityAttribute(
         params.integrity, integrity_features, integrity_metadata, &report_info);
-    SubresourceIntegrityHelper::DoReport(document, report_info);
+    SubresourceIntegrityHelper::DoReport(*document.ToExecutionContext(),
+                                         report_info);
   }
 
   // Step 9. "Let referrer policy be the current state of the element's

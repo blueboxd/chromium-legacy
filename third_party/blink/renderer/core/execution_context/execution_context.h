@@ -113,11 +113,16 @@ enum class SecureContextMode { kInsecureContext, kSecureContext };
 // script written by a web author and an "isolated world" content script written
 // by an extension developer, but these share an ExecutionContext (the document)
 // in common.
-class CORE_EXPORT ExecutionContext : public ContextLifecycleNotifier,
-                                     public Supplementable<ExecutionContext>,
-                                     public ConsoleLogger,
-                                     public UseCounter,
-                                     public FeaturePolicyParserDelegate {
+// TODO(crbug.com/1029822): Virtual inheritance is used here temporarily to
+// enable moving ExecutionContext from Document to LocalDOMWindow. This allows
+// Document's inheritance of ExecutionContext to be hidden, while still allowing
+// Document to inherit from some of ExecutionContext's parent classes publicly.
+class CORE_EXPORT ExecutionContext
+    : public ContextLifecycleNotifier,
+      public Supplementable<ExecutionContext>,
+      public virtual ConsoleLogger,
+      public virtual UseCounter,
+      public virtual FeaturePolicyParserDelegate {
   MERGE_GARBAGE_COLLECTED_MIXINS();
 
  public:
@@ -337,7 +342,7 @@ class CORE_EXPORT ExecutionContext : public ContextLifecycleNotifier,
   void AddConsoleMessageImpl(mojom::ConsoleMessageSource,
                              mojom::ConsoleMessageLevel,
                              const String& message,
-                             bool discard_duplicates) final;
+                             bool discard_duplicates) override;
   virtual void AddConsoleMessageImpl(ConsoleMessage*,
                                      bool discard_duplicates) = 0;
 

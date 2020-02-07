@@ -32,8 +32,8 @@ void GetStringFromTrustedTypeThrows(
       network::mojom::ContentSecurityPolicySource::kMeta);
   DummyExceptionStateForTesting exception_state;
   ASSERT_FALSE(exception_state.HadException());
-  String s = GetStringFromTrustedType(string_or_trusted_type, document,
-                                      exception_state);
+  String s = GetStringFromTrustedType(
+      string_or_trusted_type, document->ToExecutionContext(), exception_state);
   EXPECT_FALSE(exception_state.HadException());
 
   document->GetContentSecurityPolicy()->DidReceiveHeader(
@@ -41,8 +41,8 @@ void GetStringFromTrustedTypeThrows(
       network::mojom::ContentSecurityPolicyType::kEnforce,
       network::mojom::ContentSecurityPolicySource::kMeta);
   ASSERT_FALSE(exception_state.HadException());
-  String s1 = GetStringFromTrustedType(string_or_trusted_type, document,
-                                       exception_state);
+  String s1 = GetStringFromTrustedType(
+      string_or_trusted_type, document->ToExecutionContext(), exception_state);
   EXPECT_TRUE(exception_state.HadException());
   EXPECT_EQ(ESErrorType::kTypeError, exception_state.CodeAs<ESErrorType>());
   exception_state.ClearException();
@@ -84,8 +84,8 @@ void GetStringFromTrustedScriptThrows(
   V8TestingScope scope;
   DummyExceptionStateForTesting exception_state;
   ASSERT_FALSE(exception_state.HadException());
-  String s = GetStringFromTrustedScript(string_or_trusted_script, &document,
-                                        exception_state);
+  String s = GetStringFromTrustedScript(
+      string_or_trusted_script, document.ToExecutionContext(), exception_state);
   EXPECT_FALSE(exception_state.HadException());
 
   document.GetContentSecurityPolicy()->DidReceiveHeader(
@@ -93,8 +93,8 @@ void GetStringFromTrustedScriptThrows(
       network::mojom::ContentSecurityPolicyType::kEnforce,
       network::mojom::ContentSecurityPolicySource::kMeta);
   ASSERT_FALSE(exception_state.HadException());
-  String s1 = GetStringFromTrustedScript(string_or_trusted_script, &document,
-                                         exception_state);
+  String s1 = GetStringFromTrustedScript(
+      string_or_trusted_script, document.ToExecutionContext(), exception_state);
   EXPECT_TRUE(exception_state.HadException());
   EXPECT_EQ(ESErrorType::kTypeError, exception_state.CodeAs<ESErrorType>());
   exception_state.ClearException();
@@ -111,7 +111,8 @@ void GetStringFromTrustedScriptURLThrows(
   DummyExceptionStateForTesting exception_state;
   ASSERT_FALSE(exception_state.HadException());
   String s = GetStringFromTrustedScriptURL(string_or_trusted_script_url,
-                                           &document, exception_state);
+                                           document.ToExecutionContext(),
+                                           exception_state);
   EXPECT_FALSE(exception_state.HadException());
 
   document.GetContentSecurityPolicy()->DidReceiveHeader(
@@ -120,7 +121,8 @@ void GetStringFromTrustedScriptURLThrows(
       network::mojom::ContentSecurityPolicySource::kMeta);
   ASSERT_FALSE(exception_state.HadException());
   String s1 = GetStringFromTrustedScriptURL(string_or_trusted_script_url,
-                                            &document, exception_state);
+                                            document.ToExecutionContext(),
+                                            exception_state);
   EXPECT_TRUE(exception_state.HadException());
   EXPECT_EQ(ESErrorType::kTypeError, exception_state.CodeAs<ESErrorType>());
   exception_state.ClearException();
@@ -136,8 +138,8 @@ void GetStringFromTrustedTypeWorks(
       "trusted-types *", network::mojom::ContentSecurityPolicyType::kEnforce,
       network::mojom::ContentSecurityPolicySource::kMeta);
   DummyExceptionStateForTesting exception_state;
-  String s = GetStringFromTrustedType(string_or_trusted_type, document,
-                                      exception_state);
+  String s = GetStringFromTrustedType(
+      string_or_trusted_type, document->ToExecutionContext(), exception_state);
   ASSERT_EQ(s, expected);
 }
 
@@ -166,8 +168,8 @@ void GetStringFromTrustedScriptWorks(
       network::mojom::ContentSecurityPolicySource::kMeta);
   V8TestingScope scope;
   DummyExceptionStateForTesting exception_state;
-  String s = GetStringFromTrustedScript(string_or_trusted_script, &document,
-                                        exception_state);
+  String s = GetStringFromTrustedScript(
+      string_or_trusted_script, document.ToExecutionContext(), exception_state);
   ASSERT_EQ(s, expected);
 }
 
@@ -182,7 +184,8 @@ void GetStringFromTrustedScriptURLWorks(
   V8TestingScope scope;
   DummyExceptionStateForTesting exception_state;
   String s = GetStringFromTrustedScriptURL(string_or_trusted_script_url,
-                                           &document, exception_state);
+                                           document.ToExecutionContext(),
+                                           exception_state);
   ASSERT_EQ(s, expected);
 }
 

@@ -55,14 +55,17 @@ CSSPrimitiveValue* ConsumePositiveInteger(CSSParserTokenRange&);
 bool ConsumeNumberRaw(CSSParserTokenRange&, double& result);
 CSSPrimitiveValue* ConsumeNumber(CSSParserTokenRange&, ValueRange);
 CSSPrimitiveValue* ConsumeLength(CSSParserTokenRange&,
-                                 CSSParserMode,
+                                 const CSSParserContext&,
                                  ValueRange,
                                  UnitlessQuirk = UnitlessQuirk::kForbid);
-CSSPrimitiveValue* ConsumePercent(CSSParserTokenRange&, ValueRange);
-CSSPrimitiveValue* ConsumeAlphaValue(CSSParserTokenRange&);
+CSSPrimitiveValue* ConsumePercent(CSSParserTokenRange&,
+                                  const CSSParserContext&,
+                                  ValueRange);
+CSSPrimitiveValue* ConsumeAlphaValue(CSSParserTokenRange&,
+                                     const CSSParserContext&);
 CSSPrimitiveValue* ConsumeLengthOrPercent(
     CSSParserTokenRange&,
-    CSSParserMode,
+    const CSSParserContext&,
     ValueRange,
     UnitlessQuirk = UnitlessQuirk::kForbid);
 CSSPrimitiveValue* ConsumeSVGGeometryPropertyLength(CSSParserTokenRange&,
@@ -100,10 +103,12 @@ cssvalue::CSSURIValue* ConsumeUrl(CSSParserTokenRange&,
                                   const CSSParserContext*);
 
 CSSValue* ConsumeColor(CSSParserTokenRange&,
-                       CSSParserMode,
+                       const CSSParserContext&,
                        bool accept_quirky_colors = false);
 
-CSSValue* ConsumeLineWidth(CSSParserTokenRange&, CSSParserMode, UnitlessQuirk);
+CSSValue* ConsumeLineWidth(CSSParserTokenRange&,
+                           const CSSParserContext&,
+                           UnitlessQuirk);
 
 CSSValuePair* ConsumePosition(CSSParserTokenRange&,
                               const CSSParserContext&,
@@ -116,7 +121,7 @@ bool ConsumePosition(CSSParserTokenRange&,
                      CSSValue*& result_x,
                      CSSValue*& result_y);
 bool ConsumeOneOrTwoValuedPosition(CSSParserTokenRange&,
-                                   CSSParserMode,
+                                   const CSSParserContext&,
                                    UnitlessQuirk,
                                    CSSValue*& result_x,
                                    CSSValue*& result_y);

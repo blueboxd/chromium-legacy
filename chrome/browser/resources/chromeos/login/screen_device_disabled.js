@@ -30,11 +30,9 @@ login.createScreen('DeviceDisabledScreen', 'device-disabled', function() {
      */
     cancel() {},
 
-    /**
-     * Event handler that is invoked just before the screen in shown.
-     */
-    onBeforeShow() {
-      Oobe.getInstance().setSigninUIState(SIGNIN_UI_STATE.HIDDEN);
+    /** Initial UI State for screen */
+    getOobeUIInitialState() {
+      return OOBE_UI_STATE.BLOCKING;
     },
 
     /**

@@ -245,13 +245,17 @@ login.createScreen('ErrorMessageScreen', 'error-message', function() {
       this.onContentChange_();
     },
 
+    /** Initial UI State for screen */
+    getOobeUIInitialState() {
+      return OOBE_UI_STATE.ERROR;
+    },
+
     /**
      * Event handler that is invoked just before the screen is shown.
      * @param {Object} data Screen init payload.
      */
     onBeforeShow(data) {
       cr.ui.Oobe.clearErrors();
-      Oobe.getInstance().setSigninUIState(SIGNIN_UI_STATE.ERROR);
       $('error-message-back-button').disabled = !this.closable;
     },
 
@@ -259,7 +263,7 @@ login.createScreen('ErrorMessageScreen', 'error-message', function() {
      * Event handler that is invoked just before the screen is hidden.
      */
     onBeforeHide() {
-      Oobe.getInstance().setSigninUIState(SIGNIN_UI_STATE.HIDDEN);
+      Oobe.getInstance().setOobeUIState(OOBE_UI_STATE.HIDDEN);
       // Reset property to the default state.
       this.setIsPersistentError(false);
     },

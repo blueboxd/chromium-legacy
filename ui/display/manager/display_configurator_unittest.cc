@@ -1376,7 +1376,7 @@ TEST_F(DisplayConfiguratorTest, EnablePrivacyScreenOnSupportedEmbeddedDisplay) {
   InitWithOutputs(&small_mode_);
   observer_.Reset();
 
-  EXPECT_TRUE(configurator_.SetPrivacyScreen(kDisplayIds[0], true));
+  EXPECT_TRUE(configurator_.SetPrivacyScreenOnInternalDisplay(true));
   EXPECT_EQ(SetPrivacyScreenAction(kDisplayIds[0], true),
             log_->GetActionsAndClear());
 }
@@ -1396,7 +1396,7 @@ TEST_F(DisplayConfiguratorTest,
   InitWithOutputs(&big_mode_);
   observer_.Reset();
 
-  EXPECT_FALSE(configurator_.SetPrivacyScreen(kDisplayIds[0], true));
+  EXPECT_FALSE(configurator_.SetPrivacyScreenOnInternalDisplay(true));
   EXPECT_EQ(kNoActions, log_->GetActionsAndClear());
 }
 
@@ -1414,7 +1414,7 @@ TEST_F(DisplayConfiguratorTest, EnablePrivacyScreenOnExternalDisplay) {
   InitWithOutputs(&small_mode_);
   observer_.Reset();
 
-  EXPECT_FALSE(configurator_.SetPrivacyScreen(kDisplayIds[0], true));
+  EXPECT_FALSE(configurator_.SetPrivacyScreenOnInternalDisplay(true));
   EXPECT_EQ(kNoActions, log_->GetActionsAndClear());
 }
 

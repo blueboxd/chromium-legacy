@@ -32,7 +32,7 @@ class PLATFORM_EXPORT SourceKeyedCachedMetadataHandler final
   SingleCachedMetadataHandler* HandlerForSource(const String& source);
 
   void ClearCachedMetadata(
-      CachedMetadataHandler::CacheType cache_type) override;
+      CachedMetadataHandler::ClearCacheType cache_type) override;
   String Encoding() const override;
   bool IsServedFromCacheStorage() const override {
     return sender_->IsServedFromCacheStorage();

@@ -17,6 +17,11 @@ login.createScreen('SyncConsentScreen', 'sync-consent', function() {
       return $('sync-consent-impl');
     },
 
+    /** Initial UI State for screen */
+    getOobeUIInitialState() {
+      return OOBE_UI_STATE.ONBOARDING;
+    },
+
     /**
      * Event handler that is invoked just before the screen is hidden.
      */

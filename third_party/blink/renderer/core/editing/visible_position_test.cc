@@ -89,15 +89,15 @@ TEST_F(VisiblePositionTest, NonNullInvalidatedAfterStyleChange) {
   Position position(paragraph->firstChild(), 1);
 
   VisiblePosition visible_position1 = CreateVisiblePosition(position);
-  div->style()->setProperty(&GetDocument(), "color", "red", "important",
-                            ASSERT_NO_EXCEPTION);
+  div->style()->setProperty(GetDocument().ToExecutionContext(), "color", "red",
+                            "important", ASSERT_NO_EXCEPTION);
   EXPECT_FALSE(visible_position1.IsValid());
 
   UpdateAllLifecyclePhasesForTest();
 
   VisiblePosition visible_position2 = CreateVisiblePosition(position);
-  div->style()->setProperty(&GetDocument(), "display", "none", "important",
-                            ASSERT_NO_EXCEPTION);
+  div->style()->setProperty(GetDocument().ToExecutionContext(), "display",
+                            "none", "important", ASSERT_NO_EXCEPTION);
   EXPECT_FALSE(visible_position2.IsValid());
 
   UpdateAllLifecyclePhasesForTest();

@@ -128,7 +128,7 @@ class DedicatedWorkerMessagingProxyForTest
         {"contentSecurityPolicy",
          network::mojom::ContentSecurityPolicyType::kReport}};
     auto worker_settings = std::make_unique<WorkerSettings>(
-        To<Document>(GetExecutionContext())->GetSettings());
+        Document::From(GetExecutionContext())->GetSettings());
     InitializeWorkerThread(
         std::make_unique<GlobalScopeCreationParams>(
             script_url, mojom::ScriptType::kClassic,
@@ -176,7 +176,7 @@ class DedicatedWorkerTest : public PageTestBase {
     PageTestBase::SetUp(IntSize());
     worker_messaging_proxy_ =
         MakeGarbageCollected<DedicatedWorkerMessagingProxyForTest>(
-            &GetDocument());
+            GetDocument().ToExecutionContext());
   }
 
   void TearDown() override {

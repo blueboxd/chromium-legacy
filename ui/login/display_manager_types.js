@@ -83,3 +83,25 @@ var DISPLAY_TYPE = {
   DESKTOP_USER_MANAGER: 'login-add-user',
   GAIA_SIGNIN: 'gaia-signin'
 };
+
+/**
+ * Oobe UI state constants.
+ * Used to control native UI elements.
+ * Should be in sync with login_types.h
+ * @enum {number}
+ */
+var OOBE_UI_STATE = {
+  HIDDEN: 0, /* Any OOBE screen without specific state */
+  GAIA_SIGNIN: 1,
+  ACCOUNT_PICKER: 2,
+  WRONG_HWID_WARNING: 3,
+  DEPRECATED_SUPERVISED_USER_CREATION_FLOW: 4,
+  SAML_PASSWORD_CONFIRM: 5,
+  PASSWORD_CHANGED: 6,
+  ENROLLMENT: 7,
+  ERROR: 8,
+  ONBOARDING: 9,
+  BLOCKING: 10,
+  KIOSK: 11,
+  MIGRATION: 12,
+};

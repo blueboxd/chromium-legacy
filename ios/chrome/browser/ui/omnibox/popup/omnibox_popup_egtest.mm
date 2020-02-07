@@ -164,8 +164,7 @@ std::unique_ptr<net::test_server::HttpResponse> StandardResponse(
 
 // Tests that the incognito tabs aren't displayed as "opened" tab in the
 // non-incognito suggestions and vice-versa.
-// TODO(crbug.com/1045950): fix and reenable.
-- (void)DISABLED_testIncognitoSeparation {
+- (void)testIncognitoSeparation {
   GURL URL1 = self.testServer->GetURL(kPage1URL);
   GURL URL2 = self.testServer->GetURL(kPage2URL);
   GURL URL3 = self.testServer->GetURL(kPage3URL);

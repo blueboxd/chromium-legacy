@@ -1392,7 +1392,7 @@ Response InspectorPageAgent::generateTestReport(const String& message,
       MakeGarbageCollected<Report>("test", document->Url().GetString(), body);
 
   // Send the test report to any ReportingObservers.
-  ReportingContext::From(document)->QueueReport(report);
+  ReportingContext::From(document->ToExecutionContext())->QueueReport(report);
 
   return Response::OK();
 }

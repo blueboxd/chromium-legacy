@@ -47,7 +47,7 @@ const AtomicString& PortalHost::InterfaceName() const {
 }
 
 ExecutionContext* PortalHost::GetExecutionContext() const {
-  return GetSupplementable()->document();
+  return GetSupplementable()->document()->ToExecutionContext();
 }
 
 PortalHost* PortalHost::ToPortalHost() {
@@ -55,7 +55,7 @@ PortalHost* PortalHost::ToPortalHost() {
 }
 
 Document* PortalHost::GetDocument() const {
-  return To<Document>(GetExecutionContext());
+  return Document::From(GetExecutionContext());
 }
 
 void PortalHost::OnPortalActivated() {

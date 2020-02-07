@@ -636,7 +636,7 @@ bool AllowedToUsePaymentRequest(const ExecutionContext* execution_context) {
 
   // Note: PaymentRequest is only exposed to Window and not workers.
   // 1. If |document| has no browsing context, then return false.
-  const Document* document = To<Document>(execution_context);
+  const Document* document = Document::From(execution_context);
   if (!document->GetFrame())
     return false;
 

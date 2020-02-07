@@ -54,7 +54,7 @@ class HatsService : public KeyedService {
   static void RegisterProfilePrefs(PrefRegistrySimple* registry);
 
   // Launch the survey with identifier |trigger| if appropriate.
-  void LaunchSurvey(const std::string& trigger);
+  virtual void LaunchSurvey(const std::string& trigger);
 
   void SetSurveyMetadataForTesting(const SurveyMetadata& metadata);
 

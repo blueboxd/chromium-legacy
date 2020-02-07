@@ -629,6 +629,11 @@ class SamlTest : public OobeBaseTest {
 
   std::string WaitForAndGetFatalErrorMessage() {
     OobeScreenWaiter(OobeScreen::SCREEN_FATAL_ERROR).Wait();
+
+    EXPECT_TRUE(ash::LoginScreenTestApi::IsShutdownButtonShown());
+    EXPECT_FALSE(ash::LoginScreenTestApi::IsGuestButtonShown());
+    EXPECT_FALSE(ash::LoginScreenTestApi::IsAddUserButtonShown());
+
     std::string message_element = "$('fatal-error-card')";
     std::string error_message;
     if (!content::ExecuteScriptAndExtractString(

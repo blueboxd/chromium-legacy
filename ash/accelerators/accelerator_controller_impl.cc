@@ -21,6 +21,7 @@
 #include "ash/debug.h"
 #include "ash/display/display_configuration_controller.h"
 #include "ash/display/display_move_window_util.h"
+#include "ash/display/privacy_screen_controller.h"
 #include "ash/display/screen_orientation_controller.h"
 #include "ash/focus_cycler.h"
 #include "ash/home_screen/home_screen_controller.h"
@@ -1362,6 +1363,18 @@ void HandleToggleSpokenFeedback() {
       !old_value, A11Y_NOTIFICATION_SHOW);
 }
 
+bool CanHandleTogglePrivacyScreen() {
+  return Shell::Get()->privacy_screen_controller()->IsSupported();
+}
+
+void HandleTogglePrivacyScreen() {
+  base::RecordAction(UserMetricsAction("Accel_Toggle_Privacy_Screen"));
+
+  PrivacyScreenController* controller =
+      Shell::Get()->privacy_screen_controller();
+  controller->SetEnabled(!controller->GetEnabled());
+}
+
 // Percent by which the volume should be changed when a volume key is pressed.
 const double kStepPercentage = 4.0;
 
@@ -1769,6 +1782,8 @@ bool AcceleratorControllerImpl::CanPerformAction(
           CanHandleMoveActiveWindowBetweenDisplays();
     case NEW_INCOGNITO_WINDOW:
       return CanHandleNewIncognitoWindow();
+    case PRIVACY_SCREEN_TOGGLE:
+      return CanHandleTogglePrivacyScreen();
     case ROTATE_SCREEN:
       return true;
     case SCALE_UI_DOWN:
@@ -2082,6 +2097,9 @@ void AcceleratorControllerImpl::PerformAction(
       break;
     case PRINT_UI_HIERARCHIES:
       debug::PrintUIHierarchies();
+      break;
+    case PRIVACY_SCREEN_TOGGLE:
+      HandleTogglePrivacyScreen();
       break;
     case ROTATE_SCREEN:
       HandleRotateScreen();

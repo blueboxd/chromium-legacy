@@ -41,7 +41,6 @@ if (enable_java_templates) {
     "android_sdk_build_tools=" +
         rebase_path(android_sdk_build_tools, root_build_dir),
     "android_sdk_build_tools_version=$android_sdk_build_tools_version",
-    "android_sdk_tools_version_suffix=$android_sdk_tools_version_suffix",
     "android_sdk_root=" + rebase_path(android_sdk_root, root_build_dir),
     "android_sdk_version=$android_sdk_version",
     "android_ndk_root=" + rebase_path(android_ndk_root, root_build_dir),

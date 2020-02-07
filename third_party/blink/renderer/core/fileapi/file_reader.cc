@@ -292,7 +292,8 @@ void FileReader::ReadInternal(Blob* blob,
 
   // A document loader will not load new resources once the Document has
   // detached from its frame.
-  if (IsA<Document>(context) && !To<Document>(context)->GetFrame()) {
+  Document* document = Document::DynamicFrom(context);
+  if (document && !document->GetFrame()) {
     exception_state.ThrowDOMException(
         DOMExceptionCode::kAbortError,
         "Reading from a Document-detached FileReader is not supported.");

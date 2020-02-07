@@ -510,8 +510,9 @@ void EditingStyle::Init(Node* node, PropertiesToInclude properties_to_include) {
   mutable_style_ =
       properties_to_include == kAllProperties && computed_style_at_position
           ? computed_style_at_position->CopyProperties()
-          : CopyEditingProperties(node ? &node->GetDocument() : nullptr,
-                                  computed_style_at_position);
+          : CopyEditingProperties(
+                node ? node->GetDocument().ToExecutionContext() : nullptr,
+                computed_style_at_position);
 
   if (properties_to_include == kEditingPropertiesInEffect) {
     if (const CSSValue* value =
@@ -766,11 +767,11 @@ void EditingStyle::RemoveStyleAddedByElement(Element* element) {
   if (!element || !element->parentNode())
     return;
   MutableCSSPropertyValueSet* parent_style = CopyEditingProperties(
-      &element->parentNode()->GetDocument(),
+      element->parentNode()->GetDocument().ToExecutionContext(),
       MakeGarbageCollected<CSSComputedStyleDeclaration>(element->parentNode()),
       kAllEditingProperties);
   MutableCSSPropertyValueSet* node_style = CopyEditingProperties(
-      &element->GetDocument(),
+      element->GetDocument().ToExecutionContext(),
       MakeGarbageCollected<CSSComputedStyleDeclaration>(element),
       kAllEditingProperties);
   node_style->RemoveEquivalentProperties(parent_style);
@@ -782,11 +783,11 @@ void EditingStyle::RemoveStyleConflictingWithStyleOfElement(Element* element) {
     return;
 
   MutableCSSPropertyValueSet* parent_style = CopyEditingProperties(
-      &element->parentNode()->GetDocument(),
+      element->parentNode()->GetDocument().ToExecutionContext(),
       MakeGarbageCollected<CSSComputedStyleDeclaration>(element->parentNode()),
       kAllEditingProperties);
   MutableCSSPropertyValueSet* node_style = CopyEditingProperties(
-      &element->GetDocument(),
+      element->GetDocument().ToExecutionContext(),
       MakeGarbageCollected<CSSComputedStyleDeclaration>(element),
       kAllEditingProperties);
   node_style->RemoveEquivalentProperties(parent_style);
@@ -870,7 +871,7 @@ EditingTriState EditingStyle::TriStateOfStyle(
 
   if (selection.IsCaret()) {
     return TriStateOfStyle(
-        selection.Start().GetDocument(),
+        selection.Start().GetDocument()->ToExecutionContext(),
         EditingStyleUtilities::CreateStyleAtSelectionStart(selection),
         secure_context_mode);
   }
@@ -1198,7 +1199,7 @@ bool EditingStyle::ElementIsStyledSpanOrHTMLEquivalent(
     if (const CSSPropertyValueSet* style = element->InlineStyle()) {
       unsigned property_count = style->PropertyCount();
       for (unsigned i = 0; i < property_count; ++i) {
-        if (!IsEditingProperty(&element->GetDocument(),
+        if (!IsEditingProperty(element->GetDocument().ToExecutionContext(),
                                style->PropertyAt(i).Id()))
           return false;
       }
@@ -1285,15 +1286,15 @@ void EditingStyle::MergeInlineStyleOfElement(
       MergeStyle(element->InlineStyle(), mode);
       return;
     case kOnlyEditingInheritableProperties:
-      MergeStyle(
-          CopyEditingProperties(&element->GetDocument(), element->InlineStyle(),
-                                kOnlyInheritableEditingProperties),
-          mode);
+      MergeStyle(CopyEditingProperties(
+                     element->GetDocument().ToExecutionContext(),
+                     element->InlineStyle(), kOnlyInheritableEditingProperties),
+                 mode);
       return;
     case kEditingPropertiesInEffect:
       MergeStyle(
-          CopyEditingProperties(&element->GetDocument(), element->InlineStyle(),
-                                kAllEditingProperties),
+          CopyEditingProperties(element->GetDocument().ToExecutionContext(),
+                                element->InlineStyle(), kAllEditingProperties),
           mode);
       return;
   }
@@ -1344,8 +1345,8 @@ void EditingStyle::MergeInlineAndImplicitStyleOfElement(
         element->InlineStyle());
 
   style_from_rules->mutable_style_ = ExtractEditingProperties(
-      &element->GetDocument(), style_from_rules->mutable_style_.Get(),
-      properties_to_include);
+      element->GetDocument().ToExecutionContext(),
+      style_from_rules->mutable_style_.Get(), properties_to_include);
   MergeStyle(style_from_rules->mutable_style_.Get(), mode);
 
   const HeapVector<Member<HTMLElementEquivalent>>& element_equivalents =
@@ -1522,7 +1523,7 @@ void EditingStyle::RemoveStyleFromRulesAndContext(Element* element,
     mutable_style_ =
         GetPropertiesNotIn(mutable_style_.Get(),
                            style_from_matched_rules->EnsureCSSStyleDeclaration(
-                               &element->GetDocument()),
+                               element->GetDocument().ToExecutionContext()),
                            secure_context_mode);
   }
 
@@ -1541,7 +1542,7 @@ void EditingStyle::RemoveStyleFromRulesAndContext(Element* element,
     mutable_style_ = GetPropertiesNotIn(
         mutable_style_.Get(),
         computed_style->mutable_style_->EnsureCSSStyleDeclaration(
-            &element->GetDocument()),
+            element->GetDocument().ToExecutionContext()),
         secure_context_mode);
   }
 

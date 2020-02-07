@@ -32,7 +32,7 @@ def _CountResourceUsage(grd, seen_files):
     elif node.name == 'part':
       part_path = os.path.join(os.path.dirname(grd), node.GetInputPath())
       seen_files.add(util.normpath(part_path))
-  return {k: len(v) for k, v in tag_name_to_count.iteritems() if v}
+  return {k: len(v) for k, v in tag_name_to_count.items() if v}
 
 
 def GenerateResourceUsages(item_list, src_dir, fake, seen_files):
@@ -57,7 +57,7 @@ def GenerateResourceUsages(item_list, src_dir, fake, seen_files):
     if item.meta and 'sizes' in item.meta:
       # If META has "sizes" field, use it instead of reading GRD.
       tag_name_to_usage = collections.Counter()
-      for k, vlist in item.meta['sizes'].iteritems():
+      for k, vlist in item.meta['sizes'].items():
         tag_name_to_usage[common.StripPlural(k.val)] = sum(v.val for v in vlist)
       tag_names = set(tag_name_to_usage.keys())
       if tag_names != supported_tag_names:

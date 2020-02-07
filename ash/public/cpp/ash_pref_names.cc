@@ -158,6 +158,9 @@ const char kDisplayMixedMirrorModeParams[] =
 const char kDisplayPowerState[] = "settings.display.power_state";
 // A dictionary pref that stores per display preferences.
 const char kDisplayProperties[] = "settings.display.properties";
+// Boolean controlling whether privacy screen is enabled.
+const char kDisplayPrivacyScreenEnabled[] =
+    "settings.display.privacy_screen_enabled";
 // A dictionary pref that specifies the state of the rotation lock, and the
 // display orientation, for the internal display.
 const char kDisplayRotationLock[] = "settings.display.rotation_lock";

@@ -42,7 +42,7 @@ bool JSBasedEventListener::BelongsToTheCurrentWorld(
   // outside of any v8 context; check if it belongs to the main world.
   if (!isolate->InContext() && execution_context &&
       execution_context->IsDocument()) {
-    Document* document = To<Document>(execution_context);
+    Document* document = Document::From(execution_context);
     if (document->Parser() && document->Parser()->IsParsing())
       return GetWorld().IsMainWorld();
   }

@@ -34,7 +34,7 @@ PresentationAvailability::PresentationAvailability(
     const WTF::Vector<KURL>& urls,
     bool value)
     : ContextLifecycleStateObserver(execution_context),
-      PageVisibilityObserver(To<Document>(execution_context)->GetPage()),
+      PageVisibilityObserver(Document::From(execution_context)->GetPage()),
       urls_(urls),
       value_(value),
       state_(State::kActive) {
@@ -106,7 +106,7 @@ void PresentationAvailability::UpdateListening() {
     return;
 
   if (state_ == State::kActive &&
-      (To<Document>(GetExecutionContext())->IsPageVisible()))
+      (Document::From(GetExecutionContext())->IsPageVisible()))
     controller->GetAvailabilityState()->AddObserver(this);
   else
     controller->GetAvailabilityState()->RemoveObserver(this);

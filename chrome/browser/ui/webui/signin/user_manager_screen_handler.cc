@@ -614,6 +614,7 @@ void UserManagerScreenHandler::RegisterMessages() {
   // Unused callbacks from display_manager.js
   web_ui()->RegisterMessageCallback("showAddUser", base::DoNothing());
   web_ui()->RegisterMessageCallback("updateCurrentScreen", base::DoNothing());
+  web_ui()->RegisterMessageCallback("updateOobeUIState", base::DoNothing());
   web_ui()->RegisterMessageCallback("loginVisible", base::DoNothing());
   // Unused callbacks from user_pod_row.js
   web_ui()->RegisterMessageCallback("focusPod", base::DoNothing());

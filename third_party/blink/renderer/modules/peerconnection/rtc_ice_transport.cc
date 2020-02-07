@@ -110,7 +110,7 @@ class DefaultIceTransportAdapterCrossThreadFactory
 }  // namespace
 
 RTCIceTransport* RTCIceTransport::Create(ExecutionContext* context) {
-  LocalFrame* frame = To<Document>(context)->GetFrame();
+  LocalFrame* frame = Document::From(context)->GetFrame();
   scoped_refptr<base::SingleThreadTaskRunner> proxy_thread =
       frame->GetTaskRunner(TaskType::kNetworking);
 
@@ -127,7 +127,7 @@ RTCIceTransport* RTCIceTransport::Create(
     ExecutionContext* context,
     rtc::scoped_refptr<webrtc::IceTransportInterface> ice_transport,
     RTCPeerConnection* peer_connection) {
-  LocalFrame* frame = To<Document>(context)->GetFrame();
+  LocalFrame* frame = Document::From(context)->GetFrame();
   scoped_refptr<base::SingleThreadTaskRunner> proxy_thread =
       frame->GetTaskRunner(TaskType::kNetworking);
 
@@ -165,7 +165,7 @@ RTCIceTransport::RTCIceTransport(
   DCHECK(adapter_factory);
   DCHECK(proxy_thread->BelongsToCurrentThread());
 
-  LocalFrame* frame = To<Document>(context)->GetFrame();
+  LocalFrame* frame = Document::From(context)->GetFrame();
   DCHECK(frame);
   proxy_ = std::make_unique<IceTransportProxy>(*frame, std::move(proxy_thread),
                                                std::move(host_thread), this,

@@ -97,6 +97,11 @@ void DeserializeWebStateList(WebStateList* web_state_list,
     if (opener_index < old_count || opener_index >= web_state_list->count())
       continue;
 
+    // A WebState cannot be its own opener. If this is the case, assume the
+    // serialized state has been tampered with and ignore the opener.
+    if (opener_index == index)
+      continue;
+
     web::WebState* opener = web_state_list->GetWebStateAt(opener_index);
     web_state_list->SetOpenerOfWebStateAt(
         index,

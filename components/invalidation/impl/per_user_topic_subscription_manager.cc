@@ -276,11 +276,19 @@ void PerUserTopicSubscriptionManager::UpdateSubscribedTopics(
   DropAllSavedSubscriptionsOnTokenChange();
 
   for (const auto& topic : topics) {
+    auto it = pending_subscriptions_.find(topic.first);
+    if (it != pending_subscriptions_.end() &&
+        it->second->type == PerUserTopicSubscriptionRequest::SUBSCRIBE) {
+      // Do not update SubscriptionEntry if there is no changes, to not loose
+      // backoff timer.
+      continue;
+    }
+
     // If the topic isn't subscribed yet, schedule the subscription.
     if (topic_to_private_topic_.find(topic.first) ==
         topic_to_private_topic_.end()) {
-      // If there was already a pending request for this topic, it'll get
-      // destroyed and replaced by the new one.
+      // If there was already a pending unsubscription request for this topic,
+      // it'll get destroyed and replaced by the new one.
       pending_subscriptions_[topic.first] = std::make_unique<SubscriptionEntry>(
           topic.first,
           base::BindRepeating(
@@ -297,6 +305,12 @@ void PerUserTopicSubscriptionManager::UpdateSubscribedTopics(
        it != topic_to_private_topic_.end();) {
     Topic topic = it->first;
     if (topics.find(topic) == topics.end()) {
+      // Unsubscription request may only replace pending subscription request,
+      // because topic immediately deleted from |topic_to_private_topic_| when
+      // unsubsciption request scheduled.
+      DCHECK(pending_subscriptions_.count(topic) == 0 ||
+             pending_subscriptions_[topic]->type ==
+                 PerUserTopicSubscriptionRequest::SUBSCRIBE);
       // If there was already a pending request for this topic, it'll get
       // destroyed and replaced by the new one.
       pending_subscriptions_[topic] = std::make_unique<SubscriptionEntry>(
@@ -316,12 +330,15 @@ void PerUserTopicSubscriptionManager::UpdateSubscribedTopics(
       ++it;
     }
   }
+  // TODO(crbug.com/1020117): remove pending subscriptions for topics we're not
+  // longer interested. Replacement by unsubscription request might be
+  // required, because request can already reach the server.
 
-  // Kick off the process of actually processing the (un)subscriptions we just
-  // scheduled.
-  // TODO(crbug.com/1020117): Only do this if we actually scheduled anything,
-  // i.e. |pending_subscriptions_| is not empty.
-  RequestAccessToken();
+  if (!pending_subscriptions_.empty()) {
+    // Kick off the process of actually processing the (un)subscriptions we just
+    // scheduled.
+    RequestAccessToken();
+  }
 }
 
 void PerUserTopicSubscriptionManager::ClearInstanceIDToken() {
@@ -345,9 +362,10 @@ void PerUserTopicSubscriptionManager::StartPendingSubscriptionRequest(
                  << " which is not in the registration map";
     return;
   }
-  // If retry was scheduled, it will end up in this function and redundant
-  // request cancellation.
-  it->second->request_retry_timer_.Stop();
+  if (it->second->request_retry_timer_.IsRunning()) {
+    // A retry is already scheduled for this request; nothing to do.
+    return;
+  }
 
   PerUserTopicSubscriptionRequest::Builder builder;
   it->second->request = builder.SetInstanceIdToken(instance_id_token_)

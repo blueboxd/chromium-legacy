@@ -32,6 +32,7 @@ const AcceleratorData kAcceleratorData[] = {
     {true, ui::VKEY_BROWSER_SEARCH, ui::EF_SHIFT_DOWN,
      TOGGLE_APP_LIST_FULLSCREEN},
     {true, ui::VKEY_WLAN, ui::EF_NONE, TOGGLE_WIFI},
+    {true, ui::VKEY_PRIVACY_SCREEN_TOGGLE, ui::EF_NONE, PRIVACY_SCREEN_TOGGLE},
     {true, ui::VKEY_KBD_BRIGHTNESS_DOWN, ui::EF_NONE, KEYBOARD_BRIGHTNESS_DOWN},
     {true, ui::VKEY_KBD_BRIGHTNESS_UP, ui::EF_NONE, KEYBOARD_BRIGHTNESS_UP},
     // Maximize button.

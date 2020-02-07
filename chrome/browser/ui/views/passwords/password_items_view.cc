@@ -26,7 +26,6 @@
 #include "ui/views/controls/button/image_button.h"
 #include "ui/views/controls/button/image_button_factory.h"
 #include "ui/views/controls/button/md_text_button.h"
-#include "ui/views/controls/editable_combobox/editable_combobox.h"
 #include "ui/views/controls/label.h"
 #include "ui/views/controls/link.h"
 #include "ui/views/layout/fill_layout.h"
@@ -119,31 +118,6 @@ std::unique_ptr<views::Label> CreateUsernameLabel(
                                               views::style::STYLE_SECONDARY);
   label->SetHorizontalAlignment(gfx::ALIGN_LEFT);
   return label;
-}
-
-std::unique_ptr<views::EditableCombobox> CreateUsernameEditableCombobox(
-    const autofill::PasswordForm& form) {
-  std::vector<base::string16> usernames = {form.username_value};
-  for (const autofill::ValueElementPair& other_possible_username_pair :
-       form.all_possible_usernames) {
-    if (other_possible_username_pair.first != form.username_value)
-      usernames.push_back(other_possible_username_pair.first);
-  }
-  base::EraseIf(usernames, [](const base::string16& username) {
-    return username.empty();
-  });
-  bool display_arrow = !usernames.empty();
-  auto combobox = std::make_unique<views::EditableCombobox>(
-      std::make_unique<ui::SimpleComboboxModel>(std::move(usernames)),
-      /*filter_on_edit=*/false, /*show_on_empty=*/true,
-      views::EditableCombobox::Type::kRegular, views::style::CONTEXT_BUTTON,
-      views::style::STYLE_PRIMARY, display_arrow);
-  combobox->SetText(form.username_value);
-  combobox->SetAccessibleName(
-      l10n_util::GetStringUTF16(IDS_PASSWORD_MANAGER_USERNAME_LABEL));
-  // In case of long username, ensure that the beginning of value is visible.
-  combobox->SelectRange(gfx::Range(0));
-  return combobox;
 }
 
 std::unique_ptr<views::Label> CreatePasswordLabel(

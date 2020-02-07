@@ -33,7 +33,11 @@ StyleRuleCSSStyleDeclaration::StyleRuleCSSStyleDeclaration(
     CSSRule* parent_rule)
     : PropertySetCSSStyleDeclaration(
           const_cast<Document*>(CSSStyleSheet::SingleOwnerDocument(
-              parent_rule->parentStyleSheet())),
+              parent_rule->parentStyleSheet()))
+              ? const_cast<Document*>(CSSStyleSheet::SingleOwnerDocument(
+                                          parent_rule->parentStyleSheet()))
+                    ->ToExecutionContext()
+              : nullptr,
           property_set_arg),
       parent_rule_(parent_rule) {}
 

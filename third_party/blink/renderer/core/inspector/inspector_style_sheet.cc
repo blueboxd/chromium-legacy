@@ -1033,7 +1033,8 @@ CSSStyleRule* InspectorStyleSheet::SetRuleSelector(
   }
 
   CSSStyleRule* style_rule = InspectorCSSAgent::AsCSSStyleRule(rule);
-  style_rule->setSelectorText(page_style_sheet_->OwnerDocument(), text);
+  style_rule->setSelectorText(
+      page_style_sheet_->OwnerDocument()->ToExecutionContext(), text);
 
   ReplaceText(source_data->rule_header_range, text, new_range, old_text);
   OnStyleSheetTextChanged();
@@ -1112,7 +1113,8 @@ CSSRule* InspectorStyleSheet::SetStyleText(const SourceRange& range,
     style = style_rule->style();
   else
     style = To<CSSKeyframeRule>(rule)->style();
-  style->setCSSText(page_style_sheet_->OwnerDocument(), text, exception_state);
+  style->setCSSText(page_style_sheet_->OwnerDocument()->ToExecutionContext(),
+                    text, exception_state);
 
   ReplaceText(source_data->rule_body_range, text, new_range, old_text);
   OnStyleSheetTextChanged();
@@ -1206,8 +1208,9 @@ CSSStyleRule* InspectorStyleSheet::InsertCSSOMRuleInMediaRule(
       break;
   }
 
-  media_rule->insertRule(page_style_sheet_->OwnerDocument(), rule_text, index,
-                         exception_state);
+  media_rule->insertRule(
+      page_style_sheet_->OwnerDocument()->ToExecutionContext(), rule_text,
+      index, exception_state);
   CSSRule* rule = media_rule->Item(index);
   CSSStyleRule* style_rule = InspectorCSSAgent::AsCSSStyleRule(rule);
   if (!style_rule) {

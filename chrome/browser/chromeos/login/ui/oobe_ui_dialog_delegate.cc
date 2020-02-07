@@ -372,7 +372,11 @@ void OobeUIDialogDelegate::SetShouldDisplayCaptivePortal(bool should_display) {
 
 void OobeUIDialogDelegate::Show() {
   widget_->Show();
-  SetState(ash::OobeDialogState::GAIA_SIGNIN);
+  if (state_ == ash::OobeDialogState::HIDDEN) {
+    SetState(ash::OobeDialogState::GAIA_SIGNIN);
+  } else {
+    ash::LoginScreen::Get()->GetModel()->NotifyOobeDialogState(state_);
+  }
 
   if (should_display_captive_portal_)
     GetOobeUI()->GetErrorScreen()->FixCaptivePortal();
@@ -403,12 +407,13 @@ void OobeUIDialogDelegate::SetState(ash::OobeDialogState state) {
   if (!widget_ || state_ == state)
     return;
 
+  state_ = state;
+
   // Gaia WebUI is preloaded, so it's possible for WebUI to send state updates
   // while the widget is not visible. Defer the state update until Show().
-  if (!widget_->IsVisible() && state != ash::OobeDialogState::HIDDEN)
+  if (!widget_->IsVisible() && state_ != ash::OobeDialogState::HIDDEN)
     return;
 
-  state_ = state;
   ash::LoginScreen::Get()->GetModel()->NotifyOobeDialogState(state_);
 }
 

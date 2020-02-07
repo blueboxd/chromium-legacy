@@ -263,7 +263,8 @@ void LinkLoader::LoadStylesheet(const LinkLoadParameters& params,
   if (!integrity_attr.IsEmpty()) {
     IntegrityMetadataSet metadata_set;
     SubresourceIntegrity::ParseIntegrityAttribute(
-        integrity_attr, SubresourceIntegrityHelper::GetFeatures(&document),
+        integrity_attr,
+        SubresourceIntegrityHelper::GetFeatures(document.ToExecutionContext()),
         metadata_set);
     link_fetch_params.SetIntegrityMetadata(metadata_set);
     link_fetch_params.MutableResourceRequest().SetFetchIntegrity(

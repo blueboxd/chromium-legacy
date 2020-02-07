@@ -122,7 +122,7 @@ TEST_F(ReportingContextTest, CountQueuedReports) {
 
   // Send the deprecation report to the Reporting API and any
   // ReportingObservers.
-  ReportingContext::From(&dummy_page_holder->GetDocument())
+  ReportingContext::From(dummy_page_holder->GetDocument().ToExecutionContext())
       ->QueueReport(report);
   //  tester.ExpectTotalCount("Blink.UseCounter.Features.DeprecationReport", 1);
   // The potential violation for an already recorded violation does not count
@@ -141,7 +141,7 @@ TEST_F(ReportingContextTest, DeprecationReportContent) {
       "FeatureId", base::Time::FromJsTime(1000), "Test report");
   auto* report =
       MakeGarbageCollected<Report>("deprecation", doc.Url().GetString(), body);
-  ReportingContext::From(&doc)->QueueReport(report);
+  ReportingContext::From(doc.ToExecutionContext())->QueueReport(report);
   run_loop.Run();
 
   EXPECT_TRUE(reporting_service.DeprecationReportAnticipatedRemoval());

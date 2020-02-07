@@ -256,6 +256,7 @@ Pokud je položka <ph name="SERVICE_SCRIPT_NAME" /> již zaškrtnutá, zrušte j
 <translation id="6939719207673461467">Zobrazit či skrýt klávesnici</translation>
 <translation id="6944854424004126054">Obnovit okno</translation>
 <translation id="6948905685698011662">Vzdálená plocha Chrome je teď na webu. Vyzkoušejte naši <ph name="LINK_BEGIN" />bezplatnou webovou aplikaci<ph name="LINK_END" />.</translation>
+<translation id="6956835181934226419">Toto oprávnění jsem už udělil(a)</translation>
 <translation id="6963936880795878952">Připojení ke vzdálenému počítači jsou dočasně zablokována, protože došlo k několika pokusům o připojení s nesprávným kódem PIN. Zkuste to znovu později.</translation>
 <translation id="6965382102122355670">OK</translation>
 <translation id="6985691951107243942">Opravdu chcete zakázat vzdálená připojení k počítači <ph name="HOSTNAME" />? Pokud později své rozhodnutí změníte, bude nutné připojení povolit přímo z uvedeného počítače.</translation>

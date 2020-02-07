@@ -688,6 +688,7 @@
 <translation id="3987940399970879459">По-малко от 1 МБ</translation>
 <translation id="3990250421422698716">Разделно офсетово отпечатване</translation>
 <translation id="40103911065039147">{URL_count,plural, =1{1 уеб страница в близост}other{# уеб страници в близост}}</translation>
+<translation id="4014128326099193693">{COUNT,plural, =1{PDF документ, съдържащ {COUNT} страница}other{PDF документ, съдържащ {COUNT} страници}}</translation>
 <translation id="4030383055268325496">&amp;Отмяна на добавянето</translation>
 <translation id="4032320456957708163">Браузърът ви се управлява от <ph name="ENROLLMENT_DOMAIN" /></translation>
 <translation id="4058922952496707368">Ключ „<ph name="SUBKEY" />“: <ph name="ERROR" /></translation>
@@ -716,6 +717,7 @@
 <translation id="4142935452406587478">Тава 10</translation>
 <translation id="4148925816941278100">American Express</translation>
 <translation id="4151403195736952345">Използване на глобалната стандартна стойност (Откриване)</translation>
+<translation id="4152318981910038897">{COUNT,plural, =1{Страница 1}other{Страница {COUNT}}}</translation>
 <translation id="4159784952369912983">лилаво</translation>
 <translation id="4165986682804962316">Настройки за сайта</translation>
 <translation id="4171400957073367226">Невалиден подпис за потвърждаване</translation>
@@ -1393,6 +1395,7 @@
 <translation id="7201591969684833065">Администраторът ви може да вижда:</translation>
 <translation id="7202346780273620635">Letter-Extra</translation>
 <translation id="7210863904660874423"><ph name="HOST_NAME" /> не се придържа към стандартите за сигурност.</translation>
+<translation id="7210993021468939304">Може да инсталира и стартира приложения за Linux в контейнера, както и да вижда активността в него</translation>
 <translation id="721197778055552897"><ph name="BEGIN_LINK" />Научете повече<ph name="END_LINK" /> за този проблем.</translation>
 <translation id="7219179957768738017">Връзката използва <ph name="SSL_VERSION" />.</translation>
 <translation id="7220786058474068424">Обработва се</translation>
@@ -1556,6 +1559,7 @@
 <translation id="7878562273885520351">Възможно е паролата ви да е компрометирана</translation>
 <translation id="7882421473871500483">кафяво</translation>
 <translation id="7887683347370398519">Прегледайте кода за проверка и опитайте отново</translation>
+<translation id="7887885240995164102">Преминаване в режим „Картина в картината“</translation>
 <translation id="7888575728750733395">Режим на изобразяване на цветовете при отпечатване</translation>
 <translation id="7904208859782148177">C3 (плик)</translation>
 <translation id="7932579305932748336">Покритие</translation>

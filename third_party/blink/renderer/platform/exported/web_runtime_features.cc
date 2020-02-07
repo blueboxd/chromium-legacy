@@ -432,10 +432,6 @@ void WebRuntimeFeatures::EnablePreciseMemoryInfo(bool enable) {
   RuntimeEnabledFeatures::SetPreciseMemoryInfoEnabled(enable);
 }
 
-void WebRuntimeFeatures::EnablePrintBrowser(bool enable) {
-  RuntimeEnabledFeatures::SetPrintBrowserEnabled(enable);
-}
-
 void WebRuntimeFeatures::EnableV8IdleTasks(bool enable) {
   RuntimeEnabledFeatures::SetV8IdleTasksEnabled(enable);
 }

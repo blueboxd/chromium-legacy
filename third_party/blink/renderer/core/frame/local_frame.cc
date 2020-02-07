@@ -1910,8 +1910,8 @@ mojom::blink::LocalFrameHost& LocalFrame::GetLocalFrameHostRemote() {
 
 void LocalFrame::SetEmbeddingToken(
     const base::UnguessableToken& embedding_token) {
-  DCHECK(Tree().Parent());
-  DCHECK(Tree().Parent()->IsRemoteFrame());
+  DCHECK((Tree().Parent() && Tree().Parent()->IsRemoteFrame()) ||
+         IsMainFrame());
   embedding_token_ = embedding_token;
 }
 

@@ -479,6 +479,42 @@ IN_PROC_BROWSER_TEST_F(AXPlatformNodeTextRangeProviderWinBrowserTest,
   value.Reset();
 }
 
+// With a rich text field, the read-only attribute should be determined based on
+// the editable root node's editable state.
+IN_PROC_BROWSER_TEST_F(AXPlatformNodeTextRangeProviderWinBrowserTest,
+                       GetAttributeValueIsReadonlyRichTextField) {
+  LoadInitialAccessibilityTreeFromHtml(std::string(R"HTML(
+      <!DOCTYPE html>
+      <html>
+        <style>
+          .myDiv::before {
+              content: attr(data-placeholder);
+              pointer-events: none;
+          }
+        </style>
+        <body>
+          <div contenteditable="true" data-placeholder="@mention or comment"
+          role="textbox" aria-readonly="false" aria-label="text_field"
+          class="myDiv"><p>3.14</p></div>
+        </body>
+      </html>
+  )HTML"));
+
+  auto* text_field_node = FindNode(ax::mojom::Role::kTextField, "text_field");
+  ASSERT_NE(nullptr, text_field_node);
+  ComPtr<ITextRangeProvider> text_range_provider;
+  GetTextRangeProviderFromTextNode(*text_field_node, &text_range_provider);
+  ASSERT_NE(nullptr, text_range_provider.Get());
+
+  base::win::ScopedVariant value;
+  EXPECT_HRESULT_SUCCEEDED(text_range_provider->GetAttributeValue(
+      UIA_IsReadOnlyAttributeId, value.Receive()));
+  EXPECT_EQ(value.type(), VT_BOOL);
+  EXPECT_EQ(V_BOOL(value.ptr()), VARIANT_FALSE);
+  text_range_provider.Reset();
+  value.Reset();
+}
+
 IN_PROC_BROWSER_TEST_F(AXPlatformNodeTextRangeProviderWinBrowserTest,
                        GetBoundingRectangles) {
   LoadInitialAccessibilityTreeFromHtml(std::string(R"HTML(

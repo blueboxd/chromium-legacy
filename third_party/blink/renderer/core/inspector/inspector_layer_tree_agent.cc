@@ -554,9 +554,11 @@ Response InspectorLayerTreeAgent::snapshotCommandLog(
   *command_log = protocol::ValueConversions<
       protocol::Array<protocol::DictionaryValue>>::fromValue(log_value.get(),
                                                              &errors);
-  if (errors.hasErrors())
-    return Response::Error(errors.errors());
-  return Response::OK();
+  auto err = errors.Errors();
+  if (err.empty())
+    return Response::OK();
+  return Response::Error(
+      protocol::StringUtil::fromUTF8(err.data(), err.size()));
 }
 
 }  // namespace blink

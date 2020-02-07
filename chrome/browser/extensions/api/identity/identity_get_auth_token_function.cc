@@ -40,8 +40,8 @@
 #include "chrome/browser/app_mode/app_mode_utils.h"
 #include "chrome/browser/chromeos/login/session/user_session_manager.h"
 #include "chrome/browser/chromeos/policy/browser_policy_connector_chromeos.h"
-#include "chrome/browser/chromeos/settings/device_oauth2_token_service.h"
-#include "chrome/browser/chromeos/settings/device_oauth2_token_service_factory.h"
+#include "chrome/browser/device_identity/device_oauth2_token_service.h"
+#include "chrome/browser/device_identity/device_oauth2_token_service_factory.h"
 #include "components/user_manager/user_manager.h"
 #include "google_apis/gaia/gaia_constants.h"
 #endif

@@ -37,4 +37,6 @@
     const unsigned long COMPRESSED_SRGB8_ALPHA8_ASTC_10x10_KHR = 0x93DB;
     const unsigned long COMPRESSED_SRGB8_ALPHA8_ASTC_12x10_KHR = 0x93DC;
     const unsigned long COMPRESSED_SRGB8_ALPHA8_ASTC_12x12_KHR = 0x93DD;
+
+    sequence<DOMString> getSupportedProfiles();
 };

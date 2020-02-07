@@ -24,7 +24,7 @@
 #include "chrome/browser/profiles/profile_manager.h"
 #include "components/performance_manager/embedder/performance_manager_lifetime.h"
 #include "components/performance_manager/embedder/performance_manager_registry.h"
-#include "components/performance_manager/performance_manager_lock_observer.h"
+#include "components/performance_manager/performance_manager_feature_observer_client.h"
 #include "components/performance_manager/public/decorators/page_load_tracker_decorator_helper.h"
 #include "components/performance_manager/public/graph/graph.h"
 #include "content/public/browser/storage_partition.h"
@@ -48,8 +48,9 @@ ChromeBrowserMainExtraPartsPerformanceManager* g_instance = nullptr;
 
 ChromeBrowserMainExtraPartsPerformanceManager::
     ChromeBrowserMainExtraPartsPerformanceManager()
-    : lock_observer_(std::make_unique<
-                     performance_manager::PerformanceManagerLockObserver>()) {
+    : feature_observer_client_(
+          std::make_unique<
+              performance_manager::PerformanceManagerFeatureObserverClient>()) {
   DCHECK(!g_instance);
   g_instance = this;
 }
@@ -110,9 +111,9 @@ void ChromeBrowserMainExtraPartsPerformanceManager::CreatePoliciesAndDecorators(
       std::make_unique<performance_manager::metrics::MemoryPressureMetrics>());
 }
 
-content::LockObserver*
-ChromeBrowserMainExtraPartsPerformanceManager::GetLockObserver() {
-  return lock_observer_.get();
+content::FeatureObserverClient*
+ChromeBrowserMainExtraPartsPerformanceManager::GetFeatureObserverClient() {
+  return feature_observer_client_.get();
 }
 
 void ChromeBrowserMainExtraPartsPerformanceManager::PostCreateThreads() {

@@ -735,7 +735,7 @@ const base::Optional<base::UnguessableToken>& FrameTreeNode::GetEmbeddingToken()
 void FrameTreeNode::SetEmbeddingToken(
     const base::Optional<base::UnguessableToken>& embedding_token) {
   embedding_token_ = embedding_token;
-  if (embedding_token_.has_value()) {
+  if (embedding_token_.has_value() && !IsMainFrame()) {
     // Propagate a non-null embedding token to the parent. Parents will
     // invalidate their own tokens if a previously remote frame becomes local to
     // them.

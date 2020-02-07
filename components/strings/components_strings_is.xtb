@@ -691,6 +691,7 @@ og röng skilríki til baka. Þetta getur gerst þegar tölvuþrjótur reynir a�
 <translation id="3987940399970879459">Minna en 1 MB</translation>
 <translation id="3990250421422698716">Jöfnuð offsetprentun</translation>
 <translation id="40103911065039147">{URL_count,plural, =1{1 vefsvæði nálægt}one{# vefsvæði nálægt}other{# vefsvæði nálægt}}</translation>
+<translation id="4014128326099193693">{COUNT,plural, =1{PDF-skjal með {COUNT} síðu}one{PDF-skjal með {COUNT} síðu}other{PDF-skjal með {COUNT} síðum}}</translation>
 <translation id="4030383055268325496">Aft&amp;urkalla viðbót</translation>
 <translation id="4032320456957708163"><ph name="ENROLLMENT_DOMAIN" /> hefur umsjón með vafranum þínum</translation>
 <translation id="4058922952496707368">Lykill „<ph name="SUBKEY" />“: <ph name="ERROR" /></translation>
@@ -719,6 +720,7 @@ og röng skilríki til baka. Þetta getur gerst þegar tölvuþrjótur reynir a�
 <translation id="4142935452406587478">Bakki 10</translation>
 <translation id="4148925816941278100">American Express</translation>
 <translation id="4151403195736952345">Nota altækt sjálfgildi (greina)</translation>
+<translation id="4152318981910038897">{COUNT,plural, =1{Síða 1}one{Síða {COUNT}}other{Síða {COUNT}}}</translation>
 <translation id="4159784952369912983">Purpurarauður</translation>
 <translation id="4165986682804962316">Svæðisstillingar</translation>
 <translation id="4171400957073367226">Röng staðfestingarundirskrift</translation>
@@ -1396,6 +1398,7 @@ og röng skilríki til baka. Þetta getur gerst þegar tölvuþrjótur reynir a�
 <translation id="7201591969684833065">Kerfisstjórinn þinn getur séð:</translation>
 <translation id="7202346780273620635">Letter-Extra</translation>
 <translation id="7210863904660874423"><ph name="HOST_NAME" /> uppfyllir ekki öryggiskröfur.</translation>
+<translation id="7210993021468939304">Virkni innan Linux-rammans og getur sett upp og keyrt Linux-forrit innan rammans</translation>
 <translation id="721197778055552897"><ph name="BEGIN_LINK" />Frekari upplýsingar<ph name="END_LINK" /> um þetta vandamál.</translation>
 <translation id="7219179957768738017">Tengingin notar <ph name="SSL_VERSION" />.</translation>
 <translation id="7220786058474068424">Í vinnslu</translation>
@@ -1559,6 +1562,7 @@ og röng skilríki til baka. Þetta getur gerst þegar tölvuþrjótur reynir a�
 <translation id="7878562273885520351">Aðgangsorðinu þínu kann að hafa verið stolið</translation>
 <translation id="7882421473871500483">Brúnn</translation>
 <translation id="7887683347370398519">Athugaðu CVC-númerið og reyndu aftur</translation>
+<translation id="7887885240995164102">Skoða mynd í mynd</translation>
 <translation id="7888575728750733395">Tilgangur myndsetningar</translation>
 <translation id="7904208859782148177">C3 (umslag)</translation>
 <translation id="7932579305932748336">Kápa</translation>

@@ -561,22 +561,14 @@ void ShelfWidget::RegisterHotseatWidget(HotseatWidget* hotseat_widget) {
   delegate_view_->set_context_menu_controller(hotseat_widget->GetShelfView());
   hotseat_transition_animator_.reset(new HotseatTransitionAnimator(this));
   hotseat_transition_animator_->AddObserver(delegate_view_);
-}
-
-void ShelfWidget::OnShelfAlignmentChanged() {
-  // This call will in turn trigger a call to delegate_view_->SchedulePaint().
-  delegate_view_->UpdateOpaqueBackground();
+  shelf_->hotseat_widget()->CreateAnimationMetricsReporter(
+      hotseat_transition_animator());
 }
 
 void ShelfWidget::OnTabletModeChanged() {
-  delegate_view_->UpdateOpaqueBackground();
-  hotseat_widget()->OnTabletModeChanged();
-
   // Resets |is_hotseat_forced_to_show| when leaving the tablet mode.
   if (!IsInTabletMode())
     is_hotseat_forced_to_show_ = false;
-
-  shelf_layout_manager()->UpdateVisibilityState();
 }
 
 void ShelfWidget::PostCreateShelf() {
@@ -676,6 +668,7 @@ void ShelfWidget::CalculateTargetBounds() {
 
 void ShelfWidget::UpdateLayout(bool animate) {
   // TODO(manucornet): Refactor layout update logic into this method.
+  delegate_view_->UpdateOpaqueBackground();
 }
 
 gfx::Rect ShelfWidget::GetTargetBounds() const {

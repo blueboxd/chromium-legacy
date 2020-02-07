@@ -256,6 +256,7 @@ Se a caixa que hai a carón de <ph name="SERVICE_SCRIPT_NAME" /> xa está selecc
 <translation id="6939719207673461467">Mostrar/ocultar teclado.</translation>
 <translation id="6944854424004126054">Restaurar ventá</translation>
 <translation id="6948905685698011662">O Escritorio remoto de Chrome xa está dispoñible na web. Proba a nosa <ph name="LINK_BEGIN" />aplicación web gratuíta<ph name="LINK_END" />.</translation>
+<translation id="6956835181934226419">Xa concedín este permiso.</translation>
 <translation id="6963936880795878952">As conexións co ordenador remoto bloqueáronse temporalmente debido a que alguén estaba tentando conectarse a el cun PIN non válido. Téntao de novo máis tarde.</translation>
 <translation id="6965382102122355670">Aceptar</translation>
 <translation id="6985691951107243942">Estás seguro de que queres desactivar as conexións remotas con <ph name="HOSTNAME" />? Se cambias de opinión, necesitarás acceder a ese ordenador para volver activar as conexións.</translation>

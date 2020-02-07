@@ -53,7 +53,9 @@ enum class PluginVmDlcUseResult {
   kDlcSuccess = 0,
   kFallbackToRootFsInvalidDlcError = 1,
   kFallbackToRootFsInternalDlcError = 2,
-  kMaxValue = kFallbackToRootFsInternalDlcError,
+  kFallbackToRootFsBusyDlcError = 3,
+  kFallbackToRootFsNeedRebootDlcError = 4,
+  kMaxValue = kFallbackToRootFsNeedRebootDlcError,
 };
 
 void RecordPluginVmImageDownloadedSizeHistogram(uint64_t bytes_downloaded);

@@ -11,12 +11,9 @@
 #include "third_party/blink/renderer/core/core_export.h"
 #include "third_party/blink/renderer/platform/wtf/allocator/allocator.h"
 #include "third_party/blink/renderer/platform/wtf/assertions.h"
-#include "third_party/blink/renderer/platform/wtf/decimal.h"
 #include "third_party/blink/renderer/platform/wtf/ref_counted.h"
 #include "third_party/blink/renderer/platform/wtf/shared_buffer.h"
-#include "third_party/blink/renderer/platform/wtf/text/string_builder.h"
 #include "third_party/blink/renderer/platform/wtf/text/string_hash.h"
-#include "third_party/blink/renderer/platform/wtf/text/string_to_number.h"
 #include "third_party/blink/renderer/platform/wtf/text/string_view.h"
 #include "third_party/blink/renderer/platform/wtf/text/wtf_string.h"
 #include "third_party/inspector_protocol/crdtp/cbor.h"
@@ -37,7 +34,6 @@ CORE_EXPORT String ToCoreString(std::unique_ptr<v8_inspector::StringBuffer>);
 
 namespace protocol {
 using String = WTF::String;
-using StringBuilder = WTF::StringBuilder;
 
 class CORE_EXPORT StringUtil {
   STATIC_ONLY(StringUtil);
@@ -47,13 +43,6 @@ class CORE_EXPORT StringUtil {
     return s.Substring(static_cast<wtf_size_t>(pos),
                        static_cast<wtf_size_t>(len));
   }
-  static String fromInteger(int64_t number) { return String::Number(number); }
-  static String fromDouble(double number) {
-    return Decimal::FromDouble(number).ToString();
-  }
-  static double toDouble(const char* s, size_t len, bool* ok) {
-    return WTF::CharactersToDouble(reinterpret_cast<const LChar*>(s), len, ok);
-  }
   static size_t find(const String& s, const char* needle) {
     return s.Find(needle);
   }
@@ -61,21 +50,6 @@ class CORE_EXPORT StringUtil {
     return s.Find(needle);
   }
   static const size_t kNotFound = WTF::kNotFound;
-  static void builderAppend(StringBuilder& builder, const String& s) {
-    builder.Append(s);
-  }
-  static void builderAppend(StringBuilder& builder, UChar c) {
-    builder.Append(c);
-  }
-  static void builderAppend(StringBuilder& builder, const char* s, size_t len) {
-    builder.Append(s, static_cast<wtf_size_t>(len));
-  }
-  static void builderReserve(StringBuilder& builder, uint64_t capacity) {
-    builder.ReserveCapacity(static_cast<wtf_size_t>(capacity));
-  }
-  static String builderToString(StringBuilder& builder) {
-    return builder.ToString();
-  }
 
   static String fromUTF8(const uint8_t* data, size_t length) {
     return String::FromUTF8(reinterpret_cast<const char*>(data), length);

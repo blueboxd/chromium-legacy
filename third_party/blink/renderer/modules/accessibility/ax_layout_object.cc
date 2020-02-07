@@ -267,8 +267,12 @@ Node* AXLayoutObject::GetNodeOrContainingBlockNode() const {
   if (layout_object_->IsListMarker())
     return ToLayoutListMarker(layout_object_)->ListItem()->GetNode();
 
-  if (layout_object_->IsAnonymous() && layout_object_->ContainingBlock()) {
-    return layout_object_->ContainingBlock()->GetNode();
+  if (layout_object_->IsAnonymous()) {
+    if (LayoutBlock* layout_block =
+            LayoutObject::FindNonAnonymousContainingBlock(layout_object_)) {
+      return layout_block->GetNode();
+    }
+    return nullptr;
   }
 
   return GetNode();

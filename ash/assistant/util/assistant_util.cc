@@ -36,9 +36,8 @@ bool IsVoiceEntryPoint(AssistantEntryPoint entry_point, bool prefer_voice) {
   switch (entry_point) {
     case AssistantEntryPoint::kHotword:
       return true;
-    case AssistantEntryPoint::kLauncherSearchBoxMic:
     case AssistantEntryPoint::kHotkey:
-    case AssistantEntryPoint::kLauncherSearchBox:
+    case AssistantEntryPoint::kLauncherSearchBoxIcon:
     case AssistantEntryPoint::kLongPressLauncher:
       return prefer_voice;
     case AssistantEntryPoint::kUnspecified:
@@ -55,14 +54,13 @@ bool ShouldAttemptWarmerWelcome(AssistantEntryPoint entry_point) {
   switch (entry_point) {
     case AssistantEntryPoint::kDeepLink:
     case AssistantEntryPoint::kHotword:
-    case AssistantEntryPoint::kLauncherSearchBoxMic:
+    case AssistantEntryPoint::kLauncherSearchBoxIcon:
     case AssistantEntryPoint::kLauncherSearchResult:
     case AssistantEntryPoint::kProactiveSuggestions:
     case AssistantEntryPoint::kStylus:
       return false;
     case AssistantEntryPoint::kUnspecified:
     case AssistantEntryPoint::kHotkey:
-    case AssistantEntryPoint::kLauncherSearchBox:
     case AssistantEntryPoint::kLongPressLauncher:
     case AssistantEntryPoint::kSetup:
       return true;

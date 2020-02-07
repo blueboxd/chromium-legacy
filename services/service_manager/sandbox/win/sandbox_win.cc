@@ -950,13 +950,6 @@ sandbox::ResultCode SandboxWin::StartSandboxedProcess(
   }
 #endif
 
-  if (process_type != service_manager::switches::kRendererProcess) {
-    // Hack for Google Desktop crash. Trick GD into not injecting its DLL into
-    // this subprocess. See
-    // http://code.google.com/p/chromium/issues/detail?id=25580
-    cmd_line->AppendSwitchASCII("ignored", " --type=renderer ");
-  }
-
   result = AddGenericPolicy(policy.get());
   if (result != sandbox::SBOX_ALL_OK) {
     NOTREACHED();

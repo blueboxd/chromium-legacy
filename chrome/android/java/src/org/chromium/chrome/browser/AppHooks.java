@@ -56,7 +56,7 @@ import org.chromium.chrome.browser.ui.ImmersiveModeManager;
 import org.chromium.chrome.browser.usage_stats.DigitalWellbeingClient;
 import org.chromium.chrome.browser.webapps.GooglePlayWebApkInstallDelegate;
 import org.chromium.chrome.browser.webauth.Fido2ApiHandler;
-import org.chromium.chrome.browser.widget.FeatureHighlightProvider;
+import org.chromium.components.browser_ui.widget.FeatureHighlightProvider;
 import org.chromium.components.download.DownloadCollectionBridge;
 import org.chromium.components.signin.AccountManagerDelegate;
 import org.chromium.components.signin.SystemAccountManagerDelegate;

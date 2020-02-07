@@ -45,6 +45,7 @@ class ProfileImpl;
 
 #if defined(OS_ANDROID)
 class TopControlsContainerView;
+enum class ControlsVisibilityReason;
 #endif
 
 class TabImpl : public Tab,
@@ -108,6 +109,8 @@ class TabImpl : public Tab,
   void OnAutofillProviderChanged(
       JNIEnv* env,
       const base::android::JavaParamRef<jobject>& autofill_provider);
+
+  void UpdateBrowserControlsState(JNIEnv* env, jint constraint);
 #endif
 
   DownloadDelegate* download_delegate() { return download_delegate_; }
@@ -207,9 +210,8 @@ class TabImpl : public Tab,
       content::WebContents* web_contents);
 
 #if defined(OS_ANDROID)
-  void UpdateBrowserControlsState(content::BrowserControlsState constraints,
-                                  content::BrowserControlsState current,
-                                  bool animate);
+  void SetBrowserControlsConstraint(ControlsVisibilityReason reason,
+                                    content::BrowserControlsState constraint);
 #endif
 
   BrowserImpl* browser_ = nullptr;

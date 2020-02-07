@@ -256,6 +256,7 @@
 <translation id="6939719207673461467">显示/隐藏键盘。</translation>
 <translation id="6944854424004126054">恢复窗口</translation>
 <translation id="6948905685698011662">新版“Chrome 远程桌面”现已上线！快来查看一下我们的这款<ph name="LINK_BEGIN" />免费网络应用<ph name="LINK_END" />吧。</translation>
+<translation id="6956835181934226419">我已授予此权限。</translation>
 <translation id="6963936880795878952">与远程计算机的连接已被暂时阻止，因为有人试图使用无效的 PIN 码连接到该计算机。请稍后重试。</translation>
 <translation id="6965382102122355670">确定</translation>
 <translation id="6985691951107243942">您确定要停用与“<ph name="HOSTNAME" />”的远程连接吗？如果您日后想要重新启用连接，需要访问该计算机。</translation>

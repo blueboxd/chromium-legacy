@@ -693,6 +693,7 @@
 <translation id="3987940399970879459">តិចជាង 1 MB</translation>
 <translation id="3990250421422698716">គម្លាតរុញ</translation>
 <translation id="40103911065039147">{URL_count,plural, =1{គេហទំព័រនៅក្បែរ 1}other{គេហទំព័រនៅក្បែរ #}}</translation>
+<translation id="4014128326099193693">{COUNT,plural, =1{ឯកសារ PDF ដែលមាន {COUNT} ទំព័រ}other{ឯកសារ PDF ដែលមាន {COUNT} ទំព័រ}}</translation>
 <translation id="4030383055268325496">បកក្រោយការបន្ថែម</translation>
 <translation id="4032320456957708163">កម្មវិធីរុករកតាមអ៊ីនធឺណិត​របស់អ្នកត្រូវបាន​គ្រប់គ្រងដោយ <ph name="ENROLLMENT_DOMAIN" /></translation>
 <translation id="4058922952496707368">សោ "<ph name="SUBKEY" />": <ph name="ERROR" /></translation>
@@ -721,6 +722,7 @@
 <translation id="4142935452406587478">ទម្រទី 10</translation>
 <translation id="4148925816941278100">American Express</translation>
 <translation id="4151403195736952345">ប្រើលំនាំដើមសកល (ចាប់យក)</translation>
+<translation id="4152318981910038897">{COUNT,plural, =1{ទំព័រទី 1}other{ទំព័រទី {COUNT}}}</translation>
 <translation id="4159784952369912983">ស្វាយ</translation>
 <translation id="4165986682804962316">ការកំណត់គេហទំព័រ</translation>
 <translation id="4171400957073367226">ហេត្ថលេខាផ្ទៀងផ្ទាត់មិនល្អ</translation>
@@ -1399,6 +1401,7 @@
 <translation id="7201591969684833065">អ្នកគ្រប់គ្រង​របស់អ្នកអាច​មើលឃើញ៖</translation>
 <translation id="7202346780273620635">Letter-Extra</translation>
 <translation id="7210863904660874423"><ph name="HOST_NAME" /> មិនត្រូវតាមបទដ្ឋានសុវត្ថិភាពទេ</translation>
+<translation id="7210993021468939304">សកម្មភាព Linux នៅក្នុង​ទម្រង់ផ្ទុក និងអាចដំឡើង និងដំណើរការ​កម្មវិធី Linux នៅក្នុងទម្រង់ផ្ទុក</translation>
 <translation id="721197778055552897"><ph name="BEGIN_LINK" />ស្វែងយល់បន្ថែម<ph name="END_LINK" /> អំពីបញ្ហានេះ។</translation>
 <translation id="7219179957768738017">ការភ្ជាប់នេះប្រើ <ph name="SSL_VERSION" />។</translation>
 <translation id="7220786058474068424">កំពុងដំណើរការ</translation>
@@ -1563,6 +1566,7 @@
 <translation id="7878562273885520351">ពាក្យសម្ងាត់​របស់អ្នក​អាចត្រូវ​បានគេលួចប្រើ​</translation>
 <translation id="7882421473871500483">ត្នោត</translation>
 <translation id="7887683347370398519">ពិនិត្យលេខកូដ CVC ហើយព្យាយាមម្តងទៀត</translation>
+<translation id="7887885240995164102">ចូលមុខងារ​រូបក្នុងរូប</translation>
 <translation id="7888575728750733395">ចេតនានៃ​ការបំប្លែង​ការបោះពុម្ព</translation>
 <translation id="7904208859782148177">C3 (ស្រោម​សំបុត្រ)</translation>
 <translation id="7932579305932748336">ស្រោប</translation>

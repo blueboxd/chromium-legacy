@@ -685,6 +685,7 @@
 <translation id="3987940399970879459">1 MB'tan az</translation>
 <translation id="3990250421422698716">Jog ofset</translation>
 <translation id="40103911065039147">{URL_count,plural, =1{Yakındaki 1 web sayfası}other{Yakındaki # web sayfası}}</translation>
+<translation id="4014128326099193693">{COUNT,plural, =1{{COUNT} sayfalı PDF dokümanı}other{{COUNT} sayfalı PDF dokümanı}}</translation>
 <translation id="4030383055268325496">Eklemeyi &amp;geri al</translation>
 <translation id="4032320456957708163">Tarayıcınız <ph name="ENROLLMENT_DOMAIN" /> tarafından yönetilmektedir</translation>
 <translation id="4058922952496707368">"<ph name="SUBKEY" />" anahtarı: <ph name="ERROR" /></translation>
@@ -713,6 +714,7 @@
 <translation id="4142935452406587478">Tepsi 10</translation>
 <translation id="4148925816941278100">American Express</translation>
 <translation id="4151403195736952345">Genel varsayılanı kullan (Algıla)</translation>
+<translation id="4152318981910038897">{COUNT,plural, =1{1. sayfa}other{{COUNT}. sayfa}}</translation>
 <translation id="4159784952369912983">Mor</translation>
 <translation id="4165986682804962316">Site ayarları</translation>
 <translation id="4171400957073367226">Geçersiz doğrulama imzası</translation>
@@ -1390,6 +1392,7 @@
 <translation id="7201591969684833065">Yöneticiniz şunları görebilir:</translation>
 <translation id="7202346780273620635">Letter-Extra</translation>
 <translation id="7210863904660874423"><ph name="HOST_NAME" /> güvenlik standartlarına uymuyor.</translation>
+<translation id="7210993021468939304">Yönetici kapsayıcı içindeki Linux etkinliğini görebilir ve kapsayıcı içindeki Linux uygulamalarını yükleyip çalıştırabilir</translation>
 <translation id="721197778055552897">Bu sorun hakkında <ph name="BEGIN_LINK" />daha fazla<ph name="END_LINK" /> bilgi edinin.</translation>
 <translation id="7219179957768738017">Bağlantı <ph name="SSL_VERSION" /> kullanıyor.</translation>
 <translation id="7220786058474068424">İşleme koyuluyor</translation>
@@ -1553,6 +1556,7 @@ Ek ayrıntılar:
 <translation id="7878562273885520351">Şifrenizin güvenliği ihlal edilmiş olabilir</translation>
 <translation id="7882421473871500483">Kahverengi</translation>
 <translation id="7887683347370398519">CVC'nizi kontrol edin ve tekrar deneyin</translation>
+<translation id="7887885240995164102">Pencere içinde pencere moduna gir</translation>
 <translation id="7888575728750733395">Baskı oluşturma amacı</translation>
 <translation id="7904208859782148177">C3 (Zarf)</translation>
 <translation id="7932579305932748336">Kaplama</translation>

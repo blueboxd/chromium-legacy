@@ -2,12 +2,16 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+// clang-format off
+// #import {addSingletonGetter, sendWithPromise} from 'chrome://resources/js/cr.m.js';
+// clang-format on
+
 /** @typedef {{id: string, name: string, canBeDisabled: boolean}} */
-let NtpExtension;
+/* #export */ let NtpExtension;
 
 cr.define('settings', function() {
   /** @interface */
-  class OnStartupBrowserProxy {
+  /* #export */ class OnStartupBrowserProxy {
     /** @return {!Promise<?NtpExtension>} */
     getNtpExtension() {}
   }
@@ -15,7 +19,7 @@ cr.define('settings', function() {
   /**
    * @implements {settings.OnStartupBrowserProxy}
    */
-  class OnStartupBrowserProxyImpl {
+  /* #export */ class OnStartupBrowserProxyImpl {
     /** @override */
     getNtpExtension() {
       return cr.sendWithPromise('getNtpExtension');

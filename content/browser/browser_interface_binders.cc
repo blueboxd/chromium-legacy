@@ -14,6 +14,7 @@
 #include "content/browser/browser_main_loop.h"
 #include "content/browser/content_index/content_index_service_impl.h"
 #include "content/browser/cookie_store/cookie_store_context.h"
+#include "content/browser/feature_observer.h"
 #include "content/browser/frame_host/clipboard_host_impl.h"
 #include "content/browser/frame_host/render_frame_host_impl.h"
 #include "content/browser/gpu/gpu_process_host.h"
@@ -73,6 +74,7 @@
 #include "third_party/blink/public/mojom/content_index/content_index.mojom.h"
 #include "third_party/blink/public/mojom/cookie_store/cookie_store.mojom.h"
 #include "third_party/blink/public/mojom/credentialmanager/credential_manager.mojom.h"
+#include "third_party/blink/public/mojom/feature_observer/feature_observer.mojom.h"
 #include "third_party/blink/public/mojom/filesystem/file_system.mojom.h"
 #include "third_party/blink/public/mojom/geolocation/geolocation_service.mojom.h"
 #include "third_party/blink/public/mojom/idle/idle_manager.mojom.h"
@@ -480,6 +482,9 @@ void PopulateFrameBinders(RenderFrameHostImpl* host,
   map->Add<blink::mojom::DedicatedWorkerHostFactory>(base::BindRepeating(
       &RenderFrameHostImpl::CreateDedicatedWorkerHostFactory,
       base::Unretained(host)));
+
+  map->Add<blink::mojom::FeatureObserver>(base::BindRepeating(
+      &RenderFrameHostImpl::GetFeatureObserver, base::Unretained(host)));
 
   map->Add<blink::mojom::FileSystemManager>(base::BindRepeating(
       &RenderFrameHostImpl::GetFileSystemManager, base::Unretained(host)));

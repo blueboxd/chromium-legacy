@@ -118,6 +118,7 @@
 <translation id="2413728805700750528"><ph name="DISPLAY_NAME" />은(는) <ph name="DOMAIN" />에서 관리하는 관리 세션입니다.</translation>
 <translation id="2427507373259914951">왼쪽 클릭</translation>
 <translation id="2429753432712299108">블루투스 기기 '<ph name="DEVICE_NAME" />'에서 페어링 허가를 요청합니다. 허가하기 전에 다음 패스키가 기기에 표시되는지 확인하세요. <ph name="PASSKEY" /></translation>
+<translation id="2473177541599297363">해상도 확인</translation>
 <translation id="2482878487686419369">알림</translation>
 <translation id="2484513351006226581">키보드 레이아웃을 전환하려면 <ph name="KEYBOARD_SHORTCUT" />을(를) 누르세요.</translation>
 <translation id="2501920221385095727">고정키</translation>
@@ -138,6 +139,7 @@
 <translation id="2727977024730340865">저출력 충전기에 연결되었습니다. 배터리 충전 상태가 불안정합니다.</translation>
 <translation id="2792498699870441125">Alt+검색 키</translation>
 <translation id="2819276065543622893">지금 로그아웃됩니다.</translation>
+<translation id="2825224105325558319"><ph name="DISPLAY_NAME" />에서 <ph name="SPECIFIED_RESOLUTION" />을(를) 지원하지 않습니다. 해상도가 <ph name="FALLBACK_RESOLUTION" />(으)로 변경되었습니다.</translation>
 <translation id="2825619548187458965">임시보관함</translation>
 <translation id="2844169650293029770">USB-C 기기(좌측 전면 포트)</translation>
 <translation id="2865888419503095837">네트워크 정보</translation>
@@ -157,6 +159,12 @@
 <translation id="3009178788565917040">출력</translation>
 <translation id="3051128274746680507">관리 대상 사용자 프로필이 곧 삭제됩니다. 자세히 알아보려면 로그인하세요.</translation>
 <translation id="3055162170959710888">오늘 이 기기를 <ph name="USED_TIME" /> 동안 사용했습니다.</translation>
+<translation id="3076778413190775903">상태 표시줄, 시간 <ph name="TIME" />,
+        <ph name="BATTERY" />
+        <ph name="NETWORK" />,
+        <ph name="NOTIFICATION" />,
+        <ph name="IME" />
+        <ph name="LOCALE" /></translation>
 <translation id="3077734595579995578">Shift</translation>
 <translation id="3081696990447829002">메뉴 펼치기</translation>
 <translation id="3087734570205094154">맨 아래</translation>
@@ -167,6 +175,7 @@
 <translation id="3151786313568798007">방향</translation>
 <translation id="3153444934357957346">멀티 로그인에는 계정을 <ph name="MULTI_PROFILE_USER_LIMIT" />개까지만 사용할 수 있습니다.</translation>
 <translation id="3154351730702813399">기기 관리자가 탐색 활동을 모니터링할 수 있습니다.</translation>
+<translation id="3181441307743005334">다시 시작하는 데 시간이 다소 걸릴 수 있습니다</translation>
 <translation id="3202010236269062730">{NUM_DEVICES,plural, =1{기기 1개에 연결됨}other{기기 #개에 연결됨}}</translation>
 <translation id="3217205077783620295">볼륨이 켜져 있으며 전환하면 오디오가 꺼집니다.</translation>
 <translation id="3226991577105957773">외 <ph name="COUNT" />개</translation>
@@ -316,6 +325,7 @@
 <translation id="5331975486040154427">USB-C 기기(좌측 후면 포트)</translation>
 <translation id="5379115545237091094">시도 횟수가 너무 많음</translation>
 <translation id="5397578532367286026">관리자(<ph name="MANAGER_EMAIL" />)는 chrome.com에서 해당 사용자의 사용 및 방문 기록을 검토할 수 있습니다.</translation>
+<translation id="5400461572260843123">빠른 설정, 검색 + 왼쪽 키를 눌러 알림 센터에 액세스하세요.</translation>
 <translation id="5430931332414098647">인스턴트 테더링</translation>
 <translation id="5431825016875453137">OpenVPN/L2TP</translation>
 <translation id="544691375626129091">사용 가능한 모든 사용자가 이미 이 세션에 추가되었습니다.</translation>
@@ -397,6 +407,7 @@
 <translation id="6490471652906364588">USB-C 기기(오른쪽 포트)</translation>
 <translation id="649452524636452238">스마트 카드 PIN</translation>
 <translation id="6501401484702599040"><ph name="RECEIVER_NAME" />(으)로 화면 전송 중</translation>
+<translation id="652139407789908527">업데이트 중에 평소보다 오래(최대 1분) 화면에 아무 내용도 나타나지 않을 수 있습니다. 업데이트가 진행되는 동안에는 전원 버튼을 누르지 마시기 바랍니다.</translation>
 <translation id="6521655319214113338">필기 입력</translation>
 <translation id="6528179044667508675">방해 금지 모드</translation>
 <translation id="6537270692134705506">화면 캡처</translation>
@@ -542,6 +553,7 @@
 <translation id="847056008324733326">배율 설정 표시</translation>
 <translation id="8473301994082929012"><ph name="ORGANIZATION_NAME" />에서 <ph name="FEATURE_NAME" /> 기능을 <ph name="FEATURE_STATE" /> 상태로 설정했습니다.</translation>
 <translation id="8477270416194247200">취소하려면 Alt+검색 또는 Shift 키를 누르세요.</translation>
+<translation id="8492573885090281069"><ph name="DISPLAY_NAME" />에서 <ph name="SPECIFIED_RESOLUTION" />을(를) 지원하지 않습니다. 해상도가 <ph name="FALLBACK_RESOLUTION" />(으)로 변경되었습니다. 변경사항을 유지하려면 확인을 클릭하세요. <ph name="TIMEOUT_SECONDS" /> 후 이전 설정으로 복원됩니다.</translation>
 <translation id="8513108775083588393">자동 회전</translation>
 <translation id="8517041960877371778"><ph name="DEVICE_TYPE" />이(가) 켜져 있는 동안에는 충전되지 않을 수 있습니다.</translation>
 <translation id="8563862697512465947">알림 설정</translation>
@@ -597,6 +609,7 @@
 <translation id="9183456764293710005">전체 화면 돋보기</translation>
 <translation id="9193626018745640770">알 수 없는 수신기에 전송 중</translation>
 <translation id="9194617393863864469">다른 사용자 추가...</translation>
+<translation id="9198992156681343238"><ph name="DISPLAY_NAME" />의 해상도가 <ph name="RESOLUTION" />(으)로 변경되었습니다. 변경사항을 유지하려면 확인을 클릭하세요. <ph name="TIMEOUT_SECONDS" /> 후 이전 설정으로 복원됩니다.</translation>
 <translation id="9201374708878217446"><ph name="CONNECTION_STATUS" />, 관리자가 관리함</translation>
 <translation id="9210037371811586452">통합 바탕화면 모드 종료 중</translation>
 <translation id="9211681782751733685">배터리 충전이 완료될 때까지 남은 시간은 <ph name="TIME_REMAINING" />입니다.</translation>

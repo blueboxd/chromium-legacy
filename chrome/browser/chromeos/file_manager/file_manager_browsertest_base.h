@@ -68,6 +68,7 @@ class FileManagerBrowserTestBase : public extensions::ExtensionApiTest {
   virtual bool GetIsOffline() const;
   virtual bool GetEnableFilesNg() const;
   virtual bool GetEnableNativeSmb() const;
+  virtual bool GetEnableUnifiedMediaView() const;
   virtual bool GetStartWithNoVolumesMounted() const;
   virtual bool GetStartWithFileTasksObserver() const;
 
@@ -105,6 +106,9 @@ class FileManagerBrowserTestBase : public extensions::ExtensionApiTest {
 
   // Returns true if the test needs a native SMB file system provider.
   bool IsNativeSmbTest() const { return GetEnableNativeSmb(); }
+
+  // Returns true if the test needs the unified media view feature.
+  bool IsUnifiedMediaViewTest() const { return GetEnableUnifiedMediaView(); }
 
   // Returns true if FilesApp should start with no volumes mounted.
   bool DoesTestStartWithNoVolumesMounted() const {

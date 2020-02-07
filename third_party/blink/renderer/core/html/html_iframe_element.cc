@@ -248,7 +248,8 @@ void HTMLIFrameElement::ParseAttribute(
                           WebFeature::kFeaturePolicyAllowAttribute);
       }
     }
-  } else if (name == html_names::kDisallowdocumentaccessAttr) {
+  } else if (name == html_names::kDisallowdocumentaccessAttr &&
+             RuntimeEnabledFeatures::DisallowDocumentAccessEnabled()) {
     disallow_document_access_ = !value.IsNull();
     // We don't need to call tell the client frame properties
     // changed since this attribute only stays inside the renderer.

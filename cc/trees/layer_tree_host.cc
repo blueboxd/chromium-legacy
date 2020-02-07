@@ -945,8 +945,10 @@ void LayerTreeHost::RecordStartOfFrameMetrics() {
   client_->RecordStartOfFrameMetrics();
 }
 
-void LayerTreeHost::RecordEndOfFrameMetrics(base::TimeTicks frame_begin_time) {
-  client_->RecordEndOfFrameMetrics(frame_begin_time);
+void LayerTreeHost::RecordEndOfFrameMetrics(
+    base::TimeTicks frame_begin_time,
+    ActiveFrameSequenceTrackers trackers) {
+  client_->RecordEndOfFrameMetrics(frame_begin_time, trackers);
 }
 
 const base::WeakPtr<InputHandler>& LayerTreeHost::GetInputHandler() const {
@@ -1078,15 +1080,13 @@ void LayerTreeHost::RegisterViewportPropertyIds(
 Layer* LayerTreeHost::InnerViewportScrollLayerForTesting() const {
   auto* scroll_node =
       property_trees()->scroll_tree.Node(viewport_property_ids_.inner_scroll);
-  return scroll_node ? LayerByElementIdForTesting(scroll_node->element_id)
-                     : nullptr;
+  return scroll_node ? LayerByElementId(scroll_node->element_id) : nullptr;
 }
 
 Layer* LayerTreeHost::OuterViewportScrollLayerForTesting() const {
   auto* scroll_node =
       property_trees()->scroll_tree.Node(viewport_property_ids_.outer_scroll);
-  return scroll_node ? LayerByElementIdForTesting(scroll_node->element_id)
-                     : nullptr;
+  return scroll_node ? LayerByElementId(scroll_node->element_id) : nullptr;
 }
 
 void LayerTreeHost::RegisterSelection(const LayerSelection& selection) {
@@ -1571,34 +1571,21 @@ void LayerTreeHost::PushLayerTreeHostPropertiesTo(
   host_impl->SetDebugState(debug_state_);
 }
 
-Layer* LayerTreeHost::LayerByElementIdForTesting(ElementId element_id) const {
-  if (!IsUsingLayerLists())
-    return LayerByElementId(element_id);
-
-  for (auto* layer : *this)
-    if (layer->element_id() == element_id)
-      return layer;
-  return nullptr;
-}
-
 Layer* LayerTreeHost::LayerByElementId(ElementId element_id) const {
-  DCHECK(!IsUsingLayerLists());
   auto iter = element_layers_map_.find(element_id);
   return iter != element_layers_map_.end() ? iter->second : nullptr;
 }
 
 void LayerTreeHost::RegisterElement(ElementId element_id,
-                                    ElementListType list_type,
                                     Layer* layer) {
-  DCHECK(!IsUsingLayerLists());
   element_layers_map_[element_id] = layer;
-  mutator_host_->RegisterElementId(element_id, list_type);
+  if (!IsUsingLayerLists())
+    mutator_host_->RegisterElementId(element_id, ElementListType::ACTIVE);
 }
 
-void LayerTreeHost::UnregisterElement(ElementId element_id,
-                                      ElementListType list_type) {
-  DCHECK(!IsUsingLayerLists());
-  mutator_host_->UnregisterElementId(element_id, list_type);
+void LayerTreeHost::UnregisterElement(ElementId element_id) {
+  if (!IsUsingLayerLists())
+    mutator_host_->UnregisterElementId(element_id, ElementListType::ACTIVE);
   element_layers_map_.erase(element_id);
 }
 

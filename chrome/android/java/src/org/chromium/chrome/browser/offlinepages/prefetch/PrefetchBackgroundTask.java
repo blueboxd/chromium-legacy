@@ -209,7 +209,7 @@ public class PrefetchBackgroundTask extends NativeBackgroundTask {
             return true;
         }
 
-        return CachedFeatureFlags.isServiceManagerForBackgroundPrefetchEnabled();
+        return PrefetchConfiguration.isServiceManagerForBackgroundPrefetchEnabled();
     }
 
     @NativeMethods

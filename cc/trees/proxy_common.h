@@ -9,6 +9,7 @@
 
 #include "base/callback_forward.h"
 #include "cc/cc_export.h"
+#include "cc/metrics/frame_sequence_tracker.h"
 #include "components/viz/common/frame_sinks/begin_frame_args.h"
 
 namespace cc {
@@ -24,9 +25,11 @@ struct CC_EXPORT BeginMainFrameAndCommitState {
   viz::BeginFrameArgs begin_frame_args;
   std::unique_ptr<ScrollAndScaleSet> scroll_info;
   size_t memory_allocation_limit_bytes = 0;
-  bool evicted_ui_resources = false;
   std::vector<std::pair<int, bool>> completed_image_decode_requests;
   std::unique_ptr<MutatorEvents> mutator_events;
+  // Bit encoding of the FrameSequenceTrackerType for active trackers
+  ActiveFrameSequenceTrackers active_sequence_trackers = 0;
+  bool evicted_ui_resources = false;
 };
 
 }  // namespace cc

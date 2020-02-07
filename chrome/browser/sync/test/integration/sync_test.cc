@@ -6,6 +6,7 @@
 
 #include "base/bind.h"
 #include "base/command_line.h"
+#include "base/files/file_util.h"
 #include "base/files/scoped_temp_dir.h"
 #include "base/memory/ptr_util.h"
 #include "base/memory/ref_counted.h"
@@ -35,16 +36,10 @@
 #include "chrome/browser/sync/test/integration/sync_disabled_checker.h"
 #include "chrome/browser/sync/test/integration/sync_integration_test_util.h"
 #include "chrome/browser/sync/test/integration/updated_progress_marker_checker.h"
-#include "chrome/browser/ui/browser.h"
-#include "chrome/browser/ui/browser_finder.h"
-#include "chrome/browser/ui/tabs/tab_strip_model.h"
-#include "chrome/browser/ui/webui/signin/login_ui_service.h"
-#include "chrome/browser/ui/webui/signin/login_ui_service_factory.h"
 #include "chrome/common/chrome_constants.h"
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/test/base/search_test_utils.h"
-#include "chrome/test/base/ui_test_utils.h"
 #include "components/bookmarks/test/bookmark_test_helpers.h"
 #include "components/gcm_driver/gcm_profile_service.h"
 #include "components/invalidation/impl/fake_invalidation_service.h"
@@ -92,6 +87,17 @@
 #include "chromeos/constants/chromeos_switches.h"
 #include "components/arc/arc_util.h"
 #endif  // defined(OS_CHROMEOS)
+
+#if defined(OS_ANDROID)
+#include "chrome/browser/sync/test/integration/sync_test_signin_utils_android.h"
+#else
+#include "chrome/browser/ui/browser.h"
+#include "chrome/browser/ui/browser_finder.h"
+#include "chrome/browser/ui/tabs/tab_strip_model.h"
+#include "chrome/browser/ui/webui/signin/login_ui_service.h"
+#include "chrome/browser/ui/webui/signin/login_ui_service_factory.h"
+#include "chrome/test/base/ui_test_utils.h"
+#endif
 
 using syncer::ProfileSyncService;
 
@@ -254,9 +260,13 @@ SyncTest::SyncTest(TestType test_type)
   }
 }
 
-SyncTest::~SyncTest() {}
+SyncTest::~SyncTest() = default;
 
 void SyncTest::SetUp() {
+#if defined(OS_ANDROID)
+  sync_test_signin_utils_android::SetUpAuthForTest();
+#endif
+
   // Sets |server_type_| if it wasn't specified by the test.
   DecideServerType();
 
@@ -282,19 +292,27 @@ void SyncTest::SetUp() {
   // Mock the Mac Keychain service.  The real Keychain can block on user input.
   OSCryptMocker::SetUp();
 
-  // Yield control back to the InProcessBrowserTest framework.
-  InProcessBrowserTest::SetUp();
+  // Yield control back to the PlatformBrowserTest framework.
+  PlatformBrowserTest::SetUp();
 }
 
 void SyncTest::TearDown() {
   // Clear any mock gaia responses that might have been set.
   ClearMockGaiaResponses();
 
-  // Allow the InProcessBrowserTest framework to perform its tear down.
-  InProcessBrowserTest::TearDown();
+  // Allow the PlatformBrowserTest framework to perform its tear down.
+  PlatformBrowserTest::TearDown();
 
   // Return OSCrypt to its real behaviour
   OSCryptMocker::TearDown();
+}
+
+void SyncTest::PostRunTestOnMainThread() {
+  PlatformBrowserTest::PostRunTestOnMainThread();
+
+#if defined(OS_ANDROID)
+  sync_test_signin_utils_android::TearDownAuthForTest();
+#endif
 }
 
 void SyncTest::SetUpCommandLine(base::CommandLine* cl) {
@@ -444,6 +462,7 @@ std::vector<Profile*> SyncTest::GetAllProfiles() {
   return profiles;
 }
 
+#if !defined(OS_ANDROID)
 Browser* SyncTest::GetBrowser(int index) {
   EXPECT_FALSE(browsers_.empty()) << "SetupClients() has not yet been called.";
   EXPECT_FALSE(index < 0 || index >= static_cast<int>(browsers_.size()))
@@ -462,6 +481,7 @@ Browser* SyncTest::AddBrowser(int profile_index) {
 
   return browsers_[browsers_.size() - 1];
 }
+#endif
 
 ProfileSyncServiceHarness* SyncTest::GetClient(int index) {
   if (clients_.empty())
@@ -517,7 +537,11 @@ bool SyncTest::SetupClients() {
   base::ScopedAllowBlockingForTesting allow_blocking;
   if (num_clients_ <= 0)
     LOG(FATAL) << "num_clients_ incorrectly initialized.";
-  if (!profiles_.empty() || !browsers_.empty() || !clients_.empty())
+  bool has_any_browser = false;
+#if !defined(OS_ANDROID)
+  has_any_browser = !browsers_.empty();
+#endif
+  if (!profiles_.empty() || has_any_browser || !clients_.empty())
     LOG(FATAL) << "SetupClients() has already been called.";
 
   // Create the required number of sync profiles, browsers and clients.
@@ -585,7 +609,9 @@ void SyncTest::InitializeProfile(int index, Profile* profile) {
   profiles_[index] = profile;
 
   SetUpInvalidations(index);
+#if !defined(OS_ANDROID)
   AddBrowser(index);
+#endif
 
   // Make sure the ProfileSyncService has been created before creating the
   // ProfileSyncServiceHarness - some tests expect the ProfileSyncService to
@@ -792,7 +818,9 @@ void SyncTest::ClearProfiles() {
   profiles_.clear();
   profile_delegates_.clear();
   scoped_temp_dirs_.clear();
+#if !defined(OS_ANDROID)
   browsers_.clear();
+#endif
   clients_.clear();
 }
 
@@ -815,6 +843,7 @@ bool SyncTest::SetupSync() {
     }
   }
 
+#if !defined(OS_ANDROID)
   if (UsingExternalServers()) {
     // OneClickSigninSyncStarter observer is created with a real user sign in.
     // It is deleted on certain conditions which are not satisfied by our tests,
@@ -827,6 +856,7 @@ bool SyncTest::SetupSync() {
               LoginUIService::SYNC_WITH_DEFAULT_SETTINGS);
     }
   }
+#endif
 
   return true;
 }
@@ -843,6 +873,7 @@ void SyncTest::TearDownOnMainThread() {
         previous_profile_->GetPath().BaseName().MaybeAsASCII());
   }
 
+#if !defined(OS_ANDROID)
   // Closing all browsers created by this test. The calls here block until
   // they are closed. Other browsers created outside SyncTest setup should be
   // closed by the creator of that browser.
@@ -852,6 +883,7 @@ void SyncTest::TearDownOnMainThread() {
   }
   ASSERT_EQ(chrome::GetTotalBrowserCount(),
             init_browser_count - browsers_.size());
+#endif
 
   if (fake_server_.get()) {
     for (const std::unique_ptr<fake_server::FakeServerInvalidationSender>&
@@ -863,6 +895,7 @@ void SyncTest::TearDownOnMainThread() {
 
   // Delete things that unsubscribe in destructor before their targets are gone.
   configuration_refresher_.reset();
+  PlatformBrowserTest::TearDownOnMainThread();
 }
 
 void SyncTest::SetUpInProcessBrowserTestFixture() {
@@ -950,7 +983,11 @@ void SyncTest::ResetSyncForPrimaryAccount() {
     // After reset account, the client should get a NOT_MY_BIRTHDAY error
     // and disable sync. Adding a wait to make sure this is propagated.
     ASSERT_TRUE(SyncDisabledChecker(GetSyncService(0)).Wait());
+
+#if !defined(OS_ANDROID)
     CloseBrowserSynchronously(browsers_[0]);
+#endif
+
     // After reset, this client will disable sync. It may log some messages
     // that do not contribute to test failures. It includes:
     //   PostClientToServerMessage with SERVER_RETURN_NOT_MY_BIRTHDAY
@@ -991,8 +1028,13 @@ void SyncTest::SetUpOnMainThread() {
 void SyncTest::WaitForDataModels(Profile* profile) {
   bookmarks::test::WaitForBookmarkModelToLoad(
       BookmarkModelFactory::GetForBrowserContext(profile));
+
+// TODO(crbug/1049597): Enable wait for history to load for Android.
+#if !defined(OS_ANDROID)
   ui_test_utils::WaitForHistoryToLoad(HistoryServiceFactory::GetForProfile(
       profile, ServiceAccessType::EXPLICIT_ACCESS));
+#endif
+
   search_test_utils::WaitForTemplateURLServiceToLoad(
       TemplateURLServiceFactory::GetForProfile(profile));
 #if defined(OS_CHROMEOS)

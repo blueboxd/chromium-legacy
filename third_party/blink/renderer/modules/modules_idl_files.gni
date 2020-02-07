@@ -8,67 +8,40 @@ import("//third_party/blink/renderer/config.gni")
 # The paths in this file are absolute since this file is imported and the
 # file lists must be valid from multple "current directories".
 
-bindings_modules_output_dir = "$bindings_output_dir/modules"
-blink_modules_output_dir = "$root_gen_dir/third_party/blink/renderer/modules"
-
-modules_core_global_constructors_original_interfaces = [
-  "AnimationWorkletGlobalScope",
-  "AudioWorkletGlobalScope",
-  "PaintWorkletGlobalScope",
-  "ServiceWorkerGlobalScope",
-]
-
-# The size and the order in the following list must match to the previous one.
-modules_core_global_constructors_original_interface_basenames = [
-  "animation_worklet_global_scope",
-  "audio_worklet_global_scope",
-  "paint_worklet_global_scope",
-  "service_worker_global_scope",
-]
-
-modules_global_constructors_original_interfaces = [
-  "AnimationWorkletGlobalScope",
-  "AudioWorkletGlobalScope",
-  "DedicatedWorkerGlobalScope",
-  "PaintWorkletGlobalScope",
-  "ServiceWorkerGlobalScope",
-  "SharedWorkerGlobalScope",
-  "Window",
-]
-
-# The size and the order in the following list must match to the previous one.
-modules_global_constructors_original_interface_basenames = [
-  "animation_worklet_global_scope",
-  "audio_worklet_global_scope",
-  "dedicated_worker_global_scope",
-  "paint_worklet_global_scope",
-  "service_worker_global_scope",
-  "shared_worker_global_scope",
-  "window",
-]
-
-# The interfaces aren't technically files, but we can treat them as file names
-# to get process_file_template to generate lists of IDL files corresponding
-# to each interface.
-modules_core_global_constructors_generated_idl_files = process_file_template(
-        modules_core_global_constructors_original_interface_basenames,
-        [ "$blink_modules_output_dir/{{source_name_part}}_core_constructors.idl" ])
-modules_global_constructors_generated_idl_files = process_file_template(
-        modules_global_constructors_original_interface_basenames,
-        [ "$blink_modules_output_dir/{{source_name_part}}_modules_constructors.idl" ])
-
-# Do not add anything to these lists. See _idl_imports below instead
-# for the preferred mechanism.
-modules_idl_files = []
-modules_callback_function_idl_files = []
-modules_dictionary_idl_files = []
-
-# 'partial interface' or target (right side of) 'implements'
-modules_dependency_idl_files = []
-
-# Similar, but for tests.
-modules_testing_dependency_idl_files = []
-
+# IDL files for a module are defined by idls.gni in the module's corresponding
+# directory. idls.gni can define certain variables to add additional IDL files
+# to the build.
+#
+#   modules_idl_files = [
+#     # IDL files that don't fit in one of the below categories. Typically
+#     # (but not required to) defines interfaces.
+#     # Spec reference: https://heycam.github.io/webidl/#idl-interfaces
+#   ]
+#
+#   modules_callback_function_idl_files = [
+#     # IDL files that only define callback functions (note: these are distinct
+#     # from callback interfaces).
+#     # Spec reference: https://heycam.github.io/webidl/#dfn-callback-function).
+#     # TODO(dcheng): Figure out why this is its own category.
+#   ]
+#
+#   modules_dictionary_idl_files = [
+#     # IDL files that define dictionaries and any supporting types (such as
+#     # enums) for the dictionaries.
+#     # Spec reference: https://heycam.github.io/webidl/#idl-dictionaries
+#   ]
+#
+#   modules_dependency_idl_files = [
+#     # IDL files that either define partial interfaces or target (right side
+#     # of) `includes`.
+#     # Spec reference: https://heycam.github.io/webidl/#dfn-partial-interface
+#     # Spec reference: https://heycam.github.io/webidl/#idl-interface-mixins
+#   ]
+#
+#   modules_testing_dependency_idl_files = [
+#     # Similar to |modules_dependency_idl_files| but limited to things that are
+#     # exposed only for testing.
+#   ]
 _idl_imports = [
   "//third_party/blink/renderer/modules/accessibility/idls.gni",
   "//third_party/blink/renderer/modules/animationworklet/idls.gni",
@@ -153,9 +126,20 @@ _idl_imports = [
   "//third_party/blink/renderer/modules/webusb/idls.gni",
   "//third_party/blink/renderer/modules/xr/idls.gni",
 ]
+
+# TODO(dcheng): For whatever reason, is_android doesn't seem to be defined, even
+# if using import() instead of read_file() in the foreach() loop below...
 if (!is_android) {
   _idl_imports += [ "//third_party/blink/renderer/modules/serial/idls.gni" ]
 }
+
+# Do not add IDL files directly to these lists. See _idl_imports above instead
+# on how to add IDL files for a module.
+modules_idl_files = []
+modules_callback_function_idl_files = []
+modules_dictionary_idl_files = []
+modules_dependency_idl_files = []
+modules_testing_dependency_idl_files = []
 
 foreach(idl_import, _idl_imports) {
   # Avoid reassignment error by assigning to empty scope first.
@@ -204,6 +188,55 @@ foreach(idl_import, _idl_imports) {
             "abspath")
   }
 }
+
+bindings_modules_output_dir = "$bindings_output_dir/modules"
+blink_modules_output_dir = "$root_gen_dir/third_party/blink/renderer/modules"
+
+modules_core_global_constructors_original_interfaces = [
+  "AnimationWorkletGlobalScope",
+  "AudioWorkletGlobalScope",
+  "PaintWorkletGlobalScope",
+  "ServiceWorkerGlobalScope",
+]
+
+# The size and the order in the following list must match to the previous one.
+modules_core_global_constructors_original_interface_basenames = [
+  "animation_worklet_global_scope",
+  "audio_worklet_global_scope",
+  "paint_worklet_global_scope",
+  "service_worker_global_scope",
+]
+
+modules_global_constructors_original_interfaces = [
+  "AnimationWorkletGlobalScope",
+  "AudioWorkletGlobalScope",
+  "DedicatedWorkerGlobalScope",
+  "PaintWorkletGlobalScope",
+  "ServiceWorkerGlobalScope",
+  "SharedWorkerGlobalScope",
+  "Window",
+]
+
+# The size and the order in the following list must match to the previous one.
+modules_global_constructors_original_interface_basenames = [
+  "animation_worklet_global_scope",
+  "audio_worklet_global_scope",
+  "dedicated_worker_global_scope",
+  "paint_worklet_global_scope",
+  "service_worker_global_scope",
+  "shared_worker_global_scope",
+  "window",
+]
+
+# The interfaces aren't technically files, but we can treat them as file names
+# to get process_file_template to generate lists of IDL files corresponding
+# to each interface.
+modules_core_global_constructors_generated_idl_files = process_file_template(
+        modules_core_global_constructors_original_interface_basenames,
+        [ "$blink_modules_output_dir/{{source_name_part}}_core_constructors.idl" ])
+modules_global_constructors_generated_idl_files = process_file_template(
+        modules_global_constructors_original_interface_basenames,
+        [ "$blink_modules_output_dir/{{source_name_part}}_modules_constructors.idl" ])
 
 modules_definition_idl_files = modules_dictionary_idl_files + modules_idl_files
 

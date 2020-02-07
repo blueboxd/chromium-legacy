@@ -87,7 +87,6 @@ import org.chromium.chrome.browser.flags.ActivityType;
 import org.chromium.chrome.browser.flags.ChromeFeatureList;
 import org.chromium.chrome.browser.flags.ChromeSessionState;
 import org.chromium.chrome.browser.fullscreen.ChromeFullscreenManager;
-import org.chromium.chrome.browser.fullscreen.ComposedBrowserControlsVisibilityDelegate;
 import org.chromium.chrome.browser.gsa.ContextReporter;
 import org.chromium.chrome.browser.gsa.GSAAccountChangeListener;
 import org.chromium.chrome.browser.gsa.GSAState;
@@ -159,8 +158,12 @@ import org.chromium.chrome.browser.vr.VrModuleProvider;
 import org.chromium.chrome.browser.webapps.addtohomescreen.AddToHomescreenCoordinator;
 import org.chromium.chrome.browser.widget.ScrimView;
 import org.chromium.chrome.browser.widget.bottomsheet.BottomSheetController;
+import org.chromium.chrome.modules.image_editor.ImageEditorModuleProvider;
 import org.chromium.components.bookmarks.BookmarkId;
 import org.chromium.components.browser_ui.modaldialog.AppModalPresenter;
+import org.chromium.components.browser_ui.util.ComposedBrowserControlsVisibilityDelegate;
+import org.chromium.components.browser_ui.widget.InsetObserverView;
+import org.chromium.components.browser_ui.widget.MenuOrKeyboardActionController;
 import org.chromium.components.browser_ui.widget.textbubble.TextBubble;
 import org.chromium.components.feature_engagement.EventConstants;
 import org.chromium.components.feature_engagement.Tracker;
@@ -1349,6 +1352,11 @@ public abstract class ChromeActivity<C extends ChromeActivityComponent>
         if (getSavedInstanceState() == null && getIntent() != null) {
             VrModuleProvider.getDelegate().onNewIntentWithNative(this, getIntent());
         }
+
+        if (ChromeFeatureList.isEnabled(ChromeFeatureList.CHROME_SHARE_SCREENSHOT)) {
+            ImageEditorModuleProvider.maybeInstallModuleDeferred();
+        }
+
         super.finishNativeInitialization();
 
         mManualFillingComponent.initialize(getWindowAndroid(),

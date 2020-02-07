@@ -218,9 +218,7 @@ void IndexedDBDispatcherHost::AddReceiver(
   DCHECK(IDBTaskRunner()->RunsTasksInCurrentSequence());
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   DCHECK_EQ(render_process_id, ipc_process_id_);
-  receivers_.Add(this, std::move(pending_receiver),
-                 {origin, IndexedDBExecutionContextConnectionTracker(
-                              render_process_id, render_frame_id)});
+  receivers_.Add(this, std::move(pending_receiver), origin);
 }
 
 void IndexedDBDispatcherHost::AddDatabaseBinding(
@@ -277,13 +275,13 @@ void IndexedDBDispatcherHost::GetDatabaseInfo(
         pending_callbacks) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
-  const auto& context = receivers_.current_context();
+  const auto& origin = receivers_.current_context();
   scoped_refptr<IndexedDBCallbacks> callbacks(
-      new IndexedDBCallbacks(this->AsWeakPtr(), context.origin,
+      new IndexedDBCallbacks(this->AsWeakPtr(), origin,
                              std::move(pending_callbacks), IDBTaskRunner()));
   base::FilePath indexed_db_path = indexed_db_context_->data_path();
   indexed_db_context_->GetIDBFactory()->GetDatabaseInfo(
-      std::move(callbacks), context.origin, indexed_db_path);
+      std::move(callbacks), origin, indexed_db_path);
 }
 
 void IndexedDBDispatcherHost::GetDatabaseNames(
@@ -291,13 +289,13 @@ void IndexedDBDispatcherHost::GetDatabaseNames(
         pending_callbacks) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
-  const auto& context = receivers_.current_context();
+  const auto& origin = receivers_.current_context();
   scoped_refptr<IndexedDBCallbacks> callbacks(
-      new IndexedDBCallbacks(this->AsWeakPtr(), context.origin,
+      new IndexedDBCallbacks(this->AsWeakPtr(), origin,
                              std::move(pending_callbacks), IDBTaskRunner()));
   base::FilePath indexed_db_path = indexed_db_context_->data_path();
   indexed_db_context_->GetIDBFactory()->GetDatabaseNames(
-      std::move(callbacks), context.origin, indexed_db_path);
+      std::move(callbacks), origin, indexed_db_path);
 }
 
 void IndexedDBDispatcherHost::Open(
@@ -311,9 +309,9 @@ void IndexedDBDispatcherHost::Open(
     int64_t transaction_id) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
-  const auto& context = receivers_.current_context();
+  const auto& origin = receivers_.current_context();
   scoped_refptr<IndexedDBCallbacks> callbacks(
-      new IndexedDBCallbacks(this->AsWeakPtr(), context.origin,
+      new IndexedDBCallbacks(this->AsWeakPtr(), origin,
                              std::move(pending_callbacks), IDBTaskRunner()));
   scoped_refptr<IndexedDBDatabaseCallbacks> database_callbacks(
       new IndexedDBDatabaseCallbacks(indexed_db_context_,
@@ -321,18 +319,17 @@ void IndexedDBDispatcherHost::Open(
                                      IDBTaskRunner()));
   base::FilePath indexed_db_path = indexed_db_context_->data_path();
 
-  auto create_transaction_callback = base::BindOnce(
-      &IndexedDBDispatcherHost::CreateAndBindTransactionImpl, AsWeakPtr(),
-      std::move(transaction_receiver), context.origin);
+  auto create_transaction_callback =
+      base::BindOnce(&IndexedDBDispatcherHost::CreateAndBindTransactionImpl,
+                     AsWeakPtr(), std::move(transaction_receiver), origin);
   std::unique_ptr<IndexedDBPendingConnection> connection =
       std::make_unique<IndexedDBPendingConnection>(
-          std::move(callbacks), std::move(database_callbacks),
-          context.connection_tracker.CreateHandle(), transaction_id, version,
-          std::move(create_transaction_callback));
+          std::move(callbacks), std::move(database_callbacks), transaction_id,
+          version, std::move(create_transaction_callback));
   // TODO(dgrogan): Don't let a non-existing database be opened (and therefore
   // created) if this origin is already over quota.
   indexed_db_context_->GetIDBFactory()->Open(name, std::move(connection),
-                                             context.origin, indexed_db_path);
+                                             origin, indexed_db_path);
 }
 
 void IndexedDBDispatcherHost::DeleteDatabase(
@@ -341,35 +338,35 @@ void IndexedDBDispatcherHost::DeleteDatabase(
     bool force_close) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
-  const auto& context = receivers_.current_context();
+  const auto& origin = receivers_.current_context();
   scoped_refptr<IndexedDBCallbacks> callbacks(
-      new IndexedDBCallbacks(this->AsWeakPtr(), context.origin,
+      new IndexedDBCallbacks(this->AsWeakPtr(), origin,
                              std::move(pending_callbacks), IDBTaskRunner()));
   base::FilePath indexed_db_path = indexed_db_context_->data_path();
   indexed_db_context_->GetIDBFactory()->DeleteDatabase(
-      name, std::move(callbacks), context.origin, indexed_db_path, force_close);
+      name, std::move(callbacks), origin, indexed_db_path, force_close);
 }
 
 void IndexedDBDispatcherHost::AbortTransactionsAndCompactDatabase(
     AbortTransactionsAndCompactDatabaseCallback mojo_callback) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
-  const auto& context = receivers_.current_context();
+  const auto& origin = receivers_.current_context();
   base::OnceCallback<void(leveldb::Status)> callback_on_io = base::BindOnce(
       &CallCompactionStatusCallbackOnIDBThread, std::move(mojo_callback));
   indexed_db_context_->GetIDBFactory()->AbortTransactionsAndCompactDatabase(
-      std::move(callback_on_io), context.origin);
+      std::move(callback_on_io), origin);
 }
 
 void IndexedDBDispatcherHost::AbortTransactionsForDatabase(
     AbortTransactionsForDatabaseCallback mojo_callback) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
-  const auto& context = receivers_.current_context();
+  const auto& origin = receivers_.current_context();
   base::OnceCallback<void(leveldb::Status)> callback_on_io = base::BindOnce(
       &CallAbortStatusCallbackOnIDBThread, std::move(mojo_callback));
   indexed_db_context_->GetIDBFactory()->AbortTransactionsForDatabase(
-      std::move(callback_on_io), context.origin);
+      std::move(callback_on_io), origin);
 }
 
 void IndexedDBDispatcherHost::CreateAndBindTransactionImpl(

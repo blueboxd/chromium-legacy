@@ -167,6 +167,7 @@ SettingsUI::SettingsUI(content::WebUI* web_ui)
   // Currently only used for testing the Polymer 3 version of
   // certificate-manager.
 #if BUILDFLAG(OPTIMIZE_WEBUI)
+  html_source->EnableReplaceI18nInJS();
   html_source->OverrideContentSecurityPolicyScriptSrc(
       "script-src chrome://resources chrome://test 'self';");
   html_source->AddResourcePath("test_loader.js", IDR_WEBUI_JS_TEST_LOADER);

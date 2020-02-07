@@ -40,6 +40,7 @@ import org.chromium.ui.modelutil.PropertyModelChangeProcessor;
 import org.chromium.ui.test.util.DummyUiActivityTestCase;
 import org.chromium.ui.widget.ButtonCompat;
 import org.chromium.ui.widget.ChipView;
+import org.chromium.ui.widget.ChromeImageView;
 
 import java.lang.ref.WeakReference;
 import java.util.concurrent.atomic.AtomicBoolean;
@@ -525,6 +526,24 @@ public class TabListViewHolderTest extends DummyUiActivityTestCase {
         mGridModel.set(TabProperties.SEARCH_LISTENER, null);
         searchButton.performClick();
         Assert.assertEquals(Tab.INVALID_TAB_ID, clickedTabId.get());
+    }
+
+    @Test
+    @MediumTest
+    @UiThreadTest
+    public void testSearchChipIcon() {
+        ChipView searchButton = mTabGridView.findViewById(R.id.search_button);
+        View iconView = searchButton.getChildAt(0);
+        Assert.assertTrue(iconView instanceof ChromeImageView);
+        ChromeImageView iconImageView = (ChromeImageView) iconView;
+
+        mGridModel.set(TabProperties.SEARCH_CHIP_ICON_DRAWABLE_ID, R.drawable.ic_logo_googleg_24dp);
+        Drawable googleDrawable = iconImageView.getDrawable();
+
+        mGridModel.set(TabProperties.SEARCH_CHIP_ICON_DRAWABLE_ID, R.drawable.ic_search);
+        Drawable magnifierDrawable = iconImageView.getDrawable();
+
+        Assert.assertNotEquals(magnifierDrawable, googleDrawable);
     }
 
     @Override

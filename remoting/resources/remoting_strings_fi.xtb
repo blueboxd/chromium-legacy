@@ -256,6 +256,7 @@ Jos <ph name="SERVICE_SCRIPT_NAME" /> on jo valittu, poista valinta ja valitse s
 <translation id="6939719207673461467">Näytä/piilota näppäimistö</translation>
 <translation id="6944854424004126054">Palauta ikkuna</translation>
 <translation id="6948905685698011662">Chrome-etäkäyttö on nyt verkossa! Tutustu <ph name="LINK_BEGIN" />maksuttomaan verkkosovellukseen<ph name="LINK_END" />.</translation>
+<translation id="6956835181934226419">Olen jo myöntänyt tämän luvan.</translation>
 <translation id="6963936880795878952">Yhteydet etätietokoneeseen on väliaikaisesti estetty, sillä siihen yritettiin muodostaa yhteys virheellisellä PIN-koodilla. Yritä myöhemmin uudelleen.</translation>
 <translation id="6965382102122355670">OK</translation>
 <translation id="6985691951107243942">Haluatko varmasti poistaa käytöstä etäyhteydet kohteeseen <ph name="HOSTNAME" />? Jos muutat mieltäsi, yhteydet täytyy palauttaa käyttöön kyseisellä tietokoneella.</translation>

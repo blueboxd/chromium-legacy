@@ -22,6 +22,8 @@ namespace syncer {
 class SyncSetupInProgressHandle;
 }  // namespace syncer
 
+class SyncSigninDelegate;
+
 // An instance of this class is basically our notion of a "sync client" for
 // automation purposes. It harnesses the ProfileSyncService member of the
 // profile passed to it on construction and automates certain things like setup
@@ -215,6 +217,9 @@ class ProfileSyncServiceHarness {
 
   // Used for logging.
   const std::string profile_debug_name_;
+
+  // Delegate to sign-in the test account across platforms.
+  std::unique_ptr<SyncSigninDelegate> signin_delegate_;
 
   DISALLOW_COPY_AND_ASSIGN(ProfileSyncServiceHarness);
 };

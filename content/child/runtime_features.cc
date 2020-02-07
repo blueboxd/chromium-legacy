@@ -430,7 +430,6 @@ void SetRuntimeFeaturesFromCommandLine(const base::CommandLine& command_line) {
       {wrf::ForceOverlayFullscreenVideo, switches::kForceOverlayFullscreenVideo,
        true},
       {wrf::EnablePreciseMemoryInfo, switches::kEnablePreciseMemoryInfo, true},
-      {wrf::EnablePrintBrowser, switches::kEnablePrintBrowser, true},
       {wrf::EnableNetInfoDownlinkMax,
        switches::kEnableNetworkInformationDownlinkMax, true},
       {wrf::EnablePermissionsAPI, switches::kDisablePermissionsAPI, false},

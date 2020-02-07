@@ -355,8 +355,13 @@ RenderProcessHostKillWaiter::Wait() {
 
   // Wait for the renderer kill.
   exit_watcher_.Wait();
+#if !defined(OS_ANDROID)
+  // Getting termination status on android is not reliable. To avoid flakiness,
+  // we can skip this check and just check bad message. On other platforms we
+  // want to verify that the renderer got killed, rather than exiting normally.
   if (exit_watcher_.did_exit_normally())
     return result;
+#endif
 
   // Find the logged Stability.BadMessageTerminated.Content data (if present).
   std::vector<base::Bucket> uma_samples =

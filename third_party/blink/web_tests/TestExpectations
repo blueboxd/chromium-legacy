@@ -11,6 +11,7 @@
 harness-tests/crash.html [ Crash ]
 harness-tests/timeout.html [ Timeout ]
 
+# Expected to fail.
 external/wpt/infrastructure/reftest/legacy/reftest_and_fail_0-ref.html [ Failure ]
 external/wpt/infrastructure/reftest/legacy/reftest_cycle_fail_0-ref.html [ Failure ]
 external/wpt/infrastructure/reftest/reftest_match_and_mismatch-0.html [ Failure ]
@@ -24,6 +25,7 @@ external/wpt/infrastructure/reftest/reftest_mismatch_fail.html [ Failure ]
 external/wpt/infrastructure/reftest/reftest_multiple_mismatch-0.html [ Failure ]
 external/wpt/infrastructure/reftest/reftest_multiple_mismatch-1.html [ Failure ]
 
+# Expected to time out.
 external/wpt/infrastructure/expected-fail/timeout.html [ Timeout ]
 external/wpt/infrastructure/reftest/reftest_ref_timeout.html [ Timeout ]
 external/wpt/infrastructure/reftest/reftest_timeout.html [ Timeout ]
@@ -35,6 +37,14 @@ crbug.com/997202 external/wpt/infrastructure/reftest/legacy/fuzzy-ref-2.html [ F
 crbug.com/997202 external/wpt/infrastructure/reftest/reftest_fuzzy_ini_full.html [ Failure ]
 crbug.com/997202 external/wpt/infrastructure/reftest/reftest_fuzzy_ini_ref_only.html [ Failure ]
 crbug.com/997202 external/wpt/infrastructure/reftest/reftest_fuzzy_ini_short.html [ Failure ]
+
+# TestRendered event isn't supported by run_web_tests.
+crbug.com/1028631 external/wpt/infrastructure/reftest/reftest_wait_TestRendered.html [ Skip ]
+
+# WPT HTTP/2 is not supported by run_web_tests.
+crbug.com/1048761 external/wpt/infrastructure/server/http2-context.sub.h2.any.html [ Skip ]
+crbug.com/1048761 external/wpt/infrastructure/server/http2-context.sub.h2.any.sharedworker.html [ Skip ]
+crbug.com/1048761 external/wpt/infrastructure/server/http2-context.sub.h2.any.worker.html [ Skip ]
 
 crbug.com/807686 crbug.com/24182 jquery/manipulation.html [ Timeout Pass ]
 
@@ -2181,7 +2191,7 @@ crbug.com/991413 external/wpt/css/css-text/white-space/trailing-other-space-sepa
 
 # Sheriff 2020-02-06
 # Flaking on Linux Leak
-crbug.com/1049599 [ Linux ] virtual/threaded-prefer-compositing/fast/scrolling/events/overscroll-event-fired-to-element-with-overscroll-behavior.html [ Pass Failure ]
+crbug.com/1049599 [ Linux ] virtual/threaded-prefer-compositing/fast/scrolling/events/overscroll-event-fired-to-element-with-overscroll-behavior.html [ Pass Failure Timeout ]
 crbug.com/1049641 [ Debug ] http/tests/devtools/sources/debugger/js-with-inline-stylesheets.js [ Pass Failure ]
 crbug.com/1049641 [ Debug ] http/tests/devtools/sources/debugger-breakpoints/set-breakpoint.js [ Pass Failure ]
 crbug.com/1049641 [ Debug ] http/tests/devtools/sources/debugger-breakpoints/set-conditional-breakpoint.js [ Pass Failure ]
@@ -2866,8 +2876,6 @@ crbug.com/641245 external/wpt/css/motion/offset-path-ray-contain-005.html [ Fail
 crbug.com/626703 [ Linux ] external/wpt/css/css-fonts/variations/font-slant-1.html [ Failure ]
 crbug.com/626703 [ Mac ] external/wpt/css/css-fonts/variations/font-slant-1.html [ Failure ]
 crbug.com/626703 [ Win ] external/wpt/css/css-fonts/variations/font-slant-1.html [ Failure ]
-crbug.com/626703 external/wpt/infrastructure/server/http2-context.sub.h2.any.html [ Timeout ]
-crbug.com/626703 external/wpt/infrastructure/server/http2-context.sub.h2.any.sharedworker.html [ Timeout ]
 crbug.com/626703 [ Linux ] external/wpt/webaudio/the-audio-api/the-audioworklet-interface/process-parameters.https.html [ Timeout ]
 crbug.com/626703 [ Mac ] external/wpt/webaudio/the-audio-api/the-audioworklet-interface/process-parameters.https.html [ Timeout ]
 crbug.com/626703 [ Win ] external/wpt/webaudio/the-audio-api/the-audioworklet-interface/process-parameters.https.html [ Timeout ]
@@ -2944,9 +2952,6 @@ crbug.com/626703 [ Mac ] external/wpt/offscreen-canvas/text/2d.text.measure.base
 crbug.com/626703 [ Win ] external/wpt/offscreen-canvas/text/2d.text.measure.baselines.worker.html [ Timeout ]
 crbug.com/626703 [ Win7 ] external/wpt/pointerevents/pointerevent_touch-action-pan-left-css_touch.html [ Timeout ]
 crbug.com/626703 [ Mac ] external/wpt/css/css-fonts/standard-font-family.html [ Failure ]
-crbug.com/626703 [ Linux ] external/wpt/infrastructure/reftest/reftest_wait_TestRendered.html [ Timeout ]
-crbug.com/626703 [ Mac ] external/wpt/infrastructure/reftest/reftest_wait_TestRendered.html [ Timeout ]
-crbug.com/626703 [ Win ] external/wpt/infrastructure/reftest/reftest_wait_TestRendered.html [ Timeout ]
 crbug.com/626703 [ Linux ] external/wpt/quirks/percentage-height-quirk-excludes-flex-grid-001.html [ Failure ]
 crbug.com/626703 [ Mac ] external/wpt/quirks/percentage-height-quirk-excludes-flex-grid-001.html [ Failure ]
 crbug.com/626703 [ Win ] external/wpt/quirks/percentage-height-quirk-excludes-flex-grid-001.html [ Failure ]
@@ -6498,11 +6503,6 @@ crbug.com/1047420 [ Mac ] http/tests/devtools/persistence/persistence-move-break
 # Sheriff 2020-01-31
 crbug.com/1047760 [ Win ] http/tests/devtools/screen-orientation-override.js [ Pass Timeout ]
 
-# Sheriff 2020-02-03
-crbug.com/1048113 [ Debug ] virtual/threaded-prefer-compositing/fast/scroll-behavior/main-frame-interrupted-scroll.html [ Pass Failure ]
-crbug.com/1048113 [ Debug ] virtual/threaded-prefer-compositing/fast/scroll-behavior/main-frame-scrollLeft.html [ Pass Failure ]
-crbug.com/1048113 [ Debug ] virtual/threaded-prefer-compositing/fast/scroll-behavior/subframe-interrupted-scroll.html [ Pass Failure ]
-
 crbug.com/1049689 external/wpt/workers/modules/shared-worker-import-referrer.html [ Pass Timeout ]
 crbug.com/1049689 virtual/omt-worker-fetch/external/wpt/workers/modules/shared-worker-import-referrer.html [ Pass Timeout ]
 
@@ -6521,7 +6521,7 @@ crbug.com/1048149 [ Mac ] virtual/controls-refresh/color/color-picker-appearance
 crbug.com/1048149 [ Mac ] virtual/controls-refresh/color/color-picker-top-left-selection-position-after-reopen.html [ Pass Crash ]
 crbug.com/1048149 [ Mac ] virtual/controls-refresh/color/color-picker-zoom150-bottom-edge-no-nan.html [ Pass Crash ]
 # This used to be [ Pass Crash ], but as of crbug.com/1050039 it started flaking as well.
-crbug.com/1048149 [ Mac ] virtual/controls-refresh/month-picker/month-picker-appearance-zoom150.html [ Pass Failure Crash ]
+crbug.com/1048149 crbug.com/1050121 [ Mac ] virtual/controls-refresh/month-picker/month-picker-appearance-zoom150.html [ Pass Failure Crash Failure ]
 crbug.com/1048149 [ Mac ] virtual/form-controls-refresh-disabled/fast/forms/calendar-picker/calendar-picker-key-operations.html [ Pass Crash ]
 crbug.com/1048149 [ Mac ] virtual/form-controls-refresh-disabled/fast/forms/calendar-picker/calendar-picker-touch-operations.html [ Pass Crash ]
 crbug.com/1048149 [ Mac ] virtual/form-controls-refresh-disabled/fast/forms/calendar-picker/calendar-picker-type-change-onchange.html [ Pass Crash ]
@@ -6563,3 +6563,9 @@ crbug.com/1050039 [ Mac ] virtual/omt-worker-fetch/fast/workers/worker-onerror-0
 
 # TODO(michaelludwig) - Remove and rebaseline after Skia roll
 crbug.com/1050086 transforms/3d/point-mapping/3d-point-mapping-preserve-3d.html [ Pass Failure ]
+
+crbug.com/1050102 [ Win ] fast/forms/suggestion-picker/datetimelocal-suggestion-picker-appearance-locale-hebrew.html [ Failure ]
+crbug.com/1050102 [ Win ] virtual/form-controls-refresh-disabled/fast/forms/suggestion-picker/datetimelocal-suggestion-picker-appearance-locale-hebrew.html [ Failure ]
+crbug.com/1050102 [ Win ] fast/forms/suggestion-picker/time-suggestion-picker-appearance-rtl.html [ Failure ]
+
+crbug.com/1050212 [ Win ] external/wpt/infrastructure/server/wpt-server-http.sub.html [ Skip ]

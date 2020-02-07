@@ -646,10 +646,10 @@ TEST_F(PluginVmInstallerDriveTest, SuccessfulDriveDownloadTest) {
                                         PluginVmDlcUseResult::kDlcSuccess, 1);
 }
 
-// TODO(b/145814572): Modify test to block once PluginVM DLC is stable and
+// TODO(b/148470849): Modify test to block once PluginVM DLC is stable and
 // rootfs PluginVM is no longer resident.
 TEST_F(PluginVmInstallerDriveTest,
-       InstallingPluingVmDlcFailureAllowsPassthrough) {
+       InstallingPluingVmDlcInternalFailureAllowsPassthrough) {
   SetPluginVmImagePref(kDriveUrl, kHash);
   fake_dlcservice_client_->SetInstallError(dlcservice::kErrorInternal);
 
@@ -660,6 +660,38 @@ TEST_F(PluginVmInstallerDriveTest,
   histogram_tester_->ExpectUniqueSample(
       kPluginVmDlcUseResultHistogram,
       PluginVmDlcUseResult::kFallbackToRootFsInternalDlcError, 1);
+}
+
+// TODO(b/148470849): Modify test to block once PluginVM DLC is stable and
+// rootfs PluginVM is no longer resident.
+TEST_F(PluginVmInstallerDriveTest,
+       InstallingPluingVmDlcBusyFailureAllowsPassthrough) {
+  SetPluginVmImagePref(kDriveUrl, kHash);
+  fake_dlcservice_client_->SetInstallError(dlcservice::kErrorBusy);
+
+  EXPECT_CALL(*observer_, OnDlcDownloadCompleted());
+  EXPECT_CALL(*observer_, OnDownloadCompleted());
+
+  StartAndRunToCompletion();
+  histogram_tester_->ExpectUniqueSample(
+      kPluginVmDlcUseResultHistogram,
+      PluginVmDlcUseResult::kFallbackToRootFsBusyDlcError, 1);
+}
+
+// TODO(b/148470849): Modify test to block once PluginVM DLC is stable and
+// rootfs PluginVM is no longer resident.
+TEST_F(PluginVmInstallerDriveTest,
+       InstallingPluingVmDlcNeedRebootFailureAllowsPassthrough) {
+  SetPluginVmImagePref(kDriveUrl, kHash);
+  fake_dlcservice_client_->SetInstallError(dlcservice::kErrorNeedReboot);
+
+  EXPECT_CALL(*observer_, OnDlcDownloadCompleted());
+  EXPECT_CALL(*observer_, OnDownloadCompleted());
+
+  StartAndRunToCompletion();
+  histogram_tester_->ExpectUniqueSample(
+      kPluginVmDlcUseResultHistogram,
+      PluginVmDlcUseResult::kFallbackToRootFsNeedRebootDlcError, 1);
 }
 
 TEST_F(PluginVmInstallerDriveTest, InstallingPluginVmDlcWhenUnsupported) {

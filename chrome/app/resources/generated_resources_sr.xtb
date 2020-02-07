@@ -3558,6 +3558,7 @@
 <translation id="5975792506968920132">Проценат напуњености батерије</translation>
 <translation id="5976160379964388480">Други</translation>
 <translation id="5978277834170881274">&amp;Користи основну проверу правописа</translation>
+<translation id="5979084224081478209">Провери лозинке</translation>
 <translation id="5979421442488174909">&amp;Преведи на <ph name="LANGUAGE" /> </translation>
 <translation id="5979469435153841984">Да бисте обележили страницу, кликните на звездицу у траци за адресу.</translation>
 <translation id="5984222099446776634">Недавно посећено</translation>
@@ -4158,7 +4159,6 @@
 <translation id="6840155290835956714">Питај пре слања</translation>
 <translation id="6840184929775541289">Није ауторитет за издавање сертификата</translation>
 <translation id="6841186874966388268">Грешке</translation>
-<translation id="6843267103192918276">Пријавите се да би вам обележивачи, историја, лозинке и друга подешавања били доступни на свим уређајима. Аутоматски ћете бити пријављени и на Google услуге. <ph name="LINK_BEGIN" />Сазнајте више<ph name="LINK_END" /></translation>
 <translation id="6843423766595476978">Опција Ок Google је спремна</translation>
 <translation id="6845038076637626672">Отвори увећано</translation>
 <translation id="6845325883481699275">Помозите нам да побољшамо Chrome безбедност</translation>

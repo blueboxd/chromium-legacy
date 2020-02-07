@@ -3560,6 +3560,7 @@ Mesaj de la server: <ph name="SERVER_MSG" /></translation>
 <translation id="5975792506968920132">Procent de încărcare a bateriei</translation>
 <translation id="5976160379964388480">Altele</translation>
 <translation id="5978277834170881274">Folosește verificarea de bază a ortografiei</translation>
+<translation id="5979084224081478209">Verifică parolele</translation>
 <translation id="5979421442488174909">&amp;Tradu în <ph name="LANGUAGE" /></translation>
 <translation id="5979469435153841984">Pentru a marca paginile, dă clic pe steaua din bara de adrese</translation>
 <translation id="5984222099446776634">Recently visited (Vizitate recent)</translation>
@@ -4160,7 +4161,6 @@ Mesaj de la server: <ph name="SERVER_MSG" /></translation>
 <translation id="6840155290835956714">Întreabă înainte de a trimite</translation>
 <translation id="6840184929775541289">Nu este o Autoritate de certificare</translation>
 <translation id="6841186874966388268">Erori</translation>
-<translation id="6843267103192918276">Conectează-te și accesează marcajele, istoricul, parolele și alte setări pe toate dispozitivele. În plus, te vei conecta automat la serviciile Google. <ph name="LINK_BEGIN" />Află mai multe<ph name="LINK_END" /></translation>
 <translation id="6843423766595476978">Ok Google este configurat</translation>
 <translation id="6845038076637626672">Deschideți aplicația maximizată</translation>
 <translation id="6845325883481699275">Contribuie la îmbunătățirea securității pentru Chrome</translation>

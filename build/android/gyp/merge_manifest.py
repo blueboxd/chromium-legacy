@@ -18,10 +18,16 @@ from util import manifest_utils
 
 _MANIFEST_MERGER_MAIN_CLASS = 'com.android.manifmerger.Merger'
 _MANIFEST_MERGER_JARS = [
-    'common{suffix}.jar',
-    'manifest-merger{suffix}.jar',
-    'sdk-common{suffix}.jar',
-    'sdklib{suffix}.jar',
+    os.path.join('build-system', 'manifest-merger.jar'),
+    os.path.join('common', 'common.jar'),
+    os.path.join('sdk-common', 'sdk-common.jar'),
+    os.path.join('sdklib', 'sdklib.jar'),
+    os.path.join('external', 'com', 'google', 'guava', 'guava', '27.1-jre',
+                 'guava-27.1-jre.jar'),
+    os.path.join('external', 'kotlin-plugin-ij', 'Kotlin', 'kotlinc', 'lib',
+                 'kotlin-stdlib.jar'),
+    os.path.join('external', 'com', 'google', 'code', 'gson', 'gson', '2.8.5',
+                 'gson-2.8.5.jar'),
 ]
 
 
@@ -45,11 +51,9 @@ def _ProcessManifest(manifest_path, min_sdk_version, target_sdk_version,
     yield patched_manifest.name, manifest_utils.GetPackage(manifest)
 
 
-def _BuildManifestMergerClasspath(android_sdk_tools,
-                                  android_sdk_tools_version_suffix):
+def _BuildManifestMergerClasspath(android_sdk_cmdline_tools):
   return ':'.join([
-      os.path.join(android_sdk_tools, 'lib',
-                   jar.format(suffix=android_sdk_tools_version_suffix))
+      os.path.join(android_sdk_cmdline_tools, 'lib', jar)
       for jar in _MANIFEST_MERGER_JARS
   ])
 
@@ -59,12 +63,8 @@ def main(argv):
   parser = argparse.ArgumentParser(description=__doc__)
   build_utils.AddDepfileOption(parser)
   parser.add_argument(
-      '--android-sdk-tools',
-      help='Path to root of SDK providing the manifest merger tool.',
-      required=True)
-  parser.add_argument(
-      '--android-sdk-tools-version-suffix',
-      help='Version suffix for SDK providing the manifest merger tool.',
+      '--android-sdk-cmdline-tools',
+      help='Path to SDK\'s cmdline-tools folder.',
       required=True)
   parser.add_argument('--root-manifest',
                       help='Root manifest which to merge into',
@@ -87,8 +87,7 @@ def main(argv):
       help='Package name of the merged AndroidManifest.xml.')
   args = parser.parse_args(argv)
 
-  classpath = _BuildManifestMergerClasspath(
-      args.android_sdk_tools, args.android_sdk_tools_version_suffix)
+  classpath = _BuildManifestMergerClasspath(args.android_sdk_cmdline_tools)
 
   with build_utils.AtomicOutput(args.output) as output:
     cmd = [

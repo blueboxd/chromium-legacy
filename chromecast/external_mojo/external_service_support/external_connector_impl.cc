@@ -103,6 +103,24 @@ void ExternalConnectorImpl::QueryServiceList(
 void ExternalConnectorImpl::BindInterface(
     const std::string& service_name,
     const std::string& interface_name,
+    mojo::ScopedMessagePipeHandle interface_pipe,
+    bool async) {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  if (!async) {
+    BindInterfaceImmediately(service_name, interface_name,
+                             std::move(interface_pipe));
+    return;
+  }
+  base::SequencedTaskRunnerHandle::Get()->PostTask(
+      FROM_HERE,
+      base::BindOnce(&ExternalConnectorImpl::BindInterfaceImmediately,
+                     weak_factory_.GetWeakPtr(), service_name, interface_name,
+                     std::move(interface_pipe)));
+}
+
+void ExternalConnectorImpl::BindInterfaceImmediately(
+    const std::string& service_name,
+    const std::string& interface_name,
     mojo::ScopedMessagePipeHandle interface_pipe) {
   if (BindConnectorIfNecessary()) {
     connector_->BindInterface(service_name, interface_name,

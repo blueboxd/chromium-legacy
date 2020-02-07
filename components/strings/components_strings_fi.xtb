@@ -691,6 +691,7 @@
 <translation id="3987940399970879459">Alle 1 Mt</translation>
 <translation id="3990250421422698716">Jog offset</translation>
 <translation id="40103911065039147">{URL_count,plural, =1{1 verkkosivu lähistöllä}other{# verkkosivua lähistöllä}}</translation>
+<translation id="4014128326099193693">{COUNT,plural, =1{PDF-dokumentti, jossa on {COUNT} sivu}other{PDF-dokumentti, jossa on {COUNT} sivua}}</translation>
 <translation id="4030383055268325496">K&amp;umoa lisäys</translation>
 <translation id="4032320456957708163">Selaimen ylläpitäjä on <ph name="ENROLLMENT_DOMAIN" /></translation>
 <translation id="4058922952496707368">Avain <ph name="SUBKEY" />: <ph name="ERROR" /></translation>
@@ -719,6 +720,7 @@
 <translation id="4142935452406587478">Lokero 10</translation>
 <translation id="4148925816941278100">American Express</translation>
 <translation id="4151403195736952345">Käytä yleistä oletusta (havaitse)</translation>
+<translation id="4152318981910038897">{COUNT,plural, =1{Sivu 1}other{Sivu {COUNT}}}</translation>
 <translation id="4159784952369912983">Violetti</translation>
 <translation id="4165986682804962316">Sivustoasetukset</translation>
 <translation id="4171400957073367226">Virheellinen vahvistusallekirjoitus.</translation>
@@ -1396,6 +1398,7 @@
 <translation id="7201591969684833065">Järjestelmänvalvoja näkee seuraavat:</translation>
 <translation id="7202346780273620635">Kirje-ekstra</translation>
 <translation id="7210863904660874423"><ph name="HOST_NAME" /> ei noudata tietoturvastandardeja.</translation>
+<translation id="7210993021468939304">Linux-toiminta säilön sisällä, ja voi asentaa ja suorittaa Linux-sovelluksia säilön sisällä</translation>
 <translation id="721197778055552897"><ph name="BEGIN_LINK" />Lisätietoja<ph name="END_LINK" /> ongelmasta.</translation>
 <translation id="7219179957768738017">Yhteys käyttää protokollaa <ph name="SSL_VERSION" />.</translation>
 <translation id="7220786058474068424">Käsitellään.</translation>
@@ -1559,6 +1562,7 @@ Lisätietoja:
 <translation id="7878562273885520351">Salasanasi on saattanut vaarantua.</translation>
 <translation id="7882421473871500483">Ruskea</translation>
 <translation id="7887683347370398519">Tarkista CVC ja yritä uudelleen.</translation>
+<translation id="7887885240995164102">Avaa kuva kuvassa</translation>
 <translation id="7888575728750733395">Tulosteen renderöintitavoite</translation>
 <translation id="7904208859782148177">C3 (kirjekuori)</translation>
 <translation id="7932579305932748336">Päällystys</translation>

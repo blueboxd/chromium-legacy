@@ -75,6 +75,11 @@ struct TestCase {
     return *this;
   }
 
+  TestCase& EnableUnifiedMediaView() {
+    enable_unified_media_view.emplace(true);
+    return *this;
+  }
+
   TestCase& DontMountVolumes() {
     mount_no_volumes = true;
     return *this;
@@ -131,6 +136,7 @@ struct TestCase {
   bool offline = false;
   bool files_ng = false;
   bool enable_native_smb = true;
+  base::Optional<bool> enable_unified_media_view;
   bool mount_no_volumes = false;
   bool observe_file_tasks = true;
 };
@@ -192,6 +198,11 @@ class FilesAppBrowserTest : public FileManagerBrowserTestBase,
 
   bool GetEnableNativeSmb() const override {
     return GetParam().enable_native_smb;
+  }
+
+  bool GetEnableUnifiedMediaView() const override {
+    return GetParam().enable_unified_media_view.value_or(
+        FileManagerBrowserTestBase::GetEnableUnifiedMediaView());
   }
 
   bool GetStartWithNoVolumesMounted() const override {
@@ -845,12 +856,19 @@ WRAPPED_INSTANTIATE_TEST_SUITE_P(
 WRAPPED_INSTANTIATE_TEST_SUITE_P(
     Recents, /* recents.js */
     FilesAppBrowserTest,
-    ::testing::Values(TestCase("recentsDownloads"),
-                      TestCase("recentsDrive"),
-                      TestCase("recentsCrostiniNotMounted"),
-                      TestCase("recentsCrostiniMounted"),
-                      TestCase("recentsDownloadsAndDrive"),
-                      TestCase("recentsDownloadsAndDriveWithOverlap")));
+    ::testing::Values(
+        TestCase("recentsDownloads"),
+        TestCase("recentsDrive"),
+        TestCase("recentsCrostiniNotMounted"),
+        TestCase("recentsCrostiniMounted"),
+        TestCase("recentsDownloadsAndDrive"),
+        TestCase("recentsDownloadsAndDriveWithOverlap"),
+        TestCase("recentAudioDownloads").EnableUnifiedMediaView(),
+        TestCase("recentAudioDownloadsAndDrive").EnableUnifiedMediaView(),
+        TestCase("recentImagesDownloads").EnableUnifiedMediaView(),
+        TestCase("recentImagesDownloadsAndDrive").EnableUnifiedMediaView(),
+        TestCase("recentVideosDownloads").EnableUnifiedMediaView(),
+        TestCase("recentVideosDownloadsAndDrive").EnableUnifiedMediaView()));
 
 WRAPPED_INSTANTIATE_TEST_SUITE_P(
     Metadata, /* metadata.js */

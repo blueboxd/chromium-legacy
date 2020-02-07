@@ -7,6 +7,7 @@ package org.chromium.chrome.browser.tab;
 import org.chromium.base.Callback;
 import org.chromium.base.UserData;
 import org.chromium.base.annotations.NativeMethods;
+import org.chromium.components.browser_ui.util.BrowserControlsVisibilityDelegate;
 import org.chromium.content_public.browser.NavigationHandle;
 import org.chromium.content_public.browser.WebContents;
 import org.chromium.content_public.common.BrowserControlsState;

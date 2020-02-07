@@ -687,6 +687,7 @@
 <translation id="3987940399970879459">Mazāk nekā 1 MB</translation>
 <translation id="3990250421422698716">Ofseta izlīdzināšana</translation>
 <translation id="40103911065039147">{URL_count,plural, =1{Tuvumā ir 1 tīmekļa lapa}zero{Tuvumā ir # tīmekļa lapas}one{Tuvumā ir # tīmekļa lapa}other{Tuvumā ir # tīmekļa lapas}}</translation>
+<translation id="4014128326099193693">{COUNT,plural, =1{PDF dokumentā ir {COUNT} lapa}zero{PDF dokumentā ir {COUNT} lapas}one{PDF dokumentā ir {COUNT} lapa}other{PDF dokumentā ir {COUNT} lapas}}</translation>
 <translation id="4030383055268325496">&amp;Atsaukt pievienošanu</translation>
 <translation id="4032320456957708163">Jūsu pārlūku pārvalda <ph name="ENROLLMENT_DOMAIN" /></translation>
 <translation id="4058922952496707368">Atslēga <ph name="SUBKEY" />: <ph name="ERROR" /></translation>
@@ -715,6 +716,7 @@
 <translation id="4142935452406587478">10. paplāte</translation>
 <translation id="4148925816941278100">American Express</translation>
 <translation id="4151403195736952345">Izmantot globālo noklusējuma vērtību (noteikt)</translation>
+<translation id="4152318981910038897">{COUNT,plural, =1{1. lapa}zero{{COUNT}. lapa}one{{COUNT}. lapa}other{{COUNT}. lapa}}</translation>
 <translation id="4159784952369912983">Violets</translation>
 <translation id="4165986682804962316">Vietnes iestatījumi</translation>
 <translation id="4171400957073367226">Verifikācijas paraksts nav derīgs.</translation>
@@ -1392,6 +1394,7 @@
 <translation id="7201591969684833065">Administrators var redzēt:</translation>
 <translation id="7202346780273620635">Letter-Extra</translation>
 <translation id="7210863904660874423"><ph name="HOST_NAME" /> neatbilst drošības standartiem.</translation>
+<translation id="7210993021468939304">Linux darbība konteinerā; var instalēt un palaist Linux lietotnes konteinerā</translation>
 <translation id="721197778055552897"><ph name="BEGIN_LINK" />Uzziniet vairāk<ph name="END_LINK" /> par šo problēmu.</translation>
 <translation id="7219179957768738017">Savienojums izmanto <ph name="SSL_VERSION" />.</translation>
 <translation id="7220786058474068424">Notiek apstrāde</translation>
@@ -1555,6 +1558,7 @@ Papildu informācija:
 <translation id="7878562273885520351">Iespējams, jūsu parole ir apdraudēta</translation>
 <translation id="7882421473871500483">Brūna</translation>
 <translation id="7887683347370398519">Pārbaudiet CVC kodu un mēģiniet vēlreiz.</translation>
+<translation id="7887885240995164102">Atvērt režīmu “attēls attēlā”</translation>
 <translation id="7888575728750733395">Drukāšanas krāsu atveide</translation>
 <translation id="7904208859782148177">C3 (aploksne)</translation>
 <translation id="7932579305932748336">Pārklājums</translation>

@@ -177,6 +177,9 @@ class MockUserManager : public ChromeUserManager {
   // affiliated with the domain, that owns the device.
   void AddUser(const AccountId& account_id);
 
+  // Allows to add SAML user
+  void AddPublicAccountWithSAML(const AccountId& account_id);
+
   // The same as AddUser, but allows specifying affiliation with the domain,
   // that owns the device and user type.
   void AddUserWithAffiliationAndType(const AccountId& account_id,

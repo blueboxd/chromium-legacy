@@ -4,19 +4,12 @@
 
 #include "chrome/common/chrome_features.h"
 
-#include <array>
-
 #include "base/command_line.h"
-#include "base/no_destructor.h"
 #include "base/strings/string_split.h"
 #include "build/build_config.h"
 #include "chrome/common/chrome_switches.h"
 #include "extensions/buildflags/buildflags.h"
 #include "ppapi/buildflags/buildflags.h"
-
-#if defined(OS_ANDROID)
-#include "base/android/build_info.h"
-#endif
 
 namespace features {
 
@@ -744,28 +737,6 @@ const base::Feature kHeavyAdIntervention{"HeavyAdIntervention",
 // prior to seeing a heavy ad.
 const base::Feature kHeavyAdPrivacyMitigations{
     "HeavyAdPrivacyMitigations", base::FEATURE_ENABLED_BY_DEFAULT};
-
-#if defined(OS_ANDROID)
-bool UseDisplayWideColorGamut() {
-  auto compute_use_display_wide_color_gamut = []() {
-    const char* current_model =
-        base::android::BuildInfo::GetInstance()->model();
-    const std::array<std::string, 2> enabled_models = {
-        std::string{"Pixel 4"}, std::string{"Pixel 4 XL"}};
-    for (const std::string& model : enabled_models) {
-      if (model == current_model)
-        return true;
-    }
-
-    return false;
-  };
-
-  // As it takes some work to compute this, cache the result.
-  static base::NoDestructor<bool> is_wide_color_gamut_enabled(
-      compute_use_display_wide_color_gamut());
-  return *is_wide_color_gamut_enabled;
-}
-#endif
 
 #if defined(OS_CHROMEOS)
 // Enables or disables the FTL signaling service for CRD sessions in Kiosk mode.

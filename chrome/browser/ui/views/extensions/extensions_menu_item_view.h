@@ -40,6 +40,7 @@ class ExtensionsMenuItemView : public views::View,
 
   // views::View:
   const char* GetClassName() const override;
+  void OnThemeChanged() override;
 
   void UpdatePinButton();
 

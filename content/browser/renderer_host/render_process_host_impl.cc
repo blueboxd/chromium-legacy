@@ -3202,7 +3202,6 @@ void RenderProcessHostImpl::PropagateBrowserCommandLineToRenderer(
     switches::kEnableOopRasterization,
     switches::kEnablePluginPlaceholderTesting,
     switches::kEnablePreciseMemoryInfo,
-    switches::kEnablePrintBrowser,
     switches::kEnablePreferCompositingToLCDText,
     switches::kEnableRGBA4444Textures,
     switches::kEnableSkiaBenchmarking,

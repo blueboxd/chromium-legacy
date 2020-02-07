@@ -256,6 +256,7 @@ Si ya está marcada la casilla "<ph name="SERVICE_SCRIPT_NAME" />", desmárcala 
 <translation id="6939719207673461467">Mostrar u ocultar teclado</translation>
 <translation id="6944854424004126054">Restaurar ventana</translation>
 <translation id="6948905685698011662">¡Escritorio remoto de Chrome ahora está en la Web! Échale un vistazo a nuestra <ph name="LINK_BEGIN" />app web gratuita<ph name="LINK_END" />.</translation>
+<translation id="6956835181934226419">Ya otorgué este permiso.</translation>
 <translation id="6963936880795878952">Las conexiones con la computadora remota se bloquearon temporalmente porque alguien intentó conectarse a ella con un PIN no válido. Vuelve a intentarlo más tarde.</translation>
 <translation id="6965382102122355670">Aceptar</translation>
 <translation id="6985691951107243942">¿Realmente deseas inhabilitar las conexiones remotas con <ph name="HOSTNAME" />? Si te arrepientes, tendrás que ir a esa computadora para volver a habilitar las conexiones.</translation>

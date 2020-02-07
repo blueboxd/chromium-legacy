@@ -3559,6 +3559,7 @@ Assegureu-vos que no es pugui accedir a informació sensible.</translation>
 <translation id="5975792506968920132">Percentatge de càrrega de la bateria</translation>
 <translation id="5976160379964388480">Altres</translation>
 <translation id="5978277834170881274">&amp;Fes servir el corrector ortogràfic bàsic</translation>
+<translation id="5979084224081478209">Comprova les contrasenyes</translation>
 <translation id="5979421442488174909">&amp;Tradueix a: <ph name="LANGUAGE" /></translation>
 <translation id="5979469435153841984">Per afegir pàgines a les adreces d'interès, fes clic a l'estrella de la barra d'adreces</translation>
 <translation id="5984222099446776634">Visitats recentment</translation>
@@ -4159,7 +4160,6 @@ Assegureu-vos que no es pugui accedir a informació sensible.</translation>
 <translation id="6840155290835956714">Pregunta abans d'enviar</translation>
 <translation id="6840184929775541289">No és una entitat emissora de certificats</translation>
 <translation id="6841186874966388268">Errors</translation>
-<translation id="6843267103192918276">Inicia la sessió per tenir les adreces d'interès, l'historial, les contrasenyes i altres opcions de configuració en tots els dispositius. A més, s'iniciarà la sessió automàticament als serveis de Google. <ph name="LINK_BEGIN" />Més informació<ph name="LINK_END" /></translation>
 <translation id="6843423766595476978">Ok Google ja està configurat</translation>
 <translation id="6845038076637626672">Obre-la maximitzada</translation>
 <translation id="6845325883481699275">Ajuda a millorar la seguretat de Chrome</translation>

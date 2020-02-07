@@ -3560,6 +3560,7 @@ kasutades juhtpaneeli funktsiooni <ph name="CONTROL_PANEL_APPLET_NAME" />.
 <translation id="5975792506968920132">Aku laetuse protsent</translation>
 <translation id="5976160379964388480">Muud</translation>
 <translation id="5978277834170881274">&amp;Kasuta lihtsat õigekirjakontrolli</translation>
+<translation id="5979084224081478209">Kontrolli paroole</translation>
 <translation id="5979421442488174909">&amp;Tõlgi järgmisesse keelde: <ph name="LANGUAGE" /></translation>
 <translation id="5979469435153841984">Lehtede järjehoidjatesse lisamiseks klõpsake aadressiribal tärnil</translation>
 <translation id="5984222099446776634">Viimati külastatud</translation>
@@ -4160,7 +4161,6 @@ kasutades juhtpaneeli funktsiooni <ph name="CONTROL_PANEL_APPLET_NAME" />.
 <translation id="6840155290835956714">Küsi enne saatmist</translation>
 <translation id="6840184929775541289">Ei ole sertifitseerimisorgan</translation>
 <translation id="6841186874966388268">Vead</translation>
-<translation id="6843267103192918276">Logige sisse, et tuua kõikidesse seadmetesse järjehoidjad, ajalugu, paroolid ja muud seaded. Teid logitakse ka automaatselt sisse Google'i teenustesse. <ph name="LINK_BEGIN" />Lisateave<ph name="LINK_END" /></translation>
 <translation id="6843423766595476978">„Ok Google” on kasutamiseks valmis</translation>
 <translation id="6845038076637626672">Ava maksimeeritult</translation>
 <translation id="6845325883481699275">Aidake Chrome'i turvalisust täiustada</translation>

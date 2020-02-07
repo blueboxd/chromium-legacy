@@ -13,16 +13,13 @@
 #include "base/logging.h"
 #include "base/memory/ptr_util.h"
 #include "base/test/bind_test_util.h"
+#include "build/build_config.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/signin/identity_manager_factory.h"
 #include "chrome/browser/sync/profile_sync_service_factory.h"
 #include "chrome/browser/sync/test/integration/quiesce_status_change_checker.h"
 #include "chrome/browser/sync/test/integration/single_client_status_change_checker.h"
-#include "chrome/browser/ui/browser.h"
-#include "chrome/browser/ui/browser_finder.h"
-#include "chrome/browser/ui/webui/signin/login_ui_service.h"
-#include "chrome/browser/ui/webui/signin/login_ui_service_factory.h"
-#include "chrome/browser/ui/webui/signin/login_ui_test_utils.h"
+#include "chrome/browser/sync/test/integration/sync_signin_delegate.h"
 #include "chrome/common/channel_info.h"
 #include "components/signin/public/identity_manager/identity_manager.h"
 #include "components/signin/public/identity_manager/identity_test_utils.h"
@@ -148,9 +145,10 @@ ProfileSyncServiceHarness::ProfileSyncServiceHarness(
       username_(username),
       password_(password),
       signin_type_(signin_type),
-      profile_debug_name_(profile->GetDebugName()) {}
+      profile_debug_name_(profile->GetDebugName()),
+      signin_delegate_(CreateSyncSigninDelegate()) {}
 
-ProfileSyncServiceHarness::~ProfileSyncServiceHarness() { }
+ProfileSyncServiceHarness::~ProfileSyncServiceHarness() = default;
 
 bool ProfileSyncServiceHarness::SignInPrimaryAccount() {
   // TODO(crbug.com/871221): This function should distinguish primary account
@@ -160,36 +158,11 @@ bool ProfileSyncServiceHarness::SignInPrimaryAccount() {
 
   switch (signin_type_) {
     case SigninType::UI_SIGNIN: {
-      Browser* browser = chrome::FindBrowserWithProfile(profile_);
-      DCHECK(browser);
-      if (!login_ui_test_utils::SignInWithUI(browser, username_, password_)) {
-        LOG(ERROR) << "Could not sign in to GAIA servers.";
-        return false;
-      }
-      return true;
+      return signin_delegate_->SigninUI(profile_, username_, password_);
     }
 
     case SigninType::FAKE_SIGNIN: {
-      signin::IdentityManager* identity_manager =
-          IdentityManagerFactory::GetForProfile(profile_);
-
-      // Verify HasPrimaryAccount() separately because
-      // MakePrimaryAccountAvailable() below DCHECK fails if there is already
-      // an authenticated account.
-      if (identity_manager->HasPrimaryAccount()) {
-        DCHECK_EQ(identity_manager->GetPrimaryAccountInfo().email, username_);
-        // Don't update the refresh token if we already have one. The reason is
-        // that doing so causes Sync (ServerConnectionManager in particular) to
-        // mark the current access token as invalid. Since tests typically
-        // always hand out the same access token string, any new access token
-        // acquired later would also be considered invalid.
-        if (!identity_manager->HasPrimaryAccountWithRefreshToken()) {
-          signin::SetRefreshTokenForPrimaryAccount(identity_manager);
-        }
-      } else {
-        // Authenticate sync client using GAIA credentials.
-        signin::MakePrimaryAccountAvailable(identity_manager, username_);
-      }
+      signin_delegate_->SigninFake(profile_, username_);
       return true;
     }
   }
@@ -369,24 +342,8 @@ bool ProfileSyncServiceHarness::SetupSyncImpl(
   // Notify ProfileSyncService that we are done with configuration.
   FinishSyncSetup();
 
-  if ((signin_type_ == SigninType::UI_SIGNIN) &&
-      !login_ui_test_utils::ConfirmSyncConfirmationDialog(
-          chrome::FindBrowserWithProfile(profile_),
-          base::TimeDelta::FromSeconds(30))) {
-    LOG(ERROR) << "Failed to dismiss sync confirmation dialog.";
-    return false;
-  }
-
-  // OneClickSigninSyncStarter observer is created with a real user sign in.
-  // It is deleted on certain conditions which are not satisfied by our tests,
-  // and this causes the SigninTracker observer to stay hanging at shutdown.
-  // Calling LoginUIService::SyncConfirmationUIClosed forces the observer to
-  // be removed. http://crbug.com/484388
-  if (signin_type_ == SigninType::UI_SIGNIN) {
-    LoginUIServiceFactory::GetForProfile(profile_)->SyncConfirmationUIClosed(
-        LoginUIService::SYNC_WITH_DEFAULT_SETTINGS);
-  }
-
+  if (signin_type_ == SigninType::UI_SIGNIN)
+    return signin_delegate_->ConfirmSigninUI(profile_);
   return true;
 }
 

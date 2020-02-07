@@ -3560,6 +3560,7 @@ You can manage this account’s settings by installing the Family Link app on yo
 <translation id="5975792506968920132">Battery Charge Percentage</translation>
 <translation id="5976160379964388480">Others</translation>
 <translation id="5978277834170881274">Use basic spell check</translation>
+<translation id="5979084224081478209">Check passwords</translation>
 <translation id="5979421442488174909">&amp;Translate to <ph name="LANGUAGE" /></translation>
 <translation id="5979469435153841984">To bookmark pages, click the star in the address bar</translation>
 <translation id="5984222099446776634">Recently Visited</translation>
@@ -4160,7 +4161,6 @@ You can manage this account’s settings by installing the Family Link app on yo
 <translation id="6840155290835956714">Ask before sending</translation>
 <translation id="6840184929775541289">Is not a Certification Authority</translation>
 <translation id="6841186874966388268">Errors</translation>
-<translation id="6843267103192918276">Sign in to get your bookmarks, history, passwords and other settings on all your devices. You'll also automatically be signed in to your Google services. <ph name="LINK_BEGIN" />Learn more<ph name="LINK_END" /></translation>
 <translation id="6843423766595476978">"Ok Google" is ready</translation>
 <translation id="6845038076637626672">Open Maximised</translation>
 <translation id="6845325883481699275">Help improve Chrome security</translation>

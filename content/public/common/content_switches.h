@@ -126,7 +126,6 @@ CONTENT_EXPORT extern const char kEnableNetworkInformationDownlinkMax[];
 CONTENT_EXPORT extern const char kDisableNv12DxgiVideo[];
 CONTENT_EXPORT extern const char kEnablePluginPlaceholderTesting[];
 CONTENT_EXPORT extern const char kEnablePreciseMemoryInfo[];
-CONTENT_EXPORT extern const char kEnablePrintBrowser[];
 CONTENT_EXPORT extern const char kEnableRGBA4444Textures[];
 CONTENT_EXPORT extern const char kEnableServiceBinaryLauncher[];
 extern const char kEnableSkiaBenchmarking[];

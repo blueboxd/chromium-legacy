@@ -236,28 +236,6 @@ public class CachedFeatureFlags {
     }
 
     /**
-     * @return if DownloadResumptionBackgroundTask should load native in service manager only mode.
-     */
-    public static boolean isServiceManagerForDownloadResumptionEnabled() {
-        return isEnabled(ChromeFeatureList.SERVICE_MANAGER_FOR_DOWNLOAD);
-    }
-
-    /**
-     * @return if PrefetchBackgroundTask should load native in service manager only mode.
-     */
-    public static boolean isServiceManagerForBackgroundPrefetchEnabled() {
-        return isEnabled(ChromeFeatureList.SERVICE_MANAGER_FOR_BACKGROUND_PREFETCH)
-                && isFeedEnabled();
-    }
-
-    /**
-     * @return Whether or not the Feed is enabled (based on the cached value in SharedPrefs).
-     */
-    public static boolean isFeedEnabled() {
-        return isEnabled(ChromeFeatureList.INTEREST_FEED_CONTENT_SUGGESTIONS);
-    }
-
-    /**
      * @return Whether or not the download auto-resumptions should be enabled in native.
      */
     @CalledByNative
@@ -558,12 +536,6 @@ public class CachedFeatureFlags {
             @Nullable Boolean isEnabled) {
         sFlags.put(ChromePreferenceKeys.FLAGS_CACHED_DUET_TABSTRIP_INTEGRATION_ANDROID_ENABLED,
                 isEnabled);
-    }
-
-    private static boolean isHighEndPhone() {
-        return !SysUtils.isLowEndDevice()
-                && !DeviceFormFactor.isNonMultiDisplayContextOnTablet(
-                        ContextUtils.getApplicationContext());
     }
 
     private static boolean isEligibleForTabUiExperiments() {

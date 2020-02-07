@@ -1058,7 +1058,7 @@ void AppListControllerImpl::RecordShelfAppLaunched(
 
 void AppListControllerImpl::StartAssistant() {
   Shell::Get()->assistant_controller()->ui_controller()->ShowUi(
-      AssistantEntryPoint::kLauncherSearchBoxMic);
+      AssistantEntryPoint::kLauncherSearchBoxIcon);
 }
 
 void AppListControllerImpl::StartSearch(const base::string16& raw_query) {

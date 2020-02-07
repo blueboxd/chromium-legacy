@@ -104,7 +104,6 @@
 #include "third_party/blink/renderer/core/page/frame_tree.h"
 #include "third_party/blink/renderer/core/page/link_highlight.h"
 #include "third_party/blink/renderer/core/page/page.h"
-#include "third_party/blink/renderer/core/page/print_context.h"
 #include "third_party/blink/renderer/core/page/scrolling/fragment_anchor.h"
 #include "third_party/blink/renderer/core/page/scrolling/scrolling_coordinator.h"
 #include "third_party/blink/renderer/core/page/scrolling/scrolling_coordinator_context.h"
@@ -167,12 +166,6 @@
 
 namespace blink {
 namespace {
-
-// Page dimensions in pixels at 72 DPI.
-constexpr int kA4PortraitPageWidth = 595;
-constexpr int kA4PortraitPageHeight = 842;
-constexpr int kLetterPortraitPageWidth = 612;
-constexpr int kLetterPortraitPageHeight = 792;
 
 // Logs a UseCounter for the size of the cursor that will be set. This will be
 // used for compatibility analysis to determine whether the maximum size can be
@@ -303,7 +296,6 @@ void LocalFrameView::Trace(blink::Visitor* visitor) {
   visitor->Trace(viewport_scrollable_area_);
   visitor->Trace(anchoring_adjustment_queue_);
   visitor->Trace(scroll_event_queue_);
-  visitor->Trace(print_context_);
   visitor->Trace(paint_timing_detector_);
   visitor->Trace(lifecycle_observers_);
 }
@@ -387,8 +379,6 @@ void LocalFrameView::Dispose() {
   // OwnedEmbeddedContentView is B. See https://crbug.com/673170 for an example.
   if (owner_element && owner_element->OwnedEmbeddedContentView() == this)
     owner_element->SetEmbeddedContentView(nullptr);
-
-  ClearPrintContext();
 
   ukm_aggregator_.reset();
   layout_shift_tracker_->Dispose();
@@ -2143,40 +2133,6 @@ void LocalFrameView::NotifyResizeObservers() {
   DCHECK(!GetLayoutView()->NeedsLayout());
 }
 
-void LocalFrameView::DispatchEventsForPrintingOnAllFrames() {
-  DCHECK(frame_->IsMainFrame());
-  for (Frame* current_frame = frame_; current_frame;
-       current_frame = current_frame->Tree().TraverseNext(frame_)) {
-    auto* current_local_frame = DynamicTo<LocalFrame>(current_frame);
-    if (current_local_frame)
-      current_local_frame->GetDocument()->DispatchEventsForPrinting();
-  }
-}
-
-void LocalFrameView::SetupPrintContext() {
-  if (frame_->GetDocument()->Printing())
-    return;
-  if (!print_context_) {
-    print_context_ = MakeGarbageCollected<PrintContext>(
-        frame_, /*use_printing_layout=*/true);
-  }
-  if (frame_->GetSettings())
-    frame_->GetSettings()->SetShouldPrintBackgrounds(true);
-  bool is_us = DefaultLanguage() == "en-US";
-  int width = is_us ? kLetterPortraitPageWidth : kA4PortraitPageWidth;
-  int height = is_us ? kLetterPortraitPageHeight : kA4PortraitPageHeight;
-  print_context_->BeginPrintMode(width, height);
-  print_context_->ComputePageRects(FloatSize(width, height));
-  DispatchEventsForPrintingOnAllFrames();
-}
-
-void LocalFrameView::ClearPrintContext() {
-  if (!print_context_)
-    return;
-  print_context_->EndPrintMode();
-  print_context_.Clear();
-}
-
 // TODO(leviw): We don't assert lifecycle information from documents in child
 // WebPluginContainerImpls.
 bool LocalFrameView::UpdateLifecyclePhases(
@@ -2255,14 +2211,6 @@ bool LocalFrameView::UpdateLifecyclePhases(
     });
   }
 
-  // If we're in PrintBrowser mode, setup a print context.
-  // TODO(vmpstr): It doesn't seem like we need to do this every lifecycle
-  // update, but rather once somewhere at creation time.
-  if (RuntimeEnabledFeatures::PrintBrowserEnabled())
-    SetupPrintContext();
-  else
-    ClearPrintContext();
-
   // Run the lifecycle updates.
   UpdateLifecyclePhasesInternal(target_state);
 
@@ -2323,8 +2271,7 @@ void LocalFrameView::UpdateLifecyclePhasesInternal(
   DCHECK_EQ(target_state, DocumentLifecycle::kPaintClean);
   RunPaintLifecyclePhase();
   DCHECK(ShouldThrottleRendering() ||
-         (frame_->GetDocument()->IsCapturingLayout() &&
-          !RuntimeEnabledFeatures::PrintBrowserEnabled()) ||
+         frame_->GetDocument()->IsCapturingLayout() ||
          Lifecycle().GetState() == DocumentLifecycle::kPaintClean);
 }
 
@@ -2479,12 +2426,7 @@ void LocalFrameView::RunPaintLifecyclePhase() {
   // While printing or capturing a paint preview of a document, the paint walk
   // is done into a special canvas. There is no point doing a normal paint step
   // (or animations update) when in this mode.
-  //
-  // RuntimeEnabledFeatures::PrintBrowserEnabled is a mode which runs the
-  // browser normally, but renders every page as if it were being printed.
-  // See crbug.com/667547
-  bool is_capturing_layout = frame_->GetDocument()->IsCapturingLayout() &&
-                             !RuntimeEnabledFeatures::PrintBrowserEnabled();
+  bool is_capturing_layout = frame_->GetDocument()->IsCapturingLayout();
   if (!is_capturing_layout)
     PaintTree();
 
@@ -2701,9 +2643,6 @@ void LocalFrameView::PaintTree() {
       paint_controller_->UpdateUMACountsOnFullyCached();
     } else {
       GraphicsContext graphics_context(*paint_controller_);
-      if (RuntimeEnabledFeatures::PrintBrowserEnabled())
-        graphics_context.SetPrinting(true);
-
       if (Settings* settings = frame_->GetSettings()) {
         graphics_context.SetDarkMode(
             BuildDarkModeSettings(*settings, *GetLayoutView()));

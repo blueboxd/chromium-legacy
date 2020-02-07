@@ -3636,10 +3636,16 @@ TEST_F(AXPlatformNodeTextRangeProviderTest,
   ui::AXNodeData link_data;
   link_data.id = 16;
   link_data.role = ax::mojom::Role::kLink;
+  link_data.AddIntAttribute(ax::mojom::IntAttribute::kBackgroundColor,
+                            0xDEADBEEFU);
+  link_data.AddIntAttribute(ax::mojom::IntAttribute::kColor, 0xDEADC0DEU);
 
   ui::AXNodeData link_text_data;
   link_text_data.id = 17;
   link_text_data.role = ax::mojom::Role::kStaticText;
+  link_text_data.AddIntAttribute(ax::mojom::IntAttribute::kBackgroundColor,
+                                 0xDEADBEEFU);
+  link_text_data.AddIntAttribute(ax::mojom::IntAttribute::kColor, 0xDEADC0DEU);
   link_data.child_ids = {17};
 
   ui::AXNodeData root_data;
@@ -3726,6 +3732,8 @@ TEST_F(AXPlatformNodeTextRangeProviderTest,
   expected_variant.Set(static_cast<int32_t>(0x00EFBEADU));
   EXPECT_UIA_TEXTATTRIBUTE_EQ(text_range_provider,
                               UIA_BackgroundColorAttributeId, expected_variant);
+  // Important: all nodes need to have the kColor and kBackgroundColor attribute
+  // set for this test, otherwise the following assert will fail.
   EXPECT_UIA_TEXTATTRIBUTE_EQ(document_range_provider,
                               UIA_BackgroundColorAttributeId, expected_variant);
   expected_variant.Reset();

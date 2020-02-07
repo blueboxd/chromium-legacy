@@ -53,6 +53,48 @@ class DeepScanningDialogViews : public views::DialogDelegate {
     // paste.
     FAILURE,
   };
+
+  // TestObserver should be implemented by tests that need to track when certain
+  // DeepScanningDialogViews functions are called. The test can add itself as an
+  // observer by using SetObserverForTesting.
+  class TestObserver {
+   public:
+    virtual ~TestObserver() {}
+
+    // Called at the end of DeepScanningDialogViews's constructor. |views| is a
+    // pointer to the newly constructed DeepScanningDialogViews and should be
+    // kept in memory by the test in order to validate its state.
+    virtual void ConstructorCalled(DeepScanningDialogViews* views) {}
+
+    // Called at the end of DeepScanningDialogViews::Show. |timestamp| is the
+    // time used by DeepScanningDialogViews to decide whether the pending state
+    // has been shown for long enough. The test can keep this time in memory and
+    // validate the pending time was sufficient in DialogUpdated.
+    virtual void ViewsFirstShown(DeepScanningDialogViews* views,
+                                 base::TimeTicks timestamp) {}
+
+    // Called at the end of DeepScanningDialogViews::UpdateDialog. |result| is
+    // the value that UpdatedDialog used to transition from the pending state to
+    // the success or failure state.
+    virtual void DialogUpdated(DeepScanningDialogViews* views, bool result) {}
+
+    // Called at the end of DeepScanningDialogViews's destructor. |views| is a
+    // pointer to the DeepScanningDialogViews being destructed. It can be used
+    // to compare it to the pointer obtained from ConstructorCalled to ensure
+    // which view is being destroyed.
+    virtual void DestructorCalled(DeepScanningDialogViews* views) {}
+  };
+
+  static void SetObserverForTesting(TestObserver* observer);
+
+  static void SetInitialUIDelayForTesting(base::TimeDelta delta);
+  static void SetMinimumPendingDialogTimeForTesting(base::TimeDelta delta);
+  static void SetSuccessDialogTimeoutForTesting(base::TimeDelta delta);
+
+  static base::TimeDelta GetInitialUIDelay();
+  static base::TimeDelta GetMinimumPendingDialogTime();
+  static base::TimeDelta GetSuccessDialogTimeout();
+
   DeepScanningDialogViews(std::unique_ptr<DeepScanningDialogDelegate> delegate,
                           content::WebContents* web_contents,
                           DeepScanAccessPoint access_point,

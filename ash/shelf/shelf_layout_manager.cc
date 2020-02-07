@@ -1622,8 +1622,13 @@ void ShelfLayoutManager::CalculateTargetBounds(
     const State& state,
     HotseatState hotseat_target_state) {
   const int shelf_size = ShelfConfig::Get()->shelf_size();
-  const int home_button_edge_spacing =
-      ShelfConfig::Get()->home_button_edge_spacing();
+  const int horizontal_edge_spacing =
+      ShelfConfig::Get()->control_button_edge_spacing(
+          shelf_->IsHorizontalAlignment());
+  const int vertical_edge_spacing =
+      ShelfConfig::Get()->control_button_edge_spacing(
+          !shelf_->IsHorizontalAlignment());
+
   // By default, show the whole shelf on the screen.
   int shelf_in_screen_portion = shelf_size;
   const WorkAreaInsets* const work_area =
@@ -1675,13 +1680,13 @@ void ShelfLayoutManager::CalculateTargetBounds(
   int hotseat_height;
   if (shelf_->IsHorizontalAlignment()) {
     hotseat_width = shelf_width - nav_bounds_in_shelf.size().width() -
-                    home_button_edge_spacing -
+                    horizontal_edge_spacing -
                     ShelfConfig::Get()->app_icon_group_margin() -
                     status_size.width();
     int hotseat_x =
         base::i18n::IsRTL()
-            ? nav_bounds_in_shelf.x() - home_button_edge_spacing - hotseat_width
-            : nav_bounds_in_shelf.right() + home_button_edge_spacing;
+            ? nav_bounds_in_shelf.x() - horizontal_edge_spacing - hotseat_width
+            : nav_bounds_in_shelf.right() + horizontal_edge_spacing;
     if (hotseat_target_state != HotseatState::kShown) {
       // Give the hotseat more space if it is shown outside of the shelf.
       hotseat_width = available_bounds.width();
@@ -1692,10 +1697,10 @@ void ShelfLayoutManager::CalculateTargetBounds(
     hotseat_height = ShelfConfig::Get()->hotseat_size();
   } else {
     hotseat_origin =
-        gfx::Point(0, nav_bounds_in_shelf.bottom() + home_button_edge_spacing);
+        gfx::Point(0, nav_bounds_in_shelf.bottom() + vertical_edge_spacing);
     hotseat_width = shelf_width;
     hotseat_height = shelf_height - nav_bounds_in_shelf.size().height() -
-                     home_button_edge_spacing -
+                     vertical_edge_spacing -
                      ShelfConfig::Get()->app_icon_group_margin() -
                      status_size.height();
   }
@@ -1724,16 +1729,16 @@ void ShelfLayoutManager::CalculateTargetBounds(
     target_bounds_.shelf_bounds_in_shelf = shelf_->SelectValueForShelfAlignment(
         gfx::Rect(nav_bounds_in_shelf.right(), 0,
                   shelf_width - status_size.width() -
-                      nav_bounds_in_shelf.width() - home_button_edge_spacing,
+                      nav_bounds_in_shelf.width() - horizontal_edge_spacing,
                   target_bounds_.shelf_bounds.height()),
         gfx::Rect(0, nav_bounds_in_shelf.height(),
                   target_bounds_.shelf_bounds.width(),
                   shelf_height - status_size.height() -
-                      nav_bounds_in_shelf.height() - home_button_edge_spacing),
+                      nav_bounds_in_shelf.height() - vertical_edge_spacing),
         gfx::Rect(0, nav_bounds_in_shelf.height(),
                   target_bounds_.shelf_bounds.width(),
                   shelf_height - status_size.height() -
-                      nav_bounds_in_shelf.height() - home_button_edge_spacing));
+                      nav_bounds_in_shelf.height() - vertical_edge_spacing));
   } else {
     target_bounds_.shelf_bounds_in_shelf = shelf_->SelectValueForShelfAlignment(
         gfx::Rect(0, 0, shelf_width - status_size.width(),

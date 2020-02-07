@@ -543,18 +543,47 @@ class NavigationListModel extends cr.EventTarget {
       return removableGroups;
     };
 
+    /**
+     * Creates a model item for a Recent view whose contents are filtered by
+     * their file types.
+     * @param {string} label
+     * @param {chrome.fileManagerPrivate.RecentFileType} fileType
+     * @return {!NavigationModelFakeItem}
+     */
+    const createFilteredRecentModelItem = (label, fileType) => {
+      const entry = /** @type {!FakeEntry} */ (Object.assign(
+          Object.create(FakeEntry.prototype), this.recentModelItem_.entry));
+      entry.recentFileType = fileType;
+      return new NavigationModelFakeItem(
+          label, NavigationModelItemType.RECENT, entry);
+    };
+
     // Items as per required order.
     this.navigationItems_ = [];
 
     if (this.recentModelItem_) {
       this.navigationItems_.push(this.recentModelItem_);
+      if (util.isUnifiedMediaViewEnabled()) {
+        // Unified Media View (Images, Videos and Audio).
+        this.navigationItems_.push(createFilteredRecentModelItem(
+            str('MEDIA_VIEW_AUDIO_ROOT_LABEL'),
+            chrome.fileManagerPrivate.RecentFileType.AUDIO));
+        this.navigationItems_.push(createFilteredRecentModelItem(
+            str('MEDIA_VIEW_IMAGES_ROOT_LABEL'),
+            chrome.fileManagerPrivate.RecentFileType.IMAGE));
+        this.navigationItems_.push(createFilteredRecentModelItem(
+            str('MEDIA_VIEW_VIDEOS_ROOT_LABEL'),
+            chrome.fileManagerPrivate.RecentFileType.VIDEO));
+      }
     }
 
-    // Media View (Images, Videos and Audio).
-    for (const mediaView of getVolumes(
-             VolumeManagerCommon.VolumeType.MEDIA_VIEW)) {
-      this.navigationItems_.push(mediaView);
-      mediaView.section = NavigationSection.TOP;
+    // Legacy Media View (Images, Videos and Audio).
+    if (!util.isUnifiedMediaViewEnabled()) {
+      for (const mediaView of getVolumes(
+               VolumeManagerCommon.VolumeType.MEDIA_VIEW)) {
+        this.navigationItems_.push(mediaView);
+        mediaView.section = NavigationSection.TOP;
+      }
     }
     // Shortcuts.
     for (const shortcut of this.shortcutList_) {

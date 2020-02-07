@@ -177,8 +177,8 @@ class BrowserURLHandler;
 class ClientCertificateDelegate;
 class ControllerPresentationServiceDelegate;
 class DevToolsManagerDelegate;
+class FeatureObserverClient;
 class HidDelegate;
-class LockObserver;
 class LoginDelegate;
 class MediaObserver;
 class NavigationHandle;
@@ -800,12 +800,12 @@ class CONTENT_EXPORT ContentBrowserClient {
   // return nullptr if they're not interested.
   virtual MediaObserver* GetMediaObserver();
 
-  // Returns a class to observe usage of locks. The embedder can return nullptr
-  // if they're not interested. The returned LockObserver may be used on any
-  // sequence until threads are destroyed. The impl should therefore be
-  // thread-safe and remain alive until at least
-  // BrowserMainParts::PostDestroyThreads().
-  virtual LockObserver* GetLockObserver();
+  // Returns a class to observe usage of features. The embedder can return
+  // nullptr if they're not interested. The returned FeatureObserverClient must
+  // stay alive until BrowserMainParts::PostDestroyThreads() is called and
+  // threads are destroyed.  Its interface will always be called from the same
+  // sequence.
+  virtual FeatureObserverClient* GetFeatureObserverClient();
 
   // Returns the platform notification service, capable of displaying Web
   // Notifications to the user. The embedder can return a nullptr if they don't

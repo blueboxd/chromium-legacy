@@ -6,6 +6,7 @@
 #define BASE_UTIL_MEMORY_PRESSURE_MULTI_SOURCE_MEMORY_PRESSURE_MONITOR_H_
 
 #include "base/memory/memory_pressure_monitor.h"
+#include "base/time/time.h"
 #include "base/timer/timer.h"
 #include "base/util/memory_pressure/memory_pressure_voter.h"
 
@@ -71,6 +72,9 @@ class MultiSourceMemoryPressureMonitor
 
   // A periodic timer to record UMA metrics.
   base::RepeatingTimer metric_timer_;
+
+  // The timestamp of the last pressure change event.
+  base::TimeTicks last_pressure_change_timestamp_;
 
   SEQUENCE_CHECKER(sequence_checker_);
 

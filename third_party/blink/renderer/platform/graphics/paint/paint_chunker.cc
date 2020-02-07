@@ -80,6 +80,8 @@ bool PaintChunker::IncrementDisplayItemIndex(const DisplayItem& item) {
   chunks_.emplace_back(new_chunk_begin_index, new_chunk_begin_index + 1,
                        next_chunk_id_ ? *next_chunk_id_ : item.GetId(),
                        current_properties_);
+  chunks_.back().is_copied_from_cached_subsequence =
+      item.IsCopiedFromCachedSubsequence();
   next_chunk_id_ = base::nullopt;
 
   // When forcing a new chunk, we still need to force new chunk for the next

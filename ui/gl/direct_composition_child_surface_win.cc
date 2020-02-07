@@ -110,7 +110,6 @@ bool DirectCompositionChildSurfaceWin::ReleaseDrawTexture(bool will_discard) {
       }
       dcomp_surface_serial_++;
     } else if (!will_discard) {
-      TRACE_EVENT0("gpu", "DirectCompositionChildSurfaceWin::PresentSwapChain");
       const bool use_swap_chain_tearing =
           DirectCompositionSurfaceWin::AllowTearing();
       UINT interval =
@@ -120,6 +119,9 @@ bool DirectCompositionChildSurfaceWin::ReleaseDrawTexture(bool will_discard) {
       RECT dirty_rect = swap_rect_.ToRECT();
       params.DirtyRectsCount = 1;
       params.pDirtyRects = &dirty_rect;
+
+      TRACE_EVENT2("gpu", "DirectCompositionChildSurfaceWin::PresentSwapChain",
+                   "interval", interval, "dirty_rect", swap_rect_.ToString());
       HRESULT hr = swap_chain_->Present1(interval, flags, &params);
       // Ignore DXGI_STATUS_OCCLUDED since that's not an error but only
       // indicates that the window is occluded and we can stop rendering.

@@ -161,12 +161,12 @@ enum AssistantEntryPoint {
   kDeepLink = 1,
   kHotkey = 2,
   kHotword = 3,
-  kLauncherSearchBox = 4,
+  // kLauncherSearchBoxDeprecated = 4,
   kLongPressLauncher = 5,
   kSetup = 6,
   kStylus = 7,
   kLauncherSearchResult = 8,
-  kLauncherSearchBoxMic = 9,
+  kLauncherSearchBoxIcon = 9,
   kProactiveSuggestions = 10,
 };
 

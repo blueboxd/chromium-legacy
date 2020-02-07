@@ -453,6 +453,18 @@ void MetricsService::PushExternalLog(const std::string& log) {
   log_store()->StoreLog(log, MetricsLog::ONGOING_LOG);
 }
 
+bool MetricsService::StageCurrentLogForTest() {
+  CloseCurrentLog();
+
+  MetricsLogStore* const log_store = reporting_service_.metrics_log_store();
+  log_store->StageNextLog();
+  if (!log_store->has_staged_log())
+    return false;
+
+  OpenNewLog();
+  return true;
+}
+
 //------------------------------------------------------------------------------
 // private methods
 //------------------------------------------------------------------------------

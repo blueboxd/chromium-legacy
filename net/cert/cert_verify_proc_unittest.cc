@@ -2044,7 +2044,10 @@ TEST_P(CertVerifyProcInternalTest, IsIssuedByKnownRootIgnoresTestRoots) {
 // has a notBefore date after 2018/10/15, and passing a valid |sct_list| to
 // Verify(). Verification should succeed on all platforms. (Assuming the
 // verifier trusts the SCT Logs used in |sct_list|.)
-TEST_P(CertVerifyProcInternalTest, LeafNewerThan20181015WithTlsSctList) {
+//
+// Fails on multiple plaforms, see crbug.com/1050152.
+TEST_P(CertVerifyProcInternalTest,
+       DISABLED_LeafNewerThan20181015WithTlsSctList) {
   scoped_refptr<X509Certificate> chain = CreateCertificateChainFromFile(
       GetTestCertsDirectory(), "treadclimber.pem",
       X509Certificate::FORMAT_PEM_CERT_SEQUENCE);

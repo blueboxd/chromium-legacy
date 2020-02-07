@@ -3559,6 +3559,7 @@ Puoi gestire le impostazioni dell'account installando l'app Family Link su quest
 <translation id="5975792506968920132">Percentuale di carica della batteria</translation>
 <translation id="5976160379964388480">Altri</translation>
 <translation id="5978277834170881274">&amp;Usa controllo ortografico di base</translation>
+<translation id="5979084224081478209">Controlla password</translation>
 <translation id="5979421442488174909">&amp;Traduci in <ph name="LANGUAGE" /></translation>
 <translation id="5979469435153841984">Per aggiungere una pagina ai preferiti, fai clic sulla stella nella barra degli indirizzi</translation>
 <translation id="5984222099446776634">Visitati di recente</translation>
@@ -3909,7 +3910,7 @@ Puoi gestire le impostazioni dell'account installando l'app Family Link su quest
 <translation id="6472804939621540371">Tutti i dati e i cookie memorizzati da <ph name="SITE_GROUP_NAME" />, dai siti al suo interno e dalle app installate verranno cancellati.</translation>
 <translation id="6472893788822429178">Mostra pulsante Home</translation>
 <translation id="6473842110411557830">Illustrazione Powerwash</translation>
-<translation id="6474498546677193336">Impossibile annullare la condivisione perché questa cartella è in uso in un'applicazione. La condivisione della cartella verrà annullata quando verrà spento Linux.</translation>
+<translation id="6474498546677193336">Impossibile annullare la condivisione perché questa cartella è in uso in un'applicazione. La condivisione della cartella verrà annullata quando verrà arrestato Linux.</translation>
 <translation id="6474884162850599008">Scollega account Google Drive</translation>
 <translation id="6475697075626596525"><ph name="APP_NAME" /> vuole condividere i contenuti del tuo schermo. Scegli i contenuti che desideri condividere.</translation>
 <translation id="6478248366783946499">Conservare il file pericoloso?</translation>
@@ -4159,7 +4160,6 @@ Puoi gestire le impostazioni dell'account installando l'app Family Link su quest
 <translation id="6840155290835956714">Chiedi prima di inviare</translation>
 <translation id="6840184929775541289">Non è un'autorità di certificazione</translation>
 <translation id="6841186874966388268">Errori</translation>
-<translation id="6843267103192918276">Accedi per trovare i tuoi preferiti, la cronologia, le password e altre impostazioni su tutti i tuoi dispositivi. Verrà inoltre eseguito l'accesso automatico ai tuoi servizi Google. <ph name="LINK_BEGIN" />Ulteriori informazioni<ph name="LINK_END" /></translation>
 <translation id="6843423766595476978">Ok Google impostato</translation>
 <translation id="6845038076637626672">Apri ingrandita</translation>
 <translation id="6845325883481699275">Contribuisci a migliorare la sicurezza di Chrome</translation>

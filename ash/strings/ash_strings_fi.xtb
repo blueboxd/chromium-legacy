@@ -118,6 +118,7 @@
 <translation id="2413728805700750528"><ph name="DISPLAY_NAME" /> on hallinnoitu istunto, jota hallinnoi <ph name="DOMAIN" /></translation>
 <translation id="2427507373259914951">Ykköspainikkeen klikkaus</translation>
 <translation id="2429753432712299108">Bluetooth-laite <ph name="DEVICE_NAME" /> pyytää lupaa laiteparin muodostamiseen. Ennen kuin hyväksyt pyynnön, varmista, että laitteella näkyy tämä avain: <ph name="PASSKEY" /></translation>
+<translation id="2473177541599297363">Vahvista resoluutio</translation>
 <translation id="2482878487686419369">Ilmoitukset</translation>
 <translation id="2484513351006226581">Paina <ph name="KEYBOARD_SHORTCUT" /> vaihtaaksesi näppäimistöasettelua.</translation>
 <translation id="2501920221385095727">Päälle jäävät näppäimet</translation>
@@ -138,6 +139,7 @@
 <translation id="2727977024730340865">Pienitehoinen laturi kytketty. Akku ei ehkä lataudu luotettavasti.</translation>
 <translation id="2792498699870441125">Alt + haku</translation>
 <translation id="2819276065543622893">Sinut kirjataan ulos nyt.</translation>
+<translation id="2825224105325558319"><ph name="DISPLAY_NAME" /> ei tue resoluutiota <ph name="SPECIFIED_RESOLUTION" />. Resoluutioksi vaihdettiin <ph name="FALLBACK_RESOLUTION" />.</translation>
 <translation id="2825619548187458965">Hylly</translation>
 <translation id="2844169650293029770">C-tyypin USB-laite (vasemman sivun etummainen portti)</translation>
 <translation id="2865888419503095837">Verkon tiedot</translation>
@@ -157,6 +159,12 @@
 <translation id="3009178788565917040">Äänentoisto</translation>
 <translation id="3051128274746680507">Valvottu käyttäjäprofiilisi poistetaan pian. Kirjaudu sisään nähdäksesi lisätietoja.</translation>
 <translation id="3055162170959710888">Olet käyttänyt tätä laitetta tänään <ph name="USED_TIME" /></translation>
+<translation id="3076778413190775903">Tila-alue, aika <ph name="TIME" />,
+        <ph name="BATTERY" />
+        <ph name="NETWORK" />,
+        <ph name="NOTIFICATION" />,
+        <ph name="IME" />
+        <ph name="LOCALE" /></translation>
 <translation id="3077734595579995578">shift</translation>
 <translation id="3081696990447829002">Laajenna valikko</translation>
 <translation id="3087734570205094154">Alaosassa</translation>
@@ -167,6 +175,7 @@
 <translation id="3151786313568798007">Suunta</translation>
 <translation id="3153444934357957346">Voit lisätä enintään <ph name="MULTI_PROFILE_USER_LIMIT" /> tiliä useille tileille kirjautumista varten.</translation>
 <translation id="3154351730702813399">Laitteen järjestelmänvalvoja saattaa seurata selaustoimintaasi.</translation>
+<translation id="3181441307743005334">Uudelleenkäynnistys voi kestää hetken</translation>
 <translation id="3202010236269062730">{NUM_DEVICES,plural, =1{Yhdistetty 1 laitteeseen}other{Yhdistetty # laitteeseen}}</translation>
 <translation id="3217205077783620295">Äänet ovat päällä. Mykistä ne kytkimellä.</translation>
 <translation id="3226991577105957773">+<ph name="COUNT" /> muuta</translation>
@@ -316,6 +325,7 @@
 <translation id="5331975486040154427">C-tyypin USB-laite (vasemman sivun taaimmainen portti)</translation>
 <translation id="5379115545237091094">Liian monta yritystä</translation>
 <translation id="5397578532367286026">Hallinnoija (<ph name="MANAGER_EMAIL" />) voi tarkkailla tämän käyttäjän käyttö- ja historiatietoja osoitteessa chrome.com.</translation>
+<translation id="5400461572260843123">Pika-asetukset, Paina hakupainiketta ja vasenta nuolipainiketta siirtyäksesi ilmoituskeskukseen.</translation>
 <translation id="5430931332414098647">Yhteyden pikajakaminen</translation>
 <translation id="5431825016875453137">OpenVPN/L2TP</translation>
 <translation id="544691375626129091">Kaikki käytettävissä olevat käyttäjät on jo lisätty tähän istuntoon.</translation>
@@ -399,6 +409,7 @@
 <translation id="6490471652906364588">C-tyypin USB-laite (oikean sivun portti)</translation>
 <translation id="649452524636452238">Älykortin PIN-koodi</translation>
 <translation id="6501401484702599040">Näkymä peilataan kohteeseen <ph name="RECEIVER_NAME" />.</translation>
+<translation id="652139407789908527">Näyttö pimenee normaalia pidemmäksi aikaa (korkeintaan minuutiksi) päivityksen aikana. Älä paina virtapainiketta, kun päivitys on käynnissä.</translation>
 <translation id="6521655319214113338">Käsinkirjoitus</translation>
 <translation id="6528179044667508675">Älä häiritse</translation>
 <translation id="6537270692134705506">Tallenna kuvakaappaus koko näkymästä</translation>
@@ -544,6 +555,7 @@
 <translation id="847056008324733326">Näytön skaalauksen asetukset</translation>
 <translation id="8473301994082929012"><ph name="ORGANIZATION_NAME" /> omistaa tämän: <ph name="FEATURE_STATE" /> <ph name="FEATURE_NAME" />.</translation>
 <translation id="8477270416194247200">Peruuta painamalla Alt+haku tai vaihto.</translation>
+<translation id="8492573885090281069"><ph name="DISPLAY_NAME" /> ei tue resoluutiota <ph name="SPECIFIED_RESOLUTION" />. Resoluutioksi vaihdettiin <ph name="FALLBACK_RESOLUTION" />. Pidä muutokset valitsemalla Vahvista. Aiempi asetus palautetaan <ph name="TIMEOUT_SECONDS" /> päästä.</translation>
 <translation id="8513108775083588393">Automaattinen kääntö</translation>
 <translation id="8517041960877371778"><ph name="DEVICE_TYPE" /> ei välttämättä lataudu, kun se on käynnissä.</translation>
 <translation id="8563862697512465947">Ilmoitusasetukset</translation>
@@ -599,6 +611,7 @@
 <translation id="9183456764293710005">Koko näytön suurennus</translation>
 <translation id="9193626018745640770">Suoratoistetaan tuntemattomaan vastaanottimeen</translation>
 <translation id="9194617393863864469">Kirjaa sisään toinen käyttäjä…</translation>
+<translation id="9198992156681343238">Näytön <ph name="DISPLAY_NAME" /> resoluutioksi vaihdettiin <ph name="RESOLUTION" />. Pidä muutokset valitsemalla Vahvista. Aiempi asetus palautetaan <ph name="TIMEOUT_SECONDS" /> päästä.</translation>
 <translation id="9201374708878217446"><ph name="CONNECTION_STATUS" />, järjestelmänvalvojan hallinnoima</translation>
 <translation id="9210037371811586452">Poistutaan yhtenäisen työpöydän tilasta</translation>
 <translation id="9211681782751733685">Akku on ladattu täyteen <ph name="TIME_REMAINING" /> kuluttua.</translation>

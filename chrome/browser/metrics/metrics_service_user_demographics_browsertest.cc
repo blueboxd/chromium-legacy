@@ -4,6 +4,7 @@
 
 #include "components/metrics/metrics_service.h"
 
+#include <memory>
 #include <string>
 #include <vector>
 
@@ -80,18 +81,14 @@ class MetricsServiceUserDemographicsBrowserTest
       return base::nullopt;
     }
 
-    // Force the creation of a log record (i.e., trigger all metrics providers).
-    metrics_service->CloseCurrentLogForTest();
-
-    // Stage/serialize the log record for transmission.
-    MetricsLogStore* const log_store = metrics_service->LogStoreForTest();
-    log_store->StageNextLog();
-    if (!log_store->has_staged_log()) {
+    // Stage the current log in the log store.
+    if (!metrics_service->StageCurrentLogForTest()) {
       LOG(ERROR) << "No staged log.";
       return base::nullopt;
     }
 
     // Decompress the staged log.
+    MetricsLogStore* const log_store = metrics_service->LogStoreForTest();
     std::string uncompressed_log;
     if (!compression::GzipUncompress(log_store->staged_log(),
                                      &uncompressed_log)) {

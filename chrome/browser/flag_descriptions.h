@@ -2086,6 +2086,9 @@ extern const char kUiShowCompositedLayerBordersAll[];
 extern const char kUiSlowAnimationsName[];
 extern const char kUiSlowAnimationsDescription[];
 
+extern const char kUnifiedMediaViewName[];
+extern const char kUnifiedMediaViewDescription[];
+
 extern const char kUsbguardName[];
 extern const char kUsbguardDescription[];
 

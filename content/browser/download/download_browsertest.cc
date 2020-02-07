@@ -62,7 +62,9 @@
 #include "content/shell/browser/shell_browser_context.h"
 #include "content/shell/browser/shell_download_manager_delegate.h"
 #include "content/test/content_browser_test_utils_internal.h"
+#include "content/test/fake_network_url_loader_factory.h"
 #include "content/test/test_content_browser_client.h"
+#include "net/base/filename_util.h"
 #include "net/dns/mock_host_resolver.h"
 #include "net/test/embedded_test_server/embedded_test_server.h"
 #include "net/test/embedded_test_server/http_request.h"
@@ -148,12 +150,41 @@ class DownloadTestContentBrowserClient : public TestContentBrowserClient {
     allowed_rendering_mhtml_over_http_ = allowed;
   }
 
+  void enable_register_non_network_url_loader(bool enabled) {
+    enable_register_non_network_url_loader_ = enabled;
+  }
+
   base::FilePath GetDefaultDownloadDirectory() override {
     return base::FilePath();
   }
 
+  void RegisterNonNetworkNavigationURLLoaderFactories(
+      int frame_tree_node_id,
+      NonNetworkURLLoaderFactoryMap* factories) override {
+    if (!enable_register_non_network_url_loader_)
+      return;
+
+#if defined(OS_ANDROID)
+    auto content_url_loader_factory =
+        std::make_unique<FakeNetworkURLLoaderFactory>(
+            "HTTP/1.1 200 OK\nContent-Type: multipart/related\n\n",
+            "This is a test for download mhtml through non http/https urls",
+            /* network_accessed */ true, net::OK);
+    factories->emplace(url::kContentScheme,
+                       std::move(content_url_loader_factory));
+#endif  // OS_ANDROID
+
+    auto file_url_loader_factory =
+        std::make_unique<FakeNetworkURLLoaderFactory>(
+            "HTTP/1.1 200 OK\nContent-Type: multipart/related\n\n",
+            "This is a test for download mhtml through non http/https urls",
+            /* network_accessed */ true, net::OK);
+    factories->emplace(url::kFileScheme, std::move(file_url_loader_factory));
+  }
+
  private:
   bool allowed_rendering_mhtml_over_http_ = false;
+  bool enable_register_non_network_url_loader_ = false;
 
   DISALLOW_COPY_AND_ASSIGN(DownloadTestContentBrowserClient);
 };
@@ -966,6 +997,13 @@ class DownloadContentTest : public ContentBrowserTest {
     EXPECT_TRUE(NavigateToURLAndExpectNoCommit(shell, url));
     observer->WaitForFinished();
     EXPECT_EQ(1u, observer->NumDownloadsSeenInState(expected_terminal_state));
+  }
+
+  // Navigate to a URL, expecting it to commit and donn't canceled by download.
+  // This is useful when the URL actually commits and donn't start any download.
+  void NavigateToCommittedURLAndExpectNoDownload(Shell* shell,
+                                                 const GURL& url) {
+    EXPECT_TRUE(NavigateToURL(shell, url));
   }
 
   // Navigate to a URL, expecting it to commit, and wait for a download. This
@@ -4298,6 +4336,10 @@ class MhtmlDownloadTest : public DownloadContentTest {
 
     // Force downloading the MHTML.
     new_client_.set_allowed_rendering_mhtml_over_http(false);
+    // Enable RegisterNonNetworkNavigationURLLoaderFactories for
+    // test white list for non http shemes which should not trigger
+    // download.
+    new_client_.enable_register_non_network_url_loader(true);
     old_client_ = SetBrowserClientForTesting(&new_client_);
   }
 
@@ -4310,6 +4352,19 @@ class MhtmlDownloadTest : public DownloadContentTest {
   DownloadTestContentBrowserClient new_client_;
   ContentBrowserClient* old_client_;
 };
+
+// Test allow list for non http schemes which should not trigger
+// download for mhtml.
+IN_PROC_BROWSER_TEST_F(MhtmlDownloadTest,
+                       AllowListForNonHTTPNotTriggerDownload) {
+#if defined(OS_ANDROID)
+  // "content://" is an protocol on Android.
+  GURL content_url("content://non_download.mhtml");
+  NavigateToCommittedURLAndExpectNoDownload(shell(), content_url);
+#endif
+  GURL file_url("file:///non_download.mhtml");
+  NavigateToCommittedURLAndExpectNoDownload(shell(), file_url);
+}
 
 #if defined(THREAD_SANITIZER)
 // Flaky on TSAN https://crbug.com/932092

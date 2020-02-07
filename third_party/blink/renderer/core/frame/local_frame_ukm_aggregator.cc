@@ -303,8 +303,10 @@ void LocalFrameUkmAggregator::RecordSample(size_t metric_index,
   }
 }
 
-void LocalFrameUkmAggregator::RecordEndOfFrameMetrics(base::TimeTicks start,
-                                                      base::TimeTicks end) {
+void LocalFrameUkmAggregator::RecordEndOfFrameMetrics(
+    base::TimeTicks start,
+    base::TimeTicks end,
+    cc::ActiveFrameSequenceTrackers trackers) {
   // Any of the early out's in LocalFrameView::UpdateLifecyclePhases
   // will mean we are not in a main frame update. Recording is triggered
   // higher in the stack, so we cannot know to avoid calling this method.
@@ -348,25 +350,27 @@ void LocalFrameUkmAggregator::RecordEndOfFrameMetrics(base::TimeTicks start,
 
   // Record here to avoid resetting the ratios before this data point is
   // recorded.
-  UpdateEventTimeAndRecordEventIfNeeded();
+  UpdateEventTimeAndRecordEventIfNeeded(trackers);
 
   // Reset for the next frame.
   ResetAllMetrics();
 }
 
-void LocalFrameUkmAggregator::UpdateEventTimeAndRecordEventIfNeeded() {
+void LocalFrameUkmAggregator::UpdateEventTimeAndRecordEventIfNeeded(
+    cc::ActiveFrameSequenceTrackers trackers) {
   // TODO(schenney) Adjust the mean sample interval so that we do not
   // get our events throttled by the UKM system. For M-73 only 1 in 212
   // events are being sent.
   if (!frames_to_next_event_) {
-    RecordEvent();
+    RecordEvent(trackers);
     frames_to_next_event_ += SampleFramesToNextEvent();
   }
   DCHECK_GT(frames_to_next_event_, 0u);
   --frames_to_next_event_;
 }
 
-void LocalFrameUkmAggregator::RecordEvent() {
+void LocalFrameUkmAggregator::RecordEvent(
+    cc::ActiveFrameSequenceTrackers trackers) {
 #define CASE_FOR_ID(name)                                                 \
   case k##name:                                                           \
     builder.Set##name(absolute_record.interval_duration.InMicroseconds()) \
@@ -376,12 +380,13 @@ void LocalFrameUkmAggregator::RecordEvent() {
   ukm::builders::Blink_UpdateTime builder(source_id_);
   builder.SetMainFrame(primary_metric_.interval_duration.InMicroseconds());
   builder.SetMainFrameIsBeforeFCP(is_before_fcp_);
-  for (unsigned i = 0; i < (unsigned)kCount; ++i) {
+  builder.SetMainFrameReasons(trackers);
+  for (unsigned i = 0; i < static_cast<unsigned>(kCount); ++i) {
     auto& absolute_record = absolute_metric_records_[i];
     auto& percentage_record = main_frame_percentage_records_[i];
-    unsigned percentage = (unsigned)floor(
-        percentage_record.interval_duration.InMicrosecondsF() * 100.0 /
-        primary_metric_.interval_duration.InMicrosecondsF());
+    unsigned percentage = static_cast<unsigned>(
+        floor(percentage_record.interval_duration.InMicrosecondsF() * 100.0 /
+              primary_metric_.interval_duration.InMicrosecondsF()));
     switch (static_cast<MetricId>(i)) {
       CASE_FOR_ID(Compositing);
       CASE_FOR_ID(CompositingCommit);

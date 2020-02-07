@@ -6603,6 +6603,20 @@ void RenderFrameHostImpl::CreateAudioOutputStreamFactory(
       this, audio_system, media_stream_manager, std::move(receiver));
 }
 
+void RenderFrameHostImpl::GetFeatureObserver(
+    mojo::PendingReceiver<blink::mojom::FeatureObserver> receiver) {
+  if (!feature_observer_) {
+    // Lazy initialize because tests sets the overridden content client
+    // after the RFHI constructor.
+    auto* client = GetContentClient()->browser()->GetFeatureObserverClient();
+    if (!client)
+      return;
+    feature_observer_ = std::make_unique<FeatureObserver>(
+        client, GlobalFrameRoutingId(GetProcess()->GetID(), routing_id_));
+  }
+  feature_observer_->GetFeatureObserver(std::move(receiver));
+}
+
 void RenderFrameHostImpl::BindMediaInterfaceFactoryReceiver(
     mojo::PendingReceiver<media::mojom::InterfaceFactory> receiver) {
   DCHECK(!media_interface_proxy_);
@@ -7296,16 +7310,11 @@ bool RenderFrameHostImpl::ValidateDidCommitParams(
   }
 
   // A cross-document navigation requires an embedding token for all embedded
-  // frames (a child frame to a remote parent). Embedding tokens should not
-  // exist for other cases.
+  // frames (a child frame to a remote parent) or main frames. Embedding tokens
+  // should not exist for other cases.
   if (!is_same_document_navigation) {
-    if (frame_tree_node()->IsMainFrame() &&
-        params->embedding_token.has_value()) {
-      bad_message::ReceivedBadMessage(
-          process, bad_message::RFH_UNEXPECTED_EMBEDDING_TOKEN);
-      return false;
-    } else if (IsCrossProcessSubframe() &&
-               !params->embedding_token.has_value()) {
+    if ((frame_tree_node()->IsMainFrame() || IsCrossProcessSubframe()) &&
+        !params->embedding_token.has_value()) {
       bad_message::ReceivedBadMessage(process,
                                       bad_message::RFH_MISSING_EMBEDDING_TOKEN);
       return false;

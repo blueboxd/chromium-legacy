@@ -71,7 +71,8 @@ static ScopedJavaLocalRef<jstring> JNI_UrlFormatter_FormatUrlForCopy(
                nullptr, nullptr, nullptr));
 }
 
-static ScopedJavaLocalRef<jstring> JNI_UrlFormatter_FormatUrlForSecurityDisplay(
+static ScopedJavaLocalRef<jstring>
+JNI_UrlFormatter_FormatStringUrlForSecurityDisplay(
     JNIEnv* env,
     const JavaParamRef<jstring>& url,
     jint scheme_display) {
@@ -79,6 +80,17 @@ static ScopedJavaLocalRef<jstring> JNI_UrlFormatter_FormatUrlForSecurityDisplay(
       env, url_formatter::FormatUrlForSecurityDisplay(
                JNI_UrlFormatter_ConvertJavaStringToGURL(env, url),
                static_cast<SchemeDisplay>(scheme_display)));
+}
+
+static ScopedJavaLocalRef<jstring> JNI_UrlFormatter_FormatUrlForSecurityDisplay(
+    JNIEnv* env,
+    const JavaParamRef<jobject>& j_gurl,
+    jint scheme_display) {
+  DCHECK(j_gurl);
+  std::unique_ptr<GURL> gurl = url::GURLAndroid::ToNativeGURL(env, j_gurl);
+  return base::android::ConvertUTF16ToJavaString(
+      env, url_formatter::FormatUrlForSecurityDisplay(
+               *gurl, static_cast<SchemeDisplay>(scheme_display)));
 }
 
 static ScopedJavaLocalRef<jstring>

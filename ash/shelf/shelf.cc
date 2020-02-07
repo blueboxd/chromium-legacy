@@ -305,8 +305,6 @@ void Shelf::SetAlignment(ShelfAlignment alignment) {
   // Check added for http://crbug.com/738011.
   CHECK(status_area_widget_);
   status_area_widget()->UpdateAfterShelfAlignmentChange();
-  // The ShelfWidget notifies the ShelfView of the alignment change.
-  shelf_widget_->OnShelfAlignmentChanged();
   tooltip_->Close();
   shelf_layout_manager_->LayoutShelf();
   Shell::Get()->NotifyShelfAlignmentChanged(GetWindow()->GetRootWindow(),

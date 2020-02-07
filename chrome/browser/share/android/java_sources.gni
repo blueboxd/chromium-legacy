@@ -2,7 +2,8 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
-# TODO(gayane): This should be a separate build target when circular dependencies are removed.
+# TODO(crbug/1022172): This should be a separate build target when circular
+# dependencies are removed.
 share_java_sources = [
   "//chrome/browser/share/android/java/src/org/chromium/chrome/browser/share/qrcode/QrCodeCoordinator.java",
   "//chrome/browser/share/android/java/src/org/chromium/chrome/browser/share/qrcode/QrCodeDialog.java",
@@ -18,4 +19,5 @@ share_java_sources = [
   "//chrome/browser/share/android/java/src/org/chromium/chrome/browser/share/qrcode/scan_tab/QrCodeScanViewProperties.java",
   "//chrome/browser/share/android/java/src/org/chromium/chrome/browser/share/qrcode/share_tab/QrCodeShareCoordinator.java",
   "//chrome/browser/share/android/java/src/org/chromium/chrome/browser/share/qrcode/share_tab/QrCodeShareView.java",
+  "//chrome/browser/share/android/java/src/org/chromium/chrome/browser/share/screenshot/ScreenshotCoordinator.java",
 ]

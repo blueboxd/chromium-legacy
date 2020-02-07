@@ -134,9 +134,10 @@ public class ShareSheetCoordinator {
                     (shareParams)
                             -> {
                         mBottomSheetController.hideContent(bottomSheet, true);
+                        Tab tab = mActivityTabProvider.get();
                         ScreenshotCoordinator screenshotCoordinator =
-                                new ScreenshotCoordinator(activity);
-                        screenshotCoordinator.takeScreenshot();
+                                new ScreenshotCoordinator(activity, tab);
+                        screenshotCoordinator.handleScreenshot();
                     },
                     /*isFirstParty=*/true);
             models.add(screenshotPropertyModel);

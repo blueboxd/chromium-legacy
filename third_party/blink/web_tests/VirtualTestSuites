@@ -220,11 +220,6 @@
     "args": ["--enable-blink-features=LayoutNGFieldset"]
   },
   {
-    "prefix": "print_browser",
-    "bases": ["print_testharness"],
-    "args": ["--enable-print-browser"]
-  },
-  {
     "prefix": "dark-mode-grayscale-images",
     "bases": [],
     "args": ["--blink-settings=darkModeEnabled=true,darkModeInversionAlgorithm=3,darkModeImagePolicy=0,darkModeImageStyle=1,darkModeTextBrightnessThreshold=256,darkModeBackgroundBrightnessThreshold=0"]

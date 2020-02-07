@@ -371,7 +371,8 @@ TEST_P(ShelfLayoutManagerTest, ShelfUpdatedWhenStatusAreaChangesSize) {
                                 ->hotseat_widget()
                                 ->GetWindowBoundsInScreen()
                                 .width();
-  const int margins = ShelfConfig::Get()->home_button_edge_spacing() +
+  const int margins = ShelfConfig::Get()->control_button_edge_spacing(
+                          true /* is_primary_axis_edge */) +
                       ShelfConfig::Get()->app_icon_group_margin();
   EXPECT_EQ(200, total_width - nav_width - hotseat_width - margins);
 }

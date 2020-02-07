@@ -26,6 +26,8 @@ class WebGLCompressedTextureASTC final : public WebGLExtension {
 
   WebGLExtensionName GetName() const override;
   static const BlockSizeCompressASTC kBlockSizeCompressASTC[];
+
+  Vector<String> getSupportedProfiles();
 };
 
 }  // namespace blink

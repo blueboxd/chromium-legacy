@@ -66,6 +66,7 @@ android_library("test_java") {
     "//components/autofill/android:autofill_java",
     "//components/autofill/core/common/mojom:mojo_types_java",
     "//components/browser_ui/modaldialog/android:java",
+    "//components/browser_ui/widget/android:java",
     "//components/feature_engagement/public:public_java",
     "//content/public/android:content_java",
     "//content/public/test/android:content_java_test_support",

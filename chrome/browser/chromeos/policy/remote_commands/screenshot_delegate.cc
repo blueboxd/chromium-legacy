@@ -16,8 +16,8 @@
 #include "chrome/browser/chromeos/policy/device_cloud_policy_manager_chromeos.h"
 #include "chrome/browser/chromeos/policy/status_uploader.h"
 #include "chrome/browser/chromeos/policy/upload_job_impl.h"
-#include "chrome/browser/chromeos/settings/device_oauth2_token_service.h"
-#include "chrome/browser/chromeos/settings/device_oauth2_token_service_factory.h"
+#include "chrome/browser/device_identity/device_oauth2_token_service.h"
+#include "chrome/browser/device_identity/device_oauth2_token_service_factory.h"
 #include "content/public/browser/browser_thread.h"
 
 namespace policy {

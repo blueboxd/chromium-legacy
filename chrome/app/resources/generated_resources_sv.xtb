@@ -3560,6 +3560,7 @@ Du kan hantera inställningarna för det här kontot genom att installera Family
 <translation id="5975792506968920132">Batteriets laddning i procent</translation>
 <translation id="5976160379964388480">Övriga</translation>
 <translation id="5978277834170881274">Använd grundläggande stavningskontroll</translation>
+<translation id="5979084224081478209">Kontrollera lösenorden</translation>
 <translation id="5979421442488174909">&amp;Översätt till <ph name="LANGUAGE" /></translation>
 <translation id="5979469435153841984">Klicka på stjärnan i adressfältet om du vill infoga ett bokmärke för en sida.</translation>
 <translation id="5984222099446776634">Nyligen besökta</translation>
@@ -4160,7 +4161,6 @@ Du kan hantera inställningarna för det här kontot genom att installera Family
 <translation id="6840155290835956714">Fråga innan något skickas</translation>
 <translation id="6840184929775541289">Är inte en certifikatutfärdare</translation>
 <translation id="6841186874966388268">Fel</translation>
-<translation id="6843267103192918276">Logga in så blir bokmärken, historik, lösenord med mera tillgängligt på alla dina enheter. Dessutom loggas du in automatiskt på Googles tjänster. <ph name="LINK_BEGIN" />Läs mer<ph name="LINK_END" /></translation>
 <translation id="6843423766595476978">Ok Google är klart att använda</translation>
 <translation id="6845038076637626672">Öppna maximerad</translation>
 <translation id="6845325883481699275">Bidra till att göra Chrome säkrare</translation>

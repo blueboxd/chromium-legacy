@@ -33,6 +33,7 @@
 
 #include "mojo/public/cpp/bindings/pending_associated_receiver.h"
 #include "mojo/public/cpp/bindings/pending_associated_remote.h"
+#include "third_party/blink/public/mojom/feature_observer/feature_observer.mojom-blink.h"
 #include "third_party/blink/public/mojom/indexeddb/indexeddb.mojom-blink.h"
 #include "third_party/blink/public/platform/platform.h"
 #include "third_party/blink/public/platform/task_type.h"
@@ -214,8 +215,13 @@ WebIDBFactory* IDBFactory::GetFactory(ExecutionContext* execution_context) {
     mojo::PendingRemote<mojom::blink::IDBFactory> web_idb_factory_host_remote;
     execution_context->GetBrowserInterfaceBroker().GetInterface(
         web_idb_factory_host_remote.InitWithNewPipeAndPassReceiver());
+
+    mojo::PendingRemote<mojom::blink::FeatureObserver> feature_observer;
+    execution_context->GetBrowserInterfaceBroker().GetInterface(
+        feature_observer.InitWithNewPipeAndPassReceiver());
+
     web_idb_factory_ = std::make_unique<WebIDBFactoryImpl>(
-        std::move(web_idb_factory_host_remote),
+        std::move(web_idb_factory_host_remote), std::move(feature_observer),
         execution_context->GetTaskRunner(TaskType::kDatabaseAccess));
   }
   return web_idb_factory_.get();
@@ -338,6 +344,13 @@ IDBOpenDBRequest* IDBFactory::OpenInternal(ScriptState* script_state,
   auto* database_callbacks = MakeGarbageCollected<IDBDatabaseCallbacks>();
   int64_t transaction_id = IDBDatabase::NextTransactionId();
 
+  ExecutionContext* execution_context = ExecutionContext::From(script_state);
+  WebIDBFactory* factory = GetFactory(execution_context);
+  if (!factory) {
+    exception_state.ThrowSecurityError("An internal error occurred.");
+    return nullptr;
+  }
+
   auto transaction_backend = std::make_unique<WebIDBTransactionImpl>(
       ExecutionContext::From(script_state)
           ->GetTaskRunner(TaskType::kDatabaseAccess),
@@ -346,7 +359,8 @@ IDBOpenDBRequest* IDBFactory::OpenInternal(ScriptState* script_state,
       transaction_receiver = transaction_backend->CreateReceiver();
   auto* request = MakeGarbageCollected<IDBOpenDBRequest>(
       script_state, database_callbacks, std::move(transaction_backend),
-      transaction_id, version, std::move(metrics));
+      transaction_id, version, std::move(metrics),
+      factory->GetObservedFeature());
 
   if (!CachedAllowIndexedDB(script_state)) {
     request->HandleResponse(MakeGarbageCollected<DOMException>(
@@ -354,12 +368,6 @@ IDBOpenDBRequest* IDBFactory::OpenInternal(ScriptState* script_state,
     return request;
   }
 
-  ExecutionContext* execution_context = ExecutionContext::From(script_state);
-  WebIDBFactory* factory = GetFactory(execution_context);
-  if (!factory) {
-    exception_state.ThrowSecurityError("An internal error occurred.");
-    return nullptr;
-  }
   factory->Open(name, version, std::move(transaction_receiver), transaction_id,
                 request->CreateWebCallbacks(),
                 database_callbacks->CreateWebCallbacks());
@@ -411,9 +419,17 @@ IDBOpenDBRequest* IDBFactory::DeleteDatabaseInternal(
                       WebFeature::kFileAccessedDatabase);
   }
 
+  ExecutionContext* execution_context = ExecutionContext::From(script_state);
+  WebIDBFactory* factory = GetFactory(execution_context);
+  if (!factory) {
+    exception_state.ThrowSecurityError("An internal error occurred.");
+    return nullptr;
+  }
+
   auto* request = MakeGarbageCollected<IDBOpenDBRequest>(
       script_state, nullptr, /*IDBTransactionAssociatedPtr=*/nullptr, 0,
-      IDBDatabaseMetadata::kDefaultVersion, std::move(metrics));
+      IDBDatabaseMetadata::kDefaultVersion, std::move(metrics),
+      factory->GetObservedFeature());
 
   if (!CachedAllowIndexedDB(script_state)) {
     request->HandleResponse(MakeGarbageCollected<DOMException>(
@@ -421,12 +437,6 @@ IDBOpenDBRequest* IDBFactory::DeleteDatabaseInternal(
     return request;
   }
 
-  ExecutionContext* execution_context = ExecutionContext::From(script_state);
-  WebIDBFactory* factory = GetFactory(execution_context);
-  if (!factory) {
-    exception_state.ThrowSecurityError("An internal error occurred.");
-    return nullptr;
-  }
   factory->DeleteDatabase(name, request->CreateWebCallbacks(), force_close);
   return request;
 }

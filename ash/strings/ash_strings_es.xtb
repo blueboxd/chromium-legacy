@@ -118,7 +118,7 @@
 <translation id="2413728805700750528"><ph name="DISPLAY_NAME" /> es una sesión administrada por <ph name="DOMAIN" /></translation>
 <translation id="2427507373259914951">Clic con el botón izquierdo</translation>
 <translation id="2429753432712299108">El dispositivo Bluetooth "<ph name="DEVICE_NAME" />" solicita permiso para vincularse. Antes de aceptar, comprueba que la clave de contraseña <ph name="PASSKEY" /> aparezca en el dispositivo</translation>
-<translation id="2473177541599297363">Confirmar resolución</translation>
+<translation id="2473177541599297363">Confirma la resolución</translation>
 <translation id="2482878487686419369">Notificaciones</translation>
 <translation id="2484513351006226581">Pulsa <ph name="KEYBOARD_SHORTCUT" /> para cambiar el diseño del teclado.</translation>
 <translation id="2501920221385095727">Teclas persistentes</translation>
@@ -139,7 +139,7 @@
 <translation id="2727977024730340865">Conectado a un cargador de baja potencia. Es posible que la carga de la batería no sea fiable.</translation>
 <translation id="2792498699870441125">Alt+tecla de búsqueda</translation>
 <translation id="2819276065543622893">Tu sesión se cerrará ahora.</translation>
-<translation id="2825224105325558319">La pantalla <ph name="DISPLAY_NAME" /> no admite la resolución <ph name="SPECIFIED_RESOLUTION" />. Se ha cambiado la resolución a <ph name="FALLBACK_RESOLUTION" />.</translation>
+<translation id="2825224105325558319">La pantalla <ph name="DISPLAY_NAME" /> no admite <ph name="SPECIFIED_RESOLUTION" />. Se ha cambiado la resolución a <ph name="FALLBACK_RESOLUTION" />.</translation>
 <translation id="2825619548187458965">Estantería</translation>
 <translation id="2844169650293029770">Dispositivo USB tipo C (puerto frontal izquierdo)</translation>
 <translation id="2865888419503095837">Información de red</translation>
@@ -159,11 +159,11 @@
 <translation id="3009178788565917040">Salida</translation>
 <translation id="3051128274746680507">Tu perfil de usuario supervisado se eliminará pronto. Inicia sesión para obtener más información.</translation>
 <translation id="3055162170959710888">Hoy has utilizado este dispositivo durante <ph name="USED_TIME" /></translation>
-<translation id="3076778413190775903">Bandeja de estado: <ph name="TIME" /> horas;
-        <ph name="BATTERY" />;
-        <ph name="NETWORK" />;
-        <ph name="NOTIFICATION" />;
-        <ph name="IME" />;
+<translation id="3076778413190775903">Bandeja de estado: hora <ph name="TIME" />,
+        <ph name="BATTERY" />
+        <ph name="NETWORK" />,
+        <ph name="NOTIFICATION" />,
+        <ph name="IME" />
         <ph name="LOCALE" /></translation>
 <translation id="3077734595579995578">mayús</translation>
 <translation id="3081696990447829002">Mostrar menú</translation>
@@ -408,7 +408,7 @@ Todos los usuarios deben cerrar sesión para continuar.</translation>
 <translation id="6490471652906364588">Dispositivo USB-C (puerto derecho)</translation>
 <translation id="649452524636452238">PIN de la tarjeta inteligente</translation>
 <translation id="6501401484702599040">Enviando la pantalla a <ph name="RECEIVER_NAME" /></translation>
-<translation id="652139407789908527">Durante esta actualización, la pantalla se quedará en blanco durante más tiempo de lo habitual (hasta un minuto). No pulses el botón de encendido mientra la actualización esté en curso.</translation>
+<translation id="652139407789908527">Durante esta actualización, la pantalla se quedará en blanco durante más tiempo de lo habitual (hasta un minuto). No pulses el botón de encendido mientras se esté realizando la actualización.</translation>
 <translation id="6521655319214113338">Escritura a mano</translation>
 <translation id="6528179044667508675">No molestar</translation>
 <translation id="6537270692134705506">Capturar pantalla</translation>
@@ -554,7 +554,7 @@ Todos los usuarios deben cerrar sesión para continuar.</translation>
 <translation id="847056008324733326">Configuración de escala de pantalla</translation>
 <translation id="8473301994082929012"><ph name="ORGANIZATION_NAME" /> ha <ph name="FEATURE_STATE" /> <ph name="FEATURE_NAME" />.</translation>
 <translation id="8477270416194247200">Pulsa Alt + tecla de búsqueda o Mayús para cancelarlo.</translation>
-<translation id="8492573885090281069">La pantalla <ph name="DISPLAY_NAME" /> no admite la resolución <ph name="SPECIFIED_RESOLUTION" />. Se ha cambiado la resolución a <ph name="FALLBACK_RESOLUTION" />. Haz clic en Confirmar para mantener los cambios. La configuración anterior se restaurará en <ph name="TIMEOUT_SECONDS" />.</translation>
+<translation id="8492573885090281069">La pantalla <ph name="DISPLAY_NAME" /> no admite <ph name="SPECIFIED_RESOLUTION" />. Se ha cambiado la resolución a <ph name="FALLBACK_RESOLUTION" />. Haz clic en Confirmar para mantener los cambios. La configuración anterior se restaurará en <ph name="TIMEOUT_SECONDS" />.</translation>
 <translation id="8513108775083588393">Girar automáticamente</translation>
 <translation id="8517041960877371778">Es posible que tu <ph name="DEVICE_TYPE" /> no se cargue mientras esté encendido.</translation>
 <translation id="8563862697512465947">Configuración de notificaciones</translation>

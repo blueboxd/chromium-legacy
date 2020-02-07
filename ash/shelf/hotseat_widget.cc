@@ -20,6 +20,7 @@
 #include "ash/system/status_area_widget.h"
 #include "ash/wallpaper/wallpaper_controller_impl.h"
 #include "ash/wm/tablet_mode/tablet_mode_controller.h"
+#include "base/metrics/histogram_macros.h"
 #include "chromeos/constants/chromeos_switches.h"
 #include "ui/aura/scoped_window_targeter.h"
 #include "ui/aura/window_targeter.h"
@@ -33,6 +34,57 @@
 
 namespace ash {
 namespace {
+
+// Records smoothness of bounds animations for the HotseatWidget.
+class HotseatWidgetAnimationMetricsReporter
+    : public HotseatTransitionAnimator::Observer,
+      public ui::AnimationMetricsReporter {
+ public:
+  explicit HotseatWidgetAnimationMetricsReporter(Shelf* shelf) : shelf_(shelf) {
+    shelf_->shelf_widget()->hotseat_transition_animator()->AddObserver(this);
+  }
+
+  ~HotseatWidgetAnimationMetricsReporter() override {
+    shelf_->shelf_widget()->hotseat_transition_animator()->RemoveObserver(this);
+  }
+
+  void OnHotseatTransitionAnimationStarted(HotseatState from_state,
+                                           HotseatState to_state) override {
+    target_state_ = to_state;
+  }
+
+  // ui::AnimationMetricsReporter:
+  void Report(int value) override {
+    switch (target_state_) {
+      case HotseatState::kShown:
+        UMA_HISTOGRAM_PERCENTAGE(
+            "Ash.HotseatWidgetAnimation.AnimationSmoothness."
+            "TransitionToShownHotseat",
+            value);
+        break;
+      case HotseatState::kExtended:
+        UMA_HISTOGRAM_PERCENTAGE(
+            "Ash.HotseatWidgetAnimation.AnimationSmoothness."
+            "TransitionToExtendedHotseat",
+            value);
+        break;
+      case HotseatState::kHidden:
+        UMA_HISTOGRAM_PERCENTAGE(
+            "Ash.HotseatWidgetAnimation.AnimationSmoothness."
+            "TransitionToHiddenHotseat",
+            value);
+        break;
+      default:
+        NOTREACHED();
+    }
+  }
+
+ private:
+  // The state to which the animation is transitioning.
+  HotseatState target_state_;
+  // Not owned.
+  Shelf* shelf_;
+};
 
 bool IsScrollableShelfEnabled() {
   return chromeos::switches::ShouldShowScrollableShelf();
@@ -279,6 +331,12 @@ void HotseatWidget::Initialize(aura::Window* container, Shelf* shelf) {
   delegate_view_->Init(scrollable_shelf_view(), GetLayer());
 }
 
+void HotseatWidget::CreateAnimationMetricsReporter(
+    HotseatTransitionAnimator* animator) {
+  hotseat_animation_metrics_reporter_ =
+      std::make_unique<HotseatWidgetAnimationMetricsReporter>(shelf_);
+}
+
 void HotseatWidget::OnMouseEvent(ui::MouseEvent* event) {
   if (event->type() == ui::ET_MOUSE_PRESSED)
     keyboard::KeyboardUIController::Get()->HideKeyboardImplicitlyByUser();
@@ -381,6 +439,8 @@ void HotseatWidget::UpdateLayout(bool animate) {
   animation_setter.SetTweenType(gfx::Tween::EASE_OUT);
   animation_setter.SetPreemptionStrategy(
       ui::LayerAnimator::IMMEDIATELY_ANIMATE_TO_NEW_TARGET);
+  animation_setter.SetAnimationMetricsReporter(
+      hotseat_animation_metrics_reporter_.get());
 
   layer->SetOpacity(new_layout_inputs.opacity);
   SetBounds(new_layout_inputs.bounds);

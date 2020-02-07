@@ -8,6 +8,7 @@
 #include <string>
 #include <vector>
 
+#include "base/time/time.h"
 #include "components/user_manager/user_manager_export.h"
 
 class AccountId;
@@ -214,6 +215,17 @@ void USER_MANAGER_EXPORT SetChallengeResponseKeys(const AccountId& account_id,
 
 base::Value USER_MANAGER_EXPORT
 GetChallengeResponseKeys(const AccountId& account_id);
+
+void USER_MANAGER_EXPORT SetLastOnlineSignin(const AccountId& account_id,
+                                             base::Time time);
+
+base::Time USER_MANAGER_EXPORT GetLastOnlineSignin(const AccountId& account_id);
+
+void USER_MANAGER_EXPORT SetOfflineSigninLimit(const AccountId& account_id,
+                                               base::TimeDelta time_limit);
+
+base::TimeDelta USER_MANAGER_EXPORT
+GetOfflineSigninLimit(const AccountId& account_id);
 
 // Removes all user preferences associated with |account_id|.
 // Not exported as code should not be calling this outside this component

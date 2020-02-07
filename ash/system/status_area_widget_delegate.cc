@@ -29,9 +29,7 @@ namespace {
 
 constexpr int kAnimationDurationMs = 250;
 
-constexpr int kPaddingBetweenWidgetsNewUi = 8;
-
-constexpr int kPaddingBetweenWidgetAndRightScreenEdge = 6;
+constexpr int kPaddingBetweenItems = 8;
 
 class StatusAreaWidgetDelegateAnimationSettings
     : public ui::ScopedLayerAnimationSettings {
@@ -246,17 +244,13 @@ void StatusAreaWidgetDelegate::SetBorderOnChild(views::View* child,
   int left_edge = 0;
   int bottom_edge = vertical_padding;
   // Add some extra space so that borders don't overlap. This padding between
-  // items also takes care of padding at the edge of the shelf.
-  int right_edge = kPaddingBetweenWidgetsNewUi;
+  // items also takes care of padding at the edge of the shelf (unless hotseat
+  // is enabled).
+  int right_edge = kPaddingBetweenItems;
 
-  const bool tablet_mode =
-      Shell::Get()->tablet_mode_controller() &&
-      Shell::Get()->tablet_mode_controller()->InTabletMode();
-
-  if (is_child_on_edge && chromeos::switches::ShouldShowShelfHotseat() &&
-      !tablet_mode) {
-    right_edge = kPaddingBetweenWidgetAndRightScreenEdge;
-  }
+  if (is_child_on_edge && chromeos::switches::ShouldShowShelfHotseat())
+    right_edge = ShelfConfig::Get()->control_button_edge_spacing(
+        true /* is_primary_axis_edge */);
 
   // Swap edges if alignment is not horizontal (bottom-to-top).
   if (!shelf_->IsHorizontalAlignment()) {

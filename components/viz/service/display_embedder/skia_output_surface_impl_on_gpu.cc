@@ -1011,20 +1011,26 @@ void SkiaOutputSurfaceImplOnGpu::SwapBuffers(
 
   if (frame.sub_buffer_rect) {
     if (capabilities().supports_post_sub_buffer) {
-      if (!capabilities().flipped_output_surface)
+      if (!capabilities().flipped_output_surface) {
         frame.sub_buffer_rect->set_y(size_.height() -
                                      frame.sub_buffer_rect->y() -
                                      frame.sub_buffer_rect->height());
+      }
       output_device_->PostSubBuffer(*frame.sub_buffer_rect,
                                     buffer_presented_callback_,
                                     std::move(frame.latency_info));
 
     } else if (capabilities().supports_commit_overlay_planes) {
+      // CommitOverlayPlanes() can only be used for empty swap.
       DCHECK(frame.sub_buffer_rect->IsEmpty());
       output_device_->CommitOverlayPlanes(buffer_presented_callback_,
                                           std::move(frame.latency_info));
     } else {
-      NOTREACHED();
+      // Full swap can only be used to simulate PostSubBuffer(), if the buffer
+      // content is preserved after presenting.
+      DCHECK(capabilities().preserve_buffer_content);
+      output_device_->SwapBuffers(buffer_presented_callback_,
+                                  std::move(frame.latency_info));
     }
   } else {
     output_device_->SwapBuffers(buffer_presented_callback_,

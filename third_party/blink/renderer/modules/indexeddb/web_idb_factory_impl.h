@@ -26,6 +26,7 @@ class WebIDBFactoryImpl : public WebIDBFactory {
  public:
   explicit WebIDBFactoryImpl(
       mojo::PendingRemote<mojom::blink::IDBFactory> pending_factory,
+      mojo::PendingRemote<mojom::blink::FeatureObserver> feature_observer,
       scoped_refptr<base::SingleThreadTaskRunner> task_runner);
   ~WebIDBFactoryImpl() override;
 
@@ -43,6 +44,8 @@ class WebIDBFactoryImpl : public WebIDBFactory {
   void DeleteDatabase(const WTF::String& name,
                       std::unique_ptr<WebIDBCallbacks> callbacks,
                       bool force_close) override;
+  mojo::PendingRemote<mojom::blink::ObservedFeature> GetObservedFeature()
+      override;
 
  private:
   mojo::PendingAssociatedRemote<mojom::blink::IDBCallbacks> GetCallbacksProxy(
@@ -52,6 +55,7 @@ class WebIDBFactoryImpl : public WebIDBFactory {
       std::unique_ptr<IndexedDBDatabaseCallbacksImpl> callbacks);
 
   mojo::Remote<mojom::blink::IDBFactory> factory_;
+  mojo::Remote<mojom::blink::FeatureObserver> feature_observer_;
   scoped_refptr<base::SingleThreadTaskRunner> task_runner_;
 };
 

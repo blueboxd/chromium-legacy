@@ -15,12 +15,23 @@ namespace blink {
 
 WebIDBFactoryImpl::WebIDBFactoryImpl(
     mojo::PendingRemote<mojom::blink::IDBFactory> pending_factory,
+    mojo::PendingRemote<mojom::blink::FeatureObserver> feature_observer,
     scoped_refptr<base::SingleThreadTaskRunner> task_runner)
     : task_runner_(std::move(task_runner)) {
   factory_.Bind(std::move(pending_factory), task_runner_);
+  feature_observer_.Bind(std::move(feature_observer), task_runner_);
 }
 
 WebIDBFactoryImpl::~WebIDBFactoryImpl() = default;
+
+mojo::PendingRemote<mojom::blink::ObservedFeature>
+WebIDBFactoryImpl::GetObservedFeature() {
+  mojo::PendingRemote<mojom::blink::ObservedFeature> feature;
+  feature_observer_->Register(
+      feature.InitWithNewPipeAndPassReceiver(),
+      mojom::blink::ObservedFeatureType::kIndexedDBConnection);
+  return feature;
+}
 
 void WebIDBFactoryImpl::GetDatabaseInfo(
     std::unique_ptr<WebIDBCallbacks> callbacks) {

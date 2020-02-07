@@ -675,6 +675,7 @@
 <translation id="3987940399970879459">1 მბაიტზე ნაკლები</translation>
 <translation id="3990250421422698716">კიდის წანაცვლება</translation>
 <translation id="40103911065039147">{URL_count,plural, =1{1 ახლომახლო ვებგვერდი}other{# ახლომახლო ვებგვერდი}}</translation>
+<translation id="4014128326099193693">{COUNT,plural, =1{PDF დოკუმენტი, რომელიც შეიცავს {COUNT} გვერდს}other{PDF დოკუმენტი, რომელიც შეიცავს {COUNT} გვერდს}}</translation>
 <translation id="4030383055268325496">დამატების &amp;მოქმედების გაუქმება</translation>
 <translation id="4032320456957708163">თქვენს ბრაუზერს მართავს <ph name="ENROLLMENT_DOMAIN" /></translation>
 <translation id="4058922952496707368">გასაღები „<ph name="SUBKEY" />“ <ph name="ERROR" /></translation>
@@ -703,6 +704,7 @@
 <translation id="4142935452406587478">ლანგარი 10</translation>
 <translation id="4148925816941278100">American Express</translation>
 <translation id="4151403195736952345">გამოიყენოთ გლობალური ნაგილისხმევი (გამოვლენა)</translation>
+<translation id="4152318981910038897">{COUNT,plural, =1{გვერდი 1}other{გვერდი {COUNT}}}</translation>
 <translation id="4159784952369912983">მეწამული</translation>
 <translation id="4165986682804962316">საიტის პარამეტრები</translation>
 <translation id="4171400957073367226">დამოწმების ცუდი ხელმოწერა</translation>
@@ -1379,6 +1381,7 @@
 <translation id="7201591969684833065">თქვენს ადმინისტრატორს შეუძლია ნახოს:</translation>
 <translation id="7202346780273620635">Letter-Extra</translation>
 <translation id="7210863904660874423"><ph name="HOST_NAME" /> არ აკმაყოფილებს უსაფრთხოების სტანდარტებს.</translation>
+<translation id="7210993021468939304">შეუძლია კონტეინერის შიგნით Linux-ის აქტივობის ნახვა და Linux აპების ინსტალაცია/გაშვება</translation>
 <translation id="721197778055552897"><ph name="BEGIN_LINK" />გაიგეთ მეტი<ph name="END_LINK" /> ამ პრობლემის შესახებ.</translation>
 <translation id="7219179957768738017">კავშირი იყენებს <ph name="SSL_VERSION" />-ს.</translation>
 <translation id="7220786058474068424">მუშავდება</translation>
@@ -1542,6 +1545,7 @@
 <translation id="7878562273885520351">შესაძლოა თქვენს პაროლს საფრთხე ემუქრებოდეს</translation>
 <translation id="7882421473871500483">ყავისფერი</translation>
 <translation id="7887683347370398519">შეამოწმეთ თქვენი CVC და ხელახლა სცადეთ</translation>
+<translation id="7887885240995164102">რეჟიმში „გამოსახულება გამოსახულებაში“ შესვლა</translation>
 <translation id="7888575728750733395">ბეჭდვის რენდერის სქემა</translation>
 <translation id="7904208859782148177">C3 (კონვერტი)</translation>
 <translation id="7932579305932748336">ფენით დაფარვა</translation>

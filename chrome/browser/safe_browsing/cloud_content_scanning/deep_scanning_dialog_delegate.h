@@ -169,6 +169,7 @@ class DeepScanningDialogDelegate {
   // In tests, sets a factory function for creating fake
   // DeepScanningDialogDelegates.
   static void SetFactoryForTesting(Factory factory);
+  static void ResetFactoryForTesting();
 
   // Determines if a request result should be used to allow a data use or to
   // block it.

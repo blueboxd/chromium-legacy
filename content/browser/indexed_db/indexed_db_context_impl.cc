@@ -365,8 +365,6 @@ void IndexedDBContextImpl::GetAllOriginsDetails(
               break;
           }
 
-          transaction_info->SetDouble(
-              "pid", transaction->connection()->child_process_id());
           transaction_info->SetDouble("tid", transaction->id());
           transaction_info->SetDouble(
               "age",

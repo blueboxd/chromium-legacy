@@ -187,7 +187,7 @@ bool AmlV4L2Device::Open(Type type, uint32_t v4l2_pixfmt) {
   return OpenDevice();
 }
 
-std::vector<uint32_t> AmlV4L2Device::PreferredInputFormat(Type type) {
+std::vector<uint32_t> AmlV4L2Device::PreferredInputFormat(Type type) const {
   if (type_ != Type::kEncoder)
     return GenericV4L2Device::PreferredInputFormat(type);
 

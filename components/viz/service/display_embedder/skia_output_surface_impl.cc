@@ -209,18 +209,23 @@ void SkiaOutputSurfaceImpl::Reshape(const gfx::Size& size,
   // SetDrawRectangle() will need to be called at the new size.
   has_set_draw_rectangle_for_frame_ = false;
 
+  // Reshape will damage all buffers.
+  current_buffer_ = 0u;
+  for (auto& damage : damage_of_buffers_)
+    damage = gfx::Rect(size);
+
   SkSurfaceCharacterization* characterization = nullptr;
   if (characterization_.isValid()) {
-    sk_sp<SkColorSpace> sk_color_space = color_space.ToSkColorSpace();
-    if (!SkColorSpace::Equals(characterization_.colorSpace(),
-                              sk_color_space.get())) {
+    if (color_space != color_space_) {
       characterization_ =
-          characterization_.createColorSpace(std::move(sk_color_space));
+          characterization_.createColorSpace(color_space.ToSkColorSpace());
+      color_space_ = color_space;
     }
-    if (size.width() != characterization_.width() ||
-        size.height() != characterization_.height()) {
+
+    if (size != size_) {
       characterization_ =
           characterization_.createResized(size.width(), size.height());
+      size_ = size;
     }
     // TODO(kylechar): Update |characterization_| if |use_alpha| changes.
     RecreateRootRecorder();
@@ -229,6 +234,8 @@ void SkiaOutputSurfaceImpl::Reshape(const gfx::Size& size,
     initialize_waitable_event_ = std::make_unique<base::WaitableEvent>(
         base::WaitableEvent::ResetPolicy::MANUAL,
         base::WaitableEvent::InitialState::NOT_SIGNALED);
+    size_ = size;
+    color_space_ = color_space;
   }
 
   // impl_on_gpu_ is released on the GPU thread by a posted task from
@@ -411,6 +418,26 @@ void SkiaOutputSurfaceImpl::SwapBuffers(OutputSurfaceFrame frame) {
 
   has_set_draw_rectangle_for_frame_ = false;
 
+  // If current_buffer_modified_ is false, it means SkiaRenderer doesn't draw
+  // anything for current frame. So this SwapBuffer() must be a empty swap, so
+  // the previous buffer will be used for this frame.
+  if (!damage_of_buffers_.empty() && current_buffer_modified_) {
+    gfx::Rect damage_rect =
+        frame.sub_buffer_rect ? *frame.sub_buffer_rect : gfx::Rect(size_);
+    // Calculate damage area for every buffer.
+    for (size_t i = 0u; i < damage_of_buffers_.size(); ++i) {
+      if (i == current_buffer_) {
+        damage_of_buffers_[i] = gfx::Rect();
+      } else {
+        damage_of_buffers_[i].Union(damage_rect);
+      }
+    }
+    // change the current buffer index to the next buffer in the queue.
+    if (++current_buffer_ == damage_of_buffers_.size())
+      current_buffer_ = 0u;
+    current_buffer_modified_ = false;
+  }
+
   // impl_on_gpu_ is released on the GPU thread by a posted task from
   // SkiaOutputSurfaceImpl::dtor. So it is safe to use base::Unretained.
   auto callback =
@@ -507,6 +534,8 @@ gpu::SyncToken SkiaOutputSurfaceImpl::SubmitPaint(
         resource_sync_tokens_, sync_fence_release_);
     ScheduleGpuTask(std::move(closure), std::move(resource_sync_tokens_));
   } else {
+    // Draw on the root render pass.
+    current_buffer_modified_ = true;
     std::unique_ptr<SkDeferredDisplayList> overdraw_ddl;
     if (renderer_settings_.show_overdraw_feedback) {
       overdraw_ddl = overdraw_surface_recorder_->detach();
@@ -672,6 +701,17 @@ bool SkiaOutputSurfaceImpl::Initialize() {
                                  &event, &result);
   ScheduleGpuTask(std::move(callback), {});
   event.Wait();
+
+  if (capabilities_.preserve_buffer_content) {
+    // If buffer content is preserved after presenting, SkiaOutputSurfaceImpl
+    // can simulate partial swap with regular SwapBuffers(). It is because we
+    // track damaged area for every buffer and ask SkiaRenderer to redraw the
+    // damaged area to make sure the whole buffer is validated.
+    capabilities_.supports_post_sub_buffer = true;
+    capabilities_.only_invalidates_damage_rect = false;
+    damage_of_buffers_.resize(capabilities_.max_frames_pending + 1);
+  }
+
   return result;
 }
 
@@ -927,6 +967,14 @@ void SkiaOutputSurfaceImpl::ContextLost() {
 scoped_refptr<gpu::GpuTaskSchedulerHelper>
 SkiaOutputSurfaceImpl::GetGpuTaskSchedulerHelper() {
   return gpu_task_scheduler_;
+}
+
+gfx::Rect SkiaOutputSurfaceImpl::GetCurrentFramebufferDamage() const {
+  if (damage_of_buffers_.empty())
+    return gfx::Rect();
+
+  DCHECK_LT(current_buffer_, damage_of_buffers_.size());
+  return damage_of_buffers_[current_buffer_];
 }
 
 }  // namespace viz

@@ -18,7 +18,6 @@
 #include "base/sequence_checker.h"
 #include "base/strings/string16.h"
 #include "components/services/storage/public/mojom/native_file_system_context.mojom-forward.h"
-#include "content/browser/indexed_db/indexed_db_execution_context_connection_tracker.h"
 #include "content/browser/indexed_db/indexed_db_external_object.h"
 #include "content/common/content_export.h"
 #include "content/public/browser/render_process_host_observer.h"
@@ -145,15 +144,7 @@ class CONTENT_EXPORT IndexedDBDispatcherHost : public blink::mojom::IDBFactory {
   // Used to set file permissions for blob storage.
   const int ipc_process_id_;
 
-  // State for each client held in |receivers_|.
-  struct ReceiverState {
-    url::Origin origin;
-
-    // Tracks connections for this receiver.
-    IndexedDBExecutionContextConnectionTracker connection_tracker;
-  };
-
-  mojo::ReceiverSet<blink::mojom::IDBFactory, ReceiverState> receivers_;
+  mojo::ReceiverSet<blink::mojom::IDBFactory, url::Origin> receivers_;
   mojo::UniqueAssociatedReceiverSet<blink::mojom::IDBDatabase>
       database_receivers_;
   mojo::UniqueAssociatedReceiverSet<blink::mojom::IDBCursor> cursor_receivers_;

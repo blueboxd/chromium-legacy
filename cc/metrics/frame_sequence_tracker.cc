@@ -412,6 +412,16 @@ void FrameSequenceTrackerCollection::RecreateTrackers(
   }
 }
 
+ActiveFrameSequenceTrackers
+FrameSequenceTrackerCollection::FrameSequenceTrackerActiveTypes() {
+  ActiveFrameSequenceTrackers encoded_types = 0;
+  for (const auto& tracker : frame_trackers_) {
+    encoded_types |= static_cast<ActiveFrameSequenceTrackers>(
+        1 << static_cast<unsigned>(tracker.first));
+  }
+  return encoded_types;
+}
+
 FrameSequenceTracker* FrameSequenceTrackerCollection::GetTrackerForTesting(
     FrameSequenceTrackerType type) {
   if (!frame_trackers_.contains(type))

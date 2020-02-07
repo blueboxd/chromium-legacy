@@ -853,4 +853,12 @@ TEST_F(FrameSequenceTrackerTest, OffScreenMainDamage10) {
   EXPECT_EQ(MainThroughput().frames_expected, 0u);
 }
 
+TEST_F(FrameSequenceTrackerTest, TrackerTypeEncoding) {
+  // The test begins with a kTouchScroll tracker
+  EXPECT_EQ(NumberOfTrackers(), 1u);
+  ActiveFrameSequenceTrackers active_encoded =
+      collection_.FrameSequenceTrackerActiveTypes();
+  EXPECT_EQ(active_encoded, 16);  // 1 << 4
+}
+
 }  // namespace cc

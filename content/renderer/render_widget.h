@@ -325,7 +325,9 @@ class CONTENT_EXPORT RenderWidget
   void DidCommitCompositorFrame() override;
   void DidCompletePageScaleAnimation() override;
   void RecordStartOfFrameMetrics() override;
-  void RecordEndOfFrameMetrics(base::TimeTicks frame_begin_time) override;
+  void RecordEndOfFrameMetrics(
+      base::TimeTicks frame_begin_time,
+      cc::ActiveFrameSequenceTrackers trackers) override;
   std::unique_ptr<cc::BeginMainFrameMetrics> GetBeginMainFrameMetrics()
       override;
 

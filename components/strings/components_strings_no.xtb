@@ -690,6 +690,7 @@ brukere av denne nettleseren.</translation>
 <translation id="3987940399970879459">Under 1 MB</translation>
 <translation id="3990250421422698716">Støtforskyvning</translation>
 <translation id="40103911065039147">{URL_count,plural, =1{1 Like ved-nettside}other{# Like ved-nettsider}}</translation>
+<translation id="4014128326099193693">{COUNT,plural, =1{PDF-dokument som inneholder {COUNT} side}other{PDF-dokument som inneholder {COUNT} sider}}</translation>
 <translation id="4030383055268325496">&amp;Angre tilleggingen</translation>
 <translation id="4032320456957708163">Nettleseren din administreres av <ph name="ENROLLMENT_DOMAIN" /></translation>
 <translation id="4058922952496707368">Nøkkel – «<ph name="SUBKEY" />»: <ph name="ERROR" /></translation>
@@ -718,6 +719,7 @@ brukere av denne nettleseren.</translation>
 <translation id="4142935452406587478">Skuff 10</translation>
 <translation id="4148925816941278100">American Express</translation>
 <translation id="4151403195736952345">Bruk global standard (oppdag)</translation>
+<translation id="4152318981910038897">{COUNT,plural, =1{Side 1}other{Side {COUNT}}}</translation>
 <translation id="4159784952369912983">Fiolett</translation>
 <translation id="4165986682804962316">Nettstedsinnstillinger</translation>
 <translation id="4171400957073367226">Ugyldig bekreftelsessignatur</translation>
@@ -1395,6 +1397,7 @@ brukere av denne nettleseren.</translation>
 <translation id="7201591969684833065">Administratoren kan se dette:</translation>
 <translation id="7202346780273620635">Letter-Extra</translation>
 <translation id="7210863904660874423"><ph name="HOST_NAME" /> retter seg ikke etter sikkerhetsstandardene.</translation>
+<translation id="7210993021468939304">Linux-aktivitet i beholderen, og kan installere og kjøre Linux-apper i beholderen</translation>
 <translation id="721197778055552897"><ph name="BEGIN_LINK" />Mer informasjon<ph name="END_LINK" /> om dette problemet.</translation>
 <translation id="7219179957768738017">Tilkoblingen bruker <ph name="SSL_VERSION" />.</translation>
 <translation id="7220786058474068424">Behandler</translation>
@@ -1557,6 +1560,7 @@ brukere av denne nettleseren.</translation>
 <translation id="7878562273885520351">Passordet ditt kan være kompromittert</translation>
 <translation id="7882421473871500483">Brun</translation>
 <translation id="7887683347370398519">Kontrollér CVC-koden din, og prøv igjen.</translation>
+<translation id="7887885240995164102">Start bilde-i-bilde</translation>
 <translation id="7888575728750733395">Gjengivelsesintensjon for utskrift</translation>
 <translation id="7904208859782148177">C3 (konvolutt)</translation>
 <translation id="7932579305932748336">Belegg</translation>

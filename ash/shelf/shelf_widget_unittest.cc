@@ -158,7 +158,8 @@ TEST_F(ShelfWidgetTest, LauncherInitiallySized) {
       shelf_widget->navigation_widget()->GetWindowBoundsInScreen().width();
   const int hotseat_width =
       shelf_widget->hotseat_widget()->GetWindowBoundsInScreen().width();
-  const int margins = ShelfConfig::Get()->home_button_edge_spacing() +
+  const int margins = ShelfConfig::Get()->control_button_edge_spacing(
+                          true /* is_primary_axis_edge */) +
                       ShelfConfig::Get()->app_icon_group_margin();
   EXPECT_EQ(status_width, total_width - nav_width - hotseat_width - margins);
 }
@@ -204,7 +205,8 @@ TEST_F(ShelfWidgetTest, ShelfInitiallySizedAfterLogin) {
       shelf_widget1->navigation_widget()->GetWindowBoundsInScreen().width();
   const int hotseat_width1 =
       shelf_widget1->hotseat_widget()->GetWindowBoundsInScreen().width();
-  const int margins = ShelfConfig::Get()->home_button_edge_spacing() +
+  const int margins = ShelfConfig::Get()->control_button_edge_spacing(
+                          true /* is_primary_axis_edge */) +
                       ShelfConfig::Get()->app_icon_group_margin();
 
   const int total_width2 =
@@ -415,7 +417,7 @@ TEST_F(ShelfWidgetTest, OpaqueBackgroundAndDragHandleTransition) {
 
   {
     TransitionAnimationWaiter waiter(
-        GetShelfWidget()->hotseat_transition_animator_for_testing());
+        GetShelfWidget()->hotseat_transition_animator());
     waiter.Wait();
   }
 

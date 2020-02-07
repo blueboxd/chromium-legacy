@@ -256,6 +256,7 @@ Nếu đã chọn '<ph name="SERVICE_SCRIPT_NAME" />', hãy bỏ chọn rồi ch
 <translation id="6939719207673461467">Hiển thị / ẩn bàn phím.</translation>
 <translation id="6944854424004126054">Khôi phục cửa sổ</translation>
 <translation id="6948905685698011662">Chrome Remote Desktop hiện đã có trên web! Hãy xem <ph name="LINK_BEGIN" />ứng dụng web miễn phí<ph name="LINK_END" /> của chúng tôi.</translation>
+<translation id="6956835181934226419">Tôi đã cấp quyền này.</translation>
 <translation id="6963936880795878952">Kết nối với máy tính từ xa tạm thời bị chặn vì ai đó đang cố gắng kết nối với máy tính đó bằng mã PIN không hợp lệ. Vui lòng thử lại sau.</translation>
 <translation id="6965382102122355670">OK</translation>
 <translation id="6985691951107243942">Bạn có chắc chắn muốn tắt kết nối từ xa với <ph name="HOSTNAME" /> không? Nếu bạn thay đổi ý định, bạn cần truy cập vào máy tính đó để bật lại kết nối.</translation>

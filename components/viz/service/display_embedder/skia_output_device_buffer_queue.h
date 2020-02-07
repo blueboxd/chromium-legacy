@@ -42,6 +42,9 @@ class VIZ_SERVICE_EXPORT SkiaOutputDeviceBufferQueue final
 
   void SwapBuffers(BufferPresentedCallback feedback,
                    std::vector<ui::LatencyInfo> latency_info) override;
+  void PostSubBuffer(const gfx::Rect& rect,
+                     BufferPresentedCallback feedback,
+                     std::vector<ui::LatencyInfo> latency_info) override;
   void CommitOverlayPlanes(BufferPresentedCallback feedback,
                            std::vector<ui::LatencyInfo> latency_info) override;
   bool Reshape(const gfx::Size& size,
@@ -100,7 +103,7 @@ class VIZ_SERVICE_EXPORT SkiaOutputDeviceBufferQueue final
   // The image currently on the screen, if any.
   Image* displayed_image_ = nullptr;
   // These are free for use, and are not nullptr.
-  std::vector<Image*> available_images_;
+  base::circular_deque<Image*> available_images_;
   // These cancelable callbacks bind images that have been scheduled to display
   // but are not displayed yet. This deque will be cleared when represented
   // frames are destroyed. Use CancelableOnceCallback to prevent resources

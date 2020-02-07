@@ -30,6 +30,7 @@
 
 #include "base/atomic_sequence_num.h"
 #include "base/optional.h"
+#include "third_party/blink/public/common/browser_interface_broker_proxy.h"
 #include "third_party/blink/public/common/indexeddb/web_idb_types.h"
 #include "third_party/blink/public/mojom/indexeddb/indexeddb.mojom-blink.h"
 #include "third_party/blink/renderer/bindings/core/v8/serialization/serialized_script_value.h"
@@ -93,12 +94,15 @@ const char IDBDatabase::kTransactionReadOnlyErrorMessage[] =
 const char IDBDatabase::kDatabaseClosedErrorMessage[] =
     "The database connection is closed.";
 
-IDBDatabase::IDBDatabase(ExecutionContext* context,
-                         std::unique_ptr<WebIDBDatabase> backend,
-                         IDBDatabaseCallbacks* callbacks,
-                         v8::Isolate* isolate)
+IDBDatabase::IDBDatabase(
+    ExecutionContext* context,
+    std::unique_ptr<WebIDBDatabase> backend,
+    IDBDatabaseCallbacks* callbacks,
+    v8::Isolate* isolate,
+    mojo::PendingRemote<mojom::blink::ObservedFeature> connection_lifetime)
     : ContextLifecycleObserver(context),
       backend_(std::move(backend)),
+      connection_lifetime_(std::move(connection_lifetime)),
       event_queue_(
           MakeGarbageCollected<EventQueue>(context, TaskType::kDatabaseAccess)),
       database_callbacks_(callbacks),
@@ -463,6 +467,7 @@ void IDBDatabase::close() {
   if (close_pending_)
     return;
 
+  connection_lifetime_.reset();
   close_pending_ = true;
   feature_handle_for_scheduler_.reset();
 
@@ -608,6 +613,8 @@ void IDBDatabase::ContextDestroyed(ExecutionContext*) {
     backend_->Close();
     backend_.reset();
   }
+
+  connection_lifetime_.reset();
 
   if (database_callbacks_)
     database_callbacks_->DetachWebCallbacks();

@@ -65,11 +65,13 @@ Lock::Lock(ScriptState* script_state,
            const String& name,
            mojom::blink::LockMode mode,
            mojo::PendingAssociatedRemote<mojom::blink::LockHandle> handle,
+           mojo::PendingRemote<mojom::blink::ObservedFeature> lock_lifetime,
            LockManager* manager)
     : ContextLifecycleObserver(ExecutionContext::From(script_state)),
       name_(name),
       mode_(mode),
       handle_(std::move(handle)),
+      lock_lifetime_(std::move(lock_lifetime)),
       manager_(manager) {
   handle_.set_disconnect_handler(
       WTF::Bind(&Lock::OnConnectionError, WrapWeakPersistent(this)));
@@ -134,12 +136,15 @@ void Lock::ReleaseIfHeld() {
     // Drop the mojo pipe; this releases the lock on the back end.
     handle_.reset();
 
+    lock_lifetime_.reset();
+
     // Let the lock manager know that this instance can be collected.
     manager_->OnLockReleased(this);
   }
 }
 
 void Lock::OnConnectionError() {
+  ReleaseIfHeld();
   resolver_->Reject(MakeGarbageCollected<DOMException>(
       DOMExceptionCode::kAbortError,
       "Lock broken by another request with the 'steal' option."));

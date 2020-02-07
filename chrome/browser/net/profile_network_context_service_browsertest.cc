@@ -89,6 +89,14 @@ class ProfileNetworkContextServiceBrowsertest : public InProcessBrowserTest {
     return loader_factory_;
   }
 
+ protected:
+  // The HttpCache is only created when a request is issued, thus we perform a
+  // navigation to ensure that the http cache is initialized.
+  void NavigateToCreateHttpCache() {
+    ui_test_utils::NavigateToURL(
+        browser(), embedded_test_server()->GetURL("/createbackend"));
+  }
+
  private:
   network::mojom::URLLoaderFactory* loader_factory_ = nullptr;
 };
@@ -202,6 +210,7 @@ class ProfileNetworkContextServiceCacheSameBrowsertest
 
 IN_PROC_BROWSER_TEST_F(ProfileNetworkContextServiceCacheSameBrowsertest,
                        PRE_TestCacheResetParameter) {
+  NavigateToCreateHttpCache();
   CheckCacheResetStatus(&histograms_, false);
 
   // At this point, we have already called the initialization.
@@ -215,6 +224,7 @@ IN_PROC_BROWSER_TEST_F(ProfileNetworkContextServiceCacheSameBrowsertest,
 
 IN_PROC_BROWSER_TEST_F(ProfileNetworkContextServiceCacheSameBrowsertest,
                        TestCacheResetParameter) {
+  NavigateToCreateHttpCache();
   CheckCacheResetStatus(&histograms_, false);
 
   // At this point, we have already called the initialization.
@@ -248,6 +258,7 @@ class ProfileNetworkContextServiceCacheChangeBrowsertest
 // from the unknown state.
 IN_PROC_BROWSER_TEST_F(ProfileNetworkContextServiceCacheChangeBrowsertest,
                        PRE_TestCacheResetParameter) {
+  NavigateToCreateHttpCache();
   CheckCacheResetStatus(&histograms_, false);
 
   // At this point, we have already called the initialization.
@@ -267,6 +278,7 @@ IN_PROC_BROWSER_TEST_F(ProfileNetworkContextServiceCacheChangeBrowsertest,
 // previous test, so we should see a reset being in an experiment.
 IN_PROC_BROWSER_TEST_F(ProfileNetworkContextServiceCacheChangeBrowsertest,
                        TestCacheResetParameter) {
+  NavigateToCreateHttpCache();
   CheckCacheResetStatus(&histograms_, true);
 
   // At this point, we have already called the initialization once.

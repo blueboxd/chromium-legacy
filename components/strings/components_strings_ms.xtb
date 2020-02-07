@@ -691,6 +691,7 @@
 <translation id="3987940399970879459">Kurang daripada 1 MB</translation>
 <translation id="3990250421422698716">Ofset jog</translation>
 <translation id="40103911065039147">{URL_count,plural, =1{1 halaman web berdekatan}other{# halaman web berdekatan}}</translation>
+<translation id="4014128326099193693">{COUNT,plural, =1{Dokumen PDF mengandungi {COUNT} halaman}other{Dokumen PDF mengandungi {COUNT} halaman}}</translation>
 <translation id="4030383055268325496">&amp;Buat asal tambahkan</translation>
 <translation id="4032320456957708163">Penyemak imbas anda diurus oleh <ph name="ENROLLMENT_DOMAIN" /></translation>
 <translation id="4058922952496707368">Kekunci "<ph name="SUBKEY" />": <ph name="ERROR" /></translation>
@@ -719,6 +720,7 @@
 <translation id="4142935452406587478">Dulang 10</translation>
 <translation id="4148925816941278100">American Express</translation>
 <translation id="4151403195736952345">Gunakan lalai global (Kesan)</translation>
+<translation id="4152318981910038897">{COUNT,plural, =1{Halaman 1}other{Halaman {COUNT}}}</translation>
 <translation id="4159784952369912983">Ungu</translation>
 <translation id="4165986682804962316">Tetapan tapak</translation>
 <translation id="4171400957073367226">Tandatangan pengesahan tidak sah</translation>
@@ -1396,6 +1398,7 @@
 <translation id="7201591969684833065">Pentadbir anda dapat melihat:</translation>
 <translation id="7202346780273620635">Surat-Ekstra</translation>
 <translation id="7210863904660874423"><ph name="HOST_NAME" /> tidak mematuhi piawaian keselamatan.</translation>
+<translation id="7210993021468939304">Aktiviti Linux dalam bekas dan boleh memasang serta menjalankan apl Linux dalam bekas</translation>
 <translation id="721197778055552897"><ph name="BEGIN_LINK" />Ketahui lebih lanjut<ph name="END_LINK" /> mengenai masalah ini.</translation>
 <translation id="7219179957768738017">Sambungan menggunakan <ph name="SSL_VERSION" />.</translation>
 <translation id="7220786058474068424">Memproses</translation>
@@ -1559,6 +1562,7 @@ Butiran tambahan:
 <translation id="7878562273885520351">Kata laluan anda mungkin terjejas</translation>
 <translation id="7882421473871500483">Coklat</translation>
 <translation id="7887683347370398519">Semak CVC anda dan cuba lagi</translation>
+<translation id="7887885240995164102">Akses mod gambar dalam gambar</translation>
 <translation id="7888575728750733395">Niat pemaparan cetakan</translation>
 <translation id="7904208859782148177">C3 (Sampul Surat)</translation>
 <translation id="7932579305932748336">Kot</translation>

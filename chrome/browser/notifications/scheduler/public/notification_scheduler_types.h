@@ -29,7 +29,9 @@ enum class SchedulerClientType {
   kWebUI = 1,
   // Chrome update notification.
   kChromeUpdate = 2,
-  kMaxValue = kChromeUpdate
+  // Offline prefetch notification.
+  kPrefetch = 3,
+  kMaxValue = kPrefetch
 };
 
 // The type of user feedback from a displayed notification.

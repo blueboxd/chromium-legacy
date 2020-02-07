@@ -462,6 +462,24 @@ void HeapHashTableBacking<Table>::Finalize(void* pointer) {
   }
 }
 
+namespace internal {
+
+template <typename T>
+struct IsMemberType {
+ private:
+  template <typename U>
+  static std::true_type SubclassCheck(blink::Member<U>);
+  template <typename U>
+  static std::true_type SubclassCheck(blink::WeakMember<U>);
+  static std::false_type SubclassCheck(...);
+  using type = decltype(SubclassCheck(std::declval<T>()));
+
+ public:
+  static constexpr type value{};
+};
+
+}  // namespace internal
+
 template <typename KeyArg,
           typename MappedArg,
           typename HashArg = typename DefaultHash<KeyArg>::Hash,
@@ -511,6 +529,8 @@ class HeapHashSet
   DISALLOW_NEW();
 
   static void CheckType() {
+    static_assert(internal::IsMemberType<ValueArg>::value,
+                  "HeapHashSet supports only Member and WeakMember.");
     static_assert(std::is_trivially_destructible<HeapHashSet>::value,
                   "HeapHashSet must be trivially destructible.");
     static_assert(
@@ -543,6 +563,8 @@ class HeapLinkedHashSet
   DISALLOW_IN_CONTAINER();
 
   static void CheckType() {
+    static_assert(internal::IsMemberType<ValueArg>::value,
+                  "HeapLinkedHashSet supports only Member and WeakMember.");
     static_assert(
         IsAllowedInContainer<ValueArg>::value,
         "Not allowed to directly nest type. Use Member<> indirection instead.");
@@ -575,6 +597,8 @@ class HeapListHashSet
   DISALLOW_NEW();
 
   static void CheckType() {
+    static_assert(internal::IsMemberType<ValueArg>::value,
+                  "HeapListHashSet supports only Member and WeakMember.");
     static_assert(std::is_trivially_destructible<HeapListHashSet>::value,
                   "HeapListHashSet must be trivially destructible.");
     static_assert(
@@ -604,6 +628,8 @@ class HeapHashCountedSet
   DISALLOW_NEW();
 
   static void CheckType() {
+    static_assert(internal::IsMemberType<Value>::value,
+                  "HeapHashCountedSet supports only Member and WeakMember.");
     static_assert(std::is_trivially_destructible<HeapHashCountedSet>::value,
                   "HeapHashCountedSet must be trivially destructible.");
     static_assert(
@@ -682,6 +708,8 @@ class HeapDeque : public Deque<T, 0, HeapAllocator> {
   DISALLOW_NEW();
 
   static void CheckType() {
+    static_assert(internal::IsMemberType<T>::value,
+                  "HeapDeque supports only Member and WeakMember.");
     static_assert(std::is_trivially_destructible<HeapDeque>::value,
                   "HeapDeque must be trivially destructible.");
     static_assert(

@@ -256,6 +256,7 @@
 <translation id="6939719207673461467">キーボードを表示/非表示</translation>
 <translation id="6944854424004126054">ウィンドウを元のサイズに戻す</translation>
 <translation id="6948905685698011662">Chrome リモート デスクトップが<ph name="LINK_BEGIN" />無料のウェブアプリ<ph name="LINK_END" />になりました。ぜひお試しください。</translation>
+<translation id="6956835181934226419">すでにこの権限を許可しています。</translation>
 <translation id="6963936880795878952">無効な PIN を使用した接続が試みられたため、リモートのパソコンへの接続が一時的にブロックされています。しばらくしてからもう一度お試しください。</translation>
 <translation id="6965382102122355670">OK</translation>
 <translation id="6985691951107243942"><ph name="HOSTNAME" /> へのリモート接続を無効にしてもよろしいですか？元に戻す場合は、該当のパソコンにアクセスして接続を再び有効にする必要があります。</translation>

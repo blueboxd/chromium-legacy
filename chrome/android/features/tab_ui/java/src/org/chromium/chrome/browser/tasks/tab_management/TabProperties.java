@@ -105,6 +105,9 @@ public class TabProperties {
     public static final WritableObjectPropertyKey<TabListMediator.TabActionListener>
             SEARCH_LISTENER = new WritableObjectPropertyKey<>();
 
+    public static final PropertyModel.WritableIntPropertyKey SEARCH_CHIP_ICON_DRAWABLE_ID =
+            new PropertyModel.WritableIntPropertyKey();
+
     public static final PropertyKey[] ALL_KEYS_TAB_GRID = new PropertyKey[] {TAB_ID,
             TAB_SELECTED_LISTENER, TAB_CLOSED_LISTENER, FAVICON, THUMBNAIL_FETCHER, IPH_PROVIDER,
             TITLE, IS_SELECTED, CHECKED_DRAWABLE_STATE_LIST, CREATE_GROUP_LISTENER, CARD_ALPHA,
@@ -112,7 +115,7 @@ public class TabProperties {
             IS_INCOGNITO, SELECTED_TAB_BACKGROUND_DRAWABLE_ID, TABSTRIP_FAVICON_BACKGROUND_COLOR_ID,
             SELECTABLE_TAB_ACTION_BUTTON_BACKGROUND,
             SELECTABLE_TAB_ACTION_BUTTON_SELECTED_BACKGROUND, URL, ACCESSIBILITY_DELEGATE,
-            SEARCH_QUERY, SEARCH_LISTENER, CARD_TYPE};
+            SEARCH_QUERY, SEARCH_LISTENER, SEARCH_CHIP_ICON_DRAWABLE_ID, CARD_TYPE};
 
     public static final PropertyKey[] ALL_KEYS_TAB_STRIP =
             new PropertyKey[] {TAB_ID, TAB_SELECTED_LISTENER, TAB_CLOSED_LISTENER, FAVICON,

@@ -192,7 +192,8 @@ class IDBRequestTest : public testing::Test {
       std::unique_ptr<MockWebIDBTransaction> transaction_backend) {
     db_ = MakeGarbageCollected<IDBDatabase>(
         scope.GetExecutionContext(), std::move(database_backend),
-        MakeGarbageCollected<IDBDatabaseCallbacks>(), scope.GetIsolate());
+        MakeGarbageCollected<IDBDatabaseCallbacks>(), scope.GetIsolate(),
+        mojo::NullRemote());
 
     HashSet<String> transaction_scope = {"store"};
     transaction_ = IDBTransaction::CreateNonVersionChange(
@@ -399,7 +400,8 @@ TEST_F(IDBRequestTest, ConnectionsAfterStopping) {
         kTransactionId);
     auto* request = MakeGarbageCollected<IDBOpenDBRequest>(
         scope.GetScriptState(), callbacks, std::move(transaction_backend),
-        kTransactionId, kVersion, IDBRequest::AsyncTraceState());
+        kTransactionId, kVersion, IDBRequest::AsyncTraceState(),
+        mojo::NullRemote());
     EXPECT_EQ(request->readyState(), "pending");
     std::unique_ptr<WebIDBCallbacks> callbacks = request->CreateWebCallbacks();
 
@@ -421,7 +423,8 @@ TEST_F(IDBRequestTest, ConnectionsAfterStopping) {
         kTransactionId);
     auto* request = MakeGarbageCollected<IDBOpenDBRequest>(
         scope.GetScriptState(), callbacks, std::move(transaction_backend),
-        kTransactionId, kVersion, IDBRequest::AsyncTraceState());
+        kTransactionId, kVersion, IDBRequest::AsyncTraceState(),
+        mojo::NullRemote());
     EXPECT_EQ(request->readyState(), "pending");
     std::unique_ptr<WebIDBCallbacks> callbacks = request->CreateWebCallbacks();
 

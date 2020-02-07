@@ -257,7 +257,9 @@ void ProxyMain::BeginMainFrame(
     layer_tree_host_->DidBeginMainFrame();
     TRACE_EVENT_INSTANT0("cc", "EarlyOut_DeferCommit_InsideBeginMainFrame",
                          TRACE_EVENT_SCOPE_THREAD);
-    layer_tree_host_->RecordEndOfFrameMetrics(begin_main_frame_start_time);
+    layer_tree_host_->RecordEndOfFrameMetrics(
+        begin_main_frame_start_time,
+        begin_main_frame_state->active_sequence_trackers);
     std::vector<std::unique_ptr<SwapPromise>> empty_swap_promises;
     ImplThreadTaskRunner()->PostTask(
         FROM_HERE, base::BindOnce(&ProxyImpl::BeginMainFrameAbortedOnImpl,
@@ -317,7 +319,9 @@ void ProxyMain::BeginMainFrame(
     // detected to be a no-op.  From the perspective of an embedder, this commit
     // went through, and input should no longer be throttled, etc.
     layer_tree_host_->CommitComplete();
-    layer_tree_host_->RecordEndOfFrameMetrics(begin_main_frame_start_time);
+    layer_tree_host_->RecordEndOfFrameMetrics(
+        begin_main_frame_start_time,
+        begin_main_frame_state->active_sequence_trackers);
     return;
   }
 
@@ -352,7 +356,9 @@ void ProxyMain::BeginMainFrame(
   // blink::LocalFrameView::RunPostLifecycleSteps.
   layer_tree_host_->DidBeginMainFrame();
 
-  layer_tree_host_->RecordEndOfFrameMetrics(begin_main_frame_start_time);
+  layer_tree_host_->RecordEndOfFrameMetrics(
+      begin_main_frame_start_time,
+      begin_main_frame_state->active_sequence_trackers);
 }
 
 void ProxyMain::DidPresentCompositorFrame(

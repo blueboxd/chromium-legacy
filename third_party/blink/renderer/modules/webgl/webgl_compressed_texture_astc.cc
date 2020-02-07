@@ -59,9 +59,16 @@ bool WebGLCompressedTextureASTC::Supported(WebGLRenderingContextBase* context) {
 }
 
 const char* WebGLCompressedTextureASTC::ExtensionName() {
-  // TODO(cyzero.kim): implement extension for
+  // TODO(crbug.com/1049880): implement extension for
   // GL_KHR_texture_compression_astc_hdr.
   return "WEBGL_compressed_texture_astc";
+}
+
+Vector<String> WebGLCompressedTextureASTC::getSupportedProfiles() {
+  // TODO(crbug.com/1049880): temporarily always return ["ldr"].
+  // Update when hdr is supported.
+  Vector<String> result = {"ldr"};
+  return result;
 }
 
 }  // namespace blink

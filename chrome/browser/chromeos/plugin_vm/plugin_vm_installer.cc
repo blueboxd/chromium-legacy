@@ -193,13 +193,20 @@ void PluginVmInstaller::OnDlcDownloadCompleted(
   }
 
   if (err != dlcservice::kErrorNone) {
-    // TODO(b/145814572): Remove this log once PluginVM is converted to DLC and
+    // TODO(b/148470849): Remove this log once PluginVM is converted to DLC and
     // invoke |OnDownloadFailed()|. The temporary passthrough is safe as
     // PluginVM will be rootfs resident as a fallback.
     LOG(ERROR) << "PluginVM DLC installation failed, falling back to rootfs "
-                  "resident PluginVM.";
-    RecordPluginVmDlcUseResultHistogram(
-        PluginVmDlcUseResult::kFallbackToRootFsInternalDlcError);
+                  "resident PluginVM. Reason being dlcservice error: "
+               << err;
+    PluginVmDlcUseResult dlc_use_result =
+        PluginVmDlcUseResult::kFallbackToRootFsInternalDlcError;
+    if (err == dlcservice::kErrorBusy)
+      dlc_use_result = PluginVmDlcUseResult::kFallbackToRootFsBusyDlcError;
+    else if (err == dlcservice::kErrorNeedReboot)
+      dlc_use_result =
+          PluginVmDlcUseResult::kFallbackToRootFsNeedRebootDlcError;
+    RecordPluginVmDlcUseResultHistogram(dlc_use_result);
   } else {
     RecordPluginVmDlcUseResultHistogram(PluginVmDlcUseResult::kDlcSuccess);
   }

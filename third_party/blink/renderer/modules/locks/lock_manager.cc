@@ -43,7 +43,6 @@ constexpr char kRequestAbortedMessage[] = "The request was aborted.";
 
 LockInfo* ToLockInfo(const mojom::blink::LockInfoPtr& record) {
   LockInfo* info = LockInfo::Create();
-  ;
   info->setMode(Lock::ModeToString(record->mode));
   info->setName(record->name);
   info->setClientId(record->client_id);
@@ -74,6 +73,7 @@ class LockManager::LockRequestImpl final
       const String& name,
       mojom::blink::LockMode mode,
       mojo::PendingAssociatedReceiver<mojom::blink::LockRequest> receiver,
+      mojo::PendingRemote<mojom::blink::ObservedFeature> lock_lifetime,
       LockManager* manager)
       : callback_(callback),
         resolver_(resolver),
@@ -83,6 +83,7 @@ class LockManager::LockRequestImpl final
             this,
             std::move(receiver),
             manager->GetExecutionContext()->GetTaskRunner(TaskType::kWebLocks)),
+        lock_lifetime_(std::move(lock_lifetime)),
         manager_(manager) {}
 
   ~LockRequestImpl() override = default;
@@ -159,8 +160,9 @@ class LockManager::LockRequestImpl final
       return;
     }
 
-    Lock* lock = MakeGarbageCollected<Lock>(script_state, name_, mode_,
-                                            std::move(handle_remote), manager_);
+    Lock* lock = MakeGarbageCollected<Lock>(
+        script_state, name_, mode_, std::move(handle_remote),
+        std::move(lock_lifetime_), manager_);
     manager_->held_locks_.insert(lock);
 
     ScriptState::Scope scope(script_state);
@@ -191,6 +193,10 @@ class LockManager::LockRequestImpl final
   mojom::blink::LockMode mode_;
 
   mojo::AssociatedReceiver<mojom::blink::LockRequest> receiver_;
+
+  // Held to pass into the Lock if granted, to inform the browser that
+  // WebLocks are being used by this frame.
+  mojo::PendingRemote<mojom::blink::ObservedFeature> lock_lifetime_;
 
   // The |manager_| keeps |this| alive until a response comes in and this is
   // registered. If the context is destroyed then |manager_| will dispose of
@@ -248,6 +254,11 @@ ScriptPromise LockManager::request(ScriptState* script_state,
       exception_state.ThrowTypeError("Service not available.");
       return ScriptPromise();
     }
+  }
+  if (!observer_.is_bound()) {
+    context->GetBrowserInterfaceBroker().GetInterface(
+        observer_.BindNewPipeAndPassReceiver(
+            context->GetTaskRunner(TaskType::kMiscPlatformAPI)));
   }
 
   mojom::blink::LockMode mode = Lock::StringToMode(options->mode());
@@ -314,6 +325,10 @@ ScriptPromise LockManager::request(ScriptState* script_state,
   auto* resolver = MakeGarbageCollected<ScriptPromiseResolver>(script_state);
   ScriptPromise promise = resolver->Promise();
 
+  mojo::PendingRemote<mojom::blink::ObservedFeature> lock_lifetime;
+  observer_->Register(lock_lifetime.InitWithNewPipeAndPassReceiver(),
+                      mojom::blink::ObservedFeatureType::kWebLock);
+
   mojo::PendingAssociatedRemote<mojom::blink::LockRequest> request_remote;
   // 11.1. Let request be the result of running the steps to request a lock with
   // promise, the current agent, environment’s id, origin, callback, name,
@@ -321,7 +336,8 @@ ScriptPromise LockManager::request(ScriptState* script_state,
   // and options’ steal dictionary member.
   LockRequestImpl* request = MakeGarbageCollected<LockRequestImpl>(
       callback, resolver, name, mode,
-      request_remote.InitWithNewEndpointAndPassReceiver(), this);
+      request_remote.InitWithNewEndpointAndPassReceiver(),
+      std::move(lock_lifetime), this);
   AddPendingRequest(request);
 
   // 11.2. If options’ signal dictionary member is present, then add the

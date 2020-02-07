@@ -690,6 +690,7 @@
 <translation id="3987940399970879459">أقل من ميغابايت واحد</translation>
 <translation id="3990250421422698716">ترتيب النسخ مع الفصل بينها</translation>
 <translation id="40103911065039147">{URL_count,plural, =1{صفحة ويب واحدة مجاورة}zero{# صفحات ويب مجاورة}two{صفحتا ويب (#) مجاورتان}few{# صفحات ويب مجاورة}many{# صفحة ويب مجاورة}other{# صفحة ويب مجاورة}}</translation>
+<translation id="4014128326099193693">{COUNT,plural, =1{‏يحتوي مستند PDF على صفحة واحدة ({COUNT}).}zero{‏يحتوي مستند PDF على {COUNT} صفحة.}two{‏يحتوي مستند PDF على صفحتين ({COUNT}).}few{‏يحتوي مستند PDF على {COUNT} صفحات.}many{‏يحتوي مستند PDF على {COUNT} صفحة.}other{‏يحتوي مستند PDF على {COUNT} صفحة.}}</translation>
 <translation id="4030383055268325496">تراجع عن الإ&amp;ضافة</translation>
 <translation id="4032320456957708163">إدارة متصفِّحك من خلال <ph name="ENROLLMENT_DOMAIN" /></translation>
 <translation id="4058922952496707368">المفتاح "<ph name="SUBKEY" />": <ph name="ERROR" /></translation>
@@ -718,6 +719,7 @@
 <translation id="4142935452406587478">الدُرج 10</translation>
 <translation id="4148925816941278100">American Express</translation>
 <translation id="4151403195736952345">استخدام الإعدادات العمومية التلقائية (كشف)</translation>
+<translation id="4152318981910038897">{COUNT,plural, =1{صفحة واحدة}zero{{COUNT} صفحة}two{صفحتان ({COUNT})}few{{COUNT} صفحات}many{{COUNT} صفحة}other{{COUNT} صفحة}}</translation>
 <translation id="4159784952369912983">أرجواني</translation>
 <translation id="4165986682804962316">إعدادات المواقع الإلكترونية</translation>
 <translation id="4171400957073367226">توقيع تحقق سيئ</translation>
@@ -1395,6 +1397,7 @@
 <translation id="7201591969684833065">يمكن للمشرف الاطِّلاع على ما يلي:</translation>
 <translation id="7202346780273620635">Letter-Extra</translation>
 <translation id="7210863904660874423">لا يلتزم <ph name="HOST_NAME" /> بمعايير الأمان.</translation>
+<translation id="7210993021468939304">‏نشاط نظام التشغيل Linux في الحاوية ويمكن تثبيت تطبيقات نظام التشغيل Linux وتشغيلها في الحاوية.</translation>
 <translation id="721197778055552897"><ph name="BEGIN_LINK" />مزيد من المعلومات<ph name="END_LINK" /> حول هذه المشكلة.</translation>
 <translation id="7219179957768738017">الاتصال يستخدم <ph name="SSL_VERSION" />.</translation>
 <translation id="7220786058474068424">جارٍ المعالجة</translation>
@@ -1558,6 +1561,7 @@
 <translation id="7878562273885520351">من المحتمل أنه تم اختراق كلمة مرورك</translation>
 <translation id="7882421473871500483">بني</translation>
 <translation id="7887683347370398519">‏تحقق من رمز التحقق من البطاقة (CVC) ثم أعد المحاولة.</translation>
+<translation id="7887885240995164102">الدخول في وضع "نافذة ضمن نافذة"</translation>
 <translation id="7888575728750733395">تحديد لون الصورة</translation>
 <translation id="7904208859782148177">‏C3 (مغلف)</translation>
 <translation id="7932579305932748336">الطبقة الخارجية</translation>

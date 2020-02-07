@@ -107,9 +107,9 @@ static void SetTransformTreePageScaleFactor(
 }
 
 bool PropertyTreeManager::DirectlyUpdateCompositedOpacityValue(
-    cc::PropertyTrees* property_trees,
     cc::LayerTreeHost& host,
     const EffectPaintPropertyNode& effect) {
+  auto* property_trees = host.property_trees();
   auto* cc_effect = property_trees->effect_tree.Node(
       effect.CcNodeId(property_trees->sequence_number));
   if (!cc_effect)
@@ -128,7 +128,6 @@ bool PropertyTreeManager::DirectlyUpdateCompositedOpacityValue(
 }
 
 bool PropertyTreeManager::DirectlyUpdateScrollOffsetTransform(
-    cc::PropertyTrees* property_trees,
     cc::LayerTreeHost& host,
     const TransformPaintPropertyNode& transform) {
   auto* scroll_node = transform.ScrollNode();
@@ -136,6 +135,7 @@ bool PropertyTreeManager::DirectlyUpdateScrollOffsetTransform(
   if (!scroll_node)
     return false;
 
+  auto* property_trees = host.property_trees();
   auto* cc_scroll_node = property_trees->scroll_tree.Node(
       scroll_node->CcNodeId(property_trees->sequence_number));
   if (!cc_scroll_node)
@@ -149,24 +149,22 @@ bool PropertyTreeManager::DirectlyUpdateScrollOffsetTransform(
   DCHECK(!cc_transform->is_currently_animating);
 
   UpdateCcTransformLocalMatrix(*cc_transform, transform);
-  property_trees->scroll_tree.SetScrollOffset(
-      scroll_node->GetCompositorElementId(), cc_transform->scroll_offset);
-
+  DirectlySetScrollOffset(host, scroll_node->GetCompositorElementId(),
+                          cc_transform->scroll_offset);
   cc_transform->transform_changed = true;
   property_trees->transform_tree.set_needs_update(true);
-  property_trees->scroll_tree.set_needs_update(true);
   host.SetNeedsCommit();
   return true;
 }
 
 bool PropertyTreeManager::DirectlyUpdateTransform(
-    cc::PropertyTrees* property_trees,
     cc::LayerTreeHost& host,
     const TransformPaintPropertyNode& transform) {
   // If we have a ScrollNode, we should be using
   // DirectlyUpdateScrollOffsetTransform().
   DCHECK(!transform.ScrollNode());
 
+  auto* property_trees = host.property_trees();
   auto* cc_transform = property_trees->transform_tree.Node(
       transform.CcNodeId(property_trees->sequence_number));
   if (!cc_transform)
@@ -186,11 +184,11 @@ bool PropertyTreeManager::DirectlyUpdateTransform(
 }
 
 bool PropertyTreeManager::DirectlyUpdatePageScaleTransform(
-    cc::PropertyTrees* property_trees,
     cc::LayerTreeHost& host,
     const TransformPaintPropertyNode& transform) {
   DCHECK(!transform.ScrollNode());
 
+  auto* property_trees = host.property_trees();
   auto* cc_transform = property_trees->transform_tree.Node(
       transform.CcNodeId(property_trees->sequence_number));
   if (!cc_transform)
@@ -202,6 +200,19 @@ bool PropertyTreeManager::DirectlyUpdatePageScaleTransform(
   cc_transform->transform_changed = true;
   property_trees->transform_tree.set_needs_update(true);
   host.SetNeedsCommit();
+  return true;
+}
+
+bool PropertyTreeManager::DirectlySetScrollOffset(
+    cc::LayerTreeHost& host,
+    CompositorElementId element_id,
+    const gfx::ScrollOffset& scroll_offset) {
+  auto* property_trees = host.property_trees();
+  if (property_trees->scroll_tree.SetScrollOffset(element_id, scroll_offset)) {
+    if (auto* layer = host.LayerByElementId(element_id))
+      layer->SetNeedsPushProperties();
+    host.SetNeedsCommit();
+  }
   return true;
 }
 
@@ -560,7 +571,6 @@ void PropertyTreeManager::CreateCompositorScrollNode(
 
   GetScrollTree().SetScrollOffset(compositor_element_id,
                                   scroll_offset_translation.scroll_offset);
-  GetScrollTree().set_needs_update(true);
 }
 
 int PropertyTreeManager::EnsureCompositorScrollNode(

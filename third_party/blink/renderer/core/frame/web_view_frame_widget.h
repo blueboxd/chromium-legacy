@@ -61,7 +61,9 @@ class CORE_EXPORT WebViewFrameWidget : public WebFrameWidgetBase {
   void BeginCommitCompositorFrame() override;
   void EndCommitCompositorFrame() override;
   void RecordStartOfFrameMetrics() override;
-  void RecordEndOfFrameMetrics(base::TimeTicks frame_begin_time) override;
+  void RecordEndOfFrameMetrics(
+      base::TimeTicks frame_begin_time,
+      cc::ActiveFrameSequenceTrackers trackers) override;
   std::unique_ptr<cc::BeginMainFrameMetrics> GetBeginMainFrameMetrics()
       override;
   void UpdateLifecycle(LifecycleUpdate requested_update,

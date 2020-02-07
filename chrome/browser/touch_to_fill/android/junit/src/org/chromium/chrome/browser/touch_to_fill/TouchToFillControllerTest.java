@@ -112,7 +112,7 @@ public class TouchToFillControllerTest {
         mJniMocker.mock(RecordHistogramJni.TEST_HOOKS, mMockRecordHistogram);
         when(mUrlFormatterJniMock.formatUrlForDisplayOmitScheme(anyString()))
                 .then(inv -> format(inv.getArgument(0)));
-        when(mUrlFormatterJniMock.formatUrlForSecurityDisplay(
+        when(mUrlFormatterJniMock.formatStringUrlForSecurityDisplay(
                      anyString(), eq(SchemeDisplay.OMIT_HTTP_AND_HTTPS)))
                 .then(inv -> formatForSecurityDisplay(inv.getArgument(0)));
 

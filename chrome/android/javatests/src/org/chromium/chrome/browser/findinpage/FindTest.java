@@ -31,6 +31,7 @@ import org.junit.Rule;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
+import org.chromium.base.test.util.CloseableOnMainThread;
 import org.chromium.base.test.util.CommandLineFlags;
 import org.chromium.base.test.util.Feature;
 import org.chromium.base.test.util.RetryOnFailure;
@@ -379,7 +380,7 @@ public class FindTest {
     @SmallTest
     @Feature({"FindInPage"})
     @RetryOnFailure
-    public void testPastedTextStylingRemoved() {
+    public void testPastedTextStylingRemoved() throws Throwable {
         mActivityTestRule.loadUrl(mTestServer.getURL(FILEPATH));
         findInPageFromMenu();
 
@@ -387,17 +388,23 @@ public class FindTest {
         Assert.assertEquals(View.VISIBLE, findToolbar.getVisibility());
         final EditText findQueryText = getFindQueryText();
 
-        // Emulate pasting the text into the find query text box
-        TestThreadUtils.runOnUiThreadBlocking(() -> {
-            // Setup the clipboard with a selection of stylized text
-            ClipboardManager clipboard =
-                    (ClipboardManager) InstrumentationRegistry.getInstrumentation()
-                            .getTargetContext()
-                            .getSystemService(Context.CLIPBOARD_SERVICE);
-            clipboard.setPrimaryClip(ClipData.newHtmlText("label", "text", "<b>text</b>"));
+        // Allow all thread policies temporarily in main thread to avoid
+        // DiskWrite and UnBufferedIo violations during copying under
+        // emulator environment.
+        try (CloseableOnMainThread ignored =
+                        CloseableOnMainThread.StrictMode.allowAllThreadPolicies()) {
+            // Emulate pasting the text into the find query text box
+            TestThreadUtils.runOnUiThreadBlocking(() -> {
+                // Setup the clipboard with a selection of stylized text
+                ClipboardManager clipboard =
+                        (ClipboardManager) InstrumentationRegistry.getInstrumentation()
+                                .getTargetContext()
+                                .getSystemService(Context.CLIPBOARD_SERVICE);
+                clipboard.setPrimaryClip(ClipData.newHtmlText("label", "text", "<b>text</b>"));
 
-            findQueryText.onTextContextMenuItem(android.R.id.paste);
-        });
+                findQueryText.onTextContextMenuItem(android.R.id.paste);
+            });
+        }
 
         // Resulting text in the find query box should be unstyled
         final Spannable text = findQueryText.getText();

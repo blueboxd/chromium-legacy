@@ -6,9 +6,18 @@
 
 #include <base/callback.h>
 #include <base/logging.h>
+#include "base/task/post_task.h"
+#include "base/time/time.h"
 #include "chrome/browser/safe_browsing/cloud_content_scanning/binary_upload_service.h"
+#include "content/public/browser/browser_thread.h"
 
 namespace safe_browsing {
+
+namespace {
+
+base::TimeDelta response_delay = base::TimeDelta::FromSeconds(0);
+
+}  // namespace
 
 BinaryUploadService::Result FakeDeepScanningDialogDelegate::result_ =
     BinaryUploadService::Result::SUCCESS;
@@ -55,6 +64,11 @@ FakeDeepScanningDialogDelegate::Create(
       delete_closure, status_callback, encryption_callback, std::move(dm_token),
       web_contents, std::move(data), std::move(callback));
   return ret;
+}
+
+// static
+void FakeDeepScanningDialogDelegate::SetResponseDelay(base::TimeDelta delay) {
+  response_delay = delay;
 }
 
 // static
@@ -151,10 +165,12 @@ void FakeDeepScanningDialogDelegate::UploadTextForDeepScanning(
   DCHECK_EQ(dm_token_, request->deep_scanning_request().dm_token());
 
   // Simulate a response.
-  base::ThreadTaskRunnerHandle::Get()->PostTask(
-      FROM_HERE, base::BindOnce(&FakeDeepScanningDialogDelegate::Response,
-                                base::Unretained(this), base::FilePath(),
-                                std::move(request)));
+  base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
+      FROM_HERE,
+      base::BindOnce(&FakeDeepScanningDialogDelegate::Response,
+                     base::Unretained(this), base::FilePath(),
+                     std::move(request)),
+      response_delay);
 }
 
 void FakeDeepScanningDialogDelegate::UploadFileForDeepScanning(
@@ -164,14 +180,11 @@ void FakeDeepScanningDialogDelegate::UploadFileForDeepScanning(
   DCHECK_EQ(dm_token_, request->deep_scanning_request().dm_token());
 
   // Simulate a response.
-  base::ThreadTaskRunnerHandle::Get()->PostTask(
+  base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
       FROM_HERE,
       base::BindOnce(&FakeDeepScanningDialogDelegate::Response,
-                     base::Unretained(this), path, std::move(request)));
-}
-
-bool FakeDeepScanningDialogDelegate::CloseTabModalDialog() {
-  return false;
+                     base::Unretained(this), path, std::move(request)),
+      response_delay);
 }
 
 }  // namespace safe_browsing

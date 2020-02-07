@@ -22,6 +22,8 @@
 #if defined(OS_ANDROID)
 #include "chrome/browser/notifications/scheduler/display_agent_android.h"
 #include "chrome/browser/notifications/scheduler/notification_background_task_scheduler_android.h"
+#include "chrome/browser/offline_pages/prefetch/notifications/prefetch_notification_client.h"
+#include "chrome/browser/offline_pages/prefetch/notifications/prefetch_notification_service_factory.h"
 #include "chrome/browser/updates/update_notification_client.h"
 #include "chrome/browser/updates/update_notification_service_factory.h"
 #endif  // defined(OS_ANDROID)
@@ -34,14 +36,25 @@ RegisterClients(content::BrowserContext* context) {
   // TODO(xingliu): Register clients here.
 #if defined(OS_ANDROID)
   // Register UpdateNotificationClient.
-  auto update_notification_service_callback = base::BindRepeating(
+  auto update_notification_service_getter = base::BindRepeating(
       &UpdateNotificationServiceFactory::GetForBrowserContext, context);
   auto chrome_update_client =
       std::make_unique<updates::UpdateNotificationClient>(
-          std::move(update_notification_service_callback));
+          std::move(update_notification_service_getter));
   client_registrar->RegisterClient(
       notifications::SchedulerClientType::kChromeUpdate,
       std::move(chrome_update_client));
+
+  // Register PrefetchNotificationClient.
+  auto prefetch_notification_service_getter = base::BindRepeating(
+      &PrefetchNotificationServiceFactory::GetForBrowserContext, context);
+  auto prefetch_client =
+      std::make_unique<offline_pages::PrefetchNotificationClient>(
+          std::move(prefetch_notification_service_getter));
+  client_registrar->RegisterClient(
+      notifications::SchedulerClientType::kPrefetch,
+      std::move(prefetch_client));
+
 #endif  // defined(OS_ANDROID)
   return client_registrar;
 }

@@ -343,11 +343,14 @@ void OverviewController::ToggleOverview(
       observer.OnOverviewModeEnding(overview_session_.get());
     overview_session_->Shutdown();
 
-    if (overview_session_->enter_exit_overview_type() ==
-        OverviewSession::EnterExitOverviewType::kImmediateExit) {
+    const bool should_end_immediately =
+        overview_session_->enter_exit_overview_type() ==
+        OverviewSession::EnterExitOverviewType::kImmediateExit;
+    if (should_end_immediately) {
       for (const auto& animation : delayed_animations_)
         animation->Shutdown();
       delayed_animations_.clear();
+      OnEndingAnimationComplete(/*canceled=*/false);
     }
 
     // Don't delete |overview_session_| yet since the stack is still using it.
@@ -356,7 +359,7 @@ void OverviewController::ToggleOverview(
     last_overview_session_time_ = base::Time::Now();
     for (auto& observer : observers_)
       observer.OnOverviewModeEnded();
-    if (delayed_animations_.empty())
+    if (!should_end_immediately && delayed_animations_.empty())
       OnEndingAnimationComplete(/*canceled=*/false);
   } else {
     DCHECK(CanEnterOverview());

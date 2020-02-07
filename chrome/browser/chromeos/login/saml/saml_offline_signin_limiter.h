@@ -60,6 +60,9 @@ class SAMLOfflineSigninLimiter : public KeyedService,
   // to use online authentication against GAIA.
   void ForceOnlineLogin();
 
+  // Stores the last online login time and offline login time limit
+  void UpdateOnlineSigninData(base::Time time, base::TimeDelta limit);
+
   Profile* profile_;
   base::Clock* clock_;
 

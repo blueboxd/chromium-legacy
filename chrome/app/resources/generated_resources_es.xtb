@@ -3559,6 +3559,7 @@ Exponente público (<ph name="PUBLIC_EXPONENT_NUM_BITS" /> bits):
 <translation id="5975792506968920132">Porcentaje de carga de batería</translation>
 <translation id="5976160379964388480">Otros</translation>
 <translation id="5978277834170881274">&amp;Utilizar la revisión ortográfica básica</translation>
+<translation id="5979084224081478209">Comprobar contraseñas</translation>
 <translation id="5979421442488174909">&amp;Traducir a <ph name="LANGUAGE" /></translation>
 <translation id="5979469435153841984">Para añadir páginas a marcadores, haz clic en la estrella situada en la barra de direcciones</translation>
 <translation id="5984222099446776634">Visitados recientemente</translation>
@@ -3909,7 +3910,7 @@ Exponente público (<ph name="PUBLIC_EXPONENT_NUM_BITS" /> bits):
 <translation id="6472804939621540371">Esta acción borrará todos los datos y las cookies guardados por <ph name="SITE_GROUP_NAME" />, por los sitios web que contenga y por sus aplicaciones instaladas.</translation>
 <translation id="6472893788822429178">Mostrar el botón Página principal</translation>
 <translation id="6473842110411557830">Ilustración de Powerwash</translation>
-<translation id="6474498546677193336">No se ha podido dejar de compartir porque una aplicación está usando esta carpeta. Se dejará de compartir la próxima vez que se apague Linux.</translation>
+<translation id="6474498546677193336">No se ha podido dejar de compartir esta carpeta porque una aplicación está usándola. Se dejará de compartir la próxima vez que se apague Linux.</translation>
 <translation id="6474884162850599008">Desconectar cuenta de Google Drive</translation>
 <translation id="6475697075626596525"><ph name="APP_NAME" /> quiere compartir contenido de tu pantalla. Elige lo que quieres compartir.</translation>
 <translation id="6478248366783946499">¿Quieres conservar el archivo peligroso?</translation>
@@ -4159,7 +4160,6 @@ Exponente público (<ph name="PUBLIC_EXPONENT_NUM_BITS" /> bits):
 <translation id="6840155290835956714">Preguntar antes de enviar</translation>
 <translation id="6840184929775541289">No es una entidad emisora de certificados.</translation>
 <translation id="6841186874966388268">Errores</translation>
-<translation id="6843267103192918276">Inicia sesión para acceder a los marcadores, el historial, las contraseñas y los ajustes en todos tus dispositivos. También iniciarás sesión de forma automática en tus servicios de Google. <ph name="LINK_BEGIN" />Más información<ph name="LINK_END" /></translation>
 <translation id="6843423766595476978">Ok Google ya se ha configurado</translation>
 <translation id="6845038076637626672">Abrir de forma maximizada</translation>
 <translation id="6845325883481699275">Ayudar a mejorar la seguridad de Chrome</translation>
@@ -4772,7 +4772,7 @@ Exponente público (<ph name="PUBLIC_EXPONENT_NUM_BITS" /> bits):
 <translation id="7696063401938172191">En tu "<ph name="PHONE_NAME" />":</translation>
 <translation id="7698408911093959127">{COUNT,plural, =1{1 elemento en la lista de marcadores}other{# elementos en la lista de marcadores}}</translation>
 <translation id="7701040980221191251">No hay</translation>
-<translation id="770157826141786566">El plazo para devolver este dispositivo se ha agotado.</translation>
+<translation id="770157826141786566">Se ha pasado el plazo para devolver este dispositivo.</translation>
 <translation id="7701869757853594372">EL USUARIO administra</translation>
 <translation id="7702574632857388784">Eliminar <ph name="FILE_NAME" /> de la lista</translation>
 <translation id="7702907602086592255">Dominio</translation>
@@ -5138,7 +5138,7 @@ Guarda tu archivo de clave en un lugar seguro, ya que lo necesitarás para crear
 <translation id="8154790740888707867">Ningún archivo encontrado</translation>
 <translation id="815491593104042026">¡Vaya! Se ha producido un error de autenticación porque estaba configurada para utilizar una URL no segura (<ph name="BLOCKED_URL" />). Ponte en contacto con tu administrador.</translation>
 <translation id="8157704005178149728">Configurando la supervisión</translation>
-<translation id="8158117992543756526">Este dispositivo dejó de recibir actualizaciones de software y seguridad en <ph name="MONTH_AND_YEAR" />. <ph name="LINK_BEGIN" />Más información<ph name="LINK_END" /></translation>
+<translation id="8158117992543756526">Este dispositivo dejó de recibir actualizaciones de software y seguridad automáticas en <ph name="MONTH_AND_YEAR" />. <ph name="LINK_BEGIN" />Más información<ph name="LINK_END" /></translation>
 <translation id="816055135686411707">Error al configurar el certificado de confianza</translation>
 <translation id="816095449251911490"><ph name="SPEED" /> - <ph name="RECEIVED_AMOUNT" />, <ph name="TIME_REMAINING" /></translation>
 <translation id="8162984717805647492">{NUM_TABS,plural, =1{Mover pestaña a una nueva ventana}other{Mover pestañas a una nueva ventana}}</translation>

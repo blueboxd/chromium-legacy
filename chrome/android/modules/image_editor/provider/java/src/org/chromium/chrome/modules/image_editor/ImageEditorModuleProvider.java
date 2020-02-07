@@ -18,13 +18,29 @@ public class ImageEditorModuleProvider {
     }
 
     /**
-     * Installs the module.
+     * Requests deferred installation of the module, i.e. when on unmetered network connection and
+     * device is charging.
+     */
+    public static void maybeInstallModuleDeferred() {
+        if (isModuleInstalled()) {
+            return;
+        }
+
+        ImageEditorModule.installDeferred();
+    }
+
+    /**
+     * Attempts to install the module immediately.
      *
      * @param listener Called when the install has finished.
      */
-    public static void installModule(InstallListener listener) {
-        if (isModuleInstalled()) return;
-        // TODO(crbug/1024586): Implement installation logic.
+    public static void maybeInstallModule(InstallListener listener) {
+        if (isModuleInstalled()) {
+            listener.onComplete(false);
+            return;
+        }
+
+        ImageEditorModule.install(listener);
     }
 
     /**

@@ -136,6 +136,7 @@
       确定在零售模式设备的登录屏幕上显示屏幕保护程序之前的闲置时间。
 
       应以毫秒为单位指定此政策的值。</translation>
+<translation id="1145702698069317184">禁止上传和下载不受支持的文件类型</translation>
 <translation id="1151353063931113432">在这些网站上允许图片</translation>
 <translation id="1152117524387175066">报告设备启动时的dev开关状态。
 
@@ -721,6 +722,15 @@
 <translation id="2168397434410358693">使用交流电源供电时的闲置延迟时间</translation>
 <translation id="217013996107840632">用于从替代浏览器切换至 Chrome 的命令行参数。</translation>
 <translation id="2170233653554726857">启用WPAD优化</translation>
+<translation id="2171245625445050634">在 M82 中，我们移除了此政策，请改用 MinimumChromeVersionEnforced。
+
+      配置允许使用的最低 <ph name="PRODUCT_NAME" /> 版本的相关要求。低于指定版本的版本将被视为已过时，因此只有在用户更新操作系统后，设备才会允许其登录。
+
+      如果当前版本在用户会话期间变为过时，系统会强制用户退出登录。
+
+      如果此政策未设置，系统将不会应用任何限制，并且无论使用的是哪个 <ph name="PRODUCT_NAME" /> 版本，用户都能登录。
+
+      此处的“版本”既可以是确切版本（如“61.0.3163.120”），也可以是版本前缀（如“61.0”）。  </translation>
 <translation id="2176565653304920879">设置此政策后，系统会根据所设的值采用下列某种方式执行自动检测时区流程：
 
       如果所设的值是 TimezoneAutomaticDetectionUsersDecide，用户将能够使用 chrome://settings 中的常规控件来控制自动检测时区操作。
@@ -798,6 +808,7 @@
 
       如果 HardwareAccelerationModeEnabled 设为 false，系统将忽略 Disable3DAPIs（相当于 Disable3DAPIs 设为 true）。</translation>
 <translation id="2258126710006312594">允许远程访问用户将文件传到主机或接收从主机传出的文件</translation>
+<translation id="2267288258868218403">禁止上传不受支持的文件类型</translation>
 <translation id="2269319728625047531">在登录期间允许显示同步同意声明</translation>
 <translation id="2270747976331889601">为本地信任锚启用 TLS 1.3 安全功能。</translation>
 <translation id="2274864612594831715">通过此政策，您可以启用虚拟键盘作为Chrome操作系统上的输入设备。用户无法覆盖此政策。
@@ -1252,6 +1263,13 @@
 
       请注意，如果此政策在 <ph name="PRODUCT_NAME" /> 运行期间发生了更改，则更改将仅应用于新打开的标签页。因此，部分标签页可能仍会沿用先前的设置。</translation>
 <translation id="284288632677954003">包含始终不应触发浏览器切换的网址的 XML 文件对应的网址。</translation>
+<translation id="2844404652289407061">允许在 <ph name="PRODUCT_NAME" /> 的内容视图中使用“触摸搜索”功能。
+
+      如果您启用了此设置，用户将能够使用“触摸搜索”功能，并可选择开启或关闭该功能。
+
+      如果您停用了此设置，“触摸搜索”功能将会被完全停用。
+
+      如果您未设置此政策，则等同于已启用此政策，请参见上述说明。</translation>
 <translation id="285480231336205327">启用高反差模式</translation>
 <translation id="2854919890879212089">让 <ph name="PRODUCT_NAME" /> 将系统默认打印机（而不是最近使用过的打印机）用作打印预览中的默认选项。
 
@@ -1689,6 +1707,7 @@
 <translation id="3646859102161347133">设置放大镜类型</translation>
 <translation id="3653237928288822292">默认搜索服务提供商图标</translation>
 <translation id="3654906736796256792">允许音频沙盒运行</translation>
+<translation id="3657998022005237040">禁止下载不受支持的文件类型</translation>
 <translation id="3660510274595679517">
         当此政策设为 True 时，云管理注册是强制性的。如果注册失败，Chrome 便无法启动。
 
@@ -1869,6 +1888,7 @@
       如果您未设置此政策，<ph name="PRODUCT_NAME" /> 将会使用其惯用的默认目录（因平台而异）。
 
       有关可用变量的列表，请访问 https://www.chromium.org/administrators/policy-list-3/user-data-directory-variables。</translation>
+<translation id="3898795800259311780">允许或拒绝屏幕截图</translation>
 <translation id="3911737181201537215">此政策对 Android 完成的记录没有任何影响。</translation>
 <translation id="3912092044353890761">在登录屏幕上启用虚拟键盘无障碍功能。
 
@@ -1994,6 +2014,7 @@
           如果此政策设为“在会话期间保留 Cookie”，系统将在会话结束后清除 Cookie。请注意，如果 <ph name="PRODUCT_NAME" /> 以“后台模式”运行，那么在最后一个窗口关闭后，会话可能不会结束。如需关于配置此行为的更多信息，请参见“BackgroundModeEnabled”政策。
 
           如果此政策未设置，系统将使用“AllowCookies”，并且用户可以更改此政策。</translation>
+<translation id="4093716537292423758">允许不受支持的文件类型</translation>
 <translation id="410068710490553233">允许登录其他 Google 帐号</translation>
 <translation id="4103289232974211388">用户确认后重定向至 SAML IdP</translation>
 <translation id="4105884561459127998">为 SAML 登录配置身份验证类型。
@@ -2243,9 +2264,19 @@
 <translation id="4482640907922304445">在 <ph name="PRODUCT_NAME" />的工具栏上显示“主页”按钮。如果您启用了此设置，则会始终显示“主页”按钮。如果您停用了此设置，则从不显示“主页”按钮。如果您启用或停用了此设置，用户就无法在 <ph name="PRODUCT_NAME" />中更改或替换此设置。如果未设置此政策，用户就可以选择是否显示“主页”按钮。</translation>
 <translation id="4483649828988077221">停用自动更新功能</translation>
 <translation id="4485425108474077672">配置“打开新的标签页”页面网址</translation>
+<translation id="4487507711538762752">此政策会强制网络代码在浏览器进程中运行。
+
+      此政策默认处于停用状态；若被启用，则会在网络进程被沙盒化后使用户面临安全问题的威胁。
+
+      此政策旨在让企业能够迁移到不依靠与网络 API 挂钩来运行的第三方软件。建议使用代理服务器（而非 LSP 和 Win32 API 修补程序）。
+
+      如果此政策未设置，网络代码默认会在浏览器进程之外运行。
+
+      在 <ph name="PRODUCT_NAME" /> 版本 84 中，此政策将被移除。</translation>
 <translation id="4492287494009043413">停用截取屏幕截图功能</translation>
 <translation id="4494132853995232608">Wilco DTC</translation>
 <translation id="449423975179525290">配置与 <ph name="PLUGIN_VM_NAME" /> 相关的政策。</translation>
+<translation id="4498493270899294764">不针对其检查下载内容是否包含恶意软件的网址格式</translation>
 <translation id="450537894712826981">配置<ph name="PRODUCT_NAME" />将用于在磁盘上存储缓存媒体文件的缓存大小。
 
       如果您设置了此政策，那么无论用户是否已指定“--media-cache-size”标记，<ph name="PRODUCT_NAME" />都会使用此政策中设定的缓存大小。此政策中所指定的值并非硬性限值，而是针对缓存系统提出的建议值。任何低于几兆字节的值都会因为太小而被向上舍入到一个合理的最小值。
@@ -2485,6 +2516,9 @@
 <translation id="4986560318567565414">控制用于从替代浏览器切换至 Chrome 的路径。</translation>
 <translation id="4988291787868618635">闲置延迟时间已过时执行的操作</translation>
 <translation id="500149597848135831">启用所有变体</translation>
+<translation id="5023555740504506178">如果此政策已启用或未配置（默认），网页可以使用屏幕共享 API（例如 getDisplayMedia() 或 Desktop Capture Extension API）提示用户选择要截取的标签页、窗口或屏幕内容。
+
+      如果此政策已停用，对屏幕共享 API 的所有调用都会失败并会返回错误。</translation>
 <translation id="5032164758660626397">阻止用户传输大型文件</translation>
 <translation id="5047604665028708335">允许访问非内容包内的网站</translation>
 <translation id="5052081091120171147">如果启用此政策，就会强制从当前默认浏览器导入浏览记录，还会影响导入对话框。如果停用此政策，就不会导入浏览记录。如果未设置此政策，系统就会询问用户是否导入浏览记录，或者系统自动进行导入。</translation>
@@ -2627,6 +2661,25 @@
 
           此政策仅适用于已加入 <ph name="MS_AD_NAME" /> 网域的 Windows 实例，或者已注册设备管理服务的 Windows 10 Pro 或 Enterprise 实例。</translation>
 <translation id="5208240613060747912">可让您设置网址格式的列表，这些网址格式用于指定不允许显示通知的网站。在未设置此政策的情况下，如果设置了“DefaultNotificationsSetting”政策，那么将对该政策中的所有网站使用全局默认值，否则将对用户个人配置中的所有网站使用全局默认值。</translation>
+<translation id="5210980743015047124">配置允许使用的最低 <ph name="PRODUCT_NAME" /> 版本的相关要求。
+
+      当此政策设为非空列表时：
+      如果所有条目的“chrome_version”都不高于设备中的当前版本，系统将不会应用任何限制，而且已有的限制会被撤消。
+      如果有至少 1 个条目的“chrome_version”高于当前版本，系统会选择就版本而言与当前版本最接近且期限最紧急的那个条目。
+      如果存在冲突，系统会优先考虑“warning_period”或“eol_warning_period”期限较为紧急的那个条目，并会使用该条目应用此政策。
+
+      如果当前版本在用户会话期间变为过时，系统会显示屏幕通知，以要求用户在通知中显示的“warning_period”期限内更新设备。
+      “warning_period”期限是自此政策被应用时起算的。
+      如果设备在“warning_period”期限内一直未更新，用户会被强制退出系统。
+      如果当前版本在用户登录时已过时，并且“warning_period”期限已过，则用户必须更新设备才能登录。
+
+      如果在用户会话期间设备的生命周期结束，系统会显示屏幕通知，以提醒会在“eol_warning_period”期限过后将用户退出登录。
+      如果在用户登录时设备的生命周期已结束，并且“eol_warning_period”期限已过，则任何用户都无法登录设备。
+
+      如果此政策未设置或设为空，系统将不会应用任何限制，已有的限制会被撤消，并且无论使用的是哪个 <ph name="PRODUCT_NAME" /> 版本，用户都能登录。
+
+      此处的“chrome_version”既可以是确切版本（如“61.0.3163.120”），也可以是版本前缀（如“61.0”）。
+      “warning_period”和“eol_warning_period”是以天数为单位指定的可选值。它们的默认值为 0 天，表示刻不容缓。 </translation>
 <translation id="5212118847531454979">您可以设置一个时间段（以毫秒为单位），在该时间段内，系统会通知用户必须重新启动 <ph name="PRODUCT_NAME" /> 或重启 <ph name="PRODUCT_OS_NAME" />设备以安装更新。
 
       在该时间段内，系统会反复通知用户需要更新。对于 <ph name="PRODUCT_OS_NAME" />设备，系统会根据 <ph name="RELAUNCH_HEADS_UP_PERIOD_POLICY_NAME" /> 政策在系统任务栏中显示重启通知。对于 <ph name="PRODUCT_NAME" /> 浏览器，在通知时间段过去三分之一后，应用菜单会发生变化，示意需要重启浏览器。此通知会在通知时间段过去三分之二后改变颜色，并会在时间段结束后再次改变颜色。由 <ph name="RELAUNCH_NOTIFICATION_POLICY_NAME" /> 政策引发的其他通知也会遵循这一规律。
@@ -2700,6 +2753,11 @@
       如果此政策设为 true 或未设置，系统会为此用户启用 Crostini，前提是其他设置也允许此用户运行 Crostini。
       若想通过应用 VirtualMachinesAllowed、CrostiniAllowed 和 DeviceUnaffiliatedCrostiniAllowed 这三项政策以允许 Crostini 运行，则这三项政策都需设为 true。
       如果此政策改设为 false，则只会导致无法启动新的 Crostini 容器，而不会关闭已在运行的容器。</translation>
+<translation id="5277914408935179830">此政策旨在控制对浏览器中的混合内容（HTTPS 网站上的 HTTP 内容）的处理方式。
+       如果此政策设为 true 或未设置，系统不仅会自动将音频和视频混合内容升级至 HTTPS（即：如果相应资源不是通过 HTTPS 提供的，系统便会将相关网址重写为 HTTPS，且不提供回退机制），还会在图片混合内容的网址栏中显示“不安全”警告。
+       如果此政策设为 false，系统将不会自动升级音频和视频内容，也不会为图片内容显示任何警告。
+       此政策不会影响除音频、视频和图片之外的其他类型混合内容。
+       从 <ph name="PRODUCT_NAME" /> 84 开始，此政策将不再产生任何效力。</translation>
 <translation id="5278367296164377827">这项企业政策只是短期的适应性措施，将在 M82 中移除。
 
       为配合 M80 稳定版的逐步推出，Chrome 的默认引荐来源网址政策正从其当前值 no-referrer-when-downgrade 强化为更安全的 strict-origin-when-cross-origin。
@@ -2716,6 +2774,7 @@
 <translation id="5306186200045823863">信任 Symantec Corporation 的旧版 PKI 基础架构</translation>
 <translation id="5307432759655324440">隐身模式的可用性</translation>
 <translation id="5311275381462687162">默认旧版 <ph name="ATTRIBUTE_SAMESITE_NAME" /> Cookie 行为设置</translation>
+<translation id="5313116350102437846">此政策用于控制是否允许已加入高级保护计划的用户将他们的下载内容发送给 Google 进行恶意软件扫描。如果此政策设为 True 或未设置，系统会提示用户将他们的文件发送给 Google 进行深度扫描。如果用户选择“扫描”，系统会将他们的下载内容发送给 Google。如果此政策设为 False，系统将不会提示用户，也不会将他们的下载内容发送给 Google。</translation>
 <translation id="5318185076587284965">允许远程访问主机使用中继服务器</translation>
 <translation id="5323128137188992869">允许使用 <ph name="PRODUCT_NAME" /> 向设备投射内容。
 
@@ -2890,6 +2949,16 @@
 
       请注意，如果平台支持政策通知，刷新延迟时间将被设为 24 小时（忽略所有默认值和此政策的值），这是因为只要政策发生变化，政策通知应该会自动强制进行刷新，所以没有必要更频繁地进行刷新。</translation>
 <translation id="5530347722229944744">拦截可能有危险的下载内容</translation>
+<translation id="5534198977061777727">此政策旨在控制 <ph name="PRODUCT_NAME" /> 会如何处理下述类型的数据：由用户上传、下载、拖放或从剪贴板粘贴，且文件类型不受 DLP 或恶意软件扫描支持。
+
+      如果此政策未设置，或设为“禁止不受支持的文件类型 - 无”(0)，则 <ph name="PRODUCT_NAME" /> 会允许上传或下载文件类型不受 DLP 或恶意软件扫描支持的数据。
+
+      如果此政策设为“禁止不受支持的文件类型 - 下载内容”(1)，并且用户尝试通过 <ph name="DOMAINS_TO_CHECK_COMPLIANCE_OF_DOWNLOADED_CONTENT_POLICTY_NAME" /> 政策中的网址下载文件类型不受 DLP 或恶意软件扫描支持的文件，则 <ph name="PRODUCT_NAME" /> 会禁止下载相应数据。
+
+      如果此政策设为“禁止不受支持的文件类型 - 上传内容”(2)，并且用户尝试将文件类型不受 DLP 或恶意软件扫描支持的文件上传至 <ph name="DOMAINS_TO_NOT_CHECK_COMPLIANCE_OF_UPLOADED_CONTENT_POLICY_NAME" /> 中未包含的网域，则 <ph name="PRODUCT_NAME" /> 会禁止上传相应文件、从剪贴板粘贴相应数据或拖放相应数据。
+
+      如果此政策设为“禁止不受支持的文件类型 - 上传内容和下载内容”(3)，<ph name="PRODUCT_NAME" /> 会根据“禁止不受支持的文件类型 - 上传内容”和“禁止不受支持的文件类型 - 下载内容”所述的规则操作。
+      </translation>
 <translation id="5535973522252703021">Kerberos 授权服务器白名单</translation>
 <translation id="554903022911579950">Kerberos</translation>
 <translation id="555022085242359084">在登录屏幕上启用高对比度模式</translation>
@@ -3042,6 +3111,12 @@
           如果未设置此政策，系统会执行默认操作，即暂停。
 
           如果需要执行的操作是暂停，您还可单独配置 <ph name="PRODUCT_OS_NAME" />在暂停前是否锁定屏幕。</translation>
+<translation id="5746196829700407864">以列表形式指定：对于哪些网址格式，系统不需要对下载内容执行恶意软件检查。仅当 <ph name="SEND_FILES_FOR_MALWARE_CHECK_POLICY_NAME" /> 的值设为允许或强制对下载内容执行恶意软件检查时，才会用到此政策。
+
+      如果此政策设为一个空的网址格式列表或未设置，系统便会对所有下载内容执行恶意软件检查。
+
+      这些网址格式与“URLBlacklist”政策中的网址格式相同，详见 https://www.chromium.org/administrators/url-blacklist-filter-format。
+      </translation>
 <translation id="574983287620584622">在登录屏幕上启用无障碍功能快捷方式</translation>
 <translation id="5755002458331714762"> Web Components v0 API（Shadow DOM v0、Custom Elements v0 和 HTML Imports）已于 2018 年被弃用，并且从 M80 起就已默认处于停用状态。此政策允许有选择地重新启用这些功能直至 M84。
 
@@ -3098,6 +3173,7 @@
 <translation id="5861856285460256766">家长访问码配置</translation>
 <translation id="5868414965372171132">用户级网络配置</translation>
 <translation id="5879014913445067283">控制网络文件共享功能是否通过“<ph name="NETBIOS_NAME" />”来搜索共享文件</translation>
+<translation id="588135807064822874">启用“触摸搜索”功能</translation>
 <translation id="5882345429632338713">在启动替代浏览器之前的延迟时间（以毫秒为单位）</translation>
 <translation id="5883015257301027298">默认 Cookie 设置</translation>
 <translation id="5887414688706570295">配置供远程访问主机使用的 TalkGadget 前缀，并禁止用户更改此设置。
@@ -3308,6 +3384,7 @@
 <translation id="6315673513957120120">当用户访问存在 SSL 错误的网站时，Chrome 将显示警告页面。默认情况下，或当此政策设为 true 时，用户可以在点击这些警告页面后继续操作。
       如果将此政策设为 false，用户将无法通过点击任何警告页面继续操作。</translation>
 <translation id="6319198883324703402">设置首次用户重新启动通知的时间</translation>
+<translation id="6342187235303612558">禁止用户上传或下载目前不受 DLP 或恶意软件扫描支持的文件。</translation>
 <translation id="6352543686437322588">要在延迟过后自动登录的设备本地帐号。
 
       如果设置了此政策，则只要用户未与登录屏幕互动的持续时间达到了指定的时长，系统就会自动登录指定的自助服务终端。必须已配置设备本地帐号（请参阅 |DeviceLocalAccounts|）。
@@ -4884,6 +4961,7 @@
 <translation id="8976248126101463034">允许针对远程访问主机进行 gnubby 身份验证</translation>
 <translation id="8976531594979650914">使用系统默认打印机作为默认选项</translation>
 <translation id="8992176907758534924">不允许任何网站显示图片</translation>
+<translation id="9010080992450148617">允许已加入高级保护计划的用户将下载内容发送给 Google 进行深度扫描</translation>
 <translation id="9013875414788074110">在用户登录期间，<ph name="PRODUCT_OS_NAME" />可根据服务器（在线）或使用缓存密码（离线）对用户进行身份验证。
 
       如果将此政策的值设为 -1，用户可以无限期地离线进行身份验证。将此政策设为任何其他值时，即指定了用户自最后一次使用在线身份验证起多长时间后必须再次使用在线身份验证。

@@ -672,6 +672,7 @@
 <translation id="3987940399970879459">1 MBରୁ କମ୍ ଅଛି</translation>
 <translation id="3990250421422698716">ଜଗ୍ ଅଫ୍‌ସେଟ୍</translation>
 <translation id="40103911065039147">{URL_count,plural, =1{ଆଖପାଖର 1ଟି ୱେବ୍ ପୃଷ୍ଠା}other{ଆଖପାଖର #ଟି ୱେବ୍ ପୃଷ୍ଠା}}</translation>
+<translation id="4014128326099193693">{COUNT,plural, =1{{COUNT}ଟି ପୃଷ୍ଠା ଥିବା PDF ଡକ୍ୟୁମେଣ୍ଟ}other{{COUNT}ଟି ପୃଷ୍ଠା ଥିବା PDF ଡକ୍ୟୁମେଣ୍ଟ}}</translation>
 <translation id="4030383055268325496">&amp;ପୂର୍ବବତ୍‍ ଯୋଗ କରନ୍ତୁ</translation>
 <translation id="4032320456957708163">ଆପଣଙ୍କର ବ୍ରାଉଜର୍ <ph name="ENROLLMENT_DOMAIN" /> ଦ୍ୱାରା ପରିଚାଳିତ ହେଉଛି</translation>
 <translation id="4058922952496707368">କୀ "<ph name="SUBKEY" />": <ph name="ERROR" /></translation>
@@ -700,6 +701,7 @@
 <translation id="4142935452406587478">ଟ୍ରେ 10</translation>
 <translation id="4148925816941278100">American Express</translation>
 <translation id="4151403195736952345">ବିଶ୍ୱାବ୍ୟାପୀ ଡିଫଳ୍ଟ ବ୍ୟବହାର କରନ୍ତୁ (ସନ୍ଧାନ କରନ୍ତୁ)</translation>
+<translation id="4152318981910038897">{COUNT,plural, =1{ପୃଷ୍ଠା 1}other{ପୃଷ୍ଠା {COUNT}}}</translation>
 <translation id="4159784952369912983">ବାଇଗଣୀ</translation>
 <translation id="4165986682804962316">ସାଇଟ୍‍ ସେଟିଂସ୍‌</translation>
 <translation id="4171400957073367226">ଖରାପ ଯାଞ୍ଚକରଣ ଦସ୍ତଖତ</translation>
@@ -1375,6 +1377,7 @@
 <translation id="7201591969684833065">ଏହା ଆପଣଙ୍କର ଆଡ୍‌ମିନିଷ୍ଟ୍ରେଟର୍ ଦେଖିପାରିବେ:</translation>
 <translation id="7202346780273620635">ଲେଟର୍-ଏକ୍ସଟ୍ରା</translation>
 <translation id="7210863904660874423"><ph name="HOST_NAME" /> ସୁରକ୍ଷା ମାନାଙ୍କର ପାଳନ କରୁନାହିଁ।</translation>
+<translation id="7210993021468939304">କଣ୍ଟେନର୍ ମଧ୍ୟରେ Linux କାର୍ଯ୍ୟକଳାପ ଏବଂ କଣ୍ଟେନର୍ ମଧ୍ୟରେ Linux ଆପ୍ସ ଇନଷ୍ଟଲ୍ କରି ଚଲାଇପାରେ</translation>
 <translation id="721197778055552897">ଏହି ଅସୁବିଧା ସମ୍ଵନ୍ଧରେ <ph name="BEGIN_LINK" />ଅଧିକ ଜାଣନ୍ତୁ<ph name="END_LINK" /> ।</translation>
 <translation id="7219179957768738017">ସଂଯୋଗ <ph name="SSL_VERSION" />ର ବ୍ୟବହାର କରିଥାଏ।</translation>
 <translation id="7220786058474068424">ପ୍ରକ୍ରିୟାକରଣ ହେଉଛି</translation>
@@ -1538,6 +1541,7 @@
 <translation id="7878562273885520351">ଆପଣଙ୍କର ପାସ୍‌ୱର୍ଡରେ ହେର୍‍ଫେର୍‌ କରାଯାଇଥାଇପାରେ</translation>
 <translation id="7882421473871500483">ବାଦାମୀ</translation>
 <translation id="7887683347370398519">ଆପଣଙ୍କର CVC ଯାଞ୍ଚ କରନ୍ତୁ ଏବଂ ପୁଣି ଚେଷ୍ଟା କରନ୍ତୁ</translation>
+<translation id="7887885240995164102">ପିକଚର୍-ଇନ୍-ପିକଚର୍ ଲେଖନ୍ତୁ</translation>
 <translation id="7888575728750733395">ପ୍ରିଣ୍ଟ ରେଣ୍ଡରିଂ ଇଣ୍ଟେଣ୍ଟ</translation>
 <translation id="7904208859782148177">C3 (ଏନଭଲପ୍)</translation>
 <translation id="7932579305932748336">କୋଟ୍</translation>

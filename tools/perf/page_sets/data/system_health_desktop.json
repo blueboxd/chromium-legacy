@@ -106,6 +106,15 @@
         "browse:tech:discourse_infinite_scroll:2018": {
             "DEFAULT": "system_health_desktop_065.wprgo"
         },
+        "browse:tools:docs": {
+            "DEFAULT": "system_health_desktop_69209f77b1.wprgo"
+        },
+        "browse:tools:docs-scrolling": {
+            "DEFAULT": "system_health_desktop_4c81a0acbb.wprgo"
+        },
+        "browse:tools:docs_scrolling": {
+            "DEFAULT": "system_health_desktop_b34b0b8219.wprgo"
+        },
         "browse:tools:earth": {
             "DEFAULT": "system_health_desktop_050.wprgo"
         },

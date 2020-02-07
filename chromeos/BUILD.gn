@@ -254,7 +254,7 @@ if (is_chromeos_device) {
     # To disable a specific test, add it the following list and cite a bug.
     tast_disabled_tests = [
       # crbug.com/1000351
-      "crostini.SanityArtifact",
+      "crostini.Sanity.artifact",
 
       # crbug.com/1006681
       "crostini.GPUEnabledDownload",

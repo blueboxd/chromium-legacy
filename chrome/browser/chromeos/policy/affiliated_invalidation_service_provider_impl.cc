@@ -16,8 +16,9 @@
 #include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/chromeos/policy/browser_policy_connector_chromeos.h"
 #include "chrome/browser/chromeos/profiles/profile_helper.h"
-#include "chrome/browser/chromeos/settings/device_identity_provider.h"
-#include "chrome/browser/chromeos/settings/device_oauth2_token_service_factory.h"
+#include "chrome/browser/device_identity/device_identity_provider.h"
+#include "chrome/browser/device_identity/device_oauth2_token_service_factory.h"
+#include "chrome/browser/invalidation/deprecated_profile_invalidation_provider_factory.h"
 #include "chrome/browser/invalidation/profile_invalidation_provider_factory.h"
 #include "chrome/browser/net/system_network_context_manager.h"
 #include "chrome/browser/profiles/profile.h"
@@ -123,14 +124,13 @@ AffiliatedInvalidationServiceProviderImpl::InvalidationServiceObserver::
   invalidation_service_->UnregisterInvalidationHandler(this);
 }
 
-invalidation::InvalidationService*
-AffiliatedInvalidationServiceProviderImpl::InvalidationServiceObserver::
-    GetInvalidationService() {
+invalidation::InvalidationService* AffiliatedInvalidationServiceProviderImpl::
+    InvalidationServiceObserver::GetInvalidationService() {
   return invalidation_service_;
 }
 
 bool AffiliatedInvalidationServiceProviderImpl::InvalidationServiceObserver::
-         IsServiceConnected() const {
+    IsServiceConnected() const {
   return is_service_connected_;
 }
 
@@ -203,12 +203,10 @@ void AffiliatedInvalidationServiceProviderImpl::InvalidationServiceObserver::
 
 void AffiliatedInvalidationServiceProviderImpl::InvalidationServiceObserver::
     OnIncomingInvalidation(
-        const syncer::ObjectIdInvalidationMap& invalidation_map) {
-}
+        const syncer::ObjectIdInvalidationMap& invalidation_map) {}
 
-std::string
-AffiliatedInvalidationServiceProviderImpl::InvalidationServiceObserver::
-    GetOwnerName() const {
+std::string AffiliatedInvalidationServiceProviderImpl::
+    InvalidationServiceObserver::GetOwnerName() const {
   return "AffiliatedInvalidationService";
 }
 
@@ -220,13 +218,12 @@ AffiliatedInvalidationServiceProviderImpl::
   DCHECK(g_browser_process->profile_manager()->GetLoadedProfiles().empty());
 
   // Subscribe to notification about new user profiles becoming available.
-  registrar_.Add(this,
-                 chrome::NOTIFICATION_LOGIN_USER_PROFILE_PREPARED,
+  registrar_.Add(this, chrome::NOTIFICATION_LOGIN_USER_PROFILE_PREPARED,
                  content::NotificationService::AllSources());
 }
 
 AffiliatedInvalidationServiceProviderImpl::
-~AffiliatedInvalidationServiceProviderImpl() {
+    ~AffiliatedInvalidationServiceProviderImpl() {
   // Verify that the provider was shut down first.
   DCHECK(is_shut_down_);
 }
@@ -340,8 +337,7 @@ void AffiliatedInvalidationServiceProviderImpl::OnInvalidationServiceConnected(
   invalidation_service_ = nullptr;
   SetInvalidationService(invalidation_service);
 
-  if (invalidation_service_ &&
-      device_invalidation_service_ &&
+  if (invalidation_service_ && device_invalidation_service_ &&
       invalidation_service_ != device_invalidation_service_.get()) {
     // If a different invalidation service is being made available to consumers
     // now, destroy the device-global one.
@@ -349,9 +345,9 @@ void AffiliatedInvalidationServiceProviderImpl::OnInvalidationServiceConnected(
   }
 }
 
-void
-AffiliatedInvalidationServiceProviderImpl::OnInvalidationServiceDisconnected(
-    invalidation::InvalidationService* invalidation_service) {
+void AffiliatedInvalidationServiceProviderImpl::
+    OnInvalidationServiceDisconnected(
+        invalidation::InvalidationService* invalidation_service) {
   DCHECK(!is_shut_down_);
 
   if (invalidation_service != invalidation_service_) {
@@ -375,8 +371,8 @@ AffiliatedInvalidationServiceProviderImpl::OnInvalidationServiceDisconnected(
     SetInvalidationService(nullptr);
 }
 
-void
-AffiliatedInvalidationServiceProviderImpl::FindConnectedInvalidationService() {
+void AffiliatedInvalidationServiceProviderImpl::
+    FindConnectedInvalidationService() {
   DCHECK(!invalidation_service_);
   DCHECK(consumer_count_);
   DCHECK(!is_shut_down_);
@@ -395,10 +391,8 @@ AffiliatedInvalidationServiceProviderImpl::FindConnectedInvalidationService() {
     // If no other connected invalidation service was found and no device-global
     // invalidation service exists, create one.
     device_invalidation_service_ = InitializeDeviceInvalidationService();
-    device_invalidation_service_observer_.reset(
-        new InvalidationServiceObserver(
-                this,
-                device_invalidation_service_.get()));
+    device_invalidation_service_observer_.reset(new InvalidationServiceObserver(
+        this, device_invalidation_service_.get()));
   }
 
   if (device_invalidation_service_observer_->IsServiceConnected()) {
@@ -417,8 +411,8 @@ void AffiliatedInvalidationServiceProviderImpl::SetInvalidationService(
     observer.OnInvalidationServiceSet(invalidation_service_);
 }
 
-void
-AffiliatedInvalidationServiceProviderImpl::DestroyDeviceInvalidationService() {
+void AffiliatedInvalidationServiceProviderImpl::
+    DestroyDeviceInvalidationService() {
   device_invalidation_service_observer_.reset();
   device_invalidation_service_.reset();
   device_identity_provider_.reset();

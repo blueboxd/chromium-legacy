@@ -153,6 +153,7 @@
 <translation id="1201402288615127009">Seguinte</translation>
 <translation id="1202596434010270079">Actualizouse a aplicación de quiosco. Retira a memoria USB.</translation>
 <translation id="120368089816228251">Nota musical</translation>
+<translation id="1203942045716040624">Traballador compartido: <ph name="SCRIPT_URL" /></translation>
 <translation id="1205489148908752564">Ler e cambiar os usuarios da lista branca</translation>
 <translation id="1206407435587370571">Explora o teu Chromebook</translation>
 <translation id="1209796539517632982">Servidores de nomes automáticos</translation>
@@ -486,6 +487,7 @@
 <translation id="16620462294541761">Non se puido verificar o teu contrasinal. Téntao de novo.</translation>
 <translation id="166278006618318542">Algoritmo de clave pública de entidade</translation>
 <translation id="166439687370499867">Non se permite cambiar a configuración da rede compartida</translation>
+<translation id="1668435968811469751">Inscrición manual</translation>
 <translation id="1670399744444387456">Opcións básicas</translation>
 <translation id="167160931442925455">O máis alto</translation>
 <translation id="1673137583248014546"><ph name="URL" /> quere ver a marca e o modelo da chave de seguranza</translation>
@@ -777,6 +779,7 @@ Instala a aplicación Family Link no teu dispositivo e poderás xestionar a conf
 <translation id="2079053412993822885">Se eliminas un dos teus propios certificados, non poderás volver utilizalo para identificarte.</translation>
 <translation id="2079545284768500474">Desfacer</translation>
 <translation id="2080070583977670716">Máis configuracións</translation>
+<translation id="2082187087049518845">Agrupar pestana</translation>
 <translation id="2087822576218954668">Imprimir: <ph name="PRINT_NAME" /></translation>
 <translation id="2088690981887365033">Rede VPN</translation>
 <translation id="2089566709556890888">Navega de forma segura con Google Chrome</translation>
@@ -1017,6 +1020,7 @@ Instala a aplicación Family Link no teu dispositivo e poderás xestionar a conf
 <translation id="2395616325548404795">O teu <ph name="DEVICE_TYPE" /> inscribiuse correctamente para a xestión de empresas, pero non enviou a súa información de recursos e localización. Introduce manualmente esta información desde a consola de administración para este dispositivo.</translation>
 <translation id="2396783860772170191">Introduce o PIN de 4 díxitos (0000-9999)</translation>
 <translation id="2399939490305346086">Datos de inicio de sesión da chave de seguranza</translation>
+<translation id="2400664245143453337">Requírese unha actualización de inmediato</translation>
 <translation id="2407481962792080328">Cando inicies sesión na túa Conta de Google, activarase esta función</translation>
 <translation id="2408018932941436077">Gardando tarxeta</translation>
 <translation id="2408955596600435184">Introduce o PIN</translation>
@@ -1061,6 +1065,7 @@ Instala a aplicación Family Link no teu dispositivo e poderás xestionar a conf
 <translation id="2462724976360937186">ID de clave de autoridade de certificación</translation>
 <translation id="2462752602710430187">Engadiuse <ph name="PRINTER_NAME" /></translation>
 <translation id="2464089476039395325">Proxy HTTP</translation>
+<translation id="2465237718053447668"><ph name="DOMAIN" /> require que te conectes agora á wifi e descargues unha actualización. Tamén podes descargala desde unha conexión de pago por consumo (pódense aplicar cargos).</translation>
 <translation id="2467267713099745100">Rede <ph name="NETWORK_TYPE" />, desactivada</translation>
 <translation id="2468205691404969808">Utiliza cookies para lembrar as túas preferencias, mesmo se non visitas esas páxinas</translation>
 <translation id="2468402215065996499">Tamagotchi</translation>
@@ -1208,6 +1213,7 @@ Instala a aplicación Family Link no teu dispositivo e poderás xestionar a conf
 <translation id="2653659639078652383">Enviar</translation>
 <translation id="265390580714150011">Valor do campo</translation>
 <translation id="2654166010170466751">Permitir que os sitios instalen indicadores de pago</translation>
+<translation id="2654553774144920065">Imprimir solicitude</translation>
 <translation id="2659381484350128933"><ph name="FOOTNOTE_POINTER" />As funcións varían segundo o dispositivo</translation>
 <translation id="2660779039299703961">Evento</translation>
 <translation id="266079277508604648">Non se puido conectar coa impresora. Comproba que estea acendida e conectada ao dispositivo Chromebook por wifi ou USB.</translation>
@@ -1248,6 +1254,7 @@ Instala a aplicación Family Link no teu dispositivo e poderás xestionar a conf
 <translation id="2707024448553392710">Descargando compoñente</translation>
 <translation id="270921614578699633">Media superior a</translation>
 <translation id="2709516037105925701">Autocompletar</translation>
+<translation id="2710101514844343743">Datos de uso e diagnóstico</translation>
 <translation id="271033894570825754">Novo</translation>
 <translation id="2712173769900027643">Solicitar permiso</translation>
 <translation id="2713444072780614174">Branco</translation>
@@ -1770,6 +1777,7 @@ Instala a aplicación Family Link no teu dispositivo e poderás xestionar a conf
 <translation id="3454157711543303649">Activación completa</translation>
 <translation id="3454213325559396544">Esta é a última actualización automática de software e seguranza para este <ph name="DEVICE_TYPE" />. Para obter futuras actualizacións, cambia a un modelo máis novo.</translation>
 <translation id="345693547134384690">Abrir &amp;imaxe na pestana nova</translation>
+<translation id="3458794975359644386">Produciuse un erro ao deixar de compartir o cartafol</translation>
 <translation id="3459509316159669723">Impresión</translation>
 <translation id="3459697287128633276">Para permitir que a túa conta acceda a Google Play Store, debes autenticala co teu provedor de identidade.</translation>
 <translation id="3459774175445953971">Última modificación:</translation>
@@ -1915,6 +1923,7 @@ Instala a aplicación Family Link no teu dispositivo e poderás xestionar a conf
 <translation id="3648348069317717750">Detectouse <ph name="USB_DEVICE_NAME" /></translation>
 <translation id="3649138363871392317">Capturouse a foto</translation>
 <translation id="3649505501900178324">Actualización pendente</translation>
+<translation id="3650753875413052677">Produciuse un erro na inscrición</translation>
 <translation id="3650845953328929506">A carga do rexistro está pendente.</translation>
 <translation id="3650952250015018111">Permite que "<ph name="APP_NAME" />" acceda a:</translation>
 <translation id="3651488188562686558">Desconectar da wifi</translation>
@@ -2088,6 +2097,7 @@ Instala a aplicación Family Link no teu dispositivo e poderás xestionar a conf
 <translation id="3856800405688283469">Selecciona un fuso horario</translation>
 <translation id="3857807444929313943">Levanta o dedo e volve tocar o sensor</translation>
 <translation id="3860104611854310167"><ph name="PROFILE_NAME" />: a sincronización está en pausa</translation>
+<translation id="3861638017150647085">O nome de usuario "<ph name="USERNAME" />" non está dispoñible</translation>
 <translation id="3862693525629180217">Verificación mediante o sensor integrado</translation>
 <translation id="3862788408946266506">É necesario instalar a aplicación co atributo de manifesto "kiosk_only" no modo de quiosco de Chrome OS</translation>
 <translation id="3865414814144988605">Resolución</translation>
@@ -2119,6 +2129,7 @@ Instala a aplicación Family Link no teu dispositivo e poderás xestionar a conf
 <translation id="3900789207771372462">Algunhas extensións poden ver a túa actividade de navegación, incluída a información persoal.</translation>
 <translation id="3900966090527141178">Exportar contrasinais</translation>
 <translation id="3901991538546252627">Conectando con <ph name="NAME" /></translation>
+<translation id="3904326018476041253">Servizos de localización</translation>
 <translation id="3905761538810670789">Reparar aplicación</translation>
 <translation id="3908393983276948098"><ph name="PLUGIN_NAME" /> está desactualizado</translation>
 <translation id="3908501907586732282">Activar a extensión</translation>
@@ -2714,6 +2725,7 @@ Instala a aplicación Family Link no teu dispositivo e poderás xestionar a conf
 <translation id="4808319664292298116">Queres iniciar o modo de RV en <ph name="DOMAIN" />?</translation>
 <translation id="4808667324955055115">Ventás emerxentes bloqueadas:</translation>
 <translation id="480990236307250886">Abre a páxina de inicio</translation>
+<translation id="4811503964269049987">Agrupar a pestana seleccionada</translation>
 <translation id="4813136279048157860">As miñas imaxes</translation>
 <translation id="4813512666221746211">Erro de rede</translation>
 <translation id="4814378367953456825">Ponlle un nome a esta impresión dixital</translation>
@@ -3049,6 +3061,7 @@ Instala a aplicación Family Link no teu dispositivo e poderás xestionar a conf
 <translation id="52912272896845572">O ficheiro da clave privada non é válido.</translation>
 <translation id="529175790091471945">Formatar este dispositivo</translation>
 <translation id="5293170712604732402">Restaura a configuración cos valores predeterminados orixinais</translation>
+<translation id="5294097441441645251">Debe comezar cun carácter en minúscula ou guión baixo</translation>
 <translation id="5296471962619441686">Corrixe o erro para retomar a sincronización</translation>
 <translation id="5297082477358294722">Gardouse o contrasinal. Para consultar e xestionar os contrasinais gardados, accede á túa <ph name="SAVED_PASSWORDS_STORE" />.</translation>
 <translation id="5298219193514155779">Tema creado por</translation>
@@ -3330,6 +3343,7 @@ Instala a aplicación Family Link no teu dispositivo e poderás xestionar a conf
 <translation id="5669691691057771421">Introducir novo PIN</translation>
 <translation id="5671641761787789573">Imaxes bloqueadas</translation>
 <translation id="5671658447180261823">Quitar a suxestión: <ph name="SUGGESTION_NAME" /></translation>
+<translation id="567587836466137939">Este dispositivo recibirá actualizacións automáticas de software e de seguranza ata <ph name="MONTH_AND_YEAR" />. <ph name="LINK_BEGIN" />Máis información<ph name="LINK_END" /></translation>
 <translation id="567643736130151854">Inicia sesión e activa a sincronización para ter os marcadores, os contrasinais e outros datos en todos os teus dispositivos</translation>
 <translation id="5677503058916217575">Idioma da páxina:</translation>
 <translation id="5677928146339483299">Bloqueada</translation>
@@ -3460,6 +3474,7 @@ Instala a aplicación Family Link no teu dispositivo e poderás xestionar a conf
 <translation id="5860494867054883682">Actualizando o teu dispositivo na canle <ph name="CHANNEL_NAME" /> (<ph name="PROGRESS_PERCENT" />)</translation>
 <translation id="5862109781435984885">Mostrar ferramentas do lapis óptico no estante</translation>
 <translation id="5863445608433396414">Activar funcións de depuración</translation>
+<translation id="5864195618110239517">Usar conexión de pago por consumo</translation>
 <translation id="5864471791310927901">Produciuse un erro na busca de DHCP</translation>
 <translation id="586567932979200359">Estás executando <ph name="PRODUCT_NAME" /> desde a imaxe de disco. Se o instalas no ordenador, poderás executalo sen a imaxe de disco e aseguraraste de mantelo actualizado.</translation>
 <translation id="5865733239029070421">Envía estatísticas de uso e informes de erros automaticamente a Google</translation>
@@ -3544,6 +3559,7 @@ Instala a aplicación Family Link no teu dispositivo e poderás xestionar a conf
 <translation id="5975792506968920132">Porcentaxe de carga da batería</translation>
 <translation id="5976160379964388480">Outros</translation>
 <translation id="5978277834170881274">&amp;Utilizar corrector ortográfico básico</translation>
+<translation id="5979084224081478209">Comprobar contrasinais</translation>
 <translation id="5979421442488174909">&amp;Traducir ao <ph name="LANGUAGE" /></translation>
 <translation id="5979469435153841984">Para engadir páxinas aos marcadores, fai clic na estrela da barra de enderezos</translation>
 <translation id="5984222099446776634">Visitados recentemente</translation>
@@ -3848,6 +3864,7 @@ Instala a aplicación Family Link no teu dispositivo e poderás xestionar a conf
 <translation id="6410668567036790476">Engadir motor de busca</translation>
 <translation id="641081527798843608">Coincidencia do asunto</translation>
 <translation id="6412931879992742813">Nova ventá do modo de incógnito</translation>
+<translation id="641469293210305670">Instalar actualizacións e aplicacións</translation>
 <translation id="6414888972213066896">Preguntaches aos teus pais se podes visitar este sitio</translation>
 <translation id="6415900369006735853">Conéctase a Internet a través do teléfono</translation>
 <translation id="6416743254476733475">Permíteos ou bloquéaos no teu ordenador.</translation>
@@ -3893,6 +3910,7 @@ Instala a aplicación Family Link no teu dispositivo e poderás xestionar a conf
 <translation id="6472804939621540371">Ao realizar esta acción, borraranse todos os datos e as cookies que almacenase <ph name="SITE_GROUP_NAME" />, todos os sitios que formen parte dese grupo e a súa aplicación instalada.</translation>
 <translation id="6472893788822429178">Mostrar botón de inicio</translation>
 <translation id="6473842110411557830">Ilustración de Powerwash</translation>
+<translation id="6474498546677193336">Non se puido deixar de compartir este cartafol porque había unha aplicación usándoo. O cartafol deixará de compartirse cando Linux se apague.</translation>
 <translation id="6474884162850599008">Desconectar a conta de Google Drive</translation>
 <translation id="6475697075626596525">A aplicación <ph name="APP_NAME" /> quere compartir o contido da túa pantalla. Escolle o que queres compartir.</translation>
 <translation id="6478248366783946499">Queres conservar o ficheiro perigoso?</translation>
@@ -3942,6 +3960,7 @@ Instala a aplicación Family Link no teu dispositivo e poderás xestionar a conf
 <translation id="6545864417968258051">Busca de dispositivos Bluetooth</translation>
 <translation id="6545867563032584178">O micrófono está desactivado nas preferencias do sistema de Mac</translation>
 <translation id="6547354035488017500">Libera polo menos 512 MB de espazo para que o dispositivo non se bloquee. Para liberar espazo, elimina ficheiros do almacenamento do dispositivo.</translation>
+<translation id="6549639163247690448"><ph name="DOMAIN" /> require que te conectes agora á wifi e descargues unha actualización. A actualización descargarase automaticamente cando te conectes a Internet.</translation>
 <translation id="6549966385318247177">Bloqueouse esta extensión porque inclúe contido non adecuado para menores.</translation>
 <translation id="6550675742724504774">Opcións</translation>
 <translation id="6551508934388063976">Comando non dispoñible. Preme control-N para abrir unha ventá nova.</translation>
@@ -4042,6 +4061,7 @@ Instala a aplicación Family Link no teu dispositivo e poderás xestionar a conf
 <translation id="6700480081846086223">Emitir <ph name="HOST_NAME" /></translation>
 <translation id="6701535245008341853">Non se puido obter o perfil.</translation>
 <translation id="6702639462873609204">&amp;Editar...</translation>
+<translation id="6703966911896067184">Ilustración de erro na inscrición</translation>
 <translation id="6706210727756204531">Alcance</translation>
 <translation id="6707389671160270963">Certificado de cliente SSL</translation>
 <translation id="6708242697268981054">Orixe:</translation>
@@ -4140,10 +4160,10 @@ Instala a aplicación Family Link no teu dispositivo e poderás xestionar a conf
 <translation id="6840155290835956714">Preguntar antes de enviar</translation>
 <translation id="6840184929775541289">Non é unha autoridade de certificación</translation>
 <translation id="6841186874966388268">Erros</translation>
-<translation id="6843267103192918276">Inicia sesión para ter os marcadores, o historial, os contrasinais e o resto da túa configuración en todos os teus dispositivos. Tamén iniciarás sesión automaticamente nos teus servizos de Google. <ph name="LINK_BEGIN" />Máis información<ph name="LINK_END" /></translation>
 <translation id="6843423766595476978">Ok Google está listo</translation>
 <translation id="6845038076637626672">Abrir a aplicación maximizada</translation>
 <translation id="6845325883481699275">Axudar a mellorar a seguranza de Chrome</translation>
+<translation id="6846178040388691741">"<ph name="EXTENSION_NAME" />" quere imprimir <ph name="FILE_NAME" /> con <ph name="PRINTER_NAME" />.</translation>
 <translation id="6847125920277401289">Libera espazo para continuar</translation>
 <translation id="6848388270925200958">Neste momento, tes algunhas tarxetas que só se poden utilizar neste dispositivo</translation>
 <translation id="6850286078059909152">Cor do texto</translation>
@@ -4281,6 +4301,7 @@ Instala a aplicación Family Link no teu dispositivo e poderás xestionar a conf
 <translation id="7040230719604914234">Operador</translation>
 <translation id="7043108582968290193">Feito! Non se atoparon aplicacións incompatibles.</translation>
 <translation id="7044124535091449260">Máis información sobre o acceso aos sitios</translation>
+<translation id="7044606776288350625">Sincronizar datos</translation>
 <translation id="7047059339731138197">Escolle un fondo</translation>
 <translation id="7049293980323620022">Queres conservar o ficheiro?</translation>
 <translation id="7051943809462976355">Buscando o rato...</translation>
@@ -4331,6 +4352,7 @@ Instala a aplicación Family Link no teu dispositivo e poderás xestionar a conf
 <translation id="7102832101143475489">Esgotouse o tempo de espera da solicitude</translation>
 <translation id="7102928824073746774">Grupo sen nome: <ph name="GROUP_CONTENTS" /></translation>
 <translation id="7105390788077117391">Preferencias de USB</translation>
+<translation id="710640343305609397">Abrir configuración de rede</translation>
 <translation id="7108338896283013870">Ocultar</translation>
 <translation id="7108634116785509031">O host <ph name="HOST" /> quere utilizar a túa cámara</translation>
 <translation id="7108668606237948702">intro</translation>
@@ -4356,6 +4378,7 @@ Instala a aplicación Family Link no teu dispositivo e poderás xestionar a conf
 <translation id="7133578150266914903">O administrador está instalando unha versión anterior neste dispositivo (<ph name="PROGRESS_PERCENT" />)</translation>
 <translation id="7134098520442464001">Reduce o tamaño do texto</translation>
 <translation id="7135729336746831607">Queres activar o Bluetooth?</translation>
+<translation id="7136639886842764730"><ph name="DOMAIN" /> require actualizar o teu <ph name="DEVICE_TYPE" /> de inmediato.</translation>
 <translation id="7136694880210472378">Converter en predeterminado</translation>
 <translation id="7136984461011502314">Dámosche a benvida a <ph name="PRODUCT_NAME" /></translation>
 <translation id="7136993520339022828">Produciuse un erro. Escolle outras imaxes e téntao de novo.</translation>
@@ -4492,6 +4515,7 @@ Instala a aplicación Family Link no teu dispositivo e poderás xestionar a conf
 <translation id="7328699668338161242">O teu Asistente xa pode recoñecer a túa voz</translation>
 <translation id="7328867076235380839">A combinación non é válida</translation>
 <translation id="7329154610228416156">Produciuse un erro no inicio de sesión porque se configurou para utilizar un URL non seguro (<ph name="BLOCKED_URL" />). Ponte en contacto co administrador.</translation>
+<translation id="7332053360324989309">Traballador dedicado: <ph name="SCRIPT_URL" /></translation>
 <translation id="7334190995941642545">Smart Lock non está dispoñible actualmente. Téntao de novo máis tarde.</translation>
 <translation id="7334274148831027933">Activar a lupa ancorada</translation>
 <translation id="7335974957018254119">Utilizar o corrector ortográfico para</translation>
@@ -4538,6 +4562,7 @@ Instala a aplicación Family Link no teu dispositivo e poderás xestionar a conf
 <translation id="7392915005464253525">R&amp;eabrir a ventá pechada</translation>
 <translation id="7396017167185131589">Os cartafoles compartidos aparecerán aquí</translation>
 <translation id="7396845648024431313"><ph name="APP_NAME" /> empezará a executarse cando se inicie o sistema e seguirá executándose en segundo plano aínda que peches todas as demais ventás de <ph name="PRODUCT_NAME" />.</translation>
+<translation id="7399045143794278225">Personalizar sincronización</translation>
 <translation id="7400418766976504921">URL</translation>
 <translation id="7400839060291901923">Configura a conexión no teléfono <ph name="PHONE_NAME" /></translation>
 <translation id="7401778920660465883">Ignorar esta mensaxe</translation>
@@ -4729,6 +4754,7 @@ Instala a aplicación Family Link no teu dispositivo e poderás xestionar a conf
 <translation id="767127784612208024">Toca a chave para confirmar o seu restablecemento</translation>
 <translation id="7672520070349703697"><ph name="HUNG_IFRAME_URL" />, en <ph name="PAGE_TITLE" />.</translation>
 <translation id="7676867886086876795">Envía a túa voz a Google para utilizar o ditado en calquera campo de texto.</translation>
+<translation id="767731949513650236">Sincronizar só os tipos de datos seleccionados</translation>
 <translation id="7678280409648629969">Os datos de inicio de sesión almacenaranse en Chrome cando saias do modo de incógnito. Desta forma poderás volver utilizar Touch ID con este sitio web máis tarde.</translation>
 <translation id="7681095912841365527">O sitio pode usar o Bluetooth</translation>
 <translation id="7683373461016844951">Para continuar, fai clic en Aceptar e, despois, en Engadir persoa se queres crear un perfil para o teu enderezo de correo electrónico de <ph name="DOMAIN" />.</translation>
@@ -4746,6 +4772,7 @@ Instala a aplicación Family Link no teu dispositivo e poderás xestionar a conf
 <translation id="7696063401938172191">No teu teléfono <ph name="PHONE_NAME" />:</translation>
 <translation id="7698408911093959127">{COUNT,plural, =1{1 elemento na lista de marcadores}other{# elementos na lista de marcadores}}</translation>
 <translation id="7701040980221191251">Ningunha</translation>
+<translation id="770157826141786566">Expirou o prazo para devolver este dispositivo.</translation>
 <translation id="7701869757853594372">Controladores de USUARIO</translation>
 <translation id="7702574632857388784">Quitar <ph name="FILE_NAME" /> da lista</translation>
 <translation id="7702907602086592255">Dominio</translation>
@@ -4756,6 +4783,7 @@ Instala a aplicación Family Link no teu dispositivo e poderás xestionar a conf
 <translation id="7705276765467986571">Erro ao cargar o modelo do marcador.</translation>
 <translation id="7705524343798198388">VPN</translation>
 <translation id="7707108266051544351">Bloqueouse o uso dos sensores de movemento por parte deste sitio.</translation>
+<translation id="7707354955081320373">Sincroniza todos os tipos de datos, incluídos os que se poidan engadir no futuro</translation>
 <translation id="7707922173985738739">Utilizaranse datos móbiles</translation>
 <translation id="7709152031285164251">Erro: <ph name="INTERRUPT_REASON" /></translation>
 <translation id="7710568461918838723">&amp;Emitir...</translation>
@@ -4902,6 +4930,7 @@ Instala a aplicación Family Link no teu dispositivo e poderás xestionar a conf
 <translation id="7880823633812189969">Os datos locais eliminaranse co reinicio</translation>
 <translation id="7881483672146086348">Ver conta</translation>
 <translation id="7882358943899516840">Tipo de fornecedor</translation>
+<translation id="7883262476066478211">Bloqueouse o dispositivo</translation>
 <translation id="7885253890047913815">Destinos recentes</translation>
 <translation id="7887334752153342268">Duplicar</translation>
 <translation id="7887864092952184874">Rato Bluetooth sincronizado</translation>
@@ -5102,11 +5131,13 @@ Mantén o ficheiro de clave nun lugar seguro, xa que o precisarás para crear no
 <translation id="8143442547342702591">Aplicación non válida</translation>
 <translation id="8146177459103116374">Se xa te rexistraches neste dispositivo, podes <ph name="LINK2_START" />iniciar sesión como usuario existente<ph name="LINK2_END" />.</translation>
 <translation id="8146793085009540321">Produciuse un erro no inicio de sesión. Ponte en contacto co administrador ou téntao de novo.</translation>
+<translation id="8149277777808869878">Este <ph name="DEVICE_TYPE" /> xestionarao <ph name="BEGIN_BOLD" /><ph name="DOMAIN" /><ph name="END_BOLD" />.</translation>
 <translation id="8151638057146502721">Configurar</translation>
 <translation id="8152091997436726702">Superouse o tempo de espera do rexistro da impresora. Para rexistrar unha impresora, debes confirmar o rexistro desta.</translation>
 <translation id="8154790740888707867">Non hai ningún ficheiro</translation>
 <translation id="815491593104042026">Produciuse un erro na autenticación porque se configurou para utilizar un URL non seguro (<ph name="BLOCKED_URL" />).  Ponte en contacto co teu administrador.</translation>
 <translation id="8157704005178149728">Configurando supervisión</translation>
+<translation id="8158117992543756526">Este dispositivo deixou de recibir actualizacións automáticas de software e de seguranza en <ph name="MONTH_AND_YEAR" />. <ph name="LINK_BEGIN" />Máis información<ph name="LINK_END" /></translation>
 <translation id="816055135686411707">Erro ao establecer o certificado de confianza</translation>
 <translation id="816095449251911490"><ph name="SPEED" /> (<ph name="RECEIVED_AMOUNT" />, <ph name="TIME_REMAINING" />)</translation>
 <translation id="8162984717805647492">{NUM_TABS,plural, =1{Mover pestana a unha ventá nova}other{Mover pestanas a unha ventá nova}}</translation>
@@ -5162,6 +5193,7 @@ Mantén o ficheiro de clave nun lugar seguro, xa que o precisarás para crear no
 <translation id="8236123533334037984">A túa organización está buscando esta carga para realizar a aprobación de seguranza.</translation>
 <translation id="8236917170563564587">Mellor compartir esta pestana</translation>
 <translation id="8237647586961940482">Rosa escuro e vermello</translation>
+<translation id="8239032431519548577">A inscrición da empresa está completa</translation>
 <translation id="8241040075392580210">Sombreado</translation>
 <translation id="8241806945692107836">Determinando a configuración do dispositivo...</translation>
 <translation id="8241868517363889229">Ler e modificar os teus marcadores</translation>
@@ -5252,6 +5284,7 @@ Mantén o ficheiro de clave nun lugar seguro, xa que o precisarás para crear no
 <translation id="8352772353338965963">Engade unha conta ao inicio de sesión múltiple. É posible acceder a todas as contas en que iniciaches sesión sen necesidade de inserir un contrasinal, polo que esta función só se debe utilizar coas contas de confianza.</translation>
 <translation id="8353683614194668312">Pode:</translation>
 <translation id="8356197132883132838"><ph name="TITLE" /> (<ph name="COUNT" />)</translation>
+<translation id="8357388086258943206">Produciuse un erro ao instalar Linux</translation>
 <translation id="8358685469073206162">Queres restaurar as páxinas?</translation>
 <translation id="8358912028636606457">A emisión do audio da pestana non é compatible con este dispositivo.</translation>
 <translation id="8363095875018065315">estable</translation>
@@ -5304,6 +5337,7 @@ Mantén o ficheiro de clave nun lugar seguro, xa que o precisarás para crear no
 <translation id="8438566539970814960">Mellorar as buscas e a navegación</translation>
 <translation id="8439506636278576865">Ofrecer a tradución de páxinas neste idioma</translation>
 <translation id="8440630305826533614">Aplicacións de Linux</translation>
+<translation id="8441980168797968634">Aplicacións e extensións</translation>
 <translation id="8443338615972234259">Crea agora unha nova conta para o teu usuario supervisado.</translation>
 <translation id="8446884382197647889">Máis información</translation>
 <translation id="8447409163267621480">Utiliza a tecla Ctrl ou Alt</translation>
@@ -5416,6 +5450,7 @@ Mantén o ficheiro de clave nun lugar seguro, xa que o precisarás para crear no
 <translation id="8608618451198398104">Engadir un tícket de Kerberos</translation>
 <translation id="8609465669617005112">Mover cara arriba</translation>
 <translation id="8610103157987623234">O formato é incorrecto. Téntao de novo</translation>
+<translation id="8613164732773110792">Só caracteres en minúscula, díxitos, guións baixos ou trazos</translation>
 <translation id="8615618338313291042">Aplicación de incógnito: <ph name="APP_NAME" /></translation>
 <translation id="8619803522055190423">Sombra paralela</translation>
 <translation id="8619892228487928601"><ph name="CERTIFICATE_NAME" />: <ph name="ERROR" /></translation>
@@ -5729,6 +5764,7 @@ Mantén o ficheiro de clave nun lugar seguro, xa que o precisarás para crear no
 <translation id="9009369504041480176">Cargando (<ph name="PROGRESS_PERCENT" />%)...</translation>
 <translation id="9011163749350026987">Mostrar sempre a icona</translation>
 <translation id="9013707997379828817">O teu administrador instalou unha versión anterior neste dispositivo. Garda os ficheiros importantes e reinicia. Eliminaranse todos os datos do dispositivo.</translation>
+<translation id="901668144954885282">Crear copia de seguranza en Google Drive</translation>
 <translation id="9018218886431812662">Completouse a instalación</translation>
 <translation id="901834265349196618">correo electrónico</translation>
 <translation id="9019062154811256702">Ler e cambiar a configuración de autocompletar</translation>

@@ -489,6 +489,10 @@ class CC_EXPORT ScrollTree final : public PropertyTree<ScrollNode> {
                                        bool hidden);
 
  private:
+  // ScrollTree doesn't use the needs_update flag.
+  using PropertyTree::needs_update;
+  using PropertyTree::set_needs_update;
+
   using ScrollOffsetMap = base::flat_map<ElementId, gfx::ScrollOffset>;
   using SyncedScrollOffsetMap =
       base::flat_map<ElementId, scoped_refptr<SyncedScrollOffset>>;

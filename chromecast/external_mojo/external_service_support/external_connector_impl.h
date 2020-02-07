@@ -11,6 +11,7 @@
 
 #include "base/callback.h"
 #include "base/macros.h"
+#include "base/memory/weak_ptr.h"
 #include "base/sequence_checker.h"
 #include "chromecast/external_mojo/external_service_support/external_connector.h"
 #include "mojo/public/cpp/bindings/pending_remote.h"
@@ -38,7 +39,8 @@ class ExternalConnectorImpl : public ExternalConnector {
       override;
   void BindInterface(const std::string& service_name,
                      const std::string& interface_name,
-                     mojo::ScopedMessagePipeHandle interface_pipe) override;
+                     mojo::ScopedMessagePipeHandle interface_pipe,
+                     bool async = true) override;
   std::unique_ptr<ExternalConnector> Clone() override;
   void SendChromiumConnectorRequest(
       mojo::ScopedMessagePipeHandle request) override;
@@ -49,6 +51,9 @@ class ExternalConnectorImpl : public ExternalConnector {
           callback) override;
 
  private:
+  void BindInterfaceImmediately(const std::string& service_name,
+                                const std::string& interface_name,
+                                mojo::ScopedMessagePipeHandle interface_pipe);
   void OnMojoDisconnect();
   bool BindConnectorIfNecessary();
 
@@ -57,6 +62,8 @@ class ExternalConnectorImpl : public ExternalConnector {
   base::OnceClosure connection_error_callback_;
 
   SEQUENCE_CHECKER(sequence_checker_);
+
+  base::WeakPtrFactory<ExternalConnectorImpl> weak_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(ExternalConnectorImpl);
 };

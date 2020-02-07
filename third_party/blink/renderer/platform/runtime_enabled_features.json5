@@ -1380,9 +1380,6 @@
       status: "stable",
     },
     {
-      name: "PrintBrowser",
-    },
-    {
       name: "PriorityHints",
       origin_trial_feature_name: "PriorityHints",
       status: "experimental",

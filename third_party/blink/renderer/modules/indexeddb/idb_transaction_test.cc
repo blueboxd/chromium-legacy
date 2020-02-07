@@ -93,7 +93,8 @@ class IDBTransactionTest : public testing::Test {
       std::unique_ptr<MockWebIDBTransaction> transaction_backend) {
     db_ = MakeGarbageCollected<IDBDatabase>(
         scope.GetExecutionContext(), std::move(database_backend),
-        MakeGarbageCollected<FakeIDBDatabaseCallbacks>(), scope.GetIsolate());
+        MakeGarbageCollected<FakeIDBDatabaseCallbacks>(), scope.GetIsolate(),
+        mojo::NullRemote());
 
     HashSet<String> transaction_scope = {"store"};
     transaction_ = IDBTransaction::CreateNonVersionChange(

@@ -8,6 +8,7 @@
 #include <utility>
 #include <vector>
 
+#include "ash/public/cpp/login_screen.h"
 #include "ash/public/cpp/notification_utils.h"
 #include "base/barrier_closure.h"
 #include "base/bind.h"
@@ -335,6 +336,15 @@ void SetLoginExtensionApiLaunchExtensionIdPref(const AccountId& account_id,
   prefs->CommitPendingWrite();
 }
 
+// Returns time remaining to the next online login. The value can be negative
+// which means that online login should have been already happened in the past.
+base::TimeDelta TimeToOnlineSignIn(base::Time last_online_signin,
+                                   base::TimeDelta offline_signin_limit) {
+  const base::Time now = base::DefaultClock::GetInstance()->Now();
+  // Time left to the next forced online signin.
+  return offline_signin_limit - (now - last_online_signin);
+}
+
 }  // namespace
 
 // Utility class used to wait for a Public Session policy store load if public
@@ -384,6 +394,7 @@ ExistingUserController* ExistingUserController::current_controller() {
 
 ExistingUserController::ExistingUserController()
     : cros_settings_(CrosSettings::Get()),
+      screen_refresh_timer_(std::make_unique<base::OneShotTimer>()),
       network_state_helper_(new login::NetworkStateHelper) {
   registrar_.Add(this, chrome::NOTIFICATION_AUTH_SUPPLIED,
                  content::NotificationService::AllSources());
@@ -471,6 +482,7 @@ void ExistingUserController::UpdateLoginDisplay(
     }
   }
 
+  ForceOnlineFlagChanged(filtered_users);
   // If no user pods are visible, fallback to single new user pod which will
   // have guest session link.
   bool show_guest = user_manager->IsGuestSessionAllowed();
@@ -481,6 +493,58 @@ void ExistingUserController::UpdateLoginDisplay(
   GetLoginDisplay()->Init(filtered_users, show_guest, show_users_on_signin,
                           allow_new_user);
   GetLoginDisplayHost()->OnPreferencesChanged();
+}
+
+// Check SAML offline time limits for |users| and schedules next
+// check if needed and returns true if any of user's force online
+// sign-in flag is changed.
+bool ExistingUserController::ForceOnlineFlagChanged(
+    const user_manager::UserList& users) {
+  bool force_online_flag_changed = false;
+  base::TimeDelta min_delta = base::TimeDelta::Max();
+  for (auto* user : users) {
+    if (!user->using_saml()) {
+      continue;
+    }
+    const base::TimeDelta offline_signin_limit =
+        user_manager::known_user::GetOfflineSigninLimit(user->GetAccountId());
+    if (offline_signin_limit == base::TimeDelta()) {
+      continue;
+    }
+
+    const base::Time last_online_signin =
+        user_manager::known_user::GetLastOnlineSignin(user->GetAccountId());
+    base::TimeDelta time_to_next_online_signin =
+        TimeToOnlineSignIn(last_online_signin, offline_signin_limit);
+    if (time_to_next_online_signin > base::TimeDelta() &&
+        time_to_next_online_signin < min_delta) {
+      min_delta = time_to_next_online_signin;
+    }
+    if (time_to_next_online_signin < base::TimeDelta() &&
+        !user->force_online_signin()) {
+      user_manager::UserManager::Get()->SaveForceOnlineSignin(
+          user->GetAccountId(), true);
+      force_online_flag_changed = true;
+    }
+  }
+  if (min_delta < base::TimeDelta::Max()) {
+    DCHECK(!screen_refresh_timer_->IsRunning());
+    // Schedule update task
+    screen_refresh_timer_->Start(
+        FROM_HERE, min_delta,
+        base::BindOnce(&ExistingUserController::
+                           CheckSamlOfflineTimeLimitAndUpdateLoginDisplay,
+                       weak_factory_.GetWeakPtr(), users));
+  }
+  return force_online_flag_changed;
+}
+
+// Calls ForceOnlineFlagChanged and schedules the next call.
+void ExistingUserController::CheckSamlOfflineTimeLimitAndUpdateLoginDisplay(
+    const user_manager::UserList& users) {
+  if (ForceOnlineFlagChanged(users)) {
+    ash::LoginScreen::Get()->ShowLoginScreen();
+  }
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -680,6 +744,8 @@ void ExistingUserController::PerformLogin(
     UMA_HISTOGRAM_MEDIUM_TIMES("Login.PromptToLoginTime", delta);
     time_init_ = base::Time();  // Reset to null.
   }
+  // Stop screen refresh timer - will be restarted on login screen again
+  screen_refresh_timer_->Stop();
 }
 
 void ExistingUserController::ContinuePerformLogin(
@@ -1792,6 +1858,7 @@ void ExistingUserController::DoCompleteLogin(
 void ExistingUserController::DoLogin(const UserContext& user_context,
                                      const SigninSpecifics& specifics) {
   last_login_attempt_was_auto_login_ = specifics.is_auto_login;
+  screen_refresh_timer_->Stop();
   VLOG(2) << "DoLogin with a user type: " << user_context.GetUserType();
 
   if (user_context.GetUserType() == user_manager::USER_TYPE_GUEST) {

@@ -122,7 +122,7 @@ class PaintArtifactCompositorTest : public testing::Test,
     return *GetPropertyTrees().effect_tree.Node(layer->effect_tree_index());
   }
 
-  const cc::LayerTreeHost& GetLayerTreeHost() {
+  cc::LayerTreeHost& GetLayerTreeHost() {
     return *layer_tree_->layer_tree_host();
   }
 
@@ -174,7 +174,6 @@ class PaintArtifactCompositorTest : public testing::Test,
     const auto* scroll_node = scroll_offset.ScrollNode();
     scoped_refptr<cc::Layer> layer = cc::Layer::Create();
     auto rect = scroll_node->ContainerRect();
-    layer->SetScrollable(gfx::Size(rect.Size()));
     layer->SetBounds(gfx::Size(rect.Size()));
     layer->SetElementId(scroll_node->GetCompositorElementId());
     artifact.Chunk(scroll_offset, clip, effect)
@@ -266,6 +265,10 @@ class PaintArtifactCompositorTest : public testing::Test,
   }
 
   MockScrollCallbacks& ScrollCallbacks() { return scroll_callbacks_; }
+
+  PaintArtifactCompositor& GetPaintArtifactCompositor() {
+    return *paint_artifact_compositor_;
+  }
 
  private:
   MockScrollCallbacks scroll_callbacks_;
@@ -4771,6 +4774,46 @@ TEST_P(PaintArtifactCompositorTest, EffectChange) {
   EXPECT_FALSE(GetPropertyTrees()
                    .effect_tree.Node(GetEffectNode(layer).parent_id)
                    ->effect_changed);
+}
+
+TEST_P(PaintArtifactCompositorTest, DirectlySetScrollOffset) {
+  CompositorElementId scroll_element_id = ScrollElementId(123);
+  auto scroll = CreateScroll(ScrollPaintPropertyNode::Root(), ScrollState1(),
+                             kNotScrollingOnMain, scroll_element_id);
+  auto scroll_translation = CreateScrollTranslation(
+      t0(), 7, 9, *scroll, CompositingReason::kWillChangeTransform);
+
+  TestPaintArtifact artifact;
+  CreateScrollableChunk(artifact, *scroll_translation, c0(), e0());
+  Update(artifact.Build());
+
+  auto& scroll_tree = GetPropertyTrees().scroll_tree;
+  auto* scroll_layer = ScrollableLayerAt(0);
+  auto* scroll_node = scroll_tree.FindNodeFromElementId(scroll_element_id);
+  auto& transform_tree = GetPropertyTrees().transform_tree;
+  auto* transform_node = transform_tree.Node(scroll_node->transform_id);
+  EXPECT_EQ(scroll_element_id, scroll_node->element_id);
+  EXPECT_EQ(scroll_element_id, scroll_layer->element_id());
+  EXPECT_EQ(scroll_node->id, scroll_layer->scroll_tree_index());
+  EXPECT_EQ(gfx::ScrollOffset(-7, -9),
+            scroll_tree.current_scroll_offset(scroll_element_id));
+  EXPECT_EQ(gfx::ScrollOffset(-7, -9), transform_node->scroll_offset);
+
+  auto& host = GetLayerTreeHost();
+  host.Composite(base::TimeTicks::Now(), true);
+  ASSERT_FALSE(host.LayersThatShouldPushProperties().contains(scroll_layer));
+  ASSERT_FALSE(host.proxy()->CommitRequested());
+  ASSERT_FALSE(transform_tree.needs_update());
+
+  ASSERT_TRUE(GetPaintArtifactCompositor().DirectlySetScrollOffset(
+      scroll_element_id, FloatPoint(-10, -20)));
+  EXPECT_TRUE(host.LayersThatShouldPushProperties().contains(scroll_layer));
+  EXPECT_TRUE(host.proxy()->CommitRequested());
+  EXPECT_EQ(gfx::ScrollOffset(-10, -20),
+            scroll_tree.current_scroll_offset(scroll_element_id));
+  // DirectlySetScrollOffset doesn't update transform node.
+  EXPECT_EQ(gfx::ScrollOffset(-7, -9), transform_node->scroll_offset);
+  EXPECT_FALSE(transform_tree.needs_update());
 }
 
 }  // namespace blink

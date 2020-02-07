@@ -20,6 +20,7 @@ import org.chromium.base.UserDataHost;
 import org.chromium.base.test.BaseRobolectricTestRunner;
 import org.chromium.base.test.util.JniMocker;
 import org.chromium.chrome.browser.ChromeActivity;
+import org.chromium.components.browser_ui.util.BrowserControlsVisibilityDelegate;
 import org.chromium.content_public.browser.WebContents;
 import org.chromium.content_public.common.BrowserControlsState;
 import org.chromium.ui.base.WindowAndroid;

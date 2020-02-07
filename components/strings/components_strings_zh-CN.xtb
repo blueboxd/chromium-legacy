@@ -671,6 +671,7 @@
 <translation id="3987940399970879459">小于 1 MB</translation>
 <translation id="3990250421422698716">撞页偏移</translation>
 <translation id="40103911065039147">{URL_count,plural, =1{附近有 1 个网页}other{附近有 # 个网页}}</translation>
+<translation id="4014128326099193693">{COUNT,plural, =1{包含 {COUNT} 页内容的 PDF 文档}other{包含 {COUNT} 页内容的 PDF 文档}}</translation>
 <translation id="4030383055268325496">撤消添加(&amp;U)</translation>
 <translation id="4032320456957708163">您的浏览器由 <ph name="ENROLLMENT_DOMAIN" /> 管理</translation>
 <translation id="4058922952496707368">“<ph name="SUBKEY" />”键：<ph name="ERROR" /></translation>
@@ -699,6 +700,7 @@
 <translation id="4142935452406587478">纸匣 10</translation>
 <translation id="4148925816941278100">American Express</translation>
 <translation id="4151403195736952345">使用全局默认设置（检测）</translation>
+<translation id="4152318981910038897">{COUNT,plural, =1{第 1 页}other{第 {COUNT} 页}}</translation>
 <translation id="4159784952369912983">紫色</translation>
 <translation id="4165986682804962316">网站设置</translation>
 <translation id="4171400957073367226">验证签名无效</translation>
@@ -1374,6 +1376,7 @@
 <translation id="7201591969684833065">您的管理员可以查看：</translation>
 <translation id="7202346780273620635">Letter-Extra</translation>
 <translation id="7210863904660874423"><ph name="HOST_NAME" /> 不符合相关安全标准。</translation>
+<translation id="7210993021468939304">可查看该容器内的 Linux 活动，并可在该容器内安装和运行 Linux 应用</translation>
 <translation id="721197778055552897"><ph name="BEGIN_LINK" />详细了解<ph name="END_LINK" />此问题。</translation>
 <translation id="7219179957768738017">该连接使用 <ph name="SSL_VERSION" />。</translation>
 <translation id="7220786058474068424">正在处理</translation>
@@ -1537,6 +1540,7 @@
 <translation id="7878562273885520351">您的密码可能会被盗用</translation>
 <translation id="7882421473871500483">棕色</translation>
 <translation id="7887683347370398519">请检查您的银行卡验证码 (CVC)，然后重试</translation>
+<translation id="7887885240995164102">进入“画中画”模式</translation>
 <translation id="7888575728750733395">打印操作渲染方式</translation>
 <translation id="7904208859782148177">C3 (Envelope)</translation>
 <translation id="7932579305932748336">涂层</translation>

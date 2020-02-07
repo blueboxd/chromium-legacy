@@ -6,6 +6,7 @@
 
 #include "build/build_config.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "third_party/blink/renderer/platform/wtf/text/string_builder.h"
 #include "third_party/inspector_protocol/crdtp/json.h"
 
 namespace blink {

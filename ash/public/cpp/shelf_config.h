@@ -88,8 +88,11 @@ class ASH_EXPORT ShelfConfig : public TabletModeObserver,
   // The margin around the overflow button on the shelf.
   int overflow_button_margin() const;
 
-  // The distance between the edge of the shelf and the home and back button.
-  int home_button_edge_spacing() const;
+  // The spacing between the edge of the shelf and the control buttons. When
+  // shelf is horizontal, the left/right edges of the shelf are considered a
+  // primary axis edge. When shelf is vertical, the top/bottom edges are
+  // considered the primary axis edge.
+  int control_button_edge_spacing(bool is_primary_axis_edge) const;
 
   // The duration of the hotseat background animations in ms.
   base::TimeDelta hotseat_background_animation_duration() const;

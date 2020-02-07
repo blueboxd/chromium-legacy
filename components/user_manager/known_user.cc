@@ -11,6 +11,8 @@
 
 #include "base/logging.h"
 #include "base/metrics/histogram_macros.h"
+#include "base/time/time.h"
+#include "base/value_conversions.h"
 #include "base/values.h"
 #include "components/prefs/pref_registry_simple.h"
 #include "components/prefs/scoped_user_pref_update.h"
@@ -72,6 +74,9 @@ const char kIsEphemeral[] = "is_ephemeral";
 // Key of the list value that stores challenge-response authentication keys.
 const char kChallengeResponseKeys[] = "challenge_response_keys";
 
+const char kLastOnlineSignin[] = "last_online_singin";
+const char kOfflineSigninLimit[] = "offline_signin_limit";
+
 // List containing all the known user preferences keys.
 const char* kReservedKeys[] = {kCanonicalEmail,
                                kGAIAIdKey,
@@ -86,7 +91,9 @@ const char* kReservedKeys[] = {kCanonicalEmail,
                                kMinimalMigrationAttempted,
                                kProfileRequiresPolicy,
                                kIsEphemeral,
-                               kChallengeResponseKeys};
+                               kChallengeResponseKeys,
+                               kLastOnlineSignin,
+                               kOfflineSigninLimit};
 
 PrefService* GetLocalState() {
   if (!UserManager::IsInitialized())
@@ -600,6 +607,36 @@ base::Value GetChallengeResponseKeys(const AccountId& account_id) {
   if (!GetPref(account_id, kChallengeResponseKeys, &value) || !value->is_list())
     return base::Value();
   return value->Clone();
+}
+
+void SetLastOnlineSignin(const AccountId& account_id, base::Time time) {
+  SetPref(account_id, kLastOnlineSignin, base::CreateTimeValue(time));
+}
+
+base::Time GetLastOnlineSignin(const AccountId& account_id) {
+  const base::Value* value = nullptr;
+  base::Time time = base::Time();
+  if (!GetPref(account_id, kLastOnlineSignin, &value))
+    return base::Time();
+  if (!base::GetValueAsTime(*value, &time))
+    return base::Time();
+  return time;
+}
+
+void SetOfflineSigninLimit(const AccountId& account_id,
+                           base::TimeDelta time_delta) {
+  SetPref(account_id, kOfflineSigninLimit,
+          base::CreateTimeDeltaValue(time_delta));
+}
+
+base::TimeDelta GetOfflineSigninLimit(const AccountId& account_id) {
+  const base::Value* value = nullptr;
+  base::TimeDelta time_delta = base::TimeDelta();
+  if (!GetPref(account_id, kOfflineSigninLimit, &value))
+    return base::TimeDelta();
+  if (!GetValueAsTimeDelta(*value, &time_delta))
+    return base::TimeDelta();
+  return time_delta;
 }
 
 void RemovePrefs(const AccountId& account_id) {

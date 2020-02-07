@@ -250,7 +250,7 @@ public class EphemeralTabCoordinator implements View.OnLayoutChangeListener {
             @Override
             public void didFinishNavigation(NavigationHandle navigation) {
                 if (navigation.hasCommitted() && navigation.isInMainFrame()) {
-                    mSheetContent.updateURL(mPanelContent.getWebContents().getVisibleUrlString());
+                    mSheetContent.updateURL(mPanelContent.getWebContents().getVisibleUrl());
                 }
             }
         };
@@ -309,7 +309,7 @@ public class EphemeralTabCoordinator implements View.OnLayoutChangeListener {
             int securityLevel = SecurityStateModel.getSecurityLevelForWebContents(
                     mPanelContent.getWebContents());
             mSheetContent.setSecurityIcon(getSecurityIconResource(securityLevel));
-            mSheetContent.updateURL(mPanelContent.getWebContents().getVisibleUrlString());
+            mSheetContent.updateURL(mPanelContent.getWebContents().getVisibleUrl());
         }
 
         @Override

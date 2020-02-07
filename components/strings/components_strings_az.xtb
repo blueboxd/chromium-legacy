@@ -686,6 +686,7 @@
 <translation id="3987940399970879459">1 MB-dan az</translation>
 <translation id="3990250421422698716">Kənarını bükün</translation>
 <translation id="40103911065039147">{URL_count,plural, =1{1 veb səhifəsi yaxınlıqdadır}other{# veb səhifəsi yaxınlıqdadır}}</translation>
+<translation id="4014128326099193693">{COUNT,plural, =1{{COUNT} səhifədən ibarət PDF sənədi}other{{COUNT} səhifədən ibarət PDF sənədi}}</translation>
 <translation id="4030383055268325496">Əlavəni geri qaytarın</translation>
 <translation id="4032320456957708163">Brauzer <ph name="ENROLLMENT_DOMAIN" /> tərəfindən idarə edilir</translation>
 <translation id="4058922952496707368">Açar "<ph name="SUBKEY" />": <ph name="ERROR" /></translation>
@@ -714,6 +715,7 @@
 <translation id="4142935452406587478">Qab 10</translation>
 <translation id="4148925816941278100">American Express</translation>
 <translation id="4151403195736952345">Qlobal defolt istifadə edin (Defekt)</translation>
+<translation id="4152318981910038897">{COUNT,plural, =1{Səhifə 1}other{Səhifə {COUNT}}}</translation>
 <translation id="4159784952369912983">Bənövşəyi</translation>
 <translation id="4165986682804962316">Sayt ayarları</translation>
 <translation id="4171400957073367226">Pis doğrulama imzası</translation>
@@ -1391,6 +1393,7 @@
 <translation id="7201591969684833065">Administrator baxa bilər:</translation>
 <translation id="7202346780273620635">Letter-Extra</translation>
 <translation id="7210863904660874423"><ph name="HOST_NAME" /> təhlükəsizlik standartlarına əməl etmir.</translation>
+<translation id="7210993021468939304">Konteyner nəzdində Linux fəaliyyəti. Konteyner nəzdində Linux tətbiqləri quraşdırmaq, icra etmək mümkündür</translation>
 <translation id="721197778055552897">Bu problem haqqında <ph name="BEGIN_LINK" />ətraflı məlumat alın<ph name="END_LINK" />.</translation>
 <translation id="7219179957768738017">Bağlantı <ph name="SSL_VERSION" /> istifadə edir.</translation>
 <translation id="7220786058474068424">Prosesdən keçirilir...</translation>
@@ -1554,6 +1557,7 @@
 <translation id="7878562273885520351">Parolunuz təhlükədə ola bilər</translation>
 <translation id="7882421473871500483">Qəhvəyi</translation>
 <translation id="7887683347370398519">CVC kodunuzu yoxlayın və yenidən cəhd edin</translation>
+<translation id="7887885240995164102">Şəkildə şəkil xüsusiyyətinə daxil olun</translation>
 <translation id="7888575728750733395">Çapın göstərilmə məqsədi</translation>
 <translation id="7904208859782148177">C3 (Zərf)</translation>
 <translation id="7932579305932748336">Palto</translation>

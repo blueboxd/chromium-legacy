@@ -163,26 +163,22 @@ void Layer::SetLayerTreeHost(LayerTreeHost* host) {
 
   bool property_tree_indices_invalid = false;
   if (layer_tree_host_) {
-    bool should_register_element =
-        inputs_.element_id && !layer_tree_host_->IsUsingLayerLists();
-    layer_tree_host_->property_trees()->needs_rebuild = true;
     layer_tree_host_->UnregisterLayer(this);
-    if (should_register_element) {
-      layer_tree_host_->UnregisterElement(inputs_.element_id,
-                                          ElementListType::ACTIVE);
-    }
-    if (!layer_tree_host_->IsUsingLayerLists())
+    if (inputs_.element_id)
+      layer_tree_host_->UnregisterElement(inputs_.element_id);
+    if (!layer_tree_host_->IsUsingLayerLists()) {
+      layer_tree_host_->property_trees()->needs_rebuild = true;
       property_tree_indices_invalid = true;
+    }
   }
   if (host) {
-    bool should_register_element =
-        inputs_.element_id && !host->IsUsingLayerLists();
-    host->property_trees()->needs_rebuild = true;
     host->RegisterLayer(this);
-    if (should_register_element)
-      host->RegisterElement(inputs_.element_id, ElementListType::ACTIVE, this);
-    if (!host->IsUsingLayerLists())
+    if (inputs_.element_id)
+      host->RegisterElement(inputs_.element_id, this);
+    if (!host->IsUsingLayerLists()) {
+      host->property_trees()->needs_rebuild = true;
       property_tree_indices_invalid = true;
+    }
   }
 
   layer_tree_host_ = host;
@@ -1540,19 +1536,13 @@ void Layer::SetElementId(ElementId id) {
     return;
   TRACE_EVENT1(TRACE_DISABLED_BY_DEFAULT("cc.debug"), "Layer::SetElementId",
                "element", id.AsValue().release());
-  bool should_register_element =
-      layer_tree_host() && !layer_tree_host()->IsUsingLayerLists();
-  if (should_register_element && inputs_.element_id) {
-    layer_tree_host_->UnregisterElement(inputs_.element_id,
-                                        ElementListType::ACTIVE);
-  }
+  if (layer_tree_host_ && inputs_.element_id)
+    layer_tree_host_->UnregisterElement(inputs_.element_id);
 
   inputs_.element_id = id;
 
-  if (should_register_element && inputs_.element_id) {
-    layer_tree_host_->RegisterElement(inputs_.element_id,
-                                      ElementListType::ACTIVE, this);
-  }
+  if (layer_tree_host_ && inputs_.element_id)
+    layer_tree_host_->RegisterElement(inputs_.element_id, this);
 
   SetNeedsCommit();
 }

@@ -57,6 +57,10 @@ class FakeDeepScanningDialogDelegate : public DeepScanningDialogDelegate {
       Data data,
       CompletionCallback callback);
 
+  // Sets a delay to have before returning responses. This is used by tests that
+  // need to simulate response taking some time.
+  static void SetResponseDelay(base::TimeDelta delay);
+
   // Returns a deep scanning response that represents a successful scan.
   static DeepScanningClientResponse SuccessfulResponse(
       bool include_dlp = true,
@@ -97,7 +101,6 @@ class FakeDeepScanningDialogDelegate : public DeepScanningDialogDelegate {
   void UploadFileForDeepScanning(
       const base::FilePath& path,
       std::unique_ptr<BinaryUploadService::Request> request) override;
-  bool CloseTabModalDialog() override;
 
   static BinaryUploadService::Result result_;
   base::RepeatingClosure delete_closure_;

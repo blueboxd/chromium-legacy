@@ -81,10 +81,12 @@ class LayerTreeViewDelegate {
   // RecordEndOfFrameMetrics as soon as the total frame time becomes known for
   // a given frame. For example, ProxyMain::BeginMainFrame calls
   // RecordStartOfFrameMetrics just be WillBeginCompositorFrame() and
-  // RecordEndOfFrameMetrics immediately before aborting or committing a frame
-  // (at the same time Tracing measurements are taken).
+  // RecordEndOfFrameMetrics immediately before aborting or completing the
+  // BeginMainFrame method.
   virtual void RecordStartOfFrameMetrics() = 0;
-  virtual void RecordEndOfFrameMetrics(base::TimeTicks frame_begin_time) = 0;
+  virtual void RecordEndOfFrameMetrics(
+      base::TimeTicks frame_begin_time,
+      cc::ActiveFrameSequenceTrackers trackers) = 0;
   // Return metrics information for the stages of BeginMainFrame. This is
   // ultimately implemented by Blink's LocalFrameUKMAggregator. It must be a
   // distinct call from the FrameMetrics above because the BeginMainFrameMetrics

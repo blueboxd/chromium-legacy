@@ -213,7 +213,7 @@ bool BrowserCommandController::IsReservedCommandOrKey(
     int command_id,
     const content::NativeWebKeyboardEvent& event) {
   // In Apps mode, no keys are reserved.
-  if (browser_->deprecated_is_app())
+  if (browser_->is_type_app() || browser_->is_type_app_popup())
     return false;
 
 #if defined(OS_CHROMEOS)

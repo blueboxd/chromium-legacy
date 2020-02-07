@@ -238,4 +238,36 @@ bool FileTypeSupported(bool for_malware_scan,
 
   return false;
 }
+
+DeepScanningClientResponse SimpleDeepScanningClientResponseForTesting(
+    base::Optional<bool> dlp_success,
+    base::Optional<bool> malware_success) {
+  DeepScanningClientResponse response;
+
+  if (dlp_success.has_value()) {
+    response.mutable_dlp_scan_verdict()->set_status(
+        DlpDeepScanningVerdict::SUCCESS);
+    if (!dlp_success.value()) {
+      DlpDeepScanningVerdict::TriggeredRule* rule =
+          response.mutable_dlp_scan_verdict()->add_triggered_rules();
+      rule->set_rule_name("rule");
+      rule->set_action(DlpDeepScanningVerdict::TriggeredRule::BLOCK);
+    }
+  }
+
+  if (malware_success.has_value()) {
+    response.mutable_malware_scan_verdict()->set_status(
+        MalwareDeepScanningVerdict::SUCCESS);
+    if (malware_success.value()) {
+      response.mutable_malware_scan_verdict()->set_verdict(
+          MalwareDeepScanningVerdict::CLEAN);
+    } else {
+      response.mutable_malware_scan_verdict()->set_verdict(
+          MalwareDeepScanningVerdict::MALWARE);
+    }
+  }
+
+  return response;
+}
+
 }  // namespace safe_browsing

@@ -185,7 +185,7 @@ android_library("cast_shell_java") {
   }
 }
 
-if (is_android_things_non_public && !build_for_android_things_n) {
+if (is_android_things_non_public) {
   android_library("cast_shell_android_things_sys_info_java") {
     sources = [ "//chromecast/browser/android/apk/src/org/chromium/chromecast/shell/CastSysInfoAndroidThings.java" ]
     deps = [

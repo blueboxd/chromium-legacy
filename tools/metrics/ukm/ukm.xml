@@ -2189,6 +2189,15 @@ be describing additional metrics about the same event.
       Contentful Paint) was registered.
     </summary>
   </metric>
+  <metric name="MainFrameReasons">
+    <summary>
+      A bitfield representation of the reasons for a main frame update. The
+      fields are based on the FrameSequenceTrackerType enum, so bitwise and with
+      the following values to determine if a reason was present:
+      CompositorAnimation: 1, MainThreadAnimation: 2, PinchZoom: 4, RAF: 8,
+      TouchScroll: 16, Universal: 32, Video: 64 and WheelScroll: 128.
+    </summary>
+  </metric>
   <metric name="Paint">
     <summary>
       The time taken to paint for the main frame in microseconds during the

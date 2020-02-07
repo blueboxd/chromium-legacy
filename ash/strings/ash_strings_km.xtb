@@ -118,6 +118,7 @@
 <translation id="2413728805700750528"><ph name="DISPLAY_NAME" /> គឺជា​រយៈពេល​ចូលប្រើ​ដែល​គ្រប់គ្រង​ដោយ <ph name="DOMAIN" /></translation>
 <translation id="2427507373259914951">ចុច​កណ្ដុរ​ខាងឆ្វេង</translation>
 <translation id="2429753432712299108">ឧបករណ៍ប្តូធូស "<ph name="DEVICE_NAME" />" ស្នើការអនុញ្ញាតដើម្បីភ្ជាប់។ មុនពេលទទួល សូមអះអាងថាពាក្យសម្ងាត់នេះត្រូវបានបង្ហាញនៅលើឧបករណ៍នោះ៖ <ph name="PASSKEY" /></translation>
+<translation id="2473177541599297363">បញ្ជាក់​កម្រិតច្បាស់</translation>
 <translation id="2482878487686419369">ការជូនដំណឹង</translation>
 <translation id="2484513351006226581">ចុច <ph name="KEYBOARD_SHORTCUT" /> ដើម្បី​ប្តូរប្លង់​ក្តារ​ចុច។</translation>
 <translation id="2501920221385095727">គ្រាប់ចុចស្អិត</translation>
@@ -138,6 +139,7 @@
 <translation id="2727977024730340865">បានដោតទៅឆ្នាំងសាកថាមពលខ្សោយ។ ការសាកថ្មប្រហែលជាមិនអាចជឿជាក់បានទេ។</translation>
 <translation id="2792498699870441125">Alt+ស្វែងរក</translation>
 <translation id="2819276065543622893">អ្នកនឹងត្រូវចាកចេញឥឡូវនេះ។</translation>
+<translation id="2825224105325558319"><ph name="DISPLAY_NAME" /> មិនអាចប្រើ <ph name="SPECIFIED_RESOLUTION" /> បានទេ។ បានប្ដូរកម្រិតច្បាស់​ទៅ <ph name="FALLBACK_RESOLUTION" />។</translation>
 <translation id="2825619548187458965">ធ្នើ</translation>
 <translation id="2844169650293029770">ឧបករណ៍ USB-C (រន្ធមុខផ្នែកខាងឆ្វេង)</translation>
 <translation id="2865888419503095837">ព័ត៌មាន​បណ្តាញ</translation>
@@ -157,6 +159,12 @@
 <translation id="3009178788565917040">ទិន្នផល</translation>
 <translation id="3051128274746680507">កម្រងព័ត៌មាន​អ្នកប្រើប្រាស់ដែលស្ថិតក្រោម​ការមើលការខុសត្រូវរបស់អ្នក​នឹងត្រូវបានលុបចេញ​នាពេលឆាប់ៗនេះ។ ចូលគណនី​ដើម្បីស្វែងយល់​បន្ថែម។</translation>
 <translation id="3055162170959710888">អ្នកបានប្រើឧបករណ៍នេះរយៈពេល <ph name="USED_TIME" /> នៅថ្ងៃនេះ</translation>
+<translation id="3076778413190775903">របារស្ថានភាព ម៉ោង <ph name="TIME" />,
+        <ph name="BATTERY" />
+        <ph name="NETWORK" />,
+        <ph name="NOTIFICATION" />,
+        <ph name="IME" />
+        <ph name="LOCALE" /></translation>
 <translation id="3077734595579995578">SHIFT</translation>
 <translation id="3081696990447829002">ពង្រីក​ម៉ឺនុយ​</translation>
 <translation id="3087734570205094154">ខាងក្រោម</translation>
@@ -167,6 +175,7 @@
 <translation id="3151786313568798007">ទិសដៅ</translation>
 <translation id="3153444934357957346">អ្នកអាចមានគណនីត្រឹមតែ <ph name="MULTI_PROFILE_USER_LIMIT" /> ប៉ុណ្ណោះ សម្រាប់ការចូលគណនីច្រើន។</translation>
 <translation id="3154351730702813399">អ្នកគ្រប់គ្រងឧបករណ៍នេះអាចនឹងត្រួតពិនិត្យសកម្មភាពរុករករបស់អ្នក។</translation>
+<translation id="3181441307743005334">ការចាប់ផ្ដើម​ឡើងវិញអាច​ចំណាយ​ពេលបន្តិច</translation>
 <translation id="3202010236269062730">{NUM_DEVICES,plural, =1{បាន​ភ្ជាប់​ទៅ​ឧបករណ៍មួយ}other{បាន​ភ្ជាប់​ទៅ​ឧបករណ៍ #}}</translation>
 <translation id="3217205077783620295">កម្រិត​សំឡេង​ត្រូវបានបើក ការបិទ​នឹងបិទសំឡេង។</translation>
 <translation id="3226991577105957773">+<ph name="COUNT" /> ទៀត</translation>
@@ -316,6 +325,7 @@
 <translation id="5331975486040154427">ឧបករណ៍ USB-C (រន្ធក្រោយផ្នែកខាងឆ្វេង)</translation>
 <translation id="5379115545237091094">ព្យាយាម​ច្រើនដងពេក</translation>
 <translation id="5397578532367286026">ការប្រើប្រាស់ និងប្រើ (<ph name="MANAGER_EMAIL" />) នៅលើ chrome.com។</translation>
+<translation id="5400461572260843123">ការកំណត់​រហ័ស ចុច ស្វែងរក + ឆ្វេង ដើម្បីចូលប្រើ​មជ្ឈមណ្ឌល​ជូនដំណឹង។</translation>
 <translation id="5430931332414098647">ការ​ភ្ជាប់​ភ្លាមៗ</translation>
 <translation id="5431825016875453137">OpenVPN / L2TP</translation>
 <translation id="544691375626129091">អ្នកប្រើដែលមានទាំងអស់ត្រូវបានបន្ថែមទៅក្នុងវេននេះរួចទៅហើយ។</translation>
@@ -397,6 +407,7 @@
 <translation id="6490471652906364588">ឧបករណ៍ USB-C (រន្ធខាងស្តាំ)</translation>
 <translation id="649452524636452238">កូដ PIN របស់​កាត​ឆ្លាតវៃ</translation>
 <translation id="6501401484702599040">កំពុងខាសអេក្រង់ទៅ <ph name="RECEIVER_NAME" /></translation>
+<translation id="652139407789908527">អេក្រង់របស់អ្នក​នឹងមិន​បង្ហាញអ្វីទាំងអស់យូរជាងធម្មតា (រហូតដល់​មួយនាទី) អំឡុងពេល​ដំឡើងកំណែនេះ។ សូមកុំចុច​ប៊ូតុងថាមពល នៅពេល​កំពុងដំឡើងកំណែ​។</translation>
 <translation id="6521655319214113338">ការបញ្ចូលការសរសេរដោយដៃ</translation>
 <translation id="6528179044667508675">ហាមរំខាន</translation>
 <translation id="6537270692134705506">ថតអេក្រង់</translation>
@@ -542,6 +553,7 @@
 <translation id="847056008324733326">ការកំណត់​មាត្រដ្ឋានអេក្រង់</translation>
 <translation id="8473301994082929012"><ph name="ORGANIZATION_NAME" /> មាន <ph name="FEATURE_STATE" /> <ph name="FEATURE_NAME" />។</translation>
 <translation id="8477270416194247200">ចុច Alt+Search ឬ Shift ដើម្បីបោះបង់។</translation>
+<translation id="8492573885090281069"><ph name="DISPLAY_NAME" /> មិនអាច​ប្រើ <ph name="SPECIFIED_RESOLUTION" /> បានទេ។ បានប្ដូរ​កម្រិតច្បាស់​ទៅ <ph name="FALLBACK_RESOLUTION" />។ សូមចុច "បញ្ជាក់" ដើម្បីរក្សាទុក​ការផ្លាស់ប្ដូរ។ ការកំណត់​ពីមុននឹងរក្សាទុក​ក្នុងរយៈពេល <ph name="TIMEOUT_SECONDS" />។</translation>
 <translation id="8513108775083588393">បង្វិល​ស្វ័យ​ប្រវត្តិ</translation>
 <translation id="8517041960877371778"><ph name="DEVICE_TYPE" /> របស់អ្នកអាចនឹងមិនសាកថ្មទេនៅពេលបើក។</translation>
 <translation id="8627191004499078455">បានភ្ជាប់ទៅ <ph name="DEVICE_NAME" /></translation>
@@ -596,6 +608,7 @@
 <translation id="9183456764293710005">កម្មវិធី​ពង្រីក​ពេញ​អេក្រង់</translation>
 <translation id="9193626018745640770">កំពុង​បញ្ជូន​ទៅឧបករណ៍​ទទួល​ដែលមិន​ស្គាល់</translation>
 <translation id="9194617393863864469">ចូលជាអ្នកប្រើផ្សេងទៀត...</translation>
+<translation id="9198992156681343238">បានប្ដូរ​កម្រិតច្បាស់ <ph name="DISPLAY_NAME" /> ទៅ <ph name="RESOLUTION" />។ សូមចុច "បញ្ជាក់" ដើម្បីរក្សាទុក​ការផ្លាស់ប្ដូរ។ ការកំណត់​ពីមុននឹងរក្សាទុក​ក្នុងរយៈពេល <ph name="TIMEOUT_SECONDS" />។</translation>
 <translation id="9201374708878217446"><ph name="CONNECTION_STATUS" />, គ្រប់គ្រង​ដោយ​អ្នកគ្រប់គ្រង​របស់អ្នក</translation>
 <translation id="9210037371811586452">កំពុង​ចាកចេញ​ពី​មុខងារ​អេក្រង់​ដើម​រួម</translation>
 <translation id="9211681782751733685">នៅសល់ <ph name="TIME_REMAINING" /> ទៀត ទើប​សាកថ្មពេញ។</translation>

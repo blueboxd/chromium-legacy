@@ -18,6 +18,8 @@ import org.chromium.base.annotations.JNINamespace;
 import org.chromium.base.annotations.NativeMethods;
 import org.chromium.components.autofill.AutofillProvider;
 import org.chromium.components.autofill.AutofillProviderImpl;
+import org.chromium.components.browser_ui.util.BrowserControlsVisibilityDelegate;
+import org.chromium.components.browser_ui.util.ComposedBrowserControlsVisibilityDelegate;
 import org.chromium.components.find_in_page.FindInPageBridge;
 import org.chromium.components.find_in_page.FindMatchRectsDetails;
 import org.chromium.components.find_in_page.FindResultBar;
@@ -26,6 +28,7 @@ import org.chromium.content_public.browser.SelectionPopupController;
 import org.chromium.content_public.browser.ViewEventSink;
 import org.chromium.content_public.browser.WebContents;
 import org.chromium.content_public.browser.WebContentsObserver;
+import org.chromium.content_public.common.BrowserControlsState;
 import org.chromium.ui.base.ViewAndroidDelegate;
 import org.chromium.ui.base.WindowAndroid;
 import org.chromium.weblayer_private.interfaces.IDownloadCallbackClient;
@@ -38,6 +41,9 @@ import org.chromium.weblayer_private.interfaces.ITab;
 import org.chromium.weblayer_private.interfaces.ITabClient;
 import org.chromium.weblayer_private.interfaces.ObjectWrapper;
 import org.chromium.weblayer_private.interfaces.StrictModeWorkaround;
+
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  * Implementation of ITab.
@@ -66,6 +72,13 @@ public final class TabImpl extends ITab.Stub {
     private NewTabCallbackProxy mNewTabCallbackProxy;
     private ITabClient mClient;
     private final int mId;
+
+    // A list of browser control visibility constraints, indexed by ImplControlsVisibilityReason.
+    private List<BrowserControlsVisibilityDelegate> mBrowserControlsDelegates;
+    // Computes a net browser control visibility constraint from constituent constraints.
+    private ComposedBrowserControlsVisibilityDelegate mBrowserControlsVisibility;
+    // Invoked when the computed visibility constraint changes.
+    private Callback<Integer> mConstraintsUpdatedCallback;
 
     private IFindInPageCallbackClient mFindInPageCallbackClient;
     private FindInPageBridge mFindInPageBridge;
@@ -135,6 +148,17 @@ public final class TabImpl extends ITab.Stub {
             }
         };
         mWebContents.addObserver(mWebContentsObserver);
+
+        mBrowserControlsDelegates = new ArrayList<BrowserControlsVisibilityDelegate>();
+        mBrowserControlsVisibility = new ComposedBrowserControlsVisibilityDelegate();
+        for (int i = 0; i < ImplControlsVisibilityReason.REASON_COUNT; ++i) {
+            BrowserControlsVisibilityDelegate delegate =
+                    new BrowserControlsVisibilityDelegate(BrowserControlsState.BOTH);
+            mBrowserControlsDelegates.add(delegate);
+            mBrowserControlsVisibility.addDelegate(delegate);
+        }
+        mConstraintsUpdatedCallback = (constraints) -> onBrowserControlsStateUpdated(constraints);
+        mBrowserControlsVisibility.addObserver(mConstraintsUpdatedCallback);
     }
 
     public ProfileImpl getProfile() {
@@ -320,6 +344,12 @@ public final class TabImpl extends ITab.Stub {
         BrowserViewController controller = getViewController();
         if (controller == null) return false;
 
+        // Refuse to start a find session when the browser controls are forced hidden.
+        if (mBrowserControlsVisibility.get() == BrowserControlsState.HIDDEN) return false;
+
+        setBrowserControlsVisibilityConstraint(
+                ImplControlsVisibilityReason.FIND_IN_PAGE, BrowserControlsState.SHOWN);
+
         mFindInPageCallbackClient = client;
         assert mFindInPageBridge == null;
         mFindInPageBridge = new FindInPageBridge(mWebContents);
@@ -350,6 +380,9 @@ public final class TabImpl extends ITab.Stub {
         mFindResultBar = null;
         mFindInPageBridge.destroy();
         mFindInPageBridge = null;
+
+        setBrowserControlsVisibilityConstraint(
+                ImplControlsVisibilityReason.FIND_IN_PAGE, BrowserControlsState.BOTH);
 
         try {
             if (mFindInPageCallbackClient != null) mFindInPageCallbackClient.onFindEnded();
@@ -449,6 +482,21 @@ public final class TabImpl extends ITab.Stub {
         return viewController != null && viewController.doBrowserControlsShrinkRendererSize();
     }
 
+    @CalledByNative
+    private void setBrowserControlsVisibilityConstraint(
+            @ImplControlsVisibilityReason int reason, @BrowserControlsState int constraint) {
+        mBrowserControlsDelegates.get(reason).set(constraint);
+    }
+
+    private void onBrowserControlsStateUpdated(int state) {
+        TabImplJni.get().updateBrowserControlsState(mNativeTab, state);
+        // If something has overridden the FIP's SHOWN constraint, cancel FIP. This causes FIP to
+        // dismiss when entering fullscreen.
+        if (state != BrowserControlsState.SHOWN) {
+            hideFindInPageUiAndNotifyClient();
+        }
+    }
+
     /**
      * Returns the BrowserViewController for this TabImpl, but only if this
      * is the active TabImpl.
@@ -468,5 +516,6 @@ public final class TabImpl extends ITab.Stub {
         WebContents getWebContents(long nativeTabImpl, TabImpl caller);
         void executeScript(long nativeTabImpl, String script, boolean useSeparateIsolate,
                 Callback<String> callback);
+        void updateBrowserControlsState(long nativeTabImpl, int newConstraint);
     }
 }

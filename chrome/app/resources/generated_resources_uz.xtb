@@ -3558,6 +3558,7 @@ Ochiq eksponenta (<ph name="PUBLIC_EXPONENT_NUM_BITS" /> bit):
 <translation id="5975792506968920132">Batareya quvvati foizi</translation>
 <translation id="5976160379964388480">Boshqa</translation>
 <translation id="5978277834170881274">&amp;Oddiy imlo tekshiruvini ishlatish</translation>
+<translation id="5979084224081478209">Parollarni tekshiring</translation>
 <translation id="5979421442488174909"><ph name="LANGUAGE" /> tiliga &amp;tarjima qilish</translation>
 <translation id="5979469435153841984">Sahifalarni xatcho‘plarga qo‘shish uchun manzillar qatoridagi yulduzchani bosing</translation>
 <translation id="5984222099446776634">So‘nggi ochilgan sahifalar</translation>
@@ -4158,7 +4159,6 @@ Ochiq eksponenta (<ph name="PUBLIC_EXPONENT_NUM_BITS" /> bit):
 <translation id="6840155290835956714">Yuborishdan oldin so‘ralsin</translation>
 <translation id="6840184929775541289">Sertifikatlash markazi emas</translation>
 <translation id="6841186874966388268">Xatoliklar</translation>
-<translation id="6843267103192918276">Bukmarklar, tarix, parollar va boshqa sozlamalarni barcha qurilmalaringizda sinxronlash uchun hisobingizga kiring. Tizimga kirish birdaniga barcha Google xizmatlarida amalga oshadi. <ph name="LINK_BEGIN" />Batafsil<ph name="LINK_END" /></translation>
 <translation id="6843423766595476978">“Ok Google” sozlandi</translation>
 <translation id="6845038076637626672">Yoyib ochish</translation>
 <translation id="6845325883481699275">Chrome xavfsizligini yaxshilashga yordam bering</translation>

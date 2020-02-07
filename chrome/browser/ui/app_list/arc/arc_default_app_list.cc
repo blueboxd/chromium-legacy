@@ -221,7 +221,8 @@ ArcDefaultAppList::ArcDefaultAppList(Profile* profile,
   for (const auto& source : sources) {
     base::PostTaskAndReplyWithResult(
         FROM_HERE,
-        {base::ThreadPool(), base::MayBlock(), base::TaskPriority::BEST_EFFORT},
+        {base::ThreadPool(), base::MayBlock(),
+         base::TaskPriority::USER_VISIBLE},
         base::BindOnce(&ReadAppsFromFileThread, source),
         base::BindOnce(&ArcDefaultAppList::OnAppsRead,
                        weak_ptr_factory_.GetWeakPtr()));

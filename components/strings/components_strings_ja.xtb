@@ -675,6 +675,7 @@
 <translation id="3987940399970879459">1 MB 未満</translation>
 <translation id="3990250421422698716">ジョグ オフセット</translation>
 <translation id="40103911065039147">{URL_count,plural, =1{1 件の近くのウェブページ}other{# 件の近くのウェブページ}}</translation>
+<translation id="4014128326099193693">{COUNT,plural, =1{{COUNT} ページの PDF ドキュメント}other{{COUNT} ページの PDF ドキュメント}}</translation>
 <translation id="4030383055268325496">追加の取り消し（&amp;U）</translation>
 <translation id="4032320456957708163">ご使用のブラウザは <ph name="ENROLLMENT_DOMAIN" /> によって管理されています</translation>
 <translation id="4058922952496707368">キー「<ph name="SUBKEY" />」: <ph name="ERROR" /></translation>
@@ -703,6 +704,7 @@
 <translation id="4142935452406587478">トレイ 10</translation>
 <translation id="4148925816941278100">American Express</translation>
 <translation id="4151403195736952345">全体の既定値を使用（検出）</translation>
+<translation id="4152318981910038897">{COUNT,plural, =1{1 ページ}other{{COUNT} ページ}}</translation>
 <translation id="4159784952369912983">パープル</translation>
 <translation id="4165986682804962316">サイトの設定</translation>
 <translation id="4171400957073367226">確認用の署名に問題があります</translation>
@@ -1379,6 +1381,7 @@
 <translation id="7201591969684833065">管理者は、以下の情報を確認できます。</translation>
 <translation id="7202346780273620635">Letter-Extra</translation>
 <translation id="7210863904660874423"><ph name="HOST_NAME" /> ではセキュリティ規格が遵守されていません。</translation>
+<translation id="7210993021468939304">コンテナ内の Linux アクティビティ、コンテナ内での Linux アプリのインストールと実行</translation>
 <translation id="721197778055552897">この問題の詳細については、<ph name="BEGIN_LINK" />こちら<ph name="END_LINK" />をご覧ください。</translation>
 <translation id="7219179957768738017">この接続には <ph name="SSL_VERSION" /> を使用しています。</translation>
 <translation id="7220786058474068424">処理しています</translation>
@@ -1542,6 +1545,7 @@
 <translation id="7878562273885520351">パスワードが不正使用される可能性があります</translation>
 <translation id="7882421473871500483">茶</translation>
 <translation id="7887683347370398519">CVC を確認してからもう一度お試しください</translation>
+<translation id="7887885240995164102">ピクチャー イン ピクチャーを開始</translation>
 <translation id="7888575728750733395">印刷時のレンダリング インテント</translation>
 <translation id="7904208859782148177">C3（封筒）</translation>
 <translation id="7932579305932748336">コーティング</translation>

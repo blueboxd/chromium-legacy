@@ -25,8 +25,8 @@
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/chromeos/policy/policy_pref_names.h"
 #include "chrome/browser/chromeos/policy/upload_job_impl.h"
-#include "chrome/browser/chromeos/settings/device_oauth2_token_service.h"
-#include "chrome/browser/chromeos/settings/device_oauth2_token_service_factory.h"
+#include "chrome/browser/device_identity/device_oauth2_token_service.h"
+#include "chrome/browser/device_identity/device_oauth2_token_service_factory.h"
 #include "chrome/browser/policy/chrome_policy_conversions_client.h"
 #include "chrome/browser/policy/policy_conversions.h"
 #include "chrome/browser/profiles/profile_manager.h"
@@ -60,13 +60,17 @@ constexpr char kPolicyDumpFileLocation[] = "/var/log/policy_dump.json";
 
 // The file names of the system logs to upload.
 // Note: do not add anything to this list without checking for PII in the file.
-const char* const kSystemLogFileNames[] = {
-    "/var/log/bios_info.txt",
-    "/var/log/chrome/chrome", "/var/log/chrome/chrome.PREVIOUS",
-    "/var/log/eventlog.txt",  "/var/log/platform_info.txt",
-    "/var/log/messages",      "/var/log/messages.1",
-    "/var/log/net.log",       "/var/log/net.1.log",
-    "/var/log/ui/ui.LATEST",  "/var/log/update_engine.log"};
+const char* const kSystemLogFileNames[] = {"/var/log/bios_info.txt",
+                                           "/var/log/chrome/chrome",
+                                           "/var/log/chrome/chrome.PREVIOUS",
+                                           "/var/log/eventlog.txt",
+                                           "/var/log/platform_info.txt",
+                                           "/var/log/messages",
+                                           "/var/log/messages.1",
+                                           "/var/log/net.log",
+                                           "/var/log/net.1.log",
+                                           "/var/log/ui/ui.LATEST",
+                                           "/var/log/update_engine.log"};
 
 std::string ZipFiles(
     std::unique_ptr<SystemLogUploader::SystemLogs> system_logs) {

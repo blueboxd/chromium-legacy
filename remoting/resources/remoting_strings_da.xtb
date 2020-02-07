@@ -256,6 +256,7 @@ Hvis "<ph name="SERVICE_SCRIPT_NAME" />" allerede er markeret, skal du fjerne ma
 <translation id="6939719207673461467">Vis/skjul tastatur.</translation>
 <translation id="6944854424004126054">Gendan vinduet</translation>
 <translation id="6948905685698011662">Chrome Fjernskrivebord er nu tilgængeligt på nettet. Se vores <ph name="LINK_BEGIN" />gratis webapp<ph name="LINK_END" />.</translation>
+<translation id="6956835181934226419">Jeg har allerede givet denne tilladelse.</translation>
 <translation id="6963936880795878952">Forbindelserne til fjerncomputeren er midlertidigt blokerede, fordi nogen forsøgte at få forbindelse til den med en ugyldig pinkode. Prøv igen senere.</translation>
 <translation id="6965382102122355670">OK</translation>
 <translation id="6985691951107243942">Er du sikker på, at du vil deaktivere fjernforbindelserne til <ph name="HOSTNAME" />? Hvis du ombestemmer dig, skal du genaktivere forbindelserne på den computer.</translation>

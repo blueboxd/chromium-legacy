@@ -3561,6 +3561,7 @@
 <translation id="5975792506968920132">Ποσοστό φόρτισης μπαταρίας</translation>
 <translation id="5976160379964388480">Άλλα</translation>
 <translation id="5978277834170881274">&amp;Χρήση βασικού ορθογραφικού ελέγχου</translation>
+<translation id="5979084224081478209">Έλεγχος κωδικών πρόσβασης</translation>
 <translation id="5979421442488174909">&amp;Μετάφραση σε <ph name="LANGUAGE" /></translation>
 <translation id="5979469435153841984">Για την προσθήκη σελιδοδεικτών σε σελίδες, κάντε κλικ στο αστέρι στη γραμμή διευθύνσεων</translation>
 <translation id="5984222099446776634">Πραγματοποιήθηκε επίσκεψη πρόσφατα</translation>
@@ -4161,7 +4162,6 @@
 <translation id="6840155290835956714">Ερώτηση πριν από την αποστολή</translation>
 <translation id="6840184929775541289">Δεν είναι Αρχή πιστοποίησης</translation>
 <translation id="6841186874966388268">Σφάλματα</translation>
-<translation id="6843267103192918276">Συνδεθείτε για χρήση σελιδοδεικτών, ιστορικού, κωδικών πρόσβασης κ.λπ. σε όλες τις συσκευές. Επίσης, θα συνδέεστε αυτόματα στις υπηρεσίες της Google. <ph name="LINK_BEGIN" />Μάθετε περισσότερα<ph name="LINK_END" /></translation>
 <translation id="6843423766595476978">Η εντολή "Ok Google" είναι έτοιμη</translation>
 <translation id="6845038076637626672">Άνοιγμα μεγιστοποιημένης εφαρμογής</translation>
 <translation id="6845325883481699275">Συμβάλετε στη βελτίωση της ασφάλειας του Chrome</translation>

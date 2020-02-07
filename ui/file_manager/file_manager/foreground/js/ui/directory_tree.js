@@ -1767,6 +1767,7 @@ class FakeItem extends TreeItem {
     icon.setAttribute('root-type-icon', rootType);
 
     if (rootType === VolumeManagerCommon.RootType.RECENT) {
+      icon.setAttribute('recent-file-type', this.dirEntry_.recentFileType);
       this.labelElement.scrollIntoViewIfNeeded = () => {
         this.scrollIntoView(true);
       };

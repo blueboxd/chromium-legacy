@@ -1366,18 +1366,19 @@ NavigationURLLoaderImpl::NavigationURLLoaderImpl(
     }
 
     const std::string storage_domain;
-    non_network_url_loader_factories_[url::kFileSystemScheme] =
+    non_network_url_loader_factories_.emplace(
+        url::kFileSystemScheme,
         CreateFileSystemURLLoaderFactory(ChildProcessHost::kInvalidUniqueID,
                                          frame_tree_node->frame_tree_node_id(),
                                          partition->GetFileSystemContext(),
-                                         storage_domain);
+                                         storage_domain));
   }
 
-  non_network_url_loader_factories_[url::kAboutScheme] =
-      std::make_unique<AboutURLLoaderFactory>();
+  non_network_url_loader_factories_.emplace(
+      url::kAboutScheme, std::make_unique<AboutURLLoaderFactory>());
 
-  non_network_url_loader_factories_[url::kDataScheme] =
-      std::make_unique<DataURLLoaderFactory>();
+  non_network_url_loader_factories_.emplace(
+      url::kDataScheme, std::make_unique<DataURLLoaderFactory>());
 
   std::unique_ptr<network::mojom::URLLoaderFactory> file_url_loader_factory =
       std::make_unique<FileURLLoaderFactory>(
@@ -1392,15 +1393,16 @@ NavigationURLLoaderImpl::NavigationURLLoaderImpl(
         false /* is_download */, &file_url_loader_factory);
   }
 
-  non_network_url_loader_factories_[url::kFileScheme] =
-      std::move(file_url_loader_factory);
+  non_network_url_loader_factories_.emplace(url::kFileScheme,
+                                            std::move(file_url_loader_factory));
 
 #if defined(OS_ANDROID)
-  non_network_url_loader_factories_[url::kContentScheme] =
+  non_network_url_loader_factories_.emplace(
+      url::kContentScheme,
       std::make_unique<ContentURLLoaderFactory>(base::CreateSequencedTaskRunner(
           {base::ThreadPool(), base::MayBlock(),
            base::TaskPriority::BEST_EFFORT,
-           base::TaskShutdownBehavior::SKIP_ON_SHUTDOWN}));
+           base::TaskShutdownBehavior::SKIP_ON_SHUTDOWN})));
 #endif
 
   std::set<std::string> known_schemes;

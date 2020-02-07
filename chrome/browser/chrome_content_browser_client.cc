@@ -4,6 +4,7 @@
 
 #include "chrome/browser/chrome_content_browser_client.h"
 
+#include <array>
 #include <map>
 #include <set>
 #include <utility>
@@ -395,6 +396,7 @@
 #include "chrome/browser/chrome_browser_main_linux.h"
 #elif defined(OS_ANDROID)
 #include "base/android/application_status_listener.h"
+#include "base/android/build_info.h"
 #include "chrome/android/features/dev_ui/buildflags.h"
 #include "chrome/android/modules/extra_icu/provider/module_provider.h"
 #include "chrome/browser/android/app_hooks.h"
@@ -881,6 +883,25 @@ float GetDeviceScaleAdjustment() {
   return ratio * (kMaxFSM - kMinFSM) + kMinFSM;
 }
 
+bool UseDisplayWideColorGamut() {
+  auto compute_use_display_wide_color_gamut = []() {
+    const char* current_model =
+        base::android::BuildInfo::GetInstance()->model();
+    const std::array<std::string, 2> enabled_models = {
+        std::string{"Pixel 4"}, std::string{"Pixel 4 XL"}};
+    for (const std::string& model : enabled_models) {
+      if (model == current_model)
+        return true;
+    }
+
+    return false;
+  };
+
+  // As it takes some work to compute this, cache the result.
+  static base::NoDestructor<bool> is_wide_color_gamut_enabled(
+      compute_use_display_wide_color_gamut());
+  return *is_wide_color_gamut_enabled;
+}
 #endif  // defined(OS_ANDROID)
 
 #if BUILDFLAG(ENABLE_EXTENSIONS)
@@ -2839,9 +2860,10 @@ content::MediaObserver* ChromeContentBrowserClient::GetMediaObserver() {
   return MediaCaptureDevicesDispatcher::GetInstance();
 }
 
-content::LockObserver* ChromeContentBrowserClient::GetLockObserver() {
+content::FeatureObserverClient*
+ChromeContentBrowserClient::GetFeatureObserverClient() {
   return ChromeBrowserMainExtraPartsPerformanceManager::GetInstance()
-      ->GetLockObserver();
+      ->GetFeatureObserverClient();
 }
 
 content::PlatformNotificationService*
@@ -5354,7 +5376,7 @@ ui::AXMode ChromeContentBrowserClient::GetAXModeForBrowserContext(
 #if defined(OS_ANDROID)
 content::ContentBrowserClient::WideColorGamutHeuristic
 ChromeContentBrowserClient::GetWideColorGamutHeuristic() {
-  if (features::UseDisplayWideColorGamut()) {
+  if (UseDisplayWideColorGamut()) {
     return WideColorGamutHeuristic::kUseDisplay;
   }
 

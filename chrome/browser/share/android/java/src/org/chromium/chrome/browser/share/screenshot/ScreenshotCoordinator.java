@@ -6,33 +6,87 @@ package org.chromium.chrome.browser.share.screenshot;
 
 import android.app.Activity;
 
+import org.chromium.chrome.R;
 import org.chromium.chrome.browser.image_editor.ImageEditorDialogCoordinator;
+import org.chromium.chrome.browser.modules.ModuleInstallUi;
+import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.modules.image_editor.ImageEditorModuleProvider;
-import org.chromium.chrome.modules.image_editor.ImageEditorProvider;
 
 /**
  * Handles the screenshot action in the Sharing Hub and launches the screenshot editor.
  */
 public class ScreenshotCoordinator {
+    // Maximum number of attempts to install the DFM per session.
+    private static final int MAX_INSTALL_ATTEMPTS = 5;
+    private static int sInstallAttempts;
+
     private final Activity mActivity;
-    private ImageEditorProvider mEditorProvider;
+    private final Tab mTab;
 
-    public ScreenshotCoordinator(Activity activity) {
+    public ScreenshotCoordinator(Activity activity, Tab tab) {
         mActivity = activity;
+        mTab = tab;
     }
 
-    public void takeScreenshot() {
-        // TODO(kristipark): Implement screenshot and installation logic.
-        launchEditor();
+    /**
+     * Takes a screenshot of the current tab and opens the screenshot editor if the image editor
+     * is installed. If not, attempts to install the DFM a set amount of times per session. If
+     * MAX_INSTALL_ATTEMPTS is reached, directly opens the screenshot sharesheet instead.
+     */
+    public void handleScreenshot() {
+        // TODO(crbug/1024586): Implement screenshot logic.
+
+        if (ImageEditorModuleProvider.isModuleInstalled()) {
+            launchEditor();
+        } else if (sInstallAttempts < MAX_INSTALL_ATTEMPTS) {
+            sInstallAttempts++;
+            installEditor();
+        } else {
+            launchSharesheet();
+        }
     }
 
+    /**
+     * Launches the screenshot image editor.
+     */
     private void launchEditor() {
-        if (!ImageEditorModuleProvider.isModuleInstalled()) return;
-
-        mEditorProvider = ImageEditorModuleProvider.getImageEditorProvider();
-        ImageEditorDialogCoordinator editor = mEditorProvider.getImageEditorDialogCoordinator();
+        ImageEditorDialogCoordinator editor = ImageEditorModuleProvider.getImageEditorProvider()
+                                                      .getImageEditorDialogCoordinator();
         editor.launchEditor(mActivity);
     }
 
-    private void maybeInstallEditor() {}
+    /**
+     * Opens the screenshot sharesheet.
+     */
+    private void launchSharesheet() {
+        // TODO(crbug/1024586): Open screenshot sharesheet.
+    }
+
+    /**
+     * Installs the DFM and shows UI (i.e. toasts and a retry dialog) informing the user of the
+     * installation status.
+     */
+    private void installEditor() {
+        ModuleInstallUi ui = new ModuleInstallUi(
+                mTab, R.string.image_editor_module_title, new ModuleInstallUi.FailureUiListener() {
+                    @Override
+                    public void onFailureUiResponse(boolean retry) {
+                        if (retry) {
+                            // User initiated retries are not counted toward the maximum number
+                            // of install attempts per session.
+                            installEditor();
+                        }
+                    }
+                });
+        ui.showInstallStartUi();
+
+        ImageEditorModuleProvider.maybeInstallModule((success) -> {
+            if (success) {
+                ui.showInstallSuccessUi();
+                launchEditor();
+            } else {
+                ui.showInstallFailureUi();
+            }
+        });
+    }
 }

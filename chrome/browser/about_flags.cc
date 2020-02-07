@@ -2800,6 +2800,9 @@ const FeatureEntry kFeatureEntries[] = {
     {"files-ng", flag_descriptions::kFilesNGName,
      flag_descriptions::kFilesNGDescription, kOsCrOS,
      FEATURE_VALUE_TYPE(chromeos::features::kFilesNG)},
+    {"files-unified-media-view", flag_descriptions::kUnifiedMediaViewName,
+     flag_descriptions::kUnifiedMediaViewDescription, kOsCrOS,
+     FEATURE_VALUE_TYPE(chromeos::features::kUnifiedMediaView)},
 #endif  // OS_CHROMEOS
 
 #if defined(OS_WIN)

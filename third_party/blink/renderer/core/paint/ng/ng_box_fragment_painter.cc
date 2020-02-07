@@ -1188,14 +1188,15 @@ void NGBoxFragmentPainter::PaintLineBoxChildren(
 
   ScopedPaintTimingDetectorBlockPaintHook
       scoped_paint_timing_detector_block_paint_hook;
+  const auto& layout_block = To<LayoutBlock>(*layout_object);
   if (paint_info.phase == PaintPhase::kForeground) {
     scoped_paint_timing_detector_block_paint_hook.EmplaceIfNeeded(
-        To<LayoutBoxModelObject>(*layout_object),
+        layout_block,
         paint_info.context.GetPaintController().CurrentPaintChunkProperties());
   }
 
   if (paint_info.phase == PaintPhase::kForcedColorsModeBackplate &&
-      layout_object->GetDocument().InForcedColorsMode()) {
+      layout_block.GetDocument().InForcedColorsMode()) {
     PaintBackplate(children, paint_info, paint_offset);
     return;
   }

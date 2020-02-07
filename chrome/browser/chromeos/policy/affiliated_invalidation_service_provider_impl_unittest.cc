@@ -15,8 +15,8 @@
 #include "base/task/post_task.h"
 #include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/chromeos/login/users/fake_chrome_user_manager.h"
-#include "chrome/browser/chromeos/settings/device_oauth2_token_service_factory.h"
 #include "chrome/browser/chromeos/settings/scoped_cros_settings_test_helper.h"
+#include "chrome/browser/device_identity/device_oauth2_token_service_factory.h"
 #include "chrome/browser/invalidation/profile_invalidation_provider_factory.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/test/base/testing_browser_process.h"
@@ -353,7 +353,8 @@ void AffiliatedInvalidationServiceProviderImplTest::
 
 invalidation::FakeInvalidationService*
 AffiliatedInvalidationServiceProviderImplTest::GetProfileInvalidationService(
-    Profile* profile, bool create) {
+    Profile* profile,
+    bool create) {
   invalidation::ProfileInvalidationProvider* invalidation_provider;
   invalidation_provider =
       static_cast<invalidation::ProfileInvalidationProvider*>(

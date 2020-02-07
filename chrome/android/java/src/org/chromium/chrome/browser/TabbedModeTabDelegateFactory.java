@@ -8,15 +8,15 @@ import org.chromium.base.supplier.Supplier;
 import org.chromium.chrome.browser.contextmenu.ChromeContextMenuPopulator;
 import org.chromium.chrome.browser.contextmenu.ContextMenuPopulator;
 import org.chromium.chrome.browser.externalnav.ExternalNavigationHandler;
-import org.chromium.chrome.browser.fullscreen.ComposedBrowserControlsVisibilityDelegate;
 import org.chromium.chrome.browser.share.ShareDelegate;
-import org.chromium.chrome.browser.tab.BrowserControlsVisibilityDelegate;
 import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.browser.tab.TabContextMenuItemDelegate;
 import org.chromium.chrome.browser.tab.TabDelegateFactory;
 import org.chromium.chrome.browser.tab.TabStateBrowserControlsVisibilityDelegate;
 import org.chromium.chrome.browser.tab.TabWebContentsDelegateAndroid;
 import org.chromium.chrome.browser.tab_activity_glue.ActivityTabWebContentsDelegateAndroid;
+import org.chromium.components.browser_ui.util.BrowserControlsVisibilityDelegate;
+import org.chromium.components.browser_ui.util.ComposedBrowserControlsVisibilityDelegate;
 
 /**
  * {@link TabDelegateFactory} class to be used in all {@link Tab} instances owned by a

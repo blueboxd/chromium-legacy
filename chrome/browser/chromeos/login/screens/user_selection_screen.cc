@@ -38,6 +38,7 @@
 #include "chrome/browser/ui/ash/login_screen_client.h"
 #include "chrome/browser/ui/webui/chromeos/login/l10n_util.h"
 #include "chrome/browser/ui/webui/chromeos/login/signin_screen_handler.h"
+#include "chrome/common/pref_names.h"
 #include "chrome/grit/generated_resources.h"
 #include "chromeos/components/proximity_auth/screenlock_bridge.h"
 #include "chromeos/components/proximity_auth/smart_lock_metrics_recorder.h"
@@ -479,6 +480,21 @@ bool UserSelectionScreen::ShouldForceOnlineSignIn(
             << token_status;
     return true;
   }
+
+  const base::TimeDelta offline_signin_time_limit =
+      user_manager::known_user::GetOfflineSigninLimit(user->GetAccountId());
+  if (offline_signin_time_limit == base::TimeDelta())
+    return false;
+
+  const base::Time last_gaia_signin_time =
+      user_manager::known_user::GetLastOnlineSignin(user->GetAccountId());
+  if (last_gaia_signin_time == base::Time())
+    return false;
+  const base::Time now = base::DefaultClock::GetInstance()->Now();
+  const base::TimeDelta time_since_last_gaia_signin =
+      now - last_gaia_signin_time;
+  if (time_since_last_gaia_signin >= offline_signin_time_limit)
+    return true;
 
   return false;
 }

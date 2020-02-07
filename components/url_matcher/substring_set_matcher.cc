@@ -278,7 +278,7 @@ void SubstringSetMatcher::AhoCorasickNode::AddMatches(
 }
 
 size_t SubstringSetMatcher::AhoCorasickNode::EstimateMemoryUsage() const {
-  return base::trace_event::EstimateMemoryUsage(edges_) + sizeof(failure_) +
+  return base::trace_event::EstimateMemoryUsage(edges_) +
          base::trace_event::EstimateMemoryUsage(matches_);
 }
 

@@ -1226,24 +1226,6 @@ LayoutObject* LayoutObject::ContainerForFixedPosition(
   });
 }
 
-LayoutBlock* LayoutObject::FindNonAnonymousContainingBlock(
-    LayoutObject* container,
-    AncestorSkipInfo* skip_info) {
-  // For inlines, we return the nearest non-anonymous enclosing
-  // block. We don't try to return the inline itself. This allows us to avoid
-  // having a positioned objects list in all LayoutInlines and lets us return a
-  // strongly-typed LayoutBlock* result from this method. The
-  // LayoutObject::Container() method can actually be used to obtain the inline
-  // directly.
-  if (container && !container->IsLayoutBlock())
-    container = container->ContainingBlock(skip_info);
-
-  while (container && container->IsAnonymousBlock())
-    container = container->ContainingBlock(skip_info);
-
-  return DynamicTo<LayoutBlock>(container);
-}
-
 LayoutBlock* LayoutObject::ContainingBlockForAbsolutePosition(
     AncestorSkipInfo* skip_info) const {
   auto* container = ContainerForAbsolutePosition(skip_info);
@@ -1287,6 +1269,24 @@ LayoutBlock* LayoutObject::ContainingBlock(AncestorSkipInfo* skip_info) const {
   }
 
   return DynamicTo<LayoutBlock>(object);
+}
+
+LayoutBlock* LayoutObject::FindNonAnonymousContainingBlock(
+    LayoutObject* container,
+    AncestorSkipInfo* skip_info) {
+  // For inlines, we return the nearest non-anonymous enclosing
+  // block. We don't try to return the inline itself. This allows us to avoid
+  // having a positioned objects list in all LayoutInlines and lets us return a
+  // strongly-typed LayoutBlock* result from this method. The
+  // LayoutObject::Container() method can actually be used to obtain the inline
+  // directly.
+  if (container && !container->IsLayoutBlock())
+    container = container->ContainingBlock(skip_info);
+
+  while (container && container->IsAnonymousBlock())
+    container = container->ContainingBlock(skip_info);
+
+  return DynamicTo<LayoutBlock>(container);
 }
 
 bool LayoutObject::ComputeIsFixedContainer(const ComputedStyle* style) const {

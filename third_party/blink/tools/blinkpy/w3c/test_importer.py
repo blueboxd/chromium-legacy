@@ -462,7 +462,7 @@ class TestImporter(object):
         self.fs.remove(dest)
 
     def _upload_patchset(self, message):
-        self.git_cl.run(['upload', '-f', '-t', message, '--gerrit'])
+        self.git_cl.run(['upload', '-f', '-t', message])
 
     def _upload_cl(self):
         _log.info('Uploading change list.')
@@ -477,7 +477,6 @@ class TestImporter(object):
         self.git_cl.run([
             'upload',
             '-f',
-            '--gerrit',
             '--message-file', temp_path,
             '--tbrs', sheriff_email,
             # Note: we used to CC all the directory owners, but have stopped

@@ -90,9 +90,16 @@ public final class SigninTestUtil {
      * Add and sign in an account with the default name.
      */
     public static Account addAndSignInTestAccount() {
-        Account account = addTestAccount();
+        return addAndSignInTestAccount(DEFAULT_ACCOUNT);
+    }
+
+    /**
+     * Add and sign in an account with a given name.
+     */
+    public static Account addAndSignInTestAccount(String name) {
+        Account account = addTestAccount(name);
         TestThreadUtils.runOnUiThreadBlocking(() -> {
-            ChromeSigninController.get().setSignedInAccountName(DEFAULT_ACCOUNT);
+            ChromeSigninController.get().setSignedInAccountName(name);
             seedAccounts();
         });
         return account;

@@ -58,8 +58,6 @@ class ASH_EXPORT ShelfWidget : public AccessibilityObserver,
   // Returns true if the views-based shelf is being shown.
   static bool IsUsingViewsShelf();
 
-  void OnShelfAlignmentChanged();
-
   void OnTabletModeChanged();
 
   ShelfBackgroundType GetBackgroundType() const;
@@ -157,7 +155,7 @@ class ASH_EXPORT ShelfWidget : public AccessibilityObserver,
     return &background_animator_;
   }
 
-  HotseatTransitionAnimator* hotseat_transition_animator_for_testing() {
+  HotseatTransitionAnimator* hotseat_transition_animator() {
     return hotseat_transition_animator_.get();
   }
 

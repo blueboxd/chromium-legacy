@@ -118,6 +118,7 @@
 <translation id="2413728805700750528"><ph name="DISPLAY_NAME" /> je návštěvy spravovaná doménou <ph name="DOMAIN" /></translation>
 <translation id="2427507373259914951">Kliknutí levým tlačítkem</translation>
 <translation id="2429753432712299108">Zařízení Bluetooth „<ph name="DEVICE_NAME" />“ žádá o povolení ke spárování. Než toto povolení schválíte, zkontrolujte si, zda je na zařízení zobrazen následující přístupový klíč: <ph name="PASSKEY" /></translation>
+<translation id="2473177541599297363">Potvrďte rozlišení</translation>
 <translation id="2482878487686419369">Oznámení</translation>
 <translation id="2484513351006226581">Rozložení klávesnice změníte stisknutím kláves <ph name="KEYBOARD_SHORTCUT" /></translation>
 <translation id="2501920221385095727">Jedním prstem</translation>
@@ -138,6 +139,7 @@
 <translation id="2727977024730340865">Byla připojena nabíječka s nízkým výkonem. Nabíjení baterie nemusí probíhat spolehlivě.</translation>
 <translation id="2792498699870441125">Alt + Vyhledávání</translation>
 <translation id="2819276065543622893">Nyní budete odhlášeni.</translation>
+<translation id="2825224105325558319"><ph name="DISPLAY_NAME" /> rozlišení <ph name="SPECIFIED_RESOLUTION" /> nepodporuje. Rozlišení bylo změněno na <ph name="FALLBACK_RESOLUTION" />.</translation>
 <translation id="2825619548187458965">Polička</translation>
 <translation id="2844169650293029770">Zařízení USB Type-C (levý přední port)</translation>
 <translation id="2865888419503095837">Informace o síti</translation>
@@ -157,6 +159,12 @@
 <translation id="3009178788565917040">Výstup</translation>
 <translation id="3051128274746680507">Váš dozorovaný uživatelský profil bude brzy odstraněn. Chcete-li se dozvědět více, přihlaste se.</translation>
 <translation id="3055162170959710888">Toto zařízení jsi dnes používal(a) <ph name="USED_TIME" /></translation>
+<translation id="3076778413190775903">Stavový panel, čas <ph name="TIME" />,
+        <ph name="BATTERY" />
+        <ph name="NETWORK" />,
+        <ph name="NOTIFICATION" />,
+        <ph name="IME" />
+        <ph name="LOCALE" /></translation>
 <translation id="3077734595579995578">shift</translation>
 <translation id="3081696990447829002">Rozbalit nabídku</translation>
 <translation id="3087734570205094154">Až dolů</translation>
@@ -167,6 +175,7 @@
 <translation id="3151786313568798007">Orientace</translation>
 <translation id="3153444934357957346">Počet účtů, které lze v rámci vícenásobného přihlášení používat, je omezen na <ph name="MULTI_PROFILE_USER_LIMIT" />.</translation>
 <translation id="3154351730702813399">Správce zařízení může sledovat vaši aktivitu při procházení.</translation>
+<translation id="3181441307743005334">Restartování může chvíli trvat</translation>
 <translation id="3202010236269062730">{NUM_DEVICES,plural, =1{Připojeno k zařízení}few{Připojeno k # zařízením}many{Připojeno k # zařízení}other{Připojeno k # zařízením}}</translation>
 <translation id="3217205077783620295">Zvuk je zapnutý. Přepnutím ho vypnete.</translation>
 <translation id="3226991577105957773">a ještě <ph name="COUNT" /></translation>
@@ -316,6 +325,7 @@
 <translation id="5331975486040154427">Zařízení USB Type-C (levý zadní port)</translation>
 <translation id="5379115545237091094">Příliš mnoho pokusů</translation>
 <translation id="5397578532367286026">Údaje o využití a historii tohoto uživatele si správce (<ph name="MANAGER_EMAIL" />) může prohlédnout na webu chrome.com.</translation>
+<translation id="5400461572260843123">Rychlé nastavení, centrum oznámení otevřete stisknutím klávesy vyhledávání a šipky vlevo.</translation>
 <translation id="5430931332414098647">Dynamický tethering</translation>
 <translation id="5431825016875453137">OpenVPN/L2TP</translation>
 <translation id="544691375626129091">Do této návštěvy již byli přidáni všichni dostupní uživatelé.</translation>
@@ -397,6 +407,7 @@
 <translation id="6490471652906364588">Zařízení USB Type-C (pravý port)</translation>
 <translation id="649452524636452238">PIN chytré karty</translation>
 <translation id="6501401484702599040">Odesílání obrazovky do zařízení <ph name="RECEIVER_NAME" /></translation>
+<translation id="652139407789908527">Během této aktualizace bude obrazovka prázdná delší dobu než obvykle (až minutu). V průběhu aktualizace nemačkejte vypínač.</translation>
 <translation id="6521655319214113338">Zadávání psaním rukou</translation>
 <translation id="6528179044667508675">Nerušit</translation>
 <translation id="6537270692134705506">Pořídit snímek obrazovky</translation>
@@ -542,6 +553,7 @@
 <translation id="847056008324733326">Zobrazit nastavení měřítka</translation>
 <translation id="8473301994082929012">Organizace <ph name="ORGANIZATION_NAME" /> <ph name="FEATURE_STATE" /> funkci <ph name="FEATURE_NAME" />.</translation>
 <translation id="8477270416194247200">Vypnete jej stisknutím kombinace kláves Alt + Hledat nebo klávesy Shift.</translation>
+<translation id="8492573885090281069"><ph name="DISPLAY_NAME" /> rozlišení <ph name="SPECIFIED_RESOLUTION" /> nepodporuje. Rozlišení bylo změněno na <ph name="FALLBACK_RESOLUTION" />. Chcete-li změny ponechat, klikněte na Potvrdit. Předchozí nastavení bude obnoveno za <ph name="TIMEOUT_SECONDS" />.</translation>
 <translation id="8513108775083588393">Automatické otáčení</translation>
 <translation id="8517041960877371778">Je možné, že když bude zařízení <ph name="DEVICE_TYPE" /> zapnuté, nebude se nabíjet.</translation>
 <translation id="8563862697512465947">Nastavení oznámení</translation>
@@ -597,6 +609,7 @@
 <translation id="9183456764293710005">Zvětšení obrazovky</translation>
 <translation id="9193626018745640770">Odesílání do neznámého přijímače</translation>
 <translation id="9194617393863864469">Přihlásit dalšího uživatele...</translation>
+<translation id="9198992156681343238">Rozlišení displeje <ph name="DISPLAY_NAME" /> bylo změněno na <ph name="RESOLUTION" />. Chcete-li změny ponechat, klikněte na Potvrdit. Předchozí nastavení bude obnoveno za <ph name="TIMEOUT_SECONDS" />.</translation>
 <translation id="9201374708878217446"><ph name="CONNECTION_STATUS" />, spravováno vaším administrátorem</translation>
 <translation id="9210037371811586452">Ukončování režimu jednotné plochy</translation>
 <translation id="9211681782751733685">Doba zbývající do úplného nabití baterie: <ph name="TIME_REMAINING" />.</translation>

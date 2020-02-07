@@ -118,6 +118,7 @@
 <translation id="2413728805700750528">„<ph name="DISPLAY_NAME" />“ е сесия, управлявана от <ph name="DOMAIN" /></translation>
 <translation id="2427507373259914951">Кликване с левия бутон</translation>
 <translation id="2429753432712299108">Устройството с Bluetooth „<ph name="DEVICE_NAME" />“ иска разрешение за сдвояване. Преди да приемете, моля, уверете се, че на него се показва следният ключ за достъп: <ph name="PASSKEY" /></translation>
+<translation id="2473177541599297363">Потвърждаване на разделителната способност</translation>
 <translation id="2482878487686419369">Известия</translation>
 <translation id="2484513351006226581">Натиснете <ph name="KEYBOARD_SHORTCUT" /> за превключване на клавиатурната подредба.</translation>
 <translation id="2501920221385095727">Оставащи клавиши</translation>
@@ -138,6 +139,7 @@
 <translation id="2727977024730340865">Използва се зарядно устройство с малка мощност. Зареждането на батерията може да не е надеждно.</translation>
 <translation id="2792498699870441125">Alt + търсене</translation>
 <translation id="2819276065543622893">Ще излезете сега.</translation>
+<translation id="2825224105325558319"><ph name="DISPLAY_NAME" /> не поддържа <ph name="SPECIFIED_RESOLUTION" />. Разделителната способност бе променена на <ph name="FALLBACK_RESOLUTION" />.</translation>
 <translation id="2825619548187458965">Лавица</translation>
 <translation id="2844169650293029770">Устройство с USB-C (предният ляв порт)</translation>
 <translation id="2865888419503095837">Информация за мрежата</translation>
@@ -157,6 +159,12 @@
 <translation id="3009178788565917040">Изход</translation>
 <translation id="3051128274746680507">Профилът ви на контролиран потребител скоро ще бъде премахнат. Влезте в профила си, за да научите повече.</translation>
 <translation id="3055162170959710888">Днес използвахте това устройство <ph name="USED_TIME" /></translation>
+<translation id="3076778413190775903">Лента на състоянието, часът е <ph name="TIME" />,
+        <ph name="BATTERY" />
+        <ph name="NETWORK" />,
+        <ph name="NOTIFICATION" />,
+        <ph name="IME" />
+        <ph name="LOCALE" /></translation>
 <translation id="3077734595579995578">shift</translation>
 <translation id="3081696990447829002">Разгъване на менюто</translation>
 <translation id="3087734570205094154">Най-долу</translation>
@@ -167,6 +175,7 @@
 <translation id="3151786313568798007">Ориентация</translation>
 <translation id="3153444934357957346">Можете да използвате най-много <ph name="MULTI_PROFILE_USER_LIMIT" /> профила с функцията за централизиран вход.</translation>
 <translation id="3154351730702813399">Администраторът на устройството може да наблюдава активността ви при сърфиране.</translation>
+<translation id="3181441307743005334">Рестартирането може да отнеме известно време</translation>
 <translation id="3202010236269062730">{NUM_DEVICES,plural, =1{Установена е връзка с едно устройство}other{Установена е връзка с # устройства}}</translation>
 <translation id="3217205077783620295">Звукът е включен. Превключването ще го спре.</translation>
 <translation id="3226991577105957773">+ още <ph name="COUNT" /></translation>
@@ -316,6 +325,7 @@
 <translation id="5331975486040154427">Устройство с USB-C (задният ляв порт)</translation>
 <translation id="5379115545237091094">Твърде много опити</translation>
 <translation id="5397578532367286026">Данните за употребата и историята на този потребител могат да се преглеждат от мениджъра (<ph name="MANAGER_EMAIL" />) на адрес chrome.com.</translation>
+<translation id="5400461572260843123">Бързи настройки – за достъп до центъра за известия натиснете клавиша „търсене“ + стрелката наляво.</translation>
 <translation id="5430931332414098647">Незабавен тетъринг</translation>
 <translation id="5431825016875453137">OpenVPN/L2TP</translation>
 <translation id="544691375626129091">Всички налични потребители вече са добавени към тази сесия.</translation>
@@ -397,6 +407,7 @@
 <translation id="6490471652906364588">USB-C устройство (десният порт)</translation>
 <translation id="649452524636452238">ПИН за смарткартата</translation>
 <translation id="6501401484702599040">Екранът се предава към „<ph name="RECEIVER_NAME" />“</translation>
+<translation id="652139407789908527">По време на тази актуализация екранът ще остане празен по-дълго от обичайното (до една минута). Моля, не натискайте бутона за захранване, докато тя се извършва.</translation>
 <translation id="6521655319214113338">Ръкописно въвеждане</translation>
 <translation id="6528179044667508675">Не безпокойте</translation>
 <translation id="6537270692134705506">Заснемане на екрана</translation>
@@ -542,6 +553,7 @@
 <translation id="847056008324733326">Настройки за мащаба на показване</translation>
 <translation id="8473301994082929012">Функцията „<ph name="FEATURE_NAME" />“ е <ph name="FEATURE_STATE" /> от <ph name="ORGANIZATION_NAME" />.</translation>
 <translation id="8477270416194247200">Натиснете Alt + клавиша „търсене“ или само Shift, за да анулирате.</translation>
+<translation id="8492573885090281069"><ph name="DISPLAY_NAME" /> не поддържа <ph name="SPECIFIED_RESOLUTION" />. Разделителната способност бе променена на <ph name="FALLBACK_RESOLUTION" />. Кликнете върху бутона за потвърждаване, за да запазите промените. Предишните настройки ще бъдат възстановени след <ph name="TIMEOUT_SECONDS" />.</translation>
 <translation id="8513108775083588393">Автоматична ориентация</translation>
 <translation id="8517041960877371778">Възможно е вашият <ph name="DEVICE_TYPE" /> да не се зарежда, докато е включен.</translation>
 <translation id="8563862697512465947">Настройки за известия</translation>
@@ -597,6 +609,7 @@
 <translation id="9183456764293710005">Лупа за увеличаване на целия екран</translation>
 <translation id="9193626018745640770">Предава се към неизвестен приемник</translation>
 <translation id="9194617393863864469">Влизане в профила на друг потребител...</translation>
+<translation id="9198992156681343238">Разделителната способност на <ph name="DISPLAY_NAME" /> бе променена на <ph name="RESOLUTION" />. Кликнете върху бутона за потвърждаване, за да запазите промените. Предишните настройки ще бъдат възстановени след <ph name="TIMEOUT_SECONDS" />.</translation>
 <translation id="9201374708878217446"><ph name="CONNECTION_STATUS" />, управлява се от администратора ви</translation>
 <translation id="9210037371811586452">Излиза се от режима на обединен работен плот</translation>
 <translation id="9211681782751733685">Оставащо време до пълното зареждане на батерията: <ph name="TIME_REMAINING" />.</translation>

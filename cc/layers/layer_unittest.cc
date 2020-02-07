@@ -1525,15 +1525,14 @@ TEST_F(LayerTest, SetLayerTreeHostNotUsingLayerListsManagesElementId) {
                                              0.f, false);
   EXPECT_TRUE(animation_host_->IsElementAnimating(element_id));
 
-  EXPECT_EQ(nullptr, layer_tree_host_->LayerByElementIdForTesting(element_id));
+  EXPECT_EQ(nullptr, layer_tree_host_->LayerByElementId(element_id));
   test_layer->SetLayerTreeHost(layer_tree_host_.get());
   // Layer should now be registered by element id.
-  EXPECT_EQ(test_layer,
-            layer_tree_host_->LayerByElementIdForTesting(element_id));
+  EXPECT_EQ(test_layer, layer_tree_host_->LayerByElementId(element_id));
 
   test_layer->SetLayerTreeHost(nullptr);
   // Layer should have been un-registered.
-  EXPECT_EQ(nullptr, layer_tree_host_->LayerByElementIdForTesting(element_id));
+  EXPECT_EQ(nullptr, layer_tree_host_->LayerByElementId(element_id));
 }
 
 TEST_F(LayerTest, SetElementIdNotUsingLayerLists) {
@@ -1542,20 +1541,18 @@ TEST_F(LayerTest, SetElementIdNotUsingLayerLists) {
 
   EXPECT_CALL(*layer_tree_host_, SetNeedsCommit()).Times(2);
   ElementId element_id = ElementId(2);
-  EXPECT_EQ(nullptr, layer_tree_host_->LayerByElementIdForTesting(element_id));
+  EXPECT_EQ(nullptr, layer_tree_host_->LayerByElementId(element_id));
 
   test_layer->SetElementId(element_id);
   // Layer should now be registered by element id.
-  EXPECT_EQ(test_layer,
-            layer_tree_host_->LayerByElementIdForTesting(element_id));
+  EXPECT_EQ(test_layer, layer_tree_host_->LayerByElementId(element_id));
 
   ElementId other_element_id = ElementId(3);
   test_layer->SetElementId(other_element_id);
   // The layer should have been unregistered from the original element
   // id and registered with the new one.
-  EXPECT_EQ(nullptr, layer_tree_host_->LayerByElementIdForTesting(element_id));
-  EXPECT_EQ(test_layer,
-            layer_tree_host_->LayerByElementIdForTesting(other_element_id));
+  EXPECT_EQ(nullptr, layer_tree_host_->LayerByElementId(element_id));
+  EXPECT_EQ(test_layer, layer_tree_host_->LayerByElementId(other_element_id));
 
   test_layer->SetLayerTreeHost(nullptr);
 }

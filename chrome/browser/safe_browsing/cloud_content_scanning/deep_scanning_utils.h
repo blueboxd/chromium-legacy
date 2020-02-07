@@ -72,6 +72,11 @@ bool FileTypeSupported(bool for_malware_scan,
                        bool for_dlp_scan,
                        const base::FilePath& path);
 
+// Helper function to make DeepScanningClientResponses for tests.
+DeepScanningClientResponse SimpleDeepScanningClientResponseForTesting(
+    base::Optional<bool> dlp_success,
+    base::Optional<bool> malware_success);
+
 }  // namespace safe_browsing
 
 #endif  // CHROME_BROWSER_SAFE_BROWSING_CLOUD_CONTENT_SCANNING_DEEP_SCANNING_UTILS_H_

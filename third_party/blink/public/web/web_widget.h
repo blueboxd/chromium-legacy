@@ -101,7 +101,9 @@ class WebWidget {
 
   // Called when a main frame time metric should be emitted, along with
   // any metrics that depend upon the main frame total time.
-  virtual void RecordEndOfFrameMetrics(base::TimeTicks frame_begin_time) {}
+  virtual void RecordEndOfFrameMetrics(
+      base::TimeTicks frame_begin_time,
+      cc::ActiveFrameSequenceTrackers trackers) {}
 
   // Return metrics information for the stages of BeginMainFrame. This is
   // ultimately implemented by Blink's LocalFrameUKMAggregator. It must be a

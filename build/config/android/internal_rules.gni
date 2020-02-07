@@ -1757,9 +1757,9 @@ if (enable_java_templates) {
       args = [
         "--depfile",
         rebase_path(depfile, root_build_dir),
-        "--android-sdk-tools",
-        rebase_path(android_sdk_tools, root_build_dir),
-        "--android-sdk-tools-version-suffix=${android_sdk_tools_version_suffix}",
+        "--android-sdk-cmdline-tools",
+        rebase_path("${public_android_sdk_root}/cmdline-tools/latest",
+                    root_build_dir),
         "--root-manifest",
         rebase_path(invoker.input_manifest, root_build_dir),
         "--output",

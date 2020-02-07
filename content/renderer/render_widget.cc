@@ -1371,8 +1371,10 @@ void RenderWidget::RecordStartOfFrameMetrics() {
   GetWebWidget()->RecordStartOfFrameMetrics();
 }
 
-void RenderWidget::RecordEndOfFrameMetrics(base::TimeTicks frame_begin_time) {
-  GetWebWidget()->RecordEndOfFrameMetrics(frame_begin_time);
+void RenderWidget::RecordEndOfFrameMetrics(
+    base::TimeTicks frame_begin_time,
+    cc::ActiveFrameSequenceTrackers trackers) {
+  GetWebWidget()->RecordEndOfFrameMetrics(frame_begin_time, trackers);
 }
 
 std::unique_ptr<cc::BeginMainFrameMetrics>

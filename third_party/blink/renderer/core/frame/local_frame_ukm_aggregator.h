@@ -5,6 +5,7 @@
 #ifndef THIRD_PARTY_BLINK_RENDERER_CORE_FRAME_LOCAL_FRAME_UKM_AGGREGATOR_H_
 #define THIRD_PARTY_BLINK_RENDERER_CORE_FRAME_LOCAL_FRAME_UKM_AGGREGATOR_H_
 
+#include "cc/metrics/frame_sequence_tracker.h"
 #include "third_party/blink/renderer/core/core_export.h"
 #include "third_party/blink/renderer/platform/instrumentation/histogram.h"
 #include "third_party/blink/renderer/platform/wtf/allocator/allocator.h"
@@ -74,9 +75,10 @@ namespace blink {
 //   // At this point data for kMetric2 is recorded.
 //   ...
 //   // When the primary time completes
-//   aggregator->RecordEndOfFrameMetrics(time_delta);
+//   aggregator->RecordEndOfFrameMetrics(start, end, trackers);
 //   // This records a primary sample and the sub-metrics that depend on it.
-//   // It may generate an event.
+//   // It may generate an event. trackers is a bit encoding of the active frame
+//.  // sequence trackers, informing us of why the BeginMainFrame was requested.
 //
 // In the example above, the event name is "my_event". It will measure 7
 // metrics:
@@ -225,8 +227,11 @@ class CORE_EXPORT LocalFrameUkmAggregator
   // Record a main frame time metric, that also computes the ratios for the
   // sub-metrics and generates UMA samples. UKM is only reported when
   // BeginMainFrame() had been called. All counters are cleared when this method
-  // is called.
-  void RecordEndOfFrameMetrics(base::TimeTicks start, base::TimeTicks end);
+  // is called. trackers is a bit encoding of the active frame sequence
+  // trackers, telling us the reasons for requesting a BeginMainFrame.
+  void RecordEndOfFrameMetrics(base::TimeTicks start,
+                               base::TimeTicks end,
+                               cc::ActiveFrameSequenceTrackers trackers);
 
   // Record a sample for a sub-metric. This should only be used when
   // a ScopedUkmHierarchicalTimer cannot be used (such as when the timed
@@ -276,8 +281,9 @@ class CORE_EXPORT LocalFrameUkmAggregator
     void reset() { interval_duration = base::TimeDelta(); }
   };
 
-  void UpdateEventTimeAndRecordEventIfNeeded();
-  void RecordEvent();
+  void UpdateEventTimeAndRecordEventIfNeeded(
+      cc::ActiveFrameSequenceTrackers trackers);
+  void RecordEvent(cc::ActiveFrameSequenceTrackers trackers);
   void ResetAllMetrics();
   unsigned SampleFramesToNextEvent();
 

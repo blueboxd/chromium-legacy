@@ -686,6 +686,7 @@
 <translation id="3987940399970879459">Kevesebb mint 1 MB</translation>
 <translation id="3990250421422698716">Példányok eltolása</translation>
 <translation id="40103911065039147">{URL_count,plural, =1{1 közeli weboldal}other{# közeli weboldal}}</translation>
+<translation id="4014128326099193693">{COUNT,plural, =1{{COUNT} oldalból álló PDF-dokumentum}other{{COUNT} oldalból álló PDF-dokumentum}}</translation>
 <translation id="4030383055268325496">&amp;Hozzáadás visszavonása</translation>
 <translation id="4032320456957708163">Böngészőjét a(z) <ph name="ENROLLMENT_DOMAIN" /> felügyeli</translation>
 <translation id="4058922952496707368">"<ph name="SUBKEY" />" kulcs: <ph name="ERROR" /></translation>
@@ -714,6 +715,7 @@
 <translation id="4142935452406587478">10. tálca</translation>
 <translation id="4148925816941278100">American Express</translation>
 <translation id="4151403195736952345">Globális alapértelmezés használata (Észlelés)</translation>
+<translation id="4152318981910038897">{COUNT,plural, =1{1. oldal}other{{COUNT}. oldal}}</translation>
 <translation id="4159784952369912983">Lila</translation>
 <translation id="4165986682804962316">Webhelybeállítások</translation>
 <translation id="4171400957073367226">Hibás igazoló aláírás.</translation>
@@ -1391,6 +1393,7 @@
 <translation id="7201591969684833065">Rendszergazdája a következőket láthatja:</translation>
 <translation id="7202346780273620635">Letter-Extra</translation>
 <translation id="7210863904660874423">A(z) <ph name="HOST_NAME" /> nem felel meg a biztonsági szabványoknak.</translation>
+<translation id="7210993021468939304">A tárolóban végzett linuxos tevékenység megtekintése, valamint Linux-alkalmazások telepítése és futtatása a tárolóban</translation>
 <translation id="721197778055552897"><ph name="BEGIN_LINK" />További információ<ph name="END_LINK" /> erről a hibáról.</translation>
 <translation id="7219179957768738017">A kapcsolat a következőt használja: <ph name="SSL_VERSION" />.</translation>
 <translation id="7220786058474068424">Feldolgozás alatt</translation>
@@ -1554,6 +1557,7 @@ További részletek:
 <translation id="7878562273885520351">Előfordultat, hogy jelszava már nem biztonságos</translation>
 <translation id="7882421473871500483">Barna</translation>
 <translation id="7887683347370398519">Ellenőrizze a CVC-t, majd próbálja újra</translation>
+<translation id="7887885240995164102">Belépés a kép a képben módba</translation>
 <translation id="7888575728750733395">Nyomatmegjelenítési szándék</translation>
 <translation id="7904208859782148177">C3 (boríték)</translation>
 <translation id="7932579305932748336">Bevonat</translation>

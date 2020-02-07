@@ -40,6 +40,8 @@ class MockWebIDBFactory : public testing::StrictMock<blink::WebIDBFactory> {
                void(const WTF::String& name,
                     std::unique_ptr<WebIDBCallbacks>,
                     bool force_close));
+  MOCK_METHOD0(GetObservedFeature,
+               mojo::PendingRemote<mojom::blink::ObservedFeature>());
 
   void SetCallbacksPointer(std::unique_ptr<WebIDBCallbacks>* callbacks);
 

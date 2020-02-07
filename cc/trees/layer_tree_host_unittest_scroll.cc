@@ -84,9 +84,8 @@ class LayerTreeHostScrollTest : public LayerTreeTest, public ScrollCallbacks {
                  const base::Optional<TargetSnapAreaElementIds>&
                      snap_target_ids) override {
     // Simulates cc client (e.g Blink) behavior when handling impl-side scrolls.
-    SetScrollOffsetFromImplSide(
-        layer_tree_host()->LayerByElementIdForTesting(element_id),
-        scroll_offset);
+    SetScrollOffsetFromImplSide(layer_tree_host()->LayerByElementId(element_id),
+                                scroll_offset);
 
     if (element_id ==
         layer_tree_host()->OuterViewportScrollLayerForTesting()->element_id()) {
@@ -1623,9 +1622,7 @@ class LayerTreeHostScrollTestLayerStructureChange
       EndTest();
       return;
     }
-    layer_tree_host()
-        ->LayerByElementIdForTesting(element_id)
-        ->RemoveFromParent();
+    layer_tree_host()->LayerByElementId(element_id)->RemoveFromParent();
   }
 
  protected:

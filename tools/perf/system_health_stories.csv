@@ -47,6 +47,7 @@ browse:social:twitter:2018,,desktop,2018
 browse:social:twitter:2019,,mobile,2019
 browse:social:twitter_infinite_scroll:2018,,desktop,"2018,infinite_scroll"
 browse:tech:discourse_infinite_scroll:2018,,"desktop,mobile","2018,infinite_scroll"
+browse:tools:docs_scrolling,Google Docs scrolling story:,desktop,"2020,javascript_heavy"
 browse:tools:earth,Google Earth story:,desktop,"2016,javascript_heavy,webgl"
 browse:tools:maps:2019,Google maps story:,"desktop,mobile","2019,emerging_market,javascript_heavy,webgl"
 browse:tools:sheets:2019,,desktop,"2019,javascript_heavy"

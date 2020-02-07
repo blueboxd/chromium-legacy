@@ -7,7 +7,6 @@
 #include "chrome/browser/signin/identity_manager_factory.h"
 #include "chrome/browser/sync/profile_sync_service_factory.h"
 #include "chrome/browser/sync/test/integration/profile_sync_service_harness.h"
-#include "chrome/browser/sync/test/integration/sync_test.h"
 #include "components/signin/public/identity_manager/account_info.h"
 #include "components/signin/public/identity_manager/identity_manager.h"
 #include "components/sync/test/fake_server/fake_server_network_resources.h"
@@ -18,6 +17,8 @@ namespace test {
 std::unique_ptr<ProfileSyncServiceHarness> InitializeProfileForSync(
     Profile* profile,
     base::WeakPtr<fake_server::FakeServer> fake_server) {
+  DCHECK(profile);
+
   ProfileSyncServiceFactory::GetAsProfileSyncServiceForProfile(profile)
       ->OverrideNetworkForTest(
           fake_server::CreateFakeServerHttpPostProviderFactory(
@@ -35,11 +36,9 @@ std::unique_ptr<ProfileSyncServiceHarness> InitializeProfileForSync(
     username = "user@gmail.com";
   }
 
-  std::unique_ptr<ProfileSyncServiceHarness> harness =
-      ProfileSyncServiceHarness::Create(
-          profile, username, "unused" /* password */,
-          ProfileSyncServiceHarness::SigninType::FAKE_SIGNIN);
-  return harness;
+  return ProfileSyncServiceHarness::Create(
+      profile, username, "unused" /* password */,
+      ProfileSyncServiceHarness::SigninType::FAKE_SIGNIN);
 }
 
 }  // namespace test

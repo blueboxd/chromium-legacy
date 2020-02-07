@@ -3560,6 +3560,7 @@ Je kunt de instellingen van dit account beheren door de Family Link-app op je ap
 <translation id="5975792506968920132">Percentage acculading</translation>
 <translation id="5976160379964388480">Overige</translation>
 <translation id="5978277834170881274">Standaard spellingcontrole gebruiken</translation>
+<translation id="5979084224081478209">Wachtwoorden controleren</translation>
 <translation id="5979421442488174909">&amp;Vertalen in het <ph name="LANGUAGE" /></translation>
 <translation id="5979469435153841984">Als je een bladwijzer wilt instellen voor een pagina, klik je op de ster in de adresbalk</translation>
 <translation id="5984222099446776634">Recent bezocht</translation>
@@ -4160,7 +4161,6 @@ Je kunt de instellingen van dit account beheren door de Family Link-app op je ap
 <translation id="6840155290835956714">Vragen vóór verzenden</translation>
 <translation id="6840184929775541289">Is geen certificeringsinstantie</translation>
 <translation id="6841186874966388268">Fouten</translation>
-<translation id="6843267103192918276">Als je inlogt, heb je al je instellingen op al je apparaten: bladwijzers, geschiedenis, wachtwoorden en meer. Je wordt ook automatisch ingelogd bij je Google-services. <ph name="LINK_BEGIN" />Meer informatie<ph name="LINK_END" /></translation>
 <translation id="6843423766595476978">'Oké Google' is helemaal ingesteld</translation>
 <translation id="6845038076637626672">Gemaximaliseerd openen</translation>
 <translation id="6845325883481699275">Help de beveiliging van Chrome te verbeteren</translation>

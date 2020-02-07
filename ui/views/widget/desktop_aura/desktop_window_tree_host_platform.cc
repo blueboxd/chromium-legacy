@@ -677,9 +677,12 @@ void DesktopWindowTreeHostPlatform::OnCloseRequest() {
 }
 
 void DesktopWindowTreeHostPlatform::OnActivationChanged(bool active) {
+  if (is_active_ == active)
+    return;
   is_active_ = active;
   aura::WindowTreeHostPlatform::OnActivationChanged(active);
   desktop_native_widget_aura_->HandleActivationChanged(active);
+  ScheduleRelayout();
 }
 
 base::Optional<gfx::Size>

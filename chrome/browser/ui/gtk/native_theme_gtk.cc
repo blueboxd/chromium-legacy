@@ -68,7 +68,10 @@ void PaintWidget(cc::PaintCanvas* canvas,
                     rect.x(), rect.y());
 }
 
-SkColor SkColorFromColorId(ui::NativeTheme::ColorId color_id) {
+base::Optional<SkColor> SkColorFromColorId(
+    ui::NativeTheme::ColorId color_id,
+    const ui::NativeTheme* base_theme,
+    ui::NativeTheme::ColorScheme color_scheme) {
   switch (color_id) {
     // Windows
     case ui::NativeTheme::kColorId_WindowBackground:
@@ -122,12 +125,6 @@ SkColor SkColorFromColorId(ui::NativeTheme::ColorId color_id) {
             "GtkMenu#menu GtkSeparator#separator.horizontal");
       }
       return GetFgColor("GtkMenu#menu GtkMenuItem#menuitem.separator");
-    // Fallback to the same colors as Aura.
-    case ui::NativeTheme::kColorId_HighlightedMenuItemBackgroundColor:
-    case ui::NativeTheme::kColorId_HighlightedMenuItemForegroundColor:
-    case ui::NativeTheme::kColorId_MenuItemAlertBackgroundColor:
-      return ui::NativeTheme::GetInstanceForNativeUi()->GetSystemColor(
-          color_id);
 
     // Label
     case ui::NativeTheme::kColorId_LabelEnabledColor:
@@ -145,7 +142,9 @@ SkColor SkColorFromColorId(ui::NativeTheme::ColorId color_id) {
     // Link
     case ui::NativeTheme::kColorId_LinkDisabled:
       return SkColorSetA(
-          SkColorFromColorId(ui::NativeTheme::kColorId_LinkEnabled), 0xBB);
+          base_theme->GetSystemColor(ui::NativeTheme::kColorId_LinkEnabled,
+                                     color_scheme),
+          0xBB);
     case ui::NativeTheme::kColorId_LinkPressed:
       if (GtkVersionCheck(3, 12))
         return GetFgColor("GtkLabel.link:link:hover:active");
@@ -332,8 +331,10 @@ SkColor SkColorFromColorId(ui::NativeTheme::ColorId color_id) {
     case ui::NativeTheme::kColorId_NumColors:
       NOTREACHED();
       break;
+    default:
+      break;
   }
-  return gfx::kPlaceholderColor;
+  return base::nullopt;
 }
 
 }  // namespace
@@ -434,12 +435,17 @@ void NativeThemeGtk::OnThemeChanged(GtkSettings* settings,
 
 SkColor NativeThemeGtk::GetSystemColor(ColorId color_id,
                                        ColorScheme color_scheme) const {
-  if (color_cache_[color_id])
-    return color_cache_[color_id].value();
-
-  SkColor color = SkColorFromColorId(color_id);
-  color_cache_[color_id] = color;
-  return color;
+  base::Optional<SkColor> color = color_cache_[color_id];
+  if (!color) {
+    color = SkColorFromColorId(color_id, this, color_scheme);
+    if (!color) {
+      color = ui::NativeTheme::GetInstanceForNativeUi()->GetSystemColor(
+          color_id, color_scheme);
+    }
+    color_cache_[color_id] = color;
+  }
+  DCHECK(color);
+  return color.value();
 }
 
 void NativeThemeGtk::PaintArrowButton(

@@ -38,7 +38,8 @@ class URL_MATCHER_EXPORT SubstringSetMatcher {
   // Returns true if this object retains no allocated data.
   bool IsEmpty() const { return is_empty_; }
 
-  // Returns the estimated memory usage in bytes.
+  // Returns the dynamically allocated memory usage in bytes. See
+  // base/trace_event/memory_usage_estimator.h for details.
   size_t EstimateMemoryUsage() const;
 
  private:

@@ -40,26 +40,27 @@ bool IsTabletMode() {
 
 // Returns the bounds for the first button shown in this view (the back
 // button in tablet mode, the home button otherwise).
-gfx::Rect GetFirstButtonBounds() {
+gfx::Rect GetFirstButtonBounds(bool is_shelf_horizontal) {
   // ShelfNavigationWidget is larger than the buttons in order to enable child
   // views to capture events nearby.
-  const int home_button_edge_spacing =
-      ShelfConfig::Get()->home_button_edge_spacing();
-  return gfx::Rect(home_button_edge_spacing, home_button_edge_spacing,
-                   ShelfConfig::Get()->control_size(),
-                   ShelfConfig::Get()->control_size());
+  return gfx::Rect(
+      ShelfConfig::Get()->control_button_edge_spacing(is_shelf_horizontal),
+      ShelfConfig::Get()->control_button_edge_spacing(!is_shelf_horizontal),
+      ShelfConfig::Get()->control_size(), ShelfConfig::Get()->control_size());
 }
 
 // Returns the bounds for the second button shown in this view (which is
 // always the home button and only in tablet mode, which implies a horizontal
 // shelf).
 gfx::Rect GetSecondButtonBounds() {
-  const int home_button_edge_spacing =
-      ShelfConfig::Get()->home_button_edge_spacing();
-  return gfx::Rect(home_button_edge_spacing +
+  // Second button only shows for horizontal shelf.
+  return gfx::Rect(ShelfConfig::Get()->control_button_edge_spacing(
+                       true /* is_primary_axis_edge */) +
                        ShelfConfig::Get()->control_size() +
                        ShelfConfig::Get()->button_spacing(),
-                   home_button_edge_spacing, ShelfConfig::Get()->control_size(),
+                   ShelfConfig::Get()->control_button_edge_spacing(
+                       false /* is_primary_axis_edge */),
+                   ShelfConfig::Get()->control_size(),
                    ShelfConfig::Get()->control_size());
 }
 
@@ -139,11 +140,13 @@ class ShelfNavigationWidget::Delegate : public views::AccessiblePaneView,
   // A background layer that may be visible depending on shelf state.
   ui::Layer opaque_background_;
 
+  Shelf* shelf_ = nullptr;
+
   DISALLOW_COPY_AND_ASSIGN(Delegate);
 };
 
 ShelfNavigationWidget::Delegate::Delegate(Shelf* shelf, ShelfView* shelf_view)
-    : opaque_background_(ui::LAYER_SOLID_COLOR) {
+    : opaque_background_(ui::LAYER_SOLID_COLOR), shelf_(shelf) {
   set_owned_by_client();  // Deleted by DeleteDelegate().
   set_allow_deactivate_on_esc(true);
 
@@ -194,12 +197,12 @@ void ShelfNavigationWidget::Delegate::UpdateOpaqueBackground() {
     opaque_background_.SetRoundedCornerRadius(rounded_corners);
 
   // The opaque background does not show up when there are two buttons.
-  gfx::Rect opaque_background_bounds = GetFirstButtonBounds();
+  gfx::Rect opaque_background_bounds =
+      GetFirstButtonBounds(shelf_->IsHorizontalAlignment());
   if (base::i18n::IsRTL() && GetWidget() &&
       Shelf::ForWindow(GetWidget()->GetNativeWindow())
           ->IsHorizontalAlignment()) {
-    opaque_background_bounds.set_x(
-        2 * ShelfConfig::Get()->home_button_edge_spacing());
+    opaque_background_bounds.set_x(0);
   }
   opaque_background_.SetBounds(opaque_background_bounds);
   opaque_background_.SetBackgroundBlur(
@@ -318,21 +321,26 @@ gfx::Size ShelfNavigationWidget::GetIdealSize() const {
     return gfx::Size();
 
   const int control_size = ShelfConfig::Get()->control_size();
-  const int home_button_edge_spacing =
-      ShelfConfig::Get()->home_button_edge_spacing();
+  const int horizontal_spacing =
+      ShelfConfig::Get()->control_button_edge_spacing(
+          shelf_->IsHorizontalAlignment());
+  const int vertical_spacing = ShelfConfig::Get()->control_button_edge_spacing(
+      !shelf_->IsHorizontalAlignment());
 
   if (!shelf_->IsHorizontalAlignment()) {
-    return gfx::Size(home_button_edge_spacing + control_size,
-                     home_button_edge_spacing + control_size);
+    return gfx::Size(2 * horizontal_spacing + control_size,
+                     vertical_spacing + control_size);
   }
 
   gfx::Size ideal_size(
       button_count * control_size +
           (button_count - 1) * ShelfConfig::Get()->button_spacing(),
       control_size);
+
+  // Enlarge the widget to take up available space, this ensures events which
+  // are outside of the HomeButton bounds can be received.
   if (IsHomeButtonShown()) {
-    ideal_size.Enlarge(2 * home_button_edge_spacing,
-                       2 * home_button_edge_spacing);
+    ideal_size.Enlarge(horizontal_spacing, 2 * vertical_spacing);
   }
 
   return ideal_size;
@@ -396,18 +404,11 @@ void ShelfNavigationWidget::OnShelfConfigUpdated() {
 }
 
 void ShelfNavigationWidget::CalculateTargetBounds() {
-  const int home_button_edge_spacing =
-      ShelfConfig::Get()->home_button_edge_spacing();
   const gfx::Point shelf_origin =
       shelf_->shelf_widget()->GetTargetBounds().origin();
 
   gfx::Point nav_origin = gfx::Point(shelf_origin.x(), shelf_origin.y());
   gfx::Size nav_size = GetIdealSize();
-
-  // Enlarge the widget to take up available space, this ensures events which
-  // are outside of the HomeButton bounds can be received.
-  if (!nav_size.IsEmpty())
-    nav_size.Enlarge(home_button_edge_spacing, home_button_edge_spacing);
 
   if (shelf_->IsHorizontalAlignment() && base::i18n::IsRTL()) {
     nav_origin.set_x(shelf_->shelf_widget()->GetTargetBounds().size().width() -
@@ -457,13 +458,15 @@ void ShelfNavigationWidget::UpdateLayout(bool animate) {
   UpdateButtonVisibility(home_button, home_button_shown, animate);
 
   gfx::Rect home_button_bounds =
-      back_button_shown ? GetSecondButtonBounds() : GetFirstButtonBounds();
+      back_button_shown ? GetSecondButtonBounds()
+                        : GetFirstButtonBounds(shelf_->IsHorizontalAlignment());
   if (animate)
     bounds_animator_->AnimateViewTo(home_button, home_button_bounds);
   else
     home_button->SetBoundsRect(home_button_bounds);
 
-  back_button->SetBoundsRect(GetFirstButtonBounds());
+  back_button->SetBoundsRect(
+      GetFirstButtonBounds(shelf_->IsHorizontalAlignment()));
 
   delegate_->UpdateOpaqueBackground();
 }

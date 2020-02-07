@@ -245,13 +245,13 @@ SkiaOutputDeviceBufferQueue::SkiaOutputDeviceBufferQueue(
 
   capabilities_.android_surface_control_feature_enabled = true;
   capabilities_.supports_post_sub_buffer = gl_surface_->SupportsPostSubBuffer();
-  // TODO(vasilyt): Need to figure out why partial swap isn't working
-  capabilities_.supports_post_sub_buffer = false;
   capabilities_.supports_commit_overlay_planes =
       gl_surface_->SupportsCommitOverlayPlanes();
   capabilities_.max_frames_pending = 2;
+  capabilities_.only_invalidates_damage_rect = false;
   // Set supports_surfaceless to enable overlays.
   capabilities_.supports_surfaceless = true;
+  capabilities_.preserve_buffer_content = true;
 }
 
 SkiaOutputDeviceBufferQueue::SkiaOutputDeviceBufferQueue(
@@ -315,22 +315,10 @@ SkiaOutputDeviceBufferQueue::Create(
 
 SkiaOutputDeviceBufferQueue::Image*
 SkiaOutputDeviceBufferQueue::GetNextImage() {
-  if (!available_images_.empty()) {
-    auto* image = available_images_.back();
-    available_images_.pop_back();
-    return image;
-  }
-
-  auto image = std::make_unique<Image>(
-      &shared_image_factory_, shared_image_representation_factory_.get());
-
-  if (image->Initialize(image_size_, color_space_, image_format_, dependency_,
-                        shared_image_usage_)) {
-    images_.push_back(std::move(image));
-    return images_.back().get();
-  }
-
-  return nullptr;
+  DCHECK(!available_images_.empty());
+  auto* image = available_images_.front();
+  available_images_.pop_front();
+  return image;
 }
 
 void SkiaOutputDeviceBufferQueue::PageFlipComplete(Image* image) {
@@ -447,6 +435,43 @@ void SkiaOutputDeviceBufferQueue::SwapBuffers(
   std::swap(committed_overlays_, pending_overlays_);
 }
 
+void SkiaOutputDeviceBufferQueue::PostSubBuffer(
+    const gfx::Rect& rect,
+    BufferPresentedCallback feedback,
+    std::vector<ui::LatencyInfo> latency_info) {
+  StartSwapBuffers({});
+
+  if (current_image_) {
+    submitted_image_ = current_image_;
+    current_image_ = nullptr;
+  }
+  DCHECK(submitted_image_);
+
+  if (supports_async_swap_) {
+    // Cancelable callback uses weak ptr to drop this task upon destruction.
+    // Thus it is safe to use |base::Unretained(this)|.
+    // Bind submitted_image_->GetWeakPtr(), since the |submitted_image_| could
+    // be released due to reshape() or destruction.
+    swap_completion_callbacks_.emplace_back(
+        std::make_unique<CancelableSwapCompletionCallback>(base::BindOnce(
+            &SkiaOutputDeviceBufferQueue::DoFinishSwapBuffers,
+            base::Unretained(this), image_size_, std::move(latency_info),
+            submitted_image_->GetWeakPtr(), std::move(committed_overlays_))));
+    gl_surface_->PostSubBufferAsync(
+        rect.x(), rect.y(), rect.width(), rect.height(),
+        swap_completion_callbacks_.back()->callback(), std::move(feedback));
+  } else {
+    DoFinishSwapBuffers(
+        image_size_, std::move(latency_info), submitted_image_->GetWeakPtr(),
+        std::move(committed_overlays_),
+        gl_surface_->PostSubBuffer(rect.x(), rect.y(), rect.width(),
+                                   rect.height(), std::move(feedback)),
+        nullptr);
+  }
+  committed_overlays_.clear();
+  std::swap(committed_overlays_, pending_overlays_);
+}
+
 void SkiaOutputDeviceBufferQueue::CommitOverlayPlanes(
     BufferPresentedCallback feedback,
     std::vector<ui::LatencyInfo> latency_info) {
@@ -506,6 +531,19 @@ bool SkiaOutputDeviceBufferQueue::Reshape(const gfx::Size& size,
   color_space_ = color_space;
   image_size_ = size;
   FreeAllSurfaces();
+
+  for (int i = 0; i < capabilities_.max_frames_pending + 1; ++i) {
+    auto image = std::make_unique<Image>(
+        &shared_image_factory_, shared_image_representation_factory_.get());
+    if (!image->Initialize(image_size_, color_space_, image_format_,
+                           dependency_, shared_image_usage_)) {
+      DLOG(ERROR) << "Failed to initialize image.";
+      return false;
+    }
+    available_images_.push_back(image.get());
+    images_.push_back(std::move(image));
+  }
+
   return true;
 }
 

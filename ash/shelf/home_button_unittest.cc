@@ -308,7 +308,8 @@ TEST_P(HomeButtonTest, ButtonPositionInTabletMode) {
 
     if (should_show_home_button) {
       EXPECT_EQ(home_button()->bounds().x(),
-                ShelfConfig::Get()->home_button_edge_spacing());
+                ShelfConfig::Get()->control_button_edge_spacing(
+                    true /* is_primary_axis_edge */));
     }
 
     // Switch to in-app shelf.
@@ -332,8 +333,9 @@ TEST_P(HomeButtonTest, ButtonPositionInTabletMode) {
   EXPECT_TRUE(test_api.IsHomeButtonVisible());
   ASSERT_TRUE(home_button());
 
-  // Home button spacing is within the widget.
-  EXPECT_EQ(ShelfConfig::Get()->home_button_edge_spacing(),
+  // The space between button and screen edge is within the widget.
+  EXPECT_EQ(ShelfConfig::Get()->control_button_edge_spacing(
+                true /* is_primary_axis_edge */),
             home_button()->bounds().x());
 }
 

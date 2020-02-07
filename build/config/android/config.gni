@@ -72,8 +72,6 @@ if (is_android || is_chromeos) {
   }
 
   public_android_sdk_root = "//third_party/android_sdk/public"
-  android_sdk_tools = "${public_android_sdk_root}/tools"
-  android_sdk_tools_version_suffix = "-26.0.0-dev"
   if (android_sdk_release == "q") {
     default_android_sdk_root = public_android_sdk_root
     default_android_sdk_version = 29

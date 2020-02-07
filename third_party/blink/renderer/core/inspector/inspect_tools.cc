@@ -457,7 +457,7 @@ void ScreenshotTool::Dispatch(const String& message) {
   protocol::ErrorSupport errors;
   std::unique_ptr<protocol::DOM::Rect> box =
       protocol::DOM::Rect::fromValue(value.get(), &errors);
-  if (errors.hasErrors())
+  if (!errors.Errors().empty())
     return;
 
   float scale = 1.0f;

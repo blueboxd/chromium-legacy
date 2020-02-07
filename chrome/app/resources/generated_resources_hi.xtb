@@ -3524,6 +3524,7 @@
 <translation id="5975792506968920132">बैटरी चार्ज का प्रतिशत</translation>
 <translation id="5976160379964388480">अन्य</translation>
 <translation id="5978277834170881274">&amp;बुनियादी 'वर्तनी जाँच' का इस्तेमाल करें</translation>
+<translation id="5979084224081478209">पासवर्ड जांचें</translation>
 <translation id="5979421442488174909"><ph name="LANGUAGE" /> में &amp;अनुवाद करें</translation>
 <translation id="5979469435153841984">पेज बुकमार्क करने के लिए, पता बार में मौजूद तारे के निशान पर क्‍लिक करें.</translation>
 <translation id="5984222099446776634">हाल ही में देखे गए</translation>
@@ -4118,7 +4119,6 @@
 <translation id="6840155290835956714">भेजने से पहले पूछें</translation>
 <translation id="6840184929775541289">एक प्रमाणन प्राधिकरण नहीं है</translation>
 <translation id="6841186874966388268">त्रुटियां</translation>
-<translation id="6843267103192918276">अपने सभी डिवाइस पर बुकमार्क, इतिहास, पासवर्ड, और दूसरी तरह की सेटिंग पाने के लिए साइन इन करें. आप अपने-आप Google सेवाओं में भी साइन इन हो जाएंगे. <ph name="LINK_BEGIN" />ज़्यादा जानें<ph name="LINK_END" /></translation>
 <translation id="6843423766595476978">Ok Google पूरी तरह तैयार है</translation>
 <translation id="6845038076637626672">बड़े दृश्य में खोलें</translation>
 <translation id="6845325883481699275">'Chrome सुरक्षा' को बेहतर बनाने में मदद करें</translation>

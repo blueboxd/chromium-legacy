@@ -119,6 +119,8 @@ class CORE_EXPORT ScrollableArea : public GarbageCollectedMixin {
       bool should_restore_scroll) {}
   virtual void ApplyPendingHistoryRestoreScrollOffset() {}
 
+  virtual bool HasPendingHistoryRestoreScrollOffset() { return false; }
+
   // Scrolls the area so that the given rect, given in absolute coordinates,
   // such that it's visible in the area. Returns the new location of the input
   // rect in absolute coordinates.

@@ -341,7 +341,8 @@ void WebFrameWidgetImpl::RecordStartOfFrameMetrics() {
 }
 
 void WebFrameWidgetImpl::RecordEndOfFrameMetrics(
-    base::TimeTicks frame_begin_time) {
+    base::TimeTicks frame_begin_time,
+    cc::ActiveFrameSequenceTrackers trackers) {
   if (!LocalRootImpl())
     return;
 
@@ -349,7 +350,8 @@ void WebFrameWidgetImpl::RecordEndOfFrameMetrics(
       ->GetFrame()
       ->View()
       ->EnsureUkmAggregator()
-      .RecordEndOfFrameMetrics(frame_begin_time, base::TimeTicks::Now());
+      .RecordEndOfFrameMetrics(frame_begin_time, base::TimeTicks::Now(),
+                               trackers);
 }
 
 std::unique_ptr<cc::BeginMainFrameMetrics>

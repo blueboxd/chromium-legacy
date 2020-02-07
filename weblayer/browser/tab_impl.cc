@@ -47,6 +47,7 @@
 #include "base/trace_event/trace_event.h"
 #include "components/autofill/android/autofill_provider_android.h"
 #include "components/embedder_support/android/delegate/color_chooser_android.h"
+#include "weblayer/browser/controls_visibility_reason.h"
 #include "weblayer/browser/java/jni/TabImpl_jni.h"
 #include "weblayer/browser/top_controls_container_view.h"
 #endif
@@ -368,6 +369,29 @@ void TabImpl::OnAutofillProviderChanged(
       static_cast<autofill::AutofillProviderAndroid*>(autofill_provider_.get());
   provider->OnJavaAutofillProviderChanged(env, autofill_provider);
 }
+
+void TabImpl::UpdateBrowserControlsState(JNIEnv* env, jint constraint) {
+  auto state_constraint =
+      static_cast<content::BrowserControlsState>(constraint);
+  content::BrowserControlsState current_state =
+      content::BROWSER_CONTROLS_STATE_SHOWN;
+  // Animate unless hiding the controls. Show the controls now, unless that's
+  // not allowed.
+  bool animate = true;
+  if (state_constraint == content::BROWSER_CONTROLS_STATE_HIDDEN) {
+    current_state = content::BROWSER_CONTROLS_STATE_BOTH;
+    animate = false;
+  }
+
+  web_contents_->GetMainFrame()->UpdateBrowserControlsState(
+      state_constraint, current_state, animate);
+
+  if (web_contents_->ShowingInterstitialPage()) {
+    web_contents_->GetInterstitialPage()
+        ->GetMainFrame()
+        ->UpdateBrowserControlsState(state_constraint, current_state, animate);
+  }
+}
 #endif
 
 content::WebContents* TabImpl::OpenURLFromTab(
@@ -446,8 +470,8 @@ void TabImpl::EnterFullscreenModeForTab(
   fullscreen_delegate_->EnterFullscreen(std::move(exit_fullscreen_closure));
 #if defined(OS_ANDROID)
   // Make sure browser controls cannot show when the tab is fullscreen.
-  UpdateBrowserControlsState(content::BROWSER_CONTROLS_STATE_HIDDEN,
-                             content::BROWSER_CONTROLS_STATE_BOTH, false);
+  SetBrowserControlsConstraint(ControlsVisibilityReason::kFullscreen,
+                               content::BROWSER_CONTROLS_STATE_HIDDEN);
 #endif
 }
 
@@ -456,8 +480,8 @@ void TabImpl::ExitFullscreenModeForTab(content::WebContents* web_contents) {
   fullscreen_delegate_->ExitFullscreen();
 #if defined(OS_ANDROID)
   // Attempt to show browser controls when exiting fullscreen.
-  UpdateBrowserControlsState(content::BROWSER_CONTROLS_STATE_BOTH,
-                             content::BROWSER_CONTROLS_STATE_SHOWN, true);
+  SetBrowserControlsConstraint(ControlsVisibilityReason::kFullscreen,
+                               content::BROWSER_CONTROLS_STATE_BOTH);
 #endif
 }
 
@@ -540,14 +564,14 @@ void TabImpl::DidFinishNavigation(
       !navigation_handle->IsSameDocument()) {
     // Force the browser controls to show initially, then allow hiding after a
     // short delay.
-    UpdateBrowserControlsState(content::BROWSER_CONTROLS_STATE_SHOWN,
-                               content::BROWSER_CONTROLS_STATE_BOTH, true);
+    SetBrowserControlsConstraint(ControlsVisibilityReason::kPostNavigation,
+                                 content::BROWSER_CONTROLS_STATE_SHOWN);
     update_browser_controls_state_timer_.Start(
         FROM_HERE, GetBrowserControlsAllowHideDelay(),
-        base::BindOnce(&TabImpl::UpdateBrowserControlsState,
+        base::BindOnce(&TabImpl::SetBrowserControlsConstraint,
                        base::Unretained(this),
-                       content::BROWSER_CONTROLS_STATE_BOTH,
-                       content::BROWSER_CONTROLS_STATE_BOTH, true));
+                       ControlsVisibilityReason::kPostNavigation,
+                       content::BROWSER_CONTROLS_STATE_BOTH));
   }
 #endif
 }
@@ -592,20 +616,12 @@ void TabImpl::UpdateRendererPrefs(bool should_sync_prefs) {
 }
 
 #if defined(OS_ANDROID)
-void TabImpl::UpdateBrowserControlsState(
-    content::BrowserControlsState constraints,
-    content::BrowserControlsState current,
-    bool animate) {
-  // Cancel the timer since the state was set explicitly.
-  update_browser_controls_state_timer_.Stop();
-  web_contents_->GetMainFrame()->UpdateBrowserControlsState(constraints,
-                                                            current, animate);
-
-  if (web_contents_->ShowingInterstitialPage()) {
-    web_contents_->GetInterstitialPage()
-        ->GetMainFrame()
-        ->UpdateBrowserControlsState(constraints, current, animate);
-  }
+void TabImpl::SetBrowserControlsConstraint(
+    ControlsVisibilityReason reason,
+    content::BrowserControlsState constraint) {
+  Java_TabImpl_setBrowserControlsVisibilityConstraint(
+      base::android::AttachCurrentThread(), java_impl_,
+      static_cast<int>(reason), constraint);
 }
 #endif
 

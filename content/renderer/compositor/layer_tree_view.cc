@@ -314,10 +314,12 @@ void LayerTreeView::RecordStartOfFrameMetrics() {
   delegate_->RecordStartOfFrameMetrics();
 }
 
-void LayerTreeView::RecordEndOfFrameMetrics(base::TimeTicks frame_begin_time) {
+void LayerTreeView::RecordEndOfFrameMetrics(
+    base::TimeTicks frame_begin_time,
+    cc::ActiveFrameSequenceTrackers trackers) {
   if (!delegate_)
     return;
-  delegate_->RecordEndOfFrameMetrics(frame_begin_time);
+  delegate_->RecordEndOfFrameMetrics(frame_begin_time, trackers);
 }
 
 std::unique_ptr<cc::BeginMainFrameMetrics>

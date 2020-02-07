@@ -14,12 +14,12 @@ import org.chromium.base.UserData;
 import org.chromium.base.UserDataHost;
 import org.chromium.base.annotations.JNINamespace;
 import org.chromium.blink.mojom.ViewportFit;
-import org.chromium.chrome.browser.InsetObserverView;
 import org.chromium.chrome.browser.tab.EmptyTabObserver;
 import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.browser.tab.TabImpl;
 import org.chromium.chrome.browser.tab.TabObserver;
 import org.chromium.chrome.browser.tab.TabSelectionType;
+import org.chromium.components.browser_ui.widget.InsetObserverView;
 import org.chromium.content_public.browser.WebContents;
 import org.chromium.content_public.browser.WebContentsObserver;
 

@@ -118,6 +118,7 @@
 <translation id="2413728805700750528"><ph name="DISPLAY_NAME" /> არის მართული სესია, რომელსაც მართავს <ph name="DOMAIN" /></translation>
 <translation id="2427507373259914951">მარცხენა დაწკაპუნება</translation>
 <translation id="2429753432712299108">Bluetooth მოწყობილობა „<ph name="DEVICE_NAME" />“ მოითხოვს ნებართვას დაწყვილებისთვის. დათანხმებამდე, დაადასტურეთ, რომ ეს კოდი მითითებულია მოწყობილობაში: <ph name="PASSKEY" /></translation>
+<translation id="2473177541599297363">დაადასტურეთ გარჩევადობა</translation>
 <translation id="2482878487686419369">შეტყობინებები</translation>
 <translation id="2484513351006226581">კლავიატურის განლაგების გადასართველად გამოიყენეთ კლავიშთა კომბინაცია: <ph name="KEYBOARD_SHORTCUT" />.</translation>
 <translation id="2501920221385095727">კლავიშების ფიქსაცია</translation>
@@ -138,6 +139,7 @@
 <translation id="2727977024730340865">შეერთებულია დაბალი სიმძლავრის დამტენთან. ბატარეის დატენვა შეიძლება არ იყოს სანდო.</translation>
 <translation id="2792498699870441125">Alt+ძიება</translation>
 <translation id="2819276065543622893">თქვენ ახლა გამოხვალთ.</translation>
+<translation id="2825224105325558319"><ph name="SPECIFIED_RESOLUTION" /> არ არის მხარდაჭერილი <ph name="DISPLAY_NAME" />-ის მიერ. გარჩევადობა შეიცვალა <ph name="FALLBACK_RESOLUTION" />-ზე.</translation>
 <translation id="2825619548187458965">თარო</translation>
 <translation id="2844169650293029770">USB-C მოწყობილობა (მარცხენა წინა პორტი)</translation>
 <translation id="2865888419503095837">ქსელის ინფორმაცია</translation>
@@ -157,6 +159,12 @@
 <translation id="3009178788565917040">გამოტანა</translation>
 <translation id="3051128274746680507">თქვენი კონტროლის ქვეშ მყოფი მომხმარებლის პროფილი მალე ამოიშლება. დამატებითი ინფორმაციისთვის შედით სისტემაში.</translation>
 <translation id="3055162170959710888">ამ მოწყობილობას დღეს <ph name="USED_TIME" /> იყენებდით</translation>
+<translation id="3076778413190775903">სტატუსის პანელი, დრო: <ph name="TIME" />,
+        <ph name="BATTERY" />
+        <ph name="NETWORK" />,
+        <ph name="NOTIFICATION" />,
+        <ph name="IME" />
+        <ph name="LOCALE" /></translation>
 <translation id="3077734595579995578">shift</translation>
 <translation id="3081696990447829002">მენიუს გაშლა</translation>
 <translation id="3087734570205094154">ქვედა საზღვარი</translation>
@@ -167,6 +175,7 @@
 <translation id="3151786313568798007">ორიენტაცია</translation>
 <translation id="3153444934357957346">მრავალჯერადი შესვლის ფუნქციისთვის შესაძლებელია მხოლოდ <ph name="MULTI_PROFILE_USER_LIMIT" /> ანგარიშის გამოყენება.</translation>
 <translation id="3154351730702813399">მოწყობილობის ადმინისტრატორს თქვენ მიერ ვების დათვალიერების მონიტორინგი შეუძლია.</translation>
+<translation id="3181441307743005334">გადატვირთვას შეიძლება გარკვეული დრო დასჭირდეს</translation>
 <translation id="3202010236269062730">{NUM_DEVICES,plural, =1{დაკავშირებულია მოწყობილობასთან}other{დაკავშირებულია # მოწყობილობასთან}}</translation>
 <translation id="3217205077783620295">ხმა ჩართულია, გადართვისას აუდიო დადუმდება.</translation>
 <translation id="3226991577105957773">+<ph name="COUNT" /> სხვა</translation>
@@ -316,6 +325,7 @@
 <translation id="5331975486040154427">USB-C მოწყობილობა (მარცხენა უკანა პორტი)</translation>
 <translation id="5379115545237091094">დაფიქსირდა მეტისმეტად ბევრი მცდელობა</translation>
 <translation id="5397578532367286026">ამ მომხმარებლის გამოყენების და ისტორიის დათვალიერება შესაძლებელია მენეჯერის მიერ (<ph name="MANAGER_EMAIL" />) chrome.com-ზე.</translation>
+<translation id="5400461572260843123">სწრაფი პარამეტრები, შეტყობინებების ცენტრზე წვდომისთვის დააჭირეთ კლავიშთა კომბინაციაზე: search + მარცხნივ მიმართული ისარი.</translation>
 <translation id="5430931332414098647">მყისიერი ტეტერინგი</translation>
 <translation id="5431825016875453137">OpenVPN / L2TP</translation>
 <translation id="544691375626129091">ყველა ხელმისაწვდომი მომხმარებელი უკვე დამატებულია ამ სესიაში.</translation>
@@ -397,6 +407,7 @@
 <translation id="6490471652906364588">USB-C მოწყობილობა (მარჯვენა პორტი)</translation>
 <translation id="649452524636452238">სმარტ-ბარათის PIN-კოდი</translation>
 <translation id="6501401484702599040">ეკრანის ტრანსლირება აქ: <ph name="RECEIVER_NAME" />…</translation>
+<translation id="652139407789908527">განახლებისას ეკრანი ჩვეულზე დიდი ხნის (ერთ წუთამდე) განმავლობაში იქნება მონოტონური. განახლების მიმდინარეობისას არ დააჭიროთ ელკვების ღილაკზე.</translation>
 <translation id="6521655319214113338">ხელნაწერის შეყვანა</translation>
 <translation id="6528179044667508675">არ შემაწუხოთ</translation>
 <translation id="6537270692134705506">ეკრანის აღბეჭდვა</translation>
@@ -542,6 +553,7 @@
 <translation id="847056008324733326">ჩვენების მასშტაბის პარამეტრები</translation>
 <translation id="8473301994082929012"><ph name="ORGANIZATION_NAME" />-ს აქვს <ph name="FEATURE_STATE" /> <ph name="FEATURE_NAME" />.</translation>
 <translation id="8477270416194247200">გასაუქმებლად დააჭირეთ Shift კლავიშს ან კომბინაციას: Alt+Search.</translation>
+<translation id="8492573885090281069"><ph name="SPECIFIED_RESOLUTION" /> არ არის მხარდაჭერილი <ph name="DISPLAY_NAME" />-ის მიერ. გარჩევადობა შეიცვალა <ph name="FALLBACK_RESOLUTION" />-ზე. დააწკაპუნეთ ცვლილებების შენარჩუნების დასადასტურებლად. წინა პარამეტრების აღდგენამდე დარჩა <ph name="TIMEOUT_SECONDS" />.</translation>
 <translation id="8513108775083588393">ავტომატური შეტრიალება</translation>
 <translation id="8517041960877371778">თქვენი <ph name="DEVICE_TYPE" /> შეიძლება არ დაიტენოს, როცა ის ჩართულია.</translation>
 <translation id="8627191004499078455">დაკავშირებულია <ph name="DEVICE_NAME" />-თან</translation>
@@ -596,6 +608,7 @@
 <translation id="9183456764293710005">სრულეკრანიანი ლუპა</translation>
 <translation id="9193626018745640770">მიმდინარეობს ტრანსლირება უცნობ მიმღებზე</translation>
 <translation id="9194617393863864469">შესვლა სხვა მომხმარებლის სახელით…</translation>
+<translation id="9198992156681343238"><ph name="DISPLAY_NAME" />-ის გარჩევადობა შეიცვალა <ph name="RESOLUTION" />-ზე. დააწკაპუნეთ ცვლილებების შენარჩუნების დასადასტურებლად. წინა პარამეტრების აღდგენამდე დარჩა <ph name="TIMEOUT_SECONDS" />.</translation>
 <translation id="9201374708878217446"><ph name="CONNECTION_STATUS" />, მართავს თქვენი ადმინისტრატორი</translation>
 <translation id="9210037371811586452">მიმდინარეობს ერთიანი დესკტოპის რეჟიმიდან გამოსვლა</translation>
 <translation id="9211681782751733685">ბატარეის სრულ დატენამდე დარჩენილია <ph name="TIME_REMAINING" />.</translation>

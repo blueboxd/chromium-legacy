@@ -47,7 +47,8 @@ IDBOpenDBRequest::IDBOpenDBRequest(
     std::unique_ptr<WebIDBTransaction> transaction_backend,
     int64_t transaction_id,
     int64_t version,
-    IDBRequest::AsyncTraceState metrics)
+    IDBRequest::AsyncTraceState metrics,
+    mojo::PendingRemote<mojom::blink::ObservedFeature> connection_lifetime)
     : IDBRequest(script_state,
                  IDBRequest::Source(),
                  nullptr,
@@ -56,6 +57,7 @@ IDBOpenDBRequest::IDBOpenDBRequest(
       transaction_backend_(std::move(transaction_backend)),
       transaction_id_(transaction_id),
       version_(version),
+      connection_lifetime_(std::move(connection_lifetime)),
       start_time_(base::Time::Now()) {
   DCHECK(!ResultAsAny());
 }
@@ -105,7 +107,7 @@ void IDBOpenDBRequest::EnqueueUpgradeNeeded(
 
   auto* idb_database = MakeGarbageCollected<IDBDatabase>(
       GetExecutionContext(), std::move(backend), database_callbacks_.Release(),
-      isolate_);
+      isolate_, std::move(connection_lifetime_));
   idb_database->SetMetadata(metadata);
 
   if (old_version == IDBDatabaseMetadata::kNoVersion) {
@@ -148,7 +150,8 @@ void IDBOpenDBRequest::EnqueueResponse(std::unique_ptr<WebIDBDatabase> backend,
     DCHECK(database_callbacks_);
     idb_database = MakeGarbageCollected<IDBDatabase>(
         GetExecutionContext(), std::move(backend),
-        database_callbacks_.Release(), isolate_);
+        database_callbacks_.Release(), isolate_,
+        std::move(connection_lifetime_));
     SetResult(MakeGarbageCollected<IDBAny>(idb_database));
   }
   idb_database->SetMetadata(metadata);

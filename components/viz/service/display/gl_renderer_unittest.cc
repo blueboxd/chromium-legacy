@@ -1263,6 +1263,89 @@ TEST_F(GLRendererTest, ActiveTextureState) {
   child_resource_provider->ShutdownAndReleaseAllResources();
 }
 
+class BufferSubDataTrackingGLES2Interface : public TestGLES2Interface {
+ public:
+  BufferSubDataTrackingGLES2Interface() = default;
+  ~BufferSubDataTrackingGLES2Interface() override = default;
+
+  void BufferSubData(GLenum target,
+                     GLintptr offset,
+                     GLsizeiptr size,
+                     const void* data) override {
+    if (target != GL_ARRAY_BUFFER)
+      return;
+    DCHECK_EQ(0, offset);
+    last_array_data.resize(size);
+    memcpy(last_array_data.data(), data, size);
+  }
+
+  std::vector<uint8_t> last_array_data;
+};
+
+TEST_F(GLRendererTest, DrawYUVVideoDrawQuadWithVisibleRect) {
+  gfx::Size viewport_size(100, 100);
+
+  auto mock_gl_owned = std::make_unique<BufferSubDataTrackingGLES2Interface>();
+  BufferSubDataTrackingGLES2Interface* mock_gl = mock_gl_owned.get();
+  auto provider = TestContextProvider::Create(std::move(mock_gl_owned));
+  provider->BindToCurrentThread();
+
+  cc::FakeOutputSurfaceClient output_surface_client;
+  std::unique_ptr<OutputSurface> output_surface(
+      FakeOutputSurface::Create3d(std::move(provider)));
+  output_surface->BindToClient(&output_surface_client);
+
+  std::unique_ptr<SharedBitmapManager> shared_bitmap_manager =
+      std::make_unique<TestSharedBitmapManager>();
+  std::unique_ptr<DisplayResourceProvider> resource_provider =
+      std::make_unique<DisplayResourceProvider>(
+          DisplayResourceProvider::kGpu, output_surface->context_provider(),
+          shared_bitmap_manager.get());
+
+  RendererSettings settings;
+  FakeRendererGL renderer(&settings, output_surface.get(),
+                          resource_provider.get());
+  renderer.Initialize();
+  renderer.SetVisible(true);
+
+  RenderPass* root_pass = cc::AddRenderPass(
+      &render_passes_in_draw_order_, 1, gfx::Rect(viewport_size),
+      gfx::Transform(), cc::FilterOperations());
+  root_pass->has_transparent_background = false;
+
+  gfx::Rect rect(viewport_size);
+  gfx::Rect visible_rect(rect);
+  gfx::RectF tex_coord_rect(0, 0, 1, 1);
+  visible_rect.Inset(10, 20, 30, 40);
+
+  SharedQuadState* shared_state = root_pass->CreateAndAppendSharedQuadState();
+  shared_state->SetAll(gfx::Transform(), gfx::Rect(), rect, gfx::RRectF(), rect,
+                       false, false, 1, SkBlendMode::kSrcOver, 0);
+
+  YUVVideoDrawQuad* quad =
+      root_pass->CreateAndAppendDrawQuad<YUVVideoDrawQuad>();
+  quad->SetNew(shared_state, rect, visible_rect, /*needs_blending=*/false,
+               tex_coord_rect, tex_coord_rect, rect.size(), rect.size(), 1, 1,
+               1, 1, gfx::ColorSpace(), 0, 1.0, 8);
+
+  DrawFrame(&renderer, viewport_size);
+
+  ASSERT_EQ(96u, mock_gl->last_array_data.size());
+  float* geometry_binding_vertexes =
+      reinterpret_cast<float*>(mock_gl->last_array_data.data());
+
+  const double kEpsilon = 1e-6;
+  EXPECT_NEAR(-0.4f, geometry_binding_vertexes[0], kEpsilon);
+  EXPECT_NEAR(-0.3f, geometry_binding_vertexes[1], kEpsilon);
+  EXPECT_NEAR(0.1f, geometry_binding_vertexes[3], kEpsilon);
+  EXPECT_NEAR(0.2f, geometry_binding_vertexes[4], kEpsilon);
+
+  EXPECT_NEAR(0.2f, geometry_binding_vertexes[12], kEpsilon);
+  EXPECT_NEAR(0.1f, geometry_binding_vertexes[13], kEpsilon);
+  EXPECT_NEAR(0.7f, geometry_binding_vertexes[15], kEpsilon);
+  EXPECT_NEAR(0.6f, geometry_binding_vertexes[16], kEpsilon);
+}
+
 class NoClearRootRenderPassMockGLES2Interface : public TestGLES2Interface {
  public:
   MOCK_METHOD1(Clear, void(GLbitfield mask));

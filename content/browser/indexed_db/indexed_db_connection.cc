@@ -27,8 +27,6 @@ static int32_t g_next_indexed_db_connection_id;
 }  // namespace
 
 IndexedDBConnection::IndexedDBConnection(
-    IndexedDBExecutionContextConnectionTracker::Handle
-        execution_context_connection_handle,
     IndexedDBOriginStateHandle origin_state_handle,
     IndexedDBClassFactory* indexed_db_class_factory,
     base::WeakPtr<IndexedDBDatabase> database,
@@ -36,8 +34,6 @@ IndexedDBConnection::IndexedDBConnection(
     base::OnceCallback<void(IndexedDBConnection*)> on_close,
     scoped_refptr<IndexedDBDatabaseCallbacks> callbacks)
     : id_(g_next_indexed_db_connection_id++),
-      execution_context_connection_handle_(
-          std::move(execution_context_connection_handle)),
       origin_state_handle_(std::move(origin_state_handle)),
       indexed_db_class_factory_(indexed_db_class_factory),
       database_(std::move(database)),
@@ -45,7 +41,6 @@ IndexedDBConnection::IndexedDBConnection(
       on_close_(std::move(on_close)),
       callbacks_(callbacks) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  DCHECK(!execution_context_connection_handle_.is_null());
 }
 
 IndexedDBConnection::~IndexedDBConnection() {

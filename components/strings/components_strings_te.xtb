@@ -690,6 +690,7 @@
 <translation id="3987940399970879459">1 MB కంటే తక్కువ</translation>
 <translation id="3990250421422698716">జోగ్ ఆఫ్‌సెట్</translation>
 <translation id="40103911065039147">{URL_count,plural, =1{1 వెబ్ పేజీ సమీపంలో ఉంది}other{# వెబ్ పేజీలు సమీపంలో ఉన్నాయి}}</translation>
+<translation id="4014128326099193693">{COUNT,plural, =1{PDF డాక్యుమెంట్‌‌లో {COUNT} పేజీ ఉంది}other{PDF డాక్యుమెంట్‌‌లో {COUNT} పేజీలు ఉన్నాయి}}</translation>
 <translation id="4030383055268325496">&amp;జోడించడాన్ని రద్దు చేయి</translation>
 <translation id="4032320456957708163">మీ బ్రౌజర్ <ph name="ENROLLMENT_DOMAIN" /> ద్వారా నిర్వహించబడుతోంది</translation>
 <translation id="4058922952496707368">కీ "<ph name="SUBKEY" />": <ph name="ERROR" /></translation>
@@ -718,6 +719,7 @@
 <translation id="4142935452406587478">ట్రే 10</translation>
 <translation id="4148925816941278100">అమెరికన్ ఎక్స్‌ప్రెస్</translation>
 <translation id="4151403195736952345">భౌగోళిక డిఫాల్ట్‌ను ఉపయోగించు (గుర్తించు)</translation>
+<translation id="4152318981910038897">{COUNT,plural, =1{1వ పేజీ}other{{COUNT}వ పేజీ}}</translation>
 <translation id="4159784952369912983">వంగపండు రంగు</translation>
 <translation id="4165986682804962316">సైట్ సెట్టింగ్‌లు</translation>
 <translation id="4171400957073367226">ధృవీకరణ సంతకం చెల్లదు</translation>
@@ -1395,6 +1397,7 @@
 <translation id="7201591969684833065">మీ నిర్వాహకుడు వీటిని చూడగలరు:</translation>
 <translation id="7202346780273620635">లెటర్-అదనం</translation>
 <translation id="7210863904660874423"><ph name="HOST_NAME" /> భద్రతా ప్రమాణాలకు కట్టుబడి లేదు.</translation>
+<translation id="7210993021468939304">కంటెయినర్ లోపల Linux కార్యకలాపం, కంటెయినర్ లోపల Linux యాప్‌లను ఇన్‌స్టాల్ చేయవచ్చు</translation>
 <translation id="721197778055552897">ఈ సమస్య గురించి <ph name="BEGIN_LINK" />మరింత తెలుసుకోండి <ph name="END_LINK" />.</translation>
 <translation id="7219179957768738017">కనెక్షన్ <ph name="SSL_VERSION" />ని ఉపయోగిస్తుంది.</translation>
 <translation id="7220786058474068424">ప్రాసెస్ చేస్తోంది</translation>
@@ -1558,6 +1561,7 @@
 <translation id="7878562273885520351">మీ పాస్‌వర్డ్ ఎవరికైనా తెలిసిపోయి ఉండవచ్చు</translation>
 <translation id="7882421473871500483">గోధుమ రంగు</translation>
 <translation id="7887683347370398519">మీ CVCని తనిఖీ చేసి, మళ్లీ ప్రయత్నించండి</translation>
+<translation id="7887885240995164102">చిత్రంలో చిత్రం మోడ్‌లోకి ప్రవేశిస్తుంది</translation>
 <translation id="7888575728750733395">ప్రింట్ రెండరింగ్ ఇంటెంట్</translation>
 <translation id="7904208859782148177">C3 (ఎన్వలప్)</translation>
 <translation id="7932579305932748336">కోటు</translation>

@@ -115,6 +115,7 @@ public class LocationBarTablet extends LocationBarLayout {
 
         mTargets = new View[] {mUrlBar, mDeleteButton};
         mStatusViewCoordinator.setShowIconsWhenUrlFocused(true);
+        mStatusViewCoordinator.setStatusIconShown(true);
     }
 
     @Override

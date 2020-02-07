@@ -86,7 +86,6 @@ class PaintArtifactCompositor;
 class PaintController;
 class PaintLayerScrollableArea;
 class PaintTimingDetector;
-class PrintContext;
 class RootFrameViewport;
 class ScrollableArea;
 class Scrollbar;
@@ -731,11 +730,6 @@ class CORE_EXPORT LocalFrameView final
 
   LayoutSVGRoot* EmbeddedReplacedContent() const;
 
-  void DispatchEventsForPrintingOnAllFrames();
-
-  void SetupPrintContext();
-  void ClearPrintContext();
-
   // Returns whether the lifecycle was successfully updated to the
   // target state.
   bool UpdateLifecyclePhases(DocumentLifecycle::LifecycleState target_state,
@@ -974,8 +968,6 @@ class CORE_EXPORT LocalFrameView final
   scoped_refptr<LocalFrameUkmAggregator> ukm_aggregator_;
   unsigned forced_layout_stack_depth_;
   base::TimeTicks forced_layout_start_time_;
-
-  Member<PrintContext> print_context_;
 
   // From the beginning of the document, how many frames have painted.
   size_t paint_frame_count_;

@@ -67,9 +67,7 @@ std::unique_ptr<protocol::DOM::RGBA> ParseRGBA(
     return nullptr;
   blink::protocol::ErrorSupport errors;
   auto rgba = protocol::DOM::RGBA::fromValue(parsed.get(), &errors);
-  if (errors.hasErrors())
-    return nullptr;
-  return rgba;
+  return errors.Errors().empty() ? std::move(rgba) : nullptr;
 }
 }  // namespace
 

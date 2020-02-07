@@ -117,9 +117,11 @@ public class UrlBarIntegrationTest {
     public void testCopyHuge() throws Throwable {
         mActivityTestRule.startMainActivityWithURL(HUGE_URL);
         OmniboxTestUtils.toggleUrlBarFocus(getUrlBar(), true);
-        // Allow DiskWrites temporarily in main thread to avoid
-        // violation during copying under emulator environment.
-        try (CloseableOnMainThread ignored = CloseableOnMainThread.StrictMode.allowDiskWrites()) {
+        // Allow all thread policies temporarily in main thread to avoid
+        // DiskWrite and UnBufferedIo violations during copying under
+        // emulator environment.
+        try (CloseableOnMainThread ignored =
+                        CloseableOnMainThread.StrictMode.allowAllThreadPolicies()) {
             Assert.assertEquals(HUGE_URL, copyUrlToClipboard(android.R.id.copy));
         }
     }
@@ -128,10 +130,16 @@ public class UrlBarIntegrationTest {
     @SmallTest
     @Feature({"Omnibox"})
     @RetryOnFailure
-    public void testCutHuge() {
+    public void testCutHuge() throws Throwable {
         mActivityTestRule.startMainActivityWithURL(HUGE_URL);
         OmniboxTestUtils.toggleUrlBarFocus(getUrlBar(), true);
-        Assert.assertEquals(HUGE_URL, copyUrlToClipboard(android.R.id.cut));
+        // Allow all thread policies temporarily in main thread to avoid
+        // DiskWrite and UnBufferedIo violations during copying under
+        // emulator environment.
+        try (CloseableOnMainThread ignored =
+                        CloseableOnMainThread.StrictMode.allowAllThreadPolicies()) {
+            Assert.assertEquals(HUGE_URL, copyUrlToClipboard(android.R.id.cut));
+        }
     }
 
     /**

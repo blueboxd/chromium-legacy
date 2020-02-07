@@ -13,7 +13,6 @@ import org.chromium.base.supplier.Supplier;
 import org.chromium.chrome.browser.ActivityTabProvider;
 import org.chromium.chrome.browser.ActivityTabProvider.ActivityTabTabObserver;
 import org.chromium.chrome.browser.ChromeActivity;
-import org.chromium.chrome.browser.InsetObserverView;
 import org.chromium.chrome.browser.SwipeRefreshHandler;
 import org.chromium.chrome.browser.compositor.CompositorViewHolder;
 import org.chromium.chrome.browser.flags.ChromeFeatureList;
@@ -23,6 +22,7 @@ import org.chromium.chrome.browser.lifecycle.PauseResumeWithNativeObserver;
 import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.browser.tab.TabImpl;
 import org.chromium.chrome.browser.widget.bottomsheet.BottomSheetController;
+import org.chromium.components.browser_ui.widget.InsetObserverView;
 import org.chromium.content_public.browser.WebContents;
 
 /**

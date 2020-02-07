@@ -367,7 +367,9 @@ class COMPOSITOR_EXPORT Compositor : public cc::LayerTreeHostClient,
       uint32_t frame_token,
       const gfx::PresentationFeedback& feedback) override;
   void RecordStartOfFrameMetrics() override {}
-  void RecordEndOfFrameMetrics(base::TimeTicks frame_begin_time) override {}
+  void RecordEndOfFrameMetrics(
+      base::TimeTicks frame_begin_time,
+      cc::ActiveFrameSequenceTrackers trackers) override {}
   std::unique_ptr<cc::BeginMainFrameMetrics> GetBeginMainFrameMetrics()
       override;
 

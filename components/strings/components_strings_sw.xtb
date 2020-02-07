@@ -685,6 +685,7 @@
 <translation id="3987940399970879459">Chini ya MB 1</translation>
 <translation id="3990250421422698716">Kunja kuwa katika muundo wa Z</translation>
 <translation id="40103911065039147">{URL_count,plural, =1{ukurasa 1 wa wavuti ulio karibu}other{kurasa # za wavuti zilizo karibu}}</translation>
+<translation id="4014128326099193693">{COUNT,plural, =1{Hati ya PDF iliyo na ukurasa {COUNT}}other{Hati ya PDF iliyo na kurasa {COUNT}}}</translation>
 <translation id="4030383055268325496">Tendua kuongeza</translation>
 <translation id="4032320456957708163">Kivinjari chako kinadhibitiwa na <ph name="ENROLLMENT_DOMAIN" /></translation>
 <translation id="4058922952496707368">Kitufe "<ph name="SUBKEY" />": <ph name="ERROR" /></translation>
@@ -713,6 +714,7 @@
 <translation id="4142935452406587478">Trei ya kumi</translation>
 <translation id="4148925816941278100">American Express</translation>
 <translation id="4151403195736952345">Tumia chaguomsingi la kimataifa (Gundua)</translation>
+<translation id="4152318981910038897">{COUNT,plural, =1{Ukurasa wa kwanza}other{Ukurasa wa {COUNT}}}</translation>
 <translation id="4159784952369912983">Zambarau</translation>
 <translation id="4165986682804962316">Mipangilio ya tovuti</translation>
 <translation id="4171400957073367226">Sahihi mbaya ya uthibitishaji</translation>
@@ -1389,6 +1391,7 @@
 <translation id="7201591969684833065">Msimamizi wako anaweza kuona:</translation>
 <translation id="7202346780273620635">Letter-Extra</translation>
 <translation id="7210863904660874423"><ph name="HOST_NAME" /> haizingatii viwango vya usalama.</translation>
+<translation id="7210993021468939304">Shughuli ya Linux ndani ya metadata inaweza kusakinisha na kutekeleza programu za Linux ndani ya metadata</translation>
 <translation id="721197778055552897"><ph name="BEGIN_LINK" />Pata maelezo zaidi<ph name="END_LINK" /> kuhusu tatizo hili.</translation>
 <translation id="7219179957768738017">Muunganisho unatumia <ph name="SSL_VERSION" />.</translation>
 <translation id="7220786058474068424">Malipo yanashughulikiwa</translation>
@@ -1550,6 +1553,7 @@
 <translation id="7878562273885520351">Huenda nenosiri lako limetambulika</translation>
 <translation id="7882421473871500483">Kahawia</translation>
 <translation id="7887683347370398519">Angalia CVC yako na ujaribu tena</translation>
+<translation id="7887885240995164102">Washa hali ya picha ndani ya picha</translation>
 <translation id="7888575728750733395">Utaratibu wa kuratibu utekelezaji wa uchapishaji</translation>
 <translation id="7904208859782148177">C3 (Bahasha)</translation>
 <translation id="7932579305932748336">Koleza</translation>

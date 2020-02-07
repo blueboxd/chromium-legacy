@@ -29,7 +29,8 @@ class StubLayerTreeViewDelegate : public LayerTreeViewDelegate {
   void OnDeferCommitsChanged(bool) override {}
   void DidBeginMainFrame() override {}
   void RecordStartOfFrameMetrics() override {}
-  void RecordEndOfFrameMetrics(base::TimeTicks) override {}
+  void RecordEndOfFrameMetrics(base::TimeTicks,
+                               cc::ActiveFrameSequenceTrackers) override {}
   std::unique_ptr<cc::BeginMainFrameMetrics> GetBeginMainFrameMetrics()
       override;
   void BeginUpdateLayers() override {}

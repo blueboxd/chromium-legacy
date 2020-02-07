@@ -26,6 +26,7 @@ import org.chromium.chrome.browser.share.ShareDelegate;
 import org.chromium.chrome.test.ChromeActivityTestRule;
 import org.chromium.chrome.test.ChromeJUnit4ClassRunner;
 import org.chromium.chrome.test.util.ChromeTabUtils;
+import org.chromium.components.browser_ui.util.BrowserControlsVisibilityDelegate;
 import org.chromium.content_public.browser.LoadUrlParams;
 import org.chromium.content_public.browser.test.util.TestThreadUtils;
 import org.chromium.content_public.common.BrowserControlsState;

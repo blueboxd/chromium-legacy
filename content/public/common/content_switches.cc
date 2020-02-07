@@ -396,9 +396,6 @@ const char kEnablePluginPlaceholderTesting[] =
 // also applys to workers.
 const char kEnablePreciseMemoryInfo[] = "enable-precise-memory-info";
 
-// Enables PrintBrowser mode, in which everything renders as though printed.
-const char kEnablePrintBrowser[] = "enable-print-browser";
-
 // Enables RGBA_4444 textures.
 const char kEnableRGBA4444Textures[] = "enable-rgba-4444-textures";
 

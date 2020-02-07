@@ -256,6 +256,7 @@ Bu izni vermek için aşağıdaki "<ph name="BUTTON_NAME" />" düğmesine tıkla
 <translation id="6939719207673461467">Klavyeyi göster/gizle</translation>
 <translation id="6944854424004126054">Pencereyi geri yükle</translation>
 <translation id="6948905685698011662">Chrome Uzaktan Masaüstü artık web'de! <ph name="LINK_BEGIN" />Ücretsiz web uygulamamızı<ph name="LINK_END" /> inceleyin.</translation>
+<translation id="6956835181934226419">Bu izni zaten vermiştim.</translation>
 <translation id="6963936880795878952">Bir kullanıcı geçersiz PIN ile bağlanmaya çalıştığından uzak bilgisayara yapılan bağlantılar geçici olarak engellenmiştir. Lütfen daha sonra tekrar deneyin.</translation>
 <translation id="6965382102122355670">Tamam</translation>
 <translation id="6985691951107243942"><ph name="HOSTNAME" /> adlı ana bilgisayara uzaktan bağlantıları devre dışı bırakmak istediğinizden emin misiniz? Daha sonra fikrinizi değiştirirseniz, bağlantıları yeniden etkinleştirmek için söz konusu bilgisayarı ziyaret etmeniz gerekecektir.</translation>

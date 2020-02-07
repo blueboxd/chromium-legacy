@@ -4472,6 +4472,7 @@ TEST_F(NavigationControllerTest, UnreachableURLGivesErrorPage) {
   params.method = "POST";
   params.post_id = 2;
   params.url_is_unreachable = true;
+  params.embedding_token = base::UnguessableToken::Create();
 
   // Navigate to new page.
   {
@@ -4515,6 +4516,7 @@ TEST_F(NavigationControllerTest, UnreachableURLGivesErrorPage) {
   // Navigate without changing document.
   params.url = GURL("http://foo#foo");
   params.transition = ui::PAGE_TRANSITION_LINK;
+  params.embedding_token = base::nullopt;
   {
     LoadCommittedDetailsObserver observer(contents());
     main_test_rfh()->SendNavigateWithParams(&params, true);

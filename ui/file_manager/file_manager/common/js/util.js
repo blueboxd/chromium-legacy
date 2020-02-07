@@ -1384,6 +1384,14 @@ util.isFilesNg = () => {
 };
 
 /**
+ * Returns true if the unified media view is enabled.
+ * @return {boolean}
+ */
+util.isUnifiedMediaViewEnabled = () => {
+  return loadTimeData.getBoolean('UNIFIED_MEDIA_VIEW_ENABLED');
+};
+
+/**
  * Retrieves all entries inside the given |rootEntry|.
  * @param {!DirectoryEntry} rootEntry
  * @param {function(!Array<!Entry>)} entriesCallback Called when some chunk of

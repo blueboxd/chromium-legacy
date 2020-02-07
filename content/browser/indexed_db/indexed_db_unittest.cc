@@ -19,7 +19,6 @@
 #include "components/services/storage/public/mojom/indexed_db_control.mojom-test-utils.h"
 #include "content/browser/indexed_db/indexed_db_connection.h"
 #include "content/browser/indexed_db/indexed_db_context_impl.h"
-#include "content/browser/indexed_db/indexed_db_execution_context_connection_tracker.h"
 #include "content/browser/indexed_db/indexed_db_factory_impl.h"
 #include "content/browser/indexed_db/indexed_db_leveldb_coding.h"
 #include "content/browser/indexed_db/indexed_db_leveldb_env.h"
@@ -265,8 +264,6 @@ TEST_F(IndexedDBTest, ForceCloseOpenDatabasesOnDelete) {
   factory->Open(base::ASCIIToUTF16("opendb"),
                 std::make_unique<IndexedDBPendingConnection>(
                     open_callbacks, open_db_callbacks,
-                    IndexedDBExecutionContextConnectionTracker::Handle::
-                        CreateForTesting(),
                     host_transaction_id, version,
                     std::move(create_transaction_callback1)),
                 kTestOrigin, context()->data_path());
@@ -277,8 +274,6 @@ TEST_F(IndexedDBTest, ForceCloseOpenDatabasesOnDelete) {
   factory->Open(base::ASCIIToUTF16("closeddb"),
                 std::make_unique<IndexedDBPendingConnection>(
                     closed_callbacks, closed_db_callbacks,
-                    IndexedDBExecutionContextConnectionTracker::Handle::
-                        CreateForTesting(),
                     host_transaction_id, version,
                     std::move(create_transaction_callback2)),
                 kTestOrigin, context()->data_path());
@@ -340,7 +335,6 @@ TEST_F(IndexedDBTest, ForceCloseOpenDatabasesOnCommitFailure) {
       base::BindOnce(&CreateAndBindTransactionPlaceholder);
   auto connection = std::make_unique<IndexedDBPendingConnection>(
       callbacks, db_callbacks,
-      IndexedDBExecutionContextConnectionTracker::Handle::CreateForTesting(),
       transaction_id, IndexedDBDatabaseMetadata::DEFAULT_VERSION,
       std::move(create_transaction_callback1));
   factory->Open(base::ASCIIToUTF16("db"), std::move(connection),

@@ -68,7 +68,6 @@
 <translation id="1430915738399379752">Udskriv</translation>
 <translation id="1446450296470737166">Tillad fuld kontrol over MIDI-enheder</translation>
 <translation id="1450753235335490080">Delingen af <ph name="CONTENT_TYPE" /> mislykkedes</translation>
-<translation id="145097072038377568">Deaktiveret i indstillingerne for Android</translation>
 <translation id="1477626028522505441">Download af <ph name="FILE_NAME" /> mislykkedes på grund af serverproblemer.</translation>
 <translation id="1506061864768559482">Søgemaskine</translation>
 <translation id="1513352483775369820">Bogmærker og webhistorik</translation>
@@ -280,6 +279,7 @@
 <translation id="3123473560110926937">Blokeret på visse websites</translation>
 <translation id="3123734510202723619">Meddelelser</translation>
 <translation id="3137521801621304719">Slå inkognitotilstand fra</translation>
+<translation id="3140134512074889489">Aktivér scanning af QR-koder på dit kamera</translation>
 <translation id="3143515551205905069">Annuller synkronisering</translation>
 <translation id="3157842584138209013">Se, hvor meget data du har sparet via knappen Flere valgmuligheder</translation>
 <translation id="3166827708714933426">Genveje på faner og i vinduer</translation>
@@ -450,6 +450,9 @@
 <translation id="4521489764227272523">De valgte data er fjernet fra Chrome og synkroniserede enheder.
 
 Din Google-konto kan have andre former for browserhistorik, f.eks. søgninger og aktivitet fra andre Google-tjenester, på <ph name="BEGIN_LINK" />myactivity.google.com<ph name="END_LINK" />.</translation>
+<translation id="4527374721149092498">Læs om emner på websites uden at forlade siden. Funktionen Tryk for at søge sender et ord og ordets kontekst til Google Søgning og giver dig definitioner, billeder, søgeresultater og andre oplysninger.
+
+Tryk på et ord for at oprette en søgning med det. Du kan tilpasse din søgeterm ved at trykke længe på den for at foretage dit valg. Du kan justere din søgning ved at skubbe for at åbne panelet, trykke på udvidelsesikonet for at oprette en ny fane og derefter trykke på søgefeltet.</translation>
 <translation id="4532845899244822526">Vælg mappe</translation>
 <translation id="4538018662093857852">Aktivér Lite-tilstand</translation>
 <translation id="4550003330909367850">Indstil en skærmlås på denne enhed for at se eller kopiere din adgangkode her.</translation>
@@ -691,6 +694,9 @@ Hvis du vil ændre denne indstilling, skal du <ph name="BEGIN_LINK" />nulstille 
 <translation id="6232535412751077445">Aktivering af "Do Not Track" betyder, at en anmodning medtages i din browsertrafik. Effekten afhænger af, om et website reagerer på anmodningen, og hvordan anmodningen fortolkes.
 
 Nogle websites kan f.eks. reagere på denne anmodning ved at vise dig annoncer, som ikke er baseret på andre websites, du har besøgt. Mange websites vil fortsat indsamle og bruge browserdata til f.eks. at forbedre sikkerheden, til at levere indhold, annoncer og anbefalinger og til at generere rapporteringsstatistik.</translation>
+<translation id="6238003486329291387">Læs om emner på websites uden at forlade siden. Funktionen Tryk for at søge sender et ord og ordets kontekst til Google Søgning og giver dig definitioner, billeder, søgeresultater og andre oplysninger.
+
+Tryk længe på et ord for at oprette en søgning med det. Du kan tilpasse søgningen ved at justere dine valg. Du kan også skubbe for at åbne panelet, trykke på udvidelsesikonet for at oprette en ny fane og derefter trykke på søgefeltet.</translation>
 <translation id="624789221780392884">Opdateringen er klar</translation>
 <translation id="6255999984061454636">Indholdsforslag</translation>
 <translation id="6270391203985052864">Websites kan spørge dig, om de må sende dig notifikationer</translation>

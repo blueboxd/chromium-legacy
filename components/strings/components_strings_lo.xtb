@@ -689,6 +689,7 @@
 <translation id="3987940399970879459">ໜ້ອຍກວ່າ 1 MB</translation>
 <translation id="3990250421422698716">ການຊົດເຊີຍພື້ນຜິວທີ່ບໍ່ສະໝໍ່າສະເໝີ</translation>
 <translation id="40103911065039147">{URL_count,plural, =1{1 ໜ້າເວັບທີ່ຢູ່ໃກ້ຄຽງ}other{# ໜ້າເວັບທີ່ຢູ່ໃກ້ຄຽງ}}</translation>
+<translation id="4014128326099193693">{COUNT,plural, =1{ເອກະສານ PDF ທີ່ປະກອບມີ {COUNT} ໜ້າ}other{ເອກະສານ PDF ທີ່ປະກອບມີ {COUNT} ໜ້າ}}</translation>
 <translation id="4030383055268325496">ປ່ຽນ​ກັບ​ຄືນຄໍາສັ່ງເພີ່ມ</translation>
 <translation id="4032320456957708163">ໂປຣແກຣມທ່ອງເວັບຂອງທ່ານຖືກຈັດໂດຍ <ph name="ENROLLMENT_DOMAIN" /></translation>
 <translation id="4058922952496707368">ປຸ່ມ "<ph name="SUBKEY" />": <ph name="ERROR" /></translation>
@@ -717,6 +718,7 @@
 <translation id="4142935452406587478">ຖາດ 10</translation>
 <translation id="4148925816941278100">ບັດ American Express</translation>
 <translation id="4151403195736952345">ໃຊ້​ຄ່າ​ມາດ​ຕະ​ຖານ​ທົ່ວ​ໄປ (ກ​ວດ​ຫາ)</translation>
+<translation id="4152318981910038897">{COUNT,plural, =1{ໜ້າ 1}other{ໜ້າ {COUNT}}}</translation>
 <translation id="4159784952369912983">ສີມ່ວງ</translation>
 <translation id="4165986682804962316">ການຕັ້ງຄ່າເວັບໄຊທ໌</translation>
 <translation id="4171400957073367226">ລາຍເຊັນການຢື​ນ​ຢັນບໍ່​ດີ</translation>
@@ -1394,6 +1396,7 @@
 <translation id="7201591969684833065">ຜູ້ເບິ່ງແຍງລະບົບຂອງທ່ານສາມາດເຫັນ:</translation>
 <translation id="7202346780273620635">Letter-Extra</translation>
 <translation id="7210863904660874423"><ph name="HOST_NAME" /> ບໍ່ປະຕິບັດຕາມມາດຕະຖານຄວາມປອດໄພ.</translation>
+<translation id="7210993021468939304">ການເຄື່ອນໄຫວ Linux ພາຍໃນກ່ອງບັນຈຸ ແລະ ສາມາດຕິດຕັ້ງ ແລະ ເປີດໃຊ້ແອັບ Linux ພາຍໃນກ່ອງບັນຈຸໄດ້</translation>
 <translation id="721197778055552897"><ph name="BEGIN_LINK" />ຮຽນ​ຮູ້​ເພີ່ມ​ເຕີມ<ph name="END_LINK" /> ກ່ຽວ​ກັບ​ບັນ​ຫາ​ນີ້​.</translation>
 <translation id="7219179957768738017">ການເຊື່ອມຕໍ່ໃຊ້ <ph name="SSL_VERSION" />.</translation>
 <translation id="7220786058474068424">ກຳລັງດຳເນີນການ</translation>
@@ -1557,6 +1560,7 @@
 <translation id="7878562273885520351">ອາດຈະມີການລັກໃຊ້ລະຫັດຜ່ານຂອງທ່ານ</translation>
 <translation id="7882421473871500483">ສີນ້ຳຕານ</translation>
 <translation id="7887683347370398519">ກວດ​ເບິ່ງ CVC ຂອງ​ທ່ານ ແລະ​ລອງ​ໃໝ່​ອີກ</translation>
+<translation id="7887885240995164102">ເຂົ້າໂໝດສະແດງຜົນຊ້ອນກັນ</translation>
 <translation id="7888575728750733395">ກົນໄກປະສານການສະແດງພາບການພິມ</translation>
 <translation id="7904208859782148177">C3 (ຊອງຈົດໝາຍ)</translation>
 <translation id="7932579305932748336">ເຄືອບ</translation>

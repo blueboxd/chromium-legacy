@@ -40,15 +40,6 @@ namespace safe_browsing {
 
 namespace {
 
-constexpr base::TimeDelta kInitialUIDelay =
-    base::TimeDelta::FromMilliseconds(200);
-
-constexpr base::TimeDelta kMinimumPendingDialogTime =
-    base::TimeDelta::FromSeconds(2);
-
-constexpr base::TimeDelta kSuccessDialogTimeout =
-    base::TimeDelta::FromSeconds(1);
-
 constexpr base::TimeDelta kResizeAnimationDuration =
     base::TimeDelta::FromMilliseconds(100);
 
@@ -58,6 +49,12 @@ constexpr int kLineHeight = 20;
 constexpr gfx::Insets kSideImageInsets = gfx::Insets(8, 8, 8, 8);
 constexpr gfx::Insets kMessageAndIconRowInsets = gfx::Insets(0, 32, 0, 48);
 constexpr int kSideIconBetweenChildSpacing = 16;
+
+// These time values are non-const in order to be overridden in test so they
+// complete faster.
+base::TimeDelta initial_ui_delay_ = base::TimeDelta::FromMilliseconds(200);
+base::TimeDelta minimum_pending_dialog_time_ = base::TimeDelta::FromSeconds(2);
+base::TimeDelta success_dialog_timeout_ = base::TimeDelta::FromSeconds(1);
 
 // A simple background class to show a colored circle behind the side icon once
 // the scanning is done.
@@ -81,6 +78,8 @@ SkColor GetBackgroundColor(const views::Widget* widget) {
   return widget->GetNativeTheme()->GetSystemColor(
       ui::NativeTheme::kColorId_DialogBackground);
 }
+
+DeepScanningDialogViews::TestObserver* observer_for_testing = nullptr;
 
 }  // namespace
 
@@ -156,6 +155,21 @@ class DeepScanningMessageView : public DeepScanningBaseView,
   void OnThemeChanged() override { Update(); }
 };
 
+// static
+base::TimeDelta DeepScanningDialogViews::GetInitialUIDelay() {
+  return initial_ui_delay_;
+}
+
+// static
+base::TimeDelta DeepScanningDialogViews::GetMinimumPendingDialogTime() {
+  return minimum_pending_dialog_time_;
+}
+
+// static
+base::TimeDelta DeepScanningDialogViews::GetSuccessDialogTimeout() {
+  return success_dialog_timeout_;
+}
+
 DeepScanningDialogViews::DeepScanningDialogViews(
     std::unique_ptr<DeepScanningDialogDelegate> delegate,
     content::WebContents* web_contents,
@@ -169,7 +183,10 @@ DeepScanningDialogViews::DeepScanningDialogViews(
   base::PostDelayedTask(FROM_HERE, {content::BrowserThread::UI},
                         base::BindOnce(&DeepScanningDialogViews::Show,
                                        weak_ptr_factory_.GetWeakPtr()),
-                        kInitialUIDelay);
+                        GetInitialUIDelay());
+
+  if (observer_for_testing)
+    observer_for_testing->ConstructorCalled(this);
 }
 
 base::string16 DeepScanningDialogViews::GetWindowTitle() const {
@@ -214,17 +231,20 @@ void DeepScanningDialogViews::ShowResult(bool success) {
   // Update the pending dialog only after it has been shown for a minimum amount
   // of time.
   base::TimeDelta time_shown = base::TimeTicks::Now() - first_shown_timestamp_;
-  if (time_shown >= kMinimumPendingDialogTime) {
+  if (time_shown >= GetMinimumPendingDialogTime()) {
     UpdateDialog();
   } else {
     base::PostDelayedTask(FROM_HERE, {content::BrowserThread::UI},
                           base::BindOnce(&DeepScanningDialogViews::UpdateDialog,
                                          weak_ptr_factory_.GetWeakPtr()),
-                          kMinimumPendingDialogTime - time_shown);
+                          GetMinimumPendingDialogTime() - time_shown);
   }
 }
 
-DeepScanningDialogViews::~DeepScanningDialogViews() = default;
+DeepScanningDialogViews::~DeepScanningDialogViews() {
+  if (observer_for_testing)
+    observer_for_testing->DestructorCalled(this);
+}
 
 const views::Widget* DeepScanningDialogViews::GetWidgetImpl() const {
   return contents_view_->GetWidget();
@@ -265,8 +285,16 @@ void DeepScanningDialogViews::UpdateDialog() {
     base::PostDelayedTask(FROM_HERE, {content::BrowserThread::UI},
                           base::BindOnce(&DialogDelegate::CancelDialog,
                                          weak_ptr_factory_.GetWeakPtr()),
-                          kSuccessDialogTimeout);
+                          GetSuccessDialogTimeout());
   }
+
+  if (observer_for_testing)
+    observer_for_testing->DialogUpdated(this, is_success());
+
+  // Cancel the dialog as it is updated in tests in the failure dialog case.
+  // This is necessary to terminate tests that end when the dialog is closed.
+  if (observer_for_testing && is_failure())
+    CancelDialog();
 }
 
 void DeepScanningDialogViews::Resize(int height_to_add) {
@@ -408,6 +436,14 @@ void DeepScanningDialogViews::Show() {
   layout->AddPaddingRow(views::GridLayout::kFixedSize, 10);
 
   constrained_window::ShowWebModalDialogViews(this, web_contents_);
+
+  if (observer_for_testing)
+    observer_for_testing->ViewsFirstShown(this, first_shown_timestamp_);
+
+  // Cancel the dialog as it is shown in tests if the failure dialog is shown
+  // immediately.
+  if (observer_for_testing && is_failure())
+    CancelDialog();
 }
 
 std::unique_ptr<views::View> DeepScanningDialogViews::CreateSideIcon() {
@@ -525,6 +561,29 @@ SkColor DeepScanningDialogViews::GetSideImageLogoColor() const {
       // logo should have the same color as the background.
       return GetBackgroundColor(widget);
   }
+}
+
+// static
+void DeepScanningDialogViews::SetInitialUIDelayForTesting(
+    base::TimeDelta delta) {
+  initial_ui_delay_ = delta;
+}
+
+// static
+void DeepScanningDialogViews::SetMinimumPendingDialogTimeForTesting(
+    base::TimeDelta delta) {
+  minimum_pending_dialog_time_ = delta;
+}
+
+// static
+void DeepScanningDialogViews::SetSuccessDialogTimeoutForTesting(
+    base::TimeDelta delta) {
+  success_dialog_timeout_ = delta;
+}
+
+// static
+void DeepScanningDialogViews::SetObserverForTesting(TestObserver* observer) {
+  observer_for_testing = observer;
 }
 
 }  // namespace safe_browsing

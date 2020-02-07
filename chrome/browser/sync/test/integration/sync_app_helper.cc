@@ -15,6 +15,7 @@
 #include "chrome/browser/sync/test/integration/extensions_helper.h"
 #include "chrome/browser/sync/test/integration/sync_datatype_helper.h"
 #include "chrome/browser/sync/test/integration/sync_extension_helper.h"
+#include "chrome/browser/sync/test/integration/sync_test.h"
 #include "chrome/common/extensions/extension_constants.h"
 #include "chrome/common/extensions/manifest_handlers/app_icon_color_info.h"
 #include "chrome/common/extensions/manifest_handlers/app_launch_info.h"

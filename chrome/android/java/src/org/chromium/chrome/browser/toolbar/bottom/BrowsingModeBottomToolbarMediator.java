@@ -19,7 +19,7 @@ import org.chromium.chrome.browser.ThemeColorProvider;
 import org.chromium.chrome.browser.ThemeColorProvider.ThemeColorObserver;
 import org.chromium.chrome.browser.compositor.layouts.OverviewModeBehavior;
 import org.chromium.chrome.browser.flags.ChromeFeatureList;
-import org.chromium.chrome.browser.widget.FeatureHighlightProvider;
+import org.chromium.components.browser_ui.widget.FeatureHighlightProvider;
 import org.chromium.components.feature_engagement.FeatureConstants;
 import org.chromium.components.feature_engagement.Tracker;
 

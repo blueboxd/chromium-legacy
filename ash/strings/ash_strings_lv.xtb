@@ -118,6 +118,7 @@
 <translation id="2413728805700750528"><ph name="DISPLAY_NAME" /> ir pārvaldīta sesija, kas tiek pārvaldīta domēnā <ph name="DOMAIN" /></translation>
 <translation id="2427507373259914951">Noklikšķināt ar peles kreiso pogu</translation>
 <translation id="2429753432712299108">Bluetooth ierīce “<ph name="DEVICE_NAME" />” vēlas saņemt atļauju, lai izveidotu savienojumu pārī. Pirms piekrītat, lūdzu, pārliecinieties, vai ierīcē tiek parādīta šī ieejas atslēga: <ph name="PASSKEY" />.</translation>
+<translation id="2473177541599297363">Apstipriniet izšķirtspēju</translation>
 <translation id="2482878487686419369">Paziņojumi</translation>
 <translation id="2484513351006226581">Nospiediet īsinājumtaustiņu <ph name="KEYBOARD_SHORTCUT" />, lai pārslēgtu tastatūras izkārtojumu.</translation>
 <translation id="2501920221385095727">Taustiņu ķēde</translation>
@@ -138,6 +139,7 @@
 <translation id="2727977024730340865">Pievienots lādētājs ar mazu strāvas padevi. Akumulatora uzlāde var nebūt uzticama.</translation>
 <translation id="2792498699870441125">Alt+Meklēt</translation>
 <translation id="2819276065543622893">Jūs tagad tiksiet izrakstīts.</translation>
+<translation id="2825224105325558319">Displejā <ph name="DISPLAY_NAME" /> netiek atbalstīta izšķirtspēja <ph name="SPECIFIED_RESOLUTION" />. Izšķirtspēja tika nomainīta uz: <ph name="FALLBACK_RESOLUTION" />.</translation>
 <translation id="2825619548187458965">Plaukts</translation>
 <translation id="2844169650293029770">USB-C ierīce (pieslēgvieta kreisajā pusē priekšā)</translation>
 <translation id="2865888419503095837">Tīkla informācija</translation>
@@ -157,6 +159,12 @@
 <translation id="3009178788565917040">Izvade</translation>
 <translation id="3051128274746680507">Drīzumā tiks noņems jūsu uzraudzītais lietotāja profils. Pierakstieties, lai uzzinātu vairāk.</translation>
 <translation id="3055162170959710888">Šodien jūs izmantojāt šo ierīci: <ph name="USED_TIME" /></translation>
+<translation id="3076778413190775903">Statusa josla, laiks: <ph name="TIME" />,
+        <ph name="BATTERY" />
+        <ph name="NETWORK" />,
+        <ph name="NOTIFICATION" />,
+        <ph name="IME" />
+        <ph name="LOCALE" /></translation>
 <translation id="3077734595579995578">shift</translation>
 <translation id="3081696990447829002">Izvērst izvēlni</translation>
 <translation id="3087734570205094154">Apakšā</translation>
@@ -167,6 +175,7 @@
 <translation id="3151786313568798007">Orientācija</translation>
 <translation id="3153444934357957346">Vairākkārtējas pierakstīšanās laikā var izmantot ne vairāk kā <ph name="MULTI_PROFILE_USER_LIMIT" /> kontus.</translation>
 <translation id="3154351730702813399">Ierīces administrators var uzraudzīt jūsu pārlūkošanas darbības.</translation>
+<translation id="3181441307743005334">Restartēšana var ilgt kādu brīdi</translation>
 <translation id="3202010236269062730">{NUM_DEVICES,plural, =1{Savienots ar ierīci}zero{Savienots ar # ierīcēm}one{Savienots ar # ierīci}other{Savienots ar # ierīcēm}}</translation>
 <translation id="3217205077783620295">Skaņa ir ieslēgta. Pārslēdzot tiks izslēgta skaņa.</translation>
 <translation id="3226991577105957773">vēl <ph name="COUNT" /></translation>
@@ -316,6 +325,7 @@
 <translation id="5331975486040154427">USB-C ierīce (pieslēgvieta kreisajā pusē aizmugurē)</translation>
 <translation id="5379115545237091094">Pārāk daudz mēģinājumu</translation>
 <translation id="5397578532367286026">Šī lietotāja datu lietojumu un vēsturi var pārvaldīt pārzinis (<ph name="MANAGER_EMAIL" />) vietnē chrome.com.</translation>
+<translation id="5400461572260843123">Ātrie iestatījumi: vienlaikus nospiediet meklēšanas taustiņu un kreiso bulttaustiņu, lai atvērtu paziņojumu centru.</translation>
 <translation id="5430931332414098647">Tūlītēja piesaiste</translation>
 <translation id="5431825016875453137">OpenVPN/L2TP</translation>
 <translation id="544691375626129091">Visi pieejamie lietotāji jau ir pievienoti šai sesijai.</translation>
@@ -397,6 +407,7 @@
 <translation id="6490471652906364588">USB-C ierīce (pieslēgvieta pa labi)</translation>
 <translation id="649452524636452238">Viedkartes PIN</translation>
 <translation id="6501401484702599040">Notiek ekrāna apraide šādā vietā: <ph name="RECEIVER_NAME" /></translation>
+<translation id="652139407789908527">Šīs atjaunināšanas laikā ekrāns būs tukšs ilgāk nekā parasti (līdz minūtei). Kamēr notiek atjaunināšana, lūdzu, nespiediet barošanas pogu.</translation>
 <translation id="6521655319214113338">Rokraksta ievade</translation>
 <translation id="6528179044667508675">Netraucēt</translation>
 <translation id="6537270692134705506">Uzņemt ekrāna attēlu</translation>
@@ -542,6 +553,7 @@
 <translation id="847056008324733326">Displeja mēroga iestatījumi</translation>
 <translation id="8473301994082929012"><ph name="ORGANIZATION_NAME" /> ir <ph name="FEATURE_STATE" /> <ph name="FEATURE_NAME" />.</translation>
 <translation id="8477270416194247200">Lai atceltu, nospiediet alternēšanas taustiņu + meklēšanas vai pārslēgšanas taustiņu.</translation>
+<translation id="8492573885090281069">Displejā <ph name="DISPLAY_NAME" /> netiek atbalstīta izšķirtspēja <ph name="SPECIFIED_RESOLUTION" />. Izšķirtspēja tika nomainīta uz: <ph name="FALLBACK_RESOLUTION" />. Lai saglabātu izmaiņas, noklikšķiniet uz Apstiprināt. Iepriekšējie iestatījumi tiks atjaunoti pēc: <ph name="TIMEOUT_SECONDS" />.</translation>
 <translation id="8513108775083588393">Automātiska pagriešana</translation>
 <translation id="8517041960877371778"><ph name="DEVICE_TYPE" /> ierīce, iespējams, netiks uzlādēta, kamēr tā būs ieslēgta.</translation>
 <translation id="8563862697512465947">Paziņojumu iestatījumi</translation>
@@ -597,6 +609,7 @@
 <translation id="9183456764293710005">Pilnekrāna lupa</translation>
 <translation id="9193626018745640770">Apraide nezināmā uztvērējā</translation>
 <translation id="9194617393863864469">Pierakstīties kā citam lietotājam...</translation>
+<translation id="9198992156681343238">Displeja <ph name="DISPLAY_NAME" /> izšķirtspēja ir nomainīta uz: <ph name="RESOLUTION" />. Lai saglabātu izmaiņas, noklikšķiniet uz Apstiprināt. Iepriekšējie iestatījumi tiks atjaunoti pēc: <ph name="TIMEOUT_SECONDS" />.</translation>
 <translation id="9201374708878217446"><ph name="CONNECTION_STATUS" />, pārvalda jūsu administrators</translation>
 <translation id="9210037371811586452">Notiek iziešana no vienotās darbvirsmas režīma</translation>
 <translation id="9211681782751733685">Līdz pilnīgai akumulatora uzlādei atlikušais laiks: <ph name="TIME_REMAINING" />.</translation>

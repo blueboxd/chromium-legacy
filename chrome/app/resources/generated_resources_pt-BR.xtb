@@ -3561,6 +3561,7 @@ Não exponha nenhuma informação confidencial.</translation>
 <translation id="5975792506968920132">Percentual de carga da bateria</translation>
 <translation id="5976160379964388480">Outros</translation>
 <translation id="5978277834170881274">&amp;Usar a verificação ortográfica básica</translation>
+<translation id="5979084224081478209">Verificar senhas</translation>
 <translation id="5979421442488174909">&amp;Traduzir para o <ph name="LANGUAGE" /></translation>
 <translation id="5979469435153841984">Para adicionar páginas aos favoritos, clique na estrela na barra de endereço</translation>
 <translation id="5984222099446776634">Visitados recentemente</translation>
@@ -4162,7 +4163,6 @@ permanentemente excluídos assim que esse usuário for removido. Os websites vis
 <translation id="6840155290835956714">Perguntar antes de enviar</translation>
 <translation id="6840184929775541289">Não é uma Autoridade de certificação</translation>
 <translation id="6841186874966388268">Erros</translation>
-<translation id="6843267103192918276">Faça login para que favoritos, histórico, senhas e outras configurações fiquem disponíveis em todos os seus dispositivos. Sua conta também será conectada automaticamente aos serviços do Google. <ph name="LINK_BEGIN" />Saiba mais<ph name="LINK_END" /></translation>
 <translation id="6843423766595476978">Ok Google configurado</translation>
 <translation id="6845038076637626672">Abrir maximizado</translation>
 <translation id="6845325883481699275">Ajudar a melhorar a segurança do Chrome</translation>

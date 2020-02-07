@@ -3561,6 +3561,7 @@ Ar norite paleisti „<ph name="CONTROL_PANEL_APPLET_NAME" />“?</translation>
 <translation id="5975792506968920132">Akumuliatoriaus įkrovimo procentas</translation>
 <translation id="5976160379964388480">Kita</translation>
 <translation id="5978277834170881274">&amp;Naudoti pagrindinį rašybos tikrinimą</translation>
+<translation id="5979084224081478209">Patikrinti slaptažodžius</translation>
 <translation id="5979421442488174909">Versti į <ph name="LANGUAGE" /></translation>
 <translation id="5979469435153841984">Kad pažymėtumėte puslapius, spustelėkite žvaigždutę adreso juostoje</translation>
 <translation id="5984222099446776634">Neseniai lankyta</translation>
@@ -4161,7 +4162,6 @@ Ar norite paleisti „<ph name="CONTROL_PANEL_APPLET_NAME" />“?</translation>
 <translation id="6840155290835956714">Klausti prieš siunčiant</translation>
 <translation id="6840184929775541289">Nėra sertifikavimo institucija</translation>
 <translation id="6841186874966388268">Klaidos</translation>
-<translation id="6843267103192918276">Prisijunkite, kad žymės, istorija, slaptažodžiai ir kiti nustatymai būtų pateikti visuose įrenginiuose. Taip pat būsite automatiškai prijungti prie „Google“ paslaugų. <ph name="LINK_BEGIN" />Sužinokite daugiau<ph name="LINK_END" /></translation>
 <translation id="6843423766595476978">„Ok Google“ visiškai nustatyta</translation>
 <translation id="6845038076637626672">Atidaryti padidintą</translation>
 <translation id="6845325883481699275">Padėkite tobulinti „Chrome“ saugą</translation>

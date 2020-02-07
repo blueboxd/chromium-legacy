@@ -224,26 +224,6 @@ TEST_F(HeapCompactTest, CompactDeques) {
     EXPECT_EQ(static_cast<int>(7 - i), deque->at(i)->Value());
 }
 
-TEST_F(HeapCompactTest, CompactDequeVectors) {
-  Persistent<HeapDeque<IntVector>> deque =
-      MakeGarbageCollected<HeapDeque<IntVector>>();
-  for (int i = 0; i < 8; ++i) {
-    IntWrapper* value = IntWrapper::Create(i, VectorsAreCompacted);
-    IntVector vector = IntVector(8, value);
-    deque->push_front(vector);
-  }
-  EXPECT_EQ(8u, deque->size());
-
-  for (wtf_size_t i = 0; i < deque->size(); ++i)
-    EXPECT_EQ(static_cast<int>(7 - i), deque->at(i).at(i)->Value());
-
-  PerformHeapCompaction();
-  EXPECT_TRUE(IntWrapper::did_verify_at_least_once);
-
-  for (wtf_size_t i = 0; i < deque->size(); ++i)
-    EXPECT_EQ(static_cast<int>(7 - i), deque->at(i).at(i)->Value());
-}
-
 TEST_F(HeapCompactTest, CompactLinkedHashSet) {
   using OrderedHashSet = HeapLinkedHashSet<Member<IntWrapper>>;
   Persistent<OrderedHashSet> set = MakeGarbageCollected<OrderedHashSet>();

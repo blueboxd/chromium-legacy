@@ -6,7 +6,9 @@
 
 #include "base/bind.h"
 #include "base/logging.h"
+#include "base/metrics/histogram_functions.h"
 #include "base/metrics/histogram_macros.h"
+#include "base/time/time.h"
 #include "base/util/memory_pressure/system_memory_pressure_evaluator.h"
 
 namespace util {
@@ -76,6 +78,54 @@ void MultiSourceMemoryPressureMonitor::SetDispatchCallback(
 void MultiSourceMemoryPressureMonitor::OnMemoryPressureLevelChanged(
     base::MemoryPressureListener::MemoryPressureLevel level) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  DCHECK_NE(current_pressure_level_, level);
+
+  // Records the duration of the latest pressure session, there are 4
+  // transitions of interest:
+  //   - Moderate -> None
+  //   - Moderate -> Critical
+  //   - Critical -> Moderate
+  //   - Critical -> None
+
+  base::TimeTicks now = base::TimeTicks::Now();
+
+  if (current_pressure_level_ !=
+      MemoryPressureLevel::MEMORY_PRESSURE_LEVEL_NONE) {
+    DCHECK(!last_pressure_change_timestamp_.is_null());
+    std::string histogram_name = "Memory.PressureWindowDuration.";
+    switch (current_pressure_level_) {
+      // From:
+      case MemoryPressureLevel::MEMORY_PRESSURE_LEVEL_MODERATE: {
+        // To:
+        if (level == MemoryPressureLevel::MEMORY_PRESSURE_LEVEL_NONE) {
+          histogram_name += "ModerateToNone";
+        } else {  // MemoryPressureLevel::MEMORY_PRESSURE_LEVEL_CRITICAL
+          histogram_name += "ModerateToCritical";
+        }
+        break;
+      }
+      // From:
+      case MemoryPressureLevel::MEMORY_PRESSURE_LEVEL_CRITICAL: {
+        // To:
+        if (level == MemoryPressureLevel::MEMORY_PRESSURE_LEVEL_NONE) {
+          histogram_name += "CriticalToNone";
+        } else {  // MemoryPressureLevel::MEMORY_PRESSURE_LEVEL_MODERATE
+          histogram_name += "CriticalToModerate";
+        }
+        break;
+      }
+      case MemoryPressureLevel::MEMORY_PRESSURE_LEVEL_NONE:
+      default:
+        break;
+    }
+
+    base::UmaHistogramCustomTimes(
+        histogram_name, now - last_pressure_change_timestamp_,
+        base::TimeDelta::FromSeconds(1), base::TimeDelta::FromMinutes(10), 50);
+  }
+
+  last_pressure_change_timestamp_ = now;
+
   current_pressure_level_ = level;
 }
 

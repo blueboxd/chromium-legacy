@@ -25,6 +25,10 @@ struct TransformNode;
 enum class RenderSurfaceReason : uint8_t;
 }
 
+namespace gfx {
+class ScrollOffset;
+}
+
 namespace blink {
 
 class ClipPaintPropertyNode;
@@ -125,20 +129,20 @@ class PropertyTreeManager {
   void Finalize();
 
   static bool DirectlyUpdateCompositedOpacityValue(
-      cc::PropertyTrees*,
       cc::LayerTreeHost&,
       const EffectPaintPropertyNode&);
   static bool DirectlyUpdateScrollOffsetTransform(
-      cc::PropertyTrees*,
       cc::LayerTreeHost&,
       const TransformPaintPropertyNode&);
-  static bool DirectlyUpdateTransform(cc::PropertyTrees*,
-                                      cc::LayerTreeHost&,
+  static bool DirectlyUpdateTransform(cc::LayerTreeHost&,
                                       const TransformPaintPropertyNode&);
   static bool DirectlyUpdatePageScaleTransform(
-      cc::PropertyTrees*,
       cc::LayerTreeHost&,
       const TransformPaintPropertyNode&);
+
+  static bool DirectlySetScrollOffset(cc::LayerTreeHost&,
+                                      CompositorElementId,
+                                      const gfx::ScrollOffset&);
 
  private:
   void SetupRootTransformNode();

@@ -68,7 +68,6 @@
 <translation id="1430915738399379752">Nyomtatás</translation>
 <translation id="1446450296470737166">MIDI-eszközök teljes vezérlése</translation>
 <translation id="1450753235335490080">Nem sikerült a(z) <ph name="CONTENT_TYPE" /> megosztása</translation>
-<translation id="145097072038377568">Kikapcsolva az Android beállításaiban</translation>
 <translation id="1477626028522505441">A következő fájl letöltése szerverproblémák miatt nem sikerült: <ph name="FILE_NAME" />.</translation>
 <translation id="1506061864768559482">Keresőmotor</translation>
 <translation id="1513352483775369820">Könyvjelzők és webes előzmények</translation>
@@ -280,6 +279,7 @@
 <translation id="3123473560110926937">Letiltva egyes webhelyeken</translation>
 <translation id="3123734510202723619">Hirdetmények</translation>
 <translation id="3137521801621304719">Kilépés inkognitómódból</translation>
+<translation id="3140134512074889489">A QR-kód beolvasásához adjon engedélyt a kamera használatára</translation>
 <translation id="3143515551205905069">Szinkronizálás megszakítása</translation>
 <translation id="3157842584138209013">A További lehetőségek gombra kattintva tekintheti meg, hogy mekkora a megtakarított adatmennyiség</translation>
 <translation id="3166827708714933426">Lapokkal és ablakokkal kapcsolatos billentyűparancsok</translation>
@@ -450,6 +450,9 @@
 <translation id="4521489764227272523">A kiválasztott adatok el lettek távolítva a Chrome-ból és a szinkronizált eszközökről.
 
 Előfordulhat, hogy Google-fiókjában (a <ph name="BEGIN_LINK" />myactivity.google.com<ph name="END_LINK" /> címen) még szerepelnek a böngészési előzmények egyéb formái, így például a keresések és egyéb tevékenységek más Google-szolgáltatásokból.</translation>
+<translation id="4527374721149092498">Többet is megtudhat a webhelyeken lévő egyes témákról anélkül, hogy elhagyná az adott oldalt. Az Érintéssel keresés funkció elküldi az adott szót és annak kontextusát a Google Keresés számára, majd meghatározásokat, képeket, keresési találatokat és egyéb részleteket jelenít meg.
+
+Koppintson bármelyik szóra, amelyre rá szeretne keresni. A keresési kifejezés módosításához tartsa rajta lenyomva az ujját. A keresés finomításához csúsztatással nyissa ki a panelt, koppintson rá a Kibontás ikonra, hogy új lapot hozzon létre, majd koppintson a keresőmezőre.</translation>
 <translation id="4532845899244822526">Mappa kiválasztása</translation>
 <translation id="4538018662093857852">Az Egyszerűsített mód bekapcsolása</translation>
 <translation id="4550003330909367850">A jelszó megtekintéséhez vagy idemásolásához állítson be képernyőzárat az eszközön.</translation>
@@ -691,6 +694,9 @@ A beállítás módosításához <ph name="BEGIN_LINK" />állítsa vissza a szin
 <translation id="6232535412751077445">A „Nincs nyomon követés” engedélyezése azt jelenti, hogy a böngészési forgalommal együtt kérelmet is küld a rendszer. Ennek hatása attól függ, hogy a webhely reagál-e a kérelemre, és hogyan értelmezi azt.
 
 Egyes webhelyek például válaszolhatnak rá úgy, hogy olyan hirdetéseket jelenítenek meg, amelyek nem a már felkeresett egyéb webhelyeken alapulnak. Számos webhely ilyenkor is gyűjti és felhasználja a böngészési adatokat (például a biztonság növelése, továbbá tartalom, hirdetések és ajánlatok biztosítása, valamint jelentésekhez használt statisztika előállítása céljából).</translation>
+<translation id="6238003486329291387">Többet is megtudhat a webhelyeken lévő egyes témákról anélkül, hogy elhagyná az adott oldalt. Az Érintéssel keresés funkció elküldi az adott szót és annak kontextusát a Google Keresés számára, majd meghatározásokat, képeket, keresési találatokat és egyéb részleteket jelenít meg.
+
+A kívánt szó hosszú lenyomásával keresést végezhet. A keresés finomításához módosítsa a kiválasztást. Azt is megteheti, hogy csúsztatással kinyitja a panelt, rákoppint a Kibontás ikonra, hogy új lapot hozzon létre, majd rákoppint a keresőmezőre.</translation>
 <translation id="624789221780392884">A frissítés készen áll</translation>
 <translation id="6255999984061454636">Javasolt tartalmak</translation>
 <translation id="6270391203985052864">A webhelyek rákérdezhetnek, hogy küldjenek-e Önnek értesítéseket</translation>

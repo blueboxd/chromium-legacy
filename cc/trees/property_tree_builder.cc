@@ -764,7 +764,6 @@ void PropertyTreeBuilderContext::BuildPropertyTrees() {
   transform_tree_.set_needs_update(false);
   clip_tree_.set_needs_update(true);
   effect_tree_.set_needs_update(true);
-  scroll_tree_.set_needs_update(false);
 }
 
 }  // namespace

@@ -256,6 +256,7 @@
 <translation id="6939719207673461467">顯示/隱藏鍵盤。</translation>
 <translation id="6944854424004126054">還原視窗</translation>
 <translation id="6948905685698011662">Chrome 遠端桌面現已推出線上版！歡迎查看我們的<ph name="LINK_BEGIN" />免費網路應用程式<ph name="LINK_END" />。</translation>
+<translation id="6956835181934226419">我已授予這項權限。</translation>
 <translation id="6963936880795878952">有人嘗試使用無效的 PIN 連線至遠端電腦，因此您的連線暫時遭到封鎖。請稍後再試。</translation>
 <translation id="6965382102122355670">確定</translation>
 <translation id="6985691951107243942">你是否確定要停用與 <ph name="HOSTNAME" /> 之間的遠端連線？如果之後改變心意的話，你必須親身前往該電腦所在位置並修改設定後，才能重新啟用連線。</translation>

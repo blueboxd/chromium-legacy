@@ -671,6 +671,7 @@
 <translation id="3987940399970879459">1 MB ಗಿಂತ ಕಡಿಮೆ</translation>
 <translation id="3990250421422698716">ಜಾಗ್ ಆಫ್‌ಸೆಟ್</translation>
 <translation id="40103911065039147">{URL_count,plural, =1{ಹತ್ತಿರದ 1 ವೆಬ್ ಪುಟ}one{ಹತ್ತಿರದ # ವೆಬ್ ಪುಟಗಳು}other{ಹತ್ತಿರದ # ವೆಬ್ ಪುಟಗಳು}}</translation>
+<translation id="4014128326099193693">{COUNT,plural, =1{PDF ಡಾಕ್ಯುಮೆಂಟ್, {COUNT} ಪುಟವನ್ನು ಒಳಗೊಂಡಿದೆ}one{PDF ಡಾಕ್ಯುಮೆಂಟ್, {COUNT} ಪುಟಗಳನ್ನು ಒಳಗೊಂಡಿದೆ}other{PDF ಡಾಕ್ಯುಮೆಂಟ್, {COUNT} ಪುಟಗಳನ್ನು ಒಳಗೊಂಡಿದೆ}}</translation>
 <translation id="4030383055268325496">&amp;ಸೇರಿಸುವುದನ್ನು ರದ್ದುಗೊಳಿಸಿ</translation>
 <translation id="4032320456957708163">ನಿಮ್ಮ ಬ್ರೌಸರ್ ಅನ್ನು <ph name="ENROLLMENT_DOMAIN" /> ನಿರ್ವಹಿಸುತ್ತಿದೆ</translation>
 <translation id="4058922952496707368">ಕೀ "<ph name="SUBKEY" />": <ph name="ERROR" /></translation>
@@ -699,6 +700,7 @@
 <translation id="4142935452406587478">ಟ್ರೇ 10</translation>
 <translation id="4148925816941278100">American Express</translation>
 <translation id="4151403195736952345">ಜಾಗತಿಕ ಡಿಫಾಲ್ಟ್ ಬಳಸಿ (ಪತ್ತೆ ಮಾಡಿ)</translation>
+<translation id="4152318981910038897">{COUNT,plural, =1{ಪುಟ 1}one{ಪುಟ {COUNT}}other{ಪುಟ {COUNT}}}</translation>
 <translation id="4159784952369912983">ನೇರಳೆ</translation>
 <translation id="4165986682804962316">ಸೈಟ್ ಸೆಟ್ಟಿಂಗ್‌ಗಳು</translation>
 <translation id="4171400957073367226">ತಪ್ಪು ಪರಿಶೀಲನೆ ಸಹಿ</translation>
@@ -1374,6 +1376,7 @@
 <translation id="7201591969684833065">ನಿಮ್ಮ ನಿರ್ವಾಹಕರು ಇವುಗಳನ್ನು ನೋಡಬಹುದು:</translation>
 <translation id="7202346780273620635">Letter-Extra</translation>
 <translation id="7210863904660874423"><ph name="HOST_NAME" /> ಭದ್ರತೆ ಮಾನದಂಡಗಳನ್ನು ಅನುಸರಿಸುತ್ತಿಲ್ಲ.</translation>
+<translation id="7210993021468939304">ಕಂಟೇನರ್‌ನಲ್ಲಿ Linux ಚಟುವಟಿಕೆ ಮತ್ತು ಕಂಟೇನರ್‌ನಲ್ಲಿ ಇನ್‌ಸ್ಟಾಲ್ ಮಾಡಬಹುದಾದ ಮತ್ತು ರನ್ ಮಾಡಬಹುದಾದ Linux ಆ್ಯಪ್‌ಗಳು</translation>
 <translation id="721197778055552897">ಈ ತೊಂದರೆಯ ಬಗ್ಗೆ <ph name="BEGIN_LINK" />ಇನ್ನಷ್ಟು ತಿಳಿಯಿರಿ<ph name="END_LINK" />.</translation>
 <translation id="7219179957768738017">ಸಂಪರ್ಕವು <ph name="SSL_VERSION" /> ಅನ್ನು ಬಳಸುತ್ತದೆ.</translation>
 <translation id="7220786058474068424">ಪ್ರಕ್ರಿಯೆಗೊಳಿಸಲಾಗುತ್ತಿದೆ</translation>
@@ -1536,6 +1539,7 @@
 <translation id="7878562273885520351">ನಿಮ್ಮ ಪಾಸ್‌ವರ್ಡ್‌ ಅನ್ನು ಸುಲಭವಾಗಿ ಪತ್ತೆ ಮಾಡಬಹುದು</translation>
 <translation id="7882421473871500483">ಕಂದು</translation>
 <translation id="7887683347370398519">ನಿಮ್ಮ CVC ಅನ್ನು ಪರಿಶೀಲಿಸಿ ಹಾಗೂ ಮತ್ತೆ ಪ್ರಯತ್ನಿಸಿ</translation>
+<translation id="7887885240995164102">ಚಿತ್ರದಲ್ಲಿ ಚಿತ್ರ ಮೋಡ್‌ಗೆ ಪ್ರವೇಶಿಸಿ</translation>
 <translation id="7888575728750733395">ಪ್ರಿಂಟ್ ಸಲ್ಲಿಕೆ ಉದ್ದೇಶ</translation>
 <translation id="7904208859782148177">C3 (Envelope)</translation>
 <translation id="7932579305932748336">ಹಚ್ಚು</translation>

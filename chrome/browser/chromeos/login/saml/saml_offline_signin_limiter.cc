@@ -20,10 +20,17 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/common/pref_names.h"
 #include "components/prefs/pref_service.h"
+#include "components/user_manager/known_user.h"
 #include "components/user_manager/user.h"
 #include "components/user_manager/user_manager.h"
 
 namespace chromeos {
+
+namespace {
+
+constexpr int kSAMLOfflineSigninTimeLimitNotSet = -1;
+
+}
 
 void SAMLOfflineSigninLimiter::SignedIn(UserContext::AuthFlow auth_flow) {
   PrefService* prefs = profile_->GetPrefs();
@@ -53,6 +60,12 @@ void SAMLOfflineSigninLimiter::SignedIn(UserContext::AuthFlow auth_flow) {
     user_manager::UserManager::Get()->SaveForceOnlineSignin(account_id, false);
     prefs->SetInt64(prefs::kSAMLLastGAIASignInTime,
                     clock_->Now().ToInternalValue());
+    const int saml_offline_limit =
+        prefs->GetInteger(prefs::kSAMLOfflineSigninTimeLimit);
+    UpdateOnlineSigninData(
+        clock_->Now(), saml_offline_limit == kSAMLOfflineSigninTimeLimitNotSet
+                           ? base::TimeDelta()
+                           : base::TimeDelta::FromSeconds(saml_offline_limit));
   }
 
   // Start listening for pref changes.
@@ -115,6 +128,7 @@ void SAMLOfflineSigninLimiter::UpdateLimit() {
     NOTREACHED();
     last_gaia_signin_time = now;
     prefs->SetInt64(prefs::kSAMLLastGAIASignInTime, now.ToInternalValue());
+    UpdateOnlineSigninData(now, offline_signin_time_limit);
   }
 
   const base::TimeDelta time_since_last_gaia_signin =
@@ -145,6 +159,19 @@ void SAMLOfflineSigninLimiter::ForceOnlineLogin() {
                                                           true);
   RecordReauthReason(user->GetAccountId(), ReauthReason::SAML_REAUTH_POLICY);
   offline_signin_limit_timer_->Stop();
+}
+
+void SAMLOfflineSigninLimiter::UpdateOnlineSigninData(base::Time time,
+                                                      base::TimeDelta limit) {
+  const user_manager::User* user =
+      ProfileHelper::Get()->GetUserByProfile(profile_);
+  if (!user) {
+    NOTREACHED();
+    return;
+  }
+
+  user_manager::known_user::SetLastOnlineSignin(user->GetAccountId(), time);
+  user_manager::known_user::SetOfflineSigninLimit(user->GetAccountId(), limit);
 }
 
 }  // namespace chromeos

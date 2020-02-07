@@ -3558,6 +3558,7 @@
 <translation id="5975792506968920132">Процент зарядки батареи</translation>
 <translation id="5976160379964388480">Другое</translation>
 <translation id="5978277834170881274">&amp;Использовать базовую проверку правописания</translation>
+<translation id="5979084224081478209">Проверить пароли</translation>
 <translation id="5979421442488174909">&amp;Перевести на <ph name="LANGUAGE" /></translation>
 <translation id="5979469435153841984">Чтобы добавить страницу в закладки, нажмите на значок звездочки в адресной строке</translation>
 <translation id="5984222099446776634">Недавно посещенные страницы</translation>
@@ -4158,7 +4159,6 @@
 <translation id="6840155290835956714">Запрашивать разрешение перед отправкой</translation>
 <translation id="6840184929775541289">Не является Центром сертификации</translation>
 <translation id="6841186874966388268">Ошибки</translation>
-<translation id="6843267103192918276">Войдите в аккаунт, чтобы синхронизировать закладки, историю, пароли и другие настройки на всех своих устройствах. При этом будет автоматически выполнен вход в сервисах Google. <ph name="LINK_BEGIN" />Подробнее…<ph name="LINK_END" /></translation>
 <translation id="6843423766595476978">Команда "Окей, Google" настроена</translation>
 <translation id="6845038076637626672">Развернуть</translation>
 <translation id="6845325883481699275">Помочь Chrome стать ещё безопаснее</translation>

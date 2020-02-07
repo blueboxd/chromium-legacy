@@ -688,6 +688,7 @@
 <translation id="3987940399970879459">1MB 미만</translation>
 <translation id="3990250421422698716">조그 오프셋</translation>
 <translation id="40103911065039147">{URL_count,plural, =1{주변 웹페이지 1개}other{주변 웹페이지 #개}}</translation>
+<translation id="4014128326099193693">{COUNT,plural, =1{{COUNT}페이지로 이루어진 PDF 문서}other{{COUNT}페이지로 이루어진 PDF 문서}}</translation>
 <translation id="4030383055268325496">추가 실행 취소(&amp;U)</translation>
 <translation id="4032320456957708163"><ph name="ENROLLMENT_DOMAIN" />에서 관리하는 브라우저입니다</translation>
 <translation id="4058922952496707368">'<ph name="SUBKEY" />' 키: <ph name="ERROR" /></translation>
@@ -716,6 +717,7 @@
 <translation id="4142935452406587478">트레이 10</translation>
 <translation id="4148925816941278100">American Express</translation>
 <translation id="4151403195736952345">글로벌 기본값 사용(감지)</translation>
+<translation id="4152318981910038897">{COUNT,plural, =1{페이지 1}other{페이지 {COUNT}}}</translation>
 <translation id="4159784952369912983">보라색</translation>
 <translation id="4165986682804962316">사이트 설정</translation>
 <translation id="4171400957073367226">잘못된 인증 서명입니다.</translation>
@@ -1393,6 +1395,7 @@
 <translation id="7201591969684833065">관리자가 볼 수 있는 항목은 다음과 같습니다.</translation>
 <translation id="7202346780273620635">Letter-Extra</translation>
 <translation id="7210863904660874423"><ph name="HOST_NAME" />에서 보안 기준을 준수하지 않습니다.</translation>
+<translation id="7210993021468939304">컨테이너 내 Linux 활동 및 컨테이너 내에서 Linux 앱 설치 및 실행 가능</translation>
 <translation id="721197778055552897">이 문제에 대해 <ph name="BEGIN_LINK" />자세히 알아보기<ph name="END_LINK" /></translation>
 <translation id="7219179957768738017"><ph name="SSL_VERSION" /> 연결입니다.</translation>
 <translation id="7220786058474068424">처리 중</translation>
@@ -1555,6 +1558,7 @@
 <translation id="7878562273885520351">비밀번호가 도용될 수도 있음</translation>
 <translation id="7882421473871500483">갈색</translation>
 <translation id="7887683347370398519">CVC를 확인한 후 다시 시도하세요.</translation>
+<translation id="7887885240995164102">PIP 모드 시작</translation>
 <translation id="7888575728750733395">인쇄 렌더링 인텐트</translation>
 <translation id="7904208859782148177">C3(봉투)</translation>
 <translation id="7932579305932748336">코팅</translation>

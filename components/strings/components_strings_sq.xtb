@@ -675,6 +675,7 @@
 <translation id="3987940399970879459">Më pak se 1 MB</translation>
 <translation id="3990250421422698716">Zhvendosja e bordurës</translation>
 <translation id="40103911065039147">{URL_count,plural, =1{1 faqe uebi në afërsi}other{# faqe uebi në afërsi}}</translation>
+<translation id="4014128326099193693">{COUNT,plural, =1{Dokumenti PDF me {COUNT} faqe}other{Dokumenti PDF me {COUNT} faqe}}</translation>
 <translation id="4030383055268325496">&amp;Zhbëje shtimin</translation>
 <translation id="4032320456957708163">Shfletuesi yt menaxhohet nga <ph name="ENROLLMENT_DOMAIN" /></translation>
 <translation id="4058922952496707368">Çelësi "<ph name="SUBKEY" />": <ph name="ERROR" /></translation>
@@ -703,6 +704,7 @@
 <translation id="4142935452406587478">Tabakaja 10</translation>
 <translation id="4148925816941278100">American Express</translation>
 <translation id="4151403195736952345">Përdor parazgjedhjen globale (zbulo)</translation>
+<translation id="4152318981910038897">{COUNT,plural, =1{Faqja 1}other{Faqja {COUNT}}}</translation>
 <translation id="4159784952369912983">Vjollcë</translation>
 <translation id="4165986682804962316">Cilësimet e sajtit</translation>
 <translation id="4171400957073367226">Nënshkrim vërtetimi i gabuar</translation>
@@ -1378,6 +1380,7 @@
 <translation id="7201591969684833065">Administratori yt mund të shohë:</translation>
 <translation id="7202346780273620635">Letter-Extra</translation>
 <translation id="7210863904660874423"><ph name="HOST_NAME" /> nuk i respekton standardet e sigurisë.</translation>
+<translation id="7210993021468939304">Aktiviteti i Linux brenda kontejnerit dhe mund të instalojë dhe të ekzekutojë aplikacione të Linux brenda kontejnerit</translation>
 <translation id="721197778055552897"><ph name="BEGIN_LINK" />Mëso më shumë<ph name="END_LINK" /> rreth këtij problemi.</translation>
 <translation id="7219179957768738017">Lidhja përdor <ph name="SSL_VERSION" />.</translation>
 <translation id="7220786058474068424">Po përpunohet</translation>
@@ -1541,6 +1544,7 @@ Detaje shtesë:
 <translation id="7878562273885520351">Fjalëkalimet e tua mund të jenë kompromentuar</translation>
 <translation id="7882421473871500483">Kafe</translation>
 <translation id="7887683347370398519">Kontrollo CVC-në tënde dhe provo përsëri</translation>
+<translation id="7887885240995164102">Hyr në veçorinë "figurë brenda figurës"</translation>
 <translation id="7888575728750733395">Synimi i paraqitjes për printimin</translation>
 <translation id="7904208859782148177">C3 (Zarf)</translation>
 <translation id="7932579305932748336">Veshje</translation>

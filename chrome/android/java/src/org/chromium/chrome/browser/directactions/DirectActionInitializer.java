@@ -13,7 +13,6 @@ import androidx.annotation.Nullable;
 
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.AppHooks;
-import org.chromium.chrome.browser.MenuOrKeyboardActionController;
 import org.chromium.chrome.browser.autofill_assistant.AutofillAssistantFacade;
 import org.chromium.chrome.browser.findinpage.FindToolbarManager;
 import org.chromium.chrome.browser.flags.ActivityType;
@@ -22,6 +21,7 @@ import org.chromium.chrome.browser.lifecycle.NativeInitObserver;
 import org.chromium.chrome.browser.tabmodel.TabModelSelector;
 import org.chromium.chrome.browser.widget.ScrimView;
 import org.chromium.chrome.browser.widget.bottomsheet.BottomSheetController;
+import org.chromium.components.browser_ui.widget.MenuOrKeyboardActionController;
 
 import java.util.function.Consumer;
 

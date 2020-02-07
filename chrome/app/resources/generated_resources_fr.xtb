@@ -3561,6 +3561,7 @@ Assurez-vous de ne pas dévoiler d'informations sensibles.</translation>
 <translation id="5975792506968920132">Pourcentage de chargement de la batterie</translation>
 <translation id="5976160379964388480">Autres</translation>
 <translation id="5978277834170881274">&amp;Utiliser le correcteur orthographique de base</translation>
+<translation id="5979084224081478209">Vérifier les mots de passe</translation>
 <translation id="5979421442488174909">&amp;Traduire en <ph name="LANGUAGE" /></translation>
 <translation id="5979469435153841984">Pour ajouter des pages à vos favoris, cliquez sur l'étoile dans la barre d'adresse</translation>
 <translation id="5984222099446776634">Consultations récentes</translation>
@@ -4161,7 +4162,6 @@ Assurez-vous de ne pas dévoiler d'informations sensibles.</translation>
 <translation id="6840155290835956714">Demander avant d'envoyer</translation>
 <translation id="6840184929775541289">N'est pas une autorité de certification</translation>
 <translation id="6841186874966388268">Erreurs</translation>
-<translation id="6843267103192918276">Connectez-vous pour retrouver vos favoris, votre historique, vos mots de passe et d'autres paramètres sur tous vos appareils. De plus, vous serez automatiquement connecté à vos services Google. <ph name="LINK_BEGIN" />En savoir plus<ph name="LINK_END" /></translation>
 <translation id="6843423766595476978">Ok Google est à présent configuré</translation>
 <translation id="6845038076637626672">Ouvrir la version agrandie</translation>
 <translation id="6845325883481699275">Contribuer à améliorer la sécurité de Chrome</translation>

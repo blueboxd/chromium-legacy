@@ -256,6 +256,7 @@ Ha már be van jelölve az „<ph name="SERVICE_SCRIPT_NAME" />” melletti nég
 <translation id="6939719207673461467">Billentyűzet megjelenítése/elrejtése.</translation>
 <translation id="6944854424004126054">Ablak visszaállítása</translation>
 <translation id="6948905685698011662">A Chrome távoliasztal-szolgáltatás mostantól a weben is hozzáférhető! Nézze meg <ph name="LINK_BEGIN" />ingyenes internetes alkalmazásunkat<ph name="LINK_END" />.</translation>
+<translation id="6956835181934226419">Már megadtam ezt az engedélyt.</translation>
 <translation id="6963936880795878952">A távoli számítógéphez való csatlakozás ideiglenesen le van tiltva, mert valaki érvénytelen PIN-kóddal próbált csatlakozni hozzá. Kérjük, próbálja újra később.</translation>
 <translation id="6965382102122355670">OK</translation>
 <translation id="6985691951107243942">Biztosan le szeretné tiltani a távoli kapcsolatokat a(z) <ph name="HOSTNAME" /> gazdagéppel? Ha meggondolja magát, akkor azon a számítógépen kell majd újból engedélyeznie a kapcsolatokat.</translation>

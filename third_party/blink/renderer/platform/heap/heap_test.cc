@@ -2244,8 +2244,6 @@ class Container final : public GarbageCollected<Container> {
   HeapVector<PairWrappedUnwrapped, 2> vector_wu;
   HeapVector<PairUnwrappedWrapped, 2> vector_uw;
   HeapDeque<Member<IntWrapper>> deque;
-  HeapDeque<PairWrappedUnwrapped> deque_wu;
-  HeapDeque<PairUnwrappedWrapped> deque_uw;
   void Trace(blink::Visitor* visitor) {
     visitor->Trace(map);
     visitor->Trace(set);
@@ -2255,8 +2253,6 @@ class Container final : public GarbageCollected<Container> {
     visitor->Trace(vector_wu);
     visitor->Trace(vector_uw);
     visitor->Trace(deque);
-    visitor->Trace(deque_wu);
-    visitor->Trace(deque_uw);
   }
 };
 
@@ -2432,8 +2428,6 @@ TEST_F(HeapTest, HeapCollectionTypes) {
 
   typedef HeapVector<PairWrappedUnwrapped, 2> VectorWU;
   typedef HeapVector<PairUnwrappedWrapped, 2> VectorUW;
-  typedef HeapDeque<PairWrappedUnwrapped> DequeWU;
-  typedef HeapDeque<PairUnwrappedWrapped> DequeUW;
 
   Persistent<MemberMember> member_member = MakeGarbageCollected<MemberMember>();
   Persistent<MemberMember> member_member2 =
@@ -2455,10 +2449,6 @@ TEST_F(HeapTest, HeapCollectionTypes) {
   Persistent<VectorUW> vector_uw2 = MakeGarbageCollected<VectorUW>();
   Persistent<MemberDeque> deque = MakeGarbageCollected<MemberDeque>();
   Persistent<MemberDeque> deque2 = MakeGarbageCollected<MemberDeque>();
-  Persistent<DequeWU> deque_wu = MakeGarbageCollected<DequeWU>();
-  Persistent<DequeWU> deque_wu2 = MakeGarbageCollected<DequeWU>();
-  Persistent<DequeUW> deque_uw = MakeGarbageCollected<DequeUW>();
-  Persistent<DequeUW> deque_uw2 = MakeGarbageCollected<DequeUW>();
   Persistent<Container> container = MakeGarbageCollected<Container>();
 
   ClearOutOldGarbage();
@@ -2476,18 +2466,14 @@ TEST_F(HeapTest, HeapCollectionTypes) {
       auto* three_c(MakeGarbageCollected<IntWrapper>(3));
       auto* three_d(MakeGarbageCollected<IntWrapper>(3));
       auto* three_e(MakeGarbageCollected<IntWrapper>(3));
-      auto* three_f(MakeGarbageCollected<IntWrapper>(3));
       auto* three(MakeGarbageCollected<IntWrapper>(3));
       auto* four_b(MakeGarbageCollected<IntWrapper>(4));
       auto* four_c(MakeGarbageCollected<IntWrapper>(4));
       auto* four_d(MakeGarbageCollected<IntWrapper>(4));
       auto* four_e(MakeGarbageCollected<IntWrapper>(4));
-      auto* four_f(MakeGarbageCollected<IntWrapper>(4));
       auto* four(MakeGarbageCollected<IntWrapper>(4));
       auto* five_c(MakeGarbageCollected<IntWrapper>(5));
       auto* five_d(MakeGarbageCollected<IntWrapper>(5));
-      auto* five_e(MakeGarbageCollected<IntWrapper>(5));
-      auto* five_f(MakeGarbageCollected<IntWrapper>(5));
 
       // Member Collections.
       member_member2->insert(one, two);
@@ -2516,21 +2502,13 @@ TEST_F(HeapTest, HeapCollectionTypes) {
       deque2->push_back(three_e);
       deque2->push_back(four_e);
       vector_wu->push_back(PairWrappedUnwrapped(&*one_c, 42));
-      deque_wu->push_back(PairWrappedUnwrapped(&*one_e, 42));
       vector_wu2->push_back(PairWrappedUnwrapped(&*three_c, 43));
       vector_wu2->push_back(PairWrappedUnwrapped(&*four_c, 44));
       vector_wu2->push_back(PairWrappedUnwrapped(&*five_c, 45));
-      deque_wu2->push_back(PairWrappedUnwrapped(&*three_e, 43));
-      deque_wu2->push_back(PairWrappedUnwrapped(&*four_e, 44));
-      deque_wu2->push_back(PairWrappedUnwrapped(&*five_e, 45));
       vector_uw->push_back(PairUnwrappedWrapped(1, &*one_d));
       vector_uw2->push_back(PairUnwrappedWrapped(103, &*three_d));
       vector_uw2->push_back(PairUnwrappedWrapped(104, &*four_d));
       vector_uw2->push_back(PairUnwrappedWrapped(105, &*five_d));
-      deque_uw->push_back(PairUnwrappedWrapped(1, &*one_f));
-      deque_uw2->push_back(PairUnwrappedWrapped(103, &*three_f));
-      deque_uw2->push_back(PairUnwrappedWrapped(104, &*four_f));
-      deque_uw2->push_back(PairUnwrappedWrapped(105, &*five_f));
 
       EXPECT_TRUE(DequeContains(*deque, one_b));
 
@@ -2555,10 +2533,6 @@ TEST_F(HeapTest, HeapCollectionTypes) {
       EXPECT_EQ(3u, vector_uw2->size());
       EXPECT_EQ(1u, deque->size());
       EXPECT_EQ(2u, deque2->size());
-      EXPECT_EQ(1u, deque_wu->size());
-      EXPECT_EQ(3u, deque_wu2->size());
-      EXPECT_EQ(1u, deque_uw->size());
-      EXPECT_EQ(3u, deque_uw2->size());
 
       MemberVector& cvec = container->vector;
       cvec.swap(*vector.Get());
@@ -2579,16 +2553,6 @@ TEST_F(HeapTest, HeapCollectionTypes) {
       c_deque.Swap(*deque.Get());
       deque2->Swap(c_deque);
       deque->Swap(c_deque);
-
-      DequeWU& c_deque_wu = container->deque_wu;
-      c_deque_wu.Swap(*deque_wu.Get());
-      deque_wu2->Swap(c_deque_wu);
-      deque_wu->Swap(c_deque_wu);
-
-      DequeUW& c_deque_uw = container->deque_uw;
-      c_deque_uw.Swap(*deque_uw.Get());
-      deque_uw2->Swap(c_deque_uw);
-      deque_uw->Swap(c_deque_uw);
 
       // Swap set and set2 in a roundabout way.
       MemberSet& cset1 = container->set;
@@ -2646,22 +2610,6 @@ TEST_F(HeapTest, HeapCollectionTypes) {
       EXPECT_TRUE(vector_uw->Contains(PairUnwrappedWrapped(105, &*five_d)));
       EXPECT_TRUE(vector_uw2->Contains(PairUnwrappedWrapped(1, &*one_d)));
       EXPECT_FALSE(vector_uw2->Contains(PairUnwrappedWrapped(103, &*three_d)));
-      EXPECT_TRUE(
-          DequeContains(*deque_wu, PairWrappedUnwrapped(&*three_e, 43)));
-      EXPECT_TRUE(DequeContains(*deque_wu, PairWrappedUnwrapped(&*four_e, 44)));
-      EXPECT_TRUE(DequeContains(*deque_wu, PairWrappedUnwrapped(&*five_e, 45)));
-      EXPECT_TRUE(DequeContains(*deque_wu2, PairWrappedUnwrapped(&*one_e, 42)));
-      EXPECT_FALSE(
-          DequeContains(*deque_wu2, PairWrappedUnwrapped(&*three_e, 43)));
-      EXPECT_TRUE(
-          DequeContains(*deque_uw, PairUnwrappedWrapped(103, &*three_f)));
-      EXPECT_TRUE(
-          DequeContains(*deque_uw, PairUnwrappedWrapped(104, &*four_f)));
-      EXPECT_TRUE(
-          DequeContains(*deque_uw, PairUnwrappedWrapped(105, &*five_f)));
-      EXPECT_TRUE(DequeContains(*deque_uw2, PairUnwrappedWrapped(1, &*one_f)));
-      EXPECT_FALSE(
-          DequeContains(*deque_uw2, PairUnwrappedWrapped(103, &*three_f)));
     }
 
     PreciselyCollectGarbage();
@@ -2679,7 +2627,6 @@ TEST_F(HeapTest, HeapCollectionTypes) {
     EXPECT_EQ(1u, vector2->size());
     EXPECT_EQ(2u, deque->size());
     EXPECT_EQ(1u, deque2->size());
-    EXPECT_EQ(3u, deque_uw->size());
     EXPECT_EQ(1u, deque2->size());
 
     EXPECT_TRUE(member_member->at(one) == two);
@@ -2714,10 +2661,6 @@ TEST_F(HeapTest, HeapCollectionTypes) {
   EXPECT_EQ(1u, vector_uw2->size());
   EXPECT_EQ(2u, deque->size());
   EXPECT_EQ(1u, deque2->size());
-  EXPECT_EQ(3u, deque_wu->size());
-  EXPECT_EQ(1u, deque_wu2->size());
-  EXPECT_EQ(3u, deque_uw->size());
-  EXPECT_EQ(1u, deque_uw2->size());
 }
 
 TEST_F(HeapTest, PersistentVector) {
@@ -3384,70 +3327,6 @@ void CheckPairSets(Persistent<WSSet>& weak_strong,
   EXPECT_TRUE(unwrapped_weak->Contains(PairUnwrappedWeak(2, &*two)));
 }
 
-template <typename WSSet, typename SWSet, typename WUSet, typename UWSet>
-void WeakPairsHelper() {
-  IntWrapper::destructor_calls_ = 0;
-
-  Persistent<HeapVector<Member<IntWrapper>>> keep_numbers_alive =
-      MakeGarbageCollected<HeapVector<Member<IntWrapper>>>();
-
-  Persistent<WSSet> weak_strong = MakeGarbageCollected<WSSet>();
-  Persistent<SWSet> strong_weak = MakeGarbageCollected<SWSet>();
-  Persistent<WUSet> weak_unwrapped = MakeGarbageCollected<WUSet>();
-  Persistent<UWSet> unwrapped_weak = MakeGarbageCollected<UWSet>();
-
-  Persistent<IntWrapper> two = MakeGarbageCollected<IntWrapper>(2);
-
-  weak_strong->insert(
-      PairWeakStrong(MakeGarbageCollected<IntWrapper>(1), &*two));
-  weak_strong->insert(PairWeakStrong(&*two, &*two));
-  strong_weak->insert(
-      PairStrongWeak(&*two, MakeGarbageCollected<IntWrapper>(1)));
-  strong_weak->insert(PairStrongWeak(&*two, &*two));
-  weak_unwrapped->insert(
-      PairWeakUnwrapped(MakeGarbageCollected<IntWrapper>(1), 2));
-  weak_unwrapped->insert(PairWeakUnwrapped(&*two, 2));
-  unwrapped_weak->insert(
-      PairUnwrappedWeak(2, MakeGarbageCollected<IntWrapper>(1)));
-  unwrapped_weak->insert(PairUnwrappedWeak(2, &*two));
-
-  CheckPairSets<WSSet, SWSet, WUSet, UWSet>(
-      weak_strong, strong_weak, weak_unwrapped, unwrapped_weak, true, two);
-
-  TestSupportingGC::PreciselyCollectGarbage();
-  CheckPairSets<WSSet, SWSet, WUSet, UWSet>(
-      weak_strong, strong_weak, weak_unwrapped, unwrapped_weak, false, two);
-}
-
-TEST_F(HeapTest, HeapWeakPairs) {
-  {
-    typedef HeapHashSet<PairWeakStrong> WeakStrongSet;
-    typedef HeapHashSet<PairWeakUnwrapped> WeakUnwrappedSet;
-    typedef HeapHashSet<PairStrongWeak> StrongWeakSet;
-    typedef HeapHashSet<PairUnwrappedWeak> UnwrappedWeakSet;
-    WeakPairsHelper<WeakStrongSet, StrongWeakSet, WeakUnwrappedSet,
-                    UnwrappedWeakSet>();
-  }
-
-  {
-    typedef HeapListHashSet<PairWeakStrong> WeakStrongSet;
-    typedef HeapListHashSet<PairWeakUnwrapped> WeakUnwrappedSet;
-    typedef HeapListHashSet<PairStrongWeak> StrongWeakSet;
-    typedef HeapListHashSet<PairUnwrappedWeak> UnwrappedWeakSet;
-    WeakPairsHelper<WeakStrongSet, StrongWeakSet, WeakUnwrappedSet,
-                    UnwrappedWeakSet>();
-  }
-
-  {
-    typedef HeapLinkedHashSet<PairWeakStrong> WeakStrongSet;
-    typedef HeapLinkedHashSet<PairWeakUnwrapped> WeakUnwrappedSet;
-    typedef HeapLinkedHashSet<PairStrongWeak> StrongWeakSet;
-    typedef HeapLinkedHashSet<PairUnwrappedWeak> UnwrappedWeakSet;
-    WeakPairsHelper<WeakStrongSet, StrongWeakSet, WeakUnwrappedSet,
-                    UnwrappedWeakSet>();
-  }
-}
-
 TEST_F(HeapTest, HeapWeakCollectionTypes) {
   IntWrapper::destructor_calls_ = 0;
 
@@ -4027,28 +3906,19 @@ TEST_F(HeapTest, CollectionNesting3) {
   ClearOutOldGarbage();
   IntWrapper::destructor_calls_ = 0;
   typedef HeapVector<Member<IntWrapper>> IntVector;
-  typedef HeapDeque<Member<IntWrapper>> IntDeque;
   HeapVector<IntVector>* vector = MakeGarbageCollected<HeapVector<IntVector>>();
-  HeapDeque<IntDeque>* deque = MakeGarbageCollected<HeapDeque<IntDeque>>();
 
   vector->push_back(IntVector());
-  deque->push_back(IntDeque());
 
   HeapVector<IntVector>::iterator it = vector->begin();
-  HeapDeque<IntDeque>::iterator it2 = deque->begin();
   EXPECT_EQ(0u, it->size());
-  EXPECT_EQ(0u, it2->size());
 
   it->push_back(MakeGarbageCollected<IntWrapper>(42));
-  it2->push_back(MakeGarbageCollected<IntWrapper>(42));
   EXPECT_EQ(1u, it->size());
-  EXPECT_EQ(1u, it2->size());
 
   Persistent<HeapVector<IntVector>> keep_alive(vector);
-  Persistent<HeapDeque<IntDeque>> keep_alive2(deque);
   PreciselyCollectGarbage();
   EXPECT_EQ(1u, it->size());
-  EXPECT_EQ(1u, it2->size());
   EXPECT_EQ(0, IntWrapper::destructor_calls_);
 }
 
@@ -4073,35 +3943,6 @@ TEST_F(HeapTest, EmbeddedInVector) {
     VectorObjectInheritedTrace it1, it2;
     vector_inherited_trace->push_back(it1);
     vector_inherited_trace->push_back(it2);
-
-    PreciselyCollectGarbage();
-    EXPECT_EQ(0, SimpleFinalizedObject::destructor_calls_);
-  }
-  PreciselyCollectGarbage();
-  EXPECT_EQ(6, SimpleFinalizedObject::destructor_calls_);
-}
-
-TEST_F(HeapTest, EmbeddedInDeque) {
-  ClearOutOldGarbage();
-  SimpleFinalizedObject::destructor_calls_ = 0;
-  {
-    Persistent<HeapDeque<VectorObject>> inline_deque =
-        MakeGarbageCollected<HeapDeque<VectorObject>>();
-    Persistent<HeapDeque<VectorObject>> outline_deque =
-        MakeGarbageCollected<HeapDeque<VectorObject>>();
-    VectorObject i1, i2;
-    inline_deque->push_back(i1);
-    inline_deque->push_back(i2);
-
-    VectorObject o1, o2;
-    outline_deque->push_back(o1);
-    outline_deque->push_back(o2);
-
-    Persistent<HeapDeque<VectorObjectInheritedTrace>> deque_inherited_trace =
-        MakeGarbageCollected<HeapDeque<VectorObjectInheritedTrace>>();
-    VectorObjectInheritedTrace it1, it2;
-    deque_inherited_trace->push_back(it1);
-    deque_inherited_trace->push_back(it2);
 
     PreciselyCollectGarbage();
     EXPECT_EQ(0, SimpleFinalizedObject::destructor_calls_);
@@ -5132,68 +4973,6 @@ class PartObjectWithRef {
 WTF_ALLOW_INIT_WITH_MEM_FUNCTIONS(blink::PartObjectWithRef)
 
 namespace blink {
-
-TEST_F(HeapTest, DequePartObjectsExpand) {
-  // Test expansion of HeapDeque<PartObject>
-
-  using PartDeque = HeapDeque<PartObjectWithRef>;
-
-  Persistent<PartDeque> deque = MakeGarbageCollected<PartDeque>();
-  // Auxillary Deque used to prevent 'inline' buffer expansion.
-  Persistent<PartDeque> deque_unused = MakeGarbageCollected<PartDeque>();
-
-  // Append a sequence, bringing about repeated expansions of the
-  // deque's buffer.
-  int i = 0;
-  for (; i < 60; ++i) {
-    deque->push_back(PartObjectWithRef(i));
-    deque_unused->push_back(PartObjectWithRef(i));
-  }
-
-  EXPECT_EQ(60u, deque->size());
-  i = 0;
-  for (const PartObjectWithRef& part : *deque) {
-    EXPECT_EQ(i, part.Value());
-    i++;
-  }
-
-  // Remove most of the queued objects and have the buffer's start index
-  // 'point' somewhere into the buffer, just behind the end index.
-  for (i = 0; i < 50; ++i)
-    deque->TakeFirst();
-
-  EXPECT_EQ(10u, deque->size());
-  i = 0;
-  for (const PartObjectWithRef& part : *deque) {
-    EXPECT_EQ(50 + i, part.Value());
-    i++;
-  }
-
-  // Append even more, eventually causing an expansion of the underlying
-  // buffer once the end index wraps around and reaches the start index.
-  for (i = 0; i < 70; ++i)
-    deque->push_back(PartObjectWithRef(60 + i));
-
-  // Verify that the final buffer expansion copied the start and end segments
-  // of the old buffer to both ends of the expanded buffer, along with
-  // re-adjusting both start&end indices in terms of that expanded buffer.
-  EXPECT_EQ(80u, deque->size());
-  i = 0;
-  for (const PartObjectWithRef& part : *deque) {
-    EXPECT_EQ(i + 50, part.Value());
-    i++;
-  }
-
-  for (i = 0; i < 70; ++i)
-    deque->push_back(PartObjectWithRef(130 + i));
-
-  EXPECT_EQ(150u, deque->size());
-  i = 0;
-  for (const PartObjectWithRef& part : *deque) {
-    EXPECT_EQ(i + 50, part.Value());
-    i++;
-  }
-}
 
 TEST_F(HeapTest, HeapVectorPartObjects) {
   HeapVector<PartObjectWithRef> vector1;

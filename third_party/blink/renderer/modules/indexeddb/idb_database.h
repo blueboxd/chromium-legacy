@@ -29,6 +29,7 @@
 #include <memory>
 
 #include "base/memory/scoped_refptr.h"
+#include "third_party/blink/public/mojom/feature_observer/feature_observer.mojom-blink.h"
 #include "third_party/blink/renderer/bindings/core/v8/active_script_wrappable.h"
 #include "third_party/blink/renderer/bindings/core/v8/string_or_string_sequence.h"
 #include "third_party/blink/renderer/bindings/modules/v8/v8_idb_object_store_parameters.h"
@@ -65,10 +66,12 @@ class MODULES_EXPORT IDBDatabase final
   DEFINE_WRAPPERTYPEINFO();
 
  public:
-  IDBDatabase(ExecutionContext*,
-              std::unique_ptr<WebIDBDatabase>,
-              IDBDatabaseCallbacks*,
-              v8::Isolate*);
+  IDBDatabase(
+      ExecutionContext*,
+      std::unique_ptr<WebIDBDatabase>,
+      IDBDatabaseCallbacks*,
+      v8::Isolate*,
+      mojo::PendingRemote<mojom::blink::ObservedFeature> connection_lifetime);
   ~IDBDatabase() override;
 
   void Trace(blink::Visitor*) override;
@@ -192,6 +195,9 @@ class MODULES_EXPORT IDBDatabase final
   Member<IDBTransaction> version_change_transaction_;
   HeapHashMap<int64_t, Member<IDBTransaction>> transactions_;
   HeapHashMap<int32_t, Member<IDBObserver>> observers_;
+  // No interface here, so no need to bind it.  This is only for
+  // lifetime observation of the use of IndexedDB from the browser.
+  mojo::PendingRemote<mojom::blink::ObservedFeature> connection_lifetime_;
 
   bool close_pending_ = false;
 

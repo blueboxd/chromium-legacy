@@ -8,7 +8,7 @@ import org.chromium.chrome.browser.ActivityTabProvider;
 import org.chromium.chrome.browser.dependency_injection.ActivityScope;
 import org.chromium.chrome.browser.fullscreen.BrowserStateBrowserControlsVisibilityDelegate;
 import org.chromium.chrome.browser.fullscreen.ChromeFullscreenManager;
-import org.chromium.chrome.browser.tab.BrowserControlsVisibilityDelegate;
+import org.chromium.components.browser_ui.util.BrowserControlsVisibilityDelegate;
 import org.chromium.content_public.common.BrowserControlsState;
 
 import javax.inject.Inject;

@@ -386,6 +386,12 @@ void DeepScanningDialogDelegate::SetFactoryForTesting(Factory factory) {
   *GetFactoryStorage() = factory;
 }
 
+// static
+void DeepScanningDialogDelegate::ResetFactoryForTesting() {
+  if (GetFactoryStorage())
+    GetFactoryStorage()->Reset();
+}
+
 DeepScanningDialogDelegate::DeepScanningDialogDelegate(
     content::WebContents* web_contents,
     Data data,

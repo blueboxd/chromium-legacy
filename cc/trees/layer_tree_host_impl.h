@@ -796,6 +796,10 @@ class CC_EXPORT LayerTreeHostImpl : public InputHandler,
   void InitializeUkm(std::unique_ptr<ukm::UkmRecorder> recorder);
   UkmManager* ukm_manager() { return ukm_manager_.get(); }
 
+  ActiveFrameSequenceTrackers FrameSequenceTrackerActiveTypes() {
+    return frame_trackers_.FrameSequenceTrackerActiveTypes();
+  }
+
   void RenewTreePriorityForTesting() { client_->RenewTreePriority(); }
 
   void SetRenderFrameObserver(

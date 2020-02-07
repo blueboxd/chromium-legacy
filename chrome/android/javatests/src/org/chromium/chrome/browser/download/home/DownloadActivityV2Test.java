@@ -101,7 +101,7 @@ public class DownloadActivityV2Test extends DummyUiActivityTestCase {
         super.setUpTest();
         MockitoAnnotations.initMocks(this);
         mJniMocker.mock(UrlFormatterJni.TEST_HOOKS, mUrlFormatterJniMock);
-        when(mUrlFormatterJniMock.formatUrlForSecurityDisplay(
+        when(mUrlFormatterJniMock.formatStringUrlForSecurityDisplay(
                      anyString(), eq(SchemeDisplay.OMIT_HTTP_AND_HTTPS)))
                 .then(inv -> inv.getArgument(0));
 

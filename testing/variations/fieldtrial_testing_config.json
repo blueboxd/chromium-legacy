@@ -3525,10 +3525,12 @@
     "LowPriorityAdProcesses": [
         {
             "platforms": [
+                "android",
                 "chromeos",
                 "ios",
                 "linux",
-                "mac"
+                "mac",
+                "windows"
             ],
             "experiments": [
                 {

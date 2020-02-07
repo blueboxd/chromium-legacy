@@ -93,6 +93,8 @@ class VIZ_SERVICE_EXPORT OutputSurface {
     // This is copied over from gpu feature info since there is no easy way to
     // share that out of skia output surface.
     bool android_surface_control_feature_enabled = false;
+    // True if the buffer content will be preserved after presenting.
+    bool preserve_buffer_content = false;
   };
 
   // Constructor for skia-based compositing.

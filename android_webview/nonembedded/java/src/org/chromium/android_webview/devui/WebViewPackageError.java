@@ -102,7 +102,7 @@ public class WebViewPackageError {
         AlertDialog.Builder builder = new AlertDialog.Builder(mContext);
         builder.setTitle("Wrong WebView DevTools")
                 .setMessage(String.format(Locale.US,
-                        "This app (%s) is not the selected system's WebView provider.",
+                        "This app (%s) is not the system's selected WebView provider.",
                         loadLabel()));
         builder.setPositiveButton("Open the current WebView provider", (dialog, id) -> {
             PackageInfo systemWebViewPackage =

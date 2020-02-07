@@ -13,6 +13,7 @@ import org.chromium.chrome.browser.flags.ChromeFeatureList;
 import org.chromium.chrome.browser.ssl.SecurityStateModel;
 import org.chromium.chrome.browser.util.AccessibilityUtil;
 import org.chromium.chrome.browser.util.UrlConstants;
+import org.chromium.components.browser_ui.util.BrowserControlsVisibilityDelegate;
 import org.chromium.components.dom_distiller.core.DomDistillerUrlUtils;
 import org.chromium.content_public.browser.ImeAdapter;
 import org.chromium.content_public.browser.ImeEventObserver;

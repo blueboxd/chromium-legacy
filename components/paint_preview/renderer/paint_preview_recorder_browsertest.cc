@@ -98,7 +98,9 @@ TEST_F(PaintPreviewRecorderRenderViewTest, TestCaptureMainFrameAndClipping) {
       base::BindOnce(&OnCaptureFinished, mojom::PaintPreviewStatus::kOk,
                      base::Unretained(&out_response)));
 
-  EXPECT_FALSE(out_response->embedding_token.has_value());
+  EXPECT_TRUE(out_response->embedding_token.has_value());
+  EXPECT_EQ(frame->GetWebFrame()->GetEmbeddingToken(),
+            out_response->embedding_token.value());
   EXPECT_EQ(out_response->content_id_to_embedding_token.size(), 0U);
 
   EXPECT_EQ(out_response->links.size(), 1U);
@@ -170,7 +172,9 @@ TEST_F(PaintPreviewRecorderRenderViewTest, TestCaptureFragment) {
       base::BindOnce(&OnCaptureFinished, mojom::PaintPreviewStatus::kOk,
                      &out_response));
 
-  EXPECT_FALSE(out_response->embedding_token.has_value());
+  EXPECT_TRUE(out_response->embedding_token.has_value());
+  EXPECT_EQ(frame->GetWebFrame()->GetEmbeddingToken(),
+            out_response->embedding_token.value());
   EXPECT_EQ(out_response->content_id_to_embedding_token.size(), 0U);
 
   EXPECT_EQ(out_response->links.size(), 1U);
@@ -227,7 +231,9 @@ TEST_F(PaintPreviewRecorderRenderViewTest, TestCaptureMainFrameAndLocalFrame) {
       std::move(params),
       base::BindOnce(&OnCaptureFinished, mojom::PaintPreviewStatus::kOk,
                      base::Unretained(&out_response)));
-  EXPECT_FALSE(out_response->embedding_token.has_value());
+  EXPECT_TRUE(out_response->embedding_token.has_value());
+  EXPECT_EQ(frame->GetWebFrame()->GetEmbeddingToken(),
+            out_response->embedding_token.value());
   EXPECT_EQ(out_response->content_id_to_embedding_token.size(), 0U);
 }
 

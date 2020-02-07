@@ -10,6 +10,7 @@
 #include "base/memory/ref_counted.h"
 #include "base/time/time.h"
 #include "cc/input/browser_controls_state.h"
+#include "cc/metrics/frame_sequence_tracker.h"
 #include "ui/gfx/geometry/scroll_offset.h"
 #include "ui/gfx/geometry/vector2d_f.h"
 
@@ -153,7 +154,9 @@ class LayerTreeHostClient {
   // Mark the frame start and end time for UMA and UKM metrics that require
   // the time from the start of BeginMainFrame to the Commit, or early out.
   virtual void RecordStartOfFrameMetrics() = 0;
-  virtual void RecordEndOfFrameMetrics(base::TimeTicks frame_begin_time) = 0;
+  virtual void RecordEndOfFrameMetrics(
+      base::TimeTicks frame_begin_time,
+      ActiveFrameSequenceTrackers trackers) = 0;
   // Return metrics information for the stages of BeginMainFrame. This is
   // ultimately implemented by Blink's LocalFrameUKMAggregator. It must be a
   // distinct call from the FrameMetrics above because the BeginMainFrameMetrics

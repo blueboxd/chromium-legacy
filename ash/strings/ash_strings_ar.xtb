@@ -118,6 +118,7 @@
 <translation id="2413728805700750528"><ph name="DISPLAY_NAME" /> هي جلسة مُدارة بواسطة <ph name="DOMAIN" /></translation>
 <translation id="2427507373259914951">النقر بالزر الأيسر</translation>
 <translation id="2429753432712299108">يريد جهاز بلوتوث "<ph name="DEVICE_NAME" />" الحصول على إذن للإقران. قبل القبول، يُرجى التأكد أن مفتاح المرور هذا يظهر في هذا الجهاز: <ph name="PASSKEY" /></translation>
+<translation id="2473177541599297363">تأكيد درجة الدقة</translation>
 <translation id="2482878487686419369">الإشعارات</translation>
 <translation id="2484513351006226581">انقر على <ph name="KEYBOARD_SHORTCUT" /> لتبديل تنسيق لوحة المفاتيح.</translation>
 <translation id="2501920221385095727">مفاتيح الثبات</translation>
@@ -138,6 +139,7 @@
 <translation id="2727977024730340865">تمّ توصيل شاحن منخفض الطاقة. لذا قد لا تكون عملية شحن البطارية جديرة بالثقة.</translation>
 <translation id="2792498699870441125">‏Alt+مفتاح البحث</translation>
 <translation id="2819276065543622893">سيتم تسجيل خروجك الآن.</translation>
+<translation id="2825224105325558319"><ph name="DISPLAY_NAME" /> غير متوافق مع <ph name="SPECIFIED_RESOLUTION" />. تم تغيير درجة الدقة إلى <ph name="FALLBACK_RESOLUTION" />.</translation>
 <translation id="2825619548187458965">الرف</translation>
 <translation id="2844169650293029770">‏جهاز USB-C (المنفذ الأمامي الأيسر)</translation>
 <translation id="2865888419503095837">معلومات الشبكة</translation>
@@ -157,6 +159,12 @@
 <translation id="3009178788565917040">الإخراج</translation>
 <translation id="3051128274746680507">ستتم إزالة الملف الشخصي للمستخدم تحت الإشراف قريبًا. يمكنك تسجيل الدخول  للتعرُّف على مزيد من المعلومات.</translation>
 <translation id="3055162170959710888">استخدمت هذا الجهاز لمدة <ph name="USED_TIME" /> اليوم</translation>
+<translation id="3076778413190775903">شريط الحالة، الوقت <ph name="TIME" />،
+        <ph name="BATTERY" />
+        <ph name="NETWORK" />،
+        <ph name="NOTIFICATION" />،
+        <ph name="IME" />
+        <ph name="LOCALE" /></translation>
 <translation id="3077734595579995578">shift</translation>
 <translation id="3081696990447829002">توسيع القائمة</translation>
 <translation id="3087734570205094154">أسفل</translation>
@@ -167,6 +175,7 @@
 <translation id="3151786313568798007">الاتجاه</translation>
 <translation id="3153444934357957346">يمكنك الحصول فقط على ما يصل إلى <ph name="MULTI_PROFILE_USER_LIMIT" /> حساب في الدخول المتعدد.</translation>
 <translation id="3154351730702813399">قد يراقب مشرف الجهاز نشاط التصفح.</translation>
+<translation id="3181441307743005334">قد تستغرق إعادة التشغيل بعض الوقت</translation>
 <translation id="3202010236269062730">{NUM_DEVICES,plural, =1{تم الاتصال بجهاز واحد}zero{تم الاتصال بـ # جهاز}two{تم الاتصال بجهازين (#)}few{تم الاتصال بـ # أجهزة}many{تم الاتصال بـ # جهازًا}other{تم الاتصال بـ # جهاز}}</translation>
 <translation id="3217205077783620295">تم تفعيل الصوت، وسيؤدي التبديل إلى كتم الصوت</translation>
 <translation id="3226991577105957773">+<ph name="COUNT" /> والمزيد</translation>
@@ -316,6 +325,7 @@
 <translation id="5331975486040154427">‏جهاز USB-C (المنفذ الخلفي الأيسر)</translation>
 <translation id="5379115545237091094">محاولات كثيرة جدًا</translation>
 <translation id="5397578532367286026">‏يُمكن للمدير مراجعة الاستخدام والسجل الخاص بهذا المستخدم (<ph name="MANAGER_EMAIL" />) على chrome.com.</translation>
+<translation id="5400461572260843123">الإعدادات السريعة، اضغط على مفتاح البحث + السهم المتجه لليسار، للوصول إلى مركز الإشعارات.</translation>
 <translation id="5430931332414098647">التوصيل الفوري</translation>
 <translation id="5431825016875453137">OpenVPN / L2TP</translation>
 <translation id="544691375626129091">تمت إضافة كل المستخدمين المتوفرين لهذه الجلسة.</translation>
@@ -398,6 +408,7 @@
 <translation id="6490471652906364588">‏جهاز USB-C (المنفذ الأيمن)</translation>
 <translation id="649452524636452238">رقم التعريف الشخصي للبطاقة الذكية</translation>
 <translation id="6501401484702599040">إرسال الشاشة إلى <ph name="RECEIVER_NAME" /></translation>
+<translation id="652139407789908527">ستظهر شاشتك فارغة لمدة أطول من المعتاد (تصل إلى دقيقة واحدة) أثناء هذا التحديث. يُرجى عدم الضغط على زر التشغيل خلال عملية التحديث.</translation>
 <translation id="6521655319214113338">الإدخال بالكتابة اليدوية</translation>
 <translation id="6528179044667508675">عدم الإزعاج</translation>
 <translation id="6537270692134705506">التقاط الشاشة</translation>
@@ -543,6 +554,7 @@
 <translation id="847056008324733326">عرض إعدادات المقياس</translation>
 <translation id="8473301994082929012">الميزة <ph name="FEATURE_NAME" /> حالتها <ph name="FEATURE_STATE" /> في <ph name="ORGANIZATION_NAME" />.</translation>
 <translation id="8477270416194247200">‏اضغط على Alt+مفتاح البحث، أو اضغط على المفتاح Shift للإلغاء.</translation>
+<translation id="8492573885090281069"><ph name="DISPLAY_NAME" /> غير متوافق مع <ph name="SPECIFIED_RESOLUTION" />. تم تغيير درجة الدقة إلى <ph name="FALLBACK_RESOLUTION" />. انقر على "تأكيد" لحفظ التغييرات. ستتم استعادة الإعدادات السابقة خلال <ph name="TIMEOUT_SECONDS" />.</translation>
 <translation id="8513108775083588393">التدوير تلقائي</translation>
 <translation id="8517041960877371778">قد يتعذر شحن <ph name="DEVICE_TYPE" /> أثناء التشغيل.</translation>
 <translation id="8563862697512465947">إعدادات الاشعارات</translation>
@@ -598,6 +610,7 @@
 <translation id="9183456764293710005">المكبِّر بملء الشاشة</translation>
 <translation id="9193626018745640770">إرسال إلى مستلم غير معروف</translation>
 <translation id="9194617393863864469">تسجيل دخول مستخدم آخر...</translation>
+<translation id="9198992156681343238">تم تغيير درجة دقة <ph name="DISPLAY_NAME" /> إلى <ph name="RESOLUTION" />. انقر على "تأكيد" لحفظ التغييرات. ستتم استعادة الإعدادات السابقة خلال <ph name="TIMEOUT_SECONDS" />.</translation>
 <translation id="9201374708878217446">حالة الاتصال <ph name="CONNECTION_STATUS" />، يديرها المشرف</translation>
 <translation id="9210037371811586452">جارٍ الخروج من وضع سطح المكتب الموحد</translation>
 <translation id="9211681782751733685">الوقت المتبقي حتى يتم شحن البطارية بالكامل<ph name="TIME_REMAINING" />.</translation>

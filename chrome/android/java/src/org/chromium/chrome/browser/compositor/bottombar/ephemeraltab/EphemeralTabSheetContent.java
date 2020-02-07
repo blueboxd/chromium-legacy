@@ -32,6 +32,7 @@ import org.chromium.components.url_formatter.UrlFormatter;
 import org.chromium.content_public.browser.RenderCoordinates;
 import org.chromium.content_public.browser.WebContents;
 import org.chromium.ui.base.ActivityWindowAndroid;
+import org.chromium.url.GURL;
 
 /**
  * Represents ephemeral tab content and the toolbar, which can be included inside the bottom sheet.
@@ -167,7 +168,7 @@ public class EphemeralTabSheetContent implements BottomSheetContent {
     }
 
     /** Sets the ephemeral tab URL. */
-    public void updateURL(String url) {
+    public void updateURL(GURL url) {
         TextView originView = mToolbarView.findViewById(R.id.origin);
         originView.setText(
                 UrlFormatter.formatUrlForSecurityDisplay(url, SchemeDisplay.OMIT_HTTP_AND_HTTPS));

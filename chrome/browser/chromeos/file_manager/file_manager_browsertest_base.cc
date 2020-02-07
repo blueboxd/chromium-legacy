@@ -1358,6 +1358,12 @@ void FileManagerBrowserTestBase::SetUpCommandLine(
         arc::kEnableDocumentsProviderInFilesAppFeature);
   }
 
+  if (IsUnifiedMediaViewTest()) {
+    enabled_features.emplace_back(chromeos::features::kUnifiedMediaView);
+  } else {
+    disabled_features.emplace_back(chromeos::features::kUnifiedMediaView);
+  }
+
   // This is destroyed in |TearDown()|. We cannot initialize this in the
   // constructor due to this feature values' above dependence on virtual
   // method calls, but by convention subclasses of this fixture may initialize
@@ -1554,6 +1560,10 @@ bool FileManagerBrowserTestBase::GetEnableFilesNg() const {
 
 bool FileManagerBrowserTestBase::GetEnableNativeSmb() const {
   return true;
+}
+
+bool FileManagerBrowserTestBase::GetEnableUnifiedMediaView() const {
+  return false;
 }
 
 bool FileManagerBrowserTestBase::GetStartWithNoVolumesMounted() const {

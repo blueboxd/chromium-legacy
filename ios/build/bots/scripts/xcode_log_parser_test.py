@@ -166,9 +166,9 @@ class XCode11LogParserTest(test_runner_test.TestCase):
   def testXcresulttoolListPassedTests(self, mock_xcresult):
     mock_xcresult.return_value = PASSED_TESTS
     expected = ['TestCase1/testMethod1', 'TestCase2/testMethod1']
-    self.assertEqual(expected,
-                     xcode_log_parser.Xcode11LogParser()._list_of_passed_tests(
-                         _XTEST_RESULT))
+    self.assertEqual(
+        expected,
+        xcode_log_parser.Xcode11LogParser()._get_test_statuses(_XTEST_RESULT))
 
   @mock.patch('os.path.exists', autospec=True)
   @mock.patch('xcode_log_parser.Xcode11LogParser._xcresulttool_get')

@@ -1588,6 +1588,11 @@ class CORE_EXPORT LayoutObject : public ImageResourceObserver,
   // See LayoutBlock.h for some extra explanations on containing blocks.
   LayoutBlock* ContainingBlock(AncestorSkipInfo* = nullptr) const;
 
+  // Returns |container|'s containing block.
+  static LayoutBlock* FindNonAnonymousContainingBlock(
+      LayoutObject* container,
+      AncestorSkipInfo* = nullptr);
+
   const LayoutBlock* InclusiveContainingBlock() const;
 
   bool CanContainAbsolutePositionObjects() const {
@@ -2718,10 +2723,6 @@ class CORE_EXPORT LayoutObject : public ImageResourceObserver,
     bitfields_.SetBackgroundIsKnownToBeObscured(b);
   }
 
-  // Returns |container|'s containing block.
-  static LayoutBlock* FindNonAnonymousContainingBlock(
-      LayoutObject* container,
-      AncestorSkipInfo* = nullptr);
   // Returns ContainerForAbsolutePosition() if it's a LayoutBlock, or the
   // containing LayoutBlock of it.
   LayoutBlock* ContainingBlockForAbsolutePosition(

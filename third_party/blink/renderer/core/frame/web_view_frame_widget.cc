@@ -89,8 +89,9 @@ void WebViewFrameWidget::RecordStartOfFrameMetrics() {
 }
 
 void WebViewFrameWidget::RecordEndOfFrameMetrics(
-    base::TimeTicks frame_begin_time) {
-  web_view_->RecordEndOfFrameMetrics(frame_begin_time);
+    base::TimeTicks frame_begin_time,
+    cc::ActiveFrameSequenceTrackers trackers) {
+  web_view_->RecordEndOfFrameMetrics(frame_begin_time, trackers);
 }
 
 std::unique_ptr<cc::BeginMainFrameMetrics>

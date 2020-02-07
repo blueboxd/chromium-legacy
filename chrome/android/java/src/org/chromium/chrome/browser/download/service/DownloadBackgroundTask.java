@@ -11,6 +11,8 @@ import org.chromium.base.annotations.JNINamespace;
 import org.chromium.base.annotations.NativeMethods;
 import org.chromium.base.library_loader.LibraryProcessType;
 import org.chromium.chrome.browser.flags.CachedFeatureFlags;
+import org.chromium.chrome.browser.flags.ChromeFeatureList;
+import org.chromium.chrome.browser.offlinepages.prefetch.PrefetchConfiguration;
 import org.chromium.chrome.browser.profiles.ProfileKey;
 import org.chromium.components.background_task_scheduler.NativeBackgroundTask;
 import org.chromium.components.background_task_scheduler.TaskParameters;
@@ -41,8 +43,8 @@ public class DownloadBackgroundTask extends NativeBackgroundTask {
         // The feature value could change during native initialization, store it first.
         mStartsServiceManagerOnly =
                 (mCurrentTaskType == DownloadTaskType.DOWNLOAD_AUTO_RESUMPTION_TASK)
-                ? CachedFeatureFlags.isServiceManagerForDownloadResumptionEnabled()
-                : CachedFeatureFlags.isServiceManagerForBackgroundPrefetchEnabled();
+                ? CachedFeatureFlags.isEnabled(ChromeFeatureList.SERVICE_MANAGER_FOR_DOWNLOAD)
+                : PrefetchConfiguration.isServiceManagerForBackgroundPrefetchEnabled();
         // Reschedule if minimum battery level is not satisfied.
         if (!requiresCharging
                 && BatteryStatusListenerAndroid.getBatteryPercentage() < optimalBatteryPercentage) {

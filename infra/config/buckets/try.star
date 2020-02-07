@@ -1141,3 +1141,7 @@ chrome_internal_verifier(
 chrome_internal_verifier(
     builder = 'linux-chromeos-chrome',
 )
+
+chrome_internal_verifier(
+    builder = 'win_chrome_official',
+)

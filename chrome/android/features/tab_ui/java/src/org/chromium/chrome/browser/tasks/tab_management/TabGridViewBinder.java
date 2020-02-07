@@ -201,7 +201,6 @@ class TabGridViewBinder {
             } else {
                 searchButton.setVisibility(View.VISIBLE);
                 searchButton.getPrimaryTextView().setText(query);
-                searchButton.setIcon(R.drawable.ic_search, true);
             }
         } else if (TabUiFeatureUtilities.isSearchTermChipEnabled()
                 && TabProperties.SEARCH_LISTENER == propertyKey) {
@@ -215,6 +214,12 @@ class TabGridViewBinder {
                 int tabId = model.get(TabProperties.TAB_ID);
                 listener.run(tabId);
             });
+        } else if (TabUiFeatureUtilities.isSearchTermChipEnabled()
+                && TabProperties.SEARCH_CHIP_ICON_DRAWABLE_ID == propertyKey) {
+            ChipView searchButton = (ChipView) view.fastFindViewById(R.id.search_button);
+            int iconDrawableId = model.get(TabProperties.SEARCH_CHIP_ICON_DRAWABLE_ID);
+            boolean shouldTint = iconDrawableId != R.drawable.ic_logo_googleg_24dp;
+            searchButton.setIcon(iconDrawableId, shouldTint);
         }
     }
 

@@ -35,6 +35,7 @@
 #include "content/browser/bad_message.h"
 #include "content/browser/browser_interface_broker_impl.h"
 #include "content/browser/can_commit_status.h"
+#include "content/browser/feature_observer.h"
 #include "content/browser/frame_host/back_forward_cache_metrics.h"
 #include "content/browser/frame_host/should_swap_browsing_instance.h"
 #include "content/browser/renderer_host/media/render_frame_audio_input_stream_factory.h"
@@ -425,8 +426,7 @@ class CONTENT_EXPORT RenderFrameHostImpl
   void DeleteRenderFrame(FrameDeleteIntention intent);
 
   // Tracks whether the RenderFrame for this RenderFrameHost has been created in
-  // the renderer process.  This is currently only used for subframes.
-  // TODO(creis): Use this for main frames as well when RVH goes away.
+  // the renderer process.
   void SetRenderFrameCreated(bool created);
 
   // Called for renderer-created windows to resume requests from this frame,
@@ -1233,6 +1233,9 @@ class CONTENT_EXPORT RenderFrameHostImpl
 
   void CreateAudioOutputStreamFactory(
       mojo::PendingReceiver<mojom::RendererAudioOutputStreamFactory> receiver);
+
+  void GetFeatureObserver(
+      mojo::PendingReceiver<blink::mojom::FeatureObserver> receiver);
 
   // https://mikewest.github.io/corpp/#initialize-embedder-policy-for-global
   network::mojom::CrossOriginEmbedderPolicy cross_origin_embedder_policy()
@@ -2655,6 +2658,10 @@ class CONTENT_EXPORT RenderFrameHostImpl
   // The portals owned by this frame. |Portal::owner_render_frame_host_| points
   // back to |this|.
   base::flat_set<std::unique_ptr<Portal>, base::UniquePtrComparator> portals_;
+
+  // Tracking active features in this frame, for use in figuring out whether
+  // or not it can be frozen.
+  std::unique_ptr<FeatureObserver> feature_observer_;
 
   // Optional PeakGpuMemoryTracker, when this frame is the main frame. Created
   // by NavigationRequest, ownership is maintained until the frame has stopped

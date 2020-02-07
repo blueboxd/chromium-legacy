@@ -687,6 +687,7 @@
 <translation id="3987940399970879459">১ এম. বি.তকৈ কম</translation>
 <translation id="3990250421422698716">লাহেকৈ অফছেটক হেঁচক</translation>
 <translation id="40103911065039147">{URL_count,plural, =1{ওচৰত ১টা ৱেবপৃষ্ঠা আছে}one{ওচৰত #টা ৱেবপৃষ্ঠা আছে}other{ওচৰত #টা ৱেবপৃষ্ঠা আছে}}</translation>
+<translation id="4014128326099193693">{COUNT,plural, =1{{COUNT} খন পৃষ্ঠা থকা PDF নথি}one{{COUNT} খন পৃষ্ঠা থকা PDF নথি}other{{COUNT} খন পৃষ্ঠা থকা PDF নথি}}</translation>
 <translation id="4030383055268325496">যোগ কৰাটো &amp;আনডু কৰক</translation>
 <translation id="4032320456957708163">আপোনাৰ ব্ৰাউজাৰটো <ph name="ENROLLMENT_DOMAIN" />এ পৰিচালনা কৰে</translation>
 <translation id="4058922952496707368">চাবি "<ph name="SUBKEY" />": <ph name="ERROR" /></translation>
@@ -714,6 +715,7 @@
 <translation id="4142935452406587478">ট্ৰে’ ১০</translation>
 <translation id="4148925816941278100">American Express</translation>
 <translation id="4151403195736952345">গ্ল’বেল ডিফ’ল্ট ব্যৱহাৰ কৰক (ধৰা পেলাওক)</translation>
+<translation id="4152318981910038897">{COUNT,plural, =1{পৃষ্ঠা ১}one{পৃষ্ঠা {COUNT}}other{পৃষ্ঠা {COUNT}}}</translation>
 <translation id="4159784952369912983">বেঙুনীয়া</translation>
 <translation id="4165986682804962316">ছাইটৰ ছেটিংসমূহ</translation>
 <translation id="4171400957073367226">সত্যাপনৰ স্বাক্ষৰটো বেয়া</translation>
@@ -1386,6 +1388,7 @@
 <translation id="7201591969684833065">আপোনাৰ প্ৰশাসকে এয়া চাব পাৰে:</translation>
 <translation id="7202346780273620635">পত্ৰ-অতিৰিক্ত</translation>
 <translation id="7210863904660874423"><ph name="HOST_NAME" />এ সুৰক্ষাৰ নীতি মানি নচলে।</translation>
+<translation id="7210993021468939304">কণ্টেইনাৰটোৰ ভিতৰৰ Linux কাৰ্যকলাপে কণ্টেইনাৰৰ ভিতৰত থকা Linux এপ্‌সমূহ ইনষ্টল কৰিব আৰু চলাব পাৰে</translation>
 <translation id="721197778055552897">এই সমস্যাটোৰ বিষয়ে <ph name="BEGIN_LINK" />অধিক জানক<ph name="END_LINK" />।</translation>
 <translation id="7219179957768738017">সংযোগটোৱে <ph name="SSL_VERSION" /> ব্যৱহাৰ কৰে।</translation>
 <translation id="7220786058474068424">প্ৰক্ৰিয়া চলি আছে</translation>
@@ -1548,6 +1551,7 @@
 <translation id="7878562273885520351">আপোনাৰ পাছৱৰ্ডটো হয়তো হেক হৈছে</translation>
 <translation id="7882421473871500483">মাটীয়া</translation>
 <translation id="7887683347370398519">আপোনাৰ CVC পৰীক্ষা কৰি আকৌ চেষ্টা কৰক</translation>
+<translation id="7887885240995164102">চিত্ৰৰ ভিতৰত চিত্ৰ আৰম্ভ কৰক</translation>
 <translation id="7888575728750733395">প্ৰিণ্ট ৰেণ্ডাৰ কৰা ইনটেণ্ট</translation>
 <translation id="7904208859782148177">C3 (লেফাফা)</translation>
 <translation id="7932579305932748336">ক'ট কৰক</translation>

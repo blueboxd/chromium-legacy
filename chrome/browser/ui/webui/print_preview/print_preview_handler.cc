@@ -81,8 +81,8 @@
 
 #if defined(OS_CHROMEOS)
 #include "chrome/browser/chromeos/account_manager/account_manager_util.h"
-#include "chrome/browser/chromeos/settings/device_oauth2_token_service.h"
-#include "chrome/browser/chromeos/settings/device_oauth2_token_service_factory.h"
+#include "chrome/browser/device_identity/device_oauth2_token_service.h"
+#include "chrome/browser/device_identity/device_oauth2_token_service_factory.h"
 #include "chrome/browser/ui/settings_window_manager_chromeos.h"
 #include "chrome/browser/ui/webui/signin/inline_login_handler_dialog_chromeos.h"
 #include "chromeos/printing/printer_configuration.h"

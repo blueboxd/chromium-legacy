@@ -566,11 +566,13 @@ void ProxyImpl::ScheduledActionSendBeginMainFrame(
   begin_main_frame_state->begin_frame_id = begin_frame_id;
   begin_main_frame_state->begin_frame_args = args;
   begin_main_frame_state->scroll_info = host_impl_->ProcessScrollDeltas();
-  begin_main_frame_state->evicted_ui_resources =
-      host_impl_->EvictedUIResourcesExist();
   begin_main_frame_state->completed_image_decode_requests =
       host_impl_->TakeCompletedImageDecodeRequests();
   begin_main_frame_state->mutator_events = host_impl_->TakeMutatorEvents();
+  begin_main_frame_state->active_sequence_trackers =
+      host_impl_->FrameSequenceTrackerActiveTypes();
+  begin_main_frame_state->evicted_ui_resources =
+      host_impl_->EvictedUIResourcesExist();
   host_impl_->WillSendBeginMainFrame();
   MainThreadTaskRunner()->PostTask(
       FROM_HERE,

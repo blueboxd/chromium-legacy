@@ -2466,14 +2466,15 @@ void GLRenderer::DrawYUVVideoQuad(const YUVVideoDrawQuad* quad,
   auto tile_rect = gfx::RectF(quad->rect);
 
   SetShaderOpacity(quad->shared_quad_state->opacity);
-  if (!clip_region) {
+  if (!clip_region && quad->rect == quad->visible_rect) {
     DrawQuadGeometry(current_frame()->projection_matrix,
                      quad->shared_quad_state->quad_to_target_transform,
                      tile_rect);
   } else {
+    gfx::QuadF region_quad =
+        clip_region ? *clip_region : gfx::QuadF(gfx::RectF(quad->visible_rect));
     float uvs[8] = {0};
-    GetScaledUVs(quad->visible_rect, clip_region, uvs);
-    gfx::QuadF region_quad = *clip_region;
+    GetScaledUVs(quad->rect, &region_quad, uvs);
     region_quad.Scale(1.0f / tile_rect.width(), 1.0f / tile_rect.height());
     region_quad -= gfx::Vector2dF(0.5f, 0.5f);
     DrawQuadGeometryClippedByQuadF(
@@ -2530,19 +2531,22 @@ void GLRenderer::DrawStreamVideoQuad(const StreamVideoDrawQuad* quad,
                  tex_clamp_rect.data[0], tex_clamp_rect.data[1],
                  tex_clamp_rect.data[2], tex_clamp_rect.data[3]);
 
-  if (!clip_region) {
+  auto tile_rect = gfx::RectF(quad->rect);
+
+  if (!clip_region && quad->rect == quad->visible_rect) {
     DrawQuadGeometry(current_frame()->projection_matrix,
                      quad->shared_quad_state->quad_to_target_transform,
-                     gfx::RectF(quad->rect));
+                     tile_rect);
   } else {
-    gfx::QuadF region_quad(*clip_region);
-    region_quad.Scale(1.0f / quad->rect.width(), 1.0f / quad->rect.height());
-    region_quad -= gfx::Vector2dF(0.5f, 0.5f);
+    gfx::QuadF region_quad =
+        clip_region ? *clip_region : gfx::QuadF(gfx::RectF(quad->visible_rect));
     float uvs[8] = {0};
-    GetScaledUVs(quad->visible_rect, clip_region, uvs);
+    GetScaledUVs(quad->rect, &region_quad, uvs);
+    region_quad.Scale(1.0f / tile_rect.width(), 1.0f / tile_rect.height());
+    region_quad -= gfx::Vector2dF(0.5f, 0.5f);
     DrawQuadGeometryClippedByQuadF(
-        quad->shared_quad_state->quad_to_target_transform,
-        gfx::RectF(quad->rect), region_quad, uvs);
+        quad->shared_quad_state->quad_to_target_transform, tile_rect,
+        region_quad, uvs);
   }
 }
 

@@ -24,10 +24,10 @@ import org.robolectric.annotation.Config;
 
 import org.chromium.blink.mojom.ViewportFit;
 import org.chromium.chrome.browser.ChromeActivity;
-import org.chromium.chrome.browser.InsetObserverView;
 import org.chromium.chrome.browser.tab.TabImpl;
 import org.chromium.chrome.browser.tab.TabObserver;
 import org.chromium.chrome.browser.tab.TabSelectionType;
+import org.chromium.components.browser_ui.widget.InsetObserverView;
 import org.chromium.testing.local.LocalRobolectricTestRunner;
 
 /**

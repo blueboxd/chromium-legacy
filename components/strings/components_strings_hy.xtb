@@ -689,6 +689,7 @@
 <translation id="3987940399970879459">1 ՄԲ-ից քիչ</translation>
 <translation id="3990250421422698716">Աստիճանական տեղաշարժ</translation>
 <translation id="40103911065039147">{URL_count,plural, =1{1 վեբ էջ մոտակայքում}one{# web pages nearby}other{# վեբ էջ մոտակայքում}}</translation>
+<translation id="4014128326099193693">{COUNT,plural, =1{{COUNT}-էջանոց PDF փաստաթուղթ}one{{COUNT}-էջանոց PDF փաստաթուղթ}other{{COUNT}-էջանոց PDF փաստաթուղթ}}</translation>
 <translation id="4030383055268325496">&amp;Հետարկել հավելումը</translation>
 <translation id="4032320456957708163">Ձեր դիտարկիչը կառավարվում է <ph name="ENROLLMENT_DOMAIN" /> կայքի կողմից</translation>
 <translation id="4058922952496707368">Բանալու «<ph name="SUBKEY" />»՝ <ph name="ERROR" /></translation>
@@ -717,6 +718,7 @@
 <translation id="4142935452406587478">Դարակ 10</translation>
 <translation id="4148925816941278100">American Express</translation>
 <translation id="4151403195736952345">Օգտագործել համընդհանուր կանխադրվածը (Հատկորոշել)</translation>
+<translation id="4152318981910038897">{COUNT,plural, =1{Էջ 1}one{Էջ {COUNT}}other{Էջ {COUNT}}}</translation>
 <translation id="4159784952369912983">Մանուշակագույն</translation>
 <translation id="4165986682804962316">Կայքի կարգավորումներ</translation>
 <translation id="4171400957073367226">Հաստատող ստորագրությունը սխալ է</translation>
@@ -1394,6 +1396,7 @@
 <translation id="7201591969684833065">Ձեր ադմինիստրատորը կարող է տեսնել՝</translation>
 <translation id="7202346780273620635">Letter-Extra</translation>
 <translation id="7210863904660874423"><ph name="HOST_NAME" />-ը չի հետևում անվտանգության չափորոշիչներին:</translation>
+<translation id="7210993021468939304">Տեսնում է Լինուքսի գործողությունները կոնտեյներում և կարող է տեղադրել ու գործարկել Լինուքսի հավելվածներ կոնտեյներից</translation>
 <translation id="721197778055552897"><ph name="BEGIN_LINK" />Իմանալ ավելին<ph name="END_LINK" /> այս խնդրի մասին:</translation>
 <translation id="7219179957768738017">Կապակցումն օգտագործում է <ph name="SSL_VERSION" />:</translation>
 <translation id="7220786058474068424">Մշակվում է</translation>
@@ -1557,6 +1560,7 @@
 <translation id="7878562273885520351">Ձեր գաղտնաբառը կարող են գողանալ</translation>
 <translation id="7882421473871500483">Շագանակագույն</translation>
 <translation id="7887683347370398519">Ստուգեք ձեր CVC կոդը և նորից փորձեք</translation>
+<translation id="7887885240995164102">Անցնել «նկար նկարի մեջ» ռեժիմի</translation>
 <translation id="7888575728750733395">Գույները վերահաշվելու եղանակ տպման համար</translation>
 <translation id="7904208859782148177">C3 (ծրար)</translation>
 <translation id="7932579305932748336">Ծածկույթ</translation>

@@ -492,7 +492,7 @@ MediaObserver* ContentBrowserClient::GetMediaObserver() {
   return nullptr;
 }
 
-LockObserver* ContentBrowserClient::GetLockObserver() {
+FeatureObserverClient* ContentBrowserClient::GetFeatureObserverClient() {
   return nullptr;
 }
 

@@ -451,7 +451,8 @@ class CORE_EXPORT WebViewImpl final : public WebView,
   void BeginCommitCompositorFrame();
   void EndCommitCompositorFrame();
   void RecordStartOfFrameMetrics();
-  void RecordEndOfFrameMetrics(base::TimeTicks frame_begin_time);
+  void RecordEndOfFrameMetrics(base::TimeTicks frame_begin_time,
+                               cc::ActiveFrameSequenceTrackers trackers);
   std::unique_ptr<cc::BeginMainFrameMetrics> GetBeginMainFrameMetrics();
   void UpdateLifecycle(WebWidget::LifecycleUpdate requested_update,
                        DocumentUpdateReason reason);

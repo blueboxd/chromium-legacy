@@ -5,7 +5,6 @@
 package org.chromium.chrome.browser.modaldialog;
 
 import org.chromium.chrome.browser.ChromeActivity;
-import org.chromium.chrome.browser.fullscreen.ComposedBrowserControlsVisibilityDelegate;
 import org.chromium.chrome.browser.lifecycle.Destroyable;
 import org.chromium.chrome.browser.lifecycle.NativeInitObserver;
 import org.chromium.chrome.browser.tab.EmptyTabObserver;
@@ -14,6 +13,7 @@ import org.chromium.chrome.browser.tab.TabObserver;
 import org.chromium.chrome.browser.tab.TabSelectionType;
 import org.chromium.chrome.browser.tabmodel.TabModelSelector;
 import org.chromium.chrome.browser.tabmodel.TabModelSelectorTabModelObserver;
+import org.chromium.components.browser_ui.util.ComposedBrowserControlsVisibilityDelegate;
 import org.chromium.ui.modaldialog.DialogDismissalCause;
 import org.chromium.ui.modaldialog.ModalDialogManager;
 import org.chromium.ui.modaldialog.ModalDialogManager.ModalDialogType;

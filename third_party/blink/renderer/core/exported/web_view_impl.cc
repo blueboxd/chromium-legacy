@@ -1556,7 +1556,9 @@ void WebViewImpl::RecordStartOfFrameMetrics() {
   MainFrameImpl()->GetFrame()->View()->EnsureUkmAggregator().BeginMainFrame();
 }
 
-void WebViewImpl::RecordEndOfFrameMetrics(base::TimeTicks frame_begin_time) {
+void WebViewImpl::RecordEndOfFrameMetrics(
+    base::TimeTicks frame_begin_time,
+    cc::ActiveFrameSequenceTrackers trackers) {
   if (!MainFrameImpl())
     return;
 
@@ -1564,7 +1566,8 @@ void WebViewImpl::RecordEndOfFrameMetrics(base::TimeTicks frame_begin_time) {
       ->GetFrame()
       ->View()
       ->EnsureUkmAggregator()
-      .RecordEndOfFrameMetrics(frame_begin_time, base::TimeTicks::Now());
+      .RecordEndOfFrameMetrics(frame_begin_time, base::TimeTicks::Now(),
+                               trackers);
 }
 
 std::unique_ptr<cc::BeginMainFrameMetrics>

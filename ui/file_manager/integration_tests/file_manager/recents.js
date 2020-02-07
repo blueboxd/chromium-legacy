@@ -3,14 +3,22 @@
 // found in the LICENSE file.
 'use strict';
 
-async function verifyRecents(appId, expectedRecents = RECENT_ENTRY_SET) {
-  // Navigate to Recents.
-  chrome.test.assertTrue(await remoteCall.callRemoteTestUtil(
-      'fakeMouseClick', appId, ['span[root-type-icon=\'recent\']']));
+// Test entry for a recently-modified video file.
+const RECENTLY_MODIFIED_VIDEO = new TestEntryInfo({
+  type: EntryType.FILE,
+  sourceFileName: 'video.ogv',
+  targetPath: 'world.ogv',
+  mimeType: 'video/ogg',
+  lastModifiedTime: 'Jul 4, 2038, 10:35 AM',
+  nameText: 'world.ogv',
+  sizeText: '59 KB',
+  typeText: 'OGG video'
+});
 
+async function verifyCurrentEntries(appId, expectedEntries) {
   // Verify Recents contains the expected files - those with an mtime in the
   // future.
-  const files = TestEntryInfo.getExpectedRows(expectedRecents);
+  const files = TestEntryInfo.getExpectedRows(expectedEntries);
   await remoteCall.waitForFiles(appId, files);
 
   // Select all the files and check that the delete button isn't visible.
@@ -23,6 +31,41 @@ async function verifyRecents(appId, expectedRecents = RECENT_ENTRY_SET) {
   // Test that the delete button isn't visible.
   const deleteButton = await remoteCall.waitForElement(appId, '#delete-button');
   chrome.test.assertTrue(deleteButton.hidden, 'delete button should be hidden');
+}
+
+async function verifyRecents(appId, expectedEntries = RECENT_ENTRY_SET) {
+  // Navigate to Recents.
+  chrome.test.assertTrue(await remoteCall.callRemoteTestUtil(
+      'fakeMouseClick', appId, ['span[root-type-icon=\'recent\']']));
+
+  await verifyCurrentEntries(appId, expectedEntries);
+}
+
+async function verifyRecentAudio(appId, expectedEntries) {
+  // Navigate to Audio.
+  chrome.test.assertTrue(await remoteCall.callRemoteTestUtil(
+      'fakeMouseClick', appId,
+      ['span[root-type-icon=\'recent\'][recent-file-type=\'audio\']']));
+
+  await verifyCurrentEntries(appId, expectedEntries);
+}
+
+async function verifyRecentImages(appId, expectedEntries) {
+  // Navigate to Images.
+  chrome.test.assertTrue(await remoteCall.callRemoteTestUtil(
+      'fakeMouseClick', appId,
+      ['span[root-type-icon=\'recent\'][recent-file-type=\'image\']']));
+
+  await verifyCurrentEntries(appId, expectedEntries);
+}
+
+async function verifyRecentVideos(appId, expectedEntries) {
+  // Navigate to Images.
+  chrome.test.assertTrue(await remoteCall.callRemoteTestUtil(
+      'fakeMouseClick', appId,
+      ['span[root-type-icon=\'recent\'][recent-file-type=\'video\']']));
+
+  await verifyCurrentEntries(appId, expectedEntries);
 }
 
 testcase.recentsDownloads = async () => {
@@ -69,4 +112,55 @@ testcase.recentsDownloadsAndDriveWithOverlap = async () => {
   // Populate both downloads and drive with overlapping sets of files.
   const appId = await setupAndWaitUntilReady(RootPath.DOWNLOADS);
   await verifyRecents(appId, RECENT_ENTRY_SET.concat(RECENT_ENTRY_SET));
+};
+
+testcase.recentAudioDownloads = async () => {
+  const appId = await setupAndWaitUntilReady(
+      RootPath.DOWNLOADS, BASIC_LOCAL_ENTRY_SET, []);
+  // ENTRIES.beautiful is recently-modified and has .ogg file extension.
+  await verifyRecentAudio(appId, [ENTRIES.beautiful]);
+};
+
+testcase.recentAudioDownloadsAndDrive = async () => {
+  const appId = await setupAndWaitUntilReady(
+      RootPath.DOWNLOADS, BASIC_LOCAL_ENTRY_SET, BASIC_DRIVE_ENTRY_SET);
+  // ENTRIES.beautiful in BASIC_DRIVE_ENTRY_SET does not have mime type.
+  // Since Drive files should be filtered based on mime types, only the file in
+  // Downloads should be shown even though the Drive one also has .ogg file
+  // extension.
+  await verifyRecentAudio(appId, [ENTRIES.beautiful]);
+};
+
+testcase.recentImagesDownloads = async () => {
+  const appId = await setupAndWaitUntilReady(
+      RootPath.DOWNLOADS, BASIC_LOCAL_ENTRY_SET, []);
+  // ENTRIES.desktop is recently-modified and has .png file extension.
+  await verifyRecentImages(appId, [ENTRIES.desktop]);
+};
+
+testcase.recentImagesDownloadsAndDrive = async () => {
+  const appId = await setupAndWaitUntilReady(RootPath.DOWNLOADS);
+  // ENTRIES.desktop has 'image/png' mime type, too. Both the file in Downloads
+  // and the file in Drive should be shown in Images.
+  await verifyRecentImages(appId, [ENTRIES.desktop, ENTRIES.desktop]);
+};
+
+testcase.recentVideosDownloads = async () => {
+  // RECENTLY_MODIFIED_VIDEO is recently-modified and has .ogv file extension.
+  // It should be shown in Videos.
+  const appId = await setupAndWaitUntilReady(
+      RootPath.DOWNLOADS,
+      BASIC_LOCAL_ENTRY_SET.concat([RECENTLY_MODIFIED_VIDEO]), []);
+  await verifyRecentVideos(appId, [RECENTLY_MODIFIED_VIDEO]);
+};
+
+testcase.recentVideosDownloadsAndDrive = async () => {
+  const appId = await setupAndWaitUntilReady(
+      RootPath.DOWNLOADS,
+      BASIC_LOCAL_ENTRY_SET.concat([RECENTLY_MODIFIED_VIDEO]),
+      BASIC_DRIVE_ENTRY_SET.concat([RECENTLY_MODIFIED_VIDEO]));
+  // RECENTLY_MODIFIED_VIDEO has video mime type (video/ogg) too, so the file
+  // from Drive should be shown too.
+  await verifyRecentVideos(
+      appId, [RECENTLY_MODIFIED_VIDEO, RECENTLY_MODIFIED_VIDEO]);
 };

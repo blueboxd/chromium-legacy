@@ -203,7 +203,7 @@ public class DownloadBroadcastManager extends Service {
             @Override
             public boolean startServiceManagerOnly() {
                 if (!LegacyHelpers.isLegacyDownload(id)) return false;
-                return CachedFeatureFlags.isServiceManagerForDownloadResumptionEnabled()
+                return CachedFeatureFlags.isEnabled(ChromeFeatureList.SERVICE_MANAGER_FOR_DOWNLOAD)
                         && !ACTION_DOWNLOAD_OPEN.equals(intent.getAction());
             }
         };

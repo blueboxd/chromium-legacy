@@ -1018,11 +1018,10 @@ void AutofillPopupViewNativeViews::VisibilityChanged(View* starting_from,
 
 void AutofillPopupViewNativeViews::OnThemeChanged() {
   SetBackground(views::CreateSolidBackground(GetBackgroundColor()));
-  // |body_container_| and |footer_container_| will be null if there is no body
+  // |scroll_view_| and |footer_container_| will be null if there is no body
   // or footer content, respectively.
-  if (body_container_) {
-    body_container_->SetBackground(
-        views::CreateSolidBackground(GetBackgroundColor()));
+  if (scroll_view_) {
+    scroll_view_->SetBackgroundColor(GetBackgroundColor());
   }
   if (footer_container_) {
     footer_container_->SetBackground(

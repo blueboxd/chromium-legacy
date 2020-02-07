@@ -8,6 +8,7 @@
 #include <memory>
 
 #include "base/stl_util.h"
+#include "base/trace_event/trace_event.h"
 #include "ui/display/types/display_snapshot.h"
 #include "ui/display/types/gamma_ramp_rgb_entry.h"
 #include "ui/ozone/platform/drm/common/drm_util.h"
@@ -51,15 +52,16 @@ uint32_t GetContentProtectionValue(drmModePropertyRes* property,
   return 0;
 }
 
-std::string GetEnumNameForProperty(drmModeConnector* connector,
+std::string GetEnumNameForProperty(drmModeObjectProperties* property_values,
                                    drmModePropertyRes* property) {
-  for (int prop_idx = 0; prop_idx < connector->count_props; ++prop_idx) {
-    if (connector->props[prop_idx] != property->prop_id)
+  for (uint32_t prop_idx = 0; prop_idx < property_values->count_props;
+       ++prop_idx) {
+    if (property_values->props[prop_idx] != property->prop_id)
       continue;
 
     for (int enum_idx = 0; enum_idx < property->count_enums; ++enum_idx) {
       const drm_mode_property_enum& property_enum = property->enums[enum_idx];
-      if (property_enum.value == connector->prop_values[prop_idx])
+      if (property_enum.value == property_values->prop_values[prop_idx])
         return property_enum.name;
     }
   }
@@ -144,6 +146,8 @@ bool DrmDisplay::GetHDCPState(display::HDCPState* state) {
   if (!connector_)
     return false;
 
+  TRACE_EVENT1("drm", "DrmDisplay::GetHDCPState", "connector",
+               connector_->connector_id);
   ScopedDrmPropertyPtr hdcp_property(
       drm_->GetProperty(connector_.get(), kContentProtection));
   if (!hdcp_property) {
@@ -151,8 +155,10 @@ bool DrmDisplay::GetHDCPState(display::HDCPState* state) {
     return false;
   }
 
+  ScopedDrmObjectPropertyPtr property_values(drm_->GetObjectProperties(
+      connector_->connector_id, DRM_MODE_OBJECT_CONNECTOR));
   std::string name =
-      GetEnumNameForProperty(connector_.get(), hdcp_property.get());
+      GetEnumNameForProperty(property_values.get(), hdcp_property.get());
   for (size_t i = 0; i < base::size(kContentProtectionStates); ++i) {
     if (name == kContentProtectionStates[i].name) {
       *state = kContentProtectionStates[i].state;

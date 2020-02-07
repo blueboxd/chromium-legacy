@@ -6364,7 +6364,6 @@ TEST_P(PaintPropertyTreeBuilderTest, SimpleScrollChangeDoesNotCausePacUpdate) {
       properties->ScrollTranslation()->ScrollNode()->GetCompositorElementId());
   EXPECT_FLOAT_EQ(current_scroll_offset.x(), 0);
   EXPECT_FLOAT_EQ(current_scroll_offset.y(), 10);
-  EXPECT_TRUE(property_trees->scroll_tree.needs_update());
   EXPECT_TRUE(property_trees->transform_tree.needs_update());
   EXPECT_TRUE(cc_transform_node->transform_changed);
 

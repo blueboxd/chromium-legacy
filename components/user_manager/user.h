@@ -189,6 +189,11 @@ class USER_MANAGER_EXPORT User : public UserInfo {
     return CreatePublicAccountUser(account_id);
   }
 
+  static User* CreatePublicAccountUserForTestingWithSAML(
+      const AccountId& account_id) {
+    return CreatePublicAccountUser(account_id, /* is_using_saml */ true);
+  }
+
   static User* CreateRegularUserForTesting(const AccountId& account_id) {
     User* user = CreateRegularUser(account_id, USER_TYPE_REGULAR);
     user->SetImage(std::unique_ptr<UserImage>(new UserImage), 0);

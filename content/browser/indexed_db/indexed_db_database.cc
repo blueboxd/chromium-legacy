@@ -1618,12 +1618,9 @@ Status IndexedDBDatabase::OpenInternal() {
 
 std::unique_ptr<IndexedDBConnection> IndexedDBDatabase::CreateConnection(
     IndexedDBOriginStateHandle origin_state_handle,
-    scoped_refptr<IndexedDBDatabaseCallbacks> database_callbacks,
-    IndexedDBExecutionContextConnectionTracker::Handle
-        execution_context_connection_handle) {
+    scoped_refptr<IndexedDBDatabaseCallbacks> database_callbacks) {
   std::unique_ptr<IndexedDBConnection> connection =
       std::make_unique<IndexedDBConnection>(
-          std::move(execution_context_connection_handle),
           std::move(origin_state_handle), class_factory_,
           weak_factory_.GetWeakPtr(),
           base::BindRepeating(&IndexedDBDatabase::VersionChangeIgnored,

@@ -39,7 +39,7 @@ class AmlV4L2Device : public GenericV4L2Device {
              int flags,
              unsigned int offset) override;
   void Munmap(void* addr, unsigned int len) override;
-  std::vector<uint32_t> PreferredInputFormat(Type type) override;
+  std::vector<uint32_t> PreferredInputFormat(Type type) const override;
   VideoEncodeAccelerator::SupportedProfiles GetSupportedEncodeProfiles()
       override;
 

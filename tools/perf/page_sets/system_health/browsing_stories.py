@@ -1247,6 +1247,80 @@ class GoogleSheetsDesktopStory(system_health_story.SystemHealthStory):
 
 
 ##############################################################################
+# Google docs browsing stories.
+##############################################################################
+
+
+class GoogleDocsDesktopScrollingStory(system_health_story.SystemHealthStory):
+  """
+  Google Docs scrolling story:
+    _ Open a document
+    _ Wait for UI to become available
+    _ Scroll through the document
+  """
+  NAME = 'browse:tools:docs_scrolling'
+  # Test document. safe=true forces synchronous layout which helps determinism
+  # pylint: disable=line-too-long
+  URL = 'https://docs.google.com/document/d/14sZMXhI1NljEDSFfxhgA4FNI2_rSImxx3tZ4YsNRUdU/preview?safe=true&Debug=true'
+  # pylint: enable=line-too-long
+  SUPPORTED_PLATFORMS = platforms.DESKTOP_ONLY
+  TAGS = [story_tags.JAVASCRIPT_HEAVY, story_tags.YEAR_2020]
+
+  # This map translates page-specific event names to event names needed for
+  # the reported_by_page:* metric.
+  EVENTS_REPORTED_BY_PAGE = '''
+    window.__telemetry_reported_page_events = {
+      'fcoe':
+          'telemetry:reported_by_page:editable'
+    };
+  '''
+
+  # Patch performance.mark to get notified about page events.
+  PERFORMANCE_MARK_PATCH = '''
+    window.__telemetry_observed_page_events = new Set();
+    (function () {
+      let reported = window.__telemetry_reported_page_events;
+      let observed = window.__telemetry_observed_page_events;
+      let performance_mark = window.performance.mark;
+      window.performance.mark = function (label) {
+        performance_mark.call(window.performance, label);
+        if (reported.hasOwnProperty(label)) {
+          performance_mark.call(
+              window.performance, reported[label]);
+          observed.add(reported[label]);
+        }
+      }
+    })();
+  '''
+
+  # Page event queries.
+  EDITABLE_EVENT = '''
+    (window.__telemetry_observed_page_events.has(
+        "telemetry:reported_by_page:editable"))
+  '''
+
+  def __init__(self, story_set, take_memory_measurement):
+    super(GoogleDocsDesktopScrollingStory, self).__init__(
+        story_set, take_memory_measurement)
+    self.script_to_evaluate_on_commit = js_template.Render(
+        '''{{@events_reported_by_page}}
+        {{@performance_mark}}''',
+        events_reported_by_page=self.EVENTS_REPORTED_BY_PAGE,
+        performance_mark=self.PERFORMANCE_MARK_PATCH)
+
+  def _DidLoadDocument(self, action_runner):
+    # Wait for load.
+    action_runner.WaitForJavaScriptCondition(self.EDITABLE_EVENT)
+    action_runner.Wait(10)
+    # Scroll through the document.
+    action_runner.RepeatableBrowserDrivenScroll(
+        x_scroll_distance_ratio=0.0,
+        y_scroll_distance_ratio=1,
+        repeat_count=6,
+        speed=800,
+        timeout=120)
+
+##############################################################################
 # Browsing stories with infinite scrolling
 ##############################################################################
 

@@ -116,6 +116,8 @@ extern const base::Feature kSmartDimModelV3;
 COMPONENT_EXPORT(CHROMEOS_CONSTANTS)
 extern const base::Feature kSplitSettingsSync;
 COMPONENT_EXPORT(CHROMEOS_CONSTANTS)
+extern const base::Feature kUnifiedMediaView;
+COMPONENT_EXPORT(CHROMEOS_CONSTANTS)
 extern const base::Feature kUpdatedCellularActivationUi;
 COMPONENT_EXPORT(CHROMEOS_CONSTANTS)
 extern const base::Feature kUseMessagesStagingUrl;

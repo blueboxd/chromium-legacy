@@ -689,6 +689,7 @@
 <translation id="3987940399970879459">1 МБ-тан аз</translation>
 <translation id="3990250421422698716">Бірқалыпты ығысу</translation>
 <translation id="40103911065039147">{URL_count,plural, =1{Маңайдағы құрылғылардан 1 веббет анықталды}other{Маңайдағы құрылғылардан # веббет анықталды}}</translation>
+<translation id="4014128326099193693">{COUNT,plural, =1{{COUNT} беттік PDF құжаты}other{{COUNT} беттік PDF құжаты}}</translation>
 <translation id="4030383055268325496">&amp;Қосу әрекетін кері қайтару</translation>
 <translation id="4032320456957708163">Браузерді <ph name="ENROLLMENT_DOMAIN" /> басқарады</translation>
 <translation id="4058922952496707368">"<ph name="SUBKEY" />" кілті: <ph name="ERROR" /></translation>
@@ -717,6 +718,7 @@
 <translation id="4142935452406587478">10-науа</translation>
 <translation id="4148925816941278100">American Express</translation>
 <translation id="4151403195736952345">Ғаламдық әдепкі мәнді пайдалану (анықтау)</translation>
+<translation id="4152318981910038897">{COUNT,plural, =1{1-бет}other{{COUNT}-бет}}</translation>
 <translation id="4159784952369912983">Күлгін</translation>
 <translation id="4165986682804962316">Сайт параметрлері</translation>
 <translation id="4171400957073367226">Растау қолтаңбасы жарамсыз</translation>
@@ -1394,6 +1396,7 @@
 <translation id="7201591969684833065">Әкімші келесілерді көреді:</translation>
 <translation id="7202346780273620635">Letter-Extra</translation>
 <translation id="7210863904660874423"><ph name="HOST_NAME" /> қауіпсіздік стандарттарына сай емес.</translation>
+<translation id="7210993021468939304">Linux-тің контейнердегі әрекетін көреді, сондай-ақ контейнерден Linux қолданбаларын орната және іске қоса алады.</translation>
 <translation id="721197778055552897">Бұл ақау туралы <ph name="BEGIN_LINK" />толығырақ<ph name="END_LINK" />.</translation>
 <translation id="7219179957768738017">Байланыс <ph name="SSL_VERSION" /> пайдаланады.</translation>
 <translation id="7220786058474068424">Өңделуде</translation>
@@ -1557,6 +1560,7 @@
 <translation id="7878562273885520351">Құпия сөзіңіз ұрланған болуы мүмкін</translation>
 <translation id="7882421473871500483">Қоңыр</translation>
 <translation id="7887683347370398519">CVC нөмірін енгізіп, әрекетті қайталаңыз</translation>
+<translation id="7887885240995164102">"Суреттегі сурет" режиміне өту</translation>
 <translation id="7888575728750733395">Басып шығарудың рендеринг мақсаты</translation>
 <translation id="7904208859782148177">C3 (Envelope)</translation>
 <translation id="7932579305932748336">Қаптау</translation>

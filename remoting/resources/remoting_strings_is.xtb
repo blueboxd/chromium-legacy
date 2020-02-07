@@ -256,6 +256,7 @@ Ef þegar er hakað í „<ph name="SERVICE_SCRIPT_NAME" />“ skaltu fjarlægja
 <translation id="6939719207673461467">Sýna/fela lyklaborð.</translation>
 <translation id="6944854424004126054">Endurheimta glugga</translation>
 <translation id="6948905685698011662">Fjarstjórnun tölvu í Chrome er núna á vefnum! Skoðaðu <ph name="LINK_BEGIN" />ókeypis vefforritið<ph name="LINK_END" />.</translation>
+<translation id="6956835181934226419">Ég hef þegar veitt þessa heimild.</translation>
 <translation id="6963936880795878952">Tímabundið er lokað fyrir tengingar við fjartengdu tölvuna vegna þess að einhver reyndi að tengjast henni með ógildu PIN-númeri. Reyndu aftur síðar.</translation>
 <translation id="6965382102122355670">Í lagi</translation>
 <translation id="6985691951107243942">Viltu örugglega slökkva á fjartengingum við <ph name="HOSTNAME" />? Ef þú skiptir um skoðun þarftu að fara í þá tölvu til að leyfa tengingu aftur.</translation>

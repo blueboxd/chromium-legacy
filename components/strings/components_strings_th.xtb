@@ -674,6 +674,7 @@
 <translation id="3987940399970879459">ไม่ถึง 1 MB</translation>
 <translation id="3990250421422698716">การชดเชยพื้นผิวที่ไม่สม่ำเสมอ</translation>
 <translation id="40103911065039147">{URL_count,plural, =1{มีหน้าเว็บ 1 หน้าใกล้ๆ}other{มีหน้าเว็บ # หน้าใกล้ๆ}}</translation>
+<translation id="4014128326099193693">{COUNT,plural, =1{เอกสาร PDF ที่มี {COUNT} หน้า}other{เอกสาร PDF ที่มี {COUNT} หน้า}}</translation>
 <translation id="4030383055268325496">&amp;เลิกทำการเพิ่ม</translation>
 <translation id="4032320456957708163">เบราว์เซอร์ของคุณจัดการโดย <ph name="ENROLLMENT_DOMAIN" /></translation>
 <translation id="4058922952496707368">คีย์ "<ph name="SUBKEY" />": <ph name="ERROR" /></translation>
@@ -702,6 +703,7 @@
 <translation id="4142935452406587478">ถาด 10</translation>
 <translation id="4148925816941278100">American Express</translation>
 <translation id="4151403195736952345">ใช้ค่าเริ่มต้นส่วนกลาง (ตรวจหา)</translation>
+<translation id="4152318981910038897">{COUNT,plural, =1{หน้า 1}other{หน้า {COUNT}}}</translation>
 <translation id="4159784952369912983">ม่วง</translation>
 <translation id="4165986682804962316">การตั้งค่าเว็บไซต์</translation>
 <translation id="4171400957073367226">ลายเซ็นยืนยันไม่ถูกต้อง</translation>
@@ -1378,6 +1380,7 @@
 <translation id="7201591969684833065">ผู้ดูแลระบบจะเห็นสิ่งต่อไปนี้</translation>
 <translation id="7202346780273620635">Letter-Extra</translation>
 <translation id="7210863904660874423"><ph name="HOST_NAME" /> ไม่เป็นไปตามมาตรฐานความปลอดภัย</translation>
+<translation id="7210993021468939304">กิจกรรม Linux ในคอนเทนเนอร์ และติดตั้งรวมถึงเรียกใช้แอป Linux ในคอนเทนเนอร์ได้</translation>
 <translation id="721197778055552897"><ph name="BEGIN_LINK" />ดูข้อมูลเพิ่มเติม<ph name="END_LINK" /> เกี่ยวกับปัญหานี้</translation>
 <translation id="7219179957768738017">การเชื่อมต่อใช้ <ph name="SSL_VERSION" /></translation>
 <translation id="7220786058474068424">กำลังดำเนินการ</translation>
@@ -1541,6 +1544,7 @@
 <translation id="7878562273885520351">รหัสผ่านของคุณอาจถูกขโมยได้</translation>
 <translation id="7882421473871500483">น้ำตาล</translation>
 <translation id="7887683347370398519">ตรวจสอบ CVC และลองอีกครั้ง</translation>
+<translation id="7887885240995164102">เข้าสู่การแสดงภาพซ้อนภาพ</translation>
 <translation id="7888575728750733395">การปรับค่าสีการพิมพ์</translation>
 <translation id="7904208859782148177">C3 (ซองจดหมาย)</translation>
 <translation id="7932579305932748336">เคลือบ</translation>

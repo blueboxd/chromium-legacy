@@ -783,16 +783,13 @@ void PaintLayerPainter::PaintForegroundForFragments(
                                          layer_fragments, context,
                                          local_painting_info, paint_flags);
   } else {
-    if (RuntimeEnabledFeatures::PaintUnderInvalidationCheckingEnabled() ||
-        paint_layer_.NeedsPaintPhaseDescendantBlockBackgrounds()) {
-      if (force_paint_chunks_for_phases) {
-        context.GetPaintController().ForceNewChunk(
-            paint_layer_, DisplayItem::kLayerChunkDescendantBackgrounds);
-      }
-      PaintForegroundForFragmentsWithPhase(
-          PaintPhase::kDescendantBlockBackgroundsOnly, layer_fragments, context,
-          local_painting_info, paint_flags);
+    if (force_paint_chunks_for_phases) {
+      context.GetPaintController().ForceNewChunk(
+          paint_layer_, DisplayItem::kLayerChunkDescendantBackgrounds);
     }
+    PaintForegroundForFragmentsWithPhase(
+        PaintPhase::kDescendantBlockBackgroundsOnly, layer_fragments, context,
+        local_painting_info, paint_flags);
 
     if (paint_layer_.GetLayoutObject().GetDocument().InForcedColorsMode()) {
       PaintForegroundForFragmentsWithPhase(

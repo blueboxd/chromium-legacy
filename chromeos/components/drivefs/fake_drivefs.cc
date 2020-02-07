@@ -26,6 +26,7 @@
 #include "mojo/public/cpp/bindings/pending_remote.h"
 #include "mojo/public/cpp/bindings/remote.h"
 #include "mojo/public/cpp/bindings/self_owned_receiver.h"
+#include "net/base/mime_util.h"
 
 namespace drivefs {
 namespace {
@@ -179,6 +180,10 @@ class FakeDriveFs::SearchQuery : public mojom::SearchQuery {
         }
         if (params_->shared_with_me) {
           return !metadata->shared;
+        }
+        if (params_->mime_type.has_value()) {
+          return !net::MatchesMimeType(params_->mime_type.value() + "/*",
+                                       metadata->content_mime_type);
         }
         return false;
       });

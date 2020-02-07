@@ -675,6 +675,7 @@
 <translation id="3987940399970879459">不到 1 MB</translation>
 <translation id="3990250421422698716">撞頁偏移</translation>
 <translation id="40103911065039147">{URL_count,plural, =1{附近有 1 個網頁}other{附近有 # 個網頁}}</translation>
+<translation id="4014128326099193693">{COUNT,plural, =1{PDF 文件，共 {COUNT} 頁}other{PDF 文件，共 {COUNT} 頁}}</translation>
 <translation id="4030383055268325496">復原新增(&amp;U)</translation>
 <translation id="4032320456957708163">你的瀏覽器受到 <ph name="ENROLLMENT_DOMAIN" /> 管理</translation>
 <translation id="4058922952496707368">鍵「<ph name="SUBKEY" />」：<ph name="ERROR" /></translation>
@@ -703,6 +704,7 @@
 <translation id="4142935452406587478">紙匣 10</translation>
 <translation id="4148925816941278100">American Express</translation>
 <translation id="4151403195736952345">使用全域預設設定 (偵測)</translation>
+<translation id="4152318981910038897">{COUNT,plural, =1{第 1 頁}other{第 {COUNT} 頁}}</translation>
 <translation id="4159784952369912983">紫色</translation>
 <translation id="4165986682804962316">網站設定</translation>
 <translation id="4171400957073367226">驗證簽名無效</translation>
@@ -1379,6 +1381,7 @@
 <translation id="7201591969684833065">系統管理員可以查看以下項目：</translation>
 <translation id="7202346780273620635">Letter-Extra</translation>
 <translation id="7210863904660874423"><ph name="HOST_NAME" /> 不符合安全性標準。</translation>
+<translation id="7210993021468939304">可查看容器內的 Linux 活動，並可在容器內安裝及執行 Linux 應用程式</translation>
 <translation id="721197778055552897"><ph name="BEGIN_LINK" />進一步瞭解<ph name="END_LINK" />這個問題。</translation>
 <translation id="7219179957768738017">這個連線使用 <ph name="SSL_VERSION" />。</translation>
 <translation id="7220786058474068424">處理中</translation>
@@ -1542,6 +1545,7 @@
 <translation id="7878562273885520351">你的密碼可能已經外洩</translation>
 <translation id="7882421473871500483">棕色</translation>
 <translation id="7887683347370398519">請檢查您的 CVC，然後再試一次</translation>
+<translation id="7887885240995164102">進入子母畫面</translation>
 <translation id="7888575728750733395">列印算繪方式</translation>
 <translation id="7904208859782148177">C3 (信封)</translation>
 <translation id="7932579305932748336">塗布</translation>

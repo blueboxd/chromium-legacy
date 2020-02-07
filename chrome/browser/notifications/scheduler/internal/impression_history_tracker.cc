@@ -31,6 +31,8 @@ std::string ToDatabaseKey(SchedulerClientType type) {
       return "WebUI";
     case SchedulerClientType::kChromeUpdate:
       return "ChromeUpdate";
+    case SchedulerClientType::kPrefetch:
+      return "Prefetch";
   }
 }
 

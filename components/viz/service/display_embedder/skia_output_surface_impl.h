@@ -88,6 +88,7 @@ class VIZ_SERVICE_EXPORT SkiaOutputSurfaceImpl : public SkiaOutputSurface {
   base::ScopedClosureRunner GetCacheBackBufferCb() override;
   scoped_refptr<gpu::GpuTaskSchedulerHelper> GetGpuTaskSchedulerHelper()
       override;
+  gfx::Rect GetCurrentFramebufferDamage() const override;
 
   // SkiaOutputSurface implementation:
   SkCanvas* BeginPaintCurrentFrame() override;
@@ -196,6 +197,8 @@ class VIZ_SERVICE_EXPORT SkiaOutputSurfaceImpl : public SkiaOutputSurface {
   bool is_displayed_as_overlay_ = false;
 
   std::unique_ptr<base::WaitableEvent> initialize_waitable_event_;
+  gfx::Size size_;
+  gfx::ColorSpace color_space_;
   SkSurfaceCharacterization characterization_;
   base::Optional<SkDeferredDisplayListRecorder> root_recorder_;
 
@@ -263,6 +266,13 @@ class VIZ_SERVICE_EXPORT SkiaOutputSurfaceImpl : public SkiaOutputSurface {
   // We defer the draw to the framebuffer until SwapBuffers or CopyOutput
   // to avoid the expense of posting a task and calling MakeCurrent.
   base::OnceCallback<bool()> deferred_framebuffer_draw_closure_;
+
+  // Current buffer index.
+  size_t current_buffer_ = 0;
+  // Damage area of the buffer. Differ to the last submit buffer.
+  std::vector<gfx::Rect> damage_of_buffers_;
+  // Track if the current buffer content is changed.
+  bool current_buffer_modified_ = false;
 
   base::WeakPtr<SkiaOutputSurfaceImpl> weak_ptr_;
   base::WeakPtrFactory<SkiaOutputSurfaceImpl> weak_ptr_factory_{this};

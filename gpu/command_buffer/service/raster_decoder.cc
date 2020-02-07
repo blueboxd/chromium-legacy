@@ -1234,7 +1234,8 @@ error::Error RasterDecoderImpl::DoCommandsImpl(unsigned int num_commands,
         if (DebugImpl && doing_gpu_trace)
           gpu_tracer_->End(gles2::kTraceDecoder);
 
-        if (DebugImpl && debug() && !WasContextLost()) {
+        if (DebugImpl && shared_context_state_->GrContextIsGL() && debug() &&
+            !WasContextLost()) {
           GLenum error;
           while ((error = api()->glGetErrorFn()) != GL_NO_ERROR) {
             LOG(ERROR) << "[" << logger_.GetLogPrefix() << "] "

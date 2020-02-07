@@ -240,6 +240,8 @@ android_library("chrome_java") {
     "//base:jni_java",
     "//chrome/android/features/keyboard_accessory:public_java",
     "//chrome/android/feed/core/java/src/org/chromium/chrome/browser/feed/library:piet_resources",
+    "//chrome/android/modules/image_editor/provider:java",
+    "//chrome/android/modules/image_editor/public:java",
     "//chrome/android/public/crypto:java",
     "//chrome/android/public/profiles:java",
     "//chrome/android/third_party/compositor_animator:compositor_animator_java",
@@ -253,12 +255,12 @@ android_library("chrome_java") {
     "//chrome/browser/download/android:java_resources",
     "//chrome/browser/flags:java",
     "//chrome/browser/geolocation/android:java",
+    "//chrome/browser/image_editor/public:java",
     "//chrome/browser/image_fetcher:java",
     "//chrome/browser/notifications/chime/android:java",
     "//chrome/browser/preferences:java",
     "//chrome/browser/settings:java",
     "//chrome/browser/share/android:java_resources",
-    "//chrome/browser/share/android:screenshot_java",
     "//chrome/browser/thumbnail:java",
     "//chrome/browser/ui/android/appmenu:factory_java",
     "//chrome/browser/ui/android/appmenu:java",
@@ -273,6 +275,7 @@ android_library("chrome_java") {
     "//components/bookmarks/common/android:bookmarks_java",
     "//components/browser_ui/modaldialog/android:java",
     "//components/browser_ui/styles/android:java",
+    "//components/browser_ui/util/android:java",
     "//components/browser_ui/widget/android:java",
     "//components/content_capture/android:java",
     "//components/contextual_search/content/common/mojom:mojom_java",
@@ -474,7 +477,7 @@ android_library("chrome_java") {
 
   processor_args_javac = [ "dagger.fastInit=enabled" ]
 
-  # TODO(gayane): Instead of adding source files, add it as a separate
+  # TODO(crbug/1022172): Instead of adding source files, add it as a separate
   # dependency when circular deps is resolved.
   sources += share_java_sources
 }
@@ -513,10 +516,6 @@ java_group("chrome_all_java") {
 
   if (use_chime_android_sdk) {
     deps += [ "//chrome/android/modules/chime/public:java" ]
-  }
-
-  if (enable_image_editor) {
-    deps += [ "//chrome/android/modules/image_editor/public:java" ]
   }
 }
 
@@ -658,6 +657,7 @@ junit_binary("chrome_junit_tests") {
     "//chrome/test/android:chrome_java_test_support",
     "//components/background_task_scheduler:background_task_scheduler_java",
     "//components/bookmarks/common/android:bookmarks_java",
+    "//components/browser_ui/util/android:junit",
     "//components/browser_ui/widget/android:junit",
     "//components/invalidation/impl:java",
     "//components/minidump_uploader:minidump_uploader_java",
@@ -791,6 +791,7 @@ android_library("chrome_test_java") {
     "//components/browser_ui/modaldialog/android:java",
     "//components/browser_ui/modaldialog/android:javatests",
     "//components/browser_ui/styles/android:java",
+    "//components/browser_ui/util/android:java",
     "//components/browser_ui/widget/android:java",
     "//components/browser_ui/widget/android:javatests",
     "//components/browser_ui/widget/android:test_support_java",

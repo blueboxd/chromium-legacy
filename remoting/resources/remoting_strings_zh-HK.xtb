@@ -256,6 +256,7 @@ host_ip =「<ph name="HOST_IP_ADDRESS_AND_PORT" />」版本=「<ph name="CHANNEL
 <translation id="6939719207673461467">顯示/隱藏鍵盤。</translation>
 <translation id="6944854424004126054">還原視窗</translation>
 <translation id="6948905685698011662">「Chrome 遠端桌面」現已推出網頁版！立即查看我們的<ph name="LINK_BEGIN" />免費網絡應用程式<ph name="LINK_END" />。</translation>
+<translation id="6956835181934226419">我已授予此權限。</translation>
 <translation id="6963936880795878952">由於有人嘗試使用無效的 PIN 連線至遠端電腦，因此系統暫時封鎖您的連線，請稍後再試。</translation>
 <translation id="6965382102122355670">確定</translation>
 <translation id="6985691951107243942">您是否確定要停用與 <ph name="HOSTNAME" /> 之間的遠端連線？如果其後改變主意，您必須親自前往該電腦所在位置修改設定，才能重新啟用連線。</translation>

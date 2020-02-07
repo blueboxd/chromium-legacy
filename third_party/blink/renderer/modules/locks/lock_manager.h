@@ -8,6 +8,7 @@
 #include "base/macros.h"
 #include "base/optional.h"
 #include "mojo/public/cpp/bindings/remote.h"
+#include "third_party/blink/public/mojom/feature_observer/feature_observer.mojom-blink.h"
 #include "third_party/blink/public/mojom/locks/lock_manager.mojom-blink-forward.h"
 #include "third_party/blink/renderer/bindings/core/v8/string_or_string_sequence.h"
 #include "third_party/blink/renderer/bindings/modules/v8/v8_lock_options.h"
@@ -74,6 +75,7 @@ class LockManager final : public ScriptWrappable,
   HeapHashSet<Member<Lock>> held_locks_;
 
   mojo::Remote<mojom::blink::LockManager> service_;
+  mojo::Remote<mojom::blink::FeatureObserver> observer_;
 
   base::Optional<bool> cached_allowed_;
 

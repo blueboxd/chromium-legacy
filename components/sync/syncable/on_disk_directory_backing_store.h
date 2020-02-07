@@ -18,9 +18,10 @@ namespace syncable {
 // DirectoryBackingStore.
 class OnDiskDirectoryBackingStore : public DirectoryBackingStore {
  public:
-  OnDiskDirectoryBackingStore(const std::string& dir_name,
-                              const std::string& cache_guid,
-                              const base::FilePath& backing_file_path);
+  OnDiskDirectoryBackingStore(
+      const std::string& dir_name,
+      const base::RepeatingCallback<std::string()>& cache_guid_generator,
+      const base::FilePath& backing_file_path);
   ~OnDiskDirectoryBackingStore() override;
   DirOpenResult Load(Directory::MetahandlesMap* handles_map,
                      MetahandleSet* metahandles_to_purge,

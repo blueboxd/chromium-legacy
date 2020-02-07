@@ -67,10 +67,8 @@ class MockCryptoClientStream : public quic::QuicCryptoClientStream,
   quic::CryptoMessageParser* crypto_message_parser() override;
   void OnOneRttPacketAcknowledged() override;
 
-  // Invokes the sessions's CryptoHandshakeEvent method with the specified
-  // event.
-  void SendOnCryptoHandshakeEvent(
-      quic::QuicSession::CryptoHandshakeEvent event);
+  // Notify session that 1-RTT key is available.
+  void NotifySessionOneRttKeyAvailable();
 
   static quic::CryptoHandshakeMessage GetDummyCHLOMessage();
 

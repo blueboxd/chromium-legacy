@@ -305,21 +305,25 @@ class Directory {
   // This applies only to types with implicitly created root folders.
   void MarkInitialSyncEndedForType(BaseWriteTransaction* trans, ModelType type);
 
-  // Legacy store birthday, exposed for UMA purposes.
-  std::string legacy_store_birthday_for_uma() const;
+  // Legacy store birthday, exposed for UMA purposes and migration from
+  // directory to prefs.
+  std::string legacy_store_birthday() const;
   void set_legacy_store_birthday(const std::string& store_birthday);
 
   // (Account) Bag of chip is an opaque state used by the server to track the
   // client.
   void set_legacy_bag_of_chips(const std::string& bag_of_chips);
 
-  // Authoritative cache GUID: unique to each account / client pair. Owned
-  // by DirectoryBackingStore but exposed here for convenience.
+  // Authoritative cache GUID: unique to each account / client pair.
+  // TODO(crbug.com/923285): Move authoritative cache GUID elsewhere, since its
+  // lifetime here is now complex and can be easily confused with the legacy
+  // cache GUID.
   const std::string& cache_guid() const;
+  void set_cache_guid(const std::string& cache_guid);
 
   // Legacy cache GUID (non-authoritative) as historically persisted on disk,
-  // exposed for UMA purposes only.
-  std::string legacy_cache_guid_for_uma() const;
+  // exposed for UMA purposes and migration from directory to prefs.
+  std::string legacy_cache_guid() const;
 
   // Returns a pointer to our Nigori node handler.
   NigoriHandler* GetNigoriHandler();
@@ -598,6 +602,8 @@ class Directory {
   // transaction need to check if the Directory already has an unrecoverable
   // error on it.
   bool unrecoverable_error_set(const BaseTransaction* trans) const;
+
+  std::string cache_guid_;
 
   std::unique_ptr<Kernel> kernel_;
 

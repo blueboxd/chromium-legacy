@@ -53,8 +53,9 @@ extern const int32_t kCurrentPageSizeKB;
 // OnDiskDirectoryBackingStore.
 class DirectoryBackingStore {
  public:
-  DirectoryBackingStore(const std::string& dir_name,
-                        const std::string& cache_guid);
+  DirectoryBackingStore(
+      const std::string& dir_name,
+      const base::RepeatingCallback<std::string()>& cache_guid_generator);
   virtual ~DirectoryBackingStore();
 
   // Loads and drops all currently persisted meta entries into |handles_map|
@@ -107,11 +108,12 @@ class DirectoryBackingStore {
   bool ReportMemoryUsage(base::trace_event::ProcessMemoryDump* pmd,
                          const std::string& dump_name);
 
-  const std::string& cache_guid() const { return cache_guid_; }
-
  protected:
   // For test classes.
-  DirectoryBackingStore(const std::string& dir_name, sql::Database* connection);
+  DirectoryBackingStore(
+      const std::string& dir_name,
+      const base::RepeatingCallback<std::string()>& cache_guid_generator,
+      sql::Database* connection);
 
   // An accessor for the underlying sql::Database. Avoid using outside of
   // tests.
@@ -257,7 +259,7 @@ class DirectoryBackingStore {
                                  sql::Statement* save_statement);
 
   const std::string dir_name_;
-  const std::string cache_guid_;
+  const base::RepeatingCallback<std::string()> cache_guid_generator_;
   const int database_page_size_;
 
   std::unique_ptr<sql::Database> db_;

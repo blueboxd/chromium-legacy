@@ -5,32 +5,22 @@
 var SetIconCommon = requireNative('setIcon').SetIconCommon;
 
 function loadImagePath(path, callback) {
-  let fetchPromise = fetch(path);
-
-  let blobPromise = $Promise.then(fetchPromise, function(response) {
-    if (!response.ok) {
-      throw new $Error.self('Could not load action icon \'' + path + '\'.');
-    }
-    return response.blob();
-  });
-
-  let imagePromise = $Promise.then(blobPromise, function(blob) {
-    return createImageBitmap(blob);
-  });
-
-  let imageDataPromise = $Promise.then(imagePromise, function(image) {
-    var canvas = new OffscreenCanvas(image.width, image.height);
+  var img = new Image();
+  img.onerror = function() {
+    console.error('Could not load action icon \'' + path + '\'.');
+  };
+  img.onload = function() {
+    var canvas = document.createElement('canvas');
+    canvas.width = img.width;
+    canvas.height = img.height
     var canvas_context = canvas.getContext('2d');
     canvas_context.clearRect(0, 0, canvas.width, canvas.height);
-    canvas_context.drawImage(image, 0, 0, canvas.width, canvas.height);
+    canvas_context.drawImage(img, 0, 0, canvas.width, canvas.height);
     var imageData = canvas_context.getImageData(0, 0, canvas.width,
                                                 canvas.height);
     callback(imageData);
-  });
-
-  $Promise.catch(imageDataPromise, function(error) {
-    console.error(error);
-  });
+  };
+  img.src = path;
 }
 
 function smellsLikeImageData(imageData) {

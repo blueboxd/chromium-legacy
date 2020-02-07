@@ -275,10 +275,11 @@ bool SaveEntryToDB(sql::Statement* save_statement, const EntryKernel& entry) {
 ///////////////////////////////////////////////////////////////////////////////
 // DirectoryBackingStore implementation.
 
-DirectoryBackingStore::DirectoryBackingStore(const string& dir_name,
-                                             const std::string& cache_guid)
+DirectoryBackingStore::DirectoryBackingStore(
+    const string& dir_name,
+    const base::RepeatingCallback<std::string()>& cache_guid_generator)
     : dir_name_(dir_name),
-      cache_guid_(cache_guid),
+      cache_guid_generator_(cache_guid_generator),
       database_page_size_(kCurrentPageSizeKB),
       needs_metas_column_refresh_(false),
       needs_share_info_column_refresh_(false) {
@@ -286,9 +287,12 @@ DirectoryBackingStore::DirectoryBackingStore(const string& dir_name,
   ResetAndCreateConnection();
 }
 
-DirectoryBackingStore::DirectoryBackingStore(const string& dir_name,
-                                             sql::Database* db)
+DirectoryBackingStore::DirectoryBackingStore(
+    const string& dir_name,
+    const base::RepeatingCallback<std::string()>& cache_guid_generator,
+    sql::Database* db)
     : dir_name_(dir_name),
+      cache_guid_generator_(cache_guid_generator),
       database_page_size_(kCurrentPageSizeKB),
       db_(db),
       needs_metas_column_refresh_(false),
@@ -1524,7 +1528,7 @@ bool DirectoryBackingStore::CreateTables() {
     s.BindString(0, dir_name_);                   // id
     s.BindString(1, dir_name_);                   // name
     s.BindString(2, std::string());               // store_birthday
-    s.BindString(3, cache_guid_);
+    s.BindString(3, cache_guid_generator_.Run());  // cache_guid
     s.BindBlob(4, nullptr, 0);                    // bag_of_chips
     if (!s.Run())
       return false;

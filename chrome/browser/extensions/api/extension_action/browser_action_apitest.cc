@@ -255,7 +255,8 @@ IN_PROC_BROWSER_TEST_P(BrowserActionApiLazyTest, Basic) {
   EXPECT_TRUE(catcher.GetNextResult());
 }
 
-IN_PROC_BROWSER_TEST_P(BrowserActionApiLazyTest, Update) {
+using BrowserActionApiUpdateLazyTest = BrowserActionApiLazyTest;
+IN_PROC_BROWSER_TEST_P(BrowserActionApiUpdateLazyTest, Update) {
   ExtensionTestMessageListener ready_listener("ready", true);
   ASSERT_TRUE(embedded_test_server()->Start());
   const Extension* extension = LoadExtensionWithParamFlags(
@@ -300,6 +301,22 @@ INSTANTIATE_TEST_SUITE_P(ServiceWorkerAndExtensionsMenu,
                          BrowserActionApiLazyTest,
                          ::testing::Values(kUseServiceWorker |
                                            kUseExtensionsMenuUi));
+
+INSTANTIATE_TEST_SUITE_P(EventPageAndLegacyToolbar,
+                         BrowserActionApiUpdateLazyTest,
+                         ::testing::Values(kNone));
+INSTANTIATE_TEST_SUITE_P(EventPageAndExtensionsMenu,
+                         BrowserActionApiUpdateLazyTest,
+                         ::testing::Values(kUseExtensionsMenuUi));
+// TODO(crbug.com/1015136): Enable these once setIcon works in Service worker
+// extensions. Also, combine this suite with BrowserActionApiLazyTest.
+// INSTANTIATE_TEST_SUITE_P(ServiceWorkerAndLegacyToolbar,
+//                          BrowserActionApiUpdateLazyTest,
+//                          ::testing::Values(kUseServiceWorker));
+// INSTANTIATE_TEST_SUITE_P(ServiceWorkerAndExtensionsMenu,
+//                          BrowserActionApiUpdateLazyTest,
+//                          ::testing::Values(kUseServiceWorker |
+//                                            kUseExtensionsMenuUi));
 
 IN_PROC_BROWSER_TEST_F(BrowserActionApiCanvasTest, DynamicBrowserAction) {
   ASSERT_TRUE(RunExtensionTest("browser_action/no_icon")) << message_;

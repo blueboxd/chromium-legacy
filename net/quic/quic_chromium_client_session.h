@@ -494,7 +494,6 @@ class NET_EXPORT_PRIVATE QuicChromiumClientSession
   void SendRstStream(quic::QuicStreamId id,
                      quic::QuicRstStreamErrorCode error,
                      quic::QuicStreamOffset bytes_written) override;
-  void OnCryptoHandshakeEvent(CryptoHandshakeEvent event) override;
   void SetDefaultEncryptionLevel(quic::EncryptionLevel level) override;
   void OnCryptoHandshakeMessageSent(
       const quic::CryptoHandshakeMessage& message) override;

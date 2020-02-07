@@ -1518,23 +1518,6 @@ void QuicChromiumClientSession::OnConfigNegotiated() {
           /*close_session_on_error=*/true, net_log_);
 }
 
-void QuicChromiumClientSession::OnCryptoHandshakeEvent(
-    CryptoHandshakeEvent event) {
-  if (!callback_.is_null() &&
-      (!require_confirmation_ || event == EVENT_HANDSHAKE_CONFIRMED ||
-       event == ENCRYPTION_ESTABLISHED)) {
-    // TODO(rtenneti): Currently for all CryptoHandshakeEvent events, callback_
-    // could be called because there are no error events in CryptoHandshakeEvent
-    // enum. If error events are added to CryptoHandshakeEvent, then the
-    // following code needs to changed.
-    std::move(callback_).Run(OK);
-  }
-  if (event == EVENT_HANDSHAKE_CONFIRMED) {
-    OnCryptoHandshakeComplete();
-  }
-  quic::QuicSpdySession::OnCryptoHandshakeEvent(event);
-}
-
 void QuicChromiumClientSession::SetDefaultEncryptionLevel(
     quic::EncryptionLevel level) {
   if (!callback_.is_null() &&

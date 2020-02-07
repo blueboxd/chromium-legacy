@@ -14,7 +14,7 @@ cr.define('settings', function() {
    * clicked.
    * @type {string}
    */
-  /* #export */ const EDIT_STARTUP_URL_EVENT = 'edit-startup-url';
+  const EDIT_STARTUP_URL_EVENT = 'edit-startup-url';
 
   Polymer({
     is: 'settings-startup-url-entry',

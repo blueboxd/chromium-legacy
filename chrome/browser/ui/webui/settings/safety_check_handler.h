@@ -16,10 +16,15 @@
 #include "chrome/browser/ui/webui/help/version_updater.h"
 #include "chrome/browser/ui/webui/settings/settings_page_ui_handler.h"
 
-// Settings page UI handler that checks four areas of browser safety: browser
-// updates, password leaks, malicious extensions, and unwanted software.
+class SafetyCheckHandlerObserver;
+
+// Settings page UI handler that checks four areas of browser safety:
+// browser updates, password leaks, malicious extensions, and unwanted
+// software.
 class SafetyCheckHandler : public settings::SettingsPageUIHandler {
  public:
+  enum SafeBrowsingStatus { ENABLED, DISABLED_BY_ADMIN, DISABLED };
+
   SafetyCheckHandler();
   ~SafetyCheckHandler() override;
 
@@ -28,18 +33,18 @@ class SafetyCheckHandler : public settings::SettingsPageUIHandler {
   // should only be called as a result of an explicit user action.
   void PerformSafetyCheck();
 
-  // Each triggers a corresponding check and calls the provided callback on
-  // completion.
-  void CheckUpdates(VersionUpdater* updater,
-                    const VersionUpdater::StatusCallback& update_callback);
+ protected:
+  SafetyCheckHandler(std::unique_ptr<VersionUpdater> version_updater,
+                     SafetyCheckHandlerObserver* observer);
 
  private:
-  // SettingsPageUIHandler implementation.
-  void OnJavascriptAllowed() override {}
-  void OnJavascriptDisallowed() override {}
+  // Triggers an update check and invokes the provided callback once results
+  // are available.
+  void CheckUpdates(const VersionUpdater::StatusCallback& update_callback);
 
-  // WebUIMessageHandler implementation.
-  void RegisterMessages() override {}
+  // Gets the status of Safe Browsing from the PrefService and invokes
+  // OnSafeBrowsingCheckResult with results.
+  void CheckSafeBrowsing();
 
   // Callbacks that get triggered when each check completes.
   void OnUpdateCheckResult(VersionUpdater::Status status,
@@ -49,9 +54,17 @@ class SafetyCheckHandler : public settings::SettingsPageUIHandler {
                            int64_t update_size,
                            const base::string16& message);
 
-  std::unique_ptr<VersionUpdater> version_updater_;
+  void OnSafeBrowsingCheckResult(SafeBrowsingStatus status);
 
-  DISALLOW_COPY_AND_ASSIGN(SafetyCheckHandler);
+  // SettingsPageUIHandler implementation.
+  void OnJavascriptAllowed() override;
+  void OnJavascriptDisallowed() override;
+
+  // WebUIMessageHandler implementation.
+  void RegisterMessages() override;
+
+  std::unique_ptr<VersionUpdater> version_updater_;
+  SafetyCheckHandlerObserver* const observer_;
 };
 
 #endif  // CHROME_BROWSER_UI_WEBUI_SETTINGS_SAFETY_CHECK_HANDLER_H_

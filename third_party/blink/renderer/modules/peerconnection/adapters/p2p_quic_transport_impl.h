@@ -139,7 +139,6 @@ class MODULES_EXPORT P2PQuicTransportImpl final
   // quic::QuicSession.
   P2PQuicStreamImpl* CreateOutgoingBidirectionalStream();
 
-  void OnCryptoHandshakeEvent(CryptoHandshakeEvent event) override;
   void SetDefaultEncryptionLevel(quic::EncryptionLevel level) override;
 
  private:

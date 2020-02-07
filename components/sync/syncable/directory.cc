@@ -1001,7 +1001,7 @@ void Directory::MarkInitialSyncEndedForType(BaseWriteTransaction* trans,
   }
 }
 
-std::string Directory::legacy_store_birthday_for_uma() const {
+std::string Directory::legacy_store_birthday() const {
   ScopedKernelLock lock(this);
   return kernel_->persisted_info.legacy_store_birthday;
 }
@@ -1023,10 +1023,16 @@ void Directory::set_legacy_bag_of_chips(const string& bag_of_chips) {
 }
 
 const string& Directory::cache_guid() const {
-  return store_->cache_guid();
+  DCHECK(!cache_guid_.empty()) << this;
+  return cache_guid_;
 }
 
-string Directory::legacy_cache_guid_for_uma() const {
+void Directory::set_cache_guid(const std::string& cache_guid) {
+  DCHECK(!cache_guid.empty());
+  cache_guid_ = cache_guid;
+}
+
+string Directory::legacy_cache_guid() const {
   // No need to lock since nothing ever writes to it after load.
   return kernel_->legacy_cache_guid;
 }

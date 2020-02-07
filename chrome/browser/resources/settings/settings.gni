@@ -6,19 +6,16 @@
 # targets in Settings.
 settings_namespace_rewrites = [
   "cr_slider.SliderTick|SliderTick",
-  "settings.DefaultBrowserBrowserProxy|DefaultBrowserBrowserProxy",
-  "settings.EDIT_STARTUP_URL_EVENT|EDIT_STARTUP_URL_EVENT",
   "settings.ExtensionControlBrowserProxy|ExtensionControlBrowserProxy",
   "settings.GlobalScrollTargetBehavior|GlobalScrollTargetBehavior",
   "settings.MinimumRoutes|MinimumRoutes",
   "settings.pageVisibility|pageVisibility",
-  "settings.OnStartupBrowserProxy|OnStartupBrowserProxy",
   "Settings.PrefUtil.prefToString|prefToString",
   "Settings.PrefUtil.stringToPrefValue|stringToPrefValue",
   "settings.Route|Route",
   "settings.routes|routes",
   "settings.SearchEnginesBrowserProxy|SearchEnginesBrowserProxy",
-  "settings.StartupUrlsPageBrowserProxy|StartupUrlsPageBrowserProxy",
+  "settings.DefaultBrowserBrowserProxy|DefaultBrowserBrowserProxy",
 
   "action_link.m.js|action_link.js",
 

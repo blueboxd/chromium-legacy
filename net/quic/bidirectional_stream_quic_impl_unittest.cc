@@ -586,8 +586,8 @@ class BidirectionalStreamQuicImplTest
   }
 
   void ConfirmHandshake() {
-    crypto_client_stream_factory_.last_stream()->SendOnCryptoHandshakeEvent(
-        quic::QuicSession::EVENT_HANDSHAKE_CONFIRMED);
+    crypto_client_stream_factory_.last_stream()
+        ->NotifySessionOneRttKeyAvailable();
   }
 
   void SetRequest(const std::string& method,

@@ -9,8 +9,8 @@ namespace syncable {
 
 InMemoryDirectoryBackingStore::InMemoryDirectoryBackingStore(
     const std::string& dir_name,
-    const std::string& cache_guid)
-    : DirectoryBackingStore(dir_name, cache_guid) {}
+    const base::RepeatingCallback<std::string()>& cache_guid_generator)
+    : DirectoryBackingStore(dir_name, cache_guid_generator) {}
 
 DirOpenResult InMemoryDirectoryBackingStore::Load(
     Directory::MetahandlesMap* handles_map,

@@ -267,10 +267,6 @@ QUIC_FLAG(bool,
           FLAGS_quic_reloadable_flag_quic_close_all_encryptions_levels2,
           false)
 
-// If true, QUIC crypto handshaker uses handshaker delegate to notify session
-// about handshake events.
-QUIC_FLAG(bool, FLAGS_quic_reloadable_flag_quic_use_handshaker_delegate2, true)
-
 // If true, disable QUIC version Q043.
 QUIC_FLAG(bool, FLAGS_quic_reloadable_flag_quic_disable_version_q043, false)
 

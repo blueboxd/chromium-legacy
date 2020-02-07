@@ -142,12 +142,7 @@ bool MockCryptoClientStream::CryptoConnect() {
             ENCRYPTION_ZERO_RTT,
             std::make_unique<NullEncrypter>(Perspective::IS_CLIENT));
       }
-      if (session()->use_handshake_delegate()) {
         session()->SetDefaultEncryptionLevel(ENCRYPTION_ZERO_RTT);
-      } else {
-        session()->connection()->SetDefaultEncryptionLevel(ENCRYPTION_ZERO_RTT);
-        session()->OnCryptoHandshakeEvent(QuicSession::ENCRYPTION_ESTABLISHED);
-      }
       break;
     }
 
@@ -188,17 +183,9 @@ bool MockCryptoClientStream::CryptoConnect() {
             ENCRYPTION_FORWARD_SECURE,
             std::make_unique<NullEncrypter>(Perspective::IS_CLIENT));
       }
-      if (session()->use_handshake_delegate()) {
         session()->SetDefaultEncryptionLevel(ENCRYPTION_FORWARD_SECURE);
         session()->DiscardOldEncryptionKey(ENCRYPTION_INITIAL);
         session()->NeuterHandshakeData();
-      } else {
-        session()->connection()->SetDefaultEncryptionLevel(
-            ENCRYPTION_FORWARD_SECURE);
-        session()->OnCryptoHandshakeEvent(
-            QuicSession::EVENT_HANDSHAKE_CONFIRMED);
-        session()->connection()->OnHandshakeComplete();
-      }
       break;
     }
 
@@ -241,10 +228,8 @@ CryptoMessageParser* MockCryptoClientStream::crypto_message_parser() {
 // DCHECKs within the handshaker from failing.
 void MockCryptoClientStream::OnOneRttPacketAcknowledged() {}
 
-void MockCryptoClientStream::SendOnCryptoHandshakeEvent(
-    QuicSession::CryptoHandshakeEvent event) {
+void MockCryptoClientStream::NotifySessionOneRttKeyAvailable() {
   encryption_established_ = true;
-  if (event == QuicSession::EVENT_HANDSHAKE_CONFIRMED) {
     handshake_confirmed_ = true;
     SetConfigNegotiated();
     if (use_mock_crypter_) {
@@ -275,18 +260,9 @@ void MockCryptoClientStream::SendOnCryptoHandshakeEvent(
           ENCRYPTION_FORWARD_SECURE,
           std::make_unique<NullEncrypter>(Perspective::IS_CLIENT));
     }
-    if (session()->use_handshake_delegate()) {
       session()->SetDefaultEncryptionLevel(ENCRYPTION_FORWARD_SECURE);
       session()->DiscardOldEncryptionKey(ENCRYPTION_INITIAL);
       session()->NeuterHandshakeData();
-    } else {
-      session()->connection()->SetDefaultEncryptionLevel(
-          ENCRYPTION_FORWARD_SECURE);
-    }
-  }
-  if (!session()->use_handshake_delegate()) {
-    session()->OnCryptoHandshakeEvent(event);
-  }
 }
 
 // static

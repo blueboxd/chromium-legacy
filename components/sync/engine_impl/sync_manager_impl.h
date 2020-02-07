@@ -173,6 +173,8 @@ class SyncManagerImpl
   void NudgeForInitialDownload(ModelType type) override;
   void NudgeForCommit(ModelType type) override;
 
+  static std::string GenerateCacheGUIDForTest();
+
  protected:
   // Helper functions.  Virtual for testing.
   virtual void NotifyInitializationSuccess();
@@ -212,7 +214,7 @@ class SyncManagerImpl
                                const Cryptographer* cryptographer) const;
 
   // Opens the directory.
-  bool OpenDirectory(const InitArgs* args);
+  bool OpenDirectory(InitArgs* args);
 
   void RequestNudgeForDataTypes(const base::Location& nudge_location,
                                 ModelTypeSet type);

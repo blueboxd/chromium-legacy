@@ -5,23 +5,61 @@
 #include "chrome/browser/ui/webui/settings/safety_check_handler.h"
 
 #include "base/bind.h"
+#include "chrome/browser/profiles/profile.h"
+#include "chrome/browser/ui/webui/settings/safety_check_handler_observer.h"
+#include "components/prefs/pref_service.h"
+#include "components/safe_browsing/core/common/safe_browsing_prefs.h"
 
-SafetyCheckHandler::SafetyCheckHandler() = default;
+SafetyCheckHandler::SafetyCheckHandler()
+    : SafetyCheckHandler(nullptr, nullptr) {}
 
 SafetyCheckHandler::~SafetyCheckHandler() = default;
 
 void SafetyCheckHandler::PerformSafetyCheck() {
-  version_updater_.reset(VersionUpdater::Create(web_ui()->GetWebContents()));
-  CheckUpdates(version_updater_.get(),
-               base::Bind(&SafetyCheckHandler::OnUpdateCheckResult,
+  if (!version_updater_) {
+    version_updater_.reset(VersionUpdater::Create(web_ui()->GetWebContents()));
+  }
+  CheckUpdates(base::Bind(&SafetyCheckHandler::OnUpdateCheckResult,
                           base::Unretained(this)));
+  CheckSafeBrowsing();
 }
 
+void SafetyCheckHandler::OnJavascriptAllowed() {}
+
+void SafetyCheckHandler::OnJavascriptDisallowed() {}
+
+void SafetyCheckHandler::RegisterMessages() {}
+
+SafetyCheckHandler::SafetyCheckHandler(
+    std::unique_ptr<VersionUpdater> version_updater,
+    SafetyCheckHandlerObserver* observer)
+    : version_updater_(std::move(version_updater)), observer_(observer) {}
+
 void SafetyCheckHandler::CheckUpdates(
-    VersionUpdater* version_updater,
     const VersionUpdater::StatusCallback& update_callback) {
-  version_updater->CheckForUpdate(update_callback,
-                                  VersionUpdater::PromoteCallback());
+  if (observer_) {
+    observer_->OnUpdateCheckStart();
+  }
+  version_updater_->CheckForUpdate(update_callback,
+                                   VersionUpdater::PromoteCallback());
+}
+
+void SafetyCheckHandler::CheckSafeBrowsing() {
+  if (observer_) {
+    observer_->OnSafeBrowsingCheckStart();
+  }
+  PrefService* pref_service = Profile::FromWebUI(web_ui())->GetPrefs();
+  bool enabled = pref_service->GetBoolean(prefs::kSafeBrowsingEnabled);
+  SafeBrowsingStatus status;
+  if (!enabled) {
+    bool disabled_by_admin =
+        pref_service->IsManagedPreference(prefs::kSafeBrowsingEnabled);
+    status = disabled_by_admin ? SafeBrowsingStatus::DISABLED_BY_ADMIN
+                               : SafeBrowsingStatus::DISABLED;
+  } else {
+    status = SafeBrowsingStatus::ENABLED;
+  }
+  OnSafeBrowsingCheckResult(status);
 }
 
 void SafetyCheckHandler::OnUpdateCheckResult(VersionUpdater::Status status,
@@ -30,5 +68,15 @@ void SafetyCheckHandler::OnUpdateCheckResult(VersionUpdater::Status status,
                                              const std::string& version,
                                              int64_t update_size,
                                              const base::string16& message) {
-  NOTIMPLEMENTED();
+  if (observer_) {
+    observer_->OnUpdateCheckResult(status, progress, rollback, version,
+                                   update_size, message);
+  }
+}
+
+void SafetyCheckHandler::OnSafeBrowsingCheckResult(
+    SafetyCheckHandler::SafeBrowsingStatus status) {
+  if (observer_) {
+    observer_->OnSafeBrowsingCheckResult(status);
+  }
 }

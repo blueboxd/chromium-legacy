@@ -12,7 +12,11 @@ namespace syncable {
 TestDirectoryBackingStore::TestDirectoryBackingStore(
     const std::string& dir_name,
     sql::Database* db)
-    : DirectoryBackingStore(dir_name, db) {}
+    : DirectoryBackingStore(dir_name,
+                            base::BindRepeating([]() -> std::string {
+                              return "test_cache_guid";
+                            }),
+                            db) {}
 
 TestDirectoryBackingStore::~TestDirectoryBackingStore() {
   // This variant of the DirectoryBackingStore does not own its connection, so

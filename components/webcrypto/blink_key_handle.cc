@@ -84,7 +84,7 @@ class AsymKey : public Key {
 };
 
 Key* GetKey(const blink::WebCryptoKey& key) {
-  return reinterpret_cast<Key*>(key.Handle());
+  return static_cast<Key*>(key.Handle());
 }
 
 }  // namespace

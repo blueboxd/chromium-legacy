@@ -10,8 +10,6 @@ import './controls/settings_dropdown_menu.m.js';
 import './controls/settings_slider.m.js';
 import './controls/settings_textarea.m.js';
 import './controls/settings_toggle_button.m.js';
-import './on_startup_page/on_startup_page.m.js';
-import './on_startup_page/startup_urls_page.m.js';
 import './site_favicon.m.js';
 import './search_engines_page/omnibox_extension_entry.m.js';
 import './search_engines_page/search_engine_dialog.m.js';
@@ -30,9 +28,6 @@ export {DefaultBrowserBrowserProxyImpl} from './default_browser_page/default_bro
 // </if>
 
 export {ExtensionControlBrowserProxyImpl} from './extension_control_browser_proxy.m.js';
-export {OnStartupBrowserProxy, OnStartupBrowserProxyImpl} from './on_startup_page/on_startup_browser_proxy.m.js';
-export {EDIT_STARTUP_URL_EVENT} from './on_startup_page/startup_url_entry.m.js';
-export {StartupUrlsPageBrowserProxy, StartupUrlsPageBrowserProxyImpl} from './on_startup_page/startup_urls_page_browser_proxy.m.js';
 export {prefToString, stringToPrefValue} from './prefs/pref_util.m.js';
 export {Route, Router} from './router.m.js';
 export {SearchEnginesBrowserProxyImpl} from './search_engines_page/search_engines_browser_proxy.m.js';

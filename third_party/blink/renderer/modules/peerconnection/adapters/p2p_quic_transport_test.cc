@@ -481,13 +481,9 @@ class ConnectedCryptoClientStream final : public quic::QuicCryptoClientStream {
     session()->config()->ProcessPeerHello(message, quic::CLIENT,
                                           &error_details);
     session()->OnConfigNegotiated();
-    if (session()->use_handshake_delegate()) {
-      session()->SetDefaultEncryptionLevel(quic::ENCRYPTION_FORWARD_SECURE);
-      session()->DiscardOldEncryptionKey(quic::ENCRYPTION_INITIAL);
-    } else {
-      session()->OnCryptoHandshakeEvent(
-          quic::QuicSession::EVENT_HANDSHAKE_CONFIRMED);
-    }
+    session()->SetDefaultEncryptionLevel(quic::ENCRYPTION_FORWARD_SECURE);
+    session()->DiscardOldEncryptionKey(quic::ENCRYPTION_INITIAL);
+    session()->NeuterHandshakeData();
     return true;
   }
 

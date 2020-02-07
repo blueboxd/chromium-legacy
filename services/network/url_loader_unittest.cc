@@ -65,7 +65,6 @@
 #include "net/url_request/url_request_status.h"
 #include "net/url_request/url_request_test_job.h"
 #include "net/url_request/url_request_test_util.h"
-#include "services/network/loader_util.h"
 #include "services/network/public/cpp/resource_request.h"
 #include "services/network/public/mojom/origin_policy_manager.mojom.h"
 #include "services/network/resource_scheduler/resource_scheduler_client.h"
@@ -1960,6 +1959,7 @@ TEST_F(URLLoaderTest, RedirectFailsOnModifyUnsafeHeader) {
 }
 
 TEST_F(URLLoaderTest, RedirectLogsModifiedConcerningHeader) {
+  using ConcerningHeaderId = URLLoader::ConcerningHeaderId;
   base::HistogramTester histograms;
 
   TestURLLoaderClient client;

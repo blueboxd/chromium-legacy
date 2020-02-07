@@ -28,7 +28,6 @@
 #include "net/url_request/url_request_context.h"
 #include "net/url_request/url_request_context_builder.h"
 #include "services/network/cors/cors_url_loader_factory.h"
-#include "services/network/loader_util.h"
 #include "services/network/network_context.h"
 #include "services/network/network_service.h"
 #include "services/network/public/cpp/features.h"
@@ -39,6 +38,7 @@
 #include "services/network/resource_scheduler/resource_scheduler.h"
 #include "services/network/resource_scheduler/resource_scheduler_client.h"
 #include "services/network/test/test_url_loader_client.h"
+#include "services/network/url_loader.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -1840,6 +1840,7 @@ TEST_F(CorsURLLoaderTest, NoConcerningRequestHeadersLoggedCorrectly) {
 }
 
 TEST_F(CorsURLLoaderTest, ConcerningRequestHeadersLoggedCorrectly) {
+  using ConcerningHeaderId = URLLoader::ConcerningHeaderId;
   base::HistogramTester histograms;
 
   ResourceRequest request;

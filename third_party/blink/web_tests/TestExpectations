@@ -5266,8 +5266,9 @@ crbug.com/850358 http/tests/devtools/editor/text-editor-enter-behaviour.js [ Pas
 crbug.com/849978 http/tests/devtools/elements/styles-4/stylesheet-source-url-comment.js [ Pass Failure Timeout ]
 
 # Sheriff 2018-06-08
-# Flaky timeout only on Mac 10.13.
+# Flaky timeout only on Mac 10.13 and 10.14.
 crbug.com/853360 [ Mac10.13 ] http/tests/misc/slow-loading-image-in-pattern.html [ Timeout Pass ]
+crbug.com/853360 [ Mac10.14 ] http/tests/misc/slow-loading-image-in-pattern.html [ Timeout Pass ]
 crbug.com/853360 [ Retina ] http/tests/misc/slow-loading-image-in-pattern.html [ Timeout Pass ]
 
 # Origin Policy: Skip tests that rely on --feature-enabled=OriginPolicy, so

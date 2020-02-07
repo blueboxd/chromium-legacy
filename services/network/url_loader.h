@@ -62,6 +62,25 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) URLLoader
       public mojom::AuthChallengeResponder,
       public mojom::ClientCertificateResponder {
  public:
+  // Enumeration for UMA histograms logged by LogConcerningRequestHeaders().
+  // Entries should not be renumbered and numeric values should never be reused.
+  // Please keep in sync with "NetworkServiceConcerningRequestHeaders" in
+  // src/tools/metrics/histograms/enums.xml.
+  enum class ConcerningHeaderId {
+    kConnection = 0,
+    kCookie = 1,
+    kCookie2 = 2,
+    kContentTransferEncoding = 3,
+    kDate = 4,
+    kExpect = 5,
+    kKeepAlive = 6,
+    kReferer = 7,
+    kTe = 8,
+    kTransferEncoding = 9,
+    kVia = 10,
+    kMaxValue = kVia,
+  };
+
   using DeleteCallback = base::OnceCallback<void(mojom::URLLoader* loader)>;
 
   // |delete_callback| tells the URLLoader's owner to destroy the URLLoader.
@@ -173,6 +192,10 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) URLLoader
   static URLLoader* ForRequest(const net::URLRequest& request);
 
   static const void* const kUserDataKey;
+
+  static void LogConcerningRequestHeaders(
+      const net::HttpRequestHeaders& request_headers,
+      bool added_during_redirect);
 
  private:
   // This class is used to set the URLLoader as user data on a URLRequest. This

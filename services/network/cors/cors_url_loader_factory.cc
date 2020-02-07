@@ -16,7 +16,6 @@
 #include "services/network/cors/preflight_controller.h"
 #include "services/network/crash_keys.h"
 #include "services/network/cross_origin_read_blocking.h"
-#include "services/network/loader_util.h"
 #include "services/network/network_context.h"
 #include "services/network/network_service.h"
 #include "services/network/public/cpp/cors/cors.h"
@@ -27,6 +26,7 @@
 #include "services/network/public/cpp/resource_request.h"
 #include "services/network/public/mojom/fetch_api.mojom.h"
 #include "services/network/resource_scheduler/resource_scheduler_client.h"
+#include "services/network/url_loader.h"
 #include "services/network/url_loader_factory.h"
 
 namespace network {
@@ -331,8 +331,8 @@ bool CorsURLLoaderFactory::IsSane(const NetworkContext* context,
     return false;
   }
 
-  LogConcerningRequestHeaders(request.headers,
-                              false /* added_during_redirect */);
+  URLLoader::LogConcerningRequestHeaders(request.headers,
+                                         false /* added_during_redirect */);
 
   // Specifying CredentialsMode::kSameOrigin without an initiator origin doesn't
   // make sense.

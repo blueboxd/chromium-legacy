@@ -311,7 +311,7 @@ class QuickViewController {
    */
   canDeleteEntry_(entry) {
     const deleteCommand = CommandHandler.getCommand('delete');
-    return new Promise(
+    return Promise.resolve(
         deleteCommand.canDeleteEntries([entry], this.fileManager_));
   }
 

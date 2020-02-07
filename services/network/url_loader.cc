@@ -40,7 +40,6 @@
 #include "services/network/chunked_data_pipe_upload_data_stream.h"
 #include "services/network/data_pipe_element_reader.h"
 #include "services/network/empty_url_loader_client.h"
-#include "services/network/loader_util.h"
 #include "services/network/network_usage_accumulator.h"
 #include "services/network/origin_policy/origin_policy_constants.h"
 #include "services/network/origin_policy/origin_policy_manager.h"
@@ -64,6 +63,8 @@
 namespace network {
 
 namespace {
+
+using ConcerningHeaderId = URLLoader::ConcerningHeaderId;
 
 // Cannot use 0, because this means "default" in
 // mojo::core::Core::CreateDataPipe
@@ -318,6 +319,96 @@ bool ShouldNotifyAboutCookie(
          status.HasExclusionReason(net::CanonicalCookie::CookieInclusionStatus::
                                        EXCLUDE_USER_PREFERENCES);
 }
+
+mojom::HttpRawRequestResponseInfoPtr BuildRawRequestResponseInfo(
+    const net::URLRequest& request,
+    const net::HttpRawRequestHeaders& raw_request_headers,
+    const net::HttpResponseHeaders* raw_response_headers) {
+  auto info = mojom::HttpRawRequestResponseInfo::New();
+
+  const net::HttpResponseInfo& response_info = request.response_info();
+  // Unparsed headers only make sense if they were sent as text, i.e. HTTP 1.x.
+  bool report_headers_text =
+      !response_info.DidUseQuic() && !response_info.was_fetched_via_spdy;
+
+  for (const auto& pair : raw_request_headers.headers()) {
+    info->request_headers.push_back(
+        mojom::HttpRawHeaderPair::New(pair.first, pair.second));
+  }
+  std::string request_line = raw_request_headers.request_line();
+  if (report_headers_text && !request_line.empty()) {
+    std::string text = std::move(request_line);
+    for (const auto& pair : raw_request_headers.headers()) {
+      if (!pair.second.empty()) {
+        base::StringAppendF(&text, "%s: %s\r\n", pair.first.c_str(),
+                            pair.second.c_str());
+      } else {
+        base::StringAppendF(&text, "%s:\r\n", pair.first.c_str());
+      }
+    }
+    info->request_headers_text = std::move(text);
+  }
+
+  if (!raw_response_headers)
+    raw_response_headers = request.response_headers();
+  if (raw_response_headers) {
+    info->http_status_code = raw_response_headers->response_code();
+    info->http_status_text = raw_response_headers->GetStatusText();
+
+    std::string name;
+    std::string value;
+    for (size_t it = 0;
+         raw_response_headers->EnumerateHeaderLines(&it, &name, &value);) {
+      info->response_headers.push_back(
+          mojom::HttpRawHeaderPair::New(name, value));
+    }
+    if (report_headers_text) {
+      info->response_headers_text =
+          net::HttpUtil::ConvertHeadersBackToHTTPResponse(
+              raw_response_headers->raw_headers());
+    }
+  }
+  return info;
+}
+
+bool ShouldSniffContent(net::URLRequest* url_request,
+                        const mojom::URLResponseHead& response) {
+  const std::string& mime_type = response.mime_type;
+
+  std::string content_type_options;
+  url_request->GetResponseHeaderByName("x-content-type-options",
+                                       &content_type_options);
+
+  bool sniffing_blocked =
+      base::LowerCaseEqualsASCII(content_type_options, "nosniff");
+  bool we_would_like_to_sniff =
+      net::ShouldSniffMimeType(url_request->url(), mime_type);
+
+  if (!sniffing_blocked && we_would_like_to_sniff) {
+    // We're going to look at the data before deciding what the content type
+    // is.  That means we need to delay sending the response started IPC.
+    VLOG(1) << "To buffer: " << url_request->url().spec();
+    return true;
+  }
+
+  return false;
+}
+
+// Concerning headers that consumers probably shouldn't be allowed to set.
+// Gathering numbers on these before adding them to kUnsafeHeaders.
+const struct {
+  const char* name;
+  ConcerningHeaderId histogram_id;
+} kConcerningHeaders[] = {
+    {net::HttpRequestHeaders::kConnection, ConcerningHeaderId::kConnection},
+    {net::HttpRequestHeaders::kCookie, ConcerningHeaderId::kCookie},
+    {"Date", ConcerningHeaderId::kDate},
+    {"Expect", ConcerningHeaderId::kExpect},
+    // The referer is passed in from the caller on a per-request basis, but
+    // there's a separate field for it that should be used instead.
+    {net::HttpRequestHeaders::kReferer, ConcerningHeaderId::kReferer},
+    {"Via", ConcerningHeaderId::kVia},
+};
 
 }  // namespace
 
@@ -1305,6 +1396,42 @@ URLLoader* URLLoader::ForRequest(const net::URLRequest& request) {
   if (!pointer)
     return nullptr;
   return pointer->get();
+}
+
+// static
+void URLLoader::LogConcerningRequestHeaders(
+    const net::HttpRequestHeaders& request_headers,
+    bool added_during_redirect) {
+  net::HttpRequestHeaders::Iterator it(request_headers);
+
+  bool concerning_header_found = false;
+
+  while (it.GetNext()) {
+    for (const auto& header : kConcerningHeaders) {
+      if (base::EqualsCaseInsensitiveASCII(header.name, it.name())) {
+        concerning_header_found = true;
+        if (added_during_redirect) {
+          UMA_HISTOGRAM_ENUMERATION(
+              "NetworkService.ConcerningRequestHeader.HeaderAddedOnRedirect",
+              header.histogram_id);
+        } else {
+          UMA_HISTOGRAM_ENUMERATION(
+              "NetworkService.ConcerningRequestHeader.HeaderPresentOnStart",
+              header.histogram_id);
+        }
+      }
+    }
+  }
+
+  if (added_during_redirect) {
+    UMA_HISTOGRAM_BOOLEAN(
+        "NetworkService.ConcerningRequestHeader.AddedOnRedirect",
+        concerning_header_found);
+  } else {
+    UMA_HISTOGRAM_BOOLEAN(
+        "NetworkService.ConcerningRequestHeader.PresentOnStart",
+        concerning_header_found);
+  }
 }
 
 void URLLoader::OnAuthCredentials(

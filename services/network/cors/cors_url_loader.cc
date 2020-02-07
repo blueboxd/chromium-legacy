@@ -12,12 +12,12 @@
 #include "base/strings/string_split.h"
 #include "net/base/load_flags.h"
 #include "services/network/cors/preflight_controller.h"
-#include "services/network/loader_util.h"
 #include "services/network/public/cpp/cors/cors.h"
 #include "services/network/public/cpp/cors/origin_access_list.h"
 #include "services/network/public/cpp/features.h"
 #include "services/network/public/cpp/header_util.h"
 #include "services/network/public/cpp/request_mode.h"
+#include "services/network/url_loader.h"
 #include "url/url_util.h"
 
 namespace network {
@@ -175,8 +175,8 @@ void CorsURLLoader::FollowRedirect(
     }
   }
 
-  LogConcerningRequestHeaders(modified_headers,
-                              true /* added_during_redirect */);
+  network::URLLoader::LogConcerningRequestHeaders(
+      modified_headers, true /* added_during_redirect */);
 
   for (const auto& name : removed_headers) {
     request_.headers.RemoveHeader(name);

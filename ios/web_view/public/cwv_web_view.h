@@ -81,7 +81,8 @@ CWV_EXPORT
 // @"https://example.com". Precisely speaking:
 //
 // - Internationalized domain names (IDN) are presented in Unicode if they're
-//   regarded safe. See
+//   regarded safe. Domain names with RTL characters will still be in
+//   ACE/punycode for now (crbug.com/650760). See
 //   https://dev.chromium.org/developers/design-documents/idn-in-google-chrome
 //   for details.
 // - Omits the path for standard schemes, excepting file and filesystem.

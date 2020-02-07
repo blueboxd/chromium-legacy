@@ -2876,7 +2876,7 @@ void Node::HandleLocalEvents(Event& event) {
   if (!HasEventTargetData())
     return;
 
-  if (IsDisabledFormControl(this) && event.IsMouseEvent() &&
+  if (IsDisabledFormControl(this) && IsA<MouseEvent>(event) &&
       !RuntimeEnabledFeatures::SendMouseEventsDisabledFormControlsEnabled()) {
     if (HasEventListeners(event.type())) {
       UseCounter::Count(GetDocument(),
@@ -2962,15 +2962,16 @@ void Node::DefaultEventHandler(Event& event) {
       }
     }
   } else if (event_type == event_type_names::kClick) {
-    int detail = event.IsUIEvent() ? ToUIEvent(event).detail() : 0;
+    auto* ui_event = DynamicTo<UIEvent>(event);
+    int detail = ui_event ? ui_event->detail() : 0;
     if (DispatchDOMActivateEvent(detail, event) !=
         DispatchEventResult::kNotCanceled)
       event.SetDefaultHandled();
   } else if (event_type == event_type_names::kContextmenu &&
-             event.IsMouseEvent()) {
+             IsA<MouseEvent>(event)) {
     if (Page* page = GetDocument().GetPage()) {
       page->GetContextMenuController().HandleContextMenuEvent(
-          ToMouseEvent(&event));
+          To<MouseEvent>(&event));
     }
   } else if (event_type == event_type_names::kTextInput) {
     if (event.HasInterface(event_interface_names::kTextEvent)) {
@@ -2981,8 +2982,8 @@ void Node::DefaultEventHandler(Event& event) {
     }
   } else if (RuntimeEnabledFeatures::MiddleClickAutoscrollEnabled() &&
              event_type == event_type_names::kMousedown &&
-             event.IsMouseEvent()) {
-    auto& mouse_event = ToMouseEvent(event);
+             IsA<MouseEvent>(event)) {
+    auto& mouse_event = To<MouseEvent>(event);
     if (mouse_event.button() ==
         static_cast<int16_t>(WebPointerProperties::Button::kMiddle)) {
       if (EnclosingLinkEventParentOrSelf())

@@ -74,10 +74,6 @@ class ArcAccessibilityHelperBridge
       bool enabled,
       bool processed);
 
-  // Request Android to send the entire tree with the tree id. Returns true if
-  // the specified tree exists in ARC and a request was sent.
-  bool RefreshTreeIfInActiveWindow(const ui::AXTreeID& tree_id);
-
   // KeyedService overrides.
   void Shutdown() override;
 
@@ -170,10 +166,6 @@ class ArcAccessibilityHelperBridge
 
   arc::mojom::AccessibilityFilterType filter_type_ =
       arc::mojom::AccessibilityFilterType::OFF;
-
-  // Set of task id where TalkBack is enabled. ChromeOS native accessibility
-  // support should be disabled for these tasks.
-  std::set<int32_t> talkback_enabled_task_ids_;
 
   DISALLOW_COPY_AND_ASSIGN(ArcAccessibilityHelperBridge);
 };

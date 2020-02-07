@@ -732,6 +732,8 @@ void AddAutofillStrings(content::WebUIDataSource* html_source,
   static constexpr webui::LocalizedString kLocalizedStrings[] = {
       {"autofillPageTitle", IDS_SETTINGS_AUTOFILL},
       {"passwords", IDS_SETTINGS_PASSWORDS},
+      {"checkPasswords", IDS_SETTINGS_CHECK_PASSWORDS},
+      {"checkPasswordsDescription", IDS_SETTINGS_CHECK_PASSWORDS_DESCRIPTION},
       {"creditCards", IDS_AUTOFILL_PAYMENT_METHODS},
       {"noCreditCardsFound", IDS_SETTINGS_PAYMENT_METHODS_NONE},
       {"googlePayments", IDS_SETTINGS_GOOGLE_PAYMENTS},
@@ -827,6 +829,8 @@ void AddAutofillStrings(content::WebUIDataSource* html_source,
           base::UTF8ToUTF16(google_password_manager_url.spec())));
   html_source->AddString("googlePasswordManagerUrl",
                          google_password_manager_url.spec());
+  html_source->AddString("passwordCheckLearnMoreURL",
+                         chrome::kPasswordCheckLearnMoreURL);
   html_source->AddString("passwordManagerLearnMoreURL",
                          chrome::kPasswordManagerLearnMoreURL);
   html_source->AddString("manageAddressesUrl",
@@ -906,8 +910,6 @@ void AddPeopleStrings(content::WebUIDataSource* html_source, Profile* profile) {
   };
   AddLocalizedStringsBulk(html_source, kLocalizedStrings);
 
-  // Top level people strings:
-  html_source->AddString("syncLearnMoreUrl", chrome::kSyncLearnMoreURL);
   // Add Google Account URL and include UTM parameter to signal the source of
   // the navigation.
   html_source->AddString(

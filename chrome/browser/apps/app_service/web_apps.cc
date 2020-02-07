@@ -20,6 +20,7 @@
 #include "chrome/browser/apps/app_service/menu_util.h"
 #include "chrome/browser/apps/launch_service/launch_service.h"
 #include "chrome/browser/chromeos/arc/arc_util.h"
+#include "chrome/browser/chromeos/crostini/crostini_util.h"
 #include "chrome/browser/chromeos/extensions/gfx_utils.h"
 #include "chrome/browser/content_settings/host_content_settings_map_factory.h"
 #include "chrome/browser/profiles/profile.h"
@@ -430,7 +431,8 @@ void WebApps::OnContentSettingChanged(
       continue;
     }
 
-    if (primary_pattern.Matches(web_app.launch_url())) {
+    if (primary_pattern.Matches(web_app.launch_url()) &&
+        Accepts(web_app.app_id())) {
       apps::mojom::AppPtr app = apps::mojom::App::New();
       app->app_type = apps::mojom::AppType::kWeb;
       app->app_id = web_app.app_id();
@@ -443,14 +445,14 @@ void WebApps::OnContentSettingChanged(
 
 void WebApps::OnWebAppInstalled(const web_app::AppId& app_id) {
   const web_app::WebApp* web_app = GetWebApp(app_id);
-  if (web_app) {
+  if (web_app && Accepts(app_id)) {
     Publish(Convert(web_app, apps::mojom::Readiness::kReady));
   }
 }
 
 void WebApps::OnWebAppWillBeUninstalled(const web_app::AppId& app_id) {
   const web_app::WebApp* web_app = GetWebApp(app_id);
-  if (!web_app) {
+  if (!web_app || !Accepts(app_id)) {
     return;
   }
 
@@ -667,6 +669,11 @@ void WebApps::SetIconEffect(const std::string& app_id) {
   app->app_id = app_id;
   app->icon_key = icon_key_factory_.MakeIconKey(GetIconEffects(web_app));
   Publish(std::move(app));
+}
+
+bool WebApps::Accepts(const std::string& app_id) {
+  // Crostini Terminal System App is handled by Crostini Apps.
+  return app_id != crostini::kCrostiniTerminalSystemAppId;
 }
 
 }  // namespace apps

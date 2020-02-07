@@ -66,6 +66,7 @@ Input before setting suggested values:
 |   <shadow:root>
 |     <div>
 |       aria-hidden="true"
+|       ""
 |     <slot>
 |       name="user-agent-custom-assign-slot"
 | "input.value: initial value"
@@ -247,6 +248,7 @@ After resetting suggestedValue value:
 |   <shadow:root>
 |     <div>
 |       aria-hidden="true"
+|       ""
 |     <slot>
 |       name="user-agent-custom-assign-slot"
 | "input.value: initial value"

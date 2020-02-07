@@ -1138,13 +1138,16 @@ String NGPaintFragment::DebugName() const {
   DCHECK(physical_fragment_);
   const NGPhysicalFragment& physical_fragment = *physical_fragment_;
   if (physical_fragment.IsBox()) {
+    const LayoutObject* layout_object = physical_fragment.GetLayoutObject();
+    if (!layout_object)
+      return "NGPhysicalBoxFragment";
+    // For the root |NGPaintFragment|, return the name of the |LayoutObject| to
+    // ease the transition to |NGFragmentItem|.
+    if (!Parent())
+      return layout_object->DebugName();
     name.Append("NGPhysicalBoxFragment");
-    if (const LayoutObject* layout_object =
-            physical_fragment.GetLayoutObject()) {
-      DCHECK(physical_fragment.IsBox());
-      name.Append(' ');
-      name.Append(layout_object->DebugName());
-    }
+    name.Append(' ');
+    name.Append(layout_object->DebugName());
   } else if (physical_fragment.IsText()) {
     name.Append("NGPhysicalTextFragment '");
     name.Append(To<NGPhysicalTextFragment>(physical_fragment).Text());

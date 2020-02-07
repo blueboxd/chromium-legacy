@@ -285,16 +285,10 @@ ShelfNavigationWidget::ShelfNavigationWidget(Shelf* shelf,
       delegate_(new ShelfNavigationWidget::Delegate(shelf, shelf_view)),
       bounds_animator_(std::make_unique<views::BoundsAnimator>(delegate_)) {
   DCHECK(shelf_);
-  Shell::Get()->tablet_mode_controller()->AddObserver(this);
-  Shell::Get()->AddShellObserver(this);
   ShelfConfig::Get()->AddObserver(this);
 }
 
 ShelfNavigationWidget::~ShelfNavigationWidget() {
-  // Shell destroys the TabletModeController before destroying all root windows.
-  if (Shell::Get()->tablet_mode_controller())
-    Shell::Get()->tablet_mode_controller()->RemoveObserver(this);
-  Shell::Get()->RemoveShellObserver(this);
   ShelfConfig::Get()->RemoveObserver(this);
 }
 
@@ -395,20 +389,6 @@ HomeButton* ShelfNavigationWidget::GetHomeButton() const {
 void ShelfNavigationWidget::SetDefaultLastFocusableChild(
     bool default_last_focusable_child) {
   delegate_->set_default_last_focusable_child(default_last_focusable_child);
-}
-
-void ShelfNavigationWidget::OnTabletModeStarted() {
-  UpdateLayout(/*animate=*/true);
-}
-
-void ShelfNavigationWidget::OnTabletModeEnded() {
-  UpdateLayout(/*animate=*/true);
-}
-
-void ShelfNavigationWidget::OnShelfAlignmentChanged(
-    aura::Window* root_window,
-    ShelfAlignment old_alignment) {
-  UpdateLayout(/*animate=*/false);
 }
 
 void ShelfNavigationWidget::OnShelfConfigUpdated() {

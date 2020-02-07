@@ -13,8 +13,6 @@
 #include "chrome/browser/chromeos/crostini/crostini_manager.h"
 #include "chrome/browser/chromeos/crostini/crostini_simple_types.h"
 
-using crostini::mojom::InstallerState;
-
 namespace extensions {
 
 // Displays startup status to the crostini terminal.
@@ -26,8 +24,8 @@ class CrostiniStartupStatus
                         base::OnceClosure callback);
   ~CrostiniStartupStatus() override;
 
-  // Updates the status line every 300ms.
-  void ShowStatusLineAtInterval();
+  // Updates the progress spinner every 300ms.
+  void ShowProgressAtInterval();
 
   // Deletes this object when called.
   void OnCrostiniRestarted(crostini::CrostiniResult result);
@@ -37,37 +35,22 @@ class CrostiniStartupStatus
   FRIEND_TEST_ALL_PREFIXES(CrostiniStartupStatusTest, TestVerbose);
 
   // crostini::CrostiniManager::RestartObserver
-  void OnStageStarted(InstallerState stage) override;
-  void OnComponentLoaded(crostini::CrostiniResult result) override;
-  void OnConciergeStarted(bool success) override;
-  void OnDiskImageCreated(bool success,
-                          vm_tools::concierge::DiskImageStatus status,
-                          int64_t disk_size_available) override;
-  void OnVmStarted(bool success) override;
+  void OnStageStarted(crostini::mojom::InstallerState stage) override;
   void OnContainerDownloading(int32_t download_percent) override;
-  void OnContainerCreated(crostini::CrostiniResult result) override;
-  void OnContainerSetup(bool success) override;
-  void OnContainerStarted(crostini::CrostiniResult result) override;
-  void OnSshKeysFetched(bool success) override;
-  void OnContainerMounted(bool success) override;
 
-  void PrintStatusLine();
   void Print(const std::string& output);
-  void PrintWithTimestamp(const std::string& output);
-  // Moves cursor up and to the right to previous line before status line before
-  // printing output.
-  void PrintResult(const std::string& output);
-  void PrintCrostiniResult(crostini::CrostiniResult result);
-  void PrintSuccess(bool success);
+  void PrintProgress();
+  void PrintStage(const char* color, const std::string& output);
+  void PrintAfterStage(const char* color, const std::string& output);
 
   base::RepeatingCallback<void(const std::string& output)> print_;
   const bool verbose_;
   base::OnceClosure callback_;
   int spinner_index_ = 0;
-  int progress_index_ = 0;
-  // Position of cursor on line above status line.
-  int cursor_position_ = 0;
-  InstallerState stage_ = InstallerState::kStart;
+  int stage_index_ = 0;
+  int end_of_line_index_ = 0;
+  crostini::mojom::InstallerState stage_ =
+      crostini::mojom::InstallerState::kStart;
 
   base::WeakPtrFactory<CrostiniStartupStatus> weak_factory_{this};
 };

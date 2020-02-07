@@ -54,6 +54,11 @@ content::WebUIDataSource* CreateWebUIDataSource() {
   source->AddResourcePath("inline_login.js", IDR_INLINE_LOGIN_JS);
   source->AddResourcePath("gaia_auth_host.js", IDR_GAIA_AUTH_AUTHENTICATOR_JS);
 
+#if defined(OS_CHROMEOS)
+  source->AddResourcePath("edu", IDU_EDU_LOGIN_EDU_LOGIN_HTML);
+  source->AddResourcePath("app.js", IDU_EDU_LOGIN_EDU_LOGIN_JS);
+#endif
+
   source->AddLocalizedString("title", IDS_CHROME_SIGNIN_TITLE);
   source->AddLocalizedString(
       "accessibleCloseButtonLabel", IDS_SIGNIN_ACCESSIBLE_CLOSE_BUTTON);

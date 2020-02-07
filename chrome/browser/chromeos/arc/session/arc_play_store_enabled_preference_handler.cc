@@ -23,6 +23,7 @@
 #include "components/arc/arc_prefs.h"
 #include "components/arc/arc_util.h"
 #include "components/consent_auditor/consent_auditor.h"
+#include "components/signin/public/identity_manager/consent_level.h"
 #include "components/signin/public/identity_manager/identity_manager.h"
 #include "components/sync_preferences/pref_service_syncable.h"
 #include "content/public/browser/browser_thread.h"
@@ -128,11 +129,13 @@ void ArcPlayStoreEnabledPreferenceHandler::OnPreferenceChanged() {
       // TODO(crbug.com/850297): Fix unrelated tests that are not properly
       // setting up the state of identity_manager and enable the DCHECK instead
       // of the conditional below.
-      // DCHECK(identity_manager->HasUnconsentedPrimaryAccount());
-      if (identity_manager->HasUnconsentedPrimaryAccount()) {
+      // DCHECK(identity_manager->HasPrimaryAccount(
+      //            signin::ConsentLevel::kNotRequired));
+      if (identity_manager->HasPrimaryAccount(
+              signin::ConsentLevel::kNotRequired)) {
         // This class doesn't care about browser sync consent.
-        const CoreAccountId account_id =
-            identity_manager->GetUnconsentedPrimaryAccountId();
+        const CoreAccountId account_id = identity_manager->GetPrimaryAccountId(
+            signin::ConsentLevel::kNotRequired);
 
         UserConsentTypes::ArcPlayTermsOfServiceConsent play_consent;
         play_consent.set_status(UserConsentTypes::NOT_GIVEN);

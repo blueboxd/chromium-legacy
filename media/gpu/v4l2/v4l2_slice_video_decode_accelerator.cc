@@ -1585,7 +1585,8 @@ void V4L2SliceVideoDecodeAccelerator::ImportBufferForPictureTask(
         base::BindOnce(&V4L2SliceVideoDecodeAccelerator::CreateGLImageFor,
                        weak_this_, index, picture_buffer_id, std::move(handle),
                        iter->client_texture_id, iter->texture_id,
-                       decoder_->GetPicSize(), *gl_image_format_fourcc_));
+                       decoder_->GetVisibleRect().size(),
+                       *gl_image_format_fourcc_));
   }
 
   // Buffer is now ready to be used.
@@ -2247,7 +2248,7 @@ void V4L2SliceVideoDecodeAccelerator::FrameProcessed(
             ip_buffer_index, ip_output_record.picture_id,
             CreateGpuMemoryBufferHandle(frame.get()).native_pixmap_handle,
             ip_output_record.client_texture_id, ip_output_record.texture_id,
-            decoder_->GetPicSize(), *gl_image_format_fourcc_));
+            decoder_->GetVisibleRect().size(), *gl_image_format_fourcc_));
   }
 
   DCHECK(!surfaces_at_ip_.empty());

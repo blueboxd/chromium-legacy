@@ -7,6 +7,7 @@
 
 #include "third_party/blink/renderer/core/core_export.h"
 #include "third_party/blink/renderer/core/events/mouse_event.h"
+#include "third_party/blink/renderer/platform/wtf/casting.h"
 
 namespace blink {
 
@@ -54,7 +55,10 @@ class CORE_EXPORT DragEvent final : public MouseEvent {
   Member<DataTransfer> data_transfer_;
 };
 
-DEFINE_EVENT_TYPE_CASTS(DragEvent);
+template <>
+struct DowncastTraits<DragEvent> {
+  static bool AllowFrom(const Event& event) { return event.IsDragEvent(); }
+};
 
 }  // namespace blink
 

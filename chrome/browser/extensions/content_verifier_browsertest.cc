@@ -319,6 +319,72 @@ IN_PROC_BROWSER_TEST_F(ContentVerifierTest, PolicyCorrupted) {
   EXPECT_FALSE(reasons & disable_reason::DISABLE_CORRUPTED);
 }
 
+// Tests the case when an extension is first manually installed, then it gets
+// corrupted and then it is added to force installed list. The extension should
+// get reinstalled and should be enabled.
+IN_PROC_BROWSER_TEST_F(ContentVerifierTest,
+                       ManualInstalledExtensionGotCorruptedThenForceInstalled) {
+  ExtensionSystem* system = ExtensionSystem::Get(profile());
+  ExtensionService* service = system->extension_service();
+
+  ExtensionId kTestExtensionId("dkjgfphccejbobpbljnpjcmhmagkdoia");
+  base::FilePath crx_path =
+      test_data_dir_.AppendASCII("content_verifier/v1.crx");
+
+  const Extension* extension = InstallExtension(crx_path, 1);
+  ASSERT_TRUE(extension);
+
+  TestExtensionRegistryObserver registry_observer(
+      ExtensionRegistry::Get(profile()), kTestExtensionId);
+  // Explicitly corrupt the extension.
+  ContentVerifier* verifier = system->content_verifier();
+  verifier->VerifyFailedForTest(kTestExtensionId,
+                                ContentVerifyJob::HASH_MISMATCH);
+
+  // Make sure the extension first got disabled due to corruption.
+  EXPECT_TRUE(registry_observer.WaitForExtensionUnloaded());
+  ExtensionPrefs* prefs = ExtensionPrefs::Get(profile());
+  int reasons = prefs->GetDisableReasons(kTestExtensionId);
+  EXPECT_TRUE(reasons & disable_reason::DISABLE_CORRUPTED);
+
+  VerifierObserver verifier_observer;
+
+  // Setup fake policy and update check objects.
+  content_verifier_test::ForceInstallProvider policy(kTestExtensionId);
+  system->management_policy()->RegisterProvider(&policy);
+  auto external_provider = std::make_unique<MockExternalProvider>(
+      service, Manifest::EXTERNAL_POLICY_DOWNLOAD);
+
+  external_provider->UpdateOrAddExtension(
+      std::make_unique<ExternalInstallInfoUpdateUrl>(
+          kTestExtensionId, std::string() /* install_parameter */,
+          extension_urls::GetWebstoreUpdateUrl(),
+          Manifest::EXTERNAL_POLICY_DOWNLOAD, 0 /* creation_flags */,
+          true /* mark_acknowldged */));
+  service->AddProviderForTesting(std::move(external_provider));
+
+  service->CheckForExternalUpdates();
+  // Set our mock update client to check that the corrupt bit is set on the
+  // data structure it receives.
+  ON_CALL(update_service_, StartUpdateCheck)
+      .WillByDefault(Invoke(
+          this, &ContentVerifierTest::AssertIsCorruptBitSetOnUpdateCheck));
+
+  // Make sure the extension then got re-installed, and that after reinstall it
+  // is no longer disabled due to corruption.
+  EXPECT_TRUE(registry_observer.WaitForExtensionInstalled());
+
+  // Wait for the content verification code to finish processing the hashes.
+  if (!base::Contains(verifier_observer.completed_fetches(), kTestExtensionId))
+    verifier_observer.WaitForFetchComplete(kTestExtensionId);
+
+  reasons = prefs->GetDisableReasons(kTestExtensionId);
+  EXPECT_FALSE(reasons & disable_reason::DISABLE_CORRUPTED);
+  EXPECT_TRUE(extensions::ExtensionRegistry::Get(profile())
+                  ->enabled_extensions()
+                  .GetByID(kTestExtensionId));
+}
+
 // Tests that verification failure during navigating to an extension resource
 // correctly disables the extension.
 IN_PROC_BROWSER_TEST_F(ContentVerifierTest, VerificationFailureOnNavigate) {

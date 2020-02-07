@@ -5,6 +5,7 @@
 #include "third_party/blink/renderer/core/frame/local_frame.h"
 
 #include "testing/gtest/include/gtest/gtest.h"
+#include "third_party/blink/renderer/core/dom/node_computed_style.h"
 #include "third_party/blink/renderer/core/frame/settings.h"
 #include "third_party/blink/renderer/core/loader/empty_clients.h"
 #include "third_party/blink/renderer/core/testing/core_unit_test_helper.h"
@@ -105,6 +106,83 @@ TEST_F(LocalFrameTest,
       base::BindOnce(&EnableLazyLoadInSettings));
   EXPECT_EQ(LocalFrame::LazyLoadImageSetting::kEnabledAutomatic,
             page_holder->GetFrame().GetLazyLoadImageSetting());
+}
+
+namespace {
+
+void TestGreenDiv(DummyPageHolder& page_holder) {
+  const Document& doc = page_holder.GetDocument();
+  Element* div = doc.getElementById("div");
+  ASSERT_TRUE(div);
+  ASSERT_TRUE(div->GetComputedStyle());
+  EXPECT_EQ(MakeRGB(0, 128, 0), div->GetComputedStyle()->VisitedDependentColor(
+                                    GetCSSPropertyColor()));
+}
+
+}  // namespace
+
+TEST_F(LocalFrameTest, ForceSynchronousDocumentInstall_XHTMLStyleInBody) {
+  auto page_holder = std::make_unique<DummyPageHolder>(IntSize(800, 600));
+
+  scoped_refptr<SharedBuffer> data = SharedBuffer::Create();
+  data->Append(
+      "<html xmlns='http://www.w3.org/1999/xhtml'><body><style>div { color: "
+      "green }</style><div id='div'></div></body></html>",
+      static_cast<size_t>(118));
+  page_holder->GetFrame().ForceSynchronousDocumentInstall("text/xml", data);
+  TestGreenDiv(*page_holder);
+}
+
+TEST_F(LocalFrameTest, ForceSynchronousDocumentInstall_XHTMLLinkInBody) {
+  auto page_holder = std::make_unique<DummyPageHolder>(IntSize(800, 600));
+
+  scoped_refptr<SharedBuffer> data = SharedBuffer::Create();
+  data->Append(
+      "<html xmlns='http://www.w3.org/1999/xhtml'><body><link rel='stylesheet' "
+      "href='data:text/css,div{color:green}' /><div "
+      "id='div'></div></body></html>",
+      static_cast<size_t>(146));
+  page_holder->GetFrame().ForceSynchronousDocumentInstall("text/xml", data);
+  TestGreenDiv(*page_holder);
+}
+
+TEST_F(LocalFrameTest, ForceSynchronousDocumentInstall_XHTMLStyleInHead) {
+  auto page_holder = std::make_unique<DummyPageHolder>(IntSize(800, 600));
+
+  scoped_refptr<SharedBuffer> data = SharedBuffer::Create();
+  data->Append(
+      "<html xmlns='http://www.w3.org/1999/xhtml'><head><style>div { color: "
+      "green }</style></head><body><div id='div'></div></body></html>",
+      static_cast<size_t>(131));
+  page_holder->GetFrame().ForceSynchronousDocumentInstall("text/xml", data);
+  TestGreenDiv(*page_holder);
+}
+
+TEST_F(LocalFrameTest, ForceSynchronousDocumentInstall_XHTMLLinkInHead) {
+  auto page_holder = std::make_unique<DummyPageHolder>(IntSize(800, 600));
+
+  scoped_refptr<SharedBuffer> data = SharedBuffer::Create();
+  data->Append(
+      "<html xmlns='http://www.w3.org/1999/xhtml'><head><link rel='stylesheet' "
+      "href='data:text/css,div{color:green}' /></head><body><div "
+      "id='div'></div></body></html>",
+      static_cast<size_t>(159));
+  page_holder->GetFrame().ForceSynchronousDocumentInstall("text/xml", data);
+  TestGreenDiv(*page_holder);
+}
+
+TEST_F(LocalFrameTest, ForceSynchronousDocumentInstall_XMLStyleSheet) {
+  auto page_holder = std::make_unique<DummyPageHolder>(IntSize(800, 600));
+
+  scoped_refptr<SharedBuffer> data = SharedBuffer::Create();
+  data->Append(
+      "<?xml-stylesheet type='text/css' "
+      "href='data:text/css,div{color:green}'?><html "
+      "xmlns='http://www.w3.org/1999/xhtml'><body><div "
+      "id='div'></div></body></html>",
+      static_cast<size_t>(155));
+  page_holder->GetFrame().ForceSynchronousDocumentInstall("text/xml", data);
+  TestGreenDiv(*page_holder);
 }
 
 }  // namespace blink

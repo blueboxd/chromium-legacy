@@ -94,6 +94,13 @@ TEST_F(ArcInputMethodSurfaceManagerTest, Observer) {
 
   EXPECT_EQ(2, observer.bounds_changed_calls_);
   EXPECT_EQ(gfx::Rect(), observer.last_bounds_);
+
+  // Drop InputMethodSurface should cause a bounds change call.
+  input_method_surface.reset();
+  EXPECT_EQ(3, observer.bounds_changed_calls_);
+  EXPECT_EQ(gfx::Rect(), observer.last_bounds_);
+
+  manager.RemoveObserver(&observer);
 }
 
 }  // namespace ash

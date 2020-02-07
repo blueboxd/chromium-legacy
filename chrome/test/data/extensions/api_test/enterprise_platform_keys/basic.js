@@ -2,9 +2,6 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-// Must be packed to ../enterprise_platform_keys.crx using the private key
-// ../enterprise_platform_keys.pem .
-
 'use strict';
 
 var systemTokenEnabled = (location.href.indexOf("systemTokenEnabled") != -1);

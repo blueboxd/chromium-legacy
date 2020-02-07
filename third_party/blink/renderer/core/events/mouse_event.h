@@ -30,6 +30,7 @@
 #include "third_party/blink/renderer/core/events/ui_event_with_key_state.h"
 #include "third_party/blink/renderer/platform/geometry/double_point.h"
 #include "third_party/blink/renderer/platform/runtime_enabled_features.h"
+#include "third_party/blink/renderer/platform/wtf/casting.h"
 
 namespace blink {
 
@@ -235,7 +236,10 @@ class CORE_EXPORT MouseEvent : public UIEventWithKeyState {
   WebMenuSourceType menu_source_type_;
 };
 
-DEFINE_EVENT_TYPE_CASTS(MouseEvent);
+template <>
+struct DowncastTraits<MouseEvent> {
+  static bool AllowFrom(const Event& event) { return event.IsMouseEvent(); }
+};
 
 }  // namespace blink
 

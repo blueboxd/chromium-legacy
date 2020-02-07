@@ -152,6 +152,7 @@ class AURA_EXPORT Window : public ui::LayerDelegate,
   // Initializes the window. This creates the window's layer.
   void Init(ui::LayerType layer_type);
 
+  bool is_destroying() const { return is_destroying_; }
   void set_owned_by_parent(bool owned_by_parent) {
     owned_by_parent_ = owned_by_parent;
   }
@@ -634,6 +635,9 @@ class AURA_EXPORT Window : public ui::LayerDelegate,
   WindowTreeHost* host_ = nullptr;
 
   client::WindowType type_;
+
+  // True if this window is being destroyed.
+  bool is_destroying_ = false;
 
   // True if the Window is owned by its parent - i.e. it will be deleted by its
   // parent during its parents destruction.

@@ -23,6 +23,7 @@ import org.chromium.base.test.util.Feature;
 import org.chromium.base.test.util.RetryOnFailure;
 import org.chromium.chrome.browser.ChromeActivity;
 import org.chromium.chrome.browser.ChromeSwitches;
+import org.chromium.chrome.browser.background_task_scheduler.ChromeNativeBackgroundTaskDelegate;
 import org.chromium.chrome.browser.firstrun.FirstRunUtils;
 import org.chromium.chrome.browser.flags.ChromeFeatureList;
 import org.chromium.chrome.browser.offlinepages.OfflinePageBridge;
@@ -167,6 +168,7 @@ public class PrefetchFlowTest implements WebServer.RequestHandler {
     private void runAndWaitForBackgroundTask() throws Throwable {
         CallbackHelper finished = new CallbackHelper();
         PrefetchBackgroundTask task = new PrefetchBackgroundTask();
+        task.setDelegate(new ChromeNativeBackgroundTaskDelegate());
         TestThreadUtils.runOnUiThreadBlocking(() -> {
             TaskParameters.Builder builder =
                     TaskParameters.create(TaskIds.OFFLINE_PAGES_PREFETCH_JOB_ID);

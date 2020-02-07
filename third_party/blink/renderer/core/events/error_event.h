@@ -40,6 +40,7 @@
 #include "third_party/blink/renderer/core/core_export.h"
 #include "third_party/blink/renderer/core/dom/events/event.h"
 #include "third_party/blink/renderer/platform/bindings/dom_wrapper_world.h"
+#include "third_party/blink/renderer/platform/wtf/casting.h"
 #include "third_party/blink/renderer/platform/wtf/text/wtf_string.h"
 
 namespace blink {
@@ -115,7 +116,10 @@ class CORE_EXPORT ErrorEvent final : public Event {
   scoped_refptr<DOMWrapperWorld> world_;
 };
 
-DEFINE_EVENT_TYPE_CASTS(ErrorEvent);
+template <>
+struct DowncastTraits<ErrorEvent> {
+  static bool AllowFrom(const Event& event) { return event.IsErrorEvent(); }
+};
 
 }  // namespace blink
 

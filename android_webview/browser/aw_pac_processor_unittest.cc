@@ -6,6 +6,7 @@
 
 #include "android_webview/browser/aw_pac_processor.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "base/test/task_environment.h"
 
 namespace android_webview {
 
@@ -27,6 +28,8 @@ const std::string kRequestUrl = "http://testurl.test";
 
 class AwPacProcessorTest : public testing::Test {
  protected:
+  base::test::TaskEnvironment task_environment_{
+           base::test::TaskEnvironment::TimeSource::MOCK_TIME};
   AwPacProcessor* pac_processor_ = AwPacProcessor::Get();
 };
 

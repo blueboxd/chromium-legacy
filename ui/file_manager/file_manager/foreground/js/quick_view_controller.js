@@ -131,8 +131,11 @@ class QuickViewController {
     this.quickView_.addEventListener('close', () => {
       this.listContainer_.focus();
     });
+
     this.quickView_.onOpenInNewButtonTap =
         this.onOpenInNewButtonTap_.bind(this);
+
+    this.quickView_.onDeleteButtonTap = this.onDeleteButtonTap_.bind(this);
 
     const toolTipElements =
         this.quickView_.$$('#toolbar').querySelectorAll('[has-tooltip]');
@@ -162,6 +165,16 @@ class QuickViewController {
   onOpenInNewButtonTap_(event) {
     this.tasks_ && this.tasks_.executeDefault();
     this.quickView_.close();
+  }
+
+  /**
+   * Handles delete button tap.
+   *
+   * @param {!Event} event A button click event.
+   * @private
+   */
+  onDeleteButtonTap_(event) {
+    this.deleteSelectedEntry_();
   }
 
   /**

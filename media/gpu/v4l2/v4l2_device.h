@@ -615,7 +615,7 @@ class MEDIA_GPU_EXPORT V4L2Device
 
   // Return true if the given V4L2 pixfmt can be used in CreateEGLImage()
   // for the current platform.
-  virtual bool CanCreateEGLImageFrom(const Fourcc fourcc) = 0;
+  virtual bool CanCreateEGLImageFrom(const Fourcc fourcc) const = 0;
 
   // Create an EGLImage from provided |handle|, taking full ownership of it.
   // Some implementations may also require the V4L2 |buffer_index| of the buffer
@@ -627,23 +627,23 @@ class MEDIA_GPU_EXPORT V4L2Device
                                      const gfx::Size& size,
                                      unsigned int buffer_index,
                                      const Fourcc fourcc,
-                                     gfx::NativePixmapHandle handle) = 0;
+                                     gfx::NativePixmapHandle handle) const = 0;
 
   // Create a GLImage from provided |handle|, taking full ownership of it.
   virtual scoped_refptr<gl::GLImage> CreateGLImage(
       const gfx::Size& size,
       const Fourcc fourcc,
-      gfx::NativePixmapHandle handle) = 0;
+      gfx::NativePixmapHandle handle) const = 0;
 
   // Destroys the EGLImageKHR.
   virtual EGLBoolean DestroyEGLImage(EGLDisplay egl_display,
-                                     EGLImageKHR egl_image) = 0;
+                                     EGLImageKHR egl_image) const = 0;
 
   // Returns the supported texture target for the V4L2Device.
-  virtual GLenum GetTextureTarget() = 0;
+  virtual GLenum GetTextureTarget() const = 0;
 
   // Returns the preferred V4L2 input formats for |type| or empty if none.
-  virtual std::vector<uint32_t> PreferredInputFormat(Type type) = 0;
+  virtual std::vector<uint32_t> PreferredInputFormat(Type type) const = 0;
 
   // NOTE: The below methods to query capabilities have a side effect of
   // closing the previously-open device, if any, and should not be called after

@@ -29,6 +29,7 @@
 #include "components/password_manager/core/browser/form_fetcher_impl.h"
 #include "components/password_manager/core/browser/leak_detection/leak_detection_check.h"
 #include "components/password_manager/core/browser/leak_detection/leak_detection_check_factory.h"
+#include "components/password_manager/core/browser/leak_detection/mock_leak_detection_check_factory.h"
 #include "components/password_manager/core/browser/mock_password_store.h"
 #include "components/password_manager/core/browser/password_autofill_manager.h"
 #include "components/password_manager/core/browser/password_bubble_experiment.h"
@@ -105,15 +106,6 @@ MATCHER_P(HasUsernameValue, expected_username, "") {
 class MockLeakDetectionCheck : public LeakDetectionCheck {
  public:
   MOCK_METHOD3(Start, void(const GURL&, base::string16, base::string16));
-};
-
-class MockLeakDetectionCheckFactory : public LeakDetectionCheckFactory {
- public:
-  MOCK_CONST_METHOD3(TryCreateLeakCheck,
-                     std::unique_ptr<LeakDetectionCheck>(
-                         LeakDetectionDelegateInterface*,
-                         signin::IdentityManager*,
-                         scoped_refptr<network::SharedURLLoaderFactory>));
 };
 
 class MockStoreResultFilter : public StubCredentialsFilter {

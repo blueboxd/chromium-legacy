@@ -113,7 +113,7 @@ public class TaskInfo {
          * @param currentTimeMs the current time to check for expiration.
          * @return true if the task expired and false otherwise.
          */
-        static boolean getExpirationStatus(
+        public static boolean getExpirationStatus(
                 long scheduleTimeMs, long endTimeMs, long currentTimeMs) {
             return currentTimeMs >= scheduleTimeMs + endTimeMs;
         }
@@ -238,7 +238,7 @@ public class TaskInfo {
          * @param currentTimeMs the current time to check for expiration.
          * @return true if the task expired and false otherwise.
          */
-        static boolean getExpirationStatus(
+        public static boolean getExpirationStatus(
                 long scheduleTimeMs, long intervalTimeMs, long flexTimeMs, long currentTimeMs) {
             // Whether the task is executed during the wanted time window is determined here. The
             // position of the current time in relation to the time window is calculated here.

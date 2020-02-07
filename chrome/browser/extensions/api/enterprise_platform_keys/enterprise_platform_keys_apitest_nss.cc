@@ -6,8 +6,12 @@
 #include <stddef.h>
 
 #include <memory>
+#include <string>
 
 #include "base/bind.h"
+#include "base/files/file_path.h"
+#include "base/files/file_util.h"
+#include "base/files/scoped_temp_dir.h"
 #include "base/path_service.h"
 #include "base/run_loop.h"
 #include "base/stl_util.h"
@@ -23,6 +27,7 @@
 #include "crypto/scoped_test_system_nss_key_slot.h"
 #include "extensions/browser/extension_registry.h"
 #include "net/cert/nss_cert_database.h"
+#include "net/test/embedded_test_server/embedded_test_server.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -102,9 +107,6 @@ const unsigned char privateKeyPkcs8System[] = {
     0xb5, 0x6f, 0xe9, 0x1b, 0x32, 0x91, 0x34, 0x38
 };
 
-const char kUpdateManifestPath[] =
-    "/extensions/api_test/enterprise_platform_keys/update_manifest.xml";
-
 void ImportPrivateKeyPKCS8ToSlot(const unsigned char* pkcs8_der,
                                  size_t pkcs8_der_size,
                                  PK11SlotInfo* slot) {
@@ -131,6 +133,13 @@ void ImportPrivateKeyPKCS8ToSlot(const unsigned char* pkcs8_der,
 // its extension ID is well-known and the policy system can push policies for
 // the extension.
 const char kTestExtensionID[] = "aecpbnckhoppanpmefllkdkohionpmig";
+const char kTestExtensionUpdateManifest[] =
+    R"(<?xml version='1.0' encoding='UTF-8'?>
+       <gupdate xmlns='http://www.google.com/update2/response' protocol='2.0'>
+         <app appid='$1'>
+           <updatecheck codebase='$2' version='0.1' />
+         </app>
+       </gupdate>)";
 
 struct Params {
   Params(PlatformKeysTestBase::SystemTokenStatus system_token_status,
@@ -163,7 +172,23 @@ class EnterprisePlatformKeysTest
   }
 
   void SetUpOnMainThread() override {
-    policy_test_utils::SetUpEmbeddedTestServer(embedded_test_server());
+    ASSERT_TRUE(temp_dir_.CreateUniqueTempDir());
+
+    embedded_test_server()->ServeFilesFromDirectory(temp_dir_.GetPath());
+
+    crx_path_ = temp_dir_.GetPath().Append(kCrxFileName);
+    update_manifest_path_ = temp_dir_.GetPath().Append(kUpdateManifestFileName);
+
+    extension_path_ = test_data_dir_.Append(kExtensionDirName);
+    pem_path_ = test_data_dir_.Append(kPemFileName);
+
+    base::FilePath created_crx_path =
+        PackExtensionWithOptions(extension_path_, crx_path_, pem_path_,
+                                 /*pem_out_path=*/base::FilePath());
+    ASSERT_EQ(created_crx_path, crx_path_);
+
+    GenerateUpdateManifestFile();
+
     PlatformKeysTestBase::SetUpOnMainThread();
   }
 
@@ -177,6 +202,10 @@ class EnterprisePlatformKeysTest
     done_callback.Run();
   }
 
+ protected:
+  const std::string kUpdateManifestFileName =
+      "enterprise_platform_keys_update_manifest.xml";
+
  private:
   void PrepareTestSystemSlotOnIO(
       crypto::ScopedTestSystemNSSKeySlot* system_slot) override {
@@ -186,6 +215,29 @@ class EnterprisePlatformKeysTest
                                 base::size(privateKeyPkcs8System),
                                 system_slot->slot());
   }
+
+  void GenerateUpdateManifestFile() {
+    const std::string kContent = base::ReplaceStringPlaceholders(
+        kTestExtensionUpdateManifest,
+        {kTestExtensionID,
+         embedded_test_server()->GetURL("/" + kCrxFileName).spec().c_str()},
+        /*offsets=*/nullptr);
+
+    int written_bytes = base::WriteFile(update_manifest_path_, kContent.data(),
+                                        kContent.size());
+    ASSERT_EQ(written_bytes, static_cast<int>(kContent.length()));
+  }
+
+  const std::string kCrxFileName = "enterprise_platform_keys.crx";
+  const std::string kExtensionDirName = "enterprise_platform_keys";
+  const std::string kPemFileName = "enterprise_platform_keys.pem";
+
+  base::FilePath crx_path_;
+  base::FilePath extension_path_;
+  base::FilePath pem_path_;
+  base::FilePath update_manifest_path_;
+
+  base::ScopedTempDir temp_dir_;
 
   DISALLOW_COPY_AND_ASSIGN(EnterprisePlatformKeysTest);
 };
@@ -207,8 +259,9 @@ IN_PROC_BROWSER_TEST_P(EnterprisePlatformKeysTest, Basic) {
    loop.Run();
   }
   policy_test_utils::SetExtensionInstallForcelistPolicy(
-      kTestExtensionID, embedded_test_server()->GetURL(kUpdateManifestPath),
-      profile(), mock_policy_provider());
+      kTestExtensionID,
+      embedded_test_server()->GetURL("/" + kUpdateManifestFileName), profile(),
+      mock_policy_provider());
 
   // By default, the system token is disabled.
   std::string system_token_availability = "";

@@ -192,6 +192,7 @@ SearchFieldCancelButtonElement::SearchFieldCancelButtonElement(
 
 void SearchFieldCancelButtonElement::DefaultEventHandler(Event& event) {
   // If the element is visible, on mouseup, clear the value, and set selection
+  auto* mouse_event = DynamicTo<MouseEvent>(event);
   auto* input = To<HTMLInputElement>(OwnerShadowHost());
   if (!input || input->IsDisabledOrReadOnly()) {
     if (!event.DefaultHandled())
@@ -199,8 +200,8 @@ void SearchFieldCancelButtonElement::DefaultEventHandler(Event& event) {
     return;
   }
 
-  if (event.type() == event_type_names::kClick && event.IsMouseEvent() &&
-      ToMouseEvent(event).button() ==
+  if (event.type() == event_type_names::kClick && mouse_event &&
+      mouse_event->button() ==
           static_cast<int16_t>(WebPointerProperties::Button::kLeft)) {
     input->SetValueForUser("");
     input->SetAutofillState(WebAutofillState::kNotFilled);
@@ -238,7 +239,7 @@ void PasswordRevealButtonElement::DefaultEventHandler(Event& event) {
   }
 
   // Toggle the should-reveal-password state when clicked.
-  if (event.type() == event_type_names::kClick && event.IsMouseEvent()) {
+  if (event.type() == event_type_names::kClick && IsA<MouseEvent>(event)) {
     bool shouldRevealPassword = !input->ShouldRevealPassword();
 
     input->SetShouldRevealPassword(shouldRevealPassword);

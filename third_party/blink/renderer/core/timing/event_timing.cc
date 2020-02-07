@@ -33,7 +33,7 @@ bool ShouldLogEvent(const Event& event) {
 }
 
 bool IsEventTypeForEventTiming(const Event& event) {
-  return (event.IsMouseEvent() || event.IsPointerEvent() ||
+  return (IsA<MouseEvent>(event) || event.IsPointerEvent() ||
           event.IsTouchEvent() || event.IsKeyboardEvent() ||
           event.IsWheelEvent() || event.IsInputEvent() ||
           event.IsCompositionEvent()) &&

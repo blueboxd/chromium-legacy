@@ -137,6 +137,8 @@ class WebApps : public apps::mojom::Publisher,
 
   void SetIconEffect(const std::string& app_id);
 
+  bool Accepts(const std::string& app_id);
+
   mojo::Receiver<apps::mojom::Publisher> receiver_{this};
   mojo::RemoteSet<apps::mojom::Subscriber> subscribers_;
 

@@ -130,10 +130,6 @@ bool IdentityManager::HasPrimaryAccount(ConsentLevel consent) const {
   return primary_account_manager_->IsAuthenticated();
 }
 
-CoreAccountId IdentityManager::GetUnconsentedPrimaryAccountId() const {
-  return GetPrimaryAccountInfo(ConsentLevel::kNotRequired).account_id;
-}
-
 bool IdentityManager::HasUnconsentedPrimaryAccount() const {
   return primary_account_manager_->HasUnconsentedPrimaryAccount();
 }
@@ -517,7 +513,8 @@ IdentityManager::ComputeUnconsentedPrimaryAccountInfo() const {
     // If cookies or tokens are not loaded, it is not possible to fully compute
     // the unconsented primary account. However, if the current unconsented
     // primary account is no longer valid, it has to be removed.
-    CoreAccountId current_account = GetUnconsentedPrimaryAccountId();
+    CoreAccountId current_account =
+        GetPrimaryAccountId(ConsentLevel::kNotRequired);
     if (!current_account.empty()) {
       if (AreRefreshTokensLoaded() &&
           !HasAccountWithRefreshToken(current_account)) {
@@ -597,7 +594,7 @@ void IdentityManager::OnRefreshTokenAvailable(const CoreAccountId& account_id) {
 
 void IdentityManager::OnRefreshTokenRevoked(const CoreAccountId& account_id) {
   if (!AreRefreshTokensLoaded() && HasUnconsentedPrimaryAccount() &&
-      account_id == GetUnconsentedPrimaryAccountId()) {
+      account_id == GetPrimaryAccountId(ConsentLevel::kNotRequired)) {
     unconsented_primary_account_revoked_during_load_ = true;
   }
 

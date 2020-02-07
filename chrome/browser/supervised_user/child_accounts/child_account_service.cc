@@ -262,8 +262,8 @@ void ChildAccountService::OnExtendedAccountInfoUpdated(
   }
 
   // This class doesn't care about browser sync consent.
-  CoreAccountId auth_account_id =
-      identity_manager_->GetUnconsentedPrimaryAccountId();
+  CoreAccountId auth_account_id = identity_manager_->GetPrimaryAccountId(
+      signin::ConsentLevel::kNotRequired);
   if (info.account_id != auth_account_id)
     return;
 
@@ -273,7 +273,8 @@ void ChildAccountService::OnExtendedAccountInfoUpdated(
 void ChildAccountService::OnExtendedAccountInfoRemoved(
     const AccountInfo& info) {
   // This class doesn't care about browser sync consent.
-  if (info.account_id != identity_manager_->GetUnconsentedPrimaryAccountId())
+  if (info.account_id != identity_manager_->GetPrimaryAccountId(
+                             signin::ConsentLevel::kNotRequired))
     return;
 
   SetIsChildAccount(false);

@@ -9,12 +9,12 @@
         {
           "object": "LayoutNGBlockFlow DIV id='target' class='target'",
           "rect": [0, 116, 402, 152],
-          "reason": "disappeared"
+          "reason": "appeared"
         },
         {
-          "object": "NGPhysicalBoxFragment LayoutNGBlockFlow DIV id='target' class='target'",
+          "object": "LayoutNGBlockFlow DIV id='target' class='target'",
           "rect": [0, 116, 402, 152],
-          "reason": "appeared"
+          "reason": "disappeared"
         },
         {
           "object": "LayoutImage IMG",

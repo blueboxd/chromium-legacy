@@ -181,10 +181,7 @@ js_library("route") {
 }
 
 js_library("router") {
-  deps = [
-    "//ui/webui/resources/js:cr",
-    "//ui/webui/resources/js:load_time_data",
-  ]
+  deps = [ "//ui/webui/resources/js:cr" ]
   externs_list = [ "$externs_path/metrics_private.js" ]
 }
 
@@ -323,10 +320,7 @@ js_library("route.m") {
 
 js_library("router.m") {
   sources = [ "$root_gen_dir/chrome/browser/resources/settings/router.m.js" ]
-  deps = [
-    "//ui/webui/resources/js:assert.m",
-    "//ui/webui/resources/js:load_time_data.m",
-  ]
+  deps = [ "//ui/webui/resources/js:assert.m" ]
   extra_deps = [ ":modulize" ]
   externs_list = [ "$externs_path/metrics_private.js" ]
 }

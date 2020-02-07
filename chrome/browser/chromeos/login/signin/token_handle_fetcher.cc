@@ -61,7 +61,8 @@ void TokenHandleFetcher::BackfillToken(Profile* profile,
   identity_manager_ = IdentityManagerFactory::GetForProfile(profile);
   // This class doesn't care about browser sync consent.
   if (!identity_manager_->HasAccountWithRefreshToken(
-          identity_manager_->GetUnconsentedPrimaryAccountId())) {
+          identity_manager_->GetPrimaryAccountId(
+              signin::ConsentLevel::kNotRequired))) {
     profile_shutdown_notification_ =
         TokenHandleFetcherShutdownNotifierFactory::GetInstance()
             ->Get(profile)

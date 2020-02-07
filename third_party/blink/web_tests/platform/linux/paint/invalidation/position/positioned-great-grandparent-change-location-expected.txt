@@ -7,12 +7,12 @@
       "backgroundColor": "#FFFFFF",
       "paintInvalidations": [
         {
-          "object": "NGPhysicalBoxFragment LayoutNGBlockFlow (positioned) DIV",
+          "object": "LayoutNGBlockFlow (positioned) DIV",
           "rect": [100, 200, 100, 100],
           "reason": "geometry"
         },
         {
-          "object": "NGPhysicalBoxFragment LayoutNGBlockFlow (positioned) DIV",
+          "object": "LayoutNGBlockFlow (positioned) DIV",
           "rect": [100, 100, 100, 100],
           "reason": "geometry"
         },

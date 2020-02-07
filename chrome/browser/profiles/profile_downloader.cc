@@ -25,6 +25,7 @@
 #include "components/signin/public/identity_manager/access_token_fetcher.h"
 #include "components/signin/public/identity_manager/access_token_info.h"
 #include "components/signin/public/identity_manager/account_info.h"
+#include "components/signin/public/identity_manager/consent_level.h"
 #include "google_apis/gaia/gaia_constants.h"
 #include "net/base/load_flags.h"
 #include "net/http/http_status_code.h"
@@ -65,9 +66,9 @@ void ProfileDownloader::StartForAccount(const CoreAccountId& account_id) {
     return;
   }
 
-  account_id_ = account_id.empty()
-                    ? identity_manager_->GetUnconsentedPrimaryAccountId()
-                    : account_id;
+  account_id_ = account_id.empty() ? identity_manager_->GetPrimaryAccountId(
+                                         signin::ConsentLevel::kNotRequired)
+                                   : account_id;
   StartFetchingOAuth2AccessToken();
 }
 

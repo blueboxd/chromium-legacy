@@ -315,8 +315,8 @@ bool DevToolsEventForwarder::ForwardEvent(
                               static_cast<ui::DomCode>(event.dom_code)));
   event_data.SetIntKey("keyCode", key_code);
   event_data.SetIntKey("modifiers", modifiers);
-  devtools_window_->bindings_->CallClientFunction(
-      "DevToolsAPI.keyEventUnhandled", &event_data, NULL, NULL);
+  devtools_window_->bindings_->CallClientMethod(
+      "DevToolsAPI", "keyEventUnhandled", event_data);
   return true;
 }
 
@@ -773,8 +773,7 @@ void DevToolsWindow::UpdateInspectedWebContents(
       std::make_unique<ObserverWithAccessor>(new_web_contents);
   bindings_->AttachTo(
       content::DevToolsAgentHost::GetOrCreateFor(new_web_contents));
-  bindings_->CallClientFunction("DevToolsAPI.reattachMainTarget", nullptr,
-                                nullptr, nullptr);
+  bindings_->CallClientMethod("DevToolsAPI", "reattachMainTarget");
 }
 
 void DevToolsWindow::ScheduleShow(const DevToolsToggleAction& action) {
@@ -1427,8 +1426,7 @@ void DevToolsWindow::ColorPickedInEyeDropper(int r, int g, int b, int a) {
   color.SetInteger("g", g);
   color.SetInteger("b", b);
   color.SetInteger("a", a);
-  bindings_->CallClientFunction("DevToolsAPI.eyeDropperPickedColor", &color,
-                                nullptr, nullptr);
+  bindings_->CallClientMethod("DevToolsAPI", "eyeDropperPickedColor", color);
 }
 
 void DevToolsWindow::InspectedContentsClosing() {
@@ -1491,9 +1489,9 @@ void DevToolsWindow::OnLoadCompleted() {
     sessions::SessionTabHelper* session_tab_helper =
         sessions::SessionTabHelper::FromWebContents(inspected_web_contents);
     if (session_tab_helper) {
-      base::Value tabId(session_tab_helper->session_id().id());
-      bindings_->CallClientFunction("DevToolsAPI.setInspectedTabId",
-                                    &tabId, NULL, NULL);
+      bindings_->CallClientMethod(
+          "DevToolsAPI", "setInspectedTabId",
+          base::Value(session_tab_helper->session_id().id()));
     }
   }
 
@@ -1560,8 +1558,7 @@ BrowserWindow* DevToolsWindow::GetInspectedBrowserWindow() {
 void DevToolsWindow::DoAction(const DevToolsToggleAction& action) {
   switch (action.type()) {
     case DevToolsToggleAction::kInspect:
-      bindings_->CallClientFunction("DevToolsAPI.enterInspectElementMode", NULL,
-                                    NULL, NULL);
+      bindings_->CallClientMethod("DevToolsAPI", "enterInspectElementMode");
       break;
 
     case DevToolsToggleAction::kShowElementsPanel:
@@ -1576,11 +1573,10 @@ void DevToolsWindow::DoAction(const DevToolsToggleAction& action) {
       const DevToolsToggleAction::RevealParams* params =
           action.params();
       CHECK(params);
-      base::Value url_value(params->url);
-      base::Value line_value(static_cast<int>(params->line_number));
-      base::Value column_value(static_cast<int>(params->column_number));
-      bindings_->CallClientFunction("DevToolsAPI.revealSourceLine",
-                                    &url_value, &line_value, &column_value);
+      bindings_->CallClientMethod(
+          "DevToolsAPI", "revealSourceLine", base::Value(params->url),
+          base::Value(static_cast<int>(params->line_number)),
+          base::Value(static_cast<int>(params->column_number)));
       break;
     }
     default:
@@ -1635,9 +1631,8 @@ bool DevToolsWindow::ReloadInspectedWebContents(bool bypass_cache) {
   WebContents* wc = GetInspectedWebContents();
   if (!wc || wc->GetCrashedStatus() != base::TERMINATION_STATUS_STILL_RUNNING)
     return false;
-  base::Value bypass_cache_value(bypass_cache);
-  bindings_->CallClientFunction("DevToolsAPI.reloadInspectedPage",
-                                &bypass_cache_value, nullptr, nullptr);
+  bindings_->CallClientMethod("DevToolsAPI", "reloadInspectedPage",
+                              base::Value(bypass_cache));
   return true;
 }
 

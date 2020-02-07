@@ -87,12 +87,12 @@ bool ImageInputType::SupportsValidation() const {
 }
 
 static IntPoint ExtractClickLocation(const Event& event) {
-  if (!event.UnderlyingEvent() || !event.UnderlyingEvent()->IsMouseEvent())
+  auto* mouse_event = DynamicTo<MouseEvent>(event.UnderlyingEvent());
+  if (!event.UnderlyingEvent() || !mouse_event)
     return IntPoint();
-  auto& mouse_event = *ToMouseEvent(event.UnderlyingEvent());
-  if (!mouse_event.HasPosition())
+  if (!mouse_event->HasPosition())
     return IntPoint();
-  return IntPoint(mouse_event.offsetX(), mouse_event.offsetY());
+  return IntPoint(mouse_event->offsetX(), mouse_event->offsetY());
 }
 
 void ImageInputType::HandleDOMActivateEvent(Event& event) {

@@ -17,6 +17,7 @@
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/values.h"
 #include "build/build_config.h"
+#include "components/signin/public/identity_manager/consent_level.h"
 #include "components/signin/public/identity_manager/identity_manager.h"
 #include "components/signin/public/identity_manager/identity_test_environment.h"
 #include "net/base/net_errors.h"
@@ -171,7 +172,8 @@ class FamilyInfoFetcherTest
 
   void WaitForAccessTokenRequestAndIssueToken() {
     identity_test_env_.WaitForAccessTokenRequestIfNecessaryAndRespondWithToken(
-        identity_test_env_.identity_manager()->GetUnconsentedPrimaryAccountId(),
+        identity_test_env_.identity_manager()->GetPrimaryAccountId(
+            signin::ConsentLevel::kNotRequired),
         "access_token", base::Time::Now() + base::TimeDelta::FromHours(1));
   }
 
@@ -319,7 +321,8 @@ TEST_F(FamilyInfoFetcherTest, GetTokenFailure) {
   // On failure to get an access token we expect a token error.
   EXPECT_CALL(*this, OnFailure(FamilyInfoFetcher::TOKEN_ERROR));
   identity_test_env_.WaitForAccessTokenRequestIfNecessaryAndRespondWithError(
-      identity_test_env_.identity_manager()->GetUnconsentedPrimaryAccountId(),
+      identity_test_env_.identity_manager()->GetPrimaryAccountId(
+          signin::ConsentLevel::kNotRequired),
       GoogleServiceAuthError(GoogleServiceAuthError::INVALID_GAIA_CREDENTIALS));
 }
 

@@ -1706,13 +1706,38 @@ TEST_P(FeatureInfoTest, InitializeARB_texture_rgNoFloat) {
 
 TEST_P(FeatureInfoTest, InitializeEXT_texture_norm16) {
   SetupInitExpectations("GL_EXT_texture_norm16");
+
+  if (!info_->IsWebGL2OrES3OrHigherContext()) {
+    return;
+  }
+
   EXPECT_TRUE(info_->feature_flags().ext_texture_norm16);
 
   EXPECT_TRUE(info_->validators()->texture_format.IsValid(GL_RED_EXT));
+  EXPECT_TRUE(info_->validators()->texture_format.IsValid(GL_RG_EXT));
+  EXPECT_TRUE(info_->validators()->texture_format.IsValid(GL_RGB));
+  EXPECT_TRUE(info_->validators()->texture_format.IsValid(GL_RGBA));
   EXPECT_TRUE(info_->validators()->texture_internal_format.IsValid(GL_R16_EXT));
-  EXPECT_TRUE(info_->validators()->texture_internal_format.IsValid(GL_RED_EXT));
+  EXPECT_TRUE(
+      info_->validators()->texture_internal_format.IsValid(GL_RG16_EXT));
+  EXPECT_TRUE(
+      info_->validators()->texture_internal_format.IsValid(GL_RGB16_EXT));
+  EXPECT_TRUE(
+      info_->validators()->texture_internal_format.IsValid(GL_RGBA16_EXT));
+  EXPECT_TRUE(info_->validators()->read_pixel_format.IsValid(GL_R16_EXT));
+  EXPECT_TRUE(info_->validators()->read_pixel_format.IsValid(GL_RG16_EXT));
+  EXPECT_TRUE(info_->validators()->read_pixel_format.IsValid(GL_RGBA16_EXT));
+  EXPECT_TRUE(info_->validators()->render_buffer_format.IsValid(GL_R16_EXT));
+  EXPECT_TRUE(info_->validators()->render_buffer_format.IsValid(GL_RG16_EXT));
+  EXPECT_TRUE(info_->validators()->render_buffer_format.IsValid(GL_RGBA16_EXT));
   EXPECT_TRUE(
       info_->validators()->texture_internal_format_storage.IsValid(GL_R16_EXT));
+  EXPECT_TRUE(info_->validators()->texture_internal_format_storage.IsValid(
+      GL_RG16_EXT));
+  EXPECT_TRUE(info_->validators()->texture_internal_format_storage.IsValid(
+      GL_RGB16_EXT));
+  EXPECT_TRUE(info_->validators()->texture_internal_format_storage.IsValid(
+      GL_RGBA16_EXT));
 }
 
 TEST_P(FeatureInfoTest, InitializeCHROMIUM_unpremultiply_and_dither_copy) {

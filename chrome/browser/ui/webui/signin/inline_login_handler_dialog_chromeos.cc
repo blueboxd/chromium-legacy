@@ -15,6 +15,7 @@
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/ui/webui/chromeos/system_web_dialog_delegate.h"
 #include "chrome/common/webui_url_constants.h"
+#include "chromeos/constants/chromeos_features.h"
 #include "chromeos/constants/chromeos_pref_names.h"
 #include "components/prefs/pref_service.h"
 #include "components/web_modal/web_contents_modal_dialog_manager.h"
@@ -50,9 +51,17 @@ void InlineLoginHandlerDialogChromeOS::Show(const std::string& email) {
   }
 
   GURL url;
-  if (ProfileManager::GetActiveUserProfile()->GetPrefs()->GetBoolean(
-          chromeos::prefs::kSecondaryGoogleAccountSigninAllowed) ||
-      IsDeviceAccountEmail(email)) {
+  if (ProfileManager::GetActiveUserProfile()->IsChild()) {
+    // chrome://chrome-signin/edu
+    const std::string kEduAccountLoginURL =
+        std::string(chrome::kChromeUIChromeSigninURL) + "edu";
+
+    url = GURL(features::IsEduCoexistenceEnabled()
+                   ? kEduAccountLoginURL
+                   : chrome::kChromeUIAccountManagerErrorURL);
+  } else if (ProfileManager::GetActiveUserProfile()->GetPrefs()->GetBoolean(
+                 chromeos::prefs::kSecondaryGoogleAccountSigninAllowed) ||
+             IsDeviceAccountEmail(email)) {
     // Addition of secondary Google Accounts is allowed OR it's a primary
     // account re-auth.
     url = GURL(chrome::kChromeUIChromeSigninURL);

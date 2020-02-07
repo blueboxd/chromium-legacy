@@ -240,7 +240,7 @@ TerminalPrivateOpenTerminalProcessFunction::Run() {
                             api::terminal_private::ToString(
                                 api::terminal_private::OUTPUT_TYPE_STDOUT)),
         verbose, std::move(open_process));
-    observer->ShowStatusLineAtInterval();
+    observer->ShowProgressAtInterval();
     mgr->RestartCrostini(
         vm_name, container_name,
         base::BindOnce(&CrostiniStartupStatus::OnCrostiniRestarted,

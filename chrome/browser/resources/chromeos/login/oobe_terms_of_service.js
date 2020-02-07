@@ -94,7 +94,7 @@ Polymer({
 
     this.backButtonDisabled_ = true;
     this.acceptButtonDisabled_ = true;
-    chrome.send('termsOfServiceAccept');
+    this.userActed('accept');
   },
 
   /**
@@ -110,7 +110,7 @@ Polymer({
 
     this.backButtonDisabled_ = true;
     this.acceptButtonDisabled_ = true;
-    chrome.send('termsOfServiceBack');
+    this.userActed('back');
   },
 
   /**

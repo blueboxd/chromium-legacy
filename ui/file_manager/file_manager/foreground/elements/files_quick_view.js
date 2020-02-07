@@ -156,6 +156,13 @@ const FilesQuickView = Polymer({
   },
 
   /**
+   * Client should assign the function to delete the file.
+   *
+   * @param {!Event} event
+   */
+  onDeleteButtonTap: function(event) {},
+
+  /**
    * @param {boolean} canDelete
    * @param {boolean} isModal
    * @return {boolean}

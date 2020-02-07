@@ -7,9 +7,7 @@
 
 #include "ash/ash_export.h"
 #include "ash/public/cpp/shelf_config.h"
-#include "ash/public/cpp/tablet_mode_observer.h"
 #include "ash/shelf/shelf_component.h"
-#include "ash/shell_observer.h"
 #include "ui/views/accessible_pane_view.h"
 #include "ui/views/widget/widget.h"
 #include "ui/views/widget/widget_delegate.h"
@@ -30,10 +28,8 @@ class ShelfView;
 
 // The shelf navigation widget holds the home button and (when in tablet mode)
 // the back button.
-class ASH_EXPORT ShelfNavigationWidget : public TabletModeObserver,
-                                         public ShelfComponent,
+class ASH_EXPORT ShelfNavigationWidget : public ShelfComponent,
                                          public ShelfConfig::Observer,
-                                         public ShellObserver,
                                          public views::Widget {
  public:
   class TestApi {
@@ -80,14 +76,6 @@ class ASH_EXPORT ShelfNavigationWidget : public TabletModeObserver,
   // Sets whether the last focusable child (instead of the first) should be
   // focused when activating this widget.
   void SetDefaultLastFocusableChild(bool default_last_focusable_child);
-
-  // TabletModeObserver:
-  void OnTabletModeStarted() override;
-  void OnTabletModeEnded() override;
-
-  // ShellObserver:
-  void OnShelfAlignmentChanged(aura::Window* root_window,
-                               ShelfAlignment old_alignment) override;
 
   // ShelfConfig::Observer:
   void OnShelfConfigUpdated() override;

@@ -10,6 +10,7 @@
 #include "base/callback.h"
 #include "base/compiler_specific.h"
 #include "base/macros.h"
+#include "chrome/browser/chromeos/app_mode/kiosk_app_manager.h"
 #include "chrome/browser/chromeos/login/screens/base_screen.h"
 
 namespace chromeos {
@@ -24,19 +25,33 @@ class KioskEnableScreen : public BaseScreen {
                     const base::RepeatingClosure& exit_callback);
   ~KioskEnableScreen() override;
 
-  // Called when screen is exited.
-  void OnExit();
-  // This method is called, when view is being destroyed. Note, if Delegate
-  // is destroyed earlier then it has to call SetDelegate(nullptr).
+  // This method is called, when view is being destroyed. Note, if Screen
+  // is destroyed earlier then it has to call SetScreen(nullptr).
   void OnViewDestroyed(KioskEnableScreenView* view);
 
  private:
   // BaseScreen implementation:
   void ShowImpl() override;
   void HideImpl() override;
+  void OnUserAction(const std::string& action_id) override;
+
+  void HandleClose();
+  void HandleEnable();
+
+  // Callback for KioskAppManager::EnableConsumerModeKiosk().
+  void OnEnableConsumerKioskAutoLaunch(bool success);
+
+  // Callback for KioskAppManager::GetConsumerKioskModeStatus().
+  void OnGetConsumerKioskAutoLaunchStatus(
+      KioskAppManager::ConsumerKioskAutoLaunchStatus status);
 
   KioskEnableScreenView* view_;
   base::RepeatingClosure exit_callback_;
+
+  // True if machine's consumer kiosk mode is in a configurable state.
+  bool is_configurable_ = false;
+
+  base::WeakPtrFactory<KioskEnableScreen> weak_ptr_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(KioskEnableScreen);
 };

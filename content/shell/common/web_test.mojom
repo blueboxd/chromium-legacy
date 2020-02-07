@@ -28,7 +28,4 @@ interface WebTestClient {
 
   // Reset all permissions of WebTestPermissionManager.
   ResetPermissions();
-
-  // Initialize to dump the main frame with a navigation history or pixels.
-  InitiateCaptureDump(bool capture_navigation_history, bool capture_pixels);
 };

@@ -7,14 +7,14 @@
       "backgroundColor": "#FFFFFF",
       "paintInvalidations": [
         {
+          "object": "LayoutNGBlockFlow (relative positioned) DIV id='test'",
+          "rect": [8, 52, 200, 200],
+          "reason": "disappeared"
+        },
+        {
           "object": "LayoutNGBlockFlow (relative positioned) DIV id='test' class='revealed'",
           "rect": [8, 52, 200, 200],
           "reason": "appeared"
-        },
-        {
-          "object": "NGPhysicalBoxFragment LayoutNGBlockFlow (relative positioned) DIV id='test'",
-          "rect": [8, 52, 200, 200],
-          "reason": "disappeared"
         },
         {
           "object": "LayoutNGBlockFlow (positioned) DIV id='revealer'",

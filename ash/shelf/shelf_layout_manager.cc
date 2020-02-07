@@ -419,6 +419,8 @@ void ShelfLayoutManager::InitObservers() {
   auto* shell = Shell::Get();
   shell->AddShellObserver(this);
   SplitViewController::Get(shelf_widget_->GetNativeWindow())->AddObserver(this);
+  ShelfConfig::Get()->AddObserver(this);
+  Shell::Get()->tablet_mode_controller()->AddObserver(this);
   shell->overview_controller()->AddObserver(this);
   shell->app_list_controller()->AddObserver(this);
   shell->lock_state_controller()->AddObserver(this);
@@ -445,6 +447,8 @@ void ShelfLayoutManager::PrepareForShutdown() {
 
   // Stop observing changes to avoid updating a partially destructed shelf.
   Shell::Get()->activation_client()->RemoveObserver(this);
+  ShelfConfig::Get()->RemoveObserver(this);
+  Shell::Get()->tablet_mode_controller()->RemoveObserver(this);
 
   // DesksController could be null when virtual desks feature is not enabled.
   if (DesksController::Get())
@@ -494,8 +498,8 @@ gfx::Rect ShelfLayoutManager::GetIdealBoundsForWorkAreaCalculation() const {
 
 void ShelfLayoutManager::LayoutShelf(bool animate) {
   // The ShelfWidget may be partially closed (no native widget) during shutdown
-  // so skip layout.
-  if (in_shutdown_)
+  // or before it's been fully initialized so skip layout.
+  if (in_shutdown_ || !shelf_widget_->native_widget())
     return;
 
   CalculateTargetBoundsAndUpdateWorkArea();
@@ -924,6 +928,11 @@ void ShelfLayoutManager::OnShelfAutoHideBehaviorChanged(
   UpdateVisibilityState();
 }
 
+void ShelfLayoutManager::OnShelfAlignmentChanged(aura::Window* root_window,
+                                                 ShelfAlignment old_alignment) {
+  UpdateVisibilityState();
+}
+
 void ShelfLayoutManager::OnUserWorkAreaInsetsChanged(
     aura::Window* root_window) {
   LayoutShelf();
@@ -1129,6 +1138,18 @@ int ShelfLayoutManager::CalculateHotseatYInShelf(
   const int hotseat_y_in_shelf =
       -(hotseat_distance_from_bottom_of_display - current_shelf_size);
   return hotseat_y_in_shelf;
+}
+
+void ShelfLayoutManager::OnShelfConfigUpdated() {
+  LayoutShelf(/*animate=*/true);
+}
+
+void ShelfLayoutManager::OnTabletModeStarted() {
+  LayoutShelf(/*animate=*/true);
+}
+
+void ShelfLayoutManager::OnTabletModeEnded() {
+  LayoutShelf(/*animate=*/true);
 }
 
 ////////////////////////////////////////////////////////////////////////////////

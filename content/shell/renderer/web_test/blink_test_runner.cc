@@ -464,9 +464,9 @@ void BlinkTestRunner::TestFinished() {
   if (interfaces->TestRunner()->ShouldDumpAsAudio()) {
     CaptureLocalAudioDump();
 
-    GetWebTestClientRemote().InitiateCaptureDump(
-        browser_should_dump_back_forward_list,
-        /*browser_should_capture_pixels=*/false);
+    Send(new WebTestHostMsg_InitiateCaptureDump(
+        routing_id(), browser_should_dump_back_forward_list,
+        /*browser_should_capture_pixels=*/false));
     return;
   }
 
@@ -477,9 +477,9 @@ void BlinkTestRunner::TestFinished() {
   CaptureLocalLayoutDump();
 
   if (!interfaces->TestRunner()->ShouldGeneratePixelResults()) {
-    GetWebTestClientRemote().InitiateCaptureDump(
-        browser_should_dump_back_forward_list,
-        /*browser_should_capture_pixels=*/false);
+    Send(new WebTestHostMsg_InitiateCaptureDump(
+        routing_id(), browser_should_dump_back_forward_list,
+        /*browser_should_capture_pixels=*/false));
     return;
   }
 
@@ -497,9 +497,9 @@ void BlinkTestRunner::TestFinished() {
           web_frame->GetSelectionBoundsRectForTesting();
     }
   }
-  GetWebTestClientRemote().InitiateCaptureDump(
-      browser_should_dump_back_forward_list,
-      !interfaces->TestRunner()->CanDumpPixelsFromRenderer());
+  Send(new WebTestHostMsg_InitiateCaptureDump(
+      routing_id(), browser_should_dump_back_forward_list,
+      !interfaces->TestRunner()->CanDumpPixelsFromRenderer()));
 }
 
 void BlinkTestRunner::CaptureLocalAudioDump() {

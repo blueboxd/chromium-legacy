@@ -110,6 +110,31 @@ TEST(SigninErrorControllerTest, AccountTransitionAnyAccount) {
   ASSERT_FALSE(error_controller.HasError());
 }
 
+// Verifies errors are reported in mode ANY_ACCOUNT even if the primary account
+// has not consented to the browser sync feature.
+TEST(SigninErrorControllerTest, UnconsentedPrimaryAccount) {
+  base::test::TaskEnvironment task_environment;
+  signin::IdentityTestEnvironment identity_test_env;
+
+  CoreAccountId test_account_id =
+      identity_test_env.MakeUnconsentedPrimaryAccountAvailable(kTestEmail)
+          .account_id;
+  SigninErrorController error_controller(
+      SigninErrorController::AccountMode::ANY_ACCOUNT,
+      identity_test_env.identity_manager());
+  ASSERT_FALSE(error_controller.HasError());
+
+  identity_test_env.UpdatePersistentErrorOfRefreshTokenForAccount(
+      test_account_id,
+      GoogleServiceAuthError(GoogleServiceAuthError::INVALID_GAIA_CREDENTIALS));
+  EXPECT_TRUE(error_controller.HasError());
+  EXPECT_EQ(test_account_id, error_controller.error_account_id());
+
+  identity_test_env.UpdatePersistentErrorOfRefreshTokenForAccount(
+      test_account_id, GoogleServiceAuthError::AuthErrorNone());
+  EXPECT_FALSE(error_controller.HasError());
+}
+
 // This test exercises behavior on signin/signout, which is not relevant on
 // ChromeOS.
 #if !defined(OS_CHROMEOS)

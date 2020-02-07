@@ -12,7 +12,7 @@
           "reason": "incremental"
         },
         {
-          "object": "NGPhysicalBoxFragment LayoutNGBlockFlow P",
+          "object": "LayoutNGBlockFlow P",
           "rect": [8, 74, 418, 516],
           "reason": "geometry"
         },

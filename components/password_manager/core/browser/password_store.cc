@@ -450,14 +450,14 @@ void PasswordStore::RemoveObserver(Observer* observer) {
   observers_->RemoveObserver(observer);
 }
 
-void PasswordStore::AddCompromisedPasswordsObserver(
-    CompromisedPasswordsObserver* observer) {
-  compromised_passwords_observers_->AddObserver(observer);
+void PasswordStore::AddDatabaseCompromisedCredentialsObserver(
+    DatabaseCompromisedCredentialsObserver* observer) {
+  compromised_credentials_observers_->AddObserver(observer);
 }
 
-void PasswordStore::RemoveCompromisedPasswordsObserver(
-    CompromisedPasswordsObserver* observer) {
-  compromised_passwords_observers_->RemoveObserver(observer);
+void PasswordStore::RemoveDatabaseCompromisedCredentialsObserver(
+    DatabaseCompromisedCredentialsObserver* observer) {
+  compromised_credentials_observers_->RemoveObserver(observer);
 }
 
 bool PasswordStore::ScheduleTask(base::OnceClosure task) {
@@ -716,9 +716,9 @@ void PasswordStore::InvokeAndNotifyAboutCompromisedPasswordsChange(
     base::OnceCallback<bool()> callback) {
   DCHECK(background_task_runner_->RunsTasksInCurrentSequence());
   if (std::move(callback).Run()) {
-    compromised_passwords_observers_->Notify(
-        FROM_HERE,
-        &CompromisedPasswordsObserver::OnCompromisedPasswordsChanged);
+    compromised_credentials_observers_->Notify(
+        FROM_HERE, &DatabaseCompromisedCredentialsObserver::
+                       OnCompromisedCredentialsChanged);
   }
 }
 

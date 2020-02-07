@@ -31,7 +31,7 @@
       "backgroundColor": "#008000",
       "paintInvalidations": [
         {
-          "object": "NGPhysicalBoxFragment LayoutNGBlockFlow DIV id='content'",
+          "object": "LayoutNGBlockFlow DIV id='content'",
           "rect": [0, 0, 1000, 1000],
           "reason": "background"
         }

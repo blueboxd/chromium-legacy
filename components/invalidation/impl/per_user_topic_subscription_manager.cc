@@ -483,12 +483,15 @@ void PerUserTopicSubscriptionManager::RemoveObserver(Observer* observer) {
 
 void PerUserTopicSubscriptionManager::RequestAccessToken() {
   // Only one active request at a time.
-  if (access_token_fetcher_ != nullptr)
+  if (access_token_fetcher_ != nullptr) {
     return;
-  // TODO(crbug.com/1020117): If the timer is already running, then this method
-  // should probably early-out instead of starting a request immediately. As it
-  // is, this might bypass the exponential backoff.
-  request_access_token_retry_timer_.Stop();
+  }
+  if (request_access_token_retry_timer_.IsRunning()) {
+    // Previous access token request failed and new request shouldn't be issued
+    // until backoff timer passed.
+    return;
+  }
+
   access_token_.clear();
   access_token_fetcher_ = identity_provider_->FetchAccessToken(
       "fcm_invalidation", {kFCMOAuthScope},

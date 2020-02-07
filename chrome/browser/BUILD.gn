@@ -5548,6 +5548,7 @@ grit("resources") {
     deps += [
       "//chrome/browser/resources/chromeos/crostini_installer:polymer3_elements",
       "//chrome/browser/resources/chromeos/crostini_upgrader:polymer3_elements",
+      "//chrome/browser/resources/chromeos/edu_login:polymer3_elements",
       "//chrome/browser/resources/chromeos/emulator:polymer3_elements",
       "//chrome/browser/resources/chromeos/set_time_dialog:polymer3_elements",
       "//chrome/browser/resources/chromeos/smb_shares:polymer3_elements",

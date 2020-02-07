@@ -14,6 +14,7 @@
 #include "base/run_loop.h"
 #include "base/strings/pattern.h"
 #include "base/task/post_task.h"
+#include "base/task/task_traits.h"
 #include "base/threading/thread_restrictions.h"
 #include "base/values.h"
 #include "build/build_config.h"
@@ -315,7 +316,8 @@ class TracingControllerTest : public ContentBrowserTest {
           base::Unretained(this), run_loop.QuitClosure(), result_file_path);
       bool result =
           controller->StopTracing(TracingController::CreateFileEndpoint(
-              result_file_path, std::move(callback)));
+              result_file_path, std::move(callback),
+              base::TaskPriority::USER_BLOCKING));
       ASSERT_TRUE(result);
       run_loop.Run();
       EXPECT_EQ(disable_recording_done_callback_count(), 1);

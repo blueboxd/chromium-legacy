@@ -17,11 +17,13 @@
 #include "content/renderer/child_frame_compositor.h"
 #include "ipc/ipc_listener.h"
 #include "ipc/ipc_sender.h"
+#include "mojo/public/cpp/bindings/associated_receiver.h"
 #include "mojo/public/cpp/bindings/associated_remote.h"
 #include "services/service_manager/public/cpp/binder_registry.h"
 #include "third_party/blink/public/common/associated_interfaces/associated_interface_provider.h"
 #include "third_party/blink/public/common/associated_interfaces/associated_interface_registry.h"
 #include "third_party/blink/public/common/feature_policy/feature_policy.h"
+#include "third_party/blink/public/mojom/frame/frame.mojom.h"
 #include "third_party/blink/public/mojom/frame/user_activation_update_types.mojom.h"
 #include "third_party/blink/public/mojom/input/focus_type.mojom-forward.h"
 #include "third_party/blink/public/platform/web_insecure_request_policy.h"
@@ -67,7 +69,8 @@ struct FrameReplicationState;
 class CONTENT_EXPORT RenderFrameProxy : public IPC::Listener,
                                         public IPC::Sender,
                                         public ChildFrameCompositor,
-                                        public blink::WebRemoteFrameClient {
+                                        public blink::WebRemoteFrameClient,
+                                        public mojom::RenderFrameProxy {
  public:
   // This method should be used to create a RenderFrameProxy, which will replace
   // an existing RenderFrame during its cross-process navigation from the
@@ -235,8 +238,9 @@ class CONTENT_EXPORT RenderFrameProxy : public IPC::Listener,
   void OnSetFrameOwnerProperties(const FrameOwnerProperties& properties);
   void OnTransferUserActivationFrom(int32_t source_routing_id);
   void OnDidUpdateVisualProperties(const cc::RenderFrameMetadata& metadata);
-  void OnEnableAutoResize(const gfx::Size& min_size, const gfx::Size& max_size);
-  void OnDisableAutoResize();
+  void EnableAutoResize(const gfx::Size& min_size,
+                        const gfx::Size& max_size) override;
+  void DisableAutoResize() override;
 
   // ChildFrameCompositor:
   cc::Layer* GetLayer() override;
@@ -263,6 +267,10 @@ class CONTENT_EXPORT RenderFrameProxy : public IPC::Listener,
   mojo::AssociatedRemote<mojom::RenderFrameProxyHost> frame_proxy_host_remote_;
   std::unique_ptr<blink::AssociatedInterfaceProvider>
       remote_associated_interfaces_;
+
+  // Mojo receiver to this content::mojom::RenderFrameProxy.
+  mojo::AssociatedReceiver<mojom::RenderFrameProxy>
+      render_frame_proxy_receiver_{this};
 
   // Can be nullptr when this RenderFrameProxy's parent is not a RenderFrame.
   std::unique_ptr<ChildFrameCompositingHelper> compositing_helper_;

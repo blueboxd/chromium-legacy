@@ -4,32 +4,21 @@
 
 #include "third_party/blink/renderer/platform/fonts/opentype/font_format_check.h"
 
-#include "third_party/blink/renderer/platform/wtf/vector.h"
-#include "third_party/skia/include/core/SkTypeface.h"
-
 // Include HarfBuzz to have a cross-platform way to retrieve table tags without
 // having to rely on the platform being able to instantiate this font format.
 #include <hb.h>
 
+#include "third_party/blink/renderer/platform/wtf/vector.h"
+#include "third_party/harfbuzz-ng/utils/hb_scoped.h"
+#include "third_party/skia/include/core/SkTypeface.h"
+
 namespace blink {
 
-namespace {
-
-struct HarfbuzzBlobDestroyer {
-  inline void operator()(hb_blob_t* blob) { hb_blob_destroy(blob); }
-};
-
-struct HarfbuzzFaceDestroyer {
-  inline void operator()(hb_face_t* face) { hb_face_destroy(face); }
-};
-}  // namespace
-
 FontFormatCheck::FontFormatCheck(sk_sp<SkData> sk_data) {
-  std::unique_ptr<hb_blob_t, HarfbuzzBlobDestroyer> font_blob(hb_blob_create(
+  HbScoped<hb_blob_t> font_blob(hb_blob_create(
       reinterpret_cast<const char*>(sk_data->bytes()), sk_data->size(),
       HB_MEMORY_MODE_READONLY, nullptr, nullptr));
-  std::unique_ptr<hb_face_t, HarfbuzzFaceDestroyer> face(
-      hb_face_create(font_blob.get(), 0));
+  HbScoped<hb_face_t> face(hb_face_create(font_blob.get(), 0));
 
   unsigned table_count = 0;
   table_count = hb_face_get_table_tags(face.get(), 0, nullptr, nullptr);

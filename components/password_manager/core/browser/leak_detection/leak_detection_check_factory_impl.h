@@ -24,6 +24,12 @@ class LeakDetectionCheckFactoryImpl : public LeakDetectionCheckFactory {
       signin::IdentityManager* identity_manager,
       scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory)
       const override;
+
+  std::unique_ptr<BulkLeakCheck> TryCreateBulkLeakCheck(
+      BulkLeakCheckDelegateInterface* delegate,
+      signin::IdentityManager* identity_manager,
+      scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory)
+      const override;
 };
 
 }  // namespace password_manager

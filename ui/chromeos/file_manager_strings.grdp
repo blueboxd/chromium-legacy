@@ -249,6 +249,9 @@
   <message name="IDS_FILE_BROWSER_QUICK_VIEW_OPEN_IN_NEW_BUTTON_LABEL" desc="Label for button to open a file with external app.">
     Open
   </message>
+  <message name="IDS_FILE_BROWSER_QUICK_VIEW_DELETE_BUTTON_LABEL" desc="Label for button to delete a file in QuickView.">
+    Delete
+  </message>
   <message name="IDS_FILE_BROWSER_QUICK_VIEW_TOGGLE_METADATA_BOX_BUTTON_LABEL" desc="Label for button to toggle show/hide status of metadata box.">
     File info
   </message>

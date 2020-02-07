@@ -173,6 +173,9 @@ extern const char kOmniboxLearnMoreURL[];
 // "What do these mean?" URL for the Page Info bubble.
 extern const char kPageInfoHelpCenterURL[];
 
+// Help URL for the bulk password check.
+extern const char kPasswordCheckLearnMoreURL[];
+
 extern const char kPasswordManagerLearnMoreURL[];
 
 // Help URL for the Payment methods page of the Google Pay site.

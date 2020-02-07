@@ -1435,10 +1435,11 @@ void FeatureInfo::InitializeFeatures() {
   }
   UMA_HISTOGRAM_BOOLEAN("GPU.TextureRG", feature_flags_.ext_texture_rg);
 
-  if (gl_version_info_->is_desktop_core_profile ||
-      (gl_version_info_->IsAtLeastGL(2, 1) &&
-       gfx::HasExtension(extensions, "GL_ARB_texture_rg")) ||
-      gfx::HasExtension(extensions, "GL_EXT_texture_norm16")) {
+  if (IsWebGL2OrES3OrHigherContext() &&
+      (gl_version_info_->is_desktop_core_profile ||
+       (gl_version_info_->IsAtLeastGL(2, 1) &&
+        gfx::HasExtension(extensions, "GL_ARB_texture_rg")) ||
+       gfx::HasExtension(extensions, "GL_EXT_texture_norm16"))) {
     AddExtensionString("GL_EXT_texture_norm16");
     feature_flags_.ext_texture_norm16 = true;
     g_r16_is_present = true;

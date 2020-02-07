@@ -26,6 +26,7 @@ import org.chromium.base.test.util.RetryOnFailure;
 import org.chromium.base.test.util.UrlUtils;
 import org.chromium.chrome.browser.ChromeActivity;
 import org.chromium.chrome.browser.ChromeSwitches;
+import org.chromium.chrome.browser.background_task_scheduler.ChromeNativeBackgroundTaskDelegate;
 import org.chromium.chrome.browser.download.items.OfflineContentAggregatorFactory;
 import org.chromium.chrome.browser.feed.FeedProcessScopeFactory;
 import org.chromium.chrome.browser.feed.TestNetworkClient;
@@ -308,6 +309,7 @@ public class PrefetchFeedFlowTest {
     private void runAndWaitForBackgroundTask() throws Throwable {
         final CallbackHelper finished = new CallbackHelper();
         PrefetchBackgroundTask task = new PrefetchBackgroundTask();
+        task.setDelegate(new ChromeNativeBackgroundTaskDelegate());
         TestThreadUtils.runOnUiThreadBlocking(() -> {
             TaskParameters.Builder builder =
                     TaskParameters.create(TaskIds.OFFLINE_PAGES_PREFETCH_JOB_ID);

@@ -50,11 +50,10 @@ bool FocusTabAfterNavigationHelper::ShouldFocusTabContents(
   if (!navigation->IsInMainFrame())
     return false;
 
-  // Browser-initiated navigations (e.g. typing in an omnibox) are taken care of
-  // in Browser::UpdateUIForNavigationInTab.  See also https://crbug.com/1048591
-  // for possible regression risks related to returning |true| here.
+  // Browser-initiated navigations (e.g. typing in an omnibox) should focus
+  // the tab contents.
   if (!navigation->IsRendererInitiated())
-    return false;
+    return true;
 
   // Renderer-initiated navigations shouldn't focus the tab contents, unless the
   // navigation is leaving the NTP.  See also https://crbug.com/1027719.

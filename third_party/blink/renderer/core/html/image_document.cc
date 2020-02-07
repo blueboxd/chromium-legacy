@@ -570,11 +570,10 @@ void ImageDocument::Trace(Visitor* visitor) {
 // --------
 
 void ImageEventListener::Invoke(ExecutionContext*, Event* event) {
+  auto* mouse_event = DynamicTo<MouseEvent>(event);
   if (event->type() == event_type_names::kResize) {
     doc_->WindowSizeChanged();
-  } else if (event->type() == event_type_names::kClick &&
-             event->IsMouseEvent()) {
-    MouseEvent* mouse_event = ToMouseEvent(event);
+  } else if (event->type() == event_type_names::kClick && mouse_event) {
     doc_->ImageClicked(mouse_event->x(), mouse_event->y());
   } else if ((event->type() == event_type_names::kTouchend ||
               event->type() == event_type_names::kTouchcancel) &&

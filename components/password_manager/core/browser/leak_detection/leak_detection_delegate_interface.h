@@ -5,9 +5,12 @@
 #ifndef COMPONENTS_PASSWORD_MANAGER_CORE_BROWSER_LEAK_DETECTION_LEAK_DETECTION_DELEGATE_INTERFACE_H_
 #define COMPONENTS_PASSWORD_MANAGER_CORE_BROWSER_LEAK_DETECTION_LEAK_DETECTION_DELEGATE_INTERFACE_H_
 
+#include "base/util/type_safety/strong_alias.h"
 #include "url/gurl.h"
 
 namespace password_manager {
+
+class LeakCheckCredential;
 
 enum class LeakDetectionError {
   // The user isn't signed-in to Chrome.
@@ -20,6 +23,8 @@ enum class LeakDetectionError {
   kInvalidServerResponse = 3,
   kMaxValue = kInvalidServerResponse,
 };
+
+using IsLeaked = util::StrongAlias<class IsLeakedTag, bool>;
 
 // Interface with callbacks for LeakDetectionCheck. Used to get the result of
 // the check.
@@ -46,6 +51,31 @@ class LeakDetectionDelegateInterface {
                                    base::string16 username,
                                    base::string16 password) = 0;
 
+  virtual void OnError(LeakDetectionError error) = 0;
+};
+
+// Delegate for BulkLeakCheck. Gets the updates during processing the list.
+class BulkLeakCheckDelegateInterface {
+ public:
+  BulkLeakCheckDelegateInterface() = default;
+  virtual ~BulkLeakCheckDelegateInterface() = default;
+
+  // Not copyable or movable
+  BulkLeakCheckDelegateInterface(const BulkLeakCheckDelegateInterface&) =
+      delete;
+  BulkLeakCheckDelegateInterface& operator=(
+      const BulkLeakCheckDelegateInterface&) = delete;
+  BulkLeakCheckDelegateInterface(BulkLeakCheckDelegateInterface&&) = delete;
+  BulkLeakCheckDelegateInterface& operator=(BulkLeakCheckDelegateInterface&&) =
+      delete;
+
+  // Called when |credential| was processed. |is_leaked| is true if it's leaked.
+  virtual void OnFinishedCredential(LeakCheckCredential credential,
+                                    IsLeaked is_leaked) = 0;
+
+  // Called when error occurred on one of the credentials. Other credentials are
+  // processed further.
+  // BulkLeakCheck can be deleted from this call safely.
   virtual void OnError(LeakDetectionError error) = 0;
 };
 

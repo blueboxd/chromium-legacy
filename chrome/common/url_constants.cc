@@ -189,6 +189,15 @@ const char kPageInfoHelpCenterURL[] =
     "https://support.google.com/chrome/?p=ui_security_indicator";
 #endif
 
+const char kPasswordCheckLearnMoreURL[] =
+#if defined(OS_CHROMEOS)
+    "https://support.google.com/chromebook/"
+    "?p=settings_password#leak_detection_privacy";
+#else
+    "https://support.google.com/chrome/"
+    "?p=settings_password#leak_detection_privacy";
+#endif
+
 const char kPasswordManagerLearnMoreURL[] =
 #if defined(OS_CHROMEOS)
     "https://support.google.com/chromebook/?p=settings_password";

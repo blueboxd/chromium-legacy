@@ -34,8 +34,13 @@ public class AwPacProcessor {
         return AwPacProcessorJni.get().makeProxyRequest(mNativePacProcessor, this, url);
     }
 
+    public static void initializeEnvironment() {
+        AwPacProcessorJni.get().initializeEnvironment();
+    }
+
     @NativeMethods
     interface Natives {
+        void initializeEnvironment();
         long getDefaultPacProcessor();
         boolean setProxyScript(long nativeAwPacProcessor, AwPacProcessor caller, String script);
         String makeProxyRequest(long nativeAwPacProcessor, AwPacProcessor caller, String url);

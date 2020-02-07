@@ -38,8 +38,7 @@ import org.chromium.chrome.browser.download.DownloadManagerService;
 import org.chromium.chrome.browser.services.GoogleServicesManager;
 import org.chromium.chrome.browser.webapps.ActivityAssigner;
 import org.chromium.chrome.browser.webapps.ChromeWebApkHost;
-import org.chromium.components.background_task_scheduler.BackgroundTaskSchedulerExternalUma;
-import org.chromium.components.background_task_scheduler.BackgroundTaskSchedulerPrefs;
+import org.chromium.components.background_task_scheduler.BackgroundTaskSchedulerFactory;
 import org.chromium.components.crash.browser.ChildProcessCrashObserver;
 import org.chromium.components.minidump_uploader.CrashFileManager;
 import org.chromium.components.module_installer.util.ModuleUtil;
@@ -198,12 +197,12 @@ public class ChromeBrowserInitializer {
             PostTask.postTask(TaskTraits.BEST_EFFORT_MAY_BLOCK, () -> {
                 ActivityAssigner.warmUpSharedPrefs();
                 DownloadManagerService.warmUpSharedPrefs();
-                BackgroundTaskSchedulerPrefs.warmUpSharedPrefs();
+                BackgroundTaskSchedulerFactory.warmUpSharedPrefs();
             });
         } else {
             ActivityAssigner.warmUpSharedPrefs();
             DownloadManagerService.warmUpSharedPrefs();
-            BackgroundTaskSchedulerPrefs.warmUpSharedPrefs();
+            BackgroundTaskSchedulerFactory.warmUpSharedPrefs();
         }
     }
 
@@ -310,7 +309,7 @@ public class ChromeBrowserInitializer {
         int startupMode =
                 getBrowserStartupController().getStartupMode(delegate.startServiceManagerOnly());
         tasks.add(UiThreadTaskTraits.DEFAULT, () -> {
-            BackgroundTaskSchedulerExternalUma.getInstance().reportStartupMode(startupMode);
+            BackgroundTaskSchedulerFactory.getUmaReporter().reportStartupMode(startupMode);
         });
 
         if (isAsync) {

@@ -12,7 +12,7 @@
           "reason": "appeared"
         },
         {
-          "object": "NGPhysicalBoxFragment LayoutNGBlockFlow (relative positioned) DIV",
+          "object": "LayoutNGBlockFlow (relative positioned) DIV",
           "rect": [8, 8, 273, 276],
           "reason": "disappeared"
         },

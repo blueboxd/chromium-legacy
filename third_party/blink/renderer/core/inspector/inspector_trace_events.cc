@@ -1317,20 +1317,21 @@ std::unique_ptr<TracedValue> inspector_event_dispatch_event::Data(
       value->SetString("code", keyboard_event.code());
       value->SetString("key", keyboard_event.key());
     }
-    if (event.IsMouseEvent() || event.IsWheelEvent()) {
-      const MouseEvent& mouse_event = ToMouseEvent(event);
-      value->SetDouble("x", mouse_event.x());
-      value->SetDouble("y", mouse_event.y());
-      value->SetInteger("modifier", GetModifierFromEvent(mouse_event));
+
+    const auto* mouse_event = DynamicTo<MouseEvent>(event);
+    if (mouse_event || event.IsWheelEvent()) {
+      value->SetDouble("x", mouse_event->x());
+      value->SetDouble("y", mouse_event->y());
+      value->SetInteger("modifier", GetModifierFromEvent(*mouse_event));
       value->SetDouble(
           "timestamp",
-          mouse_event.PlatformTimeStamp().since_origin().InMicroseconds());
-      value->SetInteger("button", mouse_event.button());
-      value->SetInteger("buttons", mouse_event.buttons());
-      value->SetInteger("clickCount", mouse_event.detail());
+          mouse_event->PlatformTimeStamp().since_origin().InMicroseconds());
+      value->SetInteger("button", mouse_event->button());
+      value->SetInteger("buttons", mouse_event->buttons());
+      value->SetInteger("clickCount", mouse_event->detail());
       if (event.IsWheelEvent()) {
-        value->SetDouble("deltaX", ToWheelEvent(mouse_event).deltaX());
-        value->SetDouble("deltaY", ToWheelEvent(mouse_event).deltaY());
+        value->SetDouble("deltaX", ToWheelEvent(*mouse_event).deltaX());
+        value->SetDouble("deltaY", ToWheelEvent(*mouse_event).deltaY());
       }
     }
   }

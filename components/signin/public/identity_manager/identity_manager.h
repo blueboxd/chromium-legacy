@@ -182,11 +182,6 @@ class IdentityManager : public KeyedService,
   // account for sync.
   bool HasPrimaryAccount(ConsentLevel consent = ConsentLevel::kSync) const;
 
-  // Deprecated, use GetPrimaryAccountId(ConsentLevel::kNotRequired) instead.
-  // Provides access to the account ID of the user's unconsented primary
-  // account (see ./README.md). Returns an empty id if there is no such account.
-  CoreAccountId GetUnconsentedPrimaryAccountId() const;
-
   // Deprecated, use HasPrimaryAccount(ConsentLevel::kNotRequired) instead.
   // Returns whether the user's unconsented primary account (see ./README.md) is
   // available.

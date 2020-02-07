@@ -62,6 +62,7 @@
 #include "components/drive/drive_pref_names.h"
 #include "components/drive/event_logger.h"
 #include "components/prefs/pref_service.h"
+#include "components/signin/public/identity_manager/consent_level.h"
 #include "components/signin/public/identity_manager/identity_manager.h"
 #include "components/user_manager/user_manager.h"
 #include "components/zoom/page_zoom.h"
@@ -378,7 +379,8 @@ FileManagerPrivateRequestWebStoreAccessTokenFunction::Run() {
 
   // "Unconsented" because this class doesn't care about browser sync consent.
   auth_service_ = std::make_unique<google_apis::AuthService>(
-      identity_manager, identity_manager->GetUnconsentedPrimaryAccountId(),
+      identity_manager,
+      identity_manager->GetPrimaryAccountId(signin::ConsentLevel::kNotRequired),
       g_browser_process->system_network_context_manager()
           ->GetSharedURLLoaderFactory(),
       scopes);

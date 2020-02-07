@@ -130,8 +130,10 @@ class PendingStartElementNSCallback final
                                 const xmlChar** namespaces,
                                 int attribute_count,
                                 int defaulted_count,
-                                const xmlChar** attributes)
-      : local_name_(local_name),
+                                const xmlChar** attributes,
+                                TextPosition text_position)
+      : PendingCallback(text_position),
+        local_name_(local_name),
         prefix_(prefix),
         uri_(uri),
         namespace_count_(namespace_count),
@@ -186,8 +188,10 @@ class PendingStartElementNSCallback final
 class PendingEndElementNSCallback final
     : public XMLDocumentParser::PendingCallback {
  public:
-  explicit PendingEndElementNSCallback(TextPosition script_start_position)
-      : script_start_position_(script_start_position) {}
+  explicit PendingEndElementNSCallback(TextPosition script_start_position,
+                                       TextPosition text_position)
+      : PendingCallback(text_position),
+        script_start_position_(script_start_position) {}
 
   void Call(XMLDocumentParser* parser) override {
     parser->SetScriptStartPosition(script_start_position_);
@@ -201,8 +205,12 @@ class PendingEndElementNSCallback final
 class PendingCharactersCallback final
     : public XMLDocumentParser::PendingCallback {
  public:
-  PendingCharactersCallback(const xmlChar* chars, int length)
-      : chars_(xmlStrndup(chars, length)), length_(length) {}
+  PendingCharactersCallback(const xmlChar* chars,
+                            int length,
+                            TextPosition text_position)
+      : PendingCallback(text_position),
+        chars_(xmlStrndup(chars, length)),
+        length_(length) {}
 
   ~PendingCharactersCallback() override { xmlFree(chars_); }
 
@@ -218,8 +226,10 @@ class PendingCharactersCallback final
 class PendingProcessingInstructionCallback final
     : public XMLDocumentParser::PendingCallback {
  public:
-  PendingProcessingInstructionCallback(const String& target, const String& data)
-      : target_(target), data_(data) {}
+  PendingProcessingInstructionCallback(const String& target,
+                                       const String& data,
+                                       TextPosition text_position)
+      : PendingCallback(text_position), target_(target), data_(data) {}
 
   void Call(XMLDocumentParser* parser) override {
     parser->GetProcessingInstruction(target_, data_);
@@ -233,7 +243,9 @@ class PendingProcessingInstructionCallback final
 class PendingCDATABlockCallback final
     : public XMLDocumentParser::PendingCallback {
  public:
-  explicit PendingCDATABlockCallback(const String& text) : text_(text) {}
+  explicit PendingCDATABlockCallback(const String& text,
+                                     TextPosition text_position)
+      : PendingCallback(text_position), text_(text) {}
 
   void Call(XMLDocumentParser* parser) override { parser->CdataBlock(text_); }
 
@@ -243,7 +255,9 @@ class PendingCDATABlockCallback final
 
 class PendingCommentCallback final : public XMLDocumentParser::PendingCallback {
  public:
-  explicit PendingCommentCallback(const String& text) : text_(text) {}
+  explicit PendingCommentCallback(const String& text,
+                                  TextPosition text_position)
+      : PendingCallback(text_position), text_(text) {}
 
   void Call(XMLDocumentParser* parser) override { parser->Comment(text_); }
 
@@ -256,8 +270,12 @@ class PendingInternalSubsetCallback final
  public:
   PendingInternalSubsetCallback(const String& name,
                                 const String& external_id,
-                                const String& system_id)
-      : name_(name), external_id_(external_id), system_id_(system_id) {}
+                                const String& system_id,
+                                TextPosition text_position)
+      : PendingCallback(text_position),
+        name_(name),
+        external_id_(external_id),
+        system_id_(system_id) {}
 
   void Call(XMLDocumentParser* parser) override {
     parser->InternalSubset(name_, external_id_, system_id_);
@@ -273,25 +291,21 @@ class PendingErrorCallback final : public XMLDocumentParser::PendingCallback {
  public:
   PendingErrorCallback(XMLErrors::ErrorType type,
                        const xmlChar* message,
-                       OrdinalNumber line_number,
-                       OrdinalNumber column_number)
-      : type_(type),
-        message_(xmlStrdup(message)),
-        line_number_(line_number),
-        column_number_(column_number) {}
+                       TextPosition text_position)
+      : PendingCallback(text_position),
+        type_(type),
+        message_(xmlStrdup(message)) {}
 
   ~PendingErrorCallback() override { xmlFree(message_); }
 
   void Call(XMLDocumentParser* parser) override {
     parser->HandleError(type_, reinterpret_cast<char*>(message_),
-                        TextPosition(line_number_, column_number_));
+                        GetTextPosition());
   }
 
  private:
   XMLErrors::ErrorType type_;
   xmlChar* message_;
-  OrdinalNumber line_number_;
-  OrdinalNumber column_number_;
 };
 
 void XMLDocumentParser::PushCurrentNode(ContainerNode* n) {
@@ -949,7 +963,8 @@ void XMLDocumentParser::StartElementNs(const AtomicString& local_name,
     pending_callbacks_.push_back(
         std::make_unique<PendingStartElementNSCallback>(
             local_name, prefix, uri, nb_namespaces, libxml_namespaces,
-            nb_attributes, nb_defaulted, libxml_attributes));
+            nb_attributes, nb_defaulted, libxml_attributes,
+            script_start_position_));
     return;
   }
 
@@ -1042,8 +1057,8 @@ void XMLDocumentParser::EndElementNs() {
     return;
 
   if (parser_paused_) {
-    pending_callbacks_.push_back(
-        std::make_unique<PendingEndElementNSCallback>(script_start_position_));
+    pending_callbacks_.push_back(std::make_unique<PendingEndElementNSCallback>(
+        script_start_position_, GetTextPosition()));
     return;
   }
 
@@ -1058,6 +1073,9 @@ void XMLDocumentParser::EndElementNs() {
   }
 
   element->FinishParsingChildren();
+
+  CheckIfBlockingStyleSheetAdded();
+
   if (element->IsScriptElement() &&
       !ScriptingContentIsAllowed(GetParserContentPolicy())) {
     PopCurrentNode();
@@ -1109,8 +1127,8 @@ void XMLDocumentParser::Characters(const xmlChar* chars, int length) {
     return;
 
   if (parser_paused_) {
-    pending_callbacks_.push_back(
-        std::make_unique<PendingCharactersCallback>(chars, length));
+    pending_callbacks_.push_back(std::make_unique<PendingCharactersCallback>(
+        chars, length, GetTextPosition()));
     return;
   }
 
@@ -1129,8 +1147,8 @@ void XMLDocumentParser::GetError(XMLErrors::ErrorType type,
 
   if (parser_paused_) {
     pending_callbacks_.push_back(std::make_unique<PendingErrorCallback>(
-        type, reinterpret_cast<const xmlChar*>(formatted_message), LineNumber(),
-        ColumnNumber()));
+        type, reinterpret_cast<const xmlChar*>(formatted_message),
+        GetTextPosition()));
     return;
   }
 
@@ -1144,7 +1162,8 @@ void XMLDocumentParser::GetProcessingInstruction(const String& target,
 
   if (parser_paused_) {
     pending_callbacks_.push_back(
-        std::make_unique<PendingProcessingInstructionCallback>(target, data));
+        std::make_unique<PendingProcessingInstructionCallback>(
+            target, data, GetTextPosition()));
     return;
   }
 
@@ -1163,6 +1182,8 @@ void XMLDocumentParser::GetProcessingInstruction(const String& target,
 
   if (pi->IsCSS())
     saw_css_ = true;
+
+  CheckIfBlockingStyleSheetAdded();
 
   if (!RuntimeEnabledFeatures::XSLTEnabled())
     return;
@@ -1186,7 +1207,7 @@ void XMLDocumentParser::CdataBlock(const String& text) {
 
   if (parser_paused_) {
     pending_callbacks_.push_back(
-        std::make_unique<PendingCDATABlockCallback>(text));
+        std::make_unique<PendingCDATABlockCallback>(text, GetTextPosition()));
     return;
   }
 
@@ -1203,7 +1224,7 @@ void XMLDocumentParser::Comment(const String& text) {
 
   if (parser_paused_) {
     pending_callbacks_.push_back(
-        std::make_unique<PendingCommentCallback>(text));
+        std::make_unique<PendingCommentCallback>(text, GetTextPosition()));
     return;
   }
 
@@ -1259,8 +1280,8 @@ void XMLDocumentParser::InternalSubset(const String& name,
 
   if (parser_paused_) {
     pending_callbacks_.push_back(
-        std::make_unique<PendingInternalSubsetCallback>(name, external_id,
-                                                        system_id));
+        std::make_unique<PendingInternalSubsetCallback>(
+            name, external_id, system_id, GetTextPosition()));
     return;
   }
 
@@ -1570,19 +1591,19 @@ xmlDocPtr XmlDocPtrForString(Document* document,
 }
 
 OrdinalNumber XMLDocumentParser::LineNumber() const {
+  if (callback_)
+    return callback_->LineNumber();
   return OrdinalNumber::FromOneBasedInt(Context() ? Context()->input->line : 1);
 }
 
 OrdinalNumber XMLDocumentParser::ColumnNumber() const {
+  if (callback_)
+    return callback_->ColumnNumber();
   return OrdinalNumber::FromOneBasedInt(Context() ? Context()->input->col : 1);
 }
 
 TextPosition XMLDocumentParser::GetTextPosition() const {
-  xmlParserCtxtPtr context = this->Context();
-  if (!context)
-    return TextPosition::MinimumPosition();
-  return TextPosition(OrdinalNumber::FromOneBasedInt(context->input->line),
-                      OrdinalNumber::FromOneBasedInt(context->input->col));
+  return TextPosition(LineNumber(), ColumnNumber());
 }
 
 void XMLDocumentParser::StopParsing() {
@@ -1602,13 +1623,16 @@ void XMLDocumentParser::ResumeParsing() {
 
   // First, execute any pending callbacks
   while (!pending_callbacks_.IsEmpty()) {
-    std::unique_ptr<PendingCallback> callback = pending_callbacks_.TakeFirst();
-    callback->Call(this);
+    callback_ = pending_callbacks_.TakeFirst();
+    callback_->Call(this);
 
     // A callback paused the parser
-    if (parser_paused_)
+    if (parser_paused_) {
+      callback_.reset();
       return;
+    }
   }
+  callback_.reset();
 
   // Then, write any pending data
   SegmentedString rest = pending_src_;
@@ -1667,12 +1691,20 @@ void XMLDocumentParser::DidAddPendingParserBlockingStylesheet() {
   DCHECK(IsParsing());
   if (!context_)
     return;
-  PauseParsing();
-  waiting_for_stylesheets_ = true;
+  added_pending_parser_blocking_stylesheet_ = true;
 }
 
 void XMLDocumentParser::DidLoadAllPendingParserBlockingStylesheets() {
+  added_pending_parser_blocking_stylesheet_ = false;
   waiting_for_stylesheets_ = false;
+}
+
+void XMLDocumentParser::CheckIfBlockingStyleSheetAdded() {
+  if (!added_pending_parser_blocking_stylesheet_)
+    return;
+  added_pending_parser_blocking_stylesheet_ = false;
+  waiting_for_stylesheets_ = true;
+  PauseParsing();
 }
 
 void XMLDocumentParser::ExecuteScriptsWaitingForResources() {

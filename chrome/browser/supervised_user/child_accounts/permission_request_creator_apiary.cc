@@ -261,8 +261,9 @@ void PermissionRequestCreatorApiary::OnSimpleLoaderComplete(
     scopes.insert(GetApiScope());
     // "Unconsented" because this class doesn't care about browser sync consent.
     identity_manager_->RemoveAccessTokenFromCache(
-        identity_manager_->GetUnconsentedPrimaryAccountId(), scopes,
-        request->access_token);
+        identity_manager_->GetPrimaryAccountId(
+            signin::ConsentLevel::kNotRequired),
+        scopes, request->access_token);
     StartFetching(request);
     return;
   }

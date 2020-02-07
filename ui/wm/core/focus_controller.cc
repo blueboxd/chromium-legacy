@@ -152,6 +152,11 @@ void FocusController::OnWindowDestroying(aura::Window* window) {
   // destruction.
   window->ClearProperty(aura::client::kModalKey);
   WindowLostFocusFromDispositionChange(window, window->parent());
+
+  // We may have already stopped observing |window| if `SetActiveWindow()` was
+  // called inside `WindowLostFocusFromDispositionChange()`.
+  if (observer_manager_.IsObserving(window))
+    observer_manager_.Remove(window);
 }
 
 void FocusController::OnWindowHierarchyChanging(
@@ -208,7 +213,10 @@ void FocusController::FocusAndActivateWindow(
       focusable_window_tracker.Add(focusable);
       focusable = nullptr;
     }
-    SetActiveWindow(reason, window, activatable);
+
+    if (!SetActiveWindow(reason, window, activatable))
+      return;
+
     if (!focusable_window_tracker.windows().empty())
       focusable = focusable_window_tracker.Pop();
   } else {
@@ -278,19 +286,29 @@ void FocusController::SetFocusedWindow(aura::Window* window) {
   }
 }
 
-void FocusController::SetActiveWindow(
+// Defines a macro that is meant to be called from SetActiveWindow(), which
+// checks whether the activation was interrupted by checking whether
+// |pending_activation_| has a value or not. In this case, it early-outs from
+// the SetActiveWindow() stack.
+// clang-format off
+#define MAYBE_ACTIVATION_INTERRUPTED() \
+  if (!pending_activation_)            \
+    return false
+// clang-format on
+
+bool FocusController::SetActiveWindow(
     ActivationChangeObserver::ActivationReason reason,
     aura::Window* requested_window,
     aura::Window* window) {
   if (pending_activation_)
-    return;
+    return false;
 
   if (window == active_window_) {
     if (requested_window) {
       for (auto& observer : activation_observers_)
         observer.OnAttemptToReactivateWindow(requested_window, active_window_);
     }
-    return;
+    return true;
   }
 
   DCHECK(rules_->CanActivateWindow(window));
@@ -306,18 +324,28 @@ void FocusController::SetActiveWindow(
   if (lost_activation)
     window_tracker.Add(lost_activation);
 
-  for (auto& observer : activation_observers_)
+  // Start observing the window gaining activation at this point since it maybe
+  // destroyed at an early stage, e.g. the activating phase.
+  if (window && !observer_manager_.IsObserving(window))
+    observer_manager_.Add(window);
+
+  for (auto& observer : activation_observers_) {
     observer.OnWindowActivating(reason, window, active_window_);
+
+    MAYBE_ACTIVATION_INTERRUPTED();
+  }
 
   if (active_window_ && observer_manager_.IsObserving(active_window_) &&
       focused_window_ != active_window_) {
     observer_manager_.Remove(active_window_);
   }
+
   active_window_ = window;
-  if (active_window_ && !observer_manager_.IsObserving(active_window_))
-    observer_manager_.Add(active_window_);
+
   if (active_window_)
     StackActiveWindow();
+
+  MAYBE_ACTIVATION_INTERRUPTED();
 
   ActivationChangeObserver* observer = nullptr;
   if (window_tracker.Contains(lost_activation)) {
@@ -325,17 +353,27 @@ void FocusController::SetActiveWindow(
     if (observer)
       observer->OnWindowActivated(reason, active_window_, lost_activation);
   }
+
+  MAYBE_ACTIVATION_INTERRUPTED();
+
   observer = GetActivationChangeObserver(active_window_);
   if (observer) {
     observer->OnWindowActivated(
         reason, active_window_,
         window_tracker.Contains(lost_activation) ? lost_activation : nullptr);
   }
+
+  MAYBE_ACTIVATION_INTERRUPTED();
+
   for (auto& observer : activation_observers_) {
     observer.OnWindowActivated(
         reason, active_window_,
         window_tracker.Contains(lost_activation) ? lost_activation : nullptr);
+
+    MAYBE_ACTIVATION_INTERRUPTED();
   }
+
+  return true;
 }
 
 void FocusController::StackActiveWindow() {
@@ -353,13 +391,43 @@ void FocusController::WindowLostFocusFromDispositionChange(
   // Activation adjustments are handled first in the event of a disposition
   // changed. If an activation change is necessary, focus is reset as part of
   // that process so there's no point in updating focus independently.
-  if (window == active_window_) {
+  const bool is_active_window_losing_focus = window == active_window_;
+  const bool is_pending_window_losing_focus =
+      pending_activation_ && (window == pending_activation_.value());
+  if (is_active_window_losing_focus || is_pending_window_losing_focus) {
+    if (pending_activation_) {
+      // We're in the middle of an on-going activation. We need to determine
+      // whether we need to abort this activation. This happens when the window
+      // gaining activation is destroyed at any point of the activation process.
+      if (is_pending_window_losing_focus) {
+        // Abort this on-going activation. The below call to SetActiveWindow()
+        // will attempt activating the next activatable window.
+        pending_activation_.reset();
+      } else if (is_active_window_losing_focus) {
+        // The window losing activation may have been destroyed before the
+        // window gaining active is set as the active window. We need to clear
+        // the active and focused windows temporarily, since querying the active
+        // window now should not return a dangling pointer.
+        active_window_ = nullptr;
+        SetFocusedWindow(nullptr);
+
+        // We should continue the on-going activation and leave
+        // |pending_activation_| unchanged.
+        return;
+      }
+    }
+
     aura::Window* next_activatable = rules_->GetNextActivatableWindow(window);
-    SetActiveWindow(
-        ActivationChangeObserver::ActivationReason::WINDOW_DISPOSITION_CHANGED,
-        nullptr, next_activatable);
-    if (!(active_window_ && active_window_->Contains(focused_window_)))
+    if (!SetActiveWindow(ActivationChangeObserver::ActivationReason::
+                             WINDOW_DISPOSITION_CHANGED,
+                         nullptr, next_activatable)) {
+      return;
+    }
+
+    if (window == focused_window_ || !active_window_ ||
+        !active_window_->Contains(focused_window_)) {
       SetFocusedWindow(next_activatable);
+    }
   } else if (window->Contains(focused_window_)) {
     if (pending_activation_) {
       // We're in the process of updating activation, most likely

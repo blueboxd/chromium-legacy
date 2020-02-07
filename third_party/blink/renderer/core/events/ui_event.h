@@ -28,6 +28,7 @@
 #include "third_party/blink/renderer/core/core_export.h"
 #include "third_party/blink/renderer/core/dom/events/event.h"
 #include "third_party/blink/renderer/core/frame/dom_window.h"
+#include "third_party/blink/renderer/platform/wtf/casting.h"
 
 namespace blink {
 
@@ -94,7 +95,10 @@ class CORE_EXPORT UIEvent : public Event {
   Member<InputDeviceCapabilities> source_capabilities_;
 };
 
-DEFINE_EVENT_TYPE_CASTS(UIEvent);
+template <>
+struct DowncastTraits<UIEvent> {
+  static bool AllowFrom(const Event& event) { return event.IsUIEvent(); }
+};
 
 }  // namespace blink
 

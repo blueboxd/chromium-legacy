@@ -170,7 +170,8 @@ void HTMLLabelElement::DefaultEventHandler(Event& evt) {
     // click event to control element.
     // Note: check if it is a MouseEvent because a click event may
     // not be an instance of a MouseEvent if created by document.createEvent().
-    if (evt.IsMouseEvent() && ToMouseEvent(evt).HasPosition()) {
+    auto* mouse_event = DynamicTo<MouseEvent>(evt);
+    if (mouse_event && mouse_event->HasPosition()) {
       if (LocalFrame* frame = GetDocument().GetFrame()) {
         // Check if there is a selection and click is not on the
         // selection.
@@ -189,7 +190,7 @@ void HTMLLabelElement::DefaultEventHandler(Event& evt) {
         // should pass click event to control element.
         // Only in case of drag, *neither* we pass the click event,
         // *nor* we focus the control element.
-        if (is_label_text_selected && ToMouseEvent(evt).ClickCount() == 1)
+        if (is_label_text_selected && mouse_event->ClickCount() == 1)
           return;
       }
     }

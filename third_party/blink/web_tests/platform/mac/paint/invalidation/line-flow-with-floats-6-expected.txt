@@ -164,12 +164,12 @@
         {
           "object": "LayoutNGBlockFlow (floating) SPAN id='blueFloat'",
           "rect": [14, 353, 48, 65],
-          "reason": "disappeared"
+          "reason": "appeared"
         },
         {
-          "object": "NGPhysicalBoxFragment LayoutNGBlockFlow (floating) SPAN id='blueFloat'",
+          "object": "LayoutNGBlockFlow (floating) SPAN id='blueFloat'",
           "rect": [14, 353, 48, 65],
-          "reason": "appeared"
+          "reason": "disappeared"
         },
         {
           "object": "NGPhysicalTextFragment 'would'",

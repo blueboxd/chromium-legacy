@@ -18,6 +18,7 @@
 #include "base/logging.h"
 #include "base/no_destructor.h"
 #include "base/task/post_task.h"
+#include "base/task/thread_pool/thread_pool_instance.h"
 #include "base/threading/thread_restrictions.h"
 #include "net/base/completion_once_callback.h"
 #include "net/base/net_errors.h"
@@ -271,9 +272,13 @@ void AwPacProcessor::MakeProxyRequestNative(
     net::CompletionOnceCallback complete) {
   DCHECK(task_runner_->BelongsToCurrentThread());
 
-  proxy_resolver_->GetProxyForURL(GURL(url), net::NetworkIsolationKey(),
-                                  proxy_info, std::move(complete), request,
-                                  std::make_unique<Bindings>());
+  if (proxy_resolver_) {
+    proxy_resolver_->GetProxyForURL(GURL(url), net::NetworkIsolationKey(),
+                                    proxy_info, std::move(complete), request,
+                                    std::make_unique<Bindings>());
+  } else {
+    std::move(complete).Run(net::ERR_FAILED);
+  }
 }
 
 bool AwPacProcessor::SetProxyScript(std::string script) {
@@ -307,4 +312,9 @@ ScopedJavaLocalRef<jstring> AwPacProcessor::MakeProxyRequest(
 static jlong JNI_AwPacProcessor_GetDefaultPacProcessor(JNIEnv* env) {
   return reinterpret_cast<intptr_t>(AwPacProcessor::Get());
 }
+
+static void JNI_AwPacProcessor_InitializeEnvironment(JNIEnv* env) {
+  base::ThreadPoolInstance::CreateAndStartWithDefaultParams("AwPacProcessor");
+}
+
 }  // namespace android_webview

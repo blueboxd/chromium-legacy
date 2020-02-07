@@ -58,11 +58,7 @@ class CORE_EXPORT LayoutMenuList final : public LayoutFlexibleBox {
                             LogicalExtentComputedValues&) const override;
 
   LayoutBlock* InnerBlock() const;
-  void UpdateOptionsWidth() const;
-
-  // m_optionsWidth is calculated and cached on demand.
-  // updateOptionsWidth() should be called before reading them.
-  mutable int options_width_;
+  int MeasureOptionsWidth() const;
 };
 
 DEFINE_LAYOUT_OBJECT_TYPE_CASTS(LayoutMenuList, IsMenuList());

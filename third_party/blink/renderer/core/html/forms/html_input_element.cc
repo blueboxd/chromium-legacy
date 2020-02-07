@@ -1295,8 +1295,10 @@ EventDispatchHandlingState* HTMLInputElement::PreDispatchEventHandler(
   }
   if (event.type() != event_type_names::kClick)
     return nullptr;
-  if (!event.IsMouseEvent() ||
-      ToMouseEvent(event).button() !=
+
+  auto* mouse_event = DynamicTo<MouseEvent>(event);
+  if (!mouse_event ||
+      mouse_event->button() !=
           static_cast<int16_t>(WebPointerProperties::Button::kLeft))
     return nullptr;
   return input_type_view_->WillDispatchClick();
@@ -1312,10 +1314,11 @@ void HTMLInputElement::PostDispatchEventHandler(
 }
 
 void HTMLInputElement::DefaultEventHandler(Event& evt) {
-  if (evt.IsMouseEvent() && evt.type() == event_type_names::kClick &&
-      ToMouseEvent(evt).button() ==
+  auto* mouse_event = DynamicTo<MouseEvent>(evt);
+  if (mouse_event && evt.type() == event_type_names::kClick &&
+      mouse_event->button() ==
           static_cast<int16_t>(WebPointerProperties::Button::kLeft)) {
-    input_type_view_->HandleClickEvent(ToMouseEvent(evt));
+    input_type_view_->HandleClickEvent(To<MouseEvent>(evt));
     if (evt.DefaultHandled())
       return;
   }
@@ -1393,8 +1396,8 @@ void HTMLInputElement::DefaultEventHandler(Event& evt) {
         static_cast<BeforeTextInsertedEvent&>(evt));
   }
 
-  if (evt.IsMouseEvent() && evt.type() == event_type_names::kMousedown) {
-    input_type_view_->HandleMouseDownEvent(ToMouseEvent(evt));
+  if (mouse_event && evt.type() == event_type_names::kMousedown) {
+    input_type_view_->HandleMouseDownEvent(*mouse_event);
     if (evt.DefaultHandled())
       return;
   }

@@ -332,6 +332,24 @@ TEST_F(P2PSocketTcpTest, SendDataWithPacketOptions) {
   base::RunLoop().RunUntilIdle();
 }
 
+// Verify that we ignore an empty frame.
+TEST_F(P2PSocketTcpTest, IgnoreEmptyFrame) {
+  std::vector<int8_t> response_packet;
+  CreateStunResponse(&response_packet);
+
+  std::string received_data;
+  received_data.append(IntToSize(response_packet.size()));
+  received_data.append(response_packet.begin(), response_packet.end());
+  socket_->AppendInputData(&received_data[0], received_data.size());
+
+  std::vector<int8_t> empty_packet;
+  received_data.resize(0);
+  received_data.append(IntToSize(empty_packet.size()));
+  received_data.append(empty_packet.begin(), empty_packet.end());
+  socket_->AppendInputData(&received_data[0], received_data.size());
+  EXPECT_CALL(*fake_client_.get(), DataReceived(_, _, _)).Times(0);
+}
+
 // Verify that we can send STUN message and that they are formatted
 // properly.
 TEST_F(P2PSocketStunTcpTest, SendStunNoAuth) {

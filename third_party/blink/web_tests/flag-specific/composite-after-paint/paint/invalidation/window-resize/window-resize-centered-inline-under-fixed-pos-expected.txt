@@ -76,7 +76,7 @@
           "reason": "geometry"
         },
         {
-          "object": "NGPhysicalBoxFragment LayoutNGBlockFlow DIV class='parent'",
+          "object": "LayoutNGBlockFlow DIV class='parent'",
           "rect": [0, 250, 6, 350],
           "reason": "incremental"
         },

@@ -1383,8 +1383,6 @@ void AddKerberosAccountsPageStrings(content::WebUIDataSource* html_source) {
   };
   AddLocalizedStringsBulk(html_source, kLocalizedStrings);
 
-  html_source->AddString("syncLearnMoreUrl", chrome::kSyncLearnMoreURL);
-
   PrefService* local_state = g_browser_process->local_state();
 
   // Whether new Kerberos accounts may be added.
@@ -1941,7 +1939,6 @@ void AddPeoplePageStrings(content::WebUIDataSource* html_source,
        IDS_SETTINGS_ACCOUNT_MANAGER_SUBMENU_LABEL},
       {"accountManagerPageTitle", IDS_SETTINGS_ACCOUNT_MANAGER_PAGE_TITLE},
       {"syncAdvancedPageTitle", IDS_SETTINGS_SYNC_ADVANCED_PAGE_TITLE},
-      {"syncOverview", IDS_SETTINGS_SYNC_OVERVIEW},
       {"kerberosAccountsSubMenuLabel",
        IDS_SETTINGS_KERBEROS_ACCOUNTS_SUBMENU_LABEL},
       {"accountManagerPageTitle", IDS_SETTINGS_ACCOUNT_MANAGER_PAGE_TITLE},
@@ -1954,8 +1951,6 @@ void AddPeoplePageStrings(content::WebUIDataSource* html_source,
        IDS_SETTINGS_SYNC_SYNC_AND_NON_PERSONALIZED_SERVICES},
   };
   AddLocalizedStringsBulk(html_source, kLocalizedStrings);
-
-  html_source->AddString("syncLearnMoreUrl", chrome::kSyncLearnMoreURL);
 
   // Toggles the Chrome OS Account Manager submenu in the People section.
   html_source->AddBoolean("isAccountManagerEnabled",

@@ -239,8 +239,8 @@ void WebPluginContainerImpl::HandleEvent(Event& event) {
   //    http://devedge-temp.mozilla.org/library/manuals/2002/plugin/1.0/structures5.html#1000000
   // Don't take the documentation as truth, however.  There are many cases
   // where mozilla behaves differently than the spec.
-  if (event.IsMouseEvent())
-    HandleMouseEvent(ToMouseEvent(event));
+  if (auto* mouse_event = DynamicTo<MouseEvent>(event))
+    HandleMouseEvent(*mouse_event);
   else if (event.IsWheelEvent())
     HandleWheelEvent(ToWheelEvent(event));
   else if (event.IsKeyboardEvent())
@@ -249,8 +249,8 @@ void WebPluginContainerImpl::HandleEvent(Event& event) {
     HandleTouchEvent(ToTouchEvent(event));
   else if (event.IsGestureEvent())
     HandleGestureEvent(ToGestureEvent(event));
-  else if (event.IsDragEvent() && web_plugin_->CanProcessDrag())
-    HandleDragEvent(ToDragEvent(event));
+  else if (IsA<DragEvent>(event) && web_plugin_->CanProcessDrag())
+    HandleDragEvent(To<DragEvent>(event));
 
   // FIXME: it would be cleaner if EmbeddedContentView::HandleEvent returned
   // true/false and HTMLPluginElement called SetDefaultHandled or
@@ -825,7 +825,7 @@ void WebPluginContainerImpl::HandleMouseEvent(MouseEvent& event) {
 }
 
 void WebPluginContainerImpl::HandleDragEvent(MouseEvent& event) {
-  DCHECK(event.IsDragEvent());
+  DCHECK(IsA<DragEvent>(event));
 
   WebDragStatus drag_status = kWebDragStatusUnknown;
   if (event.type() == event_type_names::kDragenter)

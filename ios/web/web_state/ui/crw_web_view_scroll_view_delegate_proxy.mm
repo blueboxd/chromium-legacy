@@ -14,7 +14,7 @@
 
 @interface CRWWebViewScrollViewDelegateProxy ()
 
-@property(nonatomic) CRWWebViewScrollViewProxy* scrollViewProxy;
+@property(nonatomic, weak) CRWWebViewScrollViewProxy* scrollViewProxy;
 
 @end
 

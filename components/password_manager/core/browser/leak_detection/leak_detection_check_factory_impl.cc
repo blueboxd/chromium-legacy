@@ -7,6 +7,7 @@
 #include <utility>
 
 #include "components/password_manager/core/browser/leak_detection/authenticated_leak_check.h"
+#include "components/password_manager/core/browser/leak_detection/bulk_leak_check_impl.h"
 #include "components/password_manager/core/browser/leak_detection/leak_detection_delegate_interface.h"
 #include "components/password_manager/core/common/password_manager_features.h"
 #include "services/network/public/cpp/shared_url_loader_factory.h"
@@ -28,6 +29,22 @@ LeakDetectionCheckFactoryImpl::TryCreateLeakCheck(
 
   return std::make_unique<AuthenticatedLeakCheck>(
       delegate, identity_manager, std::move(url_loader_factory));
+}
+
+std::unique_ptr<BulkLeakCheck>
+LeakDetectionCheckFactoryImpl::TryCreateBulkLeakCheck(
+    BulkLeakCheckDelegateInterface* delegate,
+    signin::IdentityManager* identity_manager,
+    scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory) const {
+  if (!base::FeatureList::IsEnabled(password_manager::features::kPasswordCheck))
+    return nullptr;
+
+  if (!AuthenticatedLeakCheck::HasAccountForRequest(identity_manager)) {
+    delegate->OnError(LeakDetectionError::kNotSignIn);
+    return nullptr;
+  }
+  return std::make_unique<BulkLeakCheckImpl>(delegate, identity_manager,
+                                             std::move(url_loader_factory));
 }
 
 }  // namespace password_manager

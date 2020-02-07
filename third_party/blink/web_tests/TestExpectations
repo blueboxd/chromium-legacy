@@ -6609,6 +6609,9 @@ crbug.com/1048113 [ Debug ] virtual/threaded-prefer-compositing/fast/scroll-beha
 crbug.com/1048113 [ Debug ] virtual/threaded-prefer-compositing/fast/scroll-behavior/main-frame-scrollLeft.html [ Pass Failure ]
 crbug.com/1048113 [ Debug ] virtual/threaded-prefer-compositing/fast/scroll-behavior/subframe-interrupted-scroll.html [ Pass Failure ]
 
+crbug.com/1049689 external/wpt/workers/modules/shared-worker-import-referrer.html [ Pass Timeout ]
+crbug.com/1049689 virtual/omt-worker-fetch/external/wpt/workers/modules/shared-worker-import-referrer.html [ Pass Timeout ]
+
 # Swiftshader issue.
 crbug.com/1048149 external/wpt/html/browsers/the-window-object/apis-for-creating-and-navigating-browsing-contexts-by-name/open-features-non-integer-innerwidth.html [ Crash Timeout ]
 crbug.com/1048149 external/wpt/html/browsers/the-window-object/apis-for-creating-and-navigating-browsing-contexts-by-name/open-features-non-integer-screeny.html [ Crash Timeout ]

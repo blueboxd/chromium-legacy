@@ -631,16 +631,6 @@ IPC_MESSAGE_ROUTED1(FrameMsg_SetTextTrackSettings,
 IPC_MESSAGE_ROUTED1(FrameMsg_DidUpdateVisualProperties,
                     cc::RenderFrameMetadata /* metadata */)
 
-// Requests a viz::LocalSurfaceId to enable auto-resize mode from the parent
-// renderer.
-IPC_MESSAGE_ROUTED2(FrameMsg_EnableAutoResize,
-                    gfx::Size /* min_size */,
-                    gfx::Size /* max_size */)
-
-// Requests a viz::LocalSurfaceId to disable auto-resize-mode from the parent
-// renderer.
-IPC_MESSAGE_ROUTED0(FrameMsg_DisableAutoResize)
-
 #if BUILDFLAG(USE_EXTERNAL_POPUP_MENU)
 #if defined(OS_MACOSX)
 IPC_MESSAGE_ROUTED1(FrameMsg_SelectPopupMenuItem,

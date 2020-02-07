@@ -26,7 +26,7 @@ class TermsOfServiceScreenView {
   virtual ~TermsOfServiceScreenView() {}
 
   // Sets screen this view belongs to.
-  virtual void SetDelegate(TermsOfServiceScreen* screen) = 0;
+  virtual void SetScreen(TermsOfServiceScreen* screen) = 0;
 
   // Shows the contents of the screen.
   virtual void Show() = 0;
@@ -44,6 +44,9 @@ class TermsOfServiceScreenView {
   // Called when the download of the Terms of Service is successful. Shows the
   // downloaded |terms_of_service| to the user.
   virtual void OnLoadSuccess(const std::string& terms_of_service) = 0;
+
+  // Whether TOS are successfully loaded.
+  virtual bool AreTermsLoaded() = 0;
 };
 
 // The sole implementation of the TermsOfServiceScreenView, using WebUI.
@@ -56,20 +59,18 @@ class TermsOfServiceScreenHandler : public BaseScreenHandler,
                               CoreOobeView* core_oobe_view);
   ~TermsOfServiceScreenHandler() override;
 
-  // content::WebUIMessageHandler:
-  void RegisterMessages() override;
-
   // BaseScreenHandler:
   void DeclareLocalizedValues(
       ::login::LocalizedValuesBuilder* builder) override;
 
   // TermsOfServiceScreenView:
-  void SetDelegate(TermsOfServiceScreen* screen) override;
+  void SetScreen(TermsOfServiceScreen* screen) override;
   void Show() override;
   void Hide() override;
   void SetDomain(const std::string& domain) override;
   void OnLoadError() override;
   void OnLoadSuccess(const std::string& terms_of_service) override;
+  bool AreTermsLoaded() override;
 
  private:
   // BaseScreenHandler:
@@ -91,14 +92,6 @@ class TermsOfServiceScreenHandler : public BaseScreenHandler,
   // on whether the download of the Terms of Service was successful. Does
   // nothing if the download is still in progress.
   void UpdateTermsOfServiceInUI();
-
-  // Called when the user declines the Terms of Service by clicking the "back"
-  // button.
-  void HandleBack();
-
-  // Called when the user accepts the Terms of Service by clicking the "accept
-  // and continue" button.
-  void HandleAccept();
 
   TermsOfServiceScreen* screen_ = nullptr;
 

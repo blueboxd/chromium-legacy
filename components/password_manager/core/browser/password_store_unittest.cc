@@ -111,9 +111,9 @@ class MockPasswordStoreConsumer : public PasswordStoreConsumer {
   DISALLOW_COPY_AND_ASSIGN(MockPasswordStoreConsumer);
 };
 
-struct MockCompromisedPasswordsObserver
-    : PasswordStore::CompromisedPasswordsObserver {
-  MOCK_METHOD0(OnCompromisedPasswordsChanged, void());
+struct MockDatabaseCompromisedCredentialsObserver
+    : PasswordStore::DatabaseCompromisedCredentialsObserver {
+  MOCK_METHOD0(OnCompromisedCredentialsChanged, void());
 };
 
 class MockPasswordStoreSigninNotifier : public PasswordStoreSigninNotifier {
@@ -511,7 +511,7 @@ TEST_F(PasswordStoreTest,
        CompromisedPasswordObserverOnCompromisedCredentialAdded) {
   base::test::ScopedFeatureList feature_list;
   feature_list.InitAndEnableFeature(features::kPasswordCheck);
-  MockCompromisedPasswordsObserver observer;
+  MockDatabaseCompromisedCredentialsObserver observer;
 
   CompromisedCredentials compromised_credentials(
       kTestWebRealm1, base::ASCIIToUTF16("username_value_1"),
@@ -519,15 +519,15 @@ TEST_F(PasswordStoreTest,
 
   scoped_refptr<PasswordStoreDefault> store = CreatePasswordStore();
   store->Init(syncer::SyncableService::StartSyncFlare(), nullptr);
-  store->AddCompromisedPasswordsObserver(&observer);
+  store->AddDatabaseCompromisedCredentialsObserver(&observer);
 
   // Expect a notification after adding a credential.
-  EXPECT_CALL(observer, OnCompromisedPasswordsChanged);
+  EXPECT_CALL(observer, OnCompromisedCredentialsChanged);
   store->AddCompromisedCredentials(compromised_credentials);
   WaitForPasswordStore();
 
   // Adding the same credential should not result in another notification.
-  EXPECT_CALL(observer, OnCompromisedPasswordsChanged).Times(0);
+  EXPECT_CALL(observer, OnCompromisedCredentialsChanged).Times(0);
   store->AddCompromisedCredentials(compromised_credentials);
   WaitForPasswordStore();
 
@@ -538,7 +538,7 @@ TEST_F(PasswordStoreTest,
        CompromisedPasswordObserverOnCompromisedCredentialRemoved) {
   base::test::ScopedFeatureList feature_list;
   feature_list.InitAndEnableFeature(features::kPasswordCheck);
-  MockCompromisedPasswordsObserver observer;
+  MockDatabaseCompromisedCredentialsObserver observer;
 
   CompromisedCredentials compromised_credentials(
       kTestWebRealm1, base::ASCIIToUTF16("username_value_1"),
@@ -549,17 +549,17 @@ TEST_F(PasswordStoreTest,
   store->AddCompromisedCredentials(compromised_credentials);
   WaitForPasswordStore();
 
-  store->AddCompromisedPasswordsObserver(&observer);
+  store->AddDatabaseCompromisedCredentialsObserver(&observer);
 
   // Expect a notification after removing a credential.
-  EXPECT_CALL(observer, OnCompromisedPasswordsChanged);
+  EXPECT_CALL(observer, OnCompromisedCredentialsChanged);
   store->RemoveCompromisedCredentials(
       compromised_credentials.signon_realm, compromised_credentials.username,
       RemoveCompromisedCredentialsReason::kRemove);
   WaitForPasswordStore();
 
   // Removing the same credential should not result in another notification.
-  EXPECT_CALL(observer, OnCompromisedPasswordsChanged).Times(0);
+  EXPECT_CALL(observer, OnCompromisedCredentialsChanged).Times(0);
   store->RemoveCompromisedCredentials(
       compromised_credentials.signon_realm, compromised_credentials.username,
       RemoveCompromisedCredentialsReason::kRemove);
@@ -572,7 +572,7 @@ TEST_F(PasswordStoreTest,
        CompromisedPasswordObserverOnCompromisedCredentialRemovedByTime) {
   base::test::ScopedFeatureList feature_list;
   feature_list.InitAndEnableFeature(features::kPasswordCheck);
-  MockCompromisedPasswordsObserver observer;
+  MockDatabaseCompromisedCredentialsObserver observer;
 
   CompromisedCredentials compromised_credentials(
       kTestWebRealm1, base::ASCIIToUTF16("username_value_1"),
@@ -583,10 +583,10 @@ TEST_F(PasswordStoreTest,
   store->AddCompromisedCredentials(compromised_credentials);
   WaitForPasswordStore();
 
-  store->AddCompromisedPasswordsObserver(&observer);
+  store->AddDatabaseCompromisedCredentialsObserver(&observer);
 
   // Expect a notification after removing all credential.
-  EXPECT_CALL(observer, OnCompromisedPasswordsChanged);
+  EXPECT_CALL(observer, OnCompromisedCredentialsChanged);
   store->RemoveCompromisedCredentialsByUrlAndTime(
       base::NullCallback(), base::Time::Min(), base::Time::Max(),
       base::NullCallback());

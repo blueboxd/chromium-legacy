@@ -1197,6 +1197,7 @@ class CORE_EXPORT PaintLayer : public DisplayItemClient {
       const PhysicalOffset& translation_offset = PhysicalOffset()) const;
 
   bool HitTestContents(HitTestResult&,
+                       const NGPhysicalBoxFragment*,
                        const PhysicalOffset& fragment_offset,
                        const HitTestLocation&,
                        HitTestFilter) const;

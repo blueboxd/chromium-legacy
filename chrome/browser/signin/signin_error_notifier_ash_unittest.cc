@@ -132,6 +132,25 @@ TEST_F(SigninErrorNotifierTest, ErrorResetForPrimaryAccount) {
       display_service_->GetNotification(kPrimaryAccountErrorNotificationId));
 }
 
+TEST_F(SigninErrorNotifierTest, ErrorShownForUnconsentedPrimaryAccount) {
+  EXPECT_FALSE(
+      display_service_->GetNotification(kPrimaryAccountErrorNotificationId));
+
+  CoreAccountId account_id =
+      identity_test_env()
+          ->MakeUnconsentedPrimaryAccountAvailable(kTestEmail)
+          .account_id;
+  SetAuthError(
+      account_id,
+      GoogleServiceAuthError(GoogleServiceAuthError::INVALID_GAIA_CREDENTIALS));
+  EXPECT_TRUE(
+      display_service_->GetNotification(kPrimaryAccountErrorNotificationId));
+
+  SetAuthError(account_id, GoogleServiceAuthError::AuthErrorNone());
+  EXPECT_FALSE(
+      display_service_->GetNotification(kPrimaryAccountErrorNotificationId));
+}
+
 TEST_F(SigninErrorNotifierTest, ErrorResetForSecondaryAccount) {
   EXPECT_FALSE(
       display_service_->GetNotification(kSecondaryAccountErrorNotificationId));

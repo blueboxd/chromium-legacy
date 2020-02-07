@@ -25,7 +25,7 @@
           "reason": "appeared"
         },
         {
-          "object": "NGPhysicalBoxFragment LayoutNGBlockFlow (positioned) DIV class='fixed red'",
+          "object": "LayoutNGBlockFlow (positioned) DIV class='fixed red'",
           "rect": [0, 0, 100, 100],
           "reason": "disappeared"
         }

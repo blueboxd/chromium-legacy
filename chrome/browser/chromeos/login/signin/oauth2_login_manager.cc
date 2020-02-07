@@ -174,7 +174,8 @@ AccountReconcilor* OAuth2LoginManager::GetAccountReconcilor() {
 CoreAccountId OAuth2LoginManager::GetUnconsentedPrimaryAccountId() {
   // Use the primary ID whether or not the user has consented to browser sync.
   const CoreAccountId primary_account_id =
-      GetIdentityManager()->GetUnconsentedPrimaryAccountId();
+      GetIdentityManager()->GetPrimaryAccountId(
+          signin::ConsentLevel::kNotRequired);
   LOG_IF(ERROR, primary_account_id.empty()) << "Primary account id is empty.";
   return primary_account_id;
 }

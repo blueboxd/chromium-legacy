@@ -62,7 +62,7 @@
           "reason": "incremental"
         },
         {
-          "object": "NGPhysicalBoxFragment LayoutNGBlockFlow DIV",
+          "object": "LayoutNGBlockFlow DIV",
           "rect": [10, 298, 242, 20],
           "reason": "incremental"
         },
@@ -117,7 +117,7 @@
           "reason": "incremental"
         },
         {
-          "object": "NGPhysicalBoxFragment LayoutNGBlockFlow DIV",
+          "object": "LayoutNGBlockFlow DIV",
           "rect": [252, 138, 50, 160],
           "reason": "incremental"
         }

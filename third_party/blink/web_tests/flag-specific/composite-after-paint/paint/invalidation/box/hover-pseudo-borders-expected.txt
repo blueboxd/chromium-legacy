@@ -7,12 +7,12 @@
       "backgroundColor": "#FFFFFF",
       "paintInvalidations": [
         {
-          "object": "NGPhysicalBoxFragment LayoutNGBlockFlow (positioned) ::after",
+          "object": "LayoutNGBlockFlow (positioned) ::after",
           "rect": [138, 8, 100, 100],
           "reason": "style change"
         },
         {
-          "object": "NGPhysicalBoxFragment LayoutNGBlockFlow DIV class='hitregion'",
+          "object": "LayoutNGBlockFlow DIV class='hitregion'",
           "rect": [8, 8, 100, 100],
           "reason": "background"
         }

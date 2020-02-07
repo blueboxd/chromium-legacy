@@ -95,17 +95,18 @@ class PasswordStore : protected PasswordStoreSync,
     virtual ~Observer() = default;
   };
 
-  class CompromisedPasswordsObserver {
+  class DatabaseCompromisedCredentialsObserver {
     // An interface used to notify clients (observers) of this object that the
     // list of comrpomised crendentials in the password store has changed.
-    // Register the observer via PasswordStore::AddCompromisedPasswordsObserver.
+    // Register the observer via
+    // PasswordStore::AddDatabaseCompromisedCredentialsObserver.
    public:
     // Notifies the observer that the list of compromised credentials changed.
     // Will be called from the UI thread.
-    virtual void OnCompromisedPasswordsChanged() = 0;
+    virtual void OnCompromisedCredentialsChanged() = 0;
 
    protected:
-    virtual ~CompromisedPasswordsObserver() = default;
+    virtual ~DatabaseCompromisedCredentialsObserver() = default;
   };
 
   // Represents a subset of autofill::PasswordForm needed for credential
@@ -309,11 +310,12 @@ class PasswordStore : protected PasswordStoreSync,
 
   // Adds an observer to be notified when the list of compromised passwords in
   // the password store changes.
-  void AddCompromisedPasswordsObserver(CompromisedPasswordsObserver* observer);
+  void AddDatabaseCompromisedCredentialsObserver(
+      DatabaseCompromisedCredentialsObserver* observer);
 
   // Removes |observer| from the list of compromised credentials observer.
-  void RemoveCompromisedPasswordsObserver(
-      CompromisedPasswordsObserver* observer);
+  void RemoveDatabaseCompromisedCredentialsObserver(
+      DatabaseCompromisedCredentialsObserver* observer);
 
   // Schedules the given |task| to be run on the PasswordStore's TaskRunner.
   bool ScheduleTask(base::OnceClosure task);
@@ -788,9 +790,11 @@ class PasswordStore : protected PasswordStoreSync,
 
   // The observers.
   scoped_refptr<base::ObserverListThreadSafe<Observer>> observers_;
-  scoped_refptr<base::ObserverListThreadSafe<CompromisedPasswordsObserver>>
-      compromised_passwords_observers_ = base::MakeRefCounted<
-          base::ObserverListThreadSafe<CompromisedPasswordsObserver>>();
+  scoped_refptr<
+      base::ObserverListThreadSafe<DatabaseCompromisedCredentialsObserver>>
+      compromised_credentials_observers_ =
+          base::MakeRefCounted<base::ObserverListThreadSafe<
+              DatabaseCompromisedCredentialsObserver>>();
 
   // Either of two below would actually be set based on a feature flag.
   std::unique_ptr<PasswordSyncableService> syncable_service_;

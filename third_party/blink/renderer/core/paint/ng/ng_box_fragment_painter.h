@@ -63,6 +63,11 @@ class NGBoxFragmentPainter : public BoxPainterBase {
                    const PhysicalOffset& physical_offset,
                    HitTestAction);
 
+  bool HitTestAllPhases(HitTestResult&,
+                        const HitTestLocation&,
+                        const PhysicalOffset& accumulated_offset,
+                        HitTestFilter = kHitTestAll);
+
  protected:
   LayoutRectOutsets ComputeBorders() const override;
   LayoutRectOutsets ComputePadding() const override;
@@ -216,6 +221,10 @@ class NGBoxFragmentPainter : public BoxPainterBase {
   bool HitTestChildren(const HitTestContext& hit_test,
                        const NGInlineCursor& children,
                        const PhysicalOffset& physical_offset);
+  bool HitTestBlockChildren(HitTestResult&,
+                            const HitTestLocation&,
+                            PhysicalOffset,
+                            HitTestAction);
   bool HitTestPaintFragmentChildren(const HitTestContext& hit_test,
                                     const NGInlineCursor& children,
                                     const PhysicalOffset& physical_offset);
@@ -224,10 +233,6 @@ class NGBoxFragmentPainter : public BoxPainterBase {
   bool HitTestFloatingChildren(const HitTestContext& hit_test,
                                const NGPhysicalContainerFragment& container,
                                const PhysicalOffset& accumulated_offset);
-
-  bool HitTestAllPhases(const HitTestContext& hit_test,
-                        const NGPhysicalFragment& fragment,
-                        const PhysicalOffset& accumulated_offset);
 
   // Hit tests a box fragment, which is a child of either |box_fragment_|, or
   // one of its child line box fragments.

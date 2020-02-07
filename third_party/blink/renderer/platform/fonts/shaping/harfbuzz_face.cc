@@ -30,8 +30,10 @@
 
 #include "third_party/blink/renderer/platform/fonts/shaping/harfbuzz_face.h"
 
-#include <hb-ot.h>
+// clang-format off
 #include <hb.h>
+#include <hb-ot.h>
+// clang-format on
 
 #include <memory>
 
@@ -50,6 +52,7 @@
 #include "third_party/blink/renderer/platform/wtf/hash_map.h"
 #include "third_party/blink/renderer/platform/wtf/math_extras.h"
 #include "third_party/blink/renderer/platform/wtf/std_lib_extras.h"
+#include "third_party/harfbuzz-ng/utils/hb_scoped.h"
 #include "third_party/skia/include/core/SkPaint.h"
 #include "third_party/skia/include/core/SkPath.h"
 #include "third_party/skia/include/core/SkPoint.h"
@@ -59,33 +62,14 @@
 
 namespace blink {
 
-void HbFontDeleter::operator()(hb_font_t* font) {
-  if (font)
-    hb_font_destroy(font);
-}
-
-void HbFaceDeleter::operator()(hb_face_t* face) {
-  if (face)
-    hb_face_destroy(face);
-}
-
-struct HbSetDeleter {
-  void operator()(hb_set_t* set) {
-    if (set)
-      hb_set_destroy(set);
-  }
-};
-
-using HbSetUniquePtr = std::unique_ptr<hb_set_t, HbSetDeleter>;
-
 static scoped_refptr<HbFontCacheEntry> CreateHbFontCacheEntry(hb_face_t*);
 
 HarfBuzzFace::HarfBuzzFace(FontPlatformData* platform_data, uint64_t unique_id)
     : platform_data_(platform_data), unique_id_(unique_id) {
   HarfBuzzFontCache::AddResult result =
-      FontGlobalContext::GetHarfBuzzFontCache().insert(unique_id_, nullptr);
+      FontGlobalContext::GetHarfBuzzFontCache()->insert(unique_id_, nullptr);
   if (result.is_new_entry) {
-    HbFaceUniquePtr face(CreateFace());
+    HbScoped<hb_face_t> face(CreateFace());
     result.stored_value->value = CreateHbFontCacheEntry(face.get());
   }
   result.stored_value->value->AddRef();
@@ -94,13 +78,14 @@ HarfBuzzFace::HarfBuzzFace(FontPlatformData* platform_data, uint64_t unique_id)
 }
 
 HarfBuzzFace::~HarfBuzzFace() {
-  HarfBuzzFontCache::iterator result =
-      FontGlobalContext::GetHarfBuzzFontCache().find(unique_id_);
-  SECURITY_DCHECK(result != FontGlobalContext::GetHarfBuzzFontCache().end());
+  HarfBuzzFontCache* harfbuzz_font_cache =
+      FontGlobalContext::GetHarfBuzzFontCache();
+  HarfBuzzFontCache::iterator result = harfbuzz_font_cache->find(unique_id_);
+  SECURITY_DCHECK(result != harfbuzz_font_cache->end());
   DCHECK(!result.Get()->value->HasOneRef());
   result.Get()->value->Release();
   if (result.Get()->value->HasOneRef())
-    FontGlobalContext::GetHarfBuzzFontCache().erase(unique_id_);
+    harfbuzz_font_cache->erase(unique_id_);
 }
 
 static hb_bool_t HarfBuzzGetGlyph(hb_font_t* hb_font,
@@ -228,7 +213,7 @@ bool HarfBuzzFace::HasSpaceInLigaturesOrKerning(TypesettingFeatures features) {
   const hb_codepoint_t kInvalidCodepoint = static_cast<hb_codepoint_t>(-1);
   hb_codepoint_t space = kInvalidCodepoint;
 
-  HbSetUniquePtr glyphs(hb_set_create());
+  HbScoped<hb_set_t> glyphs(hb_set_create());
 
   // Check whether computing is needed and compute for gpos/gsub.
   if (features & kKerning &&
@@ -360,11 +345,10 @@ hb_face_t* HarfBuzzFace::CreateFace() {
   if (tf_stream && tf_stream->getMemoryBase()) {
     const void* tf_memory = tf_stream->getMemoryBase();
     size_t tf_size = tf_stream->getLength();
-    std::unique_ptr<hb_blob_t, void (*)(hb_blob_t*)> face_blob(
+    HbScoped<hb_blob_t> face_blob(
         hb_blob_create(reinterpret_cast<const char*>(tf_memory),
                        SafeCast<unsigned int>(tf_size), HB_MEMORY_MODE_READONLY,
-                       tf_stream.release(), DeleteTypefaceStream),
-        hb_blob_destroy);
+                       tf_stream.release(), DeleteTypefaceStream));
     face = hb_face_create(face_blob.get(), ttc_index);
   }
 #endif
@@ -383,7 +367,7 @@ hb_face_t* HarfBuzzFace::CreateFace() {
 }
 
 scoped_refptr<HbFontCacheEntry> CreateHbFontCacheEntry(hb_face_t* face) {
-  HbFontUniquePtr ot_font(hb_font_create(face));
+  HbScoped<hb_font_t> ot_font(hb_font_create(face));
   hb_ot_font_set_funcs(ot_font.get());
   // Creating a sub font means that non-available functions
   // are found from the parent.

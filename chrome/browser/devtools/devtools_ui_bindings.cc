@@ -123,13 +123,13 @@ typedef std::vector<DevToolsUIBindings*> DevToolsUIBindingsList;
 base::LazyInstance<DevToolsUIBindingsList>::Leaky
     g_devtools_ui_bindings_instances = LAZY_INSTANCE_INITIALIZER;
 
-std::unique_ptr<base::DictionaryValue> CreateFileSystemValue(
+base::DictionaryValue CreateFileSystemValue(
     DevToolsFileHelper::FileSystem file_system) {
-  auto file_system_value = std::make_unique<base::DictionaryValue>();
-  file_system_value->SetString("type", file_system.type);
-  file_system_value->SetString("fileSystemName", file_system.file_system_name);
-  file_system_value->SetString("rootURL", file_system.root_url);
-  file_system_value->SetString("fileSystemPath", file_system.file_system_path);
+  base::DictionaryValue file_system_value;
+  file_system_value.SetString("type", file_system.type);
+  file_system_value.SetString("fileSystemName", file_system.file_system_name);
+  file_system_value.SetString("rootURL", file_system.root_url);
+  file_system_value.SetString("fileSystemPath", file_system.file_system_path);
   return file_system_value;
 }
 
@@ -479,11 +479,10 @@ class DevToolsUIBindings::NetworkResourceLoader
     } else {
       chunkValue = base::Value(chunk);
     }
-    base::Value id(stream_id_);
-    base::Value encodedValue(encoded);
 
-    bindings_->CallClientFunction("DevToolsAPI.streamWrite", &id, &chunkValue,
-                                  &encodedValue);
+    bindings_->CallClientMethod("DevToolsAPI", "streamWrite",
+                                base::Value(stream_id_), chunkValue,
+                                base::Value(encoded));
     std::move(resume).Run();
   }
 
@@ -724,20 +723,19 @@ void DevToolsUIBindings::DispatchProtocolMessage(
   base::StringPiece message_sp(reinterpret_cast<const char*>(message.data()),
                                message.size());
   if (message_sp.length() < kMaxMessageChunkSize) {
-    std::string param;
-    base::EscapeJSONString(message_sp, true, &param);
-    base::string16 javascript =
-        base::UTF8ToUTF16("DevToolsAPI.dispatchMessage(" + param + ");");
-    web_contents_->GetMainFrame()->ExecuteJavaScript(javascript,
-                                                     base::NullCallback());
+    CallClientMethod("DevToolsAPI", "dispatchMessage", base::Value(message_sp));
     return;
   }
 
-  base::Value total_size(static_cast<int>(message_sp.length()));
   for (size_t pos = 0; pos < message_sp.length(); pos += kMaxMessageChunkSize) {
     base::Value message_value(message_sp.substr(pos, kMaxMessageChunkSize));
-    CallClientFunction("DevToolsAPI.dispatchMessageChunk",
-                       &message_value, pos ? NULL : &total_size, NULL);
+    if (pos == 0) {
+      CallClientMethod("DevToolsAPI", "dispatchMessageChunk", message_value,
+                       base::Value(static_cast<int>(message_sp.length())));
+
+    } else {
+      CallClientMethod("DevToolsAPI", "dispatchMessageChunk", message_value);
+    }
   }
 }
 
@@ -750,9 +748,13 @@ void DevToolsUIBindings::AgentHostClosed(
 
 void DevToolsUIBindings::SendMessageAck(int request_id,
                                         const base::Value* arg) {
-  base::Value id_value(request_id);
-  CallClientFunction("DevToolsAPI.embedderMessageAck",
-                     &id_value, arg, nullptr);
+  if (arg) {
+    CallClientMethod("DevToolsAPI", "embedderMessageAck",
+                     base::Value(request_id), *arg);
+  } else {
+    CallClientMethod("DevToolsAPI", "embedderMessageAck",
+                     base::Value(request_id));
+  }
 }
 
 void DevToolsUIBindings::InnerAttach() {
@@ -920,13 +922,10 @@ void DevToolsUIBindings::AppendToFile(const std::string& url,
 
 void DevToolsUIBindings::RequestFileSystems() {
   CHECK(IsValidFrontendURL(web_contents_->GetURL()) && frontend_host_);
-  std::vector<DevToolsFileHelper::FileSystem> file_systems =
-      file_helper_->GetFileSystems();
   base::ListValue file_systems_value;
-  for (size_t i = 0; i < file_systems.size(); ++i)
-    file_systems_value.Append(CreateFileSystemValue(file_systems[i]));
-  CallClientFunction("DevToolsAPI.fileSystemsLoaded",
-                     &file_systems_value, NULL, NULL);
+  for (auto const& file_system : file_helper_->GetFileSystems())
+    file_systems_value.Append(CreateFileSystemValue(file_system));
+  CallClientMethod("DevToolsAPI", "fileSystemsLoaded", file_systems_value);
 }
 
 void DevToolsUIBindings::AddFileSystem(const std::string& type) {
@@ -1091,13 +1090,11 @@ void DevToolsUIBindings::DevicesDiscoveryConfigUpdated() {
                  ->FindPreference(prefs::kDevToolsTCPDiscoveryConfig)
                  ->GetValue()
                  ->CreateDeepCopy());
-  CallClientFunction("DevToolsAPI.devicesDiscoveryConfigChanged", &config,
-                     nullptr, nullptr);
+  CallClientMethod("DevToolsAPI", "devicesDiscoveryConfigChanged", config);
 }
 
 void DevToolsUIBindings::SendPortForwardingStatus(const base::Value& status) {
-  CallClientFunction("DevToolsAPI.devicesPortForwardingStatusChanged", &status,
-                     nullptr, nullptr);
+  CallClientMethod("DevToolsAPI", "devicesPortForwardingStatusChanged", status);
 }
 
 void DevToolsUIBindings::SetDevicesUpdatesEnabled(bool enabled) {
@@ -1289,53 +1286,44 @@ void DevToolsUIBindings::JsonReceived(const DispatchCallback& callback,
 }
 
 void DevToolsUIBindings::DeviceCountChanged(int count) {
-  base::Value value(count);
-  CallClientFunction("DevToolsAPI.deviceCountUpdated", &value, NULL,
-                     NULL);
+  CallClientMethod("DevToolsAPI", "deviceCountUpdated", base::Value(count));
 }
 
 void DevToolsUIBindings::DevicesUpdated(
     const std::string& source,
     const base::ListValue& targets) {
-  CallClientFunction("DevToolsAPI.devicesUpdated", &targets, NULL,
-                     NULL);
+  CallClientMethod("DevToolsAPI", "devicesUpdated", targets);
 }
 
 void DevToolsUIBindings::FileSavedAs(const std::string& url,
                                      const std::string& file_system_path) {
-  base::Value url_value(url);
-  base::Value file_system_path_value(file_system_path);
-  CallClientFunction("DevToolsAPI.savedURL", &url_value,
-                     &file_system_path_value, NULL);
+  CallClientMethod("DevToolsAPI", "savedURL", base::Value(url),
+                   base::Value(file_system_path));
 }
 
 void DevToolsUIBindings::CanceledFileSaveAs(const std::string& url) {
-  base::Value url_value(url);
-  CallClientFunction("DevToolsAPI.canceledSaveURL",
-                     &url_value, NULL, NULL);
+  CallClientMethod("DevToolsAPI", "canceledSaveURL", base::Value(url));
 }
 
 void DevToolsUIBindings::AppendedTo(const std::string& url) {
-  base::Value url_value(url);
-  CallClientFunction("DevToolsAPI.appendedToURL", &url_value, NULL,
-                     NULL);
+  CallClientMethod("DevToolsAPI", "appendedToURL", base::Value(url));
 }
 
 void DevToolsUIBindings::FileSystemAdded(
     const std::string& error,
     const DevToolsFileHelper::FileSystem* file_system) {
-  base::Value error_value(error);
-  std::unique_ptr<base::DictionaryValue> file_system_value(
-      file_system ? CreateFileSystemValue(*file_system) : nullptr);
-  CallClientFunction("DevToolsAPI.fileSystemAdded", &error_value,
-                     file_system_value.get(), NULL);
+  if (file_system) {
+    CallClientMethod("DevToolsAPI", "fileSystemAdded", base::Value(error),
+                     CreateFileSystemValue(*file_system));
+  } else {
+    CallClientMethod("DevToolsAPI", "fileSystemAdded", base::Value(error));
+  }
 }
 
 void DevToolsUIBindings::FileSystemRemoved(
     const std::string& file_system_path) {
-  base::Value file_system_path_value(file_system_path);
-  CallClientFunction("DevToolsAPI.fileSystemRemoved",
-                     &file_system_path_value, NULL, NULL);
+  CallClientMethod("DevToolsAPI", "fileSystemRemoved",
+                   base::Value(file_system_path));
 }
 
 void DevToolsUIBindings::FilePathsChanged(
@@ -1365,8 +1353,8 @@ void DevToolsUIBindings::FilePathsChanged(
       removed.AppendString(removed_paths[removed_index++]);
       --budget;
     }
-    CallClientFunction("DevToolsAPI.fileSystemFilesChangedAddedRemoved",
-                       &changed, &added, &removed);
+    CallClientMethod("DevToolsAPI", "fileSystemFilesChangedAddedRemoved",
+                     changed, added, removed);
   }
 }
 
@@ -1375,33 +1363,25 @@ void DevToolsUIBindings::IndexingTotalWorkCalculated(
     const std::string& file_system_path,
     int total_work) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
-  base::Value request_id_value(request_id);
-  base::Value file_system_path_value(file_system_path);
-  base::Value total_work_value(total_work);
-  CallClientFunction("DevToolsAPI.indexingTotalWorkCalculated",
-                     &request_id_value, &file_system_path_value,
-                     &total_work_value);
+  CallClientMethod("DevToolsAPI", "indexingTotalWorkCalculated",
+                   base::Value(request_id), base::Value(file_system_path),
+                   base::Value(total_work));
 }
 
 void DevToolsUIBindings::IndexingWorked(int request_id,
                                         const std::string& file_system_path,
                                         int worked) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
-  base::Value request_id_value(request_id);
-  base::Value file_system_path_value(file_system_path);
-  base::Value worked_value(worked);
-  CallClientFunction("DevToolsAPI.indexingWorked", &request_id_value,
-                     &file_system_path_value, &worked_value);
+  CallClientMethod("DevToolsAPI", "indexingWorked", base::Value(request_id),
+                   base::Value(file_system_path), base::Value(worked));
 }
 
 void DevToolsUIBindings::IndexingDone(int request_id,
                                       const std::string& file_system_path) {
   indexing_jobs_.erase(request_id);
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
-  base::Value request_id_value(request_id);
-  base::Value file_system_path_value(file_system_path);
-  CallClientFunction("DevToolsAPI.indexingDone", &request_id_value,
-                     &file_system_path_value, NULL);
+  CallClientMethod("DevToolsAPI", "indexingDone", base::Value(request_id),
+                   base::Value(file_system_path));
 }
 
 void DevToolsUIBindings::SearchCompleted(
@@ -1410,13 +1390,10 @@ void DevToolsUIBindings::SearchCompleted(
     const std::vector<std::string>& file_paths) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   base::ListValue file_paths_value;
-  for (auto it(file_paths.begin()); it != file_paths.end(); ++it) {
-    file_paths_value.AppendString(*it);
-  }
-  base::Value request_id_value(request_id);
-  base::Value file_system_path_value(file_system_path);
-  CallClientFunction("DevToolsAPI.searchCompleted", &request_id_value,
-                     &file_system_path_value, &file_paths_value);
+  for (auto const& file_path : file_paths)
+    file_paths_value.AppendString(file_path);
+  CallClientMethod("DevToolsAPI", "searchCompleted", base::Value(request_id),
+                   base::Value(file_system_path), file_paths_value);
 }
 
 void DevToolsUIBindings::ShowDevToolsInfoBar(
@@ -1462,8 +1439,7 @@ void DevToolsUIBindings::AddDevToolsExtensionsToClient() {
     results.Append(std::move(extension_info));
   }
 
-  CallClientFunction("DevToolsAPI.addExtensions",
-                     &results, NULL, NULL);
+  CallClientMethod("DevToolsAPI", "addExtensions", results);
 }
 
 void DevToolsUIBindings::RegisterExtensionsAPI(const std::string& origin,
@@ -1493,23 +1469,24 @@ bool DevToolsUIBindings::IsAttachedTo(content::DevToolsAgentHost* agent_host) {
   return agent_host_.get() == agent_host;
 }
 
-void DevToolsUIBindings::CallClientFunction(const std::string& function_name,
-                                            const base::Value* arg1,
-                                            const base::Value* arg2,
-                                            const base::Value* arg3) {
+void DevToolsUIBindings::CallClientMethod(const std::string& object_name,
+                                          const std::string& method_name,
+                                          const base::Value& arg1,
+                                          const base::Value& arg2,
+                                          const base::Value& arg3) {
   // If we're not exposing bindings, we shouldn't call functions either.
   if (!frontend_host_)
     return;
-  std::string javascript = function_name + "(";
-  if (arg1) {
+  std::string javascript = object_name + "." + method_name + "(";
+  if (!arg1.is_none()) {
     std::string json;
-    base::JSONWriter::Write(*arg1, &json);
+    base::JSONWriter::Write(arg1, &json);
     javascript.append(json);
-    if (arg2) {
-      base::JSONWriter::Write(*arg2, &json);
+    if (!arg2.is_none()) {
+      base::JSONWriter::Write(arg2, &json);
       javascript.append(", ").append(json);
-      if (arg3) {
-        base::JSONWriter::Write(*arg3, &json);
+      if (!arg3.is_none()) {
+        base::JSONWriter::Write(arg3, &json);
         javascript.append(", ").append(json);
       }
     }

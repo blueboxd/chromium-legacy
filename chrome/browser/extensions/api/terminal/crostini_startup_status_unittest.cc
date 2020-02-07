@@ -11,6 +11,8 @@
 #include "chrome/browser/chromeos/crostini/crostini_simple_types.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
+using crostini::mojom::InstallerState;
+
 namespace extensions {
 
 class CrostiniStartupStatusTest : public testing::Test {
@@ -40,45 +42,41 @@ TEST_F(CrostiniStartupStatusTest, TestNotVerbose) {
   auto* startup_status = NewStartupStatus(false);
   startup_status->OnStageStarted(InstallerState::kStart);
   startup_status->OnStageStarted(InstallerState::kInstallImageLoader);
-  startup_status->OnComponentLoaded(crostini::CrostiniResult::SUCCESS);
   startup_status->OnCrostiniRestarted(crostini::CrostiniResult::SUCCESS);
 
   EXPECT_TRUE(done_);
 
-  // Hides cursor, shows cursor.
   EXPECT_EQ(output_.size(), 2u);
-  EXPECT_EQ(output_[0], "\x1b[?25l");
-  EXPECT_EQ(output_[1], "\x1b[?25h");
+  // Hide cursor, init progress.
+  EXPECT_EQ(output_[0], "\x1b[?25l\x1b[35m[         ] ");
+  // CR, delete line, default color, show cursor.
+  EXPECT_EQ(output_[1], "\r\x1b[K\x1b[0m\x1b[?25h");
 }
 
 TEST_F(CrostiniStartupStatusTest, TestVerbose) {
   auto* startup_status = NewStartupStatus(true);
   startup_status->OnStageStarted(InstallerState::kStart);
   startup_status->OnStageStarted(InstallerState::kInstallImageLoader);
-  startup_status->OnComponentLoaded(crostini::CrostiniResult::SUCCESS);
   startup_status->OnCrostiniRestarted(crostini::CrostiniResult::SUCCESS);
   EXPECT_TRUE(done_);
 
-  // Hides cursor, version, start, status, component, status, done, status,
-  // ready, shows cursor.
-  EXPECT_EQ(output_.size(), 10u);
-  EXPECT_EQ(output_[0], "\x1b[?25l");
-  EXPECT_EQ(output_[1].find("Chrome OS "), 24u);
-  EXPECT_EQ(output_[2].substr(24), "Starting... 🤔\r\n");
-  EXPECT_EQ(output_[3],
-            "[\x1b[7m \x1b[27m\x1b[35m........\x1b[0m] \x1b[34m|\x1b[0m\r");
-  EXPECT_EQ(output_[4].substr(24), "Checking cros-termina component...\r\n");
-  EXPECT_EQ(output_[5],
-            "[\x1b[7m  \x1b[27m\x1b[35m.......\x1b[0m] \x1b[34m|\x1b[0m\r");
-  std::string expected = "\x1b[A";
-  for (int i = 0; i < 59; ++i)
-    expected += "\x1b[C";
-  expected += "\x1b[32mdone\x1b[0m \xE2\x9C\x94\xEF\xb8\x8F\r\n";
-  EXPECT_EQ(output_[6], expected);
-  EXPECT_EQ(output_[7],
-            "[\x1b[7m  \x1b[27m\x1b[35m.......\x1b[0m] \x1b[34m|\x1b[0m\r");
-  EXPECT_EQ(output_[8].find("Ready"), 24u);
-  EXPECT_EQ(output_[9], "\x1b[?25h");
+  EXPECT_EQ(output_.size(), 6u);
+  // Hide cursor, init progress.
+  EXPECT_EQ(output_[0], "\x1b[?25l\x1b[35m[         ] ");
+
+  // CR, purple, forward 11, yellow, stage.
+  EXPECT_EQ(output_[1], "\r\x1b[35m[\x1b[11C\x1b[K\x1b[33mInitializing ");
+
+  // CR, purple, progress, forward 10, erase, yellow, stage.
+  EXPECT_EQ(
+      output_[2],
+      "\r\x1b[35m[=\x1b[10C\x1b[K\x1b[33mChecking cros-termina component ");
+
+  // CR, purple, progress, forward 2, erase, green, done, symbol, CRLF.
+  EXPECT_EQ(output_[3], "\r\x1b[35m[=========\x1b[2C\x1b[K\x1b[1;32mdone ");
+
+  // CR, delete line, default color, show cursor;
+  EXPECT_EQ(output_[5], "\r\x1b[K\x1b[0m\x1b[?25h");
 }
 
 }  // namespace extensions

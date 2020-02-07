@@ -44,22 +44,22 @@ class TegraV4L2Device : public V4L2Device {
       int index,
       size_t num_planes,
       enum v4l2_buf_type buf_type) override;
-  bool CanCreateEGLImageFrom(const Fourcc fourcc) override;
+  bool CanCreateEGLImageFrom(const Fourcc fourcc) const override;
   EGLImageKHR CreateEGLImage(EGLDisplay egl_display,
                              EGLContext egl_context,
                              GLuint texture_id,
                              const gfx::Size& size,
                              unsigned int buffer_index,
                              const Fourcc fourcc,
-                             gfx::NativePixmapHandle handle) override;
+                             gfx::NativePixmapHandle handle) const override;
   scoped_refptr<gl::GLImage> CreateGLImage(
       const gfx::Size& size,
       const Fourcc fourcc,
-      gfx::NativePixmapHandle handle) override;
+      gfx::NativePixmapHandle handle) const override;
   EGLBoolean DestroyEGLImage(EGLDisplay egl_display,
-                             EGLImageKHR egl_image) override;
-  GLenum GetTextureTarget() override;
-  std::vector<uint32_t> PreferredInputFormat(Type type) override;
+                             EGLImageKHR egl_image) const override;
+  GLenum GetTextureTarget() const override;
+  std::vector<uint32_t> PreferredInputFormat(Type type) const override;
 
   std::vector<uint32_t> GetSupportedImageProcessorPixelformats(
       v4l2_buf_type buf_type) override;

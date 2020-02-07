@@ -39,6 +39,7 @@
 #include "components/arc/session/arc_bridge_service.h"
 #include "components/arc/session/arc_supervision_transition.h"
 #include "components/prefs/pref_service.h"
+#include "components/signin/public/identity_manager/consent_level.h"
 #include "components/user_manager/user_manager.h"
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/browser_thread.h"
@@ -537,9 +538,12 @@ void ArcAuthService::FetchPrimaryAccountInfo(
     // Optionally retrieve auth code in silent mode. Use the "unconsented"
     // primary account because this class doesn't care about browser sync
     // consent.
-    DCHECK(identity_manager_->HasUnconsentedPrimaryAccount());
+    DCHECK(identity_manager_->HasPrimaryAccount(
+        signin::ConsentLevel::kNotRequired));
     auth_code_fetcher = CreateArcBackgroundAuthCodeFetcher(
-        identity_manager_->GetUnconsentedPrimaryAccountId(), initial_signin);
+        identity_manager_->GetPrimaryAccountId(
+            signin::ConsentLevel::kNotRequired),
+        initial_signin);
   }
 
   // Add the request to |pending_token_requests_| first, before starting a token

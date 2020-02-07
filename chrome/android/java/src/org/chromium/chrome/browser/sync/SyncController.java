@@ -22,7 +22,6 @@ import org.chromium.chrome.browser.identity.UniqueIdentificationGeneratorFactory
 import org.chromium.chrome.browser.profiles.Profile;
 import org.chromium.chrome.browser.signin.IdentityServicesProvider;
 import org.chromium.chrome.browser.signin.SigninManager;
-import org.chromium.components.signin.ChromeSigninController;
 import org.chromium.components.sync.AndroidSyncSettings;
 import org.chromium.components.sync.ModelType;
 import org.chromium.components.sync.PassphraseType;
@@ -64,12 +63,10 @@ public class SyncController implements ProfileSyncService.SyncStateChangedListen
     private static SyncController sInstance;
     private static boolean sInitialized;
 
-    private final ChromeSigninController mChromeSigninController;
     private final ProfileSyncService mProfileSyncService;
     private final SyncNotificationController mSyncNotificationController;
 
     private SyncController() {
-        mChromeSigninController = ChromeSigninController.get();
         AndroidSyncSettings.get().registerObserver(this);
         mProfileSyncService = ProfileSyncService.get();
         mProfileSyncService.addSyncStateChangedListener(this);

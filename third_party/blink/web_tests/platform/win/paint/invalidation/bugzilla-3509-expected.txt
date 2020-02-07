@@ -7,7 +7,7 @@
       "backgroundColor": "#FFFFFF",
       "paintInvalidations": [
         {
-          "object": "NGPhysicalBoxFragment LayoutNGBlockFlow DIV id='im'",
+          "object": "LayoutNGBlockFlow DIV id='im'",
           "rect": [61, 131, 50, 100],
           "reason": "incremental"
         },

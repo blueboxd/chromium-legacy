@@ -196,7 +196,7 @@ std::vector<base::ScopedFD> GenericV4L2Device::GetDmabufsForV4L2Buffer(
   return dmabuf_fds;
 }
 
-bool GenericV4L2Device::CanCreateEGLImageFrom(const Fourcc fourcc) {
+bool GenericV4L2Device::CanCreateEGLImageFrom(const Fourcc fourcc) const {
   static uint32_t kEGLImageDrmFmtsSupported[] = {
     DRM_FORMAT_ARGB8888,
 #if defined(ARCH_CPU_ARM_FAMILY)
@@ -212,13 +212,14 @@ bool GenericV4L2Device::CanCreateEGLImageFrom(const Fourcc fourcc) {
          kEGLImageDrmFmtsSupported + base::size(kEGLImageDrmFmtsSupported);
 }
 
-EGLImageKHR GenericV4L2Device::CreateEGLImage(EGLDisplay egl_display,
-                                              EGLContext /* egl_context */,
-                                              GLuint texture_id,
-                                              const gfx::Size& size,
-                                              unsigned int buffer_index,
-                                              const Fourcc fourcc,
-                                              gfx::NativePixmapHandle handle) {
+EGLImageKHR GenericV4L2Device::CreateEGLImage(
+    EGLDisplay egl_display,
+    EGLContext /* egl_context */,
+    GLuint texture_id,
+    const gfx::Size& size,
+    unsigned int buffer_index,
+    const Fourcc fourcc,
+    gfx::NativePixmapHandle handle) const {
   DVLOGF(3);
 
   if (!CanCreateEGLImageFrom(fourcc)) {
@@ -265,7 +266,7 @@ EGLImageKHR GenericV4L2Device::CreateEGLImage(EGLDisplay egl_display,
 scoped_refptr<gl::GLImage> GenericV4L2Device::CreateGLImage(
     const gfx::Size& size,
     const Fourcc fourcc,
-    gfx::NativePixmapHandle handle) {
+    gfx::NativePixmapHandle handle) const {
   DVLOGF(3);
   DCHECK(CanCreateEGLImageFrom(fourcc));
 
@@ -303,7 +304,7 @@ scoped_refptr<gl::GLImage> GenericV4L2Device::CreateGLImage(
 }
 
 EGLBoolean GenericV4L2Device::DestroyEGLImage(EGLDisplay egl_display,
-                                              EGLImageKHR egl_image) {
+                                              EGLImageKHR egl_image) const {
   DVLOGF(3);
   EGLBoolean result = eglDestroyImageKHR(egl_display, egl_image);
   if (result != EGL_TRUE) {
@@ -312,11 +313,11 @@ EGLBoolean GenericV4L2Device::DestroyEGLImage(EGLDisplay egl_display,
   return result;
 }
 
-GLenum GenericV4L2Device::GetTextureTarget() {
+GLenum GenericV4L2Device::GetTextureTarget() const {
   return GL_TEXTURE_EXTERNAL_OES;
 }
 
-std::vector<uint32_t> GenericV4L2Device::PreferredInputFormat(Type type) {
+std::vector<uint32_t> GenericV4L2Device::PreferredInputFormat(Type type) const {
   if (type == Type::kEncoder)
     return {V4L2_PIX_FMT_NV12M, V4L2_PIX_FMT_NV12};
 

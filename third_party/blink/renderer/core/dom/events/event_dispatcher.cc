@@ -306,8 +306,9 @@ inline void EventDispatcher::DispatchEventPostProcess(
   // 17. Set event’s currentTarget attribute to null.
   event_->SetCurrentTarget(nullptr);
 
-  bool is_click = event_->IsMouseEvent() &&
-                  ToMouseEvent(*event_).type() == event_type_names::kClick;
+  auto* mouse_event = DynamicTo<MouseEvent>(event_);
+  bool is_click =
+      mouse_event && mouse_event->type() == event_type_names::kClick;
   if (is_click) {
     // Fire an accessibility event indicating a node was clicked on.  This is
     // safe if event_->target()->ToNode() returns null.

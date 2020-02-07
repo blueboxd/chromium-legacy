@@ -121,7 +121,7 @@ void MediaControlTimelineElement::DefaultEventHandler(Event& event) {
 
   MediaControlInputElement::DefaultEventHandler(event);
 
-  if (event.IsMouseEvent() || event.IsKeyboardEvent() ||
+  if (IsA<MouseEvent>(event) || event.IsKeyboardEvent() ||
       event.IsGestureEvent() || event.IsPointerEvent()) {
     MaybeRecordInteracted();
   }

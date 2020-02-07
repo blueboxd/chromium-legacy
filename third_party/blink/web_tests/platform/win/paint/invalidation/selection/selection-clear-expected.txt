@@ -7,12 +7,12 @@
       "backgroundColor": "#FFFFFF",
       "paintInvalidations": [
         {
-          "object": "NGPhysicalBoxFragment LayoutNGBlockFlow DIV id='firstLine'",
+          "object": "LayoutNGBlockFlow DIV id='firstLine'",
           "rect": [8, 8, 100, 200],
           "reason": "disappeared"
         },
         {
-          "object": "NGPhysicalBoxFragment LayoutNGBlockFlow DIV id='firstLine'",
+          "object": "LayoutNGBlockFlow DIV id='firstLine'",
           "rect": [8, 8, 100, 100],
           "reason": "appeared"
         },

@@ -77,6 +77,7 @@
 #include "third_party/blink/renderer/core/paint/compositing/composited_layer_mapping.h"
 #include "third_party/blink/renderer/core/paint/compositing/paint_layer_compositor.h"
 #include "third_party/blink/renderer/core/paint/filter_effect_builder.h"
+#include "third_party/blink/renderer/core/paint/ng/ng_box_fragment_painter.h"
 #include "third_party/blink/renderer/core/paint/object_paint_invalidator.h"
 #include "third_party/blink/renderer/core/paint/paint_info.h"
 #include "third_party/blink/renderer/core/paint/paint_layer_paint_order_iterator.h"
@@ -2310,8 +2311,8 @@ bool PaintLayer::HitTestContentsForFragments(
     inside_clip_rect = true;
     PhysicalOffset fragment_offset = offset;
     fragment_offset += fragment.layer_bounds.offset;
-    if (HitTestContents(result, fragment_offset, hit_test_location,
-                        hit_test_filter))
+    if (HitTestContents(result, fragment.physical_fragment, fragment_offset,
+                        hit_test_location, hit_test_filter))
       return true;
   }
 
@@ -2394,12 +2395,23 @@ PaintLayer* PaintLayer::HitTestLayerByApplyingTransform(
 }
 
 bool PaintLayer::HitTestContents(HitTestResult& result,
+                                 const NGPhysicalBoxFragment* physical_fragment,
                                  const PhysicalOffset& fragment_offset,
                                  const HitTestLocation& hit_test_location,
                                  HitTestFilter hit_test_filter) const {
   DCHECK(IsSelfPaintingLayer() || HasSelfPaintingLayerDescendant());
-  if (!GetLayoutObject().HitTestAllPhases(result, hit_test_location,
-                                          fragment_offset, hit_test_filter)) {
+
+  bool did_hit;
+  if (physical_fragment) {
+    did_hit = NGBoxFragmentPainter(*physical_fragment)
+                  .HitTestAllPhases(result, hit_test_location, fragment_offset,
+                                    hit_test_filter);
+  } else {
+    did_hit = GetLayoutObject().HitTestAllPhases(
+        result, hit_test_location, fragment_offset, hit_test_filter);
+  }
+
+  if (!did_hit) {
     // It's wrong to set innerNode, but then claim that you didn't hit anything,
     // unless it is a list-based test.
     DCHECK(!result.InnerNode() || (result.GetHitTestRequest().ListBased() &&

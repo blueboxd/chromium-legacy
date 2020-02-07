@@ -260,9 +260,6 @@ class FormatTypeValidator {
         {GL_RG, GL_RG, GL_FLOAT},
         {GL_RED, GL_RED, GL_HALF_FLOAT_OES},
         {GL_RG, GL_RG, GL_HALF_FLOAT_OES},
-
-        // Exposed by GL_EXT_texture_norm16
-        {GL_RED, GL_RED, GL_UNSIGNED_SHORT},
     };
 
     for (size_t ii = 0; ii < base::size(kSupportedFormatTypes); ++ii) {

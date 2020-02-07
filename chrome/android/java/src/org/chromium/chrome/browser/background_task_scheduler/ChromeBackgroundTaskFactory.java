@@ -24,6 +24,7 @@ import org.chromium.chrome.browser.webapps.WebApkUpdateTask;
 import org.chromium.components.background_task_scheduler.BackgroundTask;
 import org.chromium.components.background_task_scheduler.BackgroundTaskFactory;
 import org.chromium.components.background_task_scheduler.BackgroundTaskSchedulerFactory;
+import org.chromium.components.background_task_scheduler.NativeBackgroundTask;
 import org.chromium.components.background_task_scheduler.TaskIds;
 
 /**
@@ -45,6 +46,16 @@ public class ChromeBackgroundTaskFactory implements BackgroundTaskFactory {
 
     @Override
     public BackgroundTask getBackgroundTaskFromTaskId(int taskId) {
+        BackgroundTask backgroundTask = createBackgroundTaskFromTaskId(taskId);
+        if (backgroundTask instanceof NativeBackgroundTask) {
+            ((NativeBackgroundTask) backgroundTask)
+                    .setDelegate(new ChromeNativeBackgroundTaskDelegate());
+        }
+
+        return backgroundTask;
+    }
+
+    private BackgroundTask createBackgroundTaskFromTaskId(int taskId) {
         switch (taskId) {
             case TaskIds.OMAHA_JOB_ID:
                 return new OmahaService();

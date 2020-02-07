@@ -164,6 +164,13 @@ files-icon-button {
   text-transform: uppercase;
 }
 
+#delete-button > .icon {
+  -webkit-mask-image: url(../images/files/ui/delete.svg);
+  background-color: currentColor;
+  height: 16px;
+  width: 16px;
+}
+
 iron-icon {
   height: 16px;
   width: 16px;

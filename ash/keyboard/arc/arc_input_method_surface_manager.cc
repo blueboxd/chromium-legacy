@@ -27,6 +27,9 @@ void ArcInputMethodSurfaceManager::RemoveSurface(
 
   if (input_method_surface_ == surface)
     input_method_surface_ = nullptr;
+
+  for (Observer& observer : observers_)
+    observer.OnArcInputMethodSurfaceBoundsChanged(gfx::Rect());
 }
 
 void ArcInputMethodSurfaceManager::OnTouchableBoundsChanged(

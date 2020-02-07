@@ -206,7 +206,7 @@ void SliderThumbElement::DefaultEventHandler(Event& event) {
     return;
   }
 
-  if (!event.IsMouseEvent()) {
+  if (!IsA<MouseEvent>(event)) {
     HTMLDivElement::DefaultEventHandler(event);
     return;
   }
@@ -221,7 +221,7 @@ void SliderThumbElement::DefaultEventHandler(Event& event) {
     return;
   }
 
-  auto& mouse_event = ToMouseEvent(event);
+  auto& mouse_event = To<MouseEvent>(event);
   bool is_left_button =
       mouse_event.button() ==
       static_cast<int16_t>(WebPointerProperties::Button::kLeft);

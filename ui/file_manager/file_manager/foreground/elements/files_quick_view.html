@@ -28,6 +28,9 @@
            <cr-button id="open-button" on-click="onOpenInNewButtonTap" hidden$="[[!shouldShowOpenButton_(hasTask, isModal)]]" aria-label="$i18n{QUICK_VIEW_OPEN_IN_NEW_BUTTON_LABEL}">
              <span>$i18n{QUICK_VIEW_OPEN_IN_NEW_BUTTON_LABEL}</span>
            </cr-button>
+           <cr-button id="delete-button" on-click="onDeleteButtonTap" hidden$="[[!shouldShowDeleteButton_(canDelete, isModal)]]" aria-label="$i18n{QUICK_VIEW_DELETE_BUTTON_LABEL}" has-tooltip>
+            <span class="icon"></span>
+         </cr-button>
            <files-icon-button toggles id="metadata-button" on-tap="onMetadataButtonTap_" active="{{metadataBoxActive}}" aria-label="$i18n{QUICK_VIEW_TOGGLE_METADATA_BOX_BUTTON_LABEL}" tabindex="0" has-tooltip>
            </files-icon-button>
         </div>

@@ -65,26 +65,6 @@ bool IsInNavigationScopeForLaunchUrl(const GURL& launch_url, const GURL& url) {
          base::StringPiece(url.spec()).substr(0, scope_str_length);
 }
 
-const Extension* GetInstalledShortcutForUrl(Profile* profile, const GURL& url) {
-  const ExtensionPrefs* prefs = ExtensionPrefs::Get(profile);
-  web_app::AppRegistrar& registrar =
-      web_app::WebAppProviderBase::GetProviderBase(profile)->registrar();
-  for (scoped_refptr<const Extension> app :
-       ExtensionRegistry::Get(profile)->enabled_extensions()) {
-    if (!app->from_bookmark())
-      continue;
-    if (!BookmarkAppIsLocallyInstalled(prefs, app.get()))
-      continue;
-    if (!registrar.IsShortcutApp(app->id()))
-      continue;
-
-    const GURL launch_url = AppLaunchInfo::GetLaunchWebURL(app.get());
-    if (IsInNavigationScopeForLaunchUrl(launch_url, url))
-      return app.get();
-  }
-  return nullptr;
-}
-
 int CountUserInstalledBookmarkApps(content::BrowserContext* browser_context) {
   // To avoid data races and inaccurate counting, ensure that ExtensionSystem is
   // always ready at this point.

@@ -29,6 +29,12 @@
 #include "url/gurl.h"
 
 namespace chromeos {
+namespace {
+
+constexpr const char kAccept[] = "accept";
+constexpr const char kBack[] = "back";
+
+}  // namespace
 
 TermsOfServiceScreen::TermsOfServiceScreen(
     TermsOfServiceScreenView* view,
@@ -38,12 +44,12 @@ TermsOfServiceScreen::TermsOfServiceScreen(
       exit_callback_(exit_callback) {
   DCHECK(view_);
   if (view_)
-    view_->SetDelegate(this);
+    view_->SetScreen(this);
 }
 
 TermsOfServiceScreen::~TermsOfServiceScreen() {
   if (view_)
-    view_->SetDelegate(NULL);
+    view_->SetScreen(nullptr);
 }
 
 void TermsOfServiceScreen::OnDecline() {
@@ -51,12 +57,20 @@ void TermsOfServiceScreen::OnDecline() {
 }
 
 void TermsOfServiceScreen::OnAccept() {
-  exit_callback_.Run(Result::ACCEPTED);
+  if (view_ && view_->AreTermsLoaded()) {
+    exit_callback_.Run(Result::ACCEPTED);
+    return;
+  }
+  // If the Terms of Service have not been successfully downloaded, the "accept
+  // and continue" button should not be accessible. If the user managed to
+  // activate it somehow anyway, do not treat this as acceptance of the Terms
+  // and Conditions and end the session instead, as if the user had declined.
+  OnDecline();
 }
 
 void TermsOfServiceScreen::OnViewDestroyed(TermsOfServiceScreenView* view) {
   if (view_ == view)
-    view_ = NULL;
+    view_ = nullptr;
 }
 
 void TermsOfServiceScreen::ShowImpl() {
@@ -78,6 +92,15 @@ void TermsOfServiceScreen::ShowImpl() {
 void TermsOfServiceScreen::HideImpl() {
   if (view_)
     view_->Hide();
+}
+
+void TermsOfServiceScreen::OnUserAction(const std::string& action_id) {
+  if (action_id == kBack)
+    OnDecline();
+  else if (action_id == kAccept)
+    OnAccept();
+  else
+    BaseScreen::OnUserAction(action_id);
 }
 
 void TermsOfServiceScreen::StartDownload() {

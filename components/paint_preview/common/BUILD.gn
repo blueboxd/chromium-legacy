@@ -26,6 +26,7 @@ if (!is_ios) {
       "//components/paint_preview/common/proto",
       "//skia",
       "//third_party:freetype_harfbuzz",
+      "//third_party/harfbuzz-ng:hb_scoped_util",
       "//ui/gfx/geometry",
       "//url",
     ]

@@ -74,8 +74,7 @@ Polymer({
    * @private
    */
   onEnableTap_() {
-    chrome.send(
-        'login.EnableAdbSideloadingScreen.userActed', ['enable-pressed']);
+    this.userActed('enable-pressed');
   },
 
   /**
@@ -84,8 +83,7 @@ Polymer({
    * @private
    */
   onCancelTap_() {
-    chrome.send(
-        'login.EnableAdbSideloadingScreen.userActed', ['cancel-pressed']);
+    this.userActed('cancel-pressed');
   },
 
 
@@ -95,7 +93,6 @@ Polymer({
    * @private
    */
   onLearnMoreTap_() {
-    chrome.send(
-        'login.EnableAdbSideloadingScreen.userActed', ['learn-more-link']);
+    this.userActed('learn-more-link');
   },
 });

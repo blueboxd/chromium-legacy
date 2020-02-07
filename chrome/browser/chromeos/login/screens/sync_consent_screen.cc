@@ -19,6 +19,7 @@
 #include "chromeos/constants/chromeos_features.h"
 #include "components/consent_auditor/consent_auditor.h"
 #include "components/prefs/pref_service.h"
+#include "components/signin/public/identity_manager/consent_level.h"
 #include "components/signin/public/identity_manager/identity_manager.h"
 #include "components/sync/base/pref_names.h"
 #include "components/user_manager/user_manager.h"
@@ -207,8 +208,8 @@ void SyncConsentScreen::RecordConsent(
       ConsentAuditorFactory::GetForProfile(profile_);
   // The user might not consent to browser sync, so use the "unconsented" ID.
   const CoreAccountId& google_account_id =
-      IdentityManagerFactory::GetForProfile(profile_)
-          ->GetUnconsentedPrimaryAccountId();
+      IdentityManagerFactory::GetForProfile(profile_)->GetPrimaryAccountId(
+          signin::ConsentLevel::kNotRequired);
   // TODO(alemate): Support unified_consent_enabled
   sync_pb::UserConsentTypes::SyncConsent sync_consent;
   sync_consent.set_confirmation_grd_id(consent_confirmation);

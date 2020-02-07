@@ -5236,6 +5236,102 @@ TEST_F(AXPlatformNodeTextRangeProviderTest,
   EXPECT_EQ(0, GetEnd(range_span_ignored_nodes.Get())->text_offset());
 }
 
+TEST_F(AXPlatformNodeTextRangeProviderTest,
+       TestNormalizeTextRangeForceSameAnchorOnDegenerateRange) {
+  // ++1 kRootWebArea
+  // ++++2 kGenericContainer
+  // ++++++3 kImage
+  // ++++4 kTextField
+  // ++++++5 kGenericContainer
+  // ++++++++6 kStaticText
+  // ++++++++++7 kInlineTextBox
+  ui::AXNodeData root_1;
+  ui::AXNodeData generic_container_2;
+  ui::AXNodeData image_3;
+  ui::AXNodeData text_field_4;
+  ui::AXNodeData generic_container_5;
+  ui::AXNodeData static_text_6;
+  ui::AXNodeData inline_box_7;
+
+  root_1.id = 1;
+  generic_container_2.id = 2;
+  image_3.id = 3;
+  text_field_4.id = 4;
+  generic_container_5.id = 5;
+  static_text_6.id = 6;
+  inline_box_7.id = 7;
+
+  root_1.role = ax::mojom::Role::kRootWebArea;
+  root_1.child_ids = {generic_container_2.id, text_field_4.id};
+
+  generic_container_2.role = ax::mojom::Role::kGenericContainer;
+  generic_container_2.AddBoolAttribute(
+      ax::mojom::BoolAttribute::kIsLineBreakingObject, true);
+  generic_container_2.child_ids = {image_3.id};
+
+  image_3.role = ax::mojom::Role::kImage;
+
+  text_field_4.role = ax::mojom::Role::kTextField;
+  text_field_4.child_ids = {generic_container_5.id};
+  text_field_4.SetValue("3.14");
+
+  generic_container_5.role = ax::mojom::Role::kGenericContainer;
+  generic_container_5.child_ids = {static_text_6.id};
+
+  static_text_6.role = ax::mojom::Role::kStaticText;
+  static_text_6.child_ids = {inline_box_7.id};
+  static_text_6.SetName("3.14");
+
+  inline_box_7.role = ax::mojom::Role::kInlineTextBox;
+  inline_box_7.SetName("3.14");
+
+  ui::AXTreeUpdate update;
+  ui::AXTreeData tree_data;
+  tree_data.tree_id = ui::AXTreeID::CreateNewAXTreeID();
+  update.tree_data = tree_data;
+  update.has_tree_data = true;
+  update.root_id = root_1.id;
+  update.nodes.push_back(root_1);
+  update.nodes.push_back(generic_container_2);
+  update.nodes.push_back(image_3);
+  update.nodes.push_back(text_field_4);
+  update.nodes.push_back(generic_container_5);
+  update.nodes.push_back(static_text_6);
+  update.nodes.push_back(inline_box_7);
+
+  Init(update);
+  AXNodePosition::SetTree(tree_.get());
+
+  AXPlatformNodeWin* owner = static_cast<AXPlatformNodeWin*>(
+      AXPlatformNodeFromNode(GetNodeFromTree(tree_data.tree_id, 1)));
+
+  // TextPosition, anchor_id=3, text_offset=1, annotated_text=/xFFFC<>
+  AXNodePosition::AXPositionInstance range_start =
+      AXNodePosition::CreateTextPosition(tree_data.tree_id, /*anchor_id=*/3,
+                                         /*text_offset=*/1,
+                                         ax::mojom::TextAffinity::kDownstream);
+
+  // TextPosition, anchor_id=7, text_offset=0, annotated_text=<p>i
+  AXNodePosition::AXPositionInstance range_end =
+      AXNodePosition::CreateTextPosition(tree_data.tree_id, /*anchor_id=*/7,
+                                         /*text_offset=*/0,
+                                         ax::mojom::TextAffinity::kDownstream);
+
+  ComPtr<AXPlatformNodeTextRangeProviderWin> range;
+  ComPtr<ITextRangeProvider> text_range_provider =
+      AXPlatformNodeTextRangeProviderWin::CreateTextRangeProvider(
+          owner, std::move(range_start), std::move(range_end));
+  text_range_provider->QueryInterface(IID_PPV_ARGS(&range));
+
+  NormalizeTextRange(range.Get());
+  EXPECT_EQ(*GetStart(range.Get()), *GetEnd(range.Get()));
+
+  EXPECT_EQ(true, GetStart(range.Get())->AtStartOfAnchor());
+  EXPECT_EQ(true, GetEnd(range.Get())->AtStartOfAnchor());
+  EXPECT_EQ(7, GetStart(range.Get())->anchor_id());
+  EXPECT_EQ(7, GetEnd(range.Get())->anchor_id());
+}
+
 TEST_F(AXPlatformNodeTextRangeProviderTest, TestValidateStartAndEnd) {
   // This test updates the tree structure to test a specific edge case -
   // CreatePositionAtFormatBoundary when text lies at the beginning and end

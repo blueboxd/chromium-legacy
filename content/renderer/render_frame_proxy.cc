@@ -423,8 +423,6 @@ bool RenderFrameProxy::OnMessageReceived(const IPC::Message& msg) {
                         OnSetFrameOwnerProperties)
     IPC_MESSAGE_HANDLER(FrameMsg_DidUpdateVisualProperties,
                         OnDidUpdateVisualProperties)
-    IPC_MESSAGE_HANDLER(FrameMsg_EnableAutoResize, OnEnableAutoResize)
-    IPC_MESSAGE_HANDLER(FrameMsg_DisableAutoResize, OnDisableAutoResize)
     IPC_MESSAGE_HANDLER(FrameMsg_TransferUserActivationFrom,
                         OnTransferUserActivationFrom)
     IPC_MESSAGE_HANDLER(UnfreezableFrameMsg_DeleteProxy, OnDeleteProxy)
@@ -438,7 +436,13 @@ bool RenderFrameProxy::OnMessageReceived(const IPC::Message& msg) {
 void RenderFrameProxy::OnAssociatedInterfaceRequest(
     const std::string& interface_name,
     mojo::ScopedInterfaceEndpointHandle handle) {
-  associated_interfaces_.TryBindInterface(interface_name, &handle);
+  if (interface_name == blink::mojom::RemoteFrame::Name_) {
+    associated_interfaces_.TryBindInterface(interface_name, &handle);
+  } else if (interface_name == content::mojom::RenderFrameProxy::Name_) {
+    render_frame_proxy_receiver_.Bind(
+        mojo::PendingAssociatedReceiver<mojom::RenderFrameProxy>(
+            std::move(handle)));
+  }
 }
 
 bool RenderFrameProxy::Send(IPC::Message* message) {
@@ -508,8 +512,8 @@ void RenderFrameProxy::OnDidUpdateVisualProperties(
   SynchronizeVisualProperties();
 }
 
-void RenderFrameProxy::OnEnableAutoResize(const gfx::Size& min_size,
-                                          const gfx::Size& max_size) {
+void RenderFrameProxy::EnableAutoResize(const gfx::Size& min_size,
+                                        const gfx::Size& max_size) {
   DCHECK(ancestor_render_widget_);
 
   pending_visual_properties_.auto_resize_enabled = true;
@@ -518,7 +522,7 @@ void RenderFrameProxy::OnEnableAutoResize(const gfx::Size& min_size,
   SynchronizeVisualProperties();
 }
 
-void RenderFrameProxy::OnDisableAutoResize() {
+void RenderFrameProxy::DisableAutoResize() {
   DCHECK(ancestor_render_widget_);
 
   pending_visual_properties_.auto_resize_enabled = false;

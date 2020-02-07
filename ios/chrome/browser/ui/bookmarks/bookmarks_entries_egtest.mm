@@ -210,12 +210,11 @@ using chrome_test_util::TappableBookmarkNodeWithLabel;
 
 // Verify Edit Text functionality on single URL selection.
 - (void)testEditTextOnSingleURL {
-#if defined(CHROME_EARL_GREY_1)
-  // TODO(crbug.com/1035764): EG1 Test fails on iOS 12.
+  // TODO(crbug.com/1049972): Re-enable on iOS 12.
   if (!base::ios::IsRunningOnIOS13OrLater()) {
     EARL_GREY_TEST_DISABLED(@"EG1 Fails on iOS 12.");
   }
-#endif
+
   [BookmarkEarlGrey setupStandardBookmarks];
   [BookmarkEarlGreyUI openBookmarks];
   [BookmarkEarlGreyUI openMobileBookmarks];

@@ -7,7 +7,7 @@
       "backgroundColor": "#FFFFFF",
       "paintInvalidations": [
         {
-          "object": "NGPhysicalBoxFragment LayoutNGBlockFlow P",
+          "object": "LayoutNGBlockFlow P",
           "rect": [8, 74, 418, 502],
           "reason": "geometry"
         },

@@ -78,6 +78,7 @@ WebTestMessageFilter::OverrideTaskRunnerForMessage(
     case WebTestHostMsg_SimulateWebNotificationClick::ID:
     case WebTestHostMsg_SetPermission::ID:
     case WebTestHostMsg_WebTestRuntimeFlagsChanged::ID:
+    case WebTestHostMsg_InitiateCaptureDump::ID:
     case WebTestHostMsg_DeleteAllCookies::ID:
     case WebTestHostMsg_GetWritableDirectory::ID:
     case WebTestHostMsg_SetFilePathForMockFileDialog::ID:
@@ -100,6 +101,8 @@ bool WebTestMessageFilter::OnMessageReceived(const IPC::Message& message) {
     IPC_MESSAGE_HANDLER(WebTestHostMsg_SetPermission, OnSetPermission)
     IPC_MESSAGE_HANDLER(WebTestHostMsg_WebTestRuntimeFlagsChanged,
                         OnWebTestRuntimeFlagsChanged)
+    IPC_MESSAGE_HANDLER(WebTestHostMsg_InitiateCaptureDump,
+                        OnInitiateCaptureDump)
     IPC_MESSAGE_HANDLER(WebTestHostMsg_GetWritableDirectory,
                         OnGetWritableDirectory)
     IPC_MESSAGE_HANDLER(WebTestHostMsg_SetFilePathForMockFileDialog,

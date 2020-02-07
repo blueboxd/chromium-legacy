@@ -469,8 +469,8 @@ TEST_F(IdentityManagerTest, PrimaryAccountInfoAfterSignin) {
   EXPECT_EQ(primary_account_id, CoreAccountId(kTestGaiaId));
   EXPECT_EQ(primary_account_id, primary_account_info.account_id);
 
-  EXPECT_EQ(primary_account_id,
-            identity_manager()->GetUnconsentedPrimaryAccountId());
+  EXPECT_EQ(primary_account_id, identity_manager()->GetPrimaryAccountId(
+                                    signin::ConsentLevel::kNotRequired));
 }
 
 // Test that the user signing out results in firing of the IdentityManager
@@ -505,8 +505,8 @@ TEST_F(IdentityManagerTest, PrimaryAccountInfoAfterSigninAndSignout) {
   CoreAccountId primary_account_id = identity_manager()->GetPrimaryAccountId();
   EXPECT_TRUE(primary_account_id.empty());
   EXPECT_EQ(primary_account_id, primary_account_info.account_id);
-  EXPECT_EQ(primary_account_id,
-            identity_manager()->GetUnconsentedPrimaryAccountId());
+  EXPECT_EQ(primary_account_id, identity_manager()->GetPrimaryAccountId(
+                                    signin::ConsentLevel::kNotRequired));
 }
 
 // Test that the primary account's core info remains tracked by the
@@ -535,8 +535,8 @@ TEST_F(IdentityManagerTest,
 
   CoreAccountId primary_account_id = identity_manager()->GetPrimaryAccountId();
   EXPECT_EQ(primary_account_id, CoreAccountId(kTestGaiaId));
-  EXPECT_EQ(primary_account_id,
-            identity_manager()->GetUnconsentedPrimaryAccountId());
+  EXPECT_EQ(primary_account_id, identity_manager()->GetPrimaryAccountId(
+                                    signin::ConsentLevel::kNotRequired));
 }
 #endif  // !defined(OS_CHROMEOS)
 

@@ -34,9 +34,6 @@ class FakeAccessibilityHelperInstance
 
   void SetCaptionStyle(mojom::CaptionStylePtr style_ptr) override;
 
-  void RequestSendAccessibilityTree(
-      mojom::AccessibilityWindowKeyPtr window_ptr) override;
-
  private:
   mojom::AccessibilityFilterType filter_type_ =
       mojom::AccessibilityFilterType::OFF;

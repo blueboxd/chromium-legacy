@@ -88,7 +88,8 @@ FamilyInfoFetcher::FamilyInfoFetcher(
     scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory)
     : consumer_(consumer),
       // This feature doesn't care about browser sync consent.
-      primary_account_id_(identity_manager->GetUnconsentedPrimaryAccountId()),
+      primary_account_id_(identity_manager->GetPrimaryAccountId(
+          signin::ConsentLevel::kNotRequired)),
       identity_manager_(identity_manager),
       url_loader_factory_(std::move(url_loader_factory)),
       access_token_expired_(false) {}

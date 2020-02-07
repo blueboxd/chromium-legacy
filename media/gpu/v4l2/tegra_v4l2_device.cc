@@ -236,7 +236,7 @@ std::vector<base::ScopedFD> TegraV4L2Device::GetDmabufsForV4L2Buffer(
   return dmabuf_fds;
 }
 
-bool TegraV4L2Device::CanCreateEGLImageFrom(const Fourcc fourcc) {
+bool TegraV4L2Device::CanCreateEGLImageFrom(const Fourcc fourcc) const {
   return fourcc.ToV4L2PixFmt() == V4L2_PIX_FMT_NV12M;
 }
 
@@ -247,7 +247,7 @@ EGLImageKHR TegraV4L2Device::CreateEGLImage(
     const gfx::Size& /* size */,
     unsigned int buffer_index,
     const Fourcc fourcc,
-    gfx::NativePixmapHandle /* handle */) {
+    gfx::NativePixmapHandle /* handle */) const {
   DVLOGF(3);
 
   if (!CanCreateEGLImageFrom(fourcc)) {
@@ -273,22 +273,22 @@ EGLImageKHR TegraV4L2Device::CreateEGLImage(
 scoped_refptr<gl::GLImage> TegraV4L2Device::CreateGLImage(
     const gfx::Size& size,
     const Fourcc fourcc,
-    gfx::NativePixmapHandle /* handle */) {
+    gfx::NativePixmapHandle /* handle */) const {
   NOTREACHED();
   return nullptr;
 }
 
 EGLBoolean TegraV4L2Device::DestroyEGLImage(EGLDisplay egl_display,
-                                            EGLImageKHR egl_image) {
+                                            EGLImageKHR egl_image) const {
   DVLOGF(3);
   return eglDestroyImageKHR(egl_display, egl_image);
 }
 
-GLenum TegraV4L2Device::GetTextureTarget() {
+GLenum TegraV4L2Device::GetTextureTarget() const {
   return GL_TEXTURE_2D;
 }
 
-std::vector<uint32_t> TegraV4L2Device::PreferredInputFormat(Type type) {
+std::vector<uint32_t> TegraV4L2Device::PreferredInputFormat(Type type) const {
   if (type == Type::kEncoder) {
     return {V4L2_PIX_FMT_YUV420M};
   }

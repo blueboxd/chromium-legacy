@@ -78,8 +78,7 @@ NavigationPolicy NavigationPolicyFromEventInternal(Event* event) {
   if (!event)
     return kNavigationPolicyCurrentTab;
 
-  if (event->IsMouseEvent()) {
-    MouseEvent* mouse_event = ToMouseEvent(event);
+  if (auto* mouse_event = DynamicTo<MouseEvent>(event)) {
     return NavigationPolicyFromEventModifiers(
         mouse_event->button(), mouse_event->ctrlKey(), mouse_event->shiftKey(),
         mouse_event->altKey(), mouse_event->metaKey());

@@ -128,6 +128,11 @@ cr.define('settings', function() {
     if (visibility.autofill !== false) {
       r.AUTOFILL = r.BASIC.createSection('/autofill', 'autofill');
       r.PASSWORDS = r.AUTOFILL.createChild('/passwords');
+
+      if (loadTimeData.getBoolean('enablePasswordCheck')) {
+        r.CHECK_PASSWORDS = r.PASSWORDS.createChild('check');
+      }
+
       r.PAYMENTS = r.AUTOFILL.createChild('/payments');
       r.ADDRESSES = r.AUTOFILL.createChild('/addresses');
     }

@@ -134,7 +134,8 @@ bool HTMLAnchorElement::IsKeyboardFocusable() const {
 }
 
 static void AppendServerMapMousePosition(StringBuilder& url, Event* event) {
-  if (!event->IsMouseEvent())
+  auto* mouse_event = DynamicTo<MouseEvent>(event);
+  if (!mouse_event)
     return;
 
   DCHECK(event->target());
@@ -151,7 +152,7 @@ static void AppendServerMapMousePosition(StringBuilder& url, Event* event) {
   // The coordinates sent in the query string are relative to the height and
   // width of the image element, ignoring CSS transform/zoom.
   FloatPoint map_point = layout_object->AbsoluteToLocalFloatPoint(
-      FloatPoint(ToMouseEvent(event)->AbsoluteLocation()));
+      FloatPoint(mouse_event->AbsoluteLocation()));
 
   // The origin (0,0) is at the upper left of the content area, inside the
   // padding and border.
@@ -470,13 +471,13 @@ bool IsEnterKeyKeydownEvent(Event& event) {
 }
 
 bool IsLinkClick(Event& event) {
+  auto* mouse_event = DynamicTo<MouseEvent>(event);
   if ((event.type() != event_type_names::kClick &&
        event.type() != event_type_names::kAuxclick) ||
-      !event.IsMouseEvent()) {
+      !mouse_event) {
     return false;
   }
-  auto& mouse_event = ToMouseEvent(event);
-  int16_t button = mouse_event.button();
+  int16_t button = mouse_event->button();
   return (button == static_cast<int16_t>(WebPointerProperties::Button::kLeft) ||
           button ==
               static_cast<int16_t>(WebPointerProperties::Button::kMiddle));

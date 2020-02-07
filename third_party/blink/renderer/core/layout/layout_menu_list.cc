@@ -27,24 +27,15 @@
 #include "third_party/blink/renderer/core/layout/layout_menu_list.h"
 
 #include <math.h>
-#include "third_party/blink/public/strings/grit/blink_strings.h"
-#include "third_party/blink/renderer/core/accessibility/ax_object_cache.h"
 #include "third_party/blink/renderer/core/dom/node_computed_style.h"
-#include "third_party/blink/renderer/core/frame/local_frame_view.h"
 #include "third_party/blink/renderer/core/html/forms/html_option_element.h"
 #include "third_party/blink/renderer/core/html/forms/html_select_element.h"
-#include "third_party/blink/renderer/core/html/forms/menu_list_inner_element.h"
-#include "third_party/blink/renderer/core/layout/layout_block_flow.h"
-#include "third_party/blink/renderer/core/layout/layout_text.h"
 #include "third_party/blink/renderer/core/layout/layout_theme.h"
-#include "third_party/blink/renderer/core/paint/paint_layer.h"
-#include "third_party/blink/renderer/platform/text/platform_locale.h"
+#include "third_party/blink/renderer/core/layout/text_run_constructor.h"
 
 namespace blink {
 
-LayoutMenuList::LayoutMenuList(Element* element)
-    : LayoutFlexibleBox(element),
-      options_width_(0) {
+LayoutMenuList::LayoutMenuList(Element* element) : LayoutFlexibleBox(element) {
   DCHECK(IsA<HTMLSelectElement>(element));
 }
 
@@ -58,51 +49,6 @@ bool LayoutMenuList::IsChildAllowed(LayoutObject* object,
   return object->GetNode() == &SelectElement()->InnerElement();
 }
 
-// TODO(tkent): Move this to menu_list_inner_element.cc.
-void MenuListInnerElement::AdjustInnerStyle(const ComputedStyle& parent_style,
-                                            ComputedStyle& inner_style) const {
-  inner_style.SetFlexGrow(1);
-  inner_style.SetFlexShrink(1);
-  // min-width: 0; is needed for correct shrinking.
-  inner_style.SetMinWidth(Length::Fixed(0));
-  inner_style.SetHasLineIfEmpty(true);
-
-  // Use margin:auto instead of align-items:center to get safe centering, i.e.
-  // when the content overflows, treat it the same as align-items: flex-start.
-  // But we only do that for the cases where html.css would otherwise use
-  // center.
-  if (parent_style.AlignItemsPosition() == ItemPosition::kCenter) {
-    inner_style.SetMarginTop(Length());
-    inner_style.SetMarginBottom(Length());
-    inner_style.SetAlignSelfPosition(ItemPosition::kFlexStart);
-  }
-
-  LayoutTheme& theme = LayoutTheme::GetTheme();
-  Length padding_start =
-      Length::Fixed(theme.PopupInternalPaddingStart(parent_style));
-  Length padding_end = Length::Fixed(
-      theme.PopupInternalPaddingEnd(GetDocument().GetFrame(), parent_style));
-  if (parent_style.IsLeftToRightDirection()) {
-    inner_style.SetTextAlign(ETextAlign::kLeft);
-    inner_style.SetPaddingLeft(padding_start);
-    inner_style.SetPaddingRight(padding_end);
-  } else {
-    inner_style.SetTextAlign(ETextAlign::kRight);
-    inner_style.SetPaddingLeft(padding_end);
-    inner_style.SetPaddingRight(padding_start);
-  }
-  inner_style.SetPaddingTop(
-      Length::Fixed(theme.PopupInternalPaddingTop(parent_style)));
-  inner_style.SetPaddingBottom(
-      Length::Fixed(theme.PopupInternalPaddingBottom(parent_style)));
-
-  if (const ComputedStyle* option_style =
-          To<HTMLSelectElement>(OwnerShadowHost())->OptionStyle()) {
-    inner_style.SetDirection(option_style->Direction());
-    inner_style.SetUnicodeBidi(option_style->GetUnicodeBidi());
-  }
-}
-
 HTMLSelectElement* LayoutMenuList::SelectElement() const {
   return To<HTMLSelectElement>(GetNode());
 }
@@ -111,11 +57,9 @@ LayoutBlock* LayoutMenuList::InnerBlock() const {
   return To<LayoutBlock>(SelectElement()->InnerElement().GetLayoutObject());
 }
 
-void LayoutMenuList::UpdateOptionsWidth() const {
-  if (ShouldApplySizeContainment()) {
-    options_width_ = 0;
-    return;
-  }
+int LayoutMenuList::MeasureOptionsWidth() const {
+  if (ShouldApplySizeContainment())
+    return 0;
 
   float max_option_width = 0;
 
@@ -124,13 +68,13 @@ void LayoutMenuList::UpdateOptionsWidth() const {
     const ComputedStyle* item_style =
         option->GetComputedStyle() ? option->GetComputedStyle() : Style();
     item_style->ApplyTextTransform(&text);
-    // We apply SELECT's style, not OPTION's style because m_optionsWidth is
+    // We apply SELECT's style, not OPTION's style because max_option_width is
     // used to determine intrinsic width of the menulist box.
     TextRun text_run = ConstructTextRun(StyleRef().GetFont(), text, *Style());
     max_option_width =
         std::max(max_option_width, StyleRef().GetFont().Width(text_run));
   }
-  options_width_ = static_cast<int>(ceilf(max_option_width));
+  return static_cast<int>(ceilf(max_option_width));
 }
 
 PhysicalRect LayoutMenuList::ControlClipRect(
@@ -154,11 +98,11 @@ PhysicalRect LayoutMenuList::ControlClipRect(
 void LayoutMenuList::ComputeIntrinsicLogicalWidths(
     LayoutUnit& min_logical_width,
     LayoutUnit& max_logical_width) const {
-  UpdateOptionsWidth();
+  int options_width = MeasureOptionsWidth();
 
   LayoutBlock* block = InnerBlock();
   max_logical_width =
-      std::max(options_width_,
+      std::max(options_width,
                LayoutTheme::GetTheme().MinimumMenuListSize(StyleRef())) +
       block->PaddingLeft() + block->PaddingRight();
   if (!StyleRef().Width().IsPercentOrCalc())

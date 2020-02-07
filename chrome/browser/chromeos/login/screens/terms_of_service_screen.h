@@ -50,6 +50,7 @@ class TermsOfServiceScreen : public BaseScreen {
   // BaseScreen:
   void ShowImpl() override;
   void HideImpl() override;
+  void OnUserAction(const std::string& action_id) override;
 
   // Start downloading the Terms of Service.
   void StartDownload();

@@ -254,7 +254,7 @@ bool ExtensionService::OnExternalExtensionUpdateUrlFound(
                                           ExtensionRegistry::EVERYTHING),
               nullptr)) {
         int disable_reasons =
-            extension_prefs_->GetDisableReasons(extension->id());
+            extension_prefs_->GetDisableReasons(info.extension_id);
         disable_reasons &= (~(disable_reason::DISABLE_USER_ACTION |
                               disable_reason::DISABLE_PERMISSIONS_INCREASE));
         extension_prefs_->ReplaceDisableReasons(info.extension_id,
@@ -266,7 +266,15 @@ bool ExtensionService::OnExternalExtensionUpdateUrlFound(
           EnableExtension(info.extension_id);
         }
       }
-      return false;
+      // If the extension is not corrupted, it is already installed with the
+      // correct install location, so there is no need to add it to the pending
+      // set of extensions. If the extension is corrupted, it should be
+      // reinstalled, thus it should be added to the pending extensions for
+      // installation.
+      if (!pending_extension_manager_.IsPolicyReinstallForCorruptionExpected(
+              info.extension_id)) {
+        return false;
+      }
     }
     // Otherwise, overwrite the current installation.
   }

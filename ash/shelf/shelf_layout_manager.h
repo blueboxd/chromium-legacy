@@ -10,7 +10,9 @@
 #include "ash/ash_export.h"
 #include "ash/home_screen/drag_window_from_shelf_controller.h"
 #include "ash/public/cpp/app_list/app_list_controller_observer.h"
+#include "ash/public/cpp/shelf_config.h"
 #include "ash/public/cpp/shelf_types.h"
+#include "ash/public/cpp/tablet_mode_observer.h"
 #include "ash/public/cpp/wallpaper_controller.h"
 #include "ash/public/cpp/wallpaper_controller_observer.h"
 #include "ash/session/session_observer.h"
@@ -79,7 +81,9 @@ class ASH_EXPORT ShelfLayoutManager
       public WallpaperControllerObserver,
       public LocaleChangeObserver,
       public DesksController::Observer,
-      public message_center::MessageCenterObserver {
+      public message_center::MessageCenterObserver,
+      public ShelfConfig::Observer,
+      public TabletModeObserver {
  public:
   // Suspend work area updates within its scope. Note that relevant
   // ShelfLayoutManager must outlive this class.
@@ -189,6 +193,8 @@ class ASH_EXPORT ShelfLayoutManager
 
   // ShellObserver:
   void OnShelfAutoHideBehaviorChanged(aura::Window* root_window) override;
+  void OnShelfAlignmentChanged(aura::Window* root_window,
+                               ShelfAlignment old_alignment) override;
   void OnUserWorkAreaInsetsChanged(aura::Window* root_window) override;
   void OnPinnedStateChanged(aura::Window* pinned_window) override;
   void OnShellDestroying() override;
@@ -251,6 +257,13 @@ class ASH_EXPORT ShelfLayoutManager
   // Calculates the hotseat y position for |hotseat_target_state| in shelf
   // coordinates.
   int CalculateHotseatYInShelf(HotseatState hotseat_target_state) const;
+
+  // ShelfConfig::Observer:
+  void OnShelfConfigUpdated() override;
+
+  // TabletModeObserver:
+  void OnTabletModeStarted() override;
+  void OnTabletModeEnded() override;
 
   gfx::Rect GetShelfBoundsInScreen() const;
   gfx::Rect GetHotseatBounds() const;

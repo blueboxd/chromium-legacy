@@ -283,7 +283,7 @@ Polymer({
    * @private
    */
   onWelcomeNextButtonClicked_() {
-    chrome.send('login.WelcomeScreen.userActed', ['continue']);
+    this.userActed('continue');
   },
 
   /**

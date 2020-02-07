@@ -32,7 +32,7 @@
 
 ⲁⲂ
 #copt:
-"Segoe UI Historic" : 2
+"Segoe UI Symbol" : 2
 
 𒀀𒀌
 #akk:
@@ -60,7 +60,7 @@
 
 ႠႡ
 #ka:
-"Segoe UI" : 2
+"Sylfaen" : 2
 
 ΑΒ
 #el:
@@ -72,23 +72,23 @@
 
 我
 #zh-CN:
-"Microsoft YaHei UI" : 1
+"SimSun" : 1
 
 我
 #zh-HK:
-"Microsoft JhengHei UI" : 1
+"微軟正黑體" : 1
 
 我
 #zh-Hans:
-"Microsoft YaHei UI" : 1
+"SimSun" : 1
 
 我
 #zh-Hant:
-"Microsoft JhengHei UI" : 1
+"微軟正黑體" : 1
 
 我
 #ja:
-"Yu Gothic UI" : 1
+"Yu Gothic" : 1
 
 ᄀᄁ
 #ko:
@@ -228,7 +228,7 @@
 
 กข
 #th:
-"Leelawadee UI" : 2
+"Tahoma" : 2
 
 ༁༂
 #bo:

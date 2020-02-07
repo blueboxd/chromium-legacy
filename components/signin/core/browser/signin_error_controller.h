@@ -5,10 +5,8 @@
 #ifndef COMPONENTS_SIGNIN_CORE_BROWSER_SIGNIN_ERROR_CONTROLLER_H_
 #define COMPONENTS_SIGNIN_CORE_BROWSER_SIGNIN_ERROR_CONTROLLER_H_
 
-#include <set>
 #include <string>
 
-#include "base/compiler_specific.h"
 #include "base/macros.h"
 #include "base/observer_list.h"
 #include "base/scoped_observer.h"
@@ -28,8 +26,8 @@ class SigninErrorController : public KeyedService,
     // are in error state, only one of the errors is reported.
     ANY_ACCOUNT,
 
-    // Only errors on the primary account are reported. Other accounts are
-    // ignored.
+    // Only errors on the primary account are reported. The primary account
+    // must have sync consent. Other accounts are ignored.
     PRIMARY_ACCOUNT
   };
 

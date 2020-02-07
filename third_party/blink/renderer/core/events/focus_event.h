@@ -28,6 +28,7 @@
 
 #include "third_party/blink/renderer/core/dom/events/event_target.h"
 #include "third_party/blink/renderer/core/events/ui_event.h"
+#include "third_party/blink/renderer/platform/wtf/casting.h"
 
 namespace blink {
 
@@ -79,7 +80,10 @@ class FocusEvent final : public UIEvent {
   Member<EventTarget> related_target_;
 };
 
-DEFINE_EVENT_TYPE_CASTS(FocusEvent);
+template <>
+struct DowncastTraits<FocusEvent> {
+  static bool AllowFrom(const Event& event) { return event.IsFocusEvent(); }
+};
 
 }  // namespace blink
 

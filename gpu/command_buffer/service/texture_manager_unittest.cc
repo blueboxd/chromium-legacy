@@ -2753,13 +2753,6 @@ TEST_F(TextureFormatTypeValidationTest, ES3Basic) {
   ExpectInvalid(true, GL_RGB_INTEGER, GL_INT, GL_RGBA8);
 }
 
-TEST_F(TextureFormatTypeValidationTest, ES2WithTextureNorm16) {
-  SetupFeatureInfo("GL_EXT_texture_norm16", "OpenGL ES 2.0",
-                   CONTEXT_TYPE_OPENGLES2);
-
-  ExpectValid(true, GL_RED, GL_UNSIGNED_SHORT, GL_RED);
-}
-
 TEST_F(TextureFormatTypeValidationTest, ES3WithTextureNorm16) {
   SetupFeatureInfo("GL_EXT_texture_norm16", "OpenGL ES 3.0",
                    CONTEXT_TYPE_OPENGLES3);

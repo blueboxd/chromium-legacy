@@ -1437,7 +1437,7 @@ void LocalFrame::ForceSynchronousDocumentInstall(
     GetDocument()->Parser()->AppendBytes(segment.data(), segment.size());
   GetDocument()->Parser()->Finish();
 
-  // Upon loading of SVGIamges, log PageVisits in UseCounter.
+  // Upon loading of SVGImages, log PageVisits in UseCounter.
   // Do not track PageVisits for inspector, web page popups, and validation
   // message overlays (the other callers of this method).
   if (GetDocument()->IsSVGDocument())

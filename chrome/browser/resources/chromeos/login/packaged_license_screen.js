@@ -41,7 +41,7 @@ Polymer({
    * @private
    */
   onDontEnrollButtonPressed_() {
-    chrome.send('login.PackagedLicenseScreen.userActed', ['dont-enroll']);
+    this.userActed('dont-enroll');
   },
 
   /**
@@ -50,7 +50,7 @@ Polymer({
    * @private
    */
   onEnrollButtonPressed_() {
-    chrome.send('login.PackagedLicenseScreen.userActed', ['enroll']);
+    this.userActed('enroll');
   },
 
 });

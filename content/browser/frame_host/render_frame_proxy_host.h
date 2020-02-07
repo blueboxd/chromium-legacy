@@ -155,6 +155,17 @@ class CONTENT_EXPORT RenderFrameProxyHost
       const gfx::Rect& clip_rect,
       const base::UnguessableToken& guid) override;
 
+  // Returns associated remote for the content::mojom::RenderFrameProxy Mojo
+  // interface.
+  const mojo::AssociatedRemote<mojom::RenderFrameProxy>&
+  GetAssociatedRenderFrameProxy();
+  // Requests a viz::LocalSurfaceId to enable auto-resize mode from the parent
+  // renderer.
+  void EnableAutoResize(const gfx::Size& min_size, const gfx::Size& max_size);
+  // Requests a viz::LocalSurfaceId to disable auto-resize mode from the parent
+  // renderer.
+  void DisableAutoResize();
+
   blink::AssociatedInterfaceProvider* GetRemoteAssociatedInterfacesTesting();
 
  private:
@@ -215,6 +226,9 @@ class CONTENT_EXPORT RenderFrameProxyHost
 
   // Holder of Mojo connection with the Frame service in Blink.
   mojo::AssociatedRemote<blink::mojom::RemoteFrame> remote_frame_;
+
+  // Holder of Mojo connection with the content::mojom::RenderFrameProxy.
+  mojo::AssociatedRemote<mojom::RenderFrameProxy> render_frame_proxy_;
 
   mojo::AssociatedReceiver<blink::mojom::RemoteFrameHost>
       remote_frame_host_receiver_{this};

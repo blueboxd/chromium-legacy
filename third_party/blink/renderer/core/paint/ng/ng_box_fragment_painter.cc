@@ -240,6 +240,41 @@ Vector<PhysicalRect> BuildBackplate(NGInlineCursor* descendants,
   return backplates.paragraph_backplates;
 }
 
+bool HitTestAllPhasesInFragment(const NGPhysicalBoxFragment& fragment,
+                                const HitTestLocation& hit_test_location,
+                                PhysicalOffset accumulated_offset,
+                                HitTestResult* result) {
+  // Hit test all phases of inline blocks, inline tables, replaced elements and
+  // non-positioned floats as if they created their own (pseudo- [1]) stacking
+  // context. https://www.w3.org/TR/CSS22/zindex.html#painting-order
+  //
+  // [1] As if it creates a new stacking context, but any positioned descendants
+  // and descendants which actually create a new stacking context should be
+  // considered part of the parent stacking context, not this new one.
+
+  if (!fragment.CanTraverse()) {
+    return fragment.GetMutableLayoutObject()->HitTestAllPhases(
+        *result, hit_test_location, accumulated_offset);
+  }
+
+  return NGBoxFragmentPainter(To<NGPhysicalBoxFragment>(fragment))
+      .HitTestAllPhases(*result, hit_test_location, accumulated_offset);
+}
+
+bool NodeAtPointInFragment(const NGPhysicalBoxFragment& fragment,
+                           const HitTestLocation& hit_test_location,
+                           PhysicalOffset accumulated_offset,
+                           HitTestAction action,
+                           HitTestResult* result) {
+  if (!fragment.CanTraverse()) {
+    return fragment.GetMutableLayoutObject()->NodeAtPoint(
+        *result, hit_test_location, accumulated_offset, action);
+  }
+
+  return NGBoxFragmentPainter(fragment).NodeAtPoint(*result, hit_test_location,
+                                                    accumulated_offset, action);
+}
+
 }  // anonymous namespace
 
 const NGBorderEdges& NGBoxFragmentPainter::BorderEdges() const {
@@ -1657,6 +1692,42 @@ bool NGBoxFragmentPainter::NodeAtPoint(const HitTestContext& hit_test,
   return false;
 }
 
+bool NGBoxFragmentPainter::HitTestAllPhases(
+    HitTestResult& result,
+    const HitTestLocation& hit_test_location,
+    const PhysicalOffset& accumulated_offset,
+    HitTestFilter hit_test_filter) {
+  // Logic taken from LayoutObject::HitTestAllPhases().
+  HitTestContext hit_test(kHitTestForeground, hit_test_location,
+                          accumulated_offset, &result);
+  bool inside = false;
+  if (hit_test_filter != kHitTestSelf) {
+    // First test the foreground layer (lines and inlines).
+    inside = NodeAtPoint(hit_test, accumulated_offset);
+
+    // Test floats next.
+    if (!inside) {
+      hit_test.action = kHitTestFloat;
+      inside = NodeAtPoint(hit_test, accumulated_offset);
+    }
+
+    // Finally test to see if the mouse is in the background (within a child
+    // block's background).
+    if (!inside) {
+      hit_test.action = kHitTestChildBlockBackgrounds;
+      inside = NodeAtPoint(hit_test, accumulated_offset);
+    }
+  }
+
+  // See if the pointer is inside us but not any of our descendants.
+  if (hit_test_filter != kHitTestDescendants && !inside) {
+    hit_test.action = kHitTestChildBlockBackground;
+    inside = NodeAtPoint(hit_test, accumulated_offset);
+  }
+
+  return inside;
+}
+
 bool NGBoxFragmentPainter::VisibleToHitTestRequest(
     const HitTestRequest& request) const {
   return FragmentVisibleToHitTestRequest(box_fragment_, request);
@@ -1783,8 +1854,6 @@ bool NGBoxFragmentPainter::HitTestChildBoxFragment(
     return false;
 
   if (!FragmentRequiresLegacyFallback(fragment)) {
-    // TODO(layout-dev): Implement HitTestAllPhases in NG after we stop
-    // falling back to legacy for child atomic inlines and floats.
     DCHECK(!fragment.IsAtomicInline());
     DCHECK(!fragment.IsFloating());
     if (const NGPaintFragment* paint_fragment = cursor.CurrentPaintFragment()) {
@@ -1816,22 +1885,13 @@ bool NGBoxFragmentPainter::HitTestChildBoxFragment(
   if (fragment.IsInline() && hit_test.action != kHitTestForeground)
     return false;
 
-  if (fragment.IsAtomicInline() || fragment.IsFloating())
-    return HitTestAllPhases(hit_test, fragment, physical_offset);
+  if (fragment.IsAtomicInline() || fragment.IsFloating()) {
+    return HitTestAllPhasesInFragment(fragment, hit_test.location,
+                                      physical_offset, hit_test.result);
+  }
 
   return fragment.GetMutableLayoutObject()->NodeAtPoint(
       *hit_test.result, hit_test.location, physical_offset, hit_test.action);
-}
-
-bool NGBoxFragmentPainter::HitTestAllPhases(
-    const HitTestContext& hit_test,
-    const NGPhysicalFragment& fragment,
-    const PhysicalOffset& accumulated_offset) {
-  // Hit test all phases of inline blocks, inline tables, replaced elements and
-  // non-positioned floats as if they created their own stacking contexts.
-  // https://www.w3.org/TR/CSS22/zindex.html#painting-order
-  return fragment.GetMutableLayoutObject()->HitTestAllPhases(
-      *hit_test.result, hit_test.location, accumulated_offset);
 }
 
 bool NGBoxFragmentPainter::HitTestChildBoxItem(
@@ -1900,6 +1960,16 @@ bool NGBoxFragmentPainter::HitTestChildren(
     NGInlineCursor cursor(*items_);
     return HitTestChildren(hit_test, cursor, accumulated_offset);
   }
+  if (box_fragment_.CanTraverse()) {
+    DCHECK(!box_fragment_.ChildrenInline());
+    if (hit_test.action == kHitTestFloat) {
+      return box_fragment_.HasFloatingDescendantsForPaint() &&
+             HitTestFloatingChildren(hit_test, box_fragment_,
+                                     accumulated_offset);
+    }
+    return HitTestBlockChildren(*hit_test.result, hit_test.location,
+                                accumulated_offset, hit_test.action);
+  }
   NOTREACHED();
   return false;
 }
@@ -1913,6 +1983,31 @@ bool NGBoxFragmentPainter::HitTestChildren(
   if (children.IsItemCursor())
     return HitTestItemsChildren(hit_test, children);
   // Hits nothing if there were no children.
+  return false;
+}
+
+bool NGBoxFragmentPainter::HitTestBlockChildren(
+    HitTestResult& result,
+    const HitTestLocation& hit_test_location,
+    PhysicalOffset accumulated_offset,
+    HitTestAction action) {
+  if (action == kHitTestChildBlockBackgrounds)
+    action = kHitTestChildBlockBackground;
+  auto children = box_fragment_.Children();
+  for (const NGLink& child : base::Reversed(children)) {
+    const auto& block_child = To<NGPhysicalBoxFragment>(*child);
+    if (block_child.HasSelfPaintingLayer() || block_child.IsFloating())
+      continue;
+
+    const PhysicalOffset child_offset = accumulated_offset + child.offset;
+
+    // TODO(mstensho): If we hit a child that is an anonymous block, we need to
+    // provide the hit test result with the node here.
+    if (NodeAtPointInFragment(block_child, hit_test_location, child_offset,
+                              action, &result))
+      return true;
+  }
+
   return false;
 }
 
@@ -2016,7 +2111,9 @@ bool NGBoxFragmentPainter::HitTestFloatingChildren(
     const PhysicalOffset child_offset = accumulated_offset + child.offset;
 
     if (child_fragment.IsFloating()) {
-      if (HitTestAllPhases(hit_test, child_fragment, child_offset))
+      if (HitTestAllPhasesInFragment(To<NGPhysicalBoxFragment>(child_fragment),
+                                     hit_test.location, child_offset,
+                                     hit_test.result))
         return true;
       continue;
     }

@@ -63,7 +63,7 @@ Polymer({
    * @private
    */
   onEnableButton_(event) {
-    chrome.send('kioskOnEnable');
+    this.userActed('enable');
   },
 
   /**
@@ -71,7 +71,7 @@ Polymer({
    * @private
    */
   closeDialog_(event) {
-    chrome.send('kioskOnClose');
+    this.userActed('close');
   },
 
   onCompleted(success) {

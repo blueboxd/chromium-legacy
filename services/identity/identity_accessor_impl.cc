@@ -142,8 +142,8 @@ AccountState IdentityAccessorImpl::GetStateOfAccount(
   account_state.has_refresh_token =
       identity_manager_->HasAccountWithRefreshToken(account_info.account_id);
   account_state.is_unconsented_primary_account =
-      (account_info.account_id ==
-       identity_manager_->GetUnconsentedPrimaryAccountId());
+      (account_info.account_id == identity_manager_->GetPrimaryAccountId(
+                                      signin::ConsentLevel::kNotRequired));
   return account_state;
 }
 

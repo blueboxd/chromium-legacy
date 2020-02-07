@@ -329,8 +329,9 @@ void HTMLSelectElement::ParseAttribute(
     SetNeedsValidityCheck();
     if (size_ != old_size) {
       ChangeRendering();
-      ResetToDefaultSelection();
       UpdateUserAgentShadowTree(*UserAgentShadowRoot());
+      ResetToDefaultSelection();
+      UpdateMenuListLabel(UpdateFromElement());
       if (!UsesMenuList())
         SaveListboxActiveSelection();
     }
@@ -1282,6 +1283,7 @@ void HTMLSelectElement::ParseMultipleAttribute(const AtomicString& value) {
   is_multiple_ = !value.IsNull();
   SetNeedsValidityCheck();
   ChangeRendering();
+  UpdateUserAgentShadowTree(*UserAgentShadowRoot());
   // Restore selectedIndex after changing the multiple flag to preserve
   // selection as single-line and multi-line has different defaults.
   if (old_multiple != is_multiple_) {
@@ -1293,7 +1295,7 @@ void HTMLSelectElement::ParseMultipleAttribute(const AtomicString& value) {
     else
       ResetToDefaultSelection();
   }
-  UpdateUserAgentShadowTree(*UserAgentShadowRoot());
+  UpdateMenuListLabel(UpdateFromElement());
 }
 
 void HTMLSelectElement::AppendToFormData(FormData& form_data) {
@@ -1463,14 +1465,15 @@ void HTMLSelectElement::MenuListDefaultEventHandler(Event& event) {
     }
   }
 
-  if (event.type() == event_type_names::kMousedown && event.IsMouseEvent() &&
-      ToMouseEvent(event).button() ==
+  auto* mouse_event = DynamicTo<MouseEvent>(event);
+  if (event.type() == event_type_names::kMousedown && mouse_event &&
+      mouse_event->button() ==
           static_cast<int16_t>(WebPointerProperties::Button::kLeft)) {
     InputDeviceCapabilities* source_capabilities =
         GetDocument()
             .domWindow()
             ->GetInputDeviceCapabilities()
-            ->FiresTouchEvents(ToMouseEvent(event).FromTouch());
+            ->FiresTouchEvents(mouse_event->FromTouch());
     focus(FocusParams(SelectionBehaviorOnFocus::kRestore,
                       mojom::blink::FocusType::kNone, source_capabilities));
     if (GetLayoutObject() && GetLayoutObject()->IsMenuList() &&
@@ -1600,6 +1603,7 @@ void HTMLSelectElement::HandleMouseRelease() {
 }
 
 void HTMLSelectElement::ListBoxDefaultEventHandler(Event& event) {
+  auto* mouse_event = DynamicTo<MouseEvent>(event);
   if (event.type() == event_type_names::kGesturetap && event.IsGestureEvent()) {
     focus();
     // Calling focus() may cause us to lose our layoutObject or change the
@@ -1617,9 +1621,8 @@ void HTMLSelectElement::ListBoxDefaultEventHandler(Event& event) {
       event.SetDefaultHandled();
     }
 
-  } else if (event.type() == event_type_names::kMousedown &&
-             event.IsMouseEvent() &&
-             ToMouseEvent(event).button() ==
+  } else if (event.type() == event_type_names::kMousedown && mouse_event &&
+             mouse_event->button() ==
                  static_cast<int16_t>(WebPointerProperties::Button::kLeft)) {
     focus();
     // Calling focus() may cause us to lose our layoutObject, in which case
@@ -1629,15 +1632,14 @@ void HTMLSelectElement::ListBoxDefaultEventHandler(Event& event) {
       return;
 
     // Convert to coords relative to the list box if needed.
-    auto& mouse_event = ToMouseEvent(event);
-    if (HTMLOptionElement* option = EventTargetOption(mouse_event)) {
+    if (HTMLOptionElement* option = EventTargetOption(*mouse_event)) {
       if (!option->IsDisabledFormControl()) {
 #if defined(OS_MACOSX)
-        UpdateSelectedState(option, mouse_event.metaKey(),
-                            mouse_event.shiftKey());
+        UpdateSelectedState(option, mouse_event->metaKey(),
+                            mouse_event->shiftKey());
 #else
-        UpdateSelectedState(option, mouse_event.ctrlKey(),
-                            mouse_event.shiftKey());
+        UpdateSelectedState(option, mouse_event->ctrlKey(),
+                            mouse_event->shiftKey());
 #endif
       }
       if (LocalFrame* frame = GetDocument().GetFrame())
@@ -1646,12 +1648,10 @@ void HTMLSelectElement::ListBoxDefaultEventHandler(Event& event) {
       event.SetDefaultHandled();
     }
 
-  } else if (event.type() == event_type_names::kMousemove &&
-             event.IsMouseEvent()) {
-    auto& mouse_event = ToMouseEvent(event);
-    if (mouse_event.button() !=
+  } else if (event.type() == event_type_names::kMousemove && mouse_event) {
+    if (mouse_event->button() !=
             static_cast<int16_t>(WebPointerProperties::Button::kLeft) ||
-        !mouse_event.ButtonDown())
+        !mouse_event->ButtonDown())
       return;
 
     LayoutObject* layout_object = GetLayoutObject();
@@ -1668,7 +1668,7 @@ void HTMLSelectElement::ListBoxDefaultEventHandler(Event& event) {
     if (last_on_change_selection_.IsEmpty())
       return;
 
-    if (HTMLOptionElement* option = EventTargetOption(mouse_event)) {
+    if (HTMLOptionElement* option = EventTargetOption(*mouse_event)) {
       if (!IsDisabledFormControl()) {
         if (is_multiple_) {
           // Only extend selection if there is something selected.
@@ -1685,9 +1685,8 @@ void HTMLSelectElement::ListBoxDefaultEventHandler(Event& event) {
       }
     }
 
-  } else if (event.type() == event_type_names::kMouseup &&
-             event.IsMouseEvent() &&
-             ToMouseEvent(event).button() ==
+  } else if (event.type() == event_type_names::kMouseup && mouse_event &&
+             mouse_event->button() ==
                  static_cast<int16_t>(WebPointerProperties::Button::kLeft) &&
              GetLayoutObject()) {
     if (GetDocument().GetPage() &&
@@ -2001,6 +2000,7 @@ void HTMLSelectElement::DidAddUserAgentShadowRoot(ShadowRoot& root) {
   root.AppendChild(
       HTMLSlotElement::CreateUserAgentCustomAssignSlot(GetDocument()));
   UpdateUserAgentShadowTree(root);
+  UpdateMenuListLabel(UpdateFromElement());
 }
 
 void HTMLSelectElement::UpdateUserAgentShadowTree(ShadowRoot& root) {
@@ -2019,8 +2019,9 @@ void HTMLSelectElement::UpdateUserAgentShadowTree(ShadowRoot& root) {
     Element* inner_element =
         MakeGarbageCollected<MenuListInnerElement>(GetDocument());
     inner_element->setAttribute(html_names::kAriaHiddenAttr, "true");
+    // Make sure InnerElement() always has a Text node.
+    inner_element->appendChild(Text::Create(GetDocument(), g_empty_string));
     root.insertBefore(inner_element, root.firstChild());
-    UpdateMenuListLabel(UpdateFromElement());
   }
 }
 
@@ -2369,7 +2370,7 @@ String HTMLSelectElement::UpdateFromElement() {
 void HTMLSelectElement::UpdateMenuListLabel(const String& label) {
   if (!UsesMenuList())
     return;
-  InnerElement().setTextContent(label);
+  InnerElement().firstChild()->setNodeValue(label);
   // LayoutMenuList::ControlClipRect() depends on the content box size of
   // inner_element.
   if (auto* box = GetLayoutBox()) {

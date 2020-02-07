@@ -308,8 +308,9 @@ class MediaControlsImpl::MediaElementMutationCallback
 };
 
 bool MediaControlsImpl::IsTouchEvent(Event* event) {
+  auto* mouse_event = DynamicTo<MouseEvent>(event);
   return event->IsTouchEvent() || event->IsGestureEvent() ||
-         (event->IsMouseEvent() && ToMouseEvent(event)->FromTouch());
+         (mouse_event && mouse_event->FromTouch());
 }
 
 MediaControlsImpl::MediaControlsImpl(HTMLMediaElement& media_element)

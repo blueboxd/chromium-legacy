@@ -29,6 +29,7 @@
 #include "chrome/common/webui_url_constants.h"
 #include "chrome/grit/generated_resources.h"
 #include "components/consent_auditor/consent_auditor.h"
+#include "components/signin/public/identity_manager/consent_level.h"
 #include "components/signin/public/identity_manager/identity_manager.h"
 #include "components/user_manager/known_user.h"
 #include "components/user_manager/user_manager.h"
@@ -679,9 +680,10 @@ void ArcSupportHost::OnMessage(const base::DictionaryValue& message) {
 
     auto* identity_manager = IdentityManagerFactory::GetForProfile(profile_);
     // This class doesn't care about browser sync consent.
-    DCHECK(identity_manager->HasUnconsentedPrimaryAccount());
-    CoreAccountId account_id =
-        identity_manager->GetUnconsentedPrimaryAccountId();
+    DCHECK(identity_manager->HasPrimaryAccount(
+        signin::ConsentLevel::kNotRequired));
+    CoreAccountId account_id = identity_manager->GetPrimaryAccountId(
+        signin::ConsentLevel::kNotRequired);
     bool is_child = user_manager::UserManager::Get()->IsLoggedInAsChildUser();
 
     // Record acceptance of ToS if it was shown to the user, otherwise simply

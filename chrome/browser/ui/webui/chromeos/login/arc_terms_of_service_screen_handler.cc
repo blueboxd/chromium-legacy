@@ -28,6 +28,7 @@
 #include "components/consent_auditor/consent_auditor.h"
 #include "components/login/localized_values_builder.h"
 #include "components/prefs/pref_service.h"
+#include "components/signin/public/identity_manager/consent_level.h"
 #include "components/signin/public/identity_manager/identity_manager.h"
 #include "components/user_manager/user_manager.h"
 #include "content/public/browser/web_contents.h"
@@ -338,9 +339,10 @@ void ArcTermsOfServiceScreenHandler::RecordConsents(
       ConsentAuditorFactory::GetForProfile(profile);
   auto* identity_manager = IdentityManagerFactory::GetForProfile(profile);
   // The account may or may not have consented to browser sync.
-  DCHECK(identity_manager->HasUnconsentedPrimaryAccount());
+  DCHECK(
+      identity_manager->HasPrimaryAccount(signin::ConsentLevel::kNotRequired));
   const CoreAccountId account_id =
-      identity_manager->GetUnconsentedPrimaryAccountId();
+      identity_manager->GetPrimaryAccountId(signin::ConsentLevel::kNotRequired);
 
   ArcPlayTermsOfServiceConsent play_consent;
   play_consent.set_status(tos_accepted ? UserConsentTypes::GIVEN

@@ -80,10 +80,11 @@ class DevToolsUIBindings : public DevToolsEmbedderMessageDispatcher::Delegate,
 
   // Takes ownership over the |delegate|.
   void SetDelegate(Delegate* delegate);
-  void CallClientFunction(const std::string& function_name,
-                          const base::Value* arg1,
-                          const base::Value* arg2,
-                          const base::Value* arg3);
+  void CallClientMethod(const std::string& object_name,
+                        const std::string& method_name,
+                        const base::Value& arg1 = {},
+                        const base::Value& arg2 = {},
+                        const base::Value& arg3 = {});
   void AttachTo(const scoped_refptr<content::DevToolsAgentHost>& agent_host);
   void Detach();
   bool IsAttachedTo(content::DevToolsAgentHost* agent_host);

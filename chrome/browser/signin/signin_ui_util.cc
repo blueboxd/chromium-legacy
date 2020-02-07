@@ -261,7 +261,7 @@ std::vector<AccountInfo> GetAccountsForDicePromos(Profile* profile) {
 
   // Compute the default account.
   CoreAccountId default_account_id =
-      identity_manager->GetUnconsentedPrimaryAccountId();
+      identity_manager->GetPrimaryAccountId(signin::ConsentLevel::kNotRequired);
 
   // Fetch account information for each id and make sure that the first account
   // in the list matches the unconsented primary account (if available).

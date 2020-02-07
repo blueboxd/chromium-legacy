@@ -285,7 +285,7 @@ const base::Feature kRevokeMediaSourceObjectURLOnAttach{
 // Enable the instance from ChromeosVideoDecoderFactory in
 // MojoVideoDecoderService, replacing VdaVideoDecoder at Chrome OS platform.
 const base::Feature kChromeosVideoDecoder{"ChromeosVideoDecoder",
-                                          base::FEATURE_ENABLED_BY_DEFAULT};
+                                          base::FEATURE_DISABLED_BY_DEFAULT};
 
 // Enable saving playback information in a crash trace, to see if some codecs
 // are crashier than others.

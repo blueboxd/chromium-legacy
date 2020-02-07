@@ -29,6 +29,7 @@ class LeakDetectionCheckFactoryImplTest : public testing::Test {
 
   signin::IdentityTestEnvironment& identity_env() { return identity_test_env_; }
   MockLeakDetectionDelegateInterface& delegate() { return delegate_; }
+  MockBulkLeakCheckDelegateInterface& bulk_delegate() { return bulk_delegate_; }
   const scoped_refptr<network::SharedURLLoaderFactory>& url_loader_factory() {
     return url_loader_factory_;
   }
@@ -38,6 +39,7 @@ class LeakDetectionCheckFactoryImplTest : public testing::Test {
   base::test::TaskEnvironment task_env_;
   signin::IdentityTestEnvironment identity_test_env_;
   StrictMock<MockLeakDetectionDelegateInterface> delegate_;
+  StrictMock<MockBulkLeakCheckDelegateInterface> bulk_delegate_;
   scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory_ =
       base::MakeRefCounted<network::TestSharedURLLoaderFactory>();
   LeakDetectionCheckFactoryImpl request_factory_;
@@ -51,6 +53,16 @@ TEST_F(LeakDetectionCheckFactoryImplTest, SignedOut) {
       &delegate(), identity_env().identity_manager(), url_loader_factory()));
 }
 
+TEST_F(LeakDetectionCheckFactoryImplTest, BulkCheck_SignedOut) {
+  base::test::ScopedFeatureList feature_list;
+  feature_list.InitAndEnableFeature(password_manager::features::kPasswordCheck);
+
+  EXPECT_CALL(bulk_delegate(), OnError(LeakDetectionError::kNotSignIn));
+  EXPECT_FALSE(request_factory().TryCreateBulkLeakCheck(
+      &bulk_delegate(), identity_env().identity_manager(),
+      url_loader_factory()));
+}
+
 TEST_F(LeakDetectionCheckFactoryImplTest, SignedIn) {
   AccountInfo info = identity_env().MakeAccountAvailable(kTestAccount);
   identity_env().SetCookieAccounts({{info.email, info.gaia}});
@@ -59,10 +71,39 @@ TEST_F(LeakDetectionCheckFactoryImplTest, SignedIn) {
       &delegate(), identity_env().identity_manager(), url_loader_factory()));
 }
 
+TEST_F(LeakDetectionCheckFactoryImplTest, BulkCheck_SignedIn) {
+  base::test::ScopedFeatureList feature_list;
+  feature_list.InitAndEnableFeature(password_manager::features::kPasswordCheck);
+
+  AccountInfo info = identity_env().MakeAccountAvailable(kTestAccount);
+  identity_env().SetCookieAccounts({{info.email, info.gaia}});
+  identity_env().SetRefreshTokenForAccount(info.account_id);
+  EXPECT_TRUE(request_factory().TryCreateBulkLeakCheck(
+      &bulk_delegate(), identity_env().identity_manager(),
+      url_loader_factory()));
+}
+
 TEST_F(LeakDetectionCheckFactoryImplTest, SignedInAndSyncing) {
   identity_env().SetPrimaryAccount(kTestAccount);
   EXPECT_TRUE(request_factory().TryCreateLeakCheck(
       &delegate(), identity_env().identity_manager(), url_loader_factory()));
+}
+
+TEST_F(LeakDetectionCheckFactoryImplTest, BulkCheck_SignedInAndSyncing) {
+  base::test::ScopedFeatureList feature_list;
+  feature_list.InitAndEnableFeature(password_manager::features::kPasswordCheck);
+
+  identity_env().SetPrimaryAccount(kTestAccount);
+  EXPECT_TRUE(request_factory().TryCreateBulkLeakCheck(
+      &bulk_delegate(), identity_env().identity_manager(),
+      url_loader_factory()));
+}
+
+TEST_F(LeakDetectionCheckFactoryImplTest, BulkCheck_FeatureOff) {
+  identity_env().SetPrimaryAccount(kTestAccount);
+  EXPECT_FALSE(request_factory().TryCreateBulkLeakCheck(
+      &bulk_delegate(), identity_env().identity_manager(),
+      url_loader_factory()));
 }
 
 }  // namespace password_manager

@@ -305,8 +305,9 @@ void KidsChromeManagementClient::OnSimpleLoaderComplete(
       req->access_token_expired = true;
       identity::ScopeSet scopes{req->scope};
       identity_manager_->RemoveAccessTokenFromCache(
-          identity_manager_->GetUnconsentedPrimaryAccountId(), scopes,
-          token_info.token);
+          identity_manager_->GetPrimaryAccountId(
+              signin::ConsentLevel::kNotRequired),
+          scopes, token_info.token);
       StartFetching(it);
       return;
     }

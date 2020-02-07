@@ -5,11 +5,20 @@
 #include "chrome/browser/chromeos/login/screens/kiosk_enable_screen.h"
 
 #include "base/logging.h"
+#include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/chromeos/customization/customization_document.h"
 #include "chrome/browser/chromeos/login/wizard_controller.h"
 #include "chrome/browser/ui/webui/chromeos/login/kiosk_enable_screen_handler.h"
+#include "content/public/browser/notification_details.h"
+#include "content/public/browser/notification_service.h"
 
 namespace chromeos {
+namespace {
+
+constexpr const char kClose[] = "close";
+constexpr const char kEnable[] = "enable";
+
+}  // namespace
 
 KioskEnableScreen::KioskEnableScreen(
     KioskEnableScreenView* view,
@@ -19,28 +28,74 @@ KioskEnableScreen::KioskEnableScreen(
       exit_callback_(exit_callback) {
   DCHECK(view_);
   if (view_)
-    view_->SetDelegate(this);
+    view_->SetScreen(this);
 }
 
 KioskEnableScreen::~KioskEnableScreen() {
   if (view_)
-    view_->SetDelegate(NULL);
-}
-
-void KioskEnableScreen::OnExit() {
-  exit_callback_.Run();
+    view_->SetScreen(nullptr);
 }
 
 void KioskEnableScreen::OnViewDestroyed(KioskEnableScreenView* view) {
   if (view_ == view)
-    view_ = NULL;
+    view_ = nullptr;
 }
 
 void KioskEnableScreen::ShowImpl() {
   if (view_)
     view_->Show();
+  KioskAppManager::Get()->GetConsumerKioskAutoLaunchStatus(
+      base::Bind(&KioskEnableScreen::OnGetConsumerKioskAutoLaunchStatus,
+                 weak_ptr_factory_.GetWeakPtr()));
+}
+
+void KioskEnableScreen::OnGetConsumerKioskAutoLaunchStatus(
+    KioskAppManager::ConsumerKioskAutoLaunchStatus status) {
+  is_configurable_ =
+      (status == KioskAppManager::CONSUMER_KIOSK_AUTO_LAUNCH_CONFIGURABLE);
+  if (!is_configurable_) {
+    LOG(WARNING) << "Consumer kiosk auto launch feature is not configurable!";
+    HandleClose();
+    return;
+  }
 }
 
 void KioskEnableScreen::HideImpl() {}
+
+void KioskEnableScreen::OnUserAction(const std::string& action_id) {
+  if (action_id == kClose)
+    HandleClose();
+  else if (action_id == kEnable)
+    HandleEnable();
+  else
+    BaseScreen::OnUserAction(action_id);
+}
+
+void KioskEnableScreen::HandleClose() {
+  exit_callback_.Run();
+}
+
+void KioskEnableScreen::HandleEnable() {
+  if (!is_configurable_) {
+    NOTREACHED();
+    HandleClose();
+    return;
+  }
+  KioskAppManager::Get()->EnableConsumerKioskAutoLaunch(
+      base::Bind(&KioskEnableScreen::OnEnableConsumerKioskAutoLaunch,
+                 weak_ptr_factory_.GetWeakPtr()));
+}
+
+void KioskEnableScreen::OnEnableConsumerKioskAutoLaunch(bool success) {
+  view_->ShowKioskEnabled(success);
+  if (!success) {
+    LOG(WARNING) << "Consumer kiosk mode can't be enabled!";
+  } else {
+    content::NotificationService::current()->Notify(
+        chrome::NOTIFICATION_KIOSK_ENABLED,
+        content::NotificationService::AllSources(),
+        content::NotificationService::NoDetails());
+  }
+}
 
 }  // namespace chromeos

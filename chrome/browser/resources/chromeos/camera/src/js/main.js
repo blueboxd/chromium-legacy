@@ -289,6 +289,15 @@ document.addEventListener('DOMContentLoaded', async () => {
       }
     });
   });
+
+  // Setup for console perf logger.
+  perfLogger.addListener((event, duration, extras) => {
+    if (state.get(state.State.PRINT_PERFORMANCE_LOGS)) {
+      // eslint-disable-next-line no-console
+      console.log(`Event: ${event}, Duration: ${duration} ms`, extras);
+    }
+  });
+
   instance = new App(
       /** @type {!BackgroundOps} */ (bgOps));
   await instance.start();

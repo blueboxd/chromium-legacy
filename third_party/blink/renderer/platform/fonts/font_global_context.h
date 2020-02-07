@@ -6,7 +6,6 @@
 #define THIRD_PARTY_BLINK_RENDERER_PLATFORM_FONTS_FONT_GLOBAL_CONTEXT_H_
 
 #include "third_party/blink/renderer/platform/fonts/font_cache.h"
-#include "third_party/blink/renderer/platform/fonts/shaping/harfbuzz_font_cache.h"
 #include "third_party/blink/renderer/platform/platform_export.h"
 #include "third_party/blink/renderer/platform/text/layout_locale.h"
 #include "third_party/blink/renderer/platform/wtf/allocator/allocator.h"
@@ -17,6 +16,7 @@ namespace blink {
 
 class FontCache;
 class FontUniqueNameLookup;
+class HarfBuzzFontCache;
 
 enum CreateIfNeeded { kDoNotCreate, kCreate };
 
@@ -30,9 +30,7 @@ class PLATFORM_EXPORT FontGlobalContext {
 
   static inline FontCache& GetFontCache() { return Get()->font_cache_; }
 
-  static inline HarfBuzzFontCache& GetHarfBuzzFontCache() {
-    return Get()->harfbuzz_font_cache_;
-  }
+  static HarfBuzzFontCache* GetHarfBuzzFontCache();
 
   static hb_font_funcs_t* GetHarfBuzzFontFuncs() {
     return Get()->harfbuzz_font_funcs_;
@@ -54,7 +52,7 @@ class PLATFORM_EXPORT FontGlobalContext {
   ~FontGlobalContext();
 
   FontCache font_cache_;
-  HarfBuzzFontCache harfbuzz_font_cache_;
+  std::unique_ptr<HarfBuzzFontCache> harfbuzz_font_cache_;
   hb_font_funcs_t* harfbuzz_font_funcs_;
   std::unique_ptr<FontUniqueNameLookup> font_unique_name_lookup_;
 

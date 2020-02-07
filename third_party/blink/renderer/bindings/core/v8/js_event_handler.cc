@@ -69,7 +69,7 @@ void JSEventHandler::InvokeInternal(EventTarget& event_target,
   // WindowOrWorkerGlobalScope mixin. Otherwise, let special error event
   // handling be false.
   const bool special_error_event_handling =
-      event.IsErrorEvent() && event.type() == event_type_names::kError &&
+      IsA<ErrorEvent>(event) && event.type() == event_type_names::kError &&
       event.currentTarget()->IsWindowOrWorkerGlobalScope();
 
   // Step 4. Process the Event object event as follows:
@@ -93,7 +93,7 @@ void JSEventHandler::InvokeInternal(EventTarget& event_target,
       event_handler_->CallbackRelevantScriptState();
 
   if (special_error_event_handling) {
-    ErrorEvent* error_event = ToErrorEvent(&event);
+    auto* error_event = To<ErrorEvent>(&event);
 
     // The error argument should be initialized to null for dedicated workers.
     // https://html.spec.whatwg.org/C/#runtime-script-errors-2

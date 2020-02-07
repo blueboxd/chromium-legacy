@@ -654,7 +654,8 @@ void UserSessionManager::RestoreAuthenticationSession(Profile* user_profile) {
   auto* identity_manager = IdentityManagerFactory::GetForProfile(user_profile);
   const bool account_id_valid =
       identity_manager &&
-      !identity_manager->GetUnconsentedPrimaryAccountId().empty();
+      !identity_manager->GetPrimaryAccountId(signin::ConsentLevel::kNotRequired)
+           .empty();
   if (!account_id_valid)
     LOG(ERROR) << "No account is associated with sign-in manager on restore.";
   UMA_HISTOGRAM_BOOLEAN("UserSessionManager.RestoreOnCrash.AccountIdValid",
@@ -1454,8 +1455,8 @@ void UserSessionManager::InitProfilePreferences(
               gaia_id, user_context.GetAccountId().GetUserEmail());
     }
 
-    CoreAccountId account_id =
-        identity_manager->GetUnconsentedPrimaryAccountId();
+    CoreAccountId account_id = identity_manager->GetPrimaryAccountId(
+        signin::ConsentLevel::kNotRequired);
     VLOG(1) << "Seed IdentityManager with the authenticated account info, "
             << "success=" << !account_id.empty();
 

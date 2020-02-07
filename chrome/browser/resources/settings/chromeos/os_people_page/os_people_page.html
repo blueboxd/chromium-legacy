@@ -26,7 +26,6 @@
 <link rel="import" href="../../settings_page/settings_animated_pages.html">
 <link rel="import" href="../../settings_page/settings_subpage.html">
 <link rel="import" href="../../settings_shared_css.html">
-<link rel="import" href="../localized_link/localized_link.html">
 <link rel="import" href="account_manager.html">
 <link rel="import" href="fingerprint_list.html">
 <link rel="import" href="kerberos_accounts.html">
@@ -78,50 +77,37 @@
     <settings-animated-pages id="pages" section="people"
         focus-config="[[focusConfig_]]">
       <div route-path="default">
-          <div class="settings-box first two-line">
-            <template is="dom-if" if="[[syncStatus]]">
-              <!-- Does not use <cr-link-row> due to custom aria label. -->
-              <div id="profile-icon"
-                  style="background-image: [[getIconImageSet_(
-                      profileIconUrl_)]]"
-                  on-click="onAccountManagerTap_"
-                  actionable$="[[isAccountManagerEnabled_]]">
-              </div>
-              <div class="middle two-line no-min-width"
-                  id="profile-row"
-                  on-click="onAccountManagerTap_"
-                  actionable$="[[isAccountManagerEnabled_]]">
-                <div class="flex text-elide settings-box-text">
-                  <span id="profile-name" aria-hidden="true">
-                    [[profileName_]]
-                  </span>
-                  <div id="profile-label" class="secondary"
-                      aria-hidden="true">
-                    [[profileLabel_]]
-                  </div>
-                </div>
-                <cr-icon-button class="subpage-arrow"
-                    hidden="[[!isAccountManagerEnabled_]]"
-                    id="account-manager-subpage-trigger"
-                    aria-label="$i18n{accountManagerSubMenuLabel}"
-                    aria-describedby="profile-name profile-label"
-                    aria-roledescription="$i18n{subpageArrowRoleDescription}">
-                </cr-icon-button>
-              </div>
-            </template>
-          </div>
-
-        <template is="dom-if" if="[[!syncStatus.signedIn]]">
-            <div class="settings-box two-line" id="sync-overview"
-                hidden="[[!syncStatus.signinAllowed]]">
-              <div class="start settings-box-text">
-                <settings-localized-link
-                    localized-string="$i18n{syncOverview}"
-                    link-url="$i18n{syncLearnMoreUrl}">
-                </settings-localized-link>
-              </div>
+        <div class="settings-box first two-line">
+          <template is="dom-if" if="[[syncStatus]]">
+            <!-- Does not use <cr-link-row> due to custom aria label. -->
+            <div id="profile-icon"
+                style="background-image: [[getIconImageSet_(profileIconUrl_)]]"
+                on-click="onAccountManagerTap_"
+                actionable$="[[isAccountManagerEnabled_]]">
             </div>
-        </template>
+            <div class="middle two-line no-min-width"
+                id="profile-row"
+                on-click="onAccountManagerTap_"
+                actionable$="[[isAccountManagerEnabled_]]">
+              <div class="flex text-elide settings-box-text">
+                <span id="profile-name" aria-hidden="true">
+                  [[profileName_]]
+                </span>
+                <div id="profile-label" class="secondary"
+                    aria-hidden="true">
+                  [[profileLabel_]]
+                </div>
+              </div>
+              <cr-icon-button class="subpage-arrow"
+                  hidden="[[!isAccountManagerEnabled_]]"
+                  id="account-manager-subpage-trigger"
+                  aria-label="$i18n{accountManagerSubMenuLabel}"
+                  aria-describedby="profile-name profile-label"
+                  aria-roledescription="$i18n{subpageArrowRoleDescription}">
+              </cr-icon-button>
+            </div>
+          </template>
+        </div>
 
         <cr-link-row id="sync-setup"
             label="[[getSyncRowLabel_()]]"

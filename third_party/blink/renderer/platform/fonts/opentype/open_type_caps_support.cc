@@ -2,10 +2,13 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "third_party/blink/renderer/platform/fonts/opentype/open_type_caps_support.h"
-
-#include <hb-aat.h>
+// clang-format off
 #include <hb.h>
+#include <hb-aat.h>
+// clang-format on
+
+#include "third_party/blink/renderer/platform/fonts/opentype/open_type_caps_support.h"
+#include "third_party/harfbuzz-ng/utils/hb_scoped.h"
 
 namespace blink {
 
@@ -138,12 +141,10 @@ OpenTypeCapsSupport::FontFormat OpenTypeCapsSupport::GetFontFormat() const {
     hb_face_t* hb_face = hb_font_get_face(
         harfbuzz_face_->GetScaledFont(nullptr, HarfBuzzFace::NoVerticalLayout));
 
-    std::unique_ptr<hb_blob_t, decltype(&hb_blob_destroy)> morx_blob(
-        hb_face_reference_table(hb_face, HB_TAG('m', 'o', 'r', 'x')),
-        hb_blob_destroy);
-    std::unique_ptr<hb_blob_t, decltype(&hb_blob_destroy)> mort_blob(
-        hb_face_reference_table(hb_face, HB_TAG('m', 'o', 'r', 't')),
-        hb_blob_destroy);
+    HbScoped<hb_blob_t> morx_blob(
+        hb_face_reference_table(hb_face, HB_TAG('m', 'o', 'r', 'x')));
+    HbScoped<hb_blob_t> mort_blob(
+        hb_face_reference_table(hb_face, HB_TAG('m', 'o', 'r', 't')));
 
     // TODO(crbug.com/911149): Use hb_aat_layout_has_substitution() for
     // has_morx_or_mort and hb_ot_layout_has_substitution() for has_gsub once is

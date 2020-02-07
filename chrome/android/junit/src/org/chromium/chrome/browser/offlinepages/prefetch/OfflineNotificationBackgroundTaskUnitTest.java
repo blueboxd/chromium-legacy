@@ -44,6 +44,7 @@ import org.chromium.base.Callback;
 import org.chromium.base.test.BaseRobolectricTestRunner;
 import org.chromium.chrome.browser.DeviceConditions;
 import org.chromium.chrome.browser.ShadowDeviceConditions;
+import org.chromium.chrome.browser.background_task_scheduler.ChromeNativeBackgroundTaskDelegate;
 import org.chromium.chrome.browser.init.BrowserParts;
 import org.chromium.chrome.browser.init.ChromeBrowserInitializer;
 import org.chromium.chrome.browser.offlinepages.OfflinePageBridge;
@@ -116,6 +117,7 @@ public class OfflineNotificationBackgroundTaskUnitTest {
     @Before
     public void setUp() {
         MockitoAnnotations.initMocks(this);
+        mOfflineNotificationBackgroundTask.setDelegate(new ChromeNativeBackgroundTaskDelegate());
         // Set up the context.
         doNothing().when(mChromeBrowserInitializer).handlePreNativeStartup(any(BrowserParts.class));
         doAnswer(new Answer<Void>() {

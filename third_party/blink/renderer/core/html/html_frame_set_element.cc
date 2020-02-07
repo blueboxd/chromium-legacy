@@ -252,9 +252,10 @@ void HTMLFrameSetElement::AttachLayoutTree(AttachContext& context) {
 }
 
 void HTMLFrameSetElement::DefaultEventHandler(Event& evt) {
-  if (evt.IsMouseEvent() && !noresize_ && GetLayoutObject() &&
+  auto* mouse_event = DynamicTo<MouseEvent>(evt);
+  if (mouse_event && !noresize_ && GetLayoutObject() &&
       GetLayoutObject()->IsFrameSet()) {
-    if (ToLayoutFrameSet(GetLayoutObject())->UserResize(ToMouseEvent(evt))) {
+    if (ToLayoutFrameSet(GetLayoutObject())->UserResize(*mouse_event)) {
       evt.SetDefaultHandled();
       return;
     }

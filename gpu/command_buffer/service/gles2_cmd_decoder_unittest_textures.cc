@@ -4020,23 +4020,20 @@ TEST_P(GLES2DecoderManualInitTest, TexImage2DFloatConvertsFormatDesktop) {
                                     GL_LUMINANCE_ALPHA32F_ARB);
 }
 
-TEST_P(GLES2DecoderManualInitTest, TexImage2Dnorm16OnGLES2) {
-  InitState init;
-  init.extensions = "GL_EXT_texture_norm16";
-  init.gl_version = "OpenGL ES 2.0";
-  InitDecoder(init);
-  DoBindTexture(GL_TEXTURE_2D, client_texture_id_, kServiceTextureId);
-  DoTexImage2D(GL_TEXTURE_2D, 0, GL_RED, 16, 17, 0, GL_RED, GL_UNSIGNED_SHORT,
-               0, 0);
-}
-
 TEST_P(GLES2DecoderManualInitTest, TexImage2Dnorm16OnGLES3) {
   InitState init;
   init.extensions = "GL_EXT_texture_norm16";
   init.gl_version = "OpenGL ES 3.0";
+  init.context_type = CONTEXT_TYPE_OPENGLES3;
   InitDecoder(init);
   DoBindTexture(GL_TEXTURE_2D, client_texture_id_, kServiceTextureId);
   DoTexImage2D(GL_TEXTURE_2D, 0, GL_R16_EXT, 16, 17, 0, GL_RED,
+               GL_UNSIGNED_SHORT, 0, 0);
+  DoTexImage2D(GL_TEXTURE_2D, 0, GL_RG16_EXT, 16, 17, 0, GL_RG,
+               GL_UNSIGNED_SHORT, 0, 0);
+  DoTexImage2D(GL_TEXTURE_2D, 0, GL_RGB16_EXT, 16, 17, 0, GL_RGB,
+               GL_UNSIGNED_SHORT, 0, 0);
+  DoTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA16_EXT, 16, 17, 0, GL_RGBA,
                GL_UNSIGNED_SHORT, 0, 0);
 }
 

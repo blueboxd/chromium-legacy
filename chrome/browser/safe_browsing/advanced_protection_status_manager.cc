@@ -281,7 +281,8 @@ AdvancedProtectionStatusManager::AdvancedProtectionStatusManager(
 
 CoreAccountId AdvancedProtectionStatusManager::GetUnconsentedPrimaryAccountId()
     const {
-  return identity_manager_ ? identity_manager_->GetUnconsentedPrimaryAccountId()
+  return identity_manager_ ? identity_manager_->GetPrimaryAccountId(
+                                 signin::ConsentLevel::kNotRequired)
                            : CoreAccountId();
 }
 

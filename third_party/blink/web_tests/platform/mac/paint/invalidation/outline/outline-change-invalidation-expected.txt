@@ -7,7 +7,7 @@
       "backgroundColor": "#FFFFFF",
       "paintInvalidations": [
         {
-          "object": "NGPhysicalBoxFragment LayoutNGBlockFlow A id='link'",
+          "object": "LayoutNGBlockFlow A id='link'",
           "rect": [43, 79, 754, 28],
           "reason": "appeared"
         }

@@ -313,6 +313,13 @@ RenderFrameProxyHost::GetAssociatedRemoteFrame() {
   return remote_frame_;
 }
 
+const mojo::AssociatedRemote<content::mojom::RenderFrameProxy>&
+RenderFrameProxyHost::GetAssociatedRenderFrameProxy() {
+  if (!render_frame_proxy_)
+    GetRemoteAssociatedInterfaces()->GetInterface(&render_frame_proxy_);
+  return render_frame_proxy_;
+}
+
 void RenderFrameProxyHost::SetInheritedEffectiveTouchAction(
     cc::TouchAction touch_action) {
   cross_process_frame_connector_->OnSetInheritedEffectiveTouchAction(
@@ -431,6 +438,15 @@ void RenderFrameProxyHost::OnOpenURL(
 void RenderFrameProxyHost::CheckCompleted() {
   RenderFrameHostImpl* target_rfh = frame_tree_node()->current_frame_host();
   target_rfh->GetAssociatedLocalFrame()->CheckCompleted();
+}
+
+void RenderFrameProxyHost::EnableAutoResize(const gfx::Size& min_size,
+                                            const gfx::Size& max_size) {
+  GetAssociatedRenderFrameProxy()->EnableAutoResize(min_size, max_size);
+}
+
+void RenderFrameProxyHost::DisableAutoResize() {
+  GetAssociatedRenderFrameProxy()->DisableAutoResize();
 }
 
 void RenderFrameProxyHost::OnRouteMessageEvent(

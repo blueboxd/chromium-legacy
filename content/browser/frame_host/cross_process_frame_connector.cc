@@ -397,13 +397,11 @@ CrossProcessFrameConnector::GetParentRenderWidgetHostView() {
 
 void CrossProcessFrameConnector::EnableAutoResize(const gfx::Size& min_size,
                                                   const gfx::Size& max_size) {
-  frame_proxy_in_parent_renderer_->Send(new FrameMsg_EnableAutoResize(
-      frame_proxy_in_parent_renderer_->GetRoutingID(), min_size, max_size));
+  frame_proxy_in_parent_renderer_->EnableAutoResize(min_size, max_size);
 }
 
 void CrossProcessFrameConnector::DisableAutoResize() {
-  frame_proxy_in_parent_renderer_->Send(new FrameMsg_DisableAutoResize(
-      frame_proxy_in_parent_renderer_->GetRoutingID()));
+  frame_proxy_in_parent_renderer_->DisableAutoResize();
 }
 
 bool CrossProcessFrameConnector::IsInert() const {

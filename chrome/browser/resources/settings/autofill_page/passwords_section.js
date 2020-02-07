@@ -87,6 +87,14 @@ Polymer({
     },
 
     /** @private */
+    enablePasswordCheck_: {
+      type: Boolean,
+      value() {
+        return loadTimeData.getBoolean('enablePasswordCheck');
+      }
+    },
+
+    /** @private */
     hidePasswordsLink_: {
       type: Boolean,
       computed: 'computeHidePasswordsLink_(syncPrefs_, syncStatus_)',
@@ -264,6 +272,14 @@ Polymer({
     if (cr.toastManager.getToastManager().isToastOpen) {
       cr.toastManager.getToastManager().hide();
     }
+  },
+
+  /**
+   * Shows the check passwords sub page.
+   * @private
+   */
+  onCheckPasswordsClick_() {
+    settings.Router.getInstance().navigateTo(settings.routes.CHECK_PASSWORDS);
   },
 
   // <if expr="chromeos">

@@ -1838,6 +1838,7 @@
     const tabQueries = [
       {'query': ['#quick-view', '[aria-label="Back"]:focus']},
       {'query': ['#quick-view', '[aria-label="Open"]:focus']},
+      {'query': ['#quick-view', '[aria-label="Delete"]:focus']},
       {'query': ['#quick-view', '[aria-label="File info"]:focus']},
       {'query': ['#quick-view', '[aria-label="Back"]:focus']},
     ];
@@ -1874,6 +1875,7 @@
     const tabQueries = [
       {'query': ['#quick-view', '[aria-label="Back"]:focus']},
       {'query': ['#quick-view', '[aria-label="Open"]:focus']},
+      {'query': ['#quick-view', '[aria-label="Delete"]:focus']},
       {'query': ['#quick-view', '[aria-label="File info"]:focus']},
       {'query': ['#quick-view']},  // Tab past the content panel.
       {'query': ['#quick-view', '[aria-label="Back"]:focus']},
@@ -1918,6 +1920,7 @@
     const tabQueries = [
       {'query': ['#quick-view', '[aria-label="Back"]:focus']},
       {'query': ['#quick-view', '[aria-label="Open"]:focus']},
+      {'query': ['#quick-view', '[aria-label="Delete"]:focus']},
       {'query': ['#quick-view', '[aria-label="File info"]:focus']},
     ];
 
@@ -1973,6 +1976,7 @@
     const tabQueries = [
       {'query': ['#quick-view', '[aria-label="Back"]:focus']},
       {'query': ['#quick-view', '[aria-label="Open"]:focus']},
+      {'query': ['#quick-view', '[aria-label="Delete"]:focus']},
       {'query': ['#quick-view', '[aria-label="File info"]:focus']},
     ];
 

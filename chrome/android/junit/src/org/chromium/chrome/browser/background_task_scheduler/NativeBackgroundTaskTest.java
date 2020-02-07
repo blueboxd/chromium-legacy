@@ -43,6 +43,8 @@ import org.chromium.chrome.browser.metrics.BackgroundTaskMemoryMetricsEmitter;
 import org.chromium.chrome.browser.metrics.BackgroundTaskMemoryMetricsEmitterJni;
 import org.chromium.components.background_task_scheduler.BackgroundTask;
 import org.chromium.components.background_task_scheduler.BackgroundTaskSchedulerExternalUma;
+import org.chromium.components.background_task_scheduler.BackgroundTaskSchedulerFactory;
+import org.chromium.components.background_task_scheduler.NativeBackgroundTask;
 import org.chromium.components.background_task_scheduler.TaskIds;
 import org.chromium.components.background_task_scheduler.TaskParameters;
 import org.chromium.content_public.browser.BrowserStartupController;
@@ -170,9 +172,9 @@ public class NativeBackgroundTaskTest {
         private boolean mWasOnStopTaskBeforeNativeLoadedCalled;
         private BrowserStartupController mBrowserStartupController;
 
-        public TestNativeBackgroundTask(BrowserStartupController controller,
-                BackgroundTaskSchedulerExternalUma externalUma) {
-            super(externalUma);
+        public TestNativeBackgroundTask(BrowserStartupController controller) {
+            super();
+            setDelegate(new ChromeNativeBackgroundTaskDelegate());
             mBrowserStartupController = controller;
             mWasOnStartTaskWithNativeCalled = false;
             mStartBeforeNativeResult = StartBeforeNativeResult.LOAD_NATIVE;
@@ -247,7 +249,8 @@ public class NativeBackgroundTaskTest {
         mocker.mock(BackgroundTaskMemoryMetricsEmitterJni.TEST_HOOKS, mEmitterNativeMock);
         mBrowserStartupController = new TestBrowserStartupController();
         mCallback = new TaskFinishedCallback();
-        mTask = new TestNativeBackgroundTask(mBrowserStartupController, mExternalUmaMock);
+        mTask = new TestNativeBackgroundTask(mBrowserStartupController);
+        BackgroundTaskSchedulerFactory.setUmaReporterForTesting(mExternalUmaMock);
         ChromeBrowserInitializer.setForTesting(mChromeBrowserInitializer);
         ChromeBrowserInitializer.setBrowserStartupControllerForTesting(mBrowserStartupController);
     }

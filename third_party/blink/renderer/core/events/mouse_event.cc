@@ -140,9 +140,8 @@ MouseEvent* MouseEvent::Create(const AtomicString& event_type,
 
   SyntheticEventType synthetic_type = kPositionless;
   MouseEventInit* initializer = MouseEventInit::Create();
-  if (underlying_event && underlying_event->IsMouseEvent()) {
+  if (auto* mouse_event = DynamicTo<MouseEvent>(underlying_event)) {
     synthetic_type = kRealOrIndistinguishable;
-    MouseEvent* mouse_event = ToMouseEvent(underlying_event);
     initializer->setScreenX(mouse_event->screenX());
     initializer->setScreenY(mouse_event->screenY());
     initializer->setSourceCapabilities(
@@ -168,7 +167,7 @@ MouseEvent* MouseEvent::Create(const AtomicString& event_type,
                             SimulatedClickCreationScope::kFromUserAgent);
   created_event->SetUnderlyingEvent(underlying_event);
   if (synthetic_type == kRealOrIndistinguishable) {
-    MouseEvent* mouse_event = ToMouseEvent(created_event->UnderlyingEvent());
+    auto* mouse_event = To<MouseEvent>(created_event->UnderlyingEvent());
     created_event->InitCoordinates(mouse_event->clientX(),
                                    mouse_event->clientY());
   }

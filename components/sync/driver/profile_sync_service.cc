@@ -160,38 +160,6 @@ std::string GenerateCacheGUID() {
   return guid;
 }
 
-bool IsLocalSyncTransportDataValid(const SyncPrefs& sync_prefs,
-                                   const CoreAccountInfo& core_account_info) {
-  // If the cache GUID is empty, it most probably is because local sync data
-  // has been fully cleared via ClearLocalSyncTransportData() due to
-  // ShutdownReason::DISABLE_SYNC. Let's return false here anyway to make sure
-  // all prefs are cleared and a new random cache GUID generated.
-  if (sync_prefs.GetCacheGuid().empty()) {
-    return false;
-  }
-
-  // If cache GUID is initialized but the birthday isn't, it means the first
-  // sync cycle never completed (OnEngineInitialized()). This should be a rare
-  // case and theoretically harmless to resume, but as safety precaution, its
-  // simpler to regenerate the cache GUID and start from scratch, to avoid
-  // protocol violations (fetching updates requires that the request either has
-  // a birthday, or there should be no progress marker).
-  if (sync_prefs.GetBirthday().empty()) {
-    return false;
-  }
-
-  // Make sure the cached account information (gaia ID) is equal to the current
-  // one (otherwise the data may be corrupt). Note that, for local sync
-  // (IsLocalSyncEnabled()), the authenticated account is always empty.
-  if (sync_prefs.GetGaiaId() != core_account_info.gaia) {
-    DLOG(WARNING) << "Found mismatching gaia ID in sync preferences";
-    return false;
-  }
-
-  // All good: local sync data looks initialized and valid.
-  return true;
-}
-
 }  // namespace
 
 ProfileSyncService::InitParams::InitParams() = default;
@@ -534,22 +502,6 @@ void ProfileSyncService::InitializeBackendTaskRunnerIfNeeded() {
 void ProfileSyncService::StartUpSlowEngineComponents() {
   DCHECK(IsEngineAllowedToStart());
 
-  const CoreAccountInfo authenticated_account_info =
-      GetAuthenticatedAccountInfo();
-
-  if (IsLocalSyncEnabled()) {
-    // With local sync (roaming profiles) there is no identity manager and hence
-    // |authenticated_account_info| is empty. This is required for
-    // IsLocalSyncTransportDataValid() to work properly.
-    DCHECK(authenticated_account_info.gaia.empty());
-    DCHECK(authenticated_account_info.account_id.empty());
-  } else {
-    // Except for local sync (roaming profiles), the user must be signed in for
-    // sync to start.
-    DCHECK(!authenticated_account_info.gaia.empty());
-    DCHECK(!authenticated_account_info.account_id.empty());
-  }
-
   engine_ = sync_client_->GetSyncApiComponentFactory()->CreateSyncEngine(
       debug_identifier_, sync_client_->GetInvalidationService(),
       sync_prefs_.AsWeakPtr());
@@ -559,22 +511,17 @@ void ProfileSyncService::StartUpSlowEngineComponents() {
     last_actionable_error_ = SyncProtocolError();
   }
 
-  // The gaia ID in SyncPrefs was introduced with M81, so having an empty value
-  // is legitimate and should be populated as a one-off migration.
-  // TODO(mastiz): Clean up this migration code after a grace period (e.g. 1
-  // year).
-  if (sync_prefs_.GetGaiaId().empty()) {
-    sync_prefs_.SetGaiaId(authenticated_account_info.gaia);
-  }
-
-  if (!IsLocalSyncTransportDataValid(sync_prefs_, authenticated_account_info)) {
-    // Either the local data is uninitialized or corrupt, so let's throw
-    // everything away and start from scratch with a new cache GUID, which also
-    // cascades into datatypes throwing away their dangling sync metadata due to
-    // cache GUID mismatches.
-    sync_prefs_.ClearLocalSyncTransportData();
+  // If either the cache GUID or the birthday are uninitialized, it means we
+  // haven't completed a first sync cycle (OnEngineInitialized()). Theoretically
+  // both or neither should be empty, but just in case, we regenerate the cache
+  // GUID if either of them is missing, to avoid protocol violations (fetching
+  // updates requires that the request either has a birthday, or there should be
+  // no progress marker).
+  if (sync_prefs_.GetCacheGuid().empty() || sync_prefs_.GetBirthday().empty()) {
+    // TODO(crbug.com/923285): This doesn't seem to belong here, or if it does,
+    // all preferences should be cleared via SyncPrefs::ClearPreferences().
+    sync_prefs_.ClearDirectoryConsistencyPreferences();
     sync_prefs_.SetCacheGuid(GenerateCacheGUID());
-    sync_prefs_.SetGaiaId(authenticated_account_info.gaia);
   }
 
   InitializeBackendTaskRunnerIfNeeded();
@@ -594,7 +541,8 @@ void ProfileSyncService::StartUpSlowEngineComponents() {
   params.http_factory_getter = base::BindOnce(
       create_http_post_provider_factory_cb_, MakeUserAgentForSync(channel_),
       url_loader_factory_->Clone(), network_time_update_callback_);
-  params.authenticated_account_id = authenticated_account_info.account_id;
+  params.authenticated_account_id = GetAuthenticatedAccountInfo().account_id;
+  DCHECK(!params.authenticated_account_id.empty() || IsLocalSyncEnabled());
   if (!base::FeatureList::IsEnabled(switches::kSyncE2ELatencyMeasurement)) {
     invalidation::InvalidationService* invalidator =
         sync_client_->GetInvalidationService();
@@ -679,7 +627,6 @@ void ProfileSyncService::ShutdownImpl(ShutdownReason reason) {
             base::BindOnce(&syncable::Directory::DeleteDirectoryFiles,
                            sync_client_->GetSyncDataPath()));
       }
-      sync_prefs_.ClearLocalSyncTransportData();
     }
     return;
   }
@@ -734,10 +681,6 @@ void ProfileSyncService::ShutdownImpl(ShutdownReason reason) {
     auth_manager_->ConnectionClosed();
   }
 
-  if (reason == ShutdownReason::DISABLE_SYNC) {
-    sync_prefs_.ClearLocalSyncTransportData();
-  }
-
   NotifyObservers();
 }
 
@@ -749,15 +692,11 @@ void ProfileSyncService::StopImpl(SyncStopDataFate data_fate) {
     case CLEAR_DATA:
       ClearUnrecoverableError();
       ShutdownImpl(DISABLE_SYNC);
-      // Note: ShutdownImpl(DISABLE_SYNC) does *not* clear prefs which are
-      // directly user-controlled such as the set of selected types here, so
-      // that if the user ever chooses to enable Sync again, they start off
-      // with their previous settings by default. We do however require going
-      // through first-time setup again.
-      sync_prefs_.ClearFirstSetupComplete();
-      // For explicit passphrase users, clear the encryption key, such that they
-      // will need to reenter it if sync gets re-enabled.
-      sync_prefs_.ClearEncryptionBootstrapToken();
+      // Clear prefs (including SyncSetupHasCompleted) before shutting down so
+      // PSS clients don't think we're set up while we're shutting down.
+      // Note: We do this after shutting down, so that notifications about the
+      // changed pref values don't mess up our state.
+      sync_prefs_.ClearPreferences();
       break;
   }
 }
@@ -917,6 +856,15 @@ void ProfileSyncService::OnUnrecoverableErrorImpl(
 
   // Shut all data types down.
   ShutdownImpl(DISABLE_SYNC);
+
+  // This is the equivalent for Directory::DeleteDirectoryFiles(), guaranteed
+  // to be called, either directly in ShutdownImpl(), or later in
+  // SyncEngineBackend::DoShutdown().
+  // TODO(crbug.com/923285): This doesn't seem to belong here, or if it does,
+  // all preferences should be cleared via SyncPrefs::ClearPreferences(),
+  // which is done by some of the callers (but not all). Care must be taken
+  // however for scenarios like custom passphrase being set.
+  sync_prefs_.ClearDirectoryConsistencyPreferences();
 }
 
 void ProfileSyncService::DataTypePreconditionChanged(ModelType type) {
@@ -1114,9 +1062,27 @@ void ProfileSyncService::OnActionableError(const SyncProtocolError& error) {
       // restart.
       sync_disabled_by_admin_ = true;
       ShutdownImpl(DISABLE_SYNC);
+      // This is the equivalent for Directory::DeleteDirectoryFiles(),
+      // guaranteed to be called, either directly in ShutdownImpl(), or later in
+      // SyncEngineBackend::DoShutdown().
+      // TODO(crbug.com/923285): This doesn't seem to belong here, or if it
+      // does, all preferences should be cleared via
+      // SyncPrefs::ClearPreferences(), which is done by some of the callers
+      // (but not all). Care must be taken however for scenarios like custom
+      // passphrase being set.
+      sync_prefs_.ClearDirectoryConsistencyPreferences();
       break;
     case RESET_LOCAL_SYNC_DATA:
       ShutdownImpl(DISABLE_SYNC);
+      // This is the equivalent for Directory::DeleteDirectoryFiles(),
+      // guaranteed to be called, either directly in ShutdownImpl(), or later in
+      // SyncEngineBackend::DoShutdown().
+      // TODO(crbug.com/923285): This doesn't seem to belong here, or if it
+      // does, all preferences should be cleared via
+      // SyncPrefs::ClearPreferences(), which is done by some of the callers
+      // (but not all). Care must be taken however for scenarios like custom
+      // passphrase being set.
+      sync_prefs_.ClearDirectoryConsistencyPreferences();
       startup_controller_->TryStart(/*force_immediate=*/true);
       break;
     case UNKNOWN_ACTION:

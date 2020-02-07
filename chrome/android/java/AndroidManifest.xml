@@ -1105,12 +1105,12 @@ by a child template that "extends" this file.
             android:permission="android.permission.BIND_JOB_SERVICE"/>
 
         <!-- Background Task Scheduler job service -->
-        <service android:name="org.chromium.components.background_task_scheduler.BackgroundTaskJobService"
+        <service android:name="org.chromium.components.background_task_scheduler.internal.BackgroundTaskJobService"
             android:exported="false"
             android:permission="android.permission.BIND_JOB_SERVICE"/>
 
         <!-- Background Task Scheduler GCM task service -->
-        <service android:name="org.chromium.components.background_task_scheduler.BackgroundTaskGcmTaskService"
+        <service android:name="org.chromium.components.background_task_scheduler.internal.BackgroundTaskGcmTaskService"
             android:permission="com.google.android.gms.permission.BIND_NETWORK_TASK_SERVICE"
             android:exported="true">
             <intent-filter>
@@ -1119,7 +1119,7 @@ by a child template that "extends" this file.
         </service>
 
         <!-- Background Task Scheduler alarm receiver -->
-        <receiver android:name="org.chromium.components.background_task_scheduler.BackgroundTaskBroadcastReceiver"
+        <receiver android:name="org.chromium.components.background_task_scheduler.internal.BackgroundTaskBroadcastReceiver"
             android:exported="false" />
 
         <!-- GcmTaskService implementation to wake Chrome on scheduled events -->

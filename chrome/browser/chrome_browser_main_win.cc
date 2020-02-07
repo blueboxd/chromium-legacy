@@ -39,7 +39,6 @@
 #include "base/win/win_util.h"
 #include "base/win/wrapped_window_proc.h"
 #include "build/branding_buildflags.h"
-#include "chrome/browser/after_startup_task_utils.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/first_run/first_run.h"
 #include "chrome/browser/profiles/profile_manager.h"
@@ -55,7 +54,6 @@
 #include "chrome/browser/win/conflicts/enumerate_shell_extensions.h"
 #include "chrome/browser/win/conflicts/module_database.h"
 #include "chrome/browser/win/conflicts/module_event_sink_impl.h"
-#include "chrome/browser/win/util_win_service.h"
 #include "chrome/common/channel_info.h"
 #include "chrome/common/chrome_constants.h"
 #include "chrome/common/chrome_features.h"
@@ -193,14 +191,6 @@ void DetectFaultTolerantHeap() {
     detected = static_cast<FTHFlags>(detected | FTH_ACXTRNAL_LOADED);
 
   UMA_HISTOGRAM_ENUMERATION("FaultTolerantHeap", detected, FTH_FLAGS_COUNT);
-}
-
-void DelayedRecordProcessorMetrics() {
-  mojo::Remote<chrome::mojom::UtilWin> remote_util_win =
-      LaunchUtilWinServiceInstance();
-  auto* remote_util_win_ptr = remote_util_win.get();
-  remote_util_win_ptr->RecordProcessorMetrics(base::BindOnce(
-      [](mojo::Remote<chrome::mojom::UtilWin>) {}, std::move(remote_util_win)));
 }
 
 // Initializes the ModuleDatabase on its owning sequence. Also starts the
@@ -618,17 +608,12 @@ void ChromeBrowserMainPartsWin::PostBrowserStart() {
   } else {
     MaybePostSettingsResetPrompt();
   }
+
   // Record UMA data about whether the fault-tolerant heap is enabled.
   // Use a delayed task to minimize the impact on startup time.
   base::PostDelayedTask(FROM_HERE, {content::BrowserThread::UI},
                         base::BindOnce(&DetectFaultTolerantHeap),
                         base::TimeDelta::FromMinutes(1));
-
-  // Record Processor Metrics. This is a very low priority, hence posting to
-  // start after Chrome startup has completed.
-  AfterStartupTaskUtils::PostTask(
-      FROM_HERE, base::CreateSequencedTaskRunner({base::ThreadPool()}),
-      base::BindOnce(&DelayedRecordProcessorMetrics));
 }
 
 // static

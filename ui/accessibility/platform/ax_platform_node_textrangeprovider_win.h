@@ -146,8 +146,16 @@ class AX_EXPORT __declspec(uuid("3071e40d-a10d-45ff-a59f-6e8e1138e2c1"))
       const int count,
       int* units_moved);
 
-  void NormalizeAsUnignoredTextRange();
+  // A text range normalization is necessary to prevent a |start_| endpoint to
+  // be positioned at the end of an anchor when it can be at the start of the
+  // next anchor. After normalization, it is guaranteed that:
+  // * both endpoints of a range are always positioned on unignored anchors;
+  // * both endpoints of a range are never between a grapheme cluster;
+  // * if the range is degenerate, both endpoints of a range are on the same
+  //   anchor.
   void NormalizeTextRange();
+  void NormalizeAsUnignoredTextRange();
+
   AXPlatformNodeDelegate* GetRootDelegate(const ui::AXTreeID tree_id);
   AXNode* GetSelectionCommonAnchor();
   void RemoveFocusFromPreviousSelectionIfNeeded(

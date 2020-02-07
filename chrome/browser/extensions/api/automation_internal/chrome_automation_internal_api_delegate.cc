@@ -24,17 +24,11 @@
 #include "chrome/browser/ui/aura/accessibility/automation_manager_aura.h"
 #endif
 
-#if defined(OS_CHROMEOS)
-#include "chrome/browser/chromeos/arc/accessibility/arc_accessibility_helper_bridge.h"
-#endif
-
 namespace extensions {
 
-ChromeAutomationInternalApiDelegate::ChromeAutomationInternalApiDelegate() =
-    default;
+ChromeAutomationInternalApiDelegate::ChromeAutomationInternalApiDelegate() {}
 
-ChromeAutomationInternalApiDelegate::~ChromeAutomationInternalApiDelegate() =
-    default;
+ChromeAutomationInternalApiDelegate::~ChromeAutomationInternalApiDelegate() {}
 
 bool ChromeAutomationInternalApiDelegate::CanRequestAutomation(
     const Extension* extension,
@@ -76,18 +70,6 @@ content::WebContents* ChromeAutomationInternalApiDelegate::GetActiveWebContents(
       .GetCurrentBrowser()
       ->tab_strip_model()
       ->GetActiveWebContents();
-}
-
-bool ChromeAutomationInternalApiDelegate::EnableTree(
-    const ui::AXTreeID& tree_id) {
-#if defined(OS_CHROMEOS)
-  arc::ArcAccessibilityHelperBridge* bridge =
-      arc::ArcAccessibilityHelperBridge::GetForBrowserContext(
-          GetActiveUserContext());
-  if (bridge)
-    return bridge->RefreshTreeIfInActiveWindow(tree_id);
-#endif
-  return false;
 }
 
 void ChromeAutomationInternalApiDelegate::EnableDesktop() {

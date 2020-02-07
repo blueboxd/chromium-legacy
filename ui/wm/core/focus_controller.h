@@ -98,7 +98,10 @@ class WM_CORE_EXPORT FocusController : public ActivationClient,
   // request (e.g. FocusWindow or ActivateWindow). It may be NULL, e.g. if
   // SetActiveWindow was not called by an external request. |activatable_window|
   // refers to the actual window to be activated, which may be different.
-  void SetActiveWindow(ActivationChangeObserver::ActivationReason reason,
+  // Returns true if activation should proceed, or false if activation was
+  // interrupted, e.g. by the destruction of the window gaining activation
+  // during the process, and therefore activation should be aborted.
+  bool SetActiveWindow(ActivationChangeObserver::ActivationReason reason,
                        aura::Window* requested_window,
                        aura::Window* activatable_window);
 

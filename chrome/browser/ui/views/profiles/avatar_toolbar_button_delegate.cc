@@ -132,11 +132,13 @@ base::string16 AvatarToolbarButtonDelegate::GetShortProfileName() const {
 gfx::Image AvatarToolbarButtonDelegate::GetGaiaAccountImage() const {
   signin::IdentityManager* identity_manager =
       IdentityManagerFactory::GetForProfile(profile_);
-  if (identity_manager && identity_manager->HasUnconsentedPrimaryAccount()) {
+  if (identity_manager &&
+      identity_manager->HasPrimaryAccount(signin::ConsentLevel::kNotRequired)) {
     base::Optional<AccountInfo> account_info =
         identity_manager
             ->FindExtendedAccountInfoForAccountWithRefreshTokenByAccountId(
-                identity_manager->GetUnconsentedPrimaryAccountId());
+                identity_manager->GetPrimaryAccountId(
+                    signin::ConsentLevel::kNotRequired));
     if (account_info.has_value())
       return account_info->account_image;
   }

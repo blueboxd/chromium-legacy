@@ -29,6 +29,7 @@
 
 using testing::_;
 using testing::Contains;
+using testing::NiceMock;
 using testing::Not;
 
 namespace syncer {
@@ -53,6 +54,10 @@ const char kFakeInstanceIdToken[] = "fake_instance_id_token";
 class MockIdentityDiagnosticsObserver
     : public signin::IdentityManager::DiagnosticsObserver {
  public:
+  MOCK_METHOD3(OnAccessTokenRequested,
+               void(const CoreAccountId&,
+                    const std::string&,
+                    const identity::ScopeSet&));
   MOCK_METHOD2(OnAccessTokenRemovedFromCache,
                void(const CoreAccountId&, const identity::ScopeSet&));
 };
@@ -273,7 +278,7 @@ TEST_F(PerUserTopicSubscriptionManagerTest, ShouldRepeatRequestsOnFailure) {
   // For this test, we want to manually control when access tokens are returned.
   identity_test_env()->SetAutomaticIssueOfAccessTokens(false);
 
-  MockIdentityDiagnosticsObserver identity_observer;
+  NiceMock<MockIdentityDiagnosticsObserver> identity_observer;
   identity_test_env()->identity_manager()->AddDiagnosticsObserver(
       &identity_observer);
 
@@ -331,11 +336,65 @@ TEST_F(PerUserTopicSubscriptionManagerTest, ShouldRepeatRequestsOnFailure) {
 }
 
 TEST_F(PerUserTopicSubscriptionManagerTest,
+       ShouldRepeatAccessTokenRequestOnFailure) {
+  // For this test, we want to manually control when access tokens are returned.
+  identity_test_env()->SetAutomaticIssueOfAccessTokens(false);
+
+  NiceMock<MockIdentityDiagnosticsObserver> identity_observer;
+  identity_test_env()->identity_manager()->AddDiagnosticsObserver(
+      &identity_observer);
+
+  auto ids = GetSequenceOfTopics(kInvalidationObjectIdsCount);
+
+  auto per_user_topic_subscription_manager = BuildRegistrationManager();
+  ASSERT_TRUE(per_user_topic_subscription_manager->GetSubscribedTopicsForTest()
+                  .empty());
+
+  // Emulate failure on first access token request.
+  EXPECT_CALL(identity_observer, OnAccessTokenRequested(_, _, _));
+  per_user_topic_subscription_manager->UpdateSubscribedTopics(
+      ids, kFakeInstanceIdToken);
+  identity_test_env()->WaitForAccessTokenRequestIfNecessaryAndRespondWithError(
+      GoogleServiceAuthError(GoogleServiceAuthError::CONNECTION_FAILED));
+  testing::Mock::VerifyAndClearExpectations(&identity_observer);
+
+  // Initial backoff is 2 seconds with 20% jitter, so the minimum possible delay
+  // is 1600ms. Advance time to just before that; nothing should have changed
+  // yet.
+  EXPECT_CALL(identity_observer, OnAccessTokenRequested(_, _, _)).Times(0);
+  // UpdateSubscribedTopics() call shouldn't lead to backoff bypassing.
+  per_user_topic_subscription_manager->UpdateSubscribedTopics(
+      ids, kFakeInstanceIdToken);
+  FastForwardTimeBy(base::TimeDelta::FromMilliseconds(1500));
+  testing::Mock::VerifyAndClearExpectations(&identity_observer);
+
+  // The maximum backoff is 2 seconds; advance to just past that. Now access
+  // token should be requested.
+  EXPECT_CALL(identity_observer, OnAccessTokenRequested(_, _, _));
+  FastForwardTimeBy(base::TimeDelta::FromMilliseconds(600));
+  testing::Mock::VerifyAndClearExpectations(&identity_observer);
+
+  // Add valid responses to access token and subscription requests and ensure
+  // that subscribtions finished.
+  identity_test_env()->WaitForAccessTokenRequestIfNecessaryAndRespondWithToken(
+      "valid_access_token", base::Time::Max());
+  AddCorrectSubscriptionResponce();
+  base::RunLoop().RunUntilIdle();
+  EXPECT_FALSE(per_user_topic_subscription_manager->GetSubscribedTopicsForTest()
+                   .empty());
+  EXPECT_TRUE(
+      per_user_topic_subscription_manager->HaveAllRequestsFinishedForTest());
+
+  identity_test_env()->identity_manager()->RemoveDiagnosticsObserver(
+      &identity_observer);
+}
+
+TEST_F(PerUserTopicSubscriptionManagerTest,
        ShouldInvalidateAccessTokenOnUnauthorized) {
   // For this test, we need to manually control when access tokens are returned.
   identity_test_env()->SetAutomaticIssueOfAccessTokens(false);
 
-  MockIdentityDiagnosticsObserver identity_observer;
+  NiceMock<MockIdentityDiagnosticsObserver> identity_observer;
   identity_test_env()->identity_manager()->AddDiagnosticsObserver(
       &identity_observer);
 
@@ -392,7 +451,7 @@ TEST_F(PerUserTopicSubscriptionManagerTest,
   // For this test, we need to manually control when access tokens are returned.
   identity_test_env()->SetAutomaticIssueOfAccessTokens(false);
 
-  MockIdentityDiagnosticsObserver identity_observer;
+  NiceMock<MockIdentityDiagnosticsObserver> identity_observer;
   identity_test_env()->identity_manager()->AddDiagnosticsObserver(
       &identity_observer);
 

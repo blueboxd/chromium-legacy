@@ -639,6 +639,12 @@
                  file="autofill_page/show_password_behavior.js"
                  type="chrome_html"
                  preprocess="true" />
+      <structure name="IDR_SETTINGS_PASSWORD_CHECK_HTML"
+                 file="autofill_page/password_check.html"
+                 type="chrome_html" />
+      <structure name="IDR_SETTINGS_PASSWORD_CHECK_JS"
+                 file="autofill_page/password_check.js"
+                 type="chrome_html" />
       <structure name="IDR_SETTINGS_PASSWORD_LIST_ITEM_HTML"
                  file="autofill_page/password_list_item.html"
                  type="chrome_html"

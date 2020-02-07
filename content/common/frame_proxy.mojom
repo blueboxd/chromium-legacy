@@ -4,6 +4,8 @@
 
 module content.mojom;
 
+import "ui/gfx/geometry/mojom/geometry.mojom";
+
 // Mojo interface for communicating from RenderFrameProxy to
 // RenderFrameProxyHost.
 interface RenderFrameProxyHost {
@@ -11,3 +13,12 @@ interface RenderFrameProxyHost {
   // blink::RemoteFrameHost but we might still need this.
 };
 
+// Mojo interface for communicating from RenderFrameProxyHost to
+// RenderFrameProxy. The Renderer process implements the below interface.
+interface RenderFrameProxy {
+  // This function enables auto-resize mode from the parent renderer.
+  EnableAutoResize(gfx.mojom.Size min_size, gfx.mojom.Size max_size);
+
+  // This function disables auto-resize-mode from the parent renderer.
+  DisableAutoResize();
+};

@@ -108,6 +108,17 @@ class XMLDocumentParser final : public ScriptableDocumentParser,
    public:
     virtual ~PendingCallback() = default;
     virtual void Call(XMLDocumentParser*) = 0;
+
+    TextPosition GetTextPosition() const { return text_position_; }
+    OrdinalNumber LineNumber() const { return text_position_.line_; }
+    OrdinalNumber ColumnNumber() const { return text_position_.column_; }
+
+   protected:
+    PendingCallback(TextPosition text_position)
+        : text_position_(text_position) {}
+
+   private:
+    TextPosition text_position_;
   };
 
   void SetScriptStartPosition(TextPosition);
@@ -176,6 +187,8 @@ class XMLDocumentParser final : public ScriptableDocumentParser,
   void DoWrite(const String&);
   void DoEnd();
 
+  void CheckIfBlockingStyleSheetAdded();
+
   SegmentedString original_source_for_transform_;
 
   xmlParserCtxtPtr Context() const {
@@ -183,6 +196,7 @@ class XMLDocumentParser final : public ScriptableDocumentParser,
   }
   scoped_refptr<XMLParserContext> context_;
   Deque<std::unique_ptr<PendingCallback>> pending_callbacks_;
+  std::unique_ptr<PendingCallback> callback_;
   Vector<xmlChar> buffered_text_;
 
   Member<ContainerNode> current_node_;
@@ -200,6 +214,7 @@ class XMLDocumentParser final : public ScriptableDocumentParser,
   bool requesting_script_;
   bool finish_called_;
   bool waiting_for_stylesheets_ = false;
+  bool added_pending_parser_blocking_stylesheet_ = false;
 
   XMLErrors xml_errors_;
 

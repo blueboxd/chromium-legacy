@@ -62,7 +62,8 @@ void SpinButtonElement::DetachLayoutTree(bool performing_reattach) {
 }
 
 void SpinButtonElement::DefaultEventHandler(Event& event) {
-  if (!event.IsMouseEvent()) {
+  auto* mouse_event = DynamicTo<MouseEvent>(event);
+  if (!mouse_event) {
     if (!event.DefaultHandled())
       HTMLDivElement::DefaultEventHandler(event);
     return;
@@ -81,11 +82,10 @@ void SpinButtonElement::DefaultEventHandler(Event& event) {
     return;
   }
 
-  auto& mouse_event = ToMouseEvent(event);
   IntPoint local = RoundedIntPoint(box->AbsoluteToLocalFloatPoint(
-      FloatPoint(mouse_event.AbsoluteLocation())));
-  if (mouse_event.type() == event_type_names::kMousedown &&
-      mouse_event.button() ==
+      FloatPoint(mouse_event->AbsoluteLocation())));
+  if (mouse_event->type() == event_type_names::kMousedown &&
+      mouse_event->button() ==
           static_cast<int16_t>(WebPointerProperties::Button::kLeft)) {
     if (box->PixelSnappedBorderBoxRect().Contains(local)) {
       if (spin_button_owner_)
@@ -114,8 +114,8 @@ void SpinButtonElement::DefaultEventHandler(Event& event) {
       }
       event.SetDefaultHandled();
     }
-  } else if (mouse_event.type() == event_type_names::kMouseup &&
-             mouse_event.button() ==
+  } else if (mouse_event->type() == event_type_names::kMouseup &&
+             mouse_event->button() ==
                  static_cast<int16_t>(WebPointerProperties::Button::kLeft)) {
     ReleaseCapture();
   } else if (event.type() == event_type_names::kMousemove) {

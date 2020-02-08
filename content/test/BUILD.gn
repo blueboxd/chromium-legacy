@@ -913,7 +913,6 @@ test("content_browsertests") {
     "../browser/locks/lock_manager_browsertest.cc",
     "../browser/manifest/manifest_browsertest.cc",
     "../browser/media/encrypted_media_browsertest.cc",
-    "../browser/media/fullscreen_video_detection_browsertest.cc",
     "../browser/media/media_autoplay_browsertest.cc",
     "../browser/media/media_browsertest.cc",
     "../browser/media/media_browsertest.h",

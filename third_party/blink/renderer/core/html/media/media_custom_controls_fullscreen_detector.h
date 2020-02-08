@@ -13,12 +13,13 @@
 namespace blink {
 
 class HTMLVideoElement;
+class IntSize;
 class TimerBase;
 
 class CORE_EXPORT MediaCustomControlsFullscreenDetector final
     : public NativeEventListener {
  public:
-  explicit MediaCustomControlsFullscreenDetector(HTMLVideoElement& video);
+  explicit MediaCustomControlsFullscreenDetector(HTMLVideoElement&);
 
   void Attach();
   void Detach();
@@ -28,7 +29,6 @@ class CORE_EXPORT MediaCustomControlsFullscreenDetector final
   void Invoke(ExecutionContext*, Event*) override;
 
   void Trace(Visitor*) override;
-  void TriggerObservation();
 
  private:
   friend class MediaCustomControlsFullscreenDetectorTest;
@@ -39,11 +39,18 @@ class CORE_EXPORT MediaCustomControlsFullscreenDetector final
   void OnCheckViewportIntersectionTimerFired(TimerBase*);
   void OnIntersectionChanged(
       const HeapVector<Member<IntersectionObserverEntry>>&);
+
   bool IsVideoOrParentFullscreen();
+
+  static bool ComputeIsDominantVideoForTests(const IntSize& target_size,
+                                             const IntSize& root_size,
+                                             const IntSize& intersection_size);
 
   // `video_element_` owns |this|.
   Member<HTMLVideoElement> video_element_;
   Member<IntersectionObserver> viewport_intersection_observer_;
+  TaskRunnerTimer<MediaCustomControlsFullscreenDetector>
+      check_viewport_intersection_timer_;
 };
 
 }  // namespace blink

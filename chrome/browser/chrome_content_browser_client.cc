@@ -3188,6 +3188,10 @@ void ChromeContentBrowserClient::OverrideWebkitPrefs(
     web_prefs->immersive_mode_enabled = vr::VrTabHelper::IsInVr(contents);
   }
 
+#if defined(OS_ANDROID)
+  web_prefs->video_fullscreen_detection_enabled = true;
+#endif  // defined(OS_ANDROID)
+
   if (base::FeatureList::IsEnabled(features::kLowPriorityIframes)) {
     // Obtain the maximum effective connection type at which the feature is
     // enabled.

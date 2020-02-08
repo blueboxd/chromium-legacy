@@ -68,6 +68,8 @@ namespace blink {
 
 namespace {
 
+constexpr float kMostlyFillViewportThreshold = 0.85f;
+
 // This enum is used to record histograms. Do not reorder.
 enum VideoPersistenceControlsType {
   kVideoPersistenceControlsTypeNative = 0,
@@ -81,24 +83,20 @@ HTMLVideoElement::HTMLVideoElement(Document& document)
     : HTMLMediaElement(html_names::kVideoTag, document),
       remoting_interstitial_(nullptr),
       picture_in_picture_interstitial_(nullptr),
-      is_persistent_(false),
-      is_auto_picture_in_picture_(false),
       in_overlay_fullscreen_video_(false),
-      is_effectively_fullscreen_(false),
       is_default_overridden_intrinsic_size_(
           !document.IsMediaDocument() &&
           !document.IsFeatureEnabled(
-              mojom::blink::FeaturePolicyFeature::kUnsizedMedia)),
-      video_has_played_(false),
-      viewport_monitoring_is_active_(false),
-      mostly_filling_viewport_(false) {
+              mojom::blink::FeaturePolicyFeature::kUnsizedMedia)) {
   if (document.GetSettings()) {
     default_poster_url_ =
         AtomicString(document.GetSettings()->GetDefaultVideoPosterURL());
   }
 
-  custom_controls_fullscreen_detector_ =
-      MakeGarbageCollected<MediaCustomControlsFullscreenDetector>(*this);
+  if (RuntimeEnabledFeatures::VideoFullscreenDetectionEnabled()) {
+    custom_controls_fullscreen_detector_ =
+        MakeGarbageCollected<MediaCustomControlsFullscreenDetector>(*this);
+  }
 
   wake_lock_ = MakeGarbageCollected<VideoWakeLock>(*this);
 
@@ -112,6 +110,7 @@ void HTMLVideoElement::Trace(Visitor* visitor) {
   visitor->Trace(wake_lock_);
   visitor->Trace(remoting_interstitial_);
   visitor->Trace(picture_in_picture_interstitial_);
+  visitor->Trace(viewport_intersection_observer_);
   Supplementable<HTMLVideoElement>::Trace(visitor);
   HTMLMediaElement::Trace(visitor);
 }
@@ -123,7 +122,7 @@ bool HTMLVideoElement::HasPendingActivity() const {
 
 Node::InsertionNotificationRequest HTMLVideoElement::InsertedInto(
     ContainerNode& insertion_point) {
-  if (insertion_point.isConnected())
+  if (insertion_point.isConnected() && custom_controls_fullscreen_detector_)
     custom_controls_fullscreen_detector_->Attach();
 
   return HTMLMediaElement::InsertedInto(insertion_point);
@@ -131,13 +130,17 @@ Node::InsertionNotificationRequest HTMLVideoElement::InsertedInto(
 
 void HTMLVideoElement::RemovedFrom(ContainerNode& insertion_point) {
   HTMLMediaElement::RemovedFrom(insertion_point);
-  custom_controls_fullscreen_detector_->Detach();
+
+  if (custom_controls_fullscreen_detector_)
+    custom_controls_fullscreen_detector_->Detach();
 
   OnBecamePersistentVideo(false);
 }
 
 void HTMLVideoElement::ContextDestroyed(ExecutionContext* context) {
-  custom_controls_fullscreen_detector_->ContextDestroyed();
+  if (custom_controls_fullscreen_detector_)
+    custom_controls_fullscreen_detector_->ContextDestroyed();
+
   HTMLMediaElement::ContextDestroyed(context);
 }
 
@@ -350,11 +353,19 @@ void HTMLVideoElement::OnBecamePersistentVideo(bool value) {
 }
 
 void HTMLVideoElement::ActivateViewportIntersectionMonitoring(bool activate) {
-  viewport_monitoring_is_active_ = activate;
-  if (activate)
-    custom_controls_fullscreen_detector_->TriggerObservation();
-  else
+  if (activate && !viewport_intersection_observer_) {
+    viewport_intersection_observer_ = IntersectionObserver::Create(
+        {}, {kMostlyFillViewportThreshold}, &(GetDocument()),
+        WTF::BindRepeating(&HTMLVideoElement::OnViewportIntersectionChanged,
+                           WrapWeakPersistent(this)),
+        IntersectionObserver::kDeliverDuringPostLifecycleSteps,
+        IntersectionObserver::kFractionOfRoot);
+    viewport_intersection_observer_->observe(this);
+  } else if (!activate && viewport_intersection_observer_) {
+    viewport_intersection_observer_->disconnect();
+    viewport_intersection_observer_ = nullptr;
     mostly_filling_viewport_ = false;
+  }
 }
 
 bool HTMLVideoElement::IsPersistent() const {
@@ -581,7 +592,13 @@ void HTMLVideoElement::DidMoveToNewDocument(Document& old_document) {
   if (image_loader_)
     image_loader_->ElementDidMoveToNewDocument();
 
+  if (viewport_intersection_observer_) {
+    ActivateViewportIntersectionMonitoring(false);
+    ActivateViewportIntersectionMonitoring(true);
+  }
+
   wake_lock_->ElementDidMoveToNewDocument();
+
   HTMLMediaElement::DidMoveToNewDocument(old_document);
 }
 
@@ -778,22 +795,10 @@ void HTMLVideoElement::SetIsEffectivelyFullscreen(
     blink::WebFullscreenVideoStatus status) {
   is_effectively_fullscreen_ =
       status != blink::WebFullscreenVideoStatus::kNotEffectivelyFullscreen;
+
   if (GetWebMediaPlayer()) {
     GetWebMediaPlayer()->SetIsEffectivelyFullscreen(status);
     GetWebMediaPlayer()->OnDisplayTypeChanged(DisplayType());
-  }
-}
-
-void HTMLVideoElement::SetIsDominantVisibleContent(bool is_dominant) {
-  // No monitoring, means |mostly_filling_viewport_| should never become true.
-  if (!viewport_monitoring_is_active_)
-    is_dominant = false;
-
-  if (mostly_filling_viewport_ != is_dominant) {
-    mostly_filling_viewport_ = is_dominant;
-    auto* player = GetWebMediaPlayer();
-    if (player)
-      player->BecameDominantVisibleContent(mostly_filling_viewport_);
   }
 }
 
@@ -813,6 +818,18 @@ void HTMLVideoElement::AddedEventListener(
 
 bool HTMLVideoElement::IsRemotingInterstitialVisible() const {
   return remoting_interstitial_ && remoting_interstitial_->IsVisible();
+}
+
+void HTMLVideoElement::OnViewportIntersectionChanged(
+    const HeapVector<Member<IntersectionObserverEntry>>& entries) {
+  const bool is_mostly_filling_viewport =
+      (entries.back()->intersectionRatio() >= kMostlyFillViewportThreshold);
+  if (mostly_filling_viewport_ == is_mostly_filling_viewport)
+    return;
+
+  mostly_filling_viewport_ = is_mostly_filling_viewport;
+  if (web_media_player_)
+    web_media_player_->BecameDominantVisibleContent(mostly_filling_viewport_);
 }
 
 void HTMLVideoElement::OnIntersectionChangedForLazyLoad(

@@ -203,7 +203,6 @@ class CORE_EXPORT HTMLVideoElement final
   void OnExitedPictureInPicture();
 
   void SetIsEffectivelyFullscreen(blink::WebFullscreenVideoStatus);
-  void SetIsDominantVisibleContent(bool is_dominant);
 
   void SetImageForTest(ImageResourceContent* content) {
     if (!image_loader_)
@@ -253,6 +252,8 @@ class CORE_EXPORT HTMLVideoElement final
 
   void UpdatePictureInPictureAvailability();
 
+  void OnViewportIntersectionChanged(
+      const HeapVector<Member<IntersectionObserverEntry>>& entries);
   void OnIntersectionChangedForLazyLoad(
       const HeapVector<Member<IntersectionObserverEntry>>& entries);
 
@@ -269,29 +270,29 @@ class CORE_EXPORT HTMLVideoElement final
   // Represents whether the video is 'persistent'. It is used for videos with
   // custom controls that are in auto-pip (Android). This boolean is used by a
   // CSS rule.
-  bool is_persistent_ : 1;
+  bool is_persistent_ = false;
 
   // Whether the video is currently in auto-pip (Android). It is not similar to
   // a video being in regular Picture-in-Picture mode.
-  bool is_auto_picture_in_picture_ : 1;
+  bool is_auto_picture_in_picture_ = false;
 
   // Whether this element is in overlay fullscreen mode.
-  bool in_overlay_fullscreen_video_ : 1;
+  bool in_overlay_fullscreen_video_;
 
   // Whether the video element should be considered as fullscreen with regards
   // to display type and other UI features. This does not mean the DOM element
   // is fullscreen.
-  bool is_effectively_fullscreen_ : 1;
+  bool is_effectively_fullscreen_ = false;
 
-  bool is_default_overridden_intrinsic_size_ : 1;
+  bool is_default_overridden_intrinsic_size_;
 
-  bool video_has_played_ : 1;
-
-  bool viewport_monitoring_is_active_ : 1;
+  bool video_has_played_ = false;
 
   // The following is always false unless viewport intersection monitoring is
   // turned on via ActivateViewportIntersectionMonitoring().
-  bool mostly_filling_viewport_ : 1;
+  bool mostly_filling_viewport_ = false;
+
+  Member<IntersectionObserver> viewport_intersection_observer_;
 };
 
 }  // namespace blink

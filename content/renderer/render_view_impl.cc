@@ -796,6 +796,8 @@ void RenderView::ApplyWebPreferences(const WebPreferences& prefs,
       prefs.video_fullscreen_orientation_lock_enabled);
   WebRuntimeFeatures::EnableVideoRotateToFullscreen(
       prefs.video_rotate_to_fullscreen_enabled);
+  WebRuntimeFeatures::EnableVideoFullscreenDetection(
+      prefs.video_fullscreen_detection_enabled);
   settings->SetEmbeddedMediaExperienceEnabled(
       prefs.embedded_media_experience_enabled);
   settings->SetImmersiveModeEnabled(prefs.immersive_mode_enabled);
@@ -814,6 +816,7 @@ void RenderView::ApplyWebPreferences(const WebPreferences& prefs,
     WebRuntimeFeatures::EnableHTMLImports(true);
   }
 #endif  // defined(OS_ANDROID)
+
   settings->SetForceDarkModeEnabled(prefs.force_dark_mode_enabled);
 
   switch (prefs.autoplay_policy) {

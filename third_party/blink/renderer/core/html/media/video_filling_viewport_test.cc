@@ -31,11 +31,11 @@ class VideoFillingViewportTest : public SimTest {
   void ActivateViewportIntersectionMonitoring(HTMLVideoElement* element,
                                               bool enable) {
     element->ActivateViewportIntersectionMonitoring(enable);
+    EXPECT_EQ(enable, !!element->viewport_intersection_observer_);
   }
 
   void DoCompositeAndPropagate() {
-    if (Compositor().NeedsBeginFrame())
-      Compositor().BeginFrame();
+    Compositor().BeginFrame();
     test::RunPendingTasks();
   }
 

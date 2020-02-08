@@ -204,8 +204,8 @@ public class SelectableListToolbar<E>
         mSelectionBackgroundColor =
                 ApiCompatibilityUtils.getColor(getResources(), R.color.light_active_color);
 
-        mDarkIconColorList =
-                AppCompatResources.getColorStateList(getContext(), R.color.standard_mode_tint);
+        mDarkIconColorList = AppCompatResources.getColorStateList(
+                getContext(), R.color.default_icon_color_tint_list);
         mLightIconColorList = AppCompatResources.getColorStateList(
                 getContext(), R.color.default_icon_color_inverse);
 
@@ -215,11 +215,11 @@ public class SelectableListToolbar<E>
         // TODO(twellington): add the concept of normal & selected tint to apply to all toolbar
         //                    buttons.
         mNormalMenuButton = UiUtils.getTintedDrawable(
-                getContext(), R.drawable.ic_more_vert_24dp, R.color.standard_mode_tint);
+                getContext(), R.drawable.ic_more_vert_24dp, R.color.default_icon_color_tint_list);
         mSelectionMenuButton = UiUtils.getTintedDrawable(
                 getContext(), R.drawable.ic_more_vert_24dp, R.color.default_icon_color_inverse);
-        mNavigationIconDrawable = UiUtils.getTintedDrawable(
-                getContext(), R.drawable.ic_arrow_back_white_24dp, R.color.standard_mode_tint);
+        mNavigationIconDrawable = UiUtils.getTintedDrawable(getContext(),
+                R.drawable.ic_arrow_back_white_24dp, R.color.default_icon_color_tint_list);
 
         mVrModeProvider = vrModeProvider;
         mVrModeProvider.registerVrModeObserver(this);
@@ -612,7 +612,8 @@ public class SelectableListToolbar<E>
             if (mShowInfoIcon) {
                 Drawable iconDrawable =
                         TintedDrawable.constructTintedDrawable(getContext(), R.drawable.btn_info,
-                                infoShowing ? R.color.blue_mode_tint : R.color.standard_mode_tint);
+                                infoShowing ? R.color.blue_mode_tint
+                                            : R.color.default_icon_color_tint_list);
 
                 infoMenuItem.setIcon(iconDrawable);
             }

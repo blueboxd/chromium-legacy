@@ -134,15 +134,18 @@ URLLoaderThrottleProviderImpl::Clone() {
 std::vector<std::unique_ptr<blink::URLLoaderThrottle>>
 URLLoaderThrottleProviderImpl::CreateThrottles(
     int render_frame_id,
-    const blink::WebURLRequest& request,
-    blink::mojom::ResourceType resource_type) {
+    const blink::WebURLRequest& request) {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
 
   std::vector<std::unique_ptr<blink::URLLoaderThrottle>> throttles;
 
+  const network::mojom::RequestDestination request_destination =
+      request.GetRequestDestination();
+
   // Some throttles have already been added in the browser for frame resources.
   // Don't add them for frame requests.
-  bool is_frame_resource = blink::IsResourceTypeFrame(resource_type);
+  bool is_frame_resource =
+      blink::IsRequestDestinationFrame(request_destination);
 
   DCHECK(!is_frame_resource ||
          type_ == content::URLLoaderThrottleProviderType::kFrame);
@@ -180,7 +183,7 @@ URLLoaderThrottleProviderImpl::CreateThrottles(
 
 #if BUILDFLAG(ENABLE_EXTENSIONS)
   if (type_ == content::URLLoaderThrottleProviderType::kFrame &&
-      resource_type == blink::mojom::ResourceType::kObject) {
+      request_destination == network::mojom::RequestDestination::kObject) {
     content::RenderFrame* render_frame =
         content::RenderFrame::FromRoutingID(render_frame_id);
     auto mime_handlers =
@@ -222,7 +225,7 @@ URLLoaderThrottleProviderImpl::CreateThrottles(
 #endif  // defined(OS_CHROMEOS)
 
   auto throttle = subresource_redirect::SubresourceRedirectURLLoaderThrottle::
-      MaybeCreateThrottle(request, resource_type, render_frame_id);
+      MaybeCreateThrottle(request, render_frame_id);
   if (throttle)
     throttles.push_back(std::move(throttle));
 

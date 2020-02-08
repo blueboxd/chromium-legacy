@@ -441,9 +441,7 @@ void PaintController::CopyCachedSubsequence(wtf_size_t begin_index,
     }
 #endif
 
-    auto& item = MoveItemFromCurrentListToNewList(current_index);
-    item.SetCopiedFromCachedSubsequence(true);
-    ProcessNewItem(item);
+    ProcessNewItem(MoveItemFromCurrentListToNewList(current_index));
     DCHECK((!CurrentPaintChunk().is_cacheable && !cached_chunk->is_cacheable) ||
            CurrentPaintChunk().Matches(*cached_chunk));
   }
@@ -529,31 +527,13 @@ void PaintController::FinishCycle() {
       }
       for (const auto& item : current_paint_artifact_->GetDisplayItemList()) {
         const auto& client = item.Client();
-        if (item.IsCopiedFromCachedSubsequence()) {
-          // We don't need to validate the clients of a display item that is
-          // copied from a cached subsequence, because it should be already
-          // valid. See http://crbug.com/1050090 for more details.
-#if DCHECK_IS_ON()
-          DCHECK(client.IsAlive());
-          DCHECK(client.IsValid() || !client.IsCacheable());
-#endif
-          continue;
-        }
         client.ClearPartialInvalidationVisualRect();
         if (client.IsCacheable())
           client.Validate();
       }
       for (const auto& chunk : current_paint_artifact_->PaintChunks()) {
-        const auto& client = chunk.id.client;
-        if (chunk.is_copied_from_cached_subsequence) {
-#if DCHECK_IS_ON()
-          DCHECK(client.IsAlive());
-          DCHECK(client.IsValid() || !client.IsCacheable());
-#endif
-          continue;
-        }
-        if (client.IsCacheable())
-          client.Validate();
+        if (chunk.id.client.IsCacheable())
+          chunk.id.client.Validate();
       }
     }
 

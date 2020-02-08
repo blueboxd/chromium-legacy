@@ -90,7 +90,7 @@ class MockDelegate : public blink::URLLoaderThrottle::Delegate {
   MockDelegate() = default;
 
   void CancelWithError(int error_code,
-                       base::StringPiece custom_reason = nullptr) override {
+                       base::StringPiece custom_reason = "") override {
     FAIL() << "Should not be reached";
   }
 

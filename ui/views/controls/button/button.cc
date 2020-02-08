@@ -56,10 +56,10 @@ Button::WidgetObserverButtonBridge::~WidgetObserverButtonBridge() {
     owner_->GetWidget()->RemoveObserver(this);
 }
 
-void Button::WidgetObserverButtonBridge::OnWidgetActivationChanged(
+void Button::WidgetObserverButtonBridge::OnWidgetPaintAsActiveChanged(
     Widget* widget,
-    bool active) {
-  owner_->WidgetActivationChanged(widget, active);
+    bool paint_as_active) {
+  owner_->WidgetPaintAsActiveChanged(widget, paint_as_active);
 }
 
 void Button::WidgetObserverButtonBridge::OnWidgetDestroying(Widget* widget) {
@@ -118,6 +118,9 @@ bool Button::DefaultButtonControllerDelegate::InDrag() {
 }
 
 ////////////////////////////////////////////////////////////////////////////////
+
+// static
+constexpr Button::ButtonState Button::kButtonStates[STATE_COUNT];
 
 // static
 const Button* Button::AsButton(const views::View* view) {
@@ -205,7 +208,7 @@ void Button::SetState(ButtonState state) {
 
 Button::ButtonState Button::GetVisualState() const {
   if (PlatformStyle::kInactiveWidgetControlsAppearDisabled && GetWidget() &&
-      !GetWidget()->IsActive()) {
+      !GetWidget()->ShouldPaintAsActive()) {
     return STATE_DISABLED;
   }
   return state();
@@ -624,7 +627,7 @@ void Button::OnEnabledChanged() {
   }
 }
 
-void Button::WidgetActivationChanged(Widget* widget, bool active) {
+void Button::WidgetPaintAsActiveChanged(Widget* widget, bool paint_as_active) {
   StateChanged(state());
 }
 

@@ -59,12 +59,16 @@ bool g_needs_set_up_for_test_case = true;
 
   if (g_needs_set_up_for_test_case) {
     g_needs_set_up_for_test_case = false;
+#if defined(CHROME_EARL_GREY_1)
     [CoverageUtils configureCoverageReportPath];
+#endif
     [[self class] setUpForTestCase];
   }
 }
 
 + (void)tearDown {
+  [CoverageUtils writeClangCoverageProfile];
+  [CoverageUtils resetCoverageProfileCounters];
   g_needs_set_up_for_test_case = true;
   [super tearDown];
 }

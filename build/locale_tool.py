@@ -322,10 +322,10 @@ class _PrettyPrintListAsLinesTest(unittest.TestCase):
 ##########################################################################
 
 # Various list of locales that will be extracted from build/config/locales.gni
-# Do not use these directly, use ChromeLocales(), AndroidOmittedLocales() and
+# Do not use these directly, use ChromeLocales(), AndroidAPKOmittedLocales() and
 # IosUnsupportedLocales() instead to access these lists.
 _INTERNAL_CHROME_LOCALES = []
-_INTERNAL_ANDROID_OMITTED_LOCALES = []
+_INTERNAL_ANDROID_APK_OMITTED_LOCALES = []
 _INTERNAL_IOS_UNSUPPORTED_LOCALES = []
 
 
@@ -336,11 +336,11 @@ def ChromeLocales():
   return _INTERNAL_CHROME_LOCALES
 
 
-def AndroidOmittedLocales():
-  """Reutrn the list of locales omitted from Android APKs."""
-  if not _INTERNAL_ANDROID_OMITTED_LOCALES:
+def AndroidAPKOmittedLocales():
+  """Return the list of locales omitted from Android APKs."""
+  if not _INTERNAL_ANDROID_APK_OMITTED_LOCALES:
     _ExtractAllChromeLocalesLists()
-  return _INTERNAL_ANDROID_OMITTED_LOCALES
+  return _INTERNAL_ANDROID_APK_OMITTED_LOCALES
 
 
 def IosUnsupportedLocales():
@@ -370,10 +370,12 @@ def _PrepareTinyGnWorkspace(work_dir, out_subdir_name='out'):
              'buildconfig = "//BUILDCONFIG.gn"\n')
   # Create BUILDCONFIG.gn which must set a default toolchain. Also add
   # all variables that may be used in locales.gni in a declare_args() block.
-  _WriteFile(os.path.join(work_dir, 'BUILDCONFIG.gn'),
-             r'''set_default_toolchain("toolchain")
+  _WriteFile(
+      os.path.join(work_dir, 'BUILDCONFIG.gn'),
+      r'''set_default_toolchain("toolchain")
 declare_args () {
   is_ios = false
+  is_android = true
 }
 ''')
 
@@ -390,8 +392,8 @@ declare_args () {
   # Create top-level BUILD.gn, GN requires at least one target to build so do
   # that with a fake action which will never be invoked. Also write the locales
   # to misc files in the output directory.
-  _WriteFile(os.path.join(work_dir, 'BUILD.gn'),
-             r'''import("//locales.gni")
+  _WriteFile(
+      os.path.join(work_dir, 'BUILD.gn'), r'''import("//locales.gni")
 
 action("create_foo") {   # fake action to avoid GN complaints.
   script = "//build/create_foo.py"
@@ -402,8 +404,8 @@ action("create_foo") {   # fake action to avoid GN complaints.
 # Write the locales lists to files in the output directory.
 _filename = root_build_dir + "/foo"
 write_file(_filename + ".locales", locales, "json")
-write_file(_filename + ".android_omitted_locales",
-            android_chrome_omitted_locales,
+write_file(_filename + ".android_apk_omitted_locales",
+            android_apk_omitted_locales,
             "json")
 write_file(_filename + ".ios_unsupported_locales",
             ios_unsupported_locales,
@@ -448,16 +450,20 @@ def _ExtractAllChromeLocalesLists():
     # NOTE: The file suffixes used here should be kept in sync with
     # build/config/locales.gni
     gn_executable = _FindGnExecutable()
-    subprocess.check_output(
-        [gn_executable, 'gen', out_path, '--root=' + tmp_path])
+    try:
+      subprocess.check_output(
+          [gn_executable, 'gen', out_path, '--root=' + tmp_path])
+    except subprocess.CalledProcessError as e:
+      print(e.output)
+      raise e
 
     global _INTERNAL_CHROME_LOCALES
     _INTERNAL_CHROME_LOCALES = _ReadJsonList(
         os.path.join(out_path, 'foo.locales'))
 
-    global _INTERNAL_ANDROID_OMITTED_LOCALES
-    _INTERNAL_ANDROID_OMITTED_LOCALES = _ReadJsonList(
-        os.path.join(out_path, 'foo.android_omitted_locales'))
+    global _INTERNAL_ANDROID_APK_OMITTED_LOCALES
+    _INTERNAL_ANDROID_APK_OMITTED_LOCALES = _ReadJsonList(
+        os.path.join(out_path, 'foo.android_apk_omitted_locales'))
 
     global _INTERNAL_IOS_UNSUPPORTED_LOCALES
     _INTERNAL_IOS_UNSUPPORTED_LOCALES = _ReadJsonList(
@@ -1280,9 +1286,9 @@ class _ListLocalesCommand(_Command):
   description = 'List supported Chrome locales'
   long_description = r'''
 List locales of interest, by default this prints all locales supported by
-Chrome, but `--type=android_omitted` can be used to print the list of locales
-omitted from Android APKs (but not app bundles), and `--type=ios_unsupported`
-for the list of locales unsupported on iOS.
+Chrome, but `--type=android_apk_omitted` can be used to print the list of
+locales omitted from Android APKs (but not app bundles), and
+`--type=ios_unsupported` for the list of locales unsupported on iOS.
 
 These values are extracted directly from build/config/locales.gni.
 
@@ -1292,9 +1298,9 @@ instead of the default format (which is a space-separated list of locale names).
 
   # Maps type argument to a function returning the corresponding locales list.
   TYPE_MAP = {
-    'all': ChromeLocales,
-    'android_omitted': AndroidOmittedLocales,
-    'ios_unsupported': IosUnsupportedLocales,
+      'all': ChromeLocales,
+      'android_apk_omitted': AndroidAPKOmittedLocales,
+      'ios_unsupported': IosUnsupportedLocales,
   }
 
   def RegisterExtraArgs(self, group):

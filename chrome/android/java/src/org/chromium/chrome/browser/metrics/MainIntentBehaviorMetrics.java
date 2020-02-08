@@ -130,7 +130,7 @@ public class MainIntentBehaviorMetrics implements ApplicationStatus.ActivityStat
             @Override
             public void didAddTab(Tab tab, @TabLaunchType int type) {
                 if (type == TabLaunchType.FROM_RESTORE) return;
-                if (NewTabPage.isNTPUrl(tab.getUrl())) {
+                if (NewTabPage.isNTPUrl(tab.getUrlString())) {
                     recordUserBehavior(MainIntentActionType.NTP_CREATED);
                 }
             }

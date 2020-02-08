@@ -4836,7 +4836,20 @@ int AXPlatformNodeWin::MSAARole() {
       return ROLE_SYSTEM_DOCUMENT;
 
     case ax::mojom::Role::kEmbeddedObject:
-      return ROLE_SYSTEM_CLIENT;
+      // Even though the HTML-AAM has ROLE_SYSTEM_CLIENT for <embed>, we are
+      // forced to use ROLE_SYSTEM_GROUPING when the <embed> has children in the
+      // accessibility tree.
+      // https://www.w3.org/TR/html-aam-1.0/#html-element-role-mappings
+      //
+      // Screen readers Jaws and NVDA do not "see" any of the <embed>'s contents
+      // if they are represented as its children in the accessibility tree. For
+      // example, one of the places that would be negatively impacted is the
+      // reading of PDFs.
+      if (GetDelegate()->GetChildCount()) {
+        return ROLE_SYSTEM_GROUPING;
+      } else {
+        return ROLE_SYSTEM_CLIENT;
+      }
 
     case ax::mojom::Role::kFigcaption:
       return ROLE_SYSTEM_GROUPING;
@@ -4994,10 +5007,12 @@ int AXPlatformNodeWin::MSAARole() {
       return ROLE_SYSTEM_PUSHBUTTON;
 
     case ax::mojom::Role::kPluginObject:
-      if (GetDelegate()->GetChildCount())
+      // See also case ax::mojom::Role::kEmbeddedObject.
+      if (GetDelegate()->GetChildCount()) {
         return ROLE_SYSTEM_GROUPING;
-      else
+      } else {
         return ROLE_SYSTEM_CLIENT;
+      }
 
     case ax::mojom::Role::kPopUpButton: {
       std::string html_tag =
@@ -5388,7 +5403,20 @@ int32_t AXPlatformNodeWin::ComputeIA2Role() {
       ia2_role = IA2_ROLE_FOOTNOTE;
       break;
     case ax::mojom::Role::kEmbeddedObject:
-      ia2_role = IA2_ROLE_EMBEDDED_OBJECT;
+      // Even though the HTML-AAM has IA2_ROLE_EMBEDDED_OBJECT for <embed>, we
+      // are forced to use IA2_ROLE_SECTION when the <embed> has children in the
+      // accessibility tree.
+      // https://www.w3.org/TR/html-aam-1.0/#html-element-role-mappings
+      //
+      // Screen readers Jaws and NVDA do not "see" any of the <embed>'s contents
+      // if they are represented as its children in the accessibility tree. For
+      // example, one of the places that would be negatively impacted is the
+      // reading of PDFs.
+      if (GetDelegate()->GetChildCount()) {
+        ia2_role = IA2_ROLE_SECTION;
+      } else {
+        ia2_role = IA2_ROLE_EMBEDDED_OBJECT;
+      }
       break;
     case ax::mojom::Role::kFigcaption:
       ia2_role = IA2_ROLE_CAPTION;
@@ -5444,8 +5472,12 @@ int32_t AXPlatformNodeWin::ComputeIA2Role() {
       ia2_role = IA2_ROLE_PARAGRAPH;
       break;
     case ax::mojom::Role::kPluginObject:
-      if (!GetDelegate()->GetChildCount())
+      // See also case ax::mojom::Role::kEmbeddedObject.
+      if (GetDelegate()->GetChildCount()) {
+        ia2_role = IA2_ROLE_SECTION;
+      } else {
         ia2_role = IA2_ROLE_EMBEDDED_OBJECT;
+      }
       break;
     case ax::mojom::Role::kPre:
       ia2_role = IA2_ROLE_PARAGRAPH;
@@ -5674,7 +5706,11 @@ base::string16 AXPlatformNodeWin::UIAAriaRole() {
       return L"document";
 
     case ax::mojom::Role::kEmbeddedObject:
-      return L"region";
+      if (GetDelegate()->GetChildCount()) {
+        return L"group";
+      } else {
+        return L"document";
+      }
 
     case ax::mojom::Role::kEmphasis:
       return L"emphasis";
@@ -5838,10 +5874,11 @@ base::string16 AXPlatformNodeWin::UIAAriaRole() {
       return L"button";
 
     case ax::mojom::Role::kPluginObject:
-      if (GetDelegate()->GetChildCount())
+      if (GetDelegate()->GetChildCount()) {
         return L"group";
-      else
+      } else {
         return L"document";
+      }
 
     case ax::mojom::Role::kPopUpButton: {
       std::string html_tag =
@@ -6509,10 +6546,11 @@ LONG AXPlatformNodeWin::ComputeUIAControlType() {  // NOLINT(runtime/int)
       return UIA_CustomControlTypeId;
 
     case ax::mojom::Role::kPluginObject:
-      if (GetDelegate()->GetChildCount())
+      if (GetDelegate()->GetChildCount()) {
         return UIA_GroupControlTypeId;
-      else
+      } else {
         return UIA_DocumentControlTypeId;
+      }
 
     case ax::mojom::Role::kPopUpButton: {
       std::string html_tag =
@@ -6925,8 +6963,9 @@ int AXPlatformNodeWin::MSAAState() const {
     msaa_state |= STATE_SYSTEM_FOCUSABLE;
 
   if (data.HasIntAttribute(ax::mojom::IntAttribute::kHasPopup) ||
-      data.HasState(ax::mojom::State::kAutofillAvailable))
+      data.HasState(ax::mojom::State::kAutofillAvailable)) {
     msaa_state |= STATE_SYSTEM_HASPOPUP;
+  }
 
   // TODO(dougt) unhandled ux::ax::mojom::State::kHorizontal
 
@@ -7013,9 +7052,18 @@ int AXPlatformNodeWin::MSAAState() const {
       // even if the node data isn't marked as read only, as long as the
       // node is not editable.
       if (!data.HasState(ax::mojom::State::kRichlyEditable) &&
-          ShouldHaveReadonlyStateByDefault(data.role))
+          ShouldHaveReadonlyStateByDefault(data.role)) {
         msaa_state |= STATE_SYSTEM_READONLY;
+      }
       break;
+  }
+
+  // Windowless plugins should have STATE_SYSTEM_UNAVAILABLE.
+  //
+  // (All of our plugins are windowless.)
+  if (data.role == ax::mojom::Role::kPluginObject ||
+      data.role == ax::mojom::Role::kEmbeddedObject) {
+    msaa_state |= STATE_SYSTEM_UNAVAILABLE;
   }
 
   //

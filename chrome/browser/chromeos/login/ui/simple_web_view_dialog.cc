@@ -353,10 +353,6 @@ void SimpleWebViewDialog::LoadImages() {
                      tp->GetImageSkiaNamed(IDR_FORWARD_P));
   forward_->SetImage(views::Button::STATE_DISABLED,
                      tp->GetImageSkiaNamed(IDR_FORWARD_D));
-
-  reload_->SetColors(
-      tp->GetColor(ThemeProperties::COLOR_TOOLBAR_BUTTON_ICON),
-      tp->GetColor(ThemeProperties::COLOR_TOOLBAR_BUTTON_ICON_INACTIVE));
 }
 
 void SimpleWebViewDialog::UpdateButtons() {

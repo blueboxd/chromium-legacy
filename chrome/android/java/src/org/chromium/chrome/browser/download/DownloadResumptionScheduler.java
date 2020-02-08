@@ -9,6 +9,7 @@ import android.text.format.DateUtils;
 
 import org.chromium.base.ContextUtils;
 import org.chromium.chrome.browser.flags.CachedFeatureFlags;
+import org.chromium.chrome.browser.flags.ChromeFeatureList;
 import org.chromium.components.background_task_scheduler.BackgroundTaskSchedulerFactory;
 import org.chromium.components.background_task_scheduler.TaskIds;
 import org.chromium.components.background_task_scheduler.TaskInfo;
@@ -37,7 +38,9 @@ public class DownloadResumptionScheduler {
      * if there are resumable downloads available.
      */
     public void scheduleIfNecessary() {
-        if (CachedFeatureFlags.isDownloadAutoResumptionEnabledInNative()) return;
+        if (CachedFeatureFlags.isEnabled(ChromeFeatureList.DOWNLOADS_AUTO_RESUMPTION_NATIVE)) {
+            return;
+        }
 
         List<DownloadSharedPreferenceEntry> entries =
                 DownloadSharedPreferenceHelper.getInstance().getEntries();

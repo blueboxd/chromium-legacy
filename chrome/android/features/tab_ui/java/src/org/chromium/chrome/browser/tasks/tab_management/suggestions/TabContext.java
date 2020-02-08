@@ -83,7 +83,7 @@ public class TabContext {
          */
         public static TabInfo createFromTab(Tab tab) {
             String referrerUrl = getReferrerUrlFromTab(tab);
-            return new TabInfo(tab.getId(), tab.getTitle(), tab.getUrl(),
+            return new TabInfo(tab.getId(), tab.getTitle(), tab.getUrlString(),
                     ((TabImpl) tab).getOriginalUrl(), referrerUrl != null ? referrerUrl : "",
                     tab.getTimestampMillis());
         }

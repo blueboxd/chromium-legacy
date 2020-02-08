@@ -193,7 +193,7 @@ public class CustomTabsDynamicModuleUITest {
         ChromeTabUtils.waitForTabPageLoaded(cctActivity.getActivityTab(), null);
 
         // close button returns back to moduleManagedUrl2
-        assertEquals(mModuleManagedPage2, cctActivity.getActivityTab().getUrl());
+        assertEquals(mModuleManagedPage2, cctActivity.getActivityTab().getUrlString());
 
         // press the back button and wait while tab page loaded
         UiDevice mDevice = UiDevice.getInstance(InstrumentationRegistry.getInstrumentation());
@@ -201,14 +201,14 @@ public class CustomTabsDynamicModuleUITest {
         ChromeTabUtils.waitForTabPageLoaded(cctActivity.getActivityTab(), null);
 
         // the back button returns to nav1.2
-        assertEquals(mTestPage2, cctActivity.getActivityTab().getUrl());
+        assertEquals(mTestPage2, cctActivity.getActivityTab().getUrlString());
 
         // click the close button and wait while tab page loaded
         ClickUtils.clickButton(cctActivity.findViewById(R.id.close_button));
         ChromeTabUtils.waitForTabPageLoaded(cctActivity.getActivityTab(), null);
 
         // close button returns back to moduleManagedUrl1
-        assertEquals(mModuleManagedPage, cctActivity.getActivityTab().getUrl());
+        assertEquals(mModuleManagedPage, cctActivity.getActivityTab().getUrlString());
 
         // press back button and while cct is hidden
         runAndWaitForActivityStopped(mDevice::pressBack);

@@ -10,7 +10,6 @@
 
 #include "base/strings/stringprintf.h"
 #include "base/trace_event/traced_value.h"
-#include "base/values.h"
 
 namespace cc {
 
@@ -32,12 +31,6 @@ ElementIdType ElementId::GetStableId() const {
 
 std::string ElementId::ToString() const {
   return base::StringPrintf("(%" PRIu64 ")", id_);
-}
-
-std::unique_ptr<base::Value> ElementId::AsValue() const {
-  std::unique_ptr<base::DictionaryValue> res(new base::DictionaryValue());
-  res->SetInteger("id_", id_);
-  return std::move(res);
 }
 
 size_t ElementIdHash::operator()(ElementId key) const {

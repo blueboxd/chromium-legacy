@@ -35,6 +35,7 @@ mojom("mojom_platform") {
     "commit_result/commit_result.mojom",
     "contacts/contacts_manager.mojom",
     "content_index/content_index.mojom",
+    "conversions/conversions.mojom",
     "cookie_store/cookie_store.mojom",
     "crash/crash_memory_metrics_reporter.mojom",
     "credentialmanager/credential_manager.mojom",

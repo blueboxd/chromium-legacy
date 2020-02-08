@@ -21,6 +21,8 @@ void AddUiColorMixers(ColorProvider* provider) {
   mixer[kColorButtonBorder] = {kColorBorderAndSeparatorForeground};
   mixer[kColorButtonDisabledForeground] = {kColorDisabledForeground};
   mixer[kColorButtonForeground] = {kColorAccent};
+  mixer[kColorButtonHoveredForeground] = {kColorButtonForeground};
+  mixer[kColorButtonPressedForeground] = {kColorButtonForeground};
   mixer[kColorButtonPressedBackground] = {kColorButtonBackground};
   mixer[kColorButtonProminentBackground] = {kColorAccent};
   mixer[kColorButtonProminentDisabledBackground] =

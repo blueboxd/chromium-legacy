@@ -111,7 +111,7 @@ public class FeedActionHandlerTest {
     public void setUp() {
         MockitoAnnotations.initMocks(this);
         mActionHandler = new FeedActionHandler(mDelegate, mSuggestionConsumedObserver,
-                mOfflineIndicator, mOfflinePageBridge, mLoggingBridge);
+                mOfflineIndicator, mOfflinePageBridge, mLoggingBridge, null, null);
 
         // Setup mocks such that when NavigationRecorder#record is called, it immediately invokes
         // the passed callback.

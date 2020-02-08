@@ -49,13 +49,14 @@ public class FeedbackCollector implements Runnable {
     public FeedbackCollector(Activity activity, Profile profile, @Nullable String url,
             @Nullable String categoryTag, @Nullable String description,
             @Nullable String feedbackContext, boolean takeScreenshot,
-            Callback<FeedbackCollector> callback) {
+            @Nullable Map<String, String> feedContext, Callback<FeedbackCollector> callback) {
         mCategoryTag = categoryTag;
         mDescription = description;
         mCallback = callback;
 
         // 1. Build all synchronous and asynchronous sources.
-        mSynchronousSources = buildSynchronousFeedbackSources(profile, url, feedbackContext);
+        mSynchronousSources =
+                buildSynchronousFeedbackSources(profile, url, feedbackContext, feedContext);
         mAsynchronousSources = buildAsynchronousFeedbackSources(profile);
 
         // 2. Build the screenshot task if necessary.
@@ -73,8 +74,9 @@ public class FeedbackCollector implements Runnable {
     }
 
     @VisibleForTesting
-    protected List<FeedbackSource> buildSynchronousFeedbackSources(
-            Profile profile, @Nullable String url, @Nullable String feedbackContext) {
+    protected List<FeedbackSource> buildSynchronousFeedbackSources(Profile profile,
+            @Nullable String url, @Nullable String feedbackContext,
+            @Nullable Map<String, String> feedContext) {
         List<FeedbackSource> sources = new ArrayList<>();
 
         // This is the list of all synchronous sources of feedback.  Please add new synchronous
@@ -89,7 +91,7 @@ public class FeedbackCollector implements Runnable {
         sources.add(new PermissionFeedbackSource());
         sources.add(new FeedbackContextFeedbackSource(feedbackContext));
         sources.add(new DuetFeedbackSource());
-        sources.add(new InterestFeedFeedbackSource());
+        sources.add(new InterestFeedFeedbackSource(feedContext));
 
         // Sanity check in case a source is added to the wrong list.
         for (FeedbackSource source : sources) {

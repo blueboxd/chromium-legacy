@@ -35,6 +35,9 @@ public interface ActionPeformerApi {
      */
     void downloadUrl(ContentMetadata contentMetadata);
 
+    /** Opens the SendFeedback dialog for the user to report problems. */
+    void sendFeedback(ContentMetadata contentMetadata);
+
     /** Opens the Google Product Help page for the Feed. */
     void learnMore();
 }

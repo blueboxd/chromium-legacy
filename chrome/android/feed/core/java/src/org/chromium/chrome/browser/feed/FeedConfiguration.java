@@ -101,6 +101,8 @@ public final class FeedConfiguration {
     /** Default value for whether to use menu options to launch interest management page. */
     public static final boolean MANAGE_INTERESTS_ENABLED_DEFAULT = false;
 
+    private static final String SEND_FEEDBACK_ENABLED = "send_feedback_enabled";
+
     private static final String MAXIMUM_GC_ATTEMPTS = "maximum_gc_attempts";
     /** Default value for the maximum number of times that the GC task can re-enqueue itself. */
     public static final long MAXIMUM_GC_ATTEMPTS_DEFAULT = 10;

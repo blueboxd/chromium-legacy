@@ -259,6 +259,11 @@ public class StreamActionApiImpl implements StreamActionApi {
     }
 
     @Override
+    public void sendFeedback(ContentMetadata contentMetadata) {
+        mActionApi.sendFeedback(contentMetadata);
+    }
+
+    @Override
     public void learnMore() {
         mActionApi.learnMore();
     }

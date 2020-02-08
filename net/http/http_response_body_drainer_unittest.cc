@@ -28,7 +28,7 @@
 #include "net/http/http_server_properties.h"
 #include "net/http/http_stream.h"
 #include "net/http/transport_security_state.h"
-#include "net/proxy_resolution/proxy_resolution_service.h"
+#include "net/proxy_resolution/configured_proxy_resolution_service.h"
 #include "net/quic/quic_context.h"
 #include "net/ssl/ssl_config_service_defaults.h"
 #include "net/test/test_with_task_environment.h"
@@ -232,7 +232,8 @@ void MockHttpStream::CompleteRead() {
 class HttpResponseBodyDrainerTest : public TestWithTaskEnvironment {
  protected:
   HttpResponseBodyDrainerTest()
-      : proxy_resolution_service_(ProxyResolutionService::CreateDirect()),
+      : proxy_resolution_service_(
+            ConfiguredProxyResolutionService::CreateDirect()),
         ssl_config_service_(new SSLConfigServiceDefaults),
         http_server_properties_(new HttpServerProperties()),
         session_(CreateNetworkSession()),
@@ -254,7 +255,7 @@ class HttpResponseBodyDrainerTest : public TestWithTaskEnvironment {
     return new HttpNetworkSession(HttpNetworkSession::Params(), context);
   }
 
-  std::unique_ptr<ProxyResolutionService> proxy_resolution_service_;
+  std::unique_ptr<ConfiguredProxyResolutionService> proxy_resolution_service_;
   std::unique_ptr<SSLConfigService> ssl_config_service_;
   std::unique_ptr<HttpServerProperties> http_server_properties_;
   MockCertVerifier cert_verifier_;

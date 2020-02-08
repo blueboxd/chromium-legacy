@@ -435,7 +435,7 @@ public class ToolbarManager implements ScrimObserver, ToolbarTabController, UrlF
 
             @Override
             public void onShown(Tab tab, @TabSelectionType int type) {
-                if (TextUtils.isEmpty(tab.getUrl())) return;
+                if (TextUtils.isEmpty(tab.getUrlString())) return;
                 mControlContainer.setReadyForBitmapCapture(true);
             }
 
@@ -483,7 +483,9 @@ public class ToolbarManager implements ScrimObserver, ToolbarTabController, UrlF
 
             @Override
             public void onLoadProgressChanged(Tab tab, float progress) {
-                if (NativePageFactory.isNativePageUrl(tab.getUrl(), tab.isIncognito())) return;
+                if (NativePageFactory.isNativePageUrl(tab.getUrlString(), tab.isIncognito())) {
+                    return;
+                }
 
                 updateLoadProgress(progress);
             }
@@ -1840,7 +1842,7 @@ public class ToolbarManager implements ScrimObserver, ToolbarTabController, UrlF
         mLoadProgressSimulator.cancel();
 
         if (tab.isLoading()) {
-            if (NativePageFactory.isNativePageUrl(tab.getUrl(), tab.isIncognito())) {
+            if (NativePageFactory.isNativePageUrl(tab.getUrlString(), tab.isIncognito())) {
                 finishLoadProgress(false);
             } else {
                 startLoadProgress();
@@ -1862,7 +1864,8 @@ public class ToolbarManager implements ScrimObserver, ToolbarTabController, UrlF
         // TODO(kkimlabs): Investigate back/forward navigation with native page & web content and
         //                 figure out the correct progress bar presentation.
         Tab tab = mLocationBarModel.getTab();
-        if (tab == null || NativePageFactory.isNativePageUrl(tab.getUrl(), tab.isIncognito())) {
+        if (tab == null
+                || NativePageFactory.isNativePageUrl(tab.getUrlString(), tab.isIncognito())) {
             return;
         }
 

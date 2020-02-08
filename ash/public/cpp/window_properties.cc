@@ -71,4 +71,6 @@ DEFINE_UI_CLASS_PROPERTY_KEY(WindowStateType,
                              WindowStateType::kDefault)
 
 DEFINE_UI_CLASS_PROPERTY_KEY(bool, kWindowPipTypeKey, false)
+
+DEFINE_UI_CLASS_PROPERTY_KEY(bool, kExcludeInMruKey, false)
 }  // namespace ash

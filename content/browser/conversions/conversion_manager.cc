@@ -34,6 +34,22 @@ ConversionManager::ConversionManager(
 
 ConversionManager::~ConversionManager() = default;
 
+void ConversionManager::HandleConversion(const StorableConversion& conversion) {
+  if (!storage_)
+    return;
+
+  // TODO(https://crbug.com/1043345): Add UMA for the number of conversions we
+  // are logging to storage, and the number of new reports logged to storage.
+  // Unretained is safe because any task to delete |storage_| will be posted
+  // after this one.
+  storage_task_runner_.get()->PostTask(
+      FROM_HERE,
+      base::BindOnce(
+          base::IgnoreResult(
+              &ConversionStorage::MaybeCreateAndStoreConversionReports),
+          base::Unretained(storage_.get()), conversion));
+}
+
 const ConversionPolicy& ConversionManager::GetConversionPolicy() const {
   return *conversion_policy_;
 }

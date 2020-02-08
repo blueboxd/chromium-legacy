@@ -744,7 +744,7 @@ public class TabPersistentStore extends TabPersister {
             return;
         }
 
-        if (NewTabPage.isNTPUrl(tab.getUrl()) && !tab.canGoBack() && !tab.canGoForward()) {
+        if (NewTabPage.isNTPUrl(tab.getUrlString()) && !tab.canGoBack() && !tab.canGoForward()) {
             return;
         }
         mTabsToSave.addLast(tab);
@@ -833,14 +833,14 @@ public class TabPersistentStore extends TabPersister {
         TabModelMetadata incognitoInfo = new TabModelMetadata(incognitoModel.index());
         for (int i = 0; i < incognitoModel.getCount(); i++) {
             incognitoInfo.ids.add(incognitoModel.getTabAt(i).getId());
-            incognitoInfo.urls.add(incognitoModel.getTabAt(i).getUrl());
+            incognitoInfo.urls.add(incognitoModel.getTabAt(i).getUrlString());
         }
 
         TabModel normalModel = selector.getModel(false);
         TabModelMetadata normalInfo = new TabModelMetadata(normalModel.index());
         for (int i = 0; i < normalModel.getCount(); i++) {
             normalInfo.ids.add(normalModel.getTabAt(i).getId());
-            normalInfo.urls.add(normalModel.getTabAt(i).getUrl());
+            normalInfo.urls.add(normalModel.getTabAt(i).getUrlString());
         }
 
         // Cache the active tab id to be pre-loaded next launch.
@@ -1364,7 +1364,7 @@ public class TabPersistentStore extends TabPersister {
     }
 
     private boolean isTabUrlContentScheme(Tab tab) {
-        String url = tab.getUrl();
+        String url = tab.getUrlString();
         return url != null && url.startsWith(UrlConstants.CONTENT_SCHEME);
     }
 

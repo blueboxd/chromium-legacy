@@ -177,6 +177,11 @@ class ArcAppLauncherBrowserTest : public extensions::ExtensionBrowserTest {
 
   void SetUpOnMainThread() override {
     arc::SetArcPlayStoreEnabledForProfile(profile(), true);
+
+    // This ensures app_prefs()->GetApp() below never returns nullptr.
+    base::RunLoop run_loop;
+    app_prefs()->SetDefaultAppsReadyCallback(run_loop.QuitClosure());
+    run_loop.Run();
   }
 
   void InstallTestApps(const std::string& package_name, bool multi_app) {

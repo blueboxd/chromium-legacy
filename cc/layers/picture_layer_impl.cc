@@ -1718,25 +1718,4 @@ gfx::ContentColorUsage PictureLayerImpl::GetContentColorUsage() const {
   return gfx::ContentColorUsage::kSRGB;
 }
 
-std::unique_ptr<base::DictionaryValue> PictureLayerImpl::LayerAsJson() const {
-  auto result = LayerImpl::LayerAsJson();
-  auto dictionary = std::make_unique<base::DictionaryValue>();
-  if (raster_source_) {
-    dictionary->SetBoolean("IsSolidColor", raster_source_->IsSolidColor());
-    auto list = std::make_unique<base::ListValue>();
-    list->AppendInteger(raster_source_->GetSize().width());
-    list->AppendInteger(raster_source_->GetSize().height());
-    dictionary->Set("Size", std::move(list));
-    dictionary->SetBoolean("HasRecordings", raster_source_->HasRecordings());
-
-    const auto& display_list = raster_source_->GetDisplayItemList();
-    size_t op_count = display_list ? display_list->TotalOpCount() : 0;
-    size_t bytes_used = display_list ? display_list->BytesUsed() : 0;
-    dictionary->SetInteger("OpCount", op_count);
-    dictionary->SetInteger("BytesUsed", bytes_used);
-  }
-  result->Set("RasterSource", std::move(dictionary));
-  return result;
-}
-
 }  // namespace cc

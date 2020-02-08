@@ -213,7 +213,7 @@ public class PseudoTabUnitTest {
     @Test
     public void getUrl_real() {
         String url = "url 1 real";
-        doReturn(url).when(mTab1).getUrl();
+        doReturn(url).when(mTab1).getUrlString();
 
         PseudoTab tab = PseudoTab.fromTabId(TAB1_ID);
         Assert.assertEquals("", tab.getUrl());

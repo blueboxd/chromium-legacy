@@ -8,6 +8,7 @@
 #include "net/third_party/quiche/src/common/platform/api/quiche_export.h"
 
 QUICHE_EXPORT_PRIVATE extern bool FLAGS_http2_varint_decode_64_bits;
+QUICHE_EXPORT_PRIVATE extern bool FLAGS_http2_skip_querying_entry_buffer_error;
 
 namespace http2 {
 

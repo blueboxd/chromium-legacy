@@ -223,13 +223,15 @@ void WebstoreStandaloneInstaller::OnInstallPromptDone(
   installer->Start();
 }
 
-void WebstoreStandaloneInstaller::OnWebstoreRequestFailure() {
+void WebstoreStandaloneInstaller::OnWebstoreRequestFailure(
+    const std::string& extension_id) {
   OnWebStoreDataFetcherDone();
   CompleteInstall(webstore_install::WEBSTORE_REQUEST_ERROR,
                   webstore_install::kWebstoreRequestError);
 }
 
 void WebstoreStandaloneInstaller::OnWebstoreResponseParseSuccess(
+    const std::string& extension_id,
     std::unique_ptr<base::DictionaryValue> webstore_data) {
   OnWebStoreDataFetcherDone();
 
@@ -303,6 +305,7 @@ void WebstoreStandaloneInstaller::OnWebstoreResponseParseSuccess(
 }
 
 void WebstoreStandaloneInstaller::OnWebstoreResponseParseFailure(
+    const std::string& extension_id,
     const std::string& error) {
   OnWebStoreDataFetcherDone();
   CompleteInstall(webstore_install::INVALID_WEBSTORE_RESPONSE, error);

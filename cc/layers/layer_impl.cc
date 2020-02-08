@@ -419,52 +419,6 @@ bool LayerImpl::IsAffectedByPageScale() const {
       ->in_subtree_of_page_scale_layer;
 }
 
-std::unique_ptr<base::DictionaryValue> LayerImpl::LayerAsJson() const {
-  std::unique_ptr<base::DictionaryValue> result(new base::DictionaryValue);
-  result->SetInteger("LayerId", id());
-  if (element_id())
-    result->SetString("ElementId", element_id().ToString());
-  result->SetString("LayerType", LayerTypeAsString());
-
-  auto list = std::make_unique<base::ListValue>();
-  list->AppendInteger(bounds().width());
-  list->AppendInteger(bounds().height());
-  result->Set("Bounds", std::move(list));
-
-  list = std::make_unique<base::ListValue>();
-  list->AppendInteger(offset_to_transform_parent().x());
-  list->AppendInteger(offset_to_transform_parent().y());
-  result->Set("OffsetToTransformParent", std::move(list));
-
-  result->SetBoolean("DrawsContent", draws_content_);
-  result->SetBoolean("HitTestable", hit_testable_);
-  result->SetBoolean("Is3dSorted", Is3dSorted());
-  result->SetDouble("Opacity", Opacity());
-  result->SetBoolean("ContentsOpaque", contents_opaque_);
-
-  result->SetInteger("transform_tree_index", transform_tree_index());
-  result->SetInteger("clip_tree_index", clip_tree_index());
-  result->SetInteger("effect_tree_index", effect_tree_index());
-  result->SetInteger("scroll_tree_index", scroll_tree_index());
-
-  if (!GetAllTouchActionRegions().IsEmpty()) {
-    std::unique_ptr<base::Value> region = GetAllTouchActionRegions().AsValue();
-    result->Set("TouchRegion", std::move(region));
-  }
-
-  if (!wheel_event_handler_region_.IsEmpty()) {
-    std::unique_ptr<base::Value> region = wheel_event_handler_region_.AsValue();
-    result->Set("WheelRegion", std::move(region));
-  }
-
-  if (!non_fast_scrollable_region_.IsEmpty()) {
-    std::unique_ptr<base::Value> region = non_fast_scrollable_region_.AsValue();
-    result->Set("NonFastScrollableRegion", std::move(region));
-  }
-
-  return result;
-}
-
 bool LayerImpl::LayerPropertyChanged() const {
   return layer_property_changed_not_from_property_trees_ ||
          LayerPropertyChangedFromPropertyTrees();
@@ -628,7 +582,7 @@ void LayerImpl::SetElementId(ElementId element_id) {
     return;
 
   TRACE_EVENT1(TRACE_DISABLED_BY_DEFAULT("cc.debug"), "LayerImpl::SetElementId",
-               "element", element_id.AsValue().release());
+               "element", element_id.ToString());
 
   layer_tree_impl_->RemoveFromElementLayerList(element_id_);
   element_id_ = element_id;
@@ -743,6 +697,7 @@ void LayerImpl::AsValueInto(base::trace_event::TracedValue* state) const {
     state->EndArray();
   }
 
+  state->SetBoolean("hit_testable", HitTestable());
   state->SetBoolean("can_use_lcd_text", CanUseLCDText());
   state->SetBoolean("contents_opaque", contents_opaque());
 
@@ -783,13 +738,9 @@ void LayerImpl::AsValueInto(base::trace_event::TracedValue* state) const {
 }
 
 std::string LayerImpl::ToString() const {
-  std::string str;
-  base::JSONWriter::WriteWithOptions(
-      *LayerAsJson(),
-      base::JSONWriter::OPTIONS_OMIT_DOUBLE_TYPE_PRESERVATION |
-          base::JSONWriter::OPTIONS_PRETTY_PRINT,
-      &str);
-  return str;
+  base::trace_event::TracedValueJSON value;
+  AsValueInto(&value);
+  return value.ToFormattedJSON();
 }
 
 size_t LayerImpl::GPUMemoryUsageInBytes() const { return 0; }

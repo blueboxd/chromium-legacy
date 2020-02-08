@@ -152,7 +152,9 @@ public final class SubresourceFilterTest {
                 () -> tabModel.addObserver(new EmptyTabModelObserver() {
                     @Override
                     public void didAddTab(Tab tab, @TabLaunchType int type) {
-                        if (tab.getUrl().equals(LEARN_MORE_PAGE)) tabCreatedCallback.notifyCalled();
+                        if (tab.getUrlString().equals(LEARN_MORE_PAGE)) {
+                            tabCreatedCallback.notifyCalled();
+                        }
                     }
                 }));
 

@@ -313,7 +313,7 @@ public class TabImpl implements Tab {
 
             // Reload the NativePage (if any), since the old NativePage has a reference to the old
             // activity.
-            if (isNativePage()) maybeShowNativePage(getUrl(), true);
+            if (isNativePage()) maybeShowNativePage(getUrlString(), true);
         }
 
         // Notify the event to observers only when we do the reparenting task, not when we simply
@@ -346,6 +346,11 @@ public class TabImpl implements Tab {
     @Override
     public int getParentId() {
         return mParentId;
+    }
+
+    @Override
+    public String getUrlString() {
+        return getUrl();
     }
 
     @CalledByNative
@@ -527,7 +532,7 @@ public class TabImpl implements Tab {
         if (isLoading()) {
             RewindableIterator<TabObserver> observers = getTabObservers();
             while (observers.hasNext()) {
-                observers.next().onPageLoadFinished(this, getUrl());
+                observers.next().onPageLoadFinished(this, getUrlString());
             }
         }
         if (getWebContents() != null) getWebContents().stop();
@@ -722,7 +727,7 @@ public class TabImpl implements Tab {
      * @return Original url of the tab, which is the original url from DOMDistiller.
      */
     public String getOriginalUrl() {
-        return DomDistillerUrlUtils.getOriginalUrlFromDistillerUrl(getUrl());
+        return DomDistillerUrlUtils.getOriginalUrlFromDistillerUrl(getUrlString());
     }
 
     /**
@@ -1205,7 +1210,7 @@ public class TabImpl implements Tab {
             initWebContents(webContents);
         });
 
-        String url = getUrl();
+        String url = getUrlString();
 
         if (didStartLoad) {
             // Simulate the PAGE_LOAD_STARTED notification that we did not get.

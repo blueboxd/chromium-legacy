@@ -83,6 +83,7 @@ chromevox_modules = [
   "background/gesture_command_data.js",
   "background/gesture_command_handler.js",
   "background/panel/i_search.js",
+  "background/panel/annotations_ui.js",
   "background/language_switching.js",
   "background/keyboard_handler.js",
   "background/live_regions.js",

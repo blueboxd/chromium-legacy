@@ -32,8 +32,8 @@
 #include "net/log/net_log_event_type.h"
 #include "net/log/net_log_values.h"
 #include "net/log/net_log_with_source.h"
+#include "net/proxy_resolution/configured_proxy_resolution_service.h"
 #include "net/proxy_resolution/proxy_config.h"
-#include "net/proxy_resolution/proxy_resolution_service.h"
 #include "net/proxy_resolution/proxy_retry_info.h"
 #include "net/socket/ssl_client_socket.h"
 #include "net/third_party/quiche/src/quic/core/quic_error_codes.h"
@@ -330,7 +330,7 @@ NET_EXPORT std::unique_ptr<base::DictionaryValue> GetNetInfo(
   // TODO(mmenke):  The code for most of these sources should probably be moved
   // into the sources themselves.
   if (info_sources & NET_INFO_PROXY_SETTINGS) {
-    ProxyResolutionService* proxy_resolution_service =
+    ConfiguredProxyResolutionService* proxy_resolution_service =
         context->proxy_resolution_service();
 
     std::unique_ptr<base::DictionaryValue> dict(new base::DictionaryValue());

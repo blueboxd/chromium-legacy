@@ -41,8 +41,8 @@ bool IsDhcpCapableAdapter(IP_ADAPTER_ADDRESSES* adapter) {
   // dhcpsvc!DhcpRequestParams on interfaces that aren't ready yet blocks for
   // a long time.
   //
-  // Since ProxyResolutionService restarts WPAD probes in response to other
-  // network level changes, this will likely get called again once the
+  // Since ConfiguredProxyResolutionService restarts WPAD probes in response to
+  // other network level changes, this will likely get called again once the
   // interface is up.
   if (adapter->OperStatus != IfOperStatusUp)
     return false;

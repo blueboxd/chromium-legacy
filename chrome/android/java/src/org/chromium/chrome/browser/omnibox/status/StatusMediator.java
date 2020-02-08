@@ -575,7 +575,7 @@ class StatusMediator {
         if (icon == 0 || icon == R.drawable.ic_logo_googleg_20dp) {
             tint = 0;
         } else {
-            tint = mDarkTheme ? R.color.default_icon_color_secondary_list
+            tint = mDarkTheme ? R.color.default_icon_color_secondary_tint_list
                               : ToolbarColors.getThemedToolbarIconTintRes(!mDarkTheme);
         }
 

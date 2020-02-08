@@ -75,26 +75,6 @@ class ChildUserServiceTest : public testing::Test {
 // Tests Per-App Time Limits feature.
 using PerAppTimeLimitsTest = ChildUserServiceTest;
 
-TEST_F(PerAppTimeLimitsTest, EnablePerAppTimeLimitsFeature) {
-  EXPECT_FALSE(service_test_api()->app_time_controller());
-  EXPECT_FALSE(service_test_api()->web_time_enforcer());
-
-  EnablePerAppTimeLimits();
-
-  EXPECT_TRUE(service_test_api()->app_time_controller());
-  EXPECT_FALSE(service_test_api()->web_time_enforcer());
-}
-
-TEST_F(PerAppTimeLimitsTest, EnableWebTimeLimitsFeature) {
-  EXPECT_FALSE(service_test_api()->app_time_controller());
-  EXPECT_FALSE(service_test_api()->web_time_enforcer());
-
-  EnableWebTimeLimits();
-
-  EXPECT_TRUE(service_test_api()->app_time_controller());
-  EXPECT_TRUE(service_test_api()->web_time_enforcer());
-}
-
 TEST_F(PerAppTimeLimitsTest, GetWebTimeLimitInterface) {
   EXPECT_EQ(ChildUserServiceFactory::GetForBrowserContext(profile()),
             app_time::WebTimeLimitInterface::Get(profile()));

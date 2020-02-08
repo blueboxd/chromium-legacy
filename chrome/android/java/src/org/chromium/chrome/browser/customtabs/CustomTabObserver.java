@@ -121,7 +121,7 @@ public class CustomTabObserver extends EmptyTabObserver {
         } else if (mCurrentState == State.WAITING_LOAD_FINISH) {
             if (mCustomTabsConnection != null) {
                 mCustomTabsConnection.sendNavigationInfo(
-                        mSession, tab.getUrl(), tab.getTitle(), (Uri) null);
+                        mSession, tab.getUrlString(), tab.getTitle(), (Uri) null);
             }
             mPageLoadStartedTimestamp = SystemClock.elapsedRealtime();
         }
@@ -215,7 +215,7 @@ public class CustomTabObserver extends EmptyTabObserver {
                 mContentBitmapHeight, (Uri snapshotPath) -> {
                     if (TextUtils.isEmpty(tab.getTitle()) && snapshotPath == null) return;
                     mCustomTabsConnection.sendNavigationInfo(
-                            mSession, tab.getUrl(), tab.getTitle(), snapshotPath);
+                            mSession, tab.getUrlString(), tab.getTitle(), snapshotPath);
                 });
     }
 }

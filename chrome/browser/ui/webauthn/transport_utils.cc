@@ -65,7 +65,7 @@ const gfx::VectorIcon* GetTransportVectorIcon(
     AuthenticatorTransport transport) {
   switch (transport) {
     case AuthenticatorTransport::kBluetoothLowEnergy:
-      return &kBluetoothIcon;
+      return &vector_icons::kBluetoothIcon;
     case AuthenticatorTransport::kNearFieldCommunication:
       return &kNfcIcon;
     case AuthenticatorTransport::kUsbHumanInterfaceDevice:

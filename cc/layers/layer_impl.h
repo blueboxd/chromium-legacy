@@ -16,7 +16,6 @@
 
 #include "base/logging.h"
 #include "base/memory/ptr_util.h"
-#include "base/values.h"
 #include "cc/base/region.h"
 #include "cc/base/synced_property.h"
 #include "cc/cc_export.h"
@@ -39,10 +38,6 @@
 #include "ui/gfx/geometry/rect_f.h"
 #include "ui/gfx/geometry/scroll_offset.h"
 #include "ui/gfx/transform.h"
-
-namespace base {
-class DictionaryValue;
-}
 
 namespace viz {
 class ClientResourceProvider;
@@ -297,8 +292,6 @@ class CC_EXPORT LayerImpl {
   // space. By default returns empty rect, but can be overridden by subclasses
   // as appropriate.
   virtual gfx::Rect GetDamageRect() const;
-
-  virtual std::unique_ptr<base::DictionaryValue> LayerAsJson() const;
 
   // This includes |layer_property_changed_not_from_property_trees_| and
   // property_trees changes.

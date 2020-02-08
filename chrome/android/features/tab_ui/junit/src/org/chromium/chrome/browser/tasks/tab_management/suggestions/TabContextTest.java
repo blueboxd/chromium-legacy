@@ -77,7 +77,7 @@ public class TabContextTest {
         doReturn(id).when(tab).getId();
         doReturn(rootId).when(tab).getRootId();
         doReturn(title).when(tab).getTitle();
-        doReturn(url).when(tab).getUrl();
+        doReturn(url).when(tab).getUrlString();
         doReturn(originalUrl).when(tab).getOriginalUrl();
         WebContents webContents = mock(WebContents.class);
         doReturn(webContents).when(tab).getWebContents();

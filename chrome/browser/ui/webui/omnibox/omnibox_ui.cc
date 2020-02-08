@@ -7,12 +7,14 @@
 #include <utility>
 
 #include "base/bind.h"
+#include "base/feature_list.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/webui/omnibox/omnibox_page_handler.h"
 #include "chrome/browser/ui/webui/version_handler.h"
 #include "chrome/browser/ui/webui/version_ui.h"
 #include "chrome/common/url_constants.h"
 #include "chrome/grit/omnibox_resources.h"
+#include "components/omnibox/common/omnibox_features.h"
 #include "content/public/browser/web_ui.h"
 #include "content/public/browser/web_ui_controller.h"
 #include "content/public/browser/web_ui_data_source.h"
@@ -41,6 +43,11 @@ OmniboxUI::OmniboxUI(content::WebUI* web_ui)
       "chrome/browser/ui/webui/omnibox/omnibox.mojom-lite.js",
       IDR_OMNIBOX_MOJO_JS);
   source->SetDefaultResource(IDR_OMNIBOX_HTML);
+
+  if (base::FeatureList::IsEnabled(omnibox::kWebUIOmniboxPopup)) {
+    source->AddResourcePath("omnibox_popup.js", IDR_OMNIBOX_POPUP_JS);
+    source->AddResourcePath("omnibox_popup.html", IDR_OMNIBOX_POPUP_HTML);
+  }
 
   content::WebUIDataSource::Add(Profile::FromWebUI(web_ui), source);
   web_ui->AddMessageHandler(std::make_unique<VersionHandler>());

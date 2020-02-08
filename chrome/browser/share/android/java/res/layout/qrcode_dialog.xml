@@ -35,7 +35,7 @@
         style="@style/ToolbarButton"
         android:src="@drawable/btn_close"
         android:contentDescription="@string/close"
-        app:tint="@color/standard_mode_tint" />
+        app:tint="@color/default_icon_color_tint_list" />
 
     <android.support.v4.view.ViewPager
         android:id="@+id/qrcode_view_pager"

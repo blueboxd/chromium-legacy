@@ -98,8 +98,8 @@ public class ShareSheetBottomSheetContent implements BottomSheetContent, OnItemC
             if (!model.get(ShareSheetItemViewProperties.IS_FIRST_PARTY)) return;
             ImageView view = (ImageView) parent.findViewById(R.id.icon);
             ApiCompatibilityUtils.setImageTintList(view,
-                    AppCompatResources.getColorStateList(
-                            ContextUtils.getApplicationContext(), R.color.standard_mode_tint));
+                    AppCompatResources.getColorStateList(ContextUtils.getApplicationContext(),
+                            R.color.default_icon_color_tint_list));
         }
     }
 

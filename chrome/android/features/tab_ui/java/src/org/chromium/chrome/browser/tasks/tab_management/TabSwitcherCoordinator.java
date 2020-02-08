@@ -87,7 +87,7 @@ public class TabSwitcherCoordinator
                     return false;
                 }
             };
-    private TabGridIphItemCoordinator mTabGridIphItemCoordinator;
+    private TabGridIphDialogCoordinator mTabGridIphDialogCoordinator;
 
     public TabSwitcherCoordinator(Context context, ActivityLifecycleDispatcher lifecycleDispatcher,
             TabModelSelector tabModelSelector, TabContentManager tabContentManager,
@@ -151,21 +151,15 @@ public class TabSwitcherCoordinator
             mUndoGroupSnackbarController = null;
         }
 
-        if (CachedFeatureFlags.isTabGroupsAndroidUiImprovementsEnabled()
-                && mode == TabListCoordinator.TabListMode.GRID
-                && !TabSwitcherMediator.isShowingTabsInMRUOrder()) {
-            mTabGridIphItemCoordinator = new TabGridIphItemCoordinator(
-                    context, mTabListCoordinator.getContainerView(), container);
-            mMediator.setIphProvider(mTabGridIphItemCoordinator.getIphProvider());
-        }
-
         if (mode == TabListCoordinator.TabListMode.GRID) {
-            if (ChromeFeatureList.isEnabled(ChromeFeatureList.CLOSE_TAB_SUGGESTIONS)) {
+            if (shouldRegisterMessageItemType()) {
                 mTabListCoordinator.registerItemType(TabProperties.UiType.MESSAGE, () -> {
                     return (ViewGroup) LayoutInflater.from(context).inflate(
                             R.layout.tab_grid_message_card_item, container, false);
                 }, MessageCardViewBinder::bind);
+            }
 
+            if (ChromeFeatureList.isEnabled(ChromeFeatureList.CLOSE_TAB_SUGGESTIONS)) {
                 mTabSuggestionsOrchestrator =
                         new TabSuggestionsOrchestrator(mTabModelSelector, lifecycleDispatcher);
                 TabSuggestionMessageService tabSuggestionMessageService =
@@ -186,6 +180,14 @@ public class TabSwitcherCoordinator
                     return (ViewGroup) LayoutInflater.from(context).inflate(
                             R.layout.new_tab_tile_card_item, container, false);
                 }, NewTabTileViewBinder::bind);
+            }
+
+            if (CachedFeatureFlags.isTabGroupsAndroidUiImprovementsEnabled()
+                    && !TabSwitcherMediator.isShowingTabsInMRUOrder()) {
+                mTabGridIphDialogCoordinator = new TabGridIphDialogCoordinator(context, container);
+                IphMessageService iphMessageService =
+                        new IphMessageService(mTabGridIphDialogCoordinator.getIphController());
+                mMessageCardProviderCoordinator.subscribeMessageService(iphMessageService);
             }
         }
 
@@ -365,6 +367,12 @@ public class TabSwitcherCoordinator
         return sourceViewHolder.itemView;
     }
 
+    private boolean shouldRegisterMessageItemType() {
+        return ChromeFeatureList.isEnabled(ChromeFeatureList.CLOSE_TAB_SUGGESTIONS)
+                || (CachedFeatureFlags.isTabGroupsAndroidUiImprovementsEnabled()
+                        && !TabSwitcherMediator.isShowingTabsInMRUOrder());
+    }
+
     @Override
     public void softCleanup() {
         mTabListCoordinator.softCleanup();
@@ -384,8 +392,8 @@ public class TabSwitcherCoordinator
         if (mUndoGroupSnackbarController != null) {
             mUndoGroupSnackbarController.destroy();
         }
-        if (mTabGridIphItemCoordinator != null) {
-            mTabGridIphItemCoordinator.destroy();
+        if (mTabGridIphDialogCoordinator != null) {
+            mTabGridIphDialogCoordinator.destroy();
         }
         if (mNewTabTileCoordinator != null) {
             mNewTabTileCoordinator.destroy();

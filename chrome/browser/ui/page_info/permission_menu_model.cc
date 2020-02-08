@@ -85,6 +85,7 @@ bool PermissionMenuModel::ShouldShowAllow(const GURL& url) {
     // Chooser permissions do not support CONTENT_SETTING_ALLOW.
     case ContentSettingsType::SERIAL_GUARD:
     case ContentSettingsType::USB_GUARD:
+    case ContentSettingsType::BLUETOOTH_GUARD:
     // Bluetooth scanning does not support CONTENT_SETTING_ALLOW.
     case ContentSettingsType::BLUETOOTH_SCANNING:
     // Native file system write does not support CONTENT_SETTING_ALLOW.
@@ -99,6 +100,7 @@ bool PermissionMenuModel::ShouldShowAsk(const GURL& url) {
   switch (permission_.type) {
     case ContentSettingsType::USB_GUARD:
     case ContentSettingsType::SERIAL_GUARD:
+    case ContentSettingsType::BLUETOOTH_GUARD:
     case ContentSettingsType::BLUETOOTH_SCANNING:
     case ContentSettingsType::NATIVE_FILE_SYSTEM_WRITE_GUARD:
       return true;

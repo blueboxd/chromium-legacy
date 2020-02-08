@@ -143,6 +143,16 @@ class DesksController::DeskAnimationBase
     fps_counter_ = std::make_unique<FpsCounter>(
         GetSelectedCompositorForAnimationSmoothness());
 
+    // This step makes sure that the containers of the target desk are shown at
+    // the beginning of the animation (but not actually visible to the user yet,
+    // until the desk is actually activated at a later step of the animation).
+    // This is needed because a window on the target desk can be focused before
+    // the desk becomes active (See `DesksController::OnWindowActivating()`).
+    // This window must be able to accept events (See
+    // `aura::Window::CanAcceptEvent()`) even though its desk is still being
+    // activated. https://crbug.com/1008574.
+    const_cast<Desk*>(ending_desk_)->PrepareForActivationAnimation();
+
     DCHECK(!desk_switch_animators_.empty());
     for (auto& animator : desk_switch_animators_)
       animator->TakeStartingDeskScreenshot();

@@ -1121,7 +1121,7 @@ TEST_F(SpdySessionTestWithMockTime, ClientPing) {
       CreateStreamSynchronously(SPDY_BIDIRECTIONAL_STREAM, session_, test_url_,
                                 MEDIUM, NetLogWithSource());
   ASSERT_TRUE(spdy_stream1);
-  test::StreamDelegateSendImmediate delegate(spdy_stream1, nullptr);
+  test::StreamDelegateSendImmediate delegate(spdy_stream1, "");
   spdy_stream1->SetDelegate(&delegate);
 
   base::TimeTicks before_ping_time = base::TimeTicks::Now();
@@ -1190,7 +1190,7 @@ TEST_F(SpdySessionTest, ServerPing) {
       CreateStreamSynchronously(SPDY_BIDIRECTIONAL_STREAM, session_, test_url_,
                                 MEDIUM, NetLogWithSource());
   ASSERT_TRUE(spdy_stream1);
-  test::StreamDelegateSendImmediate delegate(spdy_stream1, nullptr);
+  test::StreamDelegateSendImmediate delegate(spdy_stream1, "");
   spdy_stream1->SetDelegate(&delegate);
 
   // Flush the read completion task.
@@ -1867,7 +1867,7 @@ TEST_F(SpdySessionTestWithMockTime, FailedPing) {
       CreateStreamSynchronously(SPDY_BIDIRECTIONAL_STREAM, session_, test_url_,
                                 MEDIUM, NetLogWithSource());
   ASSERT_TRUE(spdy_stream1);
-  test::StreamDelegateSendImmediate delegate(spdy_stream1, nullptr);
+  test::StreamDelegateSendImmediate delegate(spdy_stream1, "");
   spdy_stream1->SetDelegate(&delegate);
 
   // Negative value means a preface ping will always be sent.
@@ -1927,7 +1927,7 @@ TEST_F(SpdySessionTestWithMockTime, NoPingSentWhenCheckPingPending) {
       CreateStreamSynchronously(SPDY_BIDIRECTIONAL_STREAM, session_, test_url_,
                                 MEDIUM, NetLogWithSource());
   ASSERT_TRUE(spdy_stream1);
-  test::StreamDelegateSendImmediate delegate(spdy_stream1, nullptr);
+  test::StreamDelegateSendImmediate delegate(spdy_stream1, "");
   spdy_stream1->SetDelegate(&delegate);
 
   EXPECT_FALSE(ping_in_flight());

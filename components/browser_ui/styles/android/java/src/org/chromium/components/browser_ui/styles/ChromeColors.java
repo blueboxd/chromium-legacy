@@ -19,14 +19,14 @@ import org.chromium.base.ApiCompatibilityUtils;
 public class ChromeColors {
     /**
      * Determines the default theme color used for toolbar based on the provided parameters.
+     *
      * @param res {@link Resources} used to retrieve colors.
-     * @param useDark If true, returns a default dark color. If false, returns a default color
-     *         depend
-     *              on whether Night Mode is on.
+     * @param forceDarkBgColor When true, returns the default dark-mode color; otherwise returns
+     *        adaptive default color.
      * @return The default theme color.
      */
-    public static int getDefaultThemeColor(Resources res, boolean useDark) {
-        return useDark
+    public static @ColorRes int getDefaultThemeColor(Resources res, boolean forceDarkBgColor) {
+        return forceDarkBgColor
                 ? ApiCompatibilityUtils.getColor(res, R.color.toolbar_background_primary_dark)
                 : ApiCompatibilityUtils.getColor(res, R.color.toolbar_background_primary);
     }
@@ -34,36 +34,69 @@ public class ChromeColors {
     /**
      * Returns the primary background color used as native page background based on the given
      * parameters.
+     *
      * @param res The {@link Resources} used to retrieve colors.
-     * @param useDark Whether or not the color is for a dark mode. If true, a dark color will be
-     *               returned. Otherwise, the color returned will depend on whether Night Mode is
-     *               on.
+     * @param forceDarkBgColor When true, returns the dark-mode primary background color; otherwise
+     *        returns adaptive primary background color.
      * @return The primary background color.
      */
-    public static int getPrimaryBackgroundColor(Resources res, boolean useDark) {
-        return useDark
+    public static @ColorRes int getPrimaryBackgroundColor(Resources res, boolean forceDarkBgColor) {
+        return forceDarkBgColor
                 ? ApiCompatibilityUtils.getColor(res, org.chromium.ui.R.color.dark_primary_color)
                 : ApiCompatibilityUtils.getColor(res, org.chromium.ui.R.color.modern_primary_color);
     }
 
     /**
-     * Returns the icon tint resource to use based on the current parameters and whether the app is
-     * in night mode.
-     * @param useLight Whether or not the icon tint should be light when not in night mode.
+     * Returns the primary icon tint resource to use based on the current parameters and whether
+     * the app is in night mode.
+     *
+     * @param forceLightIconTint When true, returns the light tint color res; otherwise returns
+     *         adaptive primary icon tint color res.
      * @return The {@link ColorRes} for the icon tint.
      */
-    public static @ColorRes int getIconTintRes(boolean useLight) {
-        return useLight ? R.color.tint_on_dark_bg : R.color.standard_mode_tint;
+    public static @ColorRes int getPrimaryIconTintRes(boolean forceLightIconTint) {
+        return forceLightIconTint ? R.color.default_icon_color_light_tint_list
+                                  : R.color.default_icon_color_tint_list;
     }
 
     /**
-     * Returns the icon tint to use based on the current parameters and whether the app is in night
-     * mode.
+     * Returns the primary icon tint to use based on the current parameters and whether the app is
+     * in night mode.
+     *
      * @param context The {@link Context} used to retrieve colors.
-     * @param useLight Whether or not the icon tint should be light when not in night mode.
+     * @param forceLightIconTint When true, returns the light tint color res; otherwise returns
+     *         adaptive primary icon tint color res.
      * @return The {@link ColorStateList} for the icon tint.
      */
-    public static ColorStateList getIconTint(Context context, boolean useLight) {
-        return AppCompatResources.getColorStateList(context, getIconTintRes(useLight));
+    public static ColorStateList getPrimaryIconTint(Context context, boolean forceLightIconTint) {
+        return AppCompatResources.getColorStateList(
+                context, getPrimaryIconTintRes(forceLightIconTint));
+    }
+
+    /**
+     * Returns the secondary icon tint resource to use based on the current parameters and whether
+     * the app is in night mode.
+     *
+     * @param forceLightIconTint When true, returns the light tint color res; otherwise returns
+     *         adaptive secondary icon tint color res.
+     * @return The {@link ColorRes} for the icon tint.
+     */
+    public static @ColorRes int getSecondaryIconTintRes(boolean forceLightIconTint) {
+        return forceLightIconTint ? R.color.default_icon_color_secondary_light_tint_list
+                                  : R.color.default_icon_color_secondary_tint_list;
+    }
+
+    /**
+     * Returns the secondary icon tint to use based on the current parameters and whether the app
+     * is in night mode.
+     *
+     * @param context The {@link Context} used to retrieve colors.
+     * @param forceLightIconTint When true, returns the light tint color res; otherwise returns
+     *         adaptive secondary icon tint color res.
+     * @return The {@link ColorStateList} for the icon tint.
+     */
+    public static ColorStateList getSecondaryIconTint(Context context, boolean forceLightIconTint) {
+        return AppCompatResources.getColorStateList(
+                context, getSecondaryIconTintRes(forceLightIconTint));
     }
 }

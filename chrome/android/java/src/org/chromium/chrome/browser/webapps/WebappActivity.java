@@ -265,7 +265,7 @@ public class WebappActivity extends BaseCustomTabActivity<WebappActivityComponen
         // We do not load URL when restoring from saved instance states. However, it's possible that
         // we saved instance state before loading a URL, so even after restoring from
         // SavedInstanceState we might not have a URL and should initialize from the intent.
-        if (tab.getUrl().isEmpty()) {
+        if (tab.getUrlString().isEmpty()) {
             loadUrl(mWebappInfo, tab);
         } else {
             if (!mWebappInfo.isForWebApk() && NetworkChangeNotifier.isOnline()) {
@@ -531,7 +531,7 @@ public class WebappActivity extends BaseCustomTabActivity<WebappActivityComponen
 
                 // Kick the interstitial navigation to Chrome.
                 Intent intent =
-                        new Intent(Intent.ACTION_VIEW, Uri.parse(getActivityTab().getUrl()));
+                        new Intent(Intent.ACTION_VIEW, Uri.parse(getActivityTab().getUrlString()));
                 intent.setPackage(getPackageName());
                 intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
                 IntentHandler.startChromeLauncherActivityForTrustedIntent(intent);
@@ -552,8 +552,8 @@ public class WebappActivity extends BaseCustomTabActivity<WebappActivityComponen
 
             @Override
             public void onObservingDifferentTab(@NonNull Tab tab) {
-                boolean isNavigationInScope =
-                        WebappScopePolicy.isUrlInScope(scopePolicy(), mWebappInfo, tab.getUrl());
+                boolean isNavigationInScope = WebappScopePolicy.isUrlInScope(
+                        scopePolicy(), mWebappInfo, tab.getUrlString());
                 mBrowserControlsVisibilityManager.updateIsInTwaMode(isNavigationInScope);
             }
         };

@@ -200,6 +200,10 @@ ASH_PUBLIC_EXPORT extern const aura::WindowProperty<WindowStateType>* const
 ASH_PUBLIC_EXPORT extern const aura::WindowProperty<bool>* const
     kWindowPipTypeKey;
 
+// A property key to exclude the window in MruTracker.
+ASH_PUBLIC_EXPORT extern const aura::WindowProperty<bool>* const
+    kExcludeInMruKey;
+
 // Alphabetical sort.
 
 }  // namespace ash

@@ -365,7 +365,7 @@ public class NewTabPageTest {
                 TouchCommon.singleClickView(mostVisitedItem);
             }
         });
-        Assert.assertEquals(mSiteSuggestions.get(0).url, mTab.getUrl());
+        Assert.assertEquals(mSiteSuggestions.get(0).url, mTab.getUrlString());
     }
 
     /**

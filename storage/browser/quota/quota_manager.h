@@ -350,8 +350,7 @@ class COMPONENT_EXPORT(STORAGE_BROWSER) QuotaManager
 
   // Extract cached origins list from the usage tracker.
   // (Might return empty list if no origin is tracked by the tracker.)
-  void GetCachedOrigins(blink::mojom::StorageType type,
-                        std::set<url::Origin>* origins);
+  std::set<url::Origin> GetCachedOrigins(blink::mojom::StorageType type);
 
   // These internal methods are separately defined mainly for testing.
   void NotifyStorageAccessedInternal(const url::Origin& origin,

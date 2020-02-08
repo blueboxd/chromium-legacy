@@ -447,8 +447,8 @@ void WebWorkerFetchContextImpl::WillSendRequest(blink::WebURLRequest& request) {
   extra_data->set_render_frame_id(ancestor_frame_id_);
   extra_data->set_frame_request_blocker(frame_request_blocker_);
   if (throttle_provider_) {
-    extra_data->set_url_loader_throttles(throttle_provider_->CreateThrottles(
-        ancestor_frame_id_, request, WebURLRequestToResourceType(request)));
+    extra_data->set_url_loader_throttles(
+        throttle_provider_->CreateThrottles(ancestor_frame_id_, request));
   }
   if (response_override_) {
     using RequestContextType = blink::mojom::RequestContextType;

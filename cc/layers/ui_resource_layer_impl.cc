@@ -5,7 +5,7 @@
 #include "cc/layers/ui_resource_layer_impl.h"
 
 #include "base/strings/stringprintf.h"
-#include "base/values.h"
+#include "base/trace_event/traced_value.h"
 #include "cc/base/math_util.h"
 #include "cc/trees/layer_tree_impl.h"
 #include "cc/trees/occlusion.h"
@@ -138,23 +138,21 @@ const char* UIResourceLayerImpl::LayerTypeAsString() const {
   return "cc::UIResourceLayerImpl";
 }
 
-std::unique_ptr<base::DictionaryValue> UIResourceLayerImpl::LayerAsJson()
-    const {
-  std::unique_ptr<base::DictionaryValue> result = LayerImpl::LayerAsJson();
+void UIResourceLayerImpl::AsValueInto(
+    base::trace_event::TracedValue* state) const {
+  LayerImpl::AsValueInto(state);
 
-  result->Set("ImageBounds", MathUtil::AsValue(image_bounds_));
+  MathUtil::AddToTracedValue("ImageBounds", image_bounds_, state);
 
-  auto list = std::make_unique<base::ListValue>();
-  list->AppendDouble(vertex_opacity_[0]);
-  list->AppendDouble(vertex_opacity_[1]);
-  list->AppendDouble(vertex_opacity_[2]);
-  list->AppendDouble(vertex_opacity_[3]);
-  result->Set("VertexOpacity", std::move(list));
+  state->BeginArray("VertexOpacity");
+  state->AppendDouble(vertex_opacity_[0]);
+  state->AppendDouble(vertex_opacity_[1]);
+  state->AppendDouble(vertex_opacity_[2]);
+  state->AppendDouble(vertex_opacity_[3]);
+  state->EndArray();
 
-  result->Set("UVTopLeft", MathUtil::AsValue(uv_top_left_));
-  result->Set("UVBottomRight", MathUtil::AsValue(uv_bottom_right_));
-
-  return result;
+  MathUtil::AddToTracedValue("UVTopLeft", uv_top_left_, state);
+  MathUtil::AddToTracedValue("UVBottomRight", uv_bottom_right_, state);
 }
 
 }  // namespace cc

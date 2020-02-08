@@ -163,7 +163,7 @@ public class ContextReporter {
             return;
         }
 
-        String currentUrl = currentTab.getUrl();
+        String currentUrl = currentTab.getUrlString();
         if (TextUtils.isEmpty(currentUrl) || !(currentUrl.startsWith(UrlConstants.HTTP_URL_PREFIX)
                 || currentUrl.startsWith(UrlConstants.HTTPS_URL_PREFIX))) {
             reportStatus(STATUS_INVALID_SCHEME);
@@ -183,7 +183,7 @@ public class ContextReporter {
             Log.d(TAG, "Not reporting, repeated title update");
             return;
         }
-        if (TextUtils.equals(currentTab.getUrl(), mLastUrl)
+        if (TextUtils.equals(currentTab.getUrlString(), mLastUrl)
                 && TextUtils.equals(currentTab.getTitle(), mLastTitle)
                 && displaySelection == null) {
             reportStatus(STATUS_DUP_ENTRY);
@@ -193,9 +193,9 @@ public class ContextReporter {
 
         reportUsageEndedIfNecessary();
 
-        mDelegate.reportContext(currentTab.getUrl(), currentTab.getTitle(), displaySelection);
+        mDelegate.reportContext(currentTab.getUrlString(), currentTab.getTitle(), displaySelection);
         mLastContextWasTitleChange = isTitleChange;
-        mLastUrl = currentTab.getUrl();
+        mLastUrl = currentTab.getUrlString();
         mLastTitle = currentTab.getTitle();
         mContextInUse.set(true);
     }

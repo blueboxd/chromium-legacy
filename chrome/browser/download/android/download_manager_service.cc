@@ -33,6 +33,7 @@
 #include "chrome/common/chrome_constants.h"
 #include "components/download/network/android/network_status_listener_android.h"
 #include "components/download/public/common/auto_resumption_handler.h"
+#include "components/download/public/common/download_features.h"
 #include "components/download/public/common/download_item.h"
 #include "components/download/public/common/download_item_impl.h"
 #include "components/download/public/common/download_stats.h"
@@ -96,7 +97,8 @@ void DownloadManagerService::CreateAutoResumptionHandler() {
   config->auto_resumption_size_limit =
       DownloadUtils::GetAutoResumptionSizeLimit();
   config->is_auto_resumption_enabled_in_native =
-      chrome::android::IsDownloadAutoResumptionEnabledInNative();
+      chrome::android::IsJavaDrivenFeatureEnabled(
+          download::features::kDownloadAutoResumptionNative);
   download::AutoResumptionHandler::Create(
       std::move(network_listener), std::move(task_manager), std::move(config));
 }

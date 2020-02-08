@@ -33,8 +33,6 @@ class ExtensionsMenuView : public views::BubbleDialogDelegateView,
                            public TabStripModelObserver,
                            public ToolbarActionsModel::Observer {
  public:
-  static constexpr gfx::Size kExtensionsMenuIconSize = gfx::Size(28, 28);
-
   ExtensionsMenuView(views::View* anchor_view,
                      Browser* browser,
                      ExtensionsContainer* extensions_container);

@@ -94,7 +94,7 @@ public class FullscreenVideoTest {
 
         waitForTabToExitFullscreen();
         Assert.assertEquals("URL mismatch after exiting fullscreen video", url,
-                mActivity.getActivityTab().getUrl());
+                mActivity.getActivityTab().getUrlString());
     }
 
     /**

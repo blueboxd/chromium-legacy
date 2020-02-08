@@ -11,6 +11,7 @@
 
 #include "base/component_export.h"
 #include "base/debug/alias.h"
+#include "base/debug/crash_logging.h"
 #include "base/optional.h"
 #include "base/strings/string16.h"
 #include "base/strings/string_piece.h"
@@ -407,6 +408,21 @@ COMPONENT_EXPORT(URL) bool IsSameOriginWith(const GURL& a, const GURL& b);
 // value of |origin| gets preserved in crash dumps.
 #define DEBUG_ALIAS_FOR_ORIGIN(var_name, origin) \
   DEBUG_ALIAS_FOR_CSTR(var_name, (origin).Serialize().c_str(), 128)
+
+namespace debug {
+
+class COMPONENT_EXPORT(URL) ScopedOriginCrashKey
+    : public base::debug::ScopedCrashKeyString {
+ public:
+  ScopedOriginCrashKey(base::debug::CrashKeyString* crash_key,
+                       const url::Origin* value);
+  ~ScopedOriginCrashKey();
+
+  ScopedOriginCrashKey(const ScopedOriginCrashKey&) = delete;
+  ScopedOriginCrashKey& operator=(const ScopedOriginCrashKey&) = delete;
+};
+
+}  // namespace debug
 
 }  // namespace url
 

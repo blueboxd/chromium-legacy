@@ -33,8 +33,8 @@ class NET_EXPORT ProxyDelegate {
   // Called as the proxy is being resolved for |url| for a |method| request.
   // The caller may pass an empty string to get method agnostic resoulution.
   // Allows the delegate to override the proxy resolution decision made by
-  // ProxyResolutionService. The delegate may override the decision by modifying
-  // the ProxyInfo |result|.
+  // ConfiguredProxyResolutionService. The delegate may override the decision by
+  // modifying the ProxyInfo |result|.
   virtual void OnResolveProxy(const GURL& url,
                               const std::string& method,
                               const ProxyRetryInfoMap& proxy_retry_info,

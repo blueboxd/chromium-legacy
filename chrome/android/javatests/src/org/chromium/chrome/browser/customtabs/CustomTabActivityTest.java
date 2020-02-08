@@ -1168,7 +1168,7 @@ public class CustomTabActivityTest {
                             CustomTabsTestUtils.createMinimalCustomTabIntent(context, mTestPage2));
                 }));
         CriteriaHelper.pollInstrumentationThread(
-                Criteria.equals(mTestPage, () -> getActivity().getActivityTab().getUrl()));
+                Criteria.equals(mTestPage, () -> getActivity().getActivityTab().getUrlString()));
         Assert.assertTrue("CustomTabContentHandler can't handle intent with same session",
                 TestThreadUtils.runOnUiThreadBlockingNoException(() -> {
                     intent.setData(Uri.parse(mTestPage2));
@@ -1184,7 +1184,7 @@ public class CustomTabActivityTest {
         });
         pageLoadFinishedHelper.waitForCallback(0);
         CriteriaHelper.pollInstrumentationThread(
-                Criteria.equals(mTestPage2, () -> getActivity().getActivityTab().getUrl()));
+                Criteria.equals(mTestPage2, () -> getActivity().getActivityTab().getUrlString()));
     }
 
     @Test
@@ -1436,7 +1436,7 @@ public class CustomTabActivityTest {
             @Override
             public boolean isSatisfied() {
                 final Tab currentTab = mCustomTabActivityTestRule.getActivity().getActivityTab();
-                return url.equals(currentTab.getUrl());
+                return url.equals(currentTab.getUrlString());
             }
         });
         CriteriaHelper.pollUiThread(new Criteria() {
@@ -1471,7 +1471,7 @@ public class CustomTabActivityTest {
             @Override
             public boolean isSatisfied() {
                 final Tab currentTab = mCustomTabActivityTestRule.getActivity().getActivityTab();
-                return mTestPage.equals(currentTab.getUrl());
+                return mTestPage.equals(currentTab.getUrlString());
             }
         });
         Assert.assertTrue(
@@ -1510,7 +1510,7 @@ public class CustomTabActivityTest {
             @Override
             public boolean isSatisfied() {
                 final Tab currentTab = mCustomTabActivityTestRule.getActivity().getActivityTab();
-                return mTestPage.equals(currentTab.getUrl());
+                return mTestPage.equals(currentTab.getUrlString());
             }
         });
         Assert.assertTrue(
@@ -1552,7 +1552,7 @@ public class CustomTabActivityTest {
             @Override
             public boolean isSatisfied() {
                 final Tab currentTab = mCustomTabActivityTestRule.getActivity().getActivityTab();
-                return mTestPage.equals(currentTab.getUrl());
+                return mTestPage.equals(currentTab.getUrlString());
             }
         });
         Assert.assertTrue(connection.postMessage(token, "Message", null)
@@ -1580,7 +1580,7 @@ public class CustomTabActivityTest {
             @Override
             public boolean isSatisfied() {
                 final Tab currentTab = mCustomTabActivityTestRule.getActivity().getActivityTab();
-                return url.equals(currentTab.getUrl());
+                return url.equals(currentTab.getUrlString());
             }
         });
         Assert.assertTrue(connection.postMessage(token, "New title", null)
@@ -1664,7 +1664,7 @@ public class CustomTabActivityTest {
             @Override
             public boolean isSatisfied() {
                 final Tab currentTab = mCustomTabActivityTestRule.getActivity().getActivityTab();
-                return url.equals(currentTab.getUrl());
+                return url.equals(currentTab.getUrlString());
             }
         });
 
@@ -1771,7 +1771,7 @@ public class CustomTabActivityTest {
             @Override
             public boolean isSatisfied() {
                 final Tab currentTab = mCustomTabActivityTestRule.getActivity().getActivityTab();
-                return url.equals(currentTab.getUrl());
+                return url.equals(currentTab.getUrlString());
             }
         });
 
@@ -1823,7 +1823,7 @@ public class CustomTabActivityTest {
             @Override
             public boolean isSatisfied() {
                 final Tab currentTab = mCustomTabActivityTestRule.getActivity().getActivityTab();
-                return mTestPage.equals(currentTab.getUrl());
+                return mTestPage.equals(currentTab.getUrlString());
             }
         });
 
@@ -2310,7 +2310,7 @@ public class CustomTabActivityTest {
                     updateFailureReason("Incognito tab not selected");
                     return false;
                 }
-                if (!TextUtils.equals(tab.getUrl(), "about:blank")) {
+                if (!TextUtils.equals(tab.getUrlString(), "about:blank")) {
                     updateFailureReason("Wrong URL loaded in incognito tab");
                     return false;
                 }
@@ -2556,7 +2556,7 @@ public class CustomTabActivityTest {
         mCustomTabActivityTestRule.startCustomTabActivityWithIntent(
                 CustomTabsTestUtils.createMinimalCustomTabIntent(context, mTestPage));
         Tab tab = mCustomTabActivityTestRule.getActivity().getActivityTab();
-        assertEquals(mTestPage, tab.getUrl());
+        assertEquals(mTestPage, tab.getUrlString());
     }
 
     private ChromeActivity reparentAndVerifyTab() {

@@ -64,28 +64,12 @@ class PLATFORM_EXPORT StaticBitmapImage : public Image {
     return false;
   }
 
-  // EnsureMailbox modifies the internal state of an accelerated static bitmap
-  // image to make sure that it is represented by a Mailbox.  This must be
-  // called whenever the image is intende to be used in a differen GPU context.
-  // It is important to use the correct MailboxSyncMode in order to achieve
-  // optimal performance without compromising security or causeing graphics
-  // glitches.  Here is how to select the aprropriate mode:
-  //
-  // Case 1: Passing to a gpu context that is on a separate channel.
-  //   Note: a context in a separate process is necessarily on another channel.
-  //   Use kVerifiedSyncToken.  Or use kUnverifiedSyncToken with a later call
-  //   to VerifySyncTokensCHROMIUM()
-  // Case 2: Passing to a gpu context that is on the same channel but not the
-  //     same stream.
-  //   Use kUnverifiedSyncToken
-  // Case 3: Passing to a gpu context on the same stream.
-  //   Use kOrderingBarrier
-  virtual void EnsureMailbox(MailboxSyncMode, GLenum filter) { NOTREACHED(); }
+  virtual void EnsureSyncTokenVerified() { NOTREACHED(); }
   virtual gpu::MailboxHolder GetMailboxHolder() const {
     NOTREACHED();
     return gpu::MailboxHolder();
   }
-  virtual void UpdateSyncToken(const gpu::SyncToken&) {}
+  virtual void UpdateSyncToken(const gpu::SyncToken&) { NOTREACHED(); }
   virtual bool IsPremultiplied() const { return true; }
 
   // Methods have exactly the same implementation for all sub-classes

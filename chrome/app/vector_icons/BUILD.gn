@@ -21,7 +21,6 @@ aggregate_vector_icons("chrome_vector_icons") {
     "autofill/webauthn_dialog_header_dark.icon",
     "blocked_badge.icon",
     "blocked_redirect.icon",
-    "bluetooth.icon",
     "browser_tools.icon",
     "browser_tools_error.icon",
     "browser_tools_update.icon",

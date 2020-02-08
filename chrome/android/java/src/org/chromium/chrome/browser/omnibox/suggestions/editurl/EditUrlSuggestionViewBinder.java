@@ -13,8 +13,11 @@ import android.view.ViewGroup;
 import android.widget.ImageView;
 import android.widget.TextView;
 
+import androidx.annotation.ColorRes;
+
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.omnibox.suggestions.SuggestionCommonProperties;
+import org.chromium.components.browser_ui.styles.ChromeColors;
 import org.chromium.ui.modelutil.PropertyKey;
 import org.chromium.ui.modelutil.PropertyModel;
 
@@ -63,9 +66,9 @@ public class EditUrlSuggestionViewBinder {
             boolean useDarkColors = model.get(SuggestionCommonProperties.USE_DARK_COLORS);
             Drawable icon =
                     AppCompatResources.getDrawable(view.getContext(), R.drawable.ic_globe_24dp);
-            int color = view.getContext().getResources().getColor(useDarkColors
-                            ? R.color.default_icon_color_secondary_list
-                            : R.color.white_mode_tint);
+            @ColorRes
+            int color = view.getContext().getResources().getColor(
+                    ChromeColors.getSecondaryIconTintRes(!useDarkColors));
             DrawableCompat.setTint(icon, color);
             view.setImageDrawable(icon);
         }

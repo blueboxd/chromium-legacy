@@ -226,6 +226,37 @@ suite('TabList', () => {
     assertEquals(tabElements[0].tab, prependedTab);
   });
 
+  test('PlacesTabElement', () => {
+    const pinnedTab = document.createElement('tabstrip-tab');
+    tabList.placeTabElement(pinnedTab, 0, true, undefined);
+    assertEquals(pinnedTab, getPinnedTabs()[0]);
+
+    const unpinnedUngroupedTab = document.createElement('tabstrip-tab');
+    tabList.placeTabElement(unpinnedUngroupedTab, 1, false, undefined);
+    let unpinnedTabs = getUnpinnedTabs();
+    assertEquals(4, unpinnedTabs.length);
+    assertEquals(unpinnedUngroupedTab, unpinnedTabs[0]);
+
+    const groupedTab = document.createElement('tabstrip-tab');
+    tabList.placeTabElement(groupedTab, 1, false, 'group0');
+    unpinnedTabs = getUnpinnedTabs();
+    assertEquals(5, unpinnedTabs.length);
+    assertEquals(groupedTab, unpinnedTabs[0]);
+    assertEquals('TABSTRIP-TAB-GROUP', groupedTab.parentElement.tagName);
+  });
+
+  test('PlacesTabGroupElement', () => {
+    const tabGroupElement = document.createElement('tabstrip-tab-group');
+    tabList.placeTabGroupElement(tabGroupElement, 2);
+
+    const tabGroupElements = getTabGroups();
+    assertEquals(1, tabGroupElements.length);
+    assertEquals(tabGroupElement, tabGroupElements[0]);
+
+    // Group was inserted at index 2, so it should come after the 2nd tab.
+    assertEquals(getUnpinnedTabs()[1], tabGroupElement.previousElementSibling);
+  });
+
   test('AddNewTabGroup', () => {
     const appendedTab = {
       active: false,

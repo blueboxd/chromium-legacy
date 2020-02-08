@@ -11,4 +11,10 @@ bool IsResourceTypeFrame(blink::mojom::ResourceType type) {
          type == blink::mojom::ResourceType::kSubFrame;
 }
 
+bool IsRequestDestinationFrame(network::mojom::RequestDestination destination) {
+  return destination == network::mojom::RequestDestination::kDocument ||
+         destination == network::mojom::RequestDestination::kFrame ||
+         destination == network::mojom::RequestDestination::kIframe;
+}
+
 }  // namespace blink

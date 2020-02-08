@@ -46,7 +46,7 @@ public class FindToolbarPhone extends FindToolbar {
         int dividerColorId;
         if (isIncognito) {
             setBackgroundColor(ChromeColors.getDefaultThemeColor(getResources(), true));
-            ColorStateList white = ChromeColors.getIconTint(getContext(), true);
+            ColorStateList white = ChromeColors.getPrimaryIconTint(getContext(), true);
             ApiCompatibilityUtils.setImageTintList(mFindNextButton, white);
             ApiCompatibilityUtils.setImageTintList(mFindPrevButton, white);
             ApiCompatibilityUtils.setImageTintList(mCloseFindButton, white);
@@ -55,7 +55,7 @@ public class FindToolbarPhone extends FindToolbar {
             dividerColorId = R.color.white_alpha_12;
         } else {
             setBackgroundColor(ChromeColors.getDefaultThemeColor(getResources(), false));
-            ColorStateList dark = ChromeColors.getIconTint(getContext(), false);
+            ColorStateList dark = ChromeColors.getPrimaryIconTint(getContext(), false);
             ApiCompatibilityUtils.setImageTintList(mFindNextButton, dark);
             ApiCompatibilityUtils.setImageTintList(mFindPrevButton, dark);
             ApiCompatibilityUtils.setImageTintList(mCloseFindButton, dark);

@@ -6,6 +6,8 @@
 
 #include "ash/accessibility/accessibility_controller_impl.h"
 #include "ash/shell.h"
+#include "ash/wm/desks/desks_controller.h"
+#include "ash/wm/desks/desks_test_util.h"
 #include "ash/wm/tablet_mode/tablet_mode_controller.h"
 #include "base/macros.h"
 #include "base/run_loop.h"
@@ -21,8 +23,10 @@
 #include "testing/gmock/include/gmock/gmock.h"
 #include "ui/aura/client/focus_client.h"
 #include "ui/events/devices/device_data_manager.h"
+#include "ui/events/event_constants.h"
 #include "ui/events/keycodes/dom/dom_code.h"
 #include "ui/events/test/event_generator.h"
+#include "ui/events/types/event_type.h"
 
 namespace exo {
 namespace {
@@ -67,6 +71,63 @@ class TestShellSurface : public ShellSurface {
 
   MOCK_METHOD1(AcceleratorPressed, bool(const ui::Accelerator& accelerator));
 };
+
+// Verifies that switching desks via alt-tab doesn't prevent Seat from receiving
+// key events. https://crbug.com/1008574.
+TEST_F(KeyboardTest, CorrectSeatPressedKeysOnSwitchingDesks) {
+  Seat seat;
+  MockKeyboardDelegate delegate;
+  auto keyboard = std::make_unique<Keyboard>(&delegate, &seat);
+
+  // Create 2 desks.
+  auto* desks_controller = ash::DesksController::Get();
+  desks_controller->NewDesk(ash::DesksCreationRemovalSource::kButton);
+  ASSERT_EQ(2u, desks_controller->desks().size());
+  ash::Desk* desk_1 = desks_controller->desks()[0].get();
+  const ash::Desk* desk_2 = desks_controller->desks()[1].get();
+  // Desk 1 has a normal window.
+  auto win0 = CreateAppWindow(gfx::Rect(0, 0, 250, 100));
+
+  // Desk 2 has an exo surface window.
+  ash::ActivateDesk(desk_2);
+  std::unique_ptr<Surface> surface(new Surface);
+  std::unique_ptr<ShellSurface> shell_surface(new ShellSurface(surface.get()));
+  gfx::Size buffer_size(10, 10);
+  std::unique_ptr<Buffer> buffer(
+      new Buffer(exo_test_helper()->CreateGpuMemoryBuffer(buffer_size)));
+  surface->Attach(buffer.get());
+  surface->Commit();
+
+  // Go back to desk 1, and trigger an alt-tab (releasing alt first). This would
+  // trigger activating the exo surface window on desk 2, which would lead to a
+  // desk switch animation. During the animation, expect that Seat gets all the
+  // keys in `OnKeyEvent()`, and the |pressed_keys_| map is correctly updated.
+  ash::ActivateDesk(desk_1);
+  auto displatch_key_event = [&](ui::EventType type, ui::KeyboardCode key_code,
+                                 ui::DomCode code, int flags) {
+    ui::KeyEvent key_event{type, key_code, code, flags};
+    seat.WillProcessEvent(&key_event);
+    GetEventGenerator()->Dispatch(&key_event);
+
+    EXPECT_EQ(type != ui::ET_KEY_RELEASED, seat.pressed_keys().count(code));
+
+    seat.DidProcessEvent(&key_event);
+  };
+
+  ash::DeskSwitchAnimationWaiter waiter;
+  displatch_key_event(ui::ET_KEY_PRESSED, ui::VKEY_MENU, ui::DomCode::ALT_LEFT,
+                      /*flags=*/0);
+  displatch_key_event(ui::ET_KEY_PRESSED, ui::VKEY_TAB, ui::DomCode::TAB,
+                      /*flags=*/ui::EF_ALT_DOWN);
+  displatch_key_event(ui::ET_KEY_RELEASED, ui::VKEY_MENU, ui::DomCode::ALT_LEFT,
+                      /*flags=*/0);
+  displatch_key_event(ui::ET_KEY_RELEASED, ui::VKEY_TAB, ui::DomCode::TAB,
+                      /*flags=*/0);
+
+  EXPECT_TRUE(seat.pressed_keys().empty());
+  EXPECT_EQ(desk_2, desks_controller->GetTargetActiveDesk());
+  waiter.Wait();
+}
 
 TEST_F(KeyboardTest, OnKeyboardEnter) {
   std::unique_ptr<Surface> surface(new Surface);

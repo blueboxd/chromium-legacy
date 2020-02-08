@@ -28,8 +28,8 @@
 #include "net/http/transport_security_persister.h"
 #include "net/http/transport_security_state.h"
 #include "net/log/net_log.h"
+#include "net/proxy_resolution/configured_proxy_resolution_service.h"
 #include "net/proxy_resolution/proxy_config_service_ios.h"
-#include "net/proxy_resolution/proxy_resolution_service.h"
 #include "net/quic/quic_context.h"
 #include "net/ssl/ssl_config_service_defaults.h"
 #include "net/traffic_annotation/network_traffic_annotation.h"
@@ -89,7 +89,7 @@ net::URLRequestContext* WebViewURLRequestContextGetter::GetURLRequestContext() {
         std::make_unique<net::StaticHttpUserAgentSettings>("en-us,en",
                                                            user_agent));
     storage_->set_proxy_resolution_service(
-        net::ProxyResolutionService::CreateUsingSystemProxyResolver(
+        net::ConfiguredProxyResolutionService::CreateUsingSystemProxyResolver(
             std::move(proxy_config_service_), url_request_context_->net_log()));
     storage_->set_ssl_config_service(
         std::make_unique<net::SSLConfigServiceDefaults>());

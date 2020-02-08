@@ -597,14 +597,9 @@ void CompositorImpl::OnGpuChannelEstablished(
   constexpr bool support_locking = false;
   constexpr bool automatic_flushes = false;
   constexpr bool support_grcontext = true;
-  if (features::IsDynamicColorGamutEnabled()) {
-    display_color_spaces_ = display::Screen::GetScreen()
-                                ->GetDisplayNearestWindow(root_window_)
-                                .color_spaces();
-  } else {
-    display_color_spaces_ =
-        gfx::DisplayColorSpaces(gfx::ColorSpace::CreateSRGB());
-  }
+  display_color_spaces_ = display::Screen::GetScreen()
+                              ->GetDisplayNearestWindow(root_window_)
+                              .color_spaces();
 
   auto context_provider =
       base::MakeRefCounted<viz::ContextProviderCommandBuffer>(

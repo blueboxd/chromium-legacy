@@ -9,6 +9,7 @@
 #include "base/bind.h"
 #include "base/logging.h"
 #include "base/metrics/histogram_macros.h"
+#include "base/stl_util.h"
 #include "mojo/public/cpp/bindings/message.h"
 #include "mojo/public/cpp/bindings/remote.h"
 #include "net/base/load_flags.h"
@@ -28,6 +29,7 @@
 #include "services/network/resource_scheduler/resource_scheduler_client.h"
 #include "services/network/url_loader.h"
 #include "services/network/url_loader_factory.h"
+#include "url/origin.h"
 
 namespace network {
 
@@ -308,9 +310,9 @@ bool CorsURLLoaderFactory::IsSane(const NetworkContext* context,
       // TODO(lukasza): https://crbug.com/920634: Report bad message and return
       // false below.
       NOTREACHED();
-      debug::ScopedOriginCrashKey initiator_lock_crash_key(
+      url::debug::ScopedOriginCrashKey initiator_lock_crash_key(
           debug::GetRequestInitiatorSiteLockCrashKey(),
-          request_initiator_site_lock_);
+          base::OptionalOrNullptr(request_initiator_site_lock_));
       mojo::ReportBadMessage(
           "CorsURLLoaderFactory: lock VS initiator mismatch");
       return false;

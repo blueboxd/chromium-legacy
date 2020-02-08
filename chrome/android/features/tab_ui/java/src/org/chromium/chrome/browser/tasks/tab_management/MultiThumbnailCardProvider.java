@@ -117,7 +117,7 @@ public class MultiThumbnailCardProvider implements TabListMediator.ThumbnailProv
             for (int i = 0; i < 4; i++) {
                 if (mTabs.get(i) != null) {
                     final int index = i;
-                    final String url = mTabs.get(i).getUrl();
+                    final String url = mTabs.get(i).getUrlString();
                     final boolean isIncognito = mTabs.get(i).isIncognito();
                     // getTabThumbnailWithCallback() might call the callback up to twice,
                     // so use |lastFavicon| to avoid fetching the favicon the second time.

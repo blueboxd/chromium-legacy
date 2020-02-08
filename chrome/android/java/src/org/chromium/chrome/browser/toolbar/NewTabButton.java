@@ -40,10 +40,10 @@ public class NewTabButton
         super(context, attrs);
 
         mIsIncognito = false;
-        mLightModeTint =
-                AppCompatResources.getColorStateList(getContext(), R.color.tint_on_dark_bg);
-        mDarkModeTint =
-                AppCompatResources.getColorStateList(getContext(), R.color.standard_mode_tint);
+        mLightModeTint = AppCompatResources.getColorStateList(
+                getContext(), R.color.default_icon_color_light_tint_list);
+        mDarkModeTint = AppCompatResources.getColorStateList(
+                getContext(), R.color.default_icon_color_tint_list);
         setImageDrawable(VectorDrawableCompat.create(
                 getContext().getResources(), R.drawable.new_tab_icon, getContext().getTheme()));
         updateDrawableTint();

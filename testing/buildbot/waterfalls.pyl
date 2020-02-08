@@ -397,7 +397,7 @@
               'os': 'Android',
             },
           ],
-          'expiration': 10800,
+          'expiration': 21600,
         },
         'os_type': 'android',
       },

@@ -114,6 +114,10 @@ suite(extension_detail_view_tests.suiteName, function() {
     expectFalse(testIsVisible('#no-permissions'));
     expectFalse(testIsVisible('#host-access'));
     expectFalse(testIsVisible('extensions-runtime-host-permissions'));
+    // Reset state.
+    item.set('data.dependentExtensions', []);
+    item.set('data.permissions', {simplePermissions: []});
+    flush();
 
     const optionsUrl =
         'chrome-extension://' + extensionData.id + '/options.html';

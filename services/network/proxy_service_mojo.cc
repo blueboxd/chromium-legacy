@@ -10,14 +10,14 @@
 #include "base/bind.h"
 #include "base/logging.h"
 #include "base/threading/thread_task_runner_handle.h"
+#include "net/proxy_resolution/configured_proxy_resolution_service.h"
 #include "net/proxy_resolution/network_delegate_error_observer.h"
-#include "net/proxy_resolution/proxy_resolution_service.h"
 #include "net/proxy_resolution/proxy_resolver_factory.h"
 #include "services/network/proxy_resolver_factory_mojo.h"
 
 namespace network {
 
-std::unique_ptr<net::ProxyResolutionService>
+std::unique_ptr<net::ConfiguredProxyResolutionService>
 CreateProxyResolutionServiceUsingMojoFactory(
     mojo::PendingRemote<proxy_resolver::mojom::ProxyResolverFactory>
         mojo_proxy_factory,
@@ -32,8 +32,8 @@ CreateProxyResolutionServiceUsingMojoFactory(
   DCHECK(dhcp_pac_file_fetcher);
   DCHECK(host_resolver);
 
-  std::unique_ptr<net::ProxyResolutionService> proxy_resolution_service(
-      new net::ProxyResolutionService(
+  std::unique_ptr<net::ConfiguredProxyResolutionService>
+      proxy_resolution_service(new net::ConfiguredProxyResolutionService(
           std::move(proxy_config_service),
           std::make_unique<ProxyResolverFactoryMojo>(
               std::move(mojo_proxy_factory), host_resolver,

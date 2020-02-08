@@ -62,9 +62,9 @@ TEST_F('ChromeVoxNodeIdentifierTest', 'BasicButtonTest', function() {
         rootNode.find({role: RoleType.BUTTON, attributes: {name: 'Orange'}});
     assertFalse(!appleNode);
     assertFalse(!orangeNode);
-    const appleId = new NodeIdentifier(appleNode);
-    const duplicateAppleId = new NodeIdentifier(appleNode);
-    const orangeId = new NodeIdentifier(orangeNode);
+    const appleId = NodeIdentifier.constructFromNode(appleNode);
+    const duplicateAppleId = NodeIdentifier.constructFromNode(appleNode);
+    const orangeId = NodeIdentifier.constructFromNode(orangeNode);
 
     assertTrue(appleId.equals(duplicateAppleId));
     assertFalse(appleId.equals(orangeId));
@@ -76,10 +76,10 @@ TEST_F('ChromeVoxNodeIdentifierTest', 'DuplicateButtonTest', function() {
   this.runWithLoadedTree(this.duplicateButtonDoc, function() {
     CommandHandler.onCommand('nextButton');
     const firstButton = this.getRangeStart();
-    const firstButtonId = new NodeIdentifier(firstButton);
+    const firstButtonId = NodeIdentifier.constructFromNode(firstButton);
     CommandHandler.onCommand('nextButton');
     const secondButton = this.getRangeStart();
-    const secondButtonId = new NodeIdentifier(secondButton);
+    const secondButtonId = NodeIdentifier.constructFromNode(secondButton);
 
     assertFalse(firstButtonId.equals(secondButtonId));
   });
@@ -92,16 +92,16 @@ TEST_F('ChromeVoxNodeIdentifierTest', 'IdenticalListsTest', function() {
     // Create NodeIdentifiers for each item.
     CommandHandler.onCommand('nextObject');
     CommandHandler.onCommand('nextObject');
-    const firstApple = new NodeIdentifier(this.getRangeStart());
+    const firstApple = NodeIdentifier.constructFromNode(this.getRangeStart());
     CommandHandler.onCommand('nextObject');
     CommandHandler.onCommand('nextObject');
-    const firstOrange = new NodeIdentifier(this.getRangeStart());
+    const firstOrange = NodeIdentifier.constructFromNode(this.getRangeStart());
     CommandHandler.onCommand('nextObject');
     CommandHandler.onCommand('nextObject');
-    const secondApple = new NodeIdentifier(this.getRangeStart());
+    const secondApple = NodeIdentifier.constructFromNode(this.getRangeStart());
     CommandHandler.onCommand('nextObject');
     CommandHandler.onCommand('nextObject');
-    const secondOrange = new NodeIdentifier(this.getRangeStart());
+    const secondOrange = NodeIdentifier.constructFromNode(this.getRangeStart());
 
     assertFalse(firstApple.equals(secondApple));
     assertFalse(firstOrange.equals(secondOrange));
@@ -111,16 +111,16 @@ TEST_F('ChromeVoxNodeIdentifierTest', 'IdenticalListsTest', function() {
 // Tests that we can successfully stringify NodeIdentifiers.
 TEST_F('ChromeVoxNodeIdentifierTest', 'ToStringTest', function() {
   this.runWithLoadedTree(this.basicButtonDoc, function(rootNode) {
-    var appleNode =
+    const appleNode =
         rootNode.find({role: RoleType.BUTTON, attributes: {name: 'Apple'}});
-    var orangeNode =
+    const orangeNode =
         rootNode.find({role: RoleType.BUTTON, attributes: {name: 'Orange'}});
     assertFalse(!appleNode);
     assertFalse(!orangeNode);
-    var appleId = new NodeIdentifier(appleNode);
-    var orangeId = new NodeIdentifier(orangeNode);
+    const appleId = NodeIdentifier.constructFromNode(appleNode);
+    const orangeId = NodeIdentifier.constructFromNode(orangeNode);
 
-    var expectedAppleString = [
+    const expectedAppleString = [
       '{"attributes":{"id":"apple-button","name":"Apple","role":"button",',
       '"description":"","restriction":"","childCount":0,"indexInParent":1,',
       '"className":"","htmlTag":"button"},',
@@ -128,7 +128,7 @@ TEST_F('ChromeVoxNodeIdentifierTest', 'ToStringTest', function() {
       '%20%3Cbutton%20id%3D%22apple-button%22%3EApple%3C%2Fbutton%3E%20%3Cbut',
       'ton%3EOrange%3C%2Fbutton%3E","ancestry":[]}'
     ].join('');
-    var expectedOrangeString = [
+    const expectedOrangeString = [
       '{"attributes":{"id":"","name":"Orange","role":"button",',
       '"description":"","restriction":"","childCount":0,"indexInParent":2,',
       '"className":"","htmlTag":"button"},"pageUrl":"data:text/html,<!doctype',
@@ -139,5 +139,19 @@ TEST_F('ChromeVoxNodeIdentifierTest', 'ToStringTest', function() {
 
     assertEquals(appleId.toString(), expectedAppleString);
     assertEquals(orangeId.toString(), expectedOrangeString);
+  });
+});
+
+// Tests that we can successfully create a NodeIdentifier from a string
+// representation.
+TEST_F('ChromeVoxNodeIdentifierTest', 'FromStringTest', function() {
+  this.runWithLoadedTree(this.basicButtonDoc, function(rootNode) {
+    const appleNode =
+        rootNode.find({role: RoleType.BUTTON, attributes: {name: 'Apple'}});
+    assertFalse(!appleNode);
+    const appleId = NodeIdentifier.constructFromNode(appleNode);
+    const appleIdStr = JSON.stringify(appleId);
+    const duplicateAppleId = NodeIdentifier.constructFromString(appleIdStr);
+    assertTrue(appleId.equals(duplicateAppleId));
   });
 });

@@ -341,9 +341,6 @@
                 "begin": 10,
                 "abridged": false
             },
-            "v8.runtime_stats.top_25": {
-                "abridged": false
-            },
             "webrtc": {
                 "abridged": false
             }

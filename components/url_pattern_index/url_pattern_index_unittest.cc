@@ -540,7 +540,7 @@ TEST_F(UrlPatternIndexTest, OneRuleWithElementTypes) {
     Finish();
 
     EXPECT_EQ(test_case.expect_match,
-              !!FindMatch(test_case.url, nullptr /* document_origin_string */,
+              !!FindMatch(test_case.url, "" /* document_origin_string */,
                           test_case.element_type));
     Reset();
   }
@@ -584,10 +584,10 @@ TEST_F(UrlPatternIndexTest, OneRuleWithActivationTypes) {
     ASSERT_TRUE(AddUrlRule(rule));
     Finish();
 
-    EXPECT_EQ(test_case.expect_match,
-              !!FindMatch(test_case.document_url,
-                          nullptr /* parent_document_origin */,
-                          testing::kNoElement, test_case.activation_type));
+    EXPECT_EQ(
+        test_case.expect_match,
+        !!FindMatch(test_case.document_url, "" /* parent_document_origin */,
+                    testing::kNoElement, test_case.activation_type));
     EXPECT_EQ(test_case.expect_match,
               !!FindMatch(test_case.document_url, "http://example.com/",
                           testing::kNoElement, test_case.activation_type));
@@ -607,15 +607,12 @@ TEST_F(UrlPatternIndexTest, OneRuleWithElementAndActivationTypes) {
   Finish();
 
   EXPECT_FALSE(FindMatch("http://allow.ex.com"));
-  EXPECT_TRUE(FindMatch("http://allow.ex.com",
-                        nullptr /*document_origin_string */,
+  EXPECT_TRUE(FindMatch("http://allow.ex.com", "" /*document_origin_string */,
                         testing::kSubdocument));
 
-  EXPECT_FALSE(FindMatch("http://allow.ex.com",
-                         nullptr /* document_origin_string */,
+  EXPECT_FALSE(FindMatch("http://allow.ex.com", "" /* document_origin_string */,
                          testing::kNoElement, testing::kGenericBlock));
-  EXPECT_TRUE(FindMatch("http://allow.ex.com",
-                        nullptr /* document_origin_string */,
+  EXPECT_TRUE(FindMatch("http://allow.ex.com", "" /* document_origin_string */,
                         testing::kNoElement, kDocument));
 }
 
@@ -744,14 +741,14 @@ TEST_F(UrlPatternIndexTest, RulesWithSupportedAndUnsupportedTypes) {
   }
   Finish();
 
-  EXPECT_TRUE(FindMatch("http://example.com/", nullptr, kImage));
-  EXPECT_TRUE(FindMatch("http://example.com/", nullptr, kScript));
-  EXPECT_FALSE(FindMatch("http://example.com/", nullptr, testing::kPopup));
+  EXPECT_TRUE(FindMatch("http://example.com/", "", kImage));
+  EXPECT_TRUE(FindMatch("http://example.com/", "", kScript));
+  EXPECT_FALSE(FindMatch("http://example.com/", "", testing::kPopup));
   EXPECT_FALSE(FindMatch("http://example.com/"));
 
   EXPECT_TRUE(
-      FindMatch("http://example.com", nullptr, testing::kNoElement, kDocument));
-  EXPECT_FALSE(FindMatch("http://example.com", nullptr, testing::kNoElement,
+      FindMatch("http://example.com", "", testing::kNoElement, kDocument));
+  EXPECT_FALSE(FindMatch("http://example.com", "", testing::kNoElement,
                          testing::kGenericBlock));
 }
 

@@ -7,6 +7,7 @@
 
 #include "ash/public/cpp/shelf_model.h"
 #include "ash/shell.h"
+#include "base/run_loop.h"
 #include "chrome/browser/apps/app_service/app_service_proxy.h"
 #include "chrome/browser/apps/app_service/app_service_proxy_factory.h"
 #include "chrome/browser/apps/platform_apps/app_browsertest_util.h"
@@ -443,6 +444,11 @@ class AppServiceAppWindowArcAppBrowserTest
   void SetUpOnMainThread() override {
     AppServiceAppWindowBrowserTest::SetUpOnMainThread();
     arc::SetArcPlayStoreEnabledForProfile(profile(), true);
+
+    // This ensures app_prefs()->GetApp() below never returns nullptr.
+    base::RunLoop run_loop;
+    app_prefs()->SetDefaultAppsReadyCallback(run_loop.QuitClosure());
+    run_loop.Run();
   }
 
   void InstallTestApps(const std::string& package_name, bool multi_app) {

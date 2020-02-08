@@ -9,6 +9,7 @@
 #include "base/feature_list.h"
 #import "base/ios/crb_protocol_observers.h"
 #include "base/strings/sys_string_conversions.h"
+#import "ios/testing/earl_grey/coverage_utils.h"
 #import "ios/testing/earl_grey/earl_grey_test.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
@@ -98,13 +99,18 @@ bool LaunchArgumentsAreEqual(NSArray<NSString*>* args1,
       GREYAssertTrue([EarlGrey backgroundApplication],
                      @"Failed to background application.");
     }
+
+    [CoverageUtils writeClangCoverageProfile];
+
     [self.runningApplication terminate];
   }
 
   XCUIApplication* application = [[XCUIApplication alloc] init];
   application.launchArguments = arguments;
-
   [application launch];
+
+  [CoverageUtils configureCoverageReportPath];
+
   if (self.runningApplication) {
     [self.observers appLaunchManagerDidRelaunchApp:self runResets:runResets];
   }

@@ -69,6 +69,8 @@ class VIEWS_EXPORT BubbleDialogDelegateView : public DialogDelegateView,
   void OnWidgetActivationChanged(Widget* widget, bool active) override;
   void OnWidgetBoundsChanged(Widget* widget,
                              const gfx::Rect& new_bounds) override;
+  void OnWidgetPaintAsActiveChanged(Widget* widget,
+                                    bool paint_as_active) override;
 
   bool close_on_deactivate() const { return close_on_deactivate_; }
   void set_close_on_deactivate(bool close) { close_on_deactivate_ = close; }
@@ -166,7 +168,6 @@ class VIEWS_EXPORT BubbleDialogDelegateView : public DialogDelegateView,
 
   // DialogDelegateView:
   ax::mojom::Role GetAccessibleWindowRole() override;
-  void OnPaintAsActiveChanged(bool paint_as_active) override;
 
   // Disallow overrides of GetMinimumSize and GetMaximumSize(). These would only
   // be called by the FrameView, but the BubbleFrameView ignores these. Bubbles

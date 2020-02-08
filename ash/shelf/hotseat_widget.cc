@@ -48,8 +48,8 @@ class HotseatWidgetAnimationMetricsReporter
     shelf_->shelf_widget()->hotseat_transition_animator()->RemoveObserver(this);
   }
 
-  void OnHotseatTransitionAnimationStarted(HotseatState from_state,
-                                           HotseatState to_state) override {
+  void OnHotseatTransitionAnimationWillStart(HotseatState from_state,
+                                             HotseatState to_state) override {
     target_state_ = to_state;
   }
 

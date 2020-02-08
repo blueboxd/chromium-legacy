@@ -141,7 +141,7 @@ public class PseudoTab {
      */
     public String getUrl() {
         if (mTab != null && mTab.get() != null) {
-            return mTab.get().getUrl();
+            return mTab.get().getUrlString();
         }
         assert mTabId != null;
         return TabAttributeCache.getUrl(mTabId);

@@ -158,7 +158,8 @@ public class LayoutManager implements LayoutUpdateHost, LayoutProvider,
                 return;
             }
 
-            tabCreating(getTabModelSelector().getCurrentTabId(), tab.getUrl(), tab.isIncognito());
+            tabCreating(
+                    getTabModelSelector().getCurrentTabId(), tab.getUrlString(), tab.isIncognito());
         }
 
         @Override
@@ -629,7 +630,7 @@ public class LayoutManager implements LayoutUpdateHost, LayoutProvider,
         LayoutTab layoutTab = mTabCache.get(tabId);
         if (layoutTab == null) return;
 
-        String url = tab.getUrl();
+        String url = tab.getUrlString();
         boolean isNativePage = tab.isNativePage()
                 || (url != null && url.startsWith(UrlConstants.CHROME_NATIVE_URL_PREFIX));
         int themeColor = TabThemeColorHelper.getColor(tab);
@@ -649,7 +650,7 @@ public class LayoutManager implements LayoutUpdateHost, LayoutProvider,
     // Whether the tab is ready to display or it should be faded in as it loads.
     private static boolean shouldStall(Tab tab) {
         return (tab.isFrozen() || tab.needsReload())
-                && !NativePageFactory.isNativePageUrl(tab.getUrl(), tab.isIncognito());
+                && !NativePageFactory.isNativePageUrl(tab.getUrlString(), tab.isIncognito());
     }
 
     @Override

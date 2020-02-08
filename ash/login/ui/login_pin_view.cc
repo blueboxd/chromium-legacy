@@ -27,9 +27,9 @@
 #include "ui/views/animation/flood_fill_ink_drop_ripple.h"
 #include "ui/views/animation/ink_drop_highlight.h"
 #include "ui/views/animation/ink_drop_impl.h"
-#include "ui/views/animation/ink_drop_mask.h"
 #include "ui/views/animation/ink_drop_state.h"
 #include "ui/views/controls/button/label_button.h"
+#include "ui/views/controls/highlight_path_generator.h"
 #include "ui/views/layout/box_layout.h"
 #include "ui/views/layout/fill_layout.h"
 #include "ui/views/painter.h"
@@ -37,9 +37,10 @@
 namespace ash {
 namespace {
 
-// Color of the ink drop highlight.
-constexpr SkColor kInkDropHighlightColor =
-    SkColorSetARGB(0x14, 0xFF, 0xFF, 0xFF);
+// Values for the ink drop.
+constexpr SkColor kInkDropHighlightColor = SkColorSetA(SK_ColorWHITE, 0x0A);
+constexpr SkColor kInkDropRippleColor = SkColorSetA(SK_ColorWHITE, 0x0F);
+constexpr int kInkDropRadiusDp = 24;
 
 constexpr const char* kPinLabels[] = {
     "+",      // 0
@@ -61,9 +62,6 @@ constexpr const char kLoginPinViewClassName[] = "LoginPinView";
 constexpr int kInitialBackspaceDelayMs = 500;
 // After the first auto-submit, how long until the next backspace event fires?
 constexpr int kRepeatingBackspaceDelayMs = 150;
-
-// Size of the md-ripple when a PIN button is tapped.
-constexpr int kRippleSizeDp = 48;
 
 // Button sizes.
 constexpr int kButtonHeightDp = 56;
@@ -110,6 +108,10 @@ class BasePinButton : public views::InkDropHostView {
 
     focus_ring_ = views::FocusRing::Install(this);
     focus_ring_->SetColor(ShelfConfig::Get()->shelf_focus_border_color());
+    focus_ring_->SetPathGenerator(
+        std::make_unique<views::RectHighlightPathGenerator>());
+
+    views::InstallFixedSizeCircleHighlightPathGenerator(this, kInkDropRadiusDp);
   }
 
   ~BasePinButton() override = default;
@@ -144,40 +146,24 @@ class BasePinButton : public views::InkDropHostView {
     node_data->SetName(accessible_name_);
     node_data->role = ax::mojom::Role::kButton;
   }
-
-  std::unique_ptr<views::InkDrop> CreateInkDrop() override {
-    std::unique_ptr<views::InkDropImpl> ink_drop =
-        CreateDefaultFloodFillInkDropImpl();
-    ink_drop->SetShowHighlightOnHover(false);
-    return std::move(ink_drop);
-  }
-  std::unique_ptr<views::InkDropMask> CreateInkDropMask() const override {
-    return std::make_unique<views::CircleInkDropMask>(
-        size(), GetLocalBounds().CenterPoint(), GetInkDropRadius());
-  }
   std::unique_ptr<views::InkDropRipple> CreateInkDropRipple() const override {
     gfx::Point center = GetLocalBounds().CenterPoint();
-    const int radius = GetInkDropRadius();
-    gfx::Rect bounds(center.x() - radius, center.y() - radius, radius * 2,
-                     radius * 2);
+    gfx::Rect bounds(center.x() - kInkDropRadiusDp,
+                     center.y() - kInkDropRadiusDp, kInkDropRadiusDp * 2,
+                     kInkDropRadiusDp * 2);
 
     return std::make_unique<views::FloodFillInkDropRipple>(
         size(), GetLocalBounds().InsetsFrom(bounds),
-        GetInkDropCenterBasedOnLastEvent(), GetInkDropBaseColor(),
-        1.f /*visible_opacity*/);
+        GetInkDropCenterBasedOnLastEvent(), kInkDropRippleColor,
+        /*visible_opacity=*/1.f);
   }
   std::unique_ptr<views::InkDropHighlight> CreateInkDropHighlight()
       const override {
-    return std::make_unique<views::InkDropHighlight>(
-        gfx::PointF(GetLocalBounds().CenterPoint()),
-        std::make_unique<views::CircleLayerDelegate>(kInkDropHighlightColor,
-                                                     GetInkDropRadius()));
+    auto highlight = std::make_unique<views::InkDropHighlight>(
+        gfx::SizeF(size()), kInkDropHighlightColor);
+    highlight->set_visible_opacity(1.f);
+    return highlight;
   }
-  SkColor GetInkDropBaseColor() const override {
-    return SkColorSetA(SK_ColorWHITE, 0x0F);
-  }
-
-  int GetInkDropRadius() const { return kRippleSizeDp / 2; }
 
  protected:
   // Called when the button has been pressed.

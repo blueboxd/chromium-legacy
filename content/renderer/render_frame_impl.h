@@ -1175,7 +1175,7 @@ class CONTENT_EXPORT RenderFrameImpl
 
   // |transition_type| corresponds to the document which triggered this request.
   void WillSendRequestInternal(blink::WebURLRequest& request,
-                               blink::mojom::ResourceType resource_type,
+                               bool for_main_frame,
                                ui::PageTransition transition_type);
 
   // Returns the URL being loaded by the |frame_|'s request.

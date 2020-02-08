@@ -328,34 +328,34 @@ void GetProgIdEntries(const ApplicationInfo& app_info,
       entries->push_back(std::make_unique<RegistryEntry>(
           prog_id_path, ShellUtil::kRegAppUserModelId, app_info.app_id));
     }
+  }
 
-    // Add \Software\Classes\<prog_id>\Application entries
-    base::string16 application_path(prog_id_path + ShellUtil::kRegApplication);
-    if (!app_info.app_id.empty()) {
-      entries->push_back(std::make_unique<RegistryEntry>(
-          application_path, ShellUtil::kRegAppUserModelId, app_info.app_id));
-    }
-    if (!app_info.application_icon_path.empty()) {
-      entries->push_back(std::make_unique<RegistryEntry>(
-          application_path, ShellUtil::kRegApplicationIcon,
-          ShellUtil::FormatIconLocation(app_info.application_icon_path,
-                                        app_info.application_icon_index)));
-    }
-    if (!app_info.application_name.empty()) {
-      entries->push_back(std::make_unique<RegistryEntry>(
-          application_path, ShellUtil::kRegApplicationName,
-          app_info.application_name));
-    }
-    if (!app_info.application_description.empty()) {
-      entries->push_back(std::make_unique<RegistryEntry>(
-          application_path, ShellUtil::kRegApplicationDescription,
-          app_info.application_description));
-    }
-    if (!app_info.publisher_name.empty()) {
-      entries->push_back(std::make_unique<RegistryEntry>(
-          application_path, ShellUtil::kRegApplicationCompany,
-          app_info.publisher_name));
-    }
+  // Add \Software\Classes\<prog_id>\Application entries
+  base::string16 application_path(prog_id_path + ShellUtil::kRegApplication);
+  if (!app_info.app_id.empty()) {
+    entries->push_back(std::make_unique<RegistryEntry>(
+        application_path, ShellUtil::kRegAppUserModelId, app_info.app_id));
+  }
+  if (!app_info.application_icon_path.empty()) {
+    entries->push_back(std::make_unique<RegistryEntry>(
+        application_path, ShellUtil::kRegApplicationIcon,
+        ShellUtil::FormatIconLocation(app_info.application_icon_path,
+                                      app_info.application_icon_index)));
+  }
+  if (!app_info.application_name.empty()) {
+    entries->push_back(std::make_unique<RegistryEntry>(
+        application_path, ShellUtil::kRegApplicationName,
+        app_info.application_name));
+  }
+  if (!app_info.application_description.empty()) {
+    entries->push_back(std::make_unique<RegistryEntry>(
+        application_path, ShellUtil::kRegApplicationDescription,
+        app_info.application_description));
+  }
+  if (!app_info.publisher_name.empty()) {
+    entries->push_back(std::make_unique<RegistryEntry>(
+        application_path, ShellUtil::kRegApplicationCompany,
+        app_info.publisher_name));
   }
 }
 
@@ -1541,6 +1541,13 @@ ShellUtil::ShortcutProperties::ShortcutProperties(
 ShellUtil::ShortcutProperties::~ShortcutProperties() {
 }
 
+ShellUtil::FileAssociationsAndAppName::FileAssociationsAndAppName() = default;
+
+ShellUtil::FileAssociationsAndAppName::FileAssociationsAndAppName(
+    FileAssociationsAndAppName&& other) = default;
+
+ShellUtil::FileAssociationsAndAppName::~FileAssociationsAndAppName() = default;
+
 bool ShellUtil::QuickIsChromeRegisteredInHKLM(const base::FilePath& chrome_exe,
                                               const base::string16& suffix) {
   return QuickIsChromeRegistered(chrome_exe, suffix,
@@ -2477,6 +2484,43 @@ bool ShellUtil::DeleteFileAssociations(const base::string16& prog_id) {
   // Delete the key HKEY_CURRENT_USER\Software\Classes\|prog_id|.
   return InstallUtil::DeleteRegistryKey(HKEY_CURRENT_USER, prog_id_path,
                                         WorkItem::kWow64Default);
+}
+
+// static
+ShellUtil::FileAssociationsAndAppName ShellUtil::GetFileAssociationsAndAppName(
+    const base::string16& prog_id) {
+  FileAssociationsAndAppName file_associations_and_app_name;
+
+  // Get list of handled file extensions from value FileExtensions at
+  // HKEY_CURRENT_USER\Software\Classes\|prog_id|.
+  base::string16 prog_id_path(kRegClasses);
+  prog_id_path.push_back(base::FilePath::kSeparators[0]);
+  prog_id_path.append(prog_id);
+  RegKey file_extensions_key(HKEY_CURRENT_USER, prog_id_path.c_str(),
+                             KEY_QUERY_VALUE);
+  base::string16 handled_file_extensions;
+  if (file_extensions_key.ReadValue(
+          L"FileExtensions", &handled_file_extensions) != ERROR_SUCCESS) {
+    return FileAssociationsAndAppName();
+  }
+  std::vector<base::StringPiece16> file_associations_vec =
+      base::SplitStringPiece(base::StringPiece16(handled_file_extensions),
+                             base::StringPiece16(L";"), base::TRIM_WHITESPACE,
+                             base::SPLIT_WANT_NONEMPTY);
+  for (const auto& file_extension : file_associations_vec) {
+    // Skip over the leading '.' so that we return the same
+    // extensions as were passed to AddFileAssociations.
+    file_associations_and_app_name.file_associations.emplace(
+        file_extension.substr(1));
+  }
+  prog_id_path.append(kRegApplication);
+  RegKey prog_id_key(HKEY_CURRENT_USER, prog_id_path.c_str(), KEY_QUERY_VALUE);
+  if (prog_id_key.ReadValue(kRegApplicationName,
+                            &file_associations_and_app_name.app_name) !=
+      ERROR_SUCCESS) {
+    return FileAssociationsAndAppName();
+  }
+  return file_associations_and_app_name;
 }
 
 // static

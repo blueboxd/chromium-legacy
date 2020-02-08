@@ -4,8 +4,6 @@
 
 #include "chrome/updater/tools/certificate_tag.h"
 
-#include "base/containers/span.h"
-#include "base/optional.h"
 #include "third_party/boringssl/src/include/openssl/bytestring.h"
 #include "third_party/boringssl/src/include/openssl/crypto.h"
 
@@ -64,8 +62,9 @@ base::Optional<Binary> Binary::Parse(base::span<const uint8_t> binary) {
   CBS bin = CBSFromSpan(binary);
   CBS bin_for_offset = bin;
   CBS bin_for_header = bin;
-  uint32_t pe_offset, pe_magic;
-  uint16_t size_of_optional_header, characteristics, optional_header_magic;
+  uint32_t pe_offset = 0, pe_magic = 0;
+  uint16_t size_of_optional_header = 0, characteristics = 0,
+           optional_header_magic = 0;
   CBS optional_header;
   // See the IMAGE_FILE_HEADER structure from
   // http://msdn.microsoft.com/en-us/library/windows/desktop/ms680313(v=vs.85).aspx.
@@ -87,7 +86,7 @@ base::Optional<Binary> Binary::Parse(base::span<const uint8_t> binary) {
     return base::nullopt;
   }
 
-  size_t address_size, extra_header_bytes = 0;
+  size_t address_size = 0, extra_header_bytes = 0;
   switch (optional_header_magic) {
     case kPE32PlusMagic:
       address_size = 8;
@@ -105,7 +104,8 @@ base::Optional<Binary> Binary::Parse(base::span<const uint8_t> binary) {
   // directory entries.
   const size_t to_skip =
       22 + extra_header_bytes + address_size + 40 + address_size * 4 + 4;
-  uint32_t num_directory_entries, cert_entry_virtual_addr, cert_entry_size;
+  uint32_t num_directory_entries = 0, cert_entry_virtual_addr = 0,
+           cert_entry_size = 0;
   if (!CBS_skip(&optional_header, to_skip) ||
       // Read the number of directory entries, which is also the last value
       // in the Windows-specific header.
@@ -133,8 +133,8 @@ base::Optional<Binary> Binary::Parse(base::span<const uint8_t> binary) {
 
   // See the WIN_CERTIFICATE structure from
   // http://msdn.microsoft.com/en-us/library/ms920091.aspx.
-  uint32_t certs_len;
-  uint16_t revision, certs_type;
+  uint32_t certs_len = 0;
+  uint16_t revision = 0, certs_type = 0;
   CBS signed_data;
   const size_t expected_certs_len = CBS_len(&certs);
   if (!CBS_get_u32le(&certs, &certs_len) || certs_len != expected_certs_len ||
@@ -153,7 +153,7 @@ base::Optional<Binary> Binary::Parse(base::span<const uint8_t> binary) {
 
   // Double-check that the calculated |certs_size_offset_| is correct by reading
   // from that location and checking that the value is as expected.
-  uint32_t cert_entry_size_duplicate;
+  uint32_t cert_entry_size_duplicate = 0;
   CBS bin_for_check = bin;
   if (!CBS_skip(&bin_for_check, ret.certs_size_offset_) ||
       !CBS_get_u32le(&bin_for_check, &cert_entry_size_duplicate) ||
@@ -166,9 +166,8 @@ base::Optional<Binary> Binary::Parse(base::span<const uint8_t> binary) {
   ret.content_info_ = SpanFromCBS(&signed_data);
   ret.attr_cert_offset_ = cert_entry_virtual_addr;
 
-  if (!ret.ParseTag()) {
+  if (!ret.ParseTag())
     return base::nullopt;
-  }
 
   return ret;
 }
@@ -181,11 +180,7 @@ const base::Optional<base::span<const uint8_t>>& Binary::tag() const {
 // commonName with the given value.
 static bool AddName(CBB* cbb, const char* common_name) {
   // kCommonName is the DER-enabled OID for common names.
-  static constexpr uint8_t kCommonName[] = {
-      0x55,
-      0x04,
-      0x03,
-  };
+  static constexpr uint8_t kCommonName[] = {0x55, 0x04, 0x03};
 
   CBB name, rdns, rdn, oid, str;
   if (!CBB_add_asn1(cbb, &name, CBS_ASN1_SEQUENCE) ||
@@ -305,8 +300,8 @@ base::Optional<std::vector<uint8_t>> Binary::SetTag(
   CBB cert, tbs_cert, version, spki, sigalg, sigalg_oid, validity, not_before,
       not_after, key_params, public_key, extensions_tag, extensions, extension,
       critical_flag, tag_cbb, oid, null, signature;
-  uint8_t* cbb_data;
-  size_t cbb_len;
+  uint8_t* cbb_data = nullptr;
+  size_t cbb_len = 0;
   if (!CBB_add_asn1(&certs_cbb, &cert, CBS_ASN1_SEQUENCE) ||
       !CBB_add_asn1(&cert, &tbs_cert, CBS_ASN1_SEQUENCE) ||
       // version
@@ -423,14 +418,13 @@ bool Binary::ParseTag() {
     have_last_cast = true;
   }
 
-  if (!have_last_cast) {
+  if (!have_last_cast)
     return false;
-  }
 
   // See https://tools.ietf.org/html/rfc5280#section-4.1 for the X.509 structure
   // being parsed here.
   CBS tbs_cert, outer_extensions;
-  int has_extensions;
+  int has_extensions = 0;
   if (!CBS_get_asn1(&last_cert, &tbs_cert, CBS_ASN1_SEQUENCE) ||
       // version
       !CBS_get_optional_asn1(
@@ -462,14 +456,12 @@ bool Binary::ParseTag() {
     return false;
   }
 
-  if (!has_extensions) {
+  if (!has_extensions)
     return true;
-  }
 
   CBS extensions;
-  if (!CBS_get_asn1(&outer_extensions, &extensions, CBS_ASN1_SEQUENCE)) {
+  if (!CBS_get_asn1(&outer_extensions, &extensions, CBS_ASN1_SEQUENCE))
     return false;
-  }
 
   while (CBS_len(&extensions) > 0) {
     CBS extension, oid, contents;

@@ -946,9 +946,9 @@ public class TabGridDialogMediatorUnitTest {
         String url1 = "https://www.google.com";
         String url2 = "http://example.com";
         String url3 = "https://maps.google.com";
-        doReturn(url1).when(mTab1).getUrl();
-        doReturn(url2).when(mTab2).getUrl();
-        doReturn(url3).when(newTab).getUrl();
+        doReturn(url1).when(mTab1).getUrlString();
+        doReturn(url2).when(mTab2).getUrlString();
+        doReturn(url3).when(newTab).getUrlString();
         mMediator.setCurrentTabIdForTesting(TAB1_ID);
 
         // Setup two sets of tab group and share strings.
@@ -979,7 +979,7 @@ public class TabGridDialogMediatorUnitTest {
         TabImpl tab = mock(TabImpl.class);
         doReturn(id).when(tab).getId();
         doReturn(id).when(tab).getRootId();
-        doReturn("").when(tab).getUrl();
+        doReturn("").when(tab).getUrlString();
         doReturn(title).when(tab).getTitle();
         doReturn(true).when(tab).isIncognito();
         return tab;

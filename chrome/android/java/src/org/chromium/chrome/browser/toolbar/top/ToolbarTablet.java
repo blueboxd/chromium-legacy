@@ -120,10 +120,10 @@ public class ToolbarTablet extends ToolbarLayout
         final int reloadLevel = getResources().getInteger(R.integer.reload_button_level_reload);
         final int stopLevel = getResources().getInteger(R.integer.reload_button_level_stop);
         final Drawable reloadLevelDrawable = UiUtils.getTintedDrawable(
-                getContext(), R.drawable.btn_toolbar_reload, R.color.standard_mode_tint);
+                getContext(), R.drawable.btn_toolbar_reload, R.color.default_icon_color_tint_list);
         reloadIcon.addLevel(reloadLevel, reloadLevel, reloadLevelDrawable);
         final Drawable stopLevelDrawable = UiUtils.getTintedDrawable(
-                getContext(), R.drawable.btn_close, R.color.standard_mode_tint);
+                getContext(), R.drawable.btn_close, R.color.default_icon_color_tint_list);
         reloadIcon.addLevel(stopLevel, stopLevel, stopLevelDrawable);
         mReloadButton.setImageDrawable(reloadIcon);
         mShowTabStack = AccessibilityUtil.isAccessibilityEnabled()

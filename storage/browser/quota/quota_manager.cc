@@ -164,14 +164,14 @@ bool DeleteOriginInfoOnDBThread(const url::Origin& origin,
   return database->SetOriginLastEvictionTime(origin, type, now);
 }
 
-bool BootstrapDatabaseOnDBThread(const std::set<url::Origin>* origins,
+bool BootstrapDatabaseOnDBThread(std::set<url::Origin> origins,
                                  QuotaDatabase* database) {
   DCHECK(database);
   if (database->IsOriginDatabaseBootstrapped())
     return true;
 
   // Register existing origins with 0 last time access.
-  if (database->RegisterInitialOriginInfo(*origins, StorageType::kTemporary)) {
+  if (database->RegisterInitialOriginInfo(origins, StorageType::kTemporary)) {
     database->SetOriginDatabaseBootstrapped(true);
     return true;
   }
@@ -504,8 +504,7 @@ class QuotaManager::GetUsageInfoTask : public QuotaTask {
 
  private:
   void AddEntries(StorageType type, UsageTracker* tracker) {
-    std::map<std::string, int64_t> host_usage;
-    tracker->GetCachedHostsUsage(&host_usage);
+    std::map<std::string, int64_t> host_usage = tracker->GetCachedHostsUsage();
     for (const auto& host_usage_pair : host_usage) {
       entries_.emplace_back(host_usage_pair.first, type,
                             host_usage_pair.second);
@@ -1318,11 +1317,10 @@ void QuotaManager::BootstrapDatabaseForEviction(
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   // The usage cache should be fully populated now so we can
   // seed the database with origins we know about.
-  std::set<url::Origin>* origins = new std::set<url::Origin>;
-  temporary_usage_tracker_->GetCachedOrigins(origins);
+  std::set<url::Origin> origins = temporary_usage_tracker_->GetCachedOrigins();
   PostTaskAndReplyWithResultForDBThread(
       FROM_HERE,
-      base::BindOnce(&BootstrapDatabaseOnDBThread, base::Owned(origins)),
+      base::BindOnce(&BootstrapDatabaseOnDBThread, std::move(origins)),
       base::BindOnce(&QuotaManager::DidBootstrapDatabase,
                      weak_factory_.GetWeakPtr(),
                      std::move(did_get_origin_callback)));
@@ -1360,13 +1358,11 @@ UsageTracker* QuotaManager::GetUsageTracker(StorageType type) const {
   return nullptr;
 }
 
-void QuotaManager::GetCachedOrigins(StorageType type,
-                                    std::set<url::Origin>* origins) {
+std::set<url::Origin> QuotaManager::GetCachedOrigins(StorageType type) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  DCHECK(origins);
   LazyInitialize();
   DCHECK(GetUsageTracker(type));
-  GetUsageTracker(type)->GetCachedOrigins(origins);
+  return GetUsageTracker(type)->GetCachedOrigins();
 }
 
 void QuotaManager::NotifyStorageAccessedInternal(const url::Origin& origin,
@@ -1564,9 +1560,8 @@ void QuotaManager::DidGetPersistentGlobalUsageForHistogram(
 void QuotaManager::DidDumpOriginInfoTableForHistogram(
     const OriginInfoTableEntries& entries) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  using UsageMap = std::map<url::Origin, int64_t>;
-  UsageMap usage_map;
-  GetUsageTracker(StorageType::kTemporary)->GetCachedOriginsUsage(&usage_map);
+  std::map<url::Origin, int64_t> usage_map =
+      GetUsageTracker(StorageType::kTemporary)->GetCachedOriginsUsage();
   base::Time now = base::Time::Now();
   for (const auto& info : entries) {
     if (info.type != StorageType::kTemporary)

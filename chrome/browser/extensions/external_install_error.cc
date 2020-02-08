@@ -425,11 +425,13 @@ const Extension* ExternalInstallError::GetExtension() const {
       ->GetExtensionById(extension_id_, ExtensionRegistry::EVERYTHING);
 }
 
-void ExternalInstallError::OnWebstoreRequestFailure() {
+void ExternalInstallError::OnWebstoreRequestFailure(
+    const std::string& extension_id) {
   OnFetchComplete();
 }
 
 void ExternalInstallError::OnWebstoreResponseParseSuccess(
+    const std::string& extension_id,
     std::unique_ptr<base::DictionaryValue> webstore_data) {
   std::string localized_user_count;
   double average_rating = 0;
@@ -454,6 +456,7 @@ void ExternalInstallError::OnWebstoreResponseParseSuccess(
 }
 
 void ExternalInstallError::OnWebstoreResponseParseFailure(
+    const std::string& extension_id,
     const std::string& error) {
   OnFetchComplete();
 }

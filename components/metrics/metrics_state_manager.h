@@ -170,6 +170,10 @@ class MetricsStateManager final {
     return entropy_source_returned_;
   }
 
+  std::string initial_client_id_for_testing() const {
+    return initial_client_id_;
+  }
+
   // Reset the client id and low entropy source if the kMetricsResetMetricIDs
   // pref is true.
   void ResetMetricsIDsIfNecessary();
@@ -207,6 +211,12 @@ class MetricsStateManager final {
   // high entropy source used for field trial randomization so that field
   // trials don't toggle state between first and second run.
   std::string provisional_client_id_;
+
+  // The client id that was used do field trial randomization. This field should
+  // only be changed when we need to do group assignment. |initial_client_id|
+  // should left blank iff a client id was not used to do field trial
+  // randomization.
+  std::string initial_client_id_;
 
   // An instance of EntropyState for getting the entropy source values.
   EntropyState entropy_state_;

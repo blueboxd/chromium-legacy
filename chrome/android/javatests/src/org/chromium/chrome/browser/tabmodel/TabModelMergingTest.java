@@ -168,21 +168,21 @@ public class TabModelMergingTest {
         mMergeIntoActivity2ExpectedTabs = new String[7];
         for (int i = 0; i < 4; i++) {
             mMergeIntoActivity1ExpectedTabs[i] =
-                    mActivity1.getTabModelSelector().getModel(false).getTabAt(i).getUrl();
+                    mActivity1.getTabModelSelector().getModel(false).getTabAt(i).getUrlString();
             mMergeIntoActivity2ExpectedTabs[i + 3] =
-                    mActivity1.getTabModelSelector().getModel(false).getTabAt(i).getUrl();
+                    mActivity1.getTabModelSelector().getModel(false).getTabAt(i).getUrlString();
         }
         for (int i = 0; i < 3; i++) {
             mMergeIntoActivity2ExpectedTabs[i] =
-                    mActivity2.getTabModelSelector().getModel(false).getTabAt(i).getUrl();
+                    mActivity2.getTabModelSelector().getModel(false).getTabAt(i).getUrlString();
             mMergeIntoActivity1ExpectedTabs[i + 4] =
-                    mActivity2.getTabModelSelector().getModel(false).getTabAt(i).getUrl();
+                    mActivity2.getTabModelSelector().getModel(false).getTabAt(i).getUrlString();
         }
     }
 
     private void mergeTabsAndAssert(final ChromeTabbedActivity activity,
             final String[] expectedTabUrls) {
-        String selectedTabUrl = activity.getTabModelSelector().getCurrentTab().getUrl();
+        String selectedTabUrl = activity.getTabModelSelector().getCurrentTab().getUrlString();
         mergeTabsAndAssert(activity, expectedTabUrls, expectedTabUrls.length, selectedTabUrl);
     }
 
@@ -257,12 +257,12 @@ public class TabModelMergingTest {
 
         // Assert that the correct tab is selected.
         Assert.assertEquals("Wrong tab selected", expectedSelectedTabUrl,
-                activity.getTabModelSelector().getCurrentTab().getUrl());
+                activity.getTabModelSelector().getCurrentTab().getUrlString());
 
         // Assert that tabs are in the correct order.
         for (int i = 0; i < expectedTabUrls.length; i++) {
             Assert.assertEquals("Wrong tab at position " + i, expectedTabUrls[i],
-                    activity.getTabModelSelector().getModel(false).getTabAt(i).getUrl());
+                    activity.getTabModelSelector().getModel(false).getTabAt(i).getUrlString());
         }
     }
 
@@ -286,7 +286,8 @@ public class TabModelMergingTest {
     @LargeTest
     @Feature({"TabPersistentStore", "MultiWindow"})
     public void testMergeOnColdStart() {
-        String expectedSelectedUrl = mActivity1.getTabModelSelector().getCurrentTab().getUrl();
+        String expectedSelectedUrl =
+                mActivity1.getTabModelSelector().getCurrentTab().getUrlString();
 
         // Create an intent to launch a new ChromeTabbedActivity.
         Intent intent = createChromeTabbedActivityIntent(mActivity1);
@@ -328,7 +329,8 @@ public class TabModelMergingTest {
     @LargeTest
     @Feature({"TabPersistentStore", "MultiWindow"})
     public void testMergeOnColdStartFromChromeTabbedActivity2() throws Exception {
-        String expectedSelectedUrl = mActivity2.getTabModelSelector().getCurrentTab().getUrl();
+        String expectedSelectedUrl =
+                mActivity2.getTabModelSelector().getCurrentTab().getUrlString();
 
         MockTabPersistentStoreObserver mockObserver = new MockTabPersistentStoreObserver();
         TabModelSelectorImpl tabModelSelector =
@@ -476,7 +478,7 @@ public class TabModelMergingTest {
         Assert.assertEquals("Wrong number of tabs in ChromeTabbedActivity2", 4,
                 mActivity2.getTabModelSelector().getTotalTabCount());
 
-        String selectedUrl = mActivity1.getTabModelSelector().getCurrentTab().getUrl();
+        String selectedUrl = mActivity1.getTabModelSelector().getCurrentTab().getUrlString();
         mergeTabsAndAssert(mActivity1, mMergeIntoActivity1ExpectedTabs, 9, selectedUrl);
     }
 }

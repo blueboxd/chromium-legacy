@@ -149,7 +149,7 @@ class QuicChromiumClientSessionTest
                       false),
         migrate_session_early_v2_(false),
         go_away_on_path_degrading_(false) {
-    FLAGS_quic_disable_http3_settings_grease_randomness = true;
+    FLAGS_quic_enable_http3_grease_randomness = false;
     quic::QuicEnableVersion(version_);
     // Advance the time, because timers do not like uninitialized times.
     clock_.AdvanceTime(quic::QuicTime::Delta::FromSeconds(1));

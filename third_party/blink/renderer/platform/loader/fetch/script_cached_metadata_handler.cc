@@ -41,7 +41,7 @@ void ScriptCachedMetadataHandler::SetCachedMetadata(uint32_t data_type_id,
     return;
   cached_metadata_ = CachedMetadata::Create(data_type_id, data, size);
   if (!disable_send_to_platform_for_testing_)
-    SendToPlatform();
+    CommitToPersistentStorage();
 }
 
 void ScriptCachedMetadataHandler::ClearCachedMetadata(
@@ -53,8 +53,8 @@ void ScriptCachedMetadataHandler::ClearCachedMetadata(
     case kDiscardLocally:
       cached_metadata_discarded_ = true;
       break;
-    case kSendToPlatform:
-      SendToPlatform();
+    case kClearPersistentStorage:
+      CommitToPersistentStorage();
       break;
   }
 }
@@ -107,7 +107,7 @@ size_t ScriptCachedMetadataHandler::GetCodeCacheSize() const {
   return (cached_metadata_) ? cached_metadata_->SerializedData().size() : 0;
 }
 
-void ScriptCachedMetadataHandler::SendToPlatform() {
+void ScriptCachedMetadataHandler::CommitToPersistentStorage() {
   if (cached_metadata_) {
     base::span<const uint8_t> serialized_data =
         cached_metadata_->SerializedData();

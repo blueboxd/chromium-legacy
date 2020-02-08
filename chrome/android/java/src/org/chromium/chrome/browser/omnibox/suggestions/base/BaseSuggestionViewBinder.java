@@ -93,11 +93,7 @@ public final class BaseSuggestionViewBinder<T extends View>
             rciv.setRoundedCorners(radius, radius, radius, radius);
         }
 
-        @ColorRes
-        int tint = isDarkMode(model) ? R.color.default_icon_color_secondary_list
-                                     : R.color.white_mode_tint;
-
-        updateIcon(rciv, sds, tint);
+        updateIcon(rciv, sds, ChromeColors.getSecondaryIconTintRes(!isDarkMode(model)));
     }
 
     /** Update attributes of decorated suggestion icon. */
@@ -105,7 +101,7 @@ public final class BaseSuggestionViewBinder<T extends View>
             PropertyModel model, BaseSuggestionView<T> baseView) {
         final ImageView view = baseView.getActionImageView();
         final SuggestionDrawableState sds = model.get(BaseSuggestionViewProperties.ACTION_ICON);
-        updateIcon(view, sds, ChromeColors.getIconTintRes(!isDarkMode(model)));
+        updateIcon(view, sds, ChromeColors.getPrimaryIconTintRes(!isDarkMode(model)));
     }
 
     /**

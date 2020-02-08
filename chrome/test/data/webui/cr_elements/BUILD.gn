@@ -3,6 +3,7 @@
 # found in the LICENSE file.
 
 import("//ui/webui/resources/tools/js_modulizer.gni")
+import("../namespace_rewrites.gni")
 
 js_modulizer("modulize") {
   input_files = [
@@ -37,23 +38,7 @@ js_modulizer("modulize") {
     "cr_view_manager_test.js",
     "iron_list_focus_test.js",
   ]
-  namespace_rewrites = [
-    "cr.toastManager.getToastManager|getToastManager",
-    "MockInteractions.blur|blur",
-    "MockInteractions.downAndUp|downAndUp",
-    "MockInteractions.keyDownOn|keyDownOn",
-    "MockInteractions.keyEventOn|keyEventOn",
-    "MockInteractions.keyUpOn|keyUpOn",
-    "MockInteractions.pressAndReleaseKeyOn|pressAndReleaseKeyOn",
-    "MockInteractions.tap|tap",
-    "Polymer.Base|Base",
-    "test_util.eventToPromise|eventToPromise",
-    "test_util.flushTasks|flushTasks",
-    "test_util.isChildVisible|isChildVisible",
-    "test_util.isVisible|isVisible",
-    "test_util.waitBeforeNextRender|waitBeforeNextRender",
-    "test_util.whenAttributeIs|whenAttributeIs",
-  ]
+  namespace_rewrites = test_namespace_rewrites + [ "Polymer.Base|Base" ]
 
   if (is_chromeos) {
     input_files += [ "cr_searchable_drop_down_tests.js" ]

@@ -50,7 +50,7 @@ URLRequestContextBuilderMojo::CreateDhcpPacFileFetcher(
 #endif
 }
 
-std::unique_ptr<net::ProxyResolutionService>
+std::unique_ptr<net::ConfiguredProxyResolutionService>
 URLRequestContextBuilderMojo::CreateProxyResolutionService(
     std::unique_ptr<net::ProxyConfigService> proxy_config_service,
     net::URLRequestContext* url_request_context,

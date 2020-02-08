@@ -72,7 +72,7 @@ public class MediaNotificationTestTabHolder {
         when(mTab.getId()).thenReturn(tabId);
         when(mTab.isIncognito()).thenReturn(false);
         when(mTab.getTitle()).thenAnswer(invocation -> mTitle);
-        when(mTab.getUrl()).thenAnswer(invocation -> mUrl);
+        when(mTab.getUrlString()).thenAnswer(invocation -> mUrl);
 
         MediaSessionTabHelper.sOverriddenMediaSession = mMediaSession;
         mMediaSessionTabHelper = new MediaSessionTabHelper(mTab);

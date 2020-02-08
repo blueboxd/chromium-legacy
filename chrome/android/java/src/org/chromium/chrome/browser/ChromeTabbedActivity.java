@@ -1279,8 +1279,8 @@ public class ChromeTabbedActivity extends ChromeActivity {
                         boolean loaded = false;
                         if (matchingTabIndex != TabModel.INVALID_TAB_INDEX) {
                             Tab tab = tabModel.getTabAt(matchingTabIndex);
-                            if (tab.getUrl().equals(url)
-                                    || tab.getUrl().equals(IntentUtils.safeGetStringExtra(
+                            if (tab.getUrlString().equals(url)
+                                    || tab.getUrlString().equals(IntentUtils.safeGetStringExtra(
                                             intent, TabOpenType.REUSE_TAB_ORIGINAL_URL_STRING))) {
                                 tabModel.setIndex(matchingTabIndex, TabSelectionType.FROM_USER);
                                 LoadUrlParams loadUrlParams =
@@ -1607,7 +1607,8 @@ public class ChromeTabbedActivity extends ChromeActivity {
     @Override
     public boolean onMenuOrKeyboardAction(final int id, boolean fromMenu) {
         final Tab currentTab = getActivityTab();
-        boolean currentTabIsNtp = currentTab != null && NewTabPage.isNTPUrl(currentTab.getUrl());
+        boolean currentTabIsNtp =
+                currentTab != null && NewTabPage.isNTPUrl(currentTab.getUrlString());
         if (id == R.id.new_tab_menu_id) {
             getTabModelSelector().getModel(false).commitAllTabClosures();
             RecordUserAction.record("MobileMenuNewTab");
@@ -1754,7 +1755,7 @@ public class ChromeTabbedActivity extends ChromeActivity {
         // get back to the previous state. The reason for startsWith check is that the
         // actual redirected URL is a different system language based help url.
         final @TabLaunchType int type = currentTab.getLaunchType();
-        final boolean helpUrl = currentTab.getUrl().startsWith(HELP_URL_PREFIX);
+        final boolean helpUrl = currentTab.getUrlString().startsWith(HELP_URL_PREFIX);
         if (type == TabLaunchType.FROM_CHROME_UI && helpUrl) {
             getCurrentTabModel().closeTab(currentTab);
             return true;

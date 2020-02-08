@@ -8,9 +8,9 @@
 #include "chrome/renderer/subresource_redirect/subresource_redirect_hints_agent.h"
 #include "chrome/renderer/subresource_redirect/subresource_redirect_util.h"
 #include "content/public/common/previews_state.h"
+#include "services/network/public/mojom/fetch_api.mojom-shared.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/blink/public/common/features.h"
-#include "third_party/blink/public/mojom/loader/resource_load_info.mojom-shared.h"
 #include "third_party/blink/public/platform/web_url.h"
 #include "third_party/blink/public/platform/web_url_request.h"
 
@@ -41,14 +41,15 @@ namespace {
 std::unique_ptr<SubresourceRedirectURLLoaderThrottle>
 CreateSubresourceRedirectURLLoaderThrottle(
     const GURL& url,
-    blink::mojom::ResourceType resource_type,
+    network::mojom::RequestDestination request_destination,
     int previews_state,
     const std::vector<std::string>& public_image_urls) {
   blink::WebURLRequest request;
   request.SetUrl(url);
   request.SetPreviewsState(previews_state);
+  request.SetRequestDestination(request_destination);
   DCHECK(SubresourceRedirectURLLoaderThrottle::MaybeCreateThrottle(
-             request, resource_type, kRenderFrameID)
+             request, kRenderFrameID)
              .get() != nullptr);
 
   return std::make_unique<TestSubresourceRedirectURLLoaderThrottle>(
@@ -58,32 +59,32 @@ CreateSubresourceRedirectURLLoaderThrottle(
 TEST(SubresourceRedirectURLLoaderThrottleTest, TestMaybeCreateThrottle) {
   struct TestCase {
     bool is_subresource_redirect_feature_enabled;
-    blink::mojom::ResourceType resource_type;
+    network::mojom::RequestDestination destination;
     int previews_state;
     const std::string url;
     bool expected_is_throttle_created;
   };
 
   const TestCase kTestCases[]{
-      {true, blink::mojom::ResourceType::kImage,
+      {true, network::mojom::RequestDestination::kImage,
        content::PreviewsTypes::SUBRESOURCE_REDIRECT_ON,
        "https://www.test.com/test.jpg", true},
-      {true, blink::mojom::ResourceType::kImage,
+      {true, network::mojom::RequestDestination::kImage,
        content::PreviewsTypes::SUBRESOURCE_REDIRECT_ON |
            content::PreviewsTypes::LAZY_IMAGE_AUTO_RELOAD,
        "https://www.test.com/test.jpg", true},
 
       // Failure cases
-      {false, blink::mojom::ResourceType::kImage,
+      {false, network::mojom::RequestDestination::kImage,
        content::PreviewsTypes::SUBRESOURCE_REDIRECT_ON,
        "https://www.test.com/test.jpg", false},
-      {true, blink::mojom::ResourceType::kScript,
+      {true, network::mojom::RequestDestination::kScript,
        content::PreviewsTypes::SUBRESOURCE_REDIRECT_ON,
        "https://www.test.com/test.jpg", false},
-      {true, blink::mojom::ResourceType::kImage,
+      {true, network::mojom::RequestDestination::kImage,
        content::PreviewsTypes::LAZY_IMAGE_AUTO_RELOAD,
        "https://www.test.com/test.jpg", false},
-      {true, blink::mojom::ResourceType::kImage,
+      {true, network::mojom::RequestDestination::kImage,
        content::PreviewsTypes::SUBRESOURCE_REDIRECT_ON,
        "http://www.test.com/test.jpg", false},
   };
@@ -103,9 +104,10 @@ TEST(SubresourceRedirectURLLoaderThrottleTest, TestMaybeCreateThrottle) {
     blink::WebURLRequest request;
     request.SetPreviewsState(test_case.previews_state);
     request.SetUrl(GURL(test_case.url));
+    request.SetRequestDestination(test_case.destination);
     EXPECT_EQ(test_case.expected_is_throttle_created,
               SubresourceRedirectURLLoaderThrottle::MaybeCreateThrottle(
-                  request, test_case.resource_type, kRenderFrameID) != nullptr);
+                  request, kRenderFrameID) != nullptr);
   }
 }
 
@@ -151,16 +153,15 @@ TEST(SubresourceRedirectURLLoaderThrottleTest, TestGetSubresourceURL) {
 
   for (const TestCase& test_case : kTestCases) {
     auto throttle = CreateSubresourceRedirectURLLoaderThrottle(
-        test_case.original_url, blink::mojom::ResourceType::kImage,
+        test_case.original_url, network::mojom::RequestDestination::kImage,
         content::PreviewsTypes::SUBRESOURCE_REDIRECT_ON,
         {"https://www.test.com/public_img.jpg",
          "https://www.test.com/public_img.jpg#anchor",
          "https://www.test.com/public_img.jpg?public_arg1=bar&public_arg2"});
     network::ResourceRequest request;
     request.url = test_case.original_url;
-    request.resource_type =
-        static_cast<int>(blink::mojom::ResourceType::kImage);
     request.previews_state = content::PreviewsTypes::SUBRESOURCE_REDIRECT_ON;
+    request.destination = network::mojom::RequestDestination::kImage;
     bool defer = true;
     throttle->WillStartRequest(&request, &defer);
 
@@ -181,12 +182,13 @@ TEST(SubresourceRedirectURLLoaderThrottleTest, DeferOverridenToFalse) {
       {});
 
   auto throttle = CreateSubresourceRedirectURLLoaderThrottle(
-      GURL("https://www.test.com/test.jpg"), blink::mojom::ResourceType::kImage,
+      GURL("https://www.test.com/test.jpg"),
+      network::mojom::RequestDestination::kImage,
       content::PreviewsTypes::SUBRESOURCE_REDIRECT_ON,
       {"https://www.test.com/test.jpg"});
   network::ResourceRequest request;
   request.url = GURL("https://www.test.com/test.jpg");
-  request.resource_type = static_cast<int>(blink::mojom::ResourceType::kImage);
+  request.destination = network::mojom::RequestDestination::kImage;
   request.previews_state = content::PreviewsTypes::SUBRESOURCE_REDIRECT_ON;
   bool defer = true;
 

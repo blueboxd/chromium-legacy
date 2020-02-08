@@ -87,7 +87,7 @@ public class TabFavicon extends TabWebContentsUserData {
         if (mTab.isNativePage() || mTab.getWebContents() == null) return null;
 
         // Use the cached favicon only if the page wasn't changed.
-        if (mFavicon != null && mFaviconUrl != null && mFaviconUrl.equals(mTab.getUrl())) {
+        if (mFavicon != null && mFaviconUrl != null && mFaviconUrl.equals(mTab.getUrlString())) {
             return mFavicon;
         }
 
@@ -121,7 +121,7 @@ public class TabFavicon extends TabWebContentsUserData {
     @CalledByNative
     private void onFaviconAvailable(Bitmap icon) {
         if (icon == null) return;
-        String url = mTab.getUrl();
+        String url = mTab.getUrlString();
         boolean pageUrlChanged = !url.equals(mFaviconUrl);
         // This method will be called multiple times if the page has more than one favicon.
         // We are trying to use the |mIdealFaviconSize|x|mIdealFaviconSize| DP icon here, or the

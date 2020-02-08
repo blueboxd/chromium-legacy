@@ -1697,6 +1697,11 @@ StoragePartitionImpl::GetNativeFileSystemManager() {
   return native_file_system_manager_.get();
 }
 
+ConversionManager* StoragePartitionImpl::GetConversionManager() {
+  DCHECK(initialized_);
+  return conversion_manager_.get();
+}
+
 ContentIndexContextImpl* StoragePartitionImpl::GetContentIndexContext() {
   DCHECK(initialized_);
   return content_index_context_.get();

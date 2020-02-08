@@ -268,7 +268,7 @@ public class CustomTabActivity extends BaseCustomTabActivity<CustomTabActivityCo
                 CustomTabAppMenuPropertiesDelegate.getIndexOfMenuItemFromBundle(menuItemData);
         if (menuIndex >= 0) {
             mIntentDataProvider.clickMenuItemWithUrlAndTitle(
-                    this, menuIndex, getActivityTab().getUrl(), getActivityTab().getTitle());
+                    this, menuIndex, getActivityTab().getUrlString(), getActivityTab().getTitle());
             RecordUserAction.record("CustomTabsMenuCustomMenuItem");
             return true;
         }

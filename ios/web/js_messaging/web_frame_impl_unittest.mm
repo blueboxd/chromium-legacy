@@ -292,7 +292,7 @@ TEST_F(WebFrameImplTest, CallJavaScriptFunctionMessageProperlyEncoded) {
                         &function_plaintext));
   std::string message_plaintext;
   EXPECT_TRUE(aead.Open(decoded_message_ciphertext, decoded_message_iv,
-                        /*additional_data=*/nullptr, &message_plaintext));
+                        /*additional_data=*/"", &message_plaintext));
 
   base::Optional<base::Value> parsed_function_result =
       base::JSONReader::Read(function_plaintext, false);
@@ -370,7 +370,7 @@ TEST_F(WebFrameImplTest, CallJavaScriptFunctionRespondWithResult) {
   aead.Init(&key_string);
   std::string message_plaintext;
   EXPECT_TRUE(aead.Open(decoded_message_ciphertext, decoded_message_iv,
-                        /*additional_data=*/nullptr, &message_plaintext));
+                        /*additional_data=*/"", &message_plaintext));
 
   base::Optional<base::Value> parsed_result =
       base::JSONReader::Read(message_plaintext, false);

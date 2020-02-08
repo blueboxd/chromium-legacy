@@ -44,6 +44,9 @@ namespace arc {
 namespace {
 
 constexpr const char kArcVmServerProxyJobName[] = "arcvm_2dserver_2dproxy";
+constexpr const char kArcVmPerBoardFeaturesJobName[] =
+    "arcvm_2dper_2dboard_2dfeatures";
+
 constexpr const char kCrosSystemPath[] = "/usr/bin/crossystem";
 constexpr const char kHomeDirectory[] = "/home";
 
@@ -366,12 +369,30 @@ class ArcVmClientAdapter : public ArcClientAdapter,
  private:
   void OnIsDevMode(chromeos::VoidDBusMethodCallback callback,
                    bool is_dev_mode) {
+    VLOG(1) << "Starting arcvm-per-board-features";
+    // Note: the Upstart job is a task, and the callback for the start request
+    // won't be called until the task finishes. When the callback is called with
+    // true, it is ensured that the per-board features files exist.
+    chromeos::UpstartClient::Get()->StartJob(
+        kArcVmPerBoardFeaturesJobName, /*environment=*/{},
+        base::BindOnce(&ArcVmClientAdapter::OnArcVmPerBoardFeaturesStarted,
+                       weak_factory_.GetWeakPtr(), std::move(callback)));
+    is_dev_mode_ = is_dev_mode;
+  }
+
+  void OnArcVmPerBoardFeaturesStarted(chromeos::VoidDBusMethodCallback callback,
+                                      bool result) {
+    if (!result) {
+      LOG(ERROR) << "Failed to start arcvm-per-board-features";
+      // TODO(yusukes): Record UMA for this case.
+      std::move(callback).Run(result);
+      return;
+    }
     // Make sure to kill a stale arcvm-server-proxy job (if any).
     chromeos::UpstartClient::Get()->StopJob(
         kArcVmServerProxyJobName, /*environment=*/{},
         base::BindOnce(&ArcVmClientAdapter::OnArcVmServerProxyJobStopped,
                        weak_factory_.GetWeakPtr(), std::move(callback)));
-    is_dev_mode_ = is_dev_mode;
   }
 
   void OnArcVmServerProxyJobStopped(chromeos::VoidDBusMethodCallback callback,

@@ -176,7 +176,7 @@ public class OfflineIndicatorController implements ConnectivityDetector.Observer
         if (tab == null) return false;
         if (tab.isShowingErrorPage()) return false;
         if (OfflinePageUtils.isOfflinePage(tab)) return false;
-        if (TextUtils.equals(tab.getUrl(), ContentUrlConstants.ABOUT_BLANK_DISPLAY_URL)) {
+        if (TextUtils.equals(tab.getUrlString(), ContentUrlConstants.ABOUT_BLANK_DISPLAY_URL)) {
             return false;
         }
 

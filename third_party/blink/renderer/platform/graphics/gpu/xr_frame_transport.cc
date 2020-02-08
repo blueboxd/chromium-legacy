@@ -143,9 +143,7 @@ void XRFrameTransport::FrameSubmit(
     // image until the mailbox was consumed.
     StaticBitmapImage* static_image =
         static_cast<StaticBitmapImage*>(image_ref.get());
-    TRACE_EVENT_BEGIN0("gpu", "XRFrameTransport::EnsureMailbox");
-    static_image->EnsureMailbox(kVerifiedSyncToken, GL_NEAREST);
-    TRACE_EVENT_END0("gpu", "XRFrameTransport::EnsureMailbox");
+    static_image->EnsureSyncTokenVerified();
 
     // Conditionally wait for the previous render to finish. A late wait here
     // attempts to overlap work in parallel with the previous frame's

@@ -179,8 +179,8 @@ void OnDeviceHeadProvider::Start(const AutocompleteInput& input,
   int delay = 0;
   if (!client()->IsOffTheRecord()) {
     delay = base::GetFieldTrialParamByFeatureAsInt(
-        omnibox::kOnDeviceHeadProvider, "DelayOnDeviceHeadSuggestRequestMs",
-        0);
+        omnibox::kOnDeviceHeadProvider,
+        OmniboxFieldTrial::kOnDeviceHeadSuggestDelaySuggestRequestMs, 0);
   }
   base::SequencedTaskRunnerHandle::Get()->PostDelayedTask(
       FROM_HERE,
@@ -288,7 +288,8 @@ void OnDeviceHeadProvider::SearchDone(
         (params->input.type() != metrics::OmniboxInputType::URL)
             ? base::GetFieldTrialParamByFeatureAsInt(
                   omnibox::kOnDeviceHeadProvider,
-                  "OnDeviceSuggestMaxScoreForNonUrlInput", kBaseRelevance)
+                  OmniboxFieldTrial::kOnDeviceHeadSuggestMaxScoreForNonUrlInput,
+                  kBaseRelevance)
             : kBaseRelevance;
     for (const auto& item : params->suggestions) {
       matches_.push_back(BaseSearchProvider::CreateOnDeviceSearchSuggestion(

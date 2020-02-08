@@ -220,7 +220,7 @@ Refer to README.md for content description and update process.
  <item id="proxy_config_direct" hash_code="119015679" type="0" content_hash_code="119931568" os_list="linux,windows" file_path="net/proxy_resolution/proxy_config_with_annotation.cc"/>
  <item id="proxy_config_headless" hash_code="133221587" type="0" content_hash_code="77459277" os_list="linux,windows" file_path="headless/lib/browser/headless_request_context_manager.cc"/>
  <item id="proxy_config_settings" hash_code="136468456" type="0" content_hash_code="19527377" os_list="linux,windows" file_path="components/proxy_config/pref_proxy_config_tracker_impl.cc"/>
- <item id="proxy_config_system" hash_code="11258689" type="0" content_hash_code="77057929" os_list="linux,windows" file_path="net/proxy_resolution/proxy_resolution_service.cc"/>
+ <item id="proxy_config_system" hash_code="11258689" type="0" content_hash_code="77057929" os_list="linux,windows" file_path="net/proxy_resolution/configured_proxy_resolution_service.cc"/>
  <item id="proxy_script_fetcher" hash_code="37531401" type="0" deprecated="2018-03-16" content_hash_code="31866133" file_path=""/>
  <item id="puch_client_channel" hash_code="34459548" type="0" content_hash_code="92475475" os_list="linux,windows" file_path="components/invalidation/impl/push_client_channel.cc"/>
  <item id="quic_chromium_incoming_pending_session" hash_code="120830730" type="0" content_hash_code="52904665" os_list="linux,windows" file_path="net/quic/quic_chromium_client_session.cc"/>

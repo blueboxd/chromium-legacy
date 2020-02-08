@@ -153,7 +153,7 @@ public class NewTabPageRecyclerViewTest {
             TestTouchUtils.performClickOnMainSync(
                     InstrumentationRegistry.getInstrumentation(), suggestionView);
         });
-        assertEquals(suggestion.mUrl, mTab.getUrl());
+        assertEquals(suggestion.mUrl, mTab.getUrlString());
     }
 
     @Test

@@ -434,6 +434,7 @@ class QuicTestPacketMaker {
   std::string GenerateHttp3MaxPushIdData();
   std::string GenerateHttp3PriorityData(spdy::SpdyPriority priority,
                                         quic::QuicStreamId stream_id);
+  std::string GenerateHttp3GreaseData();
 
   void MaybeAddHttp3SettingsFrames();
 

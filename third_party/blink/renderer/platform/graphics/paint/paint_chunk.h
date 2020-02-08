@@ -108,7 +108,6 @@ struct PLATFORM_EXPORT PaintChunk {
   // The following fields are put here to avoid memory gap.
   bool is_cacheable;
   bool client_is_just_created;
-  bool is_copied_from_cached_subsequence = false;
 };
 
 inline bool ChunkLessThanIndex(const PaintChunk& chunk, wtf_size_t index) {

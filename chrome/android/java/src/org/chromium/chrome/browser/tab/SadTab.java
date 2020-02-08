@@ -101,7 +101,7 @@ public class SadTab extends EmptyTabObserver implements UserData {
             public void run() {
                 if (showSendFeedbackView) {
                     mTab.getActivity().startHelpAndFeedback(
-                            mTab.getUrl(), "MobileSadTabFeedback", mTab.getProfile());
+                            mTab.getUrlString(), "MobileSadTabFeedback", mTab.getProfile());
                 } else {
                     mTab.reload();
                 }

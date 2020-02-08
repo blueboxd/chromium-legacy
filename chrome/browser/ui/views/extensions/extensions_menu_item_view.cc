@@ -25,6 +25,10 @@
 #include "ui/views/view_class_properties.h"
 
 namespace {
+constexpr int kSecondaryIconSizeDp = 16;
+// Set secondary item insets to get to square buttons.
+constexpr gfx::Insets kSecondaryButtonInsets = gfx::Insets(
+    (ExtensionsMenuItemView::kMenuItemHeightDp - kSecondaryIconSizeDp) / 2);
 constexpr int EXTENSION_CONTEXT_MENU = 13;
 constexpr int EXTENSION_PINNING = 14;
 }  // namespace
@@ -58,6 +62,7 @@ ExtensionsMenuItemView::ExtensionsMenuItemView(
                                views::MaximumFlexSizeRule::kUnbounded));
 
   auto pin_button = CreateBubbleMenuItem(EXTENSION_PINNING, this);
+  pin_button->SetBorder(views::CreateEmptyBorder(kSecondaryButtonInsets));
   // Extension pinning is not available in Incognito as it leaves a trace of
   // user activity.
   pin_button->SetEnabled(!browser->profile()->IsOffTheRecord());
@@ -67,6 +72,8 @@ ExtensionsMenuItemView::ExtensionsMenuItemView(
 
   auto context_menu_button =
       CreateBubbleMenuItem(EXTENSION_CONTEXT_MENU, nullptr);
+  context_menu_button->SetBorder(
+      views::CreateEmptyBorder(kSecondaryButtonInsets));
   context_menu_button->SetTooltipText(
       l10n_util::GetStringUTF16(IDS_EXTENSIONS_MENU_CONTEXT_MENU_TOOLTIP));
   context_menu_button->SetButtonController(

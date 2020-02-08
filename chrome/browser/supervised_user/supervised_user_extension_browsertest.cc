@@ -5,7 +5,6 @@
 #include "base/files/file_path.h"
 #include "base/test/scoped_feature_list.h"
 #include "chrome/browser/extensions/extension_browsertest.h"
-#include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/supervised_user/logged_in_user_mixin.h"
 #include "chrome/browser/supervised_user/supervised_user_features.h"
@@ -180,8 +179,8 @@ IN_PROC_BROWSER_TEST_F(SupervisedUserExtensionTest,
   EXPECT_TRUE(extension);
 
   // Let's pretend this extension is mature.
-  extension_service()->DisableExtension(kGoodCrxId,
-                                        disable_reason::DISABLE_BLOCKED_MATURE);
+  GetSupervisedUserService()->MarkExtensionMatureForTesting(
+      kGoodCrxId /*extension_id*/, true /*mature_rating*/);
 
   // This extension is a supervised user initiated install and should remain
   // disabled.
@@ -199,6 +198,32 @@ IN_PROC_BROWSER_TEST_F(SupervisedUserExtensionTest,
       extension_registry()->GetInstalledExtension(kGoodCrxId);
   EXPECT_TRUE(extension);
   // The extension should be enabled now after removing supervision.
+  EXPECT_TRUE(extension_registry()->enabled_extensions().Contains(kGoodCrxId));
+  EXPECT_FALSE(IsDisabledForCustodianApproval(kGoodCrxId));
+  EXPECT_FALSE(IsDisabledForBlockedMature(kGoodCrxId));
+}
+
+// Prevent a regression to crbug/1047026.
+IN_PROC_BROWSER_TEST_F(SupervisedUserExtensionTest,
+                       PRE_RemovingSupervisionBlockedMatureZombie) {
+  SetSupervisedUserExtensionsMayRequestPermissionsPref(true);
+
+  EXPECT_TRUE(profile()->IsChild());
+
+  // Mark this extension as mature even though it's not even installed.
+  GetSupervisedUserService()->MarkExtensionMatureForTesting(
+      kGoodCrxId /*extension_id*/, true /*mature_rating*/);
+}
+
+IN_PROC_BROWSER_TEST_F(SupervisedUserExtensionTest,
+                       RemovingSupervisionBlockedMatureZombie) {
+  EXPECT_FALSE(profile()->IsChild());
+
+  base::FilePath path = test_data_dir_.AppendASCII("good.crx");
+  const Extension* extension = LoadExtensionWithFlags(path, kFlagNone);
+  EXPECT_TRUE(extension);
+  // The extension should be enabled after installing on a non-supervised
+  // profile.
   EXPECT_TRUE(extension_registry()->enabled_extensions().Contains(kGoodCrxId));
   EXPECT_FALSE(IsDisabledForCustodianApproval(kGoodCrxId));
   EXPECT_FALSE(IsDisabledForBlockedMature(kGoodCrxId));

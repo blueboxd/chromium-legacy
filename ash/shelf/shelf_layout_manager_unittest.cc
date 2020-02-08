@@ -361,6 +361,7 @@ TEST_P(ShelfLayoutManagerTest, ShelfUpdatedWhenStatusAreaChangesSize) {
   ASSERT_TRUE(shelf_widget);
   ASSERT_TRUE(shelf_widget->status_area_widget());
   shelf_widget->status_area_widget()->SetBounds(gfx::Rect(0, 0, 200, 200));
+  shelf->shelf_layout_manager()->LayoutShelf(/*animate=*/false);
   const int total_width =
       screen_util::GetDisplayBoundsWithShelf(shelf_widget->GetNativeWindow())
           .width();

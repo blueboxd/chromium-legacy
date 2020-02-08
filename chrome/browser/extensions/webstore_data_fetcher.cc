@@ -99,23 +99,25 @@ void WebstoreDataFetcher::Start(
 void WebstoreDataFetcher::OnJsonParsed(
     data_decoder::DataDecoder::ValueOrError result) {
   if (!result.value) {
-    delegate_->OnWebstoreResponseParseFailure(*result.error);
+    delegate_->OnWebstoreResponseParseFailure(id_, *result.error);
     return;
   }
 
   if (!result.value->is_dict()) {
-    delegate_->OnWebstoreResponseParseFailure(kInvalidWebstoreResponseError);
+    delegate_->OnWebstoreResponseParseFailure(id_,
+                                              kInvalidWebstoreResponseError);
     return;
   }
 
-  delegate_->OnWebstoreResponseParseSuccess(base::DictionaryValue::From(
-      base::Value::ToUniquePtrValue(std::move(*result.value))));
+  delegate_->OnWebstoreResponseParseSuccess(
+      id_, base::DictionaryValue::From(
+               base::Value::ToUniquePtrValue(std::move(*result.value))));
 }
 
 void WebstoreDataFetcher::OnSimpleLoaderComplete(
     std::unique_ptr<std::string> response_body) {
   if (!response_body) {
-    delegate_->OnWebstoreRequestFailure();
+    delegate_->OnWebstoreRequestFailure(id_);
     return;
   }
 

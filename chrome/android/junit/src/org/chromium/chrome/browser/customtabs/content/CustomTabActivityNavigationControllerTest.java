@@ -65,7 +65,7 @@ public class CustomTabActivityNavigationControllerTest {
         mNavigationController = env.createNavigationController(mTabController);
         mNavigationController.setFinishHandler(mFinishHandler);
         Tab tab = env.prepareTab();
-        when(tab.getUrl()).thenReturn(""); // avoid DomDistillerUrlUtils going to native.
+        when(tab.getUrlString()).thenReturn(""); // avoid DomDistillerUrlUtils going to native.
         env.tabProvider.setInitialTab(tab, TabCreationMode.DEFAULT);
     }
 

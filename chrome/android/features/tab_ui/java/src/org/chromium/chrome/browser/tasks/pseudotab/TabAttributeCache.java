@@ -64,7 +64,7 @@ public class TabAttributeCache {
             @Override
             public void onUrlUpdated(Tab tab) {
                 if (tab.isIncognito()) return;
-                String url = tab.getUrl();
+                String url = tab.getUrlString();
                 cacheUrl(tab.getId(), url);
             }
 
@@ -116,7 +116,7 @@ public class TabAttributeCache {
                         mTabModelSelector.getTabModelFilterProvider().getTabModelFilter(false);
                 for (int i = 0; i < filter.getCount(); i++) {
                     Tab tab = filter.getTabAt(i);
-                    cacheUrl(tab.getId(), tab.getUrl());
+                    cacheUrl(tab.getId(), tab.getUrlString());
                     cacheTitle(tab.getId(), tab.getTitle());
                     cacheRootId(tab.getId(), ((TabImpl) tab).getRootId());
                 }
@@ -245,7 +245,7 @@ public class TabAttributeCache {
         NavigationHistory history = controller.getNavigationHistory();
 
         if (!TextUtils.isEmpty(
-                    TemplateUrlServiceFactory.get().getSearchQueryForUrl(tab.getUrl()))) {
+                    TemplateUrlServiceFactory.get().getSearchQueryForUrl(tab.getUrlString()))) {
             // If we are already at a search result page, do not show the last search term.
             return null;
         }

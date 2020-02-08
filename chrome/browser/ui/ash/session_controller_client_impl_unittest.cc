@@ -442,6 +442,33 @@ TEST_F(SessionControllerClientImplTest, SendUserSession) {
   EXPECT_EQ(1, session_controller.update_user_session_count());
 }
 
+TEST_F(SessionControllerClientImplTest, SetUserSessionOrder) {
+  // Create an object to test and connect it to our test interface.
+  SessionControllerClientImpl client;
+  TestSessionController session_controller;
+  client.Init();
+
+  // User session order is not sent.
+  EXPECT_EQ(0, session_controller.set_user_session_order_count());
+
+  // Simulate a not-signed-in user has the user image changed.
+  const AccountId not_signed_in(
+      AccountId::FromUserEmailGaiaId("not_signed_in@test.com", "12345"));
+  user_manager::User* not_signed_in_user =
+      user_manager()->AddUser(not_signed_in);
+  user_manager()->NotifyUserImageChanged(*not_signed_in_user);
+
+  // User session order should not be sent.
+  EXPECT_EQ(0, session_controller.set_user_session_order_count());
+
+  // Simulate login.
+  UserAddedToSession(
+      AccountId::FromUserEmailGaiaId("signed_in@test.com", "67890"));
+
+  // User session order is sent after the sign-in.
+  EXPECT_EQ(1, session_controller.set_user_session_order_count());
+}
+
 TEST_F(SessionControllerClientImplTest, SupervisedUser) {
   // Create an object to test and connect it to our test interface.
   SessionControllerClientImpl client;

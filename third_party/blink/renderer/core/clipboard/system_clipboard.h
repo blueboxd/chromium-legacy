@@ -71,7 +71,7 @@ class CORE_EXPORT SystemClipboard final
   // the OS clipboard.
   void CommitWrite();
 
-  void Trace(blink::Visitor*) {}
+  void Trace(Visitor*) {}
 
  private:
   bool IsValidBufferType(mojom::ClipboardBuffer);

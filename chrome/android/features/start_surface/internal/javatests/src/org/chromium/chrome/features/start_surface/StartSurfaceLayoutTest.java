@@ -1463,13 +1463,13 @@ public class StartSurfaceLayoutTest {
                 .check(matches(isDisplayed()));
 
         // Click the chip and check the tab navigates back to the search result page.
-        assertEquals(mUrl, cta.getTabModelSelector().getCurrentTab().getUrl());
+        assertEquals(mUrl, cta.getTabModelSelector().getCurrentTab().getUrlString());
         OverviewModeBehaviorWatcher hideWatcher = TabUiTestHelper.createOverviewHideWatcher(cta);
         onView(allOf(withParent(withId(R.id.search_button)), withText(expectedTerm)))
                 .perform(click());
         hideWatcher.waitForBehavior();
         CriteriaHelper.pollUiThread(Criteria.equals(
-                searchUrl.get(), () -> cta.getTabModelSelector().getCurrentTab().getUrl()));
+                searchUrl.get(), () -> cta.getTabModelSelector().getCurrentTab().getUrlString()));
 
         // Verify the chip is gone.
         enterGTSWithThumbnailChecking();

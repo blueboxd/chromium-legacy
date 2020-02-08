@@ -247,7 +247,7 @@ public class CustomTabActivityNavigationController implements StartStopWithNativ
         Tab tab = mTabProvider.getTab();
         if (tab == null) return false;
 
-        String url = tab.getUrl();
+        String url = tab.getUrlString();
         if (DomDistillerUrlUtils.isDistilledPage(url)) {
             url = DomDistillerUrlUtils.getOriginalUrlFromDistillerUrl(url);
         }

@@ -959,6 +959,42 @@ const DeviceCapabilities kKohakuStylus = {
     base::size(kKohakuStylusAxes),
 };
 
+const DeviceAbsoluteAxis kXboxEliteAxes[] = {
+    {ABS_X, {0, 0, 65535, 255, 4095, 0}},
+    {ABS_Y, {0, 0, 65535, 255, 4095, 0}},
+    {ABS_Z, {0, 0, 65535, 255, 4095, 0}},
+    {ABS_RZ, {0, 0, 65535, 255, 4095, 0}},
+    {ABS_GAS, {0, 0, 1023, 3, 63, 0}},
+    {ABS_BRAKE, {0, 0, 1023, 3, 63, 0}},
+    {ABS_HAT0X, {0, -1, 1, 0, 0, 0}},
+    {ABS_HAT0Y, {0, -1, 1, 0, 0, 0}},
+};
+
+// captured from Xbox Elite series 2 controller
+const DeviceCapabilities kXboxElite = {
+    /* path */
+    "/sys/devices/pci0000:00/0000:00:14.0/usb1/1-3/1-3:1.0/bluetooth/hci0/"
+    "hci0:256:11/0005:045E:0B05.000C/input/input21/event11",
+    /* name */ "Xbox Elite Wireless Controller",
+    /* phys */ "a0:af:bd:9f:2f:76",
+    /* uniq */ "98:7a:14:3b:42:b3",
+    /* bustype */ "0005",
+    /* vendor */ "045e",
+    /* product */ "0b05",
+    /* version */ "0903",
+    /* prop */ "0",
+    /* ev */ "10001b",
+    /* key */ "4000000 0 7fff000000000000 1000000000000 100040000000 e080ffdf01cfffff fffffffffffffffe",
+    /* rel */ "0",
+    /* abs */ "30627",
+    /* msc */ "10",
+    /* sw */ "0",
+    /* led */ "0",
+    /* ff */ "0",
+    kXboxEliteAxes,
+    base::size(kXboxEliteAxes),
+};
+
 // NB: Please use the capture_device_capabilities.py script to add more
 // test data here. This will help ensure the data matches what the kernel
 // reports for a real device and is entered correctly.

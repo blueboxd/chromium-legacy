@@ -416,10 +416,14 @@ void XMLDocumentParser::end() {
   // StopParsing() calls InsertErrorMessageBlock() if there was a parsing
   // error. Avoid showing the error message block twice.
   // TODO(crbug.com/898775): Rationalize this.
-  if (saw_error_ && !IsStopped())
+  if (saw_error_ && !IsStopped()) {
     InsertErrorMessageBlock();
-  else
+    // InsertErrorMessageBlock() may detach the document
+    if (IsDetached())
+      return;
+  } else {
     UpdateLeafTextNode();
+  }
 
   if (IsParsing())
     PrepareToStopParsing();

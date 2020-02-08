@@ -57,7 +57,7 @@ class TestNavigationLoaderInterceptor : public NavigationLoaderInterceptor {
       : most_recent_resource_request_(most_recent_resource_request) {
     net::URLRequestContextBuilder context_builder;
     context_builder.set_proxy_resolution_service(
-        net::ProxyResolutionService::CreateDirect());
+        net::ConfiguredProxyResolutionService::CreateDirect());
     context_ = context_builder.Build();
     constexpr int child_id = 4;
     constexpr int route_id = 8;

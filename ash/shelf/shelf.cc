@@ -26,7 +26,6 @@
 #include "ash/shelf/shelf_tooltip_manager.h"
 #include "ash/shelf/shelf_widget.h"
 #include "ash/shell.h"
-#include "ash/system/status_area_layout_manager.h"
 #include "ash/system/status_area_widget.h"
 #include "ash/wm/work_area_insets.h"
 #include "base/bind_helpers.h"
@@ -228,8 +227,6 @@ void Shelf::CreateStatusAreaWidget(aura::Window* status_container) {
       std::make_unique<StatusAreaWidget>(status_container, this);
   status_area_widget_->Initialize();
   Shell::Get()->focus_cycler()->AddWidget(status_area_widget_.get());
-  status_container->SetLayoutManager(
-      new StatusAreaLayoutManager(shelf_widget()));
 }
 
 void Shelf::CreateShelfWidget(aura::Window* root) {

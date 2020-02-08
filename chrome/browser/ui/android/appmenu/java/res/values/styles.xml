@@ -21,6 +21,6 @@
         <item name="android:layout_weight">1</item>
         <item name="android:background">?attr/listChoiceBackgroundIndicator</item>
         <item name="android:scaleType">center</item>
-        <item name="tint">@color/standard_mode_tint</item>
+        <item name="tint">@color/default_icon_color_tint_list</item>
     </style>
 </resources>

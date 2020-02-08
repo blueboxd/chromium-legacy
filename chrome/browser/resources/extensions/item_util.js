@@ -68,7 +68,6 @@ export function userCanChangeEnablement(item) {
       item.disableReasons.suspiciousInstall ||
       item.disableReasons.updateRequired ||
       item.disableReasons.blockedByPolicy ||
-      item.disableReasons.custodianApprovalRequired ||
       item.disableReasons.blockedMature) {
     return false;
   }
@@ -183,7 +182,8 @@ export function getEnableControl(data) {
   if (data.disableReasons.corruptInstall) {
     return EnableControl.REPAIR;
   }
-  if (data.disableReasons.custodianApprovalRequired) {
+  if (data.disableReasons.custodianApprovalRequired &&
+      userCanChangeEnablement(data)) {
     return EnableControl.ENABLE_BUTTON;
   }
   return EnableControl.ENABLE_TOGGLE;

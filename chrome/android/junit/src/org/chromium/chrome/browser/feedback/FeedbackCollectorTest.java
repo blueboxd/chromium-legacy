@@ -240,13 +240,14 @@ public class FeedbackCollectorTest {
                 @Nullable String feedbackContext, boolean takeScreenshot,
                 Callback<FeedbackCollector> callback) {
             super(activity, profile, url, categoryTag, description, feedbackContext, takeScreenshot,
-                    callback);
+                    null, callback);
         }
 
         // FeedbackCollector implementation.
         @Override
         protected List<FeedbackSource> buildSynchronousFeedbackSources(
-                Profile profile, String url, String feedbackContext) {
+                Profile profile, String url, String feedbackContext,
+                @Nullable Map<String, String> feedContext) {
             return new ArrayList<>();
         }
 
@@ -307,7 +308,8 @@ public class FeedbackCollectorTest {
                 mActivity, mProfile, null, CATEGORY_TAG, DESCRIPTION, null, false, callback) {
             @Override
             protected List<FeedbackSource> buildSynchronousFeedbackSources(
-                    Profile profile, String url, String feedbackContext) {
+                    Profile profile, String url, String feedbackContext,
+                    Map<String, String> feedContext) {
                 return FeedbackCollectorTest.buildSynchronousFeedbackSources();
             }
         };
@@ -335,7 +337,8 @@ public class FeedbackCollectorTest {
                 CATEGORY_TAG, DESCRIPTION, FEEDBACK_CONTEXT, false, callback) {
             @Override
             protected List<FeedbackSource> buildSynchronousFeedbackSources(
-                    Profile profile, String url, String feedbackContext) {
+                    Profile profile, String url, String feedbackContext,
+                    Map<String, String> feedContext) {
                 List<FeedbackSource> list = FeedbackCollectorTest.buildSynchronousFeedbackSources();
                 list.add(new FeedbackContextFeedbackSource(FEEDBACK_CONTEXT));
                 return list;
@@ -402,7 +405,8 @@ public class FeedbackCollectorTest {
 
             @Override
             protected List<FeedbackSource> buildSynchronousFeedbackSources(
-                    Profile profile, String url, String feedbackContext) {
+                    Profile profile, String url, String feedbackContext,
+                    Map<String, String> feedContext) {
                 return FeedbackCollectorTest.buildSynchronousFeedbackSources();
             }
         };

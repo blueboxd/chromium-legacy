@@ -16,6 +16,10 @@
                allowexternalscript="true"
                type="BINDATA"
                compress="gzip" />
+      <include name="IDR_OMNIBOX_POPUP_HTML"
+               file="omnibox_popup.html"
+               type="BINDATA"
+               compress="gzip" />
       <include name="IDR_OMNIBOX_CSS"
                file="omnibox.css"
                type="BINDATA"
@@ -44,6 +48,10 @@
                file="omnibox_output.js"
                type="BINDATA"
                compress="gzip" />
+      <include name="IDR_OMNIBOX_POPUP_JS"
+              file="omnibox_popup.js"
+              type="BINDATA"
+              compress="gzip" />
       <include name="IDR_OMNIBOX_JS"
                file="omnibox.js"
                type="BINDATA"

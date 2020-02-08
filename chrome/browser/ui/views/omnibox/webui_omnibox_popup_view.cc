@@ -10,9 +10,10 @@ WebUIOmniboxPopupView::WebUIOmniboxPopupView(
     content::BrowserContext* browser_context)
     : views::WebView(browser_context) {
   // TODO(tommycli): Replace with actual sizing logic.
-  SetPreferredSize(gfx::Size(600, 600));
+  SetPreferredSize(gfx::Size(600, 300));
 
   // TODO(tommycli): Replace with the actual omnibox popup WebUI surface.
   // It's not implemented yet.
-  LoadInitialURL(GURL(chrome::kChromeUIOmniboxURL));
+  constexpr char kOmniboxPopupUrl[] = "chrome://omnibox/omnibox_popup.html";
+  LoadInitialURL(GURL(kOmniboxPopupUrl));
 }

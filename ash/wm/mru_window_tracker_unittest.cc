@@ -5,6 +5,7 @@
 #include "ash/wm/mru_window_tracker.h"
 
 #include "ash/public/cpp/shell_window_ids.h"
+#include "ash/public/cpp/window_properties.h"
 #include "ash/shell.h"
 #include "ash/test/ash_test_base.h"
 #include "ash/wm/window_state.h"
@@ -93,8 +94,8 @@ class TestDelegate : public views::WidgetDelegateView {
 
 }  // namespace
 
-// Test that minimized windows are not treated specially.
-TEST_P(MruWindowTrackerOrderTest, MinimizedWindowsAreLru) {
+// Test basic functionalities of MruWindowTracker.
+TEST_P(MruWindowTrackerOrderTest, Basic) {
   std::unique_ptr<aura::Window> w1(CreateTestWindow());
   std::unique_ptr<aura::Window> w2(CreateTestWindow());
   std::unique_ptr<aura::Window> w3(CreateTestWindow());
@@ -132,6 +133,15 @@ TEST_P(MruWindowTrackerOrderTest, MinimizedWindowsAreLru) {
   EXPECT_EQ(w5.get(), window_list[4]);
   EXPECT_EQ(w6.get(), window_list[5]);
 
+  // Exclude 3rd window.
+  w3->SetProperty(ash::kExcludeInMruKey, true);
+  window_list = BuildMruWindowList();
+  EXPECT_EQ(w2.get(), window_list[0]);
+  EXPECT_EQ(w1.get(), window_list[1]);
+  EXPECT_EQ(w4.get(), window_list[2]);
+  EXPECT_EQ(w5.get(), window_list[3]);
+  EXPECT_EQ(w6.get(), window_list[4]);
+
   std::unique_ptr<views::Widget> modal =
       CreateTestWidget(new TestDelegate(), kShellWindowId_Invalid);
   EXPECT_EQ(modal.get()->GetNativeView()->parent()->id(),
@@ -142,7 +152,6 @@ TEST_P(MruWindowTrackerOrderTest, MinimizedWindowsAreLru) {
   if (GetParam()) {
     EXPECT_EQ(w2.get(), *iter++);
     EXPECT_EQ(w1.get(), *iter++);
-    EXPECT_EQ(w3.get(), *iter++);
     EXPECT_EQ(w4.get(), *iter++);
     EXPECT_EQ(w5.get(), *iter++);
     EXPECT_EQ(w6.get(), *iter++);

@@ -38,10 +38,12 @@ class MessageCardViewProperties {
     public static final PropertyModel
             .WritableObjectPropertyKey<String> DISMISS_BUTTON_CONTENT_DESCRIPTION =
             new PropertyModel.WritableObjectPropertyKey<>();
+    public static final PropertyModel.WritableBooleanPropertyKey SHOULD_KEEP_AFTER_REVIEW =
+            new PropertyModel.WritableBooleanPropertyKey();
 
-    public static final PropertyKey[] ALL_KEYS =
-            new PropertyKey[] {ACTION_TEXT, DESCRIPTION_TEXT, DESCRIPTION_TEXT_TEMPLATE,
-                    MESSAGE_TYPE, ICON_PROVIDER, UI_ACTION_PROVIDER, UI_DISMISS_ACTION_PROVIDER,
-                    MESSAGE_SERVICE_ACTION_PROVIDER, MESSAGE_SERVICE_DISMISS_ACTION_PROVIDER,
-                    DISMISS_BUTTON_CONTENT_DESCRIPTION, CARD_TYPE, CARD_ALPHA};
+    public static final PropertyKey[] ALL_KEYS = new PropertyKey[] {ACTION_TEXT, DESCRIPTION_TEXT,
+            DESCRIPTION_TEXT_TEMPLATE, MESSAGE_TYPE, ICON_PROVIDER, UI_ACTION_PROVIDER,
+            UI_DISMISS_ACTION_PROVIDER, MESSAGE_SERVICE_ACTION_PROVIDER,
+            MESSAGE_SERVICE_DISMISS_ACTION_PROVIDER, DISMISS_BUTTON_CONTENT_DESCRIPTION,
+            SHOULD_KEEP_AFTER_REVIEW, CARD_TYPE, CARD_ALPHA};
 }

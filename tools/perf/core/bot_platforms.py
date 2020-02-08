@@ -208,6 +208,9 @@ OFFICIAL_BENCHMARK_CONFIGS = PerfSuite(
 OFFICIAL_BENCHMARK_NAMES = frozenset(
     b.name for b in OFFICIAL_BENCHMARK_CONFIGS.Frozenset())
 
+# TODO(crbug.com/1030840): Stop using these 'OFFICIAL_EXCEPT' suites and instead
+# define each benchmarking config separately as is already done for many of the
+# suites below.
 _OFFICIAL_EXCEPT_DISPLAY_LOCKING = PerfSuite(OFFICIAL_BENCHMARK_CONFIGS).Remove(
     ['blink_perf.display_locking'])
 _OFFICIAL_EXCEPT_JETSTREAM2 = PerfSuite(OFFICIAL_BENCHMARK_CONFIGS).Remove(
@@ -281,7 +284,10 @@ _PERFORMANCE_BROWSER_TESTS = ExecutableConfig(
     ],
     estimated_runtime=67)
 
-_LINUX_BENCHMARK_CONFIGS = _OFFICIAL_EXCEPT_DISPLAY_LOCKING
+_LINUX_BENCHMARK_CONFIGS = PerfSuite(OFFICIAL_BENCHMARK_CONFIGS).Remove([
+    'blink_perf.display_locking',
+    'v8.runtime_stats.top_25',
+])
 _LINUX_EXECUTABLE_CONFIGS = frozenset([
     # TODO(crbug.com/811766): Add views_perftests.
     _PERFORMANCE_BROWSER_TESTS,
@@ -291,7 +297,10 @@ _LINUX_EXECUTABLE_CONFIGS = frozenset([
     _MEDIA_PERFTESTS,
     _BASE_PERFTESTS,
 ])
-_MAC_HIGH_END_BENCHMARK_CONFIGS = _OFFICIAL_EXCEPT_DISPLAY_LOCKING
+_MAC_HIGH_END_BENCHMARK_CONFIGS = PerfSuite(OFFICIAL_BENCHMARK_CONFIGS).Remove([
+    'blink_perf.display_locking',
+    'v8.runtime_stats.top_25',
+])
 _MAC_HIGH_END_EXECUTABLE_CONFIGS = frozenset([
     _DAWN_PERF_TESTS,
     _PERFORMANCE_BROWSER_TESTS,
@@ -299,23 +308,40 @@ _MAC_HIGH_END_EXECUTABLE_CONFIGS = frozenset([
     _MEDIA_PERFTESTS,
     _BASE_PERFTESTS
 ])
-_MAC_LOW_END_BENCHMARK_CONFIGS = _OFFICIAL_EXCEPT_JETSTREAM2
+_MAC_LOW_END_BENCHMARK_CONFIGS = PerfSuite(OFFICIAL_BENCHMARK_CONFIGS).Remove([
+    'jetstream2',
+    'v8.runtime_stats.top_25',
+])
 _MAC_LOW_END_EXECUTABLE_CONFIGS = frozenset([
     _PERFORMANCE_BROWSER_TESTS,
     _LOAD_LIBRARY_PERF_TESTS,
 ])
-_WIN_10_BENCHMARK_CONFIGS = _OFFICIAL_EXCEPT_DISPLAY_LOCKING
+_WIN_10_BENCHMARK_CONFIGS = PerfSuite(OFFICIAL_BENCHMARK_CONFIGS).Remove([
+    'blink_perf.display_locking',
+    'v8.runtime_stats.top_25',
+])
 _WIN_10_EXECUTABLE_CONFIGS = frozenset([
     _ANGLE_PERFTESTS, _MEDIA_PERFTESTS, _COMPONENTS_PERFTESTS, _VIEWS_PERFTESTS,
     _BASE_PERFTESTS, _DAWN_PERF_TESTS])
-_WIN_10_LOW_END_BENCHMARK_CONFIGS = _OFFICIAL_EXCEPT_DISPLAY_LOCKING
+_WIN_10_LOW_END_BENCHMARK_CONFIGS = PerfSuite(
+    OFFICIAL_BENCHMARK_CONFIGS).Remove([
+        'blink_perf.display_locking',
+    ])
 _WIN_10_LOW_END_HP_CANDIDATE_BENCHMARK_CONFIGS = PerfSuite(
     [_GetBenchmarkConfig('v8.browsing_desktop')])
-_WIN_7_BENCHMARK_CONFIGS = PerfSuite(
-    _OFFICIAL_EXCEPT_DISPLAY_LOCKING_JETSTREAM2).Remove(['rendering.desktop'])
+_WIN_7_BENCHMARK_CONFIGS = PerfSuite(OFFICIAL_BENCHMARK_CONFIGS).Remove([
+    'rendering.desktop',
+    'jetstream2',
+    'blink_perf.display_locking',
+    'v8.runtime_stats.top_25',
+])
 _WIN_7_EXECUTABLE_CONFIGS = frozenset([
     _LOAD_LIBRARY_PERF_TESTS, _COMPONENTS_PERFTESTS, _MEDIA_PERFTESTS])
-_WIN_7_GPU_BENCHMARK_CONFIGS = _OFFICIAL_EXCEPT_DISPLAY_LOCKING_JETSTREAM2
+_WIN_7_GPU_BENCHMARK_CONFIGS = PerfSuite(OFFICIAL_BENCHMARK_CONFIGS).Remove([
+    'jetstream2',
+    'blink_perf.display_locking',
+    'v8.runtime_stats.top_25',
+])
 _WIN_7_GPU_EXECUTABLE_CONFIGS = frozenset([
     _LOAD_LIBRARY_PERF_TESTS, _ANGLE_PERFTESTS, _MEDIA_PERFTESTS,
     _PASSTHROUGH_COMMAND_BUFFER_PERFTESTS,

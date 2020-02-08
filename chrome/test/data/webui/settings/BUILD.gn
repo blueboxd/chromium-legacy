@@ -2,7 +2,9 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
+import("//chrome/browser/resources/settings/settings.gni")
 import("//ui/webui/resources/tools/js_modulizer.gni")
+import("../namespace_rewrites.gni")
 
 js_modulizer("modulize") {
   input_files = [
@@ -27,25 +29,9 @@ js_modulizer("modulize") {
     "test_search_engines_browser_proxy.js",
     "test_util.js",
   ]
-  namespace_rewrites = [
-    "settings.DefaultBrowserBrowserProxyImpl|DefaultBrowserBrowserProxyImpl",
-    "settings.ExtensionControlBrowserProxyImpl|ExtensionControlBrowserProxyImpl",
-    "settings.Route|Route",
-    "settings.routes|routes",
-    "test_util.eventToPromise|eventToPromise",
-    "test_util.flushTasks|flushTasks",
-    "test_util.setupPopstateListener|setupPopstateListener",
-    "MockInteractions.keyDownOn|keyDownOn",
-    "MockInteractions.keyEventOn|keyEventOn",
-    "MockInteractions.keyUpOn|keyUpOn",
-    "Settings.PrefUtil.prefToString|prefToString",
-    "global.traceAssertionsForTesting|window.traceAssertionsForTesting",
-    "Settings.PrefUtil.stringToPrefValue|stringToPrefValue",
-    "settings_search.TestSearchEnginesBrowserProxy|TestSearchEnginesBrowserProxy",
-    "settings_search.createSampleSearchEngine|createSampleSearchEngine",
-    "settings.EDIT_STARTUP_URL_EVENT|EDIT_STARTUP_URL_EVENT",
-    "settings.OnStartupBrowserProxy|OnStartupBrowserProxy",
-    "settings.SearchEnginesBrowserProxyImpl|SearchEnginesBrowserProxyImpl",
-    "settings.StartupUrlsPageBrowserProxy|StartupUrlsPageBrowserProxy",
-  ]
+  namespace_rewrites = settings_namespace_rewrites + test_namespace_rewrites + [
+                         "settings_search.createSampleSearchEngine|createSampleSearchEngine",
+                         "settings_search.TestSearchEnginesBrowserProxy|TestSearchEnginesBrowserProxy",
+                         "test_util.setupPopstateListener|setupPopstateListener",
+                       ]
 }

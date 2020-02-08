@@ -439,7 +439,7 @@ public class DownloadManagerServiceTest {
     @Feature({"Download"})
     @RetryOnFailure
     public void testInterruptedDownloadAreAutoResumed() throws InterruptedException {
-        CachedFeatureFlags.setDownloadAutoResumptionEnabledInNativeForTesting(false);
+        CachedFeatureFlags.setForTesting(ChromeFeatureList.DOWNLOADS_AUTO_RESUMPTION_NATIVE, false);
 
         MockDownloadNotifier notifier = new MockDownloadNotifier();
         createDownloadManagerService(notifier, UPDATE_DELAY_FOR_TEST);

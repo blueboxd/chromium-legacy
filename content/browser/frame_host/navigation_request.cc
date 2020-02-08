@@ -16,6 +16,7 @@
 #include "base/metrics/histogram_macros.h"
 #include "base/optional.h"
 #include "base/rand_util.h"
+#include "base/stl_util.h"
 #include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
 #include "base/system/sys_info.h"
@@ -606,6 +607,40 @@ mojom::NavigationType ConvertToCrossDocumentType(mojom::NavigationType type) {
   }
 }
 
+base::debug::CrashKeyString* GetNavigationRequestUrlCrashKey() {
+  static auto* crash_key = base::debug::AllocateCrashKeyString(
+      "navigation_request_url", base::debug::CrashKeySize::Size256);
+  return crash_key;
+}
+
+base::debug::CrashKeyString* GetNavigationRequestInitiatorCrashKey() {
+  static auto* crash_key = base::debug::AllocateCrashKeyString(
+      "navigation_request_initiator", base::debug::CrashKeySize::Size64);
+  return crash_key;
+}
+
+class ScopedNavigationRequestCrashKeys {
+ public:
+  explicit ScopedNavigationRequestCrashKeys(
+      NavigationRequest* navigation_request)
+      : initiator_origin_(
+            GetNavigationRequestInitiatorCrashKey(),
+            base::OptionalOrNullptr(navigation_request->GetInitiatorOrigin())),
+        url_(GetNavigationRequestUrlCrashKey(),
+             navigation_request->GetURL().possibly_invalid_spec()) {}
+  ~ScopedNavigationRequestCrashKeys() = default;
+
+  // No copy constructor and no copy assignment operator.
+  ScopedNavigationRequestCrashKeys(const ScopedNavigationRequestCrashKeys&) =
+      delete;
+  ScopedNavigationRequestCrashKeys& operator=(
+      const ScopedNavigationRequestCrashKeys&) = delete;
+
+ private:
+  url::debug::ScopedOriginCrashKey initiator_origin_;
+  base::debug::ScopedCrashKeyString url_;
+};
+
 }  // namespace
 
 // static
@@ -1079,6 +1114,7 @@ void NavigationRequest::BeginNavigation() {
                                "BeginNavigation");
   DCHECK(!loader_);
   DCHECK(!render_frame_host_);
+  ScopedNavigationRequestCrashKeys crash_keys(this);
 
   state_ = WILL_START_NAVIGATION;
 
@@ -1360,6 +1396,8 @@ NavigationRequest::TakeClientSecurityState() {
 void NavigationRequest::OnRequestRedirected(
     const net::RedirectInfo& redirect_info,
     network::mojom::URLResponseHeadPtr response_head) {
+  ScopedNavigationRequestCrashKeys crash_keys(this);
+
   // Sanity check - this can only be set at commit time.
   DCHECK(!auth_challenge_info_);
 
@@ -1581,6 +1619,8 @@ void NavigationRequest::OnResponseStarted(
     bool is_download,
     NavigationDownloadPolicy download_policy,
     base::Optional<SubresourceLoaderParams> subresource_loader_params) {
+  ScopedNavigationRequestCrashKeys crash_keys(this);
+
   // The |loader_|'s job is finished. It must not call the NavigationRequest
   // anymore from now.
   loader_.reset();
@@ -1907,6 +1947,7 @@ void NavigationRequest::OnRequestFailedInternal(
          state_ == WILL_FAIL_REQUEST);
   DCHECK(!(status.error_code == net::ERR_ABORTED &&
            error_page_content.has_value()));
+  ScopedNavigationRequestCrashKeys crash_keys(this);
 
   // The request failed, the |loader_| must not call the NavigationRequest
   // anymore from now while the error page is being loaded.

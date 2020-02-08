@@ -184,3 +184,24 @@ TEST_F('ChromeVoxAnnotationTest', 'UpdateAnnotationTest', function() {
         'Good night', UserAnnotationHandler.getAnnotationForNode(appleButton));
   });
 });
+
+// Tests that we can create an annotation for a node using its NodeIdentifier.
+TEST_F('ChromeVoxAnnotationTest', 'CreateFromNodeIdentifier', function() {
+  const mockFeedback = this.createMockFeedback();
+  this.runWithLoadedTree(this.basicButtonDoc, function(root) {
+    const pageUrl = root.docUrl;
+    const appleButton =
+        root.find({role: RoleType.BUTTON, attributes: {name: 'Apple'}});
+    assertFalse(!appleButton);
+    const appleId = NodeIdentifier.constructFromNode(appleButton);
+    UserAnnotationHandler.setAnnotationForIdentifier(appleId, 'Testing');
+
+    this.assertNumberOfAnnotationsForUrl(pageUrl, 1);
+    CommandHandler.onCommand('jumpToTop');
+    mockFeedback.call(doCmd('nextButton'))
+        .expectSpeech('Testing', 'Button')
+        .call(doCmd('nextButton'))
+        .expectSpeech('Orange', 'Button')
+        .replay();
+  });
+});

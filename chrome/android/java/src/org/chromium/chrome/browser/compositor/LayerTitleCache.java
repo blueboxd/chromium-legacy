@@ -134,7 +134,7 @@ public class LayerTitleCache implements TitleCache {
         Bitmap originalFavicon = TabFavicon.getBitmap(tab);
         if (originalFavicon == null) {
             originalFavicon = mDefaultFaviconHelper.getDefaultFaviconBitmap(
-                    mContext.getResources(), tab.getUrl(), !isDarkTheme);
+                    mContext.getResources(), tab.getUrlString(), !isDarkTheme);
         }
 
         TitleBitmapFactory titleBitmapFactory =
@@ -166,11 +166,8 @@ public class LayerTitleCache implements TitleCache {
 
         // Since tab#getProfile() is not available by this time, we will use whatever last used
         // profile.
-        mFaviconHelper.getLocalFaviconImageForURL(
-                Profile.getLastUsedProfile(),
-                tab.getUrl(),
-                mFaviconSize,
-                new FaviconImageCallback() {
+        mFaviconHelper.getLocalFaviconImageForURL(Profile.getLastUsedProfile(), tab.getUrlString(),
+                mFaviconSize, new FaviconImageCallback() {
                     @Override
                     public void onFaviconAvailable(Bitmap favicon, String iconUrl) {
                         updateFaviconFromHistory(tab, favicon);
@@ -186,7 +183,7 @@ public class LayerTitleCache implements TitleCache {
     private String getTitleForTab(Tab tab, String defaultTitle) {
         String title = tab.getTitle();
         if (TextUtils.isEmpty(title)) {
-            title = tab.getUrl();
+            title = tab.getUrlString();
             if (TextUtils.isEmpty(title)) {
                 title = defaultTitle;
                 if (TextUtils.isEmpty(title)) {

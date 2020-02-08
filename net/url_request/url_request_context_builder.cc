@@ -486,11 +486,11 @@ std::unique_ptr<URLRequestContext> URLRequestContextBuilder::Build() {
   if (!proxy_resolution_service_) {
 #if !defined(OS_LINUX) && !defined(OS_ANDROID)
     // TODO(willchan): Switch to using this code when
-    // ProxyResolutionService::CreateSystemProxyConfigService()'s signature
-    // doesn't suck.
+    // ConfiguredProxyResolutionService::CreateSystemProxyConfigService()'s
+    // signature doesn't suck.
     if (!proxy_config_service_) {
       proxy_config_service_ =
-          ProxyResolutionService::CreateSystemProxyConfigService(
+          ConfiguredProxyResolutionService::CreateSystemProxyConfigService(
               base::ThreadTaskRunnerHandle::Get().get());
     }
 #endif  // !defined(OS_LINUX) && !defined(OS_ANDROID)
@@ -501,7 +501,7 @@ std::unique_ptr<URLRequestContext> URLRequestContextBuilder::Build() {
     proxy_resolution_service_->set_quick_check_enabled(
         pac_quick_check_enabled_);
   }
-  ProxyResolutionService* proxy_resolution_service =
+  ConfiguredProxyResolutionService* proxy_resolution_service =
       proxy_resolution_service_.get();
   storage->set_proxy_resolution_service(std::move(proxy_resolution_service_));
 
@@ -620,14 +620,14 @@ std::unique_ptr<URLRequestContext> URLRequestContextBuilder::Build() {
   return std::move(context);
 }
 
-std::unique_ptr<ProxyResolutionService>
+std::unique_ptr<ConfiguredProxyResolutionService>
 URLRequestContextBuilder::CreateProxyResolutionService(
     std::unique_ptr<ProxyConfigService> proxy_config_service,
     URLRequestContext* url_request_context,
     HostResolver* host_resolver,
     NetworkDelegate* network_delegate,
     NetLog* net_log) {
-  return ProxyResolutionService::CreateUsingSystemProxyResolver(
+  return ConfiguredProxyResolutionService::CreateUsingSystemProxyResolver(
       std::move(proxy_config_service), net_log);
 }
 

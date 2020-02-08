@@ -62,6 +62,6 @@
             android:contentDescription="@string/close"
             android:background="?attr/selectableItemBackground"
             android:scaleType="center"
-            app:tint="@color/standard_mode_tint" />
+            app:tint="@color/default_icon_color_tint_list" />
     </org.chromium.chrome.browser.payments.ui.PaymentRequestHeader>
 </merge>

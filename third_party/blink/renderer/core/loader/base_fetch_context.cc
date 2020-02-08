@@ -55,6 +55,13 @@ bool BaseFetchContext::CalculateIfAdSubresource(const ResourceRequest& request,
           filter->IsAdResource(request.Url(), request.GetRequestContext()));
 }
 
+bool BaseFetchContext::SendConversionRequestInsteadOfRedirecting(
+    const KURL& url,
+    ResourceRequest::RedirectStatus redirect_status,
+    SecurityViolationReportingPolicy reporting_policy) const {
+  return false;
+}
+
 void BaseFetchContext::PrintAccessDeniedMessage(const KURL& url) const {
   if (url.IsNull())
     return;
@@ -231,6 +238,11 @@ BaseFetchContext::CanRequestInternal(
   if (GetPreviewsResourceLoadingHints() &&
       !GetPreviewsResourceLoadingHints()->AllowLoad(
           type, url, resource_request.Priority())) {
+    return ResourceRequestBlockedReason::kOther;
+  }
+
+  if (SendConversionRequestInsteadOfRedirecting(url, redirect_status,
+                                                reporting_policy)) {
     return ResourceRequestBlockedReason::kOther;
   }
 

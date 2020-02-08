@@ -84,7 +84,7 @@ public class DynamicModuleNavigationEventObserver extends EmptyTabObserver {
     private Bundle getExtrasBundleForNavigationEvent(Tab tab) {
         Bundle bundle = new Bundle();
         bundle.putLong(TIMESTAMP_KEY, SystemClock.uptimeMillis());
-        String url = tab.getUrl();
+        String url = tab.getUrlString();
         if (!TextUtils.isEmpty(url)) bundle.putParcelable(URL_KEY, Uri.parse(url));
 
         NavigationEntry entry = tab.getWebContents().getNavigationController()

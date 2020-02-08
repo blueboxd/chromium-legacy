@@ -144,6 +144,29 @@ button {
   white-space: pre;
 }
 
+#annotations {
+  background-color: #000;
+  border: 1px solid #fff;
+  color: #fff;
+  font-family: 'Roboto', sans-serif;
+  font-size: 12pt;
+  height: 35px;
+  line-height: 35px;
+  overflow: hidden;
+  width: 80%;
+}
+
+#discard-annotation,
+#save-annotation {
+  background-color: #000;
+  border: 1px solid #fff;
+  color: #fff;
+  font-family: 'Roboto', sans-serif;
+  font-size: 12pt;
+  height: 35px;
+}
+
+#annotations-container,
 #search-container {
   height: 35px;
   margin: 0 12px;
@@ -161,6 +184,7 @@ button {
   width: 100%;
 }
 
+#annotations::placeholder,
 #search::placeholder {
   /* Hint text should match the color of the ChromeVox focus ring. */
   color: rgb(247, 152, 58);

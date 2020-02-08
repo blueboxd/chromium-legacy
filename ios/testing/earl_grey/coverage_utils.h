@@ -19,6 +19,9 @@
 // only once in between two write coverage data calls.
 + (void)resetCoverageProfileCounters;
 
+// Writes the raw coverage data to previously configured report path.
++ (void)writeClangCoverageProfile;
+
 @end
 
 #endif  // IOS_TESTING_EARL_GREY_COVERAGE_UTILS_H_

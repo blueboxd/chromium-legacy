@@ -335,37 +335,17 @@
             "v8.browsing_desktop-future": {
                 "begin": 17,
                 "abridged": false
-            },
-            "v8.runtime_stats.top_25": {
-                "end": 27,
-                "abridged": false
             }
         }
     },
     "23": {
-        "benchmarks": {
-            "v8.runtime_stats.top_25": {
-                "begin": 27,
-                "end": 63,
-                "abridged": false
-            }
-        }
+        "benchmarks": {}
     },
     "24": {
-        "benchmarks": {
-            "v8.runtime_stats.top_25": {
-                "begin": 63,
-                "end": 101,
-                "abridged": false
-            }
-        }
+        "benchmarks": {}
     },
     "25": {
         "benchmarks": {
-            "v8.runtime_stats.top_25": {
-                "begin": 101,
-                "abridged": false
-            },
             "webrtc": {
                 "abridged": false
             }

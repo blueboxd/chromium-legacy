@@ -72,7 +72,6 @@ gfx::GpuMemoryBuffer* GpuMemoryBufferImageCopy::CopyImage(Image* image) {
 
   // Bind the read framebuffer to our image.
   StaticBitmapImage* static_image = static_cast<StaticBitmapImage*>(image);
-  static_image->EnsureMailbox(kOrderingBarrier, GL_NEAREST);
   auto mailbox_holder = static_image->GetMailboxHolder();
 
   // Not strictly necessary since we are on the same context, but keeping

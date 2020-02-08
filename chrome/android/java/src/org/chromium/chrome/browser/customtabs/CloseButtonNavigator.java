@@ -103,7 +103,7 @@ public class CloseButtonNavigator {
             // consider the current Tab) because in that case if the user started on a landing page,
             // we would not navigate at all.
             Tab nextTab = mTabProvider.getTab();
-            if (nextTab != null && isLandingPage(nextTab.getUrl())) {
+            if (nextTab != null && isLandingPage(nextTab.getUrlString())) {
                 if (isFromChildTab) {
                     recordChildTabScopeAlgorithmClosesOneTab(numTabsClosed == 1);
                 }

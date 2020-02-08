@@ -12,6 +12,7 @@ js_type_check("closure_compile") {
     ":omnibox_element",
     ":omnibox_input",
     ":omnibox_output",
+    ":omnibox_popup",
   ]
 }
 
@@ -41,6 +42,12 @@ js_library("omnibox_output") {
     "//chrome/browser/ui/webui/omnibox:mojo_bindings_js_library_for_compile",
   ]
   externs_list = [ "$externs_path/pending.js" ]
+}
+
+js_library("omnibox_popup") {
+  deps = [
+    "//chrome/browser/ui/webui/omnibox:mojo_bindings_js_library_for_compile",
+  ]
 }
 
 grit("resources") {

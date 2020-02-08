@@ -90,7 +90,7 @@ public class ToolbarTest {
 
         // Load new tab page.
         mActivityTestRule.loadUrl(UrlConstants.NTP_URL);
-        Assert.assertEquals(UrlConstants.NTP_URL, tab.getUrl());
+        Assert.assertEquals(UrlConstants.NTP_URL, tab.getUrlString());
         Assert.assertFalse(isErrorPage(tab));
 
         // Stop the server and also disconnect the network.
@@ -99,7 +99,7 @@ public class ToolbarTest {
                 () -> NetworkChangeNotifier.forceConnectivityState(false));
 
         mActivityTestRule.loadUrl(testUrl);
-        Assert.assertEquals(testUrl, tab.getUrl());
+        Assert.assertEquals(testUrl, tab.getUrlString());
         Assert.assertTrue(isErrorPage(tab));
     }
 

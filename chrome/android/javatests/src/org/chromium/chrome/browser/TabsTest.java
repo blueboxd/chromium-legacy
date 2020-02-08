@@ -1405,7 +1405,8 @@ public class TabsTest {
             TouchCommon.singleClickView(button);
 
             Assert.assertEquals("URL mismatch after switching back to the tab from tab-switch mode",
-                    urls[lastUrlIndex], mActivityTestRule.getActivity().getActivityTab().getUrl());
+                    urls[lastUrlIndex],
+                    mActivityTestRule.getActivity().getActivityTab().getUrlString());
         }
     }
 

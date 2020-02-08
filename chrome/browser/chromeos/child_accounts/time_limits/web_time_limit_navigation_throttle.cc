@@ -6,10 +6,12 @@
 
 #include <string>
 
+#include "base/feature_list.h"
 #include "base/optional.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/chromeos/child_accounts/child_user_service.h"
 #include "chrome/browser/chromeos/child_accounts/child_user_service_factory.h"
+#include "chrome/browser/chromeos/child_accounts/time_limits/web_time_limit_enforcer.h"
 #include "chrome/browser/chromeos/child_accounts/time_limits/web_time_limit_error_page/web_time_limit_error_page.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser.h"
@@ -20,6 +22,7 @@
 #include "chrome/browser/web_applications/components/web_app_id.h"
 #include "chrome/browser/web_applications/components/web_app_tab_helper_base.h"
 #include "chrome/browser/web_applications/web_app_provider.h"
+#include "chrome/common/chrome_features.h"
 #include "content/public/browser/navigation_handle.h"
 #include "content/public/browser/web_contents.h"
 
@@ -30,8 +33,7 @@ namespace {
 bool IsWebBlocked(content::BrowserContext* context) {
   auto* child_user_service =
       ChildUserServiceFactory::GetForBrowserContext(context);
-  if (!child_user_service)
-    return false;
+  DCHECK(child_user_service);
 
   return child_user_service->WebTimeLimitReached();
 }
@@ -76,15 +78,19 @@ WebTimeLimitNavigationThrottle::MaybeCreateThrottleFor(
   content::BrowserContext* browser_context =
       navigation_handle->GetWebContents()->GetBrowserContext();
 
-  if (IsWebBlocked(browser_context)) {
-    // Creating a throttle for both the main frame and sub frames. This prevents
-    // kids from circumventing the app restrictions by using iframes in a local
-    // html file.
-    return base::WrapUnique(
-        new WebTimeLimitNavigationThrottle(navigation_handle));
-  }
+  if (!Profile::FromBrowserContext(browser_context)->IsChild())
+    return nullptr;
 
-  return nullptr;
+  if (!app_time::WebTimeLimitEnforcer::IsEnabled())
+    return nullptr;
+
+  // Creating a throttle for both the main frame and sub frames. This prevents
+  // kids from circumventing the app restrictions by using iframes in a local
+  // html file.
+  return IsWebBlocked(browser_context)
+             ? base::WrapUnique(
+                   new WebTimeLimitNavigationThrottle(navigation_handle))
+             : nullptr;
 }
 
 WebTimeLimitNavigationThrottle::~WebTimeLimitNavigationThrottle() = default;

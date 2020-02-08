@@ -7,19 +7,23 @@
 #include "chrome/android/chrome_jni_headers/CachedFeatureFlags_jni.h"
 
 #include "base/android/jni_string.h"
+#include "base/feature_list.h"
 #include "content/public/common/content_features.h"
 #include "content/public/common/network_service_util.h"
 
 using base::android::ConvertJavaStringToUTF8;
+using base::android::ConvertUTF8ToJavaString;
 using base::android::JavaParamRef;
 using base::android::ScopedJavaLocalRef;
 
 namespace chrome {
 namespace android {
 
-bool IsDownloadAutoResumptionEnabledInNative() {
+bool IsJavaDrivenFeatureEnabled(const base::Feature& feature) {
   JNIEnv* env = base::android::AttachCurrentThread();
-  return Java_CachedFeatureFlags_isDownloadAutoResumptionEnabledInNative(env);
+  ScopedJavaLocalRef<jstring> j_feature_name(
+      ConvertUTF8ToJavaString(env, feature.name));
+  return Java_CachedFeatureFlags_isEnabled(env, j_feature_name);
 }
 
 std::string GetReachedCodeProfilerTrialGroup() {

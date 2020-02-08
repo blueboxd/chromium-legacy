@@ -55,8 +55,6 @@ ExtensionsMenuItemView* GetAsMenuItemView(views::View* view) {
 
 }  // namespace
 
-constexpr gfx::Size ExtensionsMenuView::kExtensionsMenuIconSize;
-
 ExtensionsMenuView::ButtonListener::ButtonListener(Browser* browser)
     : browser_(browser) {}
 

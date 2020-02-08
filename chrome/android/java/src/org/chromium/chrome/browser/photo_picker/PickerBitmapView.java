@@ -391,7 +391,7 @@ public class PickerBitmapView extends SelectableItemView<PickerBitmap> {
         mSpecialTileIcon.setImageDrawable(image);
         ApiCompatibilityUtils.setImageTintList(mSpecialTileIcon,
                 AppCompatResources.getColorStateList(
-                        mContext, R.color.default_icon_color_secondary_list));
+                        mContext, R.color.default_icon_color_secondary_tint_list));
         ImageViewCompat.setImageTintMode(mSpecialTileIcon, PorterDuff.Mode.SRC_IN);
         mSpecialTileLabel.setText(labelStringId);
 

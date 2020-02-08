@@ -376,8 +376,8 @@ void Job::StartCreateV8Resolver(
 
   // Script initialization uses blocking DNS since there isn't any
   // advantage to using non-blocking mode here. That is because the
-  // parent ProxyResolutionService can't submit any ProxyResolve requests until
-  // initialization has completed successfully!
+  // parent ConfiguredProxyResolutionService can't submit any ProxyResolve
+  // requests until initialization has completed successfully!
   Start(CREATE_V8_RESOLVER, true /*blocking*/, std::move(callback));
 }
 

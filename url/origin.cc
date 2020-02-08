@@ -351,4 +351,17 @@ bool Origin::Nonce::operator!=(const Origin::Nonce& other) const {
   return !(*this == other);
 }
 
+namespace debug {
+
+ScopedOriginCrashKey::ScopedOriginCrashKey(
+    base::debug::CrashKeyString* crash_key,
+    const url::Origin* value)
+    : base::debug::ScopedCrashKeyString(
+          crash_key,
+          value ? value->GetDebugString() : "nullptr") {}
+
+ScopedOriginCrashKey::~ScopedOriginCrashKey() = default;
+
+}  // namespace debug
+
 }  // namespace url

@@ -11,7 +11,7 @@
 #include "content/public/renderer/render_thread.h"
 #include "third_party/blink/public/platform/platform.h"
 #include "weblayer/common/features.h"
-#include "weblayer/renderer/ssl_error_helper.h"
+#include "weblayer/renderer/error_page_helper.h"
 #include "weblayer/renderer/weblayer_render_frame_observer.h"
 
 #if defined(OS_ANDROID)
@@ -70,7 +70,7 @@ void ContentRendererClientImpl::RenderFrameCreated(
     content::RenderFrame* render_frame) {
   auto* render_frame_observer = new WebLayerRenderFrameObserver(render_frame);
 
-  SSLErrorHelper::Create(render_frame);
+  ErrorPageHelper::Create(render_frame);
 
   autofill::PasswordAutofillAgent* password_autofill_agent =
       new autofill::PasswordAutofillAgent(
@@ -95,7 +95,7 @@ void ContentRendererClientImpl::PrepareErrorPage(
     const blink::WebURLError& error,
     const std::string& http_method,
     std::string* error_html) {
-  auto* ssl_helper = SSLErrorHelper::GetForFrame(render_frame);
+  auto* ssl_helper = ErrorPageHelper::GetForFrame(render_frame);
   if (ssl_helper)
     ssl_helper->PrepareErrorPage();
 

@@ -60,7 +60,7 @@ void NavigationHandleProxy::DidFinish() {
   }
 
   bool is_valid_search_form_url =
-      cpp_navigation_handle_->GetSearchableFormURL() != nullptr
+      cpp_navigation_handle_->GetSearchableFormURL() != ""
           ? cpp_navigation_handle_->GetSearchableFormURL().is_valid()
           : false;
 

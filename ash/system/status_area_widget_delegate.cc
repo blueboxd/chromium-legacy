@@ -7,6 +7,7 @@
 #include "ash/focus_cycler.h"
 #include "ash/root_window_controller.h"
 #include "ash/shelf/shelf.h"
+#include "ash/shelf/shelf_layout_manager.h"
 #include "ash/shelf/shelf_widget.h"
 #include "ash/shell.h"
 #include "ash/system/status_area_widget.h"
@@ -223,10 +224,12 @@ void StatusAreaWidgetDelegate::ChildPreferredSizeChanged(View* child) {
   // Need to resize the window when trays or items are added/removed.
   StatusAreaWidgetDelegateAnimationSettings settings(layer());
   UpdateWidgetSize();
+  shelf_->shelf_layout_manager()->LayoutShelf(/*animate=*/false);
 }
 
 void StatusAreaWidgetDelegate::ChildVisibilityChanged(View* child) {
   UpdateLayout();
+  shelf_->shelf_layout_manager()->LayoutShelf(/*animate=*/true);
 }
 
 void StatusAreaWidgetDelegate::UpdateWidgetSize() {

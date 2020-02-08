@@ -128,7 +128,7 @@ public class ShareDelegateImpl implements ShareDelegate {
                 if (shouldFetchCanonicalUrl(currentTab)) {
                     WebContents webContents = currentTab.getWebContents();
                     String title = currentTab.getTitle();
-                    String visibleUrl = currentTab.getUrl();
+                    String visibleUrl = currentTab.getUrlString();
                     webContents.getMainFrame().getCanonicalUrlForSharing(new Callback<String>() {
                         @Override
                         public void onResult(String result) {
@@ -140,7 +140,7 @@ public class ShareDelegateImpl implements ShareDelegate {
                     });
                 } else {
                     triggerShareWithCanonicalUrlResolved(window, currentTab.getWebContents(),
-                            currentTab.getTitle(), currentTab.getUrl(), null, shareDirectly,
+                            currentTab.getTitle(), currentTab.getUrlString(), null, shareDirectly,
                             isIncognito);
                 }
             }
@@ -186,7 +186,7 @@ public class ShareDelegateImpl implements ShareDelegate {
         WebContents webContents = currentTab.getWebContents();
         if (webContents == null) return false;
         if (webContents.getMainFrame() == null) return false;
-        String url = currentTab.getUrl();
+        String url = currentTab.getUrlString();
         if (TextUtils.isEmpty(url)) return false;
         if (currentTab.isShowingErrorPage() || ((TabImpl) currentTab).isShowingInterstitialPage()
                 || SadTab.isShowing(currentTab)) {

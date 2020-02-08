@@ -15,7 +15,6 @@
 #include "base/trace_event/trace_event.h"
 #include "ui/base/cursor/cursor.h"
 #include "ui/base/default_style.h"
-#include "ui/base/default_theme_provider.h"
 #include "ui/base/hit_test.h"
 #include "ui/base/ime/input_method.h"
 #include "ui/base/l10n/l10n_font_util.h"
@@ -343,7 +342,6 @@ void Widget::Init(InitParams params) {
   ownership_ = params.ownership;
   native_widget_ = CreateNativeWidget(params, this)->AsNativeWidgetPrivate();
   root_view_.reset(CreateRootView());
-  default_theme_provider_ = std::make_unique<ui::DefaultThemeProvider>();
 
   // Copy the elements of params that will be used after it is moved.
   const InitParams::Type type = params.type;
@@ -781,18 +779,8 @@ bool Widget::IsVisible() const {
 
 const ui::ThemeProvider* Widget::GetThemeProvider() const {
   const Widget* root_widget = GetTopLevelWidget();
-  if (root_widget && root_widget != this) {
-    // Attempt to get the theme provider, and fall back to the default theme
-    // provider if not found.
-    const ui::ThemeProvider* provider = root_widget->GetThemeProvider();
-    if (provider)
-      return provider;
-
-    provider = root_widget->default_theme_provider_.get();
-    if (provider)
-      return provider;
-  }
-  return default_theme_provider_.get();
+  return (root_widget && root_widget != this) ? root_widget->GetThemeProvider()
+                                              : &default_theme_provider_;
 }
 
 FocusManager* Widget::GetFocusManager() {
@@ -1658,8 +1646,9 @@ void Widget::UnlockPaintAsActive() {
 void Widget::UpdatePaintAsActiveState(bool paint_as_active) {
   if (non_client_view_)
     non_client_view_->frame_view()->PaintAsActiveChanged(paint_as_active);
-  if (widget_delegate())
-    widget_delegate()->OnPaintAsActiveChanged(paint_as_active);
+
+  for (WidgetObserver& observer : observers_)
+    observer.OnWidgetPaintAsActiveChanged(this, paint_as_active);
 }
 
 void Widget::ClearFocusFromWidget() {

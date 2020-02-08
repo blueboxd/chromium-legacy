@@ -175,7 +175,7 @@
             aria-describedby="name"
             checked="[[isEnabled_(data.state)]]"
             on-change="onEnableToggleChange_"
-            disabled="[[!isEnableToggleEnabled_(data.*)]]"
+            disabled$="[[!isEnableToggleEnabled_(data.*)]]"
             hidden$="[[!showEnableToggle_(data.*)]]">
         </cr-toggle>
         <cr-button id="enableButton"

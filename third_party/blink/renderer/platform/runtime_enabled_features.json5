@@ -369,6 +369,10 @@
       status: "experimental",
     },
     {
+      name: "ConversionMeasurement",
+      status: "test",
+    },
+    {
       name: "CookieDeprecationMessages",
       status: "experimental",
     },

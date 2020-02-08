@@ -13,7 +13,7 @@
 #include "base/strings/stringprintf.h"
 #include "net/base/ip_endpoint.h"
 #include "net/http/http_network_session.h"
-#include "net/proxy_resolution/proxy_resolution_service.h"
+#include "net/proxy_resolution/configured_proxy_resolution_service.h"
 #include "net/socket/socket_test_util.h"
 #include "net/third_party/quiche/src/spdy/core/spdy_protocol.h"
 #include "net/traffic_annotation/network_traffic_annotation_test_helper.h"
@@ -252,7 +252,7 @@ void WebSocketTestURLRequestContextHost::AddSSLSocketDataProvider(
 void WebSocketTestURLRequestContextHost::SetProxyConfig(
     const std::string& proxy_rules) {
   DCHECK(!url_request_context_initialized_);
-  proxy_resolution_service_ = ProxyResolutionService::CreateFixed(
+  proxy_resolution_service_ = ConfiguredProxyResolutionService::CreateFixed(
       proxy_rules, TRAFFIC_ANNOTATION_FOR_TESTS);
   url_request_context_.set_proxy_resolution_service(
       proxy_resolution_service_.get());

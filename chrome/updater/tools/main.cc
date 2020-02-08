@@ -14,6 +14,7 @@
 #include "base/files/file_path.h"
 #include "base/files/file_util.h"
 #include "base/logging.h"
+#include "base/numerics/checked_math.h"
 #include "base/stl_util.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_util.h"
@@ -26,14 +27,18 @@ namespace tools {
 // If set, this flag contains a string and a superfluous certificate tag with
 // that value will be set and the binary rewritten. If the string begins
 // with '0x' then it will be interpreted as hex.
-const char kSetSuperfluousCertTagSwitch[] = "set-superfluous-cert-tag";
+constexpr char kSetSuperfluousCertTagSwitch[] = "set-superfluous-cert-tag";
+
+// A superfluous certificate tag will be padded with zeros to at least this
+// number of bytes.
+constexpr char kPaddedLength[] = "padded-length";
 
 // If set, this flag causes the current tag, if any, to be written to stdout.
-const char kGetSuperfluousCertTagSwitch[] = "get-superfluous-cert-tag";
+constexpr char kGetSuperfluousCertTagSwitch[] = "get-superfluous-cert-tag";
 
 // If set, the updated binary is written to this file. Otherwise the binary is
 // updated in place.
-const char kOutFilenameSwitch[] = "out";
+constexpr char kOutFilenameSwitch[] = "out";
 
 struct CommandLineArguments {
   // Whether to print the current tag.
@@ -41,6 +46,10 @@ struct CommandLineArguments {
 
   // Sets the certificate from bytes.
   std::string set_superfluous_cert_tag;
+
+  // Contains the minimum length of the padding sequence of zeros at the end
+  // of the tag.
+  int padded_length = 0;
 
   // Specifies the input file (which may be the same as the output file).
   base::FilePath in_filename;
@@ -68,7 +77,11 @@ CommandLineArguments ParseCommandLineArgs(int argc, char** argv) {
     PrintUsageAndExit(cmdline);
 
   args.in_filename = base::FilePath{cmdline->GetArgs()[0]};
-  args.out_filename = args.in_filename;
+
+  const base::FilePath out_filename =
+      cmdline->GetSwitchValuePath(kOutFilenameSwitch);
+  cmdline->RemoveSwitch(kOutFilenameSwitch);
+  args.out_filename = out_filename;
 
   args.get_superfluous_cert_tag =
       cmdline->HasSwitch(kGetSuperfluousCertTagSwitch);
@@ -78,12 +91,15 @@ CommandLineArguments ParseCommandLineArgs(int argc, char** argv) {
       cmdline->GetSwitchValueASCII(kSetSuperfluousCertTagSwitch);
   cmdline->RemoveSwitch(kSetSuperfluousCertTagSwitch);
 
-  const base::FilePath maybe_out_filename =
-      cmdline->GetSwitchValuePath(kOutFilenameSwitch);
-  cmdline->RemoveSwitch(kOutFilenameSwitch);
-
-  if (!maybe_out_filename.empty()) {
-    args.out_filename = maybe_out_filename;
+  if (cmdline->HasSwitch(kPaddedLength)) {
+    int padded_length = 0;
+    if (!base::StringToInt(cmdline->GetSwitchValueASCII(kPaddedLength),
+                           &padded_length) ||
+        padded_length < 0) {
+      PrintUsageAndExit(cmdline);
+    }
+    args.padded_length = padded_length;
+    cmdline->RemoveSwitch(kPaddedLength);
   }
 
   const auto unknown_switches = cmdline->GetSwitches();
@@ -115,14 +131,14 @@ int CertificateTagMain(int argc, char** argv) {
 
   base::Optional<tools::Binary> bin = tools::Binary::Parse(contents);
   if (!bin) {
-    std::cerr << "Failed to parse tag binary" << std::endl;
+    std::cerr << "Failed to parse tag binary." << std::endl;
     std::exit(1);
   }
 
   if (args.get_superfluous_cert_tag) {
     base::Optional<base::span<const uint8_t>> tag = bin->tag();
     if (!tag) {
-      std::cerr << "No tag in binary" << std::endl;
+      std::cerr << "No tag in binary." << std::endl;
       std::exit(1);
     }
 
@@ -138,13 +154,23 @@ int CertificateTagMain(int argc, char** argv) {
           std::begin(args.set_superfluous_cert_tag) + base::size(kPrefix) - 1,
           std::end(args.set_superfluous_cert_tag));
       if (!base::HexStringToBytes(hex_chars, &tag_contents)) {
-        std::cerr << "Failed to parse tag contents from command line"
+        std::cerr << "Failed to parse tag contents from command line."
                   << std::endl;
         std::exit(1);
       }
     } else {
       tag_contents.assign(args.set_superfluous_cert_tag.begin(),
                           args.set_superfluous_cert_tag.end());
+    }
+    if (args.padded_length > 0) {
+      size_t new_size = 0;
+      if (base::CheckAdd(tag_contents.size(), args.padded_length)
+              .AssignIfValid(&new_size)) {
+        tag_contents.resize(new_size);
+      } else {
+        std::cerr << "Failed to pad the tag contents." << std::endl;
+        std::exit(1);
+      }
     }
 
     auto new_contents = bin->SetTag(tag_contents);

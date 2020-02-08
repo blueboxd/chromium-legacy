@@ -40,6 +40,10 @@ class TestSessionController : public ash::SessionController {
     return lock_animation_complete_call_count_;
   }
 
+  int set_user_session_order_count() const {
+    return set_user_session_order_count_;
+  }
+
   // ash::SessionController:
   void SetClient(ash::SessionControllerClient* client) override;
   void SetSessionInfo(const ash::SessionInfo& info) override;
@@ -74,6 +78,7 @@ class TestSessionController : public ash::SessionController {
   base::TimeTicks last_session_start_time_;
   int update_user_session_count_ = 0;
   int lock_animation_complete_call_count_ = 0;
+  int set_user_session_order_count_ = 0;
 
   DISALLOW_COPY_AND_ASSIGN(TestSessionController);
 };

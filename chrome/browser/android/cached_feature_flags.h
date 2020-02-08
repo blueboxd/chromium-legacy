@@ -9,10 +9,14 @@
 
 #include <string>
 
+namespace base {
+struct Feature;
+}  // namespace base
+
 namespace chrome {
 namespace android {
 
-bool IsDownloadAutoResumptionEnabledInNative();
+bool IsJavaDrivenFeatureEnabled(const base::Feature& feature);
 
 // Returns a finch group name currently used for the reached code profiler.
 // Returns an empty string if the group isn't specified.

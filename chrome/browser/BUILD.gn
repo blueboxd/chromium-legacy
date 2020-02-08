@@ -5327,6 +5327,12 @@ jumbo_static_library("browser") {
       "supervised_user/legacy/custodian_profile_downloader_service_factory.h",
     ]
   }
+  if (enable_supervised_users && enable_extensions) {
+    sources += [
+      "supervised_user/mature_extension_checker.cc",
+      "supervised_user/mature_extension_checker.h",
+    ]
+  }
 
   if (enable_vr) {
     if (enable_gvr_services) {

@@ -236,7 +236,7 @@ TEST(SourceKeyedCachedMetadataHandlerTest, Serialize_EmptyClearDoesSend) {
           WTF::TextEncoding(), std::make_unique<MockCachedMetadataSender>(url));
 
   // Clear and send to the platform
-  handler->ClearCachedMetadata(CachedMetadataHandler::kSendToPlatform);
+  handler->ClearCachedMetadata(CachedMetadataHandler::kClearPersistentStorage);
 
   // Load from platform
   Vector<CacheMetadataEntry> cache_metadatas =
@@ -320,8 +320,9 @@ TEST(SourceKeyedCachedMetadataHandlerTest,
             WTF::TextEncoding(),
             std::make_unique<MockCachedMetadataSender>(url));
 
-    // Clear and send to the platform
-    handler->ClearCachedMetadata(CachedMetadataHandler::kSendToPlatform);
+    // Clear and persist in the platform.
+    handler->ClearCachedMetadata(
+        CachedMetadataHandler::kClearPersistentStorage);
   }
 
   // Reload from platform

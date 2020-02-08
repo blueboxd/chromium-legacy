@@ -80,8 +80,8 @@ public class NavigationHandlerTest {
 
     private void assertNavigateOnSwipeFrom(boolean edge, String toUrl) {
         ChromeTabUtils.waitForTabPageLoaded(currentTab(), toUrl, () -> swipeFromEdge(edge), 10);
-        CriteriaHelper.pollUiThread(Criteria.equals(toUrl, () -> currentTab().getUrl()));
-        Assert.assertEquals("Didn't navigate back", toUrl, currentTab().getUrl());
+        CriteriaHelper.pollUiThread(Criteria.equals(toUrl, () -> currentTab().getUrlString()));
+        Assert.assertEquals("Didn't navigate back", toUrl, currentTab().getUrlString());
     }
 
     private void swipeFromEdge(boolean leftEdge) {

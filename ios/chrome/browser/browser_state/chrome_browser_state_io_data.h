@@ -43,7 +43,7 @@ class CookieStore;
 class HttpServerProperties;
 class HttpTransactionFactory;
 class ProxyConfigService;
-class ProxyResolutionService;
+class ConfiguredProxyResolutionService;
 class ReportSender;
 class SystemCookieStore;
 class TransportSecurityPersister;
@@ -172,7 +172,7 @@ class ChromeBrowserStateIOData {
   void ShutdownOnUIThread(
       std::unique_ptr<IOSChromeURLRequestContextGetterVector> context_getters);
 
-  net::ProxyResolutionService* proxy_resolution_service() const {
+  net::ConfiguredProxyResolutionService* proxy_resolution_service() const {
     return proxy_resolution_service_.get();
   }
 
@@ -240,7 +240,7 @@ class ChromeBrowserStateIOData {
 
   BooleanPrefMember enable_metrics_;
 
-  mutable std::unique_ptr<net::ProxyResolutionService>
+  mutable std::unique_ptr<net::ConfiguredProxyResolutionService>
       proxy_resolution_service_;
   mutable std::unique_ptr<net::TransportSecurityState>
       transport_security_state_;

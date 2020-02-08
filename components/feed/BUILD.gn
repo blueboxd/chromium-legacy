@@ -26,6 +26,7 @@ source_set("unit_tests") {
   testonly = true
   deps = [
     "core:core_unit_tests",
+    "core/v2:core_unit_tests",
     "//components/feed/core/common:core_common_unit_tests",
   ]
 

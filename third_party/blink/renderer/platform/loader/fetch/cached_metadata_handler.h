@@ -20,8 +20,9 @@ class CachedMetadata;
 class ResourceResponse;
 class WebProcessMemoryDump;
 
-// A callback for sending the serialized data of cached metadata back to the
-// platform.
+// A callback for sending the serialized data of cached metadata to the
+// persistent storage.
+// TODO(pasko): rename this class to CachedMetadataPersister.
 class PLATFORM_EXPORT CachedMetadataSender {
   USING_FAST_MALLOC(CachedMetadataSender);
 
@@ -58,7 +59,7 @@ class CachedMetadataHandler : public GarbageCollected<CachedMetadataHandler> {
 
     // Clears the metadata in both memory and persistent storage via
     // blink::Platform::CacheMetadata.
-    kSendToPlatform
+    kClearPersistentStorage
   };
 
   // Enum for marking serialized cached metadatas so that the deserializers

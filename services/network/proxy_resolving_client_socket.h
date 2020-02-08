@@ -18,8 +18,8 @@
 #include "net/base/host_port_pair.h"
 #include "net/base/net_errors.h"
 #include "net/log/net_log_with_source.h"
+#include "net/proxy_resolution/configured_proxy_resolution_service.h"
 #include "net/proxy_resolution/proxy_info.h"
-#include "net/proxy_resolution/proxy_resolution_service.h"
 #include "net/socket/connect_job.h"
 #include "net/socket/next_proto.h"
 #include "net/socket/stream_socket.h"
@@ -47,8 +47,8 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) ProxyResolvingClientSocket
   // for proxy resolution. Caller doesn't need to explicitly sanitize the url,
   // any sensitive data (like embedded usernames and passwords), and local data
   // (i.e. reference fragment) will be sanitized by
-  // net::ProxyResolutionService::ResolveProxyHelper() before the url is
-  // disclosed to the proxy. If |use_tls|, this will try to do a tls connect
+  // net::ConfiguredProxyResolutionService::ResolveProxyHelper() before the url
+  // is disclosed to the proxy. If |use_tls|, this will try to do a tls connect
   // instead of a regular tcp connect. |network_session| and
   // |common_connect_job_params| must outlive |this|.
   ProxyResolvingClientSocket(
@@ -129,7 +129,8 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) ProxyResolvingClientSocket
   std::unique_ptr<net::ConnectJob> connect_job_;
   std::unique_ptr<net::StreamSocket> socket_;
 
-  std::unique_ptr<net::ProxyResolutionService::Request> proxy_resolve_request_;
+  std::unique_ptr<net::ConfiguredProxyResolutionService::Request>
+      proxy_resolve_request_;
   net::ProxyInfo proxy_info_;
   const GURL url_;
   const bool use_tls_;

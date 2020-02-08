@@ -173,13 +173,13 @@ public class ReaderModeManager extends TabModelSelectorTabObserver {
         if (tabInfo == null) {
             tabInfo = new ReaderModeTabInfo();
             tabInfo.status = NOT_POSSIBLE;
-            tabInfo.url = shownTab.getUrl();
+            tabInfo.url = shownTab.getUrlString();
             mTabStatusMap.put(shownTabId, tabInfo);
         }
 
         if (tabInfo.distillabilityObserver == null) setDistillabilityObserver(shownTab);
 
-        if (DomDistillerUrlUtils.isDistilledPage(shownTab.getUrl())
+        if (DomDistillerUrlUtils.isDistilledPage(shownTab.getUrlString())
                 && !tabInfo.isViewingReaderModePage) {
             tabInfo.onStartedReaderMode();
         }
@@ -239,7 +239,7 @@ public class ReaderModeManager extends TabModelSelectorTabObserver {
         // If the content change was because of distiller switching web contents or Reader Mode has
         // already been dismissed for this tab do nothing.
         if (mTabStatusMap.containsKey(tab.getId()) && mTabStatusMap.get(tab.getId()).isDismissed
-                && !DomDistillerUrlUtils.isDistilledPage(tab.getUrl())) {
+                && !DomDistillerUrlUtils.isDistilledPage(tab.getUrlString())) {
             return;
         }
 
@@ -251,13 +251,13 @@ public class ReaderModeManager extends TabModelSelectorTabObserver {
         // If the tab state already existed, only reset the relevant data. Things like view duration
         // need to be preserved.
         tabInfo.status = NOT_POSSIBLE;
-        tabInfo.url = tab.getUrl();
+        tabInfo.url = tab.getUrlString();
 
         if (tab.getWebContents() != null) {
             tabInfo.webContentsObserver = createWebContentsObserver(tab.getWebContents());
-            if (DomDistillerUrlUtils.isDistilledPage(tab.getUrl())) {
+            if (DomDistillerUrlUtils.isDistilledPage(tab.getUrlString())) {
                 tabInfo.status = STARTED;
-                mReaderModePageUrl = tab.getUrl();
+                mReaderModePageUrl = tab.getUrlString();
             }
         }
     }
@@ -390,7 +390,7 @@ public class ReaderModeManager extends TabModelSelectorTabObserver {
                 }
                 tabInfo.showInfoBarRecorded = false;
 
-                if (curTab != null && !DomDistillerUrlUtils.isDistilledPage(curTab.getUrl())
+                if (curTab != null && !DomDistillerUrlUtils.isDistilledPage(curTab.getUrlString())
                         && tabInfo.isViewingReaderModePage) {
                     long timeMs = tabInfo.onExitReaderMode();
                     recordReaderModeViewDuration(timeMs);
@@ -524,7 +524,7 @@ public class ReaderModeManager extends TabModelSelectorTabObserver {
             if (tabInfo == null) return;
 
             // Make sure the page didn't navigate while waiting for a response.
-            if (!tab.getUrl().equals(tabInfo.url)) return;
+            if (!tab.getUrlString().equals(tabInfo.url)) return;
 
             boolean excludedMobileFriendly =
                     DomDistillerTabUtils.shouldExcludeMobileFriendly() && isMobileOptimized;

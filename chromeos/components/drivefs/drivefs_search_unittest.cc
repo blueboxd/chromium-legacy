@@ -90,14 +90,14 @@ MATCHER_P5(MatchQuery, source, text, title, shared, offline, "") {
   if (arg.query_source != source)
     return false;
   if (text != nullptr) {
-    if (!arg.text_content || *arg.text_content != base::StringPiece(text))
+    if (!arg.text_content || *arg.text_content != std::string(text))
       return false;
   } else {
     if (arg.text_content)
       return false;
   }
   if (title != nullptr) {
-    if (!arg.title || *arg.title != base::StringPiece(title))
+    if (!arg.title || *arg.title != std::string(title))
       return false;
   } else {
     if (arg.title)

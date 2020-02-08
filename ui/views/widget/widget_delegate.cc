@@ -42,8 +42,6 @@ bool WidgetDelegate::OnCloseRequested(Widget::ClosedReason close_reason) {
   return true;
 }
 
-void WidgetDelegate::OnPaintAsActiveChanged(bool paint_as_active) {}
-
 View* WidgetDelegate::GetInitiallyFocusedView() {
   return nullptr;
 }

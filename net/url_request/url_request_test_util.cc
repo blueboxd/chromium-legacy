@@ -85,7 +85,8 @@ void TestURLRequestContext::Init() {
     context_storage_.set_host_resolver(
         std::unique_ptr<HostResolver>(new MockCachingHostResolver()));
   if (!proxy_resolution_service())
-    context_storage_.set_proxy_resolution_service(ProxyResolutionService::CreateDirect());
+    context_storage_.set_proxy_resolution_service(
+        ConfiguredProxyResolutionService::CreateDirect());
   if (!cert_verifier()) {
     context_storage_.set_cert_verifier(
         CertVerifier::CreateDefault(/*cert_net_fetcher=*/nullptr));

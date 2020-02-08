@@ -172,7 +172,8 @@ TEST_F(URLRequestContextBuilderTest, ShutDownNELAndReportingWithPendingUpload) {
   host_resolver->set_ondemand_mode(true);
   MockHostResolver* mock_host_resolver = host_resolver.get();
   builder_.set_host_resolver(std::move(host_resolver));
-  builder_.set_proxy_resolution_service(ProxyResolutionService::CreateDirect());
+  builder_.set_proxy_resolution_service(
+      ConfiguredProxyResolutionService::CreateDirect());
   builder_.set_reporting_policy(std::make_unique<ReportingPolicy>());
   builder_.set_network_error_logging_enabled(true);
   base::ScopedTempDir scoped_temp_dir;

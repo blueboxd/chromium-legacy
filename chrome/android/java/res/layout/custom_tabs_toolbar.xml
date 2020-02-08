@@ -27,7 +27,7 @@
             android:layout_gravity="center_vertical"
             android:scaleType="center"
             android:visibility="invisible"
-            app:tint="@color/standard_mode_tint" />
+            app:tint="@color/default_icon_color_tint_list" />
         <view
             class="org.chromium.chrome.browser.toolbar.top.CustomTabToolbar$InterceptTouchLayout"
             android:id="@+id/title_url_container"
@@ -105,5 +105,5 @@
         android:src="@drawable/ic_more_vert_24dp"
         android:contentDescription="@string/accessibility_toolbar_btn_menu"
         android:background="@null"
-        app:tint="@color/standard_mode_tint" />
+        app:tint="@color/default_icon_color_tint_list" />
 </org.chromium.chrome.browser.toolbar.top.CustomTabToolbar>

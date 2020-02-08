@@ -7,7 +7,6 @@
 
 #include "base/macros.h"
 #include "third_party/blink/public/common/loader/url_loader_throttle.h"
-#include "third_party/blink/public/mojom/loader/resource_load_info.mojom-shared.h"
 
 namespace blink {
 class WebURLRequest;
@@ -23,7 +22,6 @@ class SubresourceRedirectURLLoaderThrottle : public blink::URLLoaderThrottle {
  public:
   static std::unique_ptr<SubresourceRedirectURLLoaderThrottle>
   MaybeCreateThrottle(const blink::WebURLRequest& request,
-                      blink::mojom::ResourceType resource_type,
                       int render_frame_id);
 
   ~SubresourceRedirectURLLoaderThrottle() override;

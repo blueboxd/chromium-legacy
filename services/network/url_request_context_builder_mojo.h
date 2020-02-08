@@ -24,16 +24,16 @@ namespace net {
 class HostResolver;
 class NetLog;
 class NetworkDelegate;
-class ProxyResolutionService;
+class ConfiguredProxyResolutionService;
 class URLRequestContext;
 }  // namespace net
 
 namespace network {
 // Specialization of URLRequestContextBuilder that can create a
-// ProxyResolutionService that uses a Mojo ProxyResolver. The consumer is
-// responsible for providing the proxy_resolver::mojom::ProxyResolverFactory.
-// If a ProxyResolutionService is set directly via the URLRequestContextBuilder
-// API, it will be used instead.
+// ConfiguredProxyResolutionService that uses a Mojo ProxyResolver. The consumer
+// is responsible for providing the proxy_resolver::mojom::ProxyResolverFactory.
+// If a ConfiguredProxyResolutionService is set directly via the
+// URLRequestContextBuilder API, it will be used instead.
 class COMPONENT_EXPORT(NETWORK_SERVICE) URLRequestContextBuilderMojo
     : public net::URLRequestContextBuilder {
  public:
@@ -53,7 +53,8 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) URLRequestContextBuilderMojo
 #endif  // defined(OS_CHROMEOS)
 
  private:
-  std::unique_ptr<net::ProxyResolutionService> CreateProxyResolutionService(
+  std::unique_ptr<net::ConfiguredProxyResolutionService>
+  CreateProxyResolutionService(
       std::unique_ptr<net::ProxyConfigService> proxy_config_service,
       net::URLRequestContext* url_request_context,
       net::HostResolver* host_resolver,

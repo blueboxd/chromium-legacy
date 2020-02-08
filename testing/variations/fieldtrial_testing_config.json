@@ -3349,14 +3349,17 @@
             ],
             "experiments": [
                 {
-                    "name": "EnabledLargerImagesAndSnippets",
+                    "name": "EnabledUndoableActions",
                     "params": {
+                        "card_menu_tooltip_eligible": "true",
                         "feed_ui_enabled": "true",
                         "init_feed_after_startup": "false",
+                        "manage_interests_enabled": "true",
                         "snippets_enabled": "true",
                         "spinner_delay": "500",
                         "spinner_minimum_show_time": "0",
-                        "storage_miss_threshold": "100"
+                        "storage_miss_threshold": "100",
+                        "undoable_actions_enabled": "true"
                     },
                     "enable_features": [
                         "InterestFeedContentSuggestions"

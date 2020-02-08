@@ -397,7 +397,7 @@ QUIC_FLAG(
     false)
 
 // If true, use predictable grease settings identifiers and values.
-QUIC_FLAG(bool, FLAGS_quic_disable_http3_settings_grease_randomness, false)
+QUIC_FLAG(bool, FLAGS_quic_enable_http3_grease_randomness, true)
 
 // If true, QuicConnection will check handshake timeout before idle timeout.
 QUIC_FLAG(
@@ -414,3 +414,9 @@ QUIC_FLAG(bool,
 // If true, QuicConnection will check MTU_DISCOVERY_FRAME in
 // nonretransmittable_frames to see if a packet is a MTU probe.
 QUIC_FLAG(bool, FLAGS_quic_reloadable_flag_quic_better_mtu_packet_check, false)
+
+// If true, neuter unencrypted control frames in
+// QuicUnackedPacketMap::NeuterUnencryptedPackets.
+QUIC_FLAG(bool,
+          FLAGS_quic_reloadable_flag_quic_neuter_unencrypted_control_frames,
+          false)

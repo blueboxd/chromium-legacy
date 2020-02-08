@@ -14,6 +14,7 @@
 #include "base/sequenced_task_runner.h"
 #include "content/browser/conversions/conversion_policy.h"
 #include "content/browser/conversions/conversion_storage.h"
+#include "content/browser/conversions/storable_conversion.h"
 
 namespace base {
 class Clock;
@@ -34,6 +35,10 @@ class ConversionManager : public ConversionStorage::Delegate {
   ConversionManager(const ConversionManager& other) = delete;
   ConversionManager& operator=(const ConversionManager& other) = delete;
   ~ConversionManager() override;
+
+  // Process a newly registered conversion. Will create and log any new
+  // conversion reports to storage.
+  void HandleConversion(const StorableConversion& conversion);
 
   const ConversionPolicy& GetConversionPolicy() const;
 

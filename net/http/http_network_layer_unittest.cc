@@ -16,7 +16,7 @@
 #include "net/http/http_transaction_test_util.h"
 #include "net/http/transport_security_state.h"
 #include "net/log/net_log_with_source.h"
-#include "net/proxy_resolution/proxy_resolution_service.h"
+#include "net/proxy_resolution/configured_proxy_resolution_service.h"
 #include "net/quic/quic_context.h"
 #include "net/socket/socket_test_util.h"
 #include "net/spdy/spdy_session_pool.h"
@@ -41,11 +41,12 @@ class HttpNetworkLayerTest : public PlatformTest, public WithTaskEnvironment {
       : ssl_config_service_(std::make_unique<SSLConfigServiceDefaults>()) {}
 
   void SetUp() override {
-    ConfigureTestDependencies(ProxyResolutionService::CreateDirect());
+    ConfigureTestDependencies(ConfiguredProxyResolutionService::CreateDirect());
   }
 
   void ConfigureTestDependencies(
-      std::unique_ptr<ProxyResolutionService> proxy_resolution_service) {
+      std::unique_ptr<ConfiguredProxyResolutionService>
+          proxy_resolution_service) {
     cert_verifier_.reset(new MockCertVerifier);
     transport_security_state_.reset(new TransportSecurityState);
     proxy_resolution_service_ = std::move(proxy_resolution_service);
@@ -270,7 +271,7 @@ class HttpNetworkLayerTest : public PlatformTest, public WithTaskEnvironment {
   std::unique_ptr<TransportSecurityState> transport_security_state_;
   MultiLogCTVerifier ct_verifier_;
   DefaultCTPolicyEnforcer ct_policy_enforcer_;
-  std::unique_ptr<ProxyResolutionService> proxy_resolution_service_;
+  std::unique_ptr<ConfiguredProxyResolutionService> proxy_resolution_service_;
   std::unique_ptr<SSLConfigService> ssl_config_service_;
   QuicContext quic_context_;
   std::unique_ptr<HttpNetworkSession> network_session_;

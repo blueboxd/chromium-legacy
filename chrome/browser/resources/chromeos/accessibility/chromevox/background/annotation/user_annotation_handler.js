@@ -13,7 +13,7 @@ goog.require('NodeIdentifier');
 /**
  * Stores annotation-related data.
  * @typedef {{
- *    annotation: !string,
+ *    annotation: string,
  *    identifier: !NodeIdentifier
  * }}
  */
@@ -37,33 +37,40 @@ UserAnnotationHandler = class {
     /**
      * Whether this feature is enabled or not.
      * @type {boolean}
-     * @private
      */
-    this.enabled_ = false;
+    this.enabled = false;
     chrome.commandLinePrivate.hasSwitch(
         'enable-experimental-accessibility-chromevox-annotations',
         (enabled) => {
-          this.enabled_ = enabled;
+          this.enabled = enabled;
         });
   }
 
   /**
-   * Creates a new, or updates an existing, annotation for the node.
+   * Creates or updates an annotation for an AutomationNode.
    * @param {!AutomationNode} node
-   * @param {!string} annotation
+   * @param {string} annotation
    */
   static setAnnotationForNode(node, annotation) {
-    const url = node.root.docUrl || '';
-    if (!UserAnnotationHandler.instance.enabled_ || !url) {
+    const identifier = NodeIdentifier.constructFromNode(node);
+    UserAnnotationHandler.setAnnotationForIdentifier(identifier, annotation);
+  }
+
+  /**
+   * Creates or updates an annotation for a NodeIdentifier.
+   * @param {!NodeIdentifier} identifier
+   * @param {string} annotation
+   */
+  static setAnnotationForIdentifier(identifier, annotation) {
+    const url = identifier.pageUrl;
+    if (!UserAnnotationHandler.instance.enabled || !url) {
       return;
     }
 
-    const annotationData = {annotation, identifier: new NodeIdentifier(node)};
-
+    const annotationData = {annotation, identifier};
     if (!UserAnnotationHandler.instance.annotations_[url]) {
       UserAnnotationHandler.instance.annotations_[url] = [];
     }
-
     // Either update an existing annotation or add a new one.
     const annotations = UserAnnotationHandler.instance.annotations_[url];
     const target = annotationData.identifier;
@@ -87,7 +94,7 @@ UserAnnotationHandler = class {
    */
   static getAnnotationForNode(node) {
     const url = node.root.docUrl || '';
-    if (!UserAnnotationHandler.instance.enabled_ || !url) {
+    if (!UserAnnotationHandler.instance.enabled || !url) {
       return null;
     }
 
@@ -96,7 +103,7 @@ UserAnnotationHandler = class {
       return null;
     }
 
-    const target = new NodeIdentifier(node);
+    const target = NodeIdentifier.constructFromNode(node);
     for (let i = 0; i < candidates.length; ++i) {
       const candidate = candidates[i];
       if (target.equals(candidate.identifier)) {

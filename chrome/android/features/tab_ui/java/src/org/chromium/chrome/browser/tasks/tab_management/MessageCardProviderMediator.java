@@ -4,6 +4,7 @@
 
 package org.chromium.chrome.browser.tasks.tab_management;
 
+import static org.chromium.chrome.browser.tasks.tab_management.MessageService.MessageType.IPH;
 import static org.chromium.chrome.browser.tasks.tab_management.MessageService.MessageType.TAB_SUGGESTION;
 
 import android.content.Context;
@@ -60,6 +61,10 @@ public class MessageCardProviderMediator implements MessageService.MessageObserv
                 assert data instanceof TabSuggestionMessageService.TabSuggestionMessageData;
                 return TabSuggestionMessageCardViewModel.create(mContext, this::messageInvalidate,
                         (TabSuggestionMessageService.TabSuggestionMessageData) data);
+            case IPH:
+                assert data instanceof IphMessageService.IphMessageData;
+                return IphMessageCardViewModel.create(
+                        mContext, this::messageInvalidate, (IphMessageService.IphMessageData) data);
             default:
                 return new PropertyModel();
         }

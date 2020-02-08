@@ -23,7 +23,7 @@
 #include "content/browser/appcache/appcache_manifest_parser.h"
 #include "content/browser/appcache/appcache_namespace.h"
 #include "content/common/content_export.h"
-#include "third_party/blink/public/mojom/appcache/appcache.mojom.h"
+#include "third_party/blink/public/mojom/appcache/appcache.mojom-forward.h"
 #include "url/gurl.h"
 
 namespace content {

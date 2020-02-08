@@ -32,7 +32,7 @@ class SubresourceFilterIndexedRulesetTest : public ::testing::Test {
 
  protected:
   LoadPolicy GetLoadPolicy(base::StringPiece url,
-                           base::StringPiece document_origin = nullptr,
+                           base::StringPiece document_origin = "",
                            proto::ElementType element_type = testing::kOther,
                            bool disable_generic_rules = false) const {
     DCHECK(matcher_);
@@ -42,7 +42,7 @@ class SubresourceFilterIndexedRulesetTest : public ::testing::Test {
   }
 
   bool MatchingRule(base::StringPiece url,
-                    base::StringPiece document_origin = nullptr,
+                    base::StringPiece document_origin = "",
                     proto::ElementType element_type = testing::kOther,
                     bool disable_generic_rules = false) const {
     DCHECK(matcher_);
@@ -53,7 +53,7 @@ class SubresourceFilterIndexedRulesetTest : public ::testing::Test {
 
   bool ShouldDeactivate(
       base::StringPiece document_url,
-      base::StringPiece parent_document_origin = nullptr,
+      base::StringPiece parent_document_origin = "",
       proto::ActivationType activation_type = testing::kNoActivation) const {
     DCHECK(matcher_);
     return matcher_->ShouldDisableFilteringForDocument(
@@ -105,7 +105,7 @@ class SubresourceFilterIndexedRulesetTest : public ::testing::Test {
 
 TEST_F(SubresourceFilterIndexedRulesetTest, EmptyRuleset) {
   Finish();
-  EXPECT_EQ(LoadPolicy::ALLOW, GetLoadPolicy(nullptr));
+  EXPECT_EQ(LoadPolicy::ALLOW, GetLoadPolicy(""));
   EXPECT_EQ(LoadPolicy::ALLOW, GetLoadPolicy("http://example.com"));
   EXPECT_EQ(LoadPolicy::ALLOW,
             GetLoadPolicy("http://another.example.com?param=val"));
@@ -250,17 +250,15 @@ TEST_F(SubresourceFilterIndexedRulesetTest,
   ASSERT_TRUE(AddSimpleWhitelistRule("example.com", testing::kDocument));
   Finish();
 
-  EXPECT_TRUE(
-      ShouldDeactivate("https://example.com", nullptr, testing::kDocument));
-  EXPECT_FALSE(
-      ShouldDeactivate("https://xample.com", nullptr, testing::kDocument));
+  EXPECT_TRUE(ShouldDeactivate("https://example.com", "", testing::kDocument));
+  EXPECT_FALSE(ShouldDeactivate("https://xample.com", "", testing::kDocument));
   EXPECT_EQ(LoadPolicy::DISALLOW, GetLoadPolicy("https://example.com"));
   EXPECT_EQ(LoadPolicy::ALLOW, GetLoadPolicy("https://xample.com"));
 }
 
 TEST_F(SubresourceFilterIndexedRulesetTest, MatchingEmptyRuleset) {
   Finish();
-  EXPECT_FALSE(MatchingRule(nullptr));
+  EXPECT_FALSE(MatchingRule(""));
   EXPECT_FALSE(MatchingRule("http://example.com"));
   EXPECT_FALSE(MatchingRule("http://another.example.com?param=val"));
 }

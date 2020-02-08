@@ -12,6 +12,16 @@ sibling layers such as `//chrome/`.
 This directory contains the Android WebView implementation, as well as the
 implementation for the [AndroidX Webkit support library][2].
 
+## Overview for Chromium team members and contributors
+
+If you're a chromium team member or contributor and want to make changes to
+Android WebView, please check out [Android WebView 101
+(2019)](https://youtu.be/qMvbtcbEkDU) ([public slide
+deck](https://docs.google.com/presentation/d/1Nv0fsiU0xtPQPyAWb0FRsjzr9h2nh339-pq7ssWoNQg/edit?usp=sharing))
+for an overview of WebView use cases, architecture (single vs. multiprocess,
+in-process GPU & Network service, etc.), and development/experimentation/release
+process.
+
 ## Want to use WebView in an Android app?
 
 Please consult our API documentation and app development guides:

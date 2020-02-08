@@ -577,12 +577,7 @@ TEST(StringPieceTest, CheckCustom) {
 }
 
 TYPED_TEST(CommonStringPieceTest, CheckNULL) {
-  // we used to crash here, but now we don't.
-  BasicStringPiece<TypeParam> s(nullptr);
-  ASSERT_EQ(s.data(), nullptr);
-  ASSERT_EQ(s.size(), 0U);
-
-  s = nullptr;
+  BasicStringPiece<TypeParam> s;
   ASSERT_EQ(s.data(), nullptr);
   ASSERT_EQ(s.size(), 0U);
 
@@ -680,7 +675,7 @@ TYPED_TEST(CommonStringPieceTest, CheckConstructors) {
       BasicStringPiece<TypeParam>(
           str.c_str(),
           static_cast<typename BasicStringPiece<TypeParam>::size_type>(0)));
-  ASSERT_EQ(empty, BasicStringPiece<TypeParam>(nullptr));
+  ASSERT_EQ(empty, BasicStringPiece<TypeParam>());
   ASSERT_TRUE(
       empty ==
       BasicStringPiece<TypeParam>(

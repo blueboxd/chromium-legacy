@@ -111,7 +111,7 @@ public class ShareDelegateImplTest {
         }
 
         @Override
-        public String getUrl() {
+        public String getUrlString() {
             return url;
         }
 

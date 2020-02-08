@@ -129,7 +129,7 @@ public abstract class TabWebContentsDelegateAndroid extends WebContentsDelegateA
         if ((flags & InvalidateTypes.TAB) != 0) {
             MediaCaptureNotificationService.updateMediaNotificationForTab(
                     ContextUtils.getApplicationContext(), mTab.getId(), mTab.getWebContents(),
-                    mTab.getUrl());
+                    mTab.getUrlString());
         }
         if ((flags & InvalidateTypes.TITLE) != 0) {
             // Update cached title then notify observers.

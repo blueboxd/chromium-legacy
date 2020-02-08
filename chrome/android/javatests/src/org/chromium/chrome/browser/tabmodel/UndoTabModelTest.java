@@ -1470,7 +1470,7 @@ public class UndoTabModelTest {
         tab0 = model.getTabAt(0);
         Tab tab1 = model.getTabAt(1);
         tabs = new Tab[]{tab0, tab1};
-        Assert.assertEquals(TEST_URL_0, tab1.getUrl());
+        Assert.assertEquals(TEST_URL_0, tab1.getUrlString());
         checkState(model, tabs, tab0, EMPTY, tabs, tab0);
     }
 
@@ -1550,8 +1550,8 @@ public class UndoTabModelTest {
                 firstModelTab);
         checkState(secondModel, secondWindowTabs, secondModelTab, EMPTY, secondWindowTabs,
                 secondModelTab);
-        Assert.assertEquals(TEST_URL_0, firstWindowTabs[1].getUrl());
-        Assert.assertEquals(TEST_URL_1, secondWindowTabs[1].getUrl());
+        Assert.assertEquals(TEST_URL_0, firstWindowTabs[1].getUrlString());
+        Assert.assertEquals(TEST_URL_1, secondWindowTabs[1].getUrlString());
 
         secondActivity.finishAndRemoveTask();
     }
@@ -1622,6 +1622,6 @@ public class UndoTabModelTest {
         Tab tab1 = firstModel.getTabAt(1);
         Tab[] firstWindowTabs = new Tab[]{tab0, tab1};
         checkState(firstModel, firstWindowTabs, tab0, EMPTY, firstWindowTabs, tab0);
-        Assert.assertEquals(TEST_URL_1, tab1.getUrl());
+        Assert.assertEquals(TEST_URL_1, tab1.getUrlString());
     }
 }

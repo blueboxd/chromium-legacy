@@ -78,6 +78,10 @@ class ToolbarButton : public views::LabelButton,
   void ClearPendingMenu();
   bool IsMenuShowing() const;
 
+  // Updates the images using the given icon and the default colors returned by
+  // GetForegroundColor().
+  void UpdateIconsWithStandardColors(const gfx::VectorIcon& icon);
+
   // Sets |layout_insets_|, see comment there.
   void SetLayoutInsets(const gfx::Insets& insets);
 
@@ -136,6 +140,17 @@ class ToolbarButton : public views::LabelButton,
   void SetLayoutInsetDelta(const gfx::Insets& insets);
 
   void UpdateColorsAndInsets();
+
+  // Returns the standard toolbar button foreground color for the given state.
+  // This color is typically used for the icon and text of toolbar buttons.
+  virtual SkColor GetForegroundColor(ButtonState state) const;
+
+  // Updates the images using the given icons and specific colors.
+  void UpdateIconsWithColors(const gfx::VectorIcon& icon,
+                             SkColor normal_color,
+                             SkColor hovered_color,
+                             SkColor pressed_color,
+                             SkColor disabled_color);
 
   static constexpr int kDefaultIconSize = 16;
   static constexpr int kDefaultTouchableIconSize = 24;

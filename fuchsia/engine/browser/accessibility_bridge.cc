@@ -41,7 +41,20 @@ AccessibilityBridge::AccessibilityBridge(
   });
 }
 
-AccessibilityBridge::~AccessibilityBridge() = default;
+AccessibilityBridge::~AccessibilityBridge() {
+  // Acknowledge to the SemanticsManager if any actions have not been handled
+  // upon destruction time.
+  for (auto& callback : pending_hit_test_callbacks_) {
+    fuchsia::accessibility::semantics::Hit hit;
+    hit.set_node_id(kSemanticNodeRootId);
+    callback.second(std::move(hit));
+  }
+  pending_hit_test_callbacks_.clear();
+
+  for (auto& callback : pending_accessibility_action_callbacks_)
+    callback.second(false);
+  pending_accessibility_action_callbacks_.clear();
+}
 
 void AccessibilityBridge::TryCommit() {
   if (commit_inflight_ || to_send_.empty())
@@ -133,6 +146,13 @@ void AccessibilityBridge::AccessibilityEventReceived(
         pending_hit_test_callbacks_.erase(event.action_request_id);
       }
     }
+
+    // Run callbacks associated with other accessibility events.
+    if (pending_accessibility_action_callbacks_.find(event.id) !=
+        pending_accessibility_action_callbacks_.end()) {
+      pending_accessibility_action_callbacks_[event.id](true);
+      pending_accessibility_action_callbacks_.erase(event.id);
+    }
   }
 }
 
@@ -140,7 +160,21 @@ void AccessibilityBridge::OnAccessibilityActionRequested(
     uint32_t node_id,
     fuchsia::accessibility::semantics::Action action,
     OnAccessibilityActionRequestedCallback callback) {
-  NOTIMPLEMENTED();
+  ui::AXActionData action_data = ui::AXActionData();
+
+  // TODO(fxb/16501): Add more actions when they become available on the
+  // SemanticsManager side.
+  action_data.action = ax::mojom::Action::kDoDefault;
+  action_data.target_node_id = node_id;
+  pending_accessibility_action_callbacks_[node_id] = std::move(callback);
+
+  // Allow tests to bypass action handling to simulate the case that actions
+  // aren't handled in tests.
+  if (!handle_actions_for_test_) {
+    return;
+  }
+
+  web_contents_->GetMainFrame()->AccessibilityPerformAction(action_data);
 }
 
 void AccessibilityBridge::HitTest(fuchsia::math::PointF local_point,

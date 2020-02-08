@@ -353,7 +353,7 @@ public final class NewTabPageUma {
     private static class TabCreationRecorder extends EmptyTabModelSelectorObserver {
         @Override
         public void onNewTabCreated(Tab tab) {
-            if (!NewTabPage.isNTPUrl(tab.getUrl())) return;
+            if (!NewTabPage.isNTPUrl(tab.getUrlString())) return;
             RecordUserAction.record("MobileNTPOpenedInNewTab");
         }
     }

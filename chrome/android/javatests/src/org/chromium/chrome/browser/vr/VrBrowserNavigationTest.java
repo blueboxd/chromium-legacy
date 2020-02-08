@@ -714,7 +714,7 @@ public class VrBrowserNavigationTest {
         // only supports either exact URL matching or no URL matching, and no URL matching results
         // in the URL still being about:blank when we check.
         CriteriaHelper.pollInstrumentationThread(() -> {
-            return mTestRule.getActivity().getActivityTab().getUrl().startsWith("chrome://");
+            return mTestRule.getActivity().getActivityTab().getUrlString().startsWith("chrome://");
         });
     }
 }

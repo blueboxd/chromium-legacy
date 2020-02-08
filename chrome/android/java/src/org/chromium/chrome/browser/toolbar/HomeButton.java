@@ -210,7 +210,7 @@ public class HomeButton extends ChromeImageButton
      *         change is likely.
      */
     private boolean isTabNTP(Tab tab) {
-        return tab != null && NewTabPage.isNTPUrl(tab.getUrl());
+        return tab != null && NewTabPage.isNTPUrl(tab.getUrlString());
     }
 
     /**

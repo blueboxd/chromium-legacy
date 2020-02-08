@@ -156,11 +156,11 @@ public class CurrentPageVerifierTest {
 
     private void setInitialUrl(String url) {
         when(mIntentDataProvider.getUrlToLoad()).thenReturn(url);
-        when(mTab.getUrl()).thenReturn(url);
+        when(mTab.getUrlString()).thenReturn(url);
     }
 
     private void navigateToUrl(String url) {
-        when(mTab.getUrl()).thenReturn(url);
+        when(mTab.getUrlString()).thenReturn(url);
         NavigationHandle navigation =
                 new NavigationHandle(0 /* navigationHandleProxy */, url, true /* isMainFrame */,
                         false /* isSameDocument */, false /* isRendererInitiated */);

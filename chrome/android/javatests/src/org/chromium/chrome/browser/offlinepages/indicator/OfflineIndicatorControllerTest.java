@@ -349,7 +349,7 @@ public class OfflineIndicatorControllerTest {
         Tab tab = mActivityTestRule.getActivity().getActivityTab();
 
         mActivityTestRule.loadUrl(pageUrl);
-        Assert.assertEquals(pageUrl, tab.getUrl());
+        Assert.assertEquals(pageUrl, tab.getUrlString());
         if (mIsConnected) {
             Assert.assertFalse(isErrorPage(tab));
             Assert.assertFalse(isOfflinePage(tab));

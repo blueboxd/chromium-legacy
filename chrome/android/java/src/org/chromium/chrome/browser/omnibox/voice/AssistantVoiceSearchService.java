@@ -181,7 +181,7 @@ public class AssistantVoiceSearchService implements TemplateUrlService.TemplateU
 
         final boolean useLightColors =
                 ColorUtils.shouldUseLightForegroundOnBackground(primaryColor);
-        int id = ChromeColors.getIconTintRes(useLightColors);
+        int id = ChromeColors.getPrimaryIconTintRes(useLightColors);
         return AppCompatResources.getColorStateList(context, id);
     }
 

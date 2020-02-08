@@ -84,9 +84,9 @@
 #include "net/http/transport_security_state.h"
 #include "net/http/transport_security_state_test_util.h"
 #include "net/nqe/network_quality_estimator_test_util.h"
+#include "net/proxy_resolution/configured_proxy_resolution_service.h"
 #include "net/proxy_resolution/proxy_config.h"
 #include "net/proxy_resolution/proxy_info.h"
-#include "net/proxy_resolution/proxy_resolution_service.h"
 #include "net/socket/client_socket_pool.h"
 #include "net/socket/transport_client_socket_pool.h"
 #include "net/test/cert_test_util.h"
@@ -2270,8 +2270,8 @@ TEST_F(NetworkContextTest, ProxyConfig) {
   // that it will result in for http and ftp URLs. All that matters is that each
   // ProxyConfig is different. It's important that none of these configs require
   // fetching a PAC scripts, as this test checks
-  // ProxyResolutionService::config(), which is only updated after fetching PAC
-  // scripts (if applicable).
+  // ConfiguredProxyResolutionService::config(), which is only updated after
+  // fetching PAC scripts (if applicable).
   struct ProxyConfigSet {
     net::ProxyConfig proxy_config;
     net::ProxyInfo http_proxy_info;
@@ -2312,7 +2312,7 @@ TEST_F(NetworkContextTest, ProxyConfig) {
     std::unique_ptr<NetworkContext> network_context =
         CreateContextWithParams(std::move(context_params));
 
-    net::ProxyResolutionService* proxy_resolution_service =
+    net::ConfiguredProxyResolutionService* proxy_resolution_service =
         network_context->url_request_context()->proxy_resolution_service();
     // Need to do proxy resolutions before can check the ProxyConfig, as the
     // ProxyService doesn't start updating its config until it's first used.
@@ -2380,10 +2380,10 @@ TEST_F(NetworkContextTest, StaticProxyConfig) {
   std::unique_ptr<NetworkContext> network_context =
       CreateContextWithParams(std::move(context_params));
 
-  net::ProxyResolutionService* proxy_resolution_service =
+  net::ConfiguredProxyResolutionService* proxy_resolution_service =
       network_context->url_request_context()->proxy_resolution_service();
-  // Kick the ProxyResolutionService into action, as it doesn't start updating
-  // its config until it's first used.
+  // Kick the ConfiguredProxyResolutionService into action, as it doesn't start
+  // updating its config until it's first used.
   proxy_resolution_service->ForceReloadProxyConfig();
   EXPECT_TRUE(proxy_resolution_service->config());
   EXPECT_TRUE(proxy_resolution_service->config()->value().Equals(proxy_config));
@@ -2398,7 +2398,7 @@ TEST_F(NetworkContextTest, NoInitialProxyConfig) {
   std::unique_ptr<NetworkContext> network_context =
       CreateContextWithParams(std::move(context_params));
 
-  net::ProxyResolutionService* proxy_resolution_service =
+  net::ConfiguredProxyResolutionService* proxy_resolution_service =
       network_context->url_request_context()->proxy_resolution_service();
   EXPECT_FALSE(proxy_resolution_service->config());
   EXPECT_FALSE(proxy_resolution_service->fetched_config());
@@ -4482,7 +4482,7 @@ TEST_F(NetworkContextTest, ClearBadProxiesCache) {
   std::unique_ptr<NetworkContext> network_context =
       CreateContextWithParams(CreateContextParams());
 
-  net::ProxyResolutionService* proxy_resolution_service =
+  net::ConfiguredProxyResolutionService* proxy_resolution_service =
       network_context->url_request_context()->proxy_resolution_service();
 
   // Very starting conditions: zero bad proxies.

@@ -940,6 +940,24 @@ TEST_F(ShellUtilRegistryTest, DeleteFileAssociations) {
   EXPECT_EQ(L"SomeOtherApp", value);
 }
 
+TEST_F(ShellUtilRegistryTest, GetFileAssociationsAndAppName) {
+  ShellUtil::FileAssociationsAndAppName empty_file_associations_and_app_name(
+      ShellUtil::GetFileAssociationsAndAppName(kTestProgid));
+  EXPECT_TRUE(empty_file_associations_and_app_name.app_name.empty());
+
+  // Add file associations and test that GetFileAssociationsAndAppName returns
+  // the registered file associations and app name. Pass kTestApplicationName
+  // for the open command, to handle the win7 case, which returns the open
+  // command executable name as the app_name.
+  ASSERT_TRUE(ShellUtil::AddFileAssociations(
+      kTestProgid, OpenCommand(), kTestApplicationName, kTestFileTypeName,
+      base::FilePath(kTestIconPath), FileExtensions()));
+  ShellUtil::FileAssociationsAndAppName file_associations_and_app_name(
+      ShellUtil::GetFileAssociationsAndAppName(kTestProgid));
+  EXPECT_EQ(file_associations_and_app_name.app_name, kTestApplicationName);
+  EXPECT_EQ(file_associations_and_app_name.file_associations, FileExtensions());
+}
+
 TEST_F(ShellUtilRegistryTest, GetApplicationForProgId) {
   // Create file associations.
   ASSERT_TRUE(ShellUtil::AddFileAssociations(

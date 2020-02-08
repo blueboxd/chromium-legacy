@@ -689,7 +689,7 @@ void LayerTreeImpl::AddToElementLayerList(ElementId element_id,
 
   TRACE_EVENT1(TRACE_DISABLED_BY_DEFAULT("layer-element"),
                "LayerTreeImpl::AddToElementLayerList", "element",
-               element_id.AsValue().release());
+               element_id.ToString());
 
   if (!settings().use_layer_lists) {
     host_impl_->mutator_host()->RegisterElementId(element_id,
@@ -703,7 +703,7 @@ void LayerTreeImpl::RemoveFromElementLayerList(ElementId element_id) {
 
   TRACE_EVENT1(TRACE_DISABLED_BY_DEFAULT("layer-element"),
                "LayerTreeImpl::RemoveFromElementLayerList", "element",
-               element_id.AsValue().release());
+               element_id.ToString());
 
   if (!settings().use_layer_lists) {
     host_impl_->mutator_host()->UnregisterElementId(
@@ -2414,16 +2414,15 @@ void LayerTreeImpl::ResetAllChangeTracking() {
 }
 
 std::string LayerTreeImpl::LayerListAsJson() const {
-  auto list = std::make_unique<base::ListValue>();
-  for (auto* layer : *this)
-    list->Append(layer->LayerAsJson());
-  std::string str;
-  base::JSONWriter::WriteWithOptions(
-      *list,
-      base::JSONWriter::OPTIONS_OMIT_DOUBLE_TYPE_PRESERVATION |
-          base::JSONWriter::OPTIONS_PRETTY_PRINT,
-      &str);
-  return str;
+  base::trace_event::TracedValueJSON value;
+  value.BeginArray("LayerTreeImpl");
+  for (auto* layer : *this) {
+    value.BeginDictionary();
+    layer->AsValueInto(&value);
+    value.EndDictionary();
+  }
+  value.EndArray();
+  return value.ToFormattedJSON();
 }
 
 }  // namespace cc

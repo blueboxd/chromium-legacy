@@ -241,7 +241,7 @@ public class ContextMenuTest implements CustomMainActivityStart {
         CriteriaHelper.pollUiThread(Criteria.equals(expectedUrl, new Callable<String>() {
             @Override
             public String call() {
-                return newTab.get().getUrl();
+                return newTab.get().getUrlString();
             }
         }));
     }
@@ -403,16 +403,17 @@ public class ContextMenuTest implements CustomMainActivityStart {
                 "Number of open tabs does not match", numOpenedTabs, tabModel.getCount());
 
         // Verify the Url is still the same of Parent page.
-        Assert.assertEquals(mTestUrl, mDownloadTestRule.getActivity().getActivityTab().getUrl());
+        Assert.assertEquals(
+                mTestUrl, mDownloadTestRule.getActivity().getActivityTab().getUrlString());
 
         // Verify that the background tabs were opened in the expected order.
         String newTabUrl = mTestServer.getURL(
                 "/chrome/test/data/android/contextmenu/test_link.html");
-        Assert.assertEquals(newTabUrl, tabModel.getTabAt(indexOfLinkPage).getUrl());
+        Assert.assertEquals(newTabUrl, tabModel.getTabAt(indexOfLinkPage).getUrlString());
 
         String imageUrl = mTestServer.getURL(
                 "/chrome/test/data/android/contextmenu/test_link2.html");
-        Assert.assertEquals(imageUrl, tabModel.getTabAt(indexOfLinkPage2).getUrl());
+        Assert.assertEquals(imageUrl, tabModel.getTabAt(indexOfLinkPage2).getUrlString());
     }
 
     @Test

@@ -18,7 +18,7 @@
            android:src="@drawable/ic_more_vert_24dp"
            android:contentDescription="@string/accessibility_toolbar_btn_menu"
            android:layout_gravity="center"
-           app:tint="@color/standard_mode_tint" />
+           app:tint="@color/default_icon_color_tint_list" />
 
        <ImageView
            android:id="@+id/menu_badge"

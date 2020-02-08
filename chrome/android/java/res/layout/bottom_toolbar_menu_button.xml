@@ -20,7 +20,7 @@
         android:importantForAccessibility="no"
         android:layout_gravity="center"
         android:background="?attr/selectableItemBackgroundBorderless"
-        app:tint="@color/standard_mode_tint" />
+        app:tint="@color/default_icon_color_tint_list" />
 
     <ImageView
         android:id="@+id/menu_badge"

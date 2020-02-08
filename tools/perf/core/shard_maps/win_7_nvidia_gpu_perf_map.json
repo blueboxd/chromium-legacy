@@ -165,9 +165,6 @@
             "v8.browsing_desktop-future": {
                 "abridged": false
             },
-            "v8.runtime_stats.top_25": {
-                "abridged": false
-            },
             "webrtc": {
                 "abridged": false
             }

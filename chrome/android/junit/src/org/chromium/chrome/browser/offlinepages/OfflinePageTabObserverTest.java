@@ -79,7 +79,7 @@ public class OfflinePageTabObserverTest {
         // Setting up a mock tab. These are the values common to most tests, but individual
         // tests might easily overwrite them.
         doReturn(TAB_ID).when(mTab).getId();
-        doReturn(TAB_URL).when(mTab).getUrl();
+        doReturn(TAB_URL).when(mTab).getUrlString();
         doReturn(false).when(mTab).isFrozen();
         doReturn(false).when(mTab).isHidden();
         doReturn(mActivity).when(mTab).getActivity();

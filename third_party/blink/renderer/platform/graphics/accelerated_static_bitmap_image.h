@@ -10,12 +10,9 @@
 #include "base/memory/weak_ptr.h"
 #include "base/single_thread_task_runner.h"
 #include "base/threading/thread_checker.h"
-#include "third_party/blink/renderer/platform/graphics/mailbox_texture_holder.h"
-#include "third_party/blink/renderer/platform/graphics/skia_texture_holder.h"
 #include "third_party/blink/renderer/platform/graphics/static_bitmap_image.h"
 #include "third_party/blink/renderer/platform/scheduler/public/thread.h"
 
-class GrContext;
 struct SkImageInfo;
 
 namespace viz {
@@ -104,25 +101,55 @@ class PLATFORM_EXPORT AcceleratedStaticBitmapImage final
   // thread.
   void Transfer() final;
 
-  void EnsureMailbox(MailboxSyncMode, GLenum filter) final;
+  // Makes sure that the sync token associated with this mailbox is verified.
+  void EnsureSyncTokenVerified() final;
 
   // Updates the sync token that must be waited on before recycling or deleting
   // the mailbox for this image. This must be set by callers using the mailbox
   // externally to this class.
   void UpdateSyncToken(const gpu::SyncToken& sync_token) final {
-    mailbox_texture_holder_->UpdateSyncToken(sync_token);
+    mailbox_ref_->set_sync_token(sync_token);
   }
 
   // Provides the mailbox backing for this image. The caller must wait on the
   // sync token before accessing this mailbox.
   gpu::MailboxHolder GetMailboxHolder() const final;
-  bool IsOriginTopLeft() const final {
-    return texture_holder()->IsOriginTopLeft();
-  }
+  bool IsOriginTopLeft() const final { return is_origin_top_left_; }
 
   PaintImage PaintImageForCurrentFrame() override;
 
  private:
+  class MailboxRef : public ThreadSafeRefCounted<MailboxRef> {
+   public:
+    MailboxRef(const gpu::SyncToken& sync_token,
+               base::PlatformThreadRef context_thread_ref,
+               scoped_refptr<base::SingleThreadTaskRunner> context_task_runner,
+               std::unique_ptr<viz::SingleReleaseCallback> release_callback);
+    ~MailboxRef();
+
+    bool is_cross_thread() const {
+      return base::PlatformThread::CurrentRef() != context_thread_ref_;
+    }
+    void set_sync_token(gpu::SyncToken token) { sync_token_ = token; }
+    const gpu::SyncToken& GetOrCreateSyncToken(
+        base::WeakPtr<WebGraphicsContext3DProviderWrapper>);
+    bool verified_flush() { return sync_token_.verified_flush(); }
+
+   private:
+    gpu::SyncToken sync_token_;
+    const base::PlatformThreadRef context_thread_ref_;
+    const scoped_refptr<base::SingleThreadTaskRunner> context_task_runner_;
+    std::unique_ptr<viz::SingleReleaseCallback> release_callback_;
+  };
+
+  struct ReleaseContext {
+    scoped_refptr<MailboxRef> mailbox_ref;
+    GLuint texture_id = 0u;
+    base::WeakPtr<WebGraphicsContext3DProviderWrapper> context_provider_wrapper;
+  };
+
+  static void ReleaseTexture(void* ctx);
+
   AcceleratedStaticBitmapImage(
       const gpu::Mailbox&,
       const gpu::SyncToken&,
@@ -136,33 +163,23 @@ class PLATFORM_EXPORT AcceleratedStaticBitmapImage final
       std::unique_ptr<viz::SingleReleaseCallback> release_callback);
 
   void CreateImageFromMailboxIfNeeded();
-  void WaitSyncTokenIfNeeded();
-  void RetainOriginalSkImage();
+  void InitializeSkImage(GLuint shared_image_texture_id);
 
-  // TODO(khushalsagar): Its unclear what to use here for calls checking IsValid
-  // or querying the ContextProvider for the image. This can differ in the 2,
-  // for instance if the image was transferred between threads.
-  const TextureHolder* texture_holder() const {
-    if (skia_texture_holder_)
-      return skia_texture_holder_.get();
-    return mailbox_texture_holder_.get();
-  }
+  const gpu::Mailbox mailbox_;
+  const SkImageInfo sk_image_info_;
+  const GLenum texture_target_;
+  const bool is_origin_top_left_;
 
-  scoped_refptr<TextureHolder::MailboxRef> mailbox_ref_;
+  base::WeakPtr<WebGraphicsContext3DProviderWrapper> context_provider_wrapper_;
+  scoped_refptr<MailboxRef> mailbox_ref_;
 
-  // The image is created with one of the texture holders below while the other
-  // one is created lazily if needed and then persisted for the lifetime of the
-  // image on a particular thread.
-  // When Transfer is called, the image is detached from its current thread to
-  // allow it to be used on a different thread. We create(if needed) and cache
-  // the mailbox in this case, so the texture can be used with a different
-  // context. The skia texture holder is released since the mailbox needs to be
-  // imported into the GrContext on the new thread.
-  std::unique_ptr<SkiaTextureHolder> skia_texture_holder_;
-  std::unique_ptr<MailboxTextureHolder> mailbox_texture_holder_;
+  // The context this SkImage is bound to.
+  base::WeakPtr<WebGraphicsContext3DProviderWrapper>
+      skia_context_provider_wrapper_;
+  sk_sp<SkImage> sk_image_;
 
-  THREAD_CHECKER(thread_checker_);
   PaintImage::ContentId paint_image_content_id_;
+  THREAD_CHECKER(thread_checker_);
 };
 
 }  // namespace blink

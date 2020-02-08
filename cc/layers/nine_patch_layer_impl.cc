@@ -5,7 +5,7 @@
 #include "cc/layers/nine_patch_layer_impl.h"
 
 #include "base/strings/stringprintf.h"
-#include "base/values.h"
+#include "base/trace_event/traced_value.h"
 #include "cc/base/math_util.h"
 #include "cc/trees/layer_tree_impl.h"
 #include "cc/trees/occlusion.h"
@@ -85,10 +85,10 @@ const char* NinePatchLayerImpl::LayerTypeAsString() const {
   return "cc::NinePatchLayerImpl";
 }
 
-std::unique_ptr<base::DictionaryValue> NinePatchLayerImpl::LayerAsJson() const {
-  std::unique_ptr<base::DictionaryValue> result = LayerImpl::LayerAsJson();
-  quad_generator_.AsJson(result.get());
-  return result;
+void NinePatchLayerImpl::AsValueInto(
+    base::trace_event::TracedValue* state) const {
+  LayerImpl::AsValueInto(state);
+  quad_generator_.AsValueInto(state);
 }
 
 }  // namespace cc

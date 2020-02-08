@@ -155,7 +155,7 @@ v8::MaybeLocal<v8::Script> CompileScriptInternal(
 
       if (cached_data->rejected) {
         cache_handler->ClearCachedMetadata(
-            CachedMetadataHandler::kSendToPlatform);
+            CachedMetadataHandler::kClearPersistentStorage);
       } else if (InDiscardExperiment()) {
         // Experimentally free code cache from memory after first use. See
         // http://crbug.com/1045052.
@@ -293,7 +293,7 @@ v8::MaybeLocal<v8::Module> V8ScriptRunner::CompileModule(
           isolate, &source, compile_options, no_cache_reason);
       if (cached_data->rejected) {
         cache_handler->ClearCachedMetadata(
-            CachedMetadataHandler::kSendToPlatform);
+            CachedMetadataHandler::kClearPersistentStorage);
       } else if (InDiscardExperiment()) {
         // Experimentally free code cache from memory after first use. See
         // http://crbug.com/1045052.

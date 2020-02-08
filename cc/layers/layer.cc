@@ -1535,7 +1535,7 @@ void Layer::SetElementId(ElementId id) {
   if (inputs_.element_id == id)
     return;
   TRACE_EVENT1(TRACE_DISABLED_BY_DEFAULT("cc.debug"), "Layer::SetElementId",
-               "element", id.AsValue().release());
+               "element", id.ToString());
   if (layer_tree_host_ && inputs_.element_id)
     layer_tree_host_->UnregisterElement(inputs_.element_id);
 

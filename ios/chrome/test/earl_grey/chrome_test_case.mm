@@ -13,7 +13,6 @@
 #import "ios/chrome/test/earl_grey/chrome_earl_grey.h"
 #import "ios/chrome/test/earl_grey/chrome_test_case_app_interface.h"
 #import "ios/testing/earl_grey/app_launch_manager.h"
-#import "ios/testing/earl_grey/coverage_utils.h"
 #import "ios/testing/earl_grey/earl_grey_test.h"
 #import "ios/web/public/test/http_server/http_server.h"
 #include "net/test/embedded_test_server/default_handlers.h"
@@ -396,8 +395,6 @@ GREY_STUB_CLASS_IN_APP_MAIN_QUEUE(ChromeTestCaseAppInterface)
   GREYAssertTrue([ChromeEarlGrey isCustomWebKitLoadedIfRequested],
                  @"Unable to load custom WebKit");
 
-  [CoverageUtils configureCoverageReportPath];
-
   [[self class] startHTTPServer];
   [[self class] enableMockAuthentication];
 
@@ -410,8 +407,6 @@ GREY_STUB_CLASS_IN_APP_MAIN_QUEUE(ChromeTestCaseAppInterface)
   // Enforce the assumption that the tests are runing in portrait.
   [ChromeEarlGrey rotateDeviceToOrientation:UIDeviceOrientationPortrait
                                       error:nil];
-
-  [CoverageUtils configureCoverageReportPath];
 }
 
 // Resets the variables tracking app state.

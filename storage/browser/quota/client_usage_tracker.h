@@ -59,10 +59,9 @@ class ClientUsageTracker : public SpecialStoragePolicy::Observer,
   void GetHostUsage(const std::string& host, UsageCallback callback);
   void UpdateUsageCache(const url::Origin& origin, int64_t delta);
   int64_t GetCachedUsage() const;
-  void GetCachedHostsUsage(std::map<std::string, int64_t>* host_usage) const;
-  void GetCachedOriginsUsage(
-      std::map<url::Origin, int64_t>* origin_usage) const;
-  void GetCachedOrigins(std::set<url::Origin>* origins) const;
+  std::map<std::string, int64_t> GetCachedHostsUsage() const;
+  std::map<url::Origin, int64_t> GetCachedOriginsUsage() const;
+  std::set<url::Origin> GetCachedOrigins() const;
   bool IsUsageCacheEnabledForOrigin(const url::Origin& origin) const;
   void SetUsageCacheEnabled(const url::Origin& origin, bool enabled);
  private:

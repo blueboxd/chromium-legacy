@@ -32,7 +32,7 @@
                 style="@style/BottomToolbarButtonWrapper"
                 android:src="@drawable/ic_close_all_tabs"
                 android:contentDescription="@string/accessibility_toolbar_btn_close_all_tabs"
-                app:tint="@color/standard_mode_tint" />
+                app:tint="@color/default_icon_color_tint_list" />
 
             <include layout="@layout/toolbar_space" />
 

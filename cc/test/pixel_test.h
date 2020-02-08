@@ -164,100 +164,15 @@ class RendererPixelTest : public PixelTest {
   void SetUp() override;
 };
 
-// Wrappers to differentiate renderers where the the output surface and viewport
-// have an externally determined size and offset.
-class GLRendererWithExpandedViewport : public viz::GLRenderer {
- public:
-  GLRendererWithExpandedViewport(
-      const viz::RendererSettings* settings,
-      viz::OutputSurface* output_surface,
-      viz::DisplayResourceProvider* resource_provider,
-      scoped_refptr<base::SingleThreadTaskRunner> current_task_runner)
-      : viz::GLRenderer(settings,
-                        output_surface,
-                        resource_provider,
-                        nullptr,
-                        std::move(current_task_runner)) {}
-};
-
-class SoftwareRendererWithExpandedViewport : public viz::SoftwareRenderer {
- public:
-  SoftwareRendererWithExpandedViewport(
-      const viz::RendererSettings* settings,
-      viz::OutputSurface* output_surface,
-      viz::DisplayResourceProvider* resource_provider)
-      : SoftwareRenderer(settings, output_surface, resource_provider, nullptr) {
-  }
-};
-
-class GLRendererWithFlippedSurface : public viz::GLRenderer {
- public:
-  GLRendererWithFlippedSurface(
-      const viz::RendererSettings* settings,
-      viz::OutputSurface* output_surface,
-      viz::DisplayResourceProvider* resource_provider,
-      scoped_refptr<base::SingleThreadTaskRunner> current_task_runner)
-      : viz::GLRenderer(settings,
-                        output_surface,
-                        resource_provider,
-                        nullptr,
-                        std::move(current_task_runner)) {}
-};
-
-class SkiaRendererWithFlippedSurface : public viz::SkiaRenderer {
- public:
-  SkiaRendererWithFlippedSurface(
-      const viz::RendererSettings* settings,
-      viz::OutputSurface* output_surface,
-      viz::DisplayResourceProvider* resource_provider,
-      viz::SkiaOutputSurface* skia_output_surface,
-      DrawMode mode)
-      : SkiaRenderer(settings,
-                     output_surface,
-                     resource_provider,
-                     nullptr,
-                     skia_output_surface,
-                     mode) {}
-};
-
-class VulkanSkiaRenderer : public viz::SkiaRenderer {
- public:
-  VulkanSkiaRenderer(const viz::RendererSettings* settings,
-                     viz::OutputSurface* output_surface,
-                     viz::DisplayResourceProvider* resource_provider,
-                     viz::SkiaOutputSurface* skia_output_surface,
-                     DrawMode mode)
-      : SkiaRenderer(settings,
-                     output_surface,
-                     resource_provider,
-                     nullptr,
-                     skia_output_surface,
-                     mode) {}
-};
-
-class VulkanSkiaRendererWithFlippedSurface : public viz::SkiaRenderer {
- public:
-  VulkanSkiaRendererWithFlippedSurface(
-      const viz::RendererSettings* settings,
-      viz::OutputSurface* output_surface,
-      viz::DisplayResourceProvider* resource_provider,
-      viz::SkiaOutputSurface* skia_output_surface,
-      DrawMode mode)
-      : SkiaRenderer(settings,
-                     output_surface,
-                     resource_provider,
-                     nullptr,
-                     skia_output_surface,
-                     mode) {}
-};
+// Types used with gtest typed tests to specify additional behaviour, eg.
+// should it be a flipped surface or what Skia backend to use.
+class GLRendererWithFlippedSurface : public viz::GLRenderer {};
+class SkiaRendererWithFlippedSurface : public viz::SkiaRenderer {};
+class VulkanSkiaRenderer : public viz::SkiaRenderer {};
+class VulkanSkiaRendererWithFlippedSurface : public viz::SkiaRenderer {};
 
 template <>
 inline void RendererPixelTest<viz::GLRenderer>::SetUp() {
-  SetUpGLRenderer(false);
-}
-
-template<>
-inline void RendererPixelTest<GLRendererWithExpandedViewport>::SetUp() {
   SetUpGLRenderer(false);
 }
 
@@ -268,11 +183,6 @@ inline void RendererPixelTest<GLRendererWithFlippedSurface>::SetUp() {
 
 template <>
 inline void RendererPixelTest<viz::SoftwareRenderer>::SetUp() {
-  SetUpSoftwareRenderer();
-}
-
-template<>
-inline void RendererPixelTest<SoftwareRendererWithExpandedViewport>::SetUp() {
   SetUpSoftwareRenderer();
 }
 

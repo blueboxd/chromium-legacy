@@ -716,7 +716,7 @@ void ThrottlingURLLoader::OnComplete(
 }
 
 void ThrottlingURLLoader::OnClientConnectionError() {
-  CancelWithError(net::ERR_ABORTED, nullptr);
+  CancelWithError(net::ERR_ABORTED, "");
 }
 
 void ThrottlingURLLoader::CancelWithError(int error_code,

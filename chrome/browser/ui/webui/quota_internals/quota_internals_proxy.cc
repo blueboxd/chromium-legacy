@@ -67,7 +67,7 @@ void QuotaInternalsProxy::RequestInfo(
   ReportStatistics(stats);
 }
 
-QuotaInternalsProxy::~QuotaInternalsProxy() {}
+QuotaInternalsProxy::~QuotaInternalsProxy() = default;
 
 #define RELAY_TO_HANDLER(func, arg_t)                                        \
   void QuotaInternalsProxy::func(arg_t arg) {                                \
@@ -119,9 +119,9 @@ void QuotaInternalsProxy::DidDumpQuotaTable(const QuotaTableEntries& entries) {
   std::vector<PerHostStorageInfo> host_info;
   host_info.reserve(entries.size());
 
-  for (auto itr(entries.begin()); itr != entries.end(); ++itr) {
-    PerHostStorageInfo info(itr->host, itr->type);
-    info.set_quota(itr->quota);
+  for (const auto& entry : entries) {
+    PerHostStorageInfo info(entry.host, entry.type);
+    info.set_quota(entry.quota);
     host_info.push_back(info);
   }
 
@@ -169,8 +169,7 @@ void QuotaInternalsProxy::DidGetHostUsage(const std::string& host,
 void QuotaInternalsProxy::RequestPerOriginInfo(StorageType type) {
   DCHECK(quota_manager_.get());
 
-  std::set<url::Origin> origins;
-  quota_manager_->GetCachedOrigins(type, &origins);
+  std::set<url::Origin> origins = quota_manager_->GetCachedOrigins(type);
 
   std::vector<PerOriginStorageInfo> origin_info;
   origin_info.reserve(origins.size());

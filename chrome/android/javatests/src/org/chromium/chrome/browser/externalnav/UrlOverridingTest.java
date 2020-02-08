@@ -267,10 +267,10 @@ public class UrlOverridingTest {
                                         == delegate.getLastOverrideUrlLoadingResultForTests())) {
                             return false;
                         }
-                        updateFailureReason("Expected: " + expectedFinalUrl + " actual: "
-                                + tab.getUrl());
+                        updateFailureReason(
+                                "Expected: " + expectedFinalUrl + " actual: " + tab.getUrlString());
                         return expectedFinalUrl == null
-                                || TextUtils.equals(expectedFinalUrl, tab.getUrl());
+                                || TextUtils.equals(expectedFinalUrl, tab.getUrlString());
                     }
                 });
 

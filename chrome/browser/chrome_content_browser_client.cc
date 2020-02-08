@@ -5376,7 +5376,8 @@ ui::AXMode ChromeContentBrowserClient::GetAXModeForBrowserContext(
 #if defined(OS_ANDROID)
 content::ContentBrowserClient::WideColorGamutHeuristic
 ChromeContentBrowserClient::GetWideColorGamutHeuristic() {
-  if (UseDisplayWideColorGamut()) {
+  if (UseDisplayWideColorGamut() ||
+      base::FeatureList::IsEnabled(features::kDynamicColorGamut)) {
     return WideColorGamutHeuristic::kUseDisplay;
   }
 

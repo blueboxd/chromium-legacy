@@ -102,7 +102,7 @@
 #include "net/log/test_net_log.h"
 #include "net/log/test_net_log_util.h"
 #include "net/net_buildflags.h"
-#include "net/proxy_resolution/proxy_resolution_service.h"
+#include "net/proxy_resolution/configured_proxy_resolution_service.h"
 #include "net/quic/mock_crypto_client_stream_factory.h"
 #include "net/quic/quic_server_info.h"
 #include "net/socket/read_buffering_stream_socket.h"
@@ -623,8 +623,8 @@ class TestURLRequestContextWithProxy : public TestURLRequestContext {
                                  bool delay_initialization = false)
       : TestURLRequestContext(true) {
     context_storage_.set_proxy_resolution_service(
-        ProxyResolutionService::CreateFixed(proxy,
-                                            TRAFFIC_ANNOTATION_FOR_TESTS));
+        ConfiguredProxyResolutionService::CreateFixed(
+            proxy, TRAFFIC_ANNOTATION_FOR_TESTS));
     set_network_delegate(delegate);
     if (!delay_initialization)
       Init();
@@ -11207,7 +11207,7 @@ class URLRequestTestFTPOverHttpProxy : public URLRequestTestFTP {
  public:
   // Test interface:
   void SetUp() override {
-    proxy_resolution_service_ = ProxyResolutionService::CreateFixed(
+    proxy_resolution_service_ = ConfiguredProxyResolutionService::CreateFixed(
         "localhost", TRAFFIC_ANNOTATION_FOR_TESTS);
     default_context_->set_proxy_resolution_service(
         proxy_resolution_service_.get());
@@ -11215,7 +11215,7 @@ class URLRequestTestFTPOverHttpProxy : public URLRequestTestFTP {
   }
 
  private:
-  std::unique_ptr<ProxyResolutionService> proxy_resolution_service_;
+  std::unique_ptr<ConfiguredProxyResolutionService> proxy_resolution_service_;
 };
 
 // Check that FTP is not supported over an HTTP proxy.

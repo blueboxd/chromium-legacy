@@ -377,8 +377,8 @@ public class EphemeralTabCoordinator implements View.OnLayoutChangeListener {
                     drawable = FaviconUtils.createRoundedBitmapDrawable(
                             mContext.getResources(), bitmap);
                 } else {
-                    drawable = UiUtils.getTintedDrawable(
-                            mContext, R.drawable.ic_globe_24dp, R.color.standard_mode_tint);
+                    drawable = UiUtils.getTintedDrawable(mContext, R.drawable.ic_globe_24dp,
+                            R.color.default_icon_color_tint_list);
                 }
 
                 callback.onResult(drawable);

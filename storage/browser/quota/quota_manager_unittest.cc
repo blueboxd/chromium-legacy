@@ -284,10 +284,8 @@ class QuotaManagerTest : public testing::Test {
                        weak_factory_.GetWeakPtr()));
   }
 
-  void GetCachedOrigins(StorageType type, std::set<url::Origin>* origins) {
-    ASSERT_TRUE(origins != nullptr);
-    origins->clear();
-    quota_manager_->GetCachedOrigins(type, origins);
+  std::set<url::Origin> GetCachedOrigins(StorageType type) {
+    return quota_manager_->GetCachedOrigins(type);
   }
 
   void NotifyStorageAccessed(const url::Origin& origin, StorageType type) {
@@ -534,8 +532,7 @@ TEST_F(QuotaManagerTest, GetUsageInfo) {
   task_environment_.RunUntilIdle();
 
   EXPECT_EQ(4U, usage_info().size());
-  for (size_t i = 0; i < usage_info().size(); ++i) {
-    const UsageInfo& info = usage_info()[i];
+  for (const UsageInfo& info : usage_info()) {
     if (info.host == "foo.com" && info.type == kTemp) {
       EXPECT_EQ(10 + 15 + 30 + 35, info.usage);
     } else if (info.host == "bar.com" && info.type == kTemp) {
@@ -1533,13 +1530,13 @@ TEST_F(QuotaManagerTest, EvictOriginData) {
   task_environment_.RunUntilIdle();
   int64_t predelete_host_pers = usage();
 
-  for (size_t i = 0; i < base::size(kData1); ++i) {
+  for (const MockOriginData& data : kData1) {
     quota_manager()->NotifyStorageAccessed(
-        url::Origin::Create(GURL(kData1[i].origin)), kData1[i].type);
+        url::Origin::Create(GURL(data.origin)), data.type);
   }
-  for (size_t i = 0; i < base::size(kData2); ++i) {
+  for (const MockOriginData& data : kData2) {
     quota_manager()->NotifyStorageAccessed(
-       url::Origin::Create(GURL(kData2[i].origin)), kData2[i].type);
+        url::Origin::Create(GURL(data.origin)), data.type);
   }
   task_environment_.RunUntilIdle();
 
@@ -1656,9 +1653,8 @@ TEST_F(QuotaManagerTest, EvictOriginDataWithDeletionError) {
   task_environment_.RunUntilIdle();
   int64_t predelete_host_pers = usage();
 
-  for (size_t i = 0; i < base::size(kData); ++i)
-    NotifyStorageAccessed(url::Origin::Create(GURL(kData[i].origin)),
-                          kData[i].type);
+  for (const MockOriginData& data : kData)
+    NotifyStorageAccessed(url::Origin::Create(GURL(data.origin)), data.type);
   task_environment_.RunUntilIdle();
 
   client->AddOriginToErrorSet(ToOrigin("http://foo.com/"), kTemp);
@@ -1920,13 +1916,13 @@ TEST_F(QuotaManagerTest, DeleteOriginDataMultiple) {
   task_environment_.RunUntilIdle();
   const int64_t predelete_bar_pers = usage();
 
-  for (size_t i = 0; i < base::size(kData1); ++i) {
+  for (const MockOriginData& data : kData1) {
     quota_manager()->NotifyStorageAccessed(
-        url::Origin::Create(GURL(kData1[i].origin)), kData1[i].type);
+        url::Origin::Create(GURL(data.origin)), data.type);
   }
-  for (size_t i = 0; i < base::size(kData2); ++i) {
+  for (const MockOriginData& data : kData2) {
     quota_manager()->NotifyStorageAccessed(
-        url::Origin::Create(GURL(kData2[i].origin)), kData2[i].type);
+        url::Origin::Create(GURL(data.origin)), data.type);
   }
   task_environment_.RunUntilIdle();
 
@@ -1983,36 +1979,35 @@ TEST_F(QuotaManagerTest, GetCachedOrigins) {
 
   // TODO(kinuko): Be careful when we add cache pruner.
 
-  std::set<url::Origin> origins;
-  GetCachedOrigins(kTemp, &origins);
+  std::set<url::Origin> origins = GetCachedOrigins(kTemp);
   EXPECT_TRUE(origins.empty());
 
   GetHostUsage("a.com", kTemp);
   task_environment_.RunUntilIdle();
-  GetCachedOrigins(kTemp, &origins);
+  origins = GetCachedOrigins(kTemp);
   EXPECT_EQ(2U, origins.size());
 
   GetHostUsage("b.com", kTemp);
   task_environment_.RunUntilIdle();
-  GetCachedOrigins(kTemp, &origins);
+  origins = GetCachedOrigins(kTemp);
   EXPECT_EQ(2U, origins.size());
 
   GetHostUsage("c.com", kTemp);
   task_environment_.RunUntilIdle();
-  GetCachedOrigins(kTemp, &origins);
+  origins = GetCachedOrigins(kTemp);
   EXPECT_EQ(3U, origins.size());
 
-  GetCachedOrigins(kPerm, &origins);
+  origins = GetCachedOrigins(kPerm);
   EXPECT_TRUE(origins.empty());
 
   GetGlobalUsage(kTemp);
   task_environment_.RunUntilIdle();
-  GetCachedOrigins(kTemp, &origins);
+  origins = GetCachedOrigins(kTemp);
   EXPECT_EQ(3U, origins.size());
 
-  for (size_t i = 0; i < base::size(kData); ++i) {
-    if (kData[i].type == kTemp)
-      EXPECT_TRUE(base::Contains(origins, ToOrigin(kData[i].origin)));
+  for (const MockOriginData& data : kData) {
+    if (data.type == kTemp)
+      EXPECT_TRUE(base::Contains(origins, ToOrigin(data.origin)));
   }
 }
 
@@ -2141,9 +2136,9 @@ TEST_F(QuotaManagerTest, GetOriginsModifiedSince) {
   task_environment_.RunUntilIdle();
   EXPECT_EQ(4U, modified_origins().size());
   EXPECT_EQ(modified_origins_type(), kTemp);
-  for (size_t i = 0; i < base::size(kData); ++i) {
-    if (kData[i].type == kTemp)
-      EXPECT_EQ(1U, modified_origins().count(ToOrigin(kData[i].origin)));
+  for (const MockOriginData& data : kData) {
+    if (data.type == kTemp)
+      EXPECT_EQ(1U, modified_origins().count(ToOrigin(data.origin)));
   }
 
   GetOriginsModifiedSince(kTemp, time2);

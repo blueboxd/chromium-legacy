@@ -336,7 +336,7 @@ TEST_P(ExtensionActionViewControllerUnitTest, PageActionBlockedActions) {
   std::unique_ptr<IconWithBadgeImageSource> image_source =
       action_controller->GetIconImageSourceForTesting(web_contents,
                                                       view_size());
-  EXPECT_TRUE(image_source->grayscale());
+  EXPECT_FALSE(image_source->grayscale());
   EXPECT_FALSE(image_source->paint_page_action_decoration());
   EXPECT_FALSE(image_source->paint_blocked_actions_decoration());
 
@@ -350,6 +350,66 @@ TEST_P(ExtensionActionViewControllerUnitTest, PageActionBlockedActions) {
   EXPECT_FALSE(image_source->grayscale());
   EXPECT_FALSE(image_source->paint_page_action_decoration());
   EXPECT_TRUE(image_source->paint_blocked_actions_decoration());
+}
+
+// Tests the appearance of extension actions for extensions without a browser or
+// page action defined in their manifest, but with host permissions on a page.
+TEST_P(ExtensionActionViewControllerUnitTest, OnlyHostPermissionsAppearance) {
+  scoped_refptr<const extensions::Extension> extension =
+      extensions::ExtensionBuilder("just hosts")
+          .SetLocation(extensions::Manifest::INTERNAL)
+          .AddPermission("https://www.google.com/*")
+          .Build();
+
+  extension_service()->GrantPermissions(extension.get());
+  extension_service()->AddExtension(extension.get());
+  extensions::ScriptingPermissionsModifier permissions_modifier(profile(),
+                                                                extension);
+  permissions_modifier.SetWithholdHostPermissions(true);
+
+  ExtensionActionViewController* const action_controller =
+      GetViewControllerForId(extension->id());
+  ASSERT_TRUE(action_controller);
+  EXPECT_EQ(extension.get(), action_controller->extension());
+
+  // Initially load on a site that the extension doesn't have permissions to.
+  AddTab(browser(), GURL("https://www.chromium.org/"));
+  content::WebContents* web_contents = GetActiveWebContents();
+
+  std::unique_ptr<IconWithBadgeImageSource> image_source =
+      action_controller->GetIconImageSourceForTesting(web_contents,
+                                                      view_size());
+  EXPECT_TRUE(image_source->grayscale());
+  EXPECT_FALSE(action_controller->IsEnabled(web_contents));
+  EXPECT_FALSE(image_source->paint_page_action_decoration());
+  EXPECT_FALSE(image_source->paint_blocked_actions_decoration());
+  EXPECT_EQ("just hosts",
+            base::UTF16ToUTF8(action_controller->GetTooltip(web_contents)));
+
+  // Navigate to a url the extension does have permissions to. The extension is
+  // set to run on click and has the current URL withheld, so it should not be
+  // grayscaled and should be clickable.
+  NavigateAndCommitActiveTab(GURL("https://www.google.com/"));
+  image_source = action_controller->GetIconImageSourceForTesting(web_contents,
+                                                                 view_size());
+  EXPECT_FALSE(image_source->grayscale());
+  EXPECT_TRUE(action_controller->IsEnabled(web_contents));
+  EXPECT_FALSE(image_source->paint_page_action_decoration());
+  EXPECT_FALSE(image_source->paint_blocked_actions_decoration());
+  EXPECT_EQ("just hosts\nWants access to this site",
+            base::UTF16ToUTF8(action_controller->GetTooltip(web_contents)));
+
+  // After triggering the action it should have access, which is reflected in
+  // the tooltip.
+  action_controller->ExecuteAction(true);
+  image_source = action_controller->GetIconImageSourceForTesting(web_contents,
+                                                                 view_size());
+  EXPECT_FALSE(image_source->grayscale());
+  EXPECT_FALSE(action_controller->IsEnabled(web_contents));
+  EXPECT_FALSE(image_source->paint_page_action_decoration());
+  EXPECT_FALSE(image_source->paint_blocked_actions_decoration());
+  EXPECT_EQ("just hosts\nHas access to this site",
+            base::UTF16ToUTF8(action_controller->GetTooltip(web_contents)));
 }
 
 // Tests the appearance of page actions with blocked actions in the overflow
@@ -487,12 +547,18 @@ class ExtensionActionViewControllerGrayscaleTest
  private:
   scoped_refptr<const extensions::Extension> CreateExtension(
       PermissionType permission_type);
+  extensions::PermissionsData::PageAccess GetPageAccess(
+      content::WebContents* web_contents,
+      scoped_refptr<const extensions::Extension> extensions,
+      PermissionType permission_type);
 
   DISALLOW_COPY_AND_ASSIGN(ExtensionActionViewControllerGrayscaleTest);
 };
 
 void ExtensionActionViewControllerGrayscaleTest::RunGrayscaleTest(
     PermissionType permission_type) {
+  // Create an extension with google.com as either an explicit or scriptable
+  // host permission.
   scoped_refptr<const extensions::Extension> extension =
       CreateExtension(permission_type);
   extension_service()->GrantPermissions(extension.get());
@@ -501,52 +567,66 @@ void ExtensionActionViewControllerGrayscaleTest::RunGrayscaleTest(
   extensions::ScriptingPermissionsModifier permissions_modifier(profile(),
                                                                 extension);
   permissions_modifier.SetWithholdHostPermissions(true);
-  const GURL kUrl("https://www.google.com/");
+  const GURL kHasPermissionUrl("https://www.google.com/");
+  const GURL kNoPermissionsUrl("https://www.chromium.org/");
 
   // Make sure UserScriptListener doesn't hold up the navigation.
   extensions::ExtensionsBrowserClient::Get()
       ->GetUserScriptListener()
       ->TriggerUserScriptsReadyForTesting(browser()->profile());
 
-  AddTab(browser(), kUrl);
+  // Load up a page that we will navigate for the different test cases.
+  AddTab(browser(), GURL("about:blank"));
 
   enum class ActionState {
     kEnabled,
     kDisabled,
   };
-  enum class PageAccess {
+  enum class PageAccessStatus {
+    // The extension has been granted permission to the host.
     kGranted,
-    kPending,
+    // The extension had the host withheld and it has not tried to access the
+    // page.
+    kWithheld,
+    // The extension had the host withheld and it has been blocked when trying
+    // to access the page.
+    kBlocked,
+    // The extension has not been granted permissions to the host, nor was it
+    // withheld.
     kNone,
   };
-  enum class Opacity {
+  enum class Coloring {
     kGrayscale,
     kFull,
   };
-  enum class BlockedActions {
+  enum class BlockedDecoration {
     kPainted,
     kNotPainted,
   };
 
   struct {
     ActionState action_state;
-    PageAccess page_access;
-    Opacity expected_opacity;
-    BlockedActions expected_blocked_actions;
+    PageAccessStatus page_access;
+    Coloring expected_coloring;
+    BlockedDecoration expected_blocked_decoration;
   } test_cases[] = {
-      {ActionState::kEnabled, PageAccess::kNone, Opacity::kFull,
-       BlockedActions::kNotPainted},
-      {ActionState::kEnabled, PageAccess::kPending, Opacity::kFull,
-       BlockedActions::kPainted},
-      {ActionState::kEnabled, PageAccess::kGranted, Opacity::kFull,
-       BlockedActions::kNotPainted},
+      {ActionState::kEnabled, PageAccessStatus::kNone, Coloring::kFull,
+       BlockedDecoration::kNotPainted},
+      {ActionState::kEnabled, PageAccessStatus::kWithheld, Coloring::kFull,
+       BlockedDecoration::kNotPainted},
+      {ActionState::kEnabled, PageAccessStatus::kBlocked, Coloring::kFull,
+       BlockedDecoration::kPainted},
+      {ActionState::kEnabled, PageAccessStatus::kGranted, Coloring::kFull,
+       BlockedDecoration::kNotPainted},
 
-      {ActionState::kDisabled, PageAccess::kNone, Opacity::kGrayscale,
-       BlockedActions::kNotPainted},
-      {ActionState::kDisabled, PageAccess::kPending, Opacity::kFull,
-       BlockedActions::kPainted},
-      {ActionState::kDisabled, PageAccess::kGranted, Opacity::kFull,
-       BlockedActions::kNotPainted},
+      {ActionState::kDisabled, PageAccessStatus::kNone, Coloring::kGrayscale,
+       BlockedDecoration::kNotPainted},
+      {ActionState::kDisabled, PageAccessStatus::kWithheld, Coloring::kFull,
+       BlockedDecoration::kNotPainted},
+      {ActionState::kDisabled, PageAccessStatus::kBlocked, Coloring::kFull,
+       BlockedDecoration::kPainted},
+      {ActionState::kDisabled, PageAccessStatus::kGranted, Coloring::kFull,
+       BlockedDecoration::kNotPainted},
   };
 
   ExtensionActionViewController* const controller =
@@ -565,48 +645,55 @@ void ExtensionActionViewControllerGrayscaleTest::RunGrayscaleTest(
         base::StringPrintf("Running test case %d", static_cast<int>(i)));
     const auto& test_case = test_cases[i];
 
-    // Set up the proper state.
-    extension_action->SetIsVisible(
-        tab_id, test_case.action_state == ActionState::kEnabled);
+    // Set up the proper state for the test case.
     switch (test_case.page_access) {
-      case PageAccess::kNone: {
+      case PageAccessStatus::kNone: {
+        NavigateAndCommitActiveTab(kNoPermissionsUrl);
+        // Page access should be denied; verify.
+        extensions::PermissionsData::PageAccess page_access =
+            GetPageAccess(web_contents, extension, permission_type);
+        EXPECT_EQ(extensions::PermissionsData::PageAccess::kDenied,
+                  page_access);
+        break;
+      }
+      case PageAccessStatus::kWithheld: {
+        NavigateAndCommitActiveTab(kHasPermissionUrl);
         // Page access should already be withheld; verify.
         extensions::PermissionsData::PageAccess page_access =
-            extensions::PermissionsData::PageAccess::kDenied;
-        switch (permission_type) {
-          case PermissionType::kExplicitHost:
-            page_access = extension->permissions_data()->GetPageAccess(
-                kUrl, tab_id, /*error=*/nullptr);
-            break;
-          case PermissionType::kScriptableHost:
-            page_access = extension->permissions_data()->GetContentScriptAccess(
-                kUrl, tab_id, /*error=*/nullptr);
-            break;
-        }
+            GetPageAccess(web_contents, extension, permission_type);
         EXPECT_EQ(extensions::PermissionsData::PageAccess::kWithheld,
                   page_access);
         break;
       }
-      case PageAccess::kPending:
+      case PageAccessStatus::kBlocked:
+        // Navigate to a page where the permission is currently withheld and try
+        // to inject a script.
+        NavigateAndCommitActiveTab(kHasPermissionUrl);
         action_runner->RequestScriptInjectionForTesting(
             extension.get(), extensions::UserScript::DOCUMENT_IDLE,
             base::DoNothing());
         break;
-      case PageAccess::kGranted:
-        permissions_modifier.GrantHostPermission(kUrl);
+      case PageAccessStatus::kGranted:
+        // Grant the withheld requested permission and navigate there.
+        permissions_modifier.GrantHostPermission(kHasPermissionUrl);
+        NavigateAndCommitActiveTab(kHasPermissionUrl);
         break;
     }
+    // Enable or disable the action based on the test case.
+    extension_action->SetIsVisible(
+        tab_id, test_case.action_state == ActionState::kEnabled);
 
     std::unique_ptr<IconWithBadgeImageSource> image_source =
         controller->GetIconImageSourceForTesting(web_contents, view_size());
-    EXPECT_EQ(test_case.expected_opacity == Opacity::kGrayscale,
+    EXPECT_EQ(test_case.expected_coloring == Coloring::kGrayscale,
               image_source->grayscale());
-    EXPECT_EQ(test_case.expected_blocked_actions == BlockedActions::kPainted,
-              image_source->paint_blocked_actions_decoration());
+    EXPECT_EQ(
+        test_case.expected_blocked_decoration == BlockedDecoration::kPainted,
+        image_source->paint_blocked_actions_decoration());
 
     // Clean up permissions state.
-    if (test_case.page_access == PageAccess::kGranted)
-      permissions_modifier.RemoveGrantedHostPermission(kUrl);
+    if (test_case.page_access == PageAccessStatus::kGranted)
+      permissions_modifier.RemoveGrantedHostPermission(kHasPermissionUrl);
     action_runner->ClearInjectionsForTesting(*extension);
   }
 }
@@ -617,23 +704,37 @@ ExtensionActionViewControllerGrayscaleTest::CreateExtension(
   extensions::ExtensionBuilder builder("extension");
   builder.SetAction(extensions::ExtensionBuilder::ActionType::BROWSER_ACTION)
       .SetLocation(extensions::Manifest::INTERNAL);
+  constexpr char kHostGoogle[] = "https://www.google.com/*";
   switch (permission_type) {
     case PermissionType::kScriptableHost: {
-      std::unique_ptr<base::Value> content_scripts =
-          base::JSONReader::ReadDeprecated(
-              R"([{
-                     "matches": ["https://www.google.com/*"],
-                     "js": ["script.js"]
-                 }])");
-      builder.SetManifestKey("content_scripts", std::move(content_scripts));
+      builder.AddContentScript("script.js", {kHostGoogle});
       break;
     }
     case PermissionType::kExplicitHost:
-      builder.AddPermission("https://www.google.com/*");
+      builder.AddPermission(kHostGoogle);
       break;
   }
 
   return builder.Build();
+}
+
+extensions::PermissionsData::PageAccess
+ExtensionActionViewControllerGrayscaleTest::GetPageAccess(
+    content::WebContents* web_contents,
+    scoped_refptr<const extensions::Extension> extension,
+    PermissionType permission_type) {
+  int tab_id = sessions::SessionTabHelper::IdForTab(web_contents).id();
+  GURL url = web_contents->GetLastCommittedURL();
+  switch (permission_type) {
+    case PermissionType::kExplicitHost:
+      return extension->permissions_data()->GetPageAccess(url, tab_id,
+                                                          /*error=*/nullptr);
+      break;
+    case PermissionType::kScriptableHost:
+      return extension->permissions_data()->GetContentScriptAccess(
+          url, tab_id, /*error=*/nullptr);
+      break;
+  }
 }
 
 // Tests the behavior for icon grayscaling. Ideally, these would be a single
@@ -679,7 +780,7 @@ TEST_P(ExtensionActionViewControllerUnitTest, RuntimeHostsTooltip) {
   EXPECT_EQ(extensions::PermissionsData::PageAccess::kWithheld,
             extension->permissions_data()->GetPageAccess(kUrl, tab_id,
                                                          /*error=*/nullptr));
-  EXPECT_EQ("extension name",
+  EXPECT_EQ("extension name\nWants access to this site",
             base::UTF16ToUTF8(controller->GetTooltip(web_contents)));
 
   // Request access.

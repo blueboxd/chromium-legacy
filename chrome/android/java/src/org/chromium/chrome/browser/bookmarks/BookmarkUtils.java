@@ -289,7 +289,7 @@ public class BookmarkUtils {
      * @return The tint used on the bookmark folder icon.
      */
     public static int getFolderIconTint() {
-        return R.color.standard_mode_tint;
+        return R.color.default_icon_color_tint_list;
     }
 
     private static void openUrl(Activity activity, String url, ComponentName componentName) {

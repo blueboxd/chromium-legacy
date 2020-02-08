@@ -69,6 +69,14 @@ class CORE_EXPORT BaseFetchContext : public FetchContext {
   bool CalculateIfAdSubresource(const ResourceRequest& resource_request,
                                 ResourceType type) override;
 
+  // Returns whether a request to |url| is a conversion registration request.
+  // Conversion registration requests are redirects to a well-known conversion
+  // registration endpoint.
+  virtual bool SendConversionRequestInsteadOfRedirecting(
+      const KURL& url,
+      ResourceRequest::RedirectStatus redirect_status,
+      SecurityViolationReportingPolicy reporting_policy) const;
+
   virtual const ContentSecurityPolicy* GetContentSecurityPolicy() const = 0;
 
  protected:

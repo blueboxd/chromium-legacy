@@ -30,7 +30,7 @@ const base::Feature kApkWebAppInstalls{"ApkWebAppInstalls",
 // Enables app activity reporting for child user.
 // Requires |kPerAppTimeLimits| to be enabled.
 const base::Feature kAppActivityReporting{"AppActivityReporting",
-                                          base::FEATURE_DISABLED_BY_DEFAULT};
+                                          base::FEATURE_ENABLED_BY_DEFAULT};
 #endif
 
 #if defined(OS_MACOSX)
@@ -576,7 +576,7 @@ const base::Feature kParentAccessCodeForTimeChange{
 
 // Enables enforcement of per-app time limits for child user.
 const base::Feature kPerAppTimeLimits{"PerAppTimeLimits",
-                                      base::FEATURE_DISABLED_BY_DEFAULT};
+                                      base::FEATURE_ENABLED_BY_DEFAULT};
 #endif
 
 // Delegate permissions to cross-origin iframes when the feature has been
@@ -738,6 +738,13 @@ const base::Feature kHeavyAdIntervention{"HeavyAdIntervention",
 const base::Feature kHeavyAdPrivacyMitigations{
     "HeavyAdPrivacyMitigations", base::FEATURE_ENABLED_BY_DEFAULT};
 
+#if defined(OS_ANDROID)
+// When wide color gamut content from the web is encountered, promote our
+// display to wide color gamut if supported.
+const base::Feature kDynamicColorGamut{"DynamicColorGamut",
+                                       base::FEATURE_DISABLED_BY_DEFAULT};
+#endif
+
 #if defined(OS_CHROMEOS)
 // Enables or disables the FTL signaling service for CRD sessions in Kiosk mode.
 const base::Feature kUseFtlSignalingForCrdHostDelegate{
@@ -847,7 +854,7 @@ const base::Feature kAccessibilityInternalsPageImprovements{
 // Requires |kPerAppTimeLimits| to be enabled.
 #if defined(OS_CHROMEOS)
 const base::Feature kWebTimeLimits{"WebTimeLimits",
-                                   base::FEATURE_DISABLED_BY_DEFAULT};
+                                   base::FEATURE_ENABLED_BY_DEFAULT};
 #endif  // defined(OS_CHROMEOS)
 
 }  // namespace features

@@ -470,7 +470,7 @@ class AutocompleteMediator
                 @Override
                 protected void onObservingDifferentTab(Tab tab) {
                     if (tab == null) return;
-                    maybeTriggerCacheRefresh(tab.getUrl());
+                    maybeTriggerCacheRefresh(tab.getUrlString());
                 }
 
                 /**

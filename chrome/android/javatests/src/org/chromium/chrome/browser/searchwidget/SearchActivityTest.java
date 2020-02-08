@@ -489,7 +489,7 @@ public class SearchActivityTest {
                 Tab tab = cta.getActivityTab();
                 if (tab == null) return null;
 
-                return tab.getUrl();
+                return tab.getUrlString();
             }
         }));
     }

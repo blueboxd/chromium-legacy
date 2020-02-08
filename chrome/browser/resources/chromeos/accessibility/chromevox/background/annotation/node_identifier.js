@@ -12,37 +12,72 @@ goog.provide('NodeIdentifier');
  * Stores all identifying attributes for an AutomationNode.
  * A helper object for NodeIdentifier.
  * @typedef {{
- *    id: !string,
- *    name: !string,
- *    role: !string,
- *    description: !string,
- *    restriction: !string,
+ *    id: string,
+ *    name: string,
+ *    role: string,
+ *    description: string,
+ *    restriction: string,
  *    childCount: number,
  *    indexInParent: number,
- *    className: !string,
- *    htmlTag: !string }}
+ *    className: string,
+ *    htmlTag: string }}
  */
 let Attributes;
 
 NodeIdentifier = class {
   /**
-   * @param {!AutomationNode} node
+   * @param {!{
+   *           attributes: !Attributes,
+   *           pageUrl: string, ancestry:
+   *           !Array<!Attributes>}} params
+   * @private
    */
-  constructor(node) {
+  constructor(params) {
     /**
      * @type {!Attributes}
      */
-    this.attributes = this.createAttributes_(node);
-
+    this.attributes = params.attributes;
     /**
-     * @type {!string}
+     * @type {string}
      */
-    this.pageUrl = node.root.docUrl || '';
-
+    this.pageUrl = params.pageUrl;
     /**
      * @type {!Array<!Attributes>}
      */
-    this.ancestry = this.createAttributesAncestry_(node);
+    this.ancestry = params.ancestry;
+  }
+
+  /**
+   * @param {!AutomationNode} node
+   * @return {!NodeIdentifier}
+   */
+  static constructFromNode(node) {
+    const params = {
+      attributes: NodeIdentifier.createAttributes_(node),
+      pageUrl: node.root.docUrl || '',
+      ancestry: NodeIdentifier.createAttributesAncestry_(node)
+    };
+    return new NodeIdentifier(params);
+  }
+
+  /**
+   * @param {string} str
+   * @return {?NodeIdentifier}
+   */
+  static constructFromString(str) {
+    try {
+      const params =
+          /**
+             @type {!{attributes: !Attributes, pageUrl: string, ancestry:
+                 !Array<!Attributes>}}
+           */
+          (JSON.parse(str));
+      return new NodeIdentifier(params);
+    } catch (error) {
+      console.error('Invalid string argument to NodeIdentifier constructor');
+      console.error(error);
+      return null;
+    }
   }
 
   /**
@@ -79,7 +114,7 @@ NodeIdentifier = class {
    * @return {!Attributes}
    * @private
    */
-  createAttributes_(node) {
+  static createAttributes_(node) {
     return {
       id: (node.htmlAttributes) ? node.htmlAttributes['id'] || '' : '',
       name: node.name || '',
@@ -98,12 +133,12 @@ NodeIdentifier = class {
    * @return {!Array<!Attributes>}
    * @private
    */
-  createAttributesAncestry_(node) {
+  static createAttributesAncestry_(node) {
     const ancestry = [];
     let scanNode = node.parent;
     const treeRoot = node.root;
     while (scanNode && scanNode !== treeRoot) {
-      ancestry.push(this.createAttributes_(scanNode));
+      ancestry.push(NodeIdentifier.createAttributes_(scanNode));
       scanNode = scanNode.parent;
     }
     return ancestry;

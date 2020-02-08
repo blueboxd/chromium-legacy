@@ -59,7 +59,7 @@ public class NavigationRecorder extends EmptyTabObserver {
                 @Override
                 public void navigationEntryCommitted() {
                     if (startStackIndex != navController.getLastCommittedEntryIndex()) return;
-                    endRecording(tab, tab.getUrl());
+                    endRecording(tab, tab.getUrlString());
                 }
             };
             webContents.addObserver(mWebContentsObserver);

@@ -46,19 +46,19 @@
         android:layout_height="match_parent"
         android:src="@drawable/ic_expand_less_black_24dp"
         android:contentDescription="@string/accessibility_find_toolbar_btn_prev"
-        app:tint="@color/standard_mode_tint" />
+        app:tint="@color/default_icon_color_tint_list" />
     <org.chromium.ui.widget.ChromeImageButton
         android:id="@+id/find_next_button"
         style="@style/ToolbarButton"
         android:layout_height="match_parent"
         android:src="@drawable/ic_expand_more_black_24dp"
         android:contentDescription="@string/accessibility_find_toolbar_btn_next"
-        app:tint="@color/standard_mode_tint" />
+        app:tint="@color/default_icon_color_tint_list" />
     <org.chromium.ui.widget.ChromeImageButton
         android:id="@+id/close_find_button"
         style="@style/ToolbarButton"
         android:layout_height="match_parent"
         android:src="@drawable/btn_close"
         android:contentDescription="@string/close"
-        app:tint="@color/standard_mode_tint" />
+        app:tint="@color/default_icon_color_tint_list" />
 </LinearLayout>

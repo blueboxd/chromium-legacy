@@ -36,9 +36,7 @@ class CONTENT_EXPORT URLLoaderThrottleProvider {
   // requests from shared or service workers, this is called on the worker
   // thread and |render_frame_id| will be set to MSG_ROUTING_NONE.
   virtual std::vector<std::unique_ptr<blink::URLLoaderThrottle>>
-  CreateThrottles(int render_frame_id,
-                  const blink::WebURLRequest& request,
-                  blink::mojom::ResourceType resource_type) = 0;
+  CreateThrottles(int render_frame_id, const blink::WebURLRequest& request) = 0;
 
   // Set the network status online state as specified in |is_online|.
   virtual void SetOnline(bool is_online) = 0;

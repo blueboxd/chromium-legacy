@@ -14,8 +14,8 @@
 #include "mojo/public/cpp/bindings/pending_remote.h"
 #include "mojo/public/cpp/bindings/remote.h"
 #include "net/base/network_isolation_key.h"
+#include "net/proxy_resolution/configured_proxy_resolution_service.h"
 #include "net/proxy_resolution/proxy_info.h"
-#include "net/proxy_resolution/proxy_resolution_service.h"
 #include "services/network/public/mojom/proxy_lookup_client.mojom.h"
 #include "url/gurl.h"
 
@@ -50,7 +50,7 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) ProxyLookupRequest {
   mojo::Remote<mojom::ProxyLookupClient> proxy_lookup_client_;
 
   net::ProxyInfo proxy_info_;
-  std::unique_ptr<net::ProxyResolutionService::Request> request_;
+  std::unique_ptr<net::ConfiguredProxyResolutionService::Request> request_;
 
   DISALLOW_COPY_AND_ASSIGN(ProxyLookupRequest);
 };

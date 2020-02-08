@@ -782,6 +782,9 @@ void WindowState::OnPrePipStateChange(WindowStateType old_window_state_type) {
     }
 
     CollectPipEnterExitMetrics(/*enter=*/true);
+
+    // PIP window shouldn't be tracked in MruWindowTracker.
+    window()->SetProperty(ash::kExcludeInMruKey, true);
   } else if (was_pip) {
     if (widget) {
       widget->widget_delegate()->SetCanActivate(true);
@@ -791,6 +794,7 @@ void WindowState::OnPrePipStateChange(WindowStateType old_window_state_type) {
         window(), ::wm::WINDOW_VISIBILITY_ANIMATION_TYPE_DEFAULT);
 
     CollectPipEnterExitMetrics(/*enter=*/false);
+    window()->ClearProperty(ash::kExcludeInMruKey);
   }
   // PIP uses restore bounds in its own special context. Reset it in PIP
   // enter/exit transition so that it won't be used wrongly.

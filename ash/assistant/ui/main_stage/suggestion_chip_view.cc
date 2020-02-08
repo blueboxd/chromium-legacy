@@ -29,7 +29,6 @@ constexpr SkColor kTextColor = gfx::kGoogleGrey700;
 constexpr int kStrokeWidthDip = 1;
 constexpr int kIconMarginDip = 8;
 constexpr int kIconSizeDip = 16;
-constexpr int kIconCornerRadiusDip = kIconSizeDip / 2;
 constexpr int kChipPaddingDip = 16;
 constexpr int kPreferredHeightDip = 32;
 
@@ -96,12 +95,6 @@ void SuggestionChipView::InitLayout(const Params& params) {
     icon_view_->SetImage(params.icon.value());
   else
     icon_view_->SetVisible(false);
-
-  icon_view_->SetPaintToLayer();
-  icon_view_->layer()->SetFillsBoundsOpaquely(false);
-  icon_view_->layer()->SetRoundedCornerRadius(
-      {kIconCornerRadiusDip, kIconCornerRadiusDip, kIconCornerRadiusDip,
-       kIconCornerRadiusDip});
 
   // Text.
   text_view_ = AddChildView(std::make_unique<views::Label>());

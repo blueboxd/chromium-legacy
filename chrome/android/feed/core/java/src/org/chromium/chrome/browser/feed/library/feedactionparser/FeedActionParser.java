@@ -216,11 +216,7 @@ public final class FeedActionParser implements ActionParser {
                 break;
             case SEND_FEEDBACK:
                 Log.d(TAG, "SendFeedback menu item clicked.");
-                // TODO(petewil):
-                // Marshall feed specific args.
-                // Get a Feedback object.
-                // Dismiss menu.
-                // Call the feedback object to send feedback async.  Don't wait for it.
+                streamActionApi.sendFeedback(this.mContentMetadata.get());
                 break;
             default:
                 Logger.wtf(TAG, "Haven't implemented host handling of %s",

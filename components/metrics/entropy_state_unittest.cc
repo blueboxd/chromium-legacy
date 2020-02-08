@@ -50,7 +50,7 @@ TEST_F(EntropyStateTest, HaveNoLowEntropySource) {
             entropy_state.GetOldLowEntropySource());
   // ...and the high entropy source should include the *new* low entropy source.
   std::string high_source = entropy_state.GetHighEntropySource(
-      "AAAAAAAA-BBBB-CCCC-DDDD-EEEEEEEEEEEF", "");
+      "AAAAAAAA-BBBB-CCCC-DDDD-EEEEEEEEEEEF");
   EXPECT_TRUE(base::EndsWith(high_source, base::NumberToString(new_low_source),
                              base::CompareCase::SENSITIVE))
       << high_source;
@@ -69,7 +69,7 @@ TEST_F(EntropyStateTest, HaveOnlyNewLowEntropySource) {
             entropy_state.GetOldLowEntropySource());
   // ...and the high entropy source should include the *new* low entropy source.
   std::string high_source = entropy_state.GetHighEntropySource(
-      "AAAAAAAA-BBBB-CCCC-DDDD-EEEEEEEEEEEF", "");
+      "AAAAAAAA-BBBB-CCCC-DDDD-EEEEEEEEEEEF");
   EXPECT_TRUE(base::EndsWith(high_source, base::NumberToString(new_low_source),
                              base::CompareCase::SENSITIVE))
       << high_source;
@@ -90,7 +90,7 @@ TEST_F(EntropyStateTest, HaveOnlyOldLowEntropySource) {
   EXPECT_EQ(old_low_source, entropy_state.GetOldLowEntropySource());
   // ...and the high entropy source should include the *old* low entropy source.
   std::string high_source = entropy_state.GetHighEntropySource(
-      "AAAAAAAA-BBBB-CCCC-DDDD-EEEEEEEEEEEF", "");
+      "AAAAAAAA-BBBB-CCCC-DDDD-EEEEEEEEEEEF");
   EXPECT_TRUE(base::EndsWith(high_source, base::NumberToString(old_low_source),
                              base::CompareCase::SENSITIVE))
       << high_source;
@@ -110,7 +110,7 @@ TEST_F(EntropyStateTest, HaveBothLowEntropySources) {
   EXPECT_EQ(old_low_source, entropy_state.GetOldLowEntropySource());
   // ...and the high entropy source should include the *old* low entropy source.
   std::string high_source = entropy_state.GetHighEntropySource(
-      "AAAAAAAA-BBBB-CCCC-DDDD-EEEEEEEEEEEF", "");
+      "AAAAAAAA-BBBB-CCCC-DDDD-EEEEEEEEEEEF");
   EXPECT_TRUE(base::EndsWith(high_source, base::NumberToString(old_low_source),
                              base::CompareCase::SENSITIVE))
       << high_source;

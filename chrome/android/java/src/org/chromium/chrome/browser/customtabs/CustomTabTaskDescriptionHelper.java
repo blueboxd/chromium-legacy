@@ -227,7 +227,7 @@ public class CustomTabTaskDescriptionHelper implements NativeInitObserver, Destr
         if (currentTab == null) return null;
 
         String label = currentTab.getTitle();
-        String domain = UrlUtilities.getDomainAndRegistry(currentTab.getUrl(), false);
+        String domain = UrlUtilities.getDomainAndRegistry(currentTab.getUrlString(), false);
         if (TextUtils.isEmpty(label)) {
             label = domain;
         }
@@ -245,7 +245,7 @@ public class CustomTabTaskDescriptionHelper implements NativeInitObserver, Destr
 
         Bitmap bitmap = null;
         if (!currentTab.isIncognito()) {
-            bitmap = mIconGenerator.getBitmap(currentTab.getUrl(), mLargestFavicon);
+            bitmap = mIconGenerator.getBitmap(currentTab.getUrlString(), mLargestFavicon);
         }
         return bitmap;
     }
@@ -265,11 +265,12 @@ public class CustomTabTaskDescriptionHelper implements NativeInitObserver, Destr
         Tab currentTab = mTabProvider.getTab();
         if (currentTab == null) return;
 
-        final String currentUrl = currentTab.getUrl();
-        mFaviconHelper.getLocalFaviconImageForURL(
-                ((TabImpl) currentTab).getProfile(), currentTab.getUrl(), 0, (image, iconUrl) -> {
+        final String currentUrl = currentTab.getUrlString();
+        mFaviconHelper.getLocalFaviconImageForURL(((TabImpl) currentTab).getProfile(),
+                currentTab.getUrlString(), 0, (image, iconUrl) -> {
                     if (mTabProvider.getTab() == null
-                            || !TextUtils.equals(currentUrl, mTabProvider.getTab().getUrl())) {
+                            || !TextUtils.equals(
+                                    currentUrl, mTabProvider.getTab().getUrlString())) {
                         return;
                     }
 

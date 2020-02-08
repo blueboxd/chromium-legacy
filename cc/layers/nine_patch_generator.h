@@ -15,7 +15,9 @@
 #include "ui/gfx/geometry/size.h"
 
 namespace base {
-class DictionaryValue;
+namespace trace_event {
+class TracedValue;
+}
 }
 
 namespace viz {
@@ -103,7 +105,7 @@ class CC_EXPORT NinePatchGenerator {
                    viz::SharedQuadState* shared_quad_state,
                    const std::vector<Patch>& patches);
 
-  void AsJson(base::DictionaryValue* dictionary) const;
+  void AsValueInto(base::trace_event::TracedValue* state) const;
   void CheckGeometryLimitations();
 
  private:

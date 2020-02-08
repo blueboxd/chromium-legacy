@@ -100,6 +100,15 @@ public interface Tab extends TabLifecycle {
      * @return The URL that is loaded in the current tab. This may not be the same as
      *         the last committed URL if a new navigation is in progress.
      */
+    String getUrlString();
+
+    /**
+     * Note: This function is currently being refactored to return a GURL. Please use
+     * {@link #getUrlString} for now.
+     *
+     * @return The URL that is loaded in the current tab. This may not be the same as
+     *         the last committed URL if a new navigation is in progress.
+     */
     String getUrl();
 
     /**

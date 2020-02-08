@@ -293,7 +293,8 @@ void AutocompleteResult::SortAndCull(
 
 void AutocompleteResult::DemoteOnDeviceSearchSuggestions() {
   const std::string mode = base::GetFieldTrialParamValueByFeature(
-      omnibox::kOnDeviceHeadProvider, "DemoteOnDeviceSearchSuggestionsMode");
+      omnibox::kOnDeviceHeadProvider,
+      OmniboxFieldTrial::kOnDeviceHeadSuggestDemoteMode);
   if (mode != "decrease-relevances" && mode != "remove-suggestions")
     return;
 

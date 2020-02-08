@@ -63,7 +63,7 @@ public class UmaSessionStats {
             UmaSessionStatsJni.get().recordPageLoadedWithKeyboard();
         }
 
-        String url = tab.getUrl();
+        String url = tab.getUrlString();
         if (!TextUtils.isEmpty(url) && UrlUtilities.isHttpOrHttps(url)) {
             PostTask.postTask(TaskTraits.BEST_EFFORT_MAY_BLOCK, () -> {
                 boolean isEligible =

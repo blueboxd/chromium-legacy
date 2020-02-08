@@ -78,8 +78,9 @@ class TLSClientSocketTestBase {
           &mock_client_socket_factory_);
     }
     if (configure_proxy) {
-      proxy_resolution_service_ = net::ProxyResolutionService::CreateFixed(
-          "http://proxy:8080", TRAFFIC_ANNOTATION_FOR_TESTS);
+      proxy_resolution_service_ =
+          net::ConfiguredProxyResolutionService::CreateFixed(
+              "http://proxy:8080", TRAFFIC_ANNOTATION_FOR_TESTS);
       url_request_context_.set_proxy_resolution_service(
           proxy_resolution_service_.get());
     }
@@ -298,7 +299,8 @@ class TLSClientSocketTestBase {
   // SSLInfo obtained from UpgradeToTLS.
   base::Optional<net::SSLInfo> ssl_info_;
 
-  std::unique_ptr<net::ProxyResolutionService> proxy_resolution_service_;
+  std::unique_ptr<net::ConfiguredProxyResolutionService>
+      proxy_resolution_service_;
   net::TestURLRequestContext url_request_context_;
   net::MockClientSocketFactory mock_client_socket_factory_;
   std::unique_ptr<SocketFactory> factory_;

@@ -36,8 +36,8 @@
 #include "net/dns/host_resolver.h"
 #include "net/http/http_network_session.h"
 #include "net/net_buildflags.h"
+#include "net/proxy_resolution/configured_proxy_resolution_service.h"
 #include "net/proxy_resolution/proxy_config_service.h"
-#include "net/proxy_resolution/proxy_resolution_service.h"
 #include "net/ssl/ssl_config_service.h"
 #include "net/third_party/quiche/src/quic/core/quic_packets.h"
 #include "net/url_request/url_request_job_factory.h"
@@ -154,14 +154,14 @@ class NET_EXPORT URLRequestContextBuilder {
       HttpNetworkSession::Context* session_context);
 
   // These functions are mutually exclusive.  The ProxyConfigService, if
-  // set, will be used to construct a ProxyResolutionService.
+  // set, will be used to construct a ConfiguredProxyResolutionService.
   void set_proxy_config_service(
       std::unique_ptr<ProxyConfigService> proxy_config_service) {
     proxy_config_service_ = std::move(proxy_config_service);
   }
 
   // Sets whether quick PAC checks are enabled. Defaults to true. Ignored if
-  // a ProxyResolutionService is set directly.
+  // a ConfiguredProxyResolutionService is set directly.
   void set_pac_quick_check_enabled(bool pac_quick_check_enabled) {
     pac_quick_check_enabled_ = pac_quick_check_enabled;
   }
@@ -171,7 +171,8 @@ class NET_EXPORT URLRequestContextBuilder {
   // resolution). Subclasses may override CreateProxyResolutionService for
   // different default behavior.
   void set_proxy_resolution_service(
-      std::unique_ptr<ProxyResolutionService> proxy_resolution_service) {
+      std::unique_ptr<ConfiguredProxyResolutionService>
+          proxy_resolution_service) {
     proxy_resolution_service_ = std::move(proxy_resolution_service);
   }
 
@@ -317,11 +318,12 @@ class NET_EXPORT URLRequestContextBuilder {
   std::unique_ptr<URLRequestContext> Build();
 
  protected:
-  // Lets subclasses override ProxyResolutionService creation, using a
-  // ProxyResolutionService that uses the URLRequestContext itself to get PAC
-  // scripts. When this method is invoked, the URLRequestContext is not yet
-  // ready to service requests.
-  virtual std::unique_ptr<ProxyResolutionService> CreateProxyResolutionService(
+  // Lets subclasses override ConfiguredProxyResolutionService creation, using a
+  // ConfiguredProxyResolutionService that uses the URLRequestContext itself to
+  // get PAC scripts. When this method is invoked, the URLRequestContext is not
+  // yet ready to service requests.
+  virtual std::unique_ptr<ConfiguredProxyResolutionService>
+  CreateProxyResolutionService(
       std::unique_ptr<ProxyConfigService> proxy_config_service,
       URLRequestContext* url_request_context,
       HostResolver* host_resolver,
@@ -357,7 +359,7 @@ class NET_EXPORT URLRequestContextBuilder {
   HostResolver::Factory* host_resolver_factory_ = nullptr;
   std::unique_ptr<ProxyConfigService> proxy_config_service_;
   bool pac_quick_check_enabled_ = true;
-  std::unique_ptr<ProxyResolutionService> proxy_resolution_service_;
+  std::unique_ptr<ConfiguredProxyResolutionService> proxy_resolution_service_;
   std::unique_ptr<SSLConfigService> ssl_config_service_;
   std::unique_ptr<NetworkDelegate> network_delegate_;
   std::unique_ptr<ProxyDelegate> proxy_delegate_;

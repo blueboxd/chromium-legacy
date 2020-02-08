@@ -57,10 +57,6 @@ class VIEWS_EXPORT WidgetDelegate : public virtual WidgetGetter {
   // ClientView.
   virtual bool OnCloseRequested(Widget::ClosedReason close_reason);
 
-  // Called when the widget transitions from a state in which it should render
-  // as active to one in which it should render as inactive or vice-versa.
-  virtual void OnPaintAsActiveChanged(bool paint_as_active);
-
   // Returns the view that should have the focus when the widget is shown.  If
   // NULL no view is focused.
   virtual View* GetInitiallyFocusedView();

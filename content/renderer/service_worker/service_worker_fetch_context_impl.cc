@@ -137,8 +137,8 @@ void ServiceWorkerFetchContextImpl::WillSendRequest(
     // worker scripts.
     script_url_to_skip_throttling_ = GURL();
   } else if (throttle_provider_) {
-    extra_data->set_url_loader_throttles(throttle_provider_->CreateThrottles(
-        MSG_ROUTING_NONE, request, WebURLRequestToResourceType(request)));
+    extra_data->set_url_loader_throttles(
+        throttle_provider_->CreateThrottles(MSG_ROUTING_NONE, request));
   }
 
   request.SetExtraData(std::move(extra_data));

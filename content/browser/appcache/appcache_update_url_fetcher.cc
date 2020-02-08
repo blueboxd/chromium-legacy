@@ -181,12 +181,8 @@ void AppCacheUpdateJob::URLFetcher::OnWriteComplete(int result) {
 }
 
 void AppCacheUpdateJob::URLFetcher::ReadResponseData() {
-  AppCacheUpdateJobState state = job_->internal_state_;
-  if (state == AppCacheUpdateJobState::CACHE_FAILURE ||
-      state == AppCacheUpdateJobState::CANCELLED ||
-      state == AppCacheUpdateJobState::COMPLETED) {
+  if (job_->IsFinished())
     return;
-  }
   request_->Read();
 }
 

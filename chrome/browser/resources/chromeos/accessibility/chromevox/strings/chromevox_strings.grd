@@ -3817,6 +3817,15 @@ If you're done with the tutorial, use ChromeVox to navigate to the Close button 
       <message desc="Title displayed in the panel for the search menu." name="IDS_CHROMEVOX_PANEL_SEARCH_MENU">
         Search menu
       </message>
+      <message desc="Hint text for the input in the ChromeVox panel used for creating annotations." name="IDS_CHROMEVOX_ANNOTATIONS_WIDGET_INTRO">
+        Enter a custom label
+      </message>
+      <message desc="A label for the button in the ChromeVox panel used to discard annotations and leave the UI." name="IDS_CHROMEVOX_DISCARD_ANNOTATION">
+        Discard label
+      </message>
+      <message desc="A label for the button in the ChromeVox panel used to save annotations." name="IDS_CHROMEVOX_SAVE_ANNOTATION">
+        Save label
+      </message>
     </messages>
   </release>
 </grit>

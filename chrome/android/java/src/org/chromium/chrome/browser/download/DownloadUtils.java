@@ -293,7 +293,7 @@ public class DownloadUtils {
             final OfflinePageBridge bridge =
                     OfflinePageBridge.getForProfile(((TabImpl) tab).getProfile());
             bridge.scheduleDownload(tab.getWebContents(), OfflinePageBridge.ASYNC_NAMESPACE,
-                    tab.getUrl(), DownloadUiActionFlags.PROMPT_DUPLICATE, origin);
+                    tab.getUrlString(), DownloadUiActionFlags.PROMPT_DUPLICATE, origin);
         } else {
             // Otherwise, the download can be started immediately.
             OfflinePageDownloadBridge.startDownload(tab, origin);
@@ -318,7 +318,7 @@ public class DownloadUtils {
         if (tab.isIncognito()) return false;
 
         // Check if the page url is supported for saving. Only HTTP and HTTPS pages are allowed.
-        if (!OfflinePageBridge.canSavePage(tab.getUrl())) return false;
+        if (!OfflinePageBridge.canSavePage(tab.getUrlString())) return false;
 
         // Download will only be allowed for the error page if download button is shown in the page.
         if (tab.isShowingErrorPage()) {

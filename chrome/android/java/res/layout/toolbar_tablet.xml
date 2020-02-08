@@ -28,28 +28,28 @@
             android:src="@drawable/btn_toolbar_home"
             android:contentDescription="@string/accessibility_toolbar_btn_home"
             android:visibility="gone"
-            app:tint="@color/standard_mode_tint" />
+            app:tint="@color/default_icon_color_tint_list" />
 
         <org.chromium.ui.widget.ChromeImageButton
             android:id="@+id/back_button"
             style="@style/ToolbarButton"
             android:src="@drawable/btn_back"
             android:contentDescription="@string/accessibility_toolbar_btn_back"
-            app:tint="@color/standard_mode_tint" />
+            app:tint="@color/default_icon_color_tint_list" />
 
         <org.chromium.ui.widget.ChromeImageButton
             android:id="@+id/forward_button"
             style="@style/ToolbarButton"
             android:src="@drawable/btn_forward"
             android:contentDescription="@string/accessibility_toolbar_btn_forward"
-            app:tint="@color/standard_mode_tint" />
+            app:tint="@color/default_icon_color_tint_list" />
 
         <!-- The src will be set in onFinishInflate. -->
         <org.chromium.ui.widget.ChromeImageButton
             android:id="@+id/refresh_button"
             android:src="@drawable/btn_reload_stop"
             android:contentDescription="@string/accessibility_btn_refresh"
-            app:tint="@color/standard_mode_tint"
+            app:tint="@color/default_icon_color_tint_list"
             style="@style/ToolbarButton" />
 
         <org.chromium.chrome.browser.omnibox.LocationBarTablet
@@ -86,7 +86,7 @@
                 android:src="@drawable/ic_more_vert_24dp"
                 android:contentDescription="@string/accessibility_toolbar_btn_menu"
                 android:layout_gravity="center"
-                app:tint="@color/standard_mode_tint" />
+                app:tint="@color/default_icon_color_tint_list" />
 
             <ImageView
                 android:id="@+id/menu_badge"

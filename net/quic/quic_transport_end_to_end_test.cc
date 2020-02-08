@@ -44,7 +44,7 @@ class QuicTransportEndToEndTest : public TestWithTaskEnvironment {
 
     URLRequestContextBuilder builder;
     builder.set_proxy_resolution_service(
-        ProxyResolutionService::CreateDirect());
+        ConfiguredProxyResolutionService::CreateDirect());
 
     auto cert_verifier = std::make_unique<MockCertVerifier>();
     cert_verifier->set_default_result(OK);

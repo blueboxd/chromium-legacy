@@ -165,12 +165,14 @@ class WebstoreStandaloneInstaller
   // informs our delegate of success/failure.
 
   // WebstoreDataFetcherDelegate interface implementation.
-  void OnWebstoreRequestFailure() override;
+  void OnWebstoreRequestFailure(const std::string& extension_id) override;
 
   void OnWebstoreResponseParseSuccess(
+      const std::string& extension_id,
       std::unique_ptr<base::DictionaryValue> webstore_data) override;
 
-  void OnWebstoreResponseParseFailure(const std::string& error) override;
+  void OnWebstoreResponseParseFailure(const std::string& extension_id,
+                                      const std::string& error) override;
 
   // WebstoreInstallHelper::Delegate interface implementation.
   void OnWebstoreParseSuccess(

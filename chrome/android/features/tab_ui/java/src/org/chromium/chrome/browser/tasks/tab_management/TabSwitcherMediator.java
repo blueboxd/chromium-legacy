@@ -120,7 +120,6 @@ class TabSwitcherMediator implements TabSwitcher.Controller, TabListRecyclerView
             .TabSelectionEditorController mTabSelectionEditorController;
     private final TabContentManager mTabContentManager;
     private TabSwitcher.OnTabSelectingListener mOnTabSelectingListener;
-    private IphProvider mIphProvider;
 
     /**
      * In cases where a didSelectTab was due to switching models with a toggle,
@@ -174,17 +173,6 @@ class TabSwitcherMediator implements TabSwitcher.Controller, TabListRecyclerView
     }
 
     /**
-     * An interface to control whether to show IPH on grid tab switcher.
-     */
-    public interface IphProvider {
-        /**
-         * Shows IPH on grid tab switcher based on incognito mode.
-         * @param isIncognito Whether IPH is shown for incognito mode.
-         */
-        void maybeShowIPH(boolean isIncognito);
-    }
-
-    /**
      * Basic constructor for the Mediator.
      * @param resetHandler The {@link ResetHandler} that handles reset for this Mediator.
      * @param containerViewModel The {@link PropertyModel} to keep state on the View containing the
@@ -221,9 +209,6 @@ class TabSwitcherMediator implements TabSwitcher.Controller, TabListRecyclerView
                 }
                 if (!mContainerViewModel.get(IS_VISIBLE)) return;
                 mResetHandler.resetWithTabList(currentTabModelFilter, false, mShowTabsInMruOrder);
-                if (mIphProvider != null) {
-                    mIphProvider.maybeShowIPH(mTabModelSelector.isIncognitoSelected());
-                }
             }
         };
         mTabModelSelector.addObserver(mTabModelSelectorObserver);
@@ -519,9 +504,6 @@ class TabSwitcherMediator implements TabSwitcher.Controller, TabListRecyclerView
         mModelIndexWhenShown = mTabModelSelector.getCurrentModelIndex();
         mTabIdWhenShown = mTabModelSelector.getCurrentTabId();
         mContainerViewModel.set(ANIMATE_VISIBILITY_CHANGES, true);
-        if (mIphProvider != null) {
-            mIphProvider.maybeShowIPH(mTabModelSelector.isIncognitoSelected());
-        }
 
         recordTabCounts();
     }
@@ -598,13 +580,6 @@ class TabSwitcherMediator implements TabSwitcher.Controller, TabListRecyclerView
      */
     void setCleanupDelayForTesting(int timeoutMs) {
         mCleanupDelayMsForTesting = timeoutMs;
-    }
-
-    /**
-     * Setup the drag-and-drop IPH provider.
-     */
-    void setIphProvider(IphProvider iphProvider) {
-        mIphProvider = iphProvider;
     }
 
     /**

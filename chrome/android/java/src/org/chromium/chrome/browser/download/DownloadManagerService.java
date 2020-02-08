@@ -401,7 +401,9 @@ public class DownloadManagerService implements DownloadController.DownloadNotifi
         updateDownloadProgress(item, status);
         updateDownloadInfoBar(item);
 
-        if (CachedFeatureFlags.isDownloadAutoResumptionEnabledInNative()) return;
+        if (CachedFeatureFlags.isEnabled(ChromeFeatureList.DOWNLOADS_AUTO_RESUMPTION_NATIVE)) {
+            return;
+        }
         DownloadProgress progress = mDownloadProgressMap.get(item.getId());
         if (progress == null) return;
         if (!isAutoResumable || sIsNetworkListenerDisabled) return;
@@ -1429,7 +1431,9 @@ public class DownloadManagerService implements DownloadController.DownloadNotifi
      * @param guid Id of the download item.
      */
     private void addAutoResumableDownload(String guid) {
-        if (CachedFeatureFlags.isDownloadAutoResumptionEnabledInNative()) return;
+        if (CachedFeatureFlags.isEnabled(ChromeFeatureList.DOWNLOADS_AUTO_RESUMPTION_NATIVE)) {
+            return;
+        }
         if (mAutoResumableDownloadIds.isEmpty() && !sIsNetworkListenerDisabled) {
             mNetworkChangeNotifier = new NetworkChangeNotifierAutoDetect(
                     this, new RegistrationPolicyAlwaysRegister());
@@ -1444,7 +1448,9 @@ public class DownloadManagerService implements DownloadController.DownloadNotifi
      * @param guid Id of the download item.
      */
     private void removeAutoResumableDownload(String guid) {
-        if (CachedFeatureFlags.isDownloadAutoResumptionEnabledInNative()) return;
+        if (CachedFeatureFlags.isEnabled(ChromeFeatureList.DOWNLOADS_AUTO_RESUMPTION_NATIVE)) {
+            return;
+        }
         if (mAutoResumableDownloadIds.isEmpty()) return;
         mAutoResumableDownloadIds.remove(guid);
         stopListenToConnectionChangeIfNotNeeded();
@@ -1462,7 +1468,9 @@ public class DownloadManagerService implements DownloadController.DownloadNotifi
 
     @Override
     public void onConnectionTypeChanged(int connectionType) {
-        if (CachedFeatureFlags.isDownloadAutoResumptionEnabledInNative()) return;
+        if (CachedFeatureFlags.isEnabled(ChromeFeatureList.DOWNLOADS_AUTO_RESUMPTION_NATIVE)) {
+            return;
+        }
         if (mAutoResumableDownloadIds.isEmpty()) return;
         if (connectionType == ConnectionType.CONNECTION_NONE) return;
         boolean isMetered = isActiveNetworkMetered(ContextUtils.getApplicationContext());

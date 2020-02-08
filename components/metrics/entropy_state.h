@@ -32,10 +32,9 @@ class EntropyState final {
 
   // Returns the high entropy source for this client, which is composed of a
   // client ID and the low entropy source. This is intended to be unique for
-  // each install. UMA must be enabled (and |client_id_| must be set) or
-  // |provisional_client_id_| must be set before calling this.
-  std::string GetHighEntropySource(const std::string& client_id,
-                                   const std::string& provisional_client_id);
+  // each install. |initial_client_id| is the client_id that was used to
+  // randomize field trials and must not be empty.
+  std::string GetHighEntropySource(const std::string& initial_client_id);
 
   // Returns the low entropy source for this client. Generates a new value if
   // there is none. See the |low_entropy_source_| comment for more info.

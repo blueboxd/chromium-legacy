@@ -26,6 +26,7 @@
 #include "chrome/browser/prefs/browser_prefs.h"
 #include "chrome/browser/signin/identity_manager_factory.h"
 #include "chrome/browser/signin/identity_test_environment_profile_adaptor.h"
+#include "chrome/common/buildflags.h"
 #include "chrome/common/chrome_constants.h"
 #include "chrome/common/chrome_paths.h"
 #include "chrome/test/base/testing_browser_process.h"
@@ -43,6 +44,10 @@
 
 #if defined(OS_CHROMEOS)
 #include "chrome/browser/chromeos/extensions/install_limiter.h"
+#endif
+
+#if BUILDFLAG(ENABLE_SUPERVISED_USERS)
+#include "chrome/browser/supervised_user/supervised_user_constants.h"
 #endif
 
 namespace extensions {
@@ -68,8 +73,13 @@ std::unique_ptr<TestingProfile> BuildTestingProfile(
     profile_builder.SetPrefService(std::move(prefs));
   }
 
-  if (params.profile_is_supervised)
+  if (params.profile_is_supervised) {
+#if BUILDFLAG(ENABLE_SUPERVISED_USERS)
+    profile_builder.SetSupervisedUserId(supervised_users::kChildAccountSUID);
+#else
     profile_builder.SetSupervisedUserId("asdf");
+#endif
+  }
 
   profile_builder.AddTestingFactories(
       IdentityTestEnvironmentProfileAdaptor::

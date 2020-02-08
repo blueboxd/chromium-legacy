@@ -30,6 +30,7 @@ import org.chromium.base.test.BaseRobolectricTestRunner;
 import org.chromium.base.test.util.Feature;
 import org.chromium.chrome.browser.background_task_scheduler.ChromeBackgroundTaskFactory;
 import org.chromium.chrome.browser.flags.CachedFeatureFlags;
+import org.chromium.chrome.browser.flags.ChromeFeatureList;
 import org.chromium.components.background_task_scheduler.BackgroundTaskScheduler;
 import org.chromium.components.background_task_scheduler.BackgroundTaskSchedulerFactory;
 import org.chromium.components.background_task_scheduler.TaskIds;
@@ -56,7 +57,7 @@ public class DownloadResumptionSchedulerTest {
 
     @Before
     public void setUp() {
-        CachedFeatureFlags.setDownloadAutoResumptionEnabledInNativeForTesting(false);
+        CachedFeatureFlags.setForTesting(ChromeFeatureList.DOWNLOADS_AUTO_RESUMPTION_NATIVE, false);
         BackgroundTaskSchedulerFactory.setSchedulerForTesting(mScheduler);
         ChromeBackgroundTaskFactory.setAsDefault();
     }

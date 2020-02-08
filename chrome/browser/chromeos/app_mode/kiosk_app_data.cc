@@ -9,6 +9,7 @@
 #include "base/bind.h"
 #include "base/files/file_util.h"
 #include "base/json/json_writer.h"
+#include "base/logging.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted_memory.h"
 #include "base/task/post_task.h"
@@ -47,9 +48,6 @@ namespace {
 
 // Keys for local state data. See sample layout in KioskAppManager.
 constexpr char kKeyRequiredPlatformVersion[] = "required_platform_version";
-
-constexpr char kInvalidWebstoreResponseError[] =
-    "Invalid Chrome Web Store reponse";
 
 bool ignore_kiosk_app_data_load_failures_for_testing = false;
 
@@ -476,24 +474,42 @@ void KioskAppData::StartFetch() {
                                ->GetURLLoaderFactory());
 }
 
-void KioskAppData::OnWebstoreRequestFailure() {
+void KioskAppData::OnWebstoreRequestFailure(const std::string& extension_id) {
   SetStatus(STATUS_ERROR);
 }
 
 void KioskAppData::OnWebstoreResponseParseSuccess(
+    const std::string& extension_id,
     std::unique_ptr<base::DictionaryValue> webstore_data) {
+  std::string id;
+  if (!webstore_data.get()->GetString(kIdKey, &id)) {
+    LOG(ERROR) << "Webstore response error (" << kIdKey
+               << "): " << ValueToString(*webstore_data.get());
+    OnWebstoreResponseParseFailure(extension_id, kInvalidWebstoreResponseError);
+    return;
+  }
+  if (extension_id != id) {
+    LOG(ERROR) << "Webstore response error (" << kIdKey
+               << "): " << ValueToString(*webstore_data.get());
+    LOG(ERROR) << "Received extension id " << id
+               << " does not equal expected extension id " << extension_id;
+    OnWebstoreResponseParseFailure(extension_id, kInvalidWebstoreResponseError);
+    return;
+  }
   // Takes ownership of |webstore_data|.
   webstore_fetcher_.reset();
 
   std::string manifest;
-  if (!CheckResponseKeyValue(webstore_data.get(), kManifestKey, &manifest))
+  if (!CheckResponseKeyValue(extension_id, webstore_data.get(), kManifestKey,
+                             &manifest))
     return;
 
-  if (!CheckResponseKeyValue(webstore_data.get(), kLocalizedNameKey, &name_))
+  if (!CheckResponseKeyValue(extension_id, webstore_data.get(),
+                             kLocalizedNameKey, &name_))
     return;
 
   std::string icon_url_string;
-  if (!CheckResponseKeyValue(webstore_data.get(), kIconUrlKey,
+  if (!CheckResponseKeyValue(extension_id, webstore_data.get(), kIconUrlKey,
                              &icon_url_string))
     return;
 
@@ -502,7 +518,7 @@ void KioskAppData::OnWebstoreResponseParseSuccess(
   if (!icon_url.is_valid()) {
     LOG(ERROR) << "Webstore response error (icon url): "
                << ValueToString(*webstore_data);
-    OnWebstoreResponseParseFailure(kInvalidWebstoreResponseError);
+    OnWebstoreResponseParseFailure(extension_id, kInvalidWebstoreResponseError);
     return;
   }
 
@@ -511,19 +527,22 @@ void KioskAppData::OnWebstoreResponseParseSuccess(
       ->Start(app_id(), manifest, icon_url, GetURLLoaderFactory());
 }
 
-void KioskAppData::OnWebstoreResponseParseFailure(const std::string& error) {
+void KioskAppData::OnWebstoreResponseParseFailure(
+    const std::string& extension_id,
+    const std::string& error) {
   LOG(ERROR) << "Webstore failed for kiosk app " << app_id() << ", " << error;
   webstore_fetcher_.reset();
   SetStatus(STATUS_ERROR);
 }
 
-bool KioskAppData::CheckResponseKeyValue(const base::DictionaryValue* response,
+bool KioskAppData::CheckResponseKeyValue(const std::string& extension_id,
+                                         const base::DictionaryValue* response,
                                          const char* key,
                                          std::string* value) {
   if (!response->GetString(key, value)) {
     LOG(ERROR) << "Webstore response error (" << key
                << "): " << ValueToString(*response);
-    OnWebstoreResponseParseFailure(kInvalidWebstoreResponseError);
+    OnWebstoreResponseParseFailure(extension_id, kInvalidWebstoreResponseError);
     return false;
   }
   return true;

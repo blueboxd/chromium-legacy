@@ -189,8 +189,6 @@ class CC_EXPORT PictureLayerImpl
   void RegisterAnimatedImages();
   void UnregisterAnimatedImages();
 
-  std::unique_ptr<base::DictionaryValue> LayerAsJson() const override;
-
   // Set the collection of PaintWorkletInput as well as their PaintImageId that
   // are part of this layer.
   void SetPaintWorkletInputs(

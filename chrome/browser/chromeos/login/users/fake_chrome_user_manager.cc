@@ -403,11 +403,11 @@ const user_manager::UserList& FakeChromeUserManager::GetLoggedInUsers() const {
 
 const user_manager::UserList& FakeChromeUserManager::GetLRULoggedInUsers()
     const {
-  return users_;
+  return logged_in_users_;
 }
 
 user_manager::UserList FakeChromeUserManager::GetUnlockUsers() const {
-  return users_;
+  return logged_in_users_;
 }
 
 void FakeChromeUserManager::UserLoggedIn(const AccountId& account_id,

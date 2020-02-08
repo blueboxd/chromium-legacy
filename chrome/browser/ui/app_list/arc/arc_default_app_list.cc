@@ -15,6 +15,8 @@
 #include "base/strings/string_split.h"
 #include "base/strings/string_util.h"
 #include "base/task/post_task.h"
+#include "base/task/task_traits.h"
+#include "base/task_runner.h"
 #include "chrome/browser/chromeos/arc/arc_util.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/app_list/arc/arc_app_list_prefs.h"
@@ -43,10 +45,6 @@ const base::FilePath::CharType kArcTestDirectory[] =
     FILE_PATH_LITERAL("arc_default_apps");
 const base::FilePath::CharType kArcTestBoardDirectory[] =
     FILE_PATH_LITERAL("arc_board_default_apps");
-const base::FilePath::CharType kBoardDirectory[] =
-    FILE_PATH_LITERAL("/var/cache/arc_default_apps");
-const base::FilePath::CharType kBuildProp[] =
-    FILE_PATH_LITERAL("/usr/share/arcvm/properties/build.prop");
 
 bool use_test_apps_directory = false;
 
@@ -177,14 +175,42 @@ ArcDefaultAppList::ArcDefaultAppList(Profile* profile,
                                      base::OnceClosure ready_callback)
     : profile_(profile), ready_callback_(std::move(ready_callback)) {
   DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
+  arc::ArcSessionManager::Get()->AddObserver(this);
+}
 
-  // Load default apps from two sources.
-  // /usr/share/google-chrome/extensions/arc - contains default apps for all
-  //     boards that share the same image.
-  // /var/cache/arc_default_apps that is link to
-  //     /usr/share/google-chrome/extensions/arc/BOARD_NAME - contains default
-  //     apps for particular current board.
-  //
+ArcDefaultAppList::~ArcDefaultAppList() {
+  auto* manager = arc::ArcSessionManager::Get();
+  if (manager)  // for unit testing
+    manager->RemoveObserver(this);
+}
+
+void ArcDefaultAppList::OnPropertyFilesExpanded(bool result) {
+  if (!result) {
+    // Failed to generate |kGeneratedPropertyFilesPath[Vm]| for whatever reason.
+    // Continue anyway not to stall the launcher initialization. In this case,
+    // ARC[VM] itself won't start, so not being able to get the board name won't
+    // be a huge problem either.
+    VLOG(1) << "Unable to get the board name.";
+    LoadDefaultApps(std::string());
+    return;
+  }
+
+  VLOG(1) << "Getting the board name";
+  const char* source_dir = arc::IsArcVmEnabled()
+                               ? arc::kGeneratedPropertyFilesPathVm
+                               : arc::kGeneratedPropertyFilesPath;
+  base::PostTaskAndReplyWithResult(
+      FROM_HERE,
+      {base::ThreadPool(), base::MayBlock(), base::TaskPriority::USER_VISIBLE},
+      base::BindOnce(&GetBoardName,
+                     base::FilePath(source_dir).Append("build.prop")),
+      base::BindOnce(&ArcDefaultAppList::LoadDefaultApps,
+                     weak_ptr_factory_.GetWeakPtr()));
+}
+
+void ArcDefaultAppList::LoadDefaultApps(std::string board_name) {
+  VLOG(1) << "Start loading default apps. Board name is "
+          << (board_name.empty() ? "<unknown>" : board_name);
   std::vector<base::FilePath> sources;
 
   base::FilePath base_path;
@@ -194,16 +220,8 @@ ArcDefaultAppList::ArcDefaultAppList(Profile* profile,
     DCHECK(valid_path);
     const base::FilePath base_arc_path = base_path.Append(kArcDirectory);
     sources.push_back(base_arc_path);
-    if (arc::IsArcVmEnabled()) {
-      // ARCVM environment doesn't have the symlink. Get the board name on the
-      // fly instead.
-      // TODO(yusukes): Do the same for ARC and remove the arc-setup code for
-      // creating the symlink.
-      sources.push_back(
-          base_arc_path.Append(GetBoardName(base::FilePath(kBuildProp))));
-    } else {
-      sources.push_back(base::FilePath(kBoardDirectory));
-    }
+    if (!board_name.empty())
+      sources.push_back(base_arc_path.Append(board_name));
   } else {
     const bool valid_path =
         base::PathService::Get(chrome::DIR_TEST_DATA, &base_path);
@@ -228,8 +246,6 @@ ArcDefaultAppList::ArcDefaultAppList(Profile* profile,
                        weak_ptr_factory_.GetWeakPtr()));
   }
 }
-
-ArcDefaultAppList::~ArcDefaultAppList() = default;
 
 void ArcDefaultAppList::OnAppsRead(std::unique_ptr<AppInfoMap> apps) {
   DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));

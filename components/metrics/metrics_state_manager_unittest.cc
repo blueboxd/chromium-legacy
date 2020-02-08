@@ -165,6 +165,7 @@ TEST_F(MetricsStateManagerTest, EntropySourceUsed_Low) {
   state_manager->CreateDefaultEntropyProvider();
   EXPECT_EQ(MetricsStateManager::ENTROPY_SOURCE_LOW,
             state_manager->entropy_source_returned());
+  EXPECT_EQ("", state_manager->initial_client_id_for_testing());
 }
 
 TEST_F(MetricsStateManagerTest, EntropySourceUsed_High) {
@@ -173,6 +174,8 @@ TEST_F(MetricsStateManagerTest, EntropySourceUsed_High) {
   state_manager->CreateDefaultEntropyProvider();
   EXPECT_EQ(MetricsStateManager::ENTROPY_SOURCE_HIGH,
             state_manager->entropy_source_returned());
+  EXPECT_EQ(state_manager->initial_client_id_for_testing(),
+            state_manager->client_id());
 }
 
 // Check that setting the kMetricsResetIds pref to true causes the client id to
@@ -473,6 +476,44 @@ TEST_F(MetricsStateManagerTest, CheckProvider) {
   EXPECT_FALSE(uma_proto.has_client_id());
   // Nothing should have been emitted to the cloned install histogram.
   histogram_tester.ExpectTotalCount("UMA.IsClonedInstall", 0);
+}
+
+TEST_F(MetricsStateManagerTest, CheckClientIdWasNotUsedToAssignFieldTrial) {
+  EnableMetricsReporting();
+  ClientInfo client_info;
+  client_info.client_id = "AAAAAAAA-BBBB-CCCC-DDDD-EEEEEEEEEEEE";
+  client_info.installation_date = 1373051956;
+  client_info.reporting_enabled_date = 1373001211;
+
+  SetFakeClientInfoBackup(client_info);
+  SetClientInfoPrefs(client_info);
+
+  std::unique_ptr<MetricsStateManager> state_manager(CreateStateManager());
+  std::unique_ptr<MetricsProvider> provider = state_manager->GetProvider();
+  // The client_id in the new log doesn't match the initial_client_id we used to
+  // assign field trials.
+  prefs_.SetString(prefs::kMetricsClientID, "New client id");
+  SystemProfileProto system_profile;
+  provider->ProvideSystemProfileMetrics(&system_profile);
+  EXPECT_TRUE(system_profile.has_client_id_was_used_for_trial_assignment());
+  EXPECT_FALSE(system_profile.client_id_was_used_for_trial_assignment());
+}
+
+TEST_F(MetricsStateManagerTest, CheckClientIdWasUsedToAssignFieldTrial) {
+  EnableMetricsReporting();
+  ClientInfo client_info;
+  client_info.client_id = "AAAAAAAA-BBBB-CCCC-DDDD-EEEEEEEEEEEE";
+  client_info.installation_date = 1373051956;
+  client_info.reporting_enabled_date = 1373001211;
+
+  SetFakeClientInfoBackup(client_info);
+  SetClientInfoPrefs(client_info);
+
+  std::unique_ptr<MetricsStateManager> state_manager(CreateStateManager());
+  std::unique_ptr<MetricsProvider> provider = state_manager->GetProvider();
+  SystemProfileProto system_profile;
+  provider->ProvideSystemProfileMetrics(&system_profile);
+  EXPECT_TRUE(system_profile.client_id_was_used_for_trial_assignment());
 }
 
 TEST_F(MetricsStateManagerTest, CheckProviderResetIds) {

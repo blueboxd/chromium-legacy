@@ -8,6 +8,7 @@
 #include <memory>
 
 #include "base/macros.h"
+#include "base/time/time.h"
 #include "chrome/browser/ui/webui/app_management/app_management.mojom-forward.h"
 #include "chrome/browser/ui/webui/settings/chromeos/app_management/app_management_page_handler_factory.h"
 #include "chrome/browser/ui/webui/webui_load_timer.h"
@@ -51,6 +52,8 @@ class OSSettingsUI : public ui::MojoWebUIController {
  private:
   void AddSettingsPageUIHandler(
       std::unique_ptr<content::WebUIMessageHandler> handler);
+
+  base::TimeTicks time_when_opened_;
 
   WebuiLoadTimer webui_load_timer_;
 

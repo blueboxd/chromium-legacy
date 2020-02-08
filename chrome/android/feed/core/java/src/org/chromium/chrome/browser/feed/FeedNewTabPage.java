@@ -85,7 +85,8 @@ public class FeedNewTabPage
                 FeedProcessScopeFactory.getFeedConsumptionObserver(),
                 FeedProcessScopeFactory.getFeedOfflineIndicator(),
                 OfflinePageBridge.getForProfile(((TabImpl) mTab).getProfile()),
-                FeedProcessScopeFactory.getFeedLoggingBridge());
+                FeedProcessScopeFactory.getFeedLoggingBridge(), ((TabImpl) mTab).getActivity(),
+                ((TabImpl) mTab).getProfile());
         LayoutInflater inflater = LayoutInflater.from(((TabImpl) mTab).getActivity());
         mNewTabPageLayout = (NewTabPageLayout) inflater.inflate(R.layout.new_tab_page_layout, null);
         SectionHeaderView sectionHeaderView = (SectionHeaderView) inflater.inflate(

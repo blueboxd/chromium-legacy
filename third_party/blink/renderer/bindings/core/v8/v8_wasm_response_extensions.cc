@@ -381,7 +381,7 @@ void StreamFromResponseCallback(
                                "v8.wasm.moduleCacheInvalid",
                                TRACE_EVENT_SCOPE_THREAD);
           cache_handler->ClearCachedMetadata(
-              CachedMetadataHandler::kSendToPlatform);
+              CachedMetadataHandler::kClearPersistentStorage);
         }
       }
     }

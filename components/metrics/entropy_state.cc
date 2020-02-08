@@ -56,8 +56,8 @@ void EntropyState::RegisterPrefs(PrefRegistrySimple* registry) {
 }
 
 std::string EntropyState::GetHighEntropySource(
-    const std::string& client_id,
-    const std::string& provisional_client_id) {
+    const std::string& initial_client_id) {
+  DCHECK(!initial_client_id.empty());
   // For metrics reporting-enabled users, we combine the client ID and low
   // entropy source to get the final entropy source.
   // This has two useful properties:
@@ -74,9 +74,7 @@ std::string EntropyState::GetHighEntropySource(
   if (low_entropy_source == kLowEntropySourceNotSet)
     low_entropy_source = GetLowEntropySource();
 
-  const std::string& client_id_to_use =
-      (client_id.empty() ? provisional_client_id : client_id);
-  return client_id_to_use + base::NumberToString(low_entropy_source);
+  return initial_client_id + base::NumberToString(low_entropy_source);
 }
 
 int EntropyState::GetLowEntropySource() {

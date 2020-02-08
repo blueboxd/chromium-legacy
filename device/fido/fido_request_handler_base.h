@@ -172,7 +172,7 @@ class COMPONENT_EXPORT(DEVICE_FIDO) FidoRequestHandlerBase
   // received from the any one of the connected authenticators, in which case
   // all other authenticators are cancelled.
   // https://w3c.github.io/webauthn/#iface-pkcredential
-  void CancelActiveAuthenticators(base::StringPiece exclude_id = nullptr);
+  void CancelActiveAuthenticators(base::StringPiece exclude_id = "");
   void OnBluetoothAdapterEnumerated(bool is_present,
                                     bool is_powered_on,
                                     bool can_power_on);

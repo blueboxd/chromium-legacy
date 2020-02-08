@@ -92,7 +92,7 @@ public class TaskRecognizer extends EmptyTabObserver implements ResolveResponse 
 
         mTabInUse = tab;
         String pageTitle = tab.getTitle();
-        String pageUrl = tab.getUrl();
+        String pageUrl = tab.getUrlString();
         WebContents webContents = tab.getWebContents();
         if (TextUtils.isEmpty(pageTitle) || TextUtils.isEmpty(pageUrl) || webContents == null) {
             Log.w(TAG, "not a good page. :-(");

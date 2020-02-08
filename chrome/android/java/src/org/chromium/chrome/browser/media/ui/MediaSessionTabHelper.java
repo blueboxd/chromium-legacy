@@ -323,7 +323,7 @@ public class MediaSessionTabHelper implements MediaImageCallback {
             }
 
             mOrigin = UrlFormatter.formatUrlForDisplayOmitSchemeOmitTrivialSubdomains(
-                    GURLUtils.getOrigin(mTab.getUrl()));
+                    GURLUtils.getOrigin(mTab.getUrlString()));
             mFavicon = null;
             mPageMediaImage = null;
             mPageMetadata = null;

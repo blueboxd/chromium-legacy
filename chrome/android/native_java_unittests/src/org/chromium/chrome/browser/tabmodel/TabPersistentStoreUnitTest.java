@@ -106,7 +106,7 @@ public class TabPersistentStoreUnitTest {
         };
 
         TabImpl emptyNtpTab = mock(TabImpl.class);
-        when(emptyNtpTab.getUrl()).thenReturn(UrlConstants.NTP_URL);
+        when(emptyNtpTab.getUrlString()).thenReturn(UrlConstants.NTP_URL);
         when(emptyNtpTab.isTabStateDirty()).thenReturn(true);
         when(emptyNtpTab.canGoBack()).thenReturn(false);
         when(emptyNtpTab.canGoForward()).thenReturn(false);
@@ -115,7 +115,7 @@ public class TabPersistentStoreUnitTest {
         assertFalse(mPersistentStore.isTabPendingSave(emptyNtpTab));
 
         TabImpl ntpWithBackNavTab = mock(TabImpl.class);
-        when(ntpWithBackNavTab.getUrl()).thenReturn(UrlConstants.NTP_URL);
+        when(ntpWithBackNavTab.getUrlString()).thenReturn(UrlConstants.NTP_URL);
         when(ntpWithBackNavTab.isTabStateDirty()).thenReturn(true);
         when(ntpWithBackNavTab.canGoBack()).thenReturn(true);
         when(ntpWithBackNavTab.canGoForward()).thenReturn(false);
@@ -124,7 +124,7 @@ public class TabPersistentStoreUnitTest {
         assertTrue(mPersistentStore.isTabPendingSave(ntpWithBackNavTab));
 
         TabImpl ntpWithForwardNavTab = mock(TabImpl.class);
-        when(ntpWithForwardNavTab.getUrl()).thenReturn(UrlConstants.NTP_URL);
+        when(ntpWithForwardNavTab.getUrlString()).thenReturn(UrlConstants.NTP_URL);
         when(ntpWithForwardNavTab.isTabStateDirty()).thenReturn(true);
         when(ntpWithForwardNavTab.canGoBack()).thenReturn(false);
         when(ntpWithForwardNavTab.canGoForward()).thenReturn(true);
@@ -133,7 +133,7 @@ public class TabPersistentStoreUnitTest {
         assertTrue(mPersistentStore.isTabPendingSave(ntpWithForwardNavTab));
 
         TabImpl ntpWithAllTheNavsTab = mock(TabImpl.class);
-        when(ntpWithAllTheNavsTab.getUrl()).thenReturn(UrlConstants.NTP_URL);
+        when(ntpWithAllTheNavsTab.getUrlString()).thenReturn(UrlConstants.NTP_URL);
         when(ntpWithAllTheNavsTab.isTabStateDirty()).thenReturn(true);
         when(ntpWithAllTheNavsTab.canGoBack()).thenReturn(true);
         when(ntpWithAllTheNavsTab.canGoForward()).thenReturn(true);

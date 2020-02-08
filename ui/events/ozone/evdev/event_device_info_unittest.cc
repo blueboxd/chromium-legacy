@@ -264,11 +264,26 @@ TEST(EventDeviceInfoTest, IllitekTP) {
 
   EXPECT_EQ(ui::InputDeviceType::INPUT_DEVICE_USB, devinfo.device_type());
 }
+
 TEST(EventDeviceInfoTest, Nocturne_Touchscreen) {
   EventDeviceInfo devinfo;
   EXPECT_TRUE(CapabilitiesToDeviceInfo(kNocturneTouchScreen, &devinfo));
   EXPECT_EQ(40, devinfo.GetAbsResolution(ABS_MT_POSITION_X));
   EXPECT_EQ(10404, devinfo.GetAbsMaximum(ABS_MT_POSITION_X));
+}
+
+TEST(EventDeviceInfoTest, XboxElite) {
+  EventDeviceInfo devinfo;
+  EXPECT_TRUE(CapabilitiesToDeviceInfo(kXboxElite, &devinfo));
+
+  EXPECT_FALSE(devinfo.HasKeyboard());
+  EXPECT_FALSE(devinfo.HasMouse());
+  EXPECT_FALSE(devinfo.HasTouchpad());
+  EXPECT_FALSE(devinfo.HasTouchscreen());
+  EXPECT_FALSE(devinfo.HasTablet());
+  EXPECT_TRUE(devinfo.HasGamepad());
+
+  EXPECT_EQ(ui::InputDeviceType::INPUT_DEVICE_BLUETOOTH, devinfo.device_type());
 }
 
 }  // namespace ui

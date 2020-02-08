@@ -93,7 +93,7 @@ class HeadlessProxyConfigMonitor
     // We must create the proxy config service on the UI loop on Linux because
     // it must synchronously run on the glib message loop.
     proxy_config_service_ =
-        net::ProxyResolutionService::CreateSystemProxyConfigService(
+        net::ConfiguredProxyResolutionService::CreateSystemProxyConfigService(
             task_runner_);
     task_runner_->PostTask(
         FROM_HERE, base::BindOnce(&net::ProxyConfigService::AddObserver,

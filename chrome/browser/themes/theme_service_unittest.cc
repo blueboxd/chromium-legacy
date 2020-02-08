@@ -305,24 +305,6 @@ TEST_F(ThemeServiceTest, IncognitoTest) {
 #endif
 }
 
-TEST_F(ThemeServiceTest, GetDefaultThemeProviderForProfile) {
-  SkColor default_toolbar_color =
-      ThemeService::GetThemeProviderForProfile(profile()).GetColor(
-          ThemeProperties::COLOR_TOOLBAR);
-
-  ThemeScoper scoper = LoadUnpackedTheme();
-
-  // Should get a new color after installing a theme.
-  EXPECT_NE(ThemeService::GetThemeProviderForProfile(profile()).GetColor(
-                ThemeProperties::COLOR_TOOLBAR),
-            default_toolbar_color);
-
-  // Should get the same color when requesting a default color.
-  EXPECT_EQ(ThemeService::GetDefaultThemeProviderForProfile(profile()).GetColor(
-                ThemeProperties::COLOR_TOOLBAR),
-            default_toolbar_color);
-}
-
 TEST_F(ThemeServiceTest, GetColorForToolbarButton) {
   // This test relies on toolbar buttons having no tint, which is not currently
   // true in dark mode.

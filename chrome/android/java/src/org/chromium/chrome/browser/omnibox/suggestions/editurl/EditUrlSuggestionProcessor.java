@@ -159,7 +159,8 @@ public class EditUrlSuggestionProcessor implements OnClickListener, SuggestionPr
 
         mLastProcessedSuggestion = suggestion;
 
-        if (!isSuggestionEquivalentToCurrentPage(mLastProcessedSuggestion, activeTab.getUrl())) {
+        if (!isSuggestionEquivalentToCurrentPage(
+                    mLastProcessedSuggestion, activeTab.getUrlString())) {
             return false;
         }
 

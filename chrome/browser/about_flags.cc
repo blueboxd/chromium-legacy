@@ -1373,12 +1373,56 @@ const FeatureEntry::FeatureParam kOmniboxOnDeviceHeadSuggestAlwaysServe[] = {
 const FeatureEntry::FeatureParam kOmniboxOnDeviceHeadSuggestIncognitoOnly[] = {
     {OmniboxFieldTrial::kOnDeviceHeadSuggestIncognitoServeMode,
      "incognito-only"}};
+const FeatureEntry::FeatureParam kOmniboxOnDeviceHeadSuggestRelevance1000[] = {
+    {OmniboxFieldTrial::kOnDeviceHeadSuggestMaxScoreForNonUrlInput, "1000"},
+    {OmniboxFieldTrial::kOnDeviceHeadSuggestDemoteMode, "decrease-relevances"}};
+const FeatureEntry::FeatureParam
+    kOmniboxOnDeviceHeadSuggestIncognitoOnlyRelevance1000[] = {
+        {OmniboxFieldTrial::kOnDeviceHeadSuggestIncognitoServeMode,
+         "incognito-only"},
+        {OmniboxFieldTrial::kOnDeviceHeadSuggestMaxScoreForNonUrlInput,
+         "1000"}};
+const FeatureEntry::FeatureParam kOmniboxOnDeviceHeadSuggestDelay200Ms[] = {
+    {OmniboxFieldTrial::kOnDeviceHeadSuggestDelaySuggestRequestMs, "200"}};
+const FeatureEntry::FeatureParam kOmniboxOnDeviceHeadSuggestDelay350Ms[] = {
+    {OmniboxFieldTrial::kOnDeviceHeadSuggestDelaySuggestRequestMs, "350"}};
+const FeatureEntry::FeatureParam
+    kOmniboxOnDeviceHeadSuggestDelay200MsAndRelevance1000[] = {
+        {OmniboxFieldTrial::kOnDeviceHeadSuggestDelaySuggestRequestMs, "200"},
+        {OmniboxFieldTrial::kOnDeviceHeadSuggestMaxScoreForNonUrlInput, "1000"},
+        {OmniboxFieldTrial::kOnDeviceHeadSuggestDemoteMode,
+         "decrease-relevances"}};
+const FeatureEntry::FeatureParam
+    kOmniboxOnDeviceHeadSuggestDelay350MsAndRelevance1000[] = {
+        {OmniboxFieldTrial::kOnDeviceHeadSuggestDelaySuggestRequestMs, "350"},
+        {OmniboxFieldTrial::kOnDeviceHeadSuggestMaxScoreForNonUrlInput, "1000"},
+        {OmniboxFieldTrial::kOnDeviceHeadSuggestDemoteMode,
+         "decrease-relevances"}};
+
 const FeatureEntry::FeatureVariation
-    kOmniboxOnDeviceHeadSuggestIncognitoVariations[] = {
+    kOmniboxOnDeviceHeadSuggestExperimentVariations[] = {
         {"both-normal-and-incognito", kOmniboxOnDeviceHeadSuggestAlwaysServe,
          base::size(kOmniboxOnDeviceHeadSuggestAlwaysServe), nullptr},
         {"incognito-only", kOmniboxOnDeviceHeadSuggestIncognitoOnly,
-         base::size(kOmniboxOnDeviceHeadSuggestIncognitoOnly), nullptr}};
+         base::size(kOmniboxOnDeviceHeadSuggestIncognitoOnly), nullptr},
+        {"relevance-1000", kOmniboxOnDeviceHeadSuggestRelevance1000,
+         base::size(kOmniboxOnDeviceHeadSuggestRelevance1000), nullptr},
+        {"incognito-only-relevance-1000",
+         kOmniboxOnDeviceHeadSuggestIncognitoOnlyRelevance1000,
+         base::size(kOmniboxOnDeviceHeadSuggestIncognitoOnlyRelevance1000),
+         nullptr},
+        {"request-delay-200ms", kOmniboxOnDeviceHeadSuggestDelay200Ms,
+         base::size(kOmniboxOnDeviceHeadSuggestDelay200Ms), nullptr},
+        {"request-delay-350ms", kOmniboxOnDeviceHeadSuggestDelay350Ms,
+         base::size(kOmniboxOnDeviceHeadSuggestDelay350Ms), nullptr},
+        {"delay-200ms-relevance-1000",
+         kOmniboxOnDeviceHeadSuggestDelay200MsAndRelevance1000,
+         base::size(kOmniboxOnDeviceHeadSuggestDelay200MsAndRelevance1000),
+         nullptr},
+        {"delay-350ms-relevance-1000",
+         kOmniboxOnDeviceHeadSuggestDelay350MsAndRelevance1000,
+         base::size(kOmniboxOnDeviceHeadSuggestDelay350MsAndRelevance1000),
+         nullptr}};
 
 const FeatureEntry::FeatureParam
     kQuietNotificationPromptsWithAdaptiveActivation[] = {
@@ -2838,7 +2882,7 @@ const FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kOmniboxOnDeviceHeadSuggestionsDescription, kOsAll,
      FEATURE_WITH_PARAMS_VALUE_TYPE(
          omnibox::kOnDeviceHeadProvider,
-         kOmniboxOnDeviceHeadSuggestIncognitoVariations,
+         kOmniboxOnDeviceHeadSuggestExperimentVariations,
          "OmniboxOnDeviceHeadSuggest")},
 
     {"omnibox-on-focus-suggestions",

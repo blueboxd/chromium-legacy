@@ -214,11 +214,11 @@ void SystemClipboard::WriteDataObject(DataObject* data_object) {
   WebDragData data = data_object->ToWebDragData();
   for (const WebDragData::Item& item : data.Items()) {
     if (item.storage_type == WebDragData::Item::kStorageTypeString) {
-      if (item.string_type == blink::kMimeTypeTextPlain) {
+      if (item.string_type == kMimeTypeTextPlain) {
         clipboard_->WriteText(NonNullString(item.string_data));
-      } else if (item.string_type == blink::kMimeTypeTextHTML) {
+      } else if (item.string_type == kMimeTypeTextHTML) {
         clipboard_->WriteHtml(NonNullString(item.string_data), KURL());
-      } else if (item.string_type != blink::kMimeTypeDownloadURL) {
+      } else if (item.string_type != kMimeTypeDownloadURL) {
         custom_data.insert(item.string_type, NonNullString(item.string_data));
       }
     }

@@ -143,7 +143,7 @@ public class CustomTabToolbarCoordinator {
         Tab tab = mTabProvider.getTab();
         if (tab == null) return;
 
-        sendButtonPendingIntentWithUrlAndTitle(params, tab.getUrl(), tab.getTitle());
+        sendButtonPendingIntentWithUrlAndTitle(params, tab.getUrlString(), tab.getTitle());
 
         if (mUmaRecorder != null) {
             mUmaRecorder.recordCustomButtonClick(mActivity.getResources(), params);

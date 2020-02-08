@@ -70,14 +70,19 @@ content::WebContents* ExtensionsMenuButton::GetCurrentWebContents() const {
 }
 
 void ExtensionsMenuButton::UpdateState() {
-  SetImage(Button::STATE_NORMAL,
-           controller_
-               ->GetIcon(GetCurrentWebContents(),
-                         ExtensionsMenuView::kExtensionsMenuIconSize)
-               .AsImageSkia());
+  constexpr gfx::Size kIconSize = gfx::Size(28, 28);
+  SetImage(
+      Button::STATE_NORMAL,
+      controller_->GetIcon(GetCurrentWebContents(), kIconSize).AsImageSkia());
   SetText(controller_->GetActionName());
   SetTooltipText(controller_->GetTooltip(GetCurrentWebContents()));
   SetEnabled(controller_->IsEnabled(GetCurrentWebContents()));
+  // The horizontal insets reasonably align the extension icons with text inside
+  // the dialog. Note that |kIconSize| also contains space for badging, so we
+  // can't trivially use dialog-text insets (empty space inside the icon).
+  constexpr gfx::Insets kBorderInsets = gfx::Insets(
+      (ExtensionsMenuItemView::kMenuItemHeightDp - kIconSize.height()) / 2, 12);
+  SetBorder(views::CreateEmptyBorder(kBorderInsets));
 }
 
 bool ExtensionsMenuButton::IsMenuRunning() const {

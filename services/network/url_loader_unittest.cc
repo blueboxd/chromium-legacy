@@ -407,7 +407,7 @@ class URLLoaderTest : public testing::Test {
     context_builder.set_http_network_session_params(params);
     context_builder.set_quic_context(std::move(quic_context));
     context_builder.set_proxy_resolution_service(
-        net::ProxyResolutionService::CreateDirect());
+        net::ConfiguredProxyResolutionService::CreateDirect());
     auto test_network_delegate = std::make_unique<net::TestNetworkDelegate>();
     unowned_test_network_delegate_ = test_network_delegate.get();
     context_builder.set_network_delegate(std::move(test_network_delegate));

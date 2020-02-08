@@ -379,7 +379,7 @@ class TabListMediator {
     private final TabObserver mTabObserver = new EmptyTabObserver() {
         @Override
         public void onDidStartNavigation(Tab tab, NavigationHandle navigationHandle) {
-            if (NativePageFactory.isNativePageUrl(tab.getUrl(), tab.isIncognito())) return;
+            if (NativePageFactory.isNativePageUrl(tab.getUrlString(), tab.isIncognito())) return;
             if (navigationHandle.isSameDocument() || !navigationHandle.isInMainFrame()) return;
             if (mModel.indexFromId(tab.getId()) == TabModel.INVALID_TAB_INDEX) return;
             mModel.get(mModel.indexFromId(tab.getId()))
@@ -1316,16 +1316,17 @@ class TabListMediator {
 
     private String getUrlForTab(Tab tab) {
         if (!CachedFeatureFlags.isTabGroupsAndroidContinuationEnabled()) return "";
-        if (!mActionsOnAllRelatedTabs) return tab.getUrl();
+        if (!mActionsOnAllRelatedTabs) return tab.getUrlString();
 
         List<Tab> relatedTabs = getRelatedTabsForId(tab.getId());
-        if (relatedTabs.size() == 1) return tab.getUrl();
+        if (relatedTabs.size() == 1) return tab.getUrlString();
 
         StringBuilder builder = new StringBuilder();
         // TODO(1024925): Address i18n issue for the list separator.
         String separator = ", ";
         for (int i = 0; i < relatedTabs.size(); i++) {
-            String domain = UrlUtilities.getDomainAndRegistry(relatedTabs.get(i).getUrl(), false);
+            String domain =
+                    UrlUtilities.getDomainAndRegistry(relatedTabs.get(i).getUrlString(), false);
             if (!domain.isEmpty()) {
                 builder.append(domain);
 
@@ -1396,7 +1397,7 @@ class TabListMediator {
         // If there is an available icon, we fetch favicon synchronously; otherwise asynchronously.
         if (icon != null) {
             Drawable drawable = mTabListFaviconProvider.getFaviconForUrlSync(
-                    tab.getUrl(), tab.isIncognito(), icon);
+                    tab.getUrlString(), tab.isIncognito(), icon);
             mModel.get(modelIndex).model.set(TabProperties.FAVICON, drawable);
             return;
         }
@@ -1410,7 +1411,7 @@ class TabListMediator {
             }
         };
         mTabListFaviconProvider.getFaviconForUrlAsync(
-                tab.getUrl(), tab.isIncognito(), faviconCallback);
+                tab.getUrlString(), tab.isIncognito(), faviconCallback);
     }
 
     /**

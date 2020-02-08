@@ -76,6 +76,12 @@ class ASH_EXPORT Desk {
   // Sets the desk's name to |new_name| and updates the observers.
   void SetName(base::string16 new_name);
 
+  // Prepares for the animation to activate this desk (i.e. this desk is not
+  // active yet), by showing its containers on all root windows while setting
+  // their opacities to 0. Calling Activate() during the animation will set the
+  // opacities back to 1.
+  void PrepareForActivationAnimation();
+
   // Activates this desk. All windows on this desk (if any) will become visible
   // (by means of showing this desk's associated containers on all root
   // windows). If |update_window_activation| is true, the most recently
@@ -114,6 +120,12 @@ class ASH_EXPORT Desk {
  private:
   void MoveWindowToDeskInternal(aura::Window* window, Desk* target_desk);
 
+  // If `PrepareForActivationAnimation()` was called during the animation to
+  // activate this desk, this function is called from `Activate()` to reset the
+  // opacities of the containers back to 1, and returns true. Otherwise, returns
+  // false.
+  bool MaybeResetContainersOpacities();
+
   // The associated container ID with this desk.
   const int container_id_;
 
@@ -139,6 +151,10 @@ class ASH_EXPORT Desk {
   // used to throttle those notifications when we add or remove many windows,
   // and we want to notify observers only once.
   bool should_notify_content_changed_ = true;
+
+  // True if the `PrepareForActivationAnimation()` was called, and this desk's
+  // containers are shown while their layer opacities are temporarily set to 0.
+  bool started_activation_animation_ = false;
 
   DISALLOW_COPY_AND_ASSIGN(Desk);
 };

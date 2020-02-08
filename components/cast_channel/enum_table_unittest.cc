@@ -93,7 +93,7 @@ TEST(EnumTableTest, TestGetEnum) {
   EXPECT_EQ(MyEnum::kOne, kSorted.GetEnum("ONE"));
   EXPECT_EQ(MyEnum::kTwo, kSorted.GetEnum("TWO"));
   EXPECT_EQ(base::nullopt, kSorted.GetEnum("THREE"));
-  EXPECT_EQ(base::nullopt, kSorted.GetEnum(nullptr));
+  EXPECT_EQ(base::nullopt, kSorted.GetEnum(""));
 }
 
 TEST(EnumTableTest, TestStringToEnumGlobal) {
@@ -101,7 +101,7 @@ TEST(EnumTableTest, TestStringToEnumGlobal) {
   EXPECT_EQ(MyEnum::kOne, StringToEnum<MyEnum>("ONE_DEFAULT"));
   EXPECT_EQ(MyEnum::kTwo, StringToEnum<MyEnum>("TWO_DEFAULT"));
   EXPECT_EQ(base::nullopt, StringToEnum<MyEnum>("THREE"));
-  EXPECT_EQ(base::nullopt, StringToEnum<MyEnum>(nullptr));
+  EXPECT_EQ(base::nullopt, StringToEnum<MyEnum>(""));
 }
 
 // See note in enum_table.h for details of why these tests have to be compiled

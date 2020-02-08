@@ -317,7 +317,7 @@ public class TabWebContentsObserver extends TabWebContentsUserData {
                 observers.next().onDidDetachInterstitialPage(mTab);
             }
             mTab.notifyLoadProgress(mTab.getProgress());
-            if (!mTab.maybeShowNativePage(mTab.getUrl(), false)) {
+            if (!mTab.maybeShowNativePage(mTab.getUrlString(), false)) {
                 mTab.showRenderedPage();
             }
         }
@@ -340,7 +340,7 @@ public class TabWebContentsObserver extends TabWebContentsUserData {
         @Override
         public void destroy() {
             MediaCaptureNotificationService.updateMediaNotificationForTab(
-                    ContextUtils.getApplicationContext(), mTab.getId(), null, mTab.getUrl());
+                    ContextUtils.getApplicationContext(), mTab.getId(), null, mTab.getUrlString());
             super.destroy();
         }
     }

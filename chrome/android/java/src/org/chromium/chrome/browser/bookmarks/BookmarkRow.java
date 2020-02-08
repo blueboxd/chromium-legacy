@@ -236,7 +236,8 @@ abstract class BookmarkRow extends SelectableItemView<BookmarkId> implements Boo
         mDragHandle = mEndButtonView;
         mDragHandle.setImageResource(R.drawable.ic_drag_handle_grey600_24dp);
         ApiCompatibilityUtils.setImageTintList(mDragHandle,
-                AppCompatResources.getColorStateList(getContext(), R.color.standard_mode_tint));
+                AppCompatResources.getColorStateList(
+                        getContext(), R.color.default_icon_color_tint_list));
     }
 
     private ListMenuButtonDelegate getListMenuButtonDelegate() {

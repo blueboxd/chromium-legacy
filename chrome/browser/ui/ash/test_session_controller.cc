@@ -18,11 +18,13 @@ void TestSessionController::SetSessionInfo(const ash::SessionInfo& info) {
 void TestSessionController::UpdateUserSession(
     const ash::UserSession& user_session) {
   last_user_session_ = user_session;
-  update_user_session_count_++;
+  ++update_user_session_count_;
 }
 
 void TestSessionController::SetUserSessionOrder(
-    const std::vector<uint32_t>& user_session_order) {}
+    const std::vector<uint32_t>& user_session_order) {
+  ++set_user_session_order_count_;
+}
 
 void TestSessionController::PrepareForLock(PrepareForLockCallback callback) {
   std::move(callback).Run();

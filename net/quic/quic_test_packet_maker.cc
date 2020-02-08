@@ -1326,6 +1326,13 @@ std::string QuicTestPacketMaker::GenerateHttp3PriorityData(
   return std::string(buffer.get(), frame_length);
 }
 
+std::string QuicTestPacketMaker::GenerateHttp3GreaseData() {
+  std::unique_ptr<char[]> buffer;
+  quic::QuicByteCount frame_length =
+      quic::HttpEncoder::SerializeGreasingFrame(&buffer);
+  return std::string(buffer.get(), frame_length);
+}
+
 void QuicTestPacketMaker::MaybeAddHttp3SettingsFrames() {
   DCHECK(quic::VersionUsesHttp3(version_.transport_version));
 
@@ -1340,11 +1347,12 @@ void QuicTestPacketMaker::MaybeAddHttp3SettingsFrames() {
   // stream first.
   std::string type(1, 0x00);
   std::string settings_data = GenerateHttp3SettingsData();
+  std::string grease_data = GenerateHttp3GreaseData();
   std::string max_push_id_data = GenerateHttp3MaxPushIdData();
 
   // The type and the SETTINGS frame may be sent in multiple QUIC STREAM
   // frames.
-  std::string data = type + settings_data + max_push_id_data;
+  std::string data = type + settings_data + grease_data + max_push_id_data;
 
   AddQuicStreamFrame(stream_id, false, data);
   AddQuicStreamFrame(stream_id + 4, false, "\x03");

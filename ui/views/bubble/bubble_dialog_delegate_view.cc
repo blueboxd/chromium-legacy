@@ -283,6 +283,23 @@ void BubbleDialogDelegateView::OnWidgetBoundsChanged(
     SizeToContents();
 }
 
+void BubbleDialogDelegateView::OnWidgetPaintAsActiveChanged(
+    Widget* widget,
+    bool paint_as_active) {
+  if (!paint_as_active) {
+    paint_as_active_lock_.reset();
+    return;
+  }
+
+  if (!anchor_widget() || !anchor_widget()->GetTopLevelWidget())
+    return;
+
+  // When this bubble renders as active, its anchor widget should also render as
+  // active.
+  paint_as_active_lock_ =
+      anchor_widget()->GetTopLevelWidget()->LockPaintAsActive();
+}
+
 BubbleBorder::Shadow BubbleDialogDelegateView::GetShadow() const {
   if (CustomShadowsSupported() || shadow_ == BubbleBorder::NO_ASSETS)
     return shadow_;
@@ -406,21 +423,6 @@ ax::mojom::Role BubbleDialogDelegateView::GetAccessibleWindowRole() {
   // readers announce the contents of the bubble dialog as soon as it appears,
   // as long as we also fire |ax::mojom::Event::kAlert|.
   return ax::mojom::Role::kAlertDialog;
-}
-
-void BubbleDialogDelegateView::OnPaintAsActiveChanged(bool paint_as_active) {
-  if (!paint_as_active) {
-    paint_as_active_lock_.reset();
-    return;
-  }
-
-  if (!anchor_widget() || !anchor_widget()->GetTopLevelWidget())
-    return;
-
-  // When this bubble renders as active, its anchor widget should also render as
-  // active.
-  paint_as_active_lock_ =
-      anchor_widget()->GetTopLevelWidget()->LockPaintAsActive();
 }
 
 gfx::Size BubbleDialogDelegateView::GetMinimumSize() const {

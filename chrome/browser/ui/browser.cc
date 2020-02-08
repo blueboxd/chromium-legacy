@@ -1017,6 +1017,7 @@ bool Browser::CanSaveContents(content::WebContents* web_contents) const {
 
 void Browser::UpdateUIForNavigationInTab(WebContents* contents,
                                          ui::PageTransition transition,
+                                         NavigateParams::WindowAction action,
                                          bool user_initiated) {
   tab_strip_model_->TabNavigating(contents, transition);
 
@@ -1039,6 +1040,17 @@ void Browser::UpdateUIForNavigationInTab(WebContents* contents,
   // the throbber will show the default favicon for a split second when
   // navigating away from the new tab page.
   ScheduleUIUpdate(contents, content::INVALIDATE_TYPE_URL);
+
+  // Navigating contents can take focus (potentially taking it away from other,
+  // currently-focused UI element like the omnibox) if the navigation was
+  // initiated by the user (e.g., via omnibox, bookmarks, etc.).
+  //
+  // Note that focusing contents of NTP-initiated navigations is taken care of
+  // elsewhere - see FocusTabAfterNavigationHelper.
+  if (user_initiated && contents_is_selected &&
+      (window()->IsActive() || action == NavigateParams::SHOW_WINDOW)) {
+    contents->SetInitialFocus();
+  }
 }
 
 void Browser::RegisterKeepAlive() {

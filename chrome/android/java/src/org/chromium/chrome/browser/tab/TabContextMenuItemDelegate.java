@@ -204,7 +204,7 @@ public class TabContextMenuItemDelegate implements ContextMenuItemDelegate {
 
     @Override
     public String getPageUrl() {
-        return mTab.getUrl();
+        return mTab.getUrlString();
     }
 
     @Override

@@ -32,7 +32,8 @@ class MessageCardViewBinder {
 
                 MessageCardView.DismissActionProvider uiDismissProvider =
                         model.get(MessageCardViewProperties.UI_DISMISS_ACTION_PROVIDER);
-                if (uiDismissProvider != null) {
+                if (uiDismissProvider != null
+                        && !model.get(MessageCardViewProperties.SHOULD_KEEP_AFTER_REVIEW)) {
                     uiDismissProvider.dismiss(model.get(MessageCardViewProperties.MESSAGE_TYPE));
                 }
             });

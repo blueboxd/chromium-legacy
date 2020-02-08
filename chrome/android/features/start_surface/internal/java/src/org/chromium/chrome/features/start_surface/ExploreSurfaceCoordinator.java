@@ -87,7 +87,8 @@ class ExploreSurfaceCoordinator implements FeedSurfaceCoordinator.FeedSurfaceDel
                         FeedProcessScopeFactory.getFeedConsumptionObserver(),
                         FeedProcessScopeFactory.getFeedOfflineIndicator(),
                         OfflinePageBridge.getForProfile(Profile.getLastUsedProfile()),
-                        FeedProcessScopeFactory.getFeedLoggingBridge());
+                        FeedProcessScopeFactory.getFeedLoggingBridge(), mActivity,
+                        Profile.getLastUsedRegularProfile().getOriginalProfile());
 
         SectionHeaderView sectionHeaderView = null;
         if (hasHeader) {

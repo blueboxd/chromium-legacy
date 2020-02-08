@@ -8,6 +8,7 @@
 
 goog.provide('Panel');
 
+goog.require('AnnotationsUI');
 goog.require('BackgroundKeyboardHandler');
 goog.require('BrailleCommandData');
 goog.require('EventSourceType');
@@ -56,6 +57,12 @@ Panel = class {
 
     /** @type {Element} @private */
     Panel.searchInput_ = $('search');
+
+    /** @type {Element} @private */
+    Panel.annotationsContainer_ = $('annotations-container');
+
+    /** @type {Element} @private */
+    Panel.annotationsInput_ = $('annotations');
 
     /** @type {Element} @private */
     Panel.brailleTableElement_ = $('braille-table');
@@ -108,6 +115,9 @@ Panel = class {
     $('tutorial_previous')
         .addEventListener('click', Panel.onTutorialPrevious, false);
     $('close_tutorial').addEventListener('click', Panel.onCloseTutorial, false);
+    $('discard-annotation')
+        .addEventListener('click', Panel.closeMenusAndRestoreFocus, false);
+    $('save-annotation').addEventListener('click', Panel.saveAnnotation, false);
 
     document.addEventListener('keydown', Panel.onKeyDown, false);
     document.addEventListener('mouseup', Panel.onMouseUp, false);
@@ -142,7 +152,16 @@ Panel = class {
     if (Panel.mode_ == Panel.Mode.SEARCH) {
       Panel.speechContainer_.hidden = true;
       Panel.brailleContainer_.hidden = true;
+      Panel.annotationsContainer_.hidden = true;
       Panel.searchContainer_.hidden = false;
+      return;
+    }
+
+    if (Panel.mode_ == Panel.Mode.ANNOTATION) {
+      Panel.speechContainer_.hidden = true;
+      Panel.brailleContainer_.hidden = true;
+      Panel.searchContainer_.hidden = true;
+      Panel.annotationsContainer_.hidden = false;
       return;
     }
 
@@ -214,6 +233,11 @@ Panel = class {
         break;
       case PanelCommandType.UPDATE_NOTES:
         Panel.onTutorial('updateNotes');
+        break;
+      case PanelCommandType.OPEN_ANNOTATIONS_UI:
+        if (typeof command.data === 'string') {
+          Panel.openAnnotationsUI(command.data);
+        }
         break;
     }
   }
@@ -977,6 +1001,9 @@ Panel = class {
       // Make sure all menus are cleared to avoid bogous output when we re-open.
       Panel.clearMenus();
 
+      // Ensure annotations input is cleared.
+      Panel.annotationsInput_.value = '';
+
       // Make sure we're not in full-screen mode.
       Panel.setMode(Panel.Mode.COLLAPSED);
 
@@ -1067,12 +1094,30 @@ Panel = class {
     }
     Panel.searchMenu.activateItem(0);
   }
+
+  /**
+   * Initializes the annotations UI.
+   * @param {!string} identifier
+   */
+  static openAnnotationsUI(identifier) {
+    Panel.setMode(Panel.Mode.ANNOTATION);
+    Panel.annotationsInput_.value = '';
+    AnnotationsUI.init(Panel.annotationsInput_, identifier);
+  }
+
+  /**
+   * Creates a new annotation using the contents of |annotationsInput|.
+   */
+  static saveAnnotation() {
+    AnnotationsUI.saveAnnotation(Panel.annotationsInput_.value);
+  }
 };
 
 /**
  * @enum {string}
  */
 Panel.Mode = {
+  ANNOTATION: 'annotation',
   COLLAPSED: 'collapsed',
   FOCUSED: 'focused',
   FULLSCREEN_MENUS: 'menus',
@@ -1084,6 +1129,7 @@ Panel.Mode = {
  * @type {!Object<string, {title: string, location: (string|undefined)}>}
  */
 Panel.ModeInfo = {
+  annotation: {title: 'panel_title', location: '#focus'},
   collapsed: {title: 'panel_title', location: '#'},
   focused: {title: 'panel_title', location: '#focus'},
   menus: {title: 'panel_menus_title', location: '#fullscreen'},

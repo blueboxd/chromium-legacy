@@ -98,10 +98,10 @@ public class NavigateTest {
                             expectedLocation(endUrl), urlBar.getText().toString()));
                     return false;
                 }
-                if (!TextUtils.equals(
-                            endUrl, mActivityTestRule.getActivity().getActivityTab().getUrl())) {
+                if (!TextUtils.equals(endUrl,
+                            mActivityTestRule.getActivity().getActivityTab().getUrlString())) {
                     updateFailureReason(String.format("Expected tab url: %s, actual: %s", endUrl,
-                            mActivityTestRule.getActivity().getActivityTab().getUrl()));
+                            mActivityTestRule.getActivity().getActivityTab().getUrlString()));
                     return false;
                 }
                 return true;
@@ -243,7 +243,7 @@ public class NavigateTest {
         DOMUtils.clickNode(tab.getWebContents(), "aboutLink");
         ChromeTabUtils.waitForTabPageLoaded(tab, url2);
         Assert.assertEquals("Desired Link not open", url2,
-                mActivityTestRule.getActivity().getActivityTab().getUrl());
+                mActivityTestRule.getActivity().getActivityTab().getUrlString());
     }
 
     /**
@@ -295,7 +295,7 @@ public class NavigateTest {
             @Override
             public void onPageLoadStarted(Tab tab, String newUrl) {
                 tab.removeObserver(this);
-                Assert.assertEquals(url1, tab.getUrl());
+                Assert.assertEquals(url1, tab.getUrlString());
                 Assert.assertEquals(url2, newUrl);
             }
         };
@@ -304,7 +304,7 @@ public class NavigateTest {
         DOMUtils.clickNode(tab.getWebContents(), "aboutLink");
         ChromeTabUtils.waitForTabPageLoaded(tab, url2);
         Assert.assertEquals("Desired Link not open", url2,
-                mActivityTestRule.getActivity().getActivityTab().getUrl());
+                mActivityTestRule.getActivity().getActivityTab().getUrlString());
     }
 
     /**
@@ -321,9 +321,8 @@ public class NavigateTest {
                 mTestServer.getURL("/chrome/test/data/android/redirect/one.html");
         typeInOmniboxAndNavigate(initialUrl, null);
 
-        CriteriaHelper.pollInstrumentationThread(
-                Criteria.equals(redirectedUrl,
-                        () -> mActivityTestRule.getActivity().getActivityTab().getUrl()));
+        CriteriaHelper.pollInstrumentationThread(Criteria.equals(redirectedUrl,
+                () -> mActivityTestRule.getActivity().getActivityTab().getUrlString()));
     }
 
     /**
@@ -336,7 +335,7 @@ public class NavigateTest {
     public void testIntentFallbackRedirection() throws Exception {
         InstrumentationRegistry.getInstrumentation().waitForIdleSync();
         Assert.assertEquals(
-                NEW_TAB_PAGE, mActivityTestRule.getActivity().getActivityTab().getUrl());
+                NEW_TAB_PAGE, mActivityTestRule.getActivity().getActivityTab().getUrlString());
 
         final String fallbackUrl =
                 mTestServer.getURL("/chrome/test/data/android/redirect/about.html");
@@ -355,8 +354,8 @@ public class NavigateTest {
         typeInOmniboxAndNavigate(initialUrl, null);
 
         // Now intent fallback should be triggered assuming 'non_existent' scheme cannot be handled.
-        CriteriaHelper.pollInstrumentationThread(Criteria.equals(targetUrl,
-                () -> mActivityTestRule.getActivity().getActivityTab().getUrl()));
+        CriteriaHelper.pollInstrumentationThread(Criteria.equals(
+                targetUrl, () -> mActivityTestRule.getActivity().getActivityTab().getUrlString()));
 
         // Check if Java redirections were removed from the history.
         // Note that if we try to go back in the test: NavigateToEntry() is called, but
@@ -406,7 +405,7 @@ public class NavigateTest {
                             "URL mismatch after pressing back button for the 1st time in repetition"
                                     + "%d.",
                             i),
-                    urls[1], mActivityTestRule.getActivity().getActivityTab().getUrl());
+                    urls[1], mActivityTestRule.getActivity().getActivityTab().getUrlString());
 
             TouchCommon.singleClickView(
                     mActivityTestRule.getActivity().findViewById(R.id.back_button));
@@ -416,7 +415,7 @@ public class NavigateTest {
                             "URL mismatch after pressing back button for the 2nd time in repetition"
                                     + "%d.",
                             i),
-                    urls[0], mActivityTestRule.getActivity().getActivityTab().getUrl());
+                    urls[0], mActivityTestRule.getActivity().getActivityTab().getUrlString());
 
             TouchCommon.singleClickView(
                     mActivityTestRule.getActivity().findViewById(R.id.forward_button));
@@ -426,7 +425,7 @@ public class NavigateTest {
                             "URL mismatch after pressing fwd button for the 1st time in repetition"
                                     + "%d.",
                             i),
-                    urls[1], mActivityTestRule.getActivity().getActivityTab().getUrl());
+                    urls[1], mActivityTestRule.getActivity().getActivityTab().getUrlString());
 
             TouchCommon.singleClickView(
                     mActivityTestRule.getActivity().findViewById(R.id.forward_button));
@@ -436,7 +435,7 @@ public class NavigateTest {
                             "URL mismatch after pressing fwd button for the 2nd time in repetition"
                                     + "%d.",
                             i),
-                    urls[2], mActivityTestRule.getActivity().getActivityTab().getUrl());
+                    urls[2], mActivityTestRule.getActivity().getActivityTab().getUrlString());
         }
     }
 
@@ -512,7 +511,7 @@ public class NavigateTest {
 
     private String getTabUrlOnUIThread(final Tab tab) {
         try {
-            return TestThreadUtils.runOnUiThreadBlocking(() -> tab.getUrl());
+            return TestThreadUtils.runOnUiThreadBlocking(() -> tab.getUrlString());
         } catch (ExecutionException ex) {
             assert false : "Unexpected ExecutionException";
         }

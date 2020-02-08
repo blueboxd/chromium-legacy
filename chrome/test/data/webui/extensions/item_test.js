@@ -346,6 +346,9 @@ suite(extension_item_tests.suiteName, function() {
         item.set('data.state', 'BLACKLISTED');
         flush();
         expectTrue(item.$['enableToggle'].disabled);
+        // Reset state.
+        item.set('data.state', 'ENABLED');
+        flush();
 
         // This section tests that the enable toggle is visible but disabled
         // when disableReasons.blockedByPolicy is true. This test prevents a

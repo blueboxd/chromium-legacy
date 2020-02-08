@@ -157,9 +157,7 @@ bool ImageLayerBridge::PrepareTransferableResource(
                          image_for_compositor->height());
     uint32_t filter =
         filter_quality_ == kNone_SkFilterQuality ? GL_NEAREST : GL_LINEAR;
-    image_for_compositor->EnsureMailbox(kUnverifiedSyncToken, filter);
     auto mailbox_holder = image_for_compositor->GetMailboxHolder();
-
     auto* sii = image_for_compositor->ContextProvider()->SharedImageInterface();
     bool is_overlay_candidate = sii->UsageForMailbox(mailbox_holder.mailbox) &
                                 gpu::SHARED_IMAGE_USAGE_SCANOUT;

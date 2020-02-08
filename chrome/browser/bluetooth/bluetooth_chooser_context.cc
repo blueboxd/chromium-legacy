@@ -284,6 +284,11 @@ bool BluetoothChooserContext::IsAllowedToAccessService(
   return false;
 }
 
+// static
+std::string BluetoothChooserContext::GetObjectName(const base::Value& object) {
+  return *object.FindStringKey(kDeviceNameKey);
+}
+
 bool BluetoothChooserContext::IsValidObject(const base::Value& object) {
   return object.FindStringKey(kDeviceAddressKey) &&
          object.FindStringKey(kDeviceNameKey) &&

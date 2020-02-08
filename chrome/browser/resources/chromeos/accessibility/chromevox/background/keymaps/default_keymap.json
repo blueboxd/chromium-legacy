@@ -1058,6 +1058,15 @@
           "shiftKey": [true]
         }
       }
+    },
+    {
+      "command": "toggleAnnotationsWidget",
+      "sequence": {
+        "cvoxModifier": true,
+        "keys": {
+          "keyCode": [65, 79]
+        }
+      }
     }
   ]
 }

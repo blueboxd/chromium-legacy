@@ -795,7 +795,7 @@ public class VrShellDelegate
         // TODO(ymalik): This call will connect to the Google Services api which can be slow. Can we
         // connect to it beforehand when we know that we'll be prompting for feedback?
         HelpAndFeedback.getInstance().showFeedback(((TabImpl) tab).getActivity(),
-                ((TabImpl) tab).getProfile(), tab.getUrl(),
+                ((TabImpl) tab).getProfile(), tab.getUrlString(),
                 ContextUtils.getApplicationContext().getPackageName() + "." + FEEDBACK_REPORT_TYPE);
     }
 

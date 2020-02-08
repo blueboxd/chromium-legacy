@@ -55,7 +55,7 @@ public class AppIndexingUtilTest {
         doReturn(true).when(mUtil).isEnabledForDevice();
         doReturn(false).when(mTab).isIncognito();
 
-        doReturn("http://www.test.com").when(mTab).getUrl();
+        doReturn("http://www.test.com").when(mTab).getUrlString();
         doReturn("My neat website").when(mTab).getTitle();
         doReturn(0L).when(mUtil).getElapsedTime();
         doAnswer(invocation -> {

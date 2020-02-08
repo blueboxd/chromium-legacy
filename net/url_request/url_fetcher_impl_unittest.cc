@@ -186,9 +186,9 @@ class FetcherTestURLRequestContext : public TestURLRequestContext {
  public:
   // All requests for |hanging_domain| will hang on host resolution until the
   // mock_resolver()->ResolveAllPending() is called.
-  FetcherTestURLRequestContext(
-      const std::string& hanging_domain,
-      std::unique_ptr<ProxyResolutionService> proxy_resolution_service)
+  FetcherTestURLRequestContext(const std::string& hanging_domain,
+                               std::unique_ptr<ConfiguredProxyResolutionService>
+                                   proxy_resolution_service)
       : TestURLRequestContext(true), mock_resolver_(new MockHostResolver()) {
     mock_resolver_->set_ondemand_mode(true);
     mock_resolver_->rules()->AddRule(hanging_domain, "127.0.0.1");
@@ -308,7 +308,8 @@ class FetcherTestURLRequestContextGetter : public URLRequestContextGetter {
   }
 
   void set_proxy_resolution_service(
-      std::unique_ptr<ProxyResolutionService> proxy_resolution_service) {
+      std::unique_ptr<ConfiguredProxyResolutionService>
+          proxy_resolution_service) {
     DCHECK(proxy_resolution_service);
     proxy_resolution_service_ = std::move(proxy_resolution_service);
   }
@@ -327,7 +328,7 @@ class FetcherTestURLRequestContextGetter : public URLRequestContextGetter {
   const std::string hanging_domain_;
 
   // May be null.
-  std::unique_ptr<ProxyResolutionService> proxy_resolution_service_;
+  std::unique_ptr<ConfiguredProxyResolutionService> proxy_resolution_service_;
 
   std::unique_ptr<FetcherTestURLRequestContext> context_;
   bool shutting_down_;
@@ -505,8 +506,8 @@ TEST_F(URLFetcherTest, FetchedUsingProxy) {
   const net::ProxyServer proxy_server(ProxyServer::SCHEME_HTTP,
                                       test_server_->host_port_pair());
 
-  std::unique_ptr<ProxyResolutionService> proxy_resolution_service =
-      ProxyResolutionService::CreateFixedFromPacResult(
+  std::unique_ptr<ConfiguredProxyResolutionService> proxy_resolution_service =
+      ConfiguredProxyResolutionService::CreateFixedFromPacResult(
           proxy_server.ToPacString(), TRAFFIC_ANNOTATION_FOR_TESTS);
   context_getter->set_proxy_resolution_service(
       std::move(proxy_resolution_service));

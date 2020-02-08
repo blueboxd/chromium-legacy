@@ -58,7 +58,7 @@ class PLATFORM_EXPORT ScriptCachedMetadataHandler final
  private:
   friend class ModuleScriptTest;
 
-  void SendToPlatform();
+  void CommitToPersistentStorage();
 
   scoped_refptr<CachedMetadata> cached_metadata_;
   bool cached_metadata_discarded_ = false;

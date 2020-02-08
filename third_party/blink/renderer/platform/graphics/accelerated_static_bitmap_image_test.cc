@@ -6,6 +6,7 @@
 
 #include "base/test/null_task_runner.h"
 #include "base/test/task_environment.h"
+#include "components/viz/common/resources/single_release_callback.h"
 #include "components/viz/test/test_gles2_interface.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -77,17 +78,12 @@ class AcceleratedStaticBitmapImageTest : public Test {
   scoped_refptr<viz::TestContextProvider> context_provider_;
 };
 
-TEST_F(AcceleratedStaticBitmapImageTest, NoTextureHolderThrashing) {
+TEST_F(AcceleratedStaticBitmapImageTest, SkImageCached) {
   auto bitmap = CreateBitmap();
 
   sk_sp<SkImage> stored_image =
       bitmap->PaintImageForCurrentFrame().GetSkImage();
-  bitmap->EnsureMailbox(kUnverifiedSyncToken, GL_LINEAR);
-
-  // Verify that calling PaintImageForCurrentFrame does not swap out of mailbox
-  // mode. It should use the cached original image instead.
   auto stored_image2 = bitmap->PaintImageForCurrentFrame().GetSkImage();
-
   EXPECT_EQ(stored_image.get(), stored_image2.get());
 }
 

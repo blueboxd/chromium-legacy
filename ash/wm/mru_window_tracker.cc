@@ -51,7 +51,9 @@ class ScopedWindowClosingObserver : public aura::WindowObserver {
 };
 
 bool IsNonSysModalWindowConsideredActivatable(aura::Window* window) {
-  DCHECK(window);
+  if (window->GetProperty(ash::kExcludeInMruKey))
+    return false;
+
   ScopedWindowClosingObserver observer(window);
   AshFocusRules* focus_rules = Shell::Get()->focus_rules();
 
@@ -189,7 +191,8 @@ MruWindowTracker::WindowList BuildWindowListInternal(
 }  // namespace
 
 bool CanIncludeWindowInMruList(aura::Window* window) {
-  return wm::CanActivateWindow(window) && !WindowState::Get(window)->IsPip();
+  return wm::CanActivateWindow(window) &&
+         !window->GetProperty(ash::kExcludeInMruKey);
 }
 
 //////////////////////////////////////////////////////////////////////////////

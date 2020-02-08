@@ -77,6 +77,9 @@ class FrameImpl : public fuchsia::web::Frame,
           semantics_manager) {
     semantics_manager_for_test_ = std::move(semantics_manager);
   }
+  void set_handle_actions_for_test(bool handle) {
+    accessibility_bridge_->set_handle_actions_for_test(handle);
+  }
 
  private:
   FRIEND_TEST_ALL_PREFIXES(FrameImplTest, DelayedNavigationEventAck);

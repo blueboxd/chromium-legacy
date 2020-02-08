@@ -93,7 +93,7 @@ class ShareButton extends ChromeImageButton implements TintObserver {
             setEnabled(false);
             return;
         }
-        final String url = tab.getUrl();
+        final String url = tab.getUrlString();
         final boolean isChromeScheme = url.startsWith(UrlConstants.CHROME_URL_PREFIX)
                 || url.startsWith(UrlConstants.CHROME_NATIVE_URL_PREFIX);
         final boolean isEnabled = !isChromeScheme && !((TabImpl) tab).isShowingInterstitialPage();

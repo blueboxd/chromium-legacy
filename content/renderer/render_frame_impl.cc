@@ -4814,13 +4814,13 @@ void RenderFrameImpl::OnMainFrameDocumentIntersectionChanged(
 void RenderFrameImpl::WillSendRequest(blink::WebURLRequest& request) {
   // This method is called for subresources, while transition type is
   // a navigation concept. We pass ui::PAGE_TRANSITION_LINK as default one.
-  WillSendRequestInternal(request, WebURLRequestToResourceType(request),
+  WillSendRequestInternal(request, /*for_main_frame=*/false,
                           ui::PAGE_TRANSITION_LINK);
 }
 
 void RenderFrameImpl::WillSendRequestInternal(
     blink::WebURLRequest& request,
-    blink::mojom::ResourceType resource_type,
+    bool for_main_frame,
     ui::PageTransition transition_type) {
   if (render_view_->renderer_preferences_.enable_do_not_track) {
     request.SetHttpHeaderField(blink::WebString::FromUTF8(kDoNotTrackHeader),
@@ -4879,9 +4879,8 @@ void RenderFrameImpl::WillSendRequestInternal(
   extra_data->set_allow_cross_origin_auth_prompt(
       render_view_->renderer_preferences().allow_cross_origin_auth_prompt);
 
-  request.SetDownloadToNetworkCacheOnly(
-      is_for_no_state_prefetch &&
-      resource_type != blink::mojom::ResourceType::kMainFrame);
+  request.SetDownloadToNetworkCacheOnly(is_for_no_state_prefetch &&
+                                        !for_main_frame);
 
   // The RenderThreadImpl or its URLLoaderThrottleProvider member may not be
   // valid in some tests.
@@ -4889,7 +4888,7 @@ void RenderFrameImpl::WillSendRequestInternal(
   if (render_thread && render_thread->url_loader_throttle_provider()) {
     extra_data->set_url_loader_throttles(
         render_thread->url_loader_throttle_provider()->CreateThrottles(
-            routing_id_, request, resource_type));
+            routing_id_, request));
   }
 
   // This is an instance where we embed a copy of the routing id
@@ -6341,11 +6340,8 @@ void RenderFrameImpl::BeginNavigationInternal(
   // TODO(clamy): Apply devtools override.
   // TODO(clamy): Make sure that navigation requests are not modified somewhere
   // else in blink.
-  WillSendRequestInternal(request,
-                          frame_->Parent()
-                              ? blink::mojom::ResourceType::kSubFrame
-                              : blink::mojom::ResourceType::kMainFrame,
-                          transition_type);
+  bool for_main_frame = !frame_->Parent();
+  WillSendRequestInternal(request, for_main_frame, transition_type);
 
   if (!info->url_request.GetExtraData())
     info->url_request.SetExtraData(base::MakeRefCounted<RequestExtraData>());

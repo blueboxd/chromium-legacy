@@ -4,6 +4,7 @@
 
 #include "services/network/crash_keys.h"
 
+#include "base/stl_util.h"
 #include "services/network/public/cpp/resource_request.h"
 #include "url/gurl.h"
 
@@ -32,20 +33,11 @@ base::debug::CrashKeyString* GetRequestInitiatorSiteLockCrashKey() {
   return crash_key;
 }
 
-ScopedOriginCrashKey::ScopedOriginCrashKey(
-    base::debug::CrashKeyString* crash_key,
-    const base::Optional<url::Origin>& value)
-    : base::debug::ScopedCrashKeyString(
-          crash_key,
-          value ? value->GetDebugString() : "base::nullopt") {}
-
-ScopedOriginCrashKey::~ScopedOriginCrashKey() = default;
-
 ScopedRequestCrashKeys::ScopedRequestCrashKeys(
     const network::ResourceRequest& request)
     : url_(GetUrlCrashKey(), request.url.possibly_invalid_spec()),
       request_initiator_(GetRequestInitiatorCrashKey(),
-                         request.request_initiator) {}
+                         base::OptionalOrNullptr(request.request_initiator)) {}
 
 ScopedRequestCrashKeys::~ScopedRequestCrashKeys() = default;
 

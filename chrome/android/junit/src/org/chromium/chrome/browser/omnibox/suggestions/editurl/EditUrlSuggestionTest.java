@@ -95,7 +95,7 @@ public final class EditUrlSuggestionTest {
         TemplateUrlServiceFactory.setInstanceForTesting(mTemplateUrlService);
 
         when(mContext.getResources()).thenReturn(mResources);
-        when(mTab.getUrl()).thenReturn(TEST_URL);
+        when(mTab.getUrlString()).thenReturn(TEST_URL);
         when(mTab.getTitle()).thenReturn(TEST_TITLE);
         when(mTab.isNativePage()).thenReturn(false);
         when(mTab.isIncognito()).thenReturn(false);
@@ -179,7 +179,7 @@ public final class EditUrlSuggestionTest {
     @Test
     @SmallTest
     public void testSearchSuggestion() {
-        when(mTab.getUrl()).thenReturn(FOOBAR_SEARCH_URL);
+        when(mTab.getUrlString()).thenReturn(FOOBAR_SEARCH_URL);
         mProcessor.onUrlFocusChange(true);
         when(mTemplateUrlService.getSearchQueryForUrl(FOOBAR_SEARCH_URL))
                 .thenReturn(FOOBAR_SEARCH_TERMS);

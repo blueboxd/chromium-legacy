@@ -1529,7 +1529,7 @@ public class TabListMediatorUnitTest {
         initAndAssertAllProperties();
         assertNotEquals(NEW_URL, mModel.get(POSITION1).model.get(TabProperties.URL));
 
-        doReturn(NEW_URL).when(mTab1).getUrl();
+        doReturn(NEW_URL).when(mTab1).getUrlString();
         mTabObserverCaptor.getValue().onUrlUpdated(mTab1);
 
         // TabProperties.URL is empty string if TabGroupsAndroidContinuationEnabled is false.
@@ -1546,7 +1546,7 @@ public class TabListMediatorUnitTest {
         setUpForTabGroupOperation(TabListMediatorType.TAB_SWITCHER);
         assertNotEquals(NEW_URL, mModel.get(POSITION1).model.get(TabProperties.URL));
 
-        doReturn(NEW_URL).when(mTab1).getUrl();
+        doReturn(NEW_URL).when(mTab1).getUrlString();
         mTabObserverCaptor.getValue().onUrlUpdated(mTab1);
 
         assertEquals(NEW_URL, mModel.get(POSITION1).model.get(TabProperties.URL));
@@ -1574,14 +1574,14 @@ public class TabListMediatorUnitTest {
                 .getDomainAndRegistry(eq(NEW_URL), anyBoolean());
 
         // Update URL for mTab1.
-        doReturn(NEW_URL).when(mTab1).getUrl();
+        doReturn(NEW_URL).when(mTab1).getUrlString();
         mTabObserverCaptor.getValue().onUrlUpdated(mTab1);
 
         assertEquals(NEW_DOMAIN + ", " + TAB2_DOMAIN,
                 mModel.get(POSITION1).model.get(TabProperties.URL));
 
         // Update URL for mTab2.
-        doReturn(NEW_URL).when(mTab2).getUrl();
+        doReturn(NEW_URL).when(mTab2).getUrlString();
         mTabObserverCaptor.getValue().onUrlUpdated(mTab2);
 
         assertEquals(
@@ -1609,14 +1609,14 @@ public class TabListMediatorUnitTest {
                 .getDomainAndRegistry(eq(NEW_URL), anyBoolean());
 
         // Update URL for mTab1.
-        doReturn(NEW_URL).when(mTab1).getUrl();
+        doReturn(NEW_URL).when(mTab1).getUrlString();
         mTabObserverCaptor.getValue().onUrlUpdated(mTab1);
 
         assertEquals(NEW_URL, mModel.get(POSITION1).model.get(TabProperties.URL));
         assertEquals(TAB2_URL, mModel.get(POSITION2).model.get(TabProperties.URL));
 
         // Update URL for mTab2.
-        doReturn(NEW_URL).when(mTab2).getUrl();
+        doReturn(NEW_URL).when(mTab2).getUrlString();
         mTabObserverCaptor.getValue().onUrlUpdated(mTab2);
 
         assertEquals(NEW_URL, mModel.get(POSITION1).model.get(TabProperties.URL));
@@ -2157,7 +2157,7 @@ public class TabListMediatorUnitTest {
         when(tab.getUserDataHost()).thenReturn(new UserDataHost());
         doReturn(id).when(tab).getId();
         doReturn(id).when(tab).getRootId();
-        doReturn(url).when(tab).getUrl();
+        doReturn(url).when(tab).getUrlString();
         doReturn(title).when(tab).getTitle();
         doReturn(true).when(tab).isIncognito();
         doReturn(title).when(mTitleProvider).getTitle(tab);

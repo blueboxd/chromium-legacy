@@ -61,11 +61,12 @@ class BrowserAppMenuButton : public AppMenuButton,
   // ui::MaterialDesignControllerObserver:
   void OnTouchUiChanged() override;
 
- private:
   // If the button is being used as an anchor for a promo, returns the best
-  // promo color given the current background color.
-  base::Optional<SkColor> GetPromoHighlightColor() const;
+  // promo color given the current background color. Otherwise, returns the
+  // standard ToolbarButton foreground color for the given |state|.
+  SkColor GetForegroundColor(ButtonState state) const override;
 
+ private:
   // AppMenuButton:
   const char* GetClassName() const override;
   bool GetDropFormats(int* formats,

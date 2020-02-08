@@ -100,7 +100,8 @@ public class CustomTabAppMenuPropertiesDelegate extends AppMenuPropertiesDelegat
             mReloadMenuItem = menu.findItem(R.id.reload_menu_id);
             Drawable icon = AppCompatResources.getDrawable(mContext, R.drawable.btn_reload_stop);
             DrawableCompat.setTintList(icon,
-                    AppCompatResources.getColorStateList(mContext, R.color.standard_mode_tint));
+                    AppCompatResources.getColorStateList(
+                            mContext, R.color.default_icon_color_tint_list));
             mReloadMenuItem.setIcon(icon);
             loadingStateChanged(currentTab.isLoading());
 
@@ -169,7 +170,7 @@ public class CustomTabAppMenuPropertiesDelegate extends AppMenuPropertiesDelegat
                 addToHomeScreenVisible = false;
             }
 
-            String url = currentTab.getUrl();
+            String url = currentTab.getUrlString();
             boolean isChromeScheme = url.startsWith(UrlConstants.CHROME_URL_PREFIX)
                     || url.startsWith(UrlConstants.CHROME_NATIVE_URL_PREFIX);
             if (isChromeScheme || TextUtils.isEmpty(url)) {

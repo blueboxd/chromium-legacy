@@ -143,7 +143,8 @@ public class RevampedContextMenuTest implements DownloadTestRule.CustomMainActiv
         // Only check for the URL matching as the tab will not be fully created in svelte mode.
         final String expectedUrl =
                 mTestServer.getURL("/chrome/test/data/android/contextmenu/test_image.png");
-        CriteriaHelper.pollUiThread(Criteria.equals(expectedUrl, () -> newTab.get().getUrl()));
+        CriteriaHelper.pollUiThread(
+                Criteria.equals(expectedUrl, () -> newTab.get().getUrlString()));
     }
 
     @Test
@@ -286,16 +287,17 @@ public class RevampedContextMenuTest implements DownloadTestRule.CustomMainActiv
                 "Number of open tabs does not match", numOpenedTabs, tabModel.getCount());
 
         // Verify the Url is still the same of Parent page.
-        Assert.assertEquals(mTestUrl, mDownloadTestRule.getActivity().getActivityTab().getUrl());
+        Assert.assertEquals(
+                mTestUrl, mDownloadTestRule.getActivity().getActivityTab().getUrlString());
 
         // Verify that the background tabs were opened in the expected order.
         String newTabUrl =
                 mTestServer.getURL("/chrome/test/data/android/contextmenu/test_link.html");
-        Assert.assertEquals(newTabUrl, tabModel.getTabAt(indexOfLinkPage).getUrl());
+        Assert.assertEquals(newTabUrl, tabModel.getTabAt(indexOfLinkPage).getUrlString());
 
         String imageUrl =
                 mTestServer.getURL("/chrome/test/data/android/contextmenu/test_link2.html");
-        Assert.assertEquals(imageUrl, tabModel.getTabAt(indexOfLinkPage2).getUrl());
+        Assert.assertEquals(imageUrl, tabModel.getTabAt(indexOfLinkPage2).getUrlString());
     }
 
     private void saveMediaFromContextMenu(String mediaDOMElement, int saveMenuID,

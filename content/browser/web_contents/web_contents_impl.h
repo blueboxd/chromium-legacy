@@ -91,6 +91,7 @@ namespace content {
 enum class PictureInPictureResult;
 class BrowserPluginEmbedder;
 class BrowserPluginGuest;
+class ConversionHost;
 class DisplayCutoutHostImpl;
 class FindRequestManager;
 class InterstitialPageImpl;
@@ -279,6 +280,9 @@ class CONTENT_EXPORT WebContentsImpl : public WebContents,
   // WebContents. Returns null of there is no registered binder for the
   // interface.
   WebContentsReceiverSet* GetReceiverSet(const std::string& interface_name);
+
+  // Removes a WebContentsReceiverSet so that it can be overridden for testing.
+  void RemoveReceiverSetForTesting(const std::string& interface_name);
 
   // Returns the focused WebContents.
   // If there are multiple inner/outer WebContents (when embedding <webview>,
@@ -1874,6 +1878,9 @@ class CONTENT_EXPORT WebContentsImpl : public WebContents,
 
   // Manages media players, CDMs, and power save blockers for media.
   std::unique_ptr<MediaWebContentsObserver> media_web_contents_observer_;
+
+  // Observes registration of conversions.
+  std::unique_ptr<ConversionHost> conversion_host_;
 
 #if BUILDFLAG(ENABLE_PLUGINS)
   // Observes pepper playback changes, and notifies MediaSession.

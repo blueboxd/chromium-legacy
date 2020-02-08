@@ -32,7 +32,8 @@ class ToolbarActionViewController {
   enum class PageInteractionStatus {
     // The extension cannot run on the page.
     kNone,
-    // The extension tried to access the page, but is pending user approval.
+    // The extension would like access to the page, but is pending user
+    // approval.
     kPending,
     // The extension has permission to run on the page.
     kActive,

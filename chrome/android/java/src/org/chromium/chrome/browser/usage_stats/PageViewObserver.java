@@ -57,7 +57,7 @@ public class PageViewObserver {
             @Override
             public void onShown(Tab tab, @TabSelectionType int type) {
                 if (!tab.isLoading() && !tab.isBeingRestored()) {
-                    updateUrl(tab.getUrl());
+                    updateUrl(tab.getUrlString());
                 }
             }
 
@@ -81,7 +81,7 @@ public class PageViewObserver {
             public void didFirstVisuallyNonEmptyPaint(Tab tab) {
                 assert tab == mCurrentTab;
 
-                updateUrl(tab.getUrl());
+                updateUrl(tab.getUrlString());
             }
 
             @Override
@@ -203,7 +203,7 @@ public class PageViewObserver {
         // If the newly active tab is hidden, we don't want to check its URL yet; we'll wait until
         // the onShown event fires.
         if (mCurrentTab != null && !tab.isHidden()) {
-            updateUrl(tab.getUrl());
+            updateUrl(tab.getUrlString());
         }
     }
 

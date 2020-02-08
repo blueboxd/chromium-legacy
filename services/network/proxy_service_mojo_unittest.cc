@@ -24,10 +24,10 @@
 #include "net/log/net_log_with_source.h"
 #include "net/log/test_net_log.h"
 #include "net/log/test_net_log_util.h"
+#include "net/proxy_resolution/configured_proxy_resolution_service.h"
 #include "net/proxy_resolution/dhcp_pac_file_fetcher.h"
 #include "net/proxy_resolution/mock_pac_file_fetcher.h"
 #include "net/proxy_resolution/proxy_config_service_fixed.h"
-#include "net/proxy_resolution/proxy_resolution_service.h"
 #include "net/test/event_waiter.h"
 #include "net/test/gtest_util.h"
 #include "net/traffic_annotation/network_traffic_annotation_test_helper.h"
@@ -89,8 +89,8 @@ void TestNetworkDelegate::OnPACScriptError(int line_number,
 void CheckCapturedNetLogEntries(const std::vector<net::NetLogEntry>& entries) {
   ASSERT_GT(entries.size(), 2u);
   size_t i = 0;
-  // ProxyResolutionService records its own NetLog entries, so skip forward
-  // until the expected event type.
+  // ConfiguredProxyResolutionService records its own NetLog entries, so skip
+  // forward until the expected event type.
   while (i < entries.size() &&
          entries[i].type != net::NetLogEventType::PAC_JAVASCRIPT_ALERT) {
     i++;
@@ -135,13 +135,14 @@ class ProxyServiceMojoTest : public testing::Test {
   // Owned by |proxy_resolution_service_|.
   net::MockPacFileFetcher* fetcher_;
   net::RecordingTestNetLog net_log_;
-  std::unique_ptr<net::ProxyResolutionService> proxy_resolution_service_;
+  std::unique_ptr<net::ConfiguredProxyResolutionService>
+      proxy_resolution_service_;
 };
 
 TEST_F(ProxyServiceMojoTest, Basic) {
   net::ProxyInfo info;
   net::TestCompletionCallback callback;
-  std::unique_ptr<net::ProxyResolutionService::Request> request;
+  std::unique_ptr<net::ConfiguredProxyResolutionService::Request> request;
   EXPECT_EQ(net::ERR_IO_PENDING,
             proxy_resolution_service_->ResolveProxy(
                 GURL("http://foo"), std::string(), net::NetworkIsolationKey(),
@@ -162,7 +163,7 @@ TEST_F(ProxyServiceMojoTest, Basic) {
 TEST_F(ProxyServiceMojoTest, DnsResolution) {
   net::ProxyInfo info;
   net::TestCompletionCallback callback;
-  std::unique_ptr<net::ProxyResolutionService::Request> request;
+  std::unique_ptr<net::ConfiguredProxyResolutionService::Request> request;
   EXPECT_EQ(net::ERR_IO_PENDING,
             proxy_resolution_service_->ResolveProxy(
                 GURL("http://foo"), std::string(), net::NetworkIsolationKey(),
@@ -185,7 +186,7 @@ TEST_F(ProxyServiceMojoTest, Error) {
   net::ProxyInfo info;
   net::TestCompletionCallback callback;
   net::RecordingBoundTestNetLog test_net_log;
-  std::unique_ptr<net::ProxyResolutionService::Request> request;
+  std::unique_ptr<net::ConfiguredProxyResolutionService::Request> request;
   EXPECT_EQ(net::ERR_IO_PENDING,
             proxy_resolution_service_->ResolveProxy(
                 GURL("http://foo"), std::string(), net::NetworkIsolationKey(),
@@ -211,7 +212,7 @@ TEST_F(ProxyServiceMojoTest, Error) {
 TEST_F(ProxyServiceMojoTest, ErrorOnInitialization) {
   net::ProxyInfo info;
   net::TestCompletionCallback callback;
-  std::unique_ptr<net::ProxyResolutionService::Request> request;
+  std::unique_ptr<net::ConfiguredProxyResolutionService::Request> request;
   EXPECT_EQ(net::ERR_IO_PENDING,
             proxy_resolution_service_->ResolveProxy(
                 GURL("http://foo"), std::string(), net::NetworkIsolationKey(),

@@ -12,6 +12,7 @@
 #endif
 
 #if BUILDFLAG(CLANG_COVERAGE)
+#include "base/test/clang_coverage.h"
 extern "C" void __llvm_profile_reset_counters(void);
 #endif
 
@@ -26,6 +27,12 @@ extern "C" void __llvm_profile_reset_counters(void);
   // In this call, the already-dump flag is also reset, so that the same file
   // can be dumped to again.
   __llvm_profile_reset_counters();
+#endif  // BUILDFLAG(CLANG_COVERAGE)
+}
+
++ (void)writeClangCoverageProfile {
+#if BUILDFLAG(CLANG_COVERAGE)
+  base::WriteClangCoverageProfile();
 #endif  // BUILDFLAG(CLANG_COVERAGE)
 }
 

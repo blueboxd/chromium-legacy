@@ -305,7 +305,7 @@ public class CustomTabBottomBarDelegate implements FullscreenListener {
             ChromeActivity activity) {
         Intent addedIntent = extraIntent == null ? new Intent() : new Intent(extraIntent);
         Tab tab = activity.getActivityTab();
-        if (tab != null) addedIntent.setData(Uri.parse(tab.getUrl()));
+        if (tab != null) addedIntent.setData(Uri.parse(tab.getUrlString()));
         try {
             pendingIntent.send(activity, 0, addedIntent, null, null);
         } catch (CanceledException e) {

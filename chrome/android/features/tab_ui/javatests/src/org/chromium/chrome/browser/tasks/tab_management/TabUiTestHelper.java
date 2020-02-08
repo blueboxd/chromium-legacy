@@ -407,7 +407,7 @@ public class TabUiTestHelper {
 
     private static void verifyAllTabsHaveUrl(TabModel tabModel, String url) {
         for (int i = 0; i < tabModel.getCount(); i++) {
-            assertEquals(url, tabModel.getTabAt(i).getUrl());
+            assertEquals(url, tabModel.getTabAt(i).getUrlString());
         }
     }
 
@@ -541,14 +541,14 @@ public class TabUiTestHelper {
      * of children.
      */
     public static class ChildrenCountAssertion implements ViewAssertion {
-        private int mExpectedCount;
+        private int mExpectedTabCount;
 
         public static ChildrenCountAssertion havingTabCount(int tabCount) {
             return new ChildrenCountAssertion(tabCount);
         }
 
-        public ChildrenCountAssertion(int expectedCount) {
-            mExpectedCount = expectedCount;
+        public ChildrenCountAssertion(int expectedTabCount) {
+            mExpectedTabCount = expectedTabCount;
         }
 
         @Override
@@ -556,9 +556,22 @@ public class TabUiTestHelper {
             if (noMatchException != null) throw noMatchException;
 
             RecyclerView recyclerView = ((RecyclerView) view);
+            recyclerView.setItemAnimator(null); // Disable animation to reduce flakiness.
             RecyclerView.Adapter adapter = recyclerView.getAdapter();
-            CriteriaHelper.pollUiThread(
-                    Criteria.equals(mExpectedCount, () -> adapter.getItemCount()));
+            int itemCount = adapter.getItemCount();
+            int nonTabCardCount = 0;
+
+            for (int i = 0; i < itemCount; i++) {
+                RecyclerView.ViewHolder viewHolder =
+                        recyclerView.findViewHolderForAdapterPosition(i);
+                if (viewHolder == null) return;
+                if (viewHolder.getItemViewType() != TabProperties.UiType.CLOSABLE
+                        && viewHolder.getItemViewType() != TabProperties.UiType.SELECTABLE
+                        && viewHolder.getItemViewType() != TabProperties.UiType.STRIP) {
+                    nonTabCardCount += 1;
+                }
+            }
+            assertEquals(mExpectedTabCount + nonTabCardCount, itemCount);
         }
     }
 }

@@ -234,11 +234,7 @@ class CC_BASE_EXPORT MathUtil {
   static gfx::Vector2dF ProjectVector(const gfx::Vector2dF& source,
                                       const gfx::Vector2dF& destination);
 
-  // Conversion to value.
-  static std::unique_ptr<base::Value> AsValue(const gfx::Size& s);
-  static std::unique_ptr<base::Value> AsValue(const gfx::Rect& r);
   static bool FromValue(const base::Value*, gfx::Rect* out_rect);
-  static std::unique_ptr<base::Value> AsValue(const gfx::PointF& q);
 
   static void AddToTracedValue(const char* name,
                                const gfx::Size& s,

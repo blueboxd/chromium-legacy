@@ -5,12 +5,17 @@
 #ifndef THIRD_PARTY_BLINK_PUBLIC_COMMON_LOADER_RESOURCE_TYPE_UTIL_H_
 #define THIRD_PARTY_BLINK_PUBLIC_COMMON_LOADER_RESOURCE_TYPE_UTIL_H_
 
+#include "services/network/public/mojom/fetch_api.mojom-shared.h"
 #include "third_party/blink/public/common/common_export.h"
 #include "third_party/blink/public/mojom/loader/resource_load_info.mojom-shared.h"
 
 namespace blink {
 
+// DEPRECATED: please use IsRequestDestinationFrame instead.
 BLINK_COMMON_EXPORT bool IsResourceTypeFrame(blink::mojom::ResourceType type);
+
+BLINK_COMMON_EXPORT bool IsRequestDestinationFrame(
+    network::mojom::RequestDestination destination);
 
 }  // namespace blink
 

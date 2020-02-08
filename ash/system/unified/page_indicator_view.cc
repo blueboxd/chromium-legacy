@@ -29,10 +29,9 @@
 #include "ui/views/animation/flood_fill_ink_drop_ripple.h"
 #include "ui/views/animation/ink_drop_highlight.h"
 #include "ui/views/animation/ink_drop_impl.h"
-#include "ui/views/animation/ink_drop_mask.h"
-#include "ui/views/animation/ink_drop_painted_layer_delegates.h"
 #include "ui/views/background.h"
 #include "ui/views/controls/button/button.h"
+#include "ui/views/controls/highlight_path_generator.h"
 #include "ui/views/layout/box_layout.h"
 
 namespace ash {
@@ -60,6 +59,8 @@ class PageIndicatorView::PageIndicatorButton : public views::Button,
     ripple_base_color_ = ripple_attributes.base_color;
     highlight_opacity_ = ripple_attributes.highlight_opacity;
     inkdrop_opacity_ = ripple_attributes.inkdrop_opacity;
+
+    views::InstallFixedSizeCircleHighlightPathGenerator(this, kInkDropRadius);
   }
 
   ~PageIndicatorButton() override {}
@@ -116,13 +117,6 @@ class PageIndicatorView::PageIndicatorButton : public views::Button,
     return ink_drop;
   }
 
-  // views::Button:
-  std::unique_ptr<views::InkDropMask> CreateInkDropMask() const override {
-    return std::make_unique<views::CircleInkDropMask>(
-        size(), GetLocalBounds().CenterPoint(), kInkDropRadius);
-  }
-
-  // views::Button:
   std::unique_ptr<views::InkDropRipple> CreateInkDropRipple() const override {
     gfx::Point center = GetLocalBounds().CenterPoint();
     gfx::Rect bounds(center.x() - kInkDropRadius, center.y() - kInkDropRadius,
@@ -133,18 +127,14 @@ class PageIndicatorView::PageIndicatorButton : public views::Button,
         inkdrop_opacity_);
   }
 
-  // views::Button:
   std::unique_ptr<views::InkDropHighlight> CreateInkDropHighlight()
       const override {
     auto highlight = std::make_unique<views::InkDropHighlight>(
-        gfx::PointF(GetLocalBounds().CenterPoint()),
-        std::make_unique<views::CircleLayerDelegate>(ripple_base_color_,
-                                                     kInkDropRadius));
+        gfx::SizeF(size()), ripple_base_color_);
     highlight->set_visible_opacity(highlight_opacity_);
     return highlight;
   }
 
-  // views::Button:
   void NotifyClick(const ui::Event& event) override {
     Button::NotifyClick(event);
     GetInkDrop()->AnimateToState(views::InkDropState::ACTION_TRIGGERED);

@@ -17,6 +17,7 @@
 #include "ash/public/cpp/stylus_utils.h"
 #include "base/bind.h"
 #include "base/feature_list.h"
+#include "base/metrics/histogram_functions.h"
 #include "build/build_config.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/browser_process_platform_part.h"
@@ -112,6 +113,7 @@ void OSSettingsUI::RegisterProfilePrefs(
 
 OSSettingsUI::OSSettingsUI(content::WebUI* web_ui)
     : ui::MojoWebUIController(web_ui, /*enable_chrome_send=*/true),
+      time_when_opened_(base::TimeTicks::Now()),
       webui_load_timer_(web_ui->GetWebContents(),
                         "ChromeOS.Settings.LoadDocumentTime",
                         "ChromeOS.Settings.LoadCompletedTime") {
@@ -233,7 +235,14 @@ OSSettingsUI::OSSettingsUI(content::WebUI* web_ui)
                                 html_source);
 }
 
-OSSettingsUI::~OSSettingsUI() = default;
+OSSettingsUI::~OSSettingsUI() {
+  // Note: OSSettingsUI lifetime is tied to the lifetime of the browser window.
+  base::UmaHistogramCustomTimes("ChromeOS.Settings.WindowOpenDuration",
+                                base::TimeTicks::Now() - time_when_opened_,
+                                /*min=*/base::TimeDelta::FromMicroseconds(500),
+                                /*max=*/base::TimeDelta::FromHours(1),
+                                /*buckets=*/50);
+}
 
 void OSSettingsUI::InitOSWebUIHandlers(content::WebUIDataSource* html_source) {
   Profile* profile = Profile::FromWebUI(web_ui());

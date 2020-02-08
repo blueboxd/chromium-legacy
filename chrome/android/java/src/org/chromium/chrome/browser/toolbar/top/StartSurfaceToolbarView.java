@@ -229,10 +229,10 @@ class StartSurfaceToolbarView extends RelativeLayout {
         setBackgroundColor(primaryColor);
 
         if (mLightIconTint == null) {
-            mLightIconTint =
-                    AppCompatResources.getColorStateList(getContext(), R.color.tint_on_dark_bg);
-            mDarkIconTint =
-                    AppCompatResources.getColorStateList(getContext(), R.color.standard_mode_tint);
+            mLightIconTint = AppCompatResources.getColorStateList(
+                    getContext(), R.color.default_icon_color_light_tint_list);
+            mDarkIconTint = AppCompatResources.getColorStateList(
+                    getContext(), R.color.default_icon_color_tint_list);
         }
 
         boolean useLightIcons = ColorUtils.shouldUseLightForegroundOnBackground(primaryColor);

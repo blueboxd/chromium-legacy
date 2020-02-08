@@ -922,12 +922,12 @@ public class LocationBarLayout
         }
 
         if (currentTab != null
-                && (currentTab.isNativePage() || NewTabPage.isNTPUrl(currentTab.getUrl()))) {
+                && (currentTab.isNativePage() || NewTabPage.isNTPUrl(currentTab.getUrlString()))) {
             NewTabPageUma.recordOmniboxNavigation(url, transition);
             // Passing in an empty string should not do anything unless the user is at the NTP.
             // Since the NTP has no url, pressing enter while clicking on the URL bar should refresh
             // the page as it does when you click and press enter on any other site.
-            if (url.isEmpty()) url = currentTab.getUrl();
+            if (url.isEmpty()) url = currentTab.getUrlString();
         }
 
         // Loads the |url| in a new tab or the current ContentView and gives focus to the

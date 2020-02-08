@@ -82,8 +82,7 @@ uint32_t GetSessionId(const User& user) {
 // no user session started for the given user.
 std::unique_ptr<ash::UserSession> UserToUserSession(const User& user) {
   const uint32_t user_session_id = GetSessionId(user);
-  if (user_session_id == 0u)
-    return nullptr;
+  DCHECK_NE(0u, user_session_id);
 
   Profile* profile = chromeos::ProfileHelper::Get()->GetProfileByUser(&user);
   DCHECK(profile);
@@ -362,7 +361,9 @@ void SessionControllerClientImpl::LocalStateChanged(
 }
 
 void SessionControllerClientImpl::OnUserImageChanged(const User& user) {
-  SendUserSession(user);
+  // Only sends user session for signed-in user.
+  if (GetSessionId(user) != 0)
+    SendUserSession(user);
 }
 
 // static
@@ -565,6 +566,9 @@ void SessionControllerClientImpl::SendSessionInfoIfChanged() {
 }
 
 void SessionControllerClientImpl::SendUserSession(const User& user) {
+  // |user| must have a session, i.e. signed-in already.
+  DCHECK_NE(0u, GetSessionId(user));
+
   // Check user profile via GetProfileByUser() instead of is_profile_created()
   // flag because many tests have only setup testing user profile in
   // ProfileHelper but do not have the flag updated.
@@ -574,14 +578,6 @@ void SessionControllerClientImpl::SendUserSession(const User& user) {
   }
 
   auto user_session = UserToUserSession(user);
-
-  // Bail if the user has no session. Currently the only code path that hits
-  // this condition is from OnUserImageChanged when user images are changed
-  // on the login screen (e.g. policy change that adds a public session user,
-  // or tests that create new users on the login screen).
-  if (!user_session)
-    return;
-
   if (last_sent_user_session_ && *user_session == *last_sent_user_session_)
     return;
 

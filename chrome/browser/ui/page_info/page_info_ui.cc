@@ -179,6 +179,7 @@ base::span<const PermissionsUIInfo> GetContentSettingsUIInfo() {
 #if !defined(OS_ANDROID)
     {ContentSettingsType::SERIAL_GUARD, IDS_PAGE_INFO_TYPE_SERIAL},
 #endif
+    {ContentSettingsType::BLUETOOTH_GUARD, IDS_PAGE_INFO_TYPE_BLUETOOTH},
     {ContentSettingsType::NATIVE_FILE_SYSTEM_WRITE_GUARD,
      IDS_PAGE_INFO_TYPE_NATIVE_FILE_SYSTEM_WRITE},
     {ContentSettingsType::BLUETOOTH_SCANNING,
@@ -621,6 +622,9 @@ const gfx::ImageSkia PageInfoUI::GetPermissionIcon(const PermissionInfo& info,
     case ContentSettingsType::SERIAL_GUARD:
       icon = &vector_icons::kSerialPortIcon;
       break;
+    case ContentSettingsType::BLUETOOTH_GUARD:
+      icon = &vector_icons::kBluetoothIcon;
+      break;
     case ContentSettingsType::BLUETOOTH_SCANNING:
       icon = &vector_icons::kBluetoothScanningIcon;
       break;
@@ -657,6 +661,10 @@ const gfx::ImageSkia PageInfoUI::GetChosenObjectIcon(
     const ChosenObjectInfo& object,
     bool deleted,
     SkColor related_text_color) {
+  // The permissions data for device APIs will always appear even if the device
+  // is not currently conncted to the system.
+  // TODO(https://crbug.com/1048860): Check the connected status of devices and
+  // change the icon to one that reflects that status.
   const gfx::VectorIcon* icon = &gfx::kNoneIcon;
   switch (object.ui_info.content_settings_type) {
     case ContentSettingsType::USB_CHOOSER_DATA:
@@ -664,6 +672,9 @@ const gfx::ImageSkia PageInfoUI::GetChosenObjectIcon(
       break;
     case ContentSettingsType::SERIAL_CHOOSER_DATA:
       icon = &vector_icons::kSerialPortIcon;
+      break;
+    case ContentSettingsType::BLUETOOTH_CHOOSER_DATA:
+      icon = &vector_icons::kBluetoothIcon;
       break;
     default:
       // All other content settings types do not represent chosen object

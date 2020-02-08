@@ -57,7 +57,7 @@ public class NewTabPageNavigationTest {
     public void testNTPIsDefault() {
         Tab tab = mActivityTestRule.getActivity().getActivityTab();
         Assert.assertNotNull(tab);
-        String url = tab.getUrl();
+        String url = tab.getUrlString();
         Assert.assertTrue("Unexpected url: " + url,
                 url.startsWith("chrome-native://newtab/")
                         || url.startsWith("chrome-native://bookmarks/")
@@ -73,7 +73,7 @@ public class NewTabPageNavigationTest {
     public void testNavigatingFromNTP() {
         String url = mTestServer.getURL("/chrome/test/data/android/google.html");
         mActivityTestRule.loadUrl(url);
-        Assert.assertEquals(url, mActivityTestRule.getActivity().getActivityTab().getUrl());
+        Assert.assertEquals(url, mActivityTestRule.getActivity().getActivityTab().getUrlString());
     }
 
     /**
@@ -85,12 +85,12 @@ public class NewTabPageNavigationTest {
     public void testNavigateBackToNTPViaUrl() {
         String url = mTestServer.getURL("/chrome/test/data/android/google.html");
         mActivityTestRule.loadUrl(url);
-        Assert.assertEquals(url, mActivityTestRule.getActivity().getActivityTab().getUrl());
+        Assert.assertEquals(url, mActivityTestRule.getActivity().getActivityTab().getUrlString());
 
         mActivityTestRule.loadUrl(UrlConstants.NTP_URL);
         Tab tab = mActivityTestRule.getActivity().getActivityTab();
         Assert.assertNotNull(tab);
-        url = tab.getUrl();
+        url = tab.getUrlString();
         Assert.assertEquals(UrlConstants.NTP_URL, url);
 
         // Check that the NTP is actually displayed.

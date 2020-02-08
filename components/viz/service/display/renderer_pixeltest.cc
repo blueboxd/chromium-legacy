@@ -879,9 +879,7 @@ void CreateTestAxisAlignedQuads(const gfx::Rect& rect,
 
 using RendererTypes = ::testing::Types<GLRenderer,
                                        SoftwareRenderer,
-                                       SkiaRenderer,
-                                       cc::GLRendererWithExpandedViewport,
-                                       cc::SoftwareRendererWithExpandedViewport
+                                       SkiaRenderer
 #if defined(ENABLE_VIZ_VULKAN_TESTS)
                                        ,
                                        cc::VulkanSkiaRenderer
@@ -889,13 +887,8 @@ using RendererTypes = ::testing::Types<GLRenderer,
                                        >;
 TYPED_TEST_SUITE(RendererPixelTest, RendererTypes);
 
-template <typename RendererType>
-class SoftwareRendererPixelTest : public cc::RendererPixelTest<RendererType> {};
-
-using SoftwareRendererTypes =
-    ::testing::Types<SoftwareRenderer,
-                     cc::SoftwareRendererWithExpandedViewport>;
-TYPED_TEST_SUITE(SoftwareRendererPixelTest, SoftwareRendererTypes);
+class SoftwareRendererPixelTest
+    : public cc::RendererPixelTest<SoftwareRenderer> {};
 
 // Test GLRenderer as well as SkiaRenderer.
 template <typename RendererType>
@@ -915,8 +908,8 @@ TYPED_TEST_SUITE(GPURendererPixelTest, GPURendererTypes);
 template <typename RendererType>
 class GLOnlyRendererPixelTest : public cc::RendererPixelTest<RendererType> {};
 
-using GLOnlyRendererTypes = ::testing::Types<GLRenderer>;
-TYPED_TEST_SUITE(GLOnlyRendererPixelTest, GLOnlyRendererTypes);
+using GLRendererTypes = ::testing::Types<GLRenderer>;
+TYPED_TEST_SUITE(GLOnlyRendererPixelTest, GLRendererTypes);
 
 template <typename RendererType>
 class FuzzyForSoftwareOnlyPixelComparator : public cc::PixelComparator {
@@ -943,13 +936,6 @@ template <>
 bool FuzzyForSoftwareOnlyPixelComparator<SkiaRenderer>::Compare(
     const SkBitmap& actual_bmp,
     const SkBitmap& expected_bmp) const {
-  return fuzzy_.Compare(actual_bmp, expected_bmp);
-}
-
-template <>
-bool FuzzyForSoftwareOnlyPixelComparator<
-    cc::SoftwareRendererWithExpandedViewport>::
-    Compare(const SkBitmap& actual_bmp, const SkBitmap& expected_bmp) const {
   return fuzzy_.Compare(actual_bmp, expected_bmp);
 }
 
@@ -1314,11 +1300,7 @@ template <typename TypeParam>
 class IntersectingQuadSoftwareTest
     : public IntersectingQuadPixelTest<TypeParam> {};
 
-using SoftwareRendererTypes =
-    ::testing::Types<SoftwareRenderer,
-                     cc::SoftwareRendererWithExpandedViewport>;
-using GLRendererTypes =
-    ::testing::Types<GLRenderer, cc::GLRendererWithExpandedViewport>;
+using SoftwareRendererTypes = ::testing::Types<SoftwareRenderer>;
 
 TYPED_TEST_SUITE(IntersectingQuadPixelTest, RendererTypes);
 TYPED_TEST_SUITE(IntersectingVideoQuadPixelTest, GPURendererTypes);
@@ -2976,9 +2958,7 @@ TYPED_TEST(RendererPixelTestWithBackdropFilter, InvertFilter) {
 }
 
 TYPED_TEST(RendererPixelTestWithBackdropFilter, InvertFilterWithMask) {
-  const bool is_gl_renderer =
-      std::is_same<TypeParam, GLRenderer>() ||
-      std::is_same<TypeParam, cc::GLRendererWithExpandedViewport>();
+  const bool is_gl_renderer = std::is_same<TypeParam, GLRenderer>();
   // TODO(989312): The mask on gl_renderer and software_renderer appears to be
   // offset from the correct location.
   const bool is_software_renderer = std::is_same<TypeParam, SoftwareRenderer>();
@@ -3142,7 +3122,7 @@ class ExternalStencilPixelTest : public RendererPixelTest<RendererType> {
 };
 
 // TODO(crbug.com/939442): Enable these tests for SkiaRenderer.
-TYPED_TEST_SUITE(ExternalStencilPixelTest, GLOnlyRendererTypes);
+TYPED_TEST_SUITE(ExternalStencilPixelTest, GLRendererTypes);
 
 TYPED_TEST(ExternalStencilPixelTest, StencilTestEnabled) {
   this->ClearBackgroundToGreen();
@@ -3586,7 +3566,7 @@ TYPED_TEST(GPURendererPixelTest, DISABLED_TrilinearFiltering) {
       cc::ExactPixelComparator(true)));
 }
 
-TYPED_TEST(SoftwareRendererPixelTest, PictureDrawQuadIdentityScale) {
+TEST_F(SoftwareRendererPixelTest, PictureDrawQuadIdentityScale) {
   gfx::Rect viewport(this->device_viewport_size_);
   // TODO(enne): the renderer should figure this out on its own.
   ResourceFormat texture_format = RGBA_8888;
@@ -3663,7 +3643,7 @@ TYPED_TEST(SoftwareRendererPixelTest, PictureDrawQuadIdentityScale) {
 }
 
 // Not WithSkiaGPUBackend since that path currently requires tiles for opacity.
-TYPED_TEST(SoftwareRendererPixelTest, PictureDrawQuadOpacity) {
+TEST_F(SoftwareRendererPixelTest, PictureDrawQuadOpacity) {
   gfx::Rect viewport(this->device_viewport_size_);
   bool needs_blending = true;
   ResourceFormat texture_format = RGBA_8888;
@@ -3723,7 +3703,7 @@ TYPED_TEST(SoftwareRendererPixelTest, PictureDrawQuadOpacity) {
       cc::FuzzyPixelOffByOneComparator(true)));
 }
 
-TYPED_TEST(SoftwareRendererPixelTest, PictureDrawQuadOpacityWithAlpha) {
+TEST_F(SoftwareRendererPixelTest, PictureDrawQuadOpacityWithAlpha) {
   gfx::Rect viewport(this->device_viewport_size_);
   bool needs_blending = true;
   ResourceFormat texture_format = RGBA_8888;
@@ -3784,21 +3764,6 @@ TYPED_TEST(SoftwareRendererPixelTest, PictureDrawQuadOpacityWithAlpha) {
                                  cc::FuzzyPixelOffByOneComparator(true)));
 }
 
-template <typename TypeParam>
-bool IsSoftwareRenderer() {
-  return false;
-}
-
-template <>
-bool IsSoftwareRenderer<SoftwareRenderer>() {
-  return true;
-}
-
-template <>
-bool IsSoftwareRenderer<cc::SoftwareRendererWithExpandedViewport>() {
-  return true;
-}
-
 void draw_point_color(SkCanvas* canvas, SkScalar x, SkScalar y, SkColor color) {
   SkPaint paint;
   paint.setColor(color);
@@ -3807,12 +3772,7 @@ void draw_point_color(SkCanvas* canvas, SkScalar x, SkScalar y, SkColor color) {
 
 // If we disable image filtering, then a 2x2 bitmap should appear as four
 // huge sharp squares.
-TYPED_TEST(SoftwareRendererPixelTest, PictureDrawQuadDisableImageFiltering) {
-  // We only care about this in software mode since bilinear filtering is
-  // cheap in hardware.
-  if (!IsSoftwareRenderer<TypeParam>())
-    return;
-
+TEST_F(SoftwareRendererPixelTest, PictureDrawQuadDisableImageFiltering) {
   gfx::Rect viewport(this->device_viewport_size_);
   ResourceFormat texture_format = RGBA_8888;
   bool needs_blending = true;
@@ -3864,7 +3824,7 @@ TYPED_TEST(SoftwareRendererPixelTest, PictureDrawQuadDisableImageFiltering) {
 
 // This disables filtering by setting |nearest_neighbor| on the
 // PictureDrawQuad.
-TYPED_TEST(SoftwareRendererPixelTest, PictureDrawQuadNearestNeighbor) {
+TEST_F(SoftwareRendererPixelTest, PictureDrawQuadNearestNeighbor) {
   gfx::Rect viewport(this->device_viewport_size_);
   ResourceFormat texture_format = RGBA_8888;
   bool needs_blending = true;
@@ -3976,7 +3936,7 @@ TYPED_TEST(RendererPixelTest, TileDrawQuadNearestNeighbor) {
 
 // This disables filtering by setting |nearest_neighbor| to true on the
 // TextureDrawQuad.
-TYPED_TEST(SoftwareRendererPixelTest, TextureDrawQuadNearestNeighbor) {
+TEST_F(SoftwareRendererPixelTest, TextureDrawQuadNearestNeighbor) {
   gfx::Rect viewport(this->device_viewport_size_);
   bool needs_blending = true;
   bool nearest_neighbor = true;
@@ -4028,7 +3988,7 @@ TYPED_TEST(SoftwareRendererPixelTest, TextureDrawQuadNearestNeighbor) {
 
 // This ensures filtering is enabled by setting |nearest_neighbor| to false on
 // the TextureDrawQuad.
-TYPED_TEST(SoftwareRendererPixelTest, TextureDrawQuadLinear) {
+TEST_F(SoftwareRendererPixelTest, TextureDrawQuadLinear) {
   gfx::Rect viewport(this->device_viewport_size_);
   bool needs_blending = true;
   bool nearest_neighbor = false;
@@ -4082,7 +4042,7 @@ TYPED_TEST(SoftwareRendererPixelTest, TextureDrawQuadLinear) {
       cc::FuzzyPixelComparator(false, 100.f, 0.f, 16.f, 16.f, 0.f)));
 }
 
-TYPED_TEST(SoftwareRendererPixelTest, PictureDrawQuadNonIdentityScale) {
+TEST_F(SoftwareRendererPixelTest, PictureDrawQuadNonIdentityScale) {
   gfx::Rect viewport(this->device_viewport_size_);
   // TODO(enne): the renderer should figure this out on its own.
   ResourceFormat texture_format = RGBA_8888;
@@ -4561,8 +4521,7 @@ TYPED_TEST(RendererPixelTest, RoundedCornerSimpleSolidDrawQuad) {
   RenderPassList pass_list;
   pass_list.push_back(std::move(root_pass));
 
-  if (std::is_same<TypeParam, GLRenderer>() ||
-      std::is_same<TypeParam, cc::GLRendererWithExpandedViewport>()) {
+  if (std::is_same<TypeParam, GLRenderer>()) {
     // GL Renderer should have an exact match as that is the reference point.
     EXPECT_TRUE(this->RunPixelTest(
         &pass_list,
@@ -4632,8 +4591,7 @@ TYPED_TEST(GPURendererPixelTest, RoundedCornerSimpleTextureDrawQuad) {
   RenderPassList pass_list;
   pass_list.push_back(std::move(root_pass));
 
-  if (std::is_same<TypeParam, GLRenderer>() ||
-      std::is_same<TypeParam, cc::GLRendererWithExpandedViewport>()) {
+  if (std::is_same<TypeParam, GLRenderer>()) {
     // GL Renderer should have an exact match as that is the reference point.
     EXPECT_TRUE(this->RunPixelTest(
         &pass_list,
@@ -4751,8 +4709,7 @@ TYPED_TEST(RendererPixelTest, DISABLED_RoundedCornerMultiRadii) {
   RenderPassList pass_list;
   pass_list.push_back(std::move(root_pass));
 
-  if (std::is_same<TypeParam, GLRenderer>() ||
-      std::is_same<TypeParam, cc::GLRendererWithExpandedViewport>()) {
+  if (std::is_same<TypeParam, GLRenderer>()) {
     // GL Renderer should have an exact match as that is the reference point.
     EXPECT_TRUE(this->RunPixelTest(
         &pass_list,
@@ -4844,9 +4801,7 @@ TYPED_TEST(RendererPixelTest, DISABLED_RoundedCornerMultipleQads) {
   // Software/skia renderer use skia rrect to create rounded corner clip.
   // This results in a different corner path due to a different anti aliasing
   // approach than the fragment shader in gl renderer.
-  const bool use_exact_comparator =
-      std::is_same<TypeParam, GLRenderer>() ||
-      std::is_same<TypeParam, cc::GLRendererWithExpandedViewport>();
+  const bool use_exact_comparator = std::is_same<TypeParam, GLRenderer>();
   std::unique_ptr<cc::PixelComparator> comparator;
   comparator.reset(
       use_exact_comparator

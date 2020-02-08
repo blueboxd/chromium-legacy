@@ -23,6 +23,8 @@
 #include "base/strings/utf_string_conversions.h"
 #include "base/values.h"
 #include "build/build_config.h"
+#include "chrome/browser/bluetooth/bluetooth_chooser_context.h"
+#include "chrome/browser/bluetooth/bluetooth_chooser_context_factory.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/browsing_data/browsing_data_cookie_helper.h"
 #include "chrome/browser/browsing_data/browsing_data_database_helper.h"
@@ -71,6 +73,7 @@
 #include "components/ukm/content/source_url_recorder.h"
 #include "components/url_formatter/elide_url.h"
 #include "content/public/browser/browser_thread.h"
+#include "content/public/common/content_features.h"
 #include "content/public/common/content_switches.h"
 #include "content/public/common/url_constants.h"
 #include "net/cert/cert_status_flags.h"
@@ -142,6 +145,7 @@ ContentSettingsType kPermissionType[] = {
     ContentSettingsType::SERIAL_GUARD,
     ContentSettingsType::NATIVE_FILE_SYSTEM_WRITE_GUARD,
 #endif
+    ContentSettingsType::BLUETOOTH_GUARD,
     ContentSettingsType::BLUETOOTH_SCANNING,
     ContentSettingsType::VR,
     ContentSettingsType::AR,
@@ -232,6 +236,15 @@ bool ShouldShowPermission(
     return true;
   }
 
+  // Show the Bluetooth guard permission if the new permissions backend is
+  // enabled.
+  if (info.type == ContentSettingsType::BLUETOOTH_GUARD &&
+      base::FeatureList::IsEnabled(
+          features::kWebBluetoothNewPermissionsBackend) &&
+      !IsPermissionFactoryDefault(content_settings, info)) {
+    return true;
+  }
+
   // Show the content setting when it has a non-default value.
   if (!IsPermissionFactoryDefault(content_settings, info))
     return true;
@@ -304,6 +317,14 @@ ChooserContextBase* GetSerialChooserContext(Profile* profile) {
 }
 #endif
 
+ChooserContextBase* GetBluetoothChooserContext(Profile* profile) {
+  if (base::FeatureList::IsEnabled(
+          features::kWebBluetoothNewPermissionsBackend)) {
+    return BluetoothChooserContextFactory::GetForProfile(profile);
+  }
+  return nullptr;
+}
+
 // The list of chooser types that need to display entries in the Website
 // Settings UI. THE ORDER OF THESE ITEMS IS IMPORTANT. To propose changing it,
 // email security-dev@chromium.org.
@@ -318,6 +339,11 @@ const PageInfo::ChooserUIInfo kChooserUIInfo[] = {
      /*allowed_by_policy_description_string_id=*/-1,
      IDS_PAGE_INFO_DELETE_SERIAL_PORT, &SerialChooserContext::GetObjectName},
 #endif
+    {ContentSettingsType::BLUETOOTH_CHOOSER_DATA, &GetBluetoothChooserContext,
+     IDS_PAGE_INFO_BLUETOOTH_DEVICE_SECONDARY_LABEL,
+     /*allowed_by_policy_description_string_id=*/-1,
+     IDS_PAGE_INFO_DELETE_BLUETOOTH_DEVICE,
+     &BluetoothChooserContext::GetObjectName},
 };
 
 // Time open histogram prefixes.
@@ -999,6 +1025,8 @@ void PageInfo::PresentSitePermissions() {
   const auto origin = url::Origin::Create(site_url_);
   for (const ChooserUIInfo& ui_info : kChooserUIInfo) {
     ChooserContextBase* context = ui_info.get_context(profile_);
+    if (!context)
+      continue;
     auto chosen_objects = context->GetGrantedObjects(origin, origin);
     for (std::unique_ptr<ChooserContextBase::Object>& object : chosen_objects) {
       chosen_object_info_list.push_back(

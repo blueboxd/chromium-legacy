@@ -186,34 +186,35 @@ int64_t ClientUsageTracker::GetCachedUsage() const {
   return usage;
 }
 
-void ClientUsageTracker::GetCachedHostsUsage(
-    std::map<std::string, int64_t>* host_usage) const {
+std::map<std::string, int64_t> ClientUsageTracker::GetCachedHostsUsage() const {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  DCHECK(host_usage);
+  std::map<std::string, int64_t> host_usage;
   for (const auto& host_and_usage_map : cached_usage_by_host_) {
     const std::string& host = host_and_usage_map.first;
-    (*host_usage)[host] += GetCachedHostUsage(host);
+    host_usage[host] += GetCachedHostUsage(host);
   }
+  return host_usage;
 }
 
-void ClientUsageTracker::GetCachedOriginsUsage(
-    std::map<url::Origin, int64_t>* origin_usage) const {
+std::map<url::Origin, int64_t> ClientUsageTracker::GetCachedOriginsUsage()
+    const {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  DCHECK(origin_usage);
+  std::map<url::Origin, int64_t> origin_usage;
   for (const auto& host_and_usage_map : cached_usage_by_host_) {
     for (const auto& origin_and_usage : host_and_usage_map.second)
-      (*origin_usage)[origin_and_usage.first] += origin_and_usage.second;
+      origin_usage[origin_and_usage.first] += origin_and_usage.second;
   }
+  return origin_usage;
 }
 
-void ClientUsageTracker::GetCachedOrigins(
-    std::set<url::Origin>* origins) const {
+std::set<url::Origin> ClientUsageTracker::GetCachedOrigins() const {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  DCHECK(origins);
+  std::set<url::Origin> origins;
   for (const auto& host_and_usage_map : cached_usage_by_host_) {
     for (const auto& origin_and_usage : host_and_usage_map.second)
-      origins->insert(origin_and_usage.first);
+      origins.insert(origin_and_usage.first);
   }
+  return origins;
 }
 
 void ClientUsageTracker::SetUsageCacheEnabled(const url::Origin& origin,

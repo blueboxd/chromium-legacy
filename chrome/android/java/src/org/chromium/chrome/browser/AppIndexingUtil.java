@@ -88,7 +88,7 @@ public class AppIndexingUtil {
         // 2. Cache hit, but no entity was found. Ignore.
         // 3. Cache miss, we need to parse the page.
         // Note that page view is reported unconditionally.
-        final String url = tab.getUrl();
+        final String url = tab.getUrlString();
         if (wasPageVisitedRecently(url)) {
             if (lastPageVisitContainedEntity(url)) {
                 // Condition 1
@@ -122,7 +122,7 @@ public class AppIndexingUtil {
     @VisibleForTesting
     void reportPageView(Tab tab) {
         if (!isEnabledForTab(tab)) return;
-        getAppIndexingReporter().reportWebPageView(tab.getUrl(), tab.getTitle());
+        getAppIndexingReporter().reportWebPageView(tab.getUrlString(), tab.getTitle());
     }
 
     @VisibleForTesting
@@ -190,7 +190,7 @@ public class AppIndexingUtil {
 
     @VisibleForTesting
     boolean isEnabledForTab(Tab tab) {
-        final String url = tab.getUrl();
+        final String url = tab.getUrlString();
         boolean isHttpOrHttps = UrlUtilities.isHttpOrHttps(url);
         return isEnabledForDevice() && !tab.isIncognito() && isHttpOrHttps;
     }

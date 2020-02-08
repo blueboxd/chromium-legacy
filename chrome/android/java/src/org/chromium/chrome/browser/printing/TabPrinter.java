@@ -60,7 +60,7 @@ public class TabPrinter implements Printable {
         String title = tab.getTitle();
         if (!TextUtils.isEmpty(title)) return title;
 
-        String url = tab.getUrl();
+        String url = tab.getUrlString();
         if (!TextUtils.isEmpty(url)) return url;
 
         return mDefaultTitle;

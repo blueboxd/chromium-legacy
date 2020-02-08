@@ -49,5 +49,5 @@
         android:contentDescription="@string/accessibility_toolbar_btn_mic"
         android:src="@drawable/btn_mic"
         android:scaleType="centerInside"
-        app:tint="@color/standard_mode_tint" />
+        app:tint="@color/default_icon_color_tint_list" />
 </view>

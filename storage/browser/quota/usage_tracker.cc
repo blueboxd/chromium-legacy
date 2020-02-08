@@ -176,30 +176,40 @@ int64_t UsageTracker::GetCachedUsage() const {
   return usage;
 }
 
-void UsageTracker::GetCachedHostsUsage(
-    std::map<std::string, int64_t>* host_usage) const {
+std::map<std::string, int64_t> UsageTracker::GetCachedHostsUsage() const {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  DCHECK(host_usage);
-  host_usage->clear();
-  for (const auto& client_id_and_tracker : client_tracker_map_)
-    client_id_and_tracker.second->GetCachedHostsUsage(host_usage);
+  std::map<std::string, int64_t> host_usage;
+  for (const auto& client_id_and_tracker : client_tracker_map_) {
+    std::map<std::string, int64_t> client_host_usage =
+        client_id_and_tracker.second->GetCachedHostsUsage();
+    for (const auto& host_and_usage : client_host_usage)
+      host_usage[host_and_usage.first] += host_and_usage.second;
+  }
+  return host_usage;
 }
 
-void UsageTracker::GetCachedOriginsUsage(
-    std::map<url::Origin, int64_t>* origin_usage) const {
+std::map<url::Origin, int64_t> UsageTracker::GetCachedOriginsUsage() const {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  DCHECK(origin_usage);
-  origin_usage->clear();
-  for (const auto& client_id_and_tracker : client_tracker_map_)
-    client_id_and_tracker.second->GetCachedOriginsUsage(origin_usage);
+  std::map<url::Origin, int64_t> origin_usage;
+  for (const auto& client_id_and_tracker : client_tracker_map_) {
+    std::map<url::Origin, int64_t> client_origin_usage =
+        client_id_and_tracker.second->GetCachedOriginsUsage();
+    for (const auto& origin_and_usage : client_origin_usage)
+      origin_usage[origin_and_usage.first] += origin_and_usage.second;
+  }
+  return origin_usage;
 }
 
-void UsageTracker::GetCachedOrigins(std::set<url::Origin>* origins) const {
+std::set<url::Origin> UsageTracker::GetCachedOrigins() const {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  DCHECK(origins);
-  origins->clear();
-  for (const auto& client_id_and_tracker : client_tracker_map_)
-    client_id_and_tracker.second->GetCachedOrigins(origins);
+  std::set<url::Origin> origins;
+  for (const auto& client_id_and_tracker : client_tracker_map_) {
+    std::set<url::Origin> client_origins =
+        client_id_and_tracker.second->GetCachedOrigins();
+    for (const auto& client_origin : client_origins)
+      origins.insert(client_origin);
+  }
+  return origins;
 }
 
 void UsageTracker::SetUsageCacheEnabled(QuotaClient::ID client_id,

@@ -1168,7 +1168,7 @@ public abstract class ChromeActivity<C extends ChromeActivityComponent>
         }
         Tab tab = getActivityTab();
         if (tab != null && !isInOverviewMode()) {
-            outContent.setWebUri(Uri.parse(tab.getUrl()));
+            outContent.setWebUri(Uri.parse(tab.getUrlString()));
         }
     }
 
@@ -2008,7 +2008,7 @@ public abstract class ChromeActivity<C extends ChromeActivityComponent>
         final Tab currentTab = getActivityTab();
 
         if (id == R.id.help_id) {
-            String url = currentTab != null ? currentTab.getUrl() : "";
+            String url = currentTab != null ? currentTab.getUrlString() : "";
             Profile profile = mTabModelSelector.isIncognitoSelected()
                     ? Profile.getLastUsedRegularProfile().getOffTheRecordProfile()
                     : Profile.getLastUsedRegularProfile();
@@ -2020,7 +2020,7 @@ public abstract class ChromeActivity<C extends ChromeActivityComponent>
             // 'currentTab' could only be null when opening history from start surface, which is
             // not available on tablet.
             assert (isTablet() && currentTab != null) || !isTablet();
-            if (currentTab != null && NewTabPage.isNTPUrl(currentTab.getUrl())) {
+            if (currentTab != null && NewTabPage.isNTPUrl(currentTab.getUrlString())) {
                 NewTabPageUma.recordAction(NewTabPageUma.ACTION_OPENED_HISTORY_MANAGER);
             }
             RecordUserAction.record("MobileMenuHistory");
@@ -2075,9 +2075,9 @@ public abstract class ChromeActivity<C extends ChromeActivityComponent>
         } else if (id == R.id.open_webapk_id) {
             Context context = ContextUtils.getApplicationContext();
             String packageName =
-                    WebApkValidator.queryFirstWebApkPackage(context, currentTab.getUrl());
+                    WebApkValidator.queryFirstWebApkPackage(context, currentTab.getUrlString());
             Intent launchIntent = WebApkNavigationClient.createLaunchWebApkIntent(
-                    packageName, currentTab.getUrl(), false);
+                    packageName, currentTab.getUrlString(), false);
             try {
                 context.startActivity(launchIntent);
                 RecordUserAction.record("MobileMenuOpenWebApk");

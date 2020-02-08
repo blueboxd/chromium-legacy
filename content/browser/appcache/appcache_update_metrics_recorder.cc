@@ -41,6 +41,14 @@ void AppCacheUpdateMetricsRecorder::IncrementExistingResourceReused() {
   existing_resource_reused_++;
 }
 
+void AppCacheUpdateMetricsRecorder::IncrementExistingVaryDuring304() {
+#if DCHECK_IS_ON()
+  DCHECK(!finalized_) << "UploadMetrics() already called";
+#endif  // DCHECK_IS_ON()
+
+  existing_vary_during_304_++;
+}
+
 void AppCacheUpdateMetricsRecorder::RecordCanceled() {
 #if DCHECK_IS_ON()
   DCHECK(!finalized_) << "UploadMetrics() already called";
@@ -68,11 +76,13 @@ void AppCacheUpdateMetricsRecorder::UploadMetrics() {
                                 existing_resource_check_, 50);
   base::UmaHistogramExactLinear("appcache.UpdateJob.ExistingResourceCorrupt",
                                 existing_resource_corrupt_, 50);
-  base::UmaHistogramExactLinear("appcache.UpdateJob.ExistingResourceReused",
-                                existing_resource_reused_, 50);
   base::UmaHistogramExactLinear(
       "appcache.UpdateJob.ExistingResourceCorruptionRecovery",
       existing_resource_corruption_recovery_, 50);
+  base::UmaHistogramExactLinear("appcache.UpdateJob.ExistingResourceReused",
+                                existing_resource_reused_, 50);
+  base::UmaHistogramExactLinear("appcache.UpdateJob.ExistingVaryDuring304",
+                                existing_vary_during_304_, 50);
   base::UmaHistogramBoolean("appcache.UpdateJob.Canceled", canceled_);
   base::UmaHistogramEnumeration("appcache.UpdateJob.FinalInternalState",
                                 final_internal_state_);

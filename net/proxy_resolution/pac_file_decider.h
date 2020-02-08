@@ -53,7 +53,7 @@ struct NET_EXPORT_PRIVATE PacFileDataWithSource {
   bool from_auto_detect = false;
 };
 
-// PacFileDecider is a helper class used by ProxyResolutionService to
+// PacFileDecider is a helper class used by ConfiguredProxyResolutionService to
 // determine which PAC script to use given our proxy configuration.
 //
 // This involves trying to use PAC scripts in this order:

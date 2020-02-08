@@ -3,6 +3,7 @@
 # found in the LICENSE file.
 
 common_namespace_rewrites = [
+  "cr_slider.SliderTick|SliderTick",
   "cr.addSingletonGetter|addSingletonGetter",
   "cr.addWebUIListener|addWebUIListener",
   "cr.dispatchSimpleEvent|dispatchSimpleEvent",
@@ -15,9 +16,11 @@ common_namespace_rewrites = [
   "cr.isWindows|isWindows",
   "cr.removeWebUIListener|removeWebUIListener",
   "cr.sendWithPromise|sendWithPromise",
+  "cr.toastManager.getToastManager|getToastManager",
   "cr.ui.FocusOutlineManager|FocusOutlineManager",
   "cr.ui.FocusRowBehavior|FocusRowBehavior",
   "cr.ui.focusWithoutInk|focusWithoutInk",
+  "cr.ui.Store|Store",
   "Polymer.dom.flush|flush",
   "Polymer.IronA11yAnnouncer|IronA11yAnnouncer",
   "Polymer.PaperRippleBehavior|PaperRippleBehavior",

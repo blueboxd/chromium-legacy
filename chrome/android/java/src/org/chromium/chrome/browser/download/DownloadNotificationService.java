@@ -29,6 +29,7 @@ import org.chromium.base.StrictModeContext;
 import org.chromium.base.library_loader.LibraryProcessType;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.flags.CachedFeatureFlags;
+import org.chromium.chrome.browser.flags.ChromeFeatureList;
 import org.chromium.chrome.browser.notifications.NotificationManagerProxy;
 import org.chromium.chrome.browser.notifications.NotificationManagerProxyImpl;
 import org.chromium.chrome.browser.notifications.NotificationUmaTracker;
@@ -526,7 +527,9 @@ public class DownloadNotificationService {
      * already in progress, do nothing.
      */
     void resumeAllPendingDownloads() {
-        if (CachedFeatureFlags.isDownloadAutoResumptionEnabledInNative()) return;
+        if (CachedFeatureFlags.isEnabled(ChromeFeatureList.DOWNLOADS_AUTO_RESUMPTION_NATIVE)) {
+            return;
+        }
 
         // Limit the number of auto resumption attempts in case Chrome falls into a vicious cycle.
         DownloadResumptionScheduler.getDownloadResumptionScheduler().cancel();

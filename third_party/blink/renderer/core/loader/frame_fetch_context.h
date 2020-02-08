@@ -109,6 +109,11 @@ class CORE_EXPORT FrameFetchContext final : public BaseFetchContext {
   bool CalculateIfAdSubresource(const ResourceRequest& resource_request,
                                 ResourceType type) override;
 
+  bool SendConversionRequestInsteadOfRedirecting(
+      const KURL& url,
+      ResourceRequest::RedirectStatus redirect_status,
+      SecurityViolationReportingPolicy reporting_policy) const override;
+
   mojo::PendingReceiver<mojom::blink::WorkerTimingContainer>
   TakePendingWorkerTimingReceiver(int request_id) override;
 

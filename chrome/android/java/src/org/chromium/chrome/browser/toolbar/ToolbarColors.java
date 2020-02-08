@@ -134,7 +134,8 @@ public class ToolbarColors {
     public static @ColorRes int getThemedToolbarIconTintRes(boolean useLight) {
         // Light toolbar theme colors may be used in night mode, so use toolbar_icon_tint_dark which
         // is not overridden in night- resources.
-        return useLight ? R.color.tint_on_dark_bg : R.color.toolbar_icon_tint_dark;
+        return useLight ? R.color.default_icon_color_light_tint_list
+                        : R.color.toolbar_icon_tint_dark;
     }
 
     /**

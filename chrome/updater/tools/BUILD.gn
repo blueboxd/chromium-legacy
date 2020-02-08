@@ -14,10 +14,6 @@ source_set("certificate_tag_lib") {
     "certificate_tag.h",
   ]
 
-  # TODO(sorin): clean up the unused constant definitions after the code is
-  # complete and before closing crbug.com/1031734.
-  cflags_cc = [ "-Wno-unused-const-variable" ]
-
   deps = [ "//base" ]
 }
 

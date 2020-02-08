@@ -5,6 +5,9 @@
 #ifndef CHROME_UPDATER_TOOLS_CERTIFICATE_TAG_H_
 #define CHROME_UPDATER_TOOLS_CERTIFICATE_TAG_H_
 
+#include <cstdint>
+#include <vector>
+
 #include "base/containers/span.h"
 #include "base/optional.h"
 
@@ -41,16 +44,20 @@ class Binary {
 
   // binary_ contains the whole input binary.
   base::span<const uint8_t> binary_;
+
   // content_info_ contains the |WIN_CERTIFICATE| structure.
   base::span<const uint8_t> content_info_;
+
   // tag_ contains the embedded tag, or |nullopt| if there isn't one.
   base::Optional<base::span<const uint8_t>> tag_;
+
   // attr_cert_offset_ is the offset in the file where the |WIN_CERTIFICATE|
   // structure appears. (This is the last structure in the file.)
-  size_t attr_cert_offset_;
+  size_t attr_cert_offset_ = 0;
+
   // certs_size_offset_ is the offset in the file where the u32le size of the
   // |WIN_CERTIFICATE| structure is embedded in an |IMAGE_DATA_DIRECTORY|.
-  size_t certs_size_offset_;
+  size_t certs_size_offset_ = 0;
 };
 
 }  // namespace tools

@@ -191,6 +191,7 @@ class CONTENT_EXPORT StoragePartitionImpl
   PrefetchURLLoaderService* GetPrefetchURLLoaderService();
   CookieStoreContext* GetCookieStoreContext();
   NativeFileSystemManagerImpl* GetNativeFileSystemManager();
+  ConversionManager* GetConversionManager();
 
   // blink::mojom::StoragePartitionService interface.
   void OpenLocalStorage(

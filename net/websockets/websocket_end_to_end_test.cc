@@ -35,12 +35,12 @@
 #include "net/base/url_util.h"
 #include "net/http/http_request_headers.h"
 #include "net/log/net_log.h"
+#include "net/proxy_resolution/configured_proxy_resolution_service.h"
 #include "net/proxy_resolution/proxy_config.h"
 #include "net/proxy_resolution/proxy_config_service.h"
 #include "net/proxy_resolution/proxy_config_service_fixed.h"
 #include "net/proxy_resolution/proxy_config_with_annotation.h"
 #include "net/proxy_resolution/proxy_info.h"
-#include "net/proxy_resolution/proxy_resolution_service.h"
 #include "net/test/embedded_test_server/embedded_test_server.h"
 #include "net/test/embedded_test_server/http_request.h"
 #include "net/test/embedded_test_server/http_response.h"
@@ -335,9 +335,9 @@ TEST_F(WebSocketEndToEndTest, DISABLED_HttpsProxyUnauthedFails) {
   ASSERT_TRUE(ws_server.BlockUntilStarted());
   std::string proxy_config =
       "https=" + proxy_server.host_port_pair().ToString();
-  std::unique_ptr<ProxyResolutionService> proxy_resolution_service(
-      ProxyResolutionService::CreateFixed(proxy_config,
-                                          TRAFFIC_ANNOTATION_FOR_TESTS));
+  std::unique_ptr<ConfiguredProxyResolutionService> proxy_resolution_service(
+      ConfiguredProxyResolutionService::CreateFixed(
+          proxy_config, TRAFFIC_ANNOTATION_FOR_TESTS));
   ASSERT_TRUE(proxy_resolution_service);
   context_.set_proxy_resolution_service(proxy_resolution_service.get());
   EXPECT_FALSE(ConnectAndWait(ws_server.GetURL(kEchoServer)));
@@ -370,8 +370,8 @@ TEST_F(WebSocketEndToEndTest, MAYBE_HttpsWssProxyUnauthedFails) {
   // TODO(https://crbug.com/901896): Don't rely on proxying localhost.
   proxy_config.proxy_rules().bypass_rules.AddRulesToSubtractImplicit();
 
-  std::unique_ptr<ProxyResolutionService> proxy_resolution_service(
-      ProxyResolutionService::CreateFixed(ProxyConfigWithAnnotation(
+  std::unique_ptr<ConfiguredProxyResolutionService> proxy_resolution_service(
+      ConfiguredProxyResolutionService::CreateFixed(ProxyConfigWithAnnotation(
           proxy_config, TRAFFIC_ANNOTATION_FOR_TESTS)));
   ASSERT_TRUE(proxy_resolution_service);
   context_.set_proxy_resolution_service(proxy_resolution_service.get());
@@ -397,8 +397,8 @@ TEST_F(WebSocketEndToEndTest, MAYBE_HttpsProxyUsed) {
   // TODO(https://crbug.com/901896): Don't rely on proxying localhost.
   proxy_config.proxy_rules().bypass_rules.AddRulesToSubtractImplicit();
 
-  std::unique_ptr<ProxyResolutionService> proxy_resolution_service(
-      ProxyResolutionService::CreateFixed(ProxyConfigWithAnnotation(
+  std::unique_ptr<ConfiguredProxyResolutionService> proxy_resolution_service(
+      ConfiguredProxyResolutionService::CreateFixed(ProxyConfigWithAnnotation(
           proxy_config, TRAFFIC_ANNOTATION_FOR_TESTS)));
   context_.set_proxy_resolution_service(proxy_resolution_service.get());
   InitialiseContext();
@@ -463,8 +463,8 @@ TEST_F(WebSocketEndToEndTest, MAYBE_ProxyPacUsed) {
   proxy_config.set_pac_mandatory(true);
   auto proxy_config_service = std::make_unique<ProxyConfigServiceFixed>(
       ProxyConfigWithAnnotation(proxy_config, TRAFFIC_ANNOTATION_FOR_TESTS));
-  std::unique_ptr<ProxyResolutionService> proxy_resolution_service(
-      ProxyResolutionService::CreateUsingSystemProxyResolver(
+  std::unique_ptr<ConfiguredProxyResolutionService> proxy_resolution_service(
+      ConfiguredProxyResolutionService::CreateUsingSystemProxyResolver(
           std::move(proxy_config_service), NetLog::Get()));
   ASSERT_EQ(ws_server.host_port_pair().host(), "127.0.0.1");
   context_.set_proxy_resolution_service(proxy_resolution_service.get());

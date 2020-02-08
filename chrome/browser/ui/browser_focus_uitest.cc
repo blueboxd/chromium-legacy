@@ -29,6 +29,7 @@
 #include "chrome/browser/ui/view_ids.h"
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/url_constants.h"
+#include "chrome/test/base/chrome_test_utils.h"
 #include "chrome/test/base/in_process_browser_test.h"
 #include "chrome/test/base/interactive_test_utils.h"
 #include "chrome/test/base/ui_test_utils.h"
@@ -48,6 +49,7 @@
 #include "content/public/test/browser_test_utils.h"
 #include "content/public/test/test_navigation_observer.h"
 #include "net/test/embedded_test_server/embedded_test_server.h"
+#include "ui/base/test/ui_controls.h"
 
 namespace {
 
@@ -640,6 +642,46 @@ IN_PROC_BROWSER_TEST_F(BrowserFocusTest, DISABLED_FocusAfterCrashedTab) {
   content::CrashTab(browser()->tab_strip_model()->GetActiveWebContents());
 
   ASSERT_TRUE(IsViewFocused(VIEW_ID_TAB_CONTAINER));
+}
+
+// Tests that when omnibox triggers a navigation, then the focus is moved into
+// the current tab.
+IN_PROC_BROWSER_TEST_F(BrowserFocusTest, NavigateFromOmnibox) {
+  const GURL url = embedded_test_server()->GetURL("/title1.html");
+
+  // Focus the Omnibox.
+  ASSERT_TRUE(ui_test_utils::BringBrowserWindowToFront(browser()));
+  chrome::FocusLocationBar(browser());
+  OmniboxView* view = browser()->window()->GetLocationBar()->GetOmniboxView();
+
+  // Simulate typing a URL into the omnibox.
+  view->SetUserText(base::UTF8ToUTF16(url.spec()));
+  EXPECT_TRUE(IsViewFocused(VIEW_ID_OMNIBOX));
+  EXPECT_FALSE(view->IsSelectAll());
+
+  // Simulate pressing Enter and wait until the navigation starts.
+  content::WebContents* web_contents =
+      chrome_test_utils::GetActiveWebContents(this);
+  content::TestNavigationManager nav_manager(web_contents, url);
+  ASSERT_TRUE(ui_controls::SendKeyPress(browser()->window()->GetNativeWindow(),
+                                        ui::VKEY_RETURN, false, false, false,
+                                        false));
+  ASSERT_TRUE(nav_manager.WaitForRequestStart());
+
+  // Verify that a navigation has started.
+  EXPECT_TRUE(web_contents->GetController().GetPendingEntry());
+  // Verify that the Omnibox text is not selected - this is a regression test
+  // for https://crbug.com/1048742.
+  EXPECT_FALSE(view->IsSelectAll());
+  // Intentionally not asserting anything about IsViewFocused in this
+  // _intermediate_ state.
+
+  // Wait for the navigation to finish and verify final, steady state.
+  nav_manager.WaitForNavigationFinished();
+  EXPECT_TRUE(nav_manager.was_successful());
+  EXPECT_EQ(url, web_contents->GetLastCommittedURL());
+  EXPECT_TRUE(IsViewFocused(VIEW_ID_TAB_CONTAINER));
+  EXPECT_FALSE(view->IsSelectAll());
 }
 
 // Tests that when a new tab is opened from the omnibox, the focus is moved from

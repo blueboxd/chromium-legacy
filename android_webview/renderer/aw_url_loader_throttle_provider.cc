@@ -48,15 +48,15 @@ AwURLLoaderThrottleProvider::~AwURLLoaderThrottleProvider() {
 std::vector<std::unique_ptr<blink::URLLoaderThrottle>>
 AwURLLoaderThrottleProvider::CreateThrottles(
     int render_frame_id,
-    const blink::WebURLRequest& request,
-    blink::mojom::ResourceType resource_type) {
+    const blink::WebURLRequest& request) {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
 
   std::vector<std::unique_ptr<blink::URLLoaderThrottle>> throttles;
 
   // Some throttles have already been added in the browser for frame resources.
   // Don't add them for frame requests.
-  bool is_frame_resource = blink::IsResourceTypeFrame(resource_type);
+  bool is_frame_resource =
+      blink::IsRequestDestinationFrame(request.GetRequestDestination());
 
   DCHECK(!is_frame_resource ||
          type_ == content::URLLoaderThrottleProviderType::kFrame);

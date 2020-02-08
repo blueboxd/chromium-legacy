@@ -14,7 +14,6 @@ import android.annotation.SuppressLint;
 import android.content.Context;
 import android.content.res.Resources;
 import android.graphics.Bitmap;
-import android.graphics.Canvas;
 import android.graphics.Rect;
 import android.os.SystemClock;
 import android.support.v7.content.res.AppCompatResources;
@@ -33,7 +32,6 @@ import android.widget.ImageView;
 import android.widget.RelativeLayout;
 
 import androidx.annotation.Nullable;
-import androidx.annotation.VisibleForTesting;
 
 import org.chromium.base.Log;
 import org.chromium.chrome.browser.flags.ChromeFeatureList;
@@ -124,8 +122,6 @@ class TabListRecyclerView
     private ImageView mShadowImageView;
     private int mShadowTopMargin;
     private TabListOnScrollListener mScrollListener;
-    private View mRecyclerViewFooter;
-    private Rect mOriginalPadding;
 
     /**
      * Basic constructor to use during inflation from xml.
@@ -184,9 +180,6 @@ class TabListRecyclerView
                 if (mDynamicView != null) {
                     mDynamicView.dropCachedBitmap();
                     unregisterDynamicView();
-                }
-                if (mRecyclerViewFooter != null) {
-                    mRecyclerViewFooter.setVisibility(VISIBLE);
                 }
                 // TODO(crbug.com/972157): remove this band-aid after we know why GTS is invisible.
                 if (TabFeatureUtilities.isTabToGtsAnimationEnabled()) {
@@ -378,23 +371,6 @@ class TabListRecyclerView
         }
     }
 
-    @Override
-    public void onDraw(Canvas c) {
-        super.onDraw(c);
-        if (mRecyclerViewFooter == null || getVisibility() != View.VISIBLE) return;
-        // Always put the recyclerView footer below the recyclerView if there is one.
-        ViewHolder viewHolder = findViewHolderForAdapterPosition(getAdapter().getItemCount() - 1);
-        if (viewHolder == null) {
-            mRecyclerViewFooter.setVisibility(INVISIBLE);
-        } else {
-            if (mRecyclerViewFooter.getVisibility() != VISIBLE) {
-                mRecyclerViewFooter.setVisibility(VISIBLE);
-            }
-            mRecyclerViewFooter.setY(
-                    viewHolder.itemView.getBottom() + mRecyclerViewFooter.getHeight());
-        }
-    }
-
     /**
      * Start hiding the tab list.
      * @param animate Whether the visibility change should be animated.
@@ -414,9 +390,6 @@ class TabListRecyclerView
                 mFadeOutAnimator = null;
                 setVisibility(View.INVISIBLE);
                 mListener.finishedHiding();
-                if (mRecyclerViewFooter != null) {
-                    mRecyclerViewFooter.setVisibility(INVISIBLE);
-                }
             }
         });
         setShadowVisibility(false);
@@ -499,39 +472,6 @@ class TabListRecyclerView
         return Math.abs(left1 - left2) < threshold && Math.abs(top1 - top2) < threshold;
     }
 
-    /**
-     * This method setup the footer of {@code recyclerView}.
-     * @param footer  The {@link View} of the footer.
-     * TODO(yuezhanggg): Refactor the footer as a item in the recyclerView instead of a separate
-     * view. (crbug: 987043)
-     */
-    void setupRecyclerViewFooter(View footer) {
-        if (mRecyclerViewFooter != null) return;
-        mRecyclerViewFooter = footer;
-        setScrollBarStyle(SCROLLBARS_OUTSIDE_OVERLAY);
-        final int height = (int) getResources().getDimension(R.dimen.tab_grid_iph_card_height);
-        final int padding = (int) getResources().getDimension(R.dimen.tab_grid_iph_card_margin);
-        mOriginalPadding =
-                new Rect(getPaddingLeft(), getPaddingTop(), getPaddingRight(), getPaddingBottom());
-        setPadding(mOriginalPadding.left, mOriginalPadding.top, mOriginalPadding.right,
-                mOriginalPadding.bottom + height + padding);
-        mRecyclerViewFooter.setVisibility(INVISIBLE);
-    }
-
-    /**
-     * This method removes the footer of {@code recyclerView} if there is one.
-     */
-    void removeRecyclerViewFooter() {
-        if (mRecyclerViewFooter == null) return;
-        ((ViewGroup) mRecyclerViewFooter.getParent()).removeView(mRecyclerViewFooter);
-        mRecyclerViewFooter = null;
-        // Restore the recyclerView to its original state.
-        assert mOriginalPadding != null;
-        setPadding(mOriginalPadding.left, mOriginalPadding.top, mOriginalPadding.right,
-                mOriginalPadding.bottom);
-        setScrollBarStyle(SCROLLBARS_INSIDE_OVERLAY);
-    }
-
     // TabGridAccessibilityHelper implementation.
     // TODO(crbug.com/1032095): Add e2e tests for implementation below when tab grid is enabled for
     // accessibility mode.
@@ -598,10 +538,5 @@ class TabListRecyclerView
             targetPosition = currentPosition + spanCount;
         }
         return new Pair<>(currentPosition, targetPosition);
-    }
-
-    @VisibleForTesting
-    View getRecyclerViewFooterForTesting() {
-        return mRecyclerViewFooter;
     }
 }

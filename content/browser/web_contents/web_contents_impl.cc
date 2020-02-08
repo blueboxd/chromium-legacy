@@ -48,6 +48,7 @@
 #include "content/browser/browser_plugin/browser_plugin_embedder.h"
 #include "content/browser/browser_plugin/browser_plugin_guest.h"
 #include "content/browser/child_process_security_policy_impl.h"
+#include "content/browser/conversions/conversion_host.h"
 #include "content/browser/devtools/protocol/page_handler.h"
 #include "content/browser/devtools/render_frame_devtools_agent_host.h"
 #include "content/browser/display_cutout/display_cutout_host_impl.h"
@@ -601,6 +602,10 @@ WebContentsImpl::WebContentsImpl(BrowserContext* browser_context)
 #if defined(OS_ANDROID)
   display_cutout_host_impl_ = std::make_unique<DisplayCutoutHostImpl>(this);
 #endif
+
+  // ConversionHost takes a weak ref on |this|, so it must be created outside of
+  // the initializer list.
+  conversion_host_ = std::make_unique<ConversionHost>(this);
 }
 
 WebContentsImpl::~WebContentsImpl() {
@@ -1221,6 +1226,11 @@ WebContentsReceiverSet* WebContentsImpl::GetReceiverSet(
   if (it == receiver_sets_.end())
     return nullptr;
   return it->second;
+}
+
+void WebContentsImpl::RemoveReceiverSetForTesting(
+    const std::string& interface_name) {
+  RemoveReceiverSet(interface_name);
 }
 
 std::vector<WebContentsImpl*> WebContentsImpl::GetWebContentsAndAllInner() {

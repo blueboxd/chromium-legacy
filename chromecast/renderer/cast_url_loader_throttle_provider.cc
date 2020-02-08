@@ -37,8 +37,7 @@ CastURLLoaderThrottleProvider::Clone() {
 std::vector<std::unique_ptr<blink::URLLoaderThrottle>>
 CastURLLoaderThrottleProvider::CreateThrottles(
     int render_frame_id,
-    const blink::WebURLRequest& request,
-    blink::mojom::ResourceType resource_type) {
+    const blink::WebURLRequest& request) {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
 
   std::vector<std::unique_ptr<blink::URLLoaderThrottle>> throttles;

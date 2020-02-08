@@ -28,9 +28,9 @@
 #include "base/values.h"
 #include "build/build_config.h"
 #include "net/base/network_change_notifier.h"
+#include "net/proxy_resolution/configured_proxy_resolution_service.h"
 #include "net/proxy_resolution/proxy_config.h"
 #include "net/proxy_resolution/proxy_config_service.h"
-#include "net/proxy_resolution/proxy_resolution_service.h"
 
 #if defined(OS_LINUX) && !defined(OS_CHROMEOS)
 #include "net/base/network_change_notifier_linux.h"
@@ -181,7 +181,7 @@ int main(int argc, char* argv[]) {
 
   // Use the network loop as the file loop also.
   std::unique_ptr<net::ProxyConfigService> proxy_config_service(
-      net::ProxyResolutionService::CreateSystemProxyConfigService(
+      net::ConfiguredProxyResolutionService::CreateSystemProxyConfigService(
           io_task_executor.task_runner()));
 
   // Uses |network_change_notifier|.

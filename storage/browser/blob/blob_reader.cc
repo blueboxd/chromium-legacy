@@ -257,10 +257,11 @@ void BlobReader::ReadSingleMojoDataItem(
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   DCHECK(IsSingleMojoDataItem());
 
-  // Read the entire data item.
+  // Read the set range of this single data item.
   auto item = blob_data_->items()[0];
-  item->data_handle()->Read(std::move(producer), item->offset(), item->length(),
-                            std::move(done));
+  item->data_handle()->Read(std::move(producer),
+                            item->offset() + current_item_offset_,
+                            remaining_bytes_, std::move(done));
 }
 
 void BlobReader::Kill() {

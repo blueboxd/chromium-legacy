@@ -446,7 +446,7 @@ public class CustomTabTabPersistencePolicyTest {
                     public Tab createTab(int id, boolean incognito) {
                         return new MockTab(id, incognito) {
                             @Override
-                            public String getUrl() {
+                            public String getUrlString() {
                                 return "https://www.google.com";
                             }
                         };

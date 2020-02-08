@@ -6,6 +6,7 @@ import("//build/config/sanitizers/sanitizers.gni")
 import("//chrome/common/features.gni")
 import("//chrome/test/base/js2gtest.gni")
 import("//ui/webui/resources/tools/js_modulizer.gni")
+import("./namespace_rewrites.gni")
 
 js2gtest("interactive_ui_tests_js_webui") {
   test_type = "webui"
@@ -337,12 +338,5 @@ js_modulizer("modulize_local") {
     "test_store.js",
     "test_util.js",
   ]
-  namespace_rewrites = [
-    "cr.ui.Store|Store",
-    "MockInteractions.down|down",
-    "MockInteractions.pressAndReleaseKeyOn|pressAndReleaseKeyOn",
-    "MockInteractions.up|up",
-    "test_util.eventToPromise|eventToPromise",
-    "test_util.waitAfterNextRender|waitAfterNextRender",
-  ]
+  namespace_rewrites = test_namespace_rewrites
 }

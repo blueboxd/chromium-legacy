@@ -273,6 +273,9 @@
     <message name="IDS_PAGE_INFO_TYPE_SERIAL" desc="The label used for the serial port permission controls in the Page Info popup.">
       Serial ports
     </message>
+    <message name="IDS_PAGE_INFO_TYPE_BLUETOOTH" desc="The label used for the Bluetooth permission controls in the Page Info popup.">
+      Bluetooth devices
+    </message>
     <message name="IDS_PAGE_INFO_TYPE_NATIVE_FILE_SYSTEM_WRITE" desc="The label used for the native file system write permission controls in the Page Info popup. The write permission determines whether sites are allowed to save to the original file that was selected by the user through the Native File System API.">
       File editing
     </message>
@@ -374,6 +377,12 @@
       Serial port
     </message>
     <message name="IDS_PAGE_INFO_DELETE_SERIAL_PORT" desc="The tooltip displayed when hovering over the button that will remove permission to access a serial port that the user previously granted to the site.">
+      Revoke access
+    </message>
+    <message name="IDS_PAGE_INFO_BLUETOOTH_DEVICE_SECONDARY_LABEL" desc="The label displayed underneath the device name to inform the user that the item refers to a Bluetooth device.">
+      Bluetooth device
+    </message>
+    <message name="IDS_PAGE_INFO_DELETE_BLUETOOTH_DEVICE" desc="The tooltip displayed when hovering over the button that will remove permission to access a Bluetooth device that the user previously granted to the site.">
       Revoke access
     </message>
 

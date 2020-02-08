@@ -178,9 +178,10 @@ public class TabGridDialogMediator {
                         ? R.drawable.tab_grid_dialog_background_incognito
                         : R.drawable.tab_grid_dialog_background;
                 ColorStateList tintList = isIncognito
-                        ? AppCompatResources.getColorStateList(mContext, R.color.tint_on_dark_bg)
+                        ? AppCompatResources.getColorStateList(
+                                mContext, R.color.default_icon_color_light_tint_list)
                         : AppCompatResources.getColorStateList(
-                                mContext, R.color.standard_mode_tint);
+                                mContext, R.color.default_icon_color_tint_list);
                 int ungroupBarBackgroundColorId = isIncognito
                         ? R.color.tab_grid_dialog_background_color_incognito
                         : R.color.tab_grid_dialog_background_color;
@@ -507,7 +508,7 @@ public class TabGridDialogMediator {
         List<Tab> tabgroup = getRelatedTabs(mCurrentTabId);
         assert tabgroup.size() > 0;
         for (int i = 0; i < tabgroup.size(); i++) {
-            sb.append(i + 1).append(". ").append(tabgroup.get(i).getUrl()).append("\n");
+            sb.append(i + 1).append(". ").append(tabgroup.get(i).getUrlString()).append("\n");
         }
         return sb.toString();
     }

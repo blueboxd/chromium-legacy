@@ -134,6 +134,7 @@ public class CachedFeatureFlags {
      * @param featureName the feature name from ChromeFeatureList.
      * @return whether the cached feature should be considered enabled.
      */
+    @CalledByNative
     public static boolean isEnabled(String featureName) {
         // All cached feature flags should have a default value.
         if (!sDefaults.containsKey(featureName)) {
@@ -233,19 +234,6 @@ public class CachedFeatureFlags {
         // LibraryLoader itself because it lives in //base and can't depend on ChromeFeatureList.
         LibraryLoader.setReachedCodeProfilerEnabledOnNextRuns(
                 ChromeFeatureList.isEnabled(ChromeFeatureList.REACHED_CODE_PROFILER));
-    }
-
-    /**
-     * @return Whether or not the download auto-resumptions should be enabled in native.
-     */
-    @CalledByNative
-    public static boolean isDownloadAutoResumptionEnabledInNative() {
-        return isEnabled(ChromeFeatureList.DOWNLOADS_AUTO_RESUMPTION_NATIVE);
-    }
-
-    @VisibleForTesting
-    public static void setDownloadAutoResumptionEnabledInNativeForTesting(Boolean value) {
-        setForTesting(ChromeFeatureList.DOWNLOADS_AUTO_RESUMPTION_NATIVE, value);
     }
 
     /**

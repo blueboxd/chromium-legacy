@@ -341,46 +341,20 @@
             "v8.browsing_desktop-future": {
                 "begin": 10,
                 "abridged": false
-            },
-            "v8.runtime_stats.top_25": {
-                "end": 9,
-                "abridged": false
             }
         }
     },
     "22": {
-        "benchmarks": {
-            "v8.runtime_stats.top_25": {
-                "begin": 9,
-                "end": 40,
-                "abridged": false
-            }
-        }
+        "benchmarks": {}
     },
     "23": {
-        "benchmarks": {
-            "v8.runtime_stats.top_25": {
-                "begin": 40,
-                "end": 73,
-                "abridged": false
-            }
-        }
+        "benchmarks": {}
     },
     "24": {
-        "benchmarks": {
-            "v8.runtime_stats.top_25": {
-                "begin": 73,
-                "end": 104,
-                "abridged": false
-            }
-        }
+        "benchmarks": {}
     },
     "25": {
         "benchmarks": {
-            "v8.runtime_stats.top_25": {
-                "begin": 104,
-                "abridged": false
-            },
             "webrtc": {
                 "abridged": false
             }

@@ -246,7 +246,7 @@ class QuicHttpStreamTest : public ::testing::TestWithParam<TestParams>,
                       false),
         random_generator_(0),
         printer_(version_) {
-    FLAGS_quic_disable_http3_settings_grease_randomness = true;
+    FLAGS_quic_enable_http3_grease_randomness = false;
     quic::QuicEnableVersion(version_);
     IPAddress ip(192, 0, 2, 33);
     peer_addr_ = IPEndPoint(ip, 443);

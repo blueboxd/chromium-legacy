@@ -148,6 +148,10 @@ class ArcVmClientAdapterTest : public testing::Test,
     auto* vm_info = start_vm_response.mutable_vm_info();
     vm_info->set_cid(kCid);
     GetTestConciergeClient()->set_start_vm_response(start_vm_response);
+
+    // Reset to the original behavior.
+    auto* upstart_client = chromeos::FakeUpstartClient::Get();
+    upstart_client->set_start_job_result(true);
   }
 
   void TearDown() override {
@@ -185,10 +189,12 @@ class ArcVmClientAdapterTest : public testing::Test,
     adapter()->SetUserInfo(kUserIdHash, kSerialNumber);
   }
 
-  void StartMiniArcWithParams(StartParams params) {
+  void StartMiniArcWithParams(bool expect_success, StartParams params) {
     adapter()->StartMiniArc(
         std::move(params),
-        base::BindOnce(&ArcVmClientAdapterTest::ExpectTrueThenQuit,
+        base::BindOnce(expect_success
+                           ? &ArcVmClientAdapterTest::ExpectTrueThenQuit
+                           : &ArcVmClientAdapterTest::ExpectFalseThenQuit,
                        base::Unretained(this)));
     run_loop()->Run();
     RecreateRunLoop();
@@ -206,7 +212,7 @@ class ArcVmClientAdapterTest : public testing::Test,
   }
 
   // Starts mini instance with the default StartParams.
-  void StartMiniArc() { StartMiniArcWithParams({}); }
+  void StartMiniArc() { StartMiniArcWithParams(true, {}); }
 
   // Upgrades the instance with the default UpgradeParams.
   void UpgradeArc(bool expect_success) {
@@ -305,10 +311,21 @@ TEST_F(ArcVmClientAdapterTest, SetUserInfo) {
   adapter()->SetUserInfo(kUserIdHash, kSerialNumber);
 }
 
-// Tests that StartMiniArc() always succeeds.
+// Tests that StartMiniArc() succeeds by default.
 TEST_F(ArcVmClientAdapterTest, StartMiniArc) {
   StartMiniArc();
   // Confirm that no VM is started. ARCVM doesn't support mini ARC yet.
+  EXPECT_FALSE(GetTestConciergeClient()->start_arc_vm_called());
+}
+
+// Tests that StartMiniArc() fails when Upstart fails to start the job.
+TEST_F(ArcVmClientAdapterTest, StartMiniArc_Fail) {
+  // Inject failure to FakeUpstartClient.
+  auto* upstart_client = chromeos::FakeUpstartClient::Get();
+  upstart_client->set_start_job_result(false);
+
+  StartMiniArcWithParams(false, {});
+  // Confirm that no VM is started.
   EXPECT_FALSE(GetTestConciergeClient()->start_arc_vm_called());
 }
 
@@ -528,7 +545,7 @@ TEST_F(ArcVmClientAdapterTest, UpgradeArc_Success) {
 TEST_F(ArcVmClientAdapterTest, StartUpgradeArc_VariousParams) {
   StartParams start_params(GetPopulatedStartParams());
   SetValidUserInfo();
-  StartMiniArcWithParams(std::move(start_params));
+  StartMiniArcWithParams(true, std::move(start_params));
 
   UpgradeParams params(GetPopulatedUpgradeParams());
   UpgradeArcWithParams(true, std::move(params));
@@ -546,7 +563,7 @@ TEST_F(ArcVmClientAdapterTest, StartUpgradeArc_VariousParams2) {
       StartParams::PlayStoreAutoUpdate::AUTO_UPDATE_OFF;
 
   SetValidUserInfo();
-  StartMiniArcWithParams(std::move(start_params));
+  StartMiniArcWithParams(true, std::move(start_params));
 
   UpgradeParams params(GetPopulatedUpgradeParams());
   // Use slightly different params than StartUpgradeArc_VariousParams.
@@ -568,7 +585,7 @@ TEST_F(ArcVmClientAdapterTest, StartUpgradeArc_DemoMode) {
 
   StartParams start_params(GetPopulatedStartParams());
   SetValidUserInfo();
-  StartMiniArcWithParams(std::move(start_params));
+  StartMiniArcWithParams(true, std::move(start_params));
 
   UpgradeParams params(GetPopulatedUpgradeParams());
   // Enable demo mode.
@@ -597,7 +614,7 @@ TEST_F(ArcVmClientAdapterTest, StartUpgradeArc_DisableSystemDefaultApp) {
   StartParams start_params(GetPopulatedStartParams());
   start_params.arc_disable_system_default_app = true;
   SetValidUserInfo();
-  StartMiniArcWithParams(std::move(start_params));
+  StartMiniArcWithParams(true, std::move(start_params));
   UpgradeParams params(GetPopulatedUpgradeParams());
   UpgradeArcWithParams(true, std::move(params));
   EXPECT_TRUE(GetStartConciergeCalled());

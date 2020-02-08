@@ -36,8 +36,11 @@
 #include "base/feature_list.h"
 #include "base/optional.h"
 #include "build/build_config.h"
+#include "mojo/public/cpp/bindings/associated_remote.h"
+#include "third_party/blink/public/common/associated_interfaces/associated_interface_provider.h"
 #include "third_party/blink/public/common/client_hints/client_hints.h"
 #include "third_party/blink/public/common/device_memory/approximated_device_memory.h"
+#include "third_party/blink/public/mojom/conversions/conversions.mojom-blink.h"
 #include "third_party/blink/public/mojom/feature_policy/feature_policy.mojom-blink.h"
 #include "third_party/blink/public/mojom/fetch/fetch_api_request.mojom-blink.h"
 #include "third_party/blink/public/mojom/loader/request_context_frame_type.mojom-blink.h"
@@ -87,6 +90,7 @@
 #include "third_party/blink/renderer/core/timing/dom_window_performance.h"
 #include "third_party/blink/renderer/core/timing/performance.h"
 #include "third_party/blink/renderer/core/timing/window_performance.h"
+#include "third_party/blink/renderer/core/url/url_search_params.h"
 #include "third_party/blink/renderer/platform/bindings/script_forbidden_scope.h"
 #include "third_party/blink/renderer/platform/exported/wrapped_resource_request.h"
 #include "third_party/blink/renderer/platform/instrumentation/histogram.h"
@@ -1055,6 +1059,67 @@ bool FrameFetchContext::CalculateIfAdSubresource(
   return GetFrame()->GetAdTracker()->CalculateIfAdSubresource(
       frame_or_imported_document_->GetDocument().ToExecutionContext(),
       resource_request, type, known_ad);
+}
+
+bool FrameFetchContext::SendConversionRequestInsteadOfRedirecting(
+    const KURL& url,
+    ResourceRequest::RedirectStatus redirect_status,
+    SecurityViolationReportingPolicy reporting_policy) const {
+  if (!RuntimeEnabledFeatures::ConversionMeasurementEnabled())
+    return false;
+
+  // Only register conversions pings that are redirects in the main frame.
+  // TODO(https://crbug.com/1042919): This should also validate that the
+  // redirect is same origin to ensure that the reporting domain has consented
+  // to the registration event.
+  if (!frame_or_imported_document_ || !GetFrame() ||
+      !GetFrame()->IsMainFrame() ||
+      redirect_status != ResourceRequest::RedirectStatus::kFollowedRedirect) {
+    return false;
+  }
+
+  const char kWellKnownConversionRegsitrationPath[] =
+      "/.well-known/register-conversion";
+  if (url.GetPath() != kWellKnownConversionRegsitrationPath)
+    return false;
+
+  // Only allow conversion registration on secure pages with a secure conversion
+  // redirect.
+  scoped_refptr<const SecurityOrigin> redirect_origin =
+      SecurityOrigin::Create(url);
+  if (!GetFrame()
+           ->GetSecurityContext()
+           ->GetSecurityOrigin()
+           ->IsPotentiallyTrustworthy() ||
+      !redirect_origin->IsPotentiallyTrustworthy()) {
+    return false;
+  }
+
+  // Only report conversions for requests with reporting enabled (i.e. do not
+  // count preload requests). However, return true.
+  if (reporting_policy == SecurityViolationReportingPolicy::kSuppressReporting)
+    return true;
+
+  mojom::blink::ConversionPtr conversion = mojom::blink::Conversion::New();
+  conversion->reporting_origin = SecurityOrigin::Create(url);
+  conversion->conversion_data = 0UL;
+
+  const char kConversionDataParam[] = "conversion-data";
+  URLSearchParams* search_params = URLSearchParams::Create(url.Query());
+  if (search_params->has(kConversionDataParam)) {
+    bool is_valid_integer = false;
+    uint64_t data = search_params->get(kConversionDataParam)
+                        .ToUInt64Strict(&is_valid_integer);
+
+    // Default invalid params to 0.
+    conversion->conversion_data = is_valid_integer ? data : 0UL;
+  }
+
+  mojo::AssociatedRemote<mojom::blink::ConversionHost> conversion_host;
+  GetFrame()->GetRemoteNavigationAssociatedInterfaces()->GetInterface(
+      &conversion_host);
+  conversion_host->RegisterConversion(std::move(conversion));
+  return true;
 }
 
 mojo::PendingReceiver<mojom::blink::WorkerTimingContainer>

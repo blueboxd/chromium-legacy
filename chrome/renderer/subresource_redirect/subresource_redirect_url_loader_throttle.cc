@@ -16,9 +16,9 @@
 #include "net/base/escape.h"
 #include "net/base/load_flags.h"
 #include "net/http/http_status_code.h"
+#include "services/network/public/mojom/fetch_api.mojom-shared.h"
 #include "services/network/public/mojom/url_response_head.mojom.h"
 #include "third_party/blink/public/common/features.h"
-#include "third_party/blink/public/mojom/loader/resource_load_info.mojom-shared.h"
 #include "third_party/blink/public/platform/web_url.h"
 #include "third_party/blink/public/platform/web_url_request.h"
 
@@ -28,10 +28,10 @@ namespace subresource_redirect {
 std::unique_ptr<SubresourceRedirectURLLoaderThrottle>
 SubresourceRedirectURLLoaderThrottle::MaybeCreateThrottle(
     const blink::WebURLRequest& request,
-    blink::mojom::ResourceType resource_type,
     int render_frame_id) {
   if (base::FeatureList::IsEnabled(blink::features::kSubresourceRedirect) &&
-      resource_type == blink::mojom::ResourceType::kImage &&
+      request.GetRequestDestination() ==
+          network::mojom::RequestDestination::kImage &&
       (request.GetPreviewsState() &
        blink::WebURLRequest::kSubresourceRedirectOn) &&
       request.Url().ProtocolIs(url::kHttpsScheme)) {
@@ -54,8 +54,7 @@ void SubresourceRedirectURLLoaderThrottle::WillStartRequest(
     network::ResourceRequest* request,
     bool* defer) {
   DCHECK(base::FeatureList::IsEnabled(blink::features::kSubresourceRedirect));
-  DCHECK_EQ(request->resource_type,
-            static_cast<int>(blink::mojom::ResourceType::kImage));
+  DCHECK_EQ(request->destination, network::mojom::RequestDestination::kImage);
   DCHECK(request->previews_state &
          content::PreviewsTypes::SUBRESOURCE_REDIRECT_ON);
   DCHECK(request->url.SchemeIs(url::kHttpsScheme));

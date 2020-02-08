@@ -149,24 +149,26 @@ class PreviewsOptimizationGuideTest : public testing::Test {
   void SeedOptimizationGuideDeciderWithDefaultResponses() {
     optimization_guide::OptimizationMetadata default_metadata;
 
-    optimization_guide::OptimizationMetadata rlh_metadata;
-    rlh_metadata.previews_metadata.set_inflation_percent(123);
-    rlh_metadata.previews_metadata.set_max_ect_trigger(
+    optimization_guide::proto::PreviewsMetadata rlh_previews_metadata;
+    rlh_previews_metadata.set_inflation_percent(123);
+    rlh_previews_metadata.set_max_ect_trigger(
         optimization_guide::proto::EFFECTIVE_CONNECTION_TYPE_3G);
-    auto* rlh1 = rlh_metadata.previews_metadata.add_resource_loading_hints();
+    auto* rlh1 = rlh_previews_metadata.add_resource_loading_hints();
     rlh1->set_resource_pattern("resource1");
     rlh1->set_loading_optimization_type(
         optimization_guide::proto::LOADING_BLOCK_RESOURCE);
-    auto* rlh2 = rlh_metadata.previews_metadata.add_resource_loading_hints();
+    auto* rlh2 = rlh_previews_metadata.add_resource_loading_hints();
     rlh2->set_resource_pattern("resource2");
     rlh2->set_loading_optimization_type(
         optimization_guide::proto::LOADING_BLOCK_RESOURCE);
-    rlh_metadata.previews_metadata.add_resource_loading_hints()
-        ->set_resource_pattern("shouldbeskipped");
+    rlh_previews_metadata.add_resource_loading_hints()->set_resource_pattern(
+        "shouldbeskipped");
     // Should also be skipped since the resource pattern is empty.
-    rlh_metadata.previews_metadata.add_resource_loading_hints()
+    rlh_previews_metadata.add_resource_loading_hints()
         ->set_loading_optimization_type(
             optimization_guide::proto::LOADING_BLOCK_RESOURCE);
+    optimization_guide::OptimizationMetadata rlh_metadata;
+    rlh_metadata.set_previews_metadata(rlh_previews_metadata);
 
     std::map<std::tuple<GURL, optimization_guide::proto::OptimizationType>,
              std::tuple<optimization_guide::OptimizationGuideDecision,

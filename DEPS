@@ -171,11 +171,11 @@ vars = {
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling Skia
   # and whatever else without interference from each other.
-  'skia_revision': '8c80b199362fce7d9f6e1ce3eea693bcb9d6eaaf',
+  'skia_revision': 'c03e6982f96fce7a0b32dcee572dd3f24136d177',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling V8
   # and whatever else without interference from each other.
-  'v8_revision': '632c2199f8b9870e2929412a09ea104bcb8b49c4',
+  'v8_revision': 'c95ce7ec50cee4d64e1bf4d6e4dfe9972ecc32a2',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling swarming_client
   # and whatever else without interference from each other.
@@ -187,7 +187,7 @@ vars = {
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling SwiftShader
   # and whatever else without interference from each other.
-  'swiftshader_revision': '54d16b890faf1b99d51736d477d0935b6ce27dfa',
+  'swiftshader_revision': '0aef64546c8d088d48d394233082199b5108a4fc',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling PDFium
   # and whatever else without interference from each other.
@@ -242,7 +242,7 @@ vars = {
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling devtools-frontend
   # and whatever else without interference from each other.
-  'devtools_frontend_revision': '76192f01c8d123999af84691a9cb9a5580c98a8b',
+  'devtools_frontend_revision': 'c08bd283dbd75587aac7853626b89e7d3d389287',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling libprotobuf-mutator
   # and whatever else without interference from each other.
@@ -1528,7 +1528,7 @@ deps = {
     Var('chromium_git') + '/v8/v8.git' + '@' +  Var('v8_revision'),
 
   'src-internal': {
-    'url': 'https://chrome-internal.googlesource.com/chrome/src-internal.git@2b288c934092986de967a0a2326ed83bcc4efd8b',
+    'url': 'https://chrome-internal.googlesource.com/chrome/src-internal.git@96094bf4ff392acb9507358b22e5dcb6380ca4d0',
     'condition': 'checkout_src_internal',
   },
 

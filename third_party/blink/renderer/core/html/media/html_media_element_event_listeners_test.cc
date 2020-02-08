@@ -115,10 +115,6 @@ class HTMLMediaElementEventListenersTest : public PageTestBase {
   MediaCustomControlsFullscreenDetector* FullscreenDetector() {
     return Video()->custom_controls_fullscreen_detector_;
   }
-  bool IsCheckViewportIntersectionTimerActive(
-      MediaCustomControlsFullscreenDetector* detector) {
-    return detector->check_viewport_intersection_timer_.IsActive();
-  }
 };
 
 TEST_F(HTMLMediaElementEventListenersTest, RemovingFromDocumentCollectsAll) {
@@ -221,8 +217,6 @@ TEST_F(HTMLMediaElementEventListenersTest,
 
   // Document should not have listeners as the ExecutionContext is destroyed.
   EXPECT_FALSE(persistent_document->HasEventListeners());
-  // The timer should be cancelled when the ExecutionContext is destroyed.
-  EXPECT_FALSE(IsCheckViewportIntersectionTimerActive(detector));
   // Should only notify the kNotEffectivelyFullscreen value when
   // ExecutionContext is destroyed.
   EXPECT_EQ(1u, observed_results.size());

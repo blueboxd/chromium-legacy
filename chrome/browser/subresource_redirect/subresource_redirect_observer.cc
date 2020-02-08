@@ -74,11 +74,14 @@ void OnReadyToSendResourceLoadingImageHints(
 
   if (decision != optimization_guide::OptimizationGuideDecision::kTrue)
     return;
+  if (!optimization_metadata.public_image_metadata())
+    return;
 
   std::vector<std::string> public_image_urls;
-  public_image_urls.reserve(
-      optimization_metadata.public_image_metadata.url_size());
-  for (const auto& url : optimization_metadata.public_image_metadata.url())
+  const optimization_guide::proto::PublicImageMetadata public_image_metadata =
+      optimization_metadata.public_image_metadata().value();
+  public_image_urls.reserve(public_image_metadata.url_size());
+  for (const auto& url : public_image_metadata.url())
     public_image_urls.push_back(url);
   // Pass down the image URLs to renderer even if it could be empty. This acts
   // as a signal that the image hint fetch has finished, for coverage metrics

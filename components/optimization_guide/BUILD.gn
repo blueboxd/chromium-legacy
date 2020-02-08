@@ -40,6 +40,8 @@ static_library("optimization_guide") {
     "optimization_guide_store.h",
     "optimization_guide_switches.cc",
     "optimization_guide_switches.h",
+    "optimization_metadata.cc",
+    "optimization_metadata.h",
     "store_update_data.cc",
     "store_update_data.h",
     "top_host_provider.h",

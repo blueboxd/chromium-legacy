@@ -97,8 +97,6 @@ class UtilUnittest(unittest.TestCase):
         for newline in newlines:
           test = test_std_newline.replace('\n', newline)
           Test(test, util.BINARY, test)
-          # RAW_TEXT uses universal newline mode
-          Test(test, util.RAW_TEXT, test_std_newline)
           # utf-8 doesn't strip BOM
           Test(test, 'utf-8', test_std_newline.decode('utf-8'))
           # utf-8-sig strips BOM

@@ -500,16 +500,15 @@ void KioskAppData::OnWebstoreResponseParseSuccess(
   webstore_fetcher_.reset();
 
   std::string manifest;
-  if (!CheckResponseKeyValue(extension_id, webstore_data.get(), kManifestKey,
-                             &manifest))
+  if (!CheckResponseKeyValue(id, webstore_data.get(), kManifestKey, &manifest))
     return;
 
-  if (!CheckResponseKeyValue(extension_id, webstore_data.get(),
-                             kLocalizedNameKey, &name_))
+  if (!CheckResponseKeyValue(id, webstore_data.get(), kLocalizedNameKey,
+                             &name_))
     return;
 
   std::string icon_url_string;
-  if (!CheckResponseKeyValue(extension_id, webstore_data.get(), kIconUrlKey,
+  if (!CheckResponseKeyValue(id, webstore_data.get(), kIconUrlKey,
                              &icon_url_string))
     return;
 

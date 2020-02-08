@@ -155,18 +155,22 @@ bool PreviewsOptimizationGuide::CanApplyPreview(
   if (!ShouldApplyPreviewWithDecision(type, decision))
     return false;
 
-  // If we can apply it, populate information from metadata.
-  if (previews_data &&
-      optimization_metadata.previews_metadata.has_inflation_percent()) {
+  // Previews metadata is mostly best effort and not actually required for all
+  // previews, so just return early if it's not populated.
+  if (!optimization_metadata.previews_metadata())
+    return true;
+
+  // If we have metadata, populate information from metadata.
+  const optimization_guide::proto::PreviewsMetadata previews_metadata =
+      optimization_metadata.previews_metadata().value();
+  if (previews_data && previews_metadata.has_inflation_percent()) {
     previews_data->set_data_savings_inflation_percent(
-        optimization_metadata.previews_metadata.inflation_percent());
+        previews_metadata.inflation_percent());
   }
-  if (optimization_metadata.previews_metadata.resource_loading_hints_size() >
-      0) {
+  if (previews_metadata.resource_loading_hints_size() > 0) {
     resource_loading_hints_cache_.Put(
         navigation_handle->GetURL(),
-        GetResourcePatternsToBlock(
-            optimization_metadata.previews_metadata.resource_loading_hints()));
+        GetResourcePatternsToBlock(previews_metadata.resource_loading_hints()));
   }
 
   return true;

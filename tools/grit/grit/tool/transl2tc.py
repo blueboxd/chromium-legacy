@@ -58,7 +58,7 @@ Bulk Translation Upload tool.
     self.rc2grd.SetOptions(globopt)
     self.limits = None
     if len(args) and args[0] == '-l':
-      self.limits = util.ReadFile(args[1], util.RAW_TEXT).split('\n')
+      self.limits = util.ReadFile(args[1], 'utf-8').splitlines()
       args = args[2:]
     return self.rc2grd.ParseOptions(args, help_func=self.ShowUsage)
 

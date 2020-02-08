@@ -165,16 +165,16 @@ bool IsOptimizationTypeSupportedByPageHint(
     if (optimization_metadata) {
       switch (optimization.metadata_case()) {
         case optimization_guide::proto::Optimization::kPreviewsMetadata:
-          optimization_metadata->previews_metadata =
-              optimization.previews_metadata();
+          optimization_metadata->set_previews_metadata(
+              optimization.previews_metadata());
           break;
         case optimization_guide::proto::Optimization::kPerformanceHintsMetadata:
-          optimization_metadata->performance_hints_metadata =
-              optimization.performance_hints_metadata();
+          optimization_metadata->set_performance_hints_metadata(
+              optimization.performance_hints_metadata());
           break;
         case optimization_guide::proto::Optimization::kPublicImageMetadata:
-          optimization_metadata->public_image_metadata =
-              optimization.public_image_metadata();
+          optimization_metadata->set_public_image_metadata(
+              optimization.public_image_metadata());
           break;
         case optimization_guide::proto::Optimization::METADATA_NOT_SET:
           // Some optimization types do not have metadata, make sure we do not

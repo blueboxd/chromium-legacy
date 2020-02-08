@@ -8,6 +8,7 @@
 #include <vector>
 
 #include "base/callback_forward.h"
+#include "components/optimization_guide/optimization_metadata.h"
 #include "components/optimization_guide/proto/hints.pb.h"
 #include "components/optimization_guide/proto/models.pb.h"
 
@@ -30,18 +31,6 @@ enum class OptimizationGuideDecision {
 
   // New values above this line.
   kMaxValue = kFalse,
-};
-
-// Contains metadata for the optimization.
-struct OptimizationMetadata {
-  // Only applicable for NOSCRIPT and RESOURCE_LOADING optimization types.
-  proto::PreviewsMetadata previews_metadata;
-
-  // Only applicable for the PERFORMANCE_HINTS optimization type.
-  proto::PerformanceHintsMetadata performance_hints_metadata;
-
-  // Only applicable for the COMPRESS_PUBLIC_IMAGES optimization type.
-  proto::PublicImageMetadata public_image_metadata;
 };
 
 using OptimizationGuideDecisionCallback =

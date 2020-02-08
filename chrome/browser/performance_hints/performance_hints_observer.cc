@@ -118,8 +118,14 @@ void PerformanceHintsObserver::ProcessPerformanceHint(
     return;
   }
 
+  if (!optimization_metadata.performance_hints_metadata())
+    return;
+
+  const optimization_guide::proto::PerformanceHintsMetadata
+      performance_hints_metadata =
+          optimization_metadata.performance_hints_metadata().value();
   for (const PerformanceHint& hint :
-       optimization_metadata.performance_hints_metadata.performance_hints()) {
+       performance_hints_metadata.performance_hints()) {
     hints_.emplace_back(URLPatternWithWildcards(hint.wildcard_pattern()), hint);
   }
 }

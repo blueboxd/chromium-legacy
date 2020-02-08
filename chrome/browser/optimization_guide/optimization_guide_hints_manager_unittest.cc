@@ -1320,7 +1320,9 @@ TEST_F(OptimizationGuideHintsManagerTest,
       hints_manager()->CanApplyOptimization(navigation_handle.get(),
                                             optimization_guide::proto::NOSCRIPT,
                                             &optimization_metadata);
-  EXPECT_EQ(1234, optimization_metadata.previews_metadata.inflation_percent());
+  EXPECT_EQ(
+      1234,
+      optimization_metadata.previews_metadata().value().inflation_percent());
 
   // Make sure decisions are logged correctly.
   EXPECT_EQ(optimization_guide::OptimizationTypeDecision::kAllowedByHint,
@@ -1479,8 +1481,7 @@ TEST_F(OptimizationGuideHintsManagerTest,
           navigation_handle.get(), optimization_guide::proto::PERFORMANCE_HINTS,
           &optimization_metadata);
   // Make sure performance hints metadata is populated.
-  EXPECT_EQ(1, optimization_metadata.performance_hints_metadata
-                   .performance_hints_size());
+  EXPECT_TRUE(optimization_metadata.performance_hints_metadata().has_value());
 
   // Make sure decisions are logged correctly.
   EXPECT_EQ(optimization_guide::OptimizationTypeDecision::kAllowedByHint,
@@ -1520,7 +1521,7 @@ TEST_F(OptimizationGuideHintsManagerTest,
           optimization_guide::proto::COMPRESS_PUBLIC_IMAGES,
           &optimization_metadata);
   // Make sure public images metadata is populated.
-  EXPECT_EQ(1, optimization_metadata.public_image_metadata.url_size());
+  EXPECT_TRUE(optimization_metadata.public_image_metadata().has_value());
 
   // Make sure decisions are logged correctly.
   EXPECT_EQ(optimization_guide::OptimizationTypeDecision::kAllowedByHint,
@@ -1602,12 +1603,13 @@ TEST_F(OptimizationGuideHintsManagerTest,
   hints_manager()->RegisterOptimizationTypes(
       {optimization_guide::proto::NOSCRIPT});
   optimization_guide::OptimizationMetadata optimization_metadata;
-  optimization_metadata.previews_metadata.set_inflation_percent(12345);
+  optimization_metadata.set_previews_metadata(
+      optimization_guide::proto::PreviewsMetadata());
   optimization_guide::OptimizationTypeDecision optimization_type_decision =
       hints_manager()->CanApplyOptimization(navigation_handle.get(),
                                             optimization_guide::proto::NOSCRIPT,
                                             &optimization_metadata);
-  EXPECT_EQ(0, optimization_metadata.previews_metadata.inflation_percent());
+  EXPECT_FALSE(optimization_metadata.previews_metadata().has_value());
 
   // Make sure decisions are logged correctly.
   EXPECT_EQ(optimization_guide::OptimizationTypeDecision::kNoHintAvailable,
@@ -1784,7 +1786,9 @@ TEST_F(OptimizationGuideHintsManagerExperimentTest,
       hints_manager()->CanApplyOptimization(navigation_handle.get(),
                                             optimization_guide::proto::NOSCRIPT,
                                             &optimization_metadata);
-  EXPECT_EQ(12345, optimization_metadata.previews_metadata.inflation_percent());
+  EXPECT_EQ(
+      12345,
+      optimization_metadata.previews_metadata().value().inflation_percent());
 
   // Make sure decisions are logged correctly.
   EXPECT_EQ(optimization_guide::OptimizationTypeDecision::kAllowedByHint,
@@ -2523,7 +2527,7 @@ TEST_F(OptimizationGuideHintsManagerFetchingTest,
   // a URL-keyed hint.
   EXPECT_EQ(optimization_guide::OptimizationTypeDecision::kAllowedByHint,
             optimization_type_decision);
-  EXPECT_EQ("someurl", optimization_metadata.public_image_metadata.url(0));
+  EXPECT_TRUE(optimization_metadata.public_image_metadata().has_value());
 }
 
 TEST_F(OptimizationGuideHintsManagerFetchingTest,
@@ -2852,7 +2856,7 @@ TEST_F(OptimizationGuideHintsManagerFetchingTest,
              const optimization_guide::OptimizationMetadata& metadata) {
             EXPECT_EQ(optimization_guide::OptimizationGuideDecision::kTrue,
                       decision);
-            EXPECT_EQ(1, metadata.public_image_metadata.url_size());
+            EXPECT_TRUE(metadata.public_image_metadata().has_value());
           }));
   RunUntilIdle();
 
@@ -2889,7 +2893,7 @@ TEST_F(OptimizationGuideHintsManagerFetchingTest,
              const optimization_guide::OptimizationMetadata& metadata) {
             EXPECT_EQ(optimization_guide::OptimizationGuideDecision::kTrue,
                       decision);
-            EXPECT_EQ(1, metadata.public_image_metadata.url_size());
+            EXPECT_TRUE(metadata.public_image_metadata().has_value());
           }));
   hints_manager()->CanApplyOptimizationAsync(
       url_with_url_keyed_hint(),
@@ -2899,7 +2903,7 @@ TEST_F(OptimizationGuideHintsManagerFetchingTest,
              const optimization_guide::OptimizationMetadata& metadata) {
             EXPECT_EQ(optimization_guide::OptimizationGuideDecision::kTrue,
                       decision);
-            EXPECT_EQ(1, metadata.public_image_metadata.url_size());
+            EXPECT_TRUE(metadata.public_image_metadata().has_value());
           }));
   hints_manager()->OnNavigationStartOrRedirect(navigation_handle.get(),
                                                base::DoNothing());
@@ -3019,7 +3023,7 @@ TEST_F(OptimizationGuideHintsManagerFetchingTest,
              const optimization_guide::OptimizationMetadata& metadata) {
             EXPECT_EQ(optimization_guide::OptimizationGuideDecision::kTrue,
                       decision);
-            EXPECT_EQ(1, metadata.public_image_metadata.url_size());
+            EXPECT_TRUE(metadata.public_image_metadata().has_value());
           }));
   RunUntilIdle();
 
@@ -3140,7 +3144,7 @@ TEST_F(OptimizationGuideHintsManagerFetchingTest,
              const optimization_guide::OptimizationMetadata& metadata) {
             EXPECT_EQ(optimization_guide::OptimizationGuideDecision::kTrue,
                       decision);
-            EXPECT_EQ(1, metadata.public_image_metadata.url_size());
+            EXPECT_TRUE(metadata.public_image_metadata().has_value());
           }));
   hints_manager()->OnNavigationFinish(url_with_url_keyed_hint(),
                                       /*navigation_data=*/nullptr);

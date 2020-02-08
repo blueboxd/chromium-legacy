@@ -65,6 +65,7 @@ suite(extension_detail_view_tests.suiteName, function() {
     expectTrue(testIsVisible('#icon'));
     expectTrue(testIsVisible('#enableToggle'));
     expectFalse(testIsVisible('#enableButton'));
+    expectFalse(testIsVisible('#blockedMatureToolTip'));
     expectFalse(testIsVisible('#extensions-options'));
     expectTrue(
         item.$.description.textContent.indexOf('This is an extension') !== -1);
@@ -192,6 +193,7 @@ suite(extension_detail_view_tests.suiteName, function() {
     flush();
     expectTrue(testIsVisible('#enableToggle'));
     expectTrue(item.$$('#enableToggle').disabled);
+    expectTrue(testIsVisible('#blockedMatureToolTip'));
     item.set('data.disableReasons.blockedMature', false);
     flush();
 

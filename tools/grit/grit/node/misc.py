@@ -53,7 +53,7 @@ def _ReadFirstIdsFromFile(filename, defines):
   Returns a tuple, the absolute path of SRCDIR followed by the
   first_ids dictionary.
   """
-  first_ids_dict = eval(util.ReadFile(filename, util.RAW_TEXT))
+  first_ids_dict = eval(util.ReadFile(filename, 'utf-8'))
   src_root_dir = os.path.abspath(os.path.join(os.path.dirname(filename),
                                               first_ids_dict['SRCDIR']))
 

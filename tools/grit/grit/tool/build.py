@@ -240,7 +240,7 @@ are exported to translation interchange files (e.g. XMB files), etc.
       self.whitelist_names = set()
       for whitelist_filename in whitelist_filenames:
         self.VerboseOut('Using whitelist: %s\n' % whitelist_filename);
-        whitelist_contents = util.ReadFile(whitelist_filename, util.RAW_TEXT)
+        whitelist_contents = util.ReadFile(whitelist_filename, 'utf-8')
         self.whitelist_names.update(whitelist_contents.strip().split('\n'))
 
     if js_minifier:

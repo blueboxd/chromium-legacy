@@ -108,7 +108,7 @@ class StructureUnittest(unittest.TestCase):
         </structures>''', base_dir=test_data_root)
     node, = root.GetChildrenOfType(structure.StructureNode)
     node.RunPreSubstitutionGatherer()
-    compressed = node.GetDataPackValue(lang='en', encoding=1)
+    compressed = node.GetDataPackValue(lang='en', encoding=util.BINARY)
 
     decompressed_data = zlib.decompress(compressed, 16 + zlib.MAX_WBITS)
     self.assertEqual(util.ReadFile(
@@ -131,7 +131,7 @@ class StructureUnittest(unittest.TestCase):
     brotli_util.SetBrotliCommand([sys.executable,
                                  os.path.join(os.path.dirname(__file__),
                                  'mock_brotli.py')])
-    compressed = node.GetDataPackValue(lang='en', encoding=1)
+    compressed = node.GetDataPackValue(lang='en', encoding=util.BINARY)
     # Assert that the first two bytes in compressed format is BROTLI_CONST.
     self.assertEqual(constants.BROTLI_CONST, compressed[0:2])
 
@@ -153,7 +153,7 @@ class StructureUnittest(unittest.TestCase):
         </structures>''', base_dir=test_data_root)
     node, = root.GetChildrenOfType(structure.StructureNode)
     node.RunPreSubstitutionGatherer()
-    data = node.GetDataPackValue(lang='en', encoding=1)
+    data = node.GetDataPackValue(lang='en', encoding=util.BINARY)
 
     self.assertEqual(util.ReadFile(
         os.path.join(test_data_root, 'test_text.txt'), util.BINARY), data)

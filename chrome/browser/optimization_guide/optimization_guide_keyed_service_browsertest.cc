@@ -308,8 +308,7 @@ IN_PROC_BROWSER_TEST_F(OptimizationGuideKeyedServiceBrowserTest,
          const optimization_guide::OptimizationMetadata& metadata) {
         EXPECT_EQ(optimization_guide::OptimizationGuideDecision::kTrue,
                   decision);
-        EXPECT_EQ(metadata.previews_metadata.max_ect_trigger(),
-                  optimization_guide::proto::EFFECTIVE_CONNECTION_TYPE_2G);
+        EXPECT_TRUE(metadata.previews_metadata().has_value());
         run_loop->Quit();
       },
       run_loop.get()));

@@ -90,9 +90,9 @@ how are you?
     current_grd.RunGatherers()
 
     source_rc_path = util.PathFromRoot('grit/testdata/source.rc')
-    source_rc = util.ReadFile(source_rc_path, util.RAW_TEXT)
+    source_rc = util.ReadFile(source_rc_path, 'utf-8')
     transl_rc_path = util.PathFromRoot('grit/testdata/transl.rc')
-    transl_rc = util.ReadFile(transl_rc_path, util.RAW_TEXT)
+    transl_rc = util.ReadFile(transl_rc_path, 'utf-8')
 
     tool = transl2tc.TranslationToTc()
     output_buf = StringIO()

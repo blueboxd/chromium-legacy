@@ -26,7 +26,7 @@ _root_dir = os.path.abspath(os.path.join(os.path.dirname(__file__), '..'))
 
 
 # Unique constants for use by ReadFile().
-BINARY, RAW_TEXT = range(2)
+BINARY = 0
 
 
 # Unique constants representing data pack encodings.
@@ -202,14 +202,13 @@ def ReadFile(filename, encoding):
 
   Args:
     filename: The path to the file.
-    encoding: A Python codec name or one of two special values: BINARY to read
-              the file in binary mode, or RAW_TEXT to read it with newline
-              conversion but without decoding to Unicode.
+    encoding: A Python codec name or the special value: BINARY to read
+              the file in binary mode.
   '''
   mode = 'rb' if encoding == BINARY else 'rU'
   with open(filename, mode) as f:
     data = f.read()
-  if encoding not in (BINARY, RAW_TEXT):
+  if encoding != BINARY:
     data = data.decode(encoding)
   return data
 

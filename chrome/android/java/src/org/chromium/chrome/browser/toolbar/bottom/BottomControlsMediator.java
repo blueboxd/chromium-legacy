@@ -171,9 +171,6 @@ class BottomControlsMediator implements ChromeFullscreenManager.FullscreenListen
     }
 
     @Override
-    public void onToggleOverlayVideoMode(boolean enabled) {}
-
-    @Override
     public void onBottomControlsHeightChanged(
             int bottomControlsHeight, int bottomControlsMinHeight) {}
 

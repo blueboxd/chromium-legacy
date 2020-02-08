@@ -291,8 +291,6 @@ public class FullscreenManagerTest {
                             int topControlsMinHeightOffset, int bottomOffset,
                             int bottomControlsMinHeightOffset, boolean needsAnimate) {}
                     @Override
-                    public void onToggleOverlayVideoMode(boolean enabled) {}
-                    @Override
                     public void onBottomControlsHeightChanged(
                             int bottomControlsHeight, int bottomControlsMinHeight) {}
                     @Override

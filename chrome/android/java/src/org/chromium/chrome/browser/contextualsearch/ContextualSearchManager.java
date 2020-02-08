@@ -1275,7 +1275,7 @@ public class ContextualSearchManager implements ContextualSearchManagementDelega
     private class ContextualSearchSelectionClient implements SelectionClient {
         @Override
         public void onSelectionChanged(String selection) {
-            if (!isOverlayVideoMode() && mSearchPanel != null) {
+            if (mSearchPanel != null) {
                 mSelectionController.handleSelectionChanged(selection);
                 mSearchPanel.updateBrowserControlsState(BrowserControlsState.BOTH, true);
             }
@@ -1284,9 +1284,7 @@ public class ContextualSearchManager implements ContextualSearchManagementDelega
         @Override
         public void onSelectionEvent(
                 @SelectionEventType int eventType, float posXPix, float posYPix) {
-            if (!isOverlayVideoMode()) {
-                mSelectionController.handleSelectionEvent(eventType, posXPix, posYPix);
-            }
+            mSelectionController.handleSelectionEvent(eventType, posXPix, posYPix);
         }
 
         @Override
@@ -1327,15 +1325,7 @@ public class ContextualSearchManager implements ContextualSearchManagementDelega
 
     /** Shows the Unhandled Tap UI.  Called by {@link ContextualSearchTabHelper}. */
     void onShowUnhandledTapUIIfNeeded(int x, int y, int fontSizeDips, int textRunLength) {
-        if (!isOverlayVideoMode()) {
-            mSelectionController.handleShowUnhandledTapUIIfNeeded(
-                    x, y, fontSizeDips, textRunLength);
-        }
-    }
-
-    /** @return Whether the display is in a full-screen video overlay mode. */
-    private boolean isOverlayVideoMode() {
-        return mActivity.getFullscreenManager().isOverlayVideoMode();
+        mSelectionController.handleShowUnhandledTapUIIfNeeded(x, y, fontSizeDips, textRunLength);
     }
 
     // ============================================================================================

@@ -158,12 +158,6 @@ public class ChromeFullscreenManager extends FullscreenManager
                 int bottomOffset, int bottomControlsMinHeightOffset, boolean needsAnimate) {}
 
         /**
-         * Called when a ContentVideoView is created/destroyed.
-         * @param enabled Whether to enter or leave overlay video mode.
-         */
-        default void onToggleOverlayVideoMode(boolean enabled) {}
-
-        /**
          * Called when the height of the bottom controls are changed.
          */
         default void onBottomControlsHeightChanged(
@@ -507,7 +501,7 @@ public class ChromeFullscreenManager extends FullscreenManager
                 // The toast tells user how to leave fullscreen by touching the screen. Since,
                 // there is no touchscreen when browsing in VR, the toast doesn't have any useful
                 // information.
-                return !isOverlayVideoMode() && !isInVr() && !bootsToVr();
+                return !isInVr() && !bootsToVr();
             }
         };
     }
@@ -653,15 +647,6 @@ public class ChromeFullscreenManager extends FullscreenManager
         } else {
             mControlOffsetRatio =
                     Math.abs((float) mRendererTopControlOffset / getTopControlsHeight());
-        }
-    }
-
-    @Override
-    public void setOverlayVideoMode(boolean enabled) {
-        super.setOverlayVideoMode(enabled);
-
-        for (int i = 0; i < mListeners.size(); i++) {
-            mListeners.get(i).onToggleOverlayVideoMode(enabled);
         }
     }
 

@@ -307,9 +307,6 @@ public class RecentTabsPage
             int bottomOffset, int bottomControlsMinHeightOffset, boolean needsAnimate) {}
 
     @Override
-    public void onToggleOverlayVideoMode(boolean enabled) {}
-
-    @Override
     public void onBottomControlsHeightChanged(
             int bottomControlsHeight, int bottomControlsMinHeight) {
         final View recentTabsRoot = mView.findViewById(R.id.recent_tabs_root);

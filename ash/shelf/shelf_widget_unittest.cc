@@ -417,7 +417,7 @@ TEST_F(ShelfWidgetTest, OpaqueBackgroundAndDragHandleTransition) {
 
   {
     TransitionAnimationWaiter waiter(
-        GetShelfWidget()->hotseat_transition_animator());
+        GetShelfWidget()->hotseat_transition_animator_for_testing());
     waiter.Wait();
   }
 

@@ -123,11 +123,6 @@ class BottomSheetManager extends EmptyBottomSheetObserver
             int bottomOffset, int bottomControlsMinHeightOffset, boolean needsAnimate) {}
 
     @Override
-    public void onToggleOverlayVideoMode(boolean enabled) {
-        if (mSheetController.isSheetOpen()) mSheetController.collapseSheet(false);
-    }
-
-    @Override
     public void onBottomControlsHeightChanged(
             int bottomControlsHeight, int bottomControlsMinHeight) {}
 

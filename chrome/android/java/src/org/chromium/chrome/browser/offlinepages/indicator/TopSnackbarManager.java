@@ -67,9 +67,6 @@ public class TopSnackbarManager
     @Override
     public void onContentOffsetChanged(int offset) {}
 
-    @Override
-    public void onToggleOverlayVideoMode(boolean enabled) {}
-
     /**
      * Shows a snackbar at the top of the given activity.
      */

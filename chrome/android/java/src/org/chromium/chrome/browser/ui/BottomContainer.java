@@ -80,7 +80,4 @@ public class BottomContainer
 
     @Override
     public void onContentOffsetChanged(int offset) {}
-
-    @Override
-    public void onToggleOverlayVideoMode(boolean enabled) {}
 }

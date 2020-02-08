@@ -39,9 +39,6 @@ class BrowserControlsMarginSupplier extends ObservableSupplierImpl<Rect>
     }
 
     @Override
-    public void onToggleOverlayVideoMode(boolean enabled) {}
-
-    @Override
     public void onTopControlsHeightChanged(int topControlsHeight, int topControlsMinHeight) {
         updateMargins();
     }

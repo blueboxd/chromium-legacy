@@ -839,13 +839,6 @@ public class CompositorViewHolder extends FrameLayout
     }
 
     @Override
-    public void onToggleOverlayVideoMode(boolean enabled) {
-        if (mCompositorView != null) {
-            mCompositorView.setOverlayVideoMode(enabled);
-        }
-    }
-
-    @Override
     public void onUpdateViewportSize() {
         // Reflect the changes that may have happened in in view/control size.
         Point viewportSize = getViewportSize();

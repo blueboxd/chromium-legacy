@@ -130,8 +130,8 @@ class ShelfWidget::DelegateView : public views::WidgetDelegate,
   void UpdateShelfBackground(SkColor color) override;
 
   // HotseatBackgroundAnimator::Observer:
-  void OnHotseatTransitionAnimationWillStart(HotseatState from_state,
-                                             HotseatState to_state) override;
+  void OnHotseatTransitionAnimationStarted(HotseatState from_state,
+                                           HotseatState to_state) override;
   void OnHotseatTransitionAnimationEnded(HotseatState from_state,
                                          HotseatState to_state) override;
 
@@ -386,7 +386,7 @@ void ShelfWidget::DelegateView::UpdateShelfBackground(SkColor color) {
   UpdateOpaqueBackground();
 }
 
-void ShelfWidget::DelegateView::OnHotseatTransitionAnimationWillStart(
+void ShelfWidget::DelegateView::OnHotseatTransitionAnimationStarted(
     HotseatState from_state,
     HotseatState to_state) {
   ShowAnimatingBackground(true);
@@ -561,8 +561,6 @@ void ShelfWidget::RegisterHotseatWidget(HotseatWidget* hotseat_widget) {
   delegate_view_->set_context_menu_controller(hotseat_widget->GetShelfView());
   hotseat_transition_animator_.reset(new HotseatTransitionAnimator(this));
   hotseat_transition_animator_->AddObserver(delegate_view_);
-  shelf_->hotseat_widget()->CreateAnimationMetricsReporter(
-      hotseat_transition_animator());
 }
 
 void ShelfWidget::OnTabletModeChanged() {

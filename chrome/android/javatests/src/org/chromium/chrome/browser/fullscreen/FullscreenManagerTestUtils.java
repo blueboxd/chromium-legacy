@@ -125,9 +125,6 @@ public class FullscreenManagerTestUtils {
             }
 
             @Override
-            public void onToggleOverlayVideoMode(boolean enabled) {}
-
-            @Override
             public void onContentOffsetChanged(int offset) {}
 
             @Override

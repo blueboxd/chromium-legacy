@@ -21,7 +21,6 @@ import org.chromium.content_public.browser.WebContents;
 //                class.
 public abstract class FullscreenManager {
     private final FullscreenHtmlApiHandler mHtmlApiHandler;
-    private boolean mOverlayVideoMode;
     @Nullable private Tab mTab;
 
     /**
@@ -107,21 +106,6 @@ public abstract class FullscreenManager {
      * @return The offset of the content from the top of the screen in px.
      */
     public abstract int getContentOffset();
-
-    /**
-     * Tells the fullscreen manager a ContentVideoView is created below the contents.
-     * @param enabled Whether to enter or leave overlay video mode.
-     */
-    public void setOverlayVideoMode(boolean enabled) {
-        mOverlayVideoMode = enabled;
-    }
-
-    /**
-     * @return Check whether ContentVideoView is shown.
-     */
-    public boolean isOverlayVideoMode() {
-        return mOverlayVideoMode;
-    }
 
     /**
      * Updates the positions of the browser controls and content to the default non fullscreen

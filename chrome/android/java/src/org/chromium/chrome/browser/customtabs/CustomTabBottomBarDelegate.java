@@ -382,7 +382,4 @@ public class CustomTabBottomBarDelegate implements FullscreenListener {
 
     @Override
     public void onContentOffsetChanged(int offset) {}
-
-    @Override
-    public void onToggleOverlayVideoMode(boolean enabled) { }
 }

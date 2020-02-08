@@ -130,9 +130,6 @@ public class NewTabPage implements NativePage, InvalidationAwareThumbnailProvide
     }
 
     @Override
-    public void onToggleOverlayVideoMode(boolean enabled) {}
-
-    @Override
     public void onBottomControlsHeightChanged(
             int bottomControlsHeight, int bottomControlsMinHeight) {
         updateMargins();

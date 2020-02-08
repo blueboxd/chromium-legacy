@@ -375,9 +375,6 @@ class AssistantOverlayDrawable extends Drawable implements FullscreenListener {
     }
 
     @Override
-    public void onToggleOverlayVideoMode(boolean enabled) {}
-
-    @Override
     public void onBottomControlsHeightChanged(
             int bottomControlsHeight, int bottomControlsMinHeight) {
         invalidateSelf();

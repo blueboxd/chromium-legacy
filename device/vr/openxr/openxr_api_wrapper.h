@@ -51,6 +51,7 @@ class OpenXrApiWrapper {
 
   XrResult BeginFrame(Microsoft::WRL::ComPtr<ID3D11Texture2D>* texture);
   XrResult EndFrame();
+  bool HasPendingFrame() const;
 
   XrResult GetHeadPose(base::Optional<gfx::Quaternion>* orientation,
                        base::Optional<gfx::Point3F>* position,
@@ -105,6 +106,7 @@ class OpenXrApiWrapper {
   XrResult UpdateStageBounds();
 
   bool session_ended_;
+  bool pending_frame_;
   base::TimeTicks last_process_events_time_;
 
   base::RepeatingCallback<void(XrResult*)>

@@ -103,10 +103,17 @@ CrossOriginReadBlockingChecker::CrossOriginReadBlockingChecker(
   DCHECK(!callback_.is_null());
   network::CrossOriginReadBlocking::LogAction(
       network::CrossOriginReadBlocking::Action::kResponseStarted);
+
+  // |is_for_non_http_isolated_world| is only used for UMA logging related to
+  // the OOR-CORS feature.  Since OOR-CORS is not used in scenarios relevant to
+  // CrossOriginReadBlockingChecker, we can just use |false| here.
+  constexpr bool is_for_non_http_isolated_world = false;
+
   corb_analyzer_ =
       std::make_unique<network::CrossOriginReadBlocking::ResponseAnalyzer>(
           request.url, request.request_initiator, response,
-          request_initiator_site_lock, request.mode);
+          request_initiator_site_lock, request.mode,
+          is_for_non_http_isolated_world);
   if (corb_analyzer_->ShouldBlock()) {
     OnBlocked();
     return;

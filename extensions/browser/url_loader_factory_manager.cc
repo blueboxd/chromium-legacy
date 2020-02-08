@@ -27,12 +27,12 @@
 #include "extensions/common/constants.h"
 #include "extensions/common/cors_util.h"
 #include "extensions/common/extension.h"
-#include "extensions/common/extension_features.h"
 #include "extensions/common/extension_set.h"
 #include "extensions/common/manifest_handlers/content_scripts_handler.h"
 #include "extensions/common/switches.h"
 #include "extensions/common/user_script.h"
 #include "mojo/public/cpp/bindings/pending_remote.h"
+#include "services/network/public/cpp/features.h"
 #include "services/network/public/mojom/network_context.mojom.h"
 #include "services/network/public/mojom/url_loader_factory.mojom.h"
 #include "url/gurl.h"
@@ -46,7 +46,7 @@ namespace {
 
 bool ShouldAllowlistAlsoApplyToOorCors() {
   return base::FeatureList::IsEnabled(
-      extensions_features::kCorbAllowlistAlsoAppliesToOorCors);
+      network::features::kCorbAllowlistAlsoAppliesToOorCors);
 }
 
 enum class FactoryUser {
@@ -264,8 +264,8 @@ std::vector<std::string> CreateExtensionAllowlist() {
 
   // Append extensions from the field trial param.
   std::string field_trial_arg = base::GetFieldTrialParamValueByFeature(
-      extensions_features::kCorbAllowlistAlsoAppliesToOorCors,
-      extensions_features::kCorbAllowlistAlsoAppliesToOorCorsParamName);
+      network::features::kCorbAllowlistAlsoAppliesToOorCors,
+      network::features::kCorbAllowlistAlsoAppliesToOorCorsParamName);
   field_trial_arg = base::ToUpperASCII(field_trial_arg);
   std::vector<std::string> field_trial_allowlist = base::SplitString(
       field_trial_arg, ",", base::TRIM_WHITESPACE, base::SPLIT_WANT_NONEMPTY);

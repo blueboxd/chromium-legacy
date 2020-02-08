@@ -103,11 +103,15 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) CrossOriginReadBlocking {
     // Creates a ResponseAnalyzer for the request (|request_url| and
     // |request_initiator|), |response| pair.  The ResponseAnalyzer will decide
     // whether |response| needs to be blocked.
+    //
+    // TODO(lukasza): https://crbug.com/920638: Remove
+    // |is_for_non_http_isolated_world| once we gather enough UMA data.
     ResponseAnalyzer(const GURL& request_url,
                      const base::Optional<url::Origin>& request_initiator,
                      const network::mojom::URLResponseHead& response,
                      base::Optional<url::Origin> request_initiator_site_lock,
-                     mojom::RequestMode request_mode);
+                     mojom::RequestMode request_mode,
+                     bool is_for_non_http_isolated_world);
 
     ~ResponseAnalyzer();
 
@@ -175,13 +179,20 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) CrossOriginReadBlocking {
     };
     // Static because this method is called both during the actual decision, and
     // for the CORB protection logging decision.
+    //
+    // |is_cors_blocking_expected| returns whether the response is 1)
+    // cross-origin, 2) made in CORS mode and 3) doesn't have the right ACAO
+    // response header.
+    // TODO(lukasza): https://crbug.com/920638: Remove
+    // |is_cors_blocking_expected| once we gather enough UMA data.
     static BlockingDecision ShouldBlockBasedOnHeaders(
         mojom::RequestMode request_mode,
         const GURL& request_url,
         const base::Optional<url::Origin>& request_initiator,
         const network::mojom::URLResponseHead& response,
         const base::Optional<url::Origin>& request_initiator_site_lock,
-        MimeType canonical_mime_type);
+        MimeType canonical_mime_type,
+        bool* is_cors_blocking_expected);
 
     // Returns true if the response has a nosniff header.
     static bool HasNoSniff(const network::mojom::URLResponseHead& response);
@@ -262,6 +273,14 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) CrossOriginReadBlocking {
 
     // Sniffing results.
     bool found_blockable_content_ = false;
+
+    // State used for calculating the
+    // SiteIsolation.XSD.Browser.AllowedByCorbButNotCors.ContentScript UMA.
+    //
+    // TODO(lukasza): https://crbug.com/920638: Remove the fields below once we
+    // gather enough UMA data.
+    const bool is_for_non_http_isolated_world_ = false;
+    bool is_cors_blocking_expected_ = false;
 
     DISALLOW_COPY_AND_ASSIGN(ResponseAnalyzer);
   };

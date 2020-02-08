@@ -7362,6 +7362,11 @@ Unknown properties are collapsed to zero. -->
   <int value="1" label="Revoked"/>
 </enum>
 
+<enum name="BooleanRisk">
+  <int value="0" label="Safe"/>
+  <int value="1" label="Risky"/>
+</enum>
+
 <enum name="BooleanSafeMode">
   <int value="0" label="Regular mode"/>
   <int value="1" label="Safe mode"/>
@@ -26430,6 +26435,8 @@ to ensure that the crash string is shown properly on the user-facing crash UI.
   <int value="3160" label="TrustedTypesEnabledEnforcing"/>
   <int value="3161" label="TrustedTypesEnabledReportOnly"/>
   <int value="3162" label="TrustedTypesAllowDuplicates"/>
+  <int value="3163" label="V8ArrayPrototypeHasElements"/>
+  <int value="3164" label="V8ObjectPrototypeHasElements"/>
 </enum>
 
 <enum name="FeaturePolicyAllowlistType">

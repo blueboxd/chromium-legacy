@@ -9,12 +9,9 @@ import android.content.Context;
 import android.graphics.Bitmap;
 import android.text.SpannableString;
 import android.text.TextUtils;
-import android.view.LayoutInflater;
-import android.view.View;
 import android.webkit.URLUtil;
 
 import org.chromium.base.Callback;
-import org.chromium.chrome.R;
 import org.chromium.chrome.browser.ChromeBaseAppCompatActivity;
 import org.chromium.chrome.browser.contextmenu.ContextMenuParams.PerformanceClass;
 import org.chromium.chrome.browser.night_mode.GlobalNightModeStateProviderHolder;
@@ -90,9 +87,5 @@ class RevampedContextMenuHeaderCoordinator {
 
     PropertyModel getModel() {
         return mModel;
-    }
-
-    View getView() {
-        return LayoutInflater.from(mContext).inflate(R.layout.revamped_context_menu_header, null);
     }
 }

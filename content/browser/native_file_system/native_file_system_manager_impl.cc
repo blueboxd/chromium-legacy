@@ -178,10 +178,10 @@ void NativeFileSystemManagerImpl::GetSandboxedFileSystem(
       weak_factory_.GetWeakPtr(), receivers_.current_context(),
       std::move(callback), base::SequencedTaskRunnerHandle::Get());
 
-  GURL origin = receivers_.current_context().origin.GetURL();
   base::PostTask(FROM_HERE, {BrowserThread::IO},
                  base::BindOnce(&FileSystemContext::OpenFileSystem, context(),
-                                origin, storage::kFileSystemTypeTemporary,
+                                receivers_.current_context().origin,
+                                storage::kFileSystemTypeTemporary,
                                 storage::OPEN_FILE_SYSTEM_CREATE_IF_NONEXISTENT,
                                 std::move(response_callback)));
 }

@@ -18,6 +18,7 @@ import org.chromium.base.ApiCompatibilityUtils;
 import org.chromium.base.Callback;
 import org.chromium.base.LifetimeAssert;
 import org.chromium.chrome.tab_ui.R;
+import org.chromium.ui.modelutil.LayoutViewBuilder;
 import org.chromium.ui.modelutil.MVCListAdapter.ListItem;
 import org.chromium.ui.modelutil.MVCListAdapter.ModelList;
 import org.chromium.ui.modelutil.ModelListAdapter;
@@ -90,8 +91,7 @@ public class TabGridDialogMenuCoordinator {
         listView.setAdapter(adapter);
         // clang-format off
         adapter.registerType(ListItemType.MENU_ITEM,
-                () -> LayoutInflater.from(listView.getContext())
-                        .inflate(R.layout.list_menu_item, listView, false),
+                new LayoutViewBuilder(R.layout.list_menu_item),
                 TabGridDialogMenuItemBinder::binder);
         // clang-format on
         listView.setOnItemClickListener((p, v, pos, id) -> {

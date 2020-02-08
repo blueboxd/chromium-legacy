@@ -46,6 +46,7 @@
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/icu/source/i18n/unicode/datefmt.h"
 #include "third_party/icu/source/i18n/unicode/regex.h"
+#include "url/origin.h"
 
 using base::BindLambdaForTesting;
 using content::AsyncFileTestHelper;
@@ -190,7 +191,8 @@ class FileSystemURLLoaderFactoryTest
         FROM_HERE,
         base::BindOnce(
             &FileSystemContext::OpenFileSystem, file_system_context_,
-            GURL("http://remote/"), storage::kFileSystemTypeTemporary,
+            url::Origin::Create(GURL("http://remote/")),
+            storage::kFileSystemTypeTemporary,
             storage::OPEN_FILE_SYSTEM_CREATE_IF_NONEXISTENT,
             base::BindOnce(&FileSystemURLLoaderFactoryTest::OnOpenFileSystem,
                            loop.QuitClosure())));

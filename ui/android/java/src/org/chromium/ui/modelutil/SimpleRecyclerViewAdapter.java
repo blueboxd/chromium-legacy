@@ -119,7 +119,7 @@ public class SimpleRecyclerViewAdapter
 
     @Override
     public ViewHolder onCreateViewHolder(ViewGroup parent, int viewType) {
-        return new ViewHolder(mViewBuilderMap.get(viewType).first.buildView(),
+        return new ViewHolder(mViewBuilderMap.get(viewType).first.buildView(parent),
                 mViewBuilderMap.get(viewType).second);
     }
 

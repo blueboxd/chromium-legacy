@@ -52,6 +52,10 @@ XRCompositorCommon::~XRCompositorCommon() {
 }
 
 void XRCompositorCommon::ClearPendingFrame() {
+  // Notify the derived class first so it can clear its pending frame before
+  // potentially starting a new frame with delayed_get_frame_data_callback_.
+  ClearPendingFrameInternal();
+
   pending_frame_.reset();
   // Send frame data to outstanding requests.
   if (delayed_get_frame_data_callback_ &&

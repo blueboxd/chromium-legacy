@@ -78,6 +78,7 @@ void OpenXrApiWrapper::Reset() {
 bool OpenXrApiWrapper::Initialize() {
   Reset();
   session_ended_ = false;
+  pending_frame_ = false;
   // Set to min so that the first call to EnsureEventPolling is guaranteed to
   // call ProcessEvents, which will update this variable from there on.
   last_process_events_time_ = base::TimeTicks::Min();
@@ -127,6 +128,7 @@ void OpenXrApiWrapper::Uninitialize() {
 
   Reset();
   session_ended_ = true;
+  pending_frame_ = false;
 
   // Set to max so events are no longer polled in the EnsureEventPolling loop.
   last_process_events_time_ = base::TimeTicks::Max();
@@ -401,6 +403,7 @@ XrResult OpenXrApiWrapper::BeginFrame(
 
   XrFrameBeginInfo begin_frame_info = {XR_TYPE_FRAME_BEGIN_INFO};
   RETURN_IF_XR_FAILED(xrBeginFrame(session_, &begin_frame_info));
+  pending_frame_ = true;
 
   XrSwapchainImageAcquireInfo acquire_info = {
       XR_TYPE_SWAPCHAIN_IMAGE_ACQUIRE_INFO};
@@ -420,6 +423,7 @@ XrResult OpenXrApiWrapper::BeginFrame(
 }
 
 XrResult OpenXrApiWrapper::EndFrame() {
+  DCHECK(pending_frame_);
   DCHECK(HasBlendMode());
   DCHECK(HasSession());
   DCHECK(HasColorSwapChain());
@@ -447,8 +451,13 @@ XrResult OpenXrApiWrapper::EndFrame() {
   end_frame_info.displayTime = frame_state_.predictedDisplayTime;
 
   RETURN_IF_XR_FAILED(xrEndFrame(session_, &end_frame_info));
+  pending_frame_ = false;
 
   return XR_SUCCESS;
+}
+
+bool OpenXrApiWrapper::HasPendingFrame() const {
+  return pending_frame_;
 }
 
 XrResult OpenXrApiWrapper::UpdateProjectionLayers() {

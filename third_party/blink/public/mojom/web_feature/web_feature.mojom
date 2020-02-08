@@ -2535,6 +2535,8 @@ enum WebFeature {
   kTrustedTypesEnabledEnforcing = 3160,
   kTrustedTypesEnabledReportOnly = 3161,
   kTrustedTypesAllowDuplicates = 3162,
+  kV8ArrayPrototypeHasElements = 3163,
+  kV8ObjectPrototypeHasElements = 3164,
 
   // Add new features immediately above this line. Don't change assigned
   // numbers of any item, and don't reuse removed slots.

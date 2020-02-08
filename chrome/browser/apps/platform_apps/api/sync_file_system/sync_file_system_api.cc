@@ -148,7 +148,8 @@ bool SyncFileSystemRequestFileSystemFunction::RunAsync() {
   // a new file system.
   base::PostTask(FROM_HERE, {BrowserThread::IO},
                  BindOnce(&storage::FileSystemContext::OpenFileSystem,
-                          GetFileSystemContext(), source_url().GetOrigin(),
+                          GetFileSystemContext(),
+                          url::Origin::Create(source_url().GetOrigin()),
                           storage::kFileSystemTypeSyncable,
                           storage::OPEN_FILE_SYSTEM_CREATE_IF_NONEXISTENT,
                           base::Bind(&self::DidOpenFileSystem, this)));

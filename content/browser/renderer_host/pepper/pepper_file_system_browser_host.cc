@@ -28,6 +28,7 @@
 #include "storage/browser/file_system/isolated_context.h"
 #include "storage/browser/quota/quota_manager_proxy.h"
 #include "storage/common/file_system/file_system_util.h"
+#include "url/origin.h"
 
 namespace content {
 
@@ -229,7 +230,8 @@ void PepperFileSystemBrowserHost::OpenFileSystem(
   GURL origin =
       browser_ppapi_host_->GetDocumentURLForInstance(pp_instance()).GetOrigin();
   file_system_context_->OpenFileSystem(
-      origin, file_system_type, storage::OPEN_FILE_SYSTEM_CREATE_IF_NONEXISTENT,
+      url::Origin::Create(origin), file_system_type,
+      storage::OPEN_FILE_SYSTEM_CREATE_IF_NONEXISTENT,
       base::BindOnce(&PepperFileSystemBrowserHost::OpenFileSystemComplete,
                      weak_factory_.GetWeakPtr(), reply_context));
 }

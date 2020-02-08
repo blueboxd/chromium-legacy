@@ -18,6 +18,7 @@
 #include "storage/browser/test/async_file_test_helper.h"
 #include "storage/browser/test/test_file_system_context.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "url/origin.h"
 
 namespace arc {
 
@@ -44,7 +45,8 @@ class FileStreamForwarderTest : public testing::Test {
     constexpr char kURLOrigin[] = "http://origin/";
 
     context_->OpenFileSystem(
-        GURL(kURLOrigin), storage::kFileSystemTypeTemporary,
+        url::Origin::Create(GURL(kURLOrigin)),
+        storage::kFileSystemTypeTemporary,
         storage::OPEN_FILE_SYSTEM_CREATE_IF_NONEXISTENT,
         base::BindOnce([](const GURL& root_url, const std::string& name,
                           base::File::Error result) {

@@ -27,6 +27,9 @@ class OpenXrRenderLoop : public XRCompositorCommon {
   ~OpenXrRenderLoop() override;
 
  private:
+  // XRCompositorCommon:
+  void ClearPendingFrameInternal() override;
+
   // XRDeviceAbstraction:
   mojom::XRFrameDataPtr GetNextFrameData() override;
   bool StartRuntime() override;

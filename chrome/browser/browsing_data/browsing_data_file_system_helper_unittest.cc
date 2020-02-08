@@ -85,9 +85,7 @@ class BrowsingDataFileSystemHelperTest : public testing::Test {
     content::RunAllTasksUntilIdle();
   }
 
-  TestingProfile* GetProfile() {
-    return profile_.get();
-  }
+  TestingProfile* GetProfile() { return profile_.get(); }
 
   // Blocks on the run_loop quits.
   void BlockUntilQuit(base::RunLoop* run_loop) {
@@ -112,7 +110,7 @@ class BrowsingDataFileSystemHelperTest : public testing::Test {
     BrowserContext::GetDefaultStoragePartition(profile_.get())
         ->GetFileSystemContext()
         ->OpenFileSystem(
-            origin.GetURL(), type, open_mode,
+            origin, type, open_mode,
             base::Bind(
                 &BrowsingDataFileSystemHelperTest::OpenFileSystemCallback,
                 base::Unretained(this), &run_loop));
@@ -127,8 +125,8 @@ class BrowsingDataFileSystemHelperTest : public testing::Test {
   // synchronously to it's caller.
   bool FileSystemContainsOriginAndType(const url::Origin& origin,
                                        storage::FileSystemType type) {
-    return OpenFileSystem(
-        origin, type, storage::OPEN_FILE_SYSTEM_FAIL_IF_NONEXISTENT);
+    return OpenFileSystem(origin, type,
+                          storage::OPEN_FILE_SYSTEM_FAIL_IF_NONEXISTENT);
   }
 
   // Callback that should be executed in response to StartFetching(), and stores
@@ -183,16 +181,14 @@ class BrowsingDataFileSystemHelperTest : public testing::Test {
   // to create a filesystem of a given type for a specified origin.
   void CreateDirectoryForOriginAndType(const url::Origin& origin,
                                        storage::FileSystemType type) {
-    OpenFileSystem(
-        origin, type, storage::OPEN_FILE_SYSTEM_CREATE_IF_NONEXISTENT);
+    OpenFileSystem(origin, type,
+                   storage::OPEN_FILE_SYSTEM_CREATE_IF_NONEXISTENT);
     EXPECT_EQ(base::File::FILE_OK, open_file_system_result_);
   }
 
   // Returns a list of the FileSystemInfo objects gathered in the most recent
   // call to StartFetching().
-  FileSystemInfoList* GetFileSystems() {
-    return file_system_info_list_.get();
-  }
+  FileSystemInfoList* GetFileSystems() { return file_system_info_list_.get(); }
 
  protected:
   content::BrowserTaskEnvironment task_environment_;

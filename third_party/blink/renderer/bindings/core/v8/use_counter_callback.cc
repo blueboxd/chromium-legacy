@@ -243,6 +243,12 @@ void UseCounterCallback(v8::Isolate* isolate,
     case v8::Isolate::kSharedArrayBufferConstructed:
       blink_feature = WebFeature::kV8SharedArrayBufferConstructed;
       break;
+    case v8::Isolate::kArrayPrototypeHasElements:
+      blink_feature = WebFeature::kV8ArrayPrototypeHasElements;
+      break;
+    case v8::Isolate::kObjectPrototypeHasElements:
+      blink_feature = WebFeature::kV8ObjectPrototypeHasElements;
+      break;
     default:
       // This can happen if V8 has added counters that this version of Blink
       // does not know about. It's harmless.

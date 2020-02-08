@@ -70,6 +70,11 @@ COMPONENT_EXPORT(NETWORK_CPP)
 extern const base::FeatureParam<std::string> kEmergencyLegacyCookieAccessParam;
 
 COMPONENT_EXPORT(NETWORK_CPP)
+extern const base::Feature kCorbAllowlistAlsoAppliesToOorCors;
+COMPONENT_EXPORT(NETWORK_CPP)
+extern const char kCorbAllowlistAlsoAppliesToOorCorsParamName[];
+
+COMPONENT_EXPORT(NETWORK_CPP)
 bool ShouldEnableOutOfBlinkCorsForTesting();
 
 }  // namespace features

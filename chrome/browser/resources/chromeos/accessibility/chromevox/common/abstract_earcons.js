@@ -24,6 +24,8 @@ Earcon = {
   BUTTON: 'button',
   CHECK_OFF: 'check_off',
   CHECK_ON: 'check_on',
+  CHROMEVOX_LOADING: 'chromevox_loading',
+  CHROMEVOX_LOADED: 'chromevox_loaded',
   EDITABLE_TEXT: 'editable_text',
   INVALID_KEYPRESS: 'invalid_keypress',
   LINK: 'link',

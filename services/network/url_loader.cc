@@ -470,7 +470,11 @@ URLLoader::URLLoader(
           request.trusted_params
               ? request.trusted_params->update_network_isolation_key_on_redirect
               : mojom::UpdateNetworkIsolationKeyOnRedirect::kDoNotUpdate),
-      origin_policy_manager_(nullptr) {
+      origin_policy_manager_(nullptr),
+      is_for_non_http_isolated_world_(
+          request.isolated_world_origin.has_value() &&
+          request.isolated_world_origin->scheme() != url::kHttpScheme &&
+          request.isolated_world_origin->scheme() != url::kHttpsScheme) {
   DCHECK(delete_callback_);
   DCHECK(factory_params_);
   if (url_loader_header_client &&
@@ -1082,7 +1086,8 @@ void URLLoader::OnResponseStarted(net::URLRequest* url_request, int net_error) {
     corb_analyzer_ =
         std::make_unique<CrossOriginReadBlocking::ResponseAnalyzer>(
             url_request_->url(), url_request_->initiator(), *response_,
-            factory_params_->request_initiator_site_lock, request_mode_);
+            factory_params_->request_initiator_site_lock, request_mode_,
+            is_for_non_http_isolated_world_);
     is_more_corb_sniffing_needed_ = corb_analyzer_->needs_sniffing();
     if (corb_analyzer_->ShouldBlock()) {
       DCHECK(!is_more_corb_sniffing_needed_);

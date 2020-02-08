@@ -16,6 +16,8 @@ import sys
 if __name__ == '__main__':
   sys.path.append(os.path.join(os.path.dirname(__file__), '../..'))
 
+import six
+
 from grit import util
 from grit.node import include
 from grit.node import message
@@ -148,7 +150,7 @@ def ReadDataPackFromString(data):
 
 
 def WriteDataPackToString(resources, encoding):
-  """Returns a string with a map of id=>data in the data pack format."""
+  """Returns bytes with a map of id=>data in the data pack format."""
   ret = []
 
   # Compute alias map.
@@ -178,6 +180,8 @@ def WriteDataPackToString(resources, encoding):
     if resource_id in alias_map:
       continue
     data = resources[resource_id]
+    if isinstance(data, six.text_type):
+      data = data.encode('utf-8')
     index_by_id[resource_id] = index
     ret.append(struct.pack('<HI', resource_id, data_offset))
     data_offset += len(data)
@@ -195,7 +199,7 @@ def WriteDataPackToString(resources, encoding):
 
   # Write data.
   ret.extend(deduped_data)
-  return ''.join(ret)
+  return b''.join(ret)
 
 
 def WriteDataPack(resources, output_file, encoding):

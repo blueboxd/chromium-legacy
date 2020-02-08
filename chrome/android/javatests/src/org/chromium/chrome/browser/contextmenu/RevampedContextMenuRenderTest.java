@@ -8,7 +8,6 @@ import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.graphics.drawable.BitmapDrawable;
 import android.support.test.filters.LargeTest;
-import android.view.LayoutInflater;
 import android.view.View;
 
 import org.junit.Rule;
@@ -25,6 +24,7 @@ import org.chromium.chrome.browser.contextmenu.RevampedContextMenuCoordinator.Li
 import org.chromium.chrome.test.ChromeJUnit4RunnerDelegate;
 import org.chromium.chrome.test.util.ChromeRenderTestRule;
 import org.chromium.content_public.browser.test.util.TestThreadUtils;
+import org.chromium.ui.modelutil.LayoutViewBuilder;
 import org.chromium.ui.modelutil.MVCListAdapter.ListItem;
 import org.chromium.ui.modelutil.MVCListAdapter.ModelList;
 import org.chromium.ui.modelutil.ModelListAdapter;
@@ -73,24 +73,20 @@ public class RevampedContextMenuRenderTest extends DummyUiActivityTestCase {
             // clang-format off
             mAdapter.registerType(
                     ListItemType.HEADER,
-                    () -> LayoutInflater.from(listView.getContext())
-                            .inflate(R.layout.revamped_context_menu_header, null),
+                    new LayoutViewBuilder(R.layout.revamped_context_menu_header),
                     RevampedContextMenuHeaderViewBinder::bind);
             mAdapter.registerType(
                     ListItemType.DIVIDER,
-                    () -> LayoutInflater.from(listView.getContext())
-                            .inflate(R.layout.app_menu_divider, null),
+                    new LayoutViewBuilder(R.layout.app_menu_divider),
                     (m, v, p) -> {
                     });
             mAdapter.registerType(
                     ListItemType.CONTEXT_MENU_ITEM,
-                    () -> LayoutInflater.from(listView.getContext())
-                            .inflate(R.layout.revamped_context_menu_row, null),
+                    new LayoutViewBuilder(R.layout.revamped_context_menu_row),
                     RevampedContextMenuItemViewBinder::bind);
             mAdapter.registerType(
                     ListItemType.CONTEXT_MENU_SHARE_ITEM,
-                    () -> LayoutInflater.from(listView.getContext())
-                            .inflate(R.layout.revamped_context_menu_share_row, null),
+                    new LayoutViewBuilder(R.layout.revamped_context_menu_share_row),
                     RevampedContextMenuShareItemViewBinder::bind);
             // clang-format on
         });

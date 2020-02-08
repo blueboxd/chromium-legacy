@@ -32,6 +32,7 @@
 #include "storage/browser/quota/quota_manager.h"
 #include "storage/browser/test/mock_blob_util.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "url/origin.h"
 
 namespace {
 std::unique_ptr<TestingProfile> GetTestingProfile() {
@@ -122,7 +123,8 @@ void OpenFileSystem(storage::FileSystemContext* fs_context,
                     storage::FileSystemType type) {
   base::RunLoop run_loop;
   fs_context->OpenFileSystem(
-      extension_url, type, storage::OPEN_FILE_SYSTEM_CREATE_IF_NONEXISTENT,
+      url::Origin::Create(extension_url), type,
+      storage::OPEN_FILE_SYSTEM_CREATE_IF_NONEXISTENT,
       base::BindLambdaForTesting([&](const GURL& root, const std::string& name,
                                      base::File::Error result) {
         EXPECT_EQ(result, base::File::FILE_OK);

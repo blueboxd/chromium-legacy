@@ -123,11 +123,12 @@ public class ModelListAdapter extends BaseAdapter implements MVCListAdapter {
     /**
      * Create a new view of the desired type.
      *
+     * @param parent Parent view.
      * @param typeId Type of the view to create.
      * @return Created view.
      */
-    protected View createView(int typeId) {
-        return mViewBuilderMap.get(typeId).first.buildView();
+    protected View createView(ViewGroup parent, int typeId) {
+        return mViewBuilderMap.get(typeId).first.buildView(parent);
     }
 
     @SuppressWarnings("unchecked")
@@ -145,7 +146,7 @@ public class ModelListAdapter extends BaseAdapter implements MVCListAdapter {
         final int desiredViewType = getItemViewType(position);
 
         if (convertView == null || !canReuseView(convertView, desiredViewType)) {
-            convertView = createView(desiredViewType);
+            convertView = createView(parent, desiredViewType);
             // Since the view type returned by getView is not guaranteed to return a view of that
             // type, we need a means of checking it. The "view_type" tag is attached to the views
             // and identify what type the view is. This should allow lists that aren't necessarily

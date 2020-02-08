@@ -38,6 +38,7 @@
 #include "storage/common/file_system/file_system_util.h"
 #include "third_party/blink/public/common/features.h"
 #include "url/gurl.h"
+#include "url/origin.h"
 
 using storage::BlobDataBuilder;
 using storage::BlobStorageContext;
@@ -217,7 +218,7 @@ void FileSystemManagerImpl::Open(const url::Origin& origin,
     RecordAction(base::UserMetricsAction("OpenFileSystemPersistent"));
   }
   context_->OpenFileSystem(
-      origin.GetURL(), ToStorageFileSystemType(file_system_type),
+      origin, ToStorageFileSystemType(file_system_type),
       storage::OPEN_FILE_SYSTEM_CREATE_IF_NONEXISTENT,
       base::BindOnce(&FileSystemManagerImpl::DidOpenFileSystem, GetWeakPtr(),
                      std::move(callback)));

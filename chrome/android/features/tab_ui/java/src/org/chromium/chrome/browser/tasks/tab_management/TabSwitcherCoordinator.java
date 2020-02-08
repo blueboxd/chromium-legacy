@@ -9,7 +9,6 @@ import android.graphics.Bitmap;
 import android.graphics.Rect;
 import android.graphics.RectF;
 import android.support.v7.widget.RecyclerView.ViewHolder;
-import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 
@@ -37,6 +36,7 @@ import org.chromium.chrome.browser.tasks.tab_management.suggestions.TabSuggestio
 import org.chromium.chrome.browser.ui.messages.snackbar.SnackbarManager;
 import org.chromium.chrome.tab_ui.R;
 import org.chromium.components.browser_ui.widget.MenuOrKeyboardActionController;
+import org.chromium.ui.modelutil.LayoutViewBuilder;
 import org.chromium.ui.modelutil.PropertyModel;
 import org.chromium.ui.modelutil.PropertyModelChangeProcessor;
 import org.chromium.ui.resources.dynamics.DynamicResourceLoader;
@@ -153,10 +153,9 @@ public class TabSwitcherCoordinator
 
         if (mode == TabListCoordinator.TabListMode.GRID) {
             if (shouldRegisterMessageItemType()) {
-                mTabListCoordinator.registerItemType(TabProperties.UiType.MESSAGE, () -> {
-                    return (ViewGroup) LayoutInflater.from(context).inflate(
-                            R.layout.tab_grid_message_card_item, container, false);
-                }, MessageCardViewBinder::bind);
+                mTabListCoordinator.registerItemType(TabProperties.UiType.MESSAGE,
+                        new LayoutViewBuilder(R.layout.tab_grid_message_card_item),
+                        MessageCardViewBinder::bind);
             }
 
             if (ChromeFeatureList.isEnabled(ChromeFeatureList.CLOSE_TAB_SUGGESTIONS)) {
@@ -176,10 +175,9 @@ public class TabSwitcherCoordinator
                             .equals("NewTabTile")) {
                 mNewTabTileCoordinator =
                         new NewTabTileCoordinator(tabModelSelector, tabCreatorManager);
-                mTabListCoordinator.registerItemType(TabProperties.UiType.NEW_TAB_TILE, () -> {
-                    return (ViewGroup) LayoutInflater.from(context).inflate(
-                            R.layout.new_tab_tile_card_item, container, false);
-                }, NewTabTileViewBinder::bind);
+                mTabListCoordinator.registerItemType(TabProperties.UiType.NEW_TAB_TILE,
+                        new LayoutViewBuilder(R.layout.new_tab_tile_card_item),
+                        NewTabTileViewBinder::bind);
             }
 
             if (CachedFeatureFlags.isTabGroupsAndroidUiImprovementsEnabled()

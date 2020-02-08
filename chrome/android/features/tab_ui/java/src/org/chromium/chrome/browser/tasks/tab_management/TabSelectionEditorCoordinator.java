@@ -21,6 +21,7 @@ import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.browser.tabmodel.TabModelSelector;
 import org.chromium.chrome.tab_ui.R;
 import org.chromium.components.browser_ui.widget.selectable_list.SelectionDelegate;
+import org.chromium.ui.modelutil.LayoutViewBuilder;
 import org.chromium.ui.modelutil.PropertyModel;
 import org.chromium.ui.modelutil.PropertyModelChangeProcessor;
 
@@ -123,9 +124,9 @@ class TabSelectionEditorCoordinator {
                 mTabModelSelector, tabContentManager::getTabThumbnailWithCallback, null, false,
                 null, null, null, TabProperties.UiType.SELECTABLE, this::getSelectionDelegate, null,
                 null, false, COMPONENT_NAME);
-        mTabListCoordinator.registerItemType(TabProperties.UiType.DIVIDER, () -> {
-            return LayoutInflater.from(context).inflate(R.layout.divider_preference, null, false);
-        }, (model, view, propertyKey) -> {});
+        mTabListCoordinator.registerItemType(TabProperties.UiType.DIVIDER,
+                new LayoutViewBuilder(R.layout.divider_preference),
+                (model, view, propertyKey) -> {});
         RecyclerView.LayoutManager layoutManager =
                 mTabListCoordinator.getContainerView().getLayoutManager();
         if (layoutManager instanceof GridLayoutManager) {

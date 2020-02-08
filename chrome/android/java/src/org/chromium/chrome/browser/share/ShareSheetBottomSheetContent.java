@@ -20,6 +20,7 @@ import org.chromium.base.ApiCompatibilityUtils;
 import org.chromium.base.ContextUtils;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.widget.bottomsheet.BottomSheetContent;
+import org.chromium.ui.modelutil.LayoutViewBuilder;
 import org.chromium.ui.modelutil.MVCListAdapter.ListItem;
 import org.chromium.ui.modelutil.MVCListAdapter.ModelList;
 import org.chromium.ui.modelutil.PropertyKey;
@@ -74,10 +75,8 @@ public class ShareSheetBottomSheetContent implements BottomSheetContent, OnItemC
             modelList.add(new ListItem(SHARE_SHEET_ITEM, model));
         }
         SimpleRecyclerViewAdapter adapter = new SimpleRecyclerViewAdapter(modelList);
-        adapter.registerType(SHARE_SHEET_ITEM, () -> {
-            return (ViewGroup) LayoutInflater.from(mContext).inflate(
-                    R.layout.share_sheet_item, (ViewGroup) view, false);
-        }, ShareSheetBottomSheetContent::bindShareItem);
+        adapter.registerType(SHARE_SHEET_ITEM, new LayoutViewBuilder(R.layout.share_sheet_item),
+                ShareSheetBottomSheetContent::bindShareItem);
         view.setAdapter(adapter);
         LinearLayoutManager layoutManager =
                 new LinearLayoutManager(mContext, LinearLayoutManager.HORIZONTAL, false);

@@ -120,31 +120,31 @@ public class AutocompleteCoordinatorImpl implements AutocompleteCoordinator {
                 // clang-format off
                 adapter.registerType(
                         OmniboxSuggestionUiType.DEFAULT,
-                        () -> new BaseSuggestionView<View>(mListView.getContext(),
-                                                     R.layout.omnibox_basic_suggestion),
+                        parent -> new BaseSuggestionView<View>(
+                                parent.getContext(), R.layout.omnibox_basic_suggestion),
                         new BaseSuggestionViewBinder<View>(SuggestionViewViewBinder::bind));
 
                 adapter.registerType(
                         OmniboxSuggestionUiType.EDIT_URL_SUGGESTION,
-                        () -> EditUrlSuggestionProcessor.createView(mListView.getContext()),
+                        parent -> EditUrlSuggestionProcessor.createView(parent.getContext()),
                         EditUrlSuggestionViewBinder::bind);
 
                 adapter.registerType(
                         OmniboxSuggestionUiType.ANSWER_SUGGESTION,
-                        () -> new BaseSuggestionView<View>(mListView.getContext(),
-                                                     R.layout.omnibox_answer_suggestion),
+                        parent -> new BaseSuggestionView<View>(
+                                parent.getContext(), R.layout.omnibox_answer_suggestion),
                         new BaseSuggestionViewBinder<View>(AnswerSuggestionViewBinder::bind));
 
                 adapter.registerType(
                         OmniboxSuggestionUiType.ENTITY_SUGGESTION,
-                        () -> new BaseSuggestionView<View>(mListView.getContext(),
-                                                     R.layout.omnibox_entity_suggestion),
+                        parent -> new BaseSuggestionView<View>(
+                                parent.getContext(), R.layout.omnibox_entity_suggestion),
                         new BaseSuggestionViewBinder<View>(EntitySuggestionViewBinder::bind));
 
                 adapter.registerType(
                         OmniboxSuggestionUiType.TAIL_SUGGESTION,
-                        () -> new BaseSuggestionView<TailSuggestionView>(
-                                new TailSuggestionView(mListView.getContext())),
+                        parent -> new BaseSuggestionView<TailSuggestionView>(
+                                new TailSuggestionView(parent.getContext())),
                         new BaseSuggestionViewBinder<TailSuggestionView>(
                                 TailSuggestionViewBinder::bind));
                 // clang-format on

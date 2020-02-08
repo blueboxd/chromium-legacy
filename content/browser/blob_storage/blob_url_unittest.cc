@@ -44,9 +44,10 @@
 #include "storage/browser/test/mock_blob_registry_delegate.h"
 #include "storage/browser/test/test_file_system_context.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "url/origin.h"
 
-using storage::BlobDataSnapshot;
 using storage::BlobDataBuilder;
+using storage::BlobDataSnapshot;
 
 namespace content {
 
@@ -114,7 +115,7 @@ class BlobURLTest : public testing::Test {
         CreateFileSystemContextForTesting(nullptr, temp_dir_.GetPath());
 
     file_system_context_->OpenFileSystem(
-        GURL(kFileSystemURLOrigin), kFileSystemType,
+        url::Origin::Create(GURL(kFileSystemURLOrigin)), kFileSystemType,
         storage::OPEN_FILE_SYSTEM_CREATE_IF_NONEXISTENT,
         base::BindOnce(&BlobURLTest::OnValidateFileSystem,
                        base::Unretained(this)));

@@ -177,6 +177,17 @@ const char kEmergencyLegacyCookieAccessParamName[] = "Patterns";
 const base::FeatureParam<std::string> kEmergencyLegacyCookieAccessParam{
     &kEmergencyLegacyCookieAccess, kEmergencyLegacyCookieAccessParamName, ""};
 
+// Controls whether the CORB allowlist [1] is also applied to OOR-CORS (e.g.
+// whether non-allowlisted content scripts are subject to CORS in OOR-CORS
+// mode).  See also: https://crbug.com/920638
+//
+// [1]
+// https://www.chromium.org/Home/chromium-security/extension-content-script-fetches
+const base::Feature kCorbAllowlistAlsoAppliesToOorCors = {
+    "CorbAllowlistAlsoAppliesToOorCors", base::FEATURE_DISABLED_BY_DEFAULT};
+const char kCorbAllowlistAlsoAppliesToOorCorsParamName[] =
+    "AllowlistForCorbAndCors";
+
 bool ShouldEnableOutOfBlinkCorsForTesting() {
   return base::FeatureList::IsEnabled(features::kOutOfBlinkCors);
 }

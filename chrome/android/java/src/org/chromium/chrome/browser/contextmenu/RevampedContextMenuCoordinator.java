@@ -21,6 +21,7 @@ import org.chromium.chrome.browser.share.ShareHelper;
 import org.chromium.chrome.browser.share.ShareParams;
 import org.chromium.components.browser_ui.widget.ContextMenuDialog;
 import org.chromium.ui.base.WindowAndroid;
+import org.chromium.ui.modelutil.LayoutViewBuilder;
 import org.chromium.ui.modelutil.MVCListAdapter.ListItem;
 import org.chromium.ui.modelutil.MVCListAdapter.ModelList;
 import org.chromium.ui.modelutil.ModelListAdapter;
@@ -117,22 +118,19 @@ public class RevampedContextMenuCoordinator implements ContextMenuUi {
         // clang-format off
         adapter.registerType(
                 ListItemType.HEADER,
-                mHeaderCoordinator::getView,
+                new LayoutViewBuilder(R.layout.revamped_context_menu_header),
                 RevampedContextMenuHeaderViewBinder::bind);
         adapter.registerType(
                 ListItemType.DIVIDER,
-                () -> LayoutInflater.from(mListView.getContext())
-                        .inflate(R.layout.app_menu_divider, null),
+                new LayoutViewBuilder(R.layout.app_menu_divider),
                 (m, v, p) -> {});
         adapter.registerType(
                 ListItemType.CONTEXT_MENU_ITEM,
-                () -> LayoutInflater.from(mListView.getContext())
-                        .inflate(R.layout.revamped_context_menu_row, null),
+                new LayoutViewBuilder(R.layout.revamped_context_menu_row),
                 RevampedContextMenuItemViewBinder::bind);
         adapter.registerType(
                 ListItemType.CONTEXT_MENU_SHARE_ITEM,
-                () -> LayoutInflater.from(mListView.getContext())
-                        .inflate(R.layout.revamped_context_menu_share_row, null),
+                new LayoutViewBuilder(R.layout.revamped_context_menu_share_row),
                 RevampedContextMenuShareItemViewBinder::bind);
         // clang-format on
 

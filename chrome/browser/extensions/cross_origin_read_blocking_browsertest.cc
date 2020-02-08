@@ -32,7 +32,6 @@
 #include "content/public/test/test_navigation_observer.h"
 #include "extensions/browser/browsertest_util.h"
 #include "extensions/browser/url_loader_factory_manager.h"
-#include "extensions/common/extension_features.h"
 #include "extensions/test/test_extension_dir.h"
 #include "net/dns/mock_host_resolver.h"
 #include "net/test/embedded_test_server/controllable_http_response.h"
@@ -398,15 +397,15 @@ class CrossOriginReadBlockingExtensionAllowlistingTest
       base::FieldTrialParams field_trial_params;
       if (IsExtensionAllowlisted()) {
         field_trial_params.emplace(
-            extensions_features::kCorbAllowlistAlsoAppliesToOorCorsParamName,
+            network::features::kCorbAllowlistAlsoAppliesToOorCorsParamName,
             kExpectedHashedExtensionId);
       }
       enabled_features.emplace_back(
-          extensions_features::kCorbAllowlistAlsoAppliesToOorCors,
+          network::features::kCorbAllowlistAlsoAppliesToOorCors,
           field_trial_params);
     } else {
       disabled_features.push_back(
-          extensions_features::kCorbAllowlistAlsoAppliesToOorCors);
+          network::features::kCorbAllowlistAlsoAppliesToOorCors);
     }
 
     scoped_feature_list_.InitWithFeaturesAndParameters(enabled_features,
@@ -464,6 +463,33 @@ class CrossOriginReadBlockingExtensionAllowlistingTest
     return IsExtensionAllowlisted();
   }
 
+  void VerifyPassiveUmaForAllowlistForCors(
+      const base::HistogramTester& histograms,
+      base::Optional<bool> expected_value) {
+    const char* kUmaName =
+        "SiteIsolation.XSD.Browser.AllowedByCorbButNotCors.ContentScript";
+    bool expect_uma_presence = expected_value.has_value();
+
+    // This logging is to get an initial estimate, and it won't work once we
+    // actually turn the new CORS content script behavior on.
+    if (IsOutOfBlinkCorsEnabled() && ShouldAllowlistAlsoApplyToOorCors())
+      expect_uma_presence = false;
+
+    // If the extension is allowlisted, then CORB is disabled (and therefore the
+    // UMA logging code in CrossOriginReadBlocking::ResponseAnalyzer won't run
+    // at all for allowlisted extensions).
+    if (IsExtensionAllowlisted())
+      expect_uma_presence = false;
+
+    // Verify |expect_uma_presence| and |expected_value|.
+    if (!expect_uma_presence) {
+      histograms.ExpectTotalCount(kUmaName, 0);
+    } else {
+      histograms.ExpectUniqueSample(kUmaName, static_cast<int>(*expected_value),
+                                    1);
+    }
+  }
+
   void VerifyFetchFromContentScriptWasBlocked(
       const base::HistogramTester& histograms) {
     // Make sure that histograms logged in other processes (e.g. in
@@ -474,6 +500,10 @@ class CrossOriginReadBlockingExtensionAllowlistingTest
                                  CORBAction::kResponseStarted, 1);
     histograms.ExpectBucketCount("SiteIsolation.XSD.Browser.Action",
                                  CORBAction::kBlockedWithoutSniffing, 1);
+
+    // If CORB blocks the response, then there is no risk in enabling
+    // CorbAllowlistAlsoAppliesToOorCors and we shouldn't log the UMA.
+    VerifyPassiveUmaForAllowlistForCors(histograms, base::nullopt);
   }
 
   void VerifyFetchFromContentScriptWasAllowed(
@@ -508,6 +538,13 @@ class CrossOriginReadBlockingExtensionAllowlistingTest
   void VerifyFetchFromContentScript(const base::HistogramTester& histograms,
                                     const std::string& actual_fetch_result,
                                     const std::string& expected_fetch_result) {
+    SubprocessMetricsProvider::MergeHistogramDeltasForTesting();
+
+    // VerifyFetchFromContentScript is only called for Content Types covered by
+    // CORB and therefore these requests carry no risk for
+    // CorbAllowlistAlsoAppliesToOorCors - verify that we didn't log the UMA.
+    VerifyPassiveUmaForAllowlistForCors(histograms, base::nullopt);
+
     if (AreContentScriptFetchesExpectedToBeBlocked()) {
       if (ShouldAllowlistAlsoApplyToOorCors()) {
         // Verify the fetch was blocked by CORS.
@@ -718,6 +755,9 @@ IN_PROC_BROWSER_TEST_P(CrossOriginReadBlockingExtensionAllowlistingTest,
   EXPECT_THAT(fetch_result, ::testing::StartsWith("nosniff.xml - body"));
   VerifyFetchFromContentScriptWasAllowed(histograms,
                                          false /* expecting_sniffing */);
+
+  // Same-origin requests are not at risk of being broken.
+  VerifyPassiveUmaForAllowlistForCors(histograms, false);
 }
 
 // Test that responses that would have been allowed by CORB anyway are not
@@ -737,9 +777,6 @@ IN_PROC_BROWSER_TEST_P(CrossOriginReadBlockingExtensionAllowlistingTest,
 
   // Inject a content script that performs a cross-origin fetch to
   // cross-site.com.
-  //
-  // StartsWith (rather than equality) is used in the verification step to
-  // account for \n VS \r\n difference on Windows.
   base::HistogramTester histograms;
   GURL cross_site_resource(
       embedded_test_server()->GetURL("cross-site.com", "/save_page/text.txt"));
@@ -764,10 +801,69 @@ IN_PROC_BROWSER_TEST_P(CrossOriginReadBlockingExtensionAllowlistingTest,
     EXPECT_EQ(kCorsErrorWhenFetching, fetch_result);
   } else {
     // Verify that the response body was not blocked by either CORB nor CORS.
+    //
+    // StartsWith (rather than equality) is used in the verification step to
+    // account for \n VS \r\n difference on Windows.
     EXPECT_THAT(fetch_result,
                 ::testing::StartsWith(
                     "text-object.txt: ae52dd09-9746-4b7e-86a6-6ada5e2680c2"));
   }
+
+  // This is the kind of response (i.e., cross-origin fetch of a non-CORB type)
+  // that could be affected by the planned CorbAllowlistAlsoAppliesToOorCors
+  // feature.
+  VerifyPassiveUmaForAllowlistForCors(histograms, true);
+}
+
+// Test that responses that would have been allowed by CORB after sniffing are
+// included in the AllowedByCorbButNotCors UMA.
+IN_PROC_BROWSER_TEST_P(CrossOriginReadBlockingExtensionAllowlistingTest,
+                       FromProgrammaticContentScript_AllowedAfterSniffing) {
+  ASSERT_TRUE(embedded_test_server()->Start());
+  ASSERT_TRUE(InstallExtension());
+
+  // Navigate to a fetch-initiator.com page.
+  GURL page_url = GetTestPageUrl("fetch-initiator.com");
+  ui_test_utils::NavigateToURL(browser(), page_url);
+  ASSERT_EQ(page_url,
+            active_web_contents()->GetMainFrame()->GetLastCommittedURL());
+  ASSERT_EQ(url::Origin::Create(page_url),
+            active_web_contents()->GetMainFrame()->GetLastCommittedOrigin());
+
+  // Inject a content script that performs a cross-origin fetch to
+  // cross-site.com (to a PNG image that is incorrectly labelled as
+  // `Content-Type: text/html`).
+  base::HistogramTester histograms;
+  GURL cross_site_resource(embedded_test_server()->GetURL(
+      "cross-site.com", "/downloads/image-labeled-as-html.png"));
+  std::string fetch_result =
+      FetchViaContentScript(cross_site_resource, active_web_contents());
+  SubprocessMetricsProvider::MergeHistogramDeltasForTesting();
+
+  if (IsCorbExpectedToBeTurnedOffAltogether()) {
+    // Verify that CORB didn't run.
+    EXPECT_EQ(
+        0u,
+        histograms.GetTotalCountsForPrefix("SiteIsolation.XSD.Browser").size());
+  } else {
+    // Verify that CORB sniffing allowed the response.
+    VerifyFetchFromContentScriptWasAllowed(histograms,
+                                           true /* expecting_sniffing */);
+  }
+
+  if (ShouldAllowlistAlsoApplyToOorCors() &&
+      AreContentScriptFetchesExpectedToBeBlocked()) {
+    // Verify that the response body was blocked by CORS.
+    EXPECT_EQ(kCorsErrorWhenFetching, fetch_result);
+  } else {
+    // Verify that the response body was not blocked by either CORB nor CORS.
+    EXPECT_THAT(fetch_result, ::testing::StartsWith("\xEF\xBF\xBDPNG"));
+  }
+
+  // This is the kind of response (i.e., cross-origin fetch that is not blocked
+  // by CORB due to sniffing) that could be affected by the planned
+  // CorbAllowlistAlsoAppliesToOorCors feature.
+  VerifyPassiveUmaForAllowlistForCors(histograms, true);
 }
 
 // Test that responses are blocked by CORB, but have empty response body are not

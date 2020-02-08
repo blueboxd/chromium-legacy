@@ -26,6 +26,8 @@
 #include "storage/browser/file_system/sandbox_file_system_backend_delegate.h"
 #include "storage/browser/file_system/task_runner_bound_observer_list.h"
 #include "storage/common/file_system/file_system_types.h"
+#include "url/gurl.h"
+#include "url/origin.h"
 
 namespace base {
 class FilePath;
@@ -210,7 +212,7 @@ class COMPONENT_EXPORT(STORAGE_BROWSER) FileSystemContext
   // If |create| is true this may actually set up a filesystem instance
   // (e.g. by creating the root directory or initializing the database
   // entry etc).
-  void OpenFileSystem(const GURL& origin_url,
+  void OpenFileSystem(const url::Origin& origin,
                       FileSystemType type,
                       OpenFileSystemMode mode,
                       OpenFileSystemCallback callback);

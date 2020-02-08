@@ -40,8 +40,6 @@
 #include "storage/common/file_system/file_system_info.h"
 #include "storage/common/file_system/file_system_util.h"
 #include "third_party/leveldatabase/leveldb_chrome.h"
-#include "url/gurl.h"
-#include "url/origin.h"
 
 using storage::QuotaClient;
 
@@ -332,7 +330,7 @@ ExternalFileSystemBackend* FileSystemContext::external_backend() const {
       GetFileSystemBackend(kFileSystemTypeExternal));
 }
 
-void FileSystemContext::OpenFileSystem(const GURL& origin_url,
+void FileSystemContext::OpenFileSystem(const url::Origin& origin,
                                        FileSystemType type,
                                        OpenFileSystemMode mode,
                                        OpenFileSystemCallback callback) {
@@ -354,7 +352,7 @@ void FileSystemContext::OpenFileSystem(const GURL& origin_url,
   }
 
   backend->ResolveURL(
-      CreateCrackedFileSystemURL(origin_url, type, base::FilePath()), mode,
+      CreateCrackedFileSystemURL(origin.GetURL(), type, base::FilePath()), mode,
       std::move(callback));
 }
 

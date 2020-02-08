@@ -18,6 +18,7 @@ import androidx.annotation.NonNull;
 import androidx.annotation.StringRes;
 
 import org.chromium.components.browser_ui.widget.R;
+import org.chromium.ui.modelutil.LayoutViewBuilder;
 import org.chromium.ui.modelutil.MVCListAdapter.ListItem;
 import org.chromium.ui.modelutil.MVCListAdapter.ModelList;
 import org.chromium.ui.modelutil.ModelListAdapter;
@@ -149,12 +150,10 @@ public class BasicListMenu implements ListMenu, OnItemClickListener {
     private void registerListItemTypes() {
         // clang-format off
         mAdapter.registerType(ListMenuItemType.MENU_ITEM,
-            () -> LayoutInflater.from(mContext)
-                .inflate(R.layout.list_menu_item, mListView, false),
+            new LayoutViewBuilder(R.layout.list_menu_item),
             ListMenuItemViewBinder::binder);
         mAdapter.registerType(ListMenuItemType.DIVIDER,
-            () -> LayoutInflater.from(mContext)
-                .inflate(R.layout.app_menu_divider, mListView, false),
+            new LayoutViewBuilder(R.layout.app_menu_divider),
             (m, v, p) -> {});
         // clang-format on
     }

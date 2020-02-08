@@ -157,28 +157,38 @@ Background = class extends ChromeVoxState {
     // ChromeVox starts.
     sessionStorage.setItem('darkScreen', 'false');
 
-    // A self-contained class to start and stop progress sounds before any
-    // speech has been generated on startup. This is important in cases where
-    // speech is severely delayed.
-    /** @implements {TtsCapturingEventListener} */
-    const ProgressPlayer = class {
-      constructor() {
-        ChromeVox.tts.addCapturingEventListener(this);
-        ChromeVox.earcons.playEarcon(Earcon.PAGE_START_LOADING);
+    chrome.loginState.getSessionState((sessionState) => {
+      // Play startup progress only when starting in a user session. Split
+      // incognito manifest appears to run two copies of the background page in
+      // different contexts, so that two progress ticks play.
+      if (sessionState === 'IN_OOBE_SCREEN' ||
+          sessionState === 'IN_LOGIN_SCREEN') {
+        return;
       }
 
-      /** @override */
-      onTtsStart() {
-        ChromeVox.earcons.playEarcon(Earcon.PAGE_FINISH_LOADING);
-        ChromeVox.tts.removeCapturingEventListener(this);
-      }
+      // A self-contained class to start and stop progress sounds before any
+      // speech has been generated on startup. This is important in cases where
+      // speech is severely delayed.
+      /** @implements {TtsCapturingEventListener} */
+      const ProgressPlayer = class {
+        constructor() {
+          ChromeVox.tts.addCapturingEventListener(this);
+          ChromeVox.earcons.playEarcon(Earcon.CHROMEVOX_LOADING);
+        }
 
-      /** @override */
-      onTtsEnd() {}
-      /** @override */
-      onTtsInterrupted() {}
-    };
-    new ProgressPlayer();
+        /** @override */
+        onTtsStart() {
+          ChromeVox.earcons.playEarcon(Earcon.CHROMEVOX_LOADED);
+          ChromeVox.tts.removeCapturingEventListener(this);
+        }
+
+        /** @override */
+        onTtsEnd() {}
+        /** @override */
+        onTtsInterrupted() {}
+      };
+      new ProgressPlayer();
+    });
   }
 
   /**

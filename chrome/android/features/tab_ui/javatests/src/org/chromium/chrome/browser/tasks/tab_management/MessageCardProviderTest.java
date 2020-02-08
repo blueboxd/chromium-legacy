@@ -32,6 +32,7 @@ import org.chromium.chrome.tab_ui.R;
 import org.chromium.chrome.test.util.browser.Features;
 import org.chromium.content_public.browser.test.util.CriteriaHelper;
 import org.chromium.content_public.browser.test.util.TestThreadUtils;
+import org.chromium.ui.modelutil.LayoutViewBuilder;
 import org.chromium.ui.modelutil.MVCListAdapter;
 import org.chromium.ui.modelutil.SimpleRecyclerViewAdapter;
 import org.chromium.ui.test.util.DummyUiActivityTestCase;
@@ -111,10 +112,9 @@ public class MessageCardProviderTest extends DummyUiActivityTestCase {
             mRecyclerView.setVisibilityListener(mRecyclerViewVisibilityListener);
             mRecyclerView.setVisibility(View.INVISIBLE);
 
-            mAdapter.registerType(TabProperties.UiType.MESSAGE, () -> {
-                return (ViewGroup) getActivity().getLayoutInflater().inflate(
-                        R.layout.tab_grid_message_card_item, mRecyclerView, false);
-            }, MessageCardViewBinder::bind);
+            mAdapter.registerType(TabProperties.UiType.MESSAGE,
+                    new LayoutViewBuilder(R.layout.tab_grid_message_card_item),
+                    MessageCardViewBinder::bind);
 
             GridLayoutManager layoutManager = new GridLayoutManager(mRecyclerView.getContext(), 2);
             layoutManager.setSpanSizeLookup(new GridLayoutManager.SpanSizeLookup() {

@@ -514,8 +514,8 @@ void CannedSyncableFileSystem::DoOpenFileSystem(
   EXPECT_TRUE(io_task_runner_->RunsTasksInCurrentSequence());
   EXPECT_FALSE(is_filesystem_opened_);
   file_system_context_->OpenFileSystem(
-      origin_, type_, storage::OPEN_FILE_SYSTEM_CREATE_IF_NONEXISTENT,
-      std::move(callback));
+      url::Origin::Create(origin_), type_,
+      storage::OPEN_FILE_SYSTEM_CREATE_IF_NONEXISTENT, std::move(callback));
 }
 
 void CannedSyncableFileSystem::DoCreateDirectory(

@@ -87,6 +87,12 @@ NextEarcons = class extends AbstractEarcons {
       case Earcon.CHECK_ON:
         this.engine_.onCheckOn();
         break;
+      case Earcon.CHROMEVOX_LOADED:
+        this.engine_.cancelProgressPersistent();
+        break;
+      case Earcon.CHROMEVOX_LOADING:
+        this.engine_.startProgressPersistent();
+        break;
       case Earcon.EDITABLE_TEXT:
         this.engine_.onTextField();
         break;

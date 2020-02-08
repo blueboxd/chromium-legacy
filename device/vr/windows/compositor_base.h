@@ -90,6 +90,9 @@ class XRCompositorCommon : public base::Thread,
   mojo::AssociatedRemote<mojom::XRInputSourceButtonListener>
       input_event_listener_;
 
+  // Derived classes override this to be notified to clear its pending frame.
+  virtual void ClearPendingFrameInternal() {}
+
  private:
   // base::Thread overrides:
   void Init() final;

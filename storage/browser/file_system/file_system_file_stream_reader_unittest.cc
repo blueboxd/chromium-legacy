@@ -27,6 +27,7 @@
 #include "storage/browser/test/async_file_test_helper.h"
 #include "storage/browser/test/test_file_system_context.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "url/origin.h"
 
 using content::AsyncFileTestHelper;
 using storage::FileSystemContext;
@@ -60,7 +61,8 @@ class FileSystemFileStreamReaderTest : public testing::Test {
         CreateFileSystemContextForTesting(nullptr, temp_dir_.GetPath());
 
     file_system_context_->OpenFileSystem(
-        GURL(kURLOrigin), storage::kFileSystemTypeTemporary,
+        url::Origin::Create(GURL(kURLOrigin)),
+        storage::kFileSystemTypeTemporary,
         storage::OPEN_FILE_SYSTEM_CREATE_IF_NONEXISTENT,
         base::BindOnce(&OnOpenFileSystem));
     base::RunLoop().RunUntilIdle();

@@ -659,7 +659,8 @@ CrossOriginReadBlocking::ResponseAnalyzer::ResponseAnalyzer(
     const base::Optional<url::Origin>& request_initiator,
     const network::mojom::URLResponseHead& response,
     base::Optional<url::Origin> request_initiator_site_lock,
-    mojom::RequestMode request_mode)
+    mojom::RequestMode request_mode,
+    bool is_for_non_http_isolated_world)
     : seems_sensitive_from_cors_heuristic_(
           SeemsSensitiveFromCORSHeuristic(response)),
       seems_sensitive_from_cache_heuristic_(
@@ -668,7 +669,8 @@ CrossOriginReadBlocking::ResponseAnalyzer::ResponseAnalyzer(
       has_nosniff_header_(HasNoSniff(response)),
       content_length_(response.content_length),
       http_response_code_(response.headers ? response.headers->response_code()
-                                           : 0) {
+                                           : 0),
+      is_for_non_http_isolated_world_(is_for_non_http_isolated_world) {
   // CORB should look directly at the Content-Type header if one has been
   // received from the network. Ignoring |response.mime_type| helps avoid
   // breaking legitimate websites (which might happen more often when blocking
@@ -691,7 +693,8 @@ CrossOriginReadBlocking::ResponseAnalyzer::ResponseAnalyzer(
 
   should_block_based_on_headers_ = ShouldBlockBasedOnHeaders(
       request_mode, request_url, request_initiator, response,
-      request_initiator_site_lock, canonical_mime_type_);
+      request_initiator_site_lock, canonical_mime_type_,
+      &is_cors_blocking_expected_);
 
   // Check if the response seems sensitive and if so include in our CORB
   // protection logging. We have not sniffed yet, so the answer might be
@@ -703,7 +706,8 @@ CrossOriginReadBlocking::ResponseAnalyzer::ResponseAnalyzer(
     url::Origin cross_origin_request_initiator = url::Origin();
     BlockingDecision would_protect_based_on_headers = ShouldBlockBasedOnHeaders(
         request_mode, request_url, cross_origin_request_initiator, response,
-        cross_origin_request_initiator, canonical_mime_type_);
+        cross_origin_request_initiator, canonical_mime_type_,
+        nullptr /* is_cors_blocking_expected */);
     corb_protection_logging_needs_sniffing_ =
         (would_protect_based_on_headers ==
          BlockingDecision::kNeedToSniffMore) &&
@@ -738,7 +742,11 @@ CrossOriginReadBlocking::ResponseAnalyzer::ShouldBlockBasedOnHeaders(
     const base::Optional<url::Origin>& request_initiator,
     const network::mojom::URLResponseHead& response,
     const base::Optional<url::Origin>& request_initiator_site_lock,
-    MimeType canonical_mime_type) {
+    MimeType canonical_mime_type,
+    bool* is_cors_blocking_expected) {
+  if (is_cors_blocking_expected)
+    *is_cors_blocking_expected = false;
+
   // The checks in this method are ordered to rule out blocking in most cases as
   // quickly as possible.  Checks that are likely to lead to returning false or
   // that are inexpensive should be near the top.
@@ -776,6 +784,11 @@ CrossOriginReadBlocking::ResponseAnalyzer::ShouldBlockBasedOnHeaders(
                                             &cors_header);
       if (IsValidCorsHeaderSet(initiator, cors_header))
         return kAllow;
+
+      // At this point we know that the response is 1) cross-origin from the
+      // initiator, 2) in CORS mode, 3) without valid ACAO header.
+      if (is_cors_blocking_expected)
+        *is_cors_blocking_expected = true;
       break;
   }
 
@@ -1142,6 +1155,30 @@ bool CrossOriginReadBlocking::ResponseAnalyzer::ShouldReportBlockedResponse()
 }
 
 void CrossOriginReadBlocking::ResponseAnalyzer::LogAllowedResponse() {
+  // Only log the ContentScript UMA when the request really came from a content
+  // script.
+  //
+  // Note that we will never get here in the following cases:
+  // 1) When CORB is disabled (e.g. for allowlisted content scripts OR for
+  //    extension background pages).
+  // 2) When CorbAllowlistAlsoAppliesToOorCors and OOR-CORS features are both
+  //    enabled, because:
+  //    2a) The former feature forces |ignore_isolated_world_origin| for
+  //        non-allowlisted content scripts and OOR-CORS in this case resets
+  //        |isolated_world_origin| to base::nullopt.
+  //    2b) Even if we could preserve |isolated_world_origin_| just for UMA,
+  //        CORS would block the response before LogAllowedResponse gets a
+  //        chance to run.
+  if (is_for_non_http_isolated_world_) {
+    // We log whether CORS would block this response if it were enabled for
+    // content scripts.  Caveat: This will be true even in cases where the
+    // server would have sent an ACAO response header if Chrome had sent an
+    // Origin request header.
+    UMA_HISTOGRAM_BOOLEAN(
+        "SiteIsolation.XSD.Browser.AllowedByCorbButNotCors.ContentScript",
+        is_cors_blocking_expected_);
+  }
+
   if (corb_protection_logging_needs_sniffing_) {
     LogSensitiveResponseProtection(
         SniffingDecisionToProtectionDecision(found_blockable_content_));

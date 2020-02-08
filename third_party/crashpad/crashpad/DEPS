@@ -25,7 +25,7 @@ vars = {
 deps = {
   'buildtools':
       Var('chromium_git') + '/chromium/src/buildtools.git@' +
-      '62f9eb0d64d6bf48f620b8233d9f7a1dc07f8414',
+      'afc5b798c72905e85f9991152be878714c579958',
   'crashpad/third_party/edo/edo': {
       'url': Var('chromium_git') + '/external/github.com/google/eDistantObject.git@' +
       '243fc89ae95b24717d41f3786f6a9abeeef87c92',
@@ -42,7 +42,7 @@ deps = {
       '7bde79cc274d06451bf65ae82c012a5d3e476b5a',
   'crashpad/third_party/mini_chromium/mini_chromium':
       Var('chromium_git') + '/chromium/mini_chromium@' +
-      '0a3a80b04b3f8b1268877fd376954a8af1480171',
+      'f8f1182adb804675b2aa4fb3ce03f6f884fae474',
   'crashpad/third_party/libfuzzer/src':
       Var('chromium_git') + '/chromium/llvm-project/compiler-rt/lib/fuzzer.git@' +
       'fda403cf93ecb8792cb1d061564d89a6553ca020',
@@ -175,45 +175,6 @@ hooks = [
       '--bucket=chromium-clang-format',
       '--sha1_file',
       'buildtools/win/clang-format.exe.sha1',
-    ],
-  },
-  {
-    'name': 'gn_mac',
-    'pattern': '.',
-    'condition': 'host_os == "mac"',
-    'action': [
-      'download_from_google_storage',
-      '--no_resume',
-      '--no_auth',
-      '--bucket=chromium-gn',
-      '--sha1_file',
-      'buildtools/mac/gn.sha1',
-    ],
-  },
-  {
-    'name': 'gn_linux',
-    'pattern': '.',
-    'condition': 'host_os == "linux"',
-    'action': [
-      'download_from_google_storage',
-      '--no_resume',
-      '--no_auth',
-      '--bucket=chromium-gn',
-      '--sha1_file',
-      'buildtools/linux64/gn.sha1',
-    ],
-  },
-  {
-    'name': 'gn_win',
-    'pattern': '.',
-    'condition': 'host_os == "win"',
-    'action': [
-      'download_from_google_storage',
-      '--no_resume',
-      '--no_auth',
-      '--bucket=chromium-gn',
-      '--sha1_file',
-      'buildtools/win/gn.exe.sha1',
     ],
   },
   {

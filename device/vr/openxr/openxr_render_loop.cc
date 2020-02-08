@@ -135,11 +135,23 @@ bool OpenXrRenderLoop::PreComposite() {
 }
 
 bool OpenXrRenderLoop::HasSessionEnded() {
-  return openxr_->UpdateAndGetSessionEnded();
+  return openxr_ && openxr_->UpdateAndGetSessionEnded();
 }
 
 bool OpenXrRenderLoop::SubmitCompositedFrame() {
   return XR_SUCCEEDED(openxr_->EndFrame());
+}
+
+void OpenXrRenderLoop::ClearPendingFrameInternal() {
+  // Complete the frame if OpenXR has started one with BeginFrame. This also
+  // releases the swapchain image that was acquired in BeginFrame so that the
+  // next frame can acquire it.
+  if (openxr_->HasPendingFrame() && XR_FAILED(openxr_->EndFrame())) {
+    // The start of the next frame will detect that the session has ended via
+    // HasSessionEnded and will exit presentation.
+    StopRuntime();
+    return;
+  }
 }
 
 // Return true if display info has changed.

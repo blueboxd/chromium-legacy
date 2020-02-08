@@ -119,7 +119,7 @@ public class TabListCoordinator implements Destroyable {
         mAdapter = new SimpleRecyclerViewAdapter(modelList);
         RecyclerView.RecyclerListener recyclerListener = null;
         if (mMode == TabListMode.GRID || mMode == TabListMode.CAROUSEL) {
-            mAdapter.registerType(UiType.SELECTABLE, () -> {
+            mAdapter.registerType(UiType.SELECTABLE, parent -> {
                 ViewGroup group = (ViewGroup) LayoutInflater.from(context).inflate(
                         R.layout.selectable_tab_grid_card_item, parentView, false);
                 group.setClickable(true);
@@ -127,7 +127,7 @@ public class TabListCoordinator implements Destroyable {
                 return group;
             }, TabGridViewBinder::bindSelectableTab);
 
-            mAdapter.registerType(UiType.CLOSABLE, () -> {
+            mAdapter.registerType(UiType.CLOSABLE, parent -> {
                 ViewGroup group = (ViewGroup) LayoutInflater.from(context).inflate(
                         R.layout.closable_tab_grid_card_item, parentView, false);
                 if (mMode == TabListMode.CAROUSEL) {
@@ -165,12 +165,12 @@ public class TabListCoordinator implements Destroyable {
                 }
             };
         } else if (mMode == TabListMode.STRIP) {
-            mAdapter.registerType(UiType.STRIP, () -> {
+            mAdapter.registerType(UiType.STRIP, parent -> {
                 return (ViewGroup) LayoutInflater.from(context).inflate(
                         R.layout.tab_strip_item, parentView, false);
             }, TabStripViewBinder::bind);
         } else if (mMode == TabListMode.LIST) {
-            mAdapter.registerType(UiType.CLOSABLE, () -> {
+            mAdapter.registerType(UiType.CLOSABLE, parent -> {
                 ViewGroup group = (ViewGroup) LayoutInflater.from(context).inflate(
                         R.layout.closable_tab_list_card_item, parentView, false);
                 group.setClickable(true);

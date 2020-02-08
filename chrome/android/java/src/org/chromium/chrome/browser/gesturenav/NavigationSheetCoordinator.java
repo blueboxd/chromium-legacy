@@ -24,6 +24,7 @@ import org.chromium.chrome.browser.widget.bottomsheet.BottomSheetController.Stat
 import org.chromium.chrome.browser.widget.bottomsheet.BottomSheetObserver;
 import org.chromium.chrome.browser.widget.bottomsheet.EmptyBottomSheetObserver;
 import org.chromium.content_public.browser.NavigationHistory;
+import org.chromium.ui.modelutil.LayoutViewBuilder;
 import org.chromium.ui.modelutil.MVCListAdapter.ModelList;
 import org.chromium.ui.modelutil.ModelListAdapter;
 import org.chromium.ui.modelutil.PropertyKey;
@@ -135,9 +136,9 @@ class NavigationSheetCoordinator implements BottomSheetContent, NavigationSheet 
                         index == -1 ? 0 : (mForward ? position + 1 : -position - 1));
             }
         });
-        mModelAdapter.registerType(NAVIGATION_LIST_ITEM_TYPE_ID, () -> {
-            return mLayoutInflater.inflate(R.layout.navigation_popup_item, null);
-        }, NavigationItemViewBinder::bind);
+        mModelAdapter.registerType(NAVIGATION_LIST_ITEM_TYPE_ID,
+                new LayoutViewBuilder(R.layout.navigation_popup_item),
+                NavigationItemViewBinder::bind);
         mOpenSheetRunnable = () -> {
             if (isHidden()) openSheet(true, true);
         };

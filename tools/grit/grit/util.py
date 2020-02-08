@@ -205,12 +205,14 @@ def ReadFile(filename, encoding):
     encoding: A Python codec name or the special value: BINARY to read
               the file in binary mode.
   '''
-  mode = 'rb' if encoding == BINARY else 'rU'
-  with open(filename, mode) as f:
-    data = f.read()
-  if encoding != BINARY:
-    data = data.decode(encoding)
-  return data
+  if encoding == BINARY:
+    mode = 'rb'
+    encoding = None
+  else:
+    mode = 'rU'
+
+  with io.open(filename, mode, encoding=encoding) as f:
+    return f.read()
 
 
 def WrapOutputStream(stream, encoding = 'utf-8'):

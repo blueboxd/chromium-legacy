@@ -554,6 +554,22 @@ MATRIX_GTEST_SUITE_WATERFALL = """\
 ]
 """
 
+MATRIX_GTEST_SUITE_WATERFALL_MIXINS = """\
+[
+  {
+    'name': 'chromium.test',
+    'machines': {
+      'Fake Tester': {
+        'mixins': ['dimension_mixin'],
+        'test_suites': {
+          'gtest_tests': 'matrix_tests',
+        },
+      },
+    },
+  },
+]
+"""
+
 FOO_TEST_SUITE = """\
 {
   'basic_suites': {
@@ -4336,7 +4352,7 @@ MATRIX_COMPOUND_EMPTY = """\
 }
 """
 
-MATRIX_COMPOUND_SWARMING_SET = """\
+MATRIX_COMPOUND_MISSING_IDENTIFIER = """\
 {
   'basic_suites': {
     'foo_tests': {
@@ -4346,78 +4362,17 @@ MATRIX_COMPOUND_SWARMING_SET = """\
   'matrix_compound_suites': {
     'matrix_tests': {
       'foo_tests': {
-        'swarming': {
-          'dimension_sets': [
-            {
-              'foo': 'bar',
+        'variants': [
+          {
+            'swarming': {
+              'dimension_sets': [
+                {
+                  'foo': 'bar',
+                },
+              ],
             },
-          ],
-        },
-      },
-    },
-  },
-}
-"""
-
-MATRIX_COMPOUND_DIMENSION_SET_MERGE = """\
-{
-  'basic_suites': {
-    'foo_tests': {
-      'foo_test': {
-        'swarming': {
-          'dimension_sets': [
-            {
-              'hello': 'world',
-            },
-          ],
-        },
-      },
-    },
-  },
-  'matrix_compound_suites': {
-    'matrix_tests': {
-      'foo_tests': {
-        'swarming': {
-          'dimension_sets': [
-            {
-              'foo': 'bar',
-            },
-          ],
-        },
-      },
-    },
-  },
-}
-"""
-
-MATRIX_BASIC_DIMENSION_SET_LARGER = """\
-{
-  'basic_suites': {
-    'foo_tests': {
-      'foo_test': {
-        'swarming': {
-          'dimension_sets': [
-            {
-              'hello': 'world',
-            },
-            {
-              'random': 'dimension',
-            },
-          ],
-        },
-      },
-    },
-  },
-  'matrix_compound_suites': {
-    'matrix_tests': {
-      'foo_tests': {
-        'swarming': {
-          'dimension_sets': [
-            {
-              'foo': 'bar',
-            }
-          ],
-        },
+          },
+        ],
       },
     },
   },
@@ -4442,34 +4397,21 @@ MATRIX_MISMATCHED_SWARMING_LENGTH = """\
   'matrix_compound_suites': {
     'matrix_tests': {
       'foo_tests': {
-        'swarming': {
-          'dimension_sets': [
-            {
-              'foo': 'bar',
+        'variants': [
+          {
+            'identifier': 'test',
+            'swarming': {
+              'dimension_sets': [
+                {
+                  'foo': 'bar',
+                },
+                {
+                  'bar': 'foo',
+                }
+              ],
             },
-            {
-              'random': 'dimension',
-            },
-          ],
-        },
-      },
-    },
-  },
-}
-"""
-
-MATRIX_OTHER_ARGS = """\
-{
-  'basic_suites': {
-    'foo_tests': {
-      'foo_test': {},
-    },
-  },
-  'matrix_compound_suites': {
-    'matrix_tests': {
-      'foo_tests': {
-        'basic_argument': 'arg1',
-        'mixins': ['random_mixin']
+          },
+        ],
       },
     },
   },
@@ -4491,7 +4433,7 @@ MATRIX_REF_NONEXISTENT = """\
 }
 """
 
-MATRIX_COMPOSITION_REF_COMPOSITION = """\
+MATRIX_COMPOUND_REF_COMPOSITION = """\
 {
   'basic_suites': {
     'foo_tests': {
@@ -4529,6 +4471,250 @@ MATRIX_COMPOSITION_REF_MATRIX = """\
 }
 """
 
+MATRIX_COMPOUND_VARIANTS_MIXINS_MERGE = """\
+{
+  'basic_suites': {
+    'foo_tests': {
+      'set': {
+        'mixins': [ 'test_mixin' ],
+      },
+    },
+  },
+  'matrix_compound_suites': {
+    'matrix_tests': {
+      'foo_tests': {
+        'variants': [
+          {
+            'mixins': [ 'dimension_mixin' ],
+          },
+        ],
+      },
+    },
+  },
+}
+"""
+
+MATRIX_COMPOUND_VARIANTS_MIXINS = """\
+{
+  'basic_suites': {
+    'foo_tests': {
+      'set': {
+        'mixins': [ 'test_mixin' ],
+      },
+    },
+  },
+  'matrix_compound_suites': {
+    'matrix_tests': {
+      'foo_tests': {
+        'variants': [
+          {
+            'mixins': [
+              'dimension_mixin',
+              'waterfall_mixin',
+              'builder_mixin',
+              'random_mixin'
+            ],
+          },
+        ],
+      },
+    },
+  },
+}
+"""
+
+MATRIX_COMPOUND_VARIANTS_MIXINS_REMOVE = """\
+{
+  'basic_suites': {
+    'foo_tests': {
+      'set': {
+        'remove_mixins': ['builder_mixin'],
+      },
+    },
+  },
+  'matrix_compound_suites': {
+    'matrix_tests': {
+      'foo_tests': {
+        'variants': [
+          {
+            'mixins': [ 'builder_mixin' ],
+          }
+        ],
+      },
+    },
+  },
+}
+"""
+
+MATRIX_COMPOUND_CONFLICTING_TEST_SUITES = """\
+{
+  'basic_suites': {
+    'bar_tests': {
+      'baz_tests': {
+        'args': [
+          '--bar',
+        ],
+      }
+    },
+    'foo_tests': {
+      'baz_tests': {
+        'args': [
+          '--foo',
+        ],
+      }
+    },
+  },
+  'matrix_compound_suites': {
+    'matrix_tests': {
+      'bar_tests': {
+        'variants': [
+          {
+            'identifier': 'bar',
+          }
+        ],
+      },
+      'foo_tests': {
+        'variants': [
+          {
+            'identifier': 'foo'
+          }
+        ]
+      }
+    },
+  },
+}
+"""
+
+MATRIX_COMPOUND_TARGETS_ARGS = """\
+{
+  'basic_suites': {
+    'foo_tests': {
+      'args_test': {
+        'args': [
+          '--iam'
+        ],
+      },
+    }
+  },
+  'matrix_compound_suites': {
+    'matrix_tests': {
+      'foo_tests': {
+        'variants': [
+          {
+            'identifier': 'args',
+            'args': [
+              '--anarg',
+            ],
+          },
+          {
+            'identifier': 'swarming',
+            'swarming': {
+              'a': 'b',
+              'dimension_sets': [
+                {
+                  'hello': 'world',
+                }
+              ]
+            }
+          },
+          {
+            'identifier': 'mixins',
+            'mixins': [ 'dimension_mixin' ],
+          }
+        ],
+      },
+    },
+  },
+}
+"""
+
+MATRIX_COMPOUND_TARGETS_MIXINS = """\
+{
+  'basic_suites': {
+    'foo_tests': {
+      'mixins_test': {
+        'mixins': [ 'test_mixin' ],
+      },
+    }
+  },
+  'matrix_compound_suites': {
+    'matrix_tests': {
+      'foo_tests': {
+        'variants': [
+          {
+            'identifier': 'args',
+            'args': [
+              '--anarg',
+            ],
+          },
+          {
+            'identifier': 'swarming',
+            'swarming': {
+              'a': 'b',
+              'dimension_sets': [
+                {
+                  'hello': 'world',
+                }
+              ]
+            }
+          },
+          {
+            'identifier': 'mixins',
+            'mixins': [ 'dimension_mixin' ],
+          }
+        ],
+      },
+    },
+  },
+}
+"""
+
+MATRIX_COMPOUND_TARGETS_SWARMING = """\
+{
+  'basic_suites': {
+    'foo_tests': {
+      'swarming_test': {
+        'swarming': {
+          'foo': 'bar',
+          'dimension_sets': [
+            {
+              'foo': 'bar',
+            },
+          ],
+        },
+      },
+    }
+  },
+  'matrix_compound_suites': {
+    'matrix_tests': {
+      'foo_tests': {
+        'variants': [
+          {
+            'identifier': 'args',
+            'args': [
+              '--anarg',
+            ],
+          },
+          {
+            'identifier': 'swarming',
+            'swarming': {
+              'a': 'b',
+              'dimension_sets': [
+                {
+                  'hello': 'world',
+                }
+              ]
+            }
+          },
+          {
+            'identifier': 'mixins',
+            'mixins': [ 'dimension_mixin' ],
+          }
+        ],
+      },
+    },
+  },
+}
+"""
 
 # # Dictionary composition test suite outputs
 
@@ -4537,140 +4723,210 @@ MATRIX_COMPOUND_EMPTY_OUTPUT = """\
   "AAAAA1 AUTOGENERATED FILE DO NOT EDIT": {},
   "AAAAA2 See generate_buildbot_json.py to make changes": {},
   "Fake Tester": {
-    "gtest_tests": [
-      {
-        "merge": {
-          "args": [],
-          "script": "//testing/merge_scripts/standard_gtest_merge.py"
-        },
-        "swarming": {
-          "can_use_on_swarming_builders": true
-        },
-        "test": "bar_test"
-      },
-      {
-        "merge": {
-          "args": [],
-          "script": "//testing/merge_scripts/standard_gtest_merge.py"
-        },
-        "swarming": {
-          "can_use_on_swarming_builders": true
-        },
-        "test": "foo_test"
-      }
-    ]
+    "gtest_tests": []
   }
 }
 """
 
-MATRIX_COMPOUND_SWARMING_SET_OUTPUT = """\
+MATRIX_TARGET_DICT_MERGE_OUTPUT_ARGS = """\
 {
   "AAAAA1 AUTOGENERATED FILE DO NOT EDIT": {},
   "AAAAA2 See generate_buildbot_json.py to make changes": {},
   "Fake Tester": {
     "gtest_tests": [
       {
+        "args": [
+          "--iam",
+          "--anarg"
+        ],
         "merge": {
           "args": [],
           "script": "//testing/merge_scripts/standard_gtest_merge.py"
         },
+        "name": "args_test_args",
+        "swarming": {
+          "can_use_on_swarming_builders": true
+        },
+        "test": "args_test"
+      },
+      {
+        "args": [
+          "--iam"
+        ],
+        "merge": {
+          "args": [],
+          "script": "//testing/merge_scripts/standard_gtest_merge.py"
+        },
+        "name": "args_test_mixins",
+        "swarming": {
+          "can_use_on_swarming_builders": true,
+          "dimension_sets": [
+            {
+              "iama": "mixin"
+            }
+          ]
+        },
+        "test": "args_test"
+      },
+      {
+        "args": [
+          "--iam"
+        ],
+        "merge": {
+          "args": [],
+          "script": "//testing/merge_scripts/standard_gtest_merge.py"
+        },
+        "name": "args_test_swarming",
+        "swarming": {
+          "a": "b",
+          "can_use_on_swarming_builders": true,
+          "dimension_sets": [
+            {
+              "hello": "world"
+            }
+          ]
+        },
+        "test": "args_test"
+      }
+    ]
+  }
+}
+"""
+
+MATRIX_TARGET_DICT_MERGE_OUTPUT_MIXINS = """\
+{
+  "AAAAA1 AUTOGENERATED FILE DO NOT EDIT": {},
+  "AAAAA2 See generate_buildbot_json.py to make changes": {},
+  "Fake Tester": {
+    "gtest_tests": [
+      {
+        "args": [
+          "--anarg"
+        ],
+        "merge": {
+          "args": [],
+          "script": "//testing/merge_scripts/standard_gtest_merge.py"
+        },
+        "name": "mixins_test_args",
+        "swarming": {
+          "can_use_on_swarming_builders": true,
+          "value": "test"
+        },
+        "test": "mixins_test"
+      },
+      {
+        "args": [],
+        "merge": {
+          "args": [],
+          "script": "//testing/merge_scripts/standard_gtest_merge.py"
+        },
+        "name": "mixins_test_mixins",
+        "swarming": {
+          "can_use_on_swarming_builders": true,
+          "dimension_sets": [
+            {
+              "iama": "mixin"
+            }
+          ],
+          "value": "test"
+        },
+        "test": "mixins_test"
+      },
+      {
+        "args": [],
+        "merge": {
+          "args": [],
+          "script": "//testing/merge_scripts/standard_gtest_merge.py"
+        },
+        "name": "mixins_test_swarming",
+        "swarming": {
+          "a": "b",
+          "can_use_on_swarming_builders": true,
+          "dimension_sets": [
+            {
+              "hello": "world"
+            }
+          ],
+          "value": "test"
+        },
+        "test": "mixins_test"
+      }
+    ]
+  }
+}
+"""
+
+MATRIX_TARGET_DICT_MERGE_OUTPUT_SWARMING = """\
+{
+  "AAAAA1 AUTOGENERATED FILE DO NOT EDIT": {},
+  "AAAAA2 See generate_buildbot_json.py to make changes": {},
+  "Fake Tester": {
+    "gtest_tests": [
+      {
+        "args": [
+          "--anarg"
+        ],
+        "merge": {
+          "args": [],
+          "script": "//testing/merge_scripts/standard_gtest_merge.py"
+        },
+        "name": "swarming_test_args",
         "swarming": {
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
               "foo": "bar"
             }
-          ]
+          ],
+          "foo": "bar"
         },
-        "test": "foo_test"
-      }
-    ]
-  }
-}
-"""
-
-MATRIX_COMPOUND_SWARMING_MERGE_OUTPUT = """\
-{
-  "AAAAA1 AUTOGENERATED FILE DO NOT EDIT": {},
-  "AAAAA2 See generate_buildbot_json.py to make changes": {},
-  "Fake Tester": {
-    "gtest_tests": [
+        "test": "swarming_test"
+      },
       {
+        "args": [],
         "merge": {
           "args": [],
           "script": "//testing/merge_scripts/standard_gtest_merge.py"
         },
+        "name": "swarming_test_mixins",
         "swarming": {
+          "can_use_on_swarming_builders": true,
+          "dimension_sets": [
+            {
+              "foo": "bar",
+              "iama": "mixin"
+            }
+          ],
+          "foo": "bar"
+        },
+        "test": "swarming_test"
+      },
+      {
+        "args": [],
+        "merge": {
+          "args": [],
+          "script": "//testing/merge_scripts/standard_gtest_merge.py"
+        },
+        "name": "swarming_test_swarming",
+        "swarming": {
+          "a": "b",
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
               "foo": "bar",
               "hello": "world"
             }
-          ]
+          ],
+          "foo": "bar"
         },
-        "test": "foo_test"
+        "test": "swarming_test"
       }
     ]
   }
 }
 """
 
-MATRIX_DIFFERENT_SIZE_MERGE_OUTPUT = """\
-{
-  "AAAAA1 AUTOGENERATED FILE DO NOT EDIT": {},
-  "AAAAA2 See generate_buildbot_json.py to make changes": {},
-  "Fake Tester": {
-    "gtest_tests": [
-      {
-        "merge": {
-          "args": [],
-          "script": "//testing/merge_scripts/standard_gtest_merge.py"
-        },
-        "swarming": {
-          "can_use_on_swarming_builders": true,
-          "dimension_sets": [
-            {
-              "foo": "bar",
-              "hello": "world"
-            },
-            {
-              "random": "dimension"
-            }
-          ]
-        },
-        "test": "foo_test"
-      }
-    ]
-  }
-}
-"""
-
-MATRIX_OTHER_ARGS_OUTPUT = """\
-{
-  "AAAAA1 AUTOGENERATED FILE DO NOT EDIT": {},
-  "AAAAA2 See generate_buildbot_json.py to make changes": {},
-  "Fake Tester": {
-    "gtest_tests": [
-      {
-        "basic_argument": "arg1",
-        "merge": {
-          "args": [],
-          "script": "//testing/merge_scripts/standard_gtest_merge.py"
-        },
-        "swarming": {
-          "can_use_on_swarming_builders": true
-        },
-        "test": "foo_test",
-        "value": "random"
-      }
-    ]
-  }
-}
-"""
-
-
-class DictionaryCompositionTests(unittest.TestCase):
+class MatrixCompositionTests(unittest.TestCase):
 
   def test_good_structure_no_configs(self):
     """
@@ -4685,43 +4941,17 @@ class DictionaryCompositionTests(unittest.TestCase):
     fbb.check_output_file_consistency(verbose=True)
     self.assertFalse(fbb.printed_lines)
 
-  def test_good_structure_swarming_composite_only(self):
+  def test_missing_identifier(self):
     """
-    Tests matrix compound test suite structure with swarming configs,
-    only defined at matrix
-    """
-    fbb = FakeBBGen(
-      MATRIX_GTEST_SUITE_WATERFALL,
-      MATRIX_COMPOUND_SWARMING_SET,
-      LUCI_MILO_CFG)
-    fbb.files['chromium.test.json'] = MATRIX_COMPOUND_SWARMING_SET_OUTPUT
-    fbb.check_output_file_consistency(verbose=True)
-    self.assertFalse(fbb.printed_lines)
-
-  def test_swarming_dimension_set_merge(self):
-    """
-    Tests matrix compound test suite structure with swarming dimension set
-    merge.
+    Variant is missing an identifier
     """
     fbb = FakeBBGen(
       MATRIX_GTEST_SUITE_WATERFALL,
-      MATRIX_COMPOUND_DIMENSION_SET_MERGE,
+      MATRIX_COMPOUND_MISSING_IDENTIFIER,
       LUCI_MILO_CFG)
-    fbb.files['chromium.test.json'] = MATRIX_COMPOUND_SWARMING_MERGE_OUTPUT
-    fbb.check_output_file_consistency(verbose=True)
-    self.assertFalse(fbb.printed_lines)
-
-  def test_mismatched_swarming_length_okay(self):
-    """
-    Swarming dimension set length mismatch test. Basic set > composition set
-    """
-    fbb = FakeBBGen(
-      MATRIX_GTEST_SUITE_WATERFALL,
-      MATRIX_BASIC_DIMENSION_SET_LARGER,
-      LUCI_MILO_CFG)
-    fbb.files['chromium.test.json'] = MATRIX_DIFFERENT_SIZE_MERGE_OUTPUT
-    fbb.check_output_file_consistency(verbose=True)
-    self.assertFalse(fbb.printed_lines)
+    with self.assertRaisesRegexp(generate_buildbot_json.BBGenErr,
+        'Missing required identifier field in matrix compound suite*'):
+      fbb.check_output_file_consistency(verbose=True)
 
   def test_mismatched_swarming_length(self):
     """
@@ -4734,21 +4964,6 @@ class DictionaryCompositionTests(unittest.TestCase):
     with self.assertRaisesRegexp(generate_buildbot_json.BBGenErr,
         'Error merging lists by key *'):
       fbb.check_output_file_consistency(verbose=True)
-
-  def test_other_args(self):
-    """
-    Ensures other args, such as mixins, are simply passed to the test definition
-    Mixins would be applied accordingly after being copied over
-    """
-    fbb = FakeBBGen(
-      MATRIX_GTEST_SUITE_WATERFALL,
-      MATRIX_OTHER_ARGS,
-      LUCI_MILO_CFG,
-      mixins=SWARMING_MIXINS,
-    )
-    fbb.files['chromium.test.json'] = MATRIX_OTHER_ARGS_OUTPUT
-    fbb.check_output_file_consistency(verbose=True)
-    self.assertFalse(fbb.printed_lines)
 
   def test_noexistent_ref(self):
     """
@@ -4768,7 +4983,7 @@ class DictionaryCompositionTests(unittest.TestCase):
     """
     fbb = FakeBBGen(
       MATRIX_GTEST_SUITE_WATERFALL,
-      MATRIX_COMPOSITION_REF_COMPOSITION,
+      MATRIX_COMPOUND_REF_COMPOSITION,
       LUCI_MILO_CFG)
     with self.assertRaisesRegexp(generate_buildbot_json.BBGenErr,
       'matrix_compound_suites may not refer to other *'):
@@ -4785,6 +5000,54 @@ class DictionaryCompositionTests(unittest.TestCase):
     with self.assertRaisesRegexp(generate_buildbot_json.BBGenErr,
       'matrix_compound_suites may not refer to other *'):
       fbb.check_output_file_consistency(verbose=True)
+
+  def test_conflicting_names(self):
+    fbb = FakeBBGen(MATRIX_GTEST_SUITE_WATERFALL,
+                    MATRIX_COMPOUND_CONFLICTING_TEST_SUITES,
+                    LUCI_MILO_CFG)
+    with self.assertRaisesRegexp(generate_buildbot_json.BBGenErr,
+                                 'Conflicting test definitions.*'):
+      fbb.check_input_file_consistency(verbose=True)
+    self.assertFalse(fbb.printed_lines)
+
+  def test_variants_swarming_dict_merge_args(self):
+    """
+    Test targets with swarming dictionary defined by both basic and matrix
+    """
+    fbb = FakeBBGen(
+      MATRIX_GTEST_SUITE_WATERFALL,
+      MATRIX_COMPOUND_TARGETS_ARGS,
+      LUCI_MILO_CFG,
+      mixins=SWARMING_MIXINS)
+    fbb.files['chromium.test.json'] = MATRIX_TARGET_DICT_MERGE_OUTPUT_ARGS
+    fbb.check_output_file_consistency(verbose=True)
+    self.assertFalse(fbb.printed_lines)
+
+  def test_variants_swarming_dict_merge_mixins(self):
+    """
+    Test targets with swarming dictionary defined by both basic and matrix
+    """
+    fbb = FakeBBGen(
+      MATRIX_GTEST_SUITE_WATERFALL,
+      MATRIX_COMPOUND_TARGETS_MIXINS,
+      LUCI_MILO_CFG,
+      mixins=SWARMING_MIXINS)
+    fbb.files['chromium.test.json'] = MATRIX_TARGET_DICT_MERGE_OUTPUT_MIXINS
+    fbb.check_output_file_consistency(verbose=True)
+    self.assertFalse(fbb.printed_lines)
+
+  def test_variants_swarming_dict_swarming(self):
+    """
+    Test targets with swarming dictionary defined by both basic and matrix
+    """
+    fbb = FakeBBGen(
+      MATRIX_GTEST_SUITE_WATERFALL,
+      MATRIX_COMPOUND_TARGETS_SWARMING,
+      LUCI_MILO_CFG,
+      mixins=SWARMING_MIXINS)
+    fbb.files['chromium.test.json'] = MATRIX_TARGET_DICT_MERGE_OUTPUT_SWARMING
+    fbb.check_output_file_consistency(verbose=True)
+    self.assertFalse(fbb.printed_lines)
 
 
 if __name__ == '__main__':

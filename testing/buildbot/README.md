@@ -205,85 +205,110 @@ basic test suites (key) and configurations (value). Matrix compound test suites
 have the same restrictions as composition test suites, in that they *cannot*
 reference other composition or matrix test suites. Configurations defined for
 a basic test suite in a matrix test suite are applied to each tests for the
-referenced basic test suite.
+referenced basic test suite. "variants" is the only supported key via matrix
+compound suites at this time.
 
-For example, for the given basic test suite definition:
+##### Variants
+
+“variants” is a top-level group introduced into matrix compound suites designed
+to allow targeting a test against multiple variants. Each variant supports args,
+mixins and swarming definitions. When variants are defined, args, mixins and
+swarming aren’t specified at the same level.
+
+Args, mixins, and swarming configurations that are defined by both the test
+suite and variants are merged together. Args and mixins are lists, and thus are
+appended together. Swarming configurations follow the same merge process -
+dimension sets are merged via the existing dictionary merge behavior, and other
+keys are appended.
+
+**identifier** is a required key for each variant. The identifier is used to
+make the test name unique. Each test generated from the resulting .json file
+is identified uniquely by name, thus, the identifier is appended to the test
+name in the format: "test_name" + "_" + "identifier"
+
+For example, iOS requires running a test suite against multiple devices. If we
+have the following basic test suite:
 
 ```
-  'ios_eg2_tests': {
-    'basic_unittests': {
-      'app': 'base_unittests',
-    },
-    'components_unittests': {
-      'app': 'components_unittests',
-      'swarming': {
-        'dimension_sets': [
-          {
-            'xcode build version': '11a1027',
-          },
-          {
-            'xcode build version': '11b53',
-          }
-        ]
-      }
-    }
+'ios_eg2_tests': {
+  'basic_unittests': {
+    'args': [
+      '--some-arg',
+    ]
   }
+}
 ```
 
-And a matrix compound test suite `ios_simulator_gtests` referencing that basic
-test suite `ios_eg2_tests`:
+and a matrix compound suite with this variants definition:
 
 ```
-  'ios_simulator_gtests': {
-      'ios_eg2_tests': {
+'matrix_compound_test': {
+  'ios_eg2_tests': {
+    'variants': [
+      {
+        'args': [
+          '--platform',
+          'iPhone X',
+          '--version',
+          '13.3'
+        ],
+        'identifier': 'iPhone_X_13.3',
+      },
+      {
+        'identifier': 'device_iPhone_X_13.3',
         'swarming': {
           'dimension_sets': [
             {
-              'device type': 'iPhone X',
-              'os': '13.1',
-            },
-            {
-              'device type': 'iPhone X',
-              'os': '12.2',
-            },
+              'os': 'iOS-iPhone10,3'
+            }
           ]
         }
       }
+    ]
   }
+}
 ```
 
-Results in four tests running:
+we can expect the following output:
 
-* base_unittests on iPhone X with os 13.1
-* base_unittests on iPhone X with os 12.2
-* components_unittests on iPhone X with os 13.1 and xcode version 11a1027
-* components_unittests on iPhone X with os 12.2 and xcode version 11b53
-
-Matrix suites reference a list of basic test suites. Each basic test suite has a
-list of tests. Matrix suites take the cross product between the configuration
-defined by the basic suite and the configuration defined by the matrix suite.
-
-When both configurations define swarming dimension sets, matrix suites attempt
-to merge the two lists. In the example above, the swarming dimension set from
-`component_unittests` is merged with the dimension set defined by the matrix
-suite, resulting in the following dimension set:
 
 ```
-  'dimension_sets': [
-    {
-      'device type': 'iPhone X',
-      'os': '13.1',
-      'xcode build version': '11a1027',
-    },
-    {
-      'device type': 'iPhone X',
-      'os': '12.2',
-      'xcode build version': '11b53',
-    },
-  ]
+{
+  'args': [
+    '--some-arg',
+    '--platform',
+    'iPhone X',
+    '--version',
+    '13.3'
+  ],
+  'merge': {
+    'args': [],
+    'script': 'some/merge/script.py'
+  }
+  'name': 'basic_unittests_iPhone_X_13.3',
+  'test': 'basic_unittests'
+},
+{
+  'args': [
+    '--some-arg'
+  ],
+  'merge': {
+    'args': [],
+    'script': 'some/merge/script.py',
+  },
+  'name': 'basic_unittests_device_iPhone_X_13.3',
+  'swarming': {
+    'dimension_sets': [
+      {
+        'os': 'iOS-iPhone10,3'
+      }
+    ]
+  },
+  'test': 'basic_unittests'
+}
 ```
 
-Due to limitations of the merging algorithm, mereging dimension sets fail when
+Due to limitations of the merging algorithm, merging dimension sets fail when
 there are more dimension sets defined in the matrix test suite than the basic
 test suite. On failure, the user is notified of an error merging list key
 dimension sets.

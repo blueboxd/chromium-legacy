@@ -201,9 +201,8 @@ class Project(object):
     @guard('core')
     def update_deployment(self, target, deployment, state, description=''):
         if state in ('pending', 'success'):
-            environment_url = '{}/submissions/{}'.format(
-                target, deployment['environment']
-            )
+            pr_number = deployment['environment'][len(DEPLOYMENT_PREFIX):]
+            environment_url = '{}/{}'.format(target, pr_number)
         else:
             environment_url = None
         url = '{}/repos/{}/deployments/{}/statuses'.format(
@@ -331,9 +330,6 @@ def synchronize(host, github_project, window):
                 project.create_deployment(
                     pull_request, revision_latest
                 )
-                # Temporarily bail after creating one deployment, to verify the
-                # end-to-end flow without spamming many PRs.
-                logger.info('Created one deployment, returning for testing purposes')
         else:
             logger.info('Pull Request should not be mirrored')
 

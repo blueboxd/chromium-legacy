@@ -85,17 +85,15 @@ class UtilUnittest(unittest.TestCase):
     def Test(data, encoding, expected_result):
       with open('testfile', 'wb') as f:
         f.write(data)
-      if util.ReadFile('testfile', encoding) != expected_result:
-        print(util.ReadFile('testfile', encoding), expected_result)
-      self.failUnless(util.ReadFile('testfile', encoding) == expected_result)
+      self.assertEqual(util.ReadFile('testfile', encoding), expected_result)
 
-    test_std_newline = '\xEF\xBB\xBFabc\ndef'  # EF BB BF is UTF-8 BOM
-    newlines = ['\n', '\r\n', '\r']
+    test_std_newline = b'\xEF\xBB\xBFabc\ndef'  # EF BB BF is UTF-8 BOM
+    newlines = [b'\n', b'\r\n', b'\r']
 
     with util.TempDir({}) as tmp_dir:
       with tmp_dir.AsCurrentDir():
         for newline in newlines:
-          test = test_std_newline.replace('\n', newline)
+          test = test_std_newline.replace(b'\n', newline)
           Test(test, util.BINARY, test)
           # utf-8 doesn't strip BOM
           Test(test, 'utf-8', test_std_newline.decode('utf-8'))
@@ -103,7 +101,7 @@ class UtilUnittest(unittest.TestCase):
           Test(test, 'utf-8-sig', test_std_newline.decode('utf-8')[1:])
           # test another encoding
           Test(test, 'cp1252', test_std_newline.decode('cp1252'))
-        self.assertRaises(UnicodeDecodeError, Test, '\x80', 'utf-8', None)
+        self.assertRaises(UnicodeDecodeError, Test, b'\x80', 'utf-8', None)
 
 
 class TestBaseClassToLoad(object):

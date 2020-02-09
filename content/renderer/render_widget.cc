@@ -2763,7 +2763,7 @@ void RenderWidget::DidOverscroll(const gfx::Vector2dF& overscroll_delta,
 void RenderWidget::InjectGestureScrollEvent(
     blink::WebGestureDevice device,
     const gfx::Vector2dF& delta,
-    ui::input_types::ScrollGranularity granularity,
+    ui::ScrollGranularity granularity,
     cc::ElementId scrollable_area_element_id,
     blink::WebInputEvent::Type injected_type) {
   input_handler_->InjectGestureScrollEvent(

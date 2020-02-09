@@ -78,7 +78,7 @@ void FakeLocalFrameHost::ScrollRectToVisibleInParentFrame(
 
 void FakeLocalFrameHost::BubbleLogicalScrollInParentFrame(
     blink::mojom::blink::ScrollDirection direction,
-    ui::input_types::ScrollGranularity granularity) {}
+    ui::ScrollGranularity granularity) {}
 
 void FakeLocalFrameHost::DidAccessInitialDocument() {}
 

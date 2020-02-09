@@ -12,9 +12,8 @@
 #undef IPC_MESSAGE_EXPORT
 #define IPC_MESSAGE_EXPORT COMPONENT_EXPORT(UI_EVENTS_IPC)
 
-IPC_ENUM_TRAITS_MIN_MAX_VALUE(
-    ui::input_types::ScrollGranularity,
-    ui::input_types::ScrollGranularity::kFirstScrollGranularity,
-    ui::input_types::ScrollGranularity::kMaxValue)
+IPC_ENUM_TRAITS_MIN_MAX_VALUE(ui::ScrollGranularity,
+                              ui::ScrollGranularity::kFirstScrollGranularity,
+                              ui::ScrollGranularity::kMaxValue)
 
 #endif  // UI_EVENTS_IPC_UI_EVENTS_PARAM_TRAITS_MACROS_H_

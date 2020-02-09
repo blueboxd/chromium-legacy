@@ -186,7 +186,7 @@ class WebWidgetClient {
   virtual void InjectGestureScrollEvent(
       WebGestureDevice device,
       const gfx::Vector2dF& delta,
-      ui::input_types::ScrollGranularity granularity,
+      ui::ScrollGranularity granularity,
       cc::ElementId scrollable_area_element_id,
       WebInputEvent::Type injected_type) {}
 

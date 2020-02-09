@@ -505,7 +505,7 @@ WebInputEventResult ScrollManager::HandleGestureScrollBegin(
 
   if (gesture_event.SourceDevice() == WebGestureDevice::kTouchpad &&
       gesture_event.data.scroll_begin.delta_hint_units ==
-          ui::input_types::ScrollGranularity::kScrollByPrecisePixel) {
+          ui::ScrollGranularity::kScrollByPrecisePixel) {
     UseCounter::Count(document, WebFeature::kScrollByPrecisionTouchPad);
   } else if (gesture_event.SourceDevice() == WebGestureDevice::kTouchscreen) {
     UseCounter::Count(document, WebFeature::kScrollByTouch);

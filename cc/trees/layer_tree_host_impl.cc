@@ -3882,7 +3882,7 @@ InputHandler::ScrollStatus LayerTreeHostImpl::ScrollBegin(
   // decide when it best makes sense to cancel a scroll animation (maybe
   // ScrollBy is a better place to do it).
   if (scroll_state->delta_granularity() ==
-      ui::input_types::ScrollGranularity::kScrollByPrecisePixel) {
+      ui::ScrollGranularity::kScrollByPrecisePixel) {
     mutator_host_->ScrollAnimationAbort();
     scroll_animating_snap_target_ids_ = TargetSnapAreaElementIds();
   }
@@ -4618,9 +4618,8 @@ bool LayerTreeHostImpl::ShouldAnimateScroll(
   if (!settings_.enable_smooth_scroll)
     return false;
 
-  bool has_precise_scroll_deltas =
-      scroll_state.delta_granularity() ==
-      ui::input_types::ScrollGranularity::kScrollByPrecisePixel;
+  bool has_precise_scroll_deltas = scroll_state.delta_granularity() ==
+                                   ui::ScrollGranularity::kScrollByPrecisePixel;
 
 #if defined(OS_MACOSX)
   if (has_precise_scroll_deltas)
@@ -4642,9 +4641,8 @@ InputHandlerScrollResult LayerTreeHostImpl::ScrollUpdate(
   DCHECK(scroll_state);
   last_scroll_state_ = *scroll_state;
 
-  bool is_delta_percent_units =
-      scroll_state->delta_granularity() ==
-      ui::input_types::ScrollGranularity::kScrollByPercentage;
+  bool is_delta_percent_units = scroll_state->delta_granularity() ==
+                                ui::ScrollGranularity::kScrollByPercentage;
   if (CurrentlyScrollingNode() && is_delta_percent_units) {
     gfx::Vector2dF resolvedScrollDelta = ResolveScrollPercentageToPixels(
         *CurrentlyScrollingNode(),
@@ -4653,7 +4651,7 @@ InputHandlerScrollResult LayerTreeHostImpl::ScrollUpdate(
     scroll_state->data()->delta_x = resolvedScrollDelta.x();
     scroll_state->data()->delta_y = resolvedScrollDelta.y();
     scroll_state->data()->delta_granularity =
-        ui::input_types::ScrollGranularity::kScrollByPixel;
+        ui::ScrollGranularity::kScrollByPixel;
   }
 
   gfx::Vector2dF scroll_delta(scroll_state->delta_x(), scroll_state->delta_y());
@@ -4828,7 +4826,7 @@ bool LayerTreeHostImpl::SnapAtScrollEnd() {
   bool imprecise_wheel_scrolling =
       latched_scroll_type_ == InputHandler::WHEEL &&
       last_scroll_state_->delta_granularity() !=
-          ui::input_types::ScrollGranularity::kScrollByPrecisePixel;
+          ui::ScrollGranularity::kScrollByPrecisePixel;
   gfx::ScrollOffset last_scroll_delta(last_scroll_state_->delta_x(),
                                       last_scroll_state_->delta_y());
 
@@ -6161,7 +6159,7 @@ void LayerTreeHostImpl::UpdateScrollSourceInfo(
     InputHandler::ScrollInputType type) {
   if (type == InputHandler::WHEEL &&
       scroll_state.delta_granularity() ==
-          ui::input_types::ScrollGranularity::kScrollByPrecisePixel) {
+          ui::ScrollGranularity::kScrollByPrecisePixel) {
     has_scrolled_by_precisiontouchpad_ = true;
   } else if (type == InputHandler::WHEEL) {
     has_scrolled_by_wheel_ = true;

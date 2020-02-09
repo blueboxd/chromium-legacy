@@ -12,6 +12,6 @@ InputHandlerScrollResult::InputHandlerScrollResult()
 
 InputHandlerPointerResult::InputHandlerPointerResult()
     : type(kUnhandled),
-      scroll_units(ui::input_types::ScrollGranularity::kScrollByPrecisePixel) {}
+      scroll_units(ui::ScrollGranularity::kScrollByPrecisePixel) {}
 
 }  // namespace cc

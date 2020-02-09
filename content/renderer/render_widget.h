@@ -400,7 +400,7 @@ class CONTENT_EXPORT RenderWidget
   void InjectGestureScrollEvent(
       blink::WebGestureDevice device,
       const gfx::Vector2dF& delta,
-      ui::input_types::ScrollGranularity granularity,
+      ui::ScrollGranularity granularity,
       cc::ElementId scrollable_area_element_id,
       blink::WebInputEvent::Type injected_type) override;
   void SetOverscrollBehavior(const cc::OverscrollBehavior&) override;

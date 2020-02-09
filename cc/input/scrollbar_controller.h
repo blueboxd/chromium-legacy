@@ -230,9 +230,8 @@ class CC_EXPORT ScrollbarController {
   float GetScrollDeltaForAbsoluteJump(const ScrollbarLayerImplBase* scrollbar);
 
   // Determines if the delta needs to be animated.
-  ui::input_types::ScrollGranularity Granularity(
-      const ScrollbarPart scrollbar_part,
-      bool shift_modifier);
+  ui::ScrollGranularity Granularity(const ScrollbarPart scrollbar_part,
+                                    bool shift_modifier);
 
   // Calculates the scroll_offset based on position_in_widget and
   // drag_anchor_relative_to_thumb_.

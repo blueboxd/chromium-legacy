@@ -733,7 +733,7 @@ TEST_P(InputHandlerProxyTest, GestureScrollByPage) {
 
   gesture_.SetType(WebInputEvent::kGestureScrollBegin);
   gesture_.data.scroll_begin.delta_hint_units =
-      ui::input_types::ScrollGranularity::kScrollByPage;
+      ui::ScrollGranularity::kScrollByPage;
   EXPECT_EQ(expected_disposition_,
             input_handler_->RouteToTypeSpecificHandler(gesture_));
 
@@ -742,7 +742,7 @@ TEST_P(InputHandlerProxyTest, GestureScrollByPage) {
   gesture_.SetType(WebInputEvent::kGestureScrollUpdate);
   gesture_.data.scroll_update.delta_y = 1;
   gesture_.data.scroll_update.delta_units =
-      ui::input_types::ScrollGranularity::kScrollByPage;
+      ui::ScrollGranularity::kScrollByPage;
   EXPECT_EQ(expected_disposition_,
             input_handler_->RouteToTypeSpecificHandler(gesture_));
 

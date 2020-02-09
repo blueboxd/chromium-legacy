@@ -116,7 +116,7 @@ class FlingControllerTest : public FlingControllerEventSenderClient,
     scroll_begin.data.scroll_begin.inertial_phase =
         WebGestureEvent::InertialPhaseState::kNonMomentum;
     scroll_begin.data.scroll_begin.delta_hint_units =
-        ui::input_types::ScrollGranularity::kScrollByPrecisePixel;
+        ui::ScrollGranularity::kScrollByPrecisePixel;
     GestureEventWithLatencyInfo scroll_begin_with_latency(scroll_begin);
 
     fling_controller_->ObserveAndMaybeConsumeGestureEvent(
@@ -134,7 +134,7 @@ class FlingControllerTest : public FlingControllerEventSenderClient,
     scroll_update.data.scroll_update.inertial_phase =
         WebGestureEvent::InertialPhaseState::kNonMomentum;
     scroll_update.data.scroll_update.delta_units =
-        ui::input_types::ScrollGranularity::kScrollByPrecisePixel;
+        ui::ScrollGranularity::kScrollByPrecisePixel;
     GestureEventWithLatencyInfo scroll_update_with_latency(scroll_update);
 
     fling_controller_->ObserveAndMaybeConsumeGestureEvent(

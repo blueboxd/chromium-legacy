@@ -153,18 +153,18 @@ void MouseWheelEventQueue::ProcessMouseWheelAck(
 
     // WebMouseWheelEvent only supports these units for the delta.
     DCHECK(event_sent_for_gesture_ack_->event.delta_units ==
-               ui::input_types::ScrollGranularity::kScrollByPage ||
+               ui::ScrollGranularity::kScrollByPage ||
            event_sent_for_gesture_ack_->event.delta_units ==
-               ui::input_types::ScrollGranularity::kScrollByPrecisePixel ||
+               ui::ScrollGranularity::kScrollByPrecisePixel ||
            event_sent_for_gesture_ack_->event.delta_units ==
-               ui::input_types::ScrollGranularity::kScrollByPixel ||
+               ui::ScrollGranularity::kScrollByPixel ||
            event_sent_for_gesture_ack_->event.delta_units ==
-               ui::input_types::ScrollGranularity::kScrollByPercentage);
+               ui::ScrollGranularity::kScrollByPercentage);
     scroll_update.data.scroll_update.delta_units =
         event_sent_for_gesture_ack_->event.delta_units;
 
     if (event_sent_for_gesture_ack_->event.delta_units ==
-        ui::input_types::ScrollGranularity::kScrollByPage) {
+        ui::ScrollGranularity::kScrollByPage) {
       // Turn page scrolls into a *single* page scroll because
       // the magnitude the number of ticks is lost when coalescing.
       if (scroll_update.data.scroll_update.delta_x)

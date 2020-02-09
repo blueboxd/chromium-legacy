@@ -44,7 +44,7 @@ struct CC_EXPORT InputHandlerPointerResult {
   PointerResultType type;
 
   // Tells what scroll_units should be used.
-  ui::input_types::ScrollGranularity scroll_units;
+  ui::ScrollGranularity scroll_units;
 
   // If the input handler processed the event as a scrollbar scroll, it will
   // return a gfx::ScrollOffset that produces the necessary scroll. However,

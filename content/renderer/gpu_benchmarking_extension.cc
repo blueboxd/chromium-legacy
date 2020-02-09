@@ -339,19 +339,14 @@ bool BeginSmoothScroll(GpuBenchmarkingContext* context,
   gesture_params.speed_in_pixels_s = speed_in_pixels_s;
   gesture_params.prevent_fling = prevent_fling;
 
-  if (scroll_by_page) {
-    gesture_params.granularity =
-        ui::input_types::ScrollGranularity::kScrollByPage;
-  } else if (precise_scrolling_deltas) {
-    gesture_params.granularity =
-        ui::input_types::ScrollGranularity::kScrollByPrecisePixel;
-  } else if (scroll_by_percentage) {
-    gesture_params.granularity =
-        ui::input_types::ScrollGranularity::kScrollByPercentage;
-  } else {
-    gesture_params.granularity =
-        ui::input_types::ScrollGranularity::kScrollByPixel;
-  }
+  if (scroll_by_page)
+    gesture_params.granularity = ui::ScrollGranularity::kScrollByPage;
+  else if (precise_scrolling_deltas)
+    gesture_params.granularity = ui::ScrollGranularity::kScrollByPrecisePixel;
+  else if (scroll_by_percentage)
+    gesture_params.granularity = ui::ScrollGranularity::kScrollByPercentage;
+  else
+    gesture_params.granularity = ui::ScrollGranularity::kScrollByPixel;
 
   gesture_params.anchor.SetPoint(start_x, start_y);
 

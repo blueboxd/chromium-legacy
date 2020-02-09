@@ -68,7 +68,7 @@ bool OverscrollController::ShouldProcessEvent(
       if (IsGestureEventFromAutoscroll(gesture))
         return false;
 
-      ui::input_types::ScrollGranularity granularity;
+      ui::ScrollGranularity granularity;
       switch (event.GetType()) {
         case blink::WebInputEvent::kGestureScrollBegin:
           granularity = gesture.data.scroll_begin.delta_hint_units;
@@ -80,12 +80,11 @@ bool OverscrollController::ShouldProcessEvent(
           granularity = gesture.data.scroll_end.delta_units;
           break;
         default:
-          granularity = ui::input_types::ScrollGranularity::kScrollByPixel;
+          granularity = ui::ScrollGranularity::kScrollByPixel;
           break;
       }
 
-      return granularity ==
-             ui::input_types::ScrollGranularity::kScrollByPrecisePixel;
+      return granularity == ui::ScrollGranularity::kScrollByPrecisePixel;
     }
     default:
       break;

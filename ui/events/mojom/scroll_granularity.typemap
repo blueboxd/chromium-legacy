@@ -5,8 +5,5 @@
 mojom = "//ui/events/mojom/scroll_granularity.mojom"
 public_headers = [ "//ui/events/types/scroll_types.h" ]
 traits_headers = [ "//ui/events/ipc/ui_events_param_traits_macros.h" ]
-public_deps = [
-  "//ui/events/ipc",
-]
-type_mappings =
-    [ "ui.mojom.ScrollGranularity=::ui::input_types::ScrollGranularity" ]
+public_deps = [ "//ui/events/ipc" ]
+type_mappings = [ "ui.mojom.ScrollGranularity=::ui::ScrollGranularity" ]

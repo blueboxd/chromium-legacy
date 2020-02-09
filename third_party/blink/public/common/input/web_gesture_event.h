@@ -86,7 +86,7 @@ class BLINK_COMMON_EXPORT WebGestureEvent : public WebInputEvent {
       // number of pointers down.
       int pointer_count;
       // Default initialized to kScrollByPrecisePixel.
-      ui::input_types::ScrollGranularity delta_hint_units;
+      ui::ScrollGranularity delta_hint_units;
       // The state of inertial phase scrolling. OSX has unique phases for normal
       // and momentum scroll events. Should always be kUnknownMomentumPhase for
       // touch based input as it generates GestureFlingStart instead.
@@ -106,13 +106,13 @@ class BLINK_COMMON_EXPORT WebGestureEvent : public WebInputEvent {
       float velocity_y;
       InertialPhaseState inertial_phase;
       // Default initialized to kScrollByPrecisePixel.
-      ui::input_types::ScrollGranularity delta_units;
+      ui::ScrollGranularity delta_units;
     } scroll_update;
 
     struct {
       // The original delta units the ScrollBegin and ScrollUpdates
       // were sent as.
-      ui::input_types::ScrollGranularity delta_units;
+      ui::ScrollGranularity delta_units;
       // The state of inertial phase scrolling. OSX has unique phases for normal
       // and momentum scroll events. Should always be kUnknownMomentumPhase for
       // touch based input as it generates GestureFlingStart instead.
@@ -211,7 +211,7 @@ class BLINK_COMMON_EXPORT WebGestureEvent : public WebInputEvent {
 
   float DeltaXInRootFrame() const;
   float DeltaYInRootFrame() const;
-  ui::input_types::ScrollGranularity DeltaUnits() const;
+  ui::ScrollGranularity DeltaUnits() const;
   gfx::PointF PositionInRootFrame() const;
   InertialPhaseState InertialPhase() const;
   bool Synthetic() const;

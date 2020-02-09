@@ -122,8 +122,7 @@ blink::WebMouseWheelEvent MakeWebMouseWheelEventFromUiEvent(
       EventFlagsToWebEventModifiers(event.flags()), event.time_stamp());
 
   webkit_event.button = blink::WebMouseEvent::Button::kNoButton;
-  webkit_event.delta_units =
-      ui::input_types::ScrollGranularity::kScrollByPrecisePixel;
+  webkit_event.delta_units = ui::ScrollGranularity::kScrollByPrecisePixel;
 
   float offset_ordinal_x = event.x_offset_ordinal();
   float offset_ordinal_y = event.y_offset_ordinal();
@@ -478,11 +477,9 @@ blink::WebMouseWheelEvent MakeWebMouseWheelEventFromUiEvent(
            event.flags() & ui::EF_SCROLL_BY_PAGE));
 
   if (event.flags() & ui::EF_PRECISION_SCROLLING_DELTA) {
-    webkit_event.delta_units =
-        ui::input_types::ScrollGranularity::kScrollByPrecisePixel;
+    webkit_event.delta_units = ui::ScrollGranularity::kScrollByPrecisePixel;
   } else if (event.flags() & ui::EF_SCROLL_BY_PAGE) {
-    webkit_event.delta_units =
-        ui::input_types::ScrollGranularity::kScrollByPage;
+    webkit_event.delta_units = ui::ScrollGranularity::kScrollByPage;
   }
 
   webkit_event.wheel_ticks_x =

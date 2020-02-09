@@ -48,7 +48,7 @@ void FakeRemoteFrame::SetNeedsOcclusionTracking(bool needs_tracking) {}
 
 void FakeRemoteFrame::BubbleLogicalScroll(
     blink::mojom::ScrollDirection direction,
-    ui::input_types::ScrollGranularity granularity) {}
+    ui::ScrollGranularity granularity) {}
 
 void FakeRemoteFrame::UpdateUserActivationState(
     blink::mojom::UserActivationUpdateType) {}

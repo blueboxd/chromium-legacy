@@ -124,7 +124,7 @@ std::unique_ptr<blink::WebGestureEvent> GenerateInjectedScrollGesture(
     blink::WebGestureDevice device,
     gfx::PointF position_in_widget,
     gfx::Vector2dF scroll_delta,
-    input_types::ScrollGranularity granularity);
+    ScrollGranularity granularity);
 
 // Returns the position in the widget if it exists for the passed in event type
 gfx::PointF PositionInWidgetFromInputEvent(const blink::WebInputEvent& event);

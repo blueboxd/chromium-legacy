@@ -870,10 +870,9 @@ std::unique_ptr<blink::WebInputEvent> TranslateAndScaleWebInputEvent(
     float x = (wheel_event->PositionInWidget().x() + delta.x()) * scale;
     float y = (wheel_event->PositionInWidget().y() + delta.y()) * scale;
     wheel_event->SetPositionInWidget(x, y);
-    if (wheel_event->delta_units !=
-            ui::input_types::ScrollGranularity::kScrollByPage &&
+    if (wheel_event->delta_units != ui::ScrollGranularity::kScrollByPage &&
         wheel_event->delta_units !=
-            ui::input_types::ScrollGranularity::kScrollByPercentage) {
+            ui::ScrollGranularity::kScrollByPercentage) {
       wheel_event->delta_x *= scale;
       wheel_event->delta_y *= scale;
       wheel_event->wheel_ticks_x *= scale;
@@ -912,18 +911,18 @@ std::unique_ptr<blink::WebInputEvent> TranslateAndScaleWebInputEvent(
     switch (gesture_event->GetType()) {
       case blink::WebInputEvent::kGestureScrollUpdate:
         if (gesture_event->data.scroll_update.delta_units ==
-                ui::input_types::ScrollGranularity::kScrollByPixel ||
+                ui::ScrollGranularity::kScrollByPixel ||
             gesture_event->data.scroll_update.delta_units ==
-                ui::input_types::ScrollGranularity::kScrollByPrecisePixel) {
+                ui::ScrollGranularity::kScrollByPrecisePixel) {
           gesture_event->data.scroll_update.delta_x *= scale;
           gesture_event->data.scroll_update.delta_y *= scale;
         }
         break;
       case blink::WebInputEvent::kGestureScrollBegin:
         if (gesture_event->data.scroll_begin.delta_hint_units ==
-                ui::input_types::ScrollGranularity::kScrollByPixel ||
+                ui::ScrollGranularity::kScrollByPixel ||
             gesture_event->data.scroll_begin.delta_hint_units ==
-                ui::input_types::ScrollGranularity::kScrollByPrecisePixel) {
+                ui::ScrollGranularity::kScrollByPrecisePixel) {
           gesture_event->data.scroll_begin.delta_x_hint *= scale;
           gesture_event->data.scroll_begin.delta_y_hint *= scale;
         }
@@ -1249,7 +1248,7 @@ std::unique_ptr<blink::WebGestureEvent> GenerateInjectedScrollGesture(
     blink::WebGestureDevice device,
     gfx::PointF position_in_widget,
     gfx::Vector2dF scroll_delta,
-    input_types::ScrollGranularity granularity) {
+    ScrollGranularity granularity) {
   DCHECK(IsGestureScroll(type));
   std::unique_ptr<WebGestureEvent> generated_gesture_event =
       std::make_unique<WebGestureEvent>(type, WebInputEvent::kNoModifiers,

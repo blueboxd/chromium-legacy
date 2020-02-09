@@ -15,12 +15,11 @@ float WebGestureEvent::DeltaXInRootFrame() const {
                       ? data.scroll_begin.delta_x_hint
                       : data.scroll_update.delta_x;
 
-  bool is_percent =
-      (type_ == WebInputEvent::kGestureScrollBegin)
-          ? data.scroll_begin.delta_hint_units ==
-                ui::input_types::ScrollGranularity::kScrollByPercentage
-          : data.scroll_update.delta_units ==
-                ui::input_types::ScrollGranularity::kScrollByPercentage;
+  bool is_percent = (type_ == WebInputEvent::kGestureScrollBegin)
+                        ? data.scroll_begin.delta_hint_units ==
+                              ui::ScrollGranularity::kScrollByPercentage
+                        : data.scroll_update.delta_units ==
+                              ui::ScrollGranularity::kScrollByPercentage;
 
   return is_percent ? delta_x : delta_x / frame_scale_;
 }
@@ -30,17 +29,16 @@ float WebGestureEvent::DeltaYInRootFrame() const {
                       ? data.scroll_begin.delta_y_hint
                       : data.scroll_update.delta_y;
 
-  bool is_percent =
-      (type_ == WebInputEvent::kGestureScrollBegin)
-          ? data.scroll_begin.delta_hint_units ==
-                ui::input_types::ScrollGranularity::kScrollByPercentage
-          : data.scroll_update.delta_units ==
-                ui::input_types::ScrollGranularity::kScrollByPercentage;
+  bool is_percent = (type_ == WebInputEvent::kGestureScrollBegin)
+                        ? data.scroll_begin.delta_hint_units ==
+                              ui::ScrollGranularity::kScrollByPercentage
+                        : data.scroll_update.delta_units ==
+                              ui::ScrollGranularity::kScrollByPercentage;
 
   return is_percent ? delta_y : delta_y / frame_scale_;
 }
 
-ui::input_types::ScrollGranularity WebGestureEvent::DeltaUnits() const {
+ui::ScrollGranularity WebGestureEvent::DeltaUnits() const {
   if (type_ == WebInputEvent::kGestureScrollBegin)
     return data.scroll_begin.delta_hint_units;
   if (type_ == WebInputEvent::kGestureScrollUpdate)
@@ -130,14 +128,14 @@ void WebGestureEvent::FlattenTransform() {
     switch (type_) {
       case WebInputEvent::kGestureScrollBegin:
         if (data.scroll_begin.delta_hint_units !=
-            ui::input_types::ScrollGranularity::kScrollByPercentage) {
+            ui::ScrollGranularity::kScrollByPercentage) {
           data.scroll_begin.delta_x_hint /= frame_scale_;
           data.scroll_begin.delta_y_hint /= frame_scale_;
         }
         break;
       case WebInputEvent::kGestureScrollUpdate:
         if (data.scroll_update.delta_units !=
-            ui::input_types::ScrollGranularity::kScrollByPercentage) {
+            ui::ScrollGranularity::kScrollByPercentage) {
           data.scroll_update.delta_x /= frame_scale_;
           data.scroll_update.delta_y /= frame_scale_;
         }

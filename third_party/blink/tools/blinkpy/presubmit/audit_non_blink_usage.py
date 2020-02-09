@@ -316,7 +316,7 @@ _CONFIG = [
             'cc::TargetSnapAreaElementIds',
             'gfx::RectToSkRect',
             'gfx::ScrollOffset',
-            'ui::input_types::ScrollGranularity',
+            'ui::ScrollGranularity',
 
             # base/util/type_safety/strong_alias.h
             'util::StrongAlias',
@@ -482,8 +482,7 @@ _CONFIG = [
     },
     {
         'paths': [
-            'third_party/blink/renderer/core/animation_frame',
-            'third_party/blink/renderer/core/offscreencanvas',
+            'third_party/blink/renderer/core/animation_frame', 'third_party/blink/renderer/core/offscreencanvas',
             'third_party/blink/renderer/core/html/canvas'
         ],
         'allowed': [

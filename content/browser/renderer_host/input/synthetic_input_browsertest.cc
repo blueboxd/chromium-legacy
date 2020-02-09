@@ -137,8 +137,7 @@ IN_PROC_BROWSER_TEST_F(SyntheticInputTest, SmoothScrollWheel) {
   params.speed_in_pixels_s = 10000000.f;
 
   // Use PrecisePixel to avoid animating.
-  params.granularity =
-      ui::input_types::ScrollGranularity::kScrollByPrecisePixel;
+  params.granularity = ui::ScrollGranularity::kScrollByPrecisePixel;
 
   runner_.reset(new base::RunLoop());
 

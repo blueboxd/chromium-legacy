@@ -66,7 +66,7 @@ TEST(WebInputEventBuilderTest, TestPercentMouseWheelScroll) {
       ::GetDesktopWindow(), WM_MOUSEWHEEL, MAKEWPARAM(0, -WHEEL_DELTA),
       MAKELPARAM(0, 0), base::TimeTicks() + base::TimeDelta::FromSeconds(100),
       blink::WebPointerProperties::PointerType::kMouse);
-  EXPECT_EQ(ui::input_types::ScrollGranularity::kScrollByPercentage,
+  EXPECT_EQ(ui::ScrollGranularity::kScrollByPercentage,
             mouse_wheel.delta_units);
   EXPECT_FLOAT_EQ(0.f, mouse_wheel.delta_x);
   EXPECT_FLOAT_EQ(
@@ -79,7 +79,7 @@ TEST(WebInputEventBuilderTest, TestPercentMouseWheelScroll) {
       ::GetDesktopWindow(), WM_MOUSEHWHEEL, MAKEWPARAM(0, -WHEEL_DELTA),
       MAKELPARAM(0, 0), base::TimeTicks() + base::TimeDelta::FromSeconds(100),
       blink::WebPointerProperties::PointerType::kMouse);
-  EXPECT_EQ(ui::input_types::ScrollGranularity::kScrollByPercentage,
+  EXPECT_EQ(ui::ScrollGranularity::kScrollByPercentage,
             mouse_wheel.delta_units);
   EXPECT_FLOAT_EQ(
       0.05f, mouse_wheel.delta_x / static_cast<float>(system_scroll_chars));

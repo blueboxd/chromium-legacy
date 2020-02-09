@@ -343,8 +343,7 @@ bool StructTraits<content::mojom::EventDataView, InputEventUniquePtr>::Read(
             static_cast<blink::WebMouseWheelEvent::EventAction>(
                 wheel_data->event_action);
         wheel_event->delta_units =
-            static_cast<ui::input_types::ScrollGranularity>(
-                wheel_data->delta_units);
+            static_cast<ui::ScrollGranularity>(wheel_data->delta_units);
       }
     }
 

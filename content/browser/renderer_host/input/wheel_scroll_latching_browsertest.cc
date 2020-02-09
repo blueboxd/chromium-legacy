@@ -168,7 +168,7 @@ IN_PROC_BROWSER_TEST_F(WheelScrollLatchingBrowserTest, MAYBE_WheelEventTarget) {
   blink::WebMouseWheelEvent wheel_event =
       SyntheticWebMouseWheelEventBuilder::Build(
           x, y, x, y, delta_x, delta_y, 0,
-          ui::input_types::ScrollGranularity::kScrollByPrecisePixel);
+          ui::ScrollGranularity::kScrollByPrecisePixel);
 
   wheel_event.phase = blink::WebMouseWheelEvent::kPhaseBegan;
   GetRouter()->RouteMouseWheelEvent(GetRootView(), &wheel_event,
@@ -222,7 +222,7 @@ IN_PROC_BROWSER_TEST_F(WheelScrollLatchingBrowserTest,
   blink::WebMouseWheelEvent wheel_event =
       SyntheticWebMouseWheelEventBuilder::Build(
           x, y, x, y, delta_x, delta_y, 0,
-          ui::input_types::ScrollGranularity::kScrollByPrecisePixel);
+          ui::ScrollGranularity::kScrollByPrecisePixel);
   wheel_event.phase = blink::WebMouseWheelEvent::kPhaseBegan;
   GetRouter()->RouteMouseWheelEvent(GetRootView(), &wheel_event,
                                     ui::LatencyInfo());
@@ -290,8 +290,8 @@ IN_PROC_BROWSER_TEST_F(WheelScrollLatchingBrowserTest,
       blink::WebInputEvent::GetStaticTimeStampForTests(),
       blink::WebGestureDevice::kTouchpad);
   gesture_scroll_begin.data.scroll_begin.delta_hint_units =
-      precise ? ui::input_types::ScrollGranularity::kScrollByPrecisePixel
-              : ui::input_types::ScrollGranularity::kScrollByPixel;
+      precise ? ui::ScrollGranularity::kScrollByPrecisePixel
+              : ui::ScrollGranularity::kScrollByPixel;
   gesture_scroll_begin.data.scroll_begin.delta_x_hint = 0.f;
   gesture_scroll_begin.data.scroll_begin.delta_y_hint = -20.f;
   gesture_scroll_begin.SetPositionInWidget(gfx::PointF(x, y));
@@ -302,8 +302,8 @@ IN_PROC_BROWSER_TEST_F(WheelScrollLatchingBrowserTest,
   blink::WebGestureEvent gesture_scroll_update(gesture_scroll_begin);
   gesture_scroll_update.SetType(blink::WebGestureEvent::kGestureScrollUpdate);
   gesture_scroll_update.data.scroll_update.delta_units =
-      precise ? ui::input_types::ScrollGranularity::kScrollByPrecisePixel
-              : ui::input_types::ScrollGranularity::kScrollByPixel;
+      precise ? ui::ScrollGranularity::kScrollByPrecisePixel
+              : ui::ScrollGranularity::kScrollByPixel;
   gesture_scroll_update.data.scroll_update.delta_x = 0.f;
   gesture_scroll_update.data.scroll_update.delta_y = -20.f;
   GetRootView()->ProcessGestureEvent(gesture_scroll_update, ui::LatencyInfo());
@@ -381,8 +381,7 @@ IN_PROC_BROWSER_TEST_F(WheelScrollLatchingBrowserTest,
       GetWidgetHost(), blink::WebInputEvent::kMouseWheel);
   blink::WebMouseWheelEvent wheel_event =
       SyntheticWebMouseWheelEventBuilder::Build(
-          x, y, x, y, 1, 1, 0,
-          ui::input_types::ScrollGranularity::kScrollByPrecisePixel);
+          x, y, x, y, 1, 1, 0, ui::ScrollGranularity::kScrollByPrecisePixel);
   wheel_event.phase = blink::WebMouseWheelEvent::kPhaseBegan;
   GetRouter()->RouteMouseWheelEvent(GetRootView(), &wheel_event,
                                     ui::LatencyInfo());

@@ -49,7 +49,7 @@ class CC_EXPORT ScrollStateData {
   bool is_direct_manipulation;
 
   // Granularity units for the scroll delta.
-  ui::input_types::ScrollGranularity delta_granularity;
+  ui::ScrollGranularity delta_granularity;
 
   // TODO(tdresser): ScrollState shouldn't need to keep track of whether or not
   // this ScrollState object has caused a scroll. Ideally, any native scroller

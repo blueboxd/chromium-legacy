@@ -425,9 +425,8 @@ void RemoteFrame::SetNeedsOcclusionTracking(bool needs_tracking) {
   View()->SetNeedsOcclusionTracking(needs_tracking);
 }
 
-void RemoteFrame::BubbleLogicalScroll(
-    mojom::blink::ScrollDirection direction,
-    ui::input_types::ScrollGranularity granularity) {
+void RemoteFrame::BubbleLogicalScroll(mojom::blink::ScrollDirection direction,
+                                      ui::ScrollGranularity granularity) {
   Frame* parent_frame = Client()->Parent();
   DCHECK(parent_frame);
   DCHECK(parent_frame->IsLocalFrame());

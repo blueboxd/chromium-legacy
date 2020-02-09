@@ -819,7 +819,7 @@ InputHandlerProxy::EventDisposition InputHandlerProxy::HandleGestureScrollBegin(
         cc::ElementId(element_id_type));
   }
   if (gesture_event.data.scroll_begin.delta_hint_units ==
-      ui::input_types::ScrollGranularity::kScrollByPage) {
+      ui::ScrollGranularity::kScrollByPage) {
     scroll_status.thread = cc::InputHandler::SCROLL_ON_MAIN_THREAD;
     scroll_status.main_thread_scrolling_reasons =
         cc::MainThreadScrollingReason::kContinuingMainThreadScroll;

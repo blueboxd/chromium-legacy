@@ -66,7 +66,7 @@ class CONTENT_EXPORT RenderWidgetInputHandler {
 
   void InjectGestureScrollEvent(blink::WebGestureDevice device,
                                 const gfx::Vector2dF& delta,
-                                ui::input_types::ScrollGranularity granularity,
+                                ui::ScrollGranularity granularity,
                                 cc::ElementId scrollable_area_element_id,
                                 blink::WebInputEvent::Type injected_type);
 
@@ -88,7 +88,7 @@ class CONTENT_EXPORT RenderWidgetInputHandler {
   struct InjectScrollGestureParams {
     blink::WebGestureDevice device;
     gfx::Vector2dF scroll_delta;
-    ui::input_types::ScrollGranularity granularity;
+    ui::ScrollGranularity granularity;
     cc::ElementId scrollable_area_element_id;
     blink::WebInputEvent::Type type;
   };

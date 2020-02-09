@@ -271,8 +271,7 @@ IN_PROC_BROWSER_TEST_F(AutoscrollBrowserTest,
       GetWidgetHost()->render_frame_metadata_provider());
   blink::WebMouseWheelEvent wheel_event =
       SyntheticWebMouseWheelEventBuilder::Build(
-          10, 10, 0, -53, 0,
-          ui::input_types::ScrollGranularity::kScrollByPrecisePixel);
+          10, 10, 0, -53, 0, ui::ScrollGranularity::kScrollByPrecisePixel);
   wheel_event.phase = blink::WebMouseWheelEvent::kPhaseBegan;
   GetWidgetHost()->ForwardWheelEvent(wheel_event);
   WaitForScroll(observer);
@@ -292,8 +291,7 @@ IN_PROC_BROWSER_TEST_F(AutoscrollBrowserTest,
       GetWidgetHost()->render_frame_metadata_provider());
   blink::WebMouseWheelEvent wheel_event =
       SyntheticWebMouseWheelEventBuilder::Build(
-          10, 10, 0, -53, 0,
-          ui::input_types::ScrollGranularity::kScrollByPrecisePixel);
+          10, 10, 0, -53, 0, ui::ScrollGranularity::kScrollByPrecisePixel);
   wheel_event.phase = blink::WebMouseWheelEvent::kPhaseBegan;
   GetWidgetHost()->ForwardWheelEvent(wheel_event);
 

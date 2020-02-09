@@ -109,9 +109,8 @@ class CORE_EXPORT RemoteFrame final : public Frame,
   void Focus() override;
   void SetHadStickyUserActivationBeforeNavigation(bool value) override;
   void SetNeedsOcclusionTracking(bool needs_tracking) override;
-  void BubbleLogicalScroll(
-      mojom::blink::ScrollDirection direction,
-      ui::input_types::ScrollGranularity granularity) override;
+  void BubbleLogicalScroll(mojom::blink::ScrollDirection direction,
+                           ui::ScrollGranularity granularity) override;
   void UpdateUserActivationState(
       mojom::blink::UserActivationUpdateType) override;
   void SetEmbeddingToken(

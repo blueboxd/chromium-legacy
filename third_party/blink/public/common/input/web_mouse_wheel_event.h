@@ -80,8 +80,7 @@ class BLINK_COMMON_EXPORT WebMouseWheelEvent : public WebMouseEvent {
   // kScrollByPrecisePixel, kScrollByPixel, and kScrollByPage, as they are
   // the only values expected after converting an OS event to a
   // WebMouseWheelEvent.
-  ui::input_types::ScrollGranularity delta_units =
-      ui::input_types::ScrollGranularity::kScrollByPixel;
+  ui::ScrollGranularity delta_units = ui::ScrollGranularity::kScrollByPixel;
 
   WebMouseWheelEvent(Type type, int modifiers, base::TimeTicks time_stamp)
       : WebMouseEvent(type, modifiers, time_stamp, kMousePointerId) {}

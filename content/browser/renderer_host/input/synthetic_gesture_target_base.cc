@@ -67,8 +67,7 @@ void SyntheticGestureTargetBase::DispatchInputEventToPlatform(
       LOG(WARNING) << "Mouse wheel position is not within content bounds.";
       return;
     }
-    if (web_wheel.delta_units !=
-        ui::input_types::ScrollGranularity::kScrollByPercentage)
+    if (web_wheel.delta_units != ui::ScrollGranularity::kScrollByPercentage)
       DispatchWebMouseWheelEventToPlatform(web_wheel, latency_info);
     else {
       // Percentage-based mouse wheel scrolls are implemented in the UI layer by

@@ -205,7 +205,7 @@ class MockMoveGestureTarget : public MockSyntheticGestureTarget {
  public:
   MockMoveGestureTarget()
       : total_abs_move_distance_length_(0),
-        granularity_(ui::input_types::ScrollGranularity::kScrollByPixel) {}
+        granularity_(ui::ScrollGranularity::kScrollByPixel) {}
   ~MockMoveGestureTarget() override {}
 
   gfx::Vector2dF start_to_end_distance() const {
@@ -215,14 +215,12 @@ class MockMoveGestureTarget : public MockSyntheticGestureTarget {
     return total_abs_move_distance_length_;
   }
 
-  ui::input_types::ScrollGranularity granularity() const {
-    return granularity_;
-  }
+  ui::ScrollGranularity granularity() const { return granularity_; }
 
  protected:
   gfx::Vector2dF start_to_end_distance_;
   float total_abs_move_distance_length_;
-  ui::input_types::ScrollGranularity granularity_;
+  ui::ScrollGranularity granularity_;
 };
 
 class MockScrollMouseTarget : public MockMoveGestureTarget {
@@ -1280,8 +1278,7 @@ TEST_F(SyntheticGestureControllerTest, SingleScrollGestureMousePreciseScroll) {
   params.input_type = SyntheticSmoothMoveGestureParams::MOUSE_WHEEL_INPUT;
   params.start_point.SetPoint(39, 86);
   params.distances.push_back(gfx::Vector2d(0, -132));
-  params.granularity =
-      ui::input_types::ScrollGranularity::kScrollByPrecisePixel;
+  params.granularity = ui::ScrollGranularity::kScrollByPrecisePixel;
 
   std::unique_ptr<SyntheticSmoothMoveGesture> gesture(
       new SyntheticSmoothMoveGesture(params));
@@ -1302,7 +1299,7 @@ TEST_F(SyntheticGestureControllerTest, SingleScrollGestureMouseScrollByPage) {
   params.input_type = SyntheticSmoothMoveGestureParams::MOUSE_WHEEL_INPUT;
   params.start_point.SetPoint(39, 86);
   params.distances.push_back(gfx::Vector2d(0, -132));
-  params.granularity = ui::input_types::ScrollGranularity::kScrollByPage;
+  params.granularity = ui::ScrollGranularity::kScrollByPage;
 
   std::unique_ptr<SyntheticSmoothMoveGesture> gesture(
       new SyntheticSmoothMoveGesture(params));

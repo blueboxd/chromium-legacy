@@ -1354,7 +1354,7 @@ class CONTENT_EXPORT RenderFrameHostImpl
       blink::mojom::ScrollIntoViewParamsPtr params) override;
   void BubbleLogicalScrollInParentFrame(
       blink::mojom::ScrollDirection direction,
-      ui::input_types::ScrollGranularity granularity) override;
+      ui::ScrollGranularity granularity) override;
   void DidAccessInitialDocument() override;
   void DidBlockNavigation(
       const GURL& blocked_url,

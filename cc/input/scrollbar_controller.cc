@@ -187,18 +187,18 @@ bool ScrollbarController::SnapToDragOrigin(
          pointer_location > gutter_max_bound;
 }
 
-ui::input_types::ScrollGranularity ScrollbarController::Granularity(
+ui::ScrollGranularity ScrollbarController::Granularity(
     const ScrollbarPart scrollbar_part,
     const bool shift_modifier) {
   const bool shift_click_on_scrollbar_track =
       shift_modifier && (scrollbar_part == ScrollbarPart::FORWARD_TRACK ||
                          scrollbar_part == ScrollbarPart::BACK_TRACK);
   if (shift_click_on_scrollbar_track || scrollbar_part == ScrollbarPart::THUMB)
-    return ui::input_types::ScrollGranularity::kScrollByPrecisePixel;
+    return ui::ScrollGranularity::kScrollByPrecisePixel;
 
   // TODO(arakeri): This needs to be updated to kLine once cc implements
   // handling it. crbug.com/959441
-  return ui::input_types::ScrollGranularity::kScrollByPixel;
+  return ui::ScrollGranularity::kScrollByPixel;
 }
 
 float ScrollbarController::GetScrollDeltaForAbsoluteJump(
@@ -346,8 +346,7 @@ InputHandlerPointerResult ScrollbarController::HandlePointerMove(
 
   // Thumb drags have more granularity and are purely dependent on the pointer
   // movement. Hence we use kPrecisePixel when dragging the thumb.
-  scroll_result.scroll_units =
-      ui::input_types::ScrollGranularity::kScrollByPrecisePixel;
+  scroll_result.scroll_units = ui::ScrollGranularity::kScrollByPrecisePixel;
   scroll_result.scroll_offset = gfx::ScrollOffset(clamped_scroll_offset);
   drag_processed_for_current_frame_ = true;
 

@@ -39,7 +39,7 @@ class CONTENT_EXPORT SyntheticSmoothMoveGestureParams {
   int fling_velocity_y;
   bool prevent_fling;
   bool add_slop;
-  ui::input_types::ScrollGranularity granularity;
+  ui::ScrollGranularity granularity;
 };
 
 // This class is used as helper class for simulation of scroll and drag.

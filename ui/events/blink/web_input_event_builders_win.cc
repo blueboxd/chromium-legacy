@@ -232,11 +232,11 @@ WebMouseWheelEvent WebMouseWheelEventBuilder::Build(
         break;
       case SB_PAGEUP:
         wheel_delta = 1;
-        result.delta_units = ui::input_types::ScrollGranularity::kScrollByPage;
+        result.delta_units = ui::ScrollGranularity::kScrollByPage;
         break;
       case SB_PAGEDOWN:
         wheel_delta = -1;
-        result.delta_units = ui::input_types::ScrollGranularity::kScrollByPage;
+        result.delta_units = ui::ScrollGranularity::kScrollByPage;
         break;
       default:  // We don't supoprt SB_THUMBPOSITION or SB_THUMBTRACK here.
         wheel_delta = 0;
@@ -294,20 +294,19 @@ WebMouseWheelEvent WebMouseWheelEventBuilder::Build(
     unsigned long scroll_lines = kDefaultScrollLinesPerWheelDelta;
     SystemParametersInfo(SPI_GETWHEELSCROLLLINES, 0, &scroll_lines, 0);
     if (scroll_lines == WHEEL_PAGESCROLL)
-      result.delta_units = ui::input_types::ScrollGranularity::kScrollByPage;
+      result.delta_units = ui::ScrollGranularity::kScrollByPage;
     else
       scroll_delta *= static_cast<float>(scroll_lines);
   }
 
-  if (result.delta_units != ui::input_types::ScrollGranularity::kScrollByPage) {
+  if (result.delta_units != ui::ScrollGranularity::kScrollByPage) {
     if (base::FeatureList::IsEnabled(features::kPercentBasedScrolling)) {
       // If percent-based scrolling is enabled, the scroll_delta represents
       // the percentage amount (out of 1, i.e. 1 == 100%) the targeted scroller
       // should scroll. This percentage will be resolved against the size of
       // the scroller in the renderer process.
       scroll_delta *= kScrollPercentPerLineOrChar / 100.f;
-      result.delta_units =
-          ui::input_types::ScrollGranularity::kScrollByPercentage;
+      result.delta_units = ui::ScrollGranularity::kScrollByPercentage;
     } else {
       // Convert wheel delta amount to a number of pixels to scroll.
       //

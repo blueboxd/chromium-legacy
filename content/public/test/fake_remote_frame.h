@@ -52,9 +52,8 @@ class FakeRemoteFrame : public blink::mojom::RemoteFrame {
   void Focus() override;
   void SetHadStickyUserActivationBeforeNavigation(bool value) override;
   void SetNeedsOcclusionTracking(bool needs_tracking) override;
-  void BubbleLogicalScroll(
-      blink::mojom::ScrollDirection direction,
-      ui::input_types::ScrollGranularity granularity) override;
+  void BubbleLogicalScroll(blink::mojom::ScrollDirection direction,
+                           ui::ScrollGranularity granularity) override;
   void UpdateUserActivationState(
       blink::mojom::UserActivationUpdateType) override;
   void SetEmbeddingToken(

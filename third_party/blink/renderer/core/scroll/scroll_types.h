@@ -50,7 +50,7 @@ inline ScrollOffset ToScrollOffset(const gfx::PointF& p) {
   return ScrollOffset(p.x(), p.y());
 }
 
-using ui::input_types::ScrollGranularity;
+using ui::ScrollGranularity;
 
 enum ScrollDirectionPhysical {
   kScrollUp,

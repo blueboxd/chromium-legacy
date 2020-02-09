@@ -2890,8 +2890,7 @@ TEST_F(WebContentsImplTest, HandleWheelEvent) {
   int modifiers = 0;
   // Verify that normal mouse wheel events do nothing to change the zoom level.
   blink::WebMouseWheelEvent event = SyntheticWebMouseWheelEventBuilder::Build(
-      0, 0, 0, 1, modifiers,
-      ui::input_types::ScrollGranularity::kScrollByPixel);
+      0, 0, 0, 1, modifiers, ui::ScrollGranularity::kScrollByPixel);
   EXPECT_FALSE(contents()->HandleWheelEvent(event));
   EXPECT_EQ(0, delegate->GetAndResetContentsZoomChangedCallCount());
 
@@ -2900,8 +2899,7 @@ TEST_F(WebContentsImplTest, HandleWheelEvent) {
   // with mousewheel.
   modifiers = WebInputEvent::kControlKey;
   event = SyntheticWebMouseWheelEventBuilder::Build(
-      0, 0, 0, 1, modifiers,
-      ui::input_types::ScrollGranularity::kScrollByPixel);
+      0, 0, 0, 1, modifiers, ui::ScrollGranularity::kScrollByPixel);
   bool handled = contents()->HandleWheelEvent(event);
 #if defined(USE_AURA)
   EXPECT_TRUE(handled);
@@ -2915,8 +2913,7 @@ TEST_F(WebContentsImplTest, HandleWheelEvent) {
   modifiers = WebInputEvent::kControlKey | WebInputEvent::kShiftKey |
               WebInputEvent::kAltKey;
   event = SyntheticWebMouseWheelEventBuilder::Build(
-      0, 0, 2, -5, modifiers,
-      ui::input_types::ScrollGranularity::kScrollByPixel);
+      0, 0, 2, -5, modifiers, ui::ScrollGranularity::kScrollByPixel);
   handled = contents()->HandleWheelEvent(event);
 #if defined(USE_AURA)
   EXPECT_TRUE(handled);
@@ -2929,8 +2926,7 @@ TEST_F(WebContentsImplTest, HandleWheelEvent) {
 
   // Unless there is no vertical movement.
   event = SyntheticWebMouseWheelEventBuilder::Build(
-      0, 0, 2, 0, modifiers,
-      ui::input_types::ScrollGranularity::kScrollByPixel);
+      0, 0, 2, 0, modifiers, ui::ScrollGranularity::kScrollByPixel);
   EXPECT_FALSE(contents()->HandleWheelEvent(event));
   EXPECT_EQ(0, delegate->GetAndResetContentsZoomChangedCallCount());
 
@@ -2939,8 +2935,7 @@ TEST_F(WebContentsImplTest, HandleWheelEvent) {
   // two-finger-scrolling on a touchpad.
   modifiers = WebInputEvent::kControlKey;
   event = SyntheticWebMouseWheelEventBuilder::Build(
-      0, 0, 0, 5, modifiers,
-      ui::input_types::ScrollGranularity::kScrollByPrecisePixel);
+      0, 0, 0, 5, modifiers, ui::ScrollGranularity::kScrollByPrecisePixel);
   EXPECT_FALSE(contents()->HandleWheelEvent(event));
   EXPECT_EQ(0, delegate->GetAndResetContentsZoomChangedCallCount());
 

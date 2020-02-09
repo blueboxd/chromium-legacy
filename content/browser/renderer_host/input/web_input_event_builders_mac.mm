@@ -555,8 +555,7 @@ blink::WebMouseWheelEvent WebMouseWheelEventBuilder::Build(
   // from data from any other continuous device.
 
   if (CGEventGetIntegerValueField(cg_event, kCGScrollWheelEventIsContinuous)) {
-    result.delta_units =
-        ui::input_types::ScrollGranularity::kScrollByPrecisePixel;
+    result.delta_units = ui::ScrollGranularity::kScrollByPrecisePixel;
     result.delta_x = CGEventGetIntegerValueField(
         cg_event, kCGScrollWheelEventPointDeltaAxis2);
     result.delta_y = CGEventGetIntegerValueField(

@@ -31,7 +31,7 @@ struct CONTENT_EXPORT SyntheticSmoothScrollGestureParams
   float speed_in_pixels_s;
   float fling_velocity_x;
   float fling_velocity_y;
-  ui::input_types::ScrollGranularity granularity;
+  ui::ScrollGranularity granularity;
 
   static const SyntheticSmoothScrollGestureParams* Cast(
       const SyntheticGestureParams* gesture_params);

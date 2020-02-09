@@ -47,7 +47,7 @@ SyntheticSmoothMoveGestureParams::SyntheticSmoothMoveGestureParams()
       fling_velocity_y(0),
       prevent_fling(true),
       add_slop(true),
-      granularity(ui::input_types::ScrollGranularity::kScrollByPixel) {}
+      granularity(ui::ScrollGranularity::kScrollByPixel) {}
 
 SyntheticSmoothMoveGestureParams::SyntheticSmoothMoveGestureParams(
     const SyntheticSmoothMoveGestureParams& other) = default;

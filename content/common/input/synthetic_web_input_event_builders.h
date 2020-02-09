@@ -34,22 +34,20 @@ class CONTENT_EXPORT SyntheticWebMouseWheelEventBuilder {
  public:
   static blink::WebMouseWheelEvent Build(
       blink::WebMouseWheelEvent::Phase phase);
-  static blink::WebMouseWheelEvent Build(
-      float x,
-      float y,
-      float dx,
-      float dy,
-      int modifiers,
-      ui::input_types::ScrollGranularity delta_units);
-  static blink::WebMouseWheelEvent Build(
-      float x,
-      float y,
-      float global_x,
-      float global_y,
-      float dx,
-      float dy,
-      int modifiers,
-      ui::input_types::ScrollGranularity delta_units);
+  static blink::WebMouseWheelEvent Build(float x,
+                                         float y,
+                                         float dx,
+                                         float dy,
+                                         int modifiers,
+                                         ui::ScrollGranularity delta_units);
+  static blink::WebMouseWheelEvent Build(float x,
+                                         float y,
+                                         float global_x,
+                                         float global_y,
+                                         float dx,
+                                         float dy,
+                                         int modifiers,
+                                         ui::ScrollGranularity delta_units);
 };
 
 class CONTENT_EXPORT SyntheticWebKeyboardEventBuilder {

@@ -137,4 +137,10 @@ interface UtilWin {
   // is included in the list, in order to preserve privacy.
   GetAntiVirusProducts(bool report_full_names) =>
       (array<AntiVirusProduct> av_products);
+
+  // Records various metrics about the processor.
+  // Note: The service process can terminate as soon as it observes that the
+  // Remote has been destroyed, hence the callback exists so the caller can
+  // know when it's safe to destroy the Remote.
+  RecordProcessorMetrics() => ();
 };

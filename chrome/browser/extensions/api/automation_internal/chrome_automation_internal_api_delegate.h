@@ -27,6 +27,7 @@ class ChromeAutomationInternalApiDelegate
   int GetTabId(content::WebContents* contents) override;
   content::WebContents* GetActiveWebContents(
       ExtensionFunction* function) override;
+  bool EnableTree(const ui::AXTreeID& tree_id) override;
   void EnableDesktop() override;
   ui::AXTreeID GetAXTreeID() override;
   void SetEventBundleSink(ui::AXEventBundleSink* sink) override;

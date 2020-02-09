@@ -52819,6 +52819,17 @@ Called by update_net_trust_anchors.py.-->
   <int value="2011028983" label="pcman.exe"/>
 </enum>
 
+<enum name="ProcessorFamily">
+<!-- These are the first three values from a very long list of values.
+The Full list of enums is in section 7.5.2 in the SMBios spec.
+https://www.dmtf.org/sites/default/files/standards/documents/DSP0134_2.7.1.pdf
+-->
+
+  <int value="0" label="Error"/>
+  <int value="1" label="Other"/>
+  <int value="2" label="Unknown"/>
+</enum>
+
 <enum name="ProcessType">
   <obsolete>
     Deprecated 3/2013. No longer generated.

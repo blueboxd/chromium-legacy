@@ -17,6 +17,7 @@
 #include "components/arc/test/connection_holder_util.h"
 #include "components/arc/test/fake_accessibility_helper_instance.h"
 #include "components/exo/shell_surface.h"
+#include "components/exo/shell_surface_util.h"
 #include "components/exo/test/exo_test_helper.h"
 #include "components/exo/wm_helper.h"
 #include "components/exo/wm_helper_chromeos.h"
@@ -78,6 +79,14 @@ IN_PROC_BROWSER_TEST_F(ArcAccessibilityHelperBridgeBrowserTest,
   exo::test::ExoTestWindow test_window_2 =
       exo_test_helper.CreateWindow(640, 480, false /* is_modal */);
 
+  // Forcefully set task_id to each window.
+  exo::SetShellApplicationId(
+      test_window_1.shell_surface()->GetWidget()->GetNativeWindow(),
+      "org.chromium.arc.1");
+  exo::SetShellApplicationId(
+      test_window_2.shell_surface()->GetWidget()->GetNativeWindow(),
+      "org.chromium.arc.2");
+
   wm::ActivationClient* activation_client =
       ash::Shell::Get()->activation_client();
   activation_client->ActivateWindow(
@@ -103,26 +112,38 @@ IN_PROC_BROWSER_TEST_F(ArcAccessibilityHelperBridgeBrowserTest,
   EXPECT_EQ(mojom::AccessibilityFilterType::ALL,
             fake_accessibility_helper_instance_->filter_type());
 
-  // Touch exploration pass through of test_window_1 (current active window)
-  // would become true as no accessibility tree is available for it. Note that
-  // this value should be set to true in this test even for filter type ALL case
-  // as we are not a dispatching accessibility event in this test case.
+  // Use ChromeVox by default. Touch exploration pass through is still false.
+  EXPECT_FALSE(
+      test_window_1.shell_surface()
+          ->GetWidget()
+          ->GetNativeWindow()
+          ->GetProperty(
+              aura::client::kAccessibilityTouchExplorationPassThrough));
+
+  ArcAccessibilityHelperBridge* bridge =
+      ArcAccessibilityHelperBridge::GetForBrowserContext(browser()->profile());
+
+  // Enable TalkBack. Touch exploration pass through of test_window_1
+  // (current active window) would become true.
+  bridge->SetNativeChromeVoxArcSupport(false);
+
   EXPECT_TRUE(test_window_1.shell_surface()
                   ->GetWidget()
                   ->GetNativeWindow()
                   ->GetProperty(
                       aura::client::kAccessibilityTouchExplorationPassThrough));
 
-  // Activate test_window_2 and confirm that it also becomes true.
+  // Activate test_window_2 and confirm that it still be false.
   activation_client->ActivateWindow(
       test_window_2.shell_surface()->GetWidget()->GetNativeWindow());
   ASSERT_EQ(test_window_2.shell_surface()->GetWidget()->GetNativeWindow(),
             activation_client->GetActiveWindow());
-  EXPECT_TRUE(test_window_2.shell_surface()
-                  ->GetWidget()
-                  ->GetNativeWindow()
-                  ->GetProperty(
-                      aura::client::kAccessibilityTouchExplorationPassThrough));
+  EXPECT_FALSE(
+      test_window_2.shell_surface()
+          ->GetWidget()
+          ->GetNativeWindow()
+          ->GetProperty(
+              aura::client::kAccessibilityTouchExplorationPassThrough));
 
   EXPECT_TRUE(fake_accessibility_helper_instance_->explore_by_touch_enabled());
 }

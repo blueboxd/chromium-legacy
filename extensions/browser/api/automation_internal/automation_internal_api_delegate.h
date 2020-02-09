@@ -53,6 +53,9 @@ class AutomationInternalApiDelegate {
   // Retrieves the active web contents.
   virtual content::WebContents* GetActiveWebContents(
       ExtensionFunction* function) = 0;
+  // Enable automation nodes on the specified ax tree. Returns true if the
+  // request is handled in the delegation.
+  virtual bool EnableTree(const ui::AXTreeID& tree_id) = 0;
   // Starts managing automation nodes on the desktop.
   virtual void EnableDesktop() = 0;
   // Gets the ax tree id for the nodes being managed for the desktop.

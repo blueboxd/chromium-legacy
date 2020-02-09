@@ -35,7 +35,7 @@ include_rules = [
 specific_include_rules = {
     ".*test.*": [
         "+base/run_loop.h",
-        "+base/test/bind_test_util.h",
+        "+base/test/scoped_run_loop_timeout.h",
         "+base/test/test_timeouts.h",
         "+base/threading/thread.h",
         "+media/audio/audio_sink_parameters.h",

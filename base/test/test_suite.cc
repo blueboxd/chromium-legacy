@@ -37,6 +37,7 @@
 #include "base/test/mock_entropy_provider.h"
 #include "base/test/multiprocess_test.h"
 #include "base/test/scoped_feature_list.h"
+#include "base/test/scoped_run_loop_timeout.h"
 #include "base/test/test_switches.h"
 #include "base/test/test_timeouts.h"
 #include "base/threading/platform_thread.h"
@@ -579,6 +580,8 @@ void TestSuite::SuppressErrorDialogs() {
 
 void TestSuite::Initialize() {
   DCHECK(!is_initialized_);
+
+  test::ScopedRunLoopTimeout::SetAddGTestFailureOnTimeout();
 
   const CommandLine* command_line = CommandLine::ForCurrentProcess();
 #if !defined(OS_IOS)

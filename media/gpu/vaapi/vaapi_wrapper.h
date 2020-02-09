@@ -228,7 +228,7 @@ class MEDIA_GPU_EXPORT VaapiWrapper
       const base::Optional<gfx::Size>& visible_size = base::nullopt);
 
   // Releases the |va_surfaces| and destroys |va_context_id_|.
-  virtual void DestroyContextAndSurfaces(std::vector<VASurfaceID> va_surfaces);
+  void DestroyContextAndSurfaces(std::vector<VASurfaceID> va_surfaces);
 
   // Creates a VA Context of |size| and sets |va_context_id_|. In the case of a
   // VPP VaapiWrapper, |size| is ignored and 0x0 is used to create the context.
@@ -237,7 +237,7 @@ class MEDIA_GPU_EXPORT VaapiWrapper
   virtual bool CreateContext(const gfx::Size& size);
 
   // Destroys the context identified by |va_context_id_|.
-  void DestroyContext();
+  virtual void DestroyContext();
 
   // Requests a VA surface of size |size| and |va_rt_format|. Returns a
   // self-cleaning ScopedVASurface or nullptr if creation failed. If
@@ -389,7 +389,7 @@ class MEDIA_GPU_EXPORT VaapiWrapper
 
   // vaDestroySurfaces() a vector or a single VASurfaceID.
   void DestroySurfaces(std::vector<VASurfaceID> va_surfaces);
-  void DestroySurface(VASurfaceID va_surface_id);
+  virtual void DestroySurface(VASurfaceID va_surface_id);
 
  protected:
   VaapiWrapper(CodecMode mode);

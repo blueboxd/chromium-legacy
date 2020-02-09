@@ -6273,9 +6273,6 @@ crbug.com/webrtc/11228 virtual/webrtc-wpt-plan-b/external/wpt/webrtc/RTCPeerConn
 # Sheriff 2020-01-09
 crbug.com/1040270 http/tests/devtools/elements/styles-1/disable-property-workingcopy-update.js [ Pass Timeout ]
 
-# Temporarily disabled to land Animations accessibility changes in DevTools
-crbug.com/963183 http/tests/devtools/animation/animation-timeline.js [ Pass Failure Timeout ]
-
 # Popup and no-opener may crash WPTs: crrev.com/c/1984306
 crbug.com/1040059 external/wpt/html/cross-origin-opener-policy/iframe-popup-same-origin-to-unsafe-none.https.html [ Pass Crash ]
 crbug.com/1040059 external/wpt/html/cross-origin-opener-policy/iframe-popup-same-origin-to-same-origin.https.html [ Pass Crash ]

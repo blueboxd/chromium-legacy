@@ -380,22 +380,11 @@ TaskEnvironment::TaskEnvironment(
       scoped_lazy_task_runner_list_for_testing_(
           std::make_unique<internal::ScopedLazyTaskRunnerListForTesting>()),
       // TODO(https://crbug.com/922098): Enable Run() timeouts even for
-      // instances created with *MOCK_TIME.
-      run_loop_timeout_(
-          mock_time_domain_
-              ? nullptr
-              : std::make_unique<RunLoop::ScopedRunTimeoutForTest>(
-                    TestTimeouts::action_timeout(),
-                    BindRepeating(
-                        [](sequence_manager::SequenceManager*
-                               sequence_manager) {
-                          ADD_FAILURE()
-                              << "RunLoop::Run() timed out with the following "
-                                 "pending task(s) in its TaskEnvironment's "
-                                 "main thread queue:\n"
-                              << sequence_manager->DescribeAllPendingTasks();
-                        },
-                        Unretained(sequence_manager_.get())))) {
+      // instances created with TimeSource::MOCK_TIME.
+      run_loop_timeout_(mock_time_domain_
+                            ? nullptr
+                            : std::make_unique<ScopedRunLoopTimeout>(
+                                  TestTimeouts::action_timeout())) {
   CHECK(!base::ThreadTaskRunnerHandle::IsSet());
   // If |subclass_creates_default_taskrunner| is true then initialization is
   // deferred until DeferredInitFromSubclass().

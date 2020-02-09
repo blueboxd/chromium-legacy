@@ -105,6 +105,8 @@ class MEDIA_GPU_EXPORT VaapiVideoDecodeAccelerator
 
   // An input buffer with id provided by the client and awaiting consumption.
   class InputBuffer;
+  // A self-cleaning VASurfaceID.
+  class ScopedVASurfaceID;
 
   // Notify the client that an error has occurred and decoding cannot continue.
   void NotifyError(Error error);
@@ -174,10 +176,11 @@ class MEDIA_GPU_EXPORT VaapiVideoDecodeAccelerator
   // Try to OutputPicture() if we have both a ready surface and picture.
   void TryOutputPicture();
 
-  // Called when a VASurface is no longer in use by the decoder or is not being
-  // synced/waiting to be synced to a picture. Returns it to the
-  // |available_va_surfaces_|
-  void RecycleVASurfaceID(VASurfaceID va_surface_id);
+  // Called when a VASurface is no longer in use by |decoder_| nor |client_|.
+  // Returns it to |available_va_surfaces_|. |va_surface_id| is not used but it
+  // must be here to bind this method as VASurface::ReleaseCB.
+  void RecycleVASurface(std::unique_ptr<ScopedVASurfaceID> va_surface,
+                        VASurfaceID va_surface_id);
 
   // Request a new set of |num_pics| PictureBuffers to be allocated by
   // |client_|. Up to |num_reference_frames| out of |num_pics_| might be needed
@@ -268,9 +271,10 @@ class MEDIA_GPU_EXPORT VaapiVideoDecodeAccelerator
   // OutputPicture() (|client_| returns them via ReusePictureBuffer()).
   std::list<int32_t> available_picture_buffers_ GUARDED_BY(lock_);
 
-  // VASurfaceIDs no longer in use that can be passed back to |decoder_| for
-  // reuse, once it requests them.
-  std::list<VASurfaceID> available_va_surfaces_ GUARDED_BY(lock_);
+  // VASurfaces available and that can be passed to |decoder_| for its use upon
+  // CreateSurface() request (and then returned via RecycleVASurface()).
+  std::list<std::unique_ptr<ScopedVASurfaceID>> available_va_surfaces_
+      GUARDED_BY(lock_);
   // Signalled when output surfaces are queued into |available_va_surfaces_|.
   base::ConditionVariable surfaces_available_;
   // VASurfaceIDs format, filled in when created.
@@ -295,8 +299,9 @@ class MEDIA_GPU_EXPORT VaapiVideoDecodeAccelerator
   // decoder thread to the ChildThread should use |weak_this_|.
   base::WeakPtr<VaapiVideoDecodeAccelerator> weak_this_;
 
-  // Callback used when creating VASurface objects. Only used on |task_runner_|.
-  base::RepeatingCallback<void(VASurfaceID)> va_surface_release_cb_;
+  // Callback used to recycle VASurfaces. Only used on |task_runner_|.
+  base::RepeatingCallback<void(std::unique_ptr<ScopedVASurfaceID>, VASurfaceID)>
+      va_surface_recycle_cb_;
 
   // To expose client callbacks from VideoDecodeAccelerator. Used only on
   // |task_runner_|.

@@ -13,7 +13,7 @@
 #include "base/fuchsia/scoped_service_binding.h"
 #include "base/fuchsia/test_interface_impl.h"
 #include "base/fuchsia/testfidl/cpp/fidl.h"
-#include "base/run_loop.h"
+#include "base/test/scoped_run_loop_timeout.h"
 #include "base/test/task_environment.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -29,7 +29,7 @@ class ServiceDirectoryTestBase : public testing::Test {
                            zx_status_t expected_error);
 
  protected:
-  const RunLoop::ScopedRunTimeoutForTest run_timeout_;
+  const test::ScopedRunLoopTimeout run_timeout_;
 
   base::test::SingleThreadTaskEnvironment task_environment_{
       base::test::SingleThreadTaskEnvironment::MainThreadType::IO};

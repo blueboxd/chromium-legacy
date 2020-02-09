@@ -50,8 +50,14 @@ GURL ResourceLoadingHintsAgent::GetDocumentURL() const {
 
 void ResourceLoadingHintsAgent::DidCreateNewDocument() {
   DCHECK(IsMainFrame());
+  did_create_new_document_ = true;
   if (!GetDocumentURL().SchemeIsHTTPOrHTTPS())
     return;
+  if (images_hints_) {
+    subresource_redirect_hints_agent_.SetCompressPublicImagesHints(
+        std::move(images_hints_));
+  }
+
   if (subresource_patterns_to_block_.empty())
     return;
 
@@ -104,8 +110,13 @@ void ResourceLoadingHintsAgent::SetResourceLoadingHints(
 
 void ResourceLoadingHintsAgent::SetCompressPublicImagesHints(
     blink::mojom::CompressPublicImagesHintsPtr images_hints) {
-  subresource_redirect_hints_agent_.SetCompressPublicImagesHints(
-      std::move(images_hints));
+  if (did_create_new_document_) {
+    subresource_redirect_hints_agent_.SetCompressPublicImagesHints(
+        std::move(images_hints));
+  } else {
+    // Let the hints be sent in DidCreateNewDocument.
+    images_hints_ = std::move(images_hints);
+  }
 }
 
 }  // namespace previews

@@ -6,6 +6,7 @@
 #define CHROME_RENDERER_SUBRESOURCE_REDIRECT_SUBRESOURCE_REDIRECT_URL_LOADER_THROTTLE_H_
 
 #include "base/macros.h"
+#include "chrome/renderer/subresource_redirect/subresource_redirect_hints_agent.h"
 #include "third_party/blink/public/common/loader/url_loader_throttle.h"
 
 namespace blink {
@@ -53,10 +54,15 @@ class SubresourceRedirectURLLoaderThrottle : public blink::URLLoaderThrottle {
  private:
   friend class TestSubresourceRedirectURLLoaderThrottle;
 
-  explicit SubresourceRedirectURLLoaderThrottle(int render_frame_id);
+  SubresourceRedirectURLLoaderThrottle(int render_frame_id,
+                                       bool allowed_to_redirect);
 
   // Render frame id to get the hints agent of the render frame.
   const int render_frame_id_;
+
+  // Whether the subresource can be redirected or not and what was the reason if
+  // its not eligible.
+  SubresourceRedirectHintsAgent::RedirectResult redirect_result_;
 
   DISALLOW_COPY_AND_ASSIGN(SubresourceRedirectURLLoaderThrottle);
 };

@@ -559,10 +559,10 @@ void MainControllerAuthenticationServiceDelegate::ClearBrowsingData(
   // before the tabModels can be created.  |self.restoreHelper| must be kept
   // alive until the BVC receives the browser state and tab model.
   BOOL postCrashLaunch = [self mustShowRestoreInfobar];
+  BOOL needRestoration = NO;
   if (postCrashLaunch) {
-    self.restoreHelper =
-        [[CrashRestoreHelper alloc] initWithBrowserState:chromeBrowserState];
-    [self.restoreHelper moveAsideSessionInformation];
+    needRestoration = [CrashRestoreHelper
+        moveAsideSessionInformationForBrowserState:chromeBrowserState];
   }
 
   // Initialize and set the main browser state.
@@ -620,6 +620,13 @@ void MainControllerAuthenticationServiceDelegate::ClearBrowsingData(
   // Ensure the main tab model is created. This also creates the BVC.
   [self.browserViewWrangler createMainBrowser];
 
+  // Only create the restoration helper if the browser state was backed up
+  // successfully.
+  if (needRestoration) {
+    self.restoreHelper =
+        [[CrashRestoreHelper alloc] initWithBrowser:self.mainBrowser];
+  }
+
   // "Low priority" tasks
   [_startupTasks registerForApplicationWillResignActiveNotification];
   [self registerForOrientationChangeNotifications];
@@ -654,11 +661,7 @@ void MainControllerAuthenticationServiceDelegate::ClearBrowsingData(
     // The startup parameters may create new tabs or navigations. If the restore
     // infobar is displayed now, it may be dismissed immediately and the user
     // will never be able to restore the session.
-    TabModel* currentTabModel = [self currentTabModel];
-    [self.restoreHelper
-        showRestoreIfNeededUsingWebState:currentTabModel.webStateList
-                                             ->GetActiveWebState()
-                         sessionRestorer:currentTabModel];
+    [self.restoreHelper showRestorePrompt];
     self.restoreHelper = nil;
   }
 

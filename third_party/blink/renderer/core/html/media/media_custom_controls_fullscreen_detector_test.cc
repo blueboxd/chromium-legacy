@@ -66,48 +66,11 @@ class MediaCustomControlsFullscreenDetectorTest
     return false;
   }
 
-  static bool ComputeIsDominantVideo(const IntRect& target_rect,
-                                     const IntRect& root_rect,
-                                     const IntRect& intersection_rect) {
-    return MediaCustomControlsFullscreenDetector::
-        ComputeIsDominantVideoForTests(target_rect.Size(), root_rect.Size(),
-                                       intersection_rect.Size());
-  }
-
  private:
   std::unique_ptr<DummyPageHolder> page_holder_;
   std::unique_ptr<DummyPageHolder> new_page_holder_;
   Persistent<HTMLVideoElement> video_;
 };
-
-TEST_F(MediaCustomControlsFullscreenDetectorTest, computeIsDominantVideo) {
-  // TestWithParam cannot be applied here as IntRect needs the memory allocator
-  // to be initialized, but the array of parameters is statically initialized,
-  // which is before the memory allocation initialization.
-  VideoTestParam test_params[] = {
-      {"xCompleteFill", {0, 0, 100, 50}, true},
-      {"yCompleteFill", {0, 0, 50, 100}, true},
-      {"xyCompleteFill", {0, 0, 100, 100}, true},
-      {"xIncompleteFillTooSmall", {0, 0, 84, 50}, false},
-      {"yIncompleteFillTooSmall", {0, 0, 50, 84}, false},
-      {"xIncompleteFillJustRight", {0, 0, 86, 50}, true},
-      {"yIncompleteFillJustRight", {0, 0, 50, 86}, true},
-      {"xVisibleProportionTooSmall", {-26, 0, 100, 100}, false},
-      {"yVisibleProportionTooSmall", {0, -26, 100, 100}, false},
-      {"xVisibleProportionJustRight", {-24, 0, 100, 100}, true},
-      {"yVisibleProportionJustRight", {0, -24, 100, 100}, true},
-  };
-
-  IntRect root_rect(0, 0, 100, 100);
-
-  for (const VideoTestParam& test_param : test_params) {
-    const IntRect& target_rect = test_param.target_rect;
-    IntRect intersection_rect = Intersection(target_rect, root_rect);
-    EXPECT_EQ(test_param.expected_result,
-              ComputeIsDominantVideo(target_rect, root_rect, intersection_rect))
-        << test_param.description << " failed";
-  }
-}
 
 TEST_F(MediaCustomControlsFullscreenDetectorTest,
        hasNoListenersBeforeAddingToDocument) {

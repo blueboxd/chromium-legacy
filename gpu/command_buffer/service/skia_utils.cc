@@ -42,9 +42,6 @@ void CleanupAfterSkiaFlush(void* context) {
 template <class T>
 void DeleteSkObject(SharedContextState* context_state, sk_sp<T> sk_object) {
   DCHECK(sk_object && sk_object->unique());
-  if (context_state->context_lost())
-    return;
-
   if (!context_state->GrContextIsVulkan())
     return;
 
@@ -131,10 +128,6 @@ void AddVulkanCleanupTaskForSkiaFlush(
 void DeleteGrBackendTexture(SharedContextState* context_state,
                             GrBackendTexture* backend_texture) {
   DCHECK(backend_texture && backend_texture->isValid());
-
-  if (context_state->context_lost())
-    return;
-
   if (!context_state->GrContextIsVulkan()) {
     context_state->gr_context()->deleteBackendTexture(
         std::move(*backend_texture));
@@ -145,15 +138,13 @@ void DeleteGrBackendTexture(SharedContextState* context_state,
   auto* fence_helper =
       context_state->vk_context_provider()->GetDeviceQueue()->GetFenceHelper();
   fence_helper->EnqueueCleanupTaskForSubmittedWork(base::BindOnce(
-      [](const scoped_refptr<SharedContextState>& context_state,
-         GrBackendTexture backend_texture, gpu::VulkanDeviceQueue* device_queue,
-         bool is_lost) {
-        if (context_state->context_lost())
-          return;
-        context_state->gr_context()->deleteBackendTexture(
-            std::move(backend_texture));
+      [](const sk_sp<GrContext>& gr_context, GrBackendTexture backend_texture,
+         gpu::VulkanDeviceQueue* device_queue, bool is_lost) {
+        // If underlying Vulkan device is destroyed, gr_context should have been
+        // abandoned, the deleteBackendTexture() should be noop.
+        gr_context->deleteBackendTexture(std::move(backend_texture));
       },
-      base::WrapRefCounted(context_state), std::move(*backend_texture)));
+      sk_ref_sp(context_state->gr_context()), std::move(*backend_texture)));
 #endif
 }
 

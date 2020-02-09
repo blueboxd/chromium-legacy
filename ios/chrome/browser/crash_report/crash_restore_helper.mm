@@ -24,11 +24,12 @@
 #include "ios/chrome/browser/infobars/infobar_ios.h"
 #include "ios/chrome/browser/infobars/infobar_manager_impl.h"
 #include "ios/chrome/browser/infobars/infobar_utils.h"
+#import "ios/chrome/browser/main/browser.h"
 #include "ios/chrome/browser/sessions/ios_chrome_tab_restore_service_factory.h"
 #import "ios/chrome/browser/sessions/session_ios.h"
+#import "ios/chrome/browser/sessions/session_restoration_browser_agent.h"
 #import "ios/chrome/browser/sessions/session_service_ios.h"
 #import "ios/chrome/browser/sessions/session_window_ios.h"
-#import "ios/chrome/browser/sessions/session_window_restoring.h"
 #import "ios/chrome/browser/ui/infobars/infobar_feature.h"
 #include "ios/chrome/browser/web_state_list/web_state_list.h"
 #include "ios/chrome/grit/ios_theme_resources.h"
@@ -49,12 +50,13 @@
 // Deletes the session file for the given browser state, optionally backing it
 // up beforehand to |backupFile| if it is not nil.  This method returns YES in
 // case of success, NO otherwise.
-- (BOOL)deleteSessionForBrowserState:(ChromeBrowserState*)browserState
++ (BOOL)deleteSessionForBrowserState:(ChromeBrowserState*)browserState
                           backupFile:(NSString*)file;
 // Returns the path where the sessions for the main browser state are backed up.
-- (NSString*)sessionBackupPath;
++ (NSString*)sessionBackupPath;
 // Restores the sessions after a crash. It should only be called if
-// |moveAsideSessionInformation| was successful.
+// |moveAsideSessionInformation| for the browser state of the current browser
+// was successful.
 - (BOOL)restoreSessionsAfterCrash;
 @end
 
@@ -204,37 +206,30 @@ int SessionCrashedInfoBarDelegate::GetIconId() const {
 }  // namespace
 
 @implementation CrashRestoreHelper {
-  ChromeBrowserState* _browserState;
-  BOOL _needRestoration;
+  Browser* _browser;
   std::unique_ptr<InfoBarManagerObserverBridge> _infoBarBridge;
-  // Object that will handle session restoration.
-  id<SessionWindowRestoring> _restorer;
 
   // Indicate that the session has been restored to tabs or to recently closed
   // and should not be rerestored.
   BOOL _sessionRestored;
 }
 
-- (id)initWithBrowserState:(ChromeBrowserState*)browserState {
+- (instancetype)initWithBrowser:(Browser*)browser {
   if (self = [super init]) {
-    _browserState = browserState;
+    _browser = browser;
   }
   return self;
 }
 
-- (void)showRestoreIfNeededUsingWebState:(web::WebState*)webState
-                         sessionRestorer:(id<SessionWindowRestoring>)restorer {
-  if (!_needRestoration)
-    return;
-
+- (void)showRestorePrompt {
+  // Get the active webState to show the infobar on it.
+  web::WebState* webState = _browser->GetWebStateList()->GetActiveWebState();
   // The last session didn't exit cleanly. Show an infobar to the user so
   // that they can restore if they want. The delegate deletes itself when
   // it is closed.
-
   DCHECK(webState);
   infobars::InfoBarManager* infoBarManager =
       InfoBarManagerImpl::FromWebState(webState);
-  _restorer = restorer;
   SessionCrashedInfoBarDelegate::Create(infoBarManager, self);
   [ConfirmInfobarMetricsRecorder
       recordConfirmInfobarEvent:MobileMessagesConfirmInfobarEvents::Presented
@@ -242,7 +237,7 @@ int SessionCrashedInfoBarDelegate::GetIconId() const {
   _infoBarBridge.reset(new InfoBarManagerObserverBridge(infoBarManager, self));
 }
 
-- (BOOL)deleteSessionForBrowserState:(ChromeBrowserState*)browserState
++ (BOOL)deleteSessionForBrowserState:(ChromeBrowserState*)browserState
                           backupFile:(NSString*)file {
   NSString* stashPath =
       base::SysUTF8ToNSString(browserState->GetStatePath().value());
@@ -282,20 +277,20 @@ int SessionCrashedInfoBarDelegate::GetIconId() const {
   return YES;
 }
 
-- (NSString*)sessionBackupPath {
++ (NSString*)sessionBackupPath {
   NSString* tmpDirectory = NSTemporaryDirectory();
   return [tmpDirectory stringByAppendingPathComponent:@"session.bak"];
 }
 
-- (void)moveAsideSessionInformation {
++ (BOOL)moveAsideSessionInformationForBrowserState:
+    (ChromeBrowserState*)browserState {
   // This may be the first time that the OTR browser state is being accessed, so
   // ensure that the OTR ChromeBrowserState is created first.
   ChromeBrowserState* otrBrowserState =
-      _browserState->GetOffTheRecordChromeBrowserState();
+      browserState->GetOffTheRecordChromeBrowserState();
   [self deleteSessionForBrowserState:otrBrowserState backupFile:nil];
-  _needRestoration =
-      [self deleteSessionForBrowserState:_browserState
-                              backupFile:[self sessionBackupPath]];
+  return [self deleteSessionForBrowserState:browserState
+                                 backupFile:[self sessionBackupPath]];
 }
 
 - (BOOL)restoreSessionsAfterCrash {
@@ -304,14 +299,14 @@ int SessionCrashedInfoBarDelegate::GetIconId() const {
   _infoBarBridge.reset();
 
   SessionIOS* session = [[SessionServiceIOS sharedService]
-      loadSessionFromPath:[self sessionBackupPath]];
+      loadSessionFromPath:[[self class] sessionBackupPath]];
   if (!session)
     return NO;
 
   DCHECK_EQ(session.sessionWindows.count, 1u);
   breakpad_helper::WillStartCrashRestoration();
-  return [_restorer restoreSessionWindow:session.sessionWindows[0]
-                       forInitialRestore:NO];
+  return SessionRestorationBrowserAgent::FromBrowser(_browser)
+      ->RestoreSessionWindow(session.sessionWindows[0]);
 }
 
 - (void)infoBarRemoved:(infobars::InfoBar*)infobar {
@@ -328,7 +323,7 @@ int SessionCrashedInfoBarDelegate::GetIconId() const {
   _sessionRestored = YES;
 
   SessionIOS* session = [[SessionServiceIOS sharedService]
-      loadSessionFromPath:[self sessionBackupPath]];
+      loadSessionFromPath:[[self class] sessionBackupPath]];
   DCHECK_EQ(session.sessionWindows.count, 1u);
 
   NSArray<CRWSessionStorage*>* sessions = session.sessionWindows[0].sessions;
@@ -336,10 +331,11 @@ int SessionCrashedInfoBarDelegate::GetIconId() const {
     return;
 
   sessions::TabRestoreService* const tabRestoreService =
-      IOSChromeTabRestoreServiceFactory::GetForBrowserState(_browserState);
+      IOSChromeTabRestoreServiceFactory::GetForBrowserState(
+          _browser->GetBrowserState());
   tabRestoreService->LoadTabsFromLastSession();
 
-  web::WebState::CreateParams params(_browserState);
+  web::WebState::CreateParams params(_browser->GetBrowserState());
   for (CRWSessionStorage* session in sessions) {
     auto live_tab = std::make_unique<sessions::RestoreIOSLiveTab>(session);
     // Add all tabs at the 0 position as the position is relative to an old

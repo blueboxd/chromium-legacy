@@ -29,19 +29,6 @@ AudibleMetrics* GetAudibleMetrics() {
   return metrics;
 }
 
-void CheckFullscreenDetectionEnabled(WebContents* web_contents) {
-#if defined(OS_ANDROID)
-  DCHECK(web_contents->GetRenderViewHost()
-             ->GetWebkitPreferences()
-             .video_fullscreen_detection_enabled)
-      << "Attempt to use method relying on fullscreen detection while "
-      << "fullscreen detection is disabled.";
-#else   // defined(OS_ANDROID)
-  NOTREACHED() << "Attempt to use method relying on fullscreen detection, "
-               << "which is only enabled on Android.";
-#endif  // defined(OS_ANDROID)
-}
-
 // Returns true if |player_id| exists in |player_map|.
 bool MediaPlayerEntryExists(
     const MediaPlayerId& player_id,
@@ -116,7 +103,6 @@ void MediaWebContentsObserver::MaybeUpdateAudibleState() {
 }
 
 bool MediaWebContentsObserver::HasActiveEffectivelyFullscreenVideo() const {
-  CheckFullscreenDetectionEnabled(web_contents_impl());
   if (!web_contents()->IsFullscreen() || !fullscreen_player_)
     return false;
 
@@ -133,7 +119,6 @@ bool MediaWebContentsObserver::IsPictureInPictureAllowedForFullscreenVideo()
 
 const base::Optional<MediaPlayerId>&
 MediaWebContentsObserver::GetFullscreenVideoMediaPlayerId() const {
-  CheckFullscreenDetectionEnabled(web_contents_impl());
   return fullscreen_player_;
 }
 

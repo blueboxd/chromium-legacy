@@ -26,13 +26,15 @@ import org.chromium.chrome.browser.compositor.scene_layer.SceneLayer;
 import org.chromium.chrome.browser.tabmodel.TabModel;
 import org.chromium.chrome.browser.tabmodel.TabModelSelector;
 import org.chromium.chrome.browser.tabmodel.TabModelUtils;
+import org.chromium.chrome.browser.ui.TabObscuringHandler;
 import org.chromium.ui.base.DeviceFormFactor;
 
 /**
  * A {@link Layout} that shows the tabs as two {@link ListView}s, one for each {@link TabModel} to
  * represent.
  */
-public class OverviewListLayout extends Layout implements AccessibilityTabModelAdapterListener {
+public class OverviewListLayout extends Layout
+        implements AccessibilityTabModelAdapterListener, TabObscuringHandler.Observer {
     private AccessibilityTabModelWrapper mTabModelWrapper;
     private final float mDensity;
     private final BlackHoleEventFilter mBlackHoleEventFilter;
@@ -220,15 +222,11 @@ public class OverviewListLayout extends Layout implements AccessibilityTabModelA
         return mSceneLayer;
     }
 
-    /**
-     * Set whether or not the accessibility tab switcher is visible (from an accessibility
-     * perspective), or whether it is obscured by another view.
-     * @param isVisible Whether or not accessibility tab switcher is visible.
-     */
-    public void updateAccessibilityVisibility(boolean isVisible) {
+    @Override
+    public void updateObscured(boolean isObscured) {
         if (mTabModelWrapper == null) return;
 
-        int importantForAccessibility = isVisible
+        int importantForAccessibility = !isObscured
                 ? View.IMPORTANT_FOR_ACCESSIBILITY_AUTO
                 : View.IMPORTANT_FOR_ACCESSIBILITY_NO_HIDE_DESCENDANTS;
         if (mTabModelWrapper.getImportantForAccessibility() != importantForAccessibility) {

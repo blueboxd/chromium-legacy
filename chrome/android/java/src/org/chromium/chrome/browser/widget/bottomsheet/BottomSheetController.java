@@ -22,6 +22,7 @@ import org.chromium.chrome.browser.lifecycle.Destroyable;
 import org.chromium.chrome.browser.tab.EmptyTabObserver;
 import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.browser.tab.TabObserver;
+import org.chromium.chrome.browser.ui.TabObscuringHandler;
 import org.chromium.chrome.browser.vr.VrModuleProvider;
 import org.chromium.chrome.browser.widget.ScrimView;
 import org.chromium.chrome.browser.widget.ScrimView.ScrimObserver;
@@ -43,31 +44,6 @@ import java.util.PriorityQueue;
  * content was actually shown (see full doc on method).
  */
 public class BottomSheetController implements Destroyable {
-    /**
-     * An interface to pass around the ability to set a view that is obscuring all tabs on the
-     * activity.
-     */
-    public interface ObscuringAllTabsDelegate {
-        /**
-         * Add a view to the set of views that obscure the content of all tabs for
-         * accessibility. As long as this set is nonempty, all tabs should be
-         * hidden from the accessibility tree.
-         *
-         * @param view The view that obscures the contents of all tabs.
-         */
-        void addViewObscuringAllTabs(View view);
-
-        /**
-         * Remove a view that previously obscured the content of all tabs.
-         *
-         * @param view The view that no longer obscures the contents of all tabs.
-         */
-        void removeViewObscuringAllTabs(View view);
-
-        /** @return Whether or not any views obscure all tabs. */
-        boolean isViewObscuringAllTabs();
-    }
-
     /**
      * The base duration of the settling animation of the sheet. 218 ms is a spec for material
      * design (this is the minimum time a user is guaranteed to pay attention to something).
@@ -465,14 +441,14 @@ public class BottomSheetController implements Destroyable {
 
     /**
      * Set whether the bottom sheet is obscuring all tabs.
-     * @param delegate A delegate that provides the functionality of obscuring all tabs.
+     * @param obscuringHandler A handler that provides the functionality of obscuring all tabs.
      * @param isObscuring Whether the bottom sheet is considered to be obscuring.
      */
-    public void setIsObscuringAllTabs(ObscuringAllTabsDelegate delegate, boolean isObscuring) {
+    public void setIsObscuringAllTabs(TabObscuringHandler obscuringHandler, boolean isObscuring) {
         if (isObscuring) {
-            delegate.addViewObscuringAllTabs(mBottomSheet);
+            obscuringHandler.addViewObscuringAllTabs(mBottomSheet);
         } else {
-            delegate.removeViewObscuringAllTabs(mBottomSheet);
+            obscuringHandler.removeViewObscuringAllTabs(mBottomSheet);
         }
     }
 

@@ -2996,8 +2996,7 @@ DXVAVideoDecodeAccelerator::GetPictureBufferMechanism() const {
     return PictureBufferMechanism::COPY_TO_RGB;
   // In Intel platform, VideoProcessor cannot convert P010/P016 into FP16.
   // It works fine dealing P010/P016 with BIND mode.
-  if (support_share_nv12_textures_ ||
-      (decoder_output_p010_or_p016_ && !use_fp16_))
+  if (support_share_nv12_textures_ || decoder_output_p010_or_p016_)
     return PictureBufferMechanism::BIND;
   if (support_delayed_copy_nv12_textures_ && support_copy_nv12_textures_)
     return PictureBufferMechanism::DELAYED_COPY_TO_NV12;

@@ -33,6 +33,7 @@ import org.chromium.chrome.browser.autofill_assistant.user_data.AssistantCollect
 import org.chromium.chrome.browser.autofill_assistant.user_data.AssistantCollectUserDataModel;
 import org.chromium.chrome.browser.compositor.CompositorViewResizer;
 import org.chromium.chrome.browser.tab.TabViewAndroidDelegate;
+import org.chromium.chrome.browser.ui.TabObscuringHandler;
 import org.chromium.chrome.browser.widget.bottomsheet.BottomSheetContent;
 import org.chromium.chrome.browser.widget.bottomsheet.BottomSheetController;
 import org.chromium.chrome.browser.widget.bottomsheet.EmptyBottomSheetObserver;
@@ -81,8 +82,8 @@ class AssistantBottomBarCoordinator
     private int mLastLayoutViewportResizing;
     private int mLastVisualViewportResizing;
 
-    AssistantBottomBarCoordinator(
-            ChromeActivity activity, AssistantModel model, BottomSheetController controller) {
+    AssistantBottomBarCoordinator(ChromeActivity activity, AssistantModel model,
+            BottomSheetController controller, TabObscuringHandler tabObscuringHandler) {
         mModel = model;
         mBottomSheetController = controller;
 
@@ -200,7 +201,7 @@ class AssistantBottomBarCoordinator
                 }
             } else if (AssistantModel.ALLOW_TALKBACK_ON_WEBSITE == propertyKey) {
                 controller.setIsObscuringAllTabs(
-                        activity, !model.get(AssistantModel.ALLOW_TALKBACK_ON_WEBSITE));
+                        tabObscuringHandler, !model.get(AssistantModel.ALLOW_TALKBACK_ON_WEBSITE));
             } else if (AssistantModel.WEB_CONTENTS == propertyKey) {
                 mWebContents = model.get(AssistantModel.WEB_CONTENTS);
             }

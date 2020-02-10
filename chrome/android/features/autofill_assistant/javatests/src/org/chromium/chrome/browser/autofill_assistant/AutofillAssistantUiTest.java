@@ -121,6 +121,7 @@ public class AutofillAssistantUiTest {
         AssistantCoordinator assistantCoordinator = ThreadUtils.runOnUiThreadBlocking(
                 ()
                         -> new AssistantCoordinator(getActivity(), bottomSheetController,
+                                getActivity().getTabObscuringHandler(),
                                 /* overlayCoordinator= */ null));
 
         // Bottom sheet is shown in the BottomSheet when creating the AssistantCoordinator.
@@ -245,6 +246,7 @@ public class AutofillAssistantUiTest {
         AssistantCoordinator assistantCoordinator = ThreadUtils.runOnUiThreadBlocking(
                 ()
                         -> new AssistantCoordinator(getActivity(), bottomSheetController,
+                                getActivity().getTabObscuringHandler(),
                                 /* overlayCoordinator= */ null));
 
         // Bottom sheet is shown in the BottomSheet when creating the AssistantCoordinator.

@@ -80,7 +80,7 @@ class CORE_EXPORT HTMLSelectElement final
   unsigned ListBoxSize() const;
   bool IsMultiple() const { return is_multiple_; }
 
-  bool UsesMenuList() const;
+  bool UsesMenuList() const { return uses_menu_list_; }
 
   void add(const HTMLOptionElementOrHTMLOptGroupElement&,
            const HTMLElementOrLong&,
@@ -305,6 +305,7 @@ class CORE_EXPORT HTMLSelectElement final
   void ObserveTreeMutation();
   void UnobserveTreeMutation();
 
+  void UpdateUsesMenuList();
   // Apply changes to rendering as a result of attribute changes (multiple,
   // size).
   void ChangeRendering();
@@ -324,6 +325,7 @@ class CORE_EXPORT HTMLSelectElement final
   Member<HTMLOptionElement> suggested_option_;
   scoped_refptr<const ComputedStyle> option_style_;
   int ax_menulist_last_active_index_ = -1;
+  bool uses_menu_list_ = true;
   bool has_updated_menulist_active_option_ = false;
   bool is_multiple_;
   bool is_in_non_contiguous_selection_;

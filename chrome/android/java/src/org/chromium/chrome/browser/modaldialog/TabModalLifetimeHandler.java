@@ -4,6 +4,7 @@
 
 package org.chromium.chrome.browser.modaldialog;
 
+import org.chromium.base.supplier.Supplier;
 import org.chromium.chrome.browser.ChromeActivity;
 import org.chromium.chrome.browser.lifecycle.Destroyable;
 import org.chromium.chrome.browser.lifecycle.NativeInitObserver;
@@ -13,6 +14,7 @@ import org.chromium.chrome.browser.tab.TabObserver;
 import org.chromium.chrome.browser.tab.TabSelectionType;
 import org.chromium.chrome.browser.tabmodel.TabModelSelector;
 import org.chromium.chrome.browser.tabmodel.TabModelSelectorTabModelObserver;
+import org.chromium.chrome.browser.ui.TabObscuringHandler;
 import org.chromium.components.browser_ui.util.ComposedBrowserControlsVisibilityDelegate;
 import org.chromium.ui.modaldialog.DialogDismissalCause;
 import org.chromium.ui.modaldialog.ModalDialogManager;
@@ -44,6 +46,7 @@ public class TabModalLifetimeHandler implements NativeInitObserver, Destroyable 
     private final ChromeActivity mActivity;
     private final ModalDialogManager mManager;
     private final ComposedBrowserControlsVisibilityDelegate mAppVisibilityDelegate;
+    private final Supplier<TabObscuringHandler> mTabObscuringHandlerSupplier;
     private TabModalPresenter mPresenter;
     private TabModelSelectorTabModelObserver mTabModelObserver;
     private Tab mActiveTab;
@@ -54,12 +57,15 @@ public class TabModalLifetimeHandler implements NativeInitObserver, Destroyable 
      * @param manager The {@link ModalDialogManager} that this handler handles.
      * @param appVisibilityDelegate The {@link ComposedBrowserControlsVisibilityDelegate} that
      *                              handles the application browser controls visibility.
+     * @param tabObscuringHandler {@link TabObscuringHandler} object.
      */
     public TabModalLifetimeHandler(ChromeActivity activity, ModalDialogManager manager,
-            ComposedBrowserControlsVisibilityDelegate appVisibilityDelegate) {
+            ComposedBrowserControlsVisibilityDelegate appVisibilityDelegate,
+            Supplier<TabObscuringHandler> tabObscuringHandler) {
         mActivity = activity;
         mManager = manager;
         mAppVisibilityDelegate = appVisibilityDelegate;
+        mTabObscuringHandlerSupplier = tabObscuringHandler;
         activity.getLifecycleDispatcher().register(this);
         mTabModalSuspendedToken = TokenHolder.INVALID_TOKEN;
     }
@@ -85,7 +91,7 @@ public class TabModalLifetimeHandler implements NativeInitObserver, Destroyable 
 
     @Override
     public void onFinishNativeInitialization() {
-        mPresenter = new TabModalPresenter(mActivity);
+        mPresenter = new TabModalPresenter(mActivity, mTabObscuringHandlerSupplier);
         mAppVisibilityDelegate.addDelegate(mPresenter.getBrowserControlsVisibilityDelegate());
         mManager.registerPresenter(mPresenter, ModalDialogType.TAB);
 

@@ -39,6 +39,7 @@ import org.chromium.chrome.browser.profiles.Profile;
 import org.chromium.chrome.browser.rlz.RevenueStats;
 import org.chromium.chrome.browser.tab.TabState.WebContentsState;
 import org.chromium.chrome.browser.tab.TabUma.TabCreationState;
+import org.chromium.chrome.browser.ui.TabObscuringHandler;
 import org.chromium.chrome.browser.ui.native_page.FrozenNativePage;
 import org.chromium.chrome.browser.ui.native_page.NativePage;
 import org.chromium.chrome.browser.util.UrlConstants;
@@ -57,7 +58,7 @@ import org.chromium.ui.base.WindowAndroid;
  * Implementation of the interface {@link Tab}. Contains and manages a {@link ContentView}.
  * This class is not intended to be extended.
  */
-public class TabImpl implements Tab {
+public class TabImpl implements Tab, TabObscuringHandler.Observer {
     private static final long INVALID_TIMESTAMP = -1;
 
     /** Used for logging. */
@@ -777,15 +778,16 @@ public class TabImpl implements Tab {
         return mPendingLoadParams != null;
     }
 
-    /**
-     * Update whether or not the current native tab and/or web contents are
-     * currently visible (from an accessibility perspective), or whether
-     * they're obscured by another view.
-     */
-    public void updateAccessibilityVisibility() {
+    // TabObscuringHandler.Observer
+
+    @Override
+    public void updateObscured(boolean isObscured) {
+        // Update whether or not the current native tab and/or web contents are
+        // currently visible (from an accessibility perspective), or whether
+        // they're obscured by another view.
         View view = getView();
         if (view != null) {
-            int importantForAccessibility = isObscuredByAnotherViewForAccessibility()
+            int importantForAccessibility = isObscured
                     ? View.IMPORTANT_FOR_ACCESSIBILITY_NO_HIDE_DESCENDANTS
                     : View.IMPORTANT_FOR_ACCESSIBILITY_YES;
             if (view.getImportantForAccessibility() != importantForAccessibility) {
@@ -796,8 +798,7 @@ public class TabImpl implements Tab {
 
         WebContentsAccessibility wcax = getWebContentsAccessibility(getWebContents());
         if (wcax != null) {
-            boolean isWebContentObscured =
-                    isObscuredByAnotherViewForAccessibility() || SadTab.isShowing(this);
+            boolean isWebContentObscured = isObscured || SadTab.isShowing(this);
             wcax.setObscuredByAnotherView(isWebContentObscured);
         }
     }
@@ -1111,7 +1112,6 @@ public class TabImpl implements Tab {
      */
     void notifyContentChanged() {
         for (TabObserver observer : mObservers) observer.onContentChanged(this);
-        updateAccessibilityVisibility();
     }
 
     void notifyThemeColorChanged(int themeColor) {
@@ -1475,11 +1475,6 @@ public class TabImpl implements Tab {
             mFrozenContentsState = newState;
             notifyNavigationEntriesDeleted();
         }
-    }
-
-    private boolean isObscuredByAnotherViewForAccessibility() {
-        ChromeActivity activity = getActivity();
-        return activity != null && activity.isViewObscuringAllTabs();
     }
 
     private static WebContentsAccessibility getWebContentsAccessibility(WebContents webContents) {

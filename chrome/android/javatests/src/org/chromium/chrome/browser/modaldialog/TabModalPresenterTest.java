@@ -530,7 +530,7 @@ public class TabModalPresenterTest {
 
     private void checkBrowserControls(boolean restricted) {
         boolean isViewObscuringAllTabs = TestThreadUtils.runOnUiThreadBlockingNoException(
-                () -> mActivity.isViewObscuringAllTabs());
+                () -> mActivity.getTabObscuringHandler().isViewObscuringAllTabs());
         boolean isMenuEnabled = TestThreadUtils.runOnUiThreadBlockingNoException(() -> {
             View menu = mActivity.getToolbarManager().getMenuButtonView();
             Assert.assertNotNull("Toolbar menu is incorrectly null.", menu);

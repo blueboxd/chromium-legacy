@@ -105,8 +105,7 @@ public class ScrimTest {
     public void testBottomSheetScrim() {
         mScrim.disableAnimationForTesting(true);
         assertScrimVisibility(false);
-        assertFalse("Nothing should be obscuring the tab.",
-                mActivityTestRule.getActivity().isViewObscuringAllTabs());
+        assertFalse("Nothing should be obscuring the tab.", isViewObscuringAllTabs());
         assertEquals("The scrim alpha should be 0.", 0f, mScrim.getAlpha(), MathUtils.EPSILON);
 
         ThreadUtils.runOnUiThreadBlocking(() -> {
@@ -118,8 +117,7 @@ public class ScrimTest {
         });
 
         assertScrimVisibility(true);
-        assertTrue("A view should be obscuring the tab.",
-                mActivityTestRule.getActivity().isViewObscuringAllTabs());
+        assertTrue("A view should be obscuring the tab.", isViewObscuringAllTabs());
         assertEquals("The scrim alpha should be 0.", 0f, mScrim.getAlpha(), MathUtils.EPSILON);
 
         ThreadUtils.runOnUiThreadBlocking(
@@ -128,8 +126,7 @@ public class ScrimTest {
                                 BottomSheetController.SheetState.PEEK, false));
 
         assertScrimVisibility(false);
-        assertFalse("Nothing should be obscuring the tab.",
-                mActivityTestRule.getActivity().isViewObscuringAllTabs());
+        assertFalse("Nothing should be obscuring the tab.", isViewObscuringAllTabs());
         assertEquals("The scrim alpha should be 0.", 0f, mScrim.getAlpha(), MathUtils.EPSILON);
     }
 
@@ -139,8 +136,7 @@ public class ScrimTest {
     @DisabledTest(message = "crbug.com/877774")
     public void testOmniboxScrim() {
         assertScrimVisibility(false);
-        assertFalse("Nothing should be obscuring the tab.",
-                mActivityTestRule.getActivity().isViewObscuringAllTabs());
+        assertFalse("Nothing should be obscuring the tab.", isViewObscuringAllTabs());
         assertEquals("The scrim alpha should be 0.", 0f, mScrim.getAlpha(), MathUtils.EPSILON);
 
         final UrlBar urlBar = (UrlBar) mActivityTestRule.getActivity().findViewById(R.id.url_bar);
@@ -148,17 +144,19 @@ public class ScrimTest {
         waitForScrimVisibilityChange(true);
 
         assertScrimVisibility(true);
-        assertTrue("A view should be obscuring the tab.",
-                mActivityTestRule.getActivity().isViewObscuringAllTabs());
+        assertTrue("A view should be obscuring the tab.", isViewObscuringAllTabs());
         assertThat("The scrim alpha should not be 0.", 0f, lessThan(mScrim.getAlpha()));
 
         ThreadUtils.runOnUiThreadBlocking(() -> OmniboxTestUtils.toggleUrlBarFocus(urlBar, false));
         waitForScrimVisibilityChange(false);
 
         assertScrimVisibility(false);
-        assertFalse("Nothing should be obscuring the tab.",
-                mActivityTestRule.getActivity().isViewObscuringAllTabs());
+        assertFalse("Nothing should be obscuring the tab.", isViewObscuringAllTabs());
         assertEquals("The scrim alpha should be 0.", 0f, mScrim.getAlpha(), MathUtils.EPSILON);
+    }
+
+    private boolean isViewObscuringAllTabs() {
+        return mActivityTestRule.getActivity().getTabObscuringHandler().isViewObscuringAllTabs();
     }
 
     /**

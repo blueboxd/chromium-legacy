@@ -139,6 +139,7 @@ import org.chromium.chrome.browser.tasks.tab_management.TabManagementModuleProvi
 import org.chromium.chrome.browser.toolbar.ToolbarButtonInProductHelpController;
 import org.chromium.chrome.browser.toolbar.top.ToolbarControlContainer;
 import org.chromium.chrome.browser.ui.RootUiCoordinator;
+import org.chromium.chrome.browser.ui.TabObscuringHandler;
 import org.chromium.chrome.browser.ui.appmenu.AppMenuPropertiesDelegate;
 import org.chromium.chrome.browser.undo_tab_close_snackbar.UndoBarController;
 import org.chromium.chrome.browser.usage_stats.UsageStatsService;
@@ -253,6 +254,8 @@ public class ChromeTabbedActivity extends ChromeActivity {
 
     private StartSurface mStartSurface;
 
+    private CompositorViewHolder mCompositorViewHolder;
+    private OverviewListLayout mOverviewListLayout;
     /**
      * Keeps track of whether or not a specific tab was created based on the startup intent.
      */
@@ -824,6 +827,17 @@ public class ChromeTabbedActivity extends ChromeActivity {
             PostTask.postTask(UiThreadTaskTraits.DEFAULT, this::addOverviewModeObserver);
             PostTask.postTask(UiThreadTaskTraits.DEFAULT, this::finishNativeInitialization);
         }
+    }
+
+    @Override
+    public void finishNativeInitialization() {
+        super.finishNativeInitialization();
+
+        // TODO(jinsukkim): Let these classes handle the registration by themselves.
+        mCompositorViewHolder = getCompositorViewHolder();
+        mOverviewListLayout = (OverviewListLayout) mLayoutManager.getOverviewListLayout();
+        getTabObscuringHandler().addObserver(mCompositorViewHolder);
+        getTabObscuringHandler().addObserver(mOverviewListLayout);
     }
 
     @Override
@@ -2003,6 +2017,13 @@ public class ChromeTabbedActivity extends ChromeActivity {
         }
 
         IncognitoTabHostRegistry.getInstance().unregister(mIncognitoTabHost);
+
+        TabObscuringHandler tabObscuringHandler = getTabObscuringHandler();
+        if (tabObscuringHandler != null) {
+            getTabObscuringHandler().removeObserver(mCompositorViewHolder);
+            getTabObscuringHandler().removeObserver(mOverviewListLayout);
+        }
+
         super.onDestroyInternal();
     }
 
@@ -2152,8 +2173,8 @@ public class ChromeTabbedActivity extends ChromeActivity {
     @Override
     protected ModalDialogManager createModalDialogManager() {
         ModalDialogManager manager = super.createModalDialogManager();
-        mTabModalHandler = new TabModalLifetimeHandler(
-                this, manager, getAppBrowserControlsVisibilityDelegate());
+        mTabModalHandler = new TabModalLifetimeHandler(this, manager,
+                getAppBrowserControlsVisibilityDelegate(), this::getTabObscuringHandler);
         return manager;
     }
 
@@ -2176,37 +2197,6 @@ public class ChromeTabbedActivity extends ChromeActivity {
     @Override
     public boolean isInOverviewMode() {
         return mOverviewModeController != null && mOverviewModeController.overviewVisible();
-    }
-
-    /**
-     * Update focus and accessibility importance for background view when accessibility tab switcher
-     * is used in Chrome Home.
-     */
-    private void updateAccessibilityVisibility() {
-        if (mLayoutManager == null) return;
-
-        CompositorViewHolder compositorViewHolder = getCompositorViewHolder();
-        if (compositorViewHolder != null) {
-            compositorViewHolder.setFocusable(!isViewObscuringAllTabs());
-        }
-
-        OverviewListLayout overviewListLayout =
-                (OverviewListLayout) mLayoutManager.getOverviewListLayout();
-        if (overviewListLayout != null) {
-            overviewListLayout.updateAccessibilityVisibility(!isViewObscuringAllTabs());
-        }
-    }
-
-    @Override
-    public void addViewObscuringAllTabs(View view) {
-        super.addViewObscuringAllTabs(view);
-        updateAccessibilityVisibility();
-    }
-
-    @Override
-    public void removeViewObscuringAllTabs(View view) {
-        super.removeViewObscuringAllTabs(view);
-        updateAccessibilityVisibility();
     }
 
     @Override

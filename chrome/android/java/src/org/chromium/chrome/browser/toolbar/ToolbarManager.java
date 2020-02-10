@@ -53,6 +53,7 @@ import org.chromium.chrome.browser.findinpage.FindToolbarObserver;
 import org.chromium.chrome.browser.flags.CachedFeatureFlags;
 import org.chromium.chrome.browser.flags.ChromeFeatureList;
 import org.chromium.chrome.browser.fullscreen.BrowserStateBrowserControlsVisibilityDelegate;
+import org.chromium.chrome.browser.fullscreen.ChromeFullscreenManager;
 import org.chromium.chrome.browser.fullscreen.ChromeFullscreenManager.FullscreenListener;
 import org.chromium.chrome.browser.fullscreen.FullscreenOptions;
 import org.chromium.chrome.browser.metrics.OmniboxStartupMetrics;
@@ -100,6 +101,7 @@ import org.chromium.chrome.browser.toolbar.top.ToolbarLayout;
 import org.chromium.chrome.browser.toolbar.top.TopToolbarCoordinator;
 import org.chromium.chrome.browser.toolbar.top.ViewShiftingActionBarDelegate;
 import org.chromium.chrome.browser.ui.ImmersiveModeManager;
+import org.chromium.chrome.browser.ui.TabObscuringHandler;
 import org.chromium.chrome.browser.ui.appmenu.AppMenuButtonHelper;
 import org.chromium.chrome.browser.ui.appmenu.AppMenuCoordinator;
 import org.chromium.chrome.browser.ui.appmenu.AppMenuHandler;
@@ -169,6 +171,7 @@ public class ToolbarManager implements ScrimObserver, ToolbarTabController, UrlF
     private final TopToolbarCoordinator mToolbar;
     private final ToolbarControlContainer mControlContainer;
     private final FullscreenListener mFullscreenListener;
+    private final TabObscuringHandler mTabObscuringHandler;
 
     private BottomControlsCoordinator mBottomControlsCoordinator;
     private TabModelSelector mTabModelSelector;
@@ -202,6 +205,7 @@ public class ToolbarManager implements ScrimObserver, ToolbarTabController, UrlF
     private final Callback<Boolean> mUrlFocusChangedCallback;
     private final Handler mHandler = new Handler();
     private final ChromeActivity mActivity;
+    private final ChromeFullscreenManager mFullscreenManager;
     private UrlFocusChangeListener mLocationBarFocusObserver;
     private ComponentCallbacks mComponentCallbacks;
 
@@ -245,15 +249,22 @@ public class ToolbarManager implements ScrimObserver, ToolbarTabController, UrlF
     /**
      * Creates a ToolbarManager object.
      *
+     * @param activity {@link ChromeActivity} object.
+     * @param fullscreenManager {@link ChromeFullscreenManager} object.
      * @param controlContainer The container of the toolbar.
      * @param invalidator Handler for synchronizing invalidations across UI elements.
      * @param urlFocusChangedCallback The callback to be notified when the URL focus changes.
+     * @param themeColorProvider The ThemeColorProvider object.
+     * @param tabObscuringHandler Delegate object handling obscuring views.
+     * @param shareDelegateSupplier Supplier for ShareDelegate.
      */
-    public ToolbarManager(ChromeActivity activity, ToolbarControlContainer controlContainer,
-            Invalidator invalidator, Callback<Boolean> urlFocusChangedCallback,
-            ThemeColorProvider themeColorProvider,
+    public ToolbarManager(ChromeActivity activity, ChromeFullscreenManager fullscreenManager,
+            ToolbarControlContainer controlContainer, Invalidator invalidator,
+            Callback<Boolean> urlFocusChangedCallback, ThemeColorProvider themeColorProvider,
+            TabObscuringHandler tabObscuringHandler,
             ObservableSupplier<ShareDelegate> shareDelegateSupplier) {
         mActivity = activity;
+        mFullscreenManager = fullscreenManager;
         mActionBarDelegate = new ViewShiftingActionBarDelegate(activity, controlContainer);
         mShareDelegateSupplier = shareDelegateSupplier;
 
@@ -335,6 +346,8 @@ public class ToolbarManager implements ScrimObserver, ToolbarTabController, UrlF
         mTabThemeColorProvider.addThemeColorObserver(this);
 
         mAppThemeColorProvider = new AppThemeColorProvider(mActivity);
+
+        mTabObscuringHandler = tabObscuringHandler;
 
         mToolbar =
                 new TopToolbarCoordinator(controlContainer, mActivity.findViewById(R.id.toolbar));
@@ -643,7 +656,7 @@ public class ToolbarManager implements ScrimObserver, ToolbarTabController, UrlF
                 if (mFindToolbarManager != null) mFindToolbarManager.hideToolbar();
             }
         };
-        mActivity.getFullscreenManager().addListener(mFullscreenListener);
+        mFullscreenManager.addListener(mFullscreenListener);
 
         mFindToolbarObserver = new FindToolbarObserver() {
             @Override
@@ -765,9 +778,9 @@ public class ToolbarManager implements ScrimObserver, ToolbarTabController, UrlF
     @Override
     public void onScrimVisibilityChanged(boolean visible) {
         if (visible) {
-            mActivity.addViewObscuringAllTabs(mActivity.getScrim());
+            mTabObscuringHandler.addViewObscuringAllTabs(mActivity.getScrim());
         } else {
-            mActivity.removeViewObscuringAllTabs(mActivity.getScrim());
+            mTabObscuringHandler.removeViewObscuringAllTabs(mActivity.getScrim());
         }
     }
 
@@ -794,7 +807,7 @@ public class ToolbarManager implements ScrimObserver, ToolbarTabController, UrlF
                     mAppThemeColorProvider, mTabGroupPopUiParentSupplier);
         }
 
-        mBottomControlsCoordinator = new BottomControlsCoordinator(mActivity.getFullscreenManager(),
+        mBottomControlsCoordinator = new BottomControlsCoordinator(mFullscreenManager,
                 mActivity.findViewById(R.id.bottom_controls_stub),
                 mActivity.getActivityTabProvider(),
                 mTabGroupPopupUi != null
@@ -1191,7 +1204,7 @@ public class ToolbarManager implements ScrimObserver, ToolbarTabController, UrlF
         mIdentityDiscController.destroy();
         mLocationBarModel.destroy();
         mHandler.removeCallbacksAndMessages(null); // Cancel delayed tasks.
-        mActivity.getFullscreenManager().removeListener(mFullscreenListener);
+        mFullscreenManager.removeListener(mFullscreenListener);
         if (mLocationBar != null) {
             mLocationBar.removeUrlFocusChangeListener(mLocationBarFocusObserver);
             mLocationBarFocusObserver = null;
@@ -1574,7 +1587,7 @@ public class ToolbarManager implements ScrimObserver, ToolbarTabController, UrlF
     private int getToolbarExtraYOffset() {
         final int stripAndToolbarHeight = mActivity.getResources().getDimensionPixelSize(
                 R.dimen.tab_strip_and_toolbar_height);
-        return mActivity.getFullscreenManager().getTopControlsHeight() - stripAndToolbarHeight;
+        return mFullscreenManager.getTopControlsHeight() - stripAndToolbarHeight;
     }
 
     /**

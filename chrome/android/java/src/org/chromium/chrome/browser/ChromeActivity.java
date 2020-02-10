@@ -145,6 +145,7 @@ import org.chromium.chrome.browser.toolbar.ToolbarManager;
 import org.chromium.chrome.browser.translate.TranslateBridge;
 import org.chromium.chrome.browser.ui.BottomContainer;
 import org.chromium.chrome.browser.ui.RootUiCoordinator;
+import org.chromium.chrome.browser.ui.TabObscuringHandler;
 import org.chromium.chrome.browser.ui.appmenu.AppMenuBlocker;
 import org.chromium.chrome.browser.ui.appmenu.AppMenuDelegate;
 import org.chromium.chrome.browser.ui.appmenu.AppMenuPropertiesDelegate;
@@ -190,9 +191,7 @@ import org.chromium.webapk.lib.client.WebApkNavigationClient;
 import org.chromium.webapk.lib.client.WebApkValidator;
 
 import java.util.ArrayList;
-import java.util.HashSet;
 import java.util.List;
-import java.util.Set;
 import java.util.function.Consumer;
 
 /**
@@ -203,10 +202,9 @@ import java.util.function.Consumer;
 public abstract class ChromeActivity<C extends ChromeActivityComponent>
         extends AsyncInitializationActivity
         implements TabCreatorManager, AccessibilityStateChangeListener, PolicyChangeListener,
-                   ContextualSearchTabPromotionDelegate,
-                   BottomSheetController.ObscuringAllTabsDelegate, SnackbarManageable,
-                   SceneChangeObserver, StatusBarColorController.StatusBarColorProvider,
-                   AppMenuDelegate, AppMenuBlocker, MenuOrKeyboardActionController {
+                   ContextualSearchTabPromotionDelegate, SnackbarManageable, SceneChangeObserver,
+                   StatusBarColorController.StatusBarColorProvider, AppMenuDelegate, AppMenuBlocker,
+                   MenuOrKeyboardActionController {
     /**
      * No control container to inflate during initialization.
      */
@@ -290,10 +288,6 @@ public abstract class ChromeActivity<C extends ChromeActivityComponent>
             ManualFillingComponentFactory.createComponent();
 
     private AssistStatusHandler mAssistStatusHandler;
-
-    // A set of views obscuring all tabs. When this set is nonempty,
-    // all tab content will be hidden from the accessibility tree.
-    private Set<View> mViewsObscuringAllTabs = new HashSet<>();
 
     // See enableHardwareAcceleration()
     private boolean mSetWindowHWA;
@@ -1143,6 +1137,15 @@ public abstract class ChromeActivity<C extends ChromeActivityComponent>
         mUiMode = config.uiMode;
         mDensityDpi = config.densityDpi;
         mStarted = true;
+    }
+
+    /**
+     * WARNING: DO NOT USE THIS METHOD. PASS TabObscuringHandler TO THE OBJECT CONSTRUCTOR INSTEAD.
+     * @return {@link TabObscuringHandler} object.
+     */
+    public TabObscuringHandler getTabObscuringHandler() {
+        if (mRootUiCoordinator == null) return null;
+        return mRootUiCoordinator.getTabObscuringHandler();
     }
 
     @Override
@@ -2112,27 +2115,6 @@ public abstract class ChromeActivity<C extends ChromeActivityComponent>
                 this, url, getCurrentTabModel().isIncognito());
         HelpAndFeedback.getInstance().show(this, helpContextId, profile, url);
         RecordUserAction.record(recordAction);
-    }
-
-    @Override
-    public void addViewObscuringAllTabs(View view) {
-        mViewsObscuringAllTabs.add(view);
-
-        TabImpl tab = (TabImpl) getActivityTab();
-        if (tab != null) tab.updateAccessibilityVisibility();
-    }
-
-    @Override
-    public void removeViewObscuringAllTabs(View view) {
-        mViewsObscuringAllTabs.remove(view);
-
-        TabImpl tab = (TabImpl) getActivityTab();
-        if (tab != null) tab.updateAccessibilityVisibility();
-    }
-
-    @Override
-    public boolean isViewObscuringAllTabs() {
-        return !mViewsObscuringAllTabs.isEmpty();
     }
 
     private void markSessionResume() {

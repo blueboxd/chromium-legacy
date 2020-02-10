@@ -208,9 +208,9 @@ class AutocompleteMediator
             mImageFetcher.destroy();
             mImageFetcher = null;
         }
-        if (mOverviewModeObserver != null) {
+        if (mOverviewModeBehavior != null) {
             mOverviewModeBehavior.removeOverviewModeObserver(mOverviewModeObserver);
-            mOverviewModeObserver = null;
+            mOverviewModeBehavior = null;
         }
     }
 

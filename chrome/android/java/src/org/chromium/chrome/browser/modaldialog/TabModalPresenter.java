@@ -18,6 +18,7 @@ import android.widget.FrameLayout;
 
 import androidx.annotation.VisibleForTesting;
 
+import org.chromium.base.supplier.Supplier;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.ChromeActivity;
 import org.chromium.chrome.browser.compositor.bottombar.OverlayPanel;
@@ -28,6 +29,7 @@ import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.browser.tab.TabAttributeKeys;
 import org.chromium.chrome.browser.tab.TabAttributes;
 import org.chromium.chrome.browser.tab.TabBrowserControlsConstraintsHelper;
+import org.chromium.chrome.browser.ui.TabObscuringHandler;
 import org.chromium.components.browser_ui.modaldialog.ModalDialogView;
 import org.chromium.components.browser_ui.modaldialog.ModalDialogViewBinder;
 import org.chromium.components.browser_ui.util.BrowserControlsVisibilityDelegate;
@@ -52,6 +54,7 @@ public class TabModalPresenter
 
     /** The activity displaying the dialogs. */
     private final ChromeActivity mChromeActivity;
+    private final Supplier<TabObscuringHandler> mTabObscuringHandlerSupplier;
     private final ChromeFullscreenManager mChromeFullscreenManager;
     private final TabModalBrowserControlsVisibilityDelegate mVisibilityDelegate;
 
@@ -116,9 +119,12 @@ public class TabModalPresenter
     /**
      * Constructor for initializing dialog container.
      * @param chromeActivity The activity displaying the dialogs.
+     * @param tabObscuringHandler TabObscuringHandler object.
      */
-    public TabModalPresenter(ChromeActivity chromeActivity) {
+    public TabModalPresenter(
+            ChromeActivity chromeActivity, Supplier<TabObscuringHandler> tabObscuringHandler) {
         mChromeActivity = chromeActivity;
+        mTabObscuringHandlerSupplier = tabObscuringHandler;
         mEnterExitAnimationDurationMs = ENTER_EXIT_ANIMATION_DURATION_MS;
         mChromeFullscreenManager = mChromeActivity.getFullscreenManager();
         mChromeFullscreenManager.addListener(this);
@@ -158,7 +164,7 @@ public class TabModalPresenter
         } else {
             mRunEnterAnimationOnCallback = true;
         }
-        mChromeActivity.addViewObscuringAllTabs(mDialogContainer);
+        mTabObscuringHandlerSupplier.get().addViewObscuringAllTabs(mDialogContainer);
     }
 
     @Override
@@ -172,7 +178,7 @@ public class TabModalPresenter
             mDialogView.clearFocus();
             runExitAnimation(mDialogView);
         }
-        mChromeActivity.removeViewObscuringAllTabs(mDialogContainer);
+        mTabObscuringHandlerSupplier.get().removeViewObscuringAllTabs(mDialogContainer);
 
         if (mModelChangeProcessor != null) {
             mModelChangeProcessor.destroy();

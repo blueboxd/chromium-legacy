@@ -212,11 +212,11 @@ unsigned HTMLSelectElement::ListBoxSize() const {
   return kDefaultListBoxSize;
 }
 
-bool HTMLSelectElement::UsesMenuList() const {
+void HTMLSelectElement::UpdateUsesMenuList() {
   if (LayoutTheme::GetTheme().DelegatesMenuListRendering())
-    return true;
-
-  return !is_multiple_ && size_ <= 1;
+    uses_menu_list_ = true;
+  else
+    uses_menu_list_ = !is_multiple_ && size_ <= 1;
 }
 
 int HTMLSelectElement::ActiveSelectionEndListIndex() const {
@@ -2294,6 +2294,7 @@ void HTMLSelectElement::CloneNonAttributePropertiesFrom(
 }
 
 void HTMLSelectElement::ChangeRendering() {
+  UpdateUsesMenuList();
   if (!InActiveDocument())
     return;
   // TODO(futhark): SetForceReattachLayoutTree() should be the correct way to

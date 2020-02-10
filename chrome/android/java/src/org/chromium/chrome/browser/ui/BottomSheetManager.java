@@ -11,7 +11,6 @@ import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.browser.ui.messages.snackbar.SnackbarManager;
 import org.chromium.chrome.browser.widget.bottomsheet.BottomSheetContent;
 import org.chromium.chrome.browser.widget.bottomsheet.BottomSheetController;
-import org.chromium.chrome.browser.widget.bottomsheet.BottomSheetController.ObscuringAllTabsDelegate;
 import org.chromium.chrome.browser.widget.bottomsheet.EmptyBottomSheetObserver;
 import org.chromium.content_public.browser.SelectionPopupController;
 import org.chromium.content_public.browser.WebContents;
@@ -46,19 +45,19 @@ class BottomSheetManager extends EmptyBottomSheetObserver
     private Supplier<SnackbarManager> mSnackbarManager;
 
     /** A delegate that provides the functionality of obscuring all tabs. */
-    private ObscuringAllTabsDelegate mObscuringAllTabsDelegate;
+    private TabObscuringHandler mTabObscuringHandler;
 
     public BottomSheetManager(BottomSheetController controller, Supplier<Tab> tabSupplier,
             Supplier<ChromeFullscreenManager> fullscreenManager,
             Supplier<ModalDialogManager> dialogManager,
             Supplier<SnackbarManager> snackbarManagerSupplier,
-            ObscuringAllTabsDelegate obscuringDelegate) {
+            TabObscuringHandler obscuringDelegate) {
         mSheetController = controller;
         mTabSupplier = tabSupplier;
         mFullscreenManager = fullscreenManager;
         mDialogManager = dialogManager;
         mSnackbarManager = snackbarManagerSupplier;
-        mObscuringAllTabsDelegate = obscuringDelegate;
+        mTabObscuringHandler = obscuringDelegate;
 
         mSheetController.addObserver(this);
         mFullscreenManager.get().addListener(BottomSheetManager.this);
@@ -79,7 +78,7 @@ class BottomSheetManager extends EmptyBottomSheetObserver
         // is responsible for adding itself to the list of obscuring views when applicable.
         if (content != null && content.hasCustomScrimLifecycle()) return;
 
-        mSheetController.setIsObscuringAllTabs(mObscuringAllTabsDelegate, true);
+        mSheetController.setIsObscuringAllTabs(mTabObscuringHandler, true);
 
         assert mAppModalToken == TokenHolder.INVALID_TOKEN;
         assert mTabModalToken == TokenHolder.INVALID_TOKEN;
@@ -99,7 +98,7 @@ class BottomSheetManager extends EmptyBottomSheetObserver
             return;
         }
 
-        mSheetController.setIsObscuringAllTabs(mObscuringAllTabsDelegate, false);
+        mSheetController.setIsObscuringAllTabs(mTabObscuringHandler, false);
 
         if (mDialogManager.get() != null) {
             mDialogManager.get().resumeType(ModalDialogManager.ModalDialogType.APP, mAppModalToken);

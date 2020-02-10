@@ -364,6 +364,7 @@ public final class TabImpl extends ITab.Stub {
     public void findInPage(String searchText, boolean forward) {
         StrictModeWorkaround.apply();
         if (mFindInPageBridge == null) return;
+
         if (searchText.length() > 0) {
             mFindInPageBridge.startFinding(searchText, forward, false);
         } else {
@@ -373,7 +374,6 @@ public final class TabImpl extends ITab.Stub {
 
     private void hideFindInPageUiAndNotifyClient() {
         if (mFindInPageBridge == null) return;
-
         mFindInPageBridge.stopFinding(true);
 
         mFindResultBar.dismiss();

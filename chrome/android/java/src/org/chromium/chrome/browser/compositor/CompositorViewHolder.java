@@ -58,6 +58,7 @@ import org.chromium.chrome.browser.tabmodel.TabModel;
 import org.chromium.chrome.browser.tabmodel.TabModelSelector;
 import org.chromium.chrome.browser.toolbar.ControlContainer;
 import org.chromium.chrome.browser.toolbar.ToolbarColors;
+import org.chromium.chrome.browser.ui.TabObscuringHandler;
 import org.chromium.components.browser_ui.widget.InsetObserverView;
 import org.chromium.components.content_capture.ContentCaptureConsumer;
 import org.chromium.components.content_capture.ContentCaptureConsumerImpl;
@@ -85,7 +86,7 @@ import java.util.Set;
 public class CompositorViewHolder extends FrameLayout
         implements ContentOffsetProvider, LayoutManagerHost, LayoutRenderHost, Invalidator.Host,
                    FullscreenListener, InsetObserverView.WindowInsetObserver,
-                   CompositorViewResizer.Observer {
+                   CompositorViewResizer.Observer, TabObscuringHandler.Observer {
     private static final long SYSTEM_UI_VIEWPORT_UPDATE_DELAY_MS = 500;
 
     /**
@@ -1313,6 +1314,13 @@ public class CompositorViewHolder extends FrameLayout
             mNodeProvider = new CompositorAccessibilityProvider(mAccessibilityView);
             ViewCompat.setAccessibilityDelegate(mAccessibilityView, mNodeProvider);
         }
+    }
+
+    // TabObscuringHandler.Observer
+
+    @Override
+    public void updateObscured(boolean isObscured) {
+        setFocusable(!isObscured);
     }
 
     /**

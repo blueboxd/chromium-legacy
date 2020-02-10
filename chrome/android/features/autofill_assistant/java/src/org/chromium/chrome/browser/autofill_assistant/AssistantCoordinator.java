@@ -10,6 +10,7 @@ import org.chromium.chrome.browser.ChromeActivity;
 import org.chromium.chrome.browser.autofill_assistant.overlay.AssistantOverlayCoordinator;
 import org.chromium.chrome.browser.help.HelpAndFeedback;
 import org.chromium.chrome.browser.profiles.Profile;
+import org.chromium.chrome.browser.ui.TabObscuringHandler;
 import org.chromium.chrome.browser.widget.bottomsheet.BottomSheetController;
 
 /**
@@ -28,6 +29,7 @@ class AssistantCoordinator {
     private final AssistantOverlayCoordinator mOverlayCoordinator;
 
     AssistantCoordinator(ChromeActivity activity, BottomSheetController controller,
+            TabObscuringHandler tabObscuringHandler,
             @Nullable AssistantOverlayCoordinator overlayCoordinator) {
         mActivity = activity;
 
@@ -40,7 +42,8 @@ class AssistantCoordinator {
                     new AssistantOverlayCoordinator(activity, mModel.getOverlayModel());
         }
 
-        mBottomBarCoordinator = new AssistantBottomBarCoordinator(activity, mModel, controller);
+        mBottomBarCoordinator = new AssistantBottomBarCoordinator(
+                activity, mModel, controller, tabObscuringHandler);
         mKeyboardCoordinator = new AssistantKeyboardCoordinator(activity, mModel);
 
         activity.getCompositorViewHolder().addCompositorViewResizer(mBottomBarCoordinator);

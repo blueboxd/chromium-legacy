@@ -34,6 +34,7 @@ import org.chromium.chrome.browser.lifecycle.Destroyable;
 import org.chromium.chrome.browser.lifecycle.InflationObserver;
 import org.chromium.chrome.browser.metrics.UkmRecorder;
 import org.chromium.chrome.browser.share.ShareDelegate;
+import org.chromium.chrome.browser.tab.AccessibilityVisibilityHandler;
 import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.browser.tabmodel.TabModelSelector;
 import org.chromium.chrome.browser.toolbar.ToolbarManager;
@@ -67,6 +68,9 @@ public class RootUiCoordinator
     protected ChromeActivity mActivity;
     protected @Nullable AppMenuCoordinator mAppMenuCoordinator;
     private final MenuOrKeyboardActionController mMenuOrKeyboardActionController;
+    private final TabObscuringHandler mTabObscuringHandler;
+    private final AccessibilityVisibilityHandler mAccessibilityVisibilityHandler;
+
     private ActivityTabProvider mActivityTabProvider;
     private ObservableSupplier<ShareDelegate> mShareDelegateSupplier;
 
@@ -103,6 +107,7 @@ public class RootUiCoordinator
      *         Remove this in favor of passing in direct dependencies.
      * @param onOmniboxFocusChangedListener Callback<Boolean> callback to invoke when Omnibox focus
      *         changes.
+     * @param shareDelegateSupplier Supplies {@link ShareDelegate} object.
      */
     public RootUiCoordinator(ChromeActivity activity,
             @Nullable Callback<Boolean> onOmniboxFocusChangedListener,
@@ -119,6 +124,10 @@ public class RootUiCoordinator
         mActivity.getLayoutManagerSupplier().addObserver(mLayoutManagerSupplierCallback);
 
         mShareDelegateSupplier = shareDelegateSupplier;
+        mTabObscuringHandler = new TabObscuringHandler();
+        mAccessibilityVisibilityHandler =
+                new AccessibilityVisibilityHandler(activity.getLifecycleDispatcher(),
+                        activity.getActivityTabProvider(), mTabObscuringHandler);
 
         initOverviewModeSupplierObserver();
     }
@@ -145,7 +154,10 @@ public class RootUiCoordinator
         if (mOverviewModeBehavior != null) {
             mOverviewModeBehavior.removeOverviewModeObserver(mOverviewModeObserver);
         }
-
+        if (mToolbarManager != null) {
+            mToolbarManager.destroy();
+            mToolbarManager = null;
+        }
         if (mAppMenuCoordinator != null) {
             mAppMenuCoordinator.unregisterAppMenuBlocker(this);
             mAppMenuCoordinator.unregisterAppMenuBlocker(mActivity);
@@ -353,9 +365,10 @@ public class RootUiCoordinator
                     mOnOmniboxFocusChangedListener.onResult(hasFocus);
                 }
             };
-            mToolbarManager = new ToolbarManager(mActivity, toolbarContainer,
-                    mActivity.getCompositorViewHolder().getInvalidator(), urlFocusChangedCallback,
-                    mTabThemeColorProvider, mShareDelegateSupplier);
+            mToolbarManager = new ToolbarManager(mActivity, mActivity.getFullscreenManager(),
+                    toolbarContainer, mActivity.getCompositorViewHolder().getInvalidator(),
+                    urlFocusChangedCallback, mTabThemeColorProvider, mTabObscuringHandler,
+                    mShareDelegateSupplier);
             if (!mActivity.supportsAppMenu()) {
                 mToolbarManager.getToolbar().disableMenuButton();
             }
@@ -487,7 +500,15 @@ public class RootUiCoordinator
 
         mBottomSheetManager = new BottomSheetManager(mBottomSheetController, mActivityTabProvider,
                 mActivity::getFullscreenManager, mActivity::getModalDialogManager,
-                this::getBottomSheetSnackbarManager, mActivity);
+                this::getBottomSheetSnackbarManager, mTabObscuringHandler);
+    }
+
+    /**
+     * TODO(jinsukkim): remove/hide this in favor of wiring it directly.
+     * @return {@link TabObscuringHandler} object.
+     */
+    public TabObscuringHandler getTabObscuringHandler() {
+        return mTabObscuringHandler;
     }
 
     /** @return The {@link BottomSheetController} for this activity. */

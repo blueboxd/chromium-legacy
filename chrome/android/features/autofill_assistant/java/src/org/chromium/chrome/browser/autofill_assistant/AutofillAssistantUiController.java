@@ -23,6 +23,7 @@ import org.chromium.chrome.browser.autofill_assistant.header.AssistantHeaderMode
 import org.chromium.chrome.browser.autofill_assistant.metrics.DropOutReason;
 import org.chromium.chrome.browser.customtabs.CustomTabActivity;
 import org.chromium.chrome.browser.tab.Tab;
+import org.chromium.chrome.browser.ui.TabObscuringHandler;
 import org.chromium.chrome.browser.ui.messages.snackbar.SnackbarManager.SnackbarController;
 import org.chromium.chrome.browser.widget.bottomsheet.BottomSheetController;
 import org.chromium.content_public.browser.UiThreadTaskTraits;
@@ -97,16 +98,20 @@ class AutofillAssistantUiController {
         }
         sActiveChromeActivities.add(activity);
 
+        // TODO(crbug.com/1048983): Have the params be passed in to the constructor directly rather
+        //         than obtaining them from ChromeActivity getters.
         return new AutofillAssistantUiController(activity, activity.getBottomSheetController(),
-                allowTabSwitching, nativeUiController, onboardingCoordinator);
+                activity.getTabObscuringHandler(), allowTabSwitching, nativeUiController,
+                onboardingCoordinator);
     }
 
     private AutofillAssistantUiController(ChromeActivity activity, BottomSheetController controller,
-            boolean allowTabSwitching, long nativeUiController,
+            TabObscuringHandler tabObscuringHandler, boolean allowTabSwitching,
+            long nativeUiController,
             @Nullable AssistantOnboardingCoordinator onboardingCoordinator) {
         mNativeUiController = nativeUiController;
         mActivity = activity;
-        mCoordinator = new AssistantCoordinator(activity, controller,
+        mCoordinator = new AssistantCoordinator(activity, controller, tabObscuringHandler,
                 onboardingCoordinator == null ? null : onboardingCoordinator.transferControls());
         mActivityTabObserver =
                 new ActivityTabProvider.ActivityTabTabObserver(activity.getActivityTabProvider()) {

@@ -12,12 +12,13 @@
 
 #include "base/lazy_instance.h"
 #include "base/logging.h"
+#include "base/memory/memory_pressure_listener.h"
 #include "base/metrics/histogram.h"
 #include "base/metrics/histogram_functions.h"
-#include "base/metrics/histogram_macros.h"
 #include "base/process/process.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/threading/platform_thread.h"
+#include "base/time/time.h"
 #include "base/trace_event/trace_event.h"
 #include "build/build_config.h"
 #include "components/version_info/version_info.h"
@@ -48,6 +49,10 @@ base::TimeTicks g_browser_exe_main_entry_point_ticks;
 base::TimeTicks g_message_loop_start_ticks;
 
 base::TimeTicks g_browser_window_display_ticks;
+
+base::MemoryPressureListener::MemoryPressureLevel
+    g_max_pressure_level_before_first_non_empty_paint = base::
+        MemoryPressureListener::MemoryPressureLevel::MEMORY_PRESSURE_LEVEL_NONE;
 
 // An enumeration of startup temperatures. This must be kept in sync with the
 // UMA StartupType enumeration defined in histograms.xml.
@@ -176,59 +181,93 @@ bool GetHardFaultCountForCurrentProcess(uint32_t* hard_fault_count) {
 }
 #endif  // defined(OS_WIN)
 
-#define UMA_HISTOGRAM_TIME_IN_MINUTES_MONTH_RANGE(name, sample) \
-  UMA_HISTOGRAM_CUSTOM_COUNTS(name, sample, 1,                  \
-                              base::TimeDelta::FromDays(30).InMinutes(), 50)
-
-// Helper macro for splitting out an UMA histogram based on startup temperature.
-// |type| is the histogram type, and corresponds to an UMA macro like
-// UMA_HISTOGRAM_LONG_TIMES. It must itself be a macro that only takes two
-// parameters.
+// Helper function for splitting out an UMA histogram based on startup
+// temperature. |histogram_function| is the histogram type, and corresponds to
+// an UMA function like base::UmaHistogramLongTimes. It must itself be a
+// function that only takes two parameters.
 // |basename| is the basename of the histogram. A histogram of this name will
 // always be recorded to. If the startup temperature is known then a value will
 // also be recorded to the histogram with name |basename| and suffix
-// ".ColdStart", ".WarmStart" or ".LukewarmStartup" as appropriate.
+// ".ColdStart", ".WarmStart" as appropriate.
 // |value_expr| is an expression evaluating to the value to be recorded. This
 // will be evaluated exactly once and cached, so side effects are not an issue.
-// A metric logged using this macro must have an affected-histogram entry in the
-// definition of the StartupTemperature suffix in histograms.xml.
-// This macro must only be used in code that runs after |g_startup_temperature|
-// has been initialized.
-#define UMA_HISTOGRAM_WITH_TEMPERATURE(type, basename, value_expr)            \
-  do {                                                                        \
-    const auto value = value_expr;                                            \
-    /* Always record to the base histogram. */                                \
-    type(basename, value);                                                    \
-    /* Record to the cold/warm/lukewarm suffixed histogram as appropriate. */ \
-    switch (g_startup_temperature) {                                          \
-      case COLD_STARTUP_TEMPERATURE:                                          \
-        type(basename ".ColdStartup", value);                                 \
-        break;                                                                \
-      case WARM_STARTUP_TEMPERATURE:                                          \
-        type(basename ".WarmStartup", value);                                 \
-        break;                                                                \
-      case LUKEWARM_STARTUP_TEMPERATURE:                                      \
-        /* No suffix emitted for lukewarm startups. */                        \
-        break;                                                                \
-      case UNDETERMINED_STARTUP_TEMPERATURE:                                  \
-        break;                                                                \
-      case STARTUP_TEMPERATURE_COUNT:                                         \
-        NOTREACHED();                                                         \
-        break;                                                                \
-    }                                                                         \
-  } while (0)
+// A metric logged using this function must have an affected-histogram entry in
+// the definition of the StartupTemperature suffix in histograms.xml.
+// This function must only be used in code that runs after
+// |g_startup_temperature| has been initialized.
+template <typename T>
+void UmaHistogramWithTemperature(
+    void (*histogram_function)(const std::string& name, T),
+    const std::string& histogram_basename,
+    T value) {
+  // Always record to the base histogram.
+  (*histogram_function)(histogram_basename, value);
+  // Record to the cold/warm suffixed histogram as appropriate.
+  switch (g_startup_temperature) {
+    case COLD_STARTUP_TEMPERATURE:
+      (*histogram_function)(histogram_basename + ".ColdStartup", value);
+      break;
+    case WARM_STARTUP_TEMPERATURE:
+      (*histogram_function)(histogram_basename + ".WarmStartup", value);
+      break;
+    case LUKEWARM_STARTUP_TEMPERATURE:
+      // No suffix emitted for lukewarm startups.
+      break;
+    case UNDETERMINED_STARTUP_TEMPERATURE:
+      break;
+    case STARTUP_TEMPERATURE_COUNT:
+      NOTREACHED();
+      break;
+  }
+}
 
-#define UMA_HISTOGRAM_AND_TRACE_WITH_TEMPERATURE(type, basename, begin_ticks, \
-                                                 end_ticks)                   \
-  do {                                                                        \
-    UMA_HISTOGRAM_WITH_TEMPERATURE(type, basename, end_ticks - begin_ticks);  \
-    TRACE_EVENT_ASYNC_BEGIN_WITH_TIMESTAMP1(                                  \
-        "startup", basename, 0, begin_ticks, "Temperature",                   \
-        g_startup_temperature);                                               \
-    TRACE_EVENT_ASYNC_END_WITH_TIMESTAMP1(                                    \
-        "startup", basename, 0, end_ticks, "Temperature",                     \
-        g_startup_temperature);                                               \
-  } while (0)
+void UmaHistogramWithTraceAndTemperature(
+    void (*histogram_function)(const std::string& name, base::TimeDelta),
+    const std::string& histogram_basename,
+    base::TimeTicks begin_ticks,
+    base::TimeTicks end_ticks) {
+  UmaHistogramWithTemperature(histogram_function, histogram_basename,
+                              end_ticks - begin_ticks);
+  TRACE_EVENT_ASYNC_BEGIN_WITH_TIMESTAMP1("startup", histogram_basename.c_str(),
+                                          0, begin_ticks, "Temperature",
+                                          g_startup_temperature);
+  TRACE_EVENT_ASYNC_END_WITH_TIMESTAMP1("startup", histogram_basename.c_str(),
+                                        0, end_ticks, "Temperature",
+                                        g_startup_temperature);
+}
+
+// Extension to the UmaHistogramWithTraceAndTemperature that records a
+// suffixed version of the histogram indicating the maximum pressure encountered
+// until now. Note that this is based on the
+// |g_max_pressure_level_before_first_non_empty_paint| value.
+void UmaHistogramAndTraceWithTemperatureAndMaxPressure(
+    void (*histogram_function)(const std::string& name, base::TimeDelta),
+    const std::string& histogram_basename,
+    base::TimeTicks begin_ticks,
+    base::TimeTicks end_ticks) {
+  UmaHistogramWithTraceAndTemperature(histogram_function, histogram_basename,
+                                      begin_ticks, end_ticks);
+  const auto value = end_ticks - begin_ticks;
+  switch (g_max_pressure_level_before_first_non_empty_paint) {
+    case base::MemoryPressureListener::MemoryPressureLevel::
+        MEMORY_PRESSURE_LEVEL_NONE:
+      (*histogram_function)(histogram_basename + ".NoMemoryPressure", value);
+      break;
+    case base::MemoryPressureListener::MemoryPressureLevel::
+        MEMORY_PRESSURE_LEVEL_MODERATE:
+      (*histogram_function)(histogram_basename + ".ModerateMemoryPressure",
+                            value);
+      break;
+    case base::MemoryPressureListener::MemoryPressureLevel::
+        MEMORY_PRESSURE_LEVEL_CRITICAL:
+      (*histogram_function)(histogram_basename + ".CriticalMemoryPressure",
+                            value);
+      break;
+    default:
+      NOTREACHED();
+      break;
+  }
+}
 
 // On Windows, records the number of hard-faults that have occurred in the
 // current chrome.exe process since it was started. This is a nop on other
@@ -245,8 +284,9 @@ void RecordHardFaultHistogram() {
   // corresponding to faulting in ~10s of MBs of code ~10s of KBs at a time.
   // (Observed to vary from 1000 to 10000 on various test machines and
   // platforms.)
-  UMA_HISTOGRAM_CUSTOM_COUNTS("Startup.BrowserMessageLoopStartHardFaultCount",
-                              hard_fault_count, 1, 40000, 50);
+  base::UmaHistogramCustomCounts(
+      "Startup.BrowserMessageLoopStartHardFaultCount", hard_fault_count, 1,
+      40000, 50);
 
   // Determine the startup type based on the number of observed hard faults.
   DCHECK_EQ(UNDETERMINED_STARTUP_TEMPERATURE, g_startup_temperature);
@@ -259,8 +299,8 @@ void RecordHardFaultHistogram() {
   }
 
   // Record the startup 'temperature'.
-  UMA_HISTOGRAM_ENUMERATION("Startup.Temperature", g_startup_temperature,
-                            STARTUP_TEMPERATURE_COUNT);
+  base::UmaHistogramEnumeration("Startup.Temperature", g_startup_temperature,
+                                STARTUP_TEMPERATURE_COUNT);
 #endif  // defined(OS_WIN)
 }
 
@@ -370,14 +410,14 @@ void RecordBrowserMainMessageLoopStart(base::TimeTicks ticks,
   // Record timing of the browser message-loop start time.
   if (!g_process_creation_ticks.is_null()) {
     if (is_first_run) {
-      UMA_HISTOGRAM_AND_TRACE_WITH_TEMPERATURE(
-          UMA_HISTOGRAM_LONG_TIMES_100,
+      UmaHistogramWithTraceAndTemperature(
+          &base::UmaHistogramLongTimes100,
           "Startup.BrowserMessageLoopStartTime.FirstRun",
           g_process_creation_ticks, ticks);
     } else {
-      UMA_HISTOGRAM_AND_TRACE_WITH_TEMPERATURE(
-          UMA_HISTOGRAM_LONG_TIMES_100, "Startup.BrowserMessageLoopStartTime",
-          g_process_creation_ticks, ticks);
+      UmaHistogramWithTraceAndTemperature(&base::UmaHistogramLongTimes100,
+                                          "Startup.BrowserMessageLoopStartTime",
+                                          g_process_creation_ticks, ticks);
     }
   }
 
@@ -386,8 +426,8 @@ void RecordBrowserMainMessageLoopStart(base::TimeTicks ticks,
   // Record values stored prior to startup temperature evaluation.
   if (ShouldLogStartupHistogram() &&
       !g_browser_window_display_ticks.is_null()) {
-    UMA_HISTOGRAM_AND_TRACE_WITH_TEMPERATURE(
-        UMA_HISTOGRAM_LONG_TIMES, "Startup.BrowserWindowDisplay",
+    UmaHistogramWithTraceAndTemperature(
+        &base::UmaHistogramLongTimes, "Startup.BrowserWindowDisplay",
         g_process_creation_ticks, g_browser_window_display_ticks);
   }
 
@@ -396,19 +436,21 @@ void RecordBrowserMainMessageLoopStart(base::TimeTicks ticks,
   if (!g_process_creation_ticks.is_null() &&
       !g_browser_exe_main_entry_point_ticks.is_null()) {
     // Process create to chrome.exe:main().
-    UMA_HISTOGRAM_AND_TRACE_WITH_TEMPERATURE(
-        UMA_HISTOGRAM_LONG_TIMES, "Startup.LoadTime.ProcessCreateToExeMain2",
-        g_process_creation_ticks, g_browser_exe_main_entry_point_ticks);
+    UmaHistogramWithTraceAndTemperature(
+        &base::UmaHistogramLongTimes,
+        "Startup.LoadTime.ProcessCreateToExeMain2", g_process_creation_ticks,
+        g_browser_exe_main_entry_point_ticks);
 
     // chrome.exe:main() to chrome.dll:main().
-    UMA_HISTOGRAM_AND_TRACE_WITH_TEMPERATURE(
-        UMA_HISTOGRAM_LONG_TIMES, "Startup.LoadTime.ExeMainToDllMain2",
+    UmaHistogramWithTraceAndTemperature(
+        &base::UmaHistogramLongTimes, "Startup.LoadTime.ExeMainToDllMain2",
         g_browser_exe_main_entry_point_ticks, g_browser_main_entry_point_ticks);
 
     // Process create to chrome.dll:main(). Reported as a histogram only as
     // the other two events above are sufficient for tracing purposes.
-    UMA_HISTOGRAM_WITH_TEMPERATURE(
-        UMA_HISTOGRAM_LONG_TIMES, "Startup.LoadTime.ProcessCreateToDllMain2",
+    UmaHistogramWithTemperature(
+        &base::UmaHistogramLongTimes,
+        "Startup.LoadTime.ProcessCreateToDllMain2",
         g_browser_main_entry_point_ticks - g_process_creation_ticks);
   }
 }
@@ -440,16 +482,16 @@ void RecordFirstWebContentsNonEmptyPaint(
   if (!ShouldLogStartupHistogram())
     return;
 
-  UMA_HISTOGRAM_AND_TRACE_WITH_TEMPERATURE(
-      UMA_HISTOGRAM_LONG_TIMES_100, "Startup.FirstWebContents.NonEmptyPaint2",
-      g_process_creation_ticks, now);
-  UMA_HISTOGRAM_WITH_TEMPERATURE(
-      UMA_HISTOGRAM_LONG_TIMES_100,
+  UmaHistogramAndTraceWithTemperatureAndMaxPressure(
+      &base::UmaHistogramLongTimes100,
+      "Startup.FirstWebContents.NonEmptyPaint2", g_process_creation_ticks, now);
+  UmaHistogramWithTemperature(
+      &base::UmaHistogramLongTimes100,
       "Startup.BrowserMessageLoopStart.To.NonEmptyPaint2",
       now - g_message_loop_start_ticks);
 
-  UMA_HISTOGRAM_WITH_TEMPERATURE(
-      UMA_HISTOGRAM_LONG_TIMES_100,
+  UmaHistogramWithTemperature(
+      &base::UmaHistogramLongTimes100,
       "Startup.FirstWebContents.RenderProcessHostInit.ToNonEmptyPaint",
       now - render_process_host_init_time);
 }
@@ -462,8 +504,8 @@ void RecordFirstWebContentsMainNavigationStart(base::TimeTicks ticks) {
   if (!ShouldLogStartupHistogram())
     return;
 
-  UMA_HISTOGRAM_AND_TRACE_WITH_TEMPERATURE(
-      UMA_HISTOGRAM_LONG_TIMES_100,
+  UmaHistogramWithTraceAndTemperature(
+      &base::UmaHistogramLongTimes100,
       "Startup.FirstWebContents.MainNavigationStart", g_process_creation_ticks,
       ticks);
 }
@@ -476,8 +518,8 @@ void RecordFirstWebContentsMainNavigationFinished(base::TimeTicks ticks) {
   if (!ShouldLogStartupHistogram())
     return;
 
-  UMA_HISTOGRAM_AND_TRACE_WITH_TEMPERATURE(
-      UMA_HISTOGRAM_LONG_TIMES_100,
+  UmaHistogramWithTraceAndTemperature(
+      &base::UmaHistogramLongTimes100,
       "Startup.FirstWebContents.MainNavigationFinished",
       g_process_creation_ticks, ticks);
 }
@@ -490,9 +532,9 @@ void RecordBrowserWindowFirstPaint(base::TimeTicks ticks) {
   if (!ShouldLogStartupHistogram())
     return;
 
-  UMA_HISTOGRAM_AND_TRACE_WITH_TEMPERATURE(UMA_HISTOGRAM_LONG_TIMES_100,
-                                           "Startup.BrowserWindow.FirstPaint",
-                                           g_process_creation_ticks, ticks);
+  UmaHistogramWithTraceAndTemperature(&base::UmaHistogramLongTimes100,
+                                      "Startup.BrowserWindow.FirstPaint",
+                                      g_process_creation_ticks, ticks);
 }
 
 void RecordBrowserWindowFirstPaintCompositingEnded(
@@ -504,8 +546,8 @@ void RecordBrowserWindowFirstPaintCompositingEnded(
   if (!ShouldLogStartupHistogram())
     return;
 
-  UMA_HISTOGRAM_AND_TRACE_WITH_TEMPERATURE(
-      UMA_HISTOGRAM_LONG_TIMES_100,
+  UmaHistogramWithTraceAndTemperature(
+      &base::UmaHistogramLongTimes100,
       "Startup.BrowserWindow.FirstPaint.CompositingEnded",
       g_process_creation_ticks, ticks);
 }
@@ -522,8 +564,8 @@ void RecordWebFooterDidFirstVisuallyNonEmptyPaint(base::TimeTicks ticks) {
   if (!ShouldLogStartupHistogram())
     return;
 
-  UMA_HISTOGRAM_AND_TRACE_WITH_TEMPERATURE(
-      UMA_HISTOGRAM_MEDIUM_TIMES,
+  UmaHistogramWithTraceAndTemperature(
+      &base::UmaHistogramMediumTimes,
       "Startup.WebFooterExperiment.DidFirstVisuallyNonEmptyPaint",
       g_process_creation_ticks, ticks);
 }
@@ -536,10 +578,16 @@ void RecordWebFooterCreation(base::TimeTicks ticks) {
   if (!ShouldLogStartupHistogram())
     return;
 
-  UMA_HISTOGRAM_AND_TRACE_WITH_TEMPERATURE(
-      UMA_HISTOGRAM_MEDIUM_TIMES,
+  UmaHistogramWithTraceAndTemperature(
+      &base::UmaHistogramMediumTimes,
       "Startup.WebFooterExperiment.WebFooterCreation", g_process_creation_ticks,
       ticks);
+}
+
+void OnMemoryPressureBeforeFirstNonEmptyPaint(
+    base::MemoryPressureListener::MemoryPressureLevel level) {
+  if (level > g_max_pressure_level_before_first_non_empty_paint)
+    g_max_pressure_level_before_first_non_empty_paint = level;
 }
 
 }  // namespace startup_metric_utils

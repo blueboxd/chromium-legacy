@@ -442,6 +442,8 @@ class FakeGemDeviceDetailsManager : public GemDeviceDetailsManager {
       base::TimeDelta upload_device_details_request_timeout);
   ~FakeGemDeviceDetailsManager() override;
 
+  using GemDeviceDetailsManager::GetRequestDictForTesting;
+  using GemDeviceDetailsManager::GetUploadStatusForTesting;
   using GemDeviceDetailsManager::SetRequestTimeoutForTesting;
 
  private:

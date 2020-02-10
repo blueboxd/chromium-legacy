@@ -57,6 +57,10 @@ class APP_LIST_EXPORT AppListFolderView : public views::View,
   // Hides the view immediately without animation.
   void HideViewImmediately();
 
+  // Prepares folder item grid for closing the folder - it ends any in-progress
+  // drag, and clears any selected view.
+  void ResetItemsGridForClose();
+
   // Closes the folder page and goes back the top level page.
   void CloseFolderPage();
 

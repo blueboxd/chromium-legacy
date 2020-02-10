@@ -30,7 +30,7 @@ void AccountSelectFillData::Add(
   auto iter_ok = forms_.insert(std::make_pair(form_data.name, FormInfo()));
   FormInfo& form_info = iter_ok.first->second;
   form_info.origin = form_data.origin;
-  form_info.action = form_data.action;
+  form_info.name = form_data.name;
   form_info.username_element = form_data.username_field.name;
   form_info.password_element = form_data.password_field.name;
 
@@ -102,7 +102,7 @@ std::unique_ptr<FillData> AccountSelectFillData::GetFillData(
   const Credential& credential = *it;
   auto result = std::make_unique<FillData>();
   result->origin = last_requested_form_->origin;
-  result->action = last_requested_form_->action;
+  result->name = last_requested_form_->name;
   result->username_element = last_requested_form_->username_element;
   result->username_value = credential.username;
   result->password_element = last_requested_password_field_.empty()

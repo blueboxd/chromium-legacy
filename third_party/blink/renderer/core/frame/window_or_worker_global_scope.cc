@@ -47,7 +47,7 @@
 #include "third_party/blink/renderer/core/workers/worker_global_scope.h"
 #include "third_party/blink/renderer/platform/bindings/exception_state.h"
 #include "third_party/blink/renderer/platform/heap/heap.h"
-#include "third_party/blink/renderer/platform/weborigin/security_violation_reporting_policy.h"
+#include "third_party/blink/renderer/platform/weborigin/reporting_disposition.h"
 #include "third_party/blink/renderer/platform/wtf/text/base64.h"
 #include "third_party/blink/renderer/platform/wtf/text/string_utf8_adaptor.h"
 
@@ -60,7 +60,7 @@ static bool IsAllowed(ExecutionContext* execution_context,
     if (!document->GetFrame())
       return false;
     if (is_eval && !document->GetContentSecurityPolicy()->AllowEval(
-                       SecurityViolationReportingPolicy::kReport,
+                       ReportingDisposition::kReport,
                        ContentSecurityPolicy::kWillNotThrowException, source)) {
       return false;
     }
@@ -74,7 +74,7 @@ static bool IsAllowed(ExecutionContext* execution_context,
     ContentSecurityPolicy* policy =
         worker_global_scope->GetContentSecurityPolicy();
     if (is_eval && policy &&
-        !policy->AllowEval(SecurityViolationReportingPolicy::kReport,
+        !policy->AllowEval(ReportingDisposition::kReport,
                            ContentSecurityPolicy::kWillNotThrowException,
                            source)) {
       return false;

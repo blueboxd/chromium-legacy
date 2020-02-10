@@ -801,7 +801,7 @@ TEST_F(ExtendedDesktopTest, StayInSameRootWindow) {
 
   aura::Window* status_container =
       Shell::GetPrimaryRootWindowController()->GetContainer(
-          kShellWindowId_ShelfControlContainer);
+          kShellWindowId_ShelfContainer);
   window = aura::test::CreateTestWindowWithId(100, status_container);
   window->SetBoundsInScreen(gfx::Rect(150, 10, 50, 50), GetSecondaryDisplay());
   EXPECT_EQ(root_windows[0], window->GetRootWindow());

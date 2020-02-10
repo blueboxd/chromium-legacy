@@ -23,6 +23,7 @@
 #include "base/test/gtest_util.h"
 #include "base/test/mock_callback.h"
 #include "base/test/mock_log.h"
+#include "base/test/scoped_run_loop_timeout.h"
 #include "base/test/test_timeouts.h"
 #include "base/threading/platform_thread.h"
 #include "base/threading/sequence_local_storage_slot.h"
@@ -838,8 +839,8 @@ TEST_F(TaskEnvironmentTest, ThreadPoolPoolAllowsMTA) {
 #endif  // defined(OS_WIN)
 
 TEST_F(TaskEnvironmentTest, SetsDefaultRunTimeout) {
-  const RunLoop::ScopedRunTimeoutForTest* old_run_timeout =
-      RunLoop::ScopedRunTimeoutForTest::Current();
+  const RunLoop::RunLoopTimeout* old_run_timeout =
+      ScopedRunLoopTimeout::GetTimeoutForCurrentThread();
 
   {
     TaskEnvironment task_environment;
@@ -847,21 +848,20 @@ TEST_F(TaskEnvironmentTest, SetsDefaultRunTimeout) {
     // TaskEnvironment should set a default Run() timeout that fails the
     // calling test (before test_launcher_timeout()).
 
-    const RunLoop::ScopedRunTimeoutForTest* run_timeout =
-        RunLoop::ScopedRunTimeoutForTest::Current();
+    const RunLoop::RunLoopTimeout* run_timeout =
+        ScopedRunLoopTimeout::GetTimeoutForCurrentThread();
     EXPECT_NE(run_timeout, old_run_timeout);
     EXPECT_TRUE(run_timeout);
     if (!debug::BeingDebugged()) {
-      EXPECT_LT(run_timeout->timeout(), TestTimeouts::test_launcher_timeout());
+      EXPECT_LT(run_timeout->timeout, TestTimeouts::test_launcher_timeout());
     }
-    EXPECT_NONFATAL_FAILURE({ run_timeout->on_timeout().Run(); },
-                            "RunLoop::Run() timed out");
+    static const RepeatingClosure& static_on_timeout = run_timeout->on_timeout;
+    EXPECT_FATAL_FAILURE(static_on_timeout.Run(), "RunLoop::Run() timed out");
   }
 
-  EXPECT_EQ(RunLoop::ScopedRunTimeoutForTest::Current(), old_run_timeout);
+  EXPECT_EQ(ScopedRunLoopTimeout::GetTimeoutForCurrentThread(),
+            old_run_timeout);
 }
-
-namespace {}
 
 TEST_F(TaskEnvironmentTest, DescribePendingMainThreadTasks) {
   TaskEnvironment task_environment;
@@ -1028,7 +1028,7 @@ TEST_F(TaskEnvironmentTest, RunLoopDriveable) {
 
   // Disable Run() timeout here, otherwise we'll fast-forward to it before we
   // reach the quit task.
-  RunLoop::ScopedDisableRunTimeoutForTest disable_timeout;
+  ScopedDisableRunLoopTimeout disable_timeout;
 
   RunLoop run_loop;
   ThreadTaskRunnerHandle::Get()->PostDelayedTask(

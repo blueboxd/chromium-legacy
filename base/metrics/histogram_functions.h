@@ -177,6 +177,11 @@ BASE_EXPORT void UmaHistogramLongTimes(const std::string& name,
                                        TimeDelta sample);
 BASE_EXPORT void UmaHistogramLongTimes(const char* name, TimeDelta sample);
 
+// For time intervals up to 1 hr (100 buckets).
+BASE_EXPORT void UmaHistogramLongTimes100(const std::string& name,
+                                          TimeDelta sample);
+BASE_EXPORT void UmaHistogramLongTimes100(const char* name, TimeDelta sample);
+
 // For histograms storing times with microseconds granularity.
 BASE_EXPORT void UmaHistogramCustomMicrosecondsTimes(const std::string& name,
                                                      TimeDelta sample,

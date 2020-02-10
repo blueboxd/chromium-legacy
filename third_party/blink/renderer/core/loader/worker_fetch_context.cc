@@ -144,9 +144,9 @@ bool WorkerFetchContext::ShouldBlockFetchByMixedContentCheck(
     mojom::RequestContextType request_context,
     ResourceRequest::RedirectStatus redirect_status,
     const KURL& url,
-    SecurityViolationReportingPolicy reporting_policy) const {
+    ReportingDisposition reporting_disposition) const {
   return MixedContentChecker::ShouldBlockFetchOnWorker(
-      *this, request_context, redirect_status, url, reporting_policy,
+      *this, request_context, redirect_status, url, reporting_disposition,
       global_scope_->IsWorkletGlobalScope());
 }
 

@@ -52,16 +52,15 @@ SubresourceFilter::SubresourceFilter(
 
 SubresourceFilter::~SubresourceFilter() = default;
 
-bool SubresourceFilter::AllowLoad(
-    const KURL& resource_url,
-    mojom::RequestContextType request_context,
-    SecurityViolationReportingPolicy reporting_policy) {
+bool SubresourceFilter::AllowLoad(const KURL& resource_url,
+                                  mojom::RequestContextType request_context,
+                                  ReportingDisposition reporting_disposition) {
   // TODO(csharrison): Implement a caching layer here which is a HashMap of
   // Pair<url string, context> -> LoadPolicy.
   WebDocumentSubresourceFilter::LoadPolicy load_policy =
       subresource_filter_->GetLoadPolicy(resource_url, request_context);
 
-  if (reporting_policy == SecurityViolationReportingPolicy::kReport)
+  if (reporting_disposition == ReportingDisposition::kReport)
     ReportLoad(resource_url, load_policy);
 
   last_resource_check_result_ = std::make_pair(

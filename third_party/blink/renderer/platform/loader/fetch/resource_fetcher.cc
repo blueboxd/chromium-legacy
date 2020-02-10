@@ -78,10 +78,10 @@
 #include "third_party/blink/renderer/platform/scheduler/public/thread_scheduler.h"
 #include "third_party/blink/renderer/platform/weborigin/known_ports.h"
 #include "third_party/blink/renderer/platform/weborigin/origin_access_entry.h"
+#include "third_party/blink/renderer/platform/weborigin/reporting_disposition.h"
 #include "third_party/blink/renderer/platform/weborigin/scheme_registry.h"
 #include "third_party/blink/renderer/platform/weborigin/security_origin.h"
 #include "third_party/blink/renderer/platform/weborigin/security_policy.h"
-#include "third_party/blink/renderer/platform/weborigin/security_violation_reporting_policy.h"
 #include "third_party/blink/renderer/platform/wtf/assertions.h"
 #include "third_party/blink/renderer/platform/wtf/text/string_builder.h"
 #include "third_party/blink/renderer/platform/wtf/text/wtf_string.h"
@@ -798,10 +798,9 @@ base::Optional<ResourceRequestBlockedReason> ResourceFetcher::PrepareRequest(
   params.OverrideContentType(factory.ContentType());
 
   // Don't send security violation reports for speculative preloads.
-  SecurityViolationReportingPolicy reporting_policy =
-      params.IsSpeculativePreload()
-          ? SecurityViolationReportingPolicy::kSuppressReporting
-          : SecurityViolationReportingPolicy::kReport;
+  ReportingDisposition reporting_disposition =
+      params.IsSpeculativePreload() ? ReportingDisposition::kSuppressReporting
+                                    : ReportingDisposition::kReport;
 
   // Note that resource_request.GetRedirectStatus() may return kFollowedRedirect
   // here since e.g. ThreadableLoader may create a new Resource from
@@ -814,7 +813,7 @@ base::Optional<ResourceRequestBlockedReason> ResourceFetcher::PrepareRequest(
   Context().CheckCSPForRequest(
       resource_request.GetRequestContext(),
       MemoryCache::RemoveFragmentIdentifierIfNeeded(params.Url()), options,
-      reporting_policy, resource_request.GetRedirectStatus());
+      reporting_disposition, resource_request.GetRedirectStatus());
 
   // This may modify params.Url() (via the resource_request argument).
   Context().PopulateResourceRequest(
@@ -874,7 +873,7 @@ base::Optional<ResourceRequestBlockedReason> ResourceFetcher::PrepareRequest(
   KURL url = MemoryCache::RemoveFragmentIdentifierIfNeeded(params.Url());
   base::Optional<ResourceRequestBlockedReason> blocked_reason =
       Context().CanRequest(resource_type, resource_request, url, options,
-                           reporting_policy,
+                           reporting_disposition,
                            resource_request.GetRedirectStatus());
 
   if (Context().CalculateIfAdSubresource(resource_request, resource_type))
@@ -2040,7 +2039,7 @@ void ResourceFetcher::EmulateLoadStartedForInspector(
   FetchParameters params(std::move(resource_request), options);
   Context().CanRequest(resource->GetType(), resource->LastResourceRequest(),
                        resource->LastResourceRequest().Url(), params.Options(),
-                       SecurityViolationReportingPolicy::kReport,
+                       ReportingDisposition::kReport,
                        resource->LastResourceRequest().GetRedirectStatus());
   DidLoadResourceFromMemoryCache(resource->InspectorId(), resource,
                                  params.GetResourceRequest(),

@@ -55,8 +55,9 @@ class MessageBoxDialog : public views::DialogDelegate,
 
   void OnDialogAccepted();
 
-  // WidgetGetter:
-  const views::Widget* GetWidgetImpl() const override;
+  // Widget:
+  views::Widget* GetWidget() override;
+  const views::Widget* GetWidget() const override;
 
   const base::string16 window_title_;
   const chrome::MessageBoxType type_;

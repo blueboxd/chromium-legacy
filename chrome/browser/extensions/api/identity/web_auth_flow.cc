@@ -59,7 +59,7 @@ WebAuthFlow::WebAuthFlow(
       provider_url_(provider_url),
       mode_(mode),
       embedded_window_created_(false) {
-  TRACE_EVENT_ASYNC_BEGIN0("identity", "WebAuthFlow", this);
+  TRACE_EVENT_NESTABLE_ASYNC_BEGIN0("identity", "WebAuthFlow", this);
 }
 
 WebAuthFlow::~WebAuthFlow() {
@@ -76,7 +76,7 @@ WebAuthFlow::~WebAuthFlow() {
     if (app_window_ && app_window_->web_contents())
       app_window_->web_contents()->Close();
   }
-  TRACE_EVENT_ASYNC_END0("identity", "WebAuthFlow", this);
+  TRACE_EVENT_NESTABLE_ASYNC_END0("identity", "WebAuthFlow", this);
 }
 
 void WebAuthFlow::Start() {
@@ -244,17 +244,16 @@ void WebAuthFlow::DidFinishNavigation(
                 navigation_handle->GetNetErrorCode());
     } else {
       failed = true;
-      TRACE_EVENT_ASYNC_STEP_PAST1("identity", "WebAuthFlow", this,
-                                   "DidFinishNavigationFailure", "error_code",
-                                   navigation_handle->GetNetErrorCode());
+      TRACE_EVENT_NESTABLE_ASYNC_INSTANT1(
+          "identity", "DidFinishNavigationFailure", this, "error_code",
+          navigation_handle->GetNetErrorCode());
     }
   } else if (navigation_handle->IsInMainFrame() &&
              navigation_handle->GetResponseHeaders() &&
              navigation_handle->GetResponseHeaders()->response_code() >= 400) {
     failed = true;
-    TRACE_EVENT_ASYNC_STEP_PAST1(
-        "identity", "WebAuthFlow", this, "DidFinishNavigationFailure",
-        "response_code",
+    TRACE_EVENT_NESTABLE_ASYNC_INSTANT1(
+        "identity", "DidFinishNavigationFailure", this, "response_code",
         navigation_handle->GetResponseHeaders()->response_code());
   }
 

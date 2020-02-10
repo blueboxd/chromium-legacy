@@ -61,17 +61,6 @@ void OnAllMurmur2Hashes(
 void WebApkIconHasher::DownloadAndComputeMurmur2Hash(
     network::mojom::URLLoaderFactory* url_loader_factory,
     const url::Origin& request_initiator,
-    const GURL& icon_url,
-    Murmur2HashCallback callback) {
-  DownloadAndComputeMurmur2HashWithTimeout(
-      url_loader_factory, request_initiator, icon_url,
-      kDownloadTimeoutInMilliseconds, std::move(callback));
-}
-
-// static
-void WebApkIconHasher::DownloadAndComputeMurmur2Hash(
-    network::mojom::URLLoaderFactory* url_loader_factory,
-    const url::Origin& request_initiator,
     const std::set<GURL>& icon_urls,
     Murmur2HashMultipleCallback callback) {
   auto hashes_ptr = std::make_unique<std::map<std::string, std::string>>();
@@ -84,8 +73,9 @@ void WebApkIconHasher::DownloadAndComputeMurmur2Hash(
 
   for (const auto& icon_url : icon_urls) {
     // |hashes| is owned by |barrier_closure|.
-    DownloadAndComputeMurmur2Hash(
+    DownloadAndComputeMurmur2HashWithTimeout(
         url_loader_factory, request_initiator, icon_url,
+        kDownloadTimeoutInMilliseconds,
         base::BindOnce(&OnMurmur2Hash, &hashes[icon_url.spec()],
                        barrier_closure));
   }

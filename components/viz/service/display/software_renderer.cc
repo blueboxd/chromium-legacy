@@ -587,7 +587,7 @@ void SoftwareRenderer::CopyDrawnRenderPass(
     const copy_output::RenderPassGeometry& geometry,
     std::unique_ptr<CopyOutputRequest> request) {
   sk_sp<SkColorSpace> color_space =
-      current_frame()->current_render_pass->color_space.ToSkColorSpace();
+      CurrentRenderPassColorSpace().ToSkColorSpace();
   DCHECK(color_space);
 
   SkBitmap bitmap;

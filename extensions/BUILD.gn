@@ -53,9 +53,6 @@ grit("extensions_renderer_resources") {
     "mojom_root=" + rebase_path(root_gen_dir, root_build_dir),
   ]
 
-  # Files included from ${mojom_root} are generated.
-  source_is_generated = true
-
   deps = [
     "//extensions/common:mojom_js",
     "//extensions/common/api:mojom_js",

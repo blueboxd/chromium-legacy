@@ -76,7 +76,7 @@
 #include "third_party/blink/renderer/platform/scheduler/public/thread.h"
 #include "third_party/blink/renderer/platform/scheduler/public/thread_scheduler.h"
 #include "third_party/blink/renderer/platform/weborigin/kurl.h"
-#include "third_party/blink/renderer/platform/weborigin/security_violation_reporting_policy.h"
+#include "third_party/blink/renderer/platform/weborigin/reporting_disposition.h"
 #include "third_party/blink/renderer/platform/wtf/assertions.h"
 #include "third_party/blink/renderer/platform/wtf/sanitizers.h"
 #include "third_party/blink/renderer/platform/wtf/stack_util.h"
@@ -380,7 +380,7 @@ static bool ContentSecurityPolicyCodeGenerationCheck(
                             static_cast<size_t>(source_str.length()));
       memcpy(snippet, *source_str, len * sizeof(UChar));
       snippet[len] = 0;
-      return policy->AllowEval(SecurityViolationReportingPolicy::kReport,
+      return policy->AllowEval(ReportingDisposition::kReport,
                                ContentSecurityPolicy::kWillThrowException,
                                snippet);
     }
@@ -464,10 +464,10 @@ static bool WasmCodeGenerationCheckCallbackInMainThread(
       // Wasm code generation is allowed if we have either the wasm-eval
       // directive or the unsafe-eval directive. However, we only recognize
       // wasm-eval for certain schemes
-      return policy->AllowWasmEval(SecurityViolationReportingPolicy::kReport,
+      return policy->AllowWasmEval(ReportingDisposition::kReport,
                                    ContentSecurityPolicy::kWillThrowException,
                                    snippet) ||
-             policy->AllowEval(SecurityViolationReportingPolicy::kReport,
+             policy->AllowEval(ReportingDisposition::kReport,
                                ContentSecurityPolicy::kWillThrowException,
                                snippet);
     }

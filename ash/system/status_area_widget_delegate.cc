@@ -134,6 +134,14 @@ const char* StatusAreaWidgetDelegate::GetClassName() const {
   return "ash/StatusAreaWidgetDelegate";
 }
 
+views::Widget* StatusAreaWidgetDelegate::GetWidget() {
+  return View::GetWidget();
+}
+
+const views::Widget* StatusAreaWidgetDelegate::GetWidget() const {
+  return View::GetWidget();
+}
+
 void StatusAreaWidgetDelegate::OnGestureEvent(ui::GestureEvent* event) {
   views::Widget* target_widget =
       static_cast<views::View*>(event->target())->GetWidget();

@@ -12,6 +12,7 @@
 #include "base/callback.h"
 #include "base/compiler_specific.h"
 #include "base/containers/stack.h"
+#include "base/gtest_prod_util.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/weak_ptr.h"
@@ -22,6 +23,12 @@
 #include "build/build_config.h"
 
 namespace base {
+
+namespace test {
+class ScopedRunLoopTimeout;
+class ScopedDisableRunLoopTimeout;
+}  // namespace test
+
 #if defined(OS_ANDROID)
 class MessagePumpForUI;
 #endif
@@ -246,65 +253,6 @@ class BASE_EXPORT RunLoop {
   static void QuitCurrentWhenIdleDeprecated();
   static RepeatingClosure QuitCurrentWhenIdleClosureDeprecated();
 
-  // Configures all RunLoop::Run() calls on the current thread to run the
-  // supplied |on_timeout| callback if they run for longer than |timeout|.
-  //
-  // Specifying Run() timeouts per-thread avoids the need to cope with Run()s
-  // executing concurrently with ScopedRunTimeoutForTest initialization or
-  // teardown, and allows "default" timeouts to be specified by suites, rather
-  // than explicitly configuring them for every RunLoop, in each test.
-  //
-  // Tests can temporarily override any currently-active Run() timeout, e.g. to
-  // allow a step to Run() for longer than the suite's default timeout, by
-  // creating a new ScopedRunTimeoutForTest on their stack, e.g:
-  //
-  //   ScopedRunTimeoutForTest default_timeout(kDefaultRunTimeout, on_timeout);
-  //   ... do other test stuff ...
-  //   RunLoop().Run(); // Run for up to kDefaultRunTimeout.
-  //   ...
-  //   {
-  //     ScopedRunTimeoutForTest specific_timeout(kTestSpecificTimeout, ...);
-  //     RunLoop().Run(); // Run for up to kTestSpecificTimeout.
-  //   }
-  //   ...
-  //   RunLoop().Run(); // Run for up to kDefaultRunTimeout.
-  //
-  // The currently-active timeout can also be temporarily disabled:
-  //   ScopedDisableRunTimeoutForTest disable_timeout;
-  //
-  // TaskEnvironment applies a default Run() timeout after which a
-  // LOG(FATAL) is performed, to dump a crash stack for diagnosis. Tests adding
-  // their own Run() timeouts can use e.g. MakeExpectedNotRunClosure().
-
-  class BASE_EXPORT ScopedRunTimeoutForTest {
-   public:
-    ScopedRunTimeoutForTest(TimeDelta timeout, RepeatingClosure on_timeout);
-    ~ScopedRunTimeoutForTest();
-
-    // Returns the active ScopedRunTimeoutForTest on the calling thread, if any,
-    // or null otherwise.
-    static const RunLoop::ScopedRunTimeoutForTest* Current();
-
-    TimeDelta timeout() const { return timeout_; }
-    const RepeatingClosure& on_timeout() const { return on_timeout_; }
-
-   private:
-    const TimeDelta timeout_;
-    const RepeatingClosure on_timeout_;
-    ScopedRunTimeoutForTest* const nested_timeout_;
-    DISALLOW_COPY_AND_ASSIGN(ScopedRunTimeoutForTest);
-  };
-
-  class BASE_EXPORT ScopedDisableRunTimeoutForTest {
-   public:
-    ScopedDisableRunTimeoutForTest();
-    ~ScopedDisableRunTimeoutForTest();
-
-   private:
-    ScopedRunTimeoutForTest* const nested_timeout_;
-    DISALLOW_COPY_AND_ASSIGN(ScopedDisableRunTimeoutForTest);
-  };
-
   // Run() will DCHECK if called while there's a ScopedDisallowRunningForTesting
   // in scope on its thread. This is useful to add safety to some test
   // constructs which allow multiple task runners to share the main thread in
@@ -335,6 +283,15 @@ class BASE_EXPORT RunLoop {
   // is not feasible. Use Run() and QuitClosure() where possible.
   void RunUntilConditionForTest(RepeatingCallback<bool()> condition);
 
+  // Support for //base/test/scoped_run_loop_timeout.h.
+  // This must be public for access by the implementation code in run_loop.cc.
+  struct BASE_EXPORT RunLoopTimeout {
+    RunLoopTimeout();
+    ~RunLoopTimeout();
+    TimeDelta timeout;
+    RepeatingClosure on_timeout;
+  };
+
  private:
   FRIEND_TEST_ALL_PREFIXES(MessageLoopTypedTest, RunLoopQuitOrderAfter);
 
@@ -349,6 +306,13 @@ class BASE_EXPORT RunLoop {
   // BeforeRun directly.
   friend class MessagePumpUIApplication;
 #endif
+
+  // Support for //base/test/scoped_run_loop_timeout.h.
+  friend class test::ScopedRunLoopTimeout;
+  friend class test::ScopedDisableRunLoopTimeout;
+
+  static void SetTimeoutForCurrentThread(const RunLoopTimeout* timeout);
+  static const RunLoopTimeout* GetTimeoutForCurrentThread();
 
   // Return false to abort the Run.
   bool BeforeRun();

@@ -32,6 +32,10 @@ void WebViewPasswordFeatureManager::SetAccountStorageOptIn(bool opt_in) {
   NOTREACHED();
 }
 
+bool WebViewPasswordFeatureManager::ShouldShowPasswordStorePicker() const {
+  return false;
+}
+
 autofill::PasswordForm::Store
 WebViewPasswordFeatureManager::GetDefaultPasswordStore() const {
   return autofill::PasswordForm::Store::kProfileStore;

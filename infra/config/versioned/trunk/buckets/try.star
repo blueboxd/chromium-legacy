@@ -167,6 +167,13 @@ try_.chromium_linux_builder(
 )
 
 try_.chromium_linux_builder(
+    name = 'linux-ozone-x11-and-wayland-rel',
+    tryjob = try_.job(
+        experiment_percentage = 1,
+    ),
+)
+
+try_.chromium_linux_builder(
     name = 'linux-rel',
     goma_jobs = goma.jobs.J150,
     tryjob = try_.job(),

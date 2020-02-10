@@ -12,6 +12,7 @@
 #include "ash/app_list/test/app_list_test_helper.h"
 #include "ash/app_list/test/app_list_test_model.h"
 #include "ash/app_list/test/app_list_test_view_delegate.h"
+#include "ash/app_list/views/app_list_folder_view.h"
 #include "ash/app_list/views/app_list_item_view.h"
 #include "ash/app_list/views/app_list_main_view.h"
 #include "ash/app_list/views/app_list_view.h"
@@ -198,6 +199,7 @@ class PopulatedAppListTest : public AshTestBase,
   ~PopulatedAppListTest() override = default;
 
   void SetUp() override {
+    AppListConfigProvider::Get().ResetForTesting();
     AshTestBase::SetUp();
 
     // Make the display big enough to hold the app list.
@@ -246,9 +248,24 @@ class PopulatedAppListTest : public AshTestBase,
     apps_grid_test_api_ =
         std::make_unique<test::AppsGridViewTestApi>(apps_grid_view_);
   }
+
   gfx::Rect GetItemRectOnCurrentPageAt(int row, int col) const {
     DCHECK_GT(app_list_test_model_->top_level_item_list()->item_count(), 0u);
     return apps_grid_test_api_->GetItemTileRectOnCurrentPageAt(row, col);
+  }
+
+  bool AppListIsInFolderView() const {
+    return app_list_view_->app_list_main_view()
+        ->contents_view()
+        ->GetAppsContainerView()
+        ->IsInFolderView();
+  }
+
+  AppListFolderView* folder_view() {
+    return app_list_view_->app_list_main_view()
+        ->contents_view()
+        ->GetAppsContainerView()
+        ->app_list_folder_view();
   }
 
   test::AppListTestModel* app_list_test_model_ = nullptr;
@@ -425,6 +442,290 @@ TEST_F(PopulatedAppListTest,
   histogram_tester.ExpectUniqueSample(
       kAppListPageSwitcherSourceHistogramInClamshell,
       AppListPageSwitcherSource::kMouseDrag, 1);
+}
+
+// Tests that mouse app list item drag is cancelled when mouse capture is lost
+// (e.g. on screen rotation).
+TEST_F(PopulatedAppListTest, CancelItemDragOnMouseCaptureLoss) {
+  InitializeAppsGrid();
+  app_list_test_model_->PopulateApps(apps_grid_test_api_->TilesPerPage(0) + 1);
+  ShowAppListInAppsFullScreen();
+
+  AppListItemView* const dragged_view = apps_grid_view_->GetItemViewAt(0);
+
+  // Start dragging the first item - move it in between items 1 and 2.
+  ui::test::EventGenerator* event_generator = GetEventGenerator();
+  event_generator->MoveMouseTo(dragged_view->GetBoundsInScreen().CenterPoint());
+  event_generator->PressLeftButton();
+  dragged_view->FireMouseDragTimerForTest();
+  event_generator->MoveMouseTo(
+      apps_grid_view_->GetItemViewAt(2)->GetBoundsInScreen().left_center());
+  EXPECT_TRUE(apps_grid_view_->dragging());
+
+  display::Display display = display::Screen::GetScreen()->GetPrimaryDisplay();
+  display_manager()->SetDisplayRotation(
+      display.id(), display::Display::ROTATE_270,
+      display::Display::RotationSource::ACTIVE);
+  // AppListView is usually notified of display bounds changes by
+  // AppListPresenterDelegate, though the test delegate implementation does not
+  // track display metrics changes, so OnParentWindowBoundsChanged() has to be
+  // explicitly called here.
+  app_list_view_->OnParentWindowBoundsChanged();
+
+  // Verify that mouse drag has been canceled due to mouse capture loss.
+  EXPECT_FALSE(apps_grid_view_->dragging());
+  EXPECT_EQ("Item 0", apps_grid_view_->GetItemViewAt(0)->item()->id());
+  EXPECT_EQ("Item 1", apps_grid_view_->GetItemViewAt(1)->item()->id());
+  EXPECT_EQ("Item 2", apps_grid_view_->GetItemViewAt(2)->item()->id());
+}
+
+// Tests that apps grid item drag operation can continue normally after display
+// rotation (and app list config change).
+TEST_F(PopulatedAppListTest, ScreenRotationDuringAppsGridItemDrag) {
+  // Set the display dimensions so rotation also changes the app list config.
+  UpdateDisplay("1200x600");
+
+  InitializeAppsGrid();
+  app_list_test_model_->PopulateApps(apps_grid_test_api_->TilesPerPage(0) + 1);
+  ShowAppListInAppsFullScreen();
+
+  AppListItemView* const dragged_view = apps_grid_view_->GetItemViewAt(0);
+
+  // Start dragging the first item.
+  ui::test::EventGenerator* event_generator = GetEventGenerator();
+  event_generator->MoveTouch(dragged_view->GetBoundsInScreen().CenterPoint());
+  event_generator->PressTouch();
+  ASSERT_TRUE(dragged_view->FireTouchDragTimerForTest());
+
+  event_generator->MoveTouch(
+      apps_grid_view_->GetItemViewAt(2)->GetBoundsInScreen().CenterPoint());
+
+  display::Display display = display::Screen::GetScreen()->GetPrimaryDisplay();
+  display_manager()->SetDisplayRotation(
+      display.id(), display::Display::ROTATE_270,
+      display::Display::RotationSource::ACTIVE);
+  // AppListView is usually notified of display bounds changes by
+  // AppListPresenterDelegate, though the test delegate implementation does not
+  // track display metrics changes, so OnParentWindowBoundsChanged() has to be
+  // explicitly called here.
+  app_list_view_->OnParentWindowBoundsChanged();
+
+  // End drag at the in between items 1 and 2 - note that these have been
+  // translated one slot left to fill in space left by the dragged view, so the
+  // expected drop slot is actually slot 1.
+  event_generator->MoveTouch(
+      apps_grid_view_->GetItemViewAt(2)->GetBoundsInScreen().left_center());
+  event_generator->ReleaseTouch();
+
+  EXPECT_EQ("Item 1", apps_grid_view_->GetItemViewAt(0)->item()->id());
+  EXPECT_EQ("Item 0", apps_grid_view_->GetItemViewAt(1)->item()->id());
+}
+
+// Tests screen rotation during apps grid item drag where the drag item ends up
+// in page-scroll area. Tests that the apps grid page scrolls without a crash,
+// and that releasing drag does not change the item position in the model.
+TEST_F(PopulatedAppListTest,
+       ScreenRotationDuringAppsGridItemDragWithPageScroll) {
+  // Set the display dimensions so rotation also changes the app list config.
+  UpdateDisplay("1200x600");
+
+  InitializeAppsGrid();
+  app_list_test_model_->PopulateApps(apps_grid_test_api_->TilesPerPage(0) + 1);
+  ShowAppListInAppsFullScreen();
+
+  AppListItemView* const dragged_view = apps_grid_view_->GetItemViewAt(0);
+
+  // Start dragging the first item.
+  ui::test::EventGenerator* event_generator = GetEventGenerator();
+  event_generator->MoveTouch(dragged_view->GetBoundsInScreen().CenterPoint());
+  event_generator->PressTouch();
+  ASSERT_TRUE(dragged_view->FireTouchDragTimerForTest());
+
+  // Move the item close to screen edge, so it ends up in area that triggers
+  // page scroll after rotation.
+  event_generator->MoveTouch(app_list_view_->GetBoundsInScreen().left_center() +
+                             gfx::Vector2d(100, 0));
+
+  display::Display display = display::Screen::GetScreen()->GetPrimaryDisplay();
+  display_manager()->SetDisplayRotation(
+      display.id(), display::Display::ROTATE_90,
+      display::Display::RotationSource::ACTIVE);
+  // AppListView is usually notified of display bounds changes by
+  // AppListPresenterDelegate, though the test delegate implementation does not
+  // track display metrics changes, so OnParentWindowBoundsChanged() has to be
+  // explicitly called here.
+  app_list_view_->OnParentWindowBoundsChanged();
+
+  event_generator->MoveTouchBy(0, 10);
+  EXPECT_TRUE(apps_grid_view_->FirePageFlipTimerForTest());
+  event_generator->ReleaseTouch();
+
+  // The model state should not have been changed.
+  EXPECT_EQ("Item 0", apps_grid_view_->GetItemViewAt(0)->item()->id());
+  EXPECT_EQ("Item 1", apps_grid_view_->GetItemViewAt(1)->item()->id());
+  EXPECT_EQ("Item 2", apps_grid_view_->GetItemViewAt(2)->item()->id());
+}
+
+// Tests screen rotation while app list folder item is in progress, and the item
+// remains in the folder bounds during the drag.
+TEST_F(PopulatedAppListTest, ScreenRotationDuringFolderItemDrag) {
+  // Set the display dimensions so rotation also changes the app list config.
+  UpdateDisplay("1200x600");
+
+  InitializeAppsGrid();
+  app_list_test_model_->PopulateApps(2);
+  AppListFolderItem* folder =
+      app_list_test_model_->CreateAndPopulateFolderWithApps(3);
+  app_list_test_model_->PopulateApps(10);
+  ShowAppListInAppsFullScreen();
+
+  // Tap the folder item to show it.
+  ui::test::EventGenerator* event_generator = GetEventGenerator();
+  event_generator->GestureTapAt(
+      apps_grid_view_->GetItemViewAt(2)->GetBoundsInScreen().CenterPoint());
+  ASSERT_TRUE(AppListIsInFolderView());
+
+  // Start dragging the first item in the active folder.
+  AppListItemView* const dragged_view =
+      folder_view()->items_grid_view()->GetItemViewAt(0);
+  event_generator->MoveTouch(dragged_view->GetBoundsInScreen().CenterPoint());
+  event_generator->PressTouch();
+  ASSERT_TRUE(dragged_view->FireTouchDragTimerForTest());
+
+  // Drag the item within the folder bounds.
+  event_generator->MoveTouch(
+      apps_grid_view_->GetItemViewAt(2)->GetBoundsInScreen().CenterPoint());
+
+  display::Display display = display::Screen::GetScreen()->GetPrimaryDisplay();
+  display_manager()->SetDisplayRotation(
+      display.id(), display::Display::ROTATE_270,
+      display::Display::RotationSource::ACTIVE);
+  // AppListView is usually notified of display bounds changes by
+  // AppListPresenterDelegate, though the test delegate implementation does not
+  // track display metrics changes, so OnParentWindowBoundsChanged() has to be
+  // explicitly called here.
+  app_list_view_->OnParentWindowBoundsChanged();
+
+  // The current behavior on app list bounds change is to close the active
+  // folder, canceling the drag.
+  EXPECT_FALSE(AppListIsInFolderView());
+  EXPECT_FALSE(apps_grid_view_->dragging());
+  EXPECT_FALSE(folder_view()->items_grid_view()->dragging());
+
+  EXPECT_EQ("Item 0", apps_grid_view_->GetItemViewAt(0)->item()->id());
+  EXPECT_EQ("Item 1", apps_grid_view_->GetItemViewAt(1)->item()->id());
+  EXPECT_EQ(folder->id(), apps_grid_view_->GetItemViewAt(2)->item()->id());
+  EXPECT_EQ(dragged_view, folder_view()->items_grid_view()->GetItemViewAt(0));
+  EXPECT_EQ("Item 3", apps_grid_view_->GetItemViewAt(3)->item()->id());
+}
+
+// Tests that app list folder item reparenting drag (where a folder item is
+// dragged outside the folder bounds, and dropped within the apps grid) can
+// continue normally after screen rotation.
+TEST_F(PopulatedAppListTest, ScreenRotationDuringAppsGridItemReparentDrag) {
+  UpdateDisplay("1200x600");
+
+  InitializeAppsGrid();
+  app_list_test_model_->PopulateApps(2);
+  AppListFolderItem* folder =
+      app_list_test_model_->CreateAndPopulateFolderWithApps(3);
+  app_list_test_model_->PopulateApps(10);
+  ShowAppListInAppsFullScreen();
+
+  // Tap the folder item to show it.
+  ui::test::EventGenerator* event_generator = GetEventGenerator();
+  event_generator->GestureTapAt(
+      apps_grid_view_->GetItemViewAt(2)->GetBoundsInScreen().CenterPoint());
+  ASSERT_TRUE(AppListIsInFolderView());
+
+  // Start dragging the first item in the active folder.
+  AppListItemView* dragged_view =
+      folder_view()->items_grid_view()->GetItemViewAt(0);
+  event_generator->MoveTouch(dragged_view->GetBoundsInScreen().CenterPoint());
+  event_generator->PressTouch();
+  ASSERT_TRUE(dragged_view->FireTouchDragTimerForTest());
+
+  // Drag the item outside the folder bounds.
+  event_generator->MoveTouch(
+      apps_grid_view_->GetItemViewAt(1)->GetBoundsInScreen().CenterPoint());
+  event_generator->MoveTouchBy(2, 2);
+
+  // Fire reparenting timer.
+  EXPECT_TRUE(
+      folder_view()->items_grid_view()->FireFolderItemReparentTimerForTest());
+  EXPECT_FALSE(AppListIsInFolderView());
+
+  display::Display display = display::Screen::GetScreen()->GetPrimaryDisplay();
+  display_manager()->SetDisplayRotation(
+      display.id(), display::Display::ROTATE_270,
+      display::Display::RotationSource::ACTIVE);
+  // AppListView is usually notified of display bounds changes by
+  // AppListPresenterDelegate, though the test delegate implementation does not
+  // track display metrics changes, so OnParentWindowBoundsChanged() has to be
+  // explicitly called here.
+  app_list_view_->OnParentWindowBoundsChanged();
+
+  // End drag at the in between items 1 and 2.
+  event_generator->MoveTouch(
+      apps_grid_view_->GetItemViewAt(1)->GetBoundsInScreen().right_center());
+  event_generator->ReleaseTouch();
+
+  // Verify the new item location within the apps grid.
+  EXPECT_EQ("Item 0", apps_grid_view_->GetItemViewAt(0)->item()->id());
+  EXPECT_EQ("Item 1", apps_grid_view_->GetItemViewAt(1)->item()->id());
+  EXPECT_EQ(dragged_view->item()->id(),
+            apps_grid_view_->GetItemViewAt(2)->item()->id());
+  EXPECT_EQ(folder->id(), apps_grid_view_->GetItemViewAt(3)->item()->id());
+}
+
+// Tests that app list folder item reparenting drag to another floder.
+TEST_F(PopulatedAppListTest, AppsGridItemReparentToFolderDrag) {
+  UpdateDisplay("1200x600");
+
+  InitializeAppsGrid();
+  app_list_test_model_->PopulateApps(2);
+  AppListFolderItem* folder =
+      app_list_test_model_->CreateAndPopulateFolderWithApps(3);
+  app_list_test_model_->PopulateApps(10);
+  ShowAppListInAppsFullScreen();
+
+  // Tap the folder item to show it.
+  ui::test::EventGenerator* event_generator = GetEventGenerator();
+  event_generator->GestureTapAt(
+      apps_grid_view_->GetItemViewAt(2)->GetBoundsInScreen().CenterPoint());
+  ASSERT_TRUE(AppListIsInFolderView());
+
+  // Start dragging the first item in the active folder.
+  AppListItemView* dragged_view =
+      folder_view()->items_grid_view()->GetItemViewAt(0);
+  event_generator->MoveTouch(dragged_view->GetBoundsInScreen().CenterPoint());
+  event_generator->PressTouch();
+  ASSERT_TRUE(dragged_view->FireTouchDragTimerForTest());
+
+  // Drag the item outside the folder bounds.
+  event_generator->MoveTouch(
+      apps_grid_view_->GetItemViewAt(0)->GetBoundsInScreen().CenterPoint());
+  event_generator->MoveTouchBy(2, 2);
+
+  EXPECT_TRUE(
+      folder_view()->items_grid_view()->FireFolderItemReparentTimerForTest());
+  EXPECT_FALSE(AppListIsInFolderView());
+
+  // Move the pointer over the item 3, and drop the dragged item.
+  gfx::Point target =
+      apps_grid_view_->GetItemViewAt(3)->GetBoundsInScreen().CenterPoint();
+  event_generator->MoveTouch(target);
+  EXPECT_TRUE(apps_grid_view_->FireFolderDroppingTimerForTest());
+  event_generator->ReleaseTouch();
+
+  // Verify the new item location within the apps grid.
+  EXPECT_EQ("Item 0", apps_grid_view_->GetItemViewAt(0)->item()->id());
+  EXPECT_EQ("Item 1", apps_grid_view_->GetItemViewAt(1)->item()->id());
+  EXPECT_EQ(folder->id(), apps_grid_view_->GetItemViewAt(2)->item()->id());
+
+  EXPECT_TRUE(apps_grid_view_->GetItemViewAt(3)->item()->is_folder());
+  EXPECT_EQ(dragged_view->item()->folder_id(),
+            apps_grid_view_->GetItemViewAt(3)->item()->id());
 }
 
 TEST_F(PopulatedAppListWithVKEnabledTest,

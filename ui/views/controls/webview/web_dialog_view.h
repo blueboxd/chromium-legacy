@@ -106,6 +106,8 @@ class WEBVIEW_EXPORT WebDialogView : public ClientView,
   View* GetInitiallyFocusedView() override;
   bool ShouldShowWindowTitle() const override;
   bool ShouldShowCloseButton() const override;
+  Widget* GetWidget() override;
+  const Widget* GetWidget() const override;
 
   // ui::WebDialogDelegate:
   ui::ModalType GetDialogModalType() const override;

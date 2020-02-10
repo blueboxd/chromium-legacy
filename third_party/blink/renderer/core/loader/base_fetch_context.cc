@@ -31,13 +31,13 @@ base::Optional<ResourceRequestBlockedReason> BaseFetchContext::CanRequest(
     const ResourceRequest& resource_request,
     const KURL& url,
     const ResourceLoaderOptions& options,
-    SecurityViolationReportingPolicy reporting_policy,
+    ReportingDisposition reporting_disposition,
     ResourceRequest::RedirectStatus redirect_status) const {
   base::Optional<ResourceRequestBlockedReason> blocked_reason =
-      CanRequestInternal(type, resource_request, url, options, reporting_policy,
-                         redirect_status);
+      CanRequestInternal(type, resource_request, url, options,
+                         reporting_disposition, redirect_status);
   if (blocked_reason &&
-      reporting_policy == SecurityViolationReportingPolicy::kReport) {
+      reporting_disposition == ReportingDisposition::kReport) {
     DispatchDidBlockRequest(resource_request, options.initiator_info,
                             blocked_reason.value(), type);
   }
@@ -58,7 +58,7 @@ bool BaseFetchContext::CalculateIfAdSubresource(const ResourceRequest& request,
 bool BaseFetchContext::SendConversionRequestInsteadOfRedirecting(
     const KURL& url,
     ResourceRequest::RedirectStatus redirect_status,
-    SecurityViolationReportingPolicy reporting_policy) const {
+    ReportingDisposition reporting_disposition) const {
   return false;
 }
 
@@ -89,10 +89,10 @@ BaseFetchContext::CheckCSPForRequest(
     mojom::RequestContextType request_context,
     const KURL& url,
     const ResourceLoaderOptions& options,
-    SecurityViolationReportingPolicy reporting_policy,
+    ReportingDisposition reporting_disposition,
     ResourceRequest::RedirectStatus redirect_status) const {
   return CheckCSPForRequestInternal(
-      request_context, url, options, reporting_policy, redirect_status,
+      request_context, url, options, reporting_disposition, redirect_status,
       ContentSecurityPolicy::CheckHeaderType::kCheckReportOnly);
 }
 
@@ -101,7 +101,7 @@ BaseFetchContext::CheckCSPForRequestInternal(
     mojom::RequestContextType request_context,
     const KURL& url,
     const ResourceLoaderOptions& options,
-    SecurityViolationReportingPolicy reporting_policy,
+    ReportingDisposition reporting_disposition,
     ResourceRequest::RedirectStatus redirect_status,
     ContentSecurityPolicy::CheckHeaderType check_header_type) const {
   if (ShouldBypassMainWorldCSP() ||
@@ -114,7 +114,7 @@ BaseFetchContext::CheckCSPForRequestInternal(
   if (csp && !csp->AllowRequest(
                  request_context, url, options.content_security_policy_nonce,
                  options.integrity_metadata, options.parser_disposition,
-                 redirect_status, reporting_policy, check_header_type)) {
+                 redirect_status, reporting_disposition, check_header_type)) {
     return ResourceRequestBlockedReason::kCSP;
   }
   return base::nullopt;
@@ -126,7 +126,7 @@ BaseFetchContext::CanRequestInternal(
     const ResourceRequest& resource_request,
     const KURL& url,
     const ResourceLoaderOptions& options,
-    SecurityViolationReportingPolicy reporting_policy,
+    ReportingDisposition reporting_disposition,
     ResourceRequest::RedirectStatus redirect_status) const {
   if (GetResourceFetcherProperties().IsDetached()) {
     if (!resource_request.GetKeepalive() ||
@@ -148,7 +148,7 @@ BaseFetchContext::CanRequestInternal(
   DCHECK(request_mode == network::mojom::RequestMode::kNavigate || origin);
   if (request_mode != network::mojom::RequestMode::kNavigate &&
       !resource_request.CanDisplay(url)) {
-    if (reporting_policy == SecurityViolationReportingPolicy::kReport) {
+    if (reporting_disposition == ReportingDisposition::kReport) {
       AddConsoleMessage(ConsoleMessage::Create(
           mojom::ConsoleMessageSource::kJavaScript,
           mojom::ConsoleMessageLevel::kError,
@@ -183,7 +183,7 @@ BaseFetchContext::CanRequestInternal(
   // populateResourceRequest). We check the enforced headers here to ensure we
   // block things we ought to block.
   if (CheckCSPForRequestInternal(
-          request_context, url, options, reporting_policy, redirect_status,
+          request_context, url, options, reporting_disposition, redirect_status,
           ContentSecurityPolicy::CheckHeaderType::kCheckEnforce) ==
       ResourceRequestBlockedReason::kCSP) {
     return ResourceRequestBlockedReason::kCSP;
@@ -226,7 +226,7 @@ BaseFetchContext::CanRequestInternal(
   // warning instead.
   if (ShouldBlockFetchByMixedContentCheck(request_context,
                                           resource_request.GetRedirectStatus(),
-                                          url, reporting_policy))
+                                          url, reporting_disposition))
     return ResourceRequestBlockedReason::kMixedContent;
 
   if (url.PotentiallyDanglingMarkup() && url.ProtocolIsInHTTPFamily()) {
@@ -242,7 +242,7 @@ BaseFetchContext::CanRequestInternal(
   }
 
   if (SendConversionRequestInsteadOfRedirecting(url, redirect_status,
-                                                reporting_policy)) {
+                                                reporting_disposition)) {
     return ResourceRequestBlockedReason::kOther;
   }
 
@@ -250,7 +250,7 @@ BaseFetchContext::CanRequestInternal(
   // proceed.
   if (GetSubresourceFilter() && type != ResourceType::kImportResource) {
     if (!GetSubresourceFilter()->AllowLoad(url, request_context,
-                                           reporting_policy)) {
+                                           reporting_disposition)) {
       return ResourceRequestBlockedReason::kSubresourceFilter;
     }
   }

@@ -56,6 +56,10 @@ class APP_LIST_EXPORT AppListItemView : public views::Button,
   // Sets the icon of this image.
   void SetIcon(const gfx::ImageSkia& icon);
 
+  // Updates the current item icon to match the current model and app list
+  // config state.
+  void RefreshIcon();
+
   void SetItemName(const base::string16& display_name,
                    const base::string16& full_name);
   void SetItemIsInstalling(bool is_installing);
@@ -138,6 +142,8 @@ class APP_LIST_EXPORT AppListItemView : public views::Button,
 
   void FireMouseDragTimerForTest();
 
+  bool FireTouchDragTimerForTest();
+
   bool is_folder() const { return is_folder_; }
 
  private:
@@ -203,6 +209,7 @@ class APP_LIST_EXPORT AppListItemView : public views::Button,
   bool OnKeyPressed(const ui::KeyEvent& event) override;
   bool OnMousePressed(const ui::MouseEvent& event) override;
   void OnMouseReleased(const ui::MouseEvent& event) override;
+  void OnMouseCaptureLost() override;
   bool OnMouseDragged(const ui::MouseEvent& event) override;
   bool SkipDefaultKeyEventProcessing(const ui::KeyEvent& event) override;
   void OnFocus() override;
@@ -248,8 +255,6 @@ class APP_LIST_EXPORT AppListItemView : public views::Button,
 
   // True if the app is enabled for drag/drop operation by mouse.
   bool mouse_dragging_ = false;
-  // True if the drag host proxy is crated for mouse dragging.
-  bool mouse_drag_proxy_created_ = false;
 
   // Whether AppsGridView should not be notified of a focus event, triggering
   // A11y alerts and a focus ring.

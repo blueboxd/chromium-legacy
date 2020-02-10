@@ -69,6 +69,8 @@ class FullscreenShellSurface : public SurfaceTreeHost,
   bool CanMinimize() const override;
   bool ShouldShowWindowTitle() const override;
   void WindowClosing() override;
+  views::Widget* GetWidget() override;
+  const views::Widget* GetWidget() const override;
   views::View* GetContentsView() override;
   bool WidgetHasHitTestMask() const override;
   void GetWidgetHitTestMask(SkPath* mask) const override;
@@ -82,9 +84,6 @@ class FullscreenShellSurface : public SurfaceTreeHost,
   void SetChildAxTreeId(ui::AXTreeID child_ax_tree_id);
 
  private:
-  // views::WidgetDelegate:
-  const views::Widget* GetWidgetImpl() const override;
-
   // Keep the bounds in sync with the root surface bounds.
   void UpdateHostWindowBounds() override;
 

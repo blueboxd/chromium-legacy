@@ -36,6 +36,7 @@
 #include "base/command_line.h"
 #include "chromeos/constants/chromeos_switches.h"
 #include "ui/compositor/layer.h"
+#include "ui/compositor/layer_owner.h"
 #include "ui/compositor/scoped_layer_animation_settings.h"
 #include "ui/gfx/skbitmap_operations.h"
 #include "ui/views/accessible_pane_view.h"
@@ -111,6 +112,8 @@ class ShelfWidget::DelegateView : public views::WidgetDelegate,
 
   // views::WidgetDelegate:
   void DeleteDelegate() override { delete this; }
+  views::Widget* GetWidget() override { return View::GetWidget(); }
+  const views::Widget* GetWidget() const override { return View::GetWidget(); }
 
   bool CanActivate() const override;
   void ReorderChildLayers(ui::Layer* parent_layer) override;
@@ -140,7 +143,7 @@ class ShelfWidget::DelegateView : public views::WidgetDelegate,
 
   SkColor GetShelfBackgroundColor() const;
 
-  ui::Layer* opaque_background() { return &opaque_background_; }
+  ui::Layer* opaque_background() { return opaque_background_.layer(); }
   ui::Layer* animating_background() { return &animating_background_; }
   ui::Layer* animating_drag_handle() { return &animating_drag_handle_; }
   views::View* drag_handle() { return drag_handle_; }
@@ -154,7 +157,7 @@ class ShelfWidget::DelegateView : public views::WidgetDelegate,
   FocusCycler* focus_cycler_;
   // A background layer that may be visible depending on a
   // ShelfBackgroundAnimator.
-  ui::Layer opaque_background_;
+  ui::LayerOwner opaque_background_;
 
   // A background layer used to animate hotseat transitions.
   ui::Layer animating_background_;
@@ -179,10 +182,10 @@ class ShelfWidget::DelegateView : public views::WidgetDelegate,
 ShelfWidget::DelegateView::DelegateView(ShelfWidget* shelf_widget)
     : shelf_widget_(shelf_widget),
       focus_cycler_(nullptr),
-      opaque_background_(ui::LAYER_SOLID_COLOR),
+      opaque_background_(std::make_unique<ui::Layer>(ui::LAYER_SOLID_COLOR)),
       animating_background_(ui::LAYER_SOLID_COLOR),
       animating_drag_handle_(ui::LAYER_SOLID_COLOR) {
-  opaque_background_.SetName("shelf/Background");
+  opaque_background_.layer()->SetName("shelf/Background");
   animating_background_.SetName("shelf/Animation");
   animating_background_.Add(&animating_drag_handle_);
 
@@ -231,14 +234,14 @@ bool ShelfWidget::IsUsingViewsShelf() {
 }
 
 void ShelfWidget::DelegateView::SetParentLayer(ui::Layer* layer) {
-  layer->Add(&opaque_background_);
+  layer->Add(opaque_background());
   layer->Add(&animating_background_);
   ReorderLayers();
 }
 
 void ShelfWidget::DelegateView::HideOpaqueBackground() {
   hide_background_for_transitions_ = true;
-  opaque_background_.SetVisible(false);
+  opaque_background()->SetVisible(false);
   drag_handle_->SetVisible(false);
 }
 
@@ -259,7 +262,7 @@ bool ShelfWidget::DelegateView::CanActivate() const {
 
 void ShelfWidget::DelegateView::ReorderChildLayers(ui::Layer* parent_layer) {
   views::View::ReorderChildLayers(parent_layer);
-  parent_layer->StackAtBottom(&opaque_background_);
+  parent_layer->StackAtBottom(opaque_background());
   parent_layer->StackAtBottom(&animating_background_);
 }
 
@@ -272,14 +275,14 @@ void ShelfWidget::DelegateView::UpdateBackgroundBlur() {
     return;
   // Blur only if the background is visible.
   const bool should_blur_background =
-      opaque_background_.visible() &&
+      opaque_background()->visible() &&
       shelf_widget_->shelf_layout_manager()->ShouldBlurShelfBackground();
   if (should_blur_background == background_is_currently_blurred_)
     return;
 
-  opaque_background_.SetBackgroundBlur(should_blur_background ? kShelfBlurRadius
-                                                              : 0);
-  opaque_background_.SetBackdropFilterQuality(kShelfBlurQuality);
+  opaque_background()->SetBackgroundBlur(
+      should_blur_background ? kShelfBlurRadius : 0);
+  opaque_background()->SetBackdropFilterQuality(kShelfBlurQuality);
 
   background_is_currently_blurred_ = should_blur_background;
 }
@@ -301,8 +304,8 @@ void ShelfWidget::DelegateView::UpdateOpaqueBackground() {
 
   bool show_opaque_background =
       !tablet_mode || in_app || !chromeos::switches::ShouldShowShelfHotseat();
-  if (show_opaque_background != opaque_background_.visible())
-    opaque_background_.SetVisible(show_opaque_background);
+  if (show_opaque_background != opaque_background()->visible())
+    opaque_background()->SetVisible(show_opaque_background);
 
   // Extend the opaque layer a little bit to handle "overshoot" gestures
   // gracefully (the user drags the shelf further than it can actually go).
@@ -326,16 +329,16 @@ void ShelfWidget::DelegateView::UpdateOpaqueBackground() {
   if (background_type == ShelfBackgroundType::kMaximized ||
       background_type == ShelfBackgroundType::kInApp ||
       (tablet_mode && in_app && chromeos::switches::ShouldShowShelfHotseat())) {
-    opaque_background_.SetRoundedCornerRadius({0, 0, 0, 0});
+    opaque_background()->SetRoundedCornerRadius({0, 0, 0, 0});
   } else {
-    opaque_background_.SetRoundedCornerRadius({
+    opaque_background()->SetRoundedCornerRadius({
         shelf->SelectValueForShelfAlignment(radius, 0, radius),
         shelf->SelectValueForShelfAlignment(radius, radius, 0),
         shelf->SelectValueForShelfAlignment(0, radius, 0),
         shelf->SelectValueForShelfAlignment(0, 0, radius),
     });
   }
-  opaque_background_.SetBounds(opaque_background_bounds);
+  opaque_background()->SetBounds(opaque_background_bounds);
   UpdateDragHandle();
   UpdateBackgroundBlur();
   SchedulePaint();
@@ -382,7 +385,7 @@ views::View* ShelfWidget::DelegateView::GetDefaultFocusableChild() {
 }
 
 void ShelfWidget::DelegateView::UpdateShelfBackground(SkColor color) {
-  opaque_background_.SetColor(color);
+  opaque_background()->SetColor(color);
   UpdateOpaqueBackground();
 }
 
@@ -413,7 +416,7 @@ void ShelfWidget::DelegateView::ShowAnimatingBackground(bool show) {
 }
 
 SkColor ShelfWidget::DelegateView::GetShelfBackgroundColor() const {
-  return opaque_background_.background_color();
+  return opaque_background_.layer()->background_color();
 }
 
 bool ShelfWidget::GetHitTestRects(aura::Window* target,

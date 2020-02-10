@@ -30,6 +30,7 @@
 #include "third_party/blink/renderer/core/css/css_pending_substitution_value.h"
 #include "third_party/blink/renderer/core/css/css_property_names.h"
 #include "third_party/blink/renderer/core/css/css_to_length_conversion_data.h"
+#include "third_party/blink/renderer/core/css/parser/css_parser_mode.h"
 #include "third_party/blink/renderer/core/css/resolver/css_to_style_map.h"
 #include "third_party/blink/renderer/core/css/resolver/element_resolve_context.h"
 #include "third_party/blink/renderer/core/css/resolver/element_style_resources.h"
@@ -196,6 +197,8 @@ class CORE_EXPORT StyleResolverState {
   HeapHashMap<CSSPropertyID, Member<const CSSValue>>&
   ParsedPropertiesForPendingSubstitutionCache(
       const cssvalue::CSSPendingSubstitutionValue&) const;
+
+  CSSParserMode GetParserMode() const;
 
  private:
   enum class AnimatingElementType { kElement, kPseudoElement };

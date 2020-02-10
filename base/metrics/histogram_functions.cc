@@ -165,6 +165,16 @@ void UmaHistogramLongTimes(const char* name, TimeDelta sample) {
                           TimeDelta::FromHours(1), 50);
 }
 
+void UmaHistogramLongTimes100(const std::string& name, TimeDelta sample) {
+  UmaHistogramCustomTimes(name, sample, TimeDelta::FromMilliseconds(1),
+                          TimeDelta::FromHours(1), 100);
+}
+
+void UmaHistogramLongTimes100(const char* name, TimeDelta sample) {
+  UmaHistogramCustomTimes(name, sample, TimeDelta::FromMilliseconds(1),
+                          TimeDelta::FromHours(1), 100);
+}
+
 void UmaHistogramCustomMicrosecondsTimes(const std::string& name,
                                          TimeDelta sample,
                                          TimeDelta min,

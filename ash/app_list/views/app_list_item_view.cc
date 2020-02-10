@@ -153,20 +153,39 @@ class AppListItemView::IconImageView : public views::ImageView {
     return old_layer;
   }
 
-  // Update the rounded corner and insets with animation. |show| is true when
-  // the target rounded corner radius and insets are for showing the indicator
-  // circle.
-  void AnimateRoundedCornerAndInsets(const AppListConfig& config, bool show) {
-    ui::ScopedLayerAnimationSettings settings(layer()->GetAnimator());
-    settings.SetTweenType(gfx::Tween::EASE_IN);
-    settings.SetTransitionDuration(base::TimeDelta::FromMilliseconds(125));
+  // Update the rounded corner and insets with animation. |extended| is true
+  // when the target rounded corner radius and insets are for showing the
+  // indicator circle.
+  void SetExtendedState(const AppListConfig& config,
+                        bool extended,
+                        bool animate) {
+    base::Optional<ui::ScopedLayerAnimationSettings> settings;
+    if (animate) {
+      settings.emplace(layer()->GetAnimator());
+      settings->SetTweenType(gfx::Tween::EASE_IN);
+      settings->SetTransitionDuration(base::TimeDelta::FromMilliseconds(125));
+    }
+
+    extended_ = extended;
 
     SetRoundedCornerAndInsets(
-        show ? config.folder_unclipped_icon_dimension() / 2
-             : config.folder_icon_dimension() / 2,
-        show ? gfx::Insets() : gfx::Insets(config.folder_icon_insets()));
+        extended ? config.folder_unclipped_icon_dimension() / 2
+                 : config.folder_icon_dimension() / 2,
+        extended ? gfx::Insets() : gfx::Insets(config.folder_icon_insets()));
   }
 
+  // Ensure that the view has a layer.
+  void EnsureLayer() {
+    if (!layer()) {
+      SetPaintToLayer();
+      layer()->SetFillsBoundsOpaquely(false);
+      layer()->SetName(GetClassName());
+    }
+  }
+
+  bool extended() const { return extended_; }
+
+ private:
   // Sets the rounded corner and the clip insets.
   void SetRoundedCornerAndInsets(int corner_radius, const gfx::Insets& insets) {
     EnsureLayer();
@@ -184,16 +203,10 @@ class AppListItemView::IconImageView : public views::ImageView {
     insets_ = insets;
   }
 
-  // Ensure that the view has a layer.
-  void EnsureLayer() {
-    if (!layer()) {
-      SetPaintToLayer();
-      layer()->SetFillsBoundsOpaquely(false);
-      layer()->SetName(GetClassName());
-    }
-  }
+  // Whether corner radius and insets are set for showing the drop target
+  // indicator circle.
+  bool extended_ = false;
 
- private:
   // The rounded corner radius.
   int corner_radius_ = 0;
 
@@ -255,9 +268,8 @@ AppListItemView::AppListItemView(AppsGridView* apps_grid_view,
     // smoothness.
     if (apps_grid_view_->IsTabletMode())
       SetBackgroundBlurEnabled(true);
-    icon_->SetRoundedCornerAndInsets(
-        GetAppListConfig().folder_icon_radius(),
-        gfx::Insets(GetAppListConfig().folder_icon_insets()));
+    icon_->SetExtendedState(GetAppListConfig(), false /*extended*/,
+                            false /*animate*/);
   }
 
   title_ = AddChildView(std::move(title));
@@ -307,6 +319,19 @@ void AppListItemView::SetIcon(const gfx::ImageSkia& icon) {
   }
 
   Layout();
+}
+
+void AppListItemView::RefreshIcon() {
+  if (!item_weak_) {
+    SetIcon(gfx::ImageSkia());
+    return;
+  }
+
+  SetIcon(item_weak_->GetIcon(GetAppListConfig().type()));
+  if (is_folder_) {
+    icon_->SetExtendedState(GetAppListConfig(), icon_->extended(),
+                            false /*animate*/);
+  }
 }
 
 void AppListItemView::SetUIState(UIState ui_state) {
@@ -368,13 +393,6 @@ void AppListItemView::SetMouseDragging(bool mouse_dragging) {
 
   SetState(STATE_NORMAL);
   SetUIState(mouse_dragging_ ? UI_STATE_DRAGGING : UI_STATE_NORMAL);
-
-  if (!mouse_dragging_) {
-    mouse_drag_proxy_created_ = false;
-
-    // EndDrag may delete |this|.
-    apps_grid_view_->EndDrag(false);
-  }
 }
 
 void AppListItemView::OnMouseDragTimer() {
@@ -650,6 +668,17 @@ bool AppListItemView::OnKeyPressed(const ui::KeyEvent& event) {
 void AppListItemView::OnMouseReleased(const ui::MouseEvent& event) {
   Button::OnMouseReleased(event);
   SetMouseDragging(false);
+
+  // EndDrag may delete |this|.
+  apps_grid_view_->EndDrag(false /*cancel*/);
+}
+
+void AppListItemView::OnMouseCaptureLost() {
+  Button::OnMouseCaptureLost();
+  SetMouseDragging(false);
+
+  // EndDrag may delete |this|.
+  apps_grid_view_->EndDrag(true /*cancel*/);
 }
 
 bool AppListItemView::OnMouseDragged(const ui::MouseEvent& event) {
@@ -772,7 +801,8 @@ base::string16 AppListItemView::GetTooltipText(const gfx::Point& p) const {
 
 void AppListItemView::OnDraggedViewEnter() {
   if (is_folder_) {
-    icon_->AnimateRoundedCornerAndInsets(GetAppListConfig(), true);
+    icon_->SetExtendedState(GetAppListConfig(), true /*extended*/,
+                            true /*animate*/);
     return;
   }
   CreateDraggedViewHoverAnimation();
@@ -781,7 +811,8 @@ void AppListItemView::OnDraggedViewEnter() {
 
 void AppListItemView::OnDraggedViewExit() {
   if (is_folder_) {
-    icon_->AnimateRoundedCornerAndInsets(GetAppListConfig(), false);
+    icon_->SetExtendedState(GetAppListConfig(), false /*extended*/,
+                            true /*animate*/);
     return;
   }
   CreateDraggedViewHoverAnimation();
@@ -805,6 +836,14 @@ void AppListItemView::EnsureLayer() {
 
 void AppListItemView::FireMouseDragTimerForTest() {
   mouse_drag_timer_.FireNow();
+}
+
+bool AppListItemView::FireTouchDragTimerForTest() {
+  if (!touch_drag_timer_.IsRunning())
+    return false;
+
+  touch_drag_timer_.FireNow();
+  return true;
 }
 
 void AppListItemView::AnimationProgressed(const gfx::Animation* animation) {

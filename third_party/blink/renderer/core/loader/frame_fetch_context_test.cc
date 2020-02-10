@@ -73,7 +73,7 @@
 #include "third_party/blink/renderer/platform/testing/histogram_tester.h"
 #include "third_party/blink/renderer/platform/testing/unit_test_helpers.h"
 #include "third_party/blink/renderer/platform/weborigin/kurl.h"
-#include "third_party/blink/renderer/platform/weborigin/security_violation_reporting_policy.h"
+#include "third_party/blink/renderer/platform/weborigin/reporting_disposition.h"
 
 namespace blink {
 
@@ -190,23 +190,22 @@ class FrameFetchContextSubresourceFilterTest : public FrameFetchContextTest {
   }
 
   base::Optional<ResourceRequestBlockedReason> CanRequest() {
-    return CanRequestInternal(SecurityViolationReportingPolicy::kReport);
+    return CanRequestInternal(ReportingDisposition::kReport);
   }
 
   base::Optional<ResourceRequestBlockedReason> CanRequestKeepAlive() {
-    return CanRequestInternal(SecurityViolationReportingPolicy::kReport,
+    return CanRequestInternal(ReportingDisposition::kReport,
                               true /* keepalive */);
   }
 
   base::Optional<ResourceRequestBlockedReason> CanRequestPreload() {
-    return CanRequestInternal(
-        SecurityViolationReportingPolicy::kSuppressReporting);
+    return CanRequestInternal(ReportingDisposition::kSuppressReporting);
   }
 
   base::Optional<ResourceRequestBlockedReason> CanRequestAndVerifyIsAd(
       bool expect_is_ad) {
     base::Optional<ResourceRequestBlockedReason> reason =
-        CanRequestInternal(SecurityViolationReportingPolicy::kReport);
+        CanRequestInternal(ReportingDisposition::kReport);
     ResourceRequest request(KURL("http://example.com/"));
     EXPECT_EQ(expect_is_ad, GetFetchContext()->CalculateIfAdSubresource(
                                 request, ResourceType::kMock));
@@ -226,7 +225,7 @@ class FrameFetchContextSubresourceFilterTest : public FrameFetchContextTest {
 
  private:
   base::Optional<ResourceRequestBlockedReason> CanRequestInternal(
-      SecurityViolationReportingPolicy reporting_policy,
+      ReportingDisposition reporting_disposition,
       bool keepalive = false) {
     const KURL input_url("http://example.com/");
     ResourceRequest resource_request(input_url);
@@ -238,7 +237,7 @@ class FrameFetchContextSubresourceFilterTest : public FrameFetchContextTest {
     ResourceLoaderOptions options;
     return GetFetchContext()->CanRequest(
         ResourceType::kImage, resource_request, input_url, options,
-        reporting_policy, ResourceRequest::RedirectStatus::kNoRedirect);
+        reporting_disposition, ResourceRequest::RedirectStatus::kNoRedirect);
   }
 
   int filtered_load_callback_counter_;

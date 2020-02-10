@@ -197,7 +197,8 @@ TEST_P(SkiaReadbackPixelTest, ExecutesCopyRequest) {
   pass_list.push_back(std::move(pass));
 
   renderer_->DecideRenderPassAllocationsForFrame(pass_list);
-  renderer_->DrawFrame(&pass_list, 1.0f, kSourceSize);
+  renderer_->DrawFrame(&pass_list, 1.0f, kSourceSize,
+                       gfx::DisplayColorSpaces());
 
   loop.Run();
 

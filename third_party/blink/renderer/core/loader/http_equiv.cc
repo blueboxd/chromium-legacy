@@ -21,7 +21,7 @@
 #include "third_party/blink/renderer/platform/network/http_names.h"
 #include "third_party/blink/renderer/platform/network/http_parsers.h"
 #include "third_party/blink/renderer/platform/weborigin/kurl.h"
-#include "third_party/blink/renderer/platform/weborigin/security_violation_reporting_policy.h"
+#include "third_party/blink/renderer/platform/weborigin/reporting_disposition.h"
 
 namespace blink {
 
@@ -195,7 +195,7 @@ void HttpEquiv::ProcessHttpEquivRefresh(Document& document,
   if (!document.GetContentSecurityPolicy()->AllowInline(
           ContentSecurityPolicy::InlineType::kScript, element, "" /* content */,
           "" /* nonce */, NullURL(), OrdinalNumber(),
-          SecurityViolationReportingPolicy::kSuppressReporting)) {
+          ReportingDisposition::kSuppressReporting)) {
     UseCounter::Count(document,
                       WebFeature::kMetaRefreshWhenCSPBlocksInlineScript);
   }

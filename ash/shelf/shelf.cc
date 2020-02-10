@@ -240,18 +240,15 @@ void Shelf::CreateShelfWidget(aura::Window* root) {
   shelf_layout_manager_->AddObserver(this);
 
   // Create the various shelf components.
-  aura::Window* control_container =
-      root->GetChildById(kShellWindowId_ShelfControlContainer);
-
-  CreateHotseatWidget(control_container);
-  CreateNavigationWidget(control_container);
+  CreateHotseatWidget(shelf_container);
+  CreateNavigationWidget(shelf_container);
 
   // Must occur after |shelf_widget_| is constructed because the system tray
   // constructors call back into Shelf::shelf_widget().
-  aura::Window* status_container =
-      root->GetChildById(kShellWindowId_ShelfControlContainer);
-  CreateStatusAreaWidget(status_container);
+  CreateStatusAreaWidget(shelf_container);
   shelf_widget_->Initialize(shelf_container);
+  shelf_widget_->GetNativeWindow()->parent()->StackChildAtBottom(
+      shelf_widget_->GetNativeWindow());
 
   // The Hotseat should be above everything in the shelf.
   hotseat_widget()->StackAtTop();

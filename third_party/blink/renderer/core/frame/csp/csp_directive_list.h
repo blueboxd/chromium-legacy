@@ -16,7 +16,7 @@
 #include "third_party/blink/renderer/platform/network/content_security_policy_parsers.h"
 #include "third_party/blink/renderer/platform/network/http_parsers.h"
 #include "third_party/blink/renderer/platform/weborigin/kurl.h"
-#include "third_party/blink/renderer/platform/weborigin/security_violation_reporting_policy.h"
+#include "third_party/blink/renderer/platform/weborigin/reporting_disposition.h"
 #include "third_party/blink/renderer/platform/wtf/text/atomic_string.h"
 #include "third_party/blink/renderer/platform/wtf/text/wtf_string.h"
 #include "third_party/blink/renderer/platform/wtf/vector.h"
@@ -60,27 +60,27 @@ class CORE_EXPORT CSPDirectiveList final
                    const String& nonce,
                    const String& context_url,
                    const WTF::OrdinalNumber& context_line,
-                   SecurityViolationReportingPolicy) const;
+                   ReportingDisposition) const;
 
   // Returns whether or not the Javascript code generation should call back the
   // CSP checker before any script evaluation from a string is being made.
   bool ShouldCheckEval() const;
 
-  bool AllowEval(SecurityViolationReportingPolicy,
+  bool AllowEval(ReportingDisposition,
                  ContentSecurityPolicy::ExceptionStatus,
                  const String& script_content) const;
-  bool AllowWasmEval(SecurityViolationReportingPolicy,
+  bool AllowWasmEval(ReportingDisposition,
                      ContentSecurityPolicy::ExceptionStatus,
                      const String& script_content) const;
   bool AllowPluginType(const String& type,
                        const String& type_attribute,
                        const KURL&,
-                       SecurityViolationReportingPolicy) const;
+                       ReportingDisposition) const;
 
   bool AllowFromSource(ContentSecurityPolicy::DirectiveType,
                        const KURL&,
                        ResourceRequest::RedirectStatus,
-                       SecurityViolationReportingPolicy,
+                       ReportingDisposition,
                        const String& nonce = String(),
                        const IntegrityMetadataSet& = IntegrityMetadataSet(),
                        ParserDisposition = kParserInserted) const;
@@ -94,16 +94,14 @@ class CORE_EXPORT CSPDirectiveList final
   // request was redirected, but this is not a concern for ancestors,
   // because a child frame can't manipulate the URL of a cross-origin
   // parent.
-  bool AllowAncestors(LocalFrame*,
-                      const KURL&,
-                      SecurityViolationReportingPolicy) const;
+  bool AllowAncestors(LocalFrame*, const KURL&, ReportingDisposition) const;
   bool AllowDynamic(ContentSecurityPolicy::DirectiveType) const;
   bool AllowDynamicWorker() const;
 
   bool AllowRequestWithoutIntegrity(mojom::RequestContextType,
                                     const KURL&,
                                     ResourceRequest::RedirectStatus,
-                                    SecurityViolationReportingPolicy) const;
+                                    ReportingDisposition) const;
 
   bool AllowTrustedTypeAssignmentFailure(const String& message,
                                          const String& sample,

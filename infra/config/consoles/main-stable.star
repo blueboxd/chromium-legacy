@@ -14,6 +14,16 @@ luci.console_view(
             short_name = 'bld',
         ),
         luci.console_view_entry(
+            builder = 'ci-stable/Linux Ozone Tester (Wayland)',
+            category = 'linux',
+            short_name = 'low',
+        ),
+        luci.console_view_entry(
+            builder = 'ci-stable/Linux Ozone Tester (X11)',
+            category = 'linux',
+            short_name = 'lox',
+        ),
+        luci.console_view_entry(
             builder = 'ci-stable/Linux Tests',
             category = 'chromium.linux|release',
             short_name = 'tst',
@@ -22,6 +32,11 @@ luci.console_view(
             builder = 'ci-stable/linux-chromeos-rel',
             category = 'chromium.chromiumos|default',
             short_name = 'rel',
+        ),
+        luci.console_view_entry(
+            builder = 'ci-stable/linux-ozone-rel',
+            category = 'chromium.linux|release',
+            short_name = 'ozo',
         ),
         luci.console_view_entry(
             builder = 'ci-stable/chromeos-amd64-generic-rel',

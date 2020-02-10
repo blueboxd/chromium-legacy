@@ -25,6 +25,7 @@
 #include "chromeos/dbus/power/power_manager_client.h"
 #include "ui/aura/window_occlusion_tracker.h"
 #include "ui/compositor/layer_animation_observer.h"
+#include "ui/compositor/layer_tree_owner.h"
 #include "ui/events/devices/input_device_event_observer.h"
 #include "ui/gfx/geometry/vector3d_f.h"
 
@@ -284,8 +285,10 @@ class ASH_EXPORT TabletModeController
   void TakeScreenshot(aura::Window* top_window);
 
   // Called when a screenshot is taken. Creates |screenshot_widget_| which holds
-  // the screenshot results and stacks it under top window.
+  // the screenshot results and stacks it under top window. |root_window|
+  // specifies on which root window the screen shot is taken.
   void OnScreenshotTaken(base::OnceClosure on_screenshot_taken,
+                         aura::Window* root_window,
                          std::unique_ptr<viz::CopyOutputResult> copy_result);
 
   // Calculates whether the device is currently in a physical tablet state,
@@ -306,6 +309,9 @@ class ASH_EXPORT TabletModeController
   // based on the current state. Returns true if there's a change in the UI
   // tablet mode state, false otherwise.
   bool UpdateUiTabletState();
+
+  void UpdateShelf(aura::Window* window, bool visible);
+  void CreatePhantomShelf(aura::Window* window);
 
   // The tablet window manager (if enabled).
   std::unique_ptr<TabletModeWindowManager> tablet_mode_window_manager_;
@@ -416,6 +422,8 @@ class ASH_EXPORT TabletModeController
   // The layer that animates duraing tablet mode <-> clamshell
   // transition. It's observed to take an action after its animation ends.
   ui::Layer* animating_layer_ = nullptr;
+
+  std::unique_ptr<ui::LayerTreeOwner> phantom_shelf_layer_;
 
   std::unique_ptr<TabletModeTransitionFpsCounter> fps_counter_;
 

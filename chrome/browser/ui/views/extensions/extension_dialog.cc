@@ -131,6 +131,14 @@ void ExtensionDialog::DeleteDelegate() {
   Release();
 }
 
+views::Widget* ExtensionDialog::GetWidget() {
+  return GetExtensionView()->GetWidget();
+}
+
+const views::Widget* ExtensionDialog::GetWidget() const {
+  return GetExtensionView()->GetWidget();
+}
+
 views::View* ExtensionDialog::GetContentsView() {
   return GetExtensionView();
 }
@@ -235,8 +243,4 @@ ExtensionViewViews* ExtensionDialog::GetExtensionView() const {
 ExtensionViewViews* ExtensionDialog::GetExtensionView(
     extensions::ExtensionViewHost* host) {
   return static_cast<ExtensionViewViews*>(host->view());
-}
-
-const views::Widget* ExtensionDialog::GetWidgetImpl() const {
-  return GetExtensionView()->GetWidget();
 }

@@ -31,7 +31,8 @@ const CGFloat kLocationImageToLabelSpacing = -2.0;
 const CGFloat kLocationBarLeadingPadding = 8.0;
 // Trailing space between the trailing button and the trailing edge of the
 // location bar.
-const CGFloat kButtonTrailingSpacing = 11;
+const CGFloat kShareButtonTrailingSpacing = -11;
+const CGFloat kVoiceSearchButtonTrailingSpacing = -7;
 // Duration of display and hide animation of the badge view, in seconds.
 const CGFloat kbadgeViewAnimationDuration = 0.2;
 // Location label vertical offset.
@@ -51,6 +52,15 @@ const CGFloat kLocationLabelVerticalOffset = -1;
 // its left.
 @property(nonatomic, strong)
     NSLayoutConstraint* locationContainerViewLeadingAnchorConstraint;
+
+// The constraint that pins the trailingButton to the trailing edge of the
+// location bar.
+@property(nonatomic, strong)
+    NSLayoutConstraint* trailingButtonTrailingAnchorConstraint;
+
+// The trailing spacing to be used for the trailingButton. This property is
+// based on the type of trailing button in use (i.e. share or voice search).
+@property(nonatomic, readonly) CGFloat trailingButtonTrailingSpacing;
 
 // Constraints to pin the badge view to the right next to the
 // |locationContainerView|.
@@ -84,7 +94,7 @@ const CGFloat kLocationLabelVerticalOffset = -1;
 
   scheme.fontColor = [UIColor colorNamed:kTextPrimaryColor];
   scheme.placeholderColor = [UIColor colorNamed:kTextfieldPlaceholderColor];
-  scheme.trailingButtonColor = [UIColor colorNamed:kToolbarButtonColor];
+  scheme.trailingButtonColor = [UIColor colorNamed:kGrey500Color];
 
   return scheme;
 }
@@ -215,6 +225,11 @@ const CGFloat kLocationLabelVerticalOffset = -1;
             constraintGreaterThanOrEqualToAnchor:self.leadingAnchor
                                         constant:kLocationBarLeadingPadding];
 
+    _trailingButtonTrailingAnchorConstraint =
+        [self.trailingButton.trailingAnchor
+            constraintEqualToAnchor:self.trailingAnchor
+                           constant:self.trailingButtonTrailingSpacing];
+
     // Setup and activate constraints.
     [NSLayoutConstraint activateConstraints:@[
       [_locationLabel.centerYAnchor
@@ -232,9 +247,7 @@ const CGFloat kLocationLabelVerticalOffset = -1;
                                                    .trailingAnchor],
       [_trailingButton.widthAnchor constraintEqualToConstant:kButtonSize],
       [_trailingButton.heightAnchor constraintEqualToConstant:kButtonSize],
-      [self.trailingButton.trailingAnchor
-          constraintEqualToAnchor:self.trailingAnchor
-                         constant:-kButtonTrailingSpacing],
+      _trailingButtonTrailingAnchorConstraint,
       centerX,
       _locationContainerViewLeadingAnchorConstraint,
     ]];
@@ -259,6 +272,14 @@ const CGFloat kLocationLabelVerticalOffset = -1;
   [self updateAccessibility];
 
   return self;
+}
+
+- (CGFloat)trailingButtonTrailingSpacing {
+  if (IsSplitToolbarMode(self)) {
+    return kShareButtonTrailingSpacing;
+  } else {
+    return kVoiceSearchButtonTrailingSpacing;
+  }
 }
 
 - (void)setColorScheme:(LocationBarSteadyViewColorScheme*)colorScheme {
@@ -418,6 +439,10 @@ const CGFloat kLocationLabelVerticalOffset = -1;
       self.traitCollection.preferredContentSizeCategory) {
     self.locationLabel.font = [self locationLabelFont];
   }
+
+  self.trailingButtonTrailingAnchorConstraint.constant =
+      self.trailingButtonTrailingSpacing;
+  [self layoutIfNeeded];
 }
 
 #pragma mark - UIAccessibilityContainer

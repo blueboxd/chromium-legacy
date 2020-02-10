@@ -201,6 +201,9 @@ class CORE_EXPORT StyleResolver final : public GarbageCollected<StyleResolver> {
       is_inherited_cache_hit = false;
       is_non_inherited_cache_hit = false;
     }
+    bool EffectiveZoomChanged(const ComputedStyle&) const;
+    bool FontChanged(const ComputedStyle&) const;
+    bool EffectiveZoomOrFontChanged(const ComputedStyle&) const;
   };
 
   // These flags indicate whether an apply pass for a given CSSPropertyPriority
@@ -267,18 +270,10 @@ class CORE_EXPORT StyleResolver final : public GarbageCollected<StyleResolver> {
 
   void CascadeAndApplyMatchedProperties(StyleResolverState&,
                                         const MatchResult&);
-  void CascadeMatchResult(StyleResolverState&,
-                          StyleCascade&,
-                          const MatchResult&);
-  void CascadeRange(StyleResolverState&,
-                    StyleCascade&,
-                    const MatchedPropertiesRange&,
-                    StyleCascade::Origin);
-  void CascadeTransitions(StyleResolverState&, StyleCascade&);
-  void CascadeAnimations(StyleResolverState&, StyleCascade&);
-  void CascadeInterpolations(StyleCascade&,
-                             const ActiveInterpolationsMap&,
-                             StyleCascade::Origin);
+  void CascadeAndApplyCustomPropertyAnimations(StyleResolverState&,
+                                               StyleCascade&,
+                                               CascadeFilter,
+                                               const MatchResult*);
 
   void CalculateAnimationUpdate(StyleResolverState&);
 

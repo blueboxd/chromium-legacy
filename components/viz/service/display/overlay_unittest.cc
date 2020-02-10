@@ -2310,7 +2310,8 @@ class GLRendererWithOverlaysTest : public testing::Test {
   }
 
   void DrawFrame(RenderPassList* pass_list, const gfx::Size& viewport_size) {
-    renderer_->DrawFrame(pass_list, 1.f, viewport_size);
+    renderer_->DrawFrame(pass_list, 1.f, viewport_size,
+                         gfx::DisplayColorSpaces());
   }
   void SwapBuffers() {
     renderer_->SwapBuffers({});

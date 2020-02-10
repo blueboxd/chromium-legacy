@@ -559,8 +559,9 @@ HRESULT GetEntryPointArgumentForRunDll(HINSTANCE dll_handle,
 
   // rundll32 expects the first command line argument to be the path to the
   // DLL, followed by a comma and the name of the function to call.  There can
-  // be no spaces around the comma.  There can be no spaces in the path.  It
-  // is recommended to use the short path name of the DLL.
+  // be no spaces around the comma. The dll path is quoted because short names
+  // may be disabled in the system and path can not have space otherwise. It is
+  // recommended to use the short path name of the DLL.
   base::FilePath path_to_dll;
   HRESULT hr = GetPathToDllFromHandle(dll_handle, &path_to_dll);
   if (FAILED(hr))
@@ -576,8 +577,8 @@ HRESULT GetEntryPointArgumentForRunDll(HINSTANCE dll_handle,
     return hr;
   }
 
-  *entrypoint_arg =
-      base::string16(base::StringPrintf(L"%ls,%ls", short_path, entrypoint));
+  *entrypoint_arg = base::string16(
+      base::StringPrintf(L"\"%ls\",%ls", short_path, entrypoint));
 
   // In tests, the current module is the unittest exe, not the real dll.
   // The unittest exe does not expose entrypoints, so return S_FALSE as a hint

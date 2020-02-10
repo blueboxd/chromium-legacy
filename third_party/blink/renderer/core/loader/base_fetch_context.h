@@ -36,13 +36,13 @@ class CORE_EXPORT BaseFetchContext : public FetchContext {
       const ResourceRequest&,
       const KURL&,
       const ResourceLoaderOptions&,
-      SecurityViolationReportingPolicy,
+      ReportingDisposition,
       ResourceRequest::RedirectStatus) const override;
   base::Optional<ResourceRequestBlockedReason> CheckCSPForRequest(
       mojom::RequestContextType,
       const KURL&,
       const ResourceLoaderOptions&,
-      SecurityViolationReportingPolicy,
+      ReportingDisposition,
       ResourceRequest::RedirectStatus) const override;
 
   void Trace(blink::Visitor*) override;
@@ -75,7 +75,7 @@ class CORE_EXPORT BaseFetchContext : public FetchContext {
   virtual bool SendConversionRequestInsteadOfRedirecting(
       const KURL& url,
       ResourceRequest::RedirectStatus redirect_status,
-      SecurityViolationReportingPolicy reporting_policy) const;
+      ReportingDisposition reporting_disposition) const;
 
   virtual const ContentSecurityPolicy* GetContentSecurityPolicy() const = 0;
 
@@ -101,7 +101,7 @@ class CORE_EXPORT BaseFetchContext : public FetchContext {
       mojom::RequestContextType,
       ResourceRequest::RedirectStatus,
       const KURL&,
-      SecurityViolationReportingPolicy) const = 0;
+      ReportingDisposition) const = 0;
   virtual bool ShouldBlockFetchAsCredentialedSubresource(const ResourceRequest&,
                                                          const KURL&) const = 0;
   virtual const KURL& Url() const = 0;
@@ -122,14 +122,14 @@ class CORE_EXPORT BaseFetchContext : public FetchContext {
       const ResourceRequest&,
       const KURL&,
       const ResourceLoaderOptions&,
-      SecurityViolationReportingPolicy,
+      ReportingDisposition,
       ResourceRequest::RedirectStatus) const;
 
   base::Optional<ResourceRequestBlockedReason> CheckCSPForRequestInternal(
       mojom::RequestContextType,
       const KURL&,
       const ResourceLoaderOptions&,
-      SecurityViolationReportingPolicy,
+      ReportingDisposition,
       ResourceRequest::RedirectStatus,
       ContentSecurityPolicy::CheckHeaderType) const;
 };

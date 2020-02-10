@@ -205,7 +205,11 @@ public class MultiThumbnailCardProvider implements TabListMediator.ThumbnailProv
         mSize = (int) resource.getDimension(R.dimen.tab_grid_thumbnail_card_default_size);
         mFaviconCirclePadding =
                 resource.getDimension(R.dimen.tab_grid_thumbnail_favicon_background_padding);
-        mTabListFaviconProvider = new TabListFaviconProvider(context, Profile.getLastUsedProfile());
+        // TODO (https://crbug.com/1048632): Use the current profile (i.e., regular profile or
+        // incognito profile) instead of always using regular profile. It works correctly now, but
+        // it is not safe.
+        mTabListFaviconProvider =
+                new TabListFaviconProvider(context, Profile.getLastUsedRegularProfile());
 
         // Initialize Paints to use.
         mEmptyThumbnailPaint = new Paint();

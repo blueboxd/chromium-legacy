@@ -859,7 +859,6 @@ void AdsPageLoadMetricsObserver::RecordPerFrameHistograms(
   RecordPerFrameHistogramsForCpuUsage(ad_frame_data);
   RecordPerFrameHistogramsForAdTagging(ad_frame_data);
   RecordPerFrameHistogramsForHeavyAds(ad_frame_data);
-  RecordAdFrameIgnoredByRestrictedAdTagging(false /*ignored */);
 }
 
 void AdsPageLoadMetricsObserver::RecordPerFrameHistogramsForCpuUsage(
@@ -940,6 +939,8 @@ void AdsPageLoadMetricsObserver::RecordPerFrameHistogramsForAdTagging(
     const FrameData& ad_frame_data) {
   if (!ad_frame_data.ShouldRecordFrameForMetrics())
     return;
+
+  RecordAdFrameIgnoredByRestrictedAdTagging(false /*ignored */);
 
   // Record per frame histograms to the appropriate visibility prefixes.
   for (const auto visibility : {FrameData::FrameVisibility::kAnyVisibility,

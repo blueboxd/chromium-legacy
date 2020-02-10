@@ -13,6 +13,7 @@
 #include "base/no_destructor.h"
 #include "chromeos/components/multidevice/logging/logging.h"
 #include "chromeos/components/multidevice/software_feature.h"
+#include "chromeos/constants/chromeos_features.h"
 #include "chromeos/services/device_sync/proto/cryptauth_common.pb.h"
 #include "components/prefs/pref_registry_simple.h"
 #include "components/prefs/pref_service.h"
@@ -265,12 +266,22 @@ void HostVerifierImpl::AttemptHostVerification() {
   PA_LOG(VERBOSE) << "HostVerifierImpl::AttemptHostVerification(): Attempting "
                   << "host verification now.";
 
-  if (current_host->instance_id().empty()) {
-    device_sync_client_->FindEligibleDevices(
-        multidevice::SoftwareFeature::kBetterTogetherHost,
-        base::BindOnce(&HostVerifierImpl::OnFindEligibleDevicesResult,
-                       weak_ptr_factory_.GetWeakPtr()));
+  if (features::ShouldUseV1DeviceSync()) {
+    if (current_host->instance_id().empty()) {
+      device_sync_client_->FindEligibleDevices(
+          multidevice::SoftwareFeature::kBetterTogetherHost,
+          base::BindOnce(&HostVerifierImpl::OnFindEligibleDevicesResult,
+                         weak_ptr_factory_.GetWeakPtr()));
+    } else {
+      device_sync_client_->NotifyDevices(
+          {current_host->instance_id()},
+          cryptauthv2::TargetService::DEVICE_SYNC,
+          multidevice::SoftwareFeature::kBetterTogetherHost,
+          base::BindOnce(&HostVerifierImpl::OnNotifyDevicesFinished,
+                         weak_ptr_factory_.GetWeakPtr()));
+    }
   } else {
+    DCHECK(!current_host->instance_id().empty());
     device_sync_client_->NotifyDevices(
         {current_host->instance_id()}, cryptauthv2::TargetService::DEVICE_SYNC,
         multidevice::SoftwareFeature::kBetterTogetherHost,

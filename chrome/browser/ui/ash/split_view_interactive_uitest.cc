@@ -115,7 +115,7 @@ IN_PROC_BROWSER_TEST_P(SplitViewTest, ResizeTwoWindows) {
   const gfx::Size display_size =
       display::Screen::GetScreen()->GetPrimaryDisplay().bounds().size();
   const gfx::Point start_position(gfx::Rect(display_size).CenterPoint());
-  TRACE_EVENT_ASYNC_BEGIN0("ui", "Interaction.ui_WindowResize", this);
+  TRACE_EVENT_NESTABLE_ASYNC_BEGIN0("ui", "Interaction.ui_WindowResize", this);
   gfx::Point end_position(start_position);
   end_position.set_x(end_position.x() - 60);
   auto generator =
@@ -128,7 +128,7 @@ IN_PROC_BROWSER_TEST_P(SplitViewTest, ResizeTwoWindows) {
                             start_position, end_position,
                             base::TimeDelta::FromMilliseconds(1000)));
   generator->Wait();
-  TRACE_EVENT_ASYNC_END0("ui", "Interaction.ui_WindowResize", this);
+  TRACE_EVENT_NESTABLE_ASYNC_END0("ui", "Interaction.ui_WindowResize", this);
 
   ash::ShellTestApi().SetTabletModeEnabledForTest(false);
 }
@@ -151,7 +151,7 @@ IN_PROC_BROWSER_TEST_P(SplitViewTest, ResizeWithOverview) {
 
   const gfx::Point start_position =
       display::Screen::GetScreen()->GetPrimaryDisplay().bounds().CenterPoint();
-  TRACE_EVENT_ASYNC_BEGIN0("ui", "Interaction.ui_WindowResize", this);
+  TRACE_EVENT_NESTABLE_ASYNC_BEGIN0("ui", "Interaction.ui_WindowResize", this);
   gfx::Point end_position(start_position);
   end_position.set_x(end_position.x() - 60);
   auto generator =
@@ -164,7 +164,7 @@ IN_PROC_BROWSER_TEST_P(SplitViewTest, ResizeWithOverview) {
                             start_position, end_position,
                             base::TimeDelta::FromMilliseconds(1000)));
   generator->Wait();
-  TRACE_EVENT_ASYNC_END0("ui", "Interaction.ui_WindowResize", this);
+  TRACE_EVENT_NESTABLE_ASYNC_END0("ui", "Interaction.ui_WindowResize", this);
 
   ash::ShellTestApi().SetTabletModeEnabledForTest(false);
 }

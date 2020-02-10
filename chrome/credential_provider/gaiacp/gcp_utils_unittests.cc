@@ -421,7 +421,7 @@ TEST_F(GcpProcHelperTest, GetCommandLineForEntrypoint) {
   ASSERT_LT(0u, GetShortPathName(path, short_path, base::size(short_path)));
 
   base::string16 expected_arg =
-      base::StringPrintf(L"%ls,%ls", short_path, L"entrypoint");
+      base::StringPrintf(L"\"%ls\",%ls", short_path, L"entrypoint");
 
   ASSERT_EQ(1u, command_line.GetArgs().size());
   ASSERT_EQ(expected_arg, command_line.GetArgs()[0]);

@@ -19,6 +19,7 @@
 #include "components/viz/service/display/overlay_processor_interface.h"
 #include "components/viz/service/viz_service_export.h"
 #include "gpu/command_buffer/common/texture_in_use_response.h"
+#include "ui/gfx/display_color_spaces.h"
 #include "ui/gfx/geometry/quad_f.h"
 #include "ui/gfx/geometry/rect.h"
 #include "ui/latency/latency_info.h"
@@ -62,11 +63,10 @@ class VIZ_SERVICE_EXPORT DirectRenderer {
   void SetVisible(bool visible);
   void DecideRenderPassAllocationsForFrame(
       const RenderPassList& render_passes_in_draw_order);
-  void DrawFrame(
-      RenderPassList* render_passes_in_draw_order,
-      float device_scale_factor,
-      const gfx::Size& device_viewport_size,
-      float sdr_white_level = gfx::ColorSpace::kDefaultSDRWhiteLevel);
+  void DrawFrame(RenderPassList* render_passes_in_draw_order,
+                 float device_scale_factor,
+                 const gfx::Size& device_viewport_size,
+                 const gfx::DisplayColorSpaces& display_color_spaces);
 
   // Public interface implemented by subclasses.
   struct SwapFrameData {
@@ -100,7 +100,7 @@ class VIZ_SERVICE_EXPORT DirectRenderer {
     gfx::Rect root_damage_rect;
     std::vector<gfx::Rect> root_content_bounds;
     gfx::Size device_viewport_size;
-    float sdr_white_level = gfx::ColorSpace::kDefaultSDRWhiteLevel;
+    gfx::DisplayColorSpaces display_color_spaces;
 
     gfx::Transform projection_matrix;
     gfx::Transform window_matrix;
@@ -236,6 +236,9 @@ class VIZ_SERVICE_EXPORT DirectRenderer {
   }
 
   bool ShouldApplyRoundedCorner(const DrawQuad* quad) const;
+
+  gfx::ColorSpace RootRenderPassColorSpace() const;
+  gfx::ColorSpace CurrentRenderPassColorSpace() const;
 
   const RendererSettings* const settings_;
   OutputSurface* const output_surface_;

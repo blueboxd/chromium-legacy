@@ -222,7 +222,7 @@ void ContentSecurityPolicy::ApplyPolicySideEffectsToDelegate() {
       Count(WebFeature::kCSPWithStrictDynamic);
     }
 
-    if (policy->AllowEval(SecurityViolationReportingPolicy::kSuppressReporting,
+    if (policy->AllowEval(ReportingDisposition::kSuppressReporting,
                           kWillNotThrowException, g_empty_string)) {
       Count(WebFeature::kCSPWithUnsafeEval);
     }
@@ -526,7 +526,7 @@ bool ContentSecurityPolicy::AllowInline(
     const String& nonce,
     const String& context_url,
     const WTF::OrdinalNumber& context_line,
-    SecurityViolationReportingPolicy reporting_policy) const {
+    ReportingDisposition reporting_disposition) const {
   DCHECK(element || inline_type == InlineType::kScriptAttribute ||
          inline_type == InlineType::kNavigation);
 
@@ -553,7 +553,7 @@ bool ContentSecurityPolicy::AllowInline(
     is_allowed &=
         CheckHashAgainstPolicy(csp_hash_values, policy, inline_type) ||
         policy->AllowInline(inline_type, element, content, nonce, context_url,
-                            context_line, reporting_policy);
+                            context_line, reporting_disposition);
   }
 
   return is_allowed;
@@ -581,24 +581,24 @@ bool ContentSecurityPolicy::ShouldCheckEval() const {
 }
 
 bool ContentSecurityPolicy::AllowEval(
-    SecurityViolationReportingPolicy reporting_policy,
+    ReportingDisposition reporting_disposition,
     ContentSecurityPolicy::ExceptionStatus exception_status,
     const String& script_content) const {
   bool is_allowed = true;
   for (const auto& policy : policies_) {
-    is_allowed &=
-        policy->AllowEval(reporting_policy, exception_status, script_content);
+    is_allowed &= policy->AllowEval(reporting_disposition, exception_status,
+                                    script_content);
   }
   return is_allowed;
 }
 
 bool ContentSecurityPolicy::AllowWasmEval(
-    SecurityViolationReportingPolicy reporting_policy,
+    ReportingDisposition reporting_disposition,
     ContentSecurityPolicy::ExceptionStatus exception_status,
     const String& script_content) const {
   bool is_allowed = true;
   for (const auto& policy : policies_) {
-    is_allowed &= policy->AllowWasmEval(reporting_policy, exception_status,
+    is_allowed &= policy->AllowWasmEval(reporting_disposition, exception_status,
                                         script_content);
   }
   return is_allowed;
@@ -623,9 +623,10 @@ bool ContentSecurityPolicy::AllowPluginType(
     const String& type,
     const String& type_attribute,
     const KURL& url,
-    SecurityViolationReportingPolicy reporting_policy) const {
+    ReportingDisposition reporting_disposition) const {
   for (const auto& policy : policies_) {
-    if (!policy->AllowPluginType(type, type_attribute, url, reporting_policy))
+    if (!policy->AllowPluginType(type, type_attribute, url,
+                                 reporting_disposition))
       return false;
   }
   return true;
@@ -636,10 +637,10 @@ bool ContentSecurityPolicy::AllowPluginTypeForDocument(
     const String& type,
     const String& type_attribute,
     const KURL& url,
-    SecurityViolationReportingPolicy reporting_policy) const {
+    ReportingDisposition reporting_disposition) const {
   if (document.GetContentSecurityPolicy() &&
       !document.GetContentSecurityPolicy()->AllowPluginType(
-          type, type_attribute, url, reporting_policy))
+          type, type_attribute, url, reporting_disposition))
     return false;
 
   return true;
@@ -649,12 +650,12 @@ bool ContentSecurityPolicy::AllowRequestWithoutIntegrity(
     mojom::RequestContextType context,
     const KURL& url,
     RedirectStatus redirect_status,
-    SecurityViolationReportingPolicy reporting_policy,
+    ReportingDisposition reporting_disposition,
     CheckHeaderType check_header_type) const {
   for (const auto& policy : policies_) {
     if (CheckHeaderTypeMatches(check_header_type, policy->HeaderType()) &&
         !policy->AllowRequestWithoutIntegrity(context, url, redirect_status,
-                                              reporting_policy))
+                                              reporting_disposition))
       return false;
   }
   return true;
@@ -732,11 +733,11 @@ bool ContentSecurityPolicy::AllowRequest(
     const IntegrityMetadataSet& integrity_metadata,
     ParserDisposition parser_disposition,
     RedirectStatus redirect_status,
-    SecurityViolationReportingPolicy reporting_policy,
+    ReportingDisposition reporting_disposition,
     CheckHeaderType check_header_type) const {
   if (integrity_metadata.IsEmpty() &&
       !AllowRequestWithoutIntegrity(context, url, redirect_status,
-                                    reporting_policy, check_header_type)) {
+                                    reporting_disposition, check_header_type)) {
     return false;
   }
 
@@ -744,7 +745,7 @@ bool ContentSecurityPolicy::AllowRequest(
       GetDirectiveTypeFromRequestContextType(context);
   if (!type)
     return true;
-  return AllowFromSource(*type, url, redirect_status, reporting_policy,
+  return AllowFromSource(*type, url, redirect_status, reporting_disposition,
                          check_header_type, nonce, integrity_metadata,
                          parser_disposition);
 }
@@ -761,7 +762,7 @@ bool ContentSecurityPolicy::AllowFromSource(
     ContentSecurityPolicy::DirectiveType type,
     const KURL& url,
     RedirectStatus redirect_status,
-    SecurityViolationReportingPolicy reporting_policy,
+    ReportingDisposition reporting_disposition,
     CheckHeaderType check_header_type,
     const String& nonce,
     const IntegrityMetadataSet& hashes,
@@ -800,9 +801,9 @@ bool ContentSecurityPolicy::AllowFromSource(
   for (const auto& policy : policies_) {
     if (!CheckHeaderTypeMatches(check_header_type, policy->HeaderType()))
       continue;
-    is_allowed &=
-        policy->AllowFromSource(type, url, redirect_status, reporting_policy,
-                                nonce, hashes, parser_disposition);
+    is_allowed &= policy->AllowFromSource(type, url, redirect_status,
+                                          reporting_disposition, nonce, hashes,
+                                          parser_disposition);
   }
 
   return is_allowed;
@@ -818,10 +819,11 @@ bool ContentSecurityPolicy::AllowBaseURI(const KURL& url) const {
 bool ContentSecurityPolicy::AllowConnectToSource(
     const KURL& url,
     RedirectStatus redirect_status,
-    SecurityViolationReportingPolicy reporting_policy,
+    ReportingDisposition reporting_disposition,
     CheckHeaderType check_header_type) const {
   return AllowFromSource(ContentSecurityPolicy::DirectiveType::kConnectSrc, url,
-                         redirect_status, reporting_policy, check_header_type);
+                         redirect_status, reporting_disposition,
+                         check_header_type);
 }
 
 bool ContentSecurityPolicy::AllowFormAction(const KURL& url) const {
@@ -832,10 +834,11 @@ bool ContentSecurityPolicy::AllowFormAction(const KURL& url) const {
 bool ContentSecurityPolicy::AllowImageFromSource(
     const KURL& url,
     RedirectStatus redirect_status,
-    SecurityViolationReportingPolicy reporting_policy,
+    ReportingDisposition reporting_disposition,
     CheckHeaderType check_header_type) const {
   return AllowFromSource(ContentSecurityPolicy::DirectiveType::kImgSrc, url,
-                         redirect_status, reporting_policy, check_header_type);
+                         redirect_status, reporting_disposition,
+                         check_header_type);
 }
 
 bool ContentSecurityPolicy::AllowMediaFromSource(const KURL& url) const {
@@ -852,10 +855,10 @@ bool ContentSecurityPolicy::AllowScriptFromSource(
     const IntegrityMetadataSet& hashes,
     ParserDisposition parser_disposition,
     RedirectStatus redirect_status,
-    SecurityViolationReportingPolicy reporting_policy,
+    ReportingDisposition reporting_disposition,
     CheckHeaderType check_header_type) const {
   return AllowFromSource(ContentSecurityPolicy::DirectiveType::kScriptSrcElem,
-                         url, redirect_status, reporting_policy,
+                         url, redirect_status, reporting_disposition,
                          check_header_type, nonce, hashes, parser_disposition);
 }
 
@@ -881,10 +884,10 @@ bool ContentSecurityPolicy::AllowTrustedTypePolicy(const String& policy_name,
 bool ContentSecurityPolicy::AllowAncestors(
     LocalFrame* frame,
     const KURL& url,
-    SecurityViolationReportingPolicy reporting_policy) const {
+    ReportingDisposition reporting_disposition) const {
   bool is_allowed = true;
   for (const auto& policy : policies_)
-    is_allowed &= policy->AllowAncestors(frame, url, reporting_policy);
+    is_allowed &= policy->AllowAncestors(frame, url, reporting_disposition);
   return is_allowed;
 }
 

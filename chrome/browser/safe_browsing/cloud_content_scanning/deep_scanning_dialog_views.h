@@ -105,6 +105,8 @@ class DeepScanningDialogViews : public views::DialogDelegate {
   bool Cancel() override;
   bool ShouldShowCloseButton() const override;
   views::View* GetContentsView() override;
+  views::Widget* GetWidget() override;
+  const views::Widget* GetWidget() const override;
   void DeleteDelegate() override;
   ui::ModalType GetModalType() const override;
 
@@ -139,9 +141,6 @@ class DeepScanningDialogViews : public views::DialogDelegate {
 
  private:
   ~DeepScanningDialogViews() override;
-
-  // views::DialogDelegate:
-  const views::Widget* GetWidgetImpl() const override;
 
   // Update the UI depending on |dialog_status_|.
   void UpdateDialog();

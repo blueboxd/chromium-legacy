@@ -33,6 +33,7 @@ import org.chromium.base.metrics.RecordHistogram;
 import org.chromium.base.task.AsyncTask;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.ChromeSwitches;
+import org.chromium.chrome.browser.flags.BooleanCachedFieldTrialParameter;
 import org.chromium.chrome.browser.flags.CachedFeatureFlags;
 import org.chromium.chrome.browser.flags.ChromeFeatureList;
 import org.chromium.chrome.browser.tab.SadTab;
@@ -70,6 +71,11 @@ public class TabContentManager {
         int NUM_ENTRIES = 4;
     }
     public static final double ASPECT_RATIO_PRECISION = 0.01;
+
+    // Whether to allow to refetch tab thumbnail if the aspect ratio is not matching.
+    public static final BooleanCachedFieldTrialParameter ALLOW_TO_REFETCH_TAB_THUMBNAIL_VARIATION =
+            new BooleanCachedFieldTrialParameter(
+                    ChromeFeatureList.TAB_GRID_LAYOUT_ANDROID, "allow_to_refetch", false);
 
     @VisibleForTesting
     public static final String UMA_THUMBNAIL_FETCHING_RESULT =
@@ -200,7 +206,7 @@ public class TabContentManager {
         mPriorityTabIds = new int[mFullResThumbnailsMaxSize];
 
         if (CachedFeatureFlags.isTabThumbnailAspectRatioNotOne()
-                || CachedFeatureFlags.isAllowToRefetchTabThumbnail()) {
+                || CachedFeatureFlags.getValue(ALLOW_TO_REFETCH_TAB_THUMBNAIL_VARIATION)) {
             mRefectchedTabIds = new HashSet<>();
             mExpectedThumbnailAspectRatio =
                     (float) ChromeFeatureList.getFieldTrialParamByFeatureAsDouble(
@@ -455,7 +461,7 @@ public class TabContentManager {
                             new CachedMetrics.EnumeratedHistogramSample(
                                     UMA_THUMBNAIL_FETCHING_RESULT,
                                     ThumbnailFetchingResult.NUM_ENTRIES);
-                    if (CachedFeatureFlags.isAllowToRefetchTabThumbnail()) {
+                    if (CachedFeatureFlags.getValue(ALLOW_TO_REFETCH_TAB_THUMBNAIL_VARIATION)) {
                         double jpegAspectRatio = jpeg.getHeight() == 0
                                 ? 0
                                 : 1.0 * jpeg.getWidth() / jpeg.getHeight();

@@ -192,6 +192,11 @@ void DatabaseQuotaClient::DeleteOriginData(const url::Origin& origin,
       net::CompletionOnceCallback(delete_callback));
 }
 
+void DatabaseQuotaClient::PerformStorageCleanup(blink::mojom::StorageType type,
+                                                base::OnceClosure callback) {
+  std::move(callback).Run();
+}
+
 bool DatabaseQuotaClient::DoesSupport(StorageType type) const {
   return type == StorageType::kTemporary;
 }

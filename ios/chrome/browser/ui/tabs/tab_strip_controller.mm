@@ -47,6 +47,7 @@
 #import "ios/chrome/browser/web_state_list/web_state_list.h"
 #import "ios/chrome/browser/web_state_list/web_state_list_favicon_driver_observer.h"
 #import "ios/chrome/browser/web_state_list/web_state_list_observer_bridge.h"
+#import "ios/chrome/common/colors/semantic_color_names.h"
 #include "ios/chrome/grit/ios_strings.h"
 #import "ios/web/public/navigation/navigation_manager.h"
 #import "ios/web/public/web_state.h"
@@ -99,24 +100,15 @@ const CGFloat kCollapsedTabWidthThreshold = 40.0;
 const CGFloat kMaxAutoscrollDistance = 10.0;
 const CGFloat kAutoscrollDecrementWidth = 10.0;
 
-// Dimming view constants, in points.
-const CGFloat kDimmingViewBottomInsetHighRes = 0.0;
-const CGFloat kDimmingViewBottomInset = 0.0;
-
 // The size of the tab strip view.
 const CGFloat kTabStripHeight = 39.0;
 
 // The size of the new tab button.
-const CGFloat kNewTabButtonWidth = 59.9;
+const CGFloat kNewTabButtonWidth = 44;
 
 // Default image insets for the new tab button.
-const CGFloat kNewTabButtonHorizontalImageInset = 2.0;
-const CGFloat kNewTabButtonTopImageInset = 6.0;
-const CGFloat kNewTabButtonBottomImageInset = 7.0;
-
-// Offsets needed to keep the UI properly centered on high-res screens, in
-// points.
-const CGFloat kNewTabButtonBottomOffsetHighRes = 2.0;
+const CGFloat kNewTabButtonLeadingImageInset = -10.0;
+const CGFloat kNewTabButtonBottomImageInset = -2.0;
 
 // Returns the background color.
 UIColor* BackgroundColor() {
@@ -471,20 +463,13 @@ UIColor* BackgroundColor() {
     _buttonNewTab.imageView.contentMode = UIViewContentModeCenter;
 
     UIImage* buttonNewTabImage = [UIImage imageNamed:@"tabstrip_new_tab"];
+    buttonNewTabImage = [buttonNewTabImage
+        imageWithRenderingMode:UIImageRenderingModeAlwaysTemplate];
     [_buttonNewTab setImage:buttonNewTabImage forState:UIControlStateNormal];
-
-    UIImage* buttonNewTabPressedImage =
-        [UIImage imageNamed:@"tabstrip_new_tab_pressed"];
-    [_buttonNewTab setImage:buttonNewTabPressedImage
-                   forState:UIControlStateHighlighted];
+    [_buttonNewTab.imageView setTintColor:[UIColor colorNamed:kGrey500Color]];
 
     UIEdgeInsets imageInsets = UIEdgeInsetsMake(
-        kNewTabButtonTopImageInset, kNewTabButtonHorizontalImageInset,
-        kNewTabButtonBottomImageInset, kNewTabButtonHorizontalImageInset);
-    if (IsHighResScreen()) {
-      imageInsets.top += kNewTabButtonBottomOffsetHighRes;
-      imageInsets.bottom -= kNewTabButtonBottomOffsetHighRes;
-    }
+        0, kNewTabButtonLeadingImageInset, kNewTabButtonBottomImageInset, 0);
     _buttonNewTab.imageEdgeInsets = imageInsets;
     SetA11yLabelAndUiAutomationName(
         _buttonNewTab,
@@ -633,8 +618,6 @@ UIColor* BackgroundColor() {
   // pixels are visually part of the top border of the toolbar.  The bottom
   // inset constants take into account the conversion from pixels to points.
   CGRect frame = [_tabStripView bounds];
-  frame.size.height -= (IsHighResScreen() ? kDimmingViewBottomInsetHighRes
-                                          : kDimmingViewBottomInset);
 
   // Create the dimming view if it doesn't exist.  In all cases, make sure it's
   // set up correctly.

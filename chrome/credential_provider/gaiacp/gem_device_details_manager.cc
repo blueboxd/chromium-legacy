@@ -42,6 +42,11 @@ const char kUploadDeviceDetailsRequestSerialNumberParameterName[] =
     "device_serial_number";
 const char kUploadDeviceDetailsRequestMachineGuidParameterName[] =
     "machine_guid";
+const char kUploadDeviceDetailsRequestUserSidParameterName[] = "user_sid";
+const char kUploadDeviceDetailsRequestUsernameParameterName[] =
+    "account_username";
+const char kUploadDeviceDetailsRequestDomainParameterName[] = "device_domain";
+const char kIsAdJoinedUser[] = "is_ad_joined_user";
 
 }  // namespace
 
@@ -77,22 +82,35 @@ GURL GemDeviceDetailsManager::GetGemServiceUploadDeviceDetailsUrl() {
 // TODO(crbug.com/1043199): Store device_resource_id on device and send that to
 // GEM service for further optimizations.
 HRESULT GemDeviceDetailsManager::UploadDeviceDetails(
-    const std::string& access_token) {
+    const std::string& access_token,
+    const base::string16& sid,
+    const base::string16& username,
+    const base::string16& domain) {
   base::string16 serial_number = GetSerialNumber();
   base::string16 machine_guid;
   HRESULT hr = GetMachineGuid(&machine_guid);
 
-  base::Value request_dict(base::Value::Type::DICTIONARY);
-  request_dict.SetStringKey(
+  request_dict_.reset(new base::Value(base::Value::Type::DICTIONARY));
+  request_dict_->SetStringKey(
       kUploadDeviceDetailsRequestSerialNumberParameterName,
       base::UTF16ToUTF8(serial_number));
-  request_dict.SetStringKey(kUploadDeviceDetailsRequestMachineGuidParameterName,
-                            base::UTF16ToUTF8(machine_guid));
+  request_dict_->SetStringKey(
+      kUploadDeviceDetailsRequestMachineGuidParameterName,
+      base::UTF16ToUTF8(machine_guid));
+  request_dict_->SetStringKey(kUploadDeviceDetailsRequestUserSidParameterName,
+                              base::UTF16ToUTF8(sid));
+  request_dict_->SetStringKey(kUploadDeviceDetailsRequestUsernameParameterName,
+                              base::UTF16ToUTF8(username));
+  request_dict_->SetStringKey(kUploadDeviceDetailsRequestDomainParameterName,
+                              base::UTF16ToUTF8(domain));
+  request_dict_->SetBoolKey(kIsAdJoinedUser,
+                            OSUserManager::Get()->IsUserDomainJoined(sid));
+
   base::Optional<base::Value> request_result;
 
   hr = WinHttpUrlFetcher::BuildRequestAndFetchResultFromHttpService(
       GemDeviceDetailsManager::Get()->GetGemServiceUploadDeviceDetailsUrl(),
-      access_token, {}, request_dict, upload_device_details_request_timeout_,
+      access_token, {}, *request_dict_, upload_device_details_request_timeout_,
       &request_result);
 
   if (FAILED(hr)) {

@@ -120,6 +120,8 @@ class ShelfNavigationWidget::Delegate : public views::AccessiblePaneView,
   // views::WidgetDelegate:
   void DeleteDelegate() override;
   bool CanActivate() const override;
+  views::Widget* GetWidget() override { return View::GetWidget(); }
+  const views::Widget* GetWidget() const override { return View::GetWidget(); }
 
   BackButton* back_button() const { return back_button_; }
   HomeButton* home_button() const { return home_button_; }

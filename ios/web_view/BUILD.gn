@@ -182,6 +182,8 @@ ios_web_view_sources = [
   "internal/sync/web_view_device_info_sync_service_factory.mm",
   "internal/sync/web_view_gcm_profile_service_factory.h",
   "internal/sync/web_view_gcm_profile_service_factory.mm",
+  "internal/sync/web_view_instance_id_profile_service_factory.h",
+  "internal/sync/web_view_instance_id_profile_service_factory.mm",
   "internal/sync/web_view_model_type_store_service_factory.h",
   "internal/sync/web_view_model_type_store_service_factory.mm",
   "internal/sync/web_view_profile_invalidation_provider_factory.h",

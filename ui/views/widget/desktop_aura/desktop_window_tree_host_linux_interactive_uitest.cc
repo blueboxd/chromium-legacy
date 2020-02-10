@@ -129,6 +129,8 @@ class HitTestWidgetDelegate : public WidgetDelegate {
 
   // WidgetDelegate:
   bool CanResize() const override { return can_resize_; }
+  Widget* GetWidget() override { return widget_; }
+  Widget* GetWidget() const override { return widget_; }
   NonClientFrameView* CreateNonClientFrameView(Widget* widget) override {
     DCHECK(widget_ == widget);
     if (!frame_view_)
@@ -138,9 +140,6 @@ class HitTestWidgetDelegate : public WidgetDelegate {
   void DeleteDelegate() override { delete this; }
 
  private:
-  // WidgetDelegate:
-  const Widget* GetWidgetImpl() const override { return widget_; }
-
   Widget* const widget_;
   HitTestNonClientFrameView* frame_view_ = nullptr;
   bool can_resize_ = false;

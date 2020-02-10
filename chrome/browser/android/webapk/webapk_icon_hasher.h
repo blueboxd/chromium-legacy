@@ -32,20 +32,11 @@ class WebApkIconHasher {
   using Murmur2HashMultipleCallback = base::OnceCallback<void(
       base::Optional<std::map<std::string, std::string>>)>;
 
-  // Creates a self-owned WebApkIconHasher instance. The instance downloads
-  // |icon_url| and calls |callback| with the Murmur2 hash of the downloaded
-  // image. The hash is taken over the raw image bytes (no image
-  // encoding/decoding beforehand). |callback| is called with an empty string if
-  // the image cannot not be downloaded in time (e.g. 404 HTTP error code).
-  static void DownloadAndComputeMurmur2Hash(
-      network::mojom::URLLoaderFactory* url_loader_factory,
-      const url::Origin& request_initiator,
-      const GURL& icon_url,
-      Murmur2HashCallback callback);
-
-  // Convenience wrapper for getting the hash for multiple urls.
-  // Returns a nullopt if any of the hashes were not successfully fetched, or a
-  // map from a GURL to its hash on success.
+  // Creates a self-owned WebApkIconHasher instance. The instance downloads all
+  // the |icon_urls| and calls |callback| with the Murmur2 hash of the
+  // downloaded images. The hash is taken over the raw image bytes (no image
+  // encoding/decoding beforehand). |callback| is called with a base::nullopt if
+  // any image cannot not be downloaded in time (e.g. 404 HTTP error code).
   static void DownloadAndComputeMurmur2Hash(
       network::mojom::URLLoaderFactory* url_loader_factory,
       const url::Origin& request_initiator,

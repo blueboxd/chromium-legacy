@@ -351,7 +351,9 @@ bool IsAdditionalSectionComplete(
     const std::map<std::string, autofill_assistant::ValueProto>&
         additional_sections,
     const autofill_assistant::UserFormSectionProto& section) {
-  if (!section.popup_list_section().selection_mandatory()) {
+  if (section.section_case() !=
+          autofill_assistant::UserFormSectionProto::kPopupListSection ||
+      !section.popup_list_section().selection_mandatory()) {
     return true;
   }
   auto find_result = additional_sections.find(

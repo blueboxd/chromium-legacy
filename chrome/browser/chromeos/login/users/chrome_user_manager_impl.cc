@@ -639,9 +639,9 @@ void ChromeUserManagerImpl::Observe(
   Profile* profile = content::Details<Profile>(details).ptr();
   if (IsUserLoggedIn() && !IsLoggedInAsGuest() && !IsLoggedInAsAnyKioskApp()) {
     if (!profile->IsOffTheRecord()) {
-      if (AuthSyncObserver::ShouldObserve(profile)) {
-        AuthSyncObserver* sync_observer =
-            AuthSyncObserverFactory::GetInstance()->GetForProfile(profile);
+      if (AuthErrorObserver::ShouldObserve(profile)) {
+        AuthErrorObserver* sync_observer =
+            AuthErrorObserverFactory::GetInstance()->GetForProfile(profile);
         sync_observer->StartObserving();
       }
       multi_profile_user_controller_->StartObserving(profile);

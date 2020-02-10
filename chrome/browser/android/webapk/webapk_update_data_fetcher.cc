@@ -5,6 +5,7 @@
 #include "chrome/browser/android/webapk/webapk_update_data_fetcher.h"
 
 #include <jni.h>
+#include <set>
 #include <vector>
 
 #include "base/android/build_info.h"
@@ -158,6 +159,15 @@ void WebApkUpdateDataFetcher::OnDidGetInstallableData(
     badge_icon_ = *data.badge_icon;
   }
 
+  std::set<GURL> urls{info_.best_primary_icon_url};
+  if (!info_.best_badge_icon_url.is_empty())
+    urls.insert(info_.best_badge_icon_url);
+
+  for (const auto& shortcut_url : info_.best_shortcut_icon_urls) {
+    if (shortcut_url.is_valid())
+      urls.insert(shortcut_url);
+  }
+
   Profile* profile =
       Profile::FromBrowserContext(web_contents()->GetBrowserContext());
 
@@ -165,39 +175,14 @@ void WebApkUpdateDataFetcher::OnDidGetInstallableData(
       content::BrowserContext::GetDefaultStoragePartition(profile)
           ->GetURLLoaderFactoryForBrowserProcess()
           .get(),
-      url::Origin::Create(last_fetched_url_), info_.best_primary_icon_url,
-      base::Bind(&WebApkUpdateDataFetcher::OnGotPrimaryIconMurmur2Hash,
+      url::Origin::Create(last_fetched_url_), urls,
+      base::Bind(&WebApkUpdateDataFetcher::OnGotIconMurmur2Hashes,
                  weak_ptr_factory_.GetWeakPtr()));
 }
 
-void WebApkUpdateDataFetcher::OnGotPrimaryIconMurmur2Hash(
-    const std::string& primary_icon_murmur2_hash) {
-  if (primary_icon_murmur2_hash.empty())
-    return;
-
-  if (!info_.best_badge_icon_url.is_empty() &&
-      info_.best_badge_icon_url != info_.best_primary_icon_url) {
-    Profile* profile =
-        Profile::FromBrowserContext(web_contents()->GetBrowserContext());
-
-    WebApkIconHasher::DownloadAndComputeMurmur2Hash(
-        content::BrowserContext::GetDefaultStoragePartition(profile)
-            ->GetURLLoaderFactoryForBrowserProcess()
-            .get(),
-        url::Origin::Create(last_fetched_url_), info_.best_badge_icon_url,
-        base::Bind(&WebApkUpdateDataFetcher::OnDataAvailable,
-                   weak_ptr_factory_.GetWeakPtr(), primary_icon_murmur2_hash,
-                   true));
-  } else {
-    OnDataAvailable(primary_icon_murmur2_hash, false, "");
-  }
-}
-
-void WebApkUpdateDataFetcher::OnDataAvailable(
-    const std::string& primary_icon_murmur2_hash,
-    bool did_fetch_badge_icon,
-    const std::string& badge_icon_murmur2_hash) {
-  if (did_fetch_badge_icon && badge_icon_murmur2_hash.empty())
+void WebApkUpdateDataFetcher::OnGotIconMurmur2Hashes(
+    base::Optional<std::map<std::string, std::string>> hashes) {
+  if (!hashes)
     return;
 
   JNIEnv* env = base::android::AttachCurrentThread();
@@ -214,7 +199,8 @@ void WebApkUpdateDataFetcher::OnDataAvailable(
       base::android::ConvertUTF8ToJavaString(
           env, info_.best_primary_icon_url.spec());
   ScopedJavaLocalRef<jstring> java_primary_icon_murmur2_hash =
-      base::android::ConvertUTF8ToJavaString(env, primary_icon_murmur2_hash);
+      base::android::ConvertUTF8ToJavaString(
+          env, (*hashes)[info_.best_primary_icon_url.spec()]);
   ScopedJavaLocalRef<jobject> java_primary_icon =
       gfx::ConvertToJavaBitmap(&primary_icon_);
   jboolean java_is_primary_icon_maskable = is_primary_icon_maskable_;
@@ -222,7 +208,8 @@ void WebApkUpdateDataFetcher::OnDataAvailable(
       base::android::ConvertUTF8ToJavaString(env,
                                              info_.best_badge_icon_url.spec());
   ScopedJavaLocalRef<jstring> java_badge_icon_murmur2_hash =
-      base::android::ConvertUTF8ToJavaString(env, badge_icon_murmur2_hash);
+      base::android::ConvertUTF8ToJavaString(
+          env, (*hashes)[info_.best_badge_icon_url.spec()]);
   ScopedJavaLocalRef<jobject> java_badge_icon;
   if (!badge_icon_.drawsNothing())
     java_badge_icon = gfx::ConvertToJavaBitmap(&badge_icon_);
@@ -264,6 +251,27 @@ void WebApkUpdateDataFetcher::OnDataAvailable(
         base::android::ToJavaArrayOfStringArray(env, accepts);
   }
 
+  // Wraps the shortcut info in a 2D vector for convenience.
+  // The inner vector represents a shortcut items, with the following fields:
+  // <name>, <short name>, <launch url>, <icon url>, <icon hash>.
+  std::vector<std::vector<base::string16>> shortcuts;
+  DCHECK_EQ(info_.shortcut_items.size(), info_.best_shortcut_icon_urls.size());
+
+  for (size_t i = 0; i < info_.shortcut_items.size(); i++) {
+    const auto& shortcut = info_.shortcut_items[i];
+    const GURL& chosen_icon_url = info_.best_shortcut_icon_urls[i];
+
+    auto it = hashes->find(chosen_icon_url.spec());
+    std::string chosen_icon_hash;
+    if (it != hashes->end())
+      chosen_icon_hash = it->second;
+
+    shortcuts.push_back({shortcut.name, shortcut.short_name.string(),
+                         base::UTF8ToUTF16(shortcut.url.spec()),
+                         base::UTF8ToUTF16(chosen_icon_url.spec()),
+                         base::UTF8ToUTF16(chosen_icon_hash)});
+  }
+
   Java_WebApkUpdateDataFetcher_onDataAvailable(
       env, java_ref_, java_url, java_scope, java_name, java_short_name,
       java_primary_icon_url, java_primary_icon_murmur2_hash, java_primary_icon,
@@ -274,5 +282,6 @@ void WebApkUpdateDataFetcher::OnDataAvailable(
       OptionalSkColorToJavaColor(info_.background_color), java_share_action,
       java_share_params_title, java_share_params_text,
       java_share_params_is_method_post, java_share_params_is_enctype_multipart,
-      java_share_params_file_names, java_share_params_accepts);
+      java_share_params_file_names, java_share_params_accepts,
+      base::android::ToJavaArrayOfStringArray(env, shortcuts));
 }

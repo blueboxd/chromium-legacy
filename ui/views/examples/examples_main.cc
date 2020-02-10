@@ -13,6 +13,7 @@
 #include "base/power_monitor/power_monitor.h"
 #include "base/power_monitor/power_monitor_device_source.h"
 #include "base/run_loop.h"
+#include "base/test/scoped_run_loop_timeout.h"
 #include "base/test/task_environment.h"
 #include "base/test/test_discardable_memory_allocator.h"
 #include "base/test/test_timeouts.h"
@@ -133,7 +134,7 @@ int main(int argc, char** argv) {
 #endif
 
     // This app isn't a test and shouldn't timeout.
-    base::RunLoop::ScopedDisableRunTimeoutForTest disable_timeout;
+    base::test::ScopedDisableRunLoopTimeout disable_timeout;
 
     base::RunLoop run_loop;
     views::examples::ShowExamplesWindow(run_loop.QuitClosure());

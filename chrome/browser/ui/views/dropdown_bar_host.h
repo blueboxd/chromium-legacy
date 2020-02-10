@@ -140,6 +140,10 @@ class DropdownBarHost : public ui::AcceleratorTarget,
     return animation_.get();
   }
 
+  // views::WidgetDelegate:
+  views::Widget* GetWidget() override;
+  const views::Widget* GetWidget() const override;
+
  private:
   // Set the view whose position in the |browser_view_| view hierarchy
   // determines the z-order of |host_| relative to views with layers and
@@ -147,9 +151,6 @@ class DropdownBarHost : public ui::AcceleratorTarget,
   //
   // Implemented in platform-specific files.
   void SetHostViewNative(views::View* host_view);
-
-  // views::WidgetDelegate:
-  const views::Widget* GetWidgetImpl() const override;
 
   // The BrowserView that created us.
   BrowserView* browser_view_;

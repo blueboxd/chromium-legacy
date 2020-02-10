@@ -481,10 +481,6 @@ int RunZygote(ContentMainDelegate* delegate) {
       command_line.GetSwitchValueASCII(switches::kProcessType);
   ContentClientInitializer::Set(process_type, delegate);
 
-#if !defined(OS_ANDROID)
-  tracing::EnableStartupTracingIfNeeded();
-#endif  // !OS_ANDROID
-
   MainFunctionParams main_params(command_line);
   main_params.zygote_child = true;
 

@@ -14,6 +14,16 @@ luci.console_view(
             short_name = 'bld',
         ),
         luci.console_view_entry(
+            builder = 'ci-beta/Linux Ozone Tester (Wayland)',
+            category = 'linux',
+            short_name = 'low',
+        ),
+        luci.console_view_entry(
+            builder = 'ci-beta/Linux Ozone Tester (X11)',
+            category = 'linux',
+            short_name = 'lox',
+        ),
+        luci.console_view_entry(
             builder = 'ci-beta/Linux Tests',
             category = 'chromium.linux|release',
             short_name = 'tst',

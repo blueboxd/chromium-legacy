@@ -4,13 +4,13 @@
 
 #include "third_party/blink/renderer/modules/canvas/htmlcanvas/html_canvas_element_module.h"
 
+#include "base/metrics/histogram_functions.h"
 #include "third_party/blink/renderer/bindings/modules/v8/v8_canvas_context_creation_attributes_module.h"
 #include "third_party/blink/renderer/core/dom/dom_node_ids.h"
 #include "third_party/blink/renderer/core/frame/local_frame.h"
 #include "third_party/blink/renderer/core/html/canvas/canvas_rendering_context.h"
 #include "third_party/blink/renderer/core/offscreencanvas/offscreen_canvas.h"
 #include "third_party/blink/renderer/modules/canvas/htmlcanvas/canvas_context_creation_attributes_helpers.h"
-#include "third_party/blink/renderer/platform/instrumentation/histogram.h"
 
 namespace blink {
 
@@ -51,8 +51,8 @@ OffscreenCanvas* HTMLCanvasElementModule::transferControlToOffscreen(
         execution_context, canvas, exception_state);
   }
 
-  UMA_HISTOGRAM_BOOLEAN("Blink.OffscreenCanvas.TransferControlToOffscreen",
-                        bool(offscreen_canvas));
+  base::UmaHistogramBoolean("Blink.OffscreenCanvas.TransferControlToOffscreen",
+                            !!offscreen_canvas);
   return offscreen_canvas;
 }
 

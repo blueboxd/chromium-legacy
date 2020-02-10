@@ -19,6 +19,7 @@ source_set("cpp") {
     "//base",
     "//chromeos/components/multidevice",
     "//chromeos/components/multidevice/logging",
+    "//chromeos/constants",
     "//chromeos/services/device_sync:feature_status_change",
     "//chromeos/services/device_sync/public/mojom",
   ]

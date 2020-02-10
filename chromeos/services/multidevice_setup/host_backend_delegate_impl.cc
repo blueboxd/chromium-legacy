@@ -140,11 +140,14 @@ void HostBackendDelegateImpl::AttemptToSetMultiDeviceHostOnBackend(
   if (host_device) {
     // If an Instance ID is available, use that to identify the device;
     // otherwise, use the encoded public key.
-    // TODO(https://crbug.com/1019206): When v1 DeviceSync is disabled, only
-    // use Instance IDs since all devices are guaranteed to have one.
-    SetPendingHostRequest(host_device->instance_id().empty()
-                              ? host_device->GetDeviceId()
-                              : host_device->instance_id());
+    if (features::ShouldUseV1DeviceSync()) {
+      SetPendingHostRequest(host_device->instance_id().empty()
+                                ? host_device->GetDeviceId()
+                                : host_device->instance_id());
+    } else {
+      DCHECK(!host_device->instance_id().empty());
+      SetPendingHostRequest(host_device->instance_id());
+    }
   } else {
     SetPendingHostRequest(kPendingRemovalOfCurrentHost);
   }
@@ -244,10 +247,14 @@ base::Optional<multidevice::RemoteDeviceRef>
 HostBackendDelegateImpl::FindDeviceById(const std::string& id) const {
   DCHECK(!id.empty());
   for (const auto& remote_device : device_sync_client_->GetSyncedDevices()) {
-    // TODO(https://crbug.com/1019206): When v1 DeviceSync is disabled,
-    // only look up by Instance ID since all devices are guaranteed to have one.
-    if (id == remote_device.instance_id() || id == remote_device.GetDeviceId())
-      return remote_device;
+    if (features::ShouldUseV1DeviceSync()) {
+      if (id == remote_device.instance_id() ||
+          id == remote_device.GetDeviceId())
+        return remote_device;
+    } else {
+      if (id == remote_device.instance_id())
+        return remote_device;
+    }
   }
 
   return base::nullopt;
@@ -275,29 +282,39 @@ void HostBackendDelegateImpl::AttemptNetworkRequest(bool is_retry) {
                << (should_enable ? "enable" : "disable") << " the host.\n"
                << GenerateDeviceIdString(device_to_set);
 
-  // In order to avoid a race condition in mutating the BetterTogether host
-  // state on the CryptAuth backend, we are assuming that all SetFeatureStatus()
-  // and SetSoftwareFeatureState() requests are added to the same queue and
-  // processed in order. The DeviceSync service implementation guarantees this
-  // ordering.
-  // TODO(https://crbug.com/1019206): When v1 DeviceSync is disabled, only use
-  // SetFeatureStatus since all devices are guaranteed to have an Instance ID.
-  if (!device_to_set.instance_id().empty()) {
+  if (features::ShouldUseV1DeviceSync()) {
+    // In order to avoid a race condition in mutating the BetterTogether host
+    // state on the CryptAuth backend, we are assuming that all
+    // SetFeatureStatus() and SetSoftwareFeatureState() requests are added to
+    // the same queue and processed in order. The DeviceSync service
+    // implementation guarantees this ordering.
+    if (!device_to_set.instance_id().empty()) {
+      device_sync_client_->SetFeatureStatus(
+          device_to_set.instance_id(),
+          multidevice::SoftwareFeature::kBetterTogetherHost,
+          should_enable ? device_sync::FeatureStatusChange::kEnableExclusively
+                        : device_sync::FeatureStatusChange::kDisable,
+          base::BindOnce(
+              &HostBackendDelegateImpl::OnSetHostNetworkRequestFinished,
+              weak_ptr_factory_.GetWeakPtr(), device_to_set, should_enable));
+
+    } else {
+      DCHECK(!device_to_set.public_key().empty());
+      device_sync_client_->SetSoftwareFeatureState(
+          device_to_set.public_key(),
+          multidevice::SoftwareFeature::kBetterTogetherHost,
+          should_enable /* enabled */, should_enable /* is_exclusive */,
+          base::BindOnce(
+              &HostBackendDelegateImpl::OnSetHostNetworkRequestFinished,
+              weak_ptr_factory_.GetWeakPtr(), device_to_set, should_enable));
+    }
+  } else {
+    DCHECK(!device_to_set.instance_id().empty());
     device_sync_client_->SetFeatureStatus(
         device_to_set.instance_id(),
         multidevice::SoftwareFeature::kBetterTogetherHost,
         should_enable ? device_sync::FeatureStatusChange::kEnableExclusively
                       : device_sync::FeatureStatusChange::kDisable,
-        base::BindOnce(
-            &HostBackendDelegateImpl::OnSetHostNetworkRequestFinished,
-            weak_ptr_factory_.GetWeakPtr(), device_to_set, should_enable));
-
-  } else {
-    DCHECK(!device_to_set.public_key().empty());
-    device_sync_client_->SetSoftwareFeatureState(
-        device_to_set.public_key(),
-        multidevice::SoftwareFeature::kBetterTogetherHost,
-        should_enable /* enabled */, should_enable /* is_exclusive */,
         base::BindOnce(
             &HostBackendDelegateImpl::OnSetHostNetworkRequestFinished,
             weak_ptr_factory_.GetWeakPtr(), device_to_set, should_enable));

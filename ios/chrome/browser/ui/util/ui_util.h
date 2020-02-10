@@ -20,9 +20,6 @@ enum InterfaceIdiom { IPHONE_IDIOM, IPAD_IDIOM, INTERFACE_IDIOM_COUNT };
 // Array of widths for device idioms in portrait orientation.
 extern const CGFloat kPortraitWidth[INTERFACE_IDIOM_COUNT];
 
-// Is the screen of the device a high resolution screen, i.e. Retina Display.
-bool IsHighResScreen();
-
 // Returns true if the device is in portrait orientation or if interface
 // orientation is unknown.
 bool IsPortrait();

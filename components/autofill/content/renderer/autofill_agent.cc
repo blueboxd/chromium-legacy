@@ -10,6 +10,8 @@
 
 #include "base/bind.h"
 #include "base/command_line.h"
+#include "base/debug/alias.h"
+#include "base/debug/dump_without_crashing.h"
 #include "base/feature_list.h"
 #include "base/i18n/case_conversion.h"
 #include "base/location.h"
@@ -392,7 +394,17 @@ void AutofillAgent::DoAcceptDataListSuggestion(
     return;
 
   WebInputElement* input_element = ToWebInputElement(&element_);
-  DCHECK(input_element);
+  if (!input_element) {
+    // For reasons not understood yet, this is triggered on elements which are
+    // not input elements.
+
+    // TODO(crbug.com/1048270) Gather debug data.
+    DEBUG_ALIAS_FOR_CSTR(element_name, element_.TagName().Latin1().c_str(), 64);
+    base::debug::DumpWithoutCrashing();
+
+    // Keep this return after removing the TODO(crbug.com/1048270) above.
+    return;
+  }
   base::string16 new_value = suggested_value;
   // If this element takes multiple values then replace the last part with
   // the suggestion.

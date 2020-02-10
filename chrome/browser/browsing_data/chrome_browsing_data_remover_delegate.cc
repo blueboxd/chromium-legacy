@@ -1194,9 +1194,11 @@ void ChromeBrowsingDataRemoverDelegate::OnTaskStarted(
   auto result = pending_sub_tasks_.insert(data_type);
   DCHECK(result.second) << "Task already started: "
                         << static_cast<int>(data_type);
-  TRACE_EVENT_ASYNC_BEGIN1("browsing_data", "ChromeBrowsingDataRemoverDelegate",
-                           static_cast<int>(data_type), "data_type",
-                           static_cast<int>(data_type));
+  TRACE_EVENT_NESTABLE_ASYNC_BEGIN1(
+      "browsing_data", "ChromeBrowsingDataRemoverDelegate",
+      TRACE_ID_WITH_SCOPE("ChromeBrowsingDataRemoverDelegate",
+                          static_cast<int>(data_type)),
+      "data_type", static_cast<int>(data_type));
 }
 
 void ChromeBrowsingDataRemoverDelegate::OnTaskComplete(
@@ -1204,9 +1206,11 @@ void ChromeBrowsingDataRemoverDelegate::OnTaskComplete(
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   size_t num_erased = pending_sub_tasks_.erase(data_type);
   DCHECK_EQ(num_erased, 1U);
-  TRACE_EVENT_ASYNC_END1("browsing_data", "ChromeBrowsingDataRemoverDelegate",
-                         static_cast<int>(data_type), "data_type",
-                         static_cast<int>(data_type));
+  TRACE_EVENT_NESTABLE_ASYNC_END1(
+      "browsing_data", "ChromeBrowsingDataRemoverDelegate",
+      TRACE_ID_WITH_SCOPE("ChromeBrowsingDataRemoverDelegate",
+                          static_cast<int>(data_type)),
+      "data_type", static_cast<int>(data_type));
   if (!pending_sub_tasks_.empty())
     return;
 

@@ -410,7 +410,7 @@ const double kFullscreenProgressBadgeViewThreshold = 0.85;
       [self.locationBarSteadyView.trailingButton
           setImage:
               [[UIImage imageNamed:@"location_bar_voice"]
-                  imageWithRenderingMode:UIImageRenderingModeAlwaysOriginal]
+                  imageWithRenderingMode:UIImageRenderingModeAlwaysTemplate]
           forState:UIControlStateNormal];
       self.locationBarSteadyView.trailingButton.accessibilityLabel =
           l10n_util::GetNSString(IDS_IOS_TOOLS_MENU_VOICE_SEARCH);

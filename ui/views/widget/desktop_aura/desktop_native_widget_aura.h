@@ -114,6 +114,8 @@ class VIEWS_EXPORT DesktopNativeWidgetAura
   bool ShouldUseNativeFrame() const override;
   bool ShouldWindowContentsBeTransparent() const override;
   void FrameTypeChanged() override;
+  Widget* GetWidget() override;
+  const Widget* GetWidget() const override;
   gfx::NativeView GetNativeView() const override;
   Widget* GetTopLevelWidget() override;
   const ui::Compositor* GetCompositor() const override;
@@ -258,9 +260,6 @@ class VIEWS_EXPORT DesktopNativeWidgetAura
 
   // Notify the root view of our widget of a native accessibility event.
   void NotifyAccessibilityEvent(ax::mojom::Event event_type);
-
-  // internal::NativeWidgetPrivate
-  const Widget* GetWidgetImpl() const override;
 
   std::unique_ptr<aura::WindowTreeHost> host_;
   DesktopWindowTreeHost* desktop_window_tree_host_;

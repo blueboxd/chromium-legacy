@@ -37,17 +37,16 @@
 namespace {
 
 // Tab close button insets.
-const CGFloat kTabCloseTopInset = -1.0;
+const CGFloat kTabCloseTopInset = 1.0;
 const CGFloat kTabCloseLeftInset = 0.0;
 const CGFloat kTabCloseBottomInset = 0.0;
 const CGFloat kTabCloseRightInset = 0.0;
 const CGFloat kTabBackgroundLeftCapInset = 34.0;
-const CGFloat kFaviconLeftInset = 23.5;
-const CGFloat kFaviconVerticalOffset = 2.0;
+const CGFloat kFaviconLeftInset = 28;
+const CGFloat kFaviconVerticalOffset = 1.0;
 const CGFloat kTabStripLineMargin = 2.5;
 const CGFloat kTabStripLineHeight = 0.5;
-const CGFloat kCloseButtonHorizontalShift = 19;
-const CGFloat kCloseButtonVerticalShift = 4.0;
+const CGFloat kCloseButtonHorizontalShift = 22;
 const CGFloat kTitleLeftMargin = 8.0;
 const CGFloat kTitleRightMargin = 0.0;
 
@@ -333,22 +332,19 @@ UIImage* DefaultFaviconImage() {
     @"H:|-faviconLeftInset-[favicon(faviconSize)]",
     @"V:|-faviconVerticalOffset-[favicon]-0-|",
     @"H:[close(==closeButtonSize)]-closeButtonHorizontalShift-|",
-    @"V:|-closeButtonVerticalShift-[close]-0-|",
+    @"V:|-0-[close]-0-|",
     @"H:[favicon]-titleLeftMargin-[title]-titleRightMargin-[close]",
     @"V:[title(==titleHeight)]",
   ];
 
-  CGFloat faviconLeftInset = kFaviconLeftInset;
-  CGFloat faviconVerticalOffset = kFaviconVerticalOffset;
   NSDictionary* metrics = @{
     @"closeButtonSize" : @(kCloseButtonSize),
     @"closeButtonHorizontalShift" : @(kCloseButtonHorizontalShift),
-    @"closeButtonVerticalShift" : @(kCloseButtonVerticalShift),
     @"titleLeftMargin" : @(kTitleLeftMargin),
     @"titleRightMargin" : @(kTitleRightMargin),
     @"titleHeight" : @(kFaviconSize),
-    @"faviconLeftInset" : @(AlignValueToPixel(faviconLeftInset)),
-    @"faviconVerticalOffset" : @(faviconVerticalOffset),
+    @"faviconLeftInset" : @(kFaviconLeftInset),
+    @"faviconVerticalOffset" : @(kFaviconVerticalOffset),
     @"faviconSize" : @(kFaviconSize),
   };
   ApplyVisualConstraintsWithMetrics(constraints, viewsDictionary, metrics);
@@ -383,28 +379,35 @@ UIImage* DefaultFaviconImage() {
   // Style the close button tint color.
   NSString* closeButtonColorName;
   if (selected) {
-    closeButtonColorName = useIncognitoFallback ? @"close_button_dark_color"
-                                                : @"close_button_color";
+    closeButtonColorName =
+        useIncognitoFallback ? kCloseButtonDarkColor : kGrey600Color;
   } else {
-    closeButtonColorName = @"tabstrip_inactive_tab_close_button_color";
+    closeButtonColorName = kGrey500Color;
   }
   _closeButton.tintColor = [UIColor colorNamed:closeButtonColorName];
 
-  // Style the favicon tint color and the title label.
+  // Style the favicon tint color.
   NSString* faviconColorName;
   if (selected) {
     faviconColorName =
-        useIncognitoFallback ? kTextPrimaryDarkColor : kTextPrimaryColor;
+        useIncognitoFallback ? kCloseButtonDarkColor : kGrey600Color;
   } else {
-    faviconColorName = @"tabstrip_inactive_tab_text_color";
+    faviconColorName = kGrey500Color;
   }
   _faviconView.tintColor = [UIColor colorNamed:faviconColorName];
-  _titleLabel.textColor = _faviconView.tintColor;
 
-  // Update font weight and accessibility label.
-  UIFontWeight fontWeight =
-      selected ? UIFontWeightSemibold : UIFontWeightMedium;
-  _titleLabel.font = [UIFont systemFontOfSize:kFontSize weight:fontWeight];
+  // Style the title tint color.
+  NSString* titleColorName = nil;
+  if (selected) {
+    titleColorName =
+        useIncognitoFallback ? kTextPrimaryDarkColor : kTextPrimaryColor;
+  } else {
+    titleColorName = kGrey600Color;
+  }
+  _titleLabel.textColor = [UIColor colorNamed:titleColorName];
+
+  _titleLabel.font = [UIFont systemFontOfSize:kFontSize
+                                       weight:UIFontWeightMedium];
   // It would make more sense to set active/inactive on tab_view itself, but
   // tab_view is not an an accessible element, and making it one would add
   // several complicated layers to UIA.  Instead, simply set active/inactive

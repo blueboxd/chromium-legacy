@@ -321,7 +321,7 @@
 
 // Returns a location icon for offline pages.
 - (UIImage*)imageForOfflinePage {
-  return [[UIImage imageNamed:@"location_bar_offline"]
+  return [[UIImage imageNamed:@"location_bar_connection_offline"]
       imageWithRenderingMode:UIImageRenderingModeAlwaysTemplate];
 }
 

@@ -172,16 +172,16 @@ TEST(MixedContentCheckerTest, DetectMixedForm) {
 
   EXPECT_TRUE(MixedContentChecker::IsMixedFormAction(
       &dummy_page_holder->GetFrame(), http_form_action_url,
-      SecurityViolationReportingPolicy::kSuppressReporting));
+      ReportingDisposition::kSuppressReporting));
   EXPECT_FALSE(MixedContentChecker::IsMixedFormAction(
       &dummy_page_holder->GetFrame(), https_form_action_url,
-      SecurityViolationReportingPolicy::kSuppressReporting));
+      ReportingDisposition::kSuppressReporting));
   EXPECT_FALSE(MixedContentChecker::IsMixedFormAction(
       &dummy_page_holder->GetFrame(), javascript_form_action_url,
-      SecurityViolationReportingPolicy::kSuppressReporting));
+      ReportingDisposition::kSuppressReporting));
   EXPECT_TRUE(MixedContentChecker::IsMixedFormAction(
       &dummy_page_holder->GetFrame(), mailto_form_action_url,
-      SecurityViolationReportingPolicy::kSuppressReporting));
+      ReportingDisposition::kSuppressReporting));
 }
 
 TEST(MixedContentCheckerTest, DetectMixedFavicon) {
@@ -205,13 +205,13 @@ TEST(MixedContentCheckerTest, DetectMixedFavicon) {
   EXPECT_TRUE(MixedContentChecker::ShouldBlockFetch(
       &dummy_page_holder->GetFrame(), mojom::RequestContextType::FAVICON,
       ResourceRequest::RedirectStatus::kNoRedirect, http_favicon_url,
-      SecurityViolationReportingPolicy::kSuppressReporting));
+      ReportingDisposition::kSuppressReporting));
 
   // Test that a secure favicon is not blocked.
   EXPECT_FALSE(MixedContentChecker::ShouldBlockFetch(
       &dummy_page_holder->GetFrame(), mojom::RequestContextType::FAVICON,
       ResourceRequest::RedirectStatus::kNoRedirect, https_favicon_url,
-      SecurityViolationReportingPolicy::kSuppressReporting));
+      ReportingDisposition::kSuppressReporting));
 }
 
 }  // namespace blink

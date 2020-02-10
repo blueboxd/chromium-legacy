@@ -13,7 +13,7 @@ namespace chromeos {
 
 namespace multidevice {
 
-class ExpiringRemoteDeviceCacheTest : public testing::Test {
+class ExpiringRemoteDeviceCacheTest : public ::testing::Test {
  protected:
   ExpiringRemoteDeviceCacheTest()
       : test_remote_device_list_(CreateRemoteDeviceListForTest(5)),
@@ -21,6 +21,27 @@ class ExpiringRemoteDeviceCacheTest : public testing::Test {
 
   // testing::Test:
   void SetUp() override {
+    // Clear every other device's Instance ID to test secondary lookup by legacy
+    // device ID.
+    test_remote_device_list_[1].instance_id.clear();
+    test_remote_device_list_[3].instance_id.clear();
+    GetMutableRemoteDevice(test_remote_device_ref_list_[1])
+        ->instance_id.clear();
+    GetMutableRemoteDevice(test_remote_device_ref_list_[3])
+        ->instance_id.clear();
+
+    // Sort device lists so they can be compared to expected device lists in
+    // VerifyCacheRemoteDevices().
+    std::sort(test_remote_device_list_.begin(), test_remote_device_list_.end(),
+              [](const auto& device_1, const auto& device_2) {
+                return device_1 < device_2;
+              });
+    std::sort(test_remote_device_ref_list_.begin(),
+              test_remote_device_ref_list_.end(),
+              [](const auto& device_1, const auto& device_2) {
+                return device_1 < device_2;
+              });
+
     cache_ = std::make_unique<ExpiringRemoteDeviceCache>();
   }
 
@@ -36,8 +57,8 @@ class ExpiringRemoteDeviceCacheTest : public testing::Test {
     EXPECT_EQ(expected_remote_device_ref_list, remote_device_ref_list);
   }
 
-  const RemoteDeviceList test_remote_device_list_;
-  const RemoteDeviceRefList test_remote_device_ref_list_;
+  RemoteDeviceList test_remote_device_list_;
+  RemoteDeviceRefList test_remote_device_ref_list_;
   std::unique_ptr<ExpiringRemoteDeviceCache> cache_;
 
   DISALLOW_COPY_AND_ASSIGN(ExpiringRemoteDeviceCacheTest);

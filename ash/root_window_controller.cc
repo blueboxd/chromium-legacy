@@ -108,8 +108,7 @@ bool IsInShelfContainer(aura::Window* container) {
   if (!container)
     return false;
   int id = container->id();
-  if (id == ash::kShellWindowId_ShelfControlContainer ||
-      id == ash::kShellWindowId_ShelfContainer ||
+  if (id == ash::kShellWindowId_ShelfContainer ||
       id == ash::kShellWindowId_ShelfBubbleContainer) {
     return true;
   }
@@ -929,15 +928,8 @@ void RootWindowController::InitLayoutManagers() {
   // Make it easier to resize windows that partially overlap the shelf. Must
   // occur after the ShelfLayoutManager is constructed by ShelfWidget.
   aura::Window* shelf_container = GetContainer(kShellWindowId_ShelfContainer);
-  shelf_container->SetEventTargeter(std::make_unique<ShelfWindowTargeter>(
-      shelf_container, shelf_.get(),
-      true /*extend_touch_area_for_auto_hidden_shelf*/));
-  aura::Window* shelf_control_container =
-      GetContainer(kShellWindowId_ShelfControlContainer);
-  shelf_control_container->SetEventTargeter(
-      std::make_unique<ShelfWindowTargeter>(
-          shelf_control_container, shelf_.get(),
-          false /*extend_touch_area_for_auto_hidden_shelf*/));
+  shelf_container->SetEventTargeter(
+      std::make_unique<ShelfWindowTargeter>(shelf_container, shelf_.get()));
 }
 
 void RootWindowController::CreateContainers() {
@@ -1091,12 +1083,6 @@ void RootWindowController::CreateContainers() {
                       "OverviewFocusContainer", lock_screen_related_containers);
   overview_focus_container->SetProperty(::wm::kUsesScreenCoordinatesKey, true);
   overview_focus_container->SetProperty(kLockedToRootKey, true);
-
-  aura::Window* shelf_control_container =
-      CreateContainer(kShellWindowId_ShelfControlContainer,
-                      "ShelfControlContainer", lock_screen_related_containers);
-  shelf_control_container->SetProperty(::wm::kUsesScreenCoordinatesKey, true);
-  shelf_control_container->SetProperty(kLockedToRootKey, true);
 
   aura::Window* power_menu_container =
       CreateContainer(kShellWindowId_PowerMenuContainer, "PowerMenuContainer",

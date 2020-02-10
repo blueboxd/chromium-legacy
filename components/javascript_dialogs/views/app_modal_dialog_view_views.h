@@ -41,13 +41,12 @@ class AppModalDialogViewViews : public AppModalDialogView,
   ui::ModalType GetModalType() const override;
   views::View* GetContentsView() override;
   views::View* GetInitiallyFocusedView() override;
+  views::Widget* GetWidget() override;
+  const views::Widget* GetWidget() const override;
   bool ShouldShowCloseButton() const override;
   void WindowClosing() override;
 
  private:
-  // views::DialogDelegate:
-  const views::Widget* GetWidgetImpl() const override;
-
   std::unique_ptr<AppModalDialogController> controller_;
 
   // The message box view whose commands we handle.

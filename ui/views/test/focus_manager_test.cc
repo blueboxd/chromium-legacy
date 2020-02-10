@@ -53,6 +53,14 @@ View* FocusManagerTest::GetContentsView() {
   return contents_view_;
 }
 
+Widget* FocusManagerTest::GetWidget() {
+  return contents_view_->GetWidget();
+}
+
+const Widget* FocusManagerTest::GetWidget() const {
+  return contents_view_->GetWidget();
+}
+
 void FocusManagerTest::GetAccessiblePanes(std::vector<View*>* panes) {
   std::copy(accessible_panes_.begin(), accessible_panes_.end(),
             std::back_inserter(*panes));
@@ -76,10 +84,6 @@ void FocusManagerTest::AddWidgetFocusChangeListener(
 
 void FocusManagerTest::SetAccessiblePanes(const std::vector<View*>& panes) {
   accessible_panes_ = panes;
-}
-
-const Widget* FocusManagerTest::GetWidgetImpl() const {
-  return contents_view_->GetWidget();
 }
 
 ////////////////////////////////////////////////////////////////////////////////

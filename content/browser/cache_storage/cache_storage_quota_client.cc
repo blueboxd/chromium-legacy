@@ -16,12 +16,14 @@ CacheStorageQuotaClient::CacheStorageQuotaClient(
     CacheStorageOwner owner)
     : cache_manager_(std::move(cache_manager)), owner_(owner) {}
 
-CacheStorageQuotaClient::~CacheStorageQuotaClient() {}
+CacheStorageQuotaClient::~CacheStorageQuotaClient() = default;
 
 storage::QuotaClient::ID CacheStorageQuotaClient::id() const {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
   return GetIDFromOwner(owner_);
 }
+
+void CacheStorageQuotaClient::OnQuotaManagerDestroyed() {}
 
 void CacheStorageQuotaClient::GetOriginUsage(const url::Origin& origin,
                                              blink::mojom::StorageType type,
@@ -72,6 +74,12 @@ void CacheStorageQuotaClient::DeleteOriginData(const url::Origin& origin,
   }
 
   cache_manager_->DeleteOriginData(origin, owner_, std::move(callback));
+}
+
+void CacheStorageQuotaClient::PerformStorageCleanup(
+    blink::mojom::StorageType type,
+    base::OnceClosure callback) {
+  std::move(callback).Run();
 }
 
 bool CacheStorageQuotaClient::DoesSupport(

@@ -58,11 +58,8 @@ void MatchResult::AddMatchedProperties(
   new_properties.types_.valid_property_filter =
       static_cast<std::underlying_type_t<ValidPropertyFilter>>(
           valid_property_filter);
-  // TODO(andruud): MatchedProperties are stored here in reverse order.
-  // Reevaluate this when cascade has shipped.
-  new_properties.types_.tree_order =
-      std::numeric_limits<uint16_t>::max() - current_tree_order_;
   new_properties.types_.origin = current_origin_;
+  new_properties.types_.tree_order = current_tree_order_;
 }
 
 void MatchResult::FinishAddingUARules() {

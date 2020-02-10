@@ -11,6 +11,7 @@
 #include "components/strings/grit/components_strings.h"
 #import "ios/chrome/browser/ui/content_suggestions/content_suggestions_collection_utils.h"
 #import "ios/chrome/browser/ui/content_suggestions/ntp_home_constant.h"
+#import "ios/chrome/browser/ui/elements/extended_touch_target_button.h"
 #import "ios/chrome/browser/ui/ntp/new_tab_page_header_constants.h"
 #import "ios/chrome/browser/ui/omnibox/omnibox_constants.h"
 #import "ios/chrome/browser/ui/omnibox/omnibox_container_view.h"
@@ -46,6 +47,8 @@ const CGFloat kFakeboxHighlightAlpha = 0.06;
 
 // Height margin of the fake location bar.
 const CGFloat kFakeLocationBarHeightMargin = 2;
+const CGFloat kVoiceSearchButtonFakeboxTrailingSpace = 12.0;
+const CGFloat kVoiceSearchButtonOmniboxTrailingSpace = 7.0;
 
 // Returns the height of the toolbar based on the preferred content size of the
 // application.
@@ -60,7 +63,8 @@ CGFloat ToolbarHeight() {
 
 @interface ContentSuggestionsHeaderView ()
 
-@property(nonatomic, strong, readwrite) UIButton* voiceSearchButton;
+@property(nonatomic, strong, readwrite)
+    ExtendedTouchTargetButton* voiceSearchButton;
 
 @property(nonatomic, strong) UIView* separator;
 
@@ -70,6 +74,13 @@ CGFloat ToolbarHeight() {
     NSLayoutConstraint* fakeLocationBarHeightConstraint;
 @property(nonatomic, strong) NSLayoutConstraint* fakeToolbarTopConstraint;
 @property(nonatomic, strong) NSLayoutConstraint* hintLabelLeadingConstraint;
+// The voice search button should always be at least inside the fake omnibox.
+// When the fake omnibox is shrunk, the position from the trailing side of
+// the search field should yield.
+@property(nonatomic, strong)
+    NSLayoutConstraint* voiceSearchTrailingMarginConstraint;
+// Constraint for positioning the voice search button away from the fake box
+// rounded rectangle.
 @property(nonatomic, strong) NSLayoutConstraint* voiceSearchTrailingConstraint;
 // Layout constraint for the invisible button that is where the omnibox should
 // be and that focuses the omnibox when tapped.
@@ -195,7 +206,8 @@ CGFloat ToolbarHeight() {
   self.searchHintLabel.isAccessibilityElement = NO;
 
   // Voice search.
-  self.voiceSearchButton = [[UIButton alloc] init];
+  self.voiceSearchButton =
+      [ExtendedTouchTargetButton buttonWithType:UIButtonTypeSystem];
   content_suggestions::configureVoiceSearchButton(self.voiceSearchButton,
                                                   searchField);
 
@@ -226,21 +238,23 @@ CGFloat ToolbarHeight() {
     self.fakeLocationBarHeightConstraint,
   ]];
 
-  // The voice search button should always be at least inside the fake omnibox.
-  // When the fake omnibox is shrinked, the position from the trailing side of
-  // the search field should yield.
+  self.voiceSearchTrailingMarginConstraint =
+      [self.voiceSearchButton.trailingAnchor
+          constraintEqualToAnchor:[searchField trailingAnchor]];
+  self.voiceSearchTrailingMarginConstraint.priority =
+      UILayoutPriorityDefaultHigh + 1;
   self.voiceSearchTrailingConstraint = [self.voiceSearchButton.trailingAnchor
-      constraintEqualToAnchor:[searchField trailingAnchor]];
-  self.voiceSearchTrailingConstraint.priority = UILayoutPriorityDefaultHigh + 1;
+      constraintLessThanOrEqualToAnchor:self.fakeLocationBar.trailingAnchor
+                               constant:-
+                                        kVoiceSearchButtonFakeboxTrailingSpace];
 
   [NSLayoutConstraint activateConstraints:@[
     [self.voiceSearchButton.centerYAnchor
         constraintEqualToAnchor:self.fakeLocationBar.centerYAnchor],
     [self.searchHintLabel.trailingAnchor
         constraintLessThanOrEqualToAnchor:self.voiceSearchButton.leadingAnchor],
+    self.voiceSearchTrailingMarginConstraint,
     self.voiceSearchTrailingConstraint,
-    [self.voiceSearchButton.trailingAnchor
-        constraintLessThanOrEqualToAnchor:self.fakeLocationBar.trailingAnchor],
   ]];
 }
 
@@ -374,7 +388,15 @@ CGFloat ToolbarHeight() {
   // Adjust the position of the search field's subviews by adjusting their
   // constraint constant value.
   CGFloat subviewsDiff = -maxXInset * percent;
-  self.voiceSearchTrailingConstraint.constant = -subviewsDiff;
+  self.voiceSearchTrailingMarginConstraint.constant = -subviewsDiff;
+  // The trailing space wanted is a linear scale between the two states of the
+  // fakebox: 1) when centered in the NTP and 2) when pinned to the top,
+  // emulating the the omnibox.
+  self.voiceSearchTrailingConstraint.constant =
+      -kVoiceSearchButtonFakeboxTrailingSpace +
+      (kVoiceSearchButtonFakeboxTrailingSpace -
+       kVoiceSearchButtonOmniboxTrailingSpace) *
+          percent;
   self.hintLabelLeadingConstraint.constant =
       subviewsDiff + ntp_header::kHintLabelSidePadding;
 }

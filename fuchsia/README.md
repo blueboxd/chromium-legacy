@@ -14,6 +14,7 @@ Fuchsia applications to embed Chromium frames for rendering web content.
 * `./runners`contains implementations of Fuchsia `sys.runner`.
     * `./runners/cast` Enables the Fuchsia system to launch cast applications.
     * `./runners/web` Enables the Fuchsia system to launch HTTP or HTTPS URLs.
+* `./media_receiver` contains an implementation for an Open Screen receiver.
 
 When writing a new Fuchsia service, it is recommended to create a new
 subdirectory under `//fuchsia` or a new subdirectory under `//fuchsia/runners`
@@ -244,4 +245,3 @@ window should be displayed and ready to use.
     ```bash
     $ tiles_ctl remove TILE_NUMBER
     ```
-

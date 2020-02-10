@@ -47,6 +47,18 @@ ToolbarActionsBarBubbleViews::ToolbarActionsBarBubbleViews(
   DialogDelegate::set_button_label(ui::DIALOG_BUTTON_CANCEL, cancel_text);
   DialogDelegate::SetExtraView(CreateExtraInfoView());
 
+  DialogDelegate::set_accept_callback(base::BindOnce(
+      &ToolbarActionsBarBubbleViews::NotifyDelegateOfClose,
+      base::Unretained(this), ToolbarActionsBarBubbleDelegate::CLOSE_EXECUTE));
+  DialogDelegate::set_cancel_callback(base::BindOnce(
+      &ToolbarActionsBarBubbleViews::NotifyDelegateOfClose,
+      base::Unretained(this),
+      ToolbarActionsBarBubbleDelegate::CLOSE_DISMISS_USER_ACTION));
+  DialogDelegate::set_close_callback(base::BindOnce(
+      &ToolbarActionsBarBubbleViews::NotifyDelegateOfClose,
+      base::Unretained(this),
+      ToolbarActionsBarBubbleDelegate::CLOSE_DISMISS_DEACTIVATION));
+
   DCHECK(anchor_view);
   set_close_on_deactivate(delegate_->ShouldCloseOnDeactivate());
   chrome::RecordDialogCreation(chrome::DialogIdentifier::TOOLBAR_ACTIONS_BAR);
@@ -115,37 +127,19 @@ ToolbarActionsBarBubbleViews::CreateExtraInfoView() {
   return icon ? std::move(icon) : std::move(extra_view);
 }
 
+void ToolbarActionsBarBubbleViews::NotifyDelegateOfClose(
+    ToolbarActionsBarBubbleDelegate::CloseAction action) {
+  if (delegate_notified_of_close_)
+    return;
+  delegate_notified_of_close_ = true;
+  delegate_->OnBubbleClosed(action);
+}
+
 base::string16 ToolbarActionsBarBubbleViews::GetWindowTitle() const {
   return delegate_->GetHeadingText();
 }
 
 bool ToolbarActionsBarBubbleViews::ShouldShowCloseButton() const {
-  return true;
-}
-
-bool ToolbarActionsBarBubbleViews::Cancel() {
-  DCHECK(!delegate_notified_of_close_);
-  delegate_notified_of_close_ = true;
-  delegate_->OnBubbleClosed(
-      ToolbarActionsBarBubbleDelegate::CLOSE_DISMISS_USER_ACTION);
-  return true;
-}
-
-bool ToolbarActionsBarBubbleViews::Accept() {
-  DCHECK(!delegate_notified_of_close_);
-  delegate_notified_of_close_ = true;
-  delegate_->OnBubbleClosed(ToolbarActionsBarBubbleDelegate::CLOSE_EXECUTE);
-  return true;
-}
-
-bool ToolbarActionsBarBubbleViews::Close() {
-  // If the user took any action, the delegate will have been notified already.
-  // Otherwise, this was dismissal due to deactivation.
-  if (!delegate_notified_of_close_) {
-    delegate_notified_of_close_ = true;
-    delegate_->OnBubbleClosed(
-        ToolbarActionsBarBubbleDelegate::CLOSE_DISMISS_DEACTIVATION);
-  }
   return true;
 }
 
@@ -187,9 +181,7 @@ void ToolbarActionsBarBubbleViews::Init() {
 
 void ToolbarActionsBarBubbleViews::ButtonPressed(views::Button* sender,
                                                  const ui::Event& event) {
-  DCHECK(!delegate_notified_of_close_);
-  delegate_notified_of_close_ = true;
-  delegate_->OnBubbleClosed(ToolbarActionsBarBubbleDelegate::CLOSE_LEARN_MORE);
+  NotifyDelegateOfClose(ToolbarActionsBarBubbleDelegate::CLOSE_LEARN_MORE);
   // Note that the Widget may or may not already be closed at this point,
   // depending on delegate_->ShouldCloseOnDeactivate(). Widget::Close() protects
   // against multiple calls (so long as they are not nested), and Widget

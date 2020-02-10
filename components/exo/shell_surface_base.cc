@@ -697,6 +697,14 @@ void ShellSurfaceBase::WindowClosing() {
   widget_ = nullptr;
 }
 
+views::Widget* ShellSurfaceBase::GetWidget() {
+  return widget_;
+}
+
+const views::Widget* ShellSurfaceBase::GetWidget() const {
+  return widget_;
+}
+
 views::View* ShellSurfaceBase::GetContentsView() {
   return this;
 }
@@ -1074,10 +1082,6 @@ views::NonClientFrameView* ShellSurfaceBase::CreateNonClientFrameViewInternal(
 
 ////////////////////////////////////////////////////////////////////////////////
 // ShellSurfaceBase, private:
-
-const views::Widget* ShellSurfaceBase::GetWidgetImpl() const {
-  return widget_;
-}
 
 float ShellSurfaceBase::GetScale() const {
   return 1.f;

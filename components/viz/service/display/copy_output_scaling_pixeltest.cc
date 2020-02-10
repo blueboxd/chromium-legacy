@@ -167,7 +167,8 @@ class CopyOutputScalingPixelTest
       request->SetScaleRatio(scale_from_, scale_to_);
       list.back()->copy_requests.push_back(std::move(request));
 
-      renderer()->DrawFrame(&list, 1.0f, viewport_size);
+      renderer()->DrawFrame(&list, 1.0f, viewport_size,
+                            gfx::DisplayColorSpaces());
       loop.Run();
     }
 

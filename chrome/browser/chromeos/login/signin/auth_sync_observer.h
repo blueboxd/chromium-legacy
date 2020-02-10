@@ -19,22 +19,22 @@ namespace chromeos {
 
 // This class is responsible for detecting authentication problems reported
 // by sync service and SigninErrorController on a user profile.
-class AuthSyncObserver : public KeyedService,
-                         public syncer::SyncServiceObserver,
-                         public SigninErrorController::Observer {
+class AuthErrorObserver : public KeyedService,
+                          public syncer::SyncServiceObserver,
+                          public SigninErrorController::Observer {
  public:
   // Whether |profile| should be observed. Currently, this returns true only
   // when |profile| is a user profile of a gaia user or a supervised user.
   static bool ShouldObserve(Profile* profile);
 
-  explicit AuthSyncObserver(Profile* profile);
-  ~AuthSyncObserver() override;
+  explicit AuthErrorObserver(Profile* profile);
+  ~AuthErrorObserver() override;
 
   // Starts to observe SyncService and SigninErrorController.
   void StartObserving();
 
  private:
-  friend class AuthSyncObserverFactory;
+  friend class AuthErrorObserverFactory;
 
   // KeyedService implementation.
   void Shutdown() override;
@@ -53,7 +53,7 @@ class AuthSyncObserver : public KeyedService,
 
   Profile* const profile_;
 
-  DISALLOW_COPY_AND_ASSIGN(AuthSyncObserver);
+  DISALLOW_COPY_AND_ASSIGN(AuthErrorObserver);
 };
 
 }  // namespace chromeos

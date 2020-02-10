@@ -14,7 +14,7 @@
 #endif
 
 namespace {
-const CGFloat kSpotlightHeight = 38.0f;
+const CGFloat kSpotlightHeight = 36.0f;
 }  // namespace
 
 @implementation ToolbarSearchButton

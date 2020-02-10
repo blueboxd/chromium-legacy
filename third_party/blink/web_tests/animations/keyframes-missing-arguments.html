@@ -7,6 +7,7 @@
 <script src="../resources/testharness.js"></script>
 <script src="../resources/testharnessreport.js"></script>
 <script>
+  setup({single_test: true});
   var keyframes = document.styleSheets[0].rules[0];
   assert_class_string(keyframes, "CSSKeyframesRule");
   assert_throws(new TypeError(), () => { keyframes.appendRule(); });

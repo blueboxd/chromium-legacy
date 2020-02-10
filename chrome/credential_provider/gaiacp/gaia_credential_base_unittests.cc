@@ -2653,13 +2653,19 @@ TEST_P(GcpGaiaCredentialBaseUploadDeviceDetailsTest, UploadDeviceDetails) {
   bool fail_upload_device_details_invalid_response = (GetParam() == 2);
 
   GoogleMdmEnrolledStatusForTesting force_success(true);
+  // Set a fake serial number.
+  base::string16 serial_number = L"1234";
+  GoogleRegistrationDataForTesting g_registration_data(serial_number);
+  base::string16 domain = L"domain";
+  base::string16 machine_guid = L"machine_guid";
+  SetMachineGuidForTesting(machine_guid);
 
   // Create a fake user associated to a gaia id.
   CComBSTR sid;
-  ASSERT_EQ(S_OK,
-            fake_os_user_manager()->CreateTestOSUser(
-                kDefaultUsername, L"password", L"Full Name", L"comment",
-                base::UTF8ToUTF16(kDefaultGaiaId), base::string16(), &sid));
+  ASSERT_EQ(S_OK, fake_os_user_manager()->CreateTestOSUser(
+                      kDefaultUsername, L"password", L"Full Name", L"comment",
+                      base::UTF8ToUTF16(kDefaultGaiaId), base::string16(),
+                      domain, &sid));
 
   // Change token response to an invalid one.
   SetDefaultTokenHandleResponse(kDefaultValidTokenHandleResponse);
@@ -2701,6 +2707,27 @@ TEST_P(GcpGaiaCredentialBaseUploadDeviceDetailsTest, UploadDeviceDetails) {
   bool has_upload_failed = (fail_upload_device_details_timeout ||
                             fail_upload_device_details_invalid_response);
   ASSERT_TRUE(has_upload_failed ? FAILED(hr) : SUCCEEDED(hr));
+
+  // Assert on the request parameters sent in the UploadDeviceDetails rpc.
+  const base::Value& request_dict =
+      fake_gem_device_details_manager()->GetRequestDictForTesting();
+  ASSERT_NE(nullptr, request_dict.FindStringKey("machine_guid"));
+  ASSERT_EQ(*request_dict.FindStringKey("machine_guid"),
+            base::UTF16ToUTF8(machine_guid));
+  ASSERT_NE(nullptr, request_dict.FindStringKey("device_serial_number"));
+  ASSERT_EQ(*request_dict.FindStringKey("device_serial_number"),
+            base::UTF16ToUTF8(serial_number));
+  ASSERT_NE(nullptr, request_dict.FindStringKey("device_domain"));
+  ASSERT_EQ(*request_dict.FindStringKey("device_domain"),
+            base::UTF16ToUTF8(domain));
+  ASSERT_NE(nullptr, request_dict.FindStringKey("account_username"));
+  ASSERT_EQ(*request_dict.FindStringKey("account_username"),
+            base::UTF16ToUTF8(kDefaultUsername));
+  ASSERT_NE(nullptr, request_dict.FindStringKey("user_sid"));
+  ASSERT_EQ(*request_dict.FindStringKey("user_sid"),
+            base::UTF16ToUTF8((BSTR)sid));
+  ASSERT_TRUE(request_dict.FindBoolKey("is_ad_joined_user").has_value());
+  ASSERT_EQ(request_dict.FindBoolKey("is_ad_joined_user").value(), true);
 
   ASSERT_EQ(S_OK, ReleaseProvider());
 }

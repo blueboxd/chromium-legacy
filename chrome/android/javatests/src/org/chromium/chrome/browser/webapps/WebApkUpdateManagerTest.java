@@ -35,6 +35,7 @@ import org.chromium.webapk.lib.client.WebApkVersion;
 
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 /**
@@ -53,6 +54,8 @@ public class WebApkUpdateManagerTest {
     private static final String WEBAPK_ID = "webapk_id";
     private static final String WEBAPK_MANIFEST_URL =
             "/chrome/test/data/banners/manifest_one_icon.json";
+    private static final String WEBAPK_MANIFEST_TOO_MANY_SHORTCUTS_URL =
+            "/chrome/test/data/banners/manifest_too_many_shortcuts.json";
 
     // manifest_one_icon_maskable.json is the same as manifest_one_icon.json except that it has an
     // additional icon of purpose maskable and of same size.
@@ -120,6 +123,7 @@ public class WebApkUpdateManagerTest {
         public long themeColor;
         public long backgroundColor;
         public boolean isPrimaryIconMaskable;
+        public List<WebApkExtras.ShortcutItem> shortcuts;
     }
 
     public CreationData defaultCreationData() {
@@ -139,6 +143,7 @@ public class WebApkUpdateManagerTest {
         creationData.themeColor = WEBAPK_THEME_COLOR;
         creationData.backgroundColor = WEBAPK_BACKGROUND_COLOR;
         creationData.isPrimaryIconMaskable = false;
+        creationData.shortcuts = new ArrayList<>();
         return creationData;
     }
 
@@ -177,7 +182,7 @@ public class WebApkUpdateManagerTest {
                     creationData.startUrl, WebApkDistributor.BROWSER,
                     creationData.iconUrlToMurmur2HashMap, null, false /* forceNavigation */,
                     false /* isSplashProvidedByWebApk */, null /* shareData */,
-                    new ArrayList<>() /* shortcutItems */, 1 /* webApkVersionCode */);
+                    creationData.shortcuts, 1 /* webApkVersionCode */);
             updateManager.updateIfNeeded(storage, info);
         });
         waiter.waitForCallback(0);
@@ -262,5 +267,27 @@ public class WebApkUpdateManagerTest {
 
         Assert.assertEquals(
                 ShortcutHelper.doesAndroidSupportMaskableIcons(), checkUpdateNeeded(creationData));
+    }
+
+    @Test
+    @MediumTest
+    @Feature({"WebApk"})
+    public void testManifestWithExtraShortcutsDoesNotCauseUpdate() throws Exception {
+        CreationData creationData = defaultCreationData();
+        creationData.startUrl = mTestServerRule.getServer().getURL(
+                "/chrome/test/data/banners/manifest_test_page.html");
+
+        creationData.manifestUrl =
+                mTestServerRule.getServer().getURL(WEBAPK_MANIFEST_TOO_MANY_SHORTCUTS_URL);
+        for (int i = 0; i < 4; i++) {
+            creationData.shortcuts.add(new WebApkExtras.ShortcutItem("name" + String.valueOf(i),
+                    "short_name",
+                    mTestServerRule.getServer().getURL(WEBAPK_SCOPE_URL + "launch_url"), "", ""));
+        }
+
+        // The fifth shortcut should be ignored.
+        WebappTestPage.navigateToServiceWorkerPageWithManifest(
+                mTestServerRule.getServer(), mTab, WEBAPK_MANIFEST_TOO_MANY_SHORTCUTS_URL);
+        Assert.assertFalse(checkUpdateNeeded(creationData));
     }
 }

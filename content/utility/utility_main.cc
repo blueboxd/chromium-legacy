@@ -20,6 +20,7 @@
 #include "content/public/common/sandbox_init.h"
 #include "content/utility/utility_thread_impl.h"
 #include "services/service_manager/sandbox/sandbox.h"
+#include "services/tracing/public/cpp/trace_startup.h"
 
 #if defined(OS_LINUX)
 #include "content/utility/soda/soda_sandbox_hook_linux.h"
@@ -109,6 +110,15 @@ int UtilityMain(const MainFunctionParams& parameters) {
   base::RunLoop run_loop;
   utility_process.set_main_thread(
       new UtilityThreadImpl(run_loop.QuitClosure()));
+
+#if defined(OS_POSIX) && !defined(OS_ANDROID) && !defined(OS_MACOSX)
+  // Startup tracing is usually enabled earlier, but if we forked from a zygote,
+  // we can only enable it after mojo IPC support is brought up initialized by
+  // UtilityThreadImpl, because the mojo broker has to create the tracing SMB on
+  // our behalf due to the zygote sandbox.
+  if (parameters.zygote_child)
+    tracing::EnableStartupTracingIfNeeded();
+#endif  // OS_POSIX && !OS_ANDROID && !!OS_MACOSX
 
   // Both utility process and service utility process would come
   // here, but the later is launched without connection to service manager, so

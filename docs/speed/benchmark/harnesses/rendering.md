@@ -65,6 +65,8 @@ If your changes have resulted in a regression in a metric that is monitored by [
 If you already have a trace and want to debug the metric computation part, you can just run the metric:
 `tracing/bin/run_metric <path-to-trace-file> renderingMetric`
 
+If you are specifically investigating a regression related to janks, [this document](https://chromium.googlesource.com/chromium/src/+/master/docs/speed/debug-janks.md) may be useful.
+
 ## How to add more pages
 
 New rendering pages should be added to the [./tools/perf/page_sets/rendering](https://cs.chromium.org/chromium/src/tools/perf/page_sets/rendering/?dr&g=0) folder:

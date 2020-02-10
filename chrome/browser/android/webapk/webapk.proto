@@ -48,6 +48,7 @@ message WebApk {
     WEB_SHARE_TARGET_DIFFERS = 13;
     MANUALLY_TRIGGERED = 14;
     PRIMARY_ICON_MASKABLE_DIFFERS = 15;
+    SHORTCUTS_DIFFER = 16;
   }
 
   // Package name of the WebAPK.

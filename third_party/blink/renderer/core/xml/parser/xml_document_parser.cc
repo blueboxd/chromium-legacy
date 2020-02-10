@@ -1692,7 +1692,6 @@ bool XMLDocumentParser::AppendFragmentSource(const String& chunk) {
 }
 
 void XMLDocumentParser::DidAddPendingParserBlockingStylesheet() {
-  DCHECK(IsParsing());
   if (!context_)
     return;
   added_pending_parser_blocking_stylesheet_ = true;

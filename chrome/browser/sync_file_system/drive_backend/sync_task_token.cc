@@ -85,17 +85,15 @@ void SyncTaskToken::InitializeTaskLog(const std::string& task_description) {
   task_log_->start_time = base::TimeTicks::Now();
   task_log_->task_description = task_description;
 
-  TRACE_EVENT_ASYNC_BEGIN1(
-      TRACE_DISABLED_BY_DEFAULT("SyncFileSystem"),
-      "SyncTask", task_log_->log_id,
-      "task_description", task_description);
+  TRACE_EVENT_NESTABLE_ASYNC_BEGIN1(
+      TRACE_DISABLED_BY_DEFAULT("SyncFileSystem"), "SyncTask",
+      TRACE_ID_LOCAL(task_log_->log_id), "task_description", task_description);
 }
 
 void SyncTaskToken::FinalizeTaskLog(const std::string& result_description) {
-  TRACE_EVENT_ASYNC_END1(
-      TRACE_DISABLED_BY_DEFAULT("SyncFileSystem"),
-      "SyncTask", task_log_->log_id,
-      "result_description", result_description);
+  TRACE_EVENT_NESTABLE_ASYNC_END1(TRACE_DISABLED_BY_DEFAULT("SyncFileSystem"),
+                                  "SyncTask", TRACE_ID_LOCAL(task_log_->log_id),
+                                  "result_description", result_description);
 
   DCHECK(task_log_);
   task_log_->result_description = result_description;

@@ -33,12 +33,10 @@ class AccountSelectFillDataTest : public PlatformTest {
  public:
   AccountSelectFillDataTest() {
     for (size_t i = 0; i < base::size(form_data_); ++i) {
-      SetPasswordFormFillData(kUrl, kUrl, kUsernameElements[i], kUsernames[i],
-                              kPasswordElements[i], kPasswords[i],
-                              kAdditionalUsernames[i], kAdditionalPasswords[i],
-                              false, &form_data_[i]);
-
-      form_data_[i].name = base::ASCIIToUTF16(kFormNames[i]);
+      SetPasswordFormFillData(kUrl, kFormNames[i], kUsernameElements[i],
+                              kUsernames[i], kPasswordElements[i],
+                              kPasswords[i], kAdditionalUsernames[i],
+                              kAdditionalPasswords[i], false, &form_data_[i]);
     }
   }
 
@@ -189,7 +187,7 @@ TEST_F(AccountSelectFillDataTest, GetFillData) {
 
       ASSERT_TRUE(fill_data);
       EXPECT_EQ(form_data.origin, fill_data->origin);
-      EXPECT_EQ(form_data.action, fill_data->action);
+      EXPECT_EQ(form_data.name, fill_data->name);
       EXPECT_EQ(base::ASCIIToUTF16(kUsernameElements[form_i]),
                 fill_data->username_element);
       EXPECT_EQ(base::ASCIIToUTF16(kUsernames[1]), fill_data->username_value);

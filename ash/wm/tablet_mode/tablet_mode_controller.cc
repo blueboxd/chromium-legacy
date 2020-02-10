@@ -15,6 +15,7 @@
 #include "ash/public/cpp/tablet_mode.h"
 #include "ash/public/cpp/tablet_mode_observer.h"
 #include "ash/root_window_controller.h"
+#include "ash/shelf/shelf.h"
 #include "ash/shell.h"
 #include "ash/shell_delegate.h"
 #include "ash/wm/overview/overview_controller.h"
@@ -46,6 +47,7 @@
 #include "ui/events/keycodes/keyboard_codes.h"
 #include "ui/gfx/geometry/vector3d_f.h"
 #include "ui/views/widget/widget.h"
+#include "ui/wm/core/window_util.h"
 
 namespace ash {
 
@@ -1040,10 +1042,13 @@ void TabletModeController::TakeScreenshot(aura::Window* top_window) {
       kShellWindowId_ScreenRotationContainer);
   base::OnceClosure callback = screenshot_set_callback_.callback();
 
+  CreatePhantomShelf(top_window);
+  UpdateShelf(top_window->GetRootWindow(), false);
+
   // Request a screenshot.
-  screenshot_taken_callback_.Reset(
-      base::BindOnce(&TabletModeController::OnScreenshotTaken,
-                     weak_factory_.GetWeakPtr(), std::move(callback)));
+  screenshot_taken_callback_.Reset(base::BindOnce(
+      &TabletModeController::OnScreenshotTaken, weak_factory_.GetWeakPtr(),
+      std::move(callback), top_window->GetRootWindow()));
 
   const gfx::Rect request_bounds(screenshot_window->layer()->size());
   auto screenshot_request = std::make_unique<viz::CopyOutputRequest>(
@@ -1057,10 +1062,15 @@ void TabletModeController::TakeScreenshot(aura::Window* top_window) {
 
 void TabletModeController::OnScreenshotTaken(
     base::OnceClosure on_screenshot_taken,
+    aura::Window* root_window,
     std::unique_ptr<viz::CopyOutputResult> copy_result) {
   aura::Window* top_window =
       destroy_observer_ ? destroy_observer_->window() : nullptr;
   ResetDestroyObserver();
+
+  phantom_shelf_layer_.reset();
+
+  UpdateShelf(root_window, true);
 
   if (!copy_result || copy_result->IsEmpty() || !top_window) {
     std::move(on_screenshot_taken).Run();
@@ -1076,6 +1086,29 @@ void TabletModeController::OnScreenshotTaken(
                                             top_window->layer());
 
   std::move(on_screenshot_taken).Run();
+}
+
+void TabletModeController::UpdateShelf(aura::Window* root_window,
+                                       bool visible) {
+  if (!base::Contains(Shell::GetAllRootWindows(), root_window))
+    return;
+
+  DCHECK(root_window->IsRootWindow());
+  Shelf::ForWindow(root_window)
+      ->GetWindow()
+      ->layer()
+      ->SetOpacity(visible ? 1 : 0);
+}
+
+void TabletModeController::CreatePhantomShelf(aura::Window* window) {
+  auto* shelf_container =
+      window->GetRootWindow()->GetChildById(kShellWindowId_ShelfContainer);
+
+  phantom_shelf_layer_ = wm::RecreateLayers(shelf_container);
+  ui::Layer* root = phantom_shelf_layer_->root();
+  aura::Window* root_window = window->GetRootWindow();
+  root_window->layer()->Add(root);
+  root_window->layer()->StackAtTop(root);
 }
 
 bool TabletModeController::CalculateIsInTabletPhysicalState() const {

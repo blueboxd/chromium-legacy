@@ -578,7 +578,7 @@ void GLRenderer::DrawDebugBorderQuad(const DebugBorderDrawQuad* quad) {
   SetBlendEnabled(quad->ShouldDrawWithBlending());
 
   SetUseProgram(ProgramKey::DebugBorder(), gfx::ColorSpace::CreateSRGB(),
-                current_frame()->current_render_pass->color_space);
+                CurrentRenderPassColorSpace());
 
   // Use the full quad_rect for debug quads to not move the edges based on
   // partial swaps.
@@ -836,7 +836,7 @@ GLenum GLRenderer::GetFramebufferCopyTextureFormat() {
   if (!current_framebuffer_texture_) {
     format = output_surface_->GetFramebufferCopyTextureFormat();
   } else {
-    ResourceFormat resource_format = BackbufferFormat();
+    ResourceFormat resource_format = CurrentRenderPassResourceFormat();
     DCHECK(GLSupportsFormat(resource_format));
     format = GLCopyTextureInternalFormat(resource_format);
   }
@@ -876,7 +876,7 @@ uint32_t GLRenderer::GetBackdropTexture(const gfx::Rect& window_rect,
   if (prefer_draw_to_copy_ && current_framebuffer_texture_) {
     // Copying from a non-root renderpass, so will use the format of the bound
     // texture.
-    ResourceFormat resource_format = BackbufferFormat();
+    ResourceFormat resource_format = CurrentRenderPassResourceFormat();
 
     // Get gl_format, gl_type and internal_format.
     DCHECK(GLSupportsFormat(resource_format));
@@ -1176,7 +1176,7 @@ void GLRenderer::DrawRenderPassQuadInternal(
 
   UpdateRPDQTexturesForSampling(params);
   UpdateRPDQBlendMode(params);
-  ChooseRPDQProgram(params, current_frame()->current_render_pass->color_space);
+  ChooseRPDQProgram(params, CurrentRenderPassColorSpace());
   UpdateRPDQUniforms(params);
   DrawRPDQ(*params);
 }
@@ -1979,8 +1979,7 @@ void GLRenderer::DrawSolidColorQuad(const SolidColorDrawQuad* quad,
   SetUseProgram(ProgramKey::SolidColor(use_aa ? USE_AA : NO_AA,
                                        tint_gl_composited_content_,
                                        ShouldApplyRoundedCorner(quad)),
-                quad_color_space,
-                current_frame()->current_render_pass->color_space);
+                quad_color_space, CurrentRenderPassColorSpace());
   SetShaderColor(color, opacity);
   if (current_program_->rounded_corner_rect_location() != -1) {
     SetShaderRoundedCorner(
@@ -2135,8 +2134,7 @@ void GLRenderer::DrawContentQuadAA(const ContentDrawQuadBase* quad,
                                               : NON_PREMULTIPLIED_ALPHA,
                        false, false, tint_gl_composited_content_,
                        ShouldApplyRoundedCorner(quad)),
-      quad_resource_lock.color_space(),
-      current_frame()->current_render_pass->color_space);
+      quad_resource_lock.color_space(), CurrentRenderPassColorSpace());
 
   if (current_program_->tint_color_matrix_location() != -1) {
     auto matrix = cc::DebugColors::TintCompositedContentColorTransformMatrix();
@@ -2232,8 +2230,7 @@ void GLRenderer::DrawContentQuadNoAA(const ContentDrawQuadBase* quad,
                        !quad->ShouldDrawWithBlending(), has_tex_clamp_rect,
                        tint_gl_composited_content_,
                        ShouldApplyRoundedCorner(quad)),
-      quad_resource_lock.color_space(),
-      current_frame()->current_render_pass->color_space);
+      quad_resource_lock.color_space(), CurrentRenderPassColorSpace());
 
   if (current_program_->tint_color_matrix_location() != -1) {
     auto matrix = cc::DebugColors::TintCompositedContentColorTransformMatrix();
@@ -2335,8 +2332,7 @@ void GLRenderer::DrawYUVVideoQuad(const YUVVideoDrawQuad* quad,
   // The source color space should never be RGB.
   DCHECK_NE(src_color_space, src_color_space.GetAsFullRangeRGB());
 
-  gfx::ColorSpace dst_color_space =
-      current_frame()->current_render_pass->color_space;
+  gfx::ColorSpace dst_color_space = CurrentRenderPassColorSpace();
 
 #if defined(OS_WIN)
   // Force sRGB output on Windows for overlay candidate video quads to match
@@ -2500,8 +2496,7 @@ void GLRenderer::DrawStreamVideoQuad(const StreamVideoDrawQuad* quad,
 
   SetUseProgram(ProgramKey::VideoStream(tex_coord_precision,
                                         ShouldApplyRoundedCorner(quad)),
-                lock.color_space(),
-                current_frame()->current_render_pass->color_space);
+                lock.color_space(), CurrentRenderPassColorSpace());
 
   DCHECK_EQ(GL_TEXTURE0, GetActiveTextureUnit(gl_));
   gl_->BindTexture(GL_TEXTURE_EXTERNAL_OES, lock.texture_id());
@@ -2567,7 +2562,7 @@ void GLRenderer::FlushTextureQuadCache(BoundGeometry flush_binding) {
 
   // Bind the program to the GL state.
   SetUseProgram(draw_cache_.program_key, locked_quad.color_space(),
-                current_frame()->current_render_pass->color_space);
+                CurrentRenderPassColorSpace());
 
   if (current_program_->rounded_corner_rect_location() != -1) {
     SetShaderRoundedCorner(
@@ -2881,7 +2876,7 @@ void GLRenderer::CopyDrawnRenderPass(
   copier_.CopyFromTextureOrFramebuffer(
       std::move(request), geometry, GetFramebufferCopyTextureFormat(),
       framebuffer_texture, framebuffer_texture_size, FlippedFramebuffer(),
-      current_frame()->current_render_pass->color_space);
+      CurrentRenderPassColorSpace());
 
   // The copier modified texture/framebuffer bindings, shader programs, and
   // other GL state; and so this must be restored before continuing.
@@ -3309,7 +3304,8 @@ void GLRenderer::SetUseProgram(const ProgramKey& program_key_no_color,
   // If the input color space is PQ, and it did not specify a white level,
   // override it with the frame's white level.
   gfx::ColorSpace adjusted_src_color_space =
-      src_color_space.GetWithPQSDRWhiteLevel(current_frame()->sdr_white_level);
+      src_color_space.GetWithPQSDRWhiteLevel(
+          current_frame()->display_color_spaces.GetSDRWhiteLevel());
 
   ProgramKey program_key = program_key_no_color;
   const gfx::ColorTransform* color_transform =
@@ -3685,9 +3681,9 @@ void GLRenderer::CopyRenderPassDrawQuadToOverlayResource(
         cc::MathUtil::CheckedRoundUp(iosurface_height, iosurface_multiple);
   }
 
-  *overlay_texture = FindOrCreateOverlayTexture(
-      params.quad->render_pass_id, iosurface_width, iosurface_height,
-      current_frame()->root_render_pass->color_space);
+  *overlay_texture =
+      FindOrCreateOverlayTexture(params.quad->render_pass_id, iosurface_width,
+                                 iosurface_height, RootRenderPassColorSpace());
   *new_bounds = gfx::RectF(updated_dst_rect.origin(),
                            gfx::SizeF((*overlay_texture)->texture.size()));
 
@@ -3907,7 +3903,7 @@ void GLRenderer::FlushOverdrawFeedback(const gfx::Rect& output_rect) {
   PrepareGeometry(SHARED_BINDING);
 
   SetUseProgram(ProgramKey::DebugBorder(), gfx::ColorSpace::CreateSRGB(),
-                current_frame()->root_render_pass->color_space);
+                CurrentRenderPassColorSpace());
 
   gfx::Transform render_matrix;
   render_matrix.Translate(0.5 * output_rect.width() + output_rect.x(),
@@ -3976,9 +3972,9 @@ void GLRenderer::UpdateRenderPassTextures(
     render_pass_textures_.erase(passes_to_delete[i]);
 }
 
-ResourceFormat GLRenderer::BackbufferFormat() const {
+ResourceFormat GLRenderer::CurrentRenderPassResourceFormat() const {
   const auto& caps = output_surface_->context_provider()->ContextCapabilities();
-  if (current_frame()->current_render_pass->color_space.IsHDR()) {
+  if (CurrentRenderPassColorSpace().IsHDR()) {
     // If a platform does not support half-float renderbuffers then it should
     // not should request HDR rendering.
     DCHECK(caps.texture_half_float_linear);
@@ -3997,7 +3993,7 @@ void GLRenderer::AllocateRenderPassResourceIfNeeded(
 
   ScopedRenderPassTexture contents_texture(
       output_surface_->context_provider(), requirements.size,
-      BackbufferFormat(), current_frame()->current_render_pass->color_space,
+      CurrentRenderPassResourceFormat(), CurrentRenderPassColorSpace(),
       requirements.generate_mipmap);
   render_pass_textures_[render_pass_id] = std::move(contents_texture);
 }

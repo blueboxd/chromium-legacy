@@ -354,6 +354,14 @@ void RootView::OnEventProcessingFinished(ui::Event* event) {
 ////////////////////////////////////////////////////////////////////////////////
 // RootView, View overrides:
 
+const Widget* RootView::GetWidget() const {
+  return widget_;
+}
+
+Widget* RootView::GetWidget() {
+  return const_cast<Widget*>(const_cast<const RootView*>(this)->GetWidget());
+}
+
 bool RootView::IsDrawn() const {
   return GetVisible();
 }
@@ -800,10 +808,6 @@ ui::EventDispatchDetails RootView::PostDispatchEvent(ui::EventTarget* target,
 #endif
 
   return details;
-}
-
-const Widget* RootView::GetWidgetImpl() const {
-  return widget_;
 }
 
 BEGIN_METADATA(RootView)

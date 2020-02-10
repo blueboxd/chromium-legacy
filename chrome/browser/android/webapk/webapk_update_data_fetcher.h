@@ -9,6 +9,7 @@
 #include "base/android/jni_weak_ref.h"
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
+#include "base/optional.h"
 #include "chrome/browser/android/shortcut_info.h"
 #include "content/public/browser/web_contents_observer.h"
 #include "third_party/skia/include/core/SkBitmap.h"
@@ -56,12 +57,9 @@ class WebApkUpdateDataFetcher : public content::WebContentsObserver {
   // Called once the installable data has been fetched.
   void OnDidGetInstallableData(const InstallableData& installable_data);
 
-  // Called with the computed Murmur2 hash for the primary icon.
-  void OnGotPrimaryIconMurmur2Hash(const std::string& primary_icon_hash);
-
-  void OnDataAvailable(const std::string& primary_icon_murmur2_hash,
-                       bool did_fetch_badge_icon,
-                       const std::string& badge_icon_murmur2_hash);
+  // Called with the computed Murmur2 hashes for the icons.
+  void OnGotIconMurmur2Hashes(
+      base::Optional<std::map<std::string, std::string>> hashes);
 
   // Called when a page has no Web Manifest or the Web Manifest is not WebAPK
   // compatible.

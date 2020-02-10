@@ -1005,8 +1005,11 @@ void AppsGridView::Layout() {
   CalculateIdealBoundsForFolder();
   for (int i = 0; i < view_model_.view_size(); ++i) {
     AppListItemView* view = GetItemViewAt(i);
-    if (view != drag_view_)
+    if (view != drag_view_) {
       view->SetBoundsRect(view_model_.ideal_bounds(i));
+    } else {
+      view->SetSize(GetTileViewSize(GetAppListConfig()));
+    }
   }
   views::ViewModelUtils::SetViewBoundsToIdealBounds(pulsing_blocks_model_);
 }
@@ -2001,6 +2004,16 @@ void AppsGridView::UpdateOpacity(bool restore_opacity) {
   // since the creation/destruction of the layer requires to repaint the parent
   // view (i.e. this class).
   if (restore_opacity) {
+    // If drag is in progress, layers are still required, so just update the
+    // opacity (the layers will be deleted when drag operation ends).
+    if (drag_view_) {
+      for (const auto& entry : view_model_.entries()) {
+        if (drag_view_ != entry.view)
+          entry.view->layer()->SetOpacity(1.0f);
+      }
+      return;
+    }
+
     // Layers are not necessary. Destroy them, and return. No need to update
     // opacity. This needs to be done on all views within |view_model_| because
     // some item view might have been moved out from the current page. See also
@@ -2103,11 +2116,35 @@ bool AppsGridView::IsTabletMode() const {
 }
 
 void AppsGridView::OnAppListConfigUpdated() {
-  Update();
+  for (int i = 0; i < view_model_.view_size(); ++i)
+    view_model_.view_at(i)->RefreshIcon();
+
+  Layout();
 }
 
 const AppListConfig& AppsGridView::GetAppListConfig() const {
   return contents_view_->app_list_view()->GetAppListConfig();
+}
+
+bool AppsGridView::FirePageFlipTimerForTest() {
+  if (!page_flip_timer_.IsRunning())
+    return false;
+  page_flip_timer_.FireNow();
+  return true;
+}
+
+bool AppsGridView::FireFolderItemReparentTimerForTest() {
+  if (!folder_item_reparent_timer_.IsRunning())
+    return false;
+  folder_item_reparent_timer_.FireNow();
+  return true;
+}
+
+bool AppsGridView::FireFolderDroppingTimerForTest() {
+  if (!folder_dropping_timer_.IsRunning())
+    return false;
+  folder_dropping_timer_.FireNow();
+  return true;
 }
 
 void AppsGridView::StartDragAndDropHostDrag(const gfx::Point& grid_location) {

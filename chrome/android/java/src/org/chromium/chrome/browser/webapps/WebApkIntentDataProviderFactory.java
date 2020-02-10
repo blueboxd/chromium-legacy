@@ -178,9 +178,11 @@ public class WebApkIntentDataProviderFactory {
                     String launchUrl = parser.getAttributeValue(
                             SHORTCUT_ATTRIBUTE_NAMESPACE, SHORTCUT_INTENT_LAUNCH_URL_ATTRIBUTE);
 
-                    shortcuts.add(new ShortcutItem(nameResId != 0 ? res.getString(nameResId) : null,
-                            shortNameResId != 0 ? res.getString(shortNameResId) : null,
-                            launchUrl != null ? launchUrl : null, iconHash));
+                    // The |iconUrl| is not required, only a change in the icon hash will trigger an
+                    // update.
+                    shortcuts.add(new ShortcutItem(nameResId != 0 ? res.getString(nameResId) : "",
+                            shortNameResId != 0 ? res.getString(shortNameResId) : "", launchUrl,
+                            "" /* iconUrl */, iconHash));
                 }
                 eventType = parser.next();
             }

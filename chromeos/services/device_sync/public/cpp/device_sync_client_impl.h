@@ -124,6 +124,10 @@ class DeviceSyncClientImpl : public DeviceSyncClient,
   bool pending_notify_new_synced_devices_ = false;
 
   base::Optional<std::string> local_instance_id_;
+
+  // TODO(https://crbug.com/951969): Only track local Instance ID after v2
+  // DeviceSync is launched, when the local device is guaranteed to have an
+  // Instance ID.
   base::Optional<std::string> local_legacy_device_id_;
 
   base::WeakPtrFactory<DeviceSyncClientImpl> weak_ptr_factory_{this};

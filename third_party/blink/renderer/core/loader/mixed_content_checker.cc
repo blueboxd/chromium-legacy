@@ -375,7 +375,7 @@ bool MixedContentChecker::ShouldBlockFetch(
     mojom::RequestContextType request_context,
     ResourceRequest::RedirectStatus redirect_status,
     const KURL& url,
-    SecurityViolationReportingPolicy reporting_policy) {
+    ReportingDisposition reporting_disposition) {
   Frame* mixed_frame = InWhichFrameIsContentMixed(frame, url);
   if (!mixed_frame)
     return false;
@@ -484,7 +484,7 @@ bool MixedContentChecker::ShouldBlockFetch(
       break;
   };
 
-  if (reporting_policy == SecurityViolationReportingPolicy::kReport) {
+  if (reporting_disposition == ReportingDisposition::kReport) {
     frame->GetDocument()->AddConsoleMessage(
         CreateConsoleMessageAboutFetch(MainResourceUrlForFrame(mixed_frame),
                                        url, request_context, allowed, nullptr));
@@ -498,7 +498,7 @@ bool MixedContentChecker::ShouldBlockFetchOnWorker(
     mojom::RequestContextType request_context,
     ResourceRequest::RedirectStatus redirect_status,
     const KURL& url,
-    SecurityViolationReportingPolicy reporting_policy,
+    ReportingDisposition reporting_disposition,
     bool is_worklet_global_scope) {
   const FetchClientSettingsObject& fetch_client_settings_object =
       worker_fetch_context.GetResourceFetcherProperties()
@@ -547,7 +547,7 @@ bool MixedContentChecker::ShouldBlockFetchOnWorker(
     }
   }
 
-  if (reporting_policy == SecurityViolationReportingPolicy::kReport) {
+  if (reporting_disposition == ReportingDisposition::kReport) {
     worker_fetch_context.AddConsoleMessage(CreateConsoleMessageAboutFetch(
         worker_fetch_context.Url(), url, request_context, allowed, nullptr));
   }
@@ -641,7 +641,7 @@ bool MixedContentChecker::IsWebSocketAllowed(
 bool MixedContentChecker::IsMixedFormAction(
     LocalFrame* frame,
     const KURL& url,
-    SecurityViolationReportingPolicy reporting_policy) {
+    ReportingDisposition reporting_disposition) {
   // For whatever reason, some folks handle forms via JavaScript, and submit to
   // `javascript:void(0)` rather than calling `preventDefault()`. We
   // special-case `javascript:` URLs here, as they don't introduce MixedContent
@@ -659,7 +659,7 @@ bool MixedContentChecker::IsMixedFormAction(
   // mixed content signals from different frames on the same page.
   frame->GetLocalFrameHostRemote().DidContainInsecureFormAction();
 
-  if (reporting_policy == SecurityViolationReportingPolicy::kReport) {
+  if (reporting_disposition == ReportingDisposition::kReport) {
     String message = String::Format(
         "Mixed Content: The page at '%s' was loaded over a secure connection, "
         "but contains a form that targets an insecure endpoint '%s'. This "

@@ -638,13 +638,14 @@ ChromePasswordManagerClient::GetOrCreateTouchToFillController() {
 
 void ChromePasswordManagerClient::DidFinishNavigation(
     content::NavigationHandle* navigation_handle) {
-  if (!navigation_handle->IsInMainFrame() || !navigation_handle->HasCommitted())
+  if (!navigation_handle->IsInMainFrame() ||
+      navigation_handle->IsSameDocument() ||
+      !navigation_handle->HasCommitted()) {
     return;
-
-  if (!navigation_handle->IsSameDocument()) {
-    // Send any collected metrics by destroying the metrics recorder.
-    metrics_recorder_.reset();
   }
+
+  // Send any collected metrics by destroying the metrics recorder.
+  metrics_recorder_.reset();
 
   httpauth_manager_.OnDidFinishMainFrameNavigation();
 
@@ -652,8 +653,7 @@ void ChromePasswordManagerClient::DidFinishNavigation(
   // the context of the new WebContents::GetLastCommittedURL, which may very
   // well be cross-origin. Disconnect existing client, and drop pending
   // requests.
-  if (!navigation_handle->IsSameDocument())
-    content_credential_manager_.DisconnectBinding();
+  content_credential_manager_.DisconnectBinding();
 
 #if defined(SYNC_PASSWORD_REUSE_DETECTION_ENABLED)
   password_reuse_detection_manager_.DidNavigateMainFrame(GetMainFrameURL());

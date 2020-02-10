@@ -75,8 +75,8 @@
 #include "third_party/blink/renderer/platform/network/network_utils.h"
 #include "third_party/blink/renderer/platform/runtime_enabled_features.h"
 #include "third_party/blink/renderer/platform/scheduler/public/thread_scheduler.h"
+#include "third_party/blink/renderer/platform/weborigin/reporting_disposition.h"
 #include "third_party/blink/renderer/platform/weborigin/scheme_registry.h"
-#include "third_party/blink/renderer/platform/weborigin/security_violation_reporting_policy.h"
 #include "third_party/blink/renderer/platform/wtf/allocator/allocator.h"
 #include "third_party/blink/renderer/platform/wtf/assertions.h"
 #include "third_party/blink/renderer/platform/wtf/shared_buffer.h"
@@ -728,19 +728,20 @@ bool ResourceLoader::WillFollowRedirect(
     bool unused_preload = resource_->IsUnusedPreload();
 
     // Don't send security violation reports for unused preloads.
-    SecurityViolationReportingPolicy reporting_policy =
-        unused_preload ? SecurityViolationReportingPolicy::kSuppressReporting
-                       : SecurityViolationReportingPolicy::kReport;
+    ReportingDisposition reporting_disposition =
+        unused_preload ? ReportingDisposition::kSuppressReporting
+                       : ReportingDisposition::kReport;
 
     // CanRequest() checks only enforced CSP, so check report-only here to
     // ensure that violations are sent.
     Context().CheckCSPForRequest(
-        request_context, new_url, options, reporting_policy,
+        request_context, new_url, options, reporting_disposition,
         ResourceRequest::RedirectStatus::kFollowedRedirect);
 
     base::Optional<ResourceRequestBlockedReason> blocked_reason =
         Context().CanRequest(
-            resource_type, *new_request, new_url, options, reporting_policy,
+            resource_type, *new_request, new_url, options,
+            reporting_disposition,
             ResourceRequest::RedirectStatus::kFollowedRedirect);
 
     if (Context().CalculateIfAdSubresource(*new_request, resource_type))
@@ -1002,14 +1003,13 @@ void ResourceLoader::DidReceiveResponseInternal(
     // CanRequest() below only checks enforced policies: check report-only
     // here to ensure violations are sent.
     Context().CheckCSPForRequest(
-        request_context, response_url, options,
-        SecurityViolationReportingPolicy::kReport,
+        request_context, response_url, options, ReportingDisposition::kReport,
         ResourceRequest::RedirectStatus::kFollowedRedirect);
 
     base::Optional<ResourceRequestBlockedReason> blocked_reason =
         Context().CanRequest(
             resource_type, initial_request, response_url, options,
-            SecurityViolationReportingPolicy::kReport,
+            ReportingDisposition::kReport,
             ResourceRequest::RedirectStatus::kFollowedRedirect);
     if (blocked_reason) {
       HandleError(ResourceError::CancelledDueToAccessCheckError(

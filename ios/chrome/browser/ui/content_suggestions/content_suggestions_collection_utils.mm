@@ -45,8 +45,6 @@ const CGFloat kNTPSearchFieldBottomPadding = 18;
 
 const CGFloat kTopSpacingMaterial = 24;
 
-const CGFloat kVoiceSearchButtonWidth = 48;
-
 // Height for the doodle frame.
 const CGFloat kGoogleSearchDoodleHeight = 120;
 
@@ -133,19 +131,12 @@ void configureVoiceSearchButton(UIButton* voiceSearchButton,
   [voiceSearchButton setTranslatesAutoresizingMaskIntoConstraints:NO];
   [searchTapTarget addSubview:voiceSearchButton];
 
-  [NSLayoutConstraint activateConstraints:@[
-    [voiceSearchButton.widthAnchor
-        constraintEqualToConstant:kVoiceSearchButtonWidth],
-    [voiceSearchButton.heightAnchor
-        constraintEqualToAnchor:voiceSearchButton.widthAnchor],
-  ]];
-
   [voiceSearchButton setAdjustsImageWhenHighlighted:NO];
 
   UIImage* micImage = [[UIImage imageNamed:@"location_bar_voice"]
-      imageWithRenderingMode:UIImageRenderingModeAlwaysOriginal];
+      imageWithRenderingMode:UIImageRenderingModeAlwaysTemplate];
   [voiceSearchButton setImage:micImage forState:UIControlStateNormal];
-  voiceSearchButton.tintColor = [UIColor colorWithWhite:0 alpha:0.7];
+  voiceSearchButton.tintColor = [UIColor colorNamed:kGrey500Color];
   [voiceSearchButton setAccessibilityLabel:l10n_util::GetNSString(
                                                IDS_IOS_ACCNAME_VOICE_SEARCH)];
   [voiceSearchButton setAccessibilityIdentifier:@"Voice Search"];

@@ -559,8 +559,10 @@ SkiaRenderer::ScopedSkImageBuilder::ScopedSkImageBuilder(
     lock_.emplace(resource_provider, resource_id, alpha_type, origin);
     sk_image_ = lock_->sk_image();
   } else {
-    float sdr_scale_factor = skia_renderer->current_frame()->sdr_white_level /
-                             gfx::ColorSpace::kDefaultSDRWhiteLevel;
+    float sdr_white_level =
+        skia_renderer->current_frame()->display_color_spaces.GetSDRWhiteLevel();
+    float sdr_scale_factor =
+        sdr_white_level / gfx::ColorSpace::kDefaultSDRWhiteLevel;
     auto* image_context =
         skia_renderer->lock_set_for_external_use_->LockResource(
             resource_id, /*video_plane=*/false, sdr_scale_factor);
@@ -1682,7 +1684,8 @@ void SkiaRenderer::DrawColoredQuad(SkColor color,
       params->draw_region.has_value() ? params->draw_region->points : nullptr;
 
   SkColor4f color4f = SkColor4f::FromColor(color);
-  float sdr_white_level = current_frame()->sdr_white_level;
+  float sdr_white_level =
+      current_frame()->display_color_spaces.GetSDRWhiteLevel();
   if (sdr_white_level != gfx::ColorSpace::kDefaultSDRWhiteLevel) {
     // SkColor is always sRGB. Use skcms to linearize, scale, and re-encode
     const float scale_factor =
@@ -2068,8 +2071,7 @@ void SkiaRenderer::DrawYUVVideoQuad(const YUVVideoDrawQuad* quad,
   // color space we lie and say the SkImage destination color space is always
   // the same as the rest of the frame. Otherwise the two color space
   // adjustments combined will produce the wrong result.
-  const gfx::ColorSpace& frame_color_space =
-      current_frame()->current_render_pass->color_space;
+  const gfx::ColorSpace& frame_color_space = CurrentRenderPassColorSpace();
   gfx::ColorSpace dst_color_space = frame_color_space;
 
 #if defined(OS_WIN)
@@ -2186,7 +2188,8 @@ sk_sp<SkColorFilter> SkiaRenderer::GetColorFilter(const gfx::ColorSpace& src,
                                                   float resource_offset,
                                                   float resource_multiplier) {
   gfx::ColorSpace adjusted_src = src;
-  float sdr_white_level = current_frame()->sdr_white_level;
+  float sdr_white_level =
+      current_frame()->display_color_spaces.GetSDRWhiteLevel();
   if (src.IsValid() && !src.IsHDR() &&
       sdr_white_level != gfx::ColorSpace::kDefaultSDRWhiteLevel) {
     adjusted_src = src.GetScaledColorSpace(
@@ -2463,7 +2466,7 @@ void SkiaRenderer::CopyDrawnRenderPass(
         render_pass_id = render_pass->id;
       }
       skia_output_surface_->CopyOutput(render_pass_id, geometry,
-                                       render_pass->color_space,
+                                       CurrentRenderPassColorSpace(),
                                        std::move(request));
       break;
     }
@@ -2584,15 +2587,14 @@ void SkiaRenderer::AllocateRenderPassResourceIfNeeded(
       render_pass_backings_.emplace(
           render_pass_id,
           RenderPassBacking(requirements.size, requirements.generate_mipmap,
-                            current_frame()->current_render_pass->color_space));
+                            CurrentRenderPassColorSpace()));
       return;
     }
   }
   render_pass_backings_.emplace(
-      render_pass_id,
-      RenderPassBacking(gr_context, caps, requirements.size,
-                        requirements.generate_mipmap,
-                        current_frame()->current_render_pass->color_space));
+      render_pass_id, RenderPassBacking(gr_context, caps, requirements.size,
+                                        requirements.generate_mipmap,
+                                        CurrentRenderPassColorSpace()));
 }
 
 SkiaRenderer::RenderPassBacking::RenderPassBacking(

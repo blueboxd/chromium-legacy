@@ -1,0 +1,82 @@
+// Copyright 2020 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
+
+package org.chromium.chrome.browser.flags;
+
+import androidx.annotation.IntDef;
+
+import org.chromium.chrome.browser.preferences.ChromePreferenceKeys;
+
+import java.lang.annotation.Retention;
+import java.lang.annotation.RetentionPolicy;
+
+/**
+ * A field trial parameter in the variations framework that is cached by {@link CachedFeatureFlags}.
+ */
+public abstract class CachedFieldTrialParameter {
+    /**
+     * Data types of field trial parameters.
+     */
+    @IntDef({FieldTrialParameterType.STRING, FieldTrialParameterType.BOOLEAN,
+            FieldTrialParameterType.INT, FieldTrialParameterType.DOUBLE})
+    @Retention(RetentionPolicy.SOURCE)
+    public @interface FieldTrialParameterType {
+        int STRING = 0;
+        int BOOLEAN = 1;
+        int INT = 2;
+        int DOUBLE = 3;
+    }
+
+    private final String mFeatureName;
+    private final String mParameterName;
+    private final @FieldTrialParameterType int mType;
+
+    CachedFieldTrialParameter(
+            String featureName, String parameterName, @FieldTrialParameterType int type) {
+        mFeatureName = featureName;
+        mParameterName = parameterName;
+        mType = type;
+    }
+
+    /**
+     * @return The name of the related field trial.
+     */
+    public String getFeatureName() {
+        return mFeatureName;
+    }
+
+    /**
+     * @return The name of the field trial parameter.
+     */
+    public String getParameterName() {
+        return mParameterName;
+    }
+
+    /**
+     * @return The data type of the field trial parameter.
+     */
+    public @FieldTrialParameterType int getType() {
+        return mType;
+    }
+
+    /**
+     * @return A human-readable string uniquely identifying the field trial parameter.
+     */
+    private String getFullName() {
+        return getFeatureName() + ":" + getParameterName();
+    }
+
+    /**
+     * @return The SharedPreferences key to cache the field trial parameter.
+     */
+    String getSharedPreferenceKey() {
+        return ChromePreferenceKeys.FLAGS_FIELD_TRIAL_PARAM_CACHED.createKey(getFullName());
+    }
+
+    /**
+     * Get the current value of the parameter and cache it to disk. Calls to getValue() in a
+     * future run will return it, if native is not loaded yet.
+     */
+    abstract void cacheToDisk();
+}

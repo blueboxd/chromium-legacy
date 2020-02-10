@@ -445,6 +445,14 @@ void WebContentController::OnSurfaceDestroying(exo::Surface* surface) {
   surface_ = nullptr;
 }
 
+void WebContentController::MainFrameWasResized(bool width_changed) {
+  // The surface ID may have changed, so trigger a new commit to re-issue the
+  // draw quad.
+  if (surface_) {
+    surface_->Commit();
+  }
+}
+
 void WebContentController::FrameSizeChanged(
     content::RenderFrameHost* render_frame_host,
     const gfx::Size& frame_size) {

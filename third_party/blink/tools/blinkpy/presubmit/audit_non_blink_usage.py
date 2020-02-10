@@ -172,6 +172,9 @@ _CONFIG = [
             'base::ClampSub',
             'base::MakeClampedNum',
 
+            # //base/strings/strcat.h.
+            'base::StrCat',
+
             # //base/template_util.h.
             'base::void_t',
 

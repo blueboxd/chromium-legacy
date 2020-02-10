@@ -78,6 +78,8 @@ class ConstrainedDialogWebView : public views::WebView,
   // views::WidgetDelegate:
   views::View* GetInitiallyFocusedView() override;
   void WindowClosing() override;
+  views::Widget* GetWidget() override;
+  const views::Widget* GetWidget() const override;
   base::string16 GetWindowTitle() const override;
   base::string16 GetAccessibleWindowTitle() const override;
   views::View* GetContentsView() override;
@@ -284,6 +286,14 @@ views::View* ConstrainedDialogWebView::GetInitiallyFocusedView() {
 void ConstrainedDialogWebView::WindowClosing() {
   if (!impl_->closed_via_webui())
     GetWebDialogDelegate()->OnDialogClosed(std::string());
+}
+
+views::Widget* ConstrainedDialogWebView::GetWidget() {
+  return View::GetWidget();
+}
+
+const views::Widget* ConstrainedDialogWebView::GetWidget() const {
+  return View::GetWidget();
 }
 
 base::string16 ConstrainedDialogWebView::GetWindowTitle() const {

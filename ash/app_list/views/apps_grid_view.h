@@ -295,6 +295,10 @@ class APP_LIST_EXPORT AppsGridView : public views::View,
   // Return the view model.
   views::ViewModelT<AppListItemView>* view_model() { return &view_model_; }
 
+  bool FirePageFlipTimerForTest();
+  bool FireFolderItemReparentTimerForTest();
+  bool FireFolderDroppingTimerForTest();
+
   // For test: Return if the drag and drop handler was set.
   bool has_drag_and_drop_host_for_test() {
     return nullptr != drag_and_drop_host_;

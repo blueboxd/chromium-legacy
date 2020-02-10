@@ -7,4 +7,5 @@ include_rules = [
   "+ppapi/proxy",
   "+services/service_manager/public/cpp",
   "+services/service_manager/sandbox",
+  "+services/tracing/public",
 ]

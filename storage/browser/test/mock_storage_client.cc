@@ -20,11 +20,12 @@ namespace content {
 
 using std::make_pair;
 
-MockStorageClient::MockStorageClient(QuotaManagerProxy* quota_manager_proxy,
-                                     const MockOriginData* mock_data,
-                                     QuotaClient::ID id,
-                                     size_t mock_data_size)
-    : quota_manager_proxy_(quota_manager_proxy),
+MockStorageClient::MockStorageClient(
+    scoped_refptr<QuotaManagerProxy> quota_manager_proxy,
+    const MockOriginData* mock_data,
+    QuotaClient::ID id,
+    size_t mock_data_size)
+    : quota_manager_proxy_(std::move(quota_manager_proxy)),
       id_(id),
       mock_time_counter_(0) {
   Populate(mock_data, mock_data_size);
@@ -87,6 +88,8 @@ QuotaClient::ID MockStorageClient::id() const {
   return id_;
 }
 
+void MockStorageClient::OnQuotaManagerDestroyed() {}
+
 void MockStorageClient::GetOriginUsage(const url::Origin& origin,
                                        StorageType type,
                                        GetUsageCallback callback) {
@@ -120,6 +123,11 @@ void MockStorageClient::DeleteOriginData(const url::Origin& origin,
       FROM_HERE, base::BindOnce(&MockStorageClient::RunDeleteOriginData,
                                 weak_factory_.GetWeakPtr(), origin, type,
                                 std::move(callback)));
+}
+
+void MockStorageClient::PerformStorageCleanup(blink::mojom::StorageType type,
+                                              base::OnceClosure callback) {
+  std::move(callback).Run();
 }
 
 bool MockStorageClient::DoesSupport(StorageType type) const {

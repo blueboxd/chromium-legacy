@@ -902,13 +902,13 @@ bool FrameFetchContext::ShouldBlockFetchByMixedContentCheck(
     mojom::RequestContextType request_context,
     ResourceRequest::RedirectStatus redirect_status,
     const KURL& url,
-    SecurityViolationReportingPolicy reporting_policy) const {
+    ReportingDisposition reporting_disposition) const {
   if (GetResourceFetcherProperties().IsDetached()) {
     // TODO(yhirano): Implement the detached case.
     return false;
   }
   return MixedContentChecker::ShouldBlockFetch(
-      GetFrame(), request_context, redirect_status, url, reporting_policy);
+      GetFrame(), request_context, redirect_status, url, reporting_disposition);
 }
 
 bool FrameFetchContext::ShouldBlockFetchAsCredentialedSubresource(
@@ -1064,7 +1064,7 @@ bool FrameFetchContext::CalculateIfAdSubresource(
 bool FrameFetchContext::SendConversionRequestInsteadOfRedirecting(
     const KURL& url,
     ResourceRequest::RedirectStatus redirect_status,
-    SecurityViolationReportingPolicy reporting_policy) const {
+    ReportingDisposition reporting_disposition) const {
   if (!RuntimeEnabledFeatures::ConversionMeasurementEnabled())
     return false;
 
@@ -1097,7 +1097,7 @@ bool FrameFetchContext::SendConversionRequestInsteadOfRedirecting(
 
   // Only report conversions for requests with reporting enabled (i.e. do not
   // count preload requests). However, return true.
-  if (reporting_policy == SecurityViolationReportingPolicy::kSuppressReporting)
+  if (reporting_disposition == ReportingDisposition::kSuppressReporting)
     return true;
 
   mojom::blink::ConversionPtr conversion = mojom::blink::Conversion::New();
@@ -1132,7 +1132,7 @@ base::Optional<ResourceRequestBlockedReason> FrameFetchContext::CanRequest(
     const ResourceRequest& resource_request,
     const KURL& url,
     const ResourceLoaderOptions& options,
-    SecurityViolationReportingPolicy reporting_policy,
+    ReportingDisposition reporting_disposition,
     ResourceRequest::RedirectStatus redirect_status) const {
   if (!GetResourceFetcherProperties().IsDetached() &&
       frame_or_imported_document_->GetDocument().IsFreezingInProgress() &&
@@ -1144,7 +1144,7 @@ base::Optional<ResourceRequestBlockedReason> FrameFetchContext::CanRequest(
     return ResourceRequestBlockedReason::kOther;
   }
   return BaseFetchContext::CanRequest(type, resource_request, url, options,
-                                      reporting_policy, redirect_status);
+                                      reporting_disposition, redirect_status);
 }
 
 CoreProbeSink* FrameFetchContext::Probe() const {

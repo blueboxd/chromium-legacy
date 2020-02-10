@@ -19,10 +19,10 @@ source_set("location_bar") {
   ]
   deps = [
     ":constants",
-    "resources:location_bar_info",
-    "resources:location_bar_not_secure_warning",
-    "resources:location_bar_offline",
-    "resources:location_bar_secure",
+    "resources:location_bar_connection_dangerous",
+    "resources:location_bar_connection_insecure",
+    "resources:location_bar_connection_offline",
+    "resources:location_bar_connection_secure",
     "resources:location_bar_share",
     "resources:location_bar_voice",
     "//base",

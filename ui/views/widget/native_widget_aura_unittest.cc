@@ -332,7 +332,8 @@ class PropertyTestWidgetDelegate : public WidgetDelegate {
   bool CanMinimize() const override { return true; }
   bool CanResize() const override { return true; }
   void DeleteDelegate() override { delete this; }
-  const Widget* GetWidgetImpl() const override { return widget_; }
+  Widget* GetWidget() override { return widget_; }
+  const Widget* GetWidget() const override { return widget_; }
 
   Widget* widget_;
   DISALLOW_COPY_AND_ASSIGN(PropertyTestWidgetDelegate);
@@ -688,7 +689,8 @@ class ModalWidgetDelegate : public WidgetDelegate {
 
   // WidgetDelegate:
   void DeleteDelegate() override { delete this; }
-  const Widget* GetWidgetImpl() const override { return widget_; }
+  Widget* GetWidget() override { return widget_; }
+  const Widget* GetWidget() const override { return widget_; }
   ui::ModalType GetModalType() const override {
     return ui::ModalType::MODAL_TYPE_WINDOW;
   }

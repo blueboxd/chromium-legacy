@@ -84,6 +84,14 @@ views::View* TabModalConfirmDialogViews::GetContentsView() {
   return message_box_view_;
 }
 
+views::Widget* TabModalConfirmDialogViews::GetWidget() {
+  return message_box_view_->GetWidget();
+}
+
+const views::Widget* TabModalConfirmDialogViews::GetWidget() const {
+  return message_box_view_->GetWidget();
+}
+
 void TabModalConfirmDialogViews::DeleteDelegate() {
   delete this;
 }
@@ -104,10 +112,6 @@ void TabModalConfirmDialogViews::CancelTabModalDialog() {
 
 void TabModalConfirmDialogViews::CloseDialog() {
   GetWidget()->Close();
-}
-
-const views::Widget* TabModalConfirmDialogViews::GetWidgetImpl() const {
-  return message_box_view_->GetWidget();
 }
 
 void TabModalConfirmDialogViews::LinkClicked(views::Link* source,

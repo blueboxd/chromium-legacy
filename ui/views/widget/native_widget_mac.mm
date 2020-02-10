@@ -157,15 +157,9 @@ void NativeWidgetMac::OnWindowKeyStatusChanged(
   if (is_key) {
     widget->OnNativeFocus();
     widget->GetFocusManager()->RestoreFocusedView();
-    if (NativeWidgetMacNSWindowHost* parent_host = ns_window_host_->parent()) {
-      parent_key_lock_ = parent_host->native_widget_mac()
-                             ->GetTopLevelWidget()
-                             ->LockPaintAsActive();
-    }
   } else {
     widget->OnNativeBlur();
     widget->GetFocusManager()->StoreFocusedView(true);
-    parent_key_lock_.reset();
   }
 }
 
@@ -274,6 +268,14 @@ void NativeWidgetMac::FrameTypeChanged() {
   // widget.
   GetWidget()->ThemeChanged();
   GetWidget()->GetRootView()->SchedulePaint();
+}
+
+Widget* NativeWidgetMac::GetWidget() {
+  return delegate_->AsWidget();
+}
+
+const Widget* NativeWidgetMac::GetWidget() const {
+  return delegate_->AsWidget();
 }
 
 gfx::NativeView NativeWidgetMac::GetNativeView() const {
@@ -798,7 +800,6 @@ void NativeWidgetMac::OnNativeViewHierarchyWillChange() {
   // listeners.
   if (!GetWidget()->is_top_level())
     SetFocusManager(nullptr);
-  parent_key_lock_.reset();
 }
 
 void NativeWidgetMac::OnNativeViewHierarchyChanged() {
@@ -893,10 +894,6 @@ ui::EventDispatchDetails NativeWidgetMac::DispatchKeyEventPostIME(
   else
     GetWidget()->OnKeyEvent(key);
   return ui::EventDispatchDetails();
-}
-
-const Widget* NativeWidgetMac::GetWidgetImpl() const {
-  return delegate_->AsWidget();
 }
 
 ////////////////////////////////////////////////////////////////////////////////

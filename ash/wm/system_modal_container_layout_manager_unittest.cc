@@ -328,7 +328,7 @@ TEST_F(SystemModalContainerLayoutManagerTest, EventFocusContainers) {
   std::unique_ptr<aura::Window> status_control(
       status_delegate->OpenTestWindowWithParent(
           Shell::GetPrimaryRootWindowController()->GetContainer(
-              kShellWindowId_ShelfControlContainer)));
+              kShellWindowId_ShelfContainer)));
   status_control->SetBounds(main->bounds());
 
   // Make sure that status window can receive event.
@@ -421,13 +421,16 @@ TEST_F(SystemModalContainerLayoutManagerTest,
   std::unique_ptr<aura::Window> status_control(
       status_delegate->OpenTestWindowWithParent(
           Shell::GetPrimaryRootWindowController()->GetContainer(
-              kShellWindowId_ShelfControlContainer)));
+              kShellWindowId_ShelfContainer)));
+
   status_control->SetBounds(main->bounds());
+  status_control->SetName("Status Control");
 
   // Events are blocked on all windows because status window is above the modal
   // window.
   EventTestWindow* modal_delegate = new EventTestWindow(true);
   aura::Window* modal = modal_delegate->OpenTestWindowWithParent(main.get());
+  modal->SetName("Modal Window");
   EXPECT_TRUE(wm::IsActiveWindow(modal));
   generator.ClickLeftButton();
 

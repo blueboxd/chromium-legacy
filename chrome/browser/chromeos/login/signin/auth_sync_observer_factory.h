@@ -13,31 +13,31 @@ class Profile;
 
 namespace chromeos {
 
-class AuthSyncObserver;
+class AuthErrorObserver;
 
-// Singleton that owns all AuthSyncObserver and associates them with
+// Singleton that owns all AuthErrorObserver and associates them with
 // Profiles. Listens for the Profile's destruction notification and cleans up
-// the associated AuthSyncObserver.
-class AuthSyncObserverFactory : public BrowserContextKeyedServiceFactory {
+// the associated AuthErrorObserver.
+class AuthErrorObserverFactory : public BrowserContextKeyedServiceFactory {
  public:
-  // Returns the instance of AuthSyncObserver associated with this
+  // Returns the instance of AuthErrorObserver associated with this
   // |profile| (creates one if none exists).
-  static AuthSyncObserver* GetForProfile(Profile* profile);
+  static AuthErrorObserver* GetForProfile(Profile* profile);
 
-  // Returns an instance of the AuthSyncObserverFactory singleton.
-  static AuthSyncObserverFactory* GetInstance();
+  // Returns an instance of the AuthErrorObserverFactory singleton.
+  static AuthErrorObserverFactory* GetInstance();
 
  private:
-  friend struct base::DefaultSingletonTraits<AuthSyncObserverFactory>;
+  friend struct base::DefaultSingletonTraits<AuthErrorObserverFactory>;
 
-  AuthSyncObserverFactory();
-  ~AuthSyncObserverFactory() override;
+  AuthErrorObserverFactory();
+  ~AuthErrorObserverFactory() override;
 
   // BrowserContextKeyedServiceFactory implementation.
   KeyedService* BuildServiceInstanceFor(
       content::BrowserContext* context) const override;
 
-  DISALLOW_COPY_AND_ASSIGN(AuthSyncObserverFactory);
+  DISALLOW_COPY_AND_ASSIGN(AuthErrorObserverFactory);
 };
 
 }  // namespace chromeos

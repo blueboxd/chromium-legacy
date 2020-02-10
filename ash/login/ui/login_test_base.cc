@@ -29,13 +29,12 @@ class LoginTestBase::WidgetDelegate : public views::WidgetDelegate {
   // views::WidgetDelegate:
   void DeleteDelegate() override { delete this; }
   views::View* GetInitiallyFocusedView() override { return content_; }
-
- private:
-  // views::WidgetDelegate:
-  const views::Widget* GetWidgetImpl() const override {
+  views::Widget* GetWidget() override { return content_->GetWidget(); }
+  const views::Widget* GetWidget() const override {
     return content_->GetWidget();
   }
 
+ private:
   views::View* content_;
 
   DISALLOW_COPY_AND_ASSIGN(WidgetDelegate);

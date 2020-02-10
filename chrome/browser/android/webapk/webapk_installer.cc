@@ -144,6 +144,8 @@ webapk::WebApk_UpdateReason ConvertUpdateReasonToProtoEnum(
       return webapk::WebApk::WEB_SHARE_TARGET_DIFFERS;
     case WebApkUpdateReason::MANUALLY_TRIGGERED:
       return webapk::WebApk::MANUALLY_TRIGGERED;
+    case WebApkUpdateReason::SHORTCUTS_DIFFER:
+      return webapk::WebApk::SHORTCUTS_DIFFER;
   }
 }
 
@@ -664,7 +666,8 @@ void WebApkInstaller::OnHaveSufficientSpaceForInstall() {
 
   for (const auto& shortcut_icon :
        install_shortcut_info_->best_shortcut_icon_urls) {
-    icons.insert(shortcut_icon);
+    if (shortcut_icon.is_valid())
+      icons.insert(shortcut_icon);
   }
 
   WebApkIconHasher::DownloadAndComputeMurmur2Hash(

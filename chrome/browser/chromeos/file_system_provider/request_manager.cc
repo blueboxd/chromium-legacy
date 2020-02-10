@@ -59,11 +59,9 @@ int RequestManager::CreateRequest(RequestType type,
   if (requests_.find(request_id) != requests_.end())
     return 0;
 
-  TRACE_EVENT_ASYNC_BEGIN1("file_system_provider",
-                           "RequestManager::Request",
-                           request_id,
-                           "type",
-                           type);
+  TRACE_EVENT_NESTABLE_ASYNC_BEGIN1("file_system_provider",
+                                    "RequestManager::Request",
+                                    TRACE_ID_LOCAL(request_id), "type", type);
 
   std::unique_ptr<Request> request = std::make_unique<Request>();
   request->handler = std::move(handler);
@@ -255,8 +253,9 @@ void RequestManager::DestroyRequest(int request_id) {
   for (auto& observer : observers_)
     observer.OnRequestDestroyed(request_id);
 
-  TRACE_EVENT_ASYNC_END0(
-      "file_system_provider", "RequestManager::Request", request_id);
+  TRACE_EVENT_NESTABLE_ASYNC_END0("file_system_provider",
+                                  "RequestManager::Request",
+                                  TRACE_ID_LOCAL(request_id));
 }
 
 }  // namespace file_system_provider

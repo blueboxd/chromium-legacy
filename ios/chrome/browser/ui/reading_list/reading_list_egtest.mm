@@ -390,7 +390,7 @@ void AssertIsShowingDistillablePage(bool online, const GURL& distillable_url) {
   [[EarlGrey selectElementWithMatcher:
                  grey_allOf(chrome_test_util::PageSecurityInfoIndicator(),
                             chrome_test_util::ImageViewWithImageNamed(
-                                @"location_bar_offline"),
+                                @"location_bar_connection_offline"),
                             nil)]
       assertWithMatcher:online ? grey_nil() : grey_notNil()];
 }

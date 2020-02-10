@@ -76,8 +76,9 @@ void OnDownloadedManifestIcon(base::OnceClosure callback,
   std::move(callback).Run();
 }
 
-void OnGotMurmur2Hash(base::OnceClosure callback,
-                      const std::string& unused_icon_murmur2_hash) {
+void OnGotMurmur2Hash(
+    base::OnceClosure callback,
+    base::Optional<std::map<std::string, std::string>> hashes) {
   std::move(callback).Run();
 }
 
@@ -110,7 +111,7 @@ IN_PROC_BROWSER_TEST_F(WebApkIconHasherBrowserTest, HasherUsesIconFromCache) {
 
     base::RunLoop run_loop;
     WebApkIconHasher::DownloadAndComputeMurmur2Hash(
-        url_loader_factory.get(), url::Origin::Create(kIconUrl), kIconUrl,
+        url_loader_factory.get(), url::Origin::Create(kIconUrl), {kIconUrl},
         base::BindOnce(&OnGotMurmur2Hash, run_loop.QuitClosure()));
     run_loop.Run();
   }

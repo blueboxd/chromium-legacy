@@ -54,16 +54,16 @@ NSString* GAIASignInForm(NSString* formAction,
 }
 
 // Returns an autoreleased string of JSON for a parsed form.
-NSString* GAIASignInFormData(NSString* formAction) {
+NSString* GAIASignInFormData(NSString* formOrigin, NSString* formName) {
   return [NSString stringWithFormat:@"{"
-                                     "  \"action\":\"%@\","
                                      "  \"origin\":\"%@\","
+                                     "  \"name\":\"%@\","
                                      "  \"fields\":["
                                      "    {\"name\":\"%@\", \"value\":\"\"},"
                                      "    {\"name\":\"%@\",\"value\":\"\"}"
                                      "  ]"
                                      "}",
-                                    formAction, formAction, kEmailInputID,
+                                    formOrigin, formName, kEmailInputID,
                                     kPasswordInputID];
 }
 
@@ -72,15 +72,16 @@ NSString* GAIASignInFormData(NSString* formAction) {
 // succeeds.
 TEST_F(PasswordControllerJsTest,
        FillPasswordFormWithPrefilledUsername_SucceedsWhenUsernameMatches) {
-  NSString* const formAction = @"https://accounts.google.com/ServiceLoginAuth";
+  const std::string origin = "https://accounts.google.com/ServiceLoginAuth";
+  NSString* const formOrigin = [NSString stringWithUTF8String:origin.c_str()];
+  NSString* const formName = @"gaia_loginform";
   NSString* const username = @"john.doe@gmail.com";
   NSString* const password = @"super!secret";
-  LoadHtmlAndInject(GAIASignInForm(formAction, username, YES));
+  LoadHtmlAndInject(GAIASignInForm(formOrigin, username, YES), GURL(origin));
   EXPECT_NSEQ(
-      @YES,
-      ExecuteJavaScriptWithFormat(
-          @"__gCrWeb.passwords.fillPasswordForm(%@, '%@', '%@', '%@')",
-          GAIASignInFormData(formAction), username, password, formAction));
+      @YES, ExecuteJavaScriptWithFormat(
+                @"__gCrWeb.passwords.fillPasswordForm(%@, '%@', '%@')",
+                GAIASignInFormData(formOrigin, formName), username, password));
   // Verifies that the sign-in form has been filled with username/password.
   ExecuteJavaScriptOnElementsAndCheck(@"document.getElementById('%@').value",
                                       @[ kEmailInputID, kPasswordInputID ],
@@ -92,16 +93,17 @@ TEST_F(PasswordControllerJsTest,
 // fails, as long as the field is read-only.
 TEST_F(PasswordControllerJsTest,
        FillPasswordFormWithPrefilledUsername_FailsWhenUsernameMismatched) {
-  NSString* const formAction = @"https://accounts.google.com/ServiceLoginAuth";
+  const std::string origin = "https://accounts.google.com/ServiceLoginAuth";
+  NSString* const formOrigin = [NSString stringWithUTF8String:origin.c_str()];
+  NSString* const formName = @"gaia_loginform";
   NSString* const username1 = @"john.doe@gmail.com";
   NSString* const username2 = @"jean.dubois@gmail.com";
   NSString* const password = @"super!secret";
-  LoadHtmlAndInject(GAIASignInForm(formAction, username1, YES));
+  LoadHtmlAndInject(GAIASignInForm(formOrigin, username1, YES), GURL(origin));
   EXPECT_NSEQ(
-      @NO,
-      ExecuteJavaScriptWithFormat(
-          @"__gCrWeb.passwords.fillPasswordForm(%@, '%@', '%@', '%@')",
-          GAIASignInFormData(formAction), username2, password, formAction));
+      @NO, ExecuteJavaScriptWithFormat(
+               @"__gCrWeb.passwords.fillPasswordForm(%@, '%@', '%@')",
+               GAIASignInFormData(formOrigin, formName), username2, password));
   // Verifies that the sign-in form has not been filled.
   ExecuteJavaScriptOnElementsAndCheck(@"document.getElementById('%@').value",
                                       @[ kEmailInputID, kPasswordInputID ],
@@ -113,16 +115,17 @@ TEST_F(PasswordControllerJsTest,
 // succeeds, as long as the field is writeable.
 TEST_F(PasswordControllerJsTest,
        FillPasswordFormWithPrefilledUsername_SucceedsByOverridingUsername) {
-  NSString* const formAction = @"https://accounts.google.com/ServiceLoginAuth";
+  const std::string origin = "https://accounts.google.com/ServiceLoginAuth";
+  NSString* const formOrigin = [NSString stringWithUTF8String:origin.c_str()];
+  NSString* const formName = @"gaia_loginform";
   NSString* const username1 = @"john.doe@gmail.com";
   NSString* const username2 = @"jane.doe@gmail.com";
   NSString* const password = @"super!secret";
-  LoadHtmlAndInject(GAIASignInForm(formAction, username1, NO));
+  LoadHtmlAndInject(GAIASignInForm(formOrigin, username1, NO), GURL(origin));
   EXPECT_NSEQ(
-      @YES,
-      ExecuteJavaScriptWithFormat(
-          @"__gCrWeb.passwords.fillPasswordForm(%@, '%@', '%@', '%@')",
-          GAIASignInFormData(formAction), username2, password, formAction));
+      @YES, ExecuteJavaScriptWithFormat(
+                @"__gCrWeb.passwords.fillPasswordForm(%@, '%@', '%@')",
+                GAIASignInFormData(formOrigin, formName), username2, password));
   // Verifies that the sign-in form has been filled with the new username
   // and password.
   ExecuteJavaScriptOnElementsAndCheck(@"document.getElementById('%@').value",
@@ -373,21 +376,20 @@ TEST_F(PasswordControllerJsTest, OriginsAreDifferentInPathes) {
   std::string page_origin = BaseUrl() + "origin1";
   std::string form_fill_data_origin = BaseUrl() + "origin2";
 
-  NSString* form_fill_data =
-      [NSString stringWithFormat:
-                    @"{"
-                     "  \"action\":\"%s\","
-                     "  \"origin\":\"%s\","
-                     "  \"fields\":["
-                     "    {\"name\":\"name\", \"value\":\"name\"},"
-                     "    {\"name\":\"password\",\"value\":\"password\"}"
-                     "  ]"
-                     "}",
-                    page_origin.c_str(), form_fill_data_origin.c_str()];
-  EXPECT_NSEQ(@YES,
-              ExecuteJavaScriptWithFormat(
-                  @"__gCrWeb.passwords.fillPasswordForm(%@, '%@', '%@', '%s')",
-                  form_fill_data, username, password, page_origin.c_str()));
+  NSString* form_fill_data = [NSString
+      stringWithFormat:@"{"
+                        "  \"action\":\"%s\","
+                        "  \"origin\":\"%s\","
+                        "  \"name\":\"login_form\","
+                        "  \"fields\":["
+                        "    {\"name\":\"name\", \"value\":\"name\"},"
+                        "    {\"name\":\"password\",\"value\":\"password\"}"
+                        "  ]"
+                        "}",
+                       page_origin.c_str(), form_fill_data_origin.c_str()];
+  EXPECT_NSEQ(@YES, ExecuteJavaScriptWithFormat(
+                        @"__gCrWeb.passwords.fillPasswordForm(%@, '%@', '%@')",
+                        form_fill_data, username, password));
   // Verifies that the sign-in form has been filled with username/password.
   ExecuteJavaScriptOnElementsAndCheck(@"document.getElementById('%@').value",
                                       @[ @"name", @"password" ],
@@ -587,16 +589,16 @@ TEST_F(PasswordControllerJsTest, FillOnlyPasswordField) {
       stringWithFormat:@"{"
                         "  \"action\":\"%s\","
                         "  \"origin\":\"%s\","
+                        "  \"name\":\"login_form\","
                         "  \"fields\":["
                         "    {\"name\":\"\", \"value\":\"\"},"
                         "    {\"name\":\"password\",\"value\":\"password\"}"
                         "  ]"
                         "}",
                        page_origin.c_str(), form_fill_data_origin.c_str()];
-  EXPECT_NSEQ(@YES,
-              ExecuteJavaScriptWithFormat(
-                  @"__gCrWeb.passwords.fillPasswordForm(%@, '', '%@', '%s')",
-                  form_fill_data, password, page_origin.c_str()));
+  EXPECT_NSEQ(@YES, ExecuteJavaScriptWithFormat(
+                        @"__gCrWeb.passwords.fillPasswordForm(%@, '', '%@')",
+                        form_fill_data, password));
   // Verifies that the sign-in form has been filled with |password|.
   ExecuteJavaScriptOnElementsAndCheck(@"document.getElementById('%@').value",
                                       @[ @"password" ], @[ password ]);

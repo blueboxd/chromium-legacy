@@ -194,7 +194,6 @@ jumbo_component("browser") {
     "quota/padding_key.cc",
     "quota/padding_key.h",
     "quota/quota_callbacks.h",
-    "quota/quota_client.cc",
     "quota/quota_client.h",
     "quota/quota_database.cc",
     "quota/quota_database.h",

@@ -4,8 +4,10 @@
 
 package org.chromium.chrome.browser;
 
+import org.chromium.chrome.browser.compositor.layouts.content.TabContentManager;
 import org.chromium.chrome.browser.firstrun.FirstRunUtils;
 import org.chromium.chrome.browser.flags.CachedFeatureFlags;
+import org.chromium.chrome.browser.flags.CachedFieldTrialParameter;
 import org.chromium.chrome.browser.flags.ChromeFeatureList;
 
 import java.util.Arrays;
@@ -47,6 +49,11 @@ public class ChromeCachedFlags {
                 ChromeFeatureList.START_SURFACE_ANDROID, ChromeFeatureList.PAINT_PREVIEW_TEST);
         CachedFeatureFlags.cacheNativeFlags(featuresToCache);
         CachedFeatureFlags.cacheAdditionalNativeFlags();
+
+        List<CachedFieldTrialParameter> fieldTrialsToCache =
+                Arrays.asList(TabContentManager.ALLOW_TO_REFETCH_TAB_THUMBNAIL_VARIATION);
+        CachedFeatureFlags.cacheFieldTrialParameters(fieldTrialsToCache);
+
         mIsFinishedCachingNativeFlags = true;
     }
 

@@ -8,7 +8,7 @@
 #include "third_party/blink/renderer/core/animation/css_interpolation_environment.h"
 #include "third_party/blink/renderer/core/animation/css_interpolation_types_map.h"
 #include "third_party/blink/renderer/core/animation/invalidatable_interpolation.h"
-#include "third_party/blink/renderer/core/css/css_pending_interpolation_value.h"
+#include "third_party/blink/renderer/core/css/resolver/cascade_interpolations.h"
 #include "third_party/blink/renderer/core/css/resolver/style_cascade.h"
 #include "third_party/blink/renderer/core/css/resolver/style_resolver_state.h"
 #include "third_party/blink/renderer/core/dom/document.h"
@@ -16,39 +16,6 @@
 #include "third_party/blink/renderer/core/style/computed_style.h"
 
 namespace blink {
-
-namespace {
-
-class TestAnimator : public StyleCascade::Animator {
-  STACK_ALLOCATED();
-
- public:
-  TestAnimator(StyleResolverState& state,
-               StyleCascade& cascade,
-               CSSInterpolationTypesMap& map,
-               const ActiveInterpolations& interpolations)
-      : state_(state),
-        cascade_(cascade),
-        map_(map),
-        interpolations_(interpolations) {}
-
-  void Apply(const CSSProperty&,
-             const cssvalue::CSSPendingInterpolationValue& value,
-             StyleCascade::Resolver& resolver) override {
-    // Ignore CSSProperty here. We assume this function is only called once
-    // for each invocation of EnsureInterpolatedValueCached.
-    CSSInterpolationEnvironment environment(map_, state_, &cascade_, &resolver);
-    InvalidatableInterpolation::ApplyStack(interpolations_, environment);
-  }
-
- private:
-  StyleResolverState& state_;
-  StyleCascade& cascade_;
-  CSSInterpolationTypesMap& map_;
-  const ActiveInterpolations& interpolations_;
-};
-
-}  // namespace
 
 void SetV8ObjectPropertyAsString(v8::Isolate* isolate,
                                  v8::Local<v8::Object> object,
@@ -80,22 +47,24 @@ void EnsureInterpolatedValueCached(const ActiveInterpolations& interpolations,
   auto style = ComputedStyle::Create();
   StyleResolverState state(document, *element, style.get(), style.get());
   state.SetStyle(style);
-  CSSInterpolationTypesMap map(state.GetDocument().GetPropertyRegistry(),
-                               state.GetDocument());
   if (RuntimeEnabledFeatures::CSSCascadeEnabled()) {
     // We must apply the animation effects via StyleCascade when the cascade
     // is enabled.
     StyleCascade cascade(state);
-    auto type = cssvalue::CSSPendingInterpolationValue::Type::kCSSProperty;
-    auto* pending = cssvalue::CSSPendingInterpolationValue::Create(type);
-    auto origin = StyleCascade::Origin::kAuthor;
-    cascade.Add(*CSSPropertyName::From(state.GetDocument().ToExecutionContext(),
-                                       "--unused"),
-                pending, origin);
 
-    TestAnimator animator(state, cascade, map, interpolations);
-    cascade.Apply(animator);
+    ActiveInterpolationsMap map;
+    map.Set(PropertyHandle("--unused"), interpolations);
+
+    using Entry = CascadeInterpolations::Entry;
+    CascadeInterpolations cascade_interpolations(Vector<Entry, 4>{
+        Entry{&map, CascadeOrigin::kAnimation},
+    });
+
+    cascade.Analyze(cascade_interpolations, CascadeFilter());
+    cascade.Apply(cascade_interpolations, CascadeFilter());
   } else {
+    CSSInterpolationTypesMap map(state.GetDocument().GetPropertyRegistry(),
+                                 state.GetDocument());
     CSSInterpolationEnvironment environment(map, state, nullptr);
     InvalidatableInterpolation::ApplyStack(interpolations, environment);
   }

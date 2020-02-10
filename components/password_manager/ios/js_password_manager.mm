@@ -20,14 +20,14 @@
 namespace password_manager {
 
 NSString* SerializeFillData(const GURL& origin,
-                            const GURL& action,
+                            const base::string16& name,
                             const base::string16& username_element,
                             const base::string16& username_value,
                             const base::string16& password_element,
                             const base::string16& password_value) {
   base::DictionaryValue rootDict;
   rootDict.SetString("origin", origin.spec());
-  rootDict.SetString("action", action.spec());
+  rootDict.SetString("name", name);
 
   auto fieldList = std::make_unique<base::ListValue>();
 
@@ -51,13 +51,13 @@ NSString* SerializeFillData(const GURL& origin,
 NSString* SerializePasswordFormFillData(
     const autofill::PasswordFormFillData& formData) {
   return SerializeFillData(
-      formData.origin, formData.action, formData.username_field.name,
+      formData.origin, formData.name, formData.username_field.name,
       formData.username_field.value, formData.password_field.name,
       formData.password_field.value);
 }
 
 NSString* SerializeFillData(const password_manager::FillData& fillData) {
-  return SerializeFillData(fillData.origin, fillData.action,
+  return SerializeFillData(fillData.origin, fillData.name,
                            fillData.username_element, fillData.username_value,
                            fillData.password_element, fillData.password_value);
 }

@@ -19,6 +19,7 @@
 #include "base/synchronization/waitable_event.h"
 #include "base/test/bind_test_util.h"
 #include "base/test/gtest_util.h"
+#include "base/test/scoped_run_loop_timeout.h"
 #include "base/test/task_environment.h"
 #include "base/test/test_timeouts.h"
 #include "base/threading/platform_thread.h"
@@ -555,10 +556,11 @@ TEST(RunLoopUntilConditionTest, FailsTestOnTimeout) {
 
   // Expect the Run() timeout to be run when |condition| is false and the loop
   // times out.
-  const RunLoop::ScopedRunTimeoutForTest short_timeout(
-      TimeDelta::FromMilliseconds(10),
-      MakeExpectedRunAtLeastOnceClosure(FROM_HERE));
-  RunLoop().RunUntilConditionForTest(BindRepeating([]() { return false; }));
+  const test::ScopedRunLoopTimeout short_timeout(
+      TimeDelta::FromMilliseconds(10));
+  EXPECT_FATAL_FAILURE(
+      RunLoop().RunUntilConditionForTest(BindRepeating([]() { return false; })),
+      "RunLoop::Run() timed out.");
 }
 
 TEST(RunLoopUntilConditionTest, FailsTestIfConditionNotMetOnQuit) {
@@ -567,12 +569,13 @@ TEST(RunLoopUntilConditionTest, FailsTestIfConditionNotMetOnQuit) {
 
   // Expect the Run() timeout to be run when |condition| is false and the loop
   // Quit()s prematurely.
-  const RunLoop::ScopedRunTimeoutForTest short_timeout(
-      TimeDelta::FromMilliseconds(10),
-      MakeExpectedRunAtLeastOnceClosure(FROM_HERE));
+  const test::ScopedRunLoopTimeout short_timeout(
+      TimeDelta::FromMilliseconds(10));
 
   // Running with a never-true condition will fire the on-timeout callback.
-  RunLoop().RunUntilConditionForTest(BindRepeating([]() { return false; }));
+  EXPECT_FATAL_FAILURE(
+      RunLoop().RunUntilConditionForTest(BindRepeating([]() { return false; })),
+      "RunLoop::Run() timed out.");
 }
 
 TEST(RunLoopUntilConditionTest, NoEffectIfConditionMetOnQuit) {
@@ -580,8 +583,8 @@ TEST(RunLoopUntilConditionTest, NoEffectIfConditionMetOnQuit) {
   RunLoop loop;
 
   // Verify that the call does not trigger the Run() timeout.
-  const RunLoop::ScopedRunTimeoutForTest short_timeout(
-      TimeDelta::FromMilliseconds(10), MakeExpectedNotRunClosure(FROM_HERE));
+  const test::ScopedRunLoopTimeout short_timeout(
+      TimeDelta::FromMilliseconds(10));
   SequencedTaskRunnerHandle::Get()->PostTask(FROM_HERE, loop.QuitClosure());
   RunLoop().RunUntilConditionForTest(BindRepeating([]() { return true; }));
 }
@@ -593,8 +596,8 @@ TEST(RunLoopUntilConditionTest, NoEffectIfConditionMetOnTimeout) {
   // Verify that the call does not trigger the Run() timeout.
   // Note that |short_timeout| must be shorter than the RunUntilConditionForTest
   // polling frequency.
-  const RunLoop::ScopedRunTimeoutForTest short_timeout(
-      TimeDelta::FromMilliseconds(10), MakeExpectedNotRunClosure(FROM_HERE));
+  const test::ScopedRunLoopTimeout short_timeout(
+      TimeDelta::FromMilliseconds(10));
   RunLoop().RunUntilConditionForTest(BindRepeating([]() { return true; }));
 }
 
@@ -603,8 +606,7 @@ TEST(RunLoopUntilConditionTest, QuitsLoopIfConditionMetOnPoll) {
   RunLoop loop;
 
   // Configure a long timeout so it won't fire before we poll.
-  const RunLoop::ScopedRunTimeoutForTest long_timeout(
-      TestTimeouts::action_timeout(), MakeExpectedNotRunClosure(FROM_HERE));
+  const test::ScopedRunLoopTimeout long_timeout(TestTimeouts::action_timeout());
 
   // Arrange to post a task to the loop after the Run()-timeout has been
   // started, set to run after the |condition| is polled and before the Run()

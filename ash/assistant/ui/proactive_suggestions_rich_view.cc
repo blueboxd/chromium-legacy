@@ -19,6 +19,17 @@
 
 namespace ash {
 
+namespace {
+
+using chromeos::assistant::features::
+    GetProactiveSuggestionsRichEntryPointBackgroundBlurRadius;
+using chromeos::assistant::features::
+    GetProactiveSuggestionsRichEntryPointCornerRadius;
+
+}  // namespace
+
+// ProactiveSuggestionsRichView ------------------------------------------------
+
 ProactiveSuggestionsRichView::ProactiveSuggestionsRichView(
     AssistantViewDelegate* delegate)
     : ProactiveSuggestionsView(delegate) {}
@@ -39,8 +50,7 @@ void ProactiveSuggestionsRichView::InitLayout() {
   view_shadow_ =
       std::make_unique<ViewShadow>(this, wm::kShadowElevationActiveWindow);
   view_shadow_->SetRoundedCornerRadius(
-      chromeos::assistant::features::
-          GetProactiveSuggestionsRichEntryPointCornerRadius());
+      GetProactiveSuggestionsRichEntryPointCornerRadius());
 
   // Initialize |contents_view_| params.
   AssistantWebView::InitParams params;
@@ -146,8 +156,17 @@ void ProactiveSuggestionsRichView::DidStopLoading() {
   // it's safe to set our desired corner radius.
   contents_view_->GetNativeView()->layer()->SetRoundedCornerRadius(
       gfx::RoundedCornersF(
-          chromeos::assistant::features::
-              GetProactiveSuggestionsRichEntryPointCornerRadius()));
+          GetProactiveSuggestionsRichEntryPointCornerRadius()));
+
+  // If specified, we also blur background to increase readability of this view
+  // which semi-transparently sits atop other content. This also serves to help
+  // us blend more with other system UI (e.g. quick settings).
+  const int background_blur_radius =
+      GetProactiveSuggestionsRichEntryPointBackgroundBlurRadius();
+  if (background_blur_radius > 0) {
+    contents_view_->GetNativeView()->layer()->SetBackgroundBlur(
+        background_blur_radius);
+  }
 
   // This view should now be fully initialized, so it's safe to show without
   // risk of introducing UI jank if we so desire.

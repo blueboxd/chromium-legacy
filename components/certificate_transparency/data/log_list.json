@@ -7,22 +7,6 @@
       ],
       "logs": [
         {
-          "description": "Google 'Argon2019' log",
-          "log_id": "Y/Lbzeg7zCzPC3KEJ1drM6SNYXePvXWmOLHHaFRL2I0=",
-          "key": "MFkwEwYHKoZIzj0CAQYIKoZIzj0DAQcDQgAEI3MQm+HzXvaYa2mVlhB4zknbtAT8cSxakmBoJcBKGqGwYS0bhxSpuvABM1kdBTDpQhXnVdcq+LSiukXJRpGHVg==",
-          "url": "https://ct.googleapis.com/logs/argon2019/",
-          "mmd": 86400,
-          "state": {
-            "usable": {
-              "timestamp": "2018-06-15T02:30:13Z"
-            }
-          },
-          "temporal_interval": {
-            "start_inclusive": "2019-01-01T00:00:00Z",
-            "end_exclusive": "2020-01-01T00:00:00Z"
-          }
-        },
-        {
           "description": "Google 'Argon2020' log",
           "log_id": "sh4FzIuizYogTodm+Su5iiUgZ2va+nDnsklTLe+LkF4=",
           "key": "MFkwEwYHKoZIzj0CAQYIKoZIzj0DAQcDQgAE6Tx2p1yKY4015NyIYvdrk36es0uAc1zA4PQ+TGRY+3ZjUTIYY9Wyu+3q/147JG4vNVKLtDWarZwVqGkg6lAYzA==",
@@ -61,8 +45,8 @@
           "url": "https://ct.googleapis.com/logs/argon2022/",
           "mmd": 86400,
           "state": {
-            "qualified": {
-              "timestamp": "2019-08-19T00:00:00Z"
+            "usable": {
+              "timestamp": "2019-12-17T18:38:01Z"
             }
           },
           "temporal_interval": {
@@ -77,29 +61,13 @@
           "url": "https://ct.googleapis.com/logs/argon2023/",
           "mmd": 86400,
           "state": {
-            "qualified": {
-              "timestamp": "2019-08-19T00:00:00Z"
+            "usable": {
+              "timestamp": "2019-12-17T18:38:01Z"
             }
           },
           "temporal_interval": {
             "start_inclusive": "2023-01-01T00:00:00Z",
             "end_exclusive": "2024-01-01T00:00:00Z"
-          }
-        },
-        {
-          "description": "Google 'Xenon2019' log",
-          "log_id": "CEEUmABxUywWGQRgvPxH/cJlOvopLHKzf/hjrinMyfA=",
-          "key": "MFkwEwYHKoZIzj0CAQYIKoZIzj0DAQcDQgAE/XyDwqzXL9i2GTjMYkqaEyiRL0Dy9sHq/BTebFdshbvCaXXEh6mjUK0Yy+AsDcI4MpzF1l7Kded2MD5zi420gA==",
-          "url": "https://ct.googleapis.com/logs/xenon2019/",
-          "mmd": 86400,
-          "state": {
-            "usable": {
-              "timestamp": "2019-06-17T21:23:01Z"
-            }
-          },
-          "temporal_interval": {
-            "start_inclusive": "2019-01-01T00:00:00Z",
-            "end_exclusive": "2020-01-01T00:00:00Z"
           }
         },
         {
@@ -157,8 +125,8 @@
           "url": "https://ct.googleapis.com/logs/xenon2023/",
           "mmd": 86400,
           "state": {
-            "qualified": {
-              "timestamp": "2019-08-19T00:00:00Z"
+            "usable": {
+              "timestamp": "2019-12-17T18:38:01Z"
             }
           },
           "temporal_interval": {
@@ -244,22 +212,6 @@
       ],
       "logs": [
         {
-          "description": "Cloudflare 'Nimbus2019' Log",
-          "log_id": "dH7agzGtMxCRIZzOJU9CcMK//V5CIAjGNzV55hB7zFY=",
-          "key": "MFkwEwYHKoZIzj0CAQYIKoZIzj0DAQcDQgAEkZHz1v5r8a9LmXSMegYZAg4UW+Ug56GtNfJTDNFZuubEJYgWf4FcC5D+ZkYwttXTDSo4OkanG9b3AI4swIQ28g==",
-          "url": "https://ct.cloudflare.com/logs/nimbus2019/",
-          "mmd": 86400,
-          "state": {
-            "usable": {
-              "timestamp": "2018-06-15T02:30:13Z"
-            }
-          },
-          "temporal_interval": {
-            "start_inclusive": "2019-01-01T00:00:00Z",
-            "end_exclusive": "2020-01-01T00:00:00Z"
-          }
-        },
-        {
           "description": "Cloudflare 'Nimbus2020' Log",
           "log_id": "Xqdz+d9WwOe1Nkh90EngMnqRmgyEoRIShBh1loFxRVg=",
           "key": "MFkwEwYHKoZIzj0CAQYIKoZIzj0DAQcDQgAE01EAhx4o0zPQrXTcYjgCt4MVFsT0Pwjzb1RwrM0lhWDlxAYPP6/gyMCXNkOn/7KFsjL7rwk78tHMpY8rXn8AYg==",
@@ -298,8 +250,8 @@
           "url": "https://ct.cloudflare.com/logs/nimbus2022/",
           "mmd": 86400,
           "state": {
-            "qualified": {
-              "timestamp": "2019-06-04T00:00:00Z"
+            "usable": {
+              "timestamp": "2019-10-31T19:22:00Z"
             }
           },
           "temporal_interval": {
@@ -314,8 +266,8 @@
           "url": "https://ct.cloudflare.com/logs/nimbus2023/",
           "mmd": 86400,
           "state": {
-            "qualified": {
-              "timestamp": "2019-06-04T00:00:00Z"
+            "usable": {
+              "timestamp": "2019-10-31T19:22:00Z"
             }
           },
           "temporal_interval": {
@@ -353,22 +305,6 @@
             "usable": {
               "timestamp": "2017-10-10T00:38:10Z"
             }
-          }
-        },
-        {
-          "description": "DigiCert Yeti2019 Log",
-          "log_id": "4mlLribo6UAJ6IYbtjuD1D7n/nSI+6SPKJMBnd3x2/4=",
-          "key": "MFkwEwYHKoZIzj0CAQYIKoZIzj0DAQcDQgAEkZd/ow8X+FSVWAVSf8xzkFohcPph/x6pS1JHh7g1wnCZ5y/8Hk6jzJxs6t3YMAWz2CPd4VkCdxwKexGhcFxD9A==",
-          "url": "https://yeti2019.ct.digicert.com/log/",
-          "mmd": 86400,
-          "state": {
-            "usable": {
-              "timestamp": "2018-08-24T00:53:07Z"
-            }
-          },
-          "temporal_interval": {
-            "start_inclusive": "2019-01-01T00:00:00Z",
-            "end_exclusive": "2020-01-01T00:00:00Z"
           }
         },
         {
@@ -426,29 +362,13 @@
           "url": "https://yeti2023.ct.digicert.com/log/",
           "mmd": 86400,
           "state": {
-            "qualified": {
-              "timestamp": "2019-06-04T00:00:00Z"
+            "usable": {
+              "timestamp": "2019-10-31T19:22:00Z"
             }
           },
           "temporal_interval": {
             "start_inclusive": "2023-01-01T00:00:00Z",
             "end_exclusive": "2024-01-01T00:00:00Z"
-          }
-        },
-        {
-          "description": "DigiCert Nessie2019 Log",
-          "log_id": "/kRhCLHQGreKYsz+q2qysrq/86va2ApNizDfLQAIgww=",
-          "key": "MFkwEwYHKoZIzj0CAQYIKoZIzj0DAQcDQgAEX+0nudCKImd7QCtelhMrDW0OXni5RE10tiiClZesmrwUk2iHLCoTHHVV+yg5D4n/rxCRVyRhikPpVDOLMLxJaA==",
-          "url": "https://nessie2019.ct.digicert.com/log/",
-          "mmd": 86400,
-          "state": {
-            "usable": {
-              "timestamp": "2019-05-09T22:11:02Z"
-            }
-          },
-          "temporal_interval": {
-            "start_inclusive": "2019-01-01T00:00:00Z",
-            "end_exclusive": "2020-01-01T00:00:00Z"
           }
         },
         {
@@ -506,8 +426,8 @@
           "url": "https://nessie2023.ct.digicert.com/log/",
           "mmd": 86400,
           "state": {
-            "qualified": {
-              "timestamp": "2019-06-04T00:00:00Z"
+            "usable": {
+              "timestamp": "2019-10-31T19:22:00Z"
             }
           },
           "temporal_interval": {
@@ -728,30 +648,14 @@
       ],
       "logs": [
         {
-          "description": "Let's Encrypt 'Oak2019' log",
-          "log_id": "ZZszUPQ7EsxepatOx2XT/ebIgkN3d3jnIAP56yuMMSk=",
-          "key": "MFkwEwYHKoZIzj0CAQYIKoZIzj0DAQcDQgAEFkqNKRuZ+Z8IOsnNJrUZ8gwp+KKGOdQrJ/HKhSadK/SJuoCc9+dxQ7awpmWIMr9SKcQeG5uRzG1kVSyFN4Wfcw==",
-          "url": "https://oak.ct.letsencrypt.org/2019/",
-          "mmd": 86400,
-          "state": {
-            "qualified": {
-              "timestamp": "2019-10-02T00:00:00Z"
-            }
-          },
-          "temporal_interval": {
-            "start_inclusive": "2019-01-01T00:00:00Z",
-            "end_exclusive": "2020-01-07T00:00:00Z"
-          }
-        },
-        {
           "description": "Let's Encrypt 'Oak2020' log",
           "log_id": "5xLysDd+GmL7jskMYYTx6ns3y1YdESZb8+DzS/JBVG4=",
           "key": "MFkwEwYHKoZIzj0CAQYIKoZIzj0DAQcDQgAEfzb42Zdr/h7hgqgDCo1vrNJqGqbcUvJGJEER9DDqp19W/wFSB0l166hD+U5cAXchpH8ZkBNUuvOHS0OnJ4oJrQ==",
           "url": "https://oak.ct.letsencrypt.org/2020/",
           "mmd": 86400,
           "state": {
-            "qualified": {
-              "timestamp": "2019-10-02T00:00:00Z"
+            "usable": {
+              "timestamp": "2020-01-27T18:18:26Z"
             }
           },
           "temporal_interval": {
@@ -766,8 +670,8 @@
           "url": "https://oak.ct.letsencrypt.org/2021/",
           "mmd": 86400,
           "state": {
-            "qualified": {
-              "timestamp": "2019-10-02T00:00:00Z"
+            "usable": {
+              "timestamp": "2020-01-27T18:18:26Z"
             }
           },
           "temporal_interval": {
@@ -782,8 +686,8 @@
           "url": "https://oak.ct.letsencrypt.org/2022/",
           "mmd": 86400,
           "state": {
-            "qualified": {
-              "timestamp": "2019-10-02T00:00:00Z"
+            "usable": {
+              "timestamp": "2020-01-27T18:18:26Z"
             }
           },
           "temporal_interval": {

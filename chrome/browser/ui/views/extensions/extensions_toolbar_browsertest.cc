@@ -35,6 +35,11 @@ void ExtensionsToolbarBrowserTest::LoadTestExtension(
   base::FilePath test_data_dir;
   base::PathService::Get(chrome::DIR_TEST_DATA, &test_data_dir);
   AppendExtension(loader.LoadExtension(test_data_dir.AppendASCII(extension)));
+
+  // Loading an extension can result in the container changing visibility.
+  // Allow it to finish laying out appropriately.
+  auto* container = GetExtensionsToolbarContainer();
+  container->GetWidget()->LayoutRootViewIfNecessary();
 }
 
 void ExtensionsToolbarBrowserTest::AppendExtension(

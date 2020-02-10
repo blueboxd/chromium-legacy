@@ -126,7 +126,8 @@ class RenderWidgetHostVisibilityTracker
     if (!host_ || host_->GetView()->IsShowing())
       return;
     host_->AddObserver(this);
-    TRACE_EVENT_ASYNC_BEGIN0("ui,latency", "TabSwitchVisibilityRequest", this);
+    TRACE_EVENT_NESTABLE_ASYNC_BEGIN0("ui,latency",
+                                      "TabSwitchVisibilityRequest", this);
   }
 
   ~RenderWidgetHostVisibilityTracker() override {
@@ -144,7 +145,8 @@ class RenderWidgetHostVisibilityTracker
         "Browser.Tabs.SelectionToVisibilityRequestTime", timer_.Elapsed(),
         base::TimeDelta::FromMicroseconds(1), base::TimeDelta::FromSeconds(3),
         50);
-    TRACE_EVENT_ASYNC_END0("ui,latency", "TabSwitchVisibilityRequest", this);
+    TRACE_EVENT_NESTABLE_ASYNC_END0("ui,latency", "TabSwitchVisibilityRequest",
+                                    this);
   }
 
   void RenderWidgetHostDestroyed(content::RenderWidgetHost* host) override {

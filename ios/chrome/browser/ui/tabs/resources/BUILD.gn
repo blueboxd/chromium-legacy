@@ -50,13 +50,6 @@ imageset("tabstrip_new_tab") {
   ]
 }
 
-imageset("tabstrip_new_tab_pressed") {
-  sources = [
-    "tabstrip_new_tab_pressed.imageset/Contents.json",
-    "tabstrip_new_tab_pressed.imageset/tabstrip_new_tab_pressed@2x~ipad.png",
-  ]
-}
-
 imageset("tabstrip_tab_switcher_count_button") {
   sources = [
     "tabstrip_tab_switcher_count_button.imageset/Contents.json",

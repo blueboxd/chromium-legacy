@@ -22,7 +22,7 @@ const CSSProperty& ResolveDirectionAware(
 }  // anonymous namespace
 
 bool StyleCascadeSlots::Set(const CSSProperty& property,
-                            Priority priority,
+                            CascadePriority priority,
                             const StyleResolverState& state,
                             AllowDefault allow_default) {
   switch (property.PropertyID()) {

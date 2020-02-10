@@ -125,7 +125,7 @@ void AshMessagePopupCollection::ConfigureWidgetInitParamsForContainer(
   init_params->shadow_elevation = ::wm::kShadowElevationInactiveWindow;
   // On ash, popups go in the status container.
   init_params->parent = shelf_->GetWindow()->GetRootWindow()->GetChildById(
-      kShellWindowId_ShelfControlContainer);
+      kShellWindowId_ShelfContainer);
 
   // Make the widget activatable so it can receive focus when cycling through
   // windows (i.e. pressing ctrl + forward/back).

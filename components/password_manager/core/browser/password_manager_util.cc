@@ -483,6 +483,12 @@ void SetAccountStorageOptIn(PrefService* pref_service,
   ScopedAccountStorageSettingsUpdate(pref_service, gaia_id).SetOptedIn(opt_in);
 }
 
+bool ShouldShowPasswordStorePicker(const PrefService* pref_service,
+                                   const syncer::SyncService* sync_service) {
+  return IsOptedInForAccountStorage(pref_service, sync_service) ||
+         IsUserEligibleForAccountStorage(sync_service);
+}
+
 PasswordForm::Store GetDefaultPasswordStore(
     const PrefService* pref_service,
     const syncer::SyncService* sync_service) {

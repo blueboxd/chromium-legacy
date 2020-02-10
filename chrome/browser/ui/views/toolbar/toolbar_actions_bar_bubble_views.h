@@ -43,12 +43,12 @@ class ToolbarActionsBarBubbleViews : public views::BubbleDialogDelegateView,
 
   std::unique_ptr<views::View> CreateExtraInfoView();
 
+  void NotifyDelegateOfClose(
+      ToolbarActionsBarBubbleDelegate::CloseAction action);
+
   // views::BubbleDialogDelegateView:
   base::string16 GetWindowTitle() const override;
   bool ShouldShowCloseButton() const override;
-  bool Cancel() override;
-  bool Accept() override;
-  bool Close() override;
   void Init() override;
 
   // views::ButtonListener:

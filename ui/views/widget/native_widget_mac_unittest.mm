@@ -1800,11 +1800,10 @@ class CustomTitleWidgetDelegate : public WidgetDelegate {
   // WidgetDelegate:
   base::string16 GetWindowTitle() const override { return title_; }
   bool ShouldShowWindowTitle() const override { return should_show_title_; }
+  Widget* GetWidget() override { return widget_; }
+  const Widget* GetWidget() const override { return widget_; }
 
  private:
-  // WidgetDelegate:
-  const Widget* GetWidgetImpl() const override { return widget_; }
-
   Widget* widget_;
   base::string16 title_;
   bool should_show_title_;

@@ -96,6 +96,11 @@ class MockQuotaClient : public QuotaClient {
         FROM_HERE, base::BindOnce(std::move(callback), QuotaStatusCode::kOk));
   }
 
+  void PerformStorageCleanup(blink::mojom::StorageType type,
+                             base::OnceClosure callback) override {
+    std::move(callback).Run();
+  }
+
   bool DoesSupport(StorageType type) const override {
     return type == StorageType::kTemporary;
   }

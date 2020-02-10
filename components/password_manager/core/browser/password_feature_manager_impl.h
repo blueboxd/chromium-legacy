@@ -32,6 +32,8 @@ class PasswordFeatureManagerImpl : public PasswordFeatureManager {
   bool ShouldShowAccountStorageOptIn() const override;
   void SetAccountStorageOptIn(bool opt_in) override;
 
+  bool ShouldShowPasswordStorePicker() const override;
+
   void SetDefaultPasswordStore(
       const autofill::PasswordForm::Store& store) override;
   autofill::PasswordForm::Store GetDefaultPasswordStore() const override;

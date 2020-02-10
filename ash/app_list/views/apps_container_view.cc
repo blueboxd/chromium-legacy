@@ -283,83 +283,81 @@ void AppsContainerView::Layout() {
   if (rect.IsEmpty())
     return;
 
+  // Layout suggestion chips.
+  gfx::Rect chip_container_rect = rect;
+  chip_container_rect.set_y(GetExpectedSuggestionChipY(
+      contents_view_->app_list_view()->GetAppListTransitionProgress(
+          AppListView::kProgressFlagNone)));
+  chip_container_rect.set_height(
+      GetAppListConfig().suggestion_chip_container_height());
+  if (app_list_features::IsScalableAppListEnabled()) {
+    chip_container_rect.Inset(GetAppListConfig().GetIdealHorizontalMargin(rect),
+                              0);
+  }
+  suggestion_chip_container_view_->SetBoundsRect(chip_container_rect);
+
+  // Leave the same available bounds for the apps grid view in both
+  // fullscreen and peeking state to avoid resizing the view during
+  // animation and dragging, which is an expensive operation.
+  rect.set_y(chip_container_rect.bottom());
+  rect.set_height(rect.height() -
+                  GetExpectedSuggestionChipY(kAppListFullscreenProgressValue) -
+                  chip_container_rect.height());
+
+  const int page_switcher_width = page_switcher_->GetPreferredSize().width();
+  // With scalable app list feature enabled, the margins are calculated from
+  // the edge of the apps container, instead of container bounds inset by
+  // page switcher area.
+  if (!app_list_features::IsScalableAppListEnabled()) {
+    rect.Inset(GetAppListConfig().GetMinGridHorizontalPadding(), 0);
+  }
+
+  const GridLayout grid_layout = CalculateGridLayout();
+  apps_grid_view_->SetLayout(grid_layout.columns, grid_layout.rows);
+
+  // Layout apps grid.
+  gfx::Rect grid_rect = rect;
+
+  if (app_list_features::IsScalableAppListEnabled()) {
+    const gfx::Insets grid_insets = apps_grid_view_->GetInsets();
+    const gfx::Insets margins = CalculateMarginsForAvailableBounds(
+        GetContentsBounds(),
+        contents_view_->GetSearchBoxSize(AppListState::kStateApps),
+        true /*for_full_container_bounds*/);
+    grid_rect.Inset(
+        margins.left(),
+        GetAppListConfig().grid_fadeout_zone_height() - grid_insets.top(),
+        margins.right(), margins.bottom());
+    // The grid rect insets are added to calculated margins. Given that the
+    // grid bounds rect should include insets, they have to be removed from
+    // added margins.
+    grid_rect.Inset(-grid_insets.left(), 0, -grid_insets.right(),
+                    -grid_insets.bottom());
+  } else {
+    grid_rect.Inset(CalculateMarginsForAvailableBounds(
+        rect, gfx::Size(), false /*for_full_container_bounds*/));
+    // The grid rect insets are added to calculated margins. Given that the
+    // grid bounds rect should include insets, they have to be removed from
+    // the added margins.
+    grid_rect.Inset(-apps_grid_view_->GetInsets());
+  }
+
+  apps_grid_view_->SetBoundsRect(grid_rect);
+
+  // Record the distance of y position between suggestion chip container
+  // and apps grid view to avoid duplicate calculation of apps grid view's
+  // y position during dragging.
+  chip_grid_y_distance_ =
+      apps_grid_view_->y() - suggestion_chip_container_view_->y();
+
+  // Layout page switcher.
+  page_switcher_->SetBoundsRect(gfx::Rect(
+      grid_rect.right() + GetAppListConfig().grid_to_page_switcher_margin(),
+      grid_rect.y(), page_switcher_width, grid_rect.height()));
+
   switch (show_state_) {
-    case SHOW_APPS: {
-      // Layout suggestion chips.
-      gfx::Rect chip_container_rect = rect;
-      chip_container_rect.set_y(GetExpectedSuggestionChipY(
-          contents_view_->app_list_view()->GetAppListTransitionProgress(
-              AppListView::kProgressFlagNone)));
-      chip_container_rect.set_height(
-          GetAppListConfig().suggestion_chip_container_height());
-      if (app_list_features::IsScalableAppListEnabled()) {
-        chip_container_rect.Inset(
-            GetAppListConfig().GetIdealHorizontalMargin(rect), 0);
-      }
-      suggestion_chip_container_view_->SetBoundsRect(chip_container_rect);
-
-      // Leave the same available bounds for the apps grid view in both
-      // fullscreen and peeking state to avoid resizing the view during
-      // animation and dragging, which is an expensive operation.
-      rect.set_y(chip_container_rect.bottom());
-      rect.set_height(
-          rect.height() -
-          GetExpectedSuggestionChipY(kAppListFullscreenProgressValue) -
-          chip_container_rect.height());
-
-      const int page_switcher_width =
-          page_switcher_->GetPreferredSize().width();
-      // With scalable app list feature enabled, the margins are calculated from
-      // the edge of the apps container, instead of container bounds inset by
-      // page switcher area.
-      if (!app_list_features::IsScalableAppListEnabled()) {
-        rect.Inset(GetAppListConfig().GetMinGridHorizontalPadding(), 0);
-      }
-
-      const GridLayout grid_layout = CalculateGridLayout();
-      apps_grid_view_->SetLayout(grid_layout.columns, grid_layout.rows);
-
-      // Layout apps grid.
-      gfx::Rect grid_rect = rect;
-
-      if (app_list_features::IsScalableAppListEnabled()) {
-        const gfx::Insets grid_insets = apps_grid_view_->GetInsets();
-        const gfx::Insets margins = CalculateMarginsForAvailableBounds(
-            GetContentsBounds(),
-            contents_view_->GetSearchBoxSize(AppListState::kStateApps),
-            true /*for_full_container_bounds*/);
-        grid_rect.Inset(
-            margins.left(),
-            GetAppListConfig().grid_fadeout_zone_height() - grid_insets.top(),
-            margins.right(), margins.bottom());
-        // The grid rect insets are added to calculated margins. Given that the
-        // grid bounds rect should include insets, they have to be removed from
-        // added margins.
-        grid_rect.Inset(-grid_insets.left(), 0, -grid_insets.right(),
-                        -grid_insets.bottom());
-      } else {
-        grid_rect.Inset(CalculateMarginsForAvailableBounds(
-            rect, gfx::Size(), false /*for_full_container_bounds*/));
-        // The grid rect insets are added to calculated margins. Given that the
-        // grid bounds rect should include insets, they have to be removed from
-        // the added margins.
-        grid_rect.Inset(-apps_grid_view_->GetInsets());
-      }
-
-      apps_grid_view_->SetBoundsRect(grid_rect);
-
-      // Record the distance of y position between suggestion chip container
-      // and apps grid view to avoid duplicate calculation of apps grid view's
-      // y position during dragging.
-      chip_grid_y_distance_ =
-          apps_grid_view_->y() - suggestion_chip_container_view_->y();
-
-      // Layout page switcher.
-      page_switcher_->SetBoundsRect(gfx::Rect(
-          grid_rect.right() + GetAppListConfig().grid_to_page_switcher_margin(),
-          grid_rect.y(), page_switcher_width, grid_rect.height()));
+    case SHOW_APPS:
       break;
-    }
     case SHOW_ACTIVE_FOLDER: {
       folder_background_view_->SetBoundsRect(rect);
       app_list_folder_view_->SetBoundsRect(
@@ -558,6 +556,7 @@ void AppsContainerView::SetShowState(ShowState show_state,
       page_switcher_->set_can_process_events_within_subtree(true);
       folder_background_view_->SetVisible(false);
       apps_grid_view_->ResetForShowApps();
+      app_list_folder_view_->ResetItemsGridForClose();
       if (show_apps_with_animation)
         app_list_folder_view_->ScheduleShowHideAnimation(false, false);
       else

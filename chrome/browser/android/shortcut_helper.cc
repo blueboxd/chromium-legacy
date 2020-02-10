@@ -51,9 +51,6 @@ int g_ideal_shortcut_icon_size = -1;
 
 int g_default_rgb_icon_value = 145;
 
-// Android allows 4 shortcuts at most, so we should cap the icon fetches.
-constexpr int kMaxShortcutIcons = 4;
-
 // Retrieves and caches the ideal and minimum sizes of the Home screen icon,
 // the splash screen image, and the shortcut icons.
 void GetIconSizes() {
@@ -176,19 +173,6 @@ std::unique_ptr<ShortcutInfo> ShortcutHelper::CreateShortcutInfo(
           manifest.icons, shortcut_info->ideal_splash_image_size_in_px,
           shortcut_info->minimum_splash_image_size_in_px,
           blink::Manifest::ImageResource::Purpose::ANY);
-
-  int ideal_shortcut_icons_size_px = GetIdealShortcutIconSizeInPx();
-  for (const auto& manifest_shortcut : manifest.shortcuts) {
-    GURL best_url = blink::ManifestIconSelector::FindBestMatchingSquareIcon(
-        manifest_shortcut.icons, ideal_shortcut_icons_size_px,
-        ideal_shortcut_icons_size_px,
-        blink::Manifest::ImageResource::Purpose::ANY);
-    if (!best_url.is_valid())
-      continue;
-    shortcut_info->best_shortcut_icon_urls.push_back(std::move(best_url));
-    if (shortcut_info->best_shortcut_icon_urls.size() == kMaxShortcutIcons)
-      break;
-  }
 
   return shortcut_info;
 }

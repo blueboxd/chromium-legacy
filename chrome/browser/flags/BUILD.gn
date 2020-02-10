@@ -6,11 +6,14 @@ import("//build/config/android/rules.gni")
 
 android_library("java") {
   sources = [
+    "android/java/src/org/chromium/chrome/browser/flags/BooleanCachedFieldTrialParameter.java",
+    "android/java/src/org/chromium/chrome/browser/flags/CachedFieldTrialParameter.java",
     "android/java/src/org/chromium/chrome/browser/flags/ChromeFeatureList.java",
   ]
   deps = [
     "//base:base_java",
     "//base:jni_java",
+    "//chrome/browser/preferences:java",
   ]
   annotation_processor_deps = [ "//base/android/jni_generator:jni_processor" ]
 }

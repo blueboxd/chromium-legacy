@@ -4,6 +4,7 @@
 
 #include <stddef.h>
 #include <stdint.h>
+#include <string>
 #include <utility>
 
 #include "base/bind.h"
@@ -28,6 +29,7 @@
 #include "storage/browser/test/test_file_system_context.h"
 #include "storage/common/file_system/file_system_util.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "url/origin.h"
 
 using content::AsyncFileTestHelper;
 using storage::CopyOrMoveFileValidator;
@@ -50,10 +52,12 @@ void ExpectOk(const GURL& origin_url,
 
 class CopyOrMoveFileValidatorTestHelper {
  public:
-  CopyOrMoveFileValidatorTestHelper(const GURL& origin,
+  CopyOrMoveFileValidatorTestHelper(const std::string& origin,
                                     storage::FileSystemType src_type,
                                     storage::FileSystemType dest_type)
-      : origin_(origin), src_type_(src_type), dest_type_(dest_type) {}
+      : origin_(url::Origin::Create(GURL(origin))),
+        src_type_(src_type),
+        dest_type_(dest_type) {}
 
   ~CopyOrMoveFileValidatorTestHelper() {
     file_system_context_ = nullptr;
@@ -76,8 +80,7 @@ class CopyOrMoveFileValidatorTestHelper {
     storage::FileSystemBackend* src_file_system_backend =
         file_system_context_->GetFileSystemBackend(src_type_);
     src_file_system_backend->ResolveURL(
-        FileSystemURL::CreateForTest(url::Origin::Create(origin_), src_type_,
-                                     base::FilePath()),
+        FileSystemURL::CreateForTest(origin_, src_type_, base::FilePath()),
         storage::OPEN_FILE_SYSTEM_CREATE_IF_NONEXISTENT,
         base::BindOnce(&ExpectOk));
     base::RunLoop().RunUntilIdle();
@@ -141,13 +144,13 @@ class CopyOrMoveFileValidatorTestHelper {
  private:
   FileSystemURL SourceURL(const std::string& path) {
     return file_system_context_->CreateCrackedFileSystemURL(
-        origin_, src_type_,
+        origin_.GetURL(), src_type_,
         base::FilePath().AppendASCII("src").AppendASCII(path));
   }
 
   FileSystemURL DestURL(const std::string& path) {
     return file_system_context_->CreateCrackedFileSystemURL(
-        origin_, dest_type_,
+        origin_.GetURL(), dest_type_,
         base::FilePath().AppendASCII("dest").AppendASCII(path));
   }
 
@@ -172,7 +175,7 @@ class CopyOrMoveFileValidatorTestHelper {
 
   base::ScopedTempDir base_;
 
-  const GURL origin_;
+  const url::Origin origin_;
 
   const storage::FileSystemType src_type_;
   const storage::FileSystemType dest_type_;
@@ -250,8 +253,8 @@ class TestCopyOrMoveFileValidatorFactory
 TEST(CopyOrMoveFileValidatorTest, NoValidatorWithinSameFSType) {
   // Within a file system type, validation is not expected, so it should
   // work for kWithValidatorType without a validator set.
-  CopyOrMoveFileValidatorTestHelper helper(
-      GURL("http://foo"), kWithValidatorType, kWithValidatorType);
+  CopyOrMoveFileValidatorTestHelper helper("http://foo", kWithValidatorType,
+                                           kWithValidatorType);
   helper.SetUp();
   helper.CopyTest(base::File::FILE_OK);
   helper.MoveTest(base::File::FILE_OK);
@@ -260,7 +263,7 @@ TEST(CopyOrMoveFileValidatorTest, NoValidatorWithinSameFSType) {
 TEST(CopyOrMoveFileValidatorTest, MissingValidator) {
   // Copying or moving into a kWithValidatorType requires a file
   // validator.  An error is expected if copy is attempted without a validator.
-  CopyOrMoveFileValidatorTestHelper helper(GURL("http://foo"), kNoValidatorType,
+  CopyOrMoveFileValidatorTestHelper helper("http://foo", kNoValidatorType,
                                            kWithValidatorType);
   helper.SetUp();
   helper.CopyTest(base::File::FILE_ERROR_SECURITY);
@@ -268,7 +271,7 @@ TEST(CopyOrMoveFileValidatorTest, MissingValidator) {
 }
 
 TEST(CopyOrMoveFileValidatorTest, AcceptAll) {
-  CopyOrMoveFileValidatorTestHelper helper(GURL("http://foo"), kNoValidatorType,
+  CopyOrMoveFileValidatorTestHelper helper("http://foo", kNoValidatorType,
                                            kWithValidatorType);
   helper.SetUp();
   std::unique_ptr<CopyOrMoveFileValidatorFactory> factory(
@@ -280,7 +283,7 @@ TEST(CopyOrMoveFileValidatorTest, AcceptAll) {
 }
 
 TEST(CopyOrMoveFileValidatorTest, AcceptNone) {
-  CopyOrMoveFileValidatorTestHelper helper(GURL("http://foo"), kNoValidatorType,
+  CopyOrMoveFileValidatorTestHelper helper("http://foo", kNoValidatorType,
                                            kWithValidatorType);
   helper.SetUp();
   std::unique_ptr<CopyOrMoveFileValidatorFactory> factory(
@@ -293,7 +296,7 @@ TEST(CopyOrMoveFileValidatorTest, AcceptNone) {
 
 TEST(CopyOrMoveFileValidatorTest, OverrideValidator) {
   // Once set, you can not override the validator.
-  CopyOrMoveFileValidatorTestHelper helper(GURL("http://foo"), kNoValidatorType,
+  CopyOrMoveFileValidatorTestHelper helper("http://foo", kNoValidatorType,
                                            kWithValidatorType);
   helper.SetUp();
   std::unique_ptr<CopyOrMoveFileValidatorFactory> reject_factory(
@@ -309,7 +312,7 @@ TEST(CopyOrMoveFileValidatorTest, OverrideValidator) {
 }
 
 TEST(CopyOrMoveFileValidatorTest, RejectPostWrite) {
-  CopyOrMoveFileValidatorTestHelper helper(GURL("http://foo"), kNoValidatorType,
+  CopyOrMoveFileValidatorTestHelper helper("http://foo", kNoValidatorType,
                                            kWithValidatorType);
   helper.SetUp();
   std::unique_ptr<CopyOrMoveFileValidatorFactory> factory(

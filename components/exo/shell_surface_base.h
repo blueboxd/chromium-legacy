@@ -162,6 +162,8 @@ class ShellSurfaceBase : public SurfaceTreeHost,
   gfx::ImageSkia GetWindowIcon() override;
   bool OnCloseRequested(views::Widget::ClosedReason close_reason) override;
   void WindowClosing() override;
+  views::Widget* GetWidget() override;
+  const views::Widget* GetWidget() const override;
   views::View* GetContentsView() override;
   views::NonClientFrameView* CreateNonClientFrameView(
       views::Widget* widget) override;
@@ -262,9 +264,6 @@ class ShellSurfaceBase : public SurfaceTreeHost,
  private:
   FRIEND_TEST_ALL_PREFIXES(ShellSurfaceTest,
                            HostWindowBoundsUpdatedAfterCommitWidget);
-
-  // WidgetDelegate:
-  const views::Widget* GetWidgetImpl() const override;
 
   // Called on widget creation to initialize its window state.
   // TODO(reveman): Remove virtual functions below to avoid FBC problem.

@@ -478,7 +478,7 @@ void DOMWindow::DoPostMessage(scoped_refptr<SerializedScriptValue> message,
 
   if (!source_document->GetContentSecurityPolicy()->AllowConnectToSource(
           target_url, RedirectStatus::kNoRedirect,
-          SecurityViolationReportingPolicy::kSuppressReporting)) {
+          ReportingDisposition::kSuppressReporting)) {
     UseCounter::Count(
         source_document,
         WebFeature::kPostMessageOutgoingWouldBeBlockedByConnectSrc);

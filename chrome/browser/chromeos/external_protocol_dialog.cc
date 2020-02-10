@@ -108,6 +108,10 @@ views::View* ExternalProtocolDialog::GetContentsView() {
   return message_box_view_;
 }
 
-const views::Widget* ExternalProtocolDialog::GetWidgetImpl() const {
+const views::Widget* ExternalProtocolDialog::GetWidget() const {
+  return message_box_view_->GetWidget();
+}
+
+views::Widget* ExternalProtocolDialog::GetWidget() {
   return message_box_view_->GetWidget();
 }

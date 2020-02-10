@@ -447,8 +447,8 @@ bool CSPDirectiveList::AllowRequestWithoutIntegrity(
     mojom::RequestContextType context,
     const KURL& url,
     ResourceRequest::RedirectStatus redirect_status,
-    SecurityViolationReportingPolicy reporting_policy) const {
-  if (reporting_policy == SecurityViolationReportingPolicy::kReport)
+    ReportingDisposition reporting_disposition) const {
+  if (reporting_disposition == ReportingDisposition::kReport)
     return CheckRequestWithoutIntegrityAndReportViolation(context, url,
                                                           redirect_status);
   return DenyIfEnforcingPolicy() || CheckRequestWithoutIntegrity(context);
@@ -684,7 +684,7 @@ bool CSPDirectiveList::AllowInline(
     const String& nonce,
     const String& context_url,
     const WTF::OrdinalNumber& context_line,
-    SecurityViolationReportingPolicy reporting_policy) const {
+    ReportingDisposition reporting_disposition) const {
   ContentSecurityPolicy::DirectiveType type =
       GetDirectiveTypeForAllowInlineFromInlineType(inline_type);
 
@@ -699,7 +699,7 @@ bool CSPDirectiveList::AllowInline(
       AllowDynamic(type)) {
     return true;
   }
-  if (reporting_policy == SecurityViolationReportingPolicy::kReport) {
+  if (reporting_disposition == ReportingDisposition::kReport) {
     String hash_value;
     switch (inline_type) {
       case ContentSecurityPolicy::InlineType::kNavigation:
@@ -752,10 +752,10 @@ bool CSPDirectiveList::ShouldCheckEval() const {
 }
 
 bool CSPDirectiveList::AllowEval(
-    SecurityViolationReportingPolicy reporting_policy,
+    ReportingDisposition reporting_disposition,
     ContentSecurityPolicy::ExceptionStatus exception_status,
     const String& content) const {
-  if (reporting_policy == SecurityViolationReportingPolicy::kReport) {
+  if (reporting_disposition == ReportingDisposition::kReport) {
     return CheckEvalAndReportViolation(
         OperativeDirective(ContentSecurityPolicy::DirectiveType::kScriptSrc),
         "Refused to evaluate a string as JavaScript because 'unsafe-eval' is "
@@ -769,10 +769,10 @@ bool CSPDirectiveList::AllowEval(
 }
 
 bool CSPDirectiveList::AllowWasmEval(
-    SecurityViolationReportingPolicy reporting_policy,
+    ReportingDisposition reporting_disposition,
     ContentSecurityPolicy::ExceptionStatus exception_status,
     const String& content) const {
-  if (reporting_policy == SecurityViolationReportingPolicy::kReport) {
+  if (reporting_disposition == ReportingDisposition::kReport) {
     return CheckWasmEvalAndReportViolation(
         OperativeDirective(ContentSecurityPolicy::DirectiveType::kScriptSrc),
         "Refused to compile or instantiate WebAssembly module because "
@@ -786,7 +786,7 @@ bool CSPDirectiveList::AllowWasmEval(
 }
 
 bool CSPDirectiveList::ShouldDisableEvalBecauseScriptSrc() const {
-  return !AllowEval(SecurityViolationReportingPolicy::kSuppressReporting,
+  return !AllowEval(ReportingDisposition::kSuppressReporting,
                     ContentSecurityPolicy::kWillNotThrowException,
                     g_empty_string);
 }
@@ -799,8 +799,8 @@ bool CSPDirectiveList::AllowPluginType(
     const String& type,
     const String& type_attribute,
     const KURL& url,
-    SecurityViolationReportingPolicy reporting_policy) const {
-  return reporting_policy == SecurityViolationReportingPolicy::kReport
+    ReportingDisposition reporting_disposition) const {
+  return reporting_disposition == ReportingDisposition::kReport
              ? CheckMediaTypeAndReportViolation(
                    plugin_types_.Get(), type, type_attribute,
                    "Refused to load '" + url.ElidedString() + "' (MIME type '" +
@@ -814,7 +814,7 @@ bool CSPDirectiveList::AllowFromSource(
     ContentSecurityPolicy::DirectiveType type,
     const KURL& url,
     ResourceRequest::RedirectStatus redirect_status,
-    SecurityViolationReportingPolicy reporting_policy,
+    ReportingDisposition reporting_disposition,
     const String& nonce,
     const IntegrityMetadataSet& hashes,
     ParserDisposition parser_disposition) const {
@@ -856,7 +856,7 @@ bool CSPDirectiveList::AllowFromSource(
   }
 
   bool result =
-      reporting_policy == SecurityViolationReportingPolicy::kReport
+      reporting_disposition == ReportingDisposition::kReport
           ? CheckSourceAndReportViolation(OperativeDirective(type), url, type,
                                           redirect_status)
           : CheckSource(OperativeDirective(type), url, redirect_status);
@@ -893,8 +893,8 @@ bool CSPDirectiveList::AllowTrustedTypePolicy(const String& policy_name,
 bool CSPDirectiveList::AllowAncestors(
     LocalFrame* frame,
     const KURL& url,
-    SecurityViolationReportingPolicy reporting_policy) const {
-  return reporting_policy == SecurityViolationReportingPolicy::kReport
+    ReportingDisposition reporting_disposition) const {
+  return reporting_disposition == ReportingDisposition::kReport
              ? CheckAncestorsAndReportViolation(
                    OperativeDirective(
                        ContentSecurityPolicy::DirectiveType::kFrameAncestors),

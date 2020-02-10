@@ -44,8 +44,8 @@
 #include "third_party/blink/renderer/platform/loader/fetch/resource_request.h"
 #include "third_party/blink/renderer/platform/network/content_security_policy_parsers.h"
 #include "third_party/blink/renderer/platform/network/http_parsers.h"
+#include "third_party/blink/renderer/platform/weborigin/reporting_disposition.h"
 #include "third_party/blink/renderer/platform/weborigin/scheme_registry.h"
-#include "third_party/blink/renderer/platform/weborigin/security_violation_reporting_policy.h"
 #include "third_party/blink/renderer/platform/wtf/hash_set.h"
 #include "third_party/blink/renderer/platform/wtf/text/string_hash.h"
 #include "third_party/blink/renderer/platform/wtf/text/text_position.h"
@@ -245,17 +245,17 @@ class CORE_EXPORT ContentSecurityPolicy final
   // exception in the event of a violation. When the caller will throw
   // an exception, ContentSecurityPolicy does not log a violation
   // message to the console because it would be redundant.
-  bool AllowEval(SecurityViolationReportingPolicy,
+  bool AllowEval(ReportingDisposition,
                  ExceptionStatus,
                  const String& script_content) const;
-  bool AllowWasmEval(SecurityViolationReportingPolicy,
+  bool AllowWasmEval(ReportingDisposition,
                      ExceptionStatus,
                      const String& script_content) const;
-  bool AllowPluginType(const String& type,
-                       const String& type_attribute,
-                       const KURL&,
-                       SecurityViolationReportingPolicy =
-                           SecurityViolationReportingPolicy::kReport) const;
+  bool AllowPluginType(
+      const String& type,
+      const String& type_attribute,
+      const KURL&,
+      ReportingDisposition = ReportingDisposition::kReport) const;
   // Checks whether the plugin type should be allowed in the given
   // document; enforces the CSP rule that PluginDocuments inherit
   // plugin-types directives from the parent document.
@@ -264,22 +264,21 @@ class CORE_EXPORT ContentSecurityPolicy final
       const String& type,
       const String& type_attribute,
       const KURL&,
-      SecurityViolationReportingPolicy =
-          SecurityViolationReportingPolicy::kReport) const;
+      ReportingDisposition = ReportingDisposition::kReport) const;
 
   // AllowFromSource() wrappers.
   bool AllowBaseURI(const KURL&) const;
-  bool AllowConnectToSource(const KURL&,
-                            RedirectStatus = RedirectStatus::kNoRedirect,
-                            SecurityViolationReportingPolicy =
-                                SecurityViolationReportingPolicy::kReport,
-                            CheckHeaderType = CheckHeaderType::kCheckAll) const;
+  bool AllowConnectToSource(
+      const KURL&,
+      RedirectStatus = RedirectStatus::kNoRedirect,
+      ReportingDisposition = ReportingDisposition::kReport,
+      CheckHeaderType = CheckHeaderType::kCheckAll) const;
   bool AllowFormAction(const KURL&) const;
-  bool AllowImageFromSource(const KURL&,
-                            RedirectStatus = RedirectStatus::kNoRedirect,
-                            SecurityViolationReportingPolicy =
-                                SecurityViolationReportingPolicy::kReport,
-                            CheckHeaderType = CheckHeaderType::kCheckAll) const;
+  bool AllowImageFromSource(
+      const KURL&,
+      RedirectStatus = RedirectStatus::kNoRedirect,
+      ReportingDisposition = ReportingDisposition::kReport,
+      CheckHeaderType = CheckHeaderType::kCheckAll) const;
   bool AllowMediaFromSource(const KURL&) const;
   bool AllowObjectFromSource(const KURL&) const;
   bool AllowScriptFromSource(
@@ -288,8 +287,7 @@ class CORE_EXPORT ContentSecurityPolicy final
       const IntegrityMetadataSet&,
       ParserDisposition,
       RedirectStatus = RedirectStatus::kNoRedirect,
-      SecurityViolationReportingPolicy =
-          SecurityViolationReportingPolicy::kReport,
+      ReportingDisposition = ReportingDisposition::kReport,
       CheckHeaderType = CheckHeaderType::kCheckAll) const;
   bool AllowWorkerContextFromSource(const KURL&) const;
 
@@ -313,8 +311,7 @@ class CORE_EXPORT ContentSecurityPolicy final
                    const String& nonce,
                    const String& context_url,
                    const WTF::OrdinalNumber& context_line,
-                   SecurityViolationReportingPolicy =
-                       SecurityViolationReportingPolicy::kReport) const;
+                   ReportingDisposition = ReportingDisposition::kReport) const;
 
   static bool IsScriptInlineType(InlineType);
 
@@ -324,18 +321,17 @@ class CORE_EXPORT ContentSecurityPolicy final
   // request was redirected, but this is not a concern for ancestors,
   // because a child frame can't manipulate the URL of a cross-origin
   // parent.
-  bool AllowAncestors(LocalFrame*,
-                      const KURL&,
-                      SecurityViolationReportingPolicy =
-                          SecurityViolationReportingPolicy::kReport) const;
+  bool AllowAncestors(
+      LocalFrame*,
+      const KURL&,
+      ReportingDisposition = ReportingDisposition::kReport) const;
   bool IsFrameAncestorsEnforced() const;
 
   bool AllowRequestWithoutIntegrity(
       mojom::RequestContextType,
       const KURL&,
       RedirectStatus = RedirectStatus::kNoRedirect,
-      SecurityViolationReportingPolicy =
-          SecurityViolationReportingPolicy::kReport,
+      ReportingDisposition = ReportingDisposition::kReport,
       CheckHeaderType = CheckHeaderType::kCheckAll) const;
 
   bool AllowRequest(mojom::RequestContextType,
@@ -344,8 +340,7 @@ class CORE_EXPORT ContentSecurityPolicy final
                     const IntegrityMetadataSet&,
                     ParserDisposition,
                     RedirectStatus = RedirectStatus::kNoRedirect,
-                    SecurityViolationReportingPolicy =
-                        SecurityViolationReportingPolicy::kReport,
+                    ReportingDisposition = ReportingDisposition::kReport,
                     CheckHeaderType = CheckHeaderType::kCheckAll) const;
 
   // Determine whether to enforce the assignment failure. Also handle reporting.
@@ -541,8 +536,7 @@ class CORE_EXPORT ContentSecurityPolicy final
   bool AllowFromSource(ContentSecurityPolicy::DirectiveType,
                        const KURL&,
                        RedirectStatus = RedirectStatus::kNoRedirect,
-                       SecurityViolationReportingPolicy =
-                           SecurityViolationReportingPolicy::kReport,
+                       ReportingDisposition = ReportingDisposition::kReport,
                        CheckHeaderType = CheckHeaderType::kCheckAll,
                        const String& = String(),
                        const IntegrityMetadataSet& = IntegrityMetadataSet(),

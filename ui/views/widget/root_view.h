@@ -110,6 +110,8 @@ class VIEWS_EXPORT RootView : public View,
   void OnEventProcessingFinished(ui::Event* event) override;
 
   // View:
+  const Widget* GetWidget() const override;
+  Widget* GetWidget() override;
   bool IsDrawn() const override;
   bool OnMousePressed(const ui::MouseEvent& event) override;
   bool OnMouseDragged(const ui::MouseEvent& event) override;
@@ -172,9 +174,6 @@ class VIEWS_EXPORT RootView : public View,
 
   //////////////////////////////////////////////////////////////////////////////
   // Tree operations -----------------------------------------------------------
-
-  // View:
-  const Widget* GetWidgetImpl() const override;
 
   // The host Widget
   Widget* widget_;

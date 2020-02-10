@@ -191,8 +191,9 @@ void ExtensionService::AddProviderForTesting(
 void ExtensionService::BlacklistExtensionForTest(
     const std::string& extension_id) {
   ExtensionIdSet blacklisted;
-  ExtensionIdSet unchanged;
   blacklisted.insert(extension_id);
+  // Don't change existing blocklisted extensions.
+  ExtensionIdSet unchanged = registry_->blacklisted_extensions().GetIDs();
   UpdateBlacklistedExtensions(blacklisted, unchanged);
 }
 

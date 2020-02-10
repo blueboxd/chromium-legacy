@@ -122,6 +122,14 @@ views::View* ViewEventTestBase::GetContentsView() {
   return content_view_;
 }
 
+const views::Widget* ViewEventTestBase::GetWidget() const {
+  return content_view_->GetWidget();
+}
+
+views::Widget* ViewEventTestBase::GetWidget() {
+  return content_view_->GetWidget();
+}
+
 ViewEventTestBase::~ViewEventTestBase() {
   TestingBrowserProcess::DeleteInstance();
 }
@@ -166,8 +174,4 @@ void ViewEventTestBase::RunTestMethod(base::OnceClosure task) {
   std::move(task).Run();
   if (HasFatalFailure())
     Done();
-}
-
-const views::Widget* ViewEventTestBase::GetWidgetImpl() const {
-  return content_view_->GetWidget();
 }

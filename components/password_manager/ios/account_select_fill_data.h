@@ -31,7 +31,6 @@ struct FormInfo {
   ~FormInfo();
   FormInfo(const FormInfo&);
   GURL origin;
-  GURL action;
   base::string16 name;
   base::string16 username_element;
   base::string16 password_element;
@@ -53,7 +52,7 @@ struct FillData {
   ~FillData();
 
   GURL origin;
-  GURL action;
+  base::string16 name;
   base::string16 username_element;
   base::string16 username_value;
   base::string16 password_element;

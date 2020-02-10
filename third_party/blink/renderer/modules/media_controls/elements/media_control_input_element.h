@@ -106,7 +106,7 @@ class MODULES_EXPORT MediaControlInputElement : public HTMLInputElement,
   enum class CTREvent {
     kDisplayed = 0,
     kInteracted,
-    kCount,
+    kMaxValue = kInteracted,
   };
 
   // Records the CTR event.

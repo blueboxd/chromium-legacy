@@ -64,6 +64,11 @@ void PasswordFeatureManagerImpl::SetDefaultPasswordStore(
                                                  store);
 }
 
+bool PasswordFeatureManagerImpl::ShouldShowPasswordStorePicker() const {
+  return password_manager_util::ShouldShowPasswordStorePicker(pref_service_,
+                                                              sync_service_);
+}
+
 PasswordForm::Store PasswordFeatureManagerImpl::GetDefaultPasswordStore()
     const {
   DCHECK(pref_service_);

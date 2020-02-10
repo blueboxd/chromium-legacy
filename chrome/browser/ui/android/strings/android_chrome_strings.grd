@@ -2937,7 +2937,7 @@ To change this setting, <ph name="BEGIN_LINK">&lt;resetlink&gt;</ph>reset sync<p
         Search your bookmarks
       </message>
       <message name="IDS_BOOKMARK_NO_RESULT" desc="Text explaining that no bookmarks are found to match a search query">
-        No bookmarks found
+        Can’t find that bookmark. Check your spelling or add a new bookmark.
       </message>
       <message name="IDS_EDIT_BOOKMARK" desc='The string prompting the user to edit the content of a bookmark. [CHAR-LIMIT=30]'>
         Edit bookmark

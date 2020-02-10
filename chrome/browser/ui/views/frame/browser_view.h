@@ -476,6 +476,8 @@ class BrowserView : public BrowserWindow,
   void OnWindowBeginUserBoundsChange() override;
   void OnWindowEndUserBoundsChange() override;
   void OnWidgetMove() override;
+  views::Widget* GetWidget() override;
+  const views::Widget* GetWidget() const override;
   void GetAccessiblePanes(std::vector<View*>* panes) override;
 
   // views::WidgetObserver:

@@ -1590,13 +1590,12 @@ class RemoveFocusChangeListenerDelegate : public WidgetDelegate {
 
   // WidgetDelegate:
   void DeleteDelegate() override;
+  Widget* GetWidget() override { return widget_; }
+  const Widget* GetWidget() const override { return widget_; }
 
   void SetFocusChangeListener(FocusChangeListener* listener);
 
  private:
-  // WidgetDelegate:
-  const Widget* GetWidgetImpl() const override { return widget_; }
-
   Widget* widget_;
   FocusChangeListener* listener_;
 

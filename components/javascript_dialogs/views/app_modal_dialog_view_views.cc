@@ -129,7 +129,11 @@ void AppModalDialogViewViews::WindowClosing() {
   controller_->OnClose();
 }
 
-const views::Widget* AppModalDialogViewViews::GetWidgetImpl() const {
+views::Widget* AppModalDialogViewViews::GetWidget() {
+  return message_box_view_->GetWidget();
+}
+
+const views::Widget* AppModalDialogViewViews::GetWidget() const {
   return message_box_view_->GetWidget();
 }
 

@@ -37,6 +37,12 @@ class PasswordFeatureManager {
   // current signed-in user (unconsented primary account).
   virtual void SetAccountStorageOptIn(bool opt_in) = 0;
 
+  // Whether it makes sense to ask the user about the store when saving a
+  // password (i.e. profile or account store). This is true if the user has
+  // opted-in already or hasn't opted in but all other requirements are met
+  // (i.e. there is a signed-in user etc).
+  virtual bool ShouldShowPasswordStorePicker() const = 0;
+
   // Sets the default password store selected by user in prefs. This store is
   // used for saving new credentials and adding blacking listing entries.
   virtual void SetDefaultPasswordStore(

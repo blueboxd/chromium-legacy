@@ -16,7 +16,9 @@ import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.content_public.browser.WebContents;
 import org.chromium.webapk.lib.common.splash.SplashLayout;
 
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 
 /**
  * Downloads the Web Manifest if the web site still uses the {@link manifestUrl} passed to the
@@ -108,7 +110,7 @@ public class WebApkUpdateDataFetcher extends EmptyTabObserver {
             @WebDisplayMode int displayMode, int orientation, long themeColor, long backgroundColor,
             String shareAction, String shareParamsTitle, String shareParamsText,
             boolean isShareMethodPost, boolean isShareEncTypeMultipart,
-            String[] shareParamsFileNames, String[][] shareParamsAccepts) {
+            String[] shareParamsFileNames, String[][] shareParamsAccepts, String[][] shortcuts) {
         Context appContext = ContextUtils.getApplicationContext();
 
         HashMap<String, String> iconUrlToMurmur2HashMap = new HashMap<String, String>();
@@ -120,6 +122,13 @@ public class WebApkUpdateDataFetcher extends EmptyTabObserver {
                 murmur2Hash = badgeIconMurmur2Hash;
             }
             iconUrlToMurmur2HashMap.put(iconUrl, murmur2Hash);
+        }
+
+        List<WebApkExtras.ShortcutItem> shortcutItems = new ArrayList<>();
+        for (String[] shortcutData : shortcuts) {
+            shortcutItems.add(new WebApkExtras.ShortcutItem(shortcutData[0] /* name */,
+                    shortcutData[1] /* shortName */, shortcutData[2] /* launchUrl */,
+                    shortcutData[3] /* iconUrl */, shortcutData[4] /* iconHash */));
         }
 
         // When share action is empty, we use a default empty share target
@@ -137,7 +146,7 @@ public class WebApkUpdateDataFetcher extends EmptyTabObserver {
                 mOldInfo.webApkPackageName(), mOldInfo.shellApkVersion(), mOldInfo.manifestUrl(),
                 manifestStartUrl, WebApkDistributor.BROWSER, iconUrlToMurmur2HashMap, shareTarget,
                 mOldInfo.shouldForceNavigation(), mOldInfo.isSplashProvidedByWebApk(), null,
-                mOldInfo.shortcutItems(), mOldInfo.webApkVersionCode());
+                shortcutItems, mOldInfo.webApkVersionCode());
         mObserver.onGotManifestData(info, primaryIconUrl, badgeIconUrl);
     }
 

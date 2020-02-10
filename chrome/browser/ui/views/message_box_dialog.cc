@@ -267,7 +267,11 @@ void MessageBoxDialog::Done(chrome::MessageBoxResult result) {
   std::move(result_callback_).Run(result);
 }
 
-const views::Widget* MessageBoxDialog::GetWidgetImpl() const {
+views::Widget* MessageBoxDialog::GetWidget() {
+  return message_box_view_->GetWidget();
+}
+
+const views::Widget* MessageBoxDialog::GetWidget() const {
   return message_box_view_->GetWidget();
 }
 

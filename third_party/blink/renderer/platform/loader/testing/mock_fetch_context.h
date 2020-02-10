@@ -39,7 +39,7 @@ class MockFetchContext : public FetchContext {
       const ResourceRequest&,
       const KURL&,
       const ResourceLoaderOptions&,
-      SecurityViolationReportingPolicy,
+      ReportingDisposition,
       ResourceRequest::RedirectStatus redirect_status) const override {
     return base::nullopt;
   }
@@ -47,7 +47,7 @@ class MockFetchContext : public FetchContext {
       mojom::RequestContextType,
       const KURL& url,
       const ResourceLoaderOptions& options,
-      SecurityViolationReportingPolicy reporting_policy,
+      ReportingDisposition reporting_disposition,
       ResourceRequest::RedirectStatus redirect_status) const override {
     return base::nullopt;
   }

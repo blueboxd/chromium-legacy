@@ -85,15 +85,13 @@ IdentityGetAuthTokenFunction::IdentityGetAuthTokenFunction()
 }
 
 IdentityGetAuthTokenFunction::~IdentityGetAuthTokenFunction() {
-  TRACE_EVENT_ASYNC_END0("identity", "IdentityGetAuthTokenFunction", this);
+  TRACE_EVENT_NESTABLE_ASYNC_END0("identity", "IdentityGetAuthTokenFunction",
+                                  this);
 }
 
 bool IdentityGetAuthTokenFunction::RunAsync() {
-  TRACE_EVENT_ASYNC_BEGIN1("identity",
-                           "IdentityGetAuthTokenFunction",
-                           this,
-                           "extension",
-                           extension()->id());
+  TRACE_EVENT_NESTABLE_ASYNC_BEGIN1("identity", "IdentityGetAuthTokenFunction",
+                                    this, "extension", extension()->id());
 
   if (GetProfile()->IsOffTheRecord()) {
     error_ = identity_constants::kOffTheRecord;
@@ -299,12 +297,8 @@ void IdentityGetAuthTokenFunction::CompleteFunctionWithResult(
 
 void IdentityGetAuthTokenFunction::CompleteFunctionWithError(
     const std::string& error) {
-  TRACE_EVENT_ASYNC_STEP_PAST1("identity",
-                               "IdentityGetAuthTokenFunction",
-                               this,
-                               "CompleteFunctionWithError",
-                               "error",
-                               error);
+  TRACE_EVENT_NESTABLE_ASYNC_INSTANT1("identity", "CompleteFunctionWithError",
+                                      this, "error", error);
   error_ = error;
   CompleteAsyncRun(false);
 }
@@ -376,6 +370,8 @@ void IdentityGetAuthTokenFunction::StartMintTokenFlow(
   DCHECK(IdentityManagerFactory::GetForProfile(GetProfile())
              ->HasAccountWithRefreshToken(token_key_.account_id));
 #endif
+  TRACE_EVENT_NESTABLE_ASYNC_BEGIN1("identity", "MintTokenFlow", this, "type",
+                                    type);
 
   mint_token_flow_type_ = type;
 
@@ -403,6 +399,8 @@ void IdentityGetAuthTokenFunction::StartMintTokenFlow(
 }
 
 void IdentityGetAuthTokenFunction::CompleteMintTokenFlow() {
+  TRACE_EVENT_NESTABLE_ASYNC_END0("identity", "MintTokenFlow", this);
+
   IdentityMintRequestQueue::MintType type = mint_token_flow_type_;
 
   extensions::IdentityAPI::GetFactoryInstance()
@@ -413,12 +411,8 @@ void IdentityGetAuthTokenFunction::CompleteMintTokenFlow() {
 
 void IdentityGetAuthTokenFunction::StartMintToken(
     IdentityMintRequestQueue::MintType type) {
-  TRACE_EVENT_ASYNC_STEP_PAST1("identity",
-                               "IdentityGetAuthTokenFunction",
-                               this,
-                               "StartMintToken",
-                               "type",
-                               type);
+  TRACE_EVENT_NESTABLE_ASYNC_INSTANT1("identity", "StartMintToken", this,
+                                      "type", type);
 
   const OAuth2Info& oauth2_info = OAuth2Info::GetOAuth2Info(extension());
   IdentityAPI* id_api = IdentityAPI::GetFactoryInstance()->Get(GetProfile());
@@ -501,11 +495,9 @@ void IdentityGetAuthTokenFunction::StartMintToken(
 }
 
 void IdentityGetAuthTokenFunction::OnMintTokenSuccess(
-    const std::string& access_token, int time_to_live) {
-  TRACE_EVENT_ASYNC_STEP_PAST0("identity",
-                               "IdentityGetAuthTokenFunction",
-                               this,
-                               "OnMintTokenSuccess");
+    const std::string& access_token,
+    int time_to_live) {
+  TRACE_EVENT_NESTABLE_ASYNC_INSTANT0("identity", "OnMintTokenSuccess", this);
 
   IdentityTokenCacheValue token(access_token,
                                 base::TimeDelta::FromSeconds(time_to_live));
@@ -519,12 +511,8 @@ void IdentityGetAuthTokenFunction::OnMintTokenSuccess(
 
 void IdentityGetAuthTokenFunction::OnMintTokenFailure(
     const GoogleServiceAuthError& error) {
-  TRACE_EVENT_ASYNC_STEP_PAST1("identity",
-                               "IdentityGetAuthTokenFunction",
-                               this,
-                               "OnMintTokenFailure",
-                               "error",
-                               error.ToString());
+  TRACE_EVENT_NESTABLE_ASYNC_INSTANT1("identity", "OnMintTokenFailure", this,
+                                      "error", error.ToString());
   CompleteMintTokenFlow();
   switch (error.state()) {
     case GoogleServiceAuthError::SERVICE_ERROR:
@@ -551,10 +539,7 @@ void IdentityGetAuthTokenFunction::OnMintTokenFailure(
 
 void IdentityGetAuthTokenFunction::OnIssueAdviceSuccess(
     const IssueAdviceInfo& issue_advice) {
-  TRACE_EVENT_ASYNC_STEP_PAST0("identity",
-                               "IdentityGetAuthTokenFunction",
-                               this,
-                               "OnIssueAdviceSuccess");
+  TRACE_EVENT_NESTABLE_ASYNC_INSTANT0("identity", "OnIssueAdviceSuccess", this);
 
   IdentityAPI::GetFactoryInstance()
       ->Get(GetProfile())
@@ -578,8 +563,8 @@ void IdentityGetAuthTokenFunction::OnRemoteConsentSuccess(
     return;
   }
 
-  TRACE_EVENT_ASYNC_STEP_PAST0("identity", "IdentityGetAuthTokenFunction", this,
-                               "OnRemoteConsentSuccess");
+  TRACE_EVENT_NESTABLE_ASYNC_INSTANT0("identity", "OnRemoteConsentSuccess",
+                                      this);
 
   IdentityAPI::GetFactoryInstance()
       ->Get(GetProfile())
@@ -613,8 +598,7 @@ void IdentityGetAuthTokenFunction::OnPrimaryAccountSet(
   if (account_listening_mode_ != AccountListeningMode::kListeningPrimaryAccount)
     return;
 
-  TRACE_EVENT_ASYNC_STEP_PAST0("identity", "IdentityGetAuthTokenFunction", this,
-                               "OnPrimaryAccountSet");
+  TRACE_EVENT_NESTABLE_ASYNC_INSTANT0("identity", "OnPrimaryAccountSet", this);
 
   DCHECK(token_key_.account_id.empty());
   token_key_.account_id = primary_account_info.account_id;
@@ -629,10 +613,7 @@ void IdentityGetAuthTokenFunction::OnPrimaryAccountSet(
 }
 
 void IdentityGetAuthTokenFunction::SigninFailed() {
-  TRACE_EVENT_ASYNC_STEP_PAST0("identity",
-                               "IdentityGetAuthTokenFunction",
-                               this,
-                               "SigninFailed");
+  TRACE_EVENT_NESTABLE_ASYNC_INSTANT0("identity", "SigninFailed", this);
   CompleteFunctionWithError(identity_constants::kUserNotSignedIn);
 }
 
@@ -687,10 +668,7 @@ void IdentityGetAuthTokenFunction::OnGaiaFlowFailure(
 void IdentityGetAuthTokenFunction::OnGaiaFlowCompleted(
     const std::string& access_token,
     const std::string& expiration) {
-  TRACE_EVENT_ASYNC_STEP_PAST0("identity",
-                               "IdentityGetAuthTokenFunction",
-                               this,
-                               "OnGaiaFlowCompleted");
+  TRACE_EVENT_NESTABLE_ASYNC_INSTANT0("identity", "OnGaiaFlowCompleted", this);
   int time_to_live;
   if (!expiration.empty() && base::StringToInt(expiration, &time_to_live)) {
     IdentityTokenCacheValue token_value(
@@ -756,15 +734,14 @@ void IdentityGetAuthTokenFunction::OnGetAccessTokenComplete(
   DCHECK(!device_access_token_request_);
   DCHECK(!token_key_account_access_token_fetcher_);
   if (access_token) {
-    TRACE_EVENT_ASYNC_STEP_PAST1("identity", "IdentityGetAuthTokenFunction",
-                                 this, "OnGetAccessTokenComplete", "account",
-                                 token_key_.account_id.ToString());
+    TRACE_EVENT_NESTABLE_ASYNC_END1("identity", "GetAccessToken", this,
+                                    "account",
+                                    token_key_.account_id.ToString());
 
     StartGaiaRequest(access_token.value());
   } else {
-    TRACE_EVENT_ASYNC_STEP_PAST1("identity", "IdentityGetAuthTokenFunction",
-                                 this, "OnGetAccessTokenComplete", "error",
-                                 error.ToString());
+    TRACE_EVENT_NESTABLE_ASYNC_END1("identity", "GetAccessToken", this, "error",
+                                    error.ToString());
 
     OnGaiaFlowFailure(GaiaWebAuthFlow::SERVICE_AUTH_ERROR, error,
                       std::string());
@@ -841,6 +818,8 @@ bool IdentityGetAuthTokenFunction::IsOriginWhitelistedInPublicSession() {
 #endif
 
 void IdentityGetAuthTokenFunction::StartTokenKeyAccountAccessTokenRequest() {
+  TRACE_EVENT_NESTABLE_ASYNC_BEGIN0("identity", "GetAccessToken", this);
+
   auto* identity_manager = IdentityManagerFactory::GetForProfile(GetProfile());
 #if defined(OS_CHROMEOS)
   if (chrome::IsRunningInForcedAppMode()) {

@@ -555,6 +555,8 @@ TEST(ComputedStyleTest, ApplyColorSchemeLightOnDark) {
 }
 
 TEST(ComputedStyleTest, ApplyInternalLightDarkColor) {
+  using css_test_helpers::ParseDeclarationBlock;
+
   ScopedCSSColorSchemeForTest scoped_property_enabled(true);
   ScopedCSSColorSchemeUARenderingForTest scoped_ua_enabled(true);
 
@@ -587,8 +589,6 @@ TEST(ComputedStyleTest, ApplyInternalLightDarkColor) {
   CSSValueList* light_value = CSSValueList::CreateSpaceSeparated();
   light_value->Append(*CSSIdentifierValue::Create(CSSValueID::kLight));
 
-  auto origin = StyleCascade::Origin::kUserAgent;
-
   {
     ScopedCSSCascadeForTest scoped_cascade_enabled(false);
 
@@ -608,25 +608,29 @@ TEST(ComputedStyleTest, ApplyInternalLightDarkColor) {
   {
     ScopedCSSCascadeForTest scoped_cascade_enabled(true);
 
+    auto* color_declaration =
+        ParseDeclarationBlock("color:-internal-light-dark-color(black, white)");
+    auto* dark_declaration = ParseDeclarationBlock("color-scheme:dark");
+    auto* light_declaration = ParseDeclarationBlock("color-scheme:light");
+    CascadeFilter filter;
+
+    MatchResult result1;
+    result1.AddMatchedProperties(color_declaration);
+    result1.AddMatchedProperties(dark_declaration);
+
     StyleCascade cascade1(state);
-    cascade1.Add(*CSSPropertyName::From(
-                     state.GetDocument().ToExecutionContext(), "color"),
-                 internal_light_dark, origin);
-    cascade1.Add(*CSSPropertyName::From(
-                     state.GetDocument().ToExecutionContext(), "color-scheme"),
-                 dark_value, origin);
-    cascade1.Apply();
+    cascade1.Analyze(result1, filter);
+    cascade1.Apply(result1, filter);
     EXPECT_EQ(Color::kWhite,
               style->VisitedDependentColor(GetCSSPropertyColor()));
 
+    MatchResult result2;
+    result2.AddMatchedProperties(color_declaration);
+    result2.AddMatchedProperties(light_declaration);
+
     StyleCascade cascade2(state);
-    cascade2.Add(*CSSPropertyName::From(
-                     state.GetDocument().ToExecutionContext(), "color"),
-                 internal_light_dark, origin);
-    cascade2.Add(*CSSPropertyName::From(
-                     state.GetDocument().ToExecutionContext(), "color-scheme"),
-                 light_value, origin);
-    cascade2.Apply();
+    cascade2.Analyze(result2, filter);
+    cascade2.Apply(result2, filter);
     EXPECT_EQ(Color::kBlack,
               style->VisitedDependentColor(GetCSSPropertyColor()));
   }

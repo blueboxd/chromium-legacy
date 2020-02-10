@@ -247,10 +247,11 @@ void DirectRenderer::DecideRenderPassAllocationsForFrame(
   UpdateRenderPassTextures(render_passes_in_draw_order, render_passes_in_frame);
 }
 
-void DirectRenderer::DrawFrame(RenderPassList* render_passes_in_draw_order,
-                               float device_scale_factor,
-                               const gfx::Size& device_viewport_size,
-                               float sdr_white_level) {
+void DirectRenderer::DrawFrame(
+    RenderPassList* render_passes_in_draw_order,
+    float device_scale_factor,
+    const gfx::Size& device_viewport_size,
+    const gfx::DisplayColorSpaces& display_color_spaces) {
   DCHECK(visible_);
   TRACE_EVENT0("viz,benchmark", "DirectRenderer::DrawFrame");
   UMA_HISTOGRAM_COUNTS_1M(
@@ -293,7 +294,7 @@ void DirectRenderer::DrawFrame(RenderPassList* render_passes_in_draw_order,
   }
   current_frame()->root_damage_rect.Intersect(gfx::Rect(device_viewport_size));
   current_frame()->device_viewport_size = device_viewport_size;
-  current_frame()->sdr_white_level = sdr_white_level;
+  current_frame()->display_color_spaces = display_color_spaces;
 
   BeginDrawingFrame();
 
@@ -336,7 +337,7 @@ void DirectRenderer::DrawFrame(RenderPassList* render_passes_in_draw_order,
       current_frame()->output_surface_plane =
           overlay_processor_->ProcessOutputSurfaceAsOverlay(
               device_viewport_size, output_surface_->GetOverlayBufferFormat(),
-              root_render_pass->color_space, frame_has_alpha,
+              RootRenderPassColorSpace(), frame_has_alpha,
               output_surface_->GetOverlayMailbox());
       primary_plane = &(current_frame()->output_surface_plane.value());
     }
@@ -364,14 +365,15 @@ void DirectRenderer::DrawFrame(RenderPassList* render_passes_in_draw_order,
   // viewport size is never set.
   bool use_stencil = overdraw_feedback_;
   bool needs_full_frame_redraw = false;
+  gfx::ColorSpace frame_color_space = RootRenderPassColorSpace();
   if (device_viewport_size != reshape_surface_size_ ||
       device_scale_factor != reshape_device_scale_factor_ ||
-      root_render_pass->color_space != reshape_device_color_space_ ||
+      frame_color_space != reshape_device_color_space_ ||
       frame_has_alpha != reshape_has_alpha_ ||
       use_stencil != reshape_use_stencil_) {
     reshape_surface_size_ = device_viewport_size;
     reshape_device_scale_factor_ = device_scale_factor;
-    reshape_device_color_space_ = root_render_pass->color_space;
+    reshape_device_color_space_ = frame_color_space;
     reshape_has_alpha_ = frame_has_alpha;
     reshape_use_stencil_ = overdraw_feedback_;
     output_surface_->Reshape(reshape_surface_size_,
@@ -884,6 +886,14 @@ bool DirectRenderer::ShouldApplyRoundedCorner(const DrawQuad* quad) const {
     }
   }
   return false;
+}
+
+gfx::ColorSpace DirectRenderer::RootRenderPassColorSpace() const {
+  return current_frame()->root_render_pass->color_space;
+}
+
+gfx::ColorSpace DirectRenderer::CurrentRenderPassColorSpace() const {
+  return current_frame()->current_render_pass->color_space;
 }
 
 }  // namespace viz

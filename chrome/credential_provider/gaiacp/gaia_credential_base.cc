@@ -1987,7 +1987,8 @@ HRESULT CGaiaCredentialBase::SaveAccountInfo(const base::Value& properties) {
       LOGFN(ERROR) << "StoreWindowsPasswordIfNeeded hr=" << putHR(hr);
 
     // Upload device details to gem database.
-    hr = GemDeviceDetailsManager::Get()->UploadDeviceDetails(access_token);
+    hr = GemDeviceDetailsManager::Get()->UploadDeviceDetails(access_token, sid,
+                                                             username, domain);
     if (FAILED(hr) && hr != E_NOTIMPL)
       LOGFN(ERROR) << "UploadDeviceDetails hr=" << putHR(hr);
 

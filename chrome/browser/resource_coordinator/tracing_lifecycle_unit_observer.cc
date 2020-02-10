@@ -72,11 +72,12 @@ void TracingLifecycleUnitObserver::MaybeEmitStateEndEvent(
 
 void TracingLifecycleUnitObserver::EmitStateBeginEvent(const char* event_name,
                                                        const char* title) {
-  TRACE_EVENT_ASYNC_BEGIN1("browser", event_name, this, "Title", title);
+  TRACE_EVENT_NESTABLE_ASYNC_BEGIN1("browser", event_name, this, "Title",
+                                    title);
 }
 
 void TracingLifecycleUnitObserver::EmitStateEndEvent(const char* event_name) {
-  TRACE_EVENT_ASYNC_END0("browser", event_name, this);
+  TRACE_EVENT_NESTABLE_ASYNC_END0("browser", event_name, this);
 }
 
 }  // namespace resource_coordinator

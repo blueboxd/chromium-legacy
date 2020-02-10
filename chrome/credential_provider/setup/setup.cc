@@ -74,8 +74,6 @@ int APIENTRY wWinMain(HINSTANCE hInstance,
                                                 switches::kProcessType, "");
   }
 
-  credential_provider::ConfigureGcpInstallerCrashReporting(*cmdline);
-
   // Initialize logging.
   logging::LoggingSettings settings;
   settings.logging_dest = logging::LOG_NONE;
@@ -113,6 +111,13 @@ int APIENTRY wWinMain(HINSTANCE hInstance,
   base::win::RegisterInvalidParamHandler();
   base::win::SetupCRT(*base::CommandLine::ForCurrentProcess());
 
+  if (!::IsUserAnAdmin()) {
+    LOGFN(ERROR) << "Setup must be run with administrative privilege.";
+    return -1;
+  }
+
+  credential_provider::ConfigureGcpInstallerCrashReporting(*cmdline);
+
   // If the program is being run to either enable or disable stats, do that
   // and exit.
   if (cmdline->HasSwitch(credential_provider::switches::kEnableStats) ||
@@ -148,11 +153,6 @@ int APIENTRY wWinMain(HINSTANCE hInstance,
   // If running from omaha, make sure machine install is used.
   if (IsPerUserInstallFromGoogleUpdate()) {
     LOGFN(ERROR) << "Only machine installs supported with Google Update";
-    return -1;
-  }
-
-  if (!::IsUserAnAdmin()) {
-    LOGFN(ERROR) << "Setup must be run with administrative privilege.";
     return -1;
   }
 

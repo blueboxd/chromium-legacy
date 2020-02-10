@@ -34,6 +34,7 @@
 #import "ios/chrome/browser/ui/commands/command_dispatcher.h"
 #import "ios/chrome/browser/ui/commands/infobar_commands.h"
 #import "ios/chrome/browser/ui/commands/page_info_commands.h"
+#import "ios/chrome/browser/ui/commands/password_breach_commands.h"
 #import "ios/chrome/browser/ui/download/ar_quick_look_coordinator.h"
 #import "ios/chrome/browser/ui/download/pass_kit_coordinator.h"
 #import "ios/chrome/browser/ui/open_in/open_in_mediator.h"
@@ -326,8 +327,11 @@
                                                      browser:self.browser];
 
   self.passwordBreachCoordinator = [[PasswordBreachCoordinator alloc]
-      initWithBaseViewController:self.viewController];
-  self.passwordBreachCoordinator.dispatcher = self.dispatcher;
+      initWithBaseViewController:self.viewController
+                         browser:self.browser];
+  [self.browser->GetCommandDispatcher()
+      startDispatchingToTarget:self.passwordBreachCoordinator
+                   forProtocol:@protocol(PasswordBreachCommands)];
 
   self.printController = [[PrintController alloc] init];
 
@@ -373,6 +377,8 @@
   self.passKitCoordinator = nil;
 
   [self.passwordBreachCoordinator stop];
+  [self.browser->GetCommandDispatcher()
+      stopDispatchingToTarget:self.passwordBreachCoordinator];
   self.passwordBreachCoordinator = nil;
 
   self.printController = nil;

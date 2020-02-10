@@ -9,6 +9,8 @@
 <body>
   <pre id="scriptlog"></pre>
   <script>
+  setup({single_test: true});
+
   function log(msg) {
     document.getElementById("scriptlog").textContent += msg + ";";
   }

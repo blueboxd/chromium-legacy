@@ -97,6 +97,8 @@ class VIEWS_EXPORT NativeWidgetMac : public internal::NativeWidgetPrivate,
   bool ShouldUseNativeFrame() const override;
   bool ShouldWindowContentsBeTransparent() const override;
   void FrameTypeChanged() override;
+  Widget* GetWidget() override;
+  const Widget* GetWidget() const override;
   gfx::NativeView GetNativeView() const override;
   gfx::NativeWindow GetNativeWindow() const override;
   Widget* GetTopLevelWidget() override;
@@ -248,9 +250,6 @@ class VIEWS_EXPORT NativeWidgetMac : public internal::NativeWidgetPrivate,
   friend class views::test::WidgetTest;
   class ZoomFocusMonitor;
 
-  // internal::NativeWidgetPrivate:
-  const Widget* GetWidgetImpl() const override;
-
   internal::NativeWidgetDelegate* delegate_;
   std::unique_ptr<NativeWidgetMacNSWindowHost> ns_window_host_;
 
@@ -268,8 +267,6 @@ class VIEWS_EXPORT NativeWidgetMac : public internal::NativeWidgetPrivate,
   FocusManager* focus_manager_ = nullptr;
   std::unique_ptr<ui::InputMethod> input_method_;
   std::unique_ptr<ZoomFocusMonitor> zoom_focus_monitor_;
-  // Held while this widget is active if it's a child.
-  std::unique_ptr<Widget::PaintAsActiveLock> parent_key_lock_;
 
   DISALLOW_COPY_AND_ASSIGN(NativeWidgetMac);
 };

@@ -125,28 +125,26 @@ TEST_F(ShortcutInfoTest, IgnoreEmptyNameAndShortName) {
   ASSERT_EQ(initial_short_name, info_.short_name);
 }
 
-TEST(ShortcutInfoHelperTest, ShortcutItem) {
-  blink::Manifest manifest;
-
-  manifest.shortcuts.push_back(CreateShortcut(
+TEST_F(ShortcutInfoTest, ShortcutItemsPopulated) {
+  manifest_.shortcuts.push_back(CreateShortcut(
       "shortcut_1",
       {CreateImage("/i1_1", {16, 16}), CreateImage("/i1_2", {64, 64}),
        CreateImage("/i1_3", {192, 192}),  // best icon.
        CreateImage("/i1_4", {256, 256})}));
 
-  manifest.shortcuts.push_back(CreateShortcut(
+  manifest_.shortcuts.push_back(CreateShortcut(
       "shortcut_2", {CreateImage("/i2_1", {192, 194}),  // not square.
                      CreateImage("/i2_2", {194, 194})}));
 
   // Nothing chosen.
-  manifest.shortcuts.push_back(
+  manifest_.shortcuts.push_back(
       CreateShortcut("shortcut_3", {CreateImage("/i3_1", {16, 16})}));
 
   ShortcutHelper::SetIdealShortcutSizeForTesting(192);
-  auto info =
-      ShortcutHelper::CreateShortcutInfo(GURL(), manifest, GURL(), GURL());
+  info_.UpdateFromManifest(manifest_);
 
-  ASSERT_EQ(info->best_shortcut_icon_urls.size(), 2u);
-  EXPECT_EQ(info->best_shortcut_icon_urls[0].path(), "/i1_3");
-  EXPECT_EQ(info->best_shortcut_icon_urls[1].path(), "/i2_2");
+  ASSERT_EQ(info_.best_shortcut_icon_urls.size(), 3u);
+  EXPECT_EQ(info_.best_shortcut_icon_urls[0].path(), "/i1_3");
+  EXPECT_EQ(info_.best_shortcut_icon_urls[1].path(), "/i2_2");
+  EXPECT_FALSE(info_.best_shortcut_icon_urls[2].is_valid());
 }

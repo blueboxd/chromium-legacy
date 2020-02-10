@@ -23,11 +23,15 @@ namespace multidevice {
 // returned by GetRemoteDevices() is the union of those different sets (i.e.,
 // devices are not deleted from the cache).
 //
-// All devices in the cache will have a unique Instance ID, if one exists, and a
-// unique legacy device ID, RemoteDevice::GetDeviceId(), if one exists. Every
-// device is guaranteed to have at least one non-trivial ID. If a device is
-// added with either ID matching an existing device, the existing device is
+// All devices in the cache will have a unique Instance ID, if one exists,
+// and/or a unique legacy device ID, RemoteDevice::GetDeviceId(), if one exists.
+// Every device is guaranteed to have at least one non-trivial ID. If a device
+// is added with either ID matching an existing device, the existing device is
 // overwritten.
+//
+// Note: Even though CryptAuth v2 DeviceSync guarantees that all devices have an
+// Instance ID, there may still be uses of RemoteDeviceCache in multi-device
+// application code that solely uses the legacy device ID.
 class RemoteDeviceCache {
  public:
   class Factory {

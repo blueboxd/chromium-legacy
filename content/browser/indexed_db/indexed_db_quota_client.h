@@ -42,6 +42,8 @@ class IndexedDBQuotaClient : public storage::QuotaClient {
   CONTENT_EXPORT void DeleteOriginData(const url::Origin& origin,
                                        blink::mojom::StorageType type,
                                        DeletionCallback callback) override;
+  void PerformStorageCleanup(blink::mojom::StorageType type,
+                             base::OnceClosure callback) override;
   bool DoesSupport(blink::mojom::StorageType type) const override;
 
  private:

@@ -158,6 +158,11 @@ void IndexedDBQuotaClient::DeleteOriginData(const url::Origin& origin,
                                     std::move(callback))));
 }
 
+void IndexedDBQuotaClient::PerformStorageCleanup(blink::mojom::StorageType type,
+                                                 base::OnceClosure callback) {
+  std::move(callback).Run();
+}
+
 bool IndexedDBQuotaClient::DoesSupport(StorageType type) const {
   return type == StorageType::kTemporary;
 }

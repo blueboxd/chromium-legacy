@@ -1661,16 +1661,6 @@ ci.linux_builder(
 )
 
 ci.linux_builder(
-    name = 'Linux Ozone Tester (Wayland)',
-    triggered_by = ['ci/linux-ozone-rel'],
-)
-
-ci.linux_builder(
-    name = 'Linux Ozone Tester (X11)',
-    triggered_by = ['ci/linux-ozone-rel'],
-)
-
-ci.linux_builder(
     name = 'Linux Tests (dbg)(1)',
     triggered_by = ['Linux Builder (dbg)'],
 )

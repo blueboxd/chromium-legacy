@@ -27,6 +27,7 @@
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/leveldatabase/leveldb_chrome.h"
 #include "url/gurl.h"
+#include "url/origin.h"
 
 using storage::FileSystemURL;
 using storage::SandboxFileSystemBackend;
@@ -110,29 +111,30 @@ class SandboxFileSystemBackendTest
     return backend_->CreateOriginEnumerator();
   }
 
-  void CreateOriginTypeDirectory(const GURL& origin,
+  void CreateOriginTypeDirectory(const char* origin_url,
                                  storage::FileSystemType type) {
     base::FilePath target = delegate_->GetBaseDirectoryForOriginAndType(
-        url::Origin::Create(origin), type, true);
+        url::Origin::Create(GURL(origin_url)), type, true);
     ASSERT_TRUE(!target.empty());
     ASSERT_TRUE(base::DirectoryExists(target));
   }
 
-  bool GetRootPath(const GURL& origin_url,
+  bool GetRootPath(const char* origin_url,
                    storage::FileSystemType type,
                    storage::OpenFileSystemMode mode,
                    base::FilePath* root_path) {
     base::File::Error error = base::File::FILE_OK;
     backend_->ResolveURL(
-        FileSystemURL::CreateForTest(url::Origin::Create(origin_url), type,
-                                     base::FilePath()),
+        FileSystemURL::CreateForTest(url::Origin::Create(GURL(origin_url)),
+                                     type, base::FilePath()),
         mode, base::BindOnce(&DidOpenFileSystem, &error));
     base::RunLoop().RunUntilIdle();
     if (error != base::File::FILE_OK)
       return false;
     base::FilePath returned_root_path =
         delegate_->GetBaseDirectoryForOriginAndType(
-            url::Origin::Create(origin_url), type, false /* create */);
+            url::Origin::Create(GURL(origin_url)), type,
+            /*create=*/false);
     if (root_path)
       *root_path = returned_root_path;
     return !returned_root_path.empty();
@@ -178,12 +180,12 @@ TEST_P(SandboxFileSystemBackendTest, EnumerateOrigins) {
   size_t persistent_size = base::size(persistent_origins);
   std::set<GURL> temporary_set, persistent_set;
   for (size_t i = 0; i < temporary_size; ++i) {
-    CreateOriginTypeDirectory(GURL(temporary_origins[i]),
+    CreateOriginTypeDirectory(temporary_origins[i],
                               storage::kFileSystemTypeTemporary);
     temporary_set.insert(GURL(temporary_origins[i]));
   }
   for (size_t i = 0; i < persistent_size; ++i) {
-    CreateOriginTypeDirectory(GURL(persistent_origins[i]),
+    CreateOriginTypeDirectory(persistent_origins[i],
                               storage::kFileSystemTypePersistent);
     persistent_set.insert(GURL(persistent_origins[i]));
   }
@@ -221,7 +223,7 @@ TEST_P(SandboxFileSystemBackendTest, GetRootPathCreateAndExamine) {
 
     base::FilePath root_path;
     EXPECT_TRUE(GetRootPath(
-        GURL(kRootPathTestCases[i].origin_url), kRootPathTestCases[i].type,
+        kRootPathTestCases[i].origin_url, kRootPathTestCases[i].type,
         storage::OPEN_FILE_SYSTEM_CREATE_IF_NONEXISTENT, &root_path));
 
     base::FilePath expected =
@@ -240,7 +242,7 @@ TEST_P(SandboxFileSystemBackendTest, GetRootPathCreateAndExamine) {
 
     base::FilePath root_path;
     EXPECT_TRUE(GetRootPath(
-        GURL(kRootPathTestCases[i].origin_url), kRootPathTestCases[i].type,
+        kRootPathTestCases[i].origin_url, kRootPathTestCases[i].type,
         storage::OPEN_FILE_SYSTEM_FAIL_IF_NONEXISTENT, &root_path));
     ASSERT_TRUE(returned_root_path.size() > i);
     EXPECT_EQ(returned_root_path[i].value(), root_path.value());
@@ -253,18 +255,16 @@ TEST_P(SandboxFileSystemBackendTest,
       base::size(kRootPathTestCases));
   SetUpNewBackend(CreateAllowFileAccessOptions());
 
-  GURL origin_url("http://foo.com:1/");
-
   base::FilePath root_path1;
-  EXPECT_TRUE(GetRootPath(origin_url, storage::kFileSystemTypeTemporary,
-                          storage::OPEN_FILE_SYSTEM_CREATE_IF_NONEXISTENT,
-                          &root_path1));
+  EXPECT_TRUE(GetRootPath(
+      "http://foo.com:1/", storage::kFileSystemTypeTemporary,
+      storage::OPEN_FILE_SYSTEM_CREATE_IF_NONEXISTENT, &root_path1));
 
   SetUpNewBackend(CreateDisallowFileAccessOptions());
   base::FilePath root_path2;
-  EXPECT_TRUE(GetRootPath(origin_url, storage::kFileSystemTypeTemporary,
-                          storage::OPEN_FILE_SYSTEM_FAIL_IF_NONEXISTENT,
-                          &root_path2));
+  EXPECT_TRUE(
+      GetRootPath("http://foo.com:1/", storage::kFileSystemTypeTemporary,
+                  storage::OPEN_FILE_SYSTEM_FAIL_IF_NONEXISTENT, &root_path2));
 
   EXPECT_EQ(root_path1.value(), root_path2.value());
 }
@@ -277,7 +277,7 @@ TEST_P(SandboxFileSystemBackendTest, GetRootPathGetWithoutCreate) {
     SCOPED_TRACE(testing::Message() << "RootPath (create=false) #" << i << " "
                                     << kRootPathTestCases[i].expected_path);
     EXPECT_FALSE(GetRootPath(
-        GURL(kRootPathTestCases[i].origin_url), kRootPathTestCases[i].type,
+        kRootPathTestCases[i].origin_url, kRootPathTestCases[i].type,
         storage::OPEN_FILE_SYSTEM_FAIL_IF_NONEXISTENT, nullptr));
   }
 }
@@ -292,7 +292,7 @@ TEST_P(SandboxFileSystemBackendTest, GetRootPathInIncognito) {
     EXPECT_EQ(
         IsPersistentFileSystemEnabledIncognito() ||
             kRootPathTestCases[i].type == storage::kFileSystemTypeTemporary,
-        GetRootPath(GURL(kRootPathTestCases[i].origin_url),
+        GetRootPath(kRootPathTestCases[i].origin_url,
                     kRootPathTestCases[i].type,
                     storage::OPEN_FILE_SYSTEM_CREATE_IF_NONEXISTENT, nullptr));
   }
@@ -304,7 +304,7 @@ TEST_P(SandboxFileSystemBackendTest, GetRootPathFileURI) {
     SCOPED_TRACE(testing::Message()
                  << "RootPathFileURI (disallow) #" << i << " "
                  << kRootPathFileURITestCases[i].expected_path);
-    EXPECT_FALSE(GetRootPath(GURL(kRootPathFileURITestCases[i].origin_url),
+    EXPECT_FALSE(GetRootPath(kRootPathFileURITestCases[i].origin_url,
                              kRootPathFileURITestCases[i].type,
                              storage::OPEN_FILE_SYSTEM_CREATE_IF_NONEXISTENT,
                              nullptr));
@@ -318,7 +318,7 @@ TEST_P(SandboxFileSystemBackendTest, GetRootPathFileURIWithAllowFlag) {
                  << "RootPathFileURI (allow) #" << i << " "
                  << kRootPathFileURITestCases[i].expected_path);
     base::FilePath root_path;
-    EXPECT_TRUE(GetRootPath(GURL(kRootPathFileURITestCases[i].origin_url),
+    EXPECT_TRUE(GetRootPath(kRootPathFileURITestCases[i].origin_url,
                             kRootPathFileURITestCases[i].type,
                             storage::OPEN_FILE_SYSTEM_CREATE_IF_NONEXISTENT,
                             &root_path));

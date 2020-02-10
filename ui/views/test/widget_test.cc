@@ -111,6 +111,14 @@ void TestDesktopWidgetDelegate::WindowClosing() {
   widget_ = nullptr;
 }
 
+Widget* TestDesktopWidgetDelegate::GetWidget() {
+  return widget_;
+}
+
+const Widget* TestDesktopWidgetDelegate::GetWidget() const {
+  return widget_;
+}
+
 View* TestDesktopWidgetDelegate::GetContentsView() {
   return contents_view_ ? contents_view_ : WidgetDelegate::GetContentsView();
 }
@@ -123,10 +131,6 @@ bool TestDesktopWidgetDelegate::OnCloseRequested(
     Widget::ClosedReason close_reason) {
   last_closed_reason_ = close_reason;
   return can_close_;
-}
-
-const Widget* TestDesktopWidgetDelegate::GetWidgetImpl() const {
-  return widget_;
 }
 
 TestInitialFocusWidgetDelegate::TestInitialFocusWidgetDelegate(

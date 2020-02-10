@@ -415,24 +415,15 @@ void OobeUI::ConfigureOobeDisplay() {
   AddScreenHandler(
       std::make_unique<MarketingOptInScreenHandler>(js_calls_container_.get()));
 
-  policy::BrowserPolicyConnectorChromeOS* connector =
-      g_browser_process->platform_part()->browser_policy_connector_chromeos();
-  ActiveDirectoryPasswordChangeScreenHandler*
-      active_directory_password_change_screen_handler = nullptr;
-  // Create Active Directory password change screen for corresponding devices
-  // only.
-  if (connector->IsActiveDirectoryManaged()) {
-    auto password_change_handler =
-        std::make_unique<ActiveDirectoryPasswordChangeScreenHandler>(
-            js_calls_container_.get(), core_handler_);
-    active_directory_password_change_screen_handler =
-        password_change_handler.get();
-    AddScreenHandler(std::move(password_change_handler));
-  }
+  auto password_change_handler =
+      std::make_unique<ActiveDirectoryPasswordChangeScreenHandler>(
+          js_calls_container_.get(), core_handler_);
 
   AddScreenHandler(std::make_unique<GaiaScreenHandler>(
       js_calls_container_.get(), core_handler_, network_state_informer_,
-      active_directory_password_change_screen_handler));
+      password_change_handler.get()));
+
+  AddScreenHandler(std::move(password_change_handler));
 
   auto signin_screen_handler = std::make_unique<SigninScreenHandler>(
       js_calls_container_.get(), network_state_informer_, error_screen,

@@ -70,7 +70,7 @@ void TrayEventFilter::ProcessPressedEvent(const ui::LocatedEvent& event) {
       return;
     // Don't process events that occurred inside a popup notification
     // from message center.
-    if (container_id == kShellWindowId_ShelfControlContainer &&
+    if (container_id == kShellWindowId_ShelfContainer &&
         target->type() == aura::client::WINDOW_TYPE_POPUP &&
         target_widget->GetName() ==
             AshMessagePopupCollection::kMessagePopupWidgetName) {

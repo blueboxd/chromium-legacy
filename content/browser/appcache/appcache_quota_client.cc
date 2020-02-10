@@ -161,6 +161,11 @@ void AppCacheQuotaClient::DeleteOriginData(const url::Origin& origin,
                                     GetServiceDeleteCallback()->callback())));
 }
 
+void AppCacheQuotaClient::PerformStorageCleanup(blink::mojom::StorageType type,
+                                                base::OnceClosure callback) {
+  std::move(callback).Run();
+}
+
 bool AppCacheQuotaClient::DoesSupport(StorageType type) const {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   return type == StorageType::kTemporary;

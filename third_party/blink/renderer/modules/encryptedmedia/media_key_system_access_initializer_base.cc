@@ -4,6 +4,7 @@
 
 #include "third_party/blink/renderer/modules/encryptedmedia/media_key_system_access_initializer_base.h"
 
+#include "base/metrics/histogram_functions.h"
 #include "media/base/eme_constants.h"
 #include "services/metrics/public/cpp/ukm_builders.h"
 #include "services/metrics/public/cpp/ukm_recorder.h"
@@ -11,7 +12,6 @@
 #include "third_party/blink/renderer/core/dom/document.h"
 #include "third_party/blink/renderer/core/inspector/console_message.h"
 #include "third_party/blink/renderer/modules/encryptedmedia/encrypted_media_utils.h"
-#include "third_party/blink/renderer/platform/instrumentation/histogram.h"
 #include "third_party/blink/renderer/platform/network/parsed_content_type.h"
 #include "third_party/blink/renderer/platform/wtf/wtf_size_t.h"
 
@@ -197,10 +197,9 @@ void MediaKeySystemAccessInitializerBase::CheckVideoCapabilityRobustness()
   }
 
   if (has_video_capabilities) {
-    DEFINE_THREAD_SAFE_STATIC_LOCAL(
-        EnumerationHistogram, empty_robustness_histogram,
-        ("Media.EME.Widevine.VideoCapability.HasEmptyRobustness", 2));
-    empty_robustness_histogram.Count(has_empty_robustness);
+    base::UmaHistogramBoolean(
+        "Media.EME.Widevine.VideoCapability.HasEmptyRobustness",
+        has_empty_robustness);
   }
 
   if (has_empty_robustness) {

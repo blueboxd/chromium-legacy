@@ -88,6 +88,8 @@ void AppListFolderItem::OnFolderImageUpdated(AppListConfigType config) {
 }
 
 void AppListFolderItem::NotifyOfDraggedItem(AppListItem* dragged_item) {
+  dragged_item_ = dragged_item;
+
   for (auto& image : folder_images_)
     image.second->UpdateDraggedItem(dragged_item);
 }
@@ -118,8 +120,13 @@ void AppListFolderItem::EnsureIconsForAvailableConfigTypes(
 
     // Call this after the image has been added to |folder_images_| to make sure
     // |folder_images_| contains the image if the observer interface is called.
-    if (request_icon_update)
+    // Note that UpdateDraggedItem will call UpdateIcon().
+    if (dragged_item_) {
+      DCHECK(request_icon_update);
+      image_ptr->UpdateDraggedItem(dragged_item_);
+    } else if (request_icon_update) {
       image_ptr->UpdateIcon();
+    }
   }
 }
 

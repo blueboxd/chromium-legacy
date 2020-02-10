@@ -9,11 +9,13 @@
 #include <utility>
 
 #include "base/macros.h"
+#include "base/test/scoped_feature_list.h"
 #include "base/test/simple_test_clock.h"
 #include "base/timer/mock_timer.h"
 #include "chromeos/components/multidevice/remote_device_test_util.h"
 #include "chromeos/components/multidevice/software_feature.h"
 #include "chromeos/components/multidevice/software_feature_state.h"
+#include "chromeos/constants/chromeos_features.h"
 #include "chromeos/services/device_sync/proto/cryptauth_common.pb.h"
 #include "chromeos/services/device_sync/public/cpp/fake_device_sync_client.h"
 #include "chromeos/services/multidevice_setup/fake_host_backend_delegate.h"
@@ -26,6 +28,16 @@ namespace chromeos {
 namespace multidevice_setup {
 
 namespace {
+
+// Parameterized test types, indicating the following test scenarios:
+enum class TestType {
+  // Use v1 DeviceSync and host does not have an Instance ID.
+  kYesV1NoInstanceId,
+  // Use v1 DeviceSync and host has an Instance ID.
+  kYesV1YesInstanceId,
+  // Do not use v1 DeviceSync and host has an Instance ID.
+  kNoV1YesInstanceId
+};
 
 const int64_t kTestTimeMs = 1500000000000;
 
@@ -58,7 +70,7 @@ enum class HostState {
 }  // namespace
 
 class MultiDeviceSetupHostVerifierImplTest
-    : public ::testing::TestWithParam<bool> {
+    : public ::testing::TestWithParam<TestType> {
  protected:
   MultiDeviceSetupHostVerifierImplTest()
       : test_device_(multidevice::CreateRemoteDeviceRefForTest()) {}
@@ -66,7 +78,9 @@ class MultiDeviceSetupHostVerifierImplTest
 
   // testing::Test:
   void SetUp() override {
-    if (GetParam())
+    SetDeviceSyncFeatureFlags();
+
+    if (!HasInstanceId())
       GetMutableRemoteDevice(test_device_)->instance_id.clear();
 
     fake_host_backend_delegate_ = std::make_unique<FakeHostBackendDelegate>();
@@ -151,7 +165,26 @@ class MultiDeviceSetupHostVerifierImplTest
   }
 
   void InvokePendingDeviceNotificationCall(bool success) {
-    if (test_device_.instance_id().empty()) {
+    if (HasInstanceId()) {
+      // Verify input parameters to NotifyDevices().
+      EXPECT_EQ(std::vector<std::string>{test_device_.instance_id()},
+                fake_device_sync_client_->notify_devices_inputs_queue()
+                    .front()
+                    .device_instance_ids);
+      EXPECT_EQ(cryptauthv2::TargetService::DEVICE_SYNC,
+                fake_device_sync_client_->notify_devices_inputs_queue()
+                    .front()
+                    .target_service);
+      EXPECT_EQ(multidevice::SoftwareFeature::kBetterTogetherHost,
+                fake_device_sync_client_->notify_devices_inputs_queue()
+                    .front()
+                    .feature);
+
+      fake_device_sync_client_->InvokePendingNotifyDevicesCallback(
+          success
+              ? device_sync::mojom::NetworkRequestResult::kSuccess
+              : device_sync::mojom::NetworkRequestResult::kInternalServerError);
+    } else {
       // Verify input parameters to FindEligibleDevices().
       EXPECT_EQ(multidevice::SoftwareFeature::kBetterTogetherHost,
                 fake_device_sync_client_->find_eligible_devices_inputs_queue()
@@ -164,27 +197,7 @@ class MultiDeviceSetupHostVerifierImplTest
               : device_sync::mojom::NetworkRequestResult::kInternalServerError,
           multidevice::RemoteDeviceRefList() /* eligible_devices */,
           multidevice::RemoteDeviceRefList() /* ineligible_devices */);
-      return;
     }
-
-    // Verify input parameters to NotifyDevices().
-    EXPECT_EQ(std::vector<std::string>{test_device_.instance_id()},
-              fake_device_sync_client_->notify_devices_inputs_queue()
-                  .front()
-                  .device_instance_ids);
-    EXPECT_EQ(cryptauthv2::TargetService::DEVICE_SYNC,
-              fake_device_sync_client_->notify_devices_inputs_queue()
-                  .front()
-                  .target_service);
-    EXPECT_EQ(multidevice::SoftwareFeature::kBetterTogetherHost,
-              fake_device_sync_client_->notify_devices_inputs_queue()
-                  .front()
-                  .feature);
-
-    fake_device_sync_client_->InvokePendingNotifyDevicesCallback(
-        success
-            ? device_sync::mojom::NetworkRequestResult::kSuccess
-            : device_sync::mojom::NetworkRequestResult::kInternalServerError);
   }
 
   void SimulateRetryTimePassing(const base::TimeDelta& delta,
@@ -203,15 +216,54 @@ class MultiDeviceSetupHostVerifierImplTest
     SetHostState(HostState::kHostSetAndFeaturesEnabled);
   }
 
-  bool DoesTestDeviceHaveInstanceId() const {
-    return !test_device_.instance_id().empty();
-  }
-
   FakeHostBackendDelegate* fake_host_backend_delegate() {
     return fake_host_backend_delegate_.get();
   }
 
  private:
+  bool HasInstanceId() {
+    switch (GetParam()) {
+      case TestType::kYesV1YesInstanceId:
+        FALLTHROUGH;
+      case TestType::kNoV1YesInstanceId:
+        return true;
+      case TestType::kYesV1NoInstanceId:
+        return false;
+    }
+  }
+
+  void SetDeviceSyncFeatureFlags() {
+    bool use_v1;
+    switch (GetParam()) {
+      case TestType::kYesV1YesInstanceId:
+        FALLTHROUGH;
+      case TestType::kYesV1NoInstanceId:
+        use_v1 = true;
+        break;
+      case TestType::kNoV1YesInstanceId:
+        use_v1 = false;
+        break;
+    }
+
+    std::vector<base::Feature> enabled_features;
+    std::vector<base::Feature> disabled_features;
+
+    // These flags have no direct effect; however, v2 Enrollment and v2
+    // DeviceSync are prerequisites for disabling v1 DeviceSync.
+    enabled_features.push_back(chromeos::features::kCryptAuthV2Enrollment);
+    enabled_features.push_back(chromeos::features::kCryptAuthV2DeviceSync);
+
+    if (use_v1) {
+      disabled_features.push_back(
+          chromeos::features::kDisableCryptAuthV1DeviceSync);
+    } else {
+      enabled_features.push_back(
+          chromeos::features::kDisableCryptAuthV1DeviceSync);
+    }
+
+    scoped_feature_list_.InitWithFeatures(enabled_features, disabled_features);
+  }
+
   multidevice::RemoteDeviceRef test_device_;
 
   std::unique_ptr<FakeHostVerifierObserver> fake_observer_;
@@ -224,6 +276,8 @@ class MultiDeviceSetupHostVerifierImplTest
   base::MockOneShotTimer* mock_sync_timer_ = nullptr;
 
   std::unique_ptr<HostVerifier> host_verifier_;
+
+  base::test::ScopedFeatureList scoped_feature_list_;
 
   DISALLOW_COPY_AND_ASSIGN(MultiDeviceSetupHostVerifierImplTest);
 };
@@ -450,12 +504,17 @@ TEST_P(MultiDeviceSetupHostVerifierImplTest, HostMissingCryptoData) {
       kFirstRetryDeltaMs /* expected_retry_delta_value */);
 }
 
-// Runs tests for a host device with and without an Instance ID.
+// Runs tests for the following scenarios.
+//   - Use v1 DeviceSync and host does not have an Instance ID.
+//   - Use v1 DeviceSync and host has an Instance ID.
+//   - Do not use v1 DeviceSync and host has an Instance ID.
 // TODO(https://crbug.com/1019206): Remove when v1 DeviceSync is disabled, when
 // all devices should have an Instance ID.
 INSTANTIATE_TEST_SUITE_P(All,
                          MultiDeviceSetupHostVerifierImplTest,
-                         ::testing::Bool());
+                         ::testing::Values(TestType::kYesV1NoInstanceId,
+                                           TestType::kYesV1YesInstanceId,
+                                           TestType::kNoV1YesInstanceId));
 
 }  // namespace multidevice_setup
 

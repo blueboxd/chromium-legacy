@@ -89,7 +89,8 @@ class GLRendererTest : public testing::Test {
     return render_passes_in_draw_order_.back().get();
   }
   void DrawFrame(GLRenderer* renderer, const gfx::Size& viewport_size) {
-    renderer->DrawFrame(&render_passes_in_draw_order_, 1.f, viewport_size);
+    renderer->DrawFrame(&render_passes_in_draw_order_, 1.f, viewport_size,
+                        gfx::DisplayColorSpaces());
   }
 
   static const Program* current_program(GLRenderer* renderer) {
@@ -207,7 +208,7 @@ class GLRendererShaderPixelTest : public cc::GLRendererPixelTest {
           // an SDR white level should the white level be set by the renderer.
           if (j == 5) {
             adjusted_color_space = src_color_space.GetWithPQSDRWhiteLevel(
-                drawing_frame.sdr_white_level);
+                drawing_frame.display_color_spaces.GetSDRWhiteLevel());
             EXPECT_NE(adjusted_color_space, src_color_space);
           }
           auto color_transform = gfx::ColorTransform::NewColorTransform(
@@ -259,7 +260,7 @@ class GLRendererShaderPixelTest : public cc::GLRendererPixelTest {
   void TestShadersWithSDRWhiteLevel(const ProgramKey& program_key,
                                     float sdr_white_level) {
     GLRenderer::DrawingFrame frame;
-    frame.sdr_white_level = sdr_white_level;
+    frame.display_color_spaces.SetSDRWhiteLevel(sdr_white_level);
     TestShaderWithDrawingFrame(program_key, frame, false);
   }
 
@@ -2327,7 +2328,7 @@ class MockOutputSurfaceTest : public GLRendererTest {
     renderer_->DecideRenderPassAllocationsForFrame(
         render_passes_in_draw_order_);
     renderer_->DrawFrame(&render_passes_in_draw_order_, device_scale_factor,
-                         viewport_size);
+                         viewport_size, gfx::DisplayColorSpaces());
   }
 
   RendererSettings settings_;

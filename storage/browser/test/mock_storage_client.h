@@ -37,10 +37,10 @@ struct MockOriginData {
   int64_t usage;
 };
 
-// Mock storage class for testing.
+// Mock QuotaClient implementation for testing.
 class MockStorageClient : public QuotaClient {
  public:
-  MockStorageClient(QuotaManagerProxy* quota_manager_proxy,
+  MockStorageClient(scoped_refptr<QuotaManagerProxy> quota_manager_proxy,
                     const MockOriginData* mock_data,
                     QuotaClient::ID id,
                     size_t mock_data_size);
@@ -58,9 +58,9 @@ class MockStorageClient : public QuotaClient {
 
   base::Time IncrementMockTime();
 
-  // QuotaClient methods.
+  // QuotaClient.
   QuotaClient::ID id() const override;
-  void OnQuotaManagerDestroyed() override {}
+  void OnQuotaManagerDestroyed() override;
   void GetOriginUsage(const url::Origin& origin,
                       StorageType type,
                       GetUsageCallback callback) override;
@@ -72,6 +72,8 @@ class MockStorageClient : public QuotaClient {
   void DeleteOriginData(const url::Origin& origin,
                         StorageType type,
                         DeletionCallback callback) override;
+  void PerformStorageCleanup(blink::mojom::StorageType type,
+                             base::OnceClosure callback) override;
   bool DoesSupport(StorageType type) const override;
 
  private:
@@ -90,7 +92,7 @@ class MockStorageClient : public QuotaClient {
 
   void Populate(const MockOriginData* mock_data, size_t mock_data_size);
 
-  scoped_refptr<QuotaManagerProxy> quota_manager_proxy_;
+  const scoped_refptr<QuotaManagerProxy> quota_manager_proxy_;
   const ID id_;
 
   std::map<std::pair<url::Origin, StorageType>, int64_t> origin_data_;

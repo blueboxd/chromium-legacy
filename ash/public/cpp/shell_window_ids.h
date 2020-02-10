@@ -89,7 +89,8 @@ enum ShellWindowId {
   // The container for Virtual Keyboard from ARC IMEs.
   kShellWindowId_ArcVirtualKeyboardContainer,
 
-  // The container for the shelf.
+  // The container for UI on the shelf (shelf, navigation, hotseat,
+  // status area).
   kShellWindowId_ShelfContainer,
 
   // The container for bubbles which float over the shelf.
@@ -114,9 +115,6 @@ enum ShellWindowId {
 
   // The container for the lock screen modal windows.
   kShellWindowId_LockSystemModalContainer,
-
-  // The container for shelf control widgets (navigation, hotseat, status area).
-  kShellWindowId_ShelfControlContainer,
 
   // The container for the overview focus widget - widget that gets focused
   // while overview session is active for accessibility purposes.
@@ -194,7 +192,7 @@ constexpr int kSystemModalContainerIds[] = {
 // windows in containers appearing later in the list. This list is used by
 // AshFocusRules to determine which container to start the search from when
 // looking for the next activatable window.
-ASH_PUBLIC_EXPORT const std::array<int, 20>& GetActivatableShellWindowIds();
+ASH_PUBLIC_EXPORT const std::array<int, 19>& GetActivatableShellWindowIds();
 
 // Returns true if |id| is in |kActivatableContainersIds|.
 ASH_PUBLIC_EXPORT bool IsActivatableShellWindowId(int id);

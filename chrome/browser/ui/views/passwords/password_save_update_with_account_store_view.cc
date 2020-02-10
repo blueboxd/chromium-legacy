@@ -12,6 +12,7 @@
 #include "base/strings/utf_string_conversions.h"
 #include "build/build_config.h"
 #include "chrome/browser/profiles/profile.h"
+#include "chrome/browser/signin/identity_manager_factory.h"
 #include "chrome/browser/ui/passwords/manage_passwords_view_utils.h"
 #include "chrome/browser/ui/passwords/password_dialog_prompts.h"
 #include "chrome/browser/ui/passwords/passwords_model_delegate.h"
@@ -22,6 +23,7 @@
 #include "chrome/browser/ui/views/passwords/password_items_view.h"
 #include "chrome/grit/generated_resources.h"
 #include "chrome/grit/theme_resources.h"
+#include "components/signin/public/identity_manager/identity_manager.h"
 #include "content/public/browser/storage_partition.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/models/combobox_model.h"
@@ -31,9 +33,9 @@
 #include "ui/gfx/color_utils.h"
 #include "ui/gfx/paint_vector_icon.h"
 #include "ui/views/bubble/bubble_frame_view.h"
-#include "ui/views/controls/button/checkbox.h"
 #include "ui/views/controls/button/image_button.h"
 #include "ui/views/controls/button/md_text_button.h"
+#include "ui/views/controls/combobox/combobox.h"
 #include "ui/views/controls/editable_combobox/editable_combobox.h"
 #include "ui/views/controls/textfield/textfield.h"
 #include "ui/views/layout/fill_layout.h"
@@ -48,6 +50,7 @@ enum PasswordSaveUpdateWithAccountStoreViewColumnSetType {
   // Used for the username/password line of the bubble, for the pending view.
   DOUBLE_VIEW_COLUMN_SET_USERNAME,
   DOUBLE_VIEW_COLUMN_SET_PASSWORD,
+  DOUBLE_VIEW_COLUMN_SET_DESTINATION,
 
   // | | (LEADING, FILL) | | (FILL, FILL) | | (TRAILING, FILL) | |
   // Used for the password line of the bubble, for the pending view.
@@ -65,6 +68,7 @@ void BuildColumnSet(views::GridLayout* layout,
   switch (type) {
     case DOUBLE_VIEW_COLUMN_SET_USERNAME:
     case DOUBLE_VIEW_COLUMN_SET_PASSWORD:
+    case DOUBLE_VIEW_COLUMN_SET_DESTINATION:
       column_set->AddColumn(views::GridLayout::LEADING, views::GridLayout::FILL,
                             views::GridLayout::kFixedSize,
                             views::GridLayout::USE_PREF, 0, 0);
@@ -91,31 +95,67 @@ void BuildColumnSet(views::GridLayout* layout,
 }
 
 // Builds a credential row, adds the given elements to the layout.
+// |destination_field| is nullptr if the destination field shouldn't be shown.
 // |password_view_button| is an optional field. If it is a nullptr, a
 // DOUBLE_VIEW_COLUMN_SET_PASSWORD will be used for password row instead of
 // TRIPLE_VIEW_COLUMN_SET.
 void BuildCredentialRows(
     views::GridLayout* layout,
+    std::unique_ptr<views::View> destination_field,
     std::unique_ptr<views::View> username_field,
     std::unique_ptr<views::View> password_field,
     std::unique_ptr<views::ToggleImageButton> password_view_button) {
-  // Username row.
-  BuildColumnSet(layout, DOUBLE_VIEW_COLUMN_SET_USERNAME);
-  layout->StartRow(views::GridLayout::kFixedSize,
-                   DOUBLE_VIEW_COLUMN_SET_USERNAME);
+  // TODO(crbug.com/1044038): Use an internationalized string instead.
+  int destination_label_width = 0;
+  int destination_field_height = 0;
+  std::unique_ptr<views::Label> destination_label;
+  if (destination_field) {
+    destination_label = std::make_unique<views::Label>(
+        base::ASCIIToUTF16("Destination"), views::style::CONTEXT_LABEL,
+        views::style::STYLE_PRIMARY);
+    destination_label->SetHorizontalAlignment(
+        gfx::HorizontalAlignment::ALIGN_LEFT);
+    destination_label_width = destination_label->GetPreferredSize().width();
+    destination_field_height = destination_field->GetPreferredSize().height();
+  }
+
   std::unique_ptr<views::Label> username_label(new views::Label(
       l10n_util::GetStringUTF16(IDS_PASSWORD_MANAGER_USERNAME_LABEL),
       views::style::CONTEXT_LABEL, views::style::STYLE_PRIMARY));
   username_label->SetHorizontalAlignment(gfx::HorizontalAlignment::ALIGN_LEFT);
+
   std::unique_ptr<views::Label> password_label(new views::Label(
       l10n_util::GetStringUTF16(IDS_PASSWORD_MANAGER_PASSWORD_LABEL),
       views::style::CONTEXT_LABEL, views::style::STYLE_PRIMARY));
   password_label->SetHorizontalAlignment(gfx::HorizontalAlignment::ALIGN_LEFT);
-  int labels_width = std::max(username_label->GetPreferredSize().width(),
-                              password_label->GetPreferredSize().width());
-  int fields_height = std::max(username_field->GetPreferredSize().height(),
-                               password_field->GetPreferredSize().height());
 
+  int labels_width = std::max({destination_label_width,
+                               username_label->GetPreferredSize().width(),
+                               password_label->GetPreferredSize().width()});
+  int fields_height = std::max({destination_field_height,
+                                username_field->GetPreferredSize().height(),
+                                password_field->GetPreferredSize().height()});
+
+  // Destination row.
+  if (destination_field) {
+    BuildColumnSet(layout, DOUBLE_VIEW_COLUMN_SET_DESTINATION);
+    layout->StartRow(views::GridLayout::kFixedSize,
+                     DOUBLE_VIEW_COLUMN_SET_DESTINATION);
+    layout->AddView(std::move(destination_label), 1, 1,
+                    views::GridLayout::LEADING, views::GridLayout::FILL,
+                    labels_width, 0);
+    layout->AddView(std::move(destination_field), 1, 1, views::GridLayout::FILL,
+                    views::GridLayout::FILL, 0, fields_height);
+
+    layout->AddPaddingRow(views::GridLayout::kFixedSize,
+                          ChromeLayoutProvider::Get()->GetDistanceMetric(
+                              DISTANCE_CONTROL_LIST_VERTICAL));
+  }
+
+  // Username row.
+  BuildColumnSet(layout, DOUBLE_VIEW_COLUMN_SET_USERNAME);
+  layout->StartRow(views::GridLayout::kFixedSize,
+                   DOUBLE_VIEW_COLUMN_SET_USERNAME);
   layout->AddView(std::move(username_label), 1, 1, views::GridLayout::LEADING,
                   views::GridLayout::FILL, labels_width, 0);
   layout->AddView(std::move(username_field), 1, 1, views::GridLayout::FILL,
@@ -228,6 +268,24 @@ std::unique_ptr<views::EditableCombobox> CreatePasswordEditableCombobox(
   return combobox;
 }
 
+std::unique_ptr<views::Combobox> CreateDestinationCombobox(
+    const std::string& account,
+    bool is_using_account_store) {
+  std::vector<base::string16> destinations;
+  destinations.push_back(base::ASCIIToUTF16(account));
+  // TODO(crbug.com/1044038): Use an internationalized string instead.
+  destinations.push_back(base::ASCIIToUTF16("Local"));
+  auto combobox = std::make_unique<views::Combobox>(
+      std::make_unique<ui::SimpleComboboxModel>(std::move(destinations)));
+  if (is_using_account_store)
+    combobox->SetSelectedRow(0);
+  else
+    combobox->SetSelectedRow(1);
+
+  // TODO(crbug.com/1044038): SetAccessibleName of the combobox.
+  return combobox;
+}
+
 std::unique_ptr<views::View> CreateHeaderImage(int image_id) {
   auto image_view = std::make_unique<NonAccessibleImageView>();
   image_view->SetImage(
@@ -244,19 +302,14 @@ std::unique_ptr<views::View> CreateHeaderImage(int image_id) {
   return image_view;
 }
 
-views::Checkbox* AppendAccountCheckboxRow(views::GridLayout* layout,
-                                          bool uses_account_store,
-                                          int height,
-                                          views::ButtonListener* listener) {
-  auto account_store_checkbox = std::make_unique<views::Checkbox>(
-      base::ASCIIToUTF16("Store passwords in account store?"), listener);
-  account_store_checkbox->SetChecked(uses_account_store);
-  BuildColumnSet(layout, DOUBLE_VIEW_COLUMN_SET_PASSWORD);
-  layout->StartRow(views::GridLayout::kFixedSize,
-                   DOUBLE_VIEW_COLUMN_SET_PASSWORD);
-  return layout->AddView(std::move(account_store_checkbox), 1, 1,
-                         views::GridLayout::FILL, views::GridLayout::FILL, 0,
-                         height);
+std::string GetSignedInEmail(Profile* profile) {
+  signin::IdentityManager* identity_manager =
+      IdentityManagerFactory::GetForProfile(profile);
+  if (!identity_manager)
+    return std::string();
+  return identity_manager
+      ->GetPrimaryAccountInfo(signin::ConsentLevel::kNotRequired)
+      .email;
 }
 
 }  // namespace
@@ -300,13 +353,19 @@ PasswordSaveUpdateWithAccountStoreView::PasswordSaveUpdateWithAccountStoreView(
     credential_view->SetEnabled(false);
     AddChildView(credential_view);
   } else {
+    std::unique_ptr<views::Combobox> destination_dropdown;
+    if (controller_.ShouldShowPasswordStorePicker()) {
+      destination_dropdown =
+          CreateDestinationCombobox(GetSignedInEmail(controller_.GetProfile()),
+                                    controller_.IsUsingAccountStore());
+      destination_dropdown->set_listener(this);
+    }
     std::unique_ptr<views::EditableCombobox> username_dropdown =
         CreateUsernameEditableCombobox(password_form);
     username_dropdown->set_listener(this);
     std::unique_ptr<views::EditableCombobox> password_dropdown =
         CreatePasswordEditableCombobox(password_form, are_passwords_revealed_);
     password_dropdown->set_listener(this);
-
     std::unique_ptr<views::ToggleImageButton> password_view_button =
         CreatePasswordViewButton(this, are_passwords_revealed_);
 
@@ -315,13 +374,29 @@ PasswordSaveUpdateWithAccountStoreView::PasswordSaveUpdateWithAccountStoreView(
 
     username_dropdown_ = username_dropdown.get();
     password_dropdown_ = password_dropdown.get();
+    destination_dropdown_ = destination_dropdown.get();
     password_view_button_ = password_view_button.get();
-    BuildCredentialRows(layout, std::move(username_dropdown),
-                        std::move(password_dropdown),
-                        std::move(password_view_button));
-    account_store_checkbox_ = AppendAccountCheckboxRow(
-        layout, controller_.IsUsingAccountStore(),
-        password_dropdown_->GetPreferredSize().height(), this);
+
+    BuildCredentialRows(
+        layout, std::move(destination_dropdown), std::move(username_dropdown),
+        std::move(password_dropdown), std::move(password_view_button));
+  }
+
+  {
+    using Controller = SaveUpdateWithAccountStoreBubbleController;
+    using ControllerNotifyFn = void (Controller::*)();
+    auto button_clicked = [](PasswordSaveUpdateWithAccountStoreView* dialog,
+                             ControllerNotifyFn func) {
+      dialog->UpdateUsernameAndPasswordInModel();
+      (dialog->controller_.*func)();
+    };
+
+    DialogDelegate::set_accept_callback(base::BindOnce(
+        button_clicked, base::Unretained(this), &Controller::OnSaveClicked));
+    DialogDelegate::set_cancel_callback(base::BindOnce(
+        button_clicked, base::Unretained(this),
+        is_update_bubble_ ? &Controller::OnNopeUpdateClicked
+                          : &Controller::OnNeverForThisSiteClicked));
   }
 
   DialogDelegate::SetFootnoteView(CreateFooterView());
@@ -341,36 +416,18 @@ PasswordSaveUpdateWithAccountStoreView::GetController() const {
   return &controller_;
 }
 
-bool PasswordSaveUpdateWithAccountStoreView::Accept() {
-  UpdateUsernameAndPasswordInModel();
-  controller_.OnSaveClicked();
-  return true;
-}
-
-bool PasswordSaveUpdateWithAccountStoreView::Cancel() {
-  UpdateUsernameAndPasswordInModel();
-  if (is_update_bubble_) {
-    controller_.OnNopeUpdateClicked();
-    return true;
-  }
-  controller_.OnNeverForThisSiteClicked();
-  return true;
-}
-
-bool PasswordSaveUpdateWithAccountStoreView::Close() {
-  return true;
-}
-
 void PasswordSaveUpdateWithAccountStoreView::ButtonPressed(
     views::Button* sender,
     const ui::Event& event) {
   DCHECK(sender);
-  if (sender == account_store_checkbox_) {
-    controller_.OnToggleAccountStore(account_store_checkbox_->GetChecked());
-    return;
-  }
   DCHECK(sender == password_view_button_);
   TogglePasswordVisibility();
+}
+
+void PasswordSaveUpdateWithAccountStoreView::OnPerformAction(
+    views::Combobox* combobox) {
+  controller_.OnToggleAccountStore(
+      /*is_account_store_selected=*/combobox->GetSelectedIndex() == 0);
 }
 
 void PasswordSaveUpdateWithAccountStoreView::OnContentChanged(
@@ -402,9 +459,9 @@ views::View* PasswordSaveUpdateWithAccountStoreView::GetInitiallyFocusedView() {
   View* initial_view = PasswordBubbleViewBase::GetInitiallyFocusedView();
   // |initial_view| will normally be the 'Save' button, but in case it's not
   // focusable, we return nullptr so the Widget doesn't give focus to the next
-  // focusable View, which would be |username_dropdown_|, and which would bring
-  // up the menu without a user interaction. We only allow initial focus on
-  // |username_dropdown_| above, when the text is empty.
+  // focusable View, which would be |username_dropdown_|, and which would
+  // bring up the menu without a user interaction. We only allow initial focus
+  // on |username_dropdown_| above, when the text is empty.
   return (initial_view && initial_view->IsFocusable()) ? initial_view : nullptr;
 }
 

@@ -14,6 +14,7 @@
 #include "chromeos/components/multidevice/expiring_remote_device_cache.h"
 #include "chromeos/components/multidevice/logging/logging.h"
 #include "chromeos/components/multidevice/remote_device.h"
+#include "chromeos/constants/chromeos_features.h"
 #include "chromeos/services/device_sync/public/mojom/device_sync.mojom.h"
 
 namespace chromeos {
@@ -258,14 +259,13 @@ void DeviceSyncClientImpl::OnGetLocalDeviceMetadataCompleted(
     return;
   }
 
-  local_instance_id_ = local_device_metadata->instance_id.empty()
-                           ? base::nullopt
-                           : base::make_optional<std::string>(
-                                 local_device_metadata->instance_id);
-  local_legacy_device_id_ = local_device_metadata->GetDeviceId().empty()
-                                ? base::nullopt
-                                : base::make_optional<std::string>(
-                                      local_device_metadata->GetDeviceId());
+  if (features::ShouldUseV2DeviceSync()) {
+    DCHECK(!local_device_metadata->instance_id.empty());
+    local_instance_id_ = local_device_metadata->instance_id;
+  } else {
+    DCHECK(!local_device_metadata->GetDeviceId().empty());
+    local_legacy_device_id_ = local_device_metadata->GetDeviceId();
+  }
 
   expiring_device_cache_->UpdateRemoteDevice(*local_device_metadata);
 

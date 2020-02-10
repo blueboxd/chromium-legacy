@@ -594,8 +594,7 @@ bool Display::DrawAndSwap(base::TimeTicks expected_display_time) {
     draw_timer.emplace();
     renderer_->DecideRenderPassAllocationsForFrame(frame.render_pass_list);
     renderer_->DrawFrame(&frame.render_pass_list, device_scale_factor_,
-                         current_surface_size,
-                         display_color_spaces_.GetSDRWhiteLevel());
+                         current_surface_size, display_color_spaces_);
     switch (output_surface_->type()) {
       case OutputSurface::Type::kSoftware:
         UMA_HISTOGRAM_COUNTS_1M(

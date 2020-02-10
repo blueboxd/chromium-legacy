@@ -13,7 +13,7 @@
 #include "third_party/blink/renderer/core/core_export.h"
 #include "third_party/blink/renderer/platform/heap/handle.h"
 #include "third_party/blink/renderer/platform/weborigin/kurl.h"
-#include "third_party/blink/renderer/platform/weborigin/security_violation_reporting_policy.h"
+#include "third_party/blink/renderer/platform/weborigin/reporting_disposition.h"
 
 namespace blink {
 
@@ -32,7 +32,7 @@ class CORE_EXPORT SubresourceFilter final
 
   bool AllowLoad(const KURL& resource_url,
                  mojom::RequestContextType,
-                 SecurityViolationReportingPolicy);
+                 ReportingDisposition);
   bool AllowWebSocketConnection(const KURL&);
 
   // Returns if |resource_url| is an ad resource.

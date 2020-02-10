@@ -838,7 +838,6 @@ void GaiaScreenHandler::DoAdAuth(
       break;
     }
     case authpolicy::ERROR_PASSWORD_EXPIRED:
-      DCHECK(active_directory_password_change_screen_handler_);
       active_directory_password_change_screen_handler_->ShowScreen(username);
       break;
     case authpolicy::ERROR_PARSE_UPN_FAILED:

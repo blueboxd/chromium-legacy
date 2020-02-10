@@ -206,6 +206,14 @@ views::View* DeepScanningDialogViews::GetContentsView() {
   return contents_view_.get();
 }
 
+views::Widget* DeepScanningDialogViews::GetWidget() {
+  return contents_view_->GetWidget();
+}
+
+const views::Widget* DeepScanningDialogViews::GetWidget() const {
+  return contents_view_->GetWidget();
+}
+
 void DeepScanningDialogViews::DeleteDelegate() {
   delete this;
 }
@@ -244,10 +252,6 @@ void DeepScanningDialogViews::ShowResult(bool success) {
 DeepScanningDialogViews::~DeepScanningDialogViews() {
   if (observer_for_testing)
     observer_for_testing->DestructorCalled(this);
-}
-
-const views::Widget* DeepScanningDialogViews::GetWidgetImpl() const {
-  return contents_view_->GetWidget();
 }
 
 void DeepScanningDialogViews::UpdateDialog() {

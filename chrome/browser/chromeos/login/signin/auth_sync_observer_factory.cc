@@ -12,34 +12,34 @@
 
 namespace chromeos {
 
-AuthSyncObserverFactory::AuthSyncObserverFactory()
+AuthErrorObserverFactory::AuthErrorObserverFactory()
     : BrowserContextKeyedServiceFactory(
-          "AuthSyncObserver",
+          "AuthErrorObserver",
           BrowserContextDependencyManager::GetInstance()) {
   DependsOn(ProfileSyncServiceFactory::GetInstance());
   DependsOn(SigninErrorControllerFactory::GetInstance());
 }
 
-AuthSyncObserverFactory::~AuthSyncObserverFactory() {}
+AuthErrorObserverFactory::~AuthErrorObserverFactory() = default;
 
 // static
-AuthSyncObserver* AuthSyncObserverFactory::GetForProfile(Profile* profile) {
-  if (!AuthSyncObserver::ShouldObserve(profile))
+AuthErrorObserver* AuthErrorObserverFactory::GetForProfile(Profile* profile) {
+  if (!AuthErrorObserver::ShouldObserve(profile))
     return nullptr;
 
-  return static_cast<AuthSyncObserver*>(
+  return static_cast<AuthErrorObserver*>(
       GetInstance()->GetServiceForBrowserContext(profile, true));
 }
 
 // static
-AuthSyncObserverFactory* AuthSyncObserverFactory::GetInstance() {
-  return base::Singleton<AuthSyncObserverFactory>::get();
+AuthErrorObserverFactory* AuthErrorObserverFactory::GetInstance() {
+  return base::Singleton<AuthErrorObserverFactory>::get();
 }
 
-KeyedService* AuthSyncObserverFactory::BuildServiceInstanceFor(
+KeyedService* AuthErrorObserverFactory::BuildServiceInstanceFor(
     content::BrowserContext* context) const {
   Profile* profile = static_cast<Profile*>(context);
-  return new AuthSyncObserver(profile);
+  return new AuthErrorObserver(profile);
 }
 
 }  // namespace chromeos

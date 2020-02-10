@@ -115,7 +115,6 @@ public class CachedFeatureFlags {
     private static Boolean sHasRecognitionIntentHandler;
     private static String sReachedCodeProfilerTrialGroup;
     private static Boolean sEnabledTabThumbnailApsectRatioForTesting;
-    private static final String ALLOW_TO_REFETCH = "allow_to_refetch";
 
     /**
      * Checks if a cached feature flag is enabled.
@@ -225,7 +224,6 @@ public class CachedFeatureFlags {
         cacheNightModeDefaultToLight();
         cacheNetworkServiceWarmUpEnabled();
         cacheNativeTabSwitcherUiFlags();
-        cacheAllowToRefetchTabThumbnail();
         cacheReachedCodeProfilerTrialGroup();
         cacheBottomToolbarVariation();
         cacheStartSurfaceVariation();
@@ -234,6 +232,27 @@ public class CachedFeatureFlags {
         // LibraryLoader itself because it lives in //base and can't depend on ChromeFeatureList.
         LibraryLoader.setReachedCodeProfilerEnabledOnNextRuns(
                 ChromeFeatureList.isEnabled(ChromeFeatureList.REACHED_CODE_PROFILER));
+    }
+
+    /**
+     * Caches flags that must take effect on startup but are set via native code.
+     */
+    public static void cacheFieldTrialParameters(List<CachedFieldTrialParameter> parameters) {
+        for (CachedFieldTrialParameter parameter : parameters) {
+            parameter.cacheToDisk();
+        }
+    }
+
+    /**
+     * TODO(crbug.com/1012975): Move this to BooleanCachedFieldTrialParameter when
+     * CachedFeatureFlags is in chrome/browser/flags.
+     *
+     * @return the value of the field trial parameter that should be used in this run.
+     */
+    public static boolean getValue(
+            BooleanCachedFieldTrialParameter booleanCachedFieldTrialParameter) {
+        return isFlagEnabled(booleanCachedFieldTrialParameter.getSharedPreferenceKey(),
+                booleanCachedFieldTrialParameter.getDefaultValue());
     }
 
     /**
@@ -657,29 +676,6 @@ public class CachedFeatureFlags {
         return Double.compare(1.0, expectedAspectRatio) != 0;
     }
 
-    /**
-     * @return Whether to allow to refetch tab thumbnail if the aspect ratio is not matching.
-     */
-    public static boolean isAllowToRefetchTabThumbnail() {
-        return isFlagEnabled(getPrefForFieldTrialParam(
-                                     ChromeFeatureList.TAB_GRID_LAYOUT_ANDROID, ALLOW_TO_REFETCH),
-                false);
-    }
-
-    /**
-     * Caches the feature flag for whether to allow refetch tab thumbnail if the aspect ratio is not
-     * matching.
-     */
-    private static void cacheAllowToRefetchTabThumbnail() {
-        boolean isAllowToRefetchTabThumbnail =
-                ChromeFeatureList.getFieldTrialParamByFeatureAsBoolean(
-                        ChromeFeatureList.TAB_GRID_LAYOUT_ANDROID, ALLOW_TO_REFETCH, false);
-        SharedPreferencesManager.getInstance().writeBoolean(
-                getPrefForFieldTrialParam(
-                        ChromeFeatureList.TAB_GRID_LAYOUT_ANDROID, ALLOW_TO_REFETCH),
-                isAllowToRefetchTabThumbnail);
-    }
-
     public static void enableTabThumbnailAspectRatioForTesting(Boolean enabled) {
         sEnabledTabThumbnailApsectRatioForTesting = enabled;
     }
@@ -694,7 +690,7 @@ public class CachedFeatureFlags {
      * @deprecated Call {@link #isEnabled(String)} instead.
      */
     @Deprecated
-    private static boolean isFlagEnabled(String preferenceName, boolean defaultValue) {
+    static boolean isFlagEnabled(String preferenceName, boolean defaultValue) {
         Boolean flag = sFlags.get(preferenceName);
         if (flag == null) {
             flag = SharedPreferencesManager.getInstance().readBoolean(preferenceName, defaultValue);
@@ -710,11 +706,6 @@ public class CachedFeatureFlags {
         } else {
             return grandfatheredPrefKey;
         }
-    }
-
-    private static String getPrefForFieldTrialParam(String featureName, String paramName) {
-        return ChromePreferenceKeys.FLAGS_FIELD_TRIAL_PARAM_CACHED.createKey(
-                featureName + ":" + paramName);
     }
 
     @VisibleForTesting

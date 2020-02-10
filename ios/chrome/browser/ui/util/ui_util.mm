@@ -30,10 +30,6 @@ const CGFloat kPortraitWidth[INTERFACE_IDIOM_COUNT] = {
     768   // IPAD_IDIOM
 };
 
-bool IsHighResScreen() {
-  return [[UIScreen mainScreen] scale] > 1.0;
-}
-
 bool IsPortrait() {
   UIInterfaceOrientation orient = GetInterfaceOrientation();
   return UIInterfaceOrientationIsPortrait(orient) ||

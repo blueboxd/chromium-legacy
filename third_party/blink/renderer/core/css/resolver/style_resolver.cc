@@ -45,7 +45,6 @@
 #include "third_party/blink/renderer/core/css/css_identifier_value.h"
 #include "third_party/blink/renderer/core/css/css_keyframe_rule.h"
 #include "third_party/blink/renderer/core/css/css_keyframes_rule.h"
-#include "third_party/blink/renderer/core/css/css_pending_interpolation_value.h"
 #include "third_party/blink/renderer/core/css/css_property_names.h"
 #include "third_party/blink/renderer/core/css/css_property_value_set.h"
 #include "third_party/blink/renderer/core/css/css_reflect_value.h"
@@ -62,13 +61,13 @@
 #include "third_party/blink/renderer/core/css/part_names.h"
 #include "third_party/blink/renderer/core/css/properties/css_property.h"
 #include "third_party/blink/renderer/core/css/properties/css_property_ref.h"
+#include "third_party/blink/renderer/core/css/resolver/cascade_interpolations.h"
 #include "third_party/blink/renderer/core/css/resolver/css_variable_animator.h"
 #include "third_party/blink/renderer/core/css/resolver/css_variable_resolver.h"
 #include "third_party/blink/renderer/core/css/resolver/match_result.h"
 #include "third_party/blink/renderer/core/css/resolver/scoped_style_resolver.h"
 #include "third_party/blink/renderer/core/css/resolver/selector_filter_parent_scope.h"
 #include "third_party/blink/renderer/core/css/resolver/style_adjuster.h"
-#include "third_party/blink/renderer/core/css/resolver/style_animator.h"
 #include "third_party/blink/renderer/core/css/resolver/style_builder_converter.h"
 #include "third_party/blink/renderer/core/css/resolver/style_resolver_state.h"
 #include "third_party/blink/renderer/core/css/resolver/style_resolver_stats.h"
@@ -932,10 +931,15 @@ CompositorKeyframeValue* StyleResolver::CreateCompositorKeyframeValueSnapshot(
   state.SetStyle(ComputedStyle::Clone(base_style));
   if (value) {
     if (RuntimeEnabledFeatures::CSSCascadeEnabled()) {
-      StyleCascade cascade(state);
-      auto name = property.GetCSSPropertyName();
-      cascade.Add(name, value, StyleCascade::Origin::kAuthor);
-      cascade.Apply();
+      MatchResult result;
+      auto* set = MakeGarbageCollected<MutableCSSPropertyValueSet>(
+          state.GetParserMode());
+      set->SetProperty(property.GetCSSProperty().PropertyID(), *value);
+      result.AddMatchedProperties(set);
+
+      STACK_UNINITIALIZED StyleCascade cascade(state);
+      cascade.Analyze(result, CascadeFilter());
+      cascade.Apply(result, CascadeFilter());
     } else {
       StyleBuilder::ApplyProperty(property.GetCSSPropertyName(), state, *value);
       state.GetFontBuilder().CreateFont(
@@ -1278,14 +1282,18 @@ bool StyleResolver::ApplyAnimatedStandardProperties(StyleResolverState& state) {
     // A StyleCascade is required, because otherwise we can't resolve any var()
     // references that may appear in keyframes. Ultimately, we should use ONE
     // cascade for everything, but this is not yet possible.
-    using Origin = StyleCascade::Origin;
-    StyleCascade cascade(state);
-    StyleAnimator animator(state, cascade);
-    CascadeInterpolations(cascade, animations_map, Origin::kAnimation);
-    CascadeInterpolations(cascade, transitions_map, Origin::kTransition);
+    STACK_UNINITIALIZED StyleCascade cascade(state);
+    CascadeFilter filter;
+
+    using Entry = CascadeInterpolations::Entry;
+    class CascadeInterpolations interpolations(Vector<Entry, 4>{
+        Entry{&animations_map, CascadeOrigin::kAnimation},
+        Entry{&transitions_map, CascadeOrigin::kTransition},
+    });
     if (IsForcedColorsModeEnabled(state))
-      cascade.Exclude(CSSProperty::kIsAffectedByForcedColors, true);
-    cascade.Apply(animator);
+      filter = filter.Add(CSSProperty::kIsAffectedByForcedColors, true);
+    cascade.Analyze(interpolations, filter);
+    cascade.Apply(interpolations, filter);
   } else {
     ApplyAnimatedStandardProperties<kHighPropertyPriority>(state,
                                                            animations_map);
@@ -1662,6 +1670,27 @@ void StyleResolver::ApplyUaForcedColors(StyleResolverState& state,
       needs_apply_pass, force_colors);
 }
 
+bool StyleResolver::CacheSuccess::EffectiveZoomChanged(
+    const ComputedStyle& style) const {
+  if (!cached_matched_properties)
+    return false;
+  return cached_matched_properties->computed_style->EffectiveZoom() !=
+         style.EffectiveZoom();
+}
+
+bool StyleResolver::CacheSuccess::FontChanged(
+    const ComputedStyle& style) const {
+  if (!cached_matched_properties)
+    return false;
+  return cached_matched_properties->computed_style->GetFontDescription() !=
+         style.GetFontDescription();
+}
+
+bool StyleResolver::CacheSuccess::EffectiveZoomOrFontChanged(
+    const ComputedStyle& style) const {
+  return EffectiveZoomChanged(style) || FontChanged(style);
+}
+
 StyleResolver::CacheSuccess StyleResolver::ApplyMatchedCache(
     StyleResolverState& state,
     const MatchResult& match_result) {
@@ -1973,55 +2002,58 @@ scoped_refptr<ComputedStyle> StyleResolver::StyleForInterpolations(
   StyleResolverState state(GetDocument(), element);
   ApplyBaseComputedStyle(&element, state, kMatchAllRules, true);
 
-  ApplyAnimatedStandardProperties<kHighPropertyPriority>(state, interpolations);
-  UpdateFont(state);
-  ApplyAnimatedStandardProperties<kLowPropertyPriority>(state, interpolations);
+  if (RuntimeEnabledFeatures::CSSCascadeEnabled()) {
+    STACK_UNINITIALIZED StyleCascade cascade(state);
+    using Entry = CascadeInterpolations::Entry;
+    class CascadeInterpolations cascade_interpolations(Vector<Entry, 4>({
+        Entry{&interpolations, CascadeOrigin::kAnimation},
+    }));
+    cascade.Analyze(cascade_interpolations, CascadeFilter());
+    cascade.Apply(cascade_interpolations, CascadeFilter());
+  } else {
+    ApplyAnimatedStandardProperties<kHighPropertyPriority>(state,
+                                                           interpolations);
+    UpdateFont(state);
+    ApplyAnimatedStandardProperties<kLowPropertyPriority>(state,
+                                                          interpolations);
+  }
 
   return state.TakeStyle();
 }
 
 void StyleResolver::CascadeAndApplyMatchedProperties(
     StyleResolverState& state,
-    const MatchResult& match_result) {
+    const MatchResult& result) {
   DCHECK(RuntimeEnabledFeatures::CSSCascadeEnabled());
 
-  CacheSuccess cache_success = ApplyMatchedCache(state, match_result);
+  CacheSuccess cache_success = ApplyMatchedCache(state, result);
 
-  StyleCascade cascade(state);
-  CascadeMatchResult(state, cascade, match_result);
+  STACK_UNINITIALIZED StyleCascade cascade(state);
+  CascadeFilter filter;
 
-  // We need to copy the entire cascade before applying, in case there are
-  // animations.
-  //
-  // TODO(crbug.com/985010): Avoid this copy with non-destructive Apply.
-  StyleCascade cascade_copy(cascade);
-
-  if (!cache_success.IsFullCacheHit())
-    cascade.Apply();
-
-  if (HasAnimationsOrTransitions(state)) {
-    CalculateAnimationUpdate(state);
-
-    // Add animation effects for custom properties to the cascade.
-    if (state.IsAnimatingCustomProperties()) {
-      cache_success.SetFailed();
-      CascadeAnimations(state, cascade_copy);
-      CascadeTransitions(state, cascade_copy);
-      StyleAnimator animator(state, cascade_copy);
-      cascade_copy.Exclude(CSSProperty::kAnimation, true);
-      cascade_copy.Apply(animator);
-    }
+  if (cache_success.IsFullCacheHit()) {
+    CascadeAndApplyCustomPropertyAnimations(state, cascade, filter, nullptr);
+    return;
   }
 
-  // TODO(crbug.com/985025): We only support full cache hits for now.
-  //
-  // The matched properties cache supports partial hits (see
-  // CacheSuccess::ShouldApplyInheritedOnly), but the StyleCascade path does
-  // not support this yet.
-  if (cache_success.IsFullCacheHit())
-    return;
+  if (state.Style()->InsideLink() == EInsideLink::kNotInsideLink)
+    filter = filter.Add(CSSProperty::kVisited, true);
 
-  CascadeAndApplyForcedColors(state, match_result);
+  cascade.Analyze(result, filter);
+
+  if (cache_success.ShouldApplyInheritedOnly()) {
+    auto reject_inherited = filter.Add(CSSProperty::kInherited, true);
+    auto reject_non_inherited = filter.Add(CSSProperty::kInherited, false);
+
+    cascade.Apply(result, reject_non_inherited);
+
+    if (cache_success.EffectiveZoomOrFontChanged(state.StyleRef()))
+      cascade.Apply(result, reject_inherited);
+  } else {
+    cascade.Apply(result, filter);
+  }
+
+  CascadeAndApplyCustomPropertyAnimations(state, cascade, filter, &result);
 
   if (const UAStyle* ua_style = state.GetUAStyle()) {
     state.Style()->SetHasAuthorBackground(
@@ -2030,133 +2062,38 @@ void StyleResolver::CascadeAndApplyMatchedProperties(
         ua_style->HasDifferentBorder(state.StyleRef()));
   }
 
+  CascadeAndApplyForcedColors(state, result);
+
   LoadPendingResources(state);
-  MaybeAddToMatchedPropertiesCache(state, cache_success, match_result);
+  MaybeAddToMatchedPropertiesCache(state, cache_success, result);
 
   DCHECK(!state.GetFontBuilder().FontDirty());
 }
 
-static void CascadeDeclaration(StyleCascade& cascade,
-                               const CSSPropertyName& name,
-                               const CSSValue& value,
-                               StyleCascade::Priority priority,
-                               unsigned apply_mask) {
-  if (apply_mask & kApplyMaskRegular)
-    cascade.Add(name, &value, priority);
-  if (apply_mask & kApplyMaskVisited) {
-    const CSSProperty* visited =
-        CSSProperty::Get(name.Id()).GetVisitedProperty();
-    if (visited)
-      cascade.Add(visited->GetCSSPropertyName(), &value, priority);
-  }
-  if (priority.HasUAOrigin()) {
-    if (const CSSProperty* ua = CSSProperty::Get(name.Id()).GetUAProperty())
-      cascade.Add(ua->GetCSSPropertyName(), &value, priority);
-  }
-}
+void StyleResolver::CascadeAndApplyCustomPropertyAnimations(
+    StyleResolverState& state,
+    StyleCascade& cascade,
+    CascadeFilter filter,
+    const MatchResult* match_result) {
+  filter = filter.Add(CSSProperty::kAnimation, true);
 
-// https://drafts.csswg.org/css-cascade/#all-shorthand
-static void CascadeAll(StyleResolverState& state,
-                       StyleCascade& cascade,
-                       StyleCascade::Priority priority,
-                       unsigned apply_mask,
-                       ValidPropertyFilter filter,
-                       const CSSValue& value) {
-  for (CSSPropertyID property_id : CSSPropertyIDList()) {
-    const CSSProperty& property = CSSProperty::Get(property_id);
+  if (HasAnimationsOrTransitions(state)) {
+    CalculateAnimationUpdate(state);
 
-    if (property.IsShorthand())
-      continue;
-    if (!property.IsAffectedByAll())
-      continue;
-    if (!PassesPropertyFilter(filter, property_id, state.GetDocument()))
-      continue;
-
-    CascadeDeclaration(cascade, CSSPropertyName(property_id), value, priority,
-                       apply_mask);
-  }
-}
-
-void StyleResolver::CascadeMatchResult(StyleResolverState& state,
-                                       StyleCascade& cascade,
-                                       const MatchResult& result) {
-  DCHECK(RuntimeEnabledFeatures::CSSCascadeEnabled());
-
-  using Origin = StyleCascade::Origin;
-  CascadeRange(state, cascade, result.UaRules(), Origin::kUserAgent);
-  CascadeRange(state, cascade, result.AuthorRules(), Origin::kAuthor);
-  CascadeRange(state, cascade, result.UserRules(), Origin::kUser);
-}
-
-void StyleResolver::CascadeRange(StyleResolverState& state,
-                                 StyleCascade& cascade,
-                                 const MatchedPropertiesRange& range,
-                                 StyleCascade::Origin origin) {
-  DCHECK(RuntimeEnabledFeatures::CSSCascadeEnabled());
-
-  if (range.IsEmpty())
-    return;
-
-  for (const auto& matched_properties : range) {
-    auto filter = static_cast<ValidPropertyFilter>(
-        matched_properties.types_.valid_property_filter);
-    uint16_t tree_order = matched_properties.types_.tree_order;
-    unsigned apply_mask = ComputeApplyMask(state, matched_properties);
-    const CSSPropertyValueSet* properties = matched_properties.properties.Get();
-    unsigned property_count = properties->PropertyCount();
-
-    for (unsigned i = 0; i < property_count; ++i) {
-      CSSPropertyValueSet::PropertyReference current =
-          properties->PropertyAt(i);
-      CSSPropertyID property_id = current.Id();
-
-      StyleCascade::Priority priority(origin, tree_order);
-
-      if (current.IsImportant())
-        priority = priority.AddImportance();
-
-      if (property_id == CSSPropertyID::kAll) {
-        CascadeAll(state, cascade, priority, apply_mask, filter,
-                   current.Value());
-        continue;
+    if (state.IsAnimatingCustomProperties()) {
+      const auto& update = state.AnimationUpdate();
+      if (!update.IsEmpty()) {
+        using Entry = CascadeInterpolations::Entry;
+        CascadeInterpolations interpolations(Vector<Entry, 4>({
+            Entry{&update.ActiveInterpolationsForCustomAnimations(),
+                  CascadeOrigin::kAnimation},
+            Entry{&update.ActiveInterpolationsForCustomTransitions(),
+                  CascadeOrigin::kTransition},
+        }));
+        cascade.Analyze(interpolations, filter);
+        cascade.Apply(match_result, &interpolations, filter);
       }
-
-      if (!PassesPropertyFilter(filter, property_id, state.GetDocument()))
-        continue;
-
-      CascadeDeclaration(cascade, current.Name(), current.Value(), priority,
-                         apply_mask);
     }
-  }
-}
-
-void StyleResolver::CascadeTransitions(StyleResolverState& state,
-                                       StyleCascade& cascade) {
-  const auto& update = state.AnimationUpdate();
-  const auto& map = update.ActiveInterpolationsForCustomTransitions();
-  const auto origin = StyleCascade::Origin::kTransition;
-  CascadeInterpolations(cascade, map, origin);
-}
-
-void StyleResolver::CascadeAnimations(StyleResolverState& state,
-                                      StyleCascade& cascade) {
-  const auto& update = state.AnimationUpdate();
-  const auto& map = update.ActiveInterpolationsForCustomAnimations();
-  const auto origin = StyleCascade::Origin::kAnimation;
-  CascadeInterpolations(cascade, map, origin);
-}
-
-void StyleResolver::CascadeInterpolations(StyleCascade& cascade,
-                                          const ActiveInterpolationsMap& map,
-                                          StyleCascade::Origin origin) {
-  using Type = cssvalue::CSSPendingInterpolationValue::Type;
-  for (const auto& entry : map) {
-    auto name = entry.key.GetCSSPropertyName();
-    Type type = entry.key.IsPresentationAttribute()
-                    ? Type::kPresentationAttribute
-                    : Type::kCSSProperty;
-    auto* v = cssvalue::CSSPendingInterpolationValue::Create(type);
-    cascade.Add(name, v, origin);
   }
 }
 
@@ -2167,44 +2104,46 @@ void StyleResolver::CascadeAndApplyForcedColors(StyleResolverState& state,
   if (state.Style()->ForcedColorAdjust() == EForcedColorAdjust::kNone)
     return;
 
-  unsigned apply_mask = kApplyMaskRegular | kApplyMaskVisited;
-  const CSSValue* unset = cssvalue::CSSUnsetValue::Create();
-  auto origin = StyleCascade::Origin::kUserAgent;
-
-  static const CSSProperty* properties[] = {
-      &GetCSSPropertyColor(),
-      &GetCSSPropertyBorderBottomColor(),
-      &GetCSSPropertyBorderLeftColor(),
-      &GetCSSPropertyBorderRightColor(),
-      &GetCSSPropertyBorderTopColor(),
-      &GetCSSPropertyBoxShadow(),
-      &GetCSSPropertyColumnRuleColor(),
-      &GetCSSPropertyFill(),
-      &GetCSSPropertyOutlineColor(),
-      &GetCSSPropertyStroke(),
-      &GetCSSPropertyTextDecorationColor(),
-      &GetCSSPropertyTextShadow(),
-      &GetCSSPropertyWebkitTapHighlightColor(),
-      &GetCSSPropertyWebkitTextEmphasisColor(),
-  };
-
-  StyleCascade cascade(state);
-
-  for (const CSSProperty* property : properties) {
-    CascadeDeclaration(cascade, property->GetCSSPropertyName(), *unset, origin,
-                       apply_mask);
-  }
-
-  const CSSValue* window = CSSIdentifierValue::Create(CSSValueID::kWindow);
-  CascadeDeclaration(cascade,
-                     GetCSSPropertyBackgroundColor().GetCSSPropertyName(),
-                     *window, origin, apply_mask);
-
   Color prev_bg_color = state.Style()->BackgroundColor().GetColor();
 
-  CascadeRange(state, cascade, result.UaRules(), origin);
-  cascade.Exclude(CSSProperty::kIsAffectedByForcedColors, false);
-  cascade.Apply();
+  MatchResult amended_result;
+
+  const CSSValue* unset = cssvalue::CSSUnsetValue::Create();
+  const CSSValue* window = CSSIdentifierValue::Create(CSSValueID::kWindow);
+  auto* set =
+      MakeGarbageCollected<MutableCSSPropertyValueSet>(state.GetParserMode());
+  set->SetProperty(CSSPropertyID::kBackgroundColor, *window);
+  set->SetProperty(CSSPropertyID::kBorderBottomColor, *unset);
+  set->SetProperty(CSSPropertyID::kBorderLeftColor, *unset);
+  set->SetProperty(CSSPropertyID::kBorderRightColor, *unset);
+  set->SetProperty(CSSPropertyID::kBorderTopColor, *unset);
+  set->SetProperty(CSSPropertyID::kBoxShadow, *unset);
+  set->SetProperty(CSSPropertyID::kColor, *unset);
+  set->SetProperty(CSSPropertyID::kColumnRuleColor, *unset);
+  set->SetProperty(CSSPropertyID::kFill, *unset);
+  set->SetProperty(CSSPropertyID::kFill, *unset);
+  set->SetProperty(CSSPropertyID::kOutlineColor, *unset);
+  set->SetProperty(CSSPropertyID::kOutlineColor, *unset);
+  set->SetProperty(CSSPropertyID::kStroke, *unset);
+  set->SetProperty(CSSPropertyID::kTextDecorationColor, *unset);
+  set->SetProperty(CSSPropertyID::kTextShadow, *unset);
+  set->SetProperty(CSSPropertyID::kWebkitTapHighlightColor, *unset);
+  set->SetProperty(CSSPropertyID::kWebkitTextEmphasisColor, *unset);
+
+  amended_result.AddMatchedProperties(set);
+
+  for (const auto& matched_properties : result.UaRules()) {
+    amended_result.AddMatchedProperties(
+        matched_properties.properties,
+        matched_properties.types_.link_match_type,
+        static_cast<ValidPropertyFilter>(
+            matched_properties.types_.valid_property_filter));
+  }
+
+  STACK_UNINITIALIZED StyleCascade cascade(state);
+  CascadeFilter filter(CSSProperty::kIsAffectedByForcedColors, false);
+  cascade.Analyze(amended_result, filter);
+  cascade.Apply(amended_result, filter);
 
   Color current_bg_color = state.Style()->BackgroundColor().GetColor();
   Color bg_color(current_bg_color.Red(), current_bg_color.Green(),

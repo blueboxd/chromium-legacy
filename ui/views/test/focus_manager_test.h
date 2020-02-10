@@ -31,6 +31,8 @@ class FocusManagerTest : public ViewsTestBase, public WidgetDelegate {
 
   // WidgetDelegate:
   View* GetContentsView() override;
+  Widget* GetWidget() override;
+  const Widget* GetWidget() const override;
   void GetAccessiblePanes(std::vector<View*>* panes) override;
 
  protected:
@@ -45,9 +47,6 @@ class FocusManagerTest : public ViewsTestBase, public WidgetDelegate {
   void SetAccessiblePanes(const std::vector<View*>& panes);
 
  private:
-  // WidgetDelegate:
-  const Widget* GetWidgetImpl() const override;
-
   View* contents_view_;
   FocusChangeListener* focus_change_listener_ = nullptr;
   WidgetFocusChangeListener* widget_focus_change_listener_ = nullptr;

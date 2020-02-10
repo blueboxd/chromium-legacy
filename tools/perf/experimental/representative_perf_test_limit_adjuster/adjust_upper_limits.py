@@ -191,6 +191,9 @@ def RecalculateUpperLimits(data_point_count):
           results[platform][story]['ci_095'], 'CI', max_change)
         results[platform][story]['ci_095'] = new_ci
 
+        if current_upper_limits[platform][story].get('control', False):
+          results[platform][story]['control'] = True
+
   if max_change > CHANGE_PERCENTAGE_LIMIT:
     with open(
       os.path.join(

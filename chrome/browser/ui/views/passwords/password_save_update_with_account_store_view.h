@@ -8,13 +8,14 @@
 #include "chrome/browser/ui/passwords/bubble_controllers/save_update_with_account_store_bubble_controller.h"
 #include "chrome/browser/ui/views/passwords/password_bubble_view_base.h"
 #include "ui/views/controls/button/button.h"
+#include "ui/views/controls/combobox/combobox_listener.h"
 #include "ui/views/controls/editable_combobox/editable_combobox_listener.h"
 #include "ui/views/view.h"
 
 namespace views {
+class Combobox;
 class EditableCombobox;
 class ToggleImageButton;
-class Checkbox;
 }  // namespace views
 
 // A view offering the user the ability to save or update credentials (depending
@@ -25,7 +26,8 @@ class Checkbox;
 class PasswordSaveUpdateWithAccountStoreView
     : public PasswordBubbleViewBase,
       public views::ButtonListener,
-      public views::EditableComboboxListener {
+      public views::EditableComboboxListener,
+      public views::ComboboxListener {
  public:
   PasswordSaveUpdateWithAccountStoreView(content::WebContents* web_contents,
                                          views::View* anchor_view,
@@ -41,6 +43,10 @@ class PasswordSaveUpdateWithAccountStoreView
   // views::ButtonListener:
   void ButtonPressed(views::Button* sender, const ui::Event& event) override;
 
+  // views::ComboboxListener:
+  // User for the destination combobox.
+  void OnPerformAction(views::Combobox* combobox) override;
+
   // views::EditableComboboxListener:
   // Used for both the username and password editable comboboxes.
   void OnContentChanged(views::EditableCombobox* editable_combobox) override;
@@ -52,9 +58,6 @@ class PasswordSaveUpdateWithAccountStoreView
   gfx::ImageSkia GetWindowIcon() override;
   bool ShouldShowWindowIcon() const override;
   bool ShouldShowCloseButton() const override;
-  bool Accept() override;
-  bool Cancel() override;
-  bool Close() override;
 
   // View:
   void AddedToWidget() override;
@@ -71,13 +74,13 @@ class PasswordSaveUpdateWithAccountStoreView
   // save bubble.
   const bool is_update_bubble_;
 
+  views::Combobox* destination_dropdown_;
+
   views::EditableCombobox* username_dropdown_;
   views::ToggleImageButton* password_view_button_;
 
   // The view for the password value.
   views::EditableCombobox* password_dropdown_;
-
-  views::Checkbox* account_store_checkbox_ = nullptr;
 
   bool are_passwords_revealed_;
 };

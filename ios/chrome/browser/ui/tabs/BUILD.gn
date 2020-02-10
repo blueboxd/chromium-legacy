@@ -31,7 +31,6 @@ source_set("tabs") {
     "resources:tabstrip_incognito_background_tab",
     "resources:tabstrip_incognito_foreground_tab",
     "resources:tabstrip_new_tab",
-    "resources:tabstrip_new_tab_pressed",
     "resources:tabstrip_tab_switcher_count_button",
     "resources:tabstrip_tab_switcher_count_button_pressed",
     "resources:tabstrip_toggle_button_gradient",

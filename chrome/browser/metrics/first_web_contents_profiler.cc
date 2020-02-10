@@ -4,11 +4,15 @@
 
 #include "chrome/browser/metrics/first_web_contents_profiler.h"
 
+#include <memory>
 #include <string>
 
+#include "base/bind.h"
 #include "base/location.h"
 #include "base/logging.h"
 #include "base/macros.h"
+#include "base/memory/memory_pressure_listener.h"
+#include "base/memory/memory_pressure_monitor.h"
 #include "base/metrics/histogram_functions.h"
 #include "base/time/time.h"
 #include "build/build_config.h"
@@ -56,6 +60,8 @@ void RecordFinishReason(FinishReason finish_reason) {
                                 finish_reason);
 }
 
+// Note: Instances of this class self destroy when the first non-empty paint
+// happens, or when an event prevents it from being recorded.
 class FirstWebContentsProfiler : public content::WebContentsObserver {
  public:
   explicit FirstWebContentsProfiler(content::WebContents* web_contents);
@@ -78,12 +84,18 @@ class FirstWebContentsProfiler : public content::WebContentsObserver {
   // Whether a main frame navigation finished since this was created.
   bool did_finish_first_navigation_ = false;
 
+  // Memory pressure listener that will be used to check if memory pressure has
+  // an impact on startup.
+  base::MemoryPressureListener memory_pressure_listener_;
+
   DISALLOW_COPY_AND_ASSIGN(FirstWebContentsProfiler);
 };
 
 FirstWebContentsProfiler::FirstWebContentsProfiler(
     content::WebContents* web_contents)
-    : content::WebContentsObserver(web_contents) {
+    : content::WebContentsObserver(web_contents),
+      memory_pressure_listener_(base::BindRepeating(
+          &startup_metric_utils::OnMemoryPressureBeforeFirstNonEmptyPaint)) {
   // FirstWebContentsProfiler is created before the main MessageLoop starts
   // running. At that time, any visible WebContents should have a pending
   // NavigationEntry, i.e. should have dispatched DidStartNavigation() but not

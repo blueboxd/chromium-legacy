@@ -38,6 +38,8 @@ class AccessibilityPanel : public views::WidgetDelegate,
   void Close();
 
   // WidgetDelegate:
+  const views::Widget* GetWidget() const override;
+  views::Widget* GetWidget() override;
   void DeleteDelegate() override;
   views::View* GetContentsView() override;
 
@@ -47,9 +49,6 @@ class AccessibilityPanel : public views::WidgetDelegate,
 
  private:
   class AccessibilityPanelWebContentsObserver;
-
-  // WidgetDelegate:
-  const views::Widget* GetWidgetImpl() const override;
 
   // content::WebContentsDelegate:
   bool HandleContextMenu(content::RenderFrameHost* render_frame_host,

@@ -109,6 +109,7 @@ class WebContentController
   void RenderFrameDeleted(content::RenderFrameHost* render_frame_host) override;
   void RenderFrameHostChanged(content::RenderFrameHost* old_host,
                               content::RenderFrameHost* new_host) override;
+  void MainFrameWasResized(bool width_changed) override;
   void FrameSizeChanged(content::RenderFrameHost* render_frame_host,
                         const gfx::Size& frame_size) override;
   void RenderViewCreated(content::RenderViewHost* render_view_host) override;

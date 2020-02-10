@@ -231,6 +231,16 @@ ci.linux_builder(
     triggered_by = [vars.poller.get()],
 )
 
+ci.linux_builder(
+    name = 'Linux Ozone Tester (Wayland)',
+    triggered_by = ['ci/linux-ozone-rel'],
+)
+
+ci.linux_builder(
+    name = 'Linux Ozone Tester (X11)',
+    triggered_by = ['ci/linux-ozone-rel'],
+)
+
 
 ci.mac_builder(
     name = 'Mac Builder',

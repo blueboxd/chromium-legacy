@@ -99,6 +99,8 @@ class NativeAppWindowViews : public extensions::NativeAppWindow,
   void SaveWindowPlacement(const gfx::Rect& bounds,
                            ui::WindowShowState show_state) override;
   void DeleteDelegate() override;
+  views::Widget* GetWidget() override;
+  const views::Widget* GetWidget() const override;
   bool ShouldDescendIntoChildForEventHandling(
       gfx::NativeView child,
       const gfx::Point& location) override;
@@ -155,9 +157,6 @@ class NativeAppWindowViews : public extensions::NativeAppWindow,
  private:
   // Informs modal dialogs that they need to update their positions.
   void OnViewWasResized();
-
-  // WidgetDelegate:
-  const views::Widget* GetWidgetImpl() const override;
 
   extensions::AppWindow* app_window_ = nullptr;  // Not owned.
   views::WebView* web_view_ = nullptr;

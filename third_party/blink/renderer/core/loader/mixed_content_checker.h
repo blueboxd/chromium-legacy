@@ -39,7 +39,7 @@
 #include "third_party/blink/renderer/platform/heap/handle.h"
 #include "third_party/blink/renderer/platform/loader/fetch/https_state.h"
 #include "third_party/blink/renderer/platform/loader/fetch/resource_request.h"
-#include "third_party/blink/renderer/platform/weborigin/security_violation_reporting_policy.h"
+#include "third_party/blink/renderer/platform/weborigin/reporting_disposition.h"
 #include "third_party/blink/renderer/platform/wtf/text/wtf_string.h"
 
 namespace blink {
@@ -69,18 +69,18 @@ class CORE_EXPORT MixedContentChecker final {
   DISALLOW_NEW();
 
  public:
-  static bool ShouldBlockFetch(LocalFrame*,
-                               mojom::RequestContextType,
-                               ResourceRequest::RedirectStatus,
-                               const KURL&,
-                               SecurityViolationReportingPolicy =
-                                   SecurityViolationReportingPolicy::kReport);
+  static bool ShouldBlockFetch(
+      LocalFrame*,
+      mojom::RequestContextType,
+      ResourceRequest::RedirectStatus,
+      const KURL&,
+      ReportingDisposition = ReportingDisposition::kReport);
 
   static bool ShouldBlockFetchOnWorker(const WorkerFetchContext&,
                                        mojom::RequestContextType,
                                        ResourceRequest::RedirectStatus,
                                        const KURL&,
-                                       SecurityViolationReportingPolicy,
+                                       ReportingDisposition,
                                        bool is_worklet_global_scope);
 
   static bool IsWebSocketAllowed(const FrameFetchContext&,
@@ -90,10 +90,10 @@ class CORE_EXPORT MixedContentChecker final {
 
   static bool IsMixedContent(const SecurityOrigin*, const KURL&);
   static bool IsMixedContent(const FetchClientSettingsObject&, const KURL&);
-  static bool IsMixedFormAction(LocalFrame*,
-                                const KURL&,
-                                SecurityViolationReportingPolicy =
-                                    SecurityViolationReportingPolicy::kReport);
+  static bool IsMixedFormAction(
+      LocalFrame*,
+      const KURL&,
+      ReportingDisposition = ReportingDisposition::kReport);
 
   static bool ShouldAutoupgrade(HttpsState context_https_state,
                                 mojom::RequestContextType type,

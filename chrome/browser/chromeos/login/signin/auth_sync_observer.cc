@@ -22,20 +22,20 @@
 namespace chromeos {
 
 // static
-bool AuthSyncObserver::ShouldObserve(Profile* profile) {
+bool AuthErrorObserver::ShouldObserve(Profile* profile) {
   const user_manager::User* const user =
       ProfileHelper::Get()->GetUserByProfile(profile);
   return user && (user->HasGaiaAccount() ||
                   user->GetType() == user_manager::USER_TYPE_SUPERVISED);
 }
 
-AuthSyncObserver::AuthSyncObserver(Profile* profile) : profile_(profile) {
+AuthErrorObserver::AuthErrorObserver(Profile* profile) : profile_(profile) {
   DCHECK(ShouldObserve(profile));
 }
 
-AuthSyncObserver::~AuthSyncObserver() {}
+AuthErrorObserver::~AuthErrorObserver() = default;
 
-void AuthSyncObserver::StartObserving() {
+void AuthErrorObserver::StartObserving() {
   syncer::SyncService* const sync_service =
       ProfileSyncServiceFactory::GetForProfile(profile_);
   if (sync_service)
@@ -49,7 +49,7 @@ void AuthSyncObserver::StartObserving() {
   }
 }
 
-void AuthSyncObserver::Shutdown() {
+void AuthErrorObserver::Shutdown() {
   syncer::SyncService* const sync_service =
       ProfileSyncServiceFactory::GetForProfile(profile_);
   if (sync_service)
@@ -61,11 +61,11 @@ void AuthSyncObserver::Shutdown() {
     error_controller->RemoveObserver(this);
 }
 
-void AuthSyncObserver::OnStateChanged(syncer::SyncService* sync) {
+void AuthErrorObserver::OnStateChanged(syncer::SyncService* sync) {
   HandleAuthError(sync->GetAuthError());
 }
 
-void AuthSyncObserver::OnErrorChanged() {
+void AuthErrorObserver::OnErrorChanged() {
   // This notification could have come for any account but we are only
   // interested in errors for the Primary Account.
   signin::IdentityManager* identity_manager =
@@ -75,7 +75,7 @@ void AuthSyncObserver::OnErrorChanged() {
           signin::ConsentLevel::kNotRequired)));
 }
 
-void AuthSyncObserver::HandleAuthError(
+void AuthErrorObserver::HandleAuthError(
     const GoogleServiceAuthError& auth_error) {
   const user_manager::User* const user =
       ProfileHelper::Get()->GetUserByProfile(profile_);

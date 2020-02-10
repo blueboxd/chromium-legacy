@@ -194,19 +194,17 @@ __gCrWeb.passwords['getPasswordFormDataAsString'] = function(identifier) {
  * @param {AutofillFormData} formData Form data.
  * @param {string} username The username to fill.
  * @param {string} password The password to fill.
- * @param {string=} opt_normalizedOrigin The origin URL to compare to.
  * @return {boolean} Whether a form field has been filled.
  */
 __gCrWeb.passwords['fillPasswordForm'] = function(
-    formData, username, password, opt_normalizedOrigin) {
-  const normalizedOrigin = opt_normalizedOrigin ||
+    formData, username, password) {
+  const normalizedOrigin =
       __gCrWeb.common.removeQueryAndReferenceFromURL(window.location.href);
   const origin = /** @type {string} */ (formData['origin']);
   if (!__gCrWeb.common.isSameOrigin(origin, normalizedOrigin)) {
     return false;
   }
-  return fillPasswordFormWithData(
-      formData, username, password, window, opt_normalizedOrigin);
+  return fillPasswordFormWithData(formData, username, password, window);
 };
 
 /**
@@ -253,20 +251,16 @@ __gCrWeb.passwords['fillPasswordFormWithGeneratedPassword'] = function(
  * @param {string} username The username to fill.
  * @param {string} password The password to fill.
  * @param {Window} win A window or a frame containing formData.
- * @param {string=} opt_normalizedOrigin The origin URL to compare to.
  * @return {boolean} Whether a form field has been filled.
  */
-const fillPasswordFormWithData = function(
-    formData, username, password, win, opt_normalizedOrigin) {
+const fillPasswordFormWithData = function(formData, username, password, win) {
   const doc = win.document;
   const forms = doc.forms;
   let filled = false;
 
   for (let i = 0; i < forms.length; i++) {
     const form = forms[i];
-    const normalizedFormAction =
-        opt_normalizedOrigin || __gCrWeb.fill.getCanonicalActionForForm(form);
-    if (formData.action !== normalizedFormAction) {
+    if (formData.name !== __gCrWeb.form.getFormIdentifier(form)) {
       continue;
     }
     const inputs = getFormInputElements(form);
@@ -304,8 +298,7 @@ const fillPasswordFormWithData = function(
   // Recursively invoke for all iframes.
   const frames = getSameOriginFrames(win);
   for (let i = 0; i < frames.length; i++) {
-    if (fillPasswordFormWithData(
-            formData, username, password, frames[i], opt_normalizedOrigin)) {
+    if (fillPasswordFormWithData(formData, username, password, frames[i])) {
       filled = true;
     }
   }

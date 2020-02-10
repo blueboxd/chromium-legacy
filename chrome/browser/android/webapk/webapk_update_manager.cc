@@ -13,6 +13,7 @@
 #include "base/bind.h"
 #include "base/files/file_path.h"
 #include "base/strings/string16.h"
+#include "base/strings/utf_string_conversions.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "chrome/android/chrome_jni_headers/WebApkUpdateManager_jni.h"
 #include "chrome/browser/android/color_helpers.h"
@@ -70,6 +71,7 @@ static void JNI_WebApkUpdateManager_StoreWebApkUpdateRequestToFile(
     const jboolean java_share_target_param_is_enctype_multipart,
     const JavaParamRef<jobjectArray>& java_share_target_param_file_names,
     const JavaParamRef<jobjectArray>& java_share_target_param_accepts,
+    const JavaParamRef<jobjectArray>& java_shortcuts,
     const JavaParamRef<jstring>& java_web_manifest_url,
     const JavaParamRef<jstring>& java_webapk_package,
     jint java_webapk_version,
@@ -159,6 +161,29 @@ static void JNI_WebApkUpdateManager_StoreWebApkUpdateRequestToFile(
 
   std::string webapk_package;
   ConvertJavaStringToUTF8(env, java_webapk_package, &webapk_package);
+
+  std::vector<std::vector<base::string16>> shortcuts;
+  base::android::Java2dStringArrayTo2dStringVector(env, java_shortcuts,
+                                                   &shortcuts);
+
+  for (const auto& shortcut_data : shortcuts) {
+    DCHECK_EQ(shortcut_data.size(), 5u);
+    blink::Manifest::ShortcutItem shortcut_item;
+    shortcut_item.name = shortcut_data[0];
+    shortcut_item.short_name = base::NullableString16(shortcut_data[1]);
+    shortcut_item.url = GURL(base::UTF16ToUTF8(shortcut_data[2]));
+
+    blink::Manifest::ImageResource icon;
+    icon.src = GURL(base::UTF16ToUTF8(shortcut_data[3]));
+    icon.purpose.push_back(blink::Manifest::ImageResource::Purpose::ANY);
+
+    if (icon.src.is_valid()) {
+      icon_url_to_murmur2_hash[icon.src.spec()] =
+          base::UTF16ToUTF8(shortcut_data[4]);
+    }
+    info.best_shortcut_icon_urls.push_back(icon.src);
+    info.shortcut_items.push_back(std::move(shortcut_item));
+  }
 
   WebApkUpdateReason update_reason =
       static_cast<WebApkUpdateReason>(java_update_reason);

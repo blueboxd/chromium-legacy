@@ -54,8 +54,10 @@
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/navigation_entry.h"
 #include "content/public/browser/web_contents.h"
+#include "content/public/browser/web_contents_observer.h"
 #include "content/public/common/content_switches.h"
 #include "content/public/common/url_constants.h"
+#include "content/public/test/mock_navigation_handle.h"
 #include "content/public/test/navigation_simulator.h"
 #include "content/public/test/web_contents_tester.h"
 #include "mojo/public/cpp/bindings/associated_receiver.h"
@@ -866,4 +868,37 @@ TEST_F(ChromePasswordManagerClientAndroidTest, FocusedInputChangedGoodFrame) {
       PasswordGenerationController::GetIfExisting(web_contents());
   EXPECT_TRUE(pwd_generation_controller);
 }
+
+TEST_F(ChromePasswordManagerClientAndroidTest,
+       SameDocumentNavigationDoesNotClearCache) {
+  auto origin = url::Origin::Create(GURL("https://example.com"));
+  PasswordForm form;
+  form.origin = origin.GetURL();
+  form.username_value = base::ASCIIToUTF16("alice");
+  form.password_value = base::ASCIIToUTF16("S3cr3t");
+  GetClient()->GetCredentialCacheForTesting()->SaveCredentialsForOrigin({&form},
+                                                                        origin);
+
+  // Check that a navigation within the same document does not clear the cache.
+  content::MockNavigationHandle handle(web_contents());
+  handle.set_is_same_document(true);
+  handle.set_has_committed(true);
+  static_cast<content::WebContentsObserver*>(GetClient())
+      ->DidFinishNavigation(&handle);
+
+  EXPECT_FALSE(GetClient()
+                   ->GetCredentialCacheForTesting()
+                   ->GetCredentialStore(origin)
+                   .GetCredentials()
+                   .empty());
+
+  // Check that a navigation to a different origin clears the cache.
+  NavigateAndCommit(GURL("https://example.org"));
+  EXPECT_TRUE(GetClient()
+                  ->GetCredentialCacheForTesting()
+                  ->GetCredentialStore(origin)
+                  .GetCredentials()
+                  .empty());
+}
+
 #endif  //  defined(OS_ANDROID)

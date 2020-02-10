@@ -475,12 +475,12 @@ bool ProcessSingletonNotificationCallback(
 class ScopedMainMessageLoopRunEvent {
  public:
   ScopedMainMessageLoopRunEvent() {
-    TRACE_EVENT_ASYNC_BEGIN0(
+    TRACE_EVENT_NESTABLE_ASYNC_BEGIN0(
         "toplevel", "ChromeBrowserMainParts::MainMessageLoopRun", this);
   }
   ~ScopedMainMessageLoopRunEvent() {
-    TRACE_EVENT_ASYNC_END0("toplevel",
-                           "ChromeBrowserMainParts::MainMessageLoopRun", this);
+    TRACE_EVENT_NESTABLE_ASYNC_END0(
+        "toplevel", "ChromeBrowserMainParts::MainMessageLoopRun", this);
   }
 };
 

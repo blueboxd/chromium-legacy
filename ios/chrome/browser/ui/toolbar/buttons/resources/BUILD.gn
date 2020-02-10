@@ -37,7 +37,6 @@ imageset("toolbar_new_tab_page") {
 imageset("toolbar_stop") {
   sources = [
     "toolbar_stop.imageset/Contents.json",
-    "toolbar_stop.imageset/toolbar_stop.png",
     "toolbar_stop.imageset/toolbar_stop@2x.png",
     "toolbar_stop.imageset/toolbar_stop@3x.png",
   ]
@@ -64,7 +63,6 @@ imageset("toolbar_bookmark_active") {
 imageset("toolbar_reload") {
   sources = [
     "toolbar_reload.imageset/Contents.json",
-    "toolbar_reload.imageset/toolbar_reload.png",
     "toolbar_reload.imageset/toolbar_reload@2x.png",
     "toolbar_reload.imageset/toolbar_reload@3x.png",
   ]
@@ -73,7 +71,6 @@ imageset("toolbar_reload") {
 imageset("toolbar_share") {
   sources = [
     "toolbar_share.imageset/Contents.json",
-    "toolbar_share.imageset/toolbar_share.png",
     "toolbar_share.imageset/toolbar_share@2x.png",
     "toolbar_share.imageset/toolbar_share@3x.png",
   ]

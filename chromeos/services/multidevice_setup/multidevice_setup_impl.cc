@@ -349,8 +349,6 @@ bool MultiDeviceSetupImpl::AttemptSetHost(
   multidevice::RemoteDeviceRefList eligible_devices =
       eligible_host_devices_provider_->GetEligibleHostDevices();
 
-  // TODO(https://crbug.com/1019206): When v1 DeviceSync is turned off, only use
-  // Instance ID since all devices are guaranteed to have one.
   auto it = std::find_if(
       eligible_devices.begin(), eligible_devices.end(),
       [&host_instance_id_or_legacy_device_id](const auto& eligible_device) {

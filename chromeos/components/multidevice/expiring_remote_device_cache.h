@@ -12,6 +12,7 @@
 #include "base/macros.h"
 #include "base/optional.h"
 #include "chromeos/components/multidevice/remote_device.h"
+#include "chromeos/components/multidevice/remote_device_cache.h"
 #include "chromeos/components/multidevice/remote_device_ref.h"
 
 namespace chromeos {
@@ -29,6 +30,9 @@ class RemoteDeviceCache;
 // call which are not in the new call will be marked as stale. Stale devices are
 // still valid RemoteDeviceRefs (preventing clients from segfaulting), but will
 // not be returned by GetNonExpiredRemoteDevices().
+//
+// Note: Because RemoteDeviceCache supports both Instance IDs and legacy device
+// IDs, ExpiringRemoteDeviceCache does the same.
 class ExpiringRemoteDeviceCache {
  public:
   ExpiringRemoteDeviceCache();
@@ -58,8 +62,6 @@ class ExpiringRemoteDeviceCache {
 
   std::unique_ptr<RemoteDeviceCache> remote_device_cache_;
 
-  // TODO(https://crbug.com/1019206): Only track Instance IDs after v1
-  // DeviceSync is deprecated, when every device is guaranteed an Instance ID.
   base::flat_set<std::string> legacy_device_ids_from_last_set_call_;
   base::flat_set<std::string> instance_ids_from_last_set_call_;
 

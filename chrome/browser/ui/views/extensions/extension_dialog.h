@@ -75,6 +75,8 @@ class ExtensionDialog : public views::DialogDelegate,
   base::string16 GetWindowTitle() const override;
   void WindowClosing() override;
   void DeleteDelegate() override;
+  views::Widget* GetWidget() override;
+  const views::Widget* GetWidget() const override;
   views::View* GetContentsView() override;
 
   // content::NotificationObserver:
@@ -102,9 +104,6 @@ class ExtensionDialog : public views::DialogDelegate,
   ExtensionViewViews* GetExtensionView() const;
   static ExtensionViewViews* GetExtensionView(
       extensions::ExtensionViewHost* host);
-
-  // views::DialogDelegate:
-  const views::Widget* GetWidgetImpl() const override;
 
   // Window Title
   base::string16 window_title_;

@@ -13,7 +13,6 @@
 #include "ui/gfx/native_widget_types.h"
 #include "ui/views/widget/native_widget.h"
 #include "ui/views/widget/widget.h"
-#include "ui/views/widget/widget_getter.h"
 
 namespace gfx {
 class ImageSkia;
@@ -44,8 +43,7 @@ namespace internal {
 //             NativeWidget implementations. This file should not be included
 //             in code that does not fall into one of these use cases.
 //
-class VIEWS_EXPORT NativeWidgetPrivate : public NativeWidget,
-                                         public virtual WidgetGetter {
+class VIEWS_EXPORT NativeWidgetPrivate : public NativeWidget {
  public:
   ~NativeWidgetPrivate() override = default;
 
@@ -93,6 +91,11 @@ class VIEWS_EXPORT NativeWidgetPrivate : public NativeWidget,
   virtual bool ShouldUseNativeFrame() const = 0;
   virtual bool ShouldWindowContentsBeTransparent() const = 0;
   virtual void FrameTypeChanged() = 0;
+
+  // Returns the Widget associated with this NativeWidget. This function is
+  // guaranteed to return non-NULL for the lifetime of the NativeWidget.
+  virtual Widget* GetWidget() = 0;
+  virtual const Widget* GetWidget() const = 0;
 
   // Returns the NativeView/Window associated with this NativeWidget.
   virtual gfx::NativeView GetNativeView() const = 0;

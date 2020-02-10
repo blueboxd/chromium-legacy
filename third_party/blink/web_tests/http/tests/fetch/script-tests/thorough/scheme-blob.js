@@ -32,6 +32,10 @@ if ('createObjectURL' in URL) {
 }
 
 if (self.importScripts) {
-  executeTests(TEST_TARGETS);
+  if (TEST_TARGETS.length > 0) {
+    executeTests(TEST_TARGETS);
+  } else {
+    setup({single_test: true});
+  }
   done();
 }

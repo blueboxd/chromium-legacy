@@ -4,6 +4,8 @@
 
 #include "third_party/blink/renderer/modules/media_controls/elements/media_control_input_element.h"
 
+#include "base/metrics/histogram_functions.h"
+#include "base/strings/strcat.h"
 #include "third_party/blink/public/platform/web_size.h"
 #include "third_party/blink/public/strings/grit/blink_strings.h"
 #include "third_party/blink/renderer/core/css/css_property_names.h"
@@ -17,7 +19,6 @@
 #include "third_party/blink/renderer/modules/media_controls/elements/media_control_elements_helper.h"
 #include "third_party/blink/renderer/modules/media_controls/media_controls_impl.h"
 #include "third_party/blink/renderer/platform/heap/heap.h"
-#include "third_party/blink/renderer/platform/instrumentation/histogram.h"
 #include "third_party/blink/renderer/platform/runtime_enabled_features.h"
 #include "third_party/blink/renderer/platform/text/platform_locale.h"
 
@@ -264,11 +265,8 @@ String MediaControlInputElement::GetOverflowMenuSubtitleString() const {
 }
 
 void MediaControlInputElement::RecordCTREvent(CTREvent event) {
-  String histogram_name =
-      StringView("Media.Controls.CTR.") + GetNameForHistograms();
-  EnumerationHistogram ctr_histogram(histogram_name.Ascii().c_str(),
-                                     static_cast<int>(CTREvent::kCount));
-  ctr_histogram.Count(static_cast<int>(event));
+  base::UmaHistogramEnumeration(
+      base::StrCat({"Media.Controls.CTR.", GetNameForHistograms()}), event);
 }
 
 void MediaControlInputElement::SetClass(const AtomicString& class_name,

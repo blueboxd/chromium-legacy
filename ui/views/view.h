@@ -49,7 +49,6 @@
 #include "ui/views/paint_info.h"
 #include "ui/views/view_targeter.h"
 #include "ui/views/views_export.h"
-#include "ui/views/widget/widget_getter.h"
 
 using ui::OSExchangeData;
 
@@ -273,8 +272,7 @@ class VIEWS_EXPORT View : public ui::LayerDelegate,
                           public ui::EventTarget,
                           public ui::EventHandler,
                           public ui::PropertyHandler,
-                          public metadata::MetaDataProvider,
-                          public virtual WidgetGetter {
+                          public views::metadata::MetaDataProvider {
  public:
   using Views = std::vector<View*>;
 
@@ -393,7 +391,9 @@ class VIEWS_EXPORT View : public ui::LayerDelegate,
 
   // Tree operations -----------------------------------------------------------
 
-  const Widget* GetWidgetImpl() const override;
+  // Get the Widget that hosts this View, if any.
+  virtual const Widget* GetWidget() const;
+  virtual Widget* GetWidget();
 
   // Adds |view| as a child of this view, optionally at |index|.
   // Returns the raw pointer for callers which want to hold a pointer to the

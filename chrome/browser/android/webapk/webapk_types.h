@@ -25,6 +25,7 @@ enum class WebApkUpdateReason {
   DISPLAY_MODE_DIFFERS,
   WEB_SHARE_TARGET_DIFFERS,
   MANUALLY_TRIGGERED,
+  SHORTCUTS_DIFFER,
 };
 
 // A Java counterpart will be generated for this enum.

@@ -113,8 +113,6 @@ void ExpectAllContainers() {
   EXPECT_TRUE(Shell::GetContainer(root_window,
                                   kShellWindowId_LockSystemModalContainer));
   EXPECT_TRUE(
-      Shell::GetContainer(root_window, kShellWindowId_ShelfControlContainer));
-  EXPECT_TRUE(
       Shell::GetContainer(root_window, kShellWindowId_OverviewFocusContainer));
   EXPECT_TRUE(Shell::GetContainer(root_window, kShellWindowId_MenuContainer));
   EXPECT_TRUE(Shell::GetContainer(root_window,

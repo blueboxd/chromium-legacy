@@ -16,6 +16,7 @@
 #include "base/test/launcher/test_launcher.h"
 #include "base/test/launcher/test_launcher_test_utils.h"
 #include "base/test/scoped_feature_list.h"
+#include "base/test/scoped_run_loop_timeout.h"
 #include "base/test/test_switches.h"
 #include "base/test/test_timeouts.h"
 #include "base/threading/thread_restrictions.h"
@@ -301,12 +302,14 @@ IN_PROC_BROWSER_TEST_F(ContentBrowserTest, NonNestableTask) {
 IN_PROC_BROWSER_TEST_F(ContentBrowserTest, RunTimeoutInstalled) {
   // Verify that a RunLoop timeout is installed and shorter than the test
   // timeout itself.
-  const auto* run_timeout = base::RunLoop::ScopedRunTimeoutForTest::Current();
+  const base::RunLoop::RunLoopTimeout* run_timeout =
+      base::test::ScopedRunLoopTimeout::GetTimeoutForCurrentThread();
   EXPECT_TRUE(run_timeout);
-  EXPECT_LT(run_timeout->timeout(), TestTimeouts::test_launcher_timeout());
+  EXPECT_LT(run_timeout->timeout, TestTimeouts::test_launcher_timeout());
 
-  EXPECT_NONFATAL_FAILURE({ run_timeout->on_timeout().Run(); },
-                          "RunLoop::Run() timed out");
+  static const base::RepeatingClosure& static_on_timeout =
+      run_timeout->on_timeout;
+  EXPECT_FATAL_FAILURE(static_on_timeout.Run(), "RunLoop::Run() timed out");
 }
 
 }  // namespace content

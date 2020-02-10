@@ -1268,6 +1268,14 @@ if (!is_ios && !is_android && !is_chromecast && !is_fuchsia) {
         "//v8:v8_shell($v8_snapshot_toolchain)",
       ]
     }
+
+    if (!is_component_build) {
+      # See https://bugs.chromium.org/p/chromium/issues/detail?id=942546#c11.
+      deps += [
+        "//third_party/webrtc/rtc_tools:rtp_generator",
+        "//third_party/webrtc/rtc_tools:video_replay",
+      ]
+    }
   }
 }
 

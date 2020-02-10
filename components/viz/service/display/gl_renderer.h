@@ -353,7 +353,7 @@ class VIZ_SERVICE_EXPORT GLRenderer : public DirectRenderer {
   void ProcessOverdrawFeedback(int surface_area, unsigned query);
   bool OverdrawTracingEnabled();
 
-  ResourceFormat BackbufferFormat() const;
+  ResourceFormat CurrentRenderPassResourceFormat() const;
 
   // A map from RenderPass id to the texture used to draw the RenderPass from.
   base::flat_map<RenderPassId, ScopedRenderPassTexture> render_pass_textures_;

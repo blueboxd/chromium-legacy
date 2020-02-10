@@ -41,6 +41,7 @@
 #include "storage/common/file_system/file_system_mount_option.h"
 #include "storage/common/file_system/file_system_util.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "url/origin.h"
 
 using content::AsyncFileTestHelper;
 using storage::CopyOrMoveOperationDelegate;
@@ -172,10 +173,10 @@ class ScopedThreadStopper {
 
 class CopyOrMoveOperationTestHelper {
  public:
-  CopyOrMoveOperationTestHelper(const GURL& origin,
+  CopyOrMoveOperationTestHelper(const std::string& origin,
                                 storage::FileSystemType src_type,
                                 storage::FileSystemType dest_type)
-      : origin_(origin),
+      : origin_(url::Origin::Create(GURL(origin))),
         src_type_(src_type),
         dest_type_(dest_type),
         task_environment_(base::test::TaskEnvironment::MainThreadType::IO) {}
@@ -209,8 +210,7 @@ class CopyOrMoveOperationTestHelper {
     storage::FileSystemBackend* backend =
         file_system_context_->GetFileSystemBackend(src_type_);
     backend->ResolveURL(
-        FileSystemURL::CreateForTest(url::Origin::Create(origin_), src_type_,
-                                     base::FilePath()),
+        FileSystemURL::CreateForTest(origin_, src_type_, base::FilePath()),
         storage::OPEN_FILE_SYSTEM_CREATE_IF_NONEXISTENT,
         base::BindOnce(&ExpectOk));
     backend = file_system_context_->GetFileSystemBackend(dest_type_);
@@ -226,19 +226,18 @@ class CopyOrMoveOperationTestHelper {
             std::move(factory));
     }
     backend->ResolveURL(
-        FileSystemURL::CreateForTest(url::Origin::Create(origin_), dest_type_,
-                                     base::FilePath()),
+        FileSystemURL::CreateForTest(origin_, dest_type_, base::FilePath()),
         storage::OPEN_FILE_SYSTEM_CREATE_IF_NONEXISTENT,
         base::BindOnce(&ExpectOk));
     task_environment_.RunUntilIdle();
 
     // Grant relatively big quota initially.
     quota_manager_->SetQuota(
-        url::Origin::Create(origin_),
-        storage::FileSystemTypeToQuotaStorageType(src_type_), 1024 * 1024);
+        origin_, storage::FileSystemTypeToQuotaStorageType(src_type_),
+        1024 * 1024);
     quota_manager_->SetQuota(
-        url::Origin::Create(origin_),
-        storage::FileSystemTypeToQuotaStorageType(dest_type_), 1024 * 1024);
+        origin_, storage::FileSystemTypeToQuotaStorageType(dest_type_),
+        1024 * 1024);
   }
 
   int64_t GetSourceUsage() {
@@ -255,12 +254,12 @@ class CopyOrMoveOperationTestHelper {
 
   FileSystemURL SourceURL(const std::string& path) {
     return file_system_context_->CreateCrackedFileSystemURL(
-        origin_, src_type_, base::FilePath::FromUTF8Unsafe(path));
+        origin_.GetURL(), src_type_, base::FilePath::FromUTF8Unsafe(path));
   }
 
   FileSystemURL DestURL(const std::string& path) {
     return file_system_context_->CreateCrackedFileSystemURL(
-        origin_, dest_type_, base::FilePath::FromUTF8Unsafe(path));
+        origin_.GetURL(), dest_type_, base::FilePath::FromUTF8Unsafe(path));
   }
 
   base::File::Error Copy(const FileSystemURL& src, const FileSystemURL& dest) {
@@ -376,8 +375,7 @@ class CopyOrMoveOperationTestHelper {
                         int64_t* usage,
                         int64_t* quota) {
     blink::mojom::QuotaStatusCode status =
-        AsyncFileTestHelper::GetUsageAndQuota(quota_manager_.get(),
-                                              url::Origin::Create(origin_),
+        AsyncFileTestHelper::GetUsageAndQuota(quota_manager_.get(), origin_,
                                               type, usage, quota);
     ASSERT_EQ(blink::mojom::QuotaStatusCode::kOk, status);
   }
@@ -385,7 +383,7 @@ class CopyOrMoveOperationTestHelper {
  private:
   base::ScopedTempDir base_;
 
-  const GURL origin_;
+  const url::Origin origin_;
   const storage::FileSystemType src_type_;
   const storage::FileSystemType dest_type_;
 
@@ -398,7 +396,7 @@ class CopyOrMoveOperationTestHelper {
 };
 
 TEST(LocalFileSystemCopyOrMoveOperationTest, CopySingleFile) {
-  CopyOrMoveOperationTestHelper helper(GURL("http://foo"),
+  CopyOrMoveOperationTestHelper helper("http://foo",
                                        storage::kFileSystemTypeTemporary,
                                        storage::kFileSystemTypePersistent);
   helper.SetUp();
@@ -427,7 +425,7 @@ TEST(LocalFileSystemCopyOrMoveOperationTest, CopySingleFile) {
 }
 
 TEST(LocalFileSystemCopyOrMoveOperationTest, MoveSingleFile) {
-  CopyOrMoveOperationTestHelper helper(GURL("http://foo"),
+  CopyOrMoveOperationTestHelper helper("http://foo",
                                        storage::kFileSystemTypeTemporary,
                                        storage::kFileSystemTypePersistent);
   helper.SetUp();
@@ -456,7 +454,7 @@ TEST(LocalFileSystemCopyOrMoveOperationTest, MoveSingleFile) {
 }
 
 TEST(LocalFileSystemCopyOrMoveOperationTest, CopySingleDirectory) {
-  CopyOrMoveOperationTestHelper helper(GURL("http://foo"),
+  CopyOrMoveOperationTestHelper helper("http://foo",
                                        storage::kFileSystemTypeTemporary,
                                        storage::kFileSystemTypePersistent);
   helper.SetUp();
@@ -485,7 +483,7 @@ TEST(LocalFileSystemCopyOrMoveOperationTest, CopySingleDirectory) {
 }
 
 TEST(LocalFileSystemCopyOrMoveOperationTest, MoveSingleDirectory) {
-  CopyOrMoveOperationTestHelper helper(GURL("http://foo"),
+  CopyOrMoveOperationTestHelper helper("http://foo",
                                        storage::kFileSystemTypeTemporary,
                                        storage::kFileSystemTypePersistent);
   helper.SetUp();
@@ -514,7 +512,7 @@ TEST(LocalFileSystemCopyOrMoveOperationTest, MoveSingleDirectory) {
 }
 
 TEST(LocalFileSystemCopyOrMoveOperationTest, CopyDirectory) {
-  CopyOrMoveOperationTestHelper helper(GURL("http://foo"),
+  CopyOrMoveOperationTestHelper helper("http://foo",
                                        storage::kFileSystemTypeTemporary,
                                        storage::kFileSystemTypePersistent);
   helper.SetUp();
@@ -551,7 +549,7 @@ TEST(LocalFileSystemCopyOrMoveOperationTest, CopyDirectory) {
 }
 
 TEST(LocalFileSystemCopyOrMoveOperationTest, MoveDirectory) {
-  CopyOrMoveOperationTestHelper helper(GURL("http://foo"),
+  CopyOrMoveOperationTestHelper helper("http://foo",
                                        storage::kFileSystemTypeTemporary,
                                        storage::kFileSystemTypePersistent);
   helper.SetUp();
@@ -587,7 +585,7 @@ TEST(LocalFileSystemCopyOrMoveOperationTest, MoveDirectory) {
 
 TEST(LocalFileSystemCopyOrMoveOperationTest,
      MoveDirectoryFailPostWriteValidation) {
-  CopyOrMoveOperationTestHelper helper(GURL("http://foo"),
+  CopyOrMoveOperationTestHelper helper("http://foo",
                                        storage::kFileSystemTypeTemporary,
                                        storage::kFileSystemTypeTest);
   helper.SetUp();
@@ -620,7 +618,7 @@ TEST(LocalFileSystemCopyOrMoveOperationTest,
 }
 
 TEST(LocalFileSystemCopyOrMoveOperationTest, CopySingleFileNoValidator) {
-  CopyOrMoveOperationTestHelper helper(GURL("http://foo"),
+  CopyOrMoveOperationTestHelper helper("http://foo",
                                        storage::kFileSystemTypeTemporary,
                                        storage::kFileSystemTypeTest);
   helper.SetUpNoValidator();
@@ -638,7 +636,7 @@ TEST(LocalFileSystemCopyOrMoveOperationTest, CopySingleFileNoValidator) {
 }
 
 TEST(LocalFileSystemCopyOrMoveOperationTest, ProgressCallback) {
-  CopyOrMoveOperationTestHelper helper(GURL("http://foo"),
+  CopyOrMoveOperationTestHelper helper("http://foo",
                                        storage::kFileSystemTypeTemporary,
                                        storage::kFileSystemTypePersistent);
   helper.SetUp();

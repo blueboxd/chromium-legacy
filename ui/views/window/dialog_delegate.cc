@@ -377,6 +377,14 @@ void DialogDelegateView::DeleteDelegate() {
   delete this;
 }
 
+Widget* DialogDelegateView::GetWidget() {
+  return View::GetWidget();
+}
+
+const Widget* DialogDelegateView::GetWidget() const {
+  return View::GetWidget();
+}
+
 View* DialogDelegateView::GetContentsView() {
   return this;
 }

@@ -138,8 +138,6 @@ login.createScreen('ArcTermsOfServiceScreen', 'arc-tos', function() {
       }
 
       var self = this;
-      var leanMoreStatisticsTitle =
-          loadTimeData.getString('arcLearnMoreStatisticsTitle');
       var leanMoreStatisticsText =
           loadTimeData.getString('arcLearnMoreStatistics');
 
@@ -147,7 +145,7 @@ login.createScreen('ArcTermsOfServiceScreen', 'arc-tos', function() {
       if (anchor) {
         anchor.onclick = function() {
           self.showLearnMoreOverlay(
-              leanMoreStatisticsText, leanMoreStatisticsTitle);
+              leanMoreStatisticsText, 'arcLearnMoreStatisticsTitle');
         };
       }
     },
@@ -344,10 +342,10 @@ login.createScreen('ArcTermsOfServiceScreen', 'arc-tos', function() {
     /**
      * Shows an OOBE Help Dialog with the given title and content
      * @param {string} content HTML formatted text to show.
-     * @param {string} title   Title for the dialog.
+     * @param {string} titleKey  Localization key for the dialog title.
      */
-    showLearnMoreOverlay(content, title) {
-      $('arc-tos-overlay-learn-more').titleKey = title;
+    showLearnMoreOverlay(content, titleKey) {
+      $('arc-tos-overlay-learn-more').titleKey = titleKey;
       $('arc-learn-more-content').innerHTML = content;
 
       this.lastFocusedElement = document.activeElement;
@@ -658,7 +656,7 @@ login.createScreen('ArcTermsOfServiceScreen', 'arc-tos', function() {
          description with a unique link_id that should open an overlay showing
          some content related to it.
       */
-      function SetUpLearnMoreCheckBox(title, content, checkbox_id, link_id) {
+      function SetUpLearnMoreCheckBox(titleKey, content, checkbox_id, link_id) {
         var content = loadTimeData.getString(content);
         var checkbox = self.getElement_(checkbox_id);
 
@@ -666,7 +664,7 @@ login.createScreen('ArcTermsOfServiceScreen', 'arc-tos', function() {
         if (anchor) {
           anchor.onclick = function(event) {
             event.stopPropagation();
-            self.showLearnMoreOverlay(content, title);
+            self.showLearnMoreOverlay(content, titleKey);
           };
         }
       }

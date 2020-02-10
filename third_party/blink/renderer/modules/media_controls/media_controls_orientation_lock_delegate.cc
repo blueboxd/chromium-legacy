@@ -6,6 +6,7 @@
 
 #include <memory>
 
+#include "base/metrics/histogram_functions.h"
 #include "build/build_config.h"
 #include "third_party/blink/public/common/thread_safe_browser_interface_broker_proxy.h"
 #include "third_party/blink/public/platform/task_type.h"
@@ -21,7 +22,6 @@
 #include "third_party/blink/renderer/modules/screen_orientation/screen_orientation.h"
 #include "third_party/blink/renderer/modules/screen_orientation/screen_screen_orientation.h"
 #include "third_party/blink/renderer/modules/screen_orientation/web_lock_orientation_callback.h"
-#include "third_party/blink/renderer/platform/instrumentation/histogram.h"
 #include "third_party/blink/renderer/platform/runtime_enabled_features.h"
 #include "third_party/blink/renderer/platform/wtf/functional.h"
 #include "third_party/blink/renderer/platform/wtf/math_extras.h"
@@ -39,29 +39,25 @@ namespace blink {
 
 namespace {
 
-// These values are used for histograms. Do not reorder.
+// These values are persisted to logs. Entries should not be renumbered and
+// numeric values should never be reused.
 enum class MetadataAvailabilityMetrics {
   kAvailable = 0,  // Available when lock was attempted.
   kMissing = 1,    // Missing when lock was attempted.
   kReceived = 2,   // Received after being missing in order to lock.
 
   // Keep at the end.
-  kMax = 3
+  kMaxValue = kReceived,
 };
 
 void RecordMetadataAvailability(MetadataAvailabilityMetrics metrics) {
-  DEFINE_STATIC_LOCAL(
-      EnumerationHistogram, metadata_histogram,
-      ("Media.Video.FullscreenOrientationLock.MetadataAvailability",
-       static_cast<int>(MetadataAvailabilityMetrics::kMax)));
-  metadata_histogram.Count(static_cast<int>(metrics));
+  base::UmaHistogramEnumeration(
+      "Media.Video.FullscreenOrientationLock.MetadataAvailability", metrics);
 }
 
 void RecordAutoRotateEnabled(bool enabled) {
-  DEFINE_STATIC_LOCAL(
-      BooleanHistogram, auto_rotate_histogram,
-      ("Media.Video.FullscreenOrientationLock.AutoRotateEnabled"));
-  auto_rotate_histogram.Count(enabled);
+  base::UmaHistogramBoolean(
+      "Media.Video.FullscreenOrientationLock.AutoRotateEnabled", enabled);
 }
 
 // WebLockOrientationCallback implementation that will not react to a success

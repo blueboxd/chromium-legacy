@@ -4,7 +4,8 @@
 #ifndef THIRD_PARTY_BLINK_RENDERER_CORE_CSS_STYLE_CASCADE_SLOTS_H_
 #define THIRD_PARTY_BLINK_RENDERER_CORE_CSS_STYLE_CASCADE_SLOTS_H_
 
-#include "third_party/blink/renderer/core/css/resolver/style_cascade.h"
+#include "third_party/blink/renderer/core/css/resolver/cascade_priority.h"
+#include "third_party/blink/renderer/platform/wtf/allocator/allocator.h"
 
 namespace blink {
 
@@ -13,7 +14,6 @@ class StyleResolverState;
 
 class CORE_EXPORT StyleCascadeSlots {
   STACK_ALLOCATED();
-  using Priority = StyleCascade::Priority;
  public:
   // The default behavior for Set is to do nothing and return 'true'.
   // By using AllowDefault::kNo, we'll instead hit a DCHECK if the default
@@ -26,15 +26,17 @@ class CORE_EXPORT StyleCascadeSlots {
   //
   // If there are no slots for the given property, Set will succeed.
   bool Set(const CSSProperty&,
-           Priority,
+           CascadePriority,
            const StyleResolverState&,
            AllowDefault allow_default = AllowDefault::kYes);
+
  private:
 {% for property in properties %}
   {% if property.is_slot %}
-  Priority {{property.name.to_class_data_member()}};
+  CascadePriority {{property.name.to_class_data_member()}};
   {% endif %}
 {% endfor %}
+
 };
 
 }  // namespace blink

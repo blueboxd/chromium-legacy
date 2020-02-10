@@ -10,6 +10,7 @@
   if (self.internals.runtimeFlags.htmlImportsEnabled) {
     // Runtime flag is enabled, so import will actually work. Explicitly call
     // done() to avoid timeout while test framework waits for a test to run.
+    setup({single_test: true});
     done();
   } else {
     test(() => {

@@ -47,7 +47,7 @@
 #include "third_party/blink/renderer/platform/loader/fetch/resource_request.h"
 #include "third_party/blink/renderer/platform/network/content_security_policy_parsers.h"
 #include "third_party/blink/renderer/platform/platform_export.h"
-#include "third_party/blink/renderer/platform/weborigin/security_violation_reporting_policy.h"
+#include "third_party/blink/renderer/platform/weborigin/reporting_disposition.h"
 #include "third_party/blink/renderer/platform/wtf/forward.h"
 
 namespace blink {
@@ -112,7 +112,7 @@ class PLATFORM_EXPORT FetchContext : public GarbageCollected<FetchContext> {
       const ResourceRequest&,
       const KURL&,
       const ResourceLoaderOptions&,
-      SecurityViolationReportingPolicy,
+      ReportingDisposition,
       ResourceRequest::RedirectStatus) const {
     return ResourceRequestBlockedReason::kOther;
   }
@@ -120,7 +120,7 @@ class PLATFORM_EXPORT FetchContext : public GarbageCollected<FetchContext> {
       mojom::RequestContextType,
       const KURL&,
       const ResourceLoaderOptions&,
-      SecurityViolationReportingPolicy,
+      ReportingDisposition,
       ResourceRequest::RedirectStatus) const {
     return ResourceRequestBlockedReason::kOther;
   }

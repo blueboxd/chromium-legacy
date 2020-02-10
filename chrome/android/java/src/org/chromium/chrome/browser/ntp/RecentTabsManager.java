@@ -31,7 +31,6 @@ import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.browser.tab.TabImpl;
 import org.chromium.components.signin.AccountManagerFacade;
 import org.chromium.components.signin.AccountsChangeObserver;
-import org.chromium.components.signin.ChromeSigninController;
 import org.chromium.components.signin.metrics.SigninAccessPoint;
 import org.chromium.components.sync.AndroidSyncSettings;
 import org.chromium.components.sync.AndroidSyncSettings.AndroidSyncSettingsObserver;
@@ -70,7 +69,6 @@ public class RecentTabsManager implements AndroidSyncSettingsObserver, SignInSta
 
     private final Profile mProfile;
     private final Tab mTab;
-    private final Context mContext;
 
     private FaviconHelper mFaviconHelper;
     private ForeignSessionHelper mForeignSessionHelper;
@@ -102,10 +100,9 @@ public class RecentTabsManager implements AndroidSyncSettingsObserver, SignInSta
                 ? sRecentlyClosedTabManagerForTests
                 : new RecentlyClosedBridge(profile);
         mSignInManager = IdentityServicesProvider.get().getSigninManager();
-        mContext = context;
 
         int imageSize = context.getResources().getDimensionPixelSize(R.dimen.user_picture_size);
-        mProfileDataCache = new ProfileDataCache(mContext, imageSize);
+        mProfileDataCache = new ProfileDataCache(context, imageSize);
         mSigninPromoController = new SigninPromoController(SigninAccessPoint.RECENT_TABS);
 
         mRecentlyClosedTabManager.setTabsUpdatedRunnable(() -> {
@@ -359,7 +356,7 @@ public class RecentTabsManager implements AndroidSyncSettingsObserver, SignInSta
      */
     @PromoState
     int getPromoType() {
-        if (!ChromeSigninController.get().isSignedIn()) {
+        if (!mSignInManager.getIdentityManager().hasPrimaryAccount()) {
             if (!mSignInManager.isSignInAllowed()) {
                 return PromoState.PROMO_NONE;
             }

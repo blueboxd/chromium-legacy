@@ -106,7 +106,7 @@ bool SyncFileSystemDeleteFileSystemFunction::RunAsync() {
       FROM_HERE, {BrowserThread::IO},
       BindOnce(
           &storage::FileSystemContext::DeleteFileSystem, file_system_context,
-          source_url().GetOrigin(), file_system_url.type(),
+          url::Origin::Create(source_url().GetOrigin()), file_system_url.type(),
           Bind(&SyncFileSystemDeleteFileSystemFunction::DidDeleteFileSystem,
                this)));
   return true;

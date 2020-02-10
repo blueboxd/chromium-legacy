@@ -2412,10 +2412,8 @@ void LayoutBox::SetCachedLayoutResult(
 void LayoutBox::AddLayoutResult(scoped_refptr<const NGLayoutResult> result,
                                 wtf_size_t index) {
   DCHECK_EQ(result->Status(), NGLayoutResult::kSuccess);
-  if (index != WTF::kNotFound) {
-    DCHECK_GE(layout_results_.size(), index);
-    layout_results_.Shrink(index);
-  }
+  if (index != WTF::kNotFound)
+    ShrinkLayoutResults(index);
   layout_results_.push_back(std::move(result));
 }
 
@@ -2424,9 +2422,15 @@ void LayoutBox::ClearLayoutResults() {
     InvalidateItems(*measure_result_);
   measure_result_ = nullptr;
 
-  for (auto result : layout_results_)
-    InvalidateItems(*result);
-  layout_results_.clear();
+  ShrinkLayoutResults(0);
+}
+
+void LayoutBox::ShrinkLayoutResults(wtf_size_t results_to_keep) {
+  DCHECK_GE(layout_results_.size(), results_to_keep);
+  // Invalidate if inline |DisplayItemClient|s will be destroyed.
+  for (wtf_size_t i = results_to_keep; i < layout_results_.size(); i++)
+    InvalidateItems(*layout_results_[i]);
+  layout_results_.Shrink(results_to_keep);
 }
 
 void LayoutBox::InvalidateItems(const NGLayoutResult& result) {

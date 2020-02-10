@@ -370,7 +370,7 @@ void HTMLFrameOwnerElement::SetEmbeddedContentView(
     bool will_be_display_none = !embedded_content_view;
     if (IsDisplayNone() != will_be_display_none) {
       doc->WillChangeFrameOwnerProperties(
-          MarginWidth(), MarginHeight(), ScrollingMode(), will_be_display_none);
+          MarginWidth(), MarginHeight(), ScrollbarMode(), will_be_display_none);
     }
   }
 

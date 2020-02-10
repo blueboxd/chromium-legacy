@@ -7,6 +7,7 @@
 #include <memory>
 
 #include "testing/gmock/include/gmock/gmock.h"
+#include "third_party/blink/public/mojom/scroll/scrollbar_mode.mojom-blink.h"
 #include "third_party/blink/renderer/core/html/html_anchor_element.h"
 #include "third_party/blink/renderer/core/html/html_element.h"
 #include "third_party/blink/renderer/core/layout/layout_view.h"
@@ -183,8 +184,8 @@ TEST_F(LocalFrameViewTest, CanHaveScrollbarsIfScrollingAttrEqualsNoChanged) {
   SetBodyInnerHTML("<iframe scrolling='no'></iframe>");
   EXPECT_FALSE(ChildDocument().View()->CanHaveScrollbars());
 
-  ChildDocument().WillChangeFrameOwnerProperties(0, 0, ScrollbarMode::kAlwaysOn,
-                                                 false);
+  ChildDocument().WillChangeFrameOwnerProperties(
+      0, 0, mojom::blink::ScrollbarMode::kAlwaysOn, false);
   EXPECT_TRUE(ChildDocument().View()->CanHaveScrollbars());
 }
 

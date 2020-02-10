@@ -40,7 +40,7 @@
 #include "services/network/public/cpp/network_switches.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
-#include "third_party/blink/public/common/web_package/signed_exchange_request_matcher.h"
+#include "third_party/blink/public/common/web_package/web_package_request_matcher.h"
 
 using testing::_;
 using testing::DoAll;
@@ -336,7 +336,7 @@ class SignedExchangeHandlerTest
         base::BindOnce(&SignedExchangeHandlerTest::OnHeaderFound,
                        base::Unretained(this)),
         std::move(cert_fetcher_factory_), net::LOAD_NORMAL,
-        std::make_unique<blink::SignedExchangeRequestMatcher>(
+        std::make_unique<blink::WebPackageRequestMatcher>(
             net::HttpRequestHeaders(), std::string() /* accept_langs */),
         nullptr /* devtools_proxy */, nullptr /* reporter */,
         FrameTreeNode::kFrameTreeNodeInvalidId);

@@ -33,7 +33,7 @@
 #include "services/network/public/cpp/url_loader_completion_status.h"
 #include "services/network/public/mojom/url_loader_factory.mojom.h"
 #include "third_party/blink/public/common/loader/url_loader_throttle.h"
-#include "third_party/blink/public/common/web_package/signed_exchange_request_matcher.h"
+#include "third_party/blink/public/common/web_package/web_package_request_matcher.h"
 
 namespace content {
 
@@ -165,8 +165,8 @@ void SignedExchangeLoader::OnStartLoadingResponseBody(
       base::BindOnce(&SignedExchangeLoader::OnHTTPExchangeFound,
                      weak_factory_.GetWeakPtr()),
       std::move(cert_fetcher_factory), outer_request_.load_flags,
-      std::make_unique<blink::SignedExchangeRequestMatcher>(
-          outer_request_.headers, accept_langs_),
+      std::make_unique<blink::WebPackageRequestMatcher>(outer_request_.headers,
+                                                        accept_langs_),
       std::move(devtools_proxy_), reporter_.get(), frame_tree_node_id_);
 }
 

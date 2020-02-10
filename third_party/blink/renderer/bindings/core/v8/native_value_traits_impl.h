@@ -227,16 +227,22 @@ class NativeValueTraitsStringAdapter {
   NativeValueTraitsStringAdapter(const NativeValueTraitsStringAdapter&) =
       default;
   NativeValueTraitsStringAdapter(NativeValueTraitsStringAdapter&&) = default;
-  NativeValueTraitsStringAdapter(v8::Local<v8::String> value)
+  explicit NativeValueTraitsStringAdapter(v8::Local<v8::String> value)
       : v8_string_(value) {}
-  NativeValueTraitsStringAdapter(const String& value) : wtf_string_(value) {}
-  NativeValueTraitsStringAdapter(int32_t value)
+  explicit NativeValueTraitsStringAdapter(const String& value)
+      : wtf_string_(value) {}
+  explicit NativeValueTraitsStringAdapter(int32_t value)
       : wtf_string_(ToBlinkString(value)) {}
 
   NativeValueTraitsStringAdapter& operator=(
       const NativeValueTraitsStringAdapter&) = default;
   NativeValueTraitsStringAdapter& operator=(NativeValueTraitsStringAdapter&&) =
       default;
+  NativeValueTraitsStringAdapter& operator=(const String& value) {
+    v8_string_.Clear();
+    wtf_string_ = value;
+    return *this;
+  }
 
   operator String() const { return ToString<String>(); }
   operator AtomicString() const { return ToString<AtomicString>(); }
@@ -352,15 +358,17 @@ template <bindings::IDLStringConvMode mode>
 struct NativeValueTraits<IDLUSVStringBaseV2<mode>>
     : public NativeValueTraitsBase<IDLUSVStringBaseV2<mode>> {
   // http://heycam.github.io/webidl/#es-USVString
-  static String NativeValue(v8::Isolate* isolate,
-                            v8::Local<v8::Value> value,
-                            ExceptionState& exception_state) {
+  static bindings::NativeValueTraitsStringAdapter NativeValue(
+      v8::Isolate* isolate,
+      v8::Local<v8::Value> value,
+      ExceptionState& exception_state) {
     String string = NativeValueTraits<IDLStringBaseV2<mode>>::NativeValue(
         isolate, value, exception_state);
     if (exception_state.HadException())
-      return String();
+      return bindings::NativeValueTraitsStringAdapter();
 
-    return ReplaceUnmatchedSurrogates(string);
+    return bindings::NativeValueTraitsStringAdapter(
+        ReplaceUnmatchedSurrogates(string));
   }
 };
 
@@ -389,10 +397,36 @@ struct CORE_EXPORT NativeValueTraits<DOMArrayBuffer>
                                        v8::Local<v8::Value> value,
                                        ExceptionState& exception_state);
 };
+template <>
+struct CORE_EXPORT NativeValueTraits<IDLNullable<DOMArrayBuffer>>
+    : public NativeValueTraitsBase<DOMArrayBuffer*> {
+  static DOMArrayBuffer* NativeValue(v8::Isolate* isolate,
+                                     v8::Local<v8::Value> value,
+                                     ExceptionState& exception_state);
+
+  static DOMArrayBuffer* ArgumentValue(v8::Isolate* isolate,
+                                       int argument_index,
+                                       v8::Local<v8::Value> value,
+                                       ExceptionState& exception_state);
+};
 
 template <typename T>
 struct NativeValueTraits<
     NotShared<T>,
+    typename std::enable_if_t<std::is_base_of<DOMArrayBufferView, T>::value>>
+    : public NativeValueTraitsBase<NotShared<T>> {
+  static NotShared<T> NativeValue(v8::Isolate* isolate,
+                                  v8::Local<v8::Value> value,
+                                  ExceptionState& exception_state);
+
+  static NotShared<T> ArgumentValue(v8::Isolate* isolate,
+                                    int argument_index,
+                                    v8::Local<v8::Value> value,
+                                    ExceptionState& exception_state);
+};
+template <typename T>
+struct NativeValueTraits<
+    IDLNullable<NotShared<T>>,
     typename std::enable_if_t<std::is_base_of<DOMArrayBufferView, T>::value>>
     : public NativeValueTraitsBase<NotShared<T>> {
   static NotShared<T> NativeValue(v8::Isolate* isolate,
@@ -419,10 +453,40 @@ struct NativeValueTraits<
                                       v8::Local<v8::Value> value,
                                       ExceptionState& exception_state);
 };
+template <typename T>
+struct NativeValueTraits<
+    IDLNullable<MaybeShared<T>>,
+    typename std::enable_if_t<std::is_base_of<DOMArrayBufferView, T>::value>>
+    : public NativeValueTraitsBase<MaybeShared<T>> {
+  static MaybeShared<T> NativeValue(v8::Isolate* isolate,
+                                    v8::Local<v8::Value> value,
+                                    ExceptionState& exception_state);
+
+  static MaybeShared<T> ArgumentValue(v8::Isolate* isolate,
+                                      int argument_index,
+                                      v8::Local<v8::Value> value,
+                                      ExceptionState& exception_state);
+};
 
 template <typename T>
 struct NativeValueTraits<
     T,
+    typename std::enable_if_t<
+        std::is_base_of<FlexibleArrayBufferView, T>::value>>
+    : public NativeValueTraitsBase<T> {
+  // FlexibleArrayBufferView must be used only as arguments.
+  static T NativeValue(v8::Isolate* isolate,
+                       v8::Local<v8::Value> value,
+                       ExceptionState& exception_state) = delete;
+
+  static T ArgumentValue(v8::Isolate* isolate,
+                         int argument_index,
+                         v8::Local<v8::Value> value,
+                         ExceptionState& exception_state);
+};
+template <typename T>
+struct NativeValueTraits<
+    IDLNullable<T>,
     typename std::enable_if_t<
         std::is_base_of<FlexibleArrayBufferView, T>::value>>
     : public NativeValueTraitsBase<T> {

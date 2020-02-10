@@ -1787,7 +1787,7 @@
         },
         'os_type': 'android',
         'test_suites': {
-          'gtest_tests': 'mojo_android_gtests',
+          'gtest_tests': 'network_service_android_gtests',
         },
       },
       # Note:
@@ -3663,6 +3663,7 @@
           'isolated_scripts': 'chromium_linux_dbg_isolated_scripts',
         },
       },
+      # For documentation, see //services/network/README.md.
       'Network Service Linux': {
         'mixins': [
           'linux-xenial',

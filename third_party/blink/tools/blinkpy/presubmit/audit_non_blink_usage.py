@@ -529,7 +529,7 @@ _CONFIG = [
     {
         'paths': ['third_party/blink/renderer/core/loader/alternate_signed_exchange_resource_info.cc'],
         'allowed': [
-            # Used by SignedExchangeRequestMatcher in //third_party/blink/common.
+            # Used by WebPackageRequestMatcher in //third_party/blink/common.
             'net::HttpRequestHeaders',
         ],
     },

@@ -43,6 +43,7 @@
 #include "third_party/blink/renderer/platform/heap/heap_buildflags.h"
 #include "third_party/blink/renderer/platform/heap/thread_state.h"
 #include "third_party/blink/renderer/platform/heap/thread_state_statistics.h"
+#include "third_party/blink/renderer/platform/heap/unsanitized_atomic.h"
 #include "third_party/blink/renderer/platform/heap/visitor.h"
 #include "third_party/blink/renderer/platform/platform_export.h"
 #include "third_party/blink/renderer/platform/wtf/allocator/allocator.h"
@@ -1201,14 +1202,9 @@ NO_SANITIZE_ADDRESS inline bool HeapObjectHeader::IsMarked() const {
 
 template <HeapObjectHeader::AccessMode mode>
 NO_SANITIZE_ADDRESS inline void HeapObjectHeader::Unmark() {
-  DCHECK(!ASAN_REGION_IS_POISONED(&encoded_low_, sizeof(encoded_low_)));
   DCHECK(IsMarked<mode>());
   StoreEncoded<mode, EncodedHalf::kLow, std::memory_order_relaxed>(
       0u, kHeaderMarkBitMask);
-  // HeapObjectHeader of live objects was left unpoisoned for the duration of
-  // GC. Repoison the header until and for the next GC.
-  ASAN_POISON_MEMORY_REGION(&encoded_low_, sizeof(encoded_low_));
-  ASAN_POISON_MEMORY_REGION(&encoded_high_, sizeof(encoded_high_));
 }
 
 // The function relies on size bits being unmodified when the function is
@@ -1221,8 +1217,7 @@ NO_SANITIZE_ADDRESS inline bool HeapObjectHeader::TryMark() {
     encoded_low_ |= kHeaderMarkBitMask;
     return true;
   }
-  ASAN_UNPOISON_MEMORY_REGION(&encoded_low_, sizeof(encoded_low_));
-  auto* atomic_encoded = WTF::AsAtomicPtr(&encoded_low_);
+  auto* atomic_encoded = internal::AsUnsanitizedAtomic(&encoded_low_);
   uint16_t old_value = atomic_encoded->load(std::memory_order_relaxed);
   if (old_value & kHeaderMarkBitMask)
     return false;
@@ -1363,8 +1358,7 @@ NO_SANITIZE_ADDRESS inline uint16_t HeapObjectHeader::LoadEncoded() const {
       part == EncodedHalf::kLow ? encoded_low_ : encoded_high_;
   if (mode == AccessMode::kNonAtomic)
     return half;
-  ASAN_UNPOISON_MEMORY_REGION(&half, sizeof(half));
-  return WTF::AsAtomicPtr(&half)->load(memory_order);
+  return internal::AsUnsanitizedAtomic(&half)->load(memory_order);
 }
 
 // Sets bits selected by the mask to the given value. Please note that atomicity
@@ -1380,10 +1374,9 @@ NO_SANITIZE_ADDRESS inline void HeapObjectHeader::StoreEncoded(uint16_t bits,
     half = (half & ~mask) | bits;
     return;
   }
-  ASAN_UNPOISON_MEMORY_REGION(&half, sizeof(half));
   // We don't perform CAS loop here assuming that the data is constant and no
   // one except for us can change this half concurrently.
-  auto* atomic_encoded = WTF::AsAtomicPtr(&half);
+  auto* atomic_encoded = internal::AsUnsanitizedAtomic(&half);
   uint16_t value = atomic_encoded->load(std::memory_order_relaxed);
   value = (value & ~mask) | bits;
   atomic_encoded->store(value, memory_order);

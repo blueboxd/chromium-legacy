@@ -56,13 +56,15 @@ void MigrateOnFileSystemThread(FileSystemContext* old_fs_context,
   if (!origin.is_empty()) {
     // Copy the temporary file system.
     if (enumerator->HasFileSystemType(storage::kFileSystemTypeTemporary)) {
-      old_sandbox_delegate->CopyFileSystem(
-          extension_url, storage::kFileSystemTypeTemporary, sandbox_delegate);
+      old_sandbox_delegate->CopyFileSystem(url::Origin::Create(extension_url),
+                                           storage::kFileSystemTypeTemporary,
+                                           sandbox_delegate);
     }
     // Copy the persistent file system.
     if (enumerator->HasFileSystemType(storage::kFileSystemTypePersistent)) {
-      old_sandbox_delegate->CopyFileSystem(
-          extension_url, storage::kFileSystemTypePersistent, sandbox_delegate);
+      old_sandbox_delegate->CopyFileSystem(url::Origin::Create(extension_url),
+                                           storage::kFileSystemTypePersistent,
+                                           sandbox_delegate);
     }
   }
 }

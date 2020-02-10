@@ -51,6 +51,7 @@
 #include "cc/layers/picture_layer.h"
 #include "third_party/blink/public/common/features.h"
 #include "third_party/blink/public/mojom/scroll/scroll_into_view_params.mojom-blink.h"
+#include "third_party/blink/public/mojom/scroll/scrollbar_mode.mojom-blink.h"
 #include "third_party/blink/public/platform/platform.h"
 #include "third_party/blink/public/platform/task_type.h"
 #include "third_party/blink/renderer/core/accessibility/ax_object_cache.h"
@@ -884,12 +885,13 @@ bool PaintLayerScrollableArea::UserInputScrollable(
     if (fullscreen_element && fullscreen_element != document.documentElement())
       return false;
 
-    ScrollbarMode h_mode;
-    ScrollbarMode v_mode;
+    mojom::blink::ScrollbarMode h_mode;
+    mojom::blink::ScrollbarMode v_mode;
     ToLayoutView(GetLayoutBox())->CalculateScrollbarModes(h_mode, v_mode);
-    ScrollbarMode mode =
+    mojom::blink::ScrollbarMode mode =
         (orientation == kHorizontalScrollbar) ? h_mode : v_mode;
-    return mode == ScrollbarMode::kAuto || mode == ScrollbarMode::kAlwaysOn;
+    return mode == mojom::blink::ScrollbarMode::kAuto ||
+           mode == mojom::blink::ScrollbarMode::kAlwaysOn;
   }
 
   EOverflow overflow_style = (orientation == kHorizontalScrollbar)
@@ -1586,8 +1588,8 @@ void PaintLayerScrollableArea::ComputeScrollbarExistence(
   }
 
   if (GetLayoutBox()->IsLayoutView()) {
-    ScrollbarMode h_mode;
-    ScrollbarMode v_mode;
+    mojom::blink::ScrollbarMode h_mode;
+    mojom::blink::ScrollbarMode v_mode;
     ToLayoutView(GetLayoutBox())->CalculateScrollbarModes(h_mode, v_mode);
 
     // Look for the scrollbarModes and reset the needs Horizontal & vertical
@@ -1595,13 +1597,13 @@ void PaintLayerScrollableArea::ComputeScrollbarExistence(
     // StyleResolver::styleForDocument returns documentStyle with no overflow
     // values, due to which we are destroying the scrollbars that were already
     // present.
-    if (h_mode == ScrollbarMode::kAlwaysOn)
+    if (h_mode == mojom::blink::ScrollbarMode::kAlwaysOn)
       needs_horizontal_scrollbar = true;
-    else if (h_mode == ScrollbarMode::kAlwaysOff)
+    else if (h_mode == mojom::blink::ScrollbarMode::kAlwaysOff)
       needs_horizontal_scrollbar = false;
-    if (v_mode == ScrollbarMode::kAlwaysOn)
+    if (v_mode == mojom::blink::ScrollbarMode::kAlwaysOn)
       needs_vertical_scrollbar = true;
-    else if (v_mode == ScrollbarMode::kAlwaysOff)
+    else if (v_mode == mojom::blink::ScrollbarMode::kAlwaysOff)
       needs_vertical_scrollbar = false;
   }
 }
@@ -1618,10 +1620,11 @@ bool PaintLayerScrollableArea::TryRemovingAutoScrollbars(
     return false;
 
   if (GetLayoutBox()->IsLayoutView()) {
-    ScrollbarMode h_mode;
-    ScrollbarMode v_mode;
+    mojom::blink::ScrollbarMode h_mode;
+    mojom::blink::ScrollbarMode v_mode;
     ToLayoutView(GetLayoutBox())->CalculateScrollbarModes(h_mode, v_mode);
-    if (h_mode != ScrollbarMode::kAuto || v_mode != ScrollbarMode::kAuto)
+    if (h_mode != mojom::blink::ScrollbarMode::kAuto ||
+        v_mode != mojom::blink::ScrollbarMode::kAuto)
       return false;
 
     IntSize visible_size_with_scrollbars =
@@ -2298,11 +2301,11 @@ void PaintLayerScrollableArea::UpdateScrollableAreaSet() {
       GetLayoutBox()->StyleRef().VisibleToHitTesting();
   bool did_scroll_overflow = scrolls_overflow_;
   if (GetLayoutBox()->IsLayoutView()) {
-    ScrollbarMode h_mode;
-    ScrollbarMode v_mode;
+    mojom::blink::ScrollbarMode h_mode;
+    mojom::blink::ScrollbarMode v_mode;
     ToLayoutView(GetLayoutBox())->CalculateScrollbarModes(h_mode, v_mode);
-    if (h_mode == ScrollbarMode::kAlwaysOff &&
-        v_mode == ScrollbarMode::kAlwaysOff)
+    if (h_mode == mojom::blink::ScrollbarMode::kAlwaysOff &&
+        v_mode == mojom::blink::ScrollbarMode::kAlwaysOff)
       has_overflow = false;
   }
 

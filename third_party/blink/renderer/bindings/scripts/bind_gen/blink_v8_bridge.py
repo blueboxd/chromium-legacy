@@ -97,6 +97,7 @@ def blink_type_info(idl_type):
             "String",
             ref_fmt="{}&",
             const_ref_fmt="const {}&",
+            value_fmt="bindings::NativeValueTraitsStringAdapter",
             has_null_value=True)
 
     if real_type.is_array_buffer:
@@ -366,9 +367,20 @@ def make_default_value_expr(idl_type, default_value):
         is_initializer_lightweight = True
         assignment_value = value
     elif default_value.idl_type.is_string:
-        value = "\"{}\"".format(default_value.value)
-        initializer = value
-        assignment_value = value
+        if idl_type.unwrap().is_string:
+            value = "\"{}\"".format(default_value.value)
+            initializer = value
+            assignment_value = value
+        elif idl_type.unwrap().is_enumeration:
+            enum_class_name = blink_class_name(
+                idl_type.unwrap().type_definition_object)
+            enum_value_name = name_style.constant(default_value.value)
+            initializer = "{}::Enum::{}".format(enum_class_name,
+                                                enum_value_name)
+            is_initializer_lightweight = True
+            assignment_value = "{}({})".format(enum_class_name, initializer)
+        else:
+            assert False
     else:
         assert False
 
@@ -417,7 +429,7 @@ def make_v8_to_blink_value(blink_var_name,
 
         if default_value is None:
             return SymbolDefinitionNode(symbol_node, [
-                F("auto ${{{}}} = {};", blink_var_name, blink_value_expr),
+                F("auto&& ${{{}}} = {};", blink_var_name, blink_value_expr),
                 CxxUnlikelyIfNode(
                     cond="${exception_state}.HadException()",
                     body=T("return;")),
@@ -428,7 +440,7 @@ def make_v8_to_blink_value(blink_var_name,
         default_expr = make_default_value_expr(idl_type, default_value)
         if default_expr.is_initializer_lightweight:
             nodes.append(
-                F("{} ${{{}}} = {};", type_info.value_t, blink_var_name,
+                F("{} ${{{}}}{{{}}};", type_info.value_t, blink_var_name,
                   default_expr.initializer))
         else:
             nodes.append(F("{} ${{{}}};", type_info.value_t, blink_var_name))
@@ -468,7 +480,7 @@ def make_v8_to_blink_value_variadic(blink_var_name, v8_array,
     assert isinstance(v8_array_start_index, (int, long))
     assert isinstance(idl_type, web_idl.IdlType)
 
-    pattern = "auto ${{{_1}}} = ToImplArguments<{_2}>({_3});"
+    pattern = "auto&& ${{{_1}}} = ToImplArguments<{_2}>({_3});"
     _1 = blink_var_name
     _2 = native_value_tag(idl_type.element_type)
     _3 = [v8_array, str(v8_array_start_index), "${exception_state}"]

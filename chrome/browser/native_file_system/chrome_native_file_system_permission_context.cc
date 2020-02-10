@@ -45,6 +45,7 @@ void ShowDirectoryAccessConfirmationPromptOnUIThread(
   if (!web_contents) {
     // Requested from a worker, or a no longer existing tab.
     std::move(callback).Run(permissions::PermissionAction::DISMISSED);
+    return;
   }
 
   // Drop fullscreen mode so that the user sees the URL bar.

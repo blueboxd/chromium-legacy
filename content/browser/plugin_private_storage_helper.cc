@@ -32,6 +32,7 @@
 #include "storage/browser/file_system/obfuscated_file_util.h"
 #include "storage/browser/quota/special_storage_policy.h"
 #include "storage/common/file_system/file_system_util.h"
+#include "url/origin.h"
 
 namespace content {
 
@@ -127,8 +128,8 @@ void PluginPrivateDataByOriginChecker::CheckFilesOnIOThread() {
 
   IncrementTaskCount();
   filesystem_context_->OpenPluginPrivateFileSystem(
-      origin_, storage::kFileSystemTypePluginPrivate, fsid_, plugin_name_,
-      storage::OPEN_FILE_SYSTEM_FAIL_IF_NONEXISTENT,
+      url::Origin::Create(origin_), storage::kFileSystemTypePluginPrivate,
+      fsid_, plugin_name_, storage::OPEN_FILE_SYSTEM_FAIL_IF_NONEXISTENT,
       base::BindOnce(&PluginPrivateDataByOriginChecker::OnFileSystemOpened,
                      base::Unretained(this)));
 }

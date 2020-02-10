@@ -40,6 +40,7 @@
 #include "services/metrics/public/cpp/ukm_source_id.h"
 #include "third_party/blink/public/common/metrics/document_update_reason.h"
 #include "third_party/blink/public/mojom/input/focus_type.mojom-blink-forward.h"
+#include "third_party/blink/public/mojom/scroll/scrollbar_mode.mojom-blink.h"
 #include "third_party/blink/public/platform/web_insecure_request_policy.h"
 #include "third_party/blink/renderer/core/accessibility/axid.h"
 #include "third_party/blink/renderer/core/core_export.h"
@@ -211,7 +212,6 @@ class WebComputedAXTree;
 class WebMouseEvent;
 class WorkletAnimationController;
 enum class CSSPropertyID;
-enum class ScrollbarMode;
 struct AnnotatedRegionValue;
 struct FocusParams;
 struct IconURL;
@@ -1056,7 +1056,7 @@ class CORE_EXPORT Document : public ContainerNode,
 
   void WillChangeFrameOwnerProperties(int margin_width,
                                       int margin_height,
-                                      ScrollbarMode,
+                                      mojom::blink::ScrollbarMode,
                                       bool is_display_none);
 
   String title() const { return title_; }

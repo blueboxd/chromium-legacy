@@ -146,7 +146,7 @@ void CdmStorageImpl::Open(const std::string& file_name, OpenCallback callback) {
       origin().GetURL(), fsid, ppapi::kPluginPrivateRootName);
 
   file_system_context_->OpenPluginPrivateFileSystem(
-      origin().GetURL(), storage::kFileSystemTypePluginPrivate, fsid,
+      origin(), storage::kFileSystemTypePluginPrivate, fsid,
       cdm_file_system_id_, storage::OPEN_FILE_SYSTEM_CREATE_IF_NONEXISTENT,
       base::BindOnce(&CdmStorageImpl::OnFileSystemOpened,
                      weak_factory_.GetWeakPtr()));

@@ -29,7 +29,6 @@ import org.chromium.chrome.browser.signin.SigninPromoUtil;
 import org.chromium.chrome.browser.signin.SyncPromoView;
 import org.chromium.components.signin.AccountManagerFacade;
 import org.chromium.components.signin.AccountsChangeObserver;
-import org.chromium.components.signin.ChromeSigninController;
 import org.chromium.components.signin.metrics.SigninAccessPoint;
 import org.chromium.components.sync.AndroidSyncSettings;
 import org.chromium.components.sync.AndroidSyncSettings.AndroidSyncSettingsObserver;
@@ -203,7 +202,7 @@ class BookmarkPromoHeader implements AndroidSyncSettingsObserver, SignInStateObs
             return PromoState.PROMO_NONE;
         }
 
-        if (!ChromeSigninController.get().isSignedIn()) {
+        if (!mSignInManager.getIdentityManager().hasPrimaryAccount()) {
             return shouldShowBookmarkSigninPromo() ? PromoState.PROMO_SIGNIN_PERSONALIZED
                                                    : PromoState.PROMO_NONE;
         }

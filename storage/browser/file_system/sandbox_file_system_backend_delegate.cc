@@ -417,7 +417,7 @@ int64_t SandboxFileSystemBackendDelegate::GetOriginUsageOnFileTaskRunner(
   // origins.
   if (base::Contains(sticky_dirty_origins_,
                      std::make_pair(origin.GetURL(), type)))
-    return RecalculateUsage(file_system_context, origin.GetURL(), type);
+    return RecalculateUsage(file_system_context, origin, type);
 
   base::FilePath base_path =
       GetBaseDirectoryForOriginAndType(origin, type, false);
@@ -443,7 +443,7 @@ int64_t SandboxFileSystemBackendDelegate::GetOriginUsageOnFileTaskRunner(
   // Get the directory size now and update the cache.
   usage_cache()->Delete(usage_file_path);
 
-  int64_t usage = RecalculateUsage(file_system_context, origin.GetURL(), type);
+  int64_t usage = RecalculateUsage(file_system_context, origin, type);
 
   // This clears the dirty flag too.
   usage_cache()->UpdateUsage(usage_file_path, usage);
@@ -623,11 +623,11 @@ SandboxFileSystemBackendDelegate::GetUsageCachePathForOriginAndType(
 
 int64_t SandboxFileSystemBackendDelegate::RecalculateUsage(
     FileSystemContext* context,
-    const GURL& origin,
+    const url::Origin& origin,
     FileSystemType type) {
   FileSystemOperationContext operation_context(context);
-  FileSystemURL url =
-      context->CreateCrackedFileSystemURL(origin, type, base::FilePath());
+  FileSystemURL url = context->CreateCrackedFileSystemURL(origin.GetURL(), type,
+                                                          base::FilePath());
   std::unique_ptr<FileSystemFileUtil::AbstractFileEnumerator> enumerator(
       obfuscated_file_util()->CreateFileEnumerator(&operation_context, url,
                                                    true));
@@ -679,29 +679,29 @@ void SandboxFileSystemBackendDelegate::CollectOpenFileSystemMetrics(
 }
 
 void SandboxFileSystemBackendDelegate::CopyFileSystem(
-    const GURL& origin_url,
+    const url::Origin& origin,
     FileSystemType type,
     SandboxFileSystemBackendDelegate* destination) {
   DCHECK(file_task_runner()->RunsTasksInCurrentSequence());
 
-  base::FilePath base_path = GetBaseDirectoryForOriginAndType(
-      url::Origin::Create(origin_url), type, false /* create */);
+  base::FilePath base_path =
+      GetBaseDirectoryForOriginAndType(origin, type, /*create=*/false);
   if (base::PathExists(base_path)) {
     // Delete any existing file system directories in the destination. A
     // previously failed migration
     // may have left behind partially copied directories.
     base::FilePath dest_path = destination->GetBaseDirectoryForOriginAndType(
-        url::Origin::Create(origin_url), type, false /* create */);
+        origin, type, /*create=*/false);
 
     // Make sure we're not about to delete our own file system.
     CHECK_NE(base_path.value(), dest_path.value());
     base::DeleteFileRecursively(dest_path);
 
-    dest_path = destination->GetBaseDirectoryForOriginAndType(
-        url::Origin::Create(origin_url), type, true /* create */);
+    dest_path = destination->GetBaseDirectoryForOriginAndType(origin, type,
+                                                              /*create=*/true);
 
     obfuscated_file_util()->CloseFileSystemForOriginAndType(
-        url::Origin::Create(origin_url), GetTypeString(type));
+        origin, GetTypeString(type));
     base::CopyDirectory(base_path, dest_path.DirName(), true /* rescursive */);
   }
 }

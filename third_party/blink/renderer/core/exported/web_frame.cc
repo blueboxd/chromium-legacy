@@ -6,6 +6,7 @@
 
 #include <algorithm>
 #include "third_party/blink/public/common/frame/sandbox_flags.h"
+#include "third_party/blink/public/mojom/scroll/scrollbar_mode.mojom-blink.h"
 #include "third_party/blink/public/web/web_element.h"
 #include "third_party/blink/public/web/web_frame_owner_properties.h"
 #include "third_party/blink/renderer/bindings/core/v8/window_proxy_manager.h"
@@ -187,12 +188,11 @@ void WebFrame::SetFrameOwnerProperties(
   if (auto* local_frame = DynamicTo<LocalFrame>(frame)) {
     local_frame->GetDocument()->WillChangeFrameOwnerProperties(
         properties.margin_width, properties.margin_height,
-        static_cast<ScrollbarMode>(properties.scrolling_mode),
-        properties.is_display_none);
+        properties.scrollbar_mode, properties.is_display_none);
   }
 
   owner->SetBrowsingContextContainerName(properties.name);
-  owner->SetScrollingMode(properties.scrolling_mode);
+  owner->SetScrollbarMode(properties.scrollbar_mode);
   owner->SetMarginWidth(properties.margin_width);
   owner->SetMarginHeight(properties.margin_height);
   owner->SetAllowFullscreen(properties.allow_fullscreen);
@@ -377,12 +377,5 @@ Frame* WebFrame::ToCoreFrame(const WebFrame& frame) {
   NOTREACHED();
   return nullptr;
 }
-
-STATIC_ASSERT_ENUM(WebFrameOwnerProperties::ScrollingMode::kAuto,
-                   ScrollbarMode::kAuto);
-STATIC_ASSERT_ENUM(WebFrameOwnerProperties::ScrollingMode::kAlwaysOff,
-                   ScrollbarMode::kAlwaysOff);
-STATIC_ASSERT_ENUM(WebFrameOwnerProperties::ScrollingMode::kAlwaysOn,
-                   ScrollbarMode::kAlwaysOn);
 
 }  // namespace blink

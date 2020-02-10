@@ -25,6 +25,7 @@
 #define THIRD_PARTY_BLINK_RENDERER_CORE_HTML_HTML_FRAME_ELEMENT_BASE_H_
 
 #include "third_party/blink/public/mojom/input/focus_type.mojom-blink-forward.h"
+#include "third_party/blink/public/mojom/scroll/scrollbar_mode.mojom-blink.h"
 #include "third_party/blink/renderer/core/core_export.h"
 #include "third_party/blink/renderer/core/html/html_frame_owner_element.h"
 
@@ -35,7 +36,9 @@ class CORE_EXPORT HTMLFrameElementBase : public HTMLFrameOwnerElement {
   bool CanContainRangeEndPoint() const final { return false; }
 
   // FrameOwner overrides:
-  ScrollbarMode ScrollingMode() const final { return scrolling_mode_; }
+  mojom::blink::ScrollbarMode ScrollbarMode() const final {
+    return scrollbar_mode_;
+  }
   int MarginWidth() const final { return margin_width_; }
   int MarginHeight() const final { return margin_height_; }
 
@@ -51,7 +54,7 @@ class CORE_EXPORT HTMLFrameElementBase : public HTMLFrameOwnerElement {
   void DidNotifySubtreeInsertionsToDocument() final;
   void AttachLayoutTree(AttachContext&) override;
 
-  void SetScrollingMode(ScrollbarMode);
+  void SetScrollbarMode(mojom::blink::ScrollbarMode);
   void SetMarginWidth(int);
   void SetMarginHeight(int);
 
@@ -80,7 +83,7 @@ class CORE_EXPORT HTMLFrameElementBase : public HTMLFrameOwnerElement {
   bool IsURLAllowed() const;
   void OpenURL(bool replace_current_item = true);
 
-  ScrollbarMode scrolling_mode_;
+  mojom::blink::ScrollbarMode scrollbar_mode_;
   int margin_width_;
   int margin_height_;
 

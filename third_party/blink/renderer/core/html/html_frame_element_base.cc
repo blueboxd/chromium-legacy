@@ -49,7 +49,7 @@ namespace blink {
 HTMLFrameElementBase::HTMLFrameElementBase(const QualifiedName& tag_name,
                                            Document& document)
     : HTMLFrameOwnerElement(tag_name, document),
-      scrolling_mode_(ScrollbarMode::kAuto),
+      scrollbar_mode_(mojom::blink::ScrollbarMode::kAuto),
       margin_width_(-1),
       margin_height_(-1) {}
 
@@ -137,9 +137,9 @@ void HTMLFrameElementBase::ParseAttribute(
     // scrolling."
     if (EqualIgnoringASCIICase(value, "auto") ||
         DeprecatedEqualIgnoringCase(value, "yes"))
-      SetScrollingMode(ScrollbarMode::kAuto);
+      SetScrollbarMode(mojom::blink::ScrollbarMode::kAuto);
     else if (EqualIgnoringASCIICase(value, "no"))
-      SetScrollingMode(ScrollbarMode::kAlwaysOff);
+      SetScrollbarMode(mojom::blink::ScrollbarMode::kAlwaysOff);
   } else if (name == html_names::kOnbeforeunloadAttr) {
     // FIXME: should <frame> elements have beforeunload handlers?
     SetAttributeEventListener(
@@ -250,15 +250,16 @@ bool HTMLFrameElementBase::IsHTMLContentAttribute(
          HTMLFrameOwnerElement::IsHTMLContentAttribute(attribute);
 }
 
-void HTMLFrameElementBase::SetScrollingMode(ScrollbarMode scrollbar_mode) {
-  if (scrolling_mode_ == scrollbar_mode)
+void HTMLFrameElementBase::SetScrollbarMode(
+    mojom::blink::ScrollbarMode scrollbar_mode) {
+  if (scrollbar_mode_ == scrollbar_mode)
     return;
 
   if (contentDocument()) {
     contentDocument()->WillChangeFrameOwnerProperties(
         margin_width_, margin_height_, scrollbar_mode, IsDisplayNone());
   }
-  scrolling_mode_ = scrollbar_mode;
+  scrollbar_mode_ = scrollbar_mode;
   FrameOwnerPropertiesChanged();
 }
 
@@ -268,7 +269,7 @@ void HTMLFrameElementBase::SetMarginWidth(int margin_width) {
 
   if (contentDocument()) {
     contentDocument()->WillChangeFrameOwnerProperties(
-        margin_width, margin_height_, scrolling_mode_, IsDisplayNone());
+        margin_width, margin_height_, scrollbar_mode_, IsDisplayNone());
   }
   margin_width_ = margin_width;
   FrameOwnerPropertiesChanged();
@@ -280,7 +281,7 @@ void HTMLFrameElementBase::SetMarginHeight(int margin_height) {
 
   if (contentDocument()) {
     contentDocument()->WillChangeFrameOwnerProperties(
-        margin_width_, margin_height, scrolling_mode_, IsDisplayNone());
+        margin_width_, margin_height, scrollbar_mode_, IsDisplayNone());
   }
   margin_height_ = margin_height;
   FrameOwnerPropertiesChanged();

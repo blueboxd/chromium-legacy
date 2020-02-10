@@ -195,8 +195,8 @@ class BrowsingDataMediaLicenseHelperTest : public testing::Test {
                                ppapi::kPluginPrivateRootName, base::FilePath());
     EXPECT_TRUE(storage::ValidateIsolatedFileSystemId(fsid));
     filesystem_context_->OpenPluginPrivateFileSystem(
-        origin, storage::kFileSystemTypePluginPrivate, fsid, plugin_name,
-        storage::OPEN_FILE_SYSTEM_CREATE_IF_NONEXISTENT,
+        url::Origin::Create(origin), storage::kFileSystemTypePluginPrivate,
+        fsid, plugin_name, storage::OPEN_FILE_SYSTEM_CREATE_IF_NONEXISTENT,
         base::Bind(&BrowsingDataMediaLicenseHelperTest::OnFileSystemOpened,
                    base::Unretained(this), await_completion.NotifyClosure()));
     await_completion.BlockUntilNotified();

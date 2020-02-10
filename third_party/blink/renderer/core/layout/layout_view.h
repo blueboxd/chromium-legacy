@@ -23,6 +23,7 @@
 #define THIRD_PARTY_BLINK_RENDERER_CORE_LAYOUT_LAYOUT_VIEW_H_
 
 #include <memory>
+#include "third_party/blink/public/mojom/scroll/scrollbar_mode.mojom-blink.h"
 #include "third_party/blink/renderer/core/core_export.h"
 #include "third_party/blink/renderer/core/layout/hit_test_cache.h"
 #include "third_party/blink/renderer/core/layout/hit_test_result.h"
@@ -164,16 +165,17 @@ class CORE_EXPORT LayoutView final : public LayoutBlockFlow {
           kIgnorePlatformOverlayScrollbarSize) const override;
 
   // If either direction has a non-auto mode, the other must as well.
-  void SetAutosizeScrollbarModes(ScrollbarMode h_mode, ScrollbarMode v_mode);
-  ScrollbarMode AutosizeHorizontalScrollbarMode() const {
+  void SetAutosizeScrollbarModes(mojom::blink::ScrollbarMode h_mode,
+                                 mojom::blink::ScrollbarMode v_mode);
+  mojom::blink::ScrollbarMode AutosizeHorizontalScrollbarMode() const {
     return autosize_h_scrollbar_mode_;
   }
-  ScrollbarMode AutosizeVerticalScrollbarMode() const {
+  mojom::blink::ScrollbarMode AutosizeVerticalScrollbarMode() const {
     return autosize_v_scrollbar_mode_;
   }
 
-  void CalculateScrollbarModes(ScrollbarMode& h_mode,
-                               ScrollbarMode& v_mode) const;
+  void CalculateScrollbarModes(mojom::blink::ScrollbarMode& h_mode,
+                               mojom::blink::ScrollbarMode& v_mode) const;
 
   LayoutState* GetLayoutState() const { return layout_state_; }
 
@@ -336,8 +338,8 @@ class CORE_EXPORT LayoutView final : public LayoutBlockFlow {
   // FrameViewAutoSizeInfo controls scrollbar appearance manually rather than
   // relying on layout. These members are used to override the ScrollbarModes
   // calculated from style. kScrollbarAuto disables the override.
-  ScrollbarMode autosize_h_scrollbar_mode_;
-  ScrollbarMode autosize_v_scrollbar_mode_;
+  mojom::blink::ScrollbarMode autosize_h_scrollbar_mode_;
+  mojom::blink::ScrollbarMode autosize_v_scrollbar_mode_;
 
   Vector<IntRect> tickmarks_override_;
 

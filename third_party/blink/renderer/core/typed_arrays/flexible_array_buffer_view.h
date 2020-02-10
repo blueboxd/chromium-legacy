@@ -39,7 +39,7 @@ class CORE_EXPORT FlexibleArrayBufferView {
   }
 
   void SetContents(v8::Local<v8::ArrayBufferView> array_buffer_view) {
-    DCHECK(IsEmpty());
+    DCHECK(IsNull());
     size_t size = array_buffer_view->ByteLength();
     if (size <= sizeof small_buffer_) {
       array_buffer_view->CopyContents(small_buffer_, size);
@@ -50,7 +50,9 @@ class CORE_EXPORT FlexibleArrayBufferView {
     }
   }
 
-  bool IsEmpty() const { return !full_ && !small_data_; }
+  // Returns true if this object represents IDL null.
+  bool IsNull() const { return !full_ && !small_data_; }
+
   bool IsFull() const { return full_; }
 
   DOMArrayBufferView* Full() const {
@@ -62,22 +64,24 @@ class CORE_EXPORT FlexibleArrayBufferView {
   // temporary storage that is only valid during the life-time of the
   // FlexibleArrayBufferView object.
   void* BaseAddressMaybeOnStack() const {
-    DCHECK(!IsEmpty());
+    DCHECK(!IsNull());
     return IsFull() ? full_->BaseAddressMaybeShared() : small_data_;
   }
 
   size_t ByteLengthAsSizeT() const {
-    DCHECK(!IsEmpty());
+    DCHECK(!IsNull());
     return IsFull() ? full_->byteLengthAsSizeT() : small_length_;
   }
 
   unsigned DeprecatedByteLengthAsUnsigned() const {
-    DCHECK(!IsEmpty());
+    DCHECK(!IsNull());
     return IsFull() ? base::checked_cast<unsigned>(full_->byteLengthAsSizeT())
                     : base::checked_cast<unsigned>(small_length_);
   }
 
-  operator bool() const { return !IsEmpty(); }
+  // TODO(crbug.com/1050474): Remove this cast operator and make the callsites
+  // explicitly call IsNull().
+  operator bool() const { return !IsNull(); }
 
  private:
   DOMArrayBufferView* full_ = nullptr;

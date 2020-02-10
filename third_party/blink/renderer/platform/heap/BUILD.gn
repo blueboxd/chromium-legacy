@@ -4,6 +4,7 @@
 
 import("//build/buildflag_header.gni")
 import("//build/config/jumbo.gni")
+import("//build/config/sanitizers/sanitizers.gni")
 import("//testing/test.gni")
 import("//third_party/blink/public/public_features.gni")
 import("//third_party/blink/renderer/platform/platform.gni")
@@ -15,6 +16,24 @@ buildflag_header("blink_heap_buildflags") {
   flags = [
     "BLINK_HEAP_VERIFICATION=$enable_blink_heap_verification",
     "BLINK_HEAP_YOUNG_GENERATION=$enable_blink_heap_young_generation",
+  ]
+}
+
+jumbo_source_set("heap_unsanitized") {
+  if (is_asan) {
+    configs -= [ "//build/config/sanitizers:default_sanitizer_flags" ]
+  }
+  configs +=
+      [ "//third_party/blink/renderer/platform:blink_platform_implementation" ]
+
+  sources = [
+    "unsanitized_atomic.cc",
+    "unsanitized_atomic.h",
+  ]
+
+  deps = [
+    "//base",
+    "//third_party/blink/renderer/platform/wtf",
   ]
 }
 
@@ -82,6 +101,7 @@ blink_platform_sources("heap") {
     ":blink_heap_buildflags",
     "//base",
     "//third_party/blink/renderer/platform:make_platform_generated",
+    "//third_party/blink/renderer/platform/heap:heap_unsanitized",
     "//third_party/blink/renderer/platform/heap/asm",
     "//third_party/icu",
     "//v8",

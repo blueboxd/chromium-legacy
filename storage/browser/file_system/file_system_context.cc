@@ -401,11 +401,11 @@ void FileSystemContext::AttemptAutoMountForURLRequest(
   copyable_callback.Run(base::File::FILE_ERROR_NOT_FOUND);
 }
 
-void FileSystemContext::DeleteFileSystem(const GURL& origin_url,
+void FileSystemContext::DeleteFileSystem(const url::Origin& origin,
                                          FileSystemType type,
                                          StatusCallback callback) {
   DCHECK(io_task_runner_->RunsTasksInCurrentSequence());
-  DCHECK(origin_url == origin_url.GetOrigin());
+  DCHECK(origin.GetURL().is_valid());
   DCHECK(!callback.is_null());
 
   FileSystemBackend* backend = GetFileSystemBackend(type);
@@ -421,10 +421,10 @@ void FileSystemContext::DeleteFileSystem(const GURL& origin_url,
   base::PostTaskAndReplyWithResult(
       default_file_task_runner(), FROM_HERE,
       // It is safe to pass Unretained(quota_util) since context owns it.
-      base::BindOnce(&FileSystemQuotaUtil::DeleteOriginDataOnFileTaskRunner,
-                     base::Unretained(backend->GetQuotaUtil()),
-                     base::RetainedRef(this),
-                     base::Unretained(quota_manager_proxy()), origin_url, type),
+      base::BindOnce(
+          &FileSystemQuotaUtil::DeleteOriginDataOnFileTaskRunner,
+          base::Unretained(backend->GetQuotaUtil()), base::RetainedRef(this),
+          base::Unretained(quota_manager_proxy()), origin.GetURL(), type),
       std::move(callback));
 }
 
@@ -494,7 +494,7 @@ bool FileSystemContext::CanServeURLRequest(const FileSystemURL& url) const {
 }
 
 void FileSystemContext::OpenPluginPrivateFileSystem(
-    const GURL& origin_url,
+    const url::Origin& origin,
     FileSystemType type,
     const std::string& filesystem_id,
     const std::string& plugin_id,
@@ -502,8 +502,7 @@ void FileSystemContext::OpenPluginPrivateFileSystem(
     StatusCallback callback) {
   DCHECK(plugin_private_backend_);
   plugin_private_backend_->OpenPrivateFileSystem(
-      url::Origin::Create(origin_url), type, filesystem_id, plugin_id, mode,
-      std::move(callback));
+      origin, type, filesystem_id, plugin_id, mode, std::move(callback));
 }
 
 FileSystemContext::~FileSystemContext() {

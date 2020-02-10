@@ -3630,6 +3630,7 @@ test("unit_tests") {
     sources += [
       "../browser/device_identity/device_oauth2_token_service_unittest.cc",
       "../browser/ui/webui/chromeos/add_supervision/add_supervision_handler_utils_unittest.cc",
+      "../browser/ui/webui/chromeos/edu_account_login_handler_unittest.cc",
       "../renderer/chromeos_delayed_callback_group_unittest.cc",
     ]
   }

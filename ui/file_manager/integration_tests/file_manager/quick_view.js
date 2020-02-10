@@ -2064,7 +2064,7 @@
    * Tests deleting an item from Quick View when in single select mode, and
    * that Quick View closes when there are no more items to view.
    */
-  testcase.deleteItemFromQuickViewSingleSelection = async () => {
+  testcase.openQuickViewAndDeleteSingleSelection = async () => {
     // Open Files app on Downloads containing ENTRIES.hello.
     const appId =
         await setupAndWaitUntilReady(RootPath.DOWNLOADS, [ENTRIES.hello], []);
@@ -2096,7 +2096,7 @@
    * the item below the item deleted is shown in Quick View after the item's
    * deletion.
    */
-  testcase.deleteItemFromQuickViewCheckSelection = async () => {
+  testcase.openQuickViewAndDeleteCheckSelection = async () => {
     // Open Files app on Downloads containing BASIC_LOCAL_ENTRY_SET.
     const appId = await setupAndWaitUntilReady(
         RootPath.DOWNLOADS, BASIC_LOCAL_ENTRY_SET, []);

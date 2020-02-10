@@ -955,6 +955,7 @@ class CORE_EXPORT LayoutBox : public LayoutBoxModelObject {
   // index, and delete all entries following it.
   void AddLayoutResult(scoped_refptr<const NGLayoutResult>, wtf_size_t index);
 
+  void ShrinkLayoutResults(wtf_size_t results_to_keep);
   void ClearLayoutResults();
 
   const NGLayoutResult* GetCachedLayoutResult() const;

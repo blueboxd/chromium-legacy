@@ -39,6 +39,7 @@
 #include "cc/tiles/frame_viewer_instrumentation.h"
 #include "third_party/blink/public/common/features.h"
 #include "third_party/blink/public/mojom/scroll/scroll_into_view_params.mojom-blink.h"
+#include "third_party/blink/public/mojom/scroll/scrollbar_mode.mojom-blink.h"
 #include "third_party/blink/public/platform/task_type.h"
 #include "third_party/blink/public/platform/web_rect.h"
 #include "third_party/blink/renderer/bindings/core/v8/v8_scroll_into_view_options.h"
@@ -274,8 +275,8 @@ LocalFrameView::LocalFrameView(LocalFrame& frame, IntRect frame_rect)
 #endif
 {
   // Propagate the marginwidth/height and scrolling modes to the view.
-  if (frame_->Owner() &&
-      frame_->Owner()->ScrollingMode() == ScrollbarMode::kAlwaysOff)
+  if (frame_->Owner() && frame_->Owner()->ScrollbarMode() ==
+                             mojom::blink::ScrollbarMode::kAlwaysOff)
     SetCanHaveScrollbars(false);
 }
 
@@ -801,10 +802,10 @@ void LocalFrameView::UpdateLayout() {
         last_viewport_size_ = GetLayoutSize();
         last_zoom_factor_ = GetLayoutView()->StyleRef().Zoom();
 
-        ScrollbarMode h_mode;
-        ScrollbarMode v_mode;
+        mojom::blink::ScrollbarMode h_mode;
+        mojom::blink::ScrollbarMode v_mode;
         GetLayoutView()->CalculateScrollbarModes(h_mode, v_mode);
-        if (v_mode == ScrollbarMode::kAuto) {
+        if (v_mode == mojom::blink::ScrollbarMode::kAuto) {
           GetLayoutView()
               ->GetScrollableArea()
               ->ForceVerticalScrollbarForFirstLayout();
@@ -2937,8 +2938,8 @@ void LocalFrameView::DisableAutoSizeMode() {
   ScheduleRelayout();
 
   // Since autosize mode forces the scrollbar mode, change them to being auto.
-  GetLayoutView()->SetAutosizeScrollbarModes(ScrollbarMode::kAuto,
-                                             ScrollbarMode::kAuto);
+  GetLayoutView()->SetAutosizeScrollbarModes(
+      mojom::blink::ScrollbarMode::kAuto, mojom::blink::ScrollbarMode::kAuto);
   auto_size_info_.Clear();
 }
 

@@ -5666,10 +5666,11 @@ HTMLFrameOwnerElement* Document::LocalOwner() const {
   return GetFrame()->DeprecatedLocalOwner();
 }
 
-void Document::WillChangeFrameOwnerProperties(int margin_width,
-                                              int margin_height,
-                                              ScrollbarMode scrolling_mode,
-                                              bool is_display_none) {
+void Document::WillChangeFrameOwnerProperties(
+    int margin_width,
+    int margin_height,
+    mojom::blink::ScrollbarMode scrollbar_mode,
+    bool is_display_none) {
   DCHECK(GetFrame() && GetFrame()->Owner());
   FrameOwner* owner = GetFrame()->Owner();
 
@@ -5690,8 +5691,9 @@ void Document::WillChangeFrameOwnerProperties(int margin_width,
                                          margin_height);
     }
   }
-  if (scrolling_mode != owner->ScrollingMode() && View()) {
-    View()->SetCanHaveScrollbars(scrolling_mode != ScrollbarMode::kAlwaysOff);
+  if (scrollbar_mode != owner->ScrollbarMode() && View()) {
+    View()->SetCanHaveScrollbars(scrollbar_mode !=
+                                 mojom::blink::ScrollbarMode::kAlwaysOff);
     View()->SetNeedsLayout();
   }
 }

@@ -4250,7 +4250,6 @@
     ],
 
     'mojo_android_gtests': [
-      'network_service_android_gtests',
     ],
 
     'mojo_chromiumos_fyi_gtests': [

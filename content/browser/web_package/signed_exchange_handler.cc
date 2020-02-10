@@ -48,7 +48,7 @@
 #include "services/network/public/mojom/network_context.mojom.h"
 #include "services/network/public/mojom/url_response_head.mojom.h"
 #include "third_party/blink/public/common/loader/url_loader_throttle.h"
-#include "third_party/blink/public/common/web_package/signed_exchange_request_matcher.h"
+#include "third_party/blink/public/common/web_package/web_package_request_matcher.h"
 
 namespace content {
 
@@ -171,7 +171,7 @@ SignedExchangeHandler::SignedExchangeHandler(
     ExchangeHeadersCallback headers_callback,
     std::unique_ptr<SignedExchangeCertFetcherFactory> cert_fetcher_factory,
     int load_flags,
-    std::unique_ptr<blink::SignedExchangeRequestMatcher> request_matcher,
+    std::unique_ptr<blink::WebPackageRequestMatcher> request_matcher,
     std::unique_ptr<SignedExchangeDevToolsProxy> devtools_proxy,
     SignedExchangeReporter* reporter,
     int frame_tree_node_id)

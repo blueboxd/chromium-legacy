@@ -5,6 +5,7 @@
 #include "third_party/blink/renderer/core/frame/frame_view_auto_size_info.h"
 
 #include "base/auto_reset.h"
+#include "third_party/blink/public/mojom/scroll/scrollbar_mode.mojom-blink.h"
 #include "third_party/blink/renderer/core/frame/local_frame.h"
 #include "third_party/blink/renderer/core/frame/local_frame_view.h"
 #include "third_party/blink/renderer/core/layout/layout_box.h"
@@ -106,15 +107,17 @@ void FrameViewAutoSizeInfo::AutoSizeIfNeeded() {
 
     // Bound the dimensions by the max bounds and determine what scrollbars to
     // show.
-    ScrollbarMode horizontal_scrollbar_mode = ScrollbarMode::kAlwaysOff;
+    mojom::blink::ScrollbarMode horizontal_scrollbar_mode =
+        mojom::blink::ScrollbarMode::kAlwaysOff;
     if (new_size.Width() > max_auto_size_.Width()) {
       new_size.SetWidth(max_auto_size_.Width());
-      horizontal_scrollbar_mode = ScrollbarMode::kAlwaysOn;
+      horizontal_scrollbar_mode = mojom::blink::ScrollbarMode::kAlwaysOn;
     }
-    ScrollbarMode vertical_scrollbar_mode = ScrollbarMode::kAlwaysOff;
+    mojom::blink::ScrollbarMode vertical_scrollbar_mode =
+        mojom::blink::ScrollbarMode::kAlwaysOff;
     if (new_size.Height() > max_auto_size_.Height()) {
       new_size.SetHeight(max_auto_size_.Height());
-      vertical_scrollbar_mode = ScrollbarMode::kAlwaysOn;
+      vertical_scrollbar_mode = mojom::blink::ScrollbarMode::kAlwaysOn;
     }
 
     if (new_size == size)

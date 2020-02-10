@@ -5576,6 +5576,12 @@ int Element::GetIntegralAttribute(const QualifiedName& attribute_name,
   return integral_value;
 }
 
+unsigned int Element::GetUnsignedIntegralAttribute(
+    const QualifiedName& attribute_name) const {
+  return static_cast<unsigned int>(
+      std::max(0, GetIntegralAttribute(attribute_name)));
+}
+
 void Element::SetIntegralAttribute(const QualifiedName& attribute_name,
                                    int value) {
   setAttribute(attribute_name, AtomicString::Number(value));

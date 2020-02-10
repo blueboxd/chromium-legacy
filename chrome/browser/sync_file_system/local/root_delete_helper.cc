@@ -61,7 +61,7 @@ void RootDeleteHelper::Run() {
             "%s", url_.DebugString().c_str());
 
   file_system_context_->DeleteFileSystem(
-      url_.origin().GetURL(), url_.type(),
+      url_.origin(), url_.type(),
       base::Bind(&RootDeleteHelper::DidDeleteFileSystem,
                  weak_factory_.GetWeakPtr()));
 }

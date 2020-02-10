@@ -310,8 +310,8 @@ void PepperFileSystemBrowserHost::OpenPluginPrivateFileSystem(
   }
 
   file_system_context->OpenPluginPrivateFileSystem(
-      origin, storage::kFileSystemTypePluginPrivate, fsid, plugin_id,
-      storage::OPEN_FILE_SYSTEM_CREATE_IF_NONEXISTENT,
+      url::Origin::Create(origin), storage::kFileSystemTypePluginPrivate, fsid,
+      plugin_id, storage::OPEN_FILE_SYSTEM_CREATE_IF_NONEXISTENT,
       base::BindOnce(
           &PepperFileSystemBrowserHost::OpenPluginPrivateFileSystemComplete,
           weak_factory_.GetWeakPtr(), reply_context, fsid));

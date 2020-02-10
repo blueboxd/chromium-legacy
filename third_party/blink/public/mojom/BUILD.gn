@@ -118,6 +118,7 @@ mojom("mojom_platform") {
     "screen_enumeration/screen_enumeration.mojom",
     "script/script_type.mojom",
     "scroll/scroll_into_view_params.mojom",
+    "scroll/scrollbar_mode.mojom",
     "selection_menu/selection_menu_behavior.mojom",
     "service_worker/controller_service_worker_mode.mojom",
     "service_worker/dispatch_fetch_event_params.mojom",

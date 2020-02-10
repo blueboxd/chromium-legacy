@@ -34,6 +34,7 @@
 #include "chrome/browser/ui/web_applications/web_app_ui_manager_impl.h"
 #include "chrome/browser/web_applications/components/install_finalizer.h"
 #include "chrome/browser/web_applications/components/web_app_constants.h"
+#include "chrome/browser/web_applications/components/web_app_helpers.h"
 #include "chrome/browser/web_applications/components/web_app_id.h"
 #include "chrome/browser/web_applications/components/web_app_utils.h"
 #include "chrome/browser/web_applications/system_web_app_manager.h"
@@ -347,7 +348,14 @@ void WebApps::PauseApp(const std::string& app_id) {
   paused_apps_.insert(app_id);
   SetIconEffect(app_id);
 
-  // TODO(crbug.com/1011235): If the app is running, Stop the app.
+  for (auto* browser : *BrowserList::GetInstance()) {
+    if (!browser->is_type_app()) {
+      continue;
+    }
+    if (web_app::GetAppIdFromApplicationName(browser->app_name()) == app_id) {
+      browser->tab_strip_model()->CloseAllTabs();
+    }
+  }
 }
 
 void WebApps::UnpauseApps(const std::string& app_id) {

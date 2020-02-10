@@ -22,8 +22,7 @@ RemoteFrameOwner::RemoteFrameOwner(
     : frame_policy_(frame_policy),
       browsing_context_container_name_(
           static_cast<String>(frame_owner_properties.name)),
-      scrolling_(
-          static_cast<ScrollbarMode>(frame_owner_properties.scrolling_mode)),
+      scrollbar_(frame_owner_properties.scrollbar_mode),
       margin_width_(frame_owner_properties.margin_width),
       margin_height_(frame_owner_properties.margin_height),
       allow_fullscreen_(frame_owner_properties.allow_fullscreen),
@@ -38,9 +37,8 @@ void RemoteFrameOwner::Trace(blink::Visitor* visitor) {
   FrameOwner::Trace(visitor);
 }
 
-void RemoteFrameOwner::SetScrollingMode(
-    WebFrameOwnerProperties::ScrollingMode mode) {
-  scrolling_ = static_cast<ScrollbarMode>(mode);
+void RemoteFrameOwner::SetScrollbarMode(mojom::blink::ScrollbarMode mode) {
+  scrollbar_ = mode;
 }
 
 void RemoteFrameOwner::SetContentFrame(Frame& frame) {

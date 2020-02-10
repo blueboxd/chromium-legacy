@@ -6,8 +6,8 @@
 #define THIRD_PARTY_BLINK_RENDERER_CORE_FRAME_FRAME_OWNER_H_
 
 #include "third_party/blink/public/common/frame/frame_policy.h"
+#include "third_party/blink/public/mojom/scroll/scrollbar_mode.mojom-blink.h"
 #include "third_party/blink/renderer/core/core_export.h"
-#include "third_party/blink/renderer/core/scroll/scroll_types.h"
 #include "third_party/blink/renderer/platform/heap/handle.h"
 #include "third_party/blink/renderer/platform/wtf/text/atomic_string.h"
 
@@ -66,7 +66,7 @@ class CORE_EXPORT FrameOwner : public GarbageCollectedMixin {
   // container.
   // https://html.spec.whatwg.org/C/#browsing-context-container
   virtual AtomicString BrowsingContextContainerName() const = 0;
-  virtual ScrollbarMode ScrollingMode() const = 0;
+  virtual mojom::blink::ScrollbarMode ScrollbarMode() const = 0;
   virtual int MarginWidth() const = 0;
   virtual int MarginHeight() const = 0;
   virtual bool AllowFullscreen() const = 0;
@@ -143,7 +143,9 @@ class CORE_EXPORT DummyFrameOwner final
   AtomicString BrowsingContextContainerName() const override {
     return AtomicString();
   }
-  ScrollbarMode ScrollingMode() const override { return ScrollbarMode::kAuto; }
+  mojom::blink::ScrollbarMode ScrollbarMode() const override {
+    return mojom::blink::ScrollbarMode::kAuto;
+  }
   int MarginWidth() const override { return -1; }
   int MarginHeight() const override { return -1; }
   bool AllowFullscreen() const override { return false; }

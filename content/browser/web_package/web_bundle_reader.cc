@@ -19,7 +19,7 @@
 #include "mojo/public/cpp/system/file_data_source.h"
 #include "mojo/public/cpp/system/platform_handle.h"
 #include "net/base/url_util.h"
-#include "third_party/blink/public/common/web_package/signed_exchange_request_matcher.h"
+#include "third_party/blink/public/common/web_package/web_package_request_matcher.h"
 
 namespace content {
 
@@ -202,8 +202,8 @@ void WebBundleReader::ReadResponse(
   size_t response_index = 0;
   if (!entry->variants_value.empty()) {
     // Select the best variant for the request.
-    blink::SignedExchangeRequestMatcher matcher(resource_request.headers,
-                                                accept_langs);
+    blink::WebPackageRequestMatcher matcher(resource_request.headers,
+                                            accept_langs);
     auto found = matcher.FindBestMatchingIndex(entry->variants_value);
     if (!found || *found >= entry->response_locations.size()) {
       PostTask(

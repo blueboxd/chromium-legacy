@@ -102,39 +102,65 @@ ScriptWrappable* NativeValueTraitsInterfaceOrNullArgumentValue(
 
 namespace {
 
-template <typename T, typename V8T>
+enum class IDLBufferSourceTypeConvMode {
+  kDefault,
+  kNullable,
+};
+
+template <
+    typename T,
+    typename V8T,
+    IDLBufferSourceTypeConvMode mode = IDLBufferSourceTypeConvMode::kDefault>
 T* NativeValueTraitsBufferSourcePtrNativeValue(
     v8::Isolate* isolate,
     v8::Local<v8::Value> value,
     ExceptionState& exception_state) {
   T* native_value = V8T::ToImplWithTypeCheck(isolate, value);
-  if (!native_value) {
-    exception_state.ThrowTypeError(ExceptionMessages::FailedToConvertJSValue(
-        V8T::GetWrapperTypeInfo()->interface_name));
+  if (native_value)
+    return native_value;
+
+  if (mode == IDLBufferSourceTypeConvMode::kNullable) {
+    if (value->IsNullOrUndefined())
+      return nullptr;
   }
-  return native_value;
+
+  exception_state.ThrowTypeError(ExceptionMessages::FailedToConvertJSValue(
+      V8T::GetWrapperTypeInfo()->interface_name));
+  return nullptr;
 }
 
-template <typename T, typename V8T>
+template <
+    typename T,
+    typename V8T,
+    IDLBufferSourceTypeConvMode mode = IDLBufferSourceTypeConvMode::kDefault>
 T* NativeValueTraitsBufferSourcePtrArgumentValue(
     v8::Isolate* isolate,
     int argument_index,
     v8::Local<v8::Value> value,
     ExceptionState& exception_state) {
   T* native_value = V8T::ToImplWithTypeCheck(isolate, value);
-  if (!native_value) {
-    exception_state.ThrowTypeError(ExceptionMessages::ArgumentNotOfType(
-        argument_index, V8T::GetWrapperTypeInfo()->interface_name));
+  if (native_value)
+    return native_value;
+
+  if (mode == IDLBufferSourceTypeConvMode::kNullable) {
+    if (value->IsNullOrUndefined())
+      return nullptr;
   }
-  return native_value;
+
+  exception_state.ThrowTypeError(ExceptionMessages::ArgumentNotOfType(
+      argument_index, V8T::GetWrapperTypeInfo()->interface_name));
+  return nullptr;
 }
 
-template <typename T, typename V8T>
+template <
+    typename T,
+    typename V8T,
+    IDLBufferSourceTypeConvMode mode = IDLBufferSourceTypeConvMode::kDefault>
 NotShared<T> NativeValueTraitsBufferSourceNotSharedNativeValue(
     v8::Isolate* isolate,
     v8::Local<v8::Value> value,
     ExceptionState& exception_state) {
-  T* native_value = NativeValueTraitsBufferSourcePtrNativeValue<T, V8T>(
+  T* native_value = NativeValueTraitsBufferSourcePtrNativeValue<T, V8T, mode>(
       isolate, value, exception_state);
   if (!native_value)
     return NotShared<T>();
@@ -146,13 +172,16 @@ NotShared<T> NativeValueTraitsBufferSourceNotSharedNativeValue(
   return NotShared<T>(native_value);
 }
 
-template <typename T, typename V8T>
+template <
+    typename T,
+    typename V8T,
+    IDLBufferSourceTypeConvMode mode = IDLBufferSourceTypeConvMode::kDefault>
 NotShared<T> NativeValueTraitsBufferSourceNotSharedArgumentValue(
     v8::Isolate* isolate,
     int argument_index,
     v8::Local<v8::Value> value,
     ExceptionState& exception_state) {
-  T* native_value = NativeValueTraitsBufferSourcePtrArgumentValue<T, V8T>(
+  T* native_value = NativeValueTraitsBufferSourcePtrArgumentValue<T, V8T, mode>(
       isolate, argument_index, value, exception_state);
   if (!native_value)
     return NotShared<T>();
@@ -164,37 +193,54 @@ NotShared<T> NativeValueTraitsBufferSourceNotSharedArgumentValue(
   return NotShared<T>(native_value);
 }
 
-template <typename T, typename V8T>
+template <
+    typename T,
+    typename V8T,
+    IDLBufferSourceTypeConvMode mode = IDLBufferSourceTypeConvMode::kDefault>
 MaybeShared<T> NativeValueTraitsBufferSourceMaybeSharedNativeValue(
     v8::Isolate* isolate,
     v8::Local<v8::Value> value,
     ExceptionState& exception_state) {
-  return MaybeShared<T>(NativeValueTraitsBufferSourcePtrNativeValue<T, V8T>(
-      isolate, value, exception_state));
+  return MaybeShared<T>(
+      NativeValueTraitsBufferSourcePtrNativeValue<T, V8T, mode>(
+          isolate, value, exception_state));
 }
 
-template <typename T, typename V8T>
+template <
+    typename T,
+    typename V8T,
+    IDLBufferSourceTypeConvMode mode = IDLBufferSourceTypeConvMode::kDefault>
 MaybeShared<T> NativeValueTraitsBufferSourceMaybeSharedArgumentValue(
     v8::Isolate* isolate,
     int argument_index,
     v8::Local<v8::Value> value,
     ExceptionState& exception_state) {
-  return MaybeShared<T>(NativeValueTraitsBufferSourcePtrArgumentValue<T, V8T>(
-      isolate, argument_index, value, exception_state));
+  return MaybeShared<T>(
+      NativeValueTraitsBufferSourcePtrArgumentValue<T, V8T, mode>(
+          isolate, argument_index, value, exception_state));
 }
 
-template <typename T, typename V8T, typename FLEXIBLE>
+template <
+    typename T,
+    typename V8T,
+    typename FLEXIBLE,
+    IDLBufferSourceTypeConvMode mode = IDLBufferSourceTypeConvMode::kDefault>
 FLEXIBLE NativeValueTraitsBufferSourceFlexibleArgumentValue(
     v8::Isolate* isolate,
     int argument_index,
     v8::Local<v8::Value> value,
     ExceptionState& exception_state) {
-  if (!V8T::HasInstance(isolate, value)) {
-    exception_state.ThrowTypeError(ExceptionMessages::ArgumentNotOfType(
-        argument_index, V8T::GetWrapperTypeInfo()->interface_name));
-    return FLEXIBLE();
+  if (V8T::HasInstance(isolate, value))
+    return FLEXIBLE(value.As<v8::ArrayBufferView>());
+
+  if (mode == IDLBufferSourceTypeConvMode::kNullable) {
+    if (value->IsNullOrUndefined())
+      return FLEXIBLE();
   }
-  return FLEXIBLE(value.As<v8::ArrayBufferView>());
+
+  exception_state.ThrowTypeError(ExceptionMessages::ArgumentNotOfType(
+      argument_index, V8T::GetWrapperTypeInfo()->interface_name));
+  return FLEXIBLE();
 }
 
 }  // namespace
@@ -232,6 +278,24 @@ DOMArrayBuffer* NativeValueTraits<DOMArrayBuffer>::ArgumentValue(
       ExceptionState& exception_state) {                                    \
     return NativeValueTraitsBufferSourceNotSharedArgumentValue<T, V8T>(     \
         isolate, argument_index, value, exception_state);                   \
+  }                                                                         \
+  template <>                                                               \
+  CORE_EXPORT NotShared<T>                                                  \
+  NativeValueTraits<IDLNullable<NotShared<T>>>::NativeValue(                \
+      v8::Isolate* isolate, v8::Local<v8::Value> value,                     \
+      ExceptionState& exception_state) {                                    \
+    return NativeValueTraitsBufferSourceNotSharedNativeValue<               \
+        T, V8T, IDLBufferSourceTypeConvMode::kNullable>(isolate, value,     \
+                                                        exception_state);   \
+  }                                                                         \
+  template <>                                                               \
+  CORE_EXPORT NotShared<T>                                                  \
+  NativeValueTraits<IDLNullable<NotShared<T>>>::ArgumentValue(              \
+      v8::Isolate* isolate, int argument_index, v8::Local<v8::Value> value, \
+      ExceptionState& exception_state) {                                    \
+    return NativeValueTraitsBufferSourceNotSharedArgumentValue<             \
+        T, V8T, IDLBufferSourceTypeConvMode::kNullable>(                    \
+        isolate, argument_index, value, exception_state);                   \
   }
 #define DEFINE_NATIVE_VALUE_TRAITS_BUFFER_SOURCE_TYPE_MAYBE_SHARED(T, V8T)     \
   template <>                                                                  \
@@ -247,6 +311,24 @@ DOMArrayBuffer* NativeValueTraits<DOMArrayBuffer>::ArgumentValue(
       ExceptionState& exception_state) {                                       \
     return NativeValueTraitsBufferSourceMaybeSharedArgumentValue<T, V8T>(      \
         isolate, argument_index, value, exception_state);                      \
+  }                                                                            \
+  template <>                                                                  \
+  CORE_EXPORT MaybeShared<T>                                                   \
+  NativeValueTraits<IDLNullable<MaybeShared<T>>>::NativeValue(                 \
+      v8::Isolate* isolate, v8::Local<v8::Value> value,                        \
+      ExceptionState& exception_state) {                                       \
+    return NativeValueTraitsBufferSourceMaybeSharedNativeValue<                \
+        T, V8T, IDLBufferSourceTypeConvMode::kNullable>(isolate, value,        \
+                                                        exception_state);      \
+  }                                                                            \
+  template <>                                                                  \
+  CORE_EXPORT MaybeShared<T>                                                   \
+  NativeValueTraits<IDLNullable<MaybeShared<T>>>::ArgumentValue(               \
+      v8::Isolate* isolate, int argument_index, v8::Local<v8::Value> value,    \
+      ExceptionState& exception_state) {                                       \
+    return NativeValueTraitsBufferSourceMaybeSharedArgumentValue<              \
+        T, V8T, IDLBufferSourceTypeConvMode::kNullable>(                       \
+        isolate, argument_index, value, exception_state);                      \
   }
 #define DEFINE_NATIVE_VALUE_TRAITS_BUFFER_SOURCE_TYPE_FLEXIBLE(T, V8T,      \
                                                                FLEXIBLE)    \
@@ -256,6 +338,15 @@ DOMArrayBuffer* NativeValueTraits<DOMArrayBuffer>::ArgumentValue(
       ExceptionState& exception_state) {                                    \
     return NativeValueTraitsBufferSourceFlexibleArgumentValue<T, V8T,       \
                                                               FLEXIBLE>(    \
+        isolate, argument_index, value, exception_state);                   \
+  }                                                                         \
+  template <>                                                               \
+  CORE_EXPORT FLEXIBLE                                                      \
+  NativeValueTraits<IDLNullable<FLEXIBLE>>::ArgumentValue(                  \
+      v8::Isolate* isolate, int argument_index, v8::Local<v8::Value> value, \
+      ExceptionState& exception_state) {                                    \
+    return NativeValueTraitsBufferSourceFlexibleArgumentValue<              \
+        T, V8T, FLEXIBLE, IDLBufferSourceTypeConvMode::kNullable>(          \
         isolate, argument_index, value, exception_state);                   \
   }
 #define DEFINE_NATIVE_VALUE_TRAITS_TYPED_ARRAY(T)                           \

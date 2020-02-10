@@ -6,7 +6,7 @@
 
 #include "net/http/http_request_headers.h"
 #include "third_party/blink/public/common/web_package/signed_exchange_consts.h"
-#include "third_party/blink/public/common/web_package/signed_exchange_request_matcher.h"
+#include "third_party/blink/public/common/web_package/web_package_request_matcher.h"
 #include "third_party/blink/public/mojom/fetch/fetch_api_request.mojom-blink.h"
 #include "third_party/blink/public/platform/web_url.h"
 #include "third_party/blink/renderer/platform/loader/fetch/resource.h"
@@ -177,7 +177,7 @@ AlternateSignedExchangeResourceInfo::FindMatchingEntry(
   net::HttpRequestHeaders request_headers;
   request_headers.SetHeader("accept", accept_header);
 
-  SignedExchangeRequestMatcher matcher(request_headers, accept_langs);
+  WebPackageRequestMatcher matcher(request_headers, accept_langs);
   const auto variant_keys_list_it =
       matcher.FindBestMatchingVariantKey(variants, variant_keys_list);
   if (variant_keys_list_it == variant_keys_list.end())

@@ -22,6 +22,7 @@
 #define THIRD_PARTY_BLINK_RENDERER_CORE_HTML_HTML_FRAME_OWNER_ELEMENT_H_
 
 #include "third_party/blink/public/common/frame/frame_owner_element_type.h"
+#include "third_party/blink/public/mojom/scroll/scrollbar_mode.mojom-blink.h"
 #include "third_party/blink/renderer/core/core_export.h"
 #include "third_party/blink/renderer/core/dom/document.h"
 #include "third_party/blink/renderer/core/feature_policy/feature_policy_parser.h"
@@ -110,7 +111,9 @@ class CORE_EXPORT HTMLFrameOwnerElement : public HTMLElement,
   AtomicString BrowsingContextContainerName() const override {
     return FastGetAttribute(html_names::kNameAttr);
   }
-  ScrollbarMode ScrollingMode() const override { return ScrollbarMode::kAuto; }
+  mojom::blink::ScrollbarMode ScrollbarMode() const override {
+    return mojom::blink::ScrollbarMode::kAuto;
+  }
   int MarginWidth() const override { return -1; }
   int MarginHeight() const override { return -1; }
   bool AllowFullscreen() const override { return false; }

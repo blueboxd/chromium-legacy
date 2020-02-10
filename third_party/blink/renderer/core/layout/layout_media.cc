@@ -25,6 +25,7 @@
 
 #include "third_party/blink/renderer/core/layout/layout_media.h"
 
+#include "third_party/blink/public/mojom/scroll/scrollbar_mode.mojom-blink.h"
 #include "third_party/blink/renderer/core/frame/local_frame_view.h"
 #include "third_party/blink/renderer/core/frame/visual_viewport.h"
 #include "third_party/blink/renderer/core/html/media/html_media_element.h"
@@ -154,9 +155,9 @@ LayoutUnit LayoutMedia::ComputePanelWidth(const LayoutRect& media_rect) const {
   // TODO(crbug.com/771379): Once we no longer assume that the video is in the
   // main frame for the visibility calculation below, we will only care about
   // the video's frame's scrollbar check below.
-  ScrollbarMode h_mode, v_mode;
+  mojom::blink::ScrollbarMode h_mode, v_mode;
   page_view->GetLayoutView()->CalculateScrollbarModes(h_mode, v_mode);
-  if (h_mode != ScrollbarMode::kAlwaysOff)
+  if (h_mode != mojom::blink::ScrollbarMode::kAlwaysOff)
     return media_rect.Width();
 
   // If the video's frame (can be different from main frame if video is in an
@@ -165,7 +166,7 @@ LayoutUnit LayoutMedia::ComputePanelWidth(const LayoutRect& media_rect) const {
   LocalFrameView* media_page_view = media_frame ? media_frame->View() : nullptr;
   if (media_page_view && media_page_view->GetLayoutView()) {
     media_page_view->GetLayoutView()->CalculateScrollbarModes(h_mode, v_mode);
-    if (h_mode != ScrollbarMode::kAlwaysOff)
+    if (h_mode != mojom::blink::ScrollbarMode::kAlwaysOff)
       return media_rect.Width();
   }
 

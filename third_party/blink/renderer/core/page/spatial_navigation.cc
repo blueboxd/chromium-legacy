@@ -28,6 +28,7 @@
 
 #include "third_party/blink/renderer/core/page/spatial_navigation.h"
 
+#include "third_party/blink/public/mojom/scroll/scrollbar_mode.mojom-blink.h"
 #include "third_party/blink/renderer/core/dom/node_traversal.h"
 #include "third_party/blink/renderer/core/frame/local_frame.h"
 #include "third_party/blink/renderer/core/frame/local_frame_view.h"
@@ -403,16 +404,16 @@ bool CanScrollInDirection(const LocalFrame* frame,
   LayoutView* layoutView = frame->ContentLayoutObject();
   if (!layoutView)
     return false;
-  ScrollbarMode vertical_mode;
-  ScrollbarMode horizontal_mode;
+  mojom::blink::ScrollbarMode vertical_mode;
+  mojom::blink::ScrollbarMode horizontal_mode;
   layoutView->CalculateScrollbarModes(horizontal_mode, vertical_mode);
   if ((direction == SpatialNavigationDirection::kLeft ||
        direction == SpatialNavigationDirection::kRight) &&
-      ScrollbarMode::kAlwaysOff == horizontal_mode)
+      mojom::blink::ScrollbarMode::kAlwaysOff == horizontal_mode)
     return false;
   if ((direction == SpatialNavigationDirection::kUp ||
        direction == SpatialNavigationDirection::kDown) &&
-      ScrollbarMode::kAlwaysOff == vertical_mode)
+      mojom::blink::ScrollbarMode::kAlwaysOff == vertical_mode)
     return false;
   ScrollableArea* scrollable_area = frame->View()->GetScrollableArea();
   LayoutSize size(scrollable_area->ContentsSize());

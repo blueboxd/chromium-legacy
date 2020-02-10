@@ -25,7 +25,7 @@
 #include "url/origin.h"
 
 namespace blink {
-class SignedExchangeRequestMatcher;
+class WebPackageRequestMatcher;
 }  // namespace blink
 
 namespace net {
@@ -94,7 +94,7 @@ class CONTENT_EXPORT SignedExchangeHandler {
       ExchangeHeadersCallback headers_callback,
       std::unique_ptr<SignedExchangeCertFetcherFactory> cert_fetcher_factory,
       int load_flags,
-      std::unique_ptr<blink::SignedExchangeRequestMatcher> request_matcher,
+      std::unique_ptr<blink::WebPackageRequestMatcher> request_matcher,
       std::unique_ptr<SignedExchangeDevToolsProxy> devtools_proxy,
       SignedExchangeReporter* reporter,
       int frame_tree_node_id);
@@ -170,7 +170,7 @@ class CONTENT_EXPORT SignedExchangeHandler {
 
   std::unique_ptr<SignedExchangeCertificateChain> unverified_cert_chain_;
 
-  std::unique_ptr<blink::SignedExchangeRequestMatcher> request_matcher_;
+  std::unique_ptr<blink::WebPackageRequestMatcher> request_matcher_;
 
   std::unique_ptr<SignedExchangeDevToolsProxy> devtools_proxy_;
 

@@ -53,6 +53,7 @@
 #include "storage/browser/file_system/file_system_operation_context.h"
 #include "storage/browser/file_system/isolated_context.h"
 #include "storage/common/file_system/file_system_util.h"
+#include "url/origin.h"
 #endif  // BUILDFLAG(ENABLE_PLUGINS)
 
 using net::CanonicalCookie;
@@ -472,8 +473,8 @@ class RemovePluginPrivateDataTester {
                                ppapi::kPluginPrivateRootName, base::FilePath());
     EXPECT_TRUE(storage::ValidateIsolatedFileSystemId(fsid));
     filesystem_context_->OpenPluginPrivateFileSystem(
-        origin, storage::kFileSystemTypePluginPrivate, fsid, plugin_name,
-        storage::OPEN_FILE_SYSTEM_CREATE_IF_NONEXISTENT,
+        url::Origin::Create(origin), storage::kFileSystemTypePluginPrivate,
+        fsid, plugin_name, storage::OPEN_FILE_SYSTEM_CREATE_IF_NONEXISTENT,
         base::BindOnce(&RemovePluginPrivateDataTester::OnFileSystemOpened,
                        base::Unretained(this), &await_completion));
     await_completion.BlockUntilNotified();

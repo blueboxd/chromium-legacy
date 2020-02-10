@@ -17,7 +17,7 @@ FrameOwnerProperties ConvertWebFrameOwnerPropertiesToFrameOwnerProperties(
   FrameOwnerProperties result;
 
   result.name = web_frame_owner_properties.name.Utf8();
-  result.scrolling_mode = web_frame_owner_properties.scrolling_mode;
+  result.scrollbar_mode = web_frame_owner_properties.scrollbar_mode;
   result.margin_width = web_frame_owner_properties.margin_width;
   result.margin_height = web_frame_owner_properties.margin_height;
   result.allow_fullscreen = web_frame_owner_properties.allow_fullscreen;
@@ -35,7 +35,7 @@ ConvertFrameOwnerPropertiesToWebFrameOwnerProperties(
   blink::WebFrameOwnerProperties result;
 
   result.name = blink::WebString::FromUTF8(frame_owner_properties.name);
-  result.scrolling_mode = frame_owner_properties.scrolling_mode;
+  result.scrollbar_mode = frame_owner_properties.scrollbar_mode;
   result.margin_width = frame_owner_properties.margin_width;
   result.margin_height = frame_owner_properties.margin_height;
   result.allow_fullscreen = frame_owner_properties.allow_fullscreen;

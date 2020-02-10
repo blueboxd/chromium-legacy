@@ -26,6 +26,7 @@
 #include "content/public/common/content_switches.h"
 
 #if defined(OS_CHROMEOS)
+#include "chrome/browser/ui/webui/chromeos/edu_account_login_handler_chromeos.h"
 #include "chrome/browser/ui/webui/signin/inline_login_handler_chromeos.h"
 #else
 #include "chrome/browser/ui/webui/signin/inline_login_handler_impl.h"
@@ -115,6 +116,9 @@ InlineLoginUI::InlineLoginUI(content::WebUI* web_ui) : WebDialogUI(web_ui) {
       std::make_unique<chromeos::InlineLoginHandlerChromeOS>(
           base::BindRepeating(&WebDialogUIBase::CloseDialog,
                               weak_factory_.GetWeakPtr(), nullptr /* args */)));
+  web_ui->AddMessageHandler(std::make_unique<chromeos::EduAccountLoginHandler>(
+      base::BindRepeating(&WebDialogUIBase::CloseDialog,
+                          weak_factory_.GetWeakPtr(), nullptr /* args */)));
 #else
   web_ui->AddMessageHandler(std::make_unique<InlineLoginHandlerImpl>());
 #endif  // defined(OS_CHROMEOS)

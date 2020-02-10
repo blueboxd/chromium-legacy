@@ -233,7 +233,7 @@ class COMPONENT_EXPORT(STORAGE_BROWSER) FileSystemContext
 
   // Deletes the filesystem for the given |origin_url| and |type|. This should
   // be called on the IO thread.
-  void DeleteFileSystem(const GURL& origin_url,
+  void DeleteFileSystem(const url::Origin& origin,
                         FileSystemType type,
                         StatusCallback callback);
 
@@ -297,7 +297,7 @@ class COMPONENT_EXPORT(STORAGE_BROWSER) FileSystemContext
 
   // This must be used to open 'plugin private' filesystem.
   // See "plugin_private_file_system_backend.h" for more details.
-  void OpenPluginPrivateFileSystem(const GURL& origin_url,
+  void OpenPluginPrivateFileSystem(const url::Origin& origin,
                                    FileSystemType type,
                                    const std::string& filesystem_id,
                                    const std::string& plugin_id,

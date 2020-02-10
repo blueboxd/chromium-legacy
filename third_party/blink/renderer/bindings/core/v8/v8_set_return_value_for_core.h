@@ -12,55 +12,25 @@ namespace blink {
 
 namespace bindings {
 
-// ScriptWrappable (DOMWindow specialization)
+class NativeValueTraitsStringAdapter;
+
+// String types
 template <typename CallbackInfo>
 void V8SetReturnValue(const CallbackInfo& info,
-                      const DOMWindow* value,
-                      V8ReturnValue::MainWorld) {
-  DCHECK(DOMWrapperWorld::Current(info.GetIsolate()).IsMainWorld());
-  DOMWindow* wrappable = const_cast<DOMWindow*>(value);
-  info.GetReturnValue().Set(ToV8(wrappable, info.This(), info.GetIsolate()));
+                      const NativeValueTraitsStringAdapter& value,
+                      v8::Isolate* isolate,
+                      V8ReturnValue::NonNullable) {
+  V8SetReturnValue(info, static_cast<String>(value), isolate,
+                   V8ReturnValue::kNonNullable);
 }
 
 template <typename CallbackInfo>
 void V8SetReturnValue(const CallbackInfo& info,
-                      const DOMWindow& value,
-                      V8ReturnValue::MainWorld) {
-  DCHECK(DOMWrapperWorld::Current(info.GetIsolate()).IsMainWorld());
-  DOMWindow* wrappable = const_cast<DOMWindow*>(&value);
-  info.GetReturnValue().Set(ToV8(wrappable, info.This(), info.GetIsolate()));
-}
-
-template <typename CallbackInfo>
-void V8SetReturnValue(const CallbackInfo& info,
-                      const DOMWindow* value,
-                      const ScriptWrappable* receiver) {
-  DOMWindow* wrappable = const_cast<DOMWindow*>(value);
-  info.GetReturnValue().Set(ToV8(wrappable, info.This(), info.GetIsolate()));
-}
-
-template <typename CallbackInfo>
-void V8SetReturnValue(const CallbackInfo& info,
-                      const DOMWindow& value,
-                      const ScriptWrappable* receiver) {
-  DOMWindow* wrappable = const_cast<DOMWindow*>(&value);
-  info.GetReturnValue().Set(ToV8(wrappable, info.This(), info.GetIsolate()));
-}
-
-template <typename CallbackInfo>
-void V8SetReturnValue(const CallbackInfo& info,
-                      const DOMWindow* value,
-                      v8::Local<v8::Context> creation_context) {
-  DOMWindow* wrappable = const_cast<DOMWindow*>(value);
-  info.GetReturnValue().Set(ToV8(wrappable, info.This(), info.GetIsolate()));
-}
-
-template <typename CallbackInfo>
-void V8SetReturnValue(const CallbackInfo& info,
-                      const DOMWindow& value,
-                      v8::Local<v8::Context> creation_context) {
-  DOMWindow* wrappable = const_cast<DOMWindow*>(&value);
-  info.GetReturnValue().Set(ToV8(wrappable, info.This(), info.GetIsolate()));
+                      const NativeValueTraitsStringAdapter& value,
+                      v8::Isolate* isolate,
+                      V8ReturnValue::Nullable) {
+  V8SetReturnValue(info, static_cast<String>(value), isolate,
+                   V8ReturnValue::kNullable);
 }
 
 // EventListener

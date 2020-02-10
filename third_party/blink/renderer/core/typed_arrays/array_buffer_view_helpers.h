@@ -55,6 +55,9 @@ class NotShared {
 
   T* View() const { return typed_array_.Get(); }
 
+  // Returns true if this object represents IDL null.
+  bool IsNull() const { return !typed_array_; }
+
   bool operator!() const { return !typed_array_; }
   explicit operator bool() const { return !!typed_array_; }
 
@@ -107,6 +110,9 @@ class MaybeShared {
   }
 
   T* View() const { return typed_array_; }
+
+  // Returns true if this object represents IDL null.
+  bool IsNull() const { return !typed_array_; }
 
   bool operator!() const { return !typed_array_; }
   explicit operator bool() const { return !!typed_array_; }

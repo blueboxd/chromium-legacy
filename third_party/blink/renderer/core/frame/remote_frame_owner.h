@@ -7,6 +7,7 @@
 
 #include "third_party/blink/public/common/frame/frame_owner_element_type.h"
 #include "third_party/blink/public/common/frame/frame_policy.h"
+#include "third_party/blink/public/mojom/scroll/scrollbar_mode.mojom-blink.h"
 #include "third_party/blink/public/web/web_frame_owner_properties.h"
 #include "third_party/blink/renderer/core/core_export.h"
 #include "third_party/blink/renderer/core/frame/frame_owner.h"
@@ -47,7 +48,9 @@ class CORE_EXPORT RemoteFrameOwner final
   AtomicString BrowsingContextContainerName() const override {
     return browsing_context_container_name_;
   }
-  ScrollbarMode ScrollingMode() const override { return scrolling_; }
+  mojom::blink::ScrollbarMode ScrollbarMode() const override {
+    return scrollbar_;
+  }
   int MarginWidth() const override { return margin_width_; }
   int MarginHeight() const override { return margin_height_; }
   bool AllowFullscreen() const override { return allow_fullscreen_; }
@@ -63,7 +66,7 @@ class CORE_EXPORT RemoteFrameOwner final
   void SetBrowsingContextContainerName(const WebString& name) {
     browsing_context_container_name_ = name;
   }
-  void SetScrollingMode(WebFrameOwnerProperties::ScrollingMode);
+  void SetScrollbarMode(mojom::blink::ScrollbarMode);
   void SetMarginWidth(int margin_width) { margin_width_ = margin_width; }
   void SetMarginHeight(int margin_height) { margin_height_ = margin_height; }
   void SetAllowFullscreen(bool allow_fullscreen) {
@@ -90,7 +93,7 @@ class CORE_EXPORT RemoteFrameOwner final
   Member<Frame> frame_;
   FramePolicy frame_policy_;
   AtomicString browsing_context_container_name_;
-  ScrollbarMode scrolling_;
+  mojom::blink::ScrollbarMode scrollbar_;
   int margin_width_;
   int margin_height_;
   bool allow_fullscreen_;

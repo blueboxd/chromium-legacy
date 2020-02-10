@@ -5410,4 +5410,25 @@ TEST_F(HeapTest, CallMostDerivedFinalizer) {
   EXPECT_EQ(1, GCDerived::destructor_called);
 }
 
+#if defined(ADDRESS_SANITIZER)
+TEST(HeapDeathTest, DieOnPoisonedObjectHeaderAccess) {
+  auto* ptr = MakeGarbageCollected<IntWrapper>(1);
+  HeapObjectHeader* header = HeapObjectHeader::FromPayload(ptr);
+  auto* low = reinterpret_cast<uint16_t*>(header);
+  auto access = [low] {
+    volatile uint16_t half = WTF::AsAtomicPtr(low)->load();
+    WTF::AsAtomicPtr(low)->store(half);
+  };
+  EXPECT_DEATH(access(), "");
+}
+
+TEST_F(HeapTest, SuccessfulUnsanitizedAccessToObjectHeader) {
+  auto* ptr = MakeGarbageCollected<IntWrapper>(1);
+  HeapObjectHeader* header = HeapObjectHeader::FromPayload(ptr);
+  auto* low = reinterpret_cast<uint16_t*>(header);
+  volatile uint16_t half = internal::AsUnsanitizedAtomic(low)->load();
+  internal::AsUnsanitizedAtomic(low)->store(half);
+}
+#endif  // ADDRESS_SANITIZER
+
 }  // namespace blink

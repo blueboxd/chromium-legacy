@@ -182,6 +182,37 @@ base::Optional<size_t> FindIndexInEnumStringTable(
   return base::nullopt;
 }
 
+bool IsEsIterableObject(v8::Isolate* isolate,
+                        v8::Local<v8::Value> value,
+                        ExceptionState& exception_state) {
+  // https://heycam.github.io/webidl/#es-overloads
+  // step 9. Otherwise: if Type(V) is Object and ...
+  if (!value->IsObject())
+    return false;
+
+  // step 9.1. Let method be ? GetMethod(V, @@iterator).
+  // https://tc39.es/ecma262/#sec-getmethod
+  v8::TryCatch try_catch(isolate);
+  v8::Local<v8::Value> iterator_key = v8::Symbol::GetIterator(isolate);
+  v8::Local<v8::Value> iterator_value;
+  if (!value.As<v8::Object>()
+           ->Get(isolate->GetCurrentContext(), iterator_key)
+           .ToLocal(&iterator_value)) {
+    exception_state.RethrowV8Exception(try_catch.Exception());
+    return false;
+  }
+
+  if (iterator_value->IsNullOrUndefined())
+    return false;
+
+  if (!iterator_value->IsFunction()) {
+    exception_state.ThrowTypeError("@@iterator must be a function");
+    return false;
+  }
+
+  return true;
+}
+
 }  // namespace bindings
 
 }  // namespace blink

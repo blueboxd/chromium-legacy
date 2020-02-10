@@ -1866,7 +1866,7 @@ LocalFrame* WebLocalFrameImpl::CreateChildFrame(
           : WebTreeScopeType::kShadow;
   WebFrameOwnerProperties owner_properties(
       owner_element->BrowsingContextContainerName(),
-      owner_element->ScrollingMode(), owner_element->MarginWidth(),
+      owner_element->ScrollbarMode(), owner_element->MarginWidth(),
       owner_element->MarginHeight(), owner_element->AllowFullscreen(),
       owner_element->AllowPaymentRequest(), owner_element->IsDisplayNone(),
       owner_element->RequiredCsp());

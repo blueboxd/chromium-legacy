@@ -53,6 +53,7 @@
 #include "third_party/blink/public/common/page/launching_process_state.h"
 #include "third_party/blink/public/mojom/fetch/fetch_api_request.mojom-blink.h"
 #include "third_party/blink/public/mojom/frame/find_in_page.mojom-blink.h"
+#include "third_party/blink/public/mojom/scroll/scrollbar_mode.mojom-blink.h"
 #include "third_party/blink/public/platform/web_cache.h"
 #include "third_party/blink/public/platform/web_coalesced_input_event.h"
 #include "third_party/blink/public/platform/web_float_rect.h"
@@ -2099,8 +2100,7 @@ TEST_F(WebFrameTest, FrameOwnerPropertiesScrolling) {
 
   WebFrameOwnerProperties properties;
   // Turn off scrolling in the subframe.
-  properties.scrolling_mode =
-      WebFrameOwnerProperties::ScrollingMode::kAlwaysOff;
+  properties.scrollbar_mode = mojom::blink::ScrollbarMode::kAlwaysOff;
   WebLocalFrameImpl* local_frame = frame_test_helpers::CreateLocalChild(
       *helper.RemoteMainFrame(), "frameName", properties);
 

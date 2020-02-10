@@ -494,8 +494,8 @@ WRAPPED_INSTANTIATE_TEST_SUITE_P(
         TestCase("openQuickViewWithMultipleFilesKeyboardLeftRight"),
         TestCase("closeQuickView"),
         TestCase("openQuickViewFromDirectoryTree"),
-        TestCase("deleteItemFromQuickViewSingleSelection"),
-        TestCase("deleteItemFromQuickViewCheckSelection")));
+        TestCase("openQuickViewAndDeleteSingleSelection"),
+        TestCase("openQuickViewAndDeleteCheckSelection")));
 
 WRAPPED_INSTANTIATE_TEST_SUITE_P(
     DirectoryTree, /* directory_tree.js */

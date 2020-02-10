@@ -590,6 +590,10 @@ void ExtensionApps::PauseApp(const std::string& app_id) {
   paused_apps_.insert(app_id);
   SetIconEffect(app_id);
 
+  if (instance_registry_->GetWindows(app_id).empty()) {
+    return;
+  }
+
   // For Web apps that are opened in app windows, close all tabs to close the
   // opened window, otherwise, show pause information in browsers.
   bool is_web_app = false;
@@ -604,8 +608,8 @@ void ExtensionApps::PauseApp(const std::string& app_id) {
     }
   }
 
-  // For web apps that are open in tabs, PauseApp() should be called with
-  // Chrome's app_id to show pause information in browsers.
+  // For web apps that are opened in tabs, PauseApp() should be
+  // called with Chrome's app_id to show pause information in browsers.
   if (is_web_app) {
     return;
   }

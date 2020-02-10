@@ -181,7 +181,7 @@ class COMPONENT_EXPORT(STORAGE_BROWSER) SandboxFileSystemBackendDelegate
 
   // Used for migrating from the general storage partition to an isolated
   // storage partition
-  void CopyFileSystem(const GURL& origin_url,
+  void CopyFileSystem(const url::Origin& origin,
                       FileSystemType type,
                       SandboxFileSystemBackendDelegate* destination);
 
@@ -231,7 +231,7 @@ class COMPONENT_EXPORT(STORAGE_BROWSER) SandboxFileSystemBackendDelegate
       base::File::Error* error_out);
 
   int64_t RecalculateUsage(FileSystemContext* context,
-                           const GURL& origin,
+                           const url::Origin& origin,
                            FileSystemType type);
 
   ObfuscatedFileUtil* obfuscated_file_util();

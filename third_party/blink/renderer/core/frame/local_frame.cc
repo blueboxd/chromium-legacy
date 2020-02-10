@@ -44,6 +44,7 @@
 #include "third_party/blink/public/mojom/frame/blocked_navigation_types.mojom-blink.h"
 #include "third_party/blink/public/mojom/frame/lifecycle.mojom-blink.h"
 #include "third_party/blink/public/mojom/frame/media_player_action.mojom-blink.h"
+#include "third_party/blink/public/mojom/scroll/scrollbar_mode.mojom-blink.h"
 #include "third_party/blink/public/platform/interface_registry.h"
 #include "third_party/blink/public/platform/scheduler/web_resource_loading_task_runner_handle.h"
 #include "third_party/blink/public/platform/web_content_settings_client.h"
@@ -222,8 +223,8 @@ void LocalFrame::CreateView(const IntSize& viewport_size,
   }
 
   if (Owner()) {
-    View()->SetCanHaveScrollbars(Owner()->ScrollingMode() !=
-                                 ScrollbarMode::kAlwaysOff);
+    View()->SetCanHaveScrollbars(Owner()->ScrollbarMode() !=
+                                 mojom::blink::ScrollbarMode::kAlwaysOff);
   }
 }
 

@@ -62,6 +62,7 @@
 #include "third_party/blink/public/mojom/frame/user_activation_update_types.mojom.h"
 #include "third_party/blink/public/mojom/input/focus_type.mojom.h"
 #include "third_party/blink/public/mojom/loader/resource_load_info.mojom-shared.h"
+#include "third_party/blink/public/mojom/scroll/scrollbar_mode.mojom.h"
 #include "third_party/blink/public/mojom/web_feature/web_feature.mojom.h"
 #include "third_party/blink/public/platform/viewport_intersection_state.h"
 #include "third_party/blink/public/platform/web_insecure_request_policy.h"
@@ -107,9 +108,8 @@ IPC_ENUM_TRAITS_MAX_VALUE(blink::ContextMenuDataInputFieldType,
                           blink::ContextMenuDataInputFieldType::kMaxValue)
 IPC_ENUM_TRAITS_MAX_VALUE(blink::mojom::FocusType,
                           blink::mojom::FocusType::kMaxValue)
-IPC_ENUM_TRAITS_MAX_VALUE(
-    blink::WebFrameOwnerProperties::ScrollingMode,
-    blink::WebFrameOwnerProperties::ScrollingMode::kMaxValue)
+IPC_ENUM_TRAITS_MAX_VALUE(blink::mojom::ScrollbarMode,
+                          blink::mojom::ScrollbarMode::kMaxValue)
 IPC_ENUM_TRAITS_MAX_VALUE(content::StopFindAction,
                           content::STOP_FIND_ACTION_LAST)
 IPC_ENUM_TRAITS_MAX_VALUE(content::FaviconURL::IconType,
@@ -204,7 +204,7 @@ IPC_STRUCT_TRAITS_END()
 
 IPC_STRUCT_TRAITS_BEGIN(content::FrameOwnerProperties)
   IPC_STRUCT_TRAITS_MEMBER(name)
-  IPC_STRUCT_TRAITS_MEMBER(scrolling_mode)
+  IPC_STRUCT_TRAITS_MEMBER(scrollbar_mode)
   IPC_STRUCT_TRAITS_MEMBER(margin_width)
   IPC_STRUCT_TRAITS_MEMBER(margin_height)
   IPC_STRUCT_TRAITS_MEMBER(allow_fullscreen)

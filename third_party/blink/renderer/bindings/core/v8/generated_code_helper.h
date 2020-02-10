@@ -105,6 +105,10 @@ base::Optional<size_t> FindIndexInEnumStringTable(
     const char* enum_type_name,
     ExceptionState& exception_state);
 
+bool IsEsIterableObject(v8::Isolate* isolate,
+                        v8::Local<v8::Value> value,
+                        ExceptionState& exception_state);
+
 }  // namespace bindings
 
 }  // namespace blink

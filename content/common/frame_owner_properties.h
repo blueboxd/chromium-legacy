@@ -9,7 +9,7 @@
 
 #include "content/common/content_export.h"
 #include "third_party/blink/public/common/feature_policy/feature_policy.h"
-#include "third_party/blink/public/web/web_frame_owner_properties.h"
+#include "third_party/blink/public/mojom/scroll/scrollbar_mode.mojom.h"
 
 namespace content {
 
@@ -27,7 +27,7 @@ struct CONTENT_EXPORT FrameOwnerProperties {
   }
 
   std::string name;  // browsing context container's name
-  blink::WebFrameOwnerProperties::ScrollingMode scrolling_mode;
+  blink::mojom::ScrollbarMode scrollbar_mode;
   int margin_width;
   int margin_height;
   bool allow_fullscreen;

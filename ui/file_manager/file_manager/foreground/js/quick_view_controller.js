@@ -88,6 +88,12 @@ class QuickViewController {
      */
     this.currentSelection_ = 0;
 
+    /**
+     * Stores whether we are in check-select mode or not.
+     * @private {boolean}
+     */
+    this.checkSelectMode_ = false;
+
     this.selectionHandler_.addEventListener(
         FileSelectionHandler.EventType.CHANGE,
         this.onFileSelectionChanged_.bind(this));
@@ -311,6 +317,8 @@ class QuickViewController {
       };
     }
 
+    this.checkSelectMode_ = this.fileListSelectionModel_.getCheckSelectMode();
+
     // Delete the entry if the entry can be deleted.
     CommandHandler.getCommand('delete').deleteEntries(
         [entry], this.fileManager_, this.deleteConfirmDialog_);
@@ -337,6 +345,8 @@ class QuickViewController {
   display_(wayToOpen) {
     // On opening Quick View, always reset the current selection index.
     this.currentSelection_ = 0;
+
+    this.checkSelectMode_ = this.fileListSelectionModel_.getCheckSelectMode();
 
     this.updateQuickView_().then(() => {
       if (!this.quickView_.isOpened()) {
@@ -367,6 +377,15 @@ class QuickViewController {
         this.currentSelection_ = this.entries_.length - 1;
       } else if (this.currentSelection_ < 0) {
         this.currentSelection_ = 0;
+      }
+
+      const checkSelectModeExited = this.checkSelectMode_ !==
+          this.fileListSelectionModel_.getCheckSelectMode();
+      if (checkSelectModeExited) {
+        if (this.quickView_ && this.quickView_.isOpened()) {
+          this.quickView_.close();
+          return;
+        }
       }
     }
 

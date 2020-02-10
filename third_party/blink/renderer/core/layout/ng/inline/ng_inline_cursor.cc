@@ -523,6 +523,15 @@ const PhysicalRect NGInlineCursorPosition::RectInContainerBlock() const {
   return PhysicalRect();
 }
 
+const PhysicalRect NGInlineCursorPosition::SelfInkOverflow() const {
+  if (paint_fragment_)
+    return paint_fragment_->SelfInkOverflow();
+  if (item_)
+    return item_->SelfInkOverflow();
+  NOTREACHED();
+  return PhysicalRect();
+}
+
 TextDirection NGInlineCursor::CurrentResolvedDirection() const {
   if (current_.paint_fragment_)
     return current_.paint_fragment_->PhysicalFragment().ResolvedDirection();
@@ -1372,24 +1381,26 @@ NGInlineBackwardCursor::NGInlineBackwardCursor(const NGInlineCursor& cursor)
       sibling_paint_fragments_.push_back(sibling.CurrentPaintFragment());
     current_index_ = sibling_paint_fragments_.size();
     if (current_index_)
-      current_paint_fragment_ = sibling_paint_fragments_[--current_index_];
+      current_.paint_fragment_ = sibling_paint_fragments_[--current_index_];
     return;
   }
   if (cursor.IsItemCursor()) {
     for (NGInlineCursor sibling(cursor); sibling; sibling.MoveToNextSibling())
       sibling_item_iterators_.push_back(sibling.Current().item_iter_);
     current_index_ = sibling_item_iterators_.size();
-    if (current_index_)
-      current_item_ = sibling_item_iterators_[--current_index_]->get();
+    if (current_index_) {
+      current_.item_iter_ = sibling_item_iterators_[--current_index_];
+      current_.item_ = current_.item_iter_->get();
+    }
     return;
   }
   NOTREACHED();
 }
 
 NGInlineCursor NGInlineBackwardCursor::CursorForDescendants() const {
-  if (const NGPaintFragment* current_paint_fragment = CurrentPaintFragment())
+  if (const NGPaintFragment* current_paint_fragment = Current().PaintFragment())
     return NGInlineCursor(*current_paint_fragment);
-  if (current_item_) {
+  if (current_.item_) {
     NGInlineCursor cursor(cursor_);
     cursor.MoveToItem(sibling_item_iterators_[current_index_]);
     return cursor.CursorForDescendants();
@@ -1398,38 +1409,21 @@ NGInlineCursor NGInlineBackwardCursor::CursorForDescendants() const {
   return NGInlineCursor();
 }
 
-const PhysicalOffset NGInlineBackwardCursor::CurrentOffset() const {
-  if (current_paint_fragment_)
-    return current_paint_fragment_->OffsetInContainerBlock();
-  if (current_item_)
-    return current_item_->OffsetInContainerBlock();
-  NOTREACHED();
-  return PhysicalOffset();
-}
-
-const PhysicalRect NGInlineBackwardCursor::CurrentSelfInkOverflow() const {
-  if (current_paint_fragment_)
-    return current_paint_fragment_->SelfInkOverflow();
-  if (current_item_)
-    return current_item_->SelfInkOverflow();
-  NOTREACHED();
-  return PhysicalRect();
-}
-
 void NGInlineBackwardCursor::MoveToPreviousSibling() {
   if (current_index_) {
-    if (current_paint_fragment_) {
-      current_paint_fragment_ = sibling_paint_fragments_[--current_index_];
+    if (current_.paint_fragment_) {
+      current_.paint_fragment_ = sibling_paint_fragments_[--current_index_];
       return;
     }
-    if (current_item_) {
-      current_item_ = sibling_item_iterators_[--current_index_]->get();
+    if (current_.item_) {
+      current_.item_iter_ = sibling_item_iterators_[--current_index_];
+      current_.item_ = current_.item_iter_->get();
       return;
     }
     NOTREACHED();
   }
-  current_paint_fragment_ = nullptr;
-  current_item_ = nullptr;
+  current_.paint_fragment_ = nullptr;
+  current_.item_ = nullptr;
 }
 
 std::ostream& operator<<(std::ostream& ostream, const NGInlineCursor& cursor) {

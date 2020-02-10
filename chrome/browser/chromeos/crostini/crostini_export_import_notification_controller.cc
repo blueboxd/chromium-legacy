@@ -74,7 +74,6 @@ CrostiniExportImportNotificationController::
       message_center::NotifierId(message_center::NotifierType::SYSTEM_COMPONENT,
                                  kNotifierCrostiniExportImportOperation),
       rich_notification_data, delegate_);
-  SetStatusRunning(0);
 }
 
 CrostiniExportImportNotificationController::

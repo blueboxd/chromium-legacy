@@ -159,7 +159,7 @@ class AppBrowserController : public TabStripModelObserver,
                                 base::Optional<web_app::AppId> app_id);
 
   // Called once the app browser controller has determined its initial url.
-  virtual void OnReceivedInitialURL() {}
+  virtual void OnReceivedInitialURL();
 
   // Called by OnTabstripModelChanged().
   virtual void OnTabInserted(content::WebContents* contents);

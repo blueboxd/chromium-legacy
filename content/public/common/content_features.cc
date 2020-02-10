@@ -409,6 +409,10 @@ const base::Feature kPepper3DImageChromium {
 #endif
 };
 
+// Kill-switch to introduce a compatibility breaking restriction.
+const base::Feature kPepperCrossOriginRedirectRestriction{
+    "PepperCrossOriginRedirectRestriction", base::FEATURE_ENABLED_BY_DEFAULT};
+
 // Whether we should composite a PLSA even if it means losing lcd text.
 const base::Feature kPreferCompositingToLCDText = {
     "PreferCompositingToLCDText", base::FEATURE_DISABLED_BY_DEFAULT};

@@ -45,6 +45,27 @@ class ASH_EXPORT PipPositioner {
   static gfx::Rect GetPositionAfterMovementAreaChange(
       WindowState* window_state);
 
+  // Moves the PIP window along the movement area to the given snap fraction.
+  // The fraction is defined in a clockwise fashion against the PIP movement
+  // area.
+  //
+  //            0   1
+  //          4 +---+ 1
+  //            |   |
+  //          3 +---+ 2
+  //            3   2
+  //
+  static gfx::Rect GetSnapFractionAppliedBounds(WindowState* window_state);
+
+  // Calculates the PIP snap fraction.
+  static void ClearSnapFraction(WindowState* window_state);
+
+  // Returns whether the PIP window has the snap fraction or not.
+  static bool HasSnapFraction(WindowState* window_state);
+
+  // Saves the current PIP snap fraction.
+  static void SaveSnapFraction(WindowState* window_state);
+
  private:
   friend class PipPositionerDisplayTest;
 

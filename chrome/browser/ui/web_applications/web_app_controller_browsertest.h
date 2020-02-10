@@ -50,6 +50,9 @@ class WebAppControllerBrowserTestBase
   // Launches the app as a window and returns the browser.
   Browser* LaunchWebAppBrowser(const AppId&);
 
+  // Launches the app, waits for the app url to load.
+  Browser* LaunchWebAppBrowserAndWait(const AppId&);
+
   // Launches the app as a tab and returns the browser.
   Browser* LaunchBrowserForWebAppInTab(const AppId&);
 

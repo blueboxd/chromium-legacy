@@ -355,6 +355,8 @@ class ClientControlledShellSurface : public ShellSurfaceBase,
 
   bool ignore_bounds_change_request_ = false;
 
+  bool display_rotating_with_pip_ = false;
+
   // True if the window state has changed during the commit.
   bool state_changed_ = false;
 

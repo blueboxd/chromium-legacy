@@ -512,7 +512,8 @@ body.should-handle-intent-result #open-settings {
 #view-video-resolution-settings,
 #view-expert-settings,
 #view-message-dialog,
-#view-warning {
+#view-warning,
+#view-splash {
   bottom: 0;
   left: 0;
   opacity: 0;
@@ -532,7 +533,8 @@ body.view-photo-resolution-settings #view-photo-resolution-settings,
 body.view-video-resolution-settings #view-video-resolution-settings,
 body.view-expert-settings #view-expert-settings,
 body.view-message-dialog #view-message-dialog,
-body.view-warning #view-warning {
+body.view-warning #view-warning,
+body.view-splash #view-splash {
   opacity: 1;
   transition: opacity 100ms;
   visibility: visible;
@@ -1204,6 +1206,11 @@ body.tab-navigation .dialog-buttons button:focus::after {
   visibility: hidden;
   width: 32px;
   z-index: 1;
+}
+
+#view-splash {
+  background: no-repeat center url(../images/camera_mode_photo.svg), black;
+  z-index: 2;
 }
 
 body:not(.mode-switching):not(.streaming):not(.review-result) #spinner {

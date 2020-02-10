@@ -20,6 +20,7 @@
 #include "base/run_loop.h"
 #include "base/single_thread_task_runner.h"
 #include "base/strings/string_number_conversions.h"
+#include "base/test/bind_test_util.h"
 #include "base/test/metrics/histogram_tester.h"
 #include "base/test/scoped_feature_list.h"
 #include "base/test/simple_test_tick_clock.h"
@@ -779,8 +780,9 @@ TEST_F(ThroughputAnalyzerTest, TestThroughputWithNetworkRequestsOverlap) {
 // of network requests overlap, and the minimum number of in flight requests
 // when taking an observation is more than 1.
 TEST_F(ThroughputAnalyzerTest, TestThroughputWithMultipleNetworkRequests) {
-  const base::test::ScopedRunLoopTimeout increased_run_timeout(
-      TestTimeouts::action_max_timeout());
+  const base::RunLoop::ScopedRunTimeoutForTest increased_run_timeout(
+      TestTimeouts::action_max_timeout(),
+      base::MakeExpectedNotRunClosure(FROM_HERE, "RunLoop::Run() timed out."));
 
   const base::TickClock* tick_clock = base::DefaultTickClock::GetInstance();
   TestNetworkQualityEstimator network_quality_estimator;

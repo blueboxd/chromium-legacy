@@ -57,7 +57,6 @@ class HostedAppBrowserController : public web_app::AppBrowserController,
                                         const base::string16& error) override;
 
   // web_app::AppBrowserController:
-  void OnReceivedInitialURL() override;
   void OnTabInserted(content::WebContents* contents) override;
   void OnTabRemoved(content::WebContents* contents) override;
 

@@ -68,7 +68,8 @@ class ResizeObserver {
  * https://github.com/tc39/proposal-bigint
  * This supports wrapping and operating on arbitrarily large integers.
  *
- * @param {number} value
+ * @param {!(number|string)} value
+ * @return {number}
  */
 let BigInt = function(value) {};
 

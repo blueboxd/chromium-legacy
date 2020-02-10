@@ -25,6 +25,9 @@ AppId InstallWebApp(Profile* profile, std::unique_ptr<WebApplicationInfo>);
 // Launches a new app window for |app| in |profile|.
 Browser* LaunchWebAppBrowser(Profile*, const AppId&);
 
+// Launches the app, waits for the app url to load.
+Browser* LaunchWebAppBrowserAndWait(Profile*, const AppId&);
+
 // Launches a new tab for |app| in |profile|.
 Browser* LaunchBrowserForWebAppInTab(Profile*, const AppId&);
 

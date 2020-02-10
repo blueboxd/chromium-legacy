@@ -710,6 +710,30 @@
     <message name="IDS_SETTINGS_CROSTINI_CONTAINER_UPGRADE_SUBTEXT" desc="The current version the user has.">
       Current version is Debian 9 (Stretch)
     </message>
+    <message name="IDS_SETTINGS_CROSTINI_PORT_FORWARDING" desc="Label for managing port forwarding in Linux on ChromeOS.">
+      Port forwarding
+    </message>
+    <message name="IDS_SETTINGS_CROSTINI_PORT_FORWARDING_DESCRIPTION" desc="Description for managing port forwarding in Linux on ChromeOS.">
+      Make Linux ports available to other devices on your network.
+    </message>
+    <message name="IDS_SETTINGS_CROSTINI_PORT_FORWARDING_NO_PORTS" desc="Label for when user has no port forwarding preferences.">
+      Your ports will appear here
+    </message>
+    <message name="IDS_SETTINGS_CROSTINI_PORT_FORWARDING_TABLE_TITLE" desc="Title for the list display of current preferences.">
+      Ports
+    </message>
+    <message name="IDS_SETTINGS_CROSTINI_PORT_FORWARDING_LIST_PORT_NUMBER" desc="Column heading for the port number of current port preferences.">
+      Port number
+    </message>
+    <message name="IDS_SETTINGS_CROSTINI_PORT_FORWARDING_LIST_LABEL" desc="Column heading for the port label of current port preferences.">
+      Label
+    </message>
+    <message name="IDS_SETTINGS_CROSTINI_PORT_FORWARDING_ADD_PORT_BUTTON" desc="Label for the button to open a dialog to add a new port.">
+      Add
+    </message>
+    <message name="IDS_SETTINGS_CROSTINI_PORT_FORWARDING_ADD_PORT_BUTTON_DESCRIPTION" desc="Accessibility label for the button to open a dialog to add a new port.">
+      Add Port
+    </message>
 
     <!-- Plugin VM Page -->
     <message name="IDS_SETTINGS_PLUGIN_VM_PAGE_TITLE" desc="The title of Plugin VM section.">

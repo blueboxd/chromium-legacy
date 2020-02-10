@@ -16,6 +16,7 @@ export const ViewName = {
   PHOTO_RESOLUTION_SETTINGS: 'view-photo-resolution-settings',
   RESOLUTION_SETTINGS: 'view-resolution-settings',
   SETTINGS: 'view-settings',
+  SPLASH: 'view-splash',
   TIMER_SETTINGS: 'view-timer-settings',
   VIDEO_RESOLUTION_SETTINGS: 'view-video-resolution-settings',
   WARNING: 'view-warning',

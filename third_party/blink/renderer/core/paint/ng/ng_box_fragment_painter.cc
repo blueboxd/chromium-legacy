@@ -1741,7 +1741,7 @@ bool NGBoxFragmentPainter::HitTestTextFragment(
   if (hit_test.action != kHitTestForeground)
     return false;
 
-  const NGPaintFragment* text_paint_fragment = cursor.CurrentPaintFragment();
+  const NGPaintFragment* text_paint_fragment = cursor.Current().PaintFragment();
   DCHECK(text_paint_fragment);
   const auto& text_fragment =
       To<NGPhysicalTextFragment>(text_paint_fragment->PhysicalFragment());
@@ -1807,7 +1807,7 @@ bool NGBoxFragmentPainter::HitTestLineBoxFragment(
     return false;
 
   const PhysicalOffset overflow_location =
-      cursor.CurrentSelfInkOverflow().offset + physical_offset;
+      cursor.Current().SelfInkOverflow().offset + physical_offset;
   if (HitTestClippedOutByBorder(hit_test.location, overflow_location))
     return false;
 
@@ -1837,8 +1837,9 @@ bool NGBoxFragmentPainter::HitTestLineBoxFragment(
       return false;
   }
 
-  return hit_test.AddNodeToResult(fragment.NodeForHitTest(), bounds_rect,
-                                  physical_offset - cursor.CurrentOffset());
+  return hit_test.AddNodeToResult(
+      fragment.NodeForHitTest(), bounds_rect,
+      physical_offset - cursor.Current().OffsetInContainerBlock());
 }
 
 bool NGBoxFragmentPainter::HitTestChildBoxFragment(
@@ -1857,7 +1858,8 @@ bool NGBoxFragmentPainter::HitTestChildBoxFragment(
   if (!FragmentRequiresLegacyFallback(fragment)) {
     DCHECK(!fragment.IsAtomicInline());
     DCHECK(!fragment.IsFloating());
-    if (const NGPaintFragment* paint_fragment = cursor.CurrentPaintFragment()) {
+    if (const NGPaintFragment* paint_fragment =
+            cursor.Current().PaintFragment()) {
       if (fragment.IsInlineBox()) {
         return NGBoxFragmentPainter(*paint_fragment)
             .NodeAtPoint(hit_test, physical_offset);
@@ -1868,7 +1870,7 @@ bool NGBoxFragmentPainter::HitTestChildBoxFragment(
           .NodeAtPoint(*hit_test.result, hit_test.location, physical_offset,
                        hit_test.action);
     }
-    const NGFragmentItem* item = cursor.CurrentItem();
+    const NGFragmentItem* item = cursor.Current().Item();
     DCHECK(item);
     DCHECK_EQ(item->BoxFragment(), &fragment);
     NGInlineCursor descendants = cursor.CursorForDescendants();
@@ -1899,7 +1901,7 @@ bool NGBoxFragmentPainter::HitTestChildBoxItem(
     const HitTestContext& hit_test,
     const NGFragmentItem& item,
     const NGInlineBackwardCursor& cursor) {
-  DCHECK_EQ(&item, cursor.CurrentItem());
+  DCHECK_EQ(&item, cursor.Current().Item());
 
   if (const NGPhysicalBoxFragment* child_fragment = item.BoxFragment()) {
     const PhysicalOffset child_offset =
@@ -2021,7 +2023,8 @@ bool NGBoxFragmentPainter::HitTestPaintFragmentChildren(
     const PhysicalOffset& accumulated_offset) {
   DCHECK(children.IsPaintFragmentCursor());
   for (NGInlineBackwardCursor cursor(children); cursor;) {
-    const NGPaintFragment* child_paint_fragment = cursor.CurrentPaintFragment();
+    const NGPaintFragment* child_paint_fragment =
+        cursor.Current().PaintFragment();
     DCHECK(child_paint_fragment);
     const NGPhysicalFragment& child_fragment =
         child_paint_fragment->PhysicalFragment();
@@ -2053,7 +2056,7 @@ bool NGBoxFragmentPainter::HitTestPaintFragmentChildren(
       // Hit test culled inline boxes between |fragment| and its parent
       // fragment.
       const NGPaintFragment* previous_sibling =
-          cursor ? cursor.CurrentPaintFragment() : nullptr;
+          cursor ? cursor.Current().PaintFragment() : nullptr;
       if (HitTestCulledInlineAncestors(*hit_test.result, *child_paint_fragment,
                                        previous_sibling, hit_test.location,
                                        child_offset))
@@ -2069,7 +2072,7 @@ bool NGBoxFragmentPainter::HitTestItemsChildren(
     const NGInlineCursor& children) {
   DCHECK(children.IsItemCursor());
   for (NGInlineBackwardCursor cursor(children); cursor;) {
-    const NGFragmentItem* item = cursor.CurrentItem();
+    const NGFragmentItem* item = cursor.Current().Item();
     DCHECK(item);
     if (item->HasSelfPaintingLayer()) {
       cursor.MoveToPreviousSibling();

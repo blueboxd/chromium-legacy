@@ -14,15 +14,18 @@
 #include "chrome/browser/ui/browser_navigator_params.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/browser/ui/toolbar/app_menu_model.h"
+#include "chrome/browser/web_applications/components/app_registrar.h"
 #include "chrome/browser/web_applications/components/external_install_options.h"
 #include "chrome/browser/web_applications/components/pending_app_manager.h"
 #include "chrome/browser/web_applications/components/web_app_constants.h"
 #include "chrome/browser/web_applications/components/web_app_helpers.h"
 #include "chrome/browser/web_applications/components/web_app_provider_base.h"
 #include "chrome/browser/web_applications/components/web_app_tab_helper_base.h"
+#include "chrome/browser/web_applications/web_app_provider.h"
 #include "chrome/common/web_application_info.h"
 #include "chrome/test/base/ui_test_utils.h"
 #include "components/security_interstitials/content/security_interstitial_tab_helper.h"
+#include "content/public/browser/notification_service.h"
 #include "content/public/test/browser_test_utils.h"
 #include "content/public/test/test_navigation_observer.h"
 #include "content/public/test/test_utils.h"
@@ -65,6 +68,16 @@ Browser* LaunchWebAppBrowser(Profile* profile, const AppId& app_id) {
   EXPECT_TRUE(is_correct_app_browser);
 
   return is_correct_app_browser ? browser : nullptr;
+}
+
+// Launches the app, waits for the app url to load.
+Browser* LaunchWebAppBrowserAndWait(Profile* profile, const AppId& app_id) {
+  ui_test_utils::UrlLoadObserver url_observer(
+      WebAppProvider::Get(profile)->registrar().GetAppLaunchURL(app_id),
+      content::NotificationService::AllSources());
+  Browser* const app_browser = LaunchWebAppBrowser(profile, app_id);
+  url_observer.Wait();
+  return app_browser;
 }
 
 Browser* LaunchBrowserForWebAppInTab(Profile* profile, const AppId& app_id) {

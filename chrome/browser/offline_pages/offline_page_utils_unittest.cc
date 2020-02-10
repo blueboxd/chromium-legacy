@@ -430,8 +430,9 @@ TEST_F(OfflinePageUtilsTest, TestGetCachedOfflinePageSizeNoPageInModel) {
 #if defined(OS_ANDROID)
   // TODO(https://crbug.com/1002762): Fix this test to run in < action_timeout()
   // on the Android bots.
-  const base::test::ScopedRunLoopTimeout increased_run_timeout(
-      TestTimeouts::action_max_timeout());
+  const base::RunLoop::ScopedRunTimeoutForTest increased_run_timeout(
+      TestTimeouts::action_max_timeout(),
+      base::MakeExpectedNotRunClosure(FROM_HERE, "RunLoop::Run() timed out."));
 #endif  // defined(OS_ANDROID)
 
   clock()->Advance(base::TimeDelta::FromHours(3));

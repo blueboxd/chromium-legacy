@@ -104,8 +104,6 @@ static_library("test_support") {
     "scoped_mock_time_message_loop_task_runner.h",
     "scoped_path_override.cc",
     "scoped_path_override.h",
-    "scoped_run_loop_timeout.cc",
-    "scoped_run_loop_timeout.h",
     "sequenced_task_runner_test_template.cc",
     "sequenced_task_runner_test_template.h",
     "simple_test_clock.cc",

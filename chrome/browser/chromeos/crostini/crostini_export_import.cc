@@ -240,6 +240,7 @@ void CrostiniExportImport::Start(
 
   auto status_tracker = std::move(operation_data->tracker_factory)
                             .Run(operation_data->type, path);
+  status_tracker->SetStatusRunning(0);
 
   auto it = status_trackers_.find(operation_data->container_id);
   if (it != status_trackers_.end()) {

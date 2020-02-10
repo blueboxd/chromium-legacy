@@ -10,10 +10,6 @@
 #include "chrome/browser/ui/web_applications/test/ssl_test_utils.h"
 #include "chrome/browser/ui/web_applications/test/web_app_browsertest_util.h"
 #include "chrome/browser/ui/web_applications/web_app_controller_browsertest.h"
-#include "chrome/browser/web_applications/components/app_registrar.h"
-#include "chrome/browser/web_applications/web_app_provider.h"
-#include "chrome/test/base/ui_test_utils.h"
-#include "content/public/browser/notification_service.h"
 #include "net/test/embedded_test_server/embedded_test_server.h"
 #include "url/gurl.h"
 
@@ -24,16 +20,6 @@ class PWAMixedContentBrowserTest : public WebAppControllerBrowserTest {
   GURL GetMixedContentAppURL() {
     return https_server()->GetURL("app.com",
                                   "/ssl/page_displays_insecure_content.html");
-  }
-
-  // Launches the app, waits for the app url to load.
-  Browser* LaunchWebAppBrowserAndWait(const AppId& app_id) {
-    ui_test_utils::UrlLoadObserver url_observer(
-        WebAppProvider::Get(profile())->registrar().GetAppLaunchURL(app_id),
-        content::NotificationService::AllSources());
-    Browser* const app_browser = LaunchWebAppBrowser(app_id);
-    url_observer.Wait();
-    return app_browser;
   }
 };
 

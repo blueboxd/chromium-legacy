@@ -53,7 +53,7 @@ class NGInlineCursorTest : public NGLayoutTest,
       Vector<const NGPaintFragment*> backwards;
       for (NGInlineBackwardCursor cursor(start); cursor;
            cursor.MoveToPreviousSibling())
-        backwards.push_back(cursor.CurrentPaintFragment());
+        backwards.push_back(cursor.Current().PaintFragment());
       backwards.Reverse();
       EXPECT_THAT(backwards, forwards);
       return;
@@ -65,7 +65,7 @@ class NGInlineCursorTest : public NGLayoutTest,
     Vector<const NGFragmentItem*> backwards;
     for (NGInlineBackwardCursor cursor(start); cursor;
          cursor.MoveToPreviousSibling())
-      backwards.push_back(cursor.CurrentItem());
+      backwards.push_back(cursor.Current().Item());
     backwards.Reverse();
     EXPECT_THAT(backwards, forwards);
   }

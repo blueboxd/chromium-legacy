@@ -24665,10 +24665,10 @@ to ensure that the crash string is shown properly on the user-facing crash UI.
   <int value="1467" label="NodeGetRootNode"/>
   <int value="1468" label="SlotChangeEventAddListener"/>
   <int value="1469" label="OBSOLETE_CSSValueAppearanceButtonRendered"/>
-  <int value="1470" label="CSSValueAppearanceButtonForAnchor"/>
+  <int value="1470" label="OBSOLETE_CSSValueAppearanceButtonForAnchor"/>
   <int value="1471" label="CSSValueAppearanceButtonForButton"/>
   <int value="1472" label="CSSValueAppearanceButtonForOtherButtons"/>
-  <int value="1473" label="CSSValueAppearanceTextFieldRendered"/>
+  <int value="1473" label="OBSOLETE_CSSValueAppearanceTextFieldRendered"/>
   <int value="1474" label="CSSValueAppearanceTextFieldForSearch"/>
   <int value="1475" label="CSSValueAppearanceTextFieldForTextField"/>
   <int value="1476" label="RTCPeerConnectionGetStats"/>
@@ -25797,37 +25797,47 @@ to ensure that the crash string is shown properly on the user-facing crash UI.
   <int value="2557" label="FormDisabledAttributePresent"/>
   <int value="2558" label="FormDisabledAttributePresentAndSubmit"/>
   <int value="2559" label="CSSValueAppearanceCheckboxRendered"/>
-  <int value="2560" label="CSSValueAppearanceCheckboxForOthersRendered"/>
+  <int value="2560"
+      label="OBSOLETE_CSSValueAppearanceCheckboxForOthersRendered"/>
   <int value="2561" label="CSSValueAppearanceRadioRendered"/>
-  <int value="2562" label="CSSValueAppearanceRadioForOthersRendered"/>
+  <int value="2562" label="OBSOLETE_CSSValueAppearanceRadioForOthersRendered"/>
   <int value="2563" label="CSSValueAppearanceInnerSpinButtonRendered"/>
-  <int value="2564" label="CSSValueAppearanceInnerSpinButtonForOthersRendered"/>
+  <int value="2564"
+      label="OBSOLETE_CSSValueAppearanceInnerSpinButtonForOthersRendered"/>
   <int value="2565" label="CSSValueAppearanceMenuListRendered"/>
-  <int value="2566" label="CSSValueAppearanceMenuListForOthersRendered"/>
+  <int value="2566"
+      label="OBSOLETE_CSSValueAppearanceMenuListForOthersRendered"/>
   <int value="2567" label="CSSValueAppearanceProgressBarRendered"/>
   <int value="2568" label="CSSValueAppearanceSliderHorizontalRendered"/>
   <int value="2569"
-      label="CSSValueAppearanceSliderHorizontalForOthersRendered"/>
+      label="OBSOLETE_CSSValueAppearanceSliderHorizontalForOthersRendered"/>
   <int value="2570" label="CSSValueAppearanceSliderVerticalRendered"/>
-  <int value="2571" label="CSSValueAppearanceSliderVerticalForOthersRendered"/>
+  <int value="2571"
+      label="OBSOLETE_CSSValueAppearanceSliderVerticalForOthersRendered"/>
   <int value="2572" label="CSSValueAppearanceSliderThumbHorizontalRendered"/>
   <int value="2573"
-      label="CSSValueAppearanceSliderThumbHorizontalForOthersRendered"/>
+      label="OBSOLETE_CSSValueAppearanceSliderThumbHorizontalForOthersRendered"/>
   <int value="2574" label="CSSValueAppearanceSliderThumbVerticalRendered"/>
   <int value="2575"
-      label="CSSValueAppearanceSliderThumbVerticalForOthersRendered"/>
+      label="OBSOLETE_CSSValueAppearanceSliderThumbVerticalForOthersRendered"/>
   <int value="2576" label="CSSValueAppearanceSearchFieldRendered"/>
-  <int value="2577" label="CSSValueAppearanceSearchFieldForOthersRendered"/>
+  <int value="2577"
+      label="OBSOLETE_CSSValueAppearanceSearchFieldForOthersRendered"/>
   <int value="2578" label="CSSValueAppearanceSearchCancelRendered"/>
-  <int value="2579" label="CSSValueAppearanceSearchCancelForOthersRendered"/>
+  <int value="2579"
+      label="OBSOLETE_CSSValueAppearanceSearchCancelForOthersRendered"/>
   <int value="2580" label="CSSValueAppearanceTextAreaRendered"/>
-  <int value="2581" label="CSSValueAppearanceTextAreaForOthersRendered"/>
+  <int value="2581"
+      label="OBSOLETE_CSSValueAppearanceTextAreaForOthersRendered"/>
   <int value="2582" label="CSSValueAppearanceMenuListButtonRendered"/>
-  <int value="2583" label="CSSValueAppearanceMenuListButtonForOthersRendered"/>
+  <int value="2583"
+      label="OBSOLETE_CSSValueAppearanceMenuListButtonForOthersRendered"/>
   <int value="2584" label="CSSValueAppearancePushButtonRendered"/>
-  <int value="2585" label="CSSValueAppearancePushButtonForOthersRendered"/>
+  <int value="2585"
+      label="OBSOLETE_CSSValueAppearancePushButtonForOthersRendered"/>
   <int value="2586" label="CSSValueAppearanceSquareButtonRendered"/>
-  <int value="2587" label="CSSValueAppearanceSquareButtonForOthersRendered"/>
+  <int value="2587"
+      label="OBSOLETE_CSSValueAppearanceSquareButtonForOthersRendered"/>
   <int value="2588" label="GetComputedStyleForWebkitAppearanceExcludeDevTools"/>
   <int value="2589" label="CursorImageLE32x32"/>
   <int value="2590" label="CursorImageGT32x32"/>
@@ -26030,8 +26040,9 @@ to ensure that the crash string is shown properly on the user-facing crash UI.
   <int value="2771" label="NoSysexWebMIDIOnInsecureOrigin"/>
   <int value="2772" label="ApplicationCacheInstalledButNoManifest"/>
   <int value="2773" label="PerMethodCanMakePaymentQuota"/>
-  <int value="2774" label="CSSValueAppearanceButtonForNonButtonRendered"/>
-  <int value="2775" label="CSSValueAppearanceButtonForOthersRendered"/>
+  <int value="2774"
+      label="OBSOLETE_CSSValueAppearanceButtonForNonButtonRendered"/>
+  <int value="2775" label="OBSOLETE_CSSValueAppearanceButtonForOthersRendered"/>
   <int value="2776" label="CustomCursorIntersectsViewport"/>
   <int value="2777" label="ClientHintsLang"/>
   <int value="2778" label="LinkRelPreloadImageSrcset"/>
@@ -26079,12 +26090,14 @@ to ensure that the crash string is shown properly on the user-facing crash UI.
   <int value="2814" label="CSSValueAppearanceInnerSpinButton"/>
   <int value="2815" label="CSSValueAppearanceMeter"/>
   <int value="2816" label="CSSValueAppearanceProgressBar"/>
-  <int value="2817" label="CSSValueAppearanceProgressBarForOthersRendered"/>
+  <int value="2817"
+      label="OBSOLETE_CSSValueAppearanceProgressBarForOthersRendered"/>
   <int value="2818" label="CSSValueAppearancePushButton"/>
   <int value="2819" label="CSSValueAppearanceSquareButton"/>
   <int value="2820" label="CSSValueAppearanceSearchCancel"/>
   <int value="2821" label="CSSValueAppearanceTextarea"/>
-  <int value="2822" label="CSSValueAppearanceTextFieldForOthersRendered"/>
+  <int value="2822"
+      label="OBSOLETE_CSSValueAppearanceTextFieldForOthersRendered"/>
   <int value="2823" label="CSSValueAppearanceTextFieldForTemporalRendered"/>
   <int value="2824" label="BuiltInModuleKvStorage"/>
   <int value="2825" label="BuiltInModuleVirtualScroller"/>
@@ -26169,7 +26182,8 @@ to ensure that the crash string is shown properly on the user-facing crash UI.
   <int value="2902" label="TextFragmentAnchorMatchFound"/>
   <int value="2903" label="NonPassiveTouchEventListener"/>
   <int value="2904" label="PassiveTouchEventListener"/>
-  <int value="2905" label="CSSValueAppearanceSearchCancelForOthers2Rendered"/>
+  <int value="2905"
+      label="OBSOLETE_CSSValueAppearanceSearchCancelForOthers2Rendered"/>
   <int value="2906" label="WebXrFramebufferScale"/>
   <int value="2907" label="WebXrIgnoreDepthValues"/>
   <int value="2908" label="WebXrSessionCreated"/>
@@ -26229,11 +26243,13 @@ to ensure that the crash string is shown properly on the user-facing crash UI.
   <int value="2961" label="V8Database_ReadTransaction_Method"/>
   <int value="2962" label="V8SQLTransaction_ExecuteSql_Method"/>
   <int value="2963"
-      label="CSSValueAppearanceButtonForBootstrapLooseSelectorRendered"/>
-  <int value="2964" label="CSSValueAppearanceButtonForOthers2Rendered"/>
-  <int value="2965" label="CSSValueAppearanceButtonForSelectRendered"/>
-  <int value="2966" label="CSSValueAppearanceListboxForOthersRendered"/>
-  <int value="2967" label="CSSValueAppearanceMeterForOthersRendered"/>
+      label="OBSOLETE_CSSValueAppearanceButtonForBootstrapLooseSelectorRendered"/>
+  <int value="2964"
+      label="OBSOLETE_CSSValueAppearanceButtonForOthers2Rendered"/>
+  <int value="2965" label="OBSOLETE_CSSValueAppearanceButtonForSelectRendered"/>
+  <int value="2966"
+      label="OBSOLETE_CSSValueAppearanceListboxForOthersRendered"/>
+  <int value="2967" label="OBSOLETE_CSSValueAppearanceMeterForOthersRendered"/>
   <int value="2968" label="SVGSMILDiscardElementParsed"/>
   <int value="2969" label="SVGSMILDiscardElementTriggered"/>
   <int value="2971" label="V8PointerEvent_GetPredictedEvents_Method"/>
@@ -37793,6 +37809,7 @@ from previous Chrome versions.
   <int value="-970067535" label="BackgroundTaskComponentUpdate:disabled"/>
   <int value="-969815853" label="migrate-linux-to-logindb:enabled"/>
   <int value="-969332901" label="stop-non-timers-in-background:disabled"/>
+  <int value="-968675274" label="Rar2Fs:enabled"/>
   <int value="-968010468" label="SharedArrayBuffer:disabled"/>
   <int value="-966290456" label="WebAuthenticationCtap2:enabled"/>
   <int value="-965842218" label="MultiDeviceApi:disabled"/>
@@ -39434,6 +39451,7 @@ from previous Chrome versions.
   <int value="1096477444" label="AssistantVoiceMatch:enabled"/>
   <int value="1098823967" label="ash-enable-window-cycle-ui"/>
   <int value="1100244809" label="MacSystemMediaPermissionsInfoUI:disabled"/>
+  <int value="1101062411" label="Rar2Fs:disabled"/>
   <int value="1102780374" label="ClickToCallDetectionV2:disabled"/>
   <int value="1104948452" label="manual-enhanced-bookmarks-optout"/>
   <int value="1105439588" label="enable-swipe-selection"/>

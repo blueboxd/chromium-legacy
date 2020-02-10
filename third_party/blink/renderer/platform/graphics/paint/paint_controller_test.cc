@@ -1660,6 +1660,37 @@ TEST_P(PaintControllerTest, DuplicatedSubsequences) {
   CommitAndFinishCycle();
 }
 
+TEST_P(PaintControllerTest, DeletedClientInUnderInvaldiatedSubsequence) {
+  if (RuntimeEnabledFeatures::PaintUnderInvalidationCheckingEnabled())
+    return;
+
+  FakeDisplayItemClient container("container");
+  auto content = std::make_unique<FakeDisplayItemClient>("content");
+  GraphicsContext context(GetPaintController());
+
+  InitRootChunk();
+  {
+    SubsequenceRecorder r(context, container);
+    GetPaintController().ForceNewChunk(container, kBackgroundType);
+    DrawRect(context, *content, kBackgroundType, FloatRect(100, 100, 300, 300));
+  }
+  CommitAndFinishCycle();
+
+  content = nullptr;
+  InitRootChunk();
+  // Leave container not invalidated.
+#if DCHECK_IS_ON()
+  ASSERT_DEATH(
+      SubsequenceRecorder::UseCachedSubsequenceIfPossible(context, container),
+      "");
+#else
+  // This should not crash.
+  EXPECT_TRUE(
+      SubsequenceRecorder::UseCachedSubsequenceIfPossible(context, container));
+  CommitAndFinishCycle();
+#endif
+}
+
 class PaintControllerUnderInvalidationTest
     : public PaintControllerTestBase,
       private ScopedPaintUnderInvalidationCheckingForTest {

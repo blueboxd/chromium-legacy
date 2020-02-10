@@ -69,6 +69,8 @@ class CORE_EXPORT NGInlineCursorPosition {
   const PhysicalOffset OffsetInContainerBlock() const;
   const PhysicalSize Size() const;
 
+  const PhysicalRect SelfInkOverflow() const;
+
  private:
   const NGPaintFragment* paint_fragment_ = nullptr;
   const NGFragmentItem* item_ = nullptr;
@@ -439,28 +441,18 @@ class CORE_EXPORT NGInlineBackwardCursor {
  public:
   NGInlineBackwardCursor(const NGInlineCursor& cursor);
 
+  const NGInlineCursorPosition& Current() const { return current_; }
+  operator bool() const { return Current(); }
+
   NGInlineCursor CursorForDescendants() const;
-
-  explicit operator bool() const {
-    return current_paint_fragment_ || current_item_;
-  }
-
-  const NGFragmentItem* CurrentItem() const { return current_item_; }
-  const NGPaintFragment* CurrentPaintFragment() const {
-    return current_paint_fragment_;
-  }
-
-  const PhysicalOffset CurrentOffset() const;
-  const PhysicalRect CurrentSelfInkOverflow() const;
 
   void MoveToPreviousSibling();
 
  private:
+  NGInlineCursorPosition current_;
   const NGInlineCursor& cursor_;
   Vector<const NGPaintFragment*, 16> sibling_paint_fragments_;
   Vector<NGInlineCursor::ItemsSpan::iterator, 16> sibling_item_iterators_;
-  const NGPaintFragment* current_paint_fragment_ = nullptr;
-  const NGFragmentItem* current_item_ = nullptr;
   wtf_size_t current_index_;
 };
 

@@ -812,21 +812,25 @@ void CrossRealmTransformReadable::HandleMessage(MessageType type,
                                                 v8::Local<v8::Value> value) {
   switch (type) {
     case MessageType::kChunk: {
-      // This can't throw because we always use the default strategy size
-      // algorithm, which doesn't throw, and always returns a valid value of
-      // 1.0.
-      ReadableStreamDefaultController::Enqueue(script_state_, controller_,
-                                               value, ASSERT_NO_EXCEPTION);
+      if (ReadableStreamDefaultController::CanCloseOrEnqueue(controller_)) {
+        // This can't throw because we always use the default strategy size
+        // algorithm, which doesn't throw, and always returns a valid value of
+        // 1.0.
+        ReadableStreamDefaultController::Enqueue(script_state_, controller_,
+                                                 value, ASSERT_NO_EXCEPTION);
 
-      backpressure_promise_->ResolveWithUndefined(script_state_);
-      backpressure_promise_ =
-          MakeGarbageCollected<StreamPromiseResolver>(script_state_);
+        backpressure_promise_->ResolveWithUndefined(script_state_);
+        backpressure_promise_ =
+            MakeGarbageCollected<StreamPromiseResolver>(script_state_);
+      }
       return;
     }
 
     case MessageType::kClose:
       finished_ = true;
-      ReadableStreamDefaultController::Close(script_state_, controller_);
+      if (ReadableStreamDefaultController::CanCloseOrEnqueue(controller_)) {
+        ReadableStreamDefaultController::Close(script_state_, controller_);
+      }
       message_port_->close();
       return;
 

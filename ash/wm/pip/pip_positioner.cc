@@ -8,6 +8,7 @@
 
 #include "ash/keyboard/ui/keyboard_ui_controller.h"
 #include "ash/public/cpp/shell_window_ids.h"
+#include "ash/public/cpp/window_properties.h"
 #include "ash/root_window_controller.h"
 #include "ash/shelf/shelf.h"
 #include "ash/shell.h"
@@ -65,15 +66,84 @@ gfx::Rect PipPositioner::GetPositionAfterMovementAreaChange(
   // window back to its original bounds after transient movement area changes,
   // like the keyboard popping up and pushing the PIP window up.
   gfx::Rect bounds_in_screen = window_state->window()->GetBoundsInScreen();
-  // If the client changes the window size, don't try to resize it back for
-  // restore.
-  if (window_state->HasRestoreBounds()) {
-    bounds_in_screen.set_origin(
-        window_state->GetRestoreBoundsInScreen().origin());
-  }
+  float* snap_fraction =
+      window_state->window()->GetProperty(ash::kPipSnapFractionKey);
+  if (snap_fraction)
+    bounds_in_screen = GetSnapFractionAppliedBounds(window_state);
   return CollisionDetectionUtils::GetRestingPosition(
       window_state->GetDisplay(), bounds_in_screen,
       CollisionDetectionUtils::RelativePriority::kPictureInPicture);
+}
+
+gfx::Rect PipPositioner::GetSnapFractionAppliedBounds(
+    WindowState* window_state) {
+  gfx::Rect bounds = window_state->window()->GetBoundsInScreen();
+  gfx::Rect movement_area =
+      CollisionDetectionUtils::GetMovementArea(window_state->GetDisplay());
+  if (!HasSnapFraction(window_state))
+    return bounds;
+  float snap_fraction =
+      *(window_state->window()->GetProperty(ash::kPipSnapFractionKey));
+
+  if (snap_fraction < 1.) {
+    int offset =
+        movement_area.x() +
+        (int)(snap_fraction * (movement_area.width() - bounds.width()));
+    return gfx::Rect(offset, movement_area.y(), bounds.width(),
+                     bounds.height());
+  } else if (snap_fraction < 2.) {
+    snap_fraction -= 1.;
+    int offset =
+        movement_area.y() +
+        (int)(snap_fraction * (movement_area.height() - bounds.height()));
+    return gfx::Rect(movement_area.right() - bounds.width(), offset,
+                     bounds.width(), bounds.height());
+  } else if (snap_fraction < 3.) {
+    snap_fraction -= 2.;
+    int offset =
+        movement_area.x() +
+        (int)((1. - snap_fraction) * (movement_area.width() - bounds.width()));
+    return gfx::Rect(offset, movement_area.bottom() - bounds.height(),
+                     bounds.width(), bounds.height());
+  } else {
+    snap_fraction -= 3.;
+    int offset =
+        movement_area.y() + (int)((1. - snap_fraction) *
+                                  (movement_area.height() - bounds.height()));
+    return gfx::Rect(movement_area.x(), offset, bounds.width(),
+                     bounds.height());
+  }
+}
+
+void PipPositioner::ClearSnapFraction(WindowState* window_state) {
+  return window_state->window()->ClearProperty(ash::kPipSnapFractionKey);
+}
+
+bool PipPositioner::HasSnapFraction(WindowState* window_state) {
+  return window_state->window()->GetProperty(ash::kPipSnapFractionKey) !=
+         nullptr;
+}
+
+void PipPositioner::SaveSnapFraction(WindowState* window_state) {
+  gfx::Rect bounds = window_state->window()->GetBoundsInScreen();
+  gfx::Rect movement_area =
+      CollisionDetectionUtils::GetMovementArea(window_state->GetDisplay());
+  float width_fraction = (float)(bounds.x() - movement_area.x()) /
+                         (movement_area.width() - bounds.width());
+  float height_fraction = (float)(bounds.y() - movement_area.y()) /
+                          (movement_area.height() - bounds.height());
+  float snap_fraction;
+  if (bounds.y() == movement_area.y()) {
+    snap_fraction = width_fraction;
+  } else if (bounds.right() == movement_area.right()) {
+    snap_fraction = 1. + height_fraction;
+  } else if (bounds.bottom() == movement_area.bottom()) {
+    snap_fraction = 2. + (1. - width_fraction);
+  } else {
+    snap_fraction = 3. + (1. - height_fraction);
+  }
+  window_state->window()->SetProperty(ash::kPipSnapFractionKey,
+                                      new float(snap_fraction));
 }
 
 }  // namespace ash

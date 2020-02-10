@@ -11,10 +11,10 @@
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/observer_list.h"
+#include "base/run_loop.h"
 #include "base/single_thread_task_runner.h"
 #include "base/task/lazy_thread_pool_task_runner.h"
 #include "base/task/sequence_manager/sequence_manager.h"
-#include "base/test/scoped_run_loop_timeout.h"
 #include "base/threading/thread_checker.h"
 #include "base/time/time.h"
 #include "base/traits_bag.h"
@@ -394,7 +394,7 @@ class TaskEnvironment {
       scoped_lazy_task_runner_list_for_testing_;
 
   // Sets RunLoop::Run() to LOG(FATAL) if not Quit() in a timely manner.
-  std::unique_ptr<ScopedRunLoopTimeout> run_loop_timeout_;
+  std::unique_ptr<RunLoop::ScopedRunTimeoutForTest> run_loop_timeout_;
 
   std::unique_ptr<bool> owns_instance_ = std::make_unique<bool>(true);
 

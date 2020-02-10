@@ -2188,10 +2188,11 @@ body.files-ng .table-header {
 }
 
 body.files-ng .table-header-label {
+  color: inherit;
   font-weight: normal;
   line-height: 20px;
   margin-inline-end: 5px;
-  margin-inline-start: 24px;
+  margin-inline-start: 32px;
 }
 
 body.files-ng .table-header-cell {
@@ -2203,13 +2204,6 @@ body.files-ng .table-header-cell {
 body.files-ng #list-container .table-header-cell:first-child
 .table-header-label {
   margin-inline-start: 12px;
-}
-
-body.files-ng .table-header-splitter {
-  background-image: url(../images/common/dragger.svg);
-  background-repeat: no-repeat;
-  height: inherit;
-  width: 16px;
 }
 
 body.files-ng .table-header-sort-image-desc::after {
@@ -2252,8 +2246,24 @@ body.files-ng #list-container list li .detail-thumbnail > .thumbnail {
 body.files-ng .table-row-cell > * {
   color: var(--google-grey-700);
   padding: 0;
-  padding-inline-start: 24px;
+  padding-inline-start: 32px;
   padding-top: 0 !important;
+}
+
+body.files-ng .table-header-splitter  {
+  background: none;
+  height: 32px;
+  margin-top: 14px;
+  width: 32px;
+}
+
+body.files-ng .table-header-splitter .splitter-icon {
+  --cr-icon-button-icon-size: 32px;
+  --cr-icon-button-size: 32px;
+  --cr-icon-button-margin-start: 0px;
+  --cr-icon-button-fill-color: var(--google-grey-500);
+  cursor: col-resize ;
+  height: 32px;
 }
 
 body.files-ng #list-container .table-row-cell .size {

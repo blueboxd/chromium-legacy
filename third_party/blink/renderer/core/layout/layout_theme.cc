@@ -163,9 +163,6 @@ ControlPart LayoutTheme::AdjustAppearanceWithElementType(
     const ComputedStyle& style,
     const Element* element) {
   ControlPart part = style.EffectiveAppearance();
-  if (!RuntimeEnabledFeatures::RestrictedWebkitAppearanceEnabled())
-    return part;
-
   if (!element)
     return kNoControlPart;
 

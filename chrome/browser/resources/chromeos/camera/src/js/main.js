@@ -30,7 +30,7 @@ import {
   MasterSettings,
   ResolutionSettings,
 } from './views/settings.js';
-import {ViewName} from './views/view.js';
+import {View, ViewName} from './views/view.js';
 import {Warning} from './views/warning.js';
 
 /**
@@ -116,8 +116,10 @@ export class App {
       new BaseSettings(ViewName.EXPERT_SETTINGS),
       new Warning(),
       new Dialog(ViewName.MESSAGE_DIALOG),
+      new View(ViewName.SPLASH),
     ]);
 
+    nav.open(ViewName.SPLASH);
     this.backgroundOps_.bindForegroundOps(this);
   }
 
@@ -190,7 +192,6 @@ export class App {
           const externalDir = filesystem.getExternalDirectory();
           assert(externalDir !== null);
           this.galleryButton_.initialize(externalDir);
-          nav.open(ViewName.CAMERA);
         })
         .catch((error) => {
           console.error(error);
@@ -210,6 +211,8 @@ export class App {
     })();
     const startCamera = (async () => {
       const isSuccess = await this.cameraView_.start();
+      nav.close(ViewName.SPLASH);
+      nav.open(ViewName.CAMERA);
       this.backgroundOps_.getPerfLogger().stopLaunch({hasError: !isSuccess});
     })();
     return Promise.all([showWindow, startCamera]);

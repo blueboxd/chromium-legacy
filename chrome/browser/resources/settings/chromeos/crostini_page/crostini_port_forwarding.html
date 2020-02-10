@@ -1,0 +1,68 @@
+<link rel="import" href="chrome://resources/html/polymer.html">
+
+<link rel="import" href="chrome://resources/cr_elements/cr_icon_button/cr_icon_button.html">
+<link rel="import" href="../../controls/settings_toggle_button.html">
+<link rel="import" href="../../i18n_setup.html">
+<link rel="import" href="../../prefs/prefs_behavior.html">
+<link rel="import" href="../../settings_shared_css.html">
+
+
+<dom-module id="settings-crostini-port-forwarding">
+  <template>
+    <style include="settings-shared">
+      .column-title {
+        color: var(--google-grey-500);
+      }
+
+      .no-ports-text {
+        padding-inline-start: 24px;
+        /* TODO(matterchen): Update with proper number of pixels when
+        formal UI spec is received (cr:848127). */
+      }
+
+      #addPort {
+        padding-top: 10px;
+      }
+
+      #portForwardingListTitle {
+        font-size: 14px;
+      }
+    </style>
+    <div class="settings-box first"
+        id="portForwardingDescription">
+      $i18n{crostiniPortForwardingDescription}
+    </div>
+    <div id="addPort" class="settings-box first">
+      <div id="portForwardingTableTitle" class="start"
+          aria-hidden="true">
+        $i18n{crostiniPortForwardingTableTitle}
+      </div>
+      <cr-button on-click="onAddPortClick_"
+          aria-label="$i18n{crostiniPortForwardingAddPortButtonDescription}"
+          aria-describedby="portForwardingDescription">
+        $i18n{crostiniPortForwardingAddPortButton}
+      </cr-button>
+    </div>
+    <div class="list-frame vertical-list"
+          id="portForwardingSettingsTable">
+      <div class="list-item">
+        <div class="start column-title"
+            id="portForwardingListPortNumber"
+            aria-hidden="true">
+          $i18n{crostiniPortForwardingListPortNumber}
+        </div>
+        <div class="start column-title"
+            id="portForwardingListPortLabel"
+            aria-hidden="true">
+          $i18n{crostiniPortForwardingListLabel}
+        </div>
+        <cr-icon-button class="icon-more-vert"
+            title="$i18n{moreActions}"
+            on-click="onBeginRemoveAllPorts_"
+            aria-label="$i18n{moreActions}">
+        </cr-icon-button>
+      </div>
+    </div>
+  </template>
+  <script src="crostini_port_forwarding.js"></script>
+</dom-module>

@@ -164,10 +164,11 @@ class PLATFORM_EXPORT DisplayItem {
         draws_content_(draws_content),
         fragment_(0),
         is_cacheable_(client.IsCacheable()),
-        is_tombstone_(false) {
+        is_tombstone_(false),
+        is_copied_from_cached_subsequence_(false) {
     // |derived_size| must fit in |derived_size_|.
     // If it doesn't, enlarge |derived_size_| and fix this assert.
-    SECURITY_DCHECK(derived_size < (1 << 8));
+    SECURITY_DCHECK(derived_size < (1 << 7));
     SECURITY_DCHECK(derived_size >= sizeof(*this));
     derived_size_ = static_cast<unsigned>(derived_size);
   }
@@ -267,6 +268,13 @@ class PLATFORM_EXPORT DisplayItem {
   bool IsCacheable() const { return is_cacheable_; }
   void SetUncacheable() { is_cacheable_ = false; }
 
+  bool IsCopiedFromCachedSubsequence() const {
+    return is_copied_from_cached_subsequence_;
+  }
+  void SetCopiedFromCachedSubsequence(bool b) {
+    is_copied_from_cached_subsequence_ = b;
+  }
+
   virtual bool Equals(const DisplayItem& other) const {
     // Failure of this DCHECK would cause bad casts in subclasses.
     SECURITY_CHECK(!is_tombstone_);
@@ -307,10 +315,11 @@ class PLATFORM_EXPORT DisplayItem {
   static_assert(kTypeLast < (1 << 7), "DisplayItem::Type should fit in 7 bits");
   unsigned type_ : 7;
   unsigned draws_content_ : 1;
-  unsigned derived_size_ : 8;  // size of the actual derived class
+  unsigned derived_size_ : 7;  // size of the actual derived class
   unsigned fragment_ : 14;
   unsigned is_cacheable_ : 1;
   unsigned is_tombstone_ : 1;
+  unsigned is_copied_from_cached_subsequence_ : 1;
 };
 
 inline bool operator==(const DisplayItem::Id& a, const DisplayItem::Id& b) {

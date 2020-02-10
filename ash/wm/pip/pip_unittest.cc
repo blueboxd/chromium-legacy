@@ -203,22 +203,24 @@ TEST_F(PipTest, PipRestoresToPreviousBoundsOnMovementAreaChangeIfTheyExist) {
   const gfx::Rect bounds = gfx::Rect(292, 200, 100, 100);
   // Set restore position to where the window currently is.
   window->SetBounds(bounds);
-  window_state->SetRestoreBoundsInParent(bounds);
-  EXPECT_TRUE(window_state->HasRestoreBounds());
+  PipPositioner::SaveSnapFraction(window_state);
+  EXPECT_TRUE(PipPositioner::HasSnapFraction(window_state));
 
   // Update the work area so that the PIP window should be pushed upward.
   UpdateDisplay("400x200");
   ForceHideShelvesForTest();
 
   // PIP should move up to accommodate the new work area.
-  EXPECT_EQ(gfx::Rect(292, 92, 100, 100), window->GetBoundsInScreen());
+  EXPECT_EQ(gfx::Rect(292, 76, 100, 100), window->GetBoundsInScreen());
 
   // Restore the original work area.
   UpdateDisplay("400x400");
   ForceHideShelvesForTest();
 
-  // Expect that the PIP window is put back to where it was before.
-  EXPECT_EQ(gfx::Rect(292, 200, 100, 100), window->GetBoundsInScreen());
+  // Changing the work area with the same PIP size causes snap fraction change,
+  // so PIP doesn't restore to the original position. Instead ensure that the
+  // fraction is calculated correctly.
+  EXPECT_EQ(gfx::Rect(292, 239, 100, 100), window->GetBoundsInScreen());
 }
 
 TEST_F(
@@ -239,8 +241,8 @@ TEST_F(
   window->SetBounds(gfx::Rect(8, 292, 100, 100));
 
   // Set restore position to where the window currently is.
-  window_state->SetRestoreBoundsInParent(window->bounds());
-  EXPECT_TRUE(window_state->HasRestoreBounds());
+  PipPositioner::SaveSnapFraction(window_state);
+  EXPECT_TRUE(PipPositioner::HasSnapFraction(window_state));
 
   // Update the work area so that the PIP window should be pushed upward.
   UpdateDisplay("400x400,400x200");
@@ -253,7 +255,9 @@ TEST_F(
   UpdateDisplay("400x400,400x400");
   ForceHideShelvesForTest();
 
-  // Expect that the PIP window is put back to where it was before.
+  // Changing the work area with the same PIP size causes snap fraction change,
+  // so PIP doesn't restore to the original position. Instead ensure that the
+  // fraction is calculated correctly.
   EXPECT_EQ(gfx::Rect(408, 292, 100, 100), window->GetBoundsInScreen());
 }
 
@@ -279,8 +283,9 @@ TEST_F(PipTest, PipRestoreOnWorkAreaChangeDoesNotChangeWindowSize) {
   UpdateDisplay("400x200");
   ForceHideShelvesForTest();
 
-  // The PIP window should not change size.
-  EXPECT_EQ(gfx::Rect(292, 92, 100, 100), window->GetBoundsInScreen());
+  // The PIP snap position should be applied and the relative position
+  // along the edge shouldn't change.
+  EXPECT_EQ(gfx::Rect(292, 44, 100, 100), window->GetBoundsInScreen());
 }
 
 }  // namespace ash

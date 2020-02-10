@@ -281,8 +281,20 @@
 
 - (void)registerPropertyWithStore:(CRWPropertyStore*)store {
   [_propertyStores addObject:store];
-  _propertyStoreByGetter[[NSValue valueWithPointer:store.getter]] = store;
-  _propertyStoreBySetter[[NSValue valueWithPointer:store.setter]] = store;
+
+  NSValue* getterKey = [NSValue valueWithPointer:store.getter];
+  DCHECK(!_propertyStoreByGetter[getterKey])
+      << "A property with getter "
+      << NSStringFromSelector(store.getter).UTF8String
+      << " has already been registered to the property store";
+  _propertyStoreByGetter[getterKey] = store;
+
+  NSValue* setterKey = [NSValue valueWithPointer:store.setter];
+  DCHECK(!_propertyStoreBySetter[setterKey])
+      << "A property with setter "
+      << NSStringFromSelector(store.setter).UTF8String
+      << " has already been registered to the property store";
+  _propertyStoreBySetter[setterKey] = store;
 }
 
 - (void)savePropertiesFromObject:(id)object {

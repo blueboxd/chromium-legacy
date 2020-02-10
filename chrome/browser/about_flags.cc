@@ -2851,6 +2851,9 @@ const FeatureEntry kFeatureEntries[] = {
     {"files-unified-media-view", flag_descriptions::kUnifiedMediaViewName,
      flag_descriptions::kUnifiedMediaViewDescription, kOsCrOS,
      FEATURE_VALUE_TYPE(chromeos::features::kUnifiedMediaView)},
+    {"rar2fs", flag_descriptions::kRar2FsName,
+     flag_descriptions::kRar2FsDescription, kOsCrOS,
+     FEATURE_VALUE_TYPE(chromeos::features::kRar2Fs)},
 #endif  // OS_CHROMEOS
 
 #if defined(OS_WIN)

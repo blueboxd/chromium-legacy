@@ -10,6 +10,7 @@
 #include "ash/root_window_controller.h"
 #include "ash/screen_util.h"
 #include "ash/shell.h"
+#include "ash/wm/pip/pip_positioner.h"
 #include "ash/wm/screen_pinning_controller.h"
 #include "ash/wm/window_positioning_utils.h"
 #include "ash/wm/window_state.h"
@@ -233,12 +234,13 @@ void ClientControlledState::HandleBoundsEvents(WindowState* window_state,
         }
         next_bounds_change_animation_type_ = kAnimationNone;
 
-        // For PIP, restore bounds is used to specify the ideal position.
+        // For PIP, the snap fraction is used to specify the ideal position.
         // Usually this value is set in completeDrag, but for the initial
         // position, we need to set it here.
         if (window_state->IsPip() &&
-            window_state->GetRestoreBoundsInParent().IsEmpty())
-          window_state->SetRestoreBoundsInParent(bounds);
+            !PipPositioner::HasSnapFraction(window_state)) {
+          PipPositioner::SaveSnapFraction(window_state);
+        }
 
       } else if (!window_state->IsPinned()) {
         // TODO(oshima): Define behavior for pinned app.

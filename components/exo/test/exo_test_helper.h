@@ -21,6 +21,8 @@ class GpuMemoryBuffer;
 namespace exo {
 class Buffer;
 class ClientControlledShellSurface;
+class InputMethodSurface;
+class InputMethodSurfaceManager;
 class Surface;
 class ShellSurface;
 
@@ -58,6 +60,9 @@ class ExoTestHelper {
   ExoTestWindow CreateWindow(int width, int height, bool is_modal);
   std::unique_ptr<ClientControlledShellSurface>
   CreateClientControlledShellSurface(Surface* surface, bool is_modal = false);
+  std::unique_ptr<InputMethodSurface> CreateInputMethodSurface(
+      Surface* surface,
+      InputMethodSurfaceManager* surface_manager);
 
  private:
   DISALLOW_COPY_AND_ASSIGN(ExoTestHelper);

@@ -20,6 +20,7 @@ enum class ExportImportType;
 class CrostiniExportImportStatusTracker {
  public:
   enum class Status {
+    NONE,
     RUNNING,
     CANCELLING,
     DONE,
@@ -64,7 +65,7 @@ class CrostiniExportImportStatusTracker {
 
   ExportImportType type_;
   base::FilePath path_;
-  Status status_ = Status::RUNNING;
+  Status status_ = Status::NONE;
 };
 
 }  // namespace crostini

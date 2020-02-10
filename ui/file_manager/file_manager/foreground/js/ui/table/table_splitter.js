@@ -44,6 +44,14 @@ class TableSplitter extends cr.ui.Splitter {
   decorate() {
     super.decorate();
 
+    if (util.isFilesNg()) {
+      const icon = document.createElement('cr-icon-button');
+      icon.setAttribute('iron-icon', 'files32:dragger');
+      icon.setAttribute('tabindex', '-1');
+      icon.classList.add('splitter-icon');
+      this.appendChild(icon);
+    }
+
     this.classList.add('table-header-splitter');
   }
 

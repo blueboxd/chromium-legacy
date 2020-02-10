@@ -28,7 +28,6 @@
 #include "base/task/post_task.h"
 #include "base/task/thread_pool/thread_pool_instance.h"
 #include "base/test/bind_test_util.h"
-#include "base/test/scoped_run_loop_timeout.h"
 #include "base/test/test_timeouts.h"
 #include "base/threading/thread_restrictions.h"
 #include "build/build_config.h"
@@ -604,14 +603,16 @@ void BrowserTestBase::ProxyRunTestOnMainThreadLoop() {
 #endif
 
   // Install a RunLoop timeout if none is present but do not override tests that
-  // set a ScopedLoopRunTimeout from their fixture's constructor (which
+  // set a ScopedRunTimeoutForTest from their fixture's constructor (which
   // happens as part of setting up the test factory in gtest while
   // ProxyRunTestOnMainThreadLoop() happens later as part of SetUp()).
-  base::Optional<base::test::ScopedRunLoopTimeout> scoped_run_timeout;
-  if (!base::test::ScopedRunLoopTimeout::ExistsForCurrentThread()) {
+  base::Optional<base::RunLoop::ScopedRunTimeoutForTest> scoped_run_timeout;
+  if (!base::RunLoop::ScopedRunTimeoutForTest::Current()) {
     // TODO(https://crbug.com/918724): determine whether the timeout can be
     // reduced from action_max_timeout() to action_timeout().
-    scoped_run_timeout.emplace(TestTimeouts::action_max_timeout());
+    scoped_run_timeout.emplace(TestTimeouts::action_max_timeout(),
+                               base::MakeExpectedNotRunClosure(
+                                   FROM_HERE, "RunLoop::Run() timed out."));
   }
 
 #if defined(OS_POSIX)

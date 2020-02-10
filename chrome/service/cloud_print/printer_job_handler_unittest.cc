@@ -15,7 +15,6 @@
 #include "base/single_thread_task_runner.h"
 #include "base/strings/stringprintf.h"
 #include "base/test/bind_test_util.h"
-#include "base/test/scoped_run_loop_timeout.h"
 #include "base/test/task_environment.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "chrome/common/cloud_print/cloud_print_constants.h"
@@ -609,8 +608,13 @@ void PrinterJobHandlerTest::BeginTest(int timeout_seconds) {
   base::RunLoop run_loop;
   active_run_loop_quit_closure_ = run_loop.QuitWhenIdleClosure();
 
-  base::test::ScopedRunLoopTimeout run_timeout(
-      base::TimeDelta::FromSeconds(timeout_seconds));
+  base::RunLoop::ScopedRunTimeoutForTest run_timeout(
+      base::TimeDelta::FromSeconds(timeout_seconds),
+      base::BindLambdaForTesting([&]() {
+        ADD_FAILURE();
+        run_loop.QuitWhenIdle();
+      }));
+
   run_loop.Run();
 }
 

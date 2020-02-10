@@ -64,6 +64,15 @@
           role-description="$i18n{subpageArrowRoleDescription}">
       </cr-link-row>
     </template>
+    <template is="dom-if" if="[[showCrostiniPortForwarding_]]">
+      <cr-link-row
+          class="hr"
+          label="$i18n{crostiniPortForwarding}"
+          id="crostini-port-forwarding"
+          on-click="onPortForwardingClick_"
+          role-description="$i18n{subpageArrowRoleDescription}">
+      </cr-link-row>
+    </template>
     <template is="dom-if" if="[[!hideCrostiniUninstall_]]">
       <div id="remove" class="settings-box">
         <div id="removeCrostiniLabel" class="start">$i18n{crostiniRemove}</div>

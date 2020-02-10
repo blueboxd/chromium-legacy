@@ -25,6 +25,7 @@
 #include "ash/wm/client_controlled_state.h"
 #include "ash/wm/collision_detection/collision_detection_utils.h"
 #include "ash/wm/drag_details.h"
+#include "ash/wm/pip/pip_positioner.h"
 #include "ash/wm/splitview/split_view_controller.h"
 #include "ash/wm/toplevel_window_event_handler.h"
 #include "ash/wm/window_positioning_utils.h"
@@ -802,6 +803,19 @@ void ClientControlledShellSurface::OnDeviceScaleFactorChanged(float old_dsf,
 void ClientControlledShellSurface::OnDisplayMetricsChanged(
     const display::Display& new_display,
     uint32_t changed_metrics) {
+  // The PIP window bounds is adjusted in Ash when the screen is rotated, but
+  // Android has an obsolete bounds for a while and applies it incorrectly.
+  // We need to ignore those bounds change until the states are completely
+  // synced on both sides.
+  if (widget_ && GetWindowState()->IsPip() &&
+      changed_metrics & display::DisplayObserver::DISPLAY_METRIC_ROTATION) {
+    gfx::Rect bounds_after_rotation =
+        ash::PipPositioner::GetSnapFractionAppliedBounds(GetWindowState());
+    display_rotating_with_pip_ =
+        bounds_after_rotation !=
+        GetWindowState()->window()->GetBoundsInScreen();
+  }
+
   if (!widget_ || !widget_->IsActive() ||
       !WMHelper::GetInstance()->InTabletMode()) {
     return;
@@ -880,7 +894,8 @@ void ClientControlledShellSurface::SetWidgetBounds(const gfx::Rect& bounds) {
   }
 
   bool set_bounds_locally =
-      GetWindowState()->is_dragged() && !is_display_move_pending;
+      display_rotating_with_pip_ ||
+      (GetWindowState()->is_dragged() && !is_display_move_pending);
 
   if (set_bounds_locally || client_controlled_state_->set_bounds_locally()) {
     // Convert from screen to display coordinates.
@@ -1001,6 +1016,14 @@ bool ClientControlledShellSurface::OnPreWidgetCommit() {
       origin_ = pending_geometry_.origin();
     CreateShellSurfaceWidget(ash::ToWindowShowState(pending_window_state_));
   }
+
+  // Finish ignoring obsolete bounds update as the state changes caused by
+  // display rotation are synced.
+  // TODO(takise): This assumes no other bounds update happens during screen
+  // rotation. Implement more robust logic to handle synchronization for
+  // screen rotation.
+  if (pending_geometry_ != geometry_)
+    display_rotating_with_pip_ = false;
 
   ash::WindowState* window_state = GetWindowState();
   state_changed_ = window_state->GetStateType() != pending_window_state_;

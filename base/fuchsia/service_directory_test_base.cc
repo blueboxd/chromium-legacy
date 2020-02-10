@@ -15,7 +15,9 @@ namespace base {
 namespace fuchsia {
 
 ServiceDirectoryTestBase::ServiceDirectoryTestBase()
-    : run_timeout_(TestTimeouts::action_timeout()) {
+    : run_timeout_(TestTimeouts::action_timeout(), BindRepeating([]() {
+                     ADD_FAILURE() << "Run() timed out.";
+                   })) {
   // Mount service dir and publish the service.
   outgoing_directory_ = std::make_unique<sys::OutgoingDirectory>();
   fidl::InterfaceHandle<::fuchsia::io::Directory> directory;

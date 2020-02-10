@@ -46,6 +46,14 @@ Polymer({
     },
 
     /** @private {boolean} */
+    showCrostiniPortForwarding_: {
+      type: Boolean,
+      value() {
+        return loadTimeData.getBoolean('showCrostiniPortForwarding');
+      },
+    },
+
+    /** @private {boolean} */
     isAndroidEnabled_: {
       type: Boolean,
     },
@@ -95,6 +103,8 @@ Polymer({
         r.CROSTINI_SHARED_USB_DEVICES, '#crostini-shared-usb-devices');
     this.addFocusConfig_(r.CROSTINI_EXPORT_IMPORT, '#crostini-export-import');
     this.addFocusConfig_(r.CROSTINI_ANDROID_ADB, '#crostini-enable-arc-adb');
+    this.addFocusConfig_(
+        r.CROSTINI_PORT_FORWARDING, '#crostini-port-forwarding');
   },
 
   /** @private */
@@ -150,6 +160,12 @@ Polymer({
   onSharedUsbDevicesClick_() {
     settings.Router.getInstance().navigateTo(
         settings.routes.CROSTINI_SHARED_USB_DEVICES);
+  },
+
+  /** @private */
+  onPortForwardingClick_: function() {
+    settings.Router.getInstance().navigateTo(
+        settings.routes.CROSTINI_PORT_FORWARDING);
   },
 
   /** @private */

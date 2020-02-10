@@ -232,6 +232,7 @@ source_set("unit_tests") {
       "data_source_unittest.cc",
       "display_unittest.cc",
       "gaming_seat_unittest.cc",
+      "input_method_surface_unittest.cc",
       "keyboard_unittest.cc",
       "notification_unittest.cc",
       "permission_unittest.cc",

@@ -34,17 +34,48 @@ void ProxyToTaskRunner(scoped_refptr<SequencedTaskRunner> task_runner,
   task_runner->PostTask(FROM_HERE, std::move(closure));
 }
 
-ThreadLocalPointer<const RunLoop::RunLoopTimeout>& RunLoopTimeoutTLS() {
-  static NoDestructor<ThreadLocalPointer<const RunLoop::RunLoopTimeout>> tls;
+ThreadLocalPointer<RunLoop::ScopedRunTimeoutForTest>&
+ScopedRunTimeoutForTestTLS() {
+  static NoDestructor<ThreadLocalPointer<RunLoop::ScopedRunTimeoutForTest>> tls;
   return *tls;
 }
 
-void OnRunLoopTimeout(RunLoop* run_loop, OnceClosure on_timeout) {
+void OnRunTimeout(RunLoop* run_loop, OnceClosure on_timeout) {
   run_loop->Quit();
   std::move(on_timeout).Run();
 }
 
 }  // namespace
+
+RunLoop::ScopedRunTimeoutForTest::ScopedRunTimeoutForTest(
+    TimeDelta timeout,
+    RepeatingClosure on_timeout)
+    : timeout_(timeout),
+      on_timeout_(std::move(on_timeout)),
+      nested_timeout_(ScopedRunTimeoutForTestTLS().Get()) {
+  DCHECK_GT(timeout_, TimeDelta());
+  DCHECK(on_timeout_);
+  ScopedRunTimeoutForTestTLS().Set(this);
+}
+
+RunLoop::ScopedRunTimeoutForTest::~ScopedRunTimeoutForTest() {
+  ScopedRunTimeoutForTestTLS().Set(nested_timeout_);
+}
+
+// static
+const RunLoop::ScopedRunTimeoutForTest*
+RunLoop::ScopedRunTimeoutForTest::Current() {
+  return ScopedRunTimeoutForTestTLS().Get();
+}
+
+RunLoop::ScopedDisableRunTimeoutForTest::ScopedDisableRunTimeoutForTest()
+    : nested_timeout_(ScopedRunTimeoutForTestTLS().Get()) {
+  ScopedRunTimeoutForTestTLS().Set(nullptr);
+}
+
+RunLoop::ScopedDisableRunTimeoutForTest::~ScopedDisableRunTimeoutForTest() {
+  ScopedRunTimeoutForTestTLS().Set(nested_timeout_);
+}
 
 RunLoop::Delegate::Delegate() {
   // The Delegate can be created on another thread. It is only bound in
@@ -106,16 +137,16 @@ void RunLoop::Run() {
   if (!BeforeRun())
     return;
 
-  // If there is a RunLoopTimeout active then set the timeout.
+  // If there is a ScopedRunTimeoutForTest active then set the timeout.
   // TODO(crbug.com/905412): Use real-time for Run() timeouts so that they
   // can be applied even in tests which mock TimeTicks::Now().
   CancelableOnceClosure cancelable_timeout;
-  const RunLoopTimeout* run_timeout = GetTimeoutForCurrentThread();
+  ScopedRunTimeoutForTest* run_timeout = ScopedRunTimeoutForTestTLS().Get();
   if (run_timeout) {
     cancelable_timeout.Reset(
-        BindOnce(&OnRunLoopTimeout, Unretained(this), run_timeout->on_timeout));
-    origin_task_runner_->PostDelayedTask(
-        FROM_HERE, cancelable_timeout.callback(), run_timeout->timeout);
+        BindOnce(&OnRunTimeout, Unretained(this), run_timeout->on_timeout()));
+    ThreadTaskRunnerHandle::Get()->PostDelayedTask(
+        FROM_HERE, cancelable_timeout.callback(), run_timeout->timeout());
   }
 
   DCHECK_EQ(this, delegate_->active_run_loops_.top());
@@ -273,12 +304,10 @@ RunLoop::ScopedDisallowRunningForTesting::~ScopedDisallowRunningForTesting() =
 #endif  // DCHECK_IS_ON()
 
 void RunLoop::RunUntilConditionForTest(RepeatingCallback<bool()> condition) {
-  CHECK(GetTimeoutForCurrentThread());
-  const RunLoopTimeout* old_timeout = GetTimeoutForCurrentThread();
-  RunLoopTimeout run_timeout;
-  run_timeout.timeout = old_timeout->timeout;
-  run_timeout.on_timeout = DoNothing();
-  RunLoopTimeoutTLS().Set(&run_timeout);
+  CHECK(ScopedRunTimeoutForTest::Current());
+  OnceClosure on_failure = ScopedRunTimeoutForTest::Current()->on_timeout();
+  ScopedRunTimeoutForTest run_timeout(
+      ScopedRunTimeoutForTest::Current()->timeout(), DoNothing());
   auto check_condition = BindRepeating(
       [](const RepeatingCallback<bool()>& condition, RunLoop* loop) {
         if (condition.Run())
@@ -290,22 +319,7 @@ void RunLoop::RunUntilConditionForTest(RepeatingCallback<bool()> condition) {
                        check_condition);
   Run();
   if (!condition.Run())
-    old_timeout->on_timeout.Run();
-  RunLoopTimeoutTLS().Set(old_timeout);
-}
-
-RunLoop::RunLoopTimeout::RunLoopTimeout() = default;
-
-RunLoop::RunLoopTimeout::~RunLoopTimeout() = default;
-
-// static
-void RunLoop::SetTimeoutForCurrentThread(const RunLoopTimeout* timeout) {
-  RunLoopTimeoutTLS().Set(timeout);
-}
-
-// static
-const RunLoop::RunLoopTimeout* RunLoop::GetTimeoutForCurrentThread() {
-  return RunLoopTimeoutTLS().Get();
+    std::move(on_failure).Run();
 }
 
 bool RunLoop::BeforeRun() {

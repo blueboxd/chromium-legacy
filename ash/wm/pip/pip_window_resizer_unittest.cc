@@ -16,6 +16,7 @@
 #include "ash/shelf/shelf.h"
 #include "ash/shell.h"
 #include "ash/test/ash_test_base.h"
+#include "ash/wm/pip/pip_positioner.h"
 #include "ash/wm/pip/pip_test_utils.h"
 #include "ash/wm/tablet_mode/tablet_mode_controller.h"
 #include "ash/wm/window_state.h"
@@ -565,9 +566,7 @@ TEST_P(PipWindowResizerTest, PipRestoreBoundsSetOnFling) {
   }
 
   WindowState* window_state = WindowState::Get(window());
-  EXPECT_TRUE(window_state->HasRestoreBounds());
-  EXPECT_EQ(gfx::Rect(292, 292, 100, 100),
-            window_state->GetRestoreBoundsInParent());
+  EXPECT_TRUE(PipPositioner::HasSnapFraction(window_state));
 }
 
 TEST_P(PipWindowResizerTest, PipStartAndFinishFreeResizeUmaMetrics) {

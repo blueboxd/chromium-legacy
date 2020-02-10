@@ -604,6 +604,21 @@ void AddCrostiniStrings(content::WebUIDataSource* html_source,
        IDS_SETTINGS_CROSTINI_CONTAINER_UPGRADE_SUBTEXT},
       {"crostiniContainerUpgradeButton",
        IDS_SETTINGS_CROSTINI_CONTAINER_UPGRADE_BUTTON},
+      {"crostiniPortForwarding", IDS_SETTINGS_CROSTINI_PORT_FORWARDING},
+      {"crostiniPortForwardingDescription",
+       IDS_SETTINGS_CROSTINI_PORT_FORWARDING_DESCRIPTION},
+      {"crostiniPortForwardingNoPorts",
+       IDS_SETTINGS_CROSTINI_PORT_FORWARDING_NO_PORTS},
+      {"crostiniPortForwardingTableTitle",
+       IDS_SETTINGS_CROSTINI_PORT_FORWARDING_TABLE_TITLE},
+      {"crostiniPortForwardingListPortNumber",
+       IDS_SETTINGS_CROSTINI_PORT_FORWARDING_LIST_PORT_NUMBER},
+      {"crostiniPortForwardingListLabel",
+       IDS_SETTINGS_CROSTINI_PORT_FORWARDING_LIST_LABEL},
+      {"crostiniPortForwardingAddPortButton",
+       IDS_SETTINGS_CROSTINI_PORT_FORWARDING_ADD_PORT_BUTTON},
+      {"crostiniPortForwardingAddPortButtonDescription",
+       IDS_SETTINGS_CROSTINI_PORT_FORWARDING_ADD_PORT_BUTTON_DESCRIPTION},
   };
   AddLocalizedStringsBulk(html_source, kLocalizedStrings);
   html_source->AddString(
@@ -642,6 +657,9 @@ void AddCrostiniStrings(content::WebUIDataSource* html_source,
   html_source->AddBoolean("arcAdbSideloadingSupported",
                           base::FeatureList::IsEnabled(
                               chromeos::features::kArcAdbSideloadingFeature));
+  html_source->AddBoolean("showCrostiniPortForwarding",
+                          base::FeatureList::IsEnabled(
+                              chromeos::features::kCrostiniPortForwarding));
   html_source->AddBoolean("isOwnerProfile",
                           chromeos::ProfileHelper::IsOwnerProfile(profile));
   html_source->AddBoolean("isEnterpriseManaged",

@@ -12,7 +12,6 @@
 #include "chrome/browser/ssl/security_state_tab_helper.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_window.h"
-#include "chrome/browser/ui/browser_window_state.h"
 #include "chrome/browser/ui/location_bar/location_bar.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/browser/ui/web_applications/web_app_launch_utils.h"
@@ -222,24 +221,6 @@ void HostedAppBrowserController::OnExtensionUninstallDialogClosed(
     bool success,
     const base::string16& error) {
   uninstall_dialog_.reset();
-}
-
-void HostedAppBrowserController::OnReceivedInitialURL() {
-  UpdateCustomTabBarVisibility(false);
-
-  // If the window bounds have not been overridden, there is no need to resize
-  // the window.
-  if (!browser()->bounds_overridden())
-    return;
-
-  // The saved bounds will only be wrong if they are content bounds.
-  if (!chrome::SavedBoundsAreContentBounds(browser()))
-    return;
-
-  // TODO(crbug.com/964825): Correctly set the window size at creation time.
-  // This is currently not possible because the current url is not easily known
-  // at popup construction time.
-  browser()->window()->SetContentsSize(browser()->override_bounds().size());
 }
 
 void HostedAppBrowserController::OnTabInserted(content::WebContents* contents) {

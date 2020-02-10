@@ -46,6 +46,11 @@ Polymer({
               settings.routes.CROSTINI_SHARED_USB_DEVICES.path,
               '#crostini .subpage-arrow');
         }
+        if (settings.routes.CROSTINI_PORT_FORWARDING) {
+          map.set(
+              settings.routes.CROSTINI_PORT_FORWARDING.path,
+              '#crostini .subpage-arrow');
+        }
         return map;
       },
     },

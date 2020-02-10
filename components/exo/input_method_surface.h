@@ -27,6 +27,9 @@ class InputMethodSurface : public ClientControlledShellSurface {
   // Overridden from SurfaceDelegate:
   void OnSurfaceCommit() override;
 
+  // Overridden from ShellSurfaceBase:
+  void SetWidgetBounds(const gfx::Rect& bounds) override;
+
   gfx::Rect GetBounds() const;
 
  private:

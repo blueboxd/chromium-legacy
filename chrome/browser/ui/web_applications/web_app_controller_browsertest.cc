@@ -67,6 +67,11 @@ Browser* WebAppControllerBrowserTestBase::LaunchWebAppBrowser(
   return web_app::LaunchWebAppBrowser(profile(), app_id);
 }
 
+Browser* WebAppControllerBrowserTestBase::LaunchWebAppBrowserAndWait(
+    const AppId& app_id) {
+  return web_app::LaunchWebAppBrowserAndWait(profile(), app_id);
+}
+
 Browser* WebAppControllerBrowserTestBase::LaunchBrowserForWebAppInTab(
     const AppId& app_id) {
   return web_app::LaunchBrowserForWebAppInTab(profile(), app_id);

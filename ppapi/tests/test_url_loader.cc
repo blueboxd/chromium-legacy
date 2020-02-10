@@ -99,7 +99,7 @@ bool TestURLLoader::Init() {
  *
  * Here is the environment:
  *
- * 1. TestServer.py only accepts one open connection at the time.
+ * 1. net::EmbeddedTestServer only accepts one open connection at the time.
  * 2. HTTP socket pool keeps sockets open for several seconds after last use
  * (hoping that there will be another request that could reuse the connection).
  * 3. HTTP socket pool is separated by host/port and privacy mode (which is
@@ -140,6 +140,9 @@ void TestURLLoader::RunTests(const std::string& filter) {
   RUN_CALLBACK_TEST(TestURLLoader, TrustedHttpRequests, filter);
   RUN_CALLBACK_TEST(TestURLLoader, FollowURLRedirect, filter);
   RUN_CALLBACK_TEST(TestURLLoader, AuditURLRedirect, filter);
+  RUN_CALLBACK_TEST(TestURLLoader, RestrictURLRedirectCommon, filter);
+  RUN_CALLBACK_TEST(TestURLLoader, RestrictURLRedirectEnabled, filter);
+  RUN_CALLBACK_TEST(TestURLLoader, RestrictURLRedirectDisabled, filter);
   RUN_CALLBACK_TEST(TestURLLoader, AbortCalls, filter);
   RUN_CALLBACK_TEST(TestURLLoader, UntendedLoad, filter);
   RUN_CALLBACK_TEST(TestURLLoader, PrefetchBufferThreshold, filter);
@@ -218,6 +221,17 @@ std::string TestURLLoader::LoadAndCompareBody(
     return "URLLoader::ReadResponseBody returned unexpected content length";
   if (body != expected_body)
     return "URLLoader::ReadResponseBody returned unexpected content";
+
+  PASS();
+}
+
+std::string TestURLLoader::LoadAndFail(const pp::URLRequestInfo& request) {
+  TestCompletionCallback callback(instance_->pp_instance(), callback_type());
+
+  pp::URLLoader loader(instance_);
+  callback.WaitForResult(loader.Open(request, callback.GetCallback()));
+  CHECK_CALLBACK_BEHAVIOR(callback);
+  ASSERT_EQ(PP_ERROR_FAILED, callback.result());
 
   PASS();
 }
@@ -780,6 +794,142 @@ std::string TestURLLoader::TestAuditURLRedirect() {
 
   if (body != "hello\n")
     return "URLLoader::FollowRedirect failed";
+
+  PASS();
+}
+
+// This test checks if the redirect restriction does not block acceptable cases
+// of 307/308 GET and HEAD.
+std::string TestURLLoader::TestRestrictURLRedirectCommon() {
+  std::string url = GetReachableAbsoluteURL("test_url_loader_data/hello.txt");
+  std::string redirect_307_prefix("/server-redirect-307?");
+
+  {
+    // Default method is GET and will follow the redirect.
+    pp::URLRequestInfo request_for_default_307(instance_);
+    request_for_default_307.SetURL(redirect_307_prefix.append(url));
+    std::string result_for_default_307 =
+        LoadAndCompareBody(request_for_default_307, "hello\n");
+    if (!result_for_default_307.empty())
+      return result_for_default_307;
+  }
+
+  {
+    // GET will follow the redirect.
+    pp::URLRequestInfo request_for_get_307(instance_);
+    request_for_get_307.SetURL(redirect_307_prefix.append(url));
+    request_for_get_307.SetMethod("GET");
+    std::string result_for_get_307 =
+        LoadAndCompareBody(request_for_get_307, "hello\n");
+    if (!result_for_get_307.empty())
+      return result_for_get_307;
+  }
+
+  {
+    // HEAD will follow the redirect.
+    pp::URLRequestInfo request_for_head_307(instance_);
+    request_for_head_307.SetURL(redirect_307_prefix.append(url));
+    request_for_head_307.SetMethod("HEAD");
+    std::string result_for_head_307 =
+        LoadAndCompareBody(request_for_head_307, "");
+    if (!result_for_head_307.empty())
+      return result_for_head_307;
+  }
+
+  std::string redirect_308_prefix("/server-redirect-308?");
+  {
+    // Default method is GET and will follow the redirect.
+    pp::URLRequestInfo request_for_default_308(instance_);
+    request_for_default_308.SetURL(redirect_308_prefix.append(url));
+    std::string result_for_default_308 =
+        LoadAndCompareBody(request_for_default_308, "hello\n");
+    if (!result_for_default_308.empty())
+      return result_for_default_308;
+  }
+
+  {
+    // GET will follow the redirect.
+    pp::URLRequestInfo request_for_get_308(instance_);
+    request_for_get_308.SetURL(redirect_308_prefix.append(url));
+    request_for_get_308.SetMethod("GET");
+    std::string result_for_get_308 =
+        LoadAndCompareBody(request_for_get_308, "hello\n");
+    if (!result_for_get_308.empty())
+      return result_for_get_308;
+  }
+
+  {
+    // HEAD will follow the redirect.
+    pp::URLRequestInfo request_for_head_308(instance_);
+    request_for_head_308.SetURL(redirect_308_prefix.append(url));
+    request_for_head_308.SetMethod("HEAD");
+    std::string result_for_head_308 =
+        LoadAndCompareBody(request_for_head_308, "");
+    if (!result_for_head_308.empty())
+      return result_for_head_308;
+  }
+
+  PASS();
+}
+
+// This test checks if the redirect restriction blocks the restricted cases of
+// 307/308 POST.
+std::string TestURLLoader::TestRestrictURLRedirectEnabled() {
+  std::string url = GetReachableAbsoluteURL("test_url_loader_data/hello.txt");
+
+  {
+    // POST will be blocked and fail.
+    std::string redirect_307_prefix("/server-redirect-307?");
+    pp::URLRequestInfo request_for_post_307(instance_);
+    request_for_post_307.SetURL(redirect_307_prefix.append(url));
+    request_for_post_307.SetMethod("POST");
+    std::string result_for_post_307 = LoadAndFail(request_for_post_307);
+    if (!result_for_post_307.empty())
+      return result_for_post_307;
+  }
+
+  {
+    // POST will be blocked and fail.
+    pp::URLRequestInfo request_for_post_308(instance_);
+    std::string redirect_308_prefix("/server-redirect-308?");
+    request_for_post_308.SetURL(redirect_308_prefix.append(url));
+    request_for_post_308.SetMethod("POST");
+    std::string result_for_post_308 = LoadAndFail(request_for_post_308);
+    if (!result_for_post_308.empty())
+      return result_for_post_308;
+  }
+
+  PASS();
+}
+
+// This test checks if the redirect restriction does not block the restricted
+// cases if the restriction is disabled.
+std::string TestURLLoader::TestRestrictURLRedirectDisabled() {
+  std::string url = GetReachableAbsoluteURL("test_url_loader_data/hello.txt");
+
+  {
+    // POST will not be blocked, but follow the redirect.
+    std::string redirect_307_prefix("/server-redirect-307?");
+    pp::URLRequestInfo request_for_post_307(instance_);
+    request_for_post_307.SetURL(redirect_307_prefix.append(url));
+    request_for_post_307.SetMethod("POST");
+    std::string result_for_post_307 =
+        LoadAndCompareBody(request_for_post_307, "hello\n");
+    if (!result_for_post_307.empty())
+      return result_for_post_307;
+  }
+
+  {
+    // POST will not be blocked, but follow the redirect.
+    pp::URLRequestInfo request_for_post_308(instance_);
+    std::string redirect_308_prefix("/server-redirect-308?");
+    request_for_post_308.SetURL(redirect_308_prefix.append(url));
+    request_for_post_308.SetMethod("POST");
+    std::string result_for_post_308 =
+        LoadAndCompareBody(request_for_post_308, "hello\n");
+    if (!result_for_post_308.empty())
+      return result_for_post_308;
+  }
 
   PASS();
 }

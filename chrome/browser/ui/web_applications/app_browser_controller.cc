@@ -13,6 +13,7 @@
 #include "chrome/browser/themes/theme_service.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_window.h"
+#include "chrome/browser/ui/browser_window_state.h"
 #include "chrome/browser/ui/extensions/hosted_app_browser_controller.h"
 #include "chrome/browser/ui/manifest_web_app_browser_controller.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
@@ -328,6 +329,24 @@ void AppBrowserController::OnTabStripModelChanged(
 
 CustomThemeSupplier* AppBrowserController::GetThemeSupplier() const {
   return theme_pack_.get();
+}
+
+void AppBrowserController::OnReceivedInitialURL() {
+  UpdateCustomTabBarVisibility(/*animate=*/false);
+
+  // If the window bounds have not been overridden, there is no need to resize
+  // the window.
+  if (!browser()->bounds_overridden())
+    return;
+
+  // The saved bounds will only be wrong if they are content bounds.
+  if (!chrome::SavedBoundsAreContentBounds(browser()))
+    return;
+
+  // TODO(crbug.com/964825): Correctly set the window size at creation time.
+  // This is currently not possible because the current url is not easily known
+  // at popup construction time.
+  browser()->window()->SetContentsSize(browser()->override_bounds().size());
 }
 
 void AppBrowserController::OnTabInserted(content::WebContents* contents) {

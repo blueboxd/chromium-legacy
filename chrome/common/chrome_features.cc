@@ -192,7 +192,7 @@ const base::Feature kCrostiniForceClose{"CrostiniForceClose",
 
 // Enables support for sideloading android apps into Arc via crostini.
 const base::Feature kCrostiniArcSideload{"CrostiniArcSideload",
-                                         base::FEATURE_DISABLED_BY_DEFAULT};
+                                         base::FEATURE_ENABLED_BY_DEFAULT};
 
 // Enable support for "Plugin VMs" on Chrome OS.
 const base::Feature kPluginVm{"PluginVm", base::FEATURE_DISABLED_BY_DEFAULT};

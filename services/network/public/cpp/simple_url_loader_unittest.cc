@@ -226,11 +226,14 @@ class SimpleLoaderTestHelper : public SimpleURLLoaderStreamConsumer {
   // StartSimpleLoaderAndWait, but exposed so some tests can start the
   // SimpleURLLoader directly.
   void Wait() {
-    const base::test::ScopedRunLoopTimeout run_timeout(
+    base::RunLoop::ScopedRunTimeoutForTest run_timeout(
         // Some of the bots run tests quite slowly, and the default timeout is
         // too short for them for some of the heavier weight tests.
         // See https://crbug.com/1046745 and https://crbug.com/1035127.
-        TestTimeouts::action_max_timeout());
+        TestTimeouts::action_max_timeout(), base::BindLambdaForTesting([&]() {
+          ADD_FAILURE() << "Run loop timed out";
+          run_loop_.Quit();
+        }));
     run_loop_.Run();
   }
 

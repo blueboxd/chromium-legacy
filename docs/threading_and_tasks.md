@@ -691,10 +691,10 @@ Tests can run the `base::test::TaskEnvironment`'s message pump using a
 `RunLoop::QuitClosure()`), or to `RunUntilIdle()` ready-to-run tasks and
 immediately return.
 
-TaskEnvironment configures RunLoop::Run() to GTEST_FAIL() if it hasn't been
+TaskEnvironment configures RunLoop::Run() to LOG(FATAL) if it hasn't been
 explicitly quit after TestTimeouts::action_timeout(). This is preferable to
 having the test hang if the code under test fails to trigger the RunLoop to
-quit. The timeout can be overridden with base::test::ScopedRunLoopTimeout.
+quit. The timeout can be overridden with ScopedRunTimeoutForTest.
 
 ```cpp
 class MyTest : public testing::Test {

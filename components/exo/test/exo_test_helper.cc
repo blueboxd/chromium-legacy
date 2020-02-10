@@ -13,6 +13,7 @@
 #include "components/exo/buffer.h"
 #include "components/exo/client_controlled_shell_surface.h"
 #include "components/exo/display.h"
+#include "components/exo/input_method_surface.h"
 #include "components/exo/surface.h"
 #include "components/exo/wm_helper.h"
 #include "components/exo/xdg_shell_surface.h"
@@ -163,6 +164,22 @@ ExoTestHelper::CreateClientControlledShellSurface(Surface* surface,
                            : ash::desks_util::GetActiveDeskContainerId();
   auto shell_surface = Display().CreateClientControlledShellSurface(
       surface, container,
+      WMHelper::GetInstance()->GetDefaultDeviceScaleFactor());
+
+  shell_surface->set_state_changed_callback(base::BindRepeating(
+      &HandleWindowStateRequest, base::Unretained(shell_surface.get())));
+
+  shell_surface->set_bounds_changed_callback(
+      base::BindRepeating(&HandleBoundsChangedRequest, shell_surface.get()));
+
+  return shell_surface;
+}
+
+std::unique_ptr<InputMethodSurface> ExoTestHelper::CreateInputMethodSurface(
+    Surface* surface,
+    InputMethodSurfaceManager* surface_manager) {
+  auto shell_surface = std::make_unique<InputMethodSurface>(
+      surface_manager, surface,
       WMHelper::GetInstance()->GetDefaultDeviceScaleFactor());
 
   shell_surface->set_state_changed_callback(base::BindRepeating(

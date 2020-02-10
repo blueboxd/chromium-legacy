@@ -3152,6 +3152,11 @@
     "expiry_milestone": 83
   },
   {
+    "name": "rar2fs",
+    "owners": ["fdegros", "dats"],
+    "expiry_milestone": 84
+  },
+  {
     "name": "raw-clipboard",
     "owners": ["huangdarwin", "pwnall"],
     "expiry_milestone": 84

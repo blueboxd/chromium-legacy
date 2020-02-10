@@ -73,6 +73,8 @@ cr.define('settings', function() {
         r.CROSTINI_EXPORT_IMPORT =
             r.CROSTINI_DETAILS.createChild('/crostini/exportImport');
       }
+      r.CROSTINI_PORT_FORWARDING =
+          r.CROSTINI_DETAILS.createChild('/crostini/portForwarding');
       r.CROSTINI_SHARED_PATHS =
           r.CROSTINI_DETAILS.createChild('/crostini/sharedPaths');
       r.CROSTINI_SHARED_USB_DEVICES =

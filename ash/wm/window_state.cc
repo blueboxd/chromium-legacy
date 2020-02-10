@@ -796,10 +796,11 @@ void WindowState::OnPrePipStateChange(WindowStateType old_window_state_type) {
     CollectPipEnterExitMetrics(/*enter=*/false);
     window()->ClearProperty(ash::kExcludeInMruKey);
   }
-  // PIP uses restore bounds in its own special context. Reset it in PIP
-  // enter/exit transition so that it won't be used wrongly.
+  // PIP uses the snap fraction to place the PIP window at the correct position
+  // after screen rotation, system UI area change, etc. Make sure to reset this
+  // when the window enters/exits PIP so the obsolete fraction won't be used.
   if (IsPip() || was_pip)
-    ClearRestoreBounds();
+    ash::PipPositioner::ClearSnapFraction(this);
 }
 
 void WindowState::UpdatePipBounds() {

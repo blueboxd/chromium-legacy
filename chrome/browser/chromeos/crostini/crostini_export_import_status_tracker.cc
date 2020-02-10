@@ -23,7 +23,8 @@ CrostiniExportImportStatusTracker::~CrostiniExportImportStatusTracker() =
     default;
 
 void CrostiniExportImportStatusTracker::SetStatusRunning(int progress_percent) {
-  DCHECK(status_ == Status::RUNNING || status_ == Status::CANCELLING);
+  DCHECK(status_ == Status::NONE || status_ == Status::RUNNING ||
+         status_ == Status::CANCELLING);
   // Progress updates can still be received while the notification is being
   // cancelled. These should not be displayed, as the operation will eventually
   // cancel (or fail to cancel).
@@ -51,7 +52,7 @@ void CrostiniExportImportStatusTracker::SetStatusDone() {
 }
 
 void CrostiniExportImportStatusTracker::SetStatusCancelled() {
-  DCHECK(status_ == Status::CANCELLING);
+  DCHECK(status_ == Status::NONE || status_ == Status::CANCELLING);
 
   status_ = Status::CANCELLED;
   SetStatusCancelledUI();

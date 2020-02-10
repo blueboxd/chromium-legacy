@@ -87,6 +87,7 @@ suite('CrostiniPageTests', function() {
   });
 
   suite('SubPageDetails', function() {
+    /** @type {?SettingsCrostiniSubPageElement} */
     let subpage;
 
     /**
@@ -106,6 +107,7 @@ suite('CrostiniPageTests', function() {
       setCrostiniPrefs(true);
       loadTimeData.overrideValues({
         showCrostiniExportImport: true,
+        showCrostiniPortForwarding: true,
       });
 
       const eventPromise = new Promise((resolve) => {
@@ -134,6 +136,7 @@ suite('CrostiniPageTests', function() {
       assertTrue(!!subpage.$$('#crostini-export-import'));
       assertTrue(!!subpage.$$('#remove'));
       assertTrue(!!subpage.$$('#container-upgrade'));
+      assertTrue(!!subpage.$$('#crostini-port-forwarding'));
     });
 
     test('SharedPaths', function() {
@@ -238,6 +241,14 @@ suite('CrostiniPageTests', function() {
           });
     });
 
+    test('PortForwarding', function() {
+      assertTrue(!!subpage.$$('#crostini-port-forwarding'));
+      subpage.$$('#crostini-port-forwarding').click();
+      return flushAsync().then(() => {
+        subpage = crostiniPage.$$('settings-crostini-port-forwarding');
+        assertTrue(!!subpage);
+      });
+    });
 
     test('Remove', function() {
       assertTrue(!!subpage.$$('#remove cr-button'));

@@ -12,29 +12,21 @@
 #include "base/command_line.h"
 #include "base/compiler_specific.h"
 #include "base/files/file_path.h"
-#include "base/json/json_reader.h"
 #include "base/optional.h"
 #include "base/run_loop.h"
 #include "base/strings/string_split.h"
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
-#include "base/test/bind_test_util.h"
 #include "base/test/metrics/user_action_tester.h"
 #include "base/test/scoped_feature_list.h"
 #include "base/values.h"
 #include "build/build_config.h"
 #include "chrome/app/chrome_command_ids.h"
-#include "chrome/browser/apps/app_service/app_launch_params.h"
 #include "chrome/browser/banners/test_app_banner_manager_desktop.h"
 #include "chrome/browser/extensions/extension_browsertest.h"
-#include "chrome/browser/extensions/extension_service.h"
-#include "chrome/browser/extensions/extension_util.h"
-#include "chrome/browser/extensions/launch_util.h"
 #include "chrome/browser/predictors/loading_predictor_config.h"
-#include "chrome/browser/profiles/profile_io_data.h"
 #include "chrome/browser/renderer_context_menu/render_view_context_menu_test_util.h"
 #include "chrome/browser/sessions/tab_restore_service_factory.h"
-#include "chrome/browser/ssl/ssl_browsertest_util.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_commands.h"
 #include "chrome/browser/ui/browser_dialogs.h"
@@ -47,7 +39,6 @@
 #include "chrome/browser/ui/web_applications/app_browser_controller.h"
 #include "chrome/browser/ui/web_applications/test/ssl_test_utils.h"
 #include "chrome/browser/ui/web_applications/test/web_app_browsertest_util.h"
-#include "chrome/browser/ui/web_applications/web_app_dialog_utils.h"
 #include "chrome/browser/ui/web_applications/web_app_launch_utils.h"
 #include "chrome/browser/ui/web_applications/web_app_menu_model.h"
 #include "chrome/browser/web_applications/components/app_registry_controller.h"
@@ -58,19 +49,13 @@
 #include "chrome/common/chrome_features.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/web_application_info.h"
-#include "chrome/common/webui_url_constants.h"
 #include "chrome/test/base/ui_test_utils.h"
-#include "components/security_interstitials/content/security_interstitial_tab_helper.h"
-#include "components/security_interstitials/core/controller_client.h"
 #include "components/sessions/core/tab_restore_service.h"
 #include "content/public/browser/child_process_security_policy.h"
-#include "content/public/browser/interstitial_page.h"
-#include "content/public/browser/interstitial_page_delegate.h"
 #include "content/public/browser/notification_service.h"
 #include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/render_process_host.h"
 #include "content/public/browser/web_contents.h"
-#include "content/public/common/content_features.h"
 #include "content/public/common/content_switches.h"
 #include "content/public/common/context_menu_params.h"
 #include "content/public/test/browser_test.h"
@@ -94,8 +79,6 @@
 #include "third_party/blink/public/common/features.h"
 #include "third_party/blink/public/mojom/manifest/display_mode.mojom.h"
 #include "third_party/blink/public/mojom/renderer_preferences.mojom.h"
-#include "ui/base/clipboard/clipboard.h"
-#include "ui/gfx/geometry/rect.h"
 
 using content::RenderFrameHost;
 using content::WebContents;
@@ -128,30 +111,6 @@ enum class AppType {
   BOOKMARK_APP,  // Using HostedAppBrowserController
   WEB_APP,       // Using WebAppBrowserController
 };
-
-// Opens |url| in a new popup window with the dimensions |popup_size|.
-Browser* OpenPopupAndWait(Browser* browser,
-                          const GURL& url,
-                          const gfx::Size& popup_size) {
-  WebContents* web_contents =
-      browser->tab_strip_model()->GetActiveWebContents();
-
-  content::WebContentsAddedObserver new_contents_observer;
-  std::string open_window_script = base::StringPrintf(
-      "window.open('%s', '_blank', 'toolbar=none,width=%i,height=%i')",
-      url.spec().c_str(), popup_size.width(), popup_size.height());
-
-  EXPECT_TRUE(content::ExecJs(web_contents, open_window_script));
-
-  WebContents* popup_contents = new_contents_observer.GetWebContents();
-  content::WaitForLoadStop(popup_contents);
-  Browser* popup_browser = chrome::FindBrowserWithWebContents(popup_contents);
-
-  // The navigation should happen in a new window.
-  EXPECT_NE(browser, popup_browser);
-
-  return popup_browser;
-}
 
 // Used by ShouldShowCustomTabBarForXXX. Performs a navigation and then checks
 // that the toolbar visibility is as expected.
@@ -302,10 +261,6 @@ class HostedAppTest : public extensions::ExtensionBrowserTest,
   }
 
   static const char* GetInstallableAppName() { return "Manifest test app"; }
-
-  GURL GetURLForPath(std::string path) {
-    return https_server_.GetURL("app.com", path);
-  }
 
   GURL GetSecureIFrameAppURL() {
     net::HostPortPair host_port_pair = net::HostPortPair::FromURL(
@@ -889,150 +844,6 @@ IN_PROC_BROWSER_TEST_P(SharedPWATest, PopOutDisabledInIncognito) {
   EXPECT_FALSE(model->IsEnabledAt(index));
 }
 
-// Tests that desktop PWAs open links in the browser.
-IN_PROC_BROWSER_TEST_P(HostedAppPWAOnlyTest, DesktopPWAsOpenLinksInApp) {
-  ASSERT_TRUE(https_server()->Start());
-  ASSERT_TRUE(embedded_test_server()->Start());
-
-  InstallSecurePWA();
-  ASSERT_TRUE(
-      extensions::util::GetInstalledPwaForUrl(profile(), GetSecureAppURL()));
-
-  NavigateToURLAndWait(app_browser_, GetSecureAppURL());
-
-  ASSERT_TRUE(app_browser_->app_controller());
-
-  NavigateAndCheckForToolbar(app_browser_, GURL(kExampleURL), true);
-}
-
-// Tests that desktop PWAs are opened at the correct size.
-IN_PROC_BROWSER_TEST_P(HostedAppPWAOnlyTest, PWASizeIsCorrectlyRestored) {
-  ASSERT_TRUE(https_server()->Start());
-
-  InstallSecurePWA();
-
-  EXPECT_TRUE(web_app::AppBrowserController::IsForWebAppBrowser(app_browser_));
-  NavigateToURLAndWait(app_browser_, GetSecureAppURL());
-
-  gfx::Rect bounds = gfx::Rect(50, 50, 500, 500);
-  app_browser_->window()->SetBounds(bounds);
-  app_browser_->window()->Close();
-
-  Browser* new_browser = LaunchAppBrowser(app_);
-  EXPECT_EQ(new_browser->window()->GetBounds(), bounds);
-}
-
-// Tests that desktop PWAs are reopened at the correct size.
-IN_PROC_BROWSER_TEST_P(HostedAppPWAOnlyTest,
-                       ReopenedPWASizeIsCorrectlyRestored) {
-  ASSERT_TRUE(https_server()->Start());
-
-  InstallSecurePWA();
-
-  EXPECT_TRUE(web_app::AppBrowserController::IsForWebAppBrowser(app_browser_));
-  NavigateToURLAndWait(app_browser_, GetSecureAppURL());
-
-  gfx::Rect bounds = gfx::Rect(50, 50, 500, 500);
-  app_browser_->window()->SetBounds(bounds);
-  app_browser_->window()->Close();
-
-  content::WebContentsAddedObserver new_contents_observer;
-
-  sessions::TabRestoreService* service =
-      TabRestoreServiceFactory::GetForProfile(profile());
-  ASSERT_GT(service->entries().size(), 0U);
-  service->RestoreMostRecentEntry(nullptr);
-
-  content::WebContents* restored_web_contents =
-      new_contents_observer.GetWebContents();
-  Browser* restored_browser =
-      chrome::FindBrowserWithWebContents(restored_web_contents);
-  EXPECT_EQ(restored_browser->window()->GetBounds(), bounds);
-}
-
-// Tests that using window.open to create a popup window out of scope results in
-// a correctly sized window.
-IN_PROC_BROWSER_TEST_P(HostedAppPWAOnlyTest, OffScopePWAPopupsHaveCorrectSize) {
-  ASSERT_TRUE(https_server()->Start());
-
-  InstallSecurePWA();
-
-  LaunchApp();
-  EXPECT_TRUE(web_app::AppBrowserController::IsForWebAppBrowser(app_browser_));
-
-  GURL offscope_url("https://example.com");
-  gfx::Size size(500, 500);
-
-  Browser* popup_browser = OpenPopupAndWait(app_browser_, offscope_url, size);
-
-  // The navigation should have happened in a new window.
-  EXPECT_NE(popup_browser, app_browser_);
-
-  // The popup browser should be a PWA.
-  EXPECT_TRUE(web_app::AppBrowserController::IsForWebAppBrowser(popup_browser));
-
-  // Toolbar should be shown, as the popup is out of scope.
-  EXPECT_TRUE(popup_browser->app_controller()->ShouldShowCustomTabBar());
-
-  // Skip animating the toolbar visibility.
-  popup_browser->app_controller()->UpdateCustomTabBarVisibility(false);
-
-  // The popup window should be the size we specified.
-  EXPECT_EQ(size, popup_browser->window()->GetContentsSize());
-}
-
-// Tests that using window.open to create a popup window in scope results in
-// a correctly sized window.
-IN_PROC_BROWSER_TEST_P(HostedAppPWAOnlyTest, InScopePWAPopupsHaveCorrectSize) {
-  ASSERT_TRUE(https_server()->Start());
-
-  InstallSecurePWA();
-
-  LaunchApp();
-  EXPECT_TRUE(web_app::AppBrowserController::IsForWebAppBrowser(app_browser_));
-
-  gfx::Size size(500, 500);
-  Browser* popup_browser =
-      OpenPopupAndWait(app_browser_, GetSecureAppURL(), size);
-
-  // The navigation should have happened in a new window.
-  EXPECT_NE(popup_browser, app_browser_);
-
-  // The popup browser should be a PWA.
-  EXPECT_TRUE(web_app::AppBrowserController::IsForWebAppBrowser(popup_browser));
-
-  // Toolbar should not be shown, as the popup is in scope.
-  EXPECT_FALSE(popup_browser->app_controller()->ShouldShowCustomTabBar());
-
-  // Skip animating the toolbar visibility.
-  popup_browser->app_controller()->UpdateCustomTabBarVisibility(false);
-
-  // The popup window should be the size we specified.
-  EXPECT_EQ(size, popup_browser->window()->GetContentsSize());
-}
-
-// Tests that app windows are correctly restored.
-IN_PROC_BROWSER_TEST_P(HostedAppPWAOnlyTest, RestoreAppWindow) {
-  ASSERT_TRUE(https_server()->Start());
-
-  InstallSecurePWA();
-  ASSERT_TRUE(app_browser_->is_type_app());
-  app_browser_->window()->Close();
-
-  content::WebContentsAddedObserver new_contents_observer;
-
-  sessions::TabRestoreService* service =
-      TabRestoreServiceFactory::GetForProfile(profile());
-  service->RestoreMostRecentEntry(nullptr);
-
-  content::WebContents* restored_web_contents =
-      new_contents_observer.GetWebContents();
-  Browser* restored_browser =
-      chrome::FindBrowserWithWebContents(restored_web_contents);
-
-  EXPECT_TRUE(restored_browser->is_type_app());
-}
-
 // Tests that app windows are restored in a tab if the app is uninstalled.
 IN_PROC_BROWSER_TEST_P(HostedAppPWAOnlyTest,
                        RestoreAppWindowForUninstalledApp) {
@@ -1061,28 +872,6 @@ IN_PROC_BROWSER_TEST_P(HostedAppPWAOnlyTest,
 
   EXPECT_FALSE(restored_browser->is_type_app());
   EXPECT_TRUE(restored_browser->is_type_normal());
-}
-
-// Test navigating to an out of scope url on the same origin causes the url
-// to be shown to the user.
-IN_PROC_BROWSER_TEST_P(HostedAppPWAOnlyTest,
-                       LocationBarIsVisibleOffScopeOnSameOrigin) {
-  ASSERT_TRUE(https_server()->Start());
-  ASSERT_TRUE(embedded_test_server()->Start());
-
-  InstallSecurePWA();
-
-  // Toolbar should not be visible in the app.
-  ASSERT_FALSE(app_browser_->app_controller()->ShouldShowCustomTabBar());
-
-  // The installed PWA's scope is app.com:{PORT}/ssl,
-  // so app.com:{PORT}/accessibility_fail.html is out of scope.
-  const GURL& out_of_scope = GetURLForPath("/accessibility_fail.html");
-
-  NavigateToURLAndWait(app_browser_, out_of_scope);
-
-  // Location should be visible off scope.
-  ASSERT_TRUE(app_browser_->app_controller()->ShouldShowCustomTabBar());
 }
 
 // Tests that PWA menus have an uninstall option.
@@ -1284,18 +1073,6 @@ IN_PROC_BROWSER_TEST_P(SharedPWATest, InstallToShelfContainsAppName) {
             base::UTF8ToUTF16("Install Manifest test app\xE2\x80\xA6"));
 }
 
-IN_PROC_BROWSER_TEST_P(HostedAppPWAOnlyTest, OverscrollEnabled) {
-  ASSERT_TRUE(https_server()->Start());
-  InstallSecurePWA();
-
-  // Overscroll is only enabled on Aura platforms currently.
-#if defined(USE_AURA)
-  EXPECT_TRUE(app_browser_->CanOverscrollContent());
-#else
-  EXPECT_FALSE(app_browser_->CanOverscrollContent());
-#endif
-}
-
 // Tests that when calling OpenInChrome, mixed content can be loaded in the new
 // tab.
 IN_PROC_BROWSER_TEST_P(HostedAppPWAOnlyTestWithAutoupgradesDisabled,
@@ -1478,22 +1255,6 @@ IN_PROC_BROWSER_TEST_P(HostedAppTest, CreatedForInstalledPwaForNonPwas) {
   SetupApp("https_app");
 
   EXPECT_FALSE(app_browser_->app_controller()->CreatedForInstalledPwa());
-}
-
-// Check the 'Copy URL' menu button for Hosted App windows.
-IN_PROC_BROWSER_TEST_P(HostedAppPWAOnlyTest, CopyURL) {
-  WebApplicationInfo web_app_info;
-  web_app_info.app_url = GURL(kExampleURL);
-  const extensions::Extension* app = InstallBookmarkApp(web_app_info);
-  Browser* app_browser = LaunchAppBrowser(app);
-
-  content::BrowserTestClipboardScope test_clipboard_scope;
-  chrome::ExecuteCommand(app_browser, IDC_COPY_URL);
-
-  ui::Clipboard* clipboard = ui::Clipboard::GetForCurrentThread();
-  base::string16 result;
-  clipboard->ReadText(ui::ClipboardBuffer::kCopyPaste, &result);
-  EXPECT_EQ(result, base::UTF8ToUTF16(kExampleURL));
 }
 
 // Check the 'Open in Chrome' menu button for Hosted App windows.

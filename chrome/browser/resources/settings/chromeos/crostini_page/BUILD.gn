@@ -66,6 +66,14 @@ js_library("crostini_shared_usb_devices") {
   ]
 }
 
+js_library("crostini_port_forwarding") {
+  deps = [
+    ":crostini_browser_proxy",
+    "../..:route",
+    "../../prefs:prefs_behavior",
+  ]
+}
+
 js_library("crostini_subpage") {
   deps = [
     ":crostini_browser_proxy",

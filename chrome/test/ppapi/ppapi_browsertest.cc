@@ -11,6 +11,7 @@
 #include "base/optional.h"
 #include "base/path_service.h"
 #include "base/stl_util.h"
+#include "base/test/scoped_feature_list.h"
 #include "base/test/test_timeouts.h"
 #include "base/threading/thread_restrictions.h"
 #include "build/build_config.h"
@@ -33,6 +34,7 @@
 #include "content/public/browser/network_service_instance.h"
 #include "content/public/browser/storage_partition.h"
 #include "content/public/browser/web_contents.h"
+#include "content/public/common/content_features.h"
 #include "content/public/common/content_switches.h"
 #include "content/public/common/network_service_util.h"
 #include "content/public/common/url_constants.h"
@@ -1390,6 +1392,8 @@ TEST_PPAPI_NACL(HostResolverPrivate_ResolveIPv4)
       LIST_TEST(URLLoader_UntrustedHttpRequests) \
       LIST_TEST(URLLoader_FollowURLRedirect) \
       LIST_TEST(URLLoader_AuditURLRedirect) \
+      LIST_TEST(URLLoader_RestrictURLRedirectCommon) \
+      LIST_TEST(URLLoader_RestrictURLRedirectEnabled) \
       LIST_TEST(URLLoader_AbortCalls) \
       LIST_TEST(URLLoader_UntendedLoad) \
       LIST_TEST(URLLoader_PrefetchBufferThreshold) \
@@ -1422,6 +1426,28 @@ IN_PROC_BROWSER_TEST_F(OutOfProcessPPAPITest, URLLoader3) {
 IN_PROC_BROWSER_TEST_F(OutOfProcessPPAPITest, URLLoaderTrusted) {
   RUN_URLLOADER_TRUSTED_SUBTESTS;
 }
+
+class OutOfProcessWithoutPepperCrossOriginRestrictionPPAPITest
+    : public OutOfProcessPPAPITest {
+ public:
+  OutOfProcessWithoutPepperCrossOriginRestrictionPPAPITest() {
+    scoped_feature_list_.InitAndDisableFeature(
+        features::kPepperCrossOriginRedirectRestriction);
+  }
+
+ private:
+  base::test::ScopedFeatureList scoped_feature_list_;
+};
+
+IN_PROC_BROWSER_TEST_F(OutOfProcessWithoutPepperCrossOriginRestrictionPPAPITest,
+                       URLLoaderRestrictURLRedirectDisabled) {
+  // This test verifies if the restriction in the pepper_url_loader_host.cc
+  // can be managed via base::FeatureList, and does not need to run with various
+  // NaCl sandbox modes.
+  RunTestViaHTTP(LIST_TEST(URLLoader_RestrictURLRedirectCommon)
+                 LIST_TEST(URLLoader_RestrictURLRedirectDisabled));
+}
+
 IN_PROC_BROWSER_TEST_F(PPAPINaClNewlibTest, MAYBE_PPAPI_NACL(URLLoader0)) {
   RUN_URLLOADER_SUBTESTS_0;
 }

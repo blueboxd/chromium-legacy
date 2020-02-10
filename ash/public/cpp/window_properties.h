@@ -134,6 +134,18 @@ ASH_PUBLIC_EXPORT extern const aura::WindowProperty<WindowStateType>* const
 ASH_PUBLIC_EXPORT extern const aura::WindowProperty<bool>* const
     kPipOriginalWindowKey;
 
+// A property key to store the PIP snap fraction for this window.
+// The fraction is defined in a clockwise fashion against the PIP movement area.
+//
+//            0   1
+//          4 +---+ 1
+//            |   |
+//          3 +---+ 2
+//            3   2
+//
+ASH_PUBLIC_EXPORT extern const aura::WindowProperty<float*>* const
+    kPipSnapFractionKey;
+
 // Maps to ws::mojom::WindowManager::kRenderParentTitleArea_Property.
 ASH_PUBLIC_EXPORT extern const aura::WindowProperty<bool>* const
     kRenderTitleAreaProperty;

@@ -26,6 +26,7 @@ public final class ProfileImpl extends IProfile.Stub {
     private final String mName;
     private long mNativeProfile;
     private Runnable mOnDestroyCallback;
+    private boolean mBeingDeleted;
 
     ProfileImpl(String name, Runnable onDestroyCallback) {
         if (!name.matches("^\\w*$")) {
@@ -39,15 +40,42 @@ public final class ProfileImpl extends IProfile.Stub {
     @Override
     public void destroy() {
         StrictModeWorkaround.apply();
+        if (mBeingDeleted) return;
+        deleteNativeProfile();
+        maybeRunDestroyCallback();
+    }
+
+    private void deleteNativeProfile() {
         ProfileImplJni.get().deleteProfile(mNativeProfile);
         mNativeProfile = 0;
+    }
+
+    private void maybeRunDestroyCallback() {
+        if (mOnDestroyCallback == null) return;
         mOnDestroyCallback.run();
         mOnDestroyCallback = null;
     }
 
     @Override
+    public void destroyAndDeleteDataFromDisk(IObjectWrapper completionCallback) {
+        StrictModeWorkaround.apply();
+        checkNotDestroyed();
+        final Runnable callback = ObjectWrapper.unwrap(completionCallback, Runnable.class);
+        assert mNativeProfile != 0;
+        mBeingDeleted = ProfileImplJni.get().deleteDataFromDisk(mNativeProfile, () -> {
+            deleteNativeProfile();
+            if (callback != null) callback.run();
+        });
+        if (!mBeingDeleted) {
+            throw new IllegalStateException("Profile still in use: " + mName);
+        }
+        maybeRunDestroyCallback();
+    }
+
+    @Override
     public String getName() {
         StrictModeWorkaround.apply();
+        checkNotDestroyed();
         return mName;
     }
 
@@ -59,6 +87,7 @@ public final class ProfileImpl extends IProfile.Stub {
     public void clearBrowsingData(@NonNull @BrowsingDataType int[] dataTypes, long fromMillis,
             long toMillis, @NonNull IObjectWrapper completionCallback) {
         StrictModeWorkaround.apply();
+        checkNotDestroyed();
         Runnable callback = ObjectWrapper.unwrap(completionCallback, Runnable.class);
         ProfileImplJni.get().clearBrowsingData(
                 mNativeProfile, mapBrowsingDataTypes(dataTypes), fromMillis, toMillis, callback);
@@ -67,7 +96,13 @@ public final class ProfileImpl extends IProfile.Stub {
     @Override
     public void setDownloadDirectory(String directory) {
         StrictModeWorkaround.apply();
+        checkNotDestroyed();
         ProfileImplJni.get().setDownloadDirectory(mNativeProfile, directory);
+    }
+
+    void checkNotDestroyed() {
+        if (!mBeingDeleted) return;
+        throw new IllegalArgumentException("Profile being destroyed: " + mName);
     }
 
     private static @ImplBrowsingDataType int[] mapBrowsingDataTypes(
@@ -98,6 +133,7 @@ public final class ProfileImpl extends IProfile.Stub {
     interface Natives {
         long createProfile(String name);
         void deleteProfile(long profile);
+        boolean deleteDataFromDisk(long nativeProfileImpl, Runnable completionCallback);
         void clearBrowsingData(long nativeProfileImpl, @ImplBrowsingDataType int[] dataTypes,
                 long fromMillis, long toMillis, Runnable callback);
         void setDownloadDirectory(long nativeProfileImpl, String directory);

@@ -1429,12 +1429,19 @@ TEST_F(RenderViewImplTest, EditContextGetLayoutBoundsAndInputPanelPolicy) {
   main_widget()->UpdateTextInputState();
   auto params = ProcessAndReadIPC<WidgetHostMsg_TextInputStateChanged>();
   EXPECT_EQ(true, std::get<0>(params).show_ime_if_needed);
-  gfx::Rect edit_context_control_bounds_expected(10, 20, 30, 40);
-  gfx::Rect edit_context_selection_bounds_expected(10, 20, 1, 5);
+  blink::WebRect edit_context_control_bounds_expected(10, 20, 30, 40);
+  blink::WebRect edit_context_selection_bounds_expected(10, 20, 1, 5);
+  main_widget()->ConvertViewportToWindow(&edit_context_control_bounds_expected);
+  main_widget()->ConvertViewportToWindow(
+      &edit_context_selection_bounds_expected);
+  blink::WebRect actual_active_element_control_bounds(
+      std::get<0>(params).edit_context_control_bounds.value());
+  blink::WebRect actual_active_element_selection_bounds(
+      std::get<0>(params).edit_context_selection_bounds.value());
   EXPECT_EQ(edit_context_control_bounds_expected,
-            std::get<0>(params).edit_context_control_bounds.value());
+            actual_active_element_control_bounds);
   EXPECT_EQ(edit_context_selection_bounds_expected,
-            std::get<0>(params).edit_context_selection_bounds.value());
+            actual_active_element_selection_bounds);
 }
 
 TEST_F(RenderViewImplTest, ActiveElementGetLayoutBounds) {
@@ -1461,6 +1468,7 @@ TEST_F(RenderViewImplTest, ActiveElementGetLayoutBounds) {
   blink::WebRect expected_control_bounds;
   blink::WebRect temp_selection_bounds;
   controller->GetLayoutBounds(&expected_control_bounds, &temp_selection_bounds);
+  main_widget()->ConvertViewportToWindow(&expected_control_bounds);
   blink::WebRect actual_active_element_control_bounds(
       std::get<0>(params).edit_context_control_bounds.value());
   EXPECT_EQ(actual_active_element_control_bounds, expected_control_bounds);

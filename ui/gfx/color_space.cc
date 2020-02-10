@@ -23,8 +23,6 @@ namespace gfx {
 
 namespace {
 
-base::AtomicSequenceNumber g_color_space_id;
-
 static bool IsAlmostZero(float value) {
   return std::abs(value) < std::numeric_limits<float>::epsilon();
 }
@@ -44,7 +42,6 @@ static bool FloatsEqualWithinTolerance(const float* a,
 }  // namespace
 
 // static
-constexpr int ColorSpace::kInvalidId;
 constexpr float ColorSpace::kDefaultSDRWhiteLevel;
 
 ColorSpace::ColorSpace(PrimaryID primaries,
@@ -239,11 +236,6 @@ size_t ColorSpace::TransferParamCount(TransferID transfer) {
     default:
       return 0;
   }
-}
-
-// static
-int ColorSpace::GetNextId() {
-  return g_color_space_id.GetNext();
 }
 
 bool ColorSpace::operator==(const ColorSpace& other) const {

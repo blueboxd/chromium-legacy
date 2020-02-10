@@ -112,8 +112,7 @@ class MEDIA_EXPORT VideoFrame : public base::RefCountedThreadSafe<VideoFrame> {
     DISALLOW_COPY_AND_ASSIGN(SyncTokenClient);
   };
 
-  // Call prior to CreateFrame to ensure validity of frame configuration. Called
-  // automatically by VideoDecoderConfig::IsValidConfig().
+  // Returns true if frame configuration is valid.
   static bool IsValidConfig(VideoPixelFormat format,
                             StorageType storage_type,
                             const gfx::Size& coded_size,

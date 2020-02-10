@@ -3,6 +3,7 @@
 // found in the LICENSE file.
 
 #include "base/bind.h"
+#import "base/test/ios/wait_util.h"
 #include "components/strings/grit/components_strings.h"
 #import "ios/chrome/test/earl_grey/chrome_earl_grey.h"
 #import "ios/chrome/test/earl_grey/chrome_matchers.h"
@@ -18,6 +19,7 @@
 #error "This file requires ARC support."
 #endif
 
+using base::test::ios::kWaitForUIElementTimeout;
 using chrome_test_util::ContentSuggestionCollectionView;
 using chrome_test_util::BackButton;
 using chrome_test_util::ForwardButton;
@@ -589,7 +591,11 @@ std::unique_ptr<net::test_server::HttpResponse> WindowLocationHashHandlers(
   [ChromeEarlGrey triggerRestoreViaTabGridRemoveAllUndo];
 
   [ChromeEarlGrey goForward];
-  [ChromeEarlGrey waitForWebStateContainingText:"pony"];
+  
+  // Navigating right after session restore seems to sometimes be slow, so wait with twice the
+  // usual timeout.
+  [ChromeEarlGrey waitForWebStateContainingText:"pony"
+                                        timeout:2 * kWaitForUIElementTimeout];
   [[EarlGrey selectElementWithMatcher:OmniboxText(destinationURL.GetContent())]
       assertWithMatcher:grey_notNil()];
 }

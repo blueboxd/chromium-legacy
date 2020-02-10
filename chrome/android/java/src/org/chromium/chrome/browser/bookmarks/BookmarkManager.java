@@ -190,8 +190,6 @@ public class BookmarkManager
         boolean reorderBookmarksEnabled =
                 ChromeFeatureList.isEnabled(ChromeFeatureList.REORDER_BOOKMARKS);
 
-        PartnerBookmarksReader.addFaviconUpdateObserver(this);
-
         mSelectionDelegate = new SelectionDelegate<BookmarkId>() {
             @Override
             public boolean toggleSelectionForItem(BookmarkId bookmark) {
@@ -263,6 +261,7 @@ public class BookmarkManager
                 if (!TextUtils.isEmpty(mInitialUrl)) {
                     setState(BookmarkUIState.createStateFromUrl(mInitialUrl, mBookmarkModel));
                 }
+                PartnerBookmarksReader.addFaviconUpdateObserver(this);
             };
             mBookmarkModel.finishLoadingBookmarkModel(modelLoadedRunnable);
         }

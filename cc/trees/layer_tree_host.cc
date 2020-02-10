@@ -1274,7 +1274,6 @@ void LayerTreeHost::SetRasterColorSpace(
     const gfx::ColorSpace& raster_color_space) {
   if (raster_color_space_ == raster_color_space)
     return;
-  raster_color_space_id_ = gfx::ColorSpace::GetNextId();
   raster_color_space_ = raster_color_space;
   for (auto* layer : *this)
     layer->SetNeedsDisplay();
@@ -1517,7 +1516,7 @@ void LayerTreeHost::PushLayerTreePropertiesTo(LayerTreeImpl* tree_impl) {
   if (tree_impl->IsActiveTree())
     tree_impl->elastic_overscroll()->PushPendingToActive();
 
-  tree_impl->SetRasterColorSpace(raster_color_space_id_, raster_color_space_);
+  tree_impl->SetRasterColorSpace(raster_color_space_);
   tree_impl->SetExternalPageScaleFactor(external_page_scale_factor_);
 
   tree_impl->set_painted_device_scale_factor(painted_device_scale_factor_);

@@ -68,10 +68,9 @@ void UiDevToolsClient::MaybeSendProtocolResponseOrNotification(
   if (!connected())
     return;
 
-  std::vector<uint8_t> cbor = std::move(*message).TakeSerialized();
   std::string json;
-  crdtp::Status status =
-      crdtp::json::ConvertCBORToJSON(crdtp::SpanFrom(cbor), &json);
+  crdtp::Status status = crdtp::json::ConvertCBORToJSON(
+      crdtp::SpanFrom(message->Serialize()), &json);
   LOG_IF(ERROR, !status.ok()) << status.ToASCIIString();
   server_->SendOverWebSocket(connection_id_, base::StringPiece(json));
 }

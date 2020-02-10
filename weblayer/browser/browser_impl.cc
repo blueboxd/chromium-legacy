@@ -54,6 +54,7 @@ BrowserImpl::~BrowserImpl() {
   while (!tabs_.empty())
     RemoveTab(tabs_.back().get());
 #endif
+  profile_->DecrementBrowserImplCount();
 }
 
 TabImpl* BrowserImpl::CreateTabForSessionRestore(
@@ -284,7 +285,9 @@ void BrowserImpl::RemoveObserver(BrowserObserver* observer) {
   browser_observers_.RemoveObserver(observer);
 }
 
-BrowserImpl::BrowserImpl(ProfileImpl* profile) : profile_(profile) {}
+BrowserImpl::BrowserImpl(ProfileImpl* profile) : profile_(profile) {
+  profile_->IncrementBrowserImplCount();
+}
 
 void BrowserImpl::RestoreStateIfNecessary(
     const PersistenceInfo& persistence_info) {
@@ -305,13 +308,7 @@ void BrowserImpl::VisibleSecurityStateOfActiveTabChanged() {
 }
 
 base::FilePath BrowserImpl::GetSessionServiceDataPath() {
-  base::FilePath base_path;
-  if (profile_->GetBrowserContext()->IsOffTheRecord()) {
-    CHECK(base::PathService::Get(DIR_USER_DATA, &base_path));
-    base_path = base_path.AppendASCII("Incognito Restore Data");
-  } else {
-    base_path = profile_->data_path().AppendASCII("Restore Data");
-  }
+  base::FilePath base_path = profile_->GetSessionServiceDataBaseDir();
   DCHECK(!GetPersistenceId().empty());
   const std::string encoded_name = base32::Base32Encode(GetPersistenceId());
   return base_path.AppendASCII("State" + encoded_name);

@@ -396,13 +396,13 @@ def _Method(module, parsed_method, interface):
   method = mojom.Method(
       interface, parsed_method.mojom_name,
       ordinal=parsed_method.ordinal.value if parsed_method.ordinal else None)
-  method.parameters = map(
-      lambda parameter: _Parameter(module, parameter, interface),
-      parsed_method.parameter_list)
+  method.parameters = list(
+      map(lambda parameter: _Parameter(module, parameter, interface),
+          parsed_method.parameter_list))
   if parsed_method.response_parameter_list is not None:
-    method.response_parameters = map(
-        lambda parameter: _Parameter(module, parameter, interface),
-                          parsed_method.response_parameter_list)
+    method.response_parameters = list(
+        map(lambda parameter: _Parameter(module, parameter, interface),
+            parsed_method.response_parameter_list))
   method.attributes = _AttributeListToDict(parsed_method.attribute_list)
 
   # Enforce that only methods with response can have a [Sync] attribute.

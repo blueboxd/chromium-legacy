@@ -179,10 +179,16 @@ WebLocalFrame* WebRemoteFrameImpl::CreateLocalChild(
   InsertAfter(child, previous_sibling);
   auto* owner = MakeGarbageCollected<RemoteFrameOwner>(
       frame_policy, frame_owner_properties, frame_owner_element_type);
+
+  WindowAgentFactory* window_agent_factory = nullptr;
+  if (opener) {
+    window_agent_factory = &ToCoreFrame(*opener)->window_agent_factory();
+  } else if (!frame_policy.disallow_document_access) {
+    window_agent_factory = &GetFrame()->window_agent_factory();
+  }
+
   child->InitializeCoreFrame(*GetFrame()->GetPage(), owner, name,
-                             opener
-                                 ? &ToCoreFrame(*opener)->window_agent_factory()
-                                 : &GetFrame()->window_agent_factory());
+                             window_agent_factory);
   DCHECK(child->GetFrame());
   return child;
 }
@@ -214,10 +220,15 @@ WebRemoteFrame* WebRemoteFrameImpl::CreateRemoteChild(
   AppendChild(child);
   auto* owner = MakeGarbageCollected<RemoteFrameOwner>(
       frame_policy, WebFrameOwnerProperties(), frame_owner_element_type);
+  WindowAgentFactory* window_agent_factory = nullptr;
+  if (opener) {
+    window_agent_factory = &ToCoreFrame(*opener)->window_agent_factory();
+  } else if (!frame_policy.disallow_document_access) {
+    window_agent_factory = &GetFrame()->window_agent_factory();
+  }
+
   child->InitializeCoreFrame(*GetFrame()->GetPage(), owner, name,
-                             opener
-                                 ? &ToCoreFrame(*opener)->window_agent_factory()
-                                 : &GetFrame()->window_agent_factory());
+                             window_agent_factory);
   return child;
 }
 

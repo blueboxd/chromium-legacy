@@ -565,7 +565,7 @@ void LayerTreeImpl::PushPropertiesTo(LayerTreeImpl* target_tree) {
 
   target_tree->set_overscroll_behavior(overscroll_behavior_);
 
-  target_tree->SetRasterColorSpace(raster_color_space_id_, raster_color_space_);
+  target_tree->SetRasterColorSpace(raster_color_space_);
   target_tree->elastic_overscroll()->PushPendingToActive();
 
   target_tree->set_painted_device_scale_factor(painted_device_scale_factor());
@@ -1169,11 +1169,9 @@ gfx::Rect LayerTreeImpl::GetDeviceViewport() const {
 }
 
 void LayerTreeImpl::SetRasterColorSpace(
-    int raster_color_space_id,
     const gfx::ColorSpace& raster_color_space) {
   if (raster_color_space == raster_color_space_)
     return;
-  raster_color_space_id_ = raster_color_space_id;
   raster_color_space_ = raster_color_space;
 }
 

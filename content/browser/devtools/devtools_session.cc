@@ -370,13 +370,13 @@ void DevToolsSession::ResumeSendingMessagesToAgent() {
 void DevToolsSession::sendProtocolResponse(
     int call_id,
     std::unique_ptr<protocol::Serializable> message) {
-  DispatchProtocolMessageToClient(std::move(*message).TakeSerialized());
+  DispatchProtocolMessageToClient(message->Serialize());
   // |this| may be deleted at this point.
 }
 
 void DevToolsSession::sendProtocolNotification(
     std::unique_ptr<protocol::Serializable> message) {
-  DispatchProtocolMessageToClient(std::move(*message).TakeSerialized());
+  DispatchProtocolMessageToClient(message->Serialize());
   // |this| may be deleted at this point.
 }
 

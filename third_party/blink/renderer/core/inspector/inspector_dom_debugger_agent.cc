@@ -544,7 +544,7 @@ void InspectorDOMDebuggerAgent::BreakProgramOnDOMEvent(Node* target,
   description->setInteger("nodeId", breakpoint_owner_node_id);
   description->setString("type", DomTypeName(breakpoint_type));
   std::vector<uint8_t> json;
-  ConvertCBORToJSON(SpanFrom(std::move(*description).TakeSerialized()), &json);
+  ConvertCBORToJSON(SpanFrom(description->Serialize()), &json);
   v8_session_->breakProgram(
       ToV8InspectorStringView(
           v8_inspector::protocol::Debugger::API::Paused::ReasonEnum::DOM),
@@ -585,7 +585,7 @@ void InspectorDOMDebuggerAgent::PauseOnNativeEventIfNeeded(
   if (!event_data)
     return;
   std::vector<uint8_t> json;
-  ConvertCBORToJSON(SpanFrom(std::move(*event_data).TakeSerialized()), &json);
+  ConvertCBORToJSON(SpanFrom(event_data->Serialize()), &json);
   v8_inspector::StringView json_view(json.data(), json.size());
   auto listener = ToV8InspectorStringView(
       v8_inspector::protocol::Debugger::API::Paused::ReasonEnum::EventListener);
@@ -726,7 +726,7 @@ void InspectorDOMDebuggerAgent::WillSendXMLHttpOrFetchNetworkRequest(
   event_data->setString("breakpointURL", breakpoint_url);
   event_data->setString("url", url);
   std::vector<uint8_t> json;
-  ConvertCBORToJSON(SpanFrom(std::move(*event_data).TakeSerialized()), &json);
+  ConvertCBORToJSON(SpanFrom(event_data->Serialize()), &json);
   v8_session_->breakProgram(
       ToV8InspectorStringView(
           v8_inspector::protocol::Debugger::API::Paused::ReasonEnum::XHR),

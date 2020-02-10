@@ -56,11 +56,11 @@ class ArcCameraBridge::PendingStartCameraServiceResult {
         service_(mojom::CameraServicePtrInfo(std::move(pipe), 0u)),
         callback_(std::move(callback)) {
     service_.set_connection_error_handler(
-        base::Bind(&PendingStartCameraServiceResult::OnError,
-                   weak_ptr_factory_.GetWeakPtr()));
+        base::BindOnce(&PendingStartCameraServiceResult::OnError,
+                       weak_ptr_factory_.GetWeakPtr()));
     service_.QueryVersion(
-        base::Bind(&PendingStartCameraServiceResult::OnVersionReady,
-                   weak_ptr_factory_.GetWeakPtr()));
+        base::BindOnce(&PendingStartCameraServiceResult::OnVersionReady,
+                       weak_ptr_factory_.GetWeakPtr()));
   }
 
   ~PendingStartCameraServiceResult() = default;

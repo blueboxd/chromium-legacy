@@ -30,12 +30,12 @@ namespace arc {
 
 AlwaysOnVpnManager::AlwaysOnVpnManager(PrefService* pref_service) {
   registrar_.Init(pref_service);
-  registrar_.Add(
-      prefs::kAlwaysOnVpnPackage,
-      base::Bind(&AlwaysOnVpnManager::OnPrefChanged, base::Unretained(this)));
-  registrar_.Add(
-      prefs::kAlwaysOnVpnLockdown,
-      base::Bind(&AlwaysOnVpnManager::OnPrefChanged, base::Unretained(this)));
+  registrar_.Add(prefs::kAlwaysOnVpnPackage,
+                 base::BindRepeating(&AlwaysOnVpnManager::OnPrefChanged,
+                                     base::Unretained(this)));
+  registrar_.Add(prefs::kAlwaysOnVpnLockdown,
+                 base::BindRepeating(&AlwaysOnVpnManager::OnPrefChanged,
+                                     base::Unretained(this)));
   // update once with values before we started listening
   OnPrefChanged();
 }

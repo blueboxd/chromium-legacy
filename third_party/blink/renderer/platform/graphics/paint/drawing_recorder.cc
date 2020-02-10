@@ -58,20 +58,8 @@ DrawingRecorder::~DrawingRecorder() {
   }
 #endif
 
-  sk_sp<const PaintRecord> picture = context_.EndRecording();
-
-#if DCHECK_IS_ON()
-  // When skipping cache (e.g. in PaintRecordBuilder with a temporary
-  // PaintController), the client's painting might be different from its normal
-  // painting.
-  if (!context_.GetPaintController().IsSkippingCache() &&
-      client_.PaintedOutputOfObjectHasNoEffectRegardlessOfSize()) {
-    DCHECK_EQ(0u, picture->size()) << client_.DebugName();
-  }
-#endif
-
   context_.GetPaintController().CreateAndAppend<DrawingDisplayItem>(
-      client_, type_, std::move(picture), known_to_be_opaque_);
+      client_, type_, context_.EndRecording(), known_to_be_opaque_);
 }
 
 }  // namespace blink

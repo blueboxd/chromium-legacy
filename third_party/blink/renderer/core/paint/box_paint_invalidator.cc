@@ -394,9 +394,6 @@ bool BoxPaintInvalidator::
   if (context_.fragment_data->VisualRect().IsEmpty())
     return false;
 
-  if (box_.PaintedOutputOfObjectHasNoEffectRegardlessOfSize())
-    return false;
-
   const ComputedStyle& style = box_.StyleRef();
 
   // Background and mask layers can depend on other boxes than border box. See

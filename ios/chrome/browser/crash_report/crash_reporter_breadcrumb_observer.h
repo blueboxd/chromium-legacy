@@ -12,6 +12,9 @@
 
 #import "ios/chrome/browser/crash_report/breadcrumbs/breadcrumb_manager_observer_bridge.h"
 
+// The maximum string length for product data supported by Breakpad.
+extern const int kMaxProductDataLength;
+
 // Combines breadcrumbs from multiple BreadcrumbManagers and sends the merged
 // breadcrumb events to breakpad for attachment to crash reports.
 @interface CrashReporterBreadcrumbObserver

@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/chromeos/login/signin/auth_sync_observer.h"
+#include "chrome/browser/chromeos/login/signin/auth_error_observer.h"
 
 #include "base/bind.h"
 #include "base/metrics/user_metrics.h"

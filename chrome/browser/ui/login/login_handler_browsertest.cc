@@ -24,7 +24,6 @@
 #include "chrome/browser/ui/browser_commands.h"
 #include "chrome/browser/ui/login/login_handler.h"
 #include "chrome/browser/ui/login/login_handler_test_utils.h"
-#include "chrome/browser/ui/login/login_interstitial_delegate.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/common/chrome_features.h"
 #include "chrome/common/pref_names.h"
@@ -174,7 +173,7 @@ void TestProxyAuth(Browser* browser, const GURL& test_page) {
   EXPECT_FALSE(browser->location_bar_model()->GetFormattedFullURL().empty());
 }
 
-content::InterstitialPageDelegate* GetInterstitialDelegate(
+security_interstitials::SecurityInterstitialPage* GetSecurityInterstitial(
     content::WebContents* tab) {
   security_interstitials::SecurityInterstitialTabHelper* helper =
       security_interstitials::SecurityInterstitialTabHelper::FromWebContents(
@@ -247,14 +246,13 @@ class LoginPromptBrowserTest
     if (GetParam() == SplitAuthCacheByNetworkIsolationKey::kFalse) {
       scoped_feature_list_.InitWithFeatures(
           // enabled_features
-          {features::kHTTPAuthCommittedInterstitials, features::kFtpProtocol},
+          {features::kFtpProtocol},
           // disabled_features
           {network::features::kSplitAuthCacheByNetworkIsolationKey});
     } else {
       scoped_feature_list_.InitWithFeatures(
           // enabled_features
-          {features::kHTTPAuthCommittedInterstitials,
-           network::features::kSplitAuthCacheByNetworkIsolationKey,
+          {network::features::kSplitAuthCacheByNetworkIsolationKey,
            features::kFtpProtocol},
           // disabled_features
           {});
@@ -1880,7 +1878,9 @@ IN_PROC_BROWSER_TEST_P(LoginPromptBrowserTest,
                                    ui::PAGE_TRANSITION_TYPED, false));
   auth_needed_waiter.Wait();
   ASSERT_EQ(1u, observer.handlers().size());
-  EXPECT_FALSE(contents->ShowingInterstitialPage());
+  security_interstitials::SecurityInterstitialPage* interstitial =
+      GetSecurityInterstitial(contents);
+  EXPECT_FALSE(interstitial);
 
   // Redirect to a broken SSL page. This redirect should not accidentally
   // proceed through the SSL interstitial.
@@ -1890,11 +1890,11 @@ IN_PROC_BROWSER_TEST_P(LoginPromptBrowserTest,
       std::string("window.location = '") + broken_ssl_page.spec() + "'"));
   ssl_observer.Wait();
 
-  content::InterstitialPageDelegate* delegate =
-      GetInterstitialDelegate(contents);
+  interstitial = GetSecurityInterstitial(contents);
 
-  EXPECT_TRUE(delegate);
-  EXPECT_EQ(SSLBlockingPage::kTypeForTesting, delegate->GetTypeForTesting());
+  EXPECT_TRUE(interstitial);
+  EXPECT_EQ(SSLBlockingPage::kTypeForTesting,
+            interstitial->GetTypeForTesting());
 }
 
 // Test where Basic HTTP authentication is disabled.
@@ -2214,18 +2214,6 @@ IN_PROC_BROWSER_TEST_P(LoginPromptBrowserTest,
                 "document.body.innerHTML.indexOf('Unauthorized') === -1"));
 }
 
-class ProxyBrowserTestWithHttpAuthCommittedInterstitials
-    : public ProxyBrowserTest {
- public:
-  ProxyBrowserTestWithHttpAuthCommittedInterstitials() {
-    feature_list_.InitAndEnableFeature(
-        features::kHTTPAuthCommittedInterstitials);
-  }
-
- private:
-  base::test::ScopedFeatureList feature_list_;
-};
-
 // Tests that basic proxy auth works as expected, for HTTPS pages.
 #if defined(OS_MACOSX)
 // TODO(https://crbug.com/1000446): Re-enable this test.
@@ -2233,8 +2221,7 @@ class ProxyBrowserTestWithHttpAuthCommittedInterstitials
 #else
 #define MAYBE_ProxyAuthHTTPS ProxyAuthHTTPS
 #endif
-IN_PROC_BROWSER_TEST_F(ProxyBrowserTestWithHttpAuthCommittedInterstitials,
-                       MAYBE_ProxyAuthHTTPS) {
+IN_PROC_BROWSER_TEST_F(ProxyBrowserTest, MAYBE_ProxyAuthHTTPS) {
   net::EmbeddedTestServer https_server(net::EmbeddedTestServer::TYPE_HTTPS);
   https_server.AddDefaultHandlers(GetChromeTestDataDir());
   ASSERT_TRUE(https_server.Start());
@@ -2243,8 +2230,7 @@ IN_PROC_BROWSER_TEST_F(ProxyBrowserTestWithHttpAuthCommittedInterstitials,
 }
 
 // Tests that basic proxy auth works as expected, for HTTP pages.
-IN_PROC_BROWSER_TEST_F(ProxyBrowserTestWithHttpAuthCommittedInterstitials,
-                       ProxyAuthHTTP) {
+IN_PROC_BROWSER_TEST_F(ProxyBrowserTest, ProxyAuthHTTP) {
   ASSERT_TRUE(embedded_test_server()->Start());
   ASSERT_NO_FATAL_FAILURE(
       TestProxyAuth(browser(), embedded_test_server()->GetURL("/simple.html")));
@@ -2258,14 +2244,13 @@ class LoginPromptExtensionBrowserTest
     if (GetParam() == SplitAuthCacheByNetworkIsolationKey::kFalse) {
       scoped_feature_list_.InitWithFeatures(
           // enabled_features
-          {features::kHTTPAuthCommittedInterstitials},
+          {},
           // disabled_features
           {network::features::kSplitAuthCacheByNetworkIsolationKey});
     } else {
       scoped_feature_list_.InitWithFeatures(
           // enabled_features
-          {features::kHTTPAuthCommittedInterstitials,
-           network::features::kSplitAuthCacheByNetworkIsolationKey},
+          {network::features::kSplitAuthCacheByNetworkIsolationKey},
           // disabled_features
           {});
     }

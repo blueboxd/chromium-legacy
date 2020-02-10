@@ -32,10 +32,9 @@ int FakeFrontendChannel::CountProtocolNotificationMessage(
 
 namespace {
 std::string SerializeToJSON(std::unique_ptr<protocol::Serializable> message) {
-  std::vector<uint8_t> cbor = std::move(*message).TakeSerialized();
   std::string json;
-  crdtp::Status status =
-      crdtp::json::ConvertCBORToJSON(crdtp::SpanFrom(cbor), &json);
+  crdtp::Status status = crdtp::json::ConvertCBORToJSON(
+      crdtp::SpanFrom(message->Serialize()), &json);
   DCHECK(status.ok()) << status.ToASCIIString();
   return json;
 }

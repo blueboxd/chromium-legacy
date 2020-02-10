@@ -78,6 +78,7 @@ run_jsbundler("switch_access_copied_files") {
     "nodes/node_wrapper.js",
     "nodes/switch_access_node.js",
     "nodes/system_menu_node.js",
+    "nodes/tab_node.js",
     "preferences.js",
     "rect_helper.js",
     "switch_access.js",
@@ -113,6 +114,7 @@ js2gtest("switch_access_extjs_tests") {
     "auto_scan_manager_test.js",
     "navigation_manager_test.js",
     "nodes/node_wrapper_test.js",
+    "nodes/tab_node_test.js",
     "switch_access_predicate_test.js",
     "text_navigation_manager_test.js",
   ]
@@ -194,6 +196,7 @@ js_type_check("closure_compile") {
     ":switch_access_node",
     ":switch_access_predicate",
     ":system_menu_node",
+    ":tab_node",
     ":text_navigation_manager",
     "../chromevox:constants",
     "../chromevox:tree_walker",
@@ -412,6 +415,17 @@ js_library("system_menu_node") {
   deps = [
     ":event_helper",
     ":node_wrapper",
+    ":switch_access_constants",
+    ":switch_access_node",
+  ]
+  externs_list = [ "$externs_path/automation.js" ]
+}
+
+js_library("tab_node") {
+  sources = [ "nodes/tab_node.js" ]
+  deps = [
+    ":node_wrapper",
+    ":rect_helper",
     ":switch_access_constants",
     ":switch_access_node",
   ]

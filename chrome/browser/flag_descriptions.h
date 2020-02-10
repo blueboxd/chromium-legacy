@@ -193,6 +193,9 @@ extern const char kDecodeLossyWebPImagesToYUVDescription[];
 extern const char kDnsOverHttpsName[];
 extern const char kDnsOverHttpsDescription[];
 
+extern const char kDnsHttpssvcName[];
+extern const char kDnsHttpssvcDescription[];
+
 extern const char kDrawVerticallyEdgeToEdgeName[];
 extern const char kDrawVerticallyEdgeToEdgeDescription[];
 

@@ -47,7 +47,8 @@ class SearchResultLoader {
 
   SearchResultLoader(network::mojom::URLLoaderFactory* url_loader_factory,
                      SearchResultLoaderDelegate* delegate);
-  ~SearchResultLoader();
+  // Virtual for testing.
+  virtual ~SearchResultLoader();
 
   SearchResultLoader(const SearchResultLoader&) = delete;
   SearchResultLoader& operator=(const SearchResultLoader&) = delete;
@@ -55,8 +56,8 @@ class SearchResultLoader {
   // Starts downloading of |quick_answers| associated with |selected_text|,
   // calling |SearchResultLoaderDelegate| methods when finished.
   // Note that delegate methods should be called only once per
-  // SearchResultLoader instance.
-  void Fetch(const std::string& selected_text);
+  // SearchResultLoader instance. Virtual for testing.
+  virtual void Fetch(const std::string& selected_text);
 
  private:
   void OnSimpleURLLoaderComplete(std::unique_ptr<std::string> response_body);

@@ -21,12 +21,15 @@
 #include "chrome/common/webui_url_constants.h"
 #include "chromeos/constants/chromeos_features.h"
 #include "components/prefs/pref_registry_simple.h"
+#include "components/signin/public/identity_manager/consent_level.h"
 #include "components/signin/public/identity_manager/identity_manager.h"
+#include "components/signin/public/identity_manager/primary_account_mutator.h"
 #include "components/sync/driver/sync_service.h"
 #include "components/sync/driver/sync_user_settings.h"
 #include "components/unified_consent/unified_consent_service.h"
 #include "components/user_manager/user.h"
 #include "components/user_manager/user_manager.h"
+#include "google_apis/gaia/core_account_id.h"
 
 namespace {
 
@@ -78,10 +81,13 @@ TurnSyncOnHelper::TurnSyncOnHelper(Profile* profile)
 
 TurnSyncOnHelper::TurnSyncOnHelper(Profile* profile,
                                    std::unique_ptr<Delegate> delegate)
-    : profile_(profile), delegate_(std::move(delegate)) {
+    : profile_(profile),
+      identity_manager_(IdentityManagerFactory::GetForProfile(profile)),
+      delegate_(std::move(delegate)) {
   DCHECK(profile_);
+  DCHECK(identity_manager_);
   DCHECK(chromeos::features::IsSplitSettingsSyncEnabled());
-  BrowserList::AddObserver(this);
+  Init();
 }
 
 TurnSyncOnHelper::~TurnSyncOnHelper() {
@@ -93,24 +99,37 @@ void TurnSyncOnHelper::RegisterProfilePrefs(PrefRegistrySimple* registry) {
   registry->RegisterBooleanPref(kSyncFirstRunCompleted, false);
 }
 
-void TurnSyncOnHelper::OnBrowserSetLastActive(Browser* browser) {
-  // Tabbed browser window (not an app).
-  if (!browser->is_type_normal())
-    return;
-
-  // Not guest or incognito window.
-  if (browser->profile()->IsOffTheRecord())
-    return;
-
-  // Not skipping first-run.
+void TurnSyncOnHelper::Init() {
+  // Skipping first-run.
   base::CommandLine* command_line = base::CommandLine::ForCurrentProcess();
   if (!command_line->HasSwitch(switches::kForceFirstRun) &&
       command_line->HasSwitch(switches::kNoFirstRun)) {
     return;
   }
 
-  // Not previously completed.
+  // Already consented to sync.
+  if (identity_manager_->HasPrimaryAccount(signin::ConsentLevel::kSync))
+    return;
+
+  // Previously completed setup (and chose not to sync).
   if (profile_->GetPrefs()->GetBoolean(kSyncFirstRunCompleted))
+    return;
+
+  // Watch for new windows.
+  BrowserList::AddObserver(this);
+}
+
+void TurnSyncOnHelper::OnBrowserSetLastActive(Browser* browser) {
+  // Tabbed browser window (not an app).
+  if (!browser->is_type_normal())
+    return;
+
+  // For multi-login sessions, only trigger for windows for this profile.
+  if (browser->profile() != profile_)
+    return;
+
+  // Not guest or incognito window.
+  if (browser->profile()->IsOffTheRecord())
     return;
 
   browser_ = browser;
@@ -120,7 +139,8 @@ void TurnSyncOnHelper::OnBrowserSetLastActive(Browser* browser) {
 
 void TurnSyncOnHelper::StartFlow() {
   syncer::SyncService* sync_service = GetSyncService();
-  // Abort if sync not allowed.
+  // Abort if sync not allowed. Check here instead of in Init() just in case
+  // enterprise policy was updated before the first window opened.
   if (!sync_service)
     return;
 
@@ -184,6 +204,13 @@ void TurnSyncOnHelper::FinishSyncSetup(
       }
       if (consent_service)
         consent_service->SetUrlKeyedAnonymizedDataCollectionEnabled(true);
+      CoreAccountId account_id = identity_manager_->GetPrimaryAccountId(
+          signin::ConsentLevel::kNotRequired);
+      DCHECK(!account_id.empty());
+      // TODO(https://crbug.com/1046746): Switch to consent-aware API
+      // PrimaryAccountMutator::GrantSyncConsent() when that exists.
+      identity_manager_->GetPrimaryAccountMutator()->SetPrimaryAccount(
+          account_id);
       break;
     }
     case LoginUIService::ABORT_SIGNIN:

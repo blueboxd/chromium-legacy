@@ -559,8 +559,6 @@ TEST_F(ShelfWidgetTest,
       GetShelfWidget()->GetAnimatingBackground()->bounds();
   EXPECT_NE(GetShelfWidget()->GetAnimatingBackground()->transform(),
             GetShelfWidget()->GetAnimatingBackground()->GetTargetTransform());
-  EXPECT_EQ(gfx::Transform(),
-            GetShelfWidget()->GetAnimatingBackground()->GetTargetTransform());
 
   // Go back home before the transition to in-app shelf finishes.
   window->Hide();
@@ -574,9 +572,12 @@ TEST_F(ShelfWidgetTest,
                   ->GetAnimatingBackground()
                   ->GetAnimator()
                   ->is_animating());
-  EXPECT_NE(animating_background_bounds,
+  EXPECT_EQ(animating_background_bounds,
             GetShelfWidget()->GetAnimatingBackground()->bounds());
-  EXPECT_EQ(gfx::Transform(),
+  // The original animation did not have a chance to update the transform yet,
+  // so the current transform matches the original state, that matches the new
+  // target state.
+  EXPECT_EQ(GetShelfWidget()->GetAnimatingBackground()->transform(),
             GetShelfWidget()->GetAnimatingBackground()->GetTargetTransform());
 
   // Run the current animation to the end, end verify the opaque background is

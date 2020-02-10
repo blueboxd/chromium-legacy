@@ -141,7 +141,9 @@ class ChromeScaledImage(interface.GathererBase):
   def GetTextualIds(self):
     return [self.extkey]
 
-  def GetData(self, *args):
+  def GetData(self, lang, encoding):
+    assert encoding == util.BINARY
+
     path, scale, req_scale = self._FindInputFile()
     if path is None:
       return None

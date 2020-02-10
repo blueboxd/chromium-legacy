@@ -189,12 +189,14 @@ class StructureNode(base.Node):
     return self.gatherer.GetCliques()
 
   def GetDataPackValue(self, lang, encoding):
-    """Returns a str represenation for a data_pack entry."""
+    """Returns a bytes representation for a data_pack entry."""
     if self.ExpandVariables():
       text = self.gatherer.GetText()
       data = util.Encode(self._Substitute(text), encoding)
     else:
       data = self.gatherer.GetData(lang, encoding)
+    if encoding != util.BINARY:
+      data = data.encode(encoding)
     return self.CompressDataIfNeeded(data)
 
   def GetHtmlResourceFilenames(self):

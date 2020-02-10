@@ -12,6 +12,7 @@
 #include "chrome/test/base/in_process_browser_test.h"
 #include "chromeos/components/quick_answers/quick_answers_client.h"
 #include "chromeos/components/quick_answers/quick_answers_model.h"
+#include "chromeos/components/quick_answers/test/test_helpers.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -36,10 +37,6 @@ class MockQuickAnswersClient : public QuickAnswersClient {
   // QuickAnswersClient::QuickAnswersClient:
   MOCK_METHOD1(SendRequest, void(const QuickAnswersRequest&));
 };
-
-MATCHER_P(QuickAnswersRequestEqual, quick_answers_request, "") {
-  return (arg.selected_text == quick_answers_request.selected_text);
-}
 
 // A test class for Quick Answers. This test should be a browser test because it
 //// accesses resources.

@@ -948,9 +948,10 @@ void OverviewGrid::OnSplitViewStateChanged(
   SetBoundsAndUpdatePositions(GetGridBoundsInScreen(root_window_),
                               /*ignored_items=*/{}, /*animate=*/false);
 
-  // Activate the overview focus window, to match the behavior of entering
-  // overview mode in the beginning.
-  wm::ActivateWindow(overview_session_->GetOverviewFocusWindow());
+  // If split view mode was ended, then activate the overview focus window, to
+  // match the behavior of entering overview mode in the beginning.
+  if (state == SplitViewController::State::kNoSnap)
+    wm::ActivateWindow(overview_session_->GetOverviewFocusWindow());
 }
 
 void OverviewGrid::OnSplitViewDividerPositionChanged() {

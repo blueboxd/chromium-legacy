@@ -245,6 +245,7 @@ IPC_STRUCT_TRAITS_BEGIN(blink::FramePolicy)
   IPC_STRUCT_TRAITS_MEMBER(container_policy)
   IPC_STRUCT_TRAITS_MEMBER(required_document_policy)
   IPC_STRUCT_TRAITS_MEMBER(allowed_to_download)
+  IPC_STRUCT_TRAITS_MEMBER(disallow_document_access)
 IPC_STRUCT_TRAITS_END()
 
 IPC_STRUCT_TRAITS_BEGIN(blink::ViewportIntersectionState)

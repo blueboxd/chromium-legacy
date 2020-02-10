@@ -7,6 +7,7 @@ package org.chromium.weblayer;
 import android.os.RemoteException;
 
 import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
 
 import org.chromium.weblayer_private.interfaces.APICallException;
 import org.chromium.weblayer_private.interfaces.IProfile;
@@ -89,9 +90,35 @@ public final class Profile {
      */
     public void clearBrowsingData(
             @NonNull @BrowsingDataType int[] dataTypes, @NonNull Runnable callback) {
+        ThreadCheck.ensureOnUiThread();
         clearBrowsingData(dataTypes, 0, Long.MAX_VALUE, callback);
     }
 
+    /**
+     * Delete all profile data stored on disk. There are a number of edge cases with deleting
+     * profile data:
+     * * This method will throw an exception if there are any existing usage of this Profile. For
+     *   example, all BrowserFragment belonging to this profile must be destroyed.
+     * * This object is considered destroyed after this method returns. Calling any other method
+     *   after will throw exceptions.
+     * * Creating a new profile of the same name before doneCallback runs will throw an exception.
+     * @since 82
+     */
+    public void destroyAndDeleteDataFromDisk(@Nullable Runnable completionCallback) {
+        ThreadCheck.ensureOnUiThread();
+        if (WebLayer.getSupportedMajorVersionInternal() < 82) {
+            throw new UnsupportedOperationException();
+        }
+        try {
+            mImpl.destroyAndDeleteDataFromDisk(ObjectWrapper.wrap(completionCallback));
+        } catch (RemoteException e) {
+            throw new APICallException(e);
+        }
+        mImpl = null;
+        sProfiles.remove(mName);
+    }
+
+    @Deprecated
     public void destroy() {
         ThreadCheck.ensureOnUiThread();
         try {

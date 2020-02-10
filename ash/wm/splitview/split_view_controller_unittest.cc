@@ -1243,6 +1243,19 @@ TEST_P(SplitViewControllerTest, DragAndDoubleTapDivider) {
   EXPECT_EQ(split_view_controller()->right_window(), window2.get());
 }
 
+// Verify overview does not steal focus from a split view window when trading
+// places with it.
+TEST_P(SplitViewControllerTest, OverviewNotStealFocusOnSwapWindows) {
+  const gfx::Rect bounds(0, 0, 400, 400);
+  std::unique_ptr<aura::Window> window1(CreateWindow(bounds));
+  std::unique_ptr<aura::Window> window2(CreateWindow(bounds));
+  ToggleOverview();
+  split_view_controller()->SnapWindow(window2.get(), SplitViewController::LEFT);
+  wm::ActivateWindow(window2.get());
+  split_view_controller()->SwapWindows();
+  EXPECT_TRUE(wm::IsActiveWindow(window2.get()));
+}
+
 // Verify that you cannot start dragging the divider during its snap animation.
 TEST_P(SplitViewControllerTest, StartDraggingDividerDuringSnapAnimation) {
   const gfx::Rect bounds(0, 0, 400, 400);

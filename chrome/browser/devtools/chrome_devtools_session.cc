@@ -75,14 +75,12 @@ void ChromeDevToolsSession::sendProtocolResponse(
     int call_id,
     std::unique_ptr<protocol::Serializable> message) {
   pending_commands_.erase(call_id);
-  client_channel_->DispatchProtocolMessageToClient(
-      std::move(*message).TakeSerialized());
+  client_channel_->DispatchProtocolMessageToClient(message->Serialize());
 }
 
 void ChromeDevToolsSession::sendProtocolNotification(
     std::unique_ptr<protocol::Serializable> message) {
-  client_channel_->DispatchProtocolMessageToClient(
-      std::move(*message).TakeSerialized());
+  client_channel_->DispatchProtocolMessageToClient(message->Serialize());
 }
 
 void ChromeDevToolsSession::flushProtocolNotifications() {}

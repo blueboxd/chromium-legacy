@@ -39,7 +39,8 @@ class IncludeNode(base.Node):
           grit.format.html_inline.InlineToString(filename, self,
               preprocess_only=preprocess_only,
               allow_external_script=allow_external_script))
-    return self._flattened_data
+    return self._flattened_data.encode('utf-8')
+
   def MandatoryAttributes(self):
     return ['name', 'type', 'file']
 
@@ -96,7 +97,7 @@ class IncludeNode(base.Node):
     return self.ToRealPath(input_path)
 
   def GetDataPackValue(self, lang, encoding):
-    '''Returns a str represenation for a data_pack entry.'''
+    '''Returns bytes or a str represenation for a data_pack entry.'''
     filename = self.ToRealPath(self.GetInputPath())
     if self.attrs['flattenhtml'] == 'true':
       allow_external_script = self.attrs['allowexternalscript'] == 'true'

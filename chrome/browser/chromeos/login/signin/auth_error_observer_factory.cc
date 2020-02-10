@@ -2,9 +2,9 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/chromeos/login/signin/auth_sync_observer_factory.h"
+#include "chrome/browser/chromeos/login/signin/auth_error_observer_factory.h"
 
-#include "chrome/browser/chromeos/login/signin/auth_sync_observer.h"
+#include "chrome/browser/chromeos/login/signin/auth_error_observer.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/signin/signin_error_controller_factory.h"
 #include "chrome/browser/sync/profile_sync_service_factory.h"

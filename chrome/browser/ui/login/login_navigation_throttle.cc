@@ -20,8 +20,6 @@ LoginNavigationThrottle::~LoginNavigationThrottle() {}
 
 LoginNavigationThrottle::ThrottleCheckResult
 LoginNavigationThrottle::WillProcessResponse() {
-  if (!base::FeatureList::IsEnabled(features::kHTTPAuthCommittedInterstitials))
-    return PROCEED;
   if (navigation_handle()->IsSameDocument())
     return PROCEED;
   if (!navigation_handle()->IsInMainFrame())

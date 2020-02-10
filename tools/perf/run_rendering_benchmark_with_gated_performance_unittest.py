@@ -121,20 +121,23 @@ class TestRepresentativePerfScript(unittest.TestCase):
             'ci_095': [1.0, 1.4, 1.2],
         }
     }
+    benchmark = 'rendering.desktop'
 
     sample_perf_results = create_sample_perf_results(['story_1', 'story_2'], [],
-                                                     'rendering.desktop')
+                                                     benchmark)
 
     result_recorder = perf_tests.ResultRecorder()
     result_recorder.set_tests(sample_perf_results)
 
     result_recorder = perf_tests.compare_values(
-        values_per_story, UPPER_LIMIT_DATA_SAMPLE, 'rendering.desktop',
-        result_recorder)
+        values_per_story, UPPER_LIMIT_DATA_SAMPLE, benchmark, result_recorder)
     self.assertEquals(result_recorder.tests, 2)
     self.assertEquals(result_recorder.failed_stories, set(['story_2']))
-    (_, overall_return_code) = result_recorder.get_output(0)
+    (output, overall_return_code) = result_recorder.get_output(0)
     self.assertEquals(overall_return_code, 1)
+    self.assertEquals(output['num_failures_by_type'].get('FAIL', 0), 1)
+    self.assertEquals(output['tests'][benchmark]['story_1']['actual'], 'PASS')
+    self.assertEquals(output['tests'][benchmark]['story_2']['actual'], 'FAIL')
 
   def test_compare_values_2(self):
     values_per_story = {
@@ -156,20 +159,27 @@ class TestRepresentativePerfScript(unittest.TestCase):
       }
     }
 
+    benchmark = 'rendering.desktop'
+
     sample_perf_results = create_sample_perf_results(
-        ['story_1', 'story_3', 'story_4', 'story_5'], ['story_2'],
-        'rendering.desktop')
+        ['story_1', 'story_3', 'story_4', 'story_5'], ['story_2'], benchmark)
 
     result_recorder = perf_tests.ResultRecorder()
     result_recorder.set_tests(sample_perf_results)
     self.assertEquals(result_recorder.fails, 1)
 
     result_recorder = perf_tests.compare_values(
-        values_per_story, UPPER_LIMIT_DATA_SAMPLE, 'rendering.desktop',
-        result_recorder)
+        values_per_story, UPPER_LIMIT_DATA_SAMPLE, benchmark, result_recorder)
     self.assertEquals(result_recorder.tests, 5)
     self.assertEquals(result_recorder.failed_stories,
                       set(['story_3', 'story_4', 'story_5']))
     self.assertTrue(result_recorder.is_control_stories_noisy)
-    (_, overall_return_code) = result_recorder.get_output(0)
+
+    result_recorder.invalidate_failures(benchmark)
+    (output, overall_return_code) = result_recorder.get_output(0)
+
     self.assertEquals(overall_return_code, 0)
+    self.assertEquals(output['num_failures_by_type'].get('FAIL', 0), 0)
+    self.assertEquals(output['tests'][benchmark]['story_1']['actual'], 'PASS')
+    self.assertEquals(output['tests'][benchmark]['story_3']['actual'], 'FAIL')
+    self.assertEquals(output['tests'][benchmark]['story_4']['actual'], 'FAIL')

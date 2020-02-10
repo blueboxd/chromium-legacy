@@ -42,6 +42,7 @@ class ProfileImpl : public Profile {
   const base::FilePath& data_path() const { return data_path_; }
 
   // Profile implementation:
+  bool DeleteDataFromDisk(base::OnceClosure done_callback) override;
   void ClearBrowsingData(const std::vector<BrowsingDataType>& data_types,
                          base::Time from_time,
                          base::Time to_time,
@@ -51,6 +52,9 @@ class ProfileImpl : public Profile {
 #if defined(OS_ANDROID)
   ProfileImpl(JNIEnv* env, const base::android::JavaParamRef<jstring>& path);
 
+  jboolean DeleteDataFromDisk(
+      JNIEnv* env,
+      const base::android::JavaRef<jobject>& j_completion_callback);
   void ClearBrowsingData(
       JNIEnv* env,
       const base::android::JavaParamRef<jintArray>& j_data_types,
@@ -62,7 +66,13 @@ class ProfileImpl : public Profile {
       const base::android::JavaParamRef<jstring>& directory);
 #endif
 
+  void IncrementBrowserImplCount();
+  void DecrementBrowserImplCount();
   const base::FilePath& download_directory() { return download_directory_; }
+
+  // Get the directory where session service should store tab state data. This
+  // will be a real file path even for the off-the-record profile.
+  base::FilePath GetSessionServiceDataBaseDir() const;
 
  private:
   class DataClearer;
@@ -81,6 +91,8 @@ class ProfileImpl : public Profile {
   base::FilePath download_directory_;
 
   std::unique_ptr<i18n::LocaleChangeSubscription> locale_change_subscription_;
+
+  size_t num_browser_impl_ = 0u;
 
   DISALLOW_COPY_AND_ASSIGN(ProfileImpl);
 };

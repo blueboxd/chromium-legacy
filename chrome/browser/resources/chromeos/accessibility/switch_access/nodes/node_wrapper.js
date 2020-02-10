@@ -12,6 +12,7 @@ class NodeWrapper extends SAChildNode {
   /**
    * @param {!AutomationNode} baseNode
    * @param {?SARootNode} parent
+   * @protected
    */
   constructor(baseNode, parent) {
     super();
@@ -195,6 +196,22 @@ class NodeWrapper extends SAChildNode {
     }
     return ancestor;
   }
+
+  // ================= Static methods =================
+
+  /**
+   * @param {!AutomationNode} baseNode
+   * @param {?SARootNode} parent
+   * @return {!NodeWrapper}
+   */
+  static create(baseNode, parent) {
+    switch (baseNode.role) {
+      case chrome.automation.RoleType.TAB:
+        return TabNode.create(baseNode, parent);
+      default:
+        return new NodeWrapper(baseNode, parent);
+    }
+  }
 }
 
 /**
@@ -305,7 +322,7 @@ class RootNodeWrapper extends SARootNode {
     }
 
     // Update this RootNodeWrapper's children.
-    const childConstructor = (node) => new NodeWrapper(node, this);
+    const childConstructor = (node) => NodeWrapper.create(node, this);
     try {
       RootNodeWrapper.findAndSetChildren(this, childConstructor);
     } catch (e) {
@@ -344,7 +361,7 @@ class RootNodeWrapper extends SARootNode {
           'Desktop node must have at least 1 interesting child.');
     }
 
-    const childConstructor = (autoNode) => new NodeWrapper(autoNode, root);
+    const childConstructor = (autoNode) => NodeWrapper.create(autoNode, root);
     root.children = interestingChildren.map(childConstructor);
 
     return root;
@@ -356,7 +373,7 @@ class RootNodeWrapper extends SARootNode {
    */
   static buildTree(rootNode) {
     const root = new RootNodeWrapper(rootNode);
-    const childConstructor = (node) => new NodeWrapper(node, root);
+    const childConstructor = (node) => NodeWrapper.create(node, root);
 
     RootNodeWrapper.findAndSetChildren(root, childConstructor);
     return root;
@@ -387,6 +404,9 @@ class RootNodeWrapper extends SARootNode {
    * @return {!Array<!AutomationNode>}
    */
   static getInterestingChildren(root) {
+    if (root.baseNode_.children.length === 0) {
+      return [];
+    }
     const interestingChildren = [];
     const treeWalker = new AutomationTreeWalker(
         root.baseNode_, constants.Dir.FORWARD,

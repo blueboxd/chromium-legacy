@@ -35,7 +35,7 @@
 
 namespace breakpad_helper {
 
-NSString* const kBreadcrumbs = @"breadcrumbs";
+NSString* const kBreadcrumbs = @"breadcrumbs%lu";
 
 namespace {
 
@@ -374,8 +374,12 @@ void RemoveGridToVisibleTabAnimation() {
   RemoveReportParameter(kGridToVisibleTabAnimation);
 }
 
-void SetBreadcrumbEvents(NSString* breadcrumbs) {
-  AddReportParameter(breakpad_helper::kBreadcrumbs, breadcrumbs, true);
+void SetBreadcrumbEvents(NSArray* breadcrumbs) {
+  DCHECK_LE(breadcrumbs.count, 4U);
+  for (NSUInteger i = 0; i < breadcrumbs.count; i++) {
+    NSString* key = [NSString stringWithFormat:kBreadcrumbs, i];
+    AddReportParameter(key, breadcrumbs[i], /*async=*/true);
+  }
 }
 
 void MediaStreamPlaybackDidStart() {

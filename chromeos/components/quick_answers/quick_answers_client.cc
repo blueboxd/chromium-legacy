@@ -22,6 +22,9 @@ constexpr char kAddressRegex[] =
     "^\\d+\\s[A-z]+\\s[A-z]+, ([A-z]|\\s)+, [A-z]{2}\\s[0-9]{5}";
 constexpr char kDirectionQueryRewriteTemplate[] = "Direction to %s";
 
+QuickAnswersClient::SearchResultLoaderFactoryCallback*
+    g_testing_search_result_factory_callback = nullptr;
+
 const QuickAnswersRequest PreprocessRequest(
     const QuickAnswersRequest& request) {
   QuickAnswersRequest processed_request = request;
@@ -39,6 +42,12 @@ const QuickAnswersRequest PreprocessRequest(
 }
 
 }  // namespace
+
+// static
+void QuickAnswersClient::SetSearchResultLoaderFactoryForTesting(
+    SearchResultLoaderFactoryCallback* factory) {
+  g_testing_search_result_factory_callback = factory;
+}
 
 QuickAnswersClient::QuickAnswersClient(URLLoaderFactory* url_loader_factory,
                                        ash::AssistantState* assistant_state,
@@ -88,14 +97,14 @@ void QuickAnswersClient::OnAssistantStateDestroyed() {
 
 void QuickAnswersClient::SendRequest(
     const QuickAnswersRequest& quick_answers_request) {
+  search_result_loader_ = CreateSearchResultLoader();
+
   // Preprocess the request.
   auto& processed_request = PreprocessRequest(quick_answers_request);
   delegate_->OnRequestPreprocessFinish(processed_request);
 
   // Load and parse search result.
-  search_results_loader_ =
-      std::make_unique<SearchResultLoader>(url_loader_factory_, this);
-  search_results_loader_->Fetch(processed_request.selected_text);
+  search_result_loader_->Fetch(processed_request.selected_text);
 }
 
 void QuickAnswersClient::NotifyEligibilityChanged() {
@@ -109,6 +118,13 @@ void QuickAnswersClient::NotifyEligibilityChanged() {
     is_eligible_ = is_eligible;
     delegate_->OnEligibilityChanged(is_eligible);
   }
+}
+
+std::unique_ptr<SearchResultLoader>
+QuickAnswersClient::CreateSearchResultLoader() {
+  if (g_testing_search_result_factory_callback)
+    return g_testing_search_result_factory_callback->Run();
+  return std::make_unique<SearchResultLoader>(url_loader_factory_, this);
 }
 
 void QuickAnswersClient::OnNetworkError() {

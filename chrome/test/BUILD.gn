@@ -1195,6 +1195,7 @@ if (!is_android) {
       "../browser/ui/manifest_web_app_browsertest.cc",
       "../browser/ui/passwords/google_password_manager_navigation_throttle_browsertest.cc",
       "../browser/ui/tabs/pinned_tab_service_browsertest.cc",
+      "../browser/ui/thumbnails/thumbnail_tab_helper_browsertest.cc",
       "../browser/ui/views/sharing/click_to_call_browsertest.cc",
       "../browser/ui/views/sharing/remote_copy_browsertest.cc",
       "../browser/ui/views/sharing/shared_clipboard_browsertest.cc",

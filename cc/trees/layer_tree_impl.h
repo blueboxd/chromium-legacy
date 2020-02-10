@@ -394,8 +394,7 @@ class CC_EXPORT LayerTreeImpl {
   // internal (i.e. not external) device viewport.
   gfx::Rect internal_device_viewport() { return device_viewport_rect_; }
 
-  void SetRasterColorSpace(int raster_color_space_id,
-                           const gfx::ColorSpace& raster_color_space);
+  void SetRasterColorSpace(const gfx::ColorSpace& raster_color_space);
   // OOPIFs need to know the page scale factor used in the main frame, but it
   // is distributed differently (via VisualPropertiesSync), and used only to
   // set raster-scale (page_scale_factor has geometry implications that are
@@ -417,7 +416,6 @@ class CC_EXPORT LayerTreeImpl {
   const gfx::ColorSpace& raster_color_space() const {
     return raster_color_space_;
   }
-  int raster_color_space_id() const { return raster_color_space_id_; }
 
   SyncedElasticOverscroll* elastic_overscroll() {
     return elastic_overscroll_.get();
@@ -746,7 +744,6 @@ class CC_EXPORT LayerTreeImpl {
 
   float device_scale_factor_;
   float painted_device_scale_factor_;
-  int raster_color_space_id_ = -1;
   gfx::ColorSpace raster_color_space_;
 
   viz::LocalSurfaceIdAllocation local_surface_id_allocation_from_parent_;

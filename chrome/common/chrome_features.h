@@ -175,6 +175,9 @@ extern const base::FeatureParam<std::string> kDnsOverHttpsTemplatesParam;
 COMPONENT_EXPORT(CHROME_FEATURES)
 extern const base::FeatureParam<bool> kDnsOverHttpsShowUiParam;
 
+COMPONENT_EXPORT(CHROME_FEATURES)
+extern const base::Feature kDnsHttpssvc;
+
 #if defined(OS_ANDROID)
 COMPONENT_EXPORT(CHROME_FEATURES)
 extern const base::Feature kDownloadsLocationChange;

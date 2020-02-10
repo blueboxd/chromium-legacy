@@ -38,7 +38,7 @@ class MEDIA_BLINK_EXPORT MultiBufferReader : public MultiBuffer::Reader {
       MultiBuffer* multibuffer,
       int64_t start,
       int64_t end,
-      const base::Callback<void(int64_t, int64_t)>& progress_callback);
+      base::RepeatingCallback<void(int64_t, int64_t)> progress_callback);
 
   ~MultiBufferReader() override;
 
@@ -182,7 +182,7 @@ class MEDIA_BLINK_EXPORT MultiBufferReader : public MultiBuffer::Reader {
   base::OnceClosure cb_;
 
   // Progress callback.
-  base::Callback<void(int64_t, int64_t)> progress_callback_;
+  base::RepeatingCallback<void(int64_t, int64_t)> progress_callback_;
 
   base::WeakPtrFactory<MultiBufferReader> weak_factory_{this};
 };

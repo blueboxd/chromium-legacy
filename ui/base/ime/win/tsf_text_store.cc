@@ -185,10 +185,6 @@ STDMETHODIMP TSFTextStore::GetScreenExt(TsViewCookie view_cookie, RECT* rect) {
 
   // {0, 0, 0, 0} means that the document rect is not currently displayed.
   SetRect(rect, 0, 0, 0, 0);
-  POINT left_top;
-  POINT right_bottom;
-  if (!GetWindowClientRect(window_handle_, &left_top, &right_bottom))
-    return E_FAIL;
   base::Optional<gfx::Rect> result_rect;
   base::Optional<gfx::Rect> tmp_rect;
   // If the EditContext is active, then fetch the layout bounds from
@@ -197,13 +193,16 @@ STDMETHODIMP TSFTextStore::GetScreenExt(TsViewCookie view_cookie, RECT* rect) {
   text_input_client_->GetActiveTextInputControlLayoutBounds(&result_rect,
                                                             &tmp_rect);
   if (result_rect) {
+    // This conversion is required for high dpi monitors.
     *rect = display::win::ScreenWin::DIPToScreenRect(window_handle_,
                                                      result_rect.value())
                 .ToRECT();
-    rect->left += left_top.x;
-    rect->top += left_top.y;
   } else {
     // Default if the layout bounds are not present in text input client.
+    POINT left_top;
+    POINT right_bottom;
+    if (!GetWindowClientRect(window_handle_, &left_top, &right_bottom))
+      return E_FAIL;
     rect->left = left_top.x;
     rect->top = left_top.y;
     rect->right = right_bottom.x;
@@ -330,15 +329,9 @@ STDMETHODIMP TSFTextStore::GetTextExt(TsViewCookie view_cookie,
   text_input_client_->GetActiveTextInputControlLayoutBounds(&tmp_opt_rect,
                                                             &result_rect);
   if (result_rect) {
-    POINT left_top;
-    POINT right_bottom;
-    if (!GetWindowClientRect(window_handle_, &left_top, &right_bottom))
-      return E_FAIL;
     *rect = display::win::ScreenWin::DIPToScreenRect(window_handle_,
                                                      result_rect.value())
                 .ToRECT();
-    rect->left += left_top.x;
-    rect->top += left_top.y;
     *clipped = FALSE;
     return S_OK;
   }

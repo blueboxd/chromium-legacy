@@ -1534,9 +1534,12 @@ void RenderWidget::UpdateTextInputStateInternal(bool show_virtual_keyboard,
       WebRect control_bounds;
       WebRect selection_bounds;
       controller->GetLayoutBounds(&control_bounds, &selection_bounds);
+      ConvertViewportToWindow(&control_bounds);
       params.edit_context_control_bounds = control_bounds;
-      if (controller->IsEditContextActive())
+      if (controller->IsEditContextActive()) {
+        ConvertViewportToWindow(&selection_bounds);
         params.edit_context_selection_bounds = selection_bounds;
+      }
     }
 #if defined(OS_ANDROID)
     if (next_previous_flags_ == kInvalidNextPreviousFlagsValue) {

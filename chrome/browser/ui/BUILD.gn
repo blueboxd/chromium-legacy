@@ -118,8 +118,6 @@ jumbo_static_library("ui") {
     "javascript_dialogs/javascript_tab_modal_dialog_manager_delegate_android.h",
     "login/login_handler.cc",
     "login/login_handler.h",
-    "login/login_interstitial_delegate.cc",
-    "login/login_interstitial_delegate.h",
     "login/login_navigation_throttle.cc",
     "login/login_navigation_throttle.h",
     "login/login_tab_helper.cc",

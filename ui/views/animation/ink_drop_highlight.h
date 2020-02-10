@@ -130,7 +130,7 @@ class VIEWS_EXPORT InkDropHighlight {
   gfx::PointF center_point_;
 
   // The opacity for the fully visible state of the highlight.
-  float visible_opacity_ = 0.128f;
+  float visible_opacity_;
 
   // True if the last animation to be initiated was a FADE_IN, and false
   // otherwise.

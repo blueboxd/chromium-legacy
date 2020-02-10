@@ -1808,21 +1808,13 @@ void LayerTreeHostImpl::SetIsLikelyToRequireADraw(
 }
 
 const gfx::ColorSpace& LayerTreeHostImpl::GetRasterColorSpace() const {
-  int dummy;
-  return GetRasterColorSpaceAndId(&dummy);
-}
-
-const gfx::ColorSpace& LayerTreeHostImpl::GetRasterColorSpaceAndId(
-    int* id) const {
   const gfx::ColorSpace* result = nullptr;
   // The pending tree will have the most recently updated color space, so
   // prefer that.
   if (pending_tree_) {
     result = &pending_tree_->raster_color_space();
-    *id = pending_tree_->raster_color_space_id();
   } else if (active_tree_) {
     result = &active_tree_->raster_color_space();
-    *id = active_tree_->raster_color_space_id();
   }
 
   // If we are likely to software composite the resource, we use sRGB because
@@ -1833,7 +1825,6 @@ const gfx::ColorSpace& LayerTreeHostImpl::GetRasterColorSpaceAndId(
   if (!layer_tree_frame_sink_ || !layer_tree_frame_sink_->context_provider() ||
       !result || !result->IsValid()) {
     result = &default_color_space_;
-    *id = default_color_space_id_;
   }
   return *result;
 }

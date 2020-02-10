@@ -15,4 +15,7 @@ interface IProfile {
   String getName() = 2;
 
   void setDownloadDirectory(String directory) = 3;
+
+  // Added in Version 82.
+  void destroyAndDeleteDataFromDisk(in IObjectWrapper completionCallback) = 4;
 }

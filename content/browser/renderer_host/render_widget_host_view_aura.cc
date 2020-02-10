@@ -1525,10 +1525,14 @@ void RenderWidgetHostViewAura::GetActiveTextInputControlLayoutBounds(
   if (text_input_manager_) {
     const TextInputState* state = text_input_manager_->GetTextInputState();
     if (state) {
-      *control_bounds = state->edit_context_control_bounds;
+      if (state->edit_context_control_bounds)
+        *control_bounds =
+            ConvertRectToScreen(state->edit_context_control_bounds.value());
       // Selection bounds are currently populated only for EditContext.
       // For editable elements we use GetCompositionCharacterBounds.
-      *selection_bounds = state->edit_context_selection_bounds;
+      if (state->edit_context_selection_bounds)
+        *selection_bounds =
+            ConvertRectToScreen(state->edit_context_selection_bounds.value());
     }
   }
 }

@@ -120,37 +120,23 @@ void HotseatTransitionAnimator::SetTestObserver(TestObserver* test_observer) {
 
 void HotseatTransitionAnimator::DoAnimation(HotseatState old_state,
                                             HotseatState new_state) {
-  if (!ShouldDoAnimation(old_state, new_state))
+  const bool animating_to_shown_background = new_state != HotseatState::kShown;
+  gfx::Transform transform;
+  if (animating_to_shown_background)
+    transform.Translate(0, -ShelfConfig::Get()->in_app_shelf_size());
+
+  if (!ShouldDoAnimation(old_state, new_state)) {
+    shelf_widget_->GetAnimatingBackground()->SetTransform(transform);
     return;
+  }
 
   StopObservingImplicitAnimations();
 
-  const bool animating_to_shown_background = new_state != HotseatState::kShown;
-
   shelf_widget_->GetAnimatingBackground()->SetColor(
       ShelfConfig::Get()->GetMaximizedShelfColor());
-
-  gfx::Rect target_bounds = shelf_widget_->GetOpaqueBackground()->bounds();
-  target_bounds.set_height(ShelfConfig::Get()->in_app_shelf_size());
-  target_bounds.set_y(animating_to_shown_background
-                          ? 0
-                          : ShelfConfig::Get()->system_shelf_size());
-  shelf_widget_->GetAnimatingBackground()->SetBounds(target_bounds);
   shelf_widget_->GetAnimatingDragHandle()->SetBounds(
       shelf_widget_->GetDragHandle()->bounds());
 
-  int starting_y;
-  if (animating_to_shown_background) {
-    // The background will begin the animation hidden below the shelf.
-    starting_y = ShelfConfig::Get()->system_shelf_size();
-  } else {
-    // The background will begin the animation from the top of the shelf.
-    starting_y = 0;
-  }
-  gfx::Transform transform;
-  const int y_offset = starting_y - target_bounds.y();
-  transform.Translate(0, y_offset);
-  shelf_widget_->GetAnimatingBackground()->SetTransform(transform);
   animation_metrics_reporter_->set_new_state(new_state);
 
   for (auto& observer : observers_)
@@ -171,7 +157,7 @@ void HotseatTransitionAnimator::DoAnimation(HotseatState old_state,
         weak_ptr_factory_.GetWeakPtr(), old_state, new_state);
     shelf_bg_animation_setter.AddObserver(this);
 
-    shelf_widget_->GetAnimatingBackground()->SetTransform(gfx::Transform());
+    shelf_widget_->GetAnimatingBackground()->SetTransform(transform);
   }
 }
 

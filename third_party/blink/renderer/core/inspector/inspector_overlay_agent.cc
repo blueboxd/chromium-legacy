@@ -976,9 +976,8 @@ void InspectorOverlayAgent::EvaluateInOverlay(const String& method,
   std::unique_ptr<protocol::ListValue> command = protocol::ListValue::create();
   command->pushValue(protocol::StringValue::create(method));
   command->pushValue(protocol::StringValue::create(argument));
-  std::vector<uint8_t> cbor = std::move(*command).TakeSerialized();
   std::vector<uint8_t> json;
-  ConvertCBORToJSON(SpanFrom(cbor), &json);
+  ConvertCBORToJSON(SpanFrom(command->Serialize()), &json);
   To<LocalFrame>(OverlayMainFrame())
       ->GetScriptController()
       .ExecuteScriptInMainWorld(
@@ -996,9 +995,8 @@ void InspectorOverlayAgent::EvaluateInOverlay(
   std::unique_ptr<protocol::ListValue> command = protocol::ListValue::create();
   command->pushValue(protocol::StringValue::create(method));
   command->pushValue(std::move(argument));
-  std::vector<uint8_t> cbor = std::move(*command).TakeSerialized();
   std::vector<uint8_t> json;
-  ConvertCBORToJSON(SpanFrom(cbor), &json);
+  ConvertCBORToJSON(SpanFrom(command->Serialize()), &json);
   To<LocalFrame>(OverlayMainFrame())
       ->GetScriptController()
       .ExecuteScriptInMainWorld(

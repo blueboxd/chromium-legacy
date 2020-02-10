@@ -69,6 +69,13 @@ class ResultRecorder(object):
     if is_control:
       self._noisy_control_stories.remove(name)
 
+  def invalidate_failures(self, benchmark):
+    # The method is for invalidating the failures in case of noisy control test
+    for story in self._failed_stories:
+      print(story + ' [Invalidated Failure]: The story failed but was ' +
+        'invalidated as a result of noisy control test.')
+      self.output['tests'][benchmark][story]['is_unexpected'] = False
+
   @property
   def failed_stories(self):
     return self._failed_stories
@@ -80,8 +87,10 @@ class ResultRecorder(object):
   def get_output(self, return_code):
     self.output['seconds_since_epoch'] = time.time() - self.start_time
     self.output['num_failures_by_type']['PASS'] = self.tests - self.fails
-    if self.fails > 0:
+    if self.fails > 0 and not self.is_control_stories_noisy:
       self.output['num_failures_by_type']['FAIL'] = self.fails
+    else:
+      self.output['num_failures_by_type']['FAIL'] = 0
     if return_code == 1:
       self.output['interrupted'] = True
 
@@ -89,10 +98,9 @@ class ResultRecorder(object):
     tests = lambda n: plural(n, 'test', 'tests')
 
     print('[  PASSED  ] ' + tests(self.tests - self.fails) + '.')
-    if self.fails > 0:
+    if self.fails > 0 and not self.is_control_stories_noisy:
       print('[  FAILED  ] ' + tests(self.fails) + '.')
-      if not self.is_control_stories_noisy:
-        self.return_code = 1
+      self.return_code = 1
 
     return (self.output, self.return_code)
 
@@ -299,6 +307,11 @@ def main():
         if story_name not in re_run_result_recorder.failed_stories:
           result_recorder.remove_failure(story_name, benchmark,
             is_control_story(upper_limit_data[platform][story_name]))
+
+    if result_recorder.is_control_stories_noisy:
+      # In this case all failures are reported as expected, and the number of
+      # Failed stories in output.json will be zero.
+      result_recorder.invalidate_failures(benchmark)
 
     (
       finalOut,

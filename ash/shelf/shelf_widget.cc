@@ -235,8 +235,14 @@ bool ShelfWidget::IsUsingViewsShelf() {
 
 void ShelfWidget::DelegateView::SetParentLayer(ui::Layer* layer) {
   layer->Add(opaque_background());
-  layer->Add(&animating_background_);
   ReorderLayers();
+  // Animating background is only shown during hotseat state transitions to
+  // animate the background from below the shelf. At the same time the shelf
+  // widget may be animating between in-app and system shelf. Make animating
+  // background the sibling of the shelf widget to avoid shelf widget animation
+  // from interfering with the animating background animation.
+  layer->parent()->Add(&animating_background_);
+  layer->parent()->StackAtBottom(&animating_background_);
 }
 
 void ShelfWidget::DelegateView::HideOpaqueBackground() {
@@ -263,7 +269,6 @@ bool ShelfWidget::DelegateView::CanActivate() const {
 void ShelfWidget::DelegateView::ReorderChildLayers(ui::Layer* parent_layer) {
   views::View::ReorderChildLayers(parent_layer);
   parent_layer->StackAtBottom(opaque_background());
-  parent_layer->StackAtBottom(&animating_background_);
 }
 
 void ShelfWidget::DelegateView::OnWidgetInitialized() {
@@ -364,6 +369,14 @@ void ShelfWidget::DelegateView::UpdateDragHandle() {
 
 void ShelfWidget::DelegateView::OnBoundsChanged(const gfx::Rect& old_bounds) {
   UpdateOpaqueBackground();
+
+  // Layout the animating background layer below the shelf bounds (the layer
+  // will be transformed up as needed during hotseat state transitions).
+  const gfx::Rect widget_bounds = GetWidget()->GetLayer()->bounds();
+  animating_background_.SetBounds(
+      gfx::Rect(gfx::Point(widget_bounds.x(), widget_bounds.bottom()),
+                gfx::Size(widget_bounds.width(),
+                          ShelfConfig::Get()->in_app_shelf_size())));
 
   // The StatusAreaWidget could be gone before this is called during display
   // tear down.

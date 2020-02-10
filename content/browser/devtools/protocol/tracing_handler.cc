@@ -572,6 +572,22 @@ Response TracingHandler::Disable() {
   return Response::OK();
 }
 
+namespace {
+class TracingNotification : public crdtp::Serializable {
+ public:
+  explicit TracingNotification(std::string json) : json_(std::move(json)) {}
+
+  void AppendSerialized(std::vector<uint8_t>* out) const override {
+    crdtp::Status status =
+        crdtp::json::ConvertJSONToCBOR(crdtp::SpanFrom(json_), out);
+    DCHECK(status.ok()) << status.ToASCIIString();
+  }
+
+ private:
+  std::string json_;
+};
+}  // namespace
+
 void TracingHandler::OnTraceDataCollected(
     std::unique_ptr<std::string> trace_fragment) {
   const std::string valid_trace_fragment =
@@ -589,11 +605,8 @@ void TracingHandler::OnTraceDataCollected(
   message.append(valid_trace_fragment.c_str() +
                  trace_data_buffer_state_.offset);
   message += "] } }";
-  std::vector<uint8_t> cbor;
-  crdtp::Status status =
-      crdtp::json::ConvertJSONToCBOR(crdtp::SpanFrom(message), &cbor);
-  LOG_IF(ERROR, !status.ok()) << status.ToASCIIString();
-  frontend_->sendRawCBORNotification(std::move(cbor));
+  frontend_->sendRawNotification(
+      std::make_unique<TracingNotification>(std::move(message)));
 }
 
 void TracingHandler::OnTraceComplete() {

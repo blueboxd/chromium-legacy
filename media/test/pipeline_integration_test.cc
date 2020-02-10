@@ -136,13 +136,13 @@ static const char kOpusMonoOutputHash[] = "-2.41,-1.66,0.79,1.53,1.46,-0.91,";
 #else
 // Hash for a full playthrough of "opus-trimming-test.(webm|ogg)".
 static const char kOpusEndTrimmingHash_1[] =
-    "-4.56,-5.65,-6.51,-6.29,-4.36,-3.59,";
+    "-4.57,-5.67,-6.52,-6.28,-4.34,-3.58,";
 // The above hash, plus an additional playthrough starting from T=1s.
 static const char kOpusEndTrimmingHash_2[] =
-    "-11.89,-11.09,-8.25,-7.11,-7.84,-9.97,";
+    "-11.91,-11.10,-8.24,-7.08,-7.82,-9.99,";
 // The above hash, plus an additional playthrough starting from T=6.36s.
 static const char kOpusEndTrimmingHash_3[] =
-    "-13.28,-14.35,-13.67,-11.68,-10.18,-10.46,";
+    "-13.31,-14.36,-13.66,-11.65,-10.16,-10.47,";
 // Hash for a full playthrough of "bear-opus.webm".
 static const char kOpusSmallCodecDelayHash_1[] =
     "-0.47,-0.09,1.28,1.07,1.55,-0.22,";

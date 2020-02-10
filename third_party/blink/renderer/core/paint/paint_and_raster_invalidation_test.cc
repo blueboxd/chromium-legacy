@@ -163,6 +163,20 @@ TEST_P(PaintAndRasterInvalidationTest, IncrementalInvalidationMixed) {
   GetDocument().View()->SetTracksRasterInvalidations(false);
 }
 
+TEST_P(PaintAndRasterInvalidationTest, ResizeEmptyContent) {
+  SetUpHTML(*this);
+  Element* target = GetDocument().getElementById("target");
+  // Make the box empty.
+  target->setAttribute(html_names::kClassAttr, "");
+  UpdateAllLifecyclePhasesForTest();
+
+  GetDocument().View()->SetTracksRasterInvalidations(true);
+  target->setAttribute(html_names::kStyleAttr, "width: 100px; height: 80px");
+  UpdateAllLifecyclePhasesForTest();
+  EXPECT_FALSE(GetRasterInvalidationTracking()->HasInvalidations());
+  GetDocument().View()->SetTracksRasterInvalidations(false);
+}
+
 TEST_P(PaintAndRasterInvalidationTest, SubpixelVisualRectChagne) {
   SetUpHTML(*this);
   Element* target = GetDocument().getElementById("target");

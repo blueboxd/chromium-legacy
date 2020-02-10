@@ -222,10 +222,6 @@ class COLOR_SPACE_EXPORT ColorSpace {
                       RangeID::LIMITED);
   }
 
-  // Generates a process global unique ID that can be used to key a color space.
-  static int GetNextId();
-  static constexpr int kInvalidId = -1;
-
   // On macOS and on ChromeOS, sRGB's (1,1,1) always coincides with PQ's 100
   // nits (which may not be 100 physical nits). Life is more complicated on
   // Windows.

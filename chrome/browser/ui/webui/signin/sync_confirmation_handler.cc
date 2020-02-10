@@ -25,9 +25,12 @@
 #include "components/consent_auditor/consent_auditor.h"
 #include "components/signin/public/base/avatar_icon_util.h"
 #include "components/signin/public/identity_manager/account_info.h"
+#include "components/signin/public/identity_manager/consent_level.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/browser/web_ui.h"
 #include "url/gurl.h"
+
+using signin::ConsentLevel;
 
 namespace {
 const int kProfileImageSize = 128;
@@ -106,7 +109,7 @@ void SyncConfirmationHandler::HandleAccountImageRequest(
   DCHECK(ProfileSyncServiceFactory::IsSyncAllowed(profile_));
   base::Optional<AccountInfo> primary_account_info =
       identity_manager_->FindExtendedAccountInfoForAccountWithRefreshToken(
-          identity_manager_->GetPrimaryAccountInfo());
+          identity_manager_->GetPrimaryAccountInfo(ConsentLevel::kNotRequired));
 
   // Fire the "account-image-changed" listener from |SetUserImageURL()|.
   // Note: If the account info is not available yet in the
@@ -148,8 +151,9 @@ void SyncConfirmationHandler::RecordConsent(const base::ListValue* args) {
 
   consent_auditor::ConsentAuditor* consent_auditor =
       ConsentAuditorFactory::GetForProfile(profile_);
-  consent_auditor->RecordSyncConsent(identity_manager_->GetPrimaryAccountId(),
-                                     sync_consent);
+  consent_auditor->RecordSyncConsent(
+      identity_manager_->GetPrimaryAccountId(ConsentLevel::kNotRequired),
+      sync_consent);
 }
 
 void SyncConfirmationHandler::SetUserImageURL(const std::string& picture_url) {
@@ -181,8 +185,10 @@ void SyncConfirmationHandler::OnExtendedAccountInfoUpdated(
   if (!info.IsValid())
     return;
 
-  if (info.account_id != identity_manager_->GetPrimaryAccountId())
+  if (info.account_id !=
+      identity_manager_->GetPrimaryAccountId(ConsentLevel::kNotRequired)) {
     return;
+  }
 
   identity_manager_->RemoveObserver(this);
   SetUserImageURL(info.picture_url);
@@ -218,7 +224,7 @@ void SyncConfirmationHandler::HandleInitializedWithSize(
 
   base::Optional<AccountInfo> primary_account_info =
       identity_manager_->FindExtendedAccountInfoForAccountWithRefreshToken(
-          identity_manager_->GetPrimaryAccountInfo());
+          identity_manager_->GetPrimaryAccountInfo(ConsentLevel::kNotRequired));
   if (!primary_account_info) {
     // No account is signed in, so there is nothing to be displayed in the sync
     // confirmation dialog.

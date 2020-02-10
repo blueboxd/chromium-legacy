@@ -126,6 +126,13 @@ const char kAndroidSiteSettingsUIRefreshDescription[] =
     "Enable the new UI "
     "changes in Site Settings in Android.";
 
+const char kDnsHttpssvcName[] = "Support for HTTPSSVC records in DNS.";
+const char kDnsHttpssvcDescription[] =
+    "When enabled, Chrome may query a configured DoH server for HTTPSSVC "
+    "records. If any HTTPSSVC records are returned, Chrome may upgrade the URL "
+    "to HTTPS. If the records indicate support for QUIC, Chrome may attempt "
+    "QUIC on the first connection.";
+
 const char kDnsOverHttpsName[] = "Secure DNS lookups";
 const char kDnsOverHttpsDescription[] =
     "Enables DNS over HTTPS. When this feature is enabled, your browser may "

@@ -16,6 +16,10 @@ class Browser;
 class PrefRegistrySimple;
 class Profile;
 
+namespace signin {
+class IdentityManager;
+}  // namespace signin
+
 namespace syncer {
 class SyncService;
 }  // namespace syncer
@@ -40,6 +44,7 @@ class TurnSyncOnHelper : public SyncStartupTracker::Observer,
   };
   // Uses the production delegate with real UI.
   explicit TurnSyncOnHelper(Profile* profile);
+  // Exposed for testing.
   TurnSyncOnHelper(Profile* profile, std::unique_ptr<Delegate> delegate);
   ~TurnSyncOnHelper() override;
 
@@ -60,6 +65,9 @@ class TurnSyncOnHelper : public SyncStartupTracker::Observer,
       LoginUIService::SyncConfirmationUIClosedResult result) override;
 
  private:
+  // Starts observing for new browser windows if needed.
+  void Init();
+
   // Starts the setup flow.
   void StartFlow();
 
@@ -75,8 +83,9 @@ class TurnSyncOnHelper : public SyncStartupTracker::Observer,
   syncer::SyncService* GetSyncService();
 
   Profile* const profile_;
+  signin::IdentityManager* const identity_manager_;
   std::unique_ptr<Delegate> delegate_;
-  Browser* browser_;
+  Browser* browser_ = nullptr;
   std::unique_ptr<SyncStartupTracker> sync_startup_tracker_;
 
   ScopedObserver<LoginUIService, LoginUIService::Observer>

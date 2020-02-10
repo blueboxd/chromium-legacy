@@ -436,7 +436,13 @@ int ExtensionsToolbarContainer::GetDragOperationsForView(View* sender,
 bool ExtensionsToolbarContainer::CanStartDragForView(View* sender,
                                                      const gfx::Point& press_pt,
                                                      const gfx::Point& p) {
-  return true;
+  // Only pinned extensions should be draggable.
+  auto it = std::find_if(model_->pinned_action_ids().cbegin(),
+                         model_->pinned_action_ids().cend(),
+                         [this, sender](const std::string& action_id) {
+                           return GetViewForId(action_id) == sender;
+                         });
+  return it != model_->pinned_action_ids().cend();
 }
 
 bool ExtensionsToolbarContainer::GetDropFormats(

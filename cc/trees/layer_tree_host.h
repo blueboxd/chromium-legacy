@@ -796,7 +796,6 @@ class CC_EXPORT LayerTreeHost : public MutatorHostClient {
   // Used to track the out-bound state for ApplyViewportChanges.
   bool is_pinch_gesture_active_from_impl_ = false;
 
-  int raster_color_space_id_ = -1;
   gfx::ColorSpace raster_color_space_;
 
   bool clear_caches_on_next_commit_ = false;

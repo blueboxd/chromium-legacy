@@ -11,12 +11,15 @@ import org.junit.Rule;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
+import org.chromium.base.test.util.CallbackHelper;
 import org.chromium.content_public.browser.test.util.TestThreadUtils;
 import org.chromium.weblayer.Profile;
 import org.chromium.weblayer.WebLayer;
 import org.chromium.weblayer.shell.InstrumentationActivity;
 
 import java.util.Collection;
+import java.util.concurrent.Callable;
+import java.util.concurrent.ExecutionException;
 
 /**
  * Tests that Profile works as expected.
@@ -56,6 +59,58 @@ public class ProfileTest {
             Assert.assertTrue(profiles.contains(firstProfile));
             Assert.assertTrue(profiles.contains(secondProfile));
         }
+    }
+
+    @Test
+    @SmallTest
+    public void testDestroyAndDeleteDataFromDiskWhenInUse() {
+        WebLayer weblayer = mActivityTestRule.getWebLayer();
+        InstrumentationActivity activity = mActivityTestRule.launchShellWithUrl("about:blank");
+        final Profile profile = TestThreadUtils.runOnUiThreadBlockingNoException(
+                () -> activity.getBrowser().getProfile());
+
+        try {
+            Callable<Void> c = () -> {
+                profile.destroyAndDeleteDataFromDisk(null);
+                return null;
+            };
+            TestThreadUtils.runOnUiThreadBlocking(c);
+            Assert.fail();
+        } catch (ExecutionException e) {
+            // Expected.
+        }
+    }
+
+    @Test
+    @SmallTest
+    public void testDestroyAndDeleteDataFromDisk() throws Exception {
+        doTestDestroyAndDeleteDataFromDiskIncognito("testDestroyAndDeleteDataFromDisk");
+    }
+
+    @Test
+    @SmallTest
+    public void testDestroyAndDeleteDataFromDiskIncognito() throws Exception {
+        doTestDestroyAndDeleteDataFromDiskIncognito(null);
+    }
+
+    private void doTestDestroyAndDeleteDataFromDiskIncognito(final String name) throws Exception {
+        WebLayer weblayer = mActivityTestRule.getWebLayer();
+        final Profile profile =
+                TestThreadUtils.runOnUiThreadBlockingNoException(() -> weblayer.getProfile(name));
+
+        {
+            Collection<Profile> profiles = getAllProfiles();
+            Assert.assertTrue(profiles.contains(profile));
+        }
+
+        final CallbackHelper callbackHelper = new CallbackHelper();
+        TestThreadUtils.runOnUiThreadBlocking(
+                () -> profile.destroyAndDeleteDataFromDisk(callbackHelper::notifyCalled));
+        {
+            Collection<Profile> profiles = getAllProfiles();
+            Assert.assertFalse(profiles.contains(profile));
+        }
+        callbackHelper.waitForFirst();
     }
 
     private static Collection<Profile> getAllProfiles() {

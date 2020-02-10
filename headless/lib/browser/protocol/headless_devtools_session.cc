@@ -75,14 +75,12 @@ void HeadlessDevToolsSession::sendProtocolResponse(
     std::unique_ptr<Serializable> message) {
   pending_commands_.erase(call_id);
 
-  client_channel_->DispatchProtocolMessageToClient(
-      std::move(*message).TakeSerialized());
+  client_channel_->DispatchProtocolMessageToClient(message->Serialize());
 }
 
 void HeadlessDevToolsSession::sendProtocolNotification(
     std::unique_ptr<Serializable> message) {
-  client_channel_->DispatchProtocolMessageToClient(
-      std::move(*message).TakeSerialized());
+  client_channel_->DispatchProtocolMessageToClient(message->Serialize());
 }
 
 void HeadlessDevToolsSession::flushProtocolNotifications() {}

@@ -9,6 +9,7 @@
 
 #include "base/test/task_environment.h"
 #include "chromeos/components/quick_answers/quick_answers_model.h"
+#include "chromeos/components/quick_answers/test/test_helpers.h"
 #include "services/data_decoder/public/cpp/test_support/in_process_data_decoder.h"
 #include "services/network/test/test_url_loader_factory.h"
 #include "testing/gmock/include/gmock/gmock.h"
@@ -59,10 +60,6 @@ class MockSearchResultLoaderDelegate
   MOCK_METHOD0(OnNetworkError, void());
   MOCK_METHOD1(OnQuickAnswerReceived, void(std::unique_ptr<QuickAnswer>));
 };
-
-MATCHER_P(QuickAnswerEqual, quick_answer, "") {
-  return (arg->primary_answer == quick_answer.primary_answer);
-}
 
 }  // namespace
 

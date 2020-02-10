@@ -2134,12 +2134,30 @@ bool NGBoxFragmentPainter::HitTestFloatingChildren(
     if (child_fragment.IsPaintedAtomically())
       continue;
 
-    if (const auto* child_container =
-            DynamicTo<NGPhysicalContainerFragment>(&child_fragment)) {
-      if (child_container->HasFloatingDescendantsForPaint() &&
-          HitTestFloatingChildren(hit_test, *child_container, child_offset))
+    const auto* child_container =
+        DynamicTo<NGPhysicalContainerFragment>(&child_fragment);
+    if (!child_container || !child_container->HasFloatingDescendantsForPaint())
+      continue;
+
+    if (child_container->HasOverflowClip()) {
+      // We need to properly visit this fragment for hit-testing, rather than
+      // jumping directly to its children (which is what we normally do when
+      // looking for floats), in order to set up the clip rectangle.
+      if (child_container->CanTraverse()) {
+        if (NGBoxFragmentPainter(*To<NGPhysicalBoxFragment>(child_container))
+                .NodeAtPoint(*hit_test.result, hit_test.location, child_offset,
+                             kHitTestFloat))
+          return true;
+      } else if (child_fragment.GetMutableLayoutObject()->NodeAtPoint(
+                     *hit_test.result, hit_test.location, child_offset,
+                     kHitTestFloat)) {
         return true;
+      }
+      continue;
     }
+
+    if (HitTestFloatingChildren(hit_test, *child_container, child_offset))
+      return true;
   }
   return false;
 }

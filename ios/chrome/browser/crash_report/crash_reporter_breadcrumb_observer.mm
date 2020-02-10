@@ -13,12 +13,15 @@
 #endif
 
 namespace {
-// The maximum string length of combined breadcrumb events to store at any given
-// time. Breakpad truncates long values, so keeping the string stored here short
-// will save on used memory. This will not affect the amount of data attached to
-// crash reports (as long as the value matches or exceeds the breakpad maximum).
-const int kMaxCombinedBreadcrumbLength = 255;
+// IMPORTANT: the value of this constant should not exceed 4.
+// Number of product data keys to use for breadcrumbs. Each product key allows
+// to upload limited amount of data (kMaxProductDataLength), so having
+// multiple keys makes breadcrumbs more useful by having access to more
+// breadcrumbs on crash reports.
+const int kBreadcrumbsKeyCount = 2;
 }
+
+const int kMaxProductDataLength = 255;
 
 @interface CrashReporterBreadcrumbObserver () {
   // Map associating the observed BreadcrumbManager with the corresponding
@@ -32,10 +35,10 @@ const int kMaxCombinedBreadcrumbLength = 255;
            std::unique_ptr<BreadcrumbManagerObserverBridge>>
       _breadcrumbManagerServiceObservers;
 
-  // A string which stores the received breadcrumbs. Since breakpad will
-  // truncate this string anyway, it is truncated when a new event is added in
-  // order to reduce overall memory usage.
-  NSMutableString* _breadcrumbsString;
+  // A string which stores the received breadcrumbs. Since breakpad limits
+  // product data string length, it may be truncated when a new event is added
+  // in order to reduce overall memory usage.
+  NSMutableString* _breadcrumbs;
 }
 @end
 
@@ -49,7 +52,7 @@ const int kMaxCombinedBreadcrumbLength = 255;
 
 - (instancetype)init {
   if ((self = [super init])) {
-    _breadcrumbsString = [[NSMutableString alloc] init];
+    _breadcrumbs = [[NSMutableString alloc] init];
   }
   return self;
 }
@@ -85,15 +88,28 @@ const int kMaxCombinedBreadcrumbLength = 255;
 - (void)breadcrumbManager:(BreadcrumbManager*)manager
               didAddEvent:(NSString*)event {
   NSString* eventWithSeperator = [NSString stringWithFormat:@"%@\n", event];
-  [_breadcrumbsString insertString:eventWithSeperator atIndex:0];
+  [_breadcrumbs insertString:eventWithSeperator atIndex:0];
 
-  if (_breadcrumbsString.length > kMaxCombinedBreadcrumbLength) {
-    NSRange trimRange =
-        NSMakeRange(kMaxCombinedBreadcrumbLength,
-                    _breadcrumbsString.length - kMaxCombinedBreadcrumbLength);
-    [_breadcrumbsString deleteCharactersInRange:trimRange];
+  NSUInteger maxBreadcrumbsLength =
+      kBreadcrumbsKeyCount * kMaxProductDataLength;
+  if (_breadcrumbs.length > maxBreadcrumbsLength) {
+    NSRange trimRange = NSMakeRange(maxBreadcrumbsLength,
+                                    _breadcrumbs.length - maxBreadcrumbsLength);
+    [_breadcrumbs deleteCharactersInRange:trimRange];
   }
-  breakpad_helper::SetBreadcrumbEvents(_breadcrumbsString);
+
+  // Cut breadcrumbs strings into multiple pieces and upload with separate keys.
+  NSMutableArray* breadcrumbs =
+      [[NSMutableArray alloc] initWithCapacity:kBreadcrumbsKeyCount];
+  for (NSUInteger i = 0; i < kBreadcrumbsKeyCount &&
+                         (i * kMaxProductDataLength) < _breadcrumbs.length;
+       i++) {
+    NSUInteger location = i * kMaxProductDataLength;
+    NSRange range = NSMakeRange(
+        location, MIN(kMaxProductDataLength, _breadcrumbs.length - location));
+    [breadcrumbs addObject:[_breadcrumbs substringWithRange:range]];
+  }
+  breakpad_helper::SetBreadcrumbEvents(breadcrumbs);
 }
 
 @end

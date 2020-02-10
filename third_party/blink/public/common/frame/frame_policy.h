@@ -28,7 +28,8 @@ struct BLINK_COMMON_EXPORT FramePolicy {
   FramePolicy(WebSandboxFlags sandbox_flags,
               const ParsedFeaturePolicy& container_policy,
               const DocumentPolicy::FeatureState& required_document_policy,
-              bool allowed_to_download = true);
+              bool allowed_to_download = true,
+              bool disallow_document_access = false);
   FramePolicy(const FramePolicy& lhs);
   ~FramePolicy();
 
@@ -47,6 +48,10 @@ struct BLINK_COMMON_EXPORT FramePolicy {
   // leading to downloads should be blocked. Note: this flag is currently only
   // set if the frame is sandboxed for downloads.
   bool allowed_to_download;
+
+  // Whether or not a frame allows direct script access across frame
+  // boundaries.
+  bool disallow_document_access = false;
 };
 
 }  // namespace blink

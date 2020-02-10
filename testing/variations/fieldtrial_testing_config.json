@@ -1260,7 +1260,6 @@
                     "disable_features": [
                         "BlinkSchedulerPrioritizeCompositingUntilBeginMainFrame",
                         "BlinkSchedulerVeryHighPriorityForCompositingAlternating",
-                        "PrioritizeBootstrapTasks",
                         "PrioritizeCompositingAndLoadingDuringEarlyLoading"
                     ]
                 }

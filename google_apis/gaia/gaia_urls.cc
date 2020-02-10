@@ -88,9 +88,12 @@ GURL GetURLSwitchValueWithDefault(const char* switch_value,
   std::string string_value;
   GetSwitchValueWithDefault(switch_value, default_value, &string_value);
   const GURL result(string_value);
-  DCHECK(result.is_valid()) << "Invalid URL \"" << string_value
-                            << "\" for switch \"" << switch_value << "\"";
-  return result;
+  if (result.is_valid()) {
+    return result;
+  }
+  LOG(ERROR) << "Ignoring invalid URL \"" << string_value << "\" for switch \""
+             << switch_value << "\"";
+  return GURL(default_value);
 }
 
 

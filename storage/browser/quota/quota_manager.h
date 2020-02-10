@@ -58,8 +58,6 @@ class QuotaManagerProxy;
 class QuotaTemporaryStorageEvictor;
 class UsageTracker;
 
-struct QuotaManagerDeleter;
-
 // An interface called by QuotaTemporaryStorageEvictor. This is a grab bag of
 // methods called by QuotaTemporaryStorageEvictor that need to be stubbed for
 // testing.
@@ -289,7 +287,6 @@ class COMPONENT_EXPORT(STORAGE_BROWSER) QuotaManager
   friend class quota_internals::QuotaInternalsProxy;
   friend class QuotaManagerProxy;
   friend class QuotaTemporaryStorageEvictor;
-  friend struct QuotaManagerDeleter;
 
   class EvictionRoundInfoHelper;
   class UsageAndQuotaInfoGatherer;

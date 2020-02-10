@@ -9,8 +9,6 @@ import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
 
 import android.content.ClipData;
-import android.content.ClipboardManager;
-import android.content.Context;
 import android.content.Intent;
 import android.net.Uri;
 import android.text.SpannableString;
@@ -20,7 +18,6 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.robolectric.annotation.Config;
 
-import org.chromium.base.ContextUtils;
 import org.chromium.base.test.BaseRobolectricTestRunner;
 
 /**
@@ -69,13 +66,6 @@ public class ClipboardTest {
         // Set actually data.
         clipboard.setImage(IMAGE_URI);
 
-        ClipboardManager clipboardManager =
-                (ClipboardManager) ContextUtils.getApplicationContext().getSystemService(
-                        Context.CLIPBOARD_SERVICE);
-        final ClipData clipData = clipboardManager.getPrimaryClip();
-        assertNotNull(clipData);
-
-        final Uri uri = clipData.getItemAt(0).getUri();
-        assertEquals(IMAGE_URI, uri);
+        assertEquals(IMAGE_URI, clipboard.getUri());
     }
 }

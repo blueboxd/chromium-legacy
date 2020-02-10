@@ -295,8 +295,12 @@ bool ValidateSamplingAllocations(base::Value* heaps_v2,
 
 bool ValidateProcessMmaps(base::Value* process_mmaps,
                           bool should_have_contents) {
-  base::Value* vm_regions = process_mmaps->FindKey("vm_regions");
-  size_t count = vm_regions->GetList().size();
+  base::Value* vm_regions = nullptr;
+  size_t count = 0;
+  if (process_mmaps) {
+    vm_regions = process_mmaps->FindKey("vm_regions");
+    count = vm_regions->GetList().size();
+  }
   if (!should_have_contents) {
     if (count != 0) {
       LOG(ERROR) << "vm_regions should be empty, but has contents";

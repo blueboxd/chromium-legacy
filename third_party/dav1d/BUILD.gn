@@ -222,6 +222,13 @@ if (current_cpu == "x86" || current_cpu == "x64") {
       "libdav1d/src/x86/cpu.c",
       "libdav1d/src/x86/cpu.h",
     ]
+
+    # x86/msac.h redefines macros in msac.h if x86/msac.h is included and
+    # HAVE_ASM is 0, so we must exclude msac_init.c if !enable_nasm. Also, it
+    # is only used for x64.
+    if (enable_nasm && current_cpu == "x64") {
+      sources += [ "libdav1d/src/x86/msac_init.c" ]
+    }
     configs -= [ "//build/config/compiler:chromium_code" ]
     configs += [
       "//build/config/compiler:no_chromium_code",

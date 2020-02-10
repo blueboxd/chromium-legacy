@@ -48,8 +48,8 @@ std::string GetAlwaysOnPackageName() {
       chromeos::DBusThreadManager::Get()->GetShillManagerClient();
   base::RunLoop run_loop;
   shill_manager->GetProperties(
-      base::Bind(&OnGetProperties, base::Unretained(&call_status),
-                 base::Unretained(&package_name), run_loop.QuitClosure()));
+      base::BindOnce(&OnGetProperties, base::Unretained(&call_status),
+                     base::Unretained(&package_name), run_loop.QuitClosure()));
   run_loop.Run();
   CheckStatus(call_status);
   return package_name;

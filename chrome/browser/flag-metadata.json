@@ -836,6 +836,10 @@
     "owners": [ "baileyberro", "zentaro" ],
     "expiry_milestone": 85
   },
+  { "name": "dns-httpssvc",
+    "owners": [ "dmcardle", "ericorth" ],
+    "expiry_milestone": 85
+  },
   {
     "name": "dns-over-https",
     "owners": [ "dalyk", "doh-core@google.com" ],

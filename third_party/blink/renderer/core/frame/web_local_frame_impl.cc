@@ -1748,8 +1748,10 @@ WebLocalFrameImpl* WebLocalFrameImpl::CreateProvisional(
   web_frame->InitializeCoreFrame(
       *previous_frame->GetPage(), MakeGarbageCollected<DummyFrameOwner>(),
       previous_frame->Tree().GetName(),
-      &ToCoreFrame(*previous_web_frame)->window_agent_factory(), sandbox_flags,
-      feature_state);
+      frame_policy.disallow_document_access
+          ? nullptr
+          : &ToCoreFrame(*previous_web_frame)->window_agent_factory(),
+      sandbox_flags, feature_state);
 
   LocalFrame* new_frame = web_frame->GetFrame();
   new_frame->SetOwner(previous_frame->Owner());
@@ -1885,7 +1887,7 @@ LocalFrame* WebLocalFrameImpl::CreateChildFrame(
 
   webframe_child->InitializeCoreFrame(
       *GetFrame()->GetPage(), owner_element, name,
-      owner_element->DisallowDocumentAccess()
+      owner_element->GetFramePolicy().disallow_document_access
           ? nullptr
           : &GetFrame()->window_agent_factory());
 

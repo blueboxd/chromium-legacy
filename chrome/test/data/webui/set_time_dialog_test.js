@@ -139,7 +139,8 @@ suite('SetTimeDialog', function() {
     expectEquals('Asia/Seoul', timezoneSelect.value);
   });
 
-  test('SetDateAndTimezone', async () => {
+  // Disabled for flake. https://crbug.com/1043598
+  test.skip('SetDateAndTimezone', async () => {
     const dateInput = setTimeElement.$$('#dateInput');
     assertTrue(!!dateInput);
 

@@ -2201,10 +2201,6 @@ const FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kCreditCardAssistDescription, kOsAndroid,
      FEATURE_VALUE_TYPE(autofill::features::kAutofillCreditCardAssist)},
 #endif  // OS_ANDROID
-    {"http-auth-committed-interstitials",
-     flag_descriptions::kHTTPAuthCommittedInterstitialsName,
-     flag_descriptions::kHTTPAuthCommittedInterstitialsDescription, kOsAll,
-     FEATURE_VALUE_TYPE(features::kHTTPAuthCommittedInterstitials)},
 #if defined(OS_ANDROID)
     {"enable-site-isolation-for-password-sites",
      flag_descriptions::kSiteIsolationForPasswordSitesName,
@@ -4590,6 +4586,11 @@ const FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kDecodeLossyWebPImagesToYUVName,
      flag_descriptions::kDecodeLossyWebPImagesToYUVDescription, kOsAll,
      FEATURE_VALUE_TYPE(blink::features::kDecodeLossyWebPImagesToYUV)},
+
+    {"dns-httpssvc", flag_descriptions::kDnsHttpssvcName,
+     flag_descriptions::kDnsHttpssvcDescription,
+     kOsMac | kOsWin | kOsCrOS | kOsAndroid,
+     FEATURE_VALUE_TYPE(features::kDnsHttpssvc)},
 
     {"dns-over-https", flag_descriptions::kDnsOverHttpsName,
      flag_descriptions::kDnsOverHttpsDescription,

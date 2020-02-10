@@ -450,8 +450,7 @@ Response InspectorEmulationAgent::setDefaultBackgroundColorOverride(
   }
 
   blink::protocol::DOM::RGBA* rgba = color.fromJust();
-  default_background_color_override_rgba_.Set(
-      std::move(*rgba).TakeSerialized());
+  default_background_color_override_rgba_.Set(rgba->Serialize());
   // Clamping of values is done by Color() constructor.
   int alpha = static_cast<int>(lroundf(255.0f * rgba->getA(1.0f)));
   GetWebViewImpl()->SetBaseBackgroundColorOverride(

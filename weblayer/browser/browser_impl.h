@@ -120,7 +120,7 @@ class BrowserImpl : public Browser {
   base::android::ScopedJavaGlobalRef<jobject> java_impl_;
 #endif
   base::ObserverList<BrowserObserver> browser_observers_;
-  ProfileImpl* profile_;
+  ProfileImpl* const profile_;
   std::vector<std::unique_ptr<Tab>> tabs_;
   TabImpl* active_tab_ = nullptr;
   std::string persistence_id_;

@@ -10,6 +10,7 @@ bool StructTraits<blink::mojom::FramePolicyDataView, blink::FramePolicy>::Read(
     blink::mojom::FramePolicyDataView in,
     blink::FramePolicy* out) {
   out->allowed_to_download = in.allowed_to_download();
+  out->disallow_document_access = in.disallow_document_access();
 
   return in.ReadSandboxFlags(&out->sandbox_flags) &&
          in.ReadContainerPolicy(&out->container_policy) &&

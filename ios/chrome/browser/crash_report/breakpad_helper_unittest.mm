@@ -82,7 +82,7 @@ TEST_F(BreakpadHelperTest, CrashReportUserApplicationStateAllKeys) {
   while (breadcrumbs.length < 255) {
     [breadcrumbs appendString:@"12:01 Fake Breadcrumb Event/n"];
   }
-  breakpad_helper::SetBreadcrumbEvents(breadcrumbs);
+  breakpad_helper::SetBreadcrumbEvents(@[ breadcrumbs, breadcrumbs ]);
 }
 
 TEST_F(BreakpadHelperTest, GetCrashReportCount) {

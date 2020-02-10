@@ -111,7 +111,7 @@ bool SwitchAccessEventHandler::ShouldCancelEvent(
     auto* properties = event.properties();
     bool is_linux_xevent =
         properties &&
-        properties->find(ui::kPropertyKeyboardIBusFlag) != properties->end();
+        properties->find(ui::kPropertyKeyboardHwKeyCode) != properties->end();
     if (!is_linux_xevent)
       return false;
   }

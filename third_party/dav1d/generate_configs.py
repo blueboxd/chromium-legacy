@@ -135,9 +135,10 @@ def GenerateConfig(config_dir, env, special_args=[]):
            r'// \1 -- Stack alignment is controlled by Chromium'),
       ])
 
-  if (os.path.exists(os.path.join(config_dir, 'config.asm'))):
+  config_asm_path = os.path.join(temp_dir, 'config.asm')
+  if (os.path.exists(config_asm_path)):
     RewriteFile(
-        os.path.join(temp_dir, 'config.asm'),
+        config_asm_path,
         [(r'(%define STACK_ALIGNMENT \d{1,2})',
           r'; \1 -- Stack alignment is controlled by Chromium')])
 

@@ -28,6 +28,9 @@ namespace {
 // The opacity of the highlight when it is not visible.
 constexpr float kHiddenOpacity = 0.0f;
 
+// Default opacity of the highlight.
+constexpr float kDefaultOpacity = 0.128f;
+
 }  // namespace
 
 std::string ToString(InkDropHighlight::AnimationType animation_type) {
@@ -46,6 +49,8 @@ InkDropHighlight::InkDropHighlight(
     const gfx::PointF& center_point,
     std::unique_ptr<BasePaintedLayerDelegate> layer_delegate)
     : center_point_(center_point),
+      // TODO(sammiequon) : Make the default opacity consistent between all
+      // constructors.
       visible_opacity_(1.f),
       last_animation_initiated_was_fade_in_(false),
       layer_delegate_(std::move(layer_delegate)),
@@ -70,6 +75,7 @@ InkDropHighlight::InkDropHighlight(const gfx::SizeF& size,
           center_point,
           std::unique_ptr<BasePaintedLayerDelegate>(
               new RoundedRectangleLayerDelegate(color, size, corner_radius))) {
+  visible_opacity_ = kDefaultOpacity;
   layer_->SetOpacity(visible_opacity_);
 }
 
@@ -82,12 +88,14 @@ InkDropHighlight::InkDropHighlight(const gfx::Size& size,
 InkDropHighlight::InkDropHighlight(const gfx::SizeF& size, SkColor base_color)
     : last_animation_initiated_was_fade_in_(false), observer_(nullptr) {
   size_ = explode_size_ = size;
+  visible_opacity_ = kDefaultOpacity;
 
   layer_ = std::make_unique<ui::Layer>(ui::LAYER_SOLID_COLOR);
   layer_->SetColor(base_color);
   layer_->SetBounds(gfx::Rect(gfx::ToRoundedSize(size)));
   layer_->SetVisible(false);
   layer_->SetMasksToBounds(false);
+  layer_->SetOpacity(visible_opacity_);
   layer_->SetName("InkDropHighlight:solid_color_layer");
 }
 

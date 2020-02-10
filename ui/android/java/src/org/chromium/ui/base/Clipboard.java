@@ -126,6 +126,19 @@ public class Clipboard implements ClipboardManager.OnPrimaryClipChangedListener 
     }
 
     /**
+     * Gets the Uri of top item on the primary clip on the Android clipboard.
+     *
+     * @return an Uri if any, or null if there is no Uri or no entries on the primary clip.
+     */
+    public Uri getUri() {
+        ClipData clipData = mClipboardManager.getPrimaryClip();
+        if (clipData == null) return null;
+        if (clipData.getItemCount() == 0) return null;
+
+        return clipData.getItemAt(0).getUri();
+    }
+
+    /**
      * Gets the HTML text of top item on the primary clip on the Android clipboard.
      *
      * @return a Java string with the html text if any, or null if there is no html

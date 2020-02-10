@@ -854,8 +854,6 @@ class CC_EXPORT LayerTreeHostImpl : public InputHandler,
       compositor_frame_reporting_controller_;
 
  private:
-  const gfx::ColorSpace& GetRasterColorSpaceAndId(int* id) const;
-
   void CollectScrollDeltas(ScrollAndScaleSet* scroll_info);
   void CollectScrollbarUpdates(ScrollAndScaleSet* scroll_info) const;
 
@@ -1045,7 +1043,6 @@ class CC_EXPORT LayerTreeHostImpl : public InputHandler,
   // This is usually turned on only in some tests (e.g. web-tests).
   const bool is_synchronous_single_threaded_;
 
-  const int default_color_space_id_ = gfx::ColorSpace::GetNextId();
   const gfx::ColorSpace default_color_space_ = gfx::ColorSpace::CreateSRGB();
 
   viz::ClientResourceProvider resource_provider_;

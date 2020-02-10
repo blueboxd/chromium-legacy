@@ -228,9 +228,6 @@ ObjectPaintInvalidatorWithContext::ComputePaintInvalidationReason() {
       context_.fragment_data->VisualRect().IsEmpty())
     return PaintInvalidationReason::kNone;
 
-  if (object_.PaintedOutputOfObjectHasNoEffectRegardlessOfSize())
-    return PaintInvalidationReason::kNone;
-
   // Force full paint invalidation if the outline may be affected by descendants
   // and this object is marked for checking paint invalidation for any reason.
   if (object_.OutlineMayBeAffectedByDescendants() ||

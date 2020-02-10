@@ -46,7 +46,7 @@ class MojoChannel : public MojoChannelBase {
   void QueryVersion() {
     // Note: the callback will not be called if |remote_| is destroyed.
     remote_.QueryVersion(
-        base::Bind(&MojoChannel::OnVersionReady, base::Unretained(this)));
+        base::BindOnce(&MojoChannel::OnVersionReady, base::Unretained(this)));
   }
 
  private:

@@ -99,6 +99,7 @@ public class BrowserImpl extends IBrowser.Stub {
 
     public BrowserImpl(ProfileImpl profile, String persistenceId, Bundle savedInstanceState,
             Context context, FragmentWindowAndroid windowAndroid) {
+        profile.checkNotDestroyed();
         mProfile = profile;
 
         mPersistenceInfo = new PersistenceInfo();

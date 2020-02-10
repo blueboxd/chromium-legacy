@@ -1704,10 +1704,9 @@ String InspectorNetworkAgent::NavigationInitiatorInfo(LocalFrame* frame) {
     // For navigations, we limit async stack trace to depth 1 to avoid the
     // base::Value depth limits with Mojo serialization / parsing.
     // See http://crbug.com/809996.
-    cbor = std::move(*BuildInitiatorObject(frame->GetDocument(),
-                                           FetchInitiatorInfo(),
-                                           /*max_async_depth=*/1))
-               .TakeSerialized();
+    BuildInitiatorObject(frame->GetDocument(), FetchInitiatorInfo(),
+                         /*max_async_depth=*/1)
+        ->AppendSerialized(&cbor);
   }
   std::vector<uint8_t> json;
   ConvertCBORToJSON(SpanFrom(cbor), &json);

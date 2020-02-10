@@ -535,7 +535,7 @@ class OncMojo {
    * Returns a NetworkStateProperties object with type set and default values.
    * @param {!chromeos.networkConfig.mojom.NetworkType} type
    * @param {?string=} opt_name Optional name, intended for testing.
-   * @return {chromeos.networkConfig.mojom.NetworkStateProperties}
+   * @return {!chromeos.networkConfig.mojom.NetworkStateProperties}
    */
   static getDefaultNetworkState(type, opt_name) {
     const mojom = chromeos.networkConfig.mojom;

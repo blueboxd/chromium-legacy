@@ -55,6 +55,11 @@ class QuickAnswersClient
     virtual ~QuickAnswersDelegate() = default;
   };
 
+  // Method that can be used in tests to change the search result loader
+  // returned by |CreateSearchResultLoader| in tests.
+  using SearchResultLoaderFactoryCallback =
+      base::RepeatingCallback<std::unique_ptr<SearchResultLoader>()>;
+
   QuickAnswersClient(network::mojom::URLLoaderFactory* url_loader_factory,
                      ash::AssistantState* assistant_state,
                      QuickAnswersDelegate* delegate);
@@ -79,13 +84,19 @@ class QuickAnswersClient
   // Send a quick answer request. Virtual for testing.
   virtual void SendRequest(const QuickAnswersRequest& quick_answers_request);
 
+  static void SetSearchResultLoaderFactoryForTesting(
+      SearchResultLoaderFactoryCallback* factory);
+
  private:
+  // Creates a |SearchResultLoader| instance.
+  std::unique_ptr<SearchResultLoader> CreateSearchResultLoader();
+
   void NotifyEligibilityChanged();
 
   network::mojom::URLLoaderFactory* url_loader_factory_ = nullptr;
   ash::AssistantState* assistant_state_ = nullptr;
   QuickAnswersDelegate* delegate_ = nullptr;
-  std::unique_ptr<SearchResultLoader> search_results_loader_;
+  std::unique_ptr<SearchResultLoader> search_result_loader_;
   bool assistant_enabled_ = false;
   bool assistant_context_enabled_ = false;
   bool locale_supported_ = false;

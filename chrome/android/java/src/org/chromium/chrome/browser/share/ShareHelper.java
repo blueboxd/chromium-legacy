@@ -57,6 +57,7 @@ import org.chromium.chrome.browser.preferences.SharedPreferencesManager;
 import org.chromium.content_public.browser.RenderWidgetHostView;
 import org.chromium.content_public.browser.WebContents;
 import org.chromium.ui.UiUtils;
+import org.chromium.ui.base.Clipboard;
 import org.chromium.ui.base.WindowAndroid;
 import org.chromium.ui.base.WindowAndroid.IntentCallback;
 
@@ -146,17 +147,65 @@ public class ShareHelper {
         }
     }
 
-    private static void deleteShareImageFiles(File file) {
-        if (!file.exists()) return;
+    /**
+     * Delete the |file|, if the |file| is a directory, delete the files and directories in the
+     * directory recursively.
+     *
+     * @param file The {@link File} or directory to be deleted.
+     * @param reservedFilepath The filepath should not to be deleted.
+     * @return Whether the |folder| has file to keep/reserve.
+     */
+    private static boolean deleteFiles(File file, @Nullable String reservedFilepath) {
+        if (!file.exists()) return false;
+        if (reservedFilepath != null && file.isFile()
+                && file.getPath().endsWith(reservedFilepath)) {
+            return true;
+        }
+
+        boolean anyChildKept = false;
         if (file.isDirectory()) {
-            File[] file_list = file.listFiles();
-            if (file_list != null) {
-                for (File f : file_list) deleteShareImageFiles(f);
+            for (File child : file.listFiles()) {
+                anyChildKept |= deleteFiles(child, reservedFilepath);
             }
         }
-        if (!file.delete()) {
+
+        // file.delete() will fail if |file| is a directory and has a file need to keep. In this
+        // case, the log should not been recorded since it is correct.
+        if (!anyChildKept && !file.delete()) {
             Log.w(TAG, "Failed to delete share image file: %s", file.getAbsolutePath());
+            return true;
         }
+        return anyChildKept;
+    }
+
+    /**
+     * Check if the file related to |fileUri| is in the |folder|.
+     *
+     * @param fileUri The {@link Uri} related to the file to be checked.
+     * @param folder The folder that may contain the |fileUrl|.
+     * @return Whether the |fileUri| is in the |folder|.
+     */
+    private static boolean isUriInDirectory(Uri fileUri, File folder) {
+        if (fileUri == null) return false;
+
+        Uri chromeUriPrefix = ContentUriUtils.getContentUriFromFile(folder);
+        if (chromeUriPrefix == null) return false;
+
+        return fileUri.toString().startsWith(chromeUriPrefix.toString());
+    }
+
+    /**
+     * Check if the system clipboard contains a Uri that comes from Chrome. If yes, return the file
+     * name from the Uri, otherwise return null.
+     *
+     * @return The file name if system clipboard contains a Uri from Chrome, otherwise return null.
+     */
+    private static String getClipboardCurrentFilepath() throws IOException {
+        Uri clipboardUri = Clipboard.getInstance().getUri();
+        if (isUriInDirectory(clipboardUri, getSharedFilesDirectory())) {
+            return clipboardUri.getPath();
+        }
+        return null;
     }
 
     /**
@@ -320,7 +369,7 @@ public class ShareHelper {
     public static void clearSharedImages() {
         AsyncTask.SERIAL_EXECUTOR.execute(() -> {
             try {
-                deleteShareImageFiles(getSharedFilesDirectory());
+                deleteFiles(getSharedFilesDirectory(), getClipboardCurrentFilepath());
             } catch (IOException ie) {
                 // Ignore exception.
             }

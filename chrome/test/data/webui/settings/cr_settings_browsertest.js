@@ -1981,32 +1981,3 @@ CrSettingsSiteFaviconTest.prototype = {
 TEST_F('CrSettingsSiteFaviconTest', 'All', function() {
   mocha.run();
 });
-
-GEN('#if defined(OS_CHROMEOS)');
-
-// eslint-disable-next-line no-var
-var CrSettingsSplitSettingsFlagTest = class extends CrSettingsBrowserTest {
-  /** @override */
-  get browsePreload() {
-    return 'chrome://settings/basic_page/basic_page.html';
-  }
-
-  /** @override */
-  get extraLibraries() {
-    return super.extraLibraries.concat([
-      'split_settings_flag_test.js',
-    ]);
-  }
-};
-
-// Test is consistently failing. http://crbug.com/1008916
-GEN('#if !defined(NDEBUG)');
-GEN('#define MAYBE_All3 DISABLED_All');
-GEN('#else');
-GEN('#define MAYBE_All3 All');
-GEN('#endif');
-TEST_F('CrSettingsSplitSettingsFlagTest', 'MAYBE_All3', function() {
-  mocha.run();
-});
-
-GEN('#endif  // defined(OS_CHROMEOS)');

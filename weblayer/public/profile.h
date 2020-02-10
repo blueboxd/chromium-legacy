@@ -30,6 +30,11 @@ class Profile {
 
   virtual ~Profile() {}
 
+  // Delete all profile's data from disk. If there are any existing usage
+  // of this profile, return false immediately and |done_callback| will not
+  // be called. Otherwise |done_callback| is called when deletion is complete.
+  virtual bool DeleteDataFromDisk(base::OnceClosure done_callback) = 0;
+
   virtual void ClearBrowsingData(
       const std::vector<BrowsingDataType>& data_types,
       base::Time from_time,

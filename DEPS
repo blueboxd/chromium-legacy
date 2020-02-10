@@ -242,7 +242,7 @@ vars = {
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling devtools-frontend
   # and whatever else without interference from each other.
-  'devtools_frontend_revision': '605997daea8101cfe4cdc6753bee9d87a4285375',
+  'devtools_frontend_revision': '9790091ab756a15aea1e7c11fd307058f9ceeaac',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling libprotobuf-mutator
   # and whatever else without interference from each other.
@@ -765,7 +765,7 @@ deps = {
     Var('chromium_git') + '/angle/angle.git' + '@' +  Var('angle_revision'),
 
   'src/third_party/dav1d/libdav1d':
-    Var('chromium_git') + '/external/github.com/videolan/dav1d.git' + '@' + '9c29f229c5aa7d2d9564d44e8932011f23ac4e77',
+    Var('chromium_git') + '/external/github.com/videolan/dav1d.git' + '@' + '19ce77e0b9ec60e0a3a748ae9c2c2b417d3b75b5',
 
   'src/third_party/dawn':
     Var('dawn_git') + '/dawn.git' + '@' +  Var('dawn_revision'),
@@ -1257,7 +1257,7 @@ deps = {
   },
 
   'src/third_party/perfetto':
-    Var('android_git') + '/platform/external/perfetto.git' + '@' + '5c2603dacfeeb5365dbb0cfbcd11c150703a2a83',
+    Var('android_git') + '/platform/external/perfetto.git' + '@' + 'be1f489fde92392b782a14b6c8febb68be978a90',
 
   'src/third_party/perl': {
       'url': Var('chromium_git') + '/chromium/deps/perl.git' + '@' + '6f3e5028eb65d0b4c5fdd792106ac4c84eee1eb3',
@@ -1528,7 +1528,7 @@ deps = {
     Var('chromium_git') + '/v8/v8.git' + '@' +  Var('v8_revision'),
 
   'src-internal': {
-    'url': 'https://chrome-internal.googlesource.com/chrome/src-internal.git@f88ab1597b79327f31bfe2e639307aa6d8cd3289',
+    'url': 'https://chrome-internal.googlesource.com/chrome/src-internal.git@6caf836140f9a08213c64f526e4841652a10444a',
     'condition': 'checkout_src_internal',
   },
 

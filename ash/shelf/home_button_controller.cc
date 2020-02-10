@@ -8,7 +8,6 @@
 #include "ash/assistant/assistant_controller.h"
 #include "ash/home_screen/home_screen_controller.h"
 #include "ash/root_window_controller.h"
-#include "ash/session/session_controller_impl.h"
 #include "ash/shelf/assistant_overlay.h"
 #include "ash/shelf/home_button.h"
 #include "ash/shelf/shelf_button.h"
@@ -44,18 +43,15 @@ bool CanActivate() {
 HomeButtonController::HomeButtonController(HomeButton* button)
     : button_(button) {
   DCHECK(button_);
+
+  InitializeAssistantOverlay();
+  DCHECK(assistant_overlay_);
+
   Shell* shell = Shell::Get();
   shell->app_list_controller()->AddObserver(this);
-  shell->session_controller()->AddObserver(this);
   shell->tablet_mode_controller()->AddObserver(this);
   shell->assistant_controller()->ui_controller()->AddModelObserver(this);
   AssistantState::Get()->AddObserver(this);
-
-  // Initialize the Assistant overlay and sync the flags if active user session
-  // has already started. This could happen when an external monitor is plugged
-  // in.
-  if (shell->session_controller()->IsActiveUserSessionStarted())
-    InitializeAssistantOverlay();
 }
 
 HomeButtonController::~HomeButtonController() {
@@ -69,7 +65,6 @@ HomeButtonController::~HomeButtonController() {
     shell->app_list_controller()->RemoveObserver(this);
   if (shell->tablet_mode_controller())
     shell->tablet_mode_controller()->RemoveObserver(this);
-  shell->session_controller()->RemoveObserver(this);
   if (AssistantState::Get())
     AssistantState::Get()->RemoveObserver(this);
 }
@@ -133,11 +128,8 @@ bool HomeButtonController::MaybeHandleGestureEvent(ui::GestureEvent* event) {
 
 bool HomeButtonController::IsAssistantAvailable() {
   AssistantStateBase* state = AssistantState::Get();
-  bool settings_enabled = state->settings_enabled().value_or(false);
-  bool feature_allowed =
-      state->allowed_state() == mojom::AssistantAllowedState::ALLOWED;
-
-  return assistant_overlay_ && feature_allowed && settings_enabled;
+  return state->allowed_state() == mojom::AssistantAllowedState::ALLOWED &&
+         state->settings_enabled().value_or(false);
 }
 
 bool HomeButtonController::IsAssistantVisible() {
@@ -158,23 +150,12 @@ void HomeButtonController::OnAppListVisibilityWillChange(bool shown,
     OnAppListDismissed();
 }
 
-void HomeButtonController::OnActiveUserSessionChanged(
-    const AccountId& account_id) {
-  button_->OnAssistantAvailabilityChanged();
-  // Initialize the Assistant overlay when primary user session becomes
-  // active.
-  if (Shell::Get()->session_controller()->IsUserPrimary() &&
-      !assistant_overlay_) {
-    InitializeAssistantOverlay();
-  }
-}
-
 void HomeButtonController::OnTabletModeStarted() {
   button_->AnimateInkDrop(views::InkDropState::DEACTIVATED, nullptr);
 }
 
-void HomeButtonController::OnAssistantStatusChanged(
-    mojom::AssistantState state) {
+void HomeButtonController::OnAssistantFeatureAllowedChanged(
+    mojom::AssistantAllowedState state) {
   button_->OnAssistantAvailabilityChanged();
 }
 
@@ -219,6 +200,7 @@ void HomeButtonController::OnAppListDismissed() {
 }
 
 void HomeButtonController::InitializeAssistantOverlay() {
+  DCHECK_EQ(nullptr, assistant_overlay_);
   assistant_overlay_ = new AssistantOverlay(button_);
   button_->AddChildView(assistant_overlay_);
   assistant_overlay_->SetVisible(false);

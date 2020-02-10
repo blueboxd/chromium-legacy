@@ -11,7 +11,6 @@
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browser_thread.h"
-#include "content/public/browser/login_delegate.h"
 #include "content/public/browser/navigation_entry.h"
 #include "content/public/browser/navigation_handle.h"
 #include "content/public/browser/storage_partition.h"
@@ -34,18 +33,15 @@ void LoginTabHelper::DidStartNavigation(
       navigation_handle->IsSameDocument())
     return;
 
-  if (!delegate_)
+  if (!login_handler_)
     return;
 
-  delegate_.reset();
-  url_for_delegate_ = GURL();
+  login_handler_.reset();
+  url_for_login_handler_ = GURL();
 }
 
 void LoginTabHelper::DidFinishNavigation(
     content::NavigationHandle* navigation_handle) {
-  DCHECK(
-      base::FeatureList::IsEnabled(features::kHTTPAuthCommittedInterstitials));
-
   if (!navigation_handle->IsInMainFrame() ||
       navigation_handle->IsSameDocument()) {
     return;
@@ -71,9 +67,6 @@ void LoginTabHelper::DidFinishNavigation(
     return;
   }
 
-  // TODO(https://crbug.com/969097): handle auth challenges that lead to
-  // downloads (i.e. don't commit).
-
   // Show a login prompt with the navigation's AuthChallengeInfo on FTP
   // navigations and on HTTP 401/407 responses.
   if (!navigation_handle->GetURL().SchemeIs(url::kFtpScheme)) {
@@ -89,22 +82,17 @@ void LoginTabHelper::DidFinishNavigation(
   challenge_ = navigation_handle->GetAuthChallengeInfo().value();
   network_isolation_key_ = navigation_handle->GetNetworkIsolationKey();
 
-  url_for_delegate_ = navigation_handle->GetURL();
-  delegate_ = CreateLoginPrompt(
+  url_for_login_handler_ = navigation_handle->GetURL();
+  login_handler_ = LoginHandler::Create(
       navigation_handle->GetAuthChallengeInfo().value(),
       navigation_handle->GetWebContents(),
-      navigation_handle->GetGlobalRequestID(), true,
-      navigation_handle->GetURL(),
-      // TODO(https://crbug.com/968881): response headers can be null because
-      // they are only used for passing the request to extensions, and that
-      // doesn't happen in POST_COMMIT mode. This API needs to be cleaned up.
-      nullptr, LoginHandler::POST_COMMIT,
       base::BindOnce(
           &LoginTabHelper::HandleCredentials,
-          // Since the LoginTabHelper owns the |delegate_| that calls this
-          // callback, it's safe to use base::Unretained here; the |delegate_|
-          // cannot outlive its owning LoginTabHelper.
+          // Since the LoginTabHelper owns the |login_handler_| that calls this
+          // callback, it's safe to use base::Unretained here; the
+          // |login_handler_| cannot outlive its owning LoginTabHelper.
           base::Unretained(this)));
+  login_handler_->ShowLoginPromptAfterCommit(navigation_handle->GetURL());
 
   // If the challenge comes from a proxy, the URL should be hidden in the
   // omnibox to avoid origin confusion. Call DidChangeVisibleSecurityState() to
@@ -115,11 +103,11 @@ void LoginTabHelper::DidFinishNavigation(
 }
 
 bool LoginTabHelper::ShouldDisplayURL() const {
-  return !delegate_ || !challenge_.is_proxy;
+  return !login_handler_ || !challenge_.is_proxy;
 }
 
 bool LoginTabHelper::IsShowingPrompt() const {
-  return !!delegate_;
+  return !!login_handler_;
 }
 
 content::NavigationThrottle::ThrottleCheckResult
@@ -163,8 +151,8 @@ LoginTabHelper::LoginTabHelper(content::WebContents* web_contents)
 
 void LoginTabHelper::HandleCredentials(
     const base::Optional<net::AuthCredentials>& credentials) {
-  delegate_.reset();
-  url_for_delegate_ = GURL();
+  login_handler_.reset();
+  url_for_login_handler_ = GURL();
 
   if (credentials.has_value()) {
     // Pass a weak pointer for the callback, as the WebContents (and thus this

@@ -27,7 +27,7 @@ class SystemMenuRootNode extends RootNodeWrapper {
    */
   static buildTree(menuNode) {
     const root = new SystemMenuRootNode(menuNode);
-    const childConstructor = (node) => new NodeWrapper(node, root);
+    const childConstructor = (node) => NodeWrapper.create(node, root);
 
     RootNodeWrapper.findAndSetChildren(root, childConstructor);
     return root;

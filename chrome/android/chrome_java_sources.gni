@@ -1860,7 +1860,6 @@ chrome_java_sources = [
   "java/src/org/chromium/chrome/browser/webshare/ShareServiceImplementationFactory.java",
   "java/src/org/chromium/chrome/browser/webshare/SharedFileCollator.java",
   "java/src/org/chromium/chrome/browser/widget/DateDividedAdapter.java",
-  "java/src/org/chromium/chrome/browser/widget/FeatureHighlightProvider.java",
   "java/src/org/chromium/chrome/browser/widget/ScrimView.java",
   "java/src/org/chromium/chrome/browser/widget/bottomsheet/BottomSheet.java",
   "java/src/org/chromium/chrome/browser/widget/bottomsheet/BottomSheetContent.java",

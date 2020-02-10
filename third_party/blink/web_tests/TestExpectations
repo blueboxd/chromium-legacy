@@ -6565,10 +6565,6 @@ crbug.com/1050039 [ Mac ] virtual/omt-worker-fetch/fast/workers/worker-onerror-0
 # TODO(michaelludwig) - Remove and rebaseline after Skia roll
 crbug.com/1050086 transforms/3d/point-mapping/3d-point-mapping-preserve-3d.html [ Pass Failure ]
 
-crbug.com/1050102 [ Win ] fast/forms/suggestion-picker/datetimelocal-suggestion-picker-appearance-locale-hebrew.html [ Failure ]
-crbug.com/1050102 [ Win ] virtual/form-controls-refresh-disabled/fast/forms/suggestion-picker/datetimelocal-suggestion-picker-appearance-locale-hebrew.html [ Failure ]
-crbug.com/1050102 [ Win ] fast/forms/suggestion-picker/time-suggestion-picker-appearance-rtl.html [ Failure ]
-
 crbug.com/1050212 [ Win ] external/wpt/infrastructure/server/wpt-server-http.sub.html [ Skip ]
 
 # Sheriff 2020-02-10

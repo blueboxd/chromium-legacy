@@ -324,7 +324,9 @@ class ReorderBookmarkItemsAdapter extends DragReorderableListAdapter<BookmarkIte
     public void refresh() {
         // TODO(crbug.com/160194): Clean up after bookmark reordering launches.
         // Tell the RecyclerView to update its elements.
-        notifyDataSetChanged();
+        if (mElements != null) {
+            notifyDataSetChanged();
+        }
     }
 
     /**

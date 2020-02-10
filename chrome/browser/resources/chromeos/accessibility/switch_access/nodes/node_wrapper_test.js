@@ -131,7 +131,7 @@ TEST_F('SwitchAccessNodeWrapperTest', 'Equals', function() {
         'Equals is not symmetric? Nodes with different base nodes are equal');
 
     const equivalentWrappedNode =
-        new NodeWrapper(wrappedNode.baseNode_, desktopRootNode);
+        NodeWrapper.create(wrappedNode.baseNode_, desktopRootNode);
     assertTrue(
         wrappedNode.equals(wrappedNode),
         'Equals is not reflexive? (child node)');
@@ -149,7 +149,7 @@ TEST_F('SwitchAccessNodeWrapperTest', 'Actions', function() {
                    <button></button>
                    <input type="range" min=1 max=5 value=3>`;
   this.runWithLoadedTree(website, (desktop) => {
-    const textField = new NodeWrapper(
+    const textField = NodeWrapper.create(
         desktop.find({role: chrome.automation.RoleType.TEXT_FIELD}),
         new SARootNode());
 
@@ -166,7 +166,7 @@ TEST_F('SwitchAccessNodeWrapperTest', 'Actions', function() {
         textField.hasAction(SAConstants.MenuAction.SELECT),
         'Text field has action SELECT');
 
-    const button = new NodeWrapper(
+    const button = NodeWrapper.create(
         desktop.find({role: chrome.automation.RoleType.BUTTON}),
         new SARootNode());
 
@@ -183,7 +183,7 @@ TEST_F('SwitchAccessNodeWrapperTest', 'Actions', function() {
         button.hasAction(SAConstants.MenuAction.DICTATION),
         'Button has action DICTATION');
 
-    const slider = new NodeWrapper(
+    const slider = NodeWrapper.create(
         desktop.find({role: chrome.automation.RoleType.SLIDER}),
         new SARootNode());
 

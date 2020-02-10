@@ -164,7 +164,7 @@ class AudioDecoderTest : public ::testing::TestWithParam<TestScenario> {
     // recovery) because it introduces a tiny, significant delay.
     bool examine_signal = true;
     if (GetParam().codec == CODEC_AUDIO_OPUS) {
-      ++decoded_frames_seen_;
+      decoded_frames_seen_ = should_be_continuous ? decoded_frames_seen_ + 1 : 1;
       examine_signal = (decoded_frames_seen_ > 2) && should_be_continuous;
     }
     if (examine_signal) {

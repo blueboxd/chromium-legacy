@@ -485,13 +485,23 @@ void HTMLCanvasElement::DoDeferredPaintInvalidation() {
     return;
   }
   LayoutBox* layout_box = GetLayoutBox();
+
+  FloatRect content_rect;
+  if (layout_box) {
+    if (layout_box->IsLayoutReplaced()) {
+      content_rect =
+          FloatRect(ToLayoutReplaced(layout_box)->ReplacedContentRect());
+    } else {
+      content_rect = FloatRect(layout_box->PhysicalContentBoxRect());
+    }
+  }
+
   if (Is2d()) {
     FloatRect src_rect(0, 0, Size().Width(), Size().Height());
     dirty_rect_.Intersect(src_rect);
 
     FloatRect invalidation_rect;
     if (layout_box) {
-      FloatRect content_rect(layout_box->PhysicalContentBoxRect());
       FloatRect mapped_dirty_rect =
           MapRect(dirty_rect_, src_rect, content_rect);
       if (context_->IsComposited()) {
@@ -527,7 +537,6 @@ void HTMLCanvasElement::DoDeferredPaintInvalidation() {
     // being stretched, so we need to account for color bleeding caused by the
     // interpolation filter.
     FloatRect src_rect(0, 0, Size().Width(), Size().Height());
-    FloatRect content_rect(layout_box->PhysicalContentBoxRect());
     if (content_rect.Width() > src_rect.Width() ||
         content_rect.Height() > src_rect.Height()) {
       dirty_rect_.Inflate(0.5);

@@ -8,10 +8,13 @@
 #include <string>
 
 @class NSString;
+@class NSArray;
 
 namespace breakpad_helper {
 
-// Key for breadcrumbs attached to crash reports.
+// Key format for breadcrumbs attached to crash reports. Format string contains
+// %lu for index as there are multiple breadcrumbs keys uploaded to crash
+// server.
 extern NSString* const kBreadcrumbs;
 
 // Starts the crash handlers. This must be run as soon as possible to catch
@@ -127,8 +130,10 @@ void SetGridToVisibleTabAnimation(NSString* to_view_controller,
 // tab.
 void RemoveGridToVisibleTabAnimation();
 
-// Sets a key with the given |breadcrumbs|.
-void SetBreadcrumbEvents(NSString* breadcrumbs);
+// Sets keys with the given |breadcrumbs|. Each item in |breadcrumbs| will be
+// stored separately with kBreadcrumbs+<index> key (where kBreadcrumbs0 stores
+// the latest breadscrumbs).
+void SetBreadcrumbEvents(NSArray* breadcrumbs);
 
 // Sets a key in browser to store the playback state of media player (audio or
 // video). This function records a new start. This function is called for each

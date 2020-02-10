@@ -4,11 +4,16 @@
 
 #include "weblayer/browser/profile_impl.h"
 
+#include <utility>
+
 #include "base/bind.h"
 #include "base/callback_forward.h"
 #include "base/files/file_util.h"
 #include "base/path_service.h"
 #include "base/strings/string_util.h"
+#include "base/task/post_task.h"
+#include "base/task/task_traits.h"
+#include "base/task/thread_pool.h"
 #include "base/threading/thread_restrictions.h"
 #include "build/build_config.h"
 #include "components/web_cache/browser/web_cache_manager.h"
@@ -52,6 +57,40 @@ bool IsNameValid(const std::string& name) {
   return true;
 }
 
+#if defined(OS_POSIX)
+base::FilePath ComputeCachePath(const std::string& profile_name) {
+  base::FilePath path;
+  CHECK(base::PathService::Get(base::DIR_CACHE, &path));
+  return path.AppendASCII("profiles").AppendASCII(profile_name.c_str());
+}
+#endif  // OS_POSIX
+
+base::FilePath ComputeSessionServiceDataBaseDir(
+    const base::FilePath& data_path) {
+  base::FilePath base_path;
+  if (data_path.empty()) {
+    CHECK(base::PathService::Get(DIR_USER_DATA, &base_path));
+    base_path = base_path.AppendASCII("Incognito Restore Data");
+  } else {
+    base_path = data_path.AppendASCII("Restore Data");
+  }
+  return base_path;
+}
+
+void NukeProfileFromDisk(const std::string& profile_name,
+                         const base::FilePath& data_path) {
+  if (data_path.empty()) {
+    // Incognito. Just delete session data.
+    base::DeleteFileRecursively(ComputeSessionServiceDataBaseDir(data_path));
+    return;
+  }
+
+  base::DeleteFileRecursively(data_path);
+#if defined(OS_POSIX)
+  base::DeleteFileRecursively(ComputeCachePath(profile_name));
+#endif
+}
+
 }  // namespace
 
 class ProfileImpl::DataClearer : public content::BrowsingDataRemover::Observer {
@@ -89,11 +128,9 @@ base::FilePath ProfileImpl::GetCachePath(content::BrowserContext* context) {
   ProfileImpl* profile =
       static_cast<BrowserContextImpl*>(context)->profile_impl();
 #if defined(OS_POSIX)
-  base::FilePath path;
+  base::FilePath path = ComputeCachePath(profile->name_);
   {
     base::ScopedAllowBlocking allow_blocking;
-    CHECK(base::PathService::Get(base::DIR_CACHE, &path));
-    path = path.AppendASCII("profiles").AppendASCII(profile->name_.c_str());
     if (!base::PathExists(path))
       base::CreateDirectory(path);
   }
@@ -121,20 +158,35 @@ ProfileImpl::ProfileImpl(const std::string& name)
   // Ensure WebCacheManager is created so that it starts observing
   // OnRenderProcessHostCreated events.
   web_cache::WebCacheManager::GetInstance();
-
-  browser_context_ = std::make_unique<BrowserContextImpl>(this, data_path_);
-
-  locale_change_subscription_ =
-      i18n::RegisterLocaleChangeCallback(base::BindRepeating(
-          &ProfileImpl::OnLocaleChanged, base::Unretained(this)));
 }
 
 ProfileImpl::~ProfileImpl() {
-  browser_context_->ShutdownStoragePartitions();
+  DCHECK_EQ(num_browser_impl_, 0u);
+  if (browser_context_)
+    browser_context_->ShutdownStoragePartitions();
 }
 
 content::BrowserContext* ProfileImpl::GetBrowserContext() {
+  if (browser_context_)
+    return browser_context_.get();
+
+  browser_context_ = std::make_unique<BrowserContextImpl>(this, data_path_);
+  locale_change_subscription_ =
+      i18n::RegisterLocaleChangeCallback(base::BindRepeating(
+          &ProfileImpl::OnLocaleChanged, base::Unretained(this)));
   return browser_context_.get();
+}
+
+bool ProfileImpl::DeleteDataFromDisk(base::OnceClosure done_callback) {
+  if (num_browser_impl_ > 0)
+    return false;
+  base::PostTaskAndReply(
+      FROM_HERE,
+      {base::ThreadPool(), base::MayBlock(), base::TaskPriority::BEST_EFFORT,
+       base::TaskShutdownBehavior::SKIP_ON_SHUTDOWN},
+      base::BindOnce(&NukeProfileFromDisk, name_, data_path_),
+      std::move(done_callback));
+  return true;
 }
 
 void ProfileImpl::ClearBrowsingData(
@@ -142,7 +194,7 @@ void ProfileImpl::ClearBrowsingData(
     base::Time from_time,
     base::Time to_time,
     base::OnceClosure callback) {
-  auto* clearer = new DataClearer(browser_context_.get(), std::move(callback));
+  auto* clearer = new DataClearer(GetBrowserContext(), std::move(callback));
   // DataClearer will delete itself in OnBrowsingDataRemoverDone().
   // If Profile is destroyed during clearing, it would lead to destroying
   // browser_context_ and then BrowsingDataRemover, which in turn would call
@@ -177,7 +229,7 @@ void ProfileImpl::ClearRendererCache() {
            content::RenderProcessHost::AllHostsIterator();
        !iter.IsAtEnd(); iter.Advance()) {
     content::RenderProcessHost* render_process_host = iter.GetCurrentValue();
-    if (render_process_host->GetBrowserContext() == browser_context_.get() &&
+    if (render_process_host->GetBrowserContext() == GetBrowserContext() &&
         render_process_host->IsInitializedAndNotDead()) {
       web_cache::WebCacheManager::GetInstance()->ClearCacheForProcess(
           render_process_host->GetID());
@@ -216,6 +268,14 @@ static void JNI_ProfileImpl_DeleteProfile(JNIEnv* env, jlong profile) {
   delete reinterpret_cast<ProfileImpl*>(profile);
 }
 
+jboolean ProfileImpl::DeleteDataFromDisk(
+    JNIEnv* env,
+    const base::android::JavaRef<jobject>& j_completion_callback) {
+  return DeleteDataFromDisk(base::BindOnce(
+      &base::android::RunRunnableAndroid,
+      base::android::ScopedJavaGlobalRef<jobject>(j_completion_callback)));
+}
+
 void ProfileImpl::ClearBrowsingData(
     JNIEnv* env,
     const base::android::JavaParamRef<jintArray>& j_data_types,
@@ -247,5 +307,18 @@ void ProfileImpl::SetDownloadDirectory(
 }
 
 #endif  // OS_ANDROID
+
+void ProfileImpl::IncrementBrowserImplCount() {
+  num_browser_impl_++;
+}
+
+void ProfileImpl::DecrementBrowserImplCount() {
+  DCHECK_GT(num_browser_impl_, 0u);
+  num_browser_impl_--;
+}
+
+base::FilePath ProfileImpl::GetSessionServiceDataBaseDir() const {
+  return ComputeSessionServiceDataBaseDir(data_path_);
+}
 
 }  // namespace weblayer

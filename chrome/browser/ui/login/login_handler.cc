@@ -21,7 +21,6 @@
 #include "chrome/browser/password_manager/chrome_password_manager_client.h"
 #include "chrome/browser/prerender/prerender_contents.h"
 #include "chrome/browser/tab_contents/tab_util.h"
-#include "chrome/browser/ui/login/login_interstitial_delegate.h"
 #include "chrome/browser/ui/login/login_tab_helper.h"
 #include "chrome/common/chrome_features.h"
 #include "components/autofill/core/browser/logging/log_manager.h"
@@ -111,14 +110,6 @@ LoginHandler::~LoginHandler() {
 
     // TODO(https://crbug.com/916315): Remove this line.
     NotifyAuthCancelled();
-
-    // This may be called as the browser is closing a tab, so run the
-    // interstitial logic on a fresh event loop iteration.
-    if (interstitial_delegate_) {
-      base::PostTask(FROM_HERE, {BrowserThread::UI},
-                     base::BindOnce(&LoginInterstitialDelegate::DontProceed,
-                                    interstitial_delegate_));
-    }
   }
 }
 
@@ -126,55 +117,61 @@ void LoginHandler::Start(
     const content::GlobalRequestID& request_id,
     bool is_main_frame,
     const GURL& request_url,
-    scoped_refptr<net::HttpResponseHeaders> response_headers,
-    HandlerMode mode) {
+    scoped_refptr<net::HttpResponseHeaders> response_headers) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   DCHECK(web_contents());
   DCHECK(!WasAuthHandled());
 
-  if (base::FeatureList::IsEnabled(features::kHTTPAuthCommittedInterstitials)) {
-    // When committed interstitials are enabled, the login prompt is not shown
-    // until the interstitial is committed. Create the LoginTabHelper here so
-    // that it can observe the interstitial committing and show the prompt then.
-    LoginTabHelper::CreateForWebContents(web_contents());
-  }
+  // Create the LoginTabHelper so that it can observe the interstitial
+  // committing and show the prompt when it commits.
+  LoginTabHelper::CreateForWebContents(web_contents());
 
 #if BUILDFLAG(ENABLE_EXTENSIONS)
   // If the WebRequest API wants to take a shot at intercepting this, we can
   // return immediately. |continuation| will eventually be invoked if the
   // request isn't cancelled.
-  //
-  // When committed interstitials are enabled, LoginHandler::Start is called
-  // twice: once when Chrome initially receives the auth challenge, and again
-  // after a blank error page is committed to show a login prompt on top of
-  // it. Extensions should only be notified of each auth request once, and only
-  // before the request is cancelled. Therefore, the WebRequest API is only
-  // notified in PRE_COMMIT mode.
-  if (!base::FeatureList::IsEnabled(
-          features::kHTTPAuthCommittedInterstitials) ||
-      mode == PRE_COMMIT) {
     auto* api = extensions::BrowserContextKeyedAPIFactory<
         extensions::WebRequestAPI>::Get(web_contents()->GetBrowserContext());
-    auto continuation = base::BindOnce(&LoginHandler::MaybeSetUpLoginPrompt,
-                                       weak_factory_.GetWeakPtr(), request_url,
-                                       is_main_frame, mode);
+    auto continuation =
+        base::BindOnce(&LoginHandler::MaybeSetUpLoginPromptBeforeCommit,
+                       weak_factory_.GetWeakPtr(), request_url, is_main_frame);
     if (api->MaybeProxyAuthRequest(web_contents()->GetBrowserContext(),
                                    auth_info_, std::move(response_headers),
                                    request_id, is_main_frame,
                                    std::move(continuation))) {
       return;
     }
-  }
 #endif
 
-  // To avoid reentrancy problems, this function must not call
-  // |auth_required_callback_| synchronously. Defer MaybeSetUpLoginPrompt by an
-  // event loop iteration.
-  base::PostTask(
-      FROM_HERE, {BrowserThread::UI},
-      base::BindOnce(&LoginHandler::MaybeSetUpLoginPrompt,
-                     weak_factory_.GetWeakPtr(), request_url, is_main_frame,
-                     mode, base::nullopt, false /* should_cancel */));
+    // To avoid reentrancy problems, this function must not call
+    // |auth_required_callback_| synchronously. Defer
+    // MaybeSetUpLoginPromptBeforeCommit by an event loop iteration.
+    base::PostTask(
+        FROM_HERE, {BrowserThread::UI},
+        base::BindOnce(&LoginHandler::MaybeSetUpLoginPromptBeforeCommit,
+                       weak_factory_.GetWeakPtr(), request_url, is_main_frame,
+                       base::nullopt, false /* should_cancel */));
+}
+
+void LoginHandler::ShowLoginPromptAfterCommit(const GURL& request_url) {
+  // The request may have been handled while the WebRequest API was processing.
+  if (!web_contents() || !web_contents()->GetDelegate() || WasAuthHandled()) {
+    CancelAuth();
+    return;
+  }
+
+  // This is OK; we break out of the Observe() if we aren't handling the same
+  // auth_info() or BrowserContext.
+  //
+  // TODO(davidben): Only listen to notifications within a single
+  // BrowserContext.
+  registrar_.Add(this, chrome::NOTIFICATION_AUTH_SUPPLIED,
+                 content::NotificationService::AllBrowserContextsAndSources());
+  registrar_.Add(this, chrome::NOTIFICATION_AUTH_CANCELLED,
+                 content::NotificationService::AllBrowserContextsAndSources());
+
+  prompt_started_ = true;
+  ShowLoginPrompt(request_url);
 }
 
 void LoginHandler::SetAuth(const base::string16& username,
@@ -359,14 +356,6 @@ bool LoginHandler::WasAuthHandled() const {
 // Closes the view_contents from the UI loop.
 void LoginHandler::CloseContents() {
   CloseDialog();
-
-  if (interstitial_delegate_) {
-    // This may be called as the browser is closing a tab, so run the
-    // interstitial logic on a fresh event loop iteration.
-    base::PostTask(FROM_HERE, {BrowserThread::UI},
-                   base::BindOnce(&LoginInterstitialDelegate::Proceed,
-                                  interstitial_delegate_));
-  }
 }
 
 // static
@@ -443,10 +432,9 @@ void LoginHandler::GetDialogStrings(const GURL& request_url,
   }
 }
 
-void LoginHandler::MaybeSetUpLoginPrompt(
+void LoginHandler::MaybeSetUpLoginPromptBeforeCommit(
     const GURL& request_url,
     bool is_request_for_main_frame,
-    HandlerMode mode,
     const base::Optional<net::AuthCredentials>& credentials,
     bool should_cancel) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
@@ -473,104 +461,35 @@ void LoginHandler::MaybeSetUpLoginPrompt(
   registrar_.Add(this, chrome::NOTIFICATION_AUTH_CANCELLED,
                  content::NotificationService::AllBrowserContextsAndSources());
 
-  // When committed interstitials are enabled, a login prompt is triggered once
-  // the interstitial commits (that is, when |mode| is POST_COMMIT).
-  if (base::FeatureList::IsEnabled(features::kHTTPAuthCommittedInterstitials)) {
-    if (mode == POST_COMMIT) {
-      prompt_started_ = true;
-      ShowLoginPrompt(request_url);
-      return;
-    }
-
-    // In PRE_COMMIT mode, always cancel main frame requests that receive auth
-    // challenges. An interstitial will be committed as the result of the
-    // cancellation, and the login prompt will be shown on top of it in
-    // POST_COMMIT mode once the interstitial commits.
-    //
-    // Strictly speaking, it is not necessary to show an interstitial for all
-    // main-frame navigations, just cross-origin ones. However, we show an
-    // interstitial for all main-frame navigations for simplicity. Otherwise,
-    // it's difficult to prevent repeated prompts on cancellation. For example,
-    // imagine that we navigate from http://a.com/1 to http://a.com/2 and show a
-    // login prompt without committing an interstitial. If the prompt is
-    // cancelled, the request will then be resumed to read the 401 body and
-    // commit the navigation. But the committed 401 error looks
-    // indistinguishable from what we commit in the case of a cross-origin
-    // navigation, so LoginHandler will run in POST_COMMIT mode and show another
-    // login prompt. For simplicity, and because same-origin auth prompts should
-    // be relatively rare due to credential caching, we commit an interstitial
-    // for all main-frame navigations.
-    if (is_request_for_main_frame) {
-      DCHECK(mode == PRE_COMMIT);
-      RecordHttpAuthPromptType(AUTH_PROMPT_TYPE_WITH_INTERSTITIAL);
-      CancelAuth();
-      return;
-    }
+  // Always cancel main frame requests that receive auth challenges. An
+  // interstitial will be committed as the result of the cancellation, and the
+  // login prompt will be shown on top of it once the interstitial commits.
+  //
+  // Strictly speaking, it is not necessary to show an interstitial for all
+  // main-frame navigations, just cross-origin ones. However, we show an
+  // interstitial for all main-frame navigations for simplicity. Otherwise,
+  // it's difficult to prevent repeated prompts on cancellation. For example,
+  // imagine that we navigate from http://a.com/1 to http://a.com/2 and show a
+  // login prompt without committing an interstitial. If the prompt is
+  // cancelled, the request will then be resumed to read the 401 body and
+  // commit the navigation. But the committed 401 error looks
+  // indistinguishable from what we commit in the case of a cross-origin
+  // navigation, so LoginHandler will show another login prompt. For
+  // simplicity, and because same-origin auth prompts should be relatively
+  // rare due to credential caching, we commit an interstitial for all
+  // main-frame navigations.
+  if (is_request_for_main_frame) {
+    RecordHttpAuthPromptType(AUTH_PROMPT_TYPE_WITH_INTERSTITIAL);
+    CancelAuth();
+    return;
   }
 
   prompt_started_ = true;
-
-  // Check if this is a main frame navigation and
-  // (a) if the request is cross origin or
-  // (b) if an interstitial is already being shown or
-  // (c) the prompt is for proxy authentication
-  // (d) we're not displaying a standalone app
-  //
-  // For (a), there are two different ways the navigation can occur:
-  // 1- The user enters the resource URL in the omnibox.
-  // 2- The page redirects to the resource.
-  // In both cases, the last committed URL is different than the resource URL,
-  // so checking it is sufficient.
-  // Note that (1) will not be true once site isolation is enabled, as any
-  // navigation could cause a cross-process swap, including link clicks.
-  //
-  // For (b), the login interstitial should always replace an existing
-  // interstitial. This is because |LoginHandler::CloseContents| tries to
-  // proceed whatever interstitial is being shown when the login dialog is
-  // closed, so that interstitial should only be a login interstitial.
-  //
-  // For (c), the authority information in the omnibox will be (and should be)
-  // different from the authority information in the authentication prompt. An
-  // interstitial with an empty URL clears the omnibox and reduces the possible
-  // user confusion that may result from the different authority information
-  // being displayed simultaneously. This is specially important when the proxy
-  // is accessed via an open connection while the target server is considered
-  // secure.
-  const bool is_cross_origin_request =
-      web_contents()->GetLastCommittedURL().GetOrigin() !=
-      request_url.GetOrigin();
-  if (is_request_for_main_frame &&
-      (is_cross_origin_request || web_contents()->ShowingInterstitialPage() ||
-       auth_info().is_proxy) &&
-      web_contents()->GetDelegate()->GetDisplayMode(web_contents()) !=
-          blink::mojom::DisplayMode::kStandalone) {
-    DCHECK(!base::FeatureList::IsEnabled(
-        features::kHTTPAuthCommittedInterstitials));
-    RecordHttpAuthPromptType(AUTH_PROMPT_TYPE_WITH_INTERSTITIAL);
-
-    // Show a blank interstitial for main-frame, cross origin requests
-    // so that the correct URL is shown in the omnibox.
-    base::OnceClosure callback =
-        base::BindOnce(&LoginHandler::ShowLoginPrompt,
-                       weak_factory_.GetWeakPtr(), request_url);
-    // The interstitial delegate is owned by the interstitial that it creates.
-    // This cancels any existing interstitial.
-    interstitial_delegate_ =
-        (new LoginInterstitialDelegate(
-             web_contents(), auth_info().is_proxy ? GURL() : request_url,
-             std::move(callback)))
-            ->GetWeakPtr();
-
-  } else {
-    if (is_request_for_main_frame) {
-      RecordHttpAuthPromptType(AUTH_PROMPT_TYPE_MAIN_FRAME);
-    } else {
-      RecordHttpAuthPromptType(is_cross_origin_request
-                                   ? AUTH_PROMPT_TYPE_SUBRESOURCE_CROSS_ORIGIN
-                                   : AUTH_PROMPT_TYPE_SUBRESOURCE_SAME_ORIGIN);
-    }
-    ShowLoginPrompt(request_url);
-  }
+  RecordHttpAuthPromptType(web_contents()->GetLastCommittedURL().GetOrigin() !=
+                                   request_url.GetOrigin()
+                               ? AUTH_PROMPT_TYPE_SUBRESOURCE_CROSS_ORIGIN
+                               : AUTH_PROMPT_TYPE_SUBRESOURCE_SAME_ORIGIN);
+  ShowLoginPrompt(request_url);
 }
 
 void LoginHandler::ShowLoginPrompt(const GURL& request_url) {
@@ -641,18 +560,17 @@ void LoginHandler::BuildViewAndNotify(
 
 // ----------------------------------------------------------------------------
 // Public API
-std::unique_ptr<content::LoginDelegate> CreateLoginPrompt(
+std::unique_ptr<content::LoginDelegate> CreateLoginHandler(
     const net::AuthChallengeInfo& auth_info,
     content::WebContents* web_contents,
     const content::GlobalRequestID& request_id,
     bool is_request_for_main_frame,
     const GURL& url,
     scoped_refptr<net::HttpResponseHeaders> response_headers,
-    LoginHandler::HandlerMode mode,
     LoginAuthRequiredCallback auth_required_callback) {
   std::unique_ptr<LoginHandler> handler = LoginHandler::Create(
       auth_info, web_contents, std::move(auth_required_callback));
   handler->Start(request_id, is_request_for_main_frame, url,
-                 std::move(response_headers), mode);
+                 std::move(response_headers));
   return handler;
 }

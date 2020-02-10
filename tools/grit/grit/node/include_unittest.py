@@ -104,9 +104,9 @@ class IncludeNodeUnittest(unittest.TestCase):
         </includes>''', base_dir = util.PathFromRoot('grit/testdata'))
     inc, = root.GetChildrenOfType(include.IncludeNode)
     result = inc.GetDataPackValue(lang='en', encoding=util.BINARY)
-    self.failUnless(result.find('should be kept') != -1)
-    self.failUnless(result.find('in the middle...') != -1)
-    self.failUnless(result.find('should be removed') == -1)
+    self.assertIn(b'should be kept', result)
+    self.assertIn(b'in the middle...', result)
+    self.assertNotIn(b'should be removed', result)
 
 
 if __name__ == '__main__':

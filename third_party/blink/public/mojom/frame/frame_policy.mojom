@@ -17,4 +17,5 @@ struct FramePolicy {
   array<blink.mojom.ParsedFeaturePolicyDeclaration> container_policy;
   map<blink.mojom.FeaturePolicyFeature, blink.mojom.PolicyValue> required_document_policy;
   bool allowed_to_download = true;
+  bool disallow_document_access = false;
 };

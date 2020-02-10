@@ -1,5 +1,3 @@
 file://chrome/browser/resources/settings/OWNERS
 
-per-file split_settings_flag_test.js=file://chrome/browser/resources/settings/chromeos/OWNERS
-
 # COMPONENT: UI>Settings

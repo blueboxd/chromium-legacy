@@ -60,6 +60,7 @@ class BoxPaintInvalidatorTest : public PaintControllerPaintTest {
     auto& box = *ToLayoutBox(target.GetLayoutObject());
     auto visual_rect = box.FirstFragment().VisualRect();
     auto paint_offset = box.FirstFragment().PaintOffset();
+    box.SetShouldCheckForPaintInvalidation();
 
     // No geometry change.
     EXPECT_EQ(PaintInvalidationReason::kNone,
@@ -110,7 +111,10 @@ class BoxPaintInvalidatorTest : public PaintControllerPaintTest {
 
 INSTANTIATE_PAINT_TEST_SUITE_P(BoxPaintInvalidatorTest);
 
-TEST_P(BoxPaintInvalidatorTest, ComputePaintInvalidationReasonPaintingNothing) {
+// Paint invalidation for empty content is needed for updating composited layer
+// bounds for correct composited hit testing. It won't cause raster invalidation
+// (tested in paint_and_raster_invalidation_test.cc).
+TEST_P(BoxPaintInvalidatorTest, ComputePaintInvalidationReasonEmptyContent) {
   SetUpHTML();
   auto& target = *GetDocument().getElementById("target");
   auto& box = *ToLayoutBox(target.GetLayoutObject());
@@ -118,7 +122,7 @@ TEST_P(BoxPaintInvalidatorTest, ComputePaintInvalidationReasonPaintingNothing) {
   target.setAttribute(html_names::kClassAttr, "");
   UpdateAllLifecyclePhasesForTest();
 
-  EXPECT_TRUE(box.PaintedOutputOfObjectHasNoEffectRegardlessOfSize());
+  box.SetShouldCheckForPaintInvalidation();
   auto visual_rect = box.FirstFragment().VisualRect();
 
   // No geometry change.
@@ -127,12 +131,14 @@ TEST_P(BoxPaintInvalidatorTest, ComputePaintInvalidationReasonPaintingNothing) {
       ComputePaintInvalidationReason(box, visual_rect, visual_rect.Location()));
 
   // Paint offset change.
-  EXPECT_EQ(PaintInvalidationReason::kNone,
-            ComputePaintInvalidationReason(
-                box, visual_rect, visual_rect.Location() + IntSize(10, 20)));
+  auto old_visual_rect = visual_rect;
+  old_visual_rect.Move(IntSize(10, 20));
+  EXPECT_EQ(PaintInvalidationReason::kGeometry,
+            ComputePaintInvalidationReason(box, old_visual_rect,
+                                           old_visual_rect.Location()));
 
   // Visual rect size change.
-  auto old_visual_rect = visual_rect;
+  old_visual_rect = visual_rect;
   target.setAttribute(html_names::kStyleAttr, "width: 200px");
   GetDocument().View()->UpdateLifecycleToLayoutClean(
       DocumentUpdateReason::kTest);
@@ -140,7 +146,7 @@ TEST_P(BoxPaintInvalidatorTest, ComputePaintInvalidationReasonPaintingNothing) {
   box.GetMutableForPainting().SetVisualRect(
       IntRect(visual_rect.Location(), RoundedIntSize(box.Size())));
 
-  EXPECT_EQ(PaintInvalidationReason::kNone,
+  EXPECT_EQ(PaintInvalidationReason::kIncremental,
             ComputePaintInvalidationReason(box, old_visual_rect,
                                            old_visual_rect.Location()));
 }

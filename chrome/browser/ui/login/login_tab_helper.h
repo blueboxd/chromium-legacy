@@ -14,10 +14,11 @@
 #include "url/gurl.h"
 
 namespace content {
-class LoginDelegate;
 class NavigationHandle;
 class WebContents;
 }  // namespace content
+
+class LoginHandler;
 
 // LoginTabHelper is responsible for observing navigations that need to trigger
 // authentication prompts, showing the login prompt, and handling user-entered
@@ -70,8 +71,8 @@ class LoginTabHelper : public content::WebContentsObserver,
   // places the credentials into the cache.
   void Reload();
 
-  std::unique_ptr<content::LoginDelegate> delegate_;
-  GURL url_for_delegate_;
+  std::unique_ptr<LoginHandler> login_handler_;
+  GURL url_for_login_handler_;
 
   net::AuthChallengeInfo challenge_;
   net::NetworkIsolationKey network_isolation_key_;

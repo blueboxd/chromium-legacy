@@ -38708,6 +38708,7 @@ from previous Chrome versions.
   <int value="146229312" label="WebPaymentsExperimentalFeatures:enabled"/>
   <int value="147342055" label="ChromeHomeClearUrlOnOpen:disabled"/>
   <int value="147373243" label="enable-deferred-image-decoding"/>
+  <int value="147645817" label="DnsHttpssvc:enabled"/>
   <int value="149914698" label="SearchReadyOmnibox:disabled"/>
   <int value="151022756" label="ArcAvailableForChildAccount:disabled"/>
   <int value="151101719" label="HtmlBaseUsernameDetector:enabled"/>
@@ -39830,6 +39831,7 @@ from previous Chrome versions.
   <int value="1544552792" label="InterestFeedContentSuggestions:enabled"/>
   <int value="1548776701" label="AllBookmarks:disabled"/>
   <int value="1548942246" label="PassiveDocumentEventListeners:disabled"/>
+  <int value="1552753678" label="DnsHttpssvc:disabled"/>
   <int value="1559034872" label="AutofillPrefilledFields:enabled"/>
   <int value="1560188739" label="reader-mode-heuristics"/>
   <int value="1561781431" label="VirtualKeyboardBorderedKey:enabled"/>

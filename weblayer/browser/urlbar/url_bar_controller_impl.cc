@@ -8,6 +8,8 @@
 #include "base/strings/utf_string_conversions.h"
 #include "components/omnibox/browser/autocomplete_input.h"
 #include "components/omnibox/browser/location_bar_model_impl.h"
+#include "components/security_state/content/content_utils.h"
+#include "components/security_state/core/security_state.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/common/content_constants.h"
 #include "weblayer/browser/browser_impl.h"
@@ -59,18 +61,39 @@ UrlBarControllerImpl::GetUrlForDisplay(JNIEnv* env) {
   return base::android::ScopedJavaLocalRef<jstring>(
       base::android::ConvertUTF16ToJavaString(env, GetUrlForDisplay()));
 }
+
+jint UrlBarControllerImpl::GetConnectionSecurityLevel(JNIEnv* env) {
+  return GetConnectionSecurityLevel();
+}
+
+jboolean UrlBarControllerImpl::ShouldShowDangerTriangleForWarningLevel(
+    JNIEnv* env) {
+  return ShouldShowDangerTriangleForWarningLevel();
+}
 #endif
 
 base::string16 UrlBarControllerImpl::GetUrlForDisplay() {
   return location_bar_model_->GetURLForDisplay();
 }
 
-bool UrlBarControllerImpl::GetURL(GURL* url) const {
-  auto* active_tab = static_cast<TabImpl*>(browser_->GetActiveTab());
-  if (!active_tab)
-    return false;
+security_state::SecurityLevel
+UrlBarControllerImpl::GetConnectionSecurityLevel() {
+  auto* active_web_contents = GetActiveWebContents();
+  if (!active_web_contents)
+    return security_state::SecurityLevel::NONE;
 
-  auto* active_web_contents = active_tab->web_contents();
+  auto state = security_state::GetVisibleSecurityState(active_web_contents);
+  DCHECK(state);
+  return security_state::GetSecurityLevel(
+      *state, /* used_policy_installed_certificate= */ false);
+}
+
+bool UrlBarControllerImpl::ShouldShowDangerTriangleForWarningLevel() {
+  return security_state::ShouldShowDangerTriangleForWarningLevel();
+}
+
+bool UrlBarControllerImpl::GetURL(GURL* url) const {
+  auto* active_web_contents = GetActiveWebContents();
   if (!active_web_contents)
     return false;
 
@@ -88,6 +111,14 @@ base::string16 UrlBarControllerImpl::FormattedStringWithEquivalentMeaning(
     const base::string16& formatted_url) const {
   return AutocompleteInput::FormattedStringWithEquivalentMeaning(
       url, formatted_url, AutocompleteSchemeClassifierImpl(), nullptr);
+}
+
+content::WebContents* UrlBarControllerImpl::GetActiveWebContents() const {
+  auto* active_tab = static_cast<TabImpl*>(browser_->GetActiveTab());
+  if (!active_tab)
+    return nullptr;
+
+  return active_tab->web_contents();
 }
 
 }  // namespace weblayer

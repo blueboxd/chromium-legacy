@@ -3331,9 +3331,14 @@ if (use_libfuzzer) {
   fuzzable_proto_library("policy_fuzzer_proto") {
     sources = [ "policy/fuzzer/policy_fuzzer.proto" ]
 
-    import_dirs = [ "//components/policy/proto" ]
+    import_dirs = [
+      "//components/policy/proto",
+      "$root_gen_dir/components/policy/proto",
+    ]
 
-    link_deps =
-        [ "//components/policy/proto:chrome_device_policy_full_runtime_proto" ]
+    link_deps = [
+      "//components/policy:cloud_policy_full_runtime_proto",
+      "//components/policy/proto:chrome_device_policy_full_runtime_proto",
+    ]
   }
 }

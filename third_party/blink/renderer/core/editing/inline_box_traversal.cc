@@ -260,7 +260,7 @@ class AbstractInlineBoxAndSideAffinity {
     const bool is_at_start = IsLtr(box_.Direction()) == AtLeftSide();
     NGInlineCursor cursor(box_.GetCursor());
 
-    if (!cursor.IsText()) {
+    if (!cursor.Current().IsText()) {
       return {cursor,
               is_at_start ? NGCaretPositionType::kBeforeBox
                           : NGCaretPositionType::kAfterBox,

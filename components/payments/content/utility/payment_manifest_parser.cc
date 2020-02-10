@@ -555,8 +555,9 @@ bool PaymentManifestParser::ParseWebAppInstallationInfoIntoStructs(
   {
     base::DictionaryValue* service_worker_dict = nullptr;
     if (!dict->GetDictionary(kServiceWorker, &service_worker_dict)) {
-      log.Error(
-          base::StringPrintf("\"%s\" must be a dictionary", kServiceWorker));
+      log.Error(base::StringPrintf(
+          "\"%s\" must be a dictionary in your web app manifest.",
+          kServiceWorker));
       return false;
     }
 

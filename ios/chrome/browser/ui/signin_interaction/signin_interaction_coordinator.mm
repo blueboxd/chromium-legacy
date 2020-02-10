@@ -112,6 +112,7 @@
   self.coordinator.signinCompletion =
       ^(SigninCoordinatorResult signinResult, ChromeIdentity* identity) {
         completion(signinResult == SigninCoordinatorResultSuccess);
+        [weakSelf.coordinator stop];
         weakSelf.coordinator = nil;
       };
 

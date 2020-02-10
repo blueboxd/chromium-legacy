@@ -11,7 +11,7 @@ Polymer({
     /**
      * Is device connected to network?
      */
-    isConnected: {type: Boolean, value: false},
+    isNetworkConnected: {type: Boolean, value: false},
 
     updateProgressUnavailable: {type: Boolean, value: true},
 

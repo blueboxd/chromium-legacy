@@ -264,7 +264,8 @@ crbug.com/1004547 external/wpt/intersection-observer/cross-origin-iframe.sub.htm
 crbug.com/849459 fragmentation/repeating-thead-under-repeating-thead.html [ Failure ]
 
 # These fail when device_scale_factor is changed, but only for anti-aliasing:
-crbug.com/968791 virtual/scalefactor200/css3/filters/effect-blur-hw.html [ Failure ]
+crbug.com/968791 [ Mac ] virtual/scalefactor200/css3/filters/effect-blur-hw.html [ Pass Failure Timeout ]
+crbug.com/968791 [ Linux Debug ] virtual/scalefactor200/css3/filters/effect-blur-hw.html [ Pass Timeout ]
 crbug.com/968791 virtual/scalefactor200/css3/filters/filterRegions.html [ Failure ]
 
 # These appear to be actually incorrect at device_scale_factor 2.0:
@@ -272,28 +273,29 @@ crbug.com/968791 virtual/scalefactor200/css3/filters/effect-reference-image-lazy
 crbug.com/968791 virtual/scalefactor200/css3/filters/effect-reference-image.html [ Failure ]
 crbug.com/968791 virtual/scalefactor200/external/wpt/css/filter-effects/filters-test-brightness-003.html [ Failure ]
 
-# These seem flaky on scalefactor200:
-crbug.com/968791 virtual/scalefactor200/css3/filters/effect-contrast-hw.html [ Pass Failure Timeout ]
-
 # Copying these from elsewhere in TestExpectations (for non-scalefactor200 virtual suite)
-crbug.com/658305 virtual/scalefactor200/css3/filters/buffer-offset.html [ Failure Pass ]
-crbug.com/658305 virtual/scalefactor200/css3/filters/effect-all-on-background-hw.html [ Failure Pass Timeout ]
-crbug.com/658305 crbug.com/758133 virtual/scalefactor200/css3/filters/effect-reference-colorspace-hw.html [ Failure Pass Timeout ]
-crbug.com/658305 [ Mac ] virtual/scalefactor200/css3/filters/effect-reference-composite-hw.html [ Timeout Pass ]
+crbug.com/658305 [ Mac ] virtual/scalefactor200/css3/filters/effect-all-on-background-hw.html [ Failure Pass Timeout ]
+crbug.com/658305 [ Linux Debug ] virtual/scalefactor200/css3/filters/effect-all-on-background-hw.html [ Pass Timeout ]
+crbug.com/862716 [ Mac ] virtual/scalefactor200/css3/filters/effect-brightness-clamping-hw.html [ Pass Timeout ]
+crbug.com/862716 [ Linux Debug ] virtual/scalefactor200/css3/filters/effect-brightness-clamping-hw.html [ Pass Timeout ]
+crbug.com/968791 [ Win10 ] virtual/scalefactor200/css3/filters/effect-contrast-hw.html [ Failure ]
+crbug.com/658305 crbug.com/758133 [ Mac ] virtual/scalefactor200/css3/filters/effect-reference-colorspace-hw.html [ Failure Pass Timeout ]
+crbug.com/658305 crbug.com/758133 [ Linux ] virtual/scalefactor200/css3/filters/effect-reference-colorspace-hw.html [ Pass Timeout ]
 crbug.com/658305 virtual/scalefactor200/css3/filters/effect-reference-external-stylesheet.html [ Failure Pass ]
-crbug.com/658305 virtual/scalefactor200/css3/filters/effect-reference-hidpi-hw.html [ Failure Pass Timeout ]
-crbug.com/658305 crbug.com/758133 virtual/scalefactor200/css3/filters/effect-reference-hw.html [ Failure Pass Timeout ]
-crbug.com/658305 virtual/scalefactor200/css3/filters/effect-reference-ordering-hw.html [ Failure Pass ]
+crbug.com/658305 [ Mac ] virtual/scalefactor200/css3/filters/effect-reference-hidpi-hw.html [ Pass Timeout ]
+crbug.com/873454 virtual/scalefactor200/css3/filters/effect-reference-image-hw.html [ Failure Pass ]
+crbug.com/658305 [ Mac ] virtual/scalefactor200/css3/filters/effect-reference-ordering-hw.html [ Pass Timeout ]
 crbug.com/658305 virtual/scalefactor200/css3/filters/effect-reference-subregion-hw.html [ Failure Pass Timeout ]
 crbug.com/658305 virtual/scalefactor200/css3/filters/effect-reference-zoom-hw.html [ Failure Pass Timeout ]
-crbug.com/658305 virtual/scalefactor200/css3/filters/filter-effect-removed.html [ Failure Pass ]
-crbug.com/862716 virtual/scalefactor200/css3/filters/effect-brightness-clamping-hw.html [ Failure Pass Timeout ]
-crbug.com/869364 virtual/scalefactor200/css3/filters/filter-repaint-composited-fallback.html [ Pass Timeout ]
-crbug.com/873454 virtual/scalefactor200/css3/filters/effect-reference-image-hw.html [ Failure Pass ]
+crbug.com/869364 [ Mac ] virtual/scalefactor200/css3/filters/filter-repaint-composited-fallback.html [ Pass Timeout ]
+crbug.com/869364 [ Linux Debug ] virtual/scalefactor200/css3/filters/filter-repaint-composited-fallback.html [ Pass Timeout ]
 crbug.com/903383 virtual/scalefactor200/external/wpt/css/filter-effects/css-filters-animation-combined-001.html [ Failure ]
 crbug.com/903383 virtual/scalefactor200/external/wpt/css/filter-effects/css-filters-animation-blur.html [ Failure ]
 crbug.com/626703 virtual/scalefactor200/external/wpt/css/filter-effects/filter-subregion-01.html [ Failure ]
 crbug.com/591099 virtual/scalefactor200/external/wpt/css/filter-effects/filtered-inline-applies-to-float.html [ Failure ]
+
+# Needs new baseline
+crbug.com/658305 crbug.com/758133 virtual/scalefactor200/css3/filters/effect-reference-hw.html [ Failure Pass Timeout ]
 
 # ==== Regressions introduced by BlinkGenPropertyTrees =====
 # Reflection / mask ordering issue
@@ -2253,32 +2255,16 @@ crbug.com/636239 [ Win7 ] virtual/audio-service/media/video-zoom-controls.html [
 crbug.com/377696 printing/setPrinting.html [ Failure ]
 
 crbug.com/658305 [ Mac ] css3/filters/buffer-offset.html [ Failure Pass ]
-crbug.com/658305 css3/filters/effect-all-on-background-hw.html [ Failure Pass Timeout ]
-crbug.com/862716 css3/filters/effect-brightness-clamping-hw.html [ Failure Pass Timeout ]
-crbug.com/658305 css3/filters/effect-reference-colorspace.html [ Failure Pass ]
-crbug.com/658305 crbug.com/758133 css3/filters/effect-reference-colorspace-hw.html [ Failure Pass Timeout ]
-crbug.com/658305 css3/filters/effect-reference-composite.html [ Failure Pass ]
-crbug.com/658305 css3/filters/effect-reference-composite-hw.html [ Failure Pass ]
 crbug.com/658305 [ Mac ] css3/filters/effect-reference-external.html [ Failure Pass ]
 crbug.com/658305 css3/filters/effect-reference-external-stylesheet.html [ Failure Pass ]
-crbug.com/658305 css3/filters/effect-reference-hidpi.html [ Failure Pass ]
-crbug.com/658305 css3/filters/effect-reference-hidpi-hw.html [ Failure Pass Timeout ]
-crbug.com/658305 css3/filters/effect-reference.html [ Failure Pass ]
-crbug.com/658305 crbug.com/758133 css3/filters/effect-reference-hw.html [ Failure Pass Timeout ]
 crbug.com/658305 css3/filters/effect-reference-image.html [ Pass Failure ]
 crbug.com/658305 css3/filters/effect-reference-image-lazy-attach.html [ Pass Failure ]
-crbug.com/658305 css3/filters/effect-reference-ordering.html [ Failure Pass ]
-crbug.com/658305 css3/filters/effect-reference-ordering-hw.html [ Failure Pass ]
 crbug.com/658305 [ Mac ] css3/filters/effect-reference-subregion-chained.html [ Failure Pass ]
-crbug.com/658305 css3/filters/effect-reference-subregion-chained-hw.html [ Failure Pass ]
 crbug.com/658305 [ Mac ] css3/filters/effect-reference-subregion-colormatrix.html [ Failure Pass ]
-crbug.com/658305 css3/filters/effect-reference-subregion.html [ Failure Pass ]
-crbug.com/658305 css3/filters/effect-reference-subregion-hw.html [ Failure Pass Timeout ]
+crbug.com/658305 [ Win10 ] css3/filters/effect-reference-subregion-hw.html [ Failure ]
 crbug.com/658305 [ Mac ] css3/filters/effect-reference-tile.html [ Failure Pass ]
 crbug.com/658305 [ Mac ] css3/filters/effect-reference-tile-hw.html [ Failure Pass ]
-crbug.com/658305 css3/filters/effect-reference-zoom.html [ Failure Pass ]
-crbug.com/658305 css3/filters/effect-reference-zoom-hw.html [ Failure Pass ]
-crbug.com/658305 css3/filters/filter-effect-removed.html [ Failure Pass ]
+crbug.com/658305 [ Win10 ] css3/filters/effect-reference-zoom-hw.html [ Failure ]
 
 crbug.com/524160 [ Debug ] http/tests/media/media-source/stream_memory_tests/mediasource-appendbuffer-quota-exceeded-default-buffers.html [ Timeout ]
 crbug.com/524160 [ Debug ] virtual/audio-service/http/tests/media/media-source/stream_memory_tests/mediasource-appendbuffer-quota-exceeded-default-buffers.html [ Timeout ]
@@ -6265,10 +6251,6 @@ crbug.com/1038656 [ Win ] http/tests/devtools/coverage/coverage-view-unused.js [
 
 # Temporarily disabled to land Linkifier changes in DevTools
 crbug.com/963183 http/tests/devtools/jump-to-previous-editing-location.js [ Pass Failure ]
-
-# Temporarily disable to unblock WebRTC CL roll making it PASS a test
-crbug.com/webrtc/11228 external/wpt/webrtc/RTCPeerConnection-mandatory-getStats.https.html [ Pass Failure ]
-crbug.com/webrtc/11228 virtual/webrtc-wpt-plan-b/external/wpt/webrtc/RTCPeerConnection-mandatory-getStats.https.html [ Pass Failure ]
 
 # Sheriff 2020-01-09
 crbug.com/1040270 http/tests/devtools/elements/styles-1/disable-property-workingcopy-update.js [ Pass Timeout ]

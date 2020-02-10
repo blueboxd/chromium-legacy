@@ -26,6 +26,10 @@
 
 #include "base/macros.h"
 #include "base/memory/scoped_refptr.h"
+#include "third_party/blink/renderer/core/css/resolver/cascade_expansion.h"
+#include "third_party/blink/renderer/core/css/resolver/cascade_filter.h"
+#include "third_party/blink/renderer/core/css/resolver/cascade_origin.h"
+#include "third_party/blink/renderer/core/css/resolver/cascade_priority.h"
 #include "third_party/blink/renderer/core/css/rule_set.h"
 #include "third_party/blink/renderer/core/css/selector_checker.h"
 #include "third_party/blink/renderer/platform/heap/handle.h"
@@ -48,6 +52,7 @@ struct CORE_EXPORT MatchedProperties {
   struct Data {
     unsigned link_match_type : 2;
     unsigned valid_property_filter : 2;
+    CascadeOrigin origin;
     // This is approximately equivalent to the 'shadow-including tree order'.
     // It can be used to evaluate the 'Shadow Tree' criteria. Note that the
     // number stored here is 'local' to each origin (user, author), and is
@@ -94,6 +99,58 @@ class MatchedPropertiesRange {
   MatchedPropertiesVector::const_iterator end_;
 };
 
+class MatchedExpansionsIterator {
+  STACK_ALLOCATED();
+  using Iterator = MatchedPropertiesVector::const_iterator;
+
+ public:
+  MatchedExpansionsIterator(Iterator iterator,
+                            const Document& document,
+                            CascadeFilter filter,
+                            size_t index)
+      : iterator_(iterator),
+        document_(document),
+        filter_(filter),
+        index_(index) {}
+
+  void operator++() {
+    iterator_++;
+    index_++;
+  }
+  bool operator==(const MatchedExpansionsIterator& o) const {
+    return iterator_ == o.iterator_;
+  }
+  bool operator!=(const MatchedExpansionsIterator& o) const {
+    return iterator_ != o.iterator_;
+  }
+
+  CascadeExpansion operator*() const {
+    return CascadeExpansion(*iterator_, document_, filter_, index_);
+  }
+
+ private:
+  Iterator iterator_;
+  const Document& document_;
+  CascadeFilter filter_;
+  size_t index_;
+};
+
+class MatchedExpansionsRange {
+  STACK_ALLOCATED();
+
+ public:
+  MatchedExpansionsRange(MatchedExpansionsIterator begin,
+                         MatchedExpansionsIterator end)
+      : begin_(begin), end_(end) {}
+
+  MatchedExpansionsIterator begin() const { return begin_; }
+  MatchedExpansionsIterator end() const { return end_; }
+
+ private:
+  MatchedExpansionsIterator begin_;
+  MatchedExpansionsIterator end_;
+};
+
 class CORE_EXPORT MatchResult {
   STACK_ALLOCATED();
 
@@ -112,6 +169,8 @@ class CORE_EXPORT MatchResult {
 
   void SetIsCacheable(bool cacheable) { is_cacheable_ = cacheable; }
   bool IsCacheable() const { return is_cacheable_; }
+
+  MatchedExpansionsRange Expansions(const Document&, CascadeFilter) const;
 
   MatchedPropertiesRange AllRules() const {
     return MatchedPropertiesRange(matched_properties_.begin(),
@@ -156,6 +215,7 @@ class CORE_EXPORT MatchResult {
   Vector<unsigned, 16> author_range_ends_;
   unsigned ua_range_end_ = 0;
   bool is_cacheable_ = true;
+  CascadeOrigin current_origin_ = CascadeOrigin::kUserAgent;
   uint16_t current_tree_order_ = 0;
   DISALLOW_COPY_AND_ASSIGN(MatchResult);
 };

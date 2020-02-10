@@ -350,7 +350,7 @@ Vector<LayoutText::TextBoxInfo> LayoutText::GetTextBoxInfo() const {
       // TODO(yosin): We should introduce
       // |NGPhysicalTextFragment::IsTruncated()| to skip them instead of using
       // |IsHiddenForPaint()| with ordering of fragments.
-      if (cursor.IsHiddenForPaint()) {
+      if (cursor.Current().IsHiddenForPaint()) {
         in_hidden_for_paint = true;
       } else if (in_hidden_for_paint) {
         // Because of we finished original fragments (not painted), we should
@@ -359,7 +359,7 @@ Vector<LayoutText::TextBoxInfo> LayoutText::GetTextBoxInfo() const {
       }
       // We don't put generated texts, e.g. ellipsis, hyphen, etc. not in text
       // content, into results. Note: CSS "content" aren't categorized this.
-      if (cursor.IsGeneratedTextType())
+      if (cursor.Current().IsGeneratedTextType())
         continue;
       // When the corresponding DOM range contains collapsed whitespaces, NG
       // produces one fragment but legacy produces multiple text boxes broken at
@@ -509,7 +509,7 @@ void LayoutText::CollectLineBoxRects(const PhysicalRectCollector& yield,
     for (; cursor; cursor.MoveToNextForSameLayoutObject()) {
       if (UNLIKELY(option != ClippingOption::kNoClipping)) {
         DCHECK_EQ(option, ClippingOption::kClipToEllipsis);
-        if (cursor.IsHiddenForPaint())
+        if (cursor.Current().IsHiddenForPaint())
           continue;
       }
       yield(cursor.Current().RectInContainerBlock());
@@ -2157,7 +2157,7 @@ PhysicalRect LayoutText::LocalSelectionVisualRect() const {
     PhysicalRect rect;
     NGInlineCursor cursor(*RootInlineFormattingContext());
     for (cursor.MoveTo(*this); cursor; cursor.MoveToNextForSameLayoutObject()) {
-      if (cursor.IsHiddenForPaint())
+      if (cursor.Current().IsHiddenForPaint())
         continue;
       const LayoutSelectionStatus status =
           frame_selection.ComputeLayoutSelectionStatus(cursor);

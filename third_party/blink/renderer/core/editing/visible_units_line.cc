@@ -69,7 +69,7 @@ PositionWithAffinityTemplate<Strategy> StartPositionForLine(
     }
     NGInlineCursor line_box = caret_position.cursor;
     line_box.MoveToContainingLine();
-    DCHECK(line_box.IsLineBox()) << line_box;
+    DCHECK(line_box.Current().IsLineBox()) << line_box;
     const PhysicalOffset start_point = line_box.LineStartPoint();
     return FromPositionInDOMTree<Strategy>(
         line_box.PositionForPointInInlineBox(start_point));

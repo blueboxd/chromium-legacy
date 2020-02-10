@@ -113,13 +113,9 @@ class OmniboxPerfTest : public PerfTest {
     [[[toolbarDelegate stub] andReturnValue:OCMOCK_VALUE(model_for_mock)]
         locationBarModel];
 
-    CommandDispatcher* dispatcher = [[CommandDispatcher alloc] init];
-
     coordinator_ =
         [[PrimaryToolbarCoordinator alloc] initWithBrowser:browser_.get()];
     coordinator_.delegate = toolbarDelegate;
-    coordinator_.webStateList = web_state_list_.get();
-    coordinator_.commandDispatcher = dispatcher;
     [coordinator_ start];
 
     UIView* toolbarView = coordinator_.viewController.view;

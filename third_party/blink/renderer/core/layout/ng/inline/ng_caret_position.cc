@@ -90,7 +90,7 @@ CaretPositionResolution TryResolveCaretPositionInTextFragment(
     const NGInlineCursor& cursor,
     unsigned offset,
     TextAffinity affinity) {
-  if (cursor.IsGeneratedText())
+  if (cursor.Current().IsGeneratedText())
     return CaretPositionResolution();
 
   const NGOffsetMapping& mapping =
@@ -129,7 +129,7 @@ CaretPositionResolution TryResolveCaretPositionInTextFragment(
     return {ResolutionType::kResolved, candidate};
   }
 
-  if (offset == end_offset && !cursor.IsLineBreak() &&
+  if (offset == end_offset && !cursor.Current().IsLineBreak() &&
       CanResolveCaretPositionAfterFragment(cursor, affinity)) {
     return {ResolutionType::kResolved, candidate};
   }
@@ -192,9 +192,9 @@ CaretPositionResolution TryResolveCaretPositionWithFragment(
     const NGInlineCursor& cursor,
     unsigned offset,
     TextAffinity affinity) {
-  if (cursor.IsText())
+  if (cursor.Current().IsText())
     return TryResolveCaretPositionInTextFragment(cursor, offset, affinity);
-  if (cursor.IsAtomicInline())
+  if (cursor.Current().IsAtomicInline())
     return TryResolveCaretPositionByBoxFragmentSide(cursor, offset, affinity);
   return CaretPositionResolution();
 }
@@ -232,7 +232,7 @@ bool IsUpstreamAfterLineBreak(const NGCaretPosition& caret_position) {
   DCHECK(caret_position.cursor.IsNotNull());
   DCHECK(caret_position.text_offset.has_value());
 
-  if (!caret_position.cursor.IsLineBreak())
+  if (!caret_position.cursor.Current().IsLineBreak())
     return false;
   return *caret_position.text_offset ==
          caret_position.cursor.CurrentTextEndOffset();

@@ -19,6 +19,7 @@
 
 #include "third_party/blink/renderer/modules/vibration/navigator_vibration.h"
 
+#include "base/metrics/histogram_functions.h"
 #include "third_party/blink/renderer/core/dom/document.h"
 #include "third_party/blink/renderer/core/frame/deprecation.h"
 #include "third_party/blink/renderer/core/frame/frame_console.h"
@@ -29,7 +30,6 @@
 #include "third_party/blink/renderer/core/inspector/console_message.h"
 #include "third_party/blink/renderer/core/page/page.h"
 #include "third_party/blink/renderer/modules/vibration/vibration_controller.h"
-#include "third_party/blink/renderer/platform/instrumentation/histogram.h"
 #include "third_party/blink/renderer/platform/instrumentation/use_counter.h"
 
 namespace blink {
@@ -126,9 +126,7 @@ void NavigatorVibration::CollectHistogramMetrics(const Navigator& navigator) {
     else
       type = NavigatorVibrationType::kMainFrameNoUserGesture;
   }
-  DEFINE_STATIC_LOCAL(EnumerationHistogram, navigator_vibrate_histogram,
-                      ("Vibration.Context", NavigatorVibrationType::kEnumMax));
-  navigator_vibrate_histogram.Count(type);
+  base::UmaHistogramEnumeration("Vibration.Context", type);
 }
 
 VibrationController* NavigatorVibration::Controller(LocalFrame& frame) {

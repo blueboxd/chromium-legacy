@@ -1932,17 +1932,12 @@ NSString* const kBrowserViewControllerSnackbarCategory =
   self.primaryToolbarCoordinator = topToolbarCoordinator;
   topToolbarCoordinator.delegate = self;
   topToolbarCoordinator.popupPresenterDelegate = self;
-  topToolbarCoordinator.webStateList = self.tabModel.webStateList;
-  topToolbarCoordinator.dispatcher = self.dispatcher;
-  topToolbarCoordinator.commandDispatcher = self.commandDispatcher;
   topToolbarCoordinator.longPressDelegate = self.popupMenuCoordinator;
   [topToolbarCoordinator start];
 
   SecondaryToolbarCoordinator* bottomToolbarCoordinator =
       [[SecondaryToolbarCoordinator alloc] initWithBrowser:self.browser];
   self.secondaryToolbarCoordinator = bottomToolbarCoordinator;
-  bottomToolbarCoordinator.webStateList = self.tabModel.webStateList;
-  bottomToolbarCoordinator.dispatcher = self.dispatcher;
   bottomToolbarCoordinator.longPressDelegate = self.popupMenuCoordinator;
 
   if (base::FeatureList::IsEnabled(

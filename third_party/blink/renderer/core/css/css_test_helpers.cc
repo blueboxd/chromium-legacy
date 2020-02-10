@@ -107,5 +107,13 @@ const CSSValue* ParseLonghand(Document& document,
   return longhand->ParseSingleValue(range, *context, local_context);
 }
 
+const CSSPropertyValueSet* ParseDeclarationBlock(const String& block_text,
+                                                 CSSParserMode mode) {
+  auto* set = MakeGarbageCollected<MutableCSSPropertyValueSet>(mode);
+  set->ParseDeclarationList(block_text, SecureContextMode::kSecureContext,
+                            nullptr);
+  return set;
+}
+
 }  // namespace css_test_helpers
 }  // namespace blink

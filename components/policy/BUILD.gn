@@ -7,6 +7,7 @@ import("//build/config/features.gni")
 import("//build/config/mac/base_rules.gni")
 import("//build/toolchain/toolchain.gni")
 import("//components/policy/resources/policy_templates.gni")
+import("//third_party/libprotobuf-mutator/fuzzable_proto_library.gni")
 import("//third_party/protobuf/proto_library.gni")
 import("//tools/grit/grit_rule.gni")
 
@@ -304,6 +305,19 @@ proto_library("cloud_policy_proto_generated_compile_proto") {
   link_deps =
       [ "//components/policy/proto:policy_common_definitions_compile_proto" ]
   proto_deps = [ ":policy_code_generate" ]
+}
+
+# This target generates the "full" protobuf library used by policy_fuzzer.
+if (use_libfuzzer) {
+  fuzzable_proto_library("cloud_policy_full_runtime_proto") {
+    proto_out_dir = "components/policy/proto/fuzzer"
+
+    sources = [ cloud_policy_proto_path ]
+
+    import_dirs = [ "//components/policy/proto" ]
+
+    proto_deps = [ ":policy_code_generate" ]
+  }
 }
 
 # This target builds the "full" protobuf, used for tests only.

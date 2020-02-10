@@ -155,7 +155,7 @@ NGInlineCursor NGAbstractInlineTextBox::GetCursorOnLine() const {
 
 String NGAbstractInlineTextBox::GetTextContent() const {
   const NGInlineCursor& cursor = GetCursor();
-  if (cursor.IsGeneratedTextType())
+  if (cursor.Current().IsGeneratedTextType())
     return cursor.CurrentText().ToString();
   if (const NGPaintFragment* paint_fragment = cursor.CurrentPaintFragment()) {
     return To<NGPhysicalTextFragment>(paint_fragment->PhysicalFragment())
@@ -166,7 +166,7 @@ String NGAbstractInlineTextBox::GetTextContent() const {
 
 bool NGAbstractInlineTextBox::NeedsTrailingSpace() const {
   const NGInlineCursor& cursor = GetCursor();
-  if (!cursor.CurrentStyle().CollapseWhiteSpace())
+  if (!cursor.Current().Style().CollapseWhiteSpace())
     return false;
   NGInlineCursor line_box = cursor;
   line_box.MoveToContainingLine();
@@ -342,7 +342,7 @@ scoped_refptr<AbstractInlineTextBox> NGAbstractInlineTextBox::PreviousOnLine()
 
 bool NGAbstractInlineTextBox::IsLineBreak() const {
   const NGInlineCursor& cursor = GetCursor();
-  return cursor && cursor.IsLineBreak();
+  return cursor && cursor.Current().IsLineBreak();
 }
 
 }  // namespace blink

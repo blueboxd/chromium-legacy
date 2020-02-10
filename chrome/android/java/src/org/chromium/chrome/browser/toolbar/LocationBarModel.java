@@ -37,6 +37,7 @@ import org.chromium.chrome.browser.util.UrlConstants;
 import org.chromium.chrome.browser.util.UrlUtilities;
 import org.chromium.components.browser_ui.styles.ChromeColors;
 import org.chromium.components.dom_distiller.core.DomDistillerUrlUtils;
+import org.chromium.components.omnibox.SecurityStatusIcon;
 import org.chromium.components.security_state.ConnectionSecurityLevel;
 import org.chromium.content_public.browser.WebContents;
 import org.chromium.ui.util.ColorUtils;
@@ -411,31 +412,20 @@ public class LocationBarModel implements ToolbarDataProvider, ToolbarCommonPrope
             return R.drawable.ic_offline_pin_24dp;
         }
 
-        switch (securityLevel) {
-            case ConnectionSecurityLevel.NONE:
-                return isSmallDevice
-                                && (!SearchEngineLogoUtils.shouldShowSearchEngineLogo(isIncognito())
-                                        || getNewTabPageForCurrentTab() != null)
-                        ? 0
-                        : R.drawable.omnibox_info;
-            case ConnectionSecurityLevel.WARNING:
-                if (mNativeLocationBarModelAndroid == 0) {
-                    return R.drawable.omnibox_info;
-                }
-                if (SecurityStateModel.shouldShowDangerTriangleForWarningLevel()) {
-                    return R.drawable.omnibox_not_secure_warning;
-                }
-                return R.drawable.omnibox_info;
-            case ConnectionSecurityLevel.DANGEROUS:
-                return R.drawable.omnibox_not_secure_warning;
-            case ConnectionSecurityLevel.SECURE_WITH_POLICY_INSTALLED_CERT:
-            case ConnectionSecurityLevel.SECURE:
-            case ConnectionSecurityLevel.EV_SECURE:
-                return R.drawable.omnibox_https_valid;
-            default:
-                assert false;
+        // Return early if native initialization hasn't been done yet.
+        if ((securityLevel == ConnectionSecurityLevel.NONE
+                    || securityLevel == ConnectionSecurityLevel.WARNING)
+                && mNativeLocationBarModelAndroid == 0) {
+            return R.drawable.omnibox_info;
         }
-        return 0;
+
+        boolean skipIconForNeutralState =
+                !SearchEngineLogoUtils.shouldShowSearchEngineLogo(isIncognito())
+                || getNewTabPageForCurrentTab() != null;
+
+        return SecurityStatusIcon.getSecurityIconResource(securityLevel,
+                SecurityStateModel.shouldShowDangerTriangleForWarningLevel(), isSmallDevice,
+                skipIconForNeutralState);
     }
 
     @Override

@@ -18,13 +18,13 @@
 
 namespace blink {
 
-static const v8::Eternal<v8::Name>* eternalV8TestDictionary2Keys(v8::Isolate* isolate) {
+static const base::span<const v8::Eternal<v8::Name>>
+eternalV8TestDictionary2Keys(v8::Isolate* isolate) {
   static const char* const kKeys[] = {
     "defaultEmptyDictionary",
     "defaultEmptyDictionaryForUnion",
   };
-  return V8PerIsolateData::From(isolate)->FindOrCreateEternalNameCache(
-      kKeys, kKeys, base::size(kKeys));
+  return V8PerIsolateData::From(isolate)->FindOrCreateEternalNameCache(kKeys, kKeys);
 }
 
 void V8TestDictionary2::ToImpl(v8::Isolate* isolate, v8::Local<v8::Value> v8_value, TestDictionary2* impl, ExceptionState& exception_state) {
@@ -38,7 +38,7 @@ void V8TestDictionary2::ToImpl(v8::Isolate* isolate, v8::Local<v8::Value> v8_val
   v8::Local<v8::Object> v8Object = v8_value.As<v8::Object>();
   ALLOW_UNUSED_LOCAL(v8Object);
 
-  const v8::Eternal<v8::Name>* keys = eternalV8TestDictionary2Keys(isolate);
+  const auto* keys = eternalV8TestDictionary2Keys(isolate).data();
   v8::TryCatch block(isolate);
   v8::Local<v8::Context> context = isolate->GetCurrentContext();
   v8::Local<v8::Value> default_empty_dictionary_value;
@@ -79,7 +79,7 @@ v8::Local<v8::Value> TestDictionary2::ToV8Impl(v8::Local<v8::Object> creationCon
 }
 
 bool toV8TestDictionary2(const TestDictionary2* impl, v8::Local<v8::Object> dictionary, v8::Local<v8::Object> creationContext, v8::Isolate* isolate) {
-  const v8::Eternal<v8::Name>* keys = eternalV8TestDictionary2Keys(isolate);
+  const auto* keys = eternalV8TestDictionary2Keys(isolate).data();
   v8::Local<v8::Context> context = isolate->GetCurrentContext();
 
   auto create_property = [dictionary, context, keys, isolate](

@@ -506,7 +506,7 @@ public class InfoBarContainer implements UserData, KeyboardVisibilityListener {
         mInfoBarContainerView.setHidden(mIsHidden);
         setParentView(chromeActivity.findViewById(R.id.bottom_container));
 
-        mIPHSupport = new IPHInfoBarSupport(new IPHBubbleDelegateImpl(chromeActivity));
+        mIPHSupport = new IPHInfoBarSupport(new IPHBubbleDelegateImpl(chromeActivity, mTab));
         addAnimationListener(mIPHSupport);
         addObserver(mIPHSupport);
 

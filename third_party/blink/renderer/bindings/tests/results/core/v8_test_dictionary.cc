@@ -35,7 +35,8 @@
 
 namespace blink {
 
-static const v8::Eternal<v8::Name>* eternalV8TestDictionaryKeys(v8::Isolate* isolate) {
+static const base::span<const v8::Eternal<v8::Name>>
+eternalV8TestDictionaryKeys(v8::Isolate* isolate) {
   static const char* const kKeys[] = {
     "anyInRecordMember",
     "anyMember",
@@ -101,8 +102,7 @@ static const v8::Eternal<v8::Name>* eternalV8TestDictionaryKeys(v8::Isolate* iso
     "unrestrictedDoubleMember",
     "usvStringOrNullMember",
   };
-  return V8PerIsolateData::From(isolate)->FindOrCreateEternalNameCache(
-      kKeys, kKeys, base::size(kKeys));
+  return V8PerIsolateData::From(isolate)->FindOrCreateEternalNameCache(kKeys, kKeys);
 }
 
 void V8TestDictionary::ToImpl(v8::Isolate* isolate, v8::Local<v8::Value> v8_value, TestDictionary* impl, ExceptionState& exception_state) {
@@ -117,7 +117,7 @@ void V8TestDictionary::ToImpl(v8::Isolate* isolate, v8::Local<v8::Value> v8_valu
   v8::Local<v8::Object> v8Object = v8_value.As<v8::Object>();
   ALLOW_UNUSED_LOCAL(v8Object);
 
-  const v8::Eternal<v8::Name>* keys = eternalV8TestDictionaryKeys(isolate);
+  const auto* keys = eternalV8TestDictionaryKeys(isolate).data();
   v8::TryCatch block(isolate);
   v8::Local<v8::Context> context = isolate->GetCurrentContext();
   ExecutionContext* executionContext = ToExecutionContext(context);
@@ -1084,7 +1084,7 @@ v8::Local<v8::Value> TestDictionary::ToV8Impl(v8::Local<v8::Object> creationCont
 }
 
 bool toV8TestDictionary(const TestDictionary* impl, v8::Local<v8::Object> dictionary, v8::Local<v8::Object> creationContext, v8::Isolate* isolate) {
-  const v8::Eternal<v8::Name>* keys = eternalV8TestDictionaryKeys(isolate);
+  const auto* keys = eternalV8TestDictionaryKeys(isolate).data();
   v8::Local<v8::Context> context = isolate->GetCurrentContext();
 
   auto create_property = [dictionary, context, keys, isolate](

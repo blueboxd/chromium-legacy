@@ -46,6 +46,7 @@ namespace blink {
 HTMLScriptElement::HTMLScriptElement(Document& document,
                                      const CreateElementFlags flags)
     : HTMLElement(html_names::kScriptTag, document),
+      children_changed_by_api_(false),
       loader_(InitializeScriptLoader(flags.IsCreatedByParser(),
                                      flags.WasAlreadyStarted())) {}
 
@@ -74,6 +75,10 @@ void HTMLScriptElement::ChildrenChanged(const ChildrenChange& change) {
   HTMLElement::ChildrenChanged(change);
   if (change.IsChildInsertion())
     loader_->ChildrenChanged();
+
+  // We'll record whether the script element children were ever changed by
+  // the API (as opposed to the parser).
+  children_changed_by_api_ |= (change.by_parser == kChildrenChangeSourceAPI);
 }
 
 void HTMLScriptElement::DidMoveToNewDocument(Document& old_document) {
@@ -165,8 +170,15 @@ void HTMLScriptElement::setAsync(bool async) {
 
 void HTMLScriptElement::FinishParsingChildren() {
   Element::FinishParsingChildren();
-  DCHECK(!script_text_internal_slot_.length());
-  script_text_internal_slot_ = ParkableString(TextFromChildren().Impl());
+
+  // We normally expect the parser to finish parsing before any script gets
+  // a chance to manipulate the script. However, if script parsing gets
+  // deferrred (or similar; see crbug.com/1033101) then a script might get
+  // access to the HTMLScriptElement before. In this case, we cannot blindly
+  // accept the current TextFromChildren as a parser result.
+  DCHECK(children_changed_by_api_ || !script_text_internal_slot_.length());
+  if (!children_changed_by_api_)
+    script_text_internal_slot_ = ParkableString(TextFromChildren().Impl());
 }
 
 bool HTMLScriptElement::async() const {

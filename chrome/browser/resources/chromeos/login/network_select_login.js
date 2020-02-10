@@ -33,7 +33,7 @@
        * True when connected to a network.
        * @private
        */
-      isConnected: {
+      isNetworkConnected: {
         type: Boolean,
         value: false,
         notify: true,
@@ -122,7 +122,7 @@
           },
         });
       }
-      if (this.isConnected) {
+      if (this.isNetworkConnected) {
         items.push({
           customItemName: 'proxySettingsListItemName',
           polymerIcon: 'oobe-network-20:add-proxy',
@@ -187,9 +187,9 @@
     onDefaultNetworkChanged_(event) {
       // Note: event.detail will be {} if there is no default network.
       var networkState = event.detail.type ? event.detail : undefined;
-      this.isConnected = !!networkState &&
+      this.isNetworkConnected = !!networkState &&
           OncMojo.connectionStateIsConnected(networkState.connectionState);
-      if (!this.isConnected || !this.is_shown_)
+      if (!this.isNetworkConnected || !this.is_shown_)
         return;
       this.attemptApplyConfiguration_();
     },
@@ -270,12 +270,12 @@
     handleNetworkSelection_(networkState) {
       assert(networkState);
 
-      var isConnected =
+      var isNetworkConnected =
           OncMojo.connectionStateIsConnected(networkState.connectionState);
 
       // If |configureConnected| is false and a connected network is selected,
       // continue to the next screen.
-      if (!this.configureConnected && isConnected) {
+      if (!this.configureConnected && isNetworkConnected) {
         this.onSelectedNetworkConnected_();
         return;
       }
@@ -290,7 +290,7 @@
       var oncType = OncMojo.getNetworkTypeString(networkState.type);
       var guid = networkState.guid;
 
-      var shouldShowNetworkDetails = isConnected ||
+      var shouldShowNetworkDetails = isNetworkConnected ||
           networkState.connectionState ==
               chromeos.networkConfig.mojom.ConnectionStateType.kConnecting;
       // Cellular should normally auto connect. If it is selected, show the

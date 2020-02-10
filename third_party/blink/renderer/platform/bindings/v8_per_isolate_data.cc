@@ -268,26 +268,28 @@ void V8PerIsolateData::ClearPersistentsForV8ContextSnapshot() {
   private_property_.reset();
 }
 
-const v8::Eternal<v8::Name>* V8PerIsolateData::FindOrCreateEternalNameCache(
+const base::span<const v8::Eternal<v8::Name>>
+V8PerIsolateData::FindOrCreateEternalNameCache(
     const void* lookup_key,
-    const char* const names[],
-    size_t count) {
+    const base::span<const char* const>& names) {
   auto it = eternal_name_cache_.find(lookup_key);
   const Vector<v8::Eternal<v8::Name>>* vector = nullptr;
   if (UNLIKELY(it == eternal_name_cache_.end())) {
     v8::Isolate* isolate = this->GetIsolate();
-    Vector<v8::Eternal<v8::Name>> new_vector(count);
-    std::transform(
-        names, names + count, new_vector.begin(), [isolate](const char* name) {
-          return v8::Eternal<v8::Name>(isolate, V8AtomicString(isolate, name));
-        });
+    Vector<v8::Eternal<v8::Name>> new_vector(names.size());
+    std::transform(names.begin(), names.end(), new_vector.begin(),
+                   [isolate](const char* name) {
+                     return v8::Eternal<v8::Name>(
+                         isolate, V8AtomicString(isolate, name));
+                   });
     vector = &eternal_name_cache_.Set(lookup_key, std::move(new_vector))
                   .stored_value->value;
   } else {
     vector = &it->value;
   }
-  DCHECK_EQ(vector->size(), count);
-  return vector->data();
+  DCHECK_EQ(vector->size(), names.size());
+  return base::span<const v8::Eternal<v8::Name>>(vector->data(),
+                                                 vector->size());
 }
 
 v8::Local<v8::Context> V8PerIsolateData::EnsureScriptRegexpContext() {

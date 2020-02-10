@@ -17,6 +17,7 @@ import v8_utilities
 
 
 DICTIONARY_H_INCLUDES = frozenset([
+    'base/containers/span.h',
     'bindings/core/v8/native_value_traits.h',
     'bindings/core/v8/to_v8_for_core.h',
     'bindings/core/v8/v8_binding_for_core.h',

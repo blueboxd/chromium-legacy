@@ -269,17 +269,27 @@ jumbo_static_library("browser") {
 }
 
 if (is_android) {
+  android_resources("java_resources") {
+    resource_dirs = [ "android/java/res" ]
+    custom_package = "org.chromium.components.omnibox"
+  }
+
   android_library("browser_java") {
     sources = [
+      "android/java/src/org/chromium/components/omnibox/SecurityStatusIcon.java",
       "android/java/src/org/chromium/components/omnibox/SuggestionAnswer.java",
     ]
 
     deps = [
+      ":java_resources",
       "//base:base_java",
       "//third_party/android_deps:com_android_support_support_compat_java",
     ]
 
-    srcjar_deps = [ ":browser_java_enums_srcjar" ]
+    srcjar_deps = [
+      ":browser_java_enums_srcjar",
+      "//components/security_state/core:security_state_enums_java",
+    ]
   }
 
   java_cpp_enum("browser_java_enums_srcjar") {

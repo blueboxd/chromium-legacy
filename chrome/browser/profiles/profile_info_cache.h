@@ -91,7 +91,6 @@ class ProfileInfoCache : public ProfileInfoInterface,
 
   // Will be removed SOON with ProfileInfoCache tests. Do not use!
   void SetAvatarIconOfProfileAtIndex(size_t index, size_t icon_index);
-  void SetSupervisedUserIdOfProfileAtIndex(size_t index, const std::string& id);
   void SetGAIAPictureOfProfileAtIndex(size_t index, gfx::Image image);
   void SetIsUsingGAIAPictureOfProfileAtIndex(size_t index, bool value);
   void SetProfileIsUsingDefaultAvatarAtIndex(size_t index, bool value);

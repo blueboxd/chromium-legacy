@@ -1657,13 +1657,19 @@ bool NGBoxFragmentPainter::NodeAtPoint(const HitTestContext& hit_test,
   }
 
   if (!skip_children) {
-    PhysicalOffset scrolled_offset = physical_offset;
-    if (box_fragment_.HasOverflowClip()) {
-      scrolled_offset -= PhysicalOffset(
-          PhysicalFragment().PixelSnappedScrolledContentOffset());
+    if (!box_fragment_.HasOverflowClip()) {
+      if (HitTestChildren(hit_test, physical_offset))
+        return true;
+    } else {
+      const PhysicalOffset scrolled_offset =
+          physical_offset -
+          PhysicalOffset(
+              PhysicalFragment().PixelSnappedScrolledContentOffset());
+      HitTestContext adjusted_hit_test(hit_test.action, hit_test.location,
+                                       scrolled_offset, hit_test.result);
+      if (HitTestChildren(adjusted_hit_test, scrolled_offset))
+        return true;
     }
-    if (HitTestChildren(hit_test, scrolled_offset))
-      return true;
   }
 
   if (style.HasBorderRadius() &&
@@ -1888,7 +1894,7 @@ bool NGBoxFragmentPainter::HitTestChildBoxFragment(
   if (fragment.IsInline() && hit_test.action != kHitTestForeground)
     return false;
 
-  if (fragment.IsAtomicInline() || fragment.IsFloating()) {
+  if (fragment.IsPaintedAtomically()) {
     return HitTestAllPhasesInFragment(fragment, hit_test.location,
                                       physical_offset, hit_test.result);
   }

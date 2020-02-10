@@ -74,21 +74,22 @@ using signin_metrics::PromoAction;
       initWithBaseViewController:viewController
                          browser:browser
                      accessPoint:accessPoint
-                     promoAction:PromoAction::PROMO_ACTION_NO_SIGNIN_PROMO];
+                     promoAction:PromoAction::PROMO_ACTION_NO_SIGNIN_PROMO
+                    signinIntent:SigninIntentAddAccount];
 }
 
 + (instancetype)
     reAuthenticationCoordinatorWithBaseViewController:
         (UIViewController*)viewController
                                               browser:(Browser*)browser
-
                                           accessPoint:(AccessPoint)accessPoint
                                           promoAction:(PromoAction)promoAction {
   return [[AddAccountSigninCoordinator alloc]
       initWithBaseViewController:viewController
                          browser:browser
                      accessPoint:accessPoint
-                     promoAction:PromoAction::PROMO_ACTION_NO_SIGNIN_PROMO];
+                     promoAction:promoAction
+                    signinIntent:SigninIntentReauth];
 }
 
 - (void)interruptWithAction:(SigninCoordinatorInterruptAction)action

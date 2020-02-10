@@ -6,7 +6,7 @@ PASS getFile(create=true) creates an empty file for non-existing files
 PASS getFile(create=false) returns existing files
 PASS getFile(create=true) returns existing files without erasing
 PASS getFile(create=false) when a directory already exists with the same name
-FAIL getFile(create=true) when a directory already exists with the same name assert_throws: function "function() { throw e }" threw object "NoModificationAllowedError: An attempt was made to write to a file or directory which could not be modified due to the state of the underlying filesystem." that is not a DOMException TypeMismatchError: property "code" is equal to 7, expected 17
+FAIL getFile(create=true) when a directory already exists with the same name promise_rejects_dom: function "function() { throw e }" threw object "NoModificationAllowedError: An attempt was made to write to a file or directory which could not be modified due to the state of the underlying filesystem." that is not a DOMException TypeMismatchError: property "code" is equal to 7, expected 17
 PASS getFile() with empty name
 PASS getFile() with "." name
 PASS getFile() with ".." name

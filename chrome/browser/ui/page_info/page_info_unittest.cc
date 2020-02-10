@@ -122,8 +122,8 @@ class MockPageInfoUI : public PageInfoUI {
   }
 #endif
 
-  base::Callback<void(const PermissionInfoList& permission_info_list,
-                      ChosenObjectInfoList chosen_object_info_list)>
+  base::RepeatingCallback<void(const PermissionInfoList& permission_info_list,
+                               ChosenObjectInfoList chosen_object_info_list)>
       set_permission_info_callback_;
 };
 

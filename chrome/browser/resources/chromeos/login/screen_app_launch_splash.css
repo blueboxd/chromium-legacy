@@ -3,17 +3,18 @@
  * found in the LICENSE file. */
 
 #app-launch-splash {
-  -webkit-box-align: center;
-  -webkit-box-pack: center;
   background: white;
-  display: -webkit-box;
+  display: flex;
+  justify-content: center;
 }
 
+
 #splash-content {
-  -webkit-box-align: center;
-  -webkit-box-orient: vertical;
-  -webkit-box-pack: center;
-  display: -webkit-box;
+  align-items: center;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  max-width: 100%;
   position: relative;
 }
 
@@ -21,11 +22,15 @@
   background: left center no-repeat;
   background-size: 96px;
   color: #666;
-  display: -webkit-box;
   font-size: 48px;
   height: 96px;
   line-height: 96px;
+  max-width: 100%;
+  overflow: hidden;
   padding-inline-start: 108px;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  word-break: break-all;
 }
 
 #splash-launch-text {

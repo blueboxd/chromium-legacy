@@ -35,14 +35,16 @@ class LocalFrame;
 class Navigator;
 class VibrationController;
 
-enum NavigatorVibrationType {
+// These values are persisted to logs. Entries should not be renumbered and
+// numeric values should never be reused.
+enum class NavigatorVibrationType {
   kMainFrameNoUserGesture = 0,
   kMainFrameWithUserGesture = 1,
   kSameOriginSubFrameNoUserGesture = 2,
   kSameOriginSubFrameWithUserGesture = 3,
   kCrossOriginSubFrameNoUserGesture = 4,
   kCrossOriginSubFrameWithUserGesture = 5,
-  kEnumMax = 6
+  kMaxValue = kCrossOriginSubFrameWithUserGesture,
 };
 
 class MODULES_EXPORT NavigatorVibration final

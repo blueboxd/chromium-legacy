@@ -661,7 +661,7 @@ LayoutTextSelectionStatus FrameSelection::ComputeLayoutSelectionStatus(
 LayoutSelectionStatus LayoutSelection::ComputeSelectionStatus(
     const NGInlineCursor& cursor) const {
   // We don't paint selection on ellipsis.
-  if (cursor.IsEllipsis())
+  if (cursor.Current().IsEllipsis())
     return {0, 0, SelectSoftLineBreak::kNotSelected};
   const unsigned start_offset = cursor.CurrentTextStartOffset();
   const unsigned end_offset = cursor.CurrentTextEndOffset();

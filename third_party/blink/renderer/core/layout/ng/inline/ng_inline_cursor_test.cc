@@ -71,10 +71,10 @@ class NGInlineCursorTest : public NGLayoutTest,
   }
 
   String ToDebugString(const NGInlineCursor& cursor) {
-    if (cursor.IsLineBox())
+    if (cursor.Current().IsLineBox())
       return "#linebox";
 
-    if (cursor.IsGeneratedTextType()) {
+    if (cursor.Current().IsGeneratedTextType()) {
       StringBuilder result;
       result.Append("#'");
       result.Append(cursor.CurrentText());
@@ -82,7 +82,7 @@ class NGInlineCursorTest : public NGLayoutTest,
       return result.ToString();
     }
 
-    if (cursor.IsText())
+    if (cursor.Current().IsText())
       return cursor.CurrentText().ToString().StripWhiteSpace();
 
     if (const LayoutObject* layout_object = cursor.CurrentLayoutObject()) {
@@ -102,7 +102,7 @@ class NGInlineCursorTest : public NGLayoutTest,
     Vector<String> list;
     for (NGInlineCursor cursor(start); cursor; cursor.MoveToNext()) {
       // Inline boxes do not have bidi level.
-      if (cursor.IsInlineBox())
+      if (cursor.Current().IsInlineBox())
         continue;
       list.push_back(ToDebugStringWithBidiLevel(cursor));
     }
@@ -110,7 +110,7 @@ class NGInlineCursorTest : public NGLayoutTest,
   }
 
   String ToDebugStringWithBidiLevel(const NGInlineCursor& cursor) {
-    if (!cursor.IsText() && !cursor.IsAtomicInline())
+    if (!cursor.Current().IsText() && !cursor.Current().IsAtomicInline())
       return ToDebugString(cursor);
     StringBuilder result;
     result.Append(ToDebugString(cursor));
@@ -167,7 +167,7 @@ TEST_P(NGInlineCursorTest, BidiLevelSimpleRTL) {
 
 TEST_P(NGInlineCursorTest, GetLayoutBlockFlowWithScopedCursor) {
   NGInlineCursor line = SetupCursor("<div id=root>line1<br>line2</div>");
-  ASSERT_TRUE(line.IsLineBox()) << line;
+  ASSERT_TRUE(line.Current().IsLineBox()) << line;
   NGInlineCursor cursor = line.CursorForDescendants();
   EXPECT_EQ(line.GetLayoutBlockFlow(), cursor.GetLayoutBlockFlow());
 }
@@ -179,11 +179,11 @@ TEST_P(NGInlineCursorTest, ContainingLine) {
       SetupCursor("<div id=root>abc<a id=target>def</a>ghi<br>xyz</div>");
   const LayoutBlockFlow& block_flow = *cursor.GetLayoutBlockFlow();
   NGInlineCursor line1(cursor);
-  ASSERT_TRUE(line1.IsLineBox());
+  ASSERT_TRUE(line1.Current().IsLineBox());
 
   NGInlineCursor line2(line1);
   line2.MoveToNextSibling();
-  ASSERT_TRUE(line2.IsLineBox());
+  ASSERT_TRUE(line2.Current().IsLineBox());
 
   cursor.MoveTo(*block_flow.FirstChild());
   cursor.MoveToContainingLine();
@@ -387,9 +387,10 @@ TEST_P(NGInlineCursorTest, IsEmptyLineBox) {
   InsertStyleElement("b { margin-bottom: 1px; }");
   NGInlineCursor cursor = SetupCursor("<div id=root>abc<br><b></b></div>");
 
-  EXPECT_FALSE(cursor.IsEmptyLineBox()) << "'abc\\n' is in non-empty line box.";
+  EXPECT_FALSE(cursor.Current().IsEmptyLineBox())
+      << "'abc\\n' is in non-empty line box.";
   cursor.MoveToNextLine();
-  EXPECT_TRUE(cursor.IsEmptyLineBox())
+  EXPECT_TRUE(cursor.Current().IsEmptyLineBox())
       << "<b></b> with margin produces empty line box.";
 }
 
@@ -573,12 +574,12 @@ TEST_P(NGInlineCursorTest, NextInlineLeafIgnoringLineBreak) {
 TEST_P(NGInlineCursorTest, NextLine) {
   NGInlineCursor cursor = SetupCursor("<div id=root>abc<br>xyz</div>");
   NGInlineCursor line1(cursor);
-  while (line1 && !line1.IsLineBox())
+  while (line1 && !line1.Current().IsLineBox())
     line1.MoveToNext();
   ASSERT_TRUE(line1.IsNotNull());
   NGInlineCursor line2(line1);
   line2.MoveToNext();
-  while (line2 && !line2.IsLineBox())
+  while (line2 && !line2.Current().IsLineBox())
     line2.MoveToNext();
   ASSERT_NE(line1, line2);
 
@@ -772,12 +773,12 @@ TEST_P(NGInlineCursorTest, PreviousInlineLeafOnLineFromLayoutText) {
 TEST_P(NGInlineCursorTest, PreviousLine) {
   NGInlineCursor cursor = SetupCursor("<div id=root>abc<br>xyz</div>");
   NGInlineCursor line1(cursor);
-  while (line1 && !line1.IsLineBox())
+  while (line1 && !line1.Current().IsLineBox())
     line1.MoveToNext();
   ASSERT_TRUE(line1.IsNotNull());
   NGInlineCursor line2(line1);
   line2.MoveToNext();
-  while (line2 && !line2.IsLineBox())
+  while (line2 && !line2.Current().IsLineBox())
     line2.MoveToNext();
   ASSERT_NE(line1, line2);
 
@@ -815,9 +816,9 @@ TEST_P(NGInlineCursorTest, CursorForDescendants) {
   LayoutBlockFlow* block_flow =
       To<LayoutBlockFlow>(GetLayoutObjectByElementId("root"));
   NGInlineCursor cursor(*block_flow);
-  EXPECT_TRUE(cursor.IsLineBox());
+  EXPECT_TRUE(cursor.Current().IsLineBox());
   cursor.MoveToNext();
-  EXPECT_TRUE(cursor.IsText());
+  EXPECT_TRUE(cursor.Current().IsText());
   EXPECT_THAT(ToDebugStringList(cursor.CursorForDescendants()), ElementsAre());
   cursor.MoveToNext();
   EXPECT_EQ(ToDebugString(cursor), "#span1");

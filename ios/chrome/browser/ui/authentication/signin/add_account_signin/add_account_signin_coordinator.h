@@ -24,11 +24,13 @@
 // |viewController| presents the sign-in.
 // |accessPoint| is the view where the sign-in button was displayed.
 // |promoAction| is promo button used to trigger the sign-in.
+// |signinIntent| is the intent when the user begins a sign-in flow.
 - (instancetype)
     initWithBaseViewController:(UIViewController*)viewController
                        browser:(Browser*)browser
                    accessPoint:(signin_metrics::AccessPoint)accessPoint
                    promoAction:(signin_metrics::PromoAction)promoAction
+                  signinIntent:(SigninIntent)signinIntent
     NS_DESIGNATED_INITIALIZER;
 
 @end

@@ -18,12 +18,12 @@
 
 namespace blink {
 
-static const v8::Eternal<v8::Name>* eternalV8TestInterfaceEventInitKeys(v8::Isolate* isolate) {
+static const base::span<const v8::Eternal<v8::Name>>
+eternalV8TestInterfaceEventInitKeys(v8::Isolate* isolate) {
   static const char* const kKeys[] = {
     "stringMember",
   };
-  return V8PerIsolateData::From(isolate)->FindOrCreateEternalNameCache(
-      kKeys, kKeys, base::size(kKeys));
+  return V8PerIsolateData::From(isolate)->FindOrCreateEternalNameCache(kKeys, kKeys);
 }
 
 void V8TestInterfaceEventInit::ToImpl(v8::Isolate* isolate, v8::Local<v8::Value> v8_value, TestInterfaceEventInit* impl, ExceptionState& exception_state) {
@@ -41,7 +41,7 @@ void V8TestInterfaceEventInit::ToImpl(v8::Isolate* isolate, v8::Local<v8::Value>
   if (exception_state.HadException())
     return;
 
-  const v8::Eternal<v8::Name>* keys = eternalV8TestInterfaceEventInitKeys(isolate);
+  const auto* keys = eternalV8TestInterfaceEventInitKeys(isolate).data();
   v8::TryCatch block(isolate);
   v8::Local<v8::Context> context = isolate->GetCurrentContext();
   v8::Local<v8::Value> string_member_value;
@@ -70,7 +70,7 @@ bool toV8TestInterfaceEventInit(const TestInterfaceEventInit* impl, v8::Local<v8
   if (!toV8EventInit(impl, dictionary, creationContext, isolate))
     return false;
 
-  const v8::Eternal<v8::Name>* keys = eternalV8TestInterfaceEventInitKeys(isolate);
+  const auto* keys = eternalV8TestInterfaceEventInitKeys(isolate).data();
   v8::Local<v8::Context> context = isolate->GetCurrentContext();
 
   auto create_property = [dictionary, context, keys, isolate](

@@ -17,12 +17,12 @@
 
 namespace blink {
 
-static const v8::Eternal<v8::Name>* eternalV8TestPermissiveDictionaryKeys(v8::Isolate* isolate) {
+static const base::span<const v8::Eternal<v8::Name>>
+eternalV8TestPermissiveDictionaryKeys(v8::Isolate* isolate) {
   static const char* const kKeys[] = {
     "booleanMember",
   };
-  return V8PerIsolateData::From(isolate)->FindOrCreateEternalNameCache(
-      kKeys, kKeys, base::size(kKeys));
+  return V8PerIsolateData::From(isolate)->FindOrCreateEternalNameCache(kKeys, kKeys);
 }
 
 void V8TestPermissiveDictionary::ToImpl(v8::Isolate* isolate, v8::Local<v8::Value> v8_value, TestPermissiveDictionary* impl, ExceptionState& exception_state) {
@@ -36,7 +36,7 @@ void V8TestPermissiveDictionary::ToImpl(v8::Isolate* isolate, v8::Local<v8::Valu
   v8::Local<v8::Object> v8Object = v8_value.As<v8::Object>();
   ALLOW_UNUSED_LOCAL(v8Object);
 
-  const v8::Eternal<v8::Name>* keys = eternalV8TestPermissiveDictionaryKeys(isolate);
+  const auto* keys = eternalV8TestPermissiveDictionaryKeys(isolate).data();
   v8::TryCatch block(isolate);
   v8::Local<v8::Context> context = isolate->GetCurrentContext();
   v8::Local<v8::Value> boolean_member_value;
@@ -62,7 +62,7 @@ v8::Local<v8::Value> TestPermissiveDictionary::ToV8Impl(v8::Local<v8::Object> cr
 }
 
 bool toV8TestPermissiveDictionary(const TestPermissiveDictionary* impl, v8::Local<v8::Object> dictionary, v8::Local<v8::Object> creationContext, v8::Isolate* isolate) {
-  const v8::Eternal<v8::Name>* keys = eternalV8TestPermissiveDictionaryKeys(isolate);
+  const auto* keys = eternalV8TestPermissiveDictionaryKeys(isolate).data();
   v8::Local<v8::Context> context = isolate->GetCurrentContext();
 
   auto create_property = [dictionary, context, keys, isolate](

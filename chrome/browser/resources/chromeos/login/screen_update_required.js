@@ -48,7 +48,7 @@ login.createScreen('UpdateRequiredScreen', 'update-required', function() {
 
     /** @param {boolean} connected */
     setIsConnected(connected) {
-      $('update-required-card').isConnected = connected;
+      $('update-required-card').isNetworkConnected = connected;
     },
 
     /**

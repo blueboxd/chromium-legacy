@@ -9,17 +9,19 @@ source_set("add_account_signin") {
   sources = [
     "add_account_signin_coordinator.h",
     "add_account_signin_coordinator.mm",
+    "add_account_signin_mediator.h",
+    "add_account_signin_mediator.mm",
   ]
   deps = [
+    "//components/prefs",
     "//components/signin/public/identity_manager",
     "//ios/chrome/browser/browser_state",
     "//ios/chrome/browser/main",
     "//ios/chrome/browser/signin",
-    "//ios/chrome/browser/signin",
     "//ios/chrome/browser/ui/alert_coordinator",
     "//ios/chrome/browser/ui/authentication",
+    "//ios/chrome/browser/ui/authentication/signin/user_signin",
     "//ios/public/provider/chrome/browser",
-    "//ios/public/provider/chrome/browser/signin",
     "//ios/public/provider/chrome/browser/signin",
   ]
   public_deps =

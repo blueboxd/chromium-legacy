@@ -111,6 +111,7 @@ class CORE_EXPORT HTMLScriptElement final : public HTMLElement,
 
   // https://w3c.github.io/webappsec-trusted-types/dist/spec/#script-scripttext
   ParkableString script_text_internal_slot_;
+  bool children_changed_by_api_;
 
   Member<ScriptLoader> loader_;
 };

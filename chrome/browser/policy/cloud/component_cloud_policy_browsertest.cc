@@ -274,13 +274,7 @@ IN_PROC_BROWSER_TEST_F(ComponentCloudPolicyTest, UpdateExtensionPolicy) {
   EXPECT_TRUE(policy_listener2.WaitUntilSatisfied());
 }
 
-// Flaky on Mac. http://crbug.com/816647
-#if defined(OS_MACOSX)
-#define MAYBE_InstallNewExtension DISABLED_InstallNewExtension
-#else
-#define MAYBE_InstallNewExtension InstallNewExtension
-#endif
-IN_PROC_BROWSER_TEST_F(ComponentCloudPolicyTest, MAYBE_InstallNewExtension) {
+IN_PROC_BROWSER_TEST_F(ComponentCloudPolicyTest, InstallNewExtension) {
   event_listener_->Reply("idle");
   event_listener_.reset();
 

@@ -18,15 +18,15 @@
 
 namespace blink {
 
-static const v8::Eternal<v8::Name>* eternalV8TestDictionaryDerivedImplementedAsKeys(v8::Isolate* isolate) {
+static const base::span<const v8::Eternal<v8::Name>>
+eternalV8TestDictionaryDerivedImplementedAsKeys(v8::Isolate* isolate) {
   static const char* const kKeys[] = {
     "derivedStringMember",
     "derivedStringMemberWithDefault",
     "requiredLongMember",
     "stringOrDoubleSequenceMember",
   };
-  return V8PerIsolateData::From(isolate)->FindOrCreateEternalNameCache(
-      kKeys, kKeys, base::size(kKeys));
+  return V8PerIsolateData::From(isolate)->FindOrCreateEternalNameCache(kKeys, kKeys);
 }
 
 void V8TestDictionaryDerivedImplementedAs::ToImpl(v8::Isolate* isolate, v8::Local<v8::Value> v8_value, TestDictionaryDerivedImplementedAs* impl, ExceptionState& exception_state) {
@@ -45,7 +45,7 @@ void V8TestDictionaryDerivedImplementedAs::ToImpl(v8::Isolate* isolate, v8::Loca
   if (exception_state.HadException())
     return;
 
-  const v8::Eternal<v8::Name>* keys = eternalV8TestDictionaryDerivedImplementedAsKeys(isolate);
+  const auto* keys = eternalV8TestDictionaryDerivedImplementedAsKeys(isolate).data();
   v8::TryCatch block(isolate);
   v8::Local<v8::Context> context = isolate->GetCurrentContext();
   v8::Local<v8::Value> derived_string_member_value;
@@ -117,7 +117,7 @@ bool toV8TestDictionaryDerivedImplementedAs(const TestDictionaryDerivedImplement
   if (!toV8TestDictionary(impl, dictionary, creationContext, isolate))
     return false;
 
-  const v8::Eternal<v8::Name>* keys = eternalV8TestDictionaryDerivedImplementedAsKeys(isolate);
+  const auto* keys = eternalV8TestDictionaryDerivedImplementedAsKeys(isolate).data();
   v8::Local<v8::Context> context = isolate->GetCurrentContext();
 
   auto create_property = [dictionary, context, keys, isolate](

@@ -975,7 +975,7 @@ static std::pair<LayoutUnit, LayoutUnit> SelectionTopAndBottom(
     // Step 2: Return the logical top and bottom of the line box.
     // TODO(layout-dev): Use selection top & bottom instead of line's, or decide
     // if we still want to distinguish line and selection heights in NG.
-    const ComputedStyle& line_style = line_box.CurrentStyle();
+    const ComputedStyle& line_style = line_box.Current().Style();
     const WritingMode writing_mode = line_style.GetWritingMode();
     const TextDirection text_direction = line_style.Direction();
     const PhysicalOffset line_box_offset =

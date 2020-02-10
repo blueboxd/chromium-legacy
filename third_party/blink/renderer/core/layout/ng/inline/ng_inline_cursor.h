@@ -59,8 +59,49 @@ class CORE_EXPORT NGInlineCursorPosition {
     return !operator==(other);
   }
 
+  // True if the current position is a text. It is error to call at end.
+  bool IsText() const;
+
+  // True if the current position is a generatd text. It is error to call at
+  // end.
+  bool IsGeneratedText() const;
+
+  // True if fragment is |NGFragmentItem::kGeneratedText| or
+  // |NGPhysicalTextFragment::kGeneratedText|.
+  // TODO(yosin): We should rename |IsGeneratedTextType()| to another name.
+  bool IsGeneratedTextType() const;
+
+  // True if the current position is a line break. It is error to call at end.
+  bool IsLineBreak() const;
+
+  // True if the current position is an ellipsis. It is error to call at end.
+  bool IsEllipsis() const;
+
+  // True if the current position is a line box. It is error to call at end.
+  bool IsLineBox() const;
+
+  // True if the current position is an empty line box. It is error to call
+  // other then line box.
+  bool IsEmptyLineBox() const;
+
+  // True if the current position is an inline box. It is error to call at end.
+  bool IsInlineBox() const;
+
+  // True if the current position is an atomic inline. It is error to call at
+  // end.
+  bool IsAtomicInline() const;
+
+  // True if the current position is a list marker.
+  bool IsListMarker() const;
+
+  // True if the current position is hidden for paint. It is error to call at
+  // end.
+  bool IsHiddenForPaint() const;
+
+  // |ComputedStyle| and related functions.
   NGStyleVariant StyleVariant() const;
   bool UsesFirstLineStyle() const;
+  const ComputedStyle& Style() const;
 
   const DisplayItemClient* GetDisplayItemClient() const;
 
@@ -157,57 +198,15 @@ class CORE_EXPORT NGInlineCursor {
   // other than line.
   bool HasSoftWrapToNextLine() const;
 
-  // True if the current position is an inline box. It is error to call at end.
-  bool IsInlineBox() const;
-
-  // True if the current position is an atomic inline. It is error to call at
-  // end.
-  bool IsAtomicInline() const;
-
   // True if the current position is before soft line break. It is error to call
   // at end.
   bool IsBeforeSoftLineBreak() const;
-
-  // True if the current position is an ellipsis. It is error to call at end.
-  bool IsEllipsis() const;
-
-  // True if the current position is an empty line box. It is error to call
-  // other then line box.
-  bool IsEmptyLineBox() const;
-
-  // True if the current position is a generatd text. It is error to call at
-  // end.
-  bool IsGeneratedText() const;
-
-  // True if fragment is |NGFragmentItem::kGeneratedText| or
-  // |NGPhysicalTextFragment::kGeneratedText|.
-  // TODO(yosin): We should rename |IsGeneratedTextType()| to another name.
-  bool IsGeneratedTextType() const;
-
-  // True if the current position is hidden for paint. It is error to call at
-  // end.
-  bool IsHiddenForPaint() const;
-
-  // True if the current position's writing mode in style is horizontal.
-  bool IsHorizontal() const;
 
   // True if the current position is text or atomic inline box.
   // Note: Because of this function is used for caret rect, hit testing, etc,
   // this function returns false for hidden for paint, text overflow ellipsis,
   // and line break hyphen.
   bool IsInlineLeaf() const;
-
-  // True if the current position is a line box. It is error to call at end.
-  bool IsLineBox() const;
-
-  // True if the current position is a line break. It is error to call at end.
-  bool IsLineBreak() const;
-
-  // True if the current position is a list marker.
-  bool IsListMarker() const;
-
-  // True if the current position is a text. It is error to call at end.
-  bool IsText() const;
 
   // |Current*| functions return an object for the current position.
   const NGFragmentItem* CurrentItem() const { return Current().Item(); }
@@ -233,7 +232,6 @@ class CORE_EXPORT NGInlineCursor {
   // call at other than text or atomic inline. Note: <span> doesn't have
   // reserved direction.
   TextDirection CurrentResolvedDirection() const;
-  const ComputedStyle& CurrentStyle() const;
 
   // InkOverflow of itself, including contents if they contribute to the ink
   // overflow of this object (e.g. when not clipped,) in the local coordinate.

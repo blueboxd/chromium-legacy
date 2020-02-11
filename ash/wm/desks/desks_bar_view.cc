@@ -9,10 +9,12 @@
 #include <utility>
 
 #include "ash/public/cpp/shell_window_ids.h"
+#include "ash/public/cpp/window_properties.h"
 #include "ash/shell.h"
 #include "ash/style/ash_color_provider.h"
 #include "ash/wm/desks/desk_mini_view.h"
 #include "ash/wm/desks/desk_mini_view_animations.h"
+#include "ash/wm/desks/desks_util.h"
 #include "ash/wm/desks/new_desk_button.h"
 #include "ash/wm/overview/overview_controller.h"
 #include "ash/wm/overview/overview_grid.h"
@@ -161,17 +163,25 @@ std::unique_ptr<views::Widget> DesksBarView::CreateDesksWidget(
   views::Widget::InitParams params(
       views::Widget::InitParams::TYPE_WINDOW_FRAMELESS);
   params.ownership = views::Widget::InitParams::WIDGET_OWNS_NATIVE_WIDGET;
-  params.activatable = views::Widget::InitParams::ACTIVATABLE_NO;
+  params.activatable = views::Widget::InitParams::ACTIVATABLE_YES;
   params.accept_events = true;
   params.opacity = views::Widget::InitParams::WindowOpacity::kTranslucent;
-  // Use the wallpaper container similar to all background widgets created in
-  // overview mode.
-  params.parent = root->GetChildById(kShellWindowId_WallpaperContainer);
+  // This widget will be parented to the currently-active desk container on
+  // |root|.
+  params.context = root;
   params.bounds = bounds;
   params.name = "VirtualDesksWidget";
+
+  // Even though this widget exists on the active desk container, it should not
+  // show up in the MRU list, and it should not be mirrored in the desks
+  // mini_views.
+  params.init_properties_container.SetProperty(kExcludeInMruKey, true);
+  params.init_properties_container.SetProperty(kHideInDeskMiniViewKey, true);
   widget->Init(std::move(params));
-  ::wm::SetWindowVisibilityAnimationTransition(widget->GetNativeWindow(),
-                                               ::wm::ANIMATE_NONE);
+
+  auto* window = widget->GetNativeWindow();
+  window->set_id(kShellWindowId_DesksBarWindow);
+  ::wm::SetWindowVisibilityAnimationTransition(window, ::wm::ANIMATE_NONE);
 
   return widget;
 }

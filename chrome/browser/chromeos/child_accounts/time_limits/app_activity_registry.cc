@@ -9,6 +9,7 @@
 #include "base/time/default_tick_clock.h"
 #include "base/timer/timer.h"
 #include "chrome/browser/chromeos/child_accounts/time_limits/app_time_limit_utils.h"
+#include "chrome/browser/chromeos/child_accounts/time_limits/app_time_limits_whitelist_policy_wrapper.h"
 #include "chrome/browser/chromeos/child_accounts/time_limits/app_time_notification_delegate.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_list.h"
@@ -395,6 +396,24 @@ void AppActivityRegistry::OnChromeAppActivityChanged(
   }
 
   SetAppInactive(chrome_app_id, timestamp);
+}
+
+void AppActivityRegistry::OnTimeLimitWhitelistChanged(
+    const AppTimeLimitsWhitelistPolicyWrapper& wrapper) {
+  std::vector<AppId> whitelisted_apps = wrapper.GetWhitelistAppList();
+  for (const AppId& app : whitelisted_apps) {
+    if (!base::Contains(activity_registry_, app))
+      continue;
+
+    if (GetAppState(app) == AppState::kAlwaysAvailable)
+      continue;
+
+    base::Optional<AppLimit>& limit = activity_registry_.at(app).limit;
+    if (limit.has_value())
+      limit = base::nullopt;
+
+    SetAppState(app, AppState::kAlwaysAvailable);
+  }
 }
 
 void AppActivityRegistry::OnResetTimeReached(base::Time timestamp) {

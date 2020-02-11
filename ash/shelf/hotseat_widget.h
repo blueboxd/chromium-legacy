@@ -21,6 +21,7 @@ class FocusCycler;
 class ScrollableShelfView;
 class Shelf;
 class ShelfView;
+class HotseatTransitionAnimator;
 
 // The hotseat widget is part of the shelf and hosts app shortcuts.
 class ASH_EXPORT HotseatWidget : public ShelfComponent,
@@ -35,6 +36,11 @@ class ASH_EXPORT HotseatWidget : public ShelfComponent,
 
   // Initializes the widget, sets its contents view and basic properties.
   void Initialize(aura::Window* container, Shelf* shelf);
+
+  // Initializes the animation metrics reporter responsible for recording
+  // animation performance during hotseat state changes, and attaches
+  // |delegate_view_| as an observer.
+  void OnHotseatTransitionAnimatorCreated(HotseatTransitionAnimator* animator);
 
   // views::Widget:
   void OnMouseEvent(ui::MouseEvent* event) override;
@@ -81,6 +87,9 @@ class ASH_EXPORT HotseatWidget : public ShelfComponent,
 
   ShelfView* GetShelfView();
   const ShelfView* GetShelfView() const;
+
+  // Returns the background blur of the |translucent_background_| for test.
+  int GetHotseatBackgroundBlurForTest() const;
 
   void SetState(HotseatState state);
   HotseatState state() const { return state_; }

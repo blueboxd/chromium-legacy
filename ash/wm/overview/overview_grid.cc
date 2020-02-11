@@ -259,12 +259,6 @@ gfx::Insets GetGridInsets(const gfx::Rect& grid_bounds) {
                      std::max(0, horizontal_inset - kWindowMargin));
 }
 
-// Returns the given |widget|'s bounds in its native window's root coordinates.
-gfx::Rect GetWidgetBoundsInRoot(views::Widget* widget) {
-  auto* window = widget->GetNativeWindow();
-  return window->GetBoundsInRootWindow();
-}
-
 bool ShouldExcludeItemFromGridLayout(
     OverviewItem* item,
     const base::flat_set<OverviewItem*>& ignored_items) {
@@ -733,7 +727,10 @@ bool OverviewGrid::MaybeUpdateDesksWidgetBounds() {
     return false;
 
   const gfx::Rect desks_widget_bounds = GetDesksWidgetBounds();
-  if (desks_widget_bounds != GetWidgetBoundsInRoot(desks_widget_.get())) {
+  if (desks_widget_bounds != desks_widget_->GetWindowBoundsInScreen()) {
+    // Note that the desks widget window is placed on the active desk container,
+    // which has the kUsesScreenCoordinatesKey property set to true, and hence
+    // we use the screen coordinates when positioning the desks widget.
     desks_widget_->SetBounds(desks_widget_bounds);
     return true;
   }
@@ -1615,6 +1612,11 @@ void OverviewGrid::MaybeInitDesksWidget() {
   desks_bar_view_->Init();
 
   desks_widget_->Show();
+
+  // TODO(afakhry): Check if we need to keep this as the bottom-most window in
+  // the container.
+  auto* window = desks_widget_->GetNativeWindow();
+  window->parent()->StackChildAtBottom(window);
 }
 
 std::vector<gfx::RectF> OverviewGrid::GetWindowRects(
@@ -1916,13 +1918,10 @@ void OverviewGrid::AddDraggedWindowIntoOverviewOnDragEnd(
                                        /*animate=*/false, /*restack=*/true);
 }
 
-// Returns the desks widget bounds in root, given the screen bounds of the
-// overview grid.
 gfx::Rect OverviewGrid::GetDesksWidgetBounds() const {
-  gfx::Rect desks_widget_root_bounds = bounds_;
-  ::wm::ConvertRectFromScreen(root_window_, &desks_widget_root_bounds);
-  desks_widget_root_bounds.set_height(DesksBarView::GetBarHeightForWidth(
-      desks_bar_view_, desks_widget_root_bounds.width()));
+  gfx::Rect desks_widget_screen_bounds = bounds_;
+  desks_widget_screen_bounds.set_height(DesksBarView::GetBarHeightForWidth(
+      desks_bar_view_, desks_widget_screen_bounds.width()));
   // Shift the widget down to make room for the splitview indicator guidance
   // when it's shown at the top of the screen and no other windows are snapped.
   if (split_view_drag_indicators_ &&
@@ -1930,12 +1929,12 @@ gfx::Rect OverviewGrid::GetDesksWidgetBounds() const {
           SplitViewDragIndicators::WindowDraggingState::kFromOverview &&
       !SplitViewController::IsLayoutHorizontal() &&
       !SplitViewController::Get(root_window_)->InSplitViewMode()) {
-    desks_widget_root_bounds.Offset(
+    desks_widget_screen_bounds.Offset(
         0, split_view_drag_indicators_->GetLeftHighlightViewBounds().height() +
                2 * kHighlightScreenEdgePaddingDp);
   }
 
-  return screen_util::SnapBoundsToDisplayEdge(desks_widget_root_bounds,
+  return screen_util::SnapBoundsToDisplayEdge(desks_widget_screen_bounds,
                                               root_window_);
 }
 

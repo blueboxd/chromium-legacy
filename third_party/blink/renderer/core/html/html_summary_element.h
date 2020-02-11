@@ -46,6 +46,7 @@ class HTMLSummaryElement final : public HTMLElement {
 
   bool SupportsFocus() const override;
   int DefaultTabIndex() const override;
+  bool IsClickableControl(Node*);
 };
 
 }  // namespace blink

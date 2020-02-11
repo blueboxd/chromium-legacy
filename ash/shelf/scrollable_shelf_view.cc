@@ -504,8 +504,8 @@ ScrollableShelfView::~ScrollableShelfView() {
 void ScrollableShelfView::Init() {
   // Although there is no animation for ScrollableShelfView, a layer is still
   // needed. Otherwise, the child view without its own layer will be painted on
-  // RootView and RootView is beneath |opaque_background_| in ShelfWidget. As a
-  // result, the child view will not show.
+  // RootView which is beneath |translucent_background_| in ShelfWidget.
+  // As a result, the child view will not show.
   SetPaintToLayer();
   layer()->SetFillsBoundsOpaquely(false);
 

@@ -162,6 +162,24 @@ links {
   }
 }
 links {
+  name: "Branch Consoles"
+  links {
+    text: "beta"
+    url: "/p/chromium/g/main-beta/console"
+    alt: "Beta branch console"
+  }
+  links {
+    text: "stable"
+    url: "/p/chromium/g/main-stable/console"
+    alt: "Stable branch console"
+  }
+  links {
+    text: "trunk"
+    url: "/p/chromium/g/main/console"
+    alt: "Trunk (ToT) console"
+  }
+}
+links {
   name: "Tryservers"
   links {
     text: "android"

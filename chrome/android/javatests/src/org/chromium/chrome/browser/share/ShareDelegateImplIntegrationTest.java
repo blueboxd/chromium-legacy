@@ -115,7 +115,8 @@ public class ShareDelegateImplIntegrationTest {
             ShareSheetDelegate delegate = new ShareSheetDelegate() {
                 @Override
                 void share(ShareParams params, BottomSheetController controller,
-                        ActivityTabProvider tabProvider, TabCreatorManager.TabCreator tabCreator) {
+                        ActivityTabProvider tabProvider, TabCreatorManager.TabCreator tabCreator,
+                        long shareStartTime) {
                     paramsRef.set(params);
                     helper.notifyCalled();
                 }

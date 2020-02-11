@@ -46,6 +46,7 @@ public class ShareDelegateImpl implements ShareDelegate {
     private final ShareSheetDelegate mDelegate;
     private final ActivityTabProvider mActivityTabProvider;
     private final TabCreatorManager.TabCreator mTabCreator;
+    private long mShareStartTime;
 
     private static boolean sScreenshotCaptureSkippedForTesting;
 
@@ -67,12 +68,18 @@ public class ShareDelegateImpl implements ShareDelegate {
     // ShareDelegate implementation.
     @Override
     public void share(ShareParams params) {
-        mDelegate.share(params, mBottomSheetController, mActivityTabProvider, mTabCreator);
+        if (mShareStartTime == 0L) {
+            mShareStartTime = System.currentTimeMillis();
+        }
+        mDelegate.share(
+                params, mBottomSheetController, mActivityTabProvider, mTabCreator, mShareStartTime);
+        mShareStartTime = 0;
     }
 
     // ShareDelegate implementation.
     @Override
     public void share(Tab currentTab, boolean shareDirectly) {
+        mShareStartTime = System.currentTimeMillis();
         onShareSelected(currentTab.getWindowAndroid().getActivity().get(), currentTab,
                 shareDirectly, currentTab.isIncognito());
     }
@@ -254,7 +261,8 @@ public class ShareDelegateImpl implements ShareDelegate {
          * Trigger the share action for the specified params.
          */
         void share(ShareParams params, BottomSheetController controller,
-                ActivityTabProvider tabProvider, TabCreatorManager.TabCreator tabCreator) {
+                ActivityTabProvider tabProvider, TabCreatorManager.TabCreator tabCreator,
+                long shareStartTime) {
             if (params.shareDirectly()) {
                 ShareHelper.shareDirectly(params);
             } else if (ChromeFeatureList.isEnabled(ChromeFeatureList.CHROME_SHARING_HUB)) {
@@ -263,7 +271,7 @@ public class ShareDelegateImpl implements ShareDelegate {
                                 new ShareSheetPropertyModelBuilder(controller,
                                         ContextUtils.getApplicationContext().getPackageManager()));
                 // TODO(crbug/1009124): open custom share sheet.
-                coordinator.showShareSheet(params);
+                coordinator.showShareSheet(params, shareStartTime);
             } else {
                 ShareHelper.showDefaultShareUi(params);
             }

@@ -12,6 +12,7 @@ import android.support.v7.content.res.AppCompatResources;
 
 import androidx.annotation.VisibleForTesting;
 
+import org.chromium.base.metrics.RecordHistogram;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.ActivityTabProvider;
 import org.chromium.chrome.browser.flags.ChromeFeatureList;
@@ -52,7 +53,7 @@ public class ShareSheetCoordinator {
         mPropertyModelBuilder = modelBuilder;
     }
 
-    protected void showShareSheet(ShareParams params) {
+    protected void showShareSheet(ShareParams params, long shareStartTime) {
         Activity activity = params.getWindow().getActivity().get();
         if (activity == null) {
             return;
@@ -66,7 +67,12 @@ public class ShareSheetCoordinator {
 
         bottomSheet.createRecyclerViews(chromeFeatures, thirdPartyApps);
 
-        mBottomSheetController.requestShowContent(bottomSheet, true);
+        boolean shown = mBottomSheetController.requestShowContent(bottomSheet, true);
+        if (shown) {
+            long delta = System.currentTimeMillis() - shareStartTime;
+            RecordHistogram.recordMediumTimesHistogram(
+                    "Sharing.SharingHubAndroid.TimeToShowShareSheet", delta);
+        }
     }
 
     @VisibleForTesting

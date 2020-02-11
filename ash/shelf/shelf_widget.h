@@ -158,7 +158,7 @@ class ASH_EXPORT ShelfWidget : public AccessibilityObserver,
     return &background_animator_;
   }
 
-  HotseatTransitionAnimator* hotseat_transition_animator_for_testing() {
+  HotseatTransitionAnimator* hotseat_transition_animator() {
     return hotseat_transition_animator_.get();
   }
 

@@ -1846,4 +1846,27 @@ TEST_P(HotseatWidgetTest, HotseatRemainsHiddenIfPopupLaunched) {
   EXPECT_EQ(HotseatState::kHidden, GetShelfLayoutManager()->hotseat_state());
 }
 
+// Tests that blur is not showing during animations.
+TEST_P(HotseatWidgetTest, NoBlurDuringAnimations) {
+  TabletModeControllerTestApi().EnterTabletMode();
+  ASSERT_EQ(
+      ShelfConfig::Get()->shelf_blur_radius(),
+      GetShelfWidget()->hotseat_widget()->GetHotseatBackgroundBlurForTest());
+  ui::ScopedAnimationDurationScaleMode regular_animations(
+      ui::ScopedAnimationDurationScaleMode::NORMAL_DURATION);
+
+  // Open a window, as the hotseat animates to kHidden, it should lose its blur.
+  std::unique_ptr<aura::Window> window =
+      AshTestBase::CreateTestWindow(gfx::Rect(0, 0, 400, 400));
+  wm::ActivateWindow(window.get());
+  EXPECT_EQ(
+      0, GetShelfWidget()->hotseat_widget()->GetHotseatBackgroundBlurForTest());
+
+  // Wait for the animation to finish, hotseat blur should return.
+  ShellTestApi().WaitForWindowFinishAnimating(window.get());
+  EXPECT_EQ(
+      ShelfConfig::Get()->shelf_blur_radius(),
+      GetShelfWidget()->hotseat_widget()->GetHotseatBackgroundBlurForTest());
+}
+
 }  // namespace ash

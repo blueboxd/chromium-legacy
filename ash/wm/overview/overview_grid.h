@@ -425,7 +425,7 @@ class ASH_EXPORT OverviewGrid : public SplitViewObserver,
   // the window's bounds if it has been resized.
   void AddDraggedWindowIntoOverviewOnDragEnd(aura::Window* dragged_window);
 
-  // Returns the the bounds of the desks widget in root window.
+  // Returns the the bounds of the desks widget in screen coordinates.
   gfx::Rect GetDesksWidgetBounds() const;
 
   void UpdateCannotSnapWarningVisibility();

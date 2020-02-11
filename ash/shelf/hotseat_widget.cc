@@ -12,6 +12,7 @@
 #include "ash/public/cpp/shelf_config.h"
 #include "ash/public/cpp/shelf_model.h"
 #include "ash/public/cpp/wallpaper_controller_observer.h"
+#include "ash/shelf/hotseat_transition_animator.h"
 #include "ash/shelf/scrollable_shelf_view.h"
 #include "ash/shelf/shelf_layout_manager.h"
 #include "ash/shelf/shelf_navigation_widget.h"
@@ -83,7 +84,8 @@ class HotseatWindowTargeter : public aura::WindowTargeter {
 
 }  // namespace
 
-class HotseatWidget::DelegateView : public views::WidgetDelegateView,
+class HotseatWidget::DelegateView : public HotseatTransitionAnimator::Observer,
+                                    public views::WidgetDelegateView,
                                     public WallpaperControllerObserver {
  public:
   explicit DelegateView(WallpaperControllerImpl* wallpaper_controller)
@@ -102,9 +104,19 @@ class HotseatWidget::DelegateView : public views::WidgetDelegateView,
 
   void SetTranslucentBackground(const gfx::Rect& translucent_background_bounds);
 
+  // Sets whether the background should be blurred as requested by the argument,
+  // unless the feature flag is disabled or |disable_blur_for_animations_| is
+  // true, in which case this disables background blur.
+  void SetBackgroundBlur(bool enable_blur);
+
   // Updates the hotseat background when tablet mode changes.
   void OnTabletModeChanged();
 
+  // HotseatTransitionAnimator::Observer:
+  void OnHotseatTransitionAnimationStarted(HotseatState from_state,
+                                           HotseatState to_state) override;
+  void OnHotseatTransitionAnimationEnded(HotseatState from_state,
+                                         HotseatState to_state) override;
   // views::WidgetDelegateView:
   bool CanActivate() const override;
   void ReorderChildLayers(ui::Layer* parent_layer) override;
@@ -116,6 +128,10 @@ class HotseatWidget::DelegateView : public views::WidgetDelegateView,
     focus_cycler_ = focus_cycler;
   }
 
+  int background_blur() const {
+    return translucent_background_.background_blur();
+  }
+
  private:
   void SetParentLayer(ui::Layer* layer);
 
@@ -125,6 +141,8 @@ class HotseatWidget::DelegateView : public views::WidgetDelegateView,
   ScrollableShelfView* scrollable_shelf_view_ = nullptr;  // unowned.
   // The WallpaperController, responsible for providing proper colors.
   WallpaperControllerImpl* wallpaper_controller_;
+  // Blur is disabled during animations to improve performance.
+  bool blur_lock_ = false;
 
   // The most recent color that the |translucent_background_| has been animated
   // to.
@@ -158,8 +176,7 @@ void HotseatWidget::DelegateView::Init(
 void HotseatWidget::DelegateView::UpdateTranslucentBackground() {
   if (!HotseatWidget::ShouldShowHotseatBackground()) {
     translucent_background_.SetVisible(false);
-    if (features::IsBackgroundBlurEnabled())
-      translucent_background_.SetBackgroundBlur(0);
+    SetBackgroundBlur(false);
     return;
   }
 
@@ -172,6 +189,7 @@ void HotseatWidget::DelegateView::SetTranslucentBackground(
   DCHECK(HotseatWidget::ShouldShowHotseatBackground());
 
   translucent_background_.SetVisible(true);
+  SetBackgroundBlur(/*enable_blur=*/true);
 
   // Animate the bounds change if we're changing the background, or if there's
   // a change of width (for instance when dragging an app into, or out of,
@@ -200,15 +218,34 @@ void HotseatWidget::DelegateView::SetTranslucentBackground(
 
   if (translucent_background_.bounds() != background_bounds)
     translucent_background_.SetBounds(background_bounds);
+}
 
-  if (features::IsBackgroundBlurEnabled()) {
-    translucent_background_.SetBackgroundBlur(
-        ShelfConfig::Get()->shelf_blur_radius());
-  }
+void HotseatWidget::DelegateView::SetBackgroundBlur(bool enable_blur) {
+  if (!features::IsBackgroundBlurEnabled() || blur_lock_)
+    return;
+
+  const int blur_radius =
+      enable_blur ? ShelfConfig::Get()->shelf_blur_radius() : 0;
+  if (translucent_background_.background_blur() != blur_radius)
+    translucent_background_.SetBackgroundBlur(blur_radius);
 }
 
 void HotseatWidget::DelegateView::OnTabletModeChanged() {
   UpdateTranslucentBackground();
+}
+
+void HotseatWidget::DelegateView::OnHotseatTransitionAnimationStarted(
+    HotseatState from_state,
+    HotseatState to_state) {
+  SetBackgroundBlur(false);
+  blur_lock_ = true;
+}
+
+void HotseatWidget::DelegateView::OnHotseatTransitionAnimationEnded(
+    HotseatState from_state,
+    HotseatState to_state) {
+  blur_lock_ = false;
+  SetBackgroundBlur(true);
 }
 
 bool HotseatWidget::DelegateView::CanActivate() const {
@@ -241,6 +278,8 @@ HotseatWidget::HotseatWidget()
 
 HotseatWidget::~HotseatWidget() {
   ShelfConfig::Get()->RemoveObserver(this);
+  shelf_->shelf_widget()->hotseat_transition_animator()->RemoveObserver(
+      delegate_view_);
 }
 
 bool HotseatWidget::ShouldShowHotseatBackground() {
@@ -277,6 +316,12 @@ void HotseatWidget::Initialize(aura::Window* container, Shelf* shelf) {
     shelf_view_->Init();
   }
   delegate_view_->Init(scrollable_shelf_view(), GetLayer());
+}
+
+void HotseatWidget::OnHotseatTransitionAnimatorCreated(
+    HotseatTransitionAnimator* animator) {
+  shelf_->shelf_widget()->hotseat_transition_animator()->AddObserver(
+      delegate_view_);
 }
 
 void HotseatWidget::OnMouseEvent(ui::MouseEvent* event) {
@@ -406,6 +451,10 @@ ShelfView* HotseatWidget::GetShelfView() {
 
   DCHECK(shelf_view_);
   return shelf_view_;
+}
+
+int HotseatWidget::GetHotseatBackgroundBlurForTest() const {
+  return delegate_view_->background_blur();
 }
 
 bool HotseatWidget::IsShowingShelfMenu() const {

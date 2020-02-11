@@ -108,7 +108,7 @@ cr.define('settings_sync_account_control', function() {
           testElement.$$('#promo-header').classList.contains('two-line'));
     });
 
-    test('not signed in and no stored accounts', function() {
+    test('not signed in and no stored accounts', async function() {
       testElement.syncStatus = {signedIn: false, signedInUsername: ''};
       sync_test_util.simulateStoredAccounts([]);
 
@@ -121,7 +121,11 @@ cr.define('settings_sync_account_control', function() {
       assertTrue(test_util.isChildVisible(testElement, '#sign-in'));
 
       testElement.$$('#sign-in').click();
-      return browserProxy.whenCalled('startSignIn');
+      if (cr.isChromeOS) {
+        await browserProxy.whenCalled('turnOnSync');
+      } else {
+        await browserProxy.whenCalled('startSignIn');
+      }
     });
 
     test('not signed in but has stored accounts', function() {

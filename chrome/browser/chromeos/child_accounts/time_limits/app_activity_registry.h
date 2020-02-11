@@ -31,6 +31,7 @@ class OneShotTimer;
 namespace chromeos {
 namespace app_time {
 
+class AppTimeLimitsWhitelistPolicyWrapper;
 class AppTimeNotificationDelegate;
 
 // Keeps track of app activity and time limits information.
@@ -131,6 +132,10 @@ class AppActivityRegistry : public AppServiceWrapper::EventListener {
   // Called from WebTimeActivityProvider to update chrome app state.
   void OnChromeAppActivityChanged(ChromeAppActivityState state,
                                   base::Time timestamp);
+
+  // Whitelisted applications changed. Called by AppTimeController.
+  void OnTimeLimitWhitelistChanged(
+      const AppTimeLimitsWhitelistPolicyWrapper& wrapper);
 
  private:
   // Bundles detailed data stored for a specific app.

@@ -5,7 +5,7 @@
 /** @implements {settings.SyncBrowserProxy} */
 class TestSyncBrowserProxy extends TestBrowserProxy {
   constructor() {
-    super([
+    const methodNames = [
       'didNavigateAwayFromSyncPage',
       'didNavigateToSyncPage',
       'getPromoImpressionCount',
@@ -20,7 +20,13 @@ class TestSyncBrowserProxy extends TestBrowserProxy {
       'startSignIn',
       'startSyncingWithEmail',
       'queryIsHistoryRecordingEnabled',
-    ]);
+    ];
+
+    if (cr.isChromeOS) {
+      methodNames.push('turnOnSync', 'turnOffSync');
+    }
+
+    super(methodNames);
 
     /** @private {number} */
     this.impressionCount_ = 0;
@@ -121,4 +127,16 @@ class TestSyncBrowserProxy extends TestBrowserProxy {
     this.methodCalled('queryIsHistoryRecordingEnabled');
     return Promise.resolve(this.historyRecordingEnabled_);
   }
+}
+
+if (cr.isChromeOS) {
+  /** @override */
+  TestSyncBrowserProxy.prototype.turnOnSync = function() {
+    this.methodCalled('turnOnSync');
+  };
+
+  /** @override */
+  TestSyncBrowserProxy.prototype.turnOffSync = function() {
+    this.methodCalled('turnOffSync');
+  };
 }

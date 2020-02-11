@@ -173,7 +173,11 @@ enum ShellWindowId {
 // Special shell windows that are not containers.
 enum NonContainerWindowId {
   // The window created by PhantomWindowController or DragWindowController.
-  kShellWindowId_PhantomWindow = kShellWindowId_MaxContainer + 1
+  kShellWindowId_PhantomWindow = kShellWindowId_MaxContainer + 1,
+
+  // The window that shows the Virtual Desks bar at the top of overview. There's
+  // only one such window on each display when overview mode is active.
+  kShellWindowId_DesksBarWindow,
 };
 
 // A list of system modal container IDs. The order of the list is important that

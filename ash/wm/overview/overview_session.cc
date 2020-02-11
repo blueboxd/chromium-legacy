@@ -686,6 +686,10 @@ void OverviewSession::OnWindowActivating(
   if (ignore_activations_ || gained_active == GetOverviewFocusWindow())
     return;
 
+  // Activating the Desks bar should not end overview.
+  if (gained_active && gained_active->id() == kShellWindowId_DesksBarWindow)
+    return;
+
   if (DesksController::Get()->AreDesksBeingModified()) {
     // Activating a desk from its mini view will activate its most-recently used
     // window, but this should not result in ending overview mode now.

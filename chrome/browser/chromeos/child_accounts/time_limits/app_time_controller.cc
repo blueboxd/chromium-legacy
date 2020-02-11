@@ -334,7 +334,10 @@ void AppTimeController::TimeLimitsWhitelistPolicyUpdated(
   // Figure out a way to avoid cloning
   AppTimeLimitsWhitelistPolicyWrapper wrapper(policy);
 
-  web_time_enforcer_->OnTimeLimitWhitelistChanged(wrapper);
+  app_registry_->OnTimeLimitWhitelistChanged(wrapper);
+
+  if (web_time_enforcer_)
+    web_time_enforcer_->OnTimeLimitWhitelistChanged(wrapper);
 }
 
 void AppTimeController::ShowAppTimeLimitNotification(

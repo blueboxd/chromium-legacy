@@ -82,7 +82,11 @@ class AppRegistrar {
   virtual base::Optional<SkColor> GetAppThemeColor(
       const AppId& app_id) const = 0;
   virtual const GURL& GetAppLaunchURL(const AppId& app_id) const = 0;
-  virtual base::Optional<GURL> GetAppScope(const AppId& app_id) const = 0;
+
+  // TODO(crbug.com/910016): Replace uses of this with GetAppScope().
+  virtual base::Optional<GURL> GetAppScopeInternal(
+      const AppId& app_id) const = 0;
+
   virtual DisplayMode GetAppDisplayMode(const AppId& app_id) const = 0;
   virtual DisplayMode GetAppUserDisplayMode(const AppId& app_id) const = 0;
 
@@ -100,6 +104,10 @@ class AppRegistrar {
   // Safe downcast.
   virtual WebAppRegistrar* AsWebAppRegistrar() = 0;
   virtual extensions::BookmarkAppRegistrar* AsBookmarkAppRegistrar();
+
+  // Returns the scope returned by GetAppScopeInternal() or the parent URL of
+  // GetAppLaunchURL() if there's no scope.
+  GURL GetAppScope(const AppId& app_id) const;
 
   // Searches for the first app id in the registry for which the |url| is in
   // scope.

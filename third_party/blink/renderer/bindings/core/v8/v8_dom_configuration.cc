@@ -711,6 +711,29 @@ void V8DOMConfiguration::InstallConstant(
   InstallConstantInternal(isolate, interface, prototype, constant);
 }
 
+void V8DOMConfiguration::InstallConstants(
+    v8::Isolate* isolate,
+    v8::Local<v8::FunctionTemplate> interface_template,
+    v8::Local<v8::ObjectTemplate> prototype_template,
+    const ConstantCallbackConfiguration* constants,
+    size_t constant_count) {
+  for (size_t i = 0; i < constant_count; ++i) {
+    v8::Local<v8::String> name = V8AtomicString(isolate, constants[i].name);
+    interface_template->SetNativeDataProperty(
+        name, constants[i].getter, nullptr, v8::Local<v8::Value>(),
+        static_cast<v8::PropertyAttribute>(v8::ReadOnly | v8::DontDelete),
+        v8::Local<v8::AccessorSignature>(), v8::DEFAULT,
+        v8::SideEffectType::kHasNoSideEffect,
+        v8::SideEffectType::kHasNoSideEffect);
+    prototype_template->SetNativeDataProperty(
+        name, constants[i].getter, nullptr, v8::Local<v8::Value>(),
+        static_cast<v8::PropertyAttribute>(v8::ReadOnly | v8::DontDelete),
+        v8::Local<v8::AccessorSignature>(), v8::DEFAULT,
+        v8::SideEffectType::kHasNoSideEffect,
+        v8::SideEffectType::kHasNoSideEffect);
+  }
+}
+
 void V8DOMConfiguration::InstallConstantWithGetter(
     v8::Isolate* isolate,
     v8::Local<v8::FunctionTemplate> interface_template,

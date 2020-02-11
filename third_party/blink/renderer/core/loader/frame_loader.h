@@ -279,17 +279,21 @@ class CORE_EXPORT FrameLoader final {
   std::unique_ptr<TracedValue> ToTracedValue() const;
   void TakeObjectSnapshot() const;
 
+  enum class CommitReason {
+    // Committing initial empty document.
+    kInitialization,
+    // Committing navigation as a result of javascript URL execution.
+    kJavascriptUrl,
+    // All other navigations.
+    kRegular
+  };
   // Commits the given |document_loader|.
-  // |is_initialization| should be true when committing the initial empty
-  // document. |is_javascript_url| should be true when committing a navigation
-  // to a javascript URL (eg. javascript:foo).
   void CommitDocumentLoader(
       DocumentLoader* document_loader,
       const base::Optional<Document::UnloadEventTiming>&,
       HistoryItem* previous_history_item,
-      bool is_initialization,
-      base::OnceClosure call_before_attaching_new_document,
-      bool is_javascript_url);
+      CommitReason,
+      base::OnceClosure call_before_attaching_new_document);
 
   // Creates CSP based on |response| and checks that they allow loading |url|.
   // Returns nullptr if the check fails.

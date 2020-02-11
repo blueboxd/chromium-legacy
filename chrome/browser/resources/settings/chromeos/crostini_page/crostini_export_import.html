@@ -11,25 +11,23 @@
 <dom-module id="settings-crostini-export-import">
   <template>
     <style include="settings-shared"></style>
-    <div class="list-frame vertical-list">
-      <div id="export" class="list-item">
-        <div id="exportCrostiniLabel" class="start secondary">
-          $i18n{crostiniExportLabel}
-        </div>
-        <cr-button on-click="onExportClick_" disabled="[[!enableButtons_]]"
-            aria-labelledby="exportCrostiniLabel">
-          $i18n{crostiniExport}
-        </cr-button>
+    <div id="export" class="settings-box first">
+      <div id="exportCrostiniLabel" class="start">
+        $i18n{crostiniExportLabel}
       </div>
-      <div id="import" class="list-item">
-        <div id="importCrostiniLabel" class="start secondary">
-          $i18n{crostiniImportLabel}
-        </div>
-        <cr-button on-click="onImportClick_" disabled="[[!enableButtons_]]"
-            aria-labelledby="importCrostiniLabel">
-          $i18n{crostiniImport}
-        </cr-button>
+      <cr-button on-click="onExportClick_" disabled="[[!enableButtons_]]"
+        aria-labelledby="exportCrostiniLabel">
+        $i18n{crostiniExport}
+      </cr-button>
+    </div>
+    <div id="import" class="settings-box hr">
+      <div id="importCrostiniLabel" class="start">
+        $i18n{crostiniImportLabel}
       </div>
+      <cr-button on-click="onImportClick_" disabled="[[!enableButtons_]]"
+        aria-labelledby="importCrostiniLabel">
+        $i18n{crostiniImport}
+      </cr-button>
     </div>
     <template is="dom-if" if="[[showImportConfirmationDialog_]]" restamp>
       <settings-crostini-import-confirmation-dialog

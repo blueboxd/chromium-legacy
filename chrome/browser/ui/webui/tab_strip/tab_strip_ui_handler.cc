@@ -460,8 +460,8 @@ base::DictionaryValue TabStripUIHandler::GetTabGroupData(TabGroup* group) {
   base::DictionaryValue visual_data_dict;
   visual_data_dict.SetString("title", visual_data->title());
 
-  bool is_dark_frame = color_utils::IsDark(
-      embedder_->GetThemeProvider()->GetColor(ThemeProperties::COLOR_FRAME));
+  bool is_dark_frame =
+      color_utils::IsDark(embedder_->GetColor(ThemeProperties::COLOR_FRAME));
   const tab_groups::TabGroupColor tab_group_color =
       tab_groups::GetTabGroupColorSet().at(visual_data->color());
   const SkColor group_color = is_dark_frame ? tab_group_color.dark_theme_color
@@ -515,39 +515,37 @@ void TabStripUIHandler::HandleGetThemeColors(const base::ListValue* args) {
   AllowJavascript();
   const base::Value& callback_id = args->GetList()[0];
 
-  const ui::ThemeProvider* tp = embedder_->GetThemeProvider();
-
   // This should return an object of CSS variables to rgba values so that
   // the WebUI can use the CSS variables to color the tab strip
   base::DictionaryValue colors;
   colors.SetString("--tabstrip-background-color",
                    color_utils::SkColorToRgbaString(
-                       tp->GetColor(ThemeProperties::COLOR_FRAME)));
+                       embedder_->GetColor(ThemeProperties::COLOR_FRAME)));
   colors.SetString("--tabstrip-tab-background-color",
                    color_utils::SkColorToRgbaString(
-                       tp->GetColor(ThemeProperties::COLOR_TOOLBAR)));
+                       embedder_->GetColor(ThemeProperties::COLOR_TOOLBAR)));
   colors.SetString("--tabstrip-tab-text-color",
                    color_utils::SkColorToRgbaString(
-                       tp->GetColor(ThemeProperties::COLOR_TAB_TEXT)));
+                       embedder_->GetColor(ThemeProperties::COLOR_TAB_TEXT)));
   colors.SetString("--tabstrip-tab-separator-color",
                    color_utils::SkColorToRgbaString(SkColorSetA(
-                       tp->GetColor(ThemeProperties::COLOR_TAB_TEXT),
+                       embedder_->GetColor(ThemeProperties::COLOR_TAB_TEXT),
                        /* 16% opacity */ 0.16 * 255)));
 
   colors.SetString("--tabstrip-tab-loading-spinning-color",
-                   color_utils::SkColorToRgbaString(tp->GetColor(
+                   color_utils::SkColorToRgbaString(embedder_->GetColor(
                        ThemeProperties::COLOR_TAB_THROBBER_SPINNING)));
   colors.SetString("--tabstrip-tab-waiting-spinning-color",
-                   color_utils::SkColorToRgbaString(tp->GetColor(
+                   color_utils::SkColorToRgbaString(embedder_->GetColor(
                        ThemeProperties::COLOR_TAB_THROBBER_WAITING)));
   colors.SetString("--tabstrip-indicator-recording-color",
-                   color_utils::SkColorToRgbaString(tp->GetColor(
+                   color_utils::SkColorToRgbaString(embedder_->GetColor(
                        ThemeProperties::COLOR_TAB_ALERT_RECORDING)));
   colors.SetString("--tabstrip-indicator-pip-color",
-                   color_utils::SkColorToRgbaString(
-                       tp->GetColor(ThemeProperties::COLOR_TAB_PIP_PLAYING)));
+                   color_utils::SkColorToRgbaString(embedder_->GetColor(
+                       ThemeProperties::COLOR_TAB_PIP_PLAYING)));
   colors.SetString("--tabstrip-indicator-capturing-color",
-                   color_utils::SkColorToRgbaString(tp->GetColor(
+                   color_utils::SkColorToRgbaString(embedder_->GetColor(
                        ThemeProperties::COLOR_TAB_ALERT_CAPTURING)));
   colors.SetString("--tabstrip-tab-blocked-color",
                    color_utils::SkColorToRgbaString(

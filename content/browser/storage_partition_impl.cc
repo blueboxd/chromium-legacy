@@ -1735,14 +1735,23 @@ void StoragePartitionImpl::OpenLocalStorage(
   dom_storage_context_->OpenLocalStorage(origin, std::move(receiver));
 }
 
-void StoragePartitionImpl::OpenSessionStorage(
+void StoragePartitionImpl::BindSessionStorageNamespace(
     const std::string& namespace_id,
     mojo::PendingReceiver<blink::mojom::SessionStorageNamespace> receiver) {
   DCHECK(initialized_);
-  SecurityPolicyHandle cloned_handle =
+  dom_storage_context_->BindSessionStorageNamespace(
+      namespace_id, receivers_.GetBadMessageCallback(), std::move(receiver));
+}
+
+void StoragePartitionImpl::BindSessionStorageArea(
+    const url::Origin& origin,
+    const std::string& namespace_id,
+    mojo::PendingReceiver<blink::mojom::StorageArea> receiver) {
+  DCHECK(initialized_);
+  ChildProcessSecurityPolicyImpl::Handle security_policy_handle =
       receivers_.current_context()->Duplicate();
-  dom_storage_context_->OpenSessionStorage(
-      std::move(cloned_handle), namespace_id,
+  dom_storage_context_->BindSessionStorageArea(
+      std::move(security_policy_handle), origin, namespace_id,
       receivers_.GetBadMessageCallback(), std::move(receiver));
 }
 

@@ -368,8 +368,7 @@ void DOMStorageContextWrapper::OpenLocalStorage(
   }
 }
 
-void DOMStorageContextWrapper::OpenSessionStorage(
-    ChildProcessSecurityPolicyImpl::Handle handle,
+void DOMStorageContextWrapper::BindSessionStorageNamespace(
     const std::string& namespace_id,
     mojo::ReportBadMessageCallback bad_message_callback,
     mojo::PendingReceiver<blink::mojom::SessionStorageNamespace> receiver) {
@@ -390,9 +389,38 @@ void DOMStorageContextWrapper::OpenSessionStorage(
   // further tasks from being queued.
   mojo_task_runner_->PostTask(
       FROM_HERE,
-      base::BindOnce(&SessionStorageContextMojo::OpenSessionStorage,
+      base::BindOnce(&SessionStorageContextMojo::BindSessionStorageNamespace,
+                     base::Unretained(mojo_session_state_), namespace_id,
+                     std::move(wrapped_bad_message_callback),
+                     std::move(receiver)));
+}
+
+void DOMStorageContextWrapper::BindSessionStorageArea(
+    ChildProcessSecurityPolicyImpl::Handle handle,
+    const url::Origin& origin,
+    const std::string& namespace_id,
+    mojo::ReportBadMessageCallback bad_message_callback,
+    mojo::PendingReceiver<blink::mojom::StorageArea> receiver) {
+  DCHECK(mojo_session_state_);
+  // The bad message callback must be called on the same sequenced task runner
+  // as the binding set. It cannot be called from our own mojo task runner.
+  auto wrapped_bad_message_callback = base::BindOnce(
+      [](mojo::ReportBadMessageCallback bad_message_callback,
+         scoped_refptr<base::SequencedTaskRunner> bindings_runner,
+         const std::string& error) {
+        bindings_runner->PostTask(
+            FROM_HERE, base::BindOnce(std::move(bad_message_callback), error));
+      },
+      std::move(bad_message_callback), base::SequencedTaskRunnerHandle::Get());
+  // base::Unretained is safe here, because the mojo_state_ won't be deleted
+  // until a ShutdownAndDelete task has been ran on the mojo_task_runner_, and
+  // as soon as that task is posted, mojo_state_ is set to null, preventing
+  // further tasks from being queued.
+  mojo_task_runner_->PostTask(
+      FROM_HERE,
+      base::BindOnce(&SessionStorageContextMojo::BindSessionStorageArea,
                      base::Unretained(mojo_session_state_), std::move(handle),
-                     namespace_id, std::move(wrapped_bad_message_callback),
+                     origin, namespace_id, std::move(bad_message_callback),
                      std::move(receiver)));
 }
 

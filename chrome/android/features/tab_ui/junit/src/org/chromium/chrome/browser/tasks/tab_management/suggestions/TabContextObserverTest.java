@@ -94,8 +94,17 @@ public class TabContextObserverTest {
     public void testCloseTab() {
         TabContextObserverTestHelper tabContextObserverTestHelper =
                 new TabContextObserverTestHelper(mTabModelSelector);
-        tabContextObserverTestHelper.mTabModelObserver.didCloseTab(0, false);
+        tabContextObserverTestHelper.mTabModelObserver.willCloseTab(null, false);
         Assert.assertEquals(TabContextObserver.TabContextChangeReason.TAB_CLOSED,
+                tabContextObserverTestHelper.getChangeReason());
+    }
+
+    @Test
+    public void testUndoClosedTab() {
+        TabContextObserverTestHelper tabContextObserverTestHelper =
+                new TabContextObserverTestHelper(mTabModelSelector);
+        tabContextObserverTestHelper.mTabModelObserver.tabClosureUndone(null);
+        Assert.assertEquals(TabContextObserver.TabContextChangeReason.TAB_CLOSURE_UNDONE,
                 tabContextObserverTestHelper.getChangeReason());
     }
 

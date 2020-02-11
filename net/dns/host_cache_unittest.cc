@@ -8,6 +8,7 @@
 #include <utility>
 
 #include "base/bind.h"
+#include "base/bind_helpers.h"
 #include "base/callback.h"
 #include "base/format_macros.h"
 #include "base/stl_util.h"
@@ -567,14 +568,14 @@ TEST(HostCacheTest, ClearForHosts) {
   EXPECT_EQ(5u, cache.size());
 
   // Clear the hosts matching a certain predicate, such as the number being odd.
-  cache.ClearForHosts(base::Bind(&FoobarIndexIsOdd));
+  cache.ClearForHosts(base::BindRepeating(&FoobarIndexIsOdd));
 
   EXPECT_EQ(2u, cache.size());
   EXPECT_TRUE(cache.Lookup(Key("foobar2.com"), now));
   EXPECT_TRUE(cache.Lookup(Key("foobar4.com"), now));
 
   // Passing null callback will delete all hosts.
-  cache.ClearForHosts(base::Callback<bool(const std::string&)>());
+  cache.ClearForHosts(base::NullCallback());
 
   EXPECT_EQ(0u, cache.size());
 }

@@ -32,7 +32,7 @@ ClipboardItem::ClipboardItem(
     const HeapVector<std::pair<String, Member<Blob>>>& items,
     const ClipboardItemOptions* options)
     : items_(items),
-      is_raw_(base::FeatureList::IsEnabled(blink::features::kRawClipboard) &&
+      is_raw_(base::FeatureList::IsEnabled(features::kRawClipboard) &&
               options->raw()) {
   DCHECK(items_.size());
 }
@@ -67,7 +67,7 @@ ScriptPromise ClipboardItem::getType(ScriptState* script_state,
   return promise;
 }
 
-void ClipboardItem::Trace(blink::Visitor* visitor) {
+void ClipboardItem::Trace(Visitor* visitor) {
   visitor->Trace(items_);
   ScriptWrappable::Trace(visitor);
 }

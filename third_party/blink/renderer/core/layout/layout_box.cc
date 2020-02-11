@@ -2445,7 +2445,7 @@ void LayoutBox::InvalidateItems(const NGLayoutResult& result) {
 }
 
 const NGLayoutResult* LayoutBox::GetCachedLayoutResult() const {
-  if (!layout_results_.size())
+  if (layout_results_.IsEmpty())
     return nullptr;
   // Only return re-usable results.
   const NGLayoutResult* result = layout_results_[0].get();

@@ -197,10 +197,14 @@ class CONTENT_EXPORT StoragePartitionImpl
   void OpenLocalStorage(
       const url::Origin& origin,
       mojo::PendingReceiver<blink::mojom::StorageArea> receiver) override;
-  void OpenSessionStorage(
+  void BindSessionStorageNamespace(
       const std::string& namespace_id,
       mojo::PendingReceiver<blink::mojom::SessionStorageNamespace> receiver)
       override;
+  void BindSessionStorageArea(
+      const url::Origin& origin,
+      const std::string& namespace_id,
+      mojo::PendingReceiver<blink::mojom::StorageArea> receiver) override;
 
   // network::mojom::NetworkContextClient interface.
   void OnAuthRequired(

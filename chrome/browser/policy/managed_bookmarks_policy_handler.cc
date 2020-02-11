@@ -25,7 +25,7 @@ ManagedBookmarksPolicyHandler::ManagedBookmarksPolicyHandler(
     : SchemaValidatingPolicyHandler(
           key::kManagedBookmarks,
           chrome_schema.GetKnownProperty(key::kManagedBookmarks),
-          SCHEMA_ALLOW_INVALID) {}
+          SCHEMA_ALLOW_UNKNOWN) {}
 
 ManagedBookmarksPolicyHandler::~ManagedBookmarksPolicyHandler() = default;
 

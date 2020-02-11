@@ -11,6 +11,7 @@
 #include "base/numerics/safe_conversions.h"
 #include "base/task/post_task.h"
 #include "content/browser/appcache/appcache_response.h"
+#include "content/browser/loader/url_loader_throttles.h"
 #include "content/browser/service_worker/service_worker_cache_writer.h"
 #include "content/browser/service_worker/service_worker_consts.h"
 #include "content/browser/service_worker/service_worker_context_core.h"
@@ -99,7 +100,7 @@ void ServiceWorkerUpdatedScriptLoader::ThrottlingURLLoaderCoreWrapper::
   base::RepeatingCallback<WebContents*()> wc_getter =
       base::BindRepeating([]() -> WebContents* { return nullptr; });
   std::vector<std::unique_ptr<blink::URLLoaderThrottle>> throttles =
-      GetContentClient()->browser()->CreateURLLoaderThrottles(
+      CreateContentBrowserURLLoaderThrottles(
           resource_request, browser_context, std::move(wc_getter),
           /*navigation_ui_data=*/nullptr, RenderFrameHost::kNoFrameTreeNodeId);
 

@@ -34,7 +34,8 @@ class BookmarkAppRegistrar : public web_app::AppRegistrar,
   base::Optional<SkColor> GetAppThemeColor(
       const web_app::AppId& app_id) const override;
   const GURL& GetAppLaunchURL(const web_app::AppId& app_id) const override;
-  base::Optional<GURL> GetAppScope(const web_app::AppId& app_id) const override;
+  base::Optional<GURL> GetAppScopeInternal(
+      const web_app::AppId& app_id) const override;
   web_app::DisplayMode GetAppDisplayMode(
       const web_app::AppId& app_id) const override;
   web_app::DisplayMode GetAppUserDisplayMode(

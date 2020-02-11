@@ -50,7 +50,7 @@ bool WebAppTabHelper::IsFromInstallButton() const {
   // TODO(loyso): Use something better to record apps installed from promoted
   // UIs. crbug.com/774918.
   return !app_id_.empty() &&
-         provider_->registrar().GetAppScope(app_id_).has_value();
+         provider_->registrar().GetAppScopeInternal(app_id_).has_value();
 }
 
 const base::UnguessableToken& WebAppTabHelper::GetAudioFocusGroupIdForTesting()

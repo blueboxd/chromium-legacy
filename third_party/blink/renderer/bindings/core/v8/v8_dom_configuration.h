@@ -228,6 +228,24 @@ class CORE_EXPORT V8DOMConfiguration final {
     };
   };
 
+  struct ConstantCallbackConfiguration {
+    DISALLOW_NEW();
+
+   public:
+    constexpr ConstantCallbackConfiguration(
+        const char* name,
+        v8::AccessorNameGetterCallback getter)
+        : name(name), getter(getter) {}
+    ConstantCallbackConfiguration(const ConstantCallbackConfiguration&) =
+        delete;
+
+    ConstantCallbackConfiguration& operator=(
+        const ConstantCallbackConfiguration&) = delete;
+
+    const char* const name;
+    const v8::AccessorNameGetterCallback getter;
+  };
+
   // Constant installation
   //
   // installConstants and installConstant are used for simple constants. They
@@ -252,6 +270,13 @@ class CORE_EXPORT V8DOMConfiguration final {
                               v8::Local<v8::Function> interface,
                               v8::Local<v8::Object> prototype,
                               const ConstantConfiguration&);
+
+  static void InstallConstants(
+      v8::Isolate* isolate,
+      v8::Local<v8::FunctionTemplate> interface_template,
+      v8::Local<v8::ObjectTemplate> prototype_template,
+      const ConstantCallbackConfiguration*,
+      size_t constant_count);
 
   static void InstallConstantWithGetter(
       v8::Isolate*,

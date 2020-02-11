@@ -152,7 +152,7 @@ base::flat_set<web_app::AppId> GetInstalledApps(
   auto apps = registrar.GetAppIds();
   base::flat_set<std::string> installed;
   for (auto app : apps) {
-    base::Optional<GURL> scope = registrar.GetAppScope(app);
+    base::Optional<GURL> scope = registrar.GetAppScopeInternal(app);
     if (scope.has_value())
       installed.insert(scope.value().GetOrigin().spec());
   }

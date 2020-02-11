@@ -52,19 +52,6 @@ CSSValuePool::CSSValuePool()
           MakeGarbageCollected<cssvalue::CSSColorValue>(Color::kWhite)),
       color_black_(
           MakeGarbageCollected<cssvalue::CSSColorValue>(Color::kBlack)) {
-  {
-    using Value = cssvalue::CSSPendingInterpolationValue;
-    using Type = cssvalue::CSSPendingInterpolationValue::Type;
-    pending_interpolation_values_[0] =
-        MakeGarbageCollected<Value>(Type::kCSSProperty);
-    pending_interpolation_values_[1] =
-        MakeGarbageCollected<Value>(Type::kPresentationAttribute);
-    static_assert(static_cast<size_t>(Type::kCSSProperty) == 0u,
-                  "kCSSProperty must be 0");
-    static_assert(static_cast<size_t>(Type::kPresentationAttribute) == 1u,
-                  "kPresentationAttribute must be 1");
-  }
-
   identifier_value_cache_.resize(numCSSValueKeywords);
   pixel_value_cache_.resize(kMaximumCacheableIntegerValue + 1);
   percent_value_cache_.resize(kMaximumCacheableIntegerValue + 1);
@@ -76,8 +63,6 @@ void CSSValuePool::Trace(blink::Visitor* visitor) {
   visitor->Trace(initial_value_);
   visitor->Trace(unset_value_);
   visitor->Trace(invalid_variable_value_);
-  visitor->Trace(pending_interpolation_values_[0]);
-  visitor->Trace(pending_interpolation_values_[1]);
   visitor->Trace(color_transparent_);
   visitor->Trace(color_white_);
   visitor->Trace(color_black_);

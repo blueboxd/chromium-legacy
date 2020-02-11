@@ -191,7 +191,7 @@ vars = {
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling PDFium
   # and whatever else without interference from each other.
-  'pdfium_revision': '72f2915aa3b45634c3a287d2cece5633c98a2920',
+  'pdfium_revision': '4a0f1a01ac8a9214c791e99baaf2ddbe914629da',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling BoringSSL
   # and whatever else without interference from each other.
@@ -1257,7 +1257,7 @@ deps = {
   },
 
   'src/third_party/perfetto':
-    Var('android_git') + '/platform/external/perfetto.git' + '@' + 'be1f489fde92392b782a14b6c8febb68be978a90',
+    Var('android_git') + '/platform/external/perfetto.git' + '@' + 'c7b6ede78ab763f10e5330ba0b14fda5a3b80189',
 
   'src/third_party/perl': {
       'url': Var('chromium_git') + '/chromium/deps/perl.git' + '@' + '6f3e5028eb65d0b4c5fdd792106ac4c84eee1eb3',
@@ -1528,7 +1528,7 @@ deps = {
     Var('chromium_git') + '/v8/v8.git' + '@' +  Var('v8_revision'),
 
   'src-internal': {
-    'url': 'https://chrome-internal.googlesource.com/chrome/src-internal.git@549953bc1d822de2fc6c4a8ac2623dc68b62e7d5',
+    'url': 'https://chrome-internal.googlesource.com/chrome/src-internal.git@fec8f201c2c6755624f9cbb62e606bb06ec934b2',
     'condition': 'checkout_src_internal',
   },
 

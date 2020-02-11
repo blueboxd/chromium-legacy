@@ -41,7 +41,7 @@ class WebAppRegistrar : public AppRegistrar {
   std::string GetAppDescription(const AppId& app_id) const override;
   base::Optional<SkColor> GetAppThemeColor(const AppId& app_id) const override;
   const GURL& GetAppLaunchURL(const AppId& app_id) const override;
-  base::Optional<GURL> GetAppScope(const AppId& app_id) const override;
+  base::Optional<GURL> GetAppScopeInternal(const AppId& app_id) const override;
   DisplayMode GetAppDisplayMode(const AppId& app_id) const override;
   DisplayMode GetAppUserDisplayMode(const AppId& app_id) const override;
   std::vector<WebApplicationIconInfo> GetAppIconInfos(

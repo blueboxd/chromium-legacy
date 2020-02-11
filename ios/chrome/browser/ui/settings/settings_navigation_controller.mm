@@ -178,6 +178,10 @@ NSString* const kSettingsDoneButtonId = @"kSettingsDoneButtonId";
       initWithRootViewController:controller
                          browser:browser
                         delegate:delegate];
+
+  // Fix for https://crbug.com/1042741 (hide the double header display).
+  nc.navigationBarHidden = YES;
+
   // If the controller overrides overrideUserInterfaceStyle, respect that in the
   // SettingsNavigationController.
   if (@available(iOS 13.0, *)) {

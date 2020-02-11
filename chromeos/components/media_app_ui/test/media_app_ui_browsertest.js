@@ -109,12 +109,3 @@ TEST_F('MediaAppUIBrowserTest', 'LoadFile', async () => {
   assertEquals(`${TEST_IMAGE_WIDTH}`, result);
   testDone();
 });
-
-// Tests that chrome://media-app can successfully send a request to open the
-// feedback dialog and recieve a response.
-TEST_F('MediaAppUIBrowserTest', 'CanOpenFeedbackDialog', async () => {
-  const result = await media_app.handler.openFeedbackDialog();
-
-  assertEquals(result.errorMessage, '');
-  testDone();
-});

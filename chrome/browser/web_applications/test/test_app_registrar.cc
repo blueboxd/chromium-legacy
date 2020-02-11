@@ -103,7 +103,8 @@ const GURL& TestAppRegistrar::GetAppLaunchURL(const AppId& app_id) const {
   return iterator->second.launch_url;
 }
 
-base::Optional<GURL> TestAppRegistrar::GetAppScope(const AppId& app_id) const {
+base::Optional<GURL> TestAppRegistrar::GetAppScopeInternal(
+    const AppId& app_id) const {
   const auto& result = installed_apps_.find(app_id);
   if (result == installed_apps_.end())
     return base::nullopt;

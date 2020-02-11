@@ -172,7 +172,7 @@ void DomainReliabilityMonitor::OnNetworkChanged(
 
 void DomainReliabilityMonitor::ClearBrowsingData(
     DomainReliabilityClearMode mode,
-    const base::Callback<bool(const GURL&)>& origin_filter) {
+    const base::RepeatingCallback<bool(const GURL&)>& origin_filter) {
   switch (mode) {
     case CLEAR_BEACONS:
       context_manager_.ClearBeacons(origin_filter);

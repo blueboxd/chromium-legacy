@@ -100,6 +100,13 @@ extensions::BookmarkAppRegistrar* AppRegistrar::AsBookmarkAppRegistrar() {
   return nullptr;
 }
 
+GURL AppRegistrar::GetAppScope(const AppId& app_id) const {
+  base::Optional<GURL> scope = GetAppScopeInternal(app_id);
+  if (scope)
+    return *scope;
+  return GetAppLaunchURL(app_id).GetWithoutFilename();
+}
+
 base::Optional<AppId> AppRegistrar::FindAppWithUrlInScope(
     const GURL& url) const {
   const std::string url_path = url.spec();
@@ -114,9 +121,7 @@ base::Optional<AppId> AppRegistrar::FindAppWithUrlInScope(
     if (app_is_shortcut && !best_app_is_shortcut)
       continue;
 
-    const base::Optional<GURL> scope = GetAppScope(app_id);
-    const std::string app_path =
-        scope ? scope->spec() : GetAppLaunchURL(app_id).Resolve(".").spec();
+    const std::string app_path = GetAppScope(app_id).spec();
 
     if ((app_path.size() > best_app_path_length ||
          (best_app_is_shortcut && !app_is_shortcut)) &&
@@ -135,7 +140,7 @@ std::vector<AppId> AppRegistrar::FindAppsInScope(const GURL& scope) const {
 
   std::vector<AppId> in_scope;
   for (const auto& app_id : GetAppIds()) {
-    const base::Optional<GURL>& app_scope = GetAppScope(app_id);
+    const base::Optional<GURL>& app_scope = GetAppScopeInternal(app_id);
     if (!app_scope)
       continue;
 
@@ -153,7 +158,7 @@ std::vector<AppId> AppRegistrar::FindAppsInScope(const GURL& scope) const {
 bool AppRegistrar::IsShortcutApp(const AppId& app_id) const {
   // TODO (crbug/910016): Make app scope always return a value and record this
   //  distinction in some other way.
-  return !GetAppScope(app_id).has_value();
+  return !GetAppScopeInternal(app_id).has_value();
 }
 
 DisplayMode AppRegistrar::GetAppEffectiveDisplayMode(

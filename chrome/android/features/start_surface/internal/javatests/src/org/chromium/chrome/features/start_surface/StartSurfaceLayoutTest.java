@@ -8,6 +8,7 @@ import static android.support.test.espresso.Espresso.onView;
 import static android.support.test.espresso.action.ViewActions.click;
 import static android.support.test.espresso.assertion.ViewAssertions.doesNotExist;
 import static android.support.test.espresso.assertion.ViewAssertions.matches;
+import static android.support.test.espresso.contrib.RecyclerViewActions.actionOnItemAtPosition;
 import static android.support.test.espresso.matcher.ViewMatchers.Visibility.GONE;
 import static android.support.test.espresso.matcher.ViewMatchers.isDisplayed;
 import static android.support.test.espresso.matcher.ViewMatchers.withContentDescription;
@@ -515,7 +516,7 @@ public class StartSurfaceLayoutTest {
             }
             int count = getCaptureCount();
             onView(withId(R.id.tab_list_view))
-                    .perform(RecyclerViewActions.actionOnItemAtPosition(targetIndex, click()));
+                    .perform(actionOnItemAtPosition(targetIndex, click()));
             CriteriaHelper.pollUiThread(() -> {
                 boolean doneHiding =
                         !mActivityTestRule.getActivity().getLayoutManager().overviewVisible();
@@ -638,8 +639,7 @@ public class StartSurfaceLayoutTest {
         onView(withId(R.id.tab_list_view))
                 .check(TabCountAssertion.havingTabCount(1));
 
-        onView(withId(R.id.tab_list_view))
-                .perform(RecyclerViewActions.actionOnItemAtPosition(0, click()));
+        onView(withId(R.id.tab_list_view)).perform(actionOnItemAtPosition(0, click()));
         CriteriaHelper.pollInstrumentationThread(
                 () -> !mActivityTestRule.getActivity().getLayoutManager().overviewVisible());
 
@@ -857,6 +857,46 @@ public class StartSurfaceLayoutTest {
             throws InterruptedException {
         // clang-format on
         verifyOnlyOneTabSuggestionMessageCardIsShowing();
+    }
+
+    @Test
+    @MediumTest
+    @Feature("TabSuggestion")
+    // clang-format off
+    @Features.EnableFeatures({ChromeFeatureList.CLOSE_TAB_SUGGESTIONS + "<Study"})
+    @CommandLineFlags.Add({BASE_PARAMS + "/baseline_tab_suggestions/true"})
+    public void testTabSuggestionMessageCardDismissAfterTabClosing() throws InterruptedException {
+        // clang-format on
+        prepareTabs(3, 0, mUrl);
+        CriteriaHelper.pollInstrumentationThread(
+                ()
+                        -> TabSuggestionMessageService.isSuggestionAvailableForTesting()
+                        && mActivityTestRule.getActivity()
+                                        .getTabModelSelector()
+                                        .getCurrentModel()
+                                        .getCount()
+                                == 3);
+
+        enterGTSWithThumbnailChecking();
+        CriteriaHelper.pollInstrumentationThread(
+                TabSwitcherCoordinator::hasAppendedMessagesForTesting);
+        onView(withId(R.id.tab_grid_message_item)).check(matches(isDisplayed()));
+
+        closeFirstTabInTabSwitcher();
+
+        CriteriaHelper.pollInstrumentationThread(
+                ()
+                        -> !TabSuggestionMessageService.isSuggestionAvailableForTesting()
+                        && mActivityTestRule.getActivity()
+                                        .getTabModelSelector()
+                                        .getCurrentModel()
+                                        .getCount()
+                                == 2);
+
+        onView(withId(R.id.tab_list_view))
+                .check(TabUiTestHelper.ChildrenCountAssertion.havingTabSuggestionMessageCardCount(
+                        0));
+        onView(withId(R.id.tab_grid_message_item)).check(doesNotExist());
     }
 
     @Test

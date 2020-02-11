@@ -337,7 +337,7 @@ class NET_EXPORT HostCache {
 
   // Clears hosts matching |host_filter| from the cache.
   void ClearForHosts(
-      const base::Callback<bool(const std::string&)>& host_filter);
+      const base::RepeatingCallback<bool(const std::string&)>& host_filter);
 
   // Fills the provided base::ListValue with the contents of the cache for
   // serialization. |entry_list| must be non-null and will be cleared before

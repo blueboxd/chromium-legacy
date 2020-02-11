@@ -767,4 +767,29 @@ TEST_P(ParameterizedLayoutInlineTest, VisualOverflowRecalcLayoutNG) {
   EXPECT_EQ(PhysicalRect(0, 0, 100, 20), span->PhysicalVisualOverflowRect());
 }
 
+TEST_P(ParameterizedLayoutInlineTest,
+       VisualOverflowRecalcLegacyLayoutPositionRelative) {
+  LoadAhem();
+  SetBodyInnerHTML(R"HTML(
+    <style>
+      body {
+        margin: 0;
+        font: 20px/20px Ahem;
+      }
+      span {
+        position: relative;
+      }
+    </style>
+    <span id="span">SPAN</span>
+  )HTML");
+
+  auto* span = ToLayoutInline(GetLayoutObjectByElementId("span"));
+  auto* span_element = GetDocument().getElementById("span");
+
+  span_element->setAttribute(html_names::kStyleAttr, "outline: 50px solid red");
+  UpdateAllLifecyclePhasesForTest();
+  EXPECT_EQ(PhysicalRect(-50, -50, 180, 120),
+            span->PhysicalVisualOverflowRect());
+}
+
 }  // namespace blink

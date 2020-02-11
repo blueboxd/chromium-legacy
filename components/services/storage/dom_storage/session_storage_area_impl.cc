@@ -132,6 +132,10 @@ void SessionStorageAreaImpl::GetAll(
                      std::move(callback)));
 }
 
+void SessionStorageAreaImpl::FlushForTesting() {
+  receiver_.FlushForTesting();
+}
+
 // Note: this can be called after invalidation of the |namespace_entry_|.
 void SessionStorageAreaImpl::OnConnectionError() {
   shared_data_map_->RemoveBindingReference();

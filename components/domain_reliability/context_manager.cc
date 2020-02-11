@@ -6,6 +6,7 @@
 
 #include <utility>
 
+#include "base/bind_helpers.h"
 #include "base/metrics/histogram_macros.h"
 
 namespace domain_reliability {
@@ -16,8 +17,7 @@ DomainReliabilityContextManager::DomainReliabilityContextManager(
 }
 
 DomainReliabilityContextManager::~DomainReliabilityContextManager() {
-  RemoveContexts(
-      base::Callback<bool(const GURL&)>() /* no filter - delete everything */);
+  RemoveContexts(base::NullCallback() /* no filter - delete everything */);
 }
 
 void DomainReliabilityContextManager::RouteBeacon(
@@ -74,7 +74,7 @@ void DomainReliabilityContextManager::ClearConfig(const GURL& origin) {
 }
 
 void DomainReliabilityContextManager::ClearBeacons(
-    const base::Callback<bool(const GURL&)>& origin_filter) {
+    const base::RepeatingCallback<bool(const GURL&)>& origin_filter) {
   for (auto& context_entry : contexts_) {
     if (origin_filter.is_null() ||
         origin_filter.Run(context_entry.second->config().origin)) {
@@ -99,7 +99,7 @@ DomainReliabilityContext* DomainReliabilityContextManager::AddContextForConfig(
 }
 
 void DomainReliabilityContextManager::RemoveContexts(
-    const base::Callback<bool(const GURL&)>& origin_filter) {
+    const base::RepeatingCallback<bool(const GURL&)>& origin_filter) {
   for (auto it = contexts_.begin(); it != contexts_.end();) {
     if (!origin_filter.is_null() &&
         !origin_filter.Run(it->second->config().origin)) {

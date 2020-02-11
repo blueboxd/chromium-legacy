@@ -1433,10 +1433,10 @@ std::unique_ptr<base::Value> Schema::ParseToDictAndValidate(
     const std::string& schema,
     int validator_options,
     std::string* error) {
-  base::JSONParserOptions json_options = base::JSON_ALLOW_TRAILING_COMMAS;
   std::unique_ptr<base::Value> json =
-      base::JSONReader::ReadAndReturnErrorDeprecated(schema, json_options,
-                                                     nullptr, error);
+      base::JSONReader::ReadAndReturnErrorDeprecated(
+          schema, base::JSONParserOptions::JSON_ALLOW_TRAILING_COMMAS, nullptr,
+          error);
   if (!json)
     return nullptr;
   if (!json->is_dict()) {

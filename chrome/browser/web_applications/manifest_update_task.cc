@@ -111,7 +111,7 @@ bool ManifestUpdateTask::IsUpdateNeeded(
   if (web_application_info.theme_color != registrar_.GetAppThemeColor(app_id_))
     return true;
 
-  if (web_application_info.scope != registrar_.GetAppScope(app_id_))
+  if (web_application_info.scope != registrar_.GetAppScopeInternal(app_id_))
     return true;
 
   if (web_application_info.icon_infos != registrar_.GetAppIconInfos(app_id_))

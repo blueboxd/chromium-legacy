@@ -5,6 +5,7 @@
 package org.chromium.chrome.browser.sync.settings;
 
 import android.content.Context;
+import android.content.Intent;
 import android.os.Bundle;
 import android.support.v4.app.DialogFragment;
 import android.support.v4.app.FragmentManager;
@@ -84,6 +85,8 @@ public class ManageSyncSettings extends PreferenceFragmentCompat
     public static final String PREF_ENCRYPTION = "encryption";
     @VisibleForTesting
     public static final String PREF_SYNC_MANAGE_DATA = "sync_manage_data";
+
+    private static final int REQUEST_CODE_TRUSTED_VAULT_KEY_RETRIEVAL = 1;
 
     private final ProfileSyncService mProfileSyncService = ProfileSyncService.get();
 
@@ -420,8 +423,8 @@ public class ManageSyncSettings extends PreferenceFragmentCompat
             CoreAccountInfo primaryAccountInfo =
                     IdentityServicesProvider.get().getIdentityManager().getPrimaryAccountInfo();
             if (primaryAccountInfo != null) {
-                TrustedVaultClient.get().displayKeyRetrievalDialog(
-                        getActivity(), primaryAccountInfo);
+                SyncSettingsUtils.openTrustedVaultKeyRetrievalDialog(
+                        this, primaryAccountInfo, REQUEST_CODE_TRUSTED_VAULT_KEY_RETRIEVAL);
             }
         } else {
             displayPassphraseTypeDialog();
@@ -461,5 +464,22 @@ public class ManageSyncSettings extends PreferenceFragmentCompat
         mSyncPaymentsIntegration.setChecked(
                 syncAutofill && PersonalDataManager.isPaymentsIntegrationEnabled());
         mSyncPaymentsIntegration.setEnabled(syncAutofill);
+    }
+
+    /**
+     * Called upon completion of an activity started by a previous call to startActivityForResult()
+     * via SyncSettingsUtils.openTrustedVaultKeyRetrievalDialog().
+     * @param requestCode Request code of the requested intent.
+     * @param resultCode Result code of the requested intent.
+     * @param data The data returned by the intent.
+     */
+    @Override
+    public void onActivityResult(int requestCode, int resultCode, Intent data) {
+        // Upon key retrieval completion, the keys in TrustedVaultClient could have changed. This is
+        // done even if the user cancelled the flow (i.e. resultCode != RESULT_OK) because it's
+        // harmless to issue a redundant notifyKeysChanged().
+        if (requestCode == REQUEST_CODE_TRUSTED_VAULT_KEY_RETRIEVAL) {
+            TrustedVaultClient.get().notifyKeysChanged();
+        }
     }
 }

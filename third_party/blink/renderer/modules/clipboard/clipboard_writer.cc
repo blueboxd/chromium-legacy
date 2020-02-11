@@ -142,8 +142,7 @@ ClipboardWriter* ClipboardWriter::Create(SystemClipboard* system_clipboard,
                                          const String& mime_type,
                                          bool is_raw,
                                          ClipboardPromise* promise) {
-  DCHECK(base::FeatureList::IsEnabled(blink::features::kRawClipboard) ||
-         !is_raw);
+  DCHECK(base::FeatureList::IsEnabled(features::kRawClipboard) || !is_raw);
   if (is_raw) {
     return MakeGarbageCollected<ClipboardRawDataWriter>(system_clipboard,
                                                         promise, mime_type);

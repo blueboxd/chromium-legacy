@@ -101,11 +101,16 @@ class CONTENT_EXPORT DOMStorageContextWrapper
   void OpenLocalStorage(
       const url::Origin& origin,
       mojo::PendingReceiver<blink::mojom::StorageArea> receiver);
-  void OpenSessionStorage(
-      ChildProcessSecurityPolicyImpl::Handle handle,
+  void BindSessionStorageNamespace(
       const std::string& namespace_id,
       mojo::ReportBadMessageCallback bad_message_callback,
       mojo::PendingReceiver<blink::mojom::SessionStorageNamespace> receiver);
+  void BindSessionStorageArea(
+      ChildProcessSecurityPolicyImpl::Handle handle,
+      const url::Origin& origin,
+      const std::string& namespace_id,
+      mojo::ReportBadMessageCallback bad_message_callback,
+      mojo::PendingReceiver<blink::mojom::StorageArea> receiver);
 
   SessionStorageContextMojo* mojo_session_state() {
     return mojo_session_state_;

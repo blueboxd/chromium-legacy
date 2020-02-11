@@ -53,8 +53,8 @@ std::unique_ptr<PrinterCache> ParsePrinters(std::unique_ptr<std::string> data) {
                                                 base::BlockingType::MAY_BLOCK);
   std::unique_ptr<base::Value> json_blob =
       base::JSONReader::ReadAndReturnErrorDeprecated(
-          *data, base::JSONParserOptions::JSON_PARSE_RFC, &error_code,
-          nullptr /* error_msg_out */, &error_line);
+          *data, base::JSONParserOptions::JSON_ALLOW_TRAILING_COMMAS,
+          &error_code, nullptr /* error_msg_out */, &error_line);
   // It's not valid JSON.  Give up.
   if (!json_blob || !json_blob->is_list()) {
     LOG(WARNING) << "Failed to parse printers policy (" << error_code

@@ -357,7 +357,8 @@ bool CanPlayStartupSound() {
 }  // namespace
 
 // static
-const int LoginDisplayHostWebUI::kShowLoginWebUIid = 0x1111;
+const trace_event_internal::TraceID LoginDisplayHostWebUI::kShowLoginWebUIid =
+    TRACE_ID_WITH_SCOPE("ShowLoginWebUI", TRACE_ID_GLOBAL(1));
 bool LoginDisplayHostWebUI::disable_restrictive_proxy_check_for_test_ = false;
 
 // A class to handle special menu key for keyboard driven OOBE.
@@ -605,9 +606,10 @@ void LoginDisplayHostWebUI::OnStartSignInScreen(
 
   // TODO(crbug.com/784495): Make sure this is ported to views.
   if (!login_window_) {
-    TRACE_EVENT_ASYNC_BEGIN0("ui", "ShowLoginWebUI", kShowLoginWebUIid);
-    TRACE_EVENT_ASYNC_STEP_INTO0("ui", "ShowLoginWebUI", kShowLoginWebUIid,
-                                 "StartSignInScreen");
+    TRACE_EVENT_NESTABLE_ASYNC_BEGIN0("ui", "ShowLoginWebUI",
+                                      kShowLoginWebUIid);
+    TRACE_EVENT_NESTABLE_ASYNC_INSTANT0(
+        "ui", "StartSignInScreen", LoginDisplayHostWebUI::kShowLoginWebUIid);
     BootTimesRecorder::Get()->RecordCurrentStats("login-start-signin-screen");
     LoadURL(GURL(kLoginURL));
   }
@@ -631,8 +633,8 @@ void LoginDisplayHostWebUI::OnStartSignInScreen(
 
   OnStartSignInScreenCommon();
 
-  TRACE_EVENT_ASYNC_STEP_INTO0("ui", "ShowLoginWebUI", kShowLoginWebUIid,
-                               "WaitForScreenStateInitialize");
+  TRACE_EVENT_NESTABLE_ASYNC_INSTANT0("ui", "WaitForScreenStateInitialize",
+                                      LoginDisplayHostWebUI::kShowLoginWebUIid);
 
   // TODO(crbug.com/784495): Make sure this is ported to views.
   BootTimesRecorder::Get()->RecordCurrentStats(

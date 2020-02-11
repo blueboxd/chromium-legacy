@@ -26,7 +26,6 @@
 #include "content/public/test/browser_test_utils.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "ui/base/accelerators/accelerator.h"
-#include "ui/base/default_theme_provider.h"
 #include "ui/base/models/menu_model.h"
 #include "ui/base/theme_provider.h"
 #include "ui/gfx/geometry/point.h"
@@ -38,18 +37,12 @@ namespace {
 
 class MockTabStripUIEmbedder : public TabStripUIEmbedder {
  public:
-  MockTabStripUIEmbedder() : theme_provider_(new ui::DefaultThemeProvider()) {}
   MOCK_CONST_METHOD0(GetAcceleratorProvider, const ui::AcceleratorProvider*());
   MOCK_METHOD0(CloseContainer, void());
   MOCK_METHOD2(ShowContextMenuAtPoint,
                void(gfx::Point, std::unique_ptr<ui::MenuModel>));
   MOCK_METHOD0(GetLayout, TabStripUILayout());
-  const ui::ThemeProvider* GetThemeProvider() override {
-    return theme_provider_.get();
-  }
-
- private:
-  const std::unique_ptr<ui::ThemeProvider> theme_provider_;
+  MOCK_CONST_METHOD1(GetColor, SkColor(int));
 };
 
 }  // namespace

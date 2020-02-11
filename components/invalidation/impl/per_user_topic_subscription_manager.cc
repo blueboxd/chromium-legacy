@@ -184,6 +184,7 @@ struct PerUserTopicSubscriptionManager::SubscriptionEntry {
   net::BackoffEntry request_backoff_;
 
   std::unique_ptr<PerUserTopicSubscriptionRequest> request;
+  std::string last_request_access_token;
 
   bool has_retried_on_auth_error = false;
 
@@ -366,8 +367,13 @@ void PerUserTopicSubscriptionManager::StartPendingSubscriptionRequest(
     // A retry is already scheduled for this request; nothing to do.
     return;
   }
-
+  if (it->second->request &&
+      it->second->last_request_access_token == access_token_) {
+    // The request with the same access token was already sent; nothing to do.
+    return;
+  }
   PerUserTopicSubscriptionRequest::Builder builder;
+  it->second->last_request_access_token = access_token_;
   it->second->request = builder.SetInstanceIdToken(instance_id_token_)
                             .SetScope(kInvalidationRegistrationScope)
                             .SetPublicTopicName(topic)
@@ -422,12 +428,16 @@ void PerUserTopicSubscriptionManager::ActOnSuccessfulSubscription(
 void PerUserTopicSubscriptionManager::ScheduleRequestForRepetition(
     const Topic& topic) {
   pending_subscriptions_[topic]->request_backoff_.InformOfRequest(false);
+  // Schedule RequestAccessToken() to ensure that request is performed with
+  // fresh access token. There should be no redundant request: the identity
+  // code requests new access token from the network only if the old one
+  // expired; StartPendingSubscriptionRequest() guarantees that no redundant
+  // (un)subscribe requests performed.
   pending_subscriptions_[topic]->request_retry_timer_.Start(
       FROM_HERE,
       pending_subscriptions_[topic]->request_backoff_.GetTimeUntilRelease(),
-      base::BindOnce(
-          &PerUserTopicSubscriptionManager::StartPendingSubscriptionRequest,
-          base::Unretained(this), topic));
+      base::BindOnce(&PerUserTopicSubscriptionManager::RequestAccessToken,
+                     base::Unretained(this)));
 }
 
 void PerUserTopicSubscriptionManager::SubscriptionFinishedForTopic(
@@ -441,15 +451,17 @@ void PerUserTopicSubscriptionManager::SubscriptionFinishedForTopic(
   }
 
   auto it = pending_subscriptions_.find(topic);
+  // Reset |request| to make sure it will be rescheduled during the next
+  // attempt.
+  it->second->request.reset();
   // If this is the first auth error we've encountered, then most likely the
   // access token has just expired. Get a new one and retry immediately.
   if (code.IsAuthFailure() && !it->second->has_retried_on_auth_error) {
     it->second->has_retried_on_auth_error = true;
-    // Invalidate previous token, otherwise the identity provider will return
-    // the same token again.
-    if (!access_token_.empty()) {
-      // TODO(crbug.com/1020117): |access_token_| might already be different
-      // from the one we used for this request.
+    // Invalidate previous token if it's not already refreshed, otherwise
+    // the identity provider will return the same token again.
+    if (!access_token_.empty() &&
+        it->second->last_request_access_token == access_token_) {
       identity_provider_->InvalidateAccessToken({kFCMOAuthScope},
                                                 access_token_);
       access_token_.clear();
@@ -476,10 +488,6 @@ void PerUserTopicSubscriptionManager::SubscriptionFinishedForTopic(
     pending_subscriptions_.erase(it);
     return;
   }
-  // TODO(crbug.com/1020117): This should probably go through
-  // RequestAccessToken() to make sure a fresh token is available for the
-  // request. (The identity code will only actually request a new one from the
-  // network if the existing one has expired.)
   ScheduleRequestForRepetition(topic);
 }
 

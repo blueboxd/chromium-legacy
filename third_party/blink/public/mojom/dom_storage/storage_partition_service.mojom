@@ -10,11 +10,28 @@ import "url/mojom/origin.mojom";
 
 // Returns services related to the current storage partition.  This is
 // implemented by the browser process.
-// TODO(mek): If more than just DOMStorage related interfaces get added this
-// should probably move to some other directory.
+//
+// TODO(https://crbug.com/1000959): Consider renaming this to something more
+// specific to DOM Storage and scoping it to individual page contexts so that
+// these binding methods don't need to pass an Origin value.
 interface StoragePartitionService {
+  // Binds to a StorageArea interface for Local Storage within |origin|, which
+  // must be validated by the browser to ensure the renderer is allowed to
+  // access that origin's data.
   OpenLocalStorage(url.mojom.Origin origin,
                    pending_receiver<StorageArea> area);
-  OpenSessionStorage(string namespace_id,
-                     pending_receiver<SessionStorageNamespace> session_namespace);
+
+  // Binds a control interface for Session Storage within the identified
+  // namespace.
+  BindSessionStorageNamespace(
+      string namespace_id,
+      pending_receiver<SessionStorageNamespace> receiver);
+
+  // Binds to a StorageArea interface for Session Storage within the identified
+  // namespace and origin. The given origin must be validated by the browser to
+  // ensure the renderer is allowed to access that origin's data.
+  BindSessionStorageArea(
+      url.mojom.Origin origin,
+      string namespace_id,
+      pending_receiver<StorageArea> session_namespace);
 };

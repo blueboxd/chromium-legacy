@@ -72,6 +72,17 @@ Polymer({
     return this.shadowRoot.activeElement;
   },
 
+  // TODO(crbug.com/1047807): This is a temporary quickfix to proceed with
+  // Polymer v2 migration. This screen should be reworked to avoid using
+  // i18nTemplate.process call.
+  i18nUpdateLocale() {
+    this.behaviors.forEach((behavior) => {
+      if (behavior.i18nUpdateLocale)
+        behavior.i18nUpdateLocale.call(this);
+    });
+    i18nTemplate.process(this.shadowRoot, loadTimeData);
+  },
+
   /**
    * Called when dialog is shown for the first time.
    *

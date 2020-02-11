@@ -2126,8 +2126,7 @@ void LayoutObject::SetStyle(scoped_refptr<const ComputedStyle> style,
   }
 
   if (diff.NeedsRecomputeVisualOverflow()) {
-    if (IsInline() && !IsInLayoutNGInlineFormattingContext() &&
-        !NeedsLayout()) {
+    if (!IsLayoutNGObject() && !IsLayoutBlock() && !NeedsLayout()) {
       // TODO(rego): This is still needed because RecalcVisualOverflow() does
       // not actually compute the visual overflow for inline elements (legacy
       // layout). However in LayoutNG RecalcInlineChildrenInkOverflow() is

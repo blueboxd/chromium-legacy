@@ -254,18 +254,11 @@ TEST_F(ManagedBookmarksPolicyHandlerTest, BadBookmark) {
              nullptr);
   UpdateProviderPolicy(policy);
   const base::Value* pref_value = nullptr;
-  EXPECT_TRUE(
+  // Invalid because SCHEMA_ALLOW_INVALID was replaced by SCHEMA_ALLOW_UNKNOWN
+  // which has stricter verification rules (see https://www.crbug/969706)
+  EXPECT_FALSE(
       store_->GetValue(bookmarks::prefs::kManagedBookmarks, &pref_value));
-  ASSERT_TRUE(pref_value);
-
-  std::unique_ptr<base::Value> expected(
-      extensions::ListBuilder()
-          .Append(extensions::DictionaryBuilder()
-                      .Set("name", "Google")
-                      .Set("url", "http://google.com/")
-                      .Build())
-          .Build());
-  EXPECT_TRUE(pref_value->Equals(expected.get()));
+  ASSERT_FALSE(pref_value);
 }
 #endif
 

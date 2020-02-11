@@ -37193,8 +37193,6 @@ from previous Chrome versions.
   <int value="-1703709912" label="enable-new-ntp"/>
   <int value="-1703308540" label="disable-webaudio"/>
   <int value="-1701123067" label="ShowManagedUi:enabled"/>
-  <int value="-1696778023"
-      label="HappinessTrackingSurveysForDesktopSettings:disabled"/>
   <int value="-1696619241" label="OmniboxWrapPopupPosition:disabled"/>
   <int value="-1696366449" label="disable-permissions-bubbles"/>
   <int value="-1695774453" label="skip-extra-ash-window-positioning"/>
@@ -37604,8 +37602,6 @@ from previous Chrome versions.
   <int value="-1224962996" label="PwaImprovedSplashScreen:disabled"/>
   <int value="-1222805155" label="PdfIsolation:enabled"/>
   <int value="-1222556118" label="VirtualDesks:disabled"/>
-  <int value="-1222159993"
-      label="HappinessTrackingSurveysForDesktopSettings:enabled"/>
   <int value="-1218608640" label="disable-offline-load-stale-cache"/>
   <int value="-1217623062"
       label="AutofillAlwaysReturnCloudTokenizedCard:disabled"/>
@@ -37750,8 +37746,6 @@ from previous Chrome versions.
   <int value="-1045882995" label="UseNewDoodleApi:enabled"/>
   <int value="-1044244605"
       label="UpdateNotificationSchedulingIntegration:enabled"/>
-  <int value="-1042723808"
-      label="HappinessTrackingSurveysForDesktopSettingsPrivacy:enabled"/>
   <int value="-1042579955" label="ChromeOSParentalControlsSettings:enabled"/>
   <int value="-1041650038" label="enable-forced-migration-to-tabbed-mode"/>
   <int value="-1040000888" label="ContextMenuSearchWithGoogleLens:disabled"/>
@@ -39348,8 +39342,6 @@ from previous Chrome versions.
   <int value="963457392" label="ChromeHomeModernLayout:disabled"/>
   <int value="963671232" label="DrawOcclusion:disabled"/>
   <int value="964613807" label="ContextualSearchTranslationModel:disabled"/>
-  <int value="965037619"
-      label="HappinessTrackingSurveysForDesktopSettingsPrivacy:disabled"/>
   <int value="966415988" label="SyncPseudoUSSPasswords:enabled"/>
   <int value="969340095" label="EnableDspHotword:disabled"/>
   <int value="972228058" label="SyncUSSSessions:disabled"/>
@@ -53856,6 +53848,13 @@ https://www.dmtf.org/sites/default/files/standards/documents/DSP0134_2.7.1.pdf
   <int value="2" label="Not required and not shown"/>
   <int value="3" label="Required but not shown - used grace"/>
   <int value="4" label="Required but not shown - grace exceeded"/>
+</enum>
+
+<enum name="QueryWebAndAppActivityState">
+  <int value="0" label="History recording enabled"/>
+  <int value="1" label="History recording disabled"/>
+  <int value="2" label="Request failed"/>
+  <int value="3" label="Unexpected response"/>
 </enum>
 
 <enum name="QuicAddressMismatch">

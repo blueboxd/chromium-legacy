@@ -122,16 +122,15 @@ SessionStorageContextMojo::~SessionStorageContextMojo() {
       this);
 }
 
-void SessionStorageContextMojo::OpenSessionStorage(
-    ChildProcessSecurityPolicyImpl::Handle handle,
+void SessionStorageContextMojo::BindSessionStorageNamespace(
     const std::string& namespace_id,
     mojo::ReportBadMessageCallback bad_message_callback,
     mojo::PendingReceiver<blink::mojom::SessionStorageNamespace> receiver) {
   if (connection_state_ != CONNECTION_FINISHED) {
-    RunWhenConnected(base::BindOnce(
-        &SessionStorageContextMojo::OpenSessionStorage,
-        weak_ptr_factory_.GetWeakPtr(), std::move(handle), namespace_id,
-        std::move(bad_message_callback), std::move(receiver)));
+    RunWhenConnected(
+        base::BindOnce(&SessionStorageContextMojo::BindSessionStorageNamespace,
+                       weak_ptr_factory_.GetWeakPtr(), namespace_id,
+                       std::move(bad_message_callback), std::move(receiver)));
     return;
   }
   auto found = namespaces_.find(namespace_id);
@@ -147,13 +146,45 @@ void SessionStorageContextMojo::OpenSessionStorage(
   }
 
   PurgeUnusedAreasIfNeeded();
-  found->second->Bind(std::move(receiver), std::move(handle));
+  found->second->Bind(std::move(receiver));
 
   size_t total_cache_size, unused_area_count;
   GetStatistics(&total_cache_size, &unused_area_count);
   // Track the total sessionStorage cache size.
   UMA_HISTOGRAM_COUNTS_100000("SessionStorageContext.CacheSizeInKB",
                               total_cache_size / 1024);
+}
+
+void SessionStorageContextMojo::BindSessionStorageArea(
+    ChildProcessSecurityPolicyImpl::Handle security_policy_handle,
+    const url::Origin& origin,
+    const std::string& namespace_id,
+    mojo::ReportBadMessageCallback bad_message_callback,
+    mojo::PendingReceiver<blink::mojom::StorageArea> receiver) {
+  if (connection_state_ != CONNECTION_FINISHED) {
+    RunWhenConnected(
+        base::BindOnce(&SessionStorageContextMojo::BindSessionStorageArea,
+                       weak_ptr_factory_.GetWeakPtr(),
+                       std::move(security_policy_handle), origin, namespace_id,
+                       std::move(bad_message_callback), std::move(receiver)));
+    return;
+  }
+
+  auto found = namespaces_.find(namespace_id);
+  if (found == namespaces_.end()) {
+    std::move(bad_message_callback).Run("Namespace not found: " + namespace_id);
+    return;
+  }
+
+  if (found->second->state() ==
+      SessionStorageNamespaceImplMojo::State::kNotPopulated) {
+    found->second->PopulateFromMetadata(
+        database_.get(), metadata_.GetOrCreateNamespaceEntry(namespace_id));
+  }
+
+  PurgeUnusedAreasIfNeeded();
+  found->second->OpenArea(std::move(security_policy_handle), origin,
+                          std::move(bad_message_callback), std::move(receiver));
 }
 
 void SessionStorageContextMojo::CreateSessionNamespace(

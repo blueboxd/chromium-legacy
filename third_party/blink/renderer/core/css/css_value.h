@@ -143,9 +143,6 @@ class CORE_EXPORT CSSValue : public GarbageCollected<CSSValue> {
   bool IsContentDistributionValue() const {
     return class_type_ == kCSSContentDistributionClass;
   }
-  bool IsPendingInterpolationValue() const {
-    return class_type_ == kPendingInterpolationClass;
-  }
   bool IsUnicodeRangeValue() const { return class_type_ == kUnicodeRangeClass; }
   bool IsGridLineNamesValue() const {
     return class_type_ == kGridLineNamesClass;
@@ -255,7 +252,6 @@ class CORE_EXPORT CSSValue : public GarbageCollected<CSSValue> {
 
     kCSSContentDistributionClass,
 
-    kPendingInterpolationClass,
     kKeyframeShorthandClass,
 
     // List class types must appear after ValueListClass.

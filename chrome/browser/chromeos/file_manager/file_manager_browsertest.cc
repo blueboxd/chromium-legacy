@@ -468,8 +468,6 @@ WRAPPED_INSTANTIATE_TEST_SUITE_P(
         TestCase("openQuickViewBrokenImage"),
         TestCase("openQuickViewVideo"),
         TestCase("openQuickViewPdf"),
-        // TODO(isabella): Group these with the other delete tests.
-        TestCase("openQuickViewDeleteButtonNotShown"),
         TestCase("openQuickViewPdfPreviewsDisabled"),
         TestCase("openQuickViewKeyboardUpDownChangesView"),
         TestCase("openQuickViewKeyboardLeftRightChangesView"),
@@ -478,8 +476,6 @@ WRAPPED_INSTANTIATE_TEST_SUITE_P(
         TestCase("openQuickViewScrollHtml"),
         TestCase("openQuickViewBackgroundColorHtml"),
         TestCase("openQuickViewDrive"),
-        // TODO(isabella): Group these with the other delete tests.
-        TestCase("openQuickViewDeleteEntireCheckSelection"),
         TestCase("openQuickViewAndroid"),
         TestCase("openQuickViewDocumentsProvider").EnableDocumentsProvider(),
         TestCase("openQuickViewCrostini"),
@@ -497,11 +493,13 @@ WRAPPED_INSTANTIATE_TEST_SUITE_P(
         TestCase("openQuickViewWithMultipleFilesPdf"),
         TestCase("openQuickViewWithMultipleFilesKeyboardUpDown"),
         TestCase("openQuickViewWithMultipleFilesKeyboardLeftRight"),
-        TestCase("closeQuickView"),
         TestCase("openQuickViewFromDirectoryTree"),
         TestCase("openQuickViewAndDeleteSingleSelection"),
         TestCase("openQuickViewAndDeleteCheckSelection"),
-        TestCase("openQuickViewClickDeleteButton")));
+        TestCase("openQuickViewDeleteEntireCheckSelection"),
+        TestCase("openQuickViewClickDeleteButton"),
+        TestCase("openQuickViewDeleteButtonNotShown"),
+        TestCase("closeQuickView")));
 
 WRAPPED_INSTANTIATE_TEST_SUITE_P(
     DirectoryTree, /* directory_tree.js */

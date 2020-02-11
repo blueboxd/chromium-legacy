@@ -12130,6 +12130,7 @@
           'name': 'Force',
           'value': 2,
           'caption': '''Force users to sign-in to use the browser''',
+          'supported_on': ['chrome.win:70-', 'chrome.mac:70-'],
         },
       ],
       'supported_on': ['chrome.*:70-', 'android:70-'],

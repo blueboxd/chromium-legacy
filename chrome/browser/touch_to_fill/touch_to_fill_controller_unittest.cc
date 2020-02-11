@@ -87,6 +87,8 @@ class TouchToFillControllerTest : public testing::Test {
 
   ukm::TestAutoSetUkmRecorder& test_recorder() { return test_recorder_; }
 
+  base::HistogramTester& histogram_tester() { return histogram_tester_; }
+
   TouchToFillController& touch_to_fill_controller() {
     return touch_to_fill_controller_;
   }
@@ -95,6 +97,7 @@ class TouchToFillControllerTest : public testing::Test {
   base::test::TaskEnvironment task_environment_;
   MockTouchToFillView* mock_view_ = nullptr;
   MockPasswordManagerDriver driver_;
+  base::HistogramTester histogram_tester_;
   ukm::TestAutoSetUkmRecorder test_recorder_;
   TouchToFillController touch_to_fill_controller_{
       util::PassKey<TouchToFillControllerTest>()};
@@ -108,13 +111,14 @@ TEST_F(TouchToFillControllerTest, Show_And_Fill) {
   touch_to_fill_controller().Show(credentials, driver().AsWeakPtr());
 
   // Test that we correctly log the absence of an Android credential.
-  base::HistogramTester tester;
   EXPECT_CALL(driver(), FillSuggestion(base::ASCIIToUTF16("alice"),
                                        base::ASCIIToUTF16("p4ssw0rd")));
   EXPECT_CALL(driver(), TouchToFillClosed(ShowVirtualKeyboard(false)));
   touch_to_fill_controller().OnCredentialSelected(credentials[0]);
-  tester.ExpectUniqueSample("PasswordManager.FilledCredentialWasFromAndroidApp",
-                            false, 1);
+  histogram_tester().ExpectUniqueSample(
+      "PasswordManager.TouchToFill.NumCredentialsShown", 1, 1);
+  histogram_tester().ExpectUniqueSample(
+      "PasswordManager.FilledCredentialWasFromAndroidApp", false, 1);
 
   auto entries = test_recorder().GetEntriesByName(UkmBuilder::kEntryName);
   ASSERT_EQ(1u, entries.size());
@@ -122,6 +126,13 @@ TEST_F(TouchToFillControllerTest, Show_And_Fill) {
       entries[0], UkmBuilder::kUserActionName,
       static_cast<int64_t>(
           TouchToFillController::UserAction::kSelectedCredential));
+}
+
+TEST_F(TouchToFillControllerTest, Show_Empty) {
+  EXPECT_CALL(view(), Show).Times(0);
+  touch_to_fill_controller().Show({}, driver().AsWeakPtr());
+  histogram_tester().ExpectUniqueSample(
+      "PasswordManager.TouchToFill.NumCredentialsShown", 0, 1);
 }
 
 TEST_F(TouchToFillControllerTest, Show_Insecure_Origin) {
@@ -150,13 +161,14 @@ TEST_F(TouchToFillControllerTest, Show_And_Fill_Android_Credential) {
   touch_to_fill_controller().Show(credentials, driver().AsWeakPtr());
 
   // Test that we correctly log the presence of an Android credential.
-  base::HistogramTester tester;
   EXPECT_CALL(driver(), FillSuggestion(base::ASCIIToUTF16("bob"),
                                        base::ASCIIToUTF16("s3cr3t")));
   EXPECT_CALL(driver(), TouchToFillClosed(ShowVirtualKeyboard(false)));
   touch_to_fill_controller().OnCredentialSelected(credentials[1]);
-  tester.ExpectUniqueSample("PasswordManager.FilledCredentialWasFromAndroidApp",
-                            true, 1);
+  histogram_tester().ExpectUniqueSample(
+      "PasswordManager.TouchToFill.NumCredentialsShown", 2, 1);
+  histogram_tester().ExpectUniqueSample(
+      "PasswordManager.FilledCredentialWasFromAndroidApp", true, 1);
 
   auto entries = test_recorder().GetEntriesByName(UkmBuilder::kEntryName);
   ASSERT_EQ(1u, entries.size());

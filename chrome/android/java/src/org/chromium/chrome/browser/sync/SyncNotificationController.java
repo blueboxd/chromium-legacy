@@ -92,6 +92,7 @@ public class SyncNotificationController implements ProfileSyncService.SyncStateC
                     IdentityServicesProvider.get().getIdentityManager().getPrimaryAccountInfo();
             if (primaryAccountInfo != null) {
                 int flags = Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TOP;
+                // TODO(crbug.com/1012659): Upon intent completion, the new keys should be fetched.
                 TrustedVaultClient.get()
                         .createKeyRetrievalIntent(primaryAccountInfo)
                         .then(

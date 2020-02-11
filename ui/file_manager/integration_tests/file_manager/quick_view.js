@@ -2072,21 +2072,21 @@
     // Open the file in Quick View.
     await openQuickView(appId, ENTRIES.hello.nameText);
 
-    // Press Delete
+    // Open the Quick View delete confirm dialog.
     const deleteKey = ['#quick-view', 'Delete', false, false, false];
     chrome.test.assertTrue(
         await remoteCall.callRemoteTestUtil('fakeKeyDown', appId, deleteKey),
         'Pressing Delete failed.');
 
-    // Click the OK button.
+    // Click the delete confirm dialog OK button.
     const deleteConfirm = ['#quick-view', '.cr-dialog-ok:not([hidden])'];
     await remoteCall.waitAndClickElement(appId, deleteConfirm);
 
-    // Check: File has been deleted.
+    // Check: |hello.txt| should have been deleted.
     await remoteCall.waitForElementLost(
         appId, '#file-list [file-name="hello.txt"]');
 
-    // Check: Quick View has closed.
+    // Check: the Quick View dialog should close.
     await waitQuickViewClose(appId);
   };
 
@@ -2144,7 +2144,7 @@
     const deleteConfirm = ['#quick-view', '.cr-dialog-ok:not([hidden])'];
     await remoteCall.waitAndClickElement(appId, deleteConfirm);
 
-    // Check: the hello.txt file should be deleted.
+    // Check: |hello.txt| should have been deleted.
     await remoteCall.waitForElementLost(
         appId, '#file-list [file-name="hello.txt"]');
 
@@ -2163,7 +2163,6 @@
 
     const videoWebView =
         ['#quick-view', 'files-safe-media[type="video"]', 'webview'];
-
     await repeatUntil(async () => {
       return checkWebViewVideoLoaded(await remoteCall.callRemoteTestUtil(
           'deepQueryAllElements', appId, [videoWebView, ['display']]));
@@ -2219,7 +2218,7 @@
     const deleteConfirm = ['#quick-view', '.cr-dialog-ok:not([hidden])'];
     await remoteCall.waitAndClickElement(appId, deleteConfirm);
 
-    // Check: the Beautiful Song.ogg file should be deleted.
+    // Check: |Beautiful Song.ogg| should have been deleted.
     await remoteCall.waitForElementLost(
         appId, '#file-list [file-name="Beautiful Song.ogg"]');
 
@@ -2231,7 +2230,7 @@
     // Click the delete confirm dialog OK button.
     await remoteCall.waitAndClickElement(appId, deleteConfirm);
 
-    // Check: the My Desktop Background.png file should be deleted.
+    // Check: |My Desktop Background.png| should have been deleted.
     await remoteCall.waitForElementLost(
         appId, '#file-list [file-name="My Desktop Background.png"]');
 
@@ -2259,7 +2258,7 @@
     const deleteConfirm = ['#quick-view', '.cr-dialog-ok:not([hidden])'];
     await remoteCall.waitAndClickElement(appId, deleteConfirm);
 
-    // Check: the file should have been deleted.
+    // Check: |hello.txt| should have been deleted.
     await remoteCall.waitForElementLost(
         appId, '#file-list [file-name="hello.txt"]');
 

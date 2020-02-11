@@ -94,7 +94,7 @@ ScriptPromise ClipboardPromise::CreateForWriteText(
 
 ClipboardPromise::ClipboardPromise(SystemClipboard* system_clipboard,
                                    ScriptState* script_state)
-    : ContextLifecycleObserver(blink::ExecutionContext::From(script_state)),
+    : ContextLifecycleObserver(ExecutionContext::From(script_state)),
       script_state_(script_state),
       script_promise_resolver_(
           MakeGarbageCollected<ScriptPromiseResolver>(script_state)),
@@ -175,8 +175,7 @@ void ClipboardPromise::HandleWrite(
   clipboard_item_data_ = clipboard_item->GetItems();
   is_raw_ = clipboard_item->raw();
 
-  DCHECK(base::FeatureList::IsEnabled(blink::features::kRawClipboard) ||
-         !is_raw_);
+  DCHECK(base::FeatureList::IsEnabled(features::kRawClipboard) || !is_raw_);
 
   RequestPermission(mojom::blink::PermissionName::CLIPBOARD_WRITE, is_raw_,
                     WTF::Bind(&ClipboardPromise::HandleWriteWithPermission,
@@ -354,7 +353,7 @@ scoped_refptr<base::SingleThreadTaskRunner> ClipboardPromise::GetTaskRunner() {
   return GetExecutionContext()->GetTaskRunner(TaskType::kUserInteraction);
 }
 
-void ClipboardPromise::Trace(blink::Visitor* visitor) {
+void ClipboardPromise::Trace(Visitor* visitor) {
   visitor->Trace(script_state_);
   visitor->Trace(script_promise_resolver_);
   visitor->Trace(clipboard_writer_);

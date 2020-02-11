@@ -307,8 +307,7 @@ TEST_F(DomainReliabilityMonitorTest, ClearBeacons) {
   // Make sure it was added.
   EXPECT_EQ(1u, CountQueuedBeacons(context));
 
-  monitor_.ClearBrowsingData(
-      CLEAR_BEACONS, base::Callback<bool(const GURL&)>());
+  monitor_.ClearBrowsingData(CLEAR_BEACONS, base::NullCallback());
 
   // Make sure the beacon was cleared, but not the contexts.
   EXPECT_EQ(1u, monitor_.contexts_size_for_testing());
@@ -337,8 +336,9 @@ TEST_F(DomainReliabilityMonitorTest, ClearBeaconsWithFilter) {
   // Delete the beacons for |origin1|.
   monitor_.ClearBrowsingData(
       CLEAR_BEACONS,
-      base::Bind(static_cast<bool (*)(const GURL&, const GURL&)>(operator==),
-                 origin1));
+      base::BindRepeating(
+          [](const GURL& url1, const GURL& url2) { return url1 == url2; },
+          origin1));
 
   // Beacons for |context1| were cleared. Beacons for |context2| and
   // the contexts themselves were not.
@@ -353,8 +353,7 @@ TEST_F(DomainReliabilityMonitorTest, ClearContexts) {
   // Initially the monitor should have just the test context.
   EXPECT_EQ(1u, monitor_.contexts_size_for_testing());
 
-  monitor_.ClearBrowsingData(
-      CLEAR_CONTEXTS, base::Callback<bool(const GURL&)>());
+  monitor_.ClearBrowsingData(CLEAR_CONTEXTS, base::NullCallback());
 
   // Clearing contexts should leave the monitor with none.
   EXPECT_EQ(0u, monitor_.contexts_size_for_testing());
@@ -372,8 +371,9 @@ TEST_F(DomainReliabilityMonitorTest, ClearContextsWithFilter) {
   // Delete the contexts for |origin1|.
   monitor_.ClearBrowsingData(
       CLEAR_CONTEXTS,
-      base::Bind(static_cast<bool (*)(const GURL&, const GURL&)>(operator==),
-                 origin1));
+      base::BindRepeating(
+          [](const GURL& url1, const GURL& url2) { return url1 == url2; },
+          origin1));
 
   // Only one of the contexts should have been deleted.
   EXPECT_EQ(1u, monitor_.contexts_size_for_testing());

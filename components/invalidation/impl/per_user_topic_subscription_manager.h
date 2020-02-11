@@ -107,7 +107,9 @@ class INVALIDATION_EXPORT PerUserTopicSubscriptionManager {
 
   void StartPendingSubscriptions();
 
-  // Tries to subscribe to |topic|. No retry in case of failure.
+  // Tries to (un)subscribe to |topic|. No retry in case of failure.
+  // Effectively no-op if (un)subscription request is backed off or already in
+  // flight with the same access token.
   void StartPendingSubscriptionRequest(const Topic& topic);
 
   void ActOnSuccessfulSubscription(

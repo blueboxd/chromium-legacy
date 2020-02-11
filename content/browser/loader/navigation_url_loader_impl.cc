@@ -35,6 +35,7 @@
 #include "content/browser/loader/navigation_url_loader_delegate.h"
 #include "content/browser/loader/prefetch_url_loader_service.h"
 #include "content/browser/loader/single_request_url_loader_factory.h"
+#include "content/browser/loader/url_loader_throttles.h"
 #include "content/browser/navigation_subresource_loader_params.h"
 #include "content/browser/service_worker/service_worker_container_host.h"
 #include "content/browser/service_worker/service_worker_main_resource_handle.h"
@@ -1122,7 +1123,7 @@ class NavigationURLLoaderImpl::URLLoaderRequestController
 
   std::vector<std::unique_ptr<blink::URLLoaderThrottle>>
   CreateURLLoaderThrottles() {
-    return GetContentClient()->browser()->CreateURLLoaderThrottles(
+    return CreateContentBrowserURLLoaderThrottles(
         *resource_request_, browser_context_, web_contents_getter_,
         navigation_ui_data_.get(), frame_tree_node_id_);
   }

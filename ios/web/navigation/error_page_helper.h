@@ -17,8 +17,6 @@ class GURL;
 @property(nonatomic, strong, readonly) NSURL* failedNavigationURL;
 // The error page file to be loaded as a new page.
 @property(nonatomic, strong, readonly) NSURL* errorPageFileURL;
-// The error page HTML content to be injected into current page.
-@property(nonatomic, strong, readonly) NSString* scriptToInject;
 
 - (instancetype)initWithError:(NSError*)error NS_DESIGNATED_INITIALIZER;
 
@@ -26,6 +24,12 @@ class GURL;
 
 // Returns the failed URL if |URL| is an error page URL, otherwise empty URL.
 + (GURL)failedNavigationURLFromErrorPageFileURL:(const GURL&)URL;
+
+// Returns a JavaScript script that can be injected to replace the content of
+// the page with |HTML|. It can also contains a script to automatically reload
+// the page when it is shown if |addAutomaticReload| is true.
+- (NSString*)scriptForInjectingHTML:(NSString*)HTML
+                 addAutomaticReload:(BOOL)addAutomaticReload;
 
 // Returns YES if |URL| is a file URL for this error page.
 - (BOOL)isErrorPageFileURLForFailedNavigationURL:(NSURL*)URL;

@@ -125,7 +125,7 @@ const GURL& BookmarkAppRegistrar::GetAppLaunchURL(
                    : GURL::EmptyGURL();
 }
 
-base::Optional<GURL> BookmarkAppRegistrar::GetAppScope(
+base::Optional<GURL> BookmarkAppRegistrar::GetAppScopeInternal(
     const web_app::AppId& app_id) const {
   const Extension* extension = GetBookmarkApp(app_id);
   if (!extension)

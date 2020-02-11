@@ -279,7 +279,7 @@ void DataObject::NotifyItemListChanged() const {
     observer->OnItemListChanged();
 }
 
-void DataObject::Trace(blink::Visitor* visitor) {
+void DataObject::Trace(Visitor* visitor) {
   visitor->Trace(item_list_);
   visitor->Trace(observers_);
   Supplementable<DataObject>::Trace(visitor);

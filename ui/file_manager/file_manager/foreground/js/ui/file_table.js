@@ -281,7 +281,7 @@ function renderHeader_(table) {
     const iconName = sortOrder === 'desc' ? 'down' : 'up';
     icon.setAttribute('iron-icon', `files16:arrow_${iconName}_small`);
     icon.setAttribute('tabindex', '-1');
-    icon.classList.add('sort-icon');
+    icon.classList.add('sort-icon', 'no-overlap');
 
     container.classList.toggle('not-sorted', !isSorted);
     container.classList.toggle('sorted', isSorted);

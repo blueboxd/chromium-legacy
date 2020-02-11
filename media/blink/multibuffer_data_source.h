@@ -37,7 +37,7 @@ class MultiBufferReader;
 // with the |task_runner| passed in the constructor.
 class MEDIA_BLINK_EXPORT MultibufferDataSource : public DataSource {
  public:
-  typedef base::Callback<void(bool)> DownloadingCB;
+  using DownloadingCB = base::RepeatingCallback<void(bool)>;
 
   // Used to specify video preload states. They are "hints" to the browser about
   // how aggressively the browser should load and buffer data.
@@ -60,7 +60,7 @@ class MEDIA_BLINK_EXPORT MultibufferDataSource : public DataSource {
       scoped_refptr<UrlData> url_data,
       MediaLog* media_log,
       BufferedDataSourceHost* host,
-      const DownloadingCB& downloading_cb);
+      DownloadingCB downloading_cb);
   ~MultibufferDataSource() override;
 
   // Executes |init_cb| with the result of initialization when it has completed.

@@ -37,7 +37,7 @@ class Clipboard : public EventTargetWithInlineData,
   const AtomicString& InterfaceName() const override;
   ExecutionContext* GetExecutionContext() const override;
 
-  void Trace(blink::Visitor*) override;
+  void Trace(Visitor*) override;
 
  private:
   // Access to the frame's system clipboard.

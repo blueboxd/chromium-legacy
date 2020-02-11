@@ -216,8 +216,7 @@ void FrameLoader::Init() {
       std::move(navigation_params), nullptr /* extra_data */);
 
   CommitDocumentLoader(new_document_loader, base::nullopt, nullptr,
-                       true /* is_initialization */, base::DoNothing::Once(),
-                       false /* is_javascript_url */);
+                       CommitReason::kInitialization, base::DoNothing::Once());
 
   frame_->GetDocument()->CancelParsing();
 
@@ -989,10 +988,10 @@ void FrameLoader::CommitNavigation(
       frame_, navigation_type, content_security_policy,
       std::move(navigation_params), std::move(extra_data));
 
-  CommitDocumentLoader(new_document_loader, unload_timing,
-                       previous_history_item, false /* is_initialization */,
-                       std::move(call_before_attaching_new_document),
-                       is_javascript_url);
+  CommitDocumentLoader(
+      new_document_loader, unload_timing, previous_history_item,
+      is_javascript_url ? CommitReason::kJavascriptUrl : CommitReason::kRegular,
+      std::move(call_before_attaching_new_document));
 
   RestoreScrollPositionAndViewState();
 
@@ -1111,20 +1110,19 @@ void FrameLoader::CommitDocumentLoader(
     DocumentLoader* document_loader,
     const base::Optional<Document::UnloadEventTiming>& unload_timing,
     HistoryItem* previous_history_item,
-    bool is_initialization,
-    base::OnceClosure call_before_attaching_new_document,
-    bool is_javascript_url) {
+    CommitReason commit_reason,
+    base::OnceClosure call_before_attaching_new_document) {
   document_loader_ = document_loader;
   CHECK(document_loader_);
 
-  if (is_javascript_url)
+  if (commit_reason == CommitReason::kJavascriptUrl)
     document_loader_->SetLoadingJavaScriptUrl();
 
   virtual_time_pauser_.PauseVirtualTime();
   document_loader_->StartLoading();
   virtual_time_pauser_.UnpauseVirtualTime();
 
-  if (!is_initialization) {
+  if (commit_reason != CommitReason::kInitialization) {
     // Following the call to StartLoading, the DocumentLoader state has taken
     // into account all redirects that happened during navigation. Its
     // HistoryItem can be properly updated for the commit, using the HistoryItem
@@ -1154,16 +1152,17 @@ void FrameLoader::CommitDocumentLoader(
 
   {
     FrameNavigationDisabler navigation_disabler(*frame_);
-    // TODO(https://crbug.com/855189): replace DispatchDidStartProvisionalLoad,
-    // call_before_attaching_new_document and DispatchDidCommitLoad with a
-    // single call.
-    if (!is_initialization)
+    if (commit_reason == CommitReason::kInitialization) {
+      Client()->DidCreateInitialEmptyDocument();
+    } else if (commit_reason == CommitReason::kJavascriptUrl) {
+      Client()->DidCommitJavascriptUrlNavigation(document_loader_);
+    } else {
+      // TODO(https://crbug.com/855189): replace
+      // DispatchDidStartProvisionalLoad, call_before_attaching_new_document and
+      // DispatchDidCommitLoad with a single call.
       Client()->DispatchDidStartProvisionalLoad(document_loader_);
-    std::move(call_before_attaching_new_document).Run();
-    Client()->DidCreateNewDocument();
-    if (!is_initialization & !is_javascript_url) {
-      // TODO(https://crbug.com/855189): Do not make exceptions
-      // for javascript urls.
+      std::move(call_before_attaching_new_document).Run();
+      Client()->DidCreateNewDocument();
       Client()->DispatchDidCommitLoad(
           document_loader_->GetHistoryItem(),
           DocumentLoader::LoadTypeToCommitType(document_loader_->LoadType()),
@@ -1172,7 +1171,7 @@ void FrameLoader::CommitDocumentLoader(
     // TODO(dgozman): make DidCreateScriptContext notification call currently
     // triggered by installing new document happen here, after commit.
   }
-  if (!is_initialization) {
+  if (commit_reason != CommitReason::kInitialization) {
     // Note: this must be called after DispatchDidCommitLoad() for
     // metrics to be correctly sent to the browser process.
     document_loader_->GetUseCounterHelper().DidCommitLoad(frame_);

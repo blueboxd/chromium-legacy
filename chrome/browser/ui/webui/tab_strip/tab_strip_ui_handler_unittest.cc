@@ -21,9 +21,7 @@
 #include "components/tab_groups/tab_group_visual_data.h"
 #include "content/public/browser/web_ui.h"
 #include "content/public/test/test_web_ui.h"
-#include "testing/gmock/include/gmock/gmock.h"
 #include "ui/base/accelerators/accelerator.h"
-#include "ui/base/default_theme_provider.h"
 #include "ui/base/theme_provider.h"
 #include "ui/gfx/color_utils.h"
 #include "ui/gfx/geometry/point.h"
@@ -40,37 +38,35 @@ class TestTabStripUIHandler : public TabStripUIHandler {
   }
 };
 
-class MockTabStripUIEmbedder : public TabStripUIEmbedder {
+class StubTabStripUIEmbedder : public TabStripUIEmbedder {
  public:
-  MockTabStripUIEmbedder() : theme_provider_(new ui::DefaultThemeProvider()) {}
-  MOCK_CONST_METHOD0(GetAcceleratorProvider, const ui::AcceleratorProvider*());
-  MOCK_METHOD0(CloseContainer, void());
-  MOCK_METHOD2(ShowContextMenuAtPoint,
-               void(gfx::Point, std::unique_ptr<ui::MenuModel>));
-  MOCK_METHOD0(GetLayout, TabStripUILayout());
-  const ui::ThemeProvider* GetThemeProvider() override {
-    return theme_provider_.get();
+  const ui::AcceleratorProvider* GetAcceleratorProvider() const override {
+    return nullptr;
   }
-
- private:
-  const std::unique_ptr<ui::ThemeProvider> theme_provider_;
+  void CloseContainer() override {}
+  void ShowContextMenuAtPoint(
+      gfx::Point point,
+      std::unique_ptr<ui::MenuModel> menu_model) override {}
+  TabStripUILayout GetLayout() override { return TabStripUILayout(); }
+  SkColor GetColor(int id) const override { return SK_ColorWHITE; }
 };
 
 }  // namespace
 
 class TabStripUIHandlerTest : public BrowserWithTestWindowTest {
  public:
-  TabStripUIHandlerTest() : web_ui_(new content::TestWebUI) {}
+  TabStripUIHandlerTest() = default;
+
   void SetUp() override {
     BrowserWithTestWindowTest::SetUp();
     handler_ = std::make_unique<TestTabStripUIHandler>(web_ui(), browser(),
-                                                       &mock_embedder_);
+                                                       &stub_embedder_);
     handler()->AllowJavascriptForTesting();
     web_ui()->ClearTrackedCalls();
   }
 
   TabStripUIHandler* handler() { return handler_.get(); }
-  content::TestWebUI* web_ui() { return web_ui_.get(); }
+  content::TestWebUI* web_ui() { return &web_ui_; }
 
   void ExpectVisualDataDictionary(
       const tab_groups::TabGroupVisualData visual_data,
@@ -87,13 +83,10 @@ class TabStripUIHandlerTest : public BrowserWithTestWindowTest {
               group_color);
   }
 
- protected:
-  ::testing::NiceMock<MockTabStripUIEmbedder> mock_embedder_;
-
  private:
-  std::unique_ptr<content::TestWebUI> web_ui_;
+  StubTabStripUIEmbedder stub_embedder_;
+  content::TestWebUI web_ui_;
   std::unique_ptr<TestTabStripUIHandler> handler_;
-  DISALLOW_COPY_AND_ASSIGN(TabStripUIHandlerTest);
 };
 
 TEST_F(TabStripUIHandlerTest, GroupClosedEvent) {

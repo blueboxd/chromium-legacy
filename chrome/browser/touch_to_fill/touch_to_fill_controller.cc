@@ -7,6 +7,7 @@
 #include <utility>
 
 #include "base/logging.h"
+#include "base/metrics/histogram_functions.h"
 #include "base/util/type_safety/pass_key.h"
 #include "chrome/browser/password_manager/chrome_password_manager_client.h"
 #include "chrome/browser/touch_to_fill/touch_to_fill_view.h"
@@ -41,6 +42,17 @@ void TouchToFillController::Show(base::span<const UiCredential> credentials,
                                  base::WeakPtr<PasswordManagerDriver> driver) {
   DCHECK(!driver_ || driver_.get() == driver.get());
   driver_ = std::move(driver);
+
+  base::UmaHistogramCounts100("PasswordManager.TouchToFill.NumCredentialsShown",
+                              credentials.size());
+
+  if (credentials.empty()) {
+    // Ideally this should never happen. However, in case we do end up invoking
+    // Show() without credentials, we should not show Touch To Fill to the user
+    // and treat this case as dismissal, in order to restore the soft keyboard.
+    OnDismiss();
+    return;
+  }
 
   if (!view_)
     view_ = TouchToFillViewFactory::Create(this);

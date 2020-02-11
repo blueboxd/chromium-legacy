@@ -368,6 +368,17 @@ class BLINK_EXPORT WebLocalFrameClient {
   // The frame's document has just been initialized.
   virtual void DidCreateNewDocument() {}
 
+  // The frame's initial empty document has just been initialized.
+  // DidCreateNewDocument is not called in this case.
+  virtual void DidCreateInitialEmptyDocument() {}
+
+  // A new document has just been committed as a result of evaluating
+  // javascript url. This document inherited everything from the previous
+  // document (url, origin, global object, etc.).
+  // DidStartProvisionalLoad, DidCreateNewDocument and DidCommitProvisionalLoad
+  // are not called in this case.
+  virtual void DidCommitJavascriptUrlNavigation(WebDocumentLoader*) {}
+
   // The window object for the frame has been cleared of any extra properties
   // that may have been set by script from the previously loaded document. This
   // will get invoked multiple times when navigating from an initial empty

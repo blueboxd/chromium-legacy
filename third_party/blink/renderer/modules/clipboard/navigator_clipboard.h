@@ -26,7 +26,7 @@ class NavigatorClipboard final : public GarbageCollected<NavigatorClipboard>,
 
   explicit NavigatorClipboard(Navigator&);
 
-  void Trace(blink::Visitor*) override;
+  void Trace(Visitor*) override;
 
  private:
   Member<Clipboard> clipboard_;

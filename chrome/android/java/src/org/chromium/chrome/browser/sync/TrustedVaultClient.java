@@ -4,12 +4,10 @@
 
 package org.chromium.chrome.browser.sync;
 
-import android.app.Activity;
 import android.app.PendingIntent;
 
 import androidx.annotation.VisibleForTesting;
 
-import org.chromium.base.Log;
 import org.chromium.base.Promise;
 import org.chromium.base.annotations.CalledByNative;
 import org.chromium.base.annotations.NativeMethods;
@@ -78,8 +76,6 @@ public class TrustedVaultClient {
         }
     };
 
-    private static final String TAG = "TrustedVaultClient";
-
     private static TrustedVaultClient sInstance;
 
     private final Backend mBackend;
@@ -93,6 +89,11 @@ public class TrustedVaultClient {
         mBackend = backend;
     }
 
+    @VisibleForTesting
+    public static void setInstanceForTesting(TrustedVaultClient instance) {
+        sInstance = instance;
+    }
+
     /**
      * Displays a UI that allows the user to reauthenticate and retrieve the sync encryption keys.
      */
@@ -102,30 +103,6 @@ public class TrustedVaultClient {
                     new TrustedVaultClient(AppHooks.get().createSyncTrustedVaultClientBackend());
         }
         return sInstance;
-    }
-
-    /**
-     * Displays a UI that allows the user to reauthenticate and retrieve the sync encryption keys.
-     *
-     * @param activity Activity to use when starting the dialog.
-     * @param accountInfo Account representing the user.
-     */
-    public void displayKeyRetrievalDialog(Activity activity, CoreAccountInfo accountInfo) {
-        createKeyRetrievalIntent(accountInfo)
-                .then(
-                        (pendingIntent)
-                                -> {
-                            try {
-                                // TODO(crbug.com/1012659): Upon intent completion, the new keys
-                                // should be fetched.
-                                pendingIntent.send(activity, 0, null, null, null, null, null);
-                            } catch (PendingIntent.CanceledException exception) {
-                                Log.w(TAG, "Error sending key retrieval intent: ", exception);
-                            }
-                        },
-                        (exception) -> {
-                            Log.e(TAG, "Error opening key retrieval dialog: ", exception);
-                        });
     }
 
     /**
@@ -152,8 +129,9 @@ public class TrustedVaultClient {
     /**
      * Registers a C++ client, which is a prerequisite before interacting with Java.
      */
+    @VisibleForTesting
     @CalledByNative
-    private static void registerNative(long nativeTrustedVaultClientAndroid) {
+    public static void registerNative(long nativeTrustedVaultClientAndroid) {
         assert !isNativeRegistered(nativeTrustedVaultClientAndroid);
         get().mNativeTrustedVaultClientAndroidSet.add(nativeTrustedVaultClientAndroid);
     }
@@ -161,8 +139,9 @@ public class TrustedVaultClient {
     /**
      * Unregisters a previously-registered client, canceling any in-flight requests.
      */
+    @VisibleForTesting
     @CalledByNative
-    private static void unregisterNative(long nativeTrustedVaultClientAndroid) {
+    public static void unregisterNative(long nativeTrustedVaultClientAndroid) {
         assert isNativeRegistered(nativeTrustedVaultClientAndroid);
         get().mNativeTrustedVaultClientAndroidSet.remove(nativeTrustedVaultClientAndroid);
     }

@@ -84,11 +84,16 @@ class CONTENT_EXPORT SessionStorageContextMojo
       BackingMode backing_option,
       std::string leveldb_name);
 
-  void OpenSessionStorage(
-      ChildProcessSecurityPolicyImpl::Handle handle,
+  void BindSessionStorageNamespace(
       const std::string& namespace_id,
       mojo::ReportBadMessageCallback bad_message_callback,
       mojo::PendingReceiver<blink::mojom::SessionStorageNamespace> receiver);
+  void BindSessionStorageArea(
+      ChildProcessSecurityPolicyImpl::Handle security_policy_handle,
+      const url::Origin& origin,
+      const std::string& namespace_id,
+      mojo::ReportBadMessageCallback bad_message_callback,
+      mojo::PendingReceiver<blink::mojom::StorageArea> receiver);
 
   void CreateSessionNamespace(const std::string& namespace_id);
   void CloneSessionNamespace(const std::string& namespace_id_to_clone,

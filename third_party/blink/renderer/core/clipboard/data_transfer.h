@@ -156,7 +156,7 @@ class CORE_EXPORT DataTransfer final : public ScriptWrappable,
       const PropertyTreeState&);
   static std::unique_ptr<DragImage> NodeImage(LocalFrame&, Node&);
 
-  void Trace(blink::Visitor*) override;
+  void Trace(Visitor*) override;
 
  private:
   void setDragImage(ImageResourceContent*, Node*, const IntPoint&);

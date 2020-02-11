@@ -68,7 +68,8 @@ const GURL& WebAppRegistrar::GetAppLaunchURL(const AppId& app_id) const {
   return web_app ? web_app->launch_url() : GURL::EmptyGURL();
 }
 
-base::Optional<GURL> WebAppRegistrar::GetAppScope(const AppId& app_id) const {
+base::Optional<GURL> WebAppRegistrar::GetAppScopeInternal(
+    const AppId& app_id) const {
   auto* web_app = GetAppById(app_id);
   if (!web_app)
     return base::nullopt;

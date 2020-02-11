@@ -90,7 +90,7 @@ GURL WebAppBrowserController::GetAppLaunchURL() const {
 }
 
 bool WebAppBrowserController::IsUrlInAppScope(const GURL& url) const {
-  base::Optional<GURL> app_scope = registrar().GetAppScope(GetAppId());
+  base::Optional<GURL> app_scope = registrar().GetAppScopeInternal(GetAppId());
   if (!app_scope)
     return false;
 

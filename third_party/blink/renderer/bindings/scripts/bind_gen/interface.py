@@ -3,6 +3,7 @@
 # found in the LICENSE file.
 
 import itertools
+import multiprocessing
 import os.path
 
 import web_idl
@@ -1441,7 +1442,7 @@ def make_constant_callback_def(cg_context, function_name):
         function_name,
         arg_decls=[
             "v8::Local<v8::Name> property",
-            "const v8::FunctionCallbackInfo<v8::Value>& info",
+            "const v8::PropertyCallbackInfo<v8::Value>& info",
         ])
     body = func_def.body
 
@@ -3283,12 +3284,10 @@ def generate_interface(interface):
 
 
 def generate_interfaces(web_idl_database):
-    interface = web_idl_database.find("ReadableStreamDefaultReader")
+    interface = web_idl_database.find("SVGFEBlendElement")
     generate_interface(interface)
     return
 
-    i = 0
-    for interface in web_idl_database.interfaces:
-        i += 1
-        print i, interface.identifier
-        generate_interface(interface)
+    # multiprocessing.cpu_count()
+    pool = multiprocessing.Pool(10)
+    pool.map(generate_interface, web_idl_database.interfaces)

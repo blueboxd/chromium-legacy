@@ -669,7 +669,7 @@ void HostCache::clear() {
 }
 
 void HostCache::ClearForHosts(
-    const base::Callback<bool(const std::string&)>& host_filter) {
+    const base::RepeatingCallback<bool(const std::string&)>& host_filter) {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
 
   if (host_filter.is_null()) {

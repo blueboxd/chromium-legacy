@@ -68,14 +68,10 @@ TEST_F(DOMStorageContextWrapperTest, BadMessageScheduling) {
   mojo::Remote<blink::mojom::SessionStorageNamespace> ss_namespace_remote;
   bool called = false;
 
-  const int kTestProcessId = 0;
-  auto handle = ChildProcessSecurityPolicyImpl::GetInstance()->CreateHandle(
-      kTestProcessId);
-
   // This call is invalid because |CreateSessionNamespace| was never called on
   // the SessionStorage context.
-  context_->OpenSessionStorage(
-      std::move(handle), "nonexistant-namespace",
+  context_->BindSessionStorageNamespace(
+      "nonexistant-namespace",
       base::BindLambdaForTesting(
           [&called](const std::string& message) { called = true; }),
       ss_namespace_remote.BindNewPipeAndPassReceiver());

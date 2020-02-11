@@ -256,6 +256,19 @@ void LocalFrameClientImpl::DidCreateNewDocument() {
     web_frame_->Client()->DidCreateNewDocument();
 }
 
+void LocalFrameClientImpl::DidCreateInitialEmptyDocument() {
+  if (web_frame_->Client())
+    web_frame_->Client()->DidCreateInitialEmptyDocument();
+}
+
+void LocalFrameClientImpl::DidCommitJavascriptUrlNavigation(
+    DocumentLoader* loader) {
+  if (web_frame_->Client()) {
+    web_frame_->Client()->DidCommitJavascriptUrlNavigation(
+        WebDocumentLoaderImpl::FromDocumentLoader(loader));
+  }
+}
+
 void LocalFrameClientImpl::DispatchDidClearWindowObjectInMainWorld() {
   if (web_frame_->Client()) {
     web_frame_->Client()->DidClearWindowObject();

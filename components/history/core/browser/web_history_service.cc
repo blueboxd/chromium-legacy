@@ -63,6 +63,19 @@ const char kPostDataMimeType[] = "text/plain";
 
 const char kSyncProtoMimeType[] = "application/octet-stream";
 
+const char kQueryWebAndAppActivityStateHistogramName[] =
+    "WebHistory.QueryWebAndAppActivity.State";
+
+// These values are persisted to logs. Entries should not be renumbered and
+// numeric values should never be reused.
+enum class QueryWebAndAppActivityState {
+  kOn = 0,
+  kOff = 1,
+  kRequestFailed = 2,
+  kUnexpectedResponse = 3,
+  kMaxValue = kUnexpectedResponse,
+};
+
 // The maximum number of retries for the SimpleURLLoader requests.
 const size_t kMaxRetries = 1;
 
@@ -677,16 +690,24 @@ void WebHistoryService::QueryOtherFormsOfBrowsingHistoryCompletionCallback(
 base::Optional<bool> WebHistoryService::ReportQueryWebAndAppActivity(
     WebHistoryService::Request* request,
     bool success) {
-  std::unique_ptr<base::DictionaryValue> response_value;
   if (success) {
+    std::unique_ptr<base::DictionaryValue> response_value;
     response_value = ReadResponse(request);
     bool web_and_app_activity_enabled = false;
     if (response_value &&
         response_value->GetBoolean("history_recording_enabled",
                                    &web_and_app_activity_enabled)) {
+      UMA_HISTOGRAM_ENUMERATION(kQueryWebAndAppActivityStateHistogramName,
+                                web_and_app_activity_enabled
+                                    ? QueryWebAndAppActivityState::kOn
+                                    : QueryWebAndAppActivityState::kOff);
       return web_and_app_activity_enabled;
     }
   }
+  UMA_HISTOGRAM_ENUMERATION(
+      kQueryWebAndAppActivityStateHistogramName,
+      success ? QueryWebAndAppActivityState::kUnexpectedResponse
+              : QueryWebAndAppActivityState::kRequestFailed);
   return base::nullopt;
 }
 

@@ -8,8 +8,13 @@ import mojom.generate.generator as generator
 import mojom.generate.module as mojom
 import mojom.generate.pack as pack
 import os
-import urllib
+import sys
 from mojom.generate.template_expander import UseJinja
+
+if sys.version_info.major == 2:
+  import urllib as urllib_request
+else:
+  import urllib.request as urllib_request
 
 _kind_to_javascript_default_value = {
   mojom.BOOL:                  "false",
@@ -225,7 +230,7 @@ def GetArrayExpectedDimensionSizes(kind):
 
 
 def GetRelativeUrl(module, base_module):
-  return urllib.pathname2url(
+  return urllib_request.pathname2url(
       os.path.relpath(module.path, os.path.dirname(base_module.path)))
 
 

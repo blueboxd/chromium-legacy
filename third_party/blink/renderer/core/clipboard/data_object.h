@@ -124,7 +124,7 @@ class CORE_EXPORT DataObject : public GarbageCollected<DataObject>,
   // whenever the underlying item_list_ changes.
   void AddObserver(Observer*);
 
-  void Trace(blink::Visitor*) override;
+  void Trace(Visitor*) override;
 
   WebDragData ToWebDragData();
 

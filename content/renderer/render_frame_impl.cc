@@ -4462,6 +4462,27 @@ void RenderFrameImpl::DidCreateNewDocument() {
     observer.DidCreateNewDocument();
 }
 
+void RenderFrameImpl::DidCreateInitialEmptyDocument() {
+  for (auto& observer : observers_)
+    observer.DidCreateNewDocument();
+}
+
+void RenderFrameImpl::DidCommitJavascriptUrlNavigation(
+    blink::WebDocumentLoader* document_loader) {
+  // TODO(https://crbug.com/855189): figure out which of the following observer
+  // calls are necessary, if any.
+  for (auto& observer : observers_)
+    observer.DidStartNavigation(document_loader->GetUrl(), base::nullopt);
+  for (auto& observer : observers_)
+    observer.ReadyToCommitNavigation(document_loader);
+  for (auto& observer : observers_)
+    observer.DidCreateNewDocument();
+  ui::PageTransition transition =
+      GetTransitionType(document_loader, IsMainFrame());
+  NotifyObserversOfNavigationCommit(false /* was_within_same_document */,
+                                    transition);
+}
+
 void RenderFrameImpl::DidClearWindowObject() {
   if (enabled_bindings_ & BINDINGS_POLICY_WEB_UI)
     WebUIExtension::Install(frame_);

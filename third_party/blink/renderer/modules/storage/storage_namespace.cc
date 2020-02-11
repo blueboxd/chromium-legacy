@@ -100,8 +100,8 @@ scoped_refptr<CachedStorageArea> StorageNamespace::GetCachedArea(
   controller_->ClearAreasIfNeeded();
   if (IsSessionStorage()) {
     mojo::PendingRemote<mojom::blink::StorageArea> area_remote;
-    EnsureConnected();
-    namespace_->OpenArea(origin, area_remote.InitWithNewPipeAndPassReceiver());
+    controller_->storage_partition_service()->BindSessionStorageArea(
+        origin, namespace_id_, area_remote.InitWithNewPipeAndPassReceiver());
     result = base::MakeRefCounted<CachedStorageArea>(
         CachedStorageArea::AreaType::kSessionStorage, origin,
         std::move(area_remote), controller_->IPCTaskRunner(), this);
@@ -203,7 +203,7 @@ void StorageNamespace::EnsureConnected() {
   DCHECK(IsSessionStorage());
   if (namespace_)
     return;
-  controller_->storage_partition_service()->OpenSessionStorage(
+  controller_->storage_partition_service()->BindSessionStorageNamespace(
       namespace_id_,
       namespace_.BindNewPipeAndPassReceiver(controller_->IPCTaskRunner()));
 }

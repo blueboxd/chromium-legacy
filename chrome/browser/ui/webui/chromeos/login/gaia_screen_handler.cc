@@ -1053,9 +1053,8 @@ void GaiaScreenHandler::HandleGaiaUIReady() {
 
 void GaiaScreenHandler::HandleShowAddUser(const base::ListValue* args) {
   // TODO(xiaoyinh): Add trace event for gaia webui in views login screen.
-  TRACE_EVENT_ASYNC_STEP_INTO0("ui", "ShowLoginWebUI",
-                               LoginDisplayHostWebUI::kShowLoginWebUIid,
-                               "ShowAddUser");
+  TRACE_EVENT_NESTABLE_ASYNC_INSTANT0("ui", "ShowAddUser",
+                                      LoginDisplayHostWebUI::kShowLoginWebUIid);
 
   std::string email;
   // |args| can be null if it's OOBE.

@@ -358,6 +358,8 @@ class CORE_EXPORT EmptyLocalFrameClient : public LocalFrameClient {
       HTMLMediaElement&) override;
 
   void DidCreateNewDocument() override {}
+  void DidCreateInitialEmptyDocument() override {}
+  void DidCommitJavascriptUrlNavigation(DocumentLoader*) override {}
   void DispatchDidClearWindowObjectInMainWorld() override {}
   void DocumentElementAvailable() override {}
   void RunScriptsAtDocumentElementAvailable() override {}

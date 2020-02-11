@@ -25,11 +25,14 @@ class NoopStoragePartitionService
   void OpenLocalStorage(
       const scoped_refptr<const SecurityOrigin>& origin,
       mojo::PendingReceiver<mojom::blink::StorageArea> receiver) override {}
-
-  void OpenSessionStorage(
+  void BindSessionStorageNamespace(
       const String& namespace_id,
       mojo::PendingReceiver<mojom::blink::SessionStorageNamespace> receiver)
       override {}
+  void BindSessionStorageArea(
+      const scoped_refptr<const SecurityOrigin>& origin,
+      const String& namespace_id,
+      mojo::PendingReceiver<mojom::blink::StorageArea> receiver) override {}
 };
 
 }  // namespace

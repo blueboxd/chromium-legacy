@@ -1841,12 +1841,7 @@ void ReportOutOfSyncURLInDidStartProvisionalNavigation(
         [webView loadFileURL:errorPage.errorPageFileURL
             allowingReadAccessToURL:errorPage.errorPageFileURL];
       } else {
-        [webView evaluateJavaScript:errorPage.scriptToInject
-                  completionHandler:^(id result, NSError* error) {
-                    DCHECK(!error)
-                        << "Error injecting page: "
-                        << base::SysNSStringToUTF8(error.description);
-                  }];
+        // TODO(crbug.com/991608): Inject HTML for the error page.
       }
     } else {
       GURL errorURL =

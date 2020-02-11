@@ -382,7 +382,7 @@ void PopulateInfoMapWithInstalled(
   auto app_ids = registrar.GetAppIds();
   std::map<std::string, std::string> installed_origins_map;
   for (auto& app_id : app_ids) {
-    auto scope = registrar.GetAppScope(app_id);
+    auto scope = registrar.GetAppScopeInternal(app_id);
     if (scope) {
       auto app_name = registrar.GetAppShortName(app_id);
       installed_origins_map.emplace(

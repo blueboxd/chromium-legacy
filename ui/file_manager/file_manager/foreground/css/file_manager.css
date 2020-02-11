@@ -2207,9 +2207,8 @@ body.files-ng #list-container .table-header-cell:first-child
 
 body.files-ng .table-header-label .sort-icon {
   --cr-icon-button-icon-size: 16px;
-  --cr-icon-button-margin-start: 0px;
   --cr-icon-button-size: 32px;
-  border-radius: 16px;
+  border-radius: 50%;
 }
 
 body.files-ng .table-label-container {
@@ -2224,8 +2223,6 @@ body.files-ng .table-header-label .sorted .sort-icon:hover {
 }
 
 body.files-ng .table-header-label .not-sorted .sort-icon {
-  background-color: transparent;
-  --cr-icon-button-fill-color: transparent;
   display: none;
 }
 
@@ -2250,7 +2247,7 @@ body.files-ng.check-select #list-container list li[selected] .detail-thumbnail
 }
 
 body.files-ng #list-container list li .detail-thumbnail > .thumbnail {
-  border-radius: 16px;
+  border-radius: 50%;
 }
 
 body.files-ng .table-row-cell > * {

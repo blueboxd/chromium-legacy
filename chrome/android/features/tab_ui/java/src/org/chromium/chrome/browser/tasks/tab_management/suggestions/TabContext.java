@@ -199,14 +199,26 @@ public class TabContext {
             List<Tab> relatedTabs = tabModelFilter.getRelatedTabList(currentTab.getId());
 
             if (relatedTabs != null && relatedTabs.size() > 1) {
+                List<Tab> nonClosingTabs = getNonClosingTabs(relatedTabs);
                 existingGroups.add(new TabGroupInfo(
-                        ((TabImpl) currentTab).getRootId(), createTabInfoList(relatedTabs)));
+                        ((TabImpl) currentTab).getRootId(), createTabInfoList(nonClosingTabs)));
             } else {
+                if (currentTab.isClosing()) continue;
                 ungroupedTabs.add(TabInfo.createFromTab(currentTab));
             }
         }
 
         return new TabContext(ungroupedTabs, existingGroups);
+    }
+
+    private static List<Tab> getNonClosingTabs(List<Tab> tabs) {
+        List<Tab> nonClosingTabs = new ArrayList<>();
+        for (int i = 0; i < tabs.size(); i++) {
+            Tab tab = tabs.get(i);
+            if (tab.isClosing()) continue;
+            nonClosingTabs.add(tab);
+        }
+        return nonClosingTabs;
     }
 
     private static List<TabInfo> createTabInfoList(List<Tab> tabs) {

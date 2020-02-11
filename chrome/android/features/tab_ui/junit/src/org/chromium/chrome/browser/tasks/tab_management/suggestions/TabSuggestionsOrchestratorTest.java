@@ -91,6 +91,7 @@ public class TabSuggestionsOrchestratorTest {
                 .when(mTabModelFilterProvider)
                 .addTabModelFilterObserver(any(TabModelObserver.class));
         doReturn(mTabModelFilter).when(mTabModelFilterProvider).getCurrentTabModelFilter();
+        // TODO(1049917): According to TabModelFilter, getRelatedTabList returns non-null.
         doReturn(null).when(mTabModelFilter).getRelatedTabList(anyInt());
         RecordUserAction.setDisabledForTests(true);
         RecordHistogram.setDisabledForTests(true);

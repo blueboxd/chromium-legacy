@@ -43,7 +43,12 @@ public abstract class TabContextObserver {
             }
 
             @Override
-            public void didCloseTab(int tabId, boolean incognito) {
+            public void tabClosureUndone(Tab tab) {
+                onTabContextChanged(TabContextChangeReason.TAB_CLOSURE_UNDONE);
+            }
+
+            @Override
+            public void willCloseTab(Tab tab, boolean animate) {
                 onTabContextChanged(TabContextChangeReason.TAB_CLOSED);
             }
         };
@@ -62,6 +67,7 @@ public abstract class TabContextObserver {
         int TAB_ADDED = 1;
         int TAB_CLOSED = 2;
         int FIRST_VISUALLY_NON_EMPTY_PAINT = 3;
+        int TAB_CLOSURE_UNDONE = 4;
     }
 
     /**

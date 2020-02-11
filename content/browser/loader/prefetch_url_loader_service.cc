@@ -10,6 +10,7 @@
 #include "content/browser/blob_storage/chrome_blob_storage_context.h"
 #include "content/browser/frame_host/render_frame_host_impl.h"
 #include "content/browser/loader/prefetch_url_loader.h"
+#include "content/browser/loader/url_loader_throttles.h"
 #include "content/browser/url_loader_factory_getter.h"
 #include "content/browser/web_package/prefetched_signed_exchange_cache.h"
 #include "content/public/browser/content_browser_client.h"
@@ -316,7 +317,7 @@ std::vector<std::unique_ptr<blink::URLLoaderThrottle>>
 PrefetchURLLoaderService::CreateURLLoaderThrottles(
     const network::ResourceRequest& request,
     int frame_tree_node_id) {
-  return GetContentClient()->browser()->CreateURLLoaderThrottles(
+  return CreateContentBrowserURLLoaderThrottles(
       request, browser_context_,
       base::BindRepeating(&WebContents::FromFrameTreeNodeId,
                           frame_tree_node_id),

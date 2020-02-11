@@ -70,8 +70,10 @@ bool WebUsbServiceImpl::HasDevicePermission(
 }
 
 void WebUsbServiceImpl::GetDevices(GetDevicesCallback callback) {
-  if (!chooser_context_)
+  if (!chooser_context_) {
     std::move(callback).Run(std::vector<device::mojom::UsbDeviceInfoPtr>());
+    return;
+  }
 
   chooser_context_->GetDevices(base::BindOnce(&WebUsbServiceImpl::OnGetDevices,
                                               weak_factory_.GetWeakPtr(),
@@ -113,8 +115,10 @@ void WebUsbServiceImpl::GetDevice(
 void WebUsbServiceImpl::GetPermission(
     std::vector<device::mojom::UsbDeviceFilterPtr> device_filters,
     GetPermissionCallback callback) {
-  if (!usb_chooser_)
+  if (!usb_chooser_) {
     std::move(callback).Run(nullptr);
+    return;
+  }
 
   usb_chooser_->GetPermission(std::move(device_filters), std::move(callback));
 }

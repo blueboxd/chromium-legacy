@@ -3171,7 +3171,7 @@ void ChromeContentBrowserClient::OverrideWebkitPrefs(
         web_prefs->web_app_scope =
             web_app::WebAppProvider::Get(profile)
                 ->registrar()
-                .GetAppScope(browser->app_controller()->GetAppId())
+                .GetAppScopeInternal(browser->app_controller()->GetAppId())
                 .value();
       }
     }

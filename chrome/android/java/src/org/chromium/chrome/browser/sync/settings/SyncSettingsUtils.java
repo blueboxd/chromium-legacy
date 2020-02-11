@@ -6,10 +6,12 @@ package org.chromium.chrome.browser.sync.settings;
 import android.app.Activity;
 import android.content.Context;
 import android.content.Intent;
+import android.content.IntentSender;
 import android.content.res.Resources;
 import android.graphics.drawable.Drawable;
 import android.net.Uri;
 import android.provider.Browser;
+import android.support.v4.app.Fragment;
 import android.support.v7.preference.Preference;
 import android.support.v7.preference.PreferenceFragmentCompat;
 
@@ -18,6 +20,7 @@ import androidx.annotation.Nullable;
 import androidx.browser.customtabs.CustomTabsIntent;
 
 import org.chromium.base.BuildInfo;
+import org.chromium.base.Log;
 import org.chromium.base.metrics.RecordHistogram;
 import org.chromium.base.metrics.RecordUserAction;
 import org.chromium.chrome.R;
@@ -27,8 +30,10 @@ import org.chromium.chrome.browser.browserservices.BrowserServicesIntentDataProv
 import org.chromium.chrome.browser.customtabs.CustomTabIntentDataProvider;
 import org.chromium.chrome.browser.sync.GoogleServiceAuthError;
 import org.chromium.chrome.browser.sync.ProfileSyncService;
+import org.chromium.chrome.browser.sync.TrustedVaultClient;
 import org.chromium.chrome.browser.util.IntentUtils;
 import org.chromium.components.signin.ChromeSigninController;
+import org.chromium.components.signin.base.CoreAccountInfo;
 import org.chromium.components.sync.AndroidSyncSettings;
 import org.chromium.components.sync.StopSource;
 import org.chromium.ui.UiUtils;
@@ -42,6 +47,7 @@ import java.lang.annotation.RetentionPolicy;
 public class SyncSettingsUtils {
     private static final String DASHBOARD_URL = "https://www.google.com/settings/chrome/sync";
     private static final String MY_ACCOUNT_URL = "https://myaccount.google.com/smartlink/home";
+    private static final String TAG = "SyncSettingsUtils";
 
     @IntDef({SyncError.NO_ERROR, SyncError.ANDROID_SYNC_DISABLED, SyncError.AUTH_ERROR,
             SyncError.PASSPHRASE_REQUIRED, SyncError.CLIENT_OUT_OF_DATE,
@@ -306,5 +312,36 @@ public class SyncSettingsUtils {
         assert ChromeSigninController.get().isSignedIn();
         RecordUserAction.record("SyncPreferences_ManageGoogleAccountClicked");
         openCustomTabWithURL(activity, MY_ACCOUNT_URL);
+    }
+
+    /**
+     * Displays a UI that allows the user to reauthenticate and retrieve the sync encryption keys
+     * from a trusted vault.
+     *
+     * @param fragment Fragment to use when starting the dialog.
+     * @param accountInfo Account representing the user.
+     * @param requestCode Arbitrary request code that upon completion will be passed back via
+     *         Fragment.onActivityResult().
+     */
+    public static void openTrustedVaultKeyRetrievalDialog(
+            Fragment fragment, CoreAccountInfo accountInfo, int requestCode) {
+        TrustedVaultClient.get()
+                .createKeyRetrievalIntent(accountInfo)
+                .then(
+                        (pendingIntent)
+                                -> {
+                            try {
+                                fragment.startIntentSenderForResult(pendingIntent.getIntentSender(),
+                                        requestCode,
+                                        /* fillInIntent */ null, /* flagsMask */ 0,
+                                        /* flagsValues */ 0, /* extraFlags */ 0,
+                                        /* options */ null);
+                            } catch (IntentSender.SendIntentException exception) {
+                                Log.w(TAG, "Error sending key retrieval intent: ", exception);
+                            }
+                        },
+                        (exception) -> {
+                            Log.e(TAG, "Error opening key retrieval dialog: ", exception);
+                        });
     }
 }

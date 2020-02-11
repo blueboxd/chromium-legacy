@@ -122,18 +122,16 @@ void SessionStorageNamespaceImplMojo::Reset() {
 }
 
 void SessionStorageNamespaceImplMojo::Bind(
-    mojo::PendingReceiver<blink::mojom::SessionStorageNamespace> receiver,
-    ChildProcessSecurityPolicyImpl::Handle handle) {
+    mojo::PendingReceiver<blink::mojom::SessionStorageNamespace> receiver) {
   if (!IsPopulated()) {
     bind_waiting_on_population_ = true;
-    run_after_population_.push_back(base::BindOnce(
-        &SessionStorageNamespaceImplMojo::Bind, base::Unretained(this),
-        std::move(receiver), std::move(handle)));
+    run_after_population_.push_back(
+        base::BindOnce(&SessionStorageNamespaceImplMojo::Bind,
+                       base::Unretained(this), std::move(receiver)));
     return;
   }
   DCHECK(IsPopulated());
-  receivers_.Add(this, std::move(receiver),
-                 std::make_unique<SecurityPolicyHandle>(std::move(handle)));
+  receivers_.Add(this, std::move(receiver));
   bind_waiting_on_population_ = false;
 }
 
@@ -173,15 +171,24 @@ void SessionStorageNamespaceImplMojo::RemoveOriginData(
 }
 
 void SessionStorageNamespaceImplMojo::OpenArea(
+    ChildProcessSecurityPolicyImpl::Handle security_policy_handle,
     const url::Origin& origin,
+    mojo::ReportBadMessageCallback bad_message_callback,
     mojo::PendingReceiver<blink::mojom::StorageArea> receiver) {
-  DCHECK(IsPopulated());
-  DCHECK(!receivers_.empty());
-  const auto& security_policy_handle = receivers_.current_context();
-  if (!security_policy_handle->CanAccessDataForOrigin(origin)) {
-    receivers_.ReportBadMessage("Access denied for sessionStorage request");
+  if (!security_policy_handle.CanAccessDataForOrigin(origin)) {
+    std::move(bad_message_callback)
+        .Run("Access denied for sessionStorage request");
     return;
   }
+
+  if (!IsPopulated()) {
+    run_after_population_.push_back(base::BindOnce(
+        &SessionStorageNamespaceImplMojo::OpenArea, base::Unretained(this),
+        std::move(security_policy_handle), origin,
+        std::move(bad_message_callback), std::move(receiver)));
+    return;
+  }
+
   auto it = origin_areas_.find(origin);
   if (it == origin_areas_.end()) {
     // The area may have been purged due to lack of bindings, so check the
@@ -273,6 +280,11 @@ void SessionStorageNamespaceImplMojo::CloneAllNamespacesWaitingForClone(
     }
   }
   child_namespaces_waiting_for_clone_call_.clear();
+}
+
+void SessionStorageNamespaceImplMojo::FlushAreasForTesting() {
+  for (auto& area : origin_areas_)
+    area.second->FlushForTesting();
 }
 
 void SessionStorageNamespaceImplMojo::FlushOriginForTesting(

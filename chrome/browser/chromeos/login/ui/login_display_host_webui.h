@@ -14,6 +14,7 @@
 #include "ash/public/cpp/multi_user_window_manager_observer.h"
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
+#include "base/trace_event/trace_event.h"
 #include "chrome/browser/chromeos/login/existing_user_controller.h"
 #include "chrome/browser/chromeos/login/oobe_configuration.h"
 #include "chrome/browser/chromeos/login/signin_screen_controller.h"
@@ -95,7 +96,7 @@ class LoginDisplayHostWebUI : public LoginDisplayHostCommon,
 
   // Trace id for ShowLoginWebUI event (since there exists at most one login
   // WebUI at a time).
-  static const int kShowLoginWebUIid;
+  static const trace_event_internal::TraceID kShowLoginWebUIid;
 
   views::Widget* login_window_for_test() { return login_window_; }
 

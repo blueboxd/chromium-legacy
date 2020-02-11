@@ -253,6 +253,7 @@ void ContentSettingBubbleContents::ListItemContainer::AddItem(
         &ContentSettingBubbleContents::LinkClicked, base::Unretained(parent_)));
     item_contents = std::move(link);
   } else {
+    item_contents = std::make_unique<views::View>();
     item_contents->SetBorder(
         views::CreateEmptyBorder(kTitleDescriptionListItemInset));
     item_contents->SetLayoutManager(std::make_unique<views::BoxLayout>(

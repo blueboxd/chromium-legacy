@@ -31,11 +31,14 @@ class MockStoragePartitionService
   void OpenLocalStorage(
       const scoped_refptr<const SecurityOrigin>& origin,
       mojo::PendingReceiver<mojom::blink::StorageArea> receiver) override {}
-
-  void OpenSessionStorage(
+  void BindSessionStorageNamespace(
       const String& namespace_id,
       mojo::PendingReceiver<mojom::blink::SessionStorageNamespace> receiver)
-      override {
+      override {}
+  void BindSessionStorageArea(
+      const scoped_refptr<const SecurityOrigin>& origin,
+      const String& namespace_id,
+      mojo::PendingReceiver<mojom::blink::StorageArea> receiver) override {
     session_storage_opens++;
   }
 
@@ -176,7 +179,7 @@ TEST(StorageControllerTest, CacheLimitSessionStorage) {
         loop.QuitClosure());
     loop.Run();
   }
-  EXPECT_EQ(opens, 2);
+  EXPECT_EQ(opens, 3);
 }
 
 }  // namespace blink

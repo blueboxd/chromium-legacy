@@ -30,7 +30,6 @@ class Tracker;
 
 namespace ui {
 class MenuModel;
-class ThemeProvider;
 }  // namespace ui
 
 namespace views {
@@ -96,7 +95,7 @@ class WebUITabStripContainerView : public TabStripUIEmbedder,
       gfx::Point point,
       std::unique_ptr<ui::MenuModel> menu_model) override;
   TabStripUILayout GetLayout() override;
-  const ui::ThemeProvider* GetThemeProvider() override;
+  SkColor GetColor(int id) const override;
 
   // views::View:
   void AddedToWidget() override;

@@ -106,7 +106,7 @@ class DOMAIN_RELIABILITY_EXPORT DomainReliabilityMonitor
   // as an always-true filter, indicating complete deletion.
   void ClearBrowsingData(
       DomainReliabilityClearMode mode,
-      const base::Callback<bool(const GURL&)>& origin_filter);
+      const base::RepeatingCallback<bool(const GURL&)>& origin_filter);
 
   // Gets a Value containing data that can be formatted into a web page for
   // debugging purposes.

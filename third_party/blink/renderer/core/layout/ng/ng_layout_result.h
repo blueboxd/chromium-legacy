@@ -173,6 +173,8 @@ class CORE_EXPORT NGLayoutResult : public RefCounted<NGLayoutResult> {
 
   // Return whether this result is single-use only (true), or if it is allowed
   // to be involved in cache hits in future layout passes (false).
+  // For example, this happens when a block is fragmented, since we don't yet
+  // support caching of block-fragmented results.
   bool IsSingleUse() const {
     return HasRareData() && rare_data_->is_single_use;
   }

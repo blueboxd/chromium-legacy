@@ -112,6 +112,8 @@ public class SyncAndServicesSettings extends PreferenceFragmentCompat
     @VisibleForTesting
     public static final String PREF_AUTOFILL_ASSISTANT = "autofill_assistant";
 
+    private static final int REQUEST_CODE_TRUSTED_VAULT_KEY_RETRIEVAL = 1;
+
     private final ProfileSyncService mProfileSyncService = ProfileSyncService.get();
     private final PrefServiceBridge mPrefServiceBridge = PrefServiceBridge.getInstance();
     private final PrivacyPreferencesManager mPrivacyPrefManager =
@@ -521,8 +523,8 @@ public class SyncAndServicesSettings extends PreferenceFragmentCompat
             CoreAccountInfo primaryAccountInfo =
                     IdentityServicesProvider.get().getIdentityManager().getPrimaryAccountInfo();
             if (primaryAccountInfo != null) {
-                TrustedVaultClient.get().displayKeyRetrievalDialog(
-                        getActivity(), primaryAccountInfo);
+                SyncSettingsUtils.openTrustedVaultKeyRetrievalDialog(
+                        this, primaryAccountInfo, REQUEST_CODE_TRUSTED_VAULT_KEY_RETRIEVAL);
             }
             return;
         }
@@ -741,5 +743,22 @@ public class SyncAndServicesSettings extends PreferenceFragmentCompat
     public void setAutofillAssistantSwitchValue(boolean newValue) {
         mSharedPreferencesManager.writeBoolean(
                 ChromePreferenceKeys.AUTOFILL_ASSISTANT_ENABLED, newValue);
+    }
+
+    /**
+     * Called upon completion of an activity started by a previous call to startActivityForResult()
+     * via SyncSettingsUtils.openTrustedVaultKeyRetrievalDialog().
+     * @param requestCode Request code of the requested intent.
+     * @param resultCode Result code of the requested intent.
+     * @param data The data returned by the intent.
+     */
+    @Override
+    public void onActivityResult(int requestCode, int resultCode, Intent data) {
+        // Upon key retrieval completion, the keys in TrustedVaultClient could have changed. This is
+        // done even if the user cancelled the flow (i.e. resultCode != RESULT_OK) because it's
+        // harmless to issue a redundant notifyKeysChanged().
+        if (requestCode == REQUEST_CODE_TRUSTED_VAULT_KEY_RETRIEVAL) {
+            TrustedVaultClient.get().notifyKeysChanged();
+        }
     }
 }

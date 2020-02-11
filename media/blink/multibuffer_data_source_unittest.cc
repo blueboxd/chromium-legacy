@@ -184,8 +184,8 @@ class MockMultibufferDataSource : public MultibufferDataSource {
             std::move(url_data),
             &media_log_,
             host,
-            base::Bind(&MockMultibufferDataSource::set_downloading,
-                       base::Unretained(this))),
+            base::BindRepeating(&MockMultibufferDataSource::set_downloading,
+                                base::Unretained(this))),
         downloading_(false) {}
 
   bool downloading() { return downloading_; }

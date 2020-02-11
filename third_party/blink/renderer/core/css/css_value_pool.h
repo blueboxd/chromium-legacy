@@ -38,7 +38,6 @@
 #include "third_party/blink/renderer/core/css/css_initial_value.h"
 #include "third_party/blink/renderer/core/css/css_invalid_variable_value.h"
 #include "third_party/blink/renderer/core/css/css_numeric_literal_value.h"
-#include "third_party/blink/renderer/core/css/css_pending_interpolation_value.h"
 #include "third_party/blink/renderer/core/css/css_property_names.h"
 #include "third_party/blink/renderer/core/css/css_unset_value.h"
 #include "third_party/blink/renderer/core/css/css_value_list.h"
@@ -56,7 +55,6 @@ class CORE_EXPORT CSSValuePool final : public GarbageCollected<CSSValuePool> {
   static const int kMaximumCacheableIntegerValue = 255;
   using CSSColorValue = cssvalue::CSSColorValue;
   using CSSUnsetValue = cssvalue::CSSUnsetValue;
-  using CSSPendingInterpolationValue = cssvalue::CSSPendingInterpolationValue;
   using ColorValueCache = HeapHashMap<unsigned, Member<CSSColorValue>>;
   static const unsigned kMaximumColorCacheSize = 512;
   using FontFaceValueCache =
@@ -75,12 +73,6 @@ class CORE_EXPORT CSSValuePool final : public GarbageCollected<CSSValuePool> {
   CSSUnsetValue* UnsetValue() { return unset_value_; }
   CSSInvalidVariableValue* InvalidVariableValue() {
     return invalid_variable_value_;
-  }
-  CSSPendingInterpolationValue* PendingInterpolationValue(
-      CSSPendingInterpolationValue::Type type) {
-    DCHECK_GE(static_cast<size_t>(type), 0u);
-    DCHECK_LE(static_cast<size_t>(type), 1u);
-    return pending_interpolation_values_[static_cast<size_t>(type)];
   }
 
   // Vector caches.
@@ -143,7 +135,6 @@ class CORE_EXPORT CSSValuePool final : public GarbageCollected<CSSValuePool> {
   Member<CSSInitialValue> initial_value_;
   Member<CSSUnsetValue> unset_value_;
   Member<CSSInvalidVariableValue> invalid_variable_value_;
-  Member<CSSPendingInterpolationValue> pending_interpolation_values_[2];
   Member<CSSColorValue> color_transparent_;
   Member<CSSColorValue> color_white_;
   Member<CSSColorValue> color_black_;

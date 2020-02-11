@@ -158,8 +158,7 @@ class CONTENT_EXPORT SessionStorageNamespaceImplMojo final
   // |SetWaitingForClonePopulation|. For the later case, |PopulateAsClone| must
   // eventually be called before the PendingReceiver can be bound.
   void Bind(
-      mojo::PendingReceiver<blink::mojom::SessionStorageNamespace> receiver,
-      ChildProcessSecurityPolicyImpl::Handle handle);
+      mojo::PendingReceiver<blink::mojom::SessionStorageNamespace> receiver);
 
   bool IsBound() const {
     return !receivers_.empty() || bind_waiting_on_population_;
@@ -173,16 +172,14 @@ class CONTENT_EXPORT SessionStorageNamespaceImplMojo final
   // is either populated or waiting for clone population.
   void RemoveOriginData(const url::Origin& origin, base::OnceClosure callback);
 
-  // SessionStorageNamespace:
   // Connects the given database mojo request to the data map for the given
-  // origin. Before connection, it checks to make sure the |process_id| given to
-  // the |Bind| method can access the given origin.
-  void OpenArea(
-      const url::Origin& origin,
-      mojo::PendingReceiver<blink::mojom::StorageArea> receiver) override;
+  // origin.
+  void OpenArea(ChildProcessSecurityPolicyImpl::Handle security_policy_handle,
+                const url::Origin& origin,
+                mojo::ReportBadMessageCallback bad_message_callback,
+                mojo::PendingReceiver<blink::mojom::StorageArea> receiver);
 
-  // Simply calls the |add_namespace_callback_| callback with this namespace's
-  // data.
+  // SessionStorageNamespace:
   void Clone(const std::string& clone_to_namespace) override;
 
   // Clones all namespaces that are waiting to be cloned from this namespace.
@@ -198,6 +195,7 @@ class CONTENT_EXPORT SessionStorageNamespaceImplMojo final
                      std::unique_ptr<SessionStorageNamespaceImplMojo>>&
           namespaces_map);
 
+  void FlushAreasForTesting();
   void FlushOriginForTesting(const url::Origin& origin);
 
  private:
@@ -226,11 +224,7 @@ class CONTENT_EXPORT SessionStorageNamespaceImplMojo final
   base::flat_set<std::string> child_namespaces_waiting_for_clone_call_;
 
   OriginAreas origin_areas_;
-
-  using SecurityPolicyHandle = ChildProcessSecurityPolicyImpl::Handle;
-  mojo::ReceiverSet<blink::mojom::SessionStorageNamespace,
-                    std::unique_ptr<SecurityPolicyHandle>>
-      receivers_;
+  mojo::ReceiverSet<blink::mojom::SessionStorageNamespace> receivers_;
 };
 
 }  // namespace content

@@ -11,15 +11,9 @@ js_type_check("closure_compile") {
                     "jscomp_error=strictCheckTypes",
                     "jscomp_error=reportUnknownTypes",
                     "language_in=ECMASCRIPT_2018",
-
-                    # TODO(crbug/1048973): Remove these when the mojo bindings
-                    # js is updated to pass a closure compile check.
-                    "hide_warnings_for=mojo/public/js/",
-                    "hide_warnings_for=chromeos/components/media_app_ui/media_app_ui.mojom-lite-for-compile.js",
                   ]
   deps = [
     ":launch",
-    ":mojo_api_bootstrap",
     ":receiver",
   ]
 }
@@ -33,10 +27,4 @@ js_library("launch") {
 
 js_library("receiver") {
   externs_list = [ "media_app.externs.js" ]
-}
-
-js_library("mojo_api_bootstrap") {
-  deps = [
-    "//chromeos/components/media_app_ui:mojo_bindings_js_library_for_compile",
-  ]
 }

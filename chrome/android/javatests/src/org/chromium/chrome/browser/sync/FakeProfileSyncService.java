@@ -18,6 +18,7 @@ public class FakeProfileSyncService extends ProfileSyncService {
     private boolean mPassphraseRequiredForPreferredDataTypes;
     private boolean mTrustedVaultKeyRequired;
     private boolean mTrustedVaultKeyRequiredForPreferredDataTypes;
+    private boolean mEncryptEverythingEnabled;
     private Set<Integer> mChosenTypes = new HashSet<>();
     private boolean mCanSyncFeatureStart;
 
@@ -86,6 +87,16 @@ public class FakeProfileSyncService extends ProfileSyncService {
             boolean trustedVaultKeyRequiredForPreferredDataTypes) {
         mTrustedVaultKeyRequiredForPreferredDataTypes =
                 trustedVaultKeyRequiredForPreferredDataTypes;
+    }
+
+    @Override
+    public boolean isEncryptEverythingEnabled() {
+        return mEncryptEverythingEnabled;
+    }
+
+    @Override
+    public void enableEncryptEverything() {
+        mEncryptEverythingEnabled = true;
     }
 
     @Override

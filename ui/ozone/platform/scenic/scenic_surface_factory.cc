@@ -111,7 +111,6 @@ GLOzone* ScenicSurfaceFactory::GetGLOzone(gl::GLImplementation implementation) {
 std::unique_ptr<PlatformWindowSurface>
 ScenicSurfaceFactory::CreatePlatformWindowSurface(
     gfx::AcceleratedWidget window) {
-  DCHECK(gpu_host_);
   auto surface =
       std::make_unique<ScenicSurface>(this, window, CreateScenicSession());
   main_thread_task_runner_->PostTask(
@@ -158,10 +157,6 @@ std::unique_ptr<gpu::VulkanImplementation>
 ScenicSurfaceFactory::CreateVulkanImplementation(
     bool allow_protected_memory,
     bool enforce_protected_memory) {
-  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
-  if (!gpu_host_)
-    LOG(FATAL) << "Vulkan implementation requires InitializeForGPU";
-
   return std::make_unique<ui::VulkanImplementationScenic>(
       this, &sysmem_buffer_manager_, allow_protected_memory,
       enforce_protected_memory);

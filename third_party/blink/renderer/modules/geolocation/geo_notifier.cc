@@ -4,12 +4,12 @@
 
 #include "third_party/blink/renderer/modules/geolocation/geo_notifier.h"
 
+#include "base/metrics/histogram_functions.h"
 #include "third_party/blink/public/platform/task_type.h"
 #include "third_party/blink/renderer/bindings/modules/v8/v8_position_options.h"
 #include "third_party/blink/renderer/core/dom/document.h"
 #include "third_party/blink/renderer/modules/geolocation/geolocation.h"
 #include "third_party/blink/renderer/modules/geolocation/geolocation_position_error.h"
-#include "third_party/blink/renderer/platform/instrumentation/histogram.h"
 #include "third_party/blink/renderer/platform/wtf/assertions.h"
 
 namespace blink {
@@ -30,10 +30,11 @@ GeoNotifier::GeoNotifier(Geolocation* geolocation,
   DCHECK(geolocation_);
   DCHECK(success_callback_);
 
-  DEFINE_STATIC_LOCAL(CustomCountHistogram, timeout_histogram,
-                      ("Geolocation.Timeout", 0,
-                       1000 * 60 * 10 /* 10 minute max */, 20 /* buckets */));
-  timeout_histogram.Count(options_->timeout());
+  base::UmaHistogramCustomTimes(
+      "Geolocation.Timeout",
+      base::TimeDelta::FromMilliseconds(options_->timeout()),
+      base::TimeDelta::FromMilliseconds(1), base::TimeDelta::FromMinutes(10),
+      /* buckets = */ 20);
 }
 
 void GeoNotifier::Trace(blink::Visitor* visitor) {
@@ -136,10 +137,11 @@ void GeoNotifier::TimerFired(TimerBase*) {
                      GeolocationPositionError::kTimeout, "Timeout expired"));
   }
 
-  DEFINE_STATIC_LOCAL(CustomCountHistogram, timeout_expired_histogram,
-                      ("Geolocation.TimeoutExpired", 0,
-                       1000 * 60 * 10 /* 10 minute max */, 20 /* buckets */));
-  timeout_expired_histogram.Count(options_->timeout());
+  base::UmaHistogramCustomTimes(
+      "Geolocation.TimeoutExpired",
+      base::TimeDelta::FromMilliseconds(options_->timeout()),
+      base::TimeDelta::FromMilliseconds(1), base::TimeDelta::FromMinutes(10),
+      /* buckets = */ 20);
 
   geolocation_->RequestTimedOut(this);
 }

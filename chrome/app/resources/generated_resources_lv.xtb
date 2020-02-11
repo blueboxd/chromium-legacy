@@ -492,6 +492,7 @@
 <translation id="1670399744444387456">Pamata</translation>
 <translation id="167160931442925455">Visskaļāk</translation>
 <translation id="1673137583248014546">Vietne <ph name="URL" /> vēlas skatīt jūsu drošības atslēgas ražotāju un modeli.</translation>
+<translation id="1677472565718498478">Atlikušais laiks: <ph name="TIME" /></translation>
 <translation id="1679068421605151609">Izstrādātāja rīki</translation>
 <translation id="1679806121152819234">Plugin VM</translation>
 <translation id="1679810534535368772">Vai tiešām vēlaties iziet?</translation>
@@ -1787,6 +1788,7 @@ Servera ziņojums: <ph name="SERVER_MSG" /></translation>
 <translation id="3462413494201477527">Vai atcelt konta iestatīšanu?</translation>
 <translation id="3464012987031883895">Vietne piekļūst jūsu audio ievadei</translation>
 <translation id="346431825526753">Šis ir bērniem paredzēts konts, ko pārvalda <ph name="CUSTODIAN_EMAIL" />.</translation>
+<translation id="3468298837301810372">Iezīme</translation>
 <translation id="3468999815377931311">Android tālrunis</translation>
 <translation id="3470442499439619530">Noņemt šo lietotāju</translation>
 <translation id="3471876058939596279">HDMI un USB Type-C pieslēgvietas nevar izmantot vienlaikus video rādīšanai. Izmantojiet citu video pieslēgvietu.</translation>
@@ -3962,7 +3964,6 @@ Vai vēlaties palaist rīku <ph name="CONTROL_PANEL_APPLET_NAME" />?</translatio
 <translation id="6545867563032584178">Mikrofons ir izslēgts Mac sistēmas preferencēs</translation>
 <translation id="6547354035488017500">Atbrīvojiet vismaz 512 MB vietas ierīcē, pretējā gadījumā tā nereaģēs. Lai atbrīvotu vietu, izdzēsiet failus no ierīces krātuves.</translation>
 <translation id="6549639163247690448"><ph name="DOMAIN" /> pieprasa, lai jūs izveidotu savienojumu ar Wi-Fi tīklu tūlīt un lejupielādētu atjauninājumu. Atjauninājums tiks lejupielādēts automātiski, kad izveidosiet savienojumu ar internetu.</translation>
-<translation id="6549966385318247177">Šis paplašinājums ir bloķēts, jo tajā ir pieaugušajiem paredzēts saturs.</translation>
 <translation id="6550675742724504774">Opcijas</translation>
 <translation id="6551508934388063976">Komanda nav pieejama. Nospiediet taustiņu kombināciju Control-N, lai atvērtu jaunu logu.</translation>
 <translation id="6551612971599078809">Vietnē tiek izmantota USB ierīce</translation>

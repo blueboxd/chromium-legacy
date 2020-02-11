@@ -724,9 +724,9 @@
 <translation id="2170233653554726857">启用WPAD优化</translation>
 <translation id="2171245625445050634">在 M82 中，我们移除了此政策，请改用 MinimumChromeVersionEnforced。
 
-      配置允许使用的最低 <ph name="PRODUCT_NAME" /> 版本的相关要求。低于指定版本的版本将被视为已过时，因此只有在用户更新操作系统后，设备才会允许其登录。
+      配置允许使用的最低 <ph name="PRODUCT_NAME" /> 版本要求。低于要求的版本将被视为已过时版本，因此只有在用户更新操作系统后，才可以登录设备。
 
-      如果当前版本在用户会话期间变为过时，系统会强制用户退出登录。
+      如果当前版本在用户使用期间变为过时版本，系统会强制用户退出登录。
 
       如果此政策未设置，系统将不会应用任何限制，并且无论使用的是哪个 <ph name="PRODUCT_NAME" /> 版本，用户都能登录。
 
@@ -2516,7 +2516,7 @@
 <translation id="4986560318567565414">控制用于从替代浏览器切换至 Chrome 的路径。</translation>
 <translation id="4988291787868618635">闲置延迟时间已过时执行的操作</translation>
 <translation id="500149597848135831">启用所有变体</translation>
-<translation id="5023555740504506178">如果此政策已启用或未配置（默认），网页可以使用屏幕共享 API（例如 getDisplayMedia() 或 Desktop Capture Extension API）提示用户选择要截取的标签页、窗口或屏幕内容。
+<translation id="5023555740504506178">如果此政策已启用或未配置（默认），网页可以使用屏幕共享 API（例如 getDisplayMedia() 或屏幕内容截取扩展程序的 API）提示用户选择要截取的标签页、窗口或桌面。
 
       如果此政策已停用，对屏幕共享 API 的所有调用都会失败并会返回错误。</translation>
 <translation id="5032164758660626397">阻止用户传输大型文件</translation>
@@ -2661,25 +2661,25 @@
 
           此政策仅适用于已加入 <ph name="MS_AD_NAME" /> 网域的 Windows 实例，或者已注册设备管理服务的 Windows 10 Pro 或 Enterprise 实例。</translation>
 <translation id="5208240613060747912">可让您设置网址格式的列表，这些网址格式用于指定不允许显示通知的网站。在未设置此政策的情况下，如果设置了“DefaultNotificationsSetting”政策，那么将对该政策中的所有网站使用全局默认值，否则将对用户个人配置中的所有网站使用全局默认值。</translation>
-<translation id="5210980743015047124">配置允许使用的最低 <ph name="PRODUCT_NAME" /> 版本的相关要求。
+<translation id="5210980743015047124">配置允许使用的最低 <ph name="PRODUCT_NAME" /> 版本要求。
 
       当此政策设为非空列表时：
       如果所有条目的“chrome_version”都不高于设备中的当前版本，系统将不会应用任何限制，而且已有的限制会被撤消。
-      如果有至少 1 个条目的“chrome_version”高于当前版本，系统会选择就版本而言与当前版本最接近且期限最紧急的那个条目。
+      如果有至少 1 个条目的“chrome_version”高于当前版本，系统会选择其版本与当前版本最接近的那个条目。
       如果存在冲突，系统会优先考虑“warning_period”或“eol_warning_period”期限较为紧急的那个条目，并会使用该条目应用此政策。
 
-      如果当前版本在用户会话期间变为过时，系统会显示屏幕通知，以要求用户在通知中显示的“warning_period”期限内更新设备。
-      “warning_period”期限是自此政策被应用时起算的。
+      如果当前版本在用户使用期间变为过时版本，系统会显示屏幕通知，以要求用户在通知中显示的“warning_period”期限内更新设备。
+      “warning_period”期限自此政策被应用时起算。
       如果设备在“warning_period”期限内一直未更新，用户会被强制退出系统。
       如果当前版本在用户登录时已过时，并且“warning_period”期限已过，则用户必须更新设备才能登录。
 
-      如果在用户会话期间设备的生命周期结束，系统会显示屏幕通知，以提醒会在“eol_warning_period”期限过后将用户退出登录。
+      如果设备的生命周期在用户使用期间结束，系统会显示屏幕通知，以提醒用户会在“eol_warning_period”期限过后退出登录。
       如果在用户登录时设备的生命周期已结束，并且“eol_warning_period”期限已过，则任何用户都无法登录设备。
 
       如果此政策未设置或设为空，系统将不会应用任何限制，已有的限制会被撤消，并且无论使用的是哪个 <ph name="PRODUCT_NAME" /> 版本，用户都能登录。
 
       此处的“chrome_version”既可以是确切版本（如“61.0.3163.120”），也可以是版本前缀（如“61.0”）。
-      “warning_period”和“eol_warning_period”是以天数为单位指定的可选值。它们的默认值为 0 天，表示刻不容缓。 </translation>
+      “warning_period”和“eol_warning_period”是以天数为单位指定的可选值。这两个期限的默认值为 0 天，表示没有等待期。 </translation>
 <translation id="5212118847531454979">您可以设置一个时间段（以毫秒为单位），在该时间段内，系统会通知用户必须重新启动 <ph name="PRODUCT_NAME" /> 或重启 <ph name="PRODUCT_OS_NAME" />设备以安装更新。
 
       在该时间段内，系统会反复通知用户需要更新。对于 <ph name="PRODUCT_OS_NAME" />设备，系统会根据 <ph name="RELAUNCH_HEADS_UP_PERIOD_POLICY_NAME" /> 政策在系统任务栏中显示重启通知。对于 <ph name="PRODUCT_NAME" /> 浏览器，在通知时间段过去三分之一后，应用菜单会发生变化，示意需要重启浏览器。此通知会在通知时间段过去三分之二后改变颜色，并会在时间段结束后再次改变颜色。由 <ph name="RELAUNCH_NOTIFICATION_POLICY_NAME" /> 政策引发的其他通知也会遵循这一规律。
@@ -2757,7 +2757,7 @@
        如果此政策设为 true 或未设置，系统不仅会自动将音频和视频混合内容升级至 HTTPS（即：如果相应资源不是通过 HTTPS 提供的，系统便会将相关网址重写为 HTTPS，且不提供回退机制），还会在图片混合内容的网址栏中显示“不安全”警告。
        如果此政策设为 false，系统将不会自动升级音频和视频内容，也不会为图片内容显示任何警告。
        此政策不会影响除音频、视频和图片之外的其他类型混合内容。
-       从 <ph name="PRODUCT_NAME" /> 84 开始，此政策将不再产生任何效力。</translation>
+       从 <ph name="PRODUCT_NAME" /> 84 版本开始，此政策将不再产生任何效力。</translation>
 <translation id="5278367296164377827">这项企业政策只是短期的适应性措施，将在 M82 中移除。
 
       为配合 M80 稳定版的逐步推出，Chrome 的默认引荐来源网址政策正从其当前值 no-referrer-when-downgrade 强化为更安全的 strict-origin-when-cross-origin。
@@ -2949,13 +2949,13 @@
 
       请注意，如果平台支持政策通知，刷新延迟时间将被设为 24 小时（忽略所有默认值和此政策的值），这是因为只要政策发生变化，政策通知应该会自动强制进行刷新，所以没有必要更频繁地进行刷新。</translation>
 <translation id="5530347722229944744">拦截可能有危险的下载内容</translation>
-<translation id="5534198977061777727">此政策旨在控制 <ph name="PRODUCT_NAME" /> 会如何处理下述类型的数据：由用户上传、下载、拖放或从剪贴板粘贴，且文件类型不受 DLP 或恶意软件扫描支持。
+<translation id="5534198977061777727">控制 <ph name="PRODUCT_NAME" /> 在文件类型不支持数据泄露防护或恶意软件扫描时，会如何处理由用户上传、下载、拖放或从剪贴板粘贴的数据。
 
-      如果此政策未设置，或设为“禁止不受支持的文件类型 - 无”(0)，则 <ph name="PRODUCT_NAME" /> 会允许上传或下载文件类型不受 DLP 或恶意软件扫描支持的数据。
+      如果此政策未设置，或设为“禁止不受支持的文件类型 - 无”(0)，则 <ph name="PRODUCT_NAME" /> 会允许上传或下载文件类型不支持数据泄露防护或恶意软件扫描的数据。
 
-      如果此政策设为“禁止不受支持的文件类型 - 下载内容”(1)，并且用户尝试通过 <ph name="DOMAINS_TO_CHECK_COMPLIANCE_OF_DOWNLOADED_CONTENT_POLICTY_NAME" /> 政策中的网址下载文件类型不受 DLP 或恶意软件扫描支持的文件，则 <ph name="PRODUCT_NAME" /> 会禁止下载相应数据。
+      如果此政策设为“禁止不受支持的文件类型 - 下载内容”(1)，当用户尝试通过 <ph name="DOMAINS_TO_CHECK_COMPLIANCE_OF_DOWNLOADED_CONTENT_POLICTY_NAME" /> 政策中的网址下载文件且文件类型不支持数据泄露防护或恶意软件扫描时，则 <ph name="PRODUCT_NAME" /> 会禁止下载相应数据。
 
-      如果此政策设为“禁止不受支持的文件类型 - 上传内容”(2)，并且用户尝试将文件类型不受 DLP 或恶意软件扫描支持的文件上传至 <ph name="DOMAINS_TO_NOT_CHECK_COMPLIANCE_OF_UPLOADED_CONTENT_POLICY_NAME" /> 中未包含的网域，则 <ph name="PRODUCT_NAME" /> 会禁止上传相应文件、从剪贴板粘贴相应数据或拖放相应数据。
+      如果此政策设为“禁止不受支持的文件类型 - 上传内容”(2)，当用户尝试将文件上传至 <ph name="DOMAINS_TO_NOT_CHECK_COMPLIANCE_OF_UPLOADED_CONTENT_POLICY_NAME" /> 中未包含的网域且文件类型不支持数据泄露防护或恶意软件扫描时，则 <ph name="PRODUCT_NAME" /> 会禁止上传相应文件、从剪贴板粘贴的相应数据或拖放的相应数据。
 
       如果此政策设为“禁止不受支持的文件类型 - 上传内容和下载内容”(3)，<ph name="PRODUCT_NAME" /> 会根据“禁止不受支持的文件类型 - 上传内容”和“禁止不受支持的文件类型 - 下载内容”所述的规则操作。
       </translation>
@@ -3384,7 +3384,7 @@
 <translation id="6315673513957120120">当用户访问存在 SSL 错误的网站时，Chrome 将显示警告页面。默认情况下，或当此政策设为 true 时，用户可以在点击这些警告页面后继续操作。
       如果将此政策设为 false，用户将无法通过点击任何警告页面继续操作。</translation>
 <translation id="6319198883324703402">设置首次用户重新启动通知的时间</translation>
-<translation id="6342187235303612558">禁止用户上传或下载目前不受 DLP 或恶意软件扫描支持的文件。</translation>
+<translation id="6342187235303612558">禁止用户上传或下载目前不支持数据泄露防护或恶意软件扫描的文件。</translation>
 <translation id="6352543686437322588">要在延迟过后自动登录的设备本地帐号。
 
       如果设置了此政策，则只要用户未与登录屏幕互动的持续时间达到了指定的时长，系统就会自动登录指定的自助服务终端。必须已配置设备本地帐号（请参阅 |DeviceLocalAccounts|）。

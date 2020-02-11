@@ -490,6 +490,7 @@ I-<ph name="EXTENSION_NAME" /></translation>
 <translation id="1670399744444387456">Isisekelo</translation>
 <translation id="167160931442925455">Nomsindo kakhulu</translation>
 <translation id="1673137583248014546"><ph name="URL" /> ifuna ukubona ukwenziwa nemodeli yokhiye wakho wokuqinisekisa ubunikazi</translation>
+<translation id="1677472565718498478"><ph name="TIME" /> esele</translation>
 <translation id="1679068421605151609">Amathuluzi wonjiniyela</translation>
 <translation id="1679806121152819234">I-Plugin VM</translation>
 <translation id="1679810534535368772">Ingabe uqinisekile ukuthi ufuna ukuphuma?</translation>
@@ -3962,7 +3963,6 @@ Qiniseka ukuthi awuvezi noma yiluphi ulwazi olubucayi.</translation>
 <translation id="6545867563032584178">Imakrofoni ivaliwe kuzintandokazi zesistimu ye-Mac</translation>
 <translation id="6547354035488017500">Khulula okungenani u-512 MB wesikhala noma idivayisi yakho ngeke isaphendula. Ukuze iskhala, susa amafayela kusuka isitoreji kudivayisi.</translation>
 <translation id="6549639163247690448">I-<ph name="DOMAIN" /> idinga ukuba uxhume ku-Wi-Fi manje futhi ulande isibuyekezi. Isibuyekezo sizolandeka ngokuzenzakalelayo lapho uxhuma ku-inthanethi.</translation>
-<translation id="6549966385318247177">Lokhu kuvinjelwe ngenxa yokuqukethwe okukhulu.</translation>
 <translation id="6550675742724504774">Izinketho</translation>
 <translation id="6551508934388063976">Umyalo awutholakali. Cindezela ku-control-N ukuze uvule iwindi elisha.</translation>
 <translation id="6551612971599078809">Isayithi elisebenzisa i-USB</translation>

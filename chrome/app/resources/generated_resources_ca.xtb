@@ -153,7 +153,7 @@
 <translation id="1201402288615127009">Següent</translation>
 <translation id="1202596434010270079">L'aplicació Quiosc s'ha actualitzat. Extraieu la memòria USB.</translation>
 <translation id="120368089816228251">Nota musical</translation>
-<translation id="1203942045716040624">Treballador compartit: <ph name="SCRIPT_URL" /></translation>
+<translation id="1203942045716040624">Shared Worker: <ph name="SCRIPT_URL" /></translation>
 <translation id="1205489148908752564">Llegir i canviar els usuaris de la llista blanca</translation>
 <translation id="1206407435587370571">Explora el teu Chromebook</translation>
 <translation id="1209796539517632982">Servidors de noms automàtics</translation>
@@ -492,6 +492,7 @@
 <translation id="1670399744444387456">Configuració bàsica</translation>
 <translation id="167160931442925455">Volum màxim</translation>
 <translation id="1673137583248014546"><ph name="URL" /> vol veure la marca i el model de la teva clau de seguretat</translation>
+<translation id="1677472565718498478">Temps restant: <ph name="TIME" /></translation>
 <translation id="1679068421605151609">Eines per a desenvolupadors</translation>
 <translation id="1679806121152819234">Plugin VM</translation>
 <translation id="1679810534535368772">Confirmes que vols sortir?</translation>
@@ -1784,6 +1785,7 @@ Descripció: <ph name="LINUX_DESCRIPTION" /></translation>
 <translation id="3462413494201477527">Voleu cancel·lar la configuració del compte?</translation>
 <translation id="3464012987031883895">Un lloc web està accedint a l'entrada d'àudio</translation>
 <translation id="346431825526753">Aquest és un compte infantil gestionat per <ph name="CUSTODIAN_EMAIL" />.</translation>
+<translation id="3468298837301810372">Etiqueta</translation>
 <translation id="3468999815377931311">Telèfon Android</translation>
 <translation id="3470442499439619530">Suprimeix aquest usuari</translation>
 <translation id="3471876058939596279">Els ports HDMI i USB tipus C no es poden utilitzar per a vídeo simultàniament. Utilitza un altre port de vídeo.</translation>
@@ -3961,7 +3963,6 @@ Assegureu-vos que no es pugui accedir a informació sensible.</translation>
 <translation id="6545867563032584178">El micròfon està desactivat a les preferències del sistema de Mac</translation>
 <translation id="6547354035488017500">Si no alliberes almenys 512 MB d'espai, el dispositiu deixarà de respondre. Per fer-ho, suprimeix fitxers de l'emmagatzematge del dispositiu.</translation>
 <translation id="6549639163247690448"><ph name="DOMAIN" /> requereix que et connectis a la Wi-Fi ara i que baixis una actualització. Es baixarà automàticament quan et connectis a Internet.</translation>
-<translation id="6549966385318247177">S'ha bloquejat perquè inclou contingut no apte per a menors.</translation>
 <translation id="6550675742724504774">Opcions</translation>
 <translation id="6551508934388063976">L'ordre no està disponible. Premeu Ctrl + N per obrir una finestra nova.</translation>
 <translation id="6551612971599078809">El lloc web fa servir USB</translation>
@@ -4515,7 +4516,7 @@ Assegureu-vos que no es pugui accedir a informació sensible.</translation>
 <translation id="7328699668338161242">L'Assistent ja pot reconèixer la teva veu</translation>
 <translation id="7328867076235380839">La combinació no és vàlida</translation>
 <translation id="7329154610228416156">S'ha produït un problema en iniciar la sessió perquè s'ha configurat per utilitzar un URL no segur (<ph name="BLOCKED_URL" />). Contacteu amb l'administrador.</translation>
-<translation id="7332053360324989309">Treballador exclusiu: <ph name="SCRIPT_URL" /></translation>
+<translation id="7332053360324989309">Dedicated Worker: <ph name="SCRIPT_URL" /></translation>
 <translation id="7334190995941642545">Smart Lock no està disponible actualment. Torneu-ho a provar més tard.</translation>
 <translation id="7334274148831027933">Activa la lupa acoblada</translation>
 <translation id="7335974957018254119">Fes servir el corrector ortogràfic per a</translation>

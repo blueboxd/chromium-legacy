@@ -4163,6 +4163,14 @@ TEST_P(GLES2DecoderCompressedFormatsTest, GetCompressedTextureFormatsBPTC) {
   CheckFormats("GL_EXT_texture_compression_bptc", formats, 4);
 }
 
+TEST_P(GLES2DecoderCompressedFormatsTest, GetCompressedTextureFormatsRGTC) {
+  const GLenum formats[] = {GL_COMPRESSED_RED_RGTC1_EXT,
+                            GL_COMPRESSED_SIGNED_RED_RGTC1_EXT,
+                            GL_COMPRESSED_RED_GREEN_RGTC2_EXT,
+                            GL_COMPRESSED_SIGNED_RED_GREEN_RGTC2_EXT};
+  CheckFormats("GL_EXT_texture_compression_rgtc", formats, 4);
+}
+
 TEST_P(GLES2DecoderManualInitTest, GetNoCompressedTextureFormats) {
   InitState init;
   init.bind_generates_resource = true;

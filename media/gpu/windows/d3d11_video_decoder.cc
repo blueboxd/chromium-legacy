@@ -265,15 +265,23 @@ void D3D11VideoDecoder::Initialize(const VideoDecoderConfig& config,
     return;
   }
 
-  texture_selector_ = TextureSelector::Create(
+  decoder_configurator_ = D3D11DecoderConfigurator::Create(
       gpu_preferences_, gpu_workarounds_, config, media_log_.get());
-  if (!texture_selector_) {
+  if (!decoder_configurator_) {
     NotifyError("D3DD11: Config provided unsupported profile");
     return;
   }
 
-  if (!texture_selector_->SupportsDevice(video_device_)) {
+  if (!decoder_configurator_->SupportsDevice(video_device_)) {
     NotifyError("D3D11: Device does not support decoder GUID");
+    return;
+  }
+
+  texture_selector_ = TextureSelector::Create(
+      gpu_preferences_, gpu_workarounds_,
+      decoder_configurator_->TextureFormat(), media_log_.get());
+  if (!texture_selector_) {
+    NotifyError("D3DD11: Cannot get TextureSelector for format");
     return;
   }
 
@@ -293,7 +301,7 @@ void D3D11VideoDecoder::Initialize(const VideoDecoderConfig& config,
 
   UINT config_count = 0;
   hr = video_device_->GetVideoDecoderConfigCount(
-      texture_selector_->DecoderDescriptor(), &config_count);
+      decoder_configurator_->DecoderDescriptor(), &config_count);
   if (FAILED(hr) || config_count == 0) {
     NotifyError("Failed to get video decoder config count");
     return;
@@ -304,7 +312,7 @@ void D3D11VideoDecoder::Initialize(const VideoDecoderConfig& config,
 
   for (UINT i = 0; i < config_count; i++) {
     hr = video_device_->GetVideoDecoderConfig(
-        texture_selector_->DecoderDescriptor(), i, &dec_config);
+        decoder_configurator_->DecoderDescriptor(), i, &dec_config);
     if (FAILED(hr)) {
       NotifyError("Failed to get decoder config");
       return;
@@ -334,8 +342,8 @@ void D3D11VideoDecoder::Initialize(const VideoDecoderConfig& config,
   }
 
   Microsoft::WRL::ComPtr<ID3D11VideoDecoder> video_decoder;
-  hr = video_device_->CreateVideoDecoder(texture_selector_->DecoderDescriptor(),
-                                         &dec_config, &video_decoder);
+  hr = video_device_->CreateVideoDecoder(
+      decoder_configurator_->DecoderDescriptor(), &dec_config, &video_decoder);
   if (!video_decoder.Get()) {
     NotifyError("Failed to create a video decoder");
     return;
@@ -647,12 +655,13 @@ void D3D11VideoDecoder::CreatePictureBuffers() {
   // thread work.
   TRACE_EVENT0("gpu", "D3D11VideoDecoder::CreatePictureBuffers");
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  DCHECK(decoder_configurator_);
   DCHECK(texture_selector_);
   gfx::Size size = accelerated_video_decoder_->GetPicSize();
 
   // Create an input texture array.
   ComD3D11Texture2D in_texture =
-      texture_selector_->CreateOutputTexture(device_, size);
+      decoder_configurator_->CreateOutputTexture(device_, size);
   if (!in_texture) {
     NotifyError("Failed to create a Texture2D for PictureBuffers");
     return;
@@ -664,7 +673,7 @@ void D3D11VideoDecoder::CreatePictureBuffers() {
   picture_buffers_.clear();
 
   // Create each picture buffer.
-  for (size_t i = 0; i < TextureSelector::BUFFER_COUNT; i++) {
+  for (size_t i = 0; i < D3D11DecoderConfigurator::BUFFER_COUNT; i++) {
     auto tex_wrapper = texture_selector_->CreateTextureWrapper(
         device_, video_device_, device_context_, in_texture, size);
     if (!tex_wrapper) {
@@ -675,7 +684,7 @@ void D3D11VideoDecoder::CreatePictureBuffers() {
     picture_buffers_.push_back(
         new D3D11PictureBuffer(std::move(tex_wrapper), size, i));
     if (!picture_buffers_[i]->Init(get_helper_cb_, video_device_,
-                                   texture_selector_->DecoderGuid(),
+                                   decoder_configurator_->DecoderGuid(),
                                    media_log_->Clone())) {
       NotifyError("Unable to allocate PictureBuffer");
       return;

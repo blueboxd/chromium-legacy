@@ -120,7 +120,7 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:singleLine="true"
-                android:textAppearance="@style/TextAppearance.BlueLink2"
+                android:textAppearance="@style/TextAppearance.TextMedium.Blue"
                 android:text="@string/autofill_card_unmask_new_card_link"
                 android:visibility="gone" />
         </LinearLayout>
@@ -215,6 +215,6 @@
             android:id="@+id/verification_message"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:textAppearance="@style/TextAppearance.BlueTitle2" />
+            android:textAppearance="@style/TextAppearance.TextMediumThick.Blue" />
     </LinearLayout>
 </RelativeLayout>

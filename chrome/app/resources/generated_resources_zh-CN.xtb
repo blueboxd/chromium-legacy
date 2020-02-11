@@ -489,6 +489,7 @@
 <translation id="1670399744444387456">基本</translation>
 <translation id="167160931442925455">最大音量</translation>
 <translation id="1673137583248014546"><ph name="URL" /> 想查看您的安全密钥的品牌和型号</translation>
+<translation id="1677472565718498478">电量尚余 <ph name="TIME" /></translation>
 <translation id="1679068421605151609">开发者工具</translation>
 <translation id="1679806121152819234">插件虚拟机</translation>
 <translation id="1679810534535368772">确定要退出吗？</translation>
@@ -1783,6 +1784,7 @@
 <translation id="3462413494201477527">要取消帐号设置吗？</translation>
 <translation id="3464012987031883895">网站正在使用音频输入</translation>
 <translation id="346431825526753">此帐号是由 <ph name="CUSTODIAN_EMAIL" /> 管理的未成年人帐号。</translation>
+<translation id="3468298837301810372">标签</translation>
 <translation id="3468999815377931311">Android 手机</translation>
 <translation id="3470442499439619530">删除此用户</translation>
 <translation id="3471876058939596279">HDMI 端口和 USB C 型端口无法同时用于视频。请另选一个视频端口。</translation>
@@ -3339,7 +3341,7 @@
 <translation id="5669691691057771421">请输入新的 PIN 码</translation>
 <translation id="5671641761787789573">已拦截图片</translation>
 <translation id="5671658447180261823">移除该项推荐内容：<ph name="SUGGESTION_NAME" /></translation>
-<translation id="567587836466137939">此设备将会自动收到软件更新和安全更新，直至 <ph name="MONTH_AND_YEAR" />为止。<ph name="LINK_BEGIN" />了解详情<ph name="LINK_END" /></translation>
+<translation id="567587836466137939">此设备将会自动获取软件更新和安全更新，直至 <ph name="MONTH_AND_YEAR" />为止。<ph name="LINK_BEGIN" />了解详情<ph name="LINK_END" /></translation>
 <translation id="567643736130151854">您只需登录帐号并开启同步功能，即可将您的书签和密码等信息同步到所有设备上</translation>
 <translation id="5677503058916217575">网页语言：</translation>
 <translation id="5677928146339483299">已禁止</translation>
@@ -3956,8 +3958,7 @@
 <translation id="6545864417968258051">蓝牙扫描</translation>
 <translation id="6545867563032584178">已在 Mac 系统偏好设置中关闭麦克风</translation>
 <translation id="6547354035488017500">请至少释放 512 MB 的空间，否则您的设备将无响应。要释放空间，请将文件从设备存储空间中删除。</translation>
-<translation id="6549639163247690448"><ph name="DOMAIN" /> 要求您立即连接到 WLAN 并下载更新。当您连接到互联网后，更新会自动下载。</translation>
-<translation id="6549966385318247177">该扩展程序已被屏蔽，因为它包含少儿不宜的内容。</translation>
+<translation id="6549639163247690448"><ph name="DOMAIN" /> 要求您立即连接到 WLAN 并下载更新。当您连接到互联网后，系统会自动下载更新。</translation>
 <translation id="6550675742724504774">选项</translation>
 <translation id="6551508934388063976">无法使用命令。请按 Ctrl+N 打开一个新窗口。</translation>
 <translation id="6551612971599078809">此网站正在使用 USB</translation>
@@ -4750,7 +4751,7 @@
 <translation id="767127784612208024">轻触以确认重置</translation>
 <translation id="7672520070349703697"><ph name="HUNG_IFRAME_URL" />（在 <ph name="PAGE_TITLE" /> 中）。</translation>
 <translation id="7676867886086876795">将您的语音内容发送给 Google，以便能向任何文本字段输入语音内容。</translation>
-<translation id="767731949513650236">仅同步所选类型的数据</translation>
+<translation id="767731949513650236">仅同步所选的数据类型</translation>
 <translation id="7678280409648629969">在您退出无痕模式后，登录数据会存储在 Chrome 中。这样，当您以后再次访问该网站时，就可以使用 Touch ID 登录了。</translation>
 <translation id="7681095912841365527">该网站可能会使用蓝牙</translation>
 <translation id="7683373461016844951">要想继续，请点击“确定”，然后点击“添加用户”为您位于 <ph name="DOMAIN" /> 中的电子邮件地址创建一份新个人资料。</translation>
@@ -4779,7 +4780,7 @@
 <translation id="7705276765467986571">无法加载书签模型。</translation>
 <translation id="7705524343798198388">VPN</translation>
 <translation id="7707108266051544351">此网站已被禁止使用动态传感器。</translation>
-<translation id="7707354955081320373">同步所有类型的数据，包括未来可能会添加的类型</translation>
+<translation id="7707354955081320373">同步所有数据类型，包括未来可能新增的数据类型</translation>
 <translation id="7707922173985738739">使用移动数据</translation>
 <translation id="7709152031285164251">失败 - <ph name="INTERRUPT_REASON" /></translation>
 <translation id="7710568461918838723">投射(&amp;C)…</translation>
@@ -5133,7 +5134,7 @@
 <translation id="8154790740888707867">未发现文件</translation>
 <translation id="815491593104042026">糟糕！身份验证失败，因为它被配置为使用不安全的网址(<ph name="BLOCKED_URL" />)。请联系您的管理员。</translation>
 <translation id="8157704005178149728">正在设置监管功能</translation>
-<translation id="8158117992543756526">自 <ph name="MONTH_AND_YEAR" />起，此设备已无法再自动收到软件更新和安全更新。<ph name="LINK_BEGIN" />了解详情<ph name="LINK_END" /></translation>
+<translation id="8158117992543756526">自 <ph name="MONTH_AND_YEAR" />起，此设备已无法再自动获取软件更新和安全更新。<ph name="LINK_BEGIN" />了解详情<ph name="LINK_END" /></translation>
 <translation id="816055135686411707">设置证书信任时出错</translation>
 <translation id="816095449251911490"><ph name="SPEED" /> - <ph name="RECEIVED_AMOUNT" />，<ph name="TIME_REMAINING" /></translation>
 <translation id="8162984717805647492">{NUM_TABS,plural, =1{将标签页移至新窗口}other{将标签页移至新窗口}}</translation>

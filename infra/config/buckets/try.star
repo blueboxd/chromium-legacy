@@ -744,6 +744,11 @@ try_.chromium_linux_builder(
 
 
 try_.chromium_mac_builder(
+    name = 'mac-coverage-rel',
+    goma_jobs = goma.jobs.J150,
+)
+
+try_.chromium_mac_builder(
     name = 'mac-osxbeta-rel',
     os = os.MAC_DEFAULT,
 )

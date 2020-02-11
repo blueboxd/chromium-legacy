@@ -5,19 +5,10 @@
 'use strict';
 
 // Allow a function to be provided by tests, which will be called when
-// the page has been populated with media history details.
+// the page has been populated.
 const pageIsPopulatedResolver = new PromiseResolver();
-let pageIsPopulatedCounter = 0;
 function whenPageIsPopulatedForTest() {
   return pageIsPopulatedResolver.promise;
-}
-
-function maybeResolvePageIsPopulated() {
-  pageIsPopulatedCounter--;
-
-  if (pageIsPopulatedCounter == 0) {
-    pageIsPopulatedResolver.resolve();
-  }
 }
 
 (function() {
@@ -146,23 +137,24 @@ function renderStatsTable(stats) {
 }
 
 /**
- * Retrieve stats from the backend and then render the table.
+ * @param {!string} name The name of the tab to show.
+ * @return {Promise}
  */
-function updateTable() {
-  pageIsPopulatedCounter += 2;
+function showTab(name) {
+  switch (name) {
+    case 'stats':
+      return store.getMediaHistoryStats().then(response => {
+        renderStatsTable(response.stats);
+      });
+    case 'origins':
+      return store.getMediaHistoryOriginRows().then(response => {
+        data = response.rows;
+        renderDataTable();
+      });
+  }
 
-  // Populate stats table.
-  store.getMediaHistoryStats().then(response => {
-    renderStatsTable(response.stats);
-    maybeResolvePageIsPopulated();
-  });
-
-  // Populate origin table.
-  store.getMediaHistoryOriginRows().then(response => {
-    data = response.rows;
-    renderDataTable();
-    maybeResolvePageIsPopulated();
-  });
+  // Return an empty promise if there is no tab.
+  return new Promise();
 }
 
 document.addEventListener('DOMContentLoaded', function() {
@@ -170,7 +162,30 @@ document.addEventListener('DOMContentLoaded', function() {
 
   dataTableBody = $('data-table-body');
   statsTableBody = $('stats-table-body');
-  updateTable();
+
+  cr.ui.decorate('tabbox', cr.ui.TabBox);
+
+  // Allow tabs to be navigated to by fragment. The fragment with be of the
+  // format "#tab-<tab id>".
+  window.onhashchange = function() {
+    showTab(window.location.hash.substr(5));
+  };
+
+  // Default to the stats tab.
+  if (!window.location.hash.substr(5)) {
+    window.location.hash = 'tab-stats';
+  } else {
+    showTab(window.location.hash.substr(5))
+        .then(pageIsPopulatedResolver.resolve);
+  }
+
+  // When the tab updates, update the anchor.
+  $('tabbox').addEventListener('selectedChange', function() {
+    const tabbox = $('tabbox');
+    const tabs = tabbox.querySelector('tabs').children;
+    const selectedTab = tabs[tabbox.selectedIndex];
+    window.location.hash = 'tab-' + selectedTab.id;
+  }, true);
 
   // Set table header sort handlers.
   const dataTableHeader = $('data-table-header');
@@ -196,17 +211,21 @@ document.addEventListener('DOMContentLoaded', function() {
     });
   }
 
-  // Add handler to 'copy all to clipboard' button
-  const copyAllToClipboardButton = $('copy-all-to-clipboard');
-  copyAllToClipboardButton.addEventListener('click', (e) => {
-    // Make sure nothing is selected
-    window.getSelection().removeAllRanges();
+  // Add handler to 'copy all to clipboard' button.
+  const copyAllToClipboardButtons =
+      document.querySelectorAll('.copy-all-to-clipboard');
 
-    document.execCommand('selectAll');
-    document.execCommand('copy');
+  copyAllToClipboardButtons.forEach((button) => {
+    button.addEventListener('click', (e) => {
+      // Make sure nothing is selected.
+      window.getSelection().removeAllRanges();
 
-    // And deselect everything at the end.
-    window.getSelection().removeAllRanges();
+      document.execCommand('selectAll');
+      document.execCommand('copy');
+
+      // And deselect everything at the end.
+      window.getSelection().removeAllRanges();
+    });
   });
 });
 })();

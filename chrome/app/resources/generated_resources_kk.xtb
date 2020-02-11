@@ -489,6 +489,7 @@
 <translation id="1670399744444387456">Негізгі</translation>
 <translation id="167160931442925455">Ең қатты</translation>
 <translation id="1673137583248014546"><ph name="URL" /> сайты Security Key құрылғысының маркасы мен үлгісін білгісі келеді</translation>
+<translation id="1677472565718498478"><ph name="TIME" /> қалды</translation>
 <translation id="1679068421605151609">Әзірлеуші құралдары</translation>
 <translation id="1679806121152819234">Plugin VM</translation>
 <translation id="1679810534535368772">Шынымен де шыққыңыз келе ме?</translation>
@@ -3959,7 +3960,6 @@
 <translation id="6545867563032584178">Микрофон Mac жүйесінің параметрлерінде өшірілген.</translation>
 <translation id="6547354035488017500">Кемінде 512 MБ орын босатпасаңыз, құрылғы жауап бермейтін болады. Бұл үшін файлдарды құрылғының жадынан жойыңыз.</translation>
 <translation id="6549639163247690448"><ph name="DOMAIN" /> ережесі бойынша Wi-Fi желісіне қосылып, жаңартылған нұсқаны жүктеп алу қажет. Интернетке қосылғаннан кейін, жаңартылған нұсқа автоматты түрде жүктеп алынады.</translation>
-<translation id="6549966385318247177">Бұл — ересектерге арналған мазмұнға байланысты бөгелді.</translation>
 <translation id="6550675742724504774">Опциялар</translation>
 <translation id="6551508934388063976">Пәрмен қолжетімсіз. Жаңа терезе ашу үшін Ctrl+N тіркесімін басыңыз.</translation>
 <translation id="6551612971599078809">Сайт USB құрылғысын пайдалануда</translation>
@@ -4059,7 +4059,7 @@
 <translation id="6700480081846086223"><ph name="HOST_NAME" /> хостын трансляциялау</translation>
 <translation id="6701535245008341853">Профильді алу мүмкін емес.</translation>
 <translation id="6702639462873609204">&amp;Өзгерту…</translation>
-<translation id="6703966911896067184">Тіркеу кезіндегі қатенің суреті</translation>
+<translation id="6703966911896067184">Тіркеу қатесінің суреті</translation>
 <translation id="6706210727756204531">Қолданыс аясы</translation>
 <translation id="6707389671160270963">SSL клиент сертификаты</translation>
 <translation id="6708242697268981054">Түпнұсқа:</translation>

@@ -2402,6 +2402,11 @@
       'GPU Linux Builder (dbg)': {},
       'GPU Mac Builder': {},
       'GPU Mac Builder (dbg)': {},
+      'GPU Mac Builder Code Coverage': {
+        'mixins': [
+          'code-coverage',
+        ],
+      },
       'Linux Debug (NVIDIA)': {
         'browser_config': 'debug',
         'os_type': 'linux',
@@ -2447,6 +2452,19 @@
           'isolated_scripts': 'rendering_desktop_representative_perf_tests_isolated_scripts_experimental',
         },
       },
+      'Mac Release (Intel) Code Coverage': {
+        'browser_config': 'release',
+        'os_type': 'mac',
+        'mixins': [
+          'code-coverage',
+          'mac_mini_intel_gpu',
+        ],
+        'test_suites': {
+          'gtest_tests': 'gpu_desktop_gtests',
+          'gpu_telemetry_tests': 'gpu_common_telemetry_tests',
+          'isolated_scripts': 'rendering_desktop_representative_perf_tests_isolated_scripts_experimental',
+        },
+      },
       'Mac Retina Debug (AMD)': {
         'browser_config': 'debug',
         'os_type': 'mac',
@@ -2462,6 +2480,19 @@
         'browser_config': 'release',
         'os_type': 'mac',
         'mixins': [
+          'mac_retina_amd_gpu',
+        ],
+        'test_suites': {
+          'gtest_tests': 'gpu_desktop_gtests',
+          'gpu_telemetry_tests': 'gpu_common_telemetry_tests',
+          'isolated_scripts': 'rendering_desktop_representative_perf_tests_isolated_scripts_experimental',
+        },
+      },
+      'Mac Retina Release (AMD) Code Coverage': {
+        'browser_config': 'release',
+        'os_type': 'mac',
+        'mixins': [
+          'code-coverage',
           'mac_retina_amd_gpu',
         ],
         'test_suites': {
@@ -3451,8 +3482,9 @@
           'win10_nvidia_quadro_p400_stable',
         ],
         'test_suites': {
-          'gtest_tests': 'gpu_win_gtests',
-          'gpu_telemetry_tests': 'gpu_common_win_and_linux_telemetry_tests',
+          'gtest_tests': 'gpu_fyi_win_gtests',
+          'isolated_scripts': 'gpu_angle_fyi_win_optional_and_representative_perf_isolated_scripts',
+          'gpu_telemetry_tests': 'gpu_fyi_win_release_telemetry_tests',
         },
         # We keep this value enabled to provide minimal regression testing.
         'use_multi_dimension_trigger_script': True,
@@ -3821,6 +3853,14 @@
           'all',
         ],
       },
+      'Mac Builder Code Coverage': {
+        'mixins': [
+          'code-coverage',
+        ],
+        'additional_compile_targets': [
+          'pdf_fuzzers',
+        ],
+      },
       'Mac10.10 Tests': {
         'mixins': [
             'mac_10.10',
@@ -3869,6 +3909,18 @@
         'test_suites': {
           'gtest_tests': 'chromium_mac_gtests',
           'isolated_scripts': 'chromium_dbg_isolated_scripts',
+        },
+      },
+      'Mac10.13 Tests Code Coverage': {
+        'mixins': [
+            'mac_10.13',
+            'no_gpu',
+            'code-coverage',
+        ],
+        'test_suites': {
+          'gtest_tests': 'chromium_mac_gtests',
+          'isolated_scripts': 'chromium_mac_rel_isolated_scripts',
+          'scripts': 'chromium_mac_scripts',
         },
       },
       'WebKit Mac10.13 (retina)': {

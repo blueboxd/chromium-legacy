@@ -173,25 +173,14 @@ void TabGroupHeader::OnThemeChanged() {
 void TabGroupHeader::OnGestureEvent(ui::GestureEvent* event) {
   tab_strip_->UpdateHoverCard(nullptr);
   switch (event->type()) {
-    case ui::ET_GESTURE_TAP_DOWN: {
-      if (!editor_bubble_tracker_.is_open()) {
-        tab_strip_->MaybeStartDrag(this, *event,
-                                   tab_strip_->GetSelectionModel());
-      }
+    case ui::ET_GESTURE_TAP: {
+      editor_bubble_tracker_.Opened(
+          TabGroupEditorBubbleView::Show(this, tab_strip_, group().value()));
       break;
     }
 
-    case ui::ET_GESTURE_SCROLL_UPDATE: {
-      tab_strip_->ContinueDrag(this, *event);
-      break;
-    }
-
-    case ui::ET_GESTURE_END: {
-      if (!dragging()) {
-        editor_bubble_tracker_.Opened(
-            TabGroupEditorBubbleView::Show(this, tab_strip_, group().value()));
-      }
-      tab_strip_->EndDrag(END_DRAG_COMPLETE);
+    case ui::ET_GESTURE_SCROLL_BEGIN: {
+      tab_strip_->MaybeStartDrag(this, *event, tab_strip_->GetSelectionModel());
       break;
     }
 

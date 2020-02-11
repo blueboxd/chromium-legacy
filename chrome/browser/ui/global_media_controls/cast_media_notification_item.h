@@ -110,8 +110,10 @@ class CastMediaNotificationItem
   };
 
   void UpdateView();
-
   void ImageChanged(const SkBitmap& bitmap);
+  void RecordMetadataMetrics() const;
+
+  bool recorded_metadata_metrics_ = false;
 
   media_message_center::MediaNotificationController* const
       notification_controller_;

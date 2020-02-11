@@ -107,7 +107,8 @@ public class ContactsPickerToolbar extends SelectableListToolbar<ContactDetails>
                 useDarkIcons() ? getDarkIconColorStateList() : getLightIconColorStateList());
 
         if (doneEnabled) {
-            ApiCompatibilityUtils.setTextAppearance(done, R.style.TextAppearance_Body_Inverse);
+            ApiCompatibilityUtils.setTextAppearance(
+                    done, R.style.TextAppearance_TextMedium_Primary_Inverse);
         } else {
             ApiCompatibilityUtils.setTextAppearance(
                     done, R.style.TextAppearance_TextMedium_Tertiary);

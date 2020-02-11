@@ -21,6 +21,10 @@ class GURL;
 class NotificationPlatformBridge;
 class Profile;
 
+namespace user_prefs {
+class PrefRegistrySyncable;
+}
+
 // Implementation of the NotificationDisplayService interface. Methods that are
 // not available in the base interface should only be used by the platform
 // notification bridges.
@@ -37,6 +41,8 @@ class NotificationDisplayServiceImpl : public NotificationDisplayService {
   // |profile|. This should be removed in favor of multiple statics for handling
   // the individual notification operations.
   static NotificationDisplayServiceImpl* GetForProfile(Profile* profile);
+
+  static void RegisterProfilePrefs(user_prefs::PrefRegistrySyncable* registry);
 
   // Used to propagate back events originate from the user. The events are
   // received and dispatched to the right consumer depending on the type of

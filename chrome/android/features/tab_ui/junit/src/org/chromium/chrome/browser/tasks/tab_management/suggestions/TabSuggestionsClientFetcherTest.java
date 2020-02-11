@@ -5,6 +5,7 @@
 package org.chromium.chrome.browser.tasks.tab_management.suggestions;
 
 import static org.mockito.Mockito.doReturn;
+import static org.mockito.Mockito.spy;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 
@@ -51,6 +52,14 @@ public class TabSuggestionsClientFetcherTest {
         MockitoAnnotations.initMocks(this);
     }
 
+    private TabContext.TabInfo getMockTab(int id, String title, String url, String originalUrl,
+            String referrer, long timestamp, double siteEngagementScore) {
+        TabContext.TabInfo tabInfo = spy(
+                new TabContext.TabInfo(id, title, url, originalUrl, referrer, timestamp, null, ""));
+        doReturn(siteEngagementScore).when(tabInfo).getSiteEngagementScore();
+        return tabInfo;
+    }
+
     /**
      * Test when client fetcher has results
      */
@@ -64,15 +73,11 @@ public class TabSuggestionsClientFetcherTest {
     public void
     testClientFetcher() {
         TabSuggestionsClientFetcher tabSuggestionsClientFetcher = new TabSuggestionsClientFetcher();
-        // Ensures we call StaleTabSuggestionsProvider by ensuring stale tabs
-        // are recommended to be closed.
+        tabSuggestionsClientFetcher.setUseBaselineTabSuggestionsForTesting();
         List<TabContext.TabInfo> tabInfos = new ArrayList<>();
-        tabInfos.add(new TabContext.TabInfo(3, "mock_recent_title", "mock_recent_url",
-                "mock_recent_original_url", "mock_recent_url",
-                System.currentTimeMillis() - TimeUnit.MINUTES.toMillis(5)));
-        tabInfos.add(new TabContext.TabInfo(3, "mock_stale_title", "mock_stale_url",
-                "mock_stale_original_url", "mock_stale_referrer_url",
-                System.currentTimeMillis() - TimeUnit.DAYS.toMillis(2)));
+        tabInfos.add(getMockTab(3, "mock_stale_title", "mock_stale_url", "mock_stale_original_url",
+                "mock_stale_referrer_url", System.currentTimeMillis() - TimeUnit.DAYS.toMillis(2),
+                0.0));
         doReturn(tabInfos).when(mTabContext).getUngroupedTabs();
         tabSuggestionsClientFetcher.fetch(mTabContext, mTabSuggestionsFetcherResultsCallback);
         ArgumentCaptor<TabSuggestionsFetcherResults> argument =
@@ -99,6 +104,7 @@ public class TabSuggestionsClientFetcherTest {
     public void
     testNullResults() {
         TabSuggestionsClientFetcher tabSuggestionsClientFetcher = new TabSuggestionsClientFetcher();
+        tabSuggestionsClientFetcher.setUseBaselineTabSuggestionsForTesting();
         doReturn(null).when(mTabContext).getUngroupedTabs();
         tabSuggestionsClientFetcher.fetch(mTabContext, mTabSuggestionsFetcherResultsCallback);
         ArgumentCaptor<TabSuggestionsFetcherResults> argument =
@@ -120,6 +126,7 @@ public class TabSuggestionsClientFetcherTest {
     public void
     testEmptyResults() {
         TabSuggestionsClientFetcher tabSuggestionsClientFetcher = new TabSuggestionsClientFetcher();
+        tabSuggestionsClientFetcher.setUseBaselineTabSuggestionsForTesting();
         doReturn(Collections.emptyList()).when(mTabContext).getUngroupedTabs();
         tabSuggestionsClientFetcher.fetch(mTabContext, mTabSuggestionsFetcherResultsCallback);
         ArgumentCaptor<TabSuggestionsFetcherResults> argument =

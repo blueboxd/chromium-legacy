@@ -84,20 +84,13 @@ class TabScopedNativeFileSystemPermissionContextTest : public testing::Test {
 
   int frame_id() { return web_contents()->GetMainFrame()->GetRoutingID(); }
 
-  void ExpectCanRequestWritePermission(
-      content::NativeFileSystemPermissionGrant* actual_grant,
-      bool expected) {
-    auto* grant = static_cast<
-        TabScopedNativeFileSystemPermissionContext::WritePermissionGrantImpl*>(
-        actual_grant);
-    EXPECT_EQ(expected, grant->CanRequestPermission());
-  }
-
  protected:
   const url::Origin kTestOrigin =
       url::Origin::Create(GURL("https://example.com"));
   const url::Origin kTestOrigin2 =
       url::Origin::Create(GURL("https://test.com"));
+  const url::Origin kChromeOrigin =
+      url::Origin::Create(GURL("chrome://test-origin"));
   const base::FilePath kTestPath =
       base::FilePath(FILE_PATH_LITERAL("/foo/bar"));
 
@@ -117,7 +110,6 @@ TEST_F(TabScopedNativeFileSystemPermissionContextTest,
   auto grant = permission_context()->GetWritePermissionGrant(
       kTestOrigin, kTestPath, /*is_directory=*/false, process_id(), frame_id(),
       UserAction::kOpen);
-  ExpectCanRequestWritePermission(grant.get(), /*expected=*/true);
   EXPECT_EQ(PermissionStatus::ASK, grant->GetStatus());
 }
 
@@ -126,14 +118,12 @@ TEST_F(TabScopedNativeFileSystemPermissionContextTest,
   auto grant = permission_context()->GetWritePermissionGrant(
       kTestOrigin, kTestPath, /*is_directory=*/false, process_id(), frame_id(),
       UserAction::kSave);
-  ExpectCanRequestWritePermission(grant.get(), /*expected=*/true);
   EXPECT_EQ(PermissionStatus::GRANTED, grant->GetStatus());
 
   // The existing grant should not change if the permission is blocked globally.
   SetDefaultContentSettingValue(
       ContentSettingsType::NATIVE_FILE_SYSTEM_WRITE_GUARD,
       CONTENT_SETTING_BLOCK);
-  ExpectCanRequestWritePermission(grant.get(), /*expected=*/false);
   EXPECT_EQ(PermissionStatus::GRANTED, grant->GetStatus());
 }
 
@@ -151,7 +141,6 @@ TEST_F(TabScopedNativeFileSystemPermissionContextTest,
   // All grants should be the same grant, and be granted.
   EXPECT_EQ(grant1, grant2);
   EXPECT_EQ(grant1, grant3);
-  ExpectCanRequestWritePermission(grant1.get(), /*expected=*/true);
   EXPECT_EQ(PermissionStatus::GRANTED, grant1->GetStatus());
 }
 
@@ -168,7 +157,6 @@ TEST_F(TabScopedNativeFileSystemPermissionContextTest,
   grant = permission_context()->GetWritePermissionGrant(
       kTestOrigin, kTestPath, /*is_directory=*/false, process_id(), frame_id(),
       UserAction::kOpen);
-  ExpectCanRequestWritePermission(grant.get(), /*expected=*/true);
   EXPECT_EQ(PermissionStatus::ASK, grant->GetStatus());
 }
 
@@ -181,7 +169,6 @@ TEST_F(TabScopedNativeFileSystemPermissionContextTest,
   auto grant = permission_context()->GetWritePermissionGrant(
       kTestOrigin, kTestPath, /*is_directory=*/false, process_id(), frame_id(),
       UserAction::kOpen);
-  ExpectCanRequestWritePermission(grant.get(), /*expected=*/false);
   EXPECT_EQ(PermissionStatus::DENIED, grant->GetStatus());
   grant.reset();
 
@@ -192,7 +179,6 @@ TEST_F(TabScopedNativeFileSystemPermissionContextTest,
   grant = permission_context()->GetWritePermissionGrant(
       kTestOrigin, kTestPath, /*is_directory=*/false, process_id(), frame_id(),
       UserAction::kOpen);
-  ExpectCanRequestWritePermission(grant.get(), /*expected=*/true);
   EXPECT_EQ(PermissionStatus::ASK, grant->GetStatus());
 }
 
@@ -206,7 +192,6 @@ TEST_F(
   auto grant = permission_context()->GetWritePermissionGrant(
       kTestOrigin, kTestPath, /*is_directory=*/false, process_id(), frame_id(),
       UserAction::kSave);
-  ExpectCanRequestWritePermission(grant.get(), /*expected=*/false);
   EXPECT_EQ(PermissionStatus::DENIED, grant->GetStatus());
   grant.reset();
 
@@ -217,7 +202,6 @@ TEST_F(
   grant = permission_context()->GetWritePermissionGrant(
       kTestOrigin, kTestPath, /*is_directory=*/false, process_id(), frame_id(),
       UserAction::kSave);
-  ExpectCanRequestWritePermission(grant.get(), /*expected=*/true);
   EXPECT_EQ(PermissionStatus::GRANTED, grant->GetStatus());
 }
 
@@ -240,7 +224,6 @@ TEST_F(
   // All grants should be the same grant, and be denied.
   EXPECT_EQ(grant1, grant2);
   EXPECT_EQ(grant1, grant3);
-  ExpectCanRequestWritePermission(grant1.get(), /*expected=*/false);
   EXPECT_EQ(PermissionStatus::DENIED, grant1->GetStatus());
 }
 
@@ -254,7 +237,6 @@ TEST_F(
   auto grant = permission_context()->GetWritePermissionGrant(
       kTestOrigin, kTestPath, /*is_directory=*/false, process_id(), frame_id(),
       UserAction::kSave);
-  ExpectCanRequestWritePermission(grant.get(), /*expected=*/false);
   EXPECT_EQ(PermissionStatus::DENIED, grant->GetStatus());
   grant.reset();
 
@@ -263,7 +245,6 @@ TEST_F(
   grant = permission_context()->GetWritePermissionGrant(
       kTestOrigin, kTestPath, /*is_directory=*/false, process_id(), frame_id(),
       UserAction::kOpen);
-  ExpectCanRequestWritePermission(grant.get(), /*expected=*/false);
   EXPECT_EQ(PermissionStatus::DENIED, grant->GetStatus());
 }
 
@@ -273,7 +254,6 @@ TEST_F(
   auto grant = permission_context()->GetWritePermissionGrant(
       kTestOrigin, kTestPath, /*is_directory=*/false, process_id(), frame_id(),
       UserAction::kSave);
-  ExpectCanRequestWritePermission(grant.get(), /*expected=*/true);
   EXPECT_EQ(PermissionStatus::GRANTED, grant->GetStatus());
   grant.reset();
 
@@ -282,7 +262,6 @@ TEST_F(
   grant = permission_context()->GetWritePermissionGrant(
       kTestOrigin, kTestPath, /*is_directory=*/false, process_id(), frame_id(),
       UserAction::kOpen);
-  ExpectCanRequestWritePermission(grant.get(), /*expected=*/true);
   EXPECT_EQ(PermissionStatus::ASK, grant->GetStatus());
 
   SetDefaultContentSettingValue(
@@ -291,7 +270,6 @@ TEST_F(
 
   // After the guard is blocked, the permission status for |grant| should remain
   // unchanged, but |CanRequestPermission()| should return false.
-  ExpectCanRequestWritePermission(grant.get(), /*expected=*/false);
   EXPECT_EQ(PermissionStatus::ASK, grant->GetStatus());
 }
 
@@ -440,6 +418,66 @@ TEST_F(TabScopedNativeFileSystemPermissionContextTest,
           [&](PermissionRequestOutcome outcome) { loop4.Quit(); }));
   loop4.Run();
   EXPECT_EQ(PermissionStatus::DENIED, grant2->GetStatus());
+}
+
+TEST_F(TabScopedNativeFileSystemPermissionContextTest,
+       GetWritePermissionGrant_WhitelistedOrigin_InitialState) {
+  SetDefaultContentSettingValue(
+      ContentSettingsType::NATIVE_FILE_SYSTEM_WRITE_GUARD,
+      CONTENT_SETTING_BLOCK);
+
+  // Whitelisted origin gets granted.
+  auto grant1 = permission_context()->GetWritePermissionGrant(
+      kChromeOrigin, kTestPath, /*is_directory=*/false, process_id(),
+      frame_id(), UserAction::kOpen);
+  EXPECT_EQ(PermissionStatus::GRANTED, grant1->GetStatus());
+
+  auto grant2 = permission_context()->GetWritePermissionGrant(
+      kChromeOrigin, kTestPath, /*is_directory=*/true, process_id(), frame_id(),
+      UserAction::kOpen);
+  EXPECT_EQ(PermissionStatus::GRANTED, grant2->GetStatus());
+
+  // Other origin should gets blocked.
+  auto grant3 = permission_context()->GetWritePermissionGrant(
+      kTestOrigin, kTestPath, /*is_directory=*/false, process_id(), frame_id(),
+      UserAction::kOpen);
+  EXPECT_EQ(PermissionStatus::DENIED, grant3->GetStatus());
+
+  auto grant4 = permission_context()->GetWritePermissionGrant(
+      kTestOrigin, kTestPath, /*is_directory=*/true, process_id(), frame_id(),
+      UserAction::kOpen);
+  EXPECT_EQ(PermissionStatus::DENIED, grant4->GetStatus());
+}
+
+TEST_F(TabScopedNativeFileSystemPermissionContextTest,
+       GetWritePermissionGrant_WhitelistedOrigin_ExistingGrant) {
+  SetDefaultContentSettingValue(
+      ContentSettingsType::NATIVE_FILE_SYSTEM_WRITE_GUARD,
+      CONTENT_SETTING_BLOCK);
+
+  // Initial grant (file).
+  auto grant1 = permission_context()->GetWritePermissionGrant(
+      kChromeOrigin, kTestPath, /*is_directory=*/false, process_id(),
+      frame_id(), UserAction::kOpen);
+  EXPECT_EQ(PermissionStatus::GRANTED, grant1->GetStatus());
+
+  // Existing grant (file).
+  auto grant2 = permission_context()->GetWritePermissionGrant(
+      kChromeOrigin, kTestPath, /*is_directory=*/false, process_id(),
+      frame_id(), UserAction::kOpen);
+  EXPECT_EQ(PermissionStatus::GRANTED, grant2->GetStatus());
+
+  // Initial grant (directory).
+  auto grant3 = permission_context()->GetWritePermissionGrant(
+      kChromeOrigin, kTestPath, /*is_directory=*/true, process_id(), frame_id(),
+      UserAction::kOpen);
+  EXPECT_EQ(PermissionStatus::GRANTED, grant3->GetStatus());
+
+  // Existing grant (directory).
+  auto grant4 = permission_context()->GetWritePermissionGrant(
+      kChromeOrigin, kTestPath, /*is_directory=*/true, process_id(), frame_id(),
+      UserAction::kOpen);
+  EXPECT_EQ(PermissionStatus::GRANTED, grant4->GetStatus());
 }
 
 #endif  // !defined(OS_ANDROID)

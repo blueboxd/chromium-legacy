@@ -31,10 +31,7 @@ sys.path.insert(0, os.path.join(CHROMIUM_SRC_PATH, 'build', 'android'))
 from pylib.base import base_test_result  # pylint: disable=import-error
 from pylib.results import json_results  # pylint: disable=import-error
 
-# Use luci-py's subprocess42.py
-sys.path.insert(
-    0, os.path.join(CHROMIUM_SRC_PATH, 'tools', 'swarming_client', 'utils'))
-import subprocess42  # pylint: disable=import-error
+import subprocess32 as subprocess  # pylint: disable=import-error
 
 DEFAULT_CROS_CACHE = os.path.abspath(
     os.path.join(CHROMIUM_SRC_PATH, 'build', 'cros_cache'))
@@ -187,20 +184,20 @@ class RemoteTest(object):
       logging.info('########################################')
       logging.info('Test attempt #%d', i)
       logging.info('########################################')
-      test_proc = subprocess42.Popen(
+      test_proc = subprocess.Popen(
           self._test_cmd,
           stdout=sys.stdout,
           stderr=sys.stderr,
           env=self._test_env)
       try:
         test_proc.wait(timeout=self._timeout)
-      except subprocess42.TimeoutExpired:
+      except subprocess.TimeoutExpired:
         logging.error('Test timed out. Sending SIGTERM.')
         # SIGTERM the proc and wait 10s for it to close.
         test_proc.terminate()
         try:
           test_proc.wait(timeout=10)
-        except subprocess42.TimeoutExpired:
+        except subprocess.TimeoutExpired:
           # If it hasn't closed in 10s, SIGKILL it.
           logging.error('Test did not exit in time. Sending SIGKILL.')
           test_proc.kill()
@@ -710,7 +707,7 @@ def host_cmd(args, unknown_args):
   logging.info('Running the following command:')
   logging.info(' '.join(cros_run_test_cmd))
 
-  return subprocess42.call(
+  return subprocess.call(
       cros_run_test_cmd, stdout=sys.stdout, stderr=sys.stderr, env=test_env)
 
 

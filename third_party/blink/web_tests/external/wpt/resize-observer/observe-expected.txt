@@ -16,5 +16,7 @@ PASS test11: simple observation with vertical writing mode
 FAIL test12: no observation is fired after the change of writing mode when box's specified size comes from logical size properties. assert_unreached: the logical size of content-box doesn't change Reached unreachable code
 FAIL test13: an observation is fired after the change of writing mode when box's specified size comes from physical size properties. assert_unreached: Timed out waiting for notification. (100ms) Reached unreachable code
 PASS test14: observe the same target but using a different box should override the previous one
+PASS test15: an observation is fired with box dimensions 0 when element's display property is set to inline
+PASS test16: observations do not fire for non-replaced inline elements
 Harness: the test ran to completion.
 

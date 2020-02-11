@@ -11,7 +11,6 @@
 #include <vector>
 
 #include "base/location.h"
-#include "base/strings/string_piece.h"
 #include "base/values.h"
 #include "media/base/media_error_codes.h"
 #include "media/base/media_export.h"
@@ -41,7 +40,7 @@ class MEDIA_EXPORT MediaError {
   // NOTE: This should never be given a location parameter when called - It is
   // defaulted in order to grab the caller location.
   MediaError(ErrorCode code,
-             base::StringPiece message = "",
+             std::string message = "",
              const base::Location& location = base::Location::Current());
 
   // Copy Constructor
@@ -57,9 +56,7 @@ class MEDIA_EXPORT MediaError {
   bool IsOk() const { return !data_; }
 
   // Getters for internal fields
-  base::StringPiece GetErrorMessage() const {
-    return data_ ? data_->message : "";
-  }
+  std::string GetErrorMessage() const { return data_ ? data_->message : ""; }
   ErrorCode GetErrorCode() const {
     return data_ ? data_->code : ErrorCode::kOk;
   }
@@ -102,7 +99,7 @@ class MEDIA_EXPORT MediaError {
 
   // Keep the internal data in a unique ptr to minimize size of OK errors.
   struct MediaErrorInternal {
-    MediaErrorInternal(ErrorCode code, base::StringPiece message);
+    MediaErrorInternal(ErrorCode code, std::string message);
     ~MediaErrorInternal();
 
     // The current error code
@@ -110,7 +107,7 @@ class MEDIA_EXPORT MediaError {
 
     // The current error message (Can be used for
     // https://developer.mozilla.org/en-US/docs/Web/API/MediaError)
-    base::StringPiece message;
+    std::string message;
 
     // Stack frames
     std::vector<base::Value> frames;

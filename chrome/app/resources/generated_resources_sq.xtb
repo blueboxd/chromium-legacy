@@ -489,6 +489,7 @@
 <translation id="1670399744444387456">Themeloret</translation>
 <translation id="167160931442925455">Më i larti</translation>
 <translation id="1673137583248014546"><ph name="URL" /> dëshiron të shohë markën dhe modelin e çelësit tënd të sigurisë</translation>
+<translation id="1677472565718498478">Koha e mbetur <ph name="TIME" /></translation>
 <translation id="1679068421605151609">Mjetet e zhvilluesit</translation>
 <translation id="1679806121152819234">Plugin VM</translation>
 <translation id="1679810534535368772">Je i sigurt që dëshiron të dalësh?</translation>
@@ -3959,7 +3960,6 @@ Cilësimet e kësaj llogarie mund t'i menaxhosh duke instaluar aplikacionin Fami
 <translation id="6545867563032584178">Mikrofoni është çaktivizuar te Mac System Preferences</translation>
 <translation id="6547354035488017500">Liro të paktën 512 MB hapësirë ose pajisja jote nuk do të reagojë më. Për të liruar hapësirën, fshi skedarët nga hapësira ruajtëse e pajisjes.</translation>
 <translation id="6549639163247690448"><ph name="DOMAIN" /> kërkon që të lidhesh me Wi-Fi tani dhe të shkarkosh një përditësim. Përditësimi do të shkarkohet automatikisht kur të lidhesh në internet.</translation>
-<translation id="6549966385318247177">Kjo është bllokuar për shkak të përmbajtjes për të rritur.</translation>
 <translation id="6550675742724504774">Opsionet</translation>
 <translation id="6551508934388063976">Komanda nuk ofrohet. Shtyp CTRL+N për të hapur një dritare të re.</translation>
 <translation id="6551612971599078809">Sajti përdor pajisje USB</translation>

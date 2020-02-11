@@ -189,8 +189,8 @@ public class TabGridDialogMediator {
                         ? R.color.tab_grid_card_selected_color_incognito
                         : R.color.tab_grid_card_selected_color;
                 int ungroupBarTextAppearance = isIncognito
-                        ? R.style.TextAppearance_BlueTitle2Incognito
-                        : R.style.TextAppearance_BlueTitle2;
+                        ? R.style.TextAppearance_TextMediumThick_Blue_Light
+                        : R.style.TextAppearance_TextMediumThick_Blue;
 
                 mModel.set(TabGridPanelProperties.DIALOG_BACKGROUND_RESOUCE_ID,
                         dialogBackgroundResource);

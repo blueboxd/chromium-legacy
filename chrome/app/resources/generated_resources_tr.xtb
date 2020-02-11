@@ -492,6 +492,7 @@
 <translation id="1670399744444387456">Temel</translation>
 <translation id="167160931442925455">En yüksek ses</translation>
 <translation id="1673137583248014546"><ph name="URL" />, Güvenlik Anahtarınızın markasını ve modelini görmek istiyor</translation>
+<translation id="1677472565718498478">Kalan süre: <ph name="TIME" /></translation>
 <translation id="1679068421605151609">Geliştirici Araçları</translation>
 <translation id="1679806121152819234">PluginVm</translation>
 <translation id="1679810534535368772">Çıkmak istediğinizden emin misiniz?</translation>
@@ -1787,6 +1788,7 @@ Sunucunun mesajı: <ph name="SERVER_MSG" /></translation>
 <translation id="3462413494201477527">Hesap kurulumu iptal edilsin mi?</translation>
 <translation id="3464012987031883895">Bir site, ses girişine erişiyor</translation>
 <translation id="346431825526753">Bu hesap çocuklar içindir ve <ph name="CUSTODIAN_EMAIL" /> tarafından yönetilmektedir</translation>
+<translation id="3468298837301810372">Etiket</translation>
 <translation id="3468999815377931311">Android telefon</translation>
 <translation id="3470442499439619530">Bu Kullanıcıyı Kaldır</translation>
 <translation id="3471876058939596279">HDMI ve USB Type-C bağlantı noktası video için aynı anda kullanılamaz. Farklı bir video bağlantı noktası kullanın.</translation>
@@ -3866,7 +3868,7 @@ Hassas bilgileri vermediğinizden emin olun.</translation>
 <translation id="6410668567036790476">Arama motoru ekleyin</translation>
 <translation id="641081527798843608">Konu eşleştirmesi</translation>
 <translation id="6412931879992742813">Yeni gizli pencere</translation>
-<translation id="641469293210305670">Güncellemeleri ve Uygulamaları Yükleyin</translation>
+<translation id="641469293210305670">Güncellemeleri ve Uygulamaları Yükle</translation>
 <translation id="6414888972213066896">Ebeveyninize bu siteyi ziyaret etmenizin uygun olup olmadığını sordunuz</translation>
 <translation id="6415900369006735853">Telefonunuz üzerinden internete bağlanın</translation>
 <translation id="6416743254476733475">Bilgisayarınızda izin verin veya engelleyin.</translation>
@@ -3963,7 +3965,6 @@ Hassas bilgileri vermediğinizden emin olun.</translation>
 <translation id="6545867563032584178">Mikrofon, Mac Sistem Tercihleri'nde kapatıldı</translation>
 <translation id="6547354035488017500">En az 512 MB alan boşaltmazsanız cihazınız yanıt vermemeye başlayacaktır. Yer açmak için cihazın depolama alanındaki dosyaları silin.</translation>
 <translation id="6549639163247690448"><ph name="DOMAIN" />, şimdi kablosuz ağa bağlanarak bir güncelleme indirmenizi gerektiriyor. İnternete bağlandığınızda güncelleme otomatik olarak indirilir.</translation>
-<translation id="6549966385318247177">Bu, erişkinlere uygun içerik nedeniyle engellendi.</translation>
 <translation id="6550675742724504774">Seçenekler</translation>
 <translation id="6551508934388063976">Komut kullanılamıyor. Yeni bir pencere açmak için Ctrl+N tuşlarına basın.</translation>
 <translation id="6551612971599078809">Sitede USB kullanılıyor</translation>
@@ -4303,7 +4304,7 @@ Hassas bilgileri vermediğinizden emin olun.</translation>
 <translation id="7040230719604914234">Operatör</translation>
 <translation id="7043108582968290193">Bitti! Uyumsuz uygulama bulunamadı.</translation>
 <translation id="7044124535091449260">Site erişimi hakkında daha fazla bilgi</translation>
-<translation id="7044606776288350625">Senkronizasyon verileri</translation>
+<translation id="7044606776288350625">Verileri senkronize et</translation>
 <translation id="7047059339731138197">Bir arka plan seçin</translation>
 <translation id="7049293980323620022">Dosya tutulsun mu?</translation>
 <translation id="7051943809462976355">Fare aranıyor...</translation>

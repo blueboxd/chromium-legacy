@@ -5,7 +5,9 @@
 #ifndef GPU_IPC_SERVICE_GPU_CHANNEL_MANAGER_DELEGATE_H_
 #define GPU_IPC_SERVICE_GPU_CHANNEL_MANAGER_DELEGATE_H_
 
+#include "build/build_config.h"
 #include "gpu/command_buffer/common/constants.h"
+#include "gpu/config/gpu_info.h"
 #include "gpu/ipc/common/surface_handle.h"
 #include "gpu/ipc/service/display_context.h"
 
@@ -64,6 +66,9 @@ class GpuChannelManagerDelegate {
   virtual gpu::Scheduler* GetGpuScheduler() = 0;
 
 #if defined(OS_WIN)
+  // Tells the delegate that overlay info was updated.
+  virtual void DidUpdateOverlayInfo(const gpu::OverlayInfo& overlay_info) = 0;
+
   // Tells the delegate that |child_window| was created in the GPU process and
   // to send an IPC to make SetParent() syscall. This syscall is blocked by the
   // GPU sandbox and must be made in the browser process.

@@ -492,6 +492,7 @@
 <translation id="1670399744444387456">Général</translation>
 <translation id="167160931442925455">Volume maximal</translation>
 <translation id="1673137583248014546"><ph name="URL" /> souhaite voir la marque et le modèle de votre clé de sécurité</translation>
+<translation id="1677472565718498478">Temps restant : <ph name="TIME" /></translation>
 <translation id="1679068421605151609">Outils de développement</translation>
 <translation id="1679806121152819234">VM Plug-in</translation>
 <translation id="1679810534535368772">Voulez-vous vraiment quitter cet écran ?</translation>
@@ -1787,6 +1788,7 @@ Vous pouvez gérer les paramètres de ce compte en installant l'application Fami
 <translation id="3462413494201477527">Annuler la configuration du compte ?</translation>
 <translation id="3464012987031883895">Un site accède à votre entrée audio</translation>
 <translation id="346431825526753">Il s'agit d'un compte pour enfants géré par <ph name="CUSTODIAN_EMAIL" />.</translation>
+<translation id="3468298837301810372">Libellé</translation>
 <translation id="3468999815377931311">Téléphone Android</translation>
 <translation id="3470442499439619530">Supprimer cet utilisateur</translation>
 <translation id="3471876058939596279">Les ports HDMI et USB Type-C ne peuvent pas être utilisés simultanément pour de la vidéo. Utilisez un autre port vidéo.</translation>
@@ -3345,7 +3347,7 @@ Assurez-vous de ne pas dévoiler d'informations sensibles.</translation>
 <translation id="5669691691057771421">Saisir le nouveau code</translation>
 <translation id="5671641761787789573">Images bloquées</translation>
 <translation id="5671658447180261823">Supprimer la suggestion <ph name="SUGGESTION_NAME" /></translation>
-<translation id="567587836466137939">Cet appareil recevra des mises à jour logicielles et de sécurité automatiques jusqu'en <ph name="MONTH_AND_YEAR" />. <ph name="LINK_BEGIN" />En savoir plus<ph name="LINK_END" /></translation>
+<translation id="567587836466137939">Cet appareil recevra automatiquement des mises à jour logicielles et de sécurité jusqu'en <ph name="MONTH_AND_YEAR" />. <ph name="LINK_BEGIN" />En savoir plus<ph name="LINK_END" /></translation>
 <translation id="567643736130151854">Connectez-vous et activez la synchronisation pour accéder à vos favoris, mots de passe et bien plus sur tous vos appareils</translation>
 <translation id="5677503058916217575">Langue de la page :</translation>
 <translation id="5677928146339483299">Bloqué</translation>
@@ -3963,7 +3965,6 @@ Assurez-vous de ne pas dévoiler d'informations sensibles.</translation>
 <translation id="6545867563032584178">Micro désactivé dans les préférences système Mac</translation>
 <translation id="6547354035488017500">Si vous ne libérez pas au moins 512 Mo en supprimant des fichiers de l'espace de stockage, votre appareil ne répondra plus.</translation>
 <translation id="6549639163247690448"><ph name="DOMAIN" /> vous demande de vous connecter au Wi-Fi et de télécharger une mise à jour. La mise à jour sera automatiquement téléchargée dès que vous serez connecté à Internet.</translation>
-<translation id="6549966385318247177">Cette extension est bloquée en raison d'un contenu réservé à un public averti.</translation>
 <translation id="6550675742724504774">Options</translation>
 <translation id="6551508934388063976">Commande indisponible. Appuyez sur CTRL + N pour ouvrir une nouvelle fenêtre.</translation>
 <translation id="6551612971599078809">Le site utilise actuellement un appareil USB</translation>
@@ -5140,7 +5141,7 @@ Conservez votre fichier de clé en lieu sûr. Vous en aurez besoin lors de la cr
 <translation id="8154790740888707867">Fichier introuvable.</translation>
 <translation id="815491593104042026">Petit problème… L'authentification a échoué, car elle a été configurée pour utiliser une URL non sécurisée (<ph name="BLOCKED_URL" />). Veuillez contacter votre administrateur.</translation>
 <translation id="8157704005178149728">Configuration de la supervision…</translation>
-<translation id="8158117992543756526">Cet appareil cessera de recevoir des mises à jour logicielles et de sécurité automatiques en <ph name="MONTH_AND_YEAR" />. <ph name="LINK_BEGIN" />En savoir plus<ph name="LINK_END" /></translation>
+<translation id="8158117992543756526">Cet appareil cessera de recevoir automatiquement des mises à jour logicielles et de sécurité en <ph name="MONTH_AND_YEAR" />. <ph name="LINK_BEGIN" />En savoir plus<ph name="LINK_END" /></translation>
 <translation id="816055135686411707">Erreur de définition du paramètre de confiance du certificat</translation>
 <translation id="816095449251911490"><ph name="SPEED" /> - <ph name="RECEIVED_AMOUNT" />, <ph name="TIME_REMAINING" /></translation>
 <translation id="8162984717805647492">{NUM_TABS,plural, =1{Déplacer l'onglet vers une nouvelle fenêtre}one{Move Tabs to New Window}other{Déplacer les onglets vers une nouvelle fenêtre}}</translation>

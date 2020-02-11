@@ -183,6 +183,7 @@ void NativeFileSystemHandleBase::DidRequestPermission(
     case Outcome::kUserDenied:
     case Outcome::kUserDismissed:
     case Outcome::kRequestAborted:
+    case Outcome::kGrantedByContentSetting:
       std::move(callback).Run(
           native_file_system_error::Ok(),
           writable ? GetWritePermissionStatus() : GetReadPermissionStatus());

@@ -21,8 +21,7 @@ namespace vr {
 WEBXR_VR_ALL_RUNTIMES_BROWSER_TEST_F(
     TestInSessionPermissionNotificationCloseWhileVisible) {
   // We need to use a local server for permission requests to not hit a DCHECK.
-  t->LoadUrlAndAwaitInitialization(
-      t->GetEmbeddedServerUrlForHtmlTestFile("generic_webxr_page"));
+  t->LoadFileAndAwaitInitialization("generic_webxr_page");
   t->EnterSessionWithUserGestureOrFail();
   // Use location instead of camera/microphone since those automatically reject
   // if a suitable device is not connected.

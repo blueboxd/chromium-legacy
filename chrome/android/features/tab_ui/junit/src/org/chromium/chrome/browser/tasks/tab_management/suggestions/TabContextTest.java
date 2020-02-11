@@ -28,6 +28,7 @@ import org.chromium.content_public.browser.NavigationController;
 import org.chromium.content_public.browser.NavigationEntry;
 import org.chromium.content_public.browser.WebContents;
 import org.chromium.testing.local.LocalRobolectricTestRunner;
+import org.chromium.url.GURL;
 
 import java.util.Arrays;
 import java.util.List;
@@ -78,8 +79,12 @@ public class TabContextTest {
         doReturn(rootId).when(tab).getRootId();
         doReturn(title).when(tab).getTitle();
         doReturn(url).when(tab).getUrlString();
+        doReturn(null).when(tab).getProfile();
         doReturn(originalUrl).when(tab).getOriginalUrl();
         WebContents webContents = mock(WebContents.class);
+        GURL gurl = mock(GURL.class);
+        doReturn("").when(gurl).getSpec();
+        doReturn(gurl).when(webContents).getVisibleUrl();
         doReturn(webContents).when(tab).getWebContents();
         NavigationController navigationController = mock(NavigationController.class);
         doReturn(navigationController).when(webContents).getNavigationController();

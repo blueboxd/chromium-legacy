@@ -492,6 +492,7 @@
 <translation id="1670399744444387456">Osnovno</translation>
 <translation id="167160931442925455">Najglasneje</translation>
 <translation id="1673137583248014546"><ph name="URL" /> si želi ogledati znamko in model varnostnega ključa</translation>
+<translation id="1677472565718498478">Še <ph name="TIME" /></translation>
 <translation id="1679068421605151609">Razvijalska orodja</translation>
 <translation id="1679806121152819234">Plugin VM</translation>
 <translation id="1679810534535368772">Ali ste prepričani, da želite zapreti?</translation>
@@ -1787,6 +1788,7 @@ Nastavitve tega računa je mogoče upravljati z namestitvijo aplikacije Family L
 <translation id="3462413494201477527">Želite preklicati nastavitev računa?</translation>
 <translation id="3464012987031883895">Spletno mesto dostopa do vhoda za zvok</translation>
 <translation id="346431825526753">To je račun za otroke, ki ga upravlja <ph name="CUSTODIAN_EMAIL" />.</translation>
+<translation id="3468298837301810372">Oznaka</translation>
 <translation id="3468999815377931311">Telefon Android</translation>
 <translation id="3470442499439619530">Odstranitev tega uporabnika</translation>
 <translation id="3471876058939596279">Vrat HDMI in USB Type-C ni mogoče hkrati uporabljati za sliko. Uporabite druga vrata za sliko.</translation>
@@ -3964,7 +3966,6 @@ Poskrbite, da ne boste razkrili morebitnih občutljivih podatkov.</translation>
 <translation id="6545867563032584178">Mikrofon je izklopljen v nastavitvah sistema macOS</translation>
 <translation id="6547354035488017500">Sprostite najmanj 512 MB prostora, sicer bo postala naprava neodzivna. Če želite sprostiti prostor, izbrišite datoteke iz shrambe v napravi.</translation>
 <translation id="6549639163247690448">Domena <ph name="DOMAIN" /> zahteva, da se povežete z omrežjem Wi-Fi in prenesete posodobitev. Posodobitev se bo samodejno prenesla, ko se povežete z internetom.</translation>
-<translation id="6549966385318247177">To je blokirano zaradi vsebine za odrasle.</translation>
 <translation id="6550675742724504774">Možnosti</translation>
 <translation id="6551508934388063976">Ukaz ni na voljo. Odprite novo okno s pritiskom tipk CTRL + N.</translation>
 <translation id="6551612971599078809">Spletno mesto uporablja USB</translation>

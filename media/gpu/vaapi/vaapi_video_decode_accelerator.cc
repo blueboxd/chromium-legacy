@@ -1094,15 +1094,16 @@ scoped_refptr<VASurface> VaapiVideoDecodeAccelerator::CreateSurface() {
   // Find the first |available_va_surfaces_| id such that the associated
   // |pictures_| entry is marked as |available_picture_buffers_|. In practice,
   // we will quickly find an available |va_surface_id|.
-  for (const auto& va_surface : available_va_surfaces_) {
-    const VASurfaceID va_surface_id = va_surface->va_surface_id();
+  for (auto it = available_va_surfaces_.begin();
+       it != available_va_surfaces_.end(); ++it) {
+    const VASurfaceID va_surface_id = (*it)->va_surface_id();
     for (const auto& id_and_picture : pictures_) {
       if (id_and_picture.second->va_surface_id() == va_surface_id &&
           base::Contains(available_picture_buffers_, id_and_picture.first)) {
         // Remove |va_surface_id| from the list of availables, and use the id
         // to return a new VASurface.
-        auto va_surface = std::move(available_va_surfaces_.front());
-        available_va_surfaces_.pop_front();
+        auto va_surface = std::move(*it);
+        available_va_surfaces_.erase(it);
         return new VASurface(
             va_surface_id, requested_pic_size_, va_surface_format_,
             base::BindOnce(va_surface_recycle_cb_, std::move(va_surface)));

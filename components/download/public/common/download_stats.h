@@ -254,11 +254,6 @@ COMPONENTS_DOWNLOAD_EXPORT void RecordDownloadCompleted(
     bool has_resumed,
     bool has_strong_validators);
 
-// Record download deletion event.
-COMPONENTS_DOWNLOAD_EXPORT void RecordDownloadDeletion(
-    base::Time completion_time,
-    const std::string& mime_type);
-
 // Record INTERRUPTED_COUNT, |reason|, |received| and |total| bytes.
 COMPONENTS_DOWNLOAD_EXPORT void RecordDownloadInterrupted(
     DownloadInterruptReason reason,

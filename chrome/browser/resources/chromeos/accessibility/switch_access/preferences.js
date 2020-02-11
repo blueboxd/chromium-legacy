@@ -6,18 +6,12 @@
  * Class to manage user preferences.
  */
 class SwitchAccessPreferences {
-  /**
-   * @param {!SwitchAccessInterface} switchAccess
-   * @param {function()} onReady A callback that is called after the
-   *     initial preferences are loaded.
-   */
-  constructor(switchAccess, onReady) {
-    /**
-     * SwitchAccess reference.
-     * @private {!SwitchAccessInterface}
-     */
-    this.switchAccess_ = switchAccess;
+  static initialize() {
+    SwitchAccessPreferences.instance = new SwitchAccessPreferences();
+  }
 
+  /** @private */
+  constructor() {
     /**
      * User preferences, initially set to the default preference values.
      * @private {!Map<SAConstants.Preference,
@@ -25,24 +19,16 @@ class SwitchAccessPreferences {
      */
     this.preferences_ = new Map();
 
-    /**
-     * Tracks whether the initial preference load has completed.
-     * @private {boolean}
-     */
-    this.isReady_ = false;
-
-    this.init_(onReady);
+    this.init_();
   }
 
   /**
    * Updates the cached preferences.
    * @param {!Array<chrome.settingsPrivate.PrefObject>} preferences
-   * @param {function()=} opt_onUpdate Optional callback, called after the
-   *     cached preferences have been updated.
+   * @param {boolean} isFirstLoad
    * @private
    */
-  updateFromSettings_(preferences, opt_onUpdate) {
-    const updatedPreferences = {};
+  updateFromSettings_(preferences, isFirstLoad = false) {
     for (const pref of preferences) {
       // Ignore preferences that are not used by Switch Access.
       if (!Object.values(SAConstants.Preference).includes(pref.key)) {
@@ -53,110 +39,56 @@ class SwitchAccessPreferences {
       const oldPrefObject = this.preferences_.get(key);
       if (!oldPrefObject || oldPrefObject.value !== pref.value) {
         this.preferences_.set(key, pref);
-        updatedPreferences[key] = pref.value;
+        switch (key) {
+          case SAConstants.Preference.AUTO_SCAN_ENABLED:
+            if (pref.type === chrome.settingsPrivate.PrefType.BOOLEAN) {
+              AutoScanManager.setEnabled(/** @type {boolean} */ (pref.value));
+            }
+            break;
+          case SAConstants.Preference.AUTO_SCAN_TIME:
+            if (pref.type === chrome.settingsPrivate.PrefType.NUMBER) {
+              AutoScanManager.setDefaultScanTime(
+                  /** @type {number} */ (pref.value));
+            }
+            break;
+          case SAConstants.Preference.AUTO_SCAN_KEYBOARD_TIME:
+            if (pref.type === chrome.settingsPrivate.PrefType.NUMBER) {
+              AutoScanManager.setKeyboardScanTime(
+                  /** @type {number} */ (pref.value));
+            }
+            break;
+        }
       }
     }
-    if (Object.keys(updatedPreferences).length > 0) {
-      this.switchAccess_.onPreferencesChanged(updatedPreferences);
-    }
 
-    if (opt_onUpdate) {
-      opt_onUpdate();
+    if (isFirstLoad) {
+      this.onInitialLoadComplete_();
     }
   }
 
-  /**
-   * @param {function()} onReady Callback that is called once preference
-   *     cache has been successfully initialized.
-   * @private
-   */
-  init_(onReady) {
-    const readyFunction = () => {
-      this.isReady_ = true;
-      onReady();
-
-      if (!this.settingsAreConfigured()) {
-        chrome.accessibilityPrivate.openSettingsSubpage(
-            'manageAccessibility/switchAccess');
-      }
-    };
-
+  /** @private */
+  init_() {
     chrome.settingsPrivate.onPrefsChanged.addListener(
         this.updateFromSettings_.bind(this));
     chrome.settingsPrivate.getAllPrefs(
-        (prefs) => this.updateFromSettings_(prefs, readyFunction));
+        (prefs) => this.updateFromSettings_(prefs, true /* isFirstLoad */));
   }
 
   /**
-   * Returns whether the preferences have been initialized or not.
-   * @return {boolean}
-   */
-  isReady() {
-    return this.isReady_;
-  }
-
-  /**
-   * Set the value of the preference |name| to |value| in |chrome.storage.sync|.
-   * |this.preferences_| is not set until |handleStorageChange_|.
-   *
-   * @param {SAConstants.Preference} name
-   * @param {boolean|number} value
-   */
-  setPreference(name, value) {
-    chrome.settingsPrivate.setPref(name, value);
-  }
-
-  /**
-   * Get the boolean value for the given name. Will throw an error if the
-   * value associated with |name| is not a boolean, or is undefined.
+   * Get the boolean value for the given name, or |null| if the value is not a
+   * boolean or does not exist.
    *
    * @param  {SAConstants.Preference} name
-   * @return {boolean}
+   * @return {boolean|null}
+   * @private
    */
-  getBooleanPreference(name) {
+  getBoolean_(name) {
     const pref = this.preferences_.get(name);
     if (pref && pref.type === chrome.settingsPrivate.PrefType.BOOLEAN) {
       return /** @type {boolean} */ (pref.value);
     } else {
-      throw SwitchAccess.error(
-          SAConstants.ErrorType.PREFERENCE_TYPE,
-          'No value of boolean type named \'' + name + '\'');
+      return null;
     }
-  }
-
-  /**
-   * Get the string value for the given name. Will throw a type error if the
-   * value associated with |name| is not a string, or is undefined.
-   *
-   * @param {SAConstants.Preference} name
-   * @return {string}
-   */
-  getStringPreference(name) {
-    const pref = this.preferences_.get(name);
-    if (pref && pref.type === chrome.settingsPrivate.PrefType.STRING) {
-      return /** @type {string} */ (pref.value);
-    } else {
-      throw SwitchAccess.error(
-          SAConstants.ErrorType.PREFERENCE_TYPE,
-          'No value of string type named \'' + name + '\'');
-    }
-  }
-
-  /**
-   * Get the number value for the given name. Will throw a type error if the
-   * value associated with |name| is not a number, or is undefined.
-   *
-   * @param  {SAConstants.Preference} name
-   * @return {number}
-   */
-  getNumberPreference(name) {
-    const value = this.getNumberPreferenceIfDefined(name);
-    if (!value) {
-      throw SwitchAccess.error(
-          SAConstants.ErrorType.PREFERENCE_TYPE,
-          'No value of number type named \'' + name + '\'');
-    }
-    return value;
   }
 
   /**
@@ -165,8 +97,9 @@ class SwitchAccessPreferences {
    *
    * @param {SAConstants.Preference} name
    * @return {number|null}
+   * @private
    */
-  getNumberPreferenceIfDefined(name) {
+  getNumber_(name) {
     const pref = this.preferences_.get(name);
     if (pref && pref.type === chrome.settingsPrivate.PrefType.NUMBER) {
       return /** @type {number} */ (pref.value);
@@ -175,19 +108,30 @@ class SwitchAccessPreferences {
   }
 
   /**
+   * Called when the preferences are finished loading for the first time.
+   * @private
+   */
+  onInitialLoadComplete_() {
+    if (!this.settingsAreConfigured_()) {
+      chrome.accessibilityPrivate.openSettingsSubpage(
+          'manageAccessibility/switchAccess');
+    }
+  }
+
+  /**
    * Whether the current settings configuration is reasonably usable;
    * specifically, whether there is a way to select and a way to navigate.
    * @return {boolean}
+   * @private
    */
-  settingsAreConfigured() {
-    const selectSetting = this.getNumberPreferenceIfDefined(
-        SAConstants.Preference.SELECT_SETTING);
-    const nextSetting =
-        this.getNumberPreferenceIfDefined(SAConstants.Preference.NEXT_SETTING);
-    const previousSetting = this.getNumberPreferenceIfDefined(
-        SAConstants.Preference.PREVIOUS_SETTING);
+  settingsAreConfigured_() {
+    const selectSetting =
+        this.getNumber_(SAConstants.Preference.SELECT_SETTING);
+    const nextSetting = this.getNumber_(SAConstants.Preference.NEXT_SETTING);
+    const previousSetting =
+        this.getNumber_(SAConstants.Preference.PREVIOUS_SETTING);
     const autoScanEnabled =
-        this.getBooleanPreference(SAConstants.Preference.AUTO_SCAN_ENABLED);
+        !!this.getBoolean_(SAConstants.Preference.AUTO_SCAN_ENABLED);
 
     if (!selectSetting) {
       return false;

@@ -120,6 +120,12 @@ void GpuDataManagerImpl::UpdateDx12VulkanInfo(
   private_->UpdateDx12VulkanInfo(dx12_vulkan_version_info);
 }
 
+void GpuDataManagerImpl::UpdateOverlayInfo(
+    const gpu::OverlayInfo& overlay_info) {
+  base::AutoLock auto_lock(lock_);
+  private_->UpdateOverlayInfo(overlay_info);
+}
+
 void GpuDataManagerImpl::UpdateDxDiagNodeRequestStatus(bool request_continues) {
   base::AutoLock auto_lock(lock_);
   private_->UpdateDxDiagNodeRequestStatus(request_continues);

@@ -20,6 +20,7 @@ enum WebGLExtensionName {
   kEXTShaderTextureLODName,
   kEXTsRGBName,
   kEXTTextureCompressionBPTCName,
+  kEXTTextureCompressionRGTCName,
   kEXTTextureFilterAnisotropicName,
   kEXTTextureNorm16Name,
   kKHRParallelShaderCompileName,

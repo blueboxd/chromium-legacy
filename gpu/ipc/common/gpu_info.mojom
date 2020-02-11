@@ -124,6 +124,15 @@ struct Dx12VulkanVersionInfo {
   uint32 vulkan_version;
 };
 
+// gpu::OverlayInfo
+[EnableIf=is_win]
+struct OverlayInfo {
+  bool direct_composition;
+  bool supports_overlays;
+  OverlaySupport yuy2_overlay_support;
+  OverlaySupport nv12_overlay_support;
+};
+
 // Corresponds to |gpu::GPUInfo| in gpu/config/gpu_info.h
 struct GpuInfo {
   mojo_base.mojom.TimeDelta initialization_time;
@@ -152,17 +161,11 @@ struct GpuInfo {
   bool can_support_threaded_texture_mailbox;
 
   [EnableIf=is_win]
-  bool direct_composition;
-  [EnableIf=is_win]
-  bool supports_overlays;
-  [EnableIf=is_win]
-  OverlaySupport yuy2_overlay_support;
-  [EnableIf=is_win]
-  OverlaySupport nv12_overlay_support;
-  [EnableIf=is_win]
   DxDiagNode dx_diagnostics;
   [EnableIf=is_win]
   Dx12VulkanVersionInfo dx12_vulkan_version_info;
+  [EnableIf=is_win]
+  OverlayInfo overlay_info;
 
   VideoDecodeAcceleratorCapabilities video_decode_accelerator_capabilities;
   array<VideoEncodeAcceleratorSupportedProfile>

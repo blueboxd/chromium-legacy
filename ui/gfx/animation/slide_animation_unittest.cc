@@ -220,4 +220,23 @@ TEST_F(SlideAnimationTest, DampenedAnimationMostlyIncomplete) {
   EXPECT_EQ(0, slide_animation_->GetCurrentValue());
 }
 
+TEST_F(SlideAnimationTest, HideFromHalfway) {
+  auto container = base::MakeRefCounted<AnimationContainer>();
+  AnimationContainerTestApi test_api(container.get());
+
+  slide_animation_->SetContainer(container.get());
+  slide_animation_->SetTweenType(Tween::LINEAR);
+  slide_animation_->SetSlideDuration(base::TimeDelta::FromMilliseconds(100));
+
+  slide_animation_->Reset(0.5);
+  EXPECT_FALSE(slide_animation_->is_animating());
+  EXPECT_EQ(0.5, slide_animation_->GetCurrentValue());
+
+  slide_animation_->Hide();
+  ASSERT_TRUE(slide_animation_->is_animating());
+
+  test_api.IncrementTime(base::TimeDelta::FromMilliseconds(100));
+  EXPECT_EQ(0.0, slide_animation_->GetCurrentValue());
+}
+
 }  // namespace gfx

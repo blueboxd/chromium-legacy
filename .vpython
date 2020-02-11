@@ -21,6 +21,9 @@
 #
 # Read more about `vpython` and how to modify this file here:
 #   https://chromium.googlesource.com/infra/infra/+/master/doc/users/vpython.md
+#
+# For the definition of this spec, see:
+#   https://chromium.googlesource.com/infra/luci/luci-go/+/master/vpython/api/vpython/spec.proto
 
 python_version: "2.7"
 
@@ -29,6 +32,19 @@ python_version: "2.7"
 wheel: <
   name: "infra/python/wheels/jsonlines-py2_py3"
   version: "version:1.2.0"
+>
+wheel: <
+  name: "infra/python/wheels/subprocess32/${vpython_platform}"
+  version: "version:3.5.0rc1"
+  # Only download for linux since we shouldn't be running CrOS tests on mac/win.
+  match_tag: <
+    abi: "cp27mu"
+    platform: "manylinux1_i686"
+  >
+  match_tag: <
+    abi: "cp27mu"
+    platform: "manylinux1_x86_64"
+  >
 >
 
 # Used by:

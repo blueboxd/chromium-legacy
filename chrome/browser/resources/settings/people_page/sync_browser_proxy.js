@@ -145,6 +145,16 @@ cr.define('settings', function() {
      */
     attemptUserExit() {}
 
+    /**
+     * Turns on sync for the currently logged in user. Chrome OS users are
+     * always signed in.
+     */
+    turnOnSync() {}
+
+    /**
+     * Turns off sync without signing out the user.
+     */
+    turnOffSync() {}
     // </if>
 
     /**
@@ -260,6 +270,16 @@ cr.define('settings', function() {
     /** @override */
     attemptUserExit() {
       return chrome.send('AttemptUserExit');
+    }
+
+    /** @override */
+    turnOnSync() {
+      return chrome.send('TurnOnSync');
+    }
+
+    /** @override */
+    turnOffSync() {
+      return chrome.send('TurnOffSync');
     }
     // </if>
 

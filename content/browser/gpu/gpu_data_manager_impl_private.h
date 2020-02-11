@@ -68,6 +68,7 @@ class CONTENT_EXPORT GpuDataManagerImplPrivate {
   void UpdateDxDiagNode(const gpu::DxDiagNode& dx_diagnostics);
   void UpdateDx12VulkanInfo(
       const gpu::Dx12VulkanVersionInfo& dx12_vulkan_version_info);
+  void UpdateOverlayInfo(const gpu::OverlayInfo& overlay_info);
   void UpdateDx12VulkanRequestStatus(bool request_continues);
   void UpdateDxDiagNodeRequestStatus(bool request_continues);
   bool Dx12VulkanRequested() const;

@@ -31,12 +31,13 @@ class GL_EXPORT GpuSwitchingManager {
   // The GpuPreference argument is a heuristic indicating whether the
   // system is known to be on the low-power or high-performance GPU.
   // If this heuristic fails, then kDefault is passed as argument.
+  // Only Mac is supported for now.
   void NotifyGpuSwitched(gl::GpuPreference active_gpu_heuristic);
 
-  // Called when a monitor is plugged in.
+  // Called when a monitor is plugged in. Only Windows is supported for now.
   void NotifyDisplayAdded();
 
-  // Called when a monitor is unplugged.
+  // Called when a monitor is unplugged.  Only Windows is supported for now.
   void NotifyDisplayRemoved();
 
  private:

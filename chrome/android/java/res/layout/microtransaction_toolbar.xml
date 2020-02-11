@@ -61,7 +61,7 @@
         android:layout_toEndOf="@id/payment_app_icon"
         android:layout_width="wrap_content"
         android:paddingTop="@dimen/microtransaction_toolbar_small_status_text_top_spacing"
-        android:textAppearance="@style/TextAppearance.BlueLink3"/>
+        android:textAppearance="@style/TextAppearance.TextSmall.Blue"/>
 
     <!-- Currency label, e.g., "USD". -->
     <TextView

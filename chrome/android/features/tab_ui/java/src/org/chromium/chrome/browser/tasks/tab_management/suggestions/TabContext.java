@@ -6,6 +6,8 @@ package org.chromium.chrome.browser.tasks.tab_management.suggestions;
 
 import android.text.TextUtils;
 
+import org.chromium.chrome.browser.engagement.SiteEngagementService;
+import org.chromium.chrome.browser.profiles.Profile;
 import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.browser.tab.TabImpl;
 import org.chromium.chrome.browser.tabmodel.TabModelFilter;
@@ -64,18 +66,22 @@ public class TabContext {
         public final int id;
         public final String title;
         public final String originalUrl;
+        public final Profile profile;
+        public final String visibleUrl;
 
         /**
          * Constructs a new TabInfo object
          */
         protected TabInfo(int id, String title, String url, String originalUrl, String referrerUrl,
-                long timestampMillis) {
+                long timestampMillis, Profile profile, String visibleUrl) {
             this.id = id;
             this.title = title;
             this.url = url;
             this.originalUrl = originalUrl;
             this.referrerUrl = referrerUrl;
             this.timestampMillis = timestampMillis;
+            this.profile = profile;
+            this.visibleUrl = visibleUrl;
         }
 
         /**
@@ -85,7 +91,12 @@ public class TabContext {
             String referrerUrl = getReferrerUrlFromTab(tab);
             return new TabInfo(tab.getId(), tab.getTitle(), tab.getUrlString(),
                     ((TabImpl) tab).getOriginalUrl(), referrerUrl != null ? referrerUrl : "",
-                    tab.getTimestampMillis());
+                    tab.getTimestampMillis(), ((TabImpl) tab).getProfile(),
+                    tab.getWebContents().getVisibleUrl().getSpec());
+        }
+
+        public double getSiteEngagementScore() {
+            return SiteEngagementService.getForProfile(profile).getScore(visibleUrl);
         }
 
         private static String getReferrerUrlFromTab(Tab tab) {

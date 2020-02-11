@@ -1,19 +1,19 @@
 diff --git a/src/main/java/com/android/tools/r8/utils/InternalOptions.java b/src/main/java/com/android/tools/r8/utils/InternalOptions.java
-index 5b0400f6e..0151ec387 100644
+index 595ac28da..e96f06364 100644
 --- a/src/main/java/com/android/tools/r8/utils/InternalOptions.java
 +++ b/src/main/java/com/android/tools/r8/utils/InternalOptions.java
-@@ -195,8 +195,8 @@ public class InternalOptions {
-   public boolean enableFieldAssignmentTracker = true;
+@@ -194,8 +194,8 @@ public class InternalOptions {
+   public boolean enableDynamicTypeOptimization = true;
    public boolean enableFieldBitAccessAnalysis =
        System.getProperty("com.android.tools.r8.fieldBitAccessAnalysis") != null;
 -  public boolean enableHorizontalClassMerging = true;
 -  public boolean enableVerticalClassMerging = true;
-+  public boolean enableHorizontalClassMerging = System.getProperty("com.android.tools.r8.enableClassMerging") != null;
-+  public boolean enableVerticalClassMerging = System.getProperty("com.android.tools.r8.enableClassMerging") != null;
++  public boolean enableHorizontalClassMerging = false;
++  public boolean enableVerticalClassMerging = false;
    public boolean enableArgumentRemoval = true;
    public boolean enableUnusedArgumentRemoval = true;
    public boolean enableUnusedInterfaceRemoval = true;
-@@ -939,7 +939,7 @@ public class InternalOptions {
+@@ -919,7 +919,7 @@ public class InternalOptions {
      public static final String CLASS_NAME = "com.android.tools.r8.GeneratedOutlineSupport";
      public static final String METHOD_PREFIX = "outline";
  

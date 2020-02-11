@@ -9,6 +9,9 @@ let model;
 let columns;
 
 function setUp() {
+  window.loadTimeData.getString = id => id;
+  window.loadTimeData.getBoolean = id => false;
+
   columns = [
     new cr.ui.table.TableColumn('col0', 'col0', 100),
     new cr.ui.table.TableColumn('col1', 'col1', 100),

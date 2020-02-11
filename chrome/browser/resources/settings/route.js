@@ -21,6 +21,7 @@ cr.define('settings', function() {
     }
     if (loadTimeData.getBoolean('privacySettingsRedesignEnabled')) {
       r.SECURITY = r.PRIVACY.createChild('/security');
+      r.COOKIES = r.PRIVACY.createChild('/cookies');
     }
 
     r.SITE_SETTINGS_ALL = r.SITE_SETTINGS.createChild('all');

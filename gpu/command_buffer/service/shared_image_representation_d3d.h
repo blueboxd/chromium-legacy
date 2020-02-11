@@ -20,21 +20,6 @@
 
 namespace gpu {
 
-// Representation of a SharedImageBackingD3D as a GL Texture.
-class SharedImageRepresentationGLTextureD3D
-    : public SharedImageRepresentationGLTexture {
- public:
-  SharedImageRepresentationGLTextureD3D(SharedImageManager* manager,
-                                        SharedImageBacking* backing,
-                                        MemoryTypeTracker* tracker,
-                                        gles2::Texture* texture);
-  ~SharedImageRepresentationGLTextureD3D() override;
-  gles2::Texture* GetTexture() override;
-
- private:
-  gles2::Texture* const texture_;
-};
-
 // Representation of a SharedImageBackingD3D as a GL TexturePassthrough.
 class SharedImageRepresentationGLTexturePassthroughD3D
     : public SharedImageRepresentationGLTexturePassthrough {
@@ -43,7 +28,7 @@ class SharedImageRepresentationGLTexturePassthroughD3D
       SharedImageManager* manager,
       SharedImageBacking* backing,
       MemoryTypeTracker* tracker,
-      scoped_refptr<gles2::TexturePassthrough> texture_passthrough);
+      scoped_refptr<gles2::TexturePassthrough> texture);
   ~SharedImageRepresentationGLTexturePassthroughD3D() override;
 
   const scoped_refptr<gles2::TexturePassthrough>& GetTexturePassthrough()
@@ -53,7 +38,7 @@ class SharedImageRepresentationGLTexturePassthroughD3D
   bool BeginAccess(GLenum mode) override;
   void EndAccess() override;
 
-  scoped_refptr<gles2::TexturePassthrough> texture_passthrough_;
+  scoped_refptr<gles2::TexturePassthrough> texture_;
 };
 
 // Representation of a SharedImageBackingD3D as a Dawn Texture

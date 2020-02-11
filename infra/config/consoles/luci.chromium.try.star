@@ -146,6 +146,7 @@ luci.list_view(
         'try/ios13-sdk-simulator',
         'try/mac-angle-rel',
         'try/mac-rel',
+        'try/mac-coverage-rel',
         'try/mac_chromium_10.10',
         'try/mac_chromium_10.12_rel_ng',
         'try/mac_chromium_10.13_rel_ng',

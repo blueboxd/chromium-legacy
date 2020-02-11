@@ -15,8 +15,6 @@ function MediaHistoryWebUIBrowserTest() {}
 MediaHistoryWebUIBrowserTest.prototype = {
   __proto__: testing.Test.prototype,
 
-  browsePreload: 'chrome://media-history',
-
   featureList: {enabled: ['media::kUseMediaHistoryStore']},
 
   isAsync: true,
@@ -34,7 +32,20 @@ GEN('#else');
 GEN('#define MAYBE_All All');
 GEN('#endif');
 
-TEST_F('MediaHistoryWebUIBrowserTest', 'MAYBE_All', function() {
+/**
+ * Tests for the stats tab.
+ * @extends {MediaHistoryWebUIBrowserTest}
+ */
+function MediaHistoryStatsWebUIBrowserTest() {}
+
+MediaHistoryStatsWebUIBrowserTest.prototype = {
+  __proto__: MediaHistoryWebUIBrowserTest.prototype,
+
+  /** @override */
+  browsePreload: 'chrome://media-history#tab-stats',
+};
+
+TEST_F('MediaHistoryStatsWebUIBrowserTest', 'MAYBE_All', function() {
   suiteSetup(function() {
     return whenPageIsPopulatedForTest();
   });
@@ -50,6 +61,27 @@ TEST_F('MediaHistoryWebUIBrowserTest', 'MAYBE_All', function() {
         ],
         statsRows.map(
             x => [x.children[0].textContent, x.children[1].textContent]));
+  });
+
+  mocha.run();
+});
+
+/**
+ * Tests for the origins tab.
+ * @extends {MediaHistoryWebUIBrowserTest}
+ */
+function MediaHistoryOriginsWebUIBrowserTest() {}
+
+MediaHistoryOriginsWebUIBrowserTest.prototype = {
+  __proto__: MediaHistoryWebUIBrowserTest.prototype,
+
+  /** @override */
+  browsePreload: 'chrome://media-history#tab-origins',
+};
+
+TEST_F('MediaHistoryOriginsWebUIBrowserTest', 'MAYBE_All', function() {
+  suiteSetup(function() {
+    return whenPageIsPopulatedForTest();
   });
 
   test('check data table is loaded', () => {

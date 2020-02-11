@@ -21,9 +21,6 @@ namespace download {
 
 namespace {
 
-// The maximium value for download deletion retention time histogram.
-const int kMaxDeletionRetentionHours = 720;
-
 // All possible error codes from the network module. Note that the error codes
 // are all positive (since histograms expect positive sample values).
 const int kAllInterruptReasonCodes[] = {
@@ -176,28 +173,6 @@ void RecordDownloadCompleted(int64_t download_len,
   if (has_resumed) {
     base::UmaHistogramBoolean("Download.ResumptionComplete.HasStrongValidators",
                               has_strong_validators);
-  }
-}
-
-void RecordDownloadDeletion(base::Time completion_time,
-                            const std::string& mime_type) {
-  if (completion_time == base::Time())
-    return;
-
-  // Records how long the user keeps media files on disk.
-  base::TimeDelta retention_time = base::Time::Now() - completion_time;
-  int retention_hours = retention_time.InHours();
-
-  DownloadContent type = DownloadContentFromMimeType(mime_type, false);
-  if (type == DownloadContent::VIDEO) {
-    UMA_HISTOGRAM_CUSTOM_COUNTS("Download.DeleteRetentionTime.Video",
-                                retention_hours, 1, kMaxDeletionRetentionHours,
-                                50);
-  }
-  if (type == DownloadContent::AUDIO) {
-    UMA_HISTOGRAM_CUSTOM_COUNTS("Download.DeleteRetentionTime.Audio",
-                                retention_hours, 1, kMaxDeletionRetentionHours,
-                                50);
   }
 }
 

@@ -69,8 +69,6 @@ SkColor GetAuraColor(NativeTheme::ColorId color_id,
       case NativeTheme::kColorId_ButtonBorderColor:
         return gfx::kGoogleGrey800;
       case NativeTheme::kColorId_ButtonEnabledColor:
-      case NativeTheme::kColorId_ButtonHoveredColor:
-      case NativeTheme::kColorId_ButtonPressedColor:
       case NativeTheme::kColorId_ProminentButtonColor:
         return gfx::kGoogleBlue300;
       case NativeTheme::kColorId_ButtonHoverColor:
@@ -206,8 +204,6 @@ SkColor GetAuraColor(NativeTheme::ColorId color_id,
 
     // Buttons
     case NativeTheme::kColorId_ButtonEnabledColor:
-    case NativeTheme::kColorId_ButtonHoveredColor:
-    case NativeTheme::kColorId_ButtonPressedColor:
       return gfx::kGoogleBlue600;
     case NativeTheme::kColorId_ButtonInkDropShadowColor:
       return SkColorSetA(SK_ColorBLACK, 0x1A);

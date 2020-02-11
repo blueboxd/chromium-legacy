@@ -1042,13 +1042,14 @@ void TabletModeController::TakeScreenshot(aura::Window* top_window) {
       kShellWindowId_ScreenRotationContainer);
   base::OnceClosure callback = screenshot_set_callback_.callback();
 
-  CreatePhantomShelf(top_window);
-  UpdateShelf(top_window->GetRootWindow(), false);
+  aura::Window* root_window = top_window->GetRootWindow();
+
+  UpdateShelfVisibilityForScreenshot(root_window, /*show=*/false);
 
   // Request a screenshot.
   screenshot_taken_callback_.Reset(base::BindOnce(
       &TabletModeController::OnScreenshotTaken, weak_factory_.GetWeakPtr(),
-      std::move(callback), top_window->GetRootWindow()));
+      std::move(callback), root_window));
 
   const gfx::Rect request_bounds(screenshot_window->layer()->size());
   auto screenshot_request = std::make_unique<viz::CopyOutputRequest>(
@@ -1068,9 +1069,11 @@ void TabletModeController::OnScreenshotTaken(
       destroy_observer_ ? destroy_observer_->window() : nullptr;
   ResetDestroyObserver();
 
-  phantom_shelf_layer_.reset();
+  // Cancel if the root window is deleted while taking a screenshot.
+  if (!base::Contains(Shell::GetAllRootWindows(), root_window))
+    return;
 
-  UpdateShelf(root_window, true);
+  UpdateShelfVisibilityForScreenshot(root_window, /*show=*/true);
 
   if (!copy_result || copy_result->IsEmpty() || !top_window) {
     std::move(on_screenshot_taken).Run();
@@ -1088,27 +1091,23 @@ void TabletModeController::OnScreenshotTaken(
   std::move(on_screenshot_taken).Run();
 }
 
-void TabletModeController::UpdateShelf(aura::Window* root_window,
-                                       bool visible) {
-  if (!base::Contains(Shell::GetAllRootWindows(), root_window))
-    return;
-
+void TabletModeController::UpdateShelfVisibilityForScreenshot(
+    aura::Window* root_window,
+    bool show) {
   DCHECK(root_window->IsRootWindow());
-  Shelf::ForWindow(root_window)
-      ->GetWindow()
-      ->layer()
-      ->SetOpacity(visible ? 1 : 0);
-}
-
-void TabletModeController::CreatePhantomShelf(aura::Window* window) {
   auto* shelf_container =
-      window->GetRootWindow()->GetChildById(kShellWindowId_ShelfContainer);
+      root_window->GetChildById(kShellWindowId_ShelfContainer);
 
-  phantom_shelf_layer_ = wm::RecreateLayers(shelf_container);
-  ui::Layer* root = phantom_shelf_layer_->root();
-  aura::Window* root_window = window->GetRootWindow();
-  root_window->layer()->Add(root);
-  root_window->layer()->StackAtTop(root);
+  if (show) {
+    phantom_shelf_layer_.reset();
+  } else {
+    phantom_shelf_layer_ = wm::RecreateLayers(shelf_container);
+    ui::Layer* root = phantom_shelf_layer_->root();
+    root_window->layer()->Add(root);
+    root_window->layer()->StackAtTop(root);
+  }
+
+  shelf_container->layer()->SetOpacity(show ? 1 : 0);
 }
 
 bool TabletModeController::CalculateIsInTabletPhysicalState() const {

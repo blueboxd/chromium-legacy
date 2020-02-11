@@ -17,6 +17,7 @@
 class Profile;
 
 namespace apps {
+class AppServiceProxy;
 class AppUpdate;
 class InstanceUpdate;
 }  // namespace apps
@@ -81,6 +82,17 @@ class AppServiceWrapper : public apps::AppRegistryCache::Observer,
   AppServiceWrapper& operator=(const AppServiceWrapper&) = delete;
   ~AppServiceWrapper() override;
 
+  // Pauses the app identified by |app_id|.
+  // Uses |daily_limit| to communicate applied time restriction to the user by
+  // showing the dialog. After this is called user will not be able to launch
+  // the app and the visual effect will be applied to the icon.
+  void PauseApp(const AppId& app_id, base::TimeDelta daily_limit);
+
+  // Resets time restriction from the app identified with |app_id|. After this
+  // is called user will be able to use the app again and the visual effect
+  // will be removed from the icon.
+  void ResumeApp(const AppId& app_id);
+
   // Returns installed apps that are relevant for Per-App Time Limits feature.
   // Installed apps of unsupported types will not be included.
   std::vector<AppId> GetInstalledApps() const;
@@ -115,6 +127,7 @@ class AppServiceWrapper : public apps::AppRegistryCache::Observer,
       apps::InstanceRegistry* cache) override;
 
  private:
+  apps::AppServiceProxy* GetAppProxy();
   apps::AppRegistryCache& GetAppCache() const;
   apps::InstanceRegistry& GetInstanceRegistry() const;
 

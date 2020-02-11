@@ -74,12 +74,53 @@ const base::Optional<AppLimit>& AppActivityRegistry::TestApi::GetAppLimit(
   return registry_->activity_registry_.at(app_id).limit;
 }
 
+base::Optional<base::TimeDelta> AppActivityRegistry::TestApi::GetTimeLeft(
+    const AppId& app_id) const {
+  return registry_->GetTimeLeftForApp(app_id);
+}
+
 AppActivityRegistry::AppDetails::AppDetails() = default;
 
 AppActivityRegistry::AppDetails::AppDetails(const AppActivity& activity)
     : activity(activity) {}
 
 AppActivityRegistry::AppDetails::~AppDetails() = default;
+
+void AppActivityRegistry::AppDetails::ResetTimeCheck() {
+  activity.set_last_notification(AppNotification::kUnknown);
+  if (app_limit_timer)
+    app_limit_timer->AbandonAndStop();
+}
+
+bool AppActivityRegistry::AppDetails::IsLimitReached() const {
+  if (!limit.has_value())
+    return false;
+
+  if (limit->restriction() != AppRestriction::kTimeLimit)
+    return false;
+
+  DCHECK(limit->daily_limit());
+  if (limit->daily_limit() > activity.RunningActiveTime())
+    return false;
+
+  return true;
+}
+
+bool AppActivityRegistry::AppDetails::IsLimitEqual(
+    const base::Optional<AppLimit>& another_limit) const {
+  if (limit.has_value() != another_limit.has_value())
+    return false;
+
+  if (!limit.has_value())
+    return true;
+
+  if (limit->restriction() == another_limit->restriction() &&
+      limit->daily_limit() == another_limit->daily_limit()) {
+    return true;
+  }
+
+  return false;
+}
 
 AppActivityRegistry::AppActivityRegistry(
     AppServiceWrapper* app_service_wrapper,
@@ -88,6 +129,7 @@ AppActivityRegistry::AppActivityRegistry(
       notification_delegate_(notification_delegate) {
   DCHECK(app_service_wrapper_);
   DCHECK(notification_delegate_);
+  // TODO(agawronska): Read stored data.
   app_service_wrapper_->AddObserver(this);
 }
 
@@ -100,8 +142,6 @@ void AppActivityRegistry::OnAppInstalled(const AppId& app_id) {
   // sessions and app service does not. Make sure not to override cached state.
   if (!base::Contains(activity_registry_, app_id))
     Add(app_id);
-
-  // TODO(agawronska): Update the limit from policy when new app is installed.
 }
 
 void AppActivityRegistry::OnAppUninstalled(const AppId& app_id) {
@@ -198,39 +238,14 @@ bool AppActivityRegistry::IsAppActive(const AppId& app_id) const {
   return activity_registry_.at(app_id).activity.is_active();
 }
 
-bool AppActivityRegistry::SetAppTimeLimitForTest(const AppId& app_id,
-                                                 base::TimeDelta time_limit,
-                                                 base::Time timestamp) {
-  DCHECK(base::Contains(activity_registry_, app_id));
-  AppDetails& details = activity_registry_.at(app_id);
-  details.limit = AppLimit(AppRestriction::kTimeLimit, time_limit, timestamp);
+void AppActivityRegistry::AddAppStateObserver(
+    AppActivityRegistry::AppStateObserver* observer) {
+  app_state_observers_.AddObserver(observer);
+}
 
-  details.activity.set_last_notification(AppNotification::kUnknown);
-  base::TimeDelta active_time = details.activity.RunningActiveTime();
-
-  if (details.activity.is_active() && active_time < time_limit) {
-    // The application still has some time before it reaches its time limit.
-    if (details.app_limit_timer)
-      details.app_limit_timer->AbandonAndStop();
-    ScheduleTimeLimitCheckForApp(app_id);
-
-    // No change in state.
-    return false;
-  }
-
-  if (active_time < time_limit &&
-      details.activity.app_state() == AppState::kLimitReached) {
-    details.activity.SetAppState(AppState::kAvailable);
-    return true;
-  }
-
-  if (active_time >= time_limit &&
-      details.activity.app_state() == AppState::kAvailable) {
-    details.activity.SetAppInactive(timestamp);
-    details.activity.SetAppState(AppState::kLimitReached);
-    return true;
-  }
-  return false;
+void AppActivityRegistry::RemoveAppStateObserver(
+    AppActivityRegistry::AppStateObserver* observer) {
+  app_state_observers_.RemoveObserver(observer);
 }
 
 base::TimeDelta AppActivityRegistry::GetActiveTime(const AppId& app_id) const {
@@ -306,15 +321,56 @@ void AppActivityRegistry::UpdateAppLimits(
     const std::map<AppId, AppLimit>& app_limits) {
   for (auto& entry : activity_registry_) {
     const AppId& app_id = entry.first;
-    const base::Optional<AppLimit>& app_limit = entry.second.limit;
-    if (!base::Contains(app_limits, app_id)) {
-      if (app_limit)
-        entry.second.limit = base::nullopt;
-    } else {
-      entry.second.limit = app_limits.at(app_id);
-    }
+    base::Optional<AppLimit> new_limit;
+    if (base::Contains(app_limits, app_id))
+      new_limit = app_limits.at(app_id);
+    SetAppLimit(app_id, new_limit);
   }
-  // TODO(agawronska): Propagate information about the limit changes.
+}
+
+void AppActivityRegistry::SetAppLimit(
+    const AppId& app_id,
+    const base::Optional<AppLimit>& app_limit) {
+  DCHECK(base::Contains(activity_registry_, app_id));
+  AppDetails& details = activity_registry_.at(app_id);
+
+  // Limit 'data' are considered equal if only the |last_updated_| is different.
+  // Update the limit to store new |last_updated_| value.
+  bool did_change = !details.IsLimitEqual(app_limit);
+  details.limit = app_limit;
+
+  // Limit 'data' is the same - no action needed.
+  if (!did_change)
+    return;
+
+  // TODO(agawronska): Handle web limit changes here.
+
+  // Limit for the active app changed - adjust the timers.
+  // Handling of active app is different, because ongoing activity needs to be
+  // taken into account.
+  if (IsAppActive(app_id)) {
+    details.ResetTimeCheck();
+    ScheduleTimeLimitCheckForApp(app_id);
+    return;
+  }
+
+  // Inactive available app reached the limit - update the state.
+  // If app is in any other state than |kAvailable| the limit does not take
+  // effect.
+  if (IsAppAvailable(app_id) && details.IsLimitReached()) {
+    SetAppInactive(app_id, base::Time::Now());
+    SetAppState(app_id, AppState::kLimitReached);
+    return;
+  }
+
+  // Paused inactive app is below the limit again - update the state.
+  // This can happen if the limit was removed or new limit is greater the the
+  // previous one. We know that the state should be available, because app can
+  // only reach the limit if it is available.
+  if (IsAppTimeLimitReached(app_id) && !details.IsLimitReached()) {
+    SetAppState(app_id, AppState::kAvailable);
+    return;
+  }
 }
 
 void AppActivityRegistry::OnChromeAppActivityChanged(
@@ -350,12 +406,11 @@ void AppActivityRegistry::OnResetTimeReached(base::Time timestamp) {
     details.activity.ResetRunningActiveTime(timestamp);
 
     // If timer is running, stop timer. Abandon all tasks set.
-    if (details.app_limit_timer)
-      details.app_limit_timer->AbandonAndStop();
+    details.ResetTimeCheck();
 
     // If the time limit has been reached, mark the app as available.
     if (details.activity.app_state() == AppState::kLimitReached)
-      details.activity.SetAppState(AppState::kAvailable);
+      SetAppState(app, AppState::kAvailable);
 
     // If the application is currently active, schedule a time limit
     // check.
@@ -366,11 +421,32 @@ void AppActivityRegistry::OnResetTimeReached(base::Time timestamp) {
 
 void AppActivityRegistry::Add(const AppId& app_id) {
   activity_registry_[app_id].activity = AppActivity(AppState::kAvailable);
+  for (auto& observer : app_state_observers_)
+    observer.OnAppInstalled(app_id);
 }
 
 void AppActivityRegistry::SetAppState(const AppId& app_id, AppState app_state) {
   DCHECK(base::Contains(activity_registry_, app_id));
-  activity_registry_.at(app_id).activity.SetAppState(app_state);
+  AppActivity& app_activity = activity_registry_.at(app_id).activity;
+  AppState previous_state = app_activity.app_state();
+  app_activity.SetAppState(app_state);
+
+  if (app_activity.app_state() == AppState::kLimitReached) {
+    for (auto& observer : app_state_observers_) {
+      const base::Optional<AppLimit>& limit =
+          activity_registry_.at(app_id).limit;
+      DCHECK(limit->daily_limit());
+      observer.OnAppLimitReached(app_id, limit->daily_limit().value());
+    }
+    return;
+  }
+
+  if (previous_state == AppState::kLimitReached &&
+      app_activity.app_state() != AppState::kLimitReached) {
+    for (auto& observer : app_state_observers_)
+      observer.OnAppLimitRemoved(app_id);
+    return;
+  }
 }
 
 void AppActivityRegistry::SetAppActive(const AppId& app_id,
@@ -392,8 +468,7 @@ void AppActivityRegistry::SetAppInactive(const AppId& app_id,
   auto& details = activity_registry_.at(app_id);
 
   details.activity.SetAppInactive(timestamp);
-  if (details.app_limit_timer)
-    details.app_limit_timer->AbandonAndStop();
+  details.ResetTimeCheck();
 
   // If the application is a web app, synchronize its running active time with
   // those of other inactive web apps.
@@ -532,7 +607,7 @@ void AppActivityRegistry::CheckTimeLimitForApp(const AppId& app_id) {
       // Set app activity state as time limit reached.
       details.active_windows.clear();
       details.activity.SetAppInactive(base::Time::Now());
-      details.activity.SetAppState(AppState::kLimitReached);
+      SetAppState(app_id, AppState::kLimitReached);
     }
 
     notification_delegate_->ShowAppTimeLimitNotification(
@@ -575,7 +650,7 @@ void AppActivityRegistry::WebTimeLimitReached(base::Time timestamp) {
       details.active_windows.clear();
       details.activity.SetAppInactive(timestamp);
     }
-    details.activity.SetAppState(AppState::kLimitReached);
+    SetAppState(app_id, AppState::kLimitReached);
   }
 }
 

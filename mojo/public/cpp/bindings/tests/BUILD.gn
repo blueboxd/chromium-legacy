@@ -23,6 +23,7 @@ source_set("tests") {
     "data_view_unittest.cc",
     "enum_headers_unittest.cc",
     "equals_unittest.cc",
+    "extra_cpp_template_unittest.cc",
     "flush_async_unittest.cc",
     "handle_passing_unittest.cc",
     "hash_unittest.cc",
@@ -61,6 +62,7 @@ source_set("tests") {
 
   deps = [
     ":mojo_public_bindings_test_utils",
+    ":test_extra_cpp_template_mojom",
     ":test_mojom",
     "//base/test:test_support",
     "//mojo/core/embedder",
@@ -132,6 +134,14 @@ source_set("struct_with_traits_impl") {
     "//base",
     "//mojo/public/cpp/system:system",
   ]
+}
+
+mojom("test_extra_cpp_template_mojom") {
+  testonly = true
+  sources = [ "extra_cpp_template_unittest.test-mojom" ]
+
+  extra_cpp_template_paths = [ "extra_cpp_template_unittest.h.tmpl" ]
+  public_deps = [ "//mojo/public/mojom/base" ]
 }
 
 mojom("test_mojom") {

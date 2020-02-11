@@ -28,6 +28,8 @@ const int kS3TCDXT3AndDXT5BlockSize = 16;
 const int kEACAndETC2BlockSize = 4;
 const int kBPTCBlockWidth = 4;
 const int kBPTCBlockHeight = 4;
+const int kRGTCBlockWidth = 4;
+const int kRGTCBlockHeight = 4;
 
 typedef struct {
   int blockWidth;
@@ -501,6 +503,15 @@ bool GetCompressedTexSizeInBytes(const char* function_name,
       bytes_required *= 16;
       bytes_required *= depth;
       break;
+    case GL_COMPRESSED_RED_RGTC1_EXT:
+    case GL_COMPRESSED_SIGNED_RED_RGTC1_EXT:
+    case GL_COMPRESSED_RED_GREEN_RGTC2_EXT:
+    case GL_COMPRESSED_SIGNED_RED_GREEN_RGTC2_EXT:
+      bytes_required = (width + kRGTCBlockWidth - 1) / kRGTCBlockWidth;
+      bytes_required *= (height + kRGTCBlockHeight - 1) / kRGTCBlockHeight;
+      bytes_required *= 8;
+      bytes_required *= depth;
+      break;
     default:
       if (function_name && error_state) {
         ERRORSTATE_SET_GL_ERROR_INVALID_ENUM(error_state, function_name, format,
@@ -788,6 +799,19 @@ bool ValidateCompressedTexDimensions(GLenum target,
         return false;
       }
       if (!(width % kBPTCBlockWidth == 0 && height % kBPTCBlockHeight == 0)) {
+        *error_message = "width or height is not a multiple of four";
+        return false;
+      }
+      return true;
+    case GL_COMPRESSED_RED_RGTC1_EXT:
+    case GL_COMPRESSED_SIGNED_RED_RGTC1_EXT:
+    case GL_COMPRESSED_RED_GREEN_RGTC2_EXT:
+    case GL_COMPRESSED_SIGNED_RED_GREEN_RGTC2_EXT:
+      if (width < 0 || height < 0 || depth < 0) {
+        *error_message = "width, height, or depth invalid";
+        return false;
+      }
+      if (!(width % kRGTCBlockWidth == 0 && height % kRGTCBlockHeight == 0)) {
         *error_message = "width or height is not a multiple of four";
         return false;
       }

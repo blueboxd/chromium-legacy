@@ -200,8 +200,7 @@ TEST_F(LocalPrinterHandlerChromeosTest, GetPrinters) {
         "printerDescription": "description1",
         "printerName": "saved",
         "printerOptions": {
-          "cupsEnterprisePrinter": "false",
-          "printerEulaUrl": ""
+          "cupsEnterprisePrinter": "false"
         }
       },
       {
@@ -210,8 +209,7 @@ TEST_F(LocalPrinterHandlerChromeosTest, GetPrinters) {
         "printerDescription": "description2",
         "printerName": "enterprise",
         "printerOptions": {
-          "cupsEnterprisePrinter": "true",
-          "printerEulaUrl": ""
+          "cupsEnterprisePrinter": "true"
         }
       },
       {
@@ -220,8 +218,7 @@ TEST_F(LocalPrinterHandlerChromeosTest, GetPrinters) {
         "printerDescription": "description3",
         "printerName": "automatic",
         "printerOptions": {
-          "cupsEnterprisePrinter": "false",
-          "printerEulaUrl": ""
+          "cupsEnterprisePrinter": "false"
         }
       }
     ]

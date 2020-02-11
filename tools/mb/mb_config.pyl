@@ -910,6 +910,7 @@
       'mac_chromium_dbg_ng': 'gpu_tests_debug_bot',
       'mac_optional_gpu_tests_rel': 'gpu_fyi_tests_release_trybot',
       'mac_upload_clang': 'release_bot',
+      'mac-coverage-rel': 'gpu_tests_release_trybot_deterministic_mac_code_coverage',
       'mac-rel': 'gpu_tests_release_trybot_deterministic_mac',
     },
 
@@ -952,7 +953,7 @@
       'gpu-fyi-try-win10-nvidia-dx12vk-dbg-64': 'gpu_fyi_tests_dx12vk_debug_trybot',
       'gpu-fyi-try-win10-nvidia-dx12vk-rel-64': 'gpu_fyi_tests_dx12vk_release_trybot',
       'gpu-fyi-try-win10-nvidia-exp-64': 'gpu_fyi_tests_release_trybot',
-      'gpu-fyi-try-win10-nvidia-rel-32': 'gpu_tests_release_trybot_x86_resource_whitelisting',
+      'gpu-fyi-try-win10-nvidia-rel-32': 'gpu_fyi_tests_release_trybot_x86',
       'gpu-fyi-try-win10-nvidia-rel-64': 'gpu_fyi_tests_release_trybot',
       'gpu-fyi-try-win10-nvidia-skgl-64': 'gpu_fyi_tests_release_trybot',
       'win10_chromium_x64_dbg_ng': 'gpu_tests_debug_bot',
@@ -1717,6 +1718,11 @@
     # macOS, remove this special case of gpu_tests_release_trybot.
     'gpu_tests_release_trybot_deterministic_mac': [
       'gpu_tests', 'release_trybot', 'mac_deterministic_build',
+    ],
+
+    'gpu_tests_release_trybot_deterministic_mac_code_coverage': [
+      'gpu_tests', 'release_trybot', 'mac_deterministic_build',
+      'use_clang_coverage', 'partial_code_coverage_instrumentation',
     ],
 
     'gpu_tests_release_trybot_resource_whitelisting': [

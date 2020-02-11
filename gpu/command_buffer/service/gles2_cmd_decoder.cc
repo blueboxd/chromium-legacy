@@ -120,10 +120,6 @@
 #include <OpenGL/CGLIOSurface.h>
 #endif  // OS_MACOSX
 
-#if defined(OS_WIN)
-#include "gpu/command_buffer/service/shared_image_backing_factory_d3d.h"
-#endif  // OS_WIN
-
 // Note: this undefs far and near so include this after other Windows headers.
 #include "third_party/angle/src/image_util/loadimage.h"
 
@@ -4305,10 +4301,6 @@ Capabilities GLES2DecoderImpl::GetCapabilities() {
   caps.use_dc_overlays_for_video = surface_->UseOverlaysForVideo();
   caps.protected_video_swap_chain = surface_->SupportsProtectedVideo();
   caps.gpu_vsync = surface_->SupportsGpuVSync();
-#if defined(OS_WIN)
-  caps.shared_image_swap_chain =
-      SharedImageBackingFactoryD3D::IsSwapChainSupported();
-#endif  // OS_WIN
   caps.blend_equation_advanced =
       feature_info_->feature_flags().blend_equation_advanced;
   caps.blend_equation_advanced_coherent =

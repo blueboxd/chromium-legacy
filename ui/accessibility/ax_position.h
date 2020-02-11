@@ -316,7 +316,6 @@ class AXPosition {
   AXNodeType* GetAnchor() const {
     if (tree_id_ == AXTreeIDUnknown() || anchor_id_ == AXNode::kInvalidAXID)
       return nullptr;
-    DCHECK_GE(anchor_id_, 0);
     return GetNodeInTree(tree_id_, anchor_id_);
   }
 

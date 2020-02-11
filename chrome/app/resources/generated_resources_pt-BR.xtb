@@ -492,6 +492,7 @@
 <translation id="1670399744444387456">Básico</translation>
 <translation id="167160931442925455">Volume máximo</translation>
 <translation id="1673137583248014546"><ph name="URL" /> quer ver a marca e o modelo da sua chave de segurança</translation>
+<translation id="1677472565718498478"><ph name="TIME" /> restante(s)</translation>
 <translation id="1679068421605151609">Ferramentas do desenvolvedor</translation>
 <translation id="1679806121152819234">Plugin VM</translation>
 <translation id="1679810534535368772">Quer mesmo sair?</translation>
@@ -1787,6 +1788,7 @@ Para gerenciar as configurações dessa conta, instale o app Family Link no seu 
 <translation id="3462413494201477527">Cancelar a configuração da conta?</translation>
 <translation id="3464012987031883895">Um site está acessando a entrada de áudio</translation>
 <translation id="346431825526753">Esta é uma conta para as crianças gerenciada por <ph name="CUSTODIAN_EMAIL" />.</translation>
+<translation id="3468298837301810372">Marcador</translation>
 <translation id="3468999815377931311">Smartphone Android</translation>
 <translation id="3470442499439619530">Remover este usuário</translation>
 <translation id="3471876058939596279">As portas HDMI and USB-C não podem ser usadas para vídeo ao mesmo tempo. Use uma porta de vídeo diferente.</translation>
@@ -3964,7 +3966,6 @@ permanentemente excluídos assim que esse usuário for removido. Os websites vis
 <translation id="6545867563032584178">O microfone está desativado nas preferências do sistema do Mac</translation>
 <translation id="6547354035488017500">Libere pelo menos 512 MB de espaço. Caso contrário, seu dispositivo deixará de responder. Para liberar espaço, exclua arquivos do armazenamento do dispositivo.</translation>
 <translation id="6549639163247690448"><ph name="DOMAIN" /> precisa que você se conecte ao Wi-Fi para fazer o download de uma atualização. Você receberá a atualização automaticamente quando se conectar à Internet.</translation>
-<translation id="6549966385318247177">Bloqueado por apresentar conteúdo para maiores.</translation>
 <translation id="6550675742724504774">Opções</translation>
 <translation id="6551508934388063976">Comando não disponível. Pressione "Control-N" para abrir uma nova janela.</translation>
 <translation id="6551612971599078809">O site está usando um dispositivo USB</translation>

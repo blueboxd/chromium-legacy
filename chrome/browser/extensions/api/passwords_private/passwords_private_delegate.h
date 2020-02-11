@@ -98,6 +98,11 @@ class PasswordsPrivateDelegate : public KeyedService {
   // Get the most recent progress status.
   virtual api::passwords_private::ExportProgressStatus
   GetExportProgressStatus() = 0;
+
+  // Whether the current signed-in user (aka unconsented primary account) has
+  // opted in to use the Google account storage for passwords (as opposed to
+  // local/profile storage).
+  virtual bool IsOptedInForAccountStorage() = 0;
 };
 
 }  // namespace extensions

@@ -48,7 +48,7 @@ void VerifyInputCounts(WebXrVrBrowserTestBase* t,
 // input.
 void TestPresentationLocksFocusImpl(WebXrVrBrowserTestBase* t,
                                     std::string filename) {
-  t->LoadUrlAndAwaitInitialization(t->GetFileUrlForHtmlTestFile(filename));
+  t->LoadFileAndAwaitInitialization(filename);
   t->EnterSessionWithUserGestureOrFail();
   t->ExecuteStepAndWait("stepSetupFocusLoss()");
   t->EndTest();
@@ -250,8 +250,7 @@ WEBXR_VR_ALL_RUNTIMES_BROWSER_TEST_F(TestInputHandednessChange) {
   WebXrControllerInputMock my_mock;
   unsigned int controller_index = my_mock.CreateAndConnectMinimalGamepad();
 
-  t->LoadUrlAndAwaitInitialization(
-      t->GetFileUrlForHtmlTestFile("test_webxr_input_same_object"));
+  t->LoadFileAndAwaitInitialization("test_webxr_input_same_object");
   t->EnterSessionWithUserGestureOrFail();
 
   // We should only have seen the first change indicating we have input sources.
@@ -303,8 +302,7 @@ WEBXR_VR_ALL_RUNTIMES_BROWSER_TEST_F(TestInputSourcesChange) {
       device::ControllerRole::kControllerRoleRight, insufficient_axis_types,
       insufficient_buttons);
 
-  t->LoadUrlAndAwaitInitialization(
-      t->GetFileUrlForHtmlTestFile("test_webxr_input_sources_change_event"));
+  t->LoadFileAndAwaitInitialization("test_webxr_input_sources_change_event");
   t->EnterSessionWithUserGestureOrFail();
 
   // Wait for the first changed event
@@ -366,8 +364,7 @@ IN_PROC_BROWSER_TEST_F(WebXrVrOpenVrBrowserTest, TestInputProfilesChange) {
   WebXrControllerInputMock my_mock;
   unsigned int controller_index = my_mock.CreateAndConnectMinimalGamepad();
 
-  LoadUrlAndAwaitInitialization(
-      GetFileUrlForHtmlTestFile("test_webxr_input_same_object"));
+  LoadFileAndAwaitInitialization("test_webxr_input_same_object");
   EnterSessionWithUserGestureOrFail();
 
   // Wait for the first changed event
@@ -429,8 +426,7 @@ IN_PROC_BROWSER_TEST_F(WebXrVrOpenVrBrowserTest, TestInputGamepadSameObject) {
       device::ControllerRole::kControllerRoleRight, insufficient_axis_types,
       insufficient_buttons);
 
-  LoadUrlAndAwaitInitialization(
-      GetFileUrlForHtmlTestFile("test_webxr_input_same_object"));
+  LoadFileAndAwaitInitialization("test_webxr_input_same_object");
   EnterSessionWithUserGestureOrFail();
 
   // We should only have seen the first change indicating we have input sources.
@@ -484,8 +480,7 @@ IN_PROC_BROWSER_TEST_F(WebXrVrOpenVrBrowserTest, TestGamepadIncompleteData) {
   my_mock.CreateAndConnectController(
       device::ControllerRole::kControllerRoleRight, {}, supported_buttons);
 
-  LoadUrlAndAwaitInitialization(
-      GetFileUrlForHtmlTestFile("test_webxr_gamepad_support"));
+  LoadFileAndAwaitInitialization("test_webxr_gamepad_support");
   EnterSessionWithUserGestureOrFail();
   PollJavaScriptBooleanOrFail("inputSourceHasNoGamepad()", kPollTimeoutShort);
   PollJavaScriptBooleanOrFail("isProfileCountEqualTo(0)", kPollTimeoutShort);
@@ -501,8 +496,7 @@ WEBXR_VR_ALL_RUNTIMES_BROWSER_TEST_F(TestGamepadMinimumData) {
 
   unsigned int controller_index = my_mock.CreateAndConnectMinimalGamepad();
 
-  t->LoadUrlAndAwaitInitialization(
-      t->GetFileUrlForHtmlTestFile("test_webxr_gamepad_support"));
+  t->LoadFileAndAwaitInitialization("test_webxr_gamepad_support");
   t->EnterSessionWithUserGestureOrFail();
 
   VerifyInputCounts(t, 1, 1);
@@ -563,8 +557,7 @@ WEBXR_VR_ALL_RUNTIMES_BROWSER_TEST_F(TestMultipleGamepads) {
       device::ControllerRole::kControllerRoleLeft);
   unsigned int controller_index2 = my_mock.CreateAndConnectMinimalGamepad();
 
-  t->LoadUrlAndAwaitInitialization(
-      t->GetFileUrlForHtmlTestFile("test_webxr_gamepad_support"));
+  t->LoadFileAndAwaitInitialization("test_webxr_gamepad_support");
   t->EnterSessionWithUserGestureOrFail();
 
   VerifyInputCounts(t, 2, 2);
@@ -660,8 +653,7 @@ WEBXR_VR_ALL_RUNTIMES_BROWSER_TEST_F(TestGamepadCompleteData) {
       device::ControllerRole::kControllerRoleRight, axis_types,
       supported_buttons);
 
-  t->LoadUrlAndAwaitInitialization(
-      t->GetFileUrlForHtmlTestFile("test_webxr_gamepad_support"));
+  t->LoadFileAndAwaitInitialization("test_webxr_gamepad_support");
   t->EnterSessionWithUserGestureOrFail();
 
   VerifyInputCounts(t, 1, 1);
@@ -773,8 +765,7 @@ IN_PROC_BROWSER_TEST_F(WebXrVrOpenVrBrowserTest, TestInputAxesWithNoButton) {
       device::ControllerRole::kControllerRoleRight, axis_types,
       supported_buttons);
 
-  LoadUrlAndAwaitInitialization(
-      GetFileUrlForHtmlTestFile("test_webxr_gamepad_support"));
+  LoadFileAndAwaitInitialization("test_webxr_gamepad_support");
   EnterSessionWithUserGestureOrFail();
 
   VerifyInputCounts(this, 1, 1);
@@ -828,8 +819,7 @@ IN_PROC_BROWSER_TEST_F(WebXrVrOpenVrBrowserTest, TestGamepadReservedData) {
       device::ControllerRole::kControllerRoleRight, axis_types,
       supported_buttons);
 
-  LoadUrlAndAwaitInitialization(
-      GetFileUrlForHtmlTestFile("test_webxr_gamepad_support"));
+  LoadFileAndAwaitInitialization("test_webxr_gamepad_support");
   EnterSessionWithUserGestureOrFail();
 
   VerifyInputCounts(this, 1, 1);
@@ -886,8 +876,7 @@ IN_PROC_BROWSER_TEST_F(WebXrVrOpenVrBrowserTest, TestGamepadOptionalData) {
       device::ControllerRole::kControllerRoleRight, axis_types,
       supported_buttons);
 
-  LoadUrlAndAwaitInitialization(
-      GetFileUrlForHtmlTestFile("test_webxr_gamepad_support"));
+  LoadFileAndAwaitInitialization("test_webxr_gamepad_support");
   EnterSessionWithUserGestureOrFail();
 
   VerifyInputCounts(this, 1, 1);
@@ -929,8 +918,7 @@ IN_PROC_BROWSER_TEST_F(WebXrVrOpenXrBrowserTest,
       device::ControllerRole::kControllerRoleRight, axis_types,
       supported_buttons);
 
-  this->LoadUrlAndAwaitInitialization(
-      this->GetFileUrlForHtmlTestFile("test_webxr_input_same_object"));
+  this->LoadFileAndAwaitInitialization("test_webxr_input_same_object");
   this->EnterSessionWithUserGestureOrFail();
 
   // We should only have seen the first change indicating we have input sources.
@@ -968,8 +956,7 @@ WEBXR_VR_ALL_RUNTIMES_BROWSER_TEST_F(TestMultipleControllerInputRegistered) {
   unsigned int controller_index2 = my_mock.CreateAndConnectMinimalGamepad();
 
   // Load the test page and enter presentation.
-  t->LoadUrlAndAwaitInitialization(
-      t->GetFileUrlForHtmlTestFile("test_webxr_input"));
+  t->LoadFileAndAwaitInitialization("test_webxr_input");
   t->EnterSessionWithUserGestureOrFail();
 
   t->RunJavaScriptOrFail("stepSetupListeners(2)");
@@ -996,7 +983,7 @@ IN_PROC_BROWSER_TEST_F(WebXrVrWmrBrowserTest, TestVoiceSelectRegistered) {
   unsigned int index = my_mock.CreateVoiceController();
 
   // Load the test page and enter presentation.
-  LoadUrlAndAwaitInitialization(GetFileUrlForHtmlTestFile("test_webxr_input"));
+  LoadFileAndAwaitInitialization("test_webxr_input");
   EnterSessionWithUserGestureOrFail();
 
   RunJavaScriptOrFail("stepSetupListeners(1)");
@@ -1020,8 +1007,7 @@ WEBXR_VR_ALL_RUNTIMES_BROWSER_TEST_F(TestControllerInputRegistered) {
   unsigned int controller_index = my_mock.CreateAndConnectMinimalGamepad();
 
   // Load the test page and enter presentation.
-  t->LoadUrlAndAwaitInitialization(
-      t->GetFileUrlForHtmlTestFile("test_webxr_input"));
+  t->LoadFileAndAwaitInitialization("test_webxr_input");
   t->EnterSessionWithUserGestureOrFail();
 
   unsigned int num_iterations = 5;
@@ -1060,8 +1046,7 @@ WEBXR_VR_ALL_RUNTIMES_BROWSER_TEST_F(TestControllerPositionTracking) {
       device::ControllerRole::kControllerRoleRight);
   unsigned int controller_index = my_mock.ConnectController(controller_data);
 
-  t->LoadUrlAndAwaitInitialization(
-      t->GetFileUrlForHtmlTestFile("webxr_test_controller_poses"));
+  t->LoadFileAndAwaitInitialization("webxr_test_controller_poses");
   t->EnterSessionWithUserGestureOrFail();
 
   auto pose = gfx::Transform();
@@ -1101,8 +1086,7 @@ class WebXrHeadPoseMock : public MockXRDeviceHookBase {
 WEBXR_VR_ALL_RUNTIMES_BROWSER_TEST_F(TestHeadPosesUpdate) {
   WebXrHeadPoseMock my_mock;
 
-  t->LoadUrlAndAwaitInitialization(
-      t->GetFileUrlForHtmlTestFile("webxr_test_head_poses"));
+  t->LoadFileAndAwaitInitialization("webxr_test_head_poses");
   t->EnterSessionWithUserGestureOrFail();
 
   auto pose = gfx::Transform();

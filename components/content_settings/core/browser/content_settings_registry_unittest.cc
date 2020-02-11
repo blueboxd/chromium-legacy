@@ -175,6 +175,11 @@ TEST_F(ContentSettingsRegistryTest, IsDefaultSettingValid) {
   info = registry()->Get(ContentSettingsType::PROTECTED_MEDIA_IDENTIFIER);
   EXPECT_FALSE(info->IsDefaultSettingValid(CONTENT_SETTING_ALLOW));
 #endif
+
+#if !defined(OS_IOS) && !defined(OS_ANDROID)
+  info = registry()->Get(ContentSettingsType::NATIVE_FILE_SYSTEM_WRITE_GUARD);
+  EXPECT_FALSE(info->IsDefaultSettingValid(CONTENT_SETTING_ALLOW));
+#endif
 }
 
 // Check the correct factory default setting is retrieved. Note the factory

@@ -34,26 +34,26 @@ TEST_F('SwitchAccessTabNodeTest', 'FindCloseButton', function() {
 
 TEST_F('SwitchAccessTabNodeTest', 'Construction', function() {
   this.runWithLoadedTree('', (desktop) => {
-    switchAccess.navigationManager_.moveTo_(
+    NavigationManager.instance.moveTo_(
         desktop.find({role: chrome.automation.RoleType.TAB}));
 
-    const tab = switchAccess.navigationManager_.node_;
+    const tab = NavigationManager.instance.node_;
     assertEquals(
         chrome.automation.RoleType.TAB, tab.role, 'Tab node is not a tab');
     assertTrue(tab.isGroup(), 'Tab node should be a group');
     assertEquals(
         0, tab.actions.length, 'Tab as a group should not have actions');
 
-    switchAccess.selectCurrentNode();
+    NavigationManager.instance.selectCurrentNode();
 
-    const tabAsRoot = switchAccess.navigationManager_.group_;
+    const tabAsRoot = NavigationManager.instance.group_;
     assertTrue(
         RectHelper.areEqual(tab.location, tabAsRoot.location),
         'Tab location should not change when treated as root');
     assertEquals(
         3, tabAsRoot.children.length, 'Tab as root should have 3 children');
 
-    const tabToSelect = switchAccess.navigationManager_.node_;
+    const tabToSelect = NavigationManager.instance.node_;
     assertEquals(
         chrome.automation.RoleType.TAB, tabToSelect.role,
         'Tab node to select is not a tab');
@@ -69,9 +69,9 @@ TEST_F('SwitchAccessTabNodeTest', 'Construction', function() {
         null, tabToSelect.asRootNode(),
         'Tab node to select should not be a root node');
 
-    switchAccess.moveForward();
+    NavigationManager.moveForward();
 
-    const close = switchAccess.navigationManager_.node_;
+    const close = NavigationManager.instance.node_;
     assertEquals(
         chrome.automation.RoleType.BUTTON, close.role,
         'Close button is not a button');
@@ -88,9 +88,11 @@ TEST_F('SwitchAccessTabNodeTest', 'Construction', function() {
         RectHelper.areEqual(RectHelper.ZERO_RECT, overlap),
         'Close button and tab node to select should not overlap');
 
-    switchAccess.moveForward();
+    BackButtonNode
+        .locationForTesting = {top: 10, left: 10, width: 10, height: 10};
+    NavigationManager.moveForward();
     assertTrue(
-        switchAccess.navigationManager_.node_ instanceof BackButtonNode,
+        NavigationManager.instance.node_ instanceof BackButtonNode,
         'Third node should be a BackButtonNode');
   });
 });

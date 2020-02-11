@@ -324,13 +324,22 @@ bool AppServiceInstanceRegistryHelper::IsOpenedInBrowser(
   // AppServiceAppWindowLauncherController should handle it, otherwise, it is
   // opened in a browser, and AppServiceAppWindowLauncherController should skip
   // them.
-  content::BrowserContext* browser_context = nullptr;
-  proxy_->InstanceRegistry().ForOneInstance(
-      window, [&browser_context](const apps::InstanceUpdate& update) {
-        browser_context = update.BrowserContext();
-      });
-  if (browser_context)
-    return false;
+  //
+  // The window could be teleported from the inactive user's profile to the
+  // current active user, so search all proxies.
+  for (auto* profile : controller_->GetProfileList()) {
+    content::BrowserContext* browser_context = nullptr;
+    auto* proxy = apps::AppServiceProxyFactory::GetForProfile(profile);
+    bool found = false;
+    proxy->InstanceRegistry().ForOneInstance(
+        window, [&browser_context, &found](const apps::InstanceUpdate& update) {
+          browser_context = update.BrowserContext();
+          found = true;
+        });
+    if (!found)
+      continue;
+    return (browser_context) ? false : true;
+  }
   return true;
 }
 

@@ -197,12 +197,14 @@ TEST_P(ContentVerifierTest, BrowserImagesShouldBeVerified) {
   }
 
   for (const base::FilePath& path : files_to_be_verified) {
+    UpdateBrowserImagePaths({});
     EXPECT_TRUE(ShouldVerifySinglePath(path)) << "for path " << path;
     UpdateBrowserImagePaths(std::set<base::FilePath>{path});
     EXPECT_TRUE(ShouldVerifySinglePath(path)) << "for path " << path;
   }
 
   for (const base::FilePath& path : files_not_to_be_verified) {
+    UpdateBrowserImagePaths({});
     EXPECT_TRUE(ShouldVerifySinglePath(path)) << "for path " << path;
     UpdateBrowserImagePaths(std::set<base::FilePath>{path});
     EXPECT_FALSE(ShouldVerifySinglePath(path)) << "for path " << path;

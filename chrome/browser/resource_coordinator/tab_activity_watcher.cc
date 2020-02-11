@@ -53,13 +53,14 @@ static int32_t reactivation_index = 0;
 int64_t internal_id_for_logging = 0;
 // Returns an int64_t number as label_id or query_id.
 int64_t NewInt64ForLabelIdOrQueryId() {
-  // The id is shifted 13 bits so that the lower bits are reserved for counting
+  // The id is shifted 16 bits so that the lower bits are reserved for counting
   // multiple queries.
-  // We choose 13 so that the lower bits for counting multiple queries and
+  // We choose 16 so that the lower bits for counting multiple queries and
   // higher bits for labeling queries are both unlikely to overflow. (lower bits
-  // only overflows when we have more than 8192 queries without labeling events;
-  // higher bits only overflow when we have more than 100 billion discards.
-  constexpr int kIdShiftBits = 13;
+  // only overflows when we have more than 65536 queries without labeling
+  // events; higher bits only overflow when we have more than 100 billion
+  // discards.
+  constexpr int kIdShiftBits = 16;
   return (++internal_id_for_logging) << kIdShiftBits;
 }
 

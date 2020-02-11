@@ -57,7 +57,7 @@ OverlayPresenterImpl::OverlayPresenterImpl(Browser* browser,
   DCHECK(web_state_list_);
   web_state_list_->AddObserver(this);
   for (int i = 0; i < web_state_list_->count(); ++i) {
-    GetQueueForWebState(web_state_list_->GetWebStateAt(i))->AddObserver(this);
+    StartObservingWebState(web_state_list_->GetWebStateAt(i));
   }
   SetActiveWebState(web_state_list_->GetActiveWebState(), CHANGE_REASON_NONE);
 }
@@ -247,22 +247,18 @@ void OverlayPresenterImpl::OverlayWasDismissed(
   if (presentation_context_ != presentation_context)
     return;
 
-  // Pop the request for overlays dismissed by the user.  The check against the
-  // queue's front request prevents popping the request twice in the event that
-  // the front request was cancelled by the queue during a user-triggered
-  // dismissal.  |popped_request| is used to extend the lifetime of the request
-  // past the DidHideOverlay() callbacks.
-  std::unique_ptr<OverlayRequest> popped_request;
+  // Pop the request for overlays dismissed by the user.  The check against
+  // |removed_request_awaiting_dismissal_| prevents the queue's front request
+  // from being popped if this dismissal was caused by |request|'s removal from
+  // the queue.
   if (reason == OverlayDismissalReason::kUserInteraction && queue &&
-      queue->front_request() == request) {
-    popped_request = queue->PopFrontRequest();
+      request != removed_request_awaiting_dismissal_.get()) {
+    queue->PopFrontRequest();
+    // Popping the request should transfer ownership of the request to the
+    // OverlayPresenter until the completion of DidHideOverlay() observer
+    // callbacks below.
+    DCHECK_EQ(removed_request_awaiting_dismissal_.get(), request);
   }
-
-  // The dismissed overlay UI should be for |presented_request_|.  If
-  // |presented_request_| is reset to nullptr before the completion of its UI's
-  // dismissal, this means that the UI was cancelled.
-  DCHECK(presented_request_ ? presented_request_ == request
-                            : reason == OverlayDismissalReason::kCancellation);
 
   presenting_ = false;
   presented_request_ = nullptr;
@@ -272,6 +268,11 @@ void OverlayPresenterImpl::OverlayWasDismissed(
     if (observer.GetRequestSupport(this)->IsRequestSupported(request))
       observer.DidHideOverlay(this, request);
   }
+
+  // Now that observers have been notified that the UI for |request| was hidden,
+  // |removed_request_awaiting_dismissal_| can be reset since the request no
+  // longer needs to be kept alive.
+  removed_request_awaiting_dismissal_ = nullptr;
 
   // Only show the next overlay if the active request has changed, either
   // because the frontmost request was popped or because the active WebState has
@@ -295,6 +296,20 @@ void OverlayPresenterImpl::CancelAllOverlayUI() {
   }
 }
 
+#pragma mark WebState helpers
+
+void OverlayPresenterImpl::StartObservingWebState(web::WebState* web_state) {
+  OverlayRequestQueueImpl* queue = GetQueueForWebState(web_state);
+  queue->AddObserver(this);
+  queue->set_delegate(this);
+}
+
+void OverlayPresenterImpl::StopObservingWebState(web::WebState* web_state) {
+  OverlayRequestQueueImpl* queue = GetQueueForWebState(web_state);
+  queue->RemoveObserver(this);
+  queue->set_delegate(nullptr);
+}
+
 #pragma mark -
 #pragma mark BrowserObserver
 
@@ -303,12 +318,24 @@ void OverlayPresenterImpl::BrowserDestroyed(Browser* browser) {
   SetActiveWebState(nullptr, CHANGE_REASON_NONE);
 
   for (int i = 0; i < web_state_list_->count(); ++i) {
-    GetQueueForWebState(web_state_list_->GetWebStateAt(i))
-        ->RemoveObserver(this);
+    StopObservingWebState(web_state_list_->GetWebStateAt(i));
   }
   web_state_list_->RemoveObserver(this);
   web_state_list_ = nullptr;
   browser->RemoveObserver(this);
+}
+
+#pragma mark OverlayRequestQueueImpl::Delegate
+
+void OverlayPresenterImpl::OverlayRequestRemoved(
+    OverlayRequestQueueImpl* queue,
+    std::unique_ptr<OverlayRequest> request,
+    bool cancelled) {
+  OverlayRequest* removed_request = request.get();
+  if (presented_request_ == removed_request)
+    removed_request_awaiting_dismissal_ = std::move(request);
+  if (cancelled)
+    CancelOverlayUIForRequest(removed_request);
 }
 
 #pragma mark OverlayRequestQueueImpl::Observer
@@ -348,14 +375,6 @@ void OverlayPresenterImpl::RequestAddedToQueue(OverlayRequestQueueImpl* queue,
     presentation_context_->HideOverlayUI(this, presented_request_);
 }
 
-void OverlayPresenterImpl::QueuedRequestCancelled(
-    OverlayRequestQueueImpl* queue,
-    OverlayRequest* request) {
-  if (request == presented_request_)
-    presented_request_ = nullptr;
-  CancelOverlayUIForRequest(request);
-}
-
 void OverlayPresenterImpl::OverlayRequestQueueDestroyed(
     OverlayRequestQueueImpl* queue) {
   queue->RemoveObserver(this);
@@ -391,15 +410,15 @@ void OverlayPresenterImpl::WebStateInsertedAt(WebStateList* web_state_list,
                                               web::WebState* web_state,
                                               int index,
                                               bool activating) {
-  GetQueueForWebState(web_state)->AddObserver(this);
+  StartObservingWebState(web_state);
 }
 
 void OverlayPresenterImpl::WebStateReplacedAt(WebStateList* web_state_list,
                                               web::WebState* old_web_state,
                                               web::WebState* new_web_state,
                                               int index) {
-  GetQueueForWebState(old_web_state)->RemoveObserver(this);
-  GetQueueForWebState(new_web_state)->AddObserver(this);
+  StopObservingWebState(old_web_state);
+  StartObservingWebState(new_web_state);
   if (old_web_state != active_web_state_) {
     // If the active WebState is being replaced, its overlay UI will be
     // cancelled later when |new_web_state| is activated.  For inactive WebState
@@ -411,7 +430,7 @@ void OverlayPresenterImpl::WebStateReplacedAt(WebStateList* web_state_list,
 void OverlayPresenterImpl::WillDetachWebStateAt(WebStateList* web_state_list,
                                                 web::WebState* web_state,
                                                 int index) {
-  GetQueueForWebState(web_state)->RemoveObserver(this);
+  StopObservingWebState(web_state);
   detaching_active_web_state_ = web_state == active_web_state_;
   if (!detaching_active_web_state_) {
     // If the active WebState is being detached, its overlay UI will be

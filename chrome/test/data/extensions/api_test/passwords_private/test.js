@@ -170,6 +170,26 @@ var availableTests = [
 
     chrome.passwordsPrivate.requestExportProgressStatus(callback);
   },
+
+  function isNotOptedInForAccountStorage() {
+    var callback = function(opted_in) {
+      chrome.test.assertEq(opted_in, false);
+      // Ensure that the callback is invoked.
+      chrome.test.succeed();
+    };
+
+    chrome.passwordsPrivate.isOptedInForAccountStorage(callback);
+  },
+
+  function isOptedInForAccountStorage() {
+    var callback = function(opted_in) {
+      chrome.test.assertEq(opted_in, true);
+      // Ensure that the callback is invoked.
+      chrome.test.succeed();
+    };
+
+    chrome.passwordsPrivate.isOptedInForAccountStorage(callback);
+  },
 ];
 
 var testToRun = window.location.search.substring(1);

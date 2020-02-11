@@ -220,9 +220,7 @@ class ServiceWorkerNewScriptLoaderTest : public testing::Test {
     int routing_id = 0;
     int request_id = 10;
     uint32_t options = 0;
-    // TODO(crbug.com/1046335): NewResourceId() will become async. Add a helper
-    // function that return a new resource ID synchronously.
-    int64_t resource_id = context()->storage()->NewResourceId();
+    int64_t resource_id = GetNewResourceIdSync(context()->storage());
 
     network::ResourceRequest request;
     request.url = url;

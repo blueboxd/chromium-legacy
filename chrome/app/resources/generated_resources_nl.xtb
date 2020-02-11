@@ -492,6 +492,7 @@
 <translation id="1670399744444387456">Basis</translation>
 <translation id="167160931442925455">Luidst</translation>
 <translation id="1673137583248014546"><ph name="URL" /> wil het merk en het model van je beveiligingssleutel bekijken</translation>
+<translation id="1677472565718498478"><ph name="TIME" /> resterend</translation>
 <translation id="1679068421605151609">Ontwikkelaarstools</translation>
 <translation id="1679806121152819234">Plugin VM</translation>
 <translation id="1679810534535368772">Weet je zeker dat je het scherm wilt afsluiten?</translation>
@@ -1066,7 +1067,7 @@ Je kunt de instellingen van dit account beheren door de Family Link-app op je ap
 <translation id="2462724976360937186">Sleutel-ID van certificeringsinstantie</translation>
 <translation id="2462752602710430187"><ph name="PRINTER_NAME" /> toegevoegd</translation>
 <translation id="2464089476039395325">HTTP-proxy</translation>
-<translation id="2465237718053447668"><ph name="DOMAIN" /> vereist dat je nu verbinding maakt met wifi en een update downloadt. Je kunt ook een download uitvoeren via een verbinding met datalimiet (er kunnen kosten van toepassing zijn).</translation>
+<translation id="2465237718053447668"><ph name="DOMAIN" /> vereist dat je nu verbinding maakt met wifi en een update downloadt. Je kunt de update ook downloaden via een verbinding met datalimiet (er kunnen kosten van toepassing zijn).</translation>
 <translation id="2467267713099745100">Netwerk: <ph name="NETWORK_TYPE" />, uitgeschakeld</translation>
 <translation id="2468205691404969808">Maakt gebruik van cookies om je voorkeuren te onthouden, zelfs als je deze pagina's niet bezoekt</translation>
 <translation id="2468402215065996499">Tamagotchi</translation>
@@ -1787,6 +1788,7 @@ Je kunt de instellingen van dit account beheren door de Family Link-app op je ap
 <translation id="3462413494201477527">Accountconfiguratie annuleren?</translation>
 <translation id="3464012987031883895">Een site heeft toegang tot audio-invoer</translation>
 <translation id="346431825526753">Dit is een account voor kinderen dat wordt beheerd door <ph name="CUSTODIAN_EMAIL" />.</translation>
+<translation id="3468298837301810372">Label</translation>
 <translation id="3468999815377931311">Android-telefoon</translation>
 <translation id="3470442499439619530">Gebruiker verwijderen</translation>
 <translation id="3471876058939596279">HDMI- en USB Type-C-poorten kunnen niet tegelijkertijd worden gebruikt voor video. Gebruik een andere videopoort.</translation>
@@ -3962,7 +3964,6 @@ Je kunt de instellingen van dit account beheren door de Family Link-app op je ap
 <translation id="6545867563032584178">Microfoon is uitgeschakeld in Mac-systeemvoorkeuren</translation>
 <translation id="6547354035488017500">Je moet minimaal 512 MB aan ruimte vrijmaken om ervoor te zorgen dat het apparaat blijft reageren. Verwijder bestanden uit de opslag van het apparaat om ruimte vrij te maken.</translation>
 <translation id="6549639163247690448"><ph name="DOMAIN" /> vereist dat je nu verbinding maakt met wifi en een update downloadt. De update wordt automatisch gedownload als je verbinding maakt met internet.</translation>
-<translation id="6549966385318247177">Deze extensie is geblokkeerd als gevolg van niet-gezinsvriendelijke content.</translation>
 <translation id="6550675742724504774">Opties</translation>
 <translation id="6551508934388063976">Opdracht niet beschikbaar. Druk op Ctrl-N om een nieuw venster te openen.</translation>
 <translation id="6551612971599078809">De site gebruikt een USB-apparaat</translation>

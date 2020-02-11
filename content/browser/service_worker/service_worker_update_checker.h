@@ -117,6 +117,9 @@ class CONTENT_EXPORT ServiceWorkerUpdateChecker {
 
  private:
   void CheckOneScript(const GURL& url, const int64_t resource_id);
+  void OnResourceIdAssignedForOneScriptCheck(const GURL& url,
+                                             const int64_t resource_id,
+                                             const int64_t new_resource_id);
   void DidSetUpOnUI(net::HttpRequestHeaders header,
                     ServiceWorkerUpdatedScriptLoader::BrowserContextGetter
                         browser_context_getter);

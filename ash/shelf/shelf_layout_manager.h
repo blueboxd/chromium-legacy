@@ -254,9 +254,9 @@ class ASH_EXPORT ShelfLayoutManager
     is_auto_hide_state_locked_ = lock_auto_hide_state;
   }
 
-  // Calculates the hotseat y position for |hotseat_target_state| in shelf
+  // Calculates the hotseat y position for |hotseat_target_state| in screen
   // coordinates.
-  int CalculateHotseatYInShelf(HotseatState hotseat_target_state) const;
+  int CalculateHotseatYInScreen(HotseatState hotseat_target_state) const;
 
   // ShelfConfig::Observer:
   void OnShelfConfigUpdated() override;
@@ -266,7 +266,7 @@ class ASH_EXPORT ShelfLayoutManager
   void OnTabletModeEnded() override;
 
   gfx::Rect GetShelfBoundsInScreen() const;
-  gfx::Rect GetHotseatBounds() const;
+  gfx::Rect GetHotseatBoundsInScreen() const;
   float GetOpacity() const;
 
   bool updating_bounds() const { return updating_bounds_; }
@@ -300,7 +300,7 @@ class ASH_EXPORT ShelfLayoutManager
 
     gfx::Rect shelf_bounds;             // Bounds of the shelf within the screen
     gfx::Rect shelf_bounds_in_shelf;    // Bounds of the shelf minus status area
-    gfx::Rect hotseat_bounds_in_shelf;  // Bounds of the hotseat within shelf
+    gfx::Rect hotseat_bounds_in_screen;  // Bounds of the hotseat within screen
     gfx::Insets shelf_insets;           // Shelf insets within the screen
   };
 

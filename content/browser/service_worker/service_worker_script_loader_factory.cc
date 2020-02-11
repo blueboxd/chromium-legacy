@@ -115,12 +115,13 @@ void ServiceWorkerScriptLoaderFactory::CreateLoaderAndStart(
       switch (it->second.result) {
         case ServiceWorkerSingleScriptUpdateChecker::Result::kIdentical:
           // Case D.1:
-          CopyScript(
-              it->first, it->second.old_resource_id,
+          context_->storage()->NewResourceId(base::BindOnce(
+              &ServiceWorkerScriptLoaderFactory::CopyScript,
+              weak_factory_.GetWeakPtr(), it->first, it->second.old_resource_id,
               base::BindOnce(
                   &ServiceWorkerScriptLoaderFactory::OnCopyScriptFinished,
                   weak_factory_.GetWeakPtr(), std::move(receiver), options,
-                  resource_request, std::move(client)));
+                  resource_request, std::move(client))));
           return;
         case ServiceWorkerSingleScriptUpdateChecker::Result::kFailed:
           // Network failure is treated as D.2
@@ -142,12 +143,10 @@ void ServiceWorkerScriptLoaderFactory::CreateLoaderAndStart(
 
   // Case D.3:
   // Assign a new resource ID for the script from network.
-  int64_t new_resource_id = context_->storage()->NewResourceId();
-  // TODO(crbug.com/1046335): Make this async once NewResourceId() becomes
-  // async.
-  OnResourceIdAssignedForNewScriptLoader(
-      std::move(receiver), routing_id, request_id, options, resource_request,
-      std::move(client), traffic_annotation, new_resource_id);
+  context_->storage()->NewResourceId(base::BindOnce(
+      &ServiceWorkerScriptLoaderFactory::OnResourceIdAssignedForNewScriptLoader,
+      weak_factory_.GetWeakPtr(), std::move(receiver), routing_id, request_id,
+      options, resource_request, std::move(client), traffic_annotation));
 }
 
 void ServiceWorkerScriptLoaderFactory::Clone(
@@ -203,9 +202,9 @@ bool ServiceWorkerScriptLoaderFactory::CheckIfScriptRequestIsValid(
 void ServiceWorkerScriptLoaderFactory::CopyScript(
     const GURL& url,
     int64_t resource_id,
-    base::OnceCallback<void(int64_t, net::Error)> callback) {
+    base::OnceCallback<void(int64_t, net::Error)> callback,
+    int64_t new_resource_id) {
   ServiceWorkerStorage* storage = context_->storage();
-  int64_t new_resource_id = storage->NewResourceId();
 
   cache_writer_ = ServiceWorkerCacheWriter::CreateForCopy(
       storage->CreateResponseReader(resource_id),

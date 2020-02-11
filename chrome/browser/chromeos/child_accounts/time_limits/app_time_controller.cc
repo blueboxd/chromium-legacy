@@ -229,11 +229,10 @@ AppTimeController::AppTimeController(Profile* profile)
   if (WebTimeLimitEnforcer::IsEnabled())
     web_time_enforcer_ = std::make_unique<WebTimeLimitEnforcer>(this);
 
+  app_registry_->AddAppStateObserver(this);
+
   PrefService* pref_service = profile->GetPrefs();
   RegisterProfilePrefObservers(pref_service);
-
-  // TODO: Update the following from PerAppTimeLimit policy.
-  limits_reset_time_ = base::TimeDelta::FromHours(6);
 
   // TODO: Update the following from user pref.instead of setting it to Now().
   SetLastResetTime(base::Time::Now());
@@ -252,9 +251,14 @@ AppTimeController::AppTimeController(Profile* profile)
   auto* time_zone_settings = system::TimezoneSettings::GetInstance();
   if (time_zone_settings)
     time_zone_settings->AddObserver(this);
+
+  // Update app limits and reset time from policy.
+  TimeLimitsPolicyUpdated(prefs::kPerAppTimeLimitsPolicy);
 }
 
 AppTimeController::~AppTimeController() {
+  app_registry_->RemoveAppStateObserver(this);
+
   auto* time_zone_settings = system::TimezoneSettings::GetInstance();
   if (time_zone_settings)
     time_zone_settings->RemoveObserver(this);
@@ -301,6 +305,8 @@ void AppTimeController::RegisterProfilePrefObservers(
 }
 
 void AppTimeController::TimeLimitsPolicyUpdated(const std::string& pref_name) {
+  DCHECK_EQ(pref_name, prefs::kPerAppTimeLimitsPolicy);
+
   const base::Value* policy =
       pref_registrar_->prefs()->GetDictionary(prefs::kPerAppTimeLimitsPolicy);
 
@@ -353,6 +359,33 @@ void AppTimeController::ShowAppTimeLimitNotification(
     default:
       return;
   }
+}
+
+void AppTimeController::OnAppLimitReached(const AppId& app_id,
+                                          base::TimeDelta time_limit) {
+  app_service_wrapper_->PauseApp(app_id, time_limit);
+}
+
+void AppTimeController::OnAppLimitRemoved(const AppId& app_id) {
+  app_service_wrapper_->ResumeApp(app_id);
+}
+
+void AppTimeController::OnAppInstalled(const AppId& app_id) {
+  const base::Value* policy =
+      pref_registrar_->prefs()->GetDictionary(prefs::kPerAppTimeLimitsPolicy);
+
+  if (!policy || !policy->is_dict()) {
+    LOG(WARNING) << "Invalid PerAppTimeLimits policy.";
+    return;
+  }
+
+  const std::map<AppId, AppLimit> limits = policy::AppLimitsFromDict(*policy);
+  // Update the limit for newly installed app, if it exists.
+  auto result = limits.find(app_id);
+  if (result == limits.end())
+    return;
+
+  app_registry_->SetAppLimit(result->first, result->second);
 }
 
 base::Time AppTimeController::GetNextResetTime() const {

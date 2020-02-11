@@ -246,6 +246,15 @@ void ServiceWorkerUpdateChecker::CheckOneScript(const GURL& url,
   DCHECK_NE(ServiceWorkerConsts::kInvalidServiceWorkerResourceId, resource_id)
       << "All the target scripts should be stored in the storage.";
 
+  version_to_update_->context()->storage()->NewResourceId(base::BindOnce(
+      &ServiceWorkerUpdateChecker::OnResourceIdAssignedForOneScriptCheck,
+      weak_factory_.GetWeakPtr(), url, resource_id));
+}
+
+void ServiceWorkerUpdateChecker::OnResourceIdAssignedForOneScriptCheck(
+    const GURL& url,
+    const int64_t resource_id,
+    const int64_t new_resource_id) {
   // When the url matches with the main script url, we can always think that
   // it's the main script even if a main script imports itself because the
   // second load (network load for imported script) should hit the script
@@ -259,7 +268,7 @@ void ServiceWorkerUpdateChecker::CheckOneScript(const GURL& url,
   auto compare_reader = storage->CreateResponseReader(resource_id);
   auto copy_reader = storage->CreateResponseReader(resource_id);
 
-  auto writer = storage->CreateResponseWriter(storage->NewResourceId());
+  auto writer = storage->CreateResponseWriter(new_resource_id);
   running_checker_ = std::make_unique<ServiceWorkerSingleScriptUpdateChecker>(
       url, is_main_script, main_script_url_, version_to_update_->scope(),
       force_bypass_cache_, update_via_cache_, fetch_client_settings_object_,

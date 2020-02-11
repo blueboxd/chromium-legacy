@@ -207,4 +207,10 @@ ResponseAction PasswordsPrivateRequestExportProgressStatusFunction::Run() {
           GetDelegate(browser_context())->GetExportProgressStatus())));
 }
 
+// PasswordsPrivateIsOptedInForAccountStorageFunction
+ResponseAction PasswordsPrivateIsOptedInForAccountStorageFunction::Run() {
+  return RespondNow(OneArgument(std::make_unique<base::Value>(
+      GetDelegate(browser_context())->IsOptedInForAccountStorage())));
+}
+
 }  // namespace extensions

@@ -121,6 +121,7 @@ _CONFIG = [
             'base::UmaHistogram.+',
 
             # //base/metrics/histogram.h
+            'base::HistogramBase',
             'base::LinearHistogram',
 
             # //base/metrics/field_trial_params.h.

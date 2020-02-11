@@ -492,6 +492,7 @@
 <translation id="1670399744444387456">基本設定</translation>
 <translation id="167160931442925455">最大</translation>
 <translation id="1673137583248014546"><ph name="URL" /> よりセキュリティ キーのメーカーとモデルの読み取り許可を求められています</translation>
+<translation id="1677472565718498478">残り <ph name="TIME" /></translation>
 <translation id="1679068421605151609">デベロッパー ツール</translation>
 <translation id="1679806121152819234">プラグイン VM</translation>
 <translation id="1679810534535368772">終了してもよろしいですか？</translation>
@@ -1787,6 +1788,7 @@
 <translation id="3462413494201477527">アカウントの設定をキャンセルしますか？</translation>
 <translation id="3464012987031883895">サイトが音声入力にアクセスしています</translation>
 <translation id="346431825526753">これは <ph name="CUSTODIAN_EMAIL" /> によって管理されている子供向けのアカウントです。</translation>
+<translation id="3468298837301810372">ラベル</translation>
 <translation id="3468999815377931311">Android スマートフォン</translation>
 <translation id="3470442499439619530">このユーザーを削除</translation>
 <translation id="3471876058939596279">HDMI ポートと USB Type-C ポートを同時にビデオ出力に使用することはできません。別のビデオポートを使用してください。</translation>
@@ -3962,7 +3964,6 @@
 <translation id="6545867563032584178">Mac のシステム環境設定でマイクがオフになっています</translation>
 <translation id="6547354035488017500">デバイスの空き領域を 512 MB 以上確保してください。空き領域がこれより少なくなると、デバイスは応答しなくなります。空き領域を確保するために、デバイスのストレージからファイルを削除してください。</translation>
 <translation id="6549639163247690448"><ph name="DOMAIN" /> が今すぐ Wi-Fi に接続して、アップデートをダウンロードするよう求めています。アップデートは、インターネットに接続すると自動的にダウンロードされます。</translation>
-<translation id="6549966385318247177">成人向けコンテンツのためブロックされました。</translation>
 <translation id="6550675742724504774">オプション</translation>
 <translation id="6551508934388063976">コマンドを使用できません。Ctrl+N を押して新しいウィンドウを開いてください。</translation>
 <translation id="6551612971599078809">サイトで USB が使用されています</translation>

@@ -1078,12 +1078,6 @@ void RootWindowController::CreateContainers() {
   lock_modal_container->SetProperty(::wm::kUsesScreenCoordinatesKey, true);
   window_util::SetChildrenUseExtendedHitRegionForWindow(lock_modal_container);
 
-  aura::Window* overview_focus_container =
-      CreateContainer(kShellWindowId_OverviewFocusContainer,
-                      "OverviewFocusContainer", lock_screen_related_containers);
-  overview_focus_container->SetProperty(::wm::kUsesScreenCoordinatesKey, true);
-  overview_focus_container->SetProperty(kLockedToRootKey, true);
-
   aura::Window* power_menu_container =
       CreateContainer(kShellWindowId_PowerMenuContainer, "PowerMenuContainer",
                       lock_screen_related_containers);

@@ -201,12 +201,6 @@ QUIC_FLAG(bool,
           FLAGS_quic_reloadable_flag_quic_use_http2_priority_write_scheduler,
           true)
 
-// If true and LIFO connection option is received, write_blocked_streams uses
-// LIFO(stream with largest ID has highest priority) write scheduler.
-QUIC_FLAG(bool,
-          FLAGS_quic_reloadable_flag_quic_enable_lifo_write_scheduler,
-          true)
-
 // The maximum amount of CRYPTO frame data that can be buffered.
 QUIC_FLAG(int32_t, FLAGS_quic_max_buffered_crypto_bytes, 16 * 1024)
 
@@ -236,9 +230,6 @@ QUIC_FLAG(int32_t, FLAGS_quic_max_congestion_window, 2000)
 QUIC_FLAG(bool,
           FLAGS_quic_reloadable_flag_quic_bbr_donot_inject_bandwidth,
           true)
-
-// If true, add a up call when N packet numbers get skipped.
-QUIC_FLAG(bool, FLAGS_quic_reloadable_flag_quic_on_packet_numbers_skipped, true)
 
 // The default minimum duration for BBRv2-native probes, in milliseconds.
 QUIC_FLAG(int32_t, FLAGS_quic_bbr2_default_probe_bw_base_duration_ms, 2000)
@@ -295,12 +286,6 @@ QUIC_FLAG(bool, FLAGS_quic_reloadable_flag_quic_testonly_default_false, false)
 // peer_advertized_ack_delay before using it.
 QUIC_FLAG(bool, FLAGS_quic_reloadable_flag_quic_sanitize_ack_delay, true)
 
-// If true, allow connection IDs of length [21,255] in version
-// negotiation packets.
-QUIC_FLAG(bool,
-          FLAGS_quic_restart_flag_quic_allow_very_long_connection_ids,
-          true)
-
 // If true, frames will be hold in an optimized wrapper data structure.
 QUIC_FLAG(bool, FLAGS_quic_reloadable_flag_quic_interval_deque, true)
 
@@ -312,7 +297,7 @@ QUIC_FLAG(bool,
 // If true, the QUIC dispatcher will drop INITIAL packets that are too small.
 QUIC_FLAG(bool,
           FLAGS_quic_reloadable_flag_quic_drop_small_initial_packets,
-          false)
+          true)
 
 // If true, QUIC will call bandwidth sampler once per ack event, instead of once
 // per acked packet.
@@ -363,7 +348,7 @@ QUIC_FLAG(int32_t, FLAGS_quic_bbr2_default_initial_ack_height_filter_window, 10)
 // instead of just counting it in STARTUP.
 QUIC_FLAG(bool,
           FLAGS_quic_reloadable_flag_quic_bbr2_always_count_loss_events,
-          false)
+          true)
 
 // The default minimum number of loss marking events to exit PROBE_UP phase.
 QUIC_FLAG(double, FLAGS_quic_bbr2_default_probe_bw_full_loss_count, 2)
@@ -372,7 +357,7 @@ QUIC_FLAG(double, FLAGS_quic_bbr2_default_probe_bw_full_loss_count, 2)
 // ACK decimation is enabled.
 QUIC_FLAG(bool,
           FLAGS_quic_reloadable_flag_quic_ack_delay_alarm_granularity,
-          true)
+          false)
 
 // If true, enable the 1ACK connection option to only send 1 immediate ACK after
 // reordering.
@@ -387,7 +372,7 @@ QUIC_FLAG(bool, FLAGS_quic_reloadable_flag_quic_use_get_handshake_state, true)
 QUIC_FLAG(
     bool,
     FLAGS_quic_restart_flag_quic_remove_quic_socket_utils_from_packet_reader,
-    false)
+    true)
 
 // If true, QuicSentPacketManager::SetSendAlgorithm(CongestionControlType) will
 // become a no-op if the current and the requested cc_type are the same.

@@ -14,8 +14,13 @@ import org.chromium.weblayer_private.interfaces.ObjectWrapper;
 /**
  * UrlBarController enables creation of URL bar views and retrieval of information about them.
  */
-public final class UrlBarController {
+public class UrlBarController {
     private final IUrlBarController mImpl;
+
+    // Constructor for test mocking.
+    protected UrlBarController() {
+        mImpl = null;
+    }
 
     UrlBarController(IUrlBarController urlBarController) {
         mImpl = urlBarController;

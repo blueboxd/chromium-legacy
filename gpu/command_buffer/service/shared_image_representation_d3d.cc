@@ -9,33 +9,18 @@
 
 namespace gpu {
 
-SharedImageRepresentationGLTextureD3D::SharedImageRepresentationGLTextureD3D(
-    SharedImageManager* manager,
-    SharedImageBacking* backing,
-    MemoryTypeTracker* tracker,
-    gles2::Texture* texture)
-    : SharedImageRepresentationGLTexture(manager, backing, tracker),
-      texture_(texture) {}
-
-gles2::Texture* SharedImageRepresentationGLTextureD3D::GetTexture() {
-  return texture_;
-}
-
-SharedImageRepresentationGLTextureD3D::
-    ~SharedImageRepresentationGLTextureD3D() = default;
-
 SharedImageRepresentationGLTexturePassthroughD3D::
     SharedImageRepresentationGLTexturePassthroughD3D(
         SharedImageManager* manager,
         SharedImageBacking* backing,
         MemoryTypeTracker* tracker,
-        scoped_refptr<gles2::TexturePassthrough> texture_passthrough)
+        scoped_refptr<gles2::TexturePassthrough> texture)
     : SharedImageRepresentationGLTexturePassthrough(manager, backing, tracker),
-      texture_passthrough_(std::move(texture_passthrough)) {}
+      texture_(std::move(texture)) {}
 
 const scoped_refptr<gles2::TexturePassthrough>&
 SharedImageRepresentationGLTexturePassthroughD3D::GetTexturePassthrough() {
-  return texture_passthrough_;
+  return texture_;
 }
 
 SharedImageRepresentationGLTexturePassthroughD3D::

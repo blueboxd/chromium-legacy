@@ -149,7 +149,7 @@ class TabSelectionEditorMediator
                         isIncognito ? R.color.dark_text_color_list
                                     : R.color.default_text_color_inverse_list);
                 int textAppearance = isIncognito ? R.style.TextAppearance_Headline_Primary_Dark
-                                                 : R.style.TextAppearance_Headline_Inverse;
+                                                 : R.style.TextAppearance_Headline_Primary_Inverse;
 
                 mModel.set(TabSelectionEditorProperties.PRIMARY_COLOR, primaryColor);
                 mModel.set(TabSelectionEditorProperties.TOOLBAR_BACKGROUND_COLOR,

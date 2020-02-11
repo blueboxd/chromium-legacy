@@ -160,6 +160,14 @@ class TestDelegate : public PasswordsPrivateDelegate {
         EXPORT_PROGRESS_STATUS_IN_PROGRESS;
   }
 
+  bool IsOptedInForAccountStorage() override {
+    return is_opted_in_for_account_storage_;
+  }
+
+  void SetOptedInForAccountStorage(bool opted_in) {
+    is_opted_in_for_account_storage_ = opted_in;
+  }
+
   // Flags for detecting whether import/export operations have been invoked.
   bool importPasswordsTriggered = false;
   bool exportPasswordsTriggered = false;
@@ -191,6 +199,8 @@ class TestDelegate : public PasswordsPrivateDelegate {
   base::Optional<api::passwords_private::ExceptionEntry>
       last_deleted_exception_;
   Profile* profile_;
+
+  bool is_opted_in_for_account_storage_ = false;
 };
 
 class PasswordsPrivateApiTest : public ExtensionApiTest {
@@ -241,6 +251,10 @@ class PasswordsPrivateApiTest : public ExtensionApiTest {
 
   bool cancelExportPasswordsWasTriggered() {
     return s_test_delegate_->cancelExportPasswordsTriggered;
+  }
+
+  void SetOptedInForAccountStorage(bool opted_in) {
+    s_test_delegate_->SetOptedInForAccountStorage(opted_in);
   }
 
  private:
@@ -302,6 +316,15 @@ IN_PROC_BROWSER_TEST_F(PasswordsPrivateApiTest, CancelExportPasswords) {
 
 IN_PROC_BROWSER_TEST_F(PasswordsPrivateApiTest, RequestExportProgressStatus) {
   EXPECT_TRUE(RunPasswordsSubtest("requestExportProgressStatus")) << message_;
+}
+
+IN_PROC_BROWSER_TEST_F(PasswordsPrivateApiTest, IsNotOptedInForAccountStorage) {
+  EXPECT_TRUE(RunPasswordsSubtest("isNotOptedInForAccountStorage")) << message_;
+}
+
+IN_PROC_BROWSER_TEST_F(PasswordsPrivateApiTest, IsOptedInForAccountStorage) {
+  SetOptedInForAccountStorage(true);
+  EXPECT_TRUE(RunPasswordsSubtest("isOptedInForAccountStorage")) << message_;
 }
 
 }  // namespace extensions

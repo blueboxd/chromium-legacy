@@ -116,10 +116,6 @@ enum ShellWindowId {
   // The container for the lock screen modal windows.
   kShellWindowId_LockSystemModalContainer,
 
-  // The container for the overview focus widget - widget that gets focused
-  // while overview session is active for accessibility purposes.
-  kShellWindowId_OverviewFocusContainer,
-
   // A parent container that holds the virtual keyboard container and ime
   // windows if any. This is to ensure that the virtual keyboard or ime window
   // is stacked above most containers but below the mouse cursor and the power
@@ -192,7 +188,7 @@ constexpr int kSystemModalContainerIds[] = {
 // windows in containers appearing later in the list. This list is used by
 // AshFocusRules to determine which container to start the search from when
 // looking for the next activatable window.
-ASH_PUBLIC_EXPORT const std::array<int, 19>& GetActivatableShellWindowIds();
+ASH_PUBLIC_EXPORT const std::array<int, 18>& GetActivatableShellWindowIds();
 
 // Returns true if |id| is in |kActivatableContainersIds|.
 ASH_PUBLIC_EXPORT bool IsActivatableShellWindowId(int id);

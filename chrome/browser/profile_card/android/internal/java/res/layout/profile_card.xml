@@ -13,12 +13,12 @@
         android:id="@+id/title"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:textAppearance="@style/TextAppearance.Title2.Inverse" />
+        android:textAppearance="@style/TextAppearance.TextMediumThick.Primary.Inverse" />
 
     <TextView
         android:id="@+id/description"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:textAppearance="@style/TextAppearance.Title2.Inverse" />
+        android:textAppearance="@style/TextAppearance.TextMediumThick.Primary.Inverse" />
 
 </LinearLayout>

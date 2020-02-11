@@ -65,7 +65,8 @@ def _MapKind(kind):
                  'handle<data_pipe_consumer>': 'h:d:c',
                  'handle<data_pipe_producer>': 'h:d:p',
                  'handle<message_pipe>': 'h:m',
-                 'handle<shared_buffer>': 'h:s'}
+                 'handle<shared_buffer>': 'h:s',
+                 'handle<platform>': 'h:p'}
   if kind.endswith('?'):
     base_kind = _MapKind(kind[0:-1])
     # NOTE: This doesn't rule out enum types. Those will be detected later, when

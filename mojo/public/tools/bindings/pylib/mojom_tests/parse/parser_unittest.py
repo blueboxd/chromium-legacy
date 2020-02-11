@@ -561,6 +561,10 @@ class ParserTest(unittest.TestCase):
           handle
             < shared_buffer
             > e;
+          handle
+            <platform
+
+            > f;
         };
         """
     expected = ast.Mojom(
@@ -577,7 +581,8 @@ class ParserTest(unittest.TestCase):
                                  None),
                  ast.StructField('d', None, None, 'handle<message_pipe>', None),
                  ast.StructField('e', None, None, 'handle<shared_buffer>',
-                                 None)]))])
+                                 None),
+                 ast.StructField('f', None, None, 'handle<platform>', None)]))])
     self.assertEquals(parser.Parse(source, "my_file.mojom"), expected)
 
   def testInvalidHandleType(self):
@@ -1181,6 +1186,7 @@ class ParserTest(unittest.TestCase):
           handle<message_pipe>? l;
           handle<shared_buffer>? m;
           some_interface&? n;
+          handle<platform>? o;
         };
         """
     expected = ast.Mojom(
@@ -1206,7 +1212,8 @@ class ParserTest(unittest.TestCase):
                  ast.StructField('l', None, None,'handle<message_pipe>?', None),
                  ast.StructField('m', None, None,'handle<shared_buffer>?',
                                  None),
-                 ast.StructField('n', None, None,'some_interface&?', None)]))])
+                 ast.StructField('n', None, None,'some_interface&?', None),
+                 ast.StructField('o', None, None,'handle<platform>?', None)]))])
     self.assertEquals(parser.Parse(source, "my_file.mojom"), expected)
 
   def testInvalidNullableTypes(self):

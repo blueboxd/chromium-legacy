@@ -9,6 +9,7 @@
 #include <memory>
 #include <set>
 
+#include "base/observer_list_types.h"
 #include "base/optional.h"
 #include "base/time/time.h"
 #include "chrome/browser/chromeos/child_accounts/time_limits/app_activity_report_interface.h"
@@ -45,9 +46,29 @@ class AppActivityRegistry : public AppServiceWrapper::EventListener {
     ~TestApi();
 
     const base::Optional<AppLimit>& GetAppLimit(const AppId& app_id) const;
+    base::Optional<base::TimeDelta> GetTimeLeft(const AppId& app_id) const;
 
    private:
     AppActivityRegistry* const registry_;
+  };
+
+  // Interface for the observers interested in the changes of apps state.
+  class AppStateObserver : public base::CheckedObserver {
+   public:
+    AppStateObserver() = default;
+    AppStateObserver(const AppStateObserver&) = delete;
+    AppStateObserver& operator=(const AppStateObserver&) = delete;
+    ~AppStateObserver() override = default;
+
+    // Called when state of the app with |app_id| changed to |kLimitReached|.
+    virtual void OnAppLimitReached(const AppId& app_id,
+                                   base::TimeDelta time_limit) = 0;
+
+    // Called when state of the app with |app_id| is no longer |kLimitReached|.
+    virtual void OnAppLimitRemoved(const AppId& app_id) = 0;
+
+    // Called when new app was installed.
+    virtual void OnAppInstalled(const AppId& app_id) = 0;
   };
 
   AppActivityRegistry(AppServiceWrapper* app_service_wrapper,
@@ -74,12 +95,9 @@ class AppActivityRegistry : public AppServiceWrapper::EventListener {
   bool IsAppTimeLimitReached(const AppId& app_id) const;
   bool IsAppActive(const AppId& app_id) const;
 
-  // Sets the timelimit for the |app_id| to |time_limit|. Notifies
-  // |notification_delegate_| if there has been a change in the state of
-  // |app_id|.
-  bool SetAppTimeLimitForTest(const AppId& app_id,
-                              base::TimeDelta time_limit,
-                              base::Time timestamp);
+  // Manages AppStateObservers.
+  void AddAppStateObserver(AppStateObserver* observer);
+  void RemoveAppStateObserver(AppStateObserver* observer);
 
   // Returns the total active time for the application since the last time limit
   // reset.
@@ -97,8 +115,15 @@ class AppActivityRegistry : public AppServiceWrapper::EventListener {
   // data left.
   void CleanRegistry(base::Time timestamp);
 
-  // Updates time limits for the installed apps.
+  // Updates time limits for all installed apps.
+  // Apps not present in |app_limits| are treated as they do not have limit set.
   void UpdateAppLimits(const std::map<AppId, AppLimit>& app_limits);
+
+  // Sets time limit for app identified with |app_id|.
+  // Does not affect limits of any other app. Not specified |app_limit| means
+  // that app does not have limit set. Does not affect limits of any other app.
+  void SetAppLimit(const AppId& app_id,
+                   const base::Optional<AppLimit>& app_limit);
 
   // Reset time has been reached at |timestamp|.
   void OnResetTimeReached(base::Time timestamp);
@@ -116,6 +141,16 @@ class AppActivityRegistry : public AppServiceWrapper::EventListener {
     AppDetails& operator=(const AppDetails&) = delete;
     ~AppDetails();
 
+    // Resets the time limit check timer.
+    void ResetTimeCheck();
+
+    // Checks |limit| and |activity| to determine if the limit was reached.
+    bool IsLimitReached() const;
+
+    // Checks if |limit| is equal to |another_limit| with exception for the
+    // timestamp (that does not indicate that limit changed).
+    bool IsLimitEqual(const base::Optional<AppLimit>& another_limit) const;
+
     // Contains information about current app state and logged activity.
     AppActivity activity{AppState::kAvailable};
 
@@ -125,7 +160,8 @@ class AppActivityRegistry : public AppServiceWrapper::EventListener {
     // Contains information about restriction set for the app.
     base::Optional<AppLimit> limit;
 
-    // Timer set up for when the app time limit is expected to be reached.
+    // Timer set up for when the app time limit is expected to be reached and
+    // preceding notifications.
     std::unique_ptr<base::OneShotTimer> app_limit_timer;
   };
 
@@ -157,6 +193,9 @@ class AppActivityRegistry : public AppServiceWrapper::EventListener {
 
   // Notification delegate.
   AppTimeNotificationDelegate* const notification_delegate_;
+
+  // Observers to be notified about app state changes.
+  base::ObserverList<AppStateObserver> app_state_observers_;
 
   std::map<AppId, AppDetails> activity_registry_;
 };

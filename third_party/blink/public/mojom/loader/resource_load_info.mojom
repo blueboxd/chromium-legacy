@@ -72,18 +72,14 @@ struct ResourceLoadInfo {
   // An ID that uniquely identifies this request.
   int64 request_id;
 
-  // The origin of the final URL of the response (final = after all redirects).
-  //
-  // The full URL is not available, because in some cases the path and query
-  // may be sanitized away - see https://crbug.com/973885.
-  url.mojom.Origin origin_of_final_url;
+  // The final URL of the response (final = after all redirects).
+  url.mojom.Url final_url;
 
   // The response referrer.
   url.mojom.Url referrer;
 
-  // The original URL is the URL used to initialize the subresource request, and
-  // it may differ from "final url" (see |origin_of_final_url|) if the request
-  // was redirected.
+  // The original URL is the URL used to initialize the subresource request,
+  // and it may differ from the |final_url| if the request was redirected.
   url.mojom.Url original_url;
 
   // The request method used to fetch this response.

@@ -492,6 +492,7 @@
 <translation id="1670399744444387456">Osnovne</translation>
 <translation id="167160931442925455">Najglasnije</translation>
 <translation id="1673137583248014546"><ph name="URL" /> želi vidjeti marku i model vašeg sigurnosnog ključa</translation>
+<translation id="1677472565718498478">Još <ph name="TIME" /></translation>
 <translation id="1679068421605151609">Alati za razvojne programere</translation>
 <translation id="1679806121152819234">Dodatak VM</translation>
 <translation id="1679810534535368772">Jeste li sigurni da želite odustati?</translation>
@@ -1066,7 +1067,7 @@ Postavkama računa možete upravljati tako da instalirate aplikaciju Family Link
 <translation id="2462724976360937186">ID ključa tijela za izdavanje certifikata</translation>
 <translation id="2462752602710430187">Dodano: <ph name="PRINTER_NAME" /></translation>
 <translation id="2464089476039395325">HTTP proxy</translation>
-<translation id="2465237718053447668">Domena <ph name="DOMAIN" /> zahtijeva da se odmah povežete s Wi-Fijem i preuzmete ažuriranje. Preuzeti možete i putem veze s ograničenim prometom (moguća je naplata naknada).</translation>
+<translation id="2465237718053447668">Domena <ph name="DOMAIN" /> zahtijeva da se odmah povežete s Wi-Fijem i preuzmete ažuriranje. Možete ga preuzeti i putem veze s ograničenim prometom (moguća je naplata naknada).</translation>
 <translation id="2467267713099745100"><ph name="NETWORK_TYPE" /> mreža, isključena</translation>
 <translation id="2468205691404969808">Upotrebljava kolačiće za pamćenje vaših postavki, čak i ako ne posjetite te stranice</translation>
 <translation id="2468402215065996499">Tamagotchi</translation>
@@ -1787,6 +1788,7 @@ Postavkama računa možete upravljati tako da instalirate aplikaciju Family Link
 <translation id="3462413494201477527">Želite li otkazati izradu računa?</translation>
 <translation id="3464012987031883895">Web-lokacija pristupa audioulazu</translation>
 <translation id="346431825526753">Ovo je račun za djecu kojim upravlja <ph name="CUSTODIAN_EMAIL" />.</translation>
+<translation id="3468298837301810372">Oznaka</translation>
 <translation id="3468999815377931311">Android telefon</translation>
 <translation id="3470442499439619530">Uklanjanje tog korisnika</translation>
 <translation id="3471876058939596279">HDMI priključci i USB priključci vrste C ne mogu se istovremeno upotrebljavati za videozapise. Koristite drugi videopriključak.</translation>
@@ -3962,7 +3964,6 @@ Postavkama računa možete upravljati tako da instalirate aplikaciju Family Link
 <translation id="6545867563032584178">Mikrofon je isključen u Postavkama sustava na Macu</translation>
 <translation id="6547354035488017500">Oslobodite najmanje 512 MB prostora ili će uređaj prestati reagirati. Da biste oslobodili prostor, izbrišite datoteke iz pohrane uređaja.</translation>
 <translation id="6549639163247690448">Domena <ph name="DOMAIN" /> zahtijeva da se odmah povežete s Wi-Fijem i preuzmete ažuriranje. Ažuriranje će se preuzeti automatski kad se povežete s internetom.</translation>
-<translation id="6549966385318247177">Proširenje je blokirano zbog sadržaja za odrasle.</translation>
 <translation id="6550675742724504774">Opcije</translation>
 <translation id="6551508934388063976">Naredba nije dostupna. Pritisnite tipke Ctrl – N za otvaranje novog prozora.</translation>
 <translation id="6551612971599078809">Web-lokacija upotrebljava USB</translation>

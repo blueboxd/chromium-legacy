@@ -223,39 +223,33 @@ void AXLanguageDetectionManager::LabelLanguagesForSubtree(
 // Will not check feature flag.
 void AXLanguageDetectionManager::LabelLanguagesForNode(AXNode* node) {
   AXLanguageInfo* lang_info = node->GetLanguageInfo();
+  if (!lang_info)
+    return;
 
-  // lang_info is only attached by Detect when it thinks a node is interesting,
-  // the presence of lang_info means that Detect expects the node to end up with
-  // a language specified.
+  // There is no work to do if we already have an assigned (non-empty) language.
+  if (lang_info->language.size())
+    return;
+
+  // Assign the highest probability language which is both:
+  // 1) reliably detected for this node, and
+  // 2) one of the top (kMaxDetectedLanguagesPerPage) languages on this page.
   //
-  // If the lang_info->language is already set then we have no more work to do
-  // for this node.
-  if (lang_info && lang_info->language.empty()) {
-    // We assign the highest probability language which is both:
-    // 1) reliably detected for this node, and
-    // 2) one of the top (kMaxDetectedLanguagesPerPage) languages on this page.
-    //
-    // This helps guard against false positives for nodes which have noisy
-    // language detection results in isolation.
-    for (const auto& lang : lang_info->detected_languages) {
-      if (lang_info_stats_.CheckLanguageWithinTop(lang)) {
-        lang_info->language = lang;
-        break;
-      }
-    }
+  // This helps guard against false positives for nodes which have noisy
+  // language detection results in isolation.
+  for (const auto& lang : lang_info->detected_languages) {
+    if (lang_info_stats_.CheckLanguageWithinTop(lang)) {
+      lang_info->language = lang;
 
-    // After attempting labelling we no longer need the detected results in
-    // LanguageInfo, as they have no future use.
-    if (lang_info->language.empty()) {
-      // If no language was assigned then LanguageInfo as a whole can safely be
-      // destroyed.
-      node->ClearLanguageInfo();
-    } else {
-      // Otherwise, if we assigned a language then we need to keep
-      // LanguageInfo.language, but we can clear the detected results.
+      // After assigning a label we no longer need detected languages.
       lang_info->detected_languages.clear();
+
+      return;
     }
   }
+
+  // If we didn't label a language, then we can discard all language detection
+  // information for this node.
+  node->ClearLanguageInfo();
 }
 
 std::vector<AXLanguageSpan>

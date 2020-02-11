@@ -15,6 +15,7 @@ import shutil
 import subprocess
 import sys
 import tempfile
+import time
 
 from common import GetEmuRootForPlatform, EnsurePathExists
 
@@ -28,16 +29,19 @@ GUEST_MAC_ADDRESS = '52:54:00:63:5e:7b'
 # Capacity of the system's blobstore volume.
 EXTENDED_BLOBSTORE_SIZE = 1073741824  # 1GB
 
+# qemu-img p99 run time is 26 seconds.  Using 2x the p99 time as the timeout.
+QEMU_IMG_TIMEOUT_SEC = 52
 
 class QemuTarget(emu_target.EmuTarget):
   def __init__(self, output_dir, target_cpu, system_log_file,
-               emu_type, cpu_cores, require_kvm, ram_size_mb):
+               emu_type, cpu_cores, require_kvm, ram_size_mb, qemu_img_retries):
     super(QemuTarget, self).__init__(output_dir, target_cpu,
                                      system_log_file)
     self._emu_type=emu_type
     self._cpu_cores=cpu_cores
     self._require_kvm=require_kvm
     self._ram_size_mb=ram_size_mb
+    self._qemu_img_retries=qemu_img_retries
 
   def _GetEmulatorName(self):
     return self._emu_type
@@ -71,7 +75,8 @@ class QemuTarget(emu_target.EmuTarget):
         '-snapshot',
         '-drive', 'file=%s,format=qcow2,if=none,id=blobstore,snapshot=on' %
                     _EnsureBlobstoreQcowAndReturnPath(self._output_dir,
-                                                      self._GetTargetSdkArch()),
+                                                      self._GetTargetSdkArch(),
+                                                      self._qemu_img_retries),
         '-device', 'virtio-blk-pci,drive=blobstore',
 
         # Use stdio for the guest OS only; don't attach the QEMU interactive
@@ -148,6 +153,7 @@ class QemuTarget(emu_target.EmuTarget):
     qemu_command.append('-nographic')
     return qemu_command
 
+
 def _ComputeFileHash(filename):
   hasher = md5.new()
   with open(filename, 'rb') as f:
@@ -159,12 +165,69 @@ def _ComputeFileHash(filename):
   return hasher.hexdigest()
 
 
-def _EnsureBlobstoreQcowAndReturnPath(output_dir, target_arch):
+def _ExecWithTimeout(command, timeout_sec):
+  """Execute command in subprocess with timeout.
+
+  Has debug logging for run time measurements.
+
+  Returns: None if command timed out or return code if command completed.
+  """
+
+  p = subprocess.Popen(command)
+  start_sec = time.time()
+  num_checks = 0
+  while p.poll() is None and time.time() - start_sec < timeout_sec:
+    time.sleep(1)
+    num_checks += 1
+  stop_sec = time.time()
+
+  # Sleep durations are much less than 1 second for python2.7 on arm64
+  # Logging number of checks and total duration to help debug timeouts.
+  logging.debug('qemu_target sleep checks: %d' % num_checks)
+  logging.debug('qemu_target sleep start: %f' % start_sec)
+  logging.debug('qemu_target sleep stop: %f' % stop_sec)
+  logging.debug('qemu_target sleep duration: %f' % float(stop_sec - start_sec))
+
+  if p.poll() is None:
+    p.kill()
+    return None
+
+  return p.returncode
+
+
+def _ExecWithTimeoutAndRetry(command, timeout_sec, retries):
+  """ Execute command in subprocess with timeout and retries.
+
+  Raises CalledProcessError if command does not complete successfully.
+  """
+
+  try:
+    tries = 0
+    status = None
+    while status is None and tries <= retries:
+      tries += 1
+      logging.debug('qemu_target call: %s' % command)
+      status = _ExecWithTimeout(command, timeout_sec)
+      logging.debug('qemu_target done: %s' % command[0])
+
+    if status is None:
+      raise subprocess.CalledProcessError(-1, command)
+    if status:
+      raise subprocess.CalledProcessError(status, command)
+  except subprocess.CalledProcessError as error:
+    logging.debug(
+        'qemu_target._EnsureBlobStoreQcowAndReturnPath qemu_img error: %s' %
+        error)
+    raise
+
+
+def _EnsureBlobstoreQcowAndReturnPath(output_dir, target_arch,
+                                      qemu_img_retries):
   """Returns a file containing the Fuchsia blobstore in a QCOW format,
   with extra buffer space added for growth."""
 
-  qimg_tool = os.path.join(common.GetEmuRootForPlatform('qemu'),
-                           'bin', 'qemu-img')
+  qemu_img_tool = os.path.join(common.GetEmuRootForPlatform('qemu'),
+                               'bin', 'qemu-img')
   fvm_tool = common.GetHostToolPathFromPlatform('fvm')
   blobstore_path = boot_data.GetTargetFile('storage-full.blk', target_arch,
                                            'qemu')
@@ -193,8 +256,10 @@ def _EnsureBlobstoreQcowAndReturnPath(output_dir, target_arch):
 
   # Construct a QCOW image from the extended, temporary FVM volume.
   # The result will be retained in the build output directory for re-use.
-  subprocess.check_call([qimg_tool, 'convert', '-f', 'raw', '-O', 'qcow2',
-                         '-c', extended_blobstore.name, qcow_path])
+  # TODO(crbug.com/1046861): Remove retries after qemu-img bug is fixed.
+  qemu_img_cmd = [qemu_img_tool, 'convert', '-f', 'raw', '-O', 'qcow2',
+              '-c', extended_blobstore.name, qcow_path]
+  _ExecWithTimeoutAndRetry(qemu_img_cmd, QEMU_IMG_TIMEOUT_SEC, qemu_img_retries)
 
   # Write out a hash of the original blobstore file, so that subsequent runs
   # can trivially check if a cached extended FVM volume is available for reuse.

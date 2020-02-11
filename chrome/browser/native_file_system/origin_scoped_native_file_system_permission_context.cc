@@ -61,16 +61,30 @@ class OriginScopedNativeFileSystemPermissionContext::PermissionGrantImpl
       return;
     }
 
-    // Check if prompting for write access is blocked by the user and update
-    // the status if it is.
-    if (type_ == GrantType::kWrite &&
-        !context_->CanRequestWritePermission(origin_)) {
-      SetStatus(PermissionStatus::DENIED);
-      RunCallbackAndRecordPermissionRequestOutcome(
-          std::move(callback),
-          PermissionRequestOutcome::kBlockedByContentSetting);
-      return;
+    if (type_ == GrantType::kWrite) {
+      ContentSetting content_setting =
+          context_->GetWriteGuardContentSetting(origin_);
+
+      // Content setting grants write permission without asking.
+      if (content_setting == CONTENT_SETTING_ALLOW) {
+        SetStatus(PermissionStatus::GRANTED);
+        RunCallbackAndRecordPermissionRequestOutcome(
+            std::move(callback),
+            PermissionRequestOutcome::kGrantedByContentSetting);
+        return;
+      }
+
+      // Content setting blocks write permission.
+      if (content_setting == CONTENT_SETTING_BLOCK) {
+        SetStatus(PermissionStatus::DENIED);
+        RunCallbackAndRecordPermissionRequestOutcome(
+            std::move(callback),
+            PermissionRequestOutcome::kBlockedByContentSetting);
+        return;
+      }
     }
+
+    // Otherwise, perform checks and ask the user for permission.
 
     content::RenderFrameHost* rfh =
         content::RenderFrameHost::FromID(process_id, frame_id);
@@ -354,13 +368,27 @@ OriginScopedNativeFileSystemPermissionContext::GetWritePermissionGrant(
     existing_grant = new_grant.get();
   }
 
-  if (CanRequestWritePermission(origin)) {
-    if (user_action == UserAction::kSave) {
+  const ContentSetting content_setting = GetWriteGuardContentSetting(origin);
+  switch (content_setting) {
+    case CONTENT_SETTING_ALLOW:
       existing_grant->SetStatus(PermissionStatus::GRANTED);
-      ScheduleUsageIconUpdate();
-    }
-  } else if (new_grant) {
-    existing_grant->SetStatus(PermissionStatus::DENIED);
+      break;
+    case CONTENT_SETTING_ASK:
+      if (user_action == UserAction::kSave) {
+        existing_grant->SetStatus(PermissionStatus::GRANTED);
+        ScheduleUsageIconUpdate();
+      }
+      break;
+    case CONTENT_SETTING_BLOCK:
+      if (new_grant) {
+        existing_grant->SetStatus(PermissionStatus::DENIED);
+      } else {
+        // We won't revoke permission to an existing grant.
+      }
+      break;
+    default:
+      NOTREACHED();
+      break;
   }
 
   return existing_grant;

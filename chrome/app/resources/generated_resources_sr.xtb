@@ -153,7 +153,7 @@
 <translation id="1201402288615127009">Даље</translation>
 <translation id="1202596434010270079">Киоск апликација је ажурирана. Уклоните USB меморију.</translation>
 <translation id="120368089816228251">Музичка нота</translation>
-<translation id="1203942045716040624">Дељени покретач: <ph name="SCRIPT_URL" /></translation>
+<translation id="1203942045716040624">Дељени обрађивач: <ph name="SCRIPT_URL" /></translation>
 <translation id="1205489148908752564">Читање и мењање корисника на белој листи</translation>
 <translation id="1206407435587370571">Истражите Chromebook</translation>
 <translation id="1209796539517632982">Аутоматски сервери назива</translation>
@@ -489,6 +489,7 @@
 <translation id="1670399744444387456">Основна</translation>
 <translation id="167160931442925455">Најгласније</translation>
 <translation id="1673137583248014546"><ph name="URL" /> жели да види произвођача и модел безбедносног кључа</translation>
+<translation id="1677472565718498478"><ph name="TIME" /> је преостало</translation>
 <translation id="1679068421605151609">Алатке за програмере</translation>
 <translation id="1679806121152819234">Додатна компонента VM</translation>
 <translation id="1679810534535368772">Желите ли стварно да изађете?</translation>
@@ -1063,7 +1064,7 @@
 <translation id="2462724976360937186">ИД кључа ауторитета за издавање сертификата</translation>
 <translation id="2462752602710430187">Додато је: <ph name="PRINTER_NAME" /></translation>
 <translation id="2464089476039395325">HTTP прокси</translation>
-<translation id="2465237718053447668"><ph name="DOMAIN" /> захтева да се повежете на Wi-Fi одмах и да преузмете ажурирање. Или преузмите помоћу везе са ограничењем (можда се наплаћују трошкови).</translation>
+<translation id="2465237718053447668"><ph name="DOMAIN" /> захтева да се одмах повежете на Wi-Fi и да преузмете ажурирање. Или преузмите помоћу везе са ограничењем (можда се наплаћују трошкови).</translation>
 <translation id="2467267713099745100">Мрежа <ph name="NETWORK_TYPE" />, искључена је</translation>
 <translation id="2468205691404969808">Користи колачиће да би се запамтила подешавања, чак и када не посећујете те странице</translation>
 <translation id="2468402215065996499">Тамагочи</translation>
@@ -1784,6 +1785,7 @@
 <translation id="3462413494201477527">Желите ли да откажете подешавање налога?</translation>
 <translation id="3464012987031883895">Сајт приступа аудио улазу</translation>
 <translation id="346431825526753">Ово је налог за децу којим управља <ph name="CUSTODIAN_EMAIL" />.</translation>
+<translation id="3468298837301810372">Ознака</translation>
 <translation id="3468999815377931311">Android телефон</translation>
 <translation id="3470442499439619530">Уклони овог корисника</translation>
 <translation id="3471876058939596279">HDMI и USB портови типа C не могу да се користе за видео у исто време. Користите други видео порт.</translation>
@@ -3959,8 +3961,7 @@
 <translation id="6545864417968258051">Bluetooth скенирање</translation>
 <translation id="6545867563032584178">Микрофон је искључен у подешавањима Mac система</translation>
 <translation id="6547354035488017500">Ослободите бар 512 MB простора или ће уређај престати да се одазива. Да бисте ослободили простор, избришите датотеке из меморијског простора уређаја.</translation>
-<translation id="6549639163247690448"><ph name="DOMAIN" /> захтева да се повежете на Wi-Fi одмах и да преузмете ажурирање. Ажурирање ће се аутоматски преузети када се повежете на интернет.</translation>
-<translation id="6549966385318247177">То је блокирано због садржаја за старију публику.</translation>
+<translation id="6549639163247690448"><ph name="DOMAIN" /> захтева да се одмах повежете на Wi-Fi и да преузмете ажурирање. Ажурирање ће се аутоматски преузети када се повежете на интернет.</translation>
 <translation id="6550675742724504774">Опције</translation>
 <translation id="6551508934388063976">Команда није доступна. Притисните control-N да бисте отворили нови прозор.</translation>
 <translation id="6551612971599078809">Сајт користи USB</translation>
@@ -4514,7 +4515,7 @@
 <translation id="7328699668338161242">Помоћник већ може да вам препознаје глас</translation>
 <translation id="7328867076235380839">Неважећа комбинација</translation>
 <translation id="7329154610228416156">Пријављивање није успело јер је конфигурисано за коришћење небезбедног URL-а (<ph name="BLOCKED_URL" />). Контактирајте администратора.</translation>
-<translation id="7332053360324989309">Наменски покретач: <ph name="SCRIPT_URL" /></translation>
+<translation id="7332053360324989309">Наменски обрађивач: <ph name="SCRIPT_URL" /></translation>
 <translation id="7334190995941642545">Smart Lock тренутно није доступан. Пробајте поново касније.</translation>
 <translation id="7334274148831027933">Омогући монтирану лупу екрана</translation>
 <translation id="7335974957018254119">Користите проверу правописа за:</translation>
@@ -4782,7 +4783,7 @@
 <translation id="7705276765467986571">Није могуће учитати модел обележивача.</translation>
 <translation id="7705524343798198388">VPN</translation>
 <translation id="7707108266051544351">Овом сајту је забрањено да користи сензоре за покрет.</translation>
-<translation id="7707354955081320373">Синхронизуј све типове података, укључујући оне који ће можда убудуће бити додати</translation>
+<translation id="7707354955081320373">Синхронизуј све типове података, укључујући оне који ће можда бити додати касније</translation>
 <translation id="7707922173985738739">Користи мобилне податке</translation>
 <translation id="7709152031285164251">Није успело – <ph name="INTERRUPT_REASON" /></translation>
 <translation id="7710568461918838723">&amp;Пребаци...</translation>

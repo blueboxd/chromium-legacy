@@ -16,8 +16,7 @@ WEBXR_VR_ALL_RUNTIMES_BROWSER_TEST_F(TestConsentAllowCreatesSession) {
   t->SetupFakeConsentManager(
       FakeXRSessionRequestConsentManager::UserResponse::kClickAllowButton);
 
-  t->LoadUrlAndAwaitInitialization(
-      t->GetFileUrlForHtmlTestFile("generic_webxr_page"));
+  t->LoadFileAndAwaitInitialization("generic_webxr_page");
 
   t->EnterSessionWithUserGestureOrFail();
 
@@ -31,8 +30,7 @@ WEBXR_VR_ALL_RUNTIMES_BROWSER_TEST_F(TestConsentCancelFailsSessionCreation) {
   t->SetupFakeConsentManager(
       FakeXRSessionRequestConsentManager::UserResponse::kClickCancelButton);
 
-  t->LoadUrlAndAwaitInitialization(
-      t->GetFileUrlForHtmlTestFile("test_webxr_consent"));
+  t->LoadFileAndAwaitInitialization("test_webxr_consent");
   t->EnterSessionWithUserGesture();
   t->PollJavaScriptBooleanOrFail(
       "sessionInfos[sessionTypes.IMMERSIVE].error != null",
@@ -50,8 +48,7 @@ WEBXR_VR_ALL_RUNTIMES_BROWSER_TEST_F(TestConsentCloseFailsSessionCreation) {
   t->SetupFakeConsentManager(
       FakeXRSessionRequestConsentManager::UserResponse::kCloseDialog);
 
-  t->LoadUrlAndAwaitInitialization(
-      t->GetFileUrlForHtmlTestFile("test_webxr_consent"));
+  t->LoadFileAndAwaitInitialization("test_webxr_consent");
   t->EnterSessionWithUserGesture();
   t->PollJavaScriptBooleanOrFail(
       "sessionInfos[sessionTypes.IMMERSIVE].error != null",
@@ -69,8 +66,7 @@ WEBXR_VR_ALL_RUNTIMES_BROWSER_TEST_F(TestConsentPersistsSameLevel) {
   t->SetupFakeConsentManager(
       FakeXRSessionRequestConsentManager::UserResponse::kClickAllowButton);
 
-  t->LoadUrlAndAwaitInitialization(
-      t->GetFileUrlForHtmlTestFile("generic_webxr_page"));
+  t->LoadFileAndAwaitInitialization("generic_webxr_page");
 
   t->EnterSessionWithUserGestureOrFail();
   t->EndSessionOrFail();
@@ -92,8 +88,7 @@ WEBXR_VR_ALL_RUNTIMES_BROWSER_TEST_F(TestConsentNotNeededForInline) {
   t->SetupFakeConsentManager(
       FakeXRSessionRequestConsentManager::UserResponse::kClickAllowButton);
 
-  t->LoadUrlAndAwaitInitialization(
-      t->GetFileUrlForHtmlTestFile("test_webxr_consent"));
+  t->LoadFileAndAwaitInitialization("test_webxr_consent");
   t->RunJavaScriptOrFail("requestMagicWindowSession()");
 
   t->PollJavaScriptBooleanOrFail(
@@ -112,8 +107,7 @@ WEBXR_VR_ALL_RUNTIMES_BROWSER_TEST_F(TestConsentPersistsLowerLevel) {
   t->SetupFakeConsentManager(
       FakeXRSessionRequestConsentManager::UserResponse::kClickAllowButton);
 
-  t->LoadUrlAndAwaitInitialization(
-      t->GetFileUrlForHtmlTestFile("test_webxr_consent"));
+  t->LoadFileAndAwaitInitialization("test_webxr_consent");
 
   // Setup to ensure that we request a session that requires a high level of
   // consent.
@@ -141,8 +135,7 @@ WEBXR_VR_ALL_RUNTIMES_BROWSER_TEST_F(TestConsentRepromptsHigherLevel) {
   t->SetupFakeConsentManager(
       FakeXRSessionRequestConsentManager::UserResponse::kClickAllowButton);
 
-  t->LoadUrlAndAwaitInitialization(
-      t->GetFileUrlForHtmlTestFile("test_webxr_consent"));
+  t->LoadFileAndAwaitInitialization("test_webxr_consent");
 
   // First request an immersive session with a medium level of consent.
   t->RunJavaScriptOrFail("setupImmersiveSessionToRequestHeight()");
@@ -164,14 +157,12 @@ WEBXR_VR_ALL_RUNTIMES_BROWSER_TEST_F(TestConsentRepromptsAfterReload) {
   t->SetupFakeConsentManager(
       FakeXRSessionRequestConsentManager::UserResponse::kClickAllowButton);
 
-  t->LoadUrlAndAwaitInitialization(
-      t->GetFileUrlForHtmlTestFile("generic_webxr_page"));
+  t->LoadFileAndAwaitInitialization("generic_webxr_page");
 
   t->EnterSessionWithUserGestureOrFail();
   t->EndSessionOrFail();
 
-  t->LoadUrlAndAwaitInitialization(
-      t->GetFileUrlForHtmlTestFile("generic_webxr_page"));
+  t->LoadFileAndAwaitInitialization("generic_webxr_page");
 
   t->EnterSessionWithUserGestureOrFail();
 

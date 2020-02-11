@@ -32,7 +32,7 @@
         android:layout_height="wrap_content"
         android:layout_below="@id/page_info_permission_status"
         android:layout_toEndOf="@id/page_info_permission_icon"
-        android:textAppearance="@style/TextAppearance.BlueLink2"
+        android:textAppearance="@style/TextAppearance.TextMedium.Blue"
         android:visibility="gone"
         app:leading="@dimen/text_size_medium_leading" />
 

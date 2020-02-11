@@ -206,10 +206,10 @@ TEST_F(StructTraitsTest, GpuInfo) {
   input.in_process_gpu = in_process_gpu;
   input.passthrough_cmd_decoder = passthrough_cmd_decoder;
 #if defined(OS_WIN)
-  input.direct_composition = direct_composition;
-  input.supports_overlays = supports_overlays;
-  input.yuy2_overlay_support = yuy2_overlay_support;
-  input.nv12_overlay_support = nv12_overlay_support;
+  input.overlay_info.direct_composition = direct_composition;
+  input.overlay_info.supports_overlays = supports_overlays;
+  input.overlay_info.yuy2_overlay_support = yuy2_overlay_support;
+  input.overlay_info.nv12_overlay_support = nv12_overlay_support;
   input.dx_diagnostics = dx_diagnostics;
 #endif
   input.video_decode_accelerator_capabilities =
@@ -269,10 +269,10 @@ TEST_F(StructTraitsTest, GpuInfo) {
   EXPECT_EQ(in_process_gpu, output.in_process_gpu);
   EXPECT_EQ(passthrough_cmd_decoder, output.passthrough_cmd_decoder);
 #if defined(OS_WIN)
-  EXPECT_EQ(direct_composition, output.direct_composition);
-  EXPECT_EQ(supports_overlays, output.supports_overlays);
-  EXPECT_EQ(yuy2_overlay_support, output.yuy2_overlay_support);
-  EXPECT_EQ(nv12_overlay_support, output.nv12_overlay_support);
+  EXPECT_EQ(direct_composition, output.overlay_info.direct_composition);
+  EXPECT_EQ(supports_overlays, output.overlay_info.supports_overlays);
+  EXPECT_EQ(yuy2_overlay_support, output.overlay_info.yuy2_overlay_support);
+  EXPECT_EQ(nv12_overlay_support, output.overlay_info.nv12_overlay_support);
   EXPECT_EQ(dx_diagnostics.values, output.dx_diagnostics.values);
 #endif
   EXPECT_EQ(output.video_decode_accelerator_capabilities.flags,

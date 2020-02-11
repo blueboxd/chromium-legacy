@@ -489,6 +489,7 @@
 <translation id="1670399744444387456">Основни</translation>
 <translation id="167160931442925455">Най-силно</translation>
 <translation id="1673137583248014546"><ph name="URL" /> иска да разбере марката и модела на ключа ви за сигурност</translation>
+<translation id="1677472565718498478">Оставащо време: <ph name="TIME" /></translation>
 <translation id="1679068421605151609">Инструменти за програмисти</translation>
 <translation id="1679806121152819234">Plugin VM</translation>
 <translation id="1679810534535368772">Наистина ли искате да излезете?</translation>
@@ -1784,6 +1785,7 @@
 <translation id="3462413494201477527">Да се анулира ли настройването на профила?</translation>
 <translation id="3464012987031883895">Сайт осъществява достъп до аудиовхода</translation>
 <translation id="346431825526753">Това е профил за деца, управляван от <ph name="CUSTODIAN_EMAIL" />.</translation>
+<translation id="3468298837301810372">Етикет</translation>
 <translation id="3468999815377931311">Телефон с Android</translation>
 <translation id="3470442499439619530">Премахване на този потребител</translation>
 <translation id="3471876058939596279">HDMI и USB Type-C портовете не могат едновременно да се използват за видео. Използвайте друг порт за видео.</translation>
@@ -3962,7 +3964,6 @@
 <translation id="6545867563032584178">Микрофонът е изключен в системните предпочитания за Mac</translation>
 <translation id="6547354035488017500">Освободете поне 512 МБ място или устройството ви ще спре да реагира. За целта изтрийте файлове от хранилището му.</translation>
 <translation id="6549639163247690448"><ph name="DOMAIN" /> изисква да се свържете с Wi-Fi сега и да изтеглите актуализация. Тя ще се изтегли автоматично, когато се свържете с интернет.</translation>
-<translation id="6549966385318247177">Това разширение е блокирано заради съдържание за възрастни.</translation>
 <translation id="6550675742724504774">Опции</translation>
 <translation id="6551508934388063976">Командата не е налице. Натиснете „control-N“, за да отворите нов прозорец.</translation>
 <translation id="6551612971599078809">Сайтът използва USB</translation>

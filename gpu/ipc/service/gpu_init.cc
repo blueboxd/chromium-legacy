@@ -39,7 +39,6 @@
 #endif
 
 #if defined(OS_WIN)
-#include "ui/gl/direct_composition_surface_win.h"
 #include "ui/gl/gl_surface_egl.h"
 #endif
 
@@ -73,16 +72,6 @@ bool CollectGraphicsInfo(GPUInfo* gpu_info) {
   return success;
 }
 
-#if defined(OS_WIN)
-OverlaySupport FlagsToOverlaySupport(UINT flags) {
-  if (flags & DXGI_OVERLAY_SUPPORT_FLAG_SCALING)
-    return OverlaySupport::kScaling;
-  if (flags & DXGI_OVERLAY_SUPPORT_FLAG_DIRECT)
-    return OverlaySupport::kDirect;
-  return OverlaySupport::kNone;
-}
-#endif  // OS_WIN
-
 void InitializePlatformOverlaySettings(GPUInfo* gpu_info) {
 #if defined(OS_WIN)
   // This has to be called after a context is created, active GPU is identified,
@@ -90,19 +79,8 @@ void InitializePlatformOverlaySettings(GPUInfo* gpu_info) {
   // |disable_direct_composition| may not be correctly applied.
   // Also, this has to be called after falling back to SwiftShader decision is
   // finalized because this function depends on GL is ANGLE's GLES or not.
-  if (gl::GetGLImplementation() == gl::kGLImplementationEGLANGLE) {
-    DCHECK(gpu_info);
-    gpu_info->direct_composition =
-        gl::DirectCompositionSurfaceWin::IsDirectCompositionSupported();
-    gpu_info->supports_overlays =
-        gl::DirectCompositionSurfaceWin::AreOverlaysSupported();
-    gpu_info->nv12_overlay_support = FlagsToOverlaySupport(
-        gl::DirectCompositionSurfaceWin::GetOverlaySupportFlags(
-            DXGI_FORMAT_NV12));
-    gpu_info->yuy2_overlay_support = FlagsToOverlaySupport(
-        gl::DirectCompositionSurfaceWin::GetOverlaySupportFlags(
-            DXGI_FORMAT_YUY2));
-  }
+  DCHECK(gpu_info);
+  CollectHardwareOverlayInfo(&gpu_info->overlay_info);
 #elif defined(OS_ANDROID)
   if (gpu_info->gpu.vendor_string == "Qualcomm")
     gl::SurfaceControl::EnableQualcommUBWC();

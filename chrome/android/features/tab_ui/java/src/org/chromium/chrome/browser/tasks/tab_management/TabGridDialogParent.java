@@ -125,7 +125,7 @@ public class TabGridDialogParent
     private int mUngroupBarStatus = UngroupBarStatus.HIDE;
     private int mUngroupBarBackgroundColorResourceId = R.color.tab_grid_dialog_background_color;
     private int mUngroupBarHoveredBackgroundColorResourceId = R.color.tab_grid_card_selected_color;
-    private int mUngroupBarTextAppearance = R.style.TextAppearance_BlueTitle2;
+    private int mUngroupBarTextAppearance = R.style.TextAppearance_TextMediumThick_Blue;
     private int mBackgroundDrawableResourceId = R.drawable.tab_grid_dialog_background;
 
     TabGridDialogParent(Context context, ViewGroup parent) {

@@ -93,6 +93,7 @@ SHARD_MAPS_DIRECTORY = os.path.join(
 GTEST_CONVERSION_WHITELIST = [
   'angle_perftests',
   'base_perftests',
+  'blink_platform_perftests',
   'cc_perftests',
   'components_perftests',
   'command_buffer_perftests',

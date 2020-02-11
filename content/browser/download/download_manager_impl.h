@@ -44,6 +44,14 @@ class DownloadItemFactory;
 class DownloadItemImpl;
 }
 
+// These values are persisted to logs (Download.InitiatedByWindowOpener).
+// Entries should not be renumbered and numeric values should never be reused.
+enum class InitiatedByWindowOpenerType {
+  kSameOrigin = 0,
+  kCrossOrigin = 1,
+  kMaxValue = kCrossOrigin
+};
+
 namespace content {
 class CONTENT_EXPORT DownloadManagerImpl
     : public DownloadManager,

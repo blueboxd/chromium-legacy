@@ -121,8 +121,10 @@ SharedImageFactory::SharedImageFactory(
   // For Windows
   bool use_passthrough = gpu_preferences.use_passthrough_cmd_decoder &&
                          gles2::PassthroughCommandDecoderSupported();
-  interop_backing_factory_ =
-      std::make_unique<SharedImageBackingFactoryD3D>(use_passthrough);
+  if (use_passthrough) {
+    // Only supported for passthrough command decoder.
+    interop_backing_factory_ = std::make_unique<SharedImageBackingFactoryD3D>();
+  }
 #endif  // OS_WIN
 
 #if defined(OS_FUCHSIA)

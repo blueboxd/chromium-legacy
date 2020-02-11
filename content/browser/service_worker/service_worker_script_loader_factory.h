@@ -83,7 +83,8 @@ class CONTENT_EXPORT ServiceWorkerScriptLoaderFactory
   // success.
   void CopyScript(const GURL& url,
                   int64_t resource_id,
-                  base::OnceCallback<void(int64_t, net::Error)> callback);
+                  base::OnceCallback<void(int64_t, net::Error)> callback,
+                  int64_t new_resource_id);
 
   // This method is called to notify that the operation triggered by
   // CopyScript() completed.

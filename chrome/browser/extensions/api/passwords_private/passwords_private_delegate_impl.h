@@ -62,6 +62,7 @@ class PasswordsPrivateDelegateImpl : public PasswordsPrivateDelegate,
   void CancelExportPasswords() override;
   api::passwords_private::ExportProgressStatus GetExportProgressStatus()
       override;
+  bool IsOptedInForAccountStorage() override;
 
   // PasswordUIView implementation.
   Profile* GetProfile() override;

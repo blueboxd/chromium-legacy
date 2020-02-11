@@ -4,6 +4,8 @@
 
 #include "chrome/browser/chromeos/child_accounts/time_limits/app_service_wrapper.h"
 
+#include <map>
+#include <set>
 #include <string>
 
 #include "base/bind.h"
@@ -67,6 +69,24 @@ AppServiceWrapper::AppServiceWrapper(Profile* profile) : profile_(profile) {
 }
 
 AppServiceWrapper::~AppServiceWrapper() = default;
+
+void AppServiceWrapper::PauseApp(const AppId& app_id,
+                                 base::TimeDelta daily_limit) {
+  apps::PauseData details;
+  details.should_show_pause_dialog = true;
+  details.hours = daily_limit.InHours();
+  details.minutes =
+      (daily_limit - base::TimeDelta::FromHours(details.hours)).InMinutes();
+
+  const std::map<std::string, apps::PauseData> apps{
+      {GetAppServiceId(app_id), std::move(details)}};
+  GetAppProxy()->PauseApps(apps);
+}
+
+void AppServiceWrapper::ResumeApp(const AppId& app_id) {
+  const std::set<std::string> apps{GetAppServiceId(app_id)};
+  GetAppProxy()->UnpauseApps(apps);
+}
 
 std::vector<AppId> AppServiceWrapper::GetInstalledApps() const {
   std::vector<AppId> installed_apps;
@@ -196,6 +216,13 @@ void AppServiceWrapper::OnInstanceUpdate(const apps::InstanceUpdate& update) {
 void AppServiceWrapper::OnInstanceRegistryWillBeDestroyed(
     apps::InstanceRegistry* cache) {
   apps::InstanceRegistry::Observer::Observe(nullptr);
+}
+
+apps::AppServiceProxy* AppServiceWrapper::GetAppProxy() {
+  apps::AppServiceProxy* proxy =
+      apps::AppServiceProxyFactory::GetForProfile(profile_);
+  DCHECK(proxy);
+  return proxy;
 }
 
 apps::AppRegistryCache& AppServiceWrapper::GetAppCache() const {

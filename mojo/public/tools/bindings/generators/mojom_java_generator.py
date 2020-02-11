@@ -40,12 +40,14 @@ _spec_to_java_type = {
   mojom.INT64.spec: 'long',
   mojom.INT8.spec: 'byte',
   mojom.MSGPIPE.spec: 'org.chromium.mojo.system.MessagePipeHandle',
+  mojom.PLATFORMHANDLE.spec: 'org.chromium.mojo.system.UntypedHandle',
   mojom.NULLABLE_DCPIPE.spec:
       'org.chromium.mojo.system.DataPipe.ConsumerHandle',
   mojom.NULLABLE_DPPIPE.spec:
       'org.chromium.mojo.system.DataPipe.ProducerHandle',
   mojom.NULLABLE_HANDLE.spec: 'org.chromium.mojo.system.UntypedHandle',
   mojom.NULLABLE_MSGPIPE.spec: 'org.chromium.mojo.system.MessagePipeHandle',
+  mojom.NULLABLE_PLATFORMHANDLE.spec: 'org.chromium.mojo.system.UntypedHandle',
   mojom.NULLABLE_SHAREDBUFFER.spec:
       'org.chromium.mojo.system.SharedBufferHandle',
   mojom.NULLABLE_STRING.spec: 'String',
@@ -69,10 +71,12 @@ _spec_to_decode_method = {
   mojom.INT64.spec:                 'readLong',
   mojom.INT8.spec:                  'readByte',
   mojom.MSGPIPE.spec:               'readMessagePipeHandle',
+  mojom.PLATFORMHANDLE.spec:        'readUntypedHandle',
   mojom.NULLABLE_DCPIPE.spec:       'readConsumerHandle',
   mojom.NULLABLE_DPPIPE.spec:       'readProducerHandle',
   mojom.NULLABLE_HANDLE.spec:       'readUntypedHandle',
   mojom.NULLABLE_MSGPIPE.spec:      'readMessagePipeHandle',
+  mojom.NULLABLE_PLATFORMHANDLE.spec: 'readUntypedHandle',
   mojom.NULLABLE_SHAREDBUFFER.spec: 'readSharedBufferHandle',
   mojom.NULLABLE_STRING.spec:       'readString',
   mojom.SHAREDBUFFER.spec:          'readSharedBufferHandle',

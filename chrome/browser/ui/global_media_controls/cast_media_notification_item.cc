@@ -5,13 +5,18 @@
 #include "chrome/browser/ui/global_media_controls/cast_media_notification_item.h"
 
 #include "base/i18n/rtl.h"
+#include "base/location.h"
 #include "base/metrics/histogram_functions.h"
 #include "base/strings/utf_string_conversions.h"
+#include "base/task/post_task.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/global_media_controls/cast_media_session_controller.h"
 #include "components/media_message_center/media_notification_controller.h"
 #include "components/media_message_center/media_notification_view.h"
+#include "components/media_message_center/media_notification_view_impl.h"
 #include "content/public/browser/browser_context.h"
+#include "content/public/browser/browser_task_traits.h"
+#include "content/public/browser/browser_thread.h"
 #include "content/public/browser/storage_partition.h"
 #include "mojo/public/cpp/bindings/interface_request.h"
 #include "net/base/load_flags.h"
@@ -19,7 +24,14 @@
 #include "services/media_session/public/cpp/util.h"
 #include "services/media_session/public/mojom/media_session.mojom.h"
 
+using Metadata = media_message_center::MediaNotificationViewImpl::Metadata;
+
 namespace {
+
+constexpr char kArtworkHistogramName[] =
+    "Media.Notification.Cast.ArtworkPresent";
+constexpr char kMetadataHistogramName[] =
+    "Media.Notification.Cast.MetadataPresent";
 
 net::NetworkTrafficAnnotationTag GetTrafficAnnotationTag() {
   return net::DefineNetworkTrafficAnnotation(
@@ -158,6 +170,20 @@ void CastMediaNotificationItem::SetView(
     media_message_center::MediaNotificationView* view) {
   view_ = view;
   UpdateView();
+  if (view_ && !recorded_metadata_metrics_) {
+    recorded_metadata_metrics_ = true;
+    // We record the metadata shown after a delay because if the view is shown
+    // as soon as the Cast session is launched, it'd take some time for Chrome
+    // to receive status info and fetch the artwork. We need to use a fixed
+    // delay rather than waiting for OnMediaStatusUpdated(), because it could
+    // get called multiple times with increasing amounts of info, or not get
+    // called at all.
+    base::PostDelayedTask(
+        FROM_HERE, {content::BrowserThread::UI},
+        base::BindOnce(&CastMediaNotificationItem::RecordMetadataMetrics,
+                       weak_ptr_factory_.GetWeakPtr()),
+        base::TimeDelta::FromSeconds(3));
+  }
 }
 
 void CastMediaNotificationItem::OnMediaSessionActionButtonPressed(
@@ -266,4 +292,19 @@ void CastMediaNotificationItem::UpdateView() {
 void CastMediaNotificationItem::ImageChanged(const SkBitmap& bitmap) {
   if (view_)
     view_->UpdateWithMediaArtwork(gfx::ImageSkia::CreateFrom1xBitmap(bitmap));
+}
+
+void CastMediaNotificationItem::RecordMetadataMetrics() const {
+  base::UmaHistogramBoolean(kArtworkHistogramName,
+                            !image_downloader_.bitmap().empty());
+
+  base::UmaHistogramEnumeration(kMetadataHistogramName, Metadata::kCount);
+  if (!metadata_.title.empty())
+    base::UmaHistogramEnumeration(kMetadataHistogramName, Metadata::kTitle);
+  if (!metadata_.artist.empty())
+    base::UmaHistogramEnumeration(kMetadataHistogramName, Metadata::kArtist);
+  if (!metadata_.album.empty())
+    base::UmaHistogramEnumeration(kMetadataHistogramName, Metadata::kAlbum);
+  if (!metadata_.source_title.empty())
+    base::UmaHistogramEnumeration(kMetadataHistogramName, Metadata::kSource);
 }

@@ -23,7 +23,7 @@ import java.util.Map;
  * Profile holds state (typically on disk) needed for browsing. Create a
  * Profile via WebLayer.
  */
-public final class Profile {
+public class Profile {
     private static final Map<String, Profile> sProfiles = new HashMap<>();
 
     /* package */ static Profile of(IProfile impl) {
@@ -54,6 +54,12 @@ public final class Profile {
 
     private final String mName;
     private IProfile mImpl;
+
+    // Constructor for test mocking.
+    protected Profile() {
+        mName = null;
+        mImpl = null;
+    }
 
     private Profile(String name, IProfile impl) {
         mName = name;

@@ -72,9 +72,6 @@ class TabScopedNativeFileSystemPermissionContext
       return key_;
     }
 
-    // Returns true if the |content_setting_guard_type_| has not been blocked.
-    bool CanRequestPermission();
-
     void SetStatus(PermissionStatus status);
 
    protected:

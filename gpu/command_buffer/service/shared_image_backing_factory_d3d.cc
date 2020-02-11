@@ -79,9 +79,8 @@ base::Optional<DXGI_FORMAT> VizFormatToDXGIFormat(
 
 }  // anonymous namespace
 
-SharedImageBackingFactoryD3D::SharedImageBackingFactoryD3D(bool use_passthrough)
-    : use_passthrough_(use_passthrough),
-      d3d11_device_(gl::QueryD3D11DeviceObjectFromANGLE()) {}
+SharedImageBackingFactoryD3D::SharedImageBackingFactoryD3D()
+    : d3d11_device_(gl::QueryD3D11DeviceObjectFromANGLE()) {}
 
 SharedImageBackingFactoryD3D::~SharedImageBackingFactoryD3D() = default;
 
@@ -167,36 +166,17 @@ std::unique_ptr<SharedImageBacking> SharedImageBackingFactoryD3D::MakeBacking(
     return nullptr;
   }
 
-  gles2::Texture* texture = nullptr;
-  scoped_refptr<gles2::TexturePassthrough> texture_passthrough;
-
-  if (use_passthrough_) {
-    texture_passthrough =
-        base::MakeRefCounted<gles2::TexturePassthrough>(service_id, target);
-    texture_passthrough->SetLevelImage(target, 0, image.get());
-    GLint texture_memory_size = 0;
-    api->glGetTexParameterivFn(target, GL_MEMORY_SIZE_ANGLE,
-                               &texture_memory_size);
-    texture_passthrough->SetEstimatedSize(texture_memory_size);
-  } else {
-    texture = new gles2::Texture(service_id);
-    texture->SetLightweightRef();
-    texture->SetTarget(target, 1);
-    texture->sampler_state_.min_filter = GL_LINEAR;
-    texture->sampler_state_.mag_filter = GL_LINEAR;
-    texture->sampler_state_.wrap_s = GL_CLAMP_TO_EDGE;
-    texture->sampler_state_.wrap_t = GL_CLAMP_TO_EDGE;
-    texture->SetLevelInfo(target, 0 /* level */, internal_format, size.width(),
-                          size.height(), 1 /* depth */, 0 /* border */,
-                          data_format, data_type, gfx::Rect(size));
-    texture->SetLevelImage(target, 0 /* level */, image.get(),
-                           gles2::Texture::BOUND);
-    texture->SetImmutable(true, false);
-  }
+  scoped_refptr<gles2::TexturePassthrough> texture =
+      base::MakeRefCounted<gles2::TexturePassthrough>(service_id, target);
+  texture->SetLevelImage(target, 0, image.get());
+  GLint texture_memory_size = 0;
+  api->glGetTexParameterivFn(target, GL_MEMORY_SIZE_ANGLE,
+                             &texture_memory_size);
+  texture->SetEstimatedSize(texture_memory_size);
 
   return std::make_unique<SharedImageBackingD3D>(
-      mailbox, format, size, color_space, usage, std::move(swap_chain), texture,
-      std::move(texture_passthrough), std::move(image), buffer_index,
+      mailbox, format, size, color_space, usage, std::move(swap_chain),
+      std::move(texture), std::move(image), buffer_index,
       std::move(d3d11_texture), std::move(shared_handle),
       std::move(dxgi_keyed_mutex));
 }

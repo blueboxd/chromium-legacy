@@ -1004,6 +1004,13 @@ void GpuProcessHost::DidCreateContextSuccessfully() {
 #endif
 }
 
+#if defined(OS_WIN)
+void GpuProcessHost::DidUpdateOverlayInfo(
+    const gpu::OverlayInfo& overlay_info) {
+  GpuDataManagerImpl::GetInstance()->UpdateOverlayInfo(overlay_info);
+}
+#endif
+
 void GpuProcessHost::BlockDomainFrom3DAPIs(const GURL& url,
                                            gpu::DomainGuilt guilt) {
   GpuDataManagerImpl::GetInstance()->BlockDomainFrom3DAPIs(url, guilt);

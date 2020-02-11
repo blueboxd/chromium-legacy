@@ -143,10 +143,6 @@ bool Frame::IsCrossOriginToParentFrame() const {
   Frame* parent = Tree().Parent();
   const SecurityOrigin* parent_security_origin =
       parent->GetSecurityContext()->GetSecurityOrigin();
-  // TODO(dcheng, crbug.com/1049612): The parent security origin should not be
-  // null.
-  if (!parent_security_origin)
-    return true;
   const SecurityOrigin* security_origin =
       GetSecurityContext()->GetSecurityOrigin();
   return !security_origin->CanAccess(parent_security_origin);

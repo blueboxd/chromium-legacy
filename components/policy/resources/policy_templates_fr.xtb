@@ -2799,13 +2799,13 @@ Si cette règle n'est pas configurée, ce paramètre est activé, mais l'utilisa
 Si cette règle n'est pas configurée, la valeur par défaut globale sera utilisée pour tous les sites à partir de la règle "DefaultNotificationsSetting", si elle est définie, ou à défaut, à partir de la configuration personnelle de l'utilisateur.</translation>
 <translation id="5210980743015047124">Permet de configurer la version minimale autorisée requise de <ph name="PRODUCT_NAME" />.
 
-      Lorsque cette règle est définie sur une entrée de la liste :
+      Lorsque cette règle est définie sur des entrées de la liste :
       Si aucune des entrées de la liste ne possède une "chrome_version" ultérieure à la version actuelle de l'appareil, aucune restriction n'est alors appliquée, et les restrictions existantes sont révoquées.
       Si au moins une entrée possède une "chrome_version" ultérieure à la version actuelle, l'entrée choisie est celle qui est la plus performante et dont la version est la plus proche de la version actuelle.
       En cas de conflit, la préférence est donnée à celle dont la "warning_period" ou la "eol_warning_period" est la plus réduite. En outre, la règle est appliquée avec cette entrée.
 
       Si la version actuelle devient obsolète pendant la session utilisateur, une notification s'affiche à l'écran pour inviter l'utilisateur à mettre à jour l'appareil dans la "warning_period" qui lui est indiquée.
-      La "warning_period" commence à partir de l'application la règle.
+      La "warning_period" commence à partir de l'application de la règle.
       Si l'appareil n'est pas mis à jour avant la fin de la "warning_period", l'utilisateur est déconnecté du système.
       Si la version actuelle s'avère obsolète au moment de la connexion, et si la "warning_period" est arrivée à expiration, l'utilisateur doit mettre à jour l'appareil avant de se connecter.
 
@@ -2890,7 +2890,7 @@ Si cette règle n'est pas configurée, la valeur par défaut globale sera utilis
       Les trois règles, VirtualMachinesAllowed, CrostiniAllowed et DeviceUnaffiliatedCrostiniAllowed doivent être définies sur True lorsqu'elles s'appliquent pour que Crostini puisse être exécuté.
       Si vous modifiez cette règle en la définissant sur False, elle est appliquée aux conteneurs Crostini qui vont être lancés, mais elle n'arrête pas ceux qui le sont déjà.</translation>
 <translation id="5277914408935179830">Permet de contrôler le traitement du contenu mixte (contenu HTTP sur les sites HTTPS) dans le navigateur.
-       Si cette règle est définie sur "True" ou si elle n'est pas configurée, le contenu mixte audio et vidéo est mis à niveau automatiquement vers HTTPS (c'est-à-dire que l'URL est réécrite pour apparaître sous la forme HTTPS, sans aucune solution de remplacement si la ressource n'est pas disponible via HTTPS). En outre, un avertissement "Non sécurisé" s'affiche dans la barre d'URL pour les images.
+       Si cette règle est définie sur "True" ou si elle n'est pas configurée, le contenu mixte audio et vidéo passe automatiquement à HTTPS (c'est-à-dire que l'URL est réécrite pour apparaître sous la forme HTTPS, sans aucune solution de remplacement si la ressource n'est pas disponible via HTTPS). En outre, un avertissement "Non sécurisé" s'affiche dans la barre d'URL pour les images.
        Si cette règle est définie sur "False", le contenu audio et vidéo n'est pas mis à niveau automatiquement, et aucun avertissement ne s'affiche pour les images.
        Cette règle n'influe pas sur les types de contenus mixtes autres que les images et les contenus audio/vidéo.
        Notez également qu'elle ne sera plus applicable à compter de la version 84 de <ph name="PRODUCT_NAME" />.</translation>
@@ -3099,7 +3099,7 @@ Lorsque cette règle n'est pas configurée, le paramètre par défaut utilisé c
 
       Si cette règle est définie sur "Bloquer le téléchargement des types de fichiers non acceptés" (1), et si l'utilisateur tente de télécharger un fichier depuis une URL (tel que décrit dans la règle <ph name="DOMAINS_TO_CHECK_COMPLIANCE_OF_DOWNLOADED_CONTENT_POLICTY_NAME" />) et dont le type n'est pas accepté dans le cadre susmentionné, <ph name="PRODUCT_NAME" /> bloque alors les données téléchargées.
 
-      Si cette règle est définie sur "Bloquer l'importation des types de fichiers non acceptés" (2), et si l'utilisateur tente d'importer un fichier vers un domaine qui a) ne figure pas dans la règle <ph name="DOMAINS_TO_NOT_CHECK_COMPLIANCE_OF_UPLOADED_CONTENT_POLICY_NAME" /> et b) dont le type n'est pas accepté dans le cadre susmentionné, <ph name="PRODUCT_NAME" /> bloque alors le fichier importé, les données collées à partir du presse-papiers ou les données glissées-déposées
+      Si cette règle est définie sur "Bloquer l'importation des types de fichiers non acceptés" (2), et si l'utilisateur tente d'importer un fichier vers un domaine qui a) ne figure pas dans la règle <ph name="DOMAINS_TO_NOT_CHECK_COMPLIANCE_OF_UPLOADED_CONTENT_POLICY_NAME" /> et b) dont le type n'est pas accepté dans le cadre susmentionné, <ph name="PRODUCT_NAME" /> bloque alors le fichier importé, les données collées à partir du presse-papiers ou les données glissées-déposées.
 
       Si cette règle est définie sur "Bloquer l'importation et le téléchargement des types de fichiers non acceptés" (3), <ph name="PRODUCT_NAME" /> agit comme indiqué ci-dessus pour les options "Bloquer l'importation des types de fichiers non acceptés" et "Bloquer le téléchargement des types de fichiers non acceptés".
       </translation>

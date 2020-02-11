@@ -103,13 +103,15 @@ QuotaClient::ID DatabaseQuotaClient::id() const {
   return kDatabase;
 }
 
+void DatabaseQuotaClient::OnQuotaManagerDestroyed() {}
+
 void DatabaseQuotaClient::GetOriginUsage(const url::Origin& origin,
                                          StorageType type,
                                          GetUsageCallback callback) {
   DCHECK(!callback.is_null());
   DCHECK(db_tracker_.get());
 
-  // All databases are in the temp namespace for now.
+  // All databases are in the default bucket.
   if (type != StorageType::kTemporary) {
     std::move(callback).Run(0);
     return;
@@ -127,7 +129,7 @@ void DatabaseQuotaClient::GetOriginsForType(StorageType type,
   DCHECK(!callback.is_null());
   DCHECK(db_tracker_.get());
 
-  // All databases are in the temp namespace for now.
+  // All databases are in the default bucket.
   if (type != StorageType::kTemporary) {
     std::move(callback).Run(std::set<url::Origin>());
     return;
@@ -148,7 +150,7 @@ void DatabaseQuotaClient::GetOriginsForHost(StorageType type,
   DCHECK(!callback.is_null());
   DCHECK(db_tracker_.get());
 
-  // All databases are in the temp namespace for now.
+  // All databases are in the default bucket.
   if (type != StorageType::kTemporary) {
     std::move(callback).Run(std::set<url::Origin>());
     return;
@@ -170,7 +172,7 @@ void DatabaseQuotaClient::DeleteOriginData(const url::Origin& origin,
   DCHECK(!callback.is_null());
   DCHECK(db_tracker_.get());
 
-  // All databases are in the temp namespace for now, so nothing to delete.
+  // All databases are in the default bucket.
   if (type != StorageType::kTemporary) {
     std::move(callback).Run(blink::mojom::QuotaStatusCode::kOk);
     return;

@@ -603,7 +603,7 @@ void GpuServiceImpl::GetGpuSupportedRuntimeVersionAndDevicePerfInfo(
 
   // The unsandboxed GPU info collection process fulfilled its duty and Dxdiag
   // task is not running. Bye bye.
-  if (!long_dx_task_different_thread_in_progress_)
+  if (number_of_long_dx_tasks_in_progress_ == 0)
     MaybeExit(false);
 }
 
@@ -624,10 +624,11 @@ void GpuServiceImpl::RequestCompleteGpuInfo(
           [](GpuServiceImpl* gpu_service,
              RequestCompleteGpuInfoCallback callback) {
             std::move(callback).Run(gpu_service->gpu_info_.dx_diagnostics);
+
             // The unsandboxed GPU info collection process fulfilled its duty.
-            // Bye bye.
-            gpu_service->long_dx_task_different_thread_in_progress_ = false;
-            gpu_service->MaybeExit(false);
+            gpu_service->number_of_long_dx_tasks_in_progress_--;
+            if (gpu_service->number_of_long_dx_tasks_in_progress_ == 0)
+              gpu_service->MaybeExit(false);
           },
           this, std::move(callback))));
 }
@@ -662,7 +663,7 @@ void GpuServiceImpl::UpdateGpuInfoPlatform(
 
   // We can continue on shutdown here because we're not writing any critical
   // state in this task.
-  long_dx_task_different_thread_in_progress_ = true;
+  number_of_long_dx_tasks_in_progress_++;
   base::PostTaskAndReplyWithResult(
       base::CreateCOMSTATaskRunner(
           {base::ThreadPool(), base::TaskPriority::USER_VISIBLE,
@@ -738,6 +739,13 @@ void GpuServiceImpl::DidLoseContext(bool offscreen,
   DCHECK(main_runner_->BelongsToCurrentThread());
   gpu_host_->DidLoseContext(offscreen, reason, active_url);
 }
+
+#if defined(OS_WIN)
+void GpuServiceImpl::DidUpdateOverlayInfo(
+    const gpu::OverlayInfo& overlay_info) {
+  gpu_host_->DidUpdateOverlayInfo(gpu_info_.overlay_info);
+}
+#endif
 
 void GpuServiceImpl::StoreShaderToDisk(int client_id,
                                        const std::string& key,
@@ -863,6 +871,12 @@ void GpuServiceImpl::DisplayAdded() {
 
   if (!in_host_process())
     ui::GpuSwitchingManager::GetInstance()->NotifyDisplayAdded();
+
+#if defined(OS_WIN)
+  // Update overlay info in the GPU process and send the updated data back to
+  // the GPU host in the Browser process through mojom if the info has changed.
+  UpdateOverlayInfo();
+#endif
 }
 
 void GpuServiceImpl::DisplayRemoved() {
@@ -870,6 +884,12 @@ void GpuServiceImpl::DisplayRemoved() {
 
   if (!in_host_process())
     ui::GpuSwitchingManager::GetInstance()->NotifyDisplayRemoved();
+
+#if defined(OS_WIN)
+  // Update overlay info in the GPU process and send the updated data back to
+  // the GPU host in the Browser process through mojom if the info has changed.
+  UpdateOverlayInfo();
+#endif
 }
 
 void GpuServiceImpl::DestroyAllChannels() {
@@ -1002,5 +1022,15 @@ void GpuServiceImpl::MaybeExit(bool for_context_loss) {
 gpu::Scheduler* GpuServiceImpl::GetGpuScheduler() {
   return scheduler_.get();
 }
+
+#if defined(OS_WIN)
+void GpuServiceImpl::UpdateOverlayInfo() {
+  gpu::OverlayInfo old_overlay_info = gpu_info_.overlay_info;
+  gpu::CollectHardwareOverlayInfo(&gpu_info_.overlay_info);
+
+  if (old_overlay_info != gpu_info_.overlay_info)
+    DidUpdateOverlayInfo(gpu_info_.overlay_info);
+}
+#endif
 
 }  // namespace viz

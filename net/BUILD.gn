@@ -794,7 +794,6 @@ component("net") {
       "nqe/network_quality_estimator_util.h",
       "nqe/network_quality_observation.cc",
       "nqe/network_quality_observation.h",
-      "nqe/network_quality_observation_source.cc",
       "nqe/network_quality_observation_source.h",
       "nqe/network_quality_store.cc",
       "nqe/network_quality_store.h",

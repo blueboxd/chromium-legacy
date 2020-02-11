@@ -9,12 +9,15 @@
 
 #include "chrome/browser/ui/ash/launcher/app_window_launcher_item_controller.h"
 
+class AppServiceAppWindowLauncherController;
+
 // Shelf item delegate for extension app windows.
 class AppServiceAppWindowLauncherItemController
     : public AppWindowLauncherItemController {
  public:
   explicit AppServiceAppWindowLauncherItemController(
-      const ash::ShelfID& shelf_id);
+      const ash::ShelfID& shelf_id,
+      AppServiceAppWindowLauncherController* controller);
 
   ~AppServiceAppWindowLauncherItemController() override;
 
@@ -39,6 +42,8 @@ class AppServiceAppWindowLauncherItemController
 
  private:
   bool IsChromeApp();
+
+  AppServiceAppWindowLauncherController* controller_ = nullptr;
 
   std::set<int> task_ids_;
 };

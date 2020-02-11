@@ -492,6 +492,7 @@
 <translation id="1670399744444387456">Base</translation>
 <translation id="167160931442925455">Al massimo</translation>
 <translation id="1673137583248014546"><ph name="URL" /> vuole accedere a marca e modello del token di sicurezza</translation>
+<translation id="1677472565718498478"><ph name="TIME" /> rimanenti</translation>
 <translation id="1679068421605151609">Strumenti per sviluppatori</translation>
 <translation id="1679806121152819234">PluginVm</translation>
 <translation id="1679810534535368772">Vuoi uscire?</translation>
@@ -1786,6 +1787,7 @@ Puoi gestire le impostazioni dell'account installando l'app Family Link su quest
 <translation id="3462413494201477527">Annullare la creazione dell'account?</translation>
 <translation id="3464012987031883895">Un sito sta accedendo all'input audio</translation>
 <translation id="346431825526753">Si tratta di un account di minori gestito da <ph name="CUSTODIAN_EMAIL" />.</translation>
+<translation id="3468298837301810372">Etichetta</translation>
 <translation id="3468999815377931311">Telefono Android</translation>
 <translation id="3470442499439619530">Rimuovi questo utente</translation>
 <translation id="3471876058939596279">Non è possibile usare contemporaneamente le porte HDMI e USB Type-C per i video. Usa una porta video diversa.</translation>
@@ -3961,7 +3963,6 @@ Puoi gestire le impostazioni dell'account installando l'app Family Link su quest
 <translation id="6545867563032584178">Il microfono è disattivato nelle Preferenze di Sistema del Mac</translation>
 <translation id="6547354035488017500">Libera almeno 512 MB di spazio, altrimenti il tuo dispositivo non risponderà più ai comandi. Per liberare spazio, elimina i file dallo spazio di archiviazione.</translation>
 <translation id="6549639163247690448"><ph name="DOMAIN" /> richiede l'immediata connessione a una rete Wi-Fi per scaricare un aggiornamento. L'aggiornamento verrà scaricato automaticamente quando ti connetterai a Internet.</translation>
-<translation id="6549966385318247177">Questa estensione è stata bloccata per la presenza di contenuti inappropriati per i minori.</translation>
 <translation id="6550675742724504774">Opzioni</translation>
 <translation id="6551508934388063976">Comando non disponibile. Premi Ctrl+N per aprire una nuova finestra.</translation>
 <translation id="6551612971599078809">Il sito usa un dispositivo USB</translation>

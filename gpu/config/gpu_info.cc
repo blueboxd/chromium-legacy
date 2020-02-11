@@ -115,6 +115,18 @@ void EnumerateDx12VulkanVersionInfo(const gpu::Dx12VulkanVersionInfo& info,
                         gpu::VulkanVersionToString(info.vulkan_version));
   enumerator->EndDx12VulkanVersionInfo();
 }
+
+void EnumerateOverlayInfo(const gpu::OverlayInfo& info,
+                          gpu::GPUInfo::Enumerator* enumerator) {
+  enumerator->BeginOverlayInfo();
+  enumerator->AddBool("directComposition", info.direct_composition);
+  enumerator->AddBool("supportsOverlays", info.supports_overlays);
+  enumerator->AddString("yuy2OverlaySupport",
+                        gpu::OverlaySupportToString(info.yuy2_overlay_support));
+  enumerator->AddString("nv12OverlaySupport",
+                        gpu::OverlaySupportToString(info.nv12_overlay_support));
+  enumerator->EndOverlayInfo();
+}
 #endif
 
 }  // namespace
@@ -239,12 +251,9 @@ void GPUInfo::EnumerateFields(Enumerator* enumerator) const {
     bool passthrough_cmd_decoder;
     bool can_support_threaded_texture_mailbox;
 #if defined(OS_WIN)
-    bool direct_composition;
-    bool supports_overlays;
-    OverlaySupport yuy2_overlay_support;
-    OverlaySupport nv12_overlay_support;
     DxDiagNode dx_diagnostics;
     Dx12VulkanVersionInfo dx12_vulkan_version_info;
+    OverlayInfo overlay_info;
 #endif
 
     VideoDecodeAcceleratorCapabilities video_decode_accelerator_capabilities;
@@ -304,12 +313,7 @@ void GPUInfo::EnumerateFields(Enumerator* enumerator) const {
                       can_support_threaded_texture_mailbox);
   // TODO(kbr): add dx_diagnostics on Windows.
 #if defined(OS_WIN)
-  enumerator->AddBool("directComposition", direct_composition);
-  enumerator->AddBool("supportsOverlays", supports_overlays);
-  enumerator->AddString("yuy2OverlaySupport",
-                        OverlaySupportToString(yuy2_overlay_support));
-  enumerator->AddString("nv12OverlaySupport",
-                        OverlaySupportToString(nv12_overlay_support));
+  EnumerateOverlayInfo(overlay_info, enumerator);
   EnumerateDx12VulkanVersionInfo(dx12_vulkan_version_info, enumerator);
 #endif
   enumerator->AddInt("videoDecodeAcceleratorFlags",

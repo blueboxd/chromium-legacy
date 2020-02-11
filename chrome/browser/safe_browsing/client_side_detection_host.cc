@@ -12,10 +12,13 @@
 #include "base/logging.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
+#include "base/metrics/histogram_functions.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/sequenced_task_runner_helpers.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/task/post_task.h"
+#include "base/time/default_tick_clock.h"
+#include "base/time/tick_clock.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/safe_browsing/browser_feature_extractor.h"
@@ -288,7 +291,8 @@ ClientSideDetectionHost::ClientSideDetectionHost(WebContents* tab)
       csd_service_(nullptr),
       classification_request_(nullptr),
       pageload_complete_(false),
-      unsafe_unique_page_id_(-1) {
+      unsafe_unique_page_id_(-1),
+      tick_clock_(base::DefaultTickClock::GetInstance()) {
   DCHECK(tab);
   // Note: csd_service_ and sb_service will be NULL here in testing.
   csd_service_ = g_browser_process->safe_browsing_detection_service();
@@ -412,6 +416,7 @@ void ClientSideDetectionHost::OnPhishingPreClassificationDone(
     phishing_detector_.reset();
     rfh->GetRemoteInterfaces()->GetInterface(
         phishing_detector_.BindNewPipeAndPassReceiver());
+    phishing_detection_start_time_ = tick_clock_->NowTicks();
     phishing_detector_->StartPhishingDetection(
         browse_info_->url,
         base::BindRepeating(&ClientSideDetectionHost::PhishingDetectionDone,
@@ -429,6 +434,9 @@ void ClientSideDetectionHost::PhishingDetectionDone(
   DCHECK(csd_service_);
   DCHECK(browse_info_.get());
 
+  UmaHistogramMediumTimes(
+      "SBClientPhishing.PhishingDetectionDuration",
+      base::TimeTicks::Now() - phishing_detection_start_time_);
   UMA_HISTOGRAM_ENUMERATION("SBClientPhishing.PhishingDetectorResult", result);
   if (result == mojom::PhishingDetectorResult::CLASSIFIER_NOT_READY) {
     Profile* profile =

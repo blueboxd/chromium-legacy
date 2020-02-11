@@ -419,7 +419,8 @@ void SharedContextState::PurgeMemory(
   }
 
   // Ensure the context is current before doing any GPU cleanup.
-  MakeCurrent(nullptr);
+  if (!MakeCurrent(nullptr))
+    return;
 
   switch (memory_pressure_level) {
     case base::MemoryPressureListener::MEMORY_PRESSURE_LEVEL_NONE:

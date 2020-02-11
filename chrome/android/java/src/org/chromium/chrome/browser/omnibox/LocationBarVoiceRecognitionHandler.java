@@ -330,15 +330,14 @@ public class LocationBarVoiceRecognitionHandler {
         // Check if this can be handled by Assistant Voice Search, if so let it handle the search.
         if (mAssistantVoiceSearchService != null
                 && mAssistantVoiceSearchService.shouldRequestAssistantVoiceSearch()) {
+            AssistantVoiceSearchService.reportUserEligibility(true);
             startAGSAForAssistantVoiceSearch(windowAndroid, source);
             return;
         }
+        AssistantVoiceSearchService.reportUserEligibility(false);
         // Check if we need to request audio permissions. If we don't, then trigger a permissions
         // prompt will appear and startVoiceRecognition will be called again.
         if (!ensureAudioPermissionGranted(windowAndroid, source)) return;
-
-        // Record metrics on the source of a voice search interaction, such as NTP or omnibox.
-        recordVoiceSearchStartEventSource(source);
 
         Intent intent = new Intent(RecognizerIntent.ACTION_RECOGNIZE_SPEECH);
         intent.putExtra(
@@ -393,8 +392,6 @@ public class LocationBarVoiceRecognitionHandler {
     /** Start AGSA to fulfill the current voice search. */
     private void startAGSAForAssistantVoiceSearch(
             WindowAndroid windowAndroid, @VoiceInteractionSource int source) {
-        recordVoiceSearchStartEventSource(source);
-
         Intent intent = mAssistantVoiceSearchService.getAssistantVoiceSearchIntent();
 
         if (!showSpeechRecognitionIntent(windowAndroid, intent, source)) {
@@ -415,6 +412,7 @@ public class LocationBarVoiceRecognitionHandler {
      */
     private boolean showSpeechRecognitionIntent(
             WindowAndroid windowAndroid, Intent intent, @VoiceInteractionSource int source) {
+        recordVoiceSearchStartEventSource(source);
         return windowAndroid.showCancelableIntent(intent,
                        new VoiceRecognitionCompleteCallback(source), R.string.voice_search_error)
                 >= 0;

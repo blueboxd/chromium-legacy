@@ -102,6 +102,7 @@ for message parameters.
 | `handle<shared_buffer>`       | Shared buffer handle.
 | `handle<data_pipe_producer>`  | Data pipe producer handle.
 | `handle<data_pipe_consumer>`  | Data pipe consumer handle.
+| `handle<platform>`            | A native platform/OS handle.
 | *`pending_remote<InterfaceType>`*             | Any user-defined Mojom interface type. This is sugar for a strongly-typed message pipe handle which should eventually be used to make outgoing calls on the interface.
 | *`pending_receiver<InterfaceType>`*            | A pending receiver for any user-defined Mojom interface type. This is sugar for a more strongly-typed message pipe handle which is expected to receive request messages and should therefore eventually be bound to an implementation of the interface.
 | *`pending_associated_remote<InterfaceType>`*  | An associated interface handle. See [Associated Interfaces](#Associated-Interfaces)
@@ -751,6 +752,7 @@ SpecificHandleType = "message_pipe"
                    | "shared_buffer"
                    | "data_pipe_consumer"
                    | "data_pipe_producer"
+                   | "platform"
 Array = "array" "<" TypeSpec ">"
 FixedArray = "array" "<" TypeSpec "," IntConstDec ">"
 Map = "map" "<" Identifier "," TypeSpec ">"

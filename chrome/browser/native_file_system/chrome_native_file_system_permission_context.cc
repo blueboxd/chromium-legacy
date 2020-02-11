@@ -22,6 +22,7 @@
 #include "chrome/browser/ui/browser_dialogs.h"
 #include "chrome/common/chrome_paths.h"
 #include "components/content_settings/core/browser/host_content_settings_map.h"
+#include "components/content_settings/core/common/content_settings.h"
 #include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/render_frame_host.h"
@@ -301,15 +302,19 @@ ChromeNativeFileSystemPermissionContext::
 ChromeNativeFileSystemPermissionContext::
     ~ChromeNativeFileSystemPermissionContext() = default;
 
-bool ChromeNativeFileSystemPermissionContext::CanRequestWritePermission(
+ContentSetting
+ChromeNativeFileSystemPermissionContext::GetWriteGuardContentSetting(
     const url::Origin& origin) {
-  ContentSetting content_setting = content_settings()->GetContentSetting(
+  return content_settings()->GetContentSetting(
       origin.GetURL(), origin.GetURL(),
       ContentSettingsType::NATIVE_FILE_SYSTEM_WRITE_GUARD,
       /*provider_id=*/std::string());
-  DCHECK(content_setting == CONTENT_SETTING_ASK ||
-         content_setting == CONTENT_SETTING_BLOCK);
-  return content_setting == CONTENT_SETTING_ASK;
+}
+
+bool ChromeNativeFileSystemPermissionContext::CanObtainWritePermission(
+    const url::Origin& origin) {
+  return GetWriteGuardContentSetting(origin) == CONTENT_SETTING_ASK ||
+         GetWriteGuardContentSetting(origin) == CONTENT_SETTING_ALLOW;
 }
 
 void ChromeNativeFileSystemPermissionContext::ConfirmDirectoryReadAccess(

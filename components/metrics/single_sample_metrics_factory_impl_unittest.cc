@@ -140,8 +140,11 @@ TEST_F(SingleSampleMetricsFactoryImplTest, DefaultSingleSampleMetricWithValue) {
                 base::HistogramBase::kUmaTargetedHistogramFlag));
 }
 
-// TODO(crbug.com/1009360). Flaky timeouts.
-TEST_F(SingleSampleMetricsFactoryImplTest, DISABLED_MultithreadedMetrics) {
+TEST_F(SingleSampleMetricsFactoryImplTest, MultithreadedMetrics) {
+  // Allow EXPECT_DCHECK_DEATH for multiple threads.
+  // https://github.com/google/googletest/blob/master/googletest/docs/advanced.md#death-tests-and-threads
+  testing::FLAGS_gtest_death_test_style = "threadsafe";
+
   base::HistogramTester tester;
   std::unique_ptr<base::SingleSampleMetric> metric =
       factory_->CreateCustomCountsMetric(kMetricName, kMin, kMax, kBucketCount);

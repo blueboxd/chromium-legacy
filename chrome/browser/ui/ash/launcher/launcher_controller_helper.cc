@@ -254,11 +254,6 @@ void LauncherControllerHelper::LaunchApp(const ash::ShelfID& id,
     return;
   }
 
-  if (app_list::IsInternalApp(app_id)) {
-    app_list::OpenInternalApp(app_id, profile_, event_flags);
-    return;
-  }
-
   // |extension| could be null when it is being unloaded for updating.
   const extensions::Extension* extension = GetExtensionByID(profile_, app_id);
   if (!extension)

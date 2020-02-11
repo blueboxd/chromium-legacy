@@ -6,8 +6,14 @@
  * This class handles navigation amongst the elements onscreen.
  */
 class NavigationManager {
+  /** @param {!chrome.automation.AutomationNode} desktop */
+  static initialize(desktop) {
+    NavigationManager.instance = new NavigationManager(desktop);
+  }
+
   /**
    * @param {!chrome.automation.AutomationNode} desktop
+   * @private
    */
   constructor(desktop) {
     /** @private {!chrome.automation.AutomationNode} */
@@ -27,6 +33,12 @@ class NavigationManager {
 
     /** @private {!FocusRingManager} */
     this.focusRingManager_ = new FocusRingManager();
+
+    /**
+     * Callback for testing use only.
+     * @private {?function()}
+     */
+    this.onMoveForwardForTesting_ = null;
 
     this.init_();
   }
@@ -68,13 +80,19 @@ class NavigationManager {
    * are not enough actions available to trigger the menu, the current element
    * is selected.
    */
-  enterMenu() {
-    if (this.menuManager_.enter(this.node_)) {
+  static enterMenu() {
+    if (!NavigationManager.instance) {
       return;
     }
+    const menuManager = NavigationManager.instance.menuManager_;
+    const currentNode = NavigationManager.instance.node_;
+
+    const didEnter = menuManager.enter(currentNode);
 
     // If the menu does not or cannot open, select the current node.
-    this.selectCurrentNode();
+    if (!didEnter) {
+      NavigationManager.instance.selectCurrentNode();
+    }
   }
 
   /**
@@ -83,87 +101,116 @@ class NavigationManager {
    * current focus.
    * @return {!SARootNode}
    */
-  getTreeForDebugging(wholeTree) {
+  static getTreeForDebugging(wholeTree) {
     if (!wholeTree) {
-      console.log(this.group_.debugString(wholeTree));
-      return this.group_;
+      console.log(NavigationManager.instance.group_.debugString(wholeTree));
+      return NavigationManager.instance.group_;
     }
 
-    const desktopRoot = RootNodeWrapper.buildDesktopTree(this.desktop_);
-    console.log(desktopRoot.debugString(wholeTree, '', this.node_));
+    const desktopRoot =
+        RootNodeWrapper.buildDesktopTree(NavigationManager.instance.desktop_);
+    console.log(desktopRoot.debugString(
+        wholeTree, '', NavigationManager.instance.node_));
     return desktopRoot;
   }
 
   /**
    * Move to the previous interesting node.
    */
-  moveBackward() {
-    if (this.menuManager_.moveBackward()) {
+  static moveBackward() {
+    const navigator = NavigationManager.instance;
+    if (!navigator) {
+      return;
+    }
+
+    if (navigator.menuManager_.moveBackward()) {
       // The menu navigation is handled separately. If we are in the menu, do
       // not change the primary focus node.
       return;
     }
 
-    this.setNode(this.node_.previous);
+    navigator.setNode_(navigator.node_.previous);
   }
 
   /**
    * Move to the next interesting node.
    */
-  moveForward() {
-    if (this.menuManager_.moveForward()) {
+  static moveForward() {
+    const navigator = NavigationManager.instance;
+    if (!navigator) {
+      return;
+    }
+
+    if (navigator.onMoveForwardForTesting_) {
+      navigator.onMoveForwardForTesting_();
+    }
+
+    if (navigator.menuManager_.moveForward()) {
       // The menu navigation is handled separately. If we are in the menu, do
       // not change the primary focus node.
       return;
     }
 
-    this.setNode(this.node_.next);
+    navigator.setNode_(navigator.node_.next);
   }
 
   /**
    * Moves to the Switch Access focus up the group stack closest to the ancestor
    * that hasn't been invalidated.
    */
-  moveToValidNode() {
-    if (this.node_.isValidAndVisible() && this.group_.isValidGroup()) {
+  static moveToValidNode() {
+    const navigator = NavigationManager.instance;
+    if (!navigator) {
       return;
     }
 
-    if (this.node_.isValidAndVisible()) {
-      // Our group has been invalidated. Move to this node to repair the group
-      // stack.
-      const node = this.node_.automationNode;
+    const nodeIsValid = navigator.node_.isValidAndVisible();
+    const groupIsValid = navigator.group_.isValidGroup();
+
+    if (nodeIsValid && groupIsValid) {
+      return;
+    }
+
+    if (nodeIsValid) {
+      // Our group has been invalidated. Move to navigator node to repair the
+      // group stack.
+      const node = navigator.node_.automationNode;
       if (node) {
-        this.moveTo_(node);
+        navigator.moveTo_(node);
         return;
       }
     }
 
-    if (this.group_.isValidGroup()) {
-      this.setNode(this.group_.firstChild);
+    if (groupIsValid) {
+      navigator.setNode_(navigator.group_.firstChild);
       return;
     }
 
-    let group = this.groupStack_.pop();
+    let group = navigator.groupStack_.pop();
     while (group) {
       if (group.isValidGroup()) {
-        this.setGroup_(group);
+        navigator.setGroup_(group);
         return;
       }
-      group = this.groupStack_.pop();
+      group = navigator.groupStack_.pop();
     }
 
     // If there is no valid node in the group stack, go to the desktop.
-    this.setGroup_(RootNodeWrapper.buildDesktopTree(this.desktop_));
-    this.groupStack_ = [];
+    navigator.setGroup_(RootNodeWrapper.buildDesktopTree(navigator.desktop_));
+    navigator.groupStack_ = [];
   }
-
 
   /**
    * Updates the focus ring locations in response to an automation event.
    */
-  refreshFocusRings() {
-    this.focusRingManager_.setFocusNodes(this.node_, this.group_);
+  static refreshFocusRings() {
+    const navigator = NavigationManager.instance;
+    if (!navigator) {
+      return;
+    }
+
+    navigator.focusRingManager_.setFocusNodes(
+        navigator.node_, navigator.group_);
   }
 
   /**
@@ -196,15 +243,17 @@ class NavigationManager {
   }
 
   /**
-   * Set |this.node_| to |node|, and update what is displayed onscreen.
+   * Forces the current node to be |node|.
+   * Should only be called by subclasses of SARootNode and
+   *    only when they are focused.
    * @param {!SAChildNode} node
    */
-  setNode(node) {
-    this.node_.onUnfocus();
-    this.node_ = node;
-    this.node_.onFocus();
-    this.focusRingManager_.setFocusNodes(this.node_, this.group_);
-    SwitchAccess.get().restartAutoScan();
+  static forceFocusedNode(node) {
+    const navigator = NavigationManager.instance;
+    if (!navigator) {
+      return;
+    }
+    navigator.setNode_(node);
   }
 
   // -------------------------------------------------------
@@ -214,13 +263,13 @@ class NavigationManager {
   /**
    * Sets up the connection between the menuPanel and menuManager.
    * @param {!PanelInterface} menuPanel
-   * @return {!MenuManager}
    */
   connectMenuPanel(menuPanel) {
     menuPanel.backButtonElement().addEventListener(
         'click', this.exitGroup_.bind(this));
     this.focusRingManager_.setMenuPanel(menuPanel);
-    return this.menuManager_.connectMenuPanel(menuPanel);
+    this.menuManager_.connectMenuPanel(menuPanel);
+    menuPanel.menuManager = this.menuManager_;
   }
 
   /**
@@ -247,14 +296,6 @@ class NavigationManager {
   }
 
   /**
-   * Notifies focus manager that the preferences have initially loaded.
-   */
-  onPrefsReady() {
-    this.focusRingManager_.onPrefsReady();
-    this.focusRingManager_.setFocusNodes(this.node_, this.group_);
-  }
-
-  /**
    * When the automation tree changes, check if it affects any nodes we are
    *     currently listening to.
    * @param {!chrome.automation.TreeChange} treeChange
@@ -262,7 +303,7 @@ class NavigationManager {
    */
   onTreeChange_(treeChange) {
     if (treeChange.type === chrome.automation.TreeChangeType.NODE_REMOVED) {
-      this.moveToValidNode();
+      NavigationManager.moveToValidNode();
     }
   }
 
@@ -326,8 +367,8 @@ class NavigationManager {
     this.group_.onFocus();
     this.node_.onFocus();
 
-    if (SwitchAccess.get().prefsAreReady()) {
-      this.onPrefsReady();
+    if (window.menuPanel) {
+      this.connectMenuPanel(window.menuPanel);
     }
 
     this.desktop_.addEventListener(
@@ -378,13 +419,14 @@ class NavigationManager {
     }
 
     this.menuManager_.exit();
-    this.setNode(node);
+    this.setNode_(node);
   }
 
   /**
    * Set |this.group_| to |group|.
    * @param {!SARootNode} group
    * @param {boolean} shouldSetNode
+   * @private
    */
   setGroup_(group, shouldSetNode = true) {
     this.group_.onUnfocus();
@@ -392,7 +434,20 @@ class NavigationManager {
     this.group_.onFocus();
 
     if (shouldSetNode) {
-      this.setNode(this.group_.firstChild);
+      this.setNode_(this.group_.firstChild);
     }
+  }
+
+  /**
+   * Set |this.node_| to |node|, and update what is displayed onscreen.
+   * @param {!SAChildNode} node
+   * @private
+   */
+  setNode_(node) {
+    this.node_.onUnfocus();
+    this.node_ = node;
+    this.node_.onFocus();
+    this.focusRingManager_.setFocusNodes(this.node_, this.group_);
+    AutoScanManager.restartIfRunning();
   }
 }

@@ -16,6 +16,7 @@ modules_idl_files = [
   "ext_shader_texture_lod.idl",
   "ext_srgb.idl",
   "ext_texture_compression_bptc.idl",
+  "ext_texture_compression_rgtc.idl",
   "ext_texture_filter_anisotropic.idl",
   "ext_texture_norm_16.idl",
   "khr_parallel_shader_compile.idl",

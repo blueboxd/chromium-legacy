@@ -32,6 +32,7 @@
 
 #include <memory>
 
+#include "base/metrics/histogram_functions.h"
 #include "cc/input/main_thread_scrolling_reason.h"
 #include "cc/layers/scrollbar_layer_base.h"
 #include "third_party/blink/public/mojom/scroll/scroll_into_view_params.mojom-blink.h"
@@ -68,7 +69,6 @@
 #include "third_party/blink/renderer/platform/graphics/paint/effect_paint_property_node.h"
 #include "third_party/blink/renderer/platform/graphics/paint/foreign_layer_display_item.h"
 #include "third_party/blink/renderer/platform/graphics/paint/transform_paint_property_node.h"
-#include "third_party/blink/renderer/platform/instrumentation/histogram.h"
 #include "third_party/blink/renderer/platform/instrumentation/tracing/trace_event.h"
 #include "third_party/blink/renderer/platform/instrumentation/tracing/traced_value.h"
 
@@ -990,20 +990,16 @@ void VisualViewport::SendUMAMetrics() {
   if (track_pinch_zoom_stats_for_page_) {
     bool did_scale = max_page_scale_ > 0;
 
-    DEFINE_STATIC_LOCAL(EnumerationHistogram, did_scale_histogram,
-                        ("Viewport.DidScalePage", 2));
-    did_scale_histogram.Count(did_scale ? 1 : 0);
+    base::UmaHistogramBoolean("Viewport.DidScalePage", did_scale);
 
     if (did_scale) {
       int zoom_percentage = floor(max_page_scale_ * 100);
 
-      // See the PageScaleFactor enumeration in histograms.xml for the bucket
-      // ranges.
+      // Note: while defined as an exact linear histogram with 21 buckets here,
+      // the UMA itself is tagged as an enumeration (PageScaleFactor) in
+      // histograms.xml to make it easy to identify the buckets...
       int bucket = floor(zoom_percentage / 25.f);
-
-      DEFINE_STATIC_LOCAL(EnumerationHistogram, max_scale_histogram,
-                          ("Viewport.MaxPageScale", 21));
-      max_scale_histogram.Count(bucket);
+      base::UmaHistogramExactLinear("Viewport.MaxPageScale", bucket, 21);
     }
   }
 

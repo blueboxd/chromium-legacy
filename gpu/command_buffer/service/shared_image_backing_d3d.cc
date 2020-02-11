@@ -42,8 +42,7 @@ SharedImageBackingD3D::SharedImageBackingD3D(
     const gfx::ColorSpace& color_space,
     uint32_t usage,
     Microsoft::WRL::ComPtr<IDXGISwapChain1> swap_chain,
-    gles2::Texture* texture,
-    scoped_refptr<gles2::TexturePassthrough> texture_passthrough,
+    scoped_refptr<gles2::TexturePassthrough> texture,
     scoped_refptr<gl::GLImageD3D> image,
     size_t buffer_index,
     Microsoft::WRL::ComPtr<ID3D11Texture2D> d3d11_texture,
@@ -54,31 +53,23 @@ SharedImageBackingD3D::SharedImageBackingD3D(
                          size,
                          color_space,
                          usage,
-                         texture ? texture->estimated_size()
-                                 : texture_passthrough->estimated_size(),
+                         texture->estimated_size(),
                          false /* is_thread_safe */),
       swap_chain_(std::move(swap_chain)),
-      texture_(texture),
-      texture_passthrough_(std::move(texture_passthrough)),
+      texture_(std::move(texture)),
       image_(std::move(image)),
       buffer_index_(buffer_index),
       d3d11_texture_(std::move(d3d11_texture)),
       shared_handle_(std::move(shared_handle)),
       dxgi_keyed_mutex_(std::move(dxgi_keyed_mutex)) {
   DCHECK(d3d11_texture_);
-  DCHECK((texture_ && !texture_passthrough_) ||
-         (!texture_ && texture_passthrough_));
+  DCHECK(texture_);
 }
 
 SharedImageBackingD3D::~SharedImageBackingD3D() {
-  if (texture_) {
-    texture_->RemoveLightweightRef(have_context());
-    texture_ = nullptr;
-  } else if (texture_passthrough_) {
-    if (!have_context())
-      texture_passthrough_->MarkContextLost();
-    texture_passthrough_ = nullptr;
-  }
+  if (!have_context())
+    texture_->MarkContextLost();
+  texture_ = nullptr;
   swap_chain_ = nullptr;
   d3d11_texture_.Reset();
   dxgi_keyed_mutex_.Reset();
@@ -99,11 +90,7 @@ void SharedImageBackingD3D::Update(std::unique_ptr<gfx::GpuFence> in_fence) {
 
 bool SharedImageBackingD3D::ProduceLegacyMailbox(
     MailboxManager* mailbox_manager) {
-  if (texture_) {
-    mailbox_manager->ProduceTexture(mailbox(), texture_);
-  } else {
-    mailbox_manager->ProduceTexture(mailbox(), texture_passthrough_.get());
-  }
+  mailbox_manager->ProduceTexture(mailbox(), texture_.get());
   return true;
 }
 
@@ -127,10 +114,8 @@ void SharedImageBackingD3D::OnMemoryDump(
   // Add a |service_guid| which expresses shared ownership between the
   // various GPU dumps.
   auto client_guid = GetSharedImageGUIDForTracing(mailbox());
-  GLuint service_id =
-      texture_ ? texture_->service_id() : texture_passthrough_->service_id();
   base::trace_event::MemoryAllocatorDumpGuid service_guid =
-      gl::GetGLTextureServiceGUIDForTracing(service_id);
+      gl::GetGLTextureServiceGUIDForTracing(texture_->service_id());
   pmd->CreateSharedGlobalAllocatorDump(service_guid);
 
   int importance = 2;  // This client always owns the ref.
@@ -209,12 +194,8 @@ bool SharedImageBackingD3D::PresentSwapChain() {
   gl::GLApi* const api = gl::g_current_gl_context;
   ScopedRestoreTexture2D scoped_restore(api);
 
-  const GLenum target = GL_TEXTURE_2D;
-  const GLuint service_id =
-      texture_ ? texture_->service_id() : texture_passthrough_->service_id();
-  api->glBindTextureFn(target, service_id);
-
-  if (!image_->BindTexImage(target)) {
+  api->glBindTextureFn(GL_TEXTURE_2D, texture_->service_id());
+  if (!image_->BindTexImage(GL_TEXTURE_2D)) {
     DLOG(ERROR) << "GLImageD3D::BindTexImage failed";
     return false;
   }
@@ -225,22 +206,12 @@ bool SharedImageBackingD3D::PresentSwapChain() {
   return true;
 }
 
-std::unique_ptr<SharedImageRepresentationGLTexture>
-SharedImageBackingD3D::ProduceGLTexture(SharedImageManager* manager,
-                                        MemoryTypeTracker* tracker) {
-  DCHECK(texture_);
-  TRACE_EVENT0("gpu", "SharedImageBackingD3D::ProduceGLTexture");
-  return std::make_unique<SharedImageRepresentationGLTextureD3D>(
-      manager, this, tracker, texture_);
-}
-
 std::unique_ptr<SharedImageRepresentationGLTexturePassthrough>
 SharedImageBackingD3D::ProduceGLTexturePassthrough(SharedImageManager* manager,
                                                    MemoryTypeTracker* tracker) {
-  DCHECK(texture_passthrough_);
   TRACE_EVENT0("gpu", "SharedImageBackingD3D::ProduceGLTexturePassthrough");
   return std::make_unique<SharedImageRepresentationGLTexturePassthroughD3D>(
-      manager, this, tracker, texture_passthrough_);
+      manager, this, tracker, texture_);
 }
 
 std::unique_ptr<SharedImageRepresentationSkia>

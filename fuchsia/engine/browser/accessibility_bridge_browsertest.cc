@@ -130,16 +130,6 @@ class FakeSemanticTree
     return nullptr;
   }
 
-  bool HasNodeWithLabel(base::StringPiece label) {
-    for (auto& node : nodes_) {
-      if (node.has_attributes() && node.attributes().has_label() &&
-          node.attributes().label() == label) {
-        return true;
-      }
-    }
-    return false;
-  }
-
   Node* GetNodeFromLabel(base::StringPiece label) {
     Node* to_return = nullptr;
     for (auto& node : nodes_) {
@@ -356,11 +346,11 @@ IN_PROC_BROWSER_TEST_F(AccessibilityBridgeTest, CorrectDataSent) {
   // available.
   semantics_manager_.semantic_tree()->RunUntilNodeCountAtLeast(kPage1NodeCount);
   EXPECT_TRUE(
-      semantics_manager_.semantic_tree()->HasNodeWithLabel(kPage1Title));
+      semantics_manager_.semantic_tree()->GetNodeFromLabel(kPage1Title));
   EXPECT_TRUE(
-      semantics_manager_.semantic_tree()->HasNodeWithLabel(kButtonName1));
+      semantics_manager_.semantic_tree()->GetNodeFromLabel(kButtonName1));
   EXPECT_TRUE(
-      semantics_manager_.semantic_tree()->HasNodeWithLabel(kParagraphName));
+      semantics_manager_.semantic_tree()->GetNodeFromLabel(kParagraphName));
 }
 
 // Batching is performed when the number of nodes to send or delete exceeds the
@@ -379,7 +369,7 @@ IN_PROC_BROWSER_TEST_F(AccessibilityBridgeTest, DataSentWithBatching) {
 
   // Run until we expect more than a batch's worth of nodes to be present.
   semantics_manager_.semantic_tree()->RunUntilNodeCountAtLeast(kPage2NodeCount);
-  EXPECT_TRUE(semantics_manager_.semantic_tree()->HasNodeWithLabel(kNodeName));
+  EXPECT_TRUE(semantics_manager_.semantic_tree()->GetNodeFromLabel(kNodeName));
 }
 
 // Check that semantics information is correctly sent when navigating from page
@@ -397,11 +387,11 @@ IN_PROC_BROWSER_TEST_F(AccessibilityBridgeTest, TestNavigation) {
 
   semantics_manager_.semantic_tree()->RunUntilNodeCountAtLeast(kPage1NodeCount);
   EXPECT_TRUE(
-      semantics_manager_.semantic_tree()->HasNodeWithLabel(kPage1Title));
+      semantics_manager_.semantic_tree()->GetNodeFromLabel(kPage1Title));
   EXPECT_TRUE(
-      semantics_manager_.semantic_tree()->HasNodeWithLabel(kButtonName1));
+      semantics_manager_.semantic_tree()->GetNodeFromLabel(kButtonName1));
   EXPECT_TRUE(
-      semantics_manager_.semantic_tree()->HasNodeWithLabel(kParagraphName));
+      semantics_manager_.semantic_tree()->GetNodeFromLabel(kParagraphName));
 
   GURL page_url2(embedded_test_server()->GetURL(kPage2Path));
   ASSERT_TRUE(cr_fuchsia::LoadUrlAndExpectResponse(
@@ -409,14 +399,14 @@ IN_PROC_BROWSER_TEST_F(AccessibilityBridgeTest, TestNavigation) {
 
   semantics_manager_.semantic_tree()->RunUntilNodeCountAtLeast(kPage2NodeCount);
   EXPECT_TRUE(
-      semantics_manager_.semantic_tree()->HasNodeWithLabel(kPage2Title));
-  EXPECT_TRUE(semantics_manager_.semantic_tree()->HasNodeWithLabel(kNodeName));
+      semantics_manager_.semantic_tree()->GetNodeFromLabel(kPage2Title));
+  EXPECT_TRUE(semantics_manager_.semantic_tree()->GetNodeFromLabel(kNodeName));
 
   // Check that data from the first page has been deleted successfully.
   EXPECT_FALSE(
-      semantics_manager_.semantic_tree()->HasNodeWithLabel(kButtonName1));
+      semantics_manager_.semantic_tree()->GetNodeFromLabel(kButtonName1));
   EXPECT_FALSE(
-      semantics_manager_.semantic_tree()->HasNodeWithLabel(kParagraphName));
+      semantics_manager_.semantic_tree()->GetNodeFromLabel(kParagraphName));
 }
 
 // Checks that the correct node ID is returned when performing hit testing.
@@ -432,11 +422,10 @@ IN_PROC_BROWSER_TEST_F(AccessibilityBridgeTest, DISABLED_HitTest) {
       controller.get(), fuchsia::web::LoadUrlParams(), page_url1.spec()));
   navigation_listener_.RunUntilUrlAndTitleEquals(page_url1, kPage1Title);
   semantics_manager_.semantic_tree()->RunUntilNodeCountAtLeast(kPage1NodeCount);
-  EXPECT_TRUE(
-      semantics_manager_.semantic_tree()->HasNodeWithLabel(kParagraphName));
 
   Node* hit_test_node =
       semantics_manager_.semantic_tree()->GetNodeFromLabel(kParagraphName);
+  EXPECT_TRUE(hit_test_node);
 
   fuchsia::math::PointF target_point =
       GetCenterOfBox(hit_test_node->location());

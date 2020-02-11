@@ -16,9 +16,6 @@ class BackButtonNode extends SAChildNode {
      * @private {!SARootNode}
      */
     this.group_ = group;
-
-    /** @private {?chrome.automation.AutomationNode} */
-    this.node_ = SwitchAccess.get().getBackButtonAutomationNode();
   }
 
   // ================= Getters and setters =================
@@ -30,13 +27,16 @@ class BackButtonNode extends SAChildNode {
 
   /** @override */
   get automationNode() {
-    return this.node_;
+    return BackButtonNode.automationNode_;
   }
 
   /** @override */
   get location() {
-    if (this.node_) {
-      return this.node_.location;
+    if (BackButtonNode.locationForTesting) {
+      return BackButtonNode.locationForTesting;
+    }
+    if (BackButtonNode.automationNode_) {
+      return BackButtonNode.automationNode_.location;
     }
   }
 
@@ -59,7 +59,8 @@ class BackButtonNode extends SAChildNode {
 
   /** @override */
   isEquivalentTo(node) {
-    return node instanceof BackButtonNode || this.node_ === node;
+    return node instanceof BackButtonNode ||
+        BackButtonNode.automationNode_ === node;
   }
 
   /** @override */
@@ -69,7 +70,7 @@ class BackButtonNode extends SAChildNode {
 
   /** @override */
   isValidAndVisible() {
-    return this.node_ !== null;
+    return BackButtonNode.automationNode_ !== null;
   }
 
   /** @override */
@@ -92,8 +93,8 @@ class BackButtonNode extends SAChildNode {
       return false;
     }
 
-    if (this.node_) {
-      this.node_.doDefault();
+    if (BackButtonNode.automationNode_) {
+      BackButtonNode.automationNode_.doDefault();
     }
     return true;
   }
@@ -103,5 +104,24 @@ class BackButtonNode extends SAChildNode {
   /** @override */
   debugString() {
     return 'BackButtonNode';
+  }
+
+  // ================= Static methods =================
+  /**
+   * Looks for the back button node.
+   * @param {!chrome.automation.AutomationNode} desktop The Switch Access panel
+   *     node.
+   */
+  static findAutomationNode(desktop) {
+    const treeWalker = new AutomationTreeWalker(
+        desktop, constants.Dir.FORWARD,
+        {visit: (node) => node.htmlAttributes.id === SAConstants.BACK_ID});
+    BackButtonNode.automationNode_ = treeWalker.next().node;
+
+    // TODO(anastasi): Generate event when Switch Access Panel is loaded instead
+    // of polling.
+    if (!BackButtonNode.automationNode_) {
+      setTimeout(() => BackButtonNode.findAutomationNode(desktop), 100);
+    }
   }
 }

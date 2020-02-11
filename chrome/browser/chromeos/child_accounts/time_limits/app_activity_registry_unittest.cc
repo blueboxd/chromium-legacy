@@ -22,13 +22,15 @@
 #include "ui/aura/client/window_types.h"
 #include "ui/aura/window.h"
 
+namespace chromeos {
+namespace app_time {
+
 namespace {
 
-const chromeos::app_time::AppId kApp1(apps::mojom::AppType::kArc, "1");
-const chromeos::app_time::AppId kApp2(apps::mojom::AppType::kWeb, "3");
+const AppId kApp1(apps::mojom::AppType::kArc, "1");
+const AppId kApp2(apps::mojom::AppType::kWeb, "3");
 
-class AppTimeNotificationDelegateMock
-    : public chromeos::app_time::AppTimeNotificationDelegate {
+class AppTimeNotificationDelegateMock : public AppTimeNotificationDelegate {
  public:
   AppTimeNotificationDelegateMock() = default;
   AppTimeNotificationDelegateMock(const AppTimeNotificationDelegateMock&) =
@@ -58,11 +60,14 @@ class AppActivityRegistryTest : public ChromeViewsTestBase {
   // ChromeViewsTestBase:
   void SetUp() override;
 
-  aura::Window* CreateWindowForApp(const chromeos::app_time::AppId& app_id);
+  aura::Window* CreateWindowForApp(const AppId& app_id);
 
-  chromeos::app_time::AppActivityRegistry& app_activity_registry() {
-    return registry_;
-  }
+  void SetAppLimit(const AppId& app_id,
+                   const base::Optional<AppLimit>& app_limit);
+
+  AppActivityRegistry& registry() { return registry_; }
+  AppActivityRegistry::TestApi& registry_test() { return registry_test_; }
+
   base::test::TaskEnvironment& task_environment() { return task_environment_; }
   AppTimeNotificationDelegateMock& notification_delegate_mock() {
     return notification_delegate_mock_;
@@ -71,27 +76,24 @@ class AppActivityRegistryTest : public ChromeViewsTestBase {
  private:
   TestingProfile profile_;
   AppTimeNotificationDelegateMock notification_delegate_mock_;
-  chromeos::app_time::AppServiceWrapper wrapper_{&profile_};
-  chromeos::app_time::AppActivityRegistry registry_{
-      &wrapper_, &notification_delegate_mock_};
+  AppServiceWrapper wrapper_{&profile_};
+  AppActivityRegistry registry_{&wrapper_, &notification_delegate_mock_};
+  AppActivityRegistry::TestApi registry_test_{&registry_};
 
-  std::map<chromeos::app_time::AppId,
-           std::vector<std::unique_ptr<aura::Window>>>
-      windows_;
+  std::map<AppId, std::vector<std::unique_ptr<aura::Window>>> windows_;
 };
 
 void AppActivityRegistryTest::SetUp() {
   ChromeViewsTestBase::SetUp();
-  app_activity_registry().OnAppInstalled(chromeos::app_time::GetChromeAppId());
-  app_activity_registry().OnAppInstalled(kApp1);
-  app_activity_registry().OnAppInstalled(kApp2);
-  app_activity_registry().OnAppAvailable(chromeos::app_time::GetChromeAppId());
-  app_activity_registry().OnAppAvailable(kApp1);
-  app_activity_registry().OnAppAvailable(kApp2);
+  registry().OnAppInstalled(GetChromeAppId());
+  registry().OnAppInstalled(kApp1);
+  registry().OnAppInstalled(kApp2);
+  registry().OnAppAvailable(GetChromeAppId());
+  registry().OnAppAvailable(kApp1);
+  registry().OnAppAvailable(kApp2);
 }
 
-aura::Window* AppActivityRegistryTest::CreateWindowForApp(
-    const chromeos::app_time::AppId& app_id) {
+aura::Window* AppActivityRegistryTest::CreateWindowForApp(const AppId& app_id) {
   std::unique_ptr<aura::Window> window =
       std::make_unique<aura::Window>(nullptr);
   window->Init(ui::LayerType::LAYER_NOT_DRAWN);
@@ -101,21 +103,28 @@ aura::Window* AppActivityRegistryTest::CreateWindowForApp(
   return to_return;
 }
 
+void AppActivityRegistryTest::SetAppLimit(
+    const AppId& app_id,
+    const base::Optional<AppLimit>& app_limit) {
+  registry_.SetAppLimit(app_id, app_limit);
+  task_environment_.RunUntilIdle();
+}
+
 TEST_F(AppActivityRegistryTest, RunningActiveTimeCheck) {
   auto* app1_window = CreateWindowForApp(kApp1);
 
   base::Time app1_start_time = base::Time::Now();
   base::TimeDelta active_time = base::TimeDelta::FromMinutes(5);
-  app_activity_registry().OnAppActive(kApp1, app1_window, app1_start_time);
+  registry().OnAppActive(kApp1, app1_window, app1_start_time);
   task_environment().FastForwardBy(active_time / 2);
-  EXPECT_EQ(active_time / 2, app_activity_registry().GetActiveTime(kApp1));
-  EXPECT_TRUE(app_activity_registry().IsAppActive(kApp1));
+  EXPECT_EQ(active_time / 2, registry().GetActiveTime(kApp1));
+  EXPECT_TRUE(registry().IsAppActive(kApp1));
 
   task_environment().FastForwardBy(active_time / 2);
   base::Time app1_end_time = base::Time::Now();
-  app_activity_registry().OnAppInactive(kApp1, app1_window, app1_end_time);
-  EXPECT_EQ(active_time, app_activity_registry().GetActiveTime(kApp1));
-  EXPECT_FALSE(app_activity_registry().IsAppActive(kApp1));
+  registry().OnAppInactive(kApp1, app1_window, app1_end_time);
+  EXPECT_EQ(active_time, registry().GetActiveTime(kApp1));
+  EXPECT_FALSE(registry().IsAppActive(kApp1));
 }
 
 TEST_F(AppActivityRegistryTest, MultipleWindowSameApp) {
@@ -124,60 +133,60 @@ TEST_F(AppActivityRegistryTest, MultipleWindowSameApp) {
 
   base::TimeDelta app2_active_time = base::TimeDelta::FromMinutes(5);
 
-  app_activity_registry().OnAppActive(kApp2, app2_window1, base::Time::Now());
+  registry().OnAppActive(kApp2, app2_window1, base::Time::Now());
   task_environment().FastForwardBy(app2_active_time / 2);
 
-  app_activity_registry().OnAppActive(kApp2, app2_window2, base::Time::Now());
-  app_activity_registry().OnAppInactive(kApp2, app2_window1, base::Time::Now());
-  app_activity_registry().OnAppInactive(kApp2, app2_window1, base::Time::Now());
-  EXPECT_TRUE(app_activity_registry().IsAppActive(kApp2));
+  registry().OnAppActive(kApp2, app2_window2, base::Time::Now());
+  registry().OnAppInactive(kApp2, app2_window1, base::Time::Now());
+  registry().OnAppInactive(kApp2, app2_window1, base::Time::Now());
+  EXPECT_TRUE(registry().IsAppActive(kApp2));
 
   task_environment().FastForwardBy(app2_active_time / 2);
 
   // Repeated calls to OnAppInactive shouldn't affect the time calculation.
-  app_activity_registry().OnAppInactive(kApp2, app2_window1, base::Time::Now());
+  registry().OnAppInactive(kApp2, app2_window1, base::Time::Now());
 
   // Mark the application inactive.
-  app_activity_registry().OnAppInactive(kApp2, app2_window2, base::Time::Now());
+  registry().OnAppInactive(kApp2, app2_window2, base::Time::Now());
 
   // There was no interruption in active times. Therefore, the app should
   // be active for the whole 5 minutes.
-  EXPECT_EQ(app2_active_time, app_activity_registry().GetActiveTime(kApp2));
+  EXPECT_EQ(app2_active_time, registry().GetActiveTime(kApp2));
 
   base::TimeDelta app2_inactive_time = base::TimeDelta::FromMinutes(1);
 
-  app_activity_registry().OnAppActive(kApp2, app2_window1, base::Time::Now());
+  registry().OnAppActive(kApp2, app2_window1, base::Time::Now());
   task_environment().FastForwardBy(app2_active_time / 2);
 
-  app_activity_registry().OnAppInactive(kApp2, app2_window1, base::Time::Now());
+  registry().OnAppInactive(kApp2, app2_window1, base::Time::Now());
   task_environment().FastForwardBy(app2_inactive_time);
-  EXPECT_FALSE(app_activity_registry().IsAppActive(kApp2));
+  EXPECT_FALSE(registry().IsAppActive(kApp2));
 
-  app_activity_registry().OnAppActive(kApp2, app2_window2, base::Time::Now());
+  registry().OnAppActive(kApp2, app2_window2, base::Time::Now());
   task_environment().FastForwardBy(app2_active_time / 2);
 
-  app_activity_registry().OnAppInactive(kApp2, app2_window1, base::Time::Now());
-  EXPECT_TRUE(app_activity_registry().IsAppActive(kApp2));
+  registry().OnAppInactive(kApp2, app2_window1, base::Time::Now());
+  EXPECT_TRUE(registry().IsAppActive(kApp2));
 
-  app_activity_registry().OnAppInactive(kApp2, app2_window2, base::Time::Now());
-  EXPECT_FALSE(app_activity_registry().IsAppActive(kApp2));
+  registry().OnAppInactive(kApp2, app2_window2, base::Time::Now());
+  EXPECT_FALSE(registry().IsAppActive(kApp2));
 
-  EXPECT_EQ(app2_active_time * 2, app_activity_registry().GetActiveTime(kApp2));
+  EXPECT_EQ(app2_active_time * 2, registry().GetActiveTime(kApp2));
 }
 
 TEST_F(AppActivityRegistryTest, AppTimeLimitReachedActiveApp) {
   base::Time start = base::Time::Now();
-  // Set the time limit for kApp1 to be 10 minutes.
-  bool state_changed = app_activity_registry().SetAppTimeLimitForTest(
-      kApp1, base::TimeDelta::FromMinutes(10), start);
 
-  EXPECT_FALSE(state_changed);
-  EXPECT_EQ(app_activity_registry().GetAppState(kApp1),
-            chromeos::app_time::AppState::kAvailable);
+  // Set the time limit for kApp1 to be 10 minutes.
+  const AppLimit limit(AppRestriction::kTimeLimit,
+                       base::TimeDelta::FromMinutes(10), start);
+  SetAppLimit(kApp1, limit);
+
+  EXPECT_EQ(registry().GetAppState(kApp1), AppState::kAvailable);
 
   auto* app1_window = CreateWindowForApp(kApp1);
 
-  app_activity_registry().OnAppActive(kApp1, app1_window, start);
+  registry().OnAppActive(kApp1, app1_window, start);
 
   // Expect 5 minute left notification.
   EXPECT_CALL(
@@ -186,9 +195,8 @@ TEST_F(AppActivityRegistryTest, AppTimeLimitReachedActiveApp) {
           kApp1, testing::_, chromeos::app_time::AppNotification::kFiveMinutes))
       .Times(1);
   task_environment().FastForwardBy(base::TimeDelta::FromMinutes(5));
-  EXPECT_EQ(base::TimeDelta::FromMinutes(5),
-            app_activity_registry().GetActiveTime(kApp1));
-  EXPECT_TRUE(app_activity_registry().IsAppActive(kApp1));
+  EXPECT_EQ(base::TimeDelta::FromMinutes(5), registry().GetActiveTime(kApp1));
+  EXPECT_TRUE(registry().IsAppActive(kApp1));
 
   // Expect One minute left notification.
   EXPECT_CALL(
@@ -197,8 +205,7 @@ TEST_F(AppActivityRegistryTest, AppTimeLimitReachedActiveApp) {
           kApp1, testing::_, chromeos::app_time::AppNotification::kOneMinute))
       .Times(1);
   task_environment().FastForwardBy(base::TimeDelta::FromMinutes(4));
-  EXPECT_EQ(base::TimeDelta::FromMinutes(9),
-            app_activity_registry().GetActiveTime(kApp1));
+  EXPECT_EQ(base::TimeDelta::FromMinutes(9), registry().GetActiveTime(kApp1));
 
   // Expect time limit reached notification.
   EXPECT_CALL(notification_delegate_mock(),
@@ -207,11 +214,9 @@ TEST_F(AppActivityRegistryTest, AppTimeLimitReachedActiveApp) {
                   chromeos::app_time::AppNotification::kTimeLimitReached))
       .Times(1);
   task_environment().FastForwardBy(base::TimeDelta::FromMinutes(1));
-  EXPECT_EQ(base::TimeDelta::FromMinutes(10),
-            app_activity_registry().GetActiveTime(kApp1));
+  EXPECT_EQ(base::TimeDelta::FromMinutes(10), registry().GetActiveTime(kApp1));
 
-  EXPECT_EQ(app_activity_registry().GetAppState(kApp1),
-            chromeos::app_time::AppState::kLimitReached);
+  EXPECT_EQ(registry().GetAppState(kApp1), AppState::kLimitReached);
 }
 
 TEST_F(AppActivityRegistryTest, SkippedFiveMinuteNotification) {
@@ -219,18 +224,20 @@ TEST_F(AppActivityRegistryTest, SkippedFiveMinuteNotification) {
   base::Time start = base::Time::Now();
 
   // Set the time limit for kApp1 to be 25 minutes.
-  bool state_changed = app_activity_registry().SetAppTimeLimitForTest(
-      kApp1, base::TimeDelta::FromMinutes(25), start);
-  EXPECT_FALSE(state_changed);
+  const AppLimit limit(AppRestriction::kTimeLimit,
+                       base::TimeDelta::FromMinutes(25), start);
+  SetAppLimit(kApp1, limit);
 
   auto* app1_window = CreateWindowForApp(kApp1);
   base::TimeDelta active_time = base::TimeDelta::FromMinutes(10);
-  app_activity_registry().OnAppActive(kApp1, app1_window, start);
+  registry().OnAppActive(kApp1, app1_window, start);
 
   task_environment().FastForwardBy(active_time);
 
-  app_activity_registry().SetAppTimeLimitForTest(
-      kApp1, base::TimeDelta::FromMinutes(14), start + active_time);
+  const AppLimit new_limit(AppRestriction::kTimeLimit,
+                           base::TimeDelta::FromMinutes(14),
+                           start + active_time);
+  SetAppLimit(kApp1, new_limit);
 
   // Notice that the 5 minute notification is jumped.
   EXPECT_CALL(
@@ -246,98 +253,97 @@ TEST_F(AppActivityRegistryTest, SkippedAllNotifications) {
   base::Time start = base::Time::Now();
 
   // Set the time limit for kApp1 to be 25 minutes.
-  app_activity_registry().SetAppTimeLimitForTest(
-      kApp1, base::TimeDelta::FromMinutes(25), start);
+  const AppLimit limit(AppRestriction::kTimeLimit,
+                       base::TimeDelta::FromMinutes(25), start);
+  SetAppLimit(kApp1, limit);
 
   auto* app1_window = CreateWindowForApp(kApp1);
   base::TimeDelta active_time = base::TimeDelta::FromMinutes(10);
-  app_activity_registry().OnAppActive(kApp1, app1_window, start);
+  registry().OnAppActive(kApp1, app1_window, start);
 
   task_environment().FastForwardBy(active_time);
 
   // Notice that the 5 minute and 1 minute notifications are jumped.
+  const AppLimit new_limit(AppRestriction::kTimeLimit,
+                           base::TimeDelta::FromMinutes(5),
+                           start + active_time);
+  SetAppLimit(kApp1, new_limit);
 
-  bool state_changed = app_activity_registry().SetAppTimeLimitForTest(
-      kApp1, base::TimeDelta::FromMinutes(5), start + active_time);
-  EXPECT_TRUE(state_changed);
-  EXPECT_EQ(app_activity_registry().GetAppState(kApp1),
-            chromeos::app_time::AppState::kLimitReached);
+  EXPECT_EQ(registry().GetAppState(kApp1), AppState::kLimitReached);
 }
 
 TEST_F(AppActivityRegistryTest, BlockedAppSetAvailable) {
   base::Time start = base::Time::Now();
 
   const base::TimeDelta kTenMinutes = base::TimeDelta::FromMinutes(10);
-  app_activity_registry().SetAppTimeLimitForTest(kApp1, kTenMinutes, start);
+  const AppLimit limit(AppRestriction::kTimeLimit, kTenMinutes, start);
+  SetAppLimit(kApp1, limit);
 
   auto* app1_window = CreateWindowForApp(kApp1);
-  app_activity_registry().OnAppActive(kApp1, app1_window, start);
+  registry().OnAppActive(kApp1, app1_window, start);
 
   // There are going to be a bunch of mock notification calls for kFiveMinutes,
   // kOneMinute, and kTimeLimitReached. They have already been tested in the
   // other tests. Let's igonre them.
   task_environment().FastForwardBy(kTenMinutes);
 
-  EXPECT_EQ(app_activity_registry().GetAppState(kApp1),
-            chromeos::app_time::AppState::kLimitReached);
+  EXPECT_EQ(registry().GetAppState(kApp1), AppState::kLimitReached);
 
-  const base::TimeDelta new_active_time = base::TimeDelta::FromMinutes(20);
-  bool state_changed = app_activity_registry().SetAppTimeLimitForTest(
-      kApp1, new_active_time, start + kTenMinutes);
-  EXPECT_TRUE(state_changed);
-  EXPECT_EQ(app_activity_registry().GetAppState(kApp1),
-            chromeos::app_time::AppState::kAvailable);
+  const AppLimit new_limit(AppRestriction::kTimeLimit,
+                           base::TimeDelta::FromMinutes(20),
+                           start + kTenMinutes);
+  SetAppLimit(kApp1, new_limit);
+  EXPECT_EQ(registry().GetAppState(kApp1), AppState::kAvailable);
 }
 
 TEST_F(AppActivityRegistryTest, ResetTimeReached) {
   base::Time start = base::Time::Now();
   const base::TimeDelta kTenMinutes = base::TimeDelta::FromMinutes(10);
 
-  const base::TimeDelta kApp1Limit = kTenMinutes;
-  const base::TimeDelta kApp2Limit = base::TimeDelta::FromMinutes(20);
-  app_activity_registry().SetAppTimeLimitForTest(kApp1, kApp1Limit, start);
-  app_activity_registry().SetAppTimeLimitForTest(kApp2, kApp2Limit, start);
+  const AppLimit limit1(AppRestriction::kTimeLimit, kTenMinutes, start);
+  const AppLimit limit2(AppRestriction::kTimeLimit,
+                        base::TimeDelta::FromMinutes(20), start);
+  const std::map<AppId, AppLimit> limits{{kApp1, limit1}, {kApp2, limit2}};
+  registry().UpdateAppLimits(limits);
 
   auto* app1_window = CreateWindowForApp(kApp1);
   auto* app2_window = CreateWindowForApp(kApp2);
-  app_activity_registry().OnAppActive(kApp1, app1_window, start);
-  app_activity_registry().OnAppActive(kApp2, app2_window, start);
+  registry().OnAppActive(kApp1, app1_window, start);
+  registry().OnAppActive(kApp2, app2_window, start);
 
   task_environment().FastForwardBy(kTenMinutes);
 
   // App 1's time limit has been reached.
-  EXPECT_TRUE(app_activity_registry().IsAppTimeLimitReached(kApp1));
-  EXPECT_EQ(kTenMinutes, app_activity_registry().GetActiveTime(kApp1));
+  EXPECT_TRUE(registry().IsAppTimeLimitReached(kApp1));
+  EXPECT_EQ(kTenMinutes, registry().GetActiveTime(kApp1));
 
   // App 2 is still active.
-  EXPECT_FALSE(app_activity_registry().IsAppTimeLimitReached(kApp2));
-  EXPECT_EQ(kTenMinutes, app_activity_registry().GetActiveTime(kApp2));
+  EXPECT_FALSE(registry().IsAppTimeLimitReached(kApp2));
+  EXPECT_EQ(kTenMinutes, registry().GetActiveTime(kApp2));
 
   // Reset time has been reached.
-  app_activity_registry().OnResetTimeReached(start + kTenMinutes);
-  EXPECT_FALSE(app_activity_registry().IsAppTimeLimitReached(kApp1));
-  EXPECT_EQ(base::TimeDelta::FromSeconds(0),
-            app_activity_registry().GetActiveTime(kApp1));
-  EXPECT_FALSE(app_activity_registry().IsAppTimeLimitReached(kApp2));
-  EXPECT_EQ(base::TimeDelta::FromSeconds(0),
-            app_activity_registry().GetActiveTime(kApp2));
+  registry().OnResetTimeReached(start + kTenMinutes);
+  EXPECT_FALSE(registry().IsAppTimeLimitReached(kApp1));
+  EXPECT_EQ(base::TimeDelta::FromSeconds(0), registry().GetActiveTime(kApp1));
+  EXPECT_FALSE(registry().IsAppTimeLimitReached(kApp2));
+  EXPECT_EQ(base::TimeDelta::FromSeconds(0), registry().GetActiveTime(kApp2));
 
   // Now make sure that the timers have been scheduled appropriately.
-  app_activity_registry().OnAppActive(kApp1, app1_window, start);
+  registry().OnAppActive(kApp1, app1_window, start);
 
   task_environment().FastForwardBy(kTenMinutes);
 
-  EXPECT_TRUE(app_activity_registry().IsAppTimeLimitReached(kApp1));
-  EXPECT_EQ(kTenMinutes, app_activity_registry().GetActiveTime(kApp1));
+  EXPECT_TRUE(registry().IsAppTimeLimitReached(kApp1));
+  EXPECT_EQ(kTenMinutes, registry().GetActiveTime(kApp1));
 
   // App 2 is still active.
-  EXPECT_FALSE(app_activity_registry().IsAppTimeLimitReached(kApp2));
-  EXPECT_EQ(kTenMinutes, app_activity_registry().GetActiveTime(kApp2));
+  EXPECT_FALSE(registry().IsAppTimeLimitReached(kApp2));
+  EXPECT_EQ(kTenMinutes, registry().GetActiveTime(kApp2));
 
   // Now let's make sure
   task_environment().FastForwardBy(kTenMinutes);
-  EXPECT_TRUE(app_activity_registry().IsAppTimeLimitReached(kApp2));
-  EXPECT_EQ(kApp2Limit, app_activity_registry().GetActiveTime(kApp2));
+  EXPECT_TRUE(registry().IsAppTimeLimitReached(kApp2));
+  EXPECT_EQ(*limit2.daily_limit(), registry().GetActiveTime(kApp2));
 }
 
 TEST_F(AppActivityRegistryTest, SharedTimeLimitForChromeAndWebApps) {
@@ -345,27 +351,28 @@ TEST_F(AppActivityRegistryTest, SharedTimeLimitForChromeAndWebApps) {
   const base::TimeDelta kOneHour = base::TimeDelta::FromHours(1);
   const base::TimeDelta kHalfHour = base::TimeDelta::FromMinutes(30);
 
-  const chromeos::app_time::AppId kChromeAppId =
-      chromeos::app_time::GetChromeAppId();
+  const AppId kChromeAppId = GetChromeAppId();
 
-  app_activity_registry().SetAppTimeLimitForTest(kChromeAppId, kOneHour, start);
-  app_activity_registry().SetAppTimeLimitForTest(kApp2, kOneHour, start);
+  const AppLimit limit1(AppRestriction::kTimeLimit, kOneHour, start);
+  const AppLimit limit2(AppRestriction::kTimeLimit, kOneHour, start);
+  const std::map<AppId, AppLimit> limits{{kChromeAppId, limit1},
+                                         {kApp2, limit2}};
+  registry().UpdateAppLimits(limits);
 
   auto* app2_window = CreateWindowForApp(kApp2);
 
   // Make chrome active for 30 minutes.
-  app_activity_registry().OnChromeAppActivityChanged(
-      chromeos::app_time::ChromeAppActivityState::kActive, start);
+  registry().OnChromeAppActivityChanged(ChromeAppActivityState::kActive, start);
   task_environment().FastForwardBy(kHalfHour);
-  app_activity_registry().OnChromeAppActivityChanged(
-      chromeos::app_time::ChromeAppActivityState::kInactive, start + kHalfHour);
+  registry().OnChromeAppActivityChanged(ChromeAppActivityState::kInactive,
+                                        start + kHalfHour);
 
   // Expect that the active running time for app2 has been updated.
-  EXPECT_EQ(kHalfHour, app_activity_registry().GetActiveTime(kChromeAppId));
-  EXPECT_EQ(kHalfHour, app_activity_registry().GetActiveTime(kApp2));
+  EXPECT_EQ(kHalfHour, registry().GetActiveTime(kChromeAppId));
+  EXPECT_EQ(kHalfHour, registry().GetActiveTime(kApp2));
 
   // Make |kApp2| active for 30 minutes. Expect that it reaches its time limit.
-  app_activity_registry().OnAppActive(kApp2, app2_window, start + kHalfHour);
+  registry().OnAppActive(kApp2, app2_window, start + kHalfHour);
   EXPECT_CALL(
       notification_delegate_mock(),
       ShowAppTimeLimitNotification(
@@ -384,6 +391,146 @@ TEST_F(AppActivityRegistryTest, SharedTimeLimitForChromeAndWebApps) {
 
   task_environment().FastForwardBy(kHalfHour);
 
-  EXPECT_TRUE(app_activity_registry().IsAppTimeLimitReached(kApp2));
-  EXPECT_TRUE(app_activity_registry().IsAppTimeLimitReached(kChromeAppId));
+  EXPECT_TRUE(registry().IsAppTimeLimitReached(kApp2));
+  EXPECT_TRUE(registry().IsAppTimeLimitReached(kChromeAppId));
 }
+
+TEST_F(AppActivityRegistryTest, LimitChangedForActiveApp) {
+  EXPECT_EQ(registry().GetAppState(kApp1), AppState::kAvailable);
+
+  auto* app1_window = CreateWindowForApp(kApp1);
+  base::Time start = base::Time::Now();
+  registry().OnAppActive(kApp1, app1_window, start);
+
+  EXPECT_TRUE(registry().IsAppActive(kApp1));
+  EXPECT_EQ(base::TimeDelta::FromMinutes(0), registry().GetActiveTime(kApp1));
+  EXPECT_EQ(base::nullopt, registry_test().GetAppLimit(kApp1));
+  EXPECT_EQ(base::nullopt, registry_test().GetTimeLeft(kApp1));
+
+  task_environment().FastForwardBy(base::TimeDelta::FromMinutes(5));
+
+  // Limit set for active app.
+  const AppLimit limit1(AppRestriction::kTimeLimit,
+                        base::TimeDelta::FromMinutes(11), base::Time::Now());
+  SetAppLimit(kApp1, limit1);
+
+  EXPECT_TRUE(registry().IsAppActive(kApp1));
+  EXPECT_EQ(base::TimeDelta::FromMinutes(5), registry().GetActiveTime(kApp1));
+  EXPECT_EQ(base::TimeDelta::FromMinutes(11),
+            registry_test().GetAppLimit(kApp1)->daily_limit());
+  EXPECT_EQ(base::TimeDelta::FromMinutes(6),
+            registry_test().GetTimeLeft(kApp1));
+
+  task_environment().FastForwardBy(base::TimeDelta::FromMinutes(5));
+
+  EXPECT_TRUE(registry().IsAppActive(kApp1));
+  EXPECT_EQ(base::TimeDelta::FromMinutes(10), registry().GetActiveTime(kApp1));
+  EXPECT_EQ(base::TimeDelta::FromMinutes(11),
+            registry_test().GetAppLimit(kApp1)->daily_limit());
+  EXPECT_EQ(base::TimeDelta::FromMinutes(1),
+            registry_test().GetTimeLeft(kApp1));
+
+  // Increase the limit.
+  const AppLimit limit_increase(AppRestriction::kTimeLimit,
+                                base::TimeDelta::FromMinutes(20),
+                                base::Time::Now());
+  SetAppLimit(kApp1, limit_increase);
+  EXPECT_TRUE(registry().IsAppActive(kApp1));
+  EXPECT_EQ(base::TimeDelta::FromMinutes(10), registry().GetActiveTime(kApp1));
+  EXPECT_EQ(base::TimeDelta::FromMinutes(20),
+            registry_test().GetAppLimit(kApp1)->daily_limit());
+  EXPECT_EQ(base::TimeDelta::FromMinutes(10),
+            registry_test().GetTimeLeft(kApp1));
+
+  // Decrease the limit.
+  const AppLimit limit_decrease(AppRestriction::kTimeLimit,
+                                base::TimeDelta::FromMinutes(5),
+                                base::Time::Now());
+  SetAppLimit(kApp1, limit_decrease);
+  EXPECT_FALSE(registry().IsAppActive(kApp1));
+  EXPECT_TRUE(registry().IsAppTimeLimitReached(kApp1));
+  EXPECT_EQ(base::TimeDelta::FromMinutes(10), registry().GetActiveTime(kApp1));
+  EXPECT_EQ(base::TimeDelta::FromMinutes(5),
+            registry_test().GetAppLimit(kApp1)->daily_limit());
+  EXPECT_EQ(base::TimeDelta::FromMinutes(0),
+            registry_test().GetTimeLeft(kApp1));
+}
+
+TEST_F(AppActivityRegistryTest, LimitChangesForInactiveApp) {
+  // Set initial limit.
+  const AppLimit limit(AppRestriction::kTimeLimit,
+                       base::TimeDelta::FromMinutes(5), base::Time::Now());
+  SetAppLimit(kApp1, limit);
+
+  // Use available limit - app should become paused.
+  auto* app1_window = CreateWindowForApp(kApp1);
+  registry().OnAppActive(kApp1, app1_window, base::Time::Now());
+  task_environment().FastForwardBy(base::TimeDelta::FromMinutes(5));
+
+  EXPECT_FALSE(registry().IsAppActive(kApp1));
+  EXPECT_TRUE(registry().IsAppTimeLimitReached(kApp1));
+  EXPECT_EQ(base::TimeDelta::FromMinutes(5), registry().GetActiveTime(kApp1));
+  EXPECT_EQ(base::TimeDelta::FromMinutes(5),
+            registry_test().GetAppLimit(kApp1)->daily_limit());
+  EXPECT_EQ(base::TimeDelta::FromMinutes(0),
+            registry_test().GetTimeLeft(kApp1));
+
+  // Decrease limit - app should remain paused.
+  const AppLimit decreased_limit(AppRestriction::kTimeLimit,
+                                 base::TimeDelta::FromMinutes(3),
+                                 base::Time::Now());
+  SetAppLimit(kApp1, decreased_limit);
+
+  EXPECT_FALSE(registry().IsAppActive(kApp1));
+  EXPECT_TRUE(registry().IsAppTimeLimitReached(kApp1));
+  EXPECT_EQ(base::TimeDelta::FromMinutes(5), registry().GetActiveTime(kApp1));
+  EXPECT_EQ(base::TimeDelta::FromMinutes(3),
+            registry_test().GetAppLimit(kApp1)->daily_limit());
+  EXPECT_EQ(base::TimeDelta::FromMinutes(0),
+            registry_test().GetTimeLeft(kApp1));
+
+  // Increase limit - app should become available, but inactive.
+  const AppLimit increased_limit(AppRestriction::kTimeLimit,
+                                 base::TimeDelta::FromMinutes(10),
+                                 base::Time::Now());
+  SetAppLimit(kApp1, increased_limit);
+
+  EXPECT_FALSE(registry().IsAppActive(kApp1));
+  EXPECT_TRUE(registry().IsAppAvailable(kApp1));
+  EXPECT_EQ(base::TimeDelta::FromMinutes(5), registry().GetActiveTime(kApp1));
+  EXPECT_EQ(base::TimeDelta::FromMinutes(10),
+            registry_test().GetAppLimit(kApp1)->daily_limit());
+  EXPECT_EQ(base::TimeDelta::FromMinutes(5),
+            registry_test().GetTimeLeft(kApp1));
+
+  // Decrease limit above used time - app should stay available.
+  const AppLimit limit_above_used(AppRestriction::kTimeLimit,
+                                  base::TimeDelta::FromMinutes(8),
+                                  base::Time::Now());
+  SetAppLimit(kApp1, limit_above_used);
+
+  EXPECT_FALSE(registry().IsAppActive(kApp1));
+  EXPECT_TRUE(registry().IsAppAvailable(kApp1));
+  EXPECT_EQ(base::TimeDelta::FromMinutes(5), registry().GetActiveTime(kApp1));
+  EXPECT_EQ(base::TimeDelta::FromMinutes(8),
+            registry_test().GetAppLimit(kApp1)->daily_limit());
+  EXPECT_EQ(base::TimeDelta::FromMinutes(3),
+            registry_test().GetTimeLeft(kApp1));
+
+  // Decrease limit below below time - app should become unavailabe.
+  const AppLimit limit_below_used(AppRestriction::kTimeLimit,
+                                  base::TimeDelta::FromMinutes(4),
+                                  base::Time::Now());
+  SetAppLimit(kApp1, limit_below_used);
+
+  EXPECT_FALSE(registry().IsAppActive(kApp1));
+  EXPECT_TRUE(registry().IsAppTimeLimitReached(kApp1));
+  EXPECT_EQ(base::TimeDelta::FromMinutes(5), registry().GetActiveTime(kApp1));
+  EXPECT_EQ(base::TimeDelta::FromMinutes(4),
+            *registry_test().GetAppLimit(kApp1)->daily_limit());
+  EXPECT_EQ(base::TimeDelta::FromMinutes(0),
+            *registry_test().GetTimeLeft(kApp1));
+}
+
+}  // namespace app_time
+}  // namespace chromeos

@@ -1245,8 +1245,8 @@ class ServiceWorkerResourceStorageTest : public ServiceWorkerStorageTest {
     script_ = GURL("http://www.test.not/script.js");
     import_ = GURL("http://www.test.not/import.js");
     document_url_ = GURL("http://www.test.not/scope/document.html");
-    resource_id1_ = storage()->NewResourceId();
-    resource_id2_ = storage()->NewResourceId();
+    resource_id1_ = GetNewResourceIdSync(storage());
+    resource_id2_ = GetNewResourceIdSync(storage());
     resource_id1_size_ = 239193;
     resource_id2_size_ = 59923;
 
@@ -1321,7 +1321,7 @@ TEST_F(ServiceWorkerResourceStorageTest,
        WriteMetadataWithServiceWorkerResponseMetadataWriter) {
   const char kMetadata1[] = "Test metadata";
   const char kMetadata2[] = "small";
-  int64_t new_resource_id_ = storage()->NewResourceId();
+  int64_t new_resource_id_ = GetNewResourceIdSync(storage());
   // Writing metadata to nonexistent resoirce ID must fail.
   EXPECT_GE(0, WriteResponseMetadata(storage(), new_resource_id_, kMetadata1));
 
@@ -1478,7 +1478,7 @@ TEST_F(ServiceWorkerResourceStorageDiskTest, CleanupOnRestart) {
   EXPECT_TRUE(VerifyBasicResponse(storage(), resource_id2_, true));
 
   // Also add an uncommitted resource.
-  int64_t kStaleUncommittedResourceId = storage()->NewResourceId();
+  int64_t kStaleUncommittedResourceId = GetNewResourceIdSync(storage());
   registry()->StoreUncommittedResourceId(kStaleUncommittedResourceId);
   verify_ids = GetUncommittedResourceIdsFromDB();
   EXPECT_EQ(1u, verify_ids.size());
@@ -1494,7 +1494,7 @@ TEST_F(ServiceWorkerResourceStorageDiskTest, CleanupOnRestart) {
   // Store a new uncommitted resource. This triggers stale resource cleanup.
   base::RunLoop loop;
   storage()->SetPurgingCompleteCallbackForTest(loop.QuitClosure());
-  int64_t kNewResourceId = storage()->NewResourceId();
+  int64_t kNewResourceId = GetNewResourceIdSync(storage());
   WriteBasicResponse(storage(), kNewResourceId);
   registry()->StoreUncommittedResourceId(kNewResourceId);
   loop.Run();

@@ -489,6 +489,7 @@
 <translation id="1670399744444387456">Básicas</translation>
 <translation id="167160931442925455">Máximo</translation>
 <translation id="1673137583248014546"><ph name="URL" /> desea ver la marca y el modelo de tu llave de seguridad</translation>
+<translation id="1677472565718498478">Tiempo restante <ph name="TIME" /></translation>
 <translation id="1679068421605151609">Herramientas del programador</translation>
 <translation id="1679806121152819234">VM del complemento</translation>
 <translation id="1679810534535368772">¿Confirmas que quieres salir?</translation>
@@ -1290,7 +1291,7 @@ Para administrar la configuración de esta cuenta, instala la app de Family Lin
 <translation id="2749756011735116528">Iniciar sesión en <ph name="PRODUCT_NAME" /></translation>
 <translation id="2749881179542288782">Controlar la gramática con la ortografía</translation>
 <translation id="2751739896257479635">Autenticación de fase 2 EAP</translation>
-<translation id="2753677631968972007">Controlar manualmente los permisos del sitio</translation>
+<translation id="2753677631968972007">Controlar manualmente los permisos del sitio.</translation>
 <translation id="2755367719610958252">Administrar funciones de accesibilidad</translation>
 <translation id="275662540872599901">Pantalla apagada</translation>
 <translation id="2762441749940182211">Cámara bloqueada</translation>
@@ -1784,6 +1785,7 @@ Para administrar la configuración de esta cuenta, instala la app de Family Lin
 <translation id="3462413494201477527">¿Cancelar la configuración de la cuenta?</translation>
 <translation id="3464012987031883895">Un sitio está accediendo a la entrada de audio</translation>
 <translation id="346431825526753">Esta es una cuenta para niños administrada por <ph name="CUSTODIAN_EMAIL" />.</translation>
+<translation id="3468298837301810372">Etiqueta</translation>
 <translation id="3468999815377931311">Teléfono Android</translation>
 <translation id="3470442499439619530">Eliminar este usuario</translation>
 <translation id="3471876058939596279">No se pueden usar los puertos HDMI y USB tipo C al mismo tiempo para transmitir video. Usa otro puerto de video.</translation>
@@ -3059,7 +3061,7 @@ Para administrar la configuración de esta cuenta, instala la app de Family Lin
 <translation id="52912272896845572">Archivo de clave privada no válido</translation>
 <translation id="529175790091471945">Formatear este dispositivo</translation>
 <translation id="5293170712604732402">Restaurar la configuración a los valores predeterminados originales</translation>
-<translation id="5294097441441645251">Debe comenzar con una letra minúscula o un guión bajo</translation>
+<translation id="5294097441441645251">Debe comenzar con una letra minúscula o un guion bajo</translation>
 <translation id="5296471962619441686">Corrige el error para reanudar la sincronización</translation>
 <translation id="5297082477358294722">Se guardó la contraseña. Puedes ver y administrar las contraseñas guardadas en tu <ph name="SAVED_PASSWORDS_STORE" />.</translation>
 <translation id="5298219193514155779">Tema creado por</translation>
@@ -3908,7 +3910,7 @@ Para administrar la configuración de esta cuenta, instala la app de Family Lin
 <translation id="6472804939621540371">Esta acción borrará todas las cookies y los datos almacenados por <ph name="SITE_GROUP_NAME" />, por sus sitios secundarios y por su app instalada.</translation>
 <translation id="6472893788822429178">Mostrar el botón de la Página principal</translation>
 <translation id="6473842110411557830">Ilustración de Powerwash</translation>
-<translation id="6474498546677193336">No se puede dejar de compartir esta carpeta porque una app la está usando. Dejará de compartirse cuando Linux esté por cerrarse.</translation>
+<translation id="6474498546677193336">No se puede dejar de compartir esta carpeta porque una app la está usando. Dejará de compartirse la próxima vez que se cierre Linux.</translation>
 <translation id="6474884162850599008">Desconectar la cuenta de Google Drive</translation>
 <translation id="6475697075626596525"><ph name="APP_NAME" /> desea compartir el contenido de tu pantalla. Elige lo que deseas compartir.</translation>
 <translation id="6478248366783946499">¿Deseas conservar el archivo peligroso?</translation>
@@ -3959,7 +3961,6 @@ Para administrar la configuración de esta cuenta, instala la app de Family Lin
 <translation id="6545867563032584178">El micrófono está desactivado en las Preferencias del Sistema de Mac</translation>
 <translation id="6547354035488017500">Libera al menos 512 MB de espacio o tu dispositivo dejará de funcionar. Para liberar espacio, borra archivos del almacenamiento del dispositivo.</translation>
 <translation id="6549639163247690448"><ph name="DOMAIN" /> requiere que te conectes a una red Wi-Fi ahora y descargues una actualización. Cuando te conectes a Internet, se descargará automáticamente la actualización.</translation>
-<translation id="6549966385318247177">Se bloqueó debido a que incluía contenido para mayores de edad.</translation>
 <translation id="6550675742724504774">Opciones</translation>
 <translation id="6551508934388063976">El comando no está disponible. Presiona Ctrl + N para abrir una ventana nueva.</translation>
 <translation id="6551612971599078809">El sitio está usando un puerto USB</translation>
@@ -4059,7 +4060,7 @@ Para administrar la configuración de esta cuenta, instala la app de Family Lin
 <translation id="6700480081846086223">Transmitir <ph name="HOST_NAME" /></translation>
 <translation id="6701535245008341853">No se pudo obtener el perfil.</translation>
 <translation id="6702639462873609204">&amp;Editar</translation>
-<translation id="6703966911896067184">Error en la ilustración durante la inscripción</translation>
+<translation id="6703966911896067184">Ilustración de error durante la inscripción</translation>
 <translation id="6706210727756204531">Alcance</translation>
 <translation id="6707389671160270963">Certificado de cliente SSL</translation>
 <translation id="6708242697268981054">Origen:</translation>

@@ -256,6 +256,7 @@ Falls neben "<ph name="SERVICE_SCRIPT_NAME" />" schon ein Haken gesetzt ist, ent
 <translation id="6939719207673461467">Tastatur ein-/ausblenden</translation>
 <translation id="6944854424004126054">Fenster wiederherstellen</translation>
 <translation id="6948905685698011662">Chrome Remote Desktop ist jetzt im Web verfügbar. Probieren Sie unsere <ph name="LINK_BEGIN" />kostenlose Web-App<ph name="LINK_END" /> aus.</translation>
+<translation id="6956835181934226419">Diese Berechtigung wurde bereits gewährt.</translation>
 <translation id="6963936880795878952">Verbindungen zum Remote-Computer sind vorübergehend blockiert, da jemand versucht hat, eine Verbindung mit einer ungültigen PIN herzustellen. Bitte versuchen Sie es später noch einmal.</translation>
 <translation id="6965382102122355670">Ok</translation>
 <translation id="6985691951107243942">Möchten Sie die Remote-Verbindung zu <ph name="HOSTNAME" /> wirklich deaktivieren? Wenn Sie die Verbindung später erneut aktivieren möchten, müssen Sie dies von dem betreffenden Computer aus tun.</translation>

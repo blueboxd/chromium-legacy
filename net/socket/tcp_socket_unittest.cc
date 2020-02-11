@@ -750,6 +750,67 @@ TEST_F(TCPSocketTest, BeforeConnectCallbackFails) {
   EXPECT_FALSE(accept_callback.have_result());
 }
 
+TEST_F(TCPSocketTest, SetKeepAlive) {
+  ASSERT_NO_FATAL_FAILURE(SetUpListenIPv4());
+
+  TestCompletionCallback accept_callback;
+  std::unique_ptr<TCPSocket> accepted_socket;
+  IPEndPoint accepted_address;
+  EXPECT_THAT(socket_.Accept(&accepted_socket, &accepted_address,
+                             accept_callback.callback()),
+              IsError(ERR_IO_PENDING));
+
+  TestCompletionCallback connect_callback;
+  TCPClientSocket connecting_socket(local_address_list(), nullptr, nullptr,
+                                    NetLogSource());
+
+  // Non-connected sockets should not be able to set KeepAlive.
+  ASSERT_FALSE(connecting_socket.IsConnected());
+  EXPECT_FALSE(
+      connecting_socket.SetKeepAlive(true /* enable */, 14 /* delay */));
+
+  // Connect.
+  int connect_result = connecting_socket.Connect(connect_callback.callback());
+  EXPECT_THAT(accept_callback.WaitForResult(), IsOk());
+  EXPECT_THAT(connect_callback.GetResult(connect_result), IsOk());
+
+  // Connected sockets should be able to enable and disable KeepAlive.
+  ASSERT_TRUE(connecting_socket.IsConnected());
+  EXPECT_TRUE(
+      connecting_socket.SetKeepAlive(true /* enable */, 22 /* delay */));
+  EXPECT_TRUE(
+      connecting_socket.SetKeepAlive(false /* enable */, 3 /* delay */));
+}
+
+TEST_F(TCPSocketTest, SetNoDelay) {
+  ASSERT_NO_FATAL_FAILURE(SetUpListenIPv4());
+
+  TestCompletionCallback accept_callback;
+  std::unique_ptr<TCPSocket> accepted_socket;
+  IPEndPoint accepted_address;
+  EXPECT_THAT(socket_.Accept(&accepted_socket, &accepted_address,
+                             accept_callback.callback()),
+              IsError(ERR_IO_PENDING));
+
+  TestCompletionCallback connect_callback;
+  TCPClientSocket connecting_socket(local_address_list(), nullptr, nullptr,
+                                    NetLogSource());
+
+  // Non-connected sockets should not be able to set NoDelay.
+  ASSERT_FALSE(connecting_socket.IsConnected());
+  EXPECT_FALSE(connecting_socket.SetNoDelay(true /* no_delay */));
+
+  // Connect.
+  int connect_result = connecting_socket.Connect(connect_callback.callback());
+  EXPECT_THAT(accept_callback.WaitForResult(), IsOk());
+  EXPECT_THAT(connect_callback.GetResult(connect_result), IsOk());
+
+  // Connected sockets should be able to enable and disable NoDelay.
+  ASSERT_TRUE(connecting_socket.IsConnected());
+  EXPECT_TRUE(connecting_socket.SetNoDelay(true /* no_delay */));
+  EXPECT_TRUE(connecting_socket.SetNoDelay(false /* no_delay */));
+}
+
 // These tests require kernel support for tcp_info struct, and so they are
 // enabled only on certain platforms.
 #if defined(TCP_INFO) || defined(OS_LINUX)

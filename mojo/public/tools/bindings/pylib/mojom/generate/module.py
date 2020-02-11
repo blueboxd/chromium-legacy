@@ -130,6 +130,8 @@ class ReferenceKind(Kind):
       return NULLABLE_MSGPIPE
     if self == SHAREDBUFFER:
       return NULLABLE_SHAREDBUFFER
+    if self == PLATFORMHANDLE:
+      return NULLABLE_PLATFORMHANDLE
 
     nullable_kind = type(self)()
     nullable_kind.shared_definition = self.shared_definition
@@ -180,12 +182,14 @@ DCPIPE                = ReferenceKind('h:d:c')
 DPPIPE                = ReferenceKind('h:d:p')
 MSGPIPE               = ReferenceKind('h:m')
 SHAREDBUFFER          = ReferenceKind('h:s')
+PLATFORMHANDLE        = ReferenceKind('h:p')
 NULLABLE_STRING       = ReferenceKind('?s', True)
 NULLABLE_HANDLE       = ReferenceKind('?h', True)
 NULLABLE_DCPIPE       = ReferenceKind('?h:d:c', True)
 NULLABLE_DPPIPE       = ReferenceKind('?h:d:p', True)
 NULLABLE_MSGPIPE      = ReferenceKind('?h:m', True)
 NULLABLE_SHAREDBUFFER = ReferenceKind('?h:s', True)
+NULLABLE_PLATFORMHANDLE = ReferenceKind('?h:p', True)
 
 
 # Collection of all Primitive types
@@ -207,12 +211,14 @@ PRIMITIVES = (
   DPPIPE,
   MSGPIPE,
   SHAREDBUFFER,
+  PLATFORMHANDLE,
   NULLABLE_STRING,
   NULLABLE_HANDLE,
   NULLABLE_DCPIPE,
   NULLABLE_DPPIPE,
   NULLABLE_MSGPIPE,
-  NULLABLE_SHAREDBUFFER
+  NULLABLE_SHAREDBUFFER,
+  NULLABLE_PLATFORMHANDLE,
 )
 
 
@@ -870,6 +876,11 @@ def IsSharedBufferKind(kind):
           kind.spec == NULLABLE_SHAREDBUFFER.spec)
 
 
+def IsPlatformHandleKind(kind):
+  return (kind.spec == PLATFORMHANDLE.spec or
+          kind.spec == NULLABLE_PLATFORMHANDLE.spec)
+
+
 def IsStructKind(kind):
   return isinstance(kind, Struct)
 
@@ -944,7 +955,8 @@ def IsAnyHandleKind(kind):
           IsDataPipeConsumerKind(kind) or
           IsDataPipeProducerKind(kind) or
           IsMessagePipeKind(kind) or
-          IsSharedBufferKind(kind))
+          IsSharedBufferKind(kind) or
+          IsPlatformHandleKind(kind))
 
 
 def IsAnyInterfaceKind(kind):

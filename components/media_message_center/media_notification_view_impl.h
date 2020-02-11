@@ -48,7 +48,8 @@ class COMPONENT_EXPORT(MEDIA_MESSAGE_CENTER) MediaNotificationViewImpl
     kArtist,
     kAlbum,
     kCount,
-    kMaxValue = kCount,
+    kSource,
+    kMaxValue = kSource,
   };
 
   MediaNotificationViewImpl(

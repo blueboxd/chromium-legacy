@@ -21,6 +21,9 @@
 #include "chrome/browser/sharing/sharing_notification_handler.h"
 #include "chrome/browser/updates/announcement_notification/announcement_notification_handler.h"
 #include "chrome/common/chrome_features.h"
+#include "chrome/common/pref_names.h"
+#include "components/pref_registry/pref_registry_syncable.h"
+#include "components/prefs/pref_service.h"
 #include "content/public/browser/browser_thread.h"
 #include "ui/base/ui_base_features.h"
 #include "ui/message_center/public/cpp/notification.h"
@@ -44,6 +47,20 @@
 
 namespace {
 
+#if !defined(OS_CHROMEOS)
+bool NativeNotificationsEnabled(Profile* profile) {
+#if defined(OS_LINUX)
+  if (profile) {
+    PrefService* prefs = profile->GetPrefs();
+    if (prefs->GetBoolean(prefs::kNativeNotificationsDisabled))
+      return false;
+  }
+#endif
+
+  return base::FeatureList::IsEnabled(features::kNativeNotifications);
+}
+#endif
+
 // Returns the NotificationPlatformBridge to use for the current platform.
 // Will return a nullptr for platforms that don't support native notifications.
 //
@@ -64,10 +81,11 @@ namespace {
 //
 // Please try to keep this comment up to date when changing behaviour on one of
 // the platforms supported by the browser.
-NotificationPlatformBridge* GetNativeNotificationPlatformBridge() {
+NotificationPlatformBridge* GetNativeNotificationPlatformBridge(
+    Profile* profile) {
 #if BUILDFLAG(ENABLE_NATIVE_NOTIFICATIONS)
 #if defined(OS_ANDROID)
-  DCHECK(base::FeatureList::IsEnabled(features::kNativeNotifications));
+  DCHECK(NativeNotificationsEnabled(profile));
   return g_browser_process->notification_platform_bridge();
 #elif defined(OS_WIN)
   if (NotificationPlatformBridgeWin::NativeNotificationEnabled())
@@ -75,7 +93,7 @@ NotificationPlatformBridge* GetNativeNotificationPlatformBridge() {
 #elif defined(OS_CHROMEOS)
   return g_browser_process->notification_platform_bridge();
 #else
-  if (base::FeatureList::IsEnabled(features::kNativeNotifications) &&
+  if (NativeNotificationsEnabled(profile) &&
       g_browser_process->notification_platform_bridge()) {
     return g_browser_process->notification_platform_bridge();
   }
@@ -110,10 +128,18 @@ NotificationDisplayServiceImpl* NotificationDisplayServiceImpl::GetForProfile(
       NotificationDisplayServiceFactory::GetForProfile(profile));
 }
 
+// static
+void NotificationDisplayServiceImpl::RegisterProfilePrefs(
+    user_prefs::PrefRegistrySyncable* registry) {
+#if defined(OS_LINUX) && !defined(OS_CHROMEOS)
+  registry->RegisterBooleanPref(prefs::kNativeNotificationsDisabled, false);
+#endif
+}
+
 NotificationDisplayServiceImpl::NotificationDisplayServiceImpl(Profile* profile)
     : profile_(profile),
-      message_center_bridge_(CreateMessageCenterBridge(profile)),
-      bridge_(GetNativeNotificationPlatformBridge()) {
+      message_center_bridge_(CreateMessageCenterBridge(profile_)),
+      bridge_(GetNativeNotificationPlatformBridge(profile_)) {
   // TODO(peter): Move these to the NotificationDisplayServiceFactory.
   if (profile_) {
     AddNotificationHandler(
@@ -319,7 +345,7 @@ void NotificationDisplayServiceImpl::OnNotificationPlatformBridgeReady(
     bool success) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
 #if BUILDFLAG(ENABLE_NATIVE_NOTIFICATIONS) && !defined(OS_CHROMEOS)
-  if (base::FeatureList::IsEnabled(features::kNativeNotifications)) {
+  if (NativeNotificationsEnabled(profile_)) {
     UMA_HISTOGRAM_BOOLEAN("Notifications.UsingNativeNotificationCenter",
                           success);
   }

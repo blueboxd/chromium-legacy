@@ -1052,10 +1052,10 @@ TEST_F(GpuControlListEntryTest, HardwareOverlay) {
   const Entry& entry = GetEntry(kGpuControlListEntryTest_HardwareOverlay);
   GPUInfo gpu_info;
   gpu_info.gpu.vendor_id = 0x8086;
-  gpu_info.supports_overlays = true;
+  gpu_info.overlay_info.supports_overlays = true;
   EXPECT_FALSE(entry.Contains(kOsWin, "10.0", gpu_info));
 
-  gpu_info.supports_overlays = false;
+  gpu_info.overlay_info.supports_overlays = false;
   EXPECT_TRUE(entry.Contains(kOsWin, "10.0", gpu_info));
 }
 #endif  // OS_WIN

@@ -19,7 +19,7 @@ namespace vr {
 // not have an origin trial token.
 void TestApiDisabledWithoutFlagSetImpl(WebXrVrBrowserTestBase* t,
                                        std::string filename) {
-  t->LoadUrlAndAwaitInitialization(t->GetFileUrlForHtmlTestFile(filename));
+  t->LoadFileAndAwaitInitialization(filename);
   t->WaitOnJavaScriptStep();
   t->EndTest();
 }
@@ -28,8 +28,7 @@ void TestApiDisabledWithoutFlagSetImpl(WebXrVrBrowserTestBase* t,
 // disabled.
 IN_PROC_BROWSER_TEST_F(WebXrVrRuntimelessBrowserTest,
                        TestWebXrNoDevicesWithoutRuntime) {
-  LoadUrlAndAwaitInitialization(
-      GetFileUrlForHtmlTestFile("test_webxr_does_not_return_device"));
+  LoadFileAndAwaitInitialization("test_webxr_does_not_return_device");
   WaitOnJavaScriptStep();
   EndTest();
 }
@@ -56,8 +55,8 @@ IN_PROC_MULTI_CLASS_BROWSER_TEST_F2(WebXrVrOpenVrBrowserTestWebXrDisabled,
 // non-immersive WebXR session.
 WEBXR_VR_ALL_RUNTIMES_BROWSER_TEST_F(
     TestWindowRafFiresDuringNonImmersiveSession) {
-  t->LoadUrlAndAwaitInitialization(t->GetFileUrlForHtmlTestFile(
-      "test_window_raf_fires_during_non_immersive_session"));
+  t->LoadFileAndAwaitInitialization(
+      "test_window_raf_fires_during_non_immersive_session");
   t->WaitOnJavaScriptStep();
   t->EndTest();
 }
@@ -66,7 +65,7 @@ WEBXR_VR_ALL_RUNTIMES_BROWSER_TEST_F(
 // an immersive session.
 void TestPresentationEntryImpl(WebXrVrBrowserTestBase* t,
                                std::string filename) {
-  t->LoadUrlAndAwaitInitialization(t->GetFileUrlForHtmlTestFile(filename));
+  t->LoadFileAndAwaitInitialization(filename);
   t->EnterSessionWithUserGestureOrFail();
   t->AssertNoJavaScriptErrors();
 }
@@ -80,7 +79,7 @@ WEBXR_VR_ALL_RUNTIMES_PLUS_INCOGNITO_BROWSER_TEST_F(
 // WebXR presentation since the tab is still visible.
 void TestWindowRafFiresWhilePresentingImpl(WebXrVrBrowserTestBase* t,
                                            std::string filename) {
-  t->LoadUrlAndAwaitInitialization(t->GetFileUrlForHtmlTestFile(filename));
+  t->LoadFileAndAwaitInitialization(filename);
   t->ExecuteStepAndWait("stepVerifyBeforePresent()");
   t->EnterSessionWithUserGestureOrFail();
   t->ExecuteStepAndWait("stepVerifyDuringPresent()");
@@ -97,8 +96,8 @@ WEBXR_VR_ALL_RUNTIMES_BROWSER_TEST_F(TestWindowRafFiresWhilePresenting) {
 // Tests that non-immersive sessions stop receiving rAFs during an immersive
 // session, but resume once the immersive session ends.
 WEBXR_VR_ALL_RUNTIMES_BROWSER_TEST_F(TestNonImmersiveStopsDuringImmersive) {
-  t->LoadUrlAndAwaitInitialization(t->GetFileUrlForHtmlTestFile(
-      "test_non_immersive_stops_during_immersive"));
+  t->LoadFileAndAwaitInitialization(
+      "test_non_immersive_stops_during_immersive");
   t->ExecuteStepAndWait("stepBeforeImmersive()");
   t->EnterSessionWithUserGestureOrFail();
   t->ExecuteStepAndWait("stepDuringImmersive()");
@@ -113,8 +112,7 @@ void TestWebXRSessionEndWhenEventTriggered(
     WebXrVrBrowserTestBase* t,
     device_test::mojom::EventType event_type) {
   MockXRDeviceHookBase transition_mock;
-  t->LoadUrlAndAwaitInitialization(
-      t->GetFileUrlForHtmlTestFile("test_webxr_presentation_ended"));
+  t->LoadFileAndAwaitInitialization("test_webxr_presentation_ended");
   t->EnterSessionWithUserGestureOrFail();
 
   // Wait for JavaScript to submit at least one frame.
@@ -141,8 +139,7 @@ IN_PROC_BROWSER_TEST_F(WebXrVrOpenXrBrowserTest, TestInsanceLost) {
 
 IN_PROC_BROWSER_TEST_F(WebXrVrOpenXrBrowserTest, TestVisibilityChanged) {
   MockXRDeviceHookBase transition_mock;
-  this->LoadUrlAndAwaitInitialization(
-      this->GetFileUrlForHtmlTestFile("webxr_test_visibility_changed"));
+  this->LoadFileAndAwaitInitialization("webxr_test_visibility_changed");
   this->EnterSessionWithUserGestureOrFail();
 
   // Wait for JavaScript to submit at least one frame.

@@ -366,7 +366,7 @@ void HotseatWidget::CalculateTargetBounds() {
 gfx::Rect HotseatWidget::GetTargetBounds() const {
   // TODO(manucornet): Store these locally and do not depend on the layout
   // manager.
-  return shelf_->shelf_layout_manager()->GetHotseatBounds();
+  return shelf_->shelf_layout_manager()->GetHotseatBoundsInScreen();
 }
 
 void HotseatWidget::UpdateLayout(bool animate) {
@@ -437,7 +437,10 @@ void HotseatWidget::SetState(HotseatState state) {
 }
 
 HotseatWidget::LayoutInputs HotseatWidget::GetLayoutInputs() const {
-  return {GetShelfView()->shelf()->shelf_layout_manager()->GetHotseatBounds(),
+  return {GetShelfView()
+              ->shelf()
+              ->shelf_layout_manager()
+              ->GetHotseatBoundsInScreen(),
           CalculateOpacity()};
 }
 

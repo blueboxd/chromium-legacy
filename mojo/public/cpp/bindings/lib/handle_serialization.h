@@ -8,7 +8,9 @@
 #include "mojo/public/cpp/bindings/lib/bindings_internal.h"
 #include "mojo/public/cpp/bindings/lib/serialization_context.h"
 #include "mojo/public/cpp/bindings/lib/serialization_forward.h"
+#include "mojo/public/cpp/platform/platform_handle.h"
 #include "mojo/public/cpp/system/handle.h"
+#include "mojo/public/cpp/system/platform_handle.h"
 
 namespace mojo {
 namespace internal {
@@ -26,6 +28,24 @@ struct Serializer<ScopedHandleBase<T>, ScopedHandleBase<T>> {
                           SerializationContext* context) {
     *output = context->TakeHandleAs<T>(*input);
     return true;
+  }
+};
+
+template <>
+struct Serializer<PlatformHandle, PlatformHandle> {
+  static void Serialize(PlatformHandle& input,
+                        Handle_Data* output,
+                        SerializationContext* context) {
+    ScopedHandle handle = WrapPlatformHandle(std::move(input));
+    DCHECK(handle.is_valid());
+    context->AddHandle(std::move(handle), output);
+  }
+
+  static bool Deserialize(Handle_Data* input,
+                          PlatformHandle* output,
+                          SerializationContext* context) {
+    *output = UnwrapPlatformHandle(context->TakeHandleAs<Handle>(*input));
+    return output->is_valid();
   }
 };
 

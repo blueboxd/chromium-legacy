@@ -7,6 +7,7 @@
 #include "base/test/bind_test_util.h"
 #include "base/test/scoped_feature_list.h"
 #include "chrome/browser/browser_process.h"
+#include "chrome/browser/content_settings/host_content_settings_map_factory.h"
 #include "chrome/browser/native_file_system/native_file_system_permission_request_manager.h"
 #include "chrome/browser/safe_browsing/download_protection/download_protection_service.h"
 #include "chrome/browser/ui/browser.h"
@@ -15,6 +16,7 @@
 #include "chrome/browser/ui/views/page_action/page_action_icon_view.h"
 #include "chrome/test/base/in_process_browser_test.h"
 #include "chrome/test/base/ui_test_utils.h"
+#include "components/content_settings/core/browser/host_content_settings_map.h"
 #include "components/permissions/permission_util.h"
 #include "content/public/test/browser_test_utils.h"
 #include "third_party/blink/public/common/features.h"
@@ -332,6 +334,112 @@ IN_PROC_BROWSER_TEST_F(NativeFileSystemBrowserTest, SafeBrowsing) {
                             "  return e.name; })()"));
 
   EXPECT_TRUE(invoked_safe_browsing);
+}
+
+IN_PROC_BROWSER_TEST_F(NativeFileSystemBrowserTest,
+                       OpenFileWithContentSettingAllow) {
+  const base::FilePath test_file = CreateTestFile("");
+  const std::string file_contents = "file contents to write";
+
+  ui::SelectFileDialog::SetFactory(
+      new FakeSelectFileDialogFactory({test_file}));
+
+  auto url = embedded_test_server()->GetURL("/title1.html");
+  ui_test_utils::NavigateToURL(browser(), url);
+  content::WebContents* web_contents =
+      browser()->tab_strip_model()->GetActiveWebContents();
+
+  // Grant write permission.
+  HostContentSettingsMap* host_content_settings_map =
+      HostContentSettingsMapFactory::GetForProfile(browser()->profile());
+  host_content_settings_map->SetContentSettingDefaultScope(
+      url, url, ContentSettingsType::NATIVE_FILE_SYSTEM_WRITE_GUARD,
+      std::string(), CONTENT_SETTING_ALLOW);
+
+  // If a prompt shows up, deny it.
+  NativeFileSystemPermissionRequestManager::FromWebContents(web_contents)
+      ->set_auto_response_for_test(permissions::PermissionAction::DENIED);
+
+  EXPECT_EQ(test_file.BaseName().AsUTF8Unsafe(),
+            content::EvalJs(web_contents,
+                            "(async () => {"
+                            "  let e = await self.chooseFileSystemEntries("
+                            "      {type: 'open-file'});"
+                            "  self.entry = e;"
+                            "  return e.name; })()"));
+
+  // Write should succeed. If a prompt shows up, it would be denied and we will
+  // get a JavaScript error.
+  EXPECT_EQ(
+      int{file_contents.size()},
+      content::EvalJs(
+          web_contents,
+          content::JsReplace("(async () => {"
+                             "  const w = await self.entry.createWriter();"
+                             "  await w.write(0, new Blob([$1]));"
+                             "  await w.close();"
+                             "  return (await self.entry.getFile()).size; })()",
+                             file_contents)));
+
+  {
+    base::ScopedAllowBlockingForTesting allow_blocking;
+    std::string read_contents;
+    EXPECT_TRUE(base::ReadFileToString(test_file, &read_contents));
+    EXPECT_EQ(file_contents, read_contents);
+  }
+}
+
+IN_PROC_BROWSER_TEST_F(NativeFileSystemBrowserTest,
+                       SaveFileWithContentSettingAllow) {
+  const base::FilePath test_file = CreateTestFile("");
+  const std::string file_contents = "file contents to write";
+
+  ui::SelectFileDialog::SetFactory(
+      new FakeSelectFileDialogFactory({test_file}));
+
+  auto url = embedded_test_server()->GetURL("/title1.html");
+  ui_test_utils::NavigateToURL(browser(), url);
+  content::WebContents* web_contents =
+      browser()->tab_strip_model()->GetActiveWebContents();
+
+  // Grant write permission.
+  HostContentSettingsMap* host_content_settings_map =
+      HostContentSettingsMapFactory::GetForProfile(browser()->profile());
+  host_content_settings_map->SetContentSettingDefaultScope(
+      url, url, ContentSettingsType::NATIVE_FILE_SYSTEM_WRITE_GUARD,
+      std::string(), CONTENT_SETTING_ALLOW);
+
+  // If a prompt shows up, deny it.
+  NativeFileSystemPermissionRequestManager::FromWebContents(web_contents)
+      ->set_auto_response_for_test(permissions::PermissionAction::DENIED);
+
+  EXPECT_EQ(test_file.BaseName().AsUTF8Unsafe(),
+            content::EvalJs(web_contents,
+                            "(async () => {"
+                            "  let e = await self.chooseFileSystemEntries("
+                            "      {type: 'save-file'});"
+                            "  self.entry = e;"
+                            "  return e.name; })()"));
+
+  // Write should succeed. If a prompt shows up, it would be denied and we will
+  // get a JavaScript error.
+  EXPECT_EQ(
+      int{file_contents.size()},
+      content::EvalJs(
+          web_contents,
+          content::JsReplace("(async () => {"
+                             "  const w = await self.entry.createWriter();"
+                             "  await w.write(0, new Blob([$1]));"
+                             "  await w.close();"
+                             "  return (await self.entry.getFile()).size; })()",
+                             file_contents)));
+
+  {
+    base::ScopedAllowBlockingForTesting allow_blocking;
+    std::string read_contents;
+    EXPECT_TRUE(base::ReadFileToString(test_file, &read_contents));
+    EXPECT_EQ(file_contents, read_contents);
+  }
 }
 
 // TODO(mek): Add more end-to-end test including other bits of UI.

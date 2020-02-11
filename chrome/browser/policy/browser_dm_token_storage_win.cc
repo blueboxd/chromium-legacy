@@ -73,12 +73,12 @@ bool StoreDMTokenInRegistry(const std::string& token) {
 
   ConfigureProxyBlanket(google_update.Get());
   Microsoft::WRL::ComPtr<IDispatch> dispatch;
-  hr = google_update->createAppBundleWeb(dispatch.GetAddressOf());
+  hr = google_update->createAppBundleWeb(&dispatch);
   if (FAILED(hr))
     return false;
 
   Microsoft::WRL::ComPtr<IAppBundleWeb> app_bundle;
-  hr = dispatch.CopyTo(app_bundle.GetAddressOf());
+  hr = dispatch.As(&app_bundle);
   if (FAILED(hr))
     return false;
 
@@ -86,28 +86,28 @@ bool StoreDMTokenInRegistry(const std::string& token) {
   ConfigureProxyBlanket(app_bundle.Get());
   app_bundle->initialize();
   const wchar_t* app_guid = install_static::GetAppGuid();
-  hr = app_bundle->createInstalledApp(base::win::ScopedBstr(app_guid));
+  hr = app_bundle->createInstalledApp(base::win::ScopedBstr(app_guid).Get());
   if (FAILED(hr))
     return false;
 
-  hr = app_bundle->get_appWeb(0, dispatch.GetAddressOf());
+  hr = app_bundle->get_appWeb(0, &dispatch);
   if (FAILED(hr))
     return false;
 
   Microsoft::WRL::ComPtr<IAppWeb> app;
-  hr = dispatch.CopyTo(app.GetAddressOf());
+  hr = dispatch.As(&app);
   if (FAILED(hr))
     return false;
 
   dispatch.Reset();
   ConfigureProxyBlanket(app.Get());
-  hr = app->get_command(base::win::ScopedBstr(installer::kCmdStoreDMToken),
-                        dispatch.GetAddressOf());
+  hr = app->get_command(
+      base::win::ScopedBstr(installer::kCmdStoreDMToken).Get(), &dispatch);
   if (FAILED(hr) || !dispatch)
     return false;
 
   Microsoft::WRL::ComPtr<IAppCommandWeb> app_command;
-  hr = dispatch.CopyTo(app_command.GetAddressOf());
+  hr = dispatch.As(&app_command);
   if (FAILED(hr))
     return false;
 

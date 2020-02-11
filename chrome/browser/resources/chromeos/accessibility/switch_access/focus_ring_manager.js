@@ -14,6 +14,29 @@ class FocusRingManager {
      */
     this.rings_ = new Map();
 
+    // Create each focus ring.
+    this.rings_.set(SAConstants.Focus.ID.PRIMARY, {
+      id: SAConstants.Focus.ID.PRIMARY,
+      rects: [],
+      type: chrome.accessibilityPrivate.FocusType.SOLID,
+      color: SAConstants.Focus.PRIMARY_COLOR,
+      secondaryColor: SAConstants.Focus.SECONDARY_COLOR
+    });
+    this.rings_.set(SAConstants.Focus.ID.NEXT, {
+      id: SAConstants.Focus.ID.NEXT,
+      rects: [],
+      type: chrome.accessibilityPrivate.FocusType.DASHED,
+      color: SAConstants.Focus.PRIMARY_COLOR,
+      secondaryColor: SAConstants.Focus.SECONDARY_COLOR
+    });
+    this.rings_.set(SAConstants.Focus.ID.TEXT, {
+      id: SAConstants.Focus.ID.TEXT,
+      rects: [],
+      type: chrome.accessibilityPrivate.FocusType.DASHED,
+      color: SAConstants.Focus.PRIMARY_COLOR,
+      secondaryColor: SAConstants.Focus.SECONDARY_COLOR
+    });
+
     /**
      * Regex pattern to verify valid colors. Checks that the first character
      * is '#', followed by between 3 and 8 valid hex characters, and no other
@@ -31,36 +54,6 @@ class FocusRingManager {
   /** @param {!PanelInterface} panel */
   setMenuPanel(panel) {
     this.menuPanel_ = panel;
-  }
-
-  /** Finishes setup of focus rings once the preferences are loaded. */
-  onPrefsReady() {
-    // Currently all focus rings share the same color.
-    // TODO(crbug/996852): Make the primary focus color a preference.
-    const color = SAConstants.Focus.PRIMARY_COLOR;
-
-    // Create each focus ring.
-    this.rings_.set(SAConstants.Focus.ID.PRIMARY, {
-      id: SAConstants.Focus.ID.PRIMARY,
-      rects: [],
-      type: chrome.accessibilityPrivate.FocusType.SOLID,
-      color,
-      secondaryColor: SAConstants.Focus.SECONDARY_COLOR
-    });
-    this.rings_.set(SAConstants.Focus.ID.NEXT, {
-      id: SAConstants.Focus.ID.NEXT,
-      rects: [],
-      type: chrome.accessibilityPrivate.FocusType.DASHED,
-      color,
-      secondaryColor: SAConstants.Focus.SECONDARY_COLOR
-    });
-    this.rings_.set(SAConstants.Focus.ID.TEXT, {
-      id: SAConstants.Focus.ID.TEXT,
-      rects: [],
-      type: chrome.accessibilityPrivate.FocusType.DASHED,
-      color,
-      secondaryColor: SAConstants.Focus.SECONDARY_COLOR
-    });
   }
 
   /**

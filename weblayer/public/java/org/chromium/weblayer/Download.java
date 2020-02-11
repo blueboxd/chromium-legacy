@@ -19,8 +19,13 @@ import java.io.File;
  *
  * @since 81
  */
-public final class Download extends IClientDownload.Stub {
+public class Download extends IClientDownload.Stub {
     private final IDownload mDownloadImpl;
+
+    // Constructor for test mocking.
+    protected Download() {
+        mDownloadImpl = null;
+    }
 
     Download(IDownload impl) {
         mDownloadImpl = impl;

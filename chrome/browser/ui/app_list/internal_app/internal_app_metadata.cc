@@ -12,28 +12,22 @@
 #include "ash/public/cpp/shelf_model.h"
 #include "base/bind.h"
 #include "base/logging.h"
-#include "base/metrics/user_metrics.h"
 #include "base/no_destructor.h"
 #include "base/stl_util.h"
 #include "base/strings/string16.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
-#include "base/time/time.h"
 #include "chrome/browser/apps/app_service/app_service_metrics.h"
 #include "chrome/browser/apps/launch_service/launch_service.h"
-#include "chrome/browser/chromeos/plugin_vm/plugin_vm_manager.h"
 #include "chrome/browser/chromeos/plugin_vm/plugin_vm_util.h"
 #include "chrome/browser/chromeos/profiles/profile_helper.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/sync/session_sync_service_factory.h"
 #include "chrome/browser/ui/app_list/app_list_client_impl.h"
 #include "chrome/browser/ui/app_list/extension_app_utils.h"
-#include "chrome/browser/ui/ash/launcher/app_window_launcher_item_controller.h"
 #include "chrome/browser/ui/ash/launcher/chrome_launcher_controller.h"
-#include "chrome/browser/ui/chrome_pages.h"
 #include "chrome/browser/ui/extensions/app_launch_params.h"
 #include "chrome/browser/ui/settings_window_manager_chromeos.h"
-#include "chrome/browser/ui/webui/chromeos/login/discover/discover_window_manager.h"
 #include "chrome/browser/web_applications/system_web_app_manager.h"
 #include "chrome/grit/chrome_unscaled_resources.h"
 #include "chrome/grit/generated_resources.h"
@@ -162,46 +156,6 @@ base::string16 GetInternalAppNameById(const std::string& app_id) {
   const auto* app = FindInternalApp(app_id);
   return app ? l10n_util::GetStringUTF16(app->name_string_resource_id)
              : base::string16();
-}
-
-int GetIconResourceIdByAppId(const std::string& app_id) {
-  const auto* app = FindInternalApp(app_id);
-  return app ? app->icon_resource_id : 0;
-}
-
-void OpenInternalApp(const std::string& app_id,
-                     Profile* profile,
-                     int event_flags) {
-  if (app_id == ash::kInternalAppIdKeyboardShortcutViewer) {
-    ash::ToggleKeyboardShortcutViewer();
-  } else if (app_id == ash::kInternalAppIdSettings) {
-    chrome::SettingsWindowManager::GetInstance()->ShowOSSettings(profile);
-  } else if (app_id == ash::kInternalAppIdDiscover) {
-    base::RecordAction(base::UserMetricsAction("ShowDiscover"));
-    chromeos::DiscoverWindowManager::GetInstance()
-        ->ShowChromeDiscoverPageForProfile(profile);
-  } else if (app_id == plugin_vm::kPluginVmAppId) {
-    if (plugin_vm::IsPluginVmEnabled(profile)) {
-      plugin_vm::PluginVmManager::GetForProfile(profile)->LaunchPluginVm();
-    } else {
-      plugin_vm::ShowPluginVmInstallerView(profile);
-    }
-  } else if (app_id == ash::kReleaseNotesAppId) {
-    base::RecordAction(
-        base::UserMetricsAction("ReleaseNotes.SuggestionChipLaunched"));
-    chrome::LaunchReleaseNotes(profile);
-  }
-}
-
-gfx::ImageSkia GetIconForResourceId(int resource_id, int resource_size_in_dip) {
-  if (resource_id == 0)
-    return gfx::ImageSkia();
-
-  gfx::ImageSkia* source =
-      ui::ResourceBundle::GetSharedInstance().GetImageSkiaNamed(resource_id);
-  return gfx::ImageSkiaOperations::CreateResizedImage(
-      *source, skia::ImageOperations::RESIZE_BEST,
-      gfx::Size(resource_size_in_dip, resource_size_in_dip));
 }
 
 bool HasRecommendableForeignTab(

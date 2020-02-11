@@ -22,6 +22,7 @@
 class OverlayPresenterImpl : public BrowserObserver,
                              public OverlayPresenter,
                              public OverlayPresentationContextObserver,
+                             public OverlayRequestQueueImpl::Delegate,
                              public OverlayRequestQueueImpl::Observer,
                              public WebStateListObserver {
  public:
@@ -103,15 +104,23 @@ class OverlayPresenterImpl : public BrowserObserver,
   // Cancels all overlays for the Browser.
   void CancelAllOverlayUI();
 
+  // Sets up and tears down observation and delegation for |web_state|'s request
+  // queue when it is added or removed from the Browser.
+  void StartObservingWebState(web::WebState* web_state);
+  void StopObservingWebState(web::WebState* web_state);
+
   // BrowserObserver:
   void BrowserDestroyed(Browser* browser) override;
+
+  // OverlayRequestQueueImpl::Delegate:
+  void OverlayRequestRemoved(OverlayRequestQueueImpl* queue,
+                             std::unique_ptr<OverlayRequest> request,
+                             bool cancelled) override;
 
   // OverlayRequestQueueImpl::Observer:
   void RequestAddedToQueue(OverlayRequestQueueImpl* queue,
                            OverlayRequest* request,
                            size_t index) override;
-  void QueuedRequestCancelled(OverlayRequestQueueImpl* queue,
-                              OverlayRequest* request) override;
   void OverlayRequestQueueDestroyed(OverlayRequestQueueImpl* queue) override;
 
   // OverlayPresentationContextObserver:
@@ -146,16 +155,15 @@ class OverlayPresenterImpl : public BrowserObserver,
   bool presenting_ = false;
   // The request whose overlay UI is currently being presented.  The value is
   // set when |presenting_| is set to true, and is reset to nullptr when
-  // |presenting_| is reset to false.  It is also reset to nullptr when the
-  // request is cancelled.  This means that it's possible for
-  // |presented_request_| to be nullptr while |presenting_| is true in the
-  // interim between the request's cancellation and the completion of its
-  // overlay UI's dismissal.  May be different from GetActiveRequest() if the
-  // front request of the active WebState's request queue is updated while
-  // overlay UI is be presented.
+  // |presenting_| is reset to false.  May be different from GetActiveRequest()
+  // if the front request of the active WebState's request queue is updated
+  // while overlay UI is be presented.
   OverlayRequest* presented_request_ = nullptr;
   // Whether the active WebState is being detached.
   bool detaching_active_web_state_ = false;
+  // Used to extend the lifetime of an OverlayRequest after being removed from
+  // a queue until the completion of its dismissal flow.
+  std::unique_ptr<OverlayRequest> removed_request_awaiting_dismissal_;
 
   OverlayModality modality_;
   WebStateList* web_state_list_ = nullptr;

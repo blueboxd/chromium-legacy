@@ -1122,15 +1122,21 @@ IN_PROC_BROWSER_TEST_P(NetworkContextConfigurationBrowserTest, DiskCache) {
 
 // Make sure that NetworkContexts have separate DNS caches.
 IN_PROC_BROWSER_TEST_P(NetworkContextConfigurationBrowserTest,
-                       DISABLED_DnsCacheIsolation) {
+                       DnsCacheIsolation) {
   net::NetworkIsolationKey network_isolation_key =
       net::NetworkIsolationKey::CreateTransient();
   net::HostPortPair host_port_pair(kHostname, 0);
+  network::mojom::ResolveHostParametersPtr params =
+      network::mojom::ResolveHostParameters::New();
+  // Use A queries, to avoid running into issues with the IPv6 probe, the
+  // results of which can change during runtime, and can affect the DNS cache
+  // key.
+  params->dns_query_type = net::DnsQueryType ::A;
   // Resolve |host_port_pair|, which should succeed and put it in the
   // NetworkContext's cache.
   network::DnsLookupResult result =
       network::BlockingDnsLookup(network_context(), host_port_pair,
-                                 nullptr /* params */, network_isolation_key);
+                                 std::move(params), network_isolation_key);
   EXPECT_EQ(net::OK, result.error);
   ASSERT_TRUE(result.resolved_addresses.has_value());
   ASSERT_EQ(1u, result.resolved_addresses->size());
@@ -1140,8 +1146,8 @@ IN_PROC_BROWSER_TEST_P(NetworkContextConfigurationBrowserTest,
   // context, and make sure no result is returned.
   ForEachOtherContext(
       base::BindLambdaForTesting([&](NetworkContextType network_context_type) {
-        network::mojom::ResolveHostParametersPtr params =
-            network::mojom::ResolveHostParameters::New();
+        params = network::mojom::ResolveHostParameters::New();
+        params->dns_query_type = net::DnsQueryType ::A;
         // Cache only lookup.
         params->cache_usage =
             network::mojom::ResolveHostParameters::CacheUsage::STALE_ALLOWED;
@@ -1153,9 +1159,9 @@ IN_PROC_BROWSER_TEST_P(NetworkContextConfigurationBrowserTest,
       }));
   // Do a cache-only lookup using the original network context, which should
   // return the same result it initially did.
-  network::mojom::ResolveHostParametersPtr params =
-      network::mojom::ResolveHostParameters::New();
+  params = network::mojom::ResolveHostParameters::New();
   // Cache only lookup.
+  params->dns_query_type = net::DnsQueryType ::A;
   params->source = net::HostResolverSource::LOCAL_ONLY;
   params->cache_usage =
       network::mojom::ResolveHostParameters::CacheUsage::STALE_ALLOWED;

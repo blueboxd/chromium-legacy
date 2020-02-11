@@ -165,6 +165,7 @@ cr.define('cr.ui.table', function() {
 
       const labelDiv = this.ownerDocument.createElement('div');
       labelDiv.className = 'table-header-label';
+      labelDiv.classList.add(cm.getId(index));
 
       if (cm.isEndAlign(index)) {
         labelDiv.style.textAlign = 'end';
@@ -173,15 +174,6 @@ cr.define('cr.ui.table', function() {
       span.appendChild(cm.renderHeader(index, this.table_));
       span.style.padding = '0';
 
-      if (dm) {
-        if (dm.sortStatus.field == cm.getId(index)) {
-          if (dm.sortStatus.direction == 'desc') {
-            span.className = 'table-header-sort-image-desc';
-          } else {
-            span.className = 'table-header-sort-image-asc';
-          }
-        }
-      }
       labelDiv.appendChild(span);
       return labelDiv;
     }

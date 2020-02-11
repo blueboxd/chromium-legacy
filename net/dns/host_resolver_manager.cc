@@ -3601,8 +3601,9 @@ bool HostResolverManager::IsIPv6Reachable(const NetLogWithSource& net_log) {
   // Cache the result for kIPv6ProbePeriodMs (measured from after
   // IsGloballyReachable() completes).
   bool cached = true;
-  if ((tick_clock_->NowTicks() - last_ipv6_probe_time_).InMilliseconds() >
-      kIPv6ProbePeriodMs) {
+  if (last_ipv6_probe_time_.is_null() ||
+      (tick_clock_->NowTicks() - last_ipv6_probe_time_).InMilliseconds() >
+          kIPv6ProbePeriodMs) {
     SetLastIPv6ProbeResult(
         IsGloballyReachable(IPAddress(kIPv6ProbeAddress), net_log));
     cached = false;

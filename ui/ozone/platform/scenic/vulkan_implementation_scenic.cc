@@ -118,9 +118,6 @@ bool VulkanImplementationScenic::GetPhysicalDevicePresentationSupport(
     VkPhysicalDevice physical_device,
     const std::vector<VkQueueFamilyProperties>& queue_family_properties,
     uint32_t queue_family_index) {
-  // TODO(spang): vkGetPhysicalDeviceMagmaPresentationSupportKHR returns false
-  // here. Use it once it is fixed.
-  NOTIMPLEMENTED();
   return true;
 }
 

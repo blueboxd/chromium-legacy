@@ -19,8 +19,13 @@ import java.util.List;
 /**
  * Information about a navigation.
  */
-public final class Navigation extends IClientNavigation.Stub {
+public class Navigation extends IClientNavigation.Stub {
     private final INavigation mNavigationImpl;
+
+    // Constructor for test mocking.
+    protected Navigation() {
+        mNavigationImpl = null;
+    }
 
     Navigation(INavigation impl) {
         mNavigationImpl = impl;

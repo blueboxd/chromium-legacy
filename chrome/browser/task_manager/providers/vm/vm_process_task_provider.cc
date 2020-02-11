@@ -54,7 +54,7 @@ bool HasValidVmDiskExtension(const std::string& filename) {
   };
 
   for (auto* const ext : valid_extensions) {
-    if (base::EndsWith(filename, ext, base::CompareCase::SENSITIVE)) {
+    if (filename.find(ext) != std::string::npos) {
       return true;
     }
   }

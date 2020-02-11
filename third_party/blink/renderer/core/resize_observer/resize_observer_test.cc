@@ -10,10 +10,12 @@
 #include "third_party/blink/renderer/bindings/core/v8/script_source_code.h"
 #include "third_party/blink/renderer/bindings/core/v8/v8_gc_controller.h"
 #include "third_party/blink/renderer/core/exported/web_view_impl.h"
+#include "third_party/blink/renderer/core/geometry/dom_rect_read_only.h"
 #include "third_party/blink/renderer/core/resize_observer/resize_observation.h"
 #include "third_party/blink/renderer/core/resize_observer/resize_observer_box_options.h"
 #include "third_party/blink/renderer/core/resize_observer/resize_observer_controller.h"
 #include "third_party/blink/renderer/core/resize_observer/resize_observer_options.h"
+#include "third_party/blink/renderer/core/resize_observer/resize_observer_size.h"
 #include "third_party/blink/renderer/core/testing/sim/sim_compositor.h"
 #include "third_party/blink/renderer/core/testing/sim/sim_request.h"
 #include "third_party/blink/renderer/core/testing/sim/sim_test.h"
@@ -147,6 +149,32 @@ TEST_F(ResizeObserverUnitTest, TestBoxOverwrite) {
   observer->observe(dom_target, border_box_option);
   // Active observations should be empty and GatherObservations should run
   ASSERT_EQ(observer->GatherObservations(0), (size_t)3);
+}
+
+// Test that default content rect, content box, and border box are created when
+// a non box target's entry is made
+TEST_F(ResizeObserverUnitTest, TestNonBoxTarget) {
+  SimRequest main_resource("https://example.com/", "text/html");
+  LoadURL("https://example.com/");
+
+  main_resource.Write(R"HTML(
+    <span id='domTarget'>yo</div>
+  )HTML");
+  main_resource.Finish();
+
+  ResizeObserverOptions* border_box_option = ResizeObserverOptions::Create();
+  border_box_option->setBox("border-box");
+
+  Element* dom_target = GetDocument().getElementById("domTarget");
+
+  auto* entry = MakeGarbageCollected<ResizeObserverEntry>(dom_target);
+
+  EXPECT_EQ(entry->contentRect()->width(), 0);
+  EXPECT_EQ(entry->contentRect()->height(), 0);
+  EXPECT_EQ(entry->contentBoxSize()->inlineSize(), 0);
+  EXPECT_EQ(entry->contentBoxSize()->blockSize(), 0);
+  EXPECT_EQ(entry->borderBoxSize()->inlineSize(), 0);
+  EXPECT_EQ(entry->borderBoxSize()->blockSize(), 0);
 }
 
 TEST_F(ResizeObserverUnitTest, TestMemoryLeaks) {

@@ -345,8 +345,8 @@ public class TabGridPanelViewBinderTest extends DummyUiActivityTestCase {
     @SmallTest
     @UiThreadTest
     public void testSetUngroupbarTextAppearance() {
-        int normalStyleId = R.style.TextAppearance_BlueTitle2;
-        int incognitoStyleId = R.style.TextAppearance_BlueTitle2Incognito;
+        int normalStyleId = R.style.TextAppearance_TextMediumThick_Blue;
+        int incognitoStyleId = R.style.TextAppearance_TextMediumThick_Blue_Light;
         // Default setup is in normal mode.
         Assert.assertEquals(
                 normalStyleId, mTabGridDialogParent.getUngroupBarTextAppearanceForTesting());

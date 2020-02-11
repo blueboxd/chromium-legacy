@@ -106,6 +106,7 @@ android_library("java") {
     "java/src/org/chromium/chrome/browser/tasks/tab_management/TabSwitcherMediator.java",
     "java/src/org/chromium/chrome/browser/tasks/tab_management/TabUiColorProvider.java",
     "java/src/org/chromium/chrome/browser/tasks/tab_management/UndoGroupSnackbarController.java",
+    "java/src/org/chromium/chrome/browser/tasks/tab_management/suggestions/BaselineStaleTabSuggestionProvider.java",
     "java/src/org/chromium/chrome/browser/tasks/tab_management/suggestions/StaleTabSuggestionProvider.java",
     "java/src/org/chromium/chrome/browser/tasks/tab_management/suggestions/TabContextObserver.java",
     "java/src/org/chromium/chrome/browser/tasks/tab_management/suggestions/TabSuggestionProvider.java",

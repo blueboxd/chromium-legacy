@@ -37,6 +37,19 @@ class GomaLinkUnix(goma_link.GomaLinkBase):
       'chrome',
   }
 
+  def analyze_args(self, args, *posargs, **kwargs):
+    # TODO(crbug.com/1040196): Builds are unreliable when all targets use
+    # distributed ThinLTO, so we only enable it for whitelisted targets.
+    # For other targets, we fall back to local ThinLTO. We must use ThinLTO
+    # because we build with -fsplit-lto-unit, which requires code generation
+    # be done for each object and target.
+    if args.output is None or os.path.basename(
+        args.output) not in self.WHITELISTED_TARGETS:
+      # Returning None causes the original, non-distributed linker command to be
+      # invoked.
+      return None
+    return super(GomaLinkUnix, self).analyze_args(args, *posargs, **kwargs)
+
   def process_output_param(self, args, i):
     """
     If args[i] is a parameter that specifies the output file,
@@ -46,21 +59,6 @@ class GomaLinkUnix(goma_link.GomaLinkBase):
       return (os.path.normpath(args[i + 1]), i + 2)
     else:
       return (None, i + 1)
-
-  def do_main(self, args):
-    # TODO(crbug.com/1040196): Builds are unreliable when all targets use
-    # distributed ThinLTO, so we only enable it for whitelisted targets.
-    # For other targets, we fall back to local ThinLTO. We must use ThinLTO
-    # because we build with -fsplit-lto-unit, which requires code generation
-    # be done for each object and target.
-    output = self.output_path(args)
-    if output is None or os.path.basename(
-        output) not in self.WHITELISTED_TARGETS:
-      import subprocess
-      subprocess.check_call(args[1:])
-      return 0
-    else:
-      return super(GomaLinkUnix, self).do_main(args)
 
 
 if __name__ == '__main__':

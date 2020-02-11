@@ -69,17 +69,6 @@ class NET_EXPORT ProxyBypassRules {
   // AddRuleFromString() to see the specific rule grammar.
   void ParseFromString(const std::string& raw);
 
-  // Adds a rule that matches a URL when all of the following are true:
-  //  (a) The URL's scheme matches |optional_scheme|, if
-  //      |!optional_scheme.empty()|
-  //  (b) The URL's hostname matches |hostname_pattern|.
-  //  (c) The URL's (effective) port number matches |optional_port| if
-  //      |optional_port != -1|
-  // Returns true if the rule was successfully added.
-  bool AddRuleForHostname(const std::string& optional_scheme,
-                          const std::string& hostname_pattern,
-                          int optional_port);
-
   // Adds a rule to the front of thelist that bypasses hostnames without a dot
   // in them (and is not an IP literal), which can be indicative of intranet
   // websites.

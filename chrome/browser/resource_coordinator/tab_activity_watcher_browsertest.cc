@@ -56,7 +56,7 @@ const UkmMetricMap kBasicMetricValues({
 
 // These parameters don't affect logging.
 const bool kCheckNavigationSuccess = true;
-const int64_t kIdShift = 1 << 13;
+const int64_t kIdShift = 1 << 16;
 
 }  // namespace
 

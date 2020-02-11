@@ -16,6 +16,7 @@
 #include "third_party/blink/public/mojom/permissions/permission_status.mojom.h"
 
 class HostContentSettingsMap;
+enum ContentSetting;
 
 namespace content {
 class BrowserContext;
@@ -63,7 +64,9 @@ class ChromeNativeFileSystemPermissionContext
       int process_id,
       int frame_id,
       base::OnceCallback<void(AfterWriteCheckResult)> callback) override;
-  bool CanRequestWritePermission(const url::Origin& origin) override;
+  bool CanObtainWritePermission(const url::Origin& origin) override;
+
+  ContentSetting GetWriteGuardContentSetting(const url::Origin& origin);
 
   // Returns a snapshot of the currently granted permissions.
   // TODO(https://crbug.com/984769): Eliminate process_id and frame_id from this

@@ -75,7 +75,13 @@ scoped_refptr<XRRuntimeManager> XRRuntimeManager::GetOrCreateInstance() {
   if (base::FeatureList::IsEnabled(features::kWebXrArModule)) {
 #if defined(OS_ANDROID)
 #if BUILDFLAG(ENABLE_ARCORE)
-    providers.emplace_back(device::ArCoreDeviceProviderFactory::Create());
+    auto arcore_device_provider = device::ArCoreDeviceProviderFactory::Create();
+    if (arcore_device_provider) {
+      providers.emplace_back(std::move(arcore_device_provider));
+    } else {
+      // TODO(crbug.com/1050470): Remove this logging after investigation.
+      LOG(ERROR) << "Could not get ARCoreDeviceProviderFactory";
+    }
 #endif  // BUILDFLAG(ENABLE_ARCORE)
 #endif  // defined(OS_ANDROID)
   }
@@ -372,6 +378,12 @@ void XRRuntimeManager::InitializeProviders() {
     return;
 
   for (const auto& provider : providers_) {
+    if (!provider) {
+      // TODO(crbug.com/1050470): Remove this logging after investigation.
+      LOG(ERROR) << __func__ << " got null XR provider";
+      continue;
+    }
+
     provider->Initialize(
         base::BindRepeating(&XRRuntimeManager::AddRuntime,
                             base::Unretained(this)),

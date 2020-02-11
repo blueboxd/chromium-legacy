@@ -4,6 +4,8 @@
 
 #import "ios/chrome/browser/overlays/overlay_request_queue_impl.h"
 
+#include <vector>
+
 #include "ios/chrome/browser/overlays/public/overlay_request.h"
 #import "ios/chrome/browser/overlays/public/overlay_request_cancel_handler.h"
 #include "ios/chrome/browser/overlays/test/fake_overlay_user_data.h"
@@ -16,6 +18,60 @@
 #endif
 
 namespace {
+// Fake queue delegate.  Keeps ownership of all requests removed from a queue,
+// recording whether the requests were removed for cancellation.
+class FakeOverlayRequestQueueImplDelegate
+    : public OverlayRequestQueueImpl::Delegate {
+ public:
+  FakeOverlayRequestQueueImplDelegate() {}
+  ~FakeOverlayRequestQueueImplDelegate() {}
+
+  void OverlayRequestRemoved(OverlayRequestQueueImpl* queue,
+                             std::unique_ptr<OverlayRequest> request,
+                             bool cancelled) override {
+    removed_requests_.emplace_back(std::move(request), cancelled);
+  }
+
+  // Whether |request| was removed from the queue.
+  bool WasRequestRemoved(OverlayRequest* request) {
+    return GetRemovedRequestStorage(request) != nullptr;
+  }
+
+  // Whether |request| was removed from the queue for cancellation.
+  bool WasRequestCancelled(OverlayRequest* request) {
+    const RemovedRequestStorage* storage = GetRemovedRequestStorage(request);
+    return storage && storage->cancelled;
+  }
+
+ private:
+  // Stores the removed requests and whether the requests were cancelled.
+  struct RemovedRequestStorage {
+    RemovedRequestStorage(std::unique_ptr<OverlayRequest> request,
+                          bool cancelled)
+        : request(std::move(request)), cancelled(cancelled) {}
+    RemovedRequestStorage(RemovedRequestStorage&& storage)
+        : request(std::move(storage.request)), cancelled(storage.cancelled) {}
+    ~RemovedRequestStorage() {}
+
+    std::unique_ptr<OverlayRequest> request;
+    bool cancelled;
+  };
+
+  // Returns the request storage for |request|.
+  const RemovedRequestStorage* GetRemovedRequestStorage(
+      OverlayRequest* request) {
+    for (auto& storage : removed_requests_) {
+      if (storage.request.get() == request)
+        return &storage;
+    }
+    return nullptr;
+  }
+
+  // Storages holding the requests that were removed from the queue being
+  // delegated.  Keeps ownership of removed requests and whether they were
+  // cancelled.
+  std::vector<RemovedRequestStorage> removed_requests_;
+};
 // Mock queue observer.
 class MockOverlayRequestQueueImplObserver
     : public OverlayRequestQueueImpl::Observer {
@@ -25,8 +81,6 @@ class MockOverlayRequestQueueImplObserver
 
   MOCK_METHOD3(RequestAddedToQueue,
                void(OverlayRequestQueueImpl*, OverlayRequest*, size_t));
-  MOCK_METHOD2(QueuedRequestCancelled,
-               void(OverlayRequestQueueImpl*, OverlayRequest*));
 };
 
 // Custom cancel handler that can be manually triggered.
@@ -45,9 +99,11 @@ class OverlayRequestQueueImplTest : public PlatformTest {
  public:
   OverlayRequestQueueImplTest() : PlatformTest() {
     OverlayRequestQueueImpl::Container::CreateForWebState(&web_state_);
+    queue()->set_delegate(&delegate_);
     queue()->AddObserver(&observer_);
   }
   ~OverlayRequestQueueImplTest() override {
+    queue()->set_delegate(nullptr);
     queue()->RemoveObserver(&observer_);
   }
 
@@ -69,8 +125,9 @@ class OverlayRequestQueueImplTest : public PlatformTest {
   }
 
  protected:
-  web::TestWebState web_state_;
+  FakeOverlayRequestQueueImplDelegate delegate_;
   MockOverlayRequestQueueImplObserver observer_;
+  web::TestWebState web_state_;
 };
 
 // Tests that state is updated correctly and observer callbacks are received
@@ -122,47 +179,40 @@ TEST_F(OverlayRequestQueueImplTest, InsertRequest) {
             queue()->GetRequest(1)->GetConfig<FakeOverlayUserData>()->value());
 }
 
-// Tests that state is updated correctly and observer callbacks are received
-// when popping the requests.
-TEST_F(OverlayRequestQueueImplTest, PopRequests) {
-  // Add three requests to the queue.
+// Tests that PopFrontRequest() correctly updates state, notifies observers, and
+// transfers ownership of the popped request to the delegate.
+TEST_F(OverlayRequestQueueImplTest, PopFrontRequest) {
+  // Add two requests to the queue.
   OverlayRequest* first_request = AddRequest();
   OverlayRequest* second_request = AddRequest();
-  AddRequest();
-
   ASSERT_EQ(first_request, queue()->front_request());
-  ASSERT_EQ(3U, queue()->size());
+  ASSERT_EQ(2U, queue()->size());
 
   // Pop the first request and check that the size and front request have been
   // updated.
   queue()->PopFrontRequest();
   EXPECT_EQ(second_request, queue()->front_request());
-  EXPECT_EQ(2U, queue()->size());
-
-  // Pop the third request and check that the second request is still frontmost
-  // and that the size is updated.
-  queue()->PopBackRequest();
-  EXPECT_EQ(second_request, queue()->front_request());
   EXPECT_EQ(1U, queue()->size());
+  EXPECT_TRUE(delegate_.WasRequestRemoved(first_request));
+  EXPECT_FALSE(delegate_.WasRequestCancelled(first_request));
 }
 
-// Tests that state is updated correctly and observer callbacks are received
-// when popping the requests.
+// Tests that CancelAllRequests() correctly updates state and transfers requests
+// to the delegate.
 TEST_F(OverlayRequestQueueImplTest, CancelAllRequests) {
   // Add two requests to the queue then cancel all requests, verifying that
   // the observer callback is received for each.
   OverlayRequest* first_request = AddRequest();
   OverlayRequest* second_request = AddRequest();
-
-  EXPECT_CALL(observer(), QueuedRequestCancelled(queue(), first_request));
-  EXPECT_CALL(observer(), QueuedRequestCancelled(queue(), second_request));
   queue()->CancelAllRequests();
 
   EXPECT_EQ(0U, queue()->size());
+  EXPECT_TRUE(delegate_.WasRequestCancelled(first_request));
+  EXPECT_TRUE(delegate_.WasRequestCancelled(second_request));
 }
 
-// Tests that state is updated correctly and observer callbacks are received
-// when cancelling a request with a custom cancel handler.
+// Tests that a cancellation via a cancel handler correctly updates state and
+// transfers the caoncelled requests to the delegate.
 TEST_F(OverlayRequestQueueImplTest, CustomCancelHandler) {
   std::unique_ptr<OverlayRequest> passed_request =
       OverlayRequest::CreateWithConfig<FakeOverlayUserData>();
@@ -177,10 +227,10 @@ TEST_F(OverlayRequestQueueImplTest, CustomCancelHandler) {
 
   // Trigger cancellation via the cancel handler, and verify that the request is
   // correctly removed.
-  EXPECT_CALL(observer(), QueuedRequestCancelled(queue(), request));
   cancel_handler->TriggerCancellation();
 
   EXPECT_EQ(0U, queue()->size());
+  EXPECT_TRUE(delegate_.WasRequestCancelled(request));
 }
 
 // Tests that the request's WebState is set up when it is added to the queue.

@@ -492,6 +492,7 @@
 <translation id="1670399744444387456">Basic</translation>
 <translation id="167160931442925455">Loudest</translation>
 <translation id="1673137583248014546"><ph name="URL" /> wants to see the make and model of your Security Key</translation>
+<translation id="1677472565718498478"><ph name="TIME" /> left</translation>
 <translation id="1679068421605151609">Developer Tools</translation>
 <translation id="1679806121152819234">Plugin VM</translation>
 <translation id="1679810534535368772">Are you sure that you want to exit?</translation>
@@ -1787,6 +1788,7 @@ You can manage this account’s settings by installing the Family Link app on yo
 <translation id="3462413494201477527">Cancel account setup?</translation>
 <translation id="3464012987031883895">A site is accessing audio input</translation>
 <translation id="346431825526753">This is an account for kids managed by <ph name="CUSTODIAN_EMAIL" />.</translation>
+<translation id="3468298837301810372">Label</translation>
 <translation id="3468999815377931311">Android phone</translation>
 <translation id="3470442499439619530">Remove This User</translation>
 <translation id="3471876058939596279">HDMI and USB Type-C ports can't be used for video at the same time. Use a different video port.</translation>
@@ -3962,7 +3964,6 @@ You can manage this account’s settings by installing the Family Link app on yo
 <translation id="6545867563032584178">Microphone is turned off in Mac System Preferences</translation>
 <translation id="6547354035488017500">Free up at least 512 MB of space or your device will become unresponsive. To free up space, delete files from device storage.</translation>
 <translation id="6549639163247690448"><ph name="DOMAIN" /> requires you to connect to Wi-Fi now and download an update. The update will download automatically when you connect to the Internet.</translation>
-<translation id="6549966385318247177">This is blocked due to mature content.</translation>
 <translation id="6550675742724504774">Options</translation>
 <translation id="6551508934388063976">Command unavailable. Press control-N to open a new window.</translation>
 <translation id="6551612971599078809">Site is using USB</translation>

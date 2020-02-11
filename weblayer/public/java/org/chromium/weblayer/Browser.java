@@ -27,10 +27,17 @@ import java.util.List;
  *
  * By default Browser has a single active Tab.
  */
-public final class Browser {
+public class Browser {
     private final IBrowser mImpl;
     private final ObserverList<TabListCallback> mTabListCallbacks;
     private final UrlBarController mUrlBarController;
+
+    // Constructor for test mocking.
+    protected Browser() {
+        mImpl = null;
+        mTabListCallbacks = null;
+        mUrlBarController = null;
+    }
 
     Browser(IBrowser impl) {
         mImpl = impl;

@@ -61,6 +61,14 @@ public class TabSuggestionsOrchestrator implements TabSuggestions, Destroyable {
         activityLifecycleDispatcher.register(this);
     }
 
+    protected void setUseBaselineTabSuggestionsForTesting() {
+        for (TabSuggestionsFetcher fetcher : mTabSuggestionsFetchers) {
+            if (fetcher instanceof TabSuggestionsClientFetcher) {
+                ((TabSuggestionsClientFetcher) fetcher).setUseBaselineTabSuggestionsForTesting();
+            }
+        }
+    }
+
     private List<TabSuggestion> aggregateResults(List<TabSuggestion> tabSuggestions) {
         List<TabSuggestion> aggregated = new LinkedList<>();
         for (TabSuggestion tabSuggestion : tabSuggestions) {

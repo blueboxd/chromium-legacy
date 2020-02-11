@@ -2839,6 +2839,11 @@ const char kAutoplayWhitelist[] = "media.autoplay_whitelist";
 const char kBlockAutoplayEnabled[] = "media.block_autoplay";
 #endif  // !defined(OS_ANDROID)
 
+#if defined(OS_LINUX) && !defined(OS_CHROMEOS)
+// Boolean that indicates if native notifications should be forcibly disabled.
+const char kNativeNotificationsDisabled[] = "native_notifications.disabled";
+#endif
+
 // Integer that holds the value of the next persistent notification ID to be
 // used.
 const char kNotificationNextPersistentId[] = "persistent_notifications.next_id";

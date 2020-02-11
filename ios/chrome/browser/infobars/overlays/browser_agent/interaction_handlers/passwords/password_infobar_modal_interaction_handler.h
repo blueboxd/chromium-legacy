@@ -7,7 +7,6 @@
 
 #import "ios/chrome/browser/infobars/overlays/browser_agent/interaction_handlers/common/infobar_modal_interaction_handler.h"
 
-@protocol ApplicationSettingsCommands;
 class Browser;
 class IOSChromeSavePasswordInfoBarDelegate;
 
@@ -59,8 +58,8 @@ class PasswordInfobarModalInteractionHandler
   // Returns the password delegate from |infobar|.
   IOSChromeSavePasswordInfoBarDelegate* GetDelegate(InfoBarIOS* infobar);
 
-  // Dispatcher used to open the password settings.
-  id<ApplicationSettingsCommands> settings_command_handler_ = nil;
+  // The Browser passed on initialization.
+  Browser* browser_ = nullptr;
 };
 
 #endif  // IOS_CHROME_BROWSER_INFOBARS_OVERLAYS_BROWSER_AGENT_INTERACTION_HANDLERS_PASSWORDS_PASSWORD_INFOBAR_MODAL_INTERACTION_HANDLER_H_

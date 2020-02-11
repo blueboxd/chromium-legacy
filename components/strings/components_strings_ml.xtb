@@ -674,6 +674,7 @@
 <translation id="3987940399970879459">ഒരു MB-യിൽ കുറവാണ്</translation>
 <translation id="3990250421422698716">ജോഗ് ഓഫ്‌സെറ്റ്</translation>
 <translation id="40103911065039147">{URL_count,plural, =1{സമീപത്ത് ഒരു വെബ്‌പേജുണ്ട്}other{സമീപത്ത് # വെബ്‌പേജുകളുണ്ട്}}</translation>
+<translation id="4014128326099193693">{COUNT,plural, =1{PDF ഡോക്യുമെന്റിൽ {COUNT} പേജ് അടങ്ങിയിരിക്കുന്നു}other{PDF ഡോക്യുമെന്റിൽ {COUNT} പേജുകൾ അടങ്ങിയിരിക്കുന്നു}}</translation>
 <translation id="4030383055268325496">&amp;ചേർത്തത് പഴയപടിയാക്കുക</translation>
 <translation id="4032320456957708163">നിങ്ങളുടെ ബ്രൗസർ മാനേജ് ചെയ്യുന്നത് <ph name="ENROLLMENT_DOMAIN" /> ആണ്</translation>
 <translation id="4058922952496707368">കീ "<ph name="SUBKEY" />": <ph name="ERROR" /></translation>
@@ -702,6 +703,7 @@
 <translation id="4142935452406587478">ട്രേ 10</translation>
 <translation id="4148925816941278100">American Express</translation>
 <translation id="4151403195736952345">ആഗോള ഡിഫോൾട്ട് ഉപയോഗിക്കുക (കണ്ടെത്തുക)</translation>
+<translation id="4152318981910038897">{COUNT,plural, =1{പേജ് 1}other{പേജ് {COUNT}}}</translation>
 <translation id="4159784952369912983">പര്‍പ്പിള്‍</translation>
 <translation id="4165986682804962316">സൈറ്റ് ക്രമീകരണങ്ങൾ</translation>
 <translation id="4171400957073367226">മോശം പരിശോധിച്ചുറപ്പിക്കൽ സിഗ്‌നേച്ചർ</translation>
@@ -1378,6 +1380,7 @@
 <translation id="7201591969684833065">നിങ്ങളുടെ അഡ്‌മിനിസ്‌ട്രേറ്റർക്ക് ഇവ കാണാനാകും:</translation>
 <translation id="7202346780273620635">ലെറ്റർ-അധികം</translation>
 <translation id="7210863904660874423"><ph name="HOST_NAME" />, സുരക്ഷാ മാനദണ്ഡങ്ങൾ പാലിക്കുന്നില്ല.</translation>
+<translation id="7210993021468939304">കണ്ടെയ്‌നറിനുള്ളിലെ Linux ആക്‌റ്റിവിറ്റി, കൂടാതെ കണ്ടെയ്‌നറിനുള്ളിൽ Linux ആപ്പുകൾ ഇൻസ്‌റ്റാൾ ചെയ്യാനും റൺ ചെയ്യാനും കഴിയും</translation>
 <translation id="721197778055552897">ഈ പ്രശ്‌നത്തെക്കുറിച്ച് <ph name="BEGIN_LINK" />കൂടുതൽ‍ മനസിലാക്കുക<ph name="END_LINK" />.</translation>
 <translation id="7219179957768738017">കണക്ഷന്‍ <ph name="SSL_VERSION" /> ഉപയോഗിക്കുന്നു.</translation>
 <translation id="7220786058474068424">പ്രോസസ്സുചെയ്യുന്നു</translation>
@@ -1539,6 +1542,7 @@
 <translation id="7878562273885520351">നിങ്ങളുടെ പാസ്‍വേഡ് അപഹരിക്കപ്പെട്ടേക്കാം</translation>
 <translation id="7882421473871500483">തവിട്ട് നിറം</translation>
 <translation id="7887683347370398519">നിങ്ങളുടെ CVC പരിശോധിച്ച് വീണ്ടും ശ്രമിക്കുക</translation>
+<translation id="7887885240995164102">ചിത്രത്തിനുള്ളിലെ ചിത്രത്തിലേക്ക് പ്രവേശിക്കുക</translation>
 <translation id="7888575728750733395">പ്രിന്റ് റെൻഡറിംഗ് ഇന്റന്റ്</translation>
 <translation id="7904208859782148177">C3 (എൻവലപ്പ്)</translation>
 <translation id="7932579305932748336">കോട്ട്</translation>

@@ -18,6 +18,7 @@
 #include "base/synchronization/waitable_event.h"
 #include "base/task/post_task.h"
 #include "base/test/metrics/histogram_tester.h"
+#include "base/test/simple_test_tick_clock.h"
 #include "chrome/browser/safe_browsing/browser_feature_extractor.h"
 #include "chrome/browser/safe_browsing/client_side_detection_service.h"
 #include "chrome/browser/safe_browsing/safe_browsing_service.h"
@@ -271,6 +272,8 @@ class ClientSideDetectionHostTestBase : public ChromeRenderViewHostTestHarness {
     csd_host_->set_client_side_detection_service(csd_service_.get());
     csd_host_->set_safe_browsing_managers(ui_manager_.get(),
                                           database_manager_.get());
+    csd_host_->set_tick_clock_for_testing(&clock_);
+
     // We need to create this here since we don't call DidStopLanding in
     // this test.
     csd_host_->browse_info_.reset(new BrowseInfo);
@@ -435,12 +438,15 @@ class ClientSideDetectionHostTestBase : public ChromeRenderViewHostTestHarness {
     ASSERT_FALSE(csd_host_->DidShowSBInterstitial());
   }
 
+  void AdvanceTimeTickClock(base::TimeDelta delta) { clock_.Advance(delta); }
+
  protected:
   std::unique_ptr<ClientSideDetectionHost> csd_host_;
   std::unique_ptr<StrictMock<MockClientSideDetectionService>> csd_service_;
   scoped_refptr<StrictMock<MockSafeBrowsingUIManager> > ui_manager_;
   scoped_refptr<StrictMock<MockSafeBrowsingDatabaseManager> > database_manager_;
   FakePhishingDetector fake_phishing_detector_;
+  base::SimpleTestTickClock clock_;
   const bool is_incognito_;
 };
 
@@ -1094,6 +1100,53 @@ TEST_F(ClientSideDetectionHostTest, RecordsPhishingDetectorResults) {
         "SBClientPhishing.PhishingDetectorResult",
         mojom::PhishingDetectorResult::FORWARD_BACK_TRANSITION, 1);
   }
+}
+
+TEST_F(ClientSideDetectionHostTest, RecordsPhishingDetectionDuration) {
+  base::HistogramTester histogram_tester;
+  histogram_tester.ExpectTotalCount(
+      "SBClientPhishing.PhishingDetectionDuration", 0);
+
+  GURL start_url("http://safe.example.com/");
+  ExpectPreClassificationChecks(start_url, &kFalse, &kFalse, &kFalse, &kFalse,
+                                &kFalse);
+  NavigateAndCommit(start_url);
+  WaitAndCheckPreClassificationChecks();
+  histogram_tester.ExpectTotalCount(
+      "SBClientPhishing.PhishingDetectionDuration", 1);
+
+  // Navigate to a different host which will have a malware hit.
+  GURL url("http://malware-but-not-phishing.com/");
+  ClientPhishingRequest verdict;
+  verdict.set_url(url.spec());
+  verdict.set_client_score(0.1f);
+  verdict.set_is_phishing(false);
+
+  ExpectPreClassificationChecks(url, &kFalse, &kFalse, &kFalse, &kFalse,
+                                &kFalse);
+  NavigateWithSBHitAndCommit(url);
+  WaitAndCheckPreClassificationChecks();
+  const base::TimeDelta duration = base::TimeDelta::FromMilliseconds(10);
+  AdvanceTimeTickClock(duration);
+
+  EXPECT_CALL(*csd_service_,
+              SendClientReportPhishingRequest(
+                  Pointee(PartiallyEqualVerdict(verdict)), _, CallbackIsNull()))
+      .WillOnce(DoAll(DeleteArg<0>(), QuitUIMessageLoop()));
+  std::vector<GURL> redirect_chain;
+  redirect_chain.push_back(url);
+  SetRedirectChain(redirect_chain);
+  PhishingDetectionDone(verdict.SerializeAsString());
+  base::RunLoop().Run();
+  EXPECT_TRUE(Mock::VerifyAndClear(csd_host_.get()));
+
+  histogram_tester.ExpectTotalCount(
+      "SBClientPhishing.PhishingDetectionDuration", 2);
+  EXPECT_LE(duration.InMilliseconds(),
+            histogram_tester
+                .GetAllSamples("SBClientPhishing.PhishingDetectionDuration")
+                .front()
+                .min);
 }
 
 }  // namespace safe_browsing

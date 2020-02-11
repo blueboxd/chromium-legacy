@@ -277,7 +277,6 @@ export class Destination {
    *          certificateStatus:
    *              (DestinationCertificateStatus|undefined),
    *          policies: (DestinationPolicies|undefined),
-   *          eulaUrl: (string|undefined),
    *         }=} opt_params Optional
    *     parameters for the destination.
    */

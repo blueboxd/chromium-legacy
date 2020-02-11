@@ -229,6 +229,30 @@ struct StructTraits<gpu::mojom::Dx12VulkanVersionInfoDataView,
     return input.vulkan_version;
   }
 };
+
+template <>
+struct StructTraits<gpu::mojom::OverlayInfoDataView, gpu::OverlayInfo> {
+  static bool Read(gpu::mojom::OverlayInfoDataView data, gpu::OverlayInfo* out);
+
+  static bool direct_composition(const gpu::OverlayInfo& input) {
+    return input.direct_composition;
+  }
+
+  static bool supports_overlays(const gpu::OverlayInfo& input) {
+    return input.supports_overlays;
+  }
+
+  static gpu::OverlaySupport yuy2_overlay_support(
+      const gpu::OverlayInfo& input) {
+    return input.yuy2_overlay_support;
+  }
+
+  static gpu::OverlaySupport nv12_overlay_support(
+      const gpu::OverlayInfo& input) {
+    return input.nv12_overlay_support;
+  }
+};
+
 #endif
 
 template <>
@@ -330,21 +354,6 @@ struct StructTraits<gpu::mojom::GpuInfoDataView, gpu::GPUInfo> {
   }
 
 #if defined(OS_WIN)
-  static bool direct_composition(const gpu::GPUInfo& input) {
-    return input.direct_composition;
-  }
-
-  static bool supports_overlays(const gpu::GPUInfo& input) {
-    return input.supports_overlays;
-  }
-
-  static gpu::OverlaySupport yuy2_overlay_support(const gpu::GPUInfo& input) {
-    return input.yuy2_overlay_support;
-  }
-
-  static gpu::OverlaySupport nv12_overlay_support(const gpu::GPUInfo& input) {
-    return input.nv12_overlay_support;
-  }
 
   static const gpu::DxDiagNode& dx_diagnostics(const gpu::GPUInfo& input) {
     return input.dx_diagnostics;
@@ -353,6 +362,10 @@ struct StructTraits<gpu::mojom::GpuInfoDataView, gpu::GPUInfo> {
   static const gpu::Dx12VulkanVersionInfo& dx12_vulkan_version_info(
       const gpu::GPUInfo& input) {
     return input.dx12_vulkan_version_info;
+  }
+
+  static const gpu::OverlayInfo& overlay_info(const gpu::GPUInfo& input) {
+    return input.overlay_info;
   }
 #endif
 

@@ -352,7 +352,7 @@
 <translation id="3714981814255182093">Ireki bilaketa-barra</translation>
 <translation id="3716182511346448902">Chrome-k orri hau pausatu du memoria gehiegi erabiltzen duelako.</translation>
 <translation id="3730075448226062617">Chrome-ri mikrofonoa atzitzeko baimena emateko, mikrofonoa aktibatu behar duzu <ph name="BEGIN_LINK" />Android-en ezarpenetan<ph name="END_LINK" />.</translation>
-<translation id="3738139272394829648">Ukitu bilatzeko</translation>
+<translation id="3738139272394829648">Sakatu bilatzeko</translation>
 <translation id="3739899004075612870">Egin da laster-marka <ph name="PRODUCT_NAME" />-n</translation>
 <translation id="3744111561329211289">Atzeko planoko sinkronizazioa</translation>
 <translation id="3749259744154402564">Ez da onartzen</translation>
@@ -450,7 +450,7 @@
 <translation id="4521489764227272523">Kendu dira hautatutako datuak Chrome-tik eta sinkronizatutako gailuetatik.
 
 Baliteke Google kontuak arakatze-historiako bestelako datu batzuk (adibidez, bilaketak eta beste Google-ren zerbitzu batzuetako jarduerak) edukitzea <ph name="BEGIN_LINK" />history.google.com<ph name="END_LINK" /> webgunean.</translation>
-<translation id="4527374721149092498">Lortu informazio gehiago beste webgune batzuetan, uneko orria utzi gabe. "Ukitu bilatzeko" eginbideak hitz bat eta haren testuingurua Google Bilaketa zerbitzura bidaltzen ditu eta definizioak, irudiak, bilaketa-emaitzak eta beste zenbait xehetasun eskaintzen ditu.
+<translation id="4527374721149092498">Lortu informazio gehiago beste webgune batzuetan, uneko orria utzi gabe. "Sakatu bilatzeko" eginbideak hitz bat eta haren testuingurua Google Bilaketa zerbitzura bidaltzen ditu, eta definizioak, irudiak, bilaketa-emaitzak eta beste zenbait xehetasun eskaintzen.
 
 Sakatu edozein hitz harekin erlazionatutako bilaketa bat sortzeko. Bilaketa-hitza doitu nahi baduzu, sakatu luze hura hautatzeko. Bilaketa mugatzeko, lerratu panela hura irekitzeko, sakatu zabaltze-ikonoa fitxa bat sortzeko eta, gero, sakatu bilaketa-koadroa.</translation>
 <translation id="4532845899244822526">Aukeratu karpeta</translation>
@@ -694,7 +694,7 @@ Ezarpena aldatzeko, <ph name="BEGIN_LINK" />berrezarri sinkronizazioa<ph name="E
 <translation id="6232535412751077445">"Ez jarraitu" eginbidea gaitzen baduzu, arakatze-trafikoan gehituko da horretarako eskaera. Aukeraren eragina faktore hauen araberakoa da: webguneek eskaerari erantzuten dioten ala ez eta eskaera nola interpretatzen den.
 
 Esaterako, bisitatu dituzun webguneetan oinarritzen ez diren iragarkiak bidalita erantzun lezakete webgune batzuek. Dena den, webgune askok arakatze-datuak bilduko dituzte, besteak beste, segurtasuna hobetzeko; edukia, iragarkiak eta gomendioak hornitzeko; eta txostenak egiteko estatistikak sortzeko.</translation>
-<translation id="6238003486329291387">Lortu informazio gehiago beste webgune batzuetan, uneko orria utzi gabe. "Ukitu bilatzeko" eginbideak hitz bat eta haren testuingurua Google Bilaketa zerbitzura bidaltzen ditu eta definizioak, irudiak, bilaketa-emaitzak eta beste zenbait xehetasun eskaintzen ditu.
+<translation id="6238003486329291387">Lortu informazio gehiago beste webgune batzuetan, uneko orria utzi gabe. "Sakatu bilatzeko" eginbideak hitz bat eta haren testuingurua Google Bilaketa zerbitzura bidaltzen ditu, eta definizioak, irudiak, bilaketa-emaitzak eta beste zenbait xehetasun eskaintzen.
 
 Sakatu luze edozein hitz harekin erlazionatutako bilaketa bat sortzeko. Bilaketa mugatzeko, doitu hautapena. Lerratu panela hura irekitzeko, sakatu zabaltze-ikonoa fitxa bat sortzeko eta, gero, sakatu bilaketa-koadroa.</translation>
 <translation id="624789221780392884">Eguneratzea prest dago</translation>
@@ -955,7 +955,7 @@ Webguneak EZ du izango kamera atzitzeko baimenik. Zeuk soilik ikus ditzakezu kam
 <translation id="8116925261070264013">Audioa desaktibatuta</translation>
 <translation id="8127542551745560481">Editatu hasierako pantaila</translation>
 <translation id="813082847718468539">Ikusi webgunearen informazioa</translation>
-<translation id="8137558756159375272">"Ukitu bilatzeko" aplikazioak hautatutako hitza eta uneko orria testuinguru gisa bidaltzen ditu Google Bilaketa zerbitzura. <ph name="BEGIN_LINK" />Ezarpenak<ph name="END_LINK" /> atalean desaktiba dezakezu.</translation>
+<translation id="8137558756159375272">"Sakatu bilatzeko" aplikazioak hautatutako hitza eta uneko orria testuinguru gisa bidaltzen ditu Google Bilaketa zerbitzura. <ph name="BEGIN_LINK" />Ezarpenak<ph name="END_LINK" /> atalean desaktiba dezakezu.</translation>
 <translation id="8156139159503939589">Zein hizkuntza irakur ditzakezu?</translation>
 <translation id="8168435359814927499">Edukia</translation>
 <translation id="8186512483418048923"><ph name="FILES" /> fitxategi gelditzen dira</translation>

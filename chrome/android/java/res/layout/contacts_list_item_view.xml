@@ -47,7 +47,7 @@
                 android:paddingStart="4dp"
                 android:clickable="true"
                 android:maxLines="1"
-                android:textAppearance="@style/TextAppearance.BlueLink2" />
+                android:textAppearance="@style/TextAppearance.TextMedium.Blue" />
         </LinearLayout>
 
         <LinearLayout
@@ -71,7 +71,7 @@
                 android:paddingStart="4dp"
                 android:clickable="true"
                 android:maxLines="1"
-                android:textAppearance="@style/TextAppearance.BlueLink2" />
+                android:textAppearance="@style/TextAppearance.TextMedium.Blue" />
         </LinearLayout>
 
         <LinearLayout
@@ -95,7 +95,7 @@
                 android:paddingStart="4dp"
                 android:clickable="true"
                 android:maxLines="1"
-                android:textAppearance="@style/TextAppearance.BlueLink2" />
+                android:textAppearance="@style/TextAppearance.TextMedium.Blue" />
         </LinearLayout>
     </LinearLayout>
 

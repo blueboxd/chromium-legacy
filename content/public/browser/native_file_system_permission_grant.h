@@ -44,7 +44,8 @@ class CONTENT_EXPORT NativeFileSystemPermissionGrant
     kUserDenied = 5,
     kUserDismissed = 6,
     kRequestAborted = 7,
-    kMaxValue = kRequestAborted
+    kGrantedByContentSetting = 8,
+    kMaxValue = kGrantedByContentSetting
   };
 
   // Call this method to request permission for this grant. The |callback|

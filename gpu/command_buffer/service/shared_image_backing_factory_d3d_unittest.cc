@@ -75,12 +75,9 @@ bool IsD3DSharedImageSupported() {
   return true;
 }
 
-class SharedImageBackingFactoryD3DTestBase
-    : public testing::TestWithParam<bool> {
+class SharedImageBackingFactoryD3DTestBase : public testing::Test {
  public:
   void SetUp() override {
-    use_passthrough_texture_ = GetParam();
-
     surface_ = gl::init::CreateOffscreenGLSurface(gfx::Size());
     ASSERT_TRUE(surface_);
     context_ = gl::init::CreateGLContext(nullptr, surface_.get(),
@@ -93,12 +90,10 @@ class SharedImageBackingFactoryD3DTestBase
     shared_image_representation_factory_ =
         std::make_unique<SharedImageRepresentationFactory>(
             &shared_image_manager_, nullptr);
-    shared_image_factory_ = std::make_unique<SharedImageBackingFactoryD3D>(
-        use_passthrough_texture_);
+    shared_image_factory_ = std::make_unique<SharedImageBackingFactoryD3D>();
   }
 
  protected:
-  bool use_passthrough_texture_ = false;
   scoped_refptr<gl::GLSurface> surface_;
   scoped_refptr<gl::GLContext> context_;
   SharedImageManager shared_image_manager_;
@@ -118,7 +113,7 @@ class SharedImageBackingFactoryD3DTestSwapChain
   }
 };
 
-TEST_P(SharedImageBackingFactoryD3DTestSwapChain, InvalidFormat) {
+TEST_F(SharedImageBackingFactoryD3DTestSwapChain, InvalidFormat) {
   if (!SharedImageBackingFactoryD3D::IsSwapChainSupported())
     return;
 
@@ -161,7 +156,7 @@ TEST_P(SharedImageBackingFactoryD3DTestSwapChain, InvalidFormat) {
   }
 }
 
-TEST_P(SharedImageBackingFactoryD3DTestSwapChain, CreateAndPresentSwapChain) {
+TEST_F(SharedImageBackingFactoryD3DTestSwapChain, CreateAndPresentSwapChain) {
   if (!SharedImageBackingFactoryD3D::IsSwapChainSupported())
     return;
 
@@ -190,59 +185,30 @@ TEST_P(SharedImageBackingFactoryD3DTestSwapChain, CreateAndPresentSwapChain) {
 
   GLuint back_texture_id, front_texture_id = 0u;
   gl::GLImageD3D *back_image, *front_image = 0u;
-  if (use_passthrough_texture_) {
-    auto back_texture = shared_image_representation_factory_
-                            ->ProduceGLTexturePassthrough(back_buffer_mailbox)
-                            ->GetTexturePassthrough();
-    ASSERT_TRUE(back_texture);
-    EXPECT_EQ(back_texture->target(), static_cast<unsigned>(GL_TEXTURE_2D));
 
-    back_texture_id = back_texture->service_id();
-    EXPECT_NE(back_texture_id, 0u);
+  auto back_texture = shared_image_representation_factory_
+                          ->ProduceGLTexturePassthrough(back_buffer_mailbox)
+                          ->GetTexturePassthrough();
+  ASSERT_TRUE(back_texture);
+  EXPECT_EQ(back_texture->target(), static_cast<unsigned>(GL_TEXTURE_2D));
 
-    back_image = gl::GLImageD3D::FromGLImage(
-        back_texture->GetLevelImage(GL_TEXTURE_2D, 0));
+  back_texture_id = back_texture->service_id();
+  EXPECT_NE(back_texture_id, 0u);
 
-    auto front_texture = shared_image_representation_factory_
-                             ->ProduceGLTexturePassthrough(front_buffer_mailbox)
-                             ->GetTexturePassthrough();
-    ASSERT_TRUE(front_texture);
-    EXPECT_EQ(front_texture->target(), static_cast<unsigned>(GL_TEXTURE_2D));
+  back_image = gl::GLImageD3D::FromGLImage(
+      back_texture->GetLevelImage(GL_TEXTURE_2D, 0));
 
-    front_texture_id = front_texture->service_id();
-    EXPECT_NE(front_texture_id, 0u);
+  auto front_texture = shared_image_representation_factory_
+                           ->ProduceGLTexturePassthrough(front_buffer_mailbox)
+                           ->GetTexturePassthrough();
+  ASSERT_TRUE(front_texture);
+  EXPECT_EQ(front_texture->target(), static_cast<unsigned>(GL_TEXTURE_2D));
 
-    front_image = gl::GLImageD3D::FromGLImage(
-        front_texture->GetLevelImage(GL_TEXTURE_2D, 0));
-  } else {
-    auto* back_texture = shared_image_representation_factory_
-                             ->ProduceGLTexture(back_buffer_mailbox)
-                             ->GetTexture();
-    ASSERT_TRUE(back_texture);
-    EXPECT_EQ(back_texture->target(), static_cast<unsigned>(GL_TEXTURE_2D));
+  front_texture_id = front_texture->service_id();
+  EXPECT_NE(front_texture_id, 0u);
 
-    back_texture_id = back_texture->service_id();
-    EXPECT_NE(back_texture_id, 0u);
-
-    gles2::Texture::ImageState image_state = gles2::Texture::UNBOUND;
-    back_image = gl::GLImageD3D::FromGLImage(
-        back_texture->GetLevelImage(GL_TEXTURE_2D, 0, &image_state));
-    EXPECT_EQ(image_state, gles2::Texture::BOUND);
-
-    auto* front_texture = shared_image_representation_factory_
-                              ->ProduceGLTexture(front_buffer_mailbox)
-                              ->GetTexture();
-    ASSERT_TRUE(front_texture);
-    EXPECT_EQ(front_texture->target(), static_cast<unsigned>(GL_TEXTURE_2D));
-
-    front_texture_id = front_texture->service_id();
-    EXPECT_NE(front_texture_id, 0u);
-
-    image_state = gles2::Texture::UNBOUND;
-    front_image = gl::GLImageD3D::FromGLImage(
-        front_texture->GetLevelImage(GL_TEXTURE_2D, 0, &image_state));
-    EXPECT_EQ(image_state, gles2::Texture::BOUND);
-  }
+  front_image = gl::GLImageD3D::FromGLImage(
+      front_texture->GetLevelImage(GL_TEXTURE_2D, 0));
 
   ASSERT_TRUE(back_image);
   EXPECT_EQ(back_image->ShouldBindOrCopy(), gl::GLImage::BIND);
@@ -421,7 +387,6 @@ class SharedImageBackingFactoryD3DTest
       return;
 
     SharedImageBackingFactoryD3DTestBase::SetUp();
-    ASSERT_TRUE(use_passthrough_texture_);
     GpuDriverBugWorkarounds workarounds;
     scoped_refptr<gl::GLShareGroup> share_group = new gl::GLShareGroup();
     context_state_ = base::MakeRefCounted<SharedContextState>(
@@ -486,7 +451,7 @@ class SharedImageBackingFactoryD3DTest
 // Test to check interaction between Gl and skia GL representations.
 // We write to a GL texture using gl representation and then read from skia
 // representation.
-TEST_P(SharedImageBackingFactoryD3DTest, GL_SkiaGL) {
+TEST_F(SharedImageBackingFactoryD3DTest, GL_SkiaGL) {
   if (!IsD3DSharedImageSupported())
     return;
 
@@ -543,7 +508,7 @@ TEST_P(SharedImageBackingFactoryD3DTest, GL_SkiaGL) {
 
 #if BUILDFLAG(USE_DAWN)
 // Test to check interaction between Dawn and skia GL representations.
-TEST_P(SharedImageBackingFactoryD3DTest, Dawn_SkiaGL) {
+TEST_F(SharedImageBackingFactoryD3DTest, Dawn_SkiaGL) {
   if (!IsD3DSharedImageSupported())
     return;
 
@@ -622,11 +587,5 @@ TEST_P(SharedImageBackingFactoryD3DTest, Dawn_SkiaGL) {
 }
 #endif  // BUILDFLAG(USE_DAWN)
 
-INSTANTIATE_TEST_SUITE_P(All,
-                         SharedImageBackingFactoryD3DTestSwapChain,
-                         testing::Bool());
-INSTANTIATE_TEST_SUITE_P(All,
-                         SharedImageBackingFactoryD3DTest,
-                         testing::Values(true));
 }  // anonymous namespace
 }  // namespace gpu

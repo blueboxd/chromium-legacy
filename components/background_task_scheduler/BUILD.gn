@@ -28,12 +28,36 @@ if (is_android) {
   }
 }
 
+static_library("public") {
+  sources = [
+    "background_task.h",
+    "background_task_scheduler.h",
+    "task_ids.h",
+    "task_info.cc",
+    "task_info.h",
+    "task_parameters.cc",
+    "task_parameters.h",
+  ]
+
+  public_deps = [
+    "//base",
+    "//components/keyed_service/core",
+  ]
+}
+
 if (is_android) {
   # This is shared between WebView and Chrome. We do not want to add GCM
   # related permissions for WebView while still wanting to avoid collision
   # between WebView and Chrome.
   android_library("background_task_scheduler_task_ids_java") {
-    sources = [ "android/java/src/org/chromium/components/background_task_scheduler/TaskIds.java" ]
+    srcjar_deps = [ ":jni_enums" ]
+    deps = [ "//third_party/android_deps:androidx_annotation_annotation_java" ]
+  }
+
+  java_cpp_enum("jni_enums") {
+    visibility = [ "*" ]
+
+    sources = [ "task_ids.h" ]
   }
 
   android_library("public_java") {

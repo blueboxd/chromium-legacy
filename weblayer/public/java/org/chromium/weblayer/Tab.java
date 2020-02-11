@@ -36,7 +36,7 @@ import java.util.Map;
  * Represents a single tab in a browser. More specifically, owns a NavigationController, and allows
  * configuring state of the tab, such as delegates and callbacks.
  */
-public final class Tab {
+public class Tab {
     /** The top level key of the JSON object returned by executeScript(). */
     public static final String SCRIPT_RESULT_KEY = "result";
 
@@ -53,6 +53,15 @@ public final class Tab {
     private NewTabCallback mNewTabCallback;
     // Id from the remote side.
     private final int mId;
+
+    // Constructor for test mocking.
+    protected Tab() {
+        mImpl = null;
+        mNavigationController = null;
+        mFindInPageController = null;
+        mCallbacks = null;
+        mId = 0;
+    }
 
     Tab(ITab impl, Browser browser) {
         mImpl = impl;

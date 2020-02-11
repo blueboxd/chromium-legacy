@@ -310,7 +310,8 @@ class Parser(object):
       if p[3] not in ('data_pipe_consumer',
                       'data_pipe_producer',
                       'message_pipe',
-                      'shared_buffer'):
+                      'shared_buffer',
+                      'platform'):
         # Note: We don't enable tracking of line numbers for everything, so we
         # can't use |p.lineno(3)|.
         raise ParseError(self.filename, "Invalid handle type %r:" % p[3],

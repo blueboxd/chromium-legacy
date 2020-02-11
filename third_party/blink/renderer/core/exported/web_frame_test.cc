@@ -9170,6 +9170,8 @@ TEST_F(WebFrameSwapTest, EventsOnDisconnectedSubDocumentSkipped) {
   WebFrame* target_frame = MainFrame()->FirstChild()->NextSibling();
   EXPECT_TRUE(target_frame);
   SwapAndVerifySubframeConsistency("local->remote", target_frame, remote_frame);
+  remote_frame->SetReplicatedOrigin(
+      WebSecurityOrigin(SecurityOrigin::CreateUniqueOpaque()), false);
 
   WebLocalFrameImpl* local_child = frame_test_helpers::CreateLocalChild(
       *remote_frame, "local-inside-remote");
@@ -9191,6 +9193,8 @@ TEST_F(WebFrameSwapTest, EventsOnDisconnectedElementSkipped) {
   WebFrame* target_frame = MainFrame()->FirstChild()->NextSibling();
   EXPECT_TRUE(target_frame);
   SwapAndVerifySubframeConsistency("local->remote", target_frame, remote_frame);
+  remote_frame->SetReplicatedOrigin(
+      WebSecurityOrigin(SecurityOrigin::CreateUniqueOpaque()), false);
 
   WebLocalFrameImpl* local_child = frame_test_helpers::CreateLocalChild(
       *remote_frame, "local-inside-remote");

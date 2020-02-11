@@ -43,6 +43,9 @@ GPU_EXPORT bool CollectContextGraphicsInfo(GPUInfo* gpu_info);
 GPU_EXPORT bool GetDxDiagnostics(DxDiagNode* output);
 GPU_EXPORT void RecordGpuSupportedRuntimeVersionHistograms(
     Dx12VulkanVersionInfo* dx12_vulkan_version_info);
+
+// Collect the hardware overlay support flags.
+GPU_EXPORT void CollectHardwareOverlayInfo(OverlayInfo* overlay_info);
 #endif  // OS_WIN
 
 // Create a GL context and collect GL strings and versions.

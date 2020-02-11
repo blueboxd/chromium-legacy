@@ -492,6 +492,7 @@
 <translation id="1670399744444387456">មូលដ្ឋាន</translation>
 <translation id="167160931442925455">ឮខ្លាំងបំផុត</translation>
 <translation id="1673137583248014546"><ph name="URL" /> ចង់មើល​ម៉ាក និង​ម៉ូដែល​សោ​សុវត្ថិភាព​របស់អ្នក</translation>
+<translation id="1677472565718498478">នៅសល់ <ph name="TIME" /></translation>
 <translation id="1679068421605151609">ឧបករណ៍អ្នកអភិវឌ្ឍន៍</translation>
 <translation id="1679806121152819234">Plugin VM</translation>
 <translation id="1679810534535368772">តើអ្នក​ពិតជាចង់ចាក​ចេញមែនឬ?</translation>
@@ -780,7 +781,7 @@
 <translation id="2079053412993822885">ប្រសិនបើអ្នកលុបវិញ្ញាបនប័ត្រមួយក្នុងចំណោមវិញ្ញាបនប័ត្រទាំងឡាយរបស់អ្នក អ្នកមិនអាចប្រើវាដើម្បីសម្គាល់ខ្លួនអ្នកទៀតទេ។</translation>
 <translation id="2079545284768500474">បកក្រោយ</translation>
 <translation id="2080070583977670716">ការកំណត់ច្រើនទៀត</translation>
-<translation id="2082187087049518845">បញ្ចូលផ្ទាំងទៅក្នុងក្រុម</translation>
+<translation id="2082187087049518845">ផ្ទាំងក្រុម</translation>
 <translation id="2087822576218954668">បោះពុម្ព៖ <ph name="PRINT_NAME" /></translation>
 <translation id="2088690981887365033">បណ្ដាញ VPN</translation>
 <translation id="2089566709556890888">រុករក​ដោយសុវត្ថិភាពជាមួយ Google Chrome</translation>
@@ -3963,7 +3964,6 @@
 <translation id="6545867563032584178">មីក្រូហ្វូន​ត្រូវបានបិទ​នៅក្នុង​ចំណូលចិត្ត​ប្រព័ន្ធ Mac</translation>
 <translation id="6547354035488017500">បង្កើនទំហំផ្ទុកយ៉ាងហោចណាស់ 512 MB បើមិនដូច្នេះទេ ឧបករណ៍របស់អ្នកនឹងមិនធ្វើការឆ្លើយតបទេ។ ដើម្បីបង្កើនទំហំផ្ទុក សូមលុបឯកសារចេញពីឧបករណ៍ផ្ទុក។</translation>
 <translation id="6549639163247690448"><ph name="DOMAIN" /> តម្រូវឱ្យអ្នក​ភ្ជាប់ Wi-Fi ឥឡូវនេះ រួចទាញយកកំណែថ្មី​។ កំណែថ្មី​នឹងទាញយក​ដោយស្វ័យប្រវត្តិ នៅពេលអ្នក​ភ្ជាប់អ៊ីនធឺណិត។</translation>
-<translation id="6549966385318247177">កម្មវិធី​បន្ថែម​នេះត្រូវបានទប់ស្កាត់​ ដោយសារមាន​ខ្លឹមសារសម្រាប់​មនុស្សពេញវ័យ។</translation>
 <translation id="6550675742724504774">ជម្រើស</translation>
 <translation id="6551508934388063976">មិនមានការបញ្ជាទេ។ ចុច control-N ដើម្បីបើកផ្ទាំងថ្មី។</translation>
 <translation id="6551612971599078809">គេហទំព័រ​កំពុង​ប្រើប្រាស់ USB</translation>

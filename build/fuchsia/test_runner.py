@@ -33,6 +33,13 @@ def main():
   parser.add_argument('--gtest_repeat',
                       help='GTest repeat value to use. This also disables the '
                            'test launcher timeout.')
+  # TODO(crbug.com/1046861): Remove qemu-img-retries flag when qemu-img arm64
+  # hang bug is fixed.
+  parser.add_argument('--qemu-img-retries',
+                      default=0,
+                      type=int,
+                      help='Number of times that the qemu-img command can be '
+                           'retried.')
   parser.add_argument('--test-launcher-retry-limit',
                       help='Number of times that test suite will retry failing '
                            'tests. This is multiplicative with --gtest_repeat.')

@@ -23,6 +23,10 @@
 #include "services/service_manager/public/cpp/binder_registry.h"
 #include "url/gurl.h"
 
+namespace base {
+class TickClock;
+}
+
 namespace safe_browsing {
 class ClientPhishingRequest;
 class ClientSideDetectionService;
@@ -102,6 +106,11 @@ class ClientSideDetectionHost : public content::WebContentsObserver,
   // class.
   void set_client_side_detection_service(ClientSideDetectionService* service);
 
+  // Sets a test tick clock only for testing.
+  void set_tick_clock_for_testing(const base::TickClock* tick_clock) {
+    tick_clock_ = tick_clock;
+  }
+
   // This pointer may be NULL if client-side phishing detection is disabled.
   ClientSideDetectionService* csd_service_;
   // These pointers may be NULL if SafeBrowsing is disabled.
@@ -134,6 +143,9 @@ class ClientSideDetectionHost : public content::WebContentsObserver,
   int unsafe_unique_page_id_;
   std::unique_ptr<security_interstitials::UnsafeResource> unsafe_resource_;
 
+  // Records the start time of when phishing detection started.
+  base::TimeTicks phishing_detection_start_time_;
+  const base::TickClock* tick_clock_;
   base::WeakPtrFactory<ClientSideDetectionHost> weak_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(ClientSideDetectionHost);

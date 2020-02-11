@@ -491,6 +491,7 @@
 <translation id="1670399744444387456">Opcións básicas</translation>
 <translation id="167160931442925455">O máis alto</translation>
 <translation id="1673137583248014546"><ph name="URL" /> quere ver a marca e o modelo da chave de seguranza</translation>
+<translation id="1677472565718498478">Tempo restante: <ph name="TIME" /></translation>
 <translation id="1679068421605151609">Ferramentas para programadores</translation>
 <translation id="1679806121152819234">Plugin VM</translation>
 <translation id="1679810534535368772">Seguro que queres saír?</translation>
@@ -3961,7 +3962,6 @@ Instala a aplicación Family Link no teu dispositivo e poderás xestionar a conf
 <translation id="6545867563032584178">O micrófono está desactivado nas preferencias do sistema de Mac</translation>
 <translation id="6547354035488017500">Libera polo menos 512 MB de espazo para que o dispositivo non se bloquee. Para liberar espazo, elimina ficheiros do almacenamento do dispositivo.</translation>
 <translation id="6549639163247690448"><ph name="DOMAIN" /> require que te conectes agora á wifi e descargues unha actualización. A actualización descargarase automaticamente cando te conectes a Internet.</translation>
-<translation id="6549966385318247177">Bloqueouse esta extensión porque inclúe contido non adecuado para menores.</translation>
 <translation id="6550675742724504774">Opcións</translation>
 <translation id="6551508934388063976">Comando non dispoñible. Preme control-N para abrir unha ventá nova.</translation>
 <translation id="6551612971599078809">O sitio está utilizando un USB</translation>

@@ -248,7 +248,7 @@ public class SnackbarView {
 
     private static int getTextAppearance(Snackbar snackbar) {
         if (snackbar.getTheme() == Snackbar.Theme.GOOGLE) {
-            return org.chromium.ui.R.style.TextAppearance_Body_Inverse;
+            return org.chromium.ui.R.style.TextAppearance_TextMedium_Primary_Inverse;
         }
 
         assert snackbar.getTheme() == Snackbar.Theme.BASIC;
@@ -261,7 +261,7 @@ public class SnackbarView {
 
     private static int getButtonTextAppearance(Snackbar snackbar) {
         if (snackbar.getTheme() == Snackbar.Theme.GOOGLE) {
-            return org.chromium.ui.R.style.TextAppearance_WhiteButtonText;
+            return org.chromium.ui.R.style.TextAppearance_Button_Text_Filled;
         }
 
         assert snackbar.getTheme() == Snackbar.Theme.BASIC;

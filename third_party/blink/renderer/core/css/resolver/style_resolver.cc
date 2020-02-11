@@ -1113,16 +1113,23 @@ scoped_refptr<const ComputedStyle> StyleResolver::StyleForPage(int page_index) {
 
   NeedsApplyPass needs_apply_pass;
   const MatchResult& result = collector.MatchedResult();
-  ApplyMatchedProperties<kAnimationPropertyPriority, kUpdateNeedsApplyPass>(
-      state, result.AllRules(), false, inherited_only, needs_apply_pass);
-  ApplyMatchedProperties<kHighPropertyPriority, kCheckNeedsApplyPass>(
-      state, result.AllRules(), false, inherited_only, needs_apply_pass);
 
-  // If our font got dirtied, go ahead and update it now.
-  UpdateFont(state);
+  if (RuntimeEnabledFeatures::CSSCascadeEnabled()) {
+    StyleCascade cascade(state);
+    cascade.Analyze(result, CascadeFilter());
+    cascade.Apply(result, CascadeFilter());
+  } else {
+    ApplyMatchedProperties<kAnimationPropertyPriority, kUpdateNeedsApplyPass>(
+        state, result.AllRules(), false, inherited_only, needs_apply_pass);
+    ApplyMatchedProperties<kHighPropertyPriority, kCheckNeedsApplyPass>(
+        state, result.AllRules(), false, inherited_only, needs_apply_pass);
 
-  ApplyMatchedProperties<kLowPropertyPriority, kCheckNeedsApplyPass>(
-      state, result.AllRules(), false, inherited_only, needs_apply_pass);
+    // If our font got dirtied, go ahead and update it now.
+    UpdateFont(state);
+
+    ApplyMatchedProperties<kLowPropertyPriority, kCheckNeedsApplyPass>(
+        state, result.AllRules(), false, inherited_only, needs_apply_pass);
+  }
 
   LoadPendingResources(state);
 
@@ -1557,6 +1564,8 @@ void StyleResolver::ApplyMatchedProperties(StyleResolverState& state,
                                            bool inherited_only,
                                            NeedsApplyPass& needs_apply_pass,
                                            ForcedColorFilter forced_colors) {
+  DCHECK(!RuntimeEnabledFeatures::CSSCascadeEnabled());
+
   if (range.IsEmpty())
     return;
 

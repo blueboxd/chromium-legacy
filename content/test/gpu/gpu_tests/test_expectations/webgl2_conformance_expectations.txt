@@ -36,6 +36,7 @@
 [ linux ] WebglExtension_WEBGL_compressed_texture_s3tc_srgb [ Skip ]
 [ mac ] WebglExtension_EXT_texture_compression_bptc [ Skip ]
 [ android qualcomm ] WebglExtension_EXT_texture_compression_bptc [ Skip ]
+[ android qualcomm ] WebglExtension_EXT_texture_compression_rgtc [ Skip ]
 crbug.com/776222 [ android ] WebglExtension_WEBGL_video_texture [ Skip ]
 
 # Disabling all multiview checks temporarily while ANGLE side changes

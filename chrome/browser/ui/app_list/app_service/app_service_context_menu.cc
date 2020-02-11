@@ -65,7 +65,13 @@ AppServiceContextMenu::AppServiceContextMenu(
   apps::AppServiceProxy* proxy =
       apps::AppServiceProxyFactory::GetForProfile(profile);
   DCHECK(proxy);
-  app_type_ = proxy->AppRegistryCache().GetAppType(app_id);
+  proxy->AppRegistryCache().ForOneApp(
+      app_id, [this](const apps::AppUpdate& update) {
+        app_type_ =
+            update.Readiness() == apps::mojom::Readiness::kUninstalledByUser
+                ? apps::mojom::AppType::kUnknown
+                : app_type_ = update.AppType();
+      });
 }
 
 AppServiceContextMenu::~AppServiceContextMenu() = default;
@@ -212,8 +218,10 @@ void AppServiceContextMenu::OnGetMenuModel(
   }
 
   // Create default items.
-  if (app_id() != extension_misc::kChromeAppId)
+  if (app_id() != extension_misc::kChromeAppId &&
+      app_type_ != apps::mojom::AppType::kUnknown) {
     app_list::AppContextMenu::BuildMenu(menu_model.get());
+  }
 
   if (app_type_ == apps::mojom::AppType::kExtension) {
     BuildExtensionAppShortcutsMenu(menu_model.get());

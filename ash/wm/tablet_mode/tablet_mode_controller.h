@@ -310,8 +310,8 @@ class ASH_EXPORT TabletModeController
   // tablet mode state, false otherwise.
   bool UpdateUiTabletState();
 
-  void UpdateShelf(aura::Window* window, bool visible);
-  void CreatePhantomShelf(aura::Window* window);
+  // Update the shelf's visibility before/after taking screenshot.
+  void UpdateShelfVisibilityForScreenshot(aura::Window* window, bool visible);
 
   // The tablet window manager (if enabled).
   std::unique_ptr<TabletModeWindowManager> tablet_mode_window_manager_;
@@ -423,6 +423,7 @@ class ASH_EXPORT TabletModeController
   // transition. It's observed to take an action after its animation ends.
   ui::Layer* animating_layer_ = nullptr;
 
+  // The layer that holds the clone of shelf layer while taking a screenshot.
   std::unique_ptr<ui::LayerTreeOwner> phantom_shelf_layer_;
 
   std::unique_ptr<TabletModeTransitionFpsCounter> fps_counter_;

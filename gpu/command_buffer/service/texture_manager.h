@@ -50,10 +50,8 @@ class SharedImageBackingIOSurface;
 class SharedImageRepresentationGLTextureIOSurface;
 class SharedImageRepresentationSkiaIOSurface;
 class SharedImageRepresentationGLOzone;
-class SharedImageBackingD3D;
 class SharedImageVideo;
 class StreamTexture;
-class SharedImageBackingFactoryD3D;
 class TestSharedImageBacking;
 
 namespace gles2 {
@@ -445,8 +443,6 @@ class GPU_GLES2_EXPORT Texture final : public TextureBase {
   friend class gpu::SharedImageRepresentationEglImageGLTexture;
   friend class gpu::SharedImageRepresentationSkiaGLAHB;
   friend class gpu::SharedImageBackingIOSurface;
-  friend class gpu::SharedImageBackingD3D;
-  friend class gpu::SharedImageBackingFactoryD3D;
   friend class gpu::SharedImageRepresentationGLTextureIOSurface;
   friend class gpu::SharedImageRepresentationSkiaIOSurface;
   friend class gpu::SharedImageRepresentationGLOzone;

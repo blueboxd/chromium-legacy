@@ -12,7 +12,9 @@ GEN_INCLUDE([
  */
 function SwitchAccessNavigationManagerTest() {
   SwitchAccessE2ETest.call(this);
-  this.navigator = window.switchAccess.navigationManager_;
+  this.navigator = NavigationManager.instance;
+  BackButtonNode
+      .locationForTesting = {top: 10, left: 10, width: 20, height: 20};
 }
 
 SwitchAccessNavigationManagerTest.prototype = {
@@ -39,7 +41,7 @@ SwitchAccessNavigationManagerTest.prototype = {
 };
 
 function moveToPageContents() {
-  const navigator = switchAccess.navigationManager_;
+  const navigator = NavigationManager.instance;
   // Start from the desktop node.
   navigator.group_ = RootNodeWrapper.buildDesktopTree(navigator.desktop_);
   navigator.node_ = navigator.group_.firstChild;
@@ -49,13 +51,13 @@ function moveToPageContents() {
 
   // The third item in the browser window is the page contents.
   // TODO(anastasi): find the browser window dynamically.
-  navigator.moveForward();
-  navigator.moveForward();
+  NavigationManager.moveForward();
+  NavigationManager.moveForward();
   navigator.selectCurrentNode();
 }
 
 function currentNode() {
-  return switchAccess.navigationManager_.node_;
+  return NavigationManager.instance.node_;
 }
 
 TEST_F('SwitchAccessNavigationManagerTest', 'MoveTo', function() {
@@ -185,9 +187,10 @@ TEST_F('SwitchAccessNavigationManagerTest', 'SelectButton', function() {
               'Checked state changed on unexpected node');
         }));
 
-    // The event listener is not set instantaneously. Set a timeout of 0 to
-    // yield to pending processes.
-    setTimeout(this.newCallback(switchAccess.selectCurrentNode), 0);
+    chrome.automation.getDesktop(this.newCallback((d) => {
+      NavigationManager.initialize(d);
+      NavigationManager.instance.selectCurrentNode();
+    }));
   });
 });
 
@@ -238,7 +241,7 @@ TEST_F('SwitchAccessNavigationManagerTest', 'DISABLED_MoveForward', function() {
         'button1', button1.automationNode.htmlAttributes['id'],
         'Current node is not button1');
 
-    this.navigator.moveForward();
+    NavigationManager.moveForward();
     assertFalse(
         button1.equals(this.navigator.node_),
         'Still on button1 after moveForward()');
@@ -250,7 +253,7 @@ TEST_F('SwitchAccessNavigationManagerTest', 'DISABLED_MoveForward', function() {
         'button2', button2.automationNode.htmlAttributes['id'],
         'Current node is not button2');
 
-    this.navigator.moveForward();
+    NavigationManager.moveForward();
     assertFalse(
         button1.equals(this.navigator.node_),
         'Unexpected navigation to button1');
@@ -265,12 +268,12 @@ TEST_F('SwitchAccessNavigationManagerTest', 'DISABLED_MoveForward', function() {
         'button3', button3.automationNode.htmlAttributes['id'],
         'Current node is not button3');
 
-    this.navigator.moveForward();
+    NavigationManager.moveForward();
     assertTrue(
         this.navigator.node_ instanceof BackButtonNode,
         'BackButtonNode should come after button3');
 
-    this.navigator.moveForward();
+    NavigationManager.moveForward();
     assertTrue(
         button1.equals(this.navigator.node_),
         'button1 should come after the BackButtonNode');
@@ -293,12 +296,12 @@ TEST_F('SwitchAccessNavigationManagerTest', 'MoveBackward', function() {
         'button1', button1.automationNode.htmlAttributes['id'],
         'Current node is not button1');
 
-    this.navigator.moveBackward();
+    NavigationManager.moveBackward();
     assertTrue(
         this.navigator.node_ instanceof BackButtonNode,
         'BackButtonNode should come before button1');
 
-    this.navigator.moveBackward();
+    NavigationManager.moveBackward();
     assertFalse(
         button1.equals(this.navigator.node_),
         'Unexpected navigation to button1');
@@ -310,7 +313,7 @@ TEST_F('SwitchAccessNavigationManagerTest', 'MoveBackward', function() {
         'button3', button3.automationNode.htmlAttributes['id'],
         'Current node is not button3');
 
-    this.navigator.moveBackward();
+    NavigationManager.moveBackward();
     assertFalse(
         button3.equals(this.navigator.node_),
         'Still on button3 after moveBackward()');
@@ -323,7 +326,7 @@ TEST_F('SwitchAccessNavigationManagerTest', 'MoveBackward', function() {
         'button2', button2.automationNode.htmlAttributes['id'],
         'Current node is not button2');
 
-    this.navigator.moveBackward();
+    NavigationManager.moveBackward();
     assertTrue(
         button1.equals(this.navigator.node_),
         'button1 should come before button2');

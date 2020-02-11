@@ -92,7 +92,7 @@ HintsFetcher::HintsFetcher(
   DCHECK(features::IsRemoteFetchingEnabled());
 }
 
-HintsFetcher::~HintsFetcher() {}
+HintsFetcher::~HintsFetcher() = default;
 
 // static
 void HintsFetcher::ClearHostsSuccessfullyFetched(PrefService* pref_service) {
@@ -241,6 +241,9 @@ bool HintsFetcher::FetchOptimizationGuideServiceHints(
   active_url_loader_->SetRetryOptions(
       kMaxRetries, network::SimpleURLLoader::RETRY_ON_NETWORK_CHANGE);
 
+  // It's safe to use |base::Unretained(this)| here because |this| owns
+  // |active_url_loader_| and the callback will be canceled if
+  // |active_url_loader_| is destroyed.
   active_url_loader_->DownloadToStringOfUnboundedSizeUntilCrashAndDie(
       url_loader_factory_.get(),
       base::BindOnce(&HintsFetcher::OnURLLoadComplete, base::Unretained(this)));
@@ -343,9 +346,14 @@ void HintsFetcher::UpdateHostsSuccessfullyFetched() {
   hosts_fetched_.clear();
 }
 
+// Callback is only invoked if |active_url_loader_| is bound and still alive.
 void HintsFetcher::OnURLLoadComplete(
     std::unique_ptr<std::string> response_body) {
   SEQUENCE_CHECKER(sequence_checker_);
+  DCHECK(active_url_loader_);
+
+  if (!active_url_loader_)
+    return;
 
   int response_code = -1;
   if (active_url_loader_->ResponseInfo() &&

@@ -635,14 +635,6 @@ void Tab::OnGestureEvent(ui::GestureEvent* event) {
       break;
     }
 
-    case ui::ET_GESTURE_END:
-      controller_->EndDrag(END_DRAG_COMPLETE);
-      break;
-
-    case ui::ET_GESTURE_SCROLL_UPDATE:
-      controller_->ContinueDrag(this, *event);
-      break;
-
     default:
       break;
   }

@@ -161,7 +161,7 @@ class ASH_EXPORT ScrollableShelfView : public views::AccessiblePaneView,
   };
 
   // Returns the maximum scroll distance based on the given space for icons.
-  int CalculateScrollUpperBound(int available_space_for_icons) const;
+  float CalculateScrollUpperBound(int available_space_for_icons) const;
 
   // Returns the clamped scroll offset.
   float CalculateClampedScrollOffset(float scroll,
@@ -174,7 +174,7 @@ class ASH_EXPORT ScrollableShelfView : public views::AccessiblePaneView,
   // (1) scroll offset on the main axis; (2) available space for shelf icons;
   // (3) Bounds of the scrollable shelf view: actual view bounds or target
   // bounds.
-  LayoutStrategy CalculateLayoutStrategy(int scroll_distance_on_main_axis,
+  LayoutStrategy CalculateLayoutStrategy(float scroll_distance_on_main_axis,
                                          int space_for_icons,
                                          bool use_target_bounds) const;
 
@@ -322,8 +322,8 @@ class ASH_EXPORT ScrollableShelfView : public views::AccessiblePaneView,
   // shows, |shelf_view_| is translated due to the change in
   // |shelf_container_view_|'s bounds. That translation offset is not included
   // in |scroll_offset_|.
-  int GetActualScrollOffset(int main_axis_scroll_distance,
-                            LayoutStrategy layout_strategy) const;
+  float GetActualScrollOffset(float main_axis_scroll_distance,
+                              LayoutStrategy layout_strategy) const;
 
   // Updates |first_tappable_app_index_| and |last_tappable_app_index_|.
   void UpdateTappableIconIndices();
@@ -361,9 +361,9 @@ class ASH_EXPORT ScrollableShelfView : public views::AccessiblePaneView,
   // be adjusted to ensure the correct UI under the specific layout strategy.
   // Three parameters are needed: (1) scroll offset on the main axis (2) layout
   // strategy (3) available space for shelf icons.
-  int CalculateAdjustmentOffset(int main_axis_scroll_distance,
-                                LayoutStrategy layout_strategy,
-                                int available_space_for_icons) const;
+  float CalculateAdjustmentOffset(int main_axis_scroll_distance,
+                                  LayoutStrategy layout_strategy,
+                                  int available_space_for_icons) const;
 
   int CalculateScrollDistanceAfterAdjustment(
       int main_axis_scroll_distance,

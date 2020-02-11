@@ -452,7 +452,7 @@
 Vaš Google račun može imati druge oblike historije pregledanja kao što su pretraživanja i aktivnosti s drugih Googleovih usluga na <ph name="BEGIN_LINK" />myactivity.google.com<ph name="END_LINK" />.</translation>
 <translation id="4527374721149092498">Saznajte više o temama na web lokacijama bez napuštanja stranice. Kada dodirnete Pretraživanje, poslat ćete riječ i njen kontekst u Google Pretraživanje, a dobit ćete definicije, slike, rezultate pretraživanja i druge detalje.
 
-Dodirnite bilo koju riječ da za nju kreirate pretraživanje. Da prilagodite pojam za pretraživanje, pritisnite i zadržite za odabir. Za fino podešavanje pretraživanja, kliznite ploču da je otvorite, dodirnite ikonu za proširivanje da kreirate novu karticu, a zatim dodirnite okvir za pretraživanje.</translation>
+Dodirnite bilo koju riječ da za nju kreirate pretraživanje. Da prilagodite pojam za pretraživanje, pritisnite i zadržite za odabir. Za fino podešavanje pretraživanja, otvorite ploču klizanjem, dodirnite ikonu za proširivanje da kreirate novu karticu, a zatim dodirnite okvir za pretraživanje.</translation>
 <translation id="4532845899244822526">Izaberite folder</translation>
 <translation id="4538018662093857852">Uključi jednostavni način rada</translation>
 <translation id="4550003330909367850">Da prikažete ili kopirate lozinku ovdje, postavite zaključavanje ekrana na ovom uređaju.</translation>
@@ -696,7 +696,7 @@ Da biste promijenili tu postavku, <ph name="BEGIN_LINK" />poništite sinkronizac
 Naprimjer, neke web lokacije mogu reagirati na ovaj zahtjev prikazivanjem oglasa koji se ne zasnivaju na drugim web lokacijama koje ste posjetili. Mnoge web lokacije će i dalje prikupljati i koristiti vaše podatke o pregledanju kako bi, naprimjer, poboljšale sigurnost, pružale sadržaje, oglase i preporuke te generirale statističke podatke za izvještaje.</translation>
 <translation id="6238003486329291387">Saznajte više o temama na web lokacijama bez napuštanja stranice. Kada dodirnete Pretraživanje, poslat ćete riječ i njen kontekst u Google Pretraživanje, a dobit ćete definicije, slike, rezultate pretraživanja i druge detalje.
 
-Dugo pritisnite bilo koju riječ da za nju kreirate pretraživanje. Za fino podešavanje pretraživanja, podesite odabir. Također možete kliznuti ploču da je otvorite, dodirnuti ikonu za proširivanje da kreirate novu karticu, a zatim dodirnuti okvir za pretraživanje.</translation>
+Dugo pritisnite bilo koju riječ da za nju kreirate pretraživanje. Za fino podešavanje pretraživanja, podesite odabir. Također možete otvoriti ploču klizanjem, dodirnuti ikonu za proširivanje da kreirate novu karticu, a zatim dodirnuti okvir za pretraživanje.</translation>
 <translation id="624789221780392884">Ažuriranje je spremno</translation>
 <translation id="6255999984061454636">Prijedlozi sadržaja</translation>
 <translation id="6270391203985052864">Web lokacije mogu tražiti da šalju obavještenja</translation>

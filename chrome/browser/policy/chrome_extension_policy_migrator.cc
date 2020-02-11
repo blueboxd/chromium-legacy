@@ -4,6 +4,7 @@
 
 #include "chrome/browser/policy/chrome_extension_policy_migrator.h"
 
+#include "base/logging.h"
 #include "base/strings/utf_string_conversions.h"
 #include "components/strings/grit/components_strings.h"
 #include "extensions/common/hashed_extension_id.h"
@@ -35,8 +36,11 @@ void ChromeExtensionPolicyMigrator::CopyPoliciesIfUnset(
     }
   }
 
-  if (extension_map == nullptr || extension_map->empty())
+  if (extension_map == nullptr || extension_map->empty()) {
+    VLOG(3) << "Extension with hashed id '" << hashed_extension_id_uppercase
+            << "' not installed. Aborting policy migration.";
     return;
+  }
 
   PolicyMap& chrome_map = bundle->Get(PolicyNamespace(
       PolicyDomain::POLICY_DOMAIN_CHROME, /* component_id */ std::string()));
@@ -45,16 +49,25 @@ void ChromeExtensionPolicyMigrator::CopyPoliciesIfUnset(
     PolicyMap::Entry* entry = extension_map->GetMutable(migration.old_name);
     if (entry) {
       if (!chrome_map.Get(migration.new_name)) {
+        VLOG(3) << "Extension policy is configured: '" << migration.old_name
+                << "'. Copied to '" << migration.new_name << "'.";
         auto new_entry = entry->DeepCopy();
         migration.transform.Run(new_entry.value.get());
         new_entry.AddError(
             l10n_util::GetStringFUTF8(IDS_POLICY_MIGRATED_NEW_POLICY,
                                       base::UTF8ToUTF16(migration.old_name)));
         chrome_map.Set(migration.new_name, std::move(new_entry));
+      } else {
+        VLOG(3) << "Extension policy is configured, but conflicts: '"
+                << migration.old_name << "' (Chrome policy '"
+                << migration.new_name << "' is also set). Skipped.";
       }
       entry->AddError(
           l10n_util::GetStringFUTF8(IDS_POLICY_MIGRATED_OLD_POLICY,
                                     base::UTF8ToUTF16(migration.new_name)));
+    } else {
+      VLOG(3) << "Extension policy is not configured: '" << migration.old_name
+              << "'. Skipped.";
     }
   }
 }

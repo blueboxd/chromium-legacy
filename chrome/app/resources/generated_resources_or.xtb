@@ -488,6 +488,7 @@
 <translation id="1670399744444387456">ମୌଳିକ</translation>
 <translation id="167160931442925455">ଅତ୍ୟଧିକ ବେଶି ଶବ୍ଦ</translation>
 <translation id="1673137583248014546"><ph name="URL" /> ଆପଣଙ୍କର ସୁରକ୍ଷା କୀ'ର ନିର୍ମାତା ଏବଂ ମଡେଲ୍ ଦେଖିବାକୁ ଚାହୁଁଛନ୍ତି</translation>
+<translation id="1677472565718498478"><ph name="TIME" /> ବାକି ଅଛି</translation>
 <translation id="1679068421605151609">ଡେଭେଲପର୍ ଟୁଲ୍</translation>
 <translation id="1679806121152819234">Vm ପ୍ଲଗ୍‌ଇନ୍</translation>
 <translation id="1679810534535368772">ଆପଣ ନିଶ୍ଚିତ ରୂପେ ବାହାରିବାକୁ ଚାହୁଁଛନ୍ତି କି?</translation>
@@ -1061,7 +1062,7 @@
 <translation id="2462724976360937186">ସାର୍ଟିଫିକେଟ୍ କର୍ତ୍ତୁପକ୍ଷ କୀ' ID</translation>
 <translation id="2462752602710430187"><ph name="PRINTER_NAME" />କୁ ଯୋଗ କରାଗଲା</translation>
 <translation id="2464089476039395325">HTTP ପ୍ରୋକ୍ସି</translation>
-<translation id="2465237718053447668"><ph name="DOMAIN" /> ଆପଣଙ୍କୁ ବର୍ତ୍ତମାନ ୱାଇ-ଫାଇ ସହ ସଂଯୋଗ କରି ଏକ ଅପଡେଟକୁ ଡାଉନଲୋଡ୍ କରିବା ପାଇଁ ଆବଶ୍ୟକ କରୁଛି। କିମ୍ବା, ଏକ ପରିମିତ ସଂଯୋଗରୁ ଡାଉନଲୋଡ୍ କରନ୍ତୁ (ଶୁଳ୍କ ଲାଗୁ ହୋଇପାରେ)।</translation>
+<translation id="2465237718053447668"><ph name="DOMAIN" /> ଆପଣଙ୍କୁ ବର୍ତ୍ତମାନ ୱାଇ-ଫାଇ ସହ ସଂଯୋଗ କରି ଏକ ଅପଡେଟକୁ ଡାଉନଲୋଡ୍ କରିବା ପାଇଁ ଆବଶ୍ୟକ କରୁଛି। କିମ୍ବା, ଏକ ମିଟର ହୋଇଥିବା ସଂଯୋଗରୁ ଡାଉନଲୋଡ୍ କରନ୍ତୁ (ଶୁଳ୍କ ଲାଗୁ ହୋଇପାରେ)।</translation>
 <translation id="2467267713099745100"><ph name="NETWORK_TYPE" /> ନେଟ୍‍ୱାର୍କ, ବନ୍ଦ ଅଛି</translation>
 <translation id="2468205691404969808">ଯଦିଓ, ଆପଣ ସେହି ପୃଷ୍ଠାଗୁଡ଼ିକୁ ଯାଆନ୍ତି ନାହିଁ, ତଥାପି ଆପଣଙ୍କର ପ୍ରାଥମିକତାକୁ ମନେରଖିବାକୁ ଏହା କୁକୀ ବ୍ୟବହାର କରେ</translation>
 <translation id="2468402215065996499">ଟାମାଗୋଚୀ</translation>
@@ -1919,7 +1920,7 @@
 <translation id="3648348069317717750"><ph name="USB_DEVICE_NAME" /> ଚିହ୍ନଟ କରାଯାଇଛି</translation>
 <translation id="3649138363871392317">ଫଟୋକୁ କ୍ୟାପଚର୍ କରାଯାଇଥିଲା</translation>
 <translation id="3649505501900178324">ଅପ୍‌ଡେଟ୍ ହେବାକୁ ବାକି ଅଛି</translation>
-<translation id="3650753875413052677">ପଞ୍ଜିକରଣ ସମୟରେ ହୋଇଥିବା ତ୍ରୁଟି</translation>
+<translation id="3650753875413052677">ପଞ୍ଜିକରଣ ତ୍ରୁଟି</translation>
 <translation id="3650845953328929506">ଲଗ୍‍ ଅପ୍‌ଲୋଡ୍‌ ବାକି ଅଛି।</translation>
 <translation id="3650952250015018111">ଆକ୍ସେସ୍ କରିବା ପାଇଁ "<ph name="APP_NAME" />"କୁ ଅନୁମତି ଦିଅନ୍ତୁ:</translation>
 <translation id="3651488188562686558">Wi-Fiରୁ ବିଚ୍ଛିନ୍ନ କରନ୍ତୁ</translation>
@@ -3469,7 +3470,7 @@
 <translation id="5860494867054883682">ଆପଣଙ୍କ ଡିଭାଇସ୍‌ <ph name="CHANNEL_NAME" /> ଚ୍ୟାନେଲ୍‌ରେ ଅପ୍‌ଡେଟ୍‌ ହେଉଛି (<ph name="PROGRESS_PERCENT" />)</translation>
 <translation id="5862109781435984885">ସେଲ୍ଫରେ ଷ୍ଟାଇଲସ୍ ଟୁଲ୍‍ଗୁଡ଼ିକ ଦେଖାନ୍ତୁ</translation>
 <translation id="5863445608433396414">ଡିବଗିଂ ବୈଶିଷ୍ଟ୍ୟକୁ ସକ୍ଷମ କରନ୍ତୁ</translation>
-<translation id="5864195618110239517">ପରିମିତ ସଂଯୋଗ ବ୍ୟବହାର କରନ୍ତୁ</translation>
+<translation id="5864195618110239517">ମିଟର ହୋଇଥିବା ସଂଯୋଗ ବ୍ୟବହାର କରନ୍ତୁ</translation>
 <translation id="5864471791310927901">DHCP ଲୁକଅପ୍ ବିଫଳ ହେଲା।</translation>
 <translation id="586567932979200359">ଆପଣ <ph name="PRODUCT_NAME" />କୁ ଏହାର ଡିସ୍କ ଛବିରୁ ଚଲାଉଛନ୍ତି। ଏହାକୁ ଆପଣଙ୍କ କମ୍ପ୍ୟୁଟର୍‌ରେ ଇନ୍‌ଷ୍ଟଲ୍ କରିବା ଦ୍ୱାରା ଆପଣଙ୍କୁ ବିନା ଡିସ୍କ ଛବିରେ ଏହା ଚଲାଇବାକୁ ଦିଏ ଏବଂ ଏହା ଅପ୍ ଟୁ ଡେଟ୍ ରହିବ ବୋଲି ସୁନିଶ୍ଚିତ କରେ।</translation>
 <translation id="5865733239029070421">ସ୍ୱଚାଳିତରୂପେ Googleକୁ ବ୍ୟବହାରର ପରିସଂଖ୍ୟାନ ଏବଂ କ୍ରାସ୍ ରିପୋର୍ଟ ପଠାଏ</translation>
@@ -3957,7 +3958,6 @@ Google Chrome ଆପଣଙ୍କ ମୋବାଇଲ୍ ଡାଟା ବ୍ୟବ
 <translation id="6545867563032584178">Mac ସିଷ୍ଟମ୍ ଅଗ୍ରାଧିକାରଗୁଡ଼ିକରେ ମାଇକ୍ରୋଫୋନ୍ ବନ୍ଦ କରାଯାଇଛି</translation>
 <translation id="6547354035488017500">ଅତିକମ୍‌ରେ 512 MB ଜାଗା ଖାଲି କରନ୍ତୁ ନଚେତ୍‌ ଆପଣଙ୍କର ଡିଭାଇସ୍‌ ପ୍ରତିକ୍ରିୟାରହିତ ହୋ‍ଇଯିବ। ଜାଗା ଖାଲି କରିବାକୁ, ଡିଭାଇସ୍‌ ଷ୍ଟୋରେଜ୍‌ରୁ ଫାଇଲ୍‌ ଡିଲିଟ୍‍ କରନ୍ତୁ।</translation>
 <translation id="6549639163247690448"><ph name="DOMAIN" /> ଆପଣଙ୍କୁ ବର୍ତ୍ତମାନ ୱାଇ-ଫାଇ ସହ ସଂଯୋଗ କରି ଏକ ଅପଡେଟକୁ ଡାଉନଲୋଡ୍ କରିବା ପାଇଁ ଆବଶ୍ୟକ କରୁଛି। ଆପଣ ଇଣ୍ଟର୍ନେଟ୍ ସଂଯୋଗ କଲେ ଏହି ଅପଡେଟ୍ ସ୍ୱଚାଳିତ ଭାବେ ଡାଉନଲୋଡ୍ ହୋଇଯିବ।</translation>
-<translation id="6549966385318247177">ପ୍ରାପ୍ତ ବୟସ୍କଙ୍କ ପାଇଁ ଉଦ୍ଦିଷ୍ଟ ବିଷୟବସ୍ତୁ ରହିଥିବା ଯୋଗୁଁ ଏହାକୁ ବ୍ଲକ୍ କରାଯାଇଛି।</translation>
 <translation id="6550675742724504774">ବିକଳ୍ପଗୁଡ଼ିକ</translation>
 <translation id="6551508934388063976">କମାଣ୍ଡ ଉପଲବ୍ଧ ନାହିଁ। ଗୋଟିଏ ନୂଆ ୱିଣ୍ଡୋ ଖୋଲିବା ପାଇଁ control-N ଦବାନ୍ତୁ।</translation>
 <translation id="6551612971599078809">ସାଇଟ୍ USB ବ୍ୟବହାର କରୁଛି</translation>
@@ -4160,7 +4160,7 @@ Google Chrome ଆପଣଙ୍କ ମୋବାଇଲ୍ ଡାଟା ବ୍ୟବ
 <translation id="6843423766595476978">Ok Google ସମ୍ପୂର୍ଣ୍ଣରୂପେ ପ୍ରସ୍ତୁତ</translation>
 <translation id="6845038076637626672">ବଡ଼ କରି ଖୋଲନ୍ତୁ</translation>
 <translation id="6845325883481699275">Chromeର ସୁରକ୍ଷା ଉନ୍ନତ କରିବାରେ ସାହାଯ୍ୟ କରନ୍ତୁ</translation>
-<translation id="6846178040388691741">"<ph name="EXTENSION_NAME" />", <ph name="PRINTER_NAME" /> ବ୍ୟବହାର କରି <ph name="FILE_NAME" /> ପ୍ରିଣ୍ଟ କରିବା ପାଇଁ ଚାହୁଁଛନ୍ତି।</translation>
+<translation id="6846178040388691741">"<ph name="EXTENSION_NAME" />", <ph name="PRINTER_NAME" /> ବ୍ୟବହାର କରି <ph name="FILE_NAME" /> ପ୍ରିଣ୍ଟ କରିବା ପାଇଁ ଚାହୁଁଛି।</translation>
 <translation id="6847125920277401289">ଜାରି ରଖିବାକୁ ଜାଗା ଖାଲି କରନ୍ତୁ</translation>
 <translation id="6848388270925200958">ବର୍ତ୍ତମାନ, ଆପଣଙ୍କ ପାଖରେ କିଛି କାର୍ଡ ଅଛି ଯାହା କେବଳ ଏହି ଡିଭାଇସ୍‌ରେ ବ୍ୟବହାର କରିପାରିବେ</translation>
 <translation id="6850286078059909152">ଟେକ୍ସଟ୍ ରଙ୍ଗ</translation>
@@ -5126,7 +5126,7 @@ Google Chrome ଆପଣଙ୍କ ମୋବାଇଲ୍ ଡାଟା ବ୍ୟବ
 <translation id="8143442547342702591">ଅବୈଧ ଆପ୍ଲିକେସନ୍</translation>
 <translation id="8146177459103116374">ଯଦି ଆପଣ ଆଗରୁ ଏହି ଡିଭାଇସ୍‌ରେ ପଞ୍ଜିକୃତ କରିସାରିଛନ୍ତି, ତେବେ ଆପଣ <ph name="LINK2_START" />ଜଣେ ବିଦ୍ୟମାନ ଉପଯୋଗକର୍ତ୍ତା ଭାବରେ ସାଇନ୍ ଇନ୍<ph name="LINK2_END" /> କରିପାରିବେ।</translation>
 <translation id="8146793085009540321">ସାଇନ୍‍-ଇନ୍‍ ବିଫଳ ହୋଇଛି। ଦୟାକରି ଆପଣଙ୍କ ବ୍ୟବସ୍ଥାପକଙ୍କ ସହ ଯୋଗାଯୋଗ କରନ୍ତୁ କିମ୍ବା ପୁଣି ଚେଷ୍ଟା କରନ୍ତୁ।</translation>
-<translation id="8149277777808869878">ଏହି <ph name="DEVICE_TYPE" />, <ph name="BEGIN_BOLD" /><ph name="DOMAIN" /><ph name="END_BOLD" />ଙ୍କ ଦ୍ୱାରା ପରିଚାଳିତ ହେବ।</translation>
+<translation id="8149277777808869878">ଏହି <ph name="DEVICE_TYPE" />, <ph name="BEGIN_BOLD" /><ph name="DOMAIN" /><ph name="END_BOLD" /> ଦ୍ୱାରା ପରିଚାଳିତ ହେବ।</translation>
 <translation id="8151638057146502721">କନ୍‍ଫିଗର୍ କରନ୍ତୁ</translation>
 <translation id="8152091997436726702">ପ୍ରିଣ୍ଟର୍ ପଞ୍ଜିକରଣର ସମୟ ସମାପ୍ତ ହୋଇଯାଇଛି। ଗୋଟିଏ ପ୍ରିଣ୍ଟର୍ ପଞ୍ଜୀକୃତ କରିବା ପାଇଁ, ଆପଣଙ୍କୁ ନିଶ୍ଚିତ ଭାବେ ପଞ୍ଜିକରଣ ସୁନିଶ୍ଚିତ କରିବା ଦରକାର।</translation>
 <translation id="8154790740888707867">କୌଣସି ଫାଇଲ୍‌ ନାହିଁ</translation>

@@ -468,7 +468,8 @@ void AppServiceAppWindowLauncherController::AddAppWindowToShelf(
       owner()->shelf_model()->GetAppWindowLauncherItemController(shelf_id);
   if (item_controller == nullptr) {
     auto controller =
-        std::make_unique<AppServiceAppWindowLauncherItemController>(shelf_id);
+        std::make_unique<AppServiceAppWindowLauncherItemController>(shelf_id,
+                                                                    this);
     item_controller = controller.get();
     if (!owner()->GetItem(shelf_id)) {
       owner()->CreateAppLauncherItem(std::move(controller),

@@ -1283,7 +1283,7 @@ Se questa norma non viene impostata, l'utente potrà scegliere se utilizzare o m
 
       Tieni presente che, se <ph name="PRODUCT_NAME" /> è in esecuzione e la norma cambia, sarà applicata solo alle nuove schede aperte. Pertanto alcune schede potrebbero continuare a osservare il comportamento precedente.</translation>
 <translation id="284288632677954003">URL di un file XML che contiene URL che non devono mai attivare il cambio di browser.</translation>
-<translation id="2844404652289407061">Consente di attivare la disponibilità della funzionalità Tocca per cercare nella visualizzazione contenuti <ph name="PRODUCT_NAME" />.
+<translation id="2844404652289407061">Consente di attivare la disponibilità della funzionalità Tocca per cercare nella visualizzazione contenuti di <ph name="PRODUCT_NAME" />.
 
       Se questa impostazione viene attivata, la funzionalità Tocca per cercare sarà a disposizione degli utenti, che potranno scegliere se attivarla o disattivarla.
 
@@ -2687,7 +2687,7 @@ Se questa norma non viene impostata viene utilizzata la riga di comando predefin
 <translation id="5210980743015047124">Consente di configurare il requisito della versione minima consentita di <ph name="PRODUCT_NAME" />.
 
       Quando questo criterio è impostato su un elenco non vuoto :
-      Se nessuna voce ha una "chrome_version" successiva alla versione corrente del dispositivo, non saranno applicate limitazioni e le limitazioni esistenti verranno revocate.
+      Se nessuna voce ha una "chrome_version" successiva alla versione corrente nel dispositivo, non saranno applicate limitazioni e le limitazioni esistenti verranno revocate.
       Se almeno una voce ha una "chrome_version" successiva alla versione corrente, viene scelta la voce più forte la cui versione è la più vicina a quella corrente.
       In caso di conflitto, la preferenza è assegnata a quella con il valore "warning_period" o "eol_warning_period" inferiore e il criterio viene applicato usando tale voce.
 
@@ -2699,7 +2699,7 @@ Se questa norma non viene impostata viene utilizzata la riga di comando predefin
       Se durante la sessione utente si raggiunge la fine del ciclo di vita, una notifica sullo schermo richiede all'utente di disconnettersi una volta che "l'eol_warning_period" scade.
       Se il dispositivo raggiunge la fine del suo ciclo di vita al momento dell'accesso con un "eol_warning_period" scaduto, il dispositivo viene bloccato e nessun utente potrà accedervi.
 
-      Se questo criterio non è impostato o è impostato su vuoto, non vengono applicate limitazioni, vengono revocate quelle esistenti e l'utente può accedere qualunque sia la versione di <ph name="PRODUCT_NAME" />.
+      Se questo criterio non è impostato o viene lasciato vuoto, non vengono applicate limitazioni, vengono revocate quelle esistenti e l'utente può accedere qualunque sia la versione di <ph name="PRODUCT_NAME" />.
 
       Per "chrome_version" si intende sia una versione esatta, ad esempio "61.0.3163.120", sia un prefisso di versione, ad esempio "61.0".
       I valori "warning_period" ed "eol_warning_period" sono facoltativi e specificati in un numero di giorni. Il valore predefinito è 0 giorni, a indicare nessun periodo d'attesa. </translation>
@@ -2797,7 +2797,7 @@ Se la norma non viene impostata, <ph name="PRODUCT_NAME" /> caricherà tutti gli
 <translation id="5306186200045823863">Considera attendibile l'infrastruttura PKI precedente di Symantec Corporation</translation>
 <translation id="5307432759655324440">Disponibilità della modalità di navigazione in incognito</translation>
 <translation id="5311275381462687162">Impostazione del comportamento precedente predefinito <ph name="ATTRIBUTE_SAMESITE_NAME" /> per i cookie</translation>
-<translation id="5313116350102437846">Questo criterio controlla se gli utenti iscritti al programma di protezione avanzata possono inviare i loro download a Google per la scansione di malware. Se il criterio viene impostato su true o non viene impostato, agli utenti registrati verrà richiesto di inviare i propri file a Google per la scansione approfondita. Se l'utente seleziona "Scansiona", il file scaricato verrà inviato a Google. Se il criterio viene impostato su false, agli utenti non verrà richiesto di inviare i file scaricati a Google.</translation>
+<translation id="5313116350102437846">Questo criterio consente di controllare se gli utenti iscritti al programma di protezione avanzata possono inviare i loro download a Google per la scansione di malware. Se il criterio viene impostato su true o non viene impostato, agli utenti registrati verrà richiesto di inviare i propri file a Google per la scansione approfondita. Se l'utente seleziona "Scansiona", il file scaricato verrà inviato a Google. Se il criterio viene impostato su false, agli utenti non verrà richiesto di inviare i file scaricati a Google.</translation>
 <translation id="5318185076587284965">Attiva l'utilizzo dei server relay per l'host di accesso remoto</translation>
 <translation id="5323128137188992869">Consente di trasmettere contenuti al dispositivo usando <ph name="PRODUCT_NAME" />.
 
@@ -3145,7 +3145,7 @@ Se questa impostazione viene disattivata o non viene impostata, sia gli utenti l
           Se l'azione è la sospensione, è possibile configurare separatamente il blocco o meno dello schermo prima della sospensione di <ph name="PRODUCT_OS_NAME" />.</translation>
 <translation id="5746196829700407864">Elenco di pattern URL per i quali è necessario controllare la presenza di malware nei contenuti scaricati.  Questo criterio viene utilizzato solo se il criterio <ph name="SEND_FILES_FOR_MALWARE_CHECK_POLICY_NAME" /> viene impostato su un valore che consente o applica i controlli della presenza di malware per i download.
 
-      Se questo criterio non viene impostato o viene impostato su un elenco di pattern URL vuoto, non verrà controllata la presenza di malware nei contenuti scaricati.
+      Se questo criterio non viene impostato o viene impostato su un elenco di pattern URL vuoto, verrà controllata la presenza di malware in tutti i contenuti scaricati.
 
       I pattern URL hanno lo stesso formato del criterio "URLBlacklist" documentato all'indirizzo https://www.chromium.org/administrators/url-blacklist-filter-format.
       </translation>

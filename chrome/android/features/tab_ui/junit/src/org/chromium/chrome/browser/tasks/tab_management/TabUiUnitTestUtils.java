@@ -7,7 +7,10 @@ package org.chromium.chrome.browser.tasks.tab_management;
 import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.mock;
 
+import org.chromium.chrome.browser.profiles.Profile;
 import org.chromium.chrome.browser.tab.TabImpl;
+import org.chromium.content_public.browser.WebContents;
+import org.chromium.url.GURL;
 
 /**
  * This is a util class for TabUi unit tests.
@@ -27,6 +30,17 @@ public class TabUiUnitTestUtils {
     public static TabImpl prepareTab(int tabId, int rootId) {
         TabImpl tab = prepareTab(tabId);
         doReturn(rootId).when(tab).getRootId();
+        return tab;
+    }
+
+    public static TabImpl prepareTab(int tabId, int rootId, Profile profile, String visibleUrl) {
+        TabImpl tab = prepareTab(tabId, rootId);
+        doReturn(null).when(tab).getProfile();
+        WebContents webContents = mock(WebContents.class);
+        GURL gurl = mock(GURL.class);
+        doReturn(visibleUrl).when(gurl).getSpec();
+        doReturn(gurl).when(webContents).getVisibleUrl();
+        doReturn(webContents).when(tab).getWebContents();
         return tab;
     }
 }

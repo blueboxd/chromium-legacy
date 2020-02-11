@@ -18,6 +18,7 @@
 #include "base/test/scoped_feature_list.h"
 #include "chrome/browser/apps/app_service/app_service_proxy.h"
 #include "chrome/browser/apps/app_service/app_service_proxy_factory.h"
+#include "chrome/browser/apps/app_service/app_service_test.h"
 #include "chrome/browser/chromeos/arc/icon_decode_request.h"
 #include "chrome/browser/extensions/extension_util.h"
 #include "chrome/browser/extensions/menu_manager_factory.h"
@@ -101,6 +102,19 @@ std::unique_ptr<KeyedService> MenuManagerFactory(
     content::BrowserContext* context) {
   return extensions::MenuManagerFactory::BuildServiceInstanceForTesting(
       context);
+}
+
+std::unique_ptr<AppServiceAppItem> GetAppListItem(Profile* profile,
+                                                  const std::string& app_id) {
+  apps::AppServiceProxy* proxy =
+      apps::AppServiceProxyFactory::GetForProfile(profile);
+  std::unique_ptr<AppServiceAppItem> item;
+  proxy->AppRegistryCache().ForOneApp(
+      app_id, [profile, &item](const apps::AppUpdate& update) {
+        item = std::make_unique<AppServiceAppItem>(profile, nullptr, nullptr,
+                                                   update);
+      });
+  return item;
 }
 
 std::unique_ptr<ui::SimpleMenuModel> GetContextMenuModel(
@@ -317,6 +331,8 @@ TEST_F(AppContextMenuTest, NonExistingExtensionApp) {
 }
 
 TEST_F(AppContextMenuTest, ArcMenu) {
+  apps::AppServiceTest app_service_test;
+  app_service_test.SetUp(profile());
   ArcAppTest arc_test;
   arc_test.SetUp(profile());
 
@@ -325,10 +341,11 @@ TEST_F(AppContextMenuTest, ArcMenu) {
   controller()->SetAppPinnable(app_id, AppListControllerDelegate::PIN_EDITABLE);
 
   arc_test.app_instance()->SendRefreshAppList(arc_test.fake_apps());
+  app_service_test.FlushMojoCalls();
 
-  ArcAppItem item(profile(), nullptr, nullptr, app_id, std::string());
+  std::unique_ptr<AppServiceAppItem> item = GetAppListItem(profile(), app_id);
 
-  std::unique_ptr<ui::MenuModel> menu = GetContextMenuModel(&item);
+  std::unique_ptr<ui::MenuModel> menu = GetContextMenuModel(item.get());
   ASSERT_NE(nullptr, menu);
 
   // Separators are not added to touchable app context menus. For touchable app
@@ -347,6 +364,7 @@ TEST_F(AppContextMenuTest, ArcMenu) {
   EXPECT_EQ(0u, arc_test.app_instance()->launch_requests().size());
 
   menu->ActivatedAt(0);
+  app_service_test.FlushMojoCalls();
 
   const std::vector<std::unique_ptr<arc::FakeAppInstance::Request>>&
       launch_requests = arc_test.app_instance()->launch_requests();
@@ -354,9 +372,11 @@ TEST_F(AppContextMenuTest, ArcMenu) {
   EXPECT_TRUE(launch_requests[0]->IsForApp(app_info));
 
   controller()->SetAppOpen(app_id, true);
+  arc_test.app_instance()->SendTaskCreated(1, app_info, std::string());
+
   // It is not expected that menu model is unchanged on GetContextMenuModel.
   // ARC app menu requires model to be recalculated.
-  menu = GetContextMenuModel(&item);
+  menu = GetContextMenuModel(item.get());
 
   // Separators are not added to touchable app context menus except for arc app
   // shortcuts, which have double separator, three more app shortcuts provided
@@ -370,26 +390,28 @@ TEST_F(AppContextMenuTest, ArcMenu) {
 
   // Test that arc app shortcuts provided by arc::FakeAppInstance have a
   // separator between each app shortcut.
-    EXPECT_EQ(ui::DOUBLE_SEPARATOR, menu->GetSeparatorTypeAt(index++));
-    for (int shortcut_index = 0; index < menu->GetItemCount(); ++index) {
-      EXPECT_EQ(base::StringPrintf("ShortLabel %d", shortcut_index++),
-                base::UTF16ToUTF8(menu->GetLabelAt(index++)));
-      if (index < menu->GetItemCount())
-        EXPECT_EQ(ui::PADDED_SEPARATOR, menu->GetSeparatorTypeAt(index));
-    }
+  EXPECT_EQ(ui::DOUBLE_SEPARATOR, menu->GetSeparatorTypeAt(index++));
+  for (int shortcut_index = 0; index < menu->GetItemCount(); ++index) {
+    EXPECT_EQ(base::StringPrintf("ShortLabel %d", shortcut_index++),
+              base::UTF16ToUTF8(menu->GetLabelAt(index++)));
+    if (index < menu->GetItemCount())
+      EXPECT_EQ(ui::PADDED_SEPARATOR, menu->GetSeparatorTypeAt(index));
+  }
 
-    // Test launching app shortcut item.
-    EXPECT_EQ(0, arc_test.app_instance()->launch_app_shortcut_item_count());
-    menu->ActivatedAt(menu->GetItemCount() - 1);
-    EXPECT_EQ(1, arc_test.app_instance()->launch_app_shortcut_item_count());
+  // Test launching app shortcut item.
+  EXPECT_EQ(0, arc_test.app_instance()->launch_app_shortcut_item_count());
+  menu->ActivatedAt(menu->GetItemCount() - 1);
+  app_service_test.FlushMojoCalls();
+  EXPECT_EQ(1, arc_test.app_instance()->launch_app_shortcut_item_count());
 
   // This makes all apps non-ready.
   controller()->SetAppOpen(app_id, false);
+  arc_test.app_instance()->SendTaskDestroyed(1);
   arc::ConnectionObserver<arc::mojom::AppInstance>* connection_observer =
       arc_test.arc_app_list_prefs();
   connection_observer->OnConnectionClosed();
 
-  menu = GetContextMenuModel(&item);
+  menu = GetContextMenuModel(item.get());
 
   // Separators and disabled options are not added to touchable app context
   // menus. For touchable app context menus, arc app has double separator,
@@ -403,25 +425,28 @@ TEST_F(AppContextMenuTest, ArcMenu) {
 
   // Test that arc app shortcuts provided by arc::FakeAppInstance have a
   // separator between each app shortcut.
-    EXPECT_EQ(ui::DOUBLE_SEPARATOR, menu->GetSeparatorTypeAt(index++));
-    for (int shortcut_index = 0; index < menu->GetItemCount(); ++index) {
-      EXPECT_EQ(base::StringPrintf("ShortLabel %d", shortcut_index++),
-                base::UTF16ToUTF8(menu->GetLabelAt(index++)));
-      if (index < menu->GetItemCount())
-        EXPECT_EQ(ui::PADDED_SEPARATOR, menu->GetSeparatorTypeAt(index));
-    }
+  EXPECT_EQ(ui::DOUBLE_SEPARATOR, menu->GetSeparatorTypeAt(index++));
+  for (int shortcut_index = 0; index < menu->GetItemCount(); ++index) {
+    EXPECT_EQ(base::StringPrintf("ShortLabel %d", shortcut_index++),
+              base::UTF16ToUTF8(menu->GetLabelAt(index++)));
+    if (index < menu->GetItemCount())
+      EXPECT_EQ(ui::PADDED_SEPARATOR, menu->GetSeparatorTypeAt(index));
+  }
 
   // Uninstall all apps.
   arc_test.app_instance()->SendRefreshAppList(
       std::vector<arc::mojom::AppInfo>());
+  app_service_test.FlushMojoCalls();
   controller()->SetAppOpen(app_id, false);
 
   // No app available case.
-  menu = GetContextMenuModel(&item);
+  menu = GetContextMenuModel(item.get());
   EXPECT_EQ(0, menu->GetItemCount());
 }
 
 TEST_F(AppContextMenuTest, ArcMenuShortcut) {
+  apps::AppServiceTest app_service_test;
+  app_service_test.SetUp(profile());
   ArcAppTest arc_test;
   arc_test.SetUp(profile());
 
@@ -430,10 +455,11 @@ TEST_F(AppContextMenuTest, ArcMenuShortcut) {
   controller()->SetAppPinnable(app_id, AppListControllerDelegate::PIN_EDITABLE);
 
   arc_test.app_instance()->SendInstallShortcuts(arc_test.fake_shortcuts());
+  app_service_test.FlushMojoCalls();
 
-  ArcAppItem item(profile(), nullptr, nullptr, app_id, std::string());
+  std::unique_ptr<AppServiceAppItem> item = GetAppListItem(profile(), app_id);
 
-  std::unique_ptr<ui::MenuModel> menu = GetContextMenuModel(&item);
+  std::unique_ptr<ui::MenuModel> menu = GetContextMenuModel(item.get());
   ASSERT_NE(nullptr, menu);
   // Separators are not added to touchable app context menus. For touchable app
   // context menus, arc app has double separator, three more app shortcuts
@@ -460,7 +486,7 @@ TEST_F(AppContextMenuTest, ArcMenuShortcut) {
       arc_test.arc_app_list_prefs();
   connection_observer->OnConnectionClosed();
 
-  menu = GetContextMenuModel(&item);
+  menu = GetContextMenuModel(item.get());
   // Separators and disabled options are not added to touchable app context
   // menus. For touchable app context menus, arc app has double separator,
   // three more app shortcuts provided by arc::FakeAppInstance and two
@@ -474,20 +500,23 @@ TEST_F(AppContextMenuTest, ArcMenuShortcut) {
 
   // Test that arc app shortcuts provided by arc::FakeAppInstance have a
   // separator between each app shortcut.
-    EXPECT_EQ(ui::DOUBLE_SEPARATOR, menu->GetSeparatorTypeAt(index++));
-    for (int shortcut_index = 0; index < menu->GetItemCount(); ++index) {
-      EXPECT_EQ(base::StringPrintf("ShortLabel %d", shortcut_index++),
-                base::UTF16ToUTF8(menu->GetLabelAt(index++)));
-      if (index < menu->GetItemCount())
-        EXPECT_EQ(ui::PADDED_SEPARATOR, menu->GetSeparatorTypeAt(index));
-    }
+  EXPECT_EQ(ui::DOUBLE_SEPARATOR, menu->GetSeparatorTypeAt(index++));
+  for (int shortcut_index = 0; index < menu->GetItemCount(); ++index) {
+    EXPECT_EQ(base::StringPrintf("ShortLabel %d", shortcut_index++),
+              base::UTF16ToUTF8(menu->GetLabelAt(index++)));
+    if (index < menu->GetItemCount())
+      EXPECT_EQ(ui::PADDED_SEPARATOR, menu->GetSeparatorTypeAt(index));
+  }
 }
 
 TEST_F(AppContextMenuTest, ArcMenuStickyItem) {
+  apps::AppServiceTest app_service_test;
+  app_service_test.SetUp(profile());
   ArcAppTest arc_test;
   arc_test.SetUp(profile());
 
   arc_test.app_instance()->SendRefreshAppList(arc_test.fake_apps());
+  app_service_test.FlushMojoCalls();
 
   {
     // Verify menu of store
@@ -495,8 +524,9 @@ TEST_F(AppContextMenuTest, ArcMenuStickyItem) {
     const std::string store_id = ArcAppTest::GetAppId(store_info);
     controller()->SetAppPinnable(store_id,
                                  AppListControllerDelegate::PIN_EDITABLE);
-    ArcAppItem item(profile(), nullptr, nullptr, store_id, std::string());
-    std::unique_ptr<ui::MenuModel> menu = GetContextMenuModel(&item);
+    std::unique_ptr<AppServiceAppItem> item =
+        GetAppListItem(profile(), store_id);
+    std::unique_ptr<ui::MenuModel> menu = GetContextMenuModel(item.get());
     ASSERT_NE(nullptr, menu);
 
     // Separators are not added to touchable app context menus. For touchable
@@ -523,6 +553,8 @@ TEST_F(AppContextMenuTest, ArcMenuStickyItem) {
 
 // In suspended state app does not have launch item.
 TEST_F(AppContextMenuTest, ArcMenuSuspendedItem) {
+  apps::AppServiceTest app_service_test;
+  app_service_test.SetUp(profile());
   ArcAppTest arc_test;
   arc_test.SetUp(profile());
 
@@ -530,11 +562,12 @@ TEST_F(AppContextMenuTest, ArcMenuSuspendedItem) {
   app.suspended = true;
 
   arc_test.app_instance()->SendRefreshAppList({app});
+  app_service_test.FlushMojoCalls();
 
   const std::string app_id = ArcAppTest::GetAppId(app);
   controller()->SetAppPinnable(app_id, AppListControllerDelegate::PIN_EDITABLE);
-  ArcAppItem item(profile(), nullptr, nullptr, app_id, std::string());
-  std::unique_ptr<ui::MenuModel> menu = GetContextMenuModel(&item);
+  std::unique_ptr<AppServiceAppItem> item = GetAppListItem(profile(), app_id);
+  std::unique_ptr<ui::MenuModel> menu = GetContextMenuModel(item.get());
   ASSERT_NE(nullptr, menu);
 
   // Separators are not added to touchable app context menus. For touchable
@@ -583,14 +616,8 @@ TEST_F(AppContextMenuTest, InternalAppMenu) {
     controller()->SetAppPinnable(internal_app.app_id,
                                  AppListControllerDelegate::PIN_EDITABLE);
 
-    apps::AppServiceProxy* proxy =
-        apps::AppServiceProxyFactory::GetForProfile(profile());
-    std::unique_ptr<AppServiceAppItem> item;
-    proxy->AppRegistryCache().ForOneApp(
-        internal_app.app_id, [this, &item](const apps::AppUpdate& update) {
-          item = std::make_unique<AppServiceAppItem>(profile(), nullptr,
-                                                     nullptr, update);
-        });
+    std::unique_ptr<AppServiceAppItem> item =
+        GetAppListItem(profile(), internal_app.app_id);
     std::unique_ptr<ui::MenuModel> menu = GetContextMenuModel(item.get());
     ASSERT_NE(nullptr, menu);
     EXPECT_EQ(1, menu->GetItemCount());

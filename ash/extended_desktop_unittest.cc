@@ -805,13 +805,6 @@ TEST_F(ExtendedDesktopTest, StayInSameRootWindow) {
   window = aura::test::CreateTestWindowWithId(100, status_container);
   window->SetBoundsInScreen(gfx::Rect(150, 10, 50, 50), GetSecondaryDisplay());
   EXPECT_EQ(root_windows[0], window->GetRootWindow());
-
-  aura::Window* overview_focus_container =
-      Shell::GetPrimaryRootWindowController()->GetContainer(
-          kShellWindowId_OverviewFocusContainer);
-  window = aura::test::CreateTestWindowWithId(100, overview_focus_container);
-  window->SetBoundsInScreen(gfx::Rect(150, 10, 50, 50), GetSecondaryDisplay());
-  EXPECT_EQ(root_windows[0], window->GetRootWindow());
 }
 
 TEST_F(ExtendedDesktopTest, KeyEventsOnLockScreen) {

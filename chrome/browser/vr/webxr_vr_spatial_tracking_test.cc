@@ -13,8 +13,7 @@ namespace vr {
 IN_PROC_BROWSER_TEST_F(WebXrVrRuntimelessBrowserTest,
                        TestInlineIdentityAlwaysAvailable) {
   browser()->tab_strip_model()->GetActiveWebContents()->Focus();
-  LoadUrlAndAwaitInitialization(
-      GetFileUrlForHtmlTestFile("test_inline_viewer_available"));
+  LoadFileAndAwaitInitialization("test_inline_viewer_available");
   WaitOnJavaScriptStep();
   EndTest();
 }
@@ -22,8 +21,7 @@ IN_PROC_BROWSER_TEST_F(WebXrVrRuntimelessBrowserTest,
 #if BUILDFLAG(ENABLE_VR)
 IN_PROC_BROWSER_TEST_F(WebXrVrRuntimelessBrowserTestSensorless,
                        TestSensorlessRejections) {
-  LoadUrlAndAwaitInitialization(
-      GetFileUrlForHtmlTestFile("test_local_floor_reference_space_rejects"));
+  LoadFileAndAwaitInitialization("test_local_floor_reference_space_rejects");
   WaitOnJavaScriptStep();
   EndTest();
 }

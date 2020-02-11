@@ -374,7 +374,7 @@ public class AssistantChoiceList extends GridLayout {
     private TextView createAddButtonLabel(String addButtonText) {
         TextView addButtonLabel = new TextView(getContext());
         ApiCompatibilityUtils.setTextAppearance(
-                addButtonLabel, R.style.TextAppearance_BlueButtonText2);
+                addButtonLabel, R.style.TextAppearance_Button_Text_Blue);
         addButtonLabel.setText(addButtonText);
         addButtonLabel.setOnClickListener(unusedView -> {
             if (mAddButtonListener != null) {

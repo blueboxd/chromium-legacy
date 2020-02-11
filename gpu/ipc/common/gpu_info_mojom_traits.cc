@@ -361,6 +361,15 @@ bool StructTraits<gpu::mojom::Dx12VulkanVersionInfoDataView,
   out->vulkan_version = data.vulkan_version();
   return true;
 }
+
+bool StructTraits<gpu::mojom::OverlayInfoDataView, gpu::OverlayInfo>::Read(
+    gpu::mojom::OverlayInfoDataView data,
+    gpu::OverlayInfo* out) {
+  out->direct_composition = data.direct_composition();
+  out->supports_overlays = data.supports_overlays();
+  return data.ReadYuy2OverlaySupport(&out->yuy2_overlay_support) &&
+         data.ReadNv12OverlaySupport(&out->nv12_overlay_support);
+}
 #endif
 
 bool StructTraits<gpu::mojom::GpuInfoDataView, gpu::GPUInfo>::Read(
@@ -381,11 +390,6 @@ bool StructTraits<gpu::mojom::GpuInfoDataView, gpu::GPUInfo>::Read(
   out->oop_rasterization_supported = data.oop_rasterization_supported();
   out->subpixel_font_rendering = data.subpixel_font_rendering();
 
-#if defined(OS_WIN)
-  out->direct_composition = data.direct_composition();
-  out->supports_overlays = data.supports_overlays();
-#endif
-
   return data.ReadInitializationTime(&out->initialization_time) &&
          data.ReadGpu(&out->gpu) &&
          data.ReadSecondaryGpus(&out->secondary_gpus) &&
@@ -403,8 +407,7 @@ bool StructTraits<gpu::mojom::GpuInfoDataView, gpu::GPUInfo>::Read(
          data.ReadGlWsExtensions(&out->gl_ws_extensions) &&
          data.ReadDirectRenderingVersion(&out->direct_rendering_version) &&
 #if defined(OS_WIN)
-         data.ReadYuy2OverlaySupport(&out->yuy2_overlay_support) &&
-         data.ReadNv12OverlaySupport(&out->nv12_overlay_support) &&
+         data.ReadOverlayInfo(&out->overlay_info) &&
          data.ReadDxDiagnostics(&out->dx_diagnostics) &&
          data.ReadDx12VulkanVersionInfo(&out->dx12_vulkan_version_info) &&
 #endif

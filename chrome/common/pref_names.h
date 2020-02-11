@@ -980,6 +980,10 @@ extern const char kAutoplayWhitelist[];
 extern const char kBlockAutoplayEnabled[];
 #endif
 
+#if defined(OS_LINUX) && !defined(OS_CHROMEOS)
+extern const char kNativeNotificationsDisabled[];
+#endif
+
 extern const char kNotificationNextPersistentId[];
 extern const char kNotificationNextTriggerTime[];
 

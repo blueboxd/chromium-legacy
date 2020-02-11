@@ -492,6 +492,7 @@
 <translation id="1670399744444387456">基本設定</translation>
 <translation id="167160931442925455">最大聲</translation>
 <translation id="1673137583248014546"><ph name="URL" /> 要求查看「安全密鑰」的品牌和型號</translation>
+<translation id="1677472565718498478">電量尚餘 <ph name="TIME" /></translation>
 <translation id="1679068421605151609">開發人員工具</translation>
 <translation id="1679806121152819234">外掛程式 VM</translation>
 <translation id="1679810534535368772">確定要離開嗎？</translation>
@@ -1785,6 +1786,7 @@
 <translation id="3462413494201477527">取消帳戶建立？</translation>
 <translation id="3464012987031883895">有網站正在存取音訊輸入</translation>
 <translation id="346431825526753">這是一個兒童帳戶 (由 <ph name="CUSTODIAN_EMAIL" /> 管理)。</translation>
+<translation id="3468298837301810372">標籤</translation>
 <translation id="3468999815377931311">Android 手機</translation>
 <translation id="3470442499439619530">移除這個使用者</translation>
 <translation id="3471876058939596279">HDMI 和 USB Type-C 連接埠無法同時用於影片。請使用其他影片連接埠。</translation>
@@ -3960,7 +3962,6 @@
 <translation id="6545867563032584178">已關閉 Mac 系統偏好設定中的麥克風</translation>
 <translation id="6547354035488017500">請釋出最少 512 MB 的儲存空間，否則裝置將沒有回應。如要釋出空間，請刪除裝置儲存空間內的檔案。</translation>
 <translation id="6549639163247690448"><ph name="DOMAIN" /> 要求您立即連接 Wi-Fi 並下載更新，系統將在您連接互聯網時自動下載更新。</translation>
-<translation id="6549966385318247177">此擴充程式包含兒童不宜內容，因此已被封鎖。</translation>
 <translation id="6550675742724504774">選項</translation>
 <translation id="6551508934388063976">無法使用指令。按下 Ctrl + N 鍵可開啟新視窗。</translation>
 <translation id="6551612971599078809">網站正在使用 USB 裝置</translation>

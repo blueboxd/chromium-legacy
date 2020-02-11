@@ -9,12 +9,14 @@
 #include <vector>
 
 #include "base/bind.h"
+#include "base/files/file_util.h"
 #include "base/run_loop.h"
 #include "base/test/scoped_feature_list.h"
 #include "chrome/browser/apps/app_service/app_launch_params.h"
 #include "chrome/browser/apps/launch_service/launch_service.h"
 #include "chrome/browser/extensions/extension_browsertest.h"
 #include "chrome/browser/extensions/extension_util.h"
+#include "chrome/browser/native_file_system/native_file_system_permission_request_manager.h"
 #include "chrome/browser/ui/browser_finder.h"
 #include "chrome/browser/ui/extensions/application_launch.h"
 #include "chrome/browser/ui/extensions/hosted_app_browser_controller.h"
@@ -25,6 +27,7 @@
 #include "chrome/common/chrome_features.h"
 #include "chrome/common/extensions/manifest_handlers/app_theme_color_info.h"
 #include "chrome/common/webui_url_constants.h"
+#include "components/permissions/permission_util.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/browser/web_ui.h"
 #include "content/public/browser/web_ui_controller_factory.h"
@@ -249,20 +252,25 @@ IN_PROC_BROWSER_TEST_F(SystemWebAppManagerBrowserTest,
 }
 
 class SystemWebAppManagerLaunchFilesBrowserTest
-    : public SystemWebAppManagerBrowserTest {
+    : public SystemWebAppManagerBrowserTest,
+      public testing::WithParamInterface<std::vector<base::Feature>> {
  public:
   SystemWebAppManagerLaunchFilesBrowserTest()
       : SystemWebAppManagerBrowserTest(/*install_mock=*/false) {
+    scoped_feature_list_.InitWithFeatures(GetParam(), {});
     maybe_installation_ =
         TestSystemWebAppInstallation::SetUpAppThatReceivesLaunchDirectory();
   }
+
+ private:
+  base::test::ScopedFeatureList scoped_feature_list_;
 };
 
 // Launching behavior for apps that do not want to received launch directory are
 // tested in |SystemWebAppManagerBrowserTest.LaunchFilesForSystemWebApp|.
 // Note: This test uses ExecuteScriptXXX instead of ExecJs and EvalJs because of
 // some quirks surrounding origin trials and content security policies.
-IN_PROC_BROWSER_TEST_F(SystemWebAppManagerLaunchFilesBrowserTest,
+IN_PROC_BROWSER_TEST_P(SystemWebAppManagerLaunchFilesBrowserTest,
                        LaunchDirectoryForSystemWebApp) {
   WaitForTestSystemAppInstall();
   apps::AppLaunchParams params = LaunchParamsForApp(GetMockAppType());
@@ -387,6 +395,44 @@ IN_PROC_BROWSER_TEST_F(SystemWebAppManagerLaunchFilesBrowserTest,
       "domAutomationController.send(window.secondLaunchParams.files[1].name)",
       &file_name));
   EXPECT_EQ(temp_file_path2.BaseName().AsUTF8Unsafe(), file_name);
+
+  // Launch directories and files passed to system web apps should automatically
+  // be granted write permission. Users should not get permission prompts. Here
+  // we execute some JavaScript code that modifies and deletes files in the
+  // directory.
+
+  // Auto deny prompts (if they show up).
+  NativeFileSystemPermissionRequestManager::FromWebContents(web_contents)
+      ->set_auto_response_for_test(permissions::PermissionAction::DENIED);
+
+  // Modifies the launch file. Reuse the first launch directory.
+  bool writer_closed;
+  EXPECT_TRUE(content::ExecuteScriptAndExtractBool(
+      web_contents,
+      "window.firstLaunchParams.files[1].createWriter().then("
+      "  async writer => {"
+      "    console.log(writer);"
+      "    await writer.write(0, 'test');"
+      "    await writer.close();"
+      "    domAutomationController.send(true);"
+      "  }"
+      ");",
+      &writer_closed));
+  EXPECT_TRUE(writer_closed);
+
+  std::string read_contents;
+  EXPECT_TRUE(base::ReadFileToString(temp_file_path, &read_contents));
+  EXPECT_EQ("test", read_contents);
+
+  // TODO(crbug.com/1048467): Check promptless directory read/write permissions.
 }
+
+INSTANTIATE_TEST_SUITE_P(
+    PermissionContext,
+    SystemWebAppManagerLaunchFilesBrowserTest,
+    testing::Values(
+        /*default_enabled_permission_context*/ std::vector<base::Feature>(),
+        /*origin_scoped_permission_context*/ std::vector<base::Feature>(
+            {features::kNativeFileSystemOriginScopedPermissions})));
 
 }  // namespace web_app

@@ -384,14 +384,17 @@ class TabStrip::TabDragContextImpl : public TabDragContext {
     // . Gesture tap down and control key isn't down.
     // . Real mouse event and control is down. This is mostly for testing.
     DCHECK(event.type() == ui::ET_MOUSE_PRESSED ||
-           event.type() == ui::ET_GESTURE_TAP_DOWN);
+           event.type() == ui::ET_GESTURE_TAP_DOWN ||
+           event.type() == ui::ET_GESTURE_SCROLL_BEGIN);
     if (tab_strip_->touch_layout_ &&
         ((event.type() == ui::ET_MOUSE_PRESSED &&
           (((event.flags() & ui::EF_FROM_TOUCH) &&
             static_cast<const ui::MouseEvent&>(event).IsLeftMouseButton()) ||
            (!(event.flags() & ui::EF_FROM_TOUCH) &&
             static_cast<const ui::MouseEvent&>(event).IsControlDown()))) ||
-         (event.type() == ui::ET_GESTURE_TAP_DOWN && !event.IsControlDown()))) {
+         (event.type() == ui::ET_GESTURE_TAP_DOWN && !event.IsControlDown()) ||
+         (event.type() == ui::ET_GESTURE_SCROLL_BEGIN &&
+          !event.IsControlDown()))) {
       move_behavior = TabDragController::MOVE_VISIBLE_TABS;
     }
 

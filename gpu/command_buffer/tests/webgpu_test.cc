@@ -62,6 +62,9 @@ void WebGPUTest::SetUp() {
 #if defined(OS_LINUX) && BUILDFLAG(USE_DAWN)
   gpu_preferences.use_vulkan = gpu::VulkanImplementationName::kNative;
   gpu_preferences.gr_context_type = gpu::GrContextType::kVulkan;
+#elif defined(OS_WIN)
+  // D3D shared images are only supported with passthrough command decoder.
+  gpu_preferences.use_passthrough_cmd_decoder = true;
 #endif
   gpu_service_holder_ =
       std::make_unique<viz::TestGpuServiceHolder>(gpu_preferences);

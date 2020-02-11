@@ -86,26 +86,13 @@ class XrBrowserTestBase : public InProcessBrowserTest {
 
   virtual RuntimeType GetRuntimeType() const;
 
-  // Returns a GURL to the XR test HTML file of the given name, e.g.
-  // GetHtmlTestFile("foo") returns a GURL for the foo.html file in the XR
-  // test HTML directory.
-  GURL GetFileUrlForHtmlTestFile(const std::string& test_name);
-
-  // Returns a GURL to the XR test HTML file of the given name served through
-  // the local server.
-  GURL GetEmbeddedServerUrlForHtmlTestFile(const std::string& test_name);
-
-  // Returns a pointer to the embedded test server capable of serving test
-  // HTML files, initializing and starting the server if necessary.
-  net::EmbeddedTestServer* GetEmbeddedServer();
-
   // Convenience function for accessing the WebContents belonging to the current
   // tab open in the browser.
   content::WebContents* GetCurrentWebContents();
 
   // Loads the given GURL and blocks until the JavaScript on the page has
   // signalled that pre-test initialization is complete.
-  void LoadUrlAndAwaitInitialization(const GURL& url);
+  void LoadFileAndAwaitInitialization(const std::string& url);
 
   // Convenience function for ensuring the given JavaScript runs successfully
   // without having to always surround in ASSERT_TRUE.
@@ -243,6 +230,15 @@ class XrBrowserTestBase : public InProcessBrowserTest {
 
  private:
   void LogJavaScriptFailure();
+
+  // Returns a GURL to the XR test HTML file of the given name served through
+  // the local server.
+  GURL GetUrlForFile(const std::string& test_name);
+
+  // Returns a pointer to the embedded test server capable of serving test
+  // HTML files, initializing and starting the server if necessary.
+  net::EmbeddedTestServer* GetEmbeddedServer();
+
   Browser* browser_ = nullptr;
   std::unique_ptr<net::EmbeddedTestServer> server_;
   base::test::ScopedFeatureList scoped_feature_list_;

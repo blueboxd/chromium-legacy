@@ -178,16 +178,16 @@ std::unique_ptr<base::ListValue> BasicGpuInfoAsListValue(
 
   basic_info->Append(NewDescriptionValuePair(
       "Direct composition",
-      std::make_unique<base::Value>(gpu_info.direct_composition)));
+      std::make_unique<base::Value>(gpu_info.overlay_info.direct_composition)));
   basic_info->Append(NewDescriptionValuePair(
       "Supports overlays",
-      std::make_unique<base::Value>(gpu_info.supports_overlays)));
+      std::make_unique<base::Value>(gpu_info.overlay_info.supports_overlays)));
   basic_info->Append(NewDescriptionValuePair(
       "YUY2 overlay support",
-      gpu::OverlaySupportToString(gpu_info.yuy2_overlay_support)));
+      gpu::OverlaySupportToString(gpu_info.overlay_info.yuy2_overlay_support)));
   basic_info->Append(NewDescriptionValuePair(
       "NV12 overlay support",
-      gpu::OverlaySupportToString(gpu_info.nv12_overlay_support)));
+      gpu::OverlaySupportToString(gpu_info.overlay_info.nv12_overlay_support)));
 
   std::vector<gfx::PhysicalDisplaySize> display_sizes =
       gfx::GetPhysicalSizeForDisplays();

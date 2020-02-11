@@ -48,7 +48,7 @@ namespace {
 
 const char* kTabMetricsEntryName = TabManager_TabMetrics::kEntryName;
 
-const int64_t kIdShift = 1 << 13;
+const int64_t kIdShift = 1 << 16;
 
 // Test URLs need to be from different origins to test site engagement score.
 const std::vector<GURL>& TestUrls() {

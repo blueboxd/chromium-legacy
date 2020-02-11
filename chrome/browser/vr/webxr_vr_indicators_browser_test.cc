@@ -69,8 +69,7 @@ void SetMultipleContentSetting(
 void LoadGenericPageChangeDefaultPermissionAndEnterVr(
     WebXrVrBrowserTestBase* t,
     const std::vector<TestContentSettings>& test_settings) {
-  t->LoadUrlAndAwaitInitialization(
-      t->GetEmbeddedServerUrlForHtmlTestFile("generic_webxr_page"));
+  t->LoadFileAndAwaitInitialization("generic_webxr_page");
   SetMultipleContentSetting(t, test_settings);
   t->EnterSessionWithUserGestureOrFail();
 }

@@ -1468,6 +1468,73 @@ IN_PROC_BROWSER_TEST_F(DownloadContentTest, DownloadOctetStream) {
       download::DownloadItem::COMPLETE);
 }
 
+// Tests that metrics are recorded when a page opens a named window, navigates
+// it to a URL, then navigates it again to a download. The navigated URL is same
+// origin as the opener.
+IN_PROC_BROWSER_TEST_F(DownloadContentTest,
+                       InitiatedByWindowOpener_SameOrigin) {
+  EXPECT_TRUE(NavigateToURL(shell()->web_contents(),
+                            embedded_test_server()->GetURL("/empty.html")));
+
+  // From the initial tab, open a window named 'foo' and navigate it to a same
+  // origin page.
+  const GURL url = embedded_test_server()->GetURL("/title1.html");
+  const std::string script = "window.open('" + url.spec() + "', 'foo')";
+  ShellAddedObserver new_shell_observer;
+  EXPECT_TRUE(ExecuteScript(shell()->web_contents(), script));
+  Shell* new_shell = new_shell_observer.GetShell();
+  ASSERT_TRUE(new_shell);
+  WaitForLoadStop(new_shell->web_contents());
+
+  // From the initial tab, navigate the 'foo' window to a download and wait for
+  // completion.
+  base::HistogramTester histogram_tester;
+  std::unique_ptr<DownloadTestObserver> observer(CreateWaiter(new_shell, 1));
+  const GURL download_url =
+      embedded_test_server()->GetURL("/download/download-test.lib");
+  const std::string download_script =
+      "window.open('" + download_url.spec() + "', 'foo')";
+  EXPECT_TRUE(ExecuteScript(shell()->web_contents(), download_script));
+  observer->WaitForFinished();
+
+  histogram_tester.ExpectTotalCount("Download.InitiatedByWindowOpener", 1);
+  histogram_tester.ExpectUniqueSample(
+      "Download.InitiatedByWindowOpener",
+      static_cast<int>(InitiatedByWindowOpenerType::kSameOrigin), 1);
+}
+
+// Same as above, but the navigated URL is cross origin to the opener.
+IN_PROC_BROWSER_TEST_F(DownloadContentTest,
+                       InitiatedByWindowOpener_CrossOrigin) {
+  EXPECT_TRUE(NavigateToURL(shell()->web_contents(),
+                            embedded_test_server()->GetURL("/empty.html")));
+
+  // From the initial tab, open a window named 'foo' and navigate it to a cross
+  // origin page.
+  ShellAddedObserver new_shell_observer;
+  EXPECT_TRUE(ExecuteScript(shell()->web_contents(),
+                            "window.open('http://a.com', 'foo')"));
+  Shell* new_shell = new_shell_observer.GetShell();
+  ASSERT_TRUE(new_shell);
+  WaitForLoadStop(new_shell->web_contents());
+
+  // From the initial tab, navigate the 'foo' window to a download and wait for
+  // completion.
+  base::HistogramTester histogram_tester;
+  std::unique_ptr<DownloadTestObserver> observer(CreateWaiter(new_shell, 1));
+  const GURL download_url =
+      embedded_test_server()->GetURL("/download/download-test.lib");
+  const std::string download_script =
+      "window.open('" + download_url.spec() + "', 'foo')";
+  EXPECT_TRUE(ExecuteScript(shell()->web_contents(), download_script));
+  observer->WaitForFinished();
+
+  histogram_tester.ExpectTotalCount("Download.InitiatedByWindowOpener", 1);
+  histogram_tester.ExpectUniqueSample(
+      "Download.InitiatedByWindowOpener",
+      static_cast<int>(InitiatedByWindowOpenerType::kCrossOrigin), 1);
+}
+
 // Content served with a MIME type of application/octet-stream should be
 // downloaded even when a plugin can be found that handles the file type.
 // See https://crbug.com/104331 for the details.

@@ -31,6 +31,8 @@
 #include "third_party/blink/renderer/core/frame/frame_serializer.h"
 
 #include "base/feature_list.h"
+#include "base/metrics/histogram.h"
+#include "base/metrics/histogram_functions.h"
 #include "third_party/blink/public/common/features.h"
 #include "third_party/blink/renderer/core/css/css_font_face_rule.h"
 #include "third_party/blink/renderer/core/css/css_font_face_src_value.h"
@@ -76,13 +78,6 @@
 #include "third_party/blink/renderer/platform/wtf/text/text_encoding.h"
 #include "third_party/blink/renderer/platform/wtf/text/wtf_string.h"
 #include "third_party/blink/renderer/platform/wtf/uuid.h"
-
-namespace {
-
-const int32_t secondsToMicroseconds = 1000 * 1000;
-const int32_t maxSerializationTimeUmaMicroseconds = 10 * secondsToMicroseconds;
-
-}  // namespace
 
 namespace blink {
 
@@ -344,29 +339,28 @@ void FrameSerializer::SerializeFrame(const LocalFrame& frame) {
 
   if (should_collect_problem_metric_) {
     // Report detectors through UMA.
-    // We're having exact 21 buckets for percentage because we want to have 5%
-    // in each bucket to avoid potential spikes in the distribution.
-    UMA_HISTOGRAM_COUNTS_100(
+    // Note: some of these histograms used 21 buckets to try to ensure each
+    // bucket covered 5% of the range. Unfortunately, there was an off-by-one
+    // error... but changing the meaning of buckets is annoying.
+    base::UmaHistogramCounts100(
         "PageSerialization.ProblemDetection.TotalImageCount",
         total_image_count_);
     if (total_image_count_ > 0) {
       DCHECK_LE(loaded_image_count_, total_image_count_);
-      DEFINE_STATIC_LOCAL(
-          LinearHistogram, image_histogram,
-          ("PageSerialization.ProblemDetection.LoadedImagePercentage", 1, 100,
-           21));
-      image_histogram.Count(loaded_image_count_ * 100 / total_image_count_);
+      base::LinearHistogram::FactoryGet(
+          "PageSerialization.ProblemDetection.LoadedImagePercentage", 1, 100,
+          21, base::HistogramBase::kUmaTargetedHistogramFlag)
+          ->Add(loaded_image_count_ * 100 / total_image_count_);
     }
 
-    UMA_HISTOGRAM_COUNTS_100("PageSerialization.ProblemDetection.TotalCSSCount",
-                             total_css_count_);
+    base::UmaHistogramCounts100(
+        "PageSerialization.ProblemDetection.TotalCSSCount", total_css_count_);
     if (total_css_count_ > 0) {
       DCHECK_LE(loaded_css_count_, total_css_count_);
-      DEFINE_STATIC_LOCAL(
-          LinearHistogram, css_histogram,
-          ("PageSerialization.ProblemDetection.LoadedCSSPercentage", 1, 100,
-           21));
-      css_histogram.Count(loaded_css_count_ * 100 / total_css_count_);
+      base::LinearHistogram::FactoryGet(
+          "PageSerialization.ProblemDetection.LoadedCSSPercentage", 1, 100, 21,
+          base::HistogramBase::kUmaTargetedHistogramFlag)
+          ->Add(loaded_css_count_ * 100 / total_css_count_);
     }
     should_collect_problem_metric_ = false;
   }
@@ -485,10 +479,9 @@ void FrameSerializer::SerializeCSSStyleSheet(CSSStyleSheet& style_sheet,
 
   if (css_start_time != base::TimeTicks()) {
     is_serializing_css_ = false;
-    DEFINE_STATIC_LOCAL(CustomCountHistogram, css_histogram,
-                        ("PageSerialization.SerializationTime.CSSElement", 0,
-                         maxSerializationTimeUmaMicroseconds, 50));
-    css_histogram.CountMicroseconds(base::TimeTicks::Now() - css_start_time);
+    base::UmaHistogramMicrosecondsTimes(
+        "PageSerialization.SerializationTime.CSSElement",
+        base::TimeTicks::Now() - css_start_time);
   }
 }
 
@@ -578,11 +571,9 @@ void FrameSerializer::AddImageToResources(ImageResourceContent* image,
   // If we're already reporting time for CSS serialization don't report it for
   // this image to avoid reporting the same time twice.
   if (!is_serializing_css_) {
-    DEFINE_STATIC_LOCAL(CustomCountHistogram, image_histogram,
-                        ("PageSerialization.SerializationTime.ImageElement", 0,
-                         maxSerializationTimeUmaMicroseconds, 50));
-    image_histogram.CountMicroseconds(base::TimeTicks::Now() -
-                                      image_start_time);
+    base::UmaHistogramMicrosecondsTimes(
+        "PageSerialization.SerializationTime.ImageElement",
+        base::TimeTicks::Now() - image_start_time);
   }
 }
 

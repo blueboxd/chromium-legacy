@@ -197,6 +197,9 @@ void WriteToDiskCacheAsync(
 std::unique_ptr<ServiceWorkerResponseWriter> CreateNewResponseWriterSync(
     ServiceWorkerStorage* storage);
 
+// Calls ServiceWorkerStorage::NewResourceId() synchronously.
+int64_t GetNewResourceIdSync(ServiceWorkerStorage* storage);
+
 // A test implementation of ServiceWorkerResponseReader.
 //
 // This class exposes the ability to expect reads (see ExpectRead*() below).

@@ -485,7 +485,7 @@ ServiceWorkerStorage::CreateResponseMetadataWriter(int64_t resource_id) {
 
 void ServiceWorkerStorage::CreateNewResponseWriter(
     ResponseWriterCreationCallback callback) {
-  int64_t resource_id = NewResourceId();
+  int64_t resource_id = NewResourceIdInternal();
   if (resource_id == ServiceWorkerConsts::kInvalidServiceWorkerResourceId) {
     std::move(callback).Run(resource_id, nullptr);
   } else {
@@ -862,11 +862,9 @@ int64_t ServiceWorkerStorage::NewVersionId() {
   return next_version_id_++;
 }
 
-int64_t ServiceWorkerStorage::NewResourceId() {
-  if (state_ == STORAGE_STATE_DISABLED)
-    return ServiceWorkerConsts::kInvalidServiceWorkerResourceId;
-  DCHECK_EQ(STORAGE_STATE_INITIALIZED, state_);
-  return next_resource_id_++;
+void ServiceWorkerStorage::NewResourceId(
+    base::OnceCallback<void(int64_t resource_id)> callback) {
+  std::move(callback).Run(NewResourceIdInternal());
 }
 
 void ServiceWorkerStorage::Disable() {
@@ -1237,6 +1235,13 @@ int64_t ServiceWorkerStorage::NewRegistrationIdInternal() {
   }
   DCHECK_EQ(STORAGE_STATE_INITIALIZED, state_);
   return next_registration_id_++;
+}
+
+int64_t ServiceWorkerStorage::NewResourceIdInternal() {
+  if (state_ == STORAGE_STATE_DISABLED)
+    return ServiceWorkerConsts::kInvalidServiceWorkerResourceId;
+  DCHECK_EQ(STORAGE_STATE_INITIALIZED, state_);
+  return next_resource_id_++;
 }
 
 // static

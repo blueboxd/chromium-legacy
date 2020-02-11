@@ -135,14 +135,20 @@ void RootFrameSink::RemoveChildFrameSinkId(
 bool RootFrameSink::BeginFrame(const viz::BeginFrameArgs& args,
                                bool had_input_event) {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
+
+  // This handles only invalidation of sub clients, root client invalidation is
+  // handled by Invalidate() from cc to |SynchronousLayerTreeFrameSink|. So we
+  // return false unless we already have damage.
+  bool invalidate = had_input_event || needs_draw_;
+
+  TRACE_EVENT_INSTANT1("android_webview", "RootFrameSink::BeginFrame",
+                       TRACE_EVENT_SCOPE_THREAD, "invalidate", invalidate);
+
   if (needs_begin_frames_) {
     begin_frame_source_->OnBeginFrame(args);
   }
 
-  // This handles only invalidation of sub clients, root client invalidation is
-  // handled by Invalidate() from cc to |SynchronousLayerTreeFrameSink|. So we
-  // return false unless there is scheduler and we already have damage.
-  return had_input_event || needs_draw_;
+  return invalidate;
 }
 
 void RootFrameSink::SetBeginFrameSourcePaused(bool paused) {

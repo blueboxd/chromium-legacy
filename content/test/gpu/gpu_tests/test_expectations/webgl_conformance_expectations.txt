@@ -51,7 +51,8 @@ crbug.com/867718 [ win d3d9 ] WebglExtension_EXT_disjoint_timer_query [ Failure 
 [ win amd d3d9 ] WebglExtension_WEBGL_depth_texture [ Failure ]
 [ win d3d9 ] WebglExtension_WEBGL_draw_buffers [ Failure ]
 [ win d3d9 ] WebglExtension_OES_fbo_render_mipmap [ Failure ]
-[ win d3d9 ] WebglExtension_EXT_texture_compression_bptc [ Failure ]
+[ win d3d9 ] WebglExtension_EXT_texture_compression_bptc [ Skip ]
+[ win d3d9 ] WebglExtension_EXT_texture_compression_rgtc [ Skip ]
 
 # Android general
 [ android ] WebglExtension_EXT_frag_depth [ Failure ]
@@ -64,7 +65,8 @@ crbug.com/867718 [ win d3d9 ] WebglExtension_EXT_disjoint_timer_query [ Failure 
 [ android qualcomm ] WebglExtension_EXT_float_blend [ Failure ]
 [ android qualcomm ] WebglExtension_EXT_shader_texture_lod [ Failure ]
 [ android qualcomm ] WebglExtension_WEBGL_draw_buffers [ Failure ]
-[ android qualcomm ] WebglExtension_EXT_texture_compression_bptc [ Failure ]
+[ android qualcomm ] WebglExtension_EXT_texture_compression_bptc [ Skip ]
+[ android qualcomm ] WebglExtension_EXT_texture_compression_rgtc [ Skip ]
 [ android qualcomm-adreno-(tm)-330 no-passthrough ] WebglExtension_OES_texture_float_linear [ Failure ]
 [ android qualcomm-adreno-(tm)-330 ] WebglExtension_WEBGL_depth_texture [ Failure ]
 [ android qualcomm-adreno-(tm)-330 ] WebglExtension_WEBGL_compressed_texture_astc [ Failure ]
@@ -76,6 +78,7 @@ crbug.com/867718 [ win d3d9 ] WebglExtension_EXT_disjoint_timer_query [ Failure 
 # Fails on Android Nvidia Tegra driver version 343, passes on 361
 # We don't have tags for specific driver version so just skip all
 [ android nvidia ] WebglExtension_EXT_texture_compression_bptc [ Skip ]
+[ android nvidia ] WebglExtension_EXT_texture_compression_rgtc [ Skip ]
 
 # ========================
 # Conformance expectations

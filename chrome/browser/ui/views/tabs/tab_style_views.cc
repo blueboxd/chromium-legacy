@@ -607,10 +607,14 @@ float GM2TabStyle::GetSeparatorOpacity(bool for_layout, bool leading) const {
   // animation. Only hide the separator if it's in the first slot, or in
   // certain cases if the tab has a visible background (see below).
 
-  // If the adjacent view is actually a group header, show the separator since
-  // the group header takes up a slot.
-  if (adjacent_to_header)
+  // Do not show the separator if it is to the right of a group header.
+  // Otherwise, show the separator since the following group header takes up a
+  // slot.
+  if (adjacent_to_header) {
+    if (leading)
+      return 0.0f;
     return GetHoverInterpolatedSeparatorOpacity(for_layout, nullptr);
+  }
 
   // If the tab has a visible background even when not selected or active, there
   // are additional cases where the separators can be hidden.

@@ -145,7 +145,7 @@ TEST_F(CacheAwareFontResourceTest, CacheAwareFontLoading) {
 
   fetcher->StartLoad(&resource);
   EXPECT_TRUE(resource.Loader()->IsCacheAwareLoadingActivated());
-  resource.load_limit_state_ = FontResource::kUnderLimit;
+  resource.load_limit_state_ = FontResource::LoadLimitState::kUnderLimit;
 
   // FontResource callbacks should be blocked during cache-aware loading.
   resource.FontLoadShortLimitCallback();

@@ -9,4 +9,8 @@
 #include "testing/gtest/include/gtest/gtest-spi.h"  // IWYU pragma: export
 #include "testing/gtest/include/gtest/gtest.h"      // IWYU pragma: export
 
+using SpdyTestImpl = ::testing::Test;
+template <class T>
+using SpdyTestWithParamImpl = ::testing::TestWithParam<T>;
+
 #endif  // NET_SPDY_PLATFORM_IMPL_SPDY_TEST_IMPL_H_

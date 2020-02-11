@@ -25,6 +25,7 @@
 
 #include "third_party/blink/renderer/core/frame/use_counter_helper.h"
 
+#include "base/metrics/histogram_macros.h"
 #include "third_party/blink/renderer/core/css/css_style_sheet.h"
 #include "third_party/blink/renderer/core/css/style_sheet_contents.h"
 #include "third_party/blink/renderer/core/dom/document.h"
@@ -37,7 +38,6 @@
 #include "third_party/blink/renderer/core/frame/local_frame_client.h"
 #include "third_party/blink/renderer/core/frame/settings.h"
 #include "third_party/blink/renderer/core/inspector/console_message.h"
-#include "third_party/blink/renderer/platform/instrumentation/histogram.h"
 #include "third_party/blink/renderer/platform/instrumentation/tracing/trace_event.h"
 #include "third_party/blink/renderer/platform/weborigin/scheme_registry.h"
 
@@ -79,24 +79,24 @@ void UseCounterHelper::RecordMeasurement(WebFeature feature,
   if (features_recorded_[feature_id])
     return;
   if (commit_state_ >= kCommited)
-    ReportAndTraceMeasurementByFeatureId(feature_id, source_frame);
+    ReportAndTraceMeasurementByFeatureId(feature, source_frame);
 
   features_recorded_.set(feature_id);
 }
 
 void UseCounterHelper::ReportAndTraceMeasurementByFeatureId(
-    int feature_id,
+    WebFeature feature,
     const LocalFrame& source_frame) {
   if (context_ != kDisabledContext) {
     // Note that HTTPArchive tooling looks specifically for this event -
     // see https://github.com/HTTPArchive/httparchive/issues/59
     TRACE_EVENT1(TRACE_DISABLED_BY_DEFAULT("blink.feature_usage"),
-                 "FeatureFirstUsed", "feature", feature_id);
+                 "FeatureFirstUsed", "feature", feature);
     if (context_ != kDefaultContext)
-      FeaturesHistogram().Count(feature_id);
+      CountFeature(feature);
     if (LocalFrameClient* client = source_frame.Client())
-      client->DidObserveNewFeatureUsage(static_cast<WebFeature>(feature_id));
-    NotifyFeatureCounted(static_cast<WebFeature>(feature_id));
+      client->DidObserveNewFeatureUsage(feature);
+    NotifyFeatureCounted(feature);
   }
 }
 
@@ -134,8 +134,10 @@ void UseCounterHelper::DidCommitLoad(const LocalFrame* frame) {
     // browser side.
     for (wtf_size_t feature_id = 0; feature_id < features_recorded_.size();
          ++feature_id) {
-      if (features_recorded_[feature_id])
-        ReportAndTraceMeasurementByFeatureId(feature_id, *frame);
+      if (features_recorded_[feature_id]) {
+        ReportAndTraceMeasurementByFeatureId(
+            static_cast<WebFeature>(feature_id), *frame);
+      }
     }
     for (wtf_size_t sample_id = 0; sample_id < css_recorded_.size();
          ++sample_id) {
@@ -147,7 +149,7 @@ void UseCounterHelper::DidCommitLoad(const LocalFrame* frame) {
 
     // TODO(loonybear): move extension histogram to the browser side.
     if (context_ == kExtensionContext || context_ == kFileContext) {
-      FeaturesHistogram().Count(static_cast<int>(WebFeature::kPageVisits));
+      CountFeature(WebFeature::kPageVisits);
     }
   }
 }
@@ -236,31 +238,26 @@ void UseCounterHelper::NotifyFeatureCounted(WebFeature feature) {
   observers_.RemoveAll(to_be_removed);
 }
 
-EnumerationHistogram& UseCounterHelper::FeaturesHistogram() const {
-  DEFINE_STATIC_LOCAL(blink::EnumerationHistogram, extension_histogram,
-                      ("Blink.UseCounter.Extensions.Features",
-                       static_cast<int32_t>(WebFeature::kNumberOfFeatures)));
-  DEFINE_STATIC_LOCAL(blink::EnumerationHistogram, file_histogram,
-                      ("Blink.UseCounter.File.Features",
-                       static_cast<int32_t>(WebFeature::kNumberOfFeatures)));
-  // Track what features/properties have been reported to the browser side
-  // histogram.
+void UseCounterHelper::CountFeature(WebFeature feature) const {
   switch (context_) {
     case kDefaultContext:
-      // The default features histogram is being recorded on the browser side.
+      // Feature usage for the default context is recorded on the browser side.
+      // TODO(dcheng): Where?
       NOTREACHED();
-      break;
+      return;
     case kExtensionContext:
-      return extension_histogram;
+      UMA_HISTOGRAM_ENUMERATION("Blink.UseCounter.Extensions.Features", feature,
+                                WebFeature::kNumberOfFeatures);
+      return;
     case kFileContext:
-      return file_histogram;
+      UMA_HISTOGRAM_ENUMERATION("Blink.UseCounter.File.Features", feature,
+                                WebFeature::kNumberOfFeatures);
+      return;
     case kDisabledContext:
       NOTREACHED();
-      break;
+      return;
   }
   NOTREACHED();
-  blink::EnumerationHistogram* null = nullptr;
-  return *null;
 }
 
 }  // namespace blink

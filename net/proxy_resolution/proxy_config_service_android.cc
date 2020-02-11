@@ -113,7 +113,7 @@ void AddBypassRules(const std::string& scheme,
       continue;
     // '?' is not one of the specified pattern characters above.
     DCHECK_EQ(std::string::npos, pattern.find('?'));
-    bypass_rules->AddRuleForHostname(scheme, pattern, -1);
+    bypass_rules->AddRuleFromString(scheme + "://" + pattern);
   }
 }
 
@@ -189,8 +189,7 @@ void CreateStaticProxyConfig(const std::string& host,
       base::TrimWhitespaceASCII(*it, base::TRIM_ALL, &pattern);
       if (pattern.empty())
           continue;
-      proxy_config.proxy_rules().bypass_rules.AddRuleForHostname("", pattern,
-                                                                 -1);
+      proxy_config.proxy_rules().bypass_rules.AddRuleFromString(pattern);
     }
     *config =
         ProxyConfigWithAnnotation(proxy_config, NO_TRAFFIC_ANNOTATION_YET);

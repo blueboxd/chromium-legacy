@@ -41,6 +41,17 @@ class OverlayRequestQueueImpl : public OverlayRequestQueue {
     std::map<OverlayModality, std::unique_ptr<OverlayRequestQueueImpl>> queues_;
   };
 
+  // Delegate class for the queue.
+  class Delegate {
+   public:
+    // Called when |request| is removed from |queue|.  |cancelled| is true if
+    // the request is removed by its cancel handler or by a call to
+    // CancelAllRequests().
+    virtual void OverlayRequestRemoved(OverlayRequestQueueImpl* queue,
+                                       std::unique_ptr<OverlayRequest> request,
+                                       bool cancelled) = 0;
+  };
+
   // Observer class for the queue.
   class Observer : public base::CheckedObserver {
    public:
@@ -48,11 +59,6 @@ class OverlayRequestQueueImpl : public OverlayRequestQueue {
     virtual void RequestAddedToQueue(OverlayRequestQueueImpl* queue,
                                      OverlayRequest* request,
                                      size_t index) {}
-
-    // Called when |request| is cancelled before it is removed from |queue|.
-    // All requests in a queue are cancelled before the queue is destroyed.
-    virtual void QueuedRequestCancelled(OverlayRequestQueueImpl* queue,
-                                        OverlayRequest* request) {}
 
     // Called when |queue| is about to be destroyed.
     virtual void OverlayRequestQueueDestroyed(OverlayRequestQueueImpl* queue) {}
@@ -62,6 +68,9 @@ class OverlayRequestQueueImpl : public OverlayRequestQueue {
   static OverlayRequestQueueImpl* FromWebState(web::WebState* web_state,
                                                OverlayModality modality);
 
+  // Sets the delegate.
+  void set_delegate(Delegate* delegate) { delegate_ = delegate; }
+
   // Adds and removes observers.
   void AddObserver(Observer* observer);
   void RemoveObserver(Observer* observer);
@@ -69,10 +78,9 @@ class OverlayRequestQueueImpl : public OverlayRequestQueue {
   // Returns a weak pointer to the queue.
   base::WeakPtr<OverlayRequestQueueImpl> GetWeakPtr();
 
-  // Removes the front or back request from the queue, transferring ownership of
-  // the request to the caller.  Must be called on a non-empty queue.
-  std::unique_ptr<OverlayRequest> PopFrontRequest();
-  std::unique_ptr<OverlayRequest> PopBackRequest();
+  // Removes the front request from the queue, transferring ownership of the
+  // request to queue's delegate.  Must be called on a non-empty queue.
+  void PopFrontRequest();
 
   // OverlayRequestQueue:
   size_t size() const override;
@@ -89,9 +97,6 @@ class OverlayRequestQueueImpl : public OverlayRequestQueue {
   void CancelRequest(OverlayRequest* request) override;
 
  private:
-  // Private constructor called by container.
-  explicit OverlayRequestQueueImpl(web::WebState* web_state);
-
   // Helper object that stores OverlayRequests along with their cancellation
   // handlers.
   struct OverlayRequestStorage {
@@ -105,7 +110,16 @@ class OverlayRequestQueueImpl : public OverlayRequestQueue {
     std::unique_ptr<OverlayRequestCancelHandler> cancel_handler;
   };
 
+  // Private constructor called by container.
+  explicit OverlayRequestQueueImpl(web::WebState* web_state);
+
+  // Removes the request at |index|, passing ownership of the removed request to
+  // the delegate.  |cancelled| is true if the request is removed by its cancel
+  // handler or by a call to CancelAllRequests().
+  void RemoveRequest(size_t index, bool cancelled);
+
   web::WebState* web_state_ = nullptr;
+  Delegate* delegate_ = nullptr;
   base::ObserverList<Observer, /* check_empty= */ true> observers_;
   // The queue used to hold the received requests.  Stored as a circular dequeue
   // to allow performant pop events from the front of the queue.

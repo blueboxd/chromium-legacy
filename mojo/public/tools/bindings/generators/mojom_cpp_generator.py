@@ -3,11 +3,11 @@
 # found in the LICENSE file.
 
 """Generates C++ source files from a mojom.Module."""
-
+import os
 import mojom.generate.generator as generator
 import mojom.generate.module as mojom
 import mojom.generate.pack as pack
-from mojom.generate.template_expander import UseJinja
+from mojom.generate.template_expander import UseJinja, UseJinjaForImportedTemplate
 
 
 _kind_to_cpp_type = {
@@ -127,6 +127,12 @@ def NamespaceToArray(namespace):
 def GetWtfHashFnNameForEnum(enum):
   return _NameFormatter(enum, None).Format("_", internal=True,
                                            flatten_nested_kind=True) + "HashFn"
+
+def GetEnumNameWithoutNamespace(enum):
+  full_enum_name = _NameFormatter(enum, None).Format(
+        "::", prefixed=True,
+        internal=False)
+  return full_enum_name.split("::")[-1]
 
 
 def IsNativeOnlyKind(kind):
@@ -364,6 +370,7 @@ class Generator(generator.Generator):
       "cpp_wrapper_param_type": self._GetCppWrapperParamType,
       "cpp_wrapper_param_type_new": self._GetCppWrapperParamTypeNew,
       "cpp_wrapper_type": self._GetCppWrapperType,
+      "cpp_enum_without_namespace": GetEnumNameWithoutNamespace,
       "default_value": self._DefaultValue,
       "expression_to_text": self._ExpressionToText,
       "format_constant_declaration": self._FormatConstantDeclaration,
@@ -391,6 +398,7 @@ class Generator(generator.Generator):
       "is_any_interface_kind": mojom.IsAnyInterfaceKind,
       "is_any_handle_or_interface_kind": mojom.IsAnyHandleOrInterfaceKind,
       "is_associated_kind": mojom.IsAssociatedKind,
+      "is_float_kind": mojom.IsFloatKind,
       "is_hashable": self._IsHashableKind,
       "is_map_kind": mojom.IsMapKind,
       "is_nullable_kind": mojom.IsNullableKind,
@@ -453,6 +461,11 @@ class Generator(generator.Generator):
   def _GenerateModuleParamsDataHeader(self):
     return self._GetJinjaExports()
 
+  @UseJinjaForImportedTemplate
+  def _GenerateModuleFromImportedTemplate(self, path_to_template, filename):
+    return self._GetJinjaExports()
+
+
   def GenerateFiles(self, args):
     self.module.Stylize(generator.Stylizer())
 
@@ -484,6 +497,13 @@ class Generator(generator.Generator):
                             "%s%s-test-utils.h" % (self.module.path, suffix))
       self.WriteWithComment(self._GenerateModuleTestUtilsSource(),
                             "%s%s-test-utils.cc" % (self.module.path, suffix))
+
+    if self.extra_cpp_template_paths:
+      for cpp_template_path in self.extra_cpp_template_paths:
+        path_to_template, filename = os.path.split(cpp_template_path)
+        filename_without_tmpl_suffix = filename.rstrip(".tmpl")
+        self.WriteWithComment(self._GenerateModuleFromImportedTemplate(path_to_template, filename),
+                              "%s%s-%s" % (self.module.path, suffix, filename_without_tmpl_suffix))
 
   def _ConstantValue(self, constant):
     return self._ExpressionToText(constant.value, kind=constant.kind)
@@ -657,6 +677,8 @@ class Generator(generator.Generator):
       return "mojo::ScopedMessagePipeHandle"
     if mojom.IsSharedBufferKind(kind):
       return "mojo::ScopedSharedBufferHandle"
+    if mojom.IsPlatformHandleKind(kind):
+      return "mojo::PlatformHandle"
     if not kind in _kind_to_cpp_type:
       raise Exception("Unrecognized kind %s" % kind.spec)
     return _kind_to_cpp_type[kind]
@@ -968,6 +990,8 @@ class Generator(generator.Generator):
       return "mojo::ScopedMessagePipeHandle"
     if mojom.IsSharedBufferKind(kind):
       return "mojo::ScopedSharedBufferHandle"
+    if mojom.IsPlatformHandleKind(kind):
+      return "mojo::PlatformHandle"
     return _kind_to_cpp_type[kind]
 
   def _GetUnmappedTypeForSerializer(self, kind):

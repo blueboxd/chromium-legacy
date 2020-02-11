@@ -74,7 +74,7 @@ class MockNativeFileSystemPermissionContext
                     int frame_id,
                     base::OnceCallback<void(AfterWriteCheckResult)>& callback));
 
-  MOCK_METHOD1(CanRequestWritePermission, bool(const url::Origin& origin));
+  MOCK_METHOD1(CanObtainWritePermission, bool(const url::Origin& origin));
 };
 
 }  // namespace content

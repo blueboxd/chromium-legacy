@@ -14,6 +14,10 @@ class FileTableColumnModel extends cr.ui.table.TableColumnModel {
 
     /** @private {?FileTableColumnModel.ColumnSnapshot} */
     this.snapshot_ = null;
+
+    if (util.isFilesNg()) {
+      FileTableColumnModel.MIN_WIDTH_ = 24;
+    }
   }
 
   /**
@@ -246,25 +250,53 @@ class FileTableColumnModel extends cr.ui.table.TableColumnModel {
  */
 function renderHeader_(table) {
   const column = /** @type {cr.ui.table.TableColumn} */ (this);
+  const container = table.ownerDocument.createElement('div');
+  container.classList.add('table-label-container');
+
   const textElement = table.ownerDocument.createElement('span');
   textElement.textContent = column.name;
   const dm = table.dataModel;
 
   let sortOrder = column.defaultOrder;
+  let isSorted = false;
   if (dm && dm.sortStatus.field === column.id) {
+    isSorted = true;
     // Here we have to flip, because clicking will perform the opposite sorting.
     sortOrder = dm.sortStatus.direction === 'desc' ? 'asc' : 'desc';
+
+    if (!util.isFilesNg()) {
+      textElement.classList.toggle(
+          'table-header-sort-image-desc', dm.sortStatus.direction === 'desc');
+      textElement.classList.toggle(
+          'table-header-sort-image-asc', dm.sortStatus.direction !== 'desc');
+    }
   }
 
   textElement.setAttribute('aria-describedby', 'sort-column-' + sortOrder);
   textElement.setAttribute('role', 'button');
-  return textElement;
+  container.appendChild(textElement);
+
+  if (util.isFilesNg()) {
+    const icon = document.createElement('cr-icon-button');
+    const iconName = sortOrder === 'desc' ? 'down' : 'up';
+    icon.setAttribute('iron-icon', `files16:arrow_${iconName}_small`);
+    icon.setAttribute('tabindex', '-1');
+    icon.classList.add('sort-icon');
+
+    container.classList.toggle('not-sorted', !isSorted);
+    container.classList.toggle('sorted', isSorted);
+
+    container.appendChild(icon);
+  }
+
+  return container;
 }
 
 /**
  * Minimum width of column. Note that is not marked private as it is used in the
  * unit tests.
- * @const {number}
+ * TODO(lucmult): Revert back to const once FilesNg flag is removed.
+ * @type {number}
  */
 FileTableColumnModel.MIN_WIDTH_ = 10;
 

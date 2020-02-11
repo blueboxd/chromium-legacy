@@ -35,6 +35,6 @@
                   android:layout_width="wrap_content"
                   android:layout_height="wrap_content"
                   android:layout_gravity="center_vertical"
-                  android:textAppearance="@style/TextAppearance.BlueButtonText2"/>
+                  android:textAppearance="@style/TextAppearance.Button.Text.Blue"/>
     </LinearLayout>
 </LinearLayout>

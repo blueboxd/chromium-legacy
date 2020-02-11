@@ -17,6 +17,7 @@ class TestGPUInfoEnumerator : public gpu::GPUInfo::Enumerator {
         video_encode_accelerator_profile_active_(false),
         image_decode_accelerator_profile_active_(false),
         dx12_vulkan_version_info_active_(false),
+        overlay_info_active_(false),
         aux_attributes_active_(false) {}
 
   void AddInt64(const char* name, int64_t value) override {}
@@ -70,6 +71,10 @@ class TestGPUInfoEnumerator : public gpu::GPUInfo::Enumerator {
     dx12_vulkan_version_info_active_ = false;
   }
 
+  void BeginOverlayInfo() override { overlay_info_active_ = true; }
+
+  void EndOverlayInfo() override { overlay_info_active_ = false; }
+
   void BeginAuxAttributes() override { aux_attributes_active_ = true; }
 
   void EndAuxAttributes() override { aux_attributes_active_ = false; }
@@ -101,6 +106,7 @@ class TestGPUInfoEnumerator : public gpu::GPUInfo::Enumerator {
   bool video_encode_accelerator_profile_active_;
   bool image_decode_accelerator_profile_active_;
   bool dx12_vulkan_version_info_active_;
+  bool overlay_info_active_;
   bool aux_attributes_active_;
 };
 }  // namespace

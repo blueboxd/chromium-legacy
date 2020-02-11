@@ -17,6 +17,7 @@
 #include "chrome/common/url_constants.h"
 #include "chrome/grit/chromium_strings.h"
 #include "chrome/grit/generated_resources.h"
+#include "chromeos/constants/chromeos_features.h"
 #include "components/google/core/common/google_util.h"
 #include "components/strings/grit/components_strings.h"
 #include "components/user_manager/user_manager.h"
@@ -107,8 +108,21 @@ void AddPersonalizationOptionsStrings(content::WebUIDataSource* html_source) {
 }
 
 void AddSignOutDialogStrings(content::WebUIDataSource* html_source) {
+  html_source->AddLocalizedString("syncDisconnectConfirm",
+                                  IDS_SETTINGS_SYNC_DISCONNECT_CONFIRM);
+#if defined(OS_CHROMEOS)
+  if (chromeos::features::IsSplitSettingsSyncEnabled()) {
+    static constexpr webui::LocalizedString kTurnOffStrings[] = {
+        {"syncDisconnect", IDS_SETTINGS_PEOPLE_SYNC_TURN_OFF},
+        {"syncDisconnectTitle",
+         IDS_SETTINGS_TURN_OFF_SYNC_AND_SIGN_OUT_DIALOG_TITLE},
+    };
+    AddLocalizedStringsBulk(html_source, kTurnOffStrings);
+    return;
+  }
+  // Fall through.
+#endif
   static constexpr webui::LocalizedString kLocalizedStrings[] = {
-      {"syncDisconnectConfirm", IDS_SETTINGS_SYNC_DISCONNECT_CONFIRM},
       {"syncDisconnect", IDS_SETTINGS_PEOPLE_SIGN_OUT},
       {"syncDisconnectTitle", IDS_SETTINGS_SYNC_DISCONNECT_TITLE},
   };

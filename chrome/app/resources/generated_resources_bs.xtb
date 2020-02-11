@@ -492,6 +492,7 @@ da li    proksi server funkcionira. Ako smatrate da ne trebate koristiti
 <translation id="1670399744444387456">Osnovni</translation>
 <translation id="167160931442925455">Najglasnije</translation>
 <translation id="1673137583248014546"><ph name="URL" /> želi vidjeti proizvođača i model vašeg sigurnosnog ključa</translation>
+<translation id="1677472565718498478">Još <ph name="TIME" /></translation>
 <translation id="1679068421605151609">Programerski alati</translation>
 <translation id="1679806121152819234">Dodatak VM</translation>
 <translation id="1679810534535368772">Jeste li sigurni da želite izaći?</translation>
@@ -1787,6 +1788,7 @@ Postavkama ovog računa možete upravljati instaliranjem aplikacije Family Link 
 <translation id="3462413494201477527">Otkazati postavljanje računa?</translation>
 <translation id="3464012987031883895">Web lokacija pristupa audio ulazu</translation>
 <translation id="346431825526753">Ovo je račun za djecu kojim upravlja <ph name="CUSTODIAN_EMAIL" />.</translation>
+<translation id="3468298837301810372">Oznaka</translation>
 <translation id="3468999815377931311">Android telefon</translation>
 <translation id="3470442499439619530">Uklanjanje tog korisnika</translation>
 <translation id="3471876058939596279">Za videozapise nije moguće istovremeno koristiti priključak HDMI i USB tip C. Koristite drugi priključak za videozapis.</translation>
@@ -1924,7 +1926,7 @@ Postavkama ovog računa možete upravljati instaliranjem aplikacije Family Link 
 <translation id="3648348069317717750">Prepoznat je USB uređaj <ph name="USB_DEVICE_NAME" /></translation>
 <translation id="3649138363871392317">Fotografija je snimljena</translation>
 <translation id="3649505501900178324">Rok za ažuriranje je prekoračen</translation>
-<translation id="3650753875413052677">Greška pri prijavi</translation>
+<translation id="3650753875413052677">Greška prilikom prijave</translation>
 <translation id="3650845953328929506">Čekanje na otpremanje zapisnika.</translation>
 <translation id="3650952250015018111">Dozvoli da "<ph name="APP_NAME" />" pristupi:</translation>
 <translation id="3651488188562686558">Prekini vezu s WiFi mrežom</translation>
@@ -2673,7 +2675,7 @@ Postavkama ovog računa možete upravljati instaliranjem aplikacije Family Link 
 <translation id="4720185134442950733">Prijenos podataka na mobilnoj mreži</translation>
 <translation id="4722735765955348426">Lozinka za korisničko ime <ph name="USERNAME" /></translation>
 <translation id="4722920479021006856"><ph name="APP_NAME" /> dijeli vaš zaslon.</translation>
-<translation id="4723140812774948886">Zamijeni sa sljedećom stavkom</translation>
+<translation id="4723140812774948886">Zamijeni sljedećom stavkom</translation>
 <translation id="4724450788351008910">Afilijacija je promijenjena</translation>
 <translation id="4725511304875193254">Corgi</translation>
 <translation id="4726710629007580002">Kada ste pokušali instalirati ovu ekstenziju, pojavila su se obavještenja:</translation>
@@ -3962,7 +3964,6 @@ Postavkama ovog računa možete upravljati instaliranjem aplikacije Family Link 
 <translation id="6545867563032584178">Mikrofon je isključen u postavkama Mac sistema</translation>
 <translation id="6547354035488017500">Oslobodite najmanje 512 MB prostora ili će vaš uređaj prestati da radi. Da oslobodite prostor, izbrišite fajlove s pohrane uređaja.</translation>
 <translation id="6549639163247690448"><ph name="DOMAIN" /> zahtijeva da se sada povežete s WiFi mrežom i da preuzmete ažuriranje. Ažuriranje će se automatski preuzeti kada se povežete s internetom.</translation>
-<translation id="6549966385318247177">Ovo je blokirano zbog sadržaja za zrelu publiku.</translation>
 <translation id="6550675742724504774">Opcije</translation>
 <translation id="6551508934388063976">Komanda nije dostupna. Pritiniste control-N da otvorite novi prozor.</translation>
 <translation id="6551612971599078809">Web lokacija koristi USB</translation>
@@ -4062,7 +4063,7 @@ Postavkama ovog računa možete upravljati instaliranjem aplikacije Family Link 
 <translation id="6700480081846086223">Emitiraj <ph name="HOST_NAME" /></translation>
 <translation id="6701535245008341853">Učitavanje profila nije uspjelo.</translation>
 <translation id="6702639462873609204">&amp;Uredi…</translation>
-<translation id="6703966911896067184">Ilustracija greške pri prijavi</translation>
+<translation id="6703966911896067184">Ilustracija greške prilikom prijave</translation>
 <translation id="6706210727756204531">Opseg</translation>
 <translation id="6707389671160270963">Potvrda SSL klijenta</translation>
 <translation id="6708242697268981054">Porijeklo:</translation>
@@ -4302,7 +4303,7 @@ Postavkama ovog računa možete upravljati instaliranjem aplikacije Family Link 
 <translation id="7040230719604914234">Operater</translation>
 <translation id="7043108582968290193">Gotovo! Nije pronađena nijedna nekompatibilna aplikacija.</translation>
 <translation id="7044124535091449260">Saznajte više o pristupu web lokaciji</translation>
-<translation id="7044606776288350625">Sinhroniziranje podataka</translation>
+<translation id="7044606776288350625">Sinhronizacija podataka</translation>
 <translation id="7047059339731138197">Odaberite pozadinu</translation>
 <translation id="7049293980323620022">Zadržati fajl?</translation>
 <translation id="7051943809462976355">Traženje miša...</translation>
@@ -4563,7 +4564,7 @@ Postavkama ovog računa možete upravljati instaliranjem aplikacije Family Link 
 <translation id="7392915005464253525">P&amp;onovo otvori zatvoreni prozor</translation>
 <translation id="7396017167185131589">Dijeljeni folderi će se pojaviti ovdje</translation>
 <translation id="7396845648024431313">Aplikacija <ph name="APP_NAME" /> će se pokrenuti pri pokretanju sistema i nastavit će raditi u pozadini čak i nakon što zatvorite sve druge prozore proizvoda <ph name="PRODUCT_NAME" />.</translation>
-<translation id="7399045143794278225">Prilagodi sinhroniziranje</translation>
+<translation id="7399045143794278225">Prilagodi sinhronizaciju</translation>
 <translation id="7400418766976504921">URL</translation>
 <translation id="7400839060291901923">Postavite vezu na uređaju <ph name="PHONE_NAME" /></translation>
 <translation id="7401778920660465883">Odbaci ovu poruku</translation>

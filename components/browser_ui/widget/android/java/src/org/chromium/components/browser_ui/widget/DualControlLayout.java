@@ -77,7 +77,7 @@ public final class DualControlLayout extends ViewGroup {
             secondaryButton.setOnClickListener(listener);
             secondaryButton.setText(text);
             ApiCompatibilityUtils.setTextAppearance(
-                    secondaryButton, R.style.TextAppearance_BlueButtonText2);
+                    secondaryButton, R.style.TextAppearance_Button_Text_Blue);
             return secondaryButton;
         }
     }

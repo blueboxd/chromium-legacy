@@ -33,6 +33,10 @@ class DisplaySchedulerWebView : public viz::DisplaySchedulerBase {
  private:
   RootFrameSink* const root_frame_sink_;
 
+  // This count how many times specific sink damaged display. It's incremented
+  // in OnDisplayDamaged and decremented in DidSwapBuffers.
+  std::map<viz::FrameSinkId, int> damaged_frames_;
+
   THREAD_CHECKER(thread_checker_);
 };
 }  // namespace android_webview

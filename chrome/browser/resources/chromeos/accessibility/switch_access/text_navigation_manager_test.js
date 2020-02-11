@@ -18,8 +18,8 @@ SwitchAccessTextNavigationManagerTest.prototype = {
   /** @override */
   setUp() {
     this.textNavigationManager =
-        switchAccess.navigationManager_.menuManager_.textNavigationManager_;
-    this.navigationManager = switchAccess.navigationManager_;
+        NavigationManager.instance.menuManager_.textNavigationManager_;
+    this.navigationManager = NavigationManager.instance;
   }
 };
 

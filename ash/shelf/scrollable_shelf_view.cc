@@ -639,7 +639,7 @@ gfx::Rect ScrollableShelfView::GetTargetScreenBoundsOfItemIcon(
   // Notes that the target bounds stored in shelf layout manager are adapted to
   // RTL already while |icon_bounds| are not adjusted to RTL yet.
   gfx::Rect hotseat_bounds_in_screen =
-      GetShelf()->shelf_layout_manager()->GetHotseatBounds();
+      GetShelf()->shelf_layout_manager()->GetHotseatBoundsInScreen();
   if (ShouldAdaptToRTL()) {
     // One simple way for transformation under RTL is: (1) Transforms hotseat
     // target bounds from RTL to LTR. (2) Calculates the icon's bounds in screen
@@ -701,10 +701,10 @@ void ScrollableShelfView::SetTestObserver(TestObserver* test_observer) {
   test_observer_ = test_observer;
 }
 
-int ScrollableShelfView::CalculateScrollUpperBound(
+float ScrollableShelfView::CalculateScrollUpperBound(
     int available_space_for_icons) const {
   if (layout_strategy_ == kNotShowArrowButtons)
-    return 0;
+    return 0.f;
 
   // Calculate the length of the available space.
   int available_length = available_space_for_icons -
@@ -753,13 +753,13 @@ void ScrollableShelfView::StartShelfScrollAnimation(float scroll_distance) {
 }
 
 ScrollableShelfView::LayoutStrategy
-ScrollableShelfView::CalculateLayoutStrategy(int scroll_distance_on_main_axis,
+ScrollableShelfView::CalculateLayoutStrategy(float scroll_distance_on_main_axis,
                                              int space_for_icons,
                                              bool use_target_bounds) const {
   if (CanFitAllAppsWithoutScrolling(use_target_bounds))
     return kNotShowArrowButtons;
 
-  if (scroll_distance_on_main_axis == 0) {
+  if (scroll_distance_on_main_axis == 0.f) {
     // No invisible shelf buttons at the left side. So hide the left button.
     return kShowRightArrowButton;
   }
@@ -1003,7 +1003,7 @@ void ScrollableShelfView::ScrollRectToVisible(const gfx::Rect& rect) {
     return;
   }
 
-  const int original_offset = CalculateMainAxisScrollDistance();
+  const float original_offset = CalculateMainAxisScrollDistance();
 
   // |forward| indicates the scroll direction.
   const bool forward =
@@ -1018,7 +1018,7 @@ void ScrollableShelfView::ScrollRectToVisible(const gfx::Rect& rect) {
   // (4) Must change |rect_after_adjustment|'s coordinates after adjusting the
   // scroll.
   LayoutStrategy layout_strategy_after_scroll = layout_strategy_;
-  int main_axis_offset_after_scroll = original_offset;
+  float main_axis_offset_after_scroll = original_offset;
   gfx::Rect visible_space_after_scroll = visible_space_;
   gfx::Rect rect_after_scroll = rect_after_adjustment;
 
@@ -1305,6 +1305,9 @@ void ScrollableShelfView::OnImplicitAnimationsCompleted() {
   during_scroll_animation_ = false;
   Layout();
 
+  if (scroll_status_ != kAlongMainAxisScroll)
+    UpdateTappableIconIndices();
+
   // Notifies ChromeVox of the changed location at the end of animation.
   shelf_view_->NotifyAccessibilityEvent(ax::mojom::Event::kLocationChanged,
                                         /*send_native_event=*/true);
@@ -1385,7 +1388,7 @@ gfx::Rect ScrollableShelfView::GetAvailableLocalBounds(
     bool use_target_bounds) const {
   return use_target_bounds ? gfx::Rect(GetShelf()
                                            ->shelf_layout_manager()
-                                           ->GetHotseatBounds()
+                                           ->GetHotseatBoundsInScreen()
                                            .size())
                            : GetLocalBounds();
 }
@@ -1403,8 +1406,9 @@ gfx::Insets ScrollableShelfView::CalculatePaddingForDisplayCentering(
 
   // Calculates paddings in view coordinates.
   const gfx::Rect screen_bounds =
-      use_target_bounds ? GetShelf()->shelf_layout_manager()->GetHotseatBounds()
-                        : GetBoundsInScreen();
+      use_target_bounds
+          ? GetShelf()->shelf_layout_manager()->GetHotseatBoundsInScreen()
+          : GetBoundsInScreen();
   const int before_padding = gap - GetShelf()->PrimaryAxisValue(
                                        screen_bounds.x() - display_bounds.x(),
                                        screen_bounds.y() - display_bounds.y());
@@ -1518,7 +1522,10 @@ bool ScrollableShelfView::ProcessGestureEvent(const ui::GestureEvent& event) {
     // adjustment, the scrolling offset should be floored.
     scroll_offset_ = gfx::ToFlooredVector2d(scroll_offset_);
 
-    AdjustOffset();
+    // If the scroll animation is created, tappable icon indices are updated
+    // at the end of animation.
+    if (!AdjustOffset() && !during_scroll_animation_)
+      UpdateTappableIconIndices();
     return true;
   }
 
@@ -1556,7 +1563,7 @@ bool ScrollableShelfView::ProcessGestureEvent(const ui::GestureEvent& event) {
   DCHECK(presentation_time_recorder_);
   presentation_time_recorder_->RequestNext();
 
-  const int scroll_x = -event.details().scroll_x();
+  const float scroll_x = -event.details().scroll_x();
   if (GetShelf()->IsHorizontalAlignment()) {
     ScrollByXOffset(ShouldAdaptToRTL() ? -scroll_x : scroll_x,
                     /*animate=*/false);
@@ -1806,8 +1813,8 @@ bool ScrollableShelfView::ShouldApplyMaskLayerGradientZone() const {
   return layout_strategy_ != LayoutStrategy::kNotShowArrowButtons;
 }
 
-int ScrollableShelfView::GetActualScrollOffset(
-    int main_axis_scroll_distance,
+float ScrollableShelfView::GetActualScrollOffset(
+    float main_axis_scroll_distance,
     LayoutStrategy layout_strategy) const {
   return (layout_strategy == kShowButtons ||
           layout_strategy == kShowLeftArrowButton)
@@ -1817,6 +1824,12 @@ int ScrollableShelfView::GetActualScrollOffset(
 }
 
 void ScrollableShelfView::UpdateTappableIconIndices() {
+  // Scrollable shelf should be not under the scroll along the main axis, which
+  // means that the decimal part of the main scroll offset should be zero.
+  DCHECK(scroll_status_ != kAlongMainAxisScroll);
+
+  // The value returned by CalculateMainAxisScrollDistance() can be casted into
+  // an integer without losing precision since the decimal part is zero.
   const std::pair<int, int> tappable_indices = CalculateTappableIconIndices(
       layout_strategy_, CalculateMainAxisScrollDistance());
   first_tappable_app_index_ = tappable_indices.first;
@@ -1917,7 +1930,7 @@ bool ScrollableShelfView::ShouldHandleScroll(const gfx::Vector2dF& offset,
 }
 
 bool ScrollableShelfView::AdjustOffset() {
-  const int offset = CalculateAdjustmentOffset(
+  const float offset = CalculateAdjustmentOffset(
       CalculateMainAxisScrollDistance(), layout_strategy_, GetSpaceForIcons());
 
   // Returns early when it does not need to adjust the shelf view's location.
@@ -1932,10 +1945,14 @@ bool ScrollableShelfView::AdjustOffset() {
   return true;
 }
 
-int ScrollableShelfView::CalculateAdjustmentOffset(
+float ScrollableShelfView::CalculateAdjustmentOffset(
     int main_axis_scroll_distance,
     LayoutStrategy layout_strategy,
     int available_space_for_icons) const {
+  // Scrollable shelf should be not under the scroll along the main axis, which
+  // means that the decimal part of the main scroll offset should be zero.
+  DCHECK(scroll_status_ != kAlongMainAxisScroll);
+
   // Returns early when it does not need to adjust the shelf view's location.
   if (layout_strategy == kNotShowArrowButtons ||
       main_axis_scroll_distance >=
@@ -1943,9 +1960,11 @@ int ScrollableShelfView::CalculateAdjustmentOffset(
     return 0;
   }
 
-  const int remainder =
-      GetActualScrollOffset(main_axis_scroll_distance, layout_strategy) %
-      GetUnit();
+  // Because the decimal part of the scroll offset is zero, it is meaningful
+  // to use modulo operation here.
+  const int remainder = static_cast<int>(GetActualScrollOffset(
+                            main_axis_scroll_distance, layout_strategy)) %
+                        GetUnit();
   int offset = remainder > GetGestureDragThreshold() ? GetUnit() - remainder
                                                      : -remainder;
 
@@ -2167,7 +2186,8 @@ void ScrollableShelfView::UpdateScrollOffset(float target_offset) {
   visible_space_ = CalculateVisibleSpace(layout_strategy_);
   shelf_container_view_->layer()->SetClipRect(visible_space_);
 
-  UpdateTappableIconIndices();
+  if (scroll_status_ != kAlongMainAxisScroll)
+    UpdateTappableIconIndices();
 }
 
 void ScrollableShelfView::UpdateAvailableSpaceAndScroll() {

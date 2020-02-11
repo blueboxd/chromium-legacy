@@ -53,7 +53,7 @@ class PageTimingMetricsSender {
   void DidObserveLazyLoadBehavior(
       blink::WebLocalFrameClient::LazyLoadBehavior lazy_load_behavior);
 
-  void DidStartResponse(const url::Origin& origin_of_final_response_url,
+  void DidStartResponse(const GURL& response_url,
                         int resource_id,
                         const network::mojom::URLResponseHead& response_head,
                         blink::mojom::ResourceType resource_type,

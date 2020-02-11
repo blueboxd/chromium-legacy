@@ -22,6 +22,7 @@
 #include "chrome/browser/ui/browser_dialogs.h"
 #include "chrome/common/chrome_paths.h"
 #include "components/content_settings/core/browser/host_content_settings_map.h"
+#include "components/content_settings/core/common/content_settings.h"
 #include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/render_frame_host.h"
@@ -210,28 +211,37 @@ void TabScopedNativeFileSystemPermissionContext::WritePermissionGrantImpl::
     return;
   }
 
-  // Check if |write_guard_content_setting_type_| is blocked by the user and
-  // update the status if it is.
-  if (!CanRequestPermission()) {
-    OnPermissionRequestComplete(
-        std::move(callback), PermissionRequestOutcome::kBlockedByContentSetting,
-        permissions::PermissionAction::DENIED);
-    return;
+  const ContentSetting content_setting =
+      context_->GetWriteGuardContentSetting(origin_);
+  switch (content_setting) {
+    // Content setting grants write permission without asking.
+    case CONTENT_SETTING_ALLOW:
+      OnPermissionRequestComplete(
+          std::move(callback),
+          PermissionRequestOutcome::kGrantedByContentSetting,
+          permissions::PermissionAction::GRANTED);
+      break;
+    // Content setting blocks write permission.
+    case CONTENT_SETTING_BLOCK:
+      OnPermissionRequestComplete(
+          std::move(callback),
+          PermissionRequestOutcome::kBlockedByContentSetting,
+          permissions::PermissionAction::DENIED);
+      break;
+    // Ask the user for permission.
+    case CONTENT_SETTING_ASK:
+      base::PostTask(
+          FROM_HERE, {content::BrowserThread::UI},
+          base::BindOnce(
+              &ShowWritePermissionPromptOnUIThread, process_id, frame_id,
+              origin_, path(), is_directory_,
+              BindResultCallbackToCurrentSequence(base::BindOnce(
+                  &WritePermissionGrantImpl::OnPermissionRequestComplete, this,
+                  std::move(callback)))));
+      break;
+    default:
+      NOTREACHED();
   }
-
-  auto result_callback = BindResultCallbackToCurrentSequence(
-      base::BindOnce(&WritePermissionGrantImpl::OnPermissionRequestComplete,
-                     this, std::move(callback)));
-
-  base::PostTask(FROM_HERE, {content::BrowserThread::UI},
-                 base::BindOnce(&ShowWritePermissionPromptOnUIThread,
-                                process_id, frame_id, origin_, path(),
-                                is_directory_, std::move(result_callback)));
-}
-
-bool TabScopedNativeFileSystemPermissionContext::WritePermissionGrantImpl::
-    CanRequestPermission() {
-  return context_ && context_->CanRequestWritePermission(origin_);
 }
 
 void TabScopedNativeFileSystemPermissionContext::WritePermissionGrantImpl::
@@ -350,11 +360,27 @@ TabScopedNativeFileSystemPermissionContext::GetWritePermissionGrant(
   // to identify grants.
   WritePermissionGrantImpl::Key grant_key{path, process_id, frame_id};
   auto*& existing_grant = origin_state.grants[grant_key];
+
+  ContentSetting content_setting = GetWriteGuardContentSetting(origin);
+
   if (existing_grant) {
-    if (existing_grant->CanRequestPermission() &&
-        user_action == UserAction::kSave) {
-      existing_grant->SetStatus(
-          WritePermissionGrantImpl::PermissionStatus::GRANTED);
+    switch (content_setting) {
+      case CONTENT_SETTING_ALLOW:
+        existing_grant->SetStatus(
+            WritePermissionGrantImpl::PermissionStatus::GRANTED);
+        break;
+      case CONTENT_SETTING_ASK:
+        if (user_action == UserAction::kSave) {
+          existing_grant->SetStatus(
+              WritePermissionGrantImpl::PermissionStatus::GRANTED);
+        }
+        break;
+      case CONTENT_SETTING_BLOCK:
+        // We won't revoke permission to existing grants.
+        break;
+      default:
+        NOTREACHED();
+        break;
     }
     return existing_grant;
   }
@@ -364,12 +390,19 @@ TabScopedNativeFileSystemPermissionContext::GetWritePermissionGrant(
   // |existing_grant|.
   auto result = base::MakeRefCounted<WritePermissionGrantImpl>(
       weak_factory_.GetWeakPtr(), origin, grant_key, is_directory);
-  if (result->CanRequestPermission()) {
-    if (user_action == UserAction::kSave) {
+  switch (content_setting) {
+    case CONTENT_SETTING_ALLOW:
       result->SetStatus(WritePermissionGrantImpl::PermissionStatus::GRANTED);
-    }
-  } else {
-    result->SetStatus(WritePermissionGrantImpl::PermissionStatus::DENIED);
+      break;
+    case CONTENT_SETTING_ASK:
+      if (user_action == UserAction::kSave)
+        result->SetStatus(WritePermissionGrantImpl::PermissionStatus::GRANTED);
+      break;
+    case CONTENT_SETTING_BLOCK:
+      result->SetStatus(WritePermissionGrantImpl::PermissionStatus::DENIED);
+      break;
+    default:
+      NOTREACHED();
   }
   existing_grant = result.get();
   return result;

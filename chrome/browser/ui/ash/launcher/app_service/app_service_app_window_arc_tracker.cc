@@ -349,7 +349,8 @@ void AppServiceAppWindowArcTracker::AttachControllerToTask(int task_id) {
 
   const ash::ShelfID shelf_id(app_shelf_id.ToString());
   std::unique_ptr<AppServiceAppWindowLauncherItemController> controller =
-      std::make_unique<AppServiceAppWindowLauncherItemController>(shelf_id);
+      std::make_unique<AppServiceAppWindowLauncherItemController>(
+          shelf_id, app_service_controller_);
   AppServiceAppWindowLauncherItemController* item_controller = controller.get();
 
   if (!app_service_controller_->owner()->GetItem(shelf_id)) {

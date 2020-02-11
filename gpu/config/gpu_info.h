@@ -186,6 +186,26 @@ struct GPU_EXPORT Dx12VulkanVersionInfo {
   // The support Vulkan API version in the gpu driver;
   uint32_t vulkan_version = 0;
 };
+
+struct GPU_EXPORT OverlayInfo {
+  OverlayInfo& operator=(const OverlayInfo& other) = default;
+  bool operator==(const OverlayInfo& other) const {
+    return direct_composition == other.direct_composition &&
+           supports_overlays == other.supports_overlays &&
+           yuy2_overlay_support == other.yuy2_overlay_support &&
+           nv12_overlay_support == other.nv12_overlay_support;
+  }
+  bool operator!=(const OverlayInfo& other) const { return !(*this == other); }
+
+  // True if we use direct composition surface on Windows.
+  bool direct_composition = false;
+
+  // True if we use direct composition surface overlays on Windows.
+  bool supports_overlays = false;
+  OverlaySupport yuy2_overlay_support = OverlaySupport::kNone;
+  OverlaySupport nv12_overlay_support = OverlaySupport::kNone;
+};
+
 #endif
 
 struct GPU_EXPORT GPUInfo {
@@ -329,18 +349,13 @@ struct GPU_EXPORT GPUInfo {
   bool can_support_threaded_texture_mailbox = false;
 
 #if defined(OS_WIN)
-  // True if we use direct composition surface on Windows.
-  bool direct_composition = false;
-
-  // True if we use direct composition surface overlays on Windows.
-  bool supports_overlays = false;
-  OverlaySupport yuy2_overlay_support = OverlaySupport::kNone;
-  OverlaySupport nv12_overlay_support = OverlaySupport::kNone;
-
   // The information returned by the DirectX Diagnostics Tool.
   DxDiagNode dx_diagnostics;
 
   Dx12VulkanVersionInfo dx12_vulkan_version_info;
+
+  // The GPU hardware overlay info.
+  OverlayInfo overlay_info;
 #endif
 
   VideoDecodeAcceleratorCapabilities video_decode_accelerator_capabilities;
@@ -407,6 +422,9 @@ struct GPU_EXPORT GPUInfo {
 
     virtual void BeginDx12VulkanVersionInfo() = 0;
     virtual void EndDx12VulkanVersionInfo() = 0;
+
+    virtual void BeginOverlayInfo() = 0;
+    virtual void EndOverlayInfo() = 0;
 
    protected:
     virtual ~Enumerator() = default;

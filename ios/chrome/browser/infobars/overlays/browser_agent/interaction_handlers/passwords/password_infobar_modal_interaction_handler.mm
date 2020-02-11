@@ -20,10 +20,8 @@ PasswordInfobarModalInteractionHandler::
 
 PasswordInfobarModalInteractionHandler::PasswordInfobarModalInteractionHandler(
     Browser* browser)
-    : settings_command_handler_(
-          HandlerForProtocol(browser->GetCommandDispatcher(),
-                             ApplicationSettingsCommands)) {
-  DCHECK(settings_command_handler_);
+    : browser_(browser) {
+  DCHECK(browser_);
 }
 
 PasswordInfobarModalInteractionHandler::
@@ -45,7 +43,9 @@ void PasswordInfobarModalInteractionHandler::NeverSaveCredentials(
 
 void PasswordInfobarModalInteractionHandler::PresentPasswordsSettings(
     InfoBarIOS* infobar) {
-  [settings_command_handler_ showSavedPasswordsSettingsFromViewController:nil];
+  id<ApplicationSettingsCommands> settings_command_handler = HandlerForProtocol(
+      browser_->GetCommandDispatcher(), ApplicationSettingsCommands);
+  [settings_command_handler showSavedPasswordsSettingsFromViewController:nil];
 }
 
 void PasswordInfobarModalInteractionHandler::PerformMainAction(

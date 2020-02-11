@@ -81,15 +81,11 @@ class SVGFilterPrimitiveStandardAttributes : public SVGElement {
 
 void InvalidateFilterPrimitiveParent(SVGElement&);
 
-inline bool IsSVGFilterPrimitiveStandardAttributes(const SVGElement& element) {
-  return element.IsFilterEffect();
-}
-
 template <>
 struct DowncastTraits<SVGFilterPrimitiveStandardAttributes> {
   static bool AllowFrom(const Node& node) {
     auto* element = DynamicTo<SVGElement>(node);
-    return element && IsSVGFilterPrimitiveStandardAttributes(*element);
+    return element && element->IsFilterEffect();
   }
 };
 

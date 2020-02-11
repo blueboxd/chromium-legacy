@@ -3444,6 +3444,9 @@
   <message name="IDS_SETTINGS_SITE_SETTINGS_CLIPBOARD_BLOCK" desc="The block label for clipboard access in site settings.">
     Do not allow sites to see text and images copied to the clipboard
   </message>
+  <message name="IDS_SETTINGS_COOKIES_PAGE" desc="Title of the cookies settings page">
+    Cookies
+  </message>
   <message name="IDS_SETTINGS_SITE_SETTINGS_COOKIES" desc="Label for the cookies and site data site settings.">
     Cookies and site data
   </message>

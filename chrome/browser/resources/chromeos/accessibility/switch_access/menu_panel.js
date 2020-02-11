@@ -15,12 +15,6 @@ class Panel {
     this.menuManager_;
 
     /**
-     * Reference to Switch Access.
-     * @private {SwitchAccessInterface}
-     */
-    this.switchAccess_;
-
-    /**
      * Reference to the menu panel element.
      * @private {Element}
      */
@@ -64,8 +58,13 @@ class Panel {
    * reference to this object for communication.
    */
   connectToBackground() {
-    this.switchAccess_ = chrome.extension.getBackgroundPage().switchAccess;
-    this.menuManager_ = this.switchAccess_.connectMenuPanel(this);
+    window.switchAccess = chrome.extension.getBackgroundPage().switchAccess;
+    window.switchAccess.connectMenuPanel(this);
+  }
+
+  /** Sets the menu manager to the given object. */
+  set menuManager(menuManager) {
+    this.menuManager_ = menuManager;
   }
 
   /**
@@ -235,7 +234,7 @@ class Panel {
 
     let rowHeight;
 
-    if (this.switchAccess_.improvedTextInputEnabled()) {
+    if (window.switchAccess.improvedTextInputEnabled()) {
       rowHeight = 85;
       const actions = document.getElementsByClassName('action');
       for (const action of actions) {

@@ -492,6 +492,7 @@
 <translation id="1670399744444387456">Grunder</translation>
 <translation id="167160931442925455">Högst</translation>
 <translation id="1673137583248014546"><ph name="URL" /> vill få tillgång till din säkerhetsnyckels märke och modell.</translation>
+<translation id="1677472565718498478"><ph name="TIME" /> kvar</translation>
 <translation id="1679068421605151609">Verktyg för utvecklare</translation>
 <translation id="1679806121152819234">PluginVM</translation>
 <translation id="1679810534535368772">Vill du avsluta?</translation>
@@ -1787,6 +1788,7 @@ Du kan hantera inställningarna för det här kontot genom att installera Family
 <translation id="3462413494201477527">Vill du avbryta konfigurationen av kontot?</translation>
 <translation id="3464012987031883895">En webbplats tar emot ljudindata</translation>
 <translation id="346431825526753">Det här är ett konto för barn som hanteras av <ph name="CUSTODIAN_EMAIL" />.</translation>
+<translation id="3468298837301810372">Etikett</translation>
 <translation id="3468999815377931311">Android-mobil</translation>
 <translation id="3470442499439619530">Ta bort denna användare</translation>
 <translation id="3471876058939596279">HDMI- och USB Type-C-portar kan inte användas till video och dockningsstation samtidigt. Använd en annan videoport.</translation>
@@ -3962,7 +3964,6 @@ Du kan hantera inställningarna för det här kontot genom att installera Family
 <translation id="6545867563032584178">Mikrofon har inaktiverats i systeminställningarna för Mac.</translation>
 <translation id="6547354035488017500">Frigör åtminstone 512 MB utrymme för att enheten ska fortsätta att svara. Frigör utrymme genom att radera filer från lagringsutrymmet på enheten.</translation>
 <translation id="6549639163247690448"><ph name="DOMAIN" /> kräver att du ansluter till Wi-Fi och laddar ned en uppdatering nu. Uppdateringen laddas ned automatiskt när du ansluter till internet.</translation>
-<translation id="6549966385318247177">Detta blockeras på grund av innehåll för vuxna.</translation>
 <translation id="6550675742724504774">Alternativ</translation>
 <translation id="6551508934388063976">Kommandot är inte tillgängligt. Tryck på Ctrl+N om du vill öppna ett nytt fönster.</translation>
 <translation id="6551612971599078809">Webbplatsen använder USB</translation>

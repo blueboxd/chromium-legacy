@@ -110,17 +110,16 @@ NSString* const kOmniboxFadeAnimationKey = @"OmniboxFadeAnimation";
     } else {
       _displayedTintColor = self.tintColor;
     }
-    [self setTextColor:_displayedTextColor];
-    [self setAutocorrectionType:UITextAutocorrectionTypeNo];
-    [self setAutocapitalizationType:UITextAutocapitalizationTypeNone];
-    [self setEnablesReturnKeyAutomatically:YES];
-    [self setReturnKeyType:UIReturnKeyGo];
-    [self setContentVerticalAlignment:UIControlContentVerticalAlignmentCenter];
-    [self setSpellCheckingType:UITextSpellCheckingTypeNo];
-    [self setTextAlignment:NSTextAlignmentNatural];
-    [self setKeyboardType:(UIKeyboardType)UIKeyboardTypeWebSearch];
-
-    [self setSmartQuotesType:UITextSmartQuotesTypeNo];
+    self.textColor = _displayedTextColor;
+    self.autocorrectionType = UITextAutocorrectionTypeNo;
+    self.autocapitalizationType = UITextAutocapitalizationTypeNone;
+    self.enablesReturnKeyAutomatically = YES;
+    self.returnKeyType = UIReturnKeyGo;
+    self.contentVerticalAlignment = UIControlContentVerticalAlignmentCenter;
+    self.spellCheckingType = UITextSpellCheckingTypeNo;
+    self.textAlignment = NSTextAlignmentNatural;
+    self.keyboardType = UIKeyboardTypeWebSearch;
+    self.smartQuotesType = UITextSmartQuotesTypeNo;
 
     // Disable drag on iPhone because there's nowhere to drag to
     if (!IsIPadIdiom()) {
@@ -144,12 +143,12 @@ NSString* const kOmniboxFadeAnimationKey = @"OmniboxFadeAnimation";
 
 - (void)setText:(NSAttributedString*)text
     userTextLength:(size_t)userTextLength {
-  DCHECK_LE(userTextLength, [text length]);
+  DCHECK_LE(userTextLength, text.length);
   if (userTextLength > 0) {
     [self exitPreEditState];
   }
 
-  NSUInteger autocompleteLength = [text length] - userTextLength;
+  NSUInteger autocompleteLength = text.length - userTextLength;
   [self setTextInternal:text autocompleteLength:autocompleteLength];
 }
 
@@ -161,9 +160,9 @@ NSString* const kOmniboxFadeAnimationKey = @"OmniboxFadeAnimation";
     [self unmarkText];
 
   NSRange selectedNSRange = [self selectedNSRange];
-  if (![self delegate] || [[self delegate] textField:self
-                              shouldChangeCharactersInRange:selectedNSRange
-                                          replacementString:text]) {
+  if (!self.delegate || [self.delegate textField:self
+                            shouldChangeCharactersInRange:selectedNSRange
+                                        replacementString:text]) {
     [self replaceRange:[self selectedTextRange] withText:text];
   }
 }
@@ -654,7 +653,7 @@ NSString* const kOmniboxFadeAnimationKey = @"OmniboxFadeAnimation";
 // Overridden to allow for custom omnibox copy behavior.  This includes
 // preprending http:// to the copied URL if needed.
 - (void)copy:(id)sender {
-  id<OmniboxTextFieldDelegate> delegate = [self delegate];
+  id<OmniboxTextFieldDelegate> delegate = self.delegate;
 
   // Must test for the onCopy method, since it's optional.
   if ([delegate respondsToSelector:@selector(onCopy)]) {
@@ -677,7 +676,7 @@ NSString* const kOmniboxFadeAnimationKey = @"OmniboxFadeAnimation";
 
 // Overridden to notify the delegate that a paste is in progress.
 - (void)paste:(id)sender {
-  id delegate = [self delegate];
+  id delegate = self.delegate;
   if ([delegate respondsToSelector:@selector(willPaste)])
     [delegate willPaste];
   [super paste:sender];
@@ -687,8 +686,8 @@ NSString* const kOmniboxFadeAnimationKey = @"OmniboxFadeAnimation";
 
 - (void)deleteBackward {
   // Must test for the onDeleteBackward method, since it's optional.
-  if ([[self delegate] respondsToSelector:@selector(onDeleteBackward)])
-    [[self delegate] onDeleteBackward];
+  if ([self.delegate respondsToSelector:@selector(onDeleteBackward)])
+    [self.delegate onDeleteBackward];
   [super deleteBackward];
 }
 

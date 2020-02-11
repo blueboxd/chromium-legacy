@@ -155,6 +155,7 @@ def GetDeploymentTargetForArgs(args, require_kvm=False):
                          'emu_type':args.device,
                          'ram_size_mb':args.memory })
     if args.device == 'qemu':
+      target_args.update({ 'qemu_img_retries':args.qemu_img_retries })
       return QemuTarget(**target_args)
     else:
       target_args.update({

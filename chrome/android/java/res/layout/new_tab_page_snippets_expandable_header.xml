@@ -25,6 +25,6 @@
         android:id="@+id/header_status"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:textAppearance="@style/TextAppearance.BlueLink3" />
+        android:textAppearance="@style/TextAppearance.TextSmall.Blue" />
 
 </org.chromium.chrome.browser.ntp.snippets.SectionHeaderView>

@@ -499,6 +499,20 @@ std::unique_ptr<ServiceWorkerResponseWriter> CreateNewResponseWriterSync(
   return writer;
 }
 
+int64_t GetNewResourceIdSync(ServiceWorkerStorage* storage) {
+  base::RunLoop run_loop;
+  int64_t resource_id;
+  storage->NewResourceId(
+      base::BindLambdaForTesting([&](int64_t new_resource_id) {
+        DCHECK_NE(new_resource_id,
+                  ServiceWorkerConsts::kInvalidServiceWorkerResourceId);
+        resource_id = new_resource_id;
+        run_loop.Quit();
+      }));
+  run_loop.Run();
+  return resource_id;
+}
+
 MockServiceWorkerResponseReader::MockServiceWorkerResponseReader()
     : ServiceWorkerResponseReader(/* resource_id=*/0, /*disk_cache=*/nullptr) {}
 

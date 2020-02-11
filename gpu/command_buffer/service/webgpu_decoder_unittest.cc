@@ -4,6 +4,7 @@
 
 #include "gpu/command_buffer/service/webgpu_decoder.h"
 
+#include "build/build_config.h"
 #include "gpu/command_buffer/client/client_test_helper.h"
 #include "gpu/command_buffer/common/shared_image_usage.h"
 #include "gpu/command_buffer/common/webgpu_cmd_enums.h"
@@ -35,7 +36,6 @@ class WebGPUDecoderTest : public ::testing::Test {
     if (!WebGPUSupported()) {
       return;
     }
-
     // Shared image factories for some backends take a dependency on GL.
     // Failure to create a test context with a surface and making it current
     // will result in a "NoContext" context being current that asserts on all
@@ -69,8 +69,14 @@ class WebGPUDecoderTest : public ::testing::Test {
     requestDeviceCmd.Init(kRequestDeviceSerial, kAdapterServiceID, 0, 0, 0);
     ASSERT_EQ(error::kNoError, ExecuteCmd(requestDeviceCmd));
 
+    GpuPreferences gpu_preferences;
+#if defined(OS_WIN)
+    // D3D shared images are only supported with passthrough command decoder.
+    gpu_preferences.use_passthrough_cmd_decoder = true;
+#endif  // OS_WIN
+
     factory_ = std::make_unique<SharedImageFactory>(
-        GpuPreferences(), GpuDriverBugWorkarounds(), GpuFeatureInfo(),
+        gpu_preferences, GpuDriverBugWorkarounds(), GpuFeatureInfo(),
         /*context_state=*/nullptr, /*mailbox_manager=*/nullptr,
         &shared_image_manager_, /*image_factory=*/nullptr, /*tracker=*/nullptr,
         /*enable_wrapped_sk_image=*/false);

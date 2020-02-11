@@ -90,12 +90,12 @@ class CORE_EXPORT FontResource final : public Resource {
   void NotifyClientsLongLimitExceeded();
 
   // This is used in UMA histograms, should not change order.
-  enum LoadLimitState {
+  enum class LoadLimitState {
     kLoadNotStarted,
     kUnderLimit,
     kShortLimitExceeded,
     kLongLimitExceeded,
-    kLoadLimitStateEnumMax
+    kMaxValue = kLongLimitExceeded,
   };
 
   scoped_refptr<FontCustomPlatformData> font_data_;

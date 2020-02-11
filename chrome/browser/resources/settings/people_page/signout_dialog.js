@@ -115,7 +115,13 @@ Polymer({
   /** @private */
   onDisconnectConfirm_() {
     this.$.dialog.close();
+    // <if expr="not chromeos">
     const deleteProfile = !!this.syncStatus.domain || this.deleteProfile_;
     settings.SyncBrowserProxyImpl.getInstance().signOut(deleteProfile);
+    // </if>
+    // <if expr="chromeos">
+    // Chrome OS users are always signed-in, so just turn off sync.
+    settings.SyncBrowserProxyImpl.getInstance().turnOffSync();
+    // </if>
   },
 });

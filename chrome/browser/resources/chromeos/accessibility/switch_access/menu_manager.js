@@ -128,7 +128,7 @@ class MenuManager {
    * @private
    */
   init_() {
-    if (SwitchAccess.get().improvedTextInputEnabled()) {
+    if (SwitchAccess.instance.improvedTextInputEnabled()) {
       chrome.clipboard.onClipboardDataChanged.addListener(
           this.updateClipboardHasData.bind(this));
     }
@@ -249,7 +249,7 @@ class MenuManager {
 
     const autoNode = this.menuOriginNode_.automationNode;
     if (autoNode && !shouldReloadMenu &&
-        SwitchAccess.get().improvedTextInputEnabled()) {
+        SwitchAccess.instance.improvedTextInputEnabled()) {
       const callback = this.reloadMenuForSelectionChange_.bind(this);
 
       autoNode.addEventListener(
@@ -426,12 +426,10 @@ class MenuManager {
   /**
    * Sets up the connection between the menuPanel and the menuManager.
    * @param {!PanelInterface} menuPanel
-   * @return {!MenuManager}
    */
   connectMenuPanel(menuPanel) {
     this.menuPanel_ = menuPanel;
     this.findMenuPanelNode_();
-    return this;
   }
 
   /**
@@ -532,7 +530,7 @@ class MenuManager {
     // Add text editing and navigation options.
     // TODO(anastasi): Move these actions into the node.
     const autoNode = node.automationNode;
-    if (autoNode && SwitchAccess.get().improvedTextInputEnabled() &&
+    if (autoNode && SwitchAccess.instance.improvedTextInputEnabled() &&
         SwitchAccessPredicate.isTextInput(autoNode) &&
         autoNode.state[StateType.FOCUSED]) {
       actions.push(SAConstants.MenuAction.MOVE_CURSOR);

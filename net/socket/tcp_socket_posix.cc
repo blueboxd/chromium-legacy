@@ -406,13 +406,15 @@ int TCPSocketPosix::SetSendBufferSize(int32_t size) {
 }
 
 bool TCPSocketPosix::SetKeepAlive(bool enable, int delay) {
-  DCHECK(socket_);
+  if (!socket_)
+    return false;
 
   return SetTCPKeepAlive(socket_->socket_fd(), enable, delay);
 }
 
 bool TCPSocketPosix::SetNoDelay(bool no_delay) {
-  DCHECK(socket_);
+  if (!socket_)
+    return false;
 
   return SetTCPNoDelay(socket_->socket_fd(), no_delay) == OK;
 }

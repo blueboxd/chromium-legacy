@@ -1,4 +1,4 @@
-// Copyright 2019 The Chromium Authors. All rights reserved.
+// Copyright 2020 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -152,6 +152,12 @@ chrome.passwordsPrivate.requestExportProgressStatus = function(callback) {};
  * written to the filesystem.
  */
 chrome.passwordsPrivate.cancelExportPasswords = function() {};
+
+/**
+ * Requests the account-storage opt-in state of the current user.
+ * @param {function(boolean):void} callback
+ */
+chrome.passwordsPrivate.isOptedInForAccountStorage = function(callback) {};
 
 /**
  * Fired when the saved passwords list has changed, meaning that an entry has

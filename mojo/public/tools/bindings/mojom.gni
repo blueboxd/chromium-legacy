@@ -295,8 +295,12 @@ if (enable_mojom_typemapping) {
 #   use_typescript_sources (optional)
 #       Uses the Typescript generator to generate JavaScript bindings.
 #
-#   js_generate_struct_deserializers (optiona)
+#   js_generate_struct_deserializers (optional)
 #       Generates JS deerialize methods for structs.
+#
+#   extra_cpp_template_paths (optional)
+#       List of extra C++ templates that are used to generate additional source
+#       and/or header files. The templates should end with extension ".tmpl".
 #
 # The following parameters are used to support the component build. They are
 # needed so that bindings which are linked with a component can use the same
@@ -979,6 +983,22 @@ template("mojom") {
             invoker.scramble_message_ids) {
           inputs += message_scrambling_inputs
           args += message_scrambling_args
+        }
+
+        if (defined(invoker.extra_cpp_template_paths)) {
+          foreach(extra_cpp_template, invoker.extra_cpp_template_paths) {
+            args += [
+              "--extra_cpp_template_paths",
+              rebase_path(extra_cpp_template, root_build_dir),
+            ]
+            assert(
+                get_path_info(extra_cpp_template, "extension") == "tmpl",
+                "--extra_cpp_template_paths only accepts template files ending in extension .tmpl")
+            foreach(source, invoker.sources) {
+              template_file_name = get_path_info("$extra_cpp_template", "name")
+              outputs += [ "$target_gen_dir/${source}${variant_dash_suffix}-${template_file_name}" ]
+            }
+          }
         }
       }
     }

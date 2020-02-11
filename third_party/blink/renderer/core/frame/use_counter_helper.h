@@ -42,7 +42,6 @@ namespace blink {
 
 class DocumentLoader;
 class Element;
-class EnumerationHistogram;
 class LocalFrame;
 
 // Utility class for muting UseCounter, for instance ignoring attributes
@@ -122,7 +121,7 @@ class CORE_EXPORT UseCounterHelper final {
   void UnmuteForInspector();
 
   void RecordMeasurement(WebFeature, const LocalFrame&);
-  void ReportAndTraceMeasurementByFeatureId(int, const LocalFrame&);
+  void ReportAndTraceMeasurementByFeatureId(WebFeature, const LocalFrame&);
   void ReportAndTraceMeasurementByCSSSampleId(int,
                                               const LocalFrame*,
                                               bool /*is_animated*/);
@@ -144,9 +143,7 @@ class CORE_EXPORT UseCounterHelper final {
   // if kDisabledContext.
   void NotifyFeatureCounted(WebFeature);
 
-  EnumerationHistogram& FeaturesHistogram() const;
-  EnumerationHistogram& CssHistogram() const;
-  EnumerationHistogram& AnimatedCSSHistogram() const;
+  void CountFeature(WebFeature) const;
 
   // If non-zero, ignore all 'count' calls completely.
   unsigned mute_count_;

@@ -492,6 +492,7 @@
 <translation id="1670399744444387456">Básico</translation>
 <translation id="167160931442925455">El más alto</translation>
 <translation id="1673137583248014546"><ph name="URL" /> quiere ver la marca y el modelo de tu llave de seguridad</translation>
+<translation id="1677472565718498478">Queda: <ph name="TIME" /></translation>
 <translation id="1679068421605151609">Herramientas para desarrolladores</translation>
 <translation id="1679806121152819234">Complemento de VM</translation>
 <translation id="1679810534535368772">¿Seguro que quieres salir?</translation>
@@ -1787,6 +1788,7 @@ Puedes gestionar la configuración de esta cuenta instalando la aplicación Fami
 <translation id="3462413494201477527">¿Quieres cancelar la configuración de la cuenta?</translation>
 <translation id="3464012987031883895">Un sitio web está accediendo a la entrada de audio</translation>
 <translation id="346431825526753">Esta es una cuenta infantil administrada por <ph name="CUSTODIAN_EMAIL" />.</translation>
+<translation id="3468298837301810372">Etiqueta</translation>
 <translation id="3468999815377931311">Teléfono Android</translation>
 <translation id="3470442499439619530">Eliminar este usuario</translation>
 <translation id="3471876058939596279">No se pueden usar los puertos HDMI y USB tipo C para vídeo al mismo tiempo. Usa otro puerto de vídeo.</translation>
@@ -3961,7 +3963,6 @@ Exponente público (<ph name="PUBLIC_EXPONENT_NUM_BITS" /> bits):
 <translation id="6545867563032584178">El micrófono está desactivado en las Preferencias del Sistema de Mac</translation>
 <translation id="6547354035488017500">Libera al menos 512 MB de espacio o el dispositivo no responderá. Para ello, elimina archivos del almacenamiento del dispositivo.</translation>
 <translation id="6549639163247690448"><ph name="DOMAIN" /> necesita que te conectes a una red Wi‑Fi para descargar una actualización. La actualización se descargará de forma automática cuando te conectes a Internet.</translation>
-<translation id="6549966385318247177">Esta extensión se ha bloqueado porque tiene contenido para adultos.</translation>
 <translation id="6550675742724504774">Configuración</translation>
 <translation id="6551508934388063976">El comando no está disponible. Pulsa Ctrl+N para abrir una ventana nueva.</translation>
 <translation id="6551612971599078809">El sitio web está usando un dispositivo USB</translation>

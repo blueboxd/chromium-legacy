@@ -8,6 +8,7 @@
 #include "ash/shell.h"
 #include "ash/strings/grit/ash_strings.h"
 #include "ui/base/l10n/l10n_util.h"
+#include "ui/compositor/layer_animation_observer.h"
 #include "ui/compositor/paint_recorder.h"
 #include "ui/compositor/scoped_layer_animation_settings.h"
 #include "ui/gfx/canvas.h"
@@ -45,9 +46,16 @@ constexpr SkColor kLabelColor = gfx::kGoogleGrey200;
 constexpr int kLabelWidth = 80;
 constexpr int kLabelHeight = 80;
 
-// Duration to show the nudge from off screen to start position.
-constexpr base::TimeDelta kShowingDuration =
+// Duration for the animation to show/hide the nudge.
+constexpr base::TimeDelta kNudgeAnimationDuration =
     base::TimeDelta::FromMilliseconds(600);
+
+// Duration for the animation of the suggestion part of the nudge.
+constexpr base::TimeDelta kSuggestionAnimationDuration =
+    base::TimeDelta::FromMilliseconds(250);
+
+// Repeat times of the suggestion animation.
+constexpr int kSuggestionAnimationRepeatTimes = 5;
 
 std::unique_ptr<views::Widget> CreateWidget() {
   auto widget = std::make_unique<views::Widget>();
@@ -107,67 +115,153 @@ class GradientLayerDelegate : public ui::LayerDelegate {
   GradientLayerDelegate& operator=(const GradientLayerDelegate&) = delete;
 };
 
-class ContextualNudgeView : public views::View {
+class ContextualNudgeView : public views::View,
+                            public ui::ImplicitAnimationObserver {
  public:
-  ContextualNudgeView() : label_(new views::Label) {
+  ContextualNudgeView() : suggestion_view_(new SuggestionView(this)) {
     SetPaintToLayer();
     layer()->SetFillsBoundsOpaquely(false);
 
     gradient_layer_delegate_ = std::make_unique<GradientLayerDelegate>();
     layer()->SetMaskLayer(gradient_layer_delegate_->layer());
 
-    label_->SetBackgroundColor(SK_ColorTRANSPARENT);
-    label_->SetEnabledColor(kLabelColor);
-    label_->SetText(
-        l10n_util::GetStringUTF16(IDS_ASH_BACK_GESTURE_CONTEXTUAL_NUDGE));
-    label_->SetMultiLine(true);
-    label_->SetFontList(
-        gfx::FontList().DeriveWithWeight(gfx::Font::Weight::MEDIUM));
-    AddChildView(label_);
+    AddChildView(suggestion_view_);
 
-    // Showing contextual nudge from off screen to its start position.
+    ScheduleOffScreenToStartPositionAnimation();
+  }
+
+  ~ContextualNudgeView() override { StopObservingImplicitAnimations(); }
+
+ private:
+  // Used to show the suggestion information of the nudge, which includes the
+  // affrodance and a label.
+  class SuggestionView : public views::View,
+                         public ui::ImplicitAnimationObserver {
+   public:
+    explicit SuggestionView(ContextualNudgeView* nudge_view)
+        : label_(new views::Label), nudge_view_(nudge_view) {
+      SetPaintToLayer();
+      layer()->SetFillsBoundsOpaquely(false);
+
+      label_->SetBackgroundColor(SK_ColorTRANSPARENT);
+      label_->SetEnabledColor(kLabelColor);
+      label_->SetText(
+          l10n_util::GetStringUTF16(IDS_ASH_BACK_GESTURE_CONTEXTUAL_NUDGE));
+      label_->SetMultiLine(true);
+      label_->SetFontList(
+          gfx::FontList().DeriveWithWeight(gfx::Font::Weight::MEDIUM));
+      AddChildView(label_);
+    }
+    ~SuggestionView() override { StopObservingImplicitAnimations(); }
+
+    void ScheduleBounceAnimation() {
+      gfx::Transform transform;
+      const int x_offset = kCircleRadius - kCircleInsideScreenWidth;
+      transform.Translate(x_offset, 0);
+      ui::ScopedLayerAnimationSettings animation(layer()->GetAnimator());
+      animation.AddObserver(this);
+      animation.SetTransitionDuration(kSuggestionAnimationDuration);
+      animation.SetTweenType(gfx::Tween::EASE_IN);
+      animation.SetPreemptionStrategy(
+          ui::LayerAnimator::IMMEDIATELY_ANIMATE_TO_NEW_TARGET);
+      layer()->SetTransform(transform);
+
+      transform.Translate(-x_offset, 0);
+      animation.SetTransitionDuration(kSuggestionAnimationDuration);
+      animation.SetTweenType(gfx::Tween::EASE_OUT);
+      animation.SetPreemptionStrategy(ui::LayerAnimator::ENQUEUE_NEW_ANIMATION);
+      layer()->SetTransform(transform);
+    }
+
+   private:
+    // views::View:
+    void Layout() override {
+      const gfx::Rect bounds = GetLocalBounds();
+      gfx::Rect label_rect(bounds);
+      label_rect.ClampToCenteredSize(gfx::Size(kLabelWidth, kLabelHeight));
+      label_rect.set_x(bounds.left_center().x() + 2 * kCircleRadius +
+                       kPaddingBetweenCircleAndLabel);
+      label_->SetBoundsRect(label_rect);
+    }
+
+    // views::View:
+    void OnPaint(gfx::Canvas* canvas) override {
+      // Draw the circle.
+      cc::PaintFlags flags;
+      flags.setAntiAlias(true);
+      flags.setStyle(cc::PaintFlags::kFill_Style);
+      flags.setColor(kCircleColor);
+      const gfx::Point left_center = GetLocalBounds().left_center();
+      canvas->DrawCircle(
+          gfx::Point(left_center.x() + kCircleRadius, left_center.y()),
+          kCircleRadius, flags);
+    }
+
+    // ui::ImplicitAnimationObserver:
+    void OnImplicitAnimationsCompleted() override {
+      if (current_animation_times_ < (kSuggestionAnimationRepeatTimes - 1)) {
+        ScheduleBounceAnimation();
+        current_animation_times_++;
+      } else {
+        nudge_view_->ScheduleStartPositionToOffScreenAnimation();
+      }
+    }
+
+    views::Label* label_ = nullptr;
+    int current_animation_times_ = 0;
+    ContextualNudgeView* nudge_view_ = nullptr;  // Not owned.
+
+    SuggestionView(const SuggestionView&) = delete;
+    SuggestionView& operator=(const SuggestionView&) = delete;
+  };
+
+  // Showing contextual nudge from off screen to its start position.
+  void ScheduleOffScreenToStartPositionAnimation() {
     gfx::Transform transform;
     transform.Translate(kBackgroundWidth, 0);
     ui::ScopedLayerAnimationSettings animation(layer()->GetAnimator());
-    animation.SetTransitionDuration(kShowingDuration);
+    animation.AddObserver(this);
+    animation.SetTransitionDuration(kNudgeAnimationDuration);
     animation.SetTweenType(gfx::Tween::EASE_IN);
     layer()->SetTransform(transform);
   }
 
-  ~ContextualNudgeView() override = default;
+  // Hiding the contextual nudge from its current position to off screen.
+  void ScheduleStartPositionToOffScreenAnimation() {
+    gfx::Transform transform;
+    transform.Translate(-kBackgroundWidth, 0);
+    ui::ScopedLayerAnimationSettings animation(layer()->GetAnimator());
+    animation.SetTransitionDuration(kNudgeAnimationDuration);
+    animation.SetTweenType(gfx::Tween::EASE_OUT);
+    layer()->SetTransform(transform);
+  }
 
- private:
   // views::View:
   void Layout() override {
     const gfx::Rect bounds = GetLocalBounds();
     gradient_layer_delegate_->layer()->SetBounds(bounds);
 
-    gfx::Rect label_rect(bounds);
-    label_rect.ClampToCenteredSize(gfx::Size(kLabelWidth, kLabelHeight));
-    label_rect.set_x(bounds.left_center().x() + kCircleInsideScreenWidth +
-                     kPaddingBetweenCircleAndLabel);
-    label_->SetBoundsRect(label_rect);
+    gfx::Rect rect(bounds);
+    rect.ClampToCenteredSize(gfx::Size(kBackgroundWidth, kBackgroundWidth));
+    rect.set_x(-2 * kCircleRadius + kCircleInsideScreenWidth);
+    suggestion_view_->SetBoundsRect(rect);
   }
 
   // views::View:
   void OnPaint(gfx::Canvas* canvas) override {
     views::View::OnPaint(canvas);
     canvas->DrawColor(kBackgroundColor);
+  }
 
-    // Draw the circle.
-    cc::PaintFlags flags;
-    flags.setAntiAlias(true);
-    flags.setStyle(cc::PaintFlags::kFill_Style);
-    flags.setColor(kCircleColor);
-    gfx::Point left_center = layer()->bounds().left_center();
-    canvas->DrawCircle(
-        gfx::Point(kCircleInsideScreenWidth - kCircleRadius, left_center.y()),
-        kCircleRadius, flags);
+  // ui::ImplicitAnimationObserver:
+  void OnImplicitAnimationsCompleted() override {
+    suggestion_view_->ScheduleBounceAnimation();
   }
 
   std::unique_ptr<GradientLayerDelegate> gradient_layer_delegate_;
 
-  views::Label* label_ = nullptr;
+  // Created by ContextualNudgeView. Owned by views hierarchy.
+  SuggestionView* suggestion_view_ = nullptr;
 
   ContextualNudgeView(const ContextualNudgeView&) = delete;
   ContextualNudgeView& operator=(const ContextualNudgeView&) = delete;

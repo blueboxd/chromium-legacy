@@ -12,7 +12,7 @@
     app:chipColor="@color/filled_button_bg"
     app:rippleColor="@color/filled_button_ripple_color"
     app:cornerRadius="@dimen/autofill_assistant_button_corner_radius"
-    app:primaryTextAppearance="@style/TextAppearance.WhiteButtonText"
+    app:primaryTextAppearance="@style/TextAppearance.Button.Text.Filled"
     app:iconWidth="24dp"
     app:iconHeight="24dp"
     app:chipBorderWidth="@dimen/autofill_assistant_filled_button_border_width"

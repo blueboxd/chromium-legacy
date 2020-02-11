@@ -136,6 +136,8 @@ class AppTimeTest : public MixinBasedInProcessBrowserTest {
 
     logged_in_user_mixin_.GetUserPolicyTestHelper()->RefreshPolicyAndWait(
         GetCurrentProfile());
+
+    base::RunLoop().RunUntilIdle();
   }
 
   AppActivityRegistry* GetAppRegistry() {
@@ -222,7 +224,7 @@ IN_PROC_BROWSER_TEST_F(AppTimeTest, PerAppTimeLimitsPolicyUpdates) {
   ASSERT_TRUE(app_registry_test.GetAppLimit(app1));
   Equals(block_limit, app_registry_test.GetAppLimit(app1).value());
 
-  // Set time limit for the app.
+  // Set time limit for the app - app should not paused.
   AppTimeLimitsPolicyBuilder time_limit_policy;
   const AppLimit time_limit =
       AppLimit(AppRestriction::kTimeLimit, base::TimeDelta::FromHours(1),
@@ -235,7 +237,28 @@ IN_PROC_BROWSER_TEST_F(AppTimeTest, PerAppTimeLimitsPolicyUpdates) {
   ASSERT_TRUE(app_registry_test.GetAppLimit(app1));
   Equals(time_limit, app_registry_test.GetAppLimit(app1).value());
 
-  // Remove app restricitons.
+  // Set time limit of zero - app should be paused.
+  AppTimeLimitsPolicyBuilder zero_time_limit_policy;
+  const AppLimit zero_limit =
+      AppLimit(AppRestriction::kTimeLimit, base::TimeDelta::FromHours(0),
+               base::Time::Now());
+  zero_time_limit_policy.AddAppLimit(app1, zero_limit);
+  zero_time_limit_policy.SetResetTime(6, 0);
+
+  UpdatePerAppTimeLimitsPolicy(zero_time_limit_policy.value());
+  EXPECT_FALSE(app_registry->IsAppAvailable(app1));
+  EXPECT_TRUE(app_registry->IsAppTimeLimitReached(app1));
+  ASSERT_TRUE(app_registry_test.GetAppLimit(app1));
+  Equals(zero_limit, app_registry_test.GetAppLimit(app1).value());
+
+  // Set time limit grater then zero again - app should be available again.
+  UpdatePerAppTimeLimitsPolicy(time_limit_policy.value());
+  EXPECT_TRUE(app_registry->IsAppAvailable(app1));
+  EXPECT_FALSE(app_registry->IsAppTimeLimitReached(app1));
+  ASSERT_TRUE(app_registry_test.GetAppLimit(app1));
+  Equals(time_limit, app_registry_test.GetAppLimit(app1).value());
+
+  // Remove app restrictions.
   AppTimeLimitsPolicyBuilder no_limits_policy;
   no_limits_policy.SetResetTime(6, 0);
 

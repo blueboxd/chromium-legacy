@@ -36,7 +36,7 @@ import java.util.List;
 /**
  * WebLayer is responsible for initializing state necessary to use any of the classes in web layer.
  */
-public final class WebLayer {
+public class WebLayer {
     // This metadata key, if defined, overrides the default behaviour of loading WebLayer from the
     // current WebView implementation. This is only intended for testing, and does not enforce any
     // signature requirements on the implementation, nor does it use the production code path to
@@ -328,6 +328,11 @@ public final class WebLayer {
             }
             mCallbacks.clear();
         }
+    }
+
+    // Constructor for test mocking.
+    protected WebLayer() {
+        mImpl = null;
     }
 
     private WebLayer(IWebLayer iWebLayer) {

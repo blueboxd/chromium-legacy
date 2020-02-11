@@ -6,6 +6,7 @@
 #define UI_GFX_ANIMATION_SLIDE_ANIMATION_H_
 
 #include "base/macros.h"
+#include "base/optional.h"
 #include "ui/gfx/animation/linear_animation.h"
 #include "ui/gfx/animation/tween.h"
 
@@ -77,8 +78,13 @@ class ANIMATION_EXPORT SlideAnimation : public LinearAnimation {
   // IsShowing() will currently return true after the 'show' animation has been
   // completed however IsClosing() will return false after the 'hide' animation
   // has been completed.
-  bool IsShowing() const { return showing_; }
-  bool IsClosing() const { return !showing_ && value_end_ < value_current_; }
+  bool IsShowing() const {
+    return direction_ == Direction::kShowing ||
+           (!direction_ && value_current_ == 1);
+  }
+  bool IsClosing() const {
+    return direction_ == Direction::kHiding && value_end_ < value_current_;
+  }
 
   class TestApi;
 
@@ -87,8 +93,13 @@ class ANIMATION_EXPORT SlideAnimation : public LinearAnimation {
   // is showing or hiding.
   base::TimeDelta GetDuration();
 
+  enum class Direction {
+    kShowing,
+    kHiding,
+  };
+
   // Implementation of Show() and Hide().
-  void BeginAnimating(bool showing);
+  void BeginAnimating(Direction direction);
 
   // Overridden from Animation.
   void AnimateToState(double state) override;
@@ -97,8 +108,8 @@ class ANIMATION_EXPORT SlideAnimation : public LinearAnimation {
 
   Tween::Type tween_type_ = Tween::EASE_OUT;
 
-  // Used to determine which way the animation is going.
-  bool showing_ = false;
+  // Current animation direction, or nullopt if not animating.
+  base::Optional<Direction> direction_;
 
   // Animation values. These are a layer on top of Animation::state_ to
   // provide the reversability.

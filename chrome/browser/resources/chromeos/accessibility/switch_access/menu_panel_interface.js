@@ -53,4 +53,6 @@ class PanelInterface {
    * Tells the menu panel to try to connect to the background page.
    */
   connectToBackground() {}
+
+  set menuManager(menuManager) {}
 }

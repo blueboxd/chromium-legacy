@@ -176,8 +176,14 @@ IN_PROC_BROWSER_TEST_F(TabHoverCardBubbleViewBrowserTest,
 
 // Verify hover card is visible while hovering and not visible outside of the
 // tabstrip.
+// TODO(crbug.com/1050765): the test is flaky.
+#if defined(OS_WIN)
+#define MAYBE_WidgetVisibleOnHover DISABLED_WidgetVisibleOnHover
+#else
+#define MAYBE_WidgetVisibleOnHover WidgetVisibleOnHover
+#endif
 IN_PROC_BROWSER_TEST_F(TabHoverCardBubbleViewBrowserTest,
-                       WidgetVisibleOnHover) {
+                       MAYBE_WidgetVisibleOnHover) {
   ShowUi("default");
   TabStrip* tab_strip =
       BrowserView::GetBrowserViewForBrowser(browser())->tabstrip();
@@ -191,8 +197,14 @@ IN_PROC_BROWSER_TEST_F(TabHoverCardBubbleViewBrowserTest,
 }
 
 // Verify hover card is visible when tab is focused.
+// TODO(crbug.com/1050765): the test is flaky.
+#if defined(OS_LINUX)
+#define MAYBE_WidgetVisibleOnTabFocus DISABLED_WidgetVisibleOnTabFocus
+#else
+#define MAYBE_WidgetVisibleOnTabFocus WidgetVisibleOnTabFocus
+#endif
 IN_PROC_BROWSER_TEST_F(TabHoverCardBubbleViewBrowserTest,
-                       WidgetVisibleOnTabFocus) {
+                       MAYBE_WidgetVisibleOnTabFocus) {
   TabStrip* tab_strip =
       BrowserView::GetBrowserViewForBrowser(browser())->tabstrip();
   Tab* tab = tab_strip->tab_at(0);
@@ -207,8 +219,16 @@ IN_PROC_BROWSER_TEST_F(TabHoverCardBubbleViewBrowserTest,
 
 // Verify hover card is visible when focus moves from the tab to tab close
 // button.
+// TODO(crbug.com/1050765): the test is flaky.
+#if defined(OS_LINUX)
+#define MAYBE_WidgetVisibleOnTabCloseButtonFocusAfterTabFocus \
+  DISABLED_WidgetVisibleOnTabCloseButtonFocusAfterTabFocus
+#else
+#define MAYBE_WidgetVisibleOnTabCloseButtonFocusAfterTabFocus \
+  WidgetVisibleOnTabCloseButtonFocusAfterTabFocus
+#endif
 IN_PROC_BROWSER_TEST_F(TabHoverCardBubbleViewBrowserTest,
-                       WidgetVisibleOnTabCloseButtonFocusAfterTabFocus) {
+                       MAYBE_WidgetVisibleOnTabCloseButtonFocusAfterTabFocus) {
   TabStrip* tab_strip =
       BrowserView::GetBrowserViewForBrowser(browser())->tabstrip();
   Tab* tab = tab_strip->tab_at(0);
@@ -265,8 +285,16 @@ IN_PROC_BROWSER_TEST_F(TabHoverCardBubbleViewBrowserTest,
 
 // Verify hover card is visible after navigating to the tab strip using keyboard
 // accelerators.
+// TODO(crbug.com/1050765): the test is flaky.
+#if defined(OS_LINUX)
+#define MAYBE_WidgetVisibleOnTabFocusFromKeyboardAccelerator \
+  DISABLED_WidgetVisibleOnTabFocusFromKeyboardAccelerator
+#else
+#define MAYBE_WidgetVisibleOnTabFocusFromKeyboardAccelerator \
+  WidgetVisibleOnTabFocusFromKeyboardAccelerator
+#endif
 IN_PROC_BROWSER_TEST_F(TabHoverCardBubbleViewBrowserTest,
-                       WidgetVisibleOnTabFocusFromKeyboardAccelerator) {
+                       MAYBE_WidgetVisibleOnTabFocusFromKeyboardAccelerator) {
   TabStrip* tab_strip =
       BrowserView::GetBrowserViewForBrowser(browser())->tabstrip();
   TabRendererData new_tab_data = TabRendererData();
@@ -294,8 +322,14 @@ IN_PROC_BROWSER_TEST_F(TabHoverCardBubbleViewBrowserTest,
 }
 
 // Verify hover card is not visible after clicking on a tab.
+// TODO(crbug.com/1050765): the test is flaky.
+#if defined(OS_WIN)
+#define MAYBE_WidgetNotVisibleOnClick DISABLED_WidgetNotVisibleOnClick
+#else
+#define MAYBE_WidgetNotVisibleOnClick WidgetNotVisibleOnClick
+#endif
 IN_PROC_BROWSER_TEST_F(TabHoverCardBubbleViewBrowserTest,
-                       WidgetNotVisibleOnClick) {
+                       MAYBE_WidgetNotVisibleOnClick) {
   ShowUi("default");
   TabStrip* tab_strip =
       BrowserView::GetBrowserViewForBrowser(browser())->tabstrip();
@@ -310,7 +344,14 @@ IN_PROC_BROWSER_TEST_F(TabHoverCardBubbleViewBrowserTest,
 
 // Verify title, domain, and anchor are correctly updated when moving hover
 // from one tab to another.
-IN_PROC_BROWSER_TEST_F(TabHoverCardBubbleViewBrowserTest, WidgetDataUpdate) {
+// TODO(crbug.com/1050765): the test is flaky.
+#if defined(OS_WIN)
+#define MAYBE_WidgetDataUpdate DISABLED_WidgetDataUpdate
+#else
+#define MAYBE_WidgetDataUpdate WidgetDataUpdate
+#endif
+IN_PROC_BROWSER_TEST_F(TabHoverCardBubbleViewBrowserTest,
+                       MAYBE_WidgetDataUpdate) {
   TabStrip* tab_strip =
       BrowserView::GetBrowserViewForBrowser(browser())->tabstrip();
   TabRendererData new_tab_data = TabRendererData();
@@ -336,8 +377,16 @@ IN_PROC_BROWSER_TEST_F(TabHoverCardBubbleViewBrowserTest, WidgetDataUpdate) {
 
 // Verify inactive window remains inactive when showing a hover card for a tab
 // in the inactive window.
+// TODO(crbug.com/1050765): the test is flaky.
+#if defined(OS_WIN)
+#define MAYBE_InactiveWindowStaysInactiveOnHover \
+  DISABLED_InactiveWindowStaysInactiveOnHover
+#else
+#define MAYBE_InactiveWindowStaysInactiveOnHover \
+  InactiveWindowStaysInactiveOnHover
+#endif
 IN_PROC_BROWSER_TEST_F(TabHoverCardBubbleViewBrowserTest,
-                       InactiveWindowStaysInactiveOnHover) {
+                       MAYBE_InactiveWindowStaysInactiveOnHover) {
   const BrowserList* active_browser_list_ = BrowserList::GetInstance();
   // Open a second window. On Windows, Widget::Deactivate() works by activating
   // the next topmost window on the z-order stack. So instead we use two windows

@@ -68,6 +68,7 @@ struct AX_EXPORT AXLanguageInfo {
   //
   // This should not be read directly by clients of AXNode, instead clients
   // should call AXNode::GetLanguage().
+  // TODO(chrishall): consider renaming this to `assigned_language`.
   std::string language;
 
   // Detected languages for this node sorted as returned by

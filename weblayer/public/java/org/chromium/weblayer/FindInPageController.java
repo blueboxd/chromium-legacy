@@ -22,8 +22,12 @@ import org.chromium.weblayer_private.interfaces.StrictModeWorkaround;
  *
  * @since 81
  */
-public final class FindInPageController {
+public class FindInPageController {
     private final ITab mTab;
+
+    protected FindInPageController() {
+        mTab = null;
+    }
 
     FindInPageController(ITab tab) {
         mTab = tab;

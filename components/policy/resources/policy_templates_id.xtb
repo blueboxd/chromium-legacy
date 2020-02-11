@@ -760,9 +760,9 @@ Secara default, tidak ada mode buka kunci cepat yang tersedia untuk perangkat ya
 <translation id="2170233653554726857">Aktifkan pengoptimalan WPAD</translation>
 <translation id="2171245625445050634">Kebijakan ini dihapus di M82, gunakan MinimumChromeVersionEnforced sebagai gantinya.
 
-      Mengonfigurasi persyaratan versi minimum yang diizinkan untuk <ph name="PRODUCT_NAME" />. Versi yang diberikan di bawah ini dianggap kedaluwarsa dan perangkat tidak akan mengizinkan pengguna login sebelum OS diupdate.
+      Mengonfigurasi persyaratan versi minimum yang diizinkan untuk <ph name="PRODUCT_NAME" />. Versi yang diberikan di bawah ini dianggap sudah tidak terpakai dan perangkat tidak akan mengizinkan pengguna login sebelum OS diupdate.
 
-      Jika versi saat ini menjadi kedaluwarsa saat sesi pengguna berlangsung, pengguna akan dipaksa logout.
+      Jika versi saat ini menjadi tidak terpakai saat sesi pengguna berlangsung, pengguna akan dipaksa logout.
 
       Jika kebijakan ini tidak ditetapkan, tidak ada batasan yang ditetapkan dan pengguna dapat login, berapa pun versi <ph name="PRODUCT_NAME" />.
 
@@ -1306,7 +1306,7 @@ Secara default, tidak ada mode buka kunci cepat yang tersedia untuk perangkat ya
 
       Jika Anda menonaktifkan setelan ini, Sentuh untuk Menelusuri akan dinonaktifkan sepenuhnya.
 
-      Jika kebijakan ini tidak ditetapkan, hal ini setara dengan diaktifkan, lihat deskripsi di atas.</translation>
+      Jika kebijakan ini tidak ditetapkan, hal ini sama dengan diaktifkan, lihat deskripsi di atas.</translation>
 <translation id="285480231336205327">Aktifkan mode kontras tinggi</translation>
 <translation id="2854919890879212089">Membuat <ph name="PRODUCT_NAME" /> menggunakan printer default sistem sebagai pilihan default pada Pratinjau Cetak, bukan printer yang terakhir kali digunakan.
 
@@ -2320,7 +2320,7 @@ Jika kebijakan ini tidak disetel, setelan default-nya tidak diizinkan bagi pengg
 
       Kebijakan ini dinonaktifkan secara default, dan jika diaktifkan, pengguna akan rentan terhadap masalah keamanan setelah proses jaringan masuk dalam sandbox.
 
-      Kebijakan ini dimaksudkan untuk memberi perusahaan kesempatan melakukan migrasi ke software pihak ke-3 yang tidak bergantung pada penarikan networking API. Server proxy lebih direkomendasikan daripada patch LSP dan Win32 API.
+      Kebijakan ini dimaksudkan untuk memberi perusahaan kesempatan melakukan migrasi ke software pihak ke-3 yang tidak bergantung pada penarikan networking API. Server proxy lebih direkomendasikan daripada patching LSP dan Win32 API.
 
       Jika kebijakan ini tidak ditetapkan, kode jaringan akan keluar dari proses browser secara default.
 
@@ -2570,12 +2570,9 @@ Jika kebijakan ini dinonaktifkan atau tidak disetel, situs tidak akan dapat mena
 <translation id="4986560318567565414">Jalur ke Chrome untuk beralih dari browser alternatif.</translation>
 <translation id="4988291787868618635">Tindakan yang akan diambil saat penundaan waktu menganggur tercapai</translation>
 <translation id="500149597848135831">Aktifkan semua variasi</translation>
-<translation id="5023555740504506178">Jika diaktifkan atau tidak dikonfigurasi (default), suatu Halaman web dapat menggunakan
-      API berbagi layar (mis. getDisplayMedia() atau API ekstensi Desktop Capture)
-      untuk meminta pengguna memilih tab, jendela, atau desktop yang akan direkam.
+<translation id="5023555740504506178">Jika diaktifkan atau tidak dikonfigurasi (default), suatu Halaman web dapat menggunakan API berbagi layar (mis. getDisplayMedia() atau API ekstensi Desktop Capture) untuk meminta pengguna memilih tab, jendela, atau desktop yang akan direkam.
 
-      Ketika kebijakan ini dinonaktifkan, setiap panggilan untuk API berbagi layar akan gagal
-      dengan error.</translation>
+      Ketika kebijakan ini dinonaktifkan, setiap panggilan untuk API berbagi layar akan gagal dengan error.</translation>
 <translation id="5032164758660626397">Mencegah pengguna mentransfer file berukuran besar</translation>
 <translation id="5047604665028708335">Memungkinkan akses ke situs di luar paket konten</translation>
 <translation id="5052081091120171147">Kebijakan ini memaksa histori browseran diimpor dari browser default saat ini, jika diaktifkan. Jika diaktifkan, kebijakan ini juga memengaruhi dialog impor. Jika dinonaktifkan, tidak ada histori browseran yang diimpor. Jika tidak disetel, pengguna mungkin ditanya apakah akan mengimpor, atau pengimporan dapat terjadi secara otomatis.</translation>
@@ -2723,22 +2720,22 @@ Jika kebijakan ini dinonaktifkan atau tidak disetel, situs tidak akan dapat mena
 <translation id="5208240613060747912">Memungkinkan Anda menyetel daftar pola url yang menentukan situs yang tidak diizinkan untuk menampilkan pemberitahuan. Jika kebijakan ini tidak disetel, nilai default global akan digunakan untuk semua situs, baik dari kebijakan 'DefaultNotificationsSetting', jika disetel, atau konfigurasi pribadi pengguna.</translation>
 <translation id="5210980743015047124">Mengonfigurasi persyaratan versi minimum yang diizinkan untuk <ph name="PRODUCT_NAME" />.
 
-      Jika kebijakan ini ditetapkan ke daftar tidak kosong :
+      Jika kebijakan ini ditetapkan ke daftar tidak kosong:
       Jika tidak ada entri yang memiliki "chrome_version" lebih baru daripada versi di perangkat saat ini, tidak ada batasan yang diterapkan dan batasan yang telah diterapkan akan dicabut.
       Jika setidaknya salah satu entri memiliki "chrome_version" yang lebih baru daripada versi saat ini, entri terkuat yang memiliki versi paling dekat dengan versi saat ini akan dipilih.
       Jika terjadi konflik, preferensi diberikan pada entri dengan "warning_period" atau "eol_warning_period" yang lebih sedikit dan kebijakan diterapkan menggunakan entri tersebut.
 
-      Jika versi saat ini menjadi kedaluwarsa saat sesi pengguna berlangsung, akan muncul notifikasi pada layar untuk mengupdate perangkat dalam "warning_period" yang ditampilkan di notifikasi.
+      Jika versi saat ini menjadi tidak terpakai saat sesi pengguna berlangsung, akan muncul notifikasi pada layar untuk mengupdate perangkat dalam "warning_period" yang ditampilkan di notifikasi.
       "Warning_period" dimulai pada saat kebijakan diterapkan.
       Jika kebijakan tidak diupdate hingga "warning_period" berakhir, pengguna akan dipaksa logout dari sistem.
-      Jika diketahui bahwa versi saat ini kedaluwarsa saat login ketika "warning_period" berakhir, pengguna diminta mengupdate perangkat sebelum login.
+      Jika diketahui bahwa versi saat ini tidak terpakai saat login ketika "warning_period" berakhir, pengguna diminta mengupdate perangkat sebelum login.
 
       Jika mencapai akhir masa pakai saat sesi pengguna berlangsung, akan muncul notifikasi pada layar untuk memaksa pengguna logout setelah "eol_warning_period" berakhir.
       Jika diketahui bahwa perangkat telah mencapai akhir masa pakai pada saat login ketika "eol_warning_period" berakhir, perangkat akan diblokir bagi siapa pun yang ingin login.
 
       Jika kebijakan ini tidak ditetapkan atau dibiarkan kosong, tidak ada batasan yang diterapkan, batasan yang ada akan dicabut, dan pengguna bisa login, berapa pun versi <ph name="PRODUCT_NAME" />.
 
-      "chrome_version" di sini bisa merupakan versi yang tepat seperti '61.0.3163.120' atau awalan versi, seperti '61.0'
+      "chrome_version" di sini bisa merupakan versi yang tepat seperti '61.0.3163.120' atau awalan versi, seperti '61.0'.
       "warning_period" dan "eol_warning_period" adalah nilai opsional yang ditentukan dalam jumlah hari. Nilai defaultnya adalah 0 hari, yang artinya tidak ada periode tunggu. </translation>
 <translation id="5212118847531454979">Memungkinkan Anda menyetel jangka waktu, dalam milidetik, untuk memberi tahu pengguna bahwa <ph name="PRODUCT_NAME" /> harus diluncurkan kembali atau bahwa perangkat <ph name="PRODUCT_OS_NAME" /> harus dimulai ulang untuk menerapkan update yang tertunda.
 
@@ -3018,7 +3015,7 @@ Jika kebijakan ini dinonaktifkan atau tidak disetel, situs tidak akan dapat mena
 
       Jika kebijakan ini ditetapkan ke 'Blokir upload jenis file yang tidak didukung' (2) dan pengguna berusaha mengupload file ke domain yang tidak ada di <ph name="DOMAINS_TO_NOT_CHECK_COMPLIANCE_OF_UPLOADED_CONTENT_POLICY_NAME" /> dan jenis filenya tidak didukung terkait DLP dan pemindaian malware, <ph name="PRODUCT_NAME" /> akan memblokir file yang diupload, data yang ditempelkan dari papan klip, atau data yang ditarik lalu dilepaskan.
 
-      Jika kebijakan ini ditetapkan ke 'Blokir upload dan download jenis file yang tidak didukung' (3), <ph name="PRODUCT_NAME" /> berperilaku seperti aturan yang dijelaskan di 'Blokir upload jenis file yang tidak didukung' dan 'Blokir download file yang tidak didukung'.
+      Jika kebijakan ini ditetapkan ke 'Blokir upload dan download jenis file yang tidak didukung' (3), <ph name="PRODUCT_NAME" /> berperilaku seperti aturan yang dijelaskan di 'Blokir upload jenis file yang tidak didukung' dan 'Blokir download jenis file yang tidak didukung'.
       </translation>
 <translation id="5535973522252703021">Daftar putih server delegasi Kerberos</translation>
 <translation id="554903022911579950">Kerberos</translation>

@@ -504,6 +504,10 @@ void GpuHostImpl::DisableGpuCompositing() {
 }
 
 #if defined(OS_WIN)
+void GpuHostImpl::DidUpdateOverlayInfo(const gpu::OverlayInfo& overlay_info) {
+  delegate_->DidUpdateOverlayInfo(overlay_info);
+}
+
 void GpuHostImpl::SetChildSurface(gpu::SurfaceHandle parent,
                                   gpu::SurfaceHandle child) {
   if (pid_ != base::kNullProcessId) {

@@ -581,7 +581,8 @@ void FeatureInfo::InitializeFeatures() {
 
   bool have_bptc =
       gfx::HasExtension(extensions, "GL_EXT_texture_compression_bptc") ||
-      gl_version_info_->IsAtLeastGL(4, 2);
+      gl_version_info_->IsAtLeastGL(4, 2) ||
+      gfx::HasExtension(extensions, "GL_ARB_texture_compression_bptc");
   if (have_bptc) {
     feature_flags_.ext_texture_compression_bptc = true;
     AddExtensionString("GL_EXT_texture_compression_bptc");
@@ -601,6 +602,30 @@ void FeatureInfo::InitializeFeatures() {
         GL_COMPRESSED_RGB_BPTC_SIGNED_FLOAT_EXT);
     validators_.texture_internal_format_storage.AddValue(
         GL_COMPRESSED_RGB_BPTC_UNSIGNED_FLOAT_EXT);
+  }
+
+  bool have_rgtc =
+      gfx::HasExtension(extensions, "GL_EXT_texture_compression_rgtc") ||
+      gl_version_info_->IsAtLeastGL(3, 0) ||
+      gfx::HasExtension(extensions, "GL_ARB_texture_compression_rgtc");
+  if (have_rgtc) {
+    feature_flags_.ext_texture_compression_rgtc = true;
+    AddExtensionString("GL_EXT_texture_compression_rgtc");
+    validators_.compressed_texture_format.AddValue(GL_COMPRESSED_RED_RGTC1_EXT);
+    validators_.compressed_texture_format.AddValue(
+        GL_COMPRESSED_SIGNED_RED_RGTC1_EXT);
+    validators_.compressed_texture_format.AddValue(
+        GL_COMPRESSED_RED_GREEN_RGTC2_EXT);
+    validators_.compressed_texture_format.AddValue(
+        GL_COMPRESSED_SIGNED_RED_GREEN_RGTC2_EXT);
+    validators_.texture_internal_format_storage.AddValue(
+        GL_COMPRESSED_RED_RGTC1_EXT);
+    validators_.texture_internal_format_storage.AddValue(
+        GL_COMPRESSED_SIGNED_RED_RGTC1_EXT);
+    validators_.texture_internal_format_storage.AddValue(
+        GL_COMPRESSED_RED_GREEN_RGTC2_EXT);
+    validators_.texture_internal_format_storage.AddValue(
+        GL_COMPRESSED_SIGNED_RED_GREEN_RGTC2_EXT);
   }
 
   bool have_astc =

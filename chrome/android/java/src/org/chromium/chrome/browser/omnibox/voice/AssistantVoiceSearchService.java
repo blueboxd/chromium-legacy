@@ -19,6 +19,7 @@ import androidx.annotation.Nullable;
 
 import org.chromium.base.LocaleUtils;
 import org.chromium.base.SysUtils;
+import org.chromium.base.metrics.RecordHistogram;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.IntentHandler;
 import org.chromium.chrome.browser.externalauth.ExternalAuthUtils;
@@ -39,6 +40,9 @@ import java.util.Set;
  * of Assistant Voice Search.
  **/
 public class AssistantVoiceSearchService implements TemplateUrlService.TemplateUrlServiceObserver {
+    private static final String USER_ELIGIBILITY_HISTOGRAM =
+            "Assistant.VoiceSearch.UserEligibility";
+
     /** Allows outside classes to listen for changes in this service. */
     public interface Observer {
         /**
@@ -154,7 +158,6 @@ public class AssistantVoiceSearchService implements TemplateUrlService.TemplateU
      * @return Whether the startVoiceRecognition call has been resolved.
      */
     public boolean shouldRequestAssistantVoiceSearch() {
-        // TODO(crbug.com/1042085): Instrument new histogram for the assistant voice search feature.
         if (!mIsAssistantVoiceSearchEnabled || !mIsDefaultSearchEngineGoogle
                 || !isDeviceEligibleForAssistant(
                         ConversionUtils.kilobytesToMegabytes(SysUtils.amountOfPhysicalMemoryKB()),
@@ -245,6 +248,11 @@ public class AssistantVoiceSearchService implements TemplateUrlService.TemplateU
         }
 
         return enabledLocales;
+    }
+
+    /** Records whether the user is eligible. */
+    public static void reportUserEligibility(boolean eligible) {
+        RecordHistogram.recordBooleanHistogram(USER_ELIGIBILITY_HISTOGRAM, eligible);
     }
 
     /** Enable the colorful mic for testing purposes. */

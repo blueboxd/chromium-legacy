@@ -312,19 +312,16 @@ void SSLManager::OnCertError(std::unique_ptr<SSLErrorHandler> handler) {
   OnCertErrorInternal(std::move(handler));
 }
 
-void SSLManager::DidStartResourceResponse(
-    const url::Origin& origin_of_final_response_url,
-    bool has_certificate_errors) {
-  const std::string& scheme = origin_of_final_response_url.scheme();
-  const std::string& host = origin_of_final_response_url.host();
-
-  if (!GURL::SchemeIsCryptographic(scheme) || has_certificate_errors)
+void SSLManager::DidStartResourceResponse(const GURL& url,
+                                          bool has_certificate_errors) {
+  if (!url.SchemeIsCryptographic() || has_certificate_errors)
     return;
 
   // If the scheme is https: or wss and the cert did not have any errors, revoke
   // any previous decisions that have occurred.
-  if (!ssl_host_state_delegate_ || !ssl_host_state_delegate_->HasAllowException(
-                                       host, controller_->GetWebContents())) {
+  if (!ssl_host_state_delegate_ ||
+      !ssl_host_state_delegate_->HasAllowException(
+          url.host(), controller_->GetWebContents())) {
     return;
   }
 
@@ -332,7 +329,7 @@ void SSLManager::DidStartResourceResponse(
   // clear out any exceptions that were made by the user for bad
   // certificates. This intentionally does not apply to cached resources
   // (see https://crbug.com/634553 for an explanation).
-  ssl_host_state_delegate_->RevokeUserAllowExceptions(host);
+  ssl_host_state_delegate_->RevokeUserAllowExceptions(url.host());
 }
 
 void SSLManager::OnCertErrorInternal(std::unique_ptr<SSLErrorHandler> handler) {

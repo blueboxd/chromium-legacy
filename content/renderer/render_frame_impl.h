@@ -902,7 +902,7 @@ class CONTENT_EXPORT RenderFrameImpl
   // browser.
   void OnDroppedNavigation();
 
-  void DidStartResponse(const url::Origin& origin_of_final_response_url,
+  void DidStartResponse(const GURL& response_url,
                         int request_id,
                         network::mojom::URLResponseHeadPtr response_head,
                         blink::mojom::ResourceType resource_type,

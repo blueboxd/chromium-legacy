@@ -145,6 +145,7 @@ class ChromeNativeFileSystemPermissionContextTest : public testing::Test {
       url::Origin::Create(GURL("https://test.com"));
   const base::FilePath kTestPath =
       base::FilePath(FILE_PATH_LITERAL("/foo/bar"));
+  const url::Origin kChromeOrigin = url::Origin::Create(GURL("chrome://test"));
 
   content::BrowserTaskEnvironment task_environment_;
   base::ScopedTempDir temp_dir_;
@@ -272,18 +273,25 @@ TEST_F(ChromeNativeFileSystemPermissionContextTest,
 }
 
 TEST_F(ChromeNativeFileSystemPermissionContextTest,
-       CanRequestWritePermission_Allowed) {
-  bool expected = permission_context()->CanRequestWritePermission(kTestOrigin);
-  EXPECT_EQ(true, expected);
+       CanObtainWritePermission_ContentSettingAsk) {
+  SetDefaultContentSettingValue(
+      ContentSettingsType::NATIVE_FILE_SYSTEM_WRITE_GUARD, CONTENT_SETTING_ASK);
+  EXPECT_TRUE(permission_context()->CanObtainWritePermission(kTestOrigin));
 }
 
 TEST_F(ChromeNativeFileSystemPermissionContextTest,
-       CanRequestWritePermission_ContentSettingsBlock) {
+       CanObtainWritePermission_ContentSettingsBlock) {
   SetDefaultContentSettingValue(
       ContentSettingsType::NATIVE_FILE_SYSTEM_WRITE_GUARD,
       CONTENT_SETTING_BLOCK);
-  bool expected = permission_context()->CanRequestWritePermission(kTestOrigin);
-  EXPECT_EQ(false, expected);
+  EXPECT_FALSE(permission_context()->CanObtainWritePermission(kTestOrigin));
+}
+
+TEST_F(ChromeNativeFileSystemPermissionContextTest,
+       CanObtainWritePermission_ContentSettingAllow) {
+  // Note, chrome:// scheme is whitelisted. But we can't set default content
+  // setting here because ALLOW is not an acceptable option.
+  EXPECT_TRUE(permission_context()->CanObtainWritePermission(kChromeOrigin));
 }
 
 #endif  // !defined(OS_ANDROID)

@@ -33,6 +33,7 @@
 #include "build/branding_buildflags.h"
 #include "gpu/config/gpu_util.h"
 #include "third_party/vulkan/include/vulkan/vulkan.h"
+#include "ui/gl/direct_composition_surface_win.h"
 
 namespace gpu {
 
@@ -69,6 +70,14 @@ inline D3D12FeatureLevel ConvertToHistogramFeatureLevel(
   }
 }
 
+OverlaySupport FlagsToOverlaySupport(UINT flags) {
+  if (flags & DXGI_OVERLAY_SUPPORT_FLAG_SCALING)
+    return OverlaySupport::kScaling;
+  if (flags & DXGI_OVERLAY_SUPPORT_FLAG_DIRECT)
+    return OverlaySupport::kDirect;
+  return OverlaySupport::kNone;
+}
+
 }  // namespace
 
 #if BUILDFLAG(GOOGLE_CHROME_BRANDING) && defined(OFFICIAL_BUILD)
@@ -84,6 +93,26 @@ bool GetAMDSwitchableInfo(bool* is_switchable,
   return false;
 }
 #endif
+
+// This has to be called after a context is created, active GPU is identified,
+// and GPU driver bug workarounds are computed again. Otherwise the workaround
+// |disable_direct_composition| may not be correctly applied.
+// Also, this has to be called after falling back to SwiftShader decision is
+// finalized because this function depends on GL is ANGLE's GLES or not.
+void CollectHardwareOverlayInfo(OverlayInfo* overlay_info) {
+  if (gl::GetGLImplementation() == gl::kGLImplementationEGLANGLE) {
+    overlay_info->direct_composition =
+        gl::DirectCompositionSurfaceWin::IsDirectCompositionSupported();
+    overlay_info->supports_overlays =
+        gl::DirectCompositionSurfaceWin::AreOverlaysSupported();
+    overlay_info->nv12_overlay_support = FlagsToOverlaySupport(
+        gl::DirectCompositionSurfaceWin::GetOverlaySupportFlags(
+            DXGI_FORMAT_NV12));
+    overlay_info->yuy2_overlay_support = FlagsToOverlaySupport(
+        gl::DirectCompositionSurfaceWin::GetOverlaySupportFlags(
+            DXGI_FORMAT_YUY2));
+  }
+}
 
 bool CollectDriverInfoD3D(GPUInfo* gpu_info) {
   TRACE_EVENT0("gpu", "CollectDriverInfoD3D");

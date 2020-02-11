@@ -91,9 +91,9 @@ public class TabSuggestionMessageServiceUnitTest {
         MockitoAnnotations.initMocks(this);
 
         // Set up Tabs.
-        mTab1 = TabUiUnitTestUtils.prepareTab(TAB1_ID, TAB1_ROOT_ID);
-        mTab2 = TabUiUnitTestUtils.prepareTab(TAB2_ID, TAB2_ROOT_ID);
-        mTab3 = TabUiUnitTestUtils.prepareTab(TAB3_ID, TAB3_ROOT_ID);
+        mTab1 = TabUiUnitTestUtils.prepareTab(TAB1_ID, TAB1_ROOT_ID, null, "");
+        mTab2 = TabUiUnitTestUtils.prepareTab(TAB2_ID, TAB2_ROOT_ID, null, "");
+        mTab3 = TabUiUnitTestUtils.prepareTab(TAB3_ID, TAB3_ROOT_ID, null, "");
 
         // Set up TabModelSelector.
         doReturn(mTabModel).when(mTabModelSelector).getCurrentModel();

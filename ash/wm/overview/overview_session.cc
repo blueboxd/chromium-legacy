@@ -182,8 +182,8 @@ void OverviewSession::Init(const WindowList& windows,
   params.bounds = gfx::Rect(0, 0, 2, 2);
   params.layer_type = ui::LAYER_NOT_DRAWN;
   params.name = "OverviewModeFocusedWidget";
-  params.parent = Shell::GetPrimaryRootWindow()->GetChildById(
-      kShellWindowId_OverviewFocusContainer);
+  params.z_order = ui::ZOrderLevel::kFloatingWindow;
+  params.init_properties_container.SetProperty(ash::kExcludeInMruKey, true);
   overview_focus_widget_->Init(std::move(params));
 
   UMA_HISTOGRAM_COUNTS_100("Ash.WindowSelector.Items", num_items_);

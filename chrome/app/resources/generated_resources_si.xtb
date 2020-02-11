@@ -489,6 +489,7 @@
 <translation id="1670399744444387456">මූලික</translation>
 <translation id="167160931442925455">වඩාත්ම ශබ්දයෙන්</translation>
 <translation id="1673137583248014546"><ph name="URL" /> හට ඔබේ ආරක්ෂක යතුරේ වර්ගය සහ මාදිලිය දැකීමට අවශ්‍යයි</translation>
+<translation id="1677472565718498478"><ph name="TIME" /> ඉතිරිය</translation>
 <translation id="1679068421605151609">සංවර්ධක මෙවලම්</translation>
 <translation id="1679806121152819234">Plugin VM</translation>
 <translation id="1679810534535368772">ඔබට පිට වීමට අවශ්‍ය බව ඔබට තහවුරුද?</translation>
@@ -3959,7 +3960,6 @@ Linux ස්ථාපනය කිරීම දත්තවලින් <ph name
 <translation id="6545867563032584178">Mac පද්ධති මනාප තුළ මයික්‍රොෆෝනය අක්‍රිය කෙරේ</translation>
 <translation id="6547354035488017500">අඩු තරමින් ඉඩෙන් 512 MB හිස් කරන්න නැතහොත් ඔබේ උපාංගය ප්‍රතිචාර නොදක්වන බවට පත් විය හැකිය. ඉඩ හිස් කිරීමට, උපාංග ගබඩාව වෙතින් ගොනු මකන්න.</translation>
 <translation id="6549639163247690448"><ph name="DOMAIN" /> ඔබ දැන් Wi-Fi වෙත සම්බන්ධ කර, බාගෙන යාවත්කාලීන කිරීම අවශ්‍ය කරයි. ඔබ අන්තර්ජාලයට සම්බන්ධ කරන විට යාවත්කාලීනය ස්වයංක්‍රීයව බාගනු ලැබේ.</translation>
-<translation id="6549966385318247177">පරිණත අන්තර්ගතය හේතුවෙන් මෙය අවහිර කෙරුණා.</translation>
 <translation id="6550675742724504774">අභිප්‍රේත</translation>
 <translation id="6551508934388063976">විධන නොමැත. නව කවුළුවක් විවෘත කිරීමට control-N ඔබන්න.</translation>
 <translation id="6551612971599078809">වෙබ් අඩවිය USB භාවිත කරයි</translation>

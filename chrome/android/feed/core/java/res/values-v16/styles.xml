@@ -21,7 +21,7 @@ found in the LICENSE file.
   <style name="FeedTextButton" parent="FeedButtonCompatBase">
     <item name="android:paddingLeft">8dp</item>
     <item name="android:paddingRight">8dp</item>
-    <item name="android:textAppearance">@style/TextAppearance.BlueButtonText2</item>
+    <item name="android:textAppearance">@style/TextAppearance.Button.Text.Blue</item>
     <item name="android:background">?feedTextRippleDrawable</item>
   </style>
 

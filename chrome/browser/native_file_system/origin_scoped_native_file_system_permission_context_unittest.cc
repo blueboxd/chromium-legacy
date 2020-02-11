@@ -101,6 +101,8 @@ class OriginScopedNativeFileSystemPermissionContextTest : public testing::Test {
       url::Origin::Create(GURL("https://test.com"));
   const base::FilePath kTestPath =
       base::FilePath(FILE_PATH_LITERAL("/foo/bar"));
+  const url::Origin kChromeOrigin =
+      url::Origin::Create(GURL("chrome://test-origin"));
 
   content::BrowserTaskEnvironment task_environment_;
   base::ScopedTempDir temp_dir_;
@@ -561,6 +563,65 @@ TEST_F(OriginScopedNativeFileSystemPermissionContextTest,
       }));
   loop4.Run();
   EXPECT_EQ(PermissionStatus::DENIED, grant2->GetStatus());
+}
+
+TEST_F(OriginScopedNativeFileSystemPermissionContextTest,
+       GetWritePermissionGrant_WhitelistedOrigin_InitialState) {
+  SetDefaultContentSettingValue(
+      ContentSettingsType::NATIVE_FILE_SYSTEM_WRITE_GUARD,
+      CONTENT_SETTING_BLOCK);
+
+  // Whitelisted origin gets granted.
+  auto grant1 = permission_context()->GetWritePermissionGrant(
+      kChromeOrigin, kTestPath, /*is_directory=*/false, process_id(),
+      frame_id(), UserAction::kOpen);
+  EXPECT_EQ(PermissionStatus::GRANTED, grant1->GetStatus());
+
+  auto grant2 = permission_context()->GetWritePermissionGrant(
+      kChromeOrigin, kTestPath, /*is_directory=*/true, process_id(), frame_id(),
+      UserAction::kOpen);
+  EXPECT_EQ(PermissionStatus::GRANTED, grant2->GetStatus());
+
+  // Other origin should gets blocked.
+  auto grant3 = permission_context()->GetWritePermissionGrant(
+      kTestOrigin, kTestPath, /*is_directory=*/false, process_id(), frame_id(),
+      UserAction::kOpen);
+  EXPECT_EQ(PermissionStatus::DENIED, grant3->GetStatus());
+  auto grant4 = permission_context()->GetWritePermissionGrant(
+      kTestOrigin, kTestPath, /*is_directory=*/true, process_id(), frame_id(),
+      UserAction::kOpen);
+  EXPECT_EQ(PermissionStatus::DENIED, grant4->GetStatus());
+}
+
+TEST_F(OriginScopedNativeFileSystemPermissionContextTest,
+       GetWritePermissionGrant_WhitelistedOrigin_ExistingGrant) {
+  SetDefaultContentSettingValue(
+      ContentSettingsType::NATIVE_FILE_SYSTEM_WRITE_GUARD,
+      CONTENT_SETTING_BLOCK);
+
+  // Initial grant (file).
+  auto grant1 = permission_context()->GetWritePermissionGrant(
+      kChromeOrigin, kTestPath, /*is_directory=*/false, process_id(),
+      frame_id(), UserAction::kOpen);
+  EXPECT_EQ(PermissionStatus::GRANTED, grant1->GetStatus());
+
+  // Existing grant (file).
+  auto grant2 = permission_context()->GetWritePermissionGrant(
+      kChromeOrigin, kTestPath, /*is_directory=*/false, process_id(),
+      frame_id(), UserAction::kOpen);
+  EXPECT_EQ(PermissionStatus::GRANTED, grant2->GetStatus());
+
+  // Initial grant (directory).
+  auto grant3 = permission_context()->GetWritePermissionGrant(
+      kChromeOrigin, kTestPath, /*is_directory=*/true, process_id(), frame_id(),
+      UserAction::kOpen);
+  EXPECT_EQ(PermissionStatus::GRANTED, grant3->GetStatus());
+
+  // Existing grant (directory).
+  auto grant4 = permission_context()->GetWritePermissionGrant(
+      kChromeOrigin, kTestPath, /*is_directory=*/true, process_id(), frame_id(),
+      UserAction::kOpen);
+  EXPECT_EQ(PermissionStatus::GRANTED, grant4->GetStatus());
 }
 
 TEST_F(OriginScopedNativeFileSystemPermissionContextTest,

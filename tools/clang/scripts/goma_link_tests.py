@@ -257,7 +257,7 @@ class GomaLdIntegrationTest(unittest.TestCase):
       subprocess.check_call(
           [self.clangxx(), '-c', '-Os', 'foo.cpp', '-o', 'foo.o'])
       rc = GomaLinkUnixWhitelistMain().main([
-          'goma_ld.py',
+          'goma_ld.py', '--gomacc', 'gomacc', '--',
           self.clangxx(), '-fuse-ld=lld', 'main.o', 'foo.o', '-o', 'main'
       ])
       # Should succeed.
@@ -280,7 +280,7 @@ class GomaLdIntegrationTest(unittest.TestCase):
       subprocess.check_call(
           [self.clangxx(), '-c', '-Os', '-flto=thin', 'foo.cpp', '-o', 'foo.o'])
       rc = goma_ld.GomaLinkUnix().main([
-          'goma_ld.py',
+          'goma_ld.py', '--gomacc', 'gomacc', '--',
           self.clangxx(), '-fuse-ld=lld', '-flto=thin', 'main.o', 'foo.o', '-o',
           'main'
       ])

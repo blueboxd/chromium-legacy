@@ -689,6 +689,7 @@
 <translation id="3987940399970879459">Менш за 1 МБ</translation>
 <translation id="3990250421422698716">Велічыня зруху</translation>
 <translation id="40103911065039147">{URL_count,plural, =1{1 вэб-старонка паблізу}one{# вэб-старонка паблізу}few{# вэб-старонкі паблізу}many{# вэб-старонак паблізу}other{# вэб-старонкі паблізу}}</translation>
+<translation id="4014128326099193693">{COUNT,plural, =1{Дакумент PDF з {COUNT} старонкай}one{Дакумент PDF з {COUNT} старонкай}few{Дакумент PDF з {COUNT} старонкамі}many{Дакумент PDF з {COUNT} старонкамі}other{Дакумент PDF з {COUNT} старонкі}}</translation>
 <translation id="4030383055268325496">&amp;Адрабіць дадаванне</translation>
 <translation id="4032320456957708163">Браўзер знаходзіцца пад кіраваннем <ph name="ENROLLMENT_DOMAIN" />.</translation>
 <translation id="4058922952496707368">Ключ "<ph name="SUBKEY" />": <ph name="ERROR" /></translation>
@@ -717,6 +718,7 @@
 <translation id="4142935452406587478">Латок 10</translation>
 <translation id="4148925816941278100">American Express</translation>
 <translation id="4151403195736952345">Выкарыстоўваць глабальныя стандартныя налады (выяўляць)</translation>
+<translation id="4152318981910038897">{COUNT,plural, =1{Старонка 1}one{Старонка {COUNT}}few{Старонка {COUNT}}many{Старонка {COUNT}}other{Старонка {COUNT}}}</translation>
 <translation id="4159784952369912983">Фіялетавы</translation>
 <translation id="4165986682804962316">Налады сайта</translation>
 <translation id="4171400957073367226">Подпіс спраўджання недапушчальны</translation>
@@ -1394,6 +1396,7 @@
 <translation id="7201591969684833065">Ваш адміністратар можа бачыць:</translation>
 <translation id="7202346780273620635">Letter-Extra</translation>
 <translation id="7210863904660874423"><ph name="HOST_NAME" /> не адпавядае стандартам бяспекі.</translation>
+<translation id="7210993021468939304">Дзеянні Linux у кантэйнеры, могуць усталёўваць і запускаць праграмы Linux у кантэйнеры</translation>
 <translation id="721197778055552897"><ph name="BEGIN_LINK" />Даведацца больш<ph name="END_LINK" /> пра гэту праблему.</translation>
 <translation id="7219179957768738017">На падключэнні выкарыстоўваецца <ph name="SSL_VERSION" />.</translation>
 <translation id="7220786058474068424">Ідзе апрацоўка</translation>
@@ -1558,6 +1561,7 @@
 <translation id="7878562273885520351">Ваш пароль можа быць раскрыты</translation>
 <translation id="7882421473871500483">Карычневы</translation>
 <translation id="7887683347370398519">Праверце код CVC і паўтарыце спробу</translation>
+<translation id="7887885240995164102">Уключыць рэжым "Відарыс у відарысе"</translation>
 <translation id="7888575728750733395">Намер візуалізацыі раздрукоўкі</translation>
 <translation id="7904208859782148177">C3 (канверт)</translation>
 <translation id="7932579305932748336">Пакрыццё</translation>

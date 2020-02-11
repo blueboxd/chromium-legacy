@@ -6653,6 +6653,11 @@ Unknown properties are collapsed to zero. -->
   <int value="1" label="Duplicate"/>
 </enum>
 
+<enum name="BooleanEligible">
+  <int value="0" label="Not elibible"/>
+  <int value="1" label="Eligible"/>
+</enum>
+
 <enum name="BooleanEmpty">
   <int value="0" label="Not Empty"/>
   <int value="1" label="Empty"/>
@@ -16282,6 +16287,15 @@ to ensure that the crash string is shown properly on the user-facing crash UI.
   <int value="3" label="Cancelled"/>
 </enum>
 
+<enum name="DownloadInitiatedByWindowOpenerType">
+  <int value="0" label="Same Origin">
+    window.opener is the same origin as the top frame of this download.
+  </int>
+  <int value="1" label="Cross Origin">
+    window.opener is cross origin to the top frame of this download.
+  </int>
+</enum>
+
 <enum name="DownloadInProgressDBCountType">
   <int value="0" label="In-progress DB initialization started"/>
   <int value="1" label="In-progress DB successfully initialized"/>
@@ -22205,6 +22219,7 @@ to ensure that the crash string is shown properly on the user-facing crash UI.
   <int value="1440" label="AUTOFILLASSISTANTPRIVATE_GETSTATE"/>
   <int value="1441" label="AUTOFILLASSISTANTPRIVATE_PERFORMACTION"/>
   <int value="1442" label="AUTOFILLASSISTANTPRIVATE_PROVIDEUSERDATA"/>
+  <int value="1443" label="PASSWORDSPRIVATE_ISOPTEDINFORACCOUNTSTORAGE"/>
 </enum>
 
 <enum name="ExtensionIconState">
@@ -42139,7 +42154,8 @@ Called by update_use_counter_css.py.-->
   <int value="0" label="Title"/>
   <int value="1" label="Artist"/>
   <int value="2" label="Album"/>
-  <int value="3" label="Count"/>
+  <int value="3" label="COUNT"/>
+  <int value="4" label="Source"/>
 </enum>
 
 <enum name="MediaNotificationSource">
@@ -43899,6 +43915,7 @@ Called by update_use_counter_css.py.-->
   <int value="5" label="Denied by user"/>
   <int value="6" label="Dismissed by user"/>
   <int value="7" label="Request was aborted"/>
+  <int value="8" label="Granted by Content Setting"/>
 </enum>
 
 <enum name="NativeLibraryPreloaderResult">
@@ -64129,6 +64146,7 @@ Full version information for the fingerprint enum values:
   <int value="189188535" label="CROS Cr50 0.4.19"/>
   <int value="228456405" label="CROS Cr50 0.3.11"/>
   <int value="230386903" label="CROS Cr50 0.0.24 Eve Flags 0x7f00(prod)"/>
+  <int value="245471087" label="CROS Cr50 0.4.25"/>
   <int value="276176597" label="CROS Cr50 0.1.0 Flags 0x10(pre-pvt)"/>
   <int value="305524852" label="IFX 9655 rev 41 fw 4.32 build 036f"/>
   <int value="313962517" label="CROS Cr50 0.3.16"/>

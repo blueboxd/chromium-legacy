@@ -54,7 +54,7 @@ ResizeObserverEntry::ResizeObserverEntry(Element* target) : target_(target) {
         content_box_size_ = ZoomAdjustedSize(bounding_box_size, style);
         border_box_size_ = ZoomAdjustedSize(bounding_box_size, style);
       }
-    } else {
+    } else if (layout_object->IsBox()) {
       LayoutBox* layout_box = target->GetLayoutBox();
       LayoutRect content_rect(
           LayoutPoint(layout_box->PaddingLeft(), layout_box->PaddingTop()),
@@ -72,11 +72,15 @@ ResizeObserverEntry::ResizeObserverEntry(Element* target) : target_(target) {
         border_box_size_ = ZoomAdjustedSize(border_box_size, style);
       }
     }
-  } else {
+  }
+  if (!content_rect_)
     content_rect_ = DOMRectReadOnly::FromFloatRect(
         FloatRect(FloatPoint(LayoutPoint()), FloatSize(LayoutSize())));
-    content_box_size_ = ResizeObserverSize::Create(0, 0);
-    border_box_size_ = ResizeObserverSize::Create(0, 0);
+  if (RuntimeEnabledFeatures::ResizeObserverUpdatesEnabled()) {
+    if (!content_box_size_)
+      content_box_size_ = ResizeObserverSize::Create(0, 0);
+    if (!border_box_size_)
+      border_box_size_ = ResizeObserverSize::Create(0, 0);
   }
 }
 

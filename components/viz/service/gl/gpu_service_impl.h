@@ -201,6 +201,9 @@ class VIZ_SERVICE_EXPORT GpuServiceImpl : public gpu::GpuChannelManagerDelegate,
   void DidLoseContext(bool offscreen,
                       gpu::error::ContextLostReason reason,
                       const GURL& active_url) override;
+#if defined(OS_WIN)
+  void DidUpdateOverlayInfo(const gpu::OverlayInfo& overlay_info) override;
+#endif
   void StoreShaderToDisk(int client_id,
                          const std::string& key,
                          const std::string& shader) override;
@@ -324,6 +327,12 @@ class VIZ_SERVICE_EXPORT GpuServiceImpl : public gpu::GpuChannelManagerDelegate,
   // process. If |for_context_loss| is true an error message will be logged.
   void MaybeExit(bool for_context_loss);
 
+  // Update overlay info on the GPU process and send the updated info back
+  // to the browser process if there is a change.
+#if defined(OS_WIN)
+  void UpdateOverlayInfo();
+#endif
+
   scoped_refptr<base::SingleThreadTaskRunner> main_runner_;
   scoped_refptr<base::SingleThreadTaskRunner> io_runner_;
 
@@ -398,7 +407,7 @@ class VIZ_SERVICE_EXPORT GpuServiceImpl : public gpu::GpuChannelManagerDelegate,
 #if defined(OS_WIN)
   // Used to track if the Dx Diag task on a different thread is still running.
   // The status is checked before exiting the unsandboxed GPU process.
-  bool long_dx_task_different_thread_in_progress_ = false;
+  int number_of_long_dx_tasks_in_progress_ = 0;
 #endif
 
 #if defined(OS_CHROMEOS)

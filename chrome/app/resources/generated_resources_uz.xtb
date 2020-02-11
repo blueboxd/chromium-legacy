@@ -154,7 +154,7 @@ xizmatlarini sizga moslashtirish maqsadlarida foydalanishi mumkin. Bu ruxsatni m
 <translation id="1201402288615127009">Keyingisi</translation>
 <translation id="1202596434010270079">Kiosk-ilovasi yangilandi. USB-xotira qurilmasini chiqarib oling.</translation>
 <translation id="120368089816228251">Musiqa notasi</translation>
-<translation id="1203942045716040624">Umumiy jarayon: <ph name="SCRIPT_URL" /></translation>
+<translation id="1203942045716040624">Shared Worker: <ph name="SCRIPT_URL" /></translation>
 <translation id="1205489148908752564">Ma’qullangan foydalanuvchilar ro‘yxatini ko‘rish va o‘zgartirish</translation>
 <translation id="1206407435587370571">Chromebook bilan tanishuv</translation>
 <translation id="1209796539517632982">Avtomatik nom serverlari</translation>
@@ -490,6 +490,7 @@ xizmatlarini sizga moslashtirish maqsadlarida foydalanishi mumkin. Bu ruxsatni m
 <translation id="1670399744444387456">Asosiy sozlamalar</translation>
 <translation id="167160931442925455">Judayam baland</translation>
 <translation id="1673137583248014546"><ph name="URL" /> elektron kalitingiz modeli va markasini ko‘rmoqchi</translation>
+<translation id="1677472565718498478"><ph name="TIME" /> qoldi</translation>
 <translation id="1679068421605151609">Dasturchi vositalari</translation>
 <translation id="1679806121152819234">Virtual mashina plagini</translation>
 <translation id="1679810534535368772">Haqiqatan ham chiqmoqchimisiz?</translation>
@@ -1064,7 +1065,7 @@ Oʻz qurilmangizda Family Link ilovasini oʻrnatib, bu hisob sozlamalarini boshq
 <translation id="2462724976360937186">Sertifikat markazi kaliti identifikatori</translation>
 <translation id="2462752602710430187"><ph name="PRINTER_NAME" /> qo‘shildi</translation>
 <translation id="2464089476039395325">HTTP proksi-server</translation>
-<translation id="2465237718053447668"><ph name="DOMAIN" /> domeni hoziroq Wi-Fi tarmoqqa ulanib, yangilanishni yuklab olishni talab qilmoqda Yoki sarfi pullik ulanish orqali yuklab olish mumkin.</translation>
+<translation id="2465237718053447668"><ph name="DOMAIN" /> domeni hoziroq Wi-Fi tarmoqqa ulanib, yangilanishni yuklab olishni talab qilmoqda Yoki trafik hisoblanadigan ulanishdan foydalanib yuklab olish mumkin.</translation>
 <translation id="2467267713099745100">Tarmoq: <ph name="NETWORK_TYPE" />, faolsizlantirilgan</translation>
 <translation id="2468205691404969808">Saytlarga tashrif buyurmasangiz ham, cookie-axborot ulardagi afzalliklaringizni eslab qolish uchun foydalaniladi</translation>
 <translation id="2468402215065996499">Tamagochi</translation>
@@ -2128,7 +2129,7 @@ Oʻz qurilmangizda Family Link ilovasini oʻrnatib, bu hisob sozlamalarini boshq
 <translation id="3900789207771372462">Ayrim kengaytmalar brauzerdagi faoliyatingizni, shuningdek, shaxsiy maʼlumotlaringizni ham kuzatishi mumkin.</translation>
 <translation id="3900966090527141178">Parollarni eksport qilish</translation>
 <translation id="3901991538546252627"><ph name="NAME" /> tarmog‘iga ulanilmoqda</translation>
-<translation id="3904326018476041253">Joylashuv axboroti xizmatlari</translation>
+<translation id="3904326018476041253">Joylashuvni aniqlash xizmatlari</translation>
 <translation id="3905761538810670789">Ilovani ta’mirlash</translation>
 <translation id="3908393983276948098">“<ph name="PLUGIN_NAME" />” plagini eskirgan</translation>
 <translation id="3908501907586732282">Kengaytmani yoqish</translation>
@@ -3473,7 +3474,7 @@ Oʻz qurilmangizda Family Link ilovasini oʻrnatib, bu hisob sozlamalarini boshq
 <translation id="5860494867054883682">Qurilma “<ph name="CHANNEL_NAME" />” kanaliga o‘tkazilmoqda (<ph name="PROGRESS_PERCENT" />)</translation>
 <translation id="5862109781435984885">Stilus vositalari javonda ko‘rsatilsin</translation>
 <translation id="5863445608433396414">Nosozliklarni ko‘rib chiqish funksiyalarini yoqish</translation>
-<translation id="5864195618110239517">Sarfi pullik ulanishdan foydalanish</translation>
+<translation id="5864195618110239517">Trafik hisoblanadigan ulanishdan foydalanish</translation>
 <translation id="5864471791310927901">DHCP topilmadi</translation>
 <translation id="586567932979200359"><ph name="PRODUCT_NAME" /> tizimini diskdagi tasviridan ishga tushirgansiz. Uni kompyuteringizga o‘rnatsangiz, disk tasviri kerak bo‘lmaydi hamda tizim muntazam yangilanib turadi.</translation>
 <translation id="5865733239029070421">Foydalanish statistikasi va ishdan chiqish hisobotlari avtomatik tarzda Google serverlariga yuborilsin</translation>
@@ -3909,7 +3910,7 @@ Ochiq eksponenta (<ph name="PUBLIC_EXPONENT_NUM_BITS" /> bit):
 <translation id="6472804939621540371"><ph name="SITE_GROUP_NAME" /> va unga tegishli saytlardan saqlangan barcha maʼlumot, cookie fayllar va oʻrnatilgan ilovalar tozalab tashlanadi.</translation>
 <translation id="6472893788822429178">Bosh sahifa tugmasini ko‘rsatish</translation>
 <translation id="6473842110411557830">Powerwash illustratsiyasi</translation>
-<translation id="6474498546677193336">Bu jild bandligi sababli umumiy ruxsati bekor qilinmadi. Jildga umumiy ruxsat Linux qayta ishga tushganda bekor qilinadi.</translation>
+<translation id="6474498546677193336">Bu jild bandligi sababli umumiy ruxsat bekor qilinmadi. Jildga umumiy ruxsat Linux qayta ishga tushganda bekor qilinadi.</translation>
 <translation id="6474884162850599008">Google Drive hisobini uzib qo‘yish</translation>
 <translation id="6475697075626596525"><ph name="APP_NAME" /> ekraningizdan foydalanmoqchi. Namoyish qilmoqchi bo‘lgan oynani tanlang.</translation>
 <translation id="6478248366783946499">Xavfli fayl yuklab olinsinmi?</translation>
@@ -3960,7 +3961,6 @@ Ochiq eksponenta (<ph name="PUBLIC_EXPONENT_NUM_BITS" /> bit):
 <translation id="6545867563032584178">Mikrofon Mac tizim sozlamalaridan faolsizlantirilgan</translation>
 <translation id="6547354035488017500">Qurilmangiz buzilib qolmasligi uchun xotirasidan kamida 512 MB bo‘shatilishi zarur. Joy ochish uchun qurilma xotirasidan fayllarni o‘chiring.</translation>
 <translation id="6549639163247690448"><ph name="DOMAIN" /> domeni hoziroq Wi-Fi tarmoqqa ulanib, yangilanishni yuklab olishni talab qilmoqda Yangilanish internet aloqasi tiklanishi bilan avtomatik yuklab olinadi.</translation>
-<translation id="6549966385318247177">Nomaqbul kontenti borligi uchun bloklandi.</translation>
 <translation id="6550675742724504774">Parametrlar</translation>
 <translation id="6551508934388063976">Buyruq ish faoliyatida emas. Yangi oyna ochish uchun “Ctrl + N” tugmalarini bosing.</translation>
 <translation id="6551612971599078809">Saytda USB ishlatilmoqda</translation>
@@ -4060,7 +4060,7 @@ Ochiq eksponenta (<ph name="PUBLIC_EXPONENT_NUM_BITS" /> bit):
 <translation id="6700480081846086223"><ph name="HOST_NAME" /> translatsiyasi</translation>
 <translation id="6701535245008341853">Profil yuklanmadi.</translation>
 <translation id="6702639462873609204">&amp;O‘zgartirish...</translation>
-<translation id="6703966911896067184">Qayd qilishdagi xatolikka namuna</translation>
+<translation id="6703966911896067184">Qayd qilishdagi xatolik namunasi</translation>
 <translation id="6706210727756204531">Qo‘llanish doirasi</translation>
 <translation id="6707389671160270963">SSL mijoz sertifikati</translation>
 <translation id="6708242697268981054">Joylashuvi:</translation>
@@ -4300,7 +4300,7 @@ Ochiq eksponenta (<ph name="PUBLIC_EXPONENT_NUM_BITS" /> bit):
 <translation id="7040230719604914234">Operator</translation>
 <translation id="7043108582968290193">Tayyor! Mos kelmaydigan ilovalar topilmadi.</translation>
 <translation id="7044124535091449260">Saytga ruxsat haqida batafsil axborot</translation>
-<translation id="7044606776288350625">Maʻlumotlarni sinxronlash</translation>
+<translation id="7044606776288350625">Maʼlumotlarni sinxronlash</translation>
 <translation id="7047059339731138197">Fon uchun rasm tanlash</translation>
 <translation id="7049293980323620022">Fayl saqlansinmi?</translation>
 <translation id="7051943809462976355">Sichqoncha qidirilmoqda...</translation>
@@ -4514,7 +4514,7 @@ Ochiq eksponenta (<ph name="PUBLIC_EXPONENT_NUM_BITS" /> bit):
 <translation id="7328699668338161242">Assistent ovozingizni allaqachon taniydi</translation>
 <translation id="7328867076235380839">Xato kombinatsiya</translation>
 <translation id="7329154610228416156">Kirish amalga oshmadi, chunki u xavfli URL manzildan foydalanish uchun moslangan (<ph name="BLOCKED_URL" />). Administrator bilan bog‘laning.</translation>
-<translation id="7332053360324989309">Alohida jarayon: <ph name="SCRIPT_URL" /></translation>
+<translation id="7332053360324989309">Dedicated Worker: <ph name="SCRIPT_URL" /></translation>
 <translation id="7334190995941642545">Ayni vaqtda Smart Lock ish faoliyatida emas. Keyinroq qayta urinib ko‘ring.</translation>
 <translation id="7334274148831027933">Lupani ekranga mahkamlash</translation>
 <translation id="7335974957018254119">Imlo tekshiruvi quyidagilar uchun ishlatilsin:</translation>
@@ -4771,7 +4771,7 @@ Ochiq eksponenta (<ph name="PUBLIC_EXPONENT_NUM_BITS" /> bit):
 <translation id="7696063401938172191"><ph name="PHONE_NAME" /> telefoningizda:</translation>
 <translation id="7698408911093959127">{COUNT,plural, =1{xatcho‘plardagi 1 ta element}other{xatcho‘plardagi # ta element}}</translation>
 <translation id="7701040980221191251">Hech qanday</translation>
-<translation id="770157826141786566">Bu qurilmani qatrarish muddati tugadi.</translation>
+<translation id="770157826141786566">Bu qurilmani qayrarish muddati tugadi.</translation>
 <translation id="7701869757853594372">USER deskriptorlari</translation>
 <translation id="7702574632857388784"><ph name="FILE_NAME" /> faylini roʻyxatdan olib tashlash</translation>
 <translation id="7702907602086592255">Domen</translation>

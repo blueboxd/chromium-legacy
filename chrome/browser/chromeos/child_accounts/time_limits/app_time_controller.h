@@ -11,6 +11,7 @@
 #include "base/time/default_tick_clock.h"
 #include "base/time/time.h"
 #include "base/timer/timer.h"
+#include "chrome/browser/chromeos/child_accounts/time_limits/app_activity_registry.h"
 #include "chrome/browser/chromeos/child_accounts/time_limits/app_time_notification_delegate.h"
 #include "chromeos/dbus/system_clock/system_clock_client.h"
 #include "chromeos/settings/timezone_settings.h"
@@ -28,7 +29,6 @@ class OneShotTimer;
 namespace chromeos {
 namespace app_time {
 
-class AppActivityRegistry;
 class AppServiceWrapper;
 class WebTimeLimitEnforcer;
 class WebTimeActivityProvider;
@@ -36,7 +36,8 @@ class WebTimeActivityProvider;
 // Coordinates per-app time limit for child user.
 class AppTimeController : public SystemClockClient::Observer,
                           public system::TimezoneSettings::Observer,
-                          public AppTimeNotificationDelegate {
+                          public AppTimeNotificationDelegate,
+                          public AppActivityRegistry::AppStateObserver {
  public:
   // Used for tests to get internal implementation details.
   class TestApi {
@@ -77,6 +78,12 @@ class AppTimeController : public SystemClockClient::Observer,
   void ShowAppTimeLimitNotification(const AppId& app_id,
                                     base::TimeDelta time_limit,
                                     AppNotification notification) override;
+
+  // AppActivityRegistry::AppStateObserver:
+  void OnAppLimitReached(const AppId& app_id,
+                         base::TimeDelta time_limit) override;
+  void OnAppLimitRemoved(const AppId& app_id) override;
+  void OnAppInstalled(const AppId& app_id) override;
 
   const WebTimeLimitEnforcer* web_time_enforcer() const {
     return web_time_enforcer_.get();

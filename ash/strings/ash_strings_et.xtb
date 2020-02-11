@@ -139,7 +139,7 @@
 <translation id="2727977024730340865">Ühendatud väikese energiakuluga laadijaga. Aku laadimine võib olla ebastabiilne.</translation>
 <translation id="2792498699870441125">Alt + otsinguklahv</translation>
 <translation id="2819276065543622893">Teid logitakse nüüd välja.</translation>
-<translation id="2825224105325558319">Üksus <ph name="DISPLAY_NAME" /> ei toeta eraldusvõimet <ph name="SPECIFIED_RESOLUTION" />. Eraldusvõime muudeti tagasi väärtusele <ph name="FALLBACK_RESOLUTION" />.</translation>
+<translation id="2825224105325558319">Üksus <ph name="DISPLAY_NAME" /> ei toeta eraldusvõimet <ph name="SPECIFIED_RESOLUTION" />. Eraldusvõimeks määrati <ph name="FALLBACK_RESOLUTION" />.</translation>
 <translation id="2825619548187458965">Riiul</translation>
 <translation id="2844169650293029770">C-tüüpi USB-seade (eesmine vasakpoolne port)</translation>
 <translation id="2865888419503095837">Võrguteave</translation>
@@ -610,7 +610,7 @@ Jätkamiseks peavad kõik kasutajad välja logima.</translation>
 <translation id="9183456764293710005">Täisekraani suurendus</translation>
 <translation id="9193626018745640770">Ülekandmine tundmatus vastuvõtjas</translation>
 <translation id="9194617393863864469">Logi sisse teine kasutaja ...</translation>
-<translation id="9198992156681343238">Seadme <ph name="DISPLAY_NAME" /> eraldusvõime muudeti väärtusele <ph name="RESOLUTION" />. Muudatuste säilitamiseks klõpsake nupul Kinnita. Eelmised seaded taastatakse <ph name="TIMEOUT_SECONDS" /> pärast.</translation>
+<translation id="9198992156681343238">Seadme <ph name="DISPLAY_NAME" /> eraldusvõimeks määrati <ph name="RESOLUTION" />. Muudatuste säilitamiseks klõpsake nupul Kinnita. Eelmised seaded taastatakse <ph name="TIMEOUT_SECONDS" /> pärast.</translation>
 <translation id="9201374708878217446"><ph name="CONNECTION_STATUS" />, võrku haldab teie administraator</translation>
 <translation id="9210037371811586452">Ühendatud töölaua režiimist väljumine</translation>
 <translation id="9211681782751733685">Aku täitumiseni on aega <ph name="TIME_REMAINING" />.</translation>

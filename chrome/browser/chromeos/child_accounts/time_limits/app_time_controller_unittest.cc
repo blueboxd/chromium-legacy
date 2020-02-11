@@ -107,6 +107,8 @@ void AppTimeControllerTest::SetUp() {
 
   app_service_test_.SetUp(&profile_);
   arc_test_.SetUp(&profile_);
+  arc_test_.app_instance()->set_icon_response_type(
+      arc::FakeAppInstance::IconResponseType::ICON_RESPONSE_SKIP);
   task_environment_.RunUntilIdle();
 
   controller_ = std::make_unique<AppTimeController>(&profile_);
@@ -131,7 +133,10 @@ void AppTimeControllerTest::CreateActivityForApp(const AppId& app_id,
                                                  base::TimeDelta time_active,
                                                  base::TimeDelta time_limit) {
   AppActivityRegistry* registry = controller_->app_registry();
-  registry->SetAppTimeLimitForTest(app_id, time_limit, base::Time::Now());
+  const AppLimit limit(AppRestriction::kTimeLimit, time_limit,
+                       base::Time::Now());
+  registry->SetAppLimit(app_id, limit);
+  task_environment_.RunUntilIdle();
 
   // AppActivityRegistry uses |window| to uniquely identify between different
   // instances of the same active application. Since this test is just trying to
@@ -284,11 +289,13 @@ TEST_F(AppTimeControllerTest, SystemTimeChangedGoingBackwards) {
 TEST_F(AppTimeControllerTest, TimeLimitNotification) {
   AppActivityRegistry* registry = controller()->app_registry();
 
-  constexpr base::TimeDelta kApp1TimeLimit = base::TimeDelta::FromMinutes(35);
-  constexpr base::TimeDelta kApp2TimeLimit = base::TimeDelta::FromMinutes(30);
-
-  registry->SetAppTimeLimitForTest(kApp1, kApp1TimeLimit, base::Time::Now());
-  registry->SetAppTimeLimitForTest(kApp2, kApp2TimeLimit, base::Time::Now());
+  const AppLimit limit1(AppRestriction::kTimeLimit,
+                        base::TimeDelta::FromMinutes(35), base::Time::Now());
+  const AppLimit limit2(AppRestriction::kTimeLimit,
+                        base::TimeDelta::FromMinutes(30), base::Time::Now());
+  const std::map<AppId, AppLimit> limits{{kApp1, limit1}, {kApp2, limit2}};
+  registry->UpdateAppLimits(limits);
+  task_environment().RunUntilIdle();
 
   registry->OnAppActive(kApp1, /* window */ nullptr, base::Time::Now());
   registry->OnAppActive(kApp2, /* window */ nullptr, base::Time::Now());

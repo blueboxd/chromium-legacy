@@ -1152,7 +1152,7 @@ media::GpuVideoAcceleratorFactories* RenderThreadImpl::GetGpuFactories() {
   enable_video_gpu_memory_buffers =
       enable_video_gpu_memory_buffers &&
       (cmd_line->HasSwitch(switches::kEnableGpuMemoryBufferVideoFrames) ||
-       gpu_channel_host->gpu_info().supports_overlays);
+       gpu_channel_host->gpu_info().overlay_info.supports_overlays);
 #endif  // defined(OS_WIN)
 
   mojo::PendingRemote<media::mojom::InterfaceFactory> interface_factory;

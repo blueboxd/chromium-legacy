@@ -772,7 +772,7 @@ public class StartSurfaceLayoutTest {
     @Feature("TabSuggestion")
     // clang-format off
     @Features.EnableFeatures(ChromeFeatureList.CLOSE_TAB_SUGGESTIONS + "<Study")
-    @CommandLineFlags.Add({BASE_PARAMS + "/close_tab_suggestions_stale_time_ms/0"})
+    @CommandLineFlags.Add({BASE_PARAMS + "/baseline_tab_suggestions/true"})
     public void testTabSuggestionMessageCard_dismiss() throws InterruptedException {
         // clang-format on
         prepareTabs(3, 0, null);
@@ -807,7 +807,7 @@ public class StartSurfaceLayoutTest {
     @Feature("TabSuggestion")
     // clang-format off
     @Features.EnableFeatures(ChromeFeatureList.CLOSE_TAB_SUGGESTIONS + "<Study")
-    @CommandLineFlags.Add({BASE_PARAMS + "/close_tab_suggestions_stale_time_ms/0"})
+    @CommandLineFlags.Add({BASE_PARAMS + "/baseline_tab_suggestions/true"})
     public void testTabSuggestionMessageCard_review() throws InterruptedException {
         // clang-format on
         prepareTabs(3, 0, null);
@@ -840,7 +840,7 @@ public class StartSurfaceLayoutTest {
     // clang-format off
     @Features.EnableFeatures({ChromeFeatureList.CLOSE_TAB_SUGGESTIONS + "<Study"})
     @CommandLineFlags.Add({BASE_PARAMS +
-            "/cleanup-delay/10000/close_tab_suggestions_stale_time_ms/0"})
+            "/cleanup-delay/10000/baseline_tab_suggestions/true"})
     public void testShowOnlyOneTabSuggestionMessageCard_withSoftCleanup()
             throws InterruptedException {
         // clang-format on
@@ -852,7 +852,7 @@ public class StartSurfaceLayoutTest {
     @Feature("TabSuggestion")
     // clang-format off
     @Features.EnableFeatures({ChromeFeatureList.CLOSE_TAB_SUGGESTIONS + "<Study"})
-    @CommandLineFlags.Add({BASE_PARAMS + "/close_tab_suggestions_stale_time_ms/0"})
+    @CommandLineFlags.Add({BASE_PARAMS + "/baseline_tab_suggestions/true"})
     public void testShowOnlyOneTabSuggestionMessageCard_withHardCleanup()
             throws InterruptedException {
         // clang-format on
@@ -919,7 +919,7 @@ public class StartSurfaceLayoutTest {
     @Feature("TabSuggestion")
     // clang-format off
     @Features.EnableFeatures(ChromeFeatureList.CLOSE_TAB_SUGGESTIONS + "<Study")
-    @CommandLineFlags.Add({BASE_PARAMS + "/close_tab_suggestions_stale_time_ms/0"})
+    @CommandLineFlags.Add({BASE_PARAMS + "/baseline_tab_suggestions/true"})
     public void testTabSuggestionMessageCard_orientation() throws InterruptedException {
         // clang-format on
         ChromeTabbedActivity cta = mActivityTestRule.getActivity();

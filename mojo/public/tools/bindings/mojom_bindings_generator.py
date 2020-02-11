@@ -229,7 +229,8 @@ class MojomProcessor(object):
             disallow_interfaces=args.disallow_interfaces,
             generate_message_ids=args.generate_message_ids,
             generate_fuzzing=args.generate_fuzzing,
-            enable_kythe_annotations=args.enable_kythe_annotations)
+            enable_kythe_annotations=args.enable_kythe_annotations,
+            extra_cpp_template_paths=args.extra_cpp_template_paths)
         filtered_args = []
         if hasattr(generator_module, 'GENERATOR_PREFIX'):
           prefix = '--' + generator_module.GENERATOR_PREFIX + '_'
@@ -498,6 +499,11 @@ def main():
       "--support_lazy_serialization",
       help="If set, generated bindings will serialize lazily when possible.",
       action="store_true")
+  generate_parser.add_argument(
+    "--extra_cpp_template_paths", dest="extra_cpp_template_paths", action="append", metavar="path_to_template",
+    default=[],
+    help="Provide a path to a new template (.tmpl) that is used to generate "
+         "additional C++ source/header files ")
   generate_parser.add_argument(
       "--disallow_native_types",
       help="Disallows the [Native] attribute to be specified on structs or "

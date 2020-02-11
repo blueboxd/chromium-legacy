@@ -1424,6 +1424,11 @@ bool ChromePasswordProtectionService::IsPingingEnabled(
       *reason = RequestOutcome::TURNED_OFF_BY_ADMIN;
       return false;
     }
+    // If the account type is UNKNOWN (i.e. AccountInfo fields could not be
+    // retrieved from server), pings should be gated by SBER.
+    if (password_type.account_type() == ReusedPasswordAccountType::UNKNOWN) {
+      return extended_reporting_enabled;
+    }
 
 // Only saved password reuse warnings are shown on Android, so other types of
 // password reuse events should be gated by extended reporting.

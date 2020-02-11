@@ -2173,4 +2173,127 @@
     const mimeType = await getQuickViewMetadataBoxField(appId, 'Type');
     chrome.test.assertEq(mimeType, 'audio/ogg');
   };
+
+
+  /**
+   * Tests that deleting all items in a check-selection closes the Quick View.
+   */
+  testcase.openQuickViewDeleteEntireCheckSelection = async () => {
+    // Open Files app on Downloads containing BASIC_LOCAL_ENTRY_SET.
+    const appId = await setupAndWaitUntilReady(
+        RootPath.DOWNLOADS, BASIC_LOCAL_ENTRY_SET, []);
+
+    const caller = getCaller();
+
+    // Check-select Beautiful Song.ogg and My Desktop Background.png.
+    const ctrlDown = ['#file-list', 'ArrowDown', true, false, false];
+    const ctrlSpace = ['#file-list', ' ', true, false, false];
+    chrome.test.assertTrue(
+        await remoteCall.callRemoteTestUtil('fakeKeyDown', appId, ctrlDown),
+        'Pressing Ctrl+Down failed.');
+
+    chrome.test.assertTrue(
+        await remoteCall.callRemoteTestUtil('fakeKeyDown', appId, ctrlDown),
+        'Pressing Ctrl+Down failed.');
+
+    chrome.test.assertTrue(
+        await remoteCall.callRemoteTestUtil('fakeKeyDown', appId, ctrlSpace),
+        'Pressing Ctrl+Space failed.');
+
+    chrome.test.assertTrue(
+        await remoteCall.callRemoteTestUtil('fakeKeyDown', appId, ctrlDown),
+        'Pressing Ctrl+Down failed.');
+
+    chrome.test.assertTrue(
+        await remoteCall.callRemoteTestUtil('fakeKeyDown', appId, ctrlSpace),
+        'Pressing Ctrl+Space failed.');
+
+    // Open Quick View on the check-selected files.
+    await openQuickViewMultipleSelection(appId, ['Beautiful', 'Desktop']);
+
+    // Open the Quick View delete confirm dialog.
+    const deleteKey = ['#quick-view', 'Delete', false, false, false];
+    chrome.test.assertTrue(
+        await remoteCall.callRemoteTestUtil('fakeKeyDown', appId, deleteKey),
+        'Pressing Delete failed.');
+
+    // Click the delete confirm dialog OK button.
+    const deleteConfirm = ['#quick-view', '.cr-dialog-ok:not([hidden])'];
+    await remoteCall.waitAndClickElement(appId, deleteConfirm);
+
+    // Check: the Beautiful Song.ogg file should be deleted.
+    await remoteCall.waitForElementLost(
+        appId, '#file-list [file-name="Beautiful Song.ogg"]');
+
+    // Open the Quick View delete confirm dialog.
+    chrome.test.assertTrue(
+        await remoteCall.callRemoteTestUtil('fakeKeyDown', appId, deleteKey),
+        'Pressing Delete failed.');
+
+    // Click the delete confirm dialog OK button.
+    await remoteCall.waitAndClickElement(appId, deleteConfirm);
+
+    // Check: the My Desktop Background.png file should be deleted.
+    await remoteCall.waitForElementLost(
+        appId, '#file-list [file-name="My Desktop Background.png"]');
+
+    // Check: the Quick View dialog should close.
+    await waitQuickViewClose(appId);
+  };
+
+  /**
+   * Tests that an item can be deleted using the Quick View delete button.
+   */
+  testcase.openQuickViewClickDeleteButton = async () => {
+    // Open Files app on Downloads containing ENTRIES.hello.
+    const appId =
+        await setupAndWaitUntilReady(RootPath.DOWNLOADS, [ENTRIES.hello], []);
+
+    // Open the file in Quick View.
+    await openQuickView(appId, ENTRIES.hello.nameText);
+
+    // Click the Quick View delete button.
+    const quickViewDeleteButton =
+        ['#quick-view', '#delete-button:not([hidden])'];
+    await remoteCall.waitAndClickElement(appId, quickViewDeleteButton);
+
+    // Click the delete confirm dialog OK button.
+    const deleteConfirm = ['#quick-view', '.cr-dialog-ok:not([hidden])'];
+    await remoteCall.waitAndClickElement(appId, deleteConfirm);
+
+    // Check: the file should have been deleted.
+    await remoteCall.waitForElementLost(
+        appId, '#file-list [file-name="hello.txt"]');
+
+    // Check: the Quick View dialog should close.
+    await waitQuickViewClose(appId);
+  };
+
+  /**
+   * Tests that the delete button is not shown if the file displayed in Quick
+   * View cannot be deleted.
+   */
+  testcase.openQuickViewDeleteButtonNotShown = async () => {
+    // Open Files app on My Files
+    const appId = await openNewWindow(RootPath.MYFILES);
+
+    // Wait for the file list to appear.
+    await remoteCall.waitForElement(appId, '#file-list');
+
+    // Check: My Files should contain the expected entries.
+    const expectedRows = [
+      ['Play files', '--', 'Folder'],
+      ['Downloads', '--', 'Folder'],
+      ['Linux files', '--', 'Folder'],
+    ];
+    await remoteCall.waitForFiles(
+        appId, expectedRows, {ignoreLastModifiedTime: true});
+
+    // Open Play files in Quick View, which cannot be deleted.
+    await openQuickView(appId, 'Play files');
+
+    // Check: the delete button should not be shown.
+    const quickViewDeleteButton = ['#quick-view', '#delete-button[hidden]'];
+    await remoteCall.waitForElement(appId, quickViewDeleteButton);
+  };
 })();

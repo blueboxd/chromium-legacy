@@ -3693,8 +3693,6 @@ jumbo_static_library("ui") {
       "app_list/crostini/crostini_app_context_menu.h",
       "app_list/crostini/crostini_app_icon.cc",
       "app_list/crostini/crostini_app_icon.h",
-      "app_list/crostini/crostini_app_icon_loader.cc",
-      "app_list/crostini/crostini_app_icon_loader.h",
       "app_list/crostini/crostini_app_item.cc",
       "app_list/crostini/crostini_app_item.h",
       "app_list/extension_app_context_menu.cc",

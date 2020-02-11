@@ -505,6 +505,15 @@ const FeatureEntry::FeatureParam kCloseTabSuggestionsStale_8Hours[] = {
     {"close_tab_suggestions_stale_time_ms", "28800000"}};
 const FeatureEntry::FeatureParam kCloseTabSuggestionsStale_7Days[] = {
     {"close_tab_suggestions_stale_time_ms", "604800000"}};
+const FeatureEntry::FeatureParam kCloseTabSuggestionsTimeSiteEngagement[] = {
+    {"close_tab_min_num_tabs", "5"},
+    {"close_tab_features_time_last_used_enabled", "true"},
+    {"close_tab_features_time_last_used_transform", "MEAN_VARIANCE"},
+    {"close_tab_features_time_last_used_threshold", "0.5"},
+    {"close_tab_features_site_engagement_enabled", "true"},
+    {"close_tab_features_site_engagement_threshold", "90.0"},
+};
+
 const FeatureEntry::FeatureVariation kCloseTabSuggestionsStaleVariations[] = {
     {"Immediate", kCloseTabSuggestionsStale_Immediate,
      base::size(kCloseTabSuggestionsStale_Immediate), nullptr},
@@ -514,6 +523,9 @@ const FeatureEntry::FeatureVariation kCloseTabSuggestionsStaleVariations[] = {
      base::size(kCloseTabSuggestionsStale_8Hours), nullptr},
     {"7 days", kCloseTabSuggestionsStale_7Days,
      base::size(kCloseTabSuggestionsStale_7Days), nullptr},
+    {"Time & Site Engagement", kCloseTabSuggestionsTimeSiteEngagement,
+     base::size(kCloseTabSuggestionsTimeSiteEngagement), nullptr},
+
 };
 #endif  // OS_ANDROID
 

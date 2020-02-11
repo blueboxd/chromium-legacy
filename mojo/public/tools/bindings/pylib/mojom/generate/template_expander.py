@@ -21,6 +21,7 @@ def ApplyTemplate(mojo_generator, path_to_template, params, **kwargs):
       )))
   final_kwargs = dict(mojo_generator.GetJinjaParameters())
   final_kwargs.update(kwargs)
+
   jinja_env = jinja2.Environment(loader=loader,
                                  keep_trailing_newline=True,
                                  **final_kwargs)
@@ -28,7 +29,6 @@ def ApplyTemplate(mojo_generator, path_to_template, params, **kwargs):
   jinja_env.filters.update(mojo_generator.GetFilters())
   template = jinja_env.get_template(path_to_template)
   return template.render(params)
-
 
 def UseJinja(path_to_template, **kwargs):
   def RealDecorator(generator):
@@ -39,6 +39,28 @@ def UseJinja(path_to_template, **kwargs):
     return GeneratorInternal
   return RealDecorator
 
+
+def ApplyImportedTemplate(mojo_generator, path_to_template, filename, params, **kwargs):
+  loader = jinja2.FileSystemLoader(searchpath=path_to_template)
+  final_kwargs = dict(mojo_generator.GetJinjaParameters())
+  final_kwargs.update(kwargs)
+
+  jinja_env = jinja2.Environment(loader=loader,
+                                 keep_trailing_newline=True,
+                                 **final_kwargs)
+  jinja_env.globals.update(mojo_generator.GetGlobals())
+  jinja_env.filters.update(mojo_generator.GetFilters())
+  template = jinja_env.get_template(filename)
+  return template.render(params)
+
+def UseJinjaForImportedTemplate(func):
+  def wrapper(*args, **kwargs):
+    parameters = func(*args, **kwargs)
+    path_to_template = args[1]
+    filename = args[2]
+    return ApplyImportedTemplate(args[0], path_to_template, filename, parameters)
+  wrapper.__name__ = func.__name__
+  return wrapper
 
 def PrecompileTemplates(generator_modules, output_dir):
   for module in generator_modules.values():

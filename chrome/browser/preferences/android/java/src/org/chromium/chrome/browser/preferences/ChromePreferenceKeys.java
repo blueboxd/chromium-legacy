@@ -520,6 +520,12 @@ public final class ChromePreferenceKeys {
     public static final String SEARCH_ENGINE_CHOICE_REQUESTED_TIMESTAMP =
             "search_engine_choice_requested_timestamp";
 
+    // Tracks which GUIDs there is an active notification for.
+    public static final String SEND_TAB_TO_SELF_ACTIVE_NOTIFICATIONS =
+            "send_tab_to_self.notification.active";
+    public static final String SEND_TAB_TO_SELF_NEXT_NOTIFICATION_ID =
+            "send_tab_to_self.notification.next_id";
+
     public static final String SETTINGS_DEVELOPER_ENABLED = "developer";
     public static final String SETTINGS_DEVELOPER_TRACING_CATEGORIES = "tracing_categories";
     public static final String SETTINGS_DEVELOPER_TRACING_MODE = "tracing_mode";
@@ -882,6 +888,8 @@ public final class ChromePreferenceKeys {
                 SEARCH_ENGINE_CHOICE_DEFAULT_TYPE_BEFORE,
                 SEARCH_ENGINE_CHOICE_PRESENTED_VERSION,
                 SEARCH_ENGINE_CHOICE_REQUESTED_TIMESTAMP,
+                SEND_TAB_TO_SELF_ACTIVE_NOTIFICATIONS,
+                SEND_TAB_TO_SELF_NEXT_NOTIFICATION_ID,
                 SETTINGS_DEVELOPER_ENABLED,
                 SETTINGS_DEVELOPER_TRACING_CATEGORIES,
                 SETTINGS_DEVELOPER_TRACING_MODE,

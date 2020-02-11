@@ -23,8 +23,7 @@ WEBXR_VR_ALL_RUNTIMES_BROWSER_TEST_F(TestDeviceServiceDisconnect) {
   vr::SetXRDeviceServiceStartupCallbackForTesting(
       base::BindLambdaForTesting([&] { device_hook.emplace(); }));
 
-  t->LoadUrlAndAwaitInitialization(
-      t->GetFileUrlForHtmlTestFile("test_isolated_device_service_disconnect"));
+  t->LoadFileAndAwaitInitialization("test_isolated_device_service_disconnect");
 
   t->EnterSessionWithUserGestureOrFail();
 

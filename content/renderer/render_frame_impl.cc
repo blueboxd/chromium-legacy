@@ -4928,15 +4928,14 @@ void RenderFrameImpl::DidLoadResourceFromMemoryCache(
 }
 
 void RenderFrameImpl::DidStartResponse(
-    const url::Origin& origin_of_final_response_url,
+    const GURL& response_url,
     int request_id,
     network::mojom::URLResponseHeadPtr response_head,
     blink::mojom::ResourceType resource_type,
     PreviewsState previews_state) {
-  for (auto& observer : observers_) {
-    observer.DidStartResponse(origin_of_final_response_url, request_id,
-                              *response_head, resource_type, previews_state);
-  }
+  for (auto& observer : observers_)
+    observer.DidStartResponse(response_url, request_id, *response_head,
+                              resource_type, previews_state);
 }
 
 void RenderFrameImpl::DidCompleteResponse(

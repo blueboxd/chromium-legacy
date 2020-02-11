@@ -185,18 +185,6 @@ void ProxyBypassRules::ParseFromString(const std::string& raw) {
   }
 }
 
-bool ProxyBypassRules::AddRuleForHostname(const std::string& optional_scheme,
-                                          const std::string& hostname_pattern,
-                                          int optional_port) {
-  if (hostname_pattern.empty())
-    return false;
-
-  matcher_.AddAsLastRule(
-      std::make_unique<SchemeHostPortMatcherHostnamePatternRule>(
-          optional_scheme, hostname_pattern, optional_port));
-  return true;
-}
-
 void ProxyBypassRules::PrependRuleToBypassSimpleHostnames() {
   matcher_.AddAsFirstRule(std::make_unique<BypassSimpleHostnamesRule>());
 }

@@ -4824,10 +4824,9 @@ void RenderFrameHostImpl::BeginNavigation(
 }
 
 void RenderFrameHostImpl::SubresourceResponseStarted(
-    const url::Origin& origin_of_final_response_url,
+    const GURL& url,
     net::CertStatus cert_status) {
-  delegate_->SubresourceResponseStarted(origin_of_final_response_url,
-                                        cert_status);
+  delegate_->SubresourceResponseStarted(url, cert_status);
 }
 
 void RenderFrameHostImpl::ResourceLoadComplete(

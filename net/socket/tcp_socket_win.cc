@@ -668,10 +668,16 @@ int TCPSocketWin::SetSendBufferSize(int32_t size) {
 }
 
 bool TCPSocketWin::SetKeepAlive(bool enable, int delay) {
+  if (socket_ == INVALID_SOCKET)
+    return false;
+
   return SetTCPKeepAlive(socket_, enable, delay);
 }
 
 bool TCPSocketWin::SetNoDelay(bool no_delay) {
+  if (socket_ == INVALID_SOCKET)
+    return false;
+
   return SetTCPNoDelay(socket_, no_delay) == OK;
 }
 

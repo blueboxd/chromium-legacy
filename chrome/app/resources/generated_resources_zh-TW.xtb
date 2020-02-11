@@ -492,6 +492,7 @@
 <translation id="1670399744444387456">基本</translation>
 <translation id="167160931442925455">最大</translation>
 <translation id="1673137583248014546"><ph name="URL" /> 要求查看安全金鑰的製造商和型號</translation>
+<translation id="1677472565718498478"><ph name="TIME" /> 後用盡</translation>
 <translation id="1679068421605151609">開發人員工具</translation>
 <translation id="1679806121152819234">Plugin VM</translation>
 <translation id="1679810534535368772">確定要離開嗎？</translation>
@@ -1786,6 +1787,7 @@
 <translation id="3462413494201477527">取消設定帳戶？</translation>
 <translation id="3464012987031883895">有某個網站正在存取音訊輸入內容</translation>
 <translation id="346431825526753">這是由 <ph name="CUSTODIAN_EMAIL" /> 所管理的兒童專用帳戶。</translation>
+<translation id="3468298837301810372">標籤</translation>
 <translation id="3468999815377931311">Android 手機</translation>
 <translation id="3470442499439619530">移除這個使用者</translation>
 <translation id="3471876058939596279">HDMI 和 USB Type-C 通訊埠無法同時用於視訊。請使用其他視訊通訊埠。</translation>
@@ -3960,7 +3962,6 @@
 <translation id="6545867563032584178">已關閉 Mac 系統偏好設定中的麥克風</translation>
 <translation id="6547354035488017500">請釋出至少 512 MB 的空間，否則裝置會無回應。如要釋出空間，請刪除裝置儲存空間內的檔案。</translation>
 <translation id="6549639163247690448"><ph name="DOMAIN" /> 要求你立即連線到 Wi-Fi 下載更新。當你連上網際網路時，系統會自動下載更新。</translation>
-<translation id="6549966385318247177">這個擴充功能包含兒童不宜的內容，因此已遭到封鎖。</translation>
 <translation id="6550675742724504774">選項</translation>
 <translation id="6551508934388063976">無法使用指令。按下 Ctrl + N 鍵可開啟新視窗。</translation>
 <translation id="6551612971599078809">網站正在使用 USB 裝置</translation>
@@ -4771,7 +4772,7 @@
 <translation id="7696063401938172191">在你的「<ph name="PHONE_NAME" />」上：</translation>
 <translation id="7698408911093959127">{COUNT,plural, =1{書籤清單中有 1 個項目}other{書籤清單中有 # 個項目}}</translation>
 <translation id="7701040980221191251">無</translation>
-<translation id="770157826141786566">這部裝置的退貨期限已到期。</translation>
+<translation id="770157826141786566">這部裝置的退貨期限已過。</translation>
 <translation id="7701869757853594372">USER 控制代碼</translation>
 <translation id="7702574632857388784">從清單中移除 <ph name="FILE_NAME" /></translation>
 <translation id="7702907602086592255">網域</translation>

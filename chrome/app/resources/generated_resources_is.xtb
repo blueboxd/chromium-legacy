@@ -492,6 +492,7 @@
 <translation id="1670399744444387456">Grunnatriði</translation>
 <translation id="167160931442925455">Hæst</translation>
 <translation id="1673137583248014546"><ph name="URL" /> vill sjá gerð og útgáfu öryggislykilsins þíns</translation>
+<translation id="1677472565718498478"><ph name="TIME" /> eftir</translation>
 <translation id="1679068421605151609">Forritunartól</translation>
 <translation id="1679806121152819234">VM-viðbót</translation>
 <translation id="1679810534535368772">Ertu viss um að þú viljir hætta?</translation>
@@ -3962,7 +3963,6 @@ Annars skaltu skrá þig út núna svo breytingarnar á þessum reikningi taki g
 <translation id="6545867563032584178">Slökkt er á hljóðnemanum í kerfisstillingum Mac</translation>
 <translation id="6547354035488017500">Losaðu um a.m.k. 512 MB af plássi, annars mun tækið þitt hætta að svara. Eyddu skrám úr geymslu tækisins til að losa um pláss.</translation>
 <translation id="6549639163247690448"><ph name="DOMAIN" /> fer fram á að þú tengist Wi-Fi núna og sækir uppfærslu. Uppfærslunni verður hlaðið niður sjálfkrafa þegar þú tengist við internetið.</translation>
-<translation id="6549966385318247177">Lokað var á þetta efni þar sem það er fyrir fullorðna.</translation>
 <translation id="6550675742724504774">Valkostir</translation>
 <translation id="6551508934388063976">Skipun óaðgengileg. Ýttu á Ctrl+N til að opna nýjan glugga.</translation>
 <translation id="6551612971599078809">Vefsvæðið notar USB</translation>
@@ -4302,7 +4302,7 @@ Annars skaltu skrá þig út núna svo breytingarnar á þessum reikningi taki g
 <translation id="7040230719604914234">Símafyrirtæki</translation>
 <translation id="7043108582968290193">Þá er þessu lokið! Engin ósamhæf forrit fundust.</translation>
 <translation id="7044124535091449260">Frekari upplýsingar um aðgang að vefsvæðum</translation>
-<translation id="7044606776288350625">Samstilla gögn</translation>
+<translation id="7044606776288350625">Samstillingargögn</translation>
 <translation id="7047059339731138197">Velja bakgrunn</translation>
 <translation id="7049293980323620022">Viltu halda skránni?</translation>
 <translation id="7051943809462976355">Leitar að mús...</translation>

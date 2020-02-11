@@ -23,6 +23,7 @@
 #include "media/gpu/command_buffer_helper.h"
 #include "media/gpu/media_gpu_export.h"
 #include "media/gpu/windows/d3d11_com_defs.h"
+#include "media/gpu/windows/d3d11_decoder_configurator.h"
 #include "media/gpu/windows/d3d11_h264_accelerator.h"
 #include "media/gpu/windows/d3d11_texture_selector.h"
 #include "media/gpu/windows/d3d11_video_decoder_client.h"
@@ -253,6 +254,8 @@ class MEDIA_GPU_EXPORT D3D11VideoDecoder : public VideoDecoder,
   D3D_FEATURE_LEVEL usable_feature_level_;
 
   std::unique_ptr<AcceleratedVideoDecoder> accelerated_video_decoder_;
+
+  std::unique_ptr<D3D11DecoderConfigurator> decoder_configurator_;
 
   std::unique_ptr<TextureSelector> texture_selector_;
 

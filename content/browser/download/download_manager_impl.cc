@@ -1216,6 +1216,17 @@ void DownloadManagerImpl::InterceptNavigationOnChecksComplete(
       tab_url = entry->GetURL();
       tab_referrer_url = entry->GetReferrer().url;
     }
+    RenderFrameHost* opener = web_contents->GetOpener();
+    if (opener) {
+      if (opener->GetLastCommittedOrigin() !=
+          render_frame_host->GetLastCommittedOrigin()) {
+        UMA_HISTOGRAM_ENUMERATION("Download.InitiatedByWindowOpener",
+                                  InitiatedByWindowOpenerType::kCrossOrigin);
+      } else {
+        UMA_HISTOGRAM_ENUMERATION("Download.InitiatedByWindowOpener",
+                                  InitiatedByWindowOpenerType::kSameOrigin);
+      }
+    }
   }
   StoragePartitionImpl* storage_partition =
       GetStoragePartition(browser_context_, render_process_id, render_frame_id);

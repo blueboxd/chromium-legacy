@@ -452,7 +452,7 @@
 Google hisobingiz orqali amalga oshirgan qidiruvlaringiz, brauzer tarixi va boshqa internetdagi faoliyatingizni <ph name="BEGIN_LINK" />myactivity.google.com<ph name="END_LINK" /> sahifasi orqali ko‘rishingiz mumkin.</translation>
 <translation id="4527374721149092498">Tasvirlar, mavzular va boshqa ma’lumotlarni belgilangan sahifani tark etmasdan qidiring. Buning uchun soʻz tanlang va u Google qidiruv serverlariga kontekst bilan birga yuboriladi.
 
-Qidirish uchun istalgan soʻz ustiga bosing. Qidiruv soʻrovini tahrirlash uchun ustiga biroz bosib turing. Soʻrovni aniqlashtirish uchun panelni yuqoriga tortib oching, yangi varaq ochish uchun yoyish belgisini bosing va qidiruv oynasini bosing.</translation>
+Qidirish uchun istalgan soʻz ustiga bosing. Qidiruv soʻrovini tahrirlash uchun ustiga biroz bosib turing. Soʻrovni aniqlashtirish uchun panelni yuqoriga tortib oching, yangi varaq ochish uchun yoyish belgisini, keyin qidiruv oynasini bosing.</translation>
 <translation id="4532845899244822526">Jildni tanlang</translation>
 <translation id="4538018662093857852">Lite rejimini yoqish</translation>
 <translation id="4550003330909367850">Bu yerda parolni ko‘rish yoki nusxalash uchun qurilmaga ekran qulfini tayinlang.</translation>
@@ -696,7 +696,7 @@ Bu sozlamani almashtirish uchun <ph name="BEGIN_LINK" />sinxronizatsiyani tiklan
 Masalan, qaysi sahifalarga kirganligingizdan qat’i nazar, ba’zi saytlarda reklama e’lonlari ko‘rsatilishi mumkin. Boshqa saytlar esa brauzer faoliyati haqidagi ma’lumotlarni (m-n, xavfsizlikni mustahkamlash, kontent ko‘rsatish, reklama taqdimoti, statistik hisobotlar yasash kabi) to‘plashda va bu ma’lumotlardan foydalanishda davom etmoqda.</translation>
 <translation id="6238003486329291387">Tasvirlar, mavzular va boshqa ma’lumotlarni belgilangan sahifani tark etmasdan qidiring. Buning uchun soʻz tanlang va u Google qidiruv serverlariga kontekst bilan birga yuboriladi.
 
-Yangi soʻrov ochish yoki qidiruv soʻrovini tahrirlash uchun kerakli soʻz ustiga biroz bosib turing. Soʻrovni aniqlashtirish uchun panelni yuqoriga tortib oching, yangi varaq ochish uchun yoyish belgisini bosing va qidiruv oynasini bosing.</translation>
+Yangi soʻrov ochish yoki qidiruv soʻrovini tahrirlash uchun kerakli soʻz ustiga biroz bosib turing. Soʻrovni aniqlashtirish uchun panelni yuqoriga tortib oching, yangi varaq ochish uchun yoyish belgisini, keyin qidiruv oynasini bosing.</translation>
 <translation id="624789221780392884">Yangilanish tayyor</translation>
 <translation id="6255999984061454636">Kontent takliflari</translation>
 <translation id="6270391203985052864">Saytlar bildirishnoma chiqarishga ruxsat soʻray oladi</translation>

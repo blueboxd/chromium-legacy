@@ -10,7 +10,6 @@
 #include "services/network/public/mojom/url_response_head.mojom.h"
 #include "third_party/blink/public/platform/web_url.h"
 #include "url/gurl.h"
-#include "url/origin.h"
 
 namespace page_load_metrics {
 
@@ -88,7 +87,7 @@ PageResourceDataUse::PageResourceDataUse(const PageResourceDataUse& other) =
 PageResourceDataUse::~PageResourceDataUse() = default;
 
 void PageResourceDataUse::DidStartResponse(
-    const url::Origin& origin_of_final_response_url,
+    const GURL& response_url,
     int resource_id,
     const network::mojom::URLResponseHead& response_head,
     blink::mojom::ResourceType resource_type,
@@ -111,11 +110,11 @@ void PageResourceDataUse::DidStartResponse(
   mime_type_ = response_head.mime_type;
   if (response_head.was_fetched_via_cache)
     cache_type_ = mojom::CacheType::kHttp;
+  is_secure_scheme_ = response_url.SchemeIsCryptographic();
   is_primary_frame_resource_ =
       resource_type == blink::mojom::ResourceType::kMainFrame ||
       resource_type == blink::mojom::ResourceType::kSubFrame;
-  origin_ = origin_of_final_response_url;
-  is_secure_scheme_ = GURL::SchemeIsCryptographic(origin_.scheme());
+  origin_ = url::Origin::Create(response_url);
 }
 
 void PageResourceDataUse::DidReceiveTransferSizeUpdate(

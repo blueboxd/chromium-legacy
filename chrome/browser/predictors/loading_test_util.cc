@@ -107,7 +107,7 @@ blink::mojom::ResourceLoadInfoPtr CreateResourceLoadInfo(
     blink::mojom::ResourceType resource_type,
     bool always_access_network) {
   auto resource_load_info = blink::mojom::ResourceLoadInfo::New();
-  resource_load_info->origin_of_final_url = url::Origin::Create(GURL(url));
+  resource_load_info->final_url = GURL(url);
   resource_load_info->original_url = GURL(url);
   resource_load_info->method = "GET";
   resource_load_info->resource_type = resource_type;
@@ -129,8 +129,7 @@ blink::mojom::ResourceLoadInfoPtr CreateResourceLoadInfoWithRedirects(
     const std::vector<std::string>& redirect_chain,
     blink::mojom::ResourceType resource_type) {
   auto resource_load_info = blink::mojom::ResourceLoadInfo::New();
-  resource_load_info->origin_of_final_url =
-      url::Origin::Create(GURL(redirect_chain.back()));
+  resource_load_info->final_url = GURL(redirect_chain.back());
   resource_load_info->original_url = GURL(redirect_chain.front());
   resource_load_info->method = "GET";
   resource_load_info->resource_type = resource_type;

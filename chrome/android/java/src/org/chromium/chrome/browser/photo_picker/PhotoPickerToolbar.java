@@ -82,7 +82,8 @@ public class PhotoPickerToolbar extends SelectableListToolbar<PickerBitmap> {
         done.setEnabled(selectedItems.size() > 0);
 
         if (selectCount > 0) {
-            ApiCompatibilityUtils.setTextAppearance(done, R.style.TextAppearance_Body_Inverse);
+            ApiCompatibilityUtils.setTextAppearance(
+                    done, R.style.TextAppearance_TextMedium_Primary_Inverse);
         } else {
             ApiCompatibilityUtils.setTextAppearance(
                     done, R.style.TextAppearance_TextMedium_Tertiary);

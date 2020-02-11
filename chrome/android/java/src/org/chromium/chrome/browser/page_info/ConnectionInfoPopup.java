@@ -146,7 +146,7 @@ public class ConnectionInfoPopup implements OnClickListener, ModalDialogProperti
         mCertificateViewerTextView = new TextView(mContext);
         mCertificateViewerTextView.setText(label);
         ApiCompatibilityUtils.setTextAppearance(
-                mCertificateViewerTextView, R.style.TextAppearance_BlueLink3);
+                mCertificateViewerTextView, R.style.TextAppearance_TextSmall_Blue);
         mCertificateViewerTextView.setOnClickListener(this);
         mCertificateViewerTextView.setPadding(0, mPaddingThin, 0, 0);
         mCertificateLayout.addView(mCertificateViewerTextView);
@@ -176,7 +176,8 @@ public class ConnectionInfoPopup implements OnClickListener, ModalDialogProperti
         mMoreInfoLink = new TextView(mContext);
         mLinkUrl = HELP_URL;
         mMoreInfoLink.setText(linkText);
-        ApiCompatibilityUtils.setTextAppearance(mMoreInfoLink, R.style.TextAppearance_BlueLink3);
+        ApiCompatibilityUtils.setTextAppearance(
+                mMoreInfoLink, R.style.TextAppearance_TextSmall_Blue);
         mMoreInfoLink.setPadding(0, mPaddingThin, 0, 0);
         mMoreInfoLink.setOnClickListener(this);
         mDescriptionLayout.addView(mMoreInfoLink);

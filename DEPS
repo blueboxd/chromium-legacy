@@ -171,7 +171,7 @@ vars = {
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling Skia
   # and whatever else without interference from each other.
-  'skia_revision': 'a04c91e098e2a2a4100f7632db1eb742c6433ec2',
+  'skia_revision': 'f83d0346c06a047fcf2f4dbbd7311c6b626e744a',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling V8
   # and whatever else without interference from each other.
@@ -187,7 +187,7 @@ vars = {
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling SwiftShader
   # and whatever else without interference from each other.
-  'swiftshader_revision': 'b3b2a4fc756f8f6dca980c75d785e06134b9d5f8',
+  'swiftshader_revision': '196d81774ef86d1c6c2d028dd5407b47eaa51a99',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling PDFium
   # and whatever else without interference from each other.
@@ -242,7 +242,7 @@ vars = {
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling devtools-frontend
   # and whatever else without interference from each other.
-  'devtools_frontend_revision': '9790091ab756a15aea1e7c11fd307058f9ceeaac',
+  'devtools_frontend_revision': '71d30b9c1aff48b9e6ef8514f9ef4d25e405ab33',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling libprotobuf-mutator
   # and whatever else without interference from each other.
@@ -302,11 +302,11 @@ vars = {
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling feed
   # and whatever else without interference from each other.
-  'dawn_revision': 'fb01a6024e4d8ba45047baa410783f7774e6cd9e',
+  'dawn_revision': '713d9cbf939e525e025a69a17bda0bf51b449c47',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling feed
   # and whatever else without interference from each other.
-  'quiche_revision': '051660f244735e560fb9637806bd50a4c9ff9bff',
+  'quiche_revision': '480f8e8563ecfa81e05778db675d55c9ea7c92d7',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling ios_webkit
   # and whatever else without interference from each other.
@@ -1360,7 +1360,7 @@ deps = {
       'packages': [
           {
               'package': 'chromium/third_party/r8',
-              'version': 'NxysnCDm-BQ7NUnsGcZ6nX2eHX17tjuLp3HUWXXtv7EC',
+              'version': '-oXGY8FjY2ZuIBHoGAByn8N6Vn2b0wB2QO8Ct_169XoC',
           },
       ],
       'condition': 'checkout_android',
@@ -1528,7 +1528,7 @@ deps = {
     Var('chromium_git') + '/v8/v8.git' + '@' +  Var('v8_revision'),
 
   'src-internal': {
-    'url': 'https://chrome-internal.googlesource.com/chrome/src-internal.git@6caf836140f9a08213c64f526e4841652a10444a',
+    'url': 'https://chrome-internal.googlesource.com/chrome/src-internal.git@4aa8a8e1eb693a72853cb7470d0a3b13f16027c7',
     'condition': 'checkout_src_internal',
   },
 

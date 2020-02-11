@@ -9,14 +9,14 @@
 namespace media {
 
 MediaError::MediaError(ErrorCode code,
-                       base::StringPiece message,
+                       std::string message,
                        const base::Location& location) {
   if (code == ErrorCode::kOk) {
     DCHECK(message.empty());
     return;
   }
 
-  data_ = std::make_unique<MediaErrorInternal>(code, message);
+  data_ = std::make_unique<MediaErrorInternal>(code, std::move(message));
   AddFrame(location);
 }
 
@@ -41,9 +41,9 @@ MediaError& MediaError::operator=(MediaError&&) = default;
 MediaError::~MediaError() = default;
 
 MediaError::MediaErrorInternal::MediaErrorInternal(ErrorCode code,
-                                                   base::StringPiece message)
+                                                   std::string message)
     : code(code),
-      message(message),
+      message(std::move(message)),
       data(base::Value(base::Value::Type::DICTIONARY)) {}
 
 MediaError::MediaErrorInternal::~MediaErrorInternal() = default;

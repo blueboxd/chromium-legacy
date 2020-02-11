@@ -820,6 +820,14 @@ void GpuDataManagerImplPrivate::UpdateDx12VulkanInfo(
   NotifyGpuInfoUpdate();
 }
 
+void GpuDataManagerImplPrivate::UpdateOverlayInfo(
+    const gpu::OverlayInfo& overlay_info) {
+  gpu_info_.overlay_info = overlay_info;
+
+  // No need to call GetContentClient()->SetGpuInfo().
+  NotifyGpuInfoUpdate();
+}
+
 void GpuDataManagerImplPrivate::UpdateDxDiagNodeRequestStatus(
     bool request_continues) {
   gpu_info_dx_diag_request_failed_ = !request_continues;
@@ -1099,7 +1107,19 @@ void GpuDataManagerImplPrivate::HandleGpuSwitch() {
 
 void GpuDataManagerImplPrivate::OnDisplayAdded(
     const display::Display& new_display) {
+#if defined(OS_WIN)
+  if (gpu_info_dx_diag_requested_) {
+    // Reset DxDiag flags so the data can be updated again
+    gpu_info_dx_diag_requested_ = false;
+    gpu_info_.dx_diagnostics = gpu::DxDiagNode();
+    // This DxDiag request goes to the unsandboxed GPU info collection GPU
+    // process while the notification below goes to the sandboxed GPU process.
+    RequestDxDiagNodeData();
+  }
+#endif
+
   base::AutoUnlock unlock(owner_->lock_);
+
   // Notify observers in the browser process.
   ui::GpuSwitchingManager::GetInstance()->NotifyDisplayAdded();
   // Pass the notification to the GPU process to notify observers there.
@@ -1112,7 +1132,19 @@ void GpuDataManagerImplPrivate::OnDisplayAdded(
 
 void GpuDataManagerImplPrivate::OnDisplayRemoved(
     const display::Display& old_display) {
+#if defined(OS_WIN)
+  if (gpu_info_dx_diag_requested_) {
+    // Reset DxDiag flags so the data can be updated again
+    gpu_info_dx_diag_requested_ = false;
+    gpu_info_.dx_diagnostics = gpu::DxDiagNode();
+    // This DxDiag request goes to the unsandboxed GPU info collection GPU
+    // process while the notification below goes to the sandboxed GPU process.
+    RequestDxDiagNodeData();
+  }
+#endif
+
   base::AutoUnlock unlock(owner_->lock_);
+
   // Notify observers in the browser process.
   ui::GpuSwitchingManager::GetInstance()->NotifyDisplayRemoved();
   // Pass the notification to the GPU process to notify observers there.

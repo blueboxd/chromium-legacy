@@ -3,34 +3,27 @@
 // found in the LICENSE file.
 
 const SwitchAccessCommand = chrome.accessibilityPrivate.SwitchAccessCommand;
+
 /**
- * Class to run and get details about user commands.
+ * Runs user commands.
  */
 class Commands {
-  /**
-   * @param {SwitchAccessInterface} switchAccess
-   */
-  constructor(switchAccess) {
-    /**
-     * SwitchAccess reference.
-     * @private {SwitchAccessInterface}
-     */
-    this.switchAccess_ = switchAccess;
+  static initialize() {
+    Commands.instance = new Commands();
+  }
 
+  /** @private */
+  constructor() {
     /**
      * A map from command name to the function binding for the command.
      * @private {!Map<!SwitchAccessCommand, !function(): void>}
      */
-    this.commandMap_ = this.buildCommandMap_();
+    this.commandMap_ = new Map([
+      [SwitchAccessCommand.SELECT, NavigationManager.enterMenu],
+      [SwitchAccessCommand.NEXT, NavigationManager.moveForward],
+      [SwitchAccessCommand.PREVIOUS, NavigationManager.moveBackward]
+    ]);
 
-    this.init_();
-  }
-
-  /**
-   * Starts listening for Switch Access command events.
-   * @private
-   */
-  init_() {
     chrome.accessibilityPrivate.onSwitchAccessCommand.addListener(
         this.runCommand_.bind(this));
   }
@@ -42,28 +35,6 @@ class Commands {
    */
   runCommand_(command) {
     this.commandMap_.get(command)();
-    this.switchAccess_.restartAutoScan();
-  }
-
-  /**
-   * Build a map from command name to the function binding for the command.
-   * @return {!Map<!SwitchAccessCommand, !function(): void>}
-   * @private
-   */
-  buildCommandMap_() {
-    return new Map([
-      [
-        SwitchAccessCommand.SELECT,
-        this.switchAccess_.enterMenu.bind(this.switchAccess_)
-      ],
-      [
-        SwitchAccessCommand.NEXT,
-        this.switchAccess_.moveForward.bind(this.switchAccess_)
-      ],
-      [
-        SwitchAccessCommand.PREVIOUS,
-        this.switchAccess_.moveBackward.bind(this.switchAccess_)
-      ]
-    ]);
+    AutoScanManager.restartIfRunning();
   }
 }

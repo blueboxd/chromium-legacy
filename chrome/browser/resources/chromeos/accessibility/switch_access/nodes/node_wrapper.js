@@ -23,7 +23,7 @@ class NodeWrapper extends SAChildNode {
     this.isGroup_ = SwitchAccessPredicate.isGroup(this.baseNode_, parent);
 
     /** @private {function(chrome.automation.AutomationEvent)} */
-    this.locationChangedHandler_ = SwitchAccess.refreshFocusRings;
+    this.locationChangedHandler_ = NavigationManager.refreshFocusRings;
   }
 
   // ================= Getters and setters =================
@@ -235,7 +235,7 @@ class RootNodeWrapper extends SARootNode {
     this.childrenChangedHandler_ = this.refresh_.bind(this);
 
     /** @private {function(chrome.automation.AutomationEvent)} */
-    this.locationChangedHandler_ = SwitchAccess.refreshFocusRings;
+    this.locationChangedHandler_ = NavigationManager.refreshFocusRings;
   }
 
   // ================= Getters and setters =================
@@ -328,21 +328,21 @@ class RootNodeWrapper extends SARootNode {
     } catch (e) {
       this.onUnfocus();
       this.invalidated_ = true;
-      SwitchAccess.moveToValidNode();
+      NavigationManager.moveToValidNode();
       return;
     }
 
     // Set the new instance of that child to be the focused node.
     for (const child of this.children) {
       if (child.isEquivalentTo(focusedChild)) {
-        SwitchAccess.forceFocusedNode(child);
+        NavigationManager.forceFocusedNode(child);
         return;
       }
     }
 
     // If the previously focused node no longer exists, focus the first node in
     // the group.
-    SwitchAccess.forceFocusedNode(this.children[0]);
+    NavigationManager.forceFocusedNode(this.children[0]);
   }
 
   // ================= Static methods =================

@@ -775,7 +775,7 @@
 <translation id="2170233653554726857">WPAD optimizasyonunu etkinleştir</translation>
 <translation id="2171245625445050634">Bu politika M82 sürümünde kaldırılmıştır. Bunun yerine lütfen MinimumChromeVersionEnforced politikasını kullanın.
 
-      İzin verilen minimum <ph name="PRODUCT_NAME" /> sürümü gereksinimini yapılandırır. Aşağıda verilen sürümler eski olarak değerlendirilir ve cihaz, OS güncellenmeden kullanıcının oturum açmasına izin vermez.
+      İzin verilen en eski <ph name="PRODUCT_NAME" /> sürümü gereksinimini yapılandırır. Aşağıda verilen sürümler eski olarak değerlendirilir ve cihaz, OS güncellenmeden kullanıcının oturum açmasına izin vermez.
 
       Geçerli sürüm, kullanıcı oturumu sırasında eski hale gelirse kullanıcının oturumu zorla kapatılır.
 
@@ -2368,7 +2368,7 @@ politikayı geçersiz kılamaz.
 
       Bu politikanın amacı, işletmelere ağ iletişimi API'lerinin tutulmasına bel bağlamayan üçüncü taraf yazılımlarına geçme fırsatı vermektir. LSP'lerden ve Win32 API yamalarından ziyade proxy sunucuları önerilir.
 
-      Bu politika ayarlanmazsa varsayılan olarak ağ iletişimi kodunun tarayıcı işlemi kalmaz.
+      Bu politika ayarlanmazsa ağ iletişimi kodu varsayılan olarak tarayıcı dışında çalışacaktır.
 
       Bu politika, <ph name="PRODUCT_NAME" /> 84 sürümünde kaldırılacaktır.</translation>
 <translation id="4492287494009043413">Ekran görüntüleri almayı devre dışı bırak</translation>
@@ -2872,7 +2872,7 @@ politikayı geçersiz kılamaz.
       Crostini'nin çalıştırılmasına izin verilmesi için üç politikanın da (VirtualMachinesAllowed, CrostiniAllowed ve DeviceUnaffiliatedCrostiniAllowed) true (doğru) değerine ayarlanması gerekir.
      Bu politika false (yanlış) olarak değiştirildiğinde, ayar yeni Crostini kapsayıcıların başlatılmasında geçerli olur, ancak halihazırda çalıştırılmakta olan kapsayıcıları kapatmaz.</translation>
 <translation id="5277914408935179830">Bu politika tarayıcıdaki karma içeriğin (HTTPS sitelerindeki HTTP içeriği) işlenme şeklini denetler.
-       Politika true (doğru) değerine ayarlanırsa veya ayarlanmamış olarak bırakılırsa ses ve videodan oluşan karma içerik otomatik olarak HTTPS sürümüne geçirilir (Yani kaynak HTTPS üzerinde kullanılamıyorsa URL yedek olmadan HTTPS olarak yeniden yazılır.) ve görsel karma içerik için URL çubuğunda bir "Güvenli Değil" uyarısı gösterilir.
+       Politika true (doğru) değerine ayarlanırsa veya ayarlanmamış olarak bırakılırsa ses ve videodan oluşan karma içerik otomatik olarak HTTPS sürümüne geçirilir. Yani kaynak HTTPS üzerinde kullanılamıyorsa URL yedek olmadan HTTPS olarak yeniden yazılır. Görsel karma içerik için URL çubuğunda bir "Güvenli Değil" uyarısı gösterilir.
        Politika false (yanlış) değerine ayarlanırsa ses ve video için otomatik yeni sürüme geçirme işlevi devre dışı bırakılır ve görseller için herhangi bir uyarı gösterilmez.
        Bu politika ses, video ve görseller dışındaki diğer karma içerikleri etkilemez.
        Bu politika, <ph name="PRODUCT_NAME" /> 84 sürümünden itibaren geçerliliğini yitirecektir.</translation>

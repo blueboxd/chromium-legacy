@@ -741,7 +741,8 @@ TEST_F(SyncEngineImplTest,
   enabled_types_.Put(FAVICON_IMAGES);
   enabled_types_.Put(FAVICON_TRACKING);
 
-  ModelTypeSet invalidation_enabled_types(enabled_types_);
+  ModelTypeSet invalidation_enabled_types(
+      Difference(enabled_types_, CommitOnlyTypes()));
 
 #if defined(OS_ANDROID)
   // SESSIONS, FAVICON_IMAGES, FAVICON_TRACKING are noisy data types whose
@@ -774,7 +775,8 @@ TEST_F(SyncEngineImplTest, WhenEnabledTypesStayDisabled) {
   InitializeBackend(true);
   EXPECT_CALL(invalidator_,
               UpdateRegisteredInvalidationIds(
-                  backend_.get(), ModelTypeSetToObjectIdSet(enabled_types_)));
+                  backend_.get(), ModelTypeSetToObjectIdSet(Difference(
+                                      enabled_types_, CommitOnlyTypes()))));
   ConfigureDataTypes();
 
   // At shutdown, we clear the registered invalidation ids.
@@ -795,7 +797,8 @@ TEST_F(SyncEngineImplTest,
 
   EXPECT_CALL(invalidator_,
               UpdateRegisteredInvalidationIds(
-                  backend_.get(), ModelTypeSetToObjectIdSet(enabled_types_)));
+                  backend_.get(), ModelTypeSetToObjectIdSet(Difference(
+                                      enabled_types_, CommitOnlyTypes()))));
   backend_->SetInvalidationsForSessionsEnabled(true);
 
   ModelTypeSet enabled_types(enabled_types_);
@@ -805,7 +808,8 @@ TEST_F(SyncEngineImplTest,
 
   EXPECT_CALL(invalidator_,
               UpdateRegisteredInvalidationIds(
-                  backend_.get(), ModelTypeSetToObjectIdSet(enabled_types)));
+                  backend_.get(), ModelTypeSetToObjectIdSet(Difference(
+                                      enabled_types, CommitOnlyTypes()))));
   backend_->SetInvalidationsForSessionsEnabled(false);
 
   // At shutdown, we clear the registered invalidation ids.

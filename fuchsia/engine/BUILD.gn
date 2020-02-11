@@ -322,7 +322,7 @@ test("web_engine_integration_tests") {
   ]
   package_deps = [ [
         ":web_engine",
-        "web_engine${release_channel_suffix}",
+        "web_engine",
       ] ]
 }
 

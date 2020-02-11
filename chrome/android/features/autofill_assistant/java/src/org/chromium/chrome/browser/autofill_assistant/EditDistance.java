@@ -28,7 +28,7 @@ public final class EditDistance {
     /**
      * An {@link Equivalence} class to test for equivalence between 2 items of the same type.
      */
-    interface Equivalence<T> {
+    public interface Equivalence<T> {
         /** Return whether {@code a} and {@code b} are equivalent. */
         boolean apply(T a, T b);
     }

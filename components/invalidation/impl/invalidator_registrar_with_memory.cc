@@ -139,8 +139,10 @@ bool InvalidatorRegistrarWithMemory::UpdateRegisteredTopics(
 
   DictionaryPrefUpdate update(prefs_, kTopicsToHandler);
   base::Value* pref_data = update->FindDictKey(sender_id_);
-  // TODO(crbug.com/1020117): This does currently *not* remove subscribed topics
-  // which are not registered, but it almost certainly should.
+  // TODO(crbug.com/1020117): This does currently *not* remove subscribed
+  // topics which are not registered, but it almost certainly should. It
+  // requires GetOwnerName() to return unique value for each handler, which is
+  // currently not the case for CloudPolicyInvalidator (see crbug.com/1049591).
   auto to_unregister = FindRemovedTopics(old_topics, topics);
   for (const auto& topic : to_unregister) {
     pref_data->RemoveKey(topic);

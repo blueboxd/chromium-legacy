@@ -48,30 +48,35 @@ abstract class AwDataDirLock {
             try {
                 // Note that the file is kept open intentionally.
                 sLockFile = new RandomAccessFile(lockFile, "rw");
-
-                // Some Android versions may have a race where a new instance of an app process can
-                // be started while an existing one is still in the process of being killed. Retry
-                // the lock a few times to give the old process time to fully go away.
-                for (int attempts = 1; attempts <= LOCK_RETRIES; ++attempts) {
-                    sExclusiveFileLock = sLockFile.getChannel().tryLock();
-                    if (sExclusiveFileLock != null) {
-                        // We got the lock; write out info for debugging.
-                        writeCurrentProcessInfo(sLockFile);
-                        recordLockAttempts(attempts);
-                        return;
-                    }
-
-                    // If we're not out of retries, sleep and try again.
-                    if (attempts == LOCK_RETRIES) break;
-                    try {
-                        Thread.sleep(LOCK_SLEEP_MS);
-                    } catch (InterruptedException e) {
-                    }
-                }
             } catch (IOException e) {
                 // Failing to create the lock file is always fatal; even if multiple processes are
                 // using the same data directory we should always be able to access the file itself.
                 throw new RuntimeException("Failed to create lock file " + lockFile, e);
+            }
+
+            // Some Android versions may have a race where a new instance of an app process can
+            // be started while an existing one is still in the process of being killed. Retry
+            // the lock a few times to give the old process time to fully go away.
+            for (int attempts = 1; attempts <= LOCK_RETRIES; ++attempts) {
+                try {
+                    sExclusiveFileLock = sLockFile.getChannel().tryLock();
+                } catch (IOException e) {
+                    // Older versions of Android incorrectly throw IOException when the flock()
+                    // call fails with EAGAIN, instead of returning null. Just ignore it.
+                }
+                if (sExclusiveFileLock != null) {
+                    // We got the lock; write out info for debugging.
+                    writeCurrentProcessInfo(sLockFile);
+                    recordLockAttempts(attempts);
+                    return;
+                }
+
+                // If we're not out of retries, sleep and try again.
+                if (attempts == LOCK_RETRIES) break;
+                try {
+                    Thread.sleep(LOCK_SLEEP_MS);
+                } catch (InterruptedException e) {
+                }
             }
 
             // We failed to get the lock even after retrying.

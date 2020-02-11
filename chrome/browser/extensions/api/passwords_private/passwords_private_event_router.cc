@@ -86,6 +86,16 @@ void PasswordsPrivateEventRouter::OnPasswordsExportProgress(
   event_router_->BroadcastEvent(std::move(extension_event));
 }
 
+void PasswordsPrivateEventRouter::OnAccountStorageOptInStateChanged(
+    bool opted_in) {
+  auto extension_event = std::make_unique<Event>(
+      events::PASSWORDS_PRIVATE_ON_ACCOUNT_STORAGE_OPT_IN_STATE_CHANGED,
+      api::passwords_private::OnAccountStorageOptInStateChanged::kEventName,
+      api::passwords_private::OnAccountStorageOptInStateChanged::Create(
+          opted_in));
+  event_router_->BroadcastEvent(std::move(extension_event));
+}
+
 PasswordsPrivateEventRouter* PasswordsPrivateEventRouter::Create(
     content::BrowserContext* context) {
   return new PasswordsPrivateEventRouter(context);

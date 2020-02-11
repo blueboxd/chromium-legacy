@@ -789,16 +789,9 @@ bool LayoutBox::HasOverrideIntrinsicContentWidth() const {
 
   const auto& style = StyleRef();
   const IntrinsicLength& intrinsic_length = style.ContainIntrinsicWidth();
-  if (intrinsic_length.IsLegacy())
+  if (intrinsic_length.IsAuto())
     return false;
 
-  if (intrinsic_length.IsAuto()) {
-    // If we have an overflow that is not 'visible' in this direction, then we
-    // override the intrinsic length to be 0. Otherwise, it's the same as
-    // legacy, meaning we don't override it.
-    // https://drafts.csswg.org/css-sizing-4/#valdef-intrinsic-block-size-auto
-    return style.OverflowX() != EOverflow::kVisible;
-  }
   return true;
 }
 
@@ -808,16 +801,8 @@ bool LayoutBox::HasOverrideIntrinsicContentHeight() const {
 
   const auto& style = StyleRef();
   const IntrinsicLength& intrinsic_length = style.ContainIntrinsicHeight();
-  if (intrinsic_length.IsLegacy())
+  if (intrinsic_length.IsAuto())
     return false;
-
-  if (intrinsic_length.IsAuto()) {
-    // If we have an overflow that is not 'visible' in this direction, then we
-    // override the intrinsic length to be 0. Otherwise, it's the same as
-    // legacy, meaning we don't override it.
-    // https://drafts.csswg.org/css-sizing-4/#valdef-intrinsic-block-size-auto
-    return style.OverflowY() != EOverflow::kVisible;
-  }
   return true;
 }
 
@@ -825,11 +810,7 @@ LayoutUnit LayoutBox::OverrideIntrinsicContentWidth() const {
   DCHECK(HasOverrideIntrinsicContentWidth());
   const auto& style = StyleRef();
   const IntrinsicLength& intrinsic_length = style.ContainIntrinsicWidth();
-  DCHECK(!intrinsic_length.IsLegacy());
-  if (intrinsic_length.IsAuto()) {
-    DCHECK(style.OverflowX() != EOverflow::kVisible);
-    return LayoutUnit();
-  }
+  DCHECK(!intrinsic_length.IsAuto());
   DCHECK(intrinsic_length.GetLength().IsFixed());
   DCHECK_GE(intrinsic_length.GetLength().Value(), 0.f);
   return LayoutUnit(intrinsic_length.GetLength().Value());
@@ -839,11 +820,7 @@ LayoutUnit LayoutBox::OverrideIntrinsicContentHeight() const {
   DCHECK(HasOverrideIntrinsicContentHeight());
   const auto& style = StyleRef();
   const IntrinsicLength& intrinsic_length = style.ContainIntrinsicHeight();
-  DCHECK(!intrinsic_length.IsLegacy());
-  if (intrinsic_length.IsAuto()) {
-    DCHECK(style.OverflowY() != EOverflow::kVisible);
-    return LayoutUnit();
-  }
+  DCHECK(!intrinsic_length.IsAuto());
   DCHECK(intrinsic_length.GetLength().IsFixed());
   DCHECK_GE(intrinsic_length.GetLength().Value(), 0.f);
   return LayoutUnit(intrinsic_length.GetLength().Value());

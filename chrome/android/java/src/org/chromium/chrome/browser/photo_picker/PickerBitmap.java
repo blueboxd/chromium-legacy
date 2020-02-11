@@ -19,7 +19,9 @@ import java.util.Date;
  * A class to keep track of the meta data associated with a an image in the photo picker.
  */
 public class PickerBitmap implements Comparable<PickerBitmap> {
-    // The possible types of tiles involved in the viewer.
+    // The possible types of tiles involved in the viewer. Note that the values for PICTURE and
+    // VIDEO matter, because they are used to prioritize still images over videos in the priority
+    // queue in PickerCategoryView.
     @IntDef({TileTypes.PICTURE, TileTypes.CAMERA, TileTypes.GALLERY, TileTypes.VIDEO})
     @Retention(RetentionPolicy.SOURCE)
     public @interface TileTypes {
@@ -46,6 +48,10 @@ public class PickerBitmap implements Comparable<PickerBitmap> {
      * @param type The type of tile involved.
      */
     public PickerBitmap(Uri uri, long lastModified, @TileTypes int type) {
+        // PICTURE must have a lower value than VIDEO, in order for the priority queue in
+        // PickerCategoryView to prioritize still images ahead of video.
+        assert TileTypes.PICTURE < TileTypes.VIDEO;
+
         mUri = uri;
         mLastModified = lastModified;
         mType = type;

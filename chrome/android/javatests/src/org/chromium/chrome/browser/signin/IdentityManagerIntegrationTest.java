@@ -16,7 +16,6 @@ import org.junit.runner.RunWith;
 import org.chromium.base.test.BaseJUnit4ClassRunner;
 import org.chromium.base.test.util.RetryOnFailure;
 import org.chromium.chrome.test.util.browser.signin.SigninTestUtil;
-import org.chromium.components.signin.AccountIdProvider;
 import org.chromium.components.signin.AccountManagerFacade;
 import org.chromium.components.signin.ChromeSigninController;
 import org.chromium.components.signin.base.CoreAccountId;
@@ -64,9 +63,8 @@ public class IdentityManagerIntegrationTest {
 
     @Before
     public void setUp() {
-        setAccountIdProviderForTest();
-
-        TestThreadUtils.runOnUiThreadBlocking(() -> { initializeTestAccounts(); });
+        mTestAccount1 = createCoreAccountInfoFromEmail(TEST_ACCOUNT1);
+        mTestAccount2 = createCoreAccountInfoFromEmail(TEST_ACCOUNT2);
 
         mActivityTestRule.loadNativeLibraryAndInitBrowserProcess();
 
@@ -75,14 +73,16 @@ public class IdentityManagerIntegrationTest {
         mChromeSigninController.setSignedInAccountName(null);
 
         TestThreadUtils.runOnUiThreadBlocking(() -> {
-            // Seed test accounts to AccountTrackerService.
             seedAccountTrackerService();
-
-            // Get a reference to the service.
             mIdentityMutator =
                     IdentityServicesProvider.get().getSigninManager().getIdentityMutator();
             mIdentityManager = IdentityServicesProvider.get().getIdentityManager();
         });
+    }
+
+    private static CoreAccountInfo createCoreAccountInfoFromEmail(String accountEmail) {
+        String accountGaiaId = AccountManagerFacade.get().getAccountGaiaId(accountEmail);
+        return new CoreAccountInfo(new CoreAccountId(accountGaiaId), accountEmail, accountGaiaId);
     }
 
     @After
@@ -92,35 +92,7 @@ public class IdentityManagerIntegrationTest {
         SigninTestUtil.resetSigninState();
     }
 
-    private void setAccountIdProviderForTest() {
-        TestThreadUtils.runOnUiThreadBlocking(() -> {
-            AccountIdProvider.setInstanceForTest(new AccountIdProvider() {
-                @Override
-                public String getAccountId(String accountName) {
-                    return "gaia-id-" + accountName.replace("@", "_at_");
-                }
-
-                @Override
-                public boolean canBeUsed() {
-                    return true;
-                }
-            });
-        });
-    }
-
-    private void initializeTestAccounts() {
-        AccountIdProvider provider = AccountIdProvider.getInstance();
-
-        String account1Id = provider.getAccountId(TEST_ACCOUNT1);
-        mTestAccount1 =
-                new CoreAccountInfo(new CoreAccountId(account1Id), TEST_ACCOUNT1, account1Id);
-        String account2Id = provider.getAccountId(TEST_ACCOUNT2);
-        mTestAccount2 =
-                new CoreAccountInfo(new CoreAccountId(account2Id), TEST_ACCOUNT2, account2Id);
-    }
-
     private void seedAccountTrackerService() {
-        AccountIdProvider provider = AccountIdProvider.getInstance();
         String[] accountNames = {mTestAccount1.getEmail(), mTestAccount2.getEmail()};
         String[] accountIds = {mTestAccount1.getGaiaId(), mTestAccount2.getGaiaId()};
         IdentityServicesProvider.get().getAccountTrackerService().syncForceRefreshForTest(

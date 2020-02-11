@@ -37,7 +37,6 @@ import org.chromium.chrome.browser.externalauth.UserRecoverableErrorHandler;
 import org.chromium.chrome.browser.preferences.Pref;
 import org.chromium.chrome.browser.preferences.PrefServiceBridge;
 import org.chromium.chrome.browser.sync.SyncUserDataWiper;
-import org.chromium.components.signin.AccountIdProvider;
 import org.chromium.components.signin.AccountManagerDelegateException;
 import org.chromium.components.signin.AccountManagerFacade;
 import org.chromium.components.signin.AccountManagerResult;
@@ -471,11 +470,10 @@ public abstract class SigninFragmentBase
      */
     private void recordConsent(TextView confirmationView) {
         // TODO(crbug.com/831257): Provide the account id synchronously from AccountManagerFacade.
-        final AccountIdProvider accountIdProvider = AccountIdProvider.getInstance();
         new AsyncTask<String>() {
             @Override
             public String doInBackground() {
-                return accountIdProvider.getAccountId(mSelectedAccountName);
+                return AccountManagerFacade.get().getAccountGaiaId(mSelectedAccountName);
             }
 
             @Override

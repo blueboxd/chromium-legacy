@@ -107,13 +107,13 @@ public class DecoderServiceHostTest implements DecoderServiceHost.ServiceReadyCa
         host.bind(mContext);
         waitForDecoder();
 
-        String fileName1 = "noogler.mp4";
-        String fileName2 = "noogler2.mp4";
-        String fileName3 = "blue100x100.jpg";
+        String video1 = "noogler.mp4";
+        String video2 = "noogler2.mp4";
+        String jpg1 = "blue100x100.jpg";
         String filePath = "chrome/test/data/android/photo_picker/";
-        File file1 = new File(UrlUtils.getIsolatedTestFilePath(filePath + fileName1));
-        File file2 = new File(UrlUtils.getIsolatedTestFilePath(filePath + fileName2));
-        File file3 = new File(UrlUtils.getIsolatedTestFilePath(filePath + fileName3));
+        File file1 = new File(UrlUtils.getIsolatedTestFilePath(filePath + video1));
+        File file2 = new File(UrlUtils.getIsolatedTestFilePath(filePath + video2));
+        File file3 = new File(UrlUtils.getIsolatedTestFilePath(filePath + jpg1));
 
         host.decodeImage(
                 Uri.fromFile(file1), PickerBitmap.TileTypes.VIDEO, 10, /*fullWidth=*/false, this);
@@ -122,38 +122,42 @@ public class DecoderServiceHostTest implements DecoderServiceHost.ServiceReadyCa
         host.decodeImage(
                 Uri.fromFile(file3), PickerBitmap.TileTypes.PICTURE, 10, /*fullWidth=*/false, this);
 
-        // First decoding result should be first frame only of video 1.
+        // First decoding result should be first frame of video 1. Even though still images take
+        // priority over video decoding, video 1 will be the only item in the queue when the first
+        // decoding request is kicked off (as a result of calling decodeImage).
         waitForThumbnailDecode();
-        Assert.assertTrue(mLastDecodedPath.contains(fileName1));
+        Assert.assertTrue(mLastDecodedPath.contains(video1));
         Assert.assertEquals(true, mLastIsVideo);
         Assert.assertEquals("0:00", mLastVideoDuration);
         Assert.assertEquals(1, mLastFrameCount);
 
-        // Second decoding result is first frame of video 2, because that's higher priority than the
-        // rest of video 1.
+        // When the decoder is finished with the first frame of video 1, there will be two new
+        // requests available for processing. Video2 was added first, but that will be skipped in
+        // favor of the still image, so the jpg is expected to be decoded next.
         waitForThumbnailDecode();
-        Assert.assertTrue(mLastDecodedPath.contains(fileName2));
-        Assert.assertEquals(true, mLastIsVideo);
-        Assert.assertEquals("0:00", mLastVideoDuration);
-        Assert.assertEquals(1, mLastFrameCount);
-
-        // Third in line should be the jpg file.
-        waitForThumbnailDecode();
-        Assert.assertTrue(mLastDecodedPath.contains(fileName3));
+        Assert.assertTrue(mLastDecodedPath.contains(jpg1));
         Assert.assertEquals(false, mLastIsVideo);
         Assert.assertEquals(null, mLastVideoDuration);
         Assert.assertEquals(1, mLastFrameCount);
 
+        // Third decoding result is first frame of video 2, because that's higher priority than the
+        // rest of video 1.
+        waitForThumbnailDecode();
+        Assert.assertTrue(mLastDecodedPath.contains(video2));
+        Assert.assertEquals(true, mLastIsVideo);
+        Assert.assertEquals("0:00", mLastVideoDuration);
+        Assert.assertEquals(1, mLastFrameCount);
+
         // Remaining frames of video 1.
         waitForThumbnailDecode();
-        Assert.assertTrue(mLastDecodedPath.contains(fileName1));
+        Assert.assertTrue(mLastDecodedPath.contains(video1));
         Assert.assertEquals(true, mLastIsVideo);
         Assert.assertEquals("0:00", mLastVideoDuration);
         Assert.assertEquals(10, mLastFrameCount);
 
         // Remaining frames of video 2.
         waitForThumbnailDecode();
-        Assert.assertTrue(mLastDecodedPath.contains(fileName2));
+        Assert.assertTrue(mLastDecodedPath.contains(video2));
         Assert.assertEquals(true, mLastIsVideo);
         Assert.assertEquals("0:00", mLastVideoDuration);
         Assert.assertEquals(10, mLastFrameCount);
@@ -168,17 +172,17 @@ public class DecoderServiceHostTest implements DecoderServiceHost.ServiceReadyCa
         host.bind(mContext);
         waitForDecoder();
 
-        String fileName1 = "noogler.mp4"; // 1920 x 1080 video.
-        String fileName2 = "blue100x100.jpg";
+        String video1 = "noogler.mp4"; // 1920 x 1080 video.
+        String jpg1 = "blue100x100.jpg";
         String filePath = "chrome/test/data/android/photo_picker/";
-        File file1 = new File(UrlUtils.getIsolatedTestFilePath(filePath + fileName1));
-        File file2 = new File(UrlUtils.getIsolatedTestFilePath(filePath + fileName2));
+        File file1 = new File(UrlUtils.getIsolatedTestFilePath(filePath + video1));
+        File file2 = new File(UrlUtils.getIsolatedTestFilePath(filePath + jpg1));
 
         // Thumbnail photo. 100 x 100 -> 10 x 10.
         host.decodeImage(
                 Uri.fromFile(file2), PickerBitmap.TileTypes.PICTURE, 10, /*fullWidth=*/false, this);
         waitForThumbnailDecode();
-        Assert.assertTrue(mLastDecodedPath.contains(fileName2));
+        Assert.assertTrue(mLastDecodedPath.contains(jpg1));
         Assert.assertEquals(false, mLastIsVideo);
         Assert.assertEquals(null, mLastVideoDuration);
         Assert.assertEquals(1, mLastFrameCount);
@@ -190,7 +194,7 @@ public class DecoderServiceHostTest implements DecoderServiceHost.ServiceReadyCa
         host.decodeImage(
                 Uri.fromFile(file2), PickerBitmap.TileTypes.PICTURE, 200, /*fullWidth=*/true, this);
         waitForThumbnailDecode();
-        Assert.assertTrue(mLastDecodedPath.contains(fileName2));
+        Assert.assertTrue(mLastDecodedPath.contains(jpg1));
         Assert.assertEquals(false, mLastIsVideo);
         Assert.assertEquals(null, mLastVideoDuration);
         Assert.assertEquals(1, mLastFrameCount);
@@ -202,7 +206,7 @@ public class DecoderServiceHostTest implements DecoderServiceHost.ServiceReadyCa
         host.decodeImage(
                 Uri.fromFile(file1), PickerBitmap.TileTypes.VIDEO, 10, /*fullWidth=*/false, this);
         waitForThumbnailDecode(); // Initial frame.
-        Assert.assertTrue(mLastDecodedPath.contains(fileName1));
+        Assert.assertTrue(mLastDecodedPath.contains(video1));
         Assert.assertEquals(true, mLastIsVideo);
         Assert.assertEquals("0:00", mLastVideoDuration);
         Assert.assertEquals(1, mLastFrameCount);
@@ -210,7 +214,7 @@ public class DecoderServiceHostTest implements DecoderServiceHost.ServiceReadyCa
         Assert.assertEquals(10, mLastInitialFrame.getWidth());
         Assert.assertEquals(10, mLastInitialFrame.getHeight());
         waitForThumbnailDecode(); // Rest of frames.
-        Assert.assertTrue(mLastDecodedPath.contains(fileName1));
+        Assert.assertTrue(mLastDecodedPath.contains(video1));
         Assert.assertEquals(true, mLastIsVideo);
         Assert.assertEquals("0:00", mLastVideoDuration);
         Assert.assertEquals(10, mLastFrameCount);
@@ -222,7 +226,7 @@ public class DecoderServiceHostTest implements DecoderServiceHost.ServiceReadyCa
         host.decodeImage(
                 Uri.fromFile(file1), PickerBitmap.TileTypes.VIDEO, 2000, /*fullWidth=*/true, this);
         waitForThumbnailDecode(); // Initial frame.
-        Assert.assertTrue(mLastDecodedPath.contains(fileName1));
+        Assert.assertTrue(mLastDecodedPath.contains(video1));
         Assert.assertEquals(true, mLastIsVideo);
         Assert.assertEquals("0:00", mLastVideoDuration);
         Assert.assertEquals(1, mLastFrameCount);
@@ -230,7 +234,7 @@ public class DecoderServiceHostTest implements DecoderServiceHost.ServiceReadyCa
         Assert.assertEquals(2000, mLastInitialFrame.getWidth());
         Assert.assertEquals(1125, mLastInitialFrame.getHeight());
         waitForThumbnailDecode(); // Rest of frames.
-        Assert.assertTrue(mLastDecodedPath.contains(fileName1));
+        Assert.assertTrue(mLastDecodedPath.contains(video1));
         Assert.assertEquals(true, mLastIsVideo);
         Assert.assertEquals("0:00", mLastVideoDuration);
         Assert.assertEquals(10, mLastFrameCount);

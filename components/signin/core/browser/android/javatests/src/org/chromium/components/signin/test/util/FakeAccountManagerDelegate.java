@@ -102,6 +102,17 @@ public class FakeAccountManagerDelegate implements AccountManagerDelegate {
         return mFakeProfileDataSource;
     }
 
+    @Nullable
+    @Override
+    public String getAccountGaiaId(String accountEmail) {
+        return "gaia-id-" + accountEmail.replace("@", "_at_");
+    }
+
+    @Override
+    public boolean isGooglePlayServicesAvailable() {
+        return true;
+    }
+
     @Override
     public void registerObservers() {
         mRegisterObserversCalled = true;

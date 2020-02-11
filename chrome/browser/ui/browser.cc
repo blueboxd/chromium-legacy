@@ -2817,6 +2817,25 @@ bool Browser::WebAppBrowserSupportsWindowFeature(WindowFeature feature,
   }
 }
 
+#if defined(OS_CHROMEOS)
+// TODO(b/64863368): Consider Fullscreen mode.
+bool Browser::CustomTabBrowserSupportsWindowFeature(
+    WindowFeature feature) const {
+  switch (feature) {
+    case FEATURE_TOOLBAR:
+    case FEATURE_INFOBAR:
+    case FEATURE_DOWNLOADSHELF:
+      return true;
+    case FEATURE_TITLEBAR:
+    case FEATURE_LOCATIONBAR:
+    case FEATURE_TABSTRIP:
+    case FEATURE_BOOKMARKBAR:
+    case FEATURE_NONE:
+      return false;
+  }
+}
+#endif
+
 bool Browser::SupportsWindowFeatureImpl(WindowFeature feature,
                                         bool check_can_support) const {
   switch (type_) {
@@ -2833,6 +2852,10 @@ bool Browser::SupportsWindowFeatureImpl(WindowFeature feature,
       return LegacyAppBrowserSupportsWindowFeature(feature, check_can_support);
     case TYPE_DEVTOOLS:
       return LegacyAppBrowserSupportsWindowFeature(feature, check_can_support);
+#if defined(OS_CHROMEOS)
+    case TYPE_CUSTOM_TAB:
+      return CustomTabBrowserSupportsWindowFeature(feature);
+#endif
   }
 }
 

@@ -1668,6 +1668,33 @@ IN_PROC_BROWSER_TEST_F(BrowserTest, DisableMenuItemsWhenIncognitoIsForced) {
   EXPECT_TRUE(new_command_updater->IsCommandEnabled(IDC_NEW_INCOGNITO_WINDOW));
 }
 
+#if defined(OS_CHROMEOS)
+IN_PROC_BROWSER_TEST_F(BrowserTest, ArcBrowserWindowFeaturesSetCorrectly) {
+  Browser* new_browser = new Browser(
+      Browser::CreateParams(Browser::TYPE_CUSTOM_TAB, browser()->profile(),
+                            /* user_gesture= */ true));
+  ASSERT_TRUE(new_browser);
+
+  EXPECT_FALSE(new_browser->SupportsWindowFeature(
+      Browser::WindowFeature::FEATURE_LOCATIONBAR));
+  EXPECT_FALSE(new_browser->SupportsWindowFeature(
+      Browser::WindowFeature::FEATURE_TITLEBAR));
+  EXPECT_FALSE(new_browser->SupportsWindowFeature(
+      Browser::WindowFeature::FEATURE_TABSTRIP));
+  EXPECT_FALSE(new_browser->SupportsWindowFeature(
+      Browser::WindowFeature::FEATURE_BOOKMARKBAR));
+  EXPECT_FALSE(
+      new_browser->SupportsWindowFeature(Browser::WindowFeature::FEATURE_NONE));
+
+  EXPECT_TRUE(new_browser->SupportsWindowFeature(
+      Browser::WindowFeature::FEATURE_TOOLBAR));
+  EXPECT_TRUE(new_browser->SupportsWindowFeature(
+      Browser::WindowFeature::FEATURE_INFOBAR));
+  EXPECT_TRUE(new_browser->SupportsWindowFeature(
+      Browser::WindowFeature::FEATURE_DOWNLOADSHELF));
+}
+#endif
+
 // Makes sure New Incognito Window command is disabled when Incognito mode is
 // not available.
 IN_PROC_BROWSER_TEST_F(BrowserTest,

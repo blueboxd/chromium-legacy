@@ -225,10 +225,10 @@ PrintSessionImpl::PrintSessionImpl(
     std::unique_ptr<ash::ArcCustomTab> custom_tab,
     mojom::PrintSessionInstancePtr instance,
     mojo::PendingReceiver<mojom::PrintSessionHost> receiver)
-    : ArcCustomTabModalDialogHost(std::move(custom_tab),
-                                  std::move(web_contents)),
+    : ArcCustomTabModalDialogHost(std::move(custom_tab), web_contents.get()),
       instance_(std::move(instance)),
-      session_receiver_(this, std::move(receiver)) {
+      session_receiver_(this, std::move(receiver)),
+      web_contents_(std::move(web_contents)) {
   session_receiver_.set_disconnect_handler(
       base::BindOnce(&PrintSessionImpl::Close, weak_ptr_factory_.GetWeakPtr()));
   web_contents_->SetUserData(UserDataKey(), base::WrapUnique(this));

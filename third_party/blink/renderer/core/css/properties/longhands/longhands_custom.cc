@@ -1784,8 +1784,6 @@ const CSSValue* ContainIntrinsicWidth::CSSValueFromComputedStyleInternal(
     const LayoutObject* layout_object,
     bool allow_visited_style) const {
   auto& width = style.ContainIntrinsicWidth();
-  if (width.IsLegacy())
-    return CSSIdentifierValue::Create(CSSValueID::kLegacy);
   if (width.IsAuto())
     return CSSIdentifierValue::Create(CSSValueID::kAuto);
   return ComputedStyleUtils::ZoomAdjustedPixelValueForLength(width.GetLength(),
@@ -1805,8 +1803,6 @@ const CSSValue* ContainIntrinsicHeight::CSSValueFromComputedStyleInternal(
     const LayoutObject* layout_object,
     bool allow_visited_style) const {
   auto& height = style.ContainIntrinsicHeight();
-  if (height.IsLegacy())
-    return CSSIdentifierValue::Create(CSSValueID::kLegacy);
   if (height.IsAuto())
     return CSSIdentifierValue::Create(CSSValueID::kAuto);
   return ComputedStyleUtils::ZoomAdjustedPixelValueForLength(height.GetLength(),

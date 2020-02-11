@@ -53,6 +53,10 @@ class PasswordsPrivateEventRouter : public KeyedService {
       api::passwords_private::ExportProgressStatus status,
       const std::string& folder_name);
 
+  // Notifies listeners about a (possible) change to the opt-in state for the
+  // account-scoped password storage.
+  void OnAccountStorageOptInStateChanged(bool opted_in);
+
  protected:
   explicit PasswordsPrivateEventRouter(content::BrowserContext* context);
 

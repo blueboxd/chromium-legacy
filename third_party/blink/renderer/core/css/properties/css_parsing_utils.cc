@@ -2690,8 +2690,7 @@ css_property_parser_helpers::UnitlessQuirk UnitlessUnlessShorthand(
 
 CSSValue* ConsumeIntrinsicLength(CSSParserTokenRange& range,
                                  const CSSParserContext& context) {
-  if (css_property_parser_helpers::IdentMatches<CSSValueID::kLegacy,
-                                                CSSValueID::kAuto>(
+  if (css_property_parser_helpers::IdentMatches<CSSValueID::kAuto>(
           range.Peek().Id())) {
     return css_property_parser_helpers::ConsumeIdent(range);
   }

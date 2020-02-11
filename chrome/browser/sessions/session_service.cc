@@ -922,6 +922,13 @@ bool SessionService::ShouldTrackBrowser(Browser* browser) const {
   if (browser->deprecated_is_app() && !browser->is_trusted_source()) {
     return false;
   }
+
+  // Don't track custom_tab browser. It doesn't need to be restored.
+#if defined(OS_CHROMEOS)
+  if (browser->is_type_custom_tab())
+    return false;
+#endif
+
   return ShouldRestoreWindowOfType(WindowTypeForBrowserType(browser->type()));
 }
 

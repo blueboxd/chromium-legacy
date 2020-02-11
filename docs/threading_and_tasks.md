@@ -337,7 +337,7 @@ posting order.
 ### Posting to the Main Thread or to the IO Thread in the Browser Process
 
 To post tasks to the main thread or to the IO thread, use
-`content::GetUIThreadTaskRunner({})` or `content::GetUIThreadTaskRunner({})`
+`content::GetUIThreadTaskRunner({})` or `content::GetIOThreadTaskRunner({})`
 from
 [`content/public/browser/browser_thread.h`](https://cs.chromium.org/chromium/src/content/public/browser/browser_thread.h)
 

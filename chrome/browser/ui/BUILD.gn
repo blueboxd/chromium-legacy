@@ -3405,6 +3405,7 @@ jumbo_static_library("ui") {
       "webauthn/transport_utils.cc",
       "webauthn/transport_utils.h",
     ]
+
     deps += [
       "//chrome/browser/ui/views",
       "//components/constrained_window",
@@ -3902,6 +3903,8 @@ jumbo_static_library("ui") {
       "views/crostini/crostini_update_component_view.h",
       "views/crostini/crostini_update_filesystem_view.cc",
       "views/crostini/crostini_update_filesystem_view.h",
+      "views/frame/custom_tab_browser_frame.cc",
+      "views/frame/custom_tab_browser_frame.h",
       "views/plugin_vm/plugin_vm_installer_view.cc",
       "views/plugin_vm/plugin_vm_installer_view.h",
     ]

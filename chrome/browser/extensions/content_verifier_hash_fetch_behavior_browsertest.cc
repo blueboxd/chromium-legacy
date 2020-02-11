@@ -63,8 +63,8 @@ class ContentVerifierHashTest
     // ChromeContentVerifierDelegate.
     ChromeContentVerifierDelegate::SetDefaultModeForTesting(
         uses_enforce_strict_mode()
-            ? ChromeContentVerifierDelegate::ENFORCE_STRICT
-            : ChromeContentVerifierDelegate::ENFORCE);
+            ? ChromeContentVerifierDelegate::VerifyInfo::Mode::ENFORCE_STRICT
+            : ChromeContentVerifierDelegate::VerifyInfo::Mode::ENFORCE);
 
     ExtensionBrowserTest::SetUp();
   }

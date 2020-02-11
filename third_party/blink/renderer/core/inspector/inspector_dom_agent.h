@@ -234,6 +234,11 @@ class CORE_EXPORT InspectorDOMAgent final
       protocol::Maybe<int> depth,
       protocol::Maybe<bool> pierce,
       std::unique_ptr<protocol::DOM::Node>*) override;
+  protocol::Response scrollIntoViewIfNeeded(
+      protocol::Maybe<int> node_id,
+      protocol::Maybe<int> backend_node_id,
+      protocol::Maybe<String> object_id,
+      protocol::Maybe<protocol::DOM::Rect> rect) override;
 
   protocol::Response getFrameOwner(const String& frame_id,
                                    int* backend_node_id,

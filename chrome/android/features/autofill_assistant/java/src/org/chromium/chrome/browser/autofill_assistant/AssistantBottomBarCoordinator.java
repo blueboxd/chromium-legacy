@@ -5,7 +5,6 @@
 package org.chromium.chrome.browser.autofill_assistant;
 
 import android.support.annotation.Nullable;
-import android.support.annotation.VisibleForTesting;
 import android.transition.ChangeBounds;
 import android.transition.Fade;
 import android.transition.TransitionManager;
@@ -20,9 +19,7 @@ import org.chromium.base.ObserverList;
 import org.chromium.chrome.autofill_assistant.R;
 import org.chromium.chrome.browser.ChromeActivity;
 import org.chromium.chrome.browser.autofill_assistant.carousel.AssistantActionsCarouselCoordinator;
-import org.chromium.chrome.browser.autofill_assistant.carousel.AssistantCarouselCoordinator;
 import org.chromium.chrome.browser.autofill_assistant.carousel.AssistantChip;
-import org.chromium.chrome.browser.autofill_assistant.carousel.AssistantSuggestionsCarouselCoordinator;
 import org.chromium.chrome.browser.autofill_assistant.details.AssistantDetailsCoordinator;
 import org.chromium.chrome.browser.autofill_assistant.form.AssistantFormCoordinator;
 import org.chromium.chrome.browser.autofill_assistant.form.AssistantFormModel;
@@ -61,8 +58,7 @@ class AssistantBottomBarCoordinator
     private final AssistantHeaderCoordinator mHeaderCoordinator;
     private final AssistantDetailsCoordinator mDetailsCoordinator;
     private final AssistantFormCoordinator mFormCoordinator;
-    private final AssistantCarouselCoordinator mSuggestionsCoordinator;
-    private final AssistantCarouselCoordinator mActionsCoordinator;
+    private final AssistantActionsCarouselCoordinator mActionsCoordinator;
     private final AssistantPeekHeightCoordinator mPeekHeightCoordinator;
     private AssistantInfoBoxCoordinator mInfoBoxCoordinator;
     private AssistantCollectUserDataCoordinator mPaymentRequestCoordinator;
@@ -117,18 +113,14 @@ class AssistantBottomBarCoordinator
         mPaymentRequestCoordinator =
                 new AssistantCollectUserDataCoordinator(activity, model.getCollectUserDataModel());
         mFormCoordinator = new AssistantFormCoordinator(activity, model.getFormModel());
-        mSuggestionsCoordinator =
-                new AssistantSuggestionsCarouselCoordinator(activity, model.getSuggestionsModel());
         mActionsCoordinator =
                 new AssistantActionsCarouselCoordinator(activity, model.getActionsModel());
         mPeekHeightCoordinator = new AssistantPeekHeightCoordinator(activity, this, controller,
                 mContent.getToolbarView(), mHeaderCoordinator.getView(),
-                mSuggestionsCoordinator.getView(), mActionsCoordinator.getView(),
-                AssistantPeekHeightCoordinator.PeekMode.HANDLE);
+                mActionsCoordinator.getView(), AssistantPeekHeightCoordinator.PeekMode.HANDLE);
 
         // We don't want to animate the carousels children views as they are already animated by the
         // recyclers ItemAnimator, so we exclude them to avoid a clash between the animations.
-        mLayoutTransition.excludeChildren(mSuggestionsCoordinator.getView(), /* exclude= */ true);
         mLayoutTransition.excludeChildren(mActionsCoordinator.getView(), /* exclude= */ true);
 
         // do not animate the contents of the payment method section inside the section choice list,
@@ -141,29 +133,22 @@ class AssistantBottomBarCoordinator
                 /* exclude= */ true);
 
         // Add child views to bottom bar container. We put all child views in the scrollable
-        // container, except the actions and suggestions.
+        // container, except the actions.
         mRootViewContainer.addView(mHeaderCoordinator.getView(), 0);
         scrollableContentContainer.addView(mInfoBoxCoordinator.getView());
         scrollableContentContainer.addView(mDetailsCoordinator.getView());
         scrollableContentContainer.addView(mPaymentRequestCoordinator.getView());
         scrollableContentContainer.addView(mFormCoordinator.getView());
-        mRootViewContainer.addView(mSuggestionsCoordinator.getView());
         mRootViewContainer.addView(mActionsCoordinator.getView());
 
         // Set children top margins to have a spacing between them.
         int childSpacing = activity.getResources().getDimensionPixelSize(
                 R.dimen.autofill_assistant_bottombar_vertical_spacing);
-        int suggestionsVerticalInset =
-                activity.getResources().getDimensionPixelSize(R.dimen.chip_bg_vertical_inset);
         setChildMarginTop(mDetailsCoordinator.getView(), childSpacing);
         setChildMarginTop(mPaymentRequestCoordinator.getView(), childSpacing);
         setChildMarginTop(mFormCoordinator.getView(), childSpacing);
-        setChildMargin(mSuggestionsCoordinator.getView(), childSpacing - suggestionsVerticalInset,
-                -suggestionsVerticalInset);
 
         // Hide the carousels when they are empty.
-        hideWhenEmpty(
-                mSuggestionsCoordinator.getView(), model.getSuggestionsModel().getChipsModel());
         hideWhenEmpty(mActionsCoordinator.getView(), model.getActionsModel().getChipsModel());
 
         // Set the horizontal margins of children. We don't set them on the payment request, the
@@ -221,7 +206,7 @@ class AssistantBottomBarCoordinator
                 });
     }
 
-    AssistantCarouselCoordinator getActionsCarouselCoordinator() {
+    AssistantActionsCarouselCoordinator getActionsCarouselCoordinator() {
         return mActionsCoordinator;
     }
 
@@ -352,11 +337,6 @@ class AssistantBottomBarCoordinator
 
     private void setCarouselVisibility(View carouselView, ListModel<AssistantChip> chipsModel) {
         carouselView.setVisibility(chipsModel.size() > 0 ? View.VISIBLE : View.GONE);
-    }
-
-    @VisibleForTesting
-    public AssistantCarouselCoordinator getSuggestionsCoordinator() {
-        return mSuggestionsCoordinator;
     }
 
     private void setHorizontalMargins(View view) {

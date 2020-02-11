@@ -20710,6 +20710,8 @@ to ensure that the crash string is shown properly on the user-facing crash UI.
   <int value="449"
       label="AUTOFILL_ASSISTANT_PRIVATE_ON_STATUS_MESSAGE_CHANGED"/>
   <int value="450" label="BLUETOOTH_PRIVATE_ON_DEVICE_ADDRESS_CHANGED"/>
+  <int value="451"
+      label="PASSWORDS_PRIVATE_ON_ACCOUNT_STORAGE_OPT_IN_STATE_CHANGED"/>
 </enum>
 
 <enum name="ExtensionFileWriteResult">
@@ -22782,6 +22784,8 @@ to ensure that the crash string is shown properly on the user-facing crash UI.
 <enum name="ExtensionPolicyReinstallReason">
   <int value="0" label="Tried to load a corrupted extension"/>
   <int value="1" label="Corrupted Chrome Web Store extension"/>
+  <int value="2" label="Corrupted non-webstore extension"/>
+  <int value="4" label="Non-webstore extension without hashes skipped"/>
 </enum>
 
 <enum name="ExtensionServiceVerifyAllSuccess">

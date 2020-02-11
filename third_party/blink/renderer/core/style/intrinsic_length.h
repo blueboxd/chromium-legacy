@@ -13,23 +13,19 @@ namespace blink {
 class IntrinsicLength {
   DISALLOW_NEW();
 
-  enum LengthType { kAuto, kLegacy, kSpecified };
+  enum LengthType { kAuto, kSpecified };
 
  public:
-  IntrinsicLength() : IntrinsicLength(kLegacy) {}
+  IntrinsicLength() : IntrinsicLength(kAuto) {}
 
   static IntrinsicLength MakeAuto() { return IntrinsicLength(kAuto); }
-  static IntrinsicLength MakeLegacy() { return IntrinsicLength(kLegacy); }
   static IntrinsicLength Make(const Length& length) {
     return IntrinsicLength(kSpecified, length);
   }
 
   bool IsAuto() const { return type_ == kAuto; }
-  bool IsLegacy() const { return type_ == kLegacy; }
   const Length& GetLength() const {
-    // We may still need to get the length for auto, so we only guard against
-    // legacy.
-    DCHECK(!IsLegacy());
+    DCHECK(!IsAuto());
     return length_;
   }
 

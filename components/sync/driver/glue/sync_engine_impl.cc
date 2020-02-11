@@ -297,7 +297,9 @@ void SyncEngineImpl::FinishConfigureDataTypesOnFrontendLoop(
     base::OnceCallback<void(ModelTypeSet, ModelTypeSet)> ready_task) {
   last_enabled_types_ = enabled_types;
   if (invalidator_) {
-    ModelTypeSet invalidation_enabled_types(enabled_types);
+    // No need to register invalidations for CommitOnlyTypes().
+    ModelTypeSet invalidation_enabled_types(
+        Difference(enabled_types, CommitOnlyTypes()));
 #if defined(OS_ANDROID)
     if (!sessions_invalidation_enabled_) {
       invalidation_enabled_types.Remove(syncer::SESSIONS);
@@ -448,10 +450,13 @@ void SyncEngineImpl::OnCookieJarChanged(bool account_mismatch,
 
 void SyncEngineImpl::SetInvalidationsForSessionsEnabled(bool enabled) {
   sessions_invalidation_enabled_ = enabled;
+  // TODO(crbug.com/1050970): unify logic here and in
+  // FinishConfigureDataTypesOnFrontedLoop() and factor it out.
   // |last_enabled_types_| contains all datatypes, for which user
-  // has enabled Sync. So by construction, it cointains also noisy datatypes
-  // if nessesary.
-  ModelTypeSet enabled_for_invalidation(last_enabled_types_);
+  // has enabled Sync. There is no need to register invalidations for
+  // CommitOnlyTypes(), so they are filtered out.
+  ModelTypeSet enabled_for_invalidation(
+      Difference(last_enabled_types_, CommitOnlyTypes()));
   if (!enabled) {
     enabled_for_invalidation.Remove(syncer::SESSIONS);
     enabled_for_invalidation.Remove(syncer::FAVICON_IMAGES);

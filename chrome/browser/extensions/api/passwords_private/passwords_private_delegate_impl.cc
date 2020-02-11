@@ -15,6 +15,7 @@
 #include "chrome/browser/extensions/api/passwords_private/passwords_private_event_router.h"
 #include "chrome/browser/extensions/api/passwords_private/passwords_private_event_router_factory.h"
 #include "chrome/browser/profiles/profile.h"
+#include "chrome/browser/signin/identity_manager_factory.h"
 #include "chrome/browser/sync/profile_sync_service_factory.h"
 #include "chrome/browser/ui/passwords/manage_passwords_view_utils.h"
 #include "chrome/common/extensions/api/passwords_private.h"
@@ -100,6 +101,14 @@ PasswordsPrivateDelegateImpl::PasswordsPrivateDelegateImpl(Profile* profile)
       password_access_authenticator_(
           base::BindRepeating(&PasswordsPrivateDelegateImpl::OsReauthCall,
                               base::Unretained(this))),
+      password_account_storage_opt_in_watcher_(
+          std::make_unique<
+              password_manager::PasswordAccountStorageOptInWatcher>(
+              IdentityManagerFactory::GetForProfile(profile_),
+              profile_->GetPrefs(),
+              base::BindRepeating(&PasswordsPrivateDelegateImpl::
+                                      OnAccountStorageOptInStateChanged,
+                                  base::Unretained(this)))),
       current_entries_initialized_(false),
       current_exceptions_initialized_(false),
       is_initialized_(false),
@@ -363,9 +372,18 @@ void PasswordsPrivateDelegateImpl::OnPasswordsExportProgress(
   }
 }
 
+void PasswordsPrivateDelegateImpl::OnAccountStorageOptInStateChanged() {
+  PasswordsPrivateEventRouter* router =
+      PasswordsPrivateEventRouterFactory::GetForProfile(profile_);
+  if (router) {
+    router->OnAccountStorageOptInStateChanged(IsOptedInForAccountStorage());
+  }
+}
+
 void PasswordsPrivateDelegateImpl::Shutdown() {
-  password_manager_presenter_.reset();
+  password_account_storage_opt_in_watcher_.reset();
   password_manager_porter_.reset();
+  password_manager_presenter_.reset();
 }
 
 SortKeyIdGenerator&

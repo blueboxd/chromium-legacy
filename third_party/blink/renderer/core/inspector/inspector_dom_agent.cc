@@ -84,6 +84,7 @@
 #include "third_party/blink/renderer/core/loader/document_loader.h"
 #include "third_party/blink/renderer/core/page/frame_tree.h"
 #include "third_party/blink/renderer/core/page/page.h"
+#include "third_party/blink/renderer/core/scroll/scroll_into_view_params_type_converters.h"
 #include "third_party/blink/renderer/core/svg/svg_svg_element.h"
 #include "third_party/blink/renderer/core/xml/document_xpath_evaluator.h"
 #include "third_party/blink/renderer/core/xml/xpath_result.h"
@@ -2270,6 +2271,44 @@ protocol::Response InspectorDOMAgent::describeNode(
     return Response::Error("Node not found");
   *result = BuildObjectForNode(node, depth.fromMaybe(0),
                                pierce.fromMaybe(false), nullptr, nullptr);
+  return Response::OK();
+}
+
+protocol::Response InspectorDOMAgent::scrollIntoViewIfNeeded(
+    protocol::Maybe<int> node_id,
+    protocol::Maybe<int> backend_node_id,
+    protocol::Maybe<String> object_id,
+    protocol::Maybe<protocol::DOM::Rect> rect) {
+  Node* node = nullptr;
+  Response response = AssertNode(node_id, backend_node_id, object_id, node);
+  if (!response.isSuccess())
+    return response;
+  node->GetDocument().EnsurePaintLocationDataValidForNode(
+      node, DocumentUpdateReason::kInspector);
+  if (!node->isConnected())
+    return Response::Error("Node is detached from document");
+  LayoutObject* layout_object = node->GetLayoutObject();
+  if (!layout_object)
+    return Response::Error("Node does not have a layout object");
+  PhysicalRect rect_to_scroll = PhysicalRect::EnclosingRect(
+      layout_object->AbsoluteBoundingBoxFloatRect());
+  if (rect.isJust()) {
+    rect_to_scroll.SetX(rect_to_scroll.X() +
+                        LayoutUnit(rect.fromJust()->getX()));
+    rect_to_scroll.SetY(rect_to_scroll.Y() +
+                        LayoutUnit(rect.fromJust()->getY()));
+    rect_to_scroll.SetWidth(LayoutUnit(rect.fromJust()->getWidth()));
+    rect_to_scroll.SetHeight(LayoutUnit(rect.fromJust()->getHeight()));
+  }
+  layout_object->ScrollRectToVisible(
+      rect_to_scroll,
+      CreateScrollIntoViewParams(
+          ScrollAlignment::kAlignCenterIfNeeded,
+          ScrollAlignment::kAlignCenterIfNeeded,
+          mojom::blink::ScrollIntoViewParams::Type::kProgrammatic,
+          true /* make_visible_in_visual_viewport */,
+          mojom::blink::ScrollIntoViewParams::Behavior::kInstant,
+          true /* is_for_scroll_sequence */, false /* zoom_into_rect */));
   return Response::OK();
 }
 

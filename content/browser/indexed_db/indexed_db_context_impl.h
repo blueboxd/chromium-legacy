@@ -94,6 +94,7 @@ class CONTENT_EXPORT IndexedDBContextImpl
   void DownloadOriginData(const url::Origin& origin,
                           DownloadOriginDataCallback callback) override;
   void GetAllOriginsDetails(GetAllOriginsDetailsCallback callback) override;
+  void SetForceKeepSessionState() override;
 
   // TODO(enne): fix internal indexeddb callers to use ForceClose async instead.
   void ForceCloseSync(const url::Origin& origin,
@@ -114,7 +115,6 @@ class CONTENT_EXPORT IndexedDBContextImpl
                       IndexedDBContext* dest_context) override;
   base::FilePath GetFilePathForTesting(const url::Origin& origin) override;
   void ResetCachesForTesting() override;
-  void SetForceKeepSessionState() override;
 
   // Methods called by IndexedDBFactoryImpl or IndexedDBDispatcherHost for
   // quota support.

@@ -15,14 +15,12 @@
 
 ArcCustomTabModalDialogHost::ArcCustomTabModalDialogHost(
     std::unique_ptr<ash::ArcCustomTab> custom_tab,
-    std::unique_ptr<content::WebContents> web_contents)
-    : custom_tab_(std::move(custom_tab)),
-      web_contents_(std::move(web_contents)) {
+    content::WebContents* web_contents)
+    : custom_tab_(std::move(custom_tab)), web_contents_(web_contents) {
   // Attach any required WebContents helpers. Browser tabs automatically get
   // them attached in TabHelpers::AttachTabHelpers.
-  web_modal::WebContentsModalDialogManager::CreateForWebContents(
-      web_contents_.get());
-  web_modal::WebContentsModalDialogManager::FromWebContents(web_contents_.get())
+  web_modal::WebContentsModalDialogManager::CreateForWebContents(web_contents_);
+  web_modal::WebContentsModalDialogManager::FromWebContents(web_contents_)
       ->SetDelegate(this);
 }
 

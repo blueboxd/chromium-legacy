@@ -40,6 +40,7 @@
 #include "chrome/browser/ui/extensions/app_launch_params.h"
 #include "chrome/browser/ui/scoped_tabbed_browser_displayer.h"
 #include "chrome/browser/ui/settings_window_manager_chromeos.h"
+#include "chrome/browser/ui/views/frame/browser_view.h"
 #include "chrome/browser/ui/webui/chrome_web_contents_handler.h"
 #include "chrome/common/extensions/extension_constants.h"
 #include "chrome/common/url_constants.h"
@@ -402,7 +403,6 @@ void ChromeNewWindowClient::OpenArcCustomTab(
 
   aura::Window* arc_window = arc::GetArcWindow(task_id);
   if (!arc_window) {
-    LOG(ERROR) << "No ARC window with the specified task ID " << task_id;
     std::move(callback).Run(nullptr);
     return;
   }
@@ -411,12 +411,20 @@ void ChromeNewWindowClient::OpenArcCustomTab(
       ash::ArcCustomTab::Create(arc_window, surface_id, top_margin);
   auto web_contents = arc::CreateArcCustomTabWebContents(profile, url);
 
+  // |custom_tab_browser| will be destroyed when its tab strip becomes empty,
+  // either due to the user opening the custom tab page in a tabbed browser or
+  // because of the CustomTabSessionImpl object getting destroyed.
+  auto* custom_tab_browser = new Browser(Browser::CreateParams(
+      Browser::TYPE_CUSTOM_TAB, profile, /* user_gesture= */ true));
+
+  custom_tab_browser->tab_strip_model()->AppendWebContents(
+      std::move(web_contents), /* foreground= */ true);
+
   // TODO(crbug.com/955171): Remove this temporary conversion to InterfacePtr
   // once OnOpenCustomTab from //components/arc/mojom/intent_helper.mojom could
   // take pending_remote directly. Refer to crrev.com/c/1868870.
   mojo::InterfacePtr<arc::mojom::CustomTabSession> custom_tab_ptr(
-      CustomTabSessionImpl::Create(std::move(web_contents),
-                                   std::move(custom_tab)));
+      CustomTabSessionImpl::Create(std::move(custom_tab), custom_tab_browser));
   std::move(callback).Run(std::move(custom_tab_ptr));
 }
 

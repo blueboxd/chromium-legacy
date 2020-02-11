@@ -20,7 +20,6 @@
     <!-- Sets drawable inset to 4dp so that min height of the button background drawable is 40dp
          while maintaining a 48dp min height of the button. -->
     <dimen name="autofill_assistant_button_bg_vertical_inset">4dp</dimen>
-    <dimen name="autofill_assistant_suggestions_spacing">16dp</dimen>
     <dimen name="autofill_assistant_actions_spacing">8dp</dimen>
     <dimen name="autofill_assistant_actions_shadow_width">8dp</dimen>
     <dimen name="autofill_assistant_actions_gradient_width">160dp</dimen>

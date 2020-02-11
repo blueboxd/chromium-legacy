@@ -33,6 +33,7 @@
 #include "chrome/browser/ui/signin_view_controller.h"
 #include "chrome/browser/ui/tabs/tab_strip_model_observer.h"
 #include "chrome/browser/ui/unload_controller.h"
+#include "chrome/browser/ui/web_applications/app_browser_controller.h"
 #include "components/content_settings/core/common/content_settings.h"
 #include "components/content_settings/core/common/content_settings_types.h"
 #include "components/omnibox/browser/location_bar_model.h"
@@ -133,6 +134,14 @@ class Browser : public TabStripModelObserver,
     // AppBrowserController) but looks like a popup (e.g. it never has a tab
     // strip).
     TYPE_APP_POPUP,
+#if defined(OS_CHROMEOS)
+    // Browser for ARC++ Chrome custom tabs.
+    // It's an enhanced version of TYPE_POPUP, and is used to show the Chrome
+    // Custom Tab toolbar for ARC++ apps. It has UI customizations like using
+    // the Android app's theme color, and the three dot menu in
+    // CustomTabToolbarview.
+    TYPE_CUSTOM_TAB,
+#endif
     // If you add a new type, consider updating the test
     // BrowserTest.StartMaximized.
   };
@@ -606,6 +615,9 @@ class Browser : public TabStripModelObserver,
   bool is_type_app() const { return type_ == TYPE_APP; }
   bool is_type_app_popup() const { return type_ == TYPE_APP_POPUP; }
   bool is_type_devtools() const { return type_ == TYPE_DEVTOOLS; }
+#if defined(OS_CHROMEOS)
+  bool is_type_custom_tab() const { return type_ == TYPE_CUSTOM_TAB; }
+#endif
   // TODO(crbug.com/990158): |deprecated_is_app()| is added for backwards
   // compatibility for previous callers to |is_app()| which returned true when
   // |app_name_| is non-empty.  This includes TYPE_APP, TYPE_DEVTOOLS and
@@ -990,6 +1002,10 @@ class Browser : public TabStripModelObserver,
 
   bool WebAppBrowserSupportsWindowFeature(WindowFeature feature,
                                           bool check_can_support) const;
+
+#if defined(OS_CHROMEOS)
+  bool CustomTabBrowserSupportsWindowFeature(WindowFeature feature) const;
+#endif
 
   // Implementation of SupportsWindowFeature and CanSupportWindowFeature. If
   // |check_fullscreen| is true, the set of features reflect the actual state of

@@ -37,7 +37,6 @@ class AssistantModel extends PropertyModel {
     private final AssistantCollectUserDataModel mCollectUserDataModel =
             new AssistantCollectUserDataModel();
     private final AssistantFormModel mFormModel = new AssistantFormModel();
-    private final AssistantCarouselModel mSuggestionsModel = new AssistantCarouselModel();
     private final AssistantCarouselModel mActionsModel = new AssistantCarouselModel();
 
     AssistantModel() {
@@ -77,10 +76,6 @@ class AssistantModel extends PropertyModel {
     @CalledByNative
     public AssistantFormModel getFormModel() {
         return mFormModel;
-    }
-
-    public AssistantCarouselModel getSuggestionsModel() {
-        return mSuggestionsModel;
     }
 
     public AssistantCarouselModel getActionsModel() {

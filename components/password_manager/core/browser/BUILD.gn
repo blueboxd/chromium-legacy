@@ -129,6 +129,8 @@ jumbo_static_library("browser") {
     "origin_credential_store.h",
     "password_access_authenticator.cc",
     "password_access_authenticator.h",
+    "password_account_storage_opt_in_watcher.cc",
+    "password_account_storage_opt_in_watcher.h",
     "password_autofill_manager.cc",
     "password_autofill_manager.h",
     "password_bubble_experiment.cc",

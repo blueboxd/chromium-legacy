@@ -569,25 +569,7 @@ void UiControllerAndroid::SetVisible(bool visible) {
   }
 }
 
-// Suggestions and actions carousels related methods.
-
-void UiControllerAndroid::UpdateSuggestions(
-    const std::vector<UserAction>& user_actions) {
-  JNIEnv* env = AttachCurrentThread();
-  auto chips = Java_AutofillAssistantUiController_createChipList(env);
-  int user_action_count = static_cast<int>(user_actions.size());
-  for (int i = 0; i < user_action_count; i++) {
-    const auto& user_action = user_actions[i];
-    if (user_action.chip().type != SUGGESTION)
-      continue;
-
-    Java_AutofillAssistantUiController_addSuggestion(
-        env, java_object_, chips,
-        base::android::ConvertUTF8ToJavaString(env, user_action.chip().text), i,
-        user_action.chip().icon, !user_action.enabled());
-  }
-  Java_AutofillAssistantUiController_setSuggestions(env, java_object_, chips);
-}
+// Actions carousels related methods.
 
 void UiControllerAndroid::UpdateActions(
     const std::vector<UserAction>& user_actions) {
@@ -667,7 +649,6 @@ void UiControllerAndroid::UpdateActions(
 void UiControllerAndroid::OnUserActionsChanged(
     const std::vector<UserAction>& actions) {
   UpdateActions(actions);
-  UpdateSuggestions(actions);
 }
 
 void UiControllerAndroid::OnUserActionSelected(

@@ -158,7 +158,8 @@ void BrowserNonClientFrameViewAsh::Init() {
     // TODO(oshima): Add Tooltip, accessibility name.
   }
 
-  frame_header_ = CreateFrameHeader();
+  if (frame()->ShouldDrawFrameHeader())
+    frame_header_ = CreateFrameHeader();
 
   if (browser_view()->IsBrowserTypeWebApp())
     SetUpForWebApp();
@@ -205,7 +206,7 @@ int BrowserNonClientFrameViewAsh::GetTopInset(bool restored) const {
 
   Browser* browser = browser_view()->browser();
 
-  int header_height = frame_header_->GetHeaderHeight();
+  int header_height = frame_header_ ? frame_header_->GetHeaderHeight() : 0;
   if (web_app_frame_toolbar()) {
     header_height = std::max(
         header_height, web_app_frame_toolbar()->GetPreferredSize().height());
@@ -316,7 +317,7 @@ void BrowserNonClientFrameViewAsh::UpdateWindowIcon() {
 }
 
 void BrowserNonClientFrameViewAsh::UpdateWindowTitle() {
-  if (!frame()->IsFullscreen())
+  if (!frame()->IsFullscreen() && frame_header_)
     frame_header_->SchedulePaintForTitle();
 }
 
@@ -328,7 +329,8 @@ void BrowserNonClientFrameViewAsh::PaintAsActiveChanged(bool active) {
   UpdateProfileIcons();
 
   const bool should_paint_as_active = ShouldPaintAsActive();
-  frame_header_->SetPaintAsActive(should_paint_as_active);
+  if (frame_header_)
+    frame_header_->SetPaintAsActive(should_paint_as_active);
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -341,20 +343,23 @@ void BrowserNonClientFrameViewAsh::OnPaint(gfx::Canvas* canvas) {
   const ash::FrameHeader::Mode header_mode =
       ShouldPaintAsActive() ? ash::FrameHeader::MODE_ACTIVE
                             : ash::FrameHeader::MODE_INACTIVE;
-  frame_header_->PaintHeader(canvas, header_mode);
+  if (frame_header_)
+    frame_header_->PaintHeader(canvas, header_mode);
 }
 
 void BrowserNonClientFrameViewAsh::Layout() {
   // The header must be laid out before computing |painted_height| because the
   // computation of |painted_height| for app and popup windows depends on the
   // position of the window controls.
-  frame_header_->LayoutHeader();
+  if (frame_header_)
+    frame_header_->LayoutHeader();
 
   int painted_height = GetTopInset(false);
   if (browser_view()->IsTabStripVisible())
     painted_height += browser_view()->tabstrip()->GetPreferredSize().height();
 
-  frame_header_->SetHeaderHeightForPainting(painted_height);
+  if (frame_header_)
+    frame_header_->SetHeaderHeightForPainting(painted_height);
 
   if (profile_indicator_icon_)
     LayoutProfileIndicator();
@@ -367,10 +372,12 @@ void BrowserNonClientFrameViewAsh::Layout() {
   BrowserNonClientFrameView::Layout();
   UpdateTopViewInset();
 
-  // The top right corner must be occupied by a caption button for easy mouse
-  // access. This check is agnostic to RTL layout.
-  DCHECK_EQ(caption_button_container_->y(), 0);
-  DCHECK_EQ(caption_button_container_->bounds().right(), width());
+  if (frame_header_) {
+    // The top right corner must be occupied by a caption button for easy mouse
+    // access. This check is agnostic to RTL layout.
+    DCHECK_EQ(caption_button_container_->y(), 0);
+    DCHECK_EQ(caption_button_container_->bounds().right(), width());
+  }
 }
 
 const char* BrowserNonClientFrameViewAsh::GetClassName() const {
@@ -392,7 +399,8 @@ gfx::Size BrowserNonClientFrameViewAsh::GetMinimumSize() const {
   }
 
   gfx::Size min_client_view_size(frame()->client_view()->GetMinimumSize());
-  const int min_frame_width = frame_header_->GetMinimumHeaderWidth();
+  const int min_frame_width =
+      frame_header_ ? frame_header_->GetMinimumHeaderWidth() : 0;
   int min_width = std::max(min_frame_width, min_client_view_size.width());
   if (browser_view()->IsTabStripVisible()) {
     // Ensure that the minimum width is enough to hold a minimum width tab strip
@@ -540,7 +548,7 @@ void BrowserNonClientFrameViewAsh::OnWindowDestroying(aura::Window* window) {
 void BrowserNonClientFrameViewAsh::OnWindowPropertyChanged(aura::Window* window,
                                                            const void* key,
                                                            intptr_t old) {
-  if (key == aura::client::kShowStateKey) {
+  if (key == aura::client::kShowStateKey && frame_header_) {
     frame_header_->OnShowStateChanged(
         window->GetProperty(aura::client::kShowStateKey));
   } else if (key == ash::kIsShowingInOverviewKey) {
@@ -779,7 +787,8 @@ void BrowserNonClientFrameViewAsh::OnUpdateFrameColor() {
     window->ClearProperty(ash::kFrameInactiveColorKey);
   }
 
-  frame_header_->UpdateFrameColors();
+  if (frame_header_)
+    frame_header_->UpdateFrameColors();
 }
 
 const aura::Window* BrowserNonClientFrameViewAsh::GetFrameWindow() const {

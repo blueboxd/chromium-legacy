@@ -6,6 +6,9 @@
 
 #include "chrome/browser/ui/views/frame/browser_frame.h"
 #include "chrome/browser/ui/views/frame/browser_view.h"
+#if defined(OS_CHROMEOS)
+#include "chrome/browser/ui/views/frame/custom_tab_browser_frame.h"
+#endif
 #include "chrome/browser/ui/views/frame/native_browser_frame_factory.h"
 #include "chrome/grit/chromium_strings.h"
 #include "components/safe_browsing/content/password_protection/metrics_util.h"
@@ -23,7 +26,15 @@ BrowserWindow* BrowserWindow::CreateBrowserWindow(
   // Create the view and the frame. The frame will attach itself via the view
   // so we don't need to do anything with the pointer.
   BrowserView* view = new BrowserView(std::move(browser));
-  (new BrowserFrame(view))->InitBrowserFrame();
+  BrowserFrame* browser_frame = nullptr;
+#if defined(OS_CHROMEOS)
+  if (view->browser()->is_type_custom_tab())
+    browser_frame = new CustomTabBrowserFrame(view);
+#endif
+  if (!browser_frame)
+    browser_frame = new BrowserFrame(view);
+  browser_frame->InitBrowserFrame();
+
   view->GetWidget()->non_client_view()->SetAccessibleName(
       l10n_util::GetStringUTF16(IDS_PRODUCT_NAME));
 

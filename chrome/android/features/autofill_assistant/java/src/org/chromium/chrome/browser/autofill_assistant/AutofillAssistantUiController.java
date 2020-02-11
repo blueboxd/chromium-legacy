@@ -6,7 +6,6 @@ package org.chromium.chrome.browser.autofill_assistant;
 
 import android.content.Context;
 import android.support.annotation.Nullable;
-import android.view.View;
 
 import org.chromium.base.annotations.CalledByNative;
 import org.chromium.base.annotations.JNINamespace;
@@ -15,8 +14,6 @@ import org.chromium.base.task.PostTask;
 import org.chromium.chrome.autofill_assistant.R;
 import org.chromium.chrome.browser.ActivityTabProvider;
 import org.chromium.chrome.browser.ChromeActivity;
-import org.chromium.chrome.browser.autofill_assistant.carousel.AssistantCarouselCoordinator;
-import org.chromium.chrome.browser.autofill_assistant.carousel.AssistantCarouselModel;
 import org.chromium.chrome.browser.autofill_assistant.carousel.AssistantChip;
 import org.chromium.chrome.browser.autofill_assistant.carousel.AssistantChip.Type;
 import org.chromium.chrome.browser.autofill_assistant.header.AssistantHeaderModel;
@@ -28,7 +25,6 @@ import org.chromium.chrome.browser.ui.messages.snackbar.SnackbarManager.Snackbar
 import org.chromium.chrome.browser.widget.bottomsheet.BottomSheetController;
 import org.chromium.content_public.browser.UiThreadTaskTraits;
 import org.chromium.content_public.browser.WebContents;
-import org.chromium.ui.modelutil.ListModel;
 
 import java.util.ArrayList;
 import java.util.HashSet;
@@ -254,14 +250,6 @@ class AutofillAssistantUiController {
         return new ArrayList<>();
     }
 
-    /** Adds a suggestion to the chip list, which executes the action {@code actionIndex}. */
-    @CalledByNative
-    private void addSuggestion(
-            List<AssistantChip> chips, String text, int actionIndex, int icon, boolean disabled) {
-        chips.add(new AssistantChip(AssistantChip.Type.CHIP_ASSISTIVE, icon, text, disabled,
-                /* sticky= */ false, () -> safeNativeOnUserActionSelected(actionIndex)));
-    }
-
     /**
      * Adds an action button to the chip list, which executes the action {@code actionIndex}.
      */
@@ -307,17 +295,8 @@ class AutofillAssistantUiController {
 
     @CalledByNative
     private void setActions(List<AssistantChip> chips) {
-        AssistantCarouselModel model = getModel().getActionsModel();
-        // TODO(b/144075373): Move this to AssistantActionsCarouselCoordinator.
-        setChips(model, chips,
-                mCoordinator.getBottomBarCoordinator().getActionsCarouselCoordinator());
+        setActionChips(chips);
         setHeaderChip(chips);
-    }
-
-    @CalledByNative
-    private void setSuggestions(List<AssistantChip> chips) {
-        // TODO(b/144075373): Move this to AssistantSuggestionsCarouselCoordinator.
-        setChips(getModel().getSuggestionsModel(), chips, /* carouselCoordinator= */ null);
     }
 
     private void setHeaderChip(List<AssistantChip> chips) {
@@ -333,55 +312,10 @@ class AutofillAssistantUiController {
         getModel().getHeaderModel().set(AssistantHeaderModel.CHIP, headerChip);
     }
 
-    /**
-     * Returns |true| if all chips in the list are considered equal, meaning the same except their
-     * |isDisabled()| state.
-     */
-    private boolean areChipsEqual(ListModel<AssistantChip> oldChips, List<AssistantChip> newChips) {
-        if (oldChips.size() != newChips.size()) {
-            return false;
-        }
-
-        for (int i = 0; i < oldChips.size(); ++i) {
-            AssistantChip oldChip = oldChips.get(i);
-            AssistantChip newChip = newChips.get(i);
-
-            if (!oldChip.equals(newChip)) {
-                return false;
-            }
-        }
-
-        return true;
-    }
-
-    private void setChips(AssistantCarouselModel model, List<AssistantChip> newChips,
-            @Nullable AssistantCarouselCoordinator carouselCoordinator) {
-        ListModel<AssistantChip> oldChips = model.getChipsModel();
-        if (carouselCoordinator == null || !areChipsEqual(oldChips, newChips)) {
-            // We apply the minimum set of operations on the current chips to transform it in the
-            // target list of chips. When testing for chip equivalence, we only compare their type
-            // and text but all substitutions will still be applied so we are sure we display the
-            // given {@code chips} with their associated callbacks.
-            EditDistance.transform(oldChips, newChips, AssistantChip::equals);
-        } else {
-            for (int i = 0; i < oldChips.size(); ++i) {
-                AssistantChip oldChip = oldChips.get(i);
-                AssistantChip newChip = newChips.get(i);
-
-                // We assume that the enabled state is the only thing that may change.
-                if (oldChip.isDisabled() == newChip.isDisabled()) {
-                    continue;
-                }
-
-                View view = carouselCoordinator.getView().getLayoutManager().findViewByPosition(i);
-                if (view == null) {
-                    oldChips.update(i, newChip);
-                } else {
-                    oldChip.setDisabled(newChip.isDisabled());
-                    view.setEnabled(!newChip.isDisabled());
-                }
-            }
-        }
+    private void setActionChips(List<AssistantChip> newChips) {
+        // TODO(b/144075373): Move this to AssistantActionsCarouselCoordinator.
+        mCoordinator.getBottomBarCoordinator().getActionsCarouselCoordinator().updateChips(
+                newChips);
     }
 
     @CalledByNative

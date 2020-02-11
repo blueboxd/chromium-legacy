@@ -11,7 +11,6 @@ import androidx.annotation.WorkerThread;
 
 import org.chromium.chrome.browser.signin.IdentityServicesProvider;
 import org.chromium.chrome.browser.signin.SigninPreferencesManager;
-import org.chromium.components.signin.AccountIdProvider;
 import org.chromium.components.signin.AccountManagerFacade;
 import org.chromium.components.signin.ChromeSigninController;
 import org.chromium.components.signin.test.util.AccountHolder;
@@ -44,7 +43,6 @@ public final class SigninTestUtil {
         sAccountManager = new FakeAccountManagerDelegate(
                 FakeAccountManagerDelegate.DISABLE_PROFILE_DATA_SOURCE);
         AccountManagerFacade.overrideAccountManagerFacadeForTests(sAccountManager);
-        overrideAccountIdProvider();
         resetSigninState();
     }
 
@@ -106,32 +104,15 @@ public final class SigninTestUtil {
     }
 
     private static void seedAccounts() {
-        AccountIdProvider accountIdProvider = AccountIdProvider.getInstance();
         Account[] accounts = sAccountManager.getAccountsSyncNoThrow();
         String[] accountNames = new String[accounts.length];
         String[] accountIds = new String[accounts.length];
         for (int i = 0; i < accounts.length; i++) {
             accountNames[i] = accounts[i].name;
-            accountIds[i] = accountIdProvider.getAccountId(accounts[i].name);
+            accountIds[i] = sAccountManager.getAccountGaiaId(accounts[i].name);
         }
         IdentityServicesProvider.get().getAccountTrackerService().syncForceRefreshForTest(
                 accountIds, accountNames);
-    }
-
-    private static void overrideAccountIdProvider() {
-        TestThreadUtils.runOnUiThreadBlocking(() -> {
-            AccountIdProvider.setInstanceForTest(new AccountIdProvider() {
-                @Override
-                public String getAccountId(String accountName) {
-                    return "gaia-id-" + accountName.replace("@", "_at_");
-                }
-
-                @Override
-                public boolean canBeUsed() {
-                    return true;
-                }
-            });
-        });
     }
 
     /**

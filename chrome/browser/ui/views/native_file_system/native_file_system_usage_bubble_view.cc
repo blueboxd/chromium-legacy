@@ -304,6 +304,9 @@ NativeFileSystemUsageBubbleView::NativeFileSystemUsageBubbleView(
   DialogDelegate::set_button_label(
       ui::DIALOG_BUTTON_CANCEL,
       l10n_util::GetStringUTF16(IDS_NATIVE_FILE_SYSTEM_USAGE_REMOVE_ACCESS));
+  DialogDelegate::set_cancel_callback(
+      base::BindOnce(&NativeFileSystemUsageBubbleView::OnDialogCancelled,
+                     base::Unretained(this)));
 }
 
 NativeFileSystemUsageBubbleView::~NativeFileSystemUsageBubbleView() = default;
@@ -383,27 +386,22 @@ void NativeFileSystemUsageBubbleView::Init() {
   }
 }
 
-bool NativeFileSystemUsageBubbleView::Cancel() {
+void NativeFileSystemUsageBubbleView::OnDialogCancelled() {
   base::RecordAction(
       base::UserMetricsAction("NativeFileSystemAPI.RevokePermissions"));
 
   if (!web_contents())
-    return true;
+    return;
 
   content::BrowserContext* profile = web_contents()->GetBrowserContext();
   auto* context =
       NativeFileSystemPermissionContextFactory::GetForProfileIfExists(profile);
   if (!context)
-    return true;
+    return;
 
   context->RevokeGrants(origin_,
                         web_contents()->GetMainFrame()->GetProcess()->GetID(),
                         web_contents()->GetMainFrame()->GetRoutingID());
-  return true;
-}
-
-bool NativeFileSystemUsageBubbleView::Close() {
-  return true;  // Do not revoke permissions via Cancel() when closing normally.
 }
 
 void NativeFileSystemUsageBubbleView::WindowClosing() {

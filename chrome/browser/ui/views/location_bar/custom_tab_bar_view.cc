@@ -75,6 +75,16 @@ bool ShouldDisplayUrl(content::WebContents* contents) {
   return true;
 }
 
+bool IsInitialUrlInAppScope(web_app::AppBrowserController* app_controller) {
+  return app_controller
+             ? app_controller->IsUrlInAppScope(app_controller->initial_url())
+             : false;
+}
+
+bool IsUrlInAppScope(web_app::AppBrowserController* app_controller, GURL url) {
+  return app_controller ? app_controller->IsUrlInAppScope(url) : false;
+}
+
 }  // namespace
 
 // Container view for laying out and rendering the title/origin of the current
@@ -259,8 +269,7 @@ void CustomTabBarView::ChildPreferredSizeChanged(views::View* child) {
 }
 
 void CustomTabBarView::OnThemeChanged() {
-  base::Optional<SkColor> optional_theme_color =
-      browser_->app_controller()->GetThemeColor();
+  base::Optional<SkColor> optional_theme_color = GetThemeColor();
 
   title_bar_color_ = optional_theme_color.value_or(GetDefaultFrameColor());
 
@@ -287,8 +296,10 @@ void CustomTabBarView::TabChangedAt(content::WebContents* contents,
   // If the toolbar should not be shown don't update the UI, as the toolbar may
   // be animating out and it looks messy.
   Browser* browser = chrome::FindBrowserWithWebContents(contents);
-  if (!browser->app_controller()->ShouldShowCustomTabBar())
+  web_app::AppBrowserController* app_controller = browser->app_controller();
+  if (app_controller && !app_controller->ShouldShowCustomTabBar()) {
     return;
+  }
 
   content::NavigationEntry* entry = contents->GetController().GetVisibleEntry();
   base::string16 title, location;
@@ -310,19 +321,15 @@ void CustomTabBarView::TabChangedAt(content::WebContents* contents,
   last_title_ = title;
   last_location_ = location;
 
-  web_app::AppBrowserController* app_controller =
-      chrome::FindBrowserWithWebContents(contents)->app_controller();
-  const bool started_in_scope =
-      app_controller->IsUrlInAppScope(app_controller->initial_url());
-
   // Only show the 'X' button if:
   // a) The current url is not in scope (no point showing a back to app button
   // while in scope).
   // And b), if the window started in scope (this is
   // important for popup windows, which may be opened outside the app).
-  close_button_->SetVisible(
-      started_in_scope &&
-      !app_controller->IsUrlInAppScope(contents->GetLastCommittedURL()));
+  bool set_visible =
+      IsInitialUrlInAppScope(app_controller) &&
+      !IsUrlInAppScope(app_controller, contents->GetLastCommittedURL());
+  close_button_->SetVisible(set_visible);
 
   Layout();
 }
@@ -404,26 +411,27 @@ SkColor CustomTabBarView::GetDefaultFrameColor() const {
 
 void CustomTabBarView::GoBackToApp() {
   content::WebContents* web_contents = GetWebContents();
-  web_app::AppBrowserController* app_controller =
-      chrome::FindBrowserWithWebContents(web_contents)->app_controller();
   content::NavigationController& controller = web_contents->GetController();
 
   content::NavigationEntry* entry = nullptr;
   int offset = 0;
+  web_app::AppBrowserController* application_controller = app_controller();
 
   // Go back until we find an in scope url or run out of urls.
   while ((entry = controller.GetEntryAtOffset(offset)) &&
-         !app_controller->IsUrlInAppScope(entry->GetURL())) {
+         !IsUrlInAppScope(application_controller, entry->GetURL())) {
     offset--;
   }
 
   // If there are no in scope urls, push the app's launch url and clear
   // the history.
   if (!entry) {
-    content::NavigationController::LoadURLParams load(
-        app_controller->GetAppLaunchURL());
-    load.should_clear_history_list = true;
-    controller.LoadURLWithParams(load);
+    if (application_controller) {
+      GURL initial_url = application_controller->GetAppLaunchURL();
+      content::NavigationController::LoadURLParams load(initial_url);
+      load.should_clear_history_list = true;
+      controller.LoadURLWithParams(load);
+    }
     return;
   }
 
@@ -470,4 +478,10 @@ void CustomTabBarView::ShowContextMenuForViewImpl(
   context_menu_runner_->RunMenuAt(
       views::View::GetWidget(), nullptr, gfx::Rect(point, gfx::Size()),
       views::MenuAnchorPosition::kTopLeft, source_type);
+}
+
+base::Optional<SkColor> CustomTabBarView::GetThemeColor() const {
+  web_app::AppBrowserController* application_controller = app_controller();
+  return application_controller ? application_controller->GetThemeColor()
+                                : base::nullopt;
 }

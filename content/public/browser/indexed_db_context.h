@@ -47,9 +47,6 @@ class IndexedDBContext
   // Forget the origins/sizes read from disk.
   virtual void ResetCachesForTesting() = 0;
 
-  // Disables the exit-time deletion of session-only data.
-  virtual void SetForceKeepSessionState() = 0;
-
  protected:
   friend class base::RefCountedDeleteOnSequence<IndexedDBContext>;
   friend class base::DeleteHelper<IndexedDBContext>;

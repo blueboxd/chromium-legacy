@@ -208,7 +208,6 @@ class UiControllerAndroid : public ControllerObserver {
   void DestroySelf();
   void Shutdown(Metrics::DropOutReason reason);
   void UpdateActions(const std::vector<UserAction>& GetUserActions);
-  void UpdateSuggestions(const std::vector<UserAction>& GetUserActions);
   void HideKeyboardIfFocusNotOnText();
 
   void ResetGenericUiControllers();

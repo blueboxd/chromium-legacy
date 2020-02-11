@@ -9,33 +9,34 @@
 #include "ash/public/cpp/arc_custom_tab.h"
 #include "base/bind.h"
 #include "base/metrics/histogram_macros.h"
+#include "chrome/browser/ui/browser.h"
+#include "chrome/browser/ui/browser_window.h"
 #include "content/public/browser/web_contents.h"
 #include "ui/aura/window.h"
 
 // static
 mojo::PendingRemote<arc::mojom::CustomTabSession> CustomTabSessionImpl::Create(
-    std::unique_ptr<content::WebContents> web_contents,
-    std::unique_ptr<ash::ArcCustomTab> custom_tab) {
-  if (!custom_tab)
-    return mojo::NullRemote();
+    std::unique_ptr<ash::ArcCustomTab> custom_tab,
+    Browser* browser) {
+  DCHECK(custom_tab);
 
   // This object will be deleted when the mojo connection is closed.
-  auto* tab =
-      new CustomTabSessionImpl(std::move(web_contents), std::move(custom_tab));
+  auto* tab = new CustomTabSessionImpl(std::move(custom_tab), browser);
   mojo::PendingRemote<arc::mojom::CustomTabSession> remote;
   tab->Bind(&remote);
   return remote;
 }
 
 CustomTabSessionImpl::CustomTabSessionImpl(
-    std::unique_ptr<content::WebContents> web_contents,
-    std::unique_ptr<ash::ArcCustomTab> custom_tab)
-    : ArcCustomTabModalDialogHost(std::move(custom_tab),
-                                  std::move(web_contents)),
+    std::unique_ptr<ash::ArcCustomTab> custom_tab,
+    Browser* browser)
+    : browser_(browser),
+      custom_tab_(std::move(custom_tab)),
       weak_ptr_factory_(this) {
-  aura::Window* window = web_contents_->GetNativeView();
-  custom_tab_->Attach(window);
-  window->Show();
+  aura::Window* native_view = browser_->window()->GetNativeWindow();
+  custom_tab_->Attach(native_view);
+  browser_->window()->Show();
+  browser_->tab_strip_model()->AddObserver(this);
 }
 
 CustomTabSessionImpl::~CustomTabSessionImpl() {
@@ -62,6 +63,15 @@ CustomTabSessionImpl::~CustomTabSessionImpl() {
           "Arc.CustomTabs.SessionLifetime2.ForwardedToNormalTab", elapsed);
       break;
   }
+
+  if (browser_) {
+    auto* tab_strip_model = browser_->tab_strip_model();
+    DCHECK(tab_strip_model);
+    tab_strip_model->RemoveObserver(this);
+    int index = tab_strip_model->GetIndexOfWebContents(
+        tab_strip_model->GetActiveWebContents());
+    tab_strip_model->DetachWebContentsAt(index);
+  }
 }
 
 void CustomTabSessionImpl::OnOpenInChromeClicked() {
@@ -77,5 +87,14 @@ void CustomTabSessionImpl::Bind(
 
 // Deletes this object when the mojo connection is closed.
 void CustomTabSessionImpl::Close() {
+  delete this;
+}
+
+// This should only be called once because a custom tab is a single tabbed
+// browser.
+void CustomTabSessionImpl::TabStripEmpty() {
+  browser_->tab_strip_model()->RemoveObserver(this);
+  browser_ = nullptr;
+  forwarded_to_normal_tab_ = true;
   delete this;
 }

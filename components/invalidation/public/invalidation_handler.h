@@ -28,6 +28,10 @@ class INVALIDATION_EXPORT InvalidationHandler {
   virtual void OnIncomingInvalidation(
       const ObjectIdInvalidationMap& invalidation_map) = 0;
 
+  // Returned value must be unique for the handlers using the same invalidation
+  // service.
+  // TODO(crbug.com/1049591): this is currently not the case for
+  // CloudPolicyInvalidator.
   virtual std::string GetOwnerName() const = 0;
 
   // Called on change of |client_id|. Client id is used to identify the

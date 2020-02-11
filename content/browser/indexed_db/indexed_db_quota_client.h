@@ -20,36 +20,36 @@
 namespace content {
 class IndexedDBContextImpl;
 
-// A QuotaClient implementation to integrate IndexedDB
-// with the quota  management system. This interface is used
-// on the IO thread by the quota manager.
+// Integrates IndexedDB with the quota management system.
+//
+// This interface is used on the IO thread by the quota manager.
 class IndexedDBQuotaClient : public storage::QuotaClient {
  public:
   CONTENT_EXPORT explicit IndexedDBQuotaClient(
-      IndexedDBContextImpl* indexed_db_context);
+      scoped_refptr<IndexedDBContextImpl> indexed_db_context);
 
-  // QuotaClient method overrides
+  // QuotaClient implementation:
   ID id() const override;
-  void OnQuotaManagerDestroyed() override {}
-  CONTENT_EXPORT void GetOriginUsage(const url::Origin& origin,
-                                     blink::mojom::StorageType type,
-                                     GetUsageCallback callback) override;
-  CONTENT_EXPORT void GetOriginsForType(blink::mojom::StorageType type,
-                                        GetOriginsCallback callback) override;
-  CONTENT_EXPORT void GetOriginsForHost(blink::mojom::StorageType type,
-                                        const std::string& host,
-                                        GetOriginsCallback callback) override;
-  CONTENT_EXPORT void DeleteOriginData(const url::Origin& origin,
-                                       blink::mojom::StorageType type,
-                                       DeletionCallback callback) override;
+  void OnQuotaManagerDestroyed() override;
+  void GetOriginUsage(const url::Origin& origin,
+                      blink::mojom::StorageType type,
+                      GetUsageCallback callback) override;
+  void GetOriginsForType(blink::mojom::StorageType type,
+                         GetOriginsCallback callback) override;
+  void GetOriginsForHost(blink::mojom::StorageType type,
+                         const std::string& host,
+                         GetOriginsCallback callback) override;
+  void DeleteOriginData(const url::Origin& origin,
+                        blink::mojom::StorageType type,
+                        DeletionCallback callback) override;
   void PerformStorageCleanup(blink::mojom::StorageType type,
                              base::OnceClosure callback) override;
   bool DoesSupport(blink::mojom::StorageType type) const override;
 
  private:
-  CONTENT_EXPORT ~IndexedDBQuotaClient() override;
+  ~IndexedDBQuotaClient() override;
 
-  scoped_refptr<IndexedDBContextImpl> indexed_db_context_;
+  const scoped_refptr<IndexedDBContextImpl> indexed_db_context_;
 
   DISALLOW_COPY_AND_ASSIGN(IndexedDBQuotaClient);
 };

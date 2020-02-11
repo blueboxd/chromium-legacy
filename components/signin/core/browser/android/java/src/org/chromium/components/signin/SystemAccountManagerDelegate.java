@@ -24,6 +24,8 @@ import android.os.PatternMatcher;
 import android.os.Process;
 import android.os.SystemClock;
 
+import androidx.annotation.Nullable;
+
 import com.google.android.gms.auth.GoogleAuthException;
 import com.google.android.gms.auth.GoogleAuthUtil;
 import com.google.android.gms.auth.GooglePlayServicesAvailabilityException;
@@ -35,6 +37,7 @@ import org.chromium.base.Callback;
 import org.chromium.base.ContextUtils;
 import org.chromium.base.Log;
 import org.chromium.base.ObserverList;
+import org.chromium.base.StrictModeContext;
 import org.chromium.base.ThreadUtils;
 import org.chromium.base.library_loader.LibraryLoader;
 import org.chromium.base.metrics.RecordHistogram;
@@ -242,6 +245,27 @@ public class SystemAccountManagerDelegate implements AccountManagerDelegate {
         Bundle emptyOptions = new Bundle();
         mAccountManager.updateCredentials(
                 account, "android", emptyOptions, activity, realCallback, null);
+    }
+
+    @Nullable
+    @Override
+    public String getAccountGaiaId(String accountEmail) {
+        try {
+            return GoogleAuthUtil.getAccountId(ContextUtils.getApplicationContext(), accountEmail);
+        } catch (IOException | GoogleAuthException ex) {
+            Log.e(TAG, "SystemAccountManagerDelegate.getAccountGaiaId", ex);
+            return null;
+        }
+    }
+
+    @Override
+    public boolean isGooglePlayServicesAvailable() {
+        // TODO(http://crbug.com/577190): Remove StrictMode override.
+        try (StrictModeContext ignored = StrictModeContext.allowDiskWrites()) {
+            int resultCode = GoogleApiAvailability.getInstance().isGooglePlayServicesAvailable(
+                    ContextUtils.getApplicationContext());
+            return resultCode == ConnectionResult.SUCCESS;
+        }
     }
 
     protected boolean hasGetAccountsPermission() {

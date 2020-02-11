@@ -111,6 +111,9 @@ class PrintSessionImpl : public mojom::PrintSessionHost,
   // In flight callbacks to |pdf_flattener_|, with their request IDs as the key.
   base::flat_map<int, CreatePreviewDocumentCallback> callbacks_;
 
+  // Web contents for the ARC custom tab.
+  std::unique_ptr<content::WebContents> web_contents_;
+
   WEB_CONTENTS_USER_DATA_KEY_DECL();
 
   // Note: This should remain the last member so it'll be destroyed and

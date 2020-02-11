@@ -131,6 +131,18 @@ class PasswordManagerProxy {
   cancelExportPasswords() {}
 
   /**
+   * Add an observer to the account storage opt-in state.
+   * @param {function(boolean):void} listener
+   */
+  addAccountStorageOptInStateListener(listener) {}
+
+  /**
+   * Remove an observer to the account storage opt-in state.
+   * @param {function(boolean):void} listener
+   */
+  removeAccountStorageOptInStateListener(listener) {}
+
+  /**
    * Requests the account-storage opt-in state of the current user.
    * @return {!Promise<(boolean)>} A promise that resolves to the opt-in state.
    */
@@ -248,6 +260,18 @@ class PasswordManagerImpl {
   /** @override */
   cancelExportPasswords() {
     chrome.passwordsPrivate.cancelExportPasswords();
+  }
+
+  /** @override */
+  addAccountStorageOptInStateListener(listener) {
+    chrome.passwordsPrivate.onAccountStorageOptInStateChanged.addListener(
+        listener);
+  }
+
+  /** @override */
+  removeAccountStorageOptInStateListener(listener) {
+    chrome.passwordsPrivate.onAccountStorageOptInStateChanged.removeListener(
+        listener);
   }
 
   /** @override */

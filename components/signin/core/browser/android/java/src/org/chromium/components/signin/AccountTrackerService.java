@@ -121,9 +121,8 @@ public class AccountTrackerService {
         ThreadUtils.assertOnUiThread();
         mSystemAccountsChanged = false;
         mSyncForceRefreshedForTest = false;
-
-        final AccountIdProvider accountIdProvider = AccountIdProvider.getInstance();
-        if (accountIdProvider.canBeUsed()) {
+        final AccountManagerFacade accountManagerFacade = AccountManagerFacade.get();
+        if (accountManagerFacade.isGooglePlayServicesAvailable()) {
             mSystemAccountsSeedingStatus = SystemAccountsSeedingStatus.SEEDING_IN_PROGRESS;
         } else {
             mSystemAccountsSeedingStatus = SystemAccountsSeedingStatus.SEEDING_NOT_STARTED;
@@ -133,10 +132,10 @@ public class AccountTrackerService {
         if (mAccountsChangeObserver == null) {
             mAccountsChangeObserver =
                     () -> invalidateAccountSeedStatus(false /* don't reseed right now */);
-            AccountManagerFacade.get().addObserver(mAccountsChangeObserver);
+            accountManagerFacade.addObserver(mAccountsChangeObserver);
         }
 
-        AccountManagerFacade.get().tryGetGoogleAccounts(accounts -> {
+        accountManagerFacade.tryGetGoogleAccounts(accounts -> {
             new AsyncTask<String[][]>() {
                 @Override
                 public String[][] doInBackground() {
@@ -147,7 +146,7 @@ public class AccountTrackerService {
                     String[][] accountIdNameMap = new String[2][accounts.size()];
                     for (int i = 0; i < accounts.size(); ++i) {
                         accountIdNameMap[0][i] =
-                                accountIdProvider.getAccountId(accounts.get(i).name);
+                                accountManagerFacade.getAccountGaiaId(accounts.get(i).name);
                         accountIdNameMap[1][i] = accounts.get(i).name;
                     }
 
@@ -257,8 +256,8 @@ public class AccountTrackerService {
 
     @NativeMethods
     interface Natives {
-        public void seedAccountsInfo(
+        void seedAccountsInfo(
                 long nativeAccountTrackerService, String[] gaiaIds, String[] accountNames);
-        public boolean areAccountsSeeded(long nativeAccountTrackerService, String[] accountNames);
+        boolean areAccountsSeeded(long nativeAccountTrackerService, String[] accountNames);
     }
 }

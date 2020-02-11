@@ -144,6 +144,10 @@ bool BrowserFrame::ShouldSaveWindowPlacement() const {
   return native_browser_frame_->ShouldSaveWindowPlacement();
 }
 
+bool BrowserFrame::ShouldDrawFrameHeader() const {
+  return true;
+}
+
 void BrowserFrame::GetWindowPlacement(gfx::Rect* bounds,
                                       ui::WindowShowState* show_state) const {
   return native_browser_frame_->GetWindowPlacement(bounds, show_state);

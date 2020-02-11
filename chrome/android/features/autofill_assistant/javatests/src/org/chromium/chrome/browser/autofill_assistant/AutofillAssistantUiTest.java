@@ -36,7 +36,7 @@ import org.chromium.base.ThreadUtils;
 import org.chromium.base.library_loader.LibraryLoader;
 import org.chromium.base.test.util.UrlUtils;
 import org.chromium.chrome.autofill_assistant.R;
-import org.chromium.chrome.browser.autofill_assistant.carousel.AssistantCarouselCoordinator;
+import org.chromium.chrome.browser.autofill_assistant.carousel.AssistantActionsCarouselCoordinator;
 import org.chromium.chrome.browser.autofill_assistant.carousel.AssistantCarouselModel;
 import org.chromium.chrome.browser.autofill_assistant.carousel.AssistantChip;
 import org.chromium.chrome.browser.autofill_assistant.details.AssistantDetails;
@@ -150,10 +150,6 @@ public class AutofillAssistantUiTest {
         View scrim = getActivity().getScrim();
         Assert.assertTrue(scrim.isShown());
 
-        // Test suggestions and actions carousels.
-        testChips(inOrder, assistantCoordinator.getModel().getSuggestionsModel(),
-                assistantCoordinator.getBottomBarCoordinator().getSuggestionsCoordinator());
-
         // TODO(crbug.com/806868): Fix test of actions carousel. This is currently broken as chips
         // are displayed in the reversed order in the actions carousel and calling
         // View#performClick() does not work as chips in the actions carousel are wrapped into a
@@ -217,7 +213,7 @@ public class AutofillAssistantUiTest {
     }
 
     private void testChips(InOrder inOrder, AssistantCarouselModel carouselModel,
-            AssistantCarouselCoordinator carouselCoordinator) {
+            AssistantActionsCarouselCoordinator carouselCoordinator) {
         List<AssistantChip> chips = Arrays.asList(
                 new AssistantChip(AssistantChip.Type.CHIP_ASSISTIVE, AssistantChip.Icon.NONE,
                         "chip 0",

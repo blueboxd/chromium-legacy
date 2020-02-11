@@ -295,10 +295,10 @@ TEST_F(ControllerTest, FetchAndRunScriptsWithChip) {
       controller_->GetUserActions(),
       UnorderedElementsAre(Property(&UserAction::chip,
                                     AllOf(Field(&Chip::text, StrEq("script1")),
-                                          Field(&Chip::type, SUGGESTION))),
+                                          Field(&Chip::type, NORMAL_ACTION))),
                            Property(&UserAction::chip,
                                     AllOf(Field(&Chip::text, StrEq("script2")),
-                                          Field(&Chip::type, SUGGESTION)))));
+                                          Field(&Chip::type, NORMAL_ACTION)))));
 
   // Choose script2 and run it successfully.
   EXPECT_CALL(*mock_service_, OnGetActions(StrEq("script2"), _, _, _, _, _))
@@ -433,7 +433,7 @@ TEST_F(ControllerTest, NoRelevantScriptYet) {
   EXPECT_EQ(AutofillAssistantState::STARTING, controller_->GetState());
 }
 
-TEST_F(ControllerTest, ReportPromptAndSuggestionsChanged) {
+TEST_F(ControllerTest, ReportPromptAndActionsChanged) {
   SupportsScriptResponseProto script_response;
   AddRunnableScript(&script_response, "script1");
   AddRunnableScript(&script_response, "script2");

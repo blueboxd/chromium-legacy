@@ -470,6 +470,7 @@ enum HistogramValue {
   AUTOFILL_ASSISTANT_PRIVATE_ON_ACTIONS_CHANGED = 448,
   AUTOFILL_ASSISTANT_PRIVATE_ON_STATUS_MESSAGE_CHANGED = 449,
   BLUETOOTH_PRIVATE_ON_DEVICE_ADDRESS_CHANGED = 450,
+  PASSWORDS_PRIVATE_ON_ACCOUNT_STORAGE_OPT_IN_STATE_CHANGED = 451,
   // Last entry: Add new entries above, then run:
   // python tools/metrics/histograms/update_extension_histograms.py
   ENUM_BOUNDARY

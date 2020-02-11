@@ -1981,3 +1981,25 @@ CrSettingsSiteFaviconTest.prototype = {
 TEST_F('CrSettingsSiteFaviconTest', 'All', function() {
   mocha.run();
 });
+
+/**
+ * @constructor
+ * @extends {CrSettingsBrowserTest}
+ */
+function CrSettingsBasicPageTest() {}
+
+CrSettingsBasicPageTest.prototype = {
+  __proto__: CrSettingsBrowserTest.prototype,
+
+  /** @override */
+  browsePreload: 'chrome://settings/basic_page/basic_page.html',
+
+  /** @override */
+  extraLibraries: CrSettingsBrowserTest.prototype.extraLibraries.concat([
+    'basic_page_test.js',
+  ]),
+};
+
+TEST_F('CrSettingsBasicPageTest', 'All', function() {
+  mocha.run();
+});

@@ -24,6 +24,7 @@
 #include "chrome/common/extensions/api/passwords_private.h"
 #include "components/keyed_service/core/keyed_service.h"
 #include "components/password_manager/core/browser/password_access_authenticator.h"
+#include "components/password_manager/core/browser/password_account_storage_opt_in_watcher.h"
 #include "components/password_manager/core/browser/reauth_purpose.h"
 #include "components/password_manager/core/browser/ui/export_progress_status.h"
 #include "extensions/browser/extension_function.h"
@@ -73,10 +74,6 @@ class PasswordsPrivateDelegateImpl : public PasswordsPrivateDelegate,
       const std::vector<std::unique_ptr<autofill::PasswordForm>>&
           password_exception_list) override;
 
-  // Callback for when the password list has been written to the destination.
-  void OnPasswordsExportProgress(password_manager::ExportProgressStatus status,
-                                 const std::string& folder_name);
-
   // KeyedService overrides:
   void Shutdown() override;
 
@@ -109,6 +106,12 @@ class PasswordsPrivateDelegateImpl : public PasswordsPrivateDelegate,
   void RemovePasswordExceptionInternal(int id);
   void UndoRemoveSavedPasswordOrExceptionInternal();
 
+  // Callback for when the password list has been written to the destination.
+  void OnPasswordsExportProgress(password_manager::ExportProgressStatus status,
+                                 const std::string& folder_name);
+
+  void OnAccountStorageOptInStateChanged();
+
   // Triggers an OS-dependent UI to present OS account login challenge and
   // returns true if the user passed that challenge.
   bool OsReauthCall(password_manager::ReauthPurpose purpose);
@@ -123,6 +126,9 @@ class PasswordsPrivateDelegateImpl : public PasswordsPrivateDelegate,
   std::unique_ptr<PasswordManagerPorter> password_manager_porter_;
 
   password_manager::PasswordAccessAuthenticator password_access_authenticator_;
+
+  std::unique_ptr<password_manager::PasswordAccountStorageOptInWatcher>
+      password_account_storage_opt_in_watcher_;
 
   // The current list of entries/exceptions. Cached here so that when new
   // observers are added, this delegate can send the current lists without

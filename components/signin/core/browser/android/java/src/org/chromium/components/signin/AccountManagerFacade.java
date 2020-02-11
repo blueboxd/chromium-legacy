@@ -539,6 +539,28 @@ public class AccountManagerFacade {
         return mUpdatePendingState;
     }
 
+    /**
+     * Returns the Gaia id for the account associated with the given email address.
+     * If an account with the given email address is not installed on the device
+     * then null is returned.
+     *
+     * This method will throw IllegalStateException if called on the main thread.
+     *
+     * @param accountEmail The email address of a Google account.
+     */
+    @WorkerThread
+    @Nullable
+    public String getAccountGaiaId(String accountEmail) {
+        return mDelegate.getAccountGaiaId(accountEmail);
+    }
+
+    /**
+     * Checks whether Google Play services is available.
+     */
+    boolean isGooglePlayServicesAvailable() {
+        return mDelegate.isGooglePlayServicesAvailable();
+    }
+
     private boolean hasFeature(Account account, String feature) {
         return mDelegate.hasFeatures(account, new String[] {feature});
     }

@@ -2137,6 +2137,7 @@ if (!is_android) {
         "../browser/chromeos/arc/auth/arc_robot_auth_code_fetcher_browsertest.cc",
         "../browser/chromeos/arc/enterprise/cert_store/arc_cert_store_bridge_browsertest.cc",
         "../browser/chromeos/arc/intent_helper/arc_settings_service_browsertest.cc",
+        "../browser/chromeos/arc/intent_helper/custom_tab_session_impl_browsertest.cc",
         "../browser/chromeos/arc/session/arc_session_manager_browsertest.cc",
         "../browser/chromeos/arc/user_session/arc_user_session_service_browsertest.cc",
         "../browser/chromeos/attestation/attestation_policy_browsertest.cc",

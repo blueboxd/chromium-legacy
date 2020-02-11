@@ -61,17 +61,15 @@ class AssistantPeekHeightCoordinator {
     private final int mToolbarHeightWithoutPaddingBottom;
     private final int mDefaultToolbarPaddingBottom;
     private final int mChildrenVerticalSpacing;
-    private final int mSuggestionsVerticalInset;
 
     private int mPeekHeight;
     private @PeekMode int mPeekMode = PeekMode.UNDEFINED;
     private int mHeaderHeight;
-    private int mSuggestionsHeight;
     private int mActionsHeight;
 
     AssistantPeekHeightCoordinator(Context context, Delegate delegate,
             BottomSheetController bottomSheetController, View toolbarView, View headerView,
-            View suggestionsView, View actionsView, @PeekMode int initialMode) {
+            View actionsView, @PeekMode int initialMode) {
         mToolbarView = toolbarView;
         mDelegate = delegate;
         mBottomSheetController = bottomSheetController;
@@ -85,8 +83,6 @@ class AssistantPeekHeightCoordinator {
                 R.dimen.autofill_assistant_toolbar_vertical_padding);
         mChildrenVerticalSpacing = context.getResources().getDimensionPixelSize(
                 R.dimen.autofill_assistant_bottombar_vertical_spacing);
-        mSuggestionsVerticalInset =
-                context.getResources().getDimensionPixelSize(R.dimen.chip_bg_vertical_inset);
 
         // Show only actions if we are in the peek state and peek mode is HANDLE_HEADER_CAROUSELS.
         mBottomSheetController.addObserver(new EmptyBottomSheetObserver() {
@@ -99,10 +95,8 @@ class AssistantPeekHeightCoordinator {
         // Listen for height changes in the header and carousel to make sure we always have the
         // correct peek height.
         mHeaderHeight = headerView.getHeight();
-        mSuggestionsHeight = suggestionsView.getHeight();
         mActionsHeight = actionsView.getHeight();
         listenForHeightChange(headerView, this::onHeaderHeightChanged);
-        listenForHeightChange(suggestionsView, this::onSuggestionsHeightChanged);
         listenForHeightChange(actionsView, this::onActionsHeightChanged);
 
         setPeekMode(initialMode);
@@ -115,11 +109,6 @@ class AssistantPeekHeightCoordinator {
 
     private void onActionsHeightChanged(int height) {
         mActionsHeight = height;
-        updateToolbarPadding();
-    }
-
-    private void onSuggestionsHeightChanged(int height) {
-        mSuggestionsHeight = height;
         updateToolbarPadding();
     }
 
@@ -179,11 +168,6 @@ class AssistantPeekHeightCoordinator {
                 break;
             case PeekMode.HANDLE_HEADER_CAROUSELS:
                 toolbarPaddingBottom = mHeaderHeight;
-                if (mSuggestionsHeight > 0) {
-                    toolbarPaddingBottom += mSuggestionsHeight + mChildrenVerticalSpacing
-                            - 2 * mSuggestionsVerticalInset;
-                }
-
                 if (mActionsHeight > 0) {
                     toolbarPaddingBottom += mActionsHeight;
                 }

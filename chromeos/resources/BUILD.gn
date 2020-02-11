@@ -107,6 +107,13 @@ grit("media_app_resources") {
     "chromeos_media_app_resources.pak",
   ]
   output_dir = "$root_gen_dir/chromeos"
+
+  grit_flags = [
+    "-E",
+    "root_gen_dir=" + rebase_path(root_gen_dir, root_build_dir),
+  ]
+
+  deps = [ "//chromeos/components/media_app_ui:mojo_bindings_js" ]
 }
 
 # Resources automatically served by the chrome://media-app bundle, obtained via DEPS.

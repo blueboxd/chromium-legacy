@@ -113,6 +113,11 @@ namespace {
 
 // Gets the display mode for a given browser.
 ToolbarView::DisplayMode GetDisplayMode(Browser* browser) {
+#if defined(OS_CHROMEOS)
+  if (browser->is_type_custom_tab())
+    return ToolbarView::DisplayMode::CUSTOM_TAB;
+#endif
+
   // Checked in this order because even tabbed PWAs use the CUSTOM_TAB
   // display mode.
   if (web_app::AppBrowserController::IsForWebAppBrowser(browser))

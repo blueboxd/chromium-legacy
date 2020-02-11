@@ -111,4 +111,22 @@ public interface AccountManagerDelegate {
     default ProfileDataSource getProfileDataSource() {
         return null;
     }
+
+    /**
+     * Returns the Gaia id for the account associated with the given email address.
+     * If an account with the given email address is not installed on the device
+     * then null is returned.
+     *
+     * This method will throw IllegalStateException if called on the main thread.
+     *
+     * @param accountEmail The email address of a Google account.
+     */
+    @WorkerThread
+    @Nullable
+    String getAccountGaiaId(String accountEmail);
+
+    /**
+     * Checks whether Google Play services is available.
+     */
+    boolean isGooglePlayServicesAvailable();
 }

@@ -8,6 +8,7 @@
 #include "base/logging.h"
 #include "base/run_loop.h"
 #include "base/stl_util.h"
+#include "base/strings/utf_string_conversions.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "build/build_config.h"
 #include "chrome/test/pixel/browser_skia_gold_pixel_diff.h"
@@ -96,6 +97,15 @@ bool TestBrowserDialog::VerifyUi() {
 
   if (added.size() != 1) {
     DLOG(INFO) << "VerifyUi(): Expected 1 added widget; got " << added.size();
+    if (added.size() > 1) {
+      base::string16 widget_title_log =
+          base::ASCIIToUTF16("Added Widgets are: ");
+      for (views::Widget* widget : added) {
+        widget_title_log += widget->widget_delegate()->GetWindowTitle() +
+                            base::ASCIIToUTF16(" ");
+      }
+      DLOG(INFO) << widget_title_log;
+    }
     return false;
   }
 

@@ -13,8 +13,12 @@ import android.view.View;
 import android.view.ViewGroup;
 
 import org.chromium.chrome.autofill_assistant.R;
+import org.chromium.chrome.browser.autofill_assistant.EditDistance;
+import org.chromium.ui.modelutil.ListModel;
 import org.chromium.ui.modelutil.RecyclerViewAdapter;
 import org.chromium.ui.modelutil.SimpleRecyclerViewMcp;
+
+import java.util.List;
 
 /**
  * A coordinator responsible for suggesting chips to the user. If there is one chip to display, it
@@ -37,10 +41,13 @@ import org.chromium.ui.modelutil.SimpleRecyclerViewMcp;
  * |[6][5][4][3][2]|       (after horizontal scrolling from left to right)
  * |               |
  */
-public class AssistantActionsCarouselCoordinator implements AssistantCarouselCoordinator {
+public class AssistantActionsCarouselCoordinator {
+    private final AssistantCarouselModel mModel;
     private final RecyclerView mView;
 
     public AssistantActionsCarouselCoordinator(Context context, AssistantCarouselModel model) {
+        mModel = model;
+
         mView = new RecyclerView(context);
         mView.setTag(RECYCLER_VIEW_TAG);
 
@@ -69,9 +76,58 @@ public class AssistantActionsCarouselCoordinator implements AssistantCarouselCoo
                 AssistantChipViewHolder::create));
     }
 
-    @Override
     public RecyclerView getView() {
         return mView;
+    }
+
+    public void updateChips(List<AssistantChip> newChips) {
+        ListModel<AssistantChip> oldChips = mModel.getChipsModel();
+        if (!areChipsEqual(oldChips, newChips)) {
+            // We apply the minimum set of operations on the current chips to transform it in the
+            // target list of chips. When testing for chip equivalence, we only compare their type
+            // and text but all substitutions will still be applied so we are sure we display the
+            // given {@code chips} with their associated callbacks.
+            EditDistance.transform(oldChips, newChips, AssistantChip::equals);
+        } else {
+            for (int i = 0; i < oldChips.size(); ++i) {
+                AssistantChip oldChip = oldChips.get(i);
+                AssistantChip newChip = newChips.get(i);
+
+                // We assume that the enabled state is the only thing that may change.
+                if (oldChip.isDisabled() == newChip.isDisabled()) {
+                    continue;
+                }
+
+                View view = mView.getLayoutManager().findViewByPosition(i);
+                if (view == null) {
+                    oldChips.update(i, newChip);
+                } else {
+                    oldChip.setDisabled(newChip.isDisabled());
+                    view.setEnabled(!newChip.isDisabled());
+                }
+            }
+        }
+    }
+
+    /**
+     * Returns |true| if all chips in the list are considered equal, meaning the same except their
+     * |isDisabled()| state.
+     */
+    private boolean areChipsEqual(ListModel<AssistantChip> oldChips, List<AssistantChip> newChips) {
+        if (oldChips.size() != newChips.size()) {
+            return false;
+        }
+
+        for (int i = 0; i < oldChips.size(); ++i) {
+            AssistantChip oldChip = oldChips.get(i);
+            AssistantChip newChip = newChips.get(i);
+
+            if (!oldChip.equals(newChip)) {
+                return false;
+            }
+        }
+
+        return true;
     }
 
     // TODO(crbug.com/806868): Handle RTL layouts.

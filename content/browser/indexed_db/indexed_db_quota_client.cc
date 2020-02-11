@@ -70,20 +70,23 @@ void GetOriginsForHostOnIndexedDBThread(
 // IndexedDBQuotaClient --------------------------------------------------------
 
 IndexedDBQuotaClient::IndexedDBQuotaClient(
-    IndexedDBContextImpl* indexed_db_context)
-    : indexed_db_context_(indexed_db_context) {}
+    scoped_refptr<IndexedDBContextImpl> indexed_db_context)
+    : indexed_db_context_(std::move(indexed_db_context)) {
+  DCHECK(indexed_db_context_.get());
+}
 
-IndexedDBQuotaClient::~IndexedDBQuotaClient() {}
+IndexedDBQuotaClient::~IndexedDBQuotaClient() = default;
 
 QuotaClient::ID IndexedDBQuotaClient::id() const {
   return kIndexedDatabase;
 }
 
+void IndexedDBQuotaClient::OnQuotaManagerDestroyed() {}
+
 void IndexedDBQuotaClient::GetOriginUsage(const url::Origin& origin,
                                           StorageType type,
                                           GetUsageCallback callback) {
   DCHECK(!callback.is_null());
-  DCHECK(indexed_db_context_.get());
 
   // IndexedDB is in the temp namespace for now.
   if (type != StorageType::kTemporary) {
@@ -101,7 +104,6 @@ void IndexedDBQuotaClient::GetOriginUsage(const url::Origin& origin,
 void IndexedDBQuotaClient::GetOriginsForType(StorageType type,
                                              GetOriginsCallback callback) {
   DCHECK(!callback.is_null());
-  DCHECK(indexed_db_context_.get());
 
   // All databases are in the temp namespace for now.
   if (type != StorageType::kTemporary) {
@@ -123,7 +125,6 @@ void IndexedDBQuotaClient::GetOriginsForHost(StorageType type,
                                              const std::string& host,
                                              GetOriginsCallback callback) {
   DCHECK(!callback.is_null());
-  DCHECK(indexed_db_context_.get());
 
   // All databases are in the temp namespace for now.
   if (type != StorageType::kTemporary) {

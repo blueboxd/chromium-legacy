@@ -156,7 +156,10 @@ class ReferenceKind(Kind):
          print(b.name)  # Outputs 'test_struct_2'.
     """
     def Get(self):
-      return self.shared_definition[name]
+      try:
+        return self.shared_definition[name]
+      except KeyError:  # Must raise AttributeError if property doesn't exist.
+        raise AttributeError
 
     def Set(self, value):
       self.shared_definition[name] = value

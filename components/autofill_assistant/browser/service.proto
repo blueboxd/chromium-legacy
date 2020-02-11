@@ -257,9 +257,6 @@ enum ChipType {
   // Chip is a highlighted (blue) action chip.
   HIGHLIGHTED_ACTION = 1;
 
-  // Chip is a suggestion.
-  SUGGESTION = 2;
-
   // Chip is a normal action chip.
   NORMAL_ACTION = 3;
 
@@ -285,6 +282,8 @@ enum ChipType {
   // cancel button. Otherwise, buttons of this type work and look like a
   // HIGHLIGHTED_ACTION.
   DONE_ACTION = 6;
+
+  reserved 2;
 }
 
 enum ChipIcon {

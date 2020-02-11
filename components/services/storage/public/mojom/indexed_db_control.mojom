@@ -64,4 +64,8 @@ interface IndexedDBControl {
 
   // Called by chrome://indexeddb-internals to populate its page details.
   GetAllOriginsDetails() => (bool incognito, mojo_base.mojom.ListValue details);
+
+  // Disables the exit-time deletion of session-only data, so that internal
+  // restarts can preserve that data.
+  SetForceKeepSessionState();
 };

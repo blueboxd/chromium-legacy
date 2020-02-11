@@ -64,12 +64,12 @@ class NativeFileSystemUsageBubbleView : public LocationBarBubbleDelegateView {
   base::string16 GetAccessibleWindowTitle() const override;
   bool ShouldShowCloseButton() const override;
   void Init() override;
-  bool Cancel() override;
-  bool Close() override;
   void WindowClosing() override;
   void CloseBubble() override;
   gfx::Size CalculatePreferredSize() const override;
   void ChildPreferredSizeChanged(views::View* child) override;
+
+  void OnDialogCancelled();
 
   // Singleton instance of the bubble. The bubble can only be shown on the
   // active browser window, so there is no case in which it will be shown

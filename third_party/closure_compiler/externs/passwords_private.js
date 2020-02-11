@@ -178,3 +178,9 @@ chrome.passwordsPrivate.onPasswordExceptionsListChanged;
  * @type {!ChromeEvent}
  */
 chrome.passwordsPrivate.onPasswordsFileExportProgress;
+
+/**
+ * Fired when the opt-in state for the account-scoped storage has changed.
+ * @type {!ChromeEvent}
+ */
+chrome.passwordsPrivate.onAccountStorageOptInStateChanged;

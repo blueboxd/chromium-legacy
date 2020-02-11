@@ -111,6 +111,14 @@ class CustomTabBarView : public views::AccessiblePaneView,
                                   const gfx::Point& point,
                                   ui::MenuSourceType source_type) override;
 
+  // Get the app controller associated with the browser, if any.
+  web_app::AppBrowserController* app_controller() const {
+    return browser_->app_controller();
+  }
+
+  // Convenience method to return the theme color from |app_controller_|.
+  base::Optional<SkColor> GetThemeColor() const;
+
   SkColor title_bar_color_;
   SkColor background_color_;
 

@@ -17,7 +17,7 @@ class AemuTarget(qemu_target.QemuTarget):
                hardware_gpu):
     super(AemuTarget, self).__init__(output_dir, target_cpu, system_log_file,
                                      emu_type, cpu_cores, require_kvm,
-                                     ram_size_mb, qemu_img_retries=0)
+                                     ram_size_mb)
 
     # TODO(crbug.com/1000907): Enable AEMU for arm64.
     if platform.machine() == 'aarch64':

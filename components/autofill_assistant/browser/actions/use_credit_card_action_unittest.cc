@@ -7,6 +7,7 @@
 #include <utility>
 
 #include "base/guid.h"
+#include "base/strings/string_number_conversions.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/test/gmock_callback_support.h"
 #include "base/test/mock_callback.h"
@@ -25,7 +26,6 @@ using ::base::test::RunOnceCallback;
 using ::testing::_;
 using ::testing::Eq;
 using ::testing::Expectation;
-using ::testing::InSequence;
 using ::testing::Invoke;
 using ::testing::NotNull;
 using ::testing::Return;
@@ -39,9 +39,6 @@ class UseCreditCardActionTest : public testing::Test {
     auto autofill_profile = std::make_unique<autofill::AutofillProfile>(
         base::GenerateGUID(), autofill::test::kEmptyOrigin);
     autofill::test::SetProfileInfo(autofill_profile.get(), kFirstName, "",
-                                   kLastName, kEmail, "", "", "", "", "", "",
-                                   "", "");
-    autofill::test::SetProfileInfo(&autofill_profile_, kFirstName, "",
                                    kLastName, kEmail, "", "", "", "", "", "",
                                    "", "");
     user_data_.selected_addresses_[kAddressName] = std::move(autofill_profile);
@@ -76,10 +73,10 @@ class UseCreditCardActionTest : public testing::Test {
 
   UseCreditCardProto::RequiredField* AddRequiredField(
       ActionProto* action,
-      UseCreditCardProto::RequiredField::CardField type,
+      std::string value_expression,
       std::string selector) {
     auto* required_field = action->mutable_use_card()->add_required_fields();
-    required_field->set_card_field(type);
+    required_field->set_value_expression(value_expression);
     required_field->mutable_element()->add_selectors(selector);
     return required_field;
   }
@@ -137,10 +134,13 @@ TEST_F(UseCreditCardActionTest, FillCreditCardRequiredFieldsFilled) {
 
   ActionProto action = CreateUseCreditCardAction();
   AddRequiredField(
-      &action, UseCreditCardProto::RequiredField::CREDIT_CARD_VERIFICATION_CODE,
+      &action,
+      base::NumberToString(static_cast<int>(
+          UseCreditCardProto::RequiredField::CREDIT_CARD_VERIFICATION_CODE)),
       "#cvc");
   AddRequiredField(&action,
-                   UseCreditCardProto::RequiredField::CREDIT_CARD_EXP_MONTH,
+                   base::NumberToString(static_cast<int>(
+                       autofill::ServerFieldType::CREDIT_CARD_EXP_MONTH)),
                    "#expmonth");
 
   autofill::CreditCard credit_card;
@@ -162,28 +162,35 @@ TEST_F(UseCreditCardActionTest, FillCreditCardWithFallback) {
 
   ActionProto action = CreateUseCreditCardAction();
   AddRequiredField(
-      &action, UseCreditCardProto::RequiredField::CREDIT_CARD_VERIFICATION_CODE,
+      &action,
+      base::NumberToString(static_cast<int>(
+          UseCreditCardProto::RequiredField::CREDIT_CARD_VERIFICATION_CODE)),
       "#cvc");
   AddRequiredField(&action,
-                   UseCreditCardProto::RequiredField::CREDIT_CARD_EXP_MONTH,
+                   base::NumberToString(static_cast<int>(
+                       autofill::ServerFieldType::CREDIT_CARD_EXP_MONTH)),
                    "#expmonth");
   AddRequiredField(
-      &action, UseCreditCardProto::RequiredField::CREDIT_CARD_EXP_2_DIGIT_YEAR,
+      &action,
+      base::NumberToString(static_cast<int>(
+          autofill::ServerFieldType::CREDIT_CARD_EXP_2_DIGIT_YEAR)),
       "#expyear2");
   AddRequiredField(
-      &action, UseCreditCardProto::RequiredField::CREDIT_CARD_EXP_4_DIGIT_YEAR,
+      &action,
+      base::NumberToString(static_cast<int>(
+          autofill::ServerFieldType::CREDIT_CARD_EXP_4_DIGIT_YEAR)),
       "#expyear4");
-  AddRequiredField(
-      &action, UseCreditCardProto::RequiredField::CREDIT_CARD_CARD_HOLDER_NAME,
-      "#card_name");
   AddRequiredField(&action,
-                   UseCreditCardProto::RequiredField::CREDIT_CARD_NUMBER,
+                   base::NumberToString(static_cast<int>(
+                       autofill::ServerFieldType::CREDIT_CARD_NAME_FULL)),
+                   "#card_name");
+  AddRequiredField(&action,
+                   base::NumberToString(static_cast<int>(
+                       autofill::ServerFieldType::CREDIT_CARD_NUMBER)),
                    "#card_number");
   AddRequiredField(&action,
-                   UseCreditCardProto::RequiredField::CREDIT_CARD_EXP_MM_YY,
-                   "#exp_month_year2");
-  AddRequiredField(&action,
-                   UseCreditCardProto::RequiredField::CREDIT_CARD_NETWORK,
+                   base::NumberToString(static_cast<int>(
+                       UseCreditCardProto::RequiredField::CREDIT_CARD_NETWORK)),
                    "#network");
 
   // First validation fails.
@@ -200,9 +207,6 @@ TEST_F(UseCreditCardActionTest, FillCreditCardWithFallback) {
       .WillOnce(RunOnceCallback<1>(OkClientStatus(), ""));
   EXPECT_CALL(mock_web_controller_,
               OnGetFieldValue(Selector({"#card_number"}), _))
-      .WillOnce(RunOnceCallback<1>(OkClientStatus(), ""));
-  EXPECT_CALL(mock_web_controller_,
-              OnGetFieldValue(Selector({"#exp_month_year2"}), _))
       .WillOnce(RunOnceCallback<1>(OkClientStatus(), ""));
   EXPECT_CALL(mock_web_controller_, OnGetFieldValue(Selector({"#network"}), _))
       .WillOnce(RunOnceCallback<1>(OkClientStatus(), ""));
@@ -233,10 +237,6 @@ TEST_F(UseCreditCardActionTest, FillCreditCardWithFallback) {
           mock_action_delegate_,
           OnSetFieldValue(Selector({"#card_number"}), "4111111111111111", _))
           .WillOnce(RunOnceCallback<2>(OkClientStatus()));
-  Expectation set_exp_month_year2 =
-      EXPECT_CALL(mock_action_delegate_,
-                  OnSetFieldValue(Selector({"#exp_month_year2"}), "09/24", _))
-          .WillOnce(RunOnceCallback<2>(OkClientStatus()));
   Expectation set_card_network =
       EXPECT_CALL(mock_action_delegate_,
                   OnSetFieldValue(Selector({"#network"}), "visa", _))
@@ -261,10 +261,6 @@ TEST_F(UseCreditCardActionTest, FillCreditCardWithFallback) {
       .WillOnce(RunOnceCallback<1>(OkClientStatus(), "not empty"));
   EXPECT_CALL(mock_web_controller_,
               OnGetFieldValue(Selector({"#card_number"}), _))
-      .After(set_expyear4)
-      .WillOnce(RunOnceCallback<1>(OkClientStatus(), "not empty"));
-  EXPECT_CALL(mock_web_controller_,
-              OnGetFieldValue(Selector({"#exp_month_year2"}), _))
       .After(set_expyear4)
       .WillOnce(RunOnceCallback<1>(OkClientStatus(), "not empty"));
   EXPECT_CALL(mock_web_controller_, OnGetFieldValue(Selector({"#network"}), _))
@@ -296,7 +292,9 @@ TEST_F(UseCreditCardActionTest, ForcedFallback) {
 
   ActionProto action = CreateUseCreditCardAction();
   auto* cvc_required = AddRequiredField(
-      &action, UseCreditCardProto::RequiredField::CREDIT_CARD_VERIFICATION_CODE,
+      &action,
+      base::NumberToString(static_cast<int>(
+          UseCreditCardProto::RequiredField::CREDIT_CARD_VERIFICATION_CODE)),
       "#cvc");
   cvc_required->set_forced(true);
   cvc_required->set_simulate_key_presses(true);
@@ -357,7 +355,9 @@ TEST_F(UseCreditCardActionTest,
   ActionProto action_proto = CreateUseCreditCardAction();
   AddRequiredField(
       &action_proto,
-      UseCreditCardProto::RequiredField::CREDIT_CARD_VERIFICATION_CODE, "#cvc");
+      base::NumberToString(static_cast<int>(
+          UseCreditCardProto::RequiredField::CREDIT_CARD_VERIFICATION_CODE)),
+      "#cvc");
 
   autofill::CreditCard credit_card;
   user_data_.selected_card_ =
@@ -395,6 +395,51 @@ TEST_F(UseCreditCardActionTest,
                 .autofill_error_info()
                 .autofill_error_status(),
             OTHER_ACTION_STATUS);
+}
+
+TEST_F(UseCreditCardActionTest, FallbackForCardExpirationSucceeds) {
+  ON_CALL(mock_action_delegate_, GetElementTag(_, _))
+      .WillByDefault(RunOnceCallback<1>(OkClientStatus(), "INPUT"));
+
+  ActionProto action_proto = CreateUseCreditCardAction();
+  AddRequiredField(&action_proto, "${53} - ${55}", "#expiration_date");
+
+  // Autofill succeeds.
+  autofill::CreditCard credit_card;
+  credit_card.SetExpirationMonth(9);
+  credit_card.SetExpirationYear(2050);
+  credit_card.SetRawInfo(autofill::CREDIT_CARD_NAME_FULL,
+                         base::UTF8ToUTF16("Jon Doe"));
+  credit_card.SetRawInfo(autofill::CREDIT_CARD_NUMBER,
+                         base::UTF8ToUTF16("4111111111111111"));
+  user_data_.selected_card_ =
+      std::make_unique<autofill::CreditCard>(credit_card);
+  EXPECT_CALL(mock_action_delegate_, OnGetFullCard(_))
+      .WillOnce(RunOnceCallback<0>(credit_card, base::UTF8ToUTF16("123")));
+  EXPECT_CALL(mock_action_delegate_,
+              OnFillCardForm(_, base::UTF8ToUTF16("123"),
+                             Selector({kFakeSelector}).MustBeVisible(), _))
+      .WillOnce(RunOnceCallback<3>(OkClientStatus()));
+
+  // Validation fails when getting expiration date.
+  EXPECT_CALL(mock_web_controller_,
+              OnGetFieldValue(Eq(Selector({"#expiration_date"})), _))
+      .WillOnce(RunOnceCallback<1>(OkClientStatus(), ""));
+
+  // Fallback succeeds.
+  Expectation set_expiration_date =
+      EXPECT_CALL(
+          mock_action_delegate_,
+          OnSetFieldValue(Eq(Selector({"#expiration_date"})), "09 - 2050", _))
+          .WillOnce(RunOnceCallback<2>(OkClientStatus()));
+
+  // Second validation succeeds.
+  EXPECT_CALL(mock_web_controller_, OnGetFieldValue(_, _))
+      .After(set_expiration_date)
+      .WillRepeatedly(RunOnceCallback<1>(OkClientStatus(), "not empty"));
+
+  EXPECT_EQ(ProcessedActionStatusProto::ACTION_APPLIED,
+            ProcessAction(action_proto));
 }
 
 }  // namespace

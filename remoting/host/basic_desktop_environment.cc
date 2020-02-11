@@ -100,8 +100,11 @@ BasicDesktopEnvironment::CreateComposingVideoCapturer() {
   // MacOS always includes the mouse cursor in the captured image.
   return nullptr;
 #else
-  return std::make_unique<DesktopAndCursorConditionalComposer>(
-      CreateVideoCapturer());
+  // TODO(crbug.com/1050789): Return a valid instance after fixing the
+  // DesktopAndCursorConditionalComposer class.
+  // return std::make_unique<DesktopAndCursorConditionalComposer>(
+  //     CreateVideoCapturer());
+  return nullptr;
 #endif
 }
 

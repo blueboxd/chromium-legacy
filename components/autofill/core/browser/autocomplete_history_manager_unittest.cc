@@ -22,6 +22,7 @@
 #include "components/autofill/core/browser/test_autofill_clock.h"
 #include "components/autofill/core/browser/webdata/autofill_entry.h"
 #include "components/autofill/core/browser/webdata/autofill_webdata_service.h"
+#include "components/autofill/core/browser/webdata/mock_autofill_webdata_service.h"
 #include "components/autofill/core/common/autofill_clock.h"
 #include "components/autofill/core/common/autofill_features.h"
 #include "components/autofill/core/common/autofill_prefs.h"
@@ -42,26 +43,6 @@ using testing::UnorderedElementsAre;
 namespace autofill {
 
 namespace {
-
-class MockWebDataService : public AutofillWebDataService {
- public:
-  MockWebDataService()
-      : AutofillWebDataService(base::ThreadTaskRunnerHandle::Get(),
-                               base::ThreadTaskRunnerHandle::Get()) {}
-
-  MOCK_METHOD1(AddFormFields, void(const std::vector<FormFieldData>&));
-  MOCK_METHOD1(CancelRequest, void(int));
-  MOCK_METHOD4(GetFormValuesForElementName,
-               WebDataServiceBase::Handle(const base::string16& name,
-                                          const base::string16& prefix,
-                                          int limit,
-                                          WebDataServiceConsumer* consumer));
-  MOCK_METHOD1(RemoveExpiredAutocompleteEntries,
-               WebDataServiceBase::Handle(WebDataServiceConsumer* consumer));
-
- protected:
-  ~MockWebDataService() override {}
-};
 
 class MockAutofillClient : public TestAutofillClient {
  public:
@@ -109,7 +90,7 @@ class AutocompleteHistoryManagerTest : public testing::Test {
 
     // Set time to some arbitrary date.
     test_clock.SetNow(base::Time::FromDoubleT(1546889367));
-    web_data_service_ = base::MakeRefCounted<MockWebDataService>();
+    web_data_service_ = base::MakeRefCounted<MockAutofillWebDataService>();
     autocomplete_manager_ = std::make_unique<AutocompleteHistoryManager>();
     autocomplete_manager_->Init(web_data_service_, prefs_.get(), false);
   }
@@ -152,7 +133,7 @@ class AutocompleteHistoryManagerTest : public testing::Test {
   }
 
   base::test::SingleThreadTaskEnvironment task_environment_;
-  scoped_refptr<MockWebDataService> web_data_service_;
+  scoped_refptr<MockAutofillWebDataService> web_data_service_;
   std::unique_ptr<AutocompleteHistoryManager> autocomplete_manager_;
   std::unique_ptr<PrefService> prefs_;
   TestAutofillClock test_clock;

@@ -328,7 +328,8 @@ public class AndroidPaymentAppFinder implements ManifestVerifyCallback {
                 mDownloader.initialize(mDelegate.getParams().getWebContents());
             }
 
-            manifestVerifiers.add(new PaymentManifestVerifier(uriMethodName,
+            manifestVerifiers.add(new PaymentManifestVerifier(
+                    mDelegate.getParams().getPaymentRequestSecurityOrigin(), uriMethodName,
                     uriMethodToDefaultAppsMapping.get(uriMethodName),
                     uriMethodToSupportedOriginsMapping.get(uriMethodName), mWebDataService,
                     mDownloader, mParser, mPackageManagerDelegate, this /* callback */));

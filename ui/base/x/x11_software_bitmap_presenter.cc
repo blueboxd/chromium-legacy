@@ -190,9 +190,12 @@ void X11SoftwareBitmapPresenter::Resize(const gfx::Size& pixel_size) {
     needs_swap_ = false;
     surface_ = nullptr;
   } else {
-    SkImageInfo info = SkImageInfo::Make(
-        viewport_pixel_size_.width(), viewport_pixel_size_.height(),
-        ColorTypeForVisual(attributes_.visual), kOpaque_SkAlphaType);
+    SkColorType color_type = ColorTypeForVisual(attributes_.visual);
+    if (color_type == kUnknown_SkColorType)
+      return;
+    SkImageInfo info = SkImageInfo::Make(viewport_pixel_size_.width(),
+                                         viewport_pixel_size_.height(),
+                                         color_type, kOpaque_SkAlphaType);
     surface_ = SkSurface::MakeRaster(info);
   }
 }
@@ -224,7 +227,7 @@ void X11SoftwareBitmapPresenter::EndPaint(const gfx::Rect& damage_rect) {
       return;
     }
     skia_pixmap = shm_pool_->CurrentBitmap().pixmap();
-  } else {
+  } else if (surface_) {
     surface_->peekPixels(&skia_pixmap);
   }
 

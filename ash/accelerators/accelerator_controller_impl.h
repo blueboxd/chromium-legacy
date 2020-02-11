@@ -49,6 +49,12 @@ ASH_EXPORT extern const char kHighContrastToggleAccelNotificationId[];
 ASH_EXPORT extern const char kDockedMagnifierToggleAccelNotificationId[];
 ASH_EXPORT extern const char kFullscreenMagnifierToggleAccelNotificationId[];
 
+// UMA accessibility histogram names.
+ASH_EXPORT extern const char kAccessibilityHighContrastShortcut[];
+ASH_EXPORT extern const char kAccessibilitySpokenFeedbackShortcut[];
+ASH_EXPORT extern const char kAccessibilityScreenMagnifierShortcut[];
+ASH_EXPORT extern const char kAccessibilityDockedMagnifierShortcut[];
+
 // AcceleratorControllerImpl provides functions for registering or unregistering
 // global keyboard accelerators, which are handled earlier than any windows. It
 // also implements several handlers as an accelerator target.

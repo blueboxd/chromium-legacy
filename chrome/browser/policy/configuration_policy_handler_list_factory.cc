@@ -79,6 +79,7 @@
 #include "components/translate/core/browser/translate_pref_names.h"
 #include "components/unified_consent/pref_names.h"
 #include "components/variations/pref_names.h"
+#include "components/variations/service/variations_service.h"
 #include "extensions/buildflags/buildflags.h"
 #include "media/media_buildflags.h"
 #include "ppapi/buildflags/buildflags.h"
@@ -1650,6 +1651,10 @@ std::unique_ptr<ConfigurationPolicyHandlerList> BuildHandlerList(
   handlers->AddHandler(
       std::make_unique<extensions::ExtensionSettingsPolicyHandler>(
           chrome_schema));
+  handlers->AddHandler(std::make_unique<IntRangePolicyHandler>(
+      key::kDeviceLoginScreenChromeVariations, nullptr,
+      static_cast<int>(variations::RestrictionPolicy::NO_RESTRICTIONS),
+      static_cast<int>(variations::RestrictionPolicy::ALL), false));
   handlers->AddHandler(std::make_unique<SimpleSchemaValidatingPolicyHandler>(
       key::kWebAppInstallForceList, prefs::kWebAppInstallForceList,
       chrome_schema, SCHEMA_ALLOW_UNKNOWN,

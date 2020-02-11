@@ -2787,9 +2787,9 @@ TEST_F(GcpGaiaCredentialBaseTest, FullNameUpdated) {
 
 // Test event logs upload to GEM service with different failure scenarios.
 // Parameters are:
-// 1. int - 0: HTTP call to upload logs succeeds.
-//          1: Fails the upload call due to invalid response from the GEM
-//             http server.
+// 1. bool  true:  HTTP call to upload logs succeeds.
+//          false: Fails the upload call due to invalid response from the GEM
+//                 http server.
 // 2. int - The number of fake events to seed the fake event log with.
 class GcpGaiaCredentialBaseUploadEventLogsTest
     : public GcpGaiaCredentialBaseTest,
@@ -2822,7 +2822,7 @@ TEST_P(GcpGaiaCredentialBaseUploadEventLogsTest, UploadEventViewerLogs) {
                 kDefaultUsername, L"password", L"Full Name", L"comment",
                 base::UTF8ToUTF16(kDefaultGaiaId), base::string16(), &sid));
 
-  // Change token response to an invalid one.
+  // Change token response to an valid one.
   SetDefaultTokenHandleResponse(kDefaultValidTokenHandleResponse);
 
   fake_http_url_fetcher_factory()->SetFakeResponse(

@@ -5,7 +5,6 @@
 package org.chromium.chrome.browser.tasks.tab_management.suggestions;
 
 import static org.mockito.Mockito.any;
-import static org.mockito.Mockito.anyInt;
 import static org.mockito.Mockito.doNothing;
 import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.eq;
@@ -91,8 +90,9 @@ public class TabSuggestionsOrchestratorTest {
                 .when(mTabModelFilterProvider)
                 .addTabModelFilterObserver(any(TabModelObserver.class));
         doReturn(mTabModelFilter).when(mTabModelFilterProvider).getCurrentTabModelFilter();
-        // TODO(1049917): According to TabModelFilter, getRelatedTabList returns non-null.
-        doReturn(null).when(mTabModelFilter).getRelatedTabList(anyInt());
+        doReturn(Arrays.asList(sTabs[0])).when(mTabModelFilter).getRelatedTabList(0);
+        doReturn(Arrays.asList(sTabs[1])).when(mTabModelFilter).getRelatedTabList(1);
+        doReturn(Arrays.asList(sTabs[2])).when(mTabModelFilter).getRelatedTabList(2);
         RecordUserAction.setDisabledForTests(true);
         RecordHistogram.setDisabledForTests(true);
     }

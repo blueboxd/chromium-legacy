@@ -16,6 +16,7 @@
 #include "base/mac/mac_util.h"
 #include "base/mac/scoped_cftyperef.h"
 #include "base/mac/scoped_nsobject.h"
+#include "base/mac/sdk_forward_declarations.h"
 #include "base/stl_util.h"
 #include "base/timer/timer.h"
 #include "ui/display/display.h"
@@ -81,32 +82,57 @@ Display BuildDisplayForScreen(NSScreen* screen) {
     scale = Display::GetForcedDeviceScaleFactor();
   display.set_device_scale_factor(scale);
 
-  // Compute the color profile.
-  gfx::ICCProfile icc_profile;
-  CGColorSpaceRef cg_color_space = [[screen colorSpace] CGColorSpace];
-  if (cg_color_space) {
-    base::ScopedCFTypeRef<CFDataRef> cf_icc_profile(
-        CGColorSpaceCopyICCProfile(cg_color_space));
-    if (cf_icc_profile) {
-      icc_profile = gfx::ICCProfile::FromData(CFDataGetBytePtr(cf_icc_profile),
-                                              CFDataGetLength(cf_icc_profile));
+  // Examine the presence of HDR.
+  bool enable_hdr = false;
+  if (@available(macOS 10.15, *)) {
+    if ([screen maximumPotentialExtendedDynamicRangeColorComponentValue] >=
+        2.0) {
+      enable_hdr = true;
     }
   }
-  icc_profile.HistogramDisplay(display.id());
-  gfx::ColorSpace screen_color_space = icc_profile.GetColorSpace();
+
+  // Compute DisplayColorSpaces.
+  gfx::ICCProfile icc_profile;
+  {
+    CGColorSpaceRef cg_color_space = [[screen colorSpace] CGColorSpace];
+    if (cg_color_space) {
+      base::ScopedCFTypeRef<CFDataRef> cf_icc_profile(
+          CGColorSpaceCopyICCProfile(cg_color_space));
+      if (cf_icc_profile) {
+        icc_profile = gfx::ICCProfile::FromData(
+            CFDataGetBytePtr(cf_icc_profile), CFDataGetLength(cf_icc_profile));
+      }
+    }
+    icc_profile.HistogramDisplay(display.id());
+  }
   if (Display::HasForceDisplayColorProfile()) {
     if (Display::HasEnsureForcedColorProfile()) {
-      CHECK_EQ(screen_color_space, display.color_space())
+      CHECK_EQ(icc_profile.GetColorSpace(), display.color_space())
           << "The display's color space does not match the color space that "
              "was forced by the command line. This will cause pixel tests to "
              "fail.";
     }
   } else {
-    display.set_color_space(screen_color_space);
+    gfx::DisplayColorSpaces display_color_spaces(icc_profile.GetColorSpace(),
+                                                 gfx::BufferFormat::RGBA_8888);
+    if (enable_hdr) {
+      bool needs_alpha_values[] = {true, false};
+      for (const auto& needs_alpha : needs_alpha_values) {
+        display_color_spaces.SetOutputColorSpaceAndBufferFormat(
+            gfx::ContentColorUsage::kHDR, needs_alpha,
+            gfx::ColorSpace::CreateExtendedSRGB(), gfx::BufferFormat::RGBA_F16);
+      }
+    }
+    display.set_color_spaces(display_color_spaces);
   }
 
-  display.set_color_depth(Display::kDefaultBitsPerPixel);
-  display.set_depth_per_component(Display::kDefaultBitsPerComponent);
+  if (enable_hdr) {
+    display.set_color_depth(Display::kHDR10BitsPerPixel);
+    display.set_depth_per_component(Display::kHDR10BitsPerComponent);
+  } else {
+    display.set_color_depth(Display::kDefaultBitsPerPixel);
+    display.set_depth_per_component(Display::kDefaultBitsPerComponent);
+  }
   display.set_is_monochrome(CGDisplayUsesForceToGray());
 
   if (auto display_link = ui::DisplayLinkMac::GetForDisplay(display_id))

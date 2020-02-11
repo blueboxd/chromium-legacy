@@ -132,6 +132,10 @@ bool XShmImagePool::Resize(const gfx::Size& pixel_size) {
     return false;
   }
 
+  SkColorType color_type = ColorTypeForVisual(visual_);
+  if (color_type == kUnknown_SkColorType)
+    return false;
+
   std::size_t needed_frame_bytes;
   for (std::size_t i = 0; i < frame_states_.size(); ++i) {
     FrameState& state = frame_states_[i];
@@ -199,8 +203,8 @@ bool XShmImagePool::Resize(const gfx::Size& pixel_size) {
   for (FrameState& state : frame_states_) {
     state.image->data = state.shminfo_.shmaddr;
     SkImageInfo image_info =
-        SkImageInfo::Make(state.image->width, state.image->height,
-                          ColorTypeForVisual(visual_), kPremul_SkAlphaType);
+        SkImageInfo::Make(state.image->width, state.image->height, color_type,
+                          kPremul_SkAlphaType);
     state.bitmap = SkBitmap();
     if (!state.bitmap.installPixels(image_info, state.image->data,
                                     state.image->bytes_per_line)) {

@@ -1632,9 +1632,7 @@ void StyleResolver::ApplyForcedColors(StyleResolverState& state,
     ApplyProperty(GetCSSPropertyBorderTopColor(), state, *unset, apply_mask);
     ApplyProperty(GetCSSPropertyBoxShadow(), state, *unset, apply_mask);
     ApplyProperty(GetCSSPropertyColumnRuleColor(), state, *unset, apply_mask);
-    ApplyProperty(GetCSSPropertyFill(), state, *unset, apply_mask);
     ApplyProperty(GetCSSPropertyOutlineColor(), state, *unset, apply_mask);
-    ApplyProperty(GetCSSPropertyStroke(), state, *unset, apply_mask);
     ApplyProperty(GetCSSPropertyTextDecorationColor(), state, *unset,
                   apply_mask);
     ApplyProperty(GetCSSPropertyTextShadow(), state, *unset, apply_mask);
@@ -1643,12 +1641,19 @@ void StyleResolver::ApplyForcedColors(StyleResolverState& state,
     ApplyProperty(GetCSSPropertyWebkitTextEmphasisColor(), state, *unset,
                   apply_mask);
 
-    // Background colors compute to the Window system color for all values
+    // Only revert fill and stroke for elements that handle fill and stroke
+    // forced colors in the UA stylesheet.
+    if (state.GetElement().IsSVGElement()) {
+      ApplyProperty(GetCSSPropertyFill(), state, *unset, apply_mask);
+      ApplyProperty(GetCSSPropertyStroke(), state, *unset, apply_mask);
+    }
+
+    // Background colors compute to the Canvas system color for all values
     // except for the alpha channel.
     RGBA32 prev_bg_color = state.Style()->BackgroundColor().GetColor().Rgb();
     RGBA32 sys_bg_color =
         LayoutTheme::GetTheme()
-            .SystemColor(CSSValueID::kWindow, WebColorScheme::kLight)
+            .SystemColor(CSSValueID::kCanvas, WebColorScheme::kLight)
             .Rgb();
     ApplyProperty(GetCSSPropertyBackgroundColor(), state,
                   *cssvalue::CSSColorValue::Create(sys_bg_color), apply_mask);
@@ -2118,10 +2123,10 @@ void StyleResolver::CascadeAndApplyForcedColors(StyleResolverState& state,
   MatchResult amended_result;
 
   const CSSValue* unset = cssvalue::CSSUnsetValue::Create();
-  const CSSValue* window = CSSIdentifierValue::Create(CSSValueID::kWindow);
+  const CSSValue* canvas = CSSIdentifierValue::Create(CSSValueID::kCanvas);
   auto* set =
       MakeGarbageCollected<MutableCSSPropertyValueSet>(state.GetParserMode());
-  set->SetProperty(CSSPropertyID::kBackgroundColor, *window);
+  set->SetProperty(CSSPropertyID::kBackgroundColor, *canvas);
   set->SetProperty(CSSPropertyID::kBorderBottomColor, *unset);
   set->SetProperty(CSSPropertyID::kBorderLeftColor, *unset);
   set->SetProperty(CSSPropertyID::kBorderRightColor, *unset);
@@ -2129,15 +2134,19 @@ void StyleResolver::CascadeAndApplyForcedColors(StyleResolverState& state,
   set->SetProperty(CSSPropertyID::kBoxShadow, *unset);
   set->SetProperty(CSSPropertyID::kColor, *unset);
   set->SetProperty(CSSPropertyID::kColumnRuleColor, *unset);
-  set->SetProperty(CSSPropertyID::kFill, *unset);
-  set->SetProperty(CSSPropertyID::kFill, *unset);
   set->SetProperty(CSSPropertyID::kOutlineColor, *unset);
   set->SetProperty(CSSPropertyID::kOutlineColor, *unset);
-  set->SetProperty(CSSPropertyID::kStroke, *unset);
   set->SetProperty(CSSPropertyID::kTextDecorationColor, *unset);
   set->SetProperty(CSSPropertyID::kTextShadow, *unset);
   set->SetProperty(CSSPropertyID::kWebkitTapHighlightColor, *unset);
   set->SetProperty(CSSPropertyID::kWebkitTextEmphasisColor, *unset);
+
+  // Only revert fill and stroke for elements that handle fill and stroke
+  // forced colors in the UA stylesheet.
+  if (state.GetElement().IsSVGElement()) {
+    set->SetProperty(CSSPropertyID::kFill, *unset);
+    set->SetProperty(CSSPropertyID::kStroke, *unset);
+  }
 
   amended_result.AddMatchedProperties(set);
 

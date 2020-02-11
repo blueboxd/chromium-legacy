@@ -35,6 +35,8 @@ base::android::ScopedJavaLocalRef<jobject> CreateJavaWindow(
       ConvertUTF8ToJavaString(env, session_id));
 }
 
+constexpr char kContextInteractionId[] = "interactionId";
+
 }  // namespace
 
 CastContentWindowAndroid::CastContentWindowAndroid(
@@ -99,7 +101,16 @@ void CastContentWindowAndroid::RequestVisibility(
 void CastContentWindowAndroid::SetActivityContext(
     base::Value activity_context) {}
 
-void CastContentWindowAndroid::SetHostContext(base::Value host_context) {}
+void CastContentWindowAndroid::SetHostContext(base::Value host_context) {
+  auto* found_interaction_id = host_context.FindKey(kContextInteractionId);
+  if (found_interaction_id) {
+    int interaction_id = found_interaction_id->GetInt();
+    JNIEnv* env = base::android::AttachCurrentThread();
+    Java_CastContentWindowAndroid_setInteractionId(
+        env, java_window_, static_cast<int>(interaction_id));
+  } else
+    LOG(ERROR) << "Interaction ID not found";
+}
 
 void CastContentWindowAndroid::NotifyVisibilityChange(
     VisibilityType visibility_type) {

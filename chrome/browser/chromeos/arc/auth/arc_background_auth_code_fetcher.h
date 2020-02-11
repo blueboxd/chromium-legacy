@@ -49,8 +49,6 @@ class ArcBackgroundAuthCodeFetcher : public ArcAuthCodeFetcher {
   // ArcAuthCodeFetcher:
   void Fetch(FetchCallback callback) override;
 
-  void SkipMergeSessionForTesting();
-
  private:
   void ResetFetchers();
   void OnPrepared(bool success);

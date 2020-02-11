@@ -12,6 +12,7 @@
 #include "base/mac/foundation_util.h"
 #include "base/scoped_observer.h"
 #include "base/strings/stringprintf.h"
+#include "base/strings/sys_string_conversions.h"
 #include "base/strings/utf_string_conversions.h"
 #import "base/test/ios/wait_util.h"
 #include "base/test/scoped_feature_list.h"
@@ -347,12 +348,29 @@ TEST_F(CRWWebControllerTest, BackForwardWithPendingNavigation) {
   EXPECT_EQ(web::WKNavigationState::FINISHED, web_controller().navigationState);
 }
 
-// Tests that a web view is created after calling -[ensureWebViewCreated].
+// Tests that a web view is created after calling -[ensureWebViewCreated] and
+// check its user agent.
 TEST_F(CRWWebControllerTest, WebViewCreatedAfterEnsureWebViewCreated) {
+  base::test::ScopedFeatureList scoped_feature_list;
+  scoped_feature_list.InitAndEnableFeature(
+      features::kUseDefaultUserAgentInWebClient);
+
+  TestWebClient* web_client = static_cast<TestWebClient*>(GetWebClient());
+
   [web_controller() removeWebView];
   WKWebView* web_view = [web_controller() ensureWebViewCreated];
   EXPECT_TRUE(web_view);
   EXPECT_NSEQ(web_view, web_controller().jsInjector.webView);
+  EXPECT_NSEQ(
+      base::SysUTF8ToNSString(web_client->GetUserAgent(UserAgentType::MOBILE)),
+      web_view.customUserAgent);
+
+  web_client->SetDefaultUserAgent(UserAgentType::DESKTOP);
+  [web_controller() removeWebView];
+  web_view = [web_controller() ensureWebViewCreated];
+  EXPECT_NSEQ(
+      base::SysUTF8ToNSString(web_client->GetUserAgent(UserAgentType::DESKTOP)),
+      web_view.customUserAgent);
 }
 
 // Test fixture to test JavaScriptDialogPresenter.

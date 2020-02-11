@@ -1455,11 +1455,11 @@ void ShelfLayoutManager::SetDimmed(bool dimmed) {
   AnimateOpacity(shelf_->navigation_widget(), target_bounds_.opacity,
                  dim_animation_duration, dim_animation_tween);
 
-  AnimateOpacity(shelf_widget_->hotseat_widget(),
-                 shelf_widget_->hotseat_widget()->CalculateOpacity(),
+  AnimateOpacity(shelf_->hotseat_widget(),
+                 shelf_->hotseat_widget()->CalculateOpacity(),
                  dim_animation_duration, dim_animation_tween);
 
-  AnimateOpacity(shelf_widget_->status_area_widget(), target_bounds_.opacity,
+  AnimateOpacity(shelf_->status_area_widget(), target_bounds_.opacity,
                  dim_animation_duration, dim_animation_tween);
 
   shelf_widget_->SetLoginShelfButtonOpacity(target_bounds_.opacity);

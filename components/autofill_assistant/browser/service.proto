@@ -640,8 +640,8 @@ message AutofillErrorInfoProto {
     // The field the error occurred for.
     optional ElementReferenceProto field = 1;
 
-    // The key of the fallback field. Matches the RequiredField::X enum entry.
-    optional int32 field_key = 2;
+    // The value expression associated with the field that caused the error.
+    optional string value_expression = 5;
 
     oneof error_type {
       // No fallback value for this field.
@@ -650,6 +650,8 @@ message AutofillErrorInfoProto {
       // The status of the action.
       ProcessedActionStatusProto status = 4;
     }
+
+    reserved 2;
   }
 
   // Comma separated list of address keys in the client memory when the
@@ -936,23 +938,21 @@ message UseAddressProto {
   // Message used to indicate what form fields should be filled with what
   // information coming from the address.
   message RequiredField {
-    enum AddressField {
-      UNDEFINED = 0;
-      FIRST_NAME = 1;
-      LAST_NAME = 2;
-      FULL_NAME = 3;
-      PHONE_NUMBER = 4;
-      EMAIL = 5;
-      ORGANIZATION = 6;
-      COUNTRY_CODE = 7;
-      REGION = 8;  // e.g. state
-      STREET_ADDRESS = 9;
-      LOCALITY = 10;  // e.g. city
-      DEPENDANT_LOCALITY = 11;
-      POSTAL_CODE = 12;
-    }
+    // Fields we add that are not mapped to field_types.h. The values must be
+    // negative not to overlap with the source.
+    enum AutofillAssistantCustomField { UNDEFINED = 0; }
 
-    optional AddressField address_field = 1;
+    // A string containing either a single integer key or multiple "${key}"
+    // placeholders, where the key is an integer corresponding to entries from
+    // field_types.h or RequiredField::AutofillAssistantCustomField.
+    // Example:
+    // * "3" -> First name.
+    // * "${3}" -> First name.
+    // * "(+${12}) (${11}) ${10}" -> phone country code, city code, number,
+    //   e.g., (+41) (79) (1234567)
+    // Note that the set of actually available fields are outside of our
+    // control and are retrieved automatically from the provided profile.
+    optional string value_expression = 6;
 
     optional ElementReferenceProto element = 2;
 
@@ -967,6 +967,8 @@ message UseAddressProto {
     // cases where the way autofill sets the field doesn't work on the website.
     // Usually used together with simulate_key_presses.
     optional bool forced = 5;
+
+    reserved 1;
   }
 
   // An optional name to allow to handle multiple addresses selection (for
@@ -990,19 +992,25 @@ message UseCreditCardProto {
   // Message used to indicate what form fields should be filled with what
   // information.
   message RequiredField {
-    enum CardField {
+    // Fields we add that are not mapped to field_types.h. The values must be
+    // negative not to overlap with the source.
+    enum AutofillAssistantCustomField {
       UNDEFINED = 0;
-      CREDIT_CARD_VERIFICATION_CODE = 1;
-      CREDIT_CARD_EXP_MONTH = 2;
-      CREDIT_CARD_EXP_2_DIGIT_YEAR = 3;
-      CREDIT_CARD_EXP_4_DIGIT_YEAR = 4;
-      CREDIT_CARD_CARD_HOLDER_NAME = 5;
-      CREDIT_CARD_NUMBER = 6;
-      CREDIT_CARD_EXP_MM_YY = 7;
-      CREDIT_CARD_NETWORK = 8;
+      CREDIT_CARD_VERIFICATION_CODE = -1;
+      CREDIT_CARD_NETWORK = -2;
+      CREDIT_CARD_RAW_NUMBER = -3;
     }
 
-    optional CardField card_field = 1;
+    // A string containing either a single integer key or multiple "${key}"
+    // placeholders, where the key is an integer corresponding to entries from
+    // field_types.h or RequiredField::AutofillAssistantCustomField.
+    // Example:
+    // * "51" -> Full name.
+    // * "${51}" -> Full Name.
+    // * "${53}/${55}" -> expiration month / expiration year
+    // Note that the set of actually available fields are outside of our
+    // control and are retrieved automatically from the provided credit card.
+    optional string value_expression = 6;
 
     optional ElementReferenceProto element = 2;
 
@@ -1017,6 +1025,8 @@ message UseCreditCardProto {
     // cases where the way autofill sets the field doesn't work on the website.
     // Usually used together with simulate_key_presses.
     optional bool forced = 5;
+
+    reserved 1;
   }
 
   // An optional message to show to the user when asking to select a card.

@@ -448,7 +448,10 @@ static NSString* kHtmlWithMultiplePasswordForms =
      // Fields in this form is attached by form's id.
      "<form id='form7'></form>"
      "<input id='un7' type='text' form='form7'>"
-     "<input id='pw7' type='password' form='form7'>";
+     "<input id='pw7' type='password' form='form7'>"
+     // Fields that are outside the <form> tag.
+     "<input id='un8' type='text'>"
+     "<input id='pw8' type='password'>";
 
 // A script that resets all text fields, including those in iframes.
 static NSString* kClearInputFieldsScript =
@@ -608,6 +611,17 @@ TEST_F(PasswordControllerTest, FillPasswordForm) {
       "test_password",
       YES,
       @"pf.un10=test_user;pf.pw10=test_password;"
+    },
+    // Fields outside the form tag.
+    {
+      base_url,
+      "",
+      "un8",
+      "test_user",
+      "pw8",
+      "test_password",
+      YES,
+      @"un8=test_user;pw8=test_password;"
     },
   };
   // clang-format on

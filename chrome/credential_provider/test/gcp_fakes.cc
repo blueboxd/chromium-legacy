@@ -582,6 +582,16 @@ HRESULT FakeScopedUserProfile::SaveAccountInfo(const base::Value& properties) {
 
 ///////////////////////////////////////////////////////////////////////////////
 
+FakeWinHttpUrlFetcherFactory::RequestData::RequestData()
+    : timeout_in_millis(-1) {}  // Set default timeout to an invalid value.
+
+FakeWinHttpUrlFetcherFactory::RequestData::RequestData(const RequestData& rhs)
+    : headers(rhs.headers),
+      body(rhs.body),
+      timeout_in_millis(rhs.timeout_in_millis) {}
+
+FakeWinHttpUrlFetcherFactory::RequestData::~RequestData() = default;
+
 FakeWinHttpUrlFetcherFactory::Response::Response() {}
 
 FakeWinHttpUrlFetcherFactory::Response::Response(const Response& rhs)
@@ -625,6 +635,13 @@ void FakeWinHttpUrlFetcherFactory::SetFakeFailedResponse(const GURL& url,
   failed_http_fetch_hr_[url] = failed_hr;
 }
 
+FakeWinHttpUrlFetcherFactory::RequestData
+FakeWinHttpUrlFetcherFactory::GetRequestData(size_t request_index) const {
+  if (request_index < requests_data_.size())
+    return requests_data_[request_index];
+  return RequestData();
+}
+
 std::unique_ptr<WinHttpUrlFetcher> FakeWinHttpUrlFetcherFactory::Create(
     const GURL& url) {
   if (fake_responses_.count(url) == 0 && failed_http_fetch_hr_.count(url) == 0)
@@ -642,6 +659,12 @@ std::unique_ptr<WinHttpUrlFetcher> FakeWinHttpUrlFetcherFactory::Create(
     DCHECK(failed_http_fetch_hr_.count(url) > 0);
     fetcher->response_hr_ = failed_http_fetch_hr_[url];
   }
+
+  if (collect_request_data_) {
+    requests_data_.push_back(RequestData());
+    fetcher->request_data_ = &requests_data_.back();
+  }
+
   ++requests_created_;
 
   return std::unique_ptr<WinHttpUrlFetcher>(fetcher);
@@ -669,6 +692,26 @@ HRESULT FakeWinHttpUrlFetcher::Fetch(std::vector<char>* response) {
 }
 
 HRESULT FakeWinHttpUrlFetcher::Close() {
+  return S_OK;
+}
+
+HRESULT FakeWinHttpUrlFetcher::SetRequestHeader(const char* name,
+                                                const char* value) {
+  if (request_data_)
+    request_data_->headers[name] = value;
+  return S_OK;
+}
+
+HRESULT FakeWinHttpUrlFetcher::SetRequestBody(const char* body) {
+  if (request_data_)
+    request_data_->body = body;
+  return S_OK;
+}
+
+HRESULT FakeWinHttpUrlFetcher::SetHttpRequestTimeout(
+    const int timeout_in_millis) {
+  if (request_data_)
+    request_data_->timeout_in_millis = timeout_in_millis;
   return S_OK;
 }
 

@@ -2386,6 +2386,8 @@ source_set("chromeos") {
     "extensions/login_screen/login_state/session_state_changed_event_dispatcher.h",
     "extensions/media_player_api.cc",
     "extensions/media_player_api.h",
+    "extensions/printing/print_job_controller.cc",
+    "extensions/printing/print_job_controller.h",
     "extensions/printing/printer_capabilities_provider.cc",
     "extensions/printing/printer_capabilities_provider.h",
     "extensions/printing_metrics/print_job_finished_event_dispatcher.cc",
@@ -2417,8 +2419,6 @@ source_set("chromeos") {
       "//chrome/services/cups_proxy/public/mojom",
     ]
     sources += [
-      "extensions/printing/print_job_controller.cc",
-      "extensions/printing/print_job_controller.h",
       "extensions/printing/print_job_submitter.cc",
       "extensions/printing/print_job_submitter.h",
       "extensions/printing/printing_api.cc",
@@ -2756,6 +2756,8 @@ source_set("unit_tests") {
     "extensions/login_screen/login_state/login_state_api_unittest.cc",
     "extensions/login_screen/login_state/session_state_changed_event_dispatcher_unittest.cc",
     "extensions/permissions_updater_delegate_chromeos_unittest.cc",
+    "extensions/printing/fake_print_job_controller.cc",
+    "extensions/printing/fake_print_job_controller.h",
     "extensions/printing/printer_capabilities_provider_unittest.cc",
     "extensions/printing_metrics/print_job_finished_event_dispatcher_unittest.cc",
     "extensions/printing_metrics/print_job_info_idl_conversions_unittest.cc",

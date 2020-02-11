@@ -529,7 +529,7 @@ void NativeWidgetMacNSWindowHost::UpdateCompositorProperties() {
   layer()->SetBounds(gfx::Rect(surface_size_in_dip));
   compositor_->UpdateSurface(
       ConvertSizeToPixel(display_.device_scale_factor(), surface_size_in_dip),
-      display_.device_scale_factor(), display_.color_space());
+      display_.device_scale_factor(), display_.color_spaces());
 }
 
 void NativeWidgetMacNSWindowHost::DestroyCompositor() {
@@ -989,7 +989,7 @@ void NativeWidgetMacNSWindowHost::OnWindowDisplayChanged(
     compositor_->UpdateSurface(
         ConvertSizeToPixel(display_.device_scale_factor(),
                            content_bounds_in_screen_.size()),
-        display_.device_scale_factor(), display_.color_space());
+        display_.device_scale_factor(), display_.color_spaces());
   }
   if (display_id_changed) {
     display_link_ = ui::DisplayLinkMac::GetForDisplay(display_.id());

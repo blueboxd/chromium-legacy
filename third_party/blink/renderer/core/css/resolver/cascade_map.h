@@ -48,7 +48,8 @@ class CORE_EXPORT CascadeMap {
   // CascadePriority objects. A companion std::bitset keeps track of which
   // properties are initialized.
   std::bitset<numCSSProperties> native_property_bits_;
-  char native_properties_[numCSSProperties * sizeof(CascadePriority)];
+  alignas(CascadePriority) char native_properties_[numCSSProperties *
+                                                   sizeof(CascadePriority)];
   HashMap<CSSPropertyName, CascadePriority> custom_properties_;
 };
 

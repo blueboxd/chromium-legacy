@@ -8,7 +8,6 @@
 
 #include "ash/home_screen/home_launcher_gesture_handler.h"
 #include "ash/home_screen/home_screen_controller.h"
-#include "ash/public/cpp/ash_features.h"
 #include "ash/public/cpp/shelf_config.h"
 #include "ash/public/cpp/shell_window_ids.h"
 #include "ash/public/cpp/window_properties.h"
@@ -405,8 +404,7 @@ base::Optional<gfx::RectF> GetSplitviewBoundsMaintainingAspectRatio() {
 }
 
 bool ShouldUseTabletModeGridLayout() {
-  return base::FeatureList::IsEnabled(features::kNewOverviewLayout) &&
-         Shell::Get()->tablet_mode_controller()->InTabletMode();
+  return Shell::Get()->tablet_mode_controller()->InTabletMode();
 }
 
 gfx::Rect ToStableSizeRoundedRect(const gfx::RectF& rect) {

@@ -21,7 +21,6 @@
 #include "third_party/blink/renderer/bindings/core/v8/v8_string_resource.h"
 #include "third_party/blink/renderer/bindings/modules/v8/v8_address_errors.h"
 #include "third_party/blink/renderer/bindings/modules/v8/v8_android_pay_method_data.h"
-#include "third_party/blink/renderer/bindings/modules/v8/v8_android_pay_tokenization.h"
 #include "third_party/blink/renderer/bindings/modules/v8/v8_basic_card_request.h"
 #include "third_party/blink/renderer/bindings/modules/v8/v8_payer_errors.h"
 #include "third_party/blink/renderer/bindings/modules/v8/v8_payment_details_init.h"

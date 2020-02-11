@@ -72,7 +72,7 @@ class NET_EXPORT URLRequestJob {
   virtual void SetPriority(RequestPriority priority);
 
   // If any error occurs while starting the Job, NotifyStartError should be
-  // called.
+  // called asynchronously.
   // This helps ensure that all errors follow more similar notification code
   // paths, which should simplify testing.
   virtual void Start() = 0;
@@ -283,6 +283,7 @@ class NET_EXPORT URLRequestJob {
   void NotifyFinalHeadersReceived();
 
   // Notifies the request that a start error has occurred.
+  // NOTE: Must not be called synchronously from |Start|.
   void NotifyStartError(const URLRequestStatus& status);
 
   // Used as an asynchronous callback for Kill to notify the URLRequest

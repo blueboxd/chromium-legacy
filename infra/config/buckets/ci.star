@@ -492,11 +492,6 @@ ci.clang_builder(
 )
 
 ci.clang_builder(
-    name = 'ToTWinLibcxx64',
-    os = os.WINDOWS_ANY,
-)
-
-ci.clang_builder(
     name = 'UBSanVptr Linux',
     goma_backend = goma.backend.RBE_PROD,
 )

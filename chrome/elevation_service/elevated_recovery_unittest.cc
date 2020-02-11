@@ -70,25 +70,24 @@ class MockServerSecurity
  public:
   MockServerSecurity() : is_impersonating_(false) {}
 
-  IFACEMETHOD(QueryBlanket)
-  (DWORD* authentication_service,
-   DWORD* authorization_service,
-   OLECHAR** server_principal_name,
-   DWORD* authentication_level,
-   DWORD* impersonation_level,
-   void** privilege,
-   DWORD* capabilities) {
+  IFACEMETHODIMP QueryBlanket(DWORD* authentication_service,
+                              DWORD* authorization_service,
+                              OLECHAR** server_principal_name,
+                              DWORD* authentication_level,
+                              DWORD* impersonation_level,
+                              void** privilege,
+                              DWORD* capabilities) override {
     return E_NOTIMPL;
   }
-  IFACEMETHOD(ImpersonateClient)() {
+  IFACEMETHODIMP ImpersonateClient() override {
     is_impersonating_ = true;
     return S_OK;
   }
-  IFACEMETHOD(RevertToSelf)() {
+  IFACEMETHODIMP RevertToSelf() override {
     is_impersonating_ = false;
     return S_OK;
   }
-  IFACEMETHOD_(BOOL, IsImpersonating)() { return is_impersonating_; }
+  IFACEMETHODIMP_(BOOL) IsImpersonating() override { return is_impersonating_; }
 
  private:
   ~MockServerSecurity() override { EXPECT_FALSE(is_impersonating_); }

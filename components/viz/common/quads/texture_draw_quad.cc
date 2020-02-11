@@ -8,8 +8,8 @@
 
 #include "base/logging.h"
 #include "base/trace_event/traced_value.h"
-#include "base/values.h"
 #include "cc/base/math_util.h"
+#include "ui/gfx/color_utils.h"
 #include "ui/gfx/geometry/vector2d_f.h"
 
 namespace viz {
@@ -99,7 +99,8 @@ void TextureDrawQuad::ExtendValue(base::trace_event::TracedValue* value) const {
   cc::MathUtil::AddToTracedValue("uv_top_left", uv_top_left, value);
   cc::MathUtil::AddToTracedValue("uv_bottom_right", uv_bottom_right, value);
 
-  value->SetInteger("background_color", background_color);
+  value->SetString("background_color",
+                   color_utils::SkColorToRgbaString(background_color));
 
   value->BeginArray("vertex_opacity");
   for (size_t i = 0; i < 4; ++i)

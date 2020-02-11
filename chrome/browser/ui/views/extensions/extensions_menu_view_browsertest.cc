@@ -356,6 +356,11 @@ IN_PROC_BROWSER_TEST_F(ExtensionsMenuViewBrowserTest,
   ShowAndVerifyUi();
 }
 
+#if (defined(OS_WIN) && defined(MEMORY_SANITIZER))
+#define MAYBE_TriggerPopup DISABLED_TriggerPopup
+#else
+#define MAYBE_TriggerPopup TriggerPopup
+#endif
 IN_PROC_BROWSER_TEST_F(ExtensionsMenuViewBrowserTest, TriggerPopup) {
   LoadTestExtension("extensions/simple_with_popup");
   ShowUi("");

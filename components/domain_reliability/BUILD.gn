@@ -3,7 +3,6 @@
 # found in the LICENSE file.
 
 import("//build/config/jumbo.gni")
-import("//testing/libfuzzer/fuzzer_test.gni")
 
 action("bake_in_configs") {
   visibility = [ ":*" ]
@@ -63,8 +62,6 @@ jumbo_component("domain_reliability") {
     "domain_reliability_export.h",
     "google_configs.cc",
     "google_configs.h",
-    "header.cc",
-    "header.h",
     "monitor.cc",
     "monitor.h",
     "quic_error_mapping.cc",
@@ -95,7 +92,6 @@ jumbo_source_set("unit_tests") {
     "context_unittest.cc",
     "dispatcher_unittest.cc",
     "google_configs_unittest.cc",
-    "header_unittest.cc",
     "monitor_unittest.cc",
     "scheduler_unittest.cc",
     "test_util.cc",
@@ -113,14 +109,4 @@ jumbo_source_set("unit_tests") {
     "//net:test_support",
     "//testing/gtest",
   ]
-}
-
-fuzzer_test("domain_reliability_header_fuzzer") {
-  sources = [ "header_fuzzer.cc" ]
-  deps = [
-    ":domain_reliability",
-    "//base",
-    "//base:i18n",
-  ]
-  dict = "header.dict"
 }

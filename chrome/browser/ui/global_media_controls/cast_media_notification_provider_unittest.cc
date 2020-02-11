@@ -11,6 +11,7 @@
 #include "content/public/test/browser_task_environment.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "ui/gfx/vector_icon_types.h"
 
 using media_router::MediaRoute;
 using testing::_;
@@ -55,6 +56,7 @@ class MockMediaNotificationView
       void(const base::flat_set<media_session::mojom::MediaSessionAction>&));
   MOCK_METHOD1(UpdateWithMediaArtwork, void(const gfx::ImageSkia&));
   MOCK_METHOD1(UpdateWithFavicon, void(const gfx::ImageSkia&));
+  MOCK_METHOD1(UpdateWithVectorIcon, void(const gfx::VectorIcon& vector_icon));
 };
 
 class MockClosure {

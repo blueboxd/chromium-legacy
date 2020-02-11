@@ -4,10 +4,8 @@
 
 #include "ash/public/cpp/ash_features.h"
 #include "ash/public/cpp/test/shell_test_api.h"
-#include "base/macros.h"
 #include "base/run_loop.h"
 #include "base/task/post_task.h"
-#include "base/test/scoped_feature_list.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/views/frame/browser_view.h"
 #include "chrome/test/base/perf/drag_event_generator.h"
@@ -19,12 +17,11 @@
 // Test overview scroll performance when the new overview layout is active.
 class OverviewScrollTest : public UIPerformanceTest {
  public:
-  OverviewScrollTest() {
-    scoped_feature_list_.InitAndEnableFeature(
-        ash::features::kNewOverviewLayout);
-  }
-
+  OverviewScrollTest() = default;
   ~OverviewScrollTest() override = default;
+
+  OverviewScrollTest(const OverviewScrollTest&) = delete;
+  OverviewScrollTest& operator=(const OverviewScrollTest&) = delete;
 
   // UIPerformanceTest:
   void SetUpOnMainThread() override {
@@ -56,11 +53,6 @@ class OverviewScrollTest : public UIPerformanceTest {
         ->GetDisplayNearestWindow(window)
         .bounds();
   }
-
- private:
-  base::test::ScopedFeatureList scoped_feature_list_;
-
-  DISALLOW_COPY_AND_ASSIGN(OverviewScrollTest);
 };
 
 IN_PROC_BROWSER_TEST_F(OverviewScrollTest, Basic) {

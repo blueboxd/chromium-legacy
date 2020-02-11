@@ -2591,7 +2591,7 @@ class ComputedStyle : public ComputedStyleBase,
   }
 
   Color ForcedBackplateColor() const {
-    return LayoutTheme::GetTheme().SystemColor(CSSValueID::kWindow,
+    return LayoutTheme::GetTheme().SystemColor(CSSValueID::kCanvas,
                                                WebColorScheme::kLight);
   }
 

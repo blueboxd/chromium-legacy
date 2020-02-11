@@ -86,6 +86,37 @@ using media_session::mojom::MediaSessionAction;
 
 namespace {
 
+struct PrefToAcceleratorEntry {
+  const char* pref_name;
+  // If |notification_id| has been set to nullptr, then no notification is
+  // expected.
+  const char* notification_id;
+  const char* histogram_id;
+  const ui::Accelerator accelerator;
+};
+
+const PrefToAcceleratorEntry kAccessibilityAcceleratorMap[] = {
+    {
+        prefs::kAccessibilityHighContrastEnabled,
+        kHighContrastToggleAccelNotificationId,
+        kAccessibilityHighContrastShortcut,
+        ui::Accelerator(ui::VKEY_H, ui::EF_COMMAND_DOWN | ui::EF_CONTROL_DOWN),
+    },
+    {prefs::kDockedMagnifierEnabled, kDockedMagnifierToggleAccelNotificationId,
+     kAccessibilityDockedMagnifierShortcut,
+     ui::Accelerator(ui::VKEY_D, ui::EF_COMMAND_DOWN | ui::EF_CONTROL_DOWN)},
+    {
+        prefs::kAccessibilitySpokenFeedbackEnabled,
+        nullptr,
+        kAccessibilitySpokenFeedbackShortcut,
+        ui::Accelerator(ui::VKEY_Z, ui::EF_CONTROL_DOWN | ui::EF_ALT_DOWN),
+    },
+    {prefs::kAccessibilityScreenMagnifierEnabled,
+     kFullscreenMagnifierToggleAccelNotificationId,
+     kAccessibilityScreenMagnifierShortcut,
+     ui::Accelerator(ui::VKEY_M, ui::EF_COMMAND_DOWN | ui::EF_CONTROL_DOWN)},
+};
+
 void AddTestImes() {
   ImeInfo ime1;
   ime1.id = "id1";
@@ -2127,12 +2158,15 @@ class AccessibilityAcceleratorTester : public MagnifiersAcceleratorsTester {
   void TestAccessibilityAcceleratorControlledByPref(
       const std::string& pref_name,
       const char* notification_id,
+      const std::string& accessibility_histogram_id,
       const ui::Accelerator& accelerator) {
     // Verify that the initial state for the accessibility feature will be
     // disabled, and for accessibility accelerators controller pref
     // |kAccessibilityShortcutsEnabled| is enabled. And neither of that
     // accessibility feature notification id, nor its confirmation dialog have
     // appeared.
+    base::HistogramTester histogram_tester_;
+
     EXPECT_FALSE(user_pref_service()->GetBoolean(pref_name));
     EXPECT_TRUE(
         user_pref_service()->GetBoolean(prefs::kAccessibilityShortcutsEnabled));
@@ -2143,7 +2177,9 @@ class AccessibilityAcceleratorTester : public MagnifiersAcceleratorsTester {
     // Verify that after disabling the accessibility accelerators, the
     // confirmation dialog won't appear for that accessibility feature. And its
     // corresponding pref won't be enabled. But a notification should appear,
-    // which shows that the shortcut for that feature has been disabled.
+    // which shows that the shortcut for that feature has been disabled. And
+    // verify that the accessibility shortcut state is being recorded
+    // accordingly.
     user_pref_service()->SetBoolean(prefs::kAccessibilityShortcutsEnabled,
                                     false);
     EXPECT_TRUE(ProcessInController(accelerator));
@@ -2151,11 +2187,13 @@ class AccessibilityAcceleratorTester : public MagnifiersAcceleratorsTester {
     if (notification_id)
       EXPECT_TRUE(ContainsAccessibilityNotification(notification_id));
     EXPECT_FALSE(user_pref_service()->GetBoolean(pref_name));
+    histogram_tester_.ExpectBucketCount(accessibility_histogram_id, 0, 1);
 
     // Verify that if the accessibility accelerators are enabled, then
     // it will show the confirmation dialog for the first time only when
     // toggling its value. And the coressponding pref will be chanaged
-    // accordingly.
+    // accordingly. And verify that the accessibility shortcut state is being
+    // recorded accordingly.
     user_pref_service()->SetBoolean(prefs::kAccessibilityShortcutsEnabled,
                                     true);
     EXPECT_TRUE(ProcessInController(accelerator));
@@ -2168,13 +2206,18 @@ class AccessibilityAcceleratorTester : public MagnifiersAcceleratorsTester {
     EXPECT_TRUE(user_pref_service()->GetBoolean(pref_name));
     if (notification_id)
       EXPECT_TRUE(ContainsAccessibilityNotification(notification_id));
+    histogram_tester_.ExpectBucketCount(accessibility_histogram_id, 1, 1);
 
     // Verify that the notification id, won't be shown if the accessibility
-    // feature is going to be disabled.
+    // feature is going to be disabled. And verify that the accessibility
+    // shortcut state is being recorded accordingly.
     EXPECT_TRUE(ProcessInController(accelerator));
     if (notification_id)
       EXPECT_FALSE(ContainsAccessibilityNotification(notification_id));
     EXPECT_FALSE(user_pref_service()->GetBoolean(pref_name));
+    histogram_tester_.ExpectBucketCount(accessibility_histogram_id, 1, 2);
+
+    histogram_tester_.ExpectTotalCount(accessibility_histogram_id, 3);
 
     // Remove all the current notifications, to get the initial state again.
     RemoveAllNotifications();
@@ -2182,31 +2225,12 @@ class AccessibilityAcceleratorTester : public MagnifiersAcceleratorsTester {
 };
 
 TEST_F(AccessibilityAcceleratorTester, DisableAccessibilityAccelerators) {
-  struct PrefToAcceleratorEntry {
-    const char* pref_name;
-    // If |notification_id| has been set to nullptr, then no notification is
-    // expected.
-    const char* notification_id;
-    const ui::Accelerator accelerator;
-  };
-  const PrefToAcceleratorEntry kAccessibilityAcceleratorMap[] = {
-      {prefs::kAccessibilityHighContrastEnabled,
-       kHighContrastToggleAccelNotificationId,
-       ui::Accelerator(ui::VKEY_H, ui::EF_COMMAND_DOWN | ui::EF_CONTROL_DOWN)},
-      {prefs::kDockedMagnifierEnabled,
-       kDockedMagnifierToggleAccelNotificationId,
-       ui::Accelerator(ui::VKEY_D, ui::EF_COMMAND_DOWN | ui::EF_CONTROL_DOWN)},
-      {prefs::kAccessibilitySpokenFeedbackEnabled, nullptr,
-       ui::Accelerator(ui::VKEY_Z, ui::EF_CONTROL_DOWN | ui::EF_ALT_DOWN)},
-      {prefs::kAccessibilityScreenMagnifierEnabled,
-       kFullscreenMagnifierToggleAccelNotificationId,
-       ui::Accelerator(ui::VKEY_M, ui::EF_COMMAND_DOWN | ui::EF_CONTROL_DOWN)},
-  };
   FakeMagnificationManager manager;
   manager.SetPrefs(user_pref_service());
   for (const auto& test_data : kAccessibilityAcceleratorMap) {
     TestAccessibilityAcceleratorControlledByPref(
-        test_data.pref_name, test_data.notification_id, test_data.accelerator);
+        test_data.pref_name, test_data.notification_id, test_data.histogram_id,
+        test_data.accelerator);
   }
 }
 

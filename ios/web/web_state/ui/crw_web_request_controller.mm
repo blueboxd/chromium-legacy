@@ -569,7 +569,8 @@ enum class BackForwardNavigationType {
   if (itemUserAgentType == web::UserAgentType::AUTOMATIC) {
     DCHECK(base::FeatureList::IsEnabled(
         web::features::kUseDefaultUserAgentInWebClient));
-    itemUserAgentType = web::GetWebClient()->GetDefaultUserAgent(self.webView);
+    itemUserAgentType = web::GetWebClient()->GetDefaultUserAgent(
+        self.webView, self.currentNavItem->GetURL());
     self.currentNavItem->SetUserAgentType(
         itemUserAgentType, /*update_inherited_user_agent =*/false);
   } else if (itemUserAgentType == web::UserAgentType::NONE &&

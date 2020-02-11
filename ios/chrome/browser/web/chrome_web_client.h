@@ -61,7 +61,8 @@ class ChromeWebClient : public web::WebClient {
                         base::OnceCallback<void(NSString*)> callback) override;
   UIView* GetWindowedContainer() override;
   bool ForceMobileVersionByDefault(const GURL& url) override;
-  web::UserAgentType GetDefaultUserAgent(UIView* web_view) override;
+  web::UserAgentType GetDefaultUserAgent(UIView* web_view,
+                                         const GURL& url) override;
 
  private:
   // Returns a string describing the product name and version, of the

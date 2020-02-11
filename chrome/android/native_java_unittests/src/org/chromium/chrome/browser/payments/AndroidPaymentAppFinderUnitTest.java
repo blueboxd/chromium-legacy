@@ -26,6 +26,7 @@ import org.chromium.components.payments.WebAppManifestSection;
 import org.chromium.content_public.browser.WebContents;
 import org.chromium.payments.mojom.PaymentDetailsModifier;
 import org.chromium.payments.mojom.PaymentMethodData;
+import org.chromium.url.Origin;
 import org.chromium.url.URI;
 
 import java.net.URISyntaxException;
@@ -360,12 +361,15 @@ public class AndroidPaymentAppFinderUnitTest {
             public void initialize(WebContents webContents) {}
 
             @Override
-            public void downloadPaymentMethodManifest(URI uri, ManifestDownloadCallback callback) {
-                callback.onPaymentMethodManifestDownloadSuccess("some content here");
+            public void downloadPaymentMethodManifest(
+                    Origin merchantOrigin, URI uri, ManifestDownloadCallback callback) {
+                callback.onPaymentMethodManifestDownloadSuccess(
+                        PaymentManifestDownloader.createOpaqueOriginForTest(), "some content here");
             }
 
             @Override
-            public void downloadWebAppManifest(URI uri, ManifestDownloadCallback callback) {
+            public void downloadWebAppManifest(Origin paynentMethodManifestOrigin, URI uri,
+                    ManifestDownloadCallback callback) {
                 callback.onWebAppManifestDownloadSuccess("some content here");
             }
 

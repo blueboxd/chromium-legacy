@@ -61,6 +61,7 @@ class TestWebClient : public web::WebClient {
                         int64_t navigation_id,
                         base::OnceCallback<void(NSString*)> callback) override;
   UIView* GetWindowedContainer() override;
+  UserAgentType GetDefaultUserAgent(UIView* web_view, const GURL& url) override;
 
   // Sets |plugin_not_supported_text_|.
   void SetPluginNotSupportedText(const base::string16& text);
@@ -81,6 +82,8 @@ class TestWebClient : public web::WebClient {
   }
   bool last_cert_error_overridable() { return last_cert_error_overridable_; }
 
+  void SetDefaultUserAgent(UserAgentType type) { default_user_agent_ = type; }
+
  private:
   base::string16 plugin_not_supported_text_;
   NSString* early_page_script_ = nil;
@@ -90,6 +93,7 @@ class TestWebClient : public web::WebClient {
   GURL last_cert_error_request_url_;
   bool last_cert_error_overridable_ = true;
   bool allow_certificate_errors_ = false;
+  UserAgentType default_user_agent_ = UserAgentType::MOBILE;
 };
 
 }  // namespace web

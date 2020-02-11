@@ -469,6 +469,8 @@ jumbo_static_library("test_support") {
     "webdata/autofill_sync_bridge_test_util.h",
     "webdata/mock_autofill_webdata_backend.cc",
     "webdata/mock_autofill_webdata_backend.h",
+    "webdata/mock_autofill_webdata_service.cc",
+    "webdata/mock_autofill_webdata_service.h",
   ]
 
   public_deps = [ ":browser" ]

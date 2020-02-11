@@ -2080,4 +2080,187 @@ __gCrWeb.fill.getAriaDescription = function(element) {
   return coalesceTextByIdList(element, 'aria-describedby');
 };
 
+/**
+ * Searches an element's ancestors to see if the element is inside a <form> or
+ * <fieldset>.
+ *
+ * It is based on the logic in
+ *     bool (const WebElement& element)
+ * in chromium/src/components/autofill/content/renderer/form_cache.cc
+ *
+ * @param {!FormControlElement} element An element to examine.
+ * @return {boolean} Whether the element is inside a <form> or <fieldset>.
+ */
+__gCrWeb.fill.isElementInsideFormOrFieldSet = function(element) {
+  let parentNode = element.parentNode;
+  while (parentNode) {
+    if ((parentNode.nodeType === Node.ELEMENT_NODE) &&
+        (__gCrWeb.fill.hasTagName(parentNode, 'form') ||
+         __gCrWeb.fill.hasTagName(parentNode, 'fieldset'))) {
+      return true;
+    }
+    parentNode = parentNode.parentNode;
+  }
+  return false;
+};
+
+/**
+ * Get all form control elements from |elements| that are not part of a form.
+ * Also append the fieldsets encountered that are not part of a form to
+ * |fieldsets|.
+ *
+ * It is based on the logic in:
+ *     std::vector<WebFormControlElement>
+ *     GetUnownedAutofillableFormFieldElements(
+ *         const WebElementCollection& elements,
+ *         std::vector<WebElement>* fieldsets);
+ * in chromium/src/components/autofill/content/renderer/form_autofill_util.cc.
+ *
+ * In the C++ version, |fieldsets| can be NULL, in which case we do not try to
+ * append to it.
+ *
+ * @param {Array<!FormControlElement>} elements elements to look through.
+ * @param {Array<Element>} fieldsets out param for unowned fieldsets.
+ * @return {Array<FormControlElement>} The elements that are not part of a form.
+ */
+__gCrWeb.fill.getUnownedAutofillableFormFieldElements = function(
+    elements, fieldsets) {
+  const unownedFieldsetChildren = [];
+  for (let i = 0; i < elements.length; ++i) {
+    if (__gCrWeb.form.isFormControlElement(elements[i])) {
+      if (!elements[i].form) {
+        unownedFieldsetChildren.push(elements[i]);
+      }
+    }
+
+    if (__gCrWeb.fill.hasTagName(elements[i], 'fieldset') &&
+        !__gCrWeb.fill.isElementInsideFormOrFieldSet(elements[i])) {
+      fieldsets.push(elements[i]);
+    }
+  }
+  return __gCrWeb.fill.extractAutofillableElementsFromSet(
+      unownedFieldsetChildren);
+};
+
+
+/**
+ * Fills |form| with the form data object corresponding to the unowned elements
+ * and fieldsets in the document.
+ * |extract_mask| controls what data is extracted.
+ * Returns true if |form| is filled out. Returns false if there are no fields or
+ * too many fields in the |form|.
+ *
+ * It is based on the logic in
+ *     bool UnownedFormElementsAndFieldSetsToFormData(
+ *         const std::vector<blink::WebElement>& fieldsets,
+ *         const std::vector<blink::WebFormControlElement>& control_elements,
+ *         const GURL& origin,
+ *         ExtractMask extract_mask,
+ *         FormData* form)
+ * and
+ *     bool UnownedCheckoutFormElementsAndFieldSetsToFormData(
+ *         const std::vector<blink::WebElement>& fieldsets,
+ *         const std::vector<blink::WebFormControlElement>& control_elements,
+ *         const blink::WebFormControlElement* element,
+ *         const blink::WebDocument& document,
+ *         ExtractMask extract_mask,
+ *         FormData* form,
+ *         FormFieldData* field)
+ * in chromium/src/components/autofill/content/renderer/form_autofill_util.cc
+ *
+ * @param {HTMLFrameElement|Window} frame The window or frame where the
+ *     formElement is in.
+ * @param {Array<Element>} fieldsets The fieldsets to look through.
+ * @param {Array<FormControlElement>} controlElements The control elements that
+ *     will be processed.
+ * @param {number} extractMask Mask controls what data is extracted from
+ *     formElement.
+ * @param {bool} restrictUnownedFieldsToFormlessCheckout whether forms made of
+ *     unowned fields (i.e., not within a <form> tag) should be restricted to
+ *     those that appear to be in a checkout flow.
+ * @param {AutofillFormData} form Form to fill in the AutofillFormData
+ *     information of formElement.
+ * @return {boolean} Whether there are fields and not too many fields in the
+ *     form.
+ */
+__gCrWeb.fill.unownedFormElementsAndFieldSetsToFormData = function(
+    frame, fieldsets, controlElements, extractMask,
+    restrictUnownedFieldsToFormlessCheckout, form) {
+  if (!frame) {
+    return false;
+  }
+  form['name'] = '';
+  form['origin'] = __gCrWeb.common.removeQueryAndReferenceFromURL(frame.origin);
+  form['action'] = '';
+  form['is_form_tag'] = false;
+
+  if (!restrictUnownedFieldsToFormlessCheckout) {
+    return __gCrWeb.fill.formOrFieldsetsToFormData(
+        null /* formElement*/, null /* formControlElement */, fieldsets,
+        controlElements, extractMask, form, null /* field */);
+  }
+
+
+  const title = document.title.toLowerCase();
+  const path = document.location.pathname.toLowerCase();
+  // The keywords are defined in
+  // UnownedCheckoutFormElementsAndFieldSetsToFormData in
+  // components/autofill/content/renderer/form_autofill_util.cc
+  const keywords =
+      ['payment', 'checkout', 'address', 'delivery', 'shipping', 'wallet'];
+
+  const count = keywords.length;
+  for (let index = 0; index < count; index++) {
+    const keyword = keywords[index];
+    if (title.includes(keyword) || path.includes(keyword)) {
+      form['is_formless_checkout'] = true;
+      return __gCrWeb.fill.formOrFieldsetsToFormData(
+          null /* formElement*/, null /* formControlElement */, fieldsets,
+          controlElements, extractMask, form, null /* field */);
+    }
+  }
+
+  // Since it's not a checkout flow, only add fields that have a non-"off"
+  // autocomplete attribute to the formless autofill.
+  const controlElementsWithAutocomplete = [];
+  for (let index = 0; index < controlElements.length; index++) {
+    if (controlElements[index].hasAttribute('autocomplete') &&
+        controlElements[index].getAttribute('autocomplete') !== 'off') {
+      controlElementsWithAutocomplete.push(controlElements[index]);
+    }
+  }
+
+  if (controlElementsWithAutocomplete.length === 0) {
+    return false;
+  }
+  return __gCrWeb.fill.formOrFieldsetsToFormData(
+      null /* formElement*/, null /* formControlElement */, fieldsets,
+      controlElementsWithAutocomplete, extractMask, form, null /* field */);
+};
+
+
+/**
+ * Returns the auto-fillable form control elements in |formElement|.
+ *
+ * It is based on the logic in:
+ *     std::vector<blink::WebFormControlElement>
+ *     ExtractAutofillableElementsFromSet(
+ *         const WebVector<WebFormControlElement>& control_elements);
+ * in chromium/src/components/autofill/content/renderer/form_autofill_util.h.
+ *
+ * @param {Array<FormControlElement>} controlElements Set of control elements.
+ * @return {Array<FormControlElement>} The array of autofillable elements.
+ */
+__gCrWeb.fill.extractAutofillableElementsFromSet = function(controlElements) {
+  const autofillableElements = [];
+  for (let i = 0; i < controlElements.length; ++i) {
+    const element = controlElements[i];
+    if (!__gCrWeb.fill.isAutofillableElement(element)) {
+      continue;
+    }
+    autofillableElements.push(element);
+  }
+  return autofillableElements;
+};
+
 }());  // End of anonymous object

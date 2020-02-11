@@ -11,9 +11,7 @@
 namespace blink {
 
 class CryptoKey;
-class Landmark;
 class NativeFileSystemHandle;
-class Point2D;
 
 // Extends V8ScriptValueSerializer with support for modules/ types.
 class MODULES_EXPORT V8ScriptValueDeserializerForModules final
@@ -45,8 +43,6 @@ class MODULES_EXPORT V8ScriptValueDeserializerForModules final
     return true;
   }
   CryptoKey* ReadCryptoKey();
-  bool ReadLandmark(Landmark* landmark);
-  bool ReadPoint2D(Point2D* point);
   NativeFileSystemHandle* ReadNativeFileSystemHandle(SerializationTag tag);
 };
 

@@ -75,30 +75,6 @@ __gCrWeb.autofill.setDelay = function(delay) {
 };
 
 /**
- * Searches an element's ancestors to see if the element is inside a <form> or
- * <fieldset>.
- *
- * It is based on the logic in
- *     bool IsElementInsideFormOrFieldSet(const WebElement& element)
- * in chromium/src/components/autofill/content/renderer/form_cache.cc
- *
- * @param {!FormControlElement} element An element to examine.
- * @return {boolean} Whether the element is inside a <form> or <fieldset>.
- */
-function isElementInsideFormOrFieldSet(element) {
-  let parentNode = element.parentNode;
-  while (parentNode) {
-    if ((parentNode.nodeType === Node.ELEMENT_NODE) &&
-        (__gCrWeb.fill.hasTagName(parentNode, 'form') ||
-         __gCrWeb.fill.hasTagName(parentNode, 'fieldset'))) {
-      return true;
-    }
-    parentNode = parentNode.parentNode;
-  }
-  return false;
-}
-
-/**
  * Determines whether the form is interesting enough to send to the browser for
  * further operations.
  *
@@ -161,43 +137,6 @@ function scanFormControlElements_(controlElements) {
     }
   }
   return numEditableElements;
-}
-
-/**
- * Get all form control elements from |elements| that are not part of a form.
- * Also append the fieldsets encountered that are not part of a form to
- * |fieldsets|.
- *
- * It is based on the logic in:
- *     std::vector<WebFormControlElement>
- *     GetUnownedAutofillableFormFieldElements(
- *         const WebElementCollection& elements,
- *         std::vector<WebElement>* fieldsets);
- * in chromium/src/components/autofill/content/renderer/form_autofill_util.cc.
- *
- * In the C++ version, |fieldsets| can be NULL, in which case we do not try to
- * append to it.
- *
- * @param {Array<!FormControlElement>} elements elements to look through.
- * @param {Array<Element>} fieldsets out param for unowned fieldsets.
- * @return {Array<FormControlElement>} The elements that are not part of a form.
- */
-function getUnownedAutofillableFormFieldElements_(elements, fieldsets) {
-  const unownedFieldsetChildren = [];
-  for (let i = 0; i < elements.length; ++i) {
-    if (__gCrWeb.form.isFormControlElement(elements[i])) {
-      if (!elements[i].form) {
-        unownedFieldsetChildren.push(elements[i]);
-      }
-    }
-
-    if (__gCrWeb.fill.hasTagName(elements[i], 'fieldset') &&
-        !isElementInsideFormOrFieldSet(elements[i])) {
-      fieldsets.push(elements[i]);
-    }
-  }
-  return __gCrWeb.autofill.extractAutofillableElementsFromSet(
-      unownedFieldsetChildren);
 }
 
 /**
@@ -268,7 +207,9 @@ __gCrWeb.autofill['fillForm'] = function(data, forceFillFieldIdentifier) {
   const form = __gCrWeb.form.getFormElementFromIdentifier(data.formName);
   const controlElements = form ?
       __gCrWeb.form.getFormControlElements(form) :
-      getUnownedAutofillableFormFieldElements_(document.all, /*fieldsets=*/[]);
+      __gCrWeb.fill.getUnownedAutofillableFormFieldElements(
+          document.all,
+          /*fieldsets=*/[]);
 
   for (let i = 0, delay = 0; i < controlElements.length; ++i) {
     const element = controlElements[i];
@@ -354,7 +295,9 @@ __gCrWeb.autofill['clearAutofilledFields'] = function(
   const form = __gCrWeb.form.getFormElementFromIdentifier(formName);
   const controlElements = form ?
       __gCrWeb.form.getFormControlElements(form) :
-      getUnownedAutofillableFormFieldElements_(document.all, /*fieldsets=*/[]);
+      __gCrWeb.fill.getUnownedAutofillableFormFieldElements(
+          document.all,
+          /*fieldsets=*/[]);
 
   let formField = null;
   for (let i = 0; i < controlElements.length; ++i) {
@@ -471,14 +414,16 @@ __gCrWeb.autofill.extractNewForms = function(
   // Look for more parseable fields outside of forms.
   const fieldsets = [];
   const unownedControlElements =
-      getUnownedAutofillableFormFieldElements_(document.all, fieldsets);
+      __gCrWeb.fill.getUnownedAutofillableFormFieldElements(
+          document.all, fieldsets);
   const numEditableUnownedElements =
       scanFormControlElements_(unownedControlElements);
   if (numEditableUnownedElements > 0) {
     const unownedForm = new __gCrWeb['common'].JSONSafeObject;
-    const hasUnownedForm = unownedFormElementsAndFieldSetsToFormData_(
-        window, fieldsets, unownedControlElements, extractMask,
-        restrictUnownedFieldsToFormlessCheckout, unownedForm);
+    const hasUnownedForm =
+        __gCrWeb.fill.unownedFormElementsAndFieldSetsToFormData(
+            window, fieldsets, unownedControlElements, extractMask,
+            restrictUnownedFieldsToFormlessCheckout, unownedForm);
     if (hasUnownedForm) {
       numFieldsSeen += unownedForm['fields'].length;
       if (numFieldsSeen <= __gCrWeb.fill.MAX_PARSEABLE_FIELDS) {
@@ -492,113 +437,6 @@ __gCrWeb.autofill.extractNewForms = function(
   }
   return forms;
 };
-
-/**
- * Fills |form| with the form data object corresponding to the unowned elements
- * and fieldsets in the document.
- * |extract_mask| controls what data is extracted.
- * Returns true if |form| is filled out. Returns false if there are no fields or
- * too many fields in the |form|.
- *
- * It is based on the logic in
- *     bool UnownedFormElementsAndFieldSetsToFormData(
- *         const std::vector<blink::WebElement>& fieldsets,
- *         const std::vector<blink::WebFormControlElement>& control_elements,
- *         const GURL& origin,
- *         ExtractMask extract_mask,
- *         FormData* form)
- * and
- *     bool UnownedCheckoutFormElementsAndFieldSetsToFormData(
- *         const std::vector<blink::WebElement>& fieldsets,
- *         const std::vector<blink::WebFormControlElement>& control_elements,
- *         const blink::WebFormControlElement* element,
- *         const blink::WebDocument& document,
- *         ExtractMask extract_mask,
- *         FormData* form,
- *         FormFieldData* field)
- * in chromium/src/components/autofill/content/renderer/form_autofill_util.cc
- *
- * @param {HTMLFrameElement|Window} frame The window or frame where the
- *     formElement is in.
- * @param {Array<Element>} fieldsets The fieldsets to look through.
- * @param {Array<FormControlElement>} controlElements The control elements that
- *     will be processed.
- * @param {number} extractMask Mask controls what data is extracted from
- *     formElement.
- * @param {bool} restrictUnownedFieldsToFormlessCheckout whether forms made of
- *     unowned fields (i.e., not within a <form> tag) should be restricted to
- *     those that appear to be in a checkout flow.
- * @param {AutofillFormData} form Form to fill in the AutofillFormData
- *     information of formElement.
- * @return {boolean} Whether there are fields and not too many fields in the
- *     form.
- */
-function unownedFormElementsAndFieldSetsToFormData_(
-    frame, fieldsets, controlElements, extractMask,
-    restrictUnownedFieldsToFormlessCheckout, form) {
-  if (!frame) {
-    return false;
-  }
-
-  form['name'] = '';
-  form['origin'] =
-      __gCrWeb.common.removeQueryAndReferenceFromURL(frame.location.href);
-  form['action'] = '';
-  form['is_form_tag'] = false;
-
-  if (!restrictUnownedFieldsToFormlessCheckout) {
-    return __gCrWeb.fill.formOrFieldsetsToFormData(
-        null /* formElement*/, null /* formControlElement */, fieldsets,
-        controlElements, extractMask, form, null /* field */);
-  }
-
-  // For now this restriction only applies to English-language pages, because
-  // the keywords are not translated. Note that an empty "lang" attribute
-  // counts as English.
-  if (document.documentElement.hasAttribute('lang') &&
-      !document.documentElement.getAttribute('lang').toLowerCase().startsWith(
-          'en')) {
-    return __gCrWeb.fill.formOrFieldsetsToFormData(
-        null /* formElement*/, null /* formControlElement */, fieldsets,
-        controlElements, extractMask, form, null /* field */);
-  }
-
-  const title = document.title.toLowerCase();
-  const path = document.location.pathname.toLowerCase();
-  // The keywords are defined in
-  // UnownedCheckoutFormElementsAndFieldSetsToFormData in
-  // components/autofill/content/renderer/form_autofill_util.cc
-  const keywords =
-      ['payment', 'checkout', 'address', 'delivery', 'shipping', 'wallet'];
-
-  const count = keywords.length;
-  for (let index = 0; index < count; index++) {
-    const keyword = keywords[index];
-    if (title.includes(keyword) || path.includes(keyword)) {
-      form['is_formless_checkout'] = true;
-      return __gCrWeb.fill.formOrFieldsetsToFormData(
-          null /* formElement*/, null /* formControlElement */, fieldsets,
-          controlElements, extractMask, form, null /* field */);
-    }
-  }
-
-  // Since it's not a checkout flow, only add fields that have a non-"off"
-  // autocomplete attribute to the formless autofill.
-  const controlElementsWithAutocomplete = [];
-  for (let index = 0; index < controlElements.length; index++) {
-    if (controlElements[index].hasAttribute('autocomplete') &&
-        controlElements[index].getAttribute('autocomplete') !== 'off') {
-      controlElementsWithAutocomplete.push(controlElements[index]);
-    }
-  }
-
-  if (controlElementsWithAutocomplete.length === 0) {
-    return false;
-  }
-  return __gCrWeb.fill.formOrFieldsetsToFormData(
-      null /* formElement*/, null /* formControlElement */, fieldsets,
-      controlElementsWithAutocomplete, extractMask, form, null /* field */);
-}
 
 /**
  * Sets the |field|'s value to the value in |data|.

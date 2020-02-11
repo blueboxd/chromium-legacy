@@ -818,14 +818,8 @@ ArcAuthService::CreateArcBackgroundAuthCodeFetcher(
   auto fetcher = std::make_unique<ArcBackgroundAuthCodeFetcher>(
       url_loader_factory_, profile_, account_id, initial_signin,
       IsPrimaryGaiaAccount(account_info.value().gaia));
-  if (skip_merge_session_for_testing_)
-    fetcher->SkipMergeSessionForTesting();
 
   return fetcher;
-}
-
-void ArcAuthService::SkipMergeSessionForTesting() {
-  skip_merge_session_for_testing_ = true;
 }
 
 void ArcAuthService::TriggerAccountsPushToArc(bool filter_primary_account) {

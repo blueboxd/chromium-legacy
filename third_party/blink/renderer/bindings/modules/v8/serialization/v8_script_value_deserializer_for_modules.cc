@@ -11,8 +11,6 @@
 #include "third_party/blink/public/platform/web_crypto.h"
 #include "third_party/blink/public/platform/web_crypto_key_algorithm.h"
 #include "third_party/blink/renderer/bindings/modules/v8/serialization/web_crypto_sub_tags.h"
-#include "third_party/blink/renderer/bindings/modules/v8/v8_landmark.h"
-#include "third_party/blink/renderer/bindings/modules/v8/v8_point_2d.h"
 #include "third_party/blink/renderer/core/execution_context/execution_context.h"
 #include "third_party/blink/renderer/modules/crypto/crypto_key.h"
 #include "third_party/blink/renderer/modules/filesystem/dom_file_system.h"
@@ -20,9 +18,6 @@
 #include "third_party/blink/renderer/modules/native_file_system/native_file_system_file_handle.h"
 #include "third_party/blink/renderer/modules/peerconnection/rtc_certificate.h"
 #include "third_party/blink/renderer/modules/peerconnection/rtc_certificate_generator.h"
-#include "third_party/blink/renderer/modules/shapedetection/detected_barcode.h"
-#include "third_party/blink/renderer/modules/shapedetection/detected_face.h"
-#include "third_party/blink/renderer/modules/shapedetection/detected_text.h"
 
 namespace blink {
 
@@ -69,65 +64,6 @@ ScriptWrappable* V8ScriptValueDeserializerForModules::ReadDOMObject(
       if (!certificate)
         return nullptr;
       return MakeGarbageCollected<RTCCertificate>(std::move(certificate));
-    }
-    case kDetectedBarcodeTag: {
-      String raw_value;
-      if (!ReadUTF8String(&raw_value))
-        return nullptr;
-      DOMRectReadOnly* bounding_box = ReadDOMRectReadOnly();
-      if (!bounding_box)
-        return nullptr;
-      // TODO(crbug.com/938663): add deserialization for |format|.
-      shape_detection::mojom::BarcodeFormat format =
-          shape_detection::mojom::BarcodeFormat::UNKNOWN;
-      uint32_t corner_points_length;
-      if (!ReadUint32(&corner_points_length))
-        return nullptr;
-      HeapVector<Member<Point2D>> corner_points;
-      for (uint32_t i = 0; i < corner_points_length; i++) {
-        Point2D* point = Point2D::Create();
-        if (!ReadPoint2D(point))
-          return nullptr;
-        corner_points.push_back(point);
-      }
-      return MakeGarbageCollected<DetectedBarcode>(raw_value, bounding_box,
-                                                   format, corner_points);
-    }
-    case kDetectedFaceTag: {
-      DOMRectReadOnly* bounding_box = ReadDOMRectReadOnly();
-      if (!bounding_box)
-        return nullptr;
-      uint32_t landmarks_length;
-      if (!ReadUint32(&landmarks_length))
-        return nullptr;
-      HeapVector<Member<Landmark>> landmarks;
-      for (uint32_t i = 0; i < landmarks_length; i++) {
-        Landmark* landmark = Landmark::Create();
-        if (!ReadLandmark(landmark))
-          return nullptr;
-        landmarks.push_back(landmark);
-      }
-      return MakeGarbageCollected<DetectedFace>(bounding_box, landmarks);
-    }
-    case kDetectedTextTag: {
-      String raw_value;
-      if (!ReadUTF8String(&raw_value))
-        return nullptr;
-      DOMRectReadOnly* bounding_box = ReadDOMRectReadOnly();
-      if (!bounding_box)
-        return nullptr;
-      uint32_t corner_points_length;
-      if (!ReadUint32(&corner_points_length))
-        return nullptr;
-      HeapVector<Member<Point2D>> corner_points;
-      for (uint32_t i = 0; i < corner_points_length; i++) {
-        Point2D* point = Point2D::Create();
-        if (!ReadPoint2D(point))
-          return nullptr;
-        corner_points.push_back(point);
-      }
-      return MakeGarbageCollected<DetectedText>(raw_value, bounding_box,
-                                                corner_points);
     }
     default:
       break;
@@ -361,34 +297,6 @@ CryptoKey* V8ScriptValueDeserializerForModules::ReadCryptoKey() {
     return nullptr;
 
   return MakeGarbageCollected<CryptoKey>(key);
-}
-
-bool V8ScriptValueDeserializerForModules::ReadLandmark(Landmark* landmark) {
-  String type;
-  if (!ReadUTF8String(&type))
-    return false;
-  uint32_t locations_length;
-  if (!ReadUint32(&locations_length))
-    return false;
-  HeapVector<Member<Point2D>> locations;
-  for (uint32_t i = 0; i < locations_length; i++) {
-    Point2D* location = Point2D::Create();
-    if (!ReadPoint2D(location))
-      return false;
-    locations.push_back(location);
-  }
-  landmark->setType(type);
-  landmark->setLocations(locations);
-  return true;
-}
-
-bool V8ScriptValueDeserializerForModules::ReadPoint2D(Point2D* point) {
-  double x = 0, y = 0;
-  if (!ReadDouble(&x) || !ReadDouble(&y))
-    return false;
-  point->setX(x);
-  point->setY(y);
-  return true;
 }
 
 NativeFileSystemHandle*

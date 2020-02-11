@@ -163,6 +163,19 @@ void DecodeLoginPolicies(const em::ChromeDeviceSettingsProto& policy,
     }
   }
 
+  if (policy.has_device_login_screen_chrome_variations_type()) {
+    const em::IntegerPolicyProto& container(
+        policy.device_login_screen_chrome_variations_type());
+    if (container.has_value()) {
+      std::unique_ptr<base::Value> value(DecodeIntegerValue(container.value()));
+      if (value) {
+        policies->Set(key::kDeviceLoginScreenChromeVariations,
+                      POLICY_LEVEL_MANDATORY, POLICY_SCOPE_MACHINE,
+                      POLICY_SOURCE_CLOUD, std::move(value), nullptr);
+      }
+    }
+  }
+
   if (policy.has_login_screen_primary_mouse_button_switch()) {
     const em::BooleanPolicyProto& container(
         policy.login_screen_primary_mouse_button_switch());

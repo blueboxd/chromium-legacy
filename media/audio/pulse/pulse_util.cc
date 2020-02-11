@@ -26,13 +26,6 @@ using media_audio_pulse::InitializeStubs;
 using media_audio_pulse::StubPathMap;
 #endif  // defined(DLOPEN_PULSEAUDIO)
 
-// TODO(dalecurtis): Remove once https://crbug.com/1047655 is solved.
-#if defined(ADDRESS_SANITIZER) || defined(THREAD_SANITIZER)
-#define DVLOG_LEVEL 0
-#else
-#define DVLOG_LEVEL 1
-#endif
-
 namespace media {
 
 namespace pulse {
@@ -194,14 +187,13 @@ void SignalReadyOrErrorStateCallback(pa_context* context, void* context_data) {
 }  // namespace
 
 bool InitPulse(pa_threaded_mainloop** mainloop, pa_context** context) {
-  DVLOG(DVLOG_LEVEL) << __func__;
 #if defined(DLOPEN_PULSEAUDIO)
   StubPathMap paths;
 
   // Check if the pulse library is available.
   paths[kModulePulse].push_back(kPulseLib);
   if (!InitializeStubs(paths)) {
-    DVLOG(0) << "Failed on loading the Pulse library and symbols";
+    VLOG(1) << "Failed on loading the Pulse library and symbols";
     return false;
   }
 #endif  // defined(DLOPEN_PULSEAUDIO)
@@ -211,12 +203,10 @@ bool InitPulse(pa_threaded_mainloop** mainloop, pa_context** context) {
 
   // Create a mainloop API and connect to the default server.
   // The mainloop is the internal asynchronous API event loop.
-  DVLOG(DVLOG_LEVEL) << __func__ << ": pa_threaded_mainloop_new";
   pa_threaded_mainloop* pa_mainloop = pa_threaded_mainloop_new();
   if (!pa_mainloop)
     return false;
 
-  DVLOG(DVLOG_LEVEL) << __func__ << ": pa_threaded_mainloop_get_api";
   pa_mainloop_api* pa_mainloop_api = pa_threaded_mainloop_get_api(pa_mainloop);
   pa_context* pa_context = pa_context_new(pa_mainloop_api, "Chrome input");
   if (!pa_context) {
@@ -233,38 +223,29 @@ bool InitPulse(pa_threaded_mainloop** mainloop, pa_context** context) {
   pa_context_set_state_callback(pa_context, &SignalReadyOrErrorStateCallback,
                                 &data);
 
-  DVLOG(DVLOG_LEVEL) << __func__ << ": pa_context_connect";
   if (pa_context_connect(pa_context, nullptr, PA_CONTEXT_NOAUTOSPAWN,
                          nullptr)) {
-    DVLOG(DVLOG_LEVEL) << "Failed to connect to the context.  Error: "
-                       << pa_strerror(pa_context_errno(pa_context));
+    VLOG(1) << "Failed to connect to the context.  Error: "
+            << pa_strerror(pa_context_errno(pa_context));
     DestroyContext(pa_context);
-    DVLOG(DVLOG_LEVEL) << __func__ << ": pa_threaded_mainloop_free";
     pa_threaded_mainloop_free(pa_mainloop);
     return false;
   }
 
   // Lock the event loop object, effectively blocking the event loop thread
   // from processing events. This is necessary.
-  DVLOG(DVLOG_LEVEL) << __func__ << ": AutoPulseLock";
   auto mainloop_lock = std::make_unique<AutoPulseLock>(pa_mainloop);
 
   // Start the threaded mainloop after everything has been configured.
-  DVLOG(DVLOG_LEVEL) << __func__ << ": pa_threaded_mainloop_start";
   if (pa_threaded_mainloop_start(pa_mainloop)) {
-    DVLOG(DVLOG_LEVEL) << "Failed to start the mainloop.  Error: "
-                       << pa_strerror(pa_context_errno(pa_context));
     DestroyContext(pa_context);
-    DVLOG(DVLOG_LEVEL) << __func__ << ": ~AutoPulseLock";
     mainloop_lock.reset();
-    DVLOG(DVLOG_LEVEL) << __func__ << ": pa_threaded_mainloop_free";
     DestroyMainloop(pa_mainloop);
     return false;
   }
 
   // Don't hold the mainloop lock while waiting for the context to become ready,
   // or we'll never complete since PulseAudio can't continue working.
-  DVLOG(DVLOG_LEVEL) << __func__ << ": ~AutoPulseLock";
   mainloop_lock.reset();
 
   // Wait for up to 5 seconds for pa_context to become ready. We'll be signaled
@@ -274,39 +255,30 @@ bool InitPulse(pa_threaded_mainloop** mainloop, pa_context** context) {
   // browser startup (other times it's during audio process startup). In the
   // normal case, this should only take ~50ms, but we've seen some test bots
   // hang indefinitely when the pulse daemon can't be started.
-  DVLOG(DVLOG_LEVEL) << __func__ << ": Waiting for context to become ready.";
   constexpr base::TimeDelta kStartupTimeout = base::TimeDelta::FromSeconds(5);
   const bool was_signaled = context_wait.TimedWait(kStartupTimeout);
 
   // Require the mainloop lock before checking the context state.
-  DVLOG(DVLOG_LEVEL) << __func__ << ": AutoPulseLock";
   mainloop_lock = std::make_unique<AutoPulseLock>(pa_mainloop);
 
-  DVLOG(DVLOG_LEVEL) << __func__ << ": pa_context_get_state...";
   auto context_state = pa_context_get_state(pa_context);
   if (context_state != PA_CONTEXT_READY) {
-    if (!was_signaled) {
-      DVLOG(DVLOG_LEVEL) << "Timed out trying to connect to PulseAudio.";
-    } else {
-      DVLOG(DVLOG_LEVEL) << "Failed to connect to PulseAudio: "
-                         << context_state;
-    }
+    if (!was_signaled)
+      VLOG(1) << "Timed out trying to connect to PulseAudio.";
+    else
+      VLOG(1) << "Failed to connect to PulseAudio: " << context_state;
     DestroyContext(pa_context);
-    DVLOG(DVLOG_LEVEL) << __func__ << ": ~AutoPulseLock";
     mainloop_lock.reset();
-    DVLOG(DVLOG_LEVEL) << __func__ << ": pa_threaded_mainloop_free";
     DestroyMainloop(pa_mainloop);
     return false;
   }
 
   // Replace our function local state callback with a global appropriate one.
-  DVLOG(DVLOG_LEVEL) << __func__ << ": pa_context_set_state_callback";
   pa_context_set_state_callback(pa_context, &pulse::ContextStateCallback,
                                 pa_mainloop);
 
   *mainloop = pa_mainloop;
   *context = pa_context;
-  DVLOG(DVLOG_LEVEL) << __func__ << ": Success!";
   return true;
 }
 

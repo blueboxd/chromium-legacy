@@ -36,6 +36,13 @@ DisplayColorSpaces::DisplayColorSpaces(const gfx::ColorSpace& c)
     color_space = c;
 }
 
+DisplayColorSpaces::DisplayColorSpaces(const ColorSpace& c, BufferFormat f) {
+  for (auto& color_space : color_spaces_)
+    color_space = c;
+  for (auto& buffer_format : buffer_formats_)
+    buffer_format = f;
+}
+
 void DisplayColorSpaces::SetOutputColorSpaceAndBufferFormat(
     ContentColorUsage color_usage,
     bool needs_alpha,

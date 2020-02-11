@@ -208,6 +208,12 @@ TEST_F(PasswordFormHelperTest, FindPasswordFormsInView) {
       "</form>",
       false, 0, nullptr
     },
+    // No <form> tag.
+    {
+      @"<input type='email' name='email1'>"
+      "<input type='password' name='pass1'>",
+      true, 2, ""
+    },
   };
   // clang-format on
 

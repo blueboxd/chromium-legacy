@@ -82,6 +82,7 @@
 #include "base/command_line.h"
 #include "base/files/file_util.h"
 #include "base/json/json_reader.h"
+#include "base/metrics/histogram_functions.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/metrics/user_metrics.h"
 #include "base/optional.h"
@@ -121,6 +122,15 @@ const char kFullscreenMagnifierToggleAccelNotificationId[] =
     "chrome://settings/accessibility/fullscreenmagnifier";
 const char kSpokenFeedbackToggleAccelNotificationId[] =
     "chrome://settings/accessibility/spokenfeedback";
+
+const char kAccessibilityHighContrastShortcut[] =
+    "Accessibility.Shortcuts.CrosHighContrast";
+const char kAccessibilitySpokenFeedbackShortcut[] =
+    "Accessibility.Shortcuts.CrosSpokenFeedback";
+const char kAccessibilityScreenMagnifierShortcut[] =
+    "Accessibility.Shortcuts.CrosScreenMagnifier";
+const char kAccessibilityDockedMagnifierShortcut[] =
+    "Accessibility.Shortcuts.CrosDockedMagnifier";
 
 namespace {
 
@@ -1192,10 +1202,16 @@ void SetDockedMagnifierEnabled(bool enabled) {
 void HandleToggleDockedMagnifier() {
   base::RecordAction(UserMetricsAction("Accel_Toggle_Docked_Magnifier"));
 
+  const bool is_shortcut_enabled =
+      IsAccessibilityShortcutEnabled(prefs::kDockedMagnifierEnabled);
+
+  base::UmaHistogramBoolean(kAccessibilityDockedMagnifierShortcut,
+                            is_shortcut_enabled);
+
   Shell* shell = Shell::Get();
 
   RemoveStickyNotitification(kDockedMagnifierToggleAccelNotificationId);
-  if (!IsAccessibilityShortcutEnabled(prefs::kDockedMagnifierEnabled)) {
+  if (!is_shortcut_enabled) {
     NotifyAccessibilityFeatureDisabledByAdmin(
         IDS_ASH_DOCKED_MAGNIFIER_SHORTCUT_DISABLED,
         shell->docked_magnifier_controller()->GetEnabled(),
@@ -1271,11 +1287,16 @@ void SetHighContrastEnabled(bool enabled) {
 void HandleToggleHighContrast() {
   base::RecordAction(UserMetricsAction("Accel_Toggle_High_Contrast"));
 
+  const bool is_shortcut_enabled =
+      IsAccessibilityShortcutEnabled(prefs::kAccessibilityHighContrastEnabled);
+
+  base::UmaHistogramBoolean(kAccessibilityHighContrastShortcut,
+                            is_shortcut_enabled);
+
   Shell* shell = Shell::Get();
 
   RemoveStickyNotitification(kHighContrastToggleAccelNotificationId);
-  if (!IsAccessibilityShortcutEnabled(
-          prefs::kAccessibilityHighContrastEnabled)) {
+  if (!is_shortcut_enabled) {
     NotifyAccessibilityFeatureDisabledByAdmin(
         IDS_ASH_HIGH_CONTRAST_SHORTCUT_DISABLED,
         shell->accessibility_controller()->high_contrast_enabled(),
@@ -1306,11 +1327,16 @@ void HandleToggleHighContrast() {
 void HandleToggleFullscreenMagnifier() {
   base::RecordAction(UserMetricsAction("Accel_Toggle_Fullscreen_Magnifier"));
 
+  const bool is_shortcut_enabled = IsAccessibilityShortcutEnabled(
+      prefs::kAccessibilityScreenMagnifierEnabled);
+
+  base::UmaHistogramBoolean(kAccessibilityScreenMagnifierShortcut,
+                            is_shortcut_enabled);
+
   Shell* shell = Shell::Get();
 
   RemoveStickyNotitification(kFullscreenMagnifierToggleAccelNotificationId);
-  if (!IsAccessibilityShortcutEnabled(
-          prefs::kAccessibilityScreenMagnifierEnabled)) {
+  if (!is_shortcut_enabled) {
     NotifyAccessibilityFeatureDisabledByAdmin(
         IDS_ASH_FULLSCREEN_MAGNIFIER_SHORTCUT_DISABLED,
         shell->magnification_controller()->IsEnabled(),
@@ -1346,13 +1372,18 @@ void HandleToggleFullscreenMagnifier() {
 void HandleToggleSpokenFeedback() {
   base::RecordAction(UserMetricsAction("Accel_Toggle_Spoken_Feedback"));
 
+  const bool is_shortcut_enabled = IsAccessibilityShortcutEnabled(
+      prefs::kAccessibilitySpokenFeedbackEnabled);
+
+  base::UmaHistogramBoolean(kAccessibilitySpokenFeedbackShortcut,
+                            is_shortcut_enabled);
+
   Shell* shell = Shell::Get();
   const bool old_value =
       shell->accessibility_controller()->spoken_feedback_enabled();
 
   RemoveStickyNotitification(kSpokenFeedbackToggleAccelNotificationId);
-  if (!IsAccessibilityShortcutEnabled(
-          prefs::kAccessibilitySpokenFeedbackEnabled)) {
+  if (!is_shortcut_enabled) {
     NotifyAccessibilityFeatureDisabledByAdmin(
         IDS_ASH_SPOKEN_FEEDBACK_SHORTCUT_DISABLED, old_value,
         kSpokenFeedbackToggleAccelNotificationId);

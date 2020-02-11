@@ -156,8 +156,6 @@ class DOMAIN_RELIABILITY_EXPORT DomainReliabilityMonitor
 
   void OnRequestLegComplete(const RequestInfo& info);
 
-  void MaybeHandleHeader(const RequestInfo& info);
-
   base::WeakPtr<DomainReliabilityMonitor> MakeWeakPtr();
 
   std::unique_ptr<MockableTime> time_;

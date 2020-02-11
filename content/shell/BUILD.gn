@@ -648,7 +648,7 @@ if (is_android) {
   }
 
   if (is_fuchsia) {
-    fuchsia_package("content_shell_pkg") {
+    cr_fuchsia_package("content_shell_pkg") {
       testonly = true
       binary = ":content_shell"
       package_name_override = "content_shell"

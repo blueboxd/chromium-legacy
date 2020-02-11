@@ -2772,6 +2772,18 @@ const char kHappinessTrackingSurveysForDesktopDemoName[] =
 const char kHappinessTrackingSurveysForDesktopDemoDescription[] =
     "Enable showing Happiness Tracking Surveys Demo to users on Desktop";
 
+const char kHappinessTrackingSurveysForDesktopSettingsName[] =
+    "Happiness Tracking Surveys for Settings";
+const char kHappinessTrackingSurveysForDesktopSettingsDescription[] =
+    "Enable showing Happiness Tracking Surveys for Settings to users on "
+    "Desktop";
+
+const char kHappinessTrackingSurveysForDesktopSettingsPrivacyName[] =
+    "Happiness Tracking Surveys for Privacy Settings";
+const char kHappinessTrackingSurveysForDesktopSettingsPrivacyDescription[] =
+    "Enable showing Happiness Tracking Surveys for Privacy Settings to users "
+    "on Desktop";
+
 const char kIntentPickerName[] = "Intent picker";
 const char kIntentPickerDescription[] =
     "When going to a site that has URL managable by a PWA, show the intent"
@@ -3463,12 +3475,6 @@ const char kMediaSessionNotificationsName[] = "Media session notifications";
 const char kMediaSessionNotificationsDescription[] =
     "Shows notifications for media sessions showing the currently playing "
     "media and providing playback controls";
-
-const char kNewOverviewTabletLayoutName[] = "New overview tablet mode layout";
-const char kNewOverviewTabletLayoutDescription[] =
-    "If enabled, in tablet mode, overview items will be laid out in two rows "
-    "with six items showing at a time. Users can scroll through to see hidden "
-    "items.";
 
 const char kPrintServerUiName[] = "Print Server UI";
 const char kPrintServerUiDescription[] =

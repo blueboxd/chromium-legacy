@@ -255,4 +255,14 @@ public class CastWebContentsIntentUtilsTest {
                 mWebContents, APP_ID, 3, false, SESSION_ID, false, true);
         Assert.assertFalse(CastWebContentsIntentUtils.isRemoteControlMode(in));
     }
+
+    @Test
+    public void testSetInteractionId() {
+        Intent in = CastWebContentsIntentUtils.setInteractionId(SESSION_ID, 123);
+        String uri = CastWebContentsIntentUtils.getUriString(in);
+        Assert.assertNotNull(uri);
+        Assert.assertEquals(EXPECTED_URI, uri);
+        Assert.assertEquals(CastWebContentsIntentUtils.ACTION_SET_INTERACTION_ID, in.getAction());
+        Assert.assertEquals(CastWebContentsIntentUtils.getInteractionId(in), 123);
+    }
 }

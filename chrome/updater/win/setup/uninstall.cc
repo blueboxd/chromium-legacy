@@ -40,13 +40,6 @@ int Uninstall() {
       std::make_unique<base::win::ScopedCOMInitializer>(
           base::win::ScopedCOMInitializer::kMTA);
 
-  if (!TaskScheduler::Initialize()) {
-    LOG(ERROR) << "Failed to initialize the scheduler.";
-    return -1;
-  }
-  base::ScopedClosureRunner task_scheduler_terminate_caller(
-      base::BindOnce([]() { TaskScheduler::Terminate(); }));
-
   updater::UnregisterUpdateAppsTask();
 
   std::unique_ptr<WorkItemList> uninstall_list(WorkItem::CreateWorkItemList());

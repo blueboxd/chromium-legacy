@@ -3791,6 +3791,20 @@ const FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kHappinessTrackingSurveysForDesktopDemoDescription,
      kOsDesktop,
      FEATURE_VALUE_TYPE(features::kHappinessTrackingSurveysForDesktopDemo)},
+
+    {"happiness-tracking-surveys-for-desktop-settings",
+     flag_descriptions::kHappinessTrackingSurveysForDesktopSettingsName,
+     flag_descriptions::kHappinessTrackingSurveysForDesktopSettingsDescription,
+     kOsDesktop,
+     FEATURE_VALUE_TYPE(features::kHappinessTrackingSurveysForDesktopSettings)},
+
+    {"happiness-tracking-surveys-for-desktop-settings-privacy",
+     flag_descriptions::kHappinessTrackingSurveysForDesktopSettingsPrivacyName,
+     flag_descriptions::
+         kHappinessTrackingSurveysForDesktopSettingsPrivacyDescription,
+     kOsDesktop,
+     FEATURE_VALUE_TYPE(
+         features::kHappinessTrackingSurveysForDesktopSettingsPrivacy)},
 #endif  // !defined(OS_ANDROID)
 
 #if BUILDFLAG(ENABLE_DICE_SUPPORT)
@@ -4647,11 +4661,6 @@ const FeatureEntry kFeatureEntries[] = {
     {"zero-state-files", flag_descriptions::kZeroStateFilesName,
      flag_descriptions::kZeroStateFilesDescription, kOsCrOS,
      FEATURE_VALUE_TYPE(app_list_features::kEnableZeroStateMixedTypesRanker)},
-
-    {"new-overview-tablet-layout",
-     flag_descriptions::kNewOverviewTabletLayoutName,
-     flag_descriptions::kNewOverviewTabletLayoutDescription, kOsCrOS,
-     FEATURE_VALUE_TYPE(ash::features::kNewOverviewLayout)},
 
     {"aggregated-ml-app-ranking",
      flag_descriptions::kAggregatedMlAppRankingName,

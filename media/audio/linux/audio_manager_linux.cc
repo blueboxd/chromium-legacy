@@ -21,13 +21,6 @@
 #include "media/audio/pulse/pulse_util.h"
 #endif
 
-// TODO(dalecurtis): Remove once https://crbug.com/1047655 is solved.
-#if defined(ADDRESS_SANITIZER) || defined(THREAD_SANITIZER)
-#define DVLOG_LEVEL 0
-#else
-#define DVLOG_LEVEL 1
-#endif
-
 namespace media {
 
 enum LinuxAudioIO {
@@ -40,7 +33,6 @@ enum LinuxAudioIO {
 std::unique_ptr<media::AudioManager> CreateAudioManager(
     std::unique_ptr<AudioThread> audio_thread,
     AudioLogFactory* audio_log_factory) {
-  DVLOG(DVLOG_LEVEL) << __func__;
 #if defined(USE_CRAS)
   if (base::CommandLine::ForCurrentProcess()->HasSwitch(switches::kUseCras)) {
     UMA_HISTOGRAM_ENUMERATION("Media.LinuxAudioIO", kCras, kAudioIOMax + 1);

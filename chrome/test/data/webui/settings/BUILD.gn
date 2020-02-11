@@ -20,7 +20,6 @@ js_modulizer("modulize") {
     "search_engines_page_test.js",
     "search_page_test.js",
     "site_favicon_test.js",
-    "settings_menu_test.js",
     "settings_slider_tests.js",
     "settings_subpage_test.js",
     "settings_textarea_tests.js",

@@ -8,6 +8,7 @@
 #include <memory>
 #include <string>
 
+#include "base/auto_reset.h"
 #include "base/callback.h"
 #include "base/memory/read_only_shared_memory_region.h"
 #include "base/memory/weak_ptr.h"
@@ -75,6 +76,8 @@ class PrintJobSubmitter {
   // |callback| is called asynchronously with the success or failure of the
   // process.
   void Start(SubmitJobCallback callback);
+
+  static base::AutoReset<bool> DisablePdfFlatteningForTesting();
 
  private:
   bool CheckContentType() const;

@@ -90,10 +90,10 @@ public class NightModeReparentingController implements NightModeStateProvider.Ob
 
     /** Reattach the given task/pair to the activity/tab-model. */
     private void reattachTab(ReparentingTask task, TabReparentingParams params, TabModel tabModel) {
+        final Tab tab = params.getTabToReparent();
         task.finish(mReparentingDelegate, () -> {
-            tabModel.addTab(params.getTabToReparent(), params.getTabIndex(),
-                    TabLaunchType.FROM_REPARENTING);
-            AsyncTabParamsManager.remove(params.getTabToReparent().getId());
+            tabModel.addTab(tab, params.getTabIndex(), TabLaunchType.FROM_REPARENTING);
+            AsyncTabParamsManager.remove(tab.getId());
         });
     }
 
@@ -120,10 +120,13 @@ public class NightModeReparentingController implements NightModeStateProvider.Ob
                 }
 
                 AsyncTabParamsManager.add(tab.getId(), params);
-                model.removeTab(tab);
                 ReparentingTask.from(tab).detach();
             }
         }
+
+        // Save the current state to overwrite tab state that was previously saved to disk. See
+        // crbug.com/1042565 for more info.
+        mDelegate.getTabModelSelector().saveState();
     }
 
     /** @return Mapping from TabModel to all the Tabs in that model. */

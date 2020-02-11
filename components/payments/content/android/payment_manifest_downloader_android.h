@@ -32,12 +32,15 @@ class PaymentManifestDownloaderAndroid {
   void DownloadPaymentMethodManifest(
       JNIEnv* env,
       const base::android::JavaParamRef<jobject>& jcaller,
+      const base::android::JavaParamRef<jobject>& jmerchant_origin,
       const base::android::JavaParamRef<jobject>& juri,
       const base::android::JavaParamRef<jobject>& jcallback);
 
   void DownloadWebAppManifest(
       JNIEnv* env,
       const base::android::JavaParamRef<jobject>& jcaller,
+      const base::android::JavaParamRef<jobject>&
+          jpayment_method_manifest_origin,
       const base::android::JavaParamRef<jobject>& juri,
       const base::android::JavaParamRef<jobject>& jcallback);
 

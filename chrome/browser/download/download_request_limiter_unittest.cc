@@ -999,3 +999,39 @@ TEST_F(DownloadRequestLimiterTest,
   EXPECT_EQ(DownloadRequestLimiter::DOWNLOAD_UI_BLOCKED,
             download_request_limiter_->GetDownloadUiStatus(web_contents()));
 }
+
+// Test that renderer initiated download from opaque origins are correctly
+// limited.
+TEST_F(DownloadRequestLimiterTest, OpaqueOrigins) {
+  // about:blank is an opaque origin.
+  NavigateAndCommit(GURL("about:blank"));
+  LoadCompleted();
+
+  // Create another opaque origin that will trigger all the download.
+  url::Origin origin;
+  // The first download should go through.
+  CanDownloadFor(web_contents(), origin);
+  ExpectAndResetCounts(1, 0, 0, __LINE__);
+  EXPECT_EQ(DownloadRequestLimiter::PROMPT_BEFORE_DOWNLOAD,
+            download_request_limiter_->GetDownloadStatus(web_contents()));
+  EXPECT_EQ(DownloadRequestLimiter::DOWNLOAD_UI_DEFAULT,
+            download_request_limiter_->GetDownloadUiStatus(web_contents()));
+
+  // The 2nd download will be canceled, there is no prompt since the origin
+  // is opaque.
+  CanDownloadFor(web_contents(), origin);
+  ExpectAndResetCounts(0, 1, 0, __LINE__);
+  EXPECT_EQ(DownloadRequestLimiter::DOWNLOADS_NOT_ALLOWED,
+            download_request_limiter_->GetDownloadStatus(web_contents()));
+  EXPECT_EQ(DownloadRequestLimiter::DOWNLOAD_UI_BLOCKED,
+            download_request_limiter_->GetDownloadUiStatus(web_contents()));
+
+  // Trigger another download from about:blank, that should not be affected
+  // as it is a special URL.
+  CanDownloadFor(web_contents());
+  ExpectAndResetCounts(1, 0, 0, __LINE__);
+  EXPECT_EQ(DownloadRequestLimiter::PROMPT_BEFORE_DOWNLOAD,
+            download_request_limiter_->GetDownloadStatus(web_contents()));
+  EXPECT_EQ(DownloadRequestLimiter::DOWNLOAD_UI_DEFAULT,
+            download_request_limiter_->GetDownloadUiStatus(web_contents()));
+}

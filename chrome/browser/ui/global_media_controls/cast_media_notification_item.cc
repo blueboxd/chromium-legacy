@@ -14,6 +14,7 @@
 #include "components/media_message_center/media_notification_controller.h"
 #include "components/media_message_center/media_notification_view.h"
 #include "components/media_message_center/media_notification_view_impl.h"
+#include "components/vector_icons/vector_icons.h"
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browser_thread.h"
@@ -169,6 +170,9 @@ CastMediaNotificationItem::~CastMediaNotificationItem() {
 void CastMediaNotificationItem::SetView(
     media_message_center::MediaNotificationView* view) {
   view_ = view;
+  if (view_)
+    view_->UpdateWithVectorIcon(vector_icons::kMediaRouterIdleIcon);
+
   UpdateView();
   if (view_ && !recorded_metadata_metrics_) {
     recorded_metadata_metrics_ = true;

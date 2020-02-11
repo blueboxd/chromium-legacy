@@ -53,7 +53,6 @@ import org.chromium.chrome.browser.autofill_assistant.proto.SupportedScriptProto
 import org.chromium.chrome.browser.autofill_assistant.proto.SupportedScriptProto.PresentationProto;
 import org.chromium.chrome.browser.autofill_assistant.proto.UseAddressProto;
 import org.chromium.chrome.browser.autofill_assistant.proto.UseAddressProto.RequiredField;
-import org.chromium.chrome.browser.autofill_assistant.proto.UseAddressProto.RequiredField.AddressField;
 import org.chromium.chrome.browser.customtabs.CustomTabActivityTestRule;
 import org.chromium.chrome.browser.customtabs.CustomTabsTestUtils;
 import org.chromium.chrome.test.ChromeJUnit4ClassRunner;
@@ -116,14 +115,14 @@ public class AutofillAssistantPersonalDataManagerTest {
                                                          "#profile_name"))
                                          .addRequiredFields(
                                                  RequiredField.newBuilder()
-                                                         .setAddressField(AddressField.FULL_NAME)
+                                                         .setValueExpression("7")
                                                          .setElement(
                                                                  ElementReferenceProto.newBuilder()
                                                                          .addSelectors(
                                                                                  "#profile_name")))
                                          .addRequiredFields(
                                                  RequiredField.newBuilder()
-                                                         .setAddressField(AddressField.EMAIL)
+                                                         .setValueExpression("9")
                                                          .setElement(
                                                                  ElementReferenceProto.newBuilder()
                                                                          .addSelectors("#email"))))

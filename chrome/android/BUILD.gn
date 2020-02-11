@@ -381,6 +381,7 @@ android_library("chrome_java") {
     "//ui/base/mojom:mojom_java",
     "//ui/gfx/geometry/mojom:mojom_java",
     "//url:gurl_java",
+    "//url:origin_java",
     "//url/mojom:url_mojom_gurl_java",
   ]
 

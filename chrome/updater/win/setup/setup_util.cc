@@ -14,7 +14,7 @@ namespace updater {
 
 namespace {
 
-constexpr base::char16 kTaskName[] = L"GoogleUpdaterUA";
+constexpr base::char16 kTaskName[] = L"UpdateApps";
 constexpr base::char16 kTaskDescription[] = L"Update all applications.";
 
 }  // namespace

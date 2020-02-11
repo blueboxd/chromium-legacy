@@ -18,7 +18,6 @@ import './search_engines_page/search_engine_dialog.m.js';
 import './search_engines_page/search_engine_entry.m.js';
 import './search_engines_page/search_engines_page.m.js';
 import './search_page/search_page.m.js';
-import './settings_menu/settings_menu.m.js';
 import './settings_page/settings_subpage.m.js';
 import './settings_page/settings_animated_pages.m.js';
 
@@ -34,8 +33,6 @@ export {ExtensionControlBrowserProxyImpl} from './extension_control_browser_prox
 export {OnStartupBrowserProxy, OnStartupBrowserProxyImpl} from './on_startup_page/on_startup_browser_proxy.m.js';
 export {EDIT_STARTUP_URL_EVENT} from './on_startup_page/startup_url_entry.m.js';
 export {StartupUrlsPageBrowserProxy, StartupUrlsPageBrowserProxyImpl} from './on_startup_page/startup_urls_page_browser_proxy.m.js';
-export {pageVisibility} from './page_visibility.m.js';
 export {prefToString, stringToPrefValue} from './prefs/pref_util.m.js';
-export {routes} from './route.m.js';
 export {Route, Router} from './router.m.js';
 export {SearchEnginesBrowserProxyImpl} from './search_engines_page/search_engines_browser_proxy.m.js';

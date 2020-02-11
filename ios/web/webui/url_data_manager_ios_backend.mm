@@ -151,6 +151,10 @@ class URLRequestChromeJob : public net::URLRequestJob {
   // Separate from ReadRawData so we can handle async I/O.
   int CompleteRead(net::IOBuffer* buf, int buf_size);
 
+  // Called asynchronously to notify of an error occuring while trying to start
+  // the job.
+  void NotifyStartErrorAsync();
+
   // The actual data we're serving.  NULL until it's been fetched.
   scoped_refptr<base::RefCountedMemory> data_;
   // The current offset into the data that we're handing off to our
@@ -239,8 +243,9 @@ void URLRequestChromeJob::Start() {
   DCHECK(backend_);
 
   if (!backend_->StartRequest(request_, this)) {
-    NotifyStartError(net::URLRequestStatus(net::URLRequestStatus::FAILED,
-                                           net::ERR_INVALID_URL));
+    base::ThreadTaskRunnerHandle::Get()->PostTask(
+        FROM_HERE, base::BindOnce(&URLRequestChromeJob::NotifyStartErrorAsync,
+                                  weak_factory_.GetWeakPtr()));
   }
 }
 
@@ -363,6 +368,12 @@ int URLRequestChromeJob::CompleteRead(net::IOBuffer* buf, int buf_size) {
     data_offset_ += buf_size;
   }
   return buf_size;
+}
+
+void URLRequestChromeJob::NotifyStartErrorAsync() {
+  const net::URLRequestStatus error = net::URLRequestStatus(
+      net::URLRequestStatus::FAILED, net::ERR_INVALID_URL);
+  NotifyStartError(error);
 }
 
 namespace {

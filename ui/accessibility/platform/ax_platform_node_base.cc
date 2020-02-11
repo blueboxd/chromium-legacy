@@ -747,7 +747,8 @@ base::Optional<float> AXPlatformNodeBase::GetFontSizeInPoints() const {
   return base::nullopt;
 }
 
-bool AXPlatformNodeBase::HasCaret() {
+bool AXPlatformNodeBase::HasCaret(
+    const AXTree::Selection* unignored_selection) {
   if (IsInvisibleOrIgnored())
     return false;
 
@@ -758,7 +759,12 @@ bool AXPlatformNodeBase::HasCaret() {
   }
 
   // The caret is always at the focus of the selection.
-  int32_t focus_id = delegate_->GetUnignoredSelection().focus_object_id;
+  int32_t focus_id;
+  if (unignored_selection)
+    focus_id = unignored_selection->focus_object_id;
+  else
+    focus_id = delegate_->GetUnignoredSelection().focus_object_id;
+
   AXPlatformNodeBase* focus_object =
       static_cast<AXPlatformNodeBase*>(delegate_->GetFromNodeID(focus_id));
 
@@ -1505,34 +1511,38 @@ int AXPlatformNodeBase::GetHypertextOffsetFromEndpoint(
   return -1;
 }
 
-int AXPlatformNodeBase::GetUnignoredSelectionAnchor() {
-  ui::AXTree::Selection unignored_selection =
-      delegate_->GetUnignoredSelection();
-  int32_t anchor_id = unignored_selection.anchor_object_id;
+int AXPlatformNodeBase::GetSelectionAnchor(const AXTree::Selection* selection) {
+  DCHECK(selection);
+  int32_t anchor_id = selection->anchor_object_id;
   AXPlatformNodeBase* anchor_object =
       static_cast<AXPlatformNodeBase*>(delegate_->GetFromNodeID(anchor_id));
 
   if (!anchor_object)
     return -1;
 
-  int anchor_offset = int{unignored_selection.anchor_offset};
+  int anchor_offset = int{selection->anchor_offset};
   return GetHypertextOffsetFromEndpoint(anchor_object, anchor_offset);
 }
 
-int AXPlatformNodeBase::GetUnignoredSelectionFocus() {
-  ui::AXTree::Selection unignored_selection =
-      delegate_->GetUnignoredSelection();
-  int32_t focus_id = unignored_selection.focus_object_id;
+int AXPlatformNodeBase::GetSelectionFocus(const AXTree::Selection* selection) {
+  DCHECK(selection);
+  int32_t focus_id = selection->focus_object_id;
   AXPlatformNodeBase* focus_object =
       static_cast<AXPlatformNodeBase*>(GetDelegate()->GetFromNodeID(focus_id));
   if (!focus_object)
     return -1;
 
-  int focus_offset = int{unignored_selection.focus_offset};
+  int focus_offset = int{selection->focus_offset};
   return GetHypertextOffsetFromEndpoint(focus_object, focus_offset);
 }
 
 void AXPlatformNodeBase::GetSelectionOffsets(int* selection_start,
+                                             int* selection_end) {
+  GetSelectionOffsets(nullptr, selection_start, selection_end);
+}
+
+void AXPlatformNodeBase::GetSelectionOffsets(const AXTree::Selection* selection,
+                                             int* selection_start,
                                              int* selection_end) {
   DCHECK(selection_start && selection_end);
 
@@ -1543,15 +1553,24 @@ void AXPlatformNodeBase::GetSelectionOffsets(int* selection_start,
     return;
   }
 
-  GetSelectionOffsetsFromTree(selection_start, selection_end);
+  // If the unignored selection has not been computed yet, compute it now.
+  AXTree::Selection unignored_selection;
+  if (!selection) {
+    unignored_selection = delegate_->GetUnignoredSelection();
+    selection = &unignored_selection;
+  }
+  DCHECK(selection);
+  GetSelectionOffsetsFromTree(selection, selection_start, selection_end);
 }
 
-void AXPlatformNodeBase::GetSelectionOffsetsFromTree(int* selection_start,
-                                                     int* selection_end) {
+void AXPlatformNodeBase::GetSelectionOffsetsFromTree(
+    const AXTree::Selection* selection,
+    int* selection_start,
+    int* selection_end) {
   DCHECK(selection_start && selection_end);
 
-  *selection_start = GetUnignoredSelectionAnchor();
-  *selection_end = GetUnignoredSelectionFocus();
+  *selection_start = GetSelectionAnchor(selection);
+  *selection_end = GetSelectionFocus(selection);
   if (*selection_start < 0 || *selection_end < 0)
     return;
 
@@ -1567,7 +1586,7 @@ void AXPlatformNodeBase::GetSelectionOffsetsFromTree(int* selection_start,
   // outside this object in their entirety.
   // Selections that span more than one character are by definition inside
   // this object, so checking them is not necessary.
-  if (*selection_start == *selection_end && !HasCaret()) {
+  if (*selection_start == *selection_end && !HasCaret(selection)) {
     *selection_start = -1;
     *selection_end = -1;
     return;
@@ -1587,7 +1606,7 @@ void AXPlatformNodeBase::GetSelectionOffsetsFromTree(int* selection_start,
     return;
 
   int hyperlink_selection_start, hyperlink_selection_end;
-  hyperlink->GetSelectionOffsets(&hyperlink_selection_start,
+  hyperlink->GetSelectionOffsets(selection, &hyperlink_selection_start,
                                  &hyperlink_selection_end);
   if (hyperlink_selection_start >= 0 && hyperlink_selection_end >= 0 &&
       hyperlink_selection_start != hyperlink_selection_end) {

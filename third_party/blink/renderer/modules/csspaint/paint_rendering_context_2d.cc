@@ -45,12 +45,6 @@ void PaintRenderingContext2D::InitializePaintRecorder() {
   did_record_draw_commands_in_paint_recorder_ = false;
 }
 
-cc::PaintCanvas* PaintRenderingContext2D::Canvas() const {
-  DCHECK(paint_recorder_);
-  DCHECK(paint_recorder_->getRecordingCanvas());
-  return paint_recorder_->getRecordingCanvas();
-}
-
 void PaintRenderingContext2D::DidDraw(const SkIRect&) {
   did_record_draw_commands_in_paint_recorder_ = true;
 }

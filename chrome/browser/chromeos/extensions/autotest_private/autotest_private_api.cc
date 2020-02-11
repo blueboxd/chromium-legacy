@@ -673,15 +673,17 @@ class WindowStateChangeObserver : public aura::WindowObserver {
 
 class EventGenerator : public aura::WindowEventDispatcherObserver {
  public:
-  EventGenerator(ui::Compositor* compositor, base::OnceClosure closure)
+  EventGenerator(aura::WindowTreeHost* host, base::OnceClosure closure)
       : input_injector_(
             ui::OzonePlatform::GetInstance()->CreateSystemInputInjector()),
+        host_(host),
         interval_(base::TimeDelta::FromSeconds(1) /
-                  std::max(compositor->refresh_rate(), 60.0f)),
+                  std::max(host->compositor()->refresh_rate(), 60.0f)),
         closure_(std::move(closure)),
         weak_ptr_factory_(this) {
-    LOG_IF(ERROR, compositor->refresh_rate() < 60.0f)
-        << "Refresh rate (" << compositor->refresh_rate() << ") is too low.";
+    LOG_IF(ERROR, host->compositor()->refresh_rate() < 60.0f)
+        << "Refresh rate (" << host->compositor()->refresh_rate()
+        << ") is too low.";
     aura::Env::GetInstance()->AddWindowEventDispatcherObserver(this);
   }
   ~EventGenerator() override {
@@ -750,7 +752,11 @@ class EventGenerator : public aura::WindowEventDispatcherObserver {
       }
       case ui::ET_MOUSE_MOVED:
       case ui::ET_MOUSE_DRAGGED:
-        input_injector_->MoveCursorTo(task->location_in_host);
+        // The location should be offset by the origin of the root-window since
+        // ui::SystemInputInjector expects so.
+        input_injector_->MoveCursorTo(
+            task->location_in_host +
+            host_->GetBoundsInPixels().OffsetFromOrigin());
         break;
       default:
         NOTREACHED();
@@ -804,6 +810,7 @@ class EventGenerator : public aura::WindowEventDispatcherObserver {
   }
 
   std::unique_ptr<ui::SystemInputInjector> input_injector_;
+  aura::WindowTreeHost* host_;
   base::TimeTicks next_event_timestamp_;
   const base::TimeDelta interval_;
   base::OnceClosure closure_;
@@ -3694,7 +3701,7 @@ ExtensionFunction::ResponseAction AutotestPrivateMouseClickFunction::Run() {
 
   int flags = GetMouseEventFlags(params->button);
   event_generator_ = std::make_unique<EventGenerator>(
-      root_window->GetHost()->compositor(),
+      root_window->GetHost(),
       base::BindOnce(&AutotestPrivateMouseClickFunction::Respond, this,
                      NoArguments()));
   event_generator_->ScheduleMouseEvent(ui::ET_MOUSE_PRESSED, location_in_host,
@@ -3736,7 +3743,7 @@ ExtensionFunction::ResponseAction AutotestPrivateMousePressFunction::Run() {
   ConvertPointToHost(root_window, &location_in_host);
 
   event_generator_ = std::make_unique<EventGenerator>(
-      root_window->GetHost()->compositor(),
+      root_window->GetHost(),
       base::BindOnce(&AutotestPrivateMousePressFunction::Respond, this,
                      NoArguments()));
   event_generator_->ScheduleMouseEvent(ui::ET_MOUSE_PRESSED, location_in_host,
@@ -3777,7 +3784,7 @@ ExtensionFunction::ResponseAction AutotestPrivateMouseReleaseFunction::Run() {
   ConvertPointToHost(root_window, &location_in_host);
 
   event_generator_ = std::make_unique<EventGenerator>(
-      root_window->GetHost()->compositor(),
+      root_window->GetHost(),
       base::BindOnce(&AutotestPrivateMouseReleaseFunction::Respond, this,
                      NoArguments()));
   event_generator_->ScheduleMouseEvent(ui::ET_MOUSE_RELEASED, location_in_host,
@@ -3803,7 +3810,6 @@ ExtensionFunction::ResponseAction AutotestPrivateMouseMoveFunction::Run() {
   if (!root_window)
     return RespondNow(Error("Failed to find the root window"));
 
-  auto* compositor = root_window->GetHost()->compositor();
   const gfx::PointF location_in_root(params->location.x, params->location.y);
   gfx::PointF location_in_screen = location_in_root;
   wm::ConvertPointToScreen(root_window, &location_in_screen);
@@ -3816,8 +3822,9 @@ ExtensionFunction::ResponseAction AutotestPrivateMouseMoveFunction::Run() {
   ConvertPointToHost(root_window, &location_in_host);
 
   event_generator_ = std::make_unique<EventGenerator>(
-      compositor, base::BindOnce(&AutotestPrivateMouseMoveFunction::Respond,
-                                 this, NoArguments()));
+      root_window->GetHost(),
+      base::BindOnce(&AutotestPrivateMouseMoveFunction::Respond, this,
+                     NoArguments()));
   gfx::PointF start_in_host(last_mouse_location.x(), last_mouse_location.y());
   wm::ConvertPointFromScreen(root_window, &start_in_host);
   ConvertPointToHost(root_window, &start_in_host);

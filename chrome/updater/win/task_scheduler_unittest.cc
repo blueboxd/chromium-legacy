@@ -22,6 +22,7 @@
 #include "base/win/scoped_bstr.h"
 #include "base/win/scoped_variant.h"
 #include "base/win/windows_version.h"
+#include "chrome/updater/updater_version.h"
 #include "chrome/updater/win/test/test_executables.h"
 #include "chrome/updater/win/test/test_strings.h"
 #include "chrome/updater/win/util.h"
@@ -290,6 +291,9 @@ TEST_F(TaskSchedulerTests, GetTaskInfoNameAndDescription) {
   EXPECT_TRUE(task_scheduler_->GetTaskInfo(kTaskName1, &info));
   EXPECT_EQ(kTaskDescription1, info.description);
   EXPECT_EQ(kTaskName1, info.name);
+
+  EXPECT_TRUE(task_scheduler_->HasTaskFolder(
+      L"\\" COMPANY_SHORTNAME_STRING L"\\" PRODUCT_FULLNAME_STRING));
 
   EXPECT_TRUE(task_scheduler_->DeleteTask(kTaskName1));
 }

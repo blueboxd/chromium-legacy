@@ -10,8 +10,6 @@
 #include "base/bind.h"
 #include "base/callback.h"
 #include "base/optional.h"
-#include "base/strings/strcat.h"
-#include "base/strings/string_number_conversions.h"
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/time/time.h"
@@ -33,15 +31,14 @@ UseCreditCardAction::UseCreditCardAction(ActionDelegate* delegate,
   prompt_ = proto.use_card().prompt();
   std::vector<RequiredField> required_fields;
   for (const auto& required_field_proto : proto_.use_card().required_fields()) {
-    if (required_field_proto.card_field() ==
-        UseCreditCardProto::RequiredField::UNDEFINED) {
-      VLOG(1) << "card_field enum not set, skipping required field";
+    if (required_field_proto.value_expression().empty()) {
+      VLOG(1) << "no fallback filling information provided, skipping field";
       continue;
     }
 
     required_fields.emplace_back();
     RequiredField& required_field = required_fields.back();
-    required_field.fallback_key = (int)required_field_proto.card_field();
+    required_field.value_expression = required_field_proto.value_expression();
     required_field.selector = Selector(required_field_proto.element());
     required_field.simulate_key_presses =
         required_field_proto.simulate_key_presses();
@@ -130,42 +127,20 @@ std::unique_ptr<FallbackData> UseCreditCardAction::CreateFallbackData(
     const base::string16& cvc,
     const autofill::CreditCard& card) {
   auto fallback_data = std::make_unique<FallbackData>();
+
   fallback_data->field_values.emplace(
-      (int)UseCreditCardProto::RequiredField::CREDIT_CARD_VERIFICATION_CODE,
+      static_cast<int>(
+          UseCreditCardProto::RequiredField::CREDIT_CARD_VERIFICATION_CODE),
       base::UTF16ToUTF8(cvc));
-
-  if (card.expiration_month() > 0) {
-    fallback_data->field_values.emplace(
-        (int)UseCreditCardProto::RequiredField::CREDIT_CARD_EXP_MONTH,
-        base::StringPrintf("%02d", card.expiration_month()));
-  }
-
-  if (card.expiration_year() > 0) {
-    fallback_data->field_values.emplace(
-        (int)UseCreditCardProto::RequiredField::CREDIT_CARD_EXP_2_DIGIT_YEAR,
-        base::StringPrintf("%02d", card.expiration_year() % 100));
-    fallback_data->field_values.emplace(
-        (int)UseCreditCardProto::RequiredField::CREDIT_CARD_EXP_4_DIGIT_YEAR,
-        base::StringPrintf("%04d", card.expiration_year()));
-    if (card.expiration_month() > 0) {
-      fallback_data->field_values.emplace(
-          (int)UseCreditCardProto::RequiredField::CREDIT_CARD_EXP_MM_YY,
-          base::StrCat(
-              {base::StringPrintf("%02d", card.expiration_month()), "/",
-               base::StringPrintf("%02d", card.expiration_year() % 100)}));
-    }
-  }
-
   fallback_data->field_values.emplace(
-      (int)UseCreditCardProto::RequiredField::CREDIT_CARD_CARD_HOLDER_NAME,
-      base::UTF16ToUTF8(card.GetRawInfo(autofill::CREDIT_CARD_NAME_FULL)));
-  fallback_data->field_values.emplace(
-      (int)UseCreditCardProto::RequiredField::CREDIT_CARD_NUMBER,
+      (int)UseCreditCardProto::RequiredField::CREDIT_CARD_RAW_NUMBER,
       base::UTF16ToUTF8(card.GetRawInfo(autofill::CREDIT_CARD_NUMBER)));
   fallback_data->field_values.emplace(
-      (int)UseCreditCardProto::RequiredField::CREDIT_CARD_NETWORK,
+      static_cast<int>(UseCreditCardProto::RequiredField::CREDIT_CARD_NETWORK),
       autofill::data_util::GetPaymentRequestData(card.network())
           .basic_card_issuer_network);
+
+  fallback_data->AddFormGroup(card);
   return fallback_data;
 }
 }  // namespace autofill_assistant

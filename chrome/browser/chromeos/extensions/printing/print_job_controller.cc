@@ -8,6 +8,9 @@
 
 #include "base/bind.h"
 #include "base/callback.h"
+#include "base/containers/flat_map.h"
+#include "base/containers/queue.h"
+#include "base/memory/scoped_refptr.h"
 #include "base/task/post_task.h"
 #include "chrome/browser/chromeos/printing/cups_print_job.h"
 #include "chrome/browser/chromeos/printing/cups_print_job_manager.h"
@@ -50,24 +53,92 @@ void CreateQueryOnIOThread(std::unique_ptr<printing::PrintSettings> settings,
 
 }  // namespace
 
-PrintJobController::JobState::JobState(scoped_refptr<printing::PrintJob> job,
-                                       StartPrintJobCallback callback)
+// This class lives on UI thread.
+class PrintJobControllerImpl : public PrintJobController {
+ public:
+  explicit PrintJobControllerImpl(
+      chromeos::CupsPrintJobManager* print_job_manager);
+  ~PrintJobControllerImpl() override;
+
+  // PrintJobController:
+  void StartPrintJob(const std::string& extension_id,
+                     std::unique_ptr<printing::MetafileSkia> metafile,
+                     std::unique_ptr<printing::PrintSettings> settings,
+                     StartPrintJobCallback callback) override;
+
+  bool CancelPrintJob(const std::string& job_id) override;
+
+  // Moves print job pointer to |print_jobs_map_| and resolves corresponding
+  void OnPrintJobCreated(
+      const std::string& extension_id,
+      const std::string& job_id,
+      base::WeakPtr<chromeos::CupsPrintJob> cups_job) override;
+
+  // Removes print job pointer from |print_jobs_map_| as the job is finished.
+  void OnPrintJobFinished(const std::string& job_id) override;
+
+ private:
+  struct JobState {
+    JobState(scoped_refptr<printing::PrintJob> job,
+             StartPrintJobCallback callback);
+    JobState(JobState&&);
+    JobState& operator=(JobState&&);
+    ~JobState();
+
+    scoped_refptr<printing::PrintJob> job;
+    StartPrintJobCallback callback;
+  };
+
+  void StartPrinting(const std::string& extension_id,
+                     std::unique_ptr<printing::MetafileSkia> metafile,
+                     StartPrintJobCallback callback,
+                     std::unique_ptr<printing::PrinterQuery> query);
+
+  // Stores mapping from extension id to queue of pending jobs to resolve.
+  // Placing a job state in the map means that we sent print job to the printing
+  // pipeline and have been waiting for the response with created job id.
+  // After that we could resolve a callback and move PrintJob to global map.
+  // We need to store job pointers to keep the current scheduled print jobs
+  // alive (as they're ref counted).
+  base::flat_map<std::string, base::queue<JobState>> extension_pending_jobs_;
+
+  // Stores mapping from job id to printing::PrintJob.
+  // This is needed to hold PrintJob pointer and correct handle CancelJob()
+  // requests.
+  base::flat_map<std::string, scoped_refptr<printing::PrintJob>>
+      print_jobs_map_;
+
+  // Stores mapping from job id to chromeos::CupsPrintJob.
+  base::flat_map<std::string, base::WeakPtr<chromeos::CupsPrintJob>>
+      cups_print_jobs_map_;
+
+  // PrintingAPIHandler (which owns PrintJobController) depends on
+  // CupsPrintJobManagerFactory, so |print_job_manager_| outlives
+  // PrintJobController.
+  chromeos::CupsPrintJobManager* const print_job_manager_;
+
+  base::WeakPtrFactory<PrintJobControllerImpl> weak_ptr_factory_{this};
+};
+
+PrintJobControllerImpl::JobState::JobState(
+    scoped_refptr<printing::PrintJob> job,
+    StartPrintJobCallback callback)
     : job(job), callback(std::move(callback)) {}
 
-PrintJobController::JobState::JobState(JobState&&) = default;
+PrintJobControllerImpl::JobState::JobState(JobState&&) = default;
 
-PrintJobController::JobState& PrintJobController::JobState::operator=(
+PrintJobControllerImpl::JobState& PrintJobControllerImpl::JobState::operator=(
     JobState&&) = default;
 
-PrintJobController::JobState::~JobState() = default;
+PrintJobControllerImpl::JobState::~JobState() = default;
 
-PrintJobController::PrintJobController(
+PrintJobControllerImpl::PrintJobControllerImpl(
     chromeos::CupsPrintJobManager* print_job_manager)
     : print_job_manager_(print_job_manager) {}
 
-PrintJobController::~PrintJobController() = default;
+PrintJobControllerImpl::~PrintJobControllerImpl() = default;
 
-void PrintJobController::StartPrintJob(
+void PrintJobControllerImpl::StartPrintJob(
     const std::string& extension_id,
     std::unique_ptr<printing::MetafileSkia> metafile,
     std::unique_ptr<printing::PrintSettings> settings,
@@ -78,12 +149,12 @@ void PrintJobController::StartPrintJob(
       FROM_HERE, {content::BrowserThread::IO},
       base::BindOnce(
           &CreateQueryOnIOThread, std::move(settings),
-          base::BindOnce(&PrintJobController::StartPrinting,
+          base::BindOnce(&PrintJobControllerImpl::StartPrinting,
                          weak_ptr_factory_.GetWeakPtr(), extension_id,
                          std::move(metafile), std::move(callback))));
 }
 
-void PrintJobController::StartPrinting(
+void PrintJobControllerImpl::StartPrinting(
     const std::string& extension_id,
     std::unique_ptr<printing::MetafileSkia> metafile,
     StartPrintJobCallback callback,
@@ -107,7 +178,7 @@ void PrintJobController::StartPrinting(
   job->StartPrinting();
 }
 
-bool PrintJobController::CancelPrintJob(const std::string& job_id) {
+bool PrintJobControllerImpl::CancelPrintJob(const std::string& job_id) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
 
   auto it = cups_print_jobs_map_.find(job_id);
@@ -117,7 +188,7 @@ bool PrintJobController::CancelPrintJob(const std::string& job_id) {
   return true;
 }
 
-void PrintJobController::OnPrintJobCreated(
+void PrintJobControllerImpl::OnPrintJobCreated(
     const std::string& extension_id,
     const std::string& job_id,
     base::WeakPtr<chromeos::CupsPrintJob> cups_job) {
@@ -145,11 +216,17 @@ void PrintJobController::OnPrintJobCreated(
   }
 }
 
-void PrintJobController::OnPrintJobFinished(const std::string& job_id) {
+void PrintJobControllerImpl::OnPrintJobFinished(const std::string& job_id) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
 
   print_jobs_map_.erase(job_id);
   cups_print_jobs_map_.erase(job_id);
+}
+
+// static
+std::unique_ptr<PrintJobController> PrintJobController::Create(
+    chromeos::CupsPrintJobManager* print_job_manager) {
+  return std::make_unique<PrintJobControllerImpl>(print_job_manager);
 }
 
 }  // namespace extensions

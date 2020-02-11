@@ -26,7 +26,9 @@ import("//build/config/sysroot.gni")
 # component_name_override: If set, specifies the name of the component.
 #     By default, the component name is the same as the package name.
 # deps: Additional targets to build and include in the package (optional).
-template("fuchsia_package") {
+#
+# TODO(https://crbug.com/1050703): Migrate consumers to GN SDK equivalents.
+template("cr_fuchsia_package") {
   pkg = {
     forward_variables_from(invoker, "*")
 
@@ -232,5 +234,13 @@ template("fuchsia_package") {
 
     sources = [ _combined_far_file ]
     outputs = [ _final_far_file ]
+  }
+}
+
+# TODO(https:crbug.com/1050703): Migrate callers to cr_fuchsia_package() and
+# remove this old name.
+template("fuchsia_package") {
+  cr_fuchsia_package(target_name) {
+    forward_variables_from(invoker, "*")
   }
 }

@@ -261,6 +261,7 @@ public class TabModelSelectorImpl extends TabModelSelectorBase implements TabMod
         return isIncognitoSelected() == model.isIncognito();
     }
 
+    @Override
     public void saveState() {
         commitAllTabClosures();
         mTabSaver.saveState();

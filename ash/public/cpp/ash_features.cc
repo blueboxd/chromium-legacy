@@ -27,9 +27,6 @@ const base::Feature kDockedMagnifier{"DockedMagnifier",
 const base::Feature kDragToSnapInClamshellMode{
     "DragToSnapInClamshellMode", base::FEATURE_DISABLED_BY_DEFAULT};
 
-const base::Feature kEnableOverviewRoundedCorners{
-    "EnableOverviewRoundedCorners", base::FEATURE_ENABLED_BY_DEFAULT};
-
 const base::Feature kLockScreenNotifications{"LockScreenNotifications",
                                              base::FEATURE_DISABLED_BY_DEFAULT};
 
@@ -54,9 +51,6 @@ const base::Feature kMediaSessionNotification{"MediaSessionNotification",
 
 const base::Feature kMultiDisplayOverviewAndSplitView{
     "MultiDisplayOverviewAndSplitView", base::FEATURE_DISABLED_BY_DEFAULT};
-
-const base::Feature kNewOverviewLayout{"NewOverviewLayout",
-                                       base::FEATURE_ENABLED_BY_DEFAULT};
 
 const base::Feature kNightLight{"NightLight", base::FEATURE_ENABLED_BY_DEFAULT};
 

@@ -4587,10 +4587,14 @@ std::pair<int, int> AXPlatformNodeAuraLinux::GetSelectionOffsetsForAtk() {
   // selected, whereas node attributes might contain selection extents that are
   // no longer part of the visual selection.
   std::pair<int, int> selection;
-  if (GetDelegate()->IsWebContent())
-    GetSelectionOffsetsFromTree(&selection.first, &selection.second);
-  else
+  if (GetDelegate()->IsWebContent()) {
+    AXTree::Selection unignored_selection =
+        GetDelegate()->GetUnignoredSelection();
+    GetSelectionOffsetsFromTree(&unignored_selection, &selection.first,
+                                &selection.second);
+  } else {
     GetSelectionOffsets(&selection.first, &selection.second);
+  }
   return selection;
 }
 

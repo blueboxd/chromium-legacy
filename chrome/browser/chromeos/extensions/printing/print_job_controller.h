@@ -9,11 +9,7 @@
 #include <string>
 
 #include "base/callback_forward.h"
-#include "base/containers/flat_map.h"
-#include "base/containers/queue.h"
-#include "base/memory/scoped_refptr.h"
 #include "base/memory/weak_ptr.h"
-#include "chrome/browser/printing/print_job.h"
 
 namespace chromeos {
 class CupsPrintJob;
@@ -22,7 +18,6 @@ class CupsPrintJobManager;
 
 namespace printing {
 class MetafileSkia;
-class PrinterQuery;
 class PrintSettings;
 }  // namespace printing
 
@@ -31,77 +26,38 @@ namespace extensions {
 // This class is responsible for sending print jobs in the printing pipeline and
 // cancelling them. It should be used by API handler as the entry point of
 // actual printing pipeline.
-// This class lives on UI thread.
 class PrintJobController {
  public:
   using StartPrintJobCallback =
       base::OnceCallback<void(std::unique_ptr<std::string> job_id)>;
 
-  explicit PrintJobController(chromeos::CupsPrintJobManager* print_job_manager);
-  ~PrintJobController();
+  static std::unique_ptr<PrintJobController> Create(
+      chromeos::CupsPrintJobManager* print_job_manager);
+
+  PrintJobController() = default;
+  virtual ~PrintJobController() = default;
+  PrintJobController(const PrintJobController&) = delete;
+  PrintJobController& operator=(const PrintJobController&) = delete;
 
   // Creates, initializes and adds print job to the queue of pending print jobs.
-  void StartPrintJob(const std::string& extension_id,
-                     std::unique_ptr<printing::MetafileSkia> metafile,
-                     std::unique_ptr<printing::PrintSettings> settings,
-                     StartPrintJobCallback callback);
+  virtual void StartPrintJob(const std::string& extension_id,
+                             std::unique_ptr<printing::MetafileSkia> metafile,
+                             std::unique_ptr<printing::PrintSettings> settings,
+                             StartPrintJobCallback callback) = 0;
 
   // Returns false if there is no active print job with specified id.
   // Returns true otherwise.
-  bool CancelPrintJob(const std::string& job_id);
+  virtual bool CancelPrintJob(const std::string& job_id) = 0;
 
-  // Moves print job pointer to |print_jobs_map_| and resolves corresponding
-  // callback.
   // This should be called when CupsPrintJobManager created CupsPrintJob.
-  void OnPrintJobCreated(const std::string& extension_id,
-                         const std::string& job_id,
-                         base::WeakPtr<chromeos::CupsPrintJob> cups_job);
+  virtual void OnPrintJobCreated(
+      const std::string& extension_id,
+      const std::string& job_id,
+      base::WeakPtr<chromeos::CupsPrintJob> cups_job) = 0;
 
-  // Removes print job pointer from |print_jobs_map_| as the job is finished.
   // This should be called when CupsPrintJob is finished (it could be either
   // completed, failed or cancelled).
-  void OnPrintJobFinished(const std::string& job_id);
-
- private:
-  struct JobState {
-    scoped_refptr<printing::PrintJob> job;
-    StartPrintJobCallback callback;
-    JobState(scoped_refptr<printing::PrintJob> job,
-             StartPrintJobCallback callback);
-    JobState(JobState&&);
-    JobState& operator=(JobState&&);
-    ~JobState();
-  };
-
-  void StartPrinting(const std::string& extension_id,
-                     std::unique_ptr<printing::MetafileSkia> metafile,
-                     StartPrintJobCallback callback,
-                     std::unique_ptr<printing::PrinterQuery> query);
-
-  // Stores mapping from extension id to queue of pending jobs to resolve.
-  // Placing a job state in the map means that we sent print job to the printing
-  // pipeline and have been waiting for the response with created job id.
-  // After that we could resolve a callback and move PrintJob to global map.
-  // We need to store job pointers to keep the current scheduled print jobs
-  // alive (as they're ref counted).
-  base::flat_map<std::string, base::queue<JobState>> extension_pending_jobs_;
-
-  // Stores mapping from job id to printing::PrintJob.
-  // This is needed to hold PrintJob pointer and correct handle CancelJob()
-  // requests.
-  base::flat_map<std::string, scoped_refptr<printing::PrintJob>>
-      print_jobs_map_;
-
-  // Stores mapping from job id to chromeos::CupsPrintJob.
-  base::flat_map<std::string, base::WeakPtr<chromeos::CupsPrintJob>>
-      cups_print_jobs_map_;
-
-  // PrintingAPIHandler (which owns PrintJobController) depends on
-  // CupsPrintJobManagerFactory, so |print_job_manager_| outlives
-  // PrintJobController.
-  chromeos::CupsPrintJobManager* const print_job_manager_;
-
-  base::WeakPtrFactory<PrintJobController> weak_ptr_factory_{this};
+  virtual void OnPrintJobFinished(const std::string& job_id) = 0;
 };
 
 }  // namespace extensions

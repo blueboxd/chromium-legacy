@@ -99,10 +99,6 @@
 #include "ui/web_dialogs/web_dialog_ui.h"
 #include "url/gurl.h"
 
-#if BUILDFLAG(ENABLE_KALEIDOSCOPE)
-#include "chrome/browser/media/kaleidoscope/internal/constants.h"
-#endif
-
 #if BUILDFLAG(ENABLE_NACL)
 #include "chrome/browser/ui/webui/nacl_ui.h"
 #endif
@@ -895,7 +891,7 @@ bool ChromeWebUIControllerFactory::IsWebUIAllowedToMakeNetworkRequests(
 #if BUILDFLAG(ENABLE_KALEIDOSCOPE)
       // TODO(https://crbug.com/1039904): This is only for prototyping purposes.
       // Must be removed before launch.
-      origin.host() == kKaleidoscopeContentUIHost ||
+      origin.host() == chrome::kChromeUIKaleidoscopeContentHost ||
 #endif
       // https://crbug.com/831812
       origin.host() == chrome::kChromeUISyncConfirmationHost ||

@@ -15,11 +15,6 @@ if (use_pulseaudio && !link_pulseaudio) {
     sigs = [ "pulse/pulse.sigs" ]
     output_name = "pulse/pulse_stubs"
     deps = [ "//base" ]
-
-    # TODO(dalecurtis): Remove once https://crbug.com/1047655 is solved.
-    if (is_asan || is_tsan) {
-      logging_function = "VLOG(0)"
-    }
   }
 }
 

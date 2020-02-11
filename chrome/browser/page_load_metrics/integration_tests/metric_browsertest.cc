@@ -135,13 +135,7 @@ class MetricIntegrationTest : public InProcessBrowserTest {
   std::unique_ptr<TraceAnalyzer> StopTracingAndAnalyze() {
     std::string trace_str;
     StopTracing(trace_str);
-
-    std::string events_str;
-    // TODO(skobes): Make TraceAnalyzer accept ListValue to avoid reserializing.
-    JSONWriter::Write(*JSONReader::Read(trace_str)->FindListKey("traceEvents"),
-                      &events_str);
-
-    return std::unique_ptr<TraceAnalyzer>(TraceAnalyzer::Create(events_str));
+    return std::unique_ptr<TraceAnalyzer>(TraceAnalyzer::Create(trace_str));
   }
 
   WebContents* web_contents() const {

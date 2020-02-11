@@ -237,8 +237,4 @@ void ArcBackgroundAuthCodeFetcher::ReportResult(
   std::move(callback_).Run(!auth_code.empty(), auth_code);
 }
 
-void ArcBackgroundAuthCodeFetcher::SkipMergeSessionForTesting() {
-  context_.SkipMergeSessionForTesting();
-}
-
 }  // namespace arc

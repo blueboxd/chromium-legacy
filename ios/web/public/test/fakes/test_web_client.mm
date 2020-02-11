@@ -49,7 +49,9 @@ base::string16 TestWebClient::GetPluginNotSupportedText() const {
 }
 
 std::string TestWebClient::GetUserAgent(UserAgentType type) const {
-  return "Chromium/66.0.3333.0 CFNetwork/893.14 Darwin/16.7.0";
+  if (type == UserAgentType::DESKTOP)
+    return "Chromium/66.0.3333.0 CFNetwork/893.14 Darwin/16.7.0 Desktop";
+  return "Chromium/66.0.3333.0 CFNetwork/893.14 Darwin/16.7.0 Mobile";
 }
 
 base::RefCountedMemory* TestWebClient::GetDataResourceBytes(
@@ -112,6 +114,11 @@ void TestWebClient::PrepareErrorPage(
 
 UIView* TestWebClient::GetWindowedContainer() {
   return UIApplication.sharedApplication.keyWindow.rootViewController.view;
+}
+
+UserAgentType TestWebClient::GetDefaultUserAgent(UIView* web_view,
+                                                 const GURL& url) {
+  return default_user_agent_;
 }
 
 }  // namespace web

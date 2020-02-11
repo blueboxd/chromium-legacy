@@ -11503,6 +11503,52 @@
       Setting the <ph name="VARIATIONS_DISABLED_OPTION_NAME">VariationsDisabled</ph> (value 2), prevent all variations from being applied to the browser. Please note that this mode can potentially prevent the <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> developers from providing criticial security fixes in a timely manner and is thus not recommended.'''
     },
     {
+      'name': 'DeviceLoginScreenChromeVariations',
+      'owners': ['pastarmovj@chromium.org', 'asvitkine@chromium.org', 'amraboelkher@chromium.org'],
+      'type': 'int-enum',
+      'schema': {
+        'type': 'integer',
+        'enum': [0,1,2],
+      },
+      'is_device_only': True,
+      'items': [
+        {
+          'name': 'VariationsEnabled',
+          'value': 0,
+          'caption': '''Enable all variations on the login screen''',
+        },
+        {
+          'name': 'CriticalFixesOnly',
+          'value': 1,
+          'caption': '''Enable variations concerning criticial fixes only on the login screen''',
+        },
+        {
+          'name': 'VariationsDisabled',
+          'value': 2,
+          'caption': '''Disable all variations on the login screen''',
+        },
+      ],
+      'supported_on': ['chrome.*:81-', 'chrome_os:81-'],
+      'features': {
+        'dynamic_refresh': True,
+        'per_profile': False,
+      },
+      'future': True,
+      'example_value': 1,
+      'id': 674,
+      'caption': '''Determine the availability of variations on the login screen''',
+      'tags': [],
+      'desc': '''Configuring this policy allows to specify which variations are allowed to be applied in <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> on the login screen.
+
+      Variations provide a mean for offering modifications to <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> without shipping a new version of the browser by selectively enabling or disabling already existing features.
+
+      Setting the <ph name="VARIATIONS_ENABLED_OPTION_NAME">VariationsEnabled</ph> (value 0), or leaving the policy not set allows all variations to be applied to the browser on the login screen.
+
+      Setting the <ph name="CRITICAL_VARIATIONS_ONLY_OPTION_NAME">CriticalFixesOnly</ph> (value 1), allows only variations considered critical security or stability fixes to be applied to <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> on the login screen.
+
+      Setting the <ph name="VARIATIONS_DISABLED_OPTION_NAME">VariationsDisabled</ph> (value 2), prevent all variations from being applied to the browser on the login screen. Please note that this mode can potentially prevent the <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> developers from providing criticial security fixes in a timely manner and is thus not recommended.'''
+    },
+    {
       'name': 'AttestationEnabledForDevice',
       'owners': ['file://components/policy/resources/OWNERS'],
       'type': 'main',
@@ -13208,24 +13254,22 @@
       'features': {
         'dynamic_refresh': True,
       },
-      'example_value': ['gbchcmhmhahfdphkhkmpfmihenigjmpp;https://clients2.google.com/service/update2/crx'],
+      'example_value': ['khpfeaanjngmcnplbdlpegiifgpfgdco;https://clients2.google.com/service/update2/crx'],
       'id': 336,
-      'caption': '''Configure the list of installed apps on the login screen''',
+      'caption': '''Configure the list of installed apps and extensions on the login screen''',
       'tags': ['full-admin-access'],
       'desc': '''
-      Specifies a list of apps that are installed silently on the login screen,
-      without user interaction, and which cannot be uninstalled.
-      All permissions requested by the apps are granted
-      implicitly, without user interaction, including any additional
-      permissions requested by future versions of the app.
+      Specifies a list of apps and extensions that are installed silently on the login screen, without user interaction, and which cannot be uninstalled or disabled by the user.
 
-      Note that, for security and privacy reasons, extensions are not allowed to be installed using this policy. Moreover, the devices on the Stable channel will only install the apps that belong to the whitelist bundled into <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph>. Any items that don't conform to these conditions will be ignored.
+      Permissions requested by the apps/extensions are granted implicitly, without user interaction, including any additional permissions requested by future versions of the app/extension. <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> restricts the set of permissions that the extensions can request.
 
-      If an app that previously had been force-installed is removed from this list, it is automatically uninstalled by <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph>.
+      Note that, for security and privacy reasons, only apps and extensions that belong to the allow list bundled into <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> can be installed. All other items will be ignored.
 
-      Each list item of the policy is a string that contains an extension ID and an "update" URL separated by a semicolon (<ph name="SEMICOLON">;</ph>). The extension ID is the 32-letter string found e.g. on <ph name="CHROME_EXTENSIONS_LINK">chrome://extensions</ph> when in developer mode. The "update" URL should point to an Update Manifest XML document as described at <ph name="LINK_TO_EXTENSION_DOC1">https://developer.chrome.com/extensions/autoupdate</ph>. Note that the "update" URL set in this policy is only used for the initial installation; subsequent updates of the extension employ the update URL indicated in the extension's manifest.
+      If an app or extension that previously had been force-installed is removed from this list, it is automatically uninstalled by <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph>.
 
-      For example, <ph name="EXTENSION_POLICY_EXAMPLE">gbchcmhmhahfdphkhkmpfmihenigjmpp;https://clients2.google.com/service/update2/crx</ph> installs the <ph name="EXTENSION_POLICY_EXAMPLE_EXTENSION_NAME">Chrome Remote Desktop</ph> app from the standard Chrome Web Store "update" URL. For more information about hosting extensions, see: <ph name="LINK_TO_EXTENSION_DOC2">https://developer.chrome.com/extensions/hosting</ph>.''',
+      Each list item of the policy is a string that contains an extension ID and, optionally, an "update" URL separated by a semicolon (<ph name="SEMICOLON">;</ph>). The extension ID is the 32-letter string found e.g. on <ph name="CHROME_EXTENSIONS_LINK">chrome://extensions</ph> when in developer mode. The "update" URL, if specified, should point to an update manifest XML document as described at <ph name="LINK_TO_EXTENSION_DOC1">https://developer.chrome.com/extensions/autoupdate</ph>. By default, the Chrome Web Store's update URL is used (which currently is "https://clients2.google.com/service/update2/crx"). Note that the "update" URL set in this policy is only used for the initial installation; subsequent updates of the extension employ the update URL indicated in the extension's manifest.
+
+      For example, <ph name="LOGIN_SCREEN_EXTENSION_POLICY_EXAMPLE">khpfeaanjngmcnplbdlpegiifgpfgdco;https://clients2.google.com/service/update2/crx</ph> installs the <ph name="SMART_CARD_CONNECTOR_APP_NAME">Smart Card Connector</ph> app from the standard Chrome Web Store "update" URL. For more information about hosting extensions, see: <ph name="LINK_TO_EXTENSION_DOC2">https://developer.chrome.com/extensions/hosting</ph>.''',
     },
     {
       'name': 'AllowScreenLock',
@@ -20206,6 +20250,7 @@ The recommended way to configure policy on Windows is via GPO, although provisio
     'NetworkThrottlingEnabled': 'network_throttling.upload_rate_kbits',
     'NetworkThrottlingEnabled': 'network_throttling.download_rate_kbits',
     'DeviceLoginScreenPowerManagement': 'login_screen_power_management.login_screen_power_management',
+    'DeviceLoginScreenChromeVariations': 'device_login_screen_chrome_variations_type.value',
     'DeviceDisplayResolution': 'device_display_resolution.device_display_resolution',
     'DeviceWallpaperImage': 'device_wallpaper_image.device_wallpaper_image',
     'DeviceNativePrinters': 'native_device_printers.external_policy',
@@ -20706,6 +20751,6 @@ The recommended way to configure policy on Windows is via GPO, although provisio
   ],
   'placeholders': [],
   'deleted_policy_ids': [412, 546, 562, 569, 578],
-  'highest_id_currently_used': 673,
+  'highest_id_currently_used': 674,
   'highest_atomic_group_id_currently_used': 38
 }

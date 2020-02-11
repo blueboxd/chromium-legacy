@@ -16,11 +16,11 @@
 
 namespace updater {
 
-STDMETHODIMP UpdaterImpl::CheckForUpdate(const base::char16* guid) {
+HRESULT UpdaterImpl::CheckForUpdate(const base::char16* guid) {
   return E_NOTIMPL;
 }
 
-STDMETHODIMP UpdaterImpl::Update(const base::char16* guid) {
+HRESULT UpdaterImpl::Update(const base::char16* guid) {
   return E_NOTIMPL;
 }
 

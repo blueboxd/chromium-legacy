@@ -28,6 +28,7 @@ import org.chromium.content_public.browser.test.util.CriteriaHelper;
 import org.chromium.net.test.EmbeddedTestServer;
 import org.chromium.payments.mojom.PaymentDetailsModifier;
 import org.chromium.payments.mojom.PaymentMethodData;
+import org.chromium.url.Origin;
 import org.chromium.url.URI;
 
 import java.net.URISyntaxException;
@@ -66,14 +67,16 @@ public class AndroidPaymentAppFinderTest
 
         @Override
         public void downloadPaymentMethodManifest(
-                URI methodName, ManifestDownloadCallback callback) {
-            super.downloadPaymentMethodManifest(substituteTestServerUri(methodName), callback);
+                Origin merchantOrigin, URI methodName, ManifestDownloadCallback callback) {
+            super.downloadPaymentMethodManifest(
+                    merchantOrigin, substituteTestServerUri(methodName), callback);
         }
 
         @Override
-        public void downloadWebAppManifest(
+        public void downloadWebAppManifest(Origin paymentMethodManifestOrigin,
                 URI webAppManifestUri, ManifestDownloadCallback callback) {
-            super.downloadWebAppManifest(substituteTestServerUri(webAppManifestUri), callback);
+            super.downloadWebAppManifest(paymentMethodManifestOrigin,
+                    substituteTestServerUri(webAppManifestUri), callback);
         }
 
         private URI substituteTestServerUri(URI uri) {
@@ -125,6 +128,12 @@ public class AndroidPaymentAppFinderTest
     @Override
     public Map<String, PaymentDetailsModifier> getModifiers() {
         return Collections.unmodifiableMap(new HashMap<String, PaymentDetailsModifier>());
+    }
+
+    // PaymentAppFactoryParams implementation.
+    @Override
+    public Origin getPaymentRequestSecurityOrigin() {
+        return PaymentManifestDownloader.createOpaqueOriginForTest();
     }
 
     // PaymentAppFactoryParams implementation.

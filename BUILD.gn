@@ -856,7 +856,7 @@ if ((is_linux || is_win) && enable_remoting && !use_ozone) {
 if (is_fuchsia) {
   # TODO(https://crbug.com/731217): This can't practically be in //v8 without
   # duplicating all the Fuchsia running infrastructure there.
-  fuchsia_package("d8_fuchsia_pkg") {
+  cr_fuchsia_package("d8_fuchsia_pkg") {
     testonly = true
     binary = "//v8:d8"
     package_name_override = "d8"
@@ -1011,6 +1011,9 @@ if (!is_ios) {
         "//chrome/test/chromedriver",
         "//third_party/catapult/third_party/typ",
       ]
+      if (is_win) {
+        data_deps += [ "//build/win:copy_cdb_to_output" ]
+      }
     }
     group("wpt_tests_isolate") {
       testonly = true
@@ -1124,6 +1127,7 @@ if (!is_ios) {
         "//third_party/apache-win32/",
         "//third_party/perl/perl/",
       ]
+      data_deps += [ "//build/win:copy_cdb_to_output" ]
     }
 
     if (is_mac) {

@@ -3,8 +3,6 @@
 # found in the LICENSE file.
 
 import("//third_party/closure_compiler/compile_js.gni")
-import("//tools/polymer/polymer.gni")
-import("../settings.gni")
 
 js_type_check("closure_compile") {
   deps = [ ":settings_menu" ]
@@ -18,34 +16,28 @@ js_library("settings_menu") {
   ]
 }
 
-js_type_check("closure_compile_module") {
-  is_polymer3 = true
-  deps = [ ":settings_menu.m" ]
-}
+# TODO(crbug.com/1026426): Fix and enable.
+#js_type_check("closure_compile_module") {
+#  is_polymer3 = true
+#  deps = [ ":settings_menu.m" ]
+#}
 
 js_library("settings_menu.m") {
   sources = [ "$root_gen_dir/chrome/browser/resources/settings/settings_menu/settings_menu.m.js" ]
   deps = [
-    "..:page_visibility.m",
-    "..:router.m",
-    "//third_party/polymer/v3_0/components-chromium/polymer:polymer_bundled",
-    "//ui/webui/resources/js:assert.m",
+    # TODO: Fill those in.
   ]
   extra_deps = [ ":settings_menu_module" ]
 }
 
+import("//tools/polymer/polymer.gni")
+
 group("polymer3_elements") {
-  public_deps = [ ":settings_menu_module" ]
+  deps = [ ":settings_menu_module" ]
 }
 
 polymer_modulizer("settings_menu") {
   js_file = "settings_menu.js"
   html_file = "settings_menu.html"
   html_type = "dom-module"
-  namespace_rewrites = settings_namespace_rewrites
-  auto_imports = [
-    "chrome/browser/resources/settings/page_visibility.html|PageVisibility",
-    "chrome/browser/resources/settings/router.html|RouteObserverBehavior,Router,Route",
-    "ui/webui/resources/html/assert.html|assert",
-  ]
 }

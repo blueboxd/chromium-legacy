@@ -80,6 +80,7 @@ class COMPONENT_EXPORT(MEDIA_MESSAGE_CENTER) MediaNotificationViewImpl
       override;
   void UpdateWithMediaArtwork(const gfx::ImageSkia& image) override;
   void UpdateWithFavicon(const gfx::ImageSkia& icon) override;
+  void UpdateWithVectorIcon(const gfx::VectorIcon& vector_icon) override;
 
   const views::Label* title_label_for_testing() const { return title_label_; }
 
@@ -152,6 +153,7 @@ class COMPONENT_EXPORT(MEDIA_MESSAGE_CENTER) MediaNotificationViewImpl
   views::View* main_row_ = nullptr;
 
   views::BoxLayout* title_artist_row_layout_ = nullptr;
+  const gfx::VectorIcon* vector_header_icon_ = nullptr;
 
   DISALLOW_COPY_AND_ASSIGN(MediaNotificationViewImpl);
 };

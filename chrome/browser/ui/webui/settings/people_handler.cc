@@ -324,12 +324,6 @@ void PeopleHandler::RegisterMessages() {
       "RequestPinLoginState",
       base::BindRepeating(&PeopleHandler::HandleRequestPinLoginState,
                           base::Unretained(this)));
-  web_ui()->RegisterMessageCallback(
-      "TurnOnSync", base::BindRepeating(&PeopleHandler::HandleTurnOnSync,
-                                        base::Unretained(this)));
-  web_ui()->RegisterMessageCallback(
-      "TurnOffSync", base::BindRepeating(&PeopleHandler::HandleTurnOffSync,
-                                         base::Unretained(this)));
 #else
   web_ui()->RegisterMessageCallback(
       "SyncSetupSignout", base::BindRepeating(&PeopleHandler::HandleSignout,
@@ -738,17 +732,7 @@ void PeopleHandler::HandleRequestPinLoginState(const base::ListValue* args) {
       base::BindOnce(&PeopleHandler::OnPinLoginAvailable,
                      weak_factory_.GetWeakPtr()));
 }
-
-void PeopleHandler::HandleTurnOnSync(const base::ListValue* args) {
-  // TODO(https://crbug.com/1050677)
-  NOTIMPLEMENTED();
-}
-
-void PeopleHandler::HandleTurnOffSync(const base::ListValue* args) {
-  // TODO(https://crbug.com/1050677)
-  NOTIMPLEMENTED();
-}
-#endif  // defined(OS_CHROMEOS)
+#endif
 
 #if !defined(OS_CHROMEOS)
 void PeopleHandler::HandleStartSignin(const base::ListValue* args) {
@@ -1017,8 +1001,9 @@ std::unique_ptr<base::DictionaryValue> PeopleHandler::GetSyncStatusDictionary()
   sync_status->SetBoolean(
       "disabled", !service || disallowed_by_policy ||
                       !service->GetUserSettings()->IsSyncAllowedByPlatform());
-  // NOTE: This means signed-in for *sync*. It can be false when the user is
-  // signed-in to the content area or to the browser.
+  // TODO(jamescook): This is always true on Chrome OS, but the WebUI uses
+  // false to mean that the user has sync turned off. We need to distinguish
+  // between the two cases.
   sync_status->SetBoolean("signedIn", identity_manager->HasPrimaryAccount());
   sync_status->SetString("signedInUsername",
                          signin_ui_util::GetAuthenticatedUsername(profile_));

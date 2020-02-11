@@ -3078,15 +3078,16 @@ TEST_P(OverviewSessionWithDragFromShelfFeatureTest, FadeOutExit) {
       ui::LayerAnimationElement::OPACITY));
 }
 
-// TODO(sammiequon): Merge this into SplitViewOverviewSessionTest and rename
-// that to TabletModeOverviewSessionTest.
-class OverviewSessionNewLayoutTest : public OverviewSessionTest {
+class TabletModeOverviewSessionTest : public OverviewSessionTest {
  public:
-  OverviewSessionNewLayoutTest() = default;
-  ~OverviewSessionNewLayoutTest() override = default;
+  TabletModeOverviewSessionTest() = default;
+  ~TabletModeOverviewSessionTest() override = default;
+
+  TabletModeOverviewSessionTest(const TabletModeOverviewSessionTest&) = delete;
+  TabletModeOverviewSessionTest& operator=(
+      const TabletModeOverviewSessionTest&) = delete;
 
   void SetUp() override {
-    scoped_feature_list_.InitAndEnableFeature(features::kNewOverviewLayout);
     OverviewSessionTest::SetUp();
     EnterTabletMode();
   }
@@ -3118,15 +3119,10 @@ class OverviewSessionNewLayoutTest : public OverviewSessionTest {
       windows[i] = CreateTestWindow();
     return windows;
   }
-
- private:
-  base::test::ScopedFeatureList scoped_feature_list_;
-
-  DISALLOW_COPY_AND_ASSIGN(OverviewSessionNewLayoutTest);
 };
 
 // Tests that windows are in proper positions in the new overview layout.
-TEST_P(OverviewSessionNewLayoutTest, CheckNewLayoutWindowPositions) {
+TEST_P(TabletModeOverviewSessionTest, CheckNewLayoutWindowPositions) {
   auto windows = CreateTestWindows(6);
   ToggleOverview();
   ASSERT_TRUE(InOverviewSession());
@@ -3157,7 +3153,7 @@ TEST_P(OverviewSessionNewLayoutTest, CheckNewLayoutWindowPositions) {
   EXPECT_LT(item3_bounds.y(), item4_bounds.y());
 }
 
-TEST_P(OverviewSessionNewLayoutTest, CheckOffscreenWindows) {
+TEST_P(TabletModeOverviewSessionTest, CheckOffscreenWindows) {
   auto windows = CreateTestWindows(8);
   ToggleOverview();
   ASSERT_TRUE(InOverviewSession());
@@ -3186,7 +3182,7 @@ TEST_P(OverviewSessionNewLayoutTest, CheckOffscreenWindows) {
 
 // Tests to see if windows are not shifted if all already available windows
 // fit on screen.
-TEST_P(OverviewSessionNewLayoutTest, CheckNoOverviewItemShift) {
+TEST_P(TabletModeOverviewSessionTest, CheckNoOverviewItemShift) {
   auto windows = CreateTestWindows(4);
   ToggleOverview();
   ASSERT_TRUE(InOverviewSession());
@@ -3200,7 +3196,7 @@ TEST_P(OverviewSessionNewLayoutTest, CheckNoOverviewItemShift) {
 
 // Tests to see if windows are shifted if at least one window is
 // partially/completely positioned offscreen.
-TEST_P(OverviewSessionNewLayoutTest, CheckOverviewItemShift) {
+TEST_P(TabletModeOverviewSessionTest, CheckOverviewItemShift) {
   auto windows = CreateTestWindows(7);
   ToggleOverview();
   ASSERT_TRUE(InOverviewSession());
@@ -3213,7 +3209,7 @@ TEST_P(OverviewSessionNewLayoutTest, CheckOverviewItemShift) {
 }
 
 // Tests to see if windows remain in bounds after scrolling extremely far.
-TEST_P(OverviewSessionNewLayoutTest, CheckOverviewItemScrollingBounds) {
+TEST_P(TabletModeOverviewSessionTest, CheckOverviewItemScrollingBounds) {
   auto windows = CreateTestWindows(8);
   ToggleOverview();
   ASSERT_TRUE(InOverviewSession());
@@ -3246,7 +3242,7 @@ TEST_P(OverviewSessionNewLayoutTest, CheckOverviewItemScrollingBounds) {
 
 // Tests the windows are stacked correctly when entering or exiting splitview
 // while the new overivew layout is enabled.
-TEST_P(OverviewSessionNewLayoutTest, StackingOrderSplitviewWindow) {
+TEST_P(TabletModeOverviewSessionTest, StackingOrderSplitviewWindow) {
   std::unique_ptr<aura::Window> window1 = CreateTestWindow();
   std::unique_ptr<aura::Window> window2 = CreateUnsnappableWindow();
   std::unique_ptr<aura::Window> window3 = CreateTestWindow();
@@ -3292,7 +3288,7 @@ TEST_P(OverviewSessionNewLayoutTest, StackingOrderSplitviewWindow) {
 
 // Tests the windows are remain stacked underneath the split view window after
 // dragging or long pressing.
-TEST_P(OverviewSessionNewLayoutTest, StackingOrderAfterGestureEvent) {
+TEST_P(TabletModeOverviewSessionTest, StackingOrderAfterGestureEvent) {
   std::unique_ptr<aura::Window> window1 = CreateTestWindow();
   std::unique_ptr<aura::Window> window2 = CreateTestWindow();
 
@@ -3325,7 +3321,7 @@ TEST_P(OverviewSessionNewLayoutTest, StackingOrderAfterGestureEvent) {
 
 // Test that scrolling occurs if started on top of a window using the window's
 // center-point as a start.
-TEST_P(OverviewSessionNewLayoutTest, HorizontalScrollingOnOverviewItem) {
+TEST_P(TabletModeOverviewSessionTest, HorizontalScrollingOnOverviewItem) {
   auto windows = CreateTestWindows(8);
   ToggleOverview();
   ASSERT_TRUE(InOverviewSession());
@@ -3341,15 +3337,17 @@ TEST_P(OverviewSessionNewLayoutTest, HorizontalScrollingOnOverviewItem) {
 
 // A unique test class for testing flings in overview as those rely on observing
 // compositor animations which require a mock time task environment.
-class OverviewSessionNewLayoutFlingTest : public AshTestBase {
+class OverviewSessionFlingTest : public AshTestBase {
  public:
-  OverviewSessionNewLayoutFlingTest()
+  OverviewSessionFlingTest()
       : AshTestBase(base::test::TaskEnvironment::TimeSource::MOCK_TIME) {}
-  ~OverviewSessionNewLayoutFlingTest() override = default;
+  ~OverviewSessionFlingTest() override = default;
+
+  OverviewSessionFlingTest(const OverviewSessionFlingTest&) = delete;
+  OverviewSessionFlingTest& operator=(const OverviewSessionFlingTest&) = delete;
 
   // AshTestBase:
   void SetUp() override {
-    scoped_feature_list_.InitAndEnableFeature(features::kNewOverviewLayout);
     AshTestBase::SetUp();
 
     // Overview flinging is only available in tablet mode.
@@ -3357,13 +3355,9 @@ class OverviewSessionNewLayoutFlingTest : public AshTestBase {
     TabletModeControllerTestApi().EnterTabletMode();
     base::RunLoop().RunUntilIdle();
   }
-
- private:
-  base::test::ScopedFeatureList scoped_feature_list_;
-  DISALLOW_COPY_AND_ASSIGN(OverviewSessionNewLayoutFlingTest);
 };
 
-TEST_F(OverviewSessionNewLayoutFlingTest, BasicFling) {
+TEST_F(OverviewSessionFlingTest, BasicFling) {
   std::vector<std::unique_ptr<aura::Window>> windows(16);
   for (int i = 15; i >= 0; --i)
     windows[i] = CreateTestWindow();
@@ -3409,7 +3403,7 @@ TEST_F(OverviewSessionNewLayoutFlingTest, BasicFling) {
 
 // Tests that a vertical scroll sequence will close the window it is scrolled
 // on.
-TEST_P(OverviewSessionNewLayoutTest, VerticalScrollingOnOverviewItem) {
+TEST_P(TabletModeOverviewSessionTest, VerticalScrollingOnOverviewItem) {
   constexpr int kNumWidgets = 8;
   std::vector<std::unique_ptr<views::Widget>> widgets(kNumWidgets);
   for (int i = kNumWidgets - 1; i >= 0; --i)
@@ -3428,7 +3422,7 @@ TEST_P(OverviewSessionNewLayoutTest, VerticalScrollingOnOverviewItem) {
 }
 
 // Test that scrolling occurs if we hit the associated keyboard shortcut.
-TEST_P(OverviewSessionNewLayoutTest, CheckScrollingWithKeyboardShortcut) {
+TEST_P(TabletModeOverviewSessionTest, CheckScrollingWithKeyboardShortcut) {
   auto windows = CreateTestWindows(8);
   ToggleOverview();
   ASSERT_TRUE(InOverviewSession());
@@ -3441,7 +3435,7 @@ TEST_P(OverviewSessionNewLayoutTest, CheckScrollingWithKeyboardShortcut) {
 }
 
 // Test that tapping a window in overview closes overview mode.
-TEST_P(OverviewSessionNewLayoutTest, CheckWindowActivateOnTap) {
+TEST_P(TabletModeOverviewSessionTest, CheckWindowActivateOnTap) {
   base::UserActionTester user_action_tester;
   auto windows = CreateTestWindows(8);
   wm::ActivateWindow(windows[1].get());
@@ -3463,7 +3457,7 @@ TEST_P(OverviewSessionNewLayoutTest, CheckWindowActivateOnTap) {
       0, user_action_tester.GetActionCount(kActiveWindowChangedFromOverview));
 }
 
-TEST_P(OverviewSessionNewLayoutTest, LayoutValidAfterRotation) {
+TEST_P(TabletModeOverviewSessionTest, LayoutValidAfterRotation) {
   UpdateDisplay("1366x768");
   display::test::ScopedSetInternalDisplayId set_internal(
       Shell::Get()->display_manager(),
@@ -3517,7 +3511,7 @@ TEST_P(OverviewSessionNewLayoutTest, LayoutValidAfterRotation) {
 
 // Tests that windows snap through long press and drag to left or right side of
 // the screen.
-TEST_P(OverviewSessionNewLayoutTest, DragOverviewWindowToSnap) {
+TEST_P(TabletModeOverviewSessionTest, DragOverviewWindowToSnap) {
   const gfx::Rect bounds(400, 400);
   std::unique_ptr<aura::Window> window1(CreateTestWindow(bounds));
   std::unique_ptr<aura::Window> window2(CreateTestWindow(bounds));
@@ -3750,9 +3744,6 @@ TEST_P(SplitViewOverviewSessionTest, DragOverviewWindowToSnap) {
 
 // Verify the correct behavior when dragging windows in overview mode.
 TEST_P(SplitViewOverviewSessionTest, OverviewDragControllerBehavior) {
-  if (!base::FeatureList::IsEnabled(features::kNewOverviewLayout))
-    return;
-
   ui::GestureConfiguration* gesture_config =
       ui::GestureConfiguration::GetInstance();
   gesture_config->set_long_press_time_in_ms(1);
@@ -6806,7 +6797,7 @@ TEST_P(SplitViewOverviewSessionInClamshellTestMultiDisplayOnly,
 }
 
 INSTANTIATE_TEST_SUITE_P(All, OverviewSessionTest, testing::Bool());
-INSTANTIATE_TEST_SUITE_P(All, OverviewSessionNewLayoutTest, testing::Bool());
+INSTANTIATE_TEST_SUITE_P(All, TabletModeOverviewSessionTest, testing::Bool());
 INSTANTIATE_TEST_SUITE_P(All, SplitViewOverviewSessionTest, testing::Bool());
 INSTANTIATE_TEST_SUITE_P(All,
                          SplitViewOverviewSessionInClamshellTest,

@@ -1067,11 +1067,11 @@ void RenderThreadImpl::RegisterSchemes() {
 }
 
 void RenderThreadImpl::RecordAction(const base::UserMetricsAction& action) {
-  Send(new ViewHostMsg_UserMetricsRecordAction(action.str_));
+  GetRendererHost()->RecordUserMetricsAction(action.str_);
 }
 
 void RenderThreadImpl::RecordComputedAction(const std::string& action) {
-  Send(new ViewHostMsg_UserMetricsRecordAction(action));
+  GetRendererHost()->RecordUserMetricsAction(action);
 }
 
 void RenderThreadImpl::RegisterExtension(

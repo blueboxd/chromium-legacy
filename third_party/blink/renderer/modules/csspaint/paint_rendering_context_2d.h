@@ -95,7 +95,6 @@ class MODULES_EXPORT PaintRenderingContext2D : public ScriptWrappable,
 
  private:
   void InitializePaintRecorder();
-  cc::PaintCanvas* Canvas() const;
 
   std::unique_ptr<PaintRecorder> paint_recorder_;
   sk_sp<PaintRecord> previous_frame_;

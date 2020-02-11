@@ -39,6 +39,9 @@ class COLOR_SPACE_EXPORT DisplayColorSpaces {
   // Initialize as |color_space| for all settings.
   explicit DisplayColorSpaces(const ColorSpace& color_space);
 
+  // Initialize as |color_space| and |buffer_format| for all settings.
+  DisplayColorSpaces(const ColorSpace& color_space, BufferFormat buffer_format);
+
   // Set the color space and buffer format for the final output surface when the
   // specified content is being displayed.
   void SetOutputColorSpaceAndBufferFormat(ContentColorUsage color_usage,

@@ -1121,12 +1121,6 @@
           'isolated_scripts': 'win_specific_isolated_scripts',
         },
       },
-      'ToTWinLibcxx64': {
-        'test_suites': {
-          'gtest_tests': 'chromium_win_gtests',
-          'isolated_scripts': 'win_specific_isolated_scripts',
-        },
-      },
       'ToTWinOfficial': {
         'test_suites': {
           'gtest_tests': 'chromium_win_gtests',

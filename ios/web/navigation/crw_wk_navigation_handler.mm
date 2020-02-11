@@ -176,7 +176,8 @@ void ReportOutOfSyncURLInDidStartProvisionalNavigation(
       }
     }
     if (userAgentType == web::UserAgentType::AUTOMATIC) {
-      userAgentType = web::GetWebClient()->GetDefaultUserAgent(webView);
+      userAgentType = web::GetWebClient()->GetDefaultUserAgent(
+          webView, net::GURLWithNSURL(navigationAction.request.URL));
     }
   }
 

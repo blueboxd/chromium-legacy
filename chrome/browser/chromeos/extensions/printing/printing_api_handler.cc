@@ -49,12 +49,13 @@ std::unique_ptr<PrintingAPIHandler> PrintingAPIHandler::CreateForTesting(
     ExtensionRegistry* extension_registry,
     chromeos::CupsPrintJobManager* print_job_manager,
     chromeos::CupsPrintersManager* printers_manager,
+    std::unique_ptr<PrintJobController> print_job_controller,
     std::unique_ptr<chromeos::PrinterConfigurer> printer_configurer,
     std::unique_ptr<chromeos::CupsWrapper> cups_wrapper) {
   return base::WrapUnique(new PrintingAPIHandler(
       browser_context, event_router, extension_registry, print_job_manager,
-      printers_manager, std::move(printer_configurer),
-      std::move(cups_wrapper)));
+      printers_manager, std::move(print_job_controller),
+      std::move(printer_configurer), std::move(cups_wrapper)));
 }
 
 PrintingAPIHandler::PrintingAPIHandler(content::BrowserContext* browser_context)
@@ -66,6 +67,9 @@ PrintingAPIHandler::PrintingAPIHandler(content::BrowserContext* browser_context)
               browser_context),
           chromeos::CupsPrintersManagerFactory::GetForBrowserContext(
               browser_context),
+          PrintJobController::Create(
+              chromeos::CupsPrintJobManagerFactory::GetForBrowserContext(
+                  browser_context)),
           chromeos::PrinterConfigurer::Create(
               Profile::FromBrowserContext(browser_context)),
           chromeos::CupsWrapper::Create()) {}
@@ -76,6 +80,7 @@ PrintingAPIHandler::PrintingAPIHandler(
     ExtensionRegistry* extension_registry,
     chromeos::CupsPrintJobManager* print_job_manager,
     chromeos::CupsPrintersManager* printers_manager,
+    std::unique_ptr<PrintJobController> print_job_controller,
     std::unique_ptr<chromeos::PrinterConfigurer> printer_configurer,
     std::unique_ptr<chromeos::CupsWrapper> cups_wrapper)
     : browser_context_(browser_context),
@@ -83,7 +88,7 @@ PrintingAPIHandler::PrintingAPIHandler(
       extension_registry_(extension_registry),
       print_job_manager_(print_job_manager),
       printers_manager_(printers_manager),
-      print_job_controller_(print_job_manager),
+      print_job_controller_(std::move(print_job_controller)),
       printer_capabilities_provider_(printers_manager,
                                      std::move(printer_configurer)),
       cups_wrapper_(std::move(cups_wrapper)),
@@ -120,8 +125,8 @@ void PrintingAPIHandler::SubmitJob(
     PrintJobSubmitter::SubmitJobCallback callback) {
   auto print_job_submitter = std::make_unique<PrintJobSubmitter>(
       native_window, browser_context_, printers_manager_,
-      &printer_capabilities_provider_, &print_job_controller_, &pdf_flattener_,
-      std::move(extension), std::move(params->request));
+      &printer_capabilities_provider_, print_job_controller_.get(),
+      &pdf_flattener_, std::move(extension), std::move(params->request));
   PrintJobSubmitter* print_job_submitter_ptr = print_job_submitter.get();
   print_job_submitter_ptr->Start(base::BindOnce(
       &PrintingAPIHandler::OnPrintJobSubmitted, weak_ptr_factory_.GetWeakPtr(),
@@ -150,7 +155,7 @@ base::Optional<std::string> PrintingAPIHandler::CancelJob(
 
   // If we can't cancel the print job (e.g. it's in terminated state) return an
   // error.
-  if (!print_job_controller_.CancelPrintJob(job_id))
+  if (!print_job_controller_->CancelPrintJob(job_id))
     return kNoActivePrintJobWithIdError;
 
   // Return no error otherwise.
@@ -251,7 +256,7 @@ void PrintingAPIHandler::OnPrintJobCreated(
   const std::string& extension_id = job->source_id();
   const std::string& job_id = job->GetUniqueId();
   print_jobs_extension_ids_[job_id] = extension_id;
-  print_job_controller_.OnPrintJobCreated(extension_id, job_id, job);
+  print_job_controller_->OnPrintJobCreated(extension_id, job_id, job);
 }
 
 void PrintingAPIHandler::OnPrintJobStarted(
@@ -298,7 +303,7 @@ void PrintingAPIHandler::FinishJob(base::WeakPtr<chromeos::CupsPrintJob> job) {
     return;
   const std::string& job_id = job->GetUniqueId();
   print_jobs_extension_ids_.erase(job_id);
-  print_job_controller_.OnPrintJobFinished(job_id);
+  print_job_controller_->OnPrintJobFinished(job_id);
 }
 
 template <>

@@ -164,6 +164,12 @@ public interface TabModelSelector {
     void commitAllTabClosures();
 
     /**
+     * Save the current state of the tab model. Usage of this method is discouraged due to it
+     * writing to disk.
+     **/
+    void saveState();
+
+    /**
      * Sets the delegate to handle the requests to close tabs in a single model.
      * @param delegate The delegate to be used.
      */

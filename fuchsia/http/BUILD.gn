@@ -35,7 +35,7 @@ executable("http_exe") {
   visibility = [ ":*" ]
 }
 
-fuchsia_package("http_pkg") {
+cr_fuchsia_package("http_pkg") {
   binary = ":http_exe"
   package_name_override = "http"
   manifest = "http.cmx"

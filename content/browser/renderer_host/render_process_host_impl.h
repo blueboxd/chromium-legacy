@@ -722,6 +722,7 @@ class CONTENT_EXPORT RenderProcessHostImpl
   void GetBrowserHistogram(const std::string& name,
                            BrowserHistogramCallback callback) override;
   void SuddenTerminationChanged(bool enabled) override;
+  void RecordUserMetricsAction(const std::string& action) override;
 
   void BindRouteProvider(
       mojo::PendingAssociatedReceiver<mojom::RouteProvider> receiver);
@@ -769,7 +770,6 @@ class CONTENT_EXPORT RenderProcessHostImpl
           client_process) override;
 
   // Control message handlers.
-  void OnUserMetricsRecordAction(const std::string& action);
   void OnCloseACK(int closed_widget_route_id);
 
   // Generates a command line to be used to spawn a renderer and appends the

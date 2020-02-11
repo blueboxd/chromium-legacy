@@ -308,6 +308,23 @@ class FakeWinHttpUrlFetcherFactory {
   // to this method.
   void SetFakeFailedResponse(const GURL& url, HRESULT failed_hr);
 
+  // Sets the option to collect request data for each URL fetcher created.
+  void SetCollectRequestData(bool value) { collect_request_data_ = value; }
+
+  // Data used to make each HTTP request by the fetcher.
+  struct RequestData {
+    RequestData();
+    RequestData(const RequestData& rhs);
+    ~RequestData();
+    WinHttpUrlFetcher::Headers headers;
+    std::string body;
+    int timeout_in_millis;
+  };
+
+  // Returns the request data for the request identified by |request_index|.
+  RequestData GetRequestData(size_t request_index) const;
+
+  // Returns the number of requests created.
   size_t requests_created() const { return requests_created_; }
 
  private:
@@ -330,6 +347,8 @@ class FakeWinHttpUrlFetcherFactory {
   std::map<GURL, Response> fake_responses_;
   std::map<GURL, HRESULT> failed_http_fetch_hr_;
   size_t requests_created_ = 0;
+  bool collect_request_data_ = false;
+  std::vector<RequestData> requests_data_;
 };
 
 class FakeWinHttpUrlFetcher : public WinHttpUrlFetcher {
@@ -343,16 +362,21 @@ class FakeWinHttpUrlFetcher : public WinHttpUrlFetcher {
 
   // WinHttpUrlFetcher
   bool IsValid() const override;
+  HRESULT SetRequestHeader(const char* name, const char* value) override;
+  HRESULT SetRequestBody(const char* body) override;
+  HRESULT SetHttpRequestTimeout(const int timeout_in_millis) override;
   HRESULT Fetch(std::vector<char>* response) override;
   HRESULT Close() override;
 
  private:
   friend FakeWinHttpUrlFetcherFactory;
+  typedef FakeWinHttpUrlFetcherFactory::RequestData RequestData;
 
   Headers response_headers_;
   std::string response_;
   HANDLE send_response_event_handle_;
   HRESULT response_hr_ = S_OK;
+  RequestData* request_data_ = nullptr;
 };
 
 ///////////////////////////////////////////////////////////////////////////////

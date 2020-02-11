@@ -104,6 +104,13 @@ public class CastContentWindowAndroid implements CastWebContentsComponent.OnComp
         mComponent.requestMoveOut();
     }
 
+    @SuppressWarnings("unused")
+    @CalledByNative
+    private void setInteractionId(int interactionId) {
+        if (DEBUG) Log.d(TAG, "setInteractionid interactionId=" + interactionId);
+        mComponent.setInteractionId(interactionId);
+    }
+
     @Override
     public void onComponentClosed() {
         if (DEBUG) Log.d(TAG, "onComponentClosed");

@@ -214,7 +214,7 @@ template("test") {
       deps = [ "//testing/buildbot/filters:fuchsia_filters" ]
     }
 
-    fuchsia_package(_pkg_target) {
+    cr_fuchsia_package(_pkg_target) {
       testonly = true
       forward_variables_from(invoker, [ "manifest" ])
       binary = ":$_exec_target"

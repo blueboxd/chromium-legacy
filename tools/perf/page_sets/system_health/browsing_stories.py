@@ -227,6 +227,8 @@ class NytimesMobileStory2019(_ArticleBrowsingStory):
   NAME = 'browse:news:nytimes:2019'
   URL = 'http://mobile.nytimes.com'
   ITEM_SELECTOR = '.css-1yjtett a'
+  # Nytimes is very heavy so only visit 2 articles.
+  ITEMS_TO_VISIT = 2
   SUPPORTED_PLATFORMS = platforms.MOBILE_ONLY
   TAGS = [story_tags.YEAR_2019]
 

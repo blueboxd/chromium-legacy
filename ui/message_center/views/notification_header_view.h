@@ -53,8 +53,8 @@ class MESSAGE_CENTER_EXPORT NotificationHeaderView : public views::Button {
   void ClearProgress();
   void SetSubpixelRenderingEnabled(bool enabled);
 
-  // Completely hides the app icon.
-  void HideAppIcon();
+  // Shows or hides the app icon.
+  void SetAppIconVisible(bool visible);
 
   // views::View:
   void GetAccessibleNodeData(ui::AXNodeData* node_data) override;

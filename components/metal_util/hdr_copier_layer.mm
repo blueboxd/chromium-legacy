@@ -74,7 +74,6 @@ API_AVAILABLE(macos(10.15))
     [self setWantsExtendedDynamicRangeContent:YES];
     [self setDevice:device];
     [self setOpaque:NO];
-    [self setDisplaySyncEnabled:NO];
     [self setPresentsWithTransaction:YES];
   }
   return self;
@@ -150,8 +149,9 @@ API_AVAILABLE(macos(10.15))
           destinationLevel:0
          destinationOrigin:MTLOriginMake(0, 0, 0)];
   [encoder endEncoding];
-  [command_buffer presentDrawable:drawable];
   [command_buffer commit];
+  [command_buffer waitUntilScheduled];
+  [drawable present];
 }
 @end
 

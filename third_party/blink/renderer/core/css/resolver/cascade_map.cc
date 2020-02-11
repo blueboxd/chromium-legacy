@@ -51,11 +51,14 @@ bool CascadeMap::Add(const CSSPropertyName& name, CascadePriority priority) {
                 "CascadeMap supports at most 63 high-priority properties");
   if (HighPriority::PropertyHasPriority(id))
     high_priority_ |= (1ull << index);
-
-  CascadePriority* buf = reinterpret_cast<CascadePriority*>(native_properties_);
-  if (!native_property_bits_.test(index) || buf[index] < priority) {
+  CascadePriority* p =
+      reinterpret_cast<CascadePriority*>(native_properties_) + index;
+  if (!native_property_bits_.test(index) || *p < priority) {
     native_property_bits_.set(index);
-    buf[index] = priority;
+    static_assert(
+        std::is_trivially_destructible<CascadePriority>::value,
+        "~CascadePriority is never called on these CascadePriority objects");
+    new (p) CascadePriority(priority);
     return true;
   }
   return false;

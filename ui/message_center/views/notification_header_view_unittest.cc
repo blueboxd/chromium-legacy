@@ -84,13 +84,18 @@ TEST_F(NotificationHeaderViewTest, UpdatesTimestampOverTime) {
 }
 
 TEST_F(NotificationHeaderViewTest, AllowsHidingOfAppIcon) {
-  // The icon should be shown by default.
+  // The icon should be shown by default...
   EXPECT_TRUE(
       notification_header_view_->app_icon_view_for_testing()->IsDrawn());
 
-  // Though it can be explicitly hidden.
-  notification_header_view_->HideAppIcon();
+  // ... though it can be explicitly hidden...
+  notification_header_view_->SetAppIconVisible(false);
   EXPECT_FALSE(
+      notification_header_view_->app_icon_view_for_testing()->IsDrawn());
+
+  // ... and shown again.
+  notification_header_view_->SetAppIconVisible(true);
+  EXPECT_TRUE(
       notification_header_view_->app_icon_view_for_testing()->IsDrawn());
 }
 

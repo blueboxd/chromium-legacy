@@ -605,10 +605,16 @@ void DownloadRequestLimiter::CanDownloadImpl(
   // settings first to see if the download needs to be blocked.
   GURL initiator = request_initiator ? request_initiator->GetURL()
                                      : originating_contents->GetVisibleURL();
+  // Use the origin of |originating_contents| as a back up, if it is non-opaque.
   url::Origin origin =
-      request_initiator && !request_initiator->opaque()
-          ? request_initiator.value()
-          : url::Origin::Create(originating_contents->GetVisibleURL());
+      url::Origin::Create(originating_contents->GetVisibleURL());
+  // If |request_initiator| has a non-opaque origin or if the origin from
+  // |originating_contents| is opaque, use the origin from |request_initiator|
+  // to make decisions so that it won't impact the download state of
+  // |originating_contents|.
+  if (request_initiator && (!request_initiator->opaque() || origin.opaque()))
+    origin = request_initiator.value();
+
   DownloadStatus status = state->GetDownloadStatus(origin);
 
   bool is_opaque_initiator = request_initiator && request_initiator->opaque();

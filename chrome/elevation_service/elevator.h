@@ -31,13 +31,12 @@ class Elevator
   // Securely validates and runs the provided Chrome Recovery CRX elevated, by
   // first copying the CRX to a secure directory under %ProgramFiles% to
   // validate and unpack the CRX.
-  IFACEMETHOD(RunRecoveryCRXElevated)
-  (const base::char16* crx_path,
-   const base::char16* browser_appid,
-   const base::char16* browser_version,
-   const base::char16* session_id,
-   DWORD caller_proc_id,
-   ULONG_PTR* proc_handle);
+  IFACEMETHODIMP RunRecoveryCRXElevated(const base::char16* crx_path,
+                                        const base::char16* browser_appid,
+                                        const base::char16* browser_version,
+                                        const base::char16* session_id,
+                                        DWORD caller_proc_id,
+                                        ULONG_PTR* proc_handle) override;
 
  private:
   ~Elevator() override = default;

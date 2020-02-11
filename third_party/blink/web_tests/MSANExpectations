@@ -25,7 +25,6 @@ crbug.com/454267 [ Linux ] virtual/gpu/fast/canvas/canvas-arc-360-winding.html [
 crbug.com/454267 [ Linux ] virtual/gpu/fast/canvas/canvas-ellipse-360-winding.html [ Crash ]
 crbug.com/522315 [ Linux ] virtual/gpu/fast/canvas/quadraticCurveTo.xml [ Crash ]
 
-crbug.com/517704 [ Linux ] external/wpt/encoding/api-invalid-label.html [ Timeout Pass ]
 crbug.com/708175 [ Linux ] external/wpt/IndexedDB/interleaved-cursors-small.html [ Timeout ]
 crbug.com/708175 [ Linux ] external/wpt/IndexedDB/interleaved-cursors-large.html [ Timeout ]
 

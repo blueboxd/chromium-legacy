@@ -25,10 +25,14 @@ namespace base {
 // std::initializer_list and C arrays are supported as well.
 //
 // In general this class is in nature quite similar to base::span, and its API
-// is inspired by it. However, one important difference is that this class
-// stores a pointer to the underlying container (as opposed to just storing its
-// data() and size()), and thus is able to deal with changes to the container,
-// such as removing or adding elements.
+// is inspired by it. Similarly to base::span (and other view-like containers
+// such as base::StringPiece) callers are encouraged to pass checked ranges by
+// value.
+//
+// However, one important difference is that this class stores a pointer to the
+// underlying container (as opposed to just storing its data() and size()), and
+// thus is able to deal with changes to the container, such as removing or
+// adding elements.
 //
 // Note however that this class still does not extend the life-time of the
 // underlying container, and thus callers need to make sure that the container
@@ -65,9 +69,10 @@ class CheckedContiguousRange {
   template <typename Container>
   friend class CheckedContiguousRange;
 
+  // Default constructor. Behaves as if the underlying container was empty.
   constexpr CheckedContiguousRange() noexcept = default;
 
-  // Templated constructor restricted to possibly rvref qualified versions of
+  // Templated constructor restricted to possibly cvref qualified versions of
   // ContiguousContainer. This makes sure it does not shadow the auto generated
   // copy and move constructors.
   template <int&... ExplicitArgumentBarrier,
@@ -124,13 +129,19 @@ class CheckedContiguousRange {
     return *(begin() + idx);
   }
 
-  constexpr pointer data() const noexcept { return base::data(*container_); }
+  constexpr pointer data() const noexcept {
+    return container_ ? base::data(*container_) : nullptr;
+  }
 
   constexpr const_pointer cdata() const noexcept { return data(); }
 
-  constexpr size_type size() const noexcept { return base::size(*container_); }
+  constexpr size_type size() const noexcept {
+    return container_ ? base::size(*container_) : 0;
+  }
 
-  constexpr bool empty() const noexcept { return base::empty(*container_); }
+  constexpr bool empty() const noexcept {
+    return container_ ? base::empty(*container_) : true;
+  }
 
  private:
   ContiguousContainer* container_ = nullptr;

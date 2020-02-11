@@ -2412,6 +2412,16 @@
     "expiry_milestone": 82
   },
   {
+    "name": "happiness-tracking-surveys-for-desktop-settings",
+    "owners": [ "msramek", "chrome-friendly-settings" ],
+    "expiry_milestone": 86
+  },
+  {
+    "name": "happiness-tracking-surveys-for-desktop-settings-privacy",
+    "owners": [ "msramek", "chrome-friendly-settings" ],
+    "expiry_milestone": 86
+  },
+  {
     "name": "hardware-media-key-handling",
     "owners": [ "steimel", "media-dev" ],
     "expiry_milestone": 84
@@ -2651,11 +2661,6 @@
     "name": "new-net-error-page-ui",
     "owners": [ "harringtond" ],
     "expiry_milestone": 75
-  },
-  {
-    "name": "new-overview-tablet-layout",
-    "owners": [ "sammiequon" ],
-    "expiry_milestone": 85
   },
   {
     "name": "new-tabstrip-animation",

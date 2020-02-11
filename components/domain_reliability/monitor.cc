@@ -15,7 +15,6 @@
 #include "base/threading/thread_task_runner_handle.h"
 #include "components/domain_reliability/baked_in_configs.h"
 #include "components/domain_reliability/google_configs.h"
-#include "components/domain_reliability/header.h"
 #include "components/domain_reliability/quic_error_mapping.h"
 #include "net/base/load_flags.h"
 #include "net/base/net_errors.h"
@@ -53,8 +52,6 @@ std::unique_ptr<DomainReliabilityBeacon> CreateBeaconFromAttempt(
     beacon->server_ip = "";
   return beacon;
 }
-
-const char* kDomainReliabilityHeaderName = "NEL";
 
 }  // namespace
 
@@ -264,8 +261,6 @@ void DomainReliabilityMonitor::OnRequestLegComplete(
   // Check these again because unit tests call this directly.
   DCHECK(discard_uploads_set_);
 
-  MaybeHandleHeader(request);
-
   if (!RequestInfo::ShouldReportRequest(request))
     return;
 
@@ -324,51 +319,6 @@ void DomainReliabilityMonitor::OnRequestLegComplete(
       CreateBeaconFromAttempt(beacon_template, url_request_attempt);
   if (beacon)
     context_manager_.RouteBeacon(std::move(beacon));
-}
-
-void DomainReliabilityMonitor::MaybeHandleHeader(
-    const RequestInfo& request) {
-  if (!request.response_info.headers)
-    return;
-
-  size_t iter = 0;
-  std::string kHeaderNameString(kDomainReliabilityHeaderName);
-
-  std::string header_value;
-  if (!request.response_info.headers->EnumerateHeader(
-          &iter, kHeaderNameString, &header_value)) {
-    // No header found.
-    return;
-  }
-
-  std::string ignored_header_value;
-  if (request.response_info.headers->EnumerateHeader(
-          &iter, kHeaderNameString, &ignored_header_value)) {
-    DLOG(WARNING) << "Request to " << request.url << " had (at least) two "
-                  << kHeaderNameString << " headers: \"" << header_value
-                  << "\" and \"" << ignored_header_value << "\".";
-    return;
-  }
-
-  std::unique_ptr<DomainReliabilityHeader> parsed =
-      DomainReliabilityHeader::Parse(header_value);
-  GURL origin = request.url.GetOrigin();
-  switch (parsed->status()) {
-    case DomainReliabilityHeader::PARSE_SET_CONFIG:
-      {
-        base::TimeDelta max_age = parsed->max_age();
-        context_manager_.SetConfig(origin, parsed->ReleaseConfig(), max_age);
-      }
-      break;
-    case DomainReliabilityHeader::PARSE_CLEAR_CONFIG:
-      context_manager_.ClearConfig(origin);
-      break;
-    case DomainReliabilityHeader::PARSE_ERROR:
-      DLOG(WARNING) << "Request to " << request.url << " had invalid "
-                    << kHeaderNameString << " header \"" << header_value
-                    << "\".";
-      break;
-  }
 }
 
 base::WeakPtr<DomainReliabilityMonitor>

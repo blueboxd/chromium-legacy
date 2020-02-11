@@ -354,6 +354,8 @@ HRESULT WinHttpUrlFetcher::BuildRequestAndFetchResultFromHttpService(
     const base::Value& request_dict,
     const base::TimeDelta& request_timeout,
     base::Optional<base::Value>* request_result) {
+  DCHECK(request_result);
+
   auto url_fetcher = WinHttpUrlFetcher::Create(request_url);
   if (!url_fetcher) {
     LOGFN(ERROR) << "Could not create valid fetcher for url="
@@ -381,6 +383,10 @@ HRESULT WinHttpUrlFetcher::BuildRequestAndFetchResultFromHttpService(
       LOGFN(ERROR) << "fetcher.SetRequestBody hr=" << putHR(hr);
       return E_FAIL;
     }
+  }
+
+  if (!request_timeout.is_zero()) {
+    url_fetcher->SetHttpRequestTimeout(request_timeout.InMilliseconds());
   }
 
   auto extracted_param = (new HttpServiceRequest(std::move(url_fetcher)))

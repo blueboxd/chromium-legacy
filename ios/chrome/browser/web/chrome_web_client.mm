@@ -272,9 +272,12 @@ bool ChromeWebClient::ForceMobileVersionByDefault(const GURL& url) {
   return false;
 }
 
-web::UserAgentType ChromeWebClient::GetDefaultUserAgent(UIView* web_view) {
+web::UserAgentType ChromeWebClient::GetDefaultUserAgent(UIView* web_view,
+                                                        const GURL& url) {
   DCHECK(base::FeatureList::IsEnabled(
       web::features::kUseDefaultUserAgentInWebClient));
+  if (ForceMobileVersionByDefault(url))
+    return web::UserAgentType::MOBILE;
   BOOL isRegularRegular = web_view.traitCollection.horizontalSizeClass ==
                               UIUserInterfaceSizeClassRegular &&
                           web_view.traitCollection.verticalSizeClass ==

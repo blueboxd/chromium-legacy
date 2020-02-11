@@ -2,11 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#import "ios/chrome/browser/ui/tab_grid/transitions/tab_to_grid_animator.h"
+#import "ios/chrome/browser/ui/tab_grid/transitions/legacy_tab_to_grid_animator.h"
 
 #import "ios/chrome/browser/ui/tab_grid/transitions/grid_transition_animation.h"
+#import "ios/chrome/browser/ui/tab_grid/transitions/grid_transition_animation_layout_providing.h"
 #import "ios/chrome/browser/ui/tab_grid/transitions/grid_transition_layout.h"
-#import "ios/chrome/browser/ui/tab_grid/transitions/grid_transition_state_providing.h"
 #import "ios/chrome/browser/ui/util/layout_guide_names.h"
 #import "ios/chrome/browser/ui/util/named_guide.h"
 #import "ios/chrome/browser/ui/util/property_animator_group.h"
@@ -15,8 +15,9 @@
 #error "This file requires ARC support."
 #endif
 
-@interface TabToGridAnimator ()
-@property(nonatomic, weak) id<GridTransitionStateProviding> stateProvider;
+@interface LegacyTabToGridAnimator ()
+@property(nonatomic, weak) id<GridTransitionAnimationLayoutProviding>
+    animationLayoutProvider;
 // Animation object for this transition.
 @property(nonatomic, strong) GridTransitionAnimation* animation;
 // Transition context passed into this object when the animation is started.
@@ -24,15 +25,12 @@
     transitionContext;
 @end
 
-@implementation TabToGridAnimator
-@synthesize stateProvider = _stateProvider;
-@synthesize animation = _animation;
-@synthesize transitionContext = _transitionContext;
+@implementation LegacyTabToGridAnimator
 
-- (instancetype)initWithStateProvider:
-    (id<GridTransitionStateProviding>)stateProvider {
+- (instancetype)initWithAnimationLayoutProvider:
+    (id<GridTransitionAnimationLayoutProviding>)animationLayoutProvider {
   if ((self = [super init])) {
-    _stateProvider = stateProvider;
+    _animationLayoutProvider = animationLayoutProvider;
   }
   return self;
 }
@@ -71,12 +69,12 @@
   [gridView layoutIfNeeded];
 
   // Ask the state provider for the views to use when inserting the animation.
-  UIView* proxyContainer =
-      [self.stateProvider proxyContainerForTransitionContext:transitionContext];
+  UIView* animationContainer =
+      [self.animationLayoutProvider animationViewsContainer];
 
   // Get the layout of the grid for the transition.
   GridTransitionLayout* layout =
-      [self.stateProvider layoutForTransitionContext:transitionContext];
+      [self.animationLayoutProvider transitionLayout];
 
   // Get the initial rect for the snapshotted content of the active tab.
   // Conceptually this transition is dismissing a tab (a BVC). However,
@@ -88,15 +86,16 @@
   // view.
   // TODO(crbug.com/860234) Clean up this arrangement.
   UIView* viewWithNamedGuides = dismissingView.subviews[0];
-  CGRect initialRect =
-      [NamedGuide guideWithName:kContentAreaGuide view:viewWithNamedGuides]
-          .layoutFrame;
+  CGRect initialRect = [NamedGuide guideWithName:kContentAreaGuide
+                                            view:viewWithNamedGuides]
+                           .layoutFrame;
 
   [layout.activeItem populateWithSnapshotsFromView:viewWithNamedGuides
                                         middleRect:initialRect];
 
-  layout.expandedRect = [proxyContainer convertRect:viewWithNamedGuides.frame
-                                           fromView:dismissingView];
+  layout.expandedRect =
+      [animationContainer convertRect:viewWithNamedGuides.frame
+                             fromView:dismissingView];
 
   NSTimeInterval duration = [self transitionDuration:transitionContext];
   // Create the animation view and insert it.
@@ -105,9 +104,10 @@
             duration:duration
            direction:GridAnimationDirectionContracting];
 
-  UIView* viewBehindProxies =
-      [self.stateProvider proxyPositionForTransitionContext:transitionContext];
-  [proxyContainer insertSubview:self.animation aboveSubview:viewBehindProxies];
+  UIView* bottomViewForAnimations =
+      [self.animationLayoutProvider animationViewsContainerBottomView];
+  [animationContainer insertSubview:self.animation
+                       aboveSubview:bottomViewForAnimations];
 
   [self.animation.animator addCompletion:^(UIViewAnimatingPosition position) {
     BOOL finished = (position == UIViewAnimatingPositionEnd);

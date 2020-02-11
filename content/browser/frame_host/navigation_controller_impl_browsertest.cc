@@ -3795,12 +3795,6 @@ IN_PROC_BROWSER_TEST_F(NavigationControllerBrowserTest,
   EXPECT_EQ(data_url,
             entry2->GetFrameEntry(root->child_at(1)->child_at(0))->url());
 
-  // In --site-per-process, we're misclassifying the subframe redirect in step 6
-  // below.  For now, skip the rest of the test in that mode.
-  // TODO(creis): Fix this in https://crbug.com/628782.
-  if (AreAllSitesIsolatedForTesting())
-    return;
-
   // Now cause the second iframe to redirect when we come back to it.
   {
     TestNavigationObserver observer(shell()->web_contents());
@@ -3864,7 +3858,8 @@ IN_PROC_BROWSER_TEST_F(NavigationControllerBrowserTest,
   EXPECT_EQ(3, controller.GetLastCommittedEntryIndex());
 
   // 8. Go back, causing the main frame to redirect to a page with no frames.
-  // All child items should be gone.
+  // All child items should be gone, and |entry2| is deleted and replaced with a
+  // new entry.
   {
     TestNavigationObserver back_load_observer(shell()->web_contents());
     shell()->web_contents()->GetController().GoBack();
@@ -3872,7 +3867,8 @@ IN_PROC_BROWSER_TEST_F(NavigationControllerBrowserTest,
   }
   EXPECT_EQ(redirect_dest_url, root->current_url());
   EXPECT_EQ(0U, root->child_count());
-  EXPECT_EQ(0U, entry2->root_node()->children.size());
+  EXPECT_EQ(0U,
+            controller.GetLastCommittedEntry()->root_node()->children.size());
   EXPECT_EQ(4, controller.GetEntryCount());
   EXPECT_EQ(2, controller.GetLastCommittedEntryIndex());
 }

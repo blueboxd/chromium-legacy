@@ -92,7 +92,7 @@ executable("cast_runner_exe") {
   visibility = [ ":*" ]
 }
 
-fuchsia_package("cast_runner_pkg") {
+cr_fuchsia_package("cast_runner_pkg") {
   binary = ":cast_runner_exe"
   package_name_override = _cast_runner_package_name
   archive_name_override = "cast_runner"
@@ -198,7 +198,7 @@ executable("web_runner_exe") {
   visibility = [ ":*" ]
 }
 
-fuchsia_package("web_runner_pkg") {
+cr_fuchsia_package("web_runner_pkg") {
   binary = ":web_runner_exe"
   package_name_override = _web_runner_package_name
   component_name_override = "web_runner"

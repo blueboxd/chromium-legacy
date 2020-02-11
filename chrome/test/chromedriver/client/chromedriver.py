@@ -139,6 +139,7 @@ class ChromeDriver(object):
           ChromeDriver.retried_tests.append(kwargs.get('test_name'))
           self._InternalInit(*args, **kwargs)
         else:
+          self._RequestCrash()
           raise
 
   def _InternalInit(self, server_url, chrome_binary=None, android_package=None,
@@ -276,6 +277,8 @@ class ChromeDriver(object):
       self.w3c_compliant = True
       self._session_id = response['value']['sessionId']
       self.capabilities = self._UnwrapValue(response['value']['capabilities'])
+      self.debuggerAddress = str(
+          self.capabilities['goog:chromeOptions']['debuggerAddress'])
     elif isinstance(response['status'], int):
       self.w3c_compliant = False
       self._session_id = response['sessionId']
@@ -322,7 +325,13 @@ class ChromeDriver(object):
 
   def _ExecuteCommand(self, command, params={}):
     params = self._WrapValue(params)
-    response = self._executor.Execute(command, params)
+    try:
+      response = self._executor.Execute(command, params)
+    except Exception as e:
+      if e.message.startswith('timed out') and self._session_id != None:
+        self._RequestCrash()
+      raise e
+
     if ('status' in response
         and response['status'] != 0):
       raise _ExceptionForLegacyResponse(response)
@@ -330,6 +339,14 @@ class ChromeDriver(object):
           and 'error' in response['value']):
       raise _ExceptionForStandardResponse(response)
     return response
+
+  def _RequestCrash(self):
+    tempDriver = ChromeDriver(self._server_url,
+      debugger_address=self.debuggerAddress, test_name='_forceCrash')
+    tempDriver.SendCommandAndGetResult("Page.crash", {})
+    # allow time to complete writing the minidump
+    time.sleep(5)
+    tempDriver.Quit();
 
   def ExecuteCommand(self, command, params={}):
     params['sessionId'] = self._session_id

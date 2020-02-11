@@ -192,7 +192,8 @@ class AX_EXPORT AXPlatformNodeBase : public AXPlatformNode {
 
   // Returns true if either a descendant has selection (sel_focus_object_id) or
   // if this node is a simple text element and has text selection attributes.
-  bool HasCaret();
+  // Optionally accepts an unignored selection to avoid redundant computation.
+  bool HasCaret(const AXTree::Selection* unignored_selection = nullptr);
 
   // Returns true if an ancestor of this node (not including itself) is a
   // leaf node, meaning that this node is not actually exposed to the
@@ -374,8 +375,8 @@ class AX_EXPORT AXPlatformNodeBase : public AXPlatformNode {
   // First they check for a local selection found on the current control, e.g.
   // when querying the selection on a textarea.
   // If not found they retrieve the global selection found on the current frame.
-  int GetUnignoredSelectionAnchor();
-  int GetUnignoredSelectionFocus();
+  int GetSelectionAnchor(const AXTree::Selection* selection);
+  int GetSelectionFocus(const AXTree::Selection* selection);
 
   // Retrieves the selection offsets in the way required by the IA2 APIs.
   // selection_start and selection_end are -1 when there is no selection active
@@ -383,7 +384,12 @@ class AX_EXPORT AXPlatformNodeBase : public AXPlatformNode {
   // The greatest of the two offsets is one past the last character of the
   // selection.)
   void GetSelectionOffsets(int* selection_start, int* selection_end);
-  void GetSelectionOffsetsFromTree(int* selection_start, int* selection_end);
+  void GetSelectionOffsets(const AXTree::Selection* selection,
+                           int* selection_start,
+                           int* selection_end);
+  void GetSelectionOffsetsFromTree(const AXTree::Selection* selection,
+                                   int* selection_start,
+                                   int* selection_end);
 
   // Returns the hyperlink at the given text position, or nullptr if no
   // hyperlink can be found.

@@ -19,6 +19,7 @@
 #include "ios/chrome/browser/chrome_url_constants.h"
 #include "ios/chrome/browser/passwords/password_manager_features.h"
 #import "ios/chrome/browser/web/error_page_util.h"
+#include "ios/chrome/browser/web/features.h"
 #include "ios/web/common/features.h"
 #import "ios/web/common/web_view_creation_util.h"
 #import "ios/web/public/test/error_test_util.h"
@@ -324,10 +325,13 @@ TEST_F(ChromeWebClientTest, PrepareErrorPageWithSSLInfo) {
 // Tests the default user agent for different views.
 TEST_F(ChromeWebClientTest, DefaultUserAgent) {
   base::test::ScopedFeatureList scoped_feature_list;
-  scoped_feature_list.InitAndEnableFeature(
-      web::features::kUseDefaultUserAgentInWebClient);
+  scoped_feature_list.InitWithFeatures(
+      {web::features::kUseDefaultUserAgentInWebClient, web::kMobileGoogleSRP},
+      {});
 
   ChromeWebClient web_client;
+  const GURL google_url = GURL("https://www.google.com/search?q=test");
+  const GURL non_google_url = GURL("http://wikipedia.org");
 
   UITraitCollection* regular_vertical_size_class = [UITraitCollection
       traitCollectionWithVerticalSizeClass:UIUserInterfaceSizeClassRegular];
@@ -362,29 +366,39 @@ TEST_F(ChromeWebClientTest, DefaultUserAgent) {
         compact_horizontal_size_class
       ]];
 
-  // Check that desktop is returned for Regular x Regular.
+  // Check that desktop is returned for Regular x Regular on non-Google URLs.
   id mock_regular_regular_view = OCMClassMock([UIView class]);
   OCMStub([mock_regular_regular_view traitCollection])
       .andReturn(regular_regular);
   EXPECT_EQ(web::UserAgentType::DESKTOP,
-            web_client.GetDefaultUserAgent(mock_regular_regular_view));
+            web_client.GetDefaultUserAgent(mock_regular_regular_view,
+                                           non_google_url));
+  EXPECT_EQ(
+      web::UserAgentType::MOBILE,
+      web_client.GetDefaultUserAgent(mock_regular_regular_view, google_url));
 
   // Check that mobile is returned for all other combinations.
   id mock_regular_compact_view = OCMClassMock([UIView class]);
   OCMStub([mock_regular_compact_view traitCollection])
       .andReturn(regular_compact);
   EXPECT_EQ(web::UserAgentType::MOBILE,
-            web_client.GetDefaultUserAgent(mock_regular_compact_view));
+            web_client.GetDefaultUserAgent(mock_regular_compact_view,
+                                           non_google_url));
+  EXPECT_EQ(
+      web::UserAgentType::MOBILE,
+      web_client.GetDefaultUserAgent(mock_regular_regular_view, google_url));
 
   id mock_compact_regular_view = OCMClassMock([UIView class]);
   OCMStub([mock_compact_regular_view traitCollection])
       .andReturn(compact_regular);
   EXPECT_EQ(web::UserAgentType::MOBILE,
-            web_client.GetDefaultUserAgent(mock_compact_regular_view));
+            web_client.GetDefaultUserAgent(mock_compact_regular_view,
+                                           non_google_url));
 
   id mock_compact_compact_view = OCMClassMock([UIView class]);
   OCMStub([mock_compact_compact_view traitCollection])
       .andReturn(compact_compact);
   EXPECT_EQ(web::UserAgentType::MOBILE,
-            web_client.GetDefaultUserAgent(mock_compact_compact_view));
+            web_client.GetDefaultUserAgent(mock_compact_compact_view,
+                                           non_google_url));
 }

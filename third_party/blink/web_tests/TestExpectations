@@ -276,26 +276,26 @@ crbug.com/968791 virtual/scalefactor200/external/wpt/css/filter-effects/filters-
 # Copying these from elsewhere in TestExpectations (for non-scalefactor200 virtual suite)
 crbug.com/658305 [ Mac ] virtual/scalefactor200/css3/filters/effect-all-on-background-hw.html [ Failure Pass Timeout ]
 crbug.com/658305 [ Linux Debug ] virtual/scalefactor200/css3/filters/effect-all-on-background-hw.html [ Pass Timeout ]
-crbug.com/862716 [ Mac ] virtual/scalefactor200/css3/filters/effect-brightness-clamping-hw.html [ Pass Timeout ]
-crbug.com/862716 [ Linux Debug ] virtual/scalefactor200/css3/filters/effect-brightness-clamping-hw.html [ Pass Timeout ]
+crbug.com/658305 [ Mac ] virtual/scalefactor200/css3/filters/effect-brightness-clamping-hw.html [ Pass Timeout ]
+crbug.com/658305 [ Linux Debug ] virtual/scalefactor200/css3/filters/effect-brightness-clamping-hw.html [ Pass Timeout ]
 crbug.com/968791 [ Win10 ] virtual/scalefactor200/css3/filters/effect-contrast-hw.html [ Failure ]
-crbug.com/658305 crbug.com/758133 [ Mac ] virtual/scalefactor200/css3/filters/effect-reference-colorspace-hw.html [ Failure Pass Timeout ]
-crbug.com/658305 crbug.com/758133 [ Linux ] virtual/scalefactor200/css3/filters/effect-reference-colorspace-hw.html [ Pass Timeout ]
+crbug.com/658305 [ Mac ] virtual/scalefactor200/css3/filters/effect-reference-colorspace-hw.html [ Failure Pass Timeout ]
+crbug.com/658305 [ Linux ] virtual/scalefactor200/css3/filters/effect-reference-colorspace-hw.html [ Pass Timeout ]
 crbug.com/658305 virtual/scalefactor200/css3/filters/effect-reference-external-stylesheet.html [ Failure Pass ]
 crbug.com/658305 [ Mac ] virtual/scalefactor200/css3/filters/effect-reference-hidpi-hw.html [ Pass Timeout ]
-crbug.com/873454 virtual/scalefactor200/css3/filters/effect-reference-image-hw.html [ Failure Pass ]
+crbug.com/658305 virtual/scalefactor200/css3/filters/effect-reference-image-hw.html [ Failure Pass ]
 crbug.com/658305 [ Mac ] virtual/scalefactor200/css3/filters/effect-reference-ordering-hw.html [ Pass Timeout ]
 crbug.com/658305 virtual/scalefactor200/css3/filters/effect-reference-subregion-hw.html [ Failure Pass Timeout ]
 crbug.com/658305 virtual/scalefactor200/css3/filters/effect-reference-zoom-hw.html [ Failure Pass Timeout ]
-crbug.com/869364 [ Mac ] virtual/scalefactor200/css3/filters/filter-repaint-composited-fallback.html [ Pass Timeout ]
-crbug.com/869364 [ Linux Debug ] virtual/scalefactor200/css3/filters/filter-repaint-composited-fallback.html [ Pass Timeout ]
+crbug.com/658305 [ Mac ] virtual/scalefactor200/css3/filters/filter-repaint-composited-fallback.html [ Pass Timeout ]
+crbug.com/658305 [ Linux Debug ] virtual/scalefactor200/css3/filters/filter-repaint-composited-fallback.html [ Pass Timeout ]
 crbug.com/903383 virtual/scalefactor200/external/wpt/css/filter-effects/css-filters-animation-combined-001.html [ Failure ]
 crbug.com/903383 virtual/scalefactor200/external/wpt/css/filter-effects/css-filters-animation-blur.html [ Failure ]
 crbug.com/626703 virtual/scalefactor200/external/wpt/css/filter-effects/filter-subregion-01.html [ Failure ]
 crbug.com/591099 virtual/scalefactor200/external/wpt/css/filter-effects/filtered-inline-applies-to-float.html [ Failure ]
 
 # Needs new baseline
-crbug.com/658305 crbug.com/758133 virtual/scalefactor200/css3/filters/effect-reference-hw.html [ Failure Pass Timeout ]
+crbug.com/658305 virtual/scalefactor200/css3/filters/effect-reference-hw.html [ Failure Pass Timeout ]
 
 # ==== Regressions introduced by BlinkGenPropertyTrees =====
 # Reflection / mask ordering issue
@@ -2033,7 +2033,7 @@ crbug.com/1042162 inspector-protocol/console/console-let-const-with-api.js [ Pas
 crbug.com/470482 fast/cookies/local-file-can-set-cookies.html [ Skip ]
 
 # Needs rebaseline when https://chromium-review.googlesource.com/c/v8/v8/+/1914218 lands in chromium.
-http/tests/devtools/startup/console-stack-overflow-source-url.html [ Skip ]
+http/tests/devtools/startup/console-stack-overflow-source-url.js [ Skip ]
 
 # Text::inDocument() returns false but should not.
 crbug.com/264138 dom/legacy_dom_conformance/xhtml/level3/core/nodecomparedocumentposition38.xhtml [ Failure ]
@@ -4122,9 +4122,6 @@ crbug.com/785230 [ Mac ] external/wpt/css/css-text-decor/text-decoration-skip-in
 crbug.com/785230 [ Win ] external/wpt/css/css-text-decor/text-decoration-skip-ink-vertical-001.html [ Failure ]
 
 crbug.com/912362 external/wpt/web-animations/timing-model/timelines/timelines.html [ Failure ]
-
-# Decoding test timeout on Win7. Marked flaky to get imported in case it's flaky timeout everywhere.
-crbug.com/862938 external/wpt/encoding/textdecoder-fatal-single-byte.any.worker.html [ Pass Timeout ]
 
 # Unclear if XHR events should still be fired after its frame is discarded.
 crbug.com/881180 external/wpt/xhr/open-url-multi-window-4.htm [ Timeout ]
@@ -6558,9 +6555,6 @@ crbug.com/1050039 [ Mac ] virtual/omt-worker-fetch/fast/workers/worker-onerror-0
 crbug.com/1050039 [ Mac ] virtual/omt-worker-fetch/fast/workers/worker-onerror-06.html [ Pass Failure ]
 crbug.com/1050039 [ Mac ] virtual/omt-worker-fetch/fast/workers/worker-onerror-08.html [ Pass Failure ]
 crbug.com/1050039 [ Mac ] virtual/omt-worker-fetch/fast/workers/worker-onerror-09.html [ Pass Failure ]
-
-# TODO(michaelludwig) - Remove and rebaseline after Skia roll
-crbug.com/1050086 transforms/3d/point-mapping/3d-point-mapping-preserve-3d.html [ Pass Failure ]
 
 crbug.com/1050212 [ Win ] external/wpt/infrastructure/server/wpt-server-http.sub.html [ Skip ]
 

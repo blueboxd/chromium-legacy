@@ -405,13 +405,7 @@ cr.define('settings', function() {
 
     /** @private */
     onSigninTap_() {
-      // <if expr="not chromeos">
       this.syncBrowserProxy_.startSignIn();
-      // </if>
-      // <if expr="chromeos">
-      // Chrome OS is always signed-in, so just turn on sync.
-      this.syncBrowserProxy_.turnOnSync();
-      // </if>
       // Need to close here since one menu item also triggers this function.
       if (this.$$('#menu')) {
         /** @type {!CrActionMenuElement} */ (this.$$('#menu')).close();

@@ -302,6 +302,7 @@ source_set("unit_tests_internal") {
     "java_script_console/java_script_console_tab_helper_unittest.mm",
   ]
   deps = [
+    ":feature_flags",
     ":test_support",
     ":web_internal",
     "//base",

@@ -3497,8 +3497,6 @@ bool RenderProcessHostImpl::OnMessageReceived(const IPC::Message& msg) {
   if (msg.routing_id() == MSG_ROUTING_CONTROL) {
     // Dispatch control messages.
     IPC_BEGIN_MESSAGE_MAP(RenderProcessHostImpl, msg)
-      IPC_MESSAGE_HANDLER(ViewHostMsg_UserMetricsRecordAction,
-                          OnUserMetricsRecordAction)
       IPC_MESSAGE_HANDLER(WidgetHostMsg_Close_ACK, OnCloseACK)
     // Adding single handlers for your service here is fine, but once your
     // service needs more than one handler, please extract them into a new
@@ -4561,6 +4559,10 @@ void RenderProcessHostImpl::SuddenTerminationChanged(bool enabled) {
   SetSuddenTerminationAllowed(enabled);
 }
 
+void RenderProcessHostImpl::RecordUserMetricsAction(const std::string& action) {
+  base::RecordComputedAction(action);
+}
+
 void RenderProcessHostImpl::UpdateProcessPriorityInputs() {
   int32_t new_visible_widgets_count = 0;
   unsigned int new_frame_depth = kMaxFrameDepthForPriority;
@@ -4857,11 +4859,6 @@ void RenderProcessHostImpl::OnProcessLaunchFailed(int error_code) {
   info.exit_code = error_code;
   PopulateTerminationInfoRendererFields(&info);
   ProcessDied(true, &info);
-}
-
-void RenderProcessHostImpl::OnUserMetricsRecordAction(
-    const std::string& action) {
-  base::RecordComputedAction(action);
 }
 
 void RenderProcessHostImpl::OnCloseACK(int closed_widget_route_id) {

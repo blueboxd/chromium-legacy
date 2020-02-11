@@ -35,4 +35,7 @@ group("wpt_tests_isolate") {
     "//third_party/blink/web_tests/VirtualTestSuites",
     "//third_party/blink/web_tests/WPTOverrideExpectations",
   ]
+  if (is_win) {
+    data_deps = [ "//build/win:copy_cdb_to_output" ]
+  }
 }

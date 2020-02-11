@@ -193,6 +193,9 @@ public abstract class TabModelSelectorBase implements TabModelSelector {
     }
 
     @Override
+    public void saveState() {}
+
+    @Override
     public Tab getTabById(int id) {
         for (int i = 0; i < getModels().size(); i++) {
             Tab tab = TabModelUtils.getTabById(mTabModels.get(i), id);

@@ -10,6 +10,7 @@
 
 namespace gfx {
 class ImageSkia;
+struct VectorIcon;
 }  // namespace gfx
 
 namespace media_session {
@@ -39,7 +40,11 @@ class COMPONENT_EXPORT(MEDIA_MESSAGE_CENTER) MediaNotificationView
       const base::flat_set<media_session::mojom::MediaSessionAction>&
           actions) = 0;
   virtual void UpdateWithMediaArtwork(const gfx::ImageSkia& image) = 0;
+  // Updates the background color to match that of the favicon.
   virtual void UpdateWithFavicon(const gfx::ImageSkia& icon) = 0;
+  // Sets the icon to be displayed in the notification's header section.
+  // |vector_icon| must outlive the MediaNotificationView.
+  virtual void UpdateWithVectorIcon(const gfx::VectorIcon& vector_icon) = 0;
 };
 
 }  // namespace media_message_center

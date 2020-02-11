@@ -21,10 +21,10 @@
 #import "ios/chrome/browser/ui/recent_tabs/recent_tabs_mediator.h"
 #import "ios/chrome/browser/ui/recent_tabs/recent_tabs_presentation_delegate.h"
 #import "ios/chrome/browser/ui/recent_tabs/recent_tabs_table_view_controller.h"
+#import "ios/chrome/browser/ui/tab_grid/legacy_tab_grid_transition_handler.h"
 #import "ios/chrome/browser/ui/tab_grid/tab_grid_adaptor.h"
 #import "ios/chrome/browser/ui/tab_grid/tab_grid_mediator.h"
 #import "ios/chrome/browser/ui/tab_grid/tab_grid_paging.h"
-#import "ios/chrome/browser/ui/tab_grid/tab_grid_transition_handler.h"
 #import "ios/chrome/browser/ui/tab_grid/tab_grid_view_controller.h"
 #include "ios/chrome/browser/ui/ui_feature_flags.h"
 #import "ios/chrome/browser/url_loading/url_loading_params.h"
@@ -51,7 +51,7 @@
 // controller will present this.
 @property(nonatomic, strong) BVCContainerViewController* bvcContainer;
 // Transitioning delegate for the view controller.
-@property(nonatomic, strong) TabGridTransitionHandler* transitionHandler;
+@property(nonatomic, strong) LegacyTabGridTransitionHandler* transitionHandler;
 // Mediator for regular Tabs.
 @property(nonatomic, strong) TabGridMediator* regularTabsMediator;
 // Mediator for incognito Tabs.
@@ -144,7 +144,7 @@
       [[TabGridViewController alloc] init];
   baseViewController.dispatcher =
       static_cast<id<ApplicationCommands>>(self.dispatcher);
-  self.transitionHandler = [[TabGridTransitionHandler alloc] init];
+  self.transitionHandler = [[LegacyTabGridTransitionHandler alloc] init];
   self.transitionHandler.provider = baseViewController;
   baseViewController.modalPresentationStyle = UIModalPresentationCustom;
   baseViewController.transitioningDelegate = self.transitionHandler;

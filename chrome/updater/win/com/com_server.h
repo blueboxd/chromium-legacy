@@ -25,8 +25,8 @@ class UpdaterImpl
  public:
   UpdaterImpl() = default;
 
-  IFACEMETHOD(CheckForUpdate)(const base::char16* guid);
-  IFACEMETHOD(Update)(const base::char16* guid);
+  IFACEMETHODIMP CheckForUpdate(const base::char16* guid) override;
+  IFACEMETHODIMP Update(const base::char16* guid) override;
 
  private:
   ~UpdaterImpl() override = default;

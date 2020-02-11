@@ -145,7 +145,6 @@
       'ToTWinASanLibfuzzer': 'libfuzzer_windows_asan_clang_tot_release_bot',
       'ToTWinCFI': 'clang_tot_win_cfi_full_cfi_diag_thin_lto_release_static_dcheck_always_on_x86',
       'ToTWinCFI64': 'clang_tot_win_cfi_full_cfi_diag_thin_lto_release_static_dcheck_always_on',
-      'ToTWinLibcxx64': 'clang_tot_official_optimize_minimal_symbols_static_release_libcxx',
       'ToTWinThinLTO64': 'clang_tot_win_official_full_symbols_thin_lto_static',
       'ToTiOS': 'ios_error',
       'UBSanVptr Linux': 'ubsan_vptr_release_bot',
@@ -1466,10 +1465,6 @@
       'clang_tot', 'official', 'minimal_symbols', 'static', 'release', 'x86',
     ],
 
-    'clang_tot_official_optimize_minimal_symbols_static_release_libcxx': [
-      'clang_tot', 'official_optimize', 'minimal_symbols', 'static', 'release', 'libcxx',
-    ],
-
     'clang_tot_release_minimal_symbols_thin_lto_static': [
       'clang_tot', 'release', 'minimal_symbols', 'thin_lto', 'static',
     ],
@@ -2365,10 +2360,6 @@
     'ios_simulator': {
       'mixins': ['ios'],
       'gn_args': 'target_cpu="x64"',
-    },
-
-    'libcxx': {
-      'gn_args': 'use_custom_libcxx=true',
     },
 
     'libfuzzer': { 'gn_args': 'use_libfuzzer=true' },

@@ -33,11 +33,6 @@ ASH_PUBLIC_EXPORT extern const base::Feature kDockedMagnifier;
 // TODO(crbug.com/890029): Remove this when the feature is fully launched.
 ASH_PUBLIC_EXPORT extern const base::Feature kDragToSnapInClamshellMode;
 
-// Enables rounded corners in overview mode for testing.
-// TODO(crbug.com/903486): Remove this when new rounded corners implementation
-// has landed.
-ASH_PUBLIC_EXPORT extern const base::Feature kEnableOverviewRoundedCorners;
-
 // Enables notifications on the lock screen.
 ASH_PUBLIC_EXPORT extern const base::Feature kLockScreenNotifications;
 
@@ -71,10 +66,6 @@ ASH_PUBLIC_EXPORT extern const base::Feature kMediaSessionNotification;
 // Enables multi-display support for overview and split view.
 // TODO(crbug.com/952461): Remove this when the feature is fully launched.
 ASH_PUBLIC_EXPORT extern const base::Feature kMultiDisplayOverviewAndSplitView;
-
-// Enables new layout for overview mode.
-// TODO(sammiequon): Cleanup this flag when feature is fully launched.
-ASH_PUBLIC_EXPORT extern const base::Feature kNewOverviewLayout;
 
 // Enables the Night Light feature.
 ASH_PUBLIC_EXPORT extern const base::Feature kNightLight;

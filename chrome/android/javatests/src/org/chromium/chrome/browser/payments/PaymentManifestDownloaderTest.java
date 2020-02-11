@@ -25,6 +25,7 @@ import org.chromium.components.payments.PaymentManifestDownloader.ManifestDownlo
 import org.chromium.content_public.browser.test.util.Criteria;
 import org.chromium.content_public.browser.test.util.CriteriaHelper;
 import org.chromium.net.test.EmbeddedTestServer;
+import org.chromium.url.Origin;
 import org.chromium.url.URI;
 
 /** An integration test for the payment manifest downloader. */
@@ -61,6 +62,7 @@ public class PaymentManifestDownloaderTest implements ManifestDownloadCallback {
             + "}\n";
 
     private final PaymentManifestDownloader mDownloader = new PaymentManifestDownloader();
+    private Origin mTestOrigin;
     private EmbeddedTestServer mServer;
     private boolean mDownloadComplete;
     private boolean mDownloadPaymentMethodManifestSuccess;
@@ -71,7 +73,8 @@ public class PaymentManifestDownloaderTest implements ManifestDownloadCallback {
     private String mWebAppManifest;
 
     @Override
-    public void onPaymentMethodManifestDownloadSuccess(String content) {
+    public void onPaymentMethodManifestDownloadSuccess(
+            Origin paymentMethodManifestOrigin, String content) {
         mDownloadComplete = true;
         mDownloadPaymentMethodManifestSuccess = true;
         mPaymentMethodManifest = content;
@@ -97,6 +100,7 @@ public class PaymentManifestDownloaderTest implements ManifestDownloadCallback {
         mServer = EmbeddedTestServer.createAndStartServer(InstrumentationRegistry.getContext());
         mRule.runOnUiThread((Runnable) () -> {
             mDownloader.initialize(mRule.getActivity().getCurrentWebContents());
+            mTestOrigin = PaymentManifestDownloader.createOpaqueOriginForTest();
         });
         mDownloadComplete = false;
         mDownloadPaymentMethodManifestSuccess = false;
@@ -118,8 +122,9 @@ public class PaymentManifestDownloaderTest implements ManifestDownloadCallback {
     public void testDownloadWebAppManifest() throws Throwable {
         final URI uri =
                 new URI(mServer.getURL("/components/test/data/payments/bobpay.com/app.json"));
-        mRule.runOnUiThread((Runnable) () -> mDownloader.downloadWebAppManifest(uri,
-                PaymentManifestDownloaderTest.this));
+        mRule.runOnUiThread((Runnable) ()
+                                    -> mDownloader.downloadWebAppManifest(
+                                            mTestOrigin, uri, PaymentManifestDownloaderTest.this));
         CriteriaHelper.pollInstrumentationThread(new Criteria() {
             @Override
             public boolean isSatisfied() {
@@ -136,8 +141,9 @@ public class PaymentManifestDownloaderTest implements ManifestDownloadCallback {
     @Feature({"Payments"})
     public void testUnableToDownloadWebAppManifest() throws Throwable {
         final URI uri = new URI(mServer.getURL("/no-such-app.json"));
-        mRule.runOnUiThread((Runnable) () -> mDownloader.downloadWebAppManifest(uri,
-                PaymentManifestDownloaderTest.this));
+        mRule.runOnUiThread((Runnable) ()
+                                    -> mDownloader.downloadWebAppManifest(
+                                            mTestOrigin, uri, PaymentManifestDownloaderTest.this));
         CriteriaHelper.pollInstrumentationThread(new Criteria() {
             @Override
             public boolean isSatisfied() {
@@ -154,8 +160,9 @@ public class PaymentManifestDownloaderTest implements ManifestDownloadCallback {
     @Feature({"Payments"})
     public void testDownloadPaymentMethodManifest() throws Throwable {
         final URI uri = new URI(mServer.getURL("/components/test/data/payments/bobpay.com/webpay"));
-        mRule.runOnUiThread((Runnable) () -> mDownloader.downloadPaymentMethodManifest(uri,
-                PaymentManifestDownloaderTest.this));
+        mRule.runOnUiThread((Runnable) ()
+                                    -> mDownloader.downloadPaymentMethodManifest(
+                                            mTestOrigin, uri, PaymentManifestDownloaderTest.this));
         CriteriaHelper.pollInstrumentationThread(new Criteria() {
             @Override
             public boolean isSatisfied() {
@@ -172,8 +179,9 @@ public class PaymentManifestDownloaderTest implements ManifestDownloadCallback {
     @Feature({"Payments"})
     public void testUnableToDownloadPaymentMethodManifest() throws Throwable {
         final URI uri = new URI(mServer.getURL("/no-such-payment-method-name"));
-        mRule.runOnUiThread((Runnable) () -> mDownloader.downloadPaymentMethodManifest(uri,
-                PaymentManifestDownloaderTest.this));
+        mRule.runOnUiThread((Runnable) ()
+                                    -> mDownloader.downloadPaymentMethodManifest(
+                                            mTestOrigin, uri, PaymentManifestDownloaderTest.this));
         CriteriaHelper.pollInstrumentationThread(new Criteria() {
             @Override
             public boolean isSatisfied() {
@@ -199,11 +207,13 @@ public class PaymentManifestDownloaderTest implements ManifestDownloadCallback {
                 new URI(mServer.getURL("/components/test/data/payments/bobpay.com/app.json"));
         mRule.runOnUiThread((Runnable) () -> {
             mDownloader.downloadPaymentMethodManifest(
-                    paymentMethodUri1, PaymentManifestDownloaderTest.this);
+                    mTestOrigin, paymentMethodUri1, PaymentManifestDownloaderTest.this);
             mDownloader.downloadPaymentMethodManifest(
-                    paymentMethodUri2, PaymentManifestDownloaderTest.this);
-            mDownloader.downloadWebAppManifest(webAppUri1, PaymentManifestDownloaderTest.this);
-            mDownloader.downloadWebAppManifest(webAppUri2, PaymentManifestDownloaderTest.this);
+                    mTestOrigin, paymentMethodUri2, PaymentManifestDownloaderTest.this);
+            mDownloader.downloadWebAppManifest(
+                    mTestOrigin, webAppUri1, PaymentManifestDownloaderTest.this);
+            mDownloader.downloadWebAppManifest(
+                    mTestOrigin, webAppUri2, PaymentManifestDownloaderTest.this);
         });
         CriteriaHelper.pollInstrumentationThread(new Criteria() {
             @Override

@@ -19,6 +19,8 @@
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/gfx/font.h"
 #include "ui/gfx/font_list.h"
+#include "ui/gfx/paint_vector_icon.h"
+#include "ui/message_center/public/cpp/message_center_constants.h"
 #include "ui/message_center/views/notification_header_view.h"
 #include "ui/views/controls/button/image_button_factory.h"
 #include "ui/views/layout/box_layout.h"
@@ -132,7 +134,7 @@ MediaNotificationViewImpl::MediaNotificationViewImpl(
     header_row->SetProperty(views::kMarginsKey,
                             kIconMediaNotificationHeaderInsets);
   } else {
-    header_row->HideAppIcon();
+    header_row->SetAppIconVisible(false);
     header_row->SetProperty(views::kMarginsKey,
                             kIconlessMediaNotificationHeaderInsets);
   }
@@ -438,6 +440,18 @@ void MediaNotificationViewImpl::UpdateWithFavicon(const gfx::ImageSkia& icon) {
   SchedulePaint();
 }
 
+void MediaNotificationViewImpl::UpdateWithVectorIcon(
+    const gfx::VectorIcon& vector_icon) {
+  vector_header_icon_ = &vector_icon;
+  const SkColor foreground =
+      GetMediaNotificationBackground()->GetForegroundColor(*this);
+  header_row_->SetAppIcon(gfx::CreateVectorIcon(
+      *vector_header_icon_, message_center::kSmallImageSizeMD, foreground));
+  header_row_->SetAppIconVisible(true);
+  header_row_->SetProperty(views::kMarginsKey,
+                           kIconMediaNotificationHeaderInsets);
+}
+
 views::Button* MediaNotificationViewImpl::GetHeaderRowForTesting() const {
   return header_row_;
 }
@@ -580,6 +594,10 @@ void MediaNotificationViewImpl::UpdateForegroundColor() {
   title_label_->SetEnabledColor(foreground);
   artist_label_->SetEnabledColor(foreground);
   header_row_->SetAccentColor(foreground);
+  if (vector_header_icon_) {
+    header_row_->SetAppIcon(gfx::CreateVectorIcon(
+        *vector_header_icon_, message_center::kSmallImageSizeMD, foreground));
+  }
 
   title_label_->SetBackgroundColor(background);
   artist_label_->SetBackgroundColor(background);

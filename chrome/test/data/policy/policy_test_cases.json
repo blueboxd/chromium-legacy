@@ -4954,6 +4954,8 @@
 
   "DeviceAllowRedeemChromeOsRegistrationOffers": {},
 
+  "DeviceLoginScreenChromeVariations": {},
+
   "DeviceStartUpFlags": {},
 
   "DeviceVariationsRestrictParameter": {},

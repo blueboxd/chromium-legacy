@@ -13,6 +13,14 @@
 
 namespace base {
 
+TEST(CheckedContiguousRange, Constructor_Default) {
+  constexpr CheckedContiguousRange<std::vector<int>> range;
+  static_assert(range.data() == nullptr, "");
+  static_assert(range.size() == 0, "");
+  static_assert(range.empty(), "");
+  static_assert(range.begin() == range.end(), "");
+}
+
 TEST(CheckedContiguousRange, Constructor_Vector) {
   std::vector<int> vector = {1, 2, 3, 4, 5};
   CheckedContiguousRange<std::vector<int>> range(vector);

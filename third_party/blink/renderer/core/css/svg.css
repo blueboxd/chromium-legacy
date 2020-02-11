@@ -96,12 +96,12 @@ foreignObject {
 */
 @media forced-colors {
   svg {
-      color: WindowText;
-      fill: WindowText;
+      color: CanvasText;
       forced-color-adjust: none;
   }
 
   text, foreignObject {
+      fill: CanvasText;
       forced-color-adjust: auto;
   }
 }

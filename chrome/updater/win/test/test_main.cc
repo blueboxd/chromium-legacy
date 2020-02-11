@@ -24,9 +24,6 @@ int main(int argc, char** argv) {
   bool success = updater::InitializeCOMSecurity();
   DCHECK(success) << "InitializeCOMSecurity() failed.";
 
-  success = updater::TaskScheduler::Initialize();
-  DCHECK(success) << "TaskScheduler::Initialize() failed.";
-
   // Some tests will fail if two tests try to launch test_process.exe
   // simultaneously, so run the tests serially. This will still shard them and
   // distribute the shards to different swarming bots, but tests will run
@@ -38,8 +35,6 @@ int main(int argc, char** argv) {
       /*default_batch_limit=*/10,  // Like LaunchUnitTestsSerially
       false,
       base::BindOnce(&base::TestSuite::Run, base::Unretained(&test_suite)));
-
-  updater::TaskScheduler::Terminate();
 
   return result;
 }

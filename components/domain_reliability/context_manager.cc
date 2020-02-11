@@ -29,50 +29,6 @@ void DomainReliabilityContextManager::RouteBeacon(
   context->OnBeacon(std::move(beacon));
 }
 
-void DomainReliabilityContextManager::SetConfig(
-    const GURL& origin,
-    std::unique_ptr<DomainReliabilityConfig> config,
-    base::TimeDelta max_age) {
-  std::string key = origin.host();
-
-  if (!contexts_.count(key) && !removed_contexts_.count(key)) {
-    DLOG(WARNING) << "Ignoring NEL header for unknown origin " << origin.spec()
-                  << ".";
-    return;
-  }
-
-  if (contexts_.count(key)) {
-    // Currently, there is no easy way to change the config of a context, so
-    // updating the config requires recreating the context, which loses
-    // pending beacons and collector backoff state. Therefore, don't do so
-    // needlessly; make sure the config has actually changed before recreating
-    // the context.
-    bool config_same = contexts_[key]->config().Equals(*config);
-    if (!config_same) {
-      DVLOG(1) << "Ignoring unchanged NEL header for existing origin "
-               << origin.spec() << ".";
-      return;
-    }
-    // TODO(juliatuttle): Make Context accept Config changes.
-  }
-
-  DVLOG(1) << "Adding/replacing context for existing origin " << origin.spec()
-           << ".";
-  removed_contexts_.erase(key);
-  config->origin = origin;
-  AddContextForConfig(std::move(config));
-}
-
-void DomainReliabilityContextManager::ClearConfig(const GURL& origin) {
-  std::string key = origin.host();
-
-  if (contexts_.count(key)) {
-    DVLOG(1) << "Removing context for existing origin " << origin.spec() << ".";
-    contexts_.erase(key);
-    removed_contexts_.insert(key);
-  }
-}
-
 void DomainReliabilityContextManager::ClearBeacons(
     const base::RepeatingCallback<bool(const GURL&)>& origin_filter) {
   for (auto& context_entry : contexts_) {

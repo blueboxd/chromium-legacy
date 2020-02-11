@@ -102,7 +102,7 @@ executable("skia_demo") {
 }
 
 if (is_fuchsia) {
-  fuchsia_package("ozone_demo_pkg") {
+  cr_fuchsia_package("ozone_demo_pkg") {
     testonly = true
     binary = ":ozone_demo"
     package_name_override = "ozone_demo"

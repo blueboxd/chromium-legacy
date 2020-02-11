@@ -144,11 +144,6 @@ luci.console_view(
             short_name = 'lto',
         ),
         luci.console_view_entry(
-            builder = 'ci/ToTWinLibcxx64',
-            category = 'ToT Windows|x64',
-            short_name = 'cxx',
-        ),
-        luci.console_view_entry(
             builder = 'ci/CrWinAsan',
             category = 'ToT Windows|Asan',
             short_name = 'asn',

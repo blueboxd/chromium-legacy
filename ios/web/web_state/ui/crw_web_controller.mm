@@ -187,11 +187,6 @@ NSString* const kScriptMessageName = @"crwebinvoke";
 // it's needed multiple times in a method.
 @property(nonatomic, readonly) GURL currentURL;
 
-// User agent type of the transient item if any, the pending item if a
-// navigation is in progress or the last committed item otherwise.
-// Returns MOBILE, the default type, if navigation manager is nullptr or empty.
-@property(nonatomic, readonly) web::UserAgentType userAgentType;
-
 @property(nonatomic, readonly) web::WebState* webState;
 // WebStateImpl instance associated with this CRWWebController, web controller
 // does not own this pointer.
@@ -492,11 +487,6 @@ typedef void (^ViewportStateCompletion)(const web::PageViewportState*);
   web::URLVerificationTrustLevel trustLevel =
       web::URLVerificationTrustLevel::kNone;
   return [self currentURLWithTrustLevel:&trustLevel];
-}
-
-- (web::UserAgentType)userAgentType {
-  web::NavigationItem* item = self.currentNavItem;
-  return item ? item->GetUserAgentType() : web::UserAgentType::MOBILE;
 }
 
 - (WebState*)webState {
@@ -1407,9 +1397,21 @@ typedef void (^ViewportStateCompletion)(const web::PageViewportState*);
 - (WKWebView*)webViewWithConfiguration:(WKWebViewConfiguration*)config {
   // Do not attach the context menu controller immediately as the JavaScript
   // delegate must be specified.
-  return web::BuildWKWebView(CGRectZero, config,
-                             self.webStateImpl->GetBrowserState(),
-                             [self userAgentType]);
+  web::UserAgentType defaultUserAgent =
+      base::FeatureList::IsEnabled(
+          web::features::kUseDefaultUserAgentInWebClient)
+          ? web::UserAgentType::AUTOMATIC
+          : web::UserAgentType::MOBILE;
+  web::NavigationItem* item = self.currentNavItem;
+  web::UserAgentType userAgentType =
+      item ? item->GetUserAgentType() : defaultUserAgent;
+  if (userAgentType == web::UserAgentType::AUTOMATIC) {
+    userAgentType =
+        web::GetWebClient()->GetDefaultUserAgent(_containerView, GURL());
+  }
+
+  return web::BuildWKWebView(
+      CGRectZero, config, self.webStateImpl->GetBrowserState(), userAgentType);
 }
 
 // Wraps the web view in a CRWWebViewContentView and adds it to the container

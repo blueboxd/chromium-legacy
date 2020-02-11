@@ -1807,13 +1807,6 @@ IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest, PrerenderPageNewTab) {
   NavigateToDestURLWithDisposition(WindowOpenDisposition::CURRENT_TAB, false);
 }
 
-// Checks that a prerender which calls window.close() on itself is aborted.
-IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest, PrerenderWindowClose) {
-  DisableLoadEventCheck();
-  PrerenderTestURL("/prerender/prerender_window_close.html",
-                   FINAL_STATUS_CLOSED, 0);
-}
-
 // Tests interaction between prerender and POST (i.e. POST request should still
 // be made and POST data should not be dropped when the POST target is the same
 // as a prerender link).

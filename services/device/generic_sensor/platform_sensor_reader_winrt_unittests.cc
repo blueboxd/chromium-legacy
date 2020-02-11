@@ -37,8 +37,8 @@ class FakeSensorReadingWinrt
   FakeSensorReadingWinrt(ABI::Windows::Foundation::DateTime time_stamp)
       : time_stamp_(time_stamp) {}
 
-  IFACEMETHOD(get_Timestamp)
-  (ABI::Windows::Foundation::DateTime* time_stamp) override {
+  IFACEMETHODIMP get_Timestamp(
+      ABI::Windows::Foundation::DateTime* time_stamp) override {
     *time_stamp = time_stamp_;
     return get_timestamp_return_code_;
   }
@@ -62,7 +62,7 @@ class FakeLightSensorReadingWinrt
 
   ~FakeLightSensorReadingWinrt() override = default;
 
-  IFACEMETHOD(get_IlluminanceInLux)(float* lux) override {
+  IFACEMETHODIMP get_IlluminanceInLux(float* lux) override {
     *lux = lux_;
     return get_illuminance_in_lux_return_code_;
   }
@@ -87,17 +87,17 @@ class FakeAccelerometerReadingWinrt
       : FakeSensorReadingWinrt(time_stamp), x_(x), y_(y), z_(z) {}
   ~FakeAccelerometerReadingWinrt() override = default;
 
-  IFACEMETHOD(get_AccelerationX)(double* x) override {
+  IFACEMETHODIMP get_AccelerationX(double* x) override {
     *x = x_;
     return get_x_return_code_;
   }
 
-  IFACEMETHOD(get_AccelerationY)(double* y) override {
+  IFACEMETHODIMP get_AccelerationY(double* y) override {
     *y = y_;
     return get_y_return_code_;
   }
 
-  IFACEMETHOD(get_AccelerationZ)(double* z) override {
+  IFACEMETHODIMP get_AccelerationZ(double* z) override {
     *z = z_;
     return get_z_return_code_;
   }
@@ -135,17 +135,17 @@ class FakeGyrometerReadingWinrt
       : FakeSensorReadingWinrt(time_stamp), x_(x), y_(y), z_(z) {}
   ~FakeGyrometerReadingWinrt() override = default;
 
-  IFACEMETHOD(get_AngularVelocityX)(double* x) override {
+  IFACEMETHODIMP get_AngularVelocityX(double* x) override {
     *x = x_;
     return get_x_return_code_;
   }
 
-  IFACEMETHOD(get_AngularVelocityY)(double* y) override {
+  IFACEMETHODIMP get_AngularVelocityY(double* y) override {
     *y = y_;
     return get_y_return_code_;
   }
 
-  IFACEMETHOD(get_AngularVelocityZ)(double* z) override {
+  IFACEMETHODIMP get_AngularVelocityZ(double* z) override {
     *z = z_;
     return get_z_return_code_;
   }
@@ -183,17 +183,17 @@ class FakeInclinometerReadingWinrt
       : FakeSensorReadingWinrt(time_stamp), x_(x), y_(y), z_(z) {}
   ~FakeInclinometerReadingWinrt() override = default;
 
-  IFACEMETHOD(get_PitchDegrees)(float* x) override {
+  IFACEMETHODIMP get_PitchDegrees(float* x) override {
     *x = x_;
     return get_x_return_code_;
   }
 
-  IFACEMETHOD(get_RollDegrees)(float* y) override {
+  IFACEMETHODIMP get_RollDegrees(float* y) override {
     *y = y_;
     return get_y_return_code_;
   }
 
-  IFACEMETHOD(get_YawDegrees)(float* z) override {
+  IFACEMETHODIMP get_YawDegrees(float* z) override {
     *z = z_;
     return get_z_return_code_;
   }
@@ -231,23 +231,23 @@ class FakeMagnetometerReadingWinrt
       : FakeSensorReadingWinrt(time_stamp), x_(x), y_(y), z_(z) {}
   ~FakeMagnetometerReadingWinrt() override = default;
 
-  IFACEMETHOD(get_MagneticFieldX)(float* x) override {
+  IFACEMETHODIMP get_MagneticFieldX(float* x) override {
     *x = x_;
     return get_x_return_code_;
   }
 
-  IFACEMETHOD(get_MagneticFieldY)(float* y) override {
+  IFACEMETHODIMP get_MagneticFieldY(float* y) override {
     *y = y_;
     return get_y_return_code_;
   }
 
-  IFACEMETHOD(get_MagneticFieldZ)(float* z) override {
+  IFACEMETHODIMP get_MagneticFieldZ(float* z) override {
     *z = z_;
     return get_z_return_code_;
   }
 
-  IFACEMETHOD(get_DirectionalAccuracy)
-  (ABI::Windows::Devices::Sensors::MagnetometerAccuracy*)override {
+  IFACEMETHODIMP get_DirectionalAccuracy(
+      ABI::Windows::Devices::Sensors::MagnetometerAccuracy*) override {
     return E_NOTIMPL;
   }
 
@@ -283,22 +283,22 @@ class FakeSensorQuaternion
       : w_(w), x_(x), y_(y), z_(z) {}
   ~FakeSensorQuaternion() override = default;
 
-  IFACEMETHOD(get_W)(float* w) override {
+  IFACEMETHODIMP get_W(float* w) override {
     *w = w_;
     return S_OK;
   }
 
-  IFACEMETHOD(get_X)(float* x) override {
+  IFACEMETHODIMP get_X(float* x) override {
     *x = x_;
     return S_OK;
   }
 
-  IFACEMETHOD(get_Y)(float* y) override {
+  IFACEMETHODIMP get_Y(float* y) override {
     *y = y_;
     return S_OK;
   }
 
-  IFACEMETHOD(get_Z)(float* z) override {
+  IFACEMETHODIMP get_Z(float* z) override {
     *z = z_;
     return S_OK;
   }
@@ -325,14 +325,15 @@ class FakeOrientationSensorReadingWinrt
   }
   ~FakeOrientationSensorReadingWinrt() override = default;
 
-  IFACEMETHOD(get_Quaternion)
-  (ABI::Windows::Devices::Sensors::ISensorQuaternion** quaternion) override {
+  IFACEMETHODIMP get_Quaternion(
+      ABI::Windows::Devices::Sensors::ISensorQuaternion** quaternion) override {
     quaternion_.CopyTo(quaternion);
     return S_OK;
   }
 
-  IFACEMETHOD(get_RotationMatrix)
-  (ABI::Windows::Devices::Sensors::ISensorRotationMatrix** ppMatrix) override {
+  IFACEMETHODIMP get_RotationMatrix(
+      ABI::Windows::Devices::Sensors::ISensorRotationMatrix** ppMatrix)
+      override {
     return E_NOTIMPL;
   }
 
@@ -362,8 +363,9 @@ class FakeSensorReadingChangedEventArgsWinrt
 
   ~FakeSensorReadingChangedEventArgsWinrt() override = default;
 
-  IFACEMETHOD(get_Reading)
-  (ISensorReading** reading) override { return reading_.CopyTo(reading); }
+  IFACEMETHODIMP get_Reading(ISensorReading** reading) override {
+    return reading_.CopyTo(reading);
+  }
 
  private:
   Microsoft::WRL::ComPtr<ISensorReading> reading_;
@@ -395,31 +397,33 @@ class FakeSensorWinrt
  public:
   ~FakeSensorWinrt() override = default;
 
-  IFACEMETHOD(GetCurrentReading)
-  (ISensorReading** ppReading) override { return E_NOTIMPL; }
+  IFACEMETHODIMP GetCurrentReading(ISensorReading** ppReading) override {
+    return E_NOTIMPL;
+  }
 
-  IFACEMETHOD(get_MinimumReportInterval)(UINT32* pValue) override {
+  IFACEMETHODIMP get_MinimumReportInterval(UINT32* pValue) override {
     *pValue = kExpectedMinimumReportInterval;
     return get_minimum_report_interval_return_code_;
   }
 
-  IFACEMETHOD(get_ReportInterval)(UINT32* pValue) override { return E_NOTIMPL; }
+  IFACEMETHODIMP get_ReportInterval(UINT32* pValue) override {
+    return E_NOTIMPL;
+  }
 
-  IFACEMETHOD(put_ReportInterval)(UINT32 value) override {
+  IFACEMETHODIMP put_ReportInterval(UINT32 value) override {
     EXPECT_EQ(value, kExpectedReportIntervalSet);
     return put_report_interval_return_code_;
   }
 
-  IFACEMETHOD(add_ReadingChanged)
-  (ABI::Windows::Foundation::ITypedEventHandler<Sensor*,
-                                                SensorReadingChangedEventArgs*>*
-       pHandler,
-   EventRegistrationToken* pToken) override {
+  IFACEMETHODIMP add_ReadingChanged(
+      ABI::Windows::Foundation::
+          ITypedEventHandler<Sensor*, SensorReadingChangedEventArgs*>* pHandler,
+      EventRegistrationToken* pToken) override {
     handler_ = pHandler;
     return add_reading_changed_return_code_;
   }
 
-  IFACEMETHOD(remove_ReadingChanged)(EventRegistrationToken iToken) override {
+  IFACEMETHODIMP remove_ReadingChanged(EventRegistrationToken iToken) override {
     handler_.Reset();
     return remove_reading_changed_return_code_;
   }
@@ -479,15 +483,15 @@ class FakeAccelerometerSensorWinrt
   FakeAccelerometerSensorWinrt() = default;
   ~FakeAccelerometerSensorWinrt() override = default;
 
-  IFACEMETHOD(add_Shaken)
-  (ABI::Windows::Foundation::ITypedEventHandler<
-       ABI::Windows::Devices::Sensors::Accelerometer*,
-       ABI::Windows::Devices::Sensors::AccelerometerShakenEventArgs*>*,
-   EventRegistrationToken*)override {
+  IFACEMETHODIMP add_Shaken(
+      ABI::Windows::Foundation::ITypedEventHandler<
+          ABI::Windows::Devices::Sensors::Accelerometer*,
+          ABI::Windows::Devices::Sensors::AccelerometerShakenEventArgs*>*,
+      EventRegistrationToken*) override {
     return E_NOTIMPL;
   }
 
-  IFACEMETHOD(remove_Shaken)(EventRegistrationToken) override {
+  IFACEMETHODIMP remove_Shaken(EventRegistrationToken) override {
     return E_NOTIMPL;
   }
 };
@@ -520,7 +524,7 @@ class FakeSensorFactoryWinrt
       : fake_sensor_(fake_sensor) {}
   ~FakeSensorFactoryWinrt() override = default;
 
-  IFACEMETHOD(GetDefault)(ISensor** ppResult) override {
+  IFACEMETHODIMP GetDefault(ISensor** ppResult) override {
     if (fake_sensor_ && SUCCEEDED(get_default_return_code_)) {
       return fake_sensor_.CopyTo(ppResult);
     }

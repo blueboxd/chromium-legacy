@@ -156,14 +156,12 @@ class PeopleHandler : public SettingsPageUIHandler,
   void HandleSetDatatypes(const base::ListValue* args);
   void HandleSetEncryption(const base::ListValue* args);
   void HandleShowSetupUI(const base::ListValue* args);
+  void HandleAttemptUserExit(const base::ListValue* args);
   void HandleSyncPrefsDispatch(const base::ListValue* args);
   void HandleGetIsHistoryRecordingEnabledAndCanBeUsed(
       const base::ListValue* args);
 #if defined(OS_CHROMEOS)
-  void HandleAttemptUserExit(const base::ListValue* args);
   void HandleRequestPinLoginState(const base::ListValue* args);
-  void HandleTurnOnSync(const base::ListValue* args);
-  void HandleTurnOffSync(const base::ListValue* args);
 #endif
 #if !defined(OS_CHROMEOS)
   void HandleStartSignin(const base::ListValue* args);

@@ -33,11 +33,6 @@ class DOMAIN_RELIABILITY_EXPORT DomainReliabilityContextManager {
   // that context with |beacon|. Otherwise, does nothing.
   void RouteBeacon(std::unique_ptr<DomainReliabilityBeacon> beacon);
 
-  void SetConfig(const GURL& origin,
-                 std::unique_ptr<DomainReliabilityConfig> config,
-                 base::TimeDelta max_age);
-  void ClearConfig(const GURL& origin);
-
   // Calls |ClearBeacons| on all contexts matched by |origin_filter| added
   // to this manager, but leaves the contexts themselves intact. A null
   // |origin_filter| is interpreted as an always-true filter, indicating
@@ -69,11 +64,6 @@ class DOMAIN_RELIABILITY_EXPORT DomainReliabilityContextManager {
   DomainReliabilityContext::Factory* context_factory_;
   // Owns DomainReliabilityContexts.
   ContextMap contexts_;
-  // Currently, Domain Reliability only allows header-based configuration by
-  // origins that already have baked-in configs. This is the set of origins
-  // that have removed their context (by sending "NEL: max-age=0"), so the
-  // context manager knows they are allowed to set a config again later.
-  std::unordered_set<std::string> removed_contexts_;
 
   DISALLOW_COPY_AND_ASSIGN(DomainReliabilityContextManager);
 };

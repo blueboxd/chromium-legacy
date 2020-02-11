@@ -84,6 +84,8 @@ _NEGATIVE_FILTER = [
     'ChromeDriverPageLoadTimeoutTest.testRefreshWithPageLoadTimeout',
     # testFocus is failing
     'JavaScriptTests.testFocus',
+    # For local testing only
+    'ChromeDriverTest.testForceCrash',
 ]
 
 
@@ -324,6 +326,15 @@ class ChromeDriverBaseTest(unittest.TestCase):
     if server_url is None:
       server_url = _CHROMEDRIVER_SERVER_URL
 
+    if not _ANDROID_PACKAGE_KEY and 'debugger_address' not in kwargs:
+      # Environment required for minidump not supported on Android
+      # minidumpPath will fail parsing if debugger_address is set
+      if 'experimental_options' in kwargs:
+        if 'minidumpPath' not in kwargs['experimental_options']:
+          kwargs['experimental_options']['minidumpPath'] = _MINIDUMP_PATH
+      else:
+        kwargs['experimental_options'] = {'minidumpPath': _MINIDUMP_PATH}
+
     android_package = None
     android_activity = None
     android_process = None
@@ -509,6 +520,9 @@ class ChromeDriverTest(ChromeDriverBaseTestWithWebServer):
 
   def testGetCurrentWindowHandle(self):
     self._driver.GetCurrentWindowHandle()
+
+  def testForceCrash(self):
+    self._driver.ExecuteScript("await new Promise(r => setTimeout(r, 100000));")
 
   # crbug.com/p/chromedriver/issues/detail?id=2995 exposed that some libraries
   # introduce circular function references. Functions should not be serialized
@@ -4317,6 +4331,11 @@ if __name__ == '__main__':
 
   if options.replayable and not options.log_path:
     parser.error('Need path specified when replayable log set to true.')
+
+  # When running in commit queue & waterfall, minidump will need to write to
+  # same directory as log, so use the same path
+  global _MINIDUMP_PATH
+  _MINIDUMP_PATH = os.path.dirname(options.log_path)
 
   global _CHROMEDRIVER_BINARY
   _CHROMEDRIVER_BINARY = util.GetAbsolutePathOfUserPath(options.chromedriver)

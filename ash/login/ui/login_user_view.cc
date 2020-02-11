@@ -65,6 +65,8 @@ constexpr float kOpaqueUserViewOpacity = 1.f;
 constexpr float kTransparentUserViewOpacity = 0.63f;
 constexpr float kUserFadeAnimationDurationMs = 180;
 
+constexpr char kAccountNameFontFamily[] = "Google Sans";
+
 constexpr char kUserViewClassName[] = "UserView";
 constexpr char kLoginUserImageClassName[] = "LoginUserImage";
 constexpr char kLoginUserLabelClassName[] = "LoginUserLabel";
@@ -174,22 +176,24 @@ class LoginUserView::UserLabel : public NonAccessibleView {
     user_name_->SetSubpixelRenderingEnabled(false);
     user_name_->SetAutoColorReadabilityEnabled(false);
 
-    // TODO(jdufault): Figure out the correct font.
     const gfx::FontList& base_font_list = views::Label::GetDefaultFontList();
+    const gfx::FontList font_list(
+        {kAccountNameFontFamily}, base_font_list.GetFontStyle(),
+        base_font_list.GetFontSize(), base_font_list.GetFontWeight());
 
     switch (style) {
       case LoginDisplayStyle::kLarge:
-        user_name_->SetFontList(base_font_list.Derive(
-            11, gfx::Font::FontStyle::NORMAL, gfx::Font::Weight::LIGHT));
+        user_name_->SetFontList(font_list.Derive(
+            12, gfx::Font::FontStyle::NORMAL, gfx::Font::Weight::NORMAL));
         break;
       case LoginDisplayStyle::kSmall:
-        user_name_->SetFontList(base_font_list.Derive(
-            8, gfx::Font::FontStyle::NORMAL, gfx::Font::Weight::LIGHT));
+        user_name_->SetFontList(font_list.Derive(
+            8, gfx::Font::FontStyle::NORMAL, gfx::Font::Weight::NORMAL));
         break;
       case LoginDisplayStyle::kExtraSmall:
         // TODO(jdufault): match font against spec.
-        user_name_->SetFontList(base_font_list.Derive(
-            6, gfx::Font::FontStyle::NORMAL, gfx::Font::Weight::LIGHT));
+        user_name_->SetFontList(font_list.Derive(
+            6, gfx::Font::FontStyle::NORMAL, gfx::Font::Weight::NORMAL));
         break;
     }
 

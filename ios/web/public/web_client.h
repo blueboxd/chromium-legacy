@@ -196,8 +196,8 @@ class WebClient {
   virtual bool ForceMobileVersionByDefault(const GURL& url);
 
   // Returns the UserAgentType that should be used by default for the web
-  // content, based on the size class of |web_view|.
-  virtual UserAgentType GetDefaultUserAgent(UIView* web_view);
+  // content, based on the size class of |web_view| and the |url|.
+  virtual UserAgentType GetDefaultUserAgent(UIView* web_view, const GURL& url);
 };
 
 }  // namespace web

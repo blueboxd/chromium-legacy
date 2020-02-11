@@ -198,7 +198,7 @@ public class TabContext {
             Tab currentTab = tabModelFilter.getTabAt(i);
             List<Tab> relatedTabs = tabModelFilter.getRelatedTabList(currentTab.getId());
 
-            if (relatedTabs != null && relatedTabs.size() > 1) {
+            if (relatedTabs.size() > 1) {
                 List<Tab> nonClosingTabs = getNonClosingTabs(relatedTabs);
                 existingGroups.add(new TabGroupInfo(
                         ((TabImpl) currentTab).getRootId(), createTabInfoList(nonClosingTabs)));

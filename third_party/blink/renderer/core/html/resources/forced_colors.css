@@ -10,8 +10,8 @@
 
 @media forced-colors {
   body {
-    background-color: Window;
-    color: WindowText;
+    background-color: Canvas;
+    color: CanvasText;
   }
 
   :focus {
@@ -28,7 +28,7 @@
   }
 
   fieldset {
-    border-color: WindowText;
+    border-color: CanvasText;
   }
 
   ::placeholder {
@@ -37,9 +37,9 @@
 
   input,
   textarea {
-    background: Window;
+    background: Canvas;
     border-color: ButtonText;
-    color: WindowText;
+    color: CanvasText;
   }
 
   input:hover,
@@ -82,8 +82,8 @@
   input::-webkit-datetime-edit-second-field:focus,
   input::-webkit-datetime-edit-week-field:focus,
   input::-webkit-datetime-edit-year-field:focus {
-      background-color: highlight;
-      color: highlighttext;
+      background-color: Highlight;
+      color: HighlightText;
       outline: none;
   }
 
@@ -96,7 +96,7 @@
   }
 
   input[type="color"]::-webkit-color-swatch {
-    border-color: WindowText !important;
+    border-color: CanvasText !important;
   }
 
   button,
@@ -134,7 +134,7 @@
   }
 
   select:-internal-list-box {
-    background-color: Window !important;
+    background-color: Canvas !important;
     border-color: ButtonText;
   }
 
@@ -143,7 +143,7 @@
   select:-internal-list-box option:disabled:hover,
   select:-internal-list-box:disabled option,
   select:-internal-list-box:disabled option:hover {
-    background-color: Window !important;
+    background-color: Canvas !important;
     color: GrayText !important;
   }
 
@@ -155,7 +155,7 @@
   select:-internal-list-box option:checked:hover,
   select:-internal-list-box:enabled option:checked:enabled:hover {
     background-color: Highlight !important;
-    color: Window !important;
+    color: Canvas !important;
     forced-color-adjust: none;
   }
 
@@ -167,20 +167,20 @@
   select:-internal-list-box option:checked:disabled,
   select:-internal-list-box option:checked:disabled:hover {
     background-color: GrayText !important;
-    color: Window !important;
+    color: Canvas !important;
     forced-color-adjust: none;
   }
 
   select:-internal-list-box option:hover {
     background-color: Highlight !important;
-    color: Window;
+    color: Canvas;
     forced-color-adjust: none;
   }
 
   select {
-    background: Window;
-    border-color: WindowText;
-    color: WindowText;
+    background: Canvas;
+    border-color: CanvasText;
+    color: CanvasText;
   }
 
   select:hover {
@@ -199,7 +199,7 @@
 
   meter::-webkit-meter-bar {
     background: ButtonFace;
-    border-color: WindowText;
+    border-color: CanvasText;
   }
 
   meter::-webkit-meter-even-less-good-value,

@@ -312,7 +312,7 @@ NSUInteger GetPageIndexFromPage(TabGridPage page) {
   return l10n_util::GetNSString(stringID);
 }
 
-#pragma mark - GridTransitionStateProviding properties
+#pragma mark - GridTransitionAnimationLayoutProviding properties
 
 - (BOOL)isSelectedCellVisible {
   if (self.activePage != self.currentPage)
@@ -323,8 +323,7 @@ NSUInteger GetPageIndexFromPage(TabGridPage page) {
                                    : gridViewController.selectedCellVisible;
 }
 
-- (GridTransitionLayout*)layoutForTransitionContext:
-    (id<UIViewControllerContextTransitioning>)context {
+- (GridTransitionLayout*)transitionLayout {
   GridViewController* gridViewController =
       [self gridViewControllerForPage:self.activePage];
   if (!gridViewController)
@@ -335,13 +334,11 @@ NSUInteger GetPageIndexFromPage(TabGridPage page) {
   return layout;
 }
 
-- (UIView*)proxyContainerForTransitionContext:
-    (id<UIViewControllerContextTransitioning>)context {
+- (UIView*)animationViewsContainer {
   return self.view;
 }
 
-- (UIView*)proxyPositionForTransitionContext:
-    (id<UIViewControllerContextTransitioning>)context {
+- (UIView*)animationViewsContainerBottomView {
   return self.scrollView;
 }
 

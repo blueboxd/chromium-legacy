@@ -93,10 +93,46 @@ BarcodeDetector::BarcodeDetector(ExecutionContext* context,
       WTF::Bind(&BarcodeDetector::OnConnectionError, WrapWeakPersistent(this)));
 }
 
+// static
 ScriptPromise BarcodeDetector::getSupportedFormats(ScriptState* script_state) {
   ExecutionContext* context = ExecutionContext::From(script_state);
   return BarcodeDetectorStatics::From(context)->EnumerateSupportedFormats(
       script_state);
+}
+
+// static
+String BarcodeDetector::BarcodeFormatToString(
+    const shape_detection::mojom::BarcodeFormat format) {
+  switch (format) {
+    case shape_detection::mojom::BarcodeFormat::AZTEC:
+      return "aztec";
+    case shape_detection::mojom::BarcodeFormat::CODE_128:
+      return "code_128";
+    case shape_detection::mojom::BarcodeFormat::CODE_39:
+      return "code_39";
+    case shape_detection::mojom::BarcodeFormat::CODE_93:
+      return "code_93";
+    case shape_detection::mojom::BarcodeFormat::CODABAR:
+      return "codabar";
+    case shape_detection::mojom::BarcodeFormat::DATA_MATRIX:
+      return "data_matrix";
+    case shape_detection::mojom::BarcodeFormat::EAN_13:
+      return "ean_13";
+    case shape_detection::mojom::BarcodeFormat::EAN_8:
+      return "ean_8";
+    case shape_detection::mojom::BarcodeFormat::ITF:
+      return "itf";
+    case shape_detection::mojom::BarcodeFormat::PDF417:
+      return "pdf417";
+    case shape_detection::mojom::BarcodeFormat::QR_CODE:
+      return "qr_code";
+    case shape_detection::mojom::BarcodeFormat::UNKNOWN:
+      return "unknown";
+    case shape_detection::mojom::BarcodeFormat::UPC_A:
+      return "upc_a";
+    case shape_detection::mojom::BarcodeFormat::UPC_E:
+      return "upc_e";
+  }
 }
 
 ScriptPromise BarcodeDetector::DoDetect(ScriptPromiseResolver* resolver,
@@ -131,12 +167,15 @@ void BarcodeDetector::OnDetectBarcodes(
       point->setY(corner_point.y());
       corner_points.push_back(point);
     }
-    detected_barcodes.push_back(MakeGarbageCollected<DetectedBarcode>(
-        barcode->raw_value,
-        DOMRectReadOnly::Create(
-            barcode->bounding_box.x, barcode->bounding_box.y,
-            barcode->bounding_box.width, barcode->bounding_box.height),
-        barcode->format, corner_points));
+
+    DetectedBarcode* detected_barcode = DetectedBarcode::Create();
+    detected_barcode->setRawValue(barcode->raw_value);
+    detected_barcode->setBoundingBox(DOMRectReadOnly::Create(
+        barcode->bounding_box.x, barcode->bounding_box.y,
+        barcode->bounding_box.width, barcode->bounding_box.height));
+    detected_barcode->setFormat(BarcodeFormatToString(barcode->format));
+    detected_barcode->setCornerPoints(corner_points);
+    detected_barcodes.push_back(detected_barcode);
   }
 
   resolver->Resolve(detected_barcodes);

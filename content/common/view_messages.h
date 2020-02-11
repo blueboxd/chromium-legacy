@@ -231,10 +231,6 @@ IPC_MESSAGE_ROUTED1(
     ViewHostMsg_NotifyTextAutosizerPageInfoChangedInLocalMainFrame,
     blink::WebTextAutosizerPageInfo /* page_info */)
 
-// Send back a string to be recorded by UserMetrics.
-IPC_MESSAGE_CONTROL1(ViewHostMsg_UserMetricsRecordAction,
-                     std::string /* action */)
-
 // Notifies the browser of an event occurring in the media pipeline.
 IPC_MESSAGE_CONTROL1(ViewHostMsg_MediaLogRecords,
                      std::vector<media::MediaLogRecord> /* records */)

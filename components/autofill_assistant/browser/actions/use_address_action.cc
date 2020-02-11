@@ -10,9 +10,6 @@
 #include "base/bind.h"
 #include "base/callback.h"
 #include "base/optional.h"
-#include "base/strings/string_number_conversions.h"
-#include "base/strings/stringprintf.h"
-#include "base/strings/utf_string_conversions.h"
 #include "base/time/time.h"
 #include "components/autofill/core/browser/autofill_data_util.h"
 #include "components/autofill/core/browser/data_model/autofill_profile.h"
@@ -33,15 +30,14 @@ UseAddressAction::UseAddressAction(ActionDelegate* delegate,
   std::vector<RequiredField> required_fields;
   for (const auto& required_field_proto :
        proto_.use_address().required_fields()) {
-    if (required_field_proto.address_field() ==
-        UseAddressProto::RequiredField::UNDEFINED) {
-      VLOG(1) << "address_field enum not set, skipping required field";
+    if (required_field_proto.value_expression().empty()) {
+      VLOG(1) << "no fallback filling information provided, skipping field";
       continue;
     }
 
     required_fields.emplace_back();
     RequiredField& required_field = required_fields.back();
-    required_field.fallback_key = (int)required_field_proto.address_field();
+    required_field.value_expression = required_field_proto.value_expression();
     required_field.selector = Selector(required_field_proto.element());
     required_field.simulate_key_presses =
         required_field_proto.simulate_key_presses();
@@ -125,56 +121,12 @@ void UseAddressAction::OnFormFilled(std::unique_ptr<FallbackData> fallback_data,
                      weak_ptr_factory_.GetWeakPtr()));
 }
 
-// This logic is from NameInfo::FullName.
-base::string16 FullName(const autofill::AutofillProfile& profile) {
-  return autofill::data_util::JoinNameParts(
-      profile.GetRawInfo(autofill::NAME_FIRST),
-      profile.GetRawInfo(autofill::NAME_MIDDLE),
-      profile.GetRawInfo(autofill::NAME_LAST));
-}
-
 std::unique_ptr<FallbackData> UseAddressAction::CreateFallbackData(
     const autofill::AutofillProfile& profile) {
   auto fallback_data = std::make_unique<FallbackData>();
-  fallback_data->field_values.emplace(
-      (int)UseAddressProto::RequiredField::FIRST_NAME,
-      base::UTF16ToUTF8(profile.GetRawInfo(autofill::NAME_FIRST)));
-  fallback_data->field_values.emplace(
-      (int)UseAddressProto::RequiredField::LAST_NAME,
-      base::UTF16ToUTF8(profile.GetRawInfo(autofill::NAME_LAST)));
-  fallback_data->field_values.emplace(
-      (int)UseAddressProto::RequiredField::FULL_NAME,
-      base::UTF16ToUTF8(FullName(profile)));
-  fallback_data->field_values.emplace(
-      (int)UseAddressProto::RequiredField::PHONE_NUMBER,
-      base::UTF16ToUTF8(profile.GetRawInfo(autofill::PHONE_HOME_WHOLE_NUMBER)));
-  fallback_data->field_values.emplace(
-      (int)UseAddressProto::RequiredField::EMAIL,
-      base::UTF16ToUTF8(profile.GetRawInfo(autofill::EMAIL_ADDRESS)));
-  fallback_data->field_values.emplace(
-      (int)UseAddressProto::RequiredField::ORGANIZATION,
-      base::UTF16ToUTF8(profile.GetRawInfo(autofill::COMPANY_NAME)));
-  fallback_data->field_values.emplace(
-      (int)UseAddressProto::RequiredField::COUNTRY_CODE,
-      base::UTF16ToUTF8(profile.GetRawInfo(autofill::ADDRESS_HOME_COUNTRY)));
-  fallback_data->field_values.emplace(
-      (int)UseAddressProto::RequiredField::REGION,
-      base::UTF16ToUTF8(profile.GetRawInfo(autofill::ADDRESS_HOME_STATE)));
-  fallback_data->field_values.emplace(
-      (int)UseAddressProto::RequiredField::STREET_ADDRESS,
-      base::UTF16ToUTF8(
-          profile.GetRawInfo(autofill::ADDRESS_HOME_STREET_ADDRESS)));
-  fallback_data->field_values.emplace(
-      (int)UseAddressProto::RequiredField::LOCALITY,
-      base::UTF16ToUTF8(profile.GetRawInfo(autofill::ADDRESS_HOME_CITY)));
-  fallback_data->field_values.emplace(
-      (int)UseAddressProto::RequiredField::DEPENDANT_LOCALITY,
-      base::UTF16ToUTF8(
-          profile.GetRawInfo(autofill::ADDRESS_HOME_DEPENDENT_LOCALITY)));
-  fallback_data->field_values.emplace(
-      (int)UseAddressProto::RequiredField::POSTAL_CODE,
-      base::UTF16ToUTF8(profile.GetRawInfo(autofill::ADDRESS_HOME_ZIP)));
 
+  fallback_data->AddFormGroup(profile);
   return fallback_data;
 }
+
 }  // namespace autofill_assistant

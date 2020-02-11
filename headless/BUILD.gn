@@ -826,7 +826,7 @@ jumbo_static_library("headless_shell_lib") {
 }
 
 if (is_fuchsia) {
-  fuchsia_package("headless_shell_pkg") {
+  cr_fuchsia_package("headless_shell_pkg") {
     binary = ":headless_shell"
     package_name_override = "headless_shell"
     manifest = "//build/config/fuchsia/tests.cmx"

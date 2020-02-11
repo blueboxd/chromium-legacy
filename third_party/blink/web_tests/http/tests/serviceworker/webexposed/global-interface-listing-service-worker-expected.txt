@@ -398,24 +398,6 @@ interface DecompressionStream
     getter readable
     getter writable
     method constructor
-interface DetectedBarcode
-    attribute @@toStringTag
-    getter boundingBox
-    getter cornerPoints
-    getter format
-    getter rawValue
-    method constructor
-interface DetectedFace
-    attribute @@toStringTag
-    getter boundingBox
-    getter landmarks
-    method constructor
-interface DetectedText
-    attribute @@toStringTag
-    getter boundingBox
-    getter cornerPoints
-    getter rawValue
-    method constructor
 interface ErrorEvent : Event
     attribute @@toStringTag
     getter colno

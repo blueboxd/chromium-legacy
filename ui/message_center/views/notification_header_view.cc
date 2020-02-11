@@ -384,8 +384,8 @@ void NotificationHeaderView::SetSubpixelRenderingEnabled(bool enabled) {
   timestamp_view_->SetSubpixelRenderingEnabled(enabled);
 }
 
-void NotificationHeaderView::HideAppIcon() {
-  app_icon_view_->SetVisible(false);
+void NotificationHeaderView::SetAppIconVisible(bool visible) {
+  app_icon_view_->SetVisible(visible);
 }
 
 const base::string16& NotificationHeaderView::app_name_for_testing() const {

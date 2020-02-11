@@ -349,8 +349,8 @@ LayoutObject* SliderContainerElement::CreateLayoutObject(const ComputedStyle&,
 }
 
 void SliderContainerElement::DefaultEventHandler(Event& event) {
-  if (event.IsTouchEvent()) {
-    HandleTouchEvent(ToTouchEvent(&event));
+  if (auto* touch_event = DynamicTo<TouchEvent>(event)) {
+    HandleTouchEvent(touch_event);
     return;
   }
 }

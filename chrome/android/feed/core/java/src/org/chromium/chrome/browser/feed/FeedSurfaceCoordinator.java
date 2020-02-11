@@ -9,7 +9,6 @@ import android.content.Context;
 import android.content.res.Configuration;
 import android.content.res.Resources;
 import android.graphics.Canvas;
-import android.graphics.Color;
 import android.graphics.drawable.Drawable;
 import android.os.Build;
 import android.view.LayoutInflater;
@@ -436,7 +435,8 @@ public class FeedSurfaceCoordinator {
         }
 
         mScrollViewForPolicy = new PolicyScrollView(mActivity);
-        mScrollViewForPolicy.setBackgroundColor(Color.WHITE);
+        mScrollViewForPolicy.setBackgroundColor(ApiCompatibilityUtils.getColor(
+                mActivity.getResources(), R.color.modern_primary_color));
         mScrollViewForPolicy.setVerticalScrollBarEnabled(false);
 
         // Make scroll view focusable so that it is the next focusable view when the url bar clears

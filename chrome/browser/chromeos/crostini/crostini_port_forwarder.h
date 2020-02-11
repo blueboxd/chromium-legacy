@@ -17,11 +17,21 @@ class Profile;
 
 namespace crostini {
 
+extern const char kDefaultInterfaceToForward[];
+extern const char kWlanInterface[];
+extern const char kPortNumberKey[];
+extern const char kPortProtocolKey[];
+extern const char kPortInterfaceKey[];
+extern const char kPortActiveKey[];
+extern const char kPortLabelKey[];
+extern const char kPortVmNameKey[];
+extern const char kPortContainerNameKey[];
+
 class CrostiniPortForwarder : public KeyedService {
  public:
   enum class Protocol {
-    TCP,
-    UDP,
+    TCP = 0,
+    UDP = 1,
   };
 
   struct PortRuleKey {
@@ -48,6 +58,11 @@ class CrostiniPortForwarder : public KeyedService {
   };
 
   using ResultCallback = base::OnceCallback<void(bool)>;
+
+  // The result_callback will only be called with success=true IF all conditions
+  // pass. This means a port setting has been successfully updated in the
+  // iptables and the profile preference setting has also been successfully
+  // updated.
   void ActivatePort(const ContainerId& container_id,
                     uint16_t port_number,
                     const Protocol& protocol_type,
@@ -67,6 +82,8 @@ class CrostiniPortForwarder : public KeyedService {
                   ResultCallback result_callback);
 
   size_t GetNumberOfForwardedPortsForTesting();
+  base::Optional<base::Value> ReadPortPreferenceForTesting(
+      const PortRuleKey& key);
 
   static CrostiniPortForwarder* GetForProfile(Profile* profile);
 
@@ -76,19 +93,18 @@ class CrostiniPortForwarder : public KeyedService {
  private:
   FRIEND_TEST_ALL_PREFIXES(CrostiniPortForwarderTest,
                            TryActivatePortPermissionBrokerClientFail);
-  void OnActivatePortCompleted(ResultCallback result_callback,
-                               PortRuleKey key,
-                               bool success);
-  void OnAddPortCompleted(ResultCallback result_callback,
-                          std::string label,
-                          PortRuleKey key,
-                          bool success);
-  void OnDeactivatePortCompleted(ResultCallback result_callback,
-                                 PortRuleKey key,
-                                 bool success);
-  void OnRemovePortCompleted(ResultCallback result_callback,
-                             PortRuleKey key,
-                             bool success);
+
+  bool MatchPortRuleDict(const base::Value& dict, const PortRuleKey& key);
+  void AddNewPortPreference(const PortRuleKey& key, const std::string& label);
+  bool RemovePortPreference(const PortRuleKey& key);
+  base::Optional<base::Value> ReadPortPreference(const PortRuleKey& key);
+
+  void OnAddOrActivatePortCompleted(ResultCallback result_callback,
+                                    PortRuleKey key,
+                                    bool success);
+  void OnRemoveOrDeactivatePortCompleted(ResultCallback result_callback,
+                                         PortRuleKey key,
+                                         bool success);
   void TryDeactivatePort(const PortRuleKey& key,
                          const ContainerId& container_id,
                          base::OnceCallback<void(bool)> result_callback);

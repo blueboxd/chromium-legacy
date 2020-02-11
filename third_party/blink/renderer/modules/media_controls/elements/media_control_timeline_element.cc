@@ -128,7 +128,7 @@ void MediaControlTimelineElement::DefaultEventHandler(Event& event) {
 
   // Update the value based on the touchmove event.
   if (is_touching_ && event.type() == event_type_names::kTouchmove) {
-    auto& touch_event = ToTouchEvent(event);
+    auto& touch_event = To<TouchEvent>(event);
     if (touch_event.touches()->length() != 1)
       return;
 

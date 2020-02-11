@@ -52,6 +52,7 @@ namespace content {
 
 class BrowserContext;
 class RenderFrameHost;
+class WebAuthRequestSecurityChecker;
 
 namespace client_data {
 // These enumerate the possible values for the `type` member of
@@ -204,6 +205,7 @@ class CONTENT_EXPORT AuthenticatorCommon {
   bool disable_ui_ = false;
   url::Origin caller_origin_;
   std::string relying_party_id_;
+  scoped_refptr<WebAuthRequestSecurityChecker> security_checker_;
   std::unique_ptr<base::OneShotTimer> timer_;
   base::Optional<device::AuthenticatorSelectionCriteria>
       authenticator_selection_criteria_;

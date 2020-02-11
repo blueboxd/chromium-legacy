@@ -1201,7 +1201,7 @@ scoped_refptr<VideoFrame> VideoFrame::CreateFrameInternal(
   // line up on sample boundaries. See discussion at http://crrev.com/1240833003
   const gfx::Size new_coded_size = DetermineAlignedSize(format, coded_size);
   auto layout = VideoFrameLayout::CreateWithStrides(
-      format, new_coded_size, ComputeStrides(format, coded_size));
+      format, new_coded_size, ComputeStrides(format, new_coded_size));
   if (!layout) {
     DLOG(ERROR) << "Invalid layout.";
     return nullptr;

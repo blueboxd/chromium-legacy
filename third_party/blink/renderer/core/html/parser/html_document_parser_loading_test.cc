@@ -8,7 +8,6 @@
 #include "third_party/blink/renderer/core/dom/document.h"
 #include "third_party/blink/renderer/core/testing/sim/sim_request.h"
 #include "third_party/blink/renderer/core/testing/sim/sim_test.h"
-#include "third_party/blink/renderer/platform/testing/histogram_tester.h"
 #include "third_party/blink/renderer/platform/testing/unit_test_helpers.h"
 
 namespace blink {
@@ -16,9 +15,9 @@ namespace blink {
 class HTMLDocumentParserSimTest : public SimTest {
  protected:
   HTMLDocumentParserSimTest() {
+    ResetDiscardedTokenCountForTesting();
     Document::SetThreadedParsingEnabledForTesting(true);
   }
-  HistogramTester histogram_;
 };
 
 class HTMLDocumentParserLoadingTest : public HTMLDocumentParserSimTest,
@@ -432,7 +431,7 @@ TEST_F(HTMLDocumentParserSimTest, NoRewindNoDocWrite) {
   )HTML");
 
   test::RunPendingTasks();
-  histogram_.ExpectTotalCount("Parser.DiscardedTokenCount", 0);
+  EXPECT_EQ(0U, GetDiscardedTokenCountForTesting());
 }
 
 TEST_F(HTMLDocumentParserSimTest, RewindBrokenToken) {
@@ -447,7 +446,7 @@ TEST_F(HTMLDocumentParserSimTest, RewindBrokenToken) {
   )HTML");
 
   test::RunPendingTasks();
-  histogram_.ExpectTotalCount("Parser.DiscardedTokenCount", 1);
+  EXPECT_EQ(2U, GetDiscardedTokenCountForTesting());
 }
 
 TEST_F(HTMLDocumentParserSimTest, RewindDifferentNamespace) {
@@ -462,7 +461,7 @@ TEST_F(HTMLDocumentParserSimTest, RewindDifferentNamespace) {
   )HTML");
 
   test::RunPendingTasks();
-  histogram_.ExpectTotalCount("Parser.DiscardedTokenCount", 1);
+  EXPECT_EQ(2U, GetDiscardedTokenCountForTesting());
 }
 
 TEST_F(HTMLDocumentParserSimTest, NoRewindSaneDocWrite1) {
@@ -476,7 +475,7 @@ TEST_F(HTMLDocumentParserSimTest, NoRewindSaneDocWrite1) {
       "</script>");
 
   test::RunPendingTasks();
-  histogram_.ExpectTotalCount("Parser.DiscardedTokenCount", 0);
+  EXPECT_EQ(0U, GetDiscardedTokenCountForTesting());
 }
 
 TEST_F(HTMLDocumentParserSimTest, NoRewindSaneDocWrite2) {
@@ -491,7 +490,7 @@ TEST_F(HTMLDocumentParserSimTest, NoRewindSaneDocWrite2) {
   )HTML");
 
   test::RunPendingTasks();
-  histogram_.ExpectTotalCount("Parser.DiscardedTokenCount", 0);
+  EXPECT_EQ(0U, GetDiscardedTokenCountForTesting());
 }
 
 TEST_F(HTMLDocumentParserSimTest, NoRewindSaneDocWriteWithTitle) {
@@ -511,7 +510,7 @@ TEST_F(HTMLDocumentParserSimTest, NoRewindSaneDocWriteWithTitle) {
   )HTML");
 
   test::RunPendingTasks();
-  histogram_.ExpectTotalCount("Parser.DiscardedTokenCount", 0);
+  EXPECT_EQ(0U, GetDiscardedTokenCountForTesting());
 }
 
 }  // namespace blink

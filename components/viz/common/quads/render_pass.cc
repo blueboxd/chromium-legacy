@@ -112,8 +112,9 @@ std::unique_ptr<RenderPass> RenderPass::Copy(int new_id) const {
       Create(shared_quad_state_list.size(), quad_list.size()));
   copy_pass->SetAll(new_id, output_rect, damage_rect, transform_to_root_target,
                     filters, backdrop_filters, backdrop_filter_bounds,
-                    color_space, has_transparent_background, cache_render_pass,
-                    has_damage_from_contributing_content, generate_mipmap);
+                    content_color_usage, has_transparent_background,
+                    cache_render_pass, has_damage_from_contributing_content,
+                    generate_mipmap);
   return copy_pass;
 }
 
@@ -126,8 +127,9 @@ std::unique_ptr<RenderPass> RenderPass::DeepCopy() const {
       Create(shared_quad_state_list.size(), quad_list.size()));
   copy_pass->SetAll(id, output_rect, damage_rect, transform_to_root_target,
                     filters, backdrop_filters, backdrop_filter_bounds,
-                    color_space, has_transparent_background, cache_render_pass,
-                    has_damage_from_contributing_content, generate_mipmap);
+                    content_color_usage, has_transparent_background,
+                    cache_render_pass, has_damage_from_contributing_content,
+                    generate_mipmap);
 
   if (shared_quad_state_list.empty()) {
     DCHECK(quad_list.empty());
@@ -192,7 +194,7 @@ void RenderPass::SetAll(
     const cc::FilterOperations& filters,
     const cc::FilterOperations& backdrop_filters,
     const base::Optional<gfx::RRectF>& backdrop_filter_bounds,
-    const gfx::ColorSpace& color_space,
+    gfx::ContentColorUsage content_color_usage,
     bool has_transparent_background,
     bool cache_render_pass,
     bool has_damage_from_contributing_content,
@@ -206,7 +208,7 @@ void RenderPass::SetAll(
   this->filters = filters;
   this->backdrop_filters = backdrop_filters;
   this->backdrop_filter_bounds = backdrop_filter_bounds;
-  this->color_space = color_space;
+  this->content_color_usage = content_color_usage;
   this->has_transparent_background = has_transparent_background;
   this->cache_render_pass = cache_render_pass;
   this->has_damage_from_contributing_content =
@@ -215,7 +217,6 @@ void RenderPass::SetAll(
 
   DCHECK(quad_list.empty());
   DCHECK(shared_quad_state_list.empty());
-  DCHECK(color_space.IsValid());
 }
 
 void RenderPass::AsValueInto(base::trace_event::TracedValue* value) const {

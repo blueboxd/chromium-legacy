@@ -940,7 +940,7 @@ void NGBlockNode::PlaceChildrenInLayoutBox(
   for (const auto& child_fragment : physical_fragment.Children()) {
     // Skip any line-boxes we have as children, this is handled within
     // NGInlineNode at the moment.
-    if (!child_fragment->IsBox() && !child_fragment->IsRenderedLegend())
+    if (!child_fragment->IsBox())
       continue;
 
     const auto& box_fragment = *To<NGPhysicalBoxFragment>(child_fragment.get());

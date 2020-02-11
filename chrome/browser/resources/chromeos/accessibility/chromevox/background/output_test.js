@@ -116,7 +116,7 @@ TEST_F('ChromeVoxOutputE2ETest', 'Links', function() {
     const o = new Output().withSpeechAndBraille(range, null, 'navigate');
     assertEqualsJSON(
         {
-          string_: 'Click here|Link|Press Search+Space to activate.',
+          string_: 'Click here|Link|Press Search+Space to activate',
           'spans_': [
             // Attributes.
             {value: 'name', start: 0, end: 10},
@@ -141,7 +141,7 @@ TEST_F('ChromeVoxOutputE2ETest', 'Checkbox', function() {
     const range = cursors.Range.fromNode(el);
     const o = new Output().withSpeechAndBraille(range, null, 'navigate');
     checkSpeechOutput(
-        '|Check box|Not checked|Press Search+Space to toggle.',
+        '|Check box|Not checked|Press Search+Space to toggle',
         [
           {value: new Output.EarconAction('CHECK_OFF'), start: 0, end: 0},
           {value: 'role', start: 1, end: 10},
@@ -758,7 +758,7 @@ TEST_F('ChromeVoxOutputE2ETest', 'ToggleButton', function() {
         assertEqualsJSON(
             {
               string_:
-                  '|Subscribe|Toggle Button|Pressed|Press Search+Space to toggle.',
+                  '|Subscribe|Toggle Button|Pressed|Press Search+Space to toggle',
               spans_: [
                 {value: {earconId: 'CHECK_ON'}, start: 0, end: 0},
                 {value: 'name', start: 1, end: 10},
@@ -1112,7 +1112,7 @@ TEST_F('ChromeVoxOutputE2ETest', 'ARCListItem', function() {
         const o = new Output().withRichSpeechAndBraille(
             cursors.Range.fromNode(listitem));
         assertEquals(
-            'storage 128 GB|List item|Press Search+Space to activate.',
+            'storage 128 GB|List item|Press Search+Space to activate',
             o.speechOutputForTest.string_);
         assertEquals('storage 128 GB lstitm', o.brailleOutputForTest.string_);
       });

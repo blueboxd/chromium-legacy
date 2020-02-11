@@ -116,7 +116,7 @@ bool PixelTest::RunPixelTestWithReadbackTargetAndArea(
   renderer_->DecideRenderPassAllocationsForFrame(*pass_list);
   float device_scale_factor = 1.f;
   renderer_->DrawFrame(pass_list, device_scale_factor, device_viewport_size_,
-                       gfx::DisplayColorSpaces());
+                       display_color_spaces_);
 
   // Wait for the readback to complete.
   if (output_surface_->context_provider())
@@ -147,7 +147,7 @@ bool PixelTest::RunPixelTest(viz::RenderPassList* pass_list,
   renderer_->DecideRenderPassAllocationsForFrame(*pass_list);
   float device_scale_factor = 1.f;
   renderer_->DrawFrame(pass_list, device_scale_factor, device_viewport_size_,
-                       gfx::DisplayColorSpaces());
+                       display_color_spaces_);
 
   // Wait for the readback to complete.
   if (output_surface_->context_provider())

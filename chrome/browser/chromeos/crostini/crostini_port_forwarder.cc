@@ -9,16 +9,26 @@
 #include "base/bind.h"
 #include "base/no_destructor.h"
 #include "chrome/browser/chromeos/crostini/crostini_manager.h"
+#include "chrome/browser/chromeos/crostini/crostini_pref_names.h"
 #include "chrome/browser/chromeos/crostini/crostini_util.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chromeos/dbus/permission_broker/permission_broker_client.h"
 #include "components/keyed_service/content/browser_context_dependency_manager.h"
 #include "components/keyed_service/content/browser_context_keyed_service_factory.h"
+#include "components/prefs/scoped_user_pref_update.h"
 
 namespace crostini {
 
 // Currently, we are not supporting ethernet/mlan/usb port forwarding.
-constexpr char kDefaultInterfaceToForward[] = "wlan0";
+const char kDefaultInterfaceToForward[] = "all";
+const char kWlanInterface[] = "wlan0";
+const char kPortNumberKey[] = "port_number";
+const char kPortProtocolKey[] = "protocol_type";
+const char kPortInterfaceKey[] = "input_ifname";
+const char kPortActiveKey[] = "active";
+const char kPortLabelKey[] = "label";
+const char kPortVmNameKey[] = "vm_name";
+const char kPortContainerNameKey[] = "container_name";
 
 class CrostiniPortForwarderFactory : public BrowserContextKeyedServiceFactory {
  public:
@@ -55,70 +65,83 @@ CrostiniPortForwarder* CrostiniPortForwarder::GetForProfile(Profile* profile) {
 }
 
 CrostiniPortForwarder::CrostiniPortForwarder(Profile* profile)
-    : profile_(profile) {
-  // TODO(matterchen): Profile will be used later, this is to remove warnings.
-  (void)profile_;
-}
+    : profile_(profile) {}
 
 CrostiniPortForwarder::~CrostiniPortForwarder() = default;
 
-void CrostiniPortForwarder::OnActivatePortCompleted(
+bool CrostiniPortForwarder::MatchPortRuleDict(const base::Value& dict,
+                                              const PortRuleKey& key) {
+  base::Optional<int> port_number = dict.FindIntKey(kPortNumberKey);
+  base::Optional<int> protocol_type = dict.FindIntKey(kPortProtocolKey);
+  const std::string* input_ifname = dict.FindStringKey(kPortInterfaceKey);
+  const std::string* vm_name = dict.FindStringKey(kPortVmNameKey);
+  const std::string* container_name = dict.FindStringKey(kPortContainerNameKey);
+  return (port_number && port_number.value() == key.port_number) &&
+         (protocol_type &&
+          protocol_type.value() == static_cast<int>(key.protocol_type)) &&
+         (input_ifname && *input_ifname == key.input_ifname) &&
+         (vm_name && *vm_name == key.container_id.vm_name) &&
+         (container_name && *container_name == key.container_id.container_name);
+}
+
+void CrostiniPortForwarder::AddNewPortPreference(const PortRuleKey& key,
+                                                 const std::string& label) {
+  PrefService* pref_service = profile_->GetPrefs();
+  ListPrefUpdate update(pref_service, crostini::prefs::kCrostiniPortForwarding);
+  base::ListValue* all_ports = update.Get();
+  base::Value new_port_metadata(base::Value::Type::DICTIONARY);
+  new_port_metadata.SetIntKey(kPortNumberKey, key.port_number);
+  new_port_metadata.SetIntKey(kPortProtocolKey,
+                              static_cast<int>(key.protocol_type));
+  new_port_metadata.SetStringKey(kPortInterfaceKey, kDefaultInterfaceToForward);
+  new_port_metadata.SetBoolKey(kPortActiveKey, true);
+  new_port_metadata.SetStringKey(kPortLabelKey, label);
+  new_port_metadata.SetStringKey(kPortVmNameKey, key.container_id.vm_name);
+  new_port_metadata.SetStringKey(kPortContainerNameKey,
+                                 key.container_id.container_name);
+  all_ports->Append(std::move(new_port_metadata));
+}
+
+bool CrostiniPortForwarder::RemovePortPreference(const PortRuleKey& key) {
+  PrefService* pref_service = profile_->GetPrefs();
+  ListPrefUpdate update(pref_service, crostini::prefs::kCrostiniPortForwarding);
+  base::ListValue* all_ports = update.Get();
+  base::Value::ListView list_view = all_ports->GetList();
+  auto it = std::find_if(
+      list_view.begin(), list_view.end(),
+      [&key, this](const auto& dict) { return MatchPortRuleDict(dict, key); });
+
+  return all_ports->EraseListIter(it);
+}
+
+base::Optional<base::Value> CrostiniPortForwarder::ReadPortPreference(
+    const PortRuleKey& key) {
+  PrefService* pref_service = profile_->GetPrefs();
+  ListPrefUpdate update(pref_service, crostini::prefs::kCrostiniPortForwarding);
+  base::ListValue* all_ports = update.Get();
+  auto it = std::find_if(
+      all_ports->begin(), all_ports->end(),
+      [&key, this](const auto& dict) { return MatchPortRuleDict(dict, key); });
+  if (it == all_ports->end()) {
+    return base::nullopt;
+  }
+  return base::Optional<base::Value>(it->Clone());
+}
+
+void CrostiniPortForwarder::OnAddOrActivatePortCompleted(
     ResultCallback result_callback,
     PortRuleKey key,
     bool success) {
   if (!success) {
     forwarded_ports_.erase(key);
-    LOG(ERROR) << "Failed to activate port, port preference not added: "
-               << key.port_number;
-    std::move(result_callback).Run(success);
-    return;
   }
-  // TODO(matterchen): Update current port forwarding preference.
   std::move(result_callback).Run(success);
 }
 
-void CrostiniPortForwarder::OnAddPortCompleted(ResultCallback result_callback,
-                                               std::string label,
-                                               PortRuleKey key,
-                                               bool success) {
-  if (!success) {
-    forwarded_ports_.erase(key);
-    LOG(ERROR) << "Failed to activate port, port preference not added: "
-               << key.port_number;
-    std::move(result_callback).Run(success);
-    return;
-  }
-  // TODO(matterchen): Add new port forwarding preference.
-  std::move(result_callback).Run(success);
-}
-
-void CrostiniPortForwarder::OnDeactivatePortCompleted(
+void CrostiniPortForwarder::OnRemoveOrDeactivatePortCompleted(
     ResultCallback result_callback,
     PortRuleKey key,
     bool success) {
-  if (!success) {
-    LOG(ERROR) << "Failed to deactivate port, port is still being forwarded: "
-               << key.port_number;
-    std::move(result_callback).Run(success);
-    return;
-  }
-  // TODO(matterchen): Set existing port forward preference active state ==
-  // False.
-  forwarded_ports_.erase(key);
-  std::move(result_callback).Run(success);
-}
-
-void CrostiniPortForwarder::OnRemovePortCompleted(
-    ResultCallback result_callback,
-    PortRuleKey key,
-    bool success) {
-  if (!success) {
-    LOG(ERROR) << "Failed to remove port, port is still being forwarded: "
-               << key.port_number;
-    std::move(result_callback).Run(success);
-    return;
-  }
-  // TODO(matterchen): Remove existing port forward preference.
   forwarded_ports_.erase(key);
   std::move(result_callback).Run(success);
 }
@@ -130,8 +153,8 @@ void CrostiniPortForwarder::TryActivatePort(
   auto info = CrostiniManager::GetForProfile(profile_)->GetContainerInfo(
       container_id.vm_name, container_id.container_name);
   if (!info) {
-    // TODO(matterchen): Change preferences directly (container inactive).
-    std::move(result_callback).Run(true);
+    LOG(ERROR) << "Inactive container to make port rules for.";
+    std::move(result_callback).Run(false);
     return;
   }
 
@@ -155,16 +178,17 @@ void CrostiniPortForwarder::TryActivatePort(
 
   forwarded_ports_[key] = std::move(lifeline_local);
 
+  // TODO(matterchen): Determining how to request all interfaces dynamically.
   switch (key.protocol_type) {
     case Protocol::TCP:
       client->RequestTcpPortForward(
-          key.port_number, kDefaultInterfaceToForward, info->ipv4_address,
-          key.port_number, lifeline_remote.get(), std::move(result_callback));
+          key.port_number, kWlanInterface, info->ipv4_address, key.port_number,
+          lifeline_remote.get(), std::move(result_callback));
       break;
     case Protocol::UDP:
       client->RequestUdpPortForward(
-          key.port_number, kDefaultInterfaceToForward, info->ipv4_address,
-          key.port_number, lifeline_remote.get(), std::move(result_callback));
+          key.port_number, kWlanInterface, info->ipv4_address, key.port_number,
+          lifeline_remote.get(), std::move(result_callback));
       break;
   }
 }
@@ -176,13 +200,13 @@ void CrostiniPortForwarder::TryDeactivatePort(
   auto info = CrostiniManager::GetForProfile(profile_)->GetContainerInfo(
       container_id.vm_name, container_id.container_name);
   if (!info) {
-    // TODO(matterchen): Change preferences directly (container inactive).
-    std::move(result_callback).Run(true);
+    LOG(ERROR) << "Inactive container to make port rules for.";
+    std::move(result_callback).Run(false);
     return;
   }
 
   if (forwarded_ports_.find(key) == forwarded_ports_.end()) {
-    LOG(ERROR) << "Trying to deactivate a non-active port.";
+    LOG(ERROR) << "Port is already inactive.";
     std::move(result_callback).Run(false);
     return;
   }
@@ -195,13 +219,14 @@ void CrostiniPortForwarder::TryDeactivatePort(
     return;
   }
 
+  // TODO(matterchen): Determining how to release all interfaces.
   switch (key.protocol_type) {
     case Protocol::TCP:
-      client->ReleaseTcpPortForward(key.port_number, kDefaultInterfaceToForward,
+      client->ReleaseTcpPortForward(key.port_number, kWlanInterface,
                                     std::move(result_callback));
       break;
     case Protocol::UDP:
-      client->ReleaseUdpPortForward(key.port_number, kDefaultInterfaceToForward,
+      client->ReleaseUdpPortForward(key.port_number, kWlanInterface,
                                     std::move(result_callback));
   }
 }
@@ -218,17 +243,16 @@ void CrostiniPortForwarder::AddPort(const ContainerId& container_id,
       .container_id = container_id,
   };
 
-  if (forwarded_ports_.find(new_port_key) != forwarded_ports_.end()) {
-    LOG(ERROR) << "Trying to add an already forwarded port.";
+  base::Optional<base::Value> existing_port = ReadPortPreference(new_port_key);
+  if (existing_port) {
+    LOG(ERROR) << "Trying to add port which already exists.";
     std::move(result_callback).Run(false);
     return;
   }
-
-  base::OnceCallback<void(bool)> on_add_port_completed =
-      base::BindOnce(&CrostiniPortForwarder::OnAddPortCompleted,
-                     weak_ptr_factory_.GetWeakPtr(), std::move(result_callback),
-                     label, new_port_key);
-
+  AddNewPortPreference(new_port_key, label);
+  base::OnceCallback<void(bool)> on_add_port_completed = base::BindOnce(
+      &CrostiniPortForwarder::OnAddOrActivatePortCompleted,
+      weak_ptr_factory_.GetWeakPtr(), std::move(result_callback), new_port_key);
   TryActivatePort(new_port_key, container_id, std::move(on_add_port_completed));
 }
 
@@ -236,14 +260,6 @@ void CrostiniPortForwarder::ActivatePort(const ContainerId& container_id,
                                          uint16_t port_number,
                                          const Protocol& protocol_type,
                                          ResultCallback result_callback) {
-  auto info = CrostiniManager::GetForProfile(profile_)->GetContainerInfo(
-      container_id.vm_name, container_id.container_name);
-  if (!info) {
-    // TODO(matterchen): Change preference to active.
-    std::move(result_callback).Run(true);
-    return;
-  }
-
   PortRuleKey existing_port_key = {
       .port_number = port_number,
       .protocol_type = protocol_type,
@@ -251,14 +267,22 @@ void CrostiniPortForwarder::ActivatePort(const ContainerId& container_id,
       .container_id = container_id,
   };
 
+  base::Optional<base::Value> existing_port =
+      ReadPortPreference(existing_port_key);
+  if (!existing_port) {
+    LOG(ERROR) << "Trying to activate port not found in preferences.";
+    std::move(result_callback).Run(false);
+    return;
+  }
+  // TODO(matterchen): Change preference to active.
   if (forwarded_ports_.find(existing_port_key) != forwarded_ports_.end()) {
-    LOG(ERROR) << "Trying to activate an already active port.";
+    LOG(ERROR) << "Trying to activate already active port.";
     std::move(result_callback).Run(false);
     return;
   }
 
   base::OnceCallback<void(bool)> on_activate_port_completed =
-      base::BindOnce(&CrostiniPortForwarder::OnActivatePortCompleted,
+      base::BindOnce(&CrostiniPortForwarder::OnAddOrActivatePortCompleted,
                      weak_ptr_factory_.GetWeakPtr(), std::move(result_callback),
                      existing_port_key);
 
@@ -270,14 +294,6 @@ void CrostiniPortForwarder::DeactivatePort(const ContainerId& container_id,
                                            uint16_t port_number,
                                            const Protocol& protocol_type,
                                            ResultCallback result_callback) {
-  auto info = CrostiniManager::GetForProfile(profile_)->GetContainerInfo(
-      container_id.vm_name, container_id.container_name);
-  if (!info) {
-    // TODO(matterchen): Change port preference for inactive container.
-    std::move(result_callback).Run(true);
-    return;
-  }
-
   PortRuleKey existing_port_key = {
       .port_number = port_number,
       .protocol_type = protocol_type,
@@ -285,8 +301,16 @@ void CrostiniPortForwarder::DeactivatePort(const ContainerId& container_id,
       .container_id = container_id,
   };
 
+  base::Optional<base::Value> existing_port =
+      ReadPortPreference(existing_port_key);
+  if (!existing_port) {
+    LOG(ERROR) << "Trying to deactivate port not found in preferences.";
+    std::move(result_callback).Run(false);
+    return;
+  }
+  // TODO(matterchen): Change preference to inactive.
   base::OnceCallback<void(bool)> on_deactivate_port_completed =
-      base::BindOnce(&CrostiniPortForwarder::OnDeactivatePortCompleted,
+      base::BindOnce(&CrostiniPortForwarder::OnRemoveOrDeactivatePortCompleted,
                      weak_ptr_factory_.GetWeakPtr(), std::move(result_callback),
                      existing_port_key);
 
@@ -298,9 +322,6 @@ void CrostiniPortForwarder::RemovePort(const ContainerId& container_id,
                                        uint16_t port_number,
                                        const Protocol& protocol_type,
                                        ResultCallback result_callback) {
-  // TODO(matterchen): Check if port is active in preferences, if active,
-  // deactivate port using on_remove_port_completed callback. Otherwise, just
-  // remove from preferences by calling OnRemovePortCompleted directly.
   PortRuleKey existing_port_key = {
       .port_number = port_number,
       .protocol_type = protocol_type,
@@ -308,8 +329,16 @@ void CrostiniPortForwarder::RemovePort(const ContainerId& container_id,
       .container_id = container_id,
   };
 
+  base::Optional<base::Value> existing_port =
+      ReadPortPreference(existing_port_key);
+  if (!existing_port) {
+    LOG(ERROR) << "Trying to remove port not found in preferences.";
+    std::move(result_callback).Run(false);
+    return;
+  }
+  RemovePortPreference(existing_port_key);
   base::OnceCallback<void(bool)> on_remove_port_completed =
-      base::BindOnce(&CrostiniPortForwarder::OnRemovePortCompleted,
+      base::BindOnce(&CrostiniPortForwarder::OnRemoveOrDeactivatePortCompleted,
                      weak_ptr_factory_.GetWeakPtr(), std::move(result_callback),
                      existing_port_key);
 
@@ -319,6 +348,11 @@ void CrostiniPortForwarder::RemovePort(const ContainerId& container_id,
 
 size_t CrostiniPortForwarder::GetNumberOfForwardedPortsForTesting() {
   return forwarded_ports_.size();
+}
+
+base::Optional<base::Value> CrostiniPortForwarder::ReadPortPreferenceForTesting(
+    const PortRuleKey& key) {
+  return ReadPortPreference(key);
 }
 
 }  // namespace crostini

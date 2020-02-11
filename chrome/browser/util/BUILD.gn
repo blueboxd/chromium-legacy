@@ -19,6 +19,7 @@ android_library("java") {
     "android/java/src/org/chromium/chrome/browser/util/PlatformUtil.java",
     "android/java/src/org/chromium/chrome/browser/util/UrlConstants.java",
     "android/java/src/org/chromium/chrome/browser/util/UrlUtilities.java",
+    "android/java/src/org/chromium/chrome/browser/util/VoiceRecognitionUtil.java",
   ]
   deps = [
     "//base:base_java",
@@ -45,13 +46,18 @@ android_library("javatests") {
   sources = [
     "android/java/src/org/chromium/chrome/browser/util/ChromeFileProviderTest.java",
     "android/java/src/org/chromium/chrome/browser/util/HashUtilTest.java",
+    "android/java/src/org/chromium/chrome/browser/util/VoiceRecognitionUtilTest.java",
   ]
   deps = [
     ":java",
     "//base:base_java",
+    "//base:base_java_test_support",
     "//base/test:test_support_java",
     "//chrome/test/android:chrome_java_test_support",
+    "//components/signin/core/browser/android:java",
     "//content/public/test/android:content_java_test_support",
+    "//third_party/android_sdk:android_test_mock_java",
+    "//third_party/android_support_test_runner:runner_java",
     "//third_party/junit",
     "//third_party/mockito:mockito_java",
   ]

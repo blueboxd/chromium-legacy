@@ -2541,12 +2541,6 @@ if (!is_android) {
         # chromeos does not support machine level user cloud policies
         "../browser/enterprise_reporting/report_scheduler_browsertest.cc",
         "../browser/policy/cloud/chrome_browser_cloud_management_browsertest.cc",
-
-        # TODO(1026473): Re-enable these when linux-chromeos-rel breakage is
-        # addressed.
-        "../browser/chromeos/accessibility/spoken_feedback_app_list_browsertest.cc",
-        "../browser/chromeos/accessibility/spoken_feedback_browsertest.cc",
-        "../browser/chromeos/accessibility/spoken_feedback_browsertest.h",
       ]
     } else {  # !is_chromeos
       sources -= [

@@ -27,6 +27,7 @@
 
 #include "base/memory/scoped_refptr.h"
 #include "third_party/blink/renderer/platform/transforms/transform_operation.h"
+#include "third_party/blink/renderer/platform/wtf/casting.h"
 
 namespace blink {
 
@@ -78,7 +79,12 @@ class PLATFORM_EXPORT SkewTransformOperation final : public TransformOperation {
   OperationType type_;
 };
 
-DEFINE_TRANSFORM_TYPE_CASTS(SkewTransformOperation);
+template <>
+struct DowncastTraits<SkewTransformOperation> {
+  static bool AllowFrom(const TransformOperation& transform) {
+    return SkewTransformOperation::IsMatchingOperationType(transform.GetType());
+  }
+};
 
 }  // namespace blink
 

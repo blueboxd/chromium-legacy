@@ -55,6 +55,9 @@
 #include "third_party/blink/renderer/core/page/focus_controller.h"
 #include "third_party/blink/renderer/core/page/page.h"
 #include "third_party/blink/renderer/core/scroll/scroll_into_view_params_type_converters.h"
+#include "third_party/blink/renderer/modules/accessibility/ax_menu_list.h"
+#include "third_party/blink/renderer/modules/accessibility/ax_menu_list_option.h"
+#include "third_party/blink/renderer/modules/accessibility/ax_menu_list_popup.h"
 #include "third_party/blink/renderer/modules/accessibility/ax_object_cache_impl.h"
 #include "third_party/blink/renderer/modules/accessibility/ax_range.h"
 #include "third_party/blink/renderer/modules/accessibility/ax_sparse_attribute_setter.h"
@@ -985,7 +988,7 @@ bool AXObject::AccessibilityIsIgnoredByDefault(
 }
 
 AXObjectInclusion AXObject::AccessibilityPlatformIncludesObject() const {
-  if (IsMenuListPopup() || IsMenuListOption())
+  if (IsA<AXMenuListPopup>(this) || IsA<AXMenuListOption>(this))
     return kIncludeObject;
 
   return kDefaultBehavior;

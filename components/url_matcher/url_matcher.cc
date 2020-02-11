@@ -513,7 +513,7 @@ URLMatcherCondition URLMatcherConditionFactory::CreateCondition(
   if (iter != pattern_singletons->end())
     return URLMatcherCondition(criterion, iter->first);
 
-  StringPattern* new_pattern = new StringPattern(pattern, id_counter_++);
+  StringPattern* new_pattern = new StringPattern(pattern, GetNextID());
   (*pattern_singletons)[new_pattern] = base::WrapUnique(new_pattern);
   return URLMatcherCondition(criterion, new_pattern);
 }
@@ -556,6 +556,15 @@ std::string URLMatcherConditionFactory::CanonicalizeQuery(
   if (append_end_of_query_component)
     query += kQueryComponentDelimiter;
   return query;
+}
+
+int URLMatcherConditionFactory::GetNextID() {
+  id_counter_++;
+
+  if (id_counter_ == StringPattern::kInvalidId)
+    id_counter_++;
+
+  return id_counter_;
 }
 
 bool URLMatcherConditionFactory::StringPatternPointerCompare::operator()(

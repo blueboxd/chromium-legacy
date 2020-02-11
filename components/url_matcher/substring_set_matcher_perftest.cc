@@ -8,6 +8,8 @@
 #include <string>
 #include <vector>
 
+#include "base/rand_util.h"
+#include "base/stl_util.h"
 #include "base/time/time.h"
 #include "base/timer/elapsed_timer.h"
 #include "base/trace_event/memory_usage_estimator.h"
@@ -18,36 +20,35 @@ namespace url_matcher {
 
 namespace {
 
-// Returns a character, cycling from 0 to the maximum signed char value.
-char GetCurrentChar() {
-  static char current = 0;
-  if (current == std::numeric_limits<char>::max())
-    current = 0;
-  else
-    current++;
-  return current;
+// Returns a random string of the given length using characters from 'a' to 'z'.
+std::string GetRandomString(size_t len) {
+  std::vector<char> random_chars;
+  random_chars.reserve(len);
+  for (size_t i = 0; i < len; i++)
+    random_chars.push_back(base::RandInt('a', 'z'));
+
+  return std::string(random_chars.begin(), random_chars.end());
 }
 
-// Returns a string of the given length.
-std::string GetString(size_t len) {
-  std::vector<char> pattern;
-  pattern.reserve(len);
-  for (size_t j = 0; j < len; j++)
-    pattern.push_back(GetCurrentChar());
-
-  return std::string(pattern.begin(), pattern.end());
-}
-
-// Tests performance of SubstringSetMatcher for hundred thousand keys each of
-// 100 characters.
-TEST(SubstringSetMatcherPerfTest, HundredThousandKeys) {
+// Tests performance of SubstringSetMatcher for 20000 random patterns of length
+// 30.
+TEST(SubstringSetMatcherPerfTest, RandomKeys) {
   std::vector<StringPattern> patterns;
+  std::set<std::string> pattern_strings;
 
   // Create patterns.
-  const size_t kNumPatterns = 100000;
-  const size_t kPatternLen = 100;
-  for (size_t i = 0; i < kNumPatterns; i++)
-    patterns.emplace_back(GetString(kPatternLen), i);
+  const size_t kNumPatterns = 20000;
+  const size_t kPatternLen = 30;
+  for (size_t i = 0; i < kNumPatterns; i++) {
+    std::string str = GetRandomString(kPatternLen);
+
+    // Ensure we don't have any duplicate pattern strings.
+    if (base::Contains(pattern_strings, str))
+      continue;
+
+    pattern_strings.insert(str);
+    patterns.emplace_back(str, i);
+  }
 
   base::ElapsedTimer init_timer;
 
@@ -56,18 +57,18 @@ TEST(SubstringSetMatcherPerfTest, HundredThousandKeys) {
   auto matcher = std::make_unique<SubstringSetMatcher>(patterns);
   base::TimeDelta init_time = init_timer.Elapsed();
 
-  // Match patterns against a string of 5000 characters.
-  const size_t kTextLen = 5000;
+  // Match patterns against a random string of 500 characters.
+  const size_t kTextLen = 500;
   base::ElapsedTimer match_timer;
   std::set<StringPattern::ID> matches;
-  matcher->Match(GetString(kTextLen), &matches);
+  matcher->Match(GetRandomString(kTextLen), &matches);
   base::TimeDelta match_time = match_timer.Elapsed();
 
   const char* kInitializationTime = ".init_time";
   const char* kMatchTime = ".match_time";
   const char* kMemoryUsage = ".memory_usage";
-  auto reporter = perf_test::PerfResultReporter("SubstringSetMatcher",
-                                                "HundredThousandKeys");
+  auto reporter =
+      perf_test::PerfResultReporter("SubstringSetMatcher", "RandomKeys");
   reporter.RegisterImportantMetric(kInitializationTime, "us");
   reporter.RegisterImportantMetric(kMatchTime, "us");
   reporter.RegisterImportantMetric(kMemoryUsage, "Mb");

@@ -274,8 +274,8 @@ public class RootUiCoordinator
 
     @Override
     public boolean canShowAppMenu() {
-        // TODO(https:crbug.com/931496): Eventually the ContextualSearchManager,
-        // EphemeralTabCoordinator, and FindToolbarManager will all be owned by this class.
+        // TODO(https:crbug.com/931496): Eventually the ContextualSearchManager, EphemeralTabPanel,
+        // and FindToolbarManager will all be owned by this class.
 
         // Do not show the menu if Contextual Search panel is opened.
         if (mActivity.getContextualSearchManager() != null
@@ -283,8 +283,8 @@ public class RootUiCoordinator
             return false;
         }
 
-        if (mActivity.getEphemeralTabCoordinator() != null
-                && mActivity.getEphemeralTabCoordinator().isOpened()) {
+        if (mActivity.getEphemeralTabPanel() != null
+                && mActivity.getEphemeralTabPanel().isPanelOpened()) {
             return false;
         }
 
@@ -460,6 +460,10 @@ public class RootUiCoordinator
                 if (mActivity.getContextualSearchManager() != null) {
                     mActivity.getContextualSearchManager().hideContextualSearch(
                             OverlayPanel.StateChangeReason.UNKNOWN);
+                }
+                if (mActivity.getEphemeralTabPanel() != null) {
+                    mActivity.getEphemeralTabPanel().closePanel(
+                            OverlayPanel.StateChangeReason.UNKNOWN, true);
                 }
             }
 

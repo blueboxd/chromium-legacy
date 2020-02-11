@@ -726,7 +726,7 @@ TEST_F(DisplayTest, BackdropFilterTest) {
           next_render_pass_id++, sub_surface_rect, no_damage, gfx::Transform(),
           cc::FilterOperations(), backdrop_filters,
           gfx::RRectF(gfx::RectF(sub_surface_rect), 0),
-          gfx::ColorSpace::CreateSRGB(), false, false, false, false);
+          gfx::ContentColorUsage::kSRGB, false, false, false, false);
       pass_list.push_back(std::move(bd_pass));
 
       CompositorFrame frame = CompositorFrameBuilder()

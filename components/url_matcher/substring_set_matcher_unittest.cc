@@ -10,6 +10,7 @@
 #include <string>
 #include <vector>
 
+#include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace url_matcher {
@@ -41,6 +42,7 @@ void TestTwoPatterns(const std::string& test_string,
   std::string test =
       "TestTwoPatterns(" + test_string + ", " + pattern_1 + ", " + pattern_2 +
       ", " + (is_match_1 ? "1" : "0") + ", " + (is_match_2 ? "1" : "0") + ")";
+  ASSERT_NE(pattern_1, pattern_2);
   StringPattern substring_pattern_1(pattern_1, 1);
   StringPattern substring_pattern_2(pattern_2, 2);
   // In order to make sure that the order in which patterns are registered
@@ -102,12 +104,6 @@ TEST(SubstringSetMatcherTest, TestMatcher) {
   // Pattern 2    de
   TestTwoPatterns("abcde", "ab", "de", true, true);
 
-  // Test duplicate patterns with different IDs
-  // String    abcde
-  // Pattern 1  bc
-  // Pattern 2  bc
-  TestTwoPatterns("abcde", "bc", "bc", true, true);
-
   // Test non-match
   // String    abcde
   // Pattern 1        fg
@@ -147,6 +143,29 @@ TEST(SubstringSetMatcherTest, TestMatcher2) {
   matcher = std::make_unique<SubstringSetMatcher>(
       std::vector<const StringPattern*>());
   EXPECT_TRUE(matcher->IsEmpty());
+}
+
+TEST(SubstringSetMatcherTest, TestMatcher3) {
+  std::string text = "abcde";
+
+  std::vector<StringPattern> patterns;
+  int id = 0;
+  // Add all substrings of this string, including empty string.
+  patterns.emplace_back("", id++);
+  for (size_t i = 0; i < text.length(); i++) {
+    for (size_t j = i; j < text.length(); j++) {
+      patterns.emplace_back(text.substr(i, j - i + 1), id++);
+    }
+  }
+
+  SubstringSetMatcher matcher(patterns);
+  std::set<int> matches;
+  matcher.Match(text, &matches);
+  EXPECT_EQ(patterns.size(), matches.size());
+  for (const StringPattern& pattern : patterns) {
+    EXPECT_TRUE(matches.find(pattern.id()) != matches.end())
+        << pattern.pattern();
+  }
 }
 
 TEST(SubstringSetMatcherTest, TestEmptyMatcher) {

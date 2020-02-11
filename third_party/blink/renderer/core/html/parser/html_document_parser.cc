@@ -58,7 +58,6 @@
 #include "third_party/blink/renderer/platform/bindings/v8_per_isolate_data.h"
 #include "third_party/blink/renderer/platform/heap/handle.h"
 #include "third_party/blink/renderer/platform/heap/heap.h"
-#include "third_party/blink/renderer/platform/instrumentation/histogram.h"
 #include "third_party/blink/renderer/platform/instrumentation/tracing/trace_event.h"
 #include "third_party/blink/renderer/platform/loader/fetch/resource_fetcher.h"
 #include "third_party/blink/renderer/platform/runtime_enabled_features.h"
@@ -69,6 +68,16 @@
 #include "third_party/blink/renderer/platform/wtf/shared_buffer.h"
 
 namespace blink {
+
+static size_t g_discarded_token_count_for_testing = 0;
+
+void ResetDiscardedTokenCountForTesting() {
+  g_discarded_token_count_for_testing = 0;
+}
+
+size_t GetDiscardedTokenCountForTesting() {
+  return g_discarded_token_count_for_testing;
+}
 
 // This is a direct transcription of step 4 from:
 // http://www.whatwg.org/specs/web-apps/current-work/multipage/the-end.html#fragment-case
@@ -451,10 +460,7 @@ void HTMLDocumentParser::DiscardSpeculationsAndResumeFrom(
   for (const auto& speculation : speculations_) {
     discarded_token_count += speculation->tokens.size();
   }
-  DEFINE_STATIC_LOCAL(CustomCountHistogram, discarded_token_count_histogram,
-                      ("Parser.DiscardedTokenCount", 1, 100000, 50));
-  discarded_token_count_histogram.Count(
-      base::saturated_cast<base::Histogram::Sample>(discarded_token_count));
+  g_discarded_token_count_for_testing += discarded_token_count;
 
   speculations_.clear();
   pending_csp_meta_token_ = nullptr;

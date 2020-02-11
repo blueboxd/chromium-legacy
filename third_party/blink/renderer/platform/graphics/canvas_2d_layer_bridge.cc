@@ -392,7 +392,7 @@ CanvasResourceProvider* Canvas2DLayerBridge::GetOrCreateResourceProvider(
   return resource_provider;
 }
 
-cc::PaintCanvas* Canvas2DLayerBridge::DrawingCanvas() {
+cc::PaintCanvas* Canvas2DLayerBridge::GetPaintCanvas() const {
   DCHECK(resource_host_);
   return recorder_->getRecordingCanvas();
 }
@@ -469,7 +469,7 @@ void Canvas2DLayerBridge::SetIsBeingDisplayed(bool displayed) {
 }
 
 void Canvas2DLayerBridge::DrawFullImage(const cc::PaintImage& image) {
-  DrawingCanvas()->drawImage(image, 0, 0);
+  GetPaintCanvas()->drawImage(image, 0, 0);
 }
 
 bool Canvas2DLayerBridge::WritePixels(const SkImageInfo& orig_info,

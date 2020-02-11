@@ -165,24 +165,15 @@ component("printing") {
     if (is_linux) {
       cflags += [
         # CUPS 1.6 deprecated the PPD APIs, but we will stay with this
-        # API for now as supported Linux and Mac OS'es are still using
-        # older versions of CUPS. More info: crbug.com/226176
+        # API for now as the suitability of the replacement is unclear.
+        # More info: crbug.com/226176
         "-Wno-deprecated-declarations",
-        # CUPS 1.7 deprecates httpConnectEncrypt(), see the mac section
-        # below.
       ]
     }
 
     if (is_mac) {
-      # The 10.9 SDK includes cups 1.7, which deprecates
-      # httpConnectEncrypt() in favor of httpConnect2(). hhttpConnect2()
-      # is new in 1.7, so it doesn't exist on OS X 10.6-10.8 and we
-      # can't use it until 10.9 is our minimum system version.
-      # (cups_version isn't reliable on OS X, so key the check off of
-      # mac_sdk).
-      # With a 10.8 deployment target, several other APIs are deprecated.
-      # We're still on CUPS 1.4 until Linux no longer needs to support it, see
-      # comment above.
+      # CUPS 1.6 deprecated the PPD APIs. We need to evaluate the
+      # effect of migrating Mac. More info: crbug.com/226176
       cflags += [ "-Wno-deprecated-declarations" ]
     }
 

@@ -39,7 +39,12 @@ class AXRadioInput final : public AXLayoutObject {
   DISALLOW_COPY_AND_ASSIGN(AXRadioInput);
 };
 
-DEFINE_AX_OBJECT_TYPE_CASTS(AXRadioInput, IsAXRadioInput());
+template <>
+struct DowncastTraits<AXRadioInput> {
+  static bool AllowFrom(const AXObject& object) {
+    return object.IsAXRadioInput();
+  }
+};
 
 }  // namespace blink
 

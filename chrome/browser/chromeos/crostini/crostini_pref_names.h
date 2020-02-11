@@ -32,6 +32,7 @@ extern const char kCrostiniLastLaunchTerminaComponentVersion[];
 extern const char kCrostiniLastLaunchTerminaKernelVersion[];
 extern const char kCrostiniLastLaunchTimeWindowStart[];
 extern const char kCrostiniLastDiskSize[];
+extern const char kCrostiniPortForwarding[];
 
 void RegisterProfilePrefs(PrefRegistrySimple* registry);
 

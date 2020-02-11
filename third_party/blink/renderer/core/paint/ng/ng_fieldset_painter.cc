@@ -32,11 +32,6 @@ void NGFieldsetPainter::PaintBoxDecorationBackground(
   // Paint the fieldset (background, other decorations, and) border, with the
   // cutout hole for the legend.
   PaintFieldsetDecorationBackground(legend, paint_info, paint_offset);
-
-  // Proceed to painting the legend. According to the spec, it should be done as
-  // part of the border phase.
-  if (legend)
-    PaintLegend(To<NGPhysicalBoxFragment>(**legend), paint_info);
 }
 
 void NGFieldsetPainter::PaintFieldsetDecorationBackground(
@@ -101,18 +96,6 @@ void NGFieldsetPainter::PaintFieldsetDecorationBackground(
                                  layout_object->GetDocument(), node, paint_info,
                                  contracted_rect, fieldset_.Style());
   }
-}
-
-void NGFieldsetPainter::PaintLegend(const NGPhysicalBoxFragment& legend,
-                                    const PaintInfo& paint_info) {
-  // Unless the legend establishes its own self-painting layer, paint the legend
-  // as part of the border phase, according to spec.
-  const LayoutObject* legend_object = legend.GetLayoutObject();
-  if (ToLayoutBox(legend_object)->HasSelfPaintingLayer())
-    return;
-  PaintInfo legend_paint_info = paint_info;
-  legend_paint_info.phase = PaintPhase::kForeground;
-  ObjectPainter(*legend_object).PaintAllPhasesAtomically(legend_paint_info);
 }
 
 }  // namespace blink

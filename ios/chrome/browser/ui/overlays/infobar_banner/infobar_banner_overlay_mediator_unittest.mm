@@ -93,13 +93,11 @@ TEST_F(InfobarBannerOverlayMediatorTest, ConfirmButtonTapped) {
 // for modal button taps before stopping itself.
 TEST_F(InfobarBannerOverlayMediatorTest, ModalButtonTapped) {
   // Notify the mediator of the button tap via its InfobarBannerDelegate
-  // implementation and verify that the modal button callback was executed and
-  // that the mediator's delegate was instructed to stop.
+  // implementation and verify that the modal button callback was executed.
   EXPECT_CALL(
       callback_receiver_,
       DispatchCallback(request_.get(),
                        InfobarBannerShowModalResponse::ResponseSupport()));
-  OCMExpect([delegate_ stopOverlayForMediator:mediator_]);
   [mediator_ presentInfobarModalFromBanner];
 }
 

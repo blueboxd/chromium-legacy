@@ -20,11 +20,6 @@
 class Profile;
 class UpgradeDetector;
 
-namespace ui {
-class NativeTheme;
-class ThemeProvider;
-}  // namespace ui
-
 // AppMenuIconController encapsulates the logic for badging the app menu icon
 // as a result of various events - such as available updates, errors, etc.
 class AppMenuIconController : public GlobalErrorObserver,
@@ -55,9 +50,8 @@ class AppMenuIconController : public GlobalErrorObserver,
     // |type_and_severity|.
     virtual void UpdateTypeAndSeverity(TypeAndSeverity type_and_severity) = 0;
 
-    // Accessors for properties of the View hosting the controller.
-    virtual const ui::ThemeProvider* GetViewThemeProvider() const = 0;
-    virtual ui::NativeTheme* GetViewNativeTheme() = 0;
+    // Get the appropriate colors for various severity levels.
+    virtual SkColor GetDefaultColorForSeverity(Severity severity) const = 0;
 
    protected:
     virtual ~Delegate() {}

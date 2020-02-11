@@ -91,10 +91,6 @@ constexpr float kDefaultShelfOpacity = 1.0f;
 // Delay before showing the shelf. This is after the mouse stops moving.
 constexpr int kAutoHideDelayMS = 200;
 
-// Duration of the animation to show or hide the shelf.
-constexpr base::TimeDelta kDimAnimationDuration =
-    base::TimeDelta::FromMilliseconds(1000);
-
 // To avoid hiding the shelf when the mouse transitions from a message bubble
 // into the shelf, the hit test area is enlarged by this amount of pixels to
 // keep the shelf from hiding.
@@ -1451,15 +1447,22 @@ void ShelfLayoutManager::SetDimmed(bool dimmed) {
   dimmed_for_inactivity_ = dimmed;
   CalculateTargetBoundsAndUpdateWorkArea();
 
+  const base::TimeDelta dim_animation_duration =
+      ShelfConfig::Get()->DimAnimationDuration();
+  const gfx::Tween::Type dim_animation_tween =
+      ShelfConfig::Get()->DimAnimationTween();
+
   AnimateOpacity(shelf_->navigation_widget(), target_bounds_.opacity,
-                 kDimAnimationDuration, gfx::Tween::LINEAR);
+                 dim_animation_duration, dim_animation_tween);
 
   AnimateOpacity(shelf_widget_->hotseat_widget(),
                  shelf_widget_->hotseat_widget()->CalculateOpacity(),
-                 kDimAnimationDuration, gfx::Tween::LINEAR);
+                 dim_animation_duration, dim_animation_tween);
 
   AnimateOpacity(shelf_widget_->status_area_widget(), target_bounds_.opacity,
-                 kDimAnimationDuration, gfx::Tween::LINEAR);
+                 dim_animation_duration, dim_animation_tween);
+
+  shelf_widget_->SetLoginShelfButtonOpacity(target_bounds_.opacity);
 }
 
 void ShelfLayoutManager::UpdateBoundsAndOpacity(bool animate) {

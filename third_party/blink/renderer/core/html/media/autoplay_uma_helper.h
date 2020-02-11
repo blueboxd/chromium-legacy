@@ -19,28 +19,16 @@ enum class AutoplaySource {
   kAttribute = 0,
   // Autoplay comes from `play()` method.
   kMethod = 1,
-  // Used for checking dual source.
-  kNumberOfSources = 2,
   // Both sources are used.
   kDualSource = 2,
-  // This enum value must be last.
-  kNumberOfUmaSources = 3,
+  kMaxValue = kDualSource,
 };
 
 // These values are used for histograms. Do not reorder.
 enum class AutoplayUnmuteActionStatus {
   kFailure = 0,
   kSuccess = 1,
-  kNumberOfStatus = 2,
-};
-
-// These values are used for histograms. Do not reorder.
-enum AutoplayBlockedReason {
-  kAutoplayBlockedReasonDataSaver_DEPRECATED = 0,
-  kAutoplayBlockedReasonSetting = 1,
-  kAutoplayBlockedReasonDataSaverAndSetting_DEPRECATED = 2,
-  // Keey at the end.
-  kAutoplayBlockedReasonMax = 3
+  kMaxValue = kSuccess,
 };
 
 class Document;
@@ -101,6 +89,11 @@ class CORE_EXPORT AutoplayUmaHelper : public NativeEventListener,
 
   // The autoplay sources.
   HashSet<AutoplaySource> sources_;
+
+  // |sources_| can be either contain 0, 1, or 2 distinct values. When
+  // |sources_.size() == 2|, that indicates there are dual sources responsible
+  // for autoplay.
+  static constexpr size_t kDualSourceSize = 2;
 
   // The media element this UMA helper is attached to. |element| owns |this|.
   Member<HTMLMediaElement> element_;

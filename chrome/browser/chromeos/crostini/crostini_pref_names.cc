@@ -73,11 +73,15 @@ const char kCrostiniLastLaunchTimeWindowStart[] =
     "crostini.last_launch.time_window_start";
 // The value of the last sample of the disk space used by Crostini.
 const char kCrostiniLastDiskSize[] = "crostini.last_disk_size";
+// A dictionary preference representing a user's settings of forwarded ports
+// to Crostini.
+const char kCrostiniPortForwarding[] = "crostini.port_forwarding.ports";
 
 void RegisterProfilePrefs(PrefRegistrySimple* registry) {
   registry->RegisterBooleanPref(kCrostiniEnabled, false);
   registry->RegisterDictionaryPref(kCrostiniMimeTypes);
   registry->RegisterDictionaryPref(kCrostiniRegistry);
+  registry->RegisterListPref(kCrostiniPortForwarding);
   registry->RegisterListPref(kCrostiniSharedUsbDevices);
 
   // Set a default value for crostini.containers to ensure that we track the

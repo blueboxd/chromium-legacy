@@ -141,9 +141,7 @@ class CORE_EXPORT NGLayoutResult : public RefCounted<NGLayoutResult> {
   }
 
   const LayoutUnit IntrinsicBlockSize() const {
-    DCHECK(physical_fragment_->Type() == NGPhysicalFragment::kFragmentBox ||
-           physical_fragment_->Type() ==
-               NGPhysicalFragment::kFragmentRenderedLegend);
+    DCHECK(physical_fragment_->IsBox());
     return intrinsic_block_size_;
   }
 

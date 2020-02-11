@@ -17,6 +17,7 @@
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_split.h"
 #include "base/strings/string_util.h"
+#include "base/time/time.h"
 #include "base/values.h"
 #include "printing/backend/print_backend.h"
 #include "printing/backend/print_backend_consts.h"
@@ -30,6 +31,10 @@ namespace printing {
 
 // This section contains helper code for PPD parsing for semantic capabilities.
 namespace {
+
+// Timeout for establishing a CUPS connection.  It is expected that cupsd is
+// able to start and respond on all systems within this duration.
+constexpr base::TimeDelta kCupsTimeout = base::TimeDelta::FromSeconds(5);
 
 constexpr char kColorDevice[] = "ColorDevice";
 constexpr char kColorModel[] = "ColorModel";
@@ -524,7 +529,8 @@ const int kDefaultIPPServerPort = 631;
 // Helper wrapper around http_t structure, with connection and cleanup
 // functionality.
 HttpConnectionCUPS::HttpConnectionCUPS(const GURL& print_server_url,
-                                       http_encryption_t encryption)
+                                       http_encryption_t encryption,
+                                       bool blocking)
     : http_(nullptr) {
   // If we have an empty url, use default print server.
   if (print_server_url.is_empty())
@@ -533,8 +539,11 @@ HttpConnectionCUPS::HttpConnectionCUPS(const GURL& print_server_url,
   int port = print_server_url.IntPort();
   if (port == url::PORT_UNSPECIFIED)
     port = kDefaultIPPServerPort;
+  http_ =
+      httpConnect2(print_server_url.host().c_str(), port, /*addrlist=*/nullptr,
+                   AF_UNSPEC, encryption, blocking ? 1 : 0,
+                   kCupsTimeout.InMilliseconds(), /*cancel=*/nullptr);
 
-  http_ = httpConnectEncrypt(print_server_url.host().c_str(), port, encryption);
   if (!http_) {
     LOG(ERROR) << "CP_CUPS: Failed connecting to print server: "
                << print_server_url;
@@ -544,10 +553,6 @@ HttpConnectionCUPS::HttpConnectionCUPS(const GURL& print_server_url,
 HttpConnectionCUPS::~HttpConnectionCUPS() {
   if (http_)
     httpClose(http_);
-}
-
-void HttpConnectionCUPS::SetBlocking(bool blocking) {
-  httpBlocking(http_, blocking ? 1 : 0);
 }
 
 http_t* HttpConnectionCUPS::http() {

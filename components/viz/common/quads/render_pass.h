@@ -18,7 +18,7 @@
 #include "components/viz/common/quads/draw_quad.h"
 #include "components/viz/common/quads/largest_draw_quad.h"
 #include "components/viz/common/viz_common_export.h"
-#include "ui/gfx/color_space.h"
+#include "ui/gfx/display_color_spaces.h"
 #include "ui/gfx/geometry/rect.h"
 #include "ui/gfx/rrect_f.h"
 #include "ui/gfx/transform.h"
@@ -92,7 +92,7 @@ class VIZ_COMMON_EXPORT RenderPass {
               const cc::FilterOperations& filters,
               const cc::FilterOperations& backdrop_filters,
               const base::Optional<gfx::RRectF>& backdrop_filter_bounds,
-              const gfx::ColorSpace& color_space,
+              gfx::ContentColorUsage content_color_usage,
               bool has_transparent_background,
               bool cache_render_pass,
               bool has_damage_from_contributing_content,
@@ -133,8 +133,8 @@ class VIZ_COMMON_EXPORT RenderPass {
   // Clipping bounds for backdrop filter.
   base::Optional<gfx::RRectF> backdrop_filter_bounds;
 
-  // The color space into which content will be rendered for this render pass.
-  gfx::ColorSpace color_space = gfx::ColorSpace::CreateSRGB();
+  // The type of color content present in this RenderPass.
+  gfx::ContentColorUsage content_color_usage = gfx::ContentColorUsage::kSRGB;
 
   // If false, the pixels in the render pass' texture are all opaque.
   bool has_transparent_background = true;

@@ -7,16 +7,26 @@
  * extension under test at runtime to populate testing functionality.
  */
 
+
+/**
+ * @typedef {{
+ *   attributes:Object<string>,
+ *   text:string,
+ *   styles:(Object<string>|undefined),
+ *   hidden:boolean,
+ *   hasShadowRoot: boolean,
+ *  }}
+ */
+let ElementObject;
+
 /**
  * Extract the information of the given element.
  * @param {Element} element Element to be extracted.
  * @param {Window} contentWindow Window to be tested.
  * @param {Array<string>=} opt_styleNames List of CSS property name to be
  *     obtained. NOTE: Causes element style re-calculation.
- * @return {{attributes:Object<string>, text:string,
- *           styles:(Object<string>|undefined), hidden:boolean}} Element
- *     information that contains contentText, attribute names and
- *     values, hidden attribute, and style names and values.
+ * @return {!ElementObject} Element information that contains contentText,
+ *     attribute names and values, hidden attribute, and style names and values.
  */
 function extractElementInfo(element, contentWindow, opt_styleNames) {
   const attributes = {};
@@ -170,10 +180,9 @@ test.util.sync.isWindowMaximized = contentWindow => {
  * @param {string} targetQuery Query to specify the element.
  * @param {Array<string>=} opt_styleNames List of CSS property name to be
  *     obtained.
- * @return {!Array<{attributes:Object<string>, text:string,
- *                  styles:Object<string>, hidden:boolean}>} Element
- *     information that contains contentText, attribute names and
- *     values, hidden attribute, and style names and values.
+ * @return {!Array<!ElementObject>} Element information that contains
+ *     contentText, attribute names and values, hidden attribute, and style
+ *     names and values.
  */
 test.util.sync.queryAllElements =
     (contentWindow, targetQuery, opt_styleNames) => {
@@ -190,10 +199,9 @@ test.util.sync.queryAllElements =
  *   elements inside the shadow DOM of the first element, and so on.
  * @param {Array<string>=} opt_styleNames List of CSS property name to be
  *     obtained.
- * @return {!Array<{attributes:Object<string>, text:string,
- *                  styles:Object<string>, hidden:boolean}>} Element
- *     information that contains contentText, attribute names and
- *     values, hidden attribute, and style names and values.
+ * @return {!Array<!ElementObject>} Element information that contains
+ *     contentText, attribute names and values, hidden attribute, and style
+ *     names and values.
  */
 test.util.sync.deepQueryAllElements =
     (contentWindow, targetQuery, opt_styleNames) => {
@@ -271,11 +279,9 @@ test.util.async.deepExecuteScriptInWebView =
  * @param {Window} contentWindow Window to be tested.
  * @param {Array<string>=} opt_styleNames List of CSS property name to be
  *     obtained.
- * @return {?{attributes:Object<string>, text:string,
- *                  styles:(Object<string>|undefined), hidden:boolean}} Element
- *     information that contains contentText, attribute names and
- *     values, hidden attribute, and style names and values. If there is no
- *     active element, returns null.
+ * @return {?ElementObject} Element information that contains contentText,
+ *     attribute names and values, hidden attribute, and style names and values.
+ *     If there is no active element, returns null.
  */
 test.util.sync.getActiveElement = (contentWindow, opt_styleNames) => {
   if (!contentWindow.document || !contentWindow.document.activeElement) {
@@ -293,11 +299,9 @@ test.util.sync.getActiveElement = (contentWindow, opt_styleNames) => {
  * @param {Window} contentWindow Window to be tested.
  * @param {Array<string>=} opt_styleNames List of CSS property name to be
  *     obtained.
- * @return {?{attributes:Object<string>, text:string,
- *                  styles:(Object<string>|undefined), hidden:boolean}} Element
- *     information that contains contentText, attribute names and
- *     values, hidden attribute, and style names and values. If there is no
- *     active element, returns null.
+ * @return {?ElementObject} Element information that contains contentText,
+ *     attribute names and values, hidden attribute, and style names and values.
+ *     If there is no active element, returns null.
  */
 test.util.sync.deepGetActiveElement = (contentWindow, opt_styleNames) => {
   if (!contentWindow.document || !contentWindow.document.activeElement) {

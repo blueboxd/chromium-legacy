@@ -193,7 +193,7 @@ def make_get_v8_dict_member_names_func(cg_context):
     dictionary = cg_context.dictionary
     name = "GetV8MemberNames"
     arg_decls = ["v8::Isolate* isolate"]
-    return_type = "const v8::Eternal<v8::Name>*"
+    return_type = "const base::span<const v8::Eternal<v8::Name>>"
 
     func_decl = CxxFuncDeclNode(
         name=name, arg_decls=arg_decls, return_type=return_type)
@@ -212,8 +212,7 @@ def make_get_v8_dict_member_names_func(cg_context):
     body.extend([
         TextNode(_format(pattern, _1=_1)),
         TextNode("return V8PerIsolateData::From(isolate)"
-                 "->FindOrCreateEternalNameCache("
-                 "kKeyStrings, kKeyStrings, base::size(kKeyStrings));"),
+                 "->FindOrCreateEternalNameCache(kKeyStrings, kKeyStrings);"),
     ])
 
     return func_decl, func_def
@@ -282,16 +281,17 @@ def make_fill_with_own_dict_members_func(cg_context):
     func_def.set_base_template_vars(cg_context.template_bindings())
     body = func_def.body
 
-    body.add_template_var("current_context", "current_context")
-    body.register_code_symbol(
+    body.register_code_symbols([
         SymbolNode(
             "execution_context", "ExecutionContext* ${execution_context} = "
-            "ToExecutionContext(${current_context});"))
-
-    text = """\
-const v8::Eternal<v8::Name>* member_names = GetV8MemberNames(isolate);
-v8::Local<v8::Context> ${current_context} = isolate->GetCurrentContext();"""
-    body.append(T(text))
+            "ToExecutionContext(${current_context});"),
+        SymbolNode(
+            "member_names", "const auto* ${member_names} = "
+            "GetV8MemberNames(isolate).data();"),
+        SymbolNode(
+            "current_context", "v8::Local<v8::Context> ${current_context} = "
+            "isolate->GetCurrentContext();"),
+    ])
 
     for key_index, member in enumerate(own_members):
         _1 = _blink_member_name(member).has_api
@@ -302,7 +302,7 @@ if ({_1}()) {{
   if (!v8_dictionary
            ->CreateDataProperty(
                ${current_context},
-               member_names[{_2}].Get(isolate),
+               ${member_names}[{_2}].Get(isolate),
                ToV8({_3}(), creation_context, isolate))
            .ToChecked()) {{
     return false;
@@ -464,11 +464,19 @@ def make_fill_dict_members_internal_func(cg_context):
     body = func_def.body
     body.add_template_var("isolate", "isolate")
     body.add_template_var("exception_state", "exception_state")
-    body.add_template_var("current_context", "current_context")
-    body.register_code_symbol(
+    body.register_code_symbols([
         SymbolNode(
             "execution_context", "ExecutionContext* ${execution_context} = "
-            "ToExecutionContext(${current_context});"))
+            "ToExecutionContext(${current_context});"),
+        SymbolNode(
+            "member_names", "const auto* ${member_names} = "
+            "GetV8MemberNames(${isolate}).data();"),
+        SymbolNode("try_block", "v8::TryCatch ${try_block}(${isolate});"),
+        SymbolNode(
+            "current_context", "v8::Local<v8::Context> ${current_context} = "
+            "${isolate}->GetCurrentContext();"),
+        SymbolNode("v8_value", "v8::Local<v8::Value> ${v8_value};"),
+    ])
 
     if dictionary.inherited:
         text = """\
@@ -478,15 +486,6 @@ if (${exception_state}.HadException()) {
 }
 """
         body.append(T(text))
-
-    body.extend([
-        T("const v8::Eternal<v8::Name>* member_names = "
-          "GetV8MemberNames(${isolate});"),
-        T("v8::TryCatch try_block(${isolate});"),
-        T("v8::Local<v8::Context> ${current_context} = "
-          "${isolate}->GetCurrentContext();"),
-        T("v8::Local<v8::Value> v8_value;"),
-    ])
 
     for key_index, member in enumerate(own_members):
         body.append(make_fill_own_dict_member(key_index, member))
@@ -501,16 +500,16 @@ def make_fill_own_dict_member(key_index, member):
     T = TextNode
 
     pattern = """
-if (!v8_dictionary->Get(${current_context}, member_names[{_1}].Get(${isolate}))
-         .ToLocal(&v8_value)) {{
-  ${exception_state}.RethrowV8Exception(try_block.Exception());
+if (!<% try_block %>v8_dictionary->Get(${current_context}, ${member_names}[{_1}].Get(${isolate}))
+         .ToLocal(&${v8_value})) {{
+  ${exception_state}.RethrowV8Exception(${try_block}.Exception());
   return;
 }}"""
     get_v8_value_node = T(_format(pattern, _1=key_index))
 
     api_call_node = SymbolScopeNode()
     api_call_node.register_code_symbol(
-        make_v8_to_blink_value("blink_value", "v8_value", member.idl_type))
+        make_v8_to_blink_value("blink_value", "${v8_value}", member.idl_type))
     _1 = _blink_member_name(member).set_api
     api_call_node.append(T(_format("{_1}(${blink_value});", _1=_1)))
 
@@ -523,14 +522,14 @@ ${exception_state}.ThrowTypeError(
 """
 
         check_and_fill_node = CxxIfElseNode(
-            cond="!v8_value->IsUndefined()",
+            cond="!${v8_value}->IsUndefined()",
             then=api_call_node,
             then_likeliness=Likeliness.LIKELY,
             else_=T(_format(exception_pattern, member.identifier)),
             else_likeliness=Likeliness.UNLIKELY)
     else:
         check_and_fill_node = CxxLikelyIfNode(
-            cond="!v8_value->IsUndefined()", body=api_call_node)
+            cond="!${v8_value}->IsUndefined()", body=api_call_node)
 
     node = SequenceNode([
         get_v8_value_node,
@@ -765,5 +764,5 @@ def generate_dictionary(dictionary):
 
 
 def generate_dictionaries(web_idl_database):
-    dictionary = web_idl_database.find('BasePropertyIndexedKeyframe')
+    dictionary = web_idl_database.find('EventSourceInit')
     generate_dictionary(dictionary)

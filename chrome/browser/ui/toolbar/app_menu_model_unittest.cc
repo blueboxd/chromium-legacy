@@ -22,8 +22,7 @@
 #include "chrome/test/base/testing_profile.h"
 #include "components/sync_preferences/testing_pref_service_syncable.h"
 #include "testing/gtest/include/gtest/gtest.h"
-#include "ui/base/default_theme_provider.h"
-#include "ui/native_theme/native_theme.h"
+#include "ui/gfx/color_palette.h"
 
 namespace {
 
@@ -61,15 +60,10 @@ class FakeIconDelegate : public AppMenuIconController::Delegate {
   // AppMenuIconController::Delegate:
   void UpdateTypeAndSeverity(
       AppMenuIconController::TypeAndSeverity type_and_severity) override {}
-  const ui::ThemeProvider* GetViewThemeProvider() const override {
-    return &theme_provider_;
+  SkColor GetDefaultColorForSeverity(
+      AppMenuIconController::Severity severity) const override {
+    return gfx::kPlaceholderColor;
   }
-  ui::NativeTheme* GetViewNativeTheme() override {
-    return ui::NativeTheme::GetInstanceForNativeUi();
-  }
-
- private:
-  ui::DefaultThemeProvider theme_provider_;
 };
 
 } // namespace

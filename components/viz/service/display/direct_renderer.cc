@@ -889,11 +889,19 @@ bool DirectRenderer::ShouldApplyRoundedCorner(const DrawQuad* quad) const {
 }
 
 gfx::ColorSpace DirectRenderer::RootRenderPassColorSpace() const {
-  return current_frame()->root_render_pass->color_space;
+  return current_frame()->display_color_spaces.GetOutputColorSpace(
+      current_frame()->root_render_pass->content_color_usage,
+      current_frame()->root_render_pass->has_transparent_background);
 }
 
 gfx::ColorSpace DirectRenderer::CurrentRenderPassColorSpace() const {
-  return current_frame()->current_render_pass->color_space;
+  if (current_frame()->current_render_pass ==
+      current_frame()->root_render_pass) {
+    return RootRenderPassColorSpace();
+  }
+  return current_frame()->display_color_spaces.GetCompositingColorSpace(
+      current_frame()->current_render_pass->has_transparent_background,
+      current_frame()->current_render_pass->content_color_usage);
 }
 
 }  // namespace viz

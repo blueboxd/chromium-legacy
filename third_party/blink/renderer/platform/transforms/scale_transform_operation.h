@@ -26,6 +26,7 @@
 #define THIRD_PARTY_BLINK_RENDERER_PLATFORM_TRANSFORMS_SCALE_TRANSFORM_OPERATION_H_
 
 #include "third_party/blink/renderer/platform/transforms/transform_operation.h"
+#include "third_party/blink/renderer/platform/wtf/casting.h"
 
 namespace blink {
 
@@ -99,7 +100,13 @@ class PLATFORM_EXPORT ScaleTransformOperation final
   OperationType type_;
 };
 
-DEFINE_TRANSFORM_TYPE_CASTS(ScaleTransformOperation);
+template <>
+struct DowncastTraits<ScaleTransformOperation> {
+  static bool AllowFrom(const TransformOperation& transform) {
+    return ScaleTransformOperation::IsMatchingOperationType(
+        transform.GetType());
+  }
+};
 
 }  // namespace blink
 

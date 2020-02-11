@@ -240,7 +240,12 @@ class MODULES_EXPORT AXLayoutObject : public AXNodeObject {
   DISALLOW_COPY_AND_ASSIGN(AXLayoutObject);
 };
 
-DEFINE_AX_OBJECT_TYPE_CASTS(AXLayoutObject, IsAXLayoutObject());
+template <>
+struct DowncastTraits<AXLayoutObject> {
+  static bool AllowFrom(const AXObject& object) {
+    return object.IsAXLayoutObject();
+  }
+};
 
 }  // namespace blink
 

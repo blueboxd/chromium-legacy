@@ -35,11 +35,11 @@ InfobarOverlayRequestCancelHandler::~InfobarOverlayRequestCancelHandler() =
 #pragma mark - Protected
 
 void InfobarOverlayRequestCancelHandler::HandleReplacement(
-    InfoBar* replacement) {}
+    InfoBarIOS* replacement) {}
 
 #pragma mark - Private
 
-void InfobarOverlayRequestCancelHandler::Cancel() {
+void InfobarOverlayRequestCancelHandler::CancelForInfobarRemoval() {
   CancelRequest();
 }
 
@@ -60,18 +60,19 @@ InfobarOverlayRequestCancelHandler::RemovalObserver::~RemovalObserver() =
 void InfobarOverlayRequestCancelHandler::RemovalObserver::OnInfoBarRemoved(
     infobars::InfoBar* infobar,
     bool animate) {
-  if (cancel_handler_->infobar() == infobar)
-    cancel_handler_->Cancel();
-  // The cancel handler is destroyed after Cancel(), so no code can be added
-  // after this call.
+  if (cancel_handler_->infobar() == infobar) {
+    cancel_handler_->CancelForInfobarRemoval();
+    // The cancel handler is destroyed after Cancel(), so no code can be added
+    // after this call.
+  }
 }
 
 void InfobarOverlayRequestCancelHandler::RemovalObserver::OnInfoBarReplaced(
     InfoBar* old_infobar,
     InfoBar* new_infobar) {
   if (cancel_handler_->infobar() == old_infobar) {
-    cancel_handler_->HandleReplacement(new_infobar);
-    cancel_handler_->Cancel();
+    cancel_handler_->HandleReplacement(static_cast<InfoBarIOS*>(new_infobar));
+    cancel_handler_->CancelForInfobarRemoval();
     // The cancel handler is destroyed after Cancel(), so no code can be added
     // after this call.
   }
@@ -80,7 +81,7 @@ void InfobarOverlayRequestCancelHandler::RemovalObserver::OnInfoBarReplaced(
 void InfobarOverlayRequestCancelHandler::RemovalObserver::OnManagerShuttingDown(
     infobars::InfoBarManager* manager) {
   scoped_observer_.Remove(manager);
-  cancel_handler_->Cancel();
+  cancel_handler_->CancelForInfobarRemoval();
   // The cancel handler is destroyed after Cancel(), so no code can be added
   // after this call.
 }

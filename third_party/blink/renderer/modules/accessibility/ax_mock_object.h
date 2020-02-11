@@ -52,7 +52,12 @@ class MODULES_EXPORT AXMockObject : public AXObject {
   DISALLOW_COPY_AND_ASSIGN(AXMockObject);
 };
 
-DEFINE_AX_OBJECT_TYPE_CASTS(AXMockObject, IsMockObject());
+template <>
+struct DowncastTraits<AXMockObject> {
+  static bool AllowFrom(const AXObject& object) {
+    return object.IsMockObject();
+  }
+};
 
 }  // namespace blink
 

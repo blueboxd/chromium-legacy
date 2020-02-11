@@ -390,6 +390,14 @@ int ShelfConfig::GetAppIconEndPadding() const {
              : 0;
 }
 
+base::TimeDelta ShelfConfig::DimAnimationDuration() const {
+  return base::TimeDelta::FromMilliseconds(1000);
+}
+
+gfx::Tween::Type ShelfConfig::DimAnimationTween() const {
+  return gfx::Tween::LINEAR;
+}
+
 void ShelfConfig::UpdateConfigForAccessibilityState() {
   UpdateConfig(is_app_list_visible_);
 }

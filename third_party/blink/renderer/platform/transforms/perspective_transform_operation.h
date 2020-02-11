@@ -27,6 +27,7 @@
 #define THIRD_PARTY_BLINK_RENDERER_PLATFORM_TRANSFORMS_PERSPECTIVE_TRANSFORM_OPERATION_H_
 
 #include "third_party/blink/renderer/platform/transforms/transform_operation.h"
+#include "third_party/blink/renderer/platform/wtf/casting.h"
 
 namespace blink {
 
@@ -78,7 +79,13 @@ class PLATFORM_EXPORT PerspectiveTransformOperation final
   double p_;
 };
 
-DEFINE_TRANSFORM_TYPE_CASTS(PerspectiveTransformOperation);
+template <>
+struct DowncastTraits<PerspectiveTransformOperation> {
+  static bool AllowFrom(const TransformOperation& transform) {
+    return PerspectiveTransformOperation::IsMatchingOperationType(
+        transform.GetType());
+  }
+};
 
 }  // namespace blink
 

@@ -2592,6 +2592,7 @@ generate_jni("chrome_jni_headers") {
     "java/src/org/chromium/chrome/browser/compositor/layouts/content/TabContentManager.java",
     "java/src/org/chromium/chrome/browser/compositor/resources/ResourceFactory.java",
     "java/src/org/chromium/chrome/browser/compositor/scene_layer/ContextualSearchSceneLayer.java",
+    "java/src/org/chromium/chrome/browser/compositor/scene_layer/EphemeralTabSceneLayer.java",
     "java/src/org/chromium/chrome/browser/compositor/scene_layer/SceneLayer.java",
     "java/src/org/chromium/chrome/browser/compositor/scene_layer/ScrollingBottomViewSceneLayer.java",
     "java/src/org/chromium/chrome/browser/compositor/scene_layer/StaticTabSceneLayer.java",

@@ -5,7 +5,7 @@
 #include "services/viz/public/cpp/compositing/render_pass_mojom_traits.h"
 
 #include "base/numerics/safe_conversions.h"
-#include "ui/gfx/mojom/color_space_mojom_traits.h"
+#include "ui/gfx/mojom/display_color_spaces_mojom_traits.h"
 
 namespace mojo {
 
@@ -21,7 +21,7 @@ bool StructTraits<viz::mojom::RenderPassDataView,
       !data.ReadFilters(&(*out)->filters) ||
       !data.ReadBackdropFilters(&(*out)->backdrop_filters) ||
       !data.ReadBackdropFilterBounds(&(*out)->backdrop_filter_bounds) ||
-      !data.ReadColorSpace(&(*out)->color_space) ||
+      !data.ReadContentColorUsage(&(*out)->content_color_usage) ||
       !data.ReadCopyRequests(&(*out)->copy_requests)) {
     return false;
   }

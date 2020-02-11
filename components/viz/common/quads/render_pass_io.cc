@@ -1772,7 +1772,11 @@ base::Value RenderPassToDict(const RenderPass& render_pass) {
                 RRectFToDict(render_pass.backdrop_filter_bounds.value()));
   }
   if (ProcessRenderPassField(kRenderPassColorSpace)) {
-    dict.SetKey("color_space", ColorSpaceToDict(render_pass.color_space));
+    // RenderPasses used to have a color space field, but this was removed in
+    // favor of color usage.
+    // https://crbug.com/1049334
+    gfx::ColorSpace render_pass_color_space = gfx::ColorSpace::CreateSRGB();
+    dict.SetKey("color_space", ColorSpaceToDict(render_pass_color_space));
   }
   if (ProcessRenderPassField(kRenderPassHasTransparentBackground)) {
     dict.SetBoolKey("has_transparent_background",
@@ -1875,7 +1879,11 @@ std::unique_ptr<RenderPass> RenderPassFromDict(const base::Value& dict) {
     if (!color_space)
       return nullptr;
 
-    if (!ColorSpaceFromDict(*color_space, &(pass->color_space)))
+    // RenderPasses used to have a color space field, but this was removed in
+    // favor of color usage.
+    // https://crbug.com/1049334
+    gfx::ColorSpace pass_color_space = gfx::ColorSpace::CreateSRGB();
+    if (!ColorSpaceFromDict(*color_space, &pass_color_space))
       return nullptr;
   }
 

@@ -712,16 +712,17 @@ TEST_F(StructTraitsTest, RenderPass) {
   backdrop_filters.Append(cc::FilterOperation::CreateSaturateFilter(2.f));
   base::Optional<gfx::RRectF> backdrop_filter_bounds(
       {10, 20, 130, 140, 1, 2, 3, 4, 5, 6, 7, 8});
-  gfx::ColorSpace color_space = gfx::ColorSpace::CreateXYZD50();
+  gfx::ContentColorUsage content_color_usage = gfx::ContentColorUsage::kHDR;
   const bool has_transparent_background = true;
   const bool cache_render_pass = true;
   const bool has_damage_from_contributing_content = true;
   const bool generate_mipmap = true;
   std::unique_ptr<RenderPass> input = RenderPass::Create();
   input->SetAll(render_pass_id, output_rect, damage_rect, transform_to_root,
-                filters, backdrop_filters, backdrop_filter_bounds, color_space,
-                has_transparent_background, cache_render_pass,
-                has_damage_from_contributing_content, generate_mipmap);
+                filters, backdrop_filters, backdrop_filter_bounds,
+                content_color_usage, has_transparent_background,
+                cache_render_pass, has_damage_from_contributing_content,
+                generate_mipmap);
   input->copy_requests.push_back(CopyOutputRequest::CreateStubForTesting());
   const gfx::Rect copy_output_area(24, 42, 75, 57);
   input->copy_requests.back()->set_area(copy_output_area);
@@ -782,7 +783,7 @@ TEST_F(StructTraitsTest, RenderPass) {
   EXPECT_EQ(output_rect, output->output_rect);
   EXPECT_EQ(damage_rect, output->damage_rect);
   EXPECT_EQ(transform_to_root, output->transform_to_root_target);
-  EXPECT_EQ(color_space, output->color_space);
+  EXPECT_EQ(content_color_usage, output->content_color_usage);
   EXPECT_EQ(has_transparent_background, output->has_transparent_background);
   EXPECT_EQ(filters, output->filters);
   EXPECT_EQ(backdrop_filters, output->backdrop_filters);
@@ -860,9 +861,7 @@ TEST_F(StructTraitsTest, RenderPassWithEmptySharedQuadStateList) {
   const gfx::Transform transform_to_root =
       gfx::Transform(1.0, 0.5, 0.5, -0.5, -1.0, 0.0);
   const base::Optional<gfx::RRectF> backdrop_filter_bounds;
-  skcms_Matrix3x3 to_XYZD50 = SkNamedGamut::kXYZ;
-  skcms_TransferFunction fn = {1, 0, 1, 0, 0, 0, 1};
-  gfx::ColorSpace color_space = gfx::ColorSpace::CreateCustom(to_XYZD50, fn);
+  gfx::ContentColorUsage content_color_usage = gfx::ContentColorUsage::kHDR;
   const bool has_transparent_background = true;
   const bool cache_render_pass = false;
   const bool has_damage_from_contributing_content = false;
@@ -870,9 +869,9 @@ TEST_F(StructTraitsTest, RenderPassWithEmptySharedQuadStateList) {
   std::unique_ptr<RenderPass> input = RenderPass::Create();
   input->SetAll(render_pass_id, output_rect, damage_rect, transform_to_root,
                 cc::FilterOperations(), cc::FilterOperations(),
-                backdrop_filter_bounds, color_space, has_transparent_background,
-                cache_render_pass, has_damage_from_contributing_content,
-                generate_mipmap);
+                backdrop_filter_bounds, content_color_usage,
+                has_transparent_background, cache_render_pass,
+                has_damage_from_contributing_content, generate_mipmap);
 
   // Unlike the previous test, don't add any quads to the list; we need to
   // verify that the serialization code can deal with that.
@@ -887,8 +886,8 @@ TEST_F(StructTraitsTest, RenderPassWithEmptySharedQuadStateList) {
   EXPECT_EQ(damage_rect, output->damage_rect);
   EXPECT_EQ(transform_to_root, output->transform_to_root_target);
   EXPECT_EQ(backdrop_filter_bounds, output->backdrop_filter_bounds);
+  EXPECT_EQ(content_color_usage, output->content_color_usage);
   EXPECT_EQ(has_transparent_background, output->has_transparent_background);
-  EXPECT_EQ(color_space, output->color_space);
 }
 
 TEST_F(StructTraitsTest, QuadListBasic) {

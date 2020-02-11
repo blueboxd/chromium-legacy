@@ -865,7 +865,8 @@ void SplitViewController::OnOverviewButtonTrayLongPressed(
   if (!overview_controller->InOverviewSession()) {
     // If we are not in overview mode, enter overview mode and then find the
     // window item to snap.
-    overview_controller->StartOverview();
+    overview_controller->StartOverview(
+        OverviewSession::EnterExitOverviewType::kImmediateEnter);
   } else {
     // If we are already in overview, do nothing if there is one window or less.
     OverviewSession* overview_session = overview_controller->overview_session();

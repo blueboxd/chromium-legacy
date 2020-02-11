@@ -82,10 +82,9 @@ class ASH_EXPORT OverviewSession : public display::DisplayObserver,
     kSwipeFromShelf,
     // Used only when it's desired to enter overview mode immediately without
     // animations. It's used when entering overview by dragging a window from
-    // the top of the screen or from the shelf. It's also used when entering
-    // overview to avoid the blatantly broken behaviors shown in the videos
-    // linked in https://crbug.com/1027179. This should not be used for exiting
-    // overview mode.
+    // the top of the screen or from the shelf, or by long pressing the overview
+    // button tray. It's also used to address https://crbug.com/1027179. This
+    // should not be used for exiting overview mode.
     kImmediateEnter,
     // Used only when it's desired to exit overview mode immediately without
     // animations. This is used when performing the desk switch animation when

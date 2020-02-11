@@ -58,7 +58,7 @@ void OverlayProcessorWin::ProcessForOverlays(
   // Skip overlay processing if output colorspace is HDR.
   // Since Overlay only supports NV12 and YUY2 now, HDR content (usually P010
   // format) cannot output through overlay without format degrading.
-  if (root_render_pass->color_space.IsHDR())
+  if (root_render_pass->content_color_usage == gfx::ContentColorUsage::kHDR)
     return;
 
   if (!enable_dc_overlay_)

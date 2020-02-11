@@ -202,6 +202,10 @@ const base::Feature kParentalControlsSettings{
 const base::Feature kQuickAnswers{"QuickAnswers",
                                   base::FEATURE_DISABLED_BY_DEFAULT};
 
+// Controls whether to enable quick answers rich ui.
+const base::Feature kQuickAnswersRichUi{"QuickAnswersRichUi",
+                                        base::FEATURE_DISABLED_BY_DEFAULT};
+
 // ChromeOS Files App mounts RAR archives via rar2fs instead of avfs.
 // https://crbug.com/996549
 const base::Feature kRar2Fs{"Rar2Fs", base::FEATURE_DISABLED_BY_DEFAULT};
@@ -316,6 +320,10 @@ bool IsParentalControlsSettingsEnabled() {
 
 bool IsQuickAnswersEnabled() {
   return base::FeatureList::IsEnabled(kQuickAnswers);
+}
+
+bool IsQuickAnswersRichUiEnabled() {
+  return base::FeatureList::IsEnabled(kQuickAnswersRichUi);
 }
 
 bool IsSplitSettingsSyncEnabled() {

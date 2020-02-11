@@ -104,6 +104,7 @@ class PixelTest : public testing::Test {
 
   viz::RendererSettings renderer_settings_;
   gfx::Size device_viewport_size_;
+  gfx::DisplayColorSpaces display_color_spaces_;
   bool disable_picture_quad_image_filtering_;
   std::unique_ptr<FakeOutputSurfaceClient> output_surface_client_;
   std::unique_ptr<viz::OutputSurface> output_surface_;

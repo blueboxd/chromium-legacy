@@ -726,8 +726,7 @@ int PrintSystemCUPS::PrintFile(const GURL& url,
   if (url.is_empty())
     return cupsPrintFile(name, filename, title, num_options, options);
 
-  printing::HttpConnectionCUPS http(url, encryption);
-  http.SetBlocking(false);
+  printing::HttpConnectionCUPS http(url, encryption, /*blocking=*/false);
   return cupsPrintFile2(http.http(), name, filename, title, num_options,
                         options);
 }
@@ -743,8 +742,7 @@ int PrintSystemCUPS::GetJobs(cups_job_t** jobs,
   if (url.is_empty())
     return cupsGetJobs(jobs, name, myjobs, whichjobs);
 
-  printing::HttpConnectionCUPS http(url, encryption);
-  http.SetBlocking(false);
+  printing::HttpConnectionCUPS http(url, encryption, /*blocking=*/false);
   return cupsGetJobs2(http.http(), jobs, name, myjobs, whichjobs);
 }
 

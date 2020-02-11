@@ -476,6 +476,11 @@ views::View* ShelfWidget::GetDragHandle() {
   return delegate_view_->drag_handle();
 }
 
+void ShelfWidget::SetLoginShelfButtonOpacity(float target_opacity) {
+  if (login_shelf_view_->GetVisible())
+    login_shelf_view_->SetButtonOpacity(target_opacity);
+}
+
 void ShelfWidget::ForceToHideHotseat() {
   if (!is_hotseat_forced_to_show_)
     return;
@@ -731,10 +736,12 @@ void ShelfWidget::OnSessionStateChanged(session_manager::SessionState state) {
 
     ShowIfHidden();
   }
+  shelf_layout_manager_->SetDimmed(false);
   login_shelf_view_->UpdateAfterSessionChange();
 }
 
 void ShelfWidget::OnUserSessionAdded(const AccountId& account_id) {
+  shelf_layout_manager_->SetDimmed(false);
   login_shelf_view_->UpdateAfterSessionChange();
 }
 

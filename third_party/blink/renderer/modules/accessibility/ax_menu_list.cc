@@ -79,7 +79,7 @@ void AXMenuList::AddChildren() {
   if (!popup)
     return;
 
-  ToAXMockObject(popup)->SetParent(this);
+  To<AXMockObject>(popup)->SetParent(this);
   if (!popup->AccessibilityIsIncludedInTree()) {
     cache.Remove(popup->AXObjectID());
     return;
@@ -114,12 +114,10 @@ void AXMenuList::DidUpdateActiveOption(int option_index) {
     const auto& child_objects = Children();
     if (!child_objects.IsEmpty()) {
       DCHECK_EQ(child_objects.size(), 1ul);
-      DCHECK(child_objects[0]->IsMenuListPopup());
+      DCHECK(IsA<AXMenuListPopup>(child_objects[0].Get()));
 
-      if (child_objects[0]->IsMenuListPopup()) {
-        if (AXMenuListPopup* popup = ToAXMenuListPopup(child_objects[0].Get()))
-          popup->DidUpdateActiveOption(option_index, !suppress_notifications);
-      }
+      if (auto* popup = DynamicTo<AXMenuListPopup>(child_objects[0].Get()))
+        popup->DidUpdateActiveOption(option_index, !suppress_notifications);
     }
   }
 
@@ -131,7 +129,7 @@ void AXMenuList::DidShowPopup() {
   if (Children().size() != 1)
     return;
 
-  AXMenuListPopup* popup = ToAXMenuListPopup(Children()[0].Get());
+  auto* popup = To<AXMenuListPopup>(Children()[0].Get());
   popup->DidShow();
 }
 
@@ -139,7 +137,7 @@ void AXMenuList::DidHidePopup() {
   if (Children().size() != 1)
     return;
 
-  AXMenuListPopup* popup = ToAXMenuListPopup(Children()[0].Get());
+  auto* popup = To<AXMenuListPopup>(Children()[0].Get());
   popup->DidHide();
 
   if (GetNode() && GetNode()->IsFocused())

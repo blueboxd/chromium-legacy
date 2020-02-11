@@ -436,7 +436,8 @@ WRAPPED_INSTANTIATE_TEST_SUITE_P(
         TestCase("checkDeleteEnabledInDocProvider").EnableDocumentsProvider(),
         TestCase("checkRenameDisabledInDocProvider").EnableDocumentsProvider(),
         TestCase("checkRenameEnabledInDocProvider").EnableDocumentsProvider(),
-        TestCase("checkContextMenuFocus")));
+        TestCase("checkContextMenuFocus"),
+        TestCase("checkContextMenusForInputElements")));
 
 WRAPPED_INSTANTIATE_TEST_SUITE_P(
     Toolbar, /* toolbar.js */

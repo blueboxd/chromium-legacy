@@ -51,7 +51,6 @@ class CORE_EXPORT NGPhysicalFragment
     kFragmentBox = 0,
     kFragmentText = 1,
     kFragmentLineBox = 2,
-    kFragmentRenderedLegend = 3,
     // When adding new values, make sure the bit size of |type_| is large
     // enough to store.
   };
@@ -65,6 +64,7 @@ class CORE_EXPORT NGPhysicalFragment
     kFloating,
     kOutOfFlowPositioned,
     kBlockFlowRoot,
+    kRenderedLegend,
     // When adding new values, make sure the bit size of |sub_type_| is large
     // enough to store.
 
@@ -79,18 +79,11 @@ class CORE_EXPORT NGPhysicalFragment
   NGFragmentType Type() const { return static_cast<NGFragmentType>(type_); }
   bool IsContainer() const {
     return Type() == NGFragmentType::kFragmentBox ||
-           Type() == NGFragmentType::kFragmentLineBox ||
-           Type() == NGFragmentType::kFragmentRenderedLegend;
+           Type() == NGFragmentType::kFragmentLineBox;
   }
   bool IsBox() const { return Type() == NGFragmentType::kFragmentBox; }
   bool IsText() const { return Type() == NGFragmentType::kFragmentText; }
   bool IsLineBox() const { return Type() == NGFragmentType::kFragmentLineBox; }
-
-  // Return true if this is the legend child of a fieldset that gets special
-  // treatment (i.e. placed over the block-start border).
-  bool IsRenderedLegend() const {
-    return Type() == NGFragmentType::kFragmentRenderedLegend;
-  }
 
   // Returns the box type of this fragment.
   NGBoxType BoxType() const {
@@ -122,6 +115,11 @@ class CORE_EXPORT NGPhysicalFragment
   }
   bool IsFloatingOrOutOfFlowPositioned() const {
     return IsFloating() || IsOutOfFlowPositioned();
+  }
+  // Return true if this is the legend child of a fieldset that gets special
+  // treatment (i.e. placed over the block-start border).
+  bool IsRenderedLegend() const {
+    return IsBox() && BoxType() == NGBoxType::kRenderedLegend;
   }
 
   // Return true if this fragment corresponds directly to an entry in the CSS

@@ -109,6 +109,7 @@
 #include "content/browser/web_package/web_bundle_source.h"
 #include "content/browser/webauth/authenticator_environment_impl.h"
 #include "content/browser/webauth/authenticator_impl.h"
+#include "content/browser/webauth/webauth_request_security_checker.h"
 #include "content/browser/websockets/websocket_connector_impl.h"
 #include "content/browser/webtransport/quic_transport_connector_impl.h"
 #include "content/browser/webui/url_data_manager_backend.h"
@@ -8296,6 +8297,46 @@ void RenderFrameHostImpl::UpdateAdFrameType(
   frame_tree_node_->SetAdFrameType(ad_frame_type);
 }
 
+blink::mojom::AuthenticatorStatus
+RenderFrameHostImpl::PerformGetAssertionWebAuthSecurityChecks(
+    const std::string& relying_party_id) {
+  bool is_cross_origin;
+  blink::mojom::AuthenticatorStatus status =
+      GetWebAuthRequestSecurityChecker()->ValidateAncestorOrigins(
+          GetLastCommittedOrigin(), &is_cross_origin);
+  if (status != blink::mojom::AuthenticatorStatus::SUCCESS) {
+    return status;
+  }
+
+  status = GetWebAuthRequestSecurityChecker()->ValidateDomainAndRelyingPartyID(
+      GetLastCommittedOrigin(), relying_party_id);
+  if (status != blink::mojom::AuthenticatorStatus::SUCCESS) {
+    return status;
+  }
+
+  return blink::mojom::AuthenticatorStatus::SUCCESS;
+}
+
+blink::mojom::AuthenticatorStatus
+RenderFrameHostImpl::PerformMakeCredentialWebAuthSecurityChecks(
+    const std::string& relying_party_id) {
+  bool is_cross_origin;
+  blink::mojom::AuthenticatorStatus status =
+      GetWebAuthRequestSecurityChecker()->ValidateAncestorOrigins(
+          GetLastCommittedOrigin(), &is_cross_origin);
+  if (status != blink::mojom::AuthenticatorStatus::SUCCESS) {
+    return status;
+  }
+
+  status = GetWebAuthRequestSecurityChecker()->ValidateDomainAndRelyingPartyID(
+      GetLastCommittedOrigin(), relying_party_id);
+  if (status != blink::mojom::AuthenticatorStatus::SUCCESS) {
+    return status;
+  }
+
+  return blink::mojom::AuthenticatorStatus::SUCCESS;
+}
+
 void RenderFrameHostImpl::IsClipboardPasteAllowed(
     const ui::ClipboardFormatType& data_type,
     const std::string& data,
@@ -8317,6 +8358,15 @@ RenderFrameHostImpl* RenderFrameHostImpl::ParentOrOuterDelegateFrame() {
 
   // No parent found.
   return nullptr;
+}
+
+scoped_refptr<WebAuthRequestSecurityChecker>
+RenderFrameHostImpl::GetWebAuthRequestSecurityChecker() {
+  if (!webauth_request_security_checker_)
+    webauth_request_security_checker_ =
+        base::MakeRefCounted<WebAuthRequestSecurityChecker>(this);
+
+  return webauth_request_security_checker_;
 }
 
 }  // namespace content

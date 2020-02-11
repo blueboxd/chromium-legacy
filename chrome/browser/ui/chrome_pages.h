@@ -55,6 +55,7 @@ enum FeedbackSource {
   kFeedbackSourceSupervisedUserInterstitial,
   kFeedbackSourceAssistant,
   kFeedbackSourceDesktopTabGroups,
+  kFeedbackSourceMediaApp,
 
   // Must be last.
   kFeedbackSourceCount,

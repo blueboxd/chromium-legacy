@@ -27,7 +27,6 @@ class NGFieldsetPainter {
   void PaintFieldsetDecorationBackground(const NGLink* legend,
                                          const PaintInfo&,
                                          const PhysicalOffset&);
-  void PaintLegend(const NGPhysicalBoxFragment& legend, const PaintInfo&);
 
   const NGPhysicalBoxFragment& fieldset_;
 };

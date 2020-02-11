@@ -308,7 +308,7 @@ TEST_F('ChromeVoxBackgroundTest', 'AriaLabel', function() {
         rootNode.find({role: RoleType.LINK}).focus();
         mockFeedback.expectSpeech('foo')
             .expectSpeech('Link')
-            .expectSpeech('Press Search+Space to activate.')
+            .expectSpeech('Press Search+Space to activate')
             .expectBraille('foo lnk');
         mockFeedback.replay();
       });
@@ -1036,7 +1036,7 @@ TEST_F('ChromeVoxBackgroundTest', 'BasicTableCommands', function() {
             .call(doCmd('previousRow'))
             .expectSpeech('name', 'row 1 column 1')
             .call(doCmd('previousRow'))
-            .expectSpeech('No cell above.')
+            .expectSpeech('No cell above')
             .call(doCmd('nextCol'))
             .expectSpeech('title', 'row 1 column 2')
             .call(doCmd('nextRow'))
@@ -1048,15 +1048,15 @@ TEST_F('ChromeVoxBackgroundTest', 'BasicTableCommands', function() {
             .call(doCmd('nextCol'))
             .expectSpeech('phone', 'row 1 column 4')
             .call(doCmd('nextCol'))
-            .expectSpeech('No cell right.')
+            .expectSpeech('No cell right')
             .call(doCmd('previousRow'))
-            .expectSpeech('No cell above.')
+            .expectSpeech('No cell above')
             .call(doCmd('nextRow'))
             .expectSpeech('212 222 5555', 'row 2 column 4')
             .call(doCmd('nextRow'))
-            .expectSpeech('No cell below.')
+            .expectSpeech('No cell below')
             .call(doCmd('nextCol'))
-            .expectSpeech('No cell right.')
+            .expectSpeech('No cell right')
             .call(doCmd('previousCol'))
             .expectSpeech('666 Elm Street', 'row 2 column 3')
             .call(doCmd('previousCol'))
@@ -1709,7 +1709,7 @@ TEST_F('ChromeVoxBackgroundTest', 'MathContentViaInnerHtml', function() {
       function(root) {
         mockFeedback.call(doCmd('nextObject'))
             .expectSpeech('a ( y + m ) squared + b ( y + m ) + c = 0 .')
-            .expectSpeech('Press up, down, left, or right to explore math.')
+            .expectSpeech('Press up, down, left, or right to explore math')
             .replay();
       });
 });
@@ -2047,7 +2047,7 @@ TEST_F('ChromeVoxBackgroundTest', 'DISABLED_PopUpButtonSetSize', function() {
             .expectSpeech('Apple')
             .expectSpeech('Button')
             .expectSpeech('has pop up')
-            .expectSpeech('Press Search+Space to activate.')
+            .expectSpeech('Press Search+Space to activate')
             .call(click)
             .expectSpeech('Apple')
             .expectSpeech('Button')
@@ -2055,7 +2055,7 @@ TEST_F('ChromeVoxBackgroundTest', 'DISABLED_PopUpButtonSetSize', function() {
             // SetSize is only reported if popup button is expanded.
             .expectSpeech('with 2 items')
             .expectSpeech('Expanded')
-            .expectSpeech('Press Search+Space to activate.')
+            .expectSpeech('Press Search+Space to activate')
             .replay();
       });
 });
@@ -2258,9 +2258,9 @@ TEST_F('ChromeVoxBackgroundTest', 'NoListTest', function() {
   `,
       function(root) {
         mockFeedback.call(doCmd('nextList'))
-            .expectSpeech('No next list.')
+            .expectSpeech('No next list')
             .call(doCmd('previousList'))
-            .expectSpeech('No previous list.');
+            .expectSpeech('No previous list');
         mockFeedback.replay();
       });
 });
@@ -2292,12 +2292,12 @@ TEST_F('ChromeVoxBackgroundTest', 'ReadLinkURLTest', function() {
       function(root) {
         mockFeedback.call(doCmd('nextLink'))
             .expectSpeech(
-                'A popular link', 'Link', 'Press Search+Space to activate.')
+                'A popular link', 'Link', 'Press Search+Space to activate')
             .call(doCmd('readLinkURL'))
             .expectSpeech('Link URL: https://www.google.com/')
             .call(doCmd('nextObject'))
             .expectSpeech(
-                'Not a link', 'Button', 'Press Search+Space to activate.')
+                'Not a link', 'Button', 'Press Search+Space to activate')
             .call(doCmd('readLinkURL'))
             .expectSpeech('No URL found')
             .replay();
@@ -2314,7 +2314,7 @@ TEST_F('ChromeVoxBackgroundTest', 'NoRepeatTitle', function() {
         mockFeedback.expectSpeech('title')
             .expectSpeech('Button')
             .expectNextSpeechUtteranceIsNot('title')
-            .expectSpeech('Press Search+Space to activate.')
+            .expectSpeech('Press Search+Space to activate')
             .replay();
       });
 });

@@ -2183,8 +2183,6 @@
     const appId = await setupAndWaitUntilReady(
         RootPath.DOWNLOADS, BASIC_LOCAL_ENTRY_SET, []);
 
-    const caller = getCaller();
-
     // Check-select Beautiful Song.ogg and My Desktop Background.png.
     const ctrlDown = ['#file-list', 'ArrowDown', true, false, false];
     const ctrlSpace = ['#file-list', ' ', true, false, false];

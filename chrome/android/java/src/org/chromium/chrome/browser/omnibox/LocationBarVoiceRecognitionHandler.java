@@ -18,12 +18,12 @@ import androidx.annotation.VisibleForTesting;
 import org.chromium.base.ThreadUtils;
 import org.chromium.base.metrics.CachedMetrics;
 import org.chromium.chrome.R;
-import org.chromium.chrome.browser.flags.CachedFeatureFlags;
 import org.chromium.chrome.browser.omnibox.suggestions.AutocompleteCoordinator;
 import org.chromium.chrome.browser.omnibox.voice.AssistantVoiceSearchService;
 import org.chromium.chrome.browser.search_engines.TemplateUrlServiceFactory;
 import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.browser.toolbar.ToolbarDataProvider;
+import org.chromium.chrome.browser.util.VoiceRecognitionUtil;
 import org.chromium.content_public.browser.NavigationHandle;
 import org.chromium.content_public.browser.RenderFrameHost;
 import org.chromium.content_public.browser.WebContents;
@@ -499,8 +499,8 @@ public class LocationBarVoiceRecognitionHandler {
     }
 
     /**
-     * Calls into {@link CachedFeatureFlags} to determine whether or not the
-     * {@link RecognizerIntent#ACTION_WEB_SEARCH} {@link Intent} is handled by any
+     * Calls into {@link VoiceRecognitionUtil} to determine whether or not the
+     * {@link RecognizerIntent#ACTION_RECOGNIZE_SPEECH} {@link Intent} is handled by any
      * {@link android.app.Activity}s in the system.
      *
      * @param useCachedValue Whether or not to use the cached value from a previous result.
@@ -508,6 +508,6 @@ public class LocationBarVoiceRecognitionHandler {
      */
     @VisibleForTesting
     protected boolean isRecognitionIntentPresent(boolean useCachedValue) {
-        return CachedFeatureFlags.isRecognitionIntentPresent(useCachedValue);
+        return VoiceRecognitionUtil.isRecognitionIntentPresent(useCachedValue);
     }
 }

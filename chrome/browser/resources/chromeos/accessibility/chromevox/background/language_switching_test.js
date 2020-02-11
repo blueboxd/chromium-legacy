@@ -342,7 +342,7 @@ TEST_F(
             .expectSpeechWithLanguage(
                 'en', 'This is a button, written in English.')
             .expectSpeechWithLanguage(
-                undefined, 'Button', 'Press Search+Space to activate.')
+                undefined, 'Button', 'Press Search+Space to activate')
             .call(doCmd('nextObject'))
             .expectSpeechWithLanguage('es', 'español: Este es un enlace.')
             .expectSpeechWithLanguage(undefined, 'Link');
@@ -370,7 +370,7 @@ TEST_F(
             .expectSpeechWithLanguage(
                 'es', 'This is a button, written in English.')
             .expectSpeechWithLanguage(
-                undefined, 'Button', 'Press Search+Space to activate.')
+                undefined, 'Button', 'Press Search+Space to activate')
             .call(doCmd('nextObject'))
             .expectSpeechWithLanguage('es', 'Este es un enlace.')
             .expectSpeechWithLanguage(undefined, 'Link');

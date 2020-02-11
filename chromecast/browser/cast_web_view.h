@@ -9,10 +9,8 @@
 #include <string>
 
 #include "base/macros.h"
-#include "base/observer_list.h"
 #include "base/strings/string16.h"
 #include "base/time/time.h"
-#include "base/values.h"
 #include "chromecast/browser/cast_content_window.h"
 #include "chromecast/browser/cast_web_contents.h"
 #include "chromecast/ui/mojom/ui_service.mojom.h"
@@ -21,6 +19,8 @@
 #include "url/gurl.h"
 
 namespace chromecast {
+
+class CastWebService;
 
 // A simplified interface for loading and displaying WebContents in cast_shell.
 class CastWebView {
@@ -55,6 +55,14 @@ class CastWebView {
   using Scoped =
       std::unique_ptr<CastWebView, std::function<void(CastWebView*)>>;
 
+  enum class RendererPool {
+    // Don't use a renderer pool for prelaunching. This means launching the
+    // render process eagerly is un-restricted and will always succeed.
+    NONE,
+    // Pool for overlay apps, which allows up to one pre-cached site.
+    OVERLAY,
+  };
+
   // The parameters used to create a CastWebView instance. Passed to
   // CastWebService::CreateWebView().
   struct CreateParams {
@@ -70,6 +78,8 @@ class CastWebView {
 
     // Parameters for creating the content window for this CastWebView.
     CastContentWindow::CreateParams window_params;
+
+    CastWebService* web_service = nullptr;
 
     // Identifies the activity that is hosted by this CastWebView.
     std::string activity_id = "";
@@ -95,13 +105,19 @@ class CastWebView {
     // immediately and synchronously.
     base::TimeDelta shutdown_delay = base::TimeDelta();
 
+    // Pool for pre-launched renderers.
+    RendererPool renderer_pool = RendererPool::NONE;
+
+    // Eagerly pre-launches a render process for |prelaunch_url| if it is valid.
+    GURL prelaunch_url;
+
     CreateParams();
     CreateParams(const CreateParams& other);
     ~CreateParams();
   };
 
-  explicit CastWebView(const CreateParams& create_params);
-  virtual ~CastWebView();
+  CastWebView() = default;
+  virtual ~CastWebView() = default;
 
   virtual CastContentWindow* window() const = 0;
 
@@ -109,21 +125,10 @@ class CastWebView {
 
   virtual CastWebContents* cast_web_contents() = 0;
 
-  base::TimeDelta shutdown_delay() const { return shutdown_delay_; }
-
-  // Navigates to |url|. The loaded page will be preloaded if MakeVisible has
-  // not been called on the object.
-  virtual void LoadUrl(GURL url) = 0;
-
-  // Begins the close process for this page (ie. triggering document.onunload).
-  // A consumer of the class can be notified when the process has been finished
-  // via Delegate::OnPageStopped(). The page will be torn down after
-  // |CreateParams::shutdown_delay| has elapsed, or immediately if the browser
-  // is shutting down.
-  virtual void ClosePage() = 0;
+  virtual base::TimeDelta shutdown_delay() const = 0;
 
   // Closes the page immediately, ignoring |CreateParams::shutdown_delay|.
-  void ForceClose();
+  virtual void ForceClose() = 0;
 
   // Adds the page to the window manager and makes it visible to the user if
   // |is_visible| is true. |z_order| determines how this window is layered in
@@ -131,26 +136,11 @@ class CastWebView {
   virtual void InitializeWindow(mojom::ZOrder z_order,
                                 VisibilityPriority initial_priority) = 0;
 
-  // Allows the page to be shown on the screen. The page cannot be shown on the
-  // screen until this is called.
-  virtual void GrantScreenAccess() = 0;
-
-  // Prevents the page from being shown on the screen until GrantScreenAccess()
-  // is called.
-  virtual void RevokeScreenAccess() = 0;
-
   // Observer interface:
-  void AddObserver(Observer* observer);
-  void RemoveObserver(Observer* observer);
-
- protected:
-  base::WeakPtr<Delegate> delegate_;
+  virtual void AddObserver(Observer* observer) = 0;
+  virtual void RemoveObserver(Observer* observer) = 0;
 
  private:
-  base::TimeDelta shutdown_delay_;
-
-  base::ObserverList<Observer>::Unchecked observer_list_;
-
   DISALLOW_COPY_AND_ASSIGN(CastWebView);
 };
 

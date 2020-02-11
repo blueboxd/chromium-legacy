@@ -132,7 +132,6 @@ void NGContainerFragmentBuilder::PropagateChildData(
     if (const NGBreakToken* child_break_token = child.BreakToken()) {
       switch (child.Type()) {
         case NGPhysicalFragment::kFragmentBox:
-        case NGPhysicalFragment::kFragmentRenderedLegend:
           child_break_tokens_.push_back(child_break_token);
           break;
         case NGPhysicalFragment::kFragmentLineBox:

@@ -34,7 +34,8 @@ void AXRadioInput::RequestUpdateToNextNode(bool forward) {
   HTMLInputElement* next_element =
       RadioInputType::NextRadioButtonInGroup(GetInputElement(), forward);
   AXObject* next_axobject = AXObjectCache().Get(next_element);
-  if (!next_axobject || !next_axobject->IsAXRadioInput())
+  auto* ax_radio_input = DynamicTo<AXRadioInput>(next_axobject);
+  if (!ax_radio_input)
     return;
 
   int position = 0;
@@ -44,10 +45,10 @@ void AXRadioInput::RequestUpdateToNextNode(bool forward) {
   // previous objects.  updatePosAndSetSize() is called with '0' and it doesn't
   // modify m_posInSet and updates m_setSize as size is increased.
 
-  ToAXRadioInput(next_axobject)->UpdatePosAndSetSize(position);
+  ax_radio_input->UpdatePosAndSetSize(position);
   AXObjectCache().PostNotification(next_axobject,
                                    ax::mojom::Event::kAriaAttributeChanged);
-  ToAXRadioInput(next_axobject)->RequestUpdateToNextNode(forward);
+  ax_radio_input->RequestUpdateToNextNode(forward);
 }
 
 HTMLInputElement* AXRadioInput::FindFirstRadioButtonInGroup(

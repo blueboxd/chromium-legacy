@@ -3879,6 +3879,8 @@ void RenderProcessHostImpl::FilterURL(RenderProcessHost* rph,
     // This is because the browser treats navigation to an empty GURL as a
     // navigation to the home page. This is often a privileged page
     // (chrome://newtab/) which is exactly what we don't want.
+    TRACE_EVENT1("navigation", "RenderProcessHost::FilterURL - invalid URL",
+                 "process_id", rph->GetID());
     *url = GURL(kBlockedURL);
     return;
   }
@@ -3889,6 +3891,9 @@ void RenderProcessHostImpl::FilterURL(RenderProcessHost* rph,
     // If this renderer is not permitted to request this URL, we invalidate
     // the URL.  This prevents us from storing the blocked URL and becoming
     // confused later.
+    TRACE_EVENT2("navigation",
+                 "RenderProcessHost::FilterURL - failed CanRequestURL",
+                 "process_id", rph->GetID(), "url", url->spec());
     VLOG(1) << "Blocked URL " << url->spec();
     *url = GURL(kBlockedURL);
   }

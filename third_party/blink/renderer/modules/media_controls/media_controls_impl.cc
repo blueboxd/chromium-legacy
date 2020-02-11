@@ -39,6 +39,7 @@
 #include "third_party/blink/renderer/core/events/gesture_event.h"
 #include "third_party/blink/renderer/core/events/keyboard_event.h"
 #include "third_party/blink/renderer/core/events/pointer_event.h"
+#include "third_party/blink/renderer/core/events/touch_event.h"
 #include "third_party/blink/renderer/core/frame/local_frame.h"
 #include "third_party/blink/renderer/core/frame/settings.h"
 #include "third_party/blink/renderer/core/frame/web_feature.h"
@@ -309,7 +310,7 @@ class MediaControlsImpl::MediaElementMutationCallback
 
 bool MediaControlsImpl::IsTouchEvent(Event* event) {
   auto* mouse_event = DynamicTo<MouseEvent>(event);
-  return event->IsTouchEvent() || event->IsGestureEvent() ||
+  return IsA<TouchEvent>(event) || event->IsGestureEvent() ||
          (mouse_event && mouse_event->FromTouch());
 }
 

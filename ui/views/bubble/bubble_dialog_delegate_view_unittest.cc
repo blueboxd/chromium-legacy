@@ -94,6 +94,19 @@ class TestBubbleDialogDelegateView : public BubbleDialogDelegateView {
   DISALLOW_COPY_AND_ASSIGN(TestBubbleDialogDelegateView);
 };
 
+// A Widget that returns something other than null as its ThemeProvider.  This
+// allows us to see whether the theme provider returned by some object came from
+// this widget.
+class WidgetWithNonNullThemeProvider : public Widget {
+ public:
+  WidgetWithNonNullThemeProvider() = default;
+
+  // Widget:
+  const ui::ThemeProvider* GetThemeProvider() const override {
+    return reinterpret_cast<ui::ThemeProvider*>(1);
+  }
+};
+
 class BubbleDialogDelegateViewTest : public ViewsTestBase {
  public:
   BubbleDialogDelegateViewTest() = default;
@@ -101,7 +114,7 @@ class BubbleDialogDelegateViewTest : public ViewsTestBase {
 
   // Creates and shows a test widget that owns its native widget.
   Widget* CreateTestWidget() {
-    Widget* widget = new Widget();
+    Widget* widget = new WidgetWithNonNullThemeProvider();
     Widget::InitParams params = CreateParams(Widget::InitParams::TYPE_WINDOW);
     params.ownership = views::Widget::InitParams::WIDGET_OWNS_NATIVE_WIDGET;
     widget->Init(std::move(params));

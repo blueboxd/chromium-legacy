@@ -128,8 +128,8 @@ def ScrambleMethodOrdinals(interfaces, salt):
         # to guess the results without the secret salt, in order to make it
         # harder for a compromised process to send fake Mojo messages.
         sha256 = hashlib.sha256(salt)
-        sha256.update(interface.mojom_name)
-        sha256.update(str(i))
+        sha256.update(interface.mojom_name.encode('utf-8'))
+        sha256.update(str(i).encode('utf-8'))
         # Take the first 4 bytes as a little-endian uint32.
         ordinal = struct.unpack('<L', sha256.digest()[:4])[0]
         # Trim to 31 bits, so it always fits into a Java (signed) int.

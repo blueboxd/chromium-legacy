@@ -201,6 +201,7 @@ class SensorProviderProxyImpl;
 class SerialService;
 class SpeechSynthesisImpl;
 class TimeoutMonitor;
+class WebAuthRequestSecurityChecker;
 class WebBluetoothServiceImpl;
 class WebBundleHandle;
 struct ContextMenuParams;
@@ -347,6 +348,10 @@ class CONTENT_EXPORT RenderFrameHostImpl
   void Reload() override;
   bool IsDOMContentLoaded() override;
   void UpdateAdFrameType(blink::mojom::AdFrameType ad_frame_type) override;
+  blink::mojom::AuthenticatorStatus PerformGetAssertionWebAuthSecurityChecks(
+      const std::string& relying_party_id) override;
+  blink::mojom::AuthenticatorStatus PerformMakeCredentialWebAuthSecurityChecks(
+      const std::string& relying_party_id) override;
 
   // Determines if a clipboard paste using |data| of type |data_type| is allowed
   // in this renderer frame.  The implementation delegates to
@@ -1316,6 +1321,9 @@ class CONTENT_EXPORT RenderFrameHostImpl
   // WebContents. Returns nullptr for top-level RenderFrameHosts in topmost
   // WebContents.
   RenderFrameHostImpl* ParentOrOuterDelegateFrame();
+
+  scoped_refptr<WebAuthRequestSecurityChecker>
+  GetWebAuthRequestSecurityChecker();
 
   base::WeakPtr<RenderFrameHostImpl> GetWeakPtr();
 
@@ -2666,6 +2674,9 @@ class CONTENT_EXPORT RenderFrameHostImpl
   // by NavigationRequest, ownership is maintained until the frame has stopped
   // loading. Or newer navigations occur.
   std::unique_ptr<PeakGpuMemoryTracker> loading_mem_tracker_ = nullptr;
+
+  scoped_refptr<WebAuthRequestSecurityChecker>
+      webauth_request_security_checker_;
 
   // NOTE: This must be the last member.
   base::WeakPtrFactory<RenderFrameHostImpl> weak_ptr_factory_{this};

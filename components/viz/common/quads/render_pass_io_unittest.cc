@@ -106,41 +106,6 @@ TEST(RenderPassIOTest, FilterOperations) {
   EXPECT_EQ(dict0, dict1);
 }
 
-TEST(RenderPassIOTest, ColorSpace) {
-  std::unique_ptr<RenderPass> render_pass0 = RenderPass::Create();
-  render_pass0->color_space = gfx::ColorSpace(
-      gfx::ColorSpace::PrimaryID::BT709,
-      gfx::ColorSpace::TransferID::IEC61966_2_1, gfx::ColorSpace::MatrixID::RGB,
-      gfx::ColorSpace::RangeID::FULL);
-  base::Value dict0 = RenderPassToDict(*render_pass0);
-  std::unique_ptr<RenderPass> render_pass1 = RenderPassFromDict(dict0);
-  EXPECT_TRUE(render_pass1);
-  EXPECT_EQ(render_pass0->color_space.ToString(),
-            render_pass1->color_space.ToString());
-  base::Value dict1 = RenderPassToDict(*render_pass1);
-  EXPECT_EQ(dict0, dict1);
-}
-
-TEST(RenderPassIOTest, ColorSpaceCustom) {
-  std::unique_ptr<RenderPass> render_pass0 = RenderPass::Create();
-  {
-    skcms_Matrix3x3 primary_matrix = {{{0.6587f, 0.3206f, 0.1508f},
-                                       {0.3332f, 0.6135f, 0.0527f},
-                                       {0.0081f, 0.0659f, 0.7965f}}};
-    skcms_TransferFunction transfer_func = {0.9495f, 0.0495f, 0.6587f, 0.3206f,
-                                            0.0003f, 0.f,     2.3955f};
-    render_pass0->color_space =
-        gfx::ColorSpace::CreateCustom(primary_matrix, transfer_func);
-  }
-  base::Value dict0 = RenderPassToDict(*render_pass0);
-  std::unique_ptr<RenderPass> render_pass1 = RenderPassFromDict(dict0);
-  EXPECT_TRUE(render_pass1);
-  EXPECT_EQ(render_pass0->color_space.ToString(),
-            render_pass1->color_space.ToString());
-  base::Value dict1 = RenderPassToDict(*render_pass1);
-  EXPECT_EQ(dict0, dict1);
-}
-
 TEST(RenderPassIOTest, SharedQuadStateList) {
   std::unique_ptr<RenderPass> render_pass0 = RenderPass::Create();
   {

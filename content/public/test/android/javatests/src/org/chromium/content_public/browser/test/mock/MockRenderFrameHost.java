@@ -53,4 +53,14 @@ public class MockRenderFrameHost implements RenderFrameHost {
     public boolean areInputEventsIgnored() {
         return false;
     }
+
+    @Override
+    public int performGetAssertionWebAuthSecurityChecks(String relyingPartyId) {
+        return 0;
+    }
+
+    @Override
+    public int performMakeCredentialWebAuthSecurityChecks(String relyingPartyId) {
+        return 0;
+    }
 }

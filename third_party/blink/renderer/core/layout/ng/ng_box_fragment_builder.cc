@@ -156,6 +156,8 @@ NGPhysicalFragment::NGBoxType NGBoxFragmentBuilder::BoxType() const {
     return NGPhysicalFragment::NGBoxType::kFloating;
   if (layout_object_->IsOutOfFlowPositioned())
     return NGPhysicalFragment::NGBoxType::kOutOfFlowPositioned;
+  if (layout_object_->IsRenderedLegend())
+    return NGPhysicalFragment::NGBoxType::kRenderedLegend;
   if (layout_object_->IsInline()) {
     // Check |IsAtomicInlineLevel()| after |IsInline()| because |LayoutReplaced|
     // sets |IsAtomicInlineLevel()| even when it's block-level. crbug.com/567964

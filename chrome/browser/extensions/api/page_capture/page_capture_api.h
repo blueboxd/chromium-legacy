@@ -10,8 +10,8 @@
 #include <string>
 
 #include "base/memory/ref_counted.h"
-#include "chrome/browser/extensions/chrome_extension_function.h"
 #include "chrome/common/extensions/api/page_capture.h"
+#include "extensions/browser/extension_function.h"
 #include "storage/browser/blob/shareable_file_reference.h"
 
 namespace base {
@@ -24,7 +24,7 @@ class WebContents;
 
 namespace extensions {
 
-class PageCaptureSaveAsMHTMLFunction : public ChromeAsyncExtensionFunction {
+class PageCaptureSaveAsMHTMLFunction : public ExtensionFunction {
  public:
   PageCaptureSaveAsMHTMLFunction();
 
@@ -39,7 +39,7 @@ class PageCaptureSaveAsMHTMLFunction : public ChromeAsyncExtensionFunction {
 
  private:
   ~PageCaptureSaveAsMHTMLFunction() override;
-  bool RunAsync() override;
+  ResponseAction Run() override;
   bool OnMessageReceived(const IPC::Message& message) override;
 
 #if defined(OS_CHROMEOS)
@@ -48,8 +48,8 @@ class PageCaptureSaveAsMHTMLFunction : public ChromeAsyncExtensionFunction {
 #endif
 
   // Returns whether or not the extension has permission to capture the current
-  // page.
-  bool CanCaptureCurrentPage();
+  // page. Sets |*error| to an error value on failure.
+  bool CanCaptureCurrentPage(std::string* error);
 
   // Called on the file thread.
   void CreateTemporaryFile();

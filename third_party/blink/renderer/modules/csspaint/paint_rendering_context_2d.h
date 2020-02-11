@@ -54,8 +54,8 @@ class MODULES_EXPORT PaintRenderingContext2D : public ScriptWrappable,
 
   bool ParseColorOrCurrentColor(Color&, const String& color_string) const final;
 
-  cc::PaintCanvas* DrawingCanvas() const final;
-  cc::PaintCanvas* ExistingDrawingCanvas() const final;
+  cc::PaintCanvas* GetOrCreatePaintCanvas() final { return GetPaintCanvas(); }
+  cc::PaintCanvas* GetPaintCanvas() const final;
 
   void DidDraw(const SkIRect&) final;
 

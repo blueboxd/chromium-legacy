@@ -782,12 +782,24 @@ void ToolbarView::UpdateTypeAndSeverity(
   app_menu_button_->SetTypeAndSeverity(type_and_severity);
 }
 
-const ui::ThemeProvider* ToolbarView::GetViewThemeProvider() const {
-  return GetThemeProvider();
-}
-
-ui::NativeTheme* ToolbarView::GetViewNativeTheme() {
-  return GetNativeTheme();
+SkColor ToolbarView::GetDefaultColorForSeverity(
+    AppMenuIconController::Severity severity) const {
+  ui::NativeTheme::ColorId color_id;
+  switch (severity) {
+    case AppMenuIconController::Severity::NONE:
+      return GetThemeProvider()->GetColor(
+          ThemeProperties::COLOR_TOOLBAR_BUTTON_ICON);
+    case AppMenuIconController::Severity::LOW:
+      color_id = ui::NativeTheme::kColorId_AlertSeverityLow;
+      break;
+    case AppMenuIconController::Severity::MEDIUM:
+      color_id = ui::NativeTheme::kColorId_AlertSeverityMedium;
+      break;
+    case AppMenuIconController::Severity::HIGH:
+      color_id = ui::NativeTheme::kColorId_AlertSeverityHigh;
+      break;
+  }
+  return GetNativeTheme()->GetSystemColor(color_id);
 }
 
 // ToolbarButtonProvider:

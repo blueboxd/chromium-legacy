@@ -260,9 +260,10 @@ class COLOR_SPACE_EXPORT ColorSpace {
   // would be appropriate for rasterization.
   ColorSpace GetRasterColorSpace() const;
 
-  // If |this| is the final output color space, return the color space that
-  // would be appropriate for blending.
-  ColorSpace GetBlendingColorSpace() const;
+  // Return true if blending in |this| is close enough to blending in sRGB to
+  // be considered acceptable (only PQ and nearly-linear transfer functions
+  // return false).
+  bool IsSuitableForBlending() const;
 
   // Return a combined color space with has the same primary and transfer than
   // the caller but replacing the matrix and range with the given values.

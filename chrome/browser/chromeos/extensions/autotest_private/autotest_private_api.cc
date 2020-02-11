@@ -3182,8 +3182,15 @@ AutotestPrivateGetAppWindowListFunction::Run() {
 
     if (window->GetProperty(aura::client::kAppType) ==
         static_cast<int>(ash::AppType::ARC_APP)) {
-      window_info.arc_package_name = std::make_unique<std::string>(
-          *window->GetProperty(ash::kArcPackageNameKey));
+      std::string* package_name = window->GetProperty(ash::kArcPackageNameKey);
+      if (package_name) {
+        window_info.arc_package_name =
+            std::make_unique<std::string>(*package_name);
+      } else {
+        LOG(ERROR) << "The package name for window " << window->GetTitle()
+                   << " (ID: " << window->id()
+                   << ") isn't available even though it is an ARC window.";
+      }
     }
 
     // Frame information

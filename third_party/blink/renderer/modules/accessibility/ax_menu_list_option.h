@@ -80,7 +80,12 @@ class AXMenuListOption final : public AXMockObject {
   DISALLOW_COPY_AND_ASSIGN(AXMenuListOption);
 };
 
-DEFINE_AX_OBJECT_TYPE_CASTS(AXMenuListOption, IsMenuListOption());
+template <>
+struct DowncastTraits<AXMenuListOption> {
+  static bool AllowFrom(const AXObject& object) {
+    return object.IsMenuListOption();
+  }
+};
 
 }  // namespace blink
 

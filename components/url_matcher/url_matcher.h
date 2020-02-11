@@ -200,6 +200,9 @@ class URL_MATCHER_EXPORT URLMatcherConditionFactory {
                                 bool prepend_beginning_of_query_component,
                                 bool append_end_of_query_component) const;
 
+  // Return the next StringPattern id to use.
+  int GetNextID();
+
   // Counter that ensures that all created StringPatterns have unique IDs.
   // Note that substring patterns and regex patterns will use different IDs.
   int id_counter_;

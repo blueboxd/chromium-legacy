@@ -293,7 +293,7 @@ bool OffscreenCanvasRenderingContext2D::ParseColorOrCurrentColor(
   return ::blink::ParseColorOrCurrentColor(color, color_string, nullptr);
 }
 
-cc::PaintCanvas* OffscreenCanvasRenderingContext2D::DrawingCanvas() const {
+cc::PaintCanvas* OffscreenCanvasRenderingContext2D::GetPaintCanvas() const {
   if (!is_valid_size_)
     return nullptr;
   return recorder_->getRecordingCanvas();
@@ -538,8 +538,8 @@ void OffscreenCanvasRenderingContext2D::DrawTextInternal(
     double y,
     CanvasRenderingContext2DState::PaintType paint_type,
     double* max_width) {
-  cc::PaintCanvas* c = DrawingCanvas();
-  if (!c)
+  cc::PaintCanvas* paint_canvas = GetPaintCanvas();
+  if (!paint_canvas)
     return;
 
   if (!std::isfinite(x) || !std::isfinite(y))
@@ -595,27 +595,28 @@ void OffscreenCanvasRenderingContext2D::DrawTextInternal(
   if (paint_type == CanvasRenderingContext2DState::kStrokePaintType)
     InflateStrokeRect(bounds);
 
-  int save_count = c->getSaveCount();
+  int save_count = paint_canvas->getSaveCount();
   if (use_max_width) {
-    DrawingCanvas()->save();
-    DrawingCanvas()->translate(location.X(), location.Y());
+    paint_canvas->save();
+    paint_canvas->translate(location.X(), location.Y());
     // We draw when fontWidth is 0 so compositing operations (eg, a "copy" op)
     // still work.
-    DrawingCanvas()->scale((font_width > 0 ? (width / font_width) : 0), 1);
+    paint_canvas->scale((font_width > 0 ? (width / font_width) : 0), 1);
     location = FloatPoint();
   }
 
   Draw(
       [&font, &text_run_paint_info, &location](
-          cc::PaintCanvas* c, const PaintFlags* flags) /* draw lambda */ {
-        font.DrawBidiText(c, text_run_paint_info, location,
+          cc::PaintCanvas* paint_canvas,
+          const PaintFlags* flags) /* draw lambda */ {
+        font.DrawBidiText(paint_canvas, text_run_paint_info, location,
                           Font::kUseFallbackIfFontNotReady, kCDeviceScaleFactor,
                           *flags);
       },
       [](const SkIRect& rect)  // overdraw test lambda
       { return false; },
       bounds, paint_type);
-  c->restoreToCount(save_count);
+  paint_canvas->restoreToCount(save_count);
   ValidateStateStack();
 }
 

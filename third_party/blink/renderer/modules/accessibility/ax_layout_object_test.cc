@@ -16,7 +16,7 @@ TEST_F(AXLayoutObjectTest, StringValueTextTransform) {
       "<option>abc</select>");
   const AXObject* ax_select = GetAXObjectByElementId("t");
   ASSERT_NE(nullptr, ax_select);
-  EXPECT_TRUE(ax_select->IsAXLayoutObject());
+  EXPECT_TRUE(IsA<AXLayoutObject>(ax_select));
   EXPECT_EQ("ABC", ax_select->StringValue());
 }
 
@@ -26,7 +26,7 @@ TEST_F(AXLayoutObjectTest, StringValueTextSecurity) {
       "<option>abc</select>");
   const AXObject* ax_select = GetAXObjectByElementId("t");
   ASSERT_NE(nullptr, ax_select);
-  EXPECT_TRUE(ax_select->IsAXLayoutObject());
+  EXPECT_TRUE(IsA<AXLayoutObject>(ax_select));
   // U+2022 -> \xE2\x80\xA2 in UTF-8
   EXPECT_EQ("\xE2\x80\xA2\xE2\x80\xA2\xE2\x80\xA2",
             ax_select->StringValue().Utf8());

@@ -202,7 +202,8 @@ class RemoteCall {
    * @param {!Array<string>} styleNames List of CSS property name to be
    *     obtained. NOTE: Causes element style re-calculation.
    *     TODO(lucmult): Add a typedef for the returned object.
-   * @return {Promise} Promise to be fulfilled when the element appears.
+   * @return {Promise<ElementObject>} Promise to be fulfilled when the element
+   *     appears.
    */
   waitForElementStyles(appId, query, styleNames) {
     const caller = getCaller();
@@ -210,7 +211,7 @@ class RemoteCall {
       const elements = await this.callRemoteTestUtil(
           'deepQueryAllElements', appId, [query, styleNames]);
       if (elements.length > 0) {
-        return elements[0];
+        return /** @type {ElementObject} */ (elements[0]);
       }
       return pending(caller, 'Element %s is not found.', query);
     });
@@ -403,10 +404,11 @@ class RemoteCallFilesApp extends RemoteCall {
    * Waits for the file list turns to the given contents.
    * @param {string} appId App window Id.
    * @param {Array<Array<string>>} expected Expected contents of file list.
-   * @param {{orderCheck:?boolean, ignoreLastModifiedTime:?boolean}=}
-   *     opt_options Options of the comparison. If orderCheck is true, it also
-   *     compares the order of files. If ignoreLastModifiedTime is true, it
-   *     compares the file without its last modified time.
+   * @param {{orderCheck:(?boolean|undefined),
+   *     ignoreLastModifiedTime:(?boolean|undefined)}=} opt_options Options of
+   *     the comparison. If orderCheck is true, it also compares the order of
+   *     files. If ignoreLastModifiedTime is true, it compares the file without
+   *     its last modified time.
    * @return {Promise} Promise to be fulfilled when the file list turns to the
    *     given contents.
    */

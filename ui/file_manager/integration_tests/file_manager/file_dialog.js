@@ -236,7 +236,7 @@ async function checkFeedbackDisplayHidden(type) {
 
 /**
  * Test file present in Downloads.
- * @{!string}
+ * @const {!string}
  */
 const TEST_LOCAL_FILE = BASIC_LOCAL_ENTRY_SET[0].targetPath;
 
@@ -305,13 +305,13 @@ testcase.saveFileDialogPanelsDisabled = () => {
 
 /**
  * Test file present in Drive only.
- * @{!string}
+ * @const {!string}
  */
 const TEST_DRIVE_FILE = ENTRIES.hello.targetPath;
 
 /**
  * Test file present in Drive only.
- * @{!string}
+ * @const {!string}
  */
 const TEST_DRIVE_PINNED_FILE = ENTRIES.pinned.targetPath;
 

@@ -719,11 +719,11 @@ const AXPosition AXPosition::AsValidDOMPosition(
   if (container->GetNode() && !container->GetNode()->IsMarkerPseudoElement())
     return *this;
 
-  DCHECK(container->IsAXLayoutObject())
+  DCHECK(IsA<AXLayoutObject>(container))
       << "Non virtual and non mock AX objects that are not associated to a DOM "
          "node should have an associated layout object.";
   const Node* container_node =
-      ToAXLayoutObject(container)->GetNodeOrContainingBlockNode();
+      To<AXLayoutObject>(container)->GetNodeOrContainingBlockNode();
   DCHECK(container_node) << "All anonymous layout objects and list markers "
                             "should have a containing block element.";
   DCHECK(!container->IsDetached());

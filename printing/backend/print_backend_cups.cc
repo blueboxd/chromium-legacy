@@ -238,8 +238,7 @@ int PrintBackendCUPS::GetDests(cups_dest_t** dests) {
   if (print_server_url_.is_empty())
     return cupsGetDests2(CUPS_HTTP_DEFAULT, dests);
 
-  HttpConnectionCUPS http(print_server_url_, cups_encryption_);
-  http.SetBlocking(blocking_);
+  HttpConnectionCUPS http(print_server_url_, cups_encryption_, blocking_);
 
   // This call must be made in the same scope as |http| because its destructor
   // closes the connection.
@@ -265,8 +264,7 @@ base::FilePath PrintBackendCUPS::GetPPD(const char* name) {
     // connection will timeout after 10 seconds of no data period. And it will
     // return the same way as if data was completely and successfully
     // downloaded.
-    HttpConnectionCUPS http(print_server_url_, cups_encryption_);
-    http.SetBlocking(blocking_);
+    HttpConnectionCUPS http(print_server_url_, cups_encryption_, blocking_);
     ppd_file_path = cupsGetPPD2(http.http(), name);
     // Check if the get full PPD, since non-blocking call may simply return
     // normally after timeout expired.
@@ -302,8 +300,7 @@ PrintBackendCUPS::ScopedDestination PrintBackendCUPS::GetNamedDest(
     // Use default (local) print server.
     dest = cupsGetNamedDest(CUPS_HTTP_DEFAULT, printer_name.c_str(), nullptr);
   } else {
-    HttpConnectionCUPS http(print_server_url_, cups_encryption_);
-    http.SetBlocking(blocking_);
+    HttpConnectionCUPS http(print_server_url_, cups_encryption_, blocking_);
     dest = cupsGetNamedDest(http.http(), printer_name.c_str(), nullptr);
   }
   return ScopedDestination(dest);

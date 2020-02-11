@@ -5,6 +5,7 @@
 #include "chromeos/components/media_app_ui/media_app_ui.h"
 
 #include "chromeos/components/media_app_ui/media_app_guest_ui.h"
+#include "chromeos/components/media_app_ui/media_app_page_handler.h"
 #include "chromeos/components/media_app_ui/url_constants.h"
 #include "chromeos/grit/chromeos_media_app_bundle_resources.h"
 #include "chromeos/grit/chromeos_media_app_resources.h"
@@ -24,16 +25,22 @@ content::WebUIDataSource* CreateHostDataSource() {
   source->AddResourcePath("pwa.html", IDR_MEDIA_APP_PWA_HTML);
   source->AddResourcePath("manifest.json", IDR_MEDIA_APP_MANIFEST);
   source->AddResourcePath("launch.js", IDR_MEDIA_APP_LAUNCH_JS);
+  source->AddResourcePath("browser_proxy.js", IDR_MEDIA_APP_BROWSER_PROXY_JS);
+  source->AddResourcePath("media_app.mojom-lite.js",
+                          IDR_MEDIA_APP_MEDIA_APP_MOJOM_JS);
 
   // Add resources from chromeos_media_app_bundle_resources.pak.
   source->AddResourcePath("system_assets/app_icon_256.png",
                           IDR_MEDIA_APP_APP_ICON_256_PNG);
+
   return source;
 }
 
 }  // namespace
 
-MediaAppUI::MediaAppUI(content::WebUI* web_ui) : MojoWebUIController(web_ui) {
+MediaAppUI::MediaAppUI(content::WebUI* web_ui,
+                       std::unique_ptr<MediaAppUIDelegate> delegate)
+    : MojoWebUIController(web_ui), delegate_(std::move(delegate)) {
   content::BrowserContext* browser_context =
       web_ui->GetWebContents()->GetBrowserContext();
   content::WebUIDataSource* host_source = CreateHostDataSource();
@@ -48,5 +55,21 @@ MediaAppUI::MediaAppUI(content::WebUI* web_ui) : MojoWebUIController(web_ui) {
 }
 
 MediaAppUI::~MediaAppUI() = default;
+
+void MediaAppUI::BindInterface(
+    mojo::PendingReceiver<media_app_ui::mojom::PageHandlerFactory> receiver) {
+  page_factory_receiver_.reset();
+  page_factory_receiver_.Bind(std::move(receiver));
+}
+
+void MediaAppUI::CreatePageHandler(
+    mojo::PendingRemote<media_app_ui::mojom::Page> page,
+    mojo::PendingReceiver<media_app_ui::mojom::PageHandler> receiver) {
+  DCHECK(page);
+  page_handler_ = std::make_unique<MediaAppPageHandler>(this, std::move(page),
+                                                        std::move(receiver));
+}
+
+WEB_UI_CONTROLLER_TYPE_IMPL(MediaAppUI)
 
 }  // namespace chromeos

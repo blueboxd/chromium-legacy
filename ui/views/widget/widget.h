@@ -40,7 +40,6 @@ class Rect;
 namespace ui {
 class Accelerator;
 class Compositor;
-class DefaultThemeProvider;
 class GestureRecognizer;
 class InputMethod;
 class Layer;

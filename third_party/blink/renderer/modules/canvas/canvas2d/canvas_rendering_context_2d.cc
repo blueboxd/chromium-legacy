@@ -95,14 +95,14 @@ class CanvasRenderingContext2DAutoRestoreSkCanvas {
       CanvasRenderingContext2D* context)
       : context_(context), save_count_(0) {
     DCHECK(context_);
-    cc::PaintCanvas* c = context_->DrawingCanvas();
+    cc::PaintCanvas* c = context_->GetOrCreatePaintCanvas();
     if (c) {
       save_count_ = c->getSaveCount();
     }
   }
 
   ~CanvasRenderingContext2DAutoRestoreSkCanvas() {
-    cc::PaintCanvas* c = context_->DrawingCanvas();
+    cc::PaintCanvas* c = context_->GetOrCreatePaintCanvas();
     if (c)
       c->restoreToCount(save_count_);
     context_->ValidateStateStack();
@@ -439,19 +439,19 @@ void CanvasRenderingContext2D::SnapshotStateForFilter() {
   ModifiableState().SetFontForFilter(AccessFont());
 }
 
-cc::PaintCanvas* CanvasRenderingContext2D::DrawingCanvas() const {
+cc::PaintCanvas* CanvasRenderingContext2D::GetOrCreatePaintCanvas() {
   if (isContextLost())
     return nullptr;
   if (canvas()->GetOrCreateCanvas2DLayerBridge())
-    return canvas()->GetCanvas2DLayerBridge()->DrawingCanvas();
+    return GetPaintCanvas();
   return nullptr;
 }
 
-cc::PaintCanvas* CanvasRenderingContext2D::ExistingDrawingCanvas() const {
+cc::PaintCanvas* CanvasRenderingContext2D::GetPaintCanvas() const {
   if (isContextLost())
     return nullptr;
-  if (IsPaintable())
-    return canvas()->GetCanvas2DLayerBridge()->DrawingCanvas();
+  if (canvas() && canvas()->GetCanvas2DLayerBridge())
+    return canvas()->GetCanvas2DLayerBridge()->GetPaintCanvas();
   return nullptr;
 }
 
@@ -841,10 +841,10 @@ void CanvasRenderingContext2D::DrawTextInternal(
 
   // accessFont needs the style to be up to date, but updating style can cause
   // script to run, (e.g. due to autofocus) which can free the canvas (set size
-  // to 0, for example), so update style before grabbing the drawingCanvas.
+  // to 0, for example), so update style before grabbing the PaintCanvas.
   canvas()->GetDocument().UpdateStyleAndLayoutTreeForNode(canvas());
 
-  cc::PaintCanvas* c = DrawingCanvas();
+  cc::PaintCanvas* c = GetOrCreatePaintCanvas();
   if (!c)
     return;
 
@@ -909,12 +909,11 @@ void CanvasRenderingContext2D::DrawTextInternal(
 
   CanvasRenderingContext2DAutoRestoreSkCanvas state_restorer(this);
   if (use_max_width) {
-    DrawingCanvas()->save();
-    DrawingCanvas()->translate(location.X(), location.Y());
+    c->save();
+    c->translate(location.X(), location.Y());
     // We draw when fontWidth is 0 so compositing operations (eg, a "copy" op)
     // still work.
-    DrawingCanvas()->scale(
-        (font_width > 0 ? clampTo<float>(width / font_width) : 0), 1);
+    c->scale((font_width > 0 ? clampTo<float>(width / font_width) : 0), 1);
     location = FloatPoint();
   }
 
@@ -1016,12 +1015,12 @@ bool CanvasRenderingContext2D::FocusRingCallIsValid(const Path& path,
 
 void CanvasRenderingContext2D::DrawFocusRing(const Path& path) {
   usage_counters_.num_draw_focus_calls++;
-  if (!DrawingCanvas())
+  if (!GetOrCreatePaintCanvas())
     return;
 
   SkColor color = LayoutTheme::GetTheme().FocusRingColor().Rgb();
   const int kFocusRingWidth = 5;
-  DrawPlatformFocusRing(path.GetSkPath(), DrawingCanvas(), color,
+  DrawPlatformFocusRing(path.GetSkPath(), GetPaintCanvas(), color,
                         /*width=*/kFocusRingWidth, /*radius=*/kFocusRingWidth);
 
   // We need to add focusRingWidth to dirtyRect.
@@ -1079,7 +1078,7 @@ void CanvasRenderingContext2D::addHitRegion(const HitRegionOptions* options,
 
   Path hit_region_path = options->path() ? options->path()->GetPath() : path_;
 
-  cc::PaintCanvas* c = DrawingCanvas();
+  cc::PaintCanvas* c = GetOrCreatePaintCanvas();
 
   if (hit_region_path.IsEmpty() || !c || !GetState().IsTransformInvertible() ||
       c->isClipEmpty()) {

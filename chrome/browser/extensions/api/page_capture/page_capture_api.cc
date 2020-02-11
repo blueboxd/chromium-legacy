@@ -85,11 +85,18 @@ void PageCaptureSaveAsMHTMLFunction::SetTestDelegate(TestDelegate* delegate) {
   test_delegate_ = delegate;
 }
 
-bool PageCaptureSaveAsMHTMLFunction::RunAsync() {
+ExtensionFunction::ResponseAction PageCaptureSaveAsMHTMLFunction::Run() {
   params_ = SaveAsMHTML::Params::Create(*args_);
   EXTENSION_FUNCTION_VALIDATE(params_.get());
 
-  AddRef();  // Balanced in ReturnFailure/ReturnSuccess()
+  // Add a reference, extending the lifespan of this extension function until
+  // the response has been received by the renderer. This function generates a
+  // blob which contains a reference scoped to this object. In order for the
+  // blob to remain alive, we have to stick around until a reference has
+  // been obtained by the renderer. The response ack is the signal that the
+  // renderer has it's reference, so we can release ours.
+  // TODO(crbug.com/1050887): Potential memory leak here.
+  AddRef();  // Balanced in OnMessageReceived()
 
   // In Public Sessions, extensions (and apps) are force-installed by admin
   // policy so the user does not get a chance to review the permissions for
@@ -101,8 +108,7 @@ bool PageCaptureSaveAsMHTMLFunction::RunAsync() {
   if (profiles::ArePublicSessionRestrictionsEnabled()) {
     WebContents* web_contents = GetWebContents();
     if (!web_contents) {
-      ReturnFailure(kTabClosedError);
-      return true;
+      return RespondNow(Error(kTabClosedError));
     }
     // This Unretained is safe because this object is Released() in
     // OnMessageReceived which gets called at some point after callback is run.
@@ -112,24 +118,25 @@ bool PageCaptureSaveAsMHTMLFunction::RunAsync() {
     permission_helper::HandlePermissionRequest(
         *extension(), {APIPermission::kPageCapture}, web_contents, callback,
         permission_helper::PromptFactory());
-    return true;
+    return RespondLater();
   }
 #endif
 
-  if (!CanCaptureCurrentPage()) {
-    return false;
+  std::string error;
+  if (!CanCaptureCurrentPage(&error)) {
+    return RespondNow(Error(error));
   }
   base::PostTask(
       FROM_HERE, kCreateTemporaryFileTaskTraits,
       base::BindOnce(&PageCaptureSaveAsMHTMLFunction::CreateTemporaryFile,
                      this));
-  return true;
+  return RespondLater();
 }
 
-bool PageCaptureSaveAsMHTMLFunction::CanCaptureCurrentPage() {
+bool PageCaptureSaveAsMHTMLFunction::CanCaptureCurrentPage(std::string* error) {
   WebContents* web_contents = GetWebContents();
   if (!web_contents) {
-    error_ = kTabClosedError;
+    *error = kTabClosedError;
     return false;
   }
   const GURL& url = web_contents->GetLastCommittedURL();
@@ -142,14 +149,14 @@ bool PageCaptureSaveAsMHTMLFunction::CanCaptureCurrentPage() {
     can_capture_page = extensions::util::AllowFileAccess(
         extension()->id(), web_contents->GetBrowserContext());
   } else {
-    std::string error;
+    std::string unused_error;
     can_capture_page = extension()->permissions_data()->CanCaptureVisiblePage(
-        url, sessions::SessionTabHelper::IdForTab(web_contents).id(), &error,
-        extensions::CaptureRequirement::kPageCapture);
+        url, sessions::SessionTabHelper::IdForTab(web_contents).id(),
+        &unused_error, extensions::CaptureRequirement::kPageCapture);
   }
 
   if (!can_capture_page) {
-    error_ = kPageCaptureNotAllowed;
+    *error = kPageCaptureNotAllowed;
   }
   return can_capture_page;
 }
@@ -262,9 +269,7 @@ void PageCaptureSaveAsMHTMLFunction::MHTMLGenerated(int64_t mhtml_file_size) {
 void PageCaptureSaveAsMHTMLFunction::ReturnFailure(const std::string& error) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
-  error_ = error;
-
-  SendResponse(false);
+  Respond(Error(error));
 
   // Must not Release() here, OnMessageReceived will call it eventually.
 }
@@ -284,9 +289,7 @@ void PageCaptureSaveAsMHTMLFunction::ReturnSuccess(int64_t file_size) {
   std::unique_ptr<base::DictionaryValue> dict(new base::DictionaryValue());
   dict->SetString("mhtmlFilePath", mhtml_path_.value());
   dict->SetInteger("mhtmlFileLength", file_size);
-  SetResult(std::move(dict));
-
-  SendResponse(true);
+  Respond(OneArgument(std::move(dict)));
 
   // Note that we'll wait for a response ack message received in
   // OnMessageReceived before we call Release() (to prevent the blob file from
@@ -297,7 +300,7 @@ WebContents* PageCaptureSaveAsMHTMLFunction::GetWebContents() {
   Browser* browser = NULL;
   content::WebContents* web_contents = NULL;
 
-  if (!ExtensionTabUtil::GetTabById(params_->details.tab_id, GetProfile(),
+  if (!ExtensionTabUtil::GetTabById(params_->details.tab_id, browser_context(),
                                     include_incognito_information(), &browser,
                                     NULL, &web_contents, NULL)) {
     return NULL;

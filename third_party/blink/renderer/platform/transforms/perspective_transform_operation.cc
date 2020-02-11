@@ -33,7 +33,7 @@ namespace blink {
 scoped_refptr<TransformOperation> PerspectiveTransformOperation::Accumulate(
     const TransformOperation& other) {
   DCHECK(other.IsSameType(*this));
-  double other_p = ToPerspectiveTransformOperation(other).p_;
+  double other_p = To<PerspectiveTransformOperation>(other).p_;
 
   if (p_ == 0 && other_p == 0)
     return nullptr;

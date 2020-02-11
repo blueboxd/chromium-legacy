@@ -49,7 +49,7 @@ TransformOperation::OperationType GetTypeForScale(double x,
 scoped_refptr<TransformOperation> ScaleTransformOperation::Accumulate(
     const TransformOperation& other) {
   DCHECK(other.CanBlendWith(*this));
-  const auto& other_op = ToScaleTransformOperation(other);
+  const auto& other_op = To<ScaleTransformOperation>(other);
   // Scale parameters are one in the identity transform function so use
   // accumulation for one-based values.
   double new_x = x_ + other_op.x_ - 1;

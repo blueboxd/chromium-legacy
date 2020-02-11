@@ -27,6 +27,7 @@
 
 #include "third_party/blink/renderer/platform/transforms/transform_operation.h"
 #include "third_party/blink/renderer/platform/transforms/transformation_matrix.h"
+#include "third_party/blink/renderer/platform/wtf/casting.h"
 
 namespace blink {
 
@@ -109,7 +110,13 @@ class PLATFORM_EXPORT MatrixTransformOperation final
   double f_;
 };
 
-DEFINE_TRANSFORM_TYPE_CASTS(MatrixTransformOperation);
+template <>
+struct DowncastTraits<MatrixTransformOperation> {
+  static bool AllowFrom(const TransformOperation& transform) {
+    return MatrixTransformOperation::IsMatchingOperationType(
+        transform.GetType());
+  }
+};
 
 }  // namespace blink
 

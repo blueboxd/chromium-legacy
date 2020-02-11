@@ -224,10 +224,11 @@ AXObject* AXObjectCacheImpl::FocusedImageMapUIElement(
   unsigned count = image_children.size();
   for (unsigned k = 0; k < count; ++k) {
     AXObject* child = image_children[k];
-    if (!child->IsImageMapLink())
+    auto* ax_object = DynamicTo<AXImageMapLink>(child);
+    if (!ax_object)
       continue;
 
-    if (ToAXImageMapLink(child)->AreaElement() == area_element)
+    if (ax_object->AreaElement() == area_element)
       return child;
   }
 
@@ -1025,8 +1026,8 @@ void AXObjectCacheImpl::PostNotificationsAfterLayout(Document* document) {
 #if DCHECK_IS_ON()
     // Make sure none of the layout views are in the process of being layed out.
     // Notifications should only be sent after the layoutObject has finished
-    if (obj->IsAXLayoutObject()) {
-      AXLayoutObject* layout_obj = ToAXLayoutObject(obj);
+    auto* layout_obj = DynamicTo<AXLayoutObject>(obj);
+    if (layout_obj) {
       LayoutObject* layout_object = layout_obj->GetLayoutObject();
       if (layout_object && layout_object->View())
         DCHECK(!layout_object->View()->GetLayoutState());
@@ -1116,11 +1117,11 @@ void AXObjectCacheImpl::ListboxSelectedChildrenChanged(
 }
 
 void AXObjectCacheImpl::ListboxActiveIndexChanged(HTMLSelectElement* select) {
-  AXObject* obj = Get(select);
-  if (!obj || !obj->IsAXListBox())
+  auto* ax_object = DynamicTo<AXListBox>(Get(select));
+  if (!ax_object)
     return;
 
-  ToAXListBox(obj)->ActiveIndexChanged();
+  ax_object->ActiveIndexChanged();
 }
 
 void AXObjectCacheImpl::LocationChanged(LayoutObject* layout_object) {
@@ -1129,21 +1130,21 @@ void AXObjectCacheImpl::LocationChanged(LayoutObject* layout_object) {
 
 void AXObjectCacheImpl::RadiobuttonRemovedFromGroup(
     HTMLInputElement* group_member) {
-  AXObject* obj = Get(group_member);
-  if (!obj || !obj->IsAXRadioInput())
+  auto* ax_object = DynamicTo<AXRadioInput>(Get(group_member));
+  if (!ax_object)
     return;
 
   // The 'posInSet' and 'setSize' attributes should be updated from the first
   // node, as the removed node is already detached from tree.
-  HTMLInputElement* first_radio =
-      ToAXRadioInput(obj)->FindFirstRadioButtonInGroup(group_member);
+  auto* first_radio = ax_object->FindFirstRadioButtonInGroup(group_member);
   AXObject* first_obj = Get(first_radio);
-  if (!first_obj || !first_obj->IsAXRadioInput())
+  auto* ax_first_obj = DynamicTo<AXRadioInput>(first_obj);
+  if (!ax_first_obj)
     return;
 
-  ToAXRadioInput(first_obj)->UpdatePosAndSetSize(1);
+  ax_first_obj->UpdatePosAndSetSize(1);
   PostNotification(first_obj, ax::mojom::Event::kAriaAttributeChanged);
-  ToAXRadioInput(first_obj)->RequestUpdateToNextNode(true);
+  ax_first_obj->RequestUpdateToNextNode(true);
 }
 
 void AXObjectCacheImpl::ImageLoaded(LayoutObject* layout_object) {
@@ -1713,27 +1714,27 @@ void AXObjectCacheImpl::HandleValueChanged(Node* node) {
 
 void AXObjectCacheImpl::HandleUpdateActiveMenuOption(LayoutObject* menu_list,
                                                      int option_index) {
-  AXObject* obj = Get(menu_list);
-  if (!obj || !obj->IsMenuList())
+  auto* ax_object = DynamicTo<AXMenuList>(Get(menu_list));
+  if (!ax_object)
     return;
 
-  ToAXMenuList(obj)->DidUpdateActiveOption(option_index);
+  ax_object->DidUpdateActiveOption(option_index);
 }
 
 void AXObjectCacheImpl::DidShowMenuListPopup(LayoutObject* menu_list) {
-  AXObject* obj = Get(menu_list);
-  if (!obj || !obj->IsMenuList())
+  auto* ax_object = DynamicTo<AXMenuList>(Get(menu_list));
+  if (!ax_object)
     return;
 
-  ToAXMenuList(obj)->DidShowPopup();
+  ax_object->DidShowPopup();
 }
 
 void AXObjectCacheImpl::DidHideMenuListPopup(LayoutObject* menu_list) {
-  AXObject* obj = Get(menu_list);
-  if (!obj || !obj->IsMenuList())
+  auto* ax_object = DynamicTo<AXMenuList>(Get(menu_list));
+  if (!ax_object)
     return;
 
-  ToAXMenuList(obj)->DidHidePopup();
+  ax_object->DidHidePopup();
 }
 
 void AXObjectCacheImpl::HandleLoadComplete(Document* document) {

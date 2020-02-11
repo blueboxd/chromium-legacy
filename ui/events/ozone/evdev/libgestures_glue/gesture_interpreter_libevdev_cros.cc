@@ -24,6 +24,10 @@
 #include "ui/events/ozone/evdev/libgestures_glue/gesture_timer_provider.h"
 #include "ui/gfx/geometry/point_f.h"
 
+#ifndef REL_WHEEL_HI_RES
+#define REL_WHEEL_HI_RES 0x0b
+#endif
+
 namespace ui {
 
 namespace {
@@ -67,6 +71,8 @@ HardwareProperties GestureHardwareProperties(
   hwprops.is_button_pad = Event_Get_Button_Pad(evdev);
   hwprops.has_wheel = EvdevBitIsSet(evdev->info.rel_bitmask, REL_WHEEL) ||
                       EvdevBitIsSet(evdev->info.rel_bitmask, REL_HWHEEL);
+  hwprops.wheel_is_hi_res =
+	  EvdevBitIsSet(evdev->info.rel_bitmask, REL_WHEEL_HI_RES);
 
   return hwprops;
 }
@@ -170,6 +176,7 @@ void GestureInterpreterLibevdevCros::OnLibEvdevCrosEvent(Evdev* evdev,
   hwstate.rel_x = evstate->rel_x;
   hwstate.rel_y = evstate->rel_y;
   hwstate.rel_wheel = evstate->rel_wheel;
+  hwstate.rel_wheel_hi_res = evstate->rel_wheel_hi_res;
   hwstate.rel_hwheel = evstate->rel_hwheel;
 
   // Touch.

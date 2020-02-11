@@ -527,12 +527,31 @@ ColorSpace ColorSpace::GetRasterColorSpace() const {
   return *this;
 }
 
-ColorSpace ColorSpace::GetBlendingColorSpace() const {
-  // HDR output on windows requires output have a linear transfer function.
-  // Linear blending breaks the web, so use extended-sRGB for blending.
-  if (IsHDR())
-    return CreateExtendedSRGB();
-  return *this;
+bool ColorSpace::IsSuitableForBlending() const {
+  switch (transfer_) {
+    case TransferID::SMPTEST2084:
+      // PQ is not an acceptable space to do blending in -- blending 0 and 1
+      // evenly will get a result of sRGB 0.259 (instead of 0.5).
+      return false;
+    case TransferID::LINEAR_HDR:
+      // If the color space is nearly-linear, then it is not suitable for
+      // blending -- blending 0 and 1 evenly will get a result of sRGB 0.735
+      // (instead of 0.5).
+      return false;
+    case TransferID::CUSTOM_HDR: {
+      // A gamma close enough to linear is treated as linear.
+      skcms_TransferFunction fn;
+      if (GetTransferFunction(&fn)) {
+        constexpr float kMinGamma = 1.25;
+        if (fn.g < kMinGamma)
+          return false;
+      }
+      break;
+    }
+    default:
+      break;
+  }
+  return true;
 }
 
 ColorSpace ColorSpace::GetWithMatrixAndRange(MatrixID matrix,

@@ -6,7 +6,10 @@ import("//third_party/closure_compiler/compile_js.gni")
 
 js_type_check("closure_compile") {
   testonly = true
-  deps = [ ":background" ]
+  deps = [
+    ":background",
+    ":file_dialog",
+  ]
 }
 
 js_library("background") {
@@ -16,4 +19,9 @@ js_library("background") {
     "//ui/file_manager/integration_tests:remote_call",
     "//ui/file_manager/integration_tests:test_util",
   ]
+}
+
+js_library("file_dialog") {
+  testonly = true
+  deps = []
 }

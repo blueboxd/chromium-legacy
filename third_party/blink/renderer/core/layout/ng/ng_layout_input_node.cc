@@ -134,7 +134,7 @@ void NGLayoutInputNode::ShowNodeTree() const {
   StringBuilder string_builder;
   string_builder.Append(".:: LayoutNG Node Tree ::.\n");
   AppendNodeToString(*this, &string_builder);
-  fprintf(stderr, "%s\n", string_builder.ToString().Utf8().c_str());
+  DLOG(INFO) << "\n" << string_builder.ToString().Utf8();
 }
 #endif
 

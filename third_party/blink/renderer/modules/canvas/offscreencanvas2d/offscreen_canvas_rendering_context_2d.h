@@ -102,10 +102,8 @@ class MODULES_EXPORT OffscreenCanvasRenderingContext2D final
 
   bool ParseColorOrCurrentColor(Color&, const String& color_string) const final;
 
-  cc::PaintCanvas* DrawingCanvas() const final;
-  cc::PaintCanvas* ExistingDrawingCanvas() const final {
-    return DrawingCanvas();
-  }
+  cc::PaintCanvas* GetOrCreatePaintCanvas() final { return GetPaintCanvas(); }
+  cc::PaintCanvas* GetPaintCanvas() const final;
 
   void DidDraw() final;
   void DidDraw(const SkIRect& dirty_rect) final;

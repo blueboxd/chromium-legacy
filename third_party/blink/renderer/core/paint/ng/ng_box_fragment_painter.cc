@@ -568,6 +568,7 @@ void NGBoxFragmentPainter::PaintBlockChildren(const PaintInfo& paint_info) {
   PaintInfo paint_info_for_descendants = paint_info.ForDescendants();
   for (const NGLink& child : box_fragment_.Children()) {
     const NGPhysicalFragment& child_fragment = *child;
+    DCHECK(child_fragment.IsBox());
     if (child_fragment.HasSelfPaintingLayer() || child_fragment.IsFloating() ||
         child_fragment.IsColumnBox())
       continue;
@@ -578,13 +579,7 @@ void NGBoxFragmentPainter::PaintBlockChildren(const PaintInfo& paint_info) {
           .Paint(paint_info_for_descendants);
       continue;
     }
-
-    if (child_fragment.Type() == NGPhysicalFragment::kFragmentBox) {
-      child_fragment.GetLayoutObject()->Paint(paint_info_for_descendants);
-    } else {
-      DCHECK_EQ(child_fragment.Type(),
-                NGPhysicalFragment::kFragmentRenderedLegend);
-    }
+    child_fragment.GetLayoutObject()->Paint(paint_info_for_descendants);
   }
 }
 

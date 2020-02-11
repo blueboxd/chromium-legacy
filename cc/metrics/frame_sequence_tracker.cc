@@ -118,6 +118,12 @@ bool ShouldReportForInteraction(FrameSequenceTrackerType sequence_type,
   return false;
 }
 
+bool IsInteractionType(FrameSequenceTrackerType sequence_type) {
+  return sequence_type == FrameSequenceTrackerType::kTouchScroll ||
+         sequence_type == FrameSequenceTrackerType::kWheelScroll ||
+         sequence_type == FrameSequenceTrackerType::kPinchZoom;
+}
+
 }  // namespace
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -181,32 +187,37 @@ void FrameSequenceMetrics::ReportMetrics() {
       GetIndexForMetric(FrameSequenceMetrics::ThreadType::kMain, type_),
       main_throughput_);
 
-  base::Optional<ThroughputData> slower_throughput;
-  base::Optional<int> slower_throughput_percent;
-  if (impl_throughput_percent &&
-      (!main_throughput_percent ||
-       impl_throughput_percent.value() <= main_throughput_percent.value())) {
-    slower_throughput = impl_throughput_;
-  }
-  if (main_throughput_percent &&
-      (!impl_throughput_percent ||
-       main_throughput_percent.value() < impl_throughput_percent.value())) {
-    slower_throughput = main_throughput_;
-  }
-  if (slower_throughput.has_value()) {
-    slower_throughput_percent = ThroughputData::ReportHistogram(
-        type_, ThreadType::kSlower,
-        GetIndexForMetric(FrameSequenceMetrics::ThreadType::kSlower, type_),
-        slower_throughput.value());
-    DCHECK(slower_throughput_percent.has_value());
-  }
+  bool should_report_slower_thread =
+      IsInteractionType(type_) || type_ == FrameSequenceTrackerType::kUniversal;
+  if (should_report_slower_thread) {
+    base::Optional<ThroughputData> slower_throughput;
+    base::Optional<int> slower_throughput_percent;
+    if (impl_throughput_percent &&
+        (!main_throughput_percent ||
+         impl_throughput_percent.value() <= main_throughput_percent.value())) {
+      slower_throughput = impl_throughput_;
+    }
+    if (main_throughput_percent &&
+        (!impl_throughput_percent ||
+         main_throughput_percent.value() < impl_throughput_percent.value())) {
+      slower_throughput = main_throughput_;
+    }
+    if (slower_throughput.has_value()) {
+      slower_throughput_percent = ThroughputData::ReportHistogram(
+          type_, ThreadType::kSlower,
+          GetIndexForMetric(FrameSequenceMetrics::ThreadType::kSlower, type_),
+          slower_throughput.value());
+      DCHECK(slower_throughput_percent.has_value())
+          << FrameSequenceTracker::GetFrameSequenceTrackerTypeName(type_);
+    }
 
-  // slower_throughput has value indicates that we have reported UMA.
-  if (slower_throughput.has_value() && ukm_manager_ &&
-      throughput_ukm_reporter_) {
-    throughput_ukm_reporter_->ReportThroughputUkm(
-        ukm_manager_, slower_throughput_percent, impl_throughput_percent,
-        main_throughput_percent, type_);
+    // slower_throughput has value indicates that we have reported UMA.
+    if (slower_throughput.has_value() && ukm_manager_ &&
+        throughput_ukm_reporter_) {
+      throughput_ukm_reporter_->ReportThroughputUkm(
+          ukm_manager_, slower_throughput_percent, impl_throughput_percent,
+          main_throughput_percent, type_);
+    }
   }
 
   // Report the checkerboarding metrics.
@@ -979,6 +990,9 @@ base::Optional<int> FrameSequenceMetrics::ThroughputData::ReportHistogram(
     UMA_HISTOGRAM_PERCENTAGE("Graphics.Smoothness.Throughput.AllSequences",
                              percent);
   }
+
+  if (!is_animation && !IsInteractionType(sequence_type))
+    return base::nullopt;
 
   const char* thread_name =
       thread_type == ThreadType::kCompositor

@@ -67,11 +67,6 @@ class COLOR_SPACE_EXPORT DisplayColorSpaces {
   gfx::ColorSpace GetCompositingColorSpace(bool needs_alpha,
                                            ContentColorUsage color_usage) const;
 
-  // Return true if |color_space| is an HDR space, but is not equal to either
-  // of the HDR output spaces. In this case, output will need to be converted
-  // from |color_space| to one of the output color spaces.
-  bool NeedsHDRColorConversionPass(const gfx::ColorSpace& color_space) const;
-
   // Return true if the HDR color spaces are, indeed, HDR.
   bool SupportsHDR() const;
 

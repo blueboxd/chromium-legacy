@@ -43,7 +43,6 @@
 #include "chrome/browser/ui/app_list/app_service/app_service_app_model_builder.h"
 #include "chrome/browser/ui/app_list/arc/arc_app_icon.h"
 #include "chrome/browser/ui/app_list/arc/arc_app_icon_loader.h"
-#include "chrome/browser/ui/app_list/arc/arc_app_item.h"
 #include "chrome/browser/ui/app_list/arc/arc_app_launcher.h"
 #include "chrome/browser/ui/app_list/arc/arc_app_list_prefs.h"
 #include "chrome/browser/ui/app_list/arc/arc_app_list_prefs_factory.h"
@@ -1280,8 +1279,8 @@ TEST_P(ArcAppModelBuilderTest, RequestShortcutIcons) {
   ASSERT_NE(nullptr, prefs);
 
   // Icons representations loading is done asynchronously and is started once
-  // the ArcAppItem is created. Wait for icons for all supported scales to be
-  // loaded.
+  // the AppServiceAppItem is created. Wait for icons for all supported scales
+  // to be loaded.
   std::set<int> expected_dimensions;
   AppServiceAppItem* app_item = FindArcItem(ArcAppTest::GetAppId(shortcut));
   ASSERT_NE(nullptr, app_item);

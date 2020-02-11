@@ -54,6 +54,10 @@ using gpu::gles2::GLES2Interface;
 namespace viz {
 namespace {
 
+const gfx::DisplayColorSpaces kRec601DisplayColorSpaces(
+    gfx::ColorSpace(gfx::ColorSpace::PrimaryID::SMPTE170M,
+                    gfx::ColorSpace::TransferID::SMPTE170M));
+
 #if !defined(OS_ANDROID)
 template <typename T>
 base::span<const uint8_t> MakePixelSpan(const std::vector<T>& vec) {
@@ -1689,8 +1693,7 @@ class VideoRendererPixelHiLoTest : public VideoRendererPixelTest<RendererType>,
     int id = 1;
     std::unique_ptr<RenderPass> pass = CreateTestRootRenderPass(id, rect);
     // Set the output color space to match the input primaries and transfer.
-    pass->color_space = gfx::ColorSpace(gfx::ColorSpace::PrimaryID::SMPTE170M,
-                                        gfx::ColorSpace::TransferID::SMPTE170M);
+    this->display_color_spaces_ = kRec601DisplayColorSpaces;
 
     SharedQuadState* shared_state = CreateTestSharedQuadState(
         gfx::Transform(), rect, pass.get(), gfx::RRectF());
@@ -1717,8 +1720,7 @@ class VideoRendererPixelHiLoTest : public VideoRendererPixelTest<RendererType>,
     int id = 1;
     std::unique_ptr<RenderPass> pass = CreateTestRootRenderPass(id, viewport);
     // Set the output color space to match the input primaries and transfer.
-    pass->color_space = gfx::ColorSpace(gfx::ColorSpace::PrimaryID::SMPTE170M,
-                                        gfx::ColorSpace::TransferID::SMPTE170M);
+    this->display_color_spaces_ = kRec601DisplayColorSpaces;
 
     SharedQuadState* shared_state = CreateTestSharedQuadState(
         gfx::Transform(), viewport, pass.get(), gfx::RRectF());
@@ -1762,8 +1764,7 @@ TYPED_TEST(VideoRendererPixelTest, OffsetYUVRect) {
   int id = 1;
   std::unique_ptr<RenderPass> pass = CreateTestRootRenderPass(id, rect);
   // Set the output color space to match the input primaries and transfer.
-  pass->color_space = gfx::ColorSpace(gfx::ColorSpace::PrimaryID::SMPTE170M,
-                                      gfx::ColorSpace::TransferID::SMPTE170M);
+  this->display_color_spaces_ = kRec601DisplayColorSpaces;
 
   SharedQuadState* shared_state = CreateTestSharedQuadState(
       gfx::Transform(), rect, pass.get(), gfx::RRectF());
@@ -1790,8 +1791,7 @@ TYPED_TEST(VideoRendererPixelTest, SimpleYUVRectBlack) {
   int id = 1;
   std::unique_ptr<RenderPass> pass = CreateTestRootRenderPass(id, rect);
   // Set the output color space to match the input primaries and transfer.
-  pass->color_space = gfx::ColorSpace(gfx::ColorSpace::PrimaryID::SMPTE170M,
-                                      gfx::ColorSpace::TransferID::SMPTE170M);
+  this->display_color_spaces_ = kRec601DisplayColorSpaces;
 
   SharedQuadState* shared_state = CreateTestSharedQuadState(
       gfx::Transform(), rect, pass.get(), gfx::RRectF());
@@ -1884,9 +1884,7 @@ TYPED_TEST(VideoRendererPixelTest, YUVAEdgeBleed) {
   this->CreateEdgeBleedPass(media::PIXEL_FORMAT_I420A,
                             gfx::ColorSpace::CreateREC601(), &pass_list);
   // Set the output color space to match the input primaries and transfer.
-  pass_list.back()->color_space =
-      gfx::ColorSpace(gfx::ColorSpace::PrimaryID::SMPTE170M,
-                      gfx::ColorSpace::TransferID::SMPTE170M);
+  this->display_color_spaces_ = kRec601DisplayColorSpaces;
   EXPECT_TRUE(this->RunPixelTest(&pass_list,
                                  base::FilePath(FILE_PATH_LITERAL("green.png")),
                                  cc::FuzzyPixelOffByOneComparator(true)));
@@ -1923,8 +1921,7 @@ TYPED_TEST(VideoRendererPixelTest, SimpleYUVARect) {
   int id = 1;
   std::unique_ptr<RenderPass> pass = CreateTestRootRenderPass(id, rect);
   // Set the output color space to match the input primaries and transfer.
-  pass->color_space = gfx::ColorSpace(gfx::ColorSpace::PrimaryID::SMPTE170M,
-                                      gfx::ColorSpace::TransferID::SMPTE170M);
+  this->display_color_spaces_ = kRec601DisplayColorSpaces;
 
   SharedQuadState* shared_state = CreateTestSharedQuadState(
       gfx::Transform(), rect, pass.get(), gfx::RRectF());
@@ -1953,8 +1950,7 @@ TYPED_TEST(VideoRendererPixelTest, FullyTransparentYUVARect) {
   int id = 1;
   std::unique_ptr<RenderPass> pass = CreateTestRootRenderPass(id, rect);
   // Set the output color space to match the input primaries and transfer.
-  pass->color_space = gfx::ColorSpace(gfx::ColorSpace::PrimaryID::SMPTE170M,
-                                      gfx::ColorSpace::TransferID::SMPTE170M);
+  this->display_color_spaces_ = kRec601DisplayColorSpaces;
 
   SharedQuadState* shared_state = CreateTestSharedQuadState(
       gfx::Transform(), rect, pass.get(), gfx::RRectF());
@@ -3528,7 +3524,7 @@ TYPED_TEST(GPURendererPixelTest, DISABLED_TrilinearFiltering) {
   child_pass->SetAll(
       child_pass_id, child_pass_rect, child_pass_rect, transform_to_root,
       cc::FilterOperations(), cc::FilterOperations(), gfx::RRectF(),
-      gfx::ColorSpace::CreateSRGB(), false, false, false, generate_mipmap);
+      gfx::ContentColorUsage::kSRGB, false, false, false, generate_mipmap);
 
   gfx::Rect red_rect(child_pass_rect);
   // Small enough red rect that linear filtering will miss it but large enough
@@ -4925,6 +4921,8 @@ class ColorTransformPixelTest
       this->dst_color_space_ =
           gfx::ICCProfileForTestingNoAnalyticTrFn().GetColorSpace();
     }
+    this->display_color_spaces_ =
+        gfx::DisplayColorSpaces(this->dst_color_space_);
     this->premultiplied_alpha_ = std::get<2>(GetParam());
   }
 
@@ -4987,7 +4985,6 @@ class ColorTransformPixelTest
 
     int id = 1;
     std::unique_ptr<RenderPass> pass = CreateTestRootRenderPass(id, rect);
-    pass->color_space = this->dst_color_space_;
 
     // Append a quad to execute the transform.
     {

@@ -473,7 +473,7 @@ bool AXLayoutObject::IsFocused() const {
   if (!focused_element)
     return false;
   AXObject* focused_object = AXObjectCache().GetOrCreate(focused_element);
-  if (!focused_object || !focused_object->IsAXLayoutObject())
+  if (!IsA<AXLayoutObject>(focused_object))
     return false;
 
   // A web area is represented by the Document node in the DOM tree, which isn't
@@ -1763,10 +1763,9 @@ AXObject* AXLayoutObject::AccessibilityHitTest(const IntPoint& point) const {
   if (result && result->AccessibilityIsIgnored()) {
     // If this element is the label of a control, a hit test should return the
     // control.
-    if (result->IsAXLayoutObject()) {
+    if (auto* ax_object = DynamicTo<AXLayoutObject>(result)) {
       AXObject* control_object =
-          ToAXLayoutObject(result)
-              ->CorrespondingControlAXObjectForLabelElement();
+          ax_object->CorrespondingControlAXObjectForLabelElement();
       if (control_object && control_object->NameFromLabelElement())
         return control_object;
     }
@@ -3089,7 +3088,7 @@ void AXLayoutObject::AddImageMapChildren() {
     // add an <area> element for this child if it has a link
     AXObject* obj = AXObjectCache().GetOrCreate(&area);
     if (obj) {
-      AXImageMapLink* area_object = ToAXImageMapLink(obj);
+      auto* area_object = To<AXImageMapLink>(obj);
       area_object->SetParent(this);
       DCHECK_NE(area_object->AXObjectID(), 0U);
       if (area_object->AccessibilityIsIncludedInTree())

@@ -59,6 +59,7 @@ source_set("application_breadcrumbs_logger") {
 
   deps = [
     ":breadcrumbs",
+    ":generate_not_user_triggered_actions",
     "//base",
     "//ios/chrome/browser/crash_report:crash_report_internal",
     "//ios/chrome/browser/crash_report/breadcrumbs",
@@ -71,6 +72,7 @@ source_set("unit_tests") {
   deps = [
     ":application_breadcrumbs_logger",
     ":breadcrumbs",
+    ":generate_not_user_triggered_actions",
     "//base/test:test_support",
     "//ios/chrome/browser/browser_state:test_support",
     "//ios/chrome/browser/main:test_support",
@@ -86,6 +88,7 @@ source_set("unit_tests") {
 
   sources = [
     "application_breadcrumbs_logger_unittest.mm",
+    "application_breadcrumbs_not_user_action_unittest.mm",
     "breadcrumb_manager_browser_agent_unittest.mm",
     "breadcrumb_manager_keyed_service_unittest.mm",
     "breadcrumb_manager_observer_bridge_unittest.mm",
@@ -94,5 +97,17 @@ source_set("unit_tests") {
     "breadcrumb_manager_unittest.mm",
     "breadcrumb_persistent_storage_keyed_service_unittest.mm",
     "breadcrumb_persistent_storage_util_unittest.mm",
+  ]
+}
+
+action("generate_not_user_triggered_actions") {
+  script = "generate_not_user_triggered_actions.py"
+  sources = [ "//tools/metrics/actions/actions.xml" ]
+  outputs = [ "$target_gen_dir/application_breadcrumbs_not_user_action.inc" ]
+  args = [
+    "--actions",
+    rebase_path(sources[0], root_build_dir),
+    "--output",
+    rebase_path(outputs[0], root_build_dir),
   ]
 }

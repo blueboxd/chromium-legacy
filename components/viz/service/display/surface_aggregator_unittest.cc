@@ -4349,9 +4349,6 @@ TEST_F(SurfaceAggregatorValidSurfaceTest, ColorSpaceTestWin) {
 
   std::vector<Pass> passes = {Pass(quads[0], 2, SurfaceSize()),
                               Pass(quads[1], 1, SurfaceSize())};
-  gfx::ColorSpace compositing_color_space =
-      display_color_spaces.GetCompositingColorSpace(
-          false, gfx::ContentColorUsage::kHDR);
   passes[1].has_transparent_background = true;
 
   // HDR content with a transparent background will get an extra RenderPass
@@ -4365,12 +4362,12 @@ TEST_F(SurfaceAggregatorValidSurfaceTest, ColorSpaceTestWin) {
     CompositorFrame aggregated_frame = AggregateFrame(surface_id);
 
     EXPECT_EQ(3u, aggregated_frame.render_pass_list.size());
-    EXPECT_EQ(compositing_color_space,
-              aggregated_frame.render_pass_list[0]->color_space);
-    EXPECT_EQ(compositing_color_space,
-              aggregated_frame.render_pass_list[1]->color_space);
-    EXPECT_EQ(gfx::ColorSpace::CreateSCRGBLinear(),
-              aggregated_frame.render_pass_list[2]->color_space);
+    EXPECT_EQ(gfx::ContentColorUsage::kHDR,
+              aggregated_frame.render_pass_list[0]->content_color_usage);
+    EXPECT_EQ(gfx::ContentColorUsage::kHDR,
+              aggregated_frame.render_pass_list[1]->content_color_usage);
+    EXPECT_EQ(gfx::ContentColorUsage::kHDR,
+              aggregated_frame.render_pass_list[2]->content_color_usage);
   }
 
   // HDR content with an opaque background will get an extra RenderPass
@@ -4384,12 +4381,12 @@ TEST_F(SurfaceAggregatorValidSurfaceTest, ColorSpaceTestWin) {
     CompositorFrame aggregated_frame = AggregateFrame(surface_id);
 
     EXPECT_EQ(3u, aggregated_frame.render_pass_list.size());
-    EXPECT_EQ(compositing_color_space,
-              aggregated_frame.render_pass_list[0]->color_space);
-    EXPECT_EQ(compositing_color_space,
-              aggregated_frame.render_pass_list[1]->color_space);
-    EXPECT_EQ(gfx::ColorSpace::CreateHDR10(),
-              aggregated_frame.render_pass_list[2]->color_space);
+    EXPECT_EQ(gfx::ContentColorUsage::kHDR,
+              aggregated_frame.render_pass_list[0]->content_color_usage);
+    EXPECT_EQ(gfx::ContentColorUsage::kHDR,
+              aggregated_frame.render_pass_list[1]->content_color_usage);
+    EXPECT_EQ(gfx::ContentColorUsage::kHDR,
+              aggregated_frame.render_pass_list[2]->content_color_usage);
   }
 
   // This simulates the situation where we don't have HDR capabilities. Opaque
@@ -4416,11 +4413,10 @@ TEST_F(SurfaceAggregatorValidSurfaceTest, ColorSpaceTestWin) {
     CompositorFrame aggregated_frame = AggregateFrame(surface_id);
 
     EXPECT_EQ(2u, aggregated_frame.render_pass_list.size());
-    EXPECT_EQ(compositing_color_space,
-              aggregated_frame.render_pass_list[0]->color_space);
-    EXPECT_EQ(gfx::ColorSpace(gfx::ColorSpace::PrimaryID::BT2020,
-                              gfx::ColorSpace::TransferID::IEC61966_2_1),
-              aggregated_frame.render_pass_list[1]->color_space);
+    EXPECT_EQ(gfx::ContentColorUsage::kHDR,
+              aggregated_frame.render_pass_list[0]->content_color_usage);
+    EXPECT_EQ(gfx::ContentColorUsage::kHDR,
+              aggregated_frame.render_pass_list[1]->content_color_usage);
   }
 
   // When the root pass has a transparent background, we'll end up getting a
@@ -4434,37 +4430,19 @@ TEST_F(SurfaceAggregatorValidSurfaceTest, ColorSpaceTestWin) {
     CompositorFrame aggregated_frame = AggregateFrame(surface_id);
 
     EXPECT_EQ(3u, aggregated_frame.render_pass_list.size());
-    EXPECT_EQ(compositing_color_space,
-              aggregated_frame.render_pass_list[0]->color_space);
-    EXPECT_EQ(compositing_color_space,
-              aggregated_frame.render_pass_list[1]->color_space);
-    EXPECT_EQ(gfx::ColorSpace::CreateSCRGBLinear(),
-              aggregated_frame.render_pass_list[2]->color_space);
+    EXPECT_EQ(gfx::ContentColorUsage::kHDR,
+              aggregated_frame.render_pass_list[0]->content_color_usage);
+    EXPECT_EQ(gfx::ContentColorUsage::kHDR,
+              aggregated_frame.render_pass_list[1]->content_color_usage);
+    EXPECT_EQ(gfx::ContentColorUsage::kHDR,
+              aggregated_frame.render_pass_list[2]->content_color_usage);
   }
 }
 
 // Ensure that the render passes have correct color spaces.
 TEST_F(SurfaceAggregatorValidSurfaceTest, MetadataContentColorUsageTest) {
   auto test_content_color_usage_aggregation =
-      [this](gfx::ContentColorUsage content_color_usage, bool is_wide,
-             bool is_hdr) {
-        gfx::DisplayColorSpaces display_color_spaces;
-        display_color_spaces.SetOutputColorSpaceAndBufferFormat(
-            gfx::ContentColorUsage::kWideColorGamut, false /* needs_alpha */,
-            gfx::ColorSpace::CreateDisplayP3D65(),
-            gfx::BufferFormat::RGBA_8888);
-        display_color_spaces.SetOutputColorSpaceAndBufferFormat(
-            gfx::ContentColorUsage::kWideColorGamut, true /* needs_alpha */,
-            gfx::ColorSpace::CreateDisplayP3D65(),
-            gfx::BufferFormat::RGBA_8888);
-        display_color_spaces.SetOutputColorSpaceAndBufferFormat(
-            gfx::ContentColorUsage::kHDR, false /* needs_alpha */,
-            gfx::ColorSpace::CreateExtendedSRGB(), gfx::BufferFormat::RGBA_F16);
-        display_color_spaces.SetOutputColorSpaceAndBufferFormat(
-            gfx::ContentColorUsage::kHDR, true /* needs_alpha */,
-            gfx::ColorSpace::CreateExtendedSRGB(), gfx::BufferFormat::RGBA_F16);
-        aggregator_.SetDisplayColorSpaces(display_color_spaces);
-
+      [this](gfx::ContentColorUsage content_color_usage) {
         std::vector<Quad> child_quads = {
             Quad::SolidColorQuad(SK_ColorGREEN, gfx::Rect(5, 5))};
         std::vector<Pass> child_passes = {
@@ -4508,16 +4486,13 @@ TEST_F(SurfaceAggregatorValidSurfaceTest, MetadataContentColorUsageTest) {
         // expected generalization.
         ASSERT_EQ(aggregated_frame.metadata.content_color_usage,
                   content_color_usage);
-        ASSERT_EQ(is_wide, aggregated_pass_list[0]->color_space.IsWide());
-        ASSERT_EQ(is_hdr, aggregated_pass_list[0]->color_space.IsHDR());
+        ASSERT_EQ(aggregated_pass_list[0]->content_color_usage,
+                  content_color_usage);
       };
 
-  test_content_color_usage_aggregation(gfx::ContentColorUsage::kSRGB, false,
-                                       false);
-  test_content_color_usage_aggregation(gfx::ContentColorUsage::kWideColorGamut,
-                                       true, false);
-  test_content_color_usage_aggregation(gfx::ContentColorUsage::kHDR, true,
-                                       true);
+  test_content_color_usage_aggregation(gfx::ContentColorUsage::kSRGB);
+  test_content_color_usage_aggregation(gfx::ContentColorUsage::kWideColorGamut);
+  test_content_color_usage_aggregation(gfx::ContentColorUsage::kHDR);
 }
 
 // Tests that has_damage_from_contributing_content is aggregated correctly from

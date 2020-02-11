@@ -104,6 +104,9 @@ class ASH_EXPORT LoginShelfView : public views::View,
   // Sets whether shutdown button is enabled in the login screen.
   void SetShutdownButtonEnabled(bool enable_shutdown_button);
 
+  // Sets and animates the opacity of login shelf buttons.
+  void SetButtonOpacity(float target_opacity);
+
   // views::View:
   const char* GetClassName() const override;
   void OnFocus() override;

@@ -58,7 +58,10 @@ class AXMenuList final : public AXLayoutObject {
   DISALLOW_COPY_AND_ASSIGN(AXMenuList);
 };
 
-DEFINE_AX_OBJECT_TYPE_CASTS(AXMenuList, IsMenuList());
+template <>
+struct DowncastTraits<AXMenuList> {
+  static bool AllowFrom(const AXObject& object) { return object.IsMenuList(); }
+};
 
 }  // namespace blink
 

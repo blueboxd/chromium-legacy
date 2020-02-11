@@ -36,6 +36,12 @@
             },
             "base_perftests": {
                 "path": "base_perftests"
+            },
+            "views_perftests": {
+                "path": "views_perftests",
+                "arguments": [
+                    "--xvfb"
+                ]
             }
         }
     },

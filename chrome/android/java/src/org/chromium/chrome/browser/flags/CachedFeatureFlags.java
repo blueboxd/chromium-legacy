@@ -4,19 +4,13 @@
 
 package org.chromium.chrome.browser.flags;
 
-import android.content.Intent;
-import android.content.pm.ResolveInfo;
-import android.speech.RecognizerIntent;
-
 import androidx.annotation.Nullable;
 import androidx.annotation.VisibleForTesting;
 
 import org.chromium.base.BuildInfo;
 import org.chromium.base.ContextUtils;
 import org.chromium.base.FieldTrialList;
-import org.chromium.base.PackageManagerUtils;
 import org.chromium.base.SysUtils;
-import org.chromium.base.ThreadUtils;
 import org.chromium.base.annotations.CalledByNative;
 import org.chromium.base.annotations.NativeMethods;
 import org.chromium.base.library_loader.LibraryLoader;
@@ -112,7 +106,6 @@ public class CachedFeatureFlags {
     };
 
     private static Map<String, Boolean> sFlags = new HashMap<>();
-    private static Boolean sHasRecognitionIntentHandler;
     private static String sReachedCodeProfilerTrialGroup;
     private static Boolean sEnabledTabThumbnailApsectRatioForTesting;
 
@@ -179,25 +172,6 @@ public class CachedFeatureFlags {
     public static void setForTesting(String featureName, @Nullable Boolean value) {
         String preferenceName = getPrefForFeatureFlag(featureName);
         sFlags.put(preferenceName, value);
-    }
-
-    /**
-     * Determines whether or not the {@link RecognizerIntent#ACTION_WEB_SEARCH} {@link Intent}
-     * is handled by any {@link android.app.Activity}s in the system.  The result will be cached for
-     * future calls.  Passing {@code false} to {@code useCachedValue} will force it to re-query any
-     * {@link android.app.Activity}s that can process the {@link Intent}.
-     * @param useCachedValue Whether or not to use the cached value from a previous result.
-     * @return {@code true} if recognition is supported.  {@code false} otherwise.
-     */
-    public static boolean isRecognitionIntentPresent(boolean useCachedValue) {
-        ThreadUtils.assertOnUiThread();
-        if (sHasRecognitionIntentHandler == null || !useCachedValue) {
-            List<ResolveInfo> activities = PackageManagerUtils.queryIntentActivities(
-                    new Intent(RecognizerIntent.ACTION_RECOGNIZE_SPEECH), 0);
-            sHasRecognitionIntentHandler = !activities.isEmpty();
-        }
-
-        return sHasRecognitionIntentHandler;
     }
 
     /**

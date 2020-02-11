@@ -3,6 +3,7 @@
 # found in the LICENSE file.
 
 import("//chrome/test/base/js2gtest.gni")
+import("//mojo/public/tools/bindings/mojom.gni")
 import("//third_party/closure_compiler/compile_js.gni")
 
 assert(is_chromeos, "Media App is Chrome OS only")
@@ -11,17 +12,24 @@ static_library("media_app_ui") {
   sources = [
     "media_app_guest_ui.cc",
     "media_app_guest_ui.h",
+    "media_app_page_handler.cc",
+    "media_app_page_handler.h",
     "media_app_ui.cc",
     "media_app_ui.h",
+    "media_app_ui_delegate.h",
     "url_constants.cc",
     "url_constants.h",
   ]
 
   deps = [
+    ":mojo_bindings",
+    ":mojo_bindings_js",
     "//chromeos/constants",
     "//chromeos/resources:media_app_bundle_resources",
     "//chromeos/resources:media_app_resources",
     "//content/public/browser",
+    "//mojo/public/cpp/bindings",
+    "//mojo/public/cpp/platform",
     "//ui/webui",
   ]
 }
@@ -49,6 +57,8 @@ source_set("browser_test_support") {
     "test/media_app_ui_browsertest.h",
   ]
 
+  defines = [ "HAS_OUT_OF_PROC_TEST_RUNNER" ]
+
   deps = [
     ":media_app_ui",
     "//base/test:test_support",
@@ -71,6 +81,10 @@ group("closure_compile") {
     "resources/js:closure_compile",
     "resources/mock/js:closure_compile",
   ]
+}
+
+mojom("mojo_bindings") {
+  sources = [ "media_app_ui.mojom" ]
 }
 
 # Note we compile with reportUnknownTypes while it works, but if dependencies

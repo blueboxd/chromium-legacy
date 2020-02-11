@@ -81,17 +81,17 @@ AXObject* AXMenuListOption::ComputeParent() const {
     return nullptr;
 
   // This happens if the <select> is not rendered. Return it and move on.
-  if (!select_ax_object->IsMenuList())
+  auto* menu_list = DynamicTo<AXMenuList>(select_ax_object);
+  if (!menu_list)
     return select_ax_object;
 
-  AXMenuList* menu_list = ToAXMenuList(select_ax_object);
   if (menu_list->HasChildren()) {
     const auto& child_objects = menu_list->Children();
     if (child_objects.IsEmpty())
       return nullptr;
     DCHECK_EQ(child_objects.size(), 1UL);
-    DCHECK(child_objects[0]->IsMenuListPopup());
-    ToAXMenuListPopup(child_objects[0].Get())->UpdateChildrenIfNecessary();
+    DCHECK(IsA<AXMenuListPopup>(child_objects[0].Get()));
+    To<AXMenuListPopup>(child_objects[0].Get())->UpdateChildrenIfNecessary();
   } else {
     menu_list->UpdateChildrenIfNecessary();
   }
@@ -151,7 +151,7 @@ bool AXMenuListOption::OnNativeClickAction() {
 
   // Calling OnNativeClickAction on the parent select element will toggle
   // it open or closed.
-  if (ParentObject() && ParentObject()->IsMenuListPopup())
+  if (IsA<AXMenuListPopup>(ParentObject()))
     return ParentObject()->OnNativeClickAction();
 
   return AXMockObject::OnNativeClickAction();
@@ -181,7 +181,7 @@ void AXMenuListOption::GetRelativeBounds(AXObject** out_container,
   AXObject* parent = ParentObject();
   if (!parent)
     return;
-  DCHECK(parent->IsMenuListPopup());
+  DCHECK(IsA<AXMenuListPopup>(parent));
 
   AXObject* grandparent = parent->ParentObject();
   if (!grandparent)

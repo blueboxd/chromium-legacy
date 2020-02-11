@@ -9,6 +9,8 @@
 #include "components/infobars/core/infobar_manager.h"
 #import "ios/chrome/browser/overlays/public/overlay_request_cancel_handler.h"
 
+class InfoBarIOS;
+
 // OverlayRequestCancelHandler that cancels its OverlayRequest when its InfoBar
 // is removed from its InfoBarManager.
 class InfobarOverlayRequestCancelHandler : public OverlayRequestCancelHandler {
@@ -19,15 +21,15 @@ class InfobarOverlayRequestCancelHandler : public OverlayRequestCancelHandler {
 
  protected:
   // Returns the InfoBar that the corresponding request was configured with.
-  infobars::InfoBar* infobar() const { return infobar_; }
+  InfoBarIOS* infobar() const { return infobar_; }
 
   // Called when the infobar triggering |request| was replaced in its manager.
   // Default implementation does nothing.
-  virtual void HandleReplacement(infobars::InfoBar* replacement);
+  virtual void HandleReplacement(InfoBarIOS* replacement);
 
  private:
-  // Cancels the request for InfoBar removal.
-  void Cancel();
+  // Cancels the request when an InfoBar is removed from its InfoBarManager.
+  void CancelForInfobarRemoval();
 
   // Helper object that triggers cancellation when its InfoBar is removed from
   // its InfoBarManager.
@@ -49,7 +51,7 @@ class InfobarOverlayRequestCancelHandler : public OverlayRequestCancelHandler {
         scoped_observer_;
   };
 
-  infobars::InfoBar* infobar_ = nullptr;
+  InfoBarIOS* infobar_ = nullptr;
   RemovalObserver removal_observer_;
 };
 

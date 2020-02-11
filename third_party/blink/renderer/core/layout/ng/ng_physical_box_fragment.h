@@ -137,8 +137,7 @@ class CORE_EXPORT NGPhysicalBoxFragment final
 template <>
 struct DowncastTraits<NGPhysicalBoxFragment> {
   static bool AllowFrom(const NGPhysicalFragment& fragment) {
-    return fragment.Type() == NGPhysicalFragment::kFragmentBox ||
-           fragment.Type() == NGPhysicalFragment::kFragmentRenderedLegend;
+    return fragment.Type() == NGPhysicalFragment::kFragmentBox;
   }
 };
 

@@ -23,7 +23,6 @@
 #error "This file requires ARC support."
 #endif
 
-using infobars::InfoBar;
 using infobars::InfoBarDelegate;
 using infobars::InfoBarManager;
 
@@ -51,12 +50,12 @@ class InfobarBannerOverlayRequestCancelHandlerTest : public PlatformTest {
   }
 
   // Returns the InfoBar used to create the front request in queue().
-  InfoBar* GetFrontRequestInfobar() {
+  InfoBarIOS* GetFrontRequestInfobar() {
     OverlayRequest* front_request = queue()->front_request();
     return front_request ? GetOverlayRequestInfobar(front_request) : nullptr;
   }
 
- private:
+ protected:
   web::TestWebState web_state_;
 };
 
@@ -64,17 +63,39 @@ class InfobarBannerOverlayRequestCancelHandlerTest : public PlatformTest {
 // in its manager.
 TEST_F(InfobarBannerOverlayRequestCancelHandlerTest,
        CancelForInfobarReplacement) {
-  std::unique_ptr<InfoBar> first_passed_infobar =
+  // Create an InfoBarIOS, add it to the InfoBarManager, and insert its
+  // corresponding banner request.
+  std::unique_ptr<InfoBarIOS> first_passed_infobar =
       std::make_unique<FakeInfobarIOS>();
-  InfoBar* first_infobar = first_passed_infobar.get();
+  InfoBarIOS* first_infobar = first_passed_infobar.get();
   manager()->AddInfoBar(std::move(first_passed_infobar));
   inserter()->AddOverlayRequest(first_infobar, InfobarOverlayType::kBanner);
   ASSERT_EQ(first_infobar, GetFrontRequestInfobar());
   // Replace with a new infobar and verify that the request has been replaced.
-  std::unique_ptr<InfoBar> second_passed_infobar =
+  std::unique_ptr<InfoBarIOS> second_passed_infobar =
       std::make_unique<FakeInfobarIOS>();
-  InfoBar* second_infobar = second_passed_infobar.get();
+  InfoBarIOS* second_infobar = second_passed_infobar.get();
   manager()->ReplaceInfoBar(first_infobar, std::move(second_passed_infobar));
   EXPECT_EQ(second_infobar, GetFrontRequestInfobar());
   EXPECT_EQ(1U, queue()->size());
+}
+
+// Tests that the request is cancelled after all modals originating from the
+// banner have been completed.
+TEST_F(InfobarBannerOverlayRequestCancelHandlerTest, CancelForModalCompletion) {
+  // Create an InfoBarIOS, add it to the InfoBarManager, and insert its
+  // corresponding banner request.
+  std::unique_ptr<InfoBarIOS> passed_infobar =
+      std::make_unique<FakeInfobarIOS>();
+  InfoBarIOS* infobar = passed_infobar.get();
+  manager()->AddInfoBar(std::move(passed_infobar));
+  inserter()->AddOverlayRequest(infobar, InfobarOverlayType::kBanner);
+  ASSERT_EQ(infobar, GetFrontRequestInfobar());
+  // Insert a modal request for the infobar, then cancel it, verifying that the
+  // banner request is cancelled alongside it.
+  inserter()->AddOverlayRequest(infobar, InfobarOverlayType::kModal);
+  OverlayRequestQueue::FromWebState(&web_state_, OverlayModality::kInfobarModal)
+      ->CancelAllRequests();
+
+  EXPECT_FALSE(queue()->front_request());
 }

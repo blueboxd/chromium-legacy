@@ -3340,6 +3340,10 @@ const char kEnableQuickAnswersName[] = "Enable Quick Answers";
 const char kEnableQuickAnswersDescription[] =
     "Enable the Quick Answers feature";
 
+const char kEnableQuickAnswersRichUiName[] = "Enable Quick Answers Rich UI";
+const char kEnableQuickAnswersRichUiDescription[] =
+    "Enable the Quick Answers rich UI.";
+
 const char kEnableVideoPlayerNativeControlsName[] =
     "Enable native controls in video player app";
 const char kEnableVideoPlayerNativeControlsDescription[] =

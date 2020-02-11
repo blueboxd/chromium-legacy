@@ -31,6 +31,9 @@ class ApplicationBreadcrumbsLogger {
   void OnMemoryPressure(
       base::MemoryPressureListener::MemoryPressureLevel memory_pressure_level);
 
+  // Returns true if |action| (UMA User Action) is user triggered.
+  static bool IsUserTriggeredAction(const std::string& action);
+
   // The BreadcrumbManager to log events.
   BreadcrumbManager* breadcrumb_manager_;
   // The callback invoked whenever a user action is registered.

@@ -283,8 +283,9 @@ void OverlayPresentationContextImpl::DismissPresentedUI(
   DCHECK(state->coordinator());
 
   state->set_dismissal_reason(reason);
-  [state->coordinator()
-      stopAnimated:reason == OverlayDismissalReason::kUserInteraction];
+  bool animate_dismissal = reason == OverlayDismissalReason::kUserInteraction ||
+                           reason == OverlayDismissalReason::kCancellation;
+  [state->coordinator() stopAnimated:animate_dismissal];
 }
 
 void OverlayPresentationContextImpl::OverlayUIWasDismissed() {

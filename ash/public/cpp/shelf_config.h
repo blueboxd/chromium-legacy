@@ -13,6 +13,7 @@
 #include "base/observer_list_types.h"
 #include "third_party/skia/include/core/SkColor.h"
 #include "ui/display/display_observer.h"
+#include "ui/gfx/animation/tween.h"
 
 namespace ash {
 
@@ -180,6 +181,12 @@ class ASH_EXPORT ShelfConfig : public TabletModeObserver,
 
   // The padding between the app icon and the end of the scrollable shelf.
   int GetAppIconEndPadding() const;
+
+  // The animation time for dimming shelf icons, widgets, and buttons.
+  base::TimeDelta DimAnimationDuration() const;
+
+  // The tween type for dimming shelf icons, widgets, and buttons.
+  gfx::Tween::Type DimAnimationTween() const;
 
  private:
   friend class ShelfConfigTest;

@@ -83,8 +83,8 @@ void MediaControlsDisplayCutoutDelegate::DidExitFullscreen() {
 void MediaControlsDisplayCutoutDelegate::Invoke(
     ExecutionContext* execution_context,
     Event* event) {
-  if (event->IsTouchEvent()) {
-    HandleTouchEvent(ToTouchEvent(event));
+  if (auto* touch_event = DynamicTo<TouchEvent>(event)) {
+    HandleTouchEvent(touch_event);
     return;
   }
   if (event->type() == event_type_names::kFullscreenchange ||

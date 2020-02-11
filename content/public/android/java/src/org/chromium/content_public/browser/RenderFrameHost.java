@@ -62,7 +62,7 @@ public interface RenderFrameHost {
     /**
      * Returns whether we're in incognito mode.
      *
-     * @return {@code true} if we're in incoginto mode.
+     * @return {@code true} if we're in incognito mode.
      */
     boolean isIncognito();
 
@@ -77,4 +77,22 @@ public interface RenderFrameHost {
      * @return Whether input events from the renderer are ignored on the browser side.
      */
     boolean areInputEventsIgnored();
+
+    /**
+     * Runs security checks associated with a Web Authentication GetAssertion request for the
+     * the given relying party ID. The return value is a code corresponding to the
+     * AuthenticatorStatus mojo enum.
+     *
+     * @return Status code indicating the result of the GetAssertion request security checks.
+     */
+    int performGetAssertionWebAuthSecurityChecks(String relyingPartyId);
+
+    /**
+     * Runs security checks associated with a Web Authentication MakeCredential request for the
+     * the given relying party ID. The return value is a code corresponding to the
+     * AuthenticatorStatus mojo enum.
+     *
+     * @return Status code indicating the result of the MakeCredential request security checks.
+     */
+    int performMakeCredentialWebAuthSecurityChecks(String relyingPartyId);
 }

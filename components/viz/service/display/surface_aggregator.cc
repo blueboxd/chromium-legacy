@@ -579,10 +579,9 @@ void SurfaceAggregator::EmitSurfaceContent(
         remapped_pass_id, output_rect, output_rect,
         source.transform_to_root_target, source.filters,
         source.backdrop_filters, source.backdrop_filter_bounds,
-        display_color_spaces_.GetCompositingColorSpace(
-            source.has_transparent_background, root_content_color_usage_),
-        source.has_transparent_background, source.cache_render_pass,
-        source.has_damage_from_contributing_content, source.generate_mipmap);
+        root_content_color_usage_, source.has_transparent_background,
+        source.cache_render_pass, source.has_damage_from_contributing_content,
+        source.generate_mipmap);
 
     MoveMatchingRequests(source.id, &copy_requests, &copy_pass->copy_requests);
 
@@ -798,12 +797,12 @@ void SurfaceAggregator::AddColorConversionPass() {
     return;
 
   // An extra color conversion pass is only done if the display's color
-  // space is unsuitable as a working color space. This happens only
-  // on platforms where HDR output is required to be in a space with a linear
-  // (or PQ) transfer function.
+  // space is unsuitable as a blending color space.
   auto* root_render_pass = dest_pass_list_->back().get();
-  if (!display_color_spaces_.NeedsHDRColorConversionPass(
-          root_render_pass->color_space)) {
+  if (display_color_spaces_
+          .GetOutputColorSpace(root_render_pass->content_color_usage,
+                               root_render_pass->has_transparent_background)
+          .IsSuitableForBlending()) {
     return;
   }
 
@@ -819,10 +818,7 @@ void SurfaceAggregator::AddColorConversionPass() {
                                 root_render_pass->transform_to_root_target);
   color_conversion_pass->has_transparent_background =
       root_render_pass->has_transparent_background;
-  color_conversion_pass->color_space =
-      display_color_spaces_.GetOutputColorSpace(
-          root_content_color_usage_,
-          root_render_pass->has_transparent_background);
+  color_conversion_pass->content_color_usage = root_content_color_usage_;
 
   auto* shared_quad_state =
       color_conversion_pass->CreateAndAppendSharedQuadState();
@@ -864,7 +860,8 @@ void SurfaceAggregator::AddDisplayTransformPass() {
       cc::MathUtil::MapEnclosedRectWith2dAxisAlignedTransform(
           root_surface_transform_, root_render_pass->damage_rect),
       gfx::Transform());
-  display_transform_pass->color_space = root_render_pass->color_space;
+  display_transform_pass->content_color_usage =
+      root_render_pass->content_color_usage;
 
   bool are_contents_opaque = true;
   for (const auto* sqs : root_render_pass->shared_quad_state_list) {
@@ -1165,10 +1162,9 @@ void SurfaceAggregator::CopyPasses(const CompositorFrame& frame,
     copy_pass->SetAll(
         remapped_pass_id, output_rect, damage_rect, transform_to_root_target,
         source.filters, source.backdrop_filters, source.backdrop_filter_bounds,
-        display_color_spaces_.GetCompositingColorSpace(
-            source.has_transparent_background, root_content_color_usage_),
-        source.has_transparent_background, source.cache_render_pass,
-        source.has_damage_from_contributing_content, source.generate_mipmap);
+        root_content_color_usage_, source.has_transparent_background,
+        source.cache_render_pass, source.has_damage_from_contributing_content,
+        source.generate_mipmap);
 
     CopyQuadsToPass(source.quad_list, source.shared_quad_state_list,
                     frame.device_scale_factor(), child_to_parent_map,

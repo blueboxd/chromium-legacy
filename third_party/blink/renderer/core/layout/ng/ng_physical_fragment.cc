@@ -80,6 +80,9 @@ String StringForBoxType(const NGPhysicalFragment& fragment) {
     case NGPhysicalFragment::NGBoxType::kBlockFlowRoot:
       result.Append("block-flow-root");
       break;
+    case NGPhysicalFragment::NGBoxType::kRenderedLegend:
+      result.Append("rendered-legend");
+      break;
   }
   if (fragment.IsLegacyLayoutRoot()) {
     if (result.length())
@@ -90,11 +93,6 @@ String StringForBoxType(const NGPhysicalFragment& fragment) {
     if (result.length())
       result.Append(" ");
     result.Append("block-flow");
-  }
-  if (fragment.IsRenderedLegend()) {
-    if (result.length())
-      result.Append(" ");
-    result.Append("rendered-legend");
   }
   if (fragment.IsFieldsetContainer()) {
     if (result.length())
@@ -124,10 +122,7 @@ void AppendFragmentToString(const NGPhysicalFragment* fragment,
   bool has_content = false;
   if (const auto* box = DynamicTo<NGPhysicalBoxFragment>(fragment)) {
     if (flags & NGPhysicalFragment::DumpType) {
-      if (fragment->IsRenderedLegend())
-        builder->Append("RenderedLegend");
-      else
-        builder->Append("Box");
+      builder->Append("Box");
       String box_type = StringForBoxType(*fragment);
       has_content = true;
       if (!box_type.IsEmpty()) {
@@ -258,7 +253,6 @@ NGPhysicalFragment::~NGPhysicalFragment() = default;
 void NGPhysicalFragment::Destroy() const {
   switch (Type()) {
     case kFragmentBox:
-    case kFragmentRenderedLegend:
       delete static_cast<const NGPhysicalBoxFragment*>(this);
       break;
     case kFragmentText:
@@ -339,7 +333,6 @@ const NGPhysicalFragment* NGPhysicalFragment::PostLayout() const {
 void NGPhysicalFragment::CheckType() const {
   switch (Type()) {
     case kFragmentBox:
-    case kFragmentRenderedLegend:
       if (IsInlineBox()) {
         DCHECK(layout_object_->IsLayoutInline());
       } else {
@@ -409,7 +402,6 @@ void NGPhysicalFragment::CheckCanUpdateInkOverflow() const {
 PhysicalRect NGPhysicalFragment::ScrollableOverflow() const {
   switch (Type()) {
     case kFragmentBox:
-    case kFragmentRenderedLegend:
       return To<NGPhysicalBoxFragment>(*this).ScrollableOverflow();
     case kFragmentText:
       return {{}, Size()};
@@ -471,7 +463,6 @@ UBiDiLevel NGPhysicalFragment::BidiLevel() const {
     case kFragmentText:
       return To<NGPhysicalTextFragment>(*this).BidiLevel();
     case kFragmentBox:
-    case kFragmentRenderedLegend:
       return To<NGPhysicalBoxFragment>(*this).BidiLevel();
     case kFragmentLineBox:
       break;
@@ -485,7 +476,6 @@ TextDirection NGPhysicalFragment::ResolvedDirection() const {
     case kFragmentText:
       return To<NGPhysicalTextFragment>(*this).ResolvedDirection();
     case kFragmentBox:
-    case kFragmentRenderedLegend:
       DCHECK(IsInline() && IsAtomicInline());
       // TODO(xiaochengh): Store direction in |base_direction_| flag.
       return DirectionFromLevel(BidiLevel());
@@ -518,7 +508,6 @@ String NGPhysicalFragment::ToString() const {
                       Size().ToString().Ascii().c_str());
   switch (Type()) {
     case kFragmentBox:
-    case kFragmentRenderedLegend:
       output.AppendFormat(", BoxType: '%s'",
                           StringForBoxType(*this).Ascii().c_str());
       break;

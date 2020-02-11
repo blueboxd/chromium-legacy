@@ -17,6 +17,7 @@
 #include "base/bind_helpers.h"
 #include "base/callback.h"
 #include "base/command_line.h"
+#include "base/files/file_path.h"
 #include "base/files/file_util.h"
 #include "base/format_macros.h"
 #include "base/i18n/number_formatting.h"
@@ -85,8 +86,10 @@
 #include "chrome/browser/chromeos/customization/customization_document.h"
 #include "chrome/browser/chromeos/login/demo_mode/demo_setup_controller.h"
 #include "chrome/browser/chromeos/login/wizard_controller.h"
+#include "chrome/browser/component_updater/cros_component_manager.h"
 #include "chromeos/system/statistics_provider.h"
 #include "components/language/core/common/locale_util.h"
+#include "third_party/cros_system_api/dbus/service_constants.h"
 #endif
 
 using content::BrowserThread;
@@ -100,6 +103,8 @@ constexpr char kStringsJsPath[] = "strings.js";
 #if defined(OS_CHROMEOS)
 
 constexpr char kKeyboardUtilsPath[] = "keyboard_utils.js";
+
+constexpr char kTerminaCreditsPath[] = "about_os_credits.html";
 
 // APAC region name.
 constexpr char kApac[] = "apac";
@@ -457,21 +462,44 @@ class CrostiniCreditsHandler
       ResponseOnUIThread();
       return;
     }
-    // Load local Linux credits from the disk.
+    auto* component_manager =
+        g_browser_process->platform_part()->cros_component_manager();
+    if (!component_manager) {
+      LoadCredits(base::FilePath(chrome::kLinuxCreditsPath));
+      return;
+    }
+    component_manager->Load(
+        imageloader::kTerminaComponentName,
+        component_updater::CrOSComponentManager::MountPolicy::kMount,
+        component_updater::CrOSComponentManager::UpdatePolicy::kSkip,
+        base::BindOnce(&CrostiniCreditsHandler::OnTerminaLoaded, this));
+  }
+
+  void LoadCredits(base::FilePath path) {
+    // Load crostini credits from the disk.
     base::PostTaskAndReply(
         FROM_HERE,
         {base::ThreadPool(), base::MayBlock(), base::TaskPriority::BEST_EFFORT},
-        base::Bind(&CrostiniCreditsHandler::LoadCrostiniCreditsFileAsync, this),
-        base::Bind(&CrostiniCreditsHandler::ResponseOnUIThread, this));
+        base::BindOnce(&CrostiniCreditsHandler::LoadCrostiniCreditsFileAsync,
+                       this, std::move(path)),
+        base::BindOnce(&CrostiniCreditsHandler::ResponseOnUIThread, this));
   }
 
-  void LoadCrostiniCreditsFileAsync() {
-    base::FilePath credits_file_path(chrome::kLinuxCreditsPath);
+  void LoadCrostiniCreditsFileAsync(base::FilePath credits_file_path) {
     if (!base::ReadFileToString(credits_file_path, &contents_)) {
       // File with credits not found, ResponseOnUIThread will load credits
       // from resources if contents_ is empty.
       contents_.clear();
     }
+  }
+
+  void OnTerminaLoaded(component_updater::CrOSComponentManager::Error error,
+                       const base::FilePath& path) {
+    if (error == component_updater::CrOSComponentManager::Error::NONE) {
+      LoadCredits(path.Append(kTerminaCreditsPath));
+      return;
+    }
+    LoadCredits(base::FilePath(chrome::kLinuxCreditsPath));
   }
 
   void ResponseOnUIThread() {

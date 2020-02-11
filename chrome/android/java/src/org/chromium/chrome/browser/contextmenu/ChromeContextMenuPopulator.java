@@ -19,7 +19,7 @@ import org.chromium.base.library_loader.LibraryProcessType;
 import org.chromium.base.metrics.RecordHistogram;
 import org.chromium.base.supplier.Supplier;
 import org.chromium.chrome.R;
-import org.chromium.chrome.browser.compositor.bottombar.ephemeraltab.EphemeralTabCoordinator;
+import org.chromium.chrome.browser.compositor.bottombar.ephemeraltab.EphemeralTabPanel;
 import org.chromium.chrome.browser.contextmenu.ChromeContextMenuItem.Item;
 import org.chromium.chrome.browser.contextmenu.ContextMenuParams.PerformanceClass;
 import org.chromium.chrome.browser.feature_engagement.TrackerFactory;
@@ -332,7 +332,7 @@ public class ChromeContextMenuPopulator implements ContextMenuPopulator {
                 if (mDelegate.isOpenInOtherWindowSupported()) {
                     linkTab.add(new ChromeContextMenuItem(Item.OPEN_IN_OTHER_WINDOW));
                 }
-                if (EphemeralTabCoordinator.isSupported()) {
+                if (EphemeralTabPanel.isSupported()) {
                     ContextMenuItem item = new ChromeContextMenuItem(Item.OPEN_IN_EPHEMERAL_TAB);
                     mShowEphemeralTabNewLabel = shouldTriggerEphemeralTabHelpUi();
                     if (mShowEphemeralTabNewLabel) item.setShowInProductHelp();
@@ -395,7 +395,7 @@ public class ChromeContextMenuPopulator implements ContextMenuPopulator {
                 if (mMode == ContextMenuMode.NORMAL) {
                     imageTab.add(new ChromeContextMenuItem(Item.OPEN_IMAGE_IN_NEW_TAB));
                 }
-                if (EphemeralTabCoordinator.isSupported()) {
+                if (EphemeralTabPanel.isSupported()) {
                     ContextMenuItem item =
                             new ChromeContextMenuItem(Item.OPEN_IMAGE_IN_EPHEMERAL_TAB);
                     if (mShowEphemeralTabNewLabel == null) {

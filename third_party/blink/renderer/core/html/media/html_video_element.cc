@@ -28,6 +28,7 @@
 #include <memory>
 
 #include "base/bind_helpers.h"
+#include "base/metrics/histogram_functions.h"
 #include "cc/paint/paint_canvas.h"
 #include "third_party/blink/public/mojom/feature_policy/feature_policy_feature.mojom-blink.h"
 #include "third_party/blink/public/platform/web_fullscreen_video_status.h"
@@ -59,7 +60,6 @@
 #include "third_party/blink/renderer/platform/graphics/canvas_resource_provider.h"
 #include "third_party/blink/renderer/platform/graphics/gpu/extensions_3d_util.h"
 #include "third_party/blink/renderer/platform/graphics/graphics_context.h"
-#include "third_party/blink/renderer/platform/instrumentation/histogram.h"
 #include "third_party/blink/renderer/platform/instrumentation/use_counter.h"
 #include "third_party/blink/renderer/platform/runtime_enabled_features.h"
 #include "third_party/blink/renderer/platform/web_test_support.h"
@@ -70,9 +70,9 @@ namespace {
 
 // This enum is used to record histograms. Do not reorder.
 enum VideoPersistenceControlsType {
-  kVideoPersistenceControlsTypeNative = 0,
-  kVideoPersistenceControlsTypeCustom,
-  kVideoPersistenceControlsTypeCount
+  kNative = 0,
+  kCustom = 1,
+  kMaxValue = 1,
 };
 
 }  // anonymous namespace
@@ -301,13 +301,10 @@ void HTMLVideoElement::OnBecamePersistentVideo(bool value) {
     // Record the type of video. If it is already fullscreen, it is a video with
     // native controls, otherwise it is assumed to be with custom controls.
     // This is only recorded when entering this mode.
-    DEFINE_STATIC_LOCAL(EnumerationHistogram, histogram,
-                        ("Media.VideoPersistence.ControlsType",
-                         kVideoPersistenceControlsTypeCount));
-    if (IsFullscreen())
-      histogram.Count(kVideoPersistenceControlsTypeNative);
-    else
-      histogram.Count(kVideoPersistenceControlsTypeCustom);
+    base::UmaHistogramEnumeration("Media.VideoPersistence.ControlsType",
+                                  IsFullscreen()
+                                      ? VideoPersistenceControlsType::kNative
+                                      : VideoPersistenceControlsType::kCustom);
 
     Element* fullscreen_element =
         Fullscreen::FullscreenElementFrom(GetDocument());

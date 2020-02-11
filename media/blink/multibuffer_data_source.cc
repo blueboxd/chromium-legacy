@@ -683,8 +683,6 @@ void MultibufferDataSource::UpdateLoadingState_Locked(bool force_loading) {
     }
 
     loading_ = loading;
-
-    // Callback could kill us, be sure to call it last.
     downloading_cb_.Run(loading_);
   }
 }

@@ -52,6 +52,8 @@ TEST(FrameSequenceMetricsTest, AllMetricsReported) {
       "Graphics.Smoothness.Throughput.CompositorThread.TouchScroll", 1u);
   histograms.ExpectTotalCount(
       "Graphics.Smoothness.Throughput.MainThread.TouchScroll", 0u);
+  histograms.ExpectTotalCount(
+      "Graphics.Smoothness.Throughput.SlowerThread.TouchScroll", 1u);
 
   // There should still be data left over for the main-thread.
   EXPECT_TRUE(first.HasDataLeftForReporting());
@@ -68,8 +70,52 @@ TEST(FrameSequenceMetricsTest, AllMetricsReported) {
       "Graphics.Smoothness.Throughput.CompositorThread.TouchScroll", 2u);
   histograms.ExpectTotalCount(
       "Graphics.Smoothness.Throughput.MainThread.TouchScroll", 1u);
+  histograms.ExpectTotalCount(
+      "Graphics.Smoothness.Throughput.SlowerThread.TouchScroll", 2u);
   // All the metrics have now been reported. No data should be left over.
   EXPECT_FALSE(first.HasDataLeftForReporting());
+}
+
+TEST(FrameSequenceMetricsTest, IrrelevantMetricsNotReported) {
+  base::HistogramTester histograms;
+
+  // Create a metric with enough frames on impl to be reported, but not enough
+  // on main.
+  FrameSequenceMetrics first(FrameSequenceTrackerType::kCompositorAnimation,
+                             nullptr, nullptr);
+  first.impl_throughput().frames_expected = 120;
+  first.impl_throughput().frames_produced = 80;
+  first.main_throughput().frames_expected = 120;
+  first.main_throughput().frames_produced = 80;
+  EXPECT_TRUE(first.HasEnoughDataForReporting());
+  first.ReportMetrics();
+
+  // The compositor-thread metric should be reported, but not the main-thread
+  // or slower-thread metric.
+  histograms.ExpectTotalCount(
+      "Graphics.Smoothness.Throughput.CompositorThread.CompositorAnimation",
+      1u);
+  histograms.ExpectTotalCount(
+      "Graphics.Smoothness.Throughput.MainThread.CompositorAnimation", 0u);
+  histograms.ExpectTotalCount(
+      "Graphics.Smoothness.Throughput.SlowerThread.CompositorAnimation", 0u);
+
+  FrameSequenceMetrics second(FrameSequenceTrackerType::kRAF, nullptr, nullptr);
+  second.impl_throughput().frames_expected = 120;
+  second.impl_throughput().frames_produced = 80;
+  second.main_throughput().frames_expected = 120;
+  second.main_throughput().frames_produced = 80;
+  EXPECT_TRUE(second.HasEnoughDataForReporting());
+  second.ReportMetrics();
+
+  // The main-thread metric should be reported, but not the compositor-thread
+  // or slower-thread metric.
+  histograms.ExpectTotalCount(
+      "Graphics.Smoothness.Throughput.CompositorThread.RAF", 0u);
+  histograms.ExpectTotalCount("Graphics.Smoothness.Throughput.MainThread.RAF",
+                              1u);
+  histograms.ExpectTotalCount("Graphics.Smoothness.Throughput.SlowerThread.RAF",
+                              0u);
 }
 
 }  // namespace cc

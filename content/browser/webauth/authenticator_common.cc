@@ -22,6 +22,7 @@
 #include "content/browser/webauth/authenticator_environment_impl.h"
 #include "content/browser/webauth/virtual_authenticator_request_delegate.h"
 #include "content/browser/webauth/virtual_fido_discovery_factory.h"
+#include "content/browser/webauth/webauth_request_security_checker.h"
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/content_browser_client.h"
 #include "content/public/browser/navigation_handle.h"
@@ -68,9 +69,6 @@ const char kU2fRegisterType[] = "navigator.id.finishEnrollment";
 
 namespace {
 
-constexpr char kCryptotokenOrigin[] =
-    "chrome-extension://kmendfapggjehodndflmmgagdbamhnfd";
-
 // AttestationPromptResult enumerates events related to attestation prompts.
 // These values are recorded in an UMA histogram and so should not be
 // reassigned.
@@ -94,137 +92,6 @@ enum class AttestationPromptResult {
   kMaxValue = kAbandoned,
 };
 
-// The following enums correspond to UMA histograms and should not be
-// reassigned.
-enum class RelyingPartySecurityCheckFailure {
-  kOpaqueOrNonSecureOrigin = 0,
-  kRelyingPartyIdInvalid = 1,
-  kAppIdExtensionInvalid = 2,
-  kAppIdExtensionDomainMismatch = 3,
-  kIconUrlInvalid = 4,
-  kCrossOriginMismatch = 5,
-  kMaxValue = kCrossOriginMismatch,
-};
-
-void ReportSecurityCheckFailure(RelyingPartySecurityCheckFailure error) {
-  UMA_HISTOGRAM_ENUMERATION(
-      "WebAuthentication.RelyingPartySecurityCheckFailure", error);
-}
-
-bool OriginIsCryptoTokenExtension(const url::Origin& origin) {
-  auto cryptotoken_origin = url::Origin::Create(GURL(kCryptotokenOrigin));
-  return cryptotoken_origin == origin;
-}
-
-// Returns AuthenticatorStatus::SUCCESS if the domain is valid and an error
-// if it fails one of the criteria below.
-// Reference https://url.spec.whatwg.org/#valid-domain-string and
-// https://html.spec.whatwg.org/multipage/origin.html#concept-origin-effective-domain.
-blink::mojom::AuthenticatorStatus ValidateEffectiveDomain(
-    url::Origin caller_origin) {
-  // For calls originating in the CryptoToken U2F extension, allow CryptoToken
-  // to validate domain.
-  if (OriginIsCryptoTokenExtension(caller_origin)) {
-    return blink::mojom::AuthenticatorStatus::SUCCESS;
-  }
-
-  if (caller_origin.opaque()) {
-    return blink::mojom::AuthenticatorStatus::OPAQUE_DOMAIN;
-  }
-
-  if (url::HostIsIPAddress(caller_origin.host()) ||
-      !content::IsOriginSecure(caller_origin.GetURL())) {
-    return blink::mojom::AuthenticatorStatus::INVALID_DOMAIN;
-  }
-
-  // Additionally, the scheme is required to be HTTP(S). Other schemes
-  // may be supported in the future but the webauthn relying party is
-  // just the domain of the origin so we would have to define how the
-  // authority part of other schemes maps to a "domain" without
-  // collisions. Given the |IsOriginSecure| check, just above, HTTP is
-  // effectively restricted to just "localhost".
-  if (caller_origin.scheme() != url::kHttpScheme &&
-      caller_origin.scheme() != url::kHttpsScheme) {
-    return blink::mojom::AuthenticatorStatus::INVALID_PROTOCOL;
-  }
-
-  return blink::mojom::AuthenticatorStatus::SUCCESS;
-}
-
-// Return the relying party ID to use for a request given the requested RP ID
-// and the origin of the caller. It's valid for the requested RP ID to be a
-// registrable domain suffix of, or be equal to, the origin's effective domain.
-// Reference:
-// https://html.spec.whatwg.org/multipage/origin.html#is-a-registrable-domain-suffix-of-or-is-equal-to.
-base::Optional<std::string> GetRelyingPartyId(
-    std::string claimed_relying_party_id,
-    const url::Origin& caller_origin) {
-  if (OriginIsCryptoTokenExtension(caller_origin)) {
-    // This code trusts cryptotoken to handle the validation itself.
-    return claimed_relying_party_id;
-  }
-
-  if (claimed_relying_party_id.empty()) {
-    return base::nullopt;
-  }
-
-  if (caller_origin.host() == claimed_relying_party_id) {
-    return claimed_relying_party_id;
-  }
-
-  if (!caller_origin.DomainIs(claimed_relying_party_id)) {
-    return base::nullopt;
-  }
-
-  if (!net::registry_controlled_domains::HostHasRegistryControlledDomain(
-          caller_origin.host(),
-          net::registry_controlled_domains::INCLUDE_UNKNOWN_REGISTRIES,
-          net::registry_controlled_domains::INCLUDE_PRIVATE_REGISTRIES) ||
-      !net::registry_controlled_domains::HostHasRegistryControlledDomain(
-          claimed_relying_party_id,
-          net::registry_controlled_domains::INCLUDE_UNKNOWN_REGISTRIES,
-          net::registry_controlled_domains::INCLUDE_PRIVATE_REGISTRIES)) {
-    // TODO(crbug.com/803414): Accept corner-case situations like the following
-    // origin: "https://login.awesomecompany",
-    // relying_party_id: "awesomecompany".
-    return base::nullopt;
-  }
-
-  return claimed_relying_party_id;
-}
-
-// Checks if the icon URL is an a-priori authenticated URL.
-// https://w3c.github.io/webappsec-credential-management/#dom-credentialuserdata-iconurl
-bool IsAPrioriAuthenticatedUrl(const base::Optional<GURL>& url_opt) {
-  if (!url_opt)
-    return true;
-
-  const auto& url = *url_opt;
-  if (url.is_empty())
-    return true;
-
-  if (!url.is_valid()) {
-    return false;
-  }
-
-  // https://www.w3.org/TR/mixed-content/#a-priori-authenticated-url
-  return url.IsAboutSrcdoc() || url.IsAboutBlank() ||
-         url.SchemeIs(url::kDataScheme) ||
-         network::IsUrlPotentiallyTrustworthy(url);
-}
-
-// Returns whether the frame indicated by |host| is same-origin with its
-// entire ancestor chain. |origin| is the origin of the frame being checked.
-bool IsSameOriginWithAncestors(url::Origin origin, RenderFrameHost* host) {
-  RenderFrameHost* parent = host->GetParent();
-  while (parent) {
-    if (!parent->GetLastCommittedOrigin().IsSameOriginWith(origin))
-      return false;
-    parent = parent->GetParent();
-  }
-  return true;
-}
-
 // Validates whether the given origin is authorized to use the provided App
 // ID value, mostly according to the rules in
 // https://fidoalliance.org/specs/fido-u2f-v1.2-ps-20170411/fido-appid-and-facets-v1.2-ps-20170411.html#determining-if-a-caller-s-facetid-is-authorized-for-an-appid.
@@ -235,7 +102,7 @@ base::Optional<std::string> ProcessAppIdExtension(std::string appid,
                                                   const url::Origin& origin) {
   // The CryptoToken U2F extension checks the appid before calling the WebAuthn
   // API so there is no need to validate it here.
-  if (OriginIsCryptoTokenExtension(origin)) {
+  if (WebAuthRequestSecurityChecker::OriginIsCryptoTokenExtension(origin)) {
     if (!GURL(appid).is_valid()) {
       DCHECK(false) << "cryptotoken request did not set a valid App ID";
       return base::nullopt;
@@ -273,7 +140,7 @@ base::Optional<std::string> ProcessAppIdExtension(std::string appid,
   GURL appid_url = GURL(appid);
   if (!appid_url.is_valid() || appid_url.scheme() != url::kHttpsScheme ||
       appid_url.scheme_piece() != origin.scheme()) {
-    ReportSecurityCheckFailure(
+    WebAuthRequestSecurityChecker::ReportSecurityCheckFailure(
         RelyingPartySecurityCheckFailure::kAppIdExtensionInvalid);
     return base::nullopt;
   }
@@ -309,7 +176,7 @@ base::Optional<std::string> ProcessAppIdExtension(std::string appid,
     return appid;
   }
 
-  ReportSecurityCheckFailure(
+  WebAuthRequestSecurityChecker::ReportSecurityCheckFailure(
       RelyingPartySecurityCheckFailure::kAppIdExtensionDomainMismatch);
 
   return base::nullopt;
@@ -535,7 +402,8 @@ base::flat_set<device::FidoTransportProtocol> GetTransports(
     base::flat_set<device::FidoTransportProtocol> available_transports) {
   // U2F requests proxied from the cryptotoken extension are limited to USB
   // devices.
-  return OriginIsCryptoTokenExtension(caller_origin)
+  return WebAuthRequestSecurityChecker::OriginIsCryptoTokenExtension(
+             caller_origin)
              ? base::flat_set<device::FidoTransportProtocol>(
                    {device::FidoTransportProtocol::kUsbHumanInterfaceDevice})
              : available_transports;
@@ -548,6 +416,8 @@ AuthenticatorCommon::AuthenticatorCommon(
     std::unique_ptr<base::OneShotTimer> timer)
     : render_frame_host_(render_frame_host),
       transports_(GetTransportsEnabledByFlags()),
+      security_checker_(static_cast<RenderFrameHostImpl*>(render_frame_host)
+                            ->GetWebAuthRequestSecurityChecker()),
       timer_(std::move(timer)) {
   DCHECK(render_frame_host_);
   DCHECK(timer_);
@@ -739,7 +609,8 @@ void AuthenticatorCommon::MakeCredential(
     blink::mojom::PublicKeyCredentialCreationOptionsPtr options,
     blink::mojom::Authenticator::MakeCredentialCallback callback) {
   if (request_) {
-    if (OriginIsCryptoTokenExtension(caller_origin)) {
+    if (WebAuthRequestSecurityChecker::OriginIsCryptoTokenExtension(
+            caller_origin)) {
       // Requests originating from cryptotoken will generally outlive any
       // navigation events on the tab of the request's sender. Evict pending
       // requests if cryptotoken sends a new one such that requests from before
@@ -754,18 +625,12 @@ void AuthenticatorCommon::MakeCredential(
   }
   DCHECK(!request_);
 
-  bool is_cross_origin =
-      !IsSameOriginWithAncestors(caller_origin, render_frame_host_);
-  if ((!base::FeatureList::IsEnabled(device::kWebAuthFeaturePolicy) ||
-       !static_cast<RenderFrameHostImpl*>(render_frame_host_)
-            ->IsFeatureEnabled(
-                blink::mojom::FeaturePolicyFeature::kPublicKeyCredentials)) &&
-      is_cross_origin) {
-    ReportSecurityCheckFailure(
-        RelyingPartySecurityCheckFailure::kCrossOriginMismatch);
-    InvokeCallbackAndCleanup(
-        std::move(callback),
-        blink::mojom::AuthenticatorStatus::NOT_ALLOWED_ERROR);
+  bool is_cross_origin;
+  blink::mojom::AuthenticatorStatus status =
+      security_checker_->ValidateAncestorOrigins(caller_origin,
+                                                 &is_cross_origin);
+  if (status != blink::mojom::AuthenticatorStatus::SUCCESS) {
+    InvokeCallbackAndCleanup(std::move(callback), status);
     return;
   }
 
@@ -784,25 +649,12 @@ void AuthenticatorCommon::MakeCredential(
   if (!rp_id) {
     // If the delegate didn't override RP ID selection then apply standard
     // rules.
-    blink::mojom::AuthenticatorStatus domain_validation =
-        ValidateEffectiveDomain(caller_origin);
-    if (domain_validation != blink::mojom::AuthenticatorStatus::SUCCESS) {
-      ReportSecurityCheckFailure(
-          RelyingPartySecurityCheckFailure::kOpaqueOrNonSecureOrigin);
-      InvokeCallbackAndCleanup(std::move(callback), domain_validation, nullptr,
+    rp_id = std::move(options->relying_party.id);
+    status = security_checker_->ValidateDomainAndRelyingPartyID(caller_origin,
+                                                                *rp_id);
+    if (status != blink::mojom::AuthenticatorStatus::SUCCESS) {
+      InvokeCallbackAndCleanup(std::move(callback), status, nullptr,
                                Focus::kDontCheck);
-      return;
-    }
-
-    rp_id =
-        GetRelyingPartyId(std::move(options->relying_party.id), caller_origin);
-    if (!rp_id) {
-      ReportSecurityCheckFailure(
-          RelyingPartySecurityCheckFailure::kRelyingPartyIdInvalid);
-      InvokeCallbackAndCleanup(
-          std::move(callback),
-          blink::mojom::AuthenticatorStatus::BAD_RELYING_PARTY_ID, nullptr,
-          Focus::kDontCheck);
       return;
     }
   }
@@ -825,16 +677,20 @@ void AuthenticatorCommon::MakeCredential(
     }
   }
 
-  if (!IsAPrioriAuthenticatedUrl(options->user.icon_url) ||
-      !IsAPrioriAuthenticatedUrl(options->relying_party.icon_url)) {
-    ReportSecurityCheckFailure(
-        RelyingPartySecurityCheckFailure::kIconUrlInvalid);
+  if (options->user.icon_url) {
+    status = security_checker_->ValidateAPrioriAuthenticatedUrl(
+        *options->user.icon_url);
+  }
+  if (status == blink::mojom::AuthenticatorStatus::SUCCESS &&
+      options->relying_party.icon_url) {
+    status = security_checker_->ValidateAPrioriAuthenticatedUrl(
+        *options->relying_party.icon_url);
+  }
+  if (status != blink::mojom::AuthenticatorStatus::SUCCESS) {
     bad_message::ReceivedBadMessage(render_frame_host_->GetProcess(),
                                     bad_message::AUTH_INVALID_ICON_URL);
-    InvokeCallbackAndCleanup(
-        std::move(callback),
-        blink::mojom::AuthenticatorStatus::INVALID_ICON_URL, nullptr,
-        Focus::kDontCheck);
+    InvokeCallbackAndCleanup(std::move(callback), status, nullptr,
+                             Focus::kDontCheck);
     return;
   }
 
@@ -898,7 +754,8 @@ void AuthenticatorCommon::MakeCredential(
       base::BindOnce(&AuthenticatorCommon::OnTimeout, base::Unretained(this)));
 
   const bool origin_is_crypto_token_extension =
-      OriginIsCryptoTokenExtension(caller_origin_);
+      WebAuthRequestSecurityChecker::OriginIsCryptoTokenExtension(
+          caller_origin_);
 
   // Save client data to return with the authenticator response.
   // TODO(kpaulhamus): Fetch and add the Channel ID/Token Binding ID public key
@@ -935,8 +792,7 @@ void AuthenticatorCommon::MakeCredential(
   ctap_make_credential_request_->is_incognito_mode =
       browser_context()->IsOffTheRecord();
   // On dual protocol CTAP2/U2F devices, force credential creation over U2F.
-  ctap_make_credential_request_->is_u2f_only =
-      OriginIsCryptoTokenExtension(caller_origin_);
+  ctap_make_credential_request_->is_u2f_only = origin_is_crypto_token_extension;
 
   // Compute the effective attestation conveyance preference and set
   // |attestation_requested_| for showing the attestation consent prompt later.
@@ -974,7 +830,8 @@ void AuthenticatorCommon::GetAssertion(
     blink::mojom::PublicKeyCredentialRequestOptionsPtr options,
     blink::mojom::Authenticator::GetAssertionCallback callback) {
   if (request_) {
-    if (OriginIsCryptoTokenExtension(caller_origin)) {
+    if (WebAuthRequestSecurityChecker::OriginIsCryptoTokenExtension(
+            caller_origin)) {
       // Requests originating from cryptotoken will generally outlive any
       // navigation events on the tab of the request's sender. Evict pending
       // requests if cryptotoken sends a new one such that requests from before
@@ -989,18 +846,12 @@ void AuthenticatorCommon::GetAssertion(
   }
   DCHECK(!request_);
 
-  bool is_cross_origin =
-      !IsSameOriginWithAncestors(caller_origin, render_frame_host_);
-  if ((!base::FeatureList::IsEnabled(device::kWebAuthFeaturePolicy) ||
-       !static_cast<RenderFrameHostImpl*>(render_frame_host_)
-            ->IsFeatureEnabled(
-                blink::mojom::FeaturePolicyFeature::kPublicKeyCredentials)) &&
-      is_cross_origin) {
-    ReportSecurityCheckFailure(
-        RelyingPartySecurityCheckFailure::kCrossOriginMismatch);
-    InvokeCallbackAndCleanup(
-        std::move(callback),
-        blink::mojom::AuthenticatorStatus::NOT_ALLOWED_ERROR);
+  bool is_cross_origin;
+  blink::mojom::AuthenticatorStatus status =
+      security_checker_->ValidateAncestorOrigins(caller_origin,
+                                                 &is_cross_origin);
+  if (status != blink::mojom::AuthenticatorStatus::SUCCESS) {
+    InvokeCallbackAndCleanup(std::move(callback), status);
     return;
   }
 
@@ -1019,25 +870,14 @@ void AuthenticatorCommon::GetAssertion(
   if (!rp_id) {
     // If the delegate didn't override RP ID selection then apply standard
     // rules.
-    blink::mojom::AuthenticatorStatus domain_validation =
-        ValidateEffectiveDomain(caller_origin);
-    if (domain_validation != blink::mojom::AuthenticatorStatus::SUCCESS) {
-      ReportSecurityCheckFailure(
-          RelyingPartySecurityCheckFailure::kOpaqueOrNonSecureOrigin);
-      InvokeCallbackAndCleanup(std::move(callback), domain_validation, nullptr);
+    status = security_checker_->ValidateDomainAndRelyingPartyID(
+        caller_origin, options->relying_party_id);
+    if (status != blink::mojom::AuthenticatorStatus::SUCCESS) {
+      InvokeCallbackAndCleanup(std::move(callback), status, nullptr);
       return;
     }
 
-    rp_id =
-        GetRelyingPartyId(std::move(options->relying_party_id), caller_origin);
-    if (!rp_id) {
-      ReportSecurityCheckFailure(
-          RelyingPartySecurityCheckFailure::kRelyingPartyIdInvalid);
-      InvokeCallbackAndCleanup(
-          std::move(callback),
-          blink::mojom::AuthenticatorStatus::BAD_RELYING_PARTY_ID, nullptr);
-      return;
-    }
+    rp_id = std::move(options->relying_party_id);
   }
 
   caller_origin_ = caller_origin;
@@ -1046,7 +886,8 @@ void AuthenticatorCommon::GetAssertion(
   request_delegate_->SetRelyingPartyId(relying_party_id_);
 
   const bool origin_is_crypto_token_extension =
-      OriginIsCryptoTokenExtension(caller_origin_);
+      WebAuthRequestSecurityChecker::OriginIsCryptoTokenExtension(
+          caller_origin_);
 
   // Save client data to return with the authenticator response.
   if (origin_is_crypto_token_extension) {
@@ -1099,8 +940,7 @@ void AuthenticatorCommon::GetAssertion(
   ctap_get_assertion_request_ = CreateCtapGetAssertionRequest(
       client_data_json_, std::move(options), app_id_,
       browser_context()->IsOffTheRecord());
-  ctap_get_assertion_request_->is_u2f_only =
-      OriginIsCryptoTokenExtension(caller_origin_);
+  ctap_get_assertion_request_->is_u2f_only = origin_is_crypto_token_extension;
 
   StartGetAssertionRequest(/*allow_skipping_pin_touch=*/true);
 }
@@ -1241,7 +1081,8 @@ void AuthenticatorCommon::OnRegisterResponse(
         //
         // Note that for AttestationConveyancePreference::kNone, attestation
         // erasure is still performed as usual.
-        if (OriginIsCryptoTokenExtension(caller_origin_)) {
+        if (WebAuthRequestSecurityChecker::OriginIsCryptoTokenExtension(
+                caller_origin_)) {
           InvokeCallbackAndCleanup(
               std::move(make_credential_response_callback_),
               blink::mojom::AuthenticatorStatus::SUCCESS,

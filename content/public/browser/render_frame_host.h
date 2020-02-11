@@ -32,6 +32,7 @@
 #include "third_party/blink/public/mojom/frame/frame.mojom.h"
 #include "third_party/blink/public/mojom/frame/sudden_termination_disabler_type.mojom.h"
 #include "third_party/blink/public/mojom/loader/pause_subresource_loading_handle.mojom-forward.h"
+#include "third_party/blink/public/mojom/webauthn/authenticator.mojom.h"
 #include "ui/accessibility/ax_tree_id.h"
 #include "ui/gfx/geometry/rect.h"
 #include "ui/gfx/native_widget_types.h"
@@ -478,6 +479,16 @@ class CONTENT_EXPORT RenderFrameHost : public IPC::Listener,
   // simplify this somewhat (maybe //content would be responsible for
   // maintaining the state, with some content client method used to update it).
   virtual void UpdateAdFrameType(blink::mojom::AdFrameType ad_frame_type) = 0;
+
+  // Perform security checks on Web Authentication requests. These can be
+  // called by other |Authenticator| mojo interface implementations in the
+  // browser process so that they don't have to duplicate security policies.
+  virtual blink::mojom::AuthenticatorStatus
+  PerformGetAssertionWebAuthSecurityChecks(
+      const std::string& relying_party_id) = 0;
+  virtual blink::mojom::AuthenticatorStatus
+  PerformMakeCredentialWebAuthSecurityChecks(
+      const std::string& relying_party_id) = 0;
 
  private:
   // This interface should only be implemented inside content.

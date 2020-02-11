@@ -40,6 +40,7 @@
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/models/menu_model.h"
 #include "ui/base/models/simple_menu_model.h"
+#include "ui/compositor/scoped_layer_animation_settings.h"
 #include "ui/gfx/canvas.h"
 #include "ui/gfx/color_palette.h"
 #include "ui/gfx/geometry/rect.h"
@@ -107,6 +108,18 @@ constexpr SkColor kButtonTextColorOobe = gfx::kGoogleGrey700;
 
 // The color of the button icon.
 constexpr SkColor kButtonIconColor = SkColorSetRGB(0xEB, 0xEA, 0xED);
+
+void AnimateButtonOpacity(ui::Layer* layer,
+                          float target_opacity,
+                          base::TimeDelta animation_duration,
+                          gfx::Tween::Type type) {
+  ui::ScopedLayerAnimationSettings animation_setter(layer->GetAnimator());
+  animation_setter.SetTransitionDuration(animation_duration);
+  animation_setter.SetTweenType(type);
+  animation_setter.SetPreemptionStrategy(
+      ui::LayerAnimator::IMMEDIATELY_ANIMATE_TO_NEW_TARGET);
+  layer->SetOpacity(target_opacity);
+}
 
 SkPath GetButtonHighlightPath(const views::View* view) {
   gfx::Rect rect(view->GetLocalBounds());
@@ -621,6 +634,19 @@ void LoginShelfView::SetAddUserButtonEnabled(bool enable_add_user) {
 
 void LoginShelfView::SetShutdownButtonEnabled(bool enable_shutdown_button) {
   GetViewByID(kShutdown)->SetEnabled(enable_shutdown_button);
+}
+void LoginShelfView::SetButtonOpacity(float target_opacity) {
+  static constexpr ButtonId kButtonIds[] = {
+      kShutdown, kRestart,      kSignOut,       kCloseNote,
+      kCancel,   kParentAccess, kBrowseAsGuest, kAddUser};
+  for (const auto& button_id : kButtonIds) {
+    AnimateButtonOpacity(GetViewByID(button_id)->layer(), target_opacity,
+                         ShelfConfig::Get()->DimAnimationDuration(),
+                         ShelfConfig::Get()->DimAnimationTween());
+  }
+  AnimateButtonOpacity(kiosk_apps_button_->layer(), target_opacity,
+                       ShelfConfig::Get()->DimAnimationDuration(),
+                       ShelfConfig::Get()->DimAnimationTween());
 }
 
 std::unique_ptr<ScopedGuestButtonBlocker>

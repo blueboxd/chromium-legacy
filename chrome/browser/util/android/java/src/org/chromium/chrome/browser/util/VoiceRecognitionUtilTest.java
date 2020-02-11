@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-package org.chromium.chrome.browser.flags;
+package org.chromium.chrome.browser.util;
 
 import android.content.Intent;
 import android.content.pm.ResolveInfo;
@@ -27,14 +27,14 @@ import java.util.ArrayList;
 import java.util.List;
 
 /**
- * Unit Test for {@link CachedFeatureFlags}.
+ * Unit Test for {@link VoiceRecognitionUtil}.
  */
 @RunWith(ChromeJUnit4ClassRunner.class)
-public class CachedFeatureFlagsTest {
+public class VoiceRecognitionUtilTest {
     private IntentTestMockContext mContextWithSpeech;
     private IntentTestMockContext mContextWithoutSpeech;
 
-    public CachedFeatureFlagsTest() {
+    public VoiceRecognitionUtilTest() {
         mContextWithSpeech = new IntentTestMockContext(RecognizerIntent.ACTION_RECOGNIZE_SPEECH);
 
         mContextWithoutSpeech = new IntentTestMockContext(RecognizerIntent.ACTION_WEB_SEARCH);
@@ -85,7 +85,7 @@ public class CachedFeatureFlagsTest {
     private static boolean isRecognitionIntentPresent(final boolean useCachedResult) {
         // Context can only be queried on a UI Thread.
         return TestThreadUtils.runOnUiThreadBlockingNoException(
-                () -> CachedFeatureFlags.isRecognitionIntentPresent(useCachedResult));
+                () -> VoiceRecognitionUtil.isRecognitionIntentPresent(useCachedResult));
     }
 
     @Test

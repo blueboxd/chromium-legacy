@@ -62,11 +62,12 @@ AXMenuListOption* AXMenuListPopup::MenuListOptionAXObject(
   if (!IsA<HTMLOptionElement>(*element))
     return nullptr;
 
-  AXObject* object = AXObjectCache().GetOrCreate(element);
-  if (!object || !object->IsMenuListOption())
+  auto* ax_object =
+      DynamicTo<AXMenuListOption>(AXObjectCache().GetOrCreate(element));
+  if (!ax_object)
     return nullptr;
 
-  return ToAXMenuListOption(object);
+  return ax_object;
 }
 
 int AXMenuListPopup::GetSelectedIndex() const {

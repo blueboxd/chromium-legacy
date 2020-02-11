@@ -62,7 +62,7 @@ scoped_refptr<TransformOperation> TranslateTransformOperation::Accumulate(
     const TransformOperation& other) {
   DCHECK(other.CanBlendWith(*this));
 
-  const auto& other_op = ToTranslateTransformOperation(other);
+  const auto& other_op = To<TranslateTransformOperation>(other);
   Length new_x = AddLengths(x_, other_op.x_);
   Length new_y = AddLengths(y_, other_op.y_);
   double new_z = z_ + other_op.z_;
@@ -85,7 +85,7 @@ scoped_refptr<TransformOperation> TranslateTransformOperation::Blend(
         blink::Blend(z_, 0., progress), type_);
   }
 
-  const auto* from_op = ToTranslateTransformOperation(from);
+  const auto* from_op = To<TranslateTransformOperation>(from);
   const Length& from_x = from_op ? from_op->x_ : zero_length;
   const Length& from_y = from_op ? from_op->y_ : zero_length;
   double from_z = from_op ? from_op->z_ : 0;

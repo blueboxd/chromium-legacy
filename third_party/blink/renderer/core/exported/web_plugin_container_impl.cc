@@ -245,8 +245,8 @@ void WebPluginContainerImpl::HandleEvent(Event& event) {
     HandleWheelEvent(ToWheelEvent(event));
   else if (event.IsKeyboardEvent())
     HandleKeyboardEvent(ToKeyboardEvent(event));
-  else if (event.IsTouchEvent())
-    HandleTouchEvent(ToTouchEvent(event));
+  else if (auto* touch_event = DynamicTo<TouchEvent>(event))
+    HandleTouchEvent(*touch_event);
   else if (event.IsGestureEvent())
     HandleGestureEvent(ToGestureEvent(event));
   else if (IsA<DragEvent>(event) && web_plugin_->CanProcessDrag())

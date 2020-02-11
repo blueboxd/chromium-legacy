@@ -114,11 +114,6 @@ class PLATFORM_EXPORT TransformOperation
   DISALLOW_COPY_AND_ASSIGN(TransformOperation);
 };
 
-#define DEFINE_TRANSFORM_TYPE_CASTS(thisType)                                \
-  DEFINE_TYPE_CASTS(thisType, TransformOperation, transform,                 \
-                    thisType::IsMatchingOperationType(transform->GetType()), \
-                    thisType::IsMatchingOperationType(transform.GetType()))
-
 }  // namespace blink
 
 #endif  // THIRD_PARTY_BLINK_RENDERER_PLATFORM_TRANSFORMS_TRANSFORM_OPERATION_H_

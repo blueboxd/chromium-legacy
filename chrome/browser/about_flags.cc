@@ -3875,6 +3875,12 @@ const FeatureEntry kFeatureEntries[] = {
     {"enable-quick-answers", flag_descriptions::kEnableQuickAnswersName,
      flag_descriptions::kEnableQuickAnswersDescription, kOsCrOS,
      FEATURE_VALUE_TYPE(chromeos::features::kQuickAnswers)},
+
+    {"enable-quick-answers-rich-ui",
+     flag_descriptions::kEnableQuickAnswersRichUiName,
+     flag_descriptions::kEnableQuickAnswersRichUiDescription, kOsCrOS,
+     FEATURE_VALUE_TYPE(chromeos::features::kQuickAnswersRichUi)},
+
 #endif  // defined(OS_CHROMEOS)
 
 #if BUILDFLAG(ENABLE_CLICK_TO_CALL)

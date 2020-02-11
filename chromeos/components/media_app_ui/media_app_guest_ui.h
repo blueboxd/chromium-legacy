@@ -5,7 +5,6 @@
 #ifndef CHROMEOS_COMPONENTS_MEDIA_APP_UI_MEDIA_APP_GUEST_UI_H_
 #define CHROMEOS_COMPONENTS_MEDIA_APP_UI_MEDIA_APP_GUEST_UI_H_
 
-#include "base/macros.h"
 #include "ui/webui/mojo_web_ui_controller.h"
 
 namespace content {
@@ -22,8 +21,8 @@ class MediaAppGuestUI : public ui::MojoWebUIController {
   explicit MediaAppGuestUI(content::WebUI* web_ui);
   ~MediaAppGuestUI() override;
 
- private:
-  DISALLOW_COPY_AND_ASSIGN(MediaAppGuestUI);
+  MediaAppGuestUI(const MediaAppGuestUI&) = delete;
+  MediaAppGuestUI& operator=(const MediaAppGuestUI&) = delete;
 };
 
 }  // namespace chromeos

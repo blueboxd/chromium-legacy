@@ -15,6 +15,7 @@
 namespace infobars {
 class InfoBar;
 }
+class InfobarModalCompletionNotifier;
 class InfobarOverlayRequestFactory;
 class OverlayRequestQueue;
 namespace web {
@@ -60,6 +61,8 @@ class InfobarOverlayRequestInserter
 
   // The WebState whose queues are being inserted into.
   web::WebState* web_state_ = nullptr;
+  // The infobar modal completion notifier.
+  std::unique_ptr<InfobarModalCompletionNotifier> modal_completion_notifier_;
   // The factory used to create OverlayRequests.
   std::unique_ptr<InfobarOverlayRequestFactory> request_factory_;
   // Map of the OverlayRequestQueues to use for each InfobarOverlayType.

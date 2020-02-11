@@ -61,11 +61,11 @@
 }
 
 - (void)presentInfobarModalFromBanner {
-  // Notify the model layer to show the infobar modal before dismissing the
-  // banner.
+  // Notify the model layer to show the infobar modal.  The banner is not
+  // dismissed immediately, but will be cancelled upon the completion of the
+  // modal UI.
   [self dispatchResponse:OverlayResponse::CreateWithInfo<
                              InfobarBannerShowModalResponse>()];
-  [self dismissOverlay];
 }
 
 - (void)infobarBannerWasDismissed {

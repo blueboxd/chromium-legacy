@@ -75,14 +75,11 @@ NGPhysicalBoxFragment::NGPhysicalBoxFragment(
     const NGPhysicalBoxStrut& borders,
     const NGPhysicalBoxStrut& padding,
     WritingMode block_or_line_writing_mode)
-    : NGPhysicalContainerFragment(
-          builder,
-          block_or_line_writing_mode,
-          children_,
-          (builder->node_ && builder->node_.IsRenderedLegend())
-              ? kFragmentRenderedLegend
-              : kFragmentBox,
-          builder->BoxType()) {
+    : NGPhysicalContainerFragment(builder,
+                                  block_or_line_writing_mode,
+                                  children_,
+                                  kFragmentBox,
+                                  builder->BoxType()) {
   DCHECK(layout_object_);
   DCHECK(layout_object_->IsBoxModelObject());
   if (NGFragmentItemsBuilder* items_builder = builder->ItemsBuilder()) {

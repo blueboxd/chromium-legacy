@@ -28,6 +28,7 @@
 #include "third_party/blink/renderer/platform/geometry/length.h"
 #include "third_party/blink/renderer/platform/geometry/length_functions.h"
 #include "third_party/blink/renderer/platform/transforms/transform_operation.h"
+#include "third_party/blink/renderer/platform/wtf/casting.h"
 
 namespace blink {
 
@@ -119,7 +120,13 @@ class PLATFORM_EXPORT TranslateTransformOperation final
   OperationType type_;
 };
 
-DEFINE_TRANSFORM_TYPE_CASTS(TranslateTransformOperation);
+template <>
+struct DowncastTraits<TranslateTransformOperation> {
+  static bool AllowFrom(const TransformOperation& transform) {
+    return TranslateTransformOperation::IsMatchingOperationType(
+        transform.GetType());
+  }
+};
 
 }  // namespace blink
 

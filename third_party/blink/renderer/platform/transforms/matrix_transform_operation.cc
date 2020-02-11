@@ -28,7 +28,7 @@ namespace blink {
 scoped_refptr<TransformOperation> MatrixTransformOperation::Accumulate(
     const TransformOperation& other_op) {
   DCHECK(other_op.IsSameType(*this));
-  const MatrixTransformOperation& other = ToMatrixTransformOperation(other_op);
+  const auto& other = To<MatrixTransformOperation>(other_op);
 
   TransformationMatrix from_t(other.a_, other.b_, other.c_, other.d_, other.e_,
                               other.f_);

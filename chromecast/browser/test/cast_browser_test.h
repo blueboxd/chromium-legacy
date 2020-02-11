@@ -35,6 +35,8 @@ class CastBrowserTest : public content::BrowserTestBase,
   CastBrowserTest();
   ~CastBrowserTest() override;
 
+  CastWebView* cast_web_view() const { return cast_web_view_.get(); }
+
   // content::BrowserTestBase implementation:
   void SetUp() final;
   void SetUpCommandLine(base::CommandLine* command_line) override;

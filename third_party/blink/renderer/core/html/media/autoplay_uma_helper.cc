@@ -4,6 +4,7 @@
 
 #include "third_party/blink/renderer/core/html/media/autoplay_uma_helper.h"
 
+#include "base/metrics/histogram_functions.h"
 #include "services/metrics/public/cpp/ukm_builders.h"
 #include "services/metrics/public/cpp/ukm_recorder.h"
 #include "third_party/blink/renderer/core/dom/document.h"
@@ -57,16 +58,18 @@ AutoplayUmaHelper::AutoplayUmaHelper(HTMLMediaElement* element)
 
 AutoplayUmaHelper::~AutoplayUmaHelper() = default;
 
+static void RecordAutoplaySourceMetrics(HTMLMediaElement* element,
+                                        AutoplaySource source) {
+  if (IsA<HTMLVideoElement>(element)) {
+    base::UmaHistogramEnumeration("Media.Video.Autoplay", source);
+    if (element->muted())
+      base::UmaHistogramEnumeration("Media.Video.Autoplay.Muted", source);
+    return;
+  }
+  base::UmaHistogramEnumeration("Media.Audio.Autoplay", source);
+}
+
 void AutoplayUmaHelper::OnAutoplayInitiated(AutoplaySource source) {
-  DEFINE_STATIC_LOCAL(EnumerationHistogram, video_histogram,
-                      ("Media.Video.Autoplay",
-                       static_cast<int>(AutoplaySource::kNumberOfUmaSources)));
-  DEFINE_STATIC_LOCAL(EnumerationHistogram, muted_video_histogram,
-                      ("Media.Video.Autoplay.Muted",
-                       static_cast<int>(AutoplaySource::kNumberOfUmaSources)));
-  DEFINE_STATIC_LOCAL(EnumerationHistogram, audio_histogram,
-                      ("Media.Audio.Autoplay",
-                       static_cast<int>(AutoplaySource::kNumberOfUmaSources)));
 
   // Autoplay already initiated
   if (sources_.Contains(source))
@@ -75,26 +78,11 @@ void AutoplayUmaHelper::OnAutoplayInitiated(AutoplaySource source) {
   sources_.insert(source);
 
   // Record the source.
-  if (IsA<HTMLVideoElement>(element_.Get())) {
-    video_histogram.Count(static_cast<int>(source));
-    if (element_->muted())
-      muted_video_histogram.Count(static_cast<int>(source));
-  } else {
-    audio_histogram.Count(static_cast<int>(source));
-  }
+  RecordAutoplaySourceMetrics(element_.Get(), source);
 
   // Record dual source.
-  if (sources_.size() ==
-      static_cast<size_t>(AutoplaySource::kNumberOfSources)) {
-    if (IsA<HTMLVideoElement>(element_.Get())) {
-      video_histogram.Count(static_cast<int>(AutoplaySource::kDualSource));
-      if (element_->muted())
-        muted_video_histogram.Count(
-            static_cast<int>(AutoplaySource::kDualSource));
-    } else {
-      audio_histogram.Count(static_cast<int>(AutoplaySource::kDualSource));
-    }
-  }
+  if (sources_.size() == kDualSourceSize)
+    RecordAutoplaySourceMetrics(element_.Get(), AutoplaySource::kDualSource);
 
   element_->addEventListener(event_type_names::kPlaying, this, false);
 
@@ -122,18 +110,13 @@ void AutoplayUmaHelper::OnAutoplayInitiated(AutoplaySource source) {
 
 void AutoplayUmaHelper::RecordAutoplayUnmuteStatus(
     AutoplayUnmuteActionStatus status) {
-  DEFINE_STATIC_LOCAL(
-      EnumerationHistogram, autoplay_unmute_histogram,
-      ("Media.Video.Autoplay.Muted.UnmuteAction",
-       static_cast<int>(AutoplayUnmuteActionStatus::kNumberOfStatus)));
-
-  autoplay_unmute_histogram.Count(static_cast<int>(status));
+  base::UmaHistogramEnumeration("Media.Video.Autoplay.Muted.UnmuteAction",
+                                status);
 
   // Record UKM event for unmute muted autoplay.
   if (element_->GetDocument().IsInMainFrame()) {
     int source = static_cast<int>(AutoplaySource::kAttribute);
-    if (sources_.size() ==
-        static_cast<size_t>(AutoplaySource::kNumberOfSources)) {
+    if (sources_.size() == kDualSourceSize) {
       source = static_cast<int>(AutoplaySource::kDualSource);
     } else if (sources_.Contains(AutoplaySource::kMethod)) {
       source = static_cast<int>(AutoplaySource::kAttribute);
@@ -239,10 +222,9 @@ void AutoplayUmaHelper::MaybeStopRecordingMutedVideoPlayMethodBecomeVisible(
   if (!muted_video_play_method_intersection_observer_)
     return;
 
-  DEFINE_STATIC_LOCAL(BooleanHistogram, histogram,
-                      ("Media.Video.Autoplay.Muted.PlayMethod.BecomesVisible"));
+  base::UmaHistogramBoolean(
+      "Media.Video.Autoplay.Muted.PlayMethod.BecomesVisible", visible);
 
-  histogram.Count(visible);
   muted_video_play_method_intersection_observer_->disconnect();
   muted_video_play_method_intersection_observer_ = nullptr;
   MaybeUnregisterContextDestroyedObserver();

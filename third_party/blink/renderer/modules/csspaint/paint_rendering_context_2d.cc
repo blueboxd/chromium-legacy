@@ -23,8 +23,8 @@ PaintRenderingContext2D::PaintRenderingContext2D(
   clip_antialiasing_ = kAntiAliased;
   ModifiableState().SetShouldAntialias(true);
 
-  Canvas()->clear(context_settings->alpha() ? SK_ColorTRANSPARENT
-                                            : SK_ColorBLACK);
+  GetPaintCanvas()->clear(context_settings->alpha() ? SK_ColorTRANSPARENT
+                                                    : SK_ColorBLACK);
   did_record_draw_commands_in_paint_recorder_ = true;
 }
 
@@ -102,12 +102,10 @@ void PaintRenderingContext2D::setShadowOffsetY(double y) {
   BaseRenderingContext2D::setShadowOffsetY(y * effective_zoom_);
 }
 
-cc::PaintCanvas* PaintRenderingContext2D::DrawingCanvas() const {
-  return Canvas();
-}
-
-cc::PaintCanvas* PaintRenderingContext2D::ExistingDrawingCanvas() const {
-  return Canvas();
+cc::PaintCanvas* PaintRenderingContext2D::GetPaintCanvas() const {
+  DCHECK(paint_recorder_);
+  DCHECK(paint_recorder_->getRecordingCanvas());
+  return paint_recorder_->getRecordingCanvas();
 }
 
 void PaintRenderingContext2D::ValidateStateStackWithCanvas(

@@ -19,7 +19,7 @@ namespace {
 // The particular UserActions used here are not important, but real UserAction
 // names are used to prevent a presubmit warning.
 const char kUserAction1Name[] = "MobileMenuNewTab";
-const char kUserAction2Name[] = "MobileTabClosed";
+const char kUserAction2Name[] = "OverscrollActionCloseTab";
 // An "InProductHelp.*" user action.
 const char kInProductHelpUserActionName[] = "InProductHelp.Dismissed";
 }  // namespace
@@ -49,6 +49,13 @@ TEST_F(ApplicationBreadcrumbsLoggerTest, UserAction) {
   EXPECT_NE(std::string::npos, events.front().find(kUserAction1Name));
   events.pop_front();
   EXPECT_NE(std::string::npos, events.front().find(kUserAction2Name));
+}
+
+// Tests that not_user_triggered User Action does not show up in breadcrumbs.
+TEST_F(ApplicationBreadcrumbsLoggerTest, LogNotUserTriggeredAction) {
+  base::RecordAction(base::UserMetricsAction("PageLoad"));
+
+  EXPECT_EQ(0U, breadcrumb_manager_.GetEvents(0).size());
 }
 
 // Tests that "InProductHelp" UserActions are not logged by

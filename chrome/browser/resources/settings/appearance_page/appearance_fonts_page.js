@@ -3,7 +3,6 @@
 // found in the LICENSE file.
 
 (function() {
-'use strict';
 
 /** @type {!Array<number>} */
 const FONT_SIZE_RANGE = [

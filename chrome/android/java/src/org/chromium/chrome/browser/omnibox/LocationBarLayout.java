@@ -53,6 +53,7 @@ import org.chromium.chrome.browser.omnibox.suggestions.AutocompleteCoordinatorFa
 import org.chromium.chrome.browser.omnibox.suggestions.AutocompleteDelegate;
 import org.chromium.chrome.browser.omnibox.suggestions.OmniboxSuggestionListEmbedder;
 import org.chromium.chrome.browser.omnibox.voice.AssistantVoiceSearchService;
+import org.chromium.chrome.browser.omnibox.voice.VoiceRecognitionHandler;
 import org.chromium.chrome.browser.profiles.Profile;
 import org.chromium.chrome.browser.search_engines.TemplateUrlServiceFactory;
 import org.chromium.chrome.browser.settings.privacy.PrivacyPreferencesManager;
@@ -78,10 +79,9 @@ import java.util.List;
  * This class represents the location bar where the user types in URLs and
  * search terms.
  */
-public class LocationBarLayout
-        extends FrameLayout implements OnClickListener, LocationBar, AutocompleteDelegate,
-                                       FakeboxDelegate, LocationBarVoiceRecognitionHandler.Delegate,
-                                       AssistantVoiceSearchService.Observer {
+public class LocationBarLayout extends FrameLayout
+        implements OnClickListener, LocationBar, AutocompleteDelegate, FakeboxDelegate,
+                   VoiceRecognitionHandler.Delegate, AssistantVoiceSearchService.Observer {
     private static final EnumeratedHistogramSample ENUMERATED_FOCUS_REASON =
             new EnumeratedHistogramSample(
                     "Android.OmniboxFocusReason", OmniboxFocusReason.NUM_ENTRIES);
@@ -119,7 +119,7 @@ public class LocationBarLayout
     protected float mUrlFocusChangePercent;
     protected LinearLayout mUrlActionContainer;
 
-    private LocationBarVoiceRecognitionHandler mVoiceRecognitionHandler;
+    private VoiceRecognitionHandler mVoiceRecognitionHandler;
 
     protected CompositeTouchDelegate mCompositeTouchDelegate;
 
@@ -208,7 +208,7 @@ public class LocationBarLayout
 
         mUrlActionContainer = (LinearLayout) findViewById(R.id.url_action_container);
 
-        mVoiceRecognitionHandler = new LocationBarVoiceRecognitionHandler(this);
+        mVoiceRecognitionHandler = new VoiceRecognitionHandler(this);
     }
 
     @Override
@@ -793,7 +793,7 @@ public class LocationBarLayout
         } else if (v == mMicButton) {
             RecordUserAction.record("MobileOmniboxVoiceSearch");
             mVoiceRecognitionHandler.startVoiceRecognition(
-                    LocationBarVoiceRecognitionHandler.VoiceInteractionSource.OMNIBOX);
+                    VoiceRecognitionHandler.VoiceInteractionSource.OMNIBOX);
         }
     }
 
@@ -1034,7 +1034,7 @@ public class LocationBarLayout
     }
 
     @Override
-    public LocationBarVoiceRecognitionHandler getLocationBarVoiceRecognitionHandler() {
+    public VoiceRecognitionHandler getVoiceRecognitionHandler() {
         return mVoiceRecognitionHandler;
     }
 

@@ -6,6 +6,7 @@
 
 #include <utility>
 
+#include "base/feature_list.h"
 #include "base/metrics/field_trial_params.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/rand_util.h"
@@ -93,6 +94,8 @@ HatsService::SurveyMetadata::~SurveyMetadata() = default;
 
 HatsService::HatsService(Profile* profile) : profile_(profile) {
   for (auto* survey_feature : survey_features) {
+    if (!base::FeatureList::IsEnabled(*survey_feature))
+      continue;
     survey_configs_by_triggers_.emplace(
         base::FeatureParam<std::string>(survey_feature, kHatsSurveyTrigger, "")
             .Get(),

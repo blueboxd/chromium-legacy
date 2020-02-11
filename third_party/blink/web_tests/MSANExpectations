@@ -375,3 +375,14 @@ crbug.com/1041052 [ Linux ] external/wpt/2dcontext/fill-and-stroke-styles/canvas
 # Sheriff 2020-02-04
 crbug.com/1047818 [ Linux ] external/wpt/visual-viewport/idlharness.window.html [ Pass Timeout ]
 crbug.com/1047818 [ Linux ] external/wpt/permissions/idlharness.any.worker.html [ Pass Timeout ]
+
+# Sheriff 2020-02-11
+crbug.com/1047818 [ Linux ] external/wpt/badging/idlharness.any.html [ Pass Timeout ]
+crbug.com/1047818 [ Linux ] external/wpt/badging/idlharness.any.worker.html [ Pass Timeout ]
+crbug.com/1047818 [ Linux ] external/wpt/input-events/idlharness.window.html [ Pass Timeout ]
+crbug.com/1047818 [ Linux ] external/wpt/permissions-request/idlharness.any.worker.html [ Pass Timeout ]
+crbug.com/1047818 [ Linux ] external/wpt/permissions-revoke/idlharness.any.html [ Pass Timeout ]
+crbug.com/1047818 [ Linux ] external/wpt/shape-detection/idlharness.https.any.html [ Pass Timeout ]
+crbug.com/1047818 [ Linux ] external/wpt/video-raf/idlharness.window.html [ Pass Timeout ]
+crbug.com/1047818 [ Linux ] external/wpt/web-locks/idlharness.tentative.https.any.html [ Pass Timeout ]
+crbug.com/1047818 [ Linux ] external/wpt/web-share/idlharness.https.window.html [ Pass Timeout ]

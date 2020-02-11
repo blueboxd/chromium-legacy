@@ -76,6 +76,10 @@ public class TopControlsTest {
     @Test
     @SmallTest
     public void testBasic() throws Exception {
+        // TODO(crbug.com/1035894): Depending on if flake is reduced, either remove this TODO or
+        // remove the longer timeout.
+        final long timeoutMs = 6000L;
+        final long checkIntervalMs = 100L;
         final String url = UrlUtils.encodeHtmlDataUri("<body><p style='height:5000px'>");
         InstrumentationActivity activity = mActivityTestRule.launchShellWithUrl(url);
 
@@ -107,7 +111,7 @@ public class TopControlsTest {
             public boolean isSatisfied() {
                 return mInitialVisiblePageHeight != getVisiblePageHeight();
             }
-        });
+        }, timeoutMs, checkIntervalMs);
 
         // Moving should also hide the top-controls View.
         TestThreadUtils.runOnUiThreadBlocking(() -> {
@@ -124,7 +128,7 @@ public class TopControlsTest {
             public boolean isSatisfied() {
                 return mInitialVisiblePageHeight == getVisiblePageHeight();
             }
-        });
+        }, timeoutMs, checkIntervalMs);
 
         // top-controls are shown async.
         CriteriaHelper.pollUiThread(new Criteria() {

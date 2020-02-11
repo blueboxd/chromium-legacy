@@ -674,7 +674,7 @@
 <translation id="3987940399970879459">ഒരു MB-യിൽ കുറവാണ്</translation>
 <translation id="3990250421422698716">ജോഗ് ഓഫ്‌സെറ്റ്</translation>
 <translation id="40103911065039147">{URL_count,plural, =1{സമീപത്ത് ഒരു വെബ്‌പേജുണ്ട്}other{സമീപത്ത് # വെബ്‌പേജുകളുണ്ട്}}</translation>
-<translation id="4014128326099193693">{COUNT,plural, =1{PDF ഡോക്യുമെന്റിൽ {COUNT} പേജ് അടങ്ങിയിരിക്കുന്നു}other{PDF ഡോക്യുമെന്റിൽ {COUNT} പേജുകൾ അടങ്ങിയിരിക്കുന്നു}}</translation>
+<translation id="4014128326099193693">{COUNT,plural, =1{{COUNT} പേജുള്ള PDF ഡോക്യുമെന്റ്}other{{COUNT} പേജുകളുള്ള PDF ഡോക്യുമെന്റ്}}</translation>
 <translation id="4030383055268325496">&amp;ചേർത്തത് പഴയപടിയാക്കുക</translation>
 <translation id="4032320456957708163">നിങ്ങളുടെ ബ്രൗസർ മാനേജ് ചെയ്യുന്നത് <ph name="ENROLLMENT_DOMAIN" /> ആണ്</translation>
 <translation id="4058922952496707368">കീ "<ph name="SUBKEY" />": <ph name="ERROR" /></translation>

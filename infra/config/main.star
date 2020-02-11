@@ -59,6 +59,31 @@ luci.cq(
     status_host = 'chromium-cq-status.appspot.com',
 )
 
+# Declare a CQ group that watches all branch heads
+# We won't add any builders, but SUBMIT TO CQ fails on Gerrit if there is no CQ
+# group
+luci.cq_group(
+    name = 'fallback-empty-cq',
+    # TODO(crbug/959436): enable it.
+    cancel_stale_tryjobs = False,
+    retry_config = cq.RETRY_ALL_FAILURES,
+    tree_status_host = 'chromium-status.appspot.com/',
+    watch = cq.refset(
+        repo = 'https://chromium.googlesource.com/chromium/src',
+        refs = ['refs/branch-heads/.+'],
+    ),
+    acls = [
+        acl.entry(
+            acl.CQ_COMMITTER,
+            groups = 'project-chromium-committers',
+        ),
+        acl.entry(
+            acl.CQ_DRY_RUNNER,
+            groups = 'project-chromium-tryjob-access',
+        ),
+    ],
+)
+
 luci.logdog(
     gs_bucket = 'chromium-luci-logdog',
 )
@@ -122,6 +147,10 @@ exec('//consoles/tryserver.chromium.win.star')
 exec('//notifiers.star')
 
 exec('//generators/cq-builders-md.star')
+# TODO(https://crbug.com/966115) Run the generator to set the fallback field for
+# the empty CQ group until it's exposed in lucicfg or there is a better way to
+# create a CQ group for all of the canary branches
+exec('//generators/cq-fallback.star')
 # TODO(https://crbug.com/819899) There are a number of noop jobs for dummy
 # builders defined due to legacy requirements that trybots mirror CI bots
 # no-op scheduler jobs are not supported by the lucicfg libraries, so this

@@ -173,8 +173,8 @@ test("weblayer_browsertests") {
       # These tests create Browser objects from C++, which the Java side is not
       # setup for. Persistence related tests for Java will be done as
       # integration tests.
+      "../browser/persistence/browser_persister_browsertest.cc",
       "../browser/persistence/minimal_browser_persister_browsertest.cc",
-      "../browser/session_service_browsertest.cc",
     ]
   }
 }

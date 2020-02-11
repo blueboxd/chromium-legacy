@@ -1456,10 +1456,12 @@ bool SkiaOutputSurfaceImplOnGpu::Initialize() {
                "is_using_vulkan", is_using_vulkan());
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
 #if defined(USE_OZONE)
-  window_surface_ =
-      ui::OzonePlatform::GetInstance()
-          ->GetSurfaceFactoryOzone()
-          ->CreatePlatformWindowSurface(dependency_->GetSurfaceHandle());
+  gpu::SurfaceHandle surface_handle = dependency_->GetSurfaceHandle();
+  if (surface_handle != gpu::kNullSurfaceHandle) {
+    window_surface_ = ui::OzonePlatform::GetInstance()
+                          ->GetSurfaceFactoryOzone()
+                          ->CreatePlatformWindowSurface(surface_handle);
+  }
 #endif
 
   if (is_using_vulkan()) {

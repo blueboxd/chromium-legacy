@@ -121,6 +121,7 @@
 #include "chrome/browser/ui/webui/chromeos/multidevice_setup/multidevice_setup_dialog.h"
 #include "chrome/browser/ui/webui/chromeos/network_ui.h"
 #include "chrome/browser/ui/webui/settings/chromeos/os_settings_ui.h"
+#include "chrome/browser/ui/webui/settings/chromeos/search/search.mojom.h"
 #include "chromeos/components/media_app_ui/media_app_ui.h"
 #include "chromeos/components/media_app_ui/media_app_ui.mojom.h"
 #include "chromeos/components/multidevice/debug_webui/proximity_auth_ui.h"
@@ -443,6 +444,10 @@ void PopulateChromeWebUIFrameBinders(
 
   RegisterWebUIControllerInterfaceBinder<
       app_management::mojom::PageHandlerFactory,
+      chromeos::settings::OSSettingsUI>(map);
+
+  RegisterWebUIControllerInterfaceBinder<
+      chromeos::settings::mojom::UserActionRecorder,
       chromeos::settings::OSSettingsUI>(map);
 
   RegisterWebUIControllerInterfaceBinder<

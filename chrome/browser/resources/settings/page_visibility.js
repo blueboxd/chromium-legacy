@@ -31,7 +31,7 @@ let PageVisibility;
  *   setTheme: boolean,
  * }}
  */
-let AppearancePageVisibility;
+/* #export */ let AppearancePageVisibility;
 
 /**
  * @typedef {{

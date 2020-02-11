@@ -544,6 +544,17 @@ var defaultTests = [
     });
   },
 
+  function pinShelfIcon() {
+    chrome.autotestPrivate.getAllInstalledApps(
+        chrome.test.callbackPass(apps => {
+          apps.forEach(app => {
+            chrome.autotestPrivate.pinShelfIcon(app.appId,
+              chrome.test.callbackPass());
+          });
+        })
+    );
+  },
+
   function waitForPrimaryDisplayRotation() {
     var displayId = "-1";
     chrome.system.display.getInfo(function(info) {

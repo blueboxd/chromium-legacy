@@ -16,8 +16,6 @@ namespace chromeos {
 
 namespace sync_wifi {
 
-namespace {
-
 std::string DecodeHexString(const std::string& base_16) {
   std::string decoded;
   DCHECK_EQ(base_16.size() % 2, 0u) << "Must be a multiple of 2";
@@ -30,8 +28,6 @@ std::string DecodeHexString(const std::string& base_16) {
   decoded.assign(reinterpret_cast<const char*>(&v[0]), v.size());
   return decoded;
 }
-
-}  // namespace
 
 std::string SecurityTypeStringFromMojo(
     const network_config::mojom::SecurityType& security_type) {
@@ -59,6 +55,100 @@ std::string SecurityTypeStringFromProto(
       NOTREACHED();
       return "";
   }
+}
+
+sync_pb::WifiConfigurationSpecificsData_SecurityType SecurityTypeProtoFromMojo(
+    const network_config::mojom::SecurityType& security_type) {
+  switch (security_type) {
+    case network_config::mojom::SecurityType::kWpaPsk:
+      return sync_pb::WifiConfigurationSpecificsData::SECURITY_TYPE_PSK;
+    case network_config::mojom::SecurityType::kWepPsk:
+      return sync_pb::WifiConfigurationSpecificsData::SECURITY_TYPE_WEP;
+    default:
+      // Only PSK and WEP secured networks are supported by sync.
+      NOTREACHED();
+      return sync_pb::WifiConfigurationSpecificsData::SECURITY_TYPE_NONE;
+  }
+}
+
+sync_pb::WifiConfigurationSpecificsData_AutomaticallyConnectOption
+AutomaticallyConnectProtoFromMojo(
+    const network_config::mojom::ManagedBooleanPtr& auto_connect) {
+  if (!auto_connect) {
+    return sync_pb::WifiConfigurationSpecificsData::
+        AUTOMATICALLY_CONNECT_UNSPECIFIED;
+  }
+
+  if (auto_connect->active_value) {
+    return sync_pb::WifiConfigurationSpecificsData::
+        AUTOMATICALLY_CONNECT_ENABLED;
+  }
+
+  return sync_pb::WifiConfigurationSpecificsData::AUTOMATICALLY_CONNECT_ENABLED;
+}
+
+sync_pb::WifiConfigurationSpecificsData_IsPreferredOption
+IsPreferredProtoFromMojo(
+    const network_config::mojom::ManagedInt32Ptr& is_preferred) {
+  if (!is_preferred) {
+    return sync_pb::WifiConfigurationSpecificsData::IS_PREFERRED_UNSPECIFIED;
+  }
+
+  if (is_preferred->active_value == 1) {
+    return sync_pb::WifiConfigurationSpecificsData::IS_PREFERRED_ENABLED;
+  }
+
+  return sync_pb::WifiConfigurationSpecificsData::IS_PREFERRED_DISABLED;
+}
+
+sync_pb::WifiConfigurationSpecificsData_ProxyConfiguration_ProxyOption
+ProxyOptionProtoFromMojo(
+    const network_config::mojom::ManagedProxySettingsPtr& proxy_settings) {
+  if (!proxy_settings) {
+    return sync_pb::WifiConfigurationSpecificsData_ProxyConfiguration::
+        PROXY_OPTION_UNSPECIFIED;
+  }
+
+  if (proxy_settings->type->active_value == ::onc::proxy::kPAC) {
+    return sync_pb::WifiConfigurationSpecificsData_ProxyConfiguration::
+        PROXY_OPTION_AUTOMATIC;
+  }
+
+  if (proxy_settings->type->active_value == ::onc::proxy::kWPAD) {
+    return sync_pb::WifiConfigurationSpecificsData_ProxyConfiguration::
+        PROXY_OPTION_AUTODISCOVERY;
+  }
+
+  if (proxy_settings->type->active_value == ::onc::proxy::kManual) {
+    return sync_pb::WifiConfigurationSpecificsData_ProxyConfiguration::
+        PROXY_OPTION_MANUAL;
+  }
+
+  return sync_pb::WifiConfigurationSpecificsData_ProxyConfiguration::
+      PROXY_OPTION_DISABLED;
+}
+
+sync_pb::WifiConfigurationSpecificsData_ProxyConfiguration
+ProxyConfigurationProtoFromMojo(
+    const network_config::mojom::ManagedProxySettingsPtr& proxy_settings) {
+  sync_pb::WifiConfigurationSpecificsData_ProxyConfiguration proto;
+  proto.set_proxy_option(ProxyOptionProtoFromMojo(proxy_settings));
+
+  if (proto.proxy_option() ==
+      sync_pb::WifiConfigurationSpecificsData_ProxyConfiguration::
+          PROXY_OPTION_AUTOMATIC) {
+    if (proxy_settings->pac) {
+      proto.set_proxy_url(proxy_settings->pac->active_value);
+    }
+  } else if (proto.proxy_option() ==
+             sync_pb::WifiConfigurationSpecificsData_ProxyConfiguration::
+                 PROXY_OPTION_MANUAL) {
+    // TODO: Implement support for manual proxies.
+    // Return an empty proxy configuration for now.
+    return sync_pb::WifiConfigurationSpecificsData_ProxyConfiguration();
+  }
+
+  return proto;
 }
 
 network_config::mojom::SecurityType MojoSecurityTypeFromProto(

@@ -277,19 +277,6 @@
       如要進一步瞭解安全瀏覽功能，請參閱 https://developers.google.com/safe-browsing。
 
       這項政策僅適用於已加入 <ph name="MS_AD_NAME" /> 網域的 Windows 執行個體，或是已註冊裝置管理服務的 Windows 10 專業版或企業版執行個體。</translation>
-<translation id="1432194160771348078">
-      這會指定哪些應用程式要在登入畫面以無訊息方式安裝，
-      而不需使用者操作；這類應用程式無法解除安裝。
-      系統會直接授予應用程式/擴充功能要求的所有權限 (不需使用者操作)，
-      包括日後新版應用程式要求的額外權限。
-
-      請注意，基於安全性和隱私權考量，這項政策不能用於安裝擴充功能。此外，搭載 Chrome 穩定版的裝置只會安裝 <ph name="PRODUCT_NAME" /> 許可清單上的應用程式，並忽略所有不符合這些條件的項目。
-
-      如果你將系統先前強制安裝的應用程式從這份清單中移除，<ph name="PRODUCT_NAME" /> 會自動解除安裝該應用程式。
-
-      這項政策的每個清單項目都是一組字串，其中包含以分號 (<ph name="SEMICOLON" />) 分隔的擴充功能 ID 和「更新」網址。擴充功能 ID 為 32 個字母的字串，可在開發人員模式下前往 <ph name="CHROME_EXTENSIONS_LINK" /> 這類頁面存取。「更新」網址應指向更新資訊清單 XML 文件 (如 <ph name="LINK_TO_EXTENSION_DOC1" /> 中所述)。請注意，這項政策中設定的「更新」網址只會用於初次安裝，擴充功能的後續更新將採用擴充功能資訊清單中指定的更新網址進行。
-
-      舉例來說，<ph name="EXTENSION_POLICY_EXAMPLE" /> 這個項目會讓裝置從標準的 Chrome 線上應用程式商店「更新」網址安裝「<ph name="EXTENSION_POLICY_EXAMPLE_EXTENSION_NAME" />」應用程式。想進一步瞭解如何代管擴充功能，請參閱：<ph name="LINK_TO_EXTENSION_DOC2" />。</translation>
 <translation id="1435659902881071157">裝置層級網路設定</translation>
 <translation id="1438739959477268107">預設金鑰產生設定</translation>
 <translation id="1454846751303307294">允許你設定網址模式清單，指定不可以執行 JavaScript 的網站。如果未設定這項政策，系統會從「DefaultJavaScriptSetting」政策 (如果有設定的話) 或使用者的個人設定，將通用預設值套用至所有網站。</translation>
@@ -4280,7 +4267,6 @@
 
       只有在已啟用 <ph name="CHROME_REPORTING_EXTENSION_NAME" />且已透過 <ph name="CLOUD_MANAGEMENT_ENROLLMENT_TOKEN_POLICY_NAME" /> 註冊電腦的情況下，這項政策才會生效。</translation>
 <translation id="7758378441185523981">為設定檔類型啟用背景驗證。</translation>
-<translation id="7761446981238915769">設定登入畫面中的已安裝應用程式清單</translation>
 <translation id="7763614521440615342">在新分頁顯示內容建議</translation>
 <translation id="7765879851993224640">允許使用 Smart Lock 登入功能。</translation>
 <translation id="7774768074957326919">使用系統 Proxy 設定</translation>

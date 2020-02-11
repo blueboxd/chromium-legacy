@@ -285,17 +285,6 @@
       セーフ ブラウジングについて詳しくは、https://developers.google.com/safe-browsing をご覧ください。
 
       このポリシーは、<ph name="MS_AD_NAME" /> ドメインに追加した Windows インスタンス、またはデバイスの管理対象として登録した Windows 10 Pro あるいは Enterprise インスタンスでのみ使用できます。</translation>
-<translation id="1432194160771348078">
-      ログイン画面でユーザーに操作を求めずにサイレント インストールするアプリのリストを指定します。これらはアンインストールできないアプリとなります。
-      アプリによってリクエストされた権限はすべて、ユーザーへの確認なしで暗黙的に許可されます。これには、アプリの将来のバージョンで新たにリクエストされる権限もすべて含まれます。
-
-      なお、セキュリティ上、プライバシー上の理由から、拡張機能のインストールにはこのポリシーは適用されません。さらに、Stable チャンネルのデバイスでは、<ph name="PRODUCT_NAME" /> にバンドルされたホワイトリストに属するアプリのみがインストールされます。これらの条件に準拠しない項目はすべて無視されます。
-
-      以前に自動インストールされたアプリをこのリストから削除した場合、そのアプリは <ph name="PRODUCT_NAME" /> によって自動的にアンインストールされます。
-
-      ポリシーの各リスト項目は、拡張機能 ID と「更新」URL をセミコロン（<ph name="SEMICOLON" />）区切りで指定した文字列となります。拡張機能 ID は 32 文字の文字列で、デベロッパー モードで <ph name="CHROME_EXTENSIONS_LINK" /> を開くと確認できます。「更新」URL は更新マニフェスト XML ドキュメントを示す必要があります（<ph name="LINK_TO_EXTENSION_DOC1" /> の説明をご覧ください）。このポリシーで設定した「更新」URL は初回のインストールでのみ使用されます。その後の拡張機能の更新には、拡張機能のマニフェストで指定されている更新 URL が使用されます。
-
-      たとえば、<ph name="EXTENSION_POLICY_EXAMPLE" /> では、標準の Chrome ウェブストアの「更新」URL から <ph name="EXTENSION_POLICY_EXAMPLE_EXTENSION_NAME" /> アプリがインストールされます。拡張機能のホスティングについて詳しくは、<ph name="LINK_TO_EXTENSION_DOC2" /> をご覧ください。</translation>
 <translation id="1435659902881071157">デバイス レベルのネットワーク設定</translation>
 <translation id="1438739959477268107">デフォルトのキー生成設定</translation>
 <translation id="1454846751303307294">JavaScript の実行を許可しないサイトを指定する URL パターンのリストを設定できます。このポリシーが未設定の場合、グローバルのデフォルト値がすべてのサイトで使用されます。グローバルのデフォルト値は「DefaultJavaScriptSetting」ポリシーの値か、この値が未設定の場合はユーザーの個人設定の値です。</translation>
@@ -4309,7 +4298,6 @@
 
       このポリシーは、<ph name="CHROME_REPORTING_EXTENSION_NAME" /> が有効で、マシンが <ph name="CLOUD_MANAGEMENT_ENROLLMENT_TOKEN_POLICY_NAME" /> を使用して登録されている場合にのみ適用されます。</translation>
 <translation id="7758378441185523981">アンビエント認証をプロフィールのタイプ別に有効にします。</translation>
-<translation id="7761446981238915769">ログイン画面でインストールするアプリのリストを設定する</translation>
 <translation id="7763614521440615342">[新しいタブ] ページにおすすめのコンテンツを表示します</translation>
 <translation id="7765879851993224640">Smart Lock Signin の使用を許可する</translation>
 <translation id="7774768074957326919">システムのプロキシ設定を使用する</translation>

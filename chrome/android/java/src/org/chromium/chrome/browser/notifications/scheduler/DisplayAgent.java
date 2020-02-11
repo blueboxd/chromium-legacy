@@ -29,7 +29,6 @@ import org.chromium.chrome.browser.notifications.NotificationUmaTracker;
 import org.chromium.chrome.browser.notifications.NotificationUmaTracker.SystemNotificationType;
 import org.chromium.chrome.browser.notifications.PendingIntentProvider;
 import org.chromium.chrome.browser.notifications.channels.ChannelDefinitions.ChannelId;
-import org.chromium.chrome.browser.profiles.Profile;
 import org.chromium.chrome.browser.util.IntentUtils;
 
 import java.util.ArrayList;
@@ -179,20 +178,20 @@ public class DisplayAgent {
             case NotificationIntentInterceptor.IntentType.UNKNOWN:
                 break;
             case NotificationIntentInterceptor.IntentType.CONTENT_INTENT:
-                DisplayAgentJni.get().onUserAction(Profile.getLastUsedProfile(), clientType,
-                        UserActionType.CLICK, guid, ActionButtonType.UNKNOWN_ACTION, null);
+                DisplayAgentJni.get().onUserAction(clientType, UserActionType.CLICK, guid,
+                        ActionButtonType.UNKNOWN_ACTION, null);
                 closeNotification(guid);
                 break;
             case NotificationIntentInterceptor.IntentType.DELETE_INTENT:
-                DisplayAgentJni.get().onUserAction(Profile.getLastUsedProfile(), clientType,
-                        UserActionType.DISMISS, guid, ActionButtonType.UNKNOWN_ACTION, null);
+                DisplayAgentJni.get().onUserAction(clientType, UserActionType.DISMISS, guid,
+                        ActionButtonType.UNKNOWN_ACTION, null);
                 break;
             case NotificationIntentInterceptor.IntentType.ACTION_INTENT:
                 int actionButtonType = IntentUtils.safeGetIntExtra(
                         intent, EXTRA_ACTION_BUTTON_TYPE, ActionButtonType.UNKNOWN_ACTION);
                 String buttonId = IntentUtils.safeGetStringExtra(intent, EXTRA_ACTION_BUTTON_ID);
-                DisplayAgentJni.get().onUserAction(Profile.getLastUsedProfile(), clientType,
-                        UserActionType.BUTTON_CLICK, guid, actionButtonType, buttonId);
+                DisplayAgentJni.get().onUserAction(
+                        clientType, UserActionType.BUTTON_CLICK, guid, actionButtonType, buttonId);
                 closeNotification(guid);
                 break;
         }
@@ -319,8 +318,7 @@ public class DisplayAgent {
 
     @NativeMethods
     interface Natives {
-        void onUserAction(Profile profile, @SchedulerClientType int clientType,
-                @UserActionType int actionType, String guid, @ActionButtonType int type,
-                String buttonId);
+        void onUserAction(@SchedulerClientType int clientType, @UserActionType int actionType,
+                String guid, @ActionButtonType int type, String buttonId);
     }
 }

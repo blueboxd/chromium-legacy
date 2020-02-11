@@ -94,11 +94,9 @@
 #define MAYBE_UsingRealWebcam_AllocateBadSize \
   DISABLED_UsingRealWebcam_AllocateBadSize
 #define MAYBE_UsingRealWebcam_CaptureMjpeg UsingRealWebcam_CaptureMjpeg
-#define MAYBE_UsingRealWebcam_TakePhoto DISABLED_UsingRealWebcam_TakePhoto
-#define MAYBE_UsingRealWebcam_GetPhotoState \
-  DISABLED_UsingRealWebcam_GetPhotoState
-#define MAYBE_UsingRealWebcam_CaptureWithSize \
-  DISABLED_UsingRealWebcam_CaptureWithSize
+#define MAYBE_UsingRealWebcam_TakePhoto UsingRealWebcam_TakePhoto
+#define MAYBE_UsingRealWebcam_GetPhotoState UsingRealWebcam_GetPhotoState
+#define MAYBE_UsingRealWebcam_CaptureWithSize UsingRealWebcam_CaptureWithSize
 #define MAYBE_UsingRealWebcam_CheckPhotoCallbackRelease \
   UsingRealWebcam_CheckPhotoCallbackRelease
 #elif defined(OS_LINUX)
@@ -481,8 +479,6 @@ class VideoCaptureDeviceTest
 // Cause hangs on Windows Debug. http://crbug.com/417824
 #if defined(OS_WIN) && !defined(NDEBUG)
 #define MAYBE_OpenInvalidDevice DISABLED_OpenInvalidDevice
-#elif defined(OS_CHROMEOS)
-#define MAYBE_OpenInvalidDevice DISABLED_OpenInvalidDevice
 #else
 #define MAYBE_OpenInvalidDevice OpenInvalidDevice
 #endif
@@ -711,13 +707,7 @@ void VideoCaptureDeviceTest::RunCaptureMjpegTestCase() {
   device->StopAndDeAllocate();
 }
 
-#if defined(OS_CHROMEOS)
-#define MAYBE_NoCameraSupportsPixelFormatMax \
-  DISABLED_NoCameraSupportsPixelFormatMax
-#else
-#define MAYBE_NoCameraSupportsPixelFormatMax NoCameraSupportsPixelFormatMax
-#endif
-WRAPPED_TEST_P(VideoCaptureDeviceTest, MAYBE_NoCameraSupportsPixelFormatMax) {
+WRAPPED_TEST_P(VideoCaptureDeviceTest, NoCameraSupportsPixelFormatMax) {
   RunTestCase(base::BindOnce(
       &VideoCaptureDeviceTest::RunNoCameraSupportsPixelFormatMaxTestCase,
       base::Unretained(this)));

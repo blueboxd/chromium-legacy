@@ -77,7 +77,7 @@ class CORE_EXPORT SnapCoordinator final
   friend class SnapCoordinatorTest;
 
   HashSet<LayoutBox*> snap_containers_;
-  bool any_snap_container_data_needs_update_ = false;
+  bool any_snap_container_data_needs_update_ = true;
 
   // Used for reporting to UMA when snapping on the initial layout affects the
   // initial scroll position.

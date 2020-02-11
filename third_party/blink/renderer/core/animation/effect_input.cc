@@ -124,9 +124,9 @@ void SetKeyframeValue(Element* element,
 }
 
 bool ValidatePartialKeyframes(const StringKeyframeVector& keyframes) {
-  // CSSAdditiveAnimationsEnabled guards both additive animations and allowing
+  // WebAnimationsAPIEnabled guards both additive animations and allowing
   // partial (implicit) keyframes.
-  if (RuntimeEnabledFeatures::CSSAdditiveAnimationsEnabled())
+  if (RuntimeEnabledFeatures::WebAnimationsAPIEnabled())
     return true;
 
   // An implicit keyframe is inserted in the below cases. Note that the 'first'
@@ -180,7 +180,7 @@ EffectModel::CompositeOperation ResolveCompositeOperationForKeyframe(
     StringKeyframe* keyframe) {
   bool additive_composite = composite == EffectModel::kCompositeAdd ||
                             composite == EffectModel::kCompositeAccumulate;
-  if (!RuntimeEnabledFeatures::CSSAdditiveAnimationsEnabled() &&
+  if (!RuntimeEnabledFeatures::WebAnimationsAPIEnabled() &&
       keyframe->HasCssProperty() && additive_composite) {
     return EffectModel::kCompositeReplace;
   }
@@ -667,7 +667,7 @@ KeyframeEffectModelBase* EffectInput::Convert(
   auto* keyframe_effect_model = MakeGarbageCollected<StringKeyframeEffectModel>(
       parsed_keyframes, composite, LinearTimingFunction::Shared());
 
-  if (!RuntimeEnabledFeatures::CSSAdditiveAnimationsEnabled()) {
+  if (!RuntimeEnabledFeatures::WebAnimationsAPIEnabled()) {
     // This should be enforced by the parsing code.
     DCHECK(!HasAdditiveCompositeCSSKeyframe(
         keyframe_effect_model->GetPropertySpecificKeyframeGroups()));

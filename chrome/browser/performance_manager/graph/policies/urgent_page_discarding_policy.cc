@@ -10,6 +10,7 @@
 #include "base/containers/flat_set.h"
 #include "base/feature_list.h"
 #include "base/memory/memory_pressure_listener.h"
+#include "base/metrics/histogram_macros.h"
 #include "base/sequence_checker.h"
 #include "base/time/time.h"
 #include "build/build_config.h"
@@ -246,6 +247,9 @@ void UrgentPageDiscardingPolicy::UrgentlyDiscardAPage() {
     }
   }
 
+  UMA_HISTOGRAM_COUNTS_100("Discarding.DiscardCandidatesCount",
+                           discardable_pages.size());
+
   if (discardable_pages.empty()) {
     RegisterMemoryPressureListener();
     return;
@@ -283,8 +287,16 @@ void UrgentPageDiscardingPolicy::UrgentlyDiscardAPage() {
     }
   }
 
-  if (!largest_page_node)
+  if (largest_page_node) {
+    // Only report the memory usage metrics if we can compare them.
+    UMA_HISTOGRAM_COUNTS_1000("Discarding.LargestTabFootprint",
+                              discardable_pages[largest_page_node] / 1024);
+    UMA_HISTOGRAM_COUNTS_1000(
+        "Discarding.OldestTabFootprint",
+        discardable_pages[oldest_bg_discardable_page_node] / 1024);
+  } else {
     largest_page_node = oldest_bg_discardable_page_node;
+  }
 
   // Adorns the PageNode with a discard attempt marker to make sure that we
   // don't try to discard it multiple times if it fails to be discarded. In

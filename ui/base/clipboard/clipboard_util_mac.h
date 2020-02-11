@@ -71,7 +71,7 @@ class COMPONENT_EXPORT(UI_BASE_CLIPBOARD) ClipboardUtil {
                                           NSArray** titles);
 
   // Gets the NSPasteboard specified from the clipboard buffer.
-  static NSPasteboard* PasteboardFromBuffer(ui::ClipboardBuffer buffer);
+  static NSPasteboard* PasteboardFromBuffer(ClipboardBuffer buffer);
 
   // If there is RTF data on the pasteboard, returns an HTML version of it.
   // Otherwise returns nil.

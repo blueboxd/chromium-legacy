@@ -3913,7 +3913,7 @@ Souhaitez-vous lancer <ph name="CONTROL_PANEL_APPLET_NAME" />?</translation>
 <translation id="6472804939621540371">Cette action effacera toutes les données et tous les témoins stockés par <ph name="SITE_GROUP_NAME" />, par tout site subordonné et par son application installée.</translation>
 <translation id="6472893788822429178">Afficher le bouton Accueil</translation>
 <translation id="6473842110411557830">Illustration de Powerwash</translation>
-<translation id="6474498546677193336">Impossible d'annuler le partage, parce qu'une application utilise ce dossier. Le partage sera annulé au prochain arrêt de Linux.</translation>
+<translation id="6474498546677193336">Impossible d'annuler le partage parce qu'une application utilise ce dossier. Le partage sera annulé au prochain arrêt de Linux.</translation>
 <translation id="6474884162850599008">Se déconnecter du compte Google Disque</translation>
 <translation id="6475697075626596525"><ph name="APP_NAME" /> souhaite partager le contenu de votre écran. Choisissez ce que vous voulez partager.</translation>
 <translation id="6478248366783946499">Conserver le fichier dangereux?</translation>
@@ -4756,7 +4756,7 @@ Souhaitez-vous lancer <ph name="CONTROL_PANEL_APPLET_NAME" />?</translation>
 <translation id="767127784612208024">Touchez pour confirmer la réinitialisation</translation>
 <translation id="7672520070349703697"><ph name="HUNG_IFRAME_URL" />, dans <ph name="PAGE_TITLE" />.</translation>
 <translation id="7676867886086876795">Envoyez votre voix à Google pour autoriser la dictée dans n'importe quel champ de texte.</translation>
-<translation id="767731949513650236">Synchroniser uniquement les types de données sélectionnés</translation>
+<translation id="767731949513650236">Synchronisez uniquement les types de données sélectionnés</translation>
 <translation id="7678280409648629969">Les données de connexion seront stockées dans Chrome lorsque vous quitterez le mode de navigation privée. Cela vous permettra d'utiliser Touch ID avec ce site Web à nouveau plus tard.</translation>
 <translation id="7681095912841365527">Le site peut utiliser le Bluetooth</translation>
 <translation id="7683373461016844951">Pour continuer, cliquez sur OK, puis sur Ajouter une personne pour créer un nouveau profil pour votre adresse de courriel <ph name="DOMAIN" />.</translation>
@@ -4785,7 +4785,7 @@ Souhaitez-vous lancer <ph name="CONTROL_PANEL_APPLET_NAME" />?</translation>
 <translation id="7705276765467986571">Échec de chargement du modèle de favori.</translation>
 <translation id="7705524343798198388">RPV</translation>
 <translation id="7707108266051544351">L'utilisation de capteurs de mouvement a été bloquée pour ce site.</translation>
-<translation id="7707354955081320373">Synchroniser tous les types de données, y compris ceux qui pourraient être ajoutés plus tard</translation>
+<translation id="7707354955081320373">Synchronisez tous les types de données, y compris ceux qui pourraient être ajoutés plus tard</translation>
 <translation id="7707922173985738739">Utiliser les données mobiles</translation>
 <translation id="7709152031285164251">Échec — <ph name="INTERRUPT_REASON" /></translation>
 <translation id="7710568461918838723">&amp;Diffuser…</translation>
@@ -5133,7 +5133,7 @@ Conservez votre fichier de clé en lieu sûr. Vous en aurez besoin lors de la cr
 <translation id="8143442547342702591">Application non valide</translation>
 <translation id="8146177459103116374">Si vous êtes déjà enregistré sur ​​cet appareil, vous pouvez <ph name="LINK2_START" />vous connecter à l'aide de votre compte<ph name="LINK2_END" />.</translation>
 <translation id="8146793085009540321">Échec de la connexion. Veuillez communiquer avec votre administrateur ou essayer de nouveau.</translation>
-<translation id="8149277777808869878">Cet appareil <ph name="DEVICE_TYPE" /> sera géré <ph name="BEGIN_BOLD" /><ph name="DOMAIN" /><ph name="END_BOLD" />.</translation>
+<translation id="8149277777808869878">Cet appareil <ph name="DEVICE_TYPE" /> sera géré par <ph name="BEGIN_BOLD" /><ph name="DOMAIN" /><ph name="END_BOLD" />.</translation>
 <translation id="8151638057146502721">Configurer</translation>
 <translation id="8152091997436726702">L'enregistrement de l'imprimante a expiré. Pour enregistrer une imprimante, vous devez confirmer l'enregistrement sur l'imprimante.</translation>
 <translation id="8154790740888707867">Fichier introuvable.</translation>

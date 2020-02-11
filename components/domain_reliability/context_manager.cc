@@ -7,7 +7,7 @@
 #include <utility>
 
 #include "base/bind_helpers.h"
-#include "base/metrics/histogram_macros.h"
+#include "net/base/url_util.h"
 
 namespace domain_reliability {
 
@@ -84,13 +84,11 @@ DomainReliabilityContext* DomainReliabilityContextManager::GetContextForHost(
   if (context_it != contexts_.end())
     return context_it->second;
 
-  size_t dot_pos = host.find('.');
-  if (dot_pos == std::string::npos)
+  // TODO(juliatuttle): Make sure parent is not in PSL before using.
+  std::string parent_host = net::GetSuperdomain(host);
+  if (parent_host.empty())
     return nullptr;
 
-  // TODO(juliatuttle): Make sure parent is not in PSL before using.
-
-  std::string parent_host = host.substr(dot_pos + 1);
   context_it = contexts_.find(parent_host);
   if (context_it != contexts_.end()
       && context_it->second->config().include_subdomains) {

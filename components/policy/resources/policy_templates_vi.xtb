@@ -288,20 +288,6 @@
       Bạn có thể xem trang web https://developers.google.com/safe-browsing để biết thêm thông tin về tính năng Duyệt web an toàn.
 
       Chính sách này chỉ có trên các phiên bản Windows liên kết với miền <ph name="MS_AD_NAME" /> hoặc phiên bản Windows 10 Pro hay Enterprise đã đăng ký quản lý thiết bị.</translation>
-<translation id="1432194160771348078">
-      Chỉ định một danh sách ứng dụng được cài đặt tự động trên màn hình đăng nhập
-      mà không có sự tương tác của người dùng và không thể gỡ cài đặt.
-      Tất cả các quyền do ứng dụng yêu cầu được cấp
-      trực tiếp mà không có sự tương tác của người dùng, kể cả mọi quyền
-      bổ sung mà các phiên bản trong tương lai của ứng dụng đó yêu cầu.
-
-      Lưu ý rằng, vì lý do bảo mật và bảo vệ quyền riêng tư, các tiện ích sẽ không được phép cài đặt theo chính sách này. Hơn nữa, các thiết bị trên Kênh chính thức sẽ chỉ cài đặt những ứng dụng thuộc danh sách cho phép kết hợp trong <ph name="PRODUCT_NAME" />. Mọi mục không tuân thủ các điều kiện này sẽ bị bỏ qua.
-
-      Nếu một ứng dụng đã từng bị buộc cài đặt trước đây bị xóa khỏi danh sách này thì ứng dụng đó sẽ tự động bị <ph name="PRODUCT_NAME" /> gỡ cài đặt.
-
-      Mỗi mục trong danh sách của chính sách này là một chuỗi chứa ID tiện ích và một URL "cập nhật" được phân tách bằng dấu chấm phẩy (<ph name="SEMICOLON" />). ID tiện ích là chuỗi gồm 32 chữ cái được tìm thấy, chẳng hạn như, trên <ph name="CHROME_EXTENSIONS_LINK" /> khi ở chế độ nhà phát triển. URL "cập nhật" sẽ trỏ tới tài liệu XML của tệp kê khai cập nhật như mô tả tại <ph name="LINK_TO_EXTENSION_DOC1" />. Lưu ý rằng URL "cập nhật" được đặt trong chính sách này chỉ dùng cho lần cài đặt ban đầu; các lần cập nhật tiếp theo của tiện ích sẽ sử dụng URL cập nhật được chỉ ra trong tệp kê khai của tiện ích.
-
-      Ví dụ: <ph name="EXTENSION_POLICY_EXAMPLE" /> cài đặt ứng dụng <ph name="EXTENSION_POLICY_EXAMPLE_EXTENSION_NAME" /> từ URL "cập nhật" tiêu chuẩn của Cửa hàng Chrome trực tuyến. Để biết thêm thông tin về cách lưu trữ tiện ích, hãy xem: <ph name="LINK_TO_EXTENSION_DOC2" />.</translation>
 <translation id="1435659902881071157">Cấu hình mạng ở mức thiết bị</translation>
 <translation id="1438739959477268107">Cài đặt tạo khóa mặc định</translation>
 <translation id="1454846751303307294">Cho phép bạn thiết lập danh sách các mẫu URL chỉ định những trang web không được phép chạy JavaScript.
@@ -4440,7 +4426,6 @@ Nếu bạn không đặt chính sách này thì người dùng sẽ có thể t
 
       Chính sách này chỉ có hiệu lực khi bật <ph name="CHROME_REPORTING_EXTENSION_NAME" /> và đăng ký máy với <ph name="CLOUD_MANAGEMENT_ENROLLMENT_TOKEN_POLICY_NAME" />.</translation>
 <translation id="7758378441185523981">Bật quy trình Xác thực môi trường xung quanh cho các loại hồ sơ.</translation>
-<translation id="7761446981238915769">Định cấu hình danh sách ứng dụng đã cài đặt trên màn hình đăng nhập</translation>
 <translation id="7763614521440615342">Hiển thị các đề xuất nội dung trên trang Tab mới</translation>
 <translation id="7765879851993224640">Cho phép sử dụng tính năng Đăng nhập bằng Smart Lock.</translation>
 <translation id="7774768074957326919">Sử dụng cài đặt proxy hệ thống</translation>

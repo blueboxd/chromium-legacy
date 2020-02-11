@@ -55,9 +55,8 @@ public class VrBrowserJavaScriptModalDialogTest {
     public void setUp() {
         mActivity = mActivityTestRule.getActivity();
         mVrBrowserTestFramework = new VrBrowserTestFramework(mActivityTestRule);
-        mVrBrowserTestFramework.loadUrlAndAwaitInitialization(
-                VrBrowserTestFramework.getFileUrlForHtmlTestFile("2d_permission_page"),
-                PAGE_LOAD_TIMEOUT_S);
+        mVrBrowserTestFramework.loadFileAndAwaitInitialization(
+                "2d_permission_page", PAGE_LOAD_TIMEOUT_S);
         VrBrowserTransitionUtils.forceEnterVrBrowserOrFail(POLL_TIMEOUT_LONG_MS);
         NativeUiUtils.enableMockedInput();
         // Wait for any residual animations from entering VR to finish so that they don't get caught

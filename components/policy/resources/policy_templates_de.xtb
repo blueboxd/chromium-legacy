@@ -283,21 +283,6 @@ Bei verwalteten Geräten sind standardmäßig keine Modi für das schnelle Entsp
       Weitere Informationen zu Safe Browsing finden Sie unter https://developers.google.com/safe-browsing.
 
       Diese Richtlinie steht nur bei Windows-Instanzen zur Verfügung, die Teil einer <ph name="MS_AD_NAME" />-Domain sind, oder bei Windows 10 Pro- oder Enterprise-Instanzen, für die eine Geräteverwaltung eingerichtet ist.</translation>
-<translation id="1432194160771348078">
-      Hierdurch wird eine Liste von Apps definiert, die automatisch auf dem
-      Anmeldebildschirm installiert werden, also ohne Interaktion des Nutzers,
-      und die nicht wieder deinstalliert werden können.
-      Alle für die App erforderlichen Berechtigungen werden implizit erteilt,
-      also ohne Interaktion des Nutzers, einschließlich zusätzlicher Berechtigungen
-      für zukünftige Versionen der App.
-
-      Beachten Sie, dass aus Sicherheits- und Datenschutzgründen keine Erweiterungen über diese Richtlinie installiert werden können. Außerdem werden auf Geräten mit der stabilen Version nur Apps installiert, die auf der weißen Liste von <ph name="PRODUCT_NAME" /> stehen. Elemente, die diese Bedingungen nicht erfüllen, werden ignoriert.
-
-      Wird eine App, deren Installation zuvor erzwungen wurde, von dieser Liste entfernt, wird sie automatisch von <ph name="PRODUCT_NAME" /> deinstalliert.
-
-      Die Listenelemente der Richtlinie sind Strings, die eine Erweiterungs-ID und eine durch ein Semikolon (<ph name="SEMICOLON" />) getrennte "Update"-URL enthalten. Die Erweiterungs-ID ist der 32-stellige String, der z. B. in "<ph name="CHROME_EXTENSIONS_LINK" />" im Entwicklermodus angegeben ist. Die "Update"-URL sollte auf ein XML-Dokument mit einem Update-Manifest verweisen, wie unter <ph name="LINK_TO_EXTENSION_DOC1" /> beschrieben. Beachten Sie, dass die in dieser Richtlinie festgelegte "Update"-URL nur für die Erstinstallation verwendet wird. Bei anschließenden Aktualisierungen der Erweiterung wird die im Manifest der Erweiterung angegebene Update-URL verwendet.
-
-      So wird im Beispiel von <ph name="EXTENSION_POLICY_EXAMPLE" /> die <ph name="EXTENSION_POLICY_EXAMPLE_EXTENSION_NAME" /> App über die standardmäßige "Update"-URL des Chrome Web Stores installiert. Weitere Informationen zum Hosten von Erweiterungen finden Sie unter <ph name="LINK_TO_EXTENSION_DOC2" />.</translation>
 <translation id="1435659902881071157">Netzwerkkonfiguration auf Geräteebene</translation>
 <translation id="1438739959477268107">Standardeinstellung für die Schlüsselgenerierung</translation>
 <translation id="1454846751303307294">Ermöglicht Ihnen die Zusammenstellung einer Liste mit URL-Mustern, die Websites angeben, denen die Ausführung von JavaScript untersagt ist. Wenn diese Richtlinie nicht konfiguriert ist, kommt für alle Websites entweder der globale Standardwert der Richtlinie "DefaultJavaScriptSetting", falls konfiguriert, oder der persönlichen Konfiguration des Nutzers zum Einsatz.</translation>
@@ -4325,7 +4310,6 @@ Die Richtlinienwerte sollten in % angegeben werden und zwischen 0 und 100 liegen
 
       Die Richtlinie wird nur angewendet, wenn die <ph name="CHROME_REPORTING_EXTENSION_NAME" /> aktiviert und das Gerät mit <ph name="CLOUD_MANAGEMENT_ENROLLMENT_TOKEN_POLICY_NAME" /> registriert ist.</translation>
 <translation id="7758378441185523981">Aktiviert die passive Authentifizierung für Profiltypen.</translation>
-<translation id="7761446981238915769">Liste der installierten Apps auf dem Anmeldebildschirm konfigurieren</translation>
 <translation id="7763614521440615342">Inhaltsvorschläge auf der "Neuer Tab"-Seite anzeigen</translation>
 <translation id="7765879851993224640">Verwendung von Smart Lock zur Anmeldung erlauben.</translation>
 <translation id="7774768074957326919">System-Proxy-Einstellungen verwenden</translation>

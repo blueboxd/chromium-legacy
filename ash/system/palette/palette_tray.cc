@@ -591,10 +591,13 @@ bool PaletteTray::HasSeenStylus() {
 }
 
 void PaletteTray::UpdateIconVisibility() {
-  SetVisiblePreferred(HasSeenStylus() && is_palette_enabled_ &&
-                      stylus_utils::HasStylusInput() &&
-                      ShouldShowOnDisplay(this) &&
-                      palette_utils::IsInUserSession());
+  bool visible_preferred = HasSeenStylus() && is_palette_enabled_ &&
+                           stylus_utils::HasStylusInput() &&
+                           ShouldShowOnDisplay(this) &&
+                           palette_utils::IsInUserSession();
+  SetVisiblePreferred(visible_preferred);
+  if (visible_preferred)
+    UpdateAfterShelfChange();
 }
 
 }  // namespace ash

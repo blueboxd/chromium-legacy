@@ -647,7 +647,7 @@
 <translation id="5864419784173784555">दूसरे डाउनलोड का इंतज़ार किया जा रहा है…</translation>
 <translation id="5865733239029070421">Google को इस्तेमाल के आंकड़े और खराबी रिपोर्ट अपने आप भेजती है</translation>
 <translation id="5869522115854928033">सेव किए गए पासवर्ड</translation>
-<translation id="5884076754568147479">ये टास्क पूरे करने में आपकी मदद के लिए, Google को उन साइटों के यूआरएल और सामग्री मिलेंगी जिन पर आप Assistant का इस्तेमाल करते हैं. साथ ही, वह जानकारी भी मिलेगी जिसे आप Assistant की मदद से सबमिट करते हैं</translation>
+<translation id="5884076754568147479">टास्क पूरे करने में आपकी मदद के लिए, Google उन साइटों के यूआरएल और सामग्री का इस्तेमाल करेगा जिनसे आपने Assistant को जोड़ा है. साथ ही, वह उस जानकारी का भी इस्तेमाल करेगा जिसे आपने Assistant की मदद से सबमिट किया है</translation>
 <translation id="5902828464777634901">कुकी सहित, ऐसा सारा डेटा मिटा दिया जाएगा, जिसे इस वेबसाइट ने सेव किया है.</translation>
 <translation id="5919204609460789179">सिंक शुरू करने के लिए <ph name="PRODUCT_NAME" /> अपडेट करें</translation>
 <translation id="5937580074298050696"><ph name="AMOUNT" /> सेव किए गए</translation>
@@ -1039,7 +1039,6 @@
 <translation id="8853345339104747198"><ph name="TAB_TITLE" />, टैब</translation>
 <translation id="885701979325669005">मेमोरी</translation>
 <translation id="889338405075704026">Chrome की सेटिंग में जाएं</translation>
-<translation id="8901170036886848654">कोई बुकमार्क नहीं मिला</translation>
 <translation id="8909135823018751308">शेयर करें…</translation>
 <translation id="8912362522468806198">Google खाता</translation>
 <translation id="8920114477895755567">अभिभावकों के विवरण की प्रतीक्षा कर रहे हैं.</translation>

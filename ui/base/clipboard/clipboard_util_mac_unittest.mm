@@ -11,6 +11,7 @@
 #include "testing/platform_test.h"
 #include "third_party/mozilla/NSPasteboard+Utils.h"
 
+namespace ui {
 namespace {
 
 class ClipboardUtilMacTest : public PlatformTest {
@@ -34,8 +35,8 @@ TEST_F(ClipboardUtilMacTest, PasteboardItemFromUrl) {
       @"sourceid=chrome&ie=UTF-8";
 
   base::scoped_nsobject<NSPasteboardItem> item(
-      ui::ClipboardUtil::PasteboardItemFromUrl(urlString, nil));
-  scoped_refptr<ui::UniquePasteboard> pasteboard = new ui::UniquePasteboard;
+      ClipboardUtil::PasteboardItemFromUrl(urlString, nil));
+  scoped_refptr<UniquePasteboard> pasteboard = new UniquePasteboard;
   [pasteboard->get() writeObjects:@[ item ]];
 
   NSArray* urls = nil;
@@ -59,8 +60,8 @@ TEST_F(ClipboardUtilMacTest, PasteboardItemWithTitle) {
   NSString* title = @"Burrowing Yams";
 
   base::scoped_nsobject<NSPasteboardItem> item(
-      ui::ClipboardUtil::PasteboardItemFromUrl(urlString, title));
-  scoped_refptr<ui::UniquePasteboard> pasteboard = new ui::UniquePasteboard;
+      ClipboardUtil::PasteboardItemFromUrl(urlString, title));
+  scoped_refptr<UniquePasteboard> pasteboard = new UniquePasteboard;
   [pasteboard->get() writeObjects:@[ item ]];
 
   NSArray* urls = nil;
@@ -85,8 +86,8 @@ TEST_F(ClipboardUtilMacTest, PasteboardItemWithFilePath) {
   NSString* urlString = [url absoluteString];
 
   base::scoped_nsobject<NSPasteboardItem> item(
-      ui::ClipboardUtil::PasteboardItemFromUrl(urlString, nil));
-  scoped_refptr<ui::UniquePasteboard> pasteboard = new ui::UniquePasteboard;
+      ClipboardUtil::PasteboardItemFromUrl(urlString, nil));
+  scoped_refptr<UniquePasteboard> pasteboard = new UniquePasteboard;
   [pasteboard->get() writeObjects:@[ item ]];
 
   NSArray* urls = nil;
@@ -108,7 +109,7 @@ TEST_F(ClipboardUtilMacTest, PasteboardItemWithFilePath) {
 TEST_F(ClipboardUtilMacTest, CheckForLeak) {
   for (int i = 0; i < 10000; ++i) {
     @autoreleasepool {
-      scoped_refptr<ui::UniquePasteboard> pboard = new ui::UniquePasteboard;
+      scoped_refptr<UniquePasteboard> pboard = new UniquePasteboard;
       EXPECT_TRUE(pboard->get());
     }
   }
@@ -118,11 +119,11 @@ TEST_F(ClipboardUtilMacTest, CompareToWriteToPasteboard) {
   NSString* urlString = @"https://www.cnn.com/";
 
   base::scoped_nsobject<NSPasteboardItem> item(
-      ui::ClipboardUtil::PasteboardItemFromUrl(urlString, nil));
-  scoped_refptr<ui::UniquePasteboard> pasteboard = new ui::UniquePasteboard;
+      ClipboardUtil::PasteboardItemFromUrl(urlString, nil));
+  scoped_refptr<UniquePasteboard> pasteboard = new UniquePasteboard;
   [pasteboard->get() writeObjects:@[ item ]];
 
-  scoped_refptr<ui::UniquePasteboard> pboard = new ui::UniquePasteboard;
+  scoped_refptr<UniquePasteboard> pboard = new UniquePasteboard;
   [pboard->get() setDataForURL:urlString title:urlString];
 
   NSDictionary* data1 = DictionaryFromPasteboard(pasteboard->get());
@@ -131,3 +132,4 @@ TEST_F(ClipboardUtilMacTest, CompareToWriteToPasteboard) {
 }
 
 }  // namespace
+}  // namespace ui

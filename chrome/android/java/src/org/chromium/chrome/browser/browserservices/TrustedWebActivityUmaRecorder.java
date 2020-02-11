@@ -61,7 +61,8 @@ public class TrustedWebActivityUmaRecorder {
     public void recordTwaOpened(@Nullable Tab tab) {
         RecordUserAction.record("BrowserServices.TwaOpened");
         if (tab != null) {
-            new UkmRecorder.Bridge().recordEvent(tab.getWebContents(), "TrustedWebActivity.Open");
+            new UkmRecorder.Bridge().recordEventWithBooleanMetric(
+                    tab.getWebContents(), "TrustedWebActivity.Open", "HasOccurred");
         }
     }
 

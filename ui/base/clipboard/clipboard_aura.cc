@@ -274,9 +274,8 @@ class AuraClipboard {
     if (!HasFormat(AuraClipboardFormat::kCustom))
       return;
 
-    ui::ReadCustomDataForType(data->custom_data_data().c_str(),
-        data->custom_data_data().size(),
-        type, result);
+    ReadCustomDataForType(data->custom_data_data().c_str(),
+                          data->custom_data_data().size(), type, result);
   }
 
   // Reads bookmark from the data at the top of clipboard stack.
@@ -487,7 +486,7 @@ void ClipboardAura::ReadAvailableTypes(ClipboardBuffer buffer,
 
   if (clipboard_internal_->IsFormatAvailable(AuraClipboardFormat::kCustom) &&
       clipboard_internal_->GetData()) {
-    ui::ReadCustomDataTypes(
+    ReadCustomDataTypes(
         clipboard_internal_->GetData()->custom_data_data().c_str(),
         clipboard_internal_->GetData()->custom_data_data().size(), types);
   }

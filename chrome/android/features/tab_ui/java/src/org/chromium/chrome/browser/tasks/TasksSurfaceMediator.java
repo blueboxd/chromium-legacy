@@ -20,7 +20,7 @@ import android.view.View;
 import org.chromium.base.metrics.RecordUserAction;
 import org.chromium.chrome.browser.ntp.FakeboxDelegate;
 import org.chromium.chrome.browser.omnibox.LocationBar;
-import org.chromium.chrome.browser.omnibox.LocationBarVoiceRecognitionHandler;
+import org.chromium.chrome.browser.omnibox.voice.VoiceRecognitionHandler;
 import org.chromium.ui.modelutil.PropertyModel;
 
 /**
@@ -67,8 +67,8 @@ class TasksSurfaceMediator {
         model.set(VOICE_SEARCH_BUTTON_CLICK_LISTENER, new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                mFakeboxDelegate.getLocationBarVoiceRecognitionHandler().startVoiceRecognition(
-                        LocationBarVoiceRecognitionHandler.VoiceInteractionSource.TASKS_SURFACE);
+                mFakeboxDelegate.getVoiceRecognitionHandler().startVoiceRecognition(
+                        VoiceRecognitionHandler.VoiceInteractionSource.TASKS_SURFACE);
                 RecordUserAction.record("TasksSurface.FakeBox.VoiceSearch");
             }
         });

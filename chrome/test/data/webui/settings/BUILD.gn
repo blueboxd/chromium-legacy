@@ -8,6 +8,8 @@ import("../namespace_rewrites.gni")
 
 js_modulizer("modulize") {
   input_files = [
+    "appearance_page_test.js",
+    "appearance_fonts_page_test.js",
     "checkbox_tests.js",
     "controlled_button_tests.js",
     "controlled_radio_button_tests.js",

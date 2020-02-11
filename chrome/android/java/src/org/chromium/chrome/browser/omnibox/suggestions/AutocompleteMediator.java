@@ -35,7 +35,6 @@ import org.chromium.chrome.browser.image_fetcher.ImageFetcherFactory;
 import org.chromium.chrome.browser.init.AsyncInitializationActivity;
 import org.chromium.chrome.browser.lifecycle.ActivityLifecycleDispatcher;
 import org.chromium.chrome.browser.lifecycle.StartStopWithNativeObserver;
-import org.chromium.chrome.browser.omnibox.LocationBarVoiceRecognitionHandler;
 import org.chromium.chrome.browser.omnibox.OmniboxSuggestionType;
 import org.chromium.chrome.browser.omnibox.UrlBarEditingTextStateProvider;
 import org.chromium.chrome.browser.omnibox.suggestions.AutocompleteController.OnSuggestionsReceivedListener;
@@ -46,6 +45,7 @@ import org.chromium.chrome.browser.omnibox.suggestions.basic.SuggestionViewDeleg
 import org.chromium.chrome.browser.omnibox.suggestions.editurl.EditUrlSuggestionProcessor;
 import org.chromium.chrome.browser.omnibox.suggestions.entity.EntitySuggestionProcessor;
 import org.chromium.chrome.browser.omnibox.suggestions.tail.TailSuggestionProcessor;
+import org.chromium.chrome.browser.omnibox.voice.VoiceRecognitionHandler;
 import org.chromium.chrome.browser.profiles.Profile;
 import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.browser.toolbar.ToolbarDataProvider;
@@ -549,7 +549,7 @@ class AutocompleteMediator
     /**
      * @see AutocompleteController#onVoiceResults(List)
      */
-    void onVoiceResults(@Nullable List<LocationBarVoiceRecognitionHandler.VoiceResult> results) {
+    void onVoiceResults(@Nullable List<VoiceRecognitionHandler.VoiceResult> results) {
         mAutocomplete.onVoiceResults(results);
     }
 

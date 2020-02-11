@@ -4,46 +4,48 @@
 
 #include "chrome/browser/offline_pages/prefetch/notifications/prefetch_notification_service_factory.h"
 
+#include <memory>
+#include <utility>
+
+#include "base/memory/singleton.h"
 #include "chrome/browser/notifications/scheduler/notification_schedule_service_factory.h"
 #include "chrome/browser/offline_pages/prefetch/notifications/prefetch_notification_service_impl.h"
-#include "chrome/browser/profiles/incognito_helpers.h"
+#include "chrome/browser/profiles/profile_key.h"
 #include "components/keyed_service/content/browser_context_dependency_manager.h"
+#include "components/keyed_service/core/simple_dependency_manager.h"
 
 // static
 PrefetchNotificationServiceFactory*
 PrefetchNotificationServiceFactory::GetInstance() {
-  static base::NoDestructor<PrefetchNotificationServiceFactory> instance;
-  return instance.get();
+  return base::Singleton<PrefetchNotificationServiceFactory>::get();
 }
 
 // static
 offline_pages::PrefetchNotificationService*
-PrefetchNotificationServiceFactory::GetForBrowserContext(
-    content::BrowserContext* context) {
+PrefetchNotificationServiceFactory::GetForKey(SimpleFactoryKey* key) {
   return static_cast<offline_pages::PrefetchNotificationService*>(
-      GetInstance()->GetServiceForBrowserContext(context, true /* create */));
+      GetInstance()->GetServiceForKey(key, true /* create */));
 }
 
 PrefetchNotificationServiceFactory::PrefetchNotificationServiceFactory()
-    : BrowserContextKeyedServiceFactory(
-          "offline_pages::PrefetchNotificationService",
-          BrowserContextDependencyManager::GetInstance()) {
+    : SimpleKeyedServiceFactory("offline_pages::PrefetchNotificationService",
+                                SimpleDependencyManager::GetInstance()) {
   DependsOn(NotificationScheduleServiceFactory::GetInstance());
-}
-
-KeyedService* PrefetchNotificationServiceFactory::BuildServiceInstanceFor(
-    content::BrowserContext* context) const {
-  auto* schedule_service =
-      NotificationScheduleServiceFactory::GetForBrowserContext(context);
-  return static_cast<KeyedService*>(
-      new offline_pages::PrefetchNotificationServiceImpl(schedule_service));
-}
-
-content::BrowserContext*
-PrefetchNotificationServiceFactory::GetBrowserContextToUse(
-    content::BrowserContext* context) const {
-  return chrome::GetBrowserContextOwnInstanceInIncognito(context);
 }
 
 PrefetchNotificationServiceFactory::~PrefetchNotificationServiceFactory() =
     default;
+
+std::unique_ptr<KeyedService>
+PrefetchNotificationServiceFactory::BuildServiceInstanceFor(
+    SimpleFactoryKey* key) const {
+  auto* schedule_service = NotificationScheduleServiceFactory::GetForKey(key);
+  return std::make_unique<offline_pages::PrefetchNotificationServiceImpl>(
+      schedule_service);
+}
+
+SimpleFactoryKey* PrefetchNotificationServiceFactory::GetKeyToUse(
+    SimpleFactoryKey* key) const {
+  ProfileKey* profile_key = ProfileKey::FromSimpleFactoryKey(key);
+  return profile_key->GetOriginalKey();
+}

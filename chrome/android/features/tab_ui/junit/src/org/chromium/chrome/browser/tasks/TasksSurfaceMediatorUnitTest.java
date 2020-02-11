@@ -41,7 +41,7 @@ import org.chromium.base.metrics.RecordUserAction;
 import org.chromium.base.test.BaseRobolectricTestRunner;
 import org.chromium.chrome.browser.ntp.FakeboxDelegate;
 import org.chromium.chrome.browser.omnibox.LocationBar;
-import org.chromium.chrome.browser.omnibox.LocationBarVoiceRecognitionHandler;
+import org.chromium.chrome.browser.omnibox.voice.VoiceRecognitionHandler;
 import org.chromium.ui.modelutil.PropertyModel;
 
 /** Tests for {@link TasksSurfaceMediator}. */
@@ -55,7 +55,7 @@ public class TasksSurfaceMediatorUnitTest {
     @Mock
     private FakeboxDelegate mFakeboxDelegate;
     @Mock
-    private LocationBarVoiceRecognitionHandler mLocationBarVoiceRecognitionHandler;
+    private VoiceRecognitionHandler mVoiceRecognitionHandler;
     @Mock
     private View.OnClickListener mLearnMoreOnClickListener;
     @Captor
@@ -145,13 +145,11 @@ public class TasksSurfaceMediatorUnitTest {
         verify(mPropertyModel)
                 .set(eq(VOICE_SEARCH_BUTTON_CLICK_LISTENER),
                         mVoiceSearchButtonClickListenerCaptor.capture());
-        doReturn(mLocationBarVoiceRecognitionHandler)
-                .when(mFakeboxDelegate)
-                .getLocationBarVoiceRecognitionHandler();
+        doReturn(mVoiceRecognitionHandler).when(mFakeboxDelegate).getVoiceRecognitionHandler();
 
         mVoiceSearchButtonClickListenerCaptor.getValue().onClick(null);
-        verify(mLocationBarVoiceRecognitionHandler, times(1))
-                .startVoiceRecognition(eq(
-                        LocationBarVoiceRecognitionHandler.VoiceInteractionSource.TASKS_SURFACE));
+        verify(mVoiceRecognitionHandler, times(1))
+                .startVoiceRecognition(
+                        eq(VoiceRecognitionHandler.VoiceInteractionSource.TASKS_SURFACE));
     }
 }

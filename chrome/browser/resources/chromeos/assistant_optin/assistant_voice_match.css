@@ -23,12 +23,21 @@
   flex-grow: 1;
 }
 
-#voice-match-animation {
-  height: 170px;
+.centering {
   left: 50%;
   position: relative;
   top: 50%;
   transform: translate(-50%, -50%);
+}
+
+:host-context(html[dir=rtl]) .centering {
+  left: auto;
+  right: 50%;
+  transform: translate(50%, -50%);
+}
+
+#voice-match-animation {
+  height: 170px;
   width: 255px;
 }
 
@@ -38,10 +47,6 @@
 
 #already-setup-animation {
   height: 300px;
-  left: 50%;
-  position: relative;
-  top: 50%;
-  transform: translate(-50%, -50%);
   width: 360px;
 }
 

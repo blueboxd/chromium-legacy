@@ -123,6 +123,10 @@ const char kAccessibilityDictationEnabled[] = "settings.a11y.dictation";
 // regardless of the state of a11y features.
 const char kShouldAlwaysShowAccessibilityMenu[] = "settings.a11y.enable_menu";
 
+// A dictionary storing the number of times and most recent time all contextual
+// tooltips have been shown.
+const char kContextualTooltips[] = "settings.contextual_tooltip.shown_info";
+
 // A boolean pref storing the enabled status of the Docked Magnifier feature.
 const char kDockedMagnifierEnabled[] = "ash.docked_magnifier.enabled";
 // A double pref storing the scale value of the Docked Magnifier feature by

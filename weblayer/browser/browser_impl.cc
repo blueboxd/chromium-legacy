@@ -10,9 +10,9 @@
 #include "base/path_service.h"
 #include "components/base32/base32.h"
 #include "content/public/browser/browser_context.h"
+#include "weblayer/browser/persistence/browser_persister.h"
 #include "weblayer/browser/persistence/minimal_browser_persister.h"
 #include "weblayer/browser/profile_impl.h"
-#include "weblayer/browser/session_service.h"
 #include "weblayer/browser/tab_impl.h"
 #include "weblayer/common/weblayer_paths.h"
 #include "weblayer/public/browser_observer.h"
@@ -132,18 +132,18 @@ ScopedJavaLocalRef<jstring> BrowserImpl::GetPersistenceId(
       base::android::ConvertUTF8ToJavaString(env, GetPersistenceId()));
 }
 
-void BrowserImpl::SaveSessionServiceIfNecessary(
+void BrowserImpl::SaveBrowserPersisterIfNecessary(
     JNIEnv* env,
     const JavaParamRef<jobject>& caller) {
-  session_service_->SaveIfNecessary();
+  browser_persister_->SaveIfNecessary();
 }
 
-ScopedJavaLocalRef<jbyteArray> BrowserImpl::GetSessionServiceCryptoKey(
+ScopedJavaLocalRef<jbyteArray> BrowserImpl::GetBrowserPersisterCryptoKey(
     JNIEnv* env,
     const JavaParamRef<jobject>& caller) {
   std::vector<uint8_t> key;
-  if (session_service_)
-    key = session_service_->GetCryptoKey();
+  if (browser_persister_)
+    key = browser_persister_->GetCryptoKey();
   return base::android::ToJavaByteArray(env, key);
 }
 
@@ -265,7 +265,7 @@ std::vector<Tab*> BrowserImpl::GetTabs() {
 }
 
 void BrowserImpl::PrepareForShutdown() {
-  session_service_.reset();
+  browser_persister_.reset();
 }
 
 std::string BrowserImpl::GetPersistenceId() {
@@ -293,8 +293,8 @@ void BrowserImpl::RestoreStateIfNecessary(
     const PersistenceInfo& persistence_info) {
   persistence_id_ = persistence_info.id;
   if (!persistence_id_.empty()) {
-    session_service_ = std::make_unique<SessionService>(
-        GetSessionServiceDataPath(), this, persistence_info.last_crypto_key);
+    browser_persister_ = std::make_unique<BrowserPersister>(
+        GetBrowserPersisterDataPath(), this, persistence_info.last_crypto_key);
   } else if (!persistence_info.minimal_state.empty()) {
     RestoreMinimalState(this, persistence_info.minimal_state);
   }
@@ -307,8 +307,8 @@ void BrowserImpl::VisibleSecurityStateOfActiveTabChanged() {
 #endif
 }
 
-base::FilePath BrowserImpl::GetSessionServiceDataPath() {
-  base::FilePath base_path = profile_->GetSessionServiceDataBaseDir();
+base::FilePath BrowserImpl::GetBrowserPersisterDataPath() {
+  base::FilePath base_path = profile_->GetBrowserPersisterDataBaseDir();
   DCHECK(!GetPersistenceId().empty());
   const std::string encoded_name = base32::Base32Encode(GetPersistenceId());
   return base_path.AppendASCII("State" + encoded_name);

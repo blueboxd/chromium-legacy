@@ -63,10 +63,6 @@ const InternalApp* FindInternalApp(const std::string& app_id);
 // Returns true if |app_id| corresponds to an internal app.
 bool IsInternalApp(const std::string& app_id);
 
-// Returns the name of internal app.
-// Returns empty string if |app_id| is invalid.
-base::string16 GetInternalAppNameById(const std::string& app_id);
-
 // Returns true if there is a recommendable foreign tab.
 // If |title| is not nullptr, it will be replaced with the title of the foreign
 // tab's last navigation.

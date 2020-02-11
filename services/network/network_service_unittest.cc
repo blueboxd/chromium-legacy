@@ -657,6 +657,43 @@ TEST_F(NetworkServiceTest, DohProbe_NoPrimaryContext) {
   EXPECT_FALSE(dns_client_ptr->factory()->doh_probes_running());
 
   task_environment()->FastForwardBy(NetworkService::kInitialDohProbeTimeout);
+  EXPECT_TRUE(dns_client_ptr->factory()->doh_probes_running());
+}
+
+TEST_F(NetworkServiceTest, DohProbe_MultipleContexts) {
+  mojom::NetworkContextParamsPtr context_params1 = CreateContextParams();
+  context_params1->primary_network_context = true;
+  mojo::Remote<mojom::NetworkContext> network_context1;
+  service()->CreateNetworkContext(network_context1.BindNewPipeAndPassReceiver(),
+                                  std::move(context_params1));
+
+  net::DnsConfig config;
+  config.nameservers.push_back(net::IPEndPoint());
+  config.dns_over_https_servers.emplace_back("example.com",
+                                             true /* use_post */);
+  auto dns_client = std::make_unique<net::MockDnsClient>(
+      std::move(config), net::MockDnsClientRuleList());
+  dns_client->set_ignore_system_config_changes(true);
+  net::MockDnsClient* dns_client_ptr = dns_client.get();
+  service()->host_resolver_manager()->SetDnsClientForTesting(
+      std::move(dns_client));
+
+  task_environment()->FastForwardBy(NetworkService::kInitialDohProbeTimeout);
+  ASSERT_TRUE(dns_client_ptr->factory()->doh_probes_running());
+
+  mojom::NetworkContextParamsPtr context_params2 = CreateContextParams();
+  context_params2->primary_network_context = false;
+  mojo::Remote<mojom::NetworkContext> network_context2;
+  service()->CreateNetworkContext(network_context2.BindNewPipeAndPassReceiver(),
+                                  std::move(context_params2));
+  EXPECT_TRUE(dns_client_ptr->factory()->doh_probes_running());
+
+  network_context2.reset();
+  task_environment()->FastForwardUntilNoTasksRemain();
+  EXPECT_TRUE(dns_client_ptr->factory()->doh_probes_running());
+
+  network_context1.reset();
+  task_environment()->FastForwardUntilNoTasksRemain();
   EXPECT_FALSE(dns_client_ptr->factory()->doh_probes_running());
 }
 

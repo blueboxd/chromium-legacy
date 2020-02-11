@@ -12,13 +12,17 @@
   margin: auto;
 }
 
+.vertical-line {
+  background-color: rgb(218, 220, 224);
+  height: 186px;
+  margin: 0 24px 0 24px;
+  width: 1px;
+}
+
 #ready-image-container {
-  border-right: 1px solid rgb(218, 220, 224);
-  padding-right: 24px;
   width: 50%;
 }
 
 #toggles-container {
-  padding-left: 24px;
   width: 50%;
 }

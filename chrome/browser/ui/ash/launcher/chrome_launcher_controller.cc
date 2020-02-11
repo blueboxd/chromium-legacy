@@ -53,7 +53,6 @@
 #include "chrome/browser/ui/ash/launcher/chrome_launcher_controller_util.h"
 #include "chrome/browser/ui/ash/launcher/crostini_app_window_shelf_controller.h"
 #include "chrome/browser/ui/ash/launcher/internal_app_window_shelf_controller.h"
-#include "chrome/browser/ui/ash/launcher/launcher_arc_app_updater.h"
 #include "chrome/browser/ui/ash/launcher/launcher_controller_helper.h"
 #include "chrome/browser/ui/ash/launcher/launcher_extension_app_updater.h"
 #include "chrome/browser/ui/ash/launcher/multi_profile_app_window_launcher_controller.h"
@@ -1344,31 +1343,18 @@ void ChromeLauncherController::AttachProfile(Profile* profile_to_attach) {
       base::Bind(&ChromeLauncherController::ScheduleUpdateAppLaunchersFromSync,
                  base::Unretained(this)));
 
-  if (app_service_enabled) {
-    std::unique_ptr<LauncherAppUpdater> app_service_app_updater(
-        new LauncherAppServiceAppUpdater(this, profile()));
-    app_updaters_.push_back(std::move(app_service_app_updater));
+  std::unique_ptr<LauncherAppUpdater> app_service_app_updater(
+      new LauncherAppServiceAppUpdater(this, profile()));
+  app_updaters_.push_back(std::move(app_service_app_updater));
 
-    // Some special extensions open new windows, and on Chrome OS, those windows
-    // should show the extension icon in the shelf. Extensions are not present
-    // in the App Service, so use LauncherExtensionAppUpdater to handle
-    // extensions life-cycle events.
-    std::unique_ptr<LauncherExtensionAppUpdater> extension_app_updater(
-        new LauncherExtensionAppUpdater(this, profile(),
-                                        true /* extensions_only */));
-    app_updaters_.push_back(std::move(extension_app_updater));
-  } else {
-    std::unique_ptr<LauncherAppUpdater> extension_app_updater(
-        new LauncherExtensionAppUpdater(this, profile(),
-                                        false /* extensions_only */));
-    app_updaters_.push_back(std::move(extension_app_updater));
-
-    if (arc::IsArcAllowedForProfile(profile())) {
-      std::unique_ptr<LauncherAppUpdater> arc_app_updater(
-          new LauncherArcAppUpdater(this, profile()));
-      app_updaters_.push_back(std::move(arc_app_updater));
-    }
-  }
+  // Some special extensions open new windows, and on Chrome OS, those windows
+  // should show the extension icon in the shelf. Extensions are not present
+  // in the App Service, so use LauncherExtensionAppUpdater to handle
+  // extensions life-cycle events.
+  std::unique_ptr<LauncherExtensionAppUpdater> extension_app_updater(
+      new LauncherExtensionAppUpdater(this, profile(),
+                                      true /* extensions_only */));
+  app_updaters_.push_back(std::move(extension_app_updater));
 
   app_list::AppListSyncableService* app_list_syncable_service =
       app_list::AppListSyncableServiceFactory::GetForProfile(profile());

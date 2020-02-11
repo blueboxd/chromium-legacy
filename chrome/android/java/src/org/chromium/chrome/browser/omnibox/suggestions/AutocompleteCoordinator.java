@@ -10,9 +10,9 @@ import androidx.annotation.Nullable;
 
 import org.chromium.chrome.browser.ActivityTabProvider;
 import org.chromium.chrome.browser.compositor.layouts.OverviewModeBehavior;
-import org.chromium.chrome.browser.omnibox.LocationBarVoiceRecognitionHandler;
 import org.chromium.chrome.browser.omnibox.UrlBar.UrlTextChangeListener;
 import org.chromium.chrome.browser.omnibox.UrlFocusChangeListener;
+import org.chromium.chrome.browser.omnibox.voice.VoiceRecognitionHandler;
 import org.chromium.chrome.browser.profiles.Profile;
 import org.chromium.chrome.browser.toolbar.ToolbarDataProvider;
 import org.chromium.ui.base.WindowAndroid;
@@ -84,7 +84,7 @@ public interface AutocompleteCoordinator extends UrlFocusChangeListener, UrlText
     /**
      * @see AutocompleteController#onVoiceResults(List)
      */
-    void onVoiceResults(@Nullable List<LocationBarVoiceRecognitionHandler.VoiceResult> results);
+    void onVoiceResults(@Nullable List<VoiceRecognitionHandler.VoiceResult> results);
 
     /**
      * @return The current native pointer to the autocomplete results.

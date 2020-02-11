@@ -19595,6 +19595,17 @@ to ensure that the crash string is shown properly on the user-facing crash UI.
   <int value="674" label="DeviceLoginScreenChromeVariations"/>
 </enum>
 
+<enum name="EnterprisePolicyDeviceIdValidity">
+  <summary>
+    Defined as PolicyDeviceIdValidity in
+    components/policy/core/common/cloud/enterprise_metrics.h.
+  </summary>
+  <int value="0" label="Valid"/>
+  <int value="1" label="Actual device ID is unknown"/>
+  <int value="2" label="Missing"/>
+  <int value="3" label="Invalid"/>
+</enum>
+
 <enum name="EnterprisePolicyInvalidations">
   <summary>
     Defined as PolicyInvalidationType in
@@ -22223,6 +22234,7 @@ to ensure that the crash string is shown properly on the user-facing crash UI.
   <int value="1441" label="AUTOFILLASSISTANTPRIVATE_PERFORMACTION"/>
   <int value="1442" label="AUTOFILLASSISTANTPRIVATE_PROVIDEUSERDATA"/>
   <int value="1443" label="PASSWORDSPRIVATE_ISOPTEDINFORACCOUNTSTORAGE"/>
+  <int value="1444" label="AUTOTESTPRIVATE_PINSHELFICON"/>
 </enum>
 
 <enum name="ExtensionIconState">
@@ -38575,6 +38587,7 @@ from previous Chrome versions.
   <int value="-30966385" label="enable-hardware-overlays"/>
   <int value="-29877377" label="TabHoverCardImages:disabled"/>
   <int value="-29847483" label="MemoryAblation:enabled"/>
+  <int value="-29507521" label="ContextualNudges:disabled"/>
   <int value="-28295905" label="AutofillEnableAccountWalletStorage:enabled"/>
   <int value="-27213807" label="GlobalMediaControls:enabled"/>
   <int value="-23804418"
@@ -39814,6 +39827,7 @@ from previous Chrome versions.
   <int value="1495748045" label="SignedHTTPExchange:enabled"/>
   <int value="1496135626" label="UploadCrashReportsUsingJobScheduler:enabled"/>
   <int value="1496571153" label="enable-webapk"/>
+  <int value="1497609106" label="ContextualNudges:enabled"/>
   <int value="1497924954" label="js-flags"/>
   <int value="1499163193" label="PostScriptPrinting:disabled"/>
   <int value="1500390299" label="NtpCustomizationMenuV2:disabled"/>

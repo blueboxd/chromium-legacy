@@ -231,6 +231,7 @@ source_set("chrome_content_browser_overlay_manifest") {
       "//chrome/browser/ui/webui/chromeos/crostini_installer:mojo_bindings",
       "//chrome/browser/ui/webui/chromeos/crostini_upgrader:mojo_bindings",
       "//chrome/browser/ui/webui/chromeos/machine_learning:mojo_bindings",
+      "//chrome/browser/ui/webui/settings/chromeos/search:mojo_bindings",
       "//chromeos/services/cellular_setup/public/mojom",
       "//chromeos/services/ime/public/mojom",
       "//chromeos/services/media_perception/public/mojom",

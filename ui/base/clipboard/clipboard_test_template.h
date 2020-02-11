@@ -90,7 +90,7 @@ class ClipboardTest : public PlatformTest {
 #if defined(USE_X11)
   std::unique_ptr<PlatformEventSource> event_source_;
 #endif
-  // ui::Clipboard has a protected destructor, so scoped_ptr doesn't work here.
+  // Clipboard has a protected destructor, so scoped_ptr doesn't work here.
   Clipboard* clipboard_ = nullptr;
 };
 
@@ -532,8 +532,8 @@ TYPED_TEST(ClipboardTest, Bitmap_N32_Premul_2x7) {
 }  // namespace
 
 TYPED_TEST(ClipboardTest, PickleTest) {
-  const ui::ClipboardFormatType kFormat =
-      ui::ClipboardFormatType::GetType("chromium/x-test-format");
+  const ClipboardFormatType kFormat =
+      ClipboardFormatType::GetType("chromium/x-test-format");
   std::string payload("test string");
   base::Pickle write_pickle;
   write_pickle.WriteString(payload);
@@ -557,14 +557,14 @@ TYPED_TEST(ClipboardTest, PickleTest) {
 }
 
 TYPED_TEST(ClipboardTest, MultiplePickleTest) {
-  const ui::ClipboardFormatType kFormat1 =
-      ui::ClipboardFormatType::GetType("chromium/x-test-format1");
+  const ClipboardFormatType kFormat1 =
+      ClipboardFormatType::GetType("chromium/x-test-format1");
   std::string payload1("test string1");
   base::Pickle write_pickle1;
   write_pickle1.WriteString(payload1);
 
-  const ui::ClipboardFormatType kFormat2 =
-      ui::ClipboardFormatType::GetType("chromium/x-test-format2");
+  const ClipboardFormatType kFormat2 =
+      ClipboardFormatType::GetType("chromium/x-test-format2");
   std::string payload2("test string2");
   base::Pickle write_pickle2;
   write_pickle2.WriteString(payload2);
@@ -618,8 +618,8 @@ TYPED_TEST(ClipboardTest, MultiplePickleTest) {
 
 TYPED_TEST(ClipboardTest, DataTest) {
   const std::string kFormatString = "chromium/x-test-format";
-  const ui::ClipboardFormatType kFormat =
-      ui::ClipboardFormatType::GetType(kFormatString);
+  const ClipboardFormatType kFormat =
+      ClipboardFormatType::GetType(kFormatString);
   const std::string payload = "test string";
   base::span<const uint8_t> payload_span(
       reinterpret_cast<const uint8_t*>(payload.data()), payload.size());
@@ -646,15 +646,15 @@ TYPED_TEST(ClipboardTest, DataTest) {
     !defined(OS_CHROMEOS)
 TYPED_TEST(ClipboardTest, MultipleDataTest) {
   const std::string kFormatString1 = "chromium/x-test-format1";
-  const ui::ClipboardFormatType kFormat1 =
-      ui::ClipboardFormatType::GetType(kFormatString1);
+  const ClipboardFormatType kFormat1 =
+      ClipboardFormatType::GetType(kFormatString1);
   const std::string payload1("test string1");
   base::span<const uint8_t> payload_span1(
       reinterpret_cast<const uint8_t*>(payload1.data()), payload1.size());
 
   const std::string kFormatString2 = "chromium/x-test-format2";
-  const ui::ClipboardFormatType kFormat2 =
-      ui::ClipboardFormatType::GetType(kFormatString2);
+  const ClipboardFormatType kFormat2 =
+      ClipboardFormatType::GetType(kFormatString2);
   const std::string payload2("test string2");
   base::span<const uint8_t> payload_span2(
       reinterpret_cast<const uint8_t*>(payload2.data()), payload2.size());

@@ -1058,7 +1058,7 @@
 <translation id="2462724976360937186">प्रमाणन अधिकृतता की आयडी</translation>
 <translation id="2462752602710430187"><ph name="PRINTER_NAME" /> जोडले</translation>
 <translation id="2464089476039395325">HTTP प्रॉक्सी</translation>
-<translation id="2465237718053447668">तुम्ही <ph name="DOMAIN" /> साठी आता वाय-फायशी कनेक्ट करणे आणि अपडेट डाउनलोड करणे आवश्यक आहे. किंवा मर्यादित कनेक्शनमधून डाउनलोड करा (शुल्क लागू शकतात).</translation>
+<translation id="2465237718053447668">तुम्ही <ph name="DOMAIN" /> साठी आता वाय-फायशी कनेक्ट करणे आणि अपडेट डाउनलोड करणे आवश्यक आहे. किंवा मर्यादित कनेक्शनमधून डाउनलोड करा (शुल्क लागू शकते).</translation>
 <translation id="2467267713099745100"><ph name="NETWORK_TYPE" /> नेटवर्क, बंद आहे</translation>
 <translation id="2468205691404969808">जरी तुम्ही त्या पेजना भेट देत नसलात तरी, तुमची प्राधान्ये लक्षात ठेवण्यासाठी कुकीजचा वापर करते</translation>
 <translation id="2468402215065996499">तामागोची</translation>
@@ -4491,7 +4491,7 @@
 <translation id="7328699668338161242">असिस्टंट तुमचा आवाज आधीपासूनच ओळखते</translation>
 <translation id="7328867076235380839">चुकीचे कॉंबिनेशन</translation>
 <translation id="7329154610228416156">सुरक्षित नसलेली URL (<ph name="BLOCKED_URL" />) वापरण्यासाठी साइन-इन कॉन्फिगर केल्यामुळे ते अयशस्वी झाले. कृपया तुमच्या ॲडमिनिस्ट्रेटरशी संपर्क साधा.</translation>
-<translation id="7332053360324989309">समप्रित कर्मचारी: <ph name="SCRIPT_URL" /></translation>
+<translation id="7332053360324989309">समर्पित कर्मचारी: <ph name="SCRIPT_URL" /></translation>
 <translation id="7334190995941642545">Smart Lock सध्या अनुपलब्ध आहे. कृपया नंतर पुन्हा प्रयत्न करा.</translation>
 <translation id="7334274148831027933">डॉक केलेले भिंग सुरू करा</translation>
 <translation id="7335974957018254119">यासाठी स्पेल चेक वापरा</translation>

@@ -87,7 +87,7 @@
 <translation id="1323433172918577554">ಇನ್ನಷ್ಟು ತೋರಿಸಿ</translation>
 <translation id="132390688737681464">ವಿಳಾಸಗಳನ್ನು ಉಳಿಸಿ ಮತ್ತು ಭರ್ತಿ ಮಾಡಿ</translation>
 <translation id="1330449323196174374">ಎಡಭಾಗದ ಗೇಟ್ ಅನ್ನು ಮಡಿಸಿ</translation>
-<translation id="1333989956347591814">ನಿಮ್ಮ ಚಟುವಟಿಕೆಗಳು <ph name="BEGIN_EMPHASIS" />ಇನ್ನೂ ಇವರಿಗೆ ಕಾಣಿಸಿಕೊಳ್ಳಬಹುದು<ph name="END_EMPHASIS" /> :
+<translation id="1333989956347591814">ನಿಮ್ಮ ಚಟುವಟಿಕೆಗಳನ್ನು ಈಗಲೂ ಇವರೆಲ್ಲಾ <ph name="BEGIN_EMPHASIS" />ನೋಡಬಹುದು<ph name="END_EMPHASIS" /> :
         <ph name="BEGIN_LIST" />
           <ph name="LIST_ITEM" />ನೀವು ಭೇಟಿ ನೀಡಿದ ವೆಬ್‌ಸೈಟ್‌ಗಳು
           <ph name="LIST_ITEM" />ನಿಮ್ಮ ಉದ್ಯೋಗದಾತರು ಅಥವಾ ಶಾಲೆ
@@ -1182,7 +1182,7 @@
 <translation id="6266934640124581640">ತಿಳಿ ಕೆನ್ನೀಲಿ</translation>
 <translation id="6276112860590028508">ನಿಮ್ಮ ಓದುವ ಪಟ್ಟಿಯ ಪುಟಗಳು ಇಲ್ಲಿ ಕಾಣಿಸಿಕೊಳ್ಳುತ್ತವೆ</translation>
 <translation id="627746635834430766">ಮುಂದಿನ ಬಾರಿ ವೇಗವಾಗಿ ಪಾವತಿಸಲು, ನಿಮ್ಮ ಕಾರ್ಡ್‌ ಮತ್ತು ಬಿಲ್ಲಿಂಗ್ ವಿಳಾಸವನ್ನು ನಿಮ್ಮ Google ಖಾತೆಯಲ್ಲಿ ಉಳಿಸಿ.</translation>
-<translation id="6279516281132775660">ಈ ಕೆಳಗಿನ ಮಾಹಿತಿಯನ್ನು Chrome ಗೆ <ph name="BEGIN_EMPHASIS" />ಉಳಿಸಲು ಆಗುವುದಿಲ್ಲ<ph name="END_EMPHASIS" />:
+<translation id="6279516281132775660">ಈ ಕೆಳಗಿನ ಮಾಹಿತಿಯನ್ನು Chrome <ph name="BEGIN_EMPHASIS" />ಉಳಿಸುವುದಿಲ್ಲ<ph name="END_EMPHASIS" />:
         <ph name="BEGIN_LIST" />
           <ph name="LIST_ITEM" />ನಿಮ್ಮ ಬ್ರೌಸಿಂಗ್ ಇತಿಹಾಸ
           <ph name="LIST_ITEM" />ಕುಕೀಗಳು ಮತ್ತು ಸೈಟ್ ಡೇಟಾ

@@ -15,6 +15,10 @@
 #include "third_party/blink/renderer/platform/heap/handle.h"
 #include "third_party/blink/renderer/platform/wtf/text/wtf_string.h"
 
+namespace base {
+class TickClock;
+}  // namespace base
+
 namespace blink {
 
 class ExecutionContext;
@@ -65,7 +69,9 @@ class MODULES_EXPORT MediaSession final
 
   void NotifyActionChange(const String& action, ActionChangeType);
 
-  void RecalculatePositionState(bool notify);
+  base::TimeDelta GetPositionNow() const;
+
+  void RecalculatePositionState(bool was_set);
 
   // blink::mojom::blink::MediaSessionClient implementation.
   void DidReceiveAction(media_session::mojom::blink::MediaSessionAction,
@@ -73,6 +79,8 @@ class MODULES_EXPORT MediaSession final
 
   // Returns null when the ExecutionContext is not document.
   mojom::blink::MediaSessionService* GetService();
+
+  const base::TickClock* clock_ = nullptr;
 
   mojom::blink::MediaSessionPlaybackState playback_state_;
   media_session::mojom::blink::MediaPositionPtr position_state_;

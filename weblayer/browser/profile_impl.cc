@@ -65,7 +65,7 @@ base::FilePath ComputeCachePath(const std::string& profile_name) {
 }
 #endif  // OS_POSIX
 
-base::FilePath ComputeSessionServiceDataBaseDir(
+base::FilePath ComputeBrowserPersisterDataBaseDir(
     const base::FilePath& data_path) {
   base::FilePath base_path;
   if (data_path.empty()) {
@@ -81,7 +81,7 @@ void NukeProfileFromDisk(const std::string& profile_name,
                          const base::FilePath& data_path) {
   if (data_path.empty()) {
     // Incognito. Just delete session data.
-    base::DeleteFileRecursively(ComputeSessionServiceDataBaseDir(data_path));
+    base::DeleteFileRecursively(ComputeBrowserPersisterDataBaseDir(data_path));
     return;
   }
 
@@ -317,8 +317,8 @@ void ProfileImpl::DecrementBrowserImplCount() {
   num_browser_impl_--;
 }
 
-base::FilePath ProfileImpl::GetSessionServiceDataBaseDir() const {
-  return ComputeSessionServiceDataBaseDir(data_path_);
+base::FilePath ProfileImpl::GetBrowserPersisterDataBaseDir() const {
+  return ComputeBrowserPersisterDataBaseDir(data_path_);
 }
 
 }  // namespace weblayer

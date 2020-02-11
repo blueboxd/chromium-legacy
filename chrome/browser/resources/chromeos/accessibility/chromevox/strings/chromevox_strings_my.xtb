@@ -1,13 +1,11 @@
 <?xml version="1.0" ?>
 <!DOCTYPE translationbundle>
 <translationbundle lang="my">
-<translation id="100812568230599391">မျက်နှာပြင် ပြသမှုပုံစံကို အပေါ်အောက်ပုံစံပြောင်းပါ။</translation>
 <translation id="1011903154582639569">ကီးကိုရှာပြီး စာရိုက်ရန်အတွက် မ လိုက်ပါ</translation>
 <translation id="1012173283529841972">အရာ စာရင်း</translation>
 <translation id="1013742170491673792">srched</translation>
 <translation id="1014370462248694370">ညာဘက်သို့ လက်နှစ်ချောင်းဖြင့် ပွတ်ဆွဲပါ</translation>
 <translation id="1022586497894531524">ChromeVox ၏ စကားပြော၍ တုံ့ပြန်မှုစနစ်ကို ပထမဆုံးအကြိမ် အသုံးပြုခြင်း ဟုတ်ပါသလား။ ChromeVox ကို စတင်အသုံးပြုနိုင်ရန်အတွက် အရေးကြီးသည့် အချက်အလက်များကို ဤသင်ခန်းစာက မြန်ဆန်စွာ ရှင်းပြပေးပါလိမ့်မည်။</translation>
-<translation id="1023866615269196768">စပန်းပြုလုပ်ထား။</translation>
 <translation id="1025074108959230262">စေးကပ် မုဒ် ပိတ်ထား</translation>
 <translation id="1031961866430398710">ထိုစဉ်</translation>
 <translation id="1038643060055067718">စာကြောင်းများ−</translation>
@@ -16,17 +14,12 @@
 <translation id="106222400312645156">rwhdr</translation>
 <translation id="1065552602950927991">မမှန်သော ဖြည့်သွင်းမှု</translation>
 <translation id="1066085461259044485">သစ်တောစိမ်း</translation>
-<translation id="1082209053475788238">အရင် အဆင့် ၆ ခေါင်းစီး မရှိပါ။</translation>
 <translation id="1087788677726983142">အစီအစဉ် ထုတ်လွှင့်မှု စစ်ထုတ်ချက်များကို ဖျောက်ထားပါ</translation>
-<translation id="1088219014394087294">ခေါင်းစဉ်မရှိပါ။</translation>
-<translation id="1106741348836243114">အသံ ပြန်စီစစ်ခြင်း (အီးယားကွန်စ်) ကို ဖွင့်မည် သို့မဟုတ် ပိတ်မည်။</translation>
 <translation id="1114836634143403764">အကြံပြုချက်</translation>
 <translation id="1120743664840974483">{"a": "alpha", "b": "bravo", "c": "charlie", "d": "delta", "e": "echo", "f": "foxtrot", "g": "golf", "h": "hotel", "i": "india", "j": "juliet","k": "kilo", "l": "lima", "m": "mike", "n": "november", "o": "oscar","p": "papa", "q": "quebec", "r": "romeo", "s": "sierra", "t": "tango", "u": "uniform", "v": "victor", "w": "whiskey","x": "xray", "y": "yankee", "z": "zulu"}</translation>
 <translation id="1120938014254001895">အပေါ်သို့ လက်နှစ်ချောင်းဖြင့် ပွတ်ဆွဲပါ</translation>
-<translation id="1124771028211010580">လက်ရှိ မျက်နှာပြင်ဖော်ပြမှုပုံစံသည် ဘေးချင်းကပ်ဖြစ်သည်။</translation>
 <translation id="1126928665165112660">စာလုံးစောင်း မဟုတ်ပါ</translation>
 <translation id="113582498867142724"><ph name="NUM" /> အမယ်များ နှင့် <ph name="TAG" /> စုဆောင်းမှု</translation>
-<translation id="1155043339247954670">နောက်စာရင်း အမယ် မရှိပါ။</translation>
 <translation id="1157782847298808853">ကီးဘုတ် အကူညီ</translation>
 <translation id="1157843803349774103"><ph name="VALUE" />, <ph name="NAME" />, ရောစပ် အကွက်</translation>
 <translation id="1161762950103988776">ခုန်ရန်</translation>
@@ -48,11 +41,9 @@
 <translation id="1246424317317450637">စာလုံးထူ</translation>
 <translation id="1251750620252348585">နောက်ထပ်အဆင့် ၆ ခေါင်းစီး</translation>
 <translation id="1275718070701477396">ရွေးထား</translation>
-<translation id="1286609444451033486">အဖွင့်အပိတ်လုပ်ရန် Search+Space ကို နှိပ်ပါ။</translation>
 <translation id="1291286136605998134">အဖွင့်အပိတ်ခလုတ်</translation>
 <translation id="1299774449519412690">ကောင်းကင်ပြာ အနု</translation>
 <translation id="1303806948938513162">ChromeVox မီနူးများသို့ ဝင်ရန် လက်ချောင်း ၄ ချောင်းဖြင့် တို့ပါ</translation>
-<translation id="1319608975892113573">အရင် ကိုးကားချက်။</translation>
 <translation id="1321576897702511272">ChromeVox အကူအညီ ဝှက်ထား</translation>
 <translation id="1325946044405407859">အညို</translation>
 <translation id="1331702245475014624"><ph name="TOTAL" />ထဲက <ph name="INDEX" /></translation>
@@ -68,7 +59,6 @@
 <translation id="1377925789329510816">နောက်ဆုံးခေါင်းစဉ်ကို ရောက်ပါပြီ။ ပထမခေါင်းစဉ်သို့ ပြန်သွားရန် Search+H ကို နှိပ်ပါ သို့မဟုတ် ဤစာမျက်နှာပေါ်ရှိ ဒုတိယခေါင်းစဉ်သို့ သွားရန် Search+Shift+H ကို နှိပ်ပါ။</translation>
 <translation id="138218114945450791">အပြာနု</translation>
 <translation id="1383876407941801731">ရှာဖွေမှု</translation>
-<translation id="1385214448885562192">လက်ခံရန် enter ကိုနှပ်ပါ၊ ပယ်ဖျက်ရန် escape ကိုနှိပ်ပါ၊  နောက်တစ်ခုကို သွားရန် အောက်ခလုတ်ကို နှိပ်ပါ၊ အရင်တစ်ခုကို သွားရန် အပေါ်ခလုတ်ကို နှိပ်ပါ။</translation>
 <translation id="1396114365388024581">တဲဘ် စာရင်း</translation>
 <translation id="1405567553485452995">အစိမ်းဖျော့</translation>
 <translation id="1417889266572670458">ရေတပ်ပြာ</translation>
@@ -77,7 +67,6 @@
 <translation id="1452236308086741652"><ph name="VALUE" />၊ စကားဝှက် စာသား အကွက်</translation>
 <translation id="146450394670219700">ဂရပ်ဖစ်ဓာတ်ပုံ အကြောင်းအရာ</translation>
 <translation id="1467432559032391204">ဘယ်</translation>
-<translation id="1474557363159888097">အရင် ကျောက်ဆူး မရှိ။</translation>
 <translation id="1480046233931937785">ခရက်ဒစ်</translation>
 <translation id="1487494366197411587">Chromebook ပေါ်တွင် Search ခလုတ်သည် ဘယ်ဘက် Shift ခလုတ်၏ အပေါ်ကပ်ရပ်တွင်ရှိသည်။</translation>
 <translation id="1499041187027566160">အသံ တိုးပါ</translation>
@@ -109,6 +98,7 @@
 <translation id="16777221443363124">မီနျူးဘား</translation>
 <translation id="1680732992526857724"><ph name="NAME" />၊ ဖွင့်ပါ</translation>
 <translation id="1686878109459149415">ရွှေ</translation>
+<translation id="1690731385917361335">အကြောင်းအရာမရှိပါ</translation>
 <translation id="1692077714702418899">တည်ဆောက်မှုဆိုင်ရာ လိုင်း</translation>
 <translation id="1700517974991662022">ဝင်ကြည့်ခဲ့သည်</translation>
 <translation id="1714116687360794776">မီတာ</translation>
@@ -123,12 +113,12 @@
 <translation id="1810107444790159527">စာရင်း အကွက်</translation>
 <translation id="1812527064848182527">အလျားလိုက်</translation>
 <translation id="1828385960365606039">မေလ</translation>
+<translation id="1829244130665387512">စာမျက်နှာတွင် ရှာရန်</translation>
 <translation id="1834891354138622109">ကော်လံ</translation>
 <translation id="1845944666972354496">စတင်ရန် နှစ်ချက်တို့ပါ</translation>
 <translation id="1846771122725914429">ဘလူးတုသ် မျက်မမြင်စာဖတ်ကိရိယာ</translation>
 <translation id="1865601187525349519">စာတိုအဆုံး</translation>
 <translation id="1876229593313240038">doc</translation>
-<translation id="188130072164734898">လက်ရှိ အချိန် နှင့် ရက်စွဲကို ပြောပါ။</translation>
 <translation id="1902396333223336119">ဆဲလ်</translation>
 <translation id="1903683160884433981">နွေဦးအစိမ်း</translation>
 <translation id="1905379170753160525">ခေါင်းစီးများ စာရင်းကို ပြရန်</translation>
@@ -147,7 +137,6 @@
 <translation id="2009187674653301682">စူပါစာသား မဟုတ်ပါ</translation>
 <translation id="2010555995361223825">ChromeVox မန်နယူးများ</translation>
 <translation id="2045490512405922022">မစစ်ဆေးရသေး</translation>
-<translation id="20601713649439366">ယခင် သင်္ချာ ညီမျှခြင်း မရှိ</translation>
 <translation id="2063539687800151747">ကမ္ပည်းစာ</translation>
 <translation id="207477615537953741">ၐေါဟာရအဓိပ္ပာယ် ပိတ်ရန်</translation>
 <translation id="2086961585857038472">နောက် စကားလုံး</translation>
@@ -160,8 +149,6 @@
 <translation id="2121067395472282800">ဝင်ရောက်အသုံးပြု ကီး:<ph name="KEY" /></translation>
 <translation id="2126597928985245619">ဤအရာအတွက် စာသားမရှိပါ</translation>
 <translation id="2127747486437921899">စာလုံးစောင်း</translation>
-<translation id="2138345533858834403">မျက်နှာပြင်၏ အပေါ်ဘက်ရှိ ChromeVox ပန်နလ်တွင် 
-       ပြန်လည်စတင်နိုင်သော မျက်မမြင်စာပြသမှုရလဒ်ကို ထုတ်ပေးပါသည်။</translation>
 <translation id="2163782704988363449">အမှားပြင်ဆင်ချက်</translation>
 <translation id="2169714232367507776">လက်ရှိ အရာကို ကလစ်ပါ</translation>
 <translation id="2179452035581866348">အရေးပါသော နောက်ထပ်အချက်အလက်များ ပေးရန်အတွက် ChromeVox သည် အသံများကို အသုံးပြုပါသည်။ အသံတစ်ခုစီ၏ အဓိပ္ပါယ်ကို လေ့လာခြင်းဖြင့် ၎င်းအသံများကို အသုံးပြုပြီး ပိုမိုလျင်မြန်စွာ ရွှေ့နိုင်ပါသည်။ ပိုမိုကျွမ်းကျင်လာသည့်အခါ ရှည်လျားသည့် ဖော်ပြချက်များကို ပိတ်ထားနိုင်ပြီး စာမျက်နှာအကြောင်း အရေးပါသည့် အချက်အလက်များအတွက် ၎င်းတို့ကို သုံးနိုင်ပါသည်။ အောက်ပါတို့မှာ အသံစာရင်းအပြည့်အစုံနှင့် အဓိပွါယ်ဖွင့်ဆိုချက်တို့ ဖြစ်ပါသည်။</translation>
@@ -184,7 +171,6 @@
 <translation id="2329324941084714723">တဲဘ်အကွက်ပြား</translation>
 <translation id="2344193891939537199">ရက်စွဲ အချိန် ထိန်းချုပ်မှု</translation>
 <translation id="2347456970887948350">လင့်ခ်</translation>
-<translation id="2359897517538099099">စားပွဲ မုဒ်မှာ မဟုတ်ပါ။</translation>
 <translation id="2381733276052567791">စကားပြော ခလုတ်ကို အဖွင့်အပိတ် ပြုလုပ်ရန်</translation>
 <translation id="2390264819538553347">နောက်တစ်ဆင့်သို့သွားရန် enter ကို နှိပ်ပါ၊ နောက်သို့ပြန်သွားရန် backspace ကိုနှိပ်ပါ။</translation>
 <translation id="240709722712693803">ခရမ်းပြာ</translation>
@@ -218,7 +204,6 @@
 <translation id="2614981083756825552">သင်္ချာ ML အဆင်အပြင်</translation>
 <translation id="2624431853467395961">လေ့လာခြင်းမုဒ်ကို ဖွင့်ပါ</translation>
 <translation id="2626530649491650971">ကလစ်ရနိုင်</translation>
-<translation id="2628764385451019380">ယခင် ကွမ်ဘို အကွက် မရှိ။</translation>
 <translation id="2637227747952042642">သင်္ချာ</translation>
 <translation id="2638785836053527382"><ph name="FILE_NAME" /> ဒေါင်းလုဒ်ဆက်လုပ်လိုက်ပါပြီ</translation>
 <translation id="2639750663247012216">ChromeVox အဆင့်မြင့်တင်ပေးသူ</translation>
@@ -243,18 +228,14 @@
 <translation id="2777845298774924149">ထွက်သွားပြီ</translation>
 <translation id="2783001728278437613">{COUNT,plural, =1{+#}other{+#}}</translation>
 <translation id="2784959586797362050">Search+a ကို နှိပ်ပြီး i ကို နှိပ်ကာ အကြံပြုချက်များကို ကျွန်ုပ်တို့ထံသို့ အမြဲတမ်း တိုက်ရိုက်ပို့နိုင်သည်။ သင့်ထံမှ အကြံပြုချက်များကို ကျွန်ုပ်တို့ ကြားလိုပါသည်။</translation>
-<translation id="2800204403141299078">မတူညီသော အရာများ မရှိတော့ပါ။</translation>
-<translation id="2800780099804980316">အရင် အဆင့် ၁ ခေါင်းစီး မရှိပါ။</translation>
 <translation id="280499067616661124">ChromeVox က စာမျက်နှာတွင် ရှာသည်</translation>
 <translation id="2808001342598757276">ဖန်သားပြင်ကို လင်းအောင်ပြုလုပ်ရန်</translation>
 <translation id="2811019999044652585">ကိရိယာဘားတန်းနှင့် ညာဘက်အောက်ထောင့်ရှိစနစ်ဗန်းကဲ့သို့ မျက်နှာပြင်ပေါ်ရှိ အခြားအစိတ်ပိုင်းသို့သွားရန် Control+Forward ကို နှိပ်ပါ။ Chromebook ပေါ်တွင် Forward ခလုတ်သည် နံပါတ် ၂ ခလုတ်၏ အပေါ်ကပ်ရပ်တွင်ရှိသည်။</translation>
 <translation id="2811204574343810641">အတန်း</translation>
-<translation id="2816654101880605877">ရှေ့မှာ ဆလိုက်ဒါး မရှိ</translation>
 <translation id="2841013758207633010">အချိန်</translation>
 <translation id="2843814945404750166">သံလွင်စိမ်းအရင့်</translation>
 <translation id="2843837985843789981">ယခင် အုပ်စု</translation>
 <translation id="2844995807198708617">ပါဝင်မှုမန်နျူး</translation>
-<translation id="2849332794118375855">နောက် ခြစ်ကွက် မရှိ</translation>
 <translation id="2864481629947106776">အရင် လင့်</translation>
 <translation id="2867808975387772810">ကျမ်းကိုးစာရင်း</translation>
 <translation id="2873259058405069099">ဇယား အစပိုင်းဆီသို့ သွားရန်</translation>
@@ -269,17 +250,13 @@
 <translation id="2932083475399492303">တည်ဆောက်ပုံ သို့မဟုတ် အပြင်အဆင် ရွေးချယ်ရန် လိုင်းအမျိုးအစား</translation>
 <translation id="2942710183375260152">မီးခိုးပြာရင့်</translation>
 <translation id="2943596527105977722">ရွှေချောင်းအရင့်</translation>
-<translation id="2944762337049891859">စာမျက်နှာကို ဖွင့်ပြီးသည်နှင့် ၎င်းကို အလိုအလျောက် ဖတ်ပါ။</translation>
 <translation id="2964026537669811554">ခေါင်းစဉ် အုပ်စု</translation>
 <translation id="2968634799764242930">ပင်လယ်ပြင် အစိမ်း</translation>
 <translation id="296951647852255825">{COUNT,plural, =1{တပ်ဘ်}other{# တဲပ်များ}}</translation>
-<translation id="2972078295414139404">ယခင် လည်ပတ်ထားသည့် လင့်ခ် မရှိပါ။</translation>
 <translation id="2972205263822847197">ကိရိယာ အကြံပေးချက်</translation>
 <translation id="297825089465017871">ဘယ်ဘက်သို့ လက်နှစ်ချောင်းဖြင့် ပွတ်ဆွဲပါ</translation>
 <translation id="2998131015536248178">ယခင် သင်္ကေတ</translation>
 <translation id="2999559350546931576">ပတ်ချ်အသံ လျော့မည်</translation>
-<translation id="2999945368667127852">နောက် မီဒီယာ ဝီဂျက် မရှိ။</translation>
-<translation id="3012414509011670858">အရင် ကဏ္ဍ မရှိပါ။</translation>
 <translation id="3014130421870723208">@အစက် ၈ စက်စနစ်ကို တည်းဖြတ်ရန်</translation>
 <translation id="3030432017085518523">မီနူး အရာ ရေဒီယို ခလုတ်</translation>
 <translation id="3037392361165431467">{COUNT,plural, =1{အပေါ်စတော်ပီ}other{# အပေါ်စတော်ပီ}}</translation>
@@ -295,7 +272,6 @@
 <translation id="3082557070674409251">နှိပ်ပြီး</translation>
 <translation id="3084806535845658316">တိုက်ရိုက်မှု ပဲ့တင်သံ မလို</translation>
 <translation id="3086746722712840547">မှတ်စု</translation>
-<translation id="308895241372589742">နောက်တစ်ခု သင်္ချာ ညီမျှချင်း မရှိ</translation>
 <translation id="3090227230165225418">ဒေါင်းလုဒ် အကြောင်းကြားချက်များ အသိပေးရန်</translation>
 <translation id="3090532668523289635">grp</translation>
 <translation id="3093176084511590672">နောက် အဓိကရ</translation>
@@ -311,7 +287,6 @@
 <translation id="3149472044574196936">နောက်တစ်လိုင်း</translation>
 <translation id="3153024374267644603">စကားပြော ခလုတ်ကို ဖွင့်ရန်</translation>
 <translation id="3153928844647607688"><ph name="TABLENAME" /> ဇယား၊ <ph name="TABLEROWS" /> လိုင်းနှင့် <ph name="TABLECOLS" /> ကော်လံ</translation>
-<translation id="3155083529632865074">အရင်ခလုတ် မရှိ။</translation>
 <translation id="3159493096109238499">ဝါညိုနု</translation>
 <translation id="3163593631834463955">ကော်လံ ခေါင်းစီး ပလာ</translation>
 <translation id="316542773973815724">သွားလာမှု</translation>
@@ -331,7 +306,6 @@
 <translation id="3260949043575829030">ယခင် အလားတူ အကြောင်းအရာ</translation>
 <translation id="3286372614333682499">ဒေါင်လိုက်</translation>
 <translation id="3286390186030710347">ရွေ့လျားတန်း</translation>
-<translation id="3299925995433437805">နောက်ထပ် လည်ပတ်ပြီးသော လင့်ခ်မှရှိပါ။</translation>
 <translation id="3300348286427369683">Rich text စာသားစနစ် ပံ့ပိုးမှု။ ChromeVox သည် ယခုအခါ တစ်ခုမှ တစ်ခုသို့ ခုန်ကူးခြင်း ကွန်မန်းများ၊ မျက်မမြင်စာ ကာဆာလမ်းညွှန်၊ ရွေးချယ်ခြင်းနှင့် အခြားအရာများ အပါအဝင် Rich text စာသားစနစ်ကို အပြည့်အဝ ပံ့ပိုးပေးထားပါသည်။</translation>
 <translation id="3307886118343381874">ဇယား အဆုံးသို့ သွားရန်</translation>
 <translation id="3311969765485641742">သတိပေးချက်များ လေ့လာရန် Alt+Shift+A နှိပ်ပါ။</translation>
@@ -349,7 +323,6 @@
 <translation id="3374537878095184207">{COUNT,plural, =1{အပေါင်း}other{#  အပေါင်း လက္ခဏာများ}}</translation>
 <translation id="338583716107319301">ခြားပေးသူ</translation>
 <translation id="3389259863310851658">အရင် ပုံစံ အကွက်</translation>
-<translation id="3390225400784126843">မတူသည့် အပိုင်း နောက်တစ်ခု</translation>
 <translation id="3392045790598181549"><ph name="NAME" />၊ မီနျူးအရာ</translation>
 <translation id="3393605254399152980">သင်ထိလိုက်သည့်အရာကို နားထောင်ရန် လက်တစ်ချောင်းဖြင့် ဖိဆွဲပါ</translation>
 <translation id="3406283310380167331">ဖောင်စာရင်း ပြရန်</translation>
@@ -366,7 +339,6 @@
 <translation id="3486232535569802404"><ph name="V1" /> သို့ <ph name="V2" /></translation>
 <translation id="3490765818161916458">ဇယားကို ဖော်ပြသည်</translation>
 <translation id="3492609944033322585">{COUNT,plural, =1{ညာကွင်း}other{# ညာကွင်းများ}}</translation>
-<translation id="3493915602752813531">ကျောက်ဆူး နောက် တစ်ခု မရှိ။</translation>
 <translation id="3494946239022273294">mnuitm</translation>
 <translation id="3497063866483065785">{COUNT,plural, =1{မေးခွန်း သင်္ကေတ}other{# မေးခွန်း သင်္ကေတများ}}</translation>
 <translation id="3514822174137761109">{COUNT,plural, =1{caret}other{# သင်္ကေတများ}}</translation>
@@ -394,20 +366,16 @@
 <translation id="3712520970944678024">စကားပြောမှု ထိန်းချုပ်ခြင်း</translation>
 <translation id="371302509916403935">အောက်မျဉ်းသားသည်</translation>
 <translation id="3716845769494773620">လိုင်းစုံ</translation>
-<translation id="3731746171184829332">အရင် ခေါင်းစီး မရှိ။</translation>
 <translation id="3735039640698208086">အသံဖွင့်နေသည့်အခါ...</translation>
-<translation id="3755561384917041694">နောက်ဆက်တွဲထည့်ထားသော မျက်မမြင်စာရေးစနစ် ကွန်မန်းများကို အသုံးပြုနိုင်ရန် အခြေအနေဖော်ပြမှုအောက်ရှိ မျက်နှာပြင်သုံးလက်ကွက်ကို ဖွင့်ပါ။</translation>
 <translation id="3762198587642264450">လက်ရှိ အတန်း၏ အဆုံးသို့ သွားရန်</translation>
 <translation id="3777255250339039212">h၁</translation>
 <translation id="3777742246909257041">နှင်း</translation>
 <translation id="3781428340399460090">ပန်းရင့်ရောင်</translation>
 <translation id="3783725005098956899">မှတ်တမ်း ပြရန်</translation>
-<translation id="3793710123303304873">မေးဖြေမှ ထွက်သွားပြီ။</translation>
 <translation id="3801735343383419236">အလိုအလျောက်ဖြည့်စွက်ခြင်း စာရင်း</translation>
 <translation id="3810838688059735925">ဗီဒီယို</translation>
 <translation id="3813387282697781382">သန္တာ အနု</translation>
 <translation id="3816633764618089385">နောက် မီဒီယာ</translation>
-<translation id="3819376190738087562">ခုန်ခြင်းမရှိ။</translation>
 <translation id="385383972552776628">ရွေးချယ်မှု စာမျက်နှာ ကို ဖွင့်မည်</translation>
 <translation id="3856075812838139784">ဖတ်ရန် အတွက်သာ</translation>
 <translation id="3857141338659865495">စိမ်းပြာ မနုမရင့်</translation>
@@ -421,7 +389,6 @@
 <translation id="3930498801443296724">ကောက်နုတ်ဖော်ပြချက်</translation>
 <translation id="3935615366277838204">စာလုံးကြီး <ph name="LETTER" /></translation>
 <translation id="3936394396199829062">ခရမ်းပြာရဲရဲ</translation>
-<translation id="3941269780691800708">မောက်စ်အောက်ရှိ စာသားကို အသံထွက်ဖတ်ရန်။</translation>
 <translation id="394953087167197343">စာလုံးပေါင်းမှား ညွှန်ပြရန်−</translation>
 <translation id="3962990492275676168">လက်ရှိတည်နေရာမှ စတင်ဖတ်ရန်</translation>
 <translation id="3970951409746498040">သဲညို</translation>
@@ -432,8 +399,6 @@
 <translation id="4006140876663370126">img</translation>
 <translation id="4038349100599457191">လ ထိန်းချုပ်မှု</translation>
 <translation id="4039983576244166038">အတန်း ခေါင်းစီး ကို အလွတ်ထားမည်</translation>
-<translation id="4042843249978639960">နောက် တစ်ဆင့် ၂ ခေါင်းစီး မရှိ</translation>
-<translation id="4043348641337972076">ယခင် ဒေသ အဓိကရ မရှိ</translation>
 <translation id="4047216625641135770">အမှတ်အသား</translation>
 <translation id="404803211695627272"><ph name="V1" />-<ph name="V2" /></translation>
 <translation id="4053520724192563562">သံပရာစိမ်း</translation>
@@ -441,20 +406,15 @@
 <translation id="4058278702844053247">စာမျက်နှာကို ဖွင့်နေဆဲဖြစ်သည်</translation>
 <translation id="4065205963140826639">Next ခလုတ်ကို ရှာဖွေရန် Search + ညာမြှား ကို ယခုအသုံးပြုကြည့်ပါ။ ပြီးလျှင် ၎င်းကိုနှိပ်ရန် Search + Space ကိုနှိပ်ပါ။</translation>
 <translation id="4081085052247739398">{COUNT,plural, =1{TILDE}other{# tildeများ}}</translation>
-<translation id="4086311032171418648">'လေ့လာခြင်းမုဒ်' ကို ရပ်နေသည်။</translation>
 <translation id="409334809956508737">ယခင် အကြောင်းရာ</translation>
 <translation id="4099274309791143834">ဆပ်မီနူးနှင့်အတူ</translation>
 <translation id="4101527861445851766">ရွေးထားသည့် အမှန်ခြစ်အကွက်</translation>
-<translation id="4107807507418787238">အောက်မှာ အကွက် မရှိ</translation>
 <translation id="4115378294792113321">ပန်းခရမ်းရောင်</translation>
 <translation id="4116415223832267137">သတိပေးချက်</translation>
-<translation id="4147126331795725888">ရှေ့မှာ ထိန်းချုပ်မှု မရှိ။</translation>
 <translation id="4148180433151187540">{COUNT,plural, =1{ညာဘက် ညှပ်right brace}other{# ညာဘက် ညှပ်များ}}</translation>
-<translation id="4158704014418536539">စာလုံးအကြီးအသေး သတိထားရမည်။</translation>
 <translation id="4159784952369912983">ခရမ်း</translation>
 <translation id="4161104397932142764">{COUNT,plural, =1{စက္ကန့်}other{စက္ကန့်}}</translation>
 <translation id="4161663686871496107">ChromeVox နှုတ်ပြော အကြံပြုချက် အသင့်ရှိနေပြီ</translation>
-<translation id="4173994908659439270">နောက်ထပ် ပြုပြင်နိုင်သည့် စာတိုအကွက် မရှိပါ။</translation>
 <translation id="4176463684765177261">ပိတ်ထားသည်။</translation>
 <translation id="4187322598335821254">မျဉ်းရွှေ့ရန် အပေါ် သို့မဟုတ် အောက်သို့ ပွတ်ဆွဲပါ</translation>
 <translation id="4188530942454211480">ပြီးခဲ့သည့် ၐါကျ</translation>
@@ -464,8 +424,6 @@
 <translation id="4204126831294769023">ပင်လယ်ပြာ</translation>
 <translation id="4204864733111726379">ပန်းပွင့်ဖြူ</translation>
 <translation id="4206289001967551965">အတွင်းဇယား</translation>
-<translation id="4207770814752775793">စာသားမှ စကားပြောသို့ ဆက်တင်များကို မူရင်းတန်ဖိုးများသို့ ပြင်ဆင်သတ်မှတ်ရန်</translation>
-<translation id="4209770650650780359">အလိုအလျောက် ဖြည့်စွက်ရန်အတွက် အပေါ် သို့မဟုတ် အောက် မြားကို နှိပ်ပါ။</translation>
 <translation id="4215733775853809057">နောက် ဆလိုက်ဒါး</translation>
 <translation id="42164919740161077">ရဲတပ်အပြာ</translation>
 <translation id="4218529045364428769">{COUNT,plural, =1{ဒက်ရှ်}other{# ဒက်ရှ်}}</translation>
@@ -474,27 +432,22 @@
 <translation id="4229646983878045487">ရက်စွဲ အချိန်</translation>
 <translation id="4230834257931120629">မီးခိုးပြာ အနု</translation>
 <translation id="4231102694147661229">တီထွင်သူများ ရွေးစရာကို ဖွင့်ရန်</translation>
-<translation id="423334822609210999">ကျန်ခဲ့သည့် အကွက် မရှိ။</translation>
 <translation id="4243624244759495699"><ph name="LOCALE" />, အဆင့် <ph name="GRADE" /></translation>
 <translation id="4246217262268234757">စတီးအပြာ</translation>
 <translation id="4253168017788158739">မှတ်ချက်</translation>
 <translation id="4254798249533888099">အပင်</translation>
 <translation id="4255943572433203166">အောက်ပါ ရွေးချယ်မှုများသုံး၍ ChromeVox အားပြုပြင်မည်။ ပြောင်းလဲမှု ချက်ခြင်း အကျိုးသက်ရောက်ပါသည်။</translation>
 <translation id="4271220233568730077">နောက်ထပ် သင်္ချာ</translation>
-<translation id="4271521365602459209">ရလဒ်များ နောက်ထပ် မရှိ။</translation>
 <translation id="4275397969489577657">အစီအစဉ် ထုတ်လွှင့်မှု မှတ်တမ်းတင်ခြင်းကို ဖွင့်ပါ</translation>
 <translation id="4281245629646759298">အဝါနု</translation>
-<translation id="4287520460805643128">ရှေ့မှာ ဆောင်းပါး မရှိ။</translation>
 <translation id="4289540628985791613">အကျဉ်းချုပ်</translation>
 <translation id="4300318234632215983">လင့် တစ်ခု၏ နောက်က URL ကို ကြေညာရန်</translation>
 <translation id="4301352596632316575">ဆပ်မီနူး</translation>
 <translation id="4322625298640984693">ညိုဝါ</translation>
 <translation id="4342180618051828363">{COUNT,plural, =1{dot}=3{ellipsis}other{# dotများ}}</translation>
-<translation id="4347461890115250064">နောက်ထပ်စာရင်း မရှိ။</translation>
 <translation id="4367650418938037324">Math ML သစ်ရွက်</translation>
 <translation id="4372435075475052704">နည်းဆုံး:<ph name="X" /></translation>
 <translation id="4372705107434148843">စကားပြောမှု ရပ်ရန်</translation>
-<translation id="4373197658375206385">လင့်ခ်မဟုတ်သည့် ယခင်အရာ မရှိပါ။</translation>
 <translation id="4376316291247992553">ပုံကို Braille အနေဖြင့် ကြည့်ပါ</translation>
 <translation id="437809255587011096">စာသားပုံစံထည့်သွင်းခြင်း ကြေညာရန်</translation>
 <translation id="4378308539633073595">ရှေ့သို့ လှိမ့်သည်</translation>
@@ -504,7 +457,6 @@
 <translation id="443163561286008705">ပြန်ညှိ</translation>
 <translation id="4432457053224379116">အိန္ဒိယ အနီ</translation>
 <translation id="4457472090507035117">လက်ရှိအသံကို ရွေးပါ−</translation>
-<translation id="4471074325120394300">လင့် မရှိ။</translation>
 <translation id="4476183483923481720">လိုင်းအသစ်</translation>
 <translation id="4479068155583208887">အုတ်ခဲနီ</translation>
 <translation id="4482330759234983253">ယခင်ဇယား</translation>
@@ -517,25 +469,21 @@
 <translation id="4537277403911487429">နောက်ထပ် အလားတူ အကြောင်းအရာ</translation>
 <translation id="4547556996012970016">ရှေ့မှာ အဆင့် ၅ ခေါင်စီး</translation>
 <translation id="4562381607973973258">ခေါင်းစီး</translation>
-<translation id="4569941707103739422">ရွှေ့ကြည့်ရန် အပေါ် သို့မဟုတ် အောက် မြားကို နှိပ်ပါ။ ဖွင့်ရန် enter ကို နှိပ်ပါ။</translation>
 <translation id="4591507479202817876">၊ရွေးထား</translation>
 <translation id="4597532268155981612">ပုံစံ</translation>
 <translation id="4597896406374528575">ဧပရယ်</translation>
-<translation id="460018603901637538">မျက်နှာပြင်ဖော်ပြမှုပုံစံကို ဘေးချင်းကပ်ပုံစံသို့ ပြောင်းပါ။</translation>
 <translation id="4601367666219428522">tbl <ph name="TABLENAME" /> <ph name="TABLEROWS" />x<ph name="TABLECOLS" /></translation>
 <translation id="4615592953348396470">နောက် ကီး နှိပ်ကို လျစ်လျူရှုရန်</translation>
 <translation id="461613135510474570">ဝါကျ</translation>
 <translation id="4623097797855662355">အမှတ်တံဆိပ်</translation>
 <translation id="463135993322337640">အသစ်များကို သိရှိနိုင်ရန် ChromeVox o၊ n ကို နှိပ်ပါ</translation>
 <translation id="4647836961514597010">အရောင် ရွေးသူ</translation>
-<translation id="4652110509054054146">'ပင်မစာမျက်နှာ သို့မဟုတ် အဆုံး' အတွက် 'ဘယ် သို့မဟုတ် ညာ ရှာဖွေမှု'၊ 'ပင်မစာမျက်နှာ သို့မဟုတ် အဆုံးကို ထိန်းချုပ်မှု' အတွက် 'ဘယ် သို့မဟုတ် ညာ ရှာဖွေမှု ထိန်းချုပ်စနစ်'၊ 'စာမျက်နှာ အပေါ် သို့မဟုတ် အောက်' အတွက် 'အပေါ် သို့မဟုတ် အောက် ရှာဖွေမှု' ကို အသုံးပြုပါ။</translation>
 <translation id="4660783501463101648">Classic ကို ဖယ်ရှားလိုက်ပါပြီ။ ChromeVox Classic သို့ ပြောင်းနိုင်သည့် ကီးဘုတ်ခလုတ်ကို ဖယ်ရှားလိုက်ပါပြီ။</translation>
 <translation id="4661075872484491155">အပင်</translation>
 <translation id="4668929960204016307">,</translation>
 <translation id="4677535310137735442">နောက် ကော်လံသို့ သွားရန်</translation>
 <translation id="4688873778442829762">grd</translation>
 <translation id="4693675773662933727">ယခင် အထိမ်းအမှတ်</translation>
-<translation id="4696413482802371445">ရှေ့မှာ အဆင့် ၅ ခေါင်စီး မရှိ။</translation>
 <translation id="4710166929009737753">ညာဘက်သို့ လက်တစ်ချောင်းဖြင့် ပွတ်ဆွဲပါ</translation>
 <translation id="4729095194763193578">ယခင် ဇယားအလျားလိုက် လိုင်း</translation>
 <translation id="4736221692378411923">ဩဂုတ်</translation>
@@ -556,15 +504,12 @@
 <translation id="4838490795649708173">လက်လေးချောင်းဖြင့် တို့ပါ</translation>
 <translation id="4839925464551908214">ယခင် အတန်းသို့ သွားရန်</translation>
 <translation id="4841614409681890122">ပန်းရင့်</translation>
-<translation id="4842108708071771135">နောက် blockquote မရှိ။</translation>
 <translation id="4844625982113518938">ကြိုက်ရာခလုတ်ကို နှိပ်ပြီး ၎င်း၏ အမည်ကို လေ့လာပါ။ Ctrl+W ကိုနှိပ်လိုက်လျှင် လေ့လာခြင်းမုဒ်ကို ပိတ်လိုက်ပါမည်။</translation>
 <translation id="4846428657345567687">ChromeVox မှ ကြိုဆိုပါသည်။</translation>
 <translation id="4848993367330139335">tmr</translation>
-<translation id="4850023505158945298">အရင် အလားတူ အပိုင်း</translation>
 <translation id="4862744964787595316">စာလုံးမည်း မဟုတ်ပါ</translation>
 <translation id="4866956062845190338">rdmnuitm</translation>
 <translation id="4867316986324544967">TTS မှတ်တမ်းတင်ခြင်း ဖွင့်</translation>
-<translation id="4877261390094455813">ရှာရန် မေးမြန်းချက်ကို ထည့်ပါ</translation>
 <translation id="4886524826165775965"><ph name="INDEX" />/<ph name="TOTAL" /></translation>
 <translation id="4892105484979139179">စိမ်းပြာအရင့်</translation>
 <translation id="489907760999452556">အတွင်းပိုင်း လင့်</translation>
@@ -576,7 +521,6 @@
 <translation id="4973717656530883744">နည်းဆုံး <ph name="X" /></translation>
 <translation id="4973762002207131920"><ph name="KEY" /> သို့ပြောင်းမည်။</translation>
 <translation id="4975416682604111799">မီလီစက္ကန့်</translation>
-<translation id="49787999531187221">ChromeVox ကို ယခု မသုံးပါ။</translation>
 <translation id="4979404613699303341">အရင်ခလုတ်</translation>
 <translation id="4982773647088557172"><ph name="VALUE" />၊ <ph name="NAME" />၊ စာရင်း အကွက်</translation>
 <translation id="4983588134362688868">စာမျက်နှာ ထိပ်ပိုင်းသို့ ခုန်သွားရန်</translation>
@@ -585,9 +529,6 @@
 <translation id="4994420463726586413">လက်ရှိဘက်ထရီ အခြေအနေကို ကြေညာရန်</translation>
 <translation id="4996716799442435517">မြင်မှု</translation>
 <translation id="4997282455736854877"><ph name="NAME" />၊ ရေဒီယို ခလုတ် ရွေးထား</translation>
-<translation id="4997475792277222884">လင့်မဟုတ်သော နောက်အရာ မရှိ။</translation>
-<translation id="5000760171916499057">ဖောင်များမရှိပါ။</translation>
-<translation id="5005670136041063723">ဆင်တူ အစိတ်အပိုင်းများ နောက်ထပ် မရှိ</translation>
 <translation id="501473567976723023">ဇန်နဝါရီ</translation>
 <translation id="5020651427400641814">စကားသံမှတ်သားခြင်းကို ဖွင့်ရန်</translation>
 <translation id="5041394372352067729">မျက်မမြင်စာကို စာမျက်နှာ၏ အပေါ်သို့ ပို့ရန်</translation>
@@ -600,26 +541,21 @@
 <translation id="5080758118274074384">နှစ်ခါ နှိပ်ထားခြင်း</translation>
 <translation id="5085453135206054947">ခရမ်းပြာနီ အဖျော့</translation>
 <translation id="5087864757604726239">နောက်သို့</translation>
-<translation id="5098541983634824365">လိုင်းကွက်မှ ထွက်ခြင်း။</translation>
 <translation id="5102981729317424850">ကိရိယာ ဘား</translation>
 <translation id="5105050547967751155">RQ</translation>
 <translation id="5106547198195128110">ဤအသစ်ထုတ်ဝေမှုတွင် စိတ်ဝင်စားစရာ ပြောင်းလဲမှု အချို့ကို ပြုလုပ်ထားပါသည်၊ ၎င်းတို့မှာ−</translation>
-<translation id="5110983769041734144">အရင် ပုံစံ အကွက် မရှိ။</translation>
 <translation id="5111640677200759579">ကော်လန် ခေါင်းစီး</translation>
 <translation id="5115892389597951922">ChromeVox မှတ်တမ်း</translation>
 <translation id="5119330972669454698">သစ်သားအကွက်</translation>
-<translation id="5136967254288895616">ယခင်လင့်ခ် မရှိ။</translation>
 <translation id="513774504516943387">lnk</translation>
 <translation id="5138912041966667164">မီးခိုးပြာ မနုမရင့်</translation>
 <translation id="5140016802771803559">ရေဘက်ကာ ခရမ်း</translation>
 <translation id="5158275234811857234">မျက်နှာဖုံး</translation>
 <translation id="517143700877085897">၊ မရွေးရသေး</translation>
 <translation id="5183440668879371625">မျက်မမြင်စာ ယခင်လိုင်း</translation>
-<translation id="5184944171021383281">ရှေ့သို့ ပုံစံ အကွက် မရှိ</translation>
 <translation id="5189244881767082992">လိုင်း</translation>
 <translation id="5203930734796605961"><ph name="KEY" /> ကို ညွှန်ကြားချက် တစ်ခုအတွက် သတ်မှတ်ပြီး</translation>
 <translation id="5205493599117157272"><ph name="TYPE" /> စာရင်း။</translation>
-<translation id="520883772648104506">နောက် ရေဒီယို ခလုတ် တစ်ခု မရှိ</translation>
 <translation id="5263034204789987535">ပြောင်းဖူးမွေး</translation>
 <translation id="5263344797180442561">h2</translation>
 <translation id="528468243742722775">အဆုံး</translation>
@@ -637,14 +573,10 @@
 <translation id="536031132345979795">ဆက်တိုက် ဖတ်နေစဉ်အတွင်း နောက်သို့ ပြန်ရစ်မည်</translation>
 <translation id="5368000168321181111">အသံတုများ ပိတ်ထား</translation>
 <translation id="5368505757342402527"><ph name="FILE_NAME" /> ကို <ph name="PROGRESS" />% ဒေါင်းလုဒ်လုပ်ပြီးပါပြီ။ <ph name="TIME" /> <ph name="UNITS" /> ခန့် ကျန်ပါသည်။</translation>
-<translation id="5374320867641260420">နောက် ခလုတ် တစ်ခု မရှိ</translation>
-<translation id="5376407118396657359">တစ်ကွက်စီရွှေ့ရန် Search+Ctrl+Alt ကို မြားနှင့်တွဲ၍ နှိပ်ပါ။</translation>
-<translation id="5382299583965267720">ရှေ့မှာ အဆင့် ၁ ခေါင်စီး မရှိ။</translation>
 <translation id="5400836586163650660">မီးခိုး</translation>
 <translation id="5402367795255837559">မျက်မမြင်စာ</translation>
 <translation id="5402791055281059602">တုန့်ပြန်ရန် သတိပေးချက်</translation>
 <translation id="5407530583102765689">{COUNT,plural, =1{စီမီးကိုလန်}other{စီမီးကိုလန် # ခု}}</translation>
-<translation id="5411891038905756502">ယခင် ခုန်သည့် နေရာ မရှိ။</translation>
 <translation id="5435274640623994081">အသံသင်္ကေတ မှတ်တမ်းကို ဖွင့်ပါ</translation>
 <translation id="5436105723448703439">{COUNT,plural, =1{ပိုနည်းသော}other{# ပိုနည်းကြောင်းပြ သင်္ကေတ}}</translation>
 <translation id="5444587279251314700">(ပွင့်နေသည်)</translation>
@@ -652,18 +584,13 @@
 <translation id="5451268436205074266">အစက် <ph name="DOT" /></translation>
 <translation id="5455441614648621694">လိုက်ဖက်သော</translation>
 <translation id="5462510922370980473">စာမျက်နှာစာရင်း</translation>
-<translation id="5485036206801896268">အရင် ဂရပ်ဖစ် မရှိ</translation>
-<translation id="5486947920110100234">နောက်တစ်ခါ ကျော်ရန် နေရာမရှိ။</translation>
 <translation id="549602578321198708">စာလုံး</translation>
-<translation id="5500932716852106146">ယခင် ပြုပြင်နိုင်သည့် စာတိုအကွက် မရှိပါ။</translation>
 <translation id="5502713021410870035">စက်တင်ဘာလ</translation>
 <translation id="5507663321906818013">အမှားရှာပြင်ခြင်း စံအမှတ်</translation>
 <translation id="551361796444814639">အပြာ မနုမရင့်</translation>
-<translation id="5518443085409638729">(Mac OS X လို) စာသားကို တည်းဖြတ်စဉ် ညွှန်းမြားကို စာလုံးများ အကြားမှာ ထားရှိပါ။</translation>
 <translation id="552195134157544755">ရေဒီယို ခလုတ်</translation>
 <translation id="5534303576632885660">hdr</translation>
 <translation id="5539820223028224601">မီးခိုးမှိုင်း</translation>
-<translation id="5546092960038624944">အရင် အဆင့် ၅ ခေါင်စီး မရှိ။</translation>
 <translation id="556042886152191864">ခလုတ်</translation>
 <translation id="5561345396546889625">နောက် စာရင်း</translation>
 <translation id="5562645715554321347">hdnggrp</translation>
@@ -672,7 +599,6 @@
 <translation id="5585044216466955529">စာသား ပြင်ဆင်ရန်၊ အီးမေးသို့ သွားရန်</translation>
 <translation id="5586942249556966598">ဘာမှမလုပ်</translation>
 <translation id="5597170376237141345">နောက်ထပ် အမှန်ခြစ်ရန် အကွက်</translation>
-<translation id="5597933780944041114">ရှေ့မှာ ခေါင်စီး မရှိ။</translation>
 <translation id="5598905979683743333"><ph name="NAME" />၊ အမည်၊ ရေဒီယို ခလုပ်ကို ရွေးချယ်မထားပါ</translation>
 <translation id="5601172225407283979">ပုံသေ လုပ်ဆောင်စရာ လုပ်ကိုင်ရန်</translation>
 <translation id="5608798115546226984">လိုင်းအတွင်း အလိုအလျောက်ဖြည့်စွက်ခြင်း</translation>
@@ -681,7 +607,6 @@
 <translation id="5623842676595125836">မှတ်တမ်း</translation>
 <translation id="5628125749885014029">h4</translation>
 <translation id="5632083598315326067">ဂရပ်ဖစ် သင်္ကေတ</translation>
-<translation id="5637871198229500030">ယခင် ဇယား မရှိ</translation>
 <translation id="5653397561111110475">Chromebook တို့ထိနိုင်သည့်ဖန်သားပြင် အများသုံးစွဲနိုင်သည့်ဝန်ဆောင်မှုများကို အသုံးပြုပါ</translation>
 <translation id="5655682562155942719">Commands များကိုကျော်</translation>
 <translation id="56637627897541303">စာသား နေရာ</translation>
@@ -690,35 +615,29 @@
 <translation id="5682113568322255809">အဓိကရ</translation>
 <translation id="5683155931978483559">ယခင် အမှန်ခြစ်ကွက်</translation>
 <translation id="5684277895745049190">စာရင်း</translation>
-<translation id="5700650669149824506">အရင် အဆင့် ၄ ခေါင်းစီး မရှိပါ။</translation>
 <translation id="5703716265115423771">အသံ လျှော့ပါ</translation>
 <translation id="5709192780268610569">ဖော်ပြချက် မရှည်ရန်</translation>
 <translation id="5712244464475377681">popbtn</translation>
 <translation id="5712338278108304766">ဇယား၏ နောက် ကော်လံ တစ်ခု</translation>
 <translation id="571866080859340309">အုပ်စုများကို ရှာဖွေမည်</translation>
 <translation id="5725079927589231571">စတီး အပြာနု</translation>
-<translation id="5728409797179002635">မည်သည့်ဇယားမှ မတွေ့ပါ</translation>
-<translation id="5729047866208036762">တွက်ချက်ခြင်းများကို လေ့လာရန် အပေါ်၊ အောက်၊ ဘယ် သို့မဟုတ် ညာခလုတ်ကို နှိပ်ပါ။</translation>
 <translation id="5732189279857692565">ဤသည်မှာ ဒုတိယခေါင်းစဉ်ဖြစ်သည်။ ဆက်သွားပါ၊ Search+H သို့မဟုတ် Search+Shift+H ကို နှိပ်ပါ</translation>
 <translation id="5748623122140342504">အရင် အဆင့် ၅ ခေါင်စီး</translation>
 <translation id="5750633686117194034">အဆင့်မြင့်သူ ကို မနှိပ်ထားပါ။ ကျေးဇူးပြုပြီး အဆင့်မြင့်သူ တစ်ခု သို့မဟုတ် အများကို နှိပ်ပြီး ဖိထားပေးပါ။ ပြီးလျင် လွတ်လိုက်ပါ၊ ခလုတ်သတ်မှတ်သံကို သင်ကြားပါလိမ့်မည်။ ထွက်ရန် တပ်ဖ်ကို နှိပ်ပါ။</translation>
 <translation id="5760594853119905566">နောက်ဆက်တွဲ</translation>
 <translation id="5788275253279308023">ရုပ်ဖျက်ဝင်းဒိုး <ph name="TITLE" /> တဲပ်</translation>
 <translation id="5805940204952508776">လက်နှစ်ချောင်းဖြင့် တို့ပါ</translation>
-<translation id="5806206155699461681">သတ်မှတ်ဆိုဒ်များကို တိုးမြင့်မည် (Google ရှာဖွေမှုကဲ့သို့)။</translation>
 <translation id="5819072574982403430">အခွဲများရှိသည့် အရာ</translation>
 <translation id="5822819874379903994">စိမ်းပြာရင့်</translation>
 <translation id="5826479389509458994">အတန်း <ph name="ROW" /> ကော်လံ <ph name="COL" /></translation>
 <translation id="5847883414085148048">ရည်ညွှန်းဖော်ပြချက်</translation>
 <translation id="5850707923114094062">နောက်သို့ လှန်မည</translation>
 <translation id="5851548754964597211">တဲပ် စာရင်း</translation>
-<translation id="5859752971144398932">ထွက်သွားပြီ စာမျက်ထဲမှာ ရှာပါ။</translation>
 <translation id="5866042630553435010">တစ်ချို့တစ်ဝက် စစ်ဆေးပြီး</translation>
 <translation id="5867591286054666064">ဤသင်ခန်းစာအတွင်းတွင် အမည်ကိုနားထောင်ရန် နှစ်သက်ရာခလုတ်ကိုနှိပ်နိုင်သည်။</translation>
 <translation id="5869546221129391014">လိုင်းကွက်</translation>
 <translation id="5876817486144482042">စကားပြောသံ ပမာဏ လျှော့ချရန်</translation>
 <translation id="5878908838135392163">ပေါင်ဒါအပြာ</translation>
-<translation id="5887397643266327462">မျက်မမြင် စာတန်း ဖွင့်ပေးထား။</translation>
 <translation id="5891934789323004067">ဇယားကွက်</translation>
 <translation id="5899860758576822363">ChromeVox စကားပြောနေသည့်အချိန်တွင် အသံတိုးတိုးဖြင့်ဖွင့်ရန်</translation>
 <translation id="5901630391730855834">အၐါရောင်</translation>
@@ -741,12 +660,10 @@
 <translation id="6017514345406065928">အစိမ်းရောင်</translation>
 <translation id="6034000775414344507">မီးခိုးဖျော့</translation>
 <translation id="6037602951055904232">ရှေ့သို့ ရွေ့ပြောင်း</translation>
-<translation id="6042826534790431634">ဖွင့်ရန် Search+Space ကို နှိပ်ပါ။</translation>
 <translation id="6044160928851315051">ဖန်သားပြင်ကို မှောင်အောင်ပြုလုပ်ရန်</translation>
 <translation id="6082768461603900813">အခြေခံလမ်းညွှန်မှု</translation>
 <translation id="6118126368611144850">Chrome အတွက် Android အက်ပ်များ။ သင့်စက်ပစ္စည်းပေါ်တွင် Play စတိုးရှိလျှင် Android အက်ပ်များဖြင့် ChromeVox ကို စမ်းကြည့်နိုင်ပါသည်။ Play စတိုးမှနေ၍ Google Chrome Canary ကို ဒေါင်းလုဒ်လုပ်၍ စမ်းသပ်ထောက်ပံ့မှုကို စမ်းကြည့်ပါ။</translation>
 <translation id="611827076493383239">vtd</translation>
-<translation id="6119955456199054975">ဆဲလ် အဆုံး။</translation>
 <translation id="6122013438240733403">btn</translation>
 <translation id="6129953537138746214">နေရာခြား</translation>
 <translation id="6132506484792346370">စာရင်းအကွက် သို့မဟုတ် ပူးပေါင်းအကွက်</translation>
@@ -763,9 +680,7 @@
 <translation id="6236061028292614533">နောက် ခေါင်းစီး</translation>
 <translation id="6254901459154107917">တည်းဖြတ်ရနိုင်သည့် စာသား နေရာ နောက်တစ်ခု</translation>
 <translation id="6259464875943891919"><ph name="TYPE" />မှ ထွက်သွားပြီ</translation>
-<translation id="6281876499889881039">အလားတူ အပိုင်း နောက်တစ်ခု</translation>
 <translation id="6282062888058716985">nav</translation>
-<translation id="6290434000785343030">နောက် ကွန်ဘို သေတ္တာ မရှိပါ။</translation>
 <translation id="6305702903308659374">ChromeVox စကားပြောနေသည့်အချိန်တွင်ပင် အသံပုံမှန်ဖြင့်ဖွင့်ရန်</translation>
 <translation id="6307969636681130414">နှိပ်ပြီး</translation>
 <translation id="6315652249189065725">ကီးဘုတ်ဖြတ်လမ်းလင့်ခ် မီနူးကို ဖွင့်ရန်</translation>
@@ -775,7 +690,6 @@
 <translation id="6348657800373377022">ကွမ်ဘို အကွက်</translation>
 <translation id="6348869651006731065">မီးခိုးဖျော့</translation>
 <translation id="6350358010104919766">{COUNT,plural, =1{ကျည်ဖူးသင်္ကေတ}other{ကျည်ဖူးသင်္ကေတ # ခု}}</translation>
-<translation id="6355910664415701303">အရင် စာရင်း အရာမရှိ။</translation>
 <translation id="6364795331201459219">h6</translation>
 <translation id="6368143427468974988">ယခင် ခေါင်းစီး</translation>
 <translation id="6376999910001533545">ကြက်သွေး</translation>
@@ -783,8 +697,6 @@
 <translation id="6385591741672306837">ကော်လံ</translation>
 <translation id="6387719785439924554">ဘေးဘက်သို့</translation>
 <translation id="6393014464788431702">အစီအစဉ် စစ်ထုတ်မှုများအားလုံးကို ပိတ်ပါ</translation>
-<translation id="6411426777058107714">ယခင်ရေဒီယို ခလုတ်မှရှိ။</translation>
-<translation id="6414968628640960377">အရင် မတူသည့် အစိတ်အပိုင်း။</translation>
 <translation id="6417265370957905582">Google Assistant</translation>
 <translation id="641759969622533235">{COUNT,plural, =1{ကော်လန်}other{# ကော်လန်များ}}</translation>
 <translation id="6438968337250688271"><ph name="NAME" />၊ မီနူး</translation>
@@ -801,17 +713,12 @@
 <translation id="6536864053412760904">သင်္ချာ ML တိုကင်</translation>
 <translation id="6540201937398578274">ChromeVox တွင် Search ခလုတ်သည် အထူးခလုတ်ဖြစ်သည်။ ChromeVox ဖြတ်လမ်းအများစုသည် Search ခလုတ်ဖြင့် စတင်ပါသည်။ ရွှေ့ရန်အတွက် မြားခလုတ်များကို အသုံးပြုနိုင်သည်။</translation>
 <translation id="6544923685317771506">ပင်လယ် ခရုခွံ</translation>
-<translation id="6550720799683018100">အောက်ပါ စာရင်းမှ ရွေးချယ်ကာ လက်ရှိကီးမြေပုံကို ပြောင်းလဲပါ။</translation>
 <translation id="6551185905438378412">ဆင်စွယ်</translation>
 <translation id="6561818612645211875">လက်ရှိ အတန်း၏ အစပိုင်းသို့ သွားရန်</translation>
 <translation id="6579990219486187401">ပန်းရောင်ဖျော့</translation>
 <translation id="6583174818554398774">အသေးစိတ်ကျသော အခြေအနေတွင် ရှေ့သို့ ပြောင်းပေးသည်</translation>
-<translation id="6587021927234520429">နောက်အဆင့် 4 ခေါင်းစဉ် မရှိပါ။</translation>
-<translation id="6601344353291556895">verboseအကြောင်းအရာများကို ဖွင့်မည်။</translation>
 <translation id="6609828810966525877">နောက်ထပ် လက်ဟန်များကို 'လေ့လာမှုမုဒ်' နှင့် 'Chromebook ကူညီရေးဌာန' တွင် ရှာဖွေပါ</translation>
-<translation id="6615602925644411249">စာမျက်နှာ မှာ ရှာပါ။</translation>
 <translation id="6628427060004938651">အစိတ်အပိုင်း</translation>
-<translation id="6633350132811819843">နောက်ထပ်ဇယား မရှိတော့ပါ။</translation>
 <translation id="6637586476836377253">မှတ်တမ်း</translation>
 <translation id="6657128831881431364">တိုးတက်မှု ဘား</translation>
 <translation id="6659594942844771486">တဲဘ်</translation>
@@ -825,7 +732,6 @@
 <translation id="6710213216561001401">အရင်</translation>
 <translation id="6714813999819678458">ယခင် အဆင့် ၂ ခေါင်းစီး</translation>
 <translation id="6716505898850596801">မွမ်းမံသူ ကီးများ</translation>
-<translation id="671916444866103745">နော်ကထပ် ARIA အထင်ကရနေရာ မရှိပါ။</translation>
 <translation id="6734854816611871228"><ph name="VALUE" />၊ ကွမ်ဘို အကွက်</translation>
 <translation id="6735257939857578167">အရာ <ph name="NUM" />ခုနှင့်</translation>
 <translation id="6736510033526053669">တဲဘ် ဖန်တီးပြီး</translation>
@@ -841,18 +747,14 @@
 <translation id="6858047746862060282">ပဏာမ</translation>
 <translation id="6859876496651143278">ဘယ်ဘက်သို့ လက်တစ်ချောင်းဖြင့် ပွတ်ဆွဲပါ</translation>
 <translation id="6865519907510167493">စာလုံးပေါင်းအမှား</translation>
-<translation id="6871161210040114857">စာလုံးကြီးသေး လျစ်လျူရှုပါ။</translation>
-<translation id="6877435256196695200">ရှေ့သို့ ဂရပ်ဖစ် မရှိ</translation>
 <translation id="688976158310523235">ရှာဖွေမှု မီနူး</translation>
 <translation id="6897341342232909480">ဘယ်ဘက်သို့ ရွှေ့ရန်</translation>
 <translation id="6901540140423170855">ရက်စွဲ</translation>
 <translation id="6910211073230771657">ဖျက်ပြီး</translation>
 <translation id="6910969481785184048">အဖွင့်၊ အပိတ်နှင့် ရပ်ခြင်း</translation>
-<translation id="6911965441508464308">အထက်မှာ ဆဲလ် မရှိ</translation>
 <translation id="6919104639734799681">ဇယားကွက် စာရင်းပြရန်</translation>
 <translation id="6949846980769640811">မြပြာ မနုမရင့်</translation>
 <translation id="6955705049214951590">မြူမှုန်လွှမ်းသော နှင်းဆီ</translation>
-<translation id="6964088412282673743">အရင် ထိန်းချုပ်မှု မရှိပါ။</translation>
 <translation id="699159175332639490">Search + O + W</translation>
 <translation id="6994042831499278539">ခက်ဆစ်အညွှန်း</translation>
 <translation id="6996566555547746822">နောက် ကွမ်ဘို အကွက်</translation>
@@ -889,11 +791,9 @@ Chrome ဘရောင်ဇာမီနူးကို ဖွင့်ရန်
 <translation id="7153618581592392745">လာဗင်ဒါ</translation>
 <translation id="7157306005867877619">ကောက်နုတ်ချက်</translation>
 <translation id="7161771961008409533">ပေါ့အာပ် ခလုတ်</translation>
-<translation id="7165714724802225287">လက်ရှိ မျက်နှာပြင် ပြသမှုပုံစံသည် အပေါ်အောက်ပုံစံဖြစ်သည်။</translation>
 <translation id="7167657087543110">စာကားလုံးအဲခိုး</translation>
 <translation id="7170733337935166589">ဆက်တိုက်ဖတ်စဉ်တွင် ရှေ့သို့ကျော်</translation>
 <translation id="7173102181852295013">ညသန်းခေါင် အပြာ</translation>
-<translation id="7181697990050180700">မကြာခဏ သုံးသည့် ညွှန်ကြားချက်များကို အောက်ပါ သက်ဆိုင်ရာ အကွက်များထဲကို  တိုက်ရိုက်ပေးလျက် ကီးဘုတ် ဖြတ်လမ်းများကို စိတ်ကြိုက် ပြုပြင်ယူပါ။</translation>
 <translation id="7203150201908454328">တိုးချဲ့ထား</translation>
 <translation id="7210211103303402262">မိနစ်</translation>
 <translation id="7217912842225915592">+<ph name="NUM" /></translation>
@@ -914,22 +814,17 @@ Chrome ဘရောင်ဇာမီနူးကို ဖွင့်ရန်
 <translation id="7289186959554153431">ခေါင်းစီး ၃</translation>
 <translation id="7292195267473691167"><ph name="LOCALE" /> (<ph name="VARIANT" />)</translation>
 <translation id="731121099745151312">tritm</translation>
-<translation id="731576946540457939">ဘရေးလ် စာတန်းများ ပိတ်ထားသည်။</translation>
-<translation id="7318872822751139669">ဆုံချက်ကို ပြောင်းလဲရန် မောက်စ်ကို သုံးပါ။</translation>
 <translation id="7322388933135261569">ဖေဖေါ်ဝါရီ</translation>
 <translation id="7332592614823088566"><ph name="ROWTOTAL" /> ထဲက အတန်း<ph name="ROWINDEX" />၊ <ph name="COLTOTAL" /> ထဲက ကော်လံ <ph name="COLINDEX" /></translation>
 <translation id="7336596009609913925">ပေါ့ပ်အာ့ပ်ရှိ</translation>
 <translation id="7356165926712028380">အစက် ၈ စက် မျက်မမြင်စာ သို့ပြောင်းရန်</translation>
 <translation id="7356610683936413584">အကြောင်းအရာ စာရင်း အသေးစိတ်</translation>
-<translation id="7362871137496673139">အရင် အဆင့် ၂ ခေါင်းစီး မရှိ။</translation>
 <translation id="7370432716629432284">{COUNT,plural, =1{ampersand}other{# ampersandများ}}</translation>
 <translation id="737396357417333429">clk</translation>
-<translation id="7374104575779636480">ဇယားကွက် ထွက်။</translation>
 <translation id="738899727977260036">မီးခိုးပြာ</translation>
 <translation id="739763518212184081">ယခင်လိုင်း</translation>
 <translation id="7400575256015741911">စာလုံးပေါင်း အမှား ရှာတွေ့ခဲ့</translation>
 <translation id="7408482676469142474">tbl</translation>
-<translation id="7420313809195758138">အခြားအချက်အလက်များ (အမည်ကဲ့သို့) ကိုမပြသမီ အကြောင်းအရာ၏ ဖော်ပြချက်ကို ပြသပါ။</translation>
 <translation id="7425395583360211003">ပြန်သွား</translation>
 <translation id="7434509671034404296">ပြုစုသူ</translation>
 <translation id="743783356331413498">ဥပမာ</translation>
@@ -939,7 +834,6 @@ Chrome ဘရောင်ဇာမီနူးကို ဖွင့်ရန်
 <translation id="7492049978501397201">စကားပြောကွက်သို့ ဝင်ရောက်</translation>
 <translation id="7505149250476994901">စကားလုံးရှေ့တွင် "ကက်ပ်" ဟု ပြောပါ</translation>
 <translation id="7518543783849163354">ChromeVox စကားပြောခြင်းမှ ခေတ္တရပ်ရန် Control ခလုတ်ကို နှိပ်ပါ။</translation>
-<translation id="7521682724501952239">ChromeVox ကို တို့ထိမျက်နှာပြင်နှင့် အသုံးပြုနိုင်ပါသည်။</translation>
 <translation id="7532613204005497612">ဇွန်</translation>
 <translation id="7533226154149229506">ရွှေချောင်းဝါ အနု</translation>
 <translation id="7552432549459840808">အသုံးဝင်သည့် Chrome ဖြတ်လမ်းများ</translation>
@@ -957,7 +851,6 @@ Chrome ဘရောင်ဇာမီနူးကို ဖွင့်ရန်
 <translation id="7628927569678398026"><ph name="LOCALE" /> ( <ph name="VARIANT" /> )၊ အဆင့် <ph name="GRADE" /></translation>
 <translation id="763535765081585392">အောက်မျဉ်းသားခြင်း ညွှန်ပြရန်−</translation>
 <translation id="7639968568612851608">မီးခိုးရင့်</translation>
-<translation id="7641134354185483015">ယခင် အဆင့် 3 ခေါင်းစဉ် မရှိပါ။</translation>
 <translation id="7659376057562985921"><ph name="VALUE" />၊ <ph name="NAME" />၊ စာသားအကွက်</translation>
 <translation id="7663318257180412551">ခေါင်းစီး ၂</translation>
 <translation id="7668307052366682650">{COUNT,plural, =1{နာရီ}other{နာရီ}}</translation>
@@ -967,14 +860,6 @@ Chrome ဘရောင်ဇာမီနူးကို ဖွင့်ရန်
 <translation id="7684431668231950609">စာသား၊ URL ရိုက်ထည့်မှု တည်းဖြတ်ရန်</translation>
 <translation id="7685589220304187312">tlbar</translation>
 <translation id="7693840228159394336">ယခင် ရေဒီယို ခလုတ်</translation>
-<translation id="769900455782717361">စာသား ဖော်မက်ထည့်သွင်းခြင်း။
-        <ph name="FONT_SIZE_STRING" />
-        <ph name="COLOR_STRING" />
-        <ph name="BOLD_STRING" />
-        <ph name="ITALIC_STRING" />
-        <ph name="UNDERLINE_STRING" />
-        <ph name="LINE_THROUGH_STRING" />
-        <ph name="FONT_FAMILY_STRING" /></translation>
 <translation id="7701196182766842984">autolst</translation>
 <translation id="7763537600611320912"><ph name="FILE_NAME" /> ဒေါင်းလုဒ် စတင်ပါပြီ</translation>
 <translation id="7770823902658038748"><ph name="VALUE" />၊ <ph name="NAME" />၊ စကားဝှက် စာသား အကွက်</translation>
@@ -991,7 +876,6 @@ Chrome ဘရောင်ဇာမီနူးကို ဖွင့်ရန်
 <translation id="7871691770940645922">မျက်မမြင်စာ ပြသမှုအတု</translation>
 <translation id="7882421473871500483">အညို</translation>
 <translation id="78826985582142166">sldr</translation>
-<translation id="7894517696028036636">ChromeVox အစဉ်အလာကို ကစားကြည့်ရန်</translation>
 <translation id="7895896691902835279">အမည်မသိ လင့်ခ်</translation>
 <translation id="7927711904086083099">ရွေးမထား</translation>
 <translation id="7935627501098484003">အချိန် ထိန်းချုပ်မှု</translation>
@@ -1100,18 +984,15 @@ Chrome ဘရောင်ဇာမီနူးကို ဖွင့်ရန်
 <translation id="8091452896542422286">နေရာခြား</translation>
 <translation id="8096975275316362544">ပူဒီနာခရင်မ်</translation>
 <translation id="8098587210054821856">မီးခိုးရင့်</translation>
-<translation id="8110647606445335195">ARIA အမှတ်အသားများ မရှိပါ။</translation>
 <translation id="8121539003537428024">အစီအစဉ်စစ်ထုတ်မှုများအားလုံးကို ဖွင့်ရန်</translation>
 <translation id="812886159861361726"><ph name="FILE_NAME" /> ဒေါင်းလုဒ် ရပ်ထားသည်</translation>
 <translation id="8138880386467279117">ထိပါ</translation>
-<translation id="8153880621934657047">အတွင်း ဇယား မဟုတ်ပါ။</translation>
 <translation id="817440585505441544">{COUNT,plural, =1{မျဉ်းသားမှု}other{# မျဉ်းသားမှုများ}}</translation>
 <translation id="8179976553408161302">အင်တာ</translation>
 <translation id="8184828902145951186">လိုင်း</translation>
 <translation id="8186185314313222077">မျက်နှာပြင်အပြည့် ကစားကြည့်ပါ</translation>
 <translation id="8199231515320852133">လက်ရှိ ဆဲလ်၏ ခေါင်းစီးများကို ကြေညာရန်</translation>
 <translation id="8202174735952881587">ကောင်းကင်ပြာ</translation>
-<translation id="820417203470636242">ပလာ ဆဲလ်</translation>
 <translation id="820469951249669083">နောက် အတန်းသို့ သွားရန်</translation>
 <translation id="8205922869661890178">ဆော့ဖ်ဝဲအင်ဂျင်နီယာ မှတ်တမ်းစာမျက်နှာကို ဖွင့်သည်</translation>
 <translation id="8215202828671303819">အမျာအပြား ရွေးရန်</translation>
@@ -1119,7 +1000,6 @@ Chrome ဘရောင်ဇာမီနူးကို ဖွင့်ရန်
 <translation id="826825447994856889">နိဒါန်း</translation>
 <translation id="827422111966801947">မဲနယ်</translation>
 <translation id="8276439074553447000">ဆုံချက်ညှိရနိုင်သည့် အရင် အရာဆီ ခုန်သွားရန်</translation>
-<translation id="8278417001922463147">ယခင် ဆောင်းပါး မရှိ။</translation>
 <translation id="8283603667300770666">ရှေ့ပုံစံ အကွက်</translation>
 <translation id="831207808878314375">ဖွင့်ဆိုချက်</translation>
 <translation id="8313653172105209786">dir</translation>
@@ -1132,9 +1012,7 @@ Chrome ဘရောင်ဇာမီနူးကို ဖွင့်ရန်
 <translation id="8378855320830505539">ဒေသ</translation>
 <translation id="8382679411218029383">လိုင်းအတွင်းနှင့် စာရင်းတွင် အလိုအလျောက်ဖြည့်စွက်ခြင်း</translation>
 <translation id="8428603554127842284">အဆင့် <ph name="DEPTH" /></translation>
-<translation id="842922884199979200">ရှေ့မှာ အဆင့် ၃ ခေါင်စီး မရှိ။</translation>
 <translation id="8430049249787218991">mnubr</translation>
-<translation id="844681116543532394">အရင် ခြစ်ကွက် မရှိ</translation>
 <translation id="8446884382197647889">ပိုမို လေ့လာရန်</translation>
 <translation id="8455868257606149352">အများဆုံး <ph name="X" /></translation>
 <translation id="84575901236241018">အသုံးပြုရန် ကီးရှိ၊ <ph name="KEY" /></translation>
@@ -1162,7 +1040,6 @@ Chrome ဘရောင်ဇာမီနူးကို ဖွင့်ရန်
 <translation id="8631359288236106450">ရွေးထား <ph name="COUNT" /> အရာများ</translation>
 <translation id="8638532244051952400">လက်ရှိ ဆဲလ် လုပ်ဆောင်မှုများကို ကြေငြာမည်</translation>
 <translation id="8640369214276455272">အခိုးအငွေ့ အဖြူ</translation>
-<translation id="8650576015643545550">ယခင်စာရင်း မရှိ။</translation>
 <translation id="8651481478098336970">အသံတိတ်ပါ</translation>
 <translation id="8653646212587894517">လင့်များ စာရင်း ပြရန်</translation>
 <translation id="8656888282555543604">မျက်မမြင်စာရေးစနစ် မှတ်တမ်းကို ဖွင့်ပါ</translation>
@@ -1175,7 +1052,6 @@ Chrome ဘရောင်ဇာမီနူးကို ဖွင့်ရန်
 <translation id="8747966237988593539">မှာယူခဲ့သည့် စာရင်း</translation>
 <translation id="8749988712346667988">ငွေ</translation>
 <translation id="875769700429317857"><ph name="FILE_NAME" /> ဒေါင်းလုဒ်လုပ်ပြီးပါပြီ</translation>
-<translation id="8759334257841767240">နောက်ထပ်လင့်ခ် မရှိ။</translation>
 <translation id="8767968232364267681">နောက်တစ်ဆင့် ၄ ခေါင်းစီး</translation>
 <translation id="8770473310765924354">ဇယားများလို ပုံစံချထားသည့် အကြောင်းအရာမှ ထွက်ရန်</translation>
 <translation id="8791025954632646584">ရင်းမြစ်ဆိုင်ရာ ဖွင့်ထား</translation>
@@ -1184,10 +1060,8 @@ Chrome ဘရောင်ဇာမီနူးကို ဖွင့်ရန်
 <translation id="8825828890761629845">bnr</translation>
 <translation id="8851136666856101339">ပင်မ</translation>
 <translation id="8856538297388979332">ညွှန်ကြားချက်မျာကို ကြည့်ရန် အပေါ် သို့မဟုတ် အောက်သို့ နှိပါပ၊ သုံးရန် အင်တာကို နှိပ်ပါ</translation>
-<translation id="8864099967139188018">ရှေ့မှာ အဆင့် ၆ ခေါင်စီး မရှိ။</translation>
 <translation id="8882002077197914455">အတန်း ခေါင်းစီး</translation>
 <translation id="8883850400338911892">url ကို အစက် ၈ စက်စနစ် ဖြင့်တည်းဖြတ်ရန်</translation>
-<translation id="8896347895970027998">ChromeVox အဖွင့် သို့မဟုတ် မပိတ် ခလုတ်။</translation>
 <translation id="8896479570570613387">ခရမ်း မနုမရင့်</translation>
 <translation id="8897030325301866860"><ph name="FONT_FAMILY" /> ဖောင့်</translation>
 <translation id="8898516272131543774">ပုဒ်ဖြတ်ပုဒ်ရပ် ပဲ့တင့်သံ စက်ဝန်း</translation>
@@ -1196,27 +1070,21 @@ Chrome ဘရောင်ဇာမီနူးကို ဖွင့်ရန်
 <translation id="8931936695772494138">ခေါင်စီးများ ပလာ</translation>
 <translation id="8937112856099038376">intlnk</translation>
 <translation id="8940925288729953902">မွမ်းမံရေး ကီးများ</translation>
-<translation id="8943175951035496220">ညာဘက် အကွက် မရှိ</translation>
 <translation id="8943282376843390568">သံပုရာ</translation>
 <translation id="8946628535652548639">r<ph name="TABLECELLROWINDEX" />c<ph name="TABLECELLCOLUMNINDEX" /></translation>
 <translation id="8957142051395645063">ကြေညာရန်</translation>
 <translation id="8978496506222343566">tltip</translation>
 <translation id="8986362086234534611">မေ့ပစ်လိုက်ပါ</translation>
 <translation id="900114243503212879">ဖိုင်</translation>
-<translation id="9027462562263121875">ဇယားများ မရှိ</translation>
 <translation id="9040132695316389094">ခေါင်းစီး ၁</translation>
 <translation id="9043969572162476692"><ph name="NUM" />%</translation>
 <translation id="9061884144798498064">အစက် ၈ စက်ပါ မျက်မမြင်စာ ဇယားကို ရွေးပါ−</translation>
 <translation id="9065283790526219006">+ပေါ့ပ်အာ့ပ်</translation>
-<translation id="9066023754636984703">အသေးစိတ်များသို့ သွားရန် Search+A၊ J ကို နှိပ်ပါ။</translation>
 <translation id="9067522039955793016">စာမျက်နှာခြားခြင်း</translation>
 <translation id="9074824103975499138">ChromeVox မီနူးများ ရှာရန်</translation>
 <translation id="9077213568694924680">ရွေးချယ်မှုမှ ဖယ်ရှား</translation>
 <translation id="9077305471618729969">ပင်လယ်အစိမ်းဖျော့</translation>
-<translation id="9082874451376019682">ယခင် ဆွဲရွှေ့ခြင်း မရှိ။</translation>
-<translation id="9087707351856729768">အလိုအလျောက် ဖြည့်စွက်ရန် စာရိုက်ပါ။</translation>
 <translation id="9089864840575085222">တိုက်ရိုက်မှု ပဲ့တင့်သံ စက်ဝန်း</translation>
-<translation id="9107530006868467849">ယခင် မီဒီယာ ဝီဂျက် မရှိပါ။</translation>
 <translation id="9108370397979208512">သင်္ချာ</translation>
 <translation id="9108589040018540527">scbr</translation>
 <translation id="911476240645808512">{COUNT,plural, =1{ရာခိုင်နှုန်း}other{# ရာခိုင်နှုန်း သင်္ကေတများ}}</translation>
@@ -1230,20 +1098,16 @@ Chrome ဘရောင်ဇာမီနူးကို ဖွင့်ရန်
 <translation id="9153606228985488238">အသံစဉ် <ph name="PERCENT" /> ရာခိုင်နှုန်း</translation>
 <translation id="9160096769946561184">လက်ရှိ ကော်လံ အဆုံးသို့ သွားရန်</translation>
 <translation id="9173115498289768110">ပမာဏ <ph name="PERCENT" /> ရာခိုင်နှုန်း</translation>
-<translation id="9178973770513562274">ရှာကြည့်ရန် အပေါ် သို့မဟုတ် အောက် မြားကို သုံးပါ၊ သို့မဟုတ် ရှာရန် တိုက်ရိုက်ပါ။</translation>
 <translation id="9192904702577636854">မာကွီး</translation>
 <translation id="9208241857935108694">ရှေးဟောင်းအဖြူ</translation>
-<translation id="9212322457209634662">နောက်အပိုင်း မရှိပါ။</translation>
 <translation id="9220679313820249046">လိမ္မော်နီ</translation>
 <translation id="9223032053830369045">အနီရင့်</translation>
 <translation id="923331726185079994">ChromeVox ကို အပ်ဒိတ်လုပ်ပြီးပါပြီ</translation>
-<translation id="930275611743429116">ရွေးချယ်မှု စရန် သို့မဟုတ် ပြီးဆုံးရန်</translation>
 <translation id="93384979447910801">ပင်လယ်စိမ်း အရင့်</translation>
 <translation id="948171205378458592">စကားပြောမှု နှုန်း လျှော့ချ</translation>
 <translation id="958854023026327378">အောက်သို့ လက်တစ်ချောင်းဖြင့် ပွတ်ဆွဲပါ</translation>
 <translation id="962913030769097253">နောက် အဆင့် ၁ ခေါင်းစီး</translation>
 <translation id="966588271015727539">ဘလူးတုသ်မျက်မမြင်စာဖတ်ကိရိယာ ရွေးပါ</translation>
 <translation id="973955474346881951">စေးကပ် မုဒ် ဖွင့်/ပိတ်ရန်</translation>
-<translation id="976849232629612000">မည်သည့်အရာမျှ မရှိပါ။</translation>
 <translation id="992256792861109788">ပန်းရောင်</translation>
 </translationbundle>

@@ -1148,6 +1148,16 @@ class AutotestPrivateSetArcTouchModeFunction : public ExtensionFunction {
   ResponseAction Run() override;
 };
 
+class AutotestPrivatePinShelfIconFunction : public ExtensionFunction {
+ public:
+  AutotestPrivatePinShelfIconFunction();
+  DECLARE_EXTENSION_FUNCTION("autotestPrivate.pinShelfIcon",
+                             AUTOTESTPRIVATE_PINSHELFICON)
+ private:
+  ~AutotestPrivatePinShelfIconFunction() override;
+  ResponseAction Run() override;
+};
+
 template <>
 KeyedService*
 BrowserContextKeyedAPIFactory<AutotestPrivateAPI>::BuildServiceInstanceFor(

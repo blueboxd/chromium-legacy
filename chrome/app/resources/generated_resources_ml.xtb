@@ -153,7 +153,7 @@
 <translation id="1201402288615127009">അടുത്തത്</translation>
 <translation id="1202596434010270079">കിയോസ്‌ക് ആപ്പ് അപ്‌ഡേറ്റ് ചെയ്‌തു. USB സ്‌റ്റിക്ക് നീക്കംചെയ്യുക.</translation>
 <translation id="120368089816228251">മ്യൂസിക് നോട്ട്</translation>
-<translation id="1203942045716040624">Shared Worker: <ph name="SCRIPT_URL" /></translation>
+<translation id="1203942045716040624">ഷെയേർഡ് വർക്കർ: <ph name="SCRIPT_URL" /></translation>
 <translation id="1205489148908752564">വൈറ്റ്‌ലിസ്റ്റ് ചെയ്‌ത ഉപയോക്താക്കളെ റീഡുചെയ്യുക, മാറ്റുക</translation>
 <translation id="1206407435587370571">നിങ്ങളുടെ Chromebook-നെ അടുത്തറിയൂ</translation>
 <translation id="1209796539517632982">യാന്ത്രിക നാമ സെർവറുകൾ</translation>
@@ -3911,7 +3911,7 @@
 <translation id="6472804939621540371">ഇത് <ph name="SITE_GROUP_NAME" /> എന്നതും അതിന് കീഴിലുള്ള എല്ലാ സൈറ്റുകളും അതിന്റെ ഇൻസ്‌റ്റാൾ ചെയ്തിരിക്കുന്ന ആപ്പും സംഭരിച്ചിരിക്കുന്ന എല്ലാ ഡാറ്റയും കുക്കികളും മായ്ക്കും.</translation>
 <translation id="6472893788822429178">ഹോം ബട്ടൺ കാണിക്കുക</translation>
 <translation id="6473842110411557830">Powerwash ചിത്രീകരണം</translation>
-<translation id="6474498546677193336">ഒരു ആപ്പ് ഈ ഫോൾഡർ ഉപയോഗിക്കുന്നതിനാൽ, പങ്കിടല്‍ മാറ്റാനായില്ല. Linux അടുത്ത തവണ ഷട്ട് ഡൗൺ ചെയ്യുമ്പോൾ ഫോൾഡർ പങ്കിടുന്നത് മാറ്റും.</translation>
+<translation id="6474498546677193336">ഒരു ആപ്പ് ഈ ഫോൾഡർ ഉപയോഗിക്കുന്നതിനാൽ പങ്കിടല്‍ മാറ്റാനായില്ല. Linux അടുത്ത തവണ ഷട്ട് ഡൗൺ ചെയ്യുമ്പോൾ ഫോൾഡർ പങ്കിടുന്നത് മാറ്റും.</translation>
 <translation id="6474884162850599008">Google ഡ്രൈവ് അക്കൗണ്ട് വിച്ഛേദിക്കുക</translation>
 <translation id="6475697075626596525"><ph name="APP_NAME" /> നിങ്ങളുടെ സ്‌‌ക്രീനിലെ ഉള്ളടക്കം പങ്കിടാൻ താൽപ്പര്യപ്പെടുന്നു. പങ്കിടാൻ താൽപ്പര്യപ്പെടുന്നത് തിരഞ്ഞെടുക്കുക.</translation>
 <translation id="6478248366783946499">അപകടകരമായ ഫയൽ സൂക്ഷിക്കണോ?</translation>
@@ -4061,7 +4061,7 @@
 <translation id="6700480081846086223"><ph name="HOST_NAME" /> കാ‌സ്റ്റ് ചെയ്യുക</translation>
 <translation id="6701535245008341853">പ്രൊഫൈൽ നേടാന്‍ കഴിഞ്ഞില്ല.</translation>
 <translation id="6702639462873609204">&amp;എഡിറ്റുചെയ്യുക...</translation>
-<translation id="6703966911896067184">എൻറോൾമെൻറ് ചിത്രീകരണത്തിൽ പിശക്</translation>
+<translation id="6703966911896067184">എൻറോൾമെന്റിനിടെ ഉണ്ടായ പിശകിന്റെ വിവരണം</translation>
 <translation id="6706210727756204531">വ്യാപ്‌തി</translation>
 <translation id="6707389671160270963">SSL ക്ലയന്‍റ് സര്‍‌ട്ടിഫിക്കറ്റ്</translation>
 <translation id="6708242697268981054">ഉത്ഭവം:</translation>
@@ -4301,7 +4301,7 @@
 <translation id="7040230719604914234">ഓപ്പറേറ്റർ</translation>
 <translation id="7043108582968290193">പൂർത്തിയായി! അനുയോജ്യതയില്ലാത്ത അപ്ലിക്കേഷനുകളൊന്നും കണ്ടെത്തിയില്ല.</translation>
 <translation id="7044124535091449260">സൈറ്റ് ആക്‌സസിനെക്കുറിച്ച് കൂടുതലറിയുക</translation>
-<translation id="7044606776288350625">ഡാറ്റാ സമന്വയിപ്പിക്കൽ</translation>
+<translation id="7044606776288350625">ഡാറ്റ സമന്വയിപ്പിക്കൽ</translation>
 <translation id="7047059339731138197">ഒരു പശ്ചാത്തലം തിരഞ്ഞെടുക്കുക</translation>
 <translation id="7049293980323620022">ഫയൽ സൂക്ഷിക്കണോ?</translation>
 <translation id="7051943809462976355">മൗസിനായി തിരയുന്നു...</translation>
@@ -4515,7 +4515,7 @@
 <translation id="7328699668338161242">അസി‌സ്റ്റന്‍റിന് നിങ്ങളുടെ ശബ്‌ദം മുമ്പേ തിരിച്ചറിയാൻ കഴിയും</translation>
 <translation id="7328867076235380839">അസാധുവായ കോമ്പിനേഷൻ</translation>
 <translation id="7329154610228416156">സുരക്ഷിതമല്ലാത്ത URL (<ph name="BLOCKED_URL" />) ഉപയോഗിക്കാൻ കോൺഫിഗർ ചെയ്‌തിരിക്കുന്നതിനാൽ സൈൻ ഇൻ ചെയ്യുന്നതിന് പരാജയപ്പെട്ടു. നിങ്ങളുടെ അഡ്‌മിനിസ്‌ട്രേറ്ററെ ബന്ധപ്പെടുക.</translation>
-<translation id="7332053360324989309">Dedicated Worker: <ph name="SCRIPT_URL" /></translation>
+<translation id="7332053360324989309">ഡെഡിക്കേറ്റഡ് വർക്കർ: <ph name="SCRIPT_URL" /></translation>
 <translation id="7334190995941642545">നിലവിൽ Smart Lock ലഭ്യമല്ല. പിന്നീട് വീണ്ടും ശ്രമിക്കുക.</translation>
 <translation id="7334274148831027933">ഡോക്ക് ചെയ്‌ത മാഗ്നിഫയർ പ്രവർത്തനക്ഷമമാക്കുക</translation>
 <translation id="7335974957018254119">അക്ഷരത്തെറ്റ് പരിശോധന ഉപയോഗിക്കേണ്ട ഭാഷകൾ</translation>
@@ -5138,7 +5138,7 @@
 <translation id="8154790740888707867">ഫയലൊന്നുമില്ല</translation>
 <translation id="815491593104042026">ക്ഷമിക്കണം!  സുരക്ഷിതമല്ലാത്ത URL ഉപയോഗിക്കുന്നതിന് കോൺഫിഗർ ചെയ്‌തിരിക്കുന്നതിനാൽ പരിശോധിച്ചുറപ്പിക്കൽ പരാജയപ്പെട്ടു (<ph name="BLOCKED_URL" />). നിങ്ങളുടെ അഡ്‌മിനി‌സ്‌ട്രേറ്ററെ ബന്ധപ്പെടുക.</translation>
 <translation id="8157704005178149728">മേൽനോട്ടം സജ്ജീകരിക്കുന്നു</translation>
-<translation id="8158117992543756526"><ph name="MONTH_AND_YEAR" />-ൽ ഈ ഉപകരണത്തിന് സ്വയമേവയുള്ള സോഫ്റ്റ്‌വെയറും സുരക്ഷാ അപ്ഡേറ്റുകളും ലഭിക്കുന്നത് നിർത്തി. <ph name="LINK_BEGIN" />കൂടുതലറിയുക<ph name="LINK_END" /></translation>
+<translation id="8158117992543756526"><ph name="MONTH_AND_YEAR" />-ൽ ഈ ഉപകരണത്തിന് സ്വയമേവയുള്ള സോഫ്റ്റ്‌വെയർ, സുരക്ഷാ അപ്ഡേറ്റുകൾ ലഭിക്കുന്നത് നിന്നു. <ph name="LINK_BEGIN" />കൂടുതലറിയുക<ph name="LINK_END" /></translation>
 <translation id="816055135686411707">പിശക് ക്രമീകരണ സര്‍ട്ടിഫിക്കറ്റ് ട്രസ്റ്റ്</translation>
 <translation id="816095449251911490"><ph name="SPEED" /> - <ph name="RECEIVED_AMOUNT" />, <ph name="TIME_REMAINING" /></translation>
 <translation id="8162984717805647492">{NUM_TABS,plural, =1{ടാബ് പുതിയ വിൻഡോയിലേക്ക് നീക്കുക}other{ടാബുകൾ പുതിയ വിൻഡോയിലേക്ക് നീക്കുക}}</translation>

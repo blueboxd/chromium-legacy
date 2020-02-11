@@ -64,6 +64,7 @@
 #include "chrome/browser/ui/webui/settings/chromeos/parental_controls_handler.h"
 #include "chrome/browser/ui/webui/settings/chromeos/plugin_vm_handler.h"
 #include "chrome/browser/ui/webui/settings/chromeos/pref_names.h"
+#include "chrome/browser/ui/webui/settings/chromeos/search/settings_user_action_tracker.h"
 #include "chrome/browser/ui/webui/settings/chromeos/wallpaper_handler.h"
 #include "chrome/browser/ui/webui/settings/downloads_handler.h"
 #include "chrome/browser/ui/webui/settings/extension_control_handler.h"
@@ -217,6 +218,9 @@ OSSettingsUI::OSSettingsUI(content::WebUI* web_ui)
                                IDR_APP_MANAGEMENT_IMAGE_MOJO_LITE_JS);
   html_source->AddResourcePath("app-management/image_info.mojom-lite.js",
                                IDR_APP_MANAGEMENT_IMAGE_INFO_MOJO_LITE_JS);
+
+  html_source->AddResourcePath("search/search.mojom-lite.js",
+                               IDR_OS_SETTINGS_SEARCH_MOJOM_LITE_JS);
 
   // AddOsLocalizedStrings must be added after AddBrowserLocalizedStrings
   // as repeated keys used by the OS strings should override the same keys
@@ -439,6 +443,14 @@ void OSSettingsUI::AddSettingsPageUIHandler(
 void OSSettingsUI::BindInterface(
     mojo::PendingReceiver<network_config::mojom::CrosNetworkConfig> receiver) {
   ash::GetNetworkConfigService(std::move(receiver));
+}
+
+void OSSettingsUI::BindInterface(
+    mojo::PendingReceiver<mojom::UserActionRecorder> receiver) {
+  DCHECK(!user_action_recorder_)
+      << "Should only be bound once per settings session.";
+  user_action_recorder_ =
+      std::make_unique<SettingsUserActionTracker>(std::move(receiver));
 }
 
 void OSSettingsUI::BindInterface(

@@ -118,7 +118,7 @@
 <translation id="2413728805700750528"><ph name="DISPLAY_NAME" /> est une session gérée par <ph name="DOMAIN" /></translation>
 <translation id="2427507373259914951">Clic gauche</translation>
 <translation id="2429753432712299108">L'appareil Bluetooth « <ph name="DEVICE_NAME" /> » demande l'autorisation de s'associer avec votre appareil. Avant d'accepter, veuillez confirmer que le code d'authentification suivant s'affiche sur l'appareil : <ph name="PASSKEY" />.</translation>
-<translation id="2473177541599297363">Confirmer la nouvelle résolution</translation>
+<translation id="2473177541599297363">Confirmer la résolution</translation>
 <translation id="2482878487686419369">Notifications</translation>
 <translation id="2484513351006226581">Appuyez sur <ph name="KEYBOARD_SHORTCUT" /> pour changer la disposition du clavier.</translation>
 <translation id="2501920221385095727">Touches rémanentes</translation>

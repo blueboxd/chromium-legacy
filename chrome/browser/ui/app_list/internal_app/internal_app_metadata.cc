@@ -152,12 +152,6 @@ bool IsInternalApp(const std::string& app_id) {
   return !!FindInternalApp(app_id);
 }
 
-base::string16 GetInternalAppNameById(const std::string& app_id) {
-  const auto* app = FindInternalApp(app_id);
-  return app ? l10n_util::GetStringUTF16(app->name_string_resource_id)
-             : base::string16();
-}
-
 bool HasRecommendableForeignTab(
     Profile* profile,
     base::string16* title,

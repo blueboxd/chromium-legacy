@@ -13,32 +13,10 @@
 #include "base/stl_util.h"
 #include "base/time/clock.h"
 #include "base/time/tick_clock.h"
+#include "net/base/url_util.h"
 #include "net/log/net_log.h"
 
 namespace net {
-
-namespace {
-// TODO(chlily): Move this (and identical code in NEL) to net/base/url_util.h.
-
-// Returns the superdomain of a given domain, or the empty string if the given
-// domain is just a single label. Note that this does not take into account
-// anything like the Public Suffix List, so the superdomain may end up being a
-// bare TLD.
-//
-// Examples:
-//
-// GetSuperdomain("assets.example.com") -> "example.com"
-// GetSuperdomain("example.net") -> "net"
-// GetSuperdomain("littlebox") -> ""
-std::string GetSuperdomain(const std::string& domain) {
-  size_t dot_pos = domain.find('.');
-  if (dot_pos == std::string::npos)
-    return "";
-
-  return domain.substr(dot_pos + 1);
-}
-
-}  // namespace
 
 ReportingCacheImpl::ReportingCacheImpl(ReportingContext* context)
     : context_(context) {

@@ -1,6 +1,28 @@
 <?xml version="1.0" encoding="utf-8"?>
 <grit-part>
   <!-- Polymer 3.0 Elements -->
+  <include name="IDR_SETTINGS_APPEARANCE_PAGE_APPEARANCE_BROWSER_PROXY_M_JS"
+           file="${root_gen_dir}/chrome/browser/resources/settings/appearance_page/appearance_browser_proxy.m.js"
+           use_base_dir="false"
+           preprocess="true"
+           type="BINDATA" />
+  <include name="IDR_SETTINGS_APPEARANCE_PAGE_APPEARANCE_FONTS_PAGE_M_JS"
+           file="${root_gen_dir}/chrome/browser/resources/settings/appearance_page/appearance_fonts_page.m.js"
+           use_base_dir="false"
+           type="BINDATA" />
+  <include name="IDR_SETTINGS_APPEARANCE_PAGE_APPEARANCE_PAGE_M_JS"
+           file="${root_gen_dir}/chrome/browser/resources/settings/appearance_page/appearance_page.m.js"
+           use_base_dir="false"
+           preprocess="true"
+           type="BINDATA" />
+  <include name="IDR_SETTINGS_APPEARANCE_PAGE_FONTS_BROWSER_PROXY_M_JS"
+           file="${root_gen_dir}/chrome/browser/resources/settings/appearance_page/fonts_browser_proxy.m.js"
+           use_base_dir="false"
+           type="BINDATA" />
+  <include name="IDR_SETTINGS_APPEARANCE_PAGE_HOME_URL_INPUT_M_JS"
+           file="${root_gen_dir}/chrome/browser/resources/settings/appearance_page/home_url_input.m.js"
+           use_base_dir="false"
+           type="BINDATA" />
   <include name="IDR_SETTINGS_CONTROLS_CONTROLLED_BUTTON_M_JS"
            file="${root_gen_dir}/chrome/browser/resources/settings/controls/controlled_button.m.js"
            use_base_dir="false"

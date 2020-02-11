@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef WEBLAYER_BROWSER_SESSION_SERVICE_H_
-#define WEBLAYER_BROWSER_SESSION_SERVICE_H_
+#ifndef WEBLAYER_BROWSER_PERSISTENCE_BROWSER_PERSISTER_H_
+#define WEBLAYER_BROWSER_PERSISTENCE_BROWSER_PERSISTER_H_
 
 #include <stddef.h>
 
@@ -31,24 +31,25 @@ namespace weblayer {
 class BrowserImpl;
 class TabImpl;
 
-// SessionService is responsible for maintaining the state of tabs in a Browser
-// so that they can be restored at a later date. To avoid having to write the
-// complete state anytime something changes interesting events (represented as
-// SessionCommands) are written to disk. To restore, the events are read back
-// and the state recreated. At certain times the file is truncated and rebuilt
-// from the current state.
-class SessionService : public sessions::CommandStorageManagerDelegate,
-                       public sessions::SessionTabHelperDelegate,
-                       public BrowserObserver {
+// BrowserPersister is responsible for maintaining the state of tabs in a
+// single Browser so that they can be restored at a later date. The state is
+// written to a file. To avoid having to write the complete state anytime
+// something changes interesting events (represented as SessionCommands) are
+// written to disk. To restore, the events are read back and the state
+// recreated. At certain times the file is truncated and rebuilt from the
+// current state.
+class BrowserPersister : public sessions::CommandStorageManagerDelegate,
+                         public sessions::SessionTabHelperDelegate,
+                         public BrowserObserver {
  public:
-  SessionService(const base::FilePath& path,
-                 BrowserImpl* browser,
-                 const std::vector<uint8_t>& decryption_key);
+  BrowserPersister(const base::FilePath& path,
+                   BrowserImpl* browser,
+                   const std::vector<uint8_t>& decryption_key);
 
-  SessionService(const SessionService&) = delete;
-  SessionService& operator=(const SessionService&) = delete;
+  BrowserPersister(const BrowserPersister&) = delete;
+  BrowserPersister& operator=(const BrowserPersister&) = delete;
 
-  ~SessionService() override;
+  ~BrowserPersister() override;
 
   void SaveIfNecessary();
 
@@ -57,7 +58,7 @@ class SessionService : public sessions::CommandStorageManagerDelegate,
   const std::vector<uint8_t>& GetCryptoKey() const;
 
  private:
-  friend class SessionServiceTestHelper;
+  friend class BrowserPersisterTestHelper;
 
   using IdToRange = std::map<SessionID, std::pair<int, int>>;
 
@@ -130,4 +131,4 @@ class SessionService : public sessions::CommandStorageManagerDelegate,
 
 }  // namespace weblayer
 
-#endif  // WEBLAYER_BROWSER_SESSION_SERVICE_H_
+#endif  // WEBLAYER_BROWSER_PERSISTENCE_BROWSER_PERSISTER_H_

@@ -221,3 +221,28 @@ var CrSettingsStartupUrlsPageV3Test = class extends CrSettingsV3BrowserTest {
 TEST_F('CrSettingsStartupUrlsPageV3Test', 'All', function() {
   mocha.run();
 });
+
+// eslint-disable-next-line no-var
+var CrSettingsAppearancePageV3Test = class extends CrSettingsV3BrowserTest {
+  /** @override */
+  get browsePreload() {
+    return 'chrome://settings/test_loader.html?module=settings/appearance_page_test.m.js';
+  }
+};
+
+TEST_F('CrSettingsAppearancePageV3Test', 'All', function() {
+  mocha.run();
+});
+
+// eslint-disable-next-line no-var
+var CrSettingsAppearanceFontsPageV3Test =
+    class extends CrSettingsV3BrowserTest {
+  /** @override */
+  get browsePreload() {
+    return 'chrome://settings/test_loader.html?module=settings/appearance_fonts_page_test.m.js';
+  }
+};
+
+TEST_F('CrSettingsAppearanceFontsPageV3Test', 'All', function() {
+  mocha.run();
+});

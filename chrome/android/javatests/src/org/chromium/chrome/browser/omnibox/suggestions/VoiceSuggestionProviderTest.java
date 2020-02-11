@@ -17,10 +17,10 @@ import org.junit.runner.RunWith;
 
 import org.chromium.base.test.BaseJUnit4ClassRunner;
 import org.chromium.base.test.util.Feature;
-import org.chromium.chrome.browser.omnibox.LocationBarVoiceRecognitionHandler.VoiceResult;
 import org.chromium.chrome.browser.omnibox.MatchClassificationStyle;
 import org.chromium.chrome.browser.omnibox.OmniboxSuggestionType;
 import org.chromium.chrome.browser.omnibox.suggestions.OmniboxSuggestion.MatchClassification;
+import org.chromium.chrome.browser.omnibox.voice.VoiceRecognitionHandler.VoiceResult;
 import org.chromium.chrome.test.ChromeBrowserTestRule;
 
 import java.util.ArrayList;

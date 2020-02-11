@@ -78,7 +78,6 @@
     [RaisesException] void pauseAnimations(double pauseTime);
     boolean isCompositedAnimation(Animation animation);
     void disableCompositedAnimation(Animation animation);
-    void disableCSSAdditiveAnimations();
 
     // Advances an animated image. For BitmapImage (e.g., animated gifs) this
     // will advance to the next frame. For SVGImage, this will trigger an

@@ -2714,6 +2714,35 @@ be describing additional metrics about the same event.
   </metric>
 </event>
 
+<event name="ContextMenuAndroid.Selected">
+  <owner>benwgold@google.com</owner>
+  <owner>twellington@chromium.org</owner>
+  <metric name="Action">
+    <summary>
+      Emits an integer id for a selection corresponding to the action enum
+      defined in ChromeContextMenuPopulator.java (within the ContextMenuUma
+      class).
+    </summary>
+  </metric>
+</event>
+
+<event name="ContextMenuAndroid.Shown">
+  <owner>benwgold@google.com</owner>
+  <owner>twellington@chromium.org</owner>
+  <metric name="SearchByImage" enum="Boolean">
+    <summary>
+      Recorded when the context menu is constructed and logged if the search by
+      image option was displayed.
+    </summary>
+  </metric>
+  <metric name="SearchWithGoogleLens" enum="Boolean">
+    <summary>
+      Recorded when the context menu is constructed and logged if the lens
+      option was displayed.
+    </summary>
+  </metric>
+</event>
+
 <event name="ContextualSearch">
   <owner>donnd@chromium.org</owner>
   <summary>

@@ -7,6 +7,7 @@
 #include <memory>
 
 #include "base/memory/memory_pressure_listener.h"
+#include "base/test/metrics/histogram_tester.h"
 #include "base/time/time.h"
 #include "base/util/memory_pressure/fake_memory_pressure_monitor.h"
 #include "chrome/browser/performance_manager/decorators/page_aggregator.h"
@@ -137,6 +138,8 @@ class UrgentPageDiscardingPolicyTest : public GraphTestHarness {
         CreateFrameNodeAutoId(process_node_.get(), page_node_.get());
     main_frame_node_->SetIsCurrent(true);
     MakePageNodeDiscardable(page_node());
+
+    histogram_tester_ = std::make_unique<base::HistogramTester>();
   }
 
   void TearDown() override {
@@ -144,14 +147,25 @@ class UrgentPageDiscardingPolicyTest : public GraphTestHarness {
     main_frame_node_.reset();
     page_node_.reset();
     process_node_.reset();
+    histogram_tester_.reset();
   }
 
-  void SimulateMemoryPressure() {
+ protected:
+  void SimulateMemoryPressure(size_t pressure_event_counts = 1) {
+    for (size_t i = 0; i < pressure_event_counts; ++i) {
+      mem_pressure_monitor_.SetAndNotifyMemoryPressure(
+          base::MemoryPressureListener::MemoryPressureLevel::
+              MEMORY_PRESSURE_LEVEL_CRITICAL);
+      task_env().RunUntilIdle();
+    }
     mem_pressure_monitor_.SetAndNotifyMemoryPressure(
         base::MemoryPressureListener::MemoryPressureLevel::
-            MEMORY_PRESSURE_LEVEL_CRITICAL);
+            MEMORY_PRESSURE_LEVEL_MODERATE);
     task_env().RunUntilIdle();
   }
+
+  // Make sure that |page_node| is discardable.
+  void MakePageNodeDiscardable(PageNodeImpl* page_node);
 
   TestUrgentPageDiscardingPolicy* policy() { return policy_; }
   PageNodeImpl* page_node() { return page_node_.get(); }
@@ -162,11 +176,9 @@ class UrgentPageDiscardingPolicyTest : public GraphTestHarness {
   util::test::FakeMemoryPressureMonitor* mem_pressure_monitor() {
     return &mem_pressure_monitor_;
   }
+  base::HistogramTester* histogram_tester() { return histogram_tester_.get(); }
 
- protected:
-  // Make sure that |page_node| is discardable.
-  void MakePageNodeDiscardable(PageNodeImpl* page_node);
-
+ private:
   util::test::FakeMemoryPressureMonitor mem_pressure_monitor_;
   TestUrgentPageDiscardingPolicy* policy_;
   MockPageDiscarder* mock_discarder_;
@@ -176,6 +188,7 @@ class UrgentPageDiscardingPolicyTest : public GraphTestHarness {
       process_node_;
   performance_manager::TestNodeWrapper<performance_manager::FrameNodeImpl>
       main_frame_node_;
+  std::unique_ptr<base::HistogramTester> histogram_tester_;
 };
 
 void UrgentPageDiscardingPolicyTest::MakePageNodeDiscardable(
@@ -299,6 +312,8 @@ TEST_F(UrgentPageDiscardingPolicyTest, UrgentlyDiscardAPageNoCandidate) {
   page_node()->SetIsVisible(true);
   SimulateMemoryPressure();
   testing::Mock::VerifyAndClearExpectations(discarder());
+  histogram_tester()->ExpectBucketCount("Discarding.DiscardCandidatesCount", 0,
+                                        1);
 }
 
 TEST_F(UrgentPageDiscardingPolicyTest, UrgentlyDiscardAPageSingleCandidate) {
@@ -306,6 +321,8 @@ TEST_F(UrgentPageDiscardingPolicyTest, UrgentlyDiscardAPageSingleCandidate) {
       .WillOnce(Return(true));
   SimulateMemoryPressure();
   testing::Mock::VerifyAndClearExpectations(discarder());
+  histogram_tester()->ExpectBucketCount("Discarding.DiscardCandidatesCount", 1,
+                                        1);
 }
 
 TEST_F(UrgentPageDiscardingPolicyTest,
@@ -314,6 +331,14 @@ TEST_F(UrgentPageDiscardingPolicyTest,
       .WillOnce(Return(false));
   SimulateMemoryPressure();
   testing::Mock::VerifyAndClearExpectations(discarder());
+  // There should be 2 discard attempts, during the first one an attempt will be
+  // made to discard |page_node()|, on the second attempt no discard candidate
+  // should be found.
+  histogram_tester()->ExpectBucketCount("Discarding.DiscardCandidatesCount", 1,
+                                        1);
+
+  histogram_tester()->ExpectBucketCount("Discarding.DiscardCandidatesCount", 0,
+                                        1);
 }
 
 TEST_F(UrgentPageDiscardingPolicyTest, UrgentlyDiscardAPageTwoCandidates) {
@@ -342,6 +367,12 @@ TEST_F(UrgentPageDiscardingPolicyTest, UrgentlyDiscardAPageTwoCandidates) {
       .WillOnce(Return(true));
   SimulateMemoryPressure();
   testing::Mock::VerifyAndClearExpectations(discarder());
+  histogram_tester()->ExpectBucketCount("Discarding.DiscardCandidatesCount", 2,
+                                        1);
+  histogram_tester()->ExpectUniqueSample("Discarding.LargestTabFootprint",
+                                         2048 / 1024, 1);
+  histogram_tester()->ExpectUniqueSample("Discarding.OldestTabFootprint",
+                                         1024 / 1024, 1);
 }
 
 TEST_F(UrgentPageDiscardingPolicyTest,

@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-package org.chromium.chrome.browser.omnibox;
+package org.chromium.chrome.browser.omnibox.voice;
 
 import static org.mockito.Mockito.doReturn;
 
@@ -34,15 +34,16 @@ import org.chromium.base.test.util.MinAndroidSdkLevel;
 import org.chromium.chrome.browser.ChromeActivity;
 import org.chromium.chrome.browser.ChromeSwitches;
 import org.chromium.chrome.browser.ntp.NewTabPage;
-import org.chromium.chrome.browser.omnibox.LocationBarVoiceRecognitionHandler.VoiceInteractionSource;
-import org.chromium.chrome.browser.omnibox.LocationBarVoiceRecognitionHandler.VoiceResult;
+import org.chromium.chrome.browser.omnibox.UrlBarData;
+import org.chromium.chrome.browser.omnibox.UrlBarEditingTextStateProvider;
 import org.chromium.chrome.browser.omnibox.suggestions.AutocompleteController.OnSuggestionsReceivedListener;
 import org.chromium.chrome.browser.omnibox.suggestions.AutocompleteCoordinator;
 import org.chromium.chrome.browser.omnibox.suggestions.AutocompleteCoordinatorImpl;
 import org.chromium.chrome.browser.omnibox.suggestions.AutocompleteDelegate;
 import org.chromium.chrome.browser.omnibox.suggestions.OmniboxSuggestion;
 import org.chromium.chrome.browser.omnibox.suggestions.OmniboxSuggestionListEmbedder;
-import org.chromium.chrome.browser.omnibox.voice.AssistantVoiceSearchService;
+import org.chromium.chrome.browser.omnibox.voice.VoiceRecognitionHandler.VoiceInteractionSource;
+import org.chromium.chrome.browser.omnibox.voice.VoiceRecognitionHandler.VoiceResult;
 import org.chromium.chrome.browser.profiles.Profile;
 import org.chromium.chrome.browser.tab.MockTab;
 import org.chromium.chrome.browser.tab.Tab;
@@ -66,18 +67,18 @@ import java.util.List;
 import java.util.concurrent.ExecutionException;
 
 /**
- * Tests for {@link LocationBarVoiceRecognitionHandler}.
+ * Tests for {@link VoiceRecognitionHandler}.
  */
 @RunWith(ChromeJUnit4ClassRunner.class)
 @CommandLineFlags.Add({ChromeSwitches.DISABLE_FIRST_RUN_EXPERIENCE})
-public class LocationBarVoiceRecognitionHandlerTest {
+public class VoiceRecognitionHandlerTest {
     @Rule
     public ChromeActivityTestRule<ChromeActivity> mActivityTestRule =
             new ChromeActivityTestRule<>(ChromeActivity.class);
 
     private TestDataProvider mDataProvider;
     private TestDelegate mDelegate;
-    private TestLocationBarVoiceRecognitionHandler mHandler;
+    private TestVoiceRecognitionHandler mHandler;
     private TestAutocompleteController mAutocomplete;
     private TestAndroidPermissionDelegate mPermissionDelegate;
     private TestWindowAndroid mWindowAndroid;
@@ -92,11 +93,10 @@ public class LocationBarVoiceRecognitionHandlerTest {
             };
 
     /**
-     * An implementation of the real {@link LocationBarVoiceRecognitionHandler} except instead of
+     * An implementation of the real {@link VoiceRecognitionHandler} except instead of
      * recording histograms we just flag whether we would have or not.
      */
-    private class TestLocationBarVoiceRecognitionHandler
-            extends LocationBarVoiceRecognitionHandler {
+    private class TestVoiceRecognitionHandler extends VoiceRecognitionHandler {
         @VoiceInteractionSource
         private int mStartSource = -1;
         @VoiceInteractionSource
@@ -108,7 +108,7 @@ public class LocationBarVoiceRecognitionHandlerTest {
         private Boolean mResult;
         private Float mVoiceConfidenceValue;
 
-        public TestLocationBarVoiceRecognitionHandler(Delegate delegate) {
+        public TestVoiceRecognitionHandler(Delegate delegate) {
             super(delegate);
         }
 
@@ -289,9 +289,9 @@ public class LocationBarVoiceRecognitionHandlerTest {
     }
 
     /**
-     * Test implementation of {@link LocationBarVoiceRecognitionHandler.Delegate}.
+     * Test implementation of {@link VoiceRecognitionHandler.Delegate}.
      */
-    private class TestDelegate implements LocationBarVoiceRecognitionHandler.Delegate {
+    private class TestDelegate implements VoiceRecognitionHandler.Delegate {
         private boolean mUpdatedMicButtonState;
         private AutocompleteCoordinator mAutocompleteCoordinator;
 
@@ -460,10 +460,9 @@ public class LocationBarVoiceRecognitionHandlerTest {
         MockitoAnnotations.initMocks(this);
         mActivityTestRule.startMainActivityOnBlankPage();
 
-
         mDataProvider = new TestDataProvider();
         mDelegate = TestThreadUtils.runOnUiThreadBlocking(() -> new TestDelegate());
-        mHandler = new TestLocationBarVoiceRecognitionHandler(mDelegate);
+        mHandler = new TestVoiceRecognitionHandler(mDelegate);
         mPermissionDelegate = new TestAndroidPermissionDelegate();
         mAutocomplete = new TestAutocompleteController(null /* view */, sEmptySuggestionListener,
                 new HashMap<String, List<SuggestionsResult>>());
@@ -481,7 +480,7 @@ public class LocationBarVoiceRecognitionHandlerTest {
     }
 
     /**
-     * Tests for {@link LocationBarVoiceRecognitionHandler#isVoiceSearchEnabled}.
+     * Tests for {@link VoiceRecognitionHandler#isVoiceSearchEnabled}.
      */
     @Test
     @SmallTest
@@ -520,7 +519,7 @@ public class LocationBarVoiceRecognitionHandlerTest {
     }
 
     /**
-     * Tests for {@link LocationBarVoiceRecognitionHandler#startVoiceRecognition}.
+     * Tests for {@link VoiceRecognitionHandler#startVoiceRecognition}.
      */
     @Test
     @SmallTest
@@ -562,7 +561,7 @@ public class LocationBarVoiceRecognitionHandlerTest {
 
     /**
      * Kicks off voice recognition with the given source, for testing
-     * {@link LocationBarVoiceRecognitionHandler.VoiceRecognitionCompleteCallback}.
+     * {@linkVoiceRecognitionHandler.VoiceRecognitionCompleteCallback}.
      *
      * @param source The source of the voice recognition initiation.
      */
@@ -593,10 +592,10 @@ public class LocationBarVoiceRecognitionHandlerTest {
     }
 
     /**
-     * Tests for the {@link LocationBarVoiceRecognitionHandler.VoiceRecognitionCompleteCallback}.
+     * Tests for the {@link VoiceRecognitionHandler.VoiceRecognitionCompleteCallback}.
      *
      * These tests are kicked off by
-     * {@link LocationBarVoiceRecognitionHandler#startVoiceRecognition} to test the flow as it would
+     * {@link VoiceRecognitionHandler#startVoiceRecognition} to test the flow as it would
      * be in reality.
      */
     @Test
@@ -648,8 +647,7 @@ public class LocationBarVoiceRecognitionHandlerTest {
     public void testCallback_successWithLowConfidence() {
         TestThreadUtils.runOnUiThreadBlocking(() -> {
             float confidence =
-                    LocationBarVoiceRecognitionHandler.VOICE_SEARCH_CONFIDENCE_NAVIGATE_THRESHOLD
-                    - 0.01f;
+                    VoiceRecognitionHandler.VOICE_SEARCH_CONFIDENCE_NAVIGATE_THRESHOLD - 0.01f;
             mWindowAndroid.setVoiceResults(createDummyBundle("testing", confidence));
             startVoiceRecognition(VoiceInteractionSource.OMNIBOX);
             Assert.assertEquals(
@@ -668,20 +666,19 @@ public class LocationBarVoiceRecognitionHandlerTest {
     public void testCallback_successWithHighConfidence() {
         // Needs to run on the UI thread because we use the TemplateUrlService on success.
         TestThreadUtils.runOnUiThreadBlocking(() -> {
-            mWindowAndroid.setVoiceResults(createDummyBundle("testing",
-                    LocationBarVoiceRecognitionHandler.VOICE_SEARCH_CONFIDENCE_NAVIGATE_THRESHOLD));
+            mWindowAndroid.setVoiceResults(createDummyBundle(
+                    "testing", VoiceRecognitionHandler.VOICE_SEARCH_CONFIDENCE_NAVIGATE_THRESHOLD));
             startVoiceRecognition(VoiceInteractionSource.OMNIBOX);
             Assert.assertEquals(
                     VoiceInteractionSource.OMNIBOX, mHandler.getVoiceSearchStartEventSource());
             Assert.assertEquals(
                     VoiceInteractionSource.OMNIBOX, mHandler.getVoiceSearchFinishEventSource());
             Assert.assertEquals(true, mHandler.getVoiceSearchResult());
-            Assert.assertTrue(
-                    LocationBarVoiceRecognitionHandler.VOICE_SEARCH_CONFIDENCE_NAVIGATE_THRESHOLD
+            Assert.assertTrue(VoiceRecognitionHandler.VOICE_SEARCH_CONFIDENCE_NAVIGATE_THRESHOLD
                     == mHandler.getVoiceConfidenceValue());
             assertVoiceResultsAreEqual(mAutocompleteVoiceResults, new String[] {"testing"},
-                    new float[] {LocationBarVoiceRecognitionHandler
-                                         .VOICE_SEARCH_CONFIDENCE_NAVIGATE_THRESHOLD});
+                    new float[] {
+                            VoiceRecognitionHandler.VOICE_SEARCH_CONFIDENCE_NAVIGATE_THRESHOLD});
         });
     }
 

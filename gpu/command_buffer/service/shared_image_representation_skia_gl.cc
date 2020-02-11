@@ -72,7 +72,7 @@ SharedImageRepresentationSkiaGL::SharedImageRepresentationSkiaGL(
 
 SharedImageRepresentationSkiaGL::~SharedImageRepresentationSkiaGL() {
   DCHECK_EQ(RepresentationAccessMode::kNone, mode_);
-  DCHECK(!surface_);
+  surface_.reset();
 }
 
 sk_sp<SkSurface> SharedImageRepresentationSkiaGL::BeginWriteAccess(
@@ -81,33 +81,38 @@ sk_sp<SkSurface> SharedImageRepresentationSkiaGL::BeginWriteAccess(
     std::vector<GrBackendSemaphore>* begin_semaphores,
     std::vector<GrBackendSemaphore>* end_semaphores) {
   DCHECK_EQ(mode_, RepresentationAccessMode::kNone);
-  DCHECK(!surface_);
   CheckContext();
 
   if (!gl_representation_->BeginAccess(
           GL_SHARED_IMAGE_ACCESS_MODE_READWRITE_CHROMIUM)) {
     return nullptr;
   }
+
+  mode_ = RepresentationAccessMode::kWrite;
+
+  if (surface_)
+    return surface_;
+
   SkColorType sk_color_type = viz::ResourceFormatToClosestSkColorType(
       /*gpu_compositing=*/true, format());
   auto surface = SkSurface::MakeFromBackendTextureAsRenderTarget(
       context_state_->gr_context(), promise_texture_->backendTexture(),
       kTopLeft_GrSurfaceOrigin, final_msaa_count, sk_color_type,
       backing()->color_space().ToSkColorSpace(), &surface_props);
-  surface_ = surface.get();
-  mode_ = RepresentationAccessMode::kWrite;
+  surface_ = surface;
   return surface;
 }
 
 void SharedImageRepresentationSkiaGL::EndWriteAccess(sk_sp<SkSurface> surface) {
   DCHECK_EQ(mode_, RepresentationAccessMode::kWrite);
   DCHECK(surface_);
-  DCHECK_EQ(surface.get(), surface_);
-  DCHECK(surface->unique());
+  DCHECK_EQ(surface.get(), surface_.get());
+
+  surface.reset();
+  DCHECK(surface_->unique());
 
   gl_representation_->EndAccess();
   mode_ = RepresentationAccessMode::kNone;
-  surface_ = nullptr;
 }
 
 sk_sp<SkPromiseImageTexture> SharedImageRepresentationSkiaGL::BeginReadAccess(

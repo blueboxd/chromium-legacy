@@ -281,17 +281,6 @@
       Consulte https://developers.google.com/safe-browsing para ver mais informações sobre o recurso "Navegação segura".
 
       Esta política está disponível apenas em instâncias do Windows associadas a um domínio <ph name="MS_AD_NAME" /> ou instâncias do Windows 10 Pro ou Enterprise inscritas no gerenciamento de dispositivos.</translation>
-<translation id="1432194160771348078">
-      Especifica uma lista de apps que são instalados silenciosamente na tela de login, sem qualquer interação do usuário e sem permitir a desinstalação.
-      Todas as permissões solicitadas pelos apps são concedidas implicitamente, sem interação do usuário, incluindo as permissões solicitadas por versões futuras do app.
-
-      Por motivos de segurança e privacidade, as extensões não podem ser instaladas usando esta política. Além disso, os dispositivos no Canal Stable instalarão apenas os apps que pertencem à lista de permissões incluída no <ph name="PRODUCT_NAME" />. Qualquer item que não se enquadre nessas condições será ignorado.
-
-      Se um app que foi instalado à força anteriormente for removido da lista, ele será automaticamente desinstalado pelo <ph name="PRODUCT_NAME" />.
-
-Cada item da lista da política é uma string que contém um código de extensão e um URL de "atualização" separados por ponto e vírgula (<ph name="SEMICOLON" />). O código da extensão é a string de 32 letras encontrada, por exemplo, em <ph name="CHROME_EXTENSIONS_LINK" /> no modo de desenvolvedor. O URL de "atualização" apontará para um documento XML de Manifesto de atualização, conforme descrito em <ph name="LINK_TO_EXTENSION_DOC1" />. O URL de "atualização" definido nesta política só é usado para a instalação inicial. As atualizações subsequentes da extensão empregam o URL de atualização indicado no manifesto da extensão.
-
-      Por exemplo, <ph name="EXTENSION_POLICY_EXAMPLE" /> instala o app <ph name="EXTENSION_POLICY_EXAMPLE_EXTENSION_NAME" /> a partir do URL de "atualização" padrão da Chrome Web Store. Para ver mais informações sobre hospedagem de extensões, consulte: <ph name="LINK_TO_EXTENSION_DOC2" />.</translation>
 <translation id="1435659902881071157">Configuração de rede em nível de dispositivo</translation>
 <translation id="1438739959477268107">Configuração padrão de geração de chaves</translation>
 <translation id="1454846751303307294">Permite que você defina uma lista de padrões de URL que especificam sites sem permissão para executar JavaScript. Se esta política for deixada sem definição, o valor padrão global será utilizado para todos os sites a partir da política "DefaultJavaScriptSetting", caso esta tenha sido definida, ou a partir das configurações pessoais do usuário, caso não tenha sido definida.</translation>
@@ -659,6 +648,10 @@ Cada item da lista da política é uma string que contém um código de extensã
 <translation id="1988371335297483117">As cargas úteis de atualização automática no <ph name="PRODUCT_OS_NAME" /> podem ser transferidas por download via HTTP, em vez de por HTTPS. Isso permite o armazenamento em cache de HTTP transparente dos downloads de HTTP.
 
       Se essa política for definida como "true", o <ph name="PRODUCT_OS_NAME" /> tentará fazer o download das cargas úteis de atualização automática via HTTP. Se a política for definida como "false" ou não for definida, o HTTPS será usado para o download das cargas úteis de atualização automática.</translation>
+<translation id="199011295049694531">Envia informações sobre o fuso horário de um dispositivo.
+
+      Se a política for definida como falsa ou se não for definida, as informações não serão enviadas.
+      Se ela for definida como verdadeira, o fuso horário atual do dispositivo será enviado.</translation>
 <translation id="199764499252435679">Ativar atualizações de componentes no <ph name="PRODUCT_NAME" /></translation>
 <translation id="1997994951395619441">Se esta configuração for ativada, o <ph name="PRODUCT_NAME" /> mostrará uma barra de favoritos.
 
@@ -760,13 +753,13 @@ Se você desativar esta configuração ou deixá-la sem definição, todas as p�
 <translation id="2170233653554726857">Ativar otimização WPAD</translation>
 <translation id="2171245625445050634">Esta política foi removida no M82. Use MinimumChromeVersionEnforced.
 
-      Ela configura o requisito da versão mínima permitida do <ph name="PRODUCT_NAME" />. As versões abaixo são tratadas como obsoletas, e o dispositivo não permite o login do usuário antes que o SO fosse atualizado.
+      Ela configura o requisito da versão mínima permitida do <ph name="PRODUCT_NAME" />. As versões abaixo são tratadas como obsoletas, e o dispositivo não permite o login do usuário antes que o SO seja atualizado.
 
       Se a versão atual se tornar obsoleta durante a sessão, o usuário será forçadamente desconectado da conta.
 
       Se esta política não for definida, nenhuma restrição será aplicada e o usuário poderá fazer login independentemente da versão do <ph name="PRODUCT_NAME" />.
 
-      Aqui, "versão" pode ser uma versão exata, como "61.0.3163.120", ou um prefixo de versão, como "61.0".  </translation>
+      Aqui, "versão" pode ser uma versão exata, como "61.0.3163.120", ou um prefixo de versão, como "61.0".</translation>
 <translation id="2176565653304920879">Quando esta política é definida, o fluxo de detecção automática de fuso horário acontece de uma das seguintes formas, dependendo do valor da configuração:
 
       Se definida para TimezoneAutomaticDetectionUsersDecide, os usuários poderão controlar a detecção automática de fuso horário usando controles normais em chrome://settings.
@@ -1103,6 +1096,11 @@ Se você desativar esta configuração ou deixá-la sem definição, todas as p�
       Se você ativar ou desativar essa configuração, os usuários não poderão alterá-la ou substituí-la.
 
       Se esta política não for configurada, o recurso de proxy de compactação de dados estará disponível para que o usuário opte por usá-lo ou não.</translation>
+<translation id="2575738503503093841">Especifica o atraso máximo em milissegundos entre o recebimento da invalidação de uma política e a busca pela nova política no serviço de gerenciamento de dispositivos.
+
+      A definição dessa política modifica o valor padrão de 10.000 milissegundos. Os valores válidos para essa política variam entre 1000 (um segundo) e 300.000 (cinco minutos). Quaisquer valores que não estejam nesse intervalo serão mantidos no limite correspondente.
+
+      Se a política não estiver definida, o <ph name="PRODUCT_NAME" /> usará o valor padrão de 10.000 milissegundos.</translation>
 <translation id="257788512393330403">A senha precisa ser digitada a cada seis horas</translation>
 <translation id="2580104054820772954">Atrasar o envio de arquivos até que o resultado seja conhecido</translation>
 <translation id="2582582399758251985">Quando esta configuração estiver ativada, o <ph name="PRODUCT_NAME" /> verificará os certificados do servidor usando o verificador integrado de certificados.
@@ -1131,6 +1129,7 @@ Se você desativar esta configuração ou deixá-la sem definição, todas as p�
           Se esta política não for definida, o padrão será verdadeira, e NTLMv2 será ativada.</translation>
 <translation id="26023406105317310">Configurar contas do Kerberos</translation>
 <translation id="2604182581880595781">Configurar políticas relacionadas ao Compartilhamento de arquivos de rede.</translation>
+<translation id="2615240493030733717">Enviar informações de fuso horário</translation>
 <translation id="2623014935069176671">Aguardar atividade inicial do usuário</translation>
 <translation id="262740370354162807">Ativar o envio de documentos para <ph name="CLOUD_PRINT_NAME" /></translation>
 <translation id="2627554163382448569">Fornece configurações para impressoras corporativas.
@@ -1537,6 +1536,8 @@ Se você desativar esta configuração ou deixá-la sem definição, todas as p�
           Se esta política não for definida, o valor global padrão será usado para todos os sites da política "DefaultCookiesSetting", caso ela tenha sido definida, ou a partir das configurações pessoais do usuário, caso não tenha sido definida.
 
           Consulte também as políticas "CookiesBlockedForUrls" e "CookiesSessionOnlyForUrls". Não pode haver padrões de URL conflitantes entre essas três políticas. Não é definido qual política tem precedência.</translation>
+<translation id="3339271789059866414">Configura a disponibilidade do serviço de proxy do sistema e as credenciais de proxy para os serviços do sistema.
+      Se a política não for definida, o serviço de proxy do sistema não estará disponível.</translation>
 <translation id="3373364525435227558">Define uma ou mais localidades recomendadas para uma sessão gerenciada, permitindo que os usuários escolham facilmente uma dessas localidades.
 
       O usuário pode escolher uma localidade e um layout de teclado antes de iniciar uma sessão gerenciada. Por padrão, todas as localidades compatíveis com o <ph name="PRODUCT_OS_NAME" /> estão listadas em ordem alfabética. É possível usar esta política para mover um conjunto de localidades recomendadas para o topo da lista.
@@ -2487,6 +2488,7 @@ Quando a |IdleAction| não for definida, a ação padrão de suspensão será re
           Se você definir essa política, os usuários não poderão alterá-la ou substituí-la.
 
           Se essa política não for definida, o cursor grande ficará desativado inicialmente, mas o usuário poderá ativá-lo a qualquer momento.</translation>
+<translation id="4802744647065138872">Limita o número de resumos de dados do usuário retidos para uso em caso de reversão de emergência.</translation>
 <translation id="4802905909524200151">Configurar o comportamento de atualização do firmware <ph name="TPM_FIRMWARE_UPDATE_TPM" /></translation>
 <translation id="4804828344300125154">É sempre reinicializado quando o usuário sai.</translation>
 <translation id="4807950475297505572">Os usuários menos utilizados ​​recentemente serão removidos até que haja espaço livre suficiente</translation>
@@ -4306,7 +4308,6 @@ Se esta política não for definida, o renderizador padrão será usado para tod
 
       Esta política só é eficaz quando a <ph name="CHROME_REPORTING_EXTENSION_NAME" /> está ativada e quando a máquina está inscrita na política <ph name="CLOUD_MANAGEMENT_ENROLLMENT_TOKEN_POLICY_NAME" />.</translation>
 <translation id="7758378441185523981">Ativar a autenticação pelo SO para tipos de perfil.</translation>
-<translation id="7761446981238915769">Configurar a lista de apps instalados na tela de login</translation>
 <translation id="7763614521440615342">Mostrar sugestões de conteúdo na página "Nova guia"</translation>
 <translation id="7765879851993224640">Permitir que o login do Smart Lock seja usado.</translation>
 <translation id="7774768074957326919">Usar configurações de proxy do sistema</translation>
@@ -4420,6 +4421,7 @@ Se esta política não for definida, o renderizador padrão será usado para tod
 
 Se a política não for definida, a configuração ficará ativada, mas o usuário poderá alterá-la.</translation>
 <translation id="7953256619080733119">Hosts de exceção manual do usuário gerenciado</translation>
+<translation id="7956210013490975468">Configura o serviço de proxy do sistema para o <ph name="PRODUCT_OS_NAME" />.</translation>
 <translation id="7958537754689366707">A senha precisa ser digitada a cada 12 horas</translation>
 <translation id="7961779417826583251">Desativar a aplicação da Transparência dos certificados para uma lista de Autoridades de certificação de legado</translation>
 <translation id="7974114691960514888">Esta política não é mais suportada. Ativa o uso de servidores STUN e de retransmissão ao estabelecer conexão a um cliente remoto. Se esta configuração estiver ativada, este computador pode descobrir e conectar-se a computadores host remotos mesmo se separados por um firewall. Se esta configuração estiver desativada e conexões de UDP enviadas forem filtradas pelo firewall, este computador só poderá estabelecer conexões a computadores host na rede local.</translation>
@@ -4665,6 +4667,11 @@ O modo recomendado para configurar políticas no Windows é por meio de GPO, emb
 <translation id="8426231401662877819">Girar tela no sentido horário em 90 graus</translation>
 <translation id="8433186206711564395">Configurações de rede</translation>
 <translation id="8433423491036718210">Configure a lista de URLs de login corporativo em que o serviço de proteção de senha deve capturar a impressão digital da senha.</translation>
+<translation id="8445576299806775661">Depois de cada atualização importante de versão, o Chrome criará um resumo de certas partes dos dados de navegação do usuário para uso em caso de reversão de emergência da versão. Se uma reversão de emergência for feita para uma versão da qual o usuário tem um resumo correspondente, os dados serão restaurados. Isso permite que o usuário retenha essas configurações, como favoritos e dados de preenchimento automático.
+
+      Se essa política não for definida, o valor padrão 3 será usado.
+
+      Se a política for definida, resumos antigos serão excluídos conforme necessário para respeitar o limite. Se a política for definida como 0, nenhum resumo será feito.</translation>
 <translation id="8451988835943702790">Usar a página "Nova guia" como página inicial</translation>
 <translation id="8459216513698220096">Especifica se e como a política de usuário da GPO de computador é processada.
 
@@ -4758,6 +4765,7 @@ O modo recomendado para configurar políticas no Windows é por meio de GPO, emb
 
       Se esta política for definida como false ou não for configurada, o usuário poderá usar o navegador sem fazer login no <ph name="PRODUCT_NAME" />.</translation>
 <translation id="858309738002328421">Bloquear upload de arquivos grandes</translation>
+<translation id="8584279193368801689">Restringe o modo de impressão com PIN. Se a política não for definida, não haverá restrição. Se o modo não estiver disponível, a política será ignorada. O recurso de impressão com PIN está disponível somente para impressoras que usam um dos protocolos IPPS, HTTPS, USB ou IPP-over-USB.</translation>
 <translation id="8585558195682146109">Enviar downloads do usuário para verificação</translation>
 <translation id="8586528890725660268">Especifica as impressoras que um usuário não pode usar.
 
@@ -4831,6 +4839,13 @@ O modo recomendado para configurar políticas no Windows é por meio de GPO, emb
 <translation id="8687958770985542440">Reativar API Web Components v0 até o M84.</translation>
 <translation id="8693243869659262736">Usar cliente DNS integrado</translation>
 <translation id="8698286761337647563">Com quantos dias de antecedência os usuários do SAML precisam ser notificados quando as senhas estiverem prestes a expirar</translation>
+<translation id="8701288965900240388">Permite que você defina se os sites podem executar automaticamente o plug-in <ph name="FLASH_PLUGIN_NAME" />. A execução automática do plug-in <ph name="FLASH_PLUGIN_NAME" /> pode ser permitida ou negada para todos os sites.
+
+          O "Clique para ver" permite que o plug-in <ph name="FLASH_PLUGIN_NAME" /> seja executado, mas o usuário precisa clicar no marcador para iniciar a execução.
+
+          A reprodução automática só é permitida em domínios explicitamente listados na política <ph name="PLUGINS_ALLOWED_FOR_URLS_POLICY_NAME" />. Se você quiser ativar a reprodução automática em todos os sites, considere adicionar http://* e https://* a essa lista.
+
+          Se essa política não for definida, "BlockPlugins" será usada, e o usuário poderá mudar a configuração manualmente.</translation>
 <translation id="8703488928438047864">Informa o status da placa</translation>
 <translation id="8704831857353097849">Lista de plug-ins desativados</translation>
 <translation id="8711086062295757690">Especifica a palavra-chave, que é o atalho utilizado na omnibox para acionar a pesquisa por este provedor. Esta política é opcional. Se não estiver definida, palavra-chave alguma ativará o mecanismo de pesquisa. Esta política só é considerada se a política "DefaultSearchProviderEnabled" estiver ativada.</translation>

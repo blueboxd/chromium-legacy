@@ -404,11 +404,6 @@
       status: "stable",
     },
     {
-      name: "CSSAdditiveAnimations",
-      depends_on: ["StackedCSSPropertyAnimations"],
-      status: "experimental",
-    },
-    {
       name: "CSSCalcAsInt",
       status: "test",
     },
@@ -1623,10 +1618,6 @@
     {
       name: "StableBlinkFeatures",
       status: "stable",
-    },
-    {
-      name: "StackedCSSPropertyAnimations",
-      status: "experimental",
     },
     {
       // Enabled when blink::features::kStorageAccessAPI is enabled.

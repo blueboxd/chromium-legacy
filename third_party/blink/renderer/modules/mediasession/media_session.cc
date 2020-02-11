@@ -5,7 +5,9 @@
 #include "third_party/blink/renderer/modules/mediasession/media_session.h"
 
 #include <memory>
+
 #include "base/optional.h"
+#include "base/time/default_tick_clock.h"
 #include "third_party/blink/public/common/browser_interface_broker_proxy.h"
 #include "third_party/blink/renderer/bindings/modules/v8/v8_media_position_state.h"
 #include "third_party/blink/renderer/bindings/modules/v8/v8_media_session_action_details.h"
@@ -125,6 +127,7 @@ mojom::blink::MediaSessionPlaybackState StringToMediaSessionPlaybackState(
 
 MediaSession::MediaSession(ExecutionContext* execution_context)
     : ContextClient(execution_context),
+      clock_(base::DefaultTickClock::GetInstance()),
       playback_state_(mojom::blink::MediaSessionPlaybackState::NONE) {}
 
 void MediaSession::Dispose() {
@@ -134,7 +137,7 @@ void MediaSession::Dispose() {
 void MediaSession::setPlaybackState(const String& playback_state) {
   playback_state_ = StringToMediaSessionPlaybackState(playback_state);
 
-  RecalculatePositionState(false /* notify */);
+  RecalculatePositionState(/*was_set=*/false);
 
   mojom::blink::MediaSessionService* service = GetService();
   if (service)
@@ -263,7 +266,7 @@ void MediaSession::setPositionState(MediaPositionState* position_state,
 
   declared_playback_rate_ = position_state_->playback_rate;
 
-  RecalculatePositionState(true /* notify */);
+  RecalculatePositionState(/*was_set=*/true);
 }
 
 void MediaSession::NotifyActionChange(const String& action,
@@ -285,7 +288,25 @@ void MediaSession::NotifyActionChange(const String& action,
   }
 }
 
-void MediaSession::RecalculatePositionState(bool notify) {
+base::TimeDelta MediaSession::GetPositionNow() const {
+  const base::TimeTicks now = clock_->NowTicks();
+
+  const base::TimeDelta elapsed_time =
+      position_state_->playback_rate *
+      (now - position_state_->last_updated_time);
+  const base::TimeDelta updated_position =
+      position_state_->position + elapsed_time;
+  const base::TimeDelta start = base::TimeDelta::FromSeconds(0);
+
+  if (updated_position <= start)
+    return start;
+  else if (updated_position >= position_state_->duration)
+    return position_state_->duration;
+  else
+    return updated_position;
+}
+
+void MediaSession::RecalculatePositionState(bool was_set) {
   if (!position_state_)
     return;
 
@@ -294,11 +315,17 @@ void MediaSession::RecalculatePositionState(bool notify) {
           ? 0.0
           : declared_playback_rate_;
 
-  notify = notify || new_playback_rate != position_state_->playback_rate;
-  position_state_->playback_rate = new_playback_rate;
-
-  if (!notify)
+  if (!was_set && new_playback_rate == position_state_->playback_rate)
     return;
+
+  // If we updated the position state because of the playback rate then we
+  // should update the time.
+  if (!was_set) {
+    position_state_->position = GetPositionNow();
+  }
+
+  position_state_->playback_rate = new_playback_rate;
+  position_state_->last_updated_time = clock_->NowTicks();
 
   if (auto* service = GetService())
     service->SetPositionState(position_state_.Clone());

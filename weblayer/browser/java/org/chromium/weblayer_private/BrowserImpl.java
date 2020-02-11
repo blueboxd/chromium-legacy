@@ -155,9 +155,9 @@ public class BrowserImpl extends IBrowser.Stub {
         if (mProfile.isIncognito() && hasPersistenceId) {
             // Trigger a save now as saving may generate a new crypto key. This doesn't actually
             // save synchronously, rather triggers a save on a background task runner.
-            BrowserImplJni.get().saveSessionServiceIfNecessary(mNativeBrowser, this);
+            BrowserImplJni.get().saveBrowserPersisterIfNecessary(mNativeBrowser, this);
             outState.putByteArray(SAVED_STATE_SESSION_SERVICE_CRYPTO_KEY,
-                    BrowserImplJni.get().getSessionServiceCryptoKey(mNativeBrowser, this));
+                    BrowserImplJni.get().getBrowserPersisterCryptoKey(mNativeBrowser, this));
         } else if (!hasPersistenceId) {
             outState.putByteArray(SAVED_STATE_MINIMAL_PERSISTENCE_STATE_KEY,
                     BrowserImplJni.get().getMinimalPersistenceState(mNativeBrowser, this));
@@ -401,8 +401,8 @@ public class BrowserImpl extends IBrowser.Stub {
         TabImpl getActiveTab(long nativeBrowserImpl, BrowserImpl browser);
         void prepareForShutdown(long nativeBrowserImpl, BrowserImpl browser);
         String getPersistenceId(long nativeBrowserImpl, BrowserImpl browser);
-        void saveSessionServiceIfNecessary(long nativeBrowserImpl, BrowserImpl browser);
-        byte[] getSessionServiceCryptoKey(long nativeBrowserImpl, BrowserImpl browser);
+        void saveBrowserPersisterIfNecessary(long nativeBrowserImpl, BrowserImpl browser);
+        byte[] getBrowserPersisterCryptoKey(long nativeBrowserImpl, BrowserImpl browser);
         byte[] getMinimalPersistenceState(long nativeBrowserImpl, BrowserImpl browser);
         void restoreStateIfNecessary(long nativeBrowserImpl, BrowserImpl browser,
                 String persistenceId, byte[] persistenceCryptoKey, byte[] minimalPersistenceState);

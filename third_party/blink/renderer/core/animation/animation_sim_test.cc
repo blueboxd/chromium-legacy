@@ -35,9 +35,7 @@ TEST_F(AnimationSimTest, CustomPropertyBaseComputedStyle) {
   // animation.
 
   ScopedCSSVariables2ForTest css_variables2(true);
-  ScopedCSSAdditiveAnimationsForTest css_additive_animation(true);
-  ScopedStackedCSSPropertyAnimationsForTest stacked_css_property_animation(
-      true);
+  ScopedWebAnimationsAPIForTest web_animations(true);
 
   SimRequest main_resource("https://example.com/", "text/html");
   LoadURL("https://example.com/");

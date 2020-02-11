@@ -505,11 +505,16 @@ bool GetCompressedTexSizeInBytes(const char* function_name,
       break;
     case GL_COMPRESSED_RED_RGTC1_EXT:
     case GL_COMPRESSED_SIGNED_RED_RGTC1_EXT:
+      bytes_required = (width + kRGTCBlockWidth - 1) / kRGTCBlockWidth;
+      bytes_required *= (height + kRGTCBlockHeight - 1) / kRGTCBlockHeight;
+      bytes_required *= 8;
+      bytes_required *= depth;
+      break;
     case GL_COMPRESSED_RED_GREEN_RGTC2_EXT:
     case GL_COMPRESSED_SIGNED_RED_GREEN_RGTC2_EXT:
       bytes_required = (width + kRGTCBlockWidth - 1) / kRGTCBlockWidth;
       bytes_required *= (height + kRGTCBlockHeight - 1) / kRGTCBlockHeight;
-      bytes_required *= 8;
+      bytes_required *= 16;
       bytes_required *= depth;
       break;
     default:

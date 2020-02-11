@@ -1,0 +1,55 @@
+// Copyright 2020 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
+
+#ifndef ASH_SHELF_CONTEXTUAL_TOOLTIP_H_
+#define ASH_SHELF_CONTEXTUAL_TOOLTIP_H_
+
+#include "ash/ash_export.h"
+#include "base/time/clock.h"
+#include "components/prefs/pref_registry_simple.h"
+#include "components/prefs/pref_service.h"
+
+namespace ash {
+
+namespace contextual_tooltip {
+
+// Enumeration of all contextual tooltips.
+enum class TooltipType {
+  kDragHandle,
+};
+
+// Maximum number of times a user can be shown a contextual nudge.
+constexpr int kNotificationLimit = 3;
+
+// Minimum time between showing contextual nudges to the user.
+constexpr base::TimeDelta kMinInterval = base::TimeDelta::FromDays(1);
+
+// The amount of time a nudge is shown.
+constexpr base::TimeDelta kNudgeShowDuration = base::TimeDelta::FromSeconds(5);
+
+// Registers profile prefs.
+ASH_EXPORT void RegisterProfilePrefs(PrefRegistrySimple* registry);
+
+// Returns true if the contextual tooltip of |type| should be shown for the user
+// with the given |prefs|.
+ASH_EXPORT bool ShouldShowNudge(PrefService* prefs, TooltipType type);
+
+// Checks whether the tooltip should be hidden after a timeout. Returns the
+// timeout if it should, returns base::TimeDelta() if not.
+ASH_EXPORT base::TimeDelta GetNudgeTimeout(PrefService* prefs,
+                                           TooltipType type);
+
+// Increments the counter tracking the number of times the tooltip has been
+// shown. Updates the last shown time for the tooltip.
+ASH_EXPORT void HandleNudgeShown(PrefService* prefs, TooltipType type);
+
+ASH_EXPORT void OverrideClockForTesting(base::Clock* test_clock);
+
+ASH_EXPORT void ClearClockOverrideForTesting();
+
+}  // namespace contextual_tooltip
+
+}  // namespace ash
+
+#endif  // ASH_SHELF_CONTEXTUAL_TOOLTIP_H_

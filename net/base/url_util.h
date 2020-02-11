@@ -115,6 +115,22 @@ NET_EXPORT std::string TrimEndingDot(base::StringPiece host);
 // Returns either the host from |url|, or, if the host is empty, the full spec.
 NET_EXPORT std::string GetHostOrSpecFromURL(const GURL& url);
 
+// Returns the given domain minus its leftmost label, or the empty string if the
+// given domain is just a single label. For normal domain names (not IP
+// addresses), this represents the "superdomain" of the given domain.
+// Note that this does not take into account anything like the Public Suffix
+// List, so the superdomain may end up being a bare eTLD. The returned string is
+// not guaranteed to be a valid or canonical hostname, or to make any sense at
+// all.
+//
+// Examples:
+//
+// GetSuperdomain("assets.example.com") -> "example.com"
+// GetSuperdomain("example.net") -> "net"
+// GetSuperdomain("littlebox") -> ""
+// GetSuperdomain("127.0.0.1") -> "0.0.1"
+NET_EXPORT std::string GetSuperdomain(base::StringPiece domain);
+
 // Canonicalizes |host| and returns it.  Also fills |host_info| with
 // IP address information.  |host_info| must not be NULL.
 NET_EXPORT std::string CanonicalizeHost(base::StringPiece host,

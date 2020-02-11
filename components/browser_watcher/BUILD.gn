@@ -48,8 +48,6 @@ if (is_win) {
     sources = [
       "activity_report_extractor.cc",
       "activity_report_extractor.h",
-      "activity_tracker_annotation.cc",
-      "activity_tracker_annotation.h",
       "minidump_user_streams.h",
     ]
     deps = [
@@ -66,6 +64,8 @@ if (is_win) {
     sources = [
       "activity_data_names.cc",
       "activity_data_names.h",
+      "activity_tracker_annotation.cc",
+      "activity_tracker_annotation.h",
       "extended_crash_reporting.cc",
       "extended_crash_reporting.h",
       "extended_crash_reporting_metrics.cc",
@@ -74,9 +74,14 @@ if (is_win) {
       "features.h",
     ]
     deps = [
+      ":activity_report_proto",
       "//base",
+      "//third_party/crashpad/crashpad/client",
       "//third_party/crashpad/crashpad/util",
     ]
+
+    # This needs to be a public dep because of base::win::PEImage.
+    public_deps = [ "//base:base_static" ]
   }
 
   source_set("unit_tests") {

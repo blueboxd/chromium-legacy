@@ -7,51 +7,53 @@
 #include <memory>
 #include <utility>
 
+#include "base/memory/singleton.h"
 #include "chrome/browser/notifications/scheduler/notification_schedule_service_factory.h"
 #include "chrome/browser/profiles/incognito_helpers.h"
+#include "chrome/browser/profiles/profile_key.h"
 #include "chrome/browser/updates/internal/update_notification_service_impl.h"
 #include "chrome/browser/updates/update_notification_config.h"
 #include "chrome/browser/updates/update_notification_service_bridge.h"
 #include "chrome/browser/updates/update_notification_service_bridge_android.h"
-#include "components/keyed_service/content/browser_context_dependency_manager.h"
+#include "components/keyed_service/core/simple_dependency_manager.h"
 
 // static
 UpdateNotificationServiceFactory*
 UpdateNotificationServiceFactory::GetInstance() {
-  static base::NoDestructor<UpdateNotificationServiceFactory> instance;
-  return instance.get();
+  return base::Singleton<UpdateNotificationServiceFactory>::get();
 }
 
 // static
-updates::UpdateNotificationService*
-UpdateNotificationServiceFactory::GetForBrowserContext(
-    content::BrowserContext* context) {
+updates::UpdateNotificationService* UpdateNotificationServiceFactory::GetForKey(
+    SimpleFactoryKey* key) {
   return static_cast<updates::UpdateNotificationService*>(
-      GetInstance()->GetServiceForBrowserContext(context, true /* create */));
+      GetInstance()->GetServiceForKey(key, true /* create */));
 }
 
 UpdateNotificationServiceFactory::UpdateNotificationServiceFactory()
-    : BrowserContextKeyedServiceFactory(
-          "updates::UpdateNotificationService",
-          BrowserContextDependencyManager::GetInstance()) {
+    : SimpleKeyedServiceFactory("updates::UpdateNotificationService",
+                                SimpleDependencyManager::GetInstance()) {
   DependsOn(NotificationScheduleServiceFactory::GetInstance());
 }
 
-KeyedService* UpdateNotificationServiceFactory::BuildServiceInstanceFor(
-    content::BrowserContext* context) const {
+UpdateNotificationServiceFactory::~UpdateNotificationServiceFactory() = default;
+
+std::unique_ptr<KeyedService>
+UpdateNotificationServiceFactory::BuildServiceInstanceFor(
+    SimpleFactoryKey* key) const {
+  auto* profile_key = ProfileKey::FromSimpleFactoryKey(key);
+
   auto* schedule_service =
-      NotificationScheduleServiceFactory::GetForBrowserContext(context);
+      NotificationScheduleServiceFactory::GetForKey(profile_key);
   auto config = updates::UpdateNotificationConfig::CreateFromFinch();
   auto bridge =
       std::make_unique<updates::UpdateNotificationServiceBridgeAndroid>();
-  return static_cast<KeyedService*>(new updates::UpdateNotificationServiceImpl(
-      schedule_service, std::move(config), std::move(bridge)));
+  return std::make_unique<updates::UpdateNotificationServiceImpl>(
+      schedule_service, std::move(config), std::move(bridge));
 }
 
-content::BrowserContext*
-UpdateNotificationServiceFactory::GetBrowserContextToUse(
-    content::BrowserContext* context) const {
-  return chrome::GetBrowserContextOwnInstanceInIncognito(context);
+SimpleFactoryKey* UpdateNotificationServiceFactory::GetKeyToUse(
+    SimpleFactoryKey* key) const {
+  ProfileKey* profile_key = ProfileKey::FromSimpleFactoryKey(key);
+  return profile_key->GetOriginalKey();
 }
-
-UpdateNotificationServiceFactory::~UpdateNotificationServiceFactory() = default;

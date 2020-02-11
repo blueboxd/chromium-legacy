@@ -35,10 +35,6 @@
 #include "gpu/vulkan/vulkan_implementation.h"
 #endif
 
-#if defined(USE_OZONE)
-#include "ui/ozone/public/ozone_platform.h"
-#endif
-
 namespace viz {
 
 namespace {
@@ -146,14 +142,7 @@ void TestGpuServiceHolder::DoNotResetOnTestExit() {
 TestGpuServiceHolder::TestGpuServiceHolder(
     const gpu::GpuPreferences& gpu_preferences)
     : gpu_thread_("GPUMainThread"), io_thread_("GPUIOThread") {
-  base::Thread::Options gpu_main_options;
-#if defined(USE_OZONE)
-  gpu_main_options.message_pump_type = ui::OzonePlatform::GetInstance()
-                                           ->GetPlatformProperties()
-                                           .message_pump_type_for_gpu;
-#endif
-
-  CHECK(gpu_thread_.StartWithOptions(gpu_main_options));
+  CHECK(gpu_thread_.Start());
   CHECK(io_thread_.Start());
 
   base::WaitableEvent completion;

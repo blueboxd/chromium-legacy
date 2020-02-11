@@ -33,6 +33,12 @@ from util import diff_utils
 from util import manifest_utils
 from util import resource_utils
 
+# `Resources_pb2` module imports `descriptor`, which imports `six`.
+sys.path.insert(
+    1,
+    os.path.join(
+        os.path.dirname(__file__), os.pardir, os.pardir, os.pardir,
+        'third_party', 'six', 'src'))
 
 # Import jinja2 from third_party/jinja2
 sys.path.insert(1, os.path.join(build_utils.DIR_SOURCE_ROOT, 'third_party'))

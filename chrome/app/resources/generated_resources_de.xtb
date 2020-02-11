@@ -1604,7 +1604,7 @@ Servernachricht: <ph name="SERVER_MSG" /></translation>
 <translation id="3192947282887913208">Audiodateien</translation>
 <translation id="3194737229810486521"><ph name="URL" /> möchte Daten dauerhaft auf Ihrem Gerät speichern</translation>
 <translation id="3199127022143353223">Server</translation>
-<translation id="3200941271596533635">Lesemodus wechseln</translation>
+<translation id="3200941271596533635">Lesemodus an-/ausschalten</translation>
 <translation id="3201306578844503970">Die virtuelle Maschine konnte wegen eines Netzwerkfehlers nicht installiert werden. Bitte versuchen Sie es noch einmal oder wenden Sie sich an den Geräteadministrator Ihrer Organisation. Fehlercode: <ph name="ERROR_CODE" />.</translation>
 <translation id="3201422919974259695">Verfügbare USB-Geräte werden hier angezeigt.</translation>
 <translation id="3202131003361292969">Pfad</translation>

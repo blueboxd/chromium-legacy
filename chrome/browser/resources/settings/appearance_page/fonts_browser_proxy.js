@@ -2,6 +2,10 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+// clang-format off
+// #import {addSingletonGetter, sendWithPromise} from 'chrome://resources/js/cr.m.js';
+// clang-format on
+
 /**
  * @typedef {{
  *   fontList: !Array<{
@@ -11,11 +15,11 @@
  *   extensionUrl: string
  * }}
  */
-let FontsData;
+/* #export */ let FontsData;
 
 cr.define('settings', function() {
   /** @interface */
-  class FontsBrowserProxy {
+  /* #export */ class FontsBrowserProxy {
     /**
      * @return {!Promise<!FontsData>} Fonts and the advanced font settings
      *     extension URL.
@@ -30,7 +34,7 @@ cr.define('settings', function() {
   /**
    * @implements {settings.FontsBrowserProxy}
    */
-  class FontsBrowserProxyImpl {
+  /* #export */ class FontsBrowserProxyImpl {
     /** @override */
     fetchFontsData() {
       return cr.sendWithPromise('fetchFontsData');

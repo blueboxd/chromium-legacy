@@ -759,7 +759,7 @@
 <translation id="6649642165559792194">预览图片<ph name="BEGIN_NEW" />新<ph name="END_NEW" /></translation>
 <translation id="6656545060687952787">Chrome 需要拥有位置信息权限才能扫描设备。<ph name="BEGIN_LINK" />更新权限<ph name="END_LINK" /></translation>
 <translation id="6657585470893396449">密码</translation>
-<translation id="6659594942844771486">Tab</translation>
+<translation id="6659594942844771486">标签页</translation>
 <translation id="666731172850799929">在 <ph name="APP_NAME" />中打开</translation>
 <translation id="666981079809192359">Chrome 隐私权声明</translation>
 <translation id="6671495933530132209">复制图片</translation>
@@ -1046,7 +1046,6 @@
 <translation id="8853345339104747198"><ph name="TAB_TITLE" />，标签页</translation>
 <translation id="885701979325669005">存储数据</translation>
 <translation id="889338405075704026">转至 Chrome 设置</translation>
-<translation id="8901170036886848654">未找到任何书签</translation>
 <translation id="8909135823018751308">分享…</translation>
 <translation id="8912362522468806198">Google 帐号</translation>
 <translation id="8920114477895755567">正在等待获取家长的详细信息。</translation>

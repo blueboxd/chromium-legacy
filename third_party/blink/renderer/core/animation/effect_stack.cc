@@ -59,7 +59,7 @@ void CopyToActiveInterpolationsMap(
     // effect erases everything that came before it, so we must clear the stack
     // when that happens.
     const bool allow_stacked_effects =
-        RuntimeEnabledFeatures::StackedCSSPropertyAnimationsEnabled() ||
+        RuntimeEnabledFeatures::WebAnimationsAPIEnabled() ||
         !property.IsCSSProperty() || property.IsPresentationAttribute();
     const bool effect_depends_on_underlying_value =
         interpolation->IsInvalidatableInterpolation() &&

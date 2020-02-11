@@ -3965,6 +3965,29 @@ AutotestPrivateSetArcTouchModeFunction::Run() {
   return RespondNow(NoArguments());
 }
 
+////////////////////////////////////////////////////////////////////////////////
+// AutotestPrivatePinShelfIconFunction
+////////////////////////////////////////////////////////////////////////////////
+AutotestPrivatePinShelfIconFunction::AutotestPrivatePinShelfIconFunction() =
+    default;
+AutotestPrivatePinShelfIconFunction::~AutotestPrivatePinShelfIconFunction() =
+    default;
+
+ExtensionFunction::ResponseAction AutotestPrivatePinShelfIconFunction::Run() {
+  std::unique_ptr<api::autotest_private::PinShelfIcon::Params> params(
+      api::autotest_private::PinShelfIcon::Params::Create(*args_));
+  EXTENSION_FUNCTION_VALIDATE(params);
+  DVLOG(1) << "AutotestPrivatePinShelfIconFunction " << params->app_id;
+
+  ChromeLauncherController* const controller =
+      ChromeLauncherController::instance();
+  if (!controller)
+    return RespondNow(Error("Controller not available"));
+
+  controller->PinAppWithID(params->app_id);
+  return RespondNow(NoArguments());
+}
+
 ///////////////////////////////////////////////////////////////////////////////
 // AutotestPrivateAPI
 ///////////////////////////////////////////////////////////////////////////////

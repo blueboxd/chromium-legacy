@@ -222,8 +222,7 @@ class StartSurfaceMediator
             // Initialize
             // Note that isVoiceSearchEnabled will return false in incognito mode.
             mPropertyModel.set(IS_VOICE_RECOGNITION_BUTTON_VISIBLE,
-                    mFakeboxDelegate.getLocationBarVoiceRecognitionHandler()
-                            .isVoiceSearchEnabled());
+                    mFakeboxDelegate.getVoiceRecognitionHandler().isVoiceSearchEnabled());
 
             int toolbarHeight =
                     ContextUtils.getApplicationContext().getResources().getDimensionPixelSize(
@@ -635,14 +634,13 @@ class StartSurfaceMediator
         if (mPropertyModel == null) return;
         mPropertyModel.set(IS_FAKE_SEARCH_BOX_VISIBLE, isVisible);
 
-        // This is because LocationBarVoiceRecognitionHandler monitors incognito mode and returns
+        // This is because VoiceRecognitionHandler monitors incognito mode and returns
         // false in incognito mode. However, when switching incognito mode, this class is notified
-        // earlier than the LocationBarVoiceRecognitionHandler, so isVoiceSearchEnabled returns
+        // earlier than the VoiceRecognitionHandler, so isVoiceSearchEnabled returns
         // incorrect state if check synchronously.
         ThreadUtils.postOnUiThread(() -> {
             mPropertyModel.set(IS_VOICE_RECOGNITION_BUTTON_VISIBLE,
-                    mFakeboxDelegate.getLocationBarVoiceRecognitionHandler()
-                            .isVoiceSearchEnabled());
+                    mFakeboxDelegate.getVoiceRecognitionHandler().isVoiceSearchEnabled());
         });
     }
 

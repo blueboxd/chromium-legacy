@@ -275,20 +275,6 @@
       Güvenli Tarama ile ilgili daha fazla bilgi edinmek için https://developers.google.com/safe-browsing sayfasına bakın.
 
       Bu politika yalnızca bir <ph name="MS_AD_NAME" /> alan adına katılmış Windows örneklerinde veya cihaz yönetimine kaydolmuş Windows 10 Pro ya da Enterprise örneklerinde kullanılabilir.</translation>
-<translation id="1432194160771348078">
-      Giriş ekranında, kullanıcı etkileşimi olmadan sessizce yüklenen ve yüklemesi
-      kaldırılamayan uygulamaların bir listesini belirtir.
-      Uygulamalar tarafından istenen tüm izinler ve
-      uygulamanın gelecekteki sürümleri tarafından istenecek ek izinler
-      kullanıcı etkileşimi olmadan, örtülü olarak verilir.
-
-      Güvenlik ve gizlilik nedeniyle uzantıların bu politika kullanılarak yüklenmesine izin verilmediğini unutmayın. Dahası, Mevcut ürün kanalındaki cihazlar yalnızca beyaz listeye eklenen ve <ph name="PRODUCT_NAME" /> olarak paket haline getirilen uygulamaları yükler. Bu koşullara uymayan öğeler yoksayılır.
-
-      Önceden zorla yüklenmiş bir uygulama bu listeden kaldırılırsa, söz konusu uygulamanın yüklemesi <ph name="PRODUCT_NAME" /> tarafından otomatik olarak kaldırılır.
-
-      Politikanın liste öğeleri, noktalı virgülle (<ph name="SEMICOLON" />) ayrılmış bir uzantı kimliği ve "güncelleme" URL'si içeren birer dizedir. Uzantı kimliği, örneğin geliştirici modundayken <ph name="CHROME_EXTENSIONS_LINK" /> üzerinde bulunan 32 harfli dizedir. "Güncelleme" URL'si, <ph name="LINK_TO_EXTENSION_DOC1" /> dokümanında açıklandığı gibi bir Güncelleme Manifest XML dokümanını işaret etmelidir. Bu politikada ayarlanan "güncelleme" URL'sinin yalnızca ilk yükleme için kullanıldığını unutmayın. Uzantının sonraki güncellemelerinde, manifest dosyasında belirtilen güncelleme URL'si kullanılır.
-
-      Örneğin, <ph name="EXTENSION_POLICY_EXAMPLE" />, standart Chrome Web Mağazası "güncelleme" URL'sinden <ph name="EXTENSION_POLICY_EXAMPLE_EXTENSION_NAME" /> uygulamasını yükler. Uzantıların barındırılması hakkında daha fazla bilgi için şu adrese bakın: <ph name="LINK_TO_EXTENSION_DOC2" />.</translation>
 <translation id="1435659902881071157">Cihaz düzeyinde ağ yapılandırması</translation>
 <translation id="1438739959477268107">Varsayılan anahtar oluşturma ayarı</translation>
 <translation id="1454846751303307294">JavaScript'i çalıştırmasına izin verilmeyen sitelerin belirtildiği bir URL kalıpları listesi ayarlamanıza olanak tanır.
@@ -4415,7 +4401,6 @@ Bu politika yanlış (false) değerine ayarlanırsa Yeni Sekme sayfasında, otom
 
       Bu politika yalnızca <ph name="CHROME_REPORTING_EXTENSION_NAME" /> etkinleştirildiğinde ve makine <ph name="CLOUD_MANAGEMENT_ENROLLMENT_TOKEN_POLICY_NAME" /> politikasına kayıtlı olduğunda geçerli olur.</translation>
 <translation id="7758378441185523981">Ambiyans Kimlik Doğrulamasını profil türlerine göre etkinleştir.</translation>
-<translation id="7761446981238915769">Giriş ekranında, yüklü uygulamaların listesini yapılandır</translation>
 <translation id="7763614521440615342">Yeni Sekme sayfasında içerik önerileri göster</translation>
 <translation id="7765879851993224640">Smart Lock oturum açmanın kullanılmasına izin ver</translation>
 <translation id="7774768074957326919">Sistem proxy ayarlarını kullan</translation>

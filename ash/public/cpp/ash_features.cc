@@ -18,6 +18,9 @@ const base::Feature kAllowAmbientEQ{"AllowAmbientEQ",
 const base::Feature kAutoNightLight{"AutoNightLight",
                                     base::FEATURE_DISABLED_BY_DEFAULT};
 
+const base::Feature kContextualNudges{"ContextualNudges",
+                                      base::FEATURE_DISABLED_BY_DEFAULT};
+
 const base::Feature kDisplayChangeModal{"DisplayChangeModal",
                                         base::FEATURE_ENABLED_BY_DEFAULT};
 
@@ -216,6 +219,10 @@ bool IsHideShelfControlsInTabletModeEnabled() {
 
 bool IsDisplayChangeModalEnabled() {
   return base::FeatureList::IsEnabled(kDisplayChangeModal);
+}
+
+bool AreContextualNudgesEnabled() {
+  return base::FeatureList::IsEnabled(kContextualNudges);
 }
 
 namespace {

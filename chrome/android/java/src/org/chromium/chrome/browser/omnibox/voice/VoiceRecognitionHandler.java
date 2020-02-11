@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-package org.chromium.chrome.browser.omnibox;
+package org.chromium.chrome.browser.omnibox.voice;
 
 import android.Manifest;
 import android.app.Activity;
@@ -19,7 +19,6 @@ import org.chromium.base.ThreadUtils;
 import org.chromium.base.metrics.CachedMetrics;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.omnibox.suggestions.AutocompleteCoordinator;
-import org.chromium.chrome.browser.omnibox.voice.AssistantVoiceSearchService;
 import org.chromium.chrome.browser.search_engines.TemplateUrlServiceFactory;
 import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.browser.toolbar.ToolbarDataProvider;
@@ -35,9 +34,9 @@ import java.util.ArrayList;
 import java.util.List;
 
 /**
- * Class containing functionality related to voice search in the location bar.
+ * Class containing functionality related to voice search.
  */
-public class LocationBarVoiceRecognitionHandler {
+public class VoiceRecognitionHandler {
     // The minimum confidence threshold that will result in navigating directly to a voice search
     // response (as opposed to treating it like a typed string in the Omnibox).
     @VisibleForTesting
@@ -162,7 +161,7 @@ public class LocationBarVoiceRecognitionHandler {
         }
     }
 
-    public LocationBarVoiceRecognitionHandler(Delegate delegate) {
+    public VoiceRecognitionHandler(Delegate delegate) {
         mDelegate = delegate;
     }
 

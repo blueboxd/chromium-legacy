@@ -15,7 +15,7 @@ let DropdownMenuOption;
 /**
  * @typedef {!Array<!DropdownMenuOption>}
  */
-let DropdownMenuOptionList;
+/* #export */ let DropdownMenuOptionList;
 
 /**
  * 'settings-dropdown-menu' is a control for displaying options

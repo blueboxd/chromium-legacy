@@ -255,7 +255,8 @@ public class RootUiCoordinator
             Tab tab = mActivity.getActivityTabProvider().get();
             if (fromMenu) {
                 RecordUserAction.record("MobileMenuFindInPage");
-                new UkmRecorder.Bridge().recordEvent(tab.getWebContents(), "MobileMenu.FindInPage");
+                new UkmRecorder.Bridge().recordEventWithBooleanMetric(
+                        tab.getWebContents(), "MobileMenu.FindInPage", "HasOccurred");
             } else {
                 RecordUserAction.record("MobileShortcutFindInPage");
             }

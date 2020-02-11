@@ -354,7 +354,7 @@ void ClipboardAndroid::ReadAvailableTypes(ClipboardBuffer buffer,
 
 std::vector<base::string16>
 ClipboardAndroid::ReadAvailablePlatformSpecificFormatNames(
-    ui::ClipboardBuffer buffer) const {
+    ClipboardBuffer buffer) const {
   DCHECK_EQ(buffer, ClipboardBuffer::kCopyPaste);
   std::vector<std::string> formats = g_map.Get().GetFormats();
 

@@ -20,7 +20,6 @@ import org.chromium.base.StrictModeContext;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.ActivityTabProvider;
 import org.chromium.chrome.browser.compositor.layouts.OverviewModeBehavior;
-import org.chromium.chrome.browser.omnibox.LocationBarVoiceRecognitionHandler;
 import org.chromium.chrome.browser.omnibox.UrlBarEditingTextStateProvider;
 import org.chromium.chrome.browser.omnibox.suggestions.AutocompleteController.OnSuggestionsReceivedListener;
 import org.chromium.chrome.browser.omnibox.suggestions.SuggestionListViewBinder.SuggestionListViewHolder;
@@ -33,6 +32,7 @@ import org.chromium.chrome.browser.omnibox.suggestions.editurl.EditUrlSuggestion
 import org.chromium.chrome.browser.omnibox.suggestions.entity.EntitySuggestionViewBinder;
 import org.chromium.chrome.browser.omnibox.suggestions.tail.TailSuggestionView;
 import org.chromium.chrome.browser.omnibox.suggestions.tail.TailSuggestionViewBinder;
+import org.chromium.chrome.browser.omnibox.voice.VoiceRecognitionHandler;
 import org.chromium.chrome.browser.profiles.Profile;
 import org.chromium.chrome.browser.toolbar.ToolbarDataProvider;
 import org.chromium.chrome.browser.util.KeyNavigationUtil;
@@ -224,8 +224,7 @@ public class AutocompleteCoordinatorImpl implements AutocompleteCoordinator {
     }
 
     @Override
-    public void onVoiceResults(
-            @Nullable List<LocationBarVoiceRecognitionHandler.VoiceResult> results) {
+    public void onVoiceResults(@Nullable List<VoiceRecognitionHandler.VoiceResult> results) {
         mMediator.onVoiceResults(results);
     }
 

@@ -759,7 +759,7 @@ Google налог можда има друге облике историје п�
 <translation id="6649642165559792194">Прикажи слику <ph name="BEGIN_NEW" />Ново<ph name="END_NEW" /></translation>
 <translation id="6656545060687952787">Chrome-у је потребан приступ локацији за скенирање уређаја. <ph name="BEGIN_LINK" />Ажурирајте дозволе<ph name="END_LINK" /></translation>
 <translation id="6657585470893396449">Лозинка</translation>
-<translation id="6659594942844771486">Tab</translation>
+<translation id="6659594942844771486">Картица</translation>
 <translation id="666731172850799929">Отвори у <ph name="APP_NAME" /></translation>
 <translation id="666981079809192359">Chrome обавештење о приватности</translation>
 <translation id="6671495933530132209">Копирај слику</translation>
@@ -1046,7 +1046,6 @@ Google налог можда има друге облике историје п�
 <translation id="8853345339104747198"><ph name="TAB_TITLE" />, картица</translation>
 <translation id="885701979325669005">Меморијски простор</translation>
 <translation id="889338405075704026">Идите у подешавања Chrome-а</translation>
-<translation id="8901170036886848654">Није пронађен ниједан обележивач</translation>
 <translation id="8909135823018751308">Дели...</translation>
 <translation id="8912362522468806198">Google налога</translation>
 <translation id="8920114477895755567">Чекају се детаљи родитеља.</translation>

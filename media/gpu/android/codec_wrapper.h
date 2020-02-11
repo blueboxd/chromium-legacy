@@ -44,6 +44,9 @@ class MEDIA_GPU_EXPORT CodecOutputBuffer {
   // The size of the image.
   gfx::Size size() const { return size_; }
 
+  // Color space of the image.
+  const gfx::ColorSpace& color_space() const { return color_space_; }
+
   // Note that you can't use the first ctor, since CodecWrapperImpl isn't
   // defined here.  Use the second, and it'll be nullptr.
   template <typename... Args>
@@ -58,15 +61,19 @@ class MEDIA_GPU_EXPORT CodecOutputBuffer {
   friend class CodecWrapperImpl;
   CodecOutputBuffer(scoped_refptr<CodecWrapperImpl> codec,
                     int64_t id,
-                    const gfx::Size& size);
+                    const gfx::Size& size,
+                    const gfx::ColorSpace& color_space);
 
   // For testing, since CodecWrapperImpl isn't available.  Uses nullptr.
-  CodecOutputBuffer(int64_t id, const gfx::Size& size);
+  CodecOutputBuffer(int64_t id,
+                    const gfx::Size& size,
+                    const gfx::ColorSpace& color_space);
 
   scoped_refptr<CodecWrapperImpl> codec_;
   int64_t id_;
   bool was_rendered_ = false;
   gfx::Size size_;
+  gfx::ColorSpace color_space_;
   DISALLOW_COPY_AND_ASSIGN(CodecOutputBuffer);
 };
 

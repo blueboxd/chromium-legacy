@@ -759,7 +759,7 @@ Utfør lange trykk på ord for å søke etter dem. For å finstemme søket, just
 <translation id="6649642165559792194">Forhåndsvis bildet <ph name="BEGIN_NEW" />Nyhet<ph name="END_NEW" /></translation>
 <translation id="6656545060687952787">Chrome trenger posisjonstilgang for å søke etter enheter. <ph name="BEGIN_LINK" />Oppdater tillatelsene<ph name="END_LINK" /></translation>
 <translation id="6657585470893396449">Passord</translation>
-<translation id="6659594942844771486">Tab</translation>
+<translation id="6659594942844771486">Fane</translation>
 <translation id="666731172850799929">Åpne i <ph name="APP_NAME" /></translation>
 <translation id="666981079809192359">Merknad om personvern for Chrome</translation>
 <translation id="6671495933530132209">Kopiér bildet</translation>
@@ -1046,7 +1046,6 @@ Nettstedet får IKKE tilgang til kameraet. Kamerabildene er kun synlige for deg.
 <translation id="8853345339104747198"><ph name="TAB_TITLE" /> – fane</translation>
 <translation id="885701979325669005">Lagring</translation>
 <translation id="889338405075704026">Gå til Chrome-innstillingene</translation>
-<translation id="8901170036886848654">Fant ingen bokmerker</translation>
 <translation id="8909135823018751308">Del</translation>
 <translation id="8912362522468806198">Google-konto</translation>
 <translation id="8920114477895755567">Venter på informasjon om foreldre.</translation>

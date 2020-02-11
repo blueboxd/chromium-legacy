@@ -1629,6 +1629,11 @@
                   '|ui/webui/resources/cr_components/chromeos/'\
                   '|ui/webui/resources/cr_elements/chromeos/',
     },
+   'share_sheet': {
+      'filepath': 'chrome/android/java/src/org/chromium/chrome/browser/share/'\
+                  'chrome/android/java/res/layout/share_sheet_.*'\
+                  'chrome/browser/share/android/java/src/org/chromium/chrome/browser/share/',
+    },
     'sharing': {
       'filepath': 'chrome/browser/sharing/|'\
                   'chrome/browser/ui/views/sharing/',
@@ -2644,6 +2649,7 @@
     'settings_os_settings': ['hsuregan+watch-os-settings@chromium.org',
                              'khorimoto+watch-os-settings@chromium.org',
                              'zentaro+watch-os-settings@chromium.org'],
+    'share_sheet': ['chrome-sharing-eng+watch@google.com'],
     'sharing': ['peter@chromium.org',
                 'unido-reviews@chromium.org'],
     'site_engagement': ['dominickn+watch-engagement@chromium.org'],

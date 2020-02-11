@@ -352,7 +352,7 @@ void ClipboardMac::WriteBookmark(const char* title_data,
   base::scoped_nsobject<NSPasteboardItem> item(
       ClipboardUtil::PasteboardItemFromUrl(url, title));
   NSPasteboard* pb = GetPasteboard();
-  ui::ClipboardUtil::AddDataToPasteboard(pb, item);
+  ClipboardUtil::AddDataToPasteboard(pb, item);
 }
 
 void ClipboardMac::WriteBitmap(const SkBitmap& bitmap) {

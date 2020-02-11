@@ -268,17 +268,6 @@
       要详细了解安全浏览功能，请访问 https://developers.google.com/safe-browsing。
 
       此政策仅适用于已加入 <ph name="MS_AD_NAME" /> 网域的 Windows 实例，或者已注册设备管理服务的 Windows 10 Pro 或 Enterprise 实例。</translation>
-<translation id="1432194160771348078">
-      指定在登录设备上静默安装（无需用户干预）的应用的列表，这些应用无法卸载。
-      此类应用请求的所有权限均由系统默认授予（无需用户干预），包括应用后续版本所请求的任何其他权限。
-
-      请注意，出于安全和隐私方面的考虑，不得使用此政策安装扩展程序。此外，采用稳定版的设备将仅安装捆绑到 <ph name="PRODUCT_NAME" /> 的白名单中的应用。任何不符合这些条件的应用都将被忽略。
-
-      如果之前强制安装的某个应用从此列表中移除，则 <ph name="PRODUCT_NAME" /> 会自动卸载该应用。
-
-      该政策的每个列表项都是一个字符串，其中包含由分号 (<ph name="SEMICOLON" />) 分隔的扩展程序 ID 和“更新”网址。扩展程序 ID 为 32 个字母的字符串，可在如下网址（示例）中找到：<ph name="CHROME_EXTENSIONS_LINK" />（在开发者模式下）。“更新”网址应指向更新清单 XML 文档，具体如 <ph name="LINK_TO_EXTENSION_DOC1" /> 中所述。请注意，该政策中设置的“更新”网址仅用于初次安装；扩展程序的后续更新将使用扩展程序的清单中指定的更新网址。
-
-      例如，<ph name="EXTENSION_POLICY_EXAMPLE" /> 会从标准 Chrome 网上应用店“更新”网址安装 <ph name="EXTENSION_POLICY_EXAMPLE_EXTENSION_NAME" /> 应用。如需关于托管扩展程序的更多信息，请访问：<ph name="LINK_TO_EXTENSION_DOC2" />。</translation>
 <translation id="1435659902881071157">设备级网络配置</translation>
 <translation id="1438739959477268107">默认的密钥生成设置</translation>
 <translation id="1454846751303307294">可让您设置网址格式的列表，这些网址格式用于指定不允许运行 JavaScript 的网站。在未设置此政策的情况下，如果设置了“DefaultJavaScriptSetting”政策，那么将对该政策中的所有网站使用全局默认值，否则将对用户个人配置中的所有网站使用全局默认值。</translation>
@@ -4251,7 +4240,6 @@
 
       仅当已启用 <ph name="CHROME_REPORTING_EXTENSION_NAME" /> 且已使用 <ph name="CLOUD_MANAGEMENT_ENROLLMENT_TOKEN_POLICY_NAME" /> 注册相应设备后，此政策才有效。</translation>
 <translation id="7758378441185523981">为个人资料类型启用静默身份验证。</translation>
-<translation id="7761446981238915769">配置登录屏幕上已安装应用的列表</translation>
 <translation id="7763614521440615342">在“打开新的标签页”页面上显示内容建议</translation>
 <translation id="7765879851993224640">允许使用 Smart Lock 登录功能。</translation>
 <translation id="7774768074957326919">使用系统代理设置</translation>

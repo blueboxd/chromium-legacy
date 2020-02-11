@@ -759,7 +759,7 @@
 <translation id="6649642165559792194">画像をプレビュー <ph name="BEGIN_NEW" />New<ph name="END_NEW" /></translation>
 <translation id="6656545060687952787">デバイスをスキャンするには、Chrome で位置情報にアクセスする必要があります。<ph name="BEGIN_LINK" />権限を更新<ph name="END_LINK" /></translation>
 <translation id="6657585470893396449">パスワード</translation>
-<translation id="6659594942844771486">Tab</translation>
+<translation id="6659594942844771486">タブ</translation>
 <translation id="666731172850799929"><ph name="APP_NAME" />で開く</translation>
 <translation id="666981079809192359">Chrome のプライバシーに関するお知らせ</translation>
 <translation id="6671495933530132209">画像をコピー</translation>
@@ -1046,7 +1046,6 @@
 <translation id="8853345339104747198">「<ph name="TAB_TITLE" />」タブ</translation>
 <translation id="885701979325669005">ストレージ</translation>
 <translation id="889338405075704026">Chrome 設定に移動</translation>
-<translation id="8901170036886848654">ブックマークが見つかりません</translation>
 <translation id="8909135823018751308">共有...</translation>
 <translation id="8912362522468806198">Google アカウントを使用</translation>
 <translation id="8920114477895755567">保護者の情報を待っています。</translation>

@@ -273,17 +273,6 @@ Secara default, tidak ada mode buka kunci cepat yang tersedia untuk perangkat ya
       Lihat https://developers.google.com/safe-browsing untuk mengetahui info selengkapnya tentang Safe Browsing.
 
       Kebijakan ini hanya tersedia pada instance Windows yang dihubungkan ke domain <ph name="MS_AD_NAME" />, atau instance Windows 10 Pro atau Enterprise yang terdaftar untuk pengelolaan perangkat.</translation>
-<translation id="1432194160771348078">
-      Menentukan daftar aplikasi yang diinstal diam-diam di layar login, tanpa interaksi pengguna, dan yang tidak dapat di-uninstal.
-      Semua izin yang diminta oleh aplikasi akan diberikan secara implisit, tanpa interaksi pengguna, termasuk semua izin tambahan yang diminta oleh aplikasi versi mendatang.
-
-      Perlu diperhatikan bahwa, demi keamanan dan privasi, penginstalan ekstensi tidak diizinkan berdasarkan kebijakan ini. Selain itu, perangkat di saluran Stabil hanya akan menginstal aplikasi yang termasuk dalam daftar diizinkan yang dipaketkan ke dalam <ph name="PRODUCT_NAME" />. Semua item yang tidak mengikuti syarat ini akan diabaikan.
-
-      Jika aplikasi yang sebelumnya diinstal otomatis dihapus dari daftar ini, maka aplikasi tersebut akan otomatis di-uninstal oleh <ph name="PRODUCT_NAME" />.
-
-      Setiap item daftar dalam kebijakan ini merupakan string yang berisi ID ekstensi dan URL "update" yang dipisahkan titik koma (<ph name="SEMICOLON" />). ID ekstensi adalah string 32 huruf yang dapat ditemukan misalnya di <ph name="CHROME_EXTENSIONS_LINK" /> saat dalam mode developer. URL "update" harus mengarah ke dokumen XML Update Manifest yang dijelaskan di <ph name="LINK_TO_EXTENSION_DOC1" />. Perhatikan bahwa URL "update" yang ditetapkan dalam kebijakan ini hanya digunakan untuk penginstalan awal; update ekstensi berikutnya akan menggunakan URL update yang ditunjukkan dalam manifes ekstensi.
-
-      Misalnya, <ph name="EXTENSION_POLICY_EXAMPLE" /> akan menginstal aplikasi <ph name="EXTENSION_POLICY_EXAMPLE_EXTENSION_NAME" /> dari URL "update" Chrome Web Store standar. Untuk informasi selengkapnya terkait menghosting ekstensi, lihat: <ph name="LINK_TO_EXTENSION_DOC2" />.</translation>
 <translation id="1435659902881071157">Konfigurasi jaringan tingkat perangkat</translation>
 <translation id="1438739959477268107">Setelan pembuatan kunci default</translation>
 <translation id="1454846751303307294">Memungkinkan Anda menyetel daftar pola url yang menentukan situs yang tidak diizinkan untuk menjalankan JavaScript. Jika kebijakan ini tidak disetel, nilai default global akan digunakan untuk semua situs, baik dari kebijakan 'DefaultJavaScriptSetting', jika disetel, ataupun dari konfigurasi pribadi pengguna.</translation>
@@ -4316,7 +4305,6 @@ Cara yang diharapkan terkait penggunaan kebijakan ini adalah merotasi konfiguras
 
       Kebijakan ini hanya berlaku jika <ph name="CHROME_REPORTING_EXTENSION_NAME" /> diaktifkan, dan perangkat didaftarkan dengan <ph name="CLOUD_MANAGEMENT_ENROLLMENT_TOKEN_POLICY_NAME" />.</translation>
 <translation id="7758378441185523981">Mengaktifkan Autentikasi Standby untuk jenis profil.</translation>
-<translation id="7761446981238915769">Konfigurasi daftar aplikasi yang terpasang di layar masuk</translation>
 <translation id="7763614521440615342">Tampilkan saran konten di halaman Tab Baru</translation>
 <translation id="7765879851993224640">Izinkan Smart Lock Signin digunakan.</translation>
 <translation id="7774768074957326919">Gunakan setelan proxy sistem</translation>

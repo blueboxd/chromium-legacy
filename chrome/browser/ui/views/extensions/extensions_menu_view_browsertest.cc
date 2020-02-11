@@ -279,7 +279,14 @@ class ExtensionsMenuViewBrowserTest : public ExtensionsToolbarBrowserTest {
   std::string ui_test_name_;
 };
 
-IN_PROC_BROWSER_TEST_F(ExtensionsMenuViewBrowserTest, InvokeUi_default) {
+// TODO(crbug.com/1050712): the test is flaky.
+// TODO(crbug.com/1050712): the test is flaky.
+#if defined(OS_MACOSX) || defined(OS_LINUX)
+#define MAYBE_InvokeUi_default DISABLED_InvokeUi_default
+#else
+#define MAYBE_InvokeUi_default InvokeUi_default
+#endif
+IN_PROC_BROWSER_TEST_F(ExtensionsMenuViewBrowserTest, MAYBE_InvokeUi_default) {
   LoadTestExtension("extensions/uitest/long_name");
   LoadTestExtension("extensions/uitest/window_open");
 
@@ -356,12 +363,8 @@ IN_PROC_BROWSER_TEST_F(ExtensionsMenuViewBrowserTest,
   ShowAndVerifyUi();
 }
 
-#if (defined(OS_WIN) && defined(MEMORY_SANITIZER))
-#define MAYBE_TriggerPopup DISABLED_TriggerPopup
-#else
-#define MAYBE_TriggerPopup TriggerPopup
-#endif
-IN_PROC_BROWSER_TEST_F(ExtensionsMenuViewBrowserTest, TriggerPopup) {
+// TODO(crbug.com/1050712): the test is flaky.
+IN_PROC_BROWSER_TEST_F(ExtensionsMenuViewBrowserTest, DISABLED_TriggerPopup) {
   LoadTestExtension("extensions/simple_with_popup");
   ShowUi("");
   VerifyUi();
@@ -446,7 +449,8 @@ IN_PROC_BROWSER_TEST_F(ExtensionsMenuViewBrowserTest,
   EXPECT_FALSE(ExtensionsMenuView::IsShowing());
 }
 
-#if defined(OS_WIN)
+// TODO(crbug.com/1050712): the test is flaky.
+#if defined(OS_WIN) || defined(OS_LINUX)
 #define MAYBE_CreatesOneMenuItemPerExtension \
   DISABLED_CreatesOneMenuItemPerExtension
 #else
@@ -463,8 +467,14 @@ IN_PROC_BROWSER_TEST_F(ExtensionsMenuViewBrowserTest,
   DismissUi();
 }
 
+// TODO(crbug.com/1050712): the test is flaky.
+#if defined(OS_WIN)
+#define MAYBE_PinningDisabledInIncognito DISABLED_PinningDisabledInIncognito
+#else
+#define MAYBE_PinningDisabledInIncognito PinningDisabledInIncognito
+#endif
 IN_PROC_BROWSER_TEST_F(ExtensionsMenuViewBrowserTest,
-                       PinningDisabledInIncognito) {
+                       MAYBE_PinningDisabledInIncognito) {
   LoadTestExtension("extensions/uitest/window_open", true);
   SetUpIncognitoBrowser();
 
@@ -555,8 +565,14 @@ class ActivateWithReloadExtensionsMenuBrowserTest
     : public ExtensionsMenuViewBrowserTest,
       public ::testing::WithParamInterface<bool> {};
 
+// Flaky on windows, http://crbug.com/1048956
+#if defined(OS_WIN)
+#define MAYBE_ActivateWithReload DISABLED_ActivateWithReload
+#else
+#define MAYBE_ActivateWithReload ActivateWithReload
+#endif
 IN_PROC_BROWSER_TEST_P(ActivateWithReloadExtensionsMenuBrowserTest,
-                       ActivateWithReload) {
+                       MAYBE_ActivateWithReload) {
   ASSERT_TRUE(embedded_test_server()->Start());
   LoadTestExtension("extensions/blocked_actions/content_scripts");
   auto extension = extensions().back();

@@ -287,20 +287,6 @@ Google에 전송됩니다.  사용 중지되면 이 정보가 Google에 전송�
       https://developers.google.com/safe-browsing에서 세이프 브라우징을 자세히 알아보세요.
 
       이 정책은 <ph name="MS_AD_NAME" /> 도메인에 참여하는 Windows 인스턴스 또는 기기 관리에 등록된 Windows 10 Pro/Enterprise 인스턴트에서만 사용할 수 있습니다.</translation>
-<translation id="1432194160771348078">
-      사용자와의 상호작용 없이 로그인 화면에 알림 없이 설치되었으며
-      제거할 수 없는 앱 목록을 명시합니다.
-      앱의 향후 버전에서 요청할 추가 권한 등
-      앱에서 요청한 모든 권한은
-      사용자와의 상호작용 없이도 암묵적으로 부여됩니다.
-
-      보안 및 개인정보 보호를 위해 확장 프로그램은 이 정책을 사용하여 설치되면 안 됩니다. 또한 공개 버전 채널의 기기에는 <ph name="PRODUCT_NAME" />에 허용 목록으로 지정된 앱만 설치할 수 있으며 이러한 조건에 부합하지 않는 모든 항목은 무시됩니다.
-
-      이전에 강제로 설치된 앱이 목록에서 제거된 경우 이는 <ph name="PRODUCT_NAME" />에 의해 자동으로 제거된 것입니다.
-
-      이 정책의 각 항목은 세미콜론(<ph name="SEMICOLON" />)으로 구분된 확장 프로그램 ID 및 '업데이트' URL로 구성된 문자열입니다. 확장 프로그램 ID는 개발자 모드일 때 <ph name="CHROME_EXTENSIONS_LINK" /> 등에 표시되는 32자리 문자열입니다. '업데이트' URL은 <ph name="LINK_TO_EXTENSION_DOC1" />에 명시된 것과 같이 업데이트 매니페스트 XML 문서를 가리켜야 합니다. 이 정책에서 설정된 '업데이트' URL은 최초 설치 시에만 사용되며 이후에 확장 프로그램이 업데이트될 때는 확장 프로그램의 매니페스트에 명시된 업데이트 URL이 사용됩니다.
-
-      예를 들어 <ph name="EXTENSION_POLICY_EXAMPLE" />의 경우 표준 Chrome 웹 스토어의 '업데이트' URL에서 <ph name="EXTENSION_POLICY_EXAMPLE_EXTENSION_NAME" /> 앱을 설치합니다. 확장 프로그램 호스팅에 관한 자세한 내용은 다음 페이지를 참조하세요. <ph name="LINK_TO_EXTENSION_DOC2" /></translation>
 <translation id="1435659902881071157">기기 수준 네트워크 설정</translation>
 <translation id="1438739959477268107">기본 키 생성 설정</translation>
 <translation id="1454846751303307294">자바스크립트 실행이 허용되지 않는 사이트를 지정하는 URL 패턴 목록을 설정할 수 있습니다.
@@ -4450,7 +4436,6 @@ Google에 전송됩니다.  사용 중지되면 이 정보가 Google에 전송�
 
       이 정책은 <ph name="CHROME_REPORTING_EXTENSION_NAME" />이(가) 사용 설정되어 있고 기기가 <ph name="CLOUD_MANAGEMENT_ENROLLMENT_TOKEN_POLICY_NAME" />에 등록된 경우에만 적용됩니다.</translation>
 <translation id="7758378441185523981">프로필 유형에 수동 인증을 사용 설정합니다.</translation>
-<translation id="7761446981238915769">로그인 화면에서 설치된 앱 목록 구성</translation>
 <translation id="7763614521440615342">새 탭 페이지에 콘텐츠 추천 표시</translation>
 <translation id="7765879851993224640">Smart Lock을 사용하도록 허용합니다.</translation>
 <translation id="7774768074957326919">시스템 프록시 설정 사용</translation>

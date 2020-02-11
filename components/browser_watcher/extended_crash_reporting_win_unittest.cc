@@ -12,28 +12,56 @@
 #include "base/files/file_path.h"
 #include "base/files/file_util.h"
 #include "base/files/scoped_temp_dir.h"
+#include "base/metrics/persistent_memory_allocator.h"
 #include "base/process/process.h"
 #include "base/test/multiprocess_test.h"
-#include "base/test/test_timeouts.h"
+#include "base/test/scoped_feature_list.h"
 #include "build/build_config.h"
 #include "components/browser_watcher/activity_report.pb.h"
 #include "components/browser_watcher/activity_report_extractor.h"
+#include "components/browser_watcher/activity_tracker_annotation.h"
+#include "components/browser_watcher/features.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "testing/multiprocess_func_list.h"
+#include "third_party/crashpad/crashpad/client/annotation_list.h"
 
 namespace browser_watcher {
+
+namespace {
+
+crashpad::Annotation* GetActivtyTrackerAnnotation() {
+  crashpad::AnnotationList* annotation_list = crashpad::AnnotationList::Get();
+  for (auto it = annotation_list->begin(); it != annotation_list->end(); ++it) {
+    if (strcmp(ActivityTrackerAnnotation::kAnnotationName, (*it)->name()) ==
+            0 &&
+        ActivityTrackerAnnotation::kAnnotationType == (*it)->type()) {
+      return *it;
+    }
+  }
+
+  return nullptr;
+}
+
+bool IsNullOrEmpty(crashpad::Annotation* annotation) {
+  return annotation == nullptr || annotation->size() == 0;
+}
+
+bool IsNonEmpty(crashpad::Annotation* annotation) {
+  return annotation != nullptr && annotation->size() > 0;
+}
 
 using base::debug::GlobalActivityAnalyzer;
 using base::debug::GlobalActivityTracker;
 
-const int kMemorySize = 1 << 20;  // 1MiB
-const uint32_t exception_code = 42U;
-const uint32_t exception_flag_continuable = 0U;
+constexpr uint32_t kExceptionCode = 42U;
+constexpr uint32_t kExceptionFlagContinuable = 0U;
 
-class StabilityDebuggingTest : public testing::Test {
+}  // namespace
+
+class ExtendedCrashReportingTest : public testing::Test {
  public:
-  StabilityDebuggingTest() {}
-  ~StabilityDebuggingTest() override {
+  ExtendedCrashReportingTest() {}
+  ~ExtendedCrashReportingTest() override {
     GlobalActivityTracker* global_tracker = GlobalActivityTracker::Get();
     if (global_tracker) {
       global_tracker->ReleaseTrackerForCurrentThreadForTesting();
@@ -44,23 +72,49 @@ class StabilityDebuggingTest : public testing::Test {
   void SetUp() override {
     testing::Test::SetUp();
 
-    ASSERT_TRUE(temp_dir_.CreateUniqueTempDir());
-    debug_path_ = temp_dir_.GetPath().AppendASCII("debug.pma");
-
-    GlobalActivityTracker::CreateWithFile(debug_path_, kMemorySize, 0ULL, "",
-                                          3);
+    // Make sure the setup is reset for each test, irrespective of whether
+    // other other tests have initialized it.
+    ExtendedCrashReporting::TearDownForTesting();
   }
-
-  const base::FilePath& debug_path() { return debug_path_; }
+  void TearDown() override {
+    ExtendedCrashReporting::TearDownForTesting();
+    testing::Test::TearDown();
+  }
 
   std::unique_ptr<GlobalActivityAnalyzer> CreateAnalyzer() {
-    return GlobalActivityAnalyzer::CreateWithFile(debug_path());
-  }
+    GlobalActivityTracker* tracker = GlobalActivityTracker::Get();
+    EXPECT_TRUE(tracker);
+    base::PersistentMemoryAllocator* tmp = tracker->allocator();
 
- private:
-  base::ScopedTempDir temp_dir_;
-  base::FilePath debug_path_;
+    return GlobalActivityAnalyzer::CreateWithAllocator(
+        std::make_unique<base::PersistentMemoryAllocator>(
+            const_cast<void*>(tmp->data()), tmp->size(), 0u, 0u, "Copy", true));
+  }
 };
+
+TEST_F(ExtendedCrashReportingTest, DisabledByDefault) {
+  EXPECT_EQ(nullptr, ExtendedCrashReporting::SetUpIfEnabled());
+  EXPECT_EQ(nullptr, ExtendedCrashReporting::GetInstance());
+}
+
+TEST_F(ExtendedCrashReportingTest, SetupIsEnabledByFeatureFlag) {
+  base::test::ScopedFeatureList feature_list;
+  feature_list.InitAndEnableFeature(kExtendedCrashReportingFeature);
+
+  ExtendedCrashReporting* reporting = ExtendedCrashReporting::SetUpIfEnabled();
+  EXPECT_NE(nullptr, reporting);
+  EXPECT_EQ(reporting, ExtendedCrashReporting::GetInstance());
+}
+
+TEST_F(ExtendedCrashReportingTest, RecordsAnnotation) {
+  // Make sure the annotation doesn't exist before initialization.
+  crashpad::Annotation* annotation = GetActivtyTrackerAnnotation();
+  EXPECT_TRUE(IsNullOrEmpty(annotation));
+
+  ExtendedCrashReporting::SetUpForTesting();
+  EXPECT_NE(nullptr, ExtendedCrashReporting::GetInstance());
+  EXPECT_TRUE(IsNonEmpty(GetActivtyTrackerAnnotation()));
+}
 
 #if defined(ADDRESS_SANITIZER) && defined(OS_WIN)
 // The test does not pass under WinASan. See crbug.com/809524.
@@ -68,12 +122,15 @@ class StabilityDebuggingTest : public testing::Test {
 #else
 #define MAYBE_CrashingTest CrashingTest
 #endif
-TEST_F(StabilityDebuggingTest, MAYBE_CrashingTest) {
-  ExtendedCrashReporting::RegisterVEH();
+TEST_F(ExtendedCrashReportingTest, MAYBE_CrashingTest) {
+  ExtendedCrashReporting::SetUpForTesting();
+  ExtendedCrashReporting* extended_crash_reporting =
+      ExtendedCrashReporting::GetInstance();
+  ASSERT_NE(nullptr, extended_crash_reporting);
 
   // Raise an exception, then continue.
   __try {
-    ::RaiseException(exception_code, exception_flag_continuable, 0U, nullptr);
+    ::RaiseException(kExceptionCode, kExceptionFlagContinuable, 0U, nullptr);
   } __except (EXCEPTION_CONTINUE_EXECUTION) {
   }
 
@@ -92,7 +149,7 @@ TEST_F(StabilityDebuggingTest, MAYBE_CrashingTest) {
       thread_found = true;
       ASSERT_TRUE(thread.has_exception());
       const Exception& exception = thread.exception();
-      EXPECT_EQ(exception_code, exception.code());
+      EXPECT_EQ(kExceptionCode, exception.code());
       EXPECT_NE(0ULL, exception.program_counter());
       EXPECT_NE(0ULL, exception.exception_address());
       EXPECT_NE(0LL, exception.time());

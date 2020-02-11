@@ -9,9 +9,9 @@
 #include "base/android/jni_string.h"
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/android/chrome_jni_headers/UpdateNotificationServiceBridge_jni.h"
+#include "chrome/browser/android/profile_key_util.h"
 #include "chrome/browser/notifications/scheduler/public/notification_params.h"
-#include "chrome/browser/profiles/profile.h"
-#include "chrome/browser/profiles/profile_android.h"
+#include "chrome/browser/profiles/profile_key.h"
 #include "chrome/browser/updates/update_notification_info.h"
 #include "chrome/browser/updates/update_notification_service.h"
 #include "chrome/browser/updates/update_notification_service_factory.h"
@@ -26,14 +26,13 @@ namespace updates {
 //
 void JNI_UpdateNotificationServiceBridge_Schedule(
     JNIEnv* env,
-    const JavaParamRef<jobject>& j_profile,
     const JavaParamRef<jstring>& j_title,
     const JavaParamRef<jstring>& j_message,
     const jint j_state,
     const jboolean j_show_immediately) {
-  Profile* profile = ProfileAndroid::FromProfileAndroid(j_profile);
+  ProfileKey* profile_key = ::android::GetLastUsedProfileKey();
   auto* update_notification_service =
-      UpdateNotificationServiceFactory::GetForBrowserContext(profile);
+      UpdateNotificationServiceFactory::GetForKey(profile_key);
   UpdateNotificationInfo data;
   data.title = ConvertJavaStringToUTF16(env, j_title);
   data.message = ConvertJavaStringToUTF16(env, j_message);

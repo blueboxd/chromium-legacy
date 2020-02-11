@@ -29,8 +29,8 @@
 #include "weblayer/browser/i18n_util.h"
 #include "weblayer/browser/isolated_world_ids.h"
 #include "weblayer/browser/navigation_controller_impl.h"
+#include "weblayer/browser/persistence/browser_persister.h"
 #include "weblayer/browser/profile_impl.h"
-#include "weblayer/browser/session_service.h"
 #include "weblayer/public/download_delegate.h"
 #include "weblayer/public/fullscreen_delegate.h"
 #include "weblayer/public/new_tab_delegate.h"
@@ -665,7 +665,7 @@ find_in_page::FindTabHelper* TabImpl::GetFindTabHelper() {
 sessions::SessionTabHelperDelegate* TabImpl::GetSessionServiceTabHelperDelegate(
     content::WebContents* web_contents) {
   DCHECK_EQ(web_contents, web_contents_.get());
-  return browser_ ? browser_->session_service() : nullptr;
+  return browser_ ? browser_->browser_persister() : nullptr;
 }
 
 }  // namespace weblayer

@@ -315,9 +315,16 @@ def Main(args):
 
 
 if __name__ == '__main__':
-  sys.path.append(os.path.abspath(
-      os.path.join(os.path.dirname(__file__), '..', '..', 'diagnosis')))
-  import crbug_1001171
+  sys.path.append(
+      os.path.join(
+          os.path.dirname(
+              os.path.dirname(os.path.dirname(os.path.abspath(__file__)))),
+          'diagnosis'))
+  try:
+    import crbug_1001171
+    with crbug_1001171.DumpStateOnLookupError():
+      sys.exit(Main(sys.argv[1:]))
+  except ImportError:
+    pass
 
-  with crbug_1001171.DumpStateOnLookupError():
-    sys.exit(Main(sys.argv[1:]))
+  sys.exit(Main(sys.argv[1:]))

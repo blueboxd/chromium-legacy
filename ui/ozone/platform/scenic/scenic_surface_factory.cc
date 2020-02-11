@@ -111,6 +111,7 @@ GLOzone* ScenicSurfaceFactory::GetGLOzone(gl::GLImplementation implementation) {
 std::unique_ptr<PlatformWindowSurface>
 ScenicSurfaceFactory::CreatePlatformWindowSurface(
     gfx::AcceleratedWidget window) {
+  DCHECK_NE(window, gfx::kNullAcceleratedWidget);
   auto surface =
       std::make_unique<ScenicSurface>(this, window, CreateScenicSession());
   main_thread_task_runner_->PostTask(

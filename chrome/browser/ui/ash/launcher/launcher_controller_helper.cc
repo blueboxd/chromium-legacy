@@ -121,52 +121,26 @@ base::string16 LauncherControllerHelper::GetAppTitle(
   if (app_id.empty())
     return base::string16();
 
-  // Get the title if the app is an ARC app.
-  //
-  // TODO(crbug.com/1002351): ARC converts the ShelfId and |app_id| here.
-  // ShelfId has not been added to AppService yet. So ARC's code is still used
-  // here to get the title name. When ShelfId is integrated to AppService, the
-  // ARC code can be removed, and use AppService to get title names for all
-  // apps.
+  // Get the title if the app is an ARC app. ARC shortcuts could call this
+  // function when it's created, so AppService can't be used for ARC shortcuts,
+  // because AppService is async.
   if (arc::IsArcItem(profile, app_id)) {
     std::unique_ptr<ArcAppListPrefs::AppInfo> app_info =
         ArcAppListPrefs::Get(profile)->GetApp(
             arc::ArcAppShelfId::FromString(app_id).app_id());
     DCHECK(app_info.get());
-    if (app_info)
-      return base::UTF8ToUTF16(app_info->name);
+    return base::UTF8ToUTF16(app_info->name);
   }
 
-  if (base::FeatureList::IsEnabled(features::kAppServiceShelf)) {
-    apps::AppServiceProxy* proxy =
-        apps::AppServiceProxyFactory::GetForProfile(profile);
-    if (!proxy)
-      return base::string16();
-    std::string name;
-    proxy->AppRegistryCache().ForOneApp(
-        app_id,
-        [&name](const apps::AppUpdate& update) { name = update.Name(); });
-    return base::UTF8ToUTF16(name);
-  }
+  apps::AppServiceProxy* proxy =
+      apps::AppServiceProxyFactory::GetForProfile(profile);
+  if (!proxy)
+    return base::string16();
 
-  crostini::CrostiniRegistryService* registry_service =
-      crostini::CrostiniRegistryServiceFactory::GetForProfile(profile);
-  if (registry_service && registry_service->IsCrostiniShelfAppId(app_id)) {
-    base::Optional<crostini::CrostiniRegistryService::Registration>
-        registration = registry_service->GetRegistration(app_id);
-    if (!registration)
-      return base::string16();
-    return base::UTF8ToUTF16(registration->Name());
-  }
-
-  const extensions::Extension* extension = GetExtensionByID(profile, app_id);
-  if (extension)
-    return base::UTF8ToUTF16(extension->name());
-
-  if (app_list::IsInternalApp(app_id))
-    return app_list::GetInternalAppNameById(app_id);
-
-  return base::string16();
+  std::string name;
+  proxy->AppRegistryCache().ForOneApp(
+      app_id, [&name](const apps::AppUpdate& update) { name = update.Name(); });
+  return base::UTF8ToUTF16(name);
 }
 
 std::string LauncherControllerHelper::GetAppID(content::WebContents* tab) {

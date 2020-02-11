@@ -32,8 +32,8 @@ constexpr char kSkipFirstRun[] = "skip_first_run";
 
 // The Finch parameter name for a string value that represents a time.
 // If first run happens after this time, notification will not show.
-// The string defined in Finch config should specify UTC time, and will be
-// parsed by base::Time::FromString().
+// The string defined in Finch config should specify the time zone.
+// e.g. 02 Feb 2020 13:00:00 GMT.
 constexpr char kSkipFirstRunAfterTime[] = "skip_first_run_after_time";
 
 // The Finch parameter name for a boolean value that whether to show

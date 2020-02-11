@@ -2,6 +2,12 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+// clang-format off
+// #import {FontsBrowserProxy, FontsBrowserProxyImpl} from 'chrome://settings/settings.js';
+// #import {flush} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
+// #import {TestBrowserProxy} from 'chrome://test/test_browser_proxy.m.js';
+// clang-format on
+
 /** @implements {settings.FontsBrowserProxy} */
 class TestFontsBrowserProxy extends TestBrowserProxy {
   constructor() {
@@ -63,7 +69,7 @@ suite('AppearanceFontHandler', function() {
     cr.webUIListenerCallback('advanced-font-settings-installed', [true]);
     Polymer.dom.flush();
     const button = fontsPage.$$('#advancedButton');
-    assert(!!button);
+    assertTrue(!!button);
     button.click();
     return fontsBrowserProxy.whenCalled('openAdvancedFontSettings');
   });

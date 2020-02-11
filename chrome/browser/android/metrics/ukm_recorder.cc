@@ -14,17 +14,37 @@
 namespace metrics {
 
 // Called by Java org.chromium.chrome.browser.metrics.UkmRecorder.
-static void JNI_UkmRecorder_RecordEvent(
+static void JNI_UkmRecorder_RecordEventWithBooleanMetric(
     JNIEnv* env,
     const base::android::JavaParamRef<jobject>& j_web_contents,
-    const base::android::JavaParamRef<jstring>& j_event_name) {
+    const base::android::JavaParamRef<jstring>& j_event_name,
+    const base::android::JavaParamRef<jstring>& j_metric_name) {
   content::WebContents* web_contents =
       content::WebContents::FromJavaWebContents(j_web_contents);
   const ukm::SourceId source_id =
       ukm::GetSourceIdForWebContentsDocument(web_contents);
   const std::string event_name(ConvertJavaStringToUTF8(env, j_event_name));
   ukm::UkmEntryBuilder builder(source_id, event_name);
-  builder.SetMetric("HasOccurred", true);
+  builder.SetMetric(ConvertJavaStringToUTF8(env, j_metric_name), true);
+  builder.Record(ukm::UkmRecorder::Get());
+}
+
+// Called by Java org.chromium.chrome.browser.metrics.UkmRecorder.
+static void JNI_UkmRecorder_RecordEventWithIntegerMetric(
+    JNIEnv* env,
+    const base::android::JavaParamRef<jobject>& j_web_contents,
+    const base::android::JavaParamRef<jstring>& j_event_name,
+    const base::android::JavaParamRef<jstring>& j_metric_name,
+    jint j_metric_value) {
+  LOG(ERROR) << "LOGGING INTERACTION WITH VAL: " << j_metric_value;
+  content::WebContents* web_contents =
+      content::WebContents::FromJavaWebContents(j_web_contents);
+  const ukm::SourceId source_id =
+      ukm::GetSourceIdForWebContentsDocument(web_contents);
+  const std::string event_name(ConvertJavaStringToUTF8(env, j_event_name));
+  ukm::UkmEntryBuilder builder(source_id, event_name);
+  builder.SetMetric(ConvertJavaStringToUTF8(env, j_metric_name),
+                    j_metric_value);
   builder.Record(ukm::UkmRecorder::Get());
 }
 

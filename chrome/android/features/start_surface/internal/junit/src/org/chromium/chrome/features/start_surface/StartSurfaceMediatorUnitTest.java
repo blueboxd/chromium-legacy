@@ -47,8 +47,8 @@ import org.chromium.chrome.browser.compositor.layouts.OverviewModeState;
 import org.chromium.chrome.browser.fullscreen.ChromeFullscreenManager;
 import org.chromium.chrome.browser.night_mode.NightModeStateProvider;
 import org.chromium.chrome.browser.ntp.FakeboxDelegate;
-import org.chromium.chrome.browser.omnibox.LocationBarVoiceRecognitionHandler;
 import org.chromium.chrome.browser.omnibox.UrlFocusChangeListener;
+import org.chromium.chrome.browser.omnibox.voice.VoiceRecognitionHandler;
 import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.browser.tabmodel.EmptyTabModelObserver;
 import org.chromium.chrome.browser.tabmodel.EmptyTabModelSelectorObserver;
@@ -91,7 +91,7 @@ public class StartSurfaceMediatorUnitTest {
     @Mock
     private StartSurfaceMediator.ActivityStateChecker mActivityStateChecker;
     @Mock
-    private LocationBarVoiceRecognitionHandler mLocationBarVoiceRecognitionHandler;
+    private VoiceRecognitionHandler mVoiceRecognitionHandler;
     @Mock
     private SecondaryTasksSurfaceInitializer mSecondaryTasksSurfaceInitializer;
     @Mock
@@ -161,10 +161,8 @@ public class StartSurfaceMediatorUnitTest {
     @Test
     public void showAndHideTasksOnlySurface() {
         doReturn(false).when(mTabModelSelector).isIncognitoSelected();
-        doReturn(mLocationBarVoiceRecognitionHandler)
-                .when(mFakeBoxDelegate)
-                .getLocationBarVoiceRecognitionHandler();
-        doReturn(true).when(mLocationBarVoiceRecognitionHandler).isVoiceSearchEnabled();
+        doReturn(mVoiceRecognitionHandler).when(mFakeBoxDelegate).getVoiceRecognitionHandler();
+        doReturn(true).when(mVoiceRecognitionHandler).isVoiceSearchEnabled();
 
         StartSurfaceMediator mediator = createStartSurfaceMediator(SurfaceMode.TASKS_ONLY);
         verify(mMainTabGridController)
@@ -208,10 +206,8 @@ public class StartSurfaceMediatorUnitTest {
     @Test
     public void showAndHideOmniboxOnlySurface() {
         doReturn(false).when(mTabModelSelector).isIncognitoSelected();
-        doReturn(mLocationBarVoiceRecognitionHandler)
-                .when(mFakeBoxDelegate)
-                .getLocationBarVoiceRecognitionHandler();
-        doReturn(true).when(mLocationBarVoiceRecognitionHandler).isVoiceSearchEnabled();
+        doReturn(mVoiceRecognitionHandler).when(mFakeBoxDelegate).getVoiceRecognitionHandler();
+        doReturn(true).when(mVoiceRecognitionHandler).isVoiceSearchEnabled();
 
         StartSurfaceMediator mediator = createStartSurfaceMediator(SurfaceMode.OMNIBOX_ONLY);
         verify(mMainTabGridController)
@@ -255,10 +251,8 @@ public class StartSurfaceMediatorUnitTest {
     @Test
     public void showAndHideTwoPanesSurface() {
         doReturn(false).when(mTabModelSelector).isIncognitoSelected();
-        doReturn(mLocationBarVoiceRecognitionHandler)
-                .when(mFakeBoxDelegate)
-                .getLocationBarVoiceRecognitionHandler();
-        doReturn(true).when(mLocationBarVoiceRecognitionHandler).isVoiceSearchEnabled();
+        doReturn(mVoiceRecognitionHandler).when(mFakeBoxDelegate).getVoiceRecognitionHandler();
+        doReturn(true).when(mVoiceRecognitionHandler).isVoiceSearchEnabled();
 
         StartSurfaceMediator mediator = createStartSurfaceMediator(SurfaceMode.TWO_PANES);
         verify(mMainTabGridController)
@@ -302,10 +296,8 @@ public class StartSurfaceMediatorUnitTest {
     @Test
     public void switchBetweenHomeAndExplorePane() {
         doReturn(false).when(mTabModelSelector).isIncognitoSelected();
-        doReturn(mLocationBarVoiceRecognitionHandler)
-                .when(mFakeBoxDelegate)
-                .getLocationBarVoiceRecognitionHandler();
-        doReturn(true).when(mLocationBarVoiceRecognitionHandler).isVoiceSearchEnabled();
+        doReturn(mVoiceRecognitionHandler).when(mFakeBoxDelegate).getVoiceRecognitionHandler();
+        doReturn(true).when(mVoiceRecognitionHandler).isVoiceSearchEnabled();
 
         StartSurfaceMediator mediator = createStartSurfaceMediator(SurfaceMode.TWO_PANES);
         verify(mMainTabGridController)
@@ -331,10 +323,8 @@ public class StartSurfaceMediatorUnitTest {
     @Test
     public void showExplorePaneByDefault() {
         doReturn(false).when(mTabModelSelector).isIncognitoSelected();
-        doReturn(mLocationBarVoiceRecognitionHandler)
-                .when(mFakeBoxDelegate)
-                .getLocationBarVoiceRecognitionHandler();
-        doReturn(true).when(mLocationBarVoiceRecognitionHandler).isVoiceSearchEnabled();
+        doReturn(mVoiceRecognitionHandler).when(mFakeBoxDelegate).getVoiceRecognitionHandler();
+        doReturn(true).when(mVoiceRecognitionHandler).isVoiceSearchEnabled();
 
         StartSurfaceMediator mediator = createStartSurfaceMediator(SurfaceMode.TWO_PANES);
         verify(mMainTabGridController)
@@ -353,10 +343,8 @@ public class StartSurfaceMediatorUnitTest {
     @Test
     public void incognitoTwoPanesSurface() {
         doReturn(false).when(mTabModelSelector).isIncognitoSelected();
-        doReturn(mLocationBarVoiceRecognitionHandler)
-                .when(mFakeBoxDelegate)
-                .getLocationBarVoiceRecognitionHandler();
-        doReturn(true).when(mLocationBarVoiceRecognitionHandler).isVoiceSearchEnabled();
+        doReturn(mVoiceRecognitionHandler).when(mFakeBoxDelegate).getVoiceRecognitionHandler();
+        doReturn(true).when(mVoiceRecognitionHandler).isVoiceSearchEnabled();
 
         StartSurfaceMediator mediator = createStartSurfaceMediator(SurfaceMode.TWO_PANES);
         verify(mMainTabGridController)
@@ -388,10 +376,8 @@ public class StartSurfaceMediatorUnitTest {
     @Test
     public void hideTabCarouselWithNoTabs() {
         doReturn(false).when(mTabModelSelector).isIncognitoSelected();
-        doReturn(mLocationBarVoiceRecognitionHandler)
-                .when(mFakeBoxDelegate)
-                .getLocationBarVoiceRecognitionHandler();
-        doReturn(true).when(mLocationBarVoiceRecognitionHandler).isVoiceSearchEnabled();
+        doReturn(mVoiceRecognitionHandler).when(mFakeBoxDelegate).getVoiceRecognitionHandler();
+        doReturn(true).when(mVoiceRecognitionHandler).isVoiceSearchEnabled();
 
         StartSurfaceMediator mediator = createStartSurfaceMediator(SurfaceMode.SINGLE_PANE);
 
@@ -407,10 +393,8 @@ public class StartSurfaceMediatorUnitTest {
     @Test
     public void hideTabCarouselWhenClosingLastTab() {
         doReturn(false).when(mTabModelSelector).isIncognitoSelected();
-        doReturn(mLocationBarVoiceRecognitionHandler)
-                .when(mFakeBoxDelegate)
-                .getLocationBarVoiceRecognitionHandler();
-        doReturn(true).when(mLocationBarVoiceRecognitionHandler).isVoiceSearchEnabled();
+        doReturn(mVoiceRecognitionHandler).when(mFakeBoxDelegate).getVoiceRecognitionHandler();
+        doReturn(true).when(mVoiceRecognitionHandler).isVoiceSearchEnabled();
 
         StartSurfaceMediator mediator = createStartSurfaceMediator(SurfaceMode.SINGLE_PANE);
 
@@ -435,10 +419,8 @@ public class StartSurfaceMediatorUnitTest {
     @Test
     public void reshowTabCarouselWhenTabClosureUndone() {
         doReturn(false).when(mTabModelSelector).isIncognitoSelected();
-        doReturn(mLocationBarVoiceRecognitionHandler)
-                .when(mFakeBoxDelegate)
-                .getLocationBarVoiceRecognitionHandler();
-        doReturn(true).when(mLocationBarVoiceRecognitionHandler).isVoiceSearchEnabled();
+        doReturn(mVoiceRecognitionHandler).when(mFakeBoxDelegate).getVoiceRecognitionHandler();
+        doReturn(true).when(mVoiceRecognitionHandler).isVoiceSearchEnabled();
 
         StartSurfaceMediator mediator = createStartSurfaceMediator(SurfaceMode.SINGLE_PANE);
 
@@ -472,10 +454,8 @@ public class StartSurfaceMediatorUnitTest {
     @Test
     public void addAndRemoveTabModelObserverWithOverview() {
         doReturn(false).when(mTabModelSelector).isIncognitoSelected();
-        doReturn(mLocationBarVoiceRecognitionHandler)
-                .when(mFakeBoxDelegate)
-                .getLocationBarVoiceRecognitionHandler();
-        doReturn(true).when(mLocationBarVoiceRecognitionHandler).isVoiceSearchEnabled();
+        doReturn(mVoiceRecognitionHandler).when(mFakeBoxDelegate).getVoiceRecognitionHandler();
+        doReturn(true).when(mVoiceRecognitionHandler).isVoiceSearchEnabled();
 
         StartSurfaceMediator mediator = createStartSurfaceMediator(SurfaceMode.SINGLE_PANE);
         verify(mNormalTabModel, never()).addObserver(mTabModelObserverCaptor.capture());
@@ -491,10 +471,8 @@ public class StartSurfaceMediatorUnitTest {
     @Test
     public void addAndRemoveTabModelSelectorObserverWithOverview() {
         doReturn(false).when(mTabModelSelector).isIncognitoSelected();
-        doReturn(mLocationBarVoiceRecognitionHandler)
-                .when(mFakeBoxDelegate)
-                .getLocationBarVoiceRecognitionHandler();
-        doReturn(true).when(mLocationBarVoiceRecognitionHandler).isVoiceSearchEnabled();
+        doReturn(mVoiceRecognitionHandler).when(mFakeBoxDelegate).getVoiceRecognitionHandler();
+        doReturn(true).when(mVoiceRecognitionHandler).isVoiceSearchEnabled();
 
         StartSurfaceMediator mediator = createStartSurfaceMediator(SurfaceMode.SINGLE_PANE);
 
@@ -511,10 +489,8 @@ public class StartSurfaceMediatorUnitTest {
     @Test
     public void overviewModeStatesNormalModeSinglePane() {
         doReturn(false).when(mTabModelSelector).isIncognitoSelected();
-        doReturn(mLocationBarVoiceRecognitionHandler)
-                .when(mFakeBoxDelegate)
-                .getLocationBarVoiceRecognitionHandler();
-        doReturn(true).when(mLocationBarVoiceRecognitionHandler).isVoiceSearchEnabled();
+        doReturn(mVoiceRecognitionHandler).when(mFakeBoxDelegate).getVoiceRecognitionHandler();
+        doReturn(true).when(mVoiceRecognitionHandler).isVoiceSearchEnabled();
 
         StartSurfaceMediator mediator = createStartSurfaceMediator(SurfaceMode.SINGLE_PANE);
         assertThat(mediator.getOverviewState(), equalTo(OverviewModeState.NOT_SHOWN));
@@ -560,10 +536,8 @@ public class StartSurfaceMediatorUnitTest {
     @Test
     public void overviewModeIncognitoModeSinglePane() {
         doReturn(true).when(mTabModelSelector).isIncognitoSelected();
-        doReturn(mLocationBarVoiceRecognitionHandler)
-                .when(mFakeBoxDelegate)
-                .getLocationBarVoiceRecognitionHandler();
-        doReturn(true).when(mLocationBarVoiceRecognitionHandler).isVoiceSearchEnabled();
+        doReturn(mVoiceRecognitionHandler).when(mFakeBoxDelegate).getVoiceRecognitionHandler();
+        doReturn(true).when(mVoiceRecognitionHandler).isVoiceSearchEnabled();
 
         StartSurfaceMediator mediator = createStartSurfaceMediator(SurfaceMode.SINGLE_PANE);
         mediator.setSecondaryTasksSurfacePropertyModel(mSecondaryTasksSurfacePropertyModel);
@@ -621,10 +595,8 @@ public class StartSurfaceMediatorUnitTest {
     @Test
     public void overviewModeIncognitoModeTaskOnly() {
         doReturn(true).when(mTabModelSelector).isIncognitoSelected();
-        doReturn(mLocationBarVoiceRecognitionHandler)
-                .when(mFakeBoxDelegate)
-                .getLocationBarVoiceRecognitionHandler();
-        doReturn(true).when(mLocationBarVoiceRecognitionHandler).isVoiceSearchEnabled();
+        doReturn(mVoiceRecognitionHandler).when(mFakeBoxDelegate).getVoiceRecognitionHandler();
+        doReturn(true).when(mVoiceRecognitionHandler).isVoiceSearchEnabled();
 
         StartSurfaceMediator mediator = createStartSurfaceMediator(SurfaceMode.TASKS_ONLY);
         assertThat(mediator.getOverviewState(), equalTo(OverviewModeState.NOT_SHOWN));
@@ -643,10 +615,8 @@ public class StartSurfaceMediatorUnitTest {
     @Test
     public void overviewModeSwitchToIncognitoModeAndBackSinglePane() {
         doReturn(false).when(mTabModelSelector).isIncognitoSelected();
-        doReturn(mLocationBarVoiceRecognitionHandler)
-                .when(mFakeBoxDelegate)
-                .getLocationBarVoiceRecognitionHandler();
-        doReturn(true).when(mLocationBarVoiceRecognitionHandler).isVoiceSearchEnabled();
+        doReturn(mVoiceRecognitionHandler).when(mFakeBoxDelegate).getVoiceRecognitionHandler();
+        doReturn(true).when(mVoiceRecognitionHandler).isVoiceSearchEnabled();
 
         StartSurfaceMediator mediator = createStartSurfaceMediator(SurfaceMode.SINGLE_PANE);
         mediator.setSecondaryTasksSurfacePropertyModel(mSecondaryTasksSurfacePropertyModel);
@@ -698,10 +668,8 @@ public class StartSurfaceMediatorUnitTest {
     @Test
     public void activityIsFinishingOrDestroyedSinglePane() {
         doReturn(false).when(mTabModelSelector).isIncognitoSelected();
-        doReturn(mLocationBarVoiceRecognitionHandler)
-                .when(mFakeBoxDelegate)
-                .getLocationBarVoiceRecognitionHandler();
-        doReturn(true).when(mLocationBarVoiceRecognitionHandler).isVoiceSearchEnabled();
+        doReturn(mVoiceRecognitionHandler).when(mFakeBoxDelegate).getVoiceRecognitionHandler();
+        doReturn(true).when(mVoiceRecognitionHandler).isVoiceSearchEnabled();
 
         StartSurfaceMediator mediator = createStartSurfaceMediator(SurfaceMode.SINGLE_PANE);
         assertThat(mediator.getOverviewState(), equalTo(OverviewModeState.NOT_SHOWN));
@@ -751,10 +719,8 @@ public class StartSurfaceMediatorUnitTest {
     @Test
     public void overviewModeSwitchToIncognitoModeAndBackTasksOnly() {
         doReturn(false).when(mTabModelSelector).isIncognitoSelected();
-        doReturn(mLocationBarVoiceRecognitionHandler)
-                .when(mFakeBoxDelegate)
-                .getLocationBarVoiceRecognitionHandler();
-        doReturn(true).when(mLocationBarVoiceRecognitionHandler).isVoiceSearchEnabled();
+        doReturn(mVoiceRecognitionHandler).when(mFakeBoxDelegate).getVoiceRecognitionHandler();
+        doReturn(true).when(mVoiceRecognitionHandler).isVoiceSearchEnabled();
 
         StartSurfaceMediator mediator = createStartSurfaceMediator(SurfaceMode.TASKS_ONLY);
         mediator.setSecondaryTasksSurfacePropertyModel(mSecondaryTasksSurfacePropertyModel);
@@ -806,10 +772,8 @@ public class StartSurfaceMediatorUnitTest {
     @Test
     public void overviewModeIncognitoTabswitcher() {
         doReturn(false).when(mTabModelSelector).isIncognitoSelected();
-        doReturn(mLocationBarVoiceRecognitionHandler)
-                .when(mFakeBoxDelegate)
-                .getLocationBarVoiceRecognitionHandler();
-        doReturn(true).when(mLocationBarVoiceRecognitionHandler).isVoiceSearchEnabled();
+        doReturn(mVoiceRecognitionHandler).when(mFakeBoxDelegate).getVoiceRecognitionHandler();
+        doReturn(true).when(mVoiceRecognitionHandler).isVoiceSearchEnabled();
 
         StartSurfaceMediator mediator = createStartSurfaceMediator(SurfaceMode.SINGLE_PANE);
         mediator.setSecondaryTasksSurfacePropertyModel(mSecondaryTasksSurfacePropertyModel);
@@ -843,10 +807,8 @@ public class StartSurfaceMediatorUnitTest {
     @Test
     public void paddingForBottomBarSinglePane() {
         doReturn(false).when(mTabModelSelector).isIncognitoSelected();
-        doReturn(mLocationBarVoiceRecognitionHandler)
-                .when(mFakeBoxDelegate)
-                .getLocationBarVoiceRecognitionHandler();
-        doReturn(true).when(mLocationBarVoiceRecognitionHandler).isVoiceSearchEnabled();
+        doReturn(mVoiceRecognitionHandler).when(mFakeBoxDelegate).getVoiceRecognitionHandler();
+        doReturn(true).when(mVoiceRecognitionHandler).isVoiceSearchEnabled();
 
         StartSurfaceMediator mediator = createStartSurfaceMediator(SurfaceMode.SINGLE_PANE);
         verify(mMainTabGridController)
@@ -881,10 +843,8 @@ public class StartSurfaceMediatorUnitTest {
     @Test
     public void doNotPaddingForBottomBarTasksOnly() {
         doReturn(false).when(mTabModelSelector).isIncognitoSelected();
-        doReturn(mLocationBarVoiceRecognitionHandler)
-                .when(mFakeBoxDelegate)
-                .getLocationBarVoiceRecognitionHandler();
-        doReturn(true).when(mLocationBarVoiceRecognitionHandler).isVoiceSearchEnabled();
+        doReturn(mVoiceRecognitionHandler).when(mFakeBoxDelegate).getVoiceRecognitionHandler();
+        doReturn(true).when(mVoiceRecognitionHandler).isVoiceSearchEnabled();
 
         StartSurfaceMediator mediator = createStartSurfaceMediator(SurfaceMode.TASKS_ONLY);
         mediator.setSecondaryTasksSurfacePropertyModel(mSecondaryTasksSurfacePropertyModel);
@@ -901,10 +861,8 @@ public class StartSurfaceMediatorUnitTest {
     @Test
     public void setIncognitoDescriptionShowTasksOnly() {
         doReturn(false).when(mTabModelSelector).isIncognitoSelected();
-        doReturn(mLocationBarVoiceRecognitionHandler)
-                .when(mFakeBoxDelegate)
-                .getLocationBarVoiceRecognitionHandler();
-        doReturn(true).when(mLocationBarVoiceRecognitionHandler).isVoiceSearchEnabled();
+        doReturn(mVoiceRecognitionHandler).when(mFakeBoxDelegate).getVoiceRecognitionHandler();
+        doReturn(true).when(mVoiceRecognitionHandler).isVoiceSearchEnabled();
 
         StartSurfaceMediator mediator = createStartSurfaceMediator(SurfaceMode.TASKS_ONLY);
         mediator.showOverview(false);
@@ -929,10 +887,8 @@ public class StartSurfaceMediatorUnitTest {
     @Test
     public void setIncognitoDescriptionHideTasksOnly() {
         doReturn(false).when(mTabModelSelector).isIncognitoSelected();
-        doReturn(mLocationBarVoiceRecognitionHandler)
-                .when(mFakeBoxDelegate)
-                .getLocationBarVoiceRecognitionHandler();
-        doReturn(true).when(mLocationBarVoiceRecognitionHandler).isVoiceSearchEnabled();
+        doReturn(mVoiceRecognitionHandler).when(mFakeBoxDelegate).getVoiceRecognitionHandler();
+        doReturn(true).when(mVoiceRecognitionHandler).isVoiceSearchEnabled();
 
         StartSurfaceMediator mediator = createStartSurfaceMediator(SurfaceMode.TASKS_ONLY);
         mediator.showOverview(false);
@@ -957,10 +913,8 @@ public class StartSurfaceMediatorUnitTest {
     @Test
     public void setIncognitoDescriptionShowSinglePane() {
         doReturn(false).when(mTabModelSelector).isIncognitoSelected();
-        doReturn(mLocationBarVoiceRecognitionHandler)
-                .when(mFakeBoxDelegate)
-                .getLocationBarVoiceRecognitionHandler();
-        doReturn(true).when(mLocationBarVoiceRecognitionHandler).isVoiceSearchEnabled();
+        doReturn(mVoiceRecognitionHandler).when(mFakeBoxDelegate).getVoiceRecognitionHandler();
+        doReturn(true).when(mVoiceRecognitionHandler).isVoiceSearchEnabled();
 
         StartSurfaceMediator mediator = createStartSurfaceMediator(SurfaceMode.SINGLE_PANE);
         mediator.setOverviewState(OverviewModeState.SHOWING_HOMEPAGE);
@@ -996,10 +950,8 @@ public class StartSurfaceMediatorUnitTest {
     @Test
     public void setIncognitoDescriptionHideSinglePane() {
         doReturn(false).when(mTabModelSelector).isIncognitoSelected();
-        doReturn(mLocationBarVoiceRecognitionHandler)
-                .when(mFakeBoxDelegate)
-                .getLocationBarVoiceRecognitionHandler();
-        doReturn(true).when(mLocationBarVoiceRecognitionHandler).isVoiceSearchEnabled();
+        doReturn(mVoiceRecognitionHandler).when(mFakeBoxDelegate).getVoiceRecognitionHandler();
+        doReturn(true).when(mVoiceRecognitionHandler).isVoiceSearchEnabled();
 
         StartSurfaceMediator mediator = createStartSurfaceMediator(SurfaceMode.SINGLE_PANE);
         mediator.setOverviewState(OverviewModeState.SHOWN_HOMEPAGE);
@@ -1035,10 +987,8 @@ public class StartSurfaceMediatorUnitTest {
     @Test
     public void showAndHideTabSwitcherToolbarHomePage() {
         doReturn(false).when(mTabModelSelector).isIncognitoSelected();
-        doReturn(mLocationBarVoiceRecognitionHandler)
-                .when(mFakeBoxDelegate)
-                .getLocationBarVoiceRecognitionHandler();
-        doReturn(true).when(mLocationBarVoiceRecognitionHandler).isVoiceSearchEnabled();
+        doReturn(mVoiceRecognitionHandler).when(mFakeBoxDelegate).getVoiceRecognitionHandler();
+        doReturn(true).when(mVoiceRecognitionHandler).isVoiceSearchEnabled();
 
         StartSurfaceMediator mediator = createStartSurfaceMediator(SurfaceMode.SINGLE_PANE);
         verify(mMainTabGridController)
@@ -1086,10 +1036,8 @@ public class StartSurfaceMediatorUnitTest {
     @Test
     public void defaultStateSinglePane() {
         doReturn(false).when(mTabModelSelector).isIncognitoSelected();
-        doReturn(mLocationBarVoiceRecognitionHandler)
-                .when(mFakeBoxDelegate)
-                .getLocationBarVoiceRecognitionHandler();
-        doReturn(true).when(mLocationBarVoiceRecognitionHandler).isVoiceSearchEnabled();
+        doReturn(mVoiceRecognitionHandler).when(mFakeBoxDelegate).getVoiceRecognitionHandler();
+        doReturn(true).when(mVoiceRecognitionHandler).isVoiceSearchEnabled();
 
         StartSurfaceMediator mediator = createStartSurfaceMediator(SurfaceMode.SINGLE_PANE);
         verify(mMainTabGridController)
@@ -1103,10 +1051,8 @@ public class StartSurfaceMediatorUnitTest {
     @Test
     public void defaultStateTaskOnly() {
         doReturn(false).when(mTabModelSelector).isIncognitoSelected();
-        doReturn(mLocationBarVoiceRecognitionHandler)
-                .when(mFakeBoxDelegate)
-                .getLocationBarVoiceRecognitionHandler();
-        doReturn(true).when(mLocationBarVoiceRecognitionHandler).isVoiceSearchEnabled();
+        doReturn(mVoiceRecognitionHandler).when(mFakeBoxDelegate).getVoiceRecognitionHandler();
+        doReturn(true).when(mVoiceRecognitionHandler).isVoiceSearchEnabled();
 
         StartSurfaceMediator mediator = createStartSurfaceMediator(SurfaceMode.TASKS_ONLY);
         verify(mMainTabGridController)
@@ -1121,10 +1067,8 @@ public class StartSurfaceMediatorUnitTest {
     @Test
     public void defaultStateTwoPanes() {
         doReturn(false).when(mTabModelSelector).isIncognitoSelected();
-        doReturn(mLocationBarVoiceRecognitionHandler)
-                .when(mFakeBoxDelegate)
-                .getLocationBarVoiceRecognitionHandler();
-        doReturn(true).when(mLocationBarVoiceRecognitionHandler).isVoiceSearchEnabled();
+        doReturn(mVoiceRecognitionHandler).when(mFakeBoxDelegate).getVoiceRecognitionHandler();
+        doReturn(true).when(mVoiceRecognitionHandler).isVoiceSearchEnabled();
 
         StartSurfaceMediator mediator = createStartSurfaceMediator(SurfaceMode.TWO_PANES);
         verify(mMainTabGridController)
@@ -1139,10 +1083,8 @@ public class StartSurfaceMediatorUnitTest {
     @Test
     public void showAndHideTabSwitcherToolbarTabswitcher() {
         doReturn(false).when(mTabModelSelector).isIncognitoSelected();
-        doReturn(mLocationBarVoiceRecognitionHandler)
-                .when(mFakeBoxDelegate)
-                .getLocationBarVoiceRecognitionHandler();
-        doReturn(true).when(mLocationBarVoiceRecognitionHandler).isVoiceSearchEnabled();
+        doReturn(mVoiceRecognitionHandler).when(mFakeBoxDelegate).getVoiceRecognitionHandler();
+        doReturn(true).when(mVoiceRecognitionHandler).isVoiceSearchEnabled();
 
         StartSurfaceMediator mediator = createStartSurfaceMediator(SurfaceMode.SINGLE_PANE);
         verify(mMainTabGridController)

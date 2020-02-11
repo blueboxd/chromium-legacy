@@ -8,7 +8,7 @@ import android.net.Uri;
 
 import androidx.annotation.IntDef;
 
-import org.chromium.chrome.browser.tab.Tab;
+import org.chromium.content_public.browser.WebContents;
 import org.chromium.content_public.common.Referrer;
 
 import java.lang.annotation.Retention;
@@ -31,6 +31,11 @@ public interface ContextMenuItemDelegate {
      * Called when this ContextMenuItemDelegate is about to be destroyed.
      */
     void onDestroy();
+
+    /**
+     * @return The web contents of the current tab owned by this delegate.
+     */
+    WebContents getWebContents();
 
     /**
      * @return Whether or not this context menu is being shown for an incognito content.

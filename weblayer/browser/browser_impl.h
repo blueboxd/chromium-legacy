@@ -26,8 +26,8 @@ class WebContents;
 
 namespace weblayer {
 
+class BrowserPersister;
 class ProfileImpl;
-class SessionService;
 class TabImpl;
 
 class BrowserImpl : public Browser {
@@ -36,7 +36,7 @@ class BrowserImpl : public Browser {
   BrowserImpl& operator=(const BrowserImpl&) = delete;
   ~BrowserImpl() override;
 
-  SessionService* session_service() { return session_service_.get(); }
+  BrowserPersister* browser_persister() { return browser_persister_.get(); }
 
   ProfileImpl* profile() { return profile_; }
 
@@ -66,10 +66,10 @@ class BrowserImpl : public Browser {
   base::android::ScopedJavaLocalRef<jstring> GetPersistenceId(
       JNIEnv* env,
       const base::android::JavaParamRef<jobject>& caller);
-  void SaveSessionServiceIfNecessary(
+  void SaveBrowserPersisterIfNecessary(
       JNIEnv* env,
       const base::android::JavaParamRef<jobject>& caller);
-  base::android::ScopedJavaLocalRef<jbyteArray> GetSessionServiceCryptoKey(
+  base::android::ScopedJavaLocalRef<jbyteArray> GetBrowserPersisterCryptoKey(
       JNIEnv* env,
       const base::android::JavaParamRef<jobject>& caller);
   base::android::ScopedJavaLocalRef<jbyteArray> GetMinimalPersistenceState(
@@ -113,8 +113,8 @@ class BrowserImpl : public Browser {
 
   void RestoreStateIfNecessary(const PersistenceInfo& persistence_info);
 
-  // Returns the path used by |session_service_|.
-  base::FilePath GetSessionServiceDataPath();
+  // Returns the path used by |browser_persister_|.
+  base::FilePath GetBrowserPersisterDataPath();
 
 #if defined(OS_ANDROID)
   base::android::ScopedJavaGlobalRef<jobject> java_impl_;
@@ -124,7 +124,7 @@ class BrowserImpl : public Browser {
   std::vector<std::unique_ptr<Tab>> tabs_;
   TabImpl* active_tab_ = nullptr;
   std::string persistence_id_;
-  std::unique_ptr<SessionService> session_service_;
+  std::unique_ptr<BrowserPersister> browser_persister_;
 };
 
 }  // namespace weblayer

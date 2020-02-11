@@ -29,6 +29,7 @@ public class LensUtils {
     private static final String MIN_AGSA_VERSION_FEATURE_PARAM_NAME = "minAgsaVersionName";
     private static final String USE_SEARCH_BY_IMAGE_TEXT_FEATURE_PARAM_NAME =
             "useSearchByImageText";
+    private static final String LOG_UKM_PARAM_NAME = "logUkm";
     private static final String MIN_AGSA_VERSION_NAME_FOR_LENS_POSTCAPTURE = "8.19";
 
     /**
@@ -148,9 +149,31 @@ public class LensUtils {
         return intent;
     }
 
+    public static boolean enableGoogleLensFeature() {
+        return ChromeFeatureList.isEnabled(ChromeFeatureList.CONTEXT_MENU_SEARCH_WITH_GOOGLE_LENS);
+    }
+
+    /**
+     * Whether to display the lens menu item with the search by image text
+     */
     public static boolean useLensWithSearchByImageText() {
         return ChromeFeatureList.getFieldTrialParamByFeatureAsBoolean(
                 ChromeFeatureList.CONTEXT_MENU_SEARCH_WITH_GOOGLE_LENS,
                 USE_SEARCH_BY_IMAGE_TEXT_FEATURE_PARAM_NAME, false);
+    }
+
+    /*
+     * Whether to log UKM pings for lens-related behavior.
+     * If in the experiment will log by default and will only be disabled
+     * if the parameter is not absent and set to true.
+     */
+    public static boolean shouldLogUkm() {
+        if (enableGoogleLensFeature()) {
+            return ChromeFeatureList.getFieldTrialParamByFeatureAsBoolean(
+                    ChromeFeatureList.CONTEXT_MENU_SEARCH_WITH_GOOGLE_LENS, LOG_UKM_PARAM_NAME,
+                    true);
+        }
+
+        return false;
     }
 }

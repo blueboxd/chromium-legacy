@@ -15,7 +15,8 @@ SharedImageVideoProvider::ImageSpec::~ImageSpec() = default;
 
 bool SharedImageVideoProvider::ImageSpec::operator==(
     const ImageSpec& rhs) const {
-  return size == rhs.size && generation_id == rhs.generation_id;
+  return size == rhs.size && generation_id == rhs.generation_id &&
+         color_space == rhs.color_space;
 }
 
 bool SharedImageVideoProvider::ImageSpec::operator!=(

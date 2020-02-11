@@ -3,7 +3,6 @@
 // found in the LICENSE file.
 
 (function() {
-'use strict';
 
 /**
  * This is the absolute difference maintained between standard and
@@ -157,7 +156,8 @@ Polymer({
 
   /** @private */
   onCustomizeFontsTap_() {
-    settings.Router.getInstance().navigateTo(settings.routes.FONTS);
+    settings.Router.getInstance().navigateTo(
+        /** @type {!settings.Route} */ (settings.routes.FONTS));
   },
 
   /** @private */

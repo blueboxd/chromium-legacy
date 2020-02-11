@@ -41,7 +41,7 @@ import org.chromium.chrome.browser.ntp.cards.ItemViewType;
 import org.chromium.chrome.browser.ntp.cards.NewTabPageAdapter;
 import org.chromium.chrome.browser.ntp.snippets.SuggestionsSource;
 import org.chromium.chrome.browser.omnibox.LocationBar.OmniboxFocusReason;
-import org.chromium.chrome.browser.omnibox.LocationBarVoiceRecognitionHandler;
+import org.chromium.chrome.browser.omnibox.voice.VoiceRecognitionHandler;
 import org.chromium.chrome.browser.profiles.Profile;
 import org.chromium.chrome.browser.search_engines.TemplateUrlServiceFactory;
 import org.chromium.chrome.browser.suggestions.SuggestionsDependencyFactory;
@@ -107,7 +107,7 @@ public class NewTabPage implements NativePage, InvalidationAwareThumbnailProvide
     protected boolean mSearchProviderHasLogo;
 
     protected FakeboxDelegate mFakeboxDelegate;
-    private LocationBarVoiceRecognitionHandler mVoiceRecognitionHandler;
+    private VoiceRecognitionHandler mVoiceRecognitionHandler;
 
     // The timestamp at which the constructor was called.
     protected final long mConstructedTimeNs;
@@ -195,7 +195,7 @@ public class NewTabPage implements NativePage, InvalidationAwareThumbnailProvide
             if (VrModuleProvider.getDelegate().isInVr()) return;
             if (mVoiceRecognitionHandler != null && beginVoiceSearch) {
                 mVoiceRecognitionHandler.startVoiceRecognition(
-                        LocationBarVoiceRecognitionHandler.VoiceInteractionSource.NTP);
+                        VoiceRecognitionHandler.VoiceInteractionSource.NTP);
             } else if (mFakeboxDelegate != null) {
                 mFakeboxDelegate.setUrlBarFocus(true, pastedText,
                         pastedText == null ? OmniboxFocusReason.FAKE_BOX_TAP
@@ -563,7 +563,7 @@ public class NewTabPage implements NativePage, InvalidationAwareThumbnailProvide
                     fakeboxDelegate.isUrlBarFocused() ? 1f : 0f);
         }
 
-        mVoiceRecognitionHandler = mFakeboxDelegate.getLocationBarVoiceRecognitionHandler();
+        mVoiceRecognitionHandler = mFakeboxDelegate.getVoiceRecognitionHandler();
         if (mVoiceRecognitionHandler != null) {
             mNewTabPageLayout.updateVoiceSearchButtonVisibility();
         }

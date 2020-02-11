@@ -313,6 +313,10 @@ class ScrollableShelfView::ScrollableShelfArrowView
   // TODO (andrewxu): Moves all of functions related with scrolling into
   // ScrollableShelfContainerView. Then erase this empty function.
   void ScrollRectToVisible(const gfx::Rect& rect) override {}
+
+  const char* GetClassName() const override {
+    return "ScrollableShelfArrowView";
+  }
 };
 
 ////////////////////////////////////////////////////////////////////////////////

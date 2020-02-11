@@ -2,6 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+import './appearance_page/appearance_page.m.js';
+import './appearance_page/appearance_fonts_page.m.js';
 import './controls/controlled_button.m.js';
 import './controls/controlled_radio_button.m.js';
 import './controls/extension_controlled_indicator.m.js';
@@ -29,7 +31,9 @@ import './default_browser_page/default_browser_page.m.js';
 export {DefaultBrowserBrowserProxyImpl} from './default_browser_page/default_browser_browser_proxy.m.js';
 // </if>
 
+export {AppearanceBrowserProxy, AppearanceBrowserProxyImpl} from './appearance_page/appearance_browser_proxy.m.js';
 export {ExtensionControlBrowserProxyImpl} from './extension_control_browser_proxy.m.js';
+export {FontsBrowserProxy, FontsBrowserProxyImpl} from './appearance_page/fonts_browser_proxy.m.js';
 export {OnStartupBrowserProxy, OnStartupBrowserProxyImpl} from './on_startup_page/on_startup_browser_proxy.m.js';
 export {EDIT_STARTUP_URL_EVENT} from './on_startup_page/startup_url_entry.m.js';
 export {StartupUrlsPageBrowserProxy, StartupUrlsPageBrowserProxyImpl} from './on_startup_page/startup_urls_page_browser_proxy.m.js';

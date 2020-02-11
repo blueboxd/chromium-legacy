@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "weblayer/browser/session_service.h"
+#include "weblayer/browser/persistence/browser_persister.h"
 
 #include "base/files/file_path.h"
 #include "base/path_service.h"
@@ -29,11 +29,11 @@
 
 namespace weblayer {
 
-class SessionServiceTestHelper {
+class BrowserPersisterTestHelper {
  public:
   static sessions::CommandStorageManager* GetCommandStorageManager(
-      SessionService* service) {
-    return service->command_storage_manager_.get();
+      BrowserPersister* persister) {
+    return persister->command_storage_manager_.get();
   }
 };
 
@@ -152,10 +152,10 @@ class BrowserNavigationObserverImpl : public BrowserObserver,
   base::RunLoop run_loop_;
 };
 
-void ShutdownSessionServiceAndWait(BrowserImpl* browser) {
+void ShutdownBrowserPersisterAndWait(BrowserImpl* browser) {
   auto task_runner = sessions::CommandStorageManagerTestHelper(
-                         SessionServiceTestHelper::GetCommandStorageManager(
-                             browser->session_service()))
+                         BrowserPersisterTestHelper::GetCommandStorageManager(
+                             browser->browser_persister()))
                          .GetBackendTaskRunner();
   browser->PrepareForShutdown();
   base::RunLoop run_loop;
@@ -175,16 +175,16 @@ std::unique_ptr<BrowserImpl> CreateBrowser(ProfileImpl* profile,
 
 }  // namespace
 
-using SessionServiceTest = WebLayerBrowserTest;
+using BrowserPersisterTest = WebLayerBrowserTest;
 
-IN_PROC_BROWSER_TEST_F(SessionServiceTest, SingleTab) {
+IN_PROC_BROWSER_TEST_F(BrowserPersisterTest, SingleTab) {
   ASSERT_TRUE(embedded_test_server()->Start());
 
   std::unique_ptr<BrowserImpl> browser = CreateBrowser(GetProfile(), "x");
   Tab* tab = browser->AddTab(Tab::Create(GetProfile()));
   const GURL url = embedded_test_server()->GetURL("/simple_page.html");
   NavigateAndWaitForCompletion(url, tab);
-  ShutdownSessionServiceAndWait(browser.get());
+  ShutdownBrowserPersisterAndWait(browser.get());
   tab = nullptr;
   browser.reset();
 
@@ -202,7 +202,7 @@ IN_PROC_BROWSER_TEST_F(SessionServiceTest, SingleTab) {
                    ->GetNavigationListSize());
 }
 
-IN_PROC_BROWSER_TEST_F(SessionServiceTest, TwoTabs) {
+IN_PROC_BROWSER_TEST_F(BrowserPersisterTest, TwoTabs) {
   ASSERT_TRUE(embedded_test_server()->Start());
 
   std::unique_ptr<BrowserImpl> browser = CreateBrowser(GetProfile(), "x");
@@ -216,7 +216,7 @@ IN_PROC_BROWSER_TEST_F(SessionServiceTest, TwoTabs) {
   browser->SetActiveTab(tab2);
 
   // Shut down the service.
-  ShutdownSessionServiceAndWait(browser.get());
+  ShutdownBrowserPersisterAndWait(browser.get());
   tab1 = tab2 = nullptr;
   browser.reset();
 
@@ -245,11 +245,11 @@ IN_PROC_BROWSER_TEST_F(SessionServiceTest, TwoTabs) {
                      ->GetNavigationListSize())
         << "iteration " << i;
 
-    ShutdownSessionServiceAndWait(browser.get());
+    ShutdownBrowserPersisterAndWait(browser.get());
   }
 }
 
-IN_PROC_BROWSER_TEST_F(SessionServiceTest, MoveBetweenBrowsers) {
+IN_PROC_BROWSER_TEST_F(BrowserPersisterTest, MoveBetweenBrowsers) {
   ASSERT_TRUE(embedded_test_server()->Start());
 
   // Create a browser with two tabs.
@@ -273,8 +273,8 @@ IN_PROC_BROWSER_TEST_F(SessionServiceTest, MoveBetweenBrowsers) {
   browser2->AddTab(browser1->RemoveTab(tab2));
   browser2->SetActiveTab(tab2);
 
-  ShutdownSessionServiceAndWait(browser1.get());
-  ShutdownSessionServiceAndWait(browser2.get());
+  ShutdownBrowserPersisterAndWait(browser1.get());
+  ShutdownBrowserPersisterAndWait(browser2.get());
   tab1 = nullptr;
   browser1.reset();
 

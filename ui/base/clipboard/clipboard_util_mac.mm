@@ -214,16 +214,16 @@ bool ClipboardUtil::URLsAndTitlesFromPasteboard(NSPasteboard* pboard,
 }
 
 // static
-NSPasteboard* ClipboardUtil::PasteboardFromBuffer(ui::ClipboardBuffer buffer) {
+NSPasteboard* ClipboardUtil::PasteboardFromBuffer(ClipboardBuffer buffer) {
   NSString* buffer_type = nil;
   switch (buffer) {
-    case ui::ClipboardBuffer::kCopyPaste:
+    case ClipboardBuffer::kCopyPaste:
       buffer_type = NSGeneralPboard;
       break;
-    case ui::ClipboardBuffer::kDrag:
+    case ClipboardBuffer::kDrag:
       buffer_type = NSDragPboard;
       break;
-    case ui::ClipboardBuffer::kSelection:
+    case ClipboardBuffer::kSelection:
       NOTREACHED();
       break;
   }

@@ -52,7 +52,7 @@ class GPU_GLES2_EXPORT SharedImageRepresentationSkiaGL
   std::unique_ptr<SharedImageRepresentationGLTextureBase> gl_representation_;
   sk_sp<SkPromiseImageTexture> promise_texture_;
   scoped_refptr<SharedContextState> context_state_;
-  SkSurface* surface_ = nullptr;
+  sk_sp<SkSurface> surface_;
   RepresentationAccessMode mode_ = RepresentationAccessMode::kNone;
 #if DCHECK_IS_ON()
   gl::GLContext* context_;

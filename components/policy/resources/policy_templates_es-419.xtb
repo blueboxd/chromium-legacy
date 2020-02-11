@@ -286,17 +286,6 @@
       Consulta https://developers.google.com/safe-browsing para obtener más información sobre "Navegación segura".
 
       Esta política está disponible en instancias de Windows vinculadas a un dominio de <ph name="MS_AD_NAME" /> o instancias de Windows 10 Pro o Enterprise habilitadas para la administración de dispositivos.</translation>
-<translation id="1432194160771348078">
-      Especifica una lista de apps que se instalan en segundo plano en la pantalla de acceso (sin interacción del usuario) y que no se pueden desinstalar.
-      Todos los permisos que solicitan las apps se otorgan de forma implícita (sin interacción del usuario), lo que incluye cualquier permiso adicional que soliciten las versiones futuras de la app.
-
-      Ten en cuenta que, por razones de seguridad y privacidad, no se podrán instalar extensiones con esta política. Además, los dispositivos en el canal estable solo instalarán la apps que pertenezcan a la lista blanca de <ph name="PRODUCT_NAME" />. Se ignorará cualquier elemento que no cumpla con estas condiciones.
-
-      Si se quita de esta lista una app que anteriormente se había instalado de manera automática, <ph name="PRODUCT_NAME" /> la desinstalará.
-
-      Cada elemento de la lista en la política es una string que contiene un ID de extensión y una dirección URL de "actualización" separada por punto y coma (<ph name="SEMICOLON" />). El ID de extensión es una string de 32 letras que se encuentra, por ejemplo, en <ph name="CHROME_EXTENSIONS_LINK" /> en el modo de desarrollador. La dirección URL de "actualización" debe estar orientada hacia un documento XML del manifiesto de actualización, como se describe en <ph name="LINK_TO_EXTENSION_DOC1" />. Ten en cuenta que la dirección URL de actualización que se configure en esta política solo se usará para la primera instalación; las siguientes actualizaciones de la extensión emplearán la dirección URL de actualización que se indica en el manifiesto de la extensión.
-
-      Por ejemplo, <ph name="EXTENSION_POLICY_EXAMPLE" /> instala la app de <ph name="EXTENSION_POLICY_EXAMPLE_EXTENSION_NAME" /> de la dirección URL de actualización estándar de Chrome Web Store. Para obtener más información sobre las extensiones de hosting, consulta: <ph name="LINK_TO_EXTENSION_DOC2" />.</translation>
 <translation id="1435659902881071157">Configuración de red de dispositivo</translation>
 <translation id="1438739959477268107">Configuración predeterminada de generación de claves</translation>
 <translation id="1454846751303307294">Te permite configurar una lista de patrones de URL que especifican los sitios a los que no se les permite ejecutar JavaScript. Si esta política no se configura, se usará el valor predeterminado global para todos los sitios, ya sea de la política "DefaultJavaScriptSetting", si está configurada, o de otro tipo de configuración personal del usuario.</translation>
@@ -761,7 +750,7 @@
 
       Configura el requisito de la versión mínima permitida de <ph name="PRODUCT_NAME" />. Las versiones que se describen a continuación se consideran obsoletas, y el dispositivo no permitirá que el usuario acceda sin antes actualizar el SO.
 
-      Si la versión actual se vuelve obsoleta durante la sesión de usuario, se lo forzará al usuario a salir.
+      Si la versión actual se vuelve obsoleta durante la sesión de usuario, se forzará al usuario a salir.
 
       Si no se establece esta política, no se aplicarán restricciones, y el usuario podrá acceder independientemente de la versión de <ph name="PRODUCT_NAME" />.
 
@@ -3230,7 +3219,7 @@ Esta política no se aplica a las aplicaciones de kiosko; estas se migran de for
 <translation id="5861856285460256766">Configuración del código de acceso superior</translation>
 <translation id="5868414965372171132">Configuración de red de usuario</translation>
 <translation id="5879014913445067283">Controla la detección de archivos compartidos en la red a través de <ph name="NETBIOS_NAME" /></translation>
-<translation id="588135807064822874">Habilita Tocar para buscar</translation>
+<translation id="588135807064822874">Habilitar Tocar para buscar</translation>
 <translation id="5882345429632338713">Retraso antes de ejecutar otro navegador (milisegundos)</translation>
 <translation id="5883015257301027298">Configuración de cookies predeterminada</translation>
 <translation id="5887414688706570295">Configura el prefijo TalkGadget que será utilizado por los hosts de acceso remoto y que evita que los usuarios lo cambien.
@@ -3459,7 +3448,7 @@ Esta política no se aplica a las aplicaciones de kiosko; estas se migran de for
 <translation id="6315673513957120120">Chrome muestra una página de advertencia cuando los usuarios visitan sitios que tienen errores de SSL. De forma predeterminada o cuando esta política se establece en true, los usuarios pueden hacer clic en estas páginas de advertencia.
       Al establecer esta política en false, los usuarios no pueden hacer clic en ninguna página de advertencia.</translation>
 <translation id="6319198883324703402">Establece la hora de la primera notificación de reinicio del usuario</translation>
-<translation id="6342187235303612558">No permite que los usuarios carguen o descarguen archivos que no admitan el análisis de DLP o software malicioso</translation>
+<translation id="6342187235303612558">No permitir que los usuarios carguen o descarguen archivos que no admitan el análisis de DLP o software malicioso</translation>
 <translation id="6352543686437322588">Se establece una cuenta local del dispositivo con acceso automático después de un retraso.
 
       Si se establece esta política, se accederá automáticamente a la sesión especificada después de un período determinado en la pantalla de acceso sin necesidad de que el usuario interactúe. La cuenta local del dispositivo ya debe estar configurada (consulta |DeviceLocalAccounts|).
@@ -4330,7 +4319,6 @@ Si se selecciona "U2F_EXTENDED", el segundo factor integrado proporcionará func
 
       Esta política solo es válida si se habilita <ph name="CHROME_REPORTING_EXTENSION_NAME" />, y la máquina está inscrita en <ph name="CLOUD_MANAGEMENT_ENROLLMENT_TOKEN_POLICY_NAME" />.</translation>
 <translation id="7758378441185523981">Permite la autenticación ambiental para tipos de perfiles.</translation>
-<translation id="7761446981238915769">Configura la lista de apps instaladas en la pantalla de acceso</translation>
 <translation id="7763614521440615342">Mostrar sugerencias de contenido en la página Nueva pestaña</translation>
 <translation id="7765879851993224640">Permitir el acceso mediante Smart Lock</translation>
 <translation id="7774768074957326919">Usar la configuración del proxy del sistema</translation>

@@ -21,7 +21,15 @@ source_set("factory") {
     "update_notification_service_factory.h",
   ]
 
-  deps = [ "//chrome/browser/updates/internal:lib" ]
+  deps = [
+    "//base",
+    "//chrome/browser/notifications/proto",
+    "//chrome/browser/notifications/scheduler/public",
+    "//chrome/browser/updates/internal:lib",
+    "//components/keyed_service/core",
+    "//components/leveldb_proto",
+    "//skia",
+  ]
 }
 
 source_set("unit_tests") {

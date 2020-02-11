@@ -609,10 +609,6 @@ void Internals::disableCompositedAnimation(Animation* animation) {
   animation->DisableCompositedAnimationForTesting();
 }
 
-void Internals::disableCSSAdditiveAnimations() {
-  RuntimeEnabledFeatures::SetCSSAdditiveAnimationsEnabled(false);
-}
-
 void Internals::advanceImageAnimation(Element* image,
                                       ExceptionState& exception_state) {
   DCHECK(image);

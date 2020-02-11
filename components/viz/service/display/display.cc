@@ -227,7 +227,8 @@ Display::~Display() {
   if (scheduler_)
     scheduler_->SetClient(nullptr);
 
-  damage_tracker_->RunDrawCallbacks();
+  if (damage_tracker_)
+    damage_tracker_->RunDrawCallbacks();
 }
 
 void Display::Initialize(DisplayClient* client,

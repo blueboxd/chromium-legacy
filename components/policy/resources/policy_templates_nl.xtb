@@ -286,20 +286,6 @@
       Zie https://developers.google.com/safe-browsing voor meer informatie over Safe Browsing.
 
       Dit beleid is alleen beschikbaar op Windows-instanties die gekoppeld zijn aan een <ph name="MS_AD_NAME" />-domein of op instanties van Windows 10 Pro of Enterprise die ingeschreven zijn voor apparaatbeheer.</translation>
-<translation id="1432194160771348078">
-      Specificeert een lijst met apps die zonder gebruikersinteractie op
-      de achtergrond op het inlogscherm worden geïnstalleerd en die niet kunnen worden verwijderd.
-      Alle rechten die worden aangevraagd door de apps worden
-      impliciet zonder gebruikersinteractie verleend, inclusief aanvullende
-      rechten die worden aangevraagd door toekomstige versies van de app.
-
-      Vanwege beveiligings- en privacyredenen kunnen extensies niet worden geïnstalleerd met dit beleid. Daarnaast installeren de apparaten op het stabiele kanaal uitsluitend de apps op de witte lijst die is gekoppeld aan <ph name="PRODUCT_NAME" />. Items die niet aan deze voorwaarden voldoen, worden genegeerd.
-
-      Als een app die eerder afgedwongen is geïnstalleerd uit deze lijst wordt verwijderd, wordt de app automatisch verwijderd door <ph name="PRODUCT_NAME" />.
-
-      Elk lijstitem van het beleid is een tekenreeks die een extensie-ID en een update-URL bevat, gescheiden door een puntkomma (<ph name="SEMICOLON" />). De extensie-ID is de tekenreeks van 32 letters die bijvoorbeeld kan worden gevonden op <ph name="CHROME_EXTENSIONS_LINK" /> als de ontwikkelaarsmodus actief is. De update-URL moet verwijzen naar een xml-document voor het updaten van het manifest, zoals beschreven op <ph name="LINK_TO_EXTENSION_DOC1" />. Houd er rekening mee dat de update-URL die is ingesteld in dit beleid alleen wordt gebruikt voor de eerste installatie. Daaropvolgende updates van de extensie gebruiken de update-URL die wordt aangegeven in het manifest van de extensie.
-
-      Met <ph name="EXTENSION_POLICY_EXAMPLE" /> wordt de app <ph name="EXTENSION_POLICY_EXAMPLE_EXTENSION_NAME" /> bijvoorbeeld geïnstalleerd via de standaard update-URL van de Chrome Web Store. Raadpleeg voor meer informatie over de hosting van extensies de volgende link: <ph name="LINK_TO_EXTENSION_DOC2" />.</translation>
 <translation id="1435659902881071157">Netwerkconfiguratie op apparaatniveau</translation>
 <translation id="1438739959477268107">Standaardinstelling voor het genereren van sleutels</translation>
 <translation id="1454846751303307294">Hiermee kun je een lijst URL-patronen instellen waarmee sites worden gespecificeerd die JavaScript niet mogen uitvoeren.
@@ -4407,7 +4393,6 @@ Geheugengegevens worden in alle gevallen aan de pagina gerapporteerd, afgezien v
 
       Dit beleid is alleen effectief als de <ph name="CHROME_REPORTING_EXTENSION_NAME" /> is ingeschakeld en de machine is ingeschreven met <ph name="CLOUD_MANAGEMENT_ENROLLMENT_TOKEN_POLICY_NAME" />.</translation>
 <translation id="7758378441185523981">Ambient-verificatie inschakelen voor profieltypen.</translation>
-<translation id="7761446981238915769">De lijst met geïnstalleerde apps op het inlogscherm configureren</translation>
 <translation id="7763614521440615342">Contentsuggesties weergeven op de nieuwe tabbladpagina</translation>
 <translation id="7765879851993224640">Toestaan dat Smart Lock Signin wordt gebruikt</translation>
 <translation id="7774768074957326919">Proxyinstellingen van het systeem gebruiken</translation>

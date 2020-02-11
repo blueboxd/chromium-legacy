@@ -3120,6 +3120,12 @@ const char kChromeosVideoDecoderDescription[] =
     "Enables the new Chrome OS video decoder pipeline for hardware accelerated"
     "video decoding.";
 
+const char kContextualNudgesName[] =
+    "Contextual nudges for user gesture education";
+const char kContextualNudgesDescription[] =
+    "Enables contextual nudges, periodically showing the user a label "
+    "explaining how to interact with a particular UI element using gestures.";
+
 const char kCrosRegionsModeName[] = "Cros-regions load mode";
 const char kCrosRegionsModeDescription[] =
     "This flag controls cros-regions load mode";

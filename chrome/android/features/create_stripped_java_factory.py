@@ -31,7 +31,14 @@ sys.path.append(os.path.join(os.path.dirname(__file__),
                              'build', 'android', 'gyp'))
 from util import build_utils
 
-sys.path.append(
+# six is a dependency of javalang
+sys.path.insert(
+    1,
+    os.path.join(
+        os.path.dirname(__file__), os.pardir, os.pardir, os.pardir,
+        'third_party', 'six', 'src'))
+sys.path.insert(
+    1,
     os.path.join(
         os.path.dirname(__file__), os.pardir, os.pardir, os.pardir,
         'third_party', 'javalang', 'src'))

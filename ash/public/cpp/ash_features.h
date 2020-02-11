@@ -21,6 +21,9 @@ ASH_PUBLIC_EXPORT extern const base::Feature kAllowAmbientEQ;
 // certain devices.
 ASH_PUBLIC_EXPORT extern const base::Feature kAutoNightLight;
 
+// Enables contextual nudges for gesture education.
+ASH_PUBLIC_EXPORT extern const base::Feature kContextualNudges;
+
 // Enables a modal dialog when resolution or refresh rate change.
 ASH_PUBLIC_EXPORT extern const base::Feature kDisplayChangeModal;
 
@@ -176,6 +179,8 @@ ASH_PUBLIC_EXPORT bool IsReduceDisplayNotificationsEnabled();
 ASH_PUBLIC_EXPORT bool IsHideShelfControlsInTabletModeEnabled();
 
 ASH_PUBLIC_EXPORT bool IsDisplayChangeModalEnabled();
+
+ASH_PUBLIC_EXPORT bool AreContextualNudgesEnabled();
 
 // These two functions are supposed to be temporary functions to set or get
 // whether "WebUITabStrip" feature is enabled from Chrome.

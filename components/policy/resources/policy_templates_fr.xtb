@@ -287,17 +287,6 @@
       Pour en savoir plus sur la navigation privée, rendez-vous sur https://developers.google.com/safe-browsing.
 
       Cette règle n'est disponible que sur les instances Windows qui sont associées à un domaine <ph name="MS_AD_NAME" />, ou sur les instances Windows 10 Pro ou Windows Enterprise qui sont enregistrées pour bénéficier de la gestion des appareils.</translation>
-<translation id="1432194160771348078">
-      Définit la liste des applications qui sont installées silencieusement sur l'écran de connexion, sans aucune intervention de l'utilisateur, et qui ne peuvent pas être désinstallées.
-      Toutes les autorisations demandées par les applications sont accordées implicitement, sans intervention de l'utilisateur, y compris n'importe quelle autre autorisation demandée par les futures versions de l'application.
-
-      Notez que, pour des raisons de sécurité et de confidentialité, les extensions ne peuvent pas être installées à l'aide de cette règle. De plus, les appareils en version stable n'installent que les applications appartenant à la liste blanche livrée avec <ph name="PRODUCT_NAME" />. Tout élément ne respectant pas ces conditions sera ignoré.
-
-      Si une application ayant été préalablement installée d'office est supprimée de cette liste, elle est automatiquement désinstallée par <ph name="PRODUCT_NAME" />.
-
-Dans cette règle, chaque élément de la liste est constitué d'une chaîne contenant un identifiant d'extension et une URL de mise à jour séparés par un point-virgule (<ph name="SEMICOLON" />). L'identifiant d'extension est la chaîne de 32 lettres qui se trouve, par exemple, dans <ph name="CHROME_EXTENSIONS_LINK" /> en mode développeur. L'URL de mise à jour doit renvoyer à un fichier manifeste de mise à jour au format XML, comme décrit sur la page <ph name="LINK_TO_EXTENSION_DOC1" />. Notez que l'URL de mise à jour définie dans cette règle n'est utilisée que pour l'installation initiale. Toute mise à jour ultérieure de l'extension est effectuée avec l'URL de mise à jour indiquée dans le fichier manifeste de l'extension.
-
-      Par exemple, <ph name="EXTENSION_POLICY_EXAMPLE" /> installe l'application <ph name="EXTENSION_POLICY_EXAMPLE_EXTENSION_NAME" /> à partir de l'URL de mise à jour normale du Chrome Web Store. Pour en savoir plus sur l'hébergement des extensions, rendez-vous sur : <ph name="LINK_TO_EXTENSION_DOC2" />.</translation>
 <translation id="1435659902881071157">Configuration réseau au niveau de l'appareil</translation>
 <translation id="1438739959477268107">Paramètre de génération de clé par défaut</translation>
 <translation id="1454846751303307294">Permet de définir une liste de formats d'URL spécifiant les sites qui ne sont pas autorisés à exécuter JavaScript. 
@@ -4440,7 +4429,6 @@ au maximum si un utilisateur se sert de l'appareil.
 
       Ces règles ne sont effectives que lorsque la règle <ph name="CHROME_REPORTING_EXTENSION_NAME" /> est activée et que l'ordinateur est inscrit à <ph name="CLOUD_MANAGEMENT_ENROLLMENT_TOKEN_POLICY_NAME" />.</translation>
 <translation id="7758378441185523981">Activer l'authentification ambiante en fonction du type de profil.</translation>
-<translation id="7761446981238915769">Configurez la liste des applications installées sur l'écran de connexion.</translation>
 <translation id="7763614521440615342">Afficher des recommandations de contenus sur la page "Nouvel onglet"</translation>
 <translation id="7765879851993224640">Autorise la connexion avec Smart Lock.</translation>
 <translation id="7774768074957326919">Utiliser les paramètres proxy du système</translation>

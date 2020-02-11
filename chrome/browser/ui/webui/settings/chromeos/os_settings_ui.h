@@ -11,6 +11,7 @@
 #include "base/time/time.h"
 #include "chrome/browser/ui/webui/app_management/app_management.mojom-forward.h"
 #include "chrome/browser/ui/webui/settings/chromeos/app_management/app_management_page_handler_factory.h"
+#include "chrome/browser/ui/webui/settings/chromeos/search/search.mojom-forward.h"
 #include "chrome/browser/ui/webui/webui_load_timer.h"
 #include "chromeos/services/network_config/public/mojom/cros_network_config.mojom-forward.h"
 #include "mojo/public/cpp/bindings/pending_receiver.h"
@@ -43,6 +44,11 @@ class OSSettingsUI : public ui::MojoWebUIController {
   // passing the pending receiver that will be internally bound.
   void BindInterface(
       mojo::PendingReceiver<network_config::mojom::CrosNetworkConfig> receiver);
+
+  // Instantiates implementor of the mojom::UserActionRecorder mojo interface
+  // passing the pending receiver that will be internally bound.
+  void BindInterface(mojo::PendingReceiver<mojom::UserActionRecorder> receiver);
+
   // Instantiates implementor of the mojom::PageHandlerFactory mojo interface
   // passing the pending receiver that will be internally bound.
   void BindInterface(
@@ -57,6 +63,7 @@ class OSSettingsUI : public ui::MojoWebUIController {
 
   WebuiLoadTimer webui_load_timer_;
 
+  std::unique_ptr<mojom::UserActionRecorder> user_action_recorder_;
   std::unique_ptr<AppManagementPageHandlerFactory>
       app_management_page_handler_factory_;
 

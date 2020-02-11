@@ -744,9 +744,6 @@ void ResourceFetcher::UpdateMemoryCacheStats(Resource* resource,
   if (is_static_data)
     return;
 
-  UMA_HISTOGRAM_BOOLEAN("Blink.ResourceFetcher.StaleWhileRevalidate",
-                        params.IsStaleRevalidation());
-
   if (params.IsSpeculativePreload() || params.IsLinkPreload()) {
     DEFINE_RESOURCE_HISTOGRAM("Preload.");
   } else {

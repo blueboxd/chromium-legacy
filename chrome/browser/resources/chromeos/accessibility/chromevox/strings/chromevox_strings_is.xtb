@@ -1,13 +1,11 @@
 <?xml version="1.0" ?>
 <!DOCTYPE translationbundle>
 <translationbundle lang="is">
-<translation id="100812568230599391">Breyta birtingarstíl í samfléttaðan.</translation>
 <translation id="1011903154582639569">Finndu lykil og lyftu síðan til að slá inn</translation>
 <translation id="1012173283529841972">Listaatriði</translation>
 <translation id="1013742170491673792">srched</translation>
 <translation id="1014370462248694370">Strjúktu tveimur fingrum til hægri</translation>
 <translation id="1022586497894531524">Ertu að nota raddsvörun ChromeVox í fyrsta skipti? Þessi stutta kynning útskýrir það helsta sem þarf til að hefjast handa með ChromeVox.</translation>
-<translation id="1023866615269196768">Spannað.</translation>
 <translation id="1025074108959230262">Lyklafesting óvirk</translation>
 <translation id="1031961866430398710">og svo</translation>
 <translation id="1038643060055067718">Línur:</translation>
@@ -16,17 +14,12 @@
 <translation id="106222400312645156">rwhdr</translation>
 <translation id="1065552602950927991">Ógildur innsláttur</translation>
 <translation id="1066085461259044485">Skógargrænn</translation>
-<translation id="1082209053475788238">Engin fyrri 6. stigs fyrirsögn.</translation>
 <translation id="1087788677726983142">Fela síur viðburðarstraums</translation>
-<translation id="1088219014394087294">Engar fyrirsagnir.</translation>
-<translation id="1106741348836243114">Kveikja eða slökkva á hljóðsvörun (hljóðmerkjum).</translation>
 <translation id="1114836634143403764">Tillaga</translation>
 <translation id="1120743664840974483">{"a": "Alfreð", "á": "Ásta", "b": "Bjarni", "c": "Ceres", "d": "Davíð", "ð": "Eðvarð", "e": "Einar", "é": "Él", "f": "Friðrik", "g": "Gunnar", "h": "Halldór", "i": "Ingi", "í": "Íris", "j": "Jónas","k": "Kristján", "l": "Lárus", "m": "Magnús", "n": "Nikulás", "o": "Oddur", "ó": "Ólafur", "p": "Pétur", "q": "Quebec", "r": "Ragnar", "s": "Sigurður", "t": "Teitur", "u": "Unnur", "ú": "Úlfur", "v": "Viktor", "w": "Whiskey","x": "xray", "y": "Ylfa", "ý": "Ýmir", "þ": "Þóra",  "æ": "Ægir", "ö": "Ölvir", "z": "zebra“}</translation>
 <translation id="1120938014254001895">Strjúktu tveimur fingrum upp</translation>
-<translation id="1124771028211010580">Núverandi birtingarstíll er hlið við hlið.</translation>
 <translation id="1126928665165112660">Ekki skáletrað</translation>
 <translation id="113582498867142724"><ph name="TAG" /> safn með <ph name="NUM" /> atriðum</translation>
-<translation id="1155043339247954670">Ekkert næsta listaatriði.</translation>
 <translation id="1157782847298808853">Lyklaborðshjálp</translation>
 <translation id="1157843803349774103"><ph name="VALUE" />, <ph name="NAME" />, fellivalmynd</translation>
 <translation id="1161762950103988776">Fara</translation>
@@ -48,11 +41,9 @@ Ef þú hefur ekki lengur þörf fyrir frekari kennslu skaltu nota ChromeVox til
 <translation id="1246424317317450637">Feitletur</translation>
 <translation id="1251750620252348585">Næsta 6. stigs fyrirsögn</translation>
 <translation id="1275718070701477396">Valið</translation>
-<translation id="1286609444451033486">Ýttu á leitarlykilinn+bilslá til að velja.</translation>
 <translation id="1291286136605998134">Hnappur til að slökkva og kveikja</translation>
 <translation id="1299774449519412690">Ljóshiminblár</translation>
 <translation id="1303806948938513162">Ýttu með fjórum fingrum til að opna valmyndir ChromeVox</translation>
-<translation id="1319608975892113573">Engin fyrri tilvitnun.</translation>
 <translation id="1321576897702511272">Fela ChromeVox hjálp</translation>
 <translation id="1325946044405407859">Gulbrúnn</translation>
 <translation id="1331702245475014624"><ph name="INDEX" /> af <ph name="TOTAL" /></translation>
@@ -68,7 +59,6 @@ Ef þú hefur ekki lengur þörf fyrir frekari kennslu skaltu nota ChromeVox til
 <translation id="1377925789329510816">Þetta er síðasta fyrirsögnin. Ýttu á leitarlykilinn + H til að fara aftur á fyrstu fyrirsögnina eða leitarlykilinn + Shift + H til að fara á aðra fyrirsögnina á þessari síðu.</translation>
 <translation id="138218114945450791">Ljósblár</translation>
 <translation id="1383876407941801731">Leita</translation>
-<translation id="1385214448885562192">Ýttu á Enter til að samþykkja eða Esc til að hætta við, niður fyrir næsta og upp fyrir fyrra.</translation>
 <translation id="1396114365388024581">tablst</translation>
 <translation id="1405567553485452995">Ljósgrænn</translation>
 <translation id="1417889266572670458">Svarblár</translation>
@@ -77,7 +67,6 @@ Ef þú hefur ekki lengur þörf fyrir frekari kennslu skaltu nota ChromeVox til
 <translation id="1452236308086741652"><ph name="VALUE" />, textareitur fyrir aðgangsorð</translation>
 <translation id="146450394670219700">Myndrænn hlutur</translation>
 <translation id="1467432559032391204">Rangsælis</translation>
-<translation id="1474557363159888097">Ekkert fyrra akkeri.</translation>
 <translation id="1480046233931937785">Samstarfsaðilar</translation>
 <translation id="1487494366197411587">Leitarlykillinn er beint fyrir ofan vinstri Shift-lykilinn á Chromebook.</translation>
 <translation id="1499041187027566160">hækka hljóð</translation>
@@ -109,6 +98,7 @@ Ef þú hefur ekki lengur þörf fyrir frekari kennslu skaltu nota ChromeVox til
 <translation id="16777221443363124">Valmyndastika</translation>
 <translation id="1680732992526857724"><ph name="NAME" />, kveikja</translation>
 <translation id="1686878109459149415">Gulllitaður</translation>
+<translation id="1690731385917361335">Engin atriði</translation>
 <translation id="1692077714702418899">burðarlína</translation>
 <translation id="1700517974991662022">Opnað</translation>
 <translation id="1714116687360794776">Mælir</translation>
@@ -123,12 +113,12 @@ Ef þú hefur ekki lengur þörf fyrir frekari kennslu skaltu nota ChromeVox til
 <translation id="1810107444790159527">Listareitur</translation>
 <translation id="1812527064848182527">langsnið</translation>
 <translation id="1828385960365606039">Maí</translation>
+<translation id="1829244130665387512">Finna á síðu</translation>
 <translation id="1834891354138622109">Dálkur</translation>
 <translation id="1845944666972354496">Ýttu tvisvar til að virkja</translation>
 <translation id="1846771122725914429">Blindraletursskjár með Bluetooth-tengingu</translation>
 <translation id="1865601187525349519">Lok texta</translation>
 <translation id="1876229593313240038">skjal</translation>
-<translation id="188130072164734898">Lesa upp núverandi tíma og dagsetningu.</translation>
 <translation id="1902396333223336119">Hólf</translation>
 <translation id="1903683160884433981">Miðlungsvorgrænn</translation>
 <translation id="1905379170753160525">Sýna fyrirsagnalista</translation>
@@ -147,7 +137,6 @@ Ef þú hefur ekki lengur þörf fyrir frekari kennslu skaltu nota ChromeVox til
 <translation id="2009187674653301682">Ekki brjóstletur</translation>
 <translation id="2010555995361223825">ChromeVox valmyndir</translation>
 <translation id="2045490512405922022">ekki merkt</translation>
-<translation id="20601713649439366">Engin fyrri stærðfræðisegð.</translation>
 <translation id="2063539687800151747">Upphafstilvitnun</translation>
 <translation id="207477615537953741">Slökkt á merkingargreiningu</translation>
 <translation id="2086961585857038472">Næsta orð</translation>
@@ -160,7 +149,6 @@ Ef þú hefur ekki lengur þörf fyrir frekari kennslu skaltu nota ChromeVox til
 <translation id="2121067395472282800">aðgangslykill: <ph name="KEY" /></translation>
 <translation id="2126597928985245619">Enginn texti er til staðar fyrir þetta atriði</translation>
 <translation id="2127747486437921899">Skáletur</translation>
-<translation id="2138345533858834403">Hermir eftir úttaki blindraletursskjás sem hægt er að endurnýja        á ChromeVox svæðinu efst á skjánum.</translation>
 <translation id="2163782704988363449">Leiðréttingar</translation>
 <translation id="2169714232367507776">Smella á valið atriði</translation>
 <translation id="2179452035581866348">ChromeVox notar hljóð til að veita þér nauðsynlegar upplýsingar og viðbótarupplýsingar. Þú getur notað þessi hljóð til að fletta hraðar með því að læra hvað hvert hljóð merkir. Þegar þetta er orðið þér kunnuglegra geturðu slökkt á ítarlegum lýsingum í tali og treyst á hljóðin til að fá nauðsynlegar upplýsingar um síðuna. Hér er listinn yfir hljóð og merkingar þeirra í heild sinni.</translation>
@@ -183,7 +171,6 @@ Ef þú hefur ekki lengur þörf fyrir frekari kennslu skaltu nota ChromeVox til
 <translation id="2329324941084714723">Flipasvæði</translation>
 <translation id="2344193891939537199">Stýring dagsetningar og tíma</translation>
 <translation id="2347456970887948350">Tengill</translation>
-<translation id="2359897517538099099">Ekki í töflustillingu.</translation>
 <translation id="2381733276052567791">Slökkva eða kveikja á rödd</translation>
 <translation id="2390264819538553347">Ýttu á færslulykilinn til að halda áfram eða bakklykilinn til að fara til baka.</translation>
 <translation id="240709722712693803">Bláfjólublár</translation>
@@ -217,7 +204,6 @@ Ef þú hefur ekki lengur þörf fyrir frekari kennslu skaltu nota ChromeVox til
 <translation id="2614981083756825552">Math ML útlit</translation>
 <translation id="2624431853467395961">Opna fræðslustillingu</translation>
 <translation id="2626530649491650971">smellanlegt</translation>
-<translation id="2628764385451019380">Engin fyrri fellivalmynd.</translation>
 <translation id="2637227747952042642">Stærðfræði</translation>
 <translation id="2638785836053527382">Niðurhali haldið áfram <ph name="FILE_NAME" /></translation>
 <translation id="2639750663247012216">ChromeVox breytingalykill</translation>
@@ -242,18 +228,14 @@ Ef þú hefur ekki lengur þörf fyrir frekari kennslu skaltu nota ChromeVox til
 <translation id="2777845298774924149">Lokað</translation>
 <translation id="2783001728278437613">{COUNT,plural, =1{+#}one{+#}other{+#}}</translation>
 <translation id="2784959586797362050">Eins og áður geturðu sent okkur ábendingar beint með því að ýta á leitarlykilinn+a og síðan „i“. Við hlökkum til að heyra frá þér.</translation>
-<translation id="2800204403141299078">Engar fleiri mismunandi einingar.</translation>
-<translation id="2800780099804980316">Engin fyrri 1. stigs fyrirsögn.</translation>
 <translation id="280499067616661124">Finna á síðu með ChromeVox</translation>
 <translation id="2808001342598757276">Taka dekkingu af skjá</translation>
 <translation id="2811019999044652585">Ýttu á Ctrl+Áfram til að stökkva yfir á aðra hluta skjásins, eins og tækjastiku og kerfisbakka. Á Chromebook er lykillinn Áfram beint fyrir ofan tölustafinn 2.</translation>
 <translation id="2811204574343810641">Lína</translation>
-<translation id="2816654101880605877">Enginn næsti sleði.</translation>
 <translation id="2841013758207633010">Tími</translation>
 <translation id="2843814945404750166">Dökkólífugrænn</translation>
 <translation id="2843837985843789981">Fyrri hópur</translation>
 <translation id="2844995807198708617">Samhengisvalmynd</translation>
-<translation id="2849332794118375855">Enginn næsti gátreitur.</translation>
 <translation id="2864481629947106776">Fyrri tengill</translation>
 <translation id="2867808975387772810">Heimildaskrá</translation>
 <translation id="2873259058405069099">Fara í upphaf töflu</translation>
@@ -268,17 +250,13 @@ Ef þú hefur ekki lengur þörf fyrir frekari kennslu skaltu nota ChromeVox til
 <translation id="2932083475399492303">Víxla línugerð milli skipulags og útlits</translation>
 <translation id="2942710183375260152">Dökkblágrár</translation>
 <translation id="2943596527105977722">Dökkgulbrúnn</translation>
-<translation id="2944762337049891859">Lesa síðu sjálfkrafa eftir að hún hefur verið sótt.</translation>
 <translation id="2964026537669811554">Fyrirsagnahópur</translation>
 <translation id="2968634799764242930">Sægrænn</translation>
 <translation id="296951647852255825">{COUNT,plural, =1{flipi}one{# flipi}other{# flipar}}</translation>
-<translation id="2972078295414139404">Enginn fyrri heimsóttur tengill.</translation>
 <translation id="2972205263822847197">Ábending</translation>
 <translation id="297825089465017871">Strjúktu tveimur fingrum til vinstri</translation>
 <translation id="2998131015536248178">Fyrra staftákn</translation>
 <translation id="2999559350546931576">Minnka tónhæð</translation>
-<translation id="2999945368667127852">Engin næsta margmiðlunargræja.</translation>
-<translation id="3012414509011670858">Enginn fyrri kafli.</translation>
 <translation id="3014130421870723208">@br í 8p</translation>
 <translation id="3030432017085518523">Valhnappur valmyndaratriðis</translation>
 <translation id="3037392361165431467">{COUNT,plural, =1{úrfellingarkomma}one{# úrfellingarkomma}other{# úrfellingarkommur}}</translation>
@@ -294,7 +272,6 @@ Ef þú hefur ekki lengur þörf fyrir frekari kennslu skaltu nota ChromeVox til
 <translation id="3082557070674409251">Smellt</translation>
 <translation id="3084806535845658316">slökkt á upplestri innsláttar</translation>
 <translation id="3086746722712840547">glósa</translation>
-<translation id="308895241372589742">Engin næsta stærðfræðisegð.</translation>
 <translation id="3090227230165225418">Láta vita af niðurhalstilkynningum</translation>
 <translation id="3090532668523289635">hópur</translation>
 <translation id="3093176084511590672">Næsta kennileiti</translation>
@@ -310,7 +287,6 @@ Ef þú hefur ekki lengur þörf fyrir frekari kennslu skaltu nota ChromeVox til
 <translation id="3149472044574196936">Næsta lína</translation>
 <translation id="3153024374267644603">Kveikja á rödd</translation>
 <translation id="3153928844647607688">Tafla <ph name="TABLENAME" />, <ph name="TABLEROWS" /> x <ph name="TABLECOLS" /></translation>
-<translation id="3155083529632865074">Enginn fyrri hnappur.</translation>
 <translation id="3159493096109238499">Drapplitaður</translation>
 <translation id="3163593631834463955">Tómur dálkhaus</translation>
 <translation id="316542773973815724">Vefskoðun</translation>
@@ -330,7 +306,6 @@ Ef þú hefur ekki lengur þörf fyrir frekari kennslu skaltu nota ChromeVox til
 <translation id="3260949043575829030">Fyrra svipað atriði</translation>
 <translation id="3286372614333682499">skammsnið</translation>
 <translation id="3286390186030710347">Sleði</translation>
-<translation id="3299925995433437805">Enginn næsti heimsóttur tengill.</translation>
 <translation id="3300348286427369683">Stuðningur við sniðinn texta. ChromeVox styður nú reiti með textasniði, þ. á m. skipanir um að fara á annan stað, leiðir bendils fyrir blindraletur, val og fleira.</translation>
 <translation id="3307886118343381874">Fara í lok töflu</translation>
 <translation id="3311969765485641742">Ýttu á Alt+Shift+A til að fara yfir viðvaranir</translation>
@@ -348,7 +323,6 @@ Ef þú hefur ekki lengur þörf fyrir frekari kennslu skaltu nota ChromeVox til
 <translation id="3374537878095184207">{COUNT,plural, =1{plús}one{# plúsmerki}other{# plúsmerki}}</translation>
 <translation id="338583716107319301">Skiltákn</translation>
 <translation id="3389259863310851658">Fyrri eyðublaðsreitur</translation>
-<translation id="3390225400784126843">Næsta ólíka eining.</translation>
 <translation id="3392045790598181549"><ph name="NAME" />, valmyndaratriði</translation>
 <translation id="3393605254399152980">Dragðu með einum fingri til að hlusta á það sem þú snertir</translation>
 <translation id="3406283310380167331">Sýna eyðublaðalista</translation>
@@ -365,7 +339,6 @@ Ef þú hefur ekki lengur þörf fyrir frekari kennslu skaltu nota ChromeVox til
 <translation id="3486232535569802404"><ph name="V1" /> til <ph name="V2" /></translation>
 <translation id="3490765818161916458">Listi með hnitaneti</translation>
 <translation id="3492609944033322585">{COUNT,plural, =1{hægri hornklofi}one{# hægri hornklofi}other{# hægri hornklofar}}</translation>
-<translation id="3493915602752813531">Ekkert næsta akkeri.</translation>
 <translation id="3494946239022273294">mnuitm</translation>
 <translation id="3497063866483065785">{COUNT,plural, =1{spurningarmerki}one{# spurningarmerki}other{# spurningarmerki}}</translation>
 <translation id="3514822174137761109">{COUNT,plural, =1{innskotsmerki}one{# innskotsmerki}other{# innskotsmerki}}</translation>
@@ -393,20 +366,16 @@ Ef þú hefur ekki lengur þörf fyrir frekari kennslu skaltu nota ChromeVox til
 <translation id="3712520970944678024">Unnið með tal</translation>
 <translation id="371302509916403935">Undirstrikun</translation>
 <translation id="3716845769494773620">Margar línur</translation>
-<translation id="3731746171184829332">Engin fyrri fyrirsögn.</translation>
 <translation id="3735039640698208086">Þegar hljóð er spilað...</translation>
-<translation id="3755561384917041694">Kveiktu á skjályklaborðinu undir stöðusvæðinu til að fá aðgang að viðbótarskipunum fyrir blindraletur.</translation>
 <translation id="3762198587642264450">Fara í lok línunnar</translation>
 <translation id="3777255250339039212">h1</translation>
 <translation id="3777742246909257041">Snjóhvítur</translation>
 <translation id="3781428340399460090">Dökkbleikur</translation>
 <translation id="3783725005098956899">Sýna annál</translation>
-<translation id="3793710123303304873">Glugga lokað.</translation>
 <translation id="3801735343383419236">Listi flýtiritunar</translation>
 <translation id="3810838688059735925">Myndskeið</translation>
 <translation id="3813387282697781382">Ljósrauðbleikur</translation>
 <translation id="3816633764618089385">Næsta margmiðlunarefni</translation>
-<translation id="3819376190738087562">Engin stökk.</translation>
 <translation id="385383972552776628">Opna valkostasíðu</translation>
 <translation id="3856075812838139784">Skrifvarið</translation>
 <translation id="3857141338659865495">Miðlungsgrænblár</translation>
@@ -420,7 +389,6 @@ Ef þú hefur ekki lengur þörf fyrir frekari kennslu skaltu nota ChromeVox til
 <translation id="3930498801443296724">Útdregin tilvitnun</translation>
 <translation id="3935615366277838204">Stórt <ph name="LETTER" /></translation>
 <translation id="3936394396199829062">Ljósfjólubleikur</translation>
-<translation id="3941269780691800708">Textaupplestur á því sem er undir músarbendli</translation>
 <translation id="394953087167197343">Gefa ábendingu um ritvillu:</translation>
 <translation id="3962990492275676168">Hefja lestur frá þessum stað</translation>
 <translation id="3970951409746498040">Sandbrúnn</translation>
@@ -431,8 +399,6 @@ Ef þú hefur ekki lengur þörf fyrir frekari kennslu skaltu nota ChromeVox til
 <translation id="4006140876663370126">mynd</translation>
 <translation id="4038349100599457191">Stýring mánaðar</translation>
 <translation id="4039983576244166038">Auður línuhaus</translation>
-<translation id="4042843249978639960">Engin næsta 2. stigs fyrirsögn.</translation>
-<translation id="4043348641337972076">Ekkert fyrra ARIA-kennileiti.</translation>
 <translation id="4047216625641135770">Merkja</translation>
 <translation id="404803211695627272"><ph name="V1" />–<ph name="V2" /></translation>
 <translation id="4053520724192563562">Límónugrænn</translation>
@@ -440,20 +406,15 @@ Ef þú hefur ekki lengur þörf fyrir frekari kennslu skaltu nota ChromeVox til
 <translation id="4058278702844053247">Verið er að sækja síðu</translation>
 <translation id="4065205963140826639">Prófaðu að nota leitarlykilinn+hægri ör til að finna hnappinn til að halda áfram og ýttu svo á leitarlykilinn+bilslá til að smella á hann.</translation>
 <translation id="4081085052247739398">{COUNT,plural, =1{TILDA}one{# tilda}other{# tildur}}</translation>
-<translation id="4086311032171418648">Slekkur á fræðslustillingu.</translation>
 <translation id="409334809956508737">Fyrri hlutur</translation>
 <translation id="4099274309791143834">með undirvalmynd</translation>
 <translation id="4101527861445851766">Gátreitur sem hefur verið merkt í</translation>
-<translation id="4107807507418787238">Ekkert hólf fyrir neðan.</translation>
 <translation id="4115378294792113321">Bleikur</translation>
 <translation id="4116415223832267137">Tilkynning</translation>
-<translation id="4147126331795725888">Engin næsta stýring.</translation>
 <translation id="4148180433151187540">{COUNT,plural, =1{hægri slaufusvigi}one{# hægri slaufusvigi}other{# hægri slaufusvigar}}</translation>
-<translation id="4158704014418536539">Há- og lágstafir skipta máli.</translation>
 <translation id="4159784952369912983">Purpurarauður</translation>
 <translation id="4161104397932142764">{COUNT,plural, =1{sekúnda}one{sekúnda}other{sekúndur}}</translation>
 <translation id="4161663686871496107">Raddsvörun ChromeVox er tilbúin</translation>
-<translation id="4173994908659439270">Enginn næsti breytanlegur textareitur.</translation>
 <translation id="4176463684765177261">Óvirkt</translation>
 <translation id="4187322598335821254">Strjúktu upp eða niður til að færa línu fyrir línu</translation>
 <translation id="4188530942454211480">Fyrri setning</translation>
@@ -463,8 +424,6 @@ Ef þú hefur ekki lengur þörf fyrir frekari kennslu skaltu nota ChromeVox til
 <translation id="4204126831294769023">Heiðblár</translation>
 <translation id="4204864733111726379">Gulhvítur</translation>
 <translation id="4206289001967551965">Innan töflu</translation>
-<translation id="4207770814752775793">Endurstilla á sjálfgefnar stillingar talgervils.</translation>
-<translation id="4209770650650780359">Ýttu á ör upp eða niður til að nota sjálfvirka útfyllingu.</translation>
 <translation id="4215733775853809057">Næsti sleði</translation>
 <translation id="42164919740161077">Blágrágrænn</translation>
 <translation id="4218529045364428769">{COUNT,plural, =1{bandstrik}one{# bandstrik}other{# bandstrik}}</translation>
@@ -473,27 +432,22 @@ Ef þú hefur ekki lengur þörf fyrir frekari kennslu skaltu nota ChromeVox til
 <translation id="4229646983878045487">dagsetning og tími</translation>
 <translation id="4230834257931120629">Ljósgráblár</translation>
 <translation id="4231102694147661229">Virkja valkosti þróunaraðila</translation>
-<translation id="423334822609210999">Ekkert hólf til vinstri.</translation>
 <translation id="4243624244759495699"><ph name="LOCALE" />, gráða <ph name="GRADE" /></translation>
 <translation id="4246217262268234757">Stálblár</translation>
 <translation id="4253168017788158739">Athugasemd</translation>
 <translation id="4254798249533888099">Tré</translation>
 <translation id="4255943572433203166">Nota neðangreinda valkosti til að sérsníða ChromeVox. Breytingar taka gildi strax.</translation>
 <translation id="4271220233568730077">Næsta stærðfræðisegð</translation>
-<translation id="4271521365602459209">Engar fleiri niðurstöður.</translation>
 <translation id="4275397969489577657">Kveikja á skráningu viðburðarstraums</translation>
 <translation id="4281245629646759298">Ljósgulur</translation>
-<translation id="4287520460805643128">Engin næsta grein.</translation>
 <translation id="4289540628985791613">Yfirlit</translation>
 <translation id="4300318234632215983">Tilkynna vefslóðina á bak við tengil</translation>
 <translation id="4301352596632316575">inniheldur undirvalmynd</translation>
 <translation id="4322625298640984693">Dökkrauðbrúnn</translation>
 <translation id="4342180618051828363">{COUNT,plural, =1{punktur}=3{þrípunktur}one{# punktur}other{# punktar}}</translation>
-<translation id="4347461890115250064">Enginn næsti listi.</translation>
 <translation id="4367650418938037324">Math ML lauf</translation>
 <translation id="4372435075475052704">lágm.:<ph name="X" /></translation>
 <translation id="4372705107434148843">Hætta að tala</translation>
-<translation id="4373197658375206385">Ekkert fyrra atriði sem er ekki tengill.</translation>
 <translation id="4376316291247992553">Skoða myndefni sem blindraletur</translation>
 <translation id="437809255587011096">Tilkynna stíl texta</translation>
 <translation id="4378308539633073595">Fletta áfram</translation>
@@ -503,7 +457,6 @@ Ef þú hefur ekki lengur þörf fyrir frekari kennslu skaltu nota ChromeVox til
 <translation id="443163561286008705">endurstilla</translation>
 <translation id="4432457053224379116">Rauðbrúnn</translation>
 <translation id="4457472090507035117">Velja núverandi rödd:</translation>
-<translation id="4471074325120394300">Engir tenglar.</translation>
 <translation id="4476183483923481720">ný lína</translation>
 <translation id="4479068155583208887">Múrsteinsrauður</translation>
 <translation id="4482330759234983253">Fyrri tafla</translation>
@@ -516,25 +469,21 @@ Ef þú hefur ekki lengur þörf fyrir frekari kennslu skaltu nota ChromeVox til
 <translation id="4537277403911487429">Næsta svipaða atriði</translation>
 <translation id="4547556996012970016">Næsta 5. stigs fyrirsögn</translation>
 <translation id="4562381607973973258">Haus</translation>
-<translation id="4569941707103739422">Ýttu á ör upp eða niður til að fletta og Enter til að velja.</translation>
 <translation id="4591507479202817876">, valið</translation>
 <translation id="4597532268155981612">eyðublað</translation>
 <translation id="4597896406374528575">Apríl</translation>
-<translation id="460018603901637538">Breyta birtingarstíl í hlið við hlið.</translation>
 <translation id="4601367666219428522">ta. <ph name="TABLENAME" /> <ph name="TABLEROWS" />x<ph name="TABLECOLS" /></translation>
 <translation id="4615592953348396470">Hunsar næsta lyklaborðsinnslátt</translation>
 <translation id="461613135510474570">Setning</translation>
 <translation id="4623097797855662355">Baktitill</translation>
 <translation id="463135993322337640">Ýttu á ChromeVox o, n til að fá upplýsingar um nýjungar</translation>
 <translation id="4647836961514597010">Litaval</translation>
-<translation id="4652110509054054146">Notaðu leitarlykilinn ásamt vinstri eða hægri ör til að ýta á Home eða End, leitarlykil, Control-hnappinn og vinstri eða hægri ör til að ýta á Control Home eða End og leitarlykil ásamt upp- eða niðurör til að ýta á Page Up eða Page Down.</translation>
 <translation id="4660783501463101648">Sígilt fjarlægt. Lyklaborðsskipunin til að skipta yfir í sígilt ChromeVox hefur verið fjarlægð.</translation>
 <translation id="4661075872484491155">tree</translation>
 <translation id="4668929960204016307">,</translation>
 <translation id="4677535310137735442">Fara í næsta dálk</translation>
 <translation id="4688873778442829762">hnit</translation>
 <translation id="4693675773662933727">Fyrra kennileiti</translation>
-<translation id="4696413482802371445">Engin næsta 5. stigs fyrirsögn.</translation>
 <translation id="4710166929009737753">Strjúktu einum fingri til hægri</translation>
 <translation id="4729095194763193578">Fyrri töflulína</translation>
 <translation id="4736221692378411923">Ágúst</translation>
@@ -555,15 +504,12 @@ Ef þú hefur ekki lengur þörf fyrir frekari kennslu skaltu nota ChromeVox til
 <translation id="4838490795649708173">Ýttu með fjórum fingrum</translation>
 <translation id="4839925464551908214">Fara í fyrri línu</translation>
 <translation id="4841614409681890122">Dökkbleikur</translation>
-<translation id="4842108708071771135">Engin næsta tilvitnun.</translation>
 <translation id="4844625982113518938">Ýttu á hvaða lykil sem er til að komast að því hvað hann heitir. Ctrl + W lokar fræðslustillingu.</translation>
 <translation id="4846428657345567687">Velkomin(n) í ChromeVox!</translation>
 <translation id="4848993367330139335">tímastillir</translation>
-<translation id="4850023505158945298">Fyrri svipuð eining.</translation>
 <translation id="4862744964787595316">Ekki feitletrað</translation>
 <translation id="4866956062845190338">rdmnuitm</translation>
 <translation id="4867316986324544967">Virkja TTS-skráningu</translation>
-<translation id="4877261390094455813">Sláðu inn leitarfyrirspurn.</translation>
 <translation id="4886524826165775965"><ph name="INDEX" />/<ph name="TOTAL" /></translation>
 <translation id="4892105484979139179">Dökkblágrænn</translation>
 <translation id="489907760999452556">Innri tengill</translation>
@@ -575,7 +521,6 @@ Ef þú hefur ekki lengur þörf fyrir frekari kennslu skaltu nota ChromeVox til
 <translation id="4973717656530883744">Lágmark <ph name="X" /></translation>
 <translation id="4973762002207131920">Skipt yfir í <ph name="KEY" />.</translation>
 <translation id="4975416682604111799">millisekúndur</translation>
-<translation id="49787999531187221">ChromeVox er nú óvirkt.</translation>
 <translation id="4979404613699303341">Fyrri hnappur</translation>
 <translation id="4982773647088557172"><ph name="VALUE" />, <ph name="NAME" />, listareitur</translation>
 <translation id="4983588134362688868">Fara efst á síðu</translation>
@@ -584,9 +529,6 @@ Ef þú hefur ekki lengur þörf fyrir frekari kennslu skaltu nota ChromeVox til
 <translation id="4994420463726586413">TIlkynna núverandi stöðu rafhlöðunnar</translation>
 <translation id="4996716799442435517">Myndrænt</translation>
 <translation id="4997282455736854877"><ph name="NAME" />, valhnappur valinn</translation>
-<translation id="4997475792277222884">Ekkert atriði næst sem ekki er tengill.</translation>
-<translation id="5000760171916499057">Engin eyðublöð.</translation>
-<translation id="5005670136041063723">Engin fleiri svipuð atriði.</translation>
 <translation id="501473567976723023">Janúar</translation>
 <translation id="5020651427400641814">Leyfa skráningu tals</translation>
 <translation id="5041394372352067729">Færa blindraletursskjá efst á síðuna</translation>
@@ -599,26 +541,21 @@ Ef þú hefur ekki lengur þörf fyrir frekari kennslu skaltu nota ChromeVox til
 <translation id="5080758118274074384">tvísmellt</translation>
 <translation id="5085453135206054947">Fölfjólurauður</translation>
 <translation id="5087864757604726239">til baka</translation>
-<translation id="5098541983634824365">Yfirgefur töflu.</translation>
 <translation id="5102981729317424850">Tækjastika</translation>
 <translation id="5105050547967751155">rq</translation>
 <translation id="5106547198195128110">Í þessari útgáfu eru nokkrar spennandi breytingar. Hér er það sem er nýtt:</translation>
-<translation id="5110983769041734144">Enginn fyrri eyðublaðsreitur.</translation>
 <translation id="5111640677200759579">Dálkhaus</translation>
 <translation id="5115892389597951922">ChromeVox annáll</translation>
 <translation id="5119330972669454698">Miðlungssandbrúnn</translation>
-<translation id="5136967254288895616">Enginn fyrri tengill.</translation>
 <translation id="513774504516943387">tengill</translation>
 <translation id="5138912041966667164">Miðlungsgráblár</translation>
 <translation id="5140016802771803559">Rebekkupurpurarauður</translation>
 <translation id="5158275234811857234">Forsíða</translation>
 <translation id="517143700877085897">, ekki valið</translation>
 <translation id="5183440668879371625">Fyrri blindraleturslína</translation>
-<translation id="5184944171021383281">Enginn næsti eyðublaðsreitur.</translation>
 <translation id="5189244881767082992">Lína</translation>
 <translation id="5203930734796605961"><ph name="KEY" /> hefur þegar fengið úthlutað skipun.</translation>
 <translation id="5205493599117157272"><ph name="TYPE" /> listi.</translation>
-<translation id="520883772648104506">Enginn næsti valhnappur.</translation>
 <translation id="5263034204789987535">Korngulur</translation>
 <translation id="5263344797180442561">h2</translation>
 <translation id="528468243742722775">Ljúka</translation>
@@ -636,14 +573,10 @@ Ef þú hefur ekki lengur þörf fyrir frekari kennslu skaltu nota ChromeVox til
 <translation id="536031132345979795">Fara aftur á bak við samfelldan lestur</translation>
 <translation id="5368000168321181111">Slökkt á hljóðmerkjum</translation>
 <translation id="5368505757342402527"><ph name="PROGRESS" />% hlaðið niður <ph name="FILE_NAME" />. Um <ph name="TIME" /> <ph name="UNITS" /> eftir.</translation>
-<translation id="5374320867641260420">Enginn næsti hnappur.</translation>
-<translation id="5376407118396657359">Ýttu á leitarlykilinn+Ctrl+Alt og örvarnar til að fara á milli hólfa.</translation>
-<translation id="5382299583965267720">Engin næsta 1. stigs fyrirsögn.</translation>
 <translation id="5400836586163650660">Grár</translation>
 <translation id="5402367795255837559">Blindraletur</translation>
 <translation id="5402791055281059602">Viðvörun sem krefst staðfestingar</translation>
 <translation id="5407530583102765689">{COUNT,plural, =1{semíkomma}one{# semíkomma}other{# semíkommur}}</translation>
-<translation id="5411891038905756502">Enginn fyrri stöðupunktur</translation>
 <translation id="5435274640623994081">Kveikja á skráningu hljóðmerkja</translation>
 <translation id="5436105723448703439">{COUNT,plural, =1{minna en}one{# minna en-merki}other{# minna en-merki}}</translation>
 <translation id="5444587279251314700">(virkt)</translation>
@@ -651,18 +584,13 @@ Ef þú hefur ekki lengur þörf fyrir frekari kennslu skaltu nota ChromeVox til
 <translation id="5451268436205074266">punktar <ph name="DOT" /></translation>
 <translation id="5455441614648621694">Til viðbótar</translation>
 <translation id="5462510922370980473">Síðulisti</translation>
-<translation id="5485036206801896268">Engin fyrri mynd.</translation>
-<translation id="5486947920110100234">Enginn næsti stöðupunktur.</translation>
 <translation id="549602578321198708">Orð</translation>
-<translation id="5500932716852106146">Enginn fyrri breytanlegur textareitur.</translation>
 <translation id="5502713021410870035">September</translation>
 <translation id="5507663321906818013">Villuleitarviðmið</translation>
 <translation id="551361796444814639">Miðlungsblár</translation>
-<translation id="5518443085409638729">Staðsetja bendilinn milli tákna þegar texti er sleginn inn (eins og í Mac OS X).</translation>
 <translation id="552195134157544755">Valhnappur</translation>
 <translation id="5534303576632885660">hdr</translation>
 <translation id="5539820223028224601">Ljósgrár</translation>
-<translation id="5546092960038624944">Engin fyrri 5. stigs fyrirsögn.</translation>
 <translation id="556042886152191864">Hnappur</translation>
 <translation id="5561345396546889625">Næsti listi</translation>
 <translation id="5562645715554321347">hdnggrp</translation>
@@ -671,7 +599,6 @@ Ef þú hefur ekki lengur þörf fyrir frekari kennslu skaltu nota ChromeVox til
 <translation id="5585044216466955529">Textareitur, innsláttur netfangs</translation>
 <translation id="5586942249556966598">Gera ekkert</translation>
 <translation id="5597170376237141345">Næsti gátreitur</translation>
-<translation id="5597933780944041114">Engin næsta fyrirsögn.</translation>
 <translation id="5598905979683743333"><ph name="NAME" />, valhnappur ekki valinn</translation>
 <translation id="5601172225407283979">Framkvæma sjálfgefna aðgerð</translation>
 <translation id="5608798115546226984">Flýtiritun í línu</translation>
@@ -680,7 +607,6 @@ Ef þú hefur ekki lengur þörf fyrir frekari kennslu skaltu nota ChromeVox til
 <translation id="5623842676595125836">Notkunarskrá</translation>
 <translation id="5628125749885014029">h4</translation>
 <translation id="5632083598315326067">Myndtákn</translation>
-<translation id="5637871198229500030">Engin fyrri tafla.</translation>
 <translation id="5653397561111110475">Nota aðgengiseiginleika Chromebook snertiskjásins</translation>
 <translation id="5655682562155942719">Stökkskipanir</translation>
 <translation id="56637627897541303">Textasvæði</translation>
@@ -689,35 +615,29 @@ Ef þú hefur ekki lengur þörf fyrir frekari kennslu skaltu nota ChromeVox til
 <translation id="5682113568322255809">Kennileiti</translation>
 <translation id="5683155931978483559">Fyrri gátreitur</translation>
 <translation id="5684277895745049190">Listi</translation>
-<translation id="5700650669149824506">Engin fyrri 4. stigs fyrirsögn.</translation>
 <translation id="5703716265115423771">lækka hljóð</translation>
 <translation id="5709192780268610569">Engin löng lýsing</translation>
 <translation id="5712244464475377681">popbtn</translation>
 <translation id="5712338278108304766">Næsti dálkur töflu</translation>
 <translation id="571866080859340309">Hópar kannaðir</translation>
 <translation id="5725079927589231571">Ljósstálblár</translation>
-<translation id="5728409797179002635">Engin tafla fannst.</translation>
-<translation id="5729047866208036762">Ýttu upp, niður, til vinstri eða hægri til að reyna fyrir þér í stærðfræði.</translation>
 <translation id="5732189279857692565">Þetta er önnur fyrirsögnin. Til að halda áfram skaltu annaðhvort ýta á leitarlykilinn + H eða leitarlykilinn + Shift + H</translation>
 <translation id="5748623122140342504">Fyrri 5. stigs fyrirsögn</translation>
 <translation id="5750633686117194034">Enginn breytingalykill notaður. Haltu inni einum eða fleiri breytingalyklum, lyftu fingrum að því loknu og þú heyrir valda lykla lesna upp. Ýttu á Tab til að hætta.</translation>
 <translation id="5760594853119905566">Viðauki</translation>
 <translation id="5788275253279308023">flipinn <ph name="TITLE" /> í huliðsglugga</translation>
 <translation id="5805940204952508776">Ýttu með tveimur fingrum</translation>
-<translation id="5806206155699461681">Bæta tiltekin vefsvæði (eins og Google leit).</translation>
 <translation id="5819072574982403430">Trjáatriði</translation>
 <translation id="5822819874379903994">Dökkgrænblár</translation>
 <translation id="5826479389509458994">lína <ph name="ROW" /> dálkur <ph name="COL" /></translation>
 <translation id="5847883414085148048">Tileinkun</translation>
 <translation id="5850707923114094062">Skima aftur á bak</translation>
 <translation id="5851548754964597211">Flipalisti</translation>
-<translation id="5859752971144398932">Finna á síðu lokað.</translation>
 <translation id="5866042630553435010">Merkt að hluta</translation>
 <translation id="5867591286054666064">Ýttu á hvaða lykil sem er í þessari leiðsögn til að heyra hvað hann kallast.</translation>
 <translation id="5869546221129391014">Tafla</translation>
 <translation id="5876817486144482042">Minnka raddstyrk</translation>
 <translation id="5878908838135392163">Fölblár</translation>
-<translation id="5887397643266327462">Kveikt á blindraletursskýringum.</translation>
 <translation id="5891934789323004067">Tafla</translation>
 <translation id="5899860758576822363">Spila með lægri hljóðstyrk þegar ChromeVox talar</translation>
 <translation id="5901630391730855834">Gulur</translation>
@@ -740,12 +660,10 @@ Ef þú hefur ekki lengur þörf fyrir frekari kennslu skaltu nota ChromeVox til
 <translation id="6017514345406065928">Grænn</translation>
 <translation id="6034000775414344507">Ljósgrár</translation>
 <translation id="6037602951055904232">Skima áfram</translation>
-<translation id="6042826534790431634">Ýttu á leitarlykilinn+bilslá til að velja.</translation>
 <translation id="6044160928851315051">Dekkja skjá</translation>
 <translation id="6082768461603900813">Grunnatriði flettingar</translation>
 <translation id="6118126368611144850">Android forrit Chrome. Ef þú ert með Play Store í tækinu þínu geturðu tekið forskot á sæluna og prófað forútgáfu af ChromeVox með Android forritum. Prófaðu þennan tilraunaeiginleika með því að sækja Google Chrome Canary í Play Store.</translation>
 <translation id="611827076493383239">vtd</translation>
-<translation id="6119955456199054975">Lok hólfs.</translation>
 <translation id="6122013438240733403">hnappur</translation>
 <translation id="6129953537138746214">Bil</translation>
 <translation id="6132506484792346370">Listareitur eða fellivalmynd</translation>
@@ -762,9 +680,7 @@ Ef þú hefur ekki lengur þörf fyrir frekari kennslu skaltu nota ChromeVox til
 <translation id="6236061028292614533">Næsta fyrirsögn</translation>
 <translation id="6254901459154107917">Næsta breytanlega textasvæði</translation>
 <translation id="6259464875943891919">Farið úr <ph name="TYPE" />.</translation>
-<translation id="6281876499889881039">Næsta svipaða eining.</translation>
 <translation id="6282062888058716985">fletting</translation>
-<translation id="6290434000785343030">Engin næsta fellivalmynd.</translation>
 <translation id="6305702903308659374">Spila með venjulegum hljóðstyrk jafnvel þótt ChromeVox sé að tala</translation>
 <translation id="6307969636681130414">Ýtt</translation>
 <translation id="6315652249189065725">Opna valmynd flýtilykla</translation>
@@ -774,7 +690,6 @@ Ef þú hefur ekki lengur þörf fyrir frekari kennslu skaltu nota ChromeVox til
 <translation id="6348657800373377022">Fellivalmynd</translation>
 <translation id="6348869651006731065">Dökkgrár</translation>
 <translation id="6350358010104919766">{COUNT,plural, =1{áherslumerki}one{# áherslumerki}other{# áherslumerki}}</translation>
-<translation id="6355910664415701303">Ekkert fyrra listaatriði.</translation>
 <translation id="6364795331201459219">h6</translation>
 <translation id="6368143427468974988">Fyrri fyrirsögn</translation>
 <translation id="6376999910001533545">Vínrauður</translation>
@@ -782,8 +697,6 @@ Ef þú hefur ekki lengur þörf fyrir frekari kennslu skaltu nota ChromeVox til
 <translation id="6385591741672306837">dálk.</translation>
 <translation id="6387719785439924554">hliðarefni</translation>
 <translation id="6393014464788431702">Slökkva á öllum viðburðasíum</translation>
-<translation id="6411426777058107714">Enginn fyrri valhnappur.</translation>
-<translation id="6414968628640960377">Fyrri öðruvísi eining.</translation>
 <translation id="6417265370957905582">Google hjálpari</translation>
 <translation id="641759969622533235">{COUNT,plural, =1{tvípunktur}one{# tvípunktur}other{# tvípunktar}}</translation>
 <translation id="6438968337250688271"><ph name="NAME" />, valmynd</translation>
@@ -800,17 +713,12 @@ Ef þú hefur ekki lengur þörf fyrir frekari kennslu skaltu nota ChromeVox til
 <translation id="6536864053412760904">Math ML kóði</translation>
 <translation id="6540201937398578274">Í ChromeVox virkar leitarlykillinn sem breytilykill. Flestir flýtilyklar ChromeVox byrja á leitarlyklinum. Þú notar einnig örvalyklana fyrir flettingar.</translation>
 <translation id="6544923685317771506">Skel</translation>
-<translation id="6550720799683018100">Breyttu núverandi lyklaskipan með því að velja kost af listanum hér að neðan.</translation>
 <translation id="6551185905438378412">Beinhvítur</translation>
 <translation id="6561818612645211875">Fara í upphaf línunnar</translation>
 <translation id="6579990219486187401">Ljósbleikur</translation>
 <translation id="6583174818554398774">Færa í næsta með niðurskiptingu</translation>
-<translation id="6587021927234520429">Engin næsta 4. stigs fyrirsögn.</translation>
-<translation id="6601344353291556895">Virkja ítarlegar lýsingar.</translation>
 <translation id="6609828810966525877">Kynntu þér fleiri bendingar í fræðslustillingunni og hjálparmiðstöð Chromebook</translation>
-<translation id="6615602925644411249">Finna á síðu.</translation>
 <translation id="6628427060004938651">Hluti</translation>
-<translation id="6633350132811819843">Engin næsta tafla.</translation>
 <translation id="6637586476836377253">annáll</translation>
 <translation id="6657128831881431364">Framvindustika</translation>
 <translation id="6659594942844771486">Flipi</translation>
@@ -824,7 +732,6 @@ Ef þú hefur ekki lengur þörf fyrir frekari kennslu skaltu nota ChromeVox til
 <translation id="6710213216561001401">Til baka</translation>
 <translation id="6714813999819678458">Fyrri 2. stigs fyrirsögn</translation>
 <translation id="6716505898850596801">Breytilyklar</translation>
-<translation id="671916444866103745">Ekkert næsta ARIA-kennileiti.</translation>
 <translation id="6734854816611871228"><ph name="VALUE" />, fellivalmynd</translation>
 <translation id="6735257939857578167">með <ph name="NUM" /> atriðum</translation>
 <translation id="6736510033526053669">flipi búinn til</translation>
@@ -840,18 +747,14 @@ Ef þú hefur ekki lengur þörf fyrir frekari kennslu skaltu nota ChromeVox til
 <translation id="6858047746862060282">Formáli</translation>
 <translation id="6859876496651143278">Strjúktu einum fingri til vinstri</translation>
 <translation id="6865519907510167493">Stafsetningarvilla</translation>
-<translation id="6871161210040114857">Hunsar há- og lágstafi.</translation>
-<translation id="6877435256196695200">Engin næsta mynd.</translation>
 <translation id="688976158310523235">Leitarvalmynd</translation>
 <translation id="6897341342232909480">Færa til vinstri</translation>
 <translation id="6901540140423170855">dagsetning</translation>
 <translation id="6910211073230771657">Eytt</translation>
 <translation id="6910969481785184048">Kveikja, slökkva og hætta</translation>
-<translation id="6911965441508464308">Ekkert hólf fyrir ofan.</translation>
 <translation id="6919104639734799681">Sýna töflulista</translation>
 <translation id="6949846980769640811">Miðlungssægrænn</translation>
 <translation id="6955705049214951590">Þokubleikur</translation>
-<translation id="6964088412282673743">Engin fyrri stýring.</translation>
 <translation id="699159175332639490">Leit + O + W</translation>
 <translation id="6994042831499278539">Tilvísun í orðalista</translation>
 <translation id="6996566555547746822">Næsta fellivalmynd</translation>
@@ -888,11 +791,9 @@ Til að opna og fara sjálfkrafa í nýjan flipa skal ýta á Ctrl+T. Bendillinn
 <translation id="7153618581592392745">Ljósfjólublár</translation>
 <translation id="7157306005867877619">Ágrip</translation>
 <translation id="7161771961008409533">Sprettihnappur</translation>
-<translation id="7165714724802225287">Núverandi birtingarstíll er samfléttaður.</translation>
 <translation id="7167657087543110">upplestur stafa</translation>
 <translation id="7170733337935166589">Fara áfram við samfelldan lestur</translation>
 <translation id="7173102181852295013">Miðnæturblár</translation>
-<translation id="7181697990050180700">Sérsníddu flýtilykla fyrir algengar skipanir með því að slá þá inn í tilheyrandi reiti fyrir neðan.</translation>
 <translation id="7203150201908454328">Stækkað</translation>
 <translation id="7210211103303402262">mínútur</translation>
 <translation id="7217912842225915592">+<ph name="NUM" /></translation>
@@ -913,22 +814,17 @@ Til að opna og fara sjálfkrafa í nýjan flipa skal ýta á Ctrl+T. Bendillinn
 <translation id="7289186959554153431">Fyrirsögn 3</translation>
 <translation id="7292195267473691167"><ph name="LOCALE" /> (<ph name="VARIANT" />)</translation>
 <translation id="731121099745151312">tritm</translation>
-<translation id="731576946540457939">Slökkt á blindraletursskýringum.</translation>
-<translation id="7318872822751139669">Nota músina til að breyta fókus.</translation>
 <translation id="7322388933135261569">Febrúar</translation>
 <translation id="7332592614823088566">Lína <ph name="ROWINDEX" /> af <ph name="ROWTOTAL" />, dálkur <ph name="COLINDEX" /> af <ph name="COLTOTAL" /></translation>
 <translation id="7336596009609913925">opnar sprettiglugga</translation>
 <translation id="7356165926712028380">Skipta yfir í 8 punkta blindraletur</translation>
 <translation id="7356610683936413584">Upplýsingar á lýsingalista</translation>
-<translation id="7362871137496673139">Engin fyrri 2. stigs fyrirsögn.</translation>
 <translation id="7370432716629432284">{COUNT,plural, =1{og-merki}one{# og-merki}other{# og-merki}}</translation>
 <translation id="737396357417333429">clk</translation>
-<translation id="7374104575779636480">Farið úr töflu.</translation>
 <translation id="738899727977260036">Blágrár</translation>
 <translation id="739763518212184081">Fyrri lína</translation>
 <translation id="7400575256015741911">Ritvilla fannst</translation>
 <translation id="7408482676469142474">tafla</translation>
-<translation id="7420313809195758138">Birta samhengi atriðis áður en frekari upplýsingar eru birtar (s.s. heiti þess).</translation>
 <translation id="7425395583360211003">vending</translation>
 <translation id="7434509671034404296">Forritarar</translation>
 <translation id="743783356331413498">Dæmi</translation>
@@ -938,7 +834,6 @@ Til að opna og fara sjálfkrafa í nýjan flipa skal ýta á Ctrl+T. Bendillinn
 <translation id="7492049978501397201">Gluggi opnaður</translation>
 <translation id="7505149250476994901">Segðu „cap“ á undan staf</translation>
 <translation id="7518543783849163354">Ýttu á Ctrl-lykilinn til að fá ChromeVox til að hætta tímabundið að tala.</translation>
-<translation id="7521682724501952239">Hægt er að nota ChromeVox með snertiskjánum.</translation>
 <translation id="7532613204005497612">Júní</translation>
 <translation id="7533226154149229506">Ljósgulur</translation>
 <translation id="7552432549459840808">Gagnlegir flýtilyklar í Chrome</translation>
@@ -956,7 +851,6 @@ Til að opna og fara sjálfkrafa í nýjan flipa skal ýta á Ctrl+T. Bendillinn
 <translation id="7628927569678398026"><ph name="LOCALE" /> (<ph name="VARIANT" />), gráða <ph name="GRADE" /></translation>
 <translation id="763535765081585392">Gefa ábendingu um undirstrikun:</translation>
 <translation id="7639968568612851608">Dökkgrár</translation>
-<translation id="7641134354185483015">Engin fyrri 3. stigs fyrirsögn.</translation>
 <translation id="7659376057562985921"><ph name="VALUE" />, <ph name="NAME" />, textareitur</translation>
 <translation id="7663318257180412551">Fyrirsögn 2</translation>
 <translation id="7668307052366682650">{COUNT,plural, =1{klukkustund}one{klukkustund}other{klukkustundir}}</translation>
@@ -966,14 +860,6 @@ Til að opna og fara sjálfkrafa í nýjan flipa skal ýta á Ctrl+T. Bendillinn
 <translation id="7684431668231950609">Textareitur, innsláttur vefslóðar</translation>
 <translation id="7685589220304187312">tlbar</translation>
 <translation id="7693840228159394336">Fyrri valhnappur</translation>
-<translation id="769900455782717361">Textasnið.
-        <ph name="FONT_SIZE_STRING" />
-        <ph name="COLOR_STRING" />
-        <ph name="BOLD_STRING" />
-        <ph name="ITALIC_STRING" />
-        <ph name="UNDERLINE_STRING" />
-        <ph name="LINE_THROUGH_STRING" />
-        <ph name="FONT_FAMILY_STRING" /></translation>
 <translation id="7701196182766842984">autolst</translation>
 <translation id="7763537600611320912">Niðurhal hafið <ph name="FILE_NAME" /></translation>
 <translation id="7770823902658038748"><ph name="VALUE" />, <ph name="NAME" />, textareitur fyrir aðgangsorð</translation>
@@ -990,7 +876,6 @@ Til að opna og fara sjálfkrafa í nýjan flipa skal ýta á Ctrl+T. Bendillinn
 <translation id="7871691770940645922">Sýndarblindraletursskjár</translation>
 <translation id="7882421473871500483">Brúnn</translation>
 <translation id="78826985582142166">sleði</translation>
-<translation id="7894517696028036636">Kveikja/slökkva á sígildu ChromeVox.</translation>
 <translation id="7895896691902835279">Óþekktur tengill</translation>
 <translation id="7927711904086083099">Ekki valið</translation>
 <translation id="7935627501098484003">Tímastjórnun</translation>
@@ -1099,18 +984,15 @@ Til að opna og fara sjálfkrafa í nýjan flipa skal ýta á Ctrl+T. Bendillinn
 <translation id="8091452896542422286">Bil</translation>
 <translation id="8096975275316362544">Mintugrænn</translation>
 <translation id="8098587210054821856">Gráblár</translation>
-<translation id="8110647606445335195">Engin ARIA-kennileiti.</translation>
 <translation id="8121539003537428024">Virkja allar viðburðasíur</translation>
 <translation id="812886159861361726">Niðurhal stöðvað <ph name="FILE_NAME" /></translation>
 <translation id="8138880386467279117">Snerting</translation>
-<translation id="8153880621934657047">Ekki í töflu.</translation>
 <translation id="817440585505441544">{COUNT,plural, =1{undirstrik}one{# undirstrik}other{# undirstrik}}</translation>
 <translation id="8179976553408161302">Enter</translation>
 <translation id="8184828902145951186">lína</translation>
 <translation id="8186185314313222077">allur skjárinn á/af</translation>
 <translation id="8199231515320852133">Tilkynna hausa í þessu hólfi</translation>
 <translation id="8202174735952881587">Himinblár</translation>
-<translation id="820417203470636242">Autt hólf.</translation>
 <translation id="820469951249669083">Fara í næstu línu</translation>
 <translation id="8205922869661890178">Opna innskráningarsíðu þróunaraðila</translation>
 <translation id="8215202828671303819">Fjölval</translation>
@@ -1118,7 +1000,6 @@ Til að opna og fara sjálfkrafa í nýjan flipa skal ýta á Ctrl+T. Bendillinn
 <translation id="826825447994856889">Inngangur</translation>
 <translation id="827422111966801947">Dimmfjólublár</translation>
 <translation id="8276439074553447000">Fara í fyrra atriði sem hægt er að setja fókus á</translation>
-<translation id="8278417001922463147">Engin fyrri grein.</translation>
 <translation id="8283603667300770666">Næsti reitur eyðublaðs</translation>
 <translation id="831207808878314375">Skilgreining</translation>
 <translation id="8313653172105209786">mappa</translation>
@@ -1131,9 +1012,7 @@ Til að opna og fara sjálfkrafa í nýjan flipa skal ýta á Ctrl+T. Bendillinn
 <translation id="8378855320830505539">Svæði</translation>
 <translation id="8382679411218029383">Flýtiritun í línu og lista</translation>
 <translation id="8428603554127842284">stig <ph name="DEPTH" /></translation>
-<translation id="842922884199979200">Engin næsta 3. stigs fyrirsögn.</translation>
 <translation id="8430049249787218991">mnubr</translation>
-<translation id="844681116543532394">Enginn fyrri gátreitur.</translation>
 <translation id="8446884382197647889">Frekari upplýsingar</translation>
 <translation id="8455868257606149352">Hámark <ph name="X" /></translation>
 <translation id="84575901236241018">hefur aðgangslykil, <ph name="KEY" /></translation>
@@ -1161,7 +1040,6 @@ Til að opna og fara sjálfkrafa í nýjan flipa skal ýta á Ctrl+T. Bendillinn
 <translation id="8631359288236106450"><ph name="COUNT" /> atriði valin</translation>
 <translation id="8638532244051952400">Tilkynna hnit núverandi hólfs</translation>
 <translation id="8640369214276455272">Reykhvítur</translation>
-<translation id="8650576015643545550">Enginn fyrri listi.</translation>
 <translation id="8651481478098336970">hljóð af</translation>
 <translation id="8653646212587894517">Sýna tenglalista</translation>
 <translation id="8656888282555543604">Kveikja á skráningu blindraleturs</translation>
@@ -1174,7 +1052,6 @@ Til að opna og fara sjálfkrafa í nýjan flipa skal ýta á Ctrl+T. Bendillinn
 <translation id="8747966237988593539">Raðaður listi</translation>
 <translation id="8749988712346667988">Silfurlitaður</translation>
 <translation id="875769700429317857">Niðurhali lokið <ph name="FILE_NAME" /></translation>
-<translation id="8759334257841767240">Enginn næsti tengill.</translation>
 <translation id="8767968232364267681">Næsta 4. stigs fyrirsögn</translation>
 <translation id="8770473310765924354">loka skipulegu efni á borð við töflur</translation>
 <translation id="8791025954632646584">Kveikt á merkingargreiningu</translation>
@@ -1183,10 +1060,8 @@ Til að opna og fara sjálfkrafa í nýjan flipa skal ýta á Ctrl+T. Bendillinn
 <translation id="8825828890761629845">borði</translation>
 <translation id="8851136666856101339">aðal</translation>
 <translation id="8856538297388979332">Ýttu upp eða niður til að skoða skipanir, ýttu á Enter til að virkja</translation>
-<translation id="8864099967139188018">Engin næsta 6. stigs fyrirsögn.</translation>
 <translation id="8882002077197914455">Línuhaus</translation>
 <translation id="8883850400338911892">vefsl 8p</translation>
-<translation id="8896347895970027998">Gera ChromeVox virkt eða óvirkt.</translation>
 <translation id="8896479570570613387">Miðlungspurpurarauður</translation>
 <translation id="8897030325301866860">Leturgerð <ph name="FONT_FAMILY" /></translation>
 <translation id="8898516272131543774">Kveikja/slökkva á upplestri greinarmerkja</translation>
@@ -1195,27 +1070,21 @@ Til að opna og fara sjálfkrafa í nýjan flipa skal ýta á Ctrl+T. Bendillinn
 <translation id="8931936695772494138">Auðir hausar</translation>
 <translation id="8937112856099038376">intlnk</translation>
 <translation id="8940925288729953902">Breytilyklar</translation>
-<translation id="8943175951035496220">Ekkert hólf til hægri.</translation>
 <translation id="8943282376843390568">Límónugrænn</translation>
 <translation id="8946628535652548639">l<ph name="TABLECELLROWINDEX" />d<ph name="TABLECELLCOLUMNINDEX" /></translation>
 <translation id="8957142051395645063">Tilkynning</translation>
 <translation id="8978496506222343566">tltip</translation>
 <translation id="8986362086234534611">Gleyma</translation>
 <translation id="900114243503212879">skrá</translation>
-<translation id="9027462562263121875">Engar töflur.</translation>
 <translation id="9040132695316389094">Fyrirsögn 1</translation>
 <translation id="9043969572162476692"><ph name="NUM" />%</translation>
 <translation id="9061884144798498064">Velja átta punkta blindraleturstöflu:</translation>
 <translation id="9065283790526219006">+sprettigluggi</translation>
-<translation id="9066023754636984703">Ýttu á Leita + A, J til að hoppa í smáatriði.</translation>
 <translation id="9067522039955793016">Síðuskil</translation>
 <translation id="9074824103975499138">Leita í ChromeVox valmyndum</translation>
 <translation id="9077213568694924680">fjarlægt úr vali</translation>
 <translation id="9077305471618729969">Ljóssægrænn</translation>
-<translation id="9082874451376019682">Engin fyrri sleði.</translation>
-<translation id="9087707351856729768">Byrjaðu að skrifa til að fá sjálfvirka útfyllingu.</translation>
 <translation id="9089864840575085222">Kveikja/slökkva á upplestri innsláttar</translation>
-<translation id="9107530006868467849">Engin fyrri margmiðlunargræja.</translation>
 <translation id="9108370397979208512">stærðfræði</translation>
 <translation id="9108589040018540527">scbr</translation>
 <translation id="911476240645808512">{COUNT,plural, =1{prósentumerki}one{# prósentumerki}other{# prósentumerki}}</translation>
@@ -1229,20 +1098,16 @@ Til að opna og fara sjálfkrafa í nýjan flipa skal ýta á Ctrl+T. Bendillinn
 <translation id="9153606228985488238">Tónhæð <ph name="PERCENT" /> prósent</translation>
 <translation id="9160096769946561184">Fara í lok þessa dálks</translation>
 <translation id="9173115498289768110">Hljóðstyrkur <ph name="PERCENT" /> prósent</translation>
-<translation id="9178973770513562274">Notaðu örvalyklana upp og niður til að fletta eða skrifaðu til að leita.</translation>
 <translation id="9192904702577636854">Efnisrammi</translation>
 <translation id="9208241857935108694">Antíkhvítur</translation>
-<translation id="9212322457209634662">Enginn næsti hluti.</translation>
 <translation id="9220679313820249046">Appelsínurauður</translation>
 <translation id="9223032053830369045">Dökkrauður</translation>
 <translation id="923331726185079994">ChromeVox uppfært</translation>
-<translation id="930275611743429116">Hefja eða ljúka vali.</translation>
 <translation id="93384979447910801">Dökksægrænn</translation>
 <translation id="948171205378458592">Minnka talhraða</translation>
 <translation id="958854023026327378">Strjúktu einum fingri niður</translation>
 <translation id="962913030769097253">Næsta 1. stigs fyrirsögn</translation>
 <translation id="966588271015727539">Velja blindraletursskjá með Bluetooth-tengingu</translation>
 <translation id="973955474346881951">Kveikja/slökkva á festistillingu</translation>
-<translation id="976849232629612000">Engin atriði.</translation>
 <translation id="992256792861109788">Bleikur</translation>
 </translationbundle>

@@ -273,20 +273,6 @@ Se questa norma non viene impostata, verrà applicato il comportamento predefini
       Visita il sito https://developers.google.com/safe-browsing per avere ulteriori informazioni sulla funzione Navigazione sicura.
 
       Questa norma è disponibile esclusivamente per le istanze di Windows che fanno parte di un dominio <ph name="MS_AD_NAME" /> così come per le istanze di Windows 10 Pro o Enterprise registrate per la gestione dei dispositivi.</translation>
-<translation id="1432194160771348078">
-      Specifica un elenco di app che sono installate automaticamente sulla schermata di accesso,
-      senza interazione dell'utente, e che non possono essere disinstallate.
-      Tutte le autorizzazioni richieste dalle app vengono concesse
-      implicitamente senza interazione dell'utente, comprese le eventuali autorizzazioni
-      aggiuntive richieste dalle future versioni delle app.
-
-      Tieni presente che, per motivi di sicurezza e privacy, non è consentita l'installazione di estensioni utilizzando questa norma. Inoltre, i dispositivi sul canale stabile installeranno solo le app autorizzate, raggruppate in<ph name="PRODUCT_NAME" />. Qualsiasi elemento che non risponda a queste condizioni verrà ignorato.
-
-      Se un'app di cui era stata precedentemente forzata l'installazione viene rimossa da questo elenco, verrà automaticamente disinstallata da <ph name="PRODUCT_NAME" />.
-
-      Ogni voce dell'elenco della norma è una stringa che contiene un ID estensione e un URL "di aggiornamento" delimitati da un punto e virgola (<ph name="SEMICOLON" />). L'ID estensione è una stringa di 32 lettere che si trova ad es. su <ph name="CHROME_EXTENSIONS_LINK" /> in modalità sviluppatore. L'URL "di aggiornamento" deve rimandare a un documento XML del file manifest di aggiornamento come descritto all'indirizzo <ph name="LINK_TO_EXTENSION_DOC1" />. Tieni presente che l'URL "di aggiornamento" impostato in questa norma viene utilizzato soltanto per l'installazione iniziale; per i successivi aggiornamenti dell'estensione viene utilizzato l'URL di aggiornamento indicato nel file manifest dell'estensione.
-
-      Ad esempio, <ph name="EXTENSION_POLICY_EXAMPLE" /> installa l'app <ph name="EXTENSION_POLICY_EXAMPLE_EXTENSION_NAME" /> dell'URL "di aggiornamento" standard del Chrome Web Store. Per ulteriori informazioni sull'hosting di estensioni, visita: <ph name="LINK_TO_EXTENSION_DOC2" />.</translation>
 <translation id="1435659902881071157">Configurazione di rete a livello di dispositivo</translation>
 <translation id="1438739959477268107">Impostazione generazione di chiavi predefinite</translation>
 <translation id="1454846751303307294">Consente di impostare un elenco di pattern URL che specificano i siti in cui non è consentita l'esecuzione di JavaScript. Se questa norma non viene impostata, per tutti i siti verrà utilizzato il valore predefinito globale della norma "DefaultJavaScriptSetting", se è impostata, oppure verrà utilizzata la configurazione personale dell'utente.</translation>
@@ -4299,7 +4285,6 @@ Nota. Attualmente i riavvii automatici vengono attivati soltanto durante la visu
 
       Questo criterio viene applicato soltanto se viene attivata l'estensione <ph name="CHROME_REPORTING_EXTENSION_NAME" /> e il computer viene registrato con il criterio <ph name="CLOUD_MANAGEMENT_ENROLLMENT_TOKEN_POLICY_NAME" />.</translation>
 <translation id="7758378441185523981">Attiva l'autenticazione ambientale in base ai tipi di profilo.</translation>
-<translation id="7761446981238915769">Configura l'elenco di app installate nella schermata di accesso</translation>
 <translation id="7763614521440615342">Mostra suggerimenti di contenuti nella pagina Nuova scheda</translation>
 <translation id="7765879851993224640">Consenti l'uso dell'accesso tramite Smart Lock.</translation>
 <translation id="7774768074957326919">Utilizza le impostazioni proxy di sistema</translation>

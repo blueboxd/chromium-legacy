@@ -11,7 +11,6 @@ import androidx.annotation.IntDef;
 import org.junit.Assert;
 
 import org.chromium.base.Log;
-import org.chromium.base.test.util.UrlUtils;
 import org.chromium.chrome.browser.tab.SadTab;
 import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.browser.tab.TabLaunchType;
@@ -83,17 +82,6 @@ public abstract class XrTestFramework {
     }
 
     private ChromeActivityTestRule mRule;
-
-    /**
-     * Gets the file:// URL to the test file.
-     *
-     * @param testName The name of the test whose file will be retrieved.
-     * @return The file:// URL to the specified test file.
-     */
-    public static String getFileUrlForHtmlTestFile(String testName) {
-        return "file://" + UrlUtils.getIsolatedTestFilePath(TEST_DIR) + "/html/" + testName
-                + ".html";
-    }
 
     /**
      * Checks whether a request for the given permission would trigger a permission prompt.
@@ -395,24 +383,27 @@ public abstract class XrTestFramework {
     }
 
     /**
-     * Gets the URL that loads the given test file from the embedded test server.
+     * Gets the URL that loads the given test file from the embedded test server
+     * Note that because sessions may cause permissions prompts to appear, this
+     * uses the embedded server, as granting permissions to file:// URLs results
+     * in DCHECKs.
      *
      * @param testName The name of the test whose file will be retrieved.
      */
-    public String getEmbeddedServerUrlForHtmlTestFile(String testName) {
+    public String getUrlForFile(String testName) {
         return mRule.getTestServer().getURL("/" + TEST_DIR + "/html/" + testName + ".html");
     }
 
     /**
-     * Loads the given URL with the given timeout then waits for JavaScript to
-     * signal that it's ready for testing.
+     * Loads the given file on an embedded server with the given timeout then
+     * waits for JavaScript to signal that it's ready for testing.
      *
-     * @param url The URL of the page to load.
+     * @param file The name of the page to load.
      * @param timeoutSec The timeout of the page load in seconds.
      * @return The return value of ChromeActivityTestRule.loadUrl().
      */
-    public int loadUrlAndAwaitInitialization(String url, int timeoutSec) {
-        int result = mRule.loadUrl(url, timeoutSec);
+    public int loadFileAndAwaitInitialization(String url, int timeoutSec) {
+        int result = mRule.loadUrl(getUrlForFile(url), timeoutSec);
         Assert.assertTrue("Timed out waiting for JavaScript test initialization",
                 pollJavaScriptBoolean("isInitializationComplete()", POLL_TIMEOUT_LONG_MS,
                         mRule.getWebContents()));

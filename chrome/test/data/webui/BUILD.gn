@@ -209,6 +209,8 @@ js2gtest("browser_tests_js_webui") {
     "$root_gen_dir/chrome/test/data/webui/mock_controller.m.js",
     "$root_gen_dir/chrome/test/data/webui/mock_timer.m.js",
     "$root_gen_dir/chrome/test/data/webui/resources/list_property_update_behavior_tests.m.js",
+    "$root_gen_dir/chrome/test/data/webui/settings/appearance_page_test.m.js",
+    "$root_gen_dir/chrome/test/data/webui/settings/appearance_fonts_page_test.m.js",
     "$root_gen_dir/chrome/test/data/webui/settings/checkbox_tests.m.js",
     "$root_gen_dir/chrome/test/data/webui/settings/controlled_button_tests.m.js",
     "$root_gen_dir/chrome/test/data/webui/settings/controlled_radio_button_tests.m.js",

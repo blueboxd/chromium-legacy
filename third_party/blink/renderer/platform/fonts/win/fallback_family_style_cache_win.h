@@ -7,11 +7,14 @@
 
 #include "third_party/blink/renderer/platform/fonts/font_description.h"
 #include "third_party/blink/renderer/platform/fonts/font_fallback_priority.h"
-#include "third_party/blink/renderer/platform/fonts/win/fallback_lru_cache_win.h"
+#include "third_party/blink/renderer/platform/wtf/lru_cache.h"
 #include "third_party/skia/include/core/SkRefCnt.h"
 #include "third_party/skia/include/core/SkTypeface.h"
 
 namespace blink {
+
+using TypefaceVector = Vector<sk_sp<SkTypeface>>;
+using FallbackLruCache = WTF::LruCache<String, TypefaceVector>;
 
 class FallbackFamilyStyleCache {
   USING_FAST_MALLOC(FallbackFamilyStyleCache);

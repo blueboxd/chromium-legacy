@@ -207,8 +207,8 @@ class ClipboardX11::X11Details : public XEventDispatcher {
   // selection holder is some other window, we spin up a nested run loop
   // and do the asynchronous dance with whatever application is holding the
   // selection.
-  ui::SelectionData RequestAndWaitForTypes(ClipboardBuffer buffer,
-                                           const std::vector<::Atom>& types);
+  SelectionData RequestAndWaitForTypes(ClipboardBuffer buffer,
+                                       const std::vector<::Atom>& types);
 
   // Retrieves the list of possible data types the current clipboard owner has.
   //
@@ -786,8 +786,8 @@ void ClipboardX11::WriteBookmark(const char* title_data,
       base::UTF8ToUTF16(base::StringPiece(title_data, title_len));
 
   std::vector<unsigned char> data;
-  ui::AddString16ToVector(url, &data);
-  ui::AddString16ToVector(title, &data);
+  AddString16ToVector(url, &data);
+  AddString16ToVector(title, &data);
   scoped_refptr<base::RefCountedMemory> mem(
       base::RefCountedBytes::TakeVector(&data));
 

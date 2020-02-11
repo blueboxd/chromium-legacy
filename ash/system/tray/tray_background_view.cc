@@ -354,6 +354,7 @@ void TrayBackgroundView::CloseBubble() {}
 void TrayBackgroundView::ShowBubble(bool show_by_click) {}
 
 void TrayBackgroundView::UpdateAfterShelfChange() {
+  UpdateBackground();
   tray_container_->UpdateAfterShelfChange();
 }
 

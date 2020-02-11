@@ -527,6 +527,11 @@
     "expiry_milestone": 88
   },
   {
+    "name": "contextual-nudges",
+    "owners": [ "yulunwu" ],
+    "expiry_milestone": 83
+  },
+  {
     "name": "contextual-search-definitions",
     "owners": [ "//chrome/android/java/src/org/chromium/chrome/browser/contextualsearch/OWNERS" ],
     "expiry_milestone": 82

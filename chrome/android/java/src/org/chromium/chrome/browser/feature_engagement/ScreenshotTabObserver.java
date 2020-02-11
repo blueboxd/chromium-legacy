@@ -100,7 +100,8 @@ public class ScreenshotTabObserver extends EmptyTabObserver implements UserData 
             // taken.
             WebContents webContents = tab.getWebContents();
             if (webContents != null) {
-                new UkmRecorder.Bridge().recordEvent(webContents, "Tab.Screenshot");
+                new UkmRecorder.Bridge().recordEventWithBooleanMetric(
+                        webContents, "Tab.Screenshot", "HasOccurred");
             }
         }
 

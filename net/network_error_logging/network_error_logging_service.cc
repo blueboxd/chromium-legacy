@@ -23,6 +23,7 @@
 #include "net/base/ip_address.h"
 #include "net/base/net_errors.h"
 #include "net/base/registry_controlled_domains/registry_controlled_domain.h"
+#include "net/base/url_util.h"
 #include "net/log/net_log.h"
 #include "net/reporting/reporting_service.h"
 #include "url/gurl.h"
@@ -40,26 +41,6 @@ const char kMaxAgeKey[] = "max_age";
 const char kIncludeSubdomainsKey[] = "include_subdomains";
 const char kSuccessFractionKey[] = "success_fraction";
 const char kFailureFractionKey[] = "failure_fraction";
-
-// Returns the superdomain of a given domain, or the empty string if the given
-// domain is just a single label. Note that this does not take into account
-// anything like the Public Suffix List, so the superdomain may end up being a
-// bare TLD.
-//
-// Examples:
-//
-// GetSuperdomain("assets.example.com") -> "example.com"
-// GetSuperdomain("example.net") -> "net"
-// GetSuperdomain("littlebox") -> ""
-//
-// TODO(juliatuttle): Deduplicate from Reporting in //net.
-std::string GetSuperdomain(const std::string& domain) {
-  size_t dot_pos = domain.find('.');
-  if (dot_pos == std::string::npos)
-    return "";
-
-  return domain.substr(dot_pos + 1);
-}
 
 const char kApplicationPhase[] = "application";
 const char kConnectionPhase[] = "connection";

@@ -358,7 +358,7 @@ void ClipboardOzone::ReadAvailableTypes(ClipboardBuffer buffer,
     if (mime_type == ClipboardFormatType::GetWebCustomDataType().GetName()) {
       auto data = async_clipboard_ozone_->ReadClipboardDataAndWait(
           buffer, ClipboardFormatType::GetWebCustomDataType().GetName());
-      ui::ReadCustomDataTypes(data.data(), data.size(), types);
+      ReadCustomDataTypes(data.data(), data.size(), types);
     } else {
       types->push_back(base::UTF8ToUTF16(mime_type));
     }
@@ -447,8 +447,7 @@ void ClipboardOzone::ReadCustomData(ClipboardBuffer buffer,
 
   auto custom_data = async_clipboard_ozone_->ReadClipboardDataAndWait(
       buffer, kMimeTypeWebCustomData);
-  ui::ReadCustomDataForType(custom_data.data(), custom_data.size(), type,
-                            result);
+  ReadCustomDataForType(custom_data.data(), custom_data.size(), type, result);
 }
 
 void ClipboardOzone::ReadBookmark(base::string16* title,

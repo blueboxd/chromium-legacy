@@ -70,7 +70,7 @@ class AnnouncementNotificationServiceImpl
     remote_url_ = base::GetFieldTrialParamValueByFeature(
         kAnnouncementNotification, kAnnouncementUrl);
 
-    bool success = base::Time::FromString(
+    bool success = base::Time::FromUTCString(
         base::GetFieldTrialParamValueByFeature(kAnnouncementNotification,
                                                kSkipFirstRunAfterTime)
             .c_str(),

@@ -7,10 +7,10 @@ package org.chromium.chrome.browser.omnibox.suggestions;
 import androidx.annotation.Nullable;
 import androidx.annotation.VisibleForTesting;
 
-import org.chromium.chrome.browser.omnibox.LocationBarVoiceRecognitionHandler.VoiceResult;
 import org.chromium.chrome.browser.omnibox.MatchClassificationStyle;
 import org.chromium.chrome.browser.omnibox.OmniboxSuggestionType;
 import org.chromium.chrome.browser.omnibox.suggestions.OmniboxSuggestion.MatchClassification;
+import org.chromium.chrome.browser.omnibox.voice.VoiceRecognitionHandler.VoiceResult;
 import org.chromium.chrome.browser.search_engines.TemplateUrlServiceFactory;
 
 import java.util.ArrayList;

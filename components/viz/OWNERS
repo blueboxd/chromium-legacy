@@ -20,6 +20,7 @@ rjkroege@chromium.org
 ccameron@chromium.org
 penghuang@chromium.org
 backer@chromium.org
+vasilyt@chromium.org
 
 # display_embedder / ozone
 rjkroege@chromium.org
@@ -34,6 +35,7 @@ jonross@chromium.org
 danakj@chromium.org
 ericrk@chromium.org
 sadrul@chromium.org
+kylechar@chromium.org
 
 # hit testing
 rjkroege@chromium.org
@@ -53,6 +55,7 @@ sunnyps@chromium.org
 # general
 danakj@chromium.org
 vmpstr@chromium.org
+kylechar@chromium.org
 
 # TEAM: graphics-dev@chromium.org
 # COMPONENT: Internals>Compositing

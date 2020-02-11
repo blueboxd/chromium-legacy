@@ -284,19 +284,6 @@ Si no se establece ningún valor para esta política, la frecuencia predetermina
       Consulta la página https://developers.google.com/safe-browsing para obtener más información acerca de la función Navegación Segura.
 
       Esta política solo está disponible en instancias de Windows que estén vinculadas a un dominio de <ph name="MS_AD_NAME" /> y en instancias de Windows 10 Pro o Enterprise que se hayan registrado para gestionar dispositivos.</translation>
-<translation id="1432194160771348078">
-      Permite especificar una lista de aplicaciones que se instalan de forma automática en la pantalla de inicio de sesión sin la intervención del usuario. Además, no se pueden desinstalar.
-      Los permisos solicitados por las aplicaciones se aceptan de forma
-      implícita, sin la interacción del usuario, incluidos los permisos que
-      soliciten las próximas versiones de la aplicación.
-
-      Ten en cuenta que, por razones de seguridad y de privacidad, no se permite instalar extensiones mediante esta política. Además, los dispositivos que estén en el canal estable solo instalarán las aplicaciones de la lista blanca incluidas en <ph name="PRODUCT_NAME" />. Cualquier elemento que no se ajuste a estas condiciones será ignorado.
-
-      Si una aplicación de instalación forzada se elimina de esta lista, <ph name="PRODUCT_NAME" /> la desinstalará automáticamente.
-
-      Cada elemento de la lista de la política es una cadena que contiene un ID de extensión y una URL de "actualización" separados por un punto y coma (<ph name="SEMICOLON" />). El ID de extensión es una cadena de 32 letras que aparece, por ejemplo, en <ph name="CHROME_EXTENSIONS_LINK" /> cuando está habilitado el modo desarrollador. La URL de "actualización" debe dirigir a un documento XML de un archivo de manifiesto de actualización, como se describe en <ph name="LINK_TO_EXTENSION_DOC1" />. Ten en cuenta que la URL de "actualización" definida en esta política solo se usa en la instalación inicial. Las actualizaciones posteriores de la extensión usarán la URL de actualización indicada en el manifiesto de la extensión.
-
-      Por ejemplo, <ph name="EXTENSION_POLICY_EXAMPLE" /> instala la aplicación <ph name="EXTENSION_POLICY_EXAMPLE_EXTENSION_NAME" /> desde la URL de "actualización" estándar de Chrome Web Store. Para obtener más información sobre cómo alojar extensiones, consulta: <ph name="LINK_TO_EXTENSION_DOC2" />.</translation>
 <translation id="1435659902881071157">Configuración de red de dispositivos</translation>
 <translation id="1438739959477268107">Configuración predeterminada de la generación de claves</translation>
 <translation id="1454846751303307294">Permite definir una lista de patrones de URL para especificar los sitios que no pueden ejecutar JavaScript.
@@ -4451,7 +4438,6 @@ Si esta opción no está establecida o está establecida en True, los dispositiv
 
       Esta política solo es efectiva si la extensión <ph name="CHROME_REPORTING_EXTENSION_NAME" /> está habilitada y el equipo está registrado en <ph name="CLOUD_MANAGEMENT_ENROLLMENT_TOKEN_POLICY_NAME" />.</translation>
 <translation id="7758378441185523981">Habilita la autenticación pasiva para tipos de perfil.</translation>
-<translation id="7761446981238915769">Configurar la lista de aplicaciones instaladas en la pantalla de inicio de sesión</translation>
 <translation id="7763614521440615342">Mostrar sugerencias de contenido en la página Nueva pestaña</translation>
 <translation id="7765879851993224640">Permitir que se use el inicio de sesión con Smart Lock</translation>
 <translation id="7774768074957326919">Utilizar configuración de proxy del sistema</translation>

@@ -759,7 +759,7 @@ Przytrzymaj dowolne słowo, by rozpocząć wyszukiwanie. Jeśli chcesz je doprec
 <translation id="6649642165559792194">Wyświetl podgląd obrazu <ph name="BEGIN_NEW" />Nowość<ph name="END_NEW" /></translation>
 <translation id="6656545060687952787">Aby wyszukać urządzenia, Chrome potrzebuje dostępu do lokalizacji. <ph name="BEGIN_LINK" />Zwiększ uprawnienia<ph name="END_LINK" /></translation>
 <translation id="6657585470893396449">Hasło</translation>
-<translation id="6659594942844771486">Tab</translation>
+<translation id="6659594942844771486">Karta</translation>
 <translation id="666731172850799929">Otwórz w <ph name="APP_NAME" /></translation>
 <translation id="666981079809192359">Informacje na temat ochrony prywatności w Chrome</translation>
 <translation id="6671495933530132209">Kopiuj grafikę</translation>
@@ -1046,7 +1046,6 @@ Witryna NIE uzyskuje dostępu do kamery. Tylko Ty widzisz rejestrowany obraz.</t
 <translation id="8853345339104747198">Karta <ph name="TAB_TITLE" /></translation>
 <translation id="885701979325669005">Pamięć</translation>
 <translation id="889338405075704026">Otwórz ustawienia Chrome</translation>
-<translation id="8901170036886848654">Nie znaleziono zakładek</translation>
 <translation id="8909135823018751308">Udostępnij…</translation>
 <translation id="8912362522468806198">Konta Google</translation>
 <translation id="8920114477895755567">Oczekiwanie na informacje o rodzicach.</translation>

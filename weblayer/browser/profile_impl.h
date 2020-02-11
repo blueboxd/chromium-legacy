@@ -70,9 +70,9 @@ class ProfileImpl : public Profile {
   void DecrementBrowserImplCount();
   const base::FilePath& download_directory() { return download_directory_; }
 
-  // Get the directory where session service should store tab state data. This
-  // will be a real file path even for the off-the-record profile.
-  base::FilePath GetSessionServiceDataBaseDir() const;
+  // Get the directory where BrowserPersister stores tab state data. This will
+  // be a real file path even for the off-the-record profile.
+  base::FilePath GetBrowserPersisterDataBaseDir() const;
 
  private:
   class DataClearer;

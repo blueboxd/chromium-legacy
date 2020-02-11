@@ -8,6 +8,7 @@
 #include <memory>
 
 #include "base/macros.h"
+#include "chromeos/network/managed_network_configuration_handler.h"
 #include "chromeos/network/network_state_test_helper.h"
 #include "chromeos/services/network_config/public/mojom/cros_network_config.mojom.h"
 #include "mojo/public/cpp/bindings/remote.h"
@@ -31,11 +32,17 @@ class CrosNetworkConfigTestHelper {
     return *network_state_helper_;
   }
 
- private:
+  void Initialize(
+      ManagedNetworkConfigurationHandler* network_configuration_handler);
+
+ protected:
+  // For use by child classes.
+  CrosNetworkConfigTestHelper(bool initialize);
   std::unique_ptr<NetworkStateTestHelper> network_state_helper_;
   std::unique_ptr<NetworkDeviceHandler> network_device_handler_;
   std::unique_ptr<CrosNetworkConfig> cros_network_config_impl_;
 
+ private:
   DISALLOW_COPY_AND_ASSIGN(CrosNetworkConfigTestHelper);
 };
 

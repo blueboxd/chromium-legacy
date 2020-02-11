@@ -71,9 +71,8 @@ public class WebXrVrConsentTest {
                 WebXrVrTestFramework.CONSENT_DIALOG_ACTION_DENY);
         mWebXrVrConsentTestFramework.setConsentDialogExpected(true);
 
-        mWebXrVrConsentTestFramework.loadUrlAndAwaitInitialization(
-                WebXrVrTestFramework.getFileUrlForHtmlTestFile("test_webxr_consent"),
-                PAGE_LOAD_TIMEOUT_S);
+        mWebXrVrConsentTestFramework.loadFileAndAwaitInitialization(
+                "test_webxr_consent", PAGE_LOAD_TIMEOUT_S);
 
         mWebXrVrConsentTestFramework.enterSessionWithUserGesture();
         mWebXrVrConsentTestFramework.pollJavaScriptBooleanOrFail(
@@ -91,9 +90,8 @@ public class WebXrVrConsentTest {
     @MediumTest
     @XrActivityRestriction({XrActivityRestriction.SupportedActivity.ALL})
     public void testConsentPersistsSameLevel() {
-        mWebXrVrConsentTestFramework.loadUrlAndAwaitInitialization(
-                WebXrVrTestFramework.getFileUrlForHtmlTestFile("generic_webxr_page"),
-                PAGE_LOAD_TIMEOUT_S);
+        mWebXrVrConsentTestFramework.loadFileAndAwaitInitialization(
+                "generic_webxr_page", PAGE_LOAD_TIMEOUT_S);
         mWebXrVrConsentTestFramework.enterSessionWithUserGestureOrFail();
         mWebXrVrConsentTestFramework.endSession();
 
@@ -112,9 +110,8 @@ public class WebXrVrConsentTest {
     public void testConsentNotNeededForInline() {
         mWebXrVrConsentTestFramework.setConsentDialogExpected(false);
 
-        mWebXrVrConsentTestFramework.loadUrlAndAwaitInitialization(
-                WebXrVrTestFramework.getFileUrlForHtmlTestFile("test_webxr_consent"),
-                PAGE_LOAD_TIMEOUT_S);
+        mWebXrVrConsentTestFramework.loadFileAndAwaitInitialization(
+                "test_webxr_consent", PAGE_LOAD_TIMEOUT_S);
 
         mWebXrVrConsentTestFramework.runJavaScriptOrFail(
                 "requestMagicWindowSession()", POLL_TIMEOUT_SHORT_MS);
@@ -130,9 +127,8 @@ public class WebXrVrConsentTest {
     @MediumTest
     @XrActivityRestriction({XrActivityRestriction.SupportedActivity.ALL})
     public void testConsentPersistsLowerLevel() {
-        mWebXrVrConsentTestFramework.loadUrlAndAwaitInitialization(
-                WebXrVrTestFramework.getFileUrlForHtmlTestFile("test_webxr_consent"),
-                PAGE_LOAD_TIMEOUT_S);
+        mWebXrVrConsentTestFramework.loadFileAndAwaitInitialization(
+                "test_webxr_consent", PAGE_LOAD_TIMEOUT_S);
 
         // Set up to request the highest level of consent support on Android (height).
         mWebXrVrConsentTestFramework.runJavaScriptOrFail(
@@ -155,9 +151,8 @@ public class WebXrVrConsentTest {
     @MediumTest
     @XrActivityRestriction({XrActivityRestriction.SupportedActivity.ALL})
     public void testConsentRepromptsHigherLevel() {
-        mWebXrVrConsentTestFramework.loadUrlAndAwaitInitialization(
-                WebXrVrTestFramework.getFileUrlForHtmlTestFile("test_webxr_consent"),
-                PAGE_LOAD_TIMEOUT_S);
+        mWebXrVrConsentTestFramework.loadFileAndAwaitInitialization(
+                "test_webxr_consent", PAGE_LOAD_TIMEOUT_S);
 
         // Request a session at the lowest level of consent, and ensure that it is entered.
         mWebXrVrConsentTestFramework.runJavaScriptOrFail(
@@ -179,16 +174,14 @@ public class WebXrVrConsentTest {
     @MediumTest
     @XrActivityRestriction({XrActivityRestriction.SupportedActivity.ALL})
     public void testConsentRepromptsAfterReload() {
-        mWebXrVrConsentTestFramework.loadUrlAndAwaitInitialization(
-                WebXrVrTestFramework.getFileUrlForHtmlTestFile("generic_webxr_page"),
-                PAGE_LOAD_TIMEOUT_S);
+        mWebXrVrConsentTestFramework.loadFileAndAwaitInitialization(
+                "generic_webxr_page", PAGE_LOAD_TIMEOUT_S);
 
         mWebXrVrConsentTestFramework.enterSessionWithUserGestureOrFail();
         mWebXrVrConsentTestFramework.endSession();
 
-        mWebXrVrConsentTestFramework.loadUrlAndAwaitInitialization(
-                WebXrVrTestFramework.getFileUrlForHtmlTestFile("generic_webxr_page"),
-                PAGE_LOAD_TIMEOUT_S);
+        mWebXrVrConsentTestFramework.loadFileAndAwaitInitialization(
+                "generic_webxr_page", PAGE_LOAD_TIMEOUT_S);
         mWebXrVrConsentTestFramework.enterSessionWithUserGestureOrFail();
     }
 }

@@ -31,6 +31,7 @@ import org.chromium.chrome.browser.util.IntentUtils;
 import org.chromium.chrome.browser.util.UrlConstants;
 import org.chromium.chrome.browser.util.UrlUtilities;
 import org.chromium.content_public.browser.LoadUrlParams;
+import org.chromium.content_public.browser.WebContents;
 import org.chromium.content_public.common.Referrer;
 import org.chromium.ui.base.Clipboard;
 import org.chromium.ui.base.PageTransition;
@@ -63,6 +64,11 @@ public class TabContextMenuItemDelegate implements ContextMenuItemDelegate {
     @Override
     public void onDestroy() {
         mTab.removeObserver(mDataReductionProxyContextMenuTabObserver);
+    }
+
+    @Override
+    public WebContents getWebContents() {
+        return mTab.getWebContents();
     }
 
     @Override

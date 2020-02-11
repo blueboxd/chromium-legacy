@@ -268,6 +268,35 @@ TEST(UrlUtilTest, GetHostOrSpecFromURL) {
             GetHostOrSpecFromURL(GURL("file:///tmp/test.html")));
 }
 
+TEST(UrlUtilTest, GetSuperdomain) {
+  struct {
+    const char* const domain;
+    const char* const expected_superdomain;
+  } tests[] = {
+      // Basic cases
+      {"foo.bar.example", "bar.example"},
+      {"bar.example", "example"},
+      {"example", ""},
+
+      // Returned value may be an eTLD.
+      {"google.com", "com"},
+      {"google.co.uk", "co.uk"},
+
+      // Weird cases.
+      {"", ""},
+      {"has.trailing.dot.", "trailing.dot."},
+      {"dot.", ""},
+      {".has.leading.dot", "has.leading.dot"},
+      {".", ""},
+      {"..", "."},
+      {"127.0.0.1", "0.0.1"},
+  };
+
+  for (const auto& test : tests) {
+    EXPECT_EQ(test.expected_superdomain, GetSuperdomain(test.domain));
+  }
+}
+
 TEST(UrlUtilTest, CompliantHost) {
   struct {
     const char* const host;

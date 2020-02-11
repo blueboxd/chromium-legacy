@@ -7,6 +7,7 @@ package org.chromium.chrome.browser.notifications;
 import android.app.Notification;
 import android.app.Service;
 import android.content.Intent;
+import android.os.Build;
 import android.support.v4.app.ServiceCompat;
 import android.support.v4.content.ContextCompat;
 
@@ -14,7 +15,6 @@ import androidx.annotation.VisibleForTesting;
 
 import org.chromium.base.ContextUtils;
 import org.chromium.base.Log;
-import org.chromium.chrome.browser.AppHooks;
 
 /**
  * Utility functions that call into Android foreground service related API, and provides
@@ -68,8 +68,11 @@ public class ForegroundServiceUtils {
         // If android fail to build the notification, do nothing.
         if (notification == null) return;
 
-        // TODO(xingliu): Remove startForeground call from AppHooks when Q sdk is available.
-        AppHooks.get().startForeground(service, id, notification, foregroundServiceType);
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
+            service.startForeground(id, notification, foregroundServiceType);
+        } else {
+            service.startForeground(id, notification);
+        }
     }
 
     /**

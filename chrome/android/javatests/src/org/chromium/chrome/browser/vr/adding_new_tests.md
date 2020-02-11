@@ -27,7 +27,7 @@ For a concrete example, take a look at
 
 The general flow in tests will be:
 
-1. Load the HTML file with loadUrlAndAwaitInitialization - this ensures that any
+1. Load the HTML file with loadFileAndAwaitInitialization - this ensures that any
    pre-test setup in JavaScript is completed.
 2. Run some code on Java's side.
 3. Trigger some JavaScript code and wait for it to signal that it is finished.

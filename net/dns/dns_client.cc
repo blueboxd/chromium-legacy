@@ -115,7 +115,8 @@ class DnsClientImpl : public DnsClient,
     if (!CanUseSecureDnsTransactions())
       return true;
 
-    return !(session_.get() && session_->HasAvailableDohServer());
+    DCHECK(session_);  // Should be true if CanUseSecureDnsTransactions() true.
+    return context->NumAvailableDohServers(session_.get()) == 0;
   }
 
   bool FallbackFromInsecureTransactionPreferred() const override {
@@ -179,10 +180,6 @@ class DnsClientImpl : public DnsClient,
 
   DnsConfigOverrides GetConfigOverridesForTesting() const override {
     return config_overrides_;
-  }
-
-  void SetProbeSuccessForTest(unsigned index, bool success) override {
-    session_->SetProbeSuccess(index, success);
   }
 
   void SetTransactionFactoryForTesting(

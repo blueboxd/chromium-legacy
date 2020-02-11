@@ -4590,6 +4590,12 @@ const FeatureEntry kFeatureEntries[] = {
      FEATURE_VALUE_TYPE(ash::features::kLockScreenMediaControls)},
 #endif  // defined(OS_CHROMEOS)
 
+#if defined(OS_CHROMEOS)
+    {"contextual-nudges", flag_descriptions::kContextualNudgesName,
+     flag_descriptions::kContextualNudgesDescription, kOsCrOS,
+     FEATURE_VALUE_TYPE(ash::features::kContextualNudges)},
+#endif  // defined(OS_CHROMEOS)
+
     {"policy-atomic-group-enabled",
      flag_descriptions::kPolicyAtomicGroupsEnabledName,
      flag_descriptions::kPolicyAtomicGroupsEnabledDescription, kOsAll,

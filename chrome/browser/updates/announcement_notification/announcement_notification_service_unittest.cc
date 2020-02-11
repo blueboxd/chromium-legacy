@@ -73,9 +73,11 @@ class AnnouncementNotificationServiceTest : public testing::Test {
     return time;
   }
 
+  // Sets the current time used in test. Assume UTC time when time zone is not
+  // specified.
   base::Time SetNow(const char* now_str) {
     base::Time now;
-    EXPECT_TRUE(base::Time::FromString(now_str, &now));
+    EXPECT_TRUE(base::Time::FromUTCString(now_str, &now));
     clock()->SetNow(now);
     EXPECT_FALSE(now.is_null());
     return now;
@@ -196,14 +198,14 @@ TEST_F(AnnouncementNotificationServiceTest, SaveFirstRunTimeNotFirstRun) {
 // Not to show notification if first run timestamp happens after Finch parameter
 // timestamp.
 TEST_F(AnnouncementNotificationServiceTest, SkipFirstRunAfterTimeNotShow) {
-  SetNow("10 Feb 2020 13:00:00");
+  SetNow("10 Feb 2020 13:00:00 GMT");
   std::map<std::string, std::string> parameters = {
       {kSkipFirstRun, "false"},
       {kVersion, "2"},
       {kSkipNewProfile, "false"},
-      {kSkipFirstRunAfterTime, "10 Feb 2020 12:15:00"}};
+      {kSkipFirstRunAfterTime, "10 Feb 2020 12:15:00 GMT"}};
   Init(parameters, true, false, 1, false);
-  auto first_run_time = SetFirstRunTimePref("10 Feb 2020 12:30:00");
+  auto first_run_time = SetFirstRunTimePref("10 Feb 2020 12:30:00 GMT");
   ON_CALL(*delegate(), IsFirstRun()).WillByDefault(Return(false));
   EXPECT_CALL(*delegate(), ShowNotification()).Times(0);
   service()->MaybeShowNotification();
@@ -214,14 +216,14 @@ TEST_F(AnnouncementNotificationServiceTest, SkipFirstRunAfterTimeNotShow) {
 // Show notification if first run timestamp happens before Finch parameter
 // timestamp.
 TEST_F(AnnouncementNotificationServiceTest, SkipFirstRunAfterTimeShow) {
-  SetNow("10 Feb 2020 13:00:00");
+  SetNow("10 Feb 2020 13:00:00 GMT");
   std::map<std::string, std::string> parameters = {
       {kSkipFirstRun, "false"},
       {kVersion, "2"},
       {kSkipNewProfile, "false"},
-      {kSkipFirstRunAfterTime, "10 Feb 2020 12:15:00"}};
+      {kSkipFirstRunAfterTime, "10 Feb 2020 12:15:00 GMT"}};
   Init(parameters, true, false, 1, false);
-  SetFirstRunTimePref("10 Feb 2020 12:10:00");
+  SetFirstRunTimePref("10 Feb 2020 12:10:00 GMT");
   ON_CALL(*delegate(), IsFirstRun()).WillByDefault(Return(false));
   EXPECT_CALL(*delegate(), ShowNotification());
   service()->MaybeShowNotification();
@@ -231,12 +233,12 @@ TEST_F(AnnouncementNotificationServiceTest, SkipFirstRunAfterTimeShow) {
 // Show notification if there is no first run timestamp but Finch has
 // "skip_first_run_after_time" parameter.
 TEST_F(AnnouncementNotificationServiceTest, SkipFirstRunAfterNoFirstRunPref) {
-  SetNow("10 Feb 2020 13:00:00");
+  SetNow("10 Feb 2020 13:00:00 GMT");
   std::map<std::string, std::string> parameters = {
       {kSkipFirstRun, "false"},
       {kVersion, "2"},
       {kSkipNewProfile, "false"},
-      {kSkipFirstRunAfterTime, "10 Feb 2020 12:15:00"}};
+      {kSkipFirstRunAfterTime, "10 Feb 2020 12:15:00 GMT"}};
   Init(parameters, true, false, 1, false);
   EXPECT_EQ(FirstRunTimePref(), base::Time());
   ON_CALL(*delegate(), IsFirstRun()).WillByDefault(Return(false));
@@ -244,6 +246,23 @@ TEST_F(AnnouncementNotificationServiceTest, SkipFirstRunAfterNoFirstRunPref) {
   service()->MaybeShowNotification();
   EXPECT_EQ(CurrentVersionPref(), 2);
   EXPECT_EQ(FirstRunTimePref(), base::Time());
+}
+
+// "skip_first_run_after_time" parameter should assume UTC when time zone is not
+// specified.
+TEST_F(AnnouncementNotificationServiceTest, SkipFirstRunAfterAssumeUTCTime) {
+  SetNow("10 Feb 2020 13:00:00 GMT");
+  std::map<std::string, std::string> parameters = {
+      {kSkipFirstRun, "false"},
+      {kVersion, "2"},
+      {kSkipNewProfile, "false"},
+      // No time zone specified. The time string should assume UTC.
+      {kSkipFirstRunAfterTime, "10 Feb 2020 12:59:59"}};
+  Init(parameters, true, false, 1, false);
+  EXPECT_EQ(FirstRunTimePref(), base::Time());
+  ON_CALL(*delegate(), IsFirstRun()).WillByDefault(Return(false));
+  EXPECT_CALL(*delegate(), ShowNotification());
+  service()->MaybeShowNotification();
 }
 
 struct VersionTestParam {

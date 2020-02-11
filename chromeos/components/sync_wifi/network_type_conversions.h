@@ -12,11 +12,32 @@ namespace chromeos {
 
 namespace sync_wifi {
 
+std::string DecodeHexString(const std::string& base_16);
+
 std::string SecurityTypeStringFromMojo(
     const network_config::mojom::SecurityType& security_type);
 
 std::string SecurityTypeStringFromProto(
     const sync_pb::WifiConfigurationSpecificsData_SecurityType& security_type);
+
+sync_pb::WifiConfigurationSpecificsData_SecurityType SecurityTypeProtoFromMojo(
+    const network_config::mojom::SecurityType& security_type);
+
+sync_pb::WifiConfigurationSpecificsData_AutomaticallyConnectOption
+AutomaticallyConnectProtoFromMojo(
+    const network_config::mojom::ManagedBooleanPtr& auto_connect);
+
+sync_pb::WifiConfigurationSpecificsData_IsPreferredOption
+IsPreferredProtoFromMojo(
+    const network_config::mojom::ManagedInt32Ptr& is_preferred);
+
+sync_pb::WifiConfigurationSpecificsData_ProxyConfiguration_ProxyOption
+ProxyOptionProtoFromMojo(
+    const network_config::mojom::ManagedProxySettingsPtr& proxy_settings);
+
+sync_pb::WifiConfigurationSpecificsData_ProxyConfiguration
+ProxyConfigurationProtoFromMojo(
+    const network_config::mojom::ManagedProxySettingsPtr& proxy_settings);
 
 network_config::mojom::SecurityType MojoSecurityTypeFromString(
     const std::string& security_type);

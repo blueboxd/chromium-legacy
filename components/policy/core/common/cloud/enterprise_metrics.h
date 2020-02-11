@@ -183,6 +183,17 @@ enum PolicyInvalidationType {
   POLICY_INVALIDATION_TYPE_SIZE  // Must be the last.
 };
 
+// Result of the Device ID field validation in policy protobufs.
+// These values are persisted to logs. Entries should not be renumbered and
+// numeric values should never be reused.
+enum class PolicyDeviceIdValidity {
+  kValid = 0,
+  kActualIdUnknown = 1,
+  kMissing = 2,
+  kInvalid = 3,
+  kMaxValue = kInvalid,  // Must be the last.
+};
+
 #if defined(OS_CHROMEOS)
 // Events related to Chrome OS user policy which cause session abort.
 // This enum is used to define the buckets for an enumerated UMA histogram.

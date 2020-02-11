@@ -259,6 +259,13 @@ std::string GetHostOrSpecFromURL(const GURL& url) {
   return url.has_host() ? TrimEndingDot(url.host_piece()) : url.spec();
 }
 
+std::string GetSuperdomain(base::StringPiece domain) {
+  size_t dot_pos = domain.find('.');
+  if (dot_pos == std::string::npos)
+    return "";
+  return domain.substr(dot_pos + 1).as_string();
+}
+
 std::string CanonicalizeHost(base::StringPiece host,
                              url::CanonHostInfo* host_info) {
   // Try to canonicalize the host.

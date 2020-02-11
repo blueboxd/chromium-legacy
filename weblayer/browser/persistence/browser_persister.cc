@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "weblayer/browser/session_service.h"
+#include "weblayer/browser/persistence/browser_persister.h"
 
 #include <stddef.h>
 
@@ -48,11 +48,12 @@ int GetIndexOfTab(BrowserImpl* browser, Tab* tab) {
 // Every kWritesPerReset commands triggers recreating the file.
 constexpr int kWritesPerReset = 250;
 
-// SessionService -------------------------------------------------------------
+// BrowserPersister
+// -------------------------------------------------------------
 
-SessionService::SessionService(const base::FilePath& path,
-                               BrowserImpl* browser,
-                               const std::vector<uint8_t>& decryption_key)
+BrowserPersister::BrowserPersister(const base::FilePath& path,
+                                   BrowserImpl* browser,
+                                   const std::vector<uint8_t>& decryption_key)
     : browser_(browser),
       browser_session_id_(SessionID::NewUnique()),
       command_storage_manager_(
@@ -64,30 +65,30 @@ SessionService::SessionService(const base::FilePath& path,
       crypto_key_(decryption_key) {
   browser_->AddObserver(this);
   command_storage_manager_->ScheduleGetCurrentSessionCommands(
-      base::BindOnce(&SessionService::OnGotCurrentSessionCommands,
+      base::BindOnce(&BrowserPersister::OnGotCurrentSessionCommands,
                      base::Unretained(this)),
       decryption_key, &cancelable_task_tracker_);
 }
 
-SessionService::~SessionService() {
+BrowserPersister::~BrowserPersister() {
   SaveIfNecessary();
   browser_->RemoveObserver(this);
 }
 
-void SessionService::SaveIfNecessary() {
+void BrowserPersister::SaveIfNecessary() {
   if (command_storage_manager_->HasPendingSave())
     command_storage_manager_->Save();
 }
 
-const std::vector<uint8_t>& SessionService::GetCryptoKey() const {
+const std::vector<uint8_t>& BrowserPersister::GetCryptoKey() const {
   return crypto_key_;
 }
 
-bool SessionService::ShouldUseDelayedSave() {
+bool BrowserPersister::ShouldUseDelayedSave() {
   return true;
 }
 
-void SessionService::OnWillSaveCommands() {
+void BrowserPersister::OnWillSaveCommands() {
   if (!rebuild_on_next_save_)
     return;
 
@@ -98,11 +99,12 @@ void SessionService::OnWillSaveCommands() {
   BuildCommandsForBrowser();
 }
 
-void SessionService::OnGeneratedNewCryptoKey(const std::vector<uint8_t>& key) {
+void BrowserPersister::OnGeneratedNewCryptoKey(
+    const std::vector<uint8_t>& key) {
   crypto_key_ = key;
 }
 
-void SessionService::OnTabAdded(Tab* tab) {
+void BrowserPersister::OnTabAdded(Tab* tab) {
   content::WebContents* web_contents =
       static_cast<TabImpl*>(tab)->web_contents();
   auto* tab_helper = sessions::SessionTabHelper::FromWebContents(web_contents);
@@ -127,7 +129,7 @@ void SessionService::OnTabAdded(Tab* tab) {
   }
 }
 
-void SessionService::OnTabRemoved(Tab* tab, bool active_tab_changed) {
+void BrowserPersister::OnTabRemoved(Tab* tab, bool active_tab_changed) {
   // Allow the associated sessionStorage to get deleted; it won't be needed
   // in the session restore.
   content::WebContents* web_contents =
@@ -150,7 +152,7 @@ void SessionService::OnTabRemoved(Tab* tab, bool active_tab_changed) {
     tab_to_available_range_.erase(i);
 }
 
-void SessionService::OnActiveTabChanged(Tab* tab) {
+void BrowserPersister::OnActiveTabChanged(Tab* tab) {
   if (rebuild_on_next_save_)
     return;
 
@@ -159,7 +161,7 @@ void SessionService::OnActiveTabChanged(Tab* tab) {
       browser_session_id_, index));
 }
 
-void SessionService::SetTabUserAgentOverride(
+void BrowserPersister::SetTabUserAgentOverride(
     const SessionID& window_id,
     const SessionID& tab_id,
     const std::string& user_agent_override) {
@@ -170,9 +172,9 @@ void SessionService::SetTabUserAgentOverride(
       tab_id, user_agent_override));
 }
 
-void SessionService::SetSelectedNavigationIndex(const SessionID& window_id,
-                                                const SessionID& tab_id,
-                                                int index) {
+void BrowserPersister::SetSelectedNavigationIndex(const SessionID& window_id,
+                                                  const SessionID& tab_id,
+                                                  int index) {
   if (rebuild_on_next_save_)
     return;
 
@@ -189,7 +191,7 @@ void SessionService::SetSelectedNavigationIndex(const SessionID& window_id,
       sessions::CreateSetSelectedNavigationIndexCommand(tab_id, index));
 }
 
-void SessionService::UpdateTabNavigation(
+void BrowserPersister::UpdateTabNavigation(
     const SessionID& window_id,
     const SessionID& tab_id,
     const SerializedNavigationEntry& navigation) {
@@ -204,10 +206,10 @@ void SessionService::UpdateTabNavigation(
   ScheduleCommand(CreateUpdateTabNavigationCommand(tab_id, navigation));
 }
 
-void SessionService::TabNavigationPathPruned(const SessionID& window_id,
-                                             const SessionID& tab_id,
-                                             int index,
-                                             int count) {
+void BrowserPersister::TabNavigationPathPruned(const SessionID& window_id,
+                                               const SessionID& tab_id,
+                                               int index,
+                                               int count) {
   if (rebuild_on_next_save_)
     return;
 
@@ -241,8 +243,9 @@ void SessionService::TabNavigationPathPruned(const SessionID& window_id,
       sessions::CreateTabNavigationPathPrunedCommand(tab_id, index, count));
 }
 
-void SessionService::TabNavigationPathEntriesDeleted(const SessionID& window_id,
-                                                     const SessionID& tab_id) {
+void BrowserPersister::TabNavigationPathEntriesDeleted(
+    const SessionID& window_id,
+    const SessionID& tab_id) {
   if (rebuild_on_next_save_)
     return;
 
@@ -252,19 +255,19 @@ void SessionService::TabNavigationPathEntriesDeleted(const SessionID& window_id,
   command_storage_manager_->StartSaveTimer();
 }
 
-void SessionService::ScheduleRebuildOnNextSave() {
+void BrowserPersister::ScheduleRebuildOnNextSave() {
   rebuild_on_next_save_ = true;
   command_storage_manager_->StartSaveTimer();
 }
 
-void SessionService::OnGotCurrentSessionCommands(
+void BrowserPersister::OnGotCurrentSessionCommands(
     std::vector<std::unique_ptr<sessions::SessionCommand>> commands) {
   ScheduleRebuildOnNextSave();
 
   RestoreBrowserState(browser_, std::move(commands));
 }
 
-void SessionService::BuildCommandsForTab(TabImpl* tab, int index_in_browser) {
+void BrowserPersister::BuildCommandsForTab(TabImpl* tab, int index_in_browser) {
   command_storage_manager_->AppendRebuildCommands(
       BuildCommandsForTabConfiguration(browser_session_id_, tab,
                                        index_in_browser));
@@ -303,8 +306,8 @@ void SessionService::BuildCommandsForTab(TabImpl* tab, int index_in_browser) {
       session_id, session_storage_namespace->id()));
 }
 
-void SessionService::BuildCommandsForBrowser() {
-  // This is necessary for SessionService to restore the browser. The type is
+void BrowserPersister::BuildCommandsForBrowser() {
+  // This is necessary for BrowserPersister to restore the browser. The type is
   // effectively ignored.
   command_storage_manager_->AppendRebuildCommand(
       sessions::CreateSetWindowTypeCommand(
@@ -325,7 +328,7 @@ void SessionService::BuildCommandsForBrowser() {
                                                     active_index));
 }
 
-void SessionService::ScheduleCommand(
+void BrowserPersister::ScheduleCommand(
     std::unique_ptr<sessions::SessionCommand> command) {
   DCHECK(command);
   if (ReplacePendingCommand(command_storage_manager_.get(), &command))

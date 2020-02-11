@@ -26,7 +26,6 @@ import org.chromium.chrome.browser.lifecycle.Destroyable;
 import org.chromium.chrome.browser.omaha.OmahaBase;
 import org.chromium.chrome.browser.omaha.UpdateStatusProvider;
 import org.chromium.chrome.browser.omaha.UpdateStatusProvider.UpdateState;
-import org.chromium.chrome.browser.profiles.Profile;
 
 /**
  * Class supports to build and to send update notification per certain duration if new Chrome
@@ -80,9 +79,9 @@ public class UpdateNotificationServiceBridge implements UpdateNotificationContro
                 // TODO(hesen): Have a debug control switch to enable/disable manually.
                 boolean shouldShowImmediately =
                         mUpdateStatus.updateState == INLINE_UPDATE_AVAILABLE;
-                UpdateNotificationServiceBridgeJni.get().schedule(Profile.getLastUsedProfile(),
-                        getUpdateNotificationTitle(), getUpdateNotificationTextBody(),
-                        mUpdateStatus.updateState, shouldShowImmediately);
+                UpdateNotificationServiceBridgeJni.get().schedule(getUpdateNotificationTitle(),
+                        getUpdateNotificationTextBody(), mUpdateStatus.updateState,
+                        shouldShowImmediately);
 
                 break;
             default:
@@ -94,13 +93,12 @@ public class UpdateNotificationServiceBridge implements UpdateNotificationContro
     interface Natives {
         /**
          * Schedule a notification through scheduling system.
-         * @param profile the main {@link Profile}.
          * @param title The title string of notification context.
          * @param message The body string of notification context.
          * @param state An enum of {@link UpdateState} pulled from UpdateStatusProvider.
          * @param shouldShowImmediately A flag to show notification right away if it is true.
          */
-        void schedule(Profile profile, String title, String message, @UpdateState int state,
+        void schedule(String title, String message, @UpdateState int state,
                 boolean shouldShowImmediately);
     }
 

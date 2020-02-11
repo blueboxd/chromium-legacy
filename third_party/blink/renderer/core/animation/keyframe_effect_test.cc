@@ -326,7 +326,10 @@ TEST_F(AnimationKeyframeEffectV8Test, SpecifiedDurationGetter) {
 }
 
 TEST_F(AnimationKeyframeEffectV8Test, SetKeyframesAdditiveCompositeOperation) {
-  ScopedCSSAdditiveAnimationsForTest css_additive_animation(false);
+  // AnimationWorklet also needs to be disabled since it depends on
+  // WebAnimationsAPI and prevents us from turning it off if enabled.
+  ScopedAnimationWorkletForTest no_animation_worklet(false);
+  ScopedWebAnimationsAPIForTest no_web_animations(false);
   V8TestingScope scope;
   ScriptState* script_state = scope.GetScriptState();
   ScriptValue js_keyframes = ScriptValue::CreateNull(scope.GetIsolate());

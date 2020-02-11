@@ -762,6 +762,9 @@ namespace autotestPrivate {
     static void setShelfAlignment(DOMString displayId,
         ShelfAlignmentType alignment, VoidCallback callback);
 
+    // Create a pin on shelf for the app specified by |appId|.
+    static void pinShelfIcon(DOMString appId, VoidCallback callback);
+
     // Enter or exit the overview mode.
     // |start|: whether entering to or exiting from the overview mode.
     // |callback|: called after the overview mode switch finishes.

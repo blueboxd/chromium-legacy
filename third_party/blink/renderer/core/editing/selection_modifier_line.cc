@@ -174,7 +174,8 @@ class AbstractLineBox {
   }
 
   static bool IsEditable(const NGInlineCursor& cursor) {
-    const LayoutObject* const layout_object = cursor.CurrentLayoutObject();
+    const LayoutObject* const layout_object =
+        cursor.Current().GetLayoutObject();
     return layout_object && layout_object->GetNode() &&
            HasEditableStyle(*layout_object->GetNode());
   }
@@ -192,7 +193,7 @@ class AbstractLineBox {
     LayoutUnit closest_leaf_distance;
     NGInlineCursor cursor(line);
     for (cursor.MoveToNext(); cursor; cursor.MoveToNext()) {
-      if (!cursor.CurrentLayoutObject())
+      if (!cursor.Current().GetLayoutObject())
         continue;
       if (!cursor.IsInlineLeaf())
         continue;
@@ -208,14 +209,14 @@ class AbstractLineBox {
       const LayoutUnit inline_max = fragment_logical_rect.offset.inline_offset +
                                     fragment_logical_rect.size.inline_size;
       if (inline_offset >= inline_min && inline_offset < inline_max)
-        return cursor.CurrentLayoutObject();
+        return cursor.Current().GetLayoutObject();
 
       const LayoutUnit distance =
           inline_offset < inline_min
               ? inline_min - inline_offset
               : inline_offset - inline_max + LayoutUnit(1);
       if (!closest_leaf_child || distance < closest_leaf_distance) {
-        closest_leaf_child = cursor.CurrentLayoutObject();
+        closest_leaf_child = cursor.Current().GetLayoutObject();
         closest_leaf_distance = distance;
       }
     }

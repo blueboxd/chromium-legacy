@@ -77,6 +77,7 @@ class CORE_EXPORT NGFragmentItem : public DisplayItemClient {
   bool IsContainer() const { return Type() == kBox || Type() == kLine; }
   bool IsInlineBox() const;
   bool IsAtomicInline() const;
+  bool IsFloating() const;
   bool IsEmptyLineBox() const;
   bool IsHiddenForPaint() const { return is_hidden_for_paint_; }
   bool IsListMarker() const;

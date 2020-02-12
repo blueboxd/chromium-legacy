@@ -2386,7 +2386,6 @@ void LayoutBlockFlow::AddVisualOverflowFromInlineChildren() {
       IsRootEditableElement(*GetNode()) && StyleRef().IsLeftToRightDirection())
     end_padding = LayoutUnit(1);
 
-  bool added_inline_children = false;
   if (const NGPaintFragment* paint_fragment = PaintFragment()) {
     for (const NGPaintFragment* child : paint_fragment->Children()) {
       if (child->HasSelfPaintingLayer())
@@ -2397,7 +2396,6 @@ void LayoutBlockFlow::AddVisualOverflowFromInlineChildren() {
         AddContentsVisualOverflow(child_rect);
       }
     }
-    added_inline_children = true;
   } else if (const NGPhysicalBoxFragment* fragment = CurrentFragment()) {
     if (const NGFragmentItems* items = fragment->Items()) {
       for (NGInlineCursor cursor(*items); cursor; cursor.MoveToNextSibling()) {
@@ -2411,12 +2409,10 @@ void LayoutBlockFlow::AddVisualOverflowFromInlineChildren() {
           AddContentsVisualOverflow(child_rect);
         }
       }
-      if (fragment->HasFloatingDescendantsForPaint())
-        AddVisualOverflowFromFloats(*fragment);
-      added_inline_children = true;
+    } else if (fragment->HasFloatingDescendantsForPaint()) {
+      AddVisualOverflowFromFloats(*fragment);
     }
-  }
-  if (!added_inline_children) {
+  } else {
     for (RootInlineBox* curr = FirstRootBox(); curr;
          curr = curr->NextRootBox()) {
       LayoutRect visual_overflow =

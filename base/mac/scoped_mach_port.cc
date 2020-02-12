@@ -83,5 +83,14 @@ bool CreateMachPort(ScopedMachReceiveRight* receive,
   return true;
 }
 
+ScopedMachSendRight RetainMachSendRight(mach_port_t port) {
+  kern_return_t kr =
+      mach_port_mod_refs(mach_task_self(), port, MACH_PORT_RIGHT_SEND, 1);
+  if (kr == KERN_SUCCESS)
+    return ScopedMachSendRight(port);
+  MACH_DLOG(ERROR, kr) << "mach_port_mod_refs +1";
+  return {};
+}
+
 }  // namespace mac
 }  // namespace base

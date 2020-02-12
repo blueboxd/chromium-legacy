@@ -25,11 +25,7 @@
 #include "storage/common/database/database_identifier.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
-using storage::DatabaseQuotaClient;
-using storage::DatabaseTracker;
-using storage::OriginInfo;
-
-namespace content {
+namespace storage {
 
 // Declared to shorten the line lengths.
 static const blink::mojom::StorageType kTemp =
@@ -50,8 +46,8 @@ class MockDatabaseTracker : public DatabaseTracker {
 
   bool GetOriginInfo(const std::string& origin_identifier,
                      OriginInfo* info) override {
-    auto found = mock_origin_infos_.find(
-        storage::GetOriginFromIdentifier(origin_identifier));
+    auto found =
+        mock_origin_infos_.find(GetOriginFromIdentifier(origin_identifier));
     if (found == mock_origin_infos_.end())
       return false;
     *info = OriginInfo(found->second);
@@ -90,7 +86,7 @@ class MockDatabaseTracker : public DatabaseTracker {
 
   void AddMockDatabase(const url::Origin& origin, const char* name, int size) {
     MockOriginInfo& info = mock_origin_infos_[origin];
-    info.set_origin(storage::GetIdentifierFromOrigin(origin));
+    info.set_origin(GetIdentifierFromOrigin(origin));
     info.AddMockDatabase(base::ASCIIToUTF16(name), size);
   }
 
@@ -134,7 +130,7 @@ class DatabaseQuotaClientTest : public testing::Test {
         usage_(0),
         mock_tracker_(new MockDatabaseTracker) {}
 
-  int64_t GetOriginUsage(scoped_refptr<storage::QuotaClient> client,
+  int64_t GetOriginUsage(scoped_refptr<QuotaClient> client,
                          const url::Origin& origin,
                          blink::mojom::StorageType type) {
     usage_ = 0;
@@ -148,7 +144,7 @@ class DatabaseQuotaClientTest : public testing::Test {
   }
 
   const std::set<url::Origin>& GetOriginsForType(
-      scoped_refptr<storage::QuotaClient> client,
+      scoped_refptr<QuotaClient> client,
       blink::mojom::StorageType type) {
     origins_.clear();
     client->GetOriginsForType(
@@ -160,7 +156,7 @@ class DatabaseQuotaClientTest : public testing::Test {
   }
 
   const std::set<url::Origin>& GetOriginsForHost(
-      scoped_refptr<storage::QuotaClient> client,
+      scoped_refptr<QuotaClient> client,
       blink::mojom::StorageType type,
       const std::string& host) {
     origins_.clear();
@@ -173,7 +169,7 @@ class DatabaseQuotaClientTest : public testing::Test {
     return origins_;
   }
 
-  bool DeleteOriginData(scoped_refptr<storage::QuotaClient> client,
+  bool DeleteOriginData(scoped_refptr<QuotaClient> client,
                         blink::mojom::StorageType type,
                         const url::Origin& origin) {
     delete_status_ = blink::mojom::QuotaStatusCode::kUnknown;
@@ -277,4 +273,4 @@ TEST_F(DatabaseQuotaClientTest, DeleteOriginData) {
   EXPECT_EQ(2, mock_tracker()->delete_called_count());
 }
 
-}  // namespace content
+}  // namespace storage

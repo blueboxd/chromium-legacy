@@ -121,6 +121,12 @@ bool NGFragmentItem::IsAtomicInline() const {
   return false;
 }
 
+bool NGFragmentItem::IsFloating() const {
+  if (const NGPhysicalBoxFragment* box = BoxFragment())
+    return box->IsFloating();
+  return false;
+}
+
 bool NGFragmentItem::IsEmptyLineBox() const {
   return LineBoxType() == NGLineBoxType::kEmptyLineBox;
 }

@@ -535,7 +535,7 @@ TEST_F(PluginVmInstallerDownloadServiceTest, EmptyPluginVmImageUrlTest) {
   EXPECT_CALL(
       *observer_,
       OnDownloadFailed(PluginVmInstaller::FailureReason::INVALID_IMAGE_URL));
-  EXPECT_CALL(*observer_, OnDlcDownloadCompleted());
+  EXPECT_CALL(*observer_, OnDlcDownloadCompleted()).Times(0);
   StartAndRunToCompletion();
 
   histogram_tester_->ExpectTotalCount(kPluginVmImageDownloadedSizeHistogram, 0);

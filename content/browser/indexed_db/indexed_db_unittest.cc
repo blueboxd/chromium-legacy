@@ -90,9 +90,10 @@ class IndexedDBTest : public testing::Test {
       : kNormalOrigin(url::Origin::Create(GURL("http://normal/"))),
         kSessionOnlyOrigin(url::Origin::Create(GURL("http://session-only/"))),
         special_storage_policy_(
-            base::MakeRefCounted<MockSpecialStoragePolicy>()),
+            base::MakeRefCounted<storage::MockSpecialStoragePolicy>()),
         quota_manager_proxy_(
-            base::MakeRefCounted<MockQuotaManagerProxy>(nullptr, nullptr)),
+            base::MakeRefCounted<storage::MockQuotaManagerProxy>(nullptr,
+                                                                 nullptr)),
         context_(base::MakeRefCounted<IndexedDBContextImpl>(
             CreateAndReturnTempDir(&temp_dir_),
             /*special_storage_policy=*/special_storage_policy_.get(),
@@ -155,8 +156,8 @@ class IndexedDBTest : public testing::Test {
 
  protected:
   IndexedDBContextImpl* context() const { return context_.get(); }
-  scoped_refptr<MockSpecialStoragePolicy> special_storage_policy_;
-  scoped_refptr<MockQuotaManagerProxy> quota_manager_proxy_;
+  scoped_refptr<storage::MockSpecialStoragePolicy> special_storage_policy_;
+  scoped_refptr<storage::MockQuotaManagerProxy> quota_manager_proxy_;
 
  private:
   BrowserTaskEnvironment task_environment_;

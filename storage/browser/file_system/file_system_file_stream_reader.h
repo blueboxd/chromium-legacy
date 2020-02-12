@@ -24,10 +24,6 @@ namespace base {
 class FilePath;
 }
 
-namespace content {
-class FileSystemFileStreamReaderTest;
-}
-
 namespace storage {
 
 class FileSystemContext;
@@ -38,7 +34,7 @@ class FileSystemContext;
 // on FileSystemOperation::GetSnapshotFile() which may force downloading
 // the entire contents for remote files.
 class COMPONENT_EXPORT(STORAGE_BROWSER) FileSystemFileStreamReader
-    : public storage::FileStreamReader {
+    : public FileStreamReader {
  public:
   ~FileSystemFileStreamReader() override;
 
@@ -49,8 +45,8 @@ class COMPONENT_EXPORT(STORAGE_BROWSER) FileSystemFileStreamReader
   int64_t GetLength(net::Int64CompletionOnceCallback callback) override;
 
  private:
-  friend class storage::FileStreamReader;
-  friend class content::FileSystemFileStreamReaderTest;
+  friend class FileStreamReader;
+  friend class FileSystemFileStreamReaderTest;
 
   FileSystemFileStreamReader(FileSystemContext* file_system_context,
                              const FileSystemURL& url,
@@ -58,11 +54,10 @@ class COMPONENT_EXPORT(STORAGE_BROWSER) FileSystemFileStreamReader
                              const base::Time& expected_modification_time);
 
   int CreateSnapshot();
-  void DidCreateSnapshot(
-      base::File::Error file_error,
-      const base::File::Info& file_info,
-      const base::FilePath& platform_path,
-      scoped_refptr<storage::ShareableFileReference> file_ref);
+  void DidCreateSnapshot(base::File::Error file_error,
+                         const base::File::Info& file_info,
+                         const base::FilePath& platform_path,
+                         scoped_refptr<ShareableFileReference> file_ref);
   void OnRead(int rv);
   void OnGetLength(int64_t rv);
 
@@ -74,8 +69,8 @@ class COMPONENT_EXPORT(STORAGE_BROWSER) FileSystemFileStreamReader
   FileSystemURL url_;
   const int64_t initial_offset_;
   const base::Time expected_modification_time_;
-  std::unique_ptr<storage::FileStreamReader> file_reader_;
-  scoped_refptr<storage::ShareableFileReference> snapshot_ref_;
+  std::unique_ptr<FileStreamReader> file_reader_;
+  scoped_refptr<ShareableFileReference> snapshot_ref_;
   bool has_pending_create_snapshot_;
   base::WeakPtrFactory<FileSystemFileStreamReader> weak_factory_{this};
 

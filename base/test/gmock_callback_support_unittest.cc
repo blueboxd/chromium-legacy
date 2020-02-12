@@ -124,5 +124,55 @@ TEST(GmockCallbackSupportTest, RunOnceCallback0) {
   EXPECT_TRUE(dst);
 }
 
+TEST(GmockCallbackSupportTest, RunClosureValue) {
+  MockFunction<void()> check;
+  bool dst = false;
+  EXPECT_CALL(check, Call())
+      .WillOnce(RunClosure(base::BindRepeating(&SetBool, true, &dst)));
+  check.Call();
+  EXPECT_TRUE(dst);
+}
+
+TEST(GmockCallbackSupportTest, RunClosureValueWithArgs) {
+  MockFunction<void(bool, int)> check;
+  bool dst = false;
+  EXPECT_CALL(check, Call(true, 42))
+      .WillOnce(RunClosure(base::BindRepeating(&SetBool, true, &dst)));
+  check.Call(true, 42);
+  EXPECT_TRUE(dst);
+}
+
+TEST(GmockCallbackSupportTest, RunOnceClosureValue) {
+  MockFunction<void()> check;
+  bool dst = false;
+  EXPECT_CALL(check, Call())
+      .WillOnce(RunOnceClosure(base::BindOnce(&SetBool, true, &dst)));
+  check.Call();
+  EXPECT_TRUE(dst);
+}
+
+TEST(GmockCallbackSupportTest, RunOnceClosureValueWithArgs) {
+  MockFunction<void(bool, int)> check;
+  bool dst = false;
+  EXPECT_CALL(check, Call(true, 42))
+      .WillOnce(RunOnceClosure(base::BindOnce(&SetBool, true, &dst)));
+  check.Call(true, 42);
+  EXPECT_TRUE(dst);
+}
+
+TEST(GmockCallbackSupportTest, RunOnceClosureValueMultipleCall) {
+  MockFunction<void()> check;
+  bool dst = false;
+  EXPECT_CALL(check, Call())
+      .WillRepeatedly(RunOnceClosure(base::BindOnce(&SetBool, true, &dst)));
+  check.Call();
+  EXPECT_TRUE(dst);
+
+  // Invoking the RunOnceClosure action more than once will trigger a
+  // CHECK-failure.
+  dst = false;
+  EXPECT_DEATH_IF_SUPPORTED(check.Call(), "");
+}
+
 }  // namespace test
 }  // namespace base

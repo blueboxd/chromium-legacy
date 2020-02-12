@@ -163,7 +163,7 @@ class ExtensionAction {
   // Get the badge text displayed for a tab, calculated based on both
   // |badge_text_| and |dnr_action_count_|. Returns in order of priority:
   // - GetExplicitlySetBadgeText(tab_id) if it exists for the |tab_id|
-  // - GetDNRActionCount(tab_id)
+  // - GetDNRActionCount(tab_id) if there is at least one action for this tab
   // - The default badge text, if set, otherwise: an empty string.
   std::string GetDisplayBadgeText(int tab_id) const;
 

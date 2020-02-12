@@ -37,7 +37,7 @@ The three public file system types are:
 ### External File Systems
 
 External File Systems are only used by Chrome OS. A lot of the code for this
-(besides `storage::ExternalMountPoints` itself) lives in
+(besides `ExternalMountPoints` itself) lives in
 [`//chrome/browser/chromeos/fileapi/`](../../../chrome/browser/chromeos/fileapi/).
 
 TODO(mek): Document this more.
@@ -62,45 +62,45 @@ and the new [Native File System API](http://wicg.github.io/native-file-system/).
 
 # Interesting Classes
 
-## `storage::FileSystemContext`
+## `FileSystemContext`
 
 This is the main entry point for any interaction with the file system
 subsystem. It is created (via `content::CreateFileSystemContext`) and owned
 by each Storage Partition.
 
 It owns:
- - Via `scoped_refptr` a optional `storage::ExternalMountPoints` instance to
+ - Via `scoped_refptr` a optional `ExternalMountPoints` instance to
    deal with `BrowserContext` specific external file systems. Currently always
    `nullptr`, except on Chrome OS.
 
- - A `storage::SandboxFileSystemBackendDelegate`. This is used by both the
+ - A `SandboxFileSystemBackendDelegate`. This is used by both the
    backend for the regular sandboxed file system, and for the chrome extensions
    specific "sync" file system.
 
- - Via `scoped_refptr` a bunch of `storage::FileSystemBackend` instances. These
+ - Via `scoped_refptr` a bunch of `FileSystemBackend` instances. These
    are either created by the `FileSystemContext` itself (for sandbox, plugin
    private, and isolated file systems) or passed in to constructor after
    requesting the additional backends from the content embedder via
    `ContentBrowserClient::GetAdditionalFileSystemBackends`.
 
 And further more it references:
- - An ordered set of URL crackers (`storage::MountPoints` instances). This
+ - An ordered set of URL crackers (`MountPoints` instances). This
    consists of the optional browser context specific `ExternalMountPoints`,
    a global singleton `ExternalMountPoints` and finally a global singleton
    `IsolatedContext`.
 
-## `storage::SandboxFileSystemBackend`
+## `SandboxFileSystemBackend`
 
 The main entry point of support for sandboxed file systems. This class forwards
 all operations to the `FileSystemContext` owned `SandboxFileSystemBackendDelegate`
 instance, which does the actual work.
 
-### `storage::SandboxFileSystemBackendDelegate`
+### `SandboxFileSystemBackendDelegate`
 
 The actual main entry point for sandboxed file systems, but as mentioned also
 used for the Chrome Extensions specific sync file system.
 
-This class delegates operating on files to a `storage::ObfuscatedFileUtil`
+This class delegates operating on files to a `ObfuscatedFileUtil`
 instance it owns (wrapped in a `AsyncFileUtilAdapter`).
 
 It is however responsible for interacting with the quota system. In order to do that
@@ -109,7 +109,7 @@ system types using a `FileSystemUsageCache` instance. This basically adds a flat
 in every directory for a origin/file system type containing the total disk usage of
 that directory, and some extra meta data.
 
-### `storage::ObfuscatedFileUtil`
+### `ObfuscatedFileUtil`
 
 This class uses several leveldb databases to translate virtual file paths given
 by arbitrary untrusted apps to obfuscated file paths that are supported by the underlying
@@ -129,7 +129,7 @@ actual file operations. There are two possible implementations of this delegate,
 one that stores all the files in memory (for incognito mode) and one that stores
 the files on disk inside the profile directory.
 
-## `storage::IsolatedContext`
+## `IsolatedContext`
 
 This class keeps track of all currently registered Isolate File Systems. Isolated
 file systems are identified by the hex encoding of 16 random bytes of data.

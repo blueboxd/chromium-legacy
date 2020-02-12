@@ -38,7 +38,7 @@ class FileStreamForwarderTest : public testing::Test {
     ASSERT_TRUE(dest_file.IsValid());
     dest_fd_ = base::ScopedFD(dest_file.TakePlatformFile());
 
-    context_ = content::CreateFileSystemContextForTesting(nullptr,
+    context_ = storage::CreateFileSystemContextForTesting(nullptr,
                                                           temp_dir_.GetPath());
 
     // Prepare a file system.
@@ -63,7 +63,7 @@ class FileStreamForwarderTest : public testing::Test {
     test_data_ = base::RandBytesAsString(kTestDataSize);
 
     ASSERT_EQ(base::File::FILE_OK,
-              content::AsyncFileTestHelper::CreateFileWithData(
+              storage::AsyncFileTestHelper::CreateFileWithData(
                   context_.get(), url_, test_data_.data(), test_data_.size()));
   }
 

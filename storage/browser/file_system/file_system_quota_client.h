@@ -31,12 +31,12 @@ class FileSystemContext;
 // All of the public methods of this class are called by the quota manager
 // (except for the constructor/destructor).
 class COMPONENT_EXPORT(STORAGE_BROWSER) FileSystemQuotaClient
-    : public storage::QuotaClient {
+    : public QuotaClient {
  public:
   FileSystemQuotaClient(FileSystemContext* file_system_context);
 
   // QuotaClient methods.
-  storage::QuotaClient::ID id() const override;
+  QuotaClient::ID id() const override;
   void OnQuotaManagerDestroyed() override {}
   void GetOriginUsage(const url::Origin& origin,
                       blink::mojom::StorageType type,

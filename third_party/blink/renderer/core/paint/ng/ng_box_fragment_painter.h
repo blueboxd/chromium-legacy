@@ -153,6 +153,7 @@ class NGBoxFragmentPainter : public BoxPainterBase {
                     const NGInlineCursor& cursor,
                     const PaintInfo& paint_info,
                     const PhysicalOffset& paint_offset);
+  void PaintFloatingItems(const NGFragmentItems& items, const PaintInfo&);
   void PaintFloatingChildren(const NGPhysicalContainerFragment&,
                              const PaintInfo& paint_info,
                              const PaintInfo& float_paint_info);
@@ -233,6 +234,9 @@ class NGBoxFragmentPainter : public BoxPainterBase {
   bool HitTestFloatingChildren(const HitTestContext& hit_test,
                                const NGPhysicalContainerFragment& container,
                                const PhysicalOffset& accumulated_offset);
+  bool HitTestFloatingChildItems(const HitTestContext& hit_test,
+                                 const NGInlineCursor& children,
+                                 const PhysicalOffset& accumulated_offset);
 
   // Hit tests a box fragment, which is a child of either |box_fragment_|, or
   // one of its child line box fragments.
@@ -312,6 +316,8 @@ inline NGBoxFragmentPainter::NGBoxFragmentPainter(
       DCHECK_EQ(&paint_fragment->PhysicalFragment(), &box);
     if (box_item)
       DCHECK_EQ(box_item->BoxFragment(), &box);
+  } else if (box.IsBlockLevel()) {
+    // We may not have |paint_fragment_| nor |box_item_|.
   } else if (box.ChildrenInline()) {
     // If no children, there maybe or may not be NGPaintFragment.
     // TODO(kojii): To be investigated if this correct or should be fixed.

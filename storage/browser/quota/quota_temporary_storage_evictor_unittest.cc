@@ -21,10 +21,9 @@
 #include "storage/browser/test/mock_storage_client.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
-using storage::QuotaTemporaryStorageEvictor;
 using blink::mojom::StorageType;
 
-namespace content {
+namespace storage {
 
 class QuotaTemporaryStorageEvictorTest;
 
@@ -35,7 +34,7 @@ url::Origin ToOrigin(const std::string& url) {
   return url::Origin::Create(GURL(url));
 }
 
-class MockQuotaEvictionHandler : public storage::QuotaEvictionHandler {
+class MockQuotaEvictionHandler : public QuotaEvictionHandler {
  public:
   explicit MockQuotaEvictionHandler(QuotaTemporaryStorageEvictorTest* test)
       : available_space_(0),
@@ -44,7 +43,7 @@ class MockQuotaEvictionHandler : public storage::QuotaEvictionHandler {
 
   void EvictOriginData(const url::Origin& origin,
                        StorageType type,
-                       storage::StatusCallback callback) override {
+                       StatusCallback callback) override {
     if (error_on_evict_origin_data_) {
       std::move(callback).Run(
           blink::mojom::QuotaStatusCode::kErrorInvalidModification);
@@ -59,7 +58,7 @@ class MockQuotaEvictionHandler : public storage::QuotaEvictionHandler {
   void GetEvictionRoundInfo(EvictionRoundInfoCallback callback) override {
     if (error_on_get_usage_and_quota_) {
       std::move(callback).Run(blink::mojom::QuotaStatusCode::kErrorAbort,
-                              storage::QuotaSettings(), 0, 0, 0, false);
+                              QuotaSettings(), 0, 0, 0, false);
       return;
     }
     if (!task_for_get_usage_and_quota_.is_null())
@@ -71,7 +70,7 @@ class MockQuotaEvictionHandler : public storage::QuotaEvictionHandler {
 
   void GetEvictionOrigin(StorageType type,
                          int64_t global_quota,
-                         storage::GetOriginCallback callback) override {
+                         GetOriginCallback callback) override {
     if (origin_order_.empty())
       std::move(callback).Run(base::nullopt);
     else
@@ -85,7 +84,7 @@ class MockQuotaEvictionHandler : public storage::QuotaEvictionHandler {
     return total_usage;
   }
 
-  const storage::QuotaSettings& settings() const { return settings_; }
+  const QuotaSettings& settings() const { return settings_; }
   void SetPoolSize(int64_t pool_size) {
     settings_.pool_size = pool_size;
     settings_.per_host_quota = pool_size / 5;
@@ -136,7 +135,7 @@ class MockQuotaEvictionHandler : public storage::QuotaEvictionHandler {
     return origin_usage;
   }
 
-  storage::QuotaSettings settings_;
+  QuotaSettings settings_;
   int64_t available_space_;
   std::list<url::Origin> origin_order_;
   std::map<url::Origin, int64_t> origins_;
@@ -396,7 +395,7 @@ TEST_F(QuotaTemporaryStorageEvictorTest, DiskSpaceEvictionTest) {
   EXPECT_EQ(0, statistics().num_errors_on_getting_usage_and_quota);
   EXPECT_EQ(2, statistics().num_evicted_origins);
   EXPECT_EQ(1, statistics().num_eviction_rounds);
-  EXPECT_EQ(0, statistics().num_skipped_eviction_rounds); // FIXME?
+  EXPECT_EQ(0, statistics().num_skipped_eviction_rounds);  // FIXME?
 }
 
-}  // namespace content
+}  // namespace storage

@@ -169,8 +169,8 @@ class IndexedDBDispatcherHostTest : public testing::Test {
   IndexedDBDispatcherHostTest()
       : task_environment_(BrowserTaskEnvironment::IO_MAINLOOP),
         special_storage_policy_(
-            base::MakeRefCounted<MockSpecialStoragePolicy>()),
-        quota_manager_(base::MakeRefCounted<MockQuotaManager>(
+            base::MakeRefCounted<storage::MockSpecialStoragePolicy>()),
+        quota_manager_(base::MakeRefCounted<storage::MockQuotaManager>(
             false /*is_incognito*/,
             browser_context_.GetPath(),
             base::CreateSingleThreadTaskRunner({BrowserThread::IO}),
@@ -227,8 +227,8 @@ class IndexedDBDispatcherHostTest : public testing::Test {
   TestBrowserContext browser_context_;
 
   base::ScopedTempDir temp_dir_;
-  scoped_refptr<MockSpecialStoragePolicy> special_storage_policy_;
-  scoped_refptr<MockQuotaManager> quota_manager_;
+  scoped_refptr<storage::MockSpecialStoragePolicy> special_storage_policy_;
+  scoped_refptr<storage::MockQuotaManager> quota_manager_;
   scoped_refptr<IndexedDBContextImpl> context_impl_;
   std::unique_ptr<IndexedDBDispatcherHost, base::OnTaskRunnerDeleter> host_;
   mojo::Remote<blink::mojom::IDBFactory> idb_mojo_factory_;

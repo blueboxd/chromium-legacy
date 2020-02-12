@@ -64,6 +64,7 @@ Polymer({
      */
     hideCrostiniUninstall_: {
       type: Boolean,
+      computed: 'or_(installerShowing_, upgraderDialogShowing_)',
     },
 
     /**
@@ -88,6 +89,32 @@ Polymer({
         return loadTimeData.getBoolean('showCrostiniDiskResize');
       },
     },
+
+    /*
+     * Whether the installer is showing.
+     * @private {boolean}
+     */
+    installerShowing_: {
+      type: Boolean,
+    },
+
+    /**
+     * Whether the upgrader dialog is showing.
+     * @private {boolean}
+     */
+    upgraderDialogShowing_: {
+      type: Boolean,
+    },
+
+    /**
+     * Whether the button to launch the Crostini container upgrade flow should
+     * be disabled.
+     * @private {boolean}
+     */
+    disableUpgradeButton_: {
+      type: Boolean,
+      computed: 'or_(installerShowing_, upgraderDialogShowing_)',
+    }
   },
 
   /** settings.RouteOriginBehavior override */
@@ -99,12 +126,16 @@ Polymer({
   ],
 
   attached() {
-    const callback = (status) => {
-      this.hideCrostiniUninstall_ = status;
-    };
-    this.addWebUIListener('crostini-installer-status-changed', callback);
+    this.addWebUIListener('crostini-installer-status-changed', (status) => {
+      this.installerShowing_ = status;
+    });
+    this.addWebUIListener('crostini-upgrader-status-changed', (status) => {
+      this.upgraderDialogShowing_ = status;
+    });
     settings.CrostiniBrowserProxyImpl.getInstance()
         .requestCrostiniInstallerStatus();
+    settings.CrostiniBrowserProxyImpl.getInstance()
+        .requestCrostiniUpgraderDialogStatus();
   },
 
   ready() {
@@ -186,8 +217,23 @@ Polymer({
         settings.routes.CROSTINI_PORT_FORWARDING);
   },
 
-  /** @private */
-  and_(a, b) {
+  /**
+   * @private
+   * @param {boolean} a
+   * @param {boolean} b
+   * @return {boolean}
+   */
+  and_: function(a, b) {
     return a && b;
+  },
+
+  /**
+   * @private
+   * @param {boolean} a
+   * @param {boolean} b
+   * @return {boolean}
+   */
+  or_: function(a, b) {
+    return a || b;
   },
 });

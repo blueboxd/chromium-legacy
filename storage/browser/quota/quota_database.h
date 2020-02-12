@@ -22,10 +22,6 @@
 #include "third_party/blink/public/mojom/quota/quota_types.mojom-forward.h"
 #include "url/origin.h"
 
-namespace content {
-class QuotaDatabaseTest;
-}
-
 namespace sql {
 class Database;
 class MetaTable;
@@ -218,7 +214,7 @@ class COMPONENT_EXPORT(STORAGE_BROWSER) QuotaDatabase {
 
   base::OneShotTimer timer_;
 
-  friend class content::QuotaDatabaseTest;
+  friend class QuotaDatabaseTest;
   friend class QuotaManager;
 
   static const TableSchema kTables[];

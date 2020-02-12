@@ -131,7 +131,8 @@ TEST_F(ChildProcessTaskPortProviderTest, ChildLifecycle) {
   EXPECT_CALL(child_process, GetTaskPort(_))
       .WillOnce(WithArgs<0>(
           [&send_right](mojom::ChildProcess::GetTaskPortCallback callback) {
-            std::move(callback).Run(mojo::WrapMachPort(send_right.get()));
+            std::move(callback).Run(mojo::PlatformHandle(
+                base::mac::RetainMachSendRight(send_right.get())));
           }));
 
   provider()->OnChildProcessLaunched(99, &child_process);
@@ -177,8 +178,8 @@ TEST_F(ChildProcessTaskPortProviderTest, DeadTaskPort) {
       .WillOnce(
           WithArgs<0>([&task_runner, &receive_right, &send_right](
                           mojom::ChildProcess::GetTaskPortCallback callback) {
-            mojo::ScopedHandle mach_handle =
-                mojo::WrapMachPort(send_right.get());
+            mojo::PlatformHandle mach_handle(
+                base::mac::RetainMachSendRight(send_right.get()));
 
             // Destroy the receive right.
             task_runner->PostTask(
@@ -206,8 +207,10 @@ TEST_F(ChildProcessTaskPortProviderTest, DeadTaskPort) {
                           mojom::ChildProcess::GetTaskPortCallback callback) {
             task_runner->PostTask(
                 FROM_HERE,
-                base::BindOnce(std::move(callback),
-                               mojo::WrapMachPort(send_right2.get())));
+                base::BindOnce(
+                    std::move(callback),
+                    mojo::PlatformHandle(
+                        base::mac::RetainMachSendRight(send_right2.get()))));
           }));
 
   provider()->OnChildProcessLaunched(123, &child_contol2);
@@ -246,7 +249,8 @@ TEST_F(ChildProcessTaskPortProviderTest, ReplacePort) {
       .Times(2)
       .WillRepeatedly(WithArgs<0>(
           [&receive_right](mojom::ChildProcess::GetTaskPortCallback callback) {
-            std::move(callback).Run(mojo::WrapMachPort(receive_right.get()));
+            std::move(callback).Run(mojo::PlatformHandle(
+                base::mac::RetainMachSendRight(receive_right.get())));
           }));
 
   provider()->OnChildProcessLaunched(42, &child_process);
@@ -276,7 +280,8 @@ TEST_F(ChildProcessTaskPortProviderTest, ReplacePort) {
   EXPECT_CALL(child_process2, GetTaskPort(_))
       .WillOnce(
           [&send_right2](mojom::ChildProcess::GetTaskPortCallback callback) {
-            std::move(callback).Run(mojo::WrapMachPort(send_right2.get()));
+            std::move(callback).Run(mojo::PlatformHandle(
+                base::mac::RetainMachSendRight(send_right2.get())));
           });
 
   provider()->OnChildProcessLaunched(42, &child_process2);

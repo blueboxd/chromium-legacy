@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CONTENT_BROWSER_FILEAPI_MOCK_FILE_UPDATE_OBSERVER_H_
-#define CONTENT_BROWSER_FILEAPI_MOCK_FILE_UPDATE_OBSERVER_H_
+#ifndef STORAGE_BROWSER_TEST_MOCK_FILE_UPDATE_OBSERVER_H_
+#define STORAGE_BROWSER_TEST_MOCK_FILE_UPDATE_OBSERVER_H_
 
 #include <stdint.h>
 
@@ -49,4 +49,4 @@ class MockFileUpdateObserver : public FileUpdateObserver {
 
 }  // namespace storage
 
-#endif  // CONTENT_BROWSER_FILEAPI_MOCK_FILE_UPDATE_OBSERVER_H_
+#endif  // STORAGE_BROWSER_TEST_MOCK_FILE_UPDATE_OBSERVER_H_

@@ -140,7 +140,7 @@ NGInlineCursor NGAbstractInlineTextBox::GetCursor() const {
     cursor.MoveTo(*fragment_item_);
   else
     cursor.MoveTo(*fragment_);
-  DCHECK(!cursor.CurrentLayoutObject()->NeedsLayout());
+  DCHECK(!cursor.Current().GetLayoutObject()->NeedsLayout());
   return cursor;
 }
 
@@ -178,14 +178,15 @@ bool NGAbstractInlineTextBox::NeedsTrailingSpace() const {
     return false;
   if (text_content[end_offset] != ' ')
     return false;
-  const NGInlineBreakToken& break_token = line_box.CurrentInlineBreakToken();
+  const NGInlineBreakToken* break_token = line_box.Current().InlineBreakToken();
+  DCHECK(break_token);
   // TODO(yosin): We should support OOF fragments between |fragment_| and
   // break token.
-  if (break_token.TextOffset() != end_offset + 1)
+  if (break_token->TextOffset() != end_offset + 1)
     return false;
   // Check a character in text content after |fragment_| comes from same
   // layout text of |fragment_|.
-  const LayoutObject* const layout_object = cursor.CurrentLayoutObject();
+  const LayoutObject* const layout_object = cursor.Current().GetLayoutObject();
   const NGOffsetMapping* mapping = NGOffsetMapping::GetFor(layout_object);
   // TODO(kojii): There's not much we can do for dirty-tree. crbug.com/946004
   if (!mapping)
@@ -205,7 +206,7 @@ NGAbstractInlineTextBox::NextInlineTextBox() const {
   if (!cursor)
     return nullptr;
   NGInlineCursor next;
-  next.MoveTo(*cursor.CurrentLayoutObject());
+  next.MoveTo(*cursor.Current().GetLayoutObject());
   while (next != cursor)
     next.MoveToNextForSameLayoutObject();
   next.MoveToNextForSameLayoutObject();
@@ -302,7 +303,7 @@ bool NGAbstractInlineTextBox::IsFirst() const {
   if (!cursor)
     return true;
   NGInlineCursor first_fragment;
-  first_fragment.MoveTo(*cursor.CurrentLayoutObject());
+  first_fragment.MoveTo(*cursor.Current().GetLayoutObject());
   return cursor == first_fragment;
 }
 
@@ -311,7 +312,7 @@ bool NGAbstractInlineTextBox::IsLast() const {
   if (!cursor)
     return true;
   NGInlineCursor last_fragment;
-  last_fragment.MoveTo(*cursor.CurrentLayoutObject());
+  last_fragment.MoveTo(*cursor.Current().GetLayoutObject());
   last_fragment.MoveToLastForSameLayoutObject();
   return cursor == last_fragment;
 }
@@ -322,7 +323,7 @@ scoped_refptr<AbstractInlineTextBox> NGAbstractInlineTextBox::NextOnLine()
   if (!cursor)
     return nullptr;
   for (cursor.MoveToNext(); cursor; cursor.MoveToNext()) {
-    if (cursor.CurrentLayoutObject()->IsText())
+    if (cursor.Current().GetLayoutObject()->IsText())
       return GetOrCreate(cursor);
   }
   return nullptr;
@@ -334,7 +335,7 @@ scoped_refptr<AbstractInlineTextBox> NGAbstractInlineTextBox::PreviousOnLine()
   if (!cursor)
     return nullptr;
   for (cursor.MoveToPrevious(); cursor; cursor.MoveToPrevious()) {
-    if (cursor.CurrentLayoutObject()->IsText())
+    if (cursor.Current().GetLayoutObject()->IsText())
       return GetOrCreate(cursor);
   }
   return nullptr;

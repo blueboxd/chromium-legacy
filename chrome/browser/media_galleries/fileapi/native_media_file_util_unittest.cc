@@ -14,6 +14,7 @@
 #include "base/files/file_util.h"
 #include "base/files/scoped_temp_dir.h"
 #include "base/format_macros.h"
+#include "base/memory/scoped_refptr.h"
 #include "base/stl_util.h"
 #include "base/strings/stringprintf.h"
 #include "base/task/post_task.h"
@@ -55,10 +56,10 @@ struct FilteringTestCase {
 
 const FilteringTestCase kFilteringTestCases[] = {
     // Directory should always be visible.
-    {FPL("hoge"), true, true, false, NULL},
-    {FPL("fuga.jpg"), true, true, false, NULL},
-    {FPL("piyo.txt"), true, true, false, NULL},
-    {FPL("moga.cod"), true, true, false, NULL},
+    {FPL("hoge"), true, true, false, nullptr},
+    {FPL("fuga.jpg"), true, true, false, nullptr},
+    {FPL("piyo.txt"), true, true, false, nullptr},
+    {FPL("moga.cod"), true, true, false, nullptr},
 
     // File should be visible if it's a supported media file.
     // File without extension.
@@ -108,7 +109,7 @@ void PopulateDirectoryWithTestCases(const base::FilePath& dir,
     if (test_cases[i].is_directory) {
       ASSERT_TRUE(base::CreateDirectory(path));
     } else {
-      ASSERT_TRUE(test_cases[i].content != NULL);
+      ASSERT_TRUE(test_cases[i].content != nullptr);
       int len = strlen(test_cases[i].content);
       ASSERT_EQ(len, base::WriteFile(path, test_cases[i].content, len));
     }
@@ -119,30 +120,31 @@ void PopulateDirectoryWithTestCases(const base::FilePath& dir,
 
 class NativeMediaFileUtilTest : public testing::Test {
  public:
-  NativeMediaFileUtilTest() {}
+  NativeMediaFileUtilTest() = default;
 
   void SetUp() override {
     ASSERT_TRUE(data_dir_.CreateUniqueTempDir());
     ASSERT_TRUE(base::CreateDirectory(root_path()));
 
-    scoped_refptr<storage::SpecialStoragePolicy> storage_policy =
-        new content::MockSpecialStoragePolicy();
+    auto storage_policy =
+        base::MakeRefCounted<storage::MockSpecialStoragePolicy>();
 
     std::vector<std::unique_ptr<storage::FileSystemBackend>>
         additional_providers;
     additional_providers.push_back(
         std::make_unique<MediaFileSystemBackend>(data_dir_.GetPath()));
 
-    file_system_context_ = new storage::FileSystemContext(
+    file_system_context_ = base::MakeRefCounted<storage::FileSystemContext>(
         base::CreateSingleThreadTaskRunner({content::BrowserThread::IO}).get(),
         base::SequencedTaskRunnerHandle::Get().get(),
         storage::ExternalMountPoints::CreateRefCounted().get(),
-        storage_policy.get(), NULL, std::move(additional_providers),
+        storage_policy.get(), nullptr, std::move(additional_providers),
         std::vector<storage::URLRequestAutoMountHandler>(), data_dir_.GetPath(),
-        content::CreateAllowFileAccessOptions());
+        storage::CreateAllowFileAccessOptions());
 
     filesystem_ = isolated_context()->RegisterFileSystemForPath(
-        storage::kFileSystemTypeNativeMedia, std::string(), root_path(), NULL);
+        storage::kFileSystemTypeNativeMedia, std::string(), root_path(),
+        nullptr);
     filesystem_id_ = filesystem_.id();
   }
 

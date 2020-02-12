@@ -5,21 +5,13 @@
 #include "skia/ext/skia_histogram.h"
 
 #include <type_traits>
-#include "base/metrics/histogram_macros.h"
-
-// In order to prevent Chrome headers from leaking into Skia, we use a raw
-// intptr_t in the header, rather than the base::subtle::AtomicWord. Make sure
-// this is a valid assumption.
-static_assert(std::is_same<intptr_t, base::subtle::AtomicWord>::value,
-              "To allow for header decoupling, skia_histogram.h uses intptr_t "
-              "instead of a base::subtle::AtomicWord. These must be the same "
-              "type");
+#include "base/metrics/histogram_macros_internal.h"
 
 namespace skia {
 
 // Wrapper around HISTOGRAM_POINTER_USE - mimics UMA_HISTOGRAM_BOOLEAN but
 // allows for an external atomic_histogram_pointer.
-void HistogramBoolean(intptr_t* atomic_histogram_pointer,
+void HistogramBoolean(std::atomic_uintptr_t* atomic_histogram_pointer,
                       const char* name,
                       bool sample) {
   HISTOGRAM_POINTER_USE(
@@ -30,7 +22,7 @@ void HistogramBoolean(intptr_t* atomic_histogram_pointer,
 
 // Wrapper around HISTOGRAM_POINTER_USE - mimics UMA_HISTOGRAM_ENUMERATION but
 // allows for an external atomic_histogram_pointer.
-void HistogramEnumeration(intptr_t* atomic_histogram_pointer,
+void HistogramEnumeration(std::atomic_uintptr_t* atomic_histogram_pointer,
                           const char* name,
                           int sample,
                           int boundary_value) {

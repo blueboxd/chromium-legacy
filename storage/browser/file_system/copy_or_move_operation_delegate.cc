@@ -131,7 +131,7 @@ class SnapshotCopyOrMoveImpl
       base::File::Error error,
       const base::File::Info& file_info,
       const base::FilePath& platform_path,
-      scoped_refptr<storage::ShareableFileReference> file_ref) {
+      scoped_refptr<ShareableFileReference> file_ref) {
     if (cancel_requested_)
       error = base::File::FILE_ERROR_ABORT;
 
@@ -162,7 +162,7 @@ class SnapshotCopyOrMoveImpl
   void RunAfterPreWriteValidation(
       const base::FilePath& platform_path,
       const base::File::Info& file_info,
-      scoped_refptr<storage::ShareableFileReference> file_ref,
+      scoped_refptr<ShareableFileReference> file_ref,
       CopyOrMoveOperationDelegate::StatusCallback callback,
       base::File::Error error) {
     if (cancel_requested_)
@@ -184,7 +184,7 @@ class SnapshotCopyOrMoveImpl
 
   void RunAfterCopyInForeignFile(
       const base::File::Info& file_info,
-      scoped_refptr<storage::ShareableFileReference> file_ref,
+      scoped_refptr<ShareableFileReference> file_ref,
       CopyOrMoveOperationDelegate::StatusCallback callback,
       base::File::Error error) {
     if (cancel_requested_)
@@ -311,7 +311,7 @@ class SnapshotCopyOrMoveImpl
       base::File::Error error,
       const base::File::Info& file_info,
       const base::FilePath& platform_path,
-      scoped_refptr<storage::ShareableFileReference> file_ref) {
+      scoped_refptr<ShareableFileReference> file_ref) {
     if (cancel_requested_)
       error = base::File::FILE_ERROR_ABORT;
 
@@ -334,7 +334,7 @@ class SnapshotCopyOrMoveImpl
   // |file_ref| is unused; it is passed here to make sure the reference is
   // alive until after post-write validation is complete.
   void DidPostWriteValidation(
-      scoped_refptr<storage::ShareableFileReference> file_ref,
+      scoped_refptr<ShareableFileReference> file_ref,
       CopyOrMoveOperationDelegate::StatusCallback callback,
       base::File::Error error) {
     std::move(callback).Run(error);
@@ -374,7 +374,7 @@ class StreamCopyOrMoveImpl
       const FileSystemURL& src_url,
       const FileSystemURL& dest_url,
       CopyOrMoveOperationDelegate::CopyOrMoveOption option,
-      std::unique_ptr<storage::FileStreamReader> reader,
+      std::unique_ptr<FileStreamReader> reader,
       std::unique_ptr<FileStreamWriter> writer,
       const FileSystemOperation::CopyFileProgressCallback&
           file_progress_callback)
@@ -577,7 +577,7 @@ class StreamCopyOrMoveImpl
   FileSystemURL src_url_;
   FileSystemURL dest_url_;
   CopyOrMoveOperationDelegate::CopyOrMoveOption option_;
-  std::unique_ptr<storage::FileStreamReader> reader_;
+  std::unique_ptr<FileStreamReader> reader_;
   std::unique_ptr<FileStreamWriter> writer_;
   FileSystemOperation::CopyFileProgressCallback file_progress_callback_;
   std::unique_ptr<CopyOrMoveOperationDelegate::StreamCopyHelper> copy_helper_;
@@ -589,9 +589,9 @@ class StreamCopyOrMoveImpl
 }  // namespace
 
 CopyOrMoveOperationDelegate::StreamCopyHelper::StreamCopyHelper(
-    std::unique_ptr<storage::FileStreamReader> reader,
+    std::unique_ptr<FileStreamReader> reader,
     std::unique_ptr<FileStreamWriter> writer,
-    storage::FlushPolicy flush_policy,
+    FlushPolicy flush_policy,
     int buffer_size,
     FileSystemOperation::CopyFileProgressCallback file_progress_callback,
     const base::TimeDelta& min_progress_callback_invocation_span)
@@ -645,7 +645,7 @@ void CopyOrMoveOperationDelegate::StreamCopyHelper::DidRead(int result) {
 
   if (result == 0) {
     // Here is the EOF.
-    if (flush_policy_ == storage::FlushPolicy::FLUSH_ON_COMPLETION)
+    if (flush_policy_ == FlushPolicy::FLUSH_ON_COMPLETION)
       Flush(true /* is_eof */);
     else
       std::move(completion_callback_).Run(base::File::FILE_OK);
@@ -696,7 +696,7 @@ void CopyOrMoveOperationDelegate::StreamCopyHelper::DidWrite(
     return;
   }
 
-  if (flush_policy_ == storage::FlushPolicy::FLUSH_ON_COMPLETION &&
+  if (flush_policy_ == FlushPolicy::FLUSH_ON_COMPLETION &&
       (num_copied_bytes_ - previous_flush_offset_) > kFlushIntervalInBytes) {
     Flush(false /* not is_eof */);
   } else {
@@ -814,9 +814,9 @@ void CopyOrMoveOperationDelegate::ProcessFile(const FileSystemURL& src_url,
     }
 
     if (!validator_factory) {
-      std::unique_ptr<storage::FileStreamReader> reader =
+      std::unique_ptr<FileStreamReader> reader =
           file_system_context()->CreateFileStreamReader(
-              src_url, 0 /* offset */, storage::kMaximumLength, base::Time());
+              src_url, 0 /* offset */, kMaximumLength, base::Time());
       std::unique_ptr<FileStreamWriter> writer =
           file_system_context()->CreateFileStreamWriter(dest_url, 0);
       if (reader && writer) {

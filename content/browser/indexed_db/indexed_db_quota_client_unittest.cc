@@ -13,6 +13,7 @@
 #include "base/files/file_util.h"
 #include "base/files/scoped_temp_dir.h"
 #include "base/macros.h"
+#include "base/memory/scoped_refptr.h"
 #include "base/run_loop.h"
 #include "base/test/bind_test_util.h"
 #include "base/threading/sequenced_task_runner_handle.h"
@@ -51,12 +52,12 @@ class IndexedDBQuotaClientTest : public testing::Test {
         usage_(0) {
     browser_context_.reset(new TestBrowserContext());
 
-    scoped_refptr<storage::QuotaManager> quota_manager =
-        new MockQuotaManager(false /*in_memory*/, browser_context_->GetPath(),
-                             base::ThreadTaskRunnerHandle::Get(),
-                             browser_context_->GetSpecialStoragePolicy());
+    auto quota_manager = base::MakeRefCounted<storage::MockQuotaManager>(
+        /*in_memory=*/false, browser_context_->GetPath(),
+        base::ThreadTaskRunnerHandle::Get(),
+        browser_context_->GetSpecialStoragePolicy());
 
-    idb_context_ = new IndexedDBContextImpl(
+    idb_context_ = base::MakeRefCounted<IndexedDBContextImpl>(
         browser_context_->GetPath(),
         browser_context_->GetSpecialStoragePolicy(), quota_manager->proxy(),
         base::DefaultClock::GetInstance(),

@@ -28,21 +28,15 @@
 #include "storage/browser/file_system/sandbox_file_system_backend_delegate.h"
 #include "storage/common/file_system/file_system_types.h"
 
-namespace content {
-class ObfuscatedFileUtilTest;
-class QuotaBackendImplTest;
-}  // namespace content
-
-namespace storage {
-class SpecialStoragePolicy;
-}
-
 class GURL;
 
 namespace storage {
 
 class FileSystemOperationContext;
+class ObfuscatedFileUtilTest;
+class QuotaBackendImplTest;
 class SandboxOriginDatabaseInterface;
+class SpecialStoragePolicy;
 
 // This file util stores directory information in LevelDB to obfuscate
 // and to neutralize virtual file paths given by arbitrary apps.
@@ -98,7 +92,7 @@ class COMPONENT_EXPORT(STORAGE_BROWSER) ObfuscatedFileUtil
   // for any known type exists the origin directory may get deleted when
   // one origin/type pair is deleted.
   //
-  ObfuscatedFileUtil(storage::SpecialStoragePolicy* special_storage_policy,
+  ObfuscatedFileUtil(SpecialStoragePolicy* special_storage_policy,
                      const base::FilePath& file_system_directory,
                      leveldb::Env* env_override,
                      GetTypeStringForURLCallback get_type_string_for_url,
@@ -148,12 +142,11 @@ class COMPONENT_EXPORT(STORAGE_BROWSER) ObfuscatedFileUtil
                                const FileSystemURL& url) override;
   base::File::Error DeleteDirectory(FileSystemOperationContext* context,
                                     const FileSystemURL& url) override;
-  storage::ScopedFile CreateSnapshotFile(
-      FileSystemOperationContext* context,
-      const FileSystemURL& url,
-      base::File::Error* error,
-      base::File::Info* file_info,
-      base::FilePath* platform_path) override;
+  ScopedFile CreateSnapshotFile(FileSystemOperationContext* context,
+                                const FileSystemURL& url,
+                                base::File::Error* error,
+                                base::File::Info* file_info,
+                                base::FilePath* platform_path) override;
 
   // Returns true if the directory |url| is empty.
   bool IsDirectoryEmpty(FileSystemOperationContext* context,
@@ -219,14 +212,14 @@ class COMPONENT_EXPORT(STORAGE_BROWSER) ObfuscatedFileUtil
   using FileInfo = SandboxDirectoryDatabase::FileInfo;
 
   friend class ObfuscatedFileEnumerator;
-  friend class content::ObfuscatedFileUtilTest;
-  friend class content::QuotaBackendImplTest;
+  friend class ObfuscatedFileUtilTest;
+  friend class QuotaBackendImplTest;
 
   // Helper method to create an obfuscated file util for regular
   // (temporary, persistent) file systems. Used only for testing.
   // Note: this is implemented in sandbox_file_system_backend_delegate.cc.
   static ObfuscatedFileUtil* CreateForTesting(
-      storage::SpecialStoragePolicy* special_storage_policy,
+      SpecialStoragePolicy* special_storage_policy,
       const base::FilePath& file_system_directory,
       leveldb::Env* env_override,
       bool is_incognito);
@@ -321,7 +314,7 @@ class COMPONENT_EXPORT(STORAGE_BROWSER) ObfuscatedFileUtil
 
   std::map<std::string, std::unique_ptr<SandboxDirectoryDatabase>> directories_;
   std::unique_ptr<SandboxOriginDatabaseInterface> origin_database_;
-  scoped_refptr<storage::SpecialStoragePolicy> special_storage_policy_;
+  scoped_refptr<SpecialStoragePolicy> special_storage_policy_;
   base::FilePath file_system_directory_;
   leveldb::Env* env_override_;
   bool is_incognito_;

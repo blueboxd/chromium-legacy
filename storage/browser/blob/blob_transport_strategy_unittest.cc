@@ -4,7 +4,11 @@
 
 #include "storage/browser/blob/blob_transport_strategy.h"
 
+#include <algorithm>
 #include <memory>
+#include <string>
+#include <utility>
+#include <vector>
 
 #include "base/bind.h"
 #include "base/files/file_util.h"
@@ -100,7 +104,7 @@ class BlobTransportStrategyTest : public testing::Test {
   base::test::TaskEnvironment task_environment_;
   scoped_refptr<base::SequencedTaskRunner> bytes_provider_runner_;
   base::Time mock_time_;
-  storage::BlobStorageLimits limits_;
+  BlobStorageLimits limits_;
 
   std::vector<std::string> bad_messages_;
 

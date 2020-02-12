@@ -72,6 +72,7 @@ class CORE_EXPORT NGPhysicalBoxFragment final
 
   bool HasSelfPaintingLayer() const;
   bool ChildrenInline() const { return children_inline_; }
+  bool IsBlockLevel() const { return is_block_level_; }
 
   PhysicalRect ScrollableOverflow() const;
   PhysicalRect ScrollableOverflowFromChildren() const;

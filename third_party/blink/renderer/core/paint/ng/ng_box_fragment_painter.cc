@@ -322,6 +322,15 @@ void NGBoxFragmentPainter::PaintInternal(const PaintInfo& paint_info) {
   PhysicalOffset paint_offset = paint_state.PaintOffset();
   PaintPhase original_phase = info.phase;
 
+  ScopedPaintTimingDetectorBlockPaintHook
+      scoped_paint_timing_detector_block_paint_hook;
+  if (original_phase == PaintPhase::kForeground &&
+      box_fragment_.GetLayoutObject()->IsBox()) {
+    scoped_paint_timing_detector_block_paint_hook.EmplaceIfNeeded(
+        ToLayoutBox(*box_fragment_.GetLayoutObject()),
+        paint_info.context.GetPaintController().CurrentPaintChunkProperties());
+  }
+
   if (original_phase == PaintPhase::kOutline) {
     info.phase = PaintPhase::kDescendantOutlinesOnly;
   } else if (ShouldPaintSelfBlockBackground(original_phase)) {
@@ -463,6 +472,8 @@ void NGBoxFragmentPainter::PaintObject(
           PaintInlineItems(paint_info.ForDescendants(), paint_offset,
                            PhysicalOffset(), &cursor);
         }
+      } else if (physical_box_fragment.IsBlockLevel()) {
+        PaintBlockChildren(paint_info);
       } else if (physical_box_fragment.ChildrenInline()) {
         DCHECK(!RuntimeEnabledFeatures::LayoutNGFragmentItemEnabled());
         DCHECK(paint_fragment_);
@@ -478,8 +489,6 @@ void NGBoxFragmentPainter::PaintObject(
           PaintInlineChildren(paint_fragment_->Children(), paint_info,
                               paint_offset);
         }
-      } else {
-        PaintBlockChildren(paint_info);
       }
     }
 
@@ -563,8 +572,7 @@ void NGBoxFragmentPainter::PaintBlockFlowContents(
 }
 
 void NGBoxFragmentPainter::PaintBlockChildren(const PaintInfo& paint_info) {
-  DCHECK(!box_fragment_.ChildrenInline());
-  DCHECK(!box_fragment_.GetLayoutObject()->ChildrenInline());
+  DCHECK(box_fragment_.IsBlockLevel());
   PaintInfo paint_info_for_descendants = paint_info.ForDescendants();
   for (const NGLink& child : box_fragment_.Children()) {
     const NGPhysicalFragment& child_fragment = *child;
@@ -583,22 +591,38 @@ void NGBoxFragmentPainter::PaintBlockChildren(const PaintInfo& paint_info) {
   }
 }
 
+void NGBoxFragmentPainter::PaintFloatingItems(const NGFragmentItems& items,
+                                              const PaintInfo& paint_info) {
+  for (const std::unique_ptr<NGFragmentItem>& item : items.Items()) {
+    const NGPhysicalBoxFragment* child_fragment = item->BoxFragment();
+    if (!child_fragment || child_fragment->HasSelfPaintingLayer() ||
+        !child_fragment->IsFloating())
+      continue;
+    // TODO(kojii): The float is outside of the inline formatting context and
+    // that it maybe another NG inline formatting context, NG block layout, or
+    // legacy. NGBoxFragmentPainter can handle only the first case. In order
+    // to cover more tests for other two cases, we always fallback to legacy,
+    // which will forward back to NGBoxFragmentPainter if the float is for
+    // NGBoxFragmentPainter. We can shortcut this for the first case when
+    // we're more stable.
+    ObjectPainter(*child_fragment->GetLayoutObject())
+        .PaintAllPhasesAtomically(paint_info);
+  }
+}
+
 void NGBoxFragmentPainter::PaintFloatingChildren(
     const NGPhysicalContainerFragment& container,
     const PaintInfo& paint_info,
     const PaintInfo& float_paint_info) {
-#if DCHECK_IS_ON()
-  // Floats are in the fragment tree, not in the fragment item list.
-  if (const NGPhysicalBoxFragment* box_fragment =
+  DCHECK(container.HasFloatingDescendantsForPaint());
+
+  if (const NGPhysicalBoxFragment* box =
           DynamicTo<NGPhysicalBoxFragment>(&container)) {
-    if (const NGFragmentItems* items = box_fragment->Items()) {
-      DCHECK(std::none_of(
-          items->Items().begin(), items->Items().end(), [](const auto& item) {
-            return item->BoxFragment() && item->BoxFragment()->IsFloating();
-          }));
+    if (const NGFragmentItems* items = box->Items()) {
+      PaintFloatingItems(*items, float_paint_info);
+      return;
     }
   }
-#endif
 
   for (const NGLink& child : container.Children()) {
     const NGPhysicalFragment& child_fragment = *child;
@@ -1955,17 +1979,17 @@ bool NGBoxFragmentPainter::HitTestChildren(
     return false;
   }
   if (items_) {
-    if (hit_test.action == kHitTestFloat) {
-      const NGPhysicalBoxFragment& fragment = PhysicalFragment();
-      return fragment.HasFloatingDescendantsForPaint() &&
-             HitTestFloatingChildren(hit_test, fragment, accumulated_offset);
-    }
-
     NGInlineCursor cursor(*items_);
     return HitTestChildren(hit_test, cursor, accumulated_offset);
   }
+  // Check descendants of this fragment because floats may be in the
+  // |NGFragmentItems| of the descendants.
+  if (hit_test.action == kHitTestFloat &&
+      box_fragment_.HasFloatingDescendantsForPaint() &&
+      RuntimeEnabledFeatures::LayoutNGFragmentItemEnabled()) {
+    return HitTestFloatingChildren(hit_test, box_fragment_, accumulated_offset);
+  }
   if (box_fragment_.CanTraverse()) {
-    DCHECK(!box_fragment_.ChildrenInline());
     if (hit_test.action == kHitTestFloat) {
       return box_fragment_.HasFloatingDescendantsForPaint() &&
              HitTestFloatingChildren(hit_test, box_fragment_,
@@ -2110,6 +2134,14 @@ bool NGBoxFragmentPainter::HitTestFloatingChildren(
     const PhysicalOffset& accumulated_offset) {
   DCHECK_EQ(hit_test.action, kHitTestFloat);
   DCHECK(container.HasFloatingDescendantsForPaint());
+
+  if (const auto* box = DynamicTo<NGPhysicalBoxFragment>(&container)) {
+    if (const NGFragmentItems* items = box->Items()) {
+      NGInlineCursor children(*items);
+      return HitTestFloatingChildItems(hit_test, children, accumulated_offset);
+    }
+  }
+
   auto children = container.Children();
   for (const NGLink& child : base::Reversed(children)) {
     const NGPhysicalFragment& child_fragment = *child.fragment;
@@ -2154,6 +2186,51 @@ bool NGBoxFragmentPainter::HitTestFloatingChildren(
     if (HitTestFloatingChildren(hit_test, *child_container, child_offset))
       return true;
   }
+  return false;
+}
+
+bool NGBoxFragmentPainter::HitTestFloatingChildItems(
+    const HitTestContext& hit_test,
+    const NGInlineCursor& children,
+    const PhysicalOffset& accumulated_offset) {
+  for (NGInlineBackwardCursor cursor(children); cursor;
+       cursor.MoveToPreviousSibling()) {
+    const NGFragmentItem* item = cursor.Current().Item();
+    DCHECK(item);
+    if (item->Type() == NGFragmentItem::kBox) {
+      if (const NGPhysicalBoxFragment* child_box = item->BoxFragment()) {
+        if (child_box->HasSelfPaintingLayer())
+          continue;
+
+        const PhysicalOffset child_offset =
+            accumulated_offset + item->OffsetInContainerBlock();
+        if (child_box->IsFloating()) {
+          if (HitTestAllPhasesInFragment(*child_box, hit_test.location,
+                                         child_offset, hit_test.result))
+            return true;
+          continue;
+        }
+
+        // Look into descendants of all inline boxes because inline boxes do not
+        // have |HasFloatingDescendantsForPaint()| flag.
+        if (!child_box->IsInlineBox())
+          continue;
+      }
+      DCHECK(item->GetLayoutObject()->IsLayoutInline());
+    } else if (item->Type() == NGFragmentItem::kLine) {
+      const NGPhysicalLineBoxFragment* child_line = item->LineBoxFragment();
+      DCHECK(child_line);
+      if (!child_line->HasFloatingDescendantsForPaint())
+        continue;
+    } else {
+      continue;
+    }
+
+    NGInlineCursor descendants = cursor.CursorForDescendants();
+    if (HitTestFloatingChildItems(hit_test, descendants, accumulated_offset))
+      return true;
+  }
+
   return false;
 }
 

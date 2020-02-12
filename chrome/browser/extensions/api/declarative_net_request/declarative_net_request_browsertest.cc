@@ -2585,9 +2585,8 @@ IN_PROC_BROWSER_TEST_P(DeclarativeNetRequestBrowserTest,
     std::string expected_badge_text;
     bool has_referrer_header;
   } test_cases[] = {
-      // zzz.com does not match any rules, but we should still display 0 as the
-      // badge text as the preference is on.
-      {"zzz.com", "0", false},
+      // zzz.com does not match any rules, so no badge text should be displayed.
+      {"zzz.com", "", false},
       // abc.com is blocked by a matching rule and should increment the badge
       // text.
       {"abc.com", "1", false},
@@ -2609,9 +2608,10 @@ IN_PROC_BROWSER_TEST_P(DeclarativeNetRequestBrowserTest,
   ui_test_utils::NavigateToURL(browser(), page_url);
   ASSERT_TRUE(WasFrameWithScriptLoaded(GetMainFrame()));
 
-  // Verify that the badge text is 0 when navigation finishes.
+  // Verify that the badge text is empty when navigation finishes because no
+  // actions have been matched.
   int first_tab_id = ExtensionTabUtil::GetTabId(web_contents());
-  EXPECT_EQ("0", action->GetDisplayBadgeText(first_tab_id));
+  EXPECT_EQ("", action->GetDisplayBadgeText(first_tab_id));
 
   for (const auto& test_case : test_cases) {
     GURL url = test_case.has_referrer_header
@@ -2635,7 +2635,7 @@ IN_PROC_BROWSER_TEST_P(DeclarativeNetRequestBrowserTest,
   ASSERT_TRUE(browser()->tab_strip_model()->IsTabSelected(1));
 
   int second_tab_id = ExtensionTabUtil::GetTabId(web_contents());
-  EXPECT_EQ("0", action->GetDisplayBadgeText(second_tab_id));
+  EXPECT_EQ("", action->GetDisplayBadgeText(second_tab_id));
 
   // Verify that the badge text for the first tab is unaffected.
   EXPECT_EQ(first_tab_badge_text, action->GetDisplayBadgeText(first_tab_id));
@@ -2794,8 +2794,15 @@ IN_PROC_BROWSER_TEST_P(DeclarativeNetRequestBrowserTest,
   // generated background page.
   set_has_background_script(true);
 
+  TestRule rule = CreateGenericRule();
+  rule.condition->url_filter = "abc.com";
+  rule.id = kMinValidID;
+  rule.condition->resource_types = std::vector<std::string>({"main_frame"});
+  rule.action->type = "block";
+
+  std::vector<TestRule> rules({rule});
   ASSERT_NO_FATAL_FAILURE(LoadExtensionWithRules(
-      {}, "test_extension", {URLPattern::kAllUrlsPattern}));
+      {rules}, "test_extension", {URLPattern::kAllUrlsPattern}));
 
   const ExtensionId& extension_id = last_loaded_extension_id();
   const Extension* dnr_extension = extension_registry()->GetExtensionById(
@@ -2809,9 +2816,8 @@ IN_PROC_BROWSER_TEST_P(DeclarativeNetRequestBrowserTest,
   action->SetBadgeText(ExtensionAction::kDefaultTabId, default_badge_text);
 
   const GURL page_url = embedded_test_server()->GetURL(
-      "norulesmatched.com", "/pages_with_script/index.html");
+      "abc.com", "/pages_with_script/index.html");
   ui_test_utils::NavigateToURL(browser(), page_url);
-  ASSERT_TRUE(WasFrameWithScriptLoaded(GetMainFrame()));
 
   // The preference is initially turned off. Both the visible badge text and the
   // badge text queried by the extension using getBadgeText() should return the
@@ -2831,8 +2837,8 @@ IN_PROC_BROWSER_TEST_P(DeclarativeNetRequestBrowserTest,
   EXPECT_EQ(declarative_net_request::kActionCountPlaceholderBadgeText,
             queried_badge_text);
 
-  // The displayed badge text should show "0" as no actions have been matched.
-  EXPECT_EQ("0", action->GetDisplayBadgeText(first_tab_id));
+  // One action was matched, and this should be reflected in the badge text.
+  EXPECT_EQ("1", action->GetDisplayBadgeText(first_tab_id));
 
   SetActionsAsBadgeText(extension_id, false);
   // Switching the preference off should cause the extension queried badge text
@@ -2858,8 +2864,15 @@ IN_PROC_BROWSER_TEST_P(DeclarativeNetRequestBrowserTest,
   // generated background page.
   set_has_background_script(true);
 
+  TestRule rule = CreateGenericRule();
+  rule.condition->url_filter = "abc.com";
+  rule.id = kMinValidID;
+  rule.condition->resource_types = std::vector<std::string>({"main_frame"});
+  rule.action->type = "block";
+
+  std::vector<TestRule> rules({rule});
   ASSERT_NO_FATAL_FAILURE(LoadExtensionWithRules(
-      {}, "test_extension", {URLPattern::kAllUrlsPattern}));
+      {rules}, "test_extension", {URLPattern::kAllUrlsPattern}));
 
   const ExtensionId& extension_id = last_loaded_extension_id();
   const Extension* dnr_extension = extension_registry()->GetExtensionById(
@@ -2870,9 +2883,8 @@ IN_PROC_BROWSER_TEST_P(DeclarativeNetRequestBrowserTest,
           ->GetExtensionAction(*dnr_extension);
 
   const GURL page_url = embedded_test_server()->GetURL(
-      "norulesmatched.com", "/pages_with_script/index.html");
+      "abc.com", "/pages_with_script/index.html");
   ui_test_utils::NavigateToURL(browser(), page_url);
-  ASSERT_TRUE(WasFrameWithScriptLoaded(GetMainFrame()));
 
   int first_browser_tab_id = ExtensionTabUtil::GetTabId(web_contents());
   EXPECT_EQ("", extension_action->GetDisplayBadgeText(first_browser_tab_id));
@@ -2881,7 +2893,6 @@ IN_PROC_BROWSER_TEST_P(DeclarativeNetRequestBrowserTest,
   // to |page_url|.
   Browser* second_browser = CreateBrowser(profile());
   ui_test_utils::NavigateToURL(second_browser, page_url);
-  ASSERT_TRUE(WasFrameWithScriptLoaded(GetMainFrame(second_browser)));
   content::WebContents* second_browser_contents =
       second_browser->tab_strip_model()->GetActiveWebContents();
 
@@ -2897,15 +2908,16 @@ IN_PROC_BROWSER_TEST_P(DeclarativeNetRequestBrowserTest,
   SetActionsAsBadgeText(extension_id, true);
 
   // Wait until ExtensionActionAPI::NotifyChange is called, then perform a
-  // sanity check on the browser action's badge text.
+  // sanity check that one action was matched, and this is reflected in the
+  // badge text.
   test_api_observer.Wait();
 
-  EXPECT_EQ("0", extension_action->GetDisplayBadgeText(first_browser_tab_id));
+  EXPECT_EQ("1", extension_action->GetDisplayBadgeText(first_browser_tab_id));
 
   // The badge text for the second browser window should also update to the
   // matched action count because the second browser shares the same browser
   // context as the first.
-  EXPECT_EQ("0", extension_action->GetDisplayBadgeText(second_browser_tab_id));
+  EXPECT_EQ("1", extension_action->GetDisplayBadgeText(second_browser_tab_id));
 }
 
 // Test that the action matched badge text for an extension is visible in an
@@ -3021,8 +3033,9 @@ IN_PROC_BROWSER_TEST_P(DeclarativeNetRequestBrowserTest,
       // The script on get_url_for_host("abc.com") matches with a rule and
       // should increment the badge text.
       {"abc.com", "1"},
-      // No rules match, so the badge text should be 0 once navigation finishes.
-      {"nomatch.com", "0"},
+      // No rules match, so there should be no badge text once navigation
+      // finishes.
+      {"nomatch.com", ""},
       // The request to def.com will redirect to get_url_for_host("abc.com") and
       // the script on abc.com should match with a rule.
       {"def.com", "2"},
@@ -3128,7 +3141,7 @@ IN_PROC_BROWSER_TEST_P(DeclarativeNetRequestBrowserTest,
   } test_cases[] = {
       // This request only has a Set-Cookie header. Only the badge text for the
       // extension with a remove Set-Cookie header rule should be incremented.
-      {get_set_cookie_url("example.com"), false, "1", "0"},
+      {get_set_cookie_url("example.com"), false, "1", ""},
       // This request only has a Referer header. Only the badge text for the
       // extension with a remove Referer header rule should be incremented.
       {get_referer_url("example.com"), true, "1", "1"},
@@ -3149,8 +3162,8 @@ IN_PROC_BROWSER_TEST_P(DeclarativeNetRequestBrowserTest,
   ASSERT_TRUE(WasFrameWithScriptLoaded(GetMainFrame()));
 
   int first_tab_id = ExtensionTabUtil::GetTabId(web_contents());
-  EXPECT_EQ("0", extension_1_action->GetDisplayBadgeText(first_tab_id));
-  EXPECT_EQ("0", extension_2_action->GetDisplayBadgeText(first_tab_id));
+  EXPECT_EQ("", extension_1_action->GetDisplayBadgeText(first_tab_id));
+  EXPECT_EQ("", extension_2_action->GetDisplayBadgeText(first_tab_id));
 
   for (const auto& test_case : test_cases) {
     SCOPED_TRACE(base::StringPrintf("Testing URL: %s, using referrer: %s",

@@ -244,7 +244,11 @@ bool LayoutNGBlockFlowMixin<Base>::NodeAtPoint(
 
   if (UNLIKELY(RuntimeEnabledFeatures::LayoutNGFragmentItemEnabled())) {
     if (const NGPhysicalBoxFragment* fragment = CurrentFragment()) {
-      if (fragment->HasItems()) {
+      if (fragment->HasItems() ||
+          // Check descendants of this fragment because floats may be in the
+          // |NGFragmentItems| of the descendants.
+          (action == kHitTestFloat &&
+           fragment->HasFloatingDescendantsForPaint())) {
         return NGBoxFragmentPainter(*fragment).NodeAtPoint(
             result, hit_test_location, accumulated_offset, action);
       }

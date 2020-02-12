@@ -64,7 +64,6 @@ namespace user_prefs {
 class PrefRegistrySyncable;
 }
 
-class OffTheRecordProfileIOData;
 class ProfileObserver;
 
 // Instead of adding more members to Profile, consider creating a
@@ -433,8 +432,6 @@ class Profile : public content::BrowserContext {
   virtual void SetCreationTimeForTesting(base::Time creation_time) = 0;
 
  protected:
-  friend class OffTheRecordProfileIOData;
-
   // Returns the profile type.
   virtual ProfileType GetProfileType() const = 0;
 

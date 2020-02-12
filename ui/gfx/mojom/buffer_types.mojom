@@ -98,7 +98,7 @@ union GpuMemoryBufferPlatformHandle {
   NativePixmapHandle native_pixmap_handle;
 
   [EnableIf=is_mac]
-  handle mach_port;
+  handle<platform> mach_port;
 
   [EnableIf=is_win]
   handle dxgi_handle;

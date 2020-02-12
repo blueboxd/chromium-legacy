@@ -141,7 +141,8 @@ inline std::pair<LayoutUnit, LayoutUnit> GetLineLeftAndRightForOffsets(
 // |NGFragmentItem| is done. http://crbug.com/982194
 inline LayoutSelectionStatus ComputeLayoutSelectionStatus(
     const NGInlineCursor& cursor) {
-  return cursor.CurrentLayoutObject()
+  return cursor.Current()
+      .GetLayoutObject()
       ->GetDocument()
       .GetFrame()
       ->Selection()

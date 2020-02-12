@@ -28,22 +28,15 @@
 #include "storage/common/database/database_connections.h"
 #include "url/origin.h"
 
-namespace content {
-class DatabaseTracker_TestHelper_Test;
-class MockDatabaseTracker;
-}
-
 namespace sql {
 class Database;
 class MetaTable;
 }
 
 namespace storage {
+
 class QuotaManagerProxy;
 class SpecialStoragePolicy;
-}
-
-namespace storage {
 
 COMPONENT_EXPORT(STORAGE_BROWSER)
 extern const base::FilePath::CharType kDatabaseDirectoryName[];
@@ -106,8 +99,8 @@ class COMPONENT_EXPORT(STORAGE_BROWSER) DatabaseTracker
 
   DatabaseTracker(const base::FilePath& profile_path,
                   bool is_incognito,
-                  storage::SpecialStoragePolicy* special_storage_policy,
-                  storage::QuotaManagerProxy* quota_manager_proxy);
+                  SpecialStoragePolicy* special_storage_policy,
+                  QuotaManagerProxy* quota_manager_proxy);
 
   void DatabaseOpened(const std::string& origin_identifier,
                       const base::string16& database_name,
@@ -141,7 +134,7 @@ class COMPONENT_EXPORT(STORAGE_BROWSER) DatabaseTracker
   virtual bool GetAllOriginsInfo(std::vector<OriginInfo>* origins_info);
 
   // Thread-safe getter.
-  storage::QuotaManagerProxy* quota_manager_proxy() const {
+  QuotaManagerProxy* quota_manager_proxy() const {
     return quota_manager_proxy_.get();
   }
 
@@ -195,8 +188,8 @@ class COMPONENT_EXPORT(STORAGE_BROWSER) DatabaseTracker
 
  private:
   friend class base::RefCountedThreadSafe<DatabaseTracker>;
-  friend class content::DatabaseTracker_TestHelper_Test;
-  friend class content::MockDatabaseTracker;  // for testing
+  friend class DatabaseTracker_TestHelper_Test;
+  friend class MockDatabaseTracker;  // for testing
 
   using DatabaseSet = std::map<std::string, std::set<base::string16>>;
 
@@ -312,12 +305,12 @@ class COMPONENT_EXPORT(STORAGE_BROWSER) DatabaseTracker
       deletion_callbacks_;
 
   // Apps and Extensions can have special rights.
-  const scoped_refptr<storage::SpecialStoragePolicy> special_storage_policy_;
+  const scoped_refptr<SpecialStoragePolicy> special_storage_policy_;
 
   // Can be accessed from any thread via quota_manager_proxy().
   //
   // Thread-safety argument: The reference is immutable.
-  const scoped_refptr<storage::QuotaManagerProxy> quota_manager_proxy_;
+  const scoped_refptr<QuotaManagerProxy> quota_manager_proxy_;
 
   // The database tracker thread we're supposed to run file IO on.
   scoped_refptr<base::SequencedTaskRunner> task_runner_;

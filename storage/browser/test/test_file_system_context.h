@@ -5,6 +5,9 @@
 #ifndef STORAGE_BROWSER_TEST_TEST_FILE_SYSTEM_CONTEXT_H_
 #define STORAGE_BROWSER_TEST_TEST_FILE_SYSTEM_CONTEXT_H_
 
+#include <memory>
+#include <vector>
+
 #include "base/files/file_path.h"
 #include "base/single_thread_task_runner.h"
 #include "storage/browser/file_system/file_system_context.h"
@@ -17,46 +20,42 @@ namespace storage {
 class FileSystemBackend;
 }
 
-namespace content {
+namespace storage {
 
-storage::FileSystemContext* CreateFileSystemContextForTesting(
-    storage::QuotaManagerProxy* quota_manager_proxy,
+FileSystemContext* CreateFileSystemContextForTesting(
+    QuotaManagerProxy* quota_manager_proxy,
     const base::FilePath& base_path);
 
 // The caller is responsible for including TestFileSystemBackend in
 // |additional_providers| if needed.
-storage::FileSystemContext*
-CreateFileSystemContextWithAdditionalProvidersForTesting(
+FileSystemContext* CreateFileSystemContextWithAdditionalProvidersForTesting(
     scoped_refptr<base::SingleThreadTaskRunner> io_task_runner,
     scoped_refptr<base::SequencedTaskRunner> file_task_runner,
-    storage::QuotaManagerProxy* quota_manager_proxy,
-    std::vector<std::unique_ptr<storage::FileSystemBackend>>
-        additional_providers,
+    QuotaManagerProxy* quota_manager_proxy,
+    std::vector<std::unique_ptr<FileSystemBackend>> additional_providers,
     const base::FilePath& base_path);
 
-storage::FileSystemContext* CreateFileSystemContextWithAutoMountersForTesting(
+FileSystemContext* CreateFileSystemContextWithAutoMountersForTesting(
     scoped_refptr<base::SingleThreadTaskRunner> io_task_runner,
     scoped_refptr<base::SequencedTaskRunner> file_task_runner,
-    storage::QuotaManagerProxy* quota_manager_proxy,
-    std::vector<std::unique_ptr<storage::FileSystemBackend>>
-        additional_providers,
-    const std::vector<storage::URLRequestAutoMountHandler>& auto_mounters,
+    QuotaManagerProxy* quota_manager_proxy,
+    std::vector<std::unique_ptr<FileSystemBackend>> additional_providers,
+    const std::vector<URLRequestAutoMountHandler>& auto_mounters,
     const base::FilePath& base_path);
 
-storage::FileSystemContext* CreateIncognitoFileSystemContextForTesting(
+FileSystemContext* CreateIncognitoFileSystemContextForTesting(
     scoped_refptr<base::SingleThreadTaskRunner> io_task_runner,
     scoped_refptr<base::SequencedTaskRunner> file_task_runner,
-    storage::QuotaManagerProxy* quota_manager_proxy,
+    QuotaManagerProxy* quota_manager_proxy,
     const base::FilePath& base_path);
 
-storage::FileSystemContext*
+FileSystemContext*
 CreateIncognitoFileSystemContextWithAdditionalProvidersForTesting(
     scoped_refptr<base::SingleThreadTaskRunner> io_task_runner,
     scoped_refptr<base::SequencedTaskRunner> file_task_runner,
-    storage::QuotaManagerProxy* quota_manager_proxy,
-    std::vector<std::unique_ptr<storage::FileSystemBackend>>
-        additional_providers,
+    QuotaManagerProxy* quota_manager_proxy,
+    std::vector<std::unique_ptr<FileSystemBackend>> additional_providers,
     const base::FilePath& base_path);
-}  // namespace content
+}  // namespace storage
 
 #endif  // STORAGE_BROWSER_TEST_TEST_FILE_SYSTEM_CONTEXT_H_

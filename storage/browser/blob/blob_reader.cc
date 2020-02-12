@@ -352,7 +352,7 @@ BlobReader::Status BlobReader::CalculateSizeImpl(
       continue;
     }
     ++pending_get_file_info_count_;
-    storage::FileStreamReader* const reader = GetOrCreateFileReaderAtIndex(i);
+    FileStreamReader* const reader = GetOrCreateFileReaderAtIndex(i);
     if (!reader)
       return ReportError(net::ERR_FILE_NOT_FOUND);
 
@@ -509,7 +509,7 @@ BlobReader::Status BlobReader::ReadItem() {
     NOTREACHED();
     return ReportError(net::ERR_UNEXPECTED);
   }
-  storage::FileStreamReader* const reader =
+  FileStreamReader* const reader =
       GetOrCreateFileReaderAtIndex(current_item_index_);
   if (!reader)
     return ReportError(net::ERR_FILE_NOT_FOUND);
@@ -723,7 +723,7 @@ std::unique_ptr<FileStreamReader> BlobReader::CreateFileStreamReader(
     case BlobDataItem::Type::kFileFilesystem: {
       int64_t max_bytes_to_read =
           item.length() == std::numeric_limits<uint64_t>::max()
-              ? storage::kMaximumLength
+              ? kMaximumLength
               : item.length() - additional_offset;
       if (file_stream_provider_for_testing_) {
         return file_stream_provider_for_testing_->CreateFileStreamReader(
@@ -731,7 +731,7 @@ std::unique_ptr<FileStreamReader> BlobReader::CreateFileStreamReader(
             max_bytes_to_read, item.expected_modification_time());
       }
       return item.file_system_context()->CreateFileStreamReader(
-          storage::FileSystemURL(
+          FileSystemURL(
               item.file_system_context()->CrackURL(item.filesystem_url())),
           item.offset() + additional_offset, max_bytes_to_read,
           item.expected_modification_time());
@@ -827,8 +827,7 @@ void BlobReader::RecordBytesReadFromDataHandle(int item_index, int result) {
   BlobDataItem& item = *items.at(item_index);
   DCHECK_EQ(item.type(), BlobDataItem::Type::kReadableDataHandle);
   if (item.data_handle()->BytesReadHistogramLabel()) {
-    storage::RecordBytesRead(item.data_handle()->BytesReadHistogramLabel(),
-                             result);
+    RecordBytesRead(item.data_handle()->BytesReadHistogramLabel(), result);
   }
 }
 

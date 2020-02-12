@@ -39,7 +39,7 @@ class MemoryFileStreamReaderTest : public testing::Test {
 
   void SetUp() override {
     ASSERT_TRUE(file_system_directory_.CreateUniqueTempDir());
-    file_util_ = std::make_unique<storage::ObfuscatedFileUtilMemoryDelegate>(
+    file_util_ = std::make_unique<ObfuscatedFileUtilMemoryDelegate>(
         file_system_directory_.GetPath());
 
     file_util_->CreateFileForTesting(
@@ -55,9 +55,7 @@ class MemoryFileStreamReaderTest : public testing::Test {
     EXPECT_TRUE(base::IsDirectoryEmpty(file_system_directory_.GetPath()));
   }
 
-  storage::ObfuscatedFileUtilMemoryDelegate* file_util() {
-    return file_util_.get();
-  }
+  ObfuscatedFileUtilMemoryDelegate* file_util() { return file_util_.get(); }
 
  protected:
   std::unique_ptr<FileStreamReader> CreateFileReader(
@@ -86,7 +84,7 @@ class MemoryFileStreamReaderTest : public testing::Test {
 
  private:
   base::ScopedTempDir file_system_directory_;
-  std::unique_ptr<storage::ObfuscatedFileUtilMemoryDelegate> file_util_;
+  std::unique_ptr<ObfuscatedFileUtilMemoryDelegate> file_util_;
   base::Time test_file_modification_time_;
 };
 

@@ -71,6 +71,10 @@ BASE_EXPORT bool CreateMachPort(
     ScopedMachSendRight* send,
     Optional<mach_port_msgcount_t> queue_limit = nullopt);
 
+// Increases the user reference count for MACH_PORT_RIGHT_SEND by 1 and returns
+// a new scoper to manage the additional right.
+BASE_EXPORT ScopedMachSendRight RetainMachSendRight(mach_port_t port);
+
 }  // namespace mac
 }  // namespace base
 

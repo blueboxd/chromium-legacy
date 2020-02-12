@@ -25,16 +25,11 @@
 #include "url/gurl.h"
 #include "url/origin.h"
 
-using storage::kFileSystemTypeTemporary;
-using storage::OpenFileHandle;
-using storage::QuotaReservation;
-using storage::QuotaReservationManager;
-
-namespace content {
+namespace storage {
 
 namespace {
 
-const storage::FileSystemType kType = kFileSystemTypeTemporary;
+const FileSystemType kType = kFileSystemTypeTemporary;
 const int64_t kInitialFileSize = 1;
 
 using ReserveQuotaCallback = QuotaReservationManager::ReserveQuotaCallback;
@@ -57,7 +52,7 @@ class FakeBackend : public QuotaReservationManager::QuotaBackend {
   ~FakeBackend() override = default;
 
   void ReserveQuota(const url::Origin& origin,
-                    storage::FileSystemType type,
+                    FileSystemType type,
                     int64_t delta,
                     ReserveQuotaCallback callback) override {
     EXPECT_EQ(this->origin(), origin);
@@ -69,7 +64,7 @@ class FakeBackend : public QuotaReservationManager::QuotaBackend {
   }
 
   void ReleaseReservedQuota(const url::Origin& origin,
-                            storage::FileSystemType type,
+                            FileSystemType type,
                             int64_t size) override {
     EXPECT_LE(0, size);
     EXPECT_EQ(this->origin(), origin);
@@ -78,7 +73,7 @@ class FakeBackend : public QuotaReservationManager::QuotaBackend {
   }
 
   void CommitQuotaUsage(const url::Origin& origin,
-                        storage::FileSystemType type,
+                        FileSystemType type,
                         int64_t delta) override {
     EXPECT_EQ(this->origin(), origin);
     EXPECT_EQ(kType, type);
@@ -87,9 +82,9 @@ class FakeBackend : public QuotaReservationManager::QuotaBackend {
   }
 
   void IncrementDirtyCount(const url::Origin& origin,
-                           storage::FileSystemType type) override {}
+                           FileSystemType type) override {}
   void DecrementDirtyCount(const url::Origin& origin,
-                           storage::FileSystemType type) override {}
+                           FileSystemType type) override {}
 
   url::Origin origin() const { return origin_; }
   int64_t on_memory_usage() { return on_memory_usage_; }
@@ -372,4 +367,4 @@ TEST_F(QuotaReservationManagerTest, ClientCrash) {
   EXPECT_EQ(kInitialFileSize + 10, fake_backend()->on_memory_usage());
 }
 
-}  // namespace content
+}  // namespace storage

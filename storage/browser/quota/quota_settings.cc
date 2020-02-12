@@ -5,7 +5,9 @@
 #include "storage/browser/quota/quota_settings.h"
 
 #include <algorithm>
+#include <limits>
 #include <memory>
+#include <utility>
 
 #include "base/bind.h"
 #include "base/rand_util.h"
@@ -30,7 +32,7 @@ int64_t RandomizeByPercent(int64_t value, int percent) {
   return value + (value * (random_percent / 100.0));
 }
 
-storage::QuotaSettings CalculateIncognitoDynamicSettings(
+QuotaSettings CalculateIncognitoDynamicSettings(
     int64_t physical_memory_amount) {
   // The incognito pool size is a fraction of the amount of system memory,
   // and the amount is capped to a hard limit.
@@ -47,7 +49,7 @@ storage::QuotaSettings CalculateIncognitoDynamicSettings(
         RandomizeByPercent(max_incognito_pool_size, kRandomizedPercentage);
   }
 
-  storage::QuotaSettings settings;
+  QuotaSettings settings;
   settings.pool_size = std::min(
       max_incognito_pool_size,
       static_cast<int64_t>(physical_memory_amount * incognito_pool_size_ratio));
@@ -57,7 +59,7 @@ storage::QuotaSettings CalculateIncognitoDynamicSettings(
   return settings;
 }
 
-base::Optional<storage::QuotaSettings> CalculateNominalDynamicSettings(
+base::Optional<QuotaSettings> CalculateNominalDynamicSettings(
     const base::FilePath& partition_path,
     bool is_incognito,
     QuotaDeviceInfoHelper* device_info_helper) {
@@ -118,7 +120,7 @@ base::Optional<storage::QuotaSettings> CalculateNominalDynamicSettings(
   const double kSessionOnlyHostQuotaRatio = 0.1;  // 10%
   const int64_t kMaxSessionOnlyHostQuota = 300 * kMBytes;
 
-  storage::QuotaSettings settings;
+  QuotaSettings settings;
 
   int64_t total = device_info_helper->AmountOfTotalDiskSpace(partition_path);
   if (total == -1) {

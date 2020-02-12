@@ -1818,29 +1818,37 @@ void CrostiniManager::GetContainerSshKeys(
 }
 
 void CrostiniManager::SetInstallerViewStatus(bool open) {
-  installer_dialog_showing_ = open;
-  for (auto& observer : installer_view_status_observers_) {
-    observer.OnCrostiniInstallerViewStatusChanged(open);
-  }
+  SetCrostiniDialogStatus(DialogType::INSTALLER, open);
 }
 
 bool CrostiniManager::GetInstallerViewStatus() const {
-  return installer_dialog_showing_;
+  return GetCrostiniDialogStatus(DialogType::INSTALLER);
 }
 
-void CrostiniManager::AddInstallerViewStatusObserver(
-    InstallerViewStatusObserver* observer) {
-  installer_view_status_observers_.AddObserver(observer);
+bool CrostiniManager::GetCrostiniDialogStatus(DialogType dialog_type) const {
+  return open_crostini_dialogs_.count(dialog_type) == 1;
 }
 
-void CrostiniManager::RemoveInstallerViewStatusObserver(
-    InstallerViewStatusObserver* observer) {
-  installer_view_status_observers_.RemoveObserver(observer);
+void CrostiniManager::SetCrostiniDialogStatus(DialogType dialog_type,
+                                              bool open) {
+  if (open) {
+    open_crostini_dialogs_.insert(dialog_type);
+  } else {
+    open_crostini_dialogs_.erase(dialog_type);
+  }
+  for (auto& observer : crostini_dialog_status_observers_) {
+    observer.OnCrostiniDialogStatusChanged(dialog_type, open);
+  }
 }
 
-bool CrostiniManager::HasInstallerViewStatusObserver(
-    InstallerViewStatusObserver* observer) {
-  return installer_view_status_observers_.HasObserver(observer);
+void CrostiniManager::AddCrostiniDialogStatusObserver(
+    CrostiniDialogStatusObserver* observer) {
+  crostini_dialog_status_observers_.AddObserver(observer);
+}
+
+void CrostiniManager::RemoveCrostiniDialogStatusObserver(
+    CrostiniDialogStatusObserver* observer) {
+  crostini_dialog_status_observers_.RemoveObserver(observer);
 }
 
 void CrostiniManager::OnDBusShuttingDownForTesting() {

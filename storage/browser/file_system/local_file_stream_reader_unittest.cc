@@ -29,9 +29,7 @@
 #include "storage/browser/file_system/file_stream_test_utils.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
-using storage::LocalFileStreamReader;
-
-namespace content {
+namespace storage {
 
 namespace {
 
@@ -260,4 +258,4 @@ TEST_F(LocalFileStreamReaderTest, DeleteWithUnfinishedRead) {
   EnsureFileTaskFinished();
 }
 
-}  // namespace content
+}  // namespace storage

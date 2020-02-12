@@ -35,17 +35,18 @@
 class GURL;
 
 namespace content {
-class BlobDispatcherHost;
-class BlobDispatcherHostTest;
+
 class ChromeBlobStorageContext;
 class ShareableBlobDataItem;
 
 namespace indexed_db_backing_store_unittest {
 class BlobStorageContextShim;
 }  // namespace indexed_db_backing_store_unittest
+
 }  // namespace content
 
 namespace storage {
+
 class BlobDataBuilder;
 class BlobDataHandle;
 class BlobDataSnapshot;
@@ -175,8 +176,6 @@ class COMPONENT_EXPORT(STORAGE_BROWSER) BlobStorageContext
   }
 
  protected:
-  friend class content::BlobDispatcherHost;
-  friend class content::BlobDispatcherHostTest;
   friend class content::ChromeBlobStorageContext;
   friend class BlobBuilderFromStream;
   friend class BlobDataHandle;
@@ -250,7 +249,7 @@ class COMPONENT_EXPORT(STORAGE_BROWSER) BlobStorageContext
   bool OnMemoryDump(const base::trace_event::MemoryDumpArgs& args,
                     base::trace_event::ProcessMemoryDump* pmd) override;
 
-  // storage::mojom::BlobStorageContext implementation.
+  // mojom::BlobStorageContext implementation.
   void RegisterFromDataItem(mojo::PendingReceiver<blink::mojom::Blob> blob,
                             const std::string& uuid,
                             mojom::BlobDataItemPtr item) override;

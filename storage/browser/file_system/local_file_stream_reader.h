@@ -22,10 +22,6 @@ namespace base {
 class TaskRunner;
 }
 
-namespace content {
-class LocalFileStreamReaderTest;
-}
-
 namespace net {
 class FileStream;
 }
@@ -47,7 +43,7 @@ class COMPONENT_EXPORT(STORAGE_BROWSER) LocalFileStreamReader
 
  private:
   friend class FileStreamReader;
-  friend class content::LocalFileStreamReaderTest;
+  friend class LocalFileStreamReaderTest;
 
   LocalFileStreamReader(base::TaskRunner* task_runner,
                         const base::FilePath& file_path,

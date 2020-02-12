@@ -9,6 +9,7 @@
 
 #include <memory>
 #include <tuple>
+#include <utility>
 
 #include "base/bind.h"
 #include "base/containers/queue.h"
@@ -79,7 +80,7 @@ int64_t UsageForPath(size_t length) {
 }
 
 bool AllocateQuota(FileSystemOperationContext* context, int64_t growth) {
-  if (context->allowed_bytes_growth() == storage::QuotaManager::kNoLimit)
+  if (context->allowed_bytes_growth() == QuotaManager::kNoLimit)
     return true;
 
   int64_t new_quota = context->allowed_bytes_growth() - growth;
@@ -231,7 +232,7 @@ class ObfuscatedOriginEnumerator
       origins_.pop_back();
     }
     current_ = record;
-    return storage::GetOriginURLFromIdentifier(record.origin);
+    return GetOriginURLFromIdentifier(record.origin);
   }
 
   // Returns the current origin's information.
@@ -258,7 +259,7 @@ class ObfuscatedOriginEnumerator
 };
 
 ObfuscatedFileUtil::ObfuscatedFileUtil(
-    storage::SpecialStoragePolicy* special_storage_policy,
+    SpecialStoragePolicy* special_storage_policy,
     const base::FilePath& file_system_directory,
     leveldb::Env* env_override,
     GetTypeStringForURLCallback get_type_string_for_url,
@@ -793,7 +794,7 @@ base::File::Error ObfuscatedFileUtil::DeleteDirectory(
   return base::File::FILE_OK;
 }
 
-storage::ScopedFile ObfuscatedFileUtil::CreateSnapshotFile(
+ScopedFile ObfuscatedFileUtil::CreateSnapshotFile(
     FileSystemOperationContext* context,
     const FileSystemURL& url,
     base::File::Error* error,
@@ -808,7 +809,7 @@ storage::ScopedFile ObfuscatedFileUtil::CreateSnapshotFile(
   }
   // An empty ScopedFile does not have any on-disk operation, therefore it can
   // be handled the same way by on-disk and in-memory implementations.
-  return storage::ScopedFile();
+  return ScopedFile();
 }
 
 std::unique_ptr<FileSystemFileUtil::AbstractFileEnumerator>
@@ -914,8 +915,7 @@ bool ObfuscatedFileUtil::DeleteDirectoryForOriginAndType(
   // No other directories seem exist. Try deleting the entire origin directory.
   InitOriginDatabase(origin, false);
   if (origin_database_) {
-    origin_database_->RemovePathForOrigin(
-        storage::GetIdentifierFromOrigin(origin));
+    origin_database_->RemovePathForOrigin(GetIdentifierFromOrigin(origin));
   }
   return delegate_->DeleteFileOrDirectory(origin_path, true /* recursive */);
 }
@@ -990,7 +990,7 @@ void ObfuscatedFileUtil::MaybePrepopulateDatabase(
   std::string origin_string = database.GetPrimaryOrigin();
   if (origin_string.empty() || !database.HasOriginPath(origin_string))
     return;
-  const url::Origin origin = storage::GetOriginFromIdentifier(origin_string);
+  const url::Origin origin = GetOriginFromIdentifier(origin_string);
 
   // Prepopulate the directory database(s) if and only if this instance
   // has primary origin and the directory database is already there.
@@ -1203,8 +1203,8 @@ std::string ObfuscatedFileUtil::GetDirectoryDatabaseKey(
     const url::Origin& origin,
     const std::string& type_string) {
   // For isolated origin we just use a type string as a key.
-  return storage::GetIdentifierFromOrigin(origin) +
-         kDirectoryDatabaseKeySeparator + type_string;
+  return GetIdentifierFromOrigin(origin) + kDirectoryDatabaseKeySeparator +
+         type_string;
 }
 
 // TODO(ericu): How to do the whole validation-without-creation thing?
@@ -1253,7 +1253,7 @@ base::FilePath ObfuscatedFileUtil::GetDirectoryForOrigin(
     return base::FilePath();
   }
   base::FilePath directory_name;
-  std::string id = storage::GetIdentifierFromOrigin(origin);
+  std::string id = GetIdentifierFromOrigin(origin);
 
   bool exists_in_db = origin_database_->HasOriginPath(id);
   if (!exists_in_db && !create) {
@@ -1357,7 +1357,7 @@ bool ObfuscatedFileUtil::InitOriginDatabase(const url::Origin& origin_hint,
     return true;
 
   const std::string isolated_origin_string =
-      storage::GetIdentifierFromOrigin(origin_hint);
+      GetIdentifierFromOrigin(origin_hint);
 
   prioritized_origin_database->InitializePrimaryOrigin(isolated_origin_string);
 

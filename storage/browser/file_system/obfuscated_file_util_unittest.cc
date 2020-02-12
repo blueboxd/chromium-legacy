@@ -18,6 +18,7 @@
 #include "base/files/file_util.h"
 #include "base/files/scoped_temp_dir.h"
 #include "base/macros.h"
+#include "base/memory/scoped_refptr.h"
 #include "base/run_loop.h"
 #include "base/stl_util.h"
 #include "base/test/task_environment.h"
@@ -54,19 +55,9 @@
 #define MAYBE_TestQuotaOnTruncation TestQuotaOnTruncation
 #endif
 
-using content::AsyncFileTestHelper;
-using storage::FileSystemContext;
-using storage::FileSystemOperation;
-using storage::FileSystemOperationContext;
-using storage::FileSystemURL;
-using storage::kFileSystemTypePersistent;
-using storage::kFileSystemTypeTemporary;
-using storage::ObfuscatedFileUtil;
-using storage::SandboxDirectoryDatabase;
-using storage::SandboxIsolatedOriginDatabase;
 using url::Origin;
 
-namespace content {
+namespace storage {
 
 namespace {
 
@@ -142,17 +133,16 @@ FileSystemURL FileSystemURLAppendUTF8(const FileSystemURL& url,
 }
 
 FileSystemURL FileSystemURLDirName(const FileSystemURL& url) {
-  return FileSystemURL::CreateForTest(
-      url.origin(), url.mount_type(),
-      storage::VirtualPath::DirName(url.virtual_path()));
+  return FileSystemURL::CreateForTest(url.origin(), url.mount_type(),
+                                      VirtualPath::DirName(url.virtual_path()));
 }
 
-std::string GetTypeString(storage::FileSystemType type) {
-  return storage::SandboxFileSystemBackendDelegate::GetTypeString(type);
+std::string GetTypeString(FileSystemType type) {
+  return SandboxFileSystemBackendDelegate::GetTypeString(type);
 }
 
 bool HasFileSystemType(ObfuscatedFileUtil::AbstractOriginEnumerator* enumerator,
-                       storage::FileSystemType type) {
+                       FileSystemType type) {
   return enumerator->HasTypeDirectory(GetTypeString(type));
 }
 
@@ -168,7 +158,7 @@ class ObfuscatedFileUtilTest : public testing::Test,
   ObfuscatedFileUtilTest()
       : task_environment_(base::test::TaskEnvironment::MainThreadType::IO),
         origin_(Origin::Create(GURL("http://www.example.com"))),
-        type_(storage::kFileSystemTypeTemporary),
+        type_(kFileSystemTypeTemporary),
         sandbox_file_system_(origin_, type_),
         quota_status_(blink::mojom::QuotaStatusCode::kUnknown),
         usage_(-1) {}
@@ -178,13 +168,13 @@ class ObfuscatedFileUtilTest : public testing::Test,
   void SetUp() override {
     ASSERT_TRUE(data_dir_.CreateUniqueTempDir());
 
-    storage_policy_ = new MockSpecialStoragePolicy();
+    storage_policy_ = base::MakeRefCounted<MockSpecialStoragePolicy>();
 
-    quota_manager_ = new storage::QuotaManager(
+    quota_manager_ = base::MakeRefCounted<QuotaManager>(
         is_incognito(), data_dir_.GetPath(),
         base::ThreadTaskRunnerHandle::Get().get(), storage_policy_.get(),
-        storage::GetQuotaSettingsFunc());
-    storage::QuotaSettings settings;
+        GetQuotaSettingsFunc());
+    QuotaSettings settings;
     settings.per_host_quota = 25 * 1024 * 1024;
     settings.pool_size = settings.per_host_quota * 5;
     settings.must_remain_available = 10 * 1024 * 1024;
@@ -205,8 +195,7 @@ class ObfuscatedFileUtilTest : public testing::Test,
 
     sandbox_file_system_.SetUp(file_system_context_.get());
 
-    change_observers_ =
-        storage::MockFileChangeObserver::CreateList(&change_observer_);
+    change_observers_ = MockFileChangeObserver::CreateList(&change_observer_);
 
     if (is_incognito())
       incognito_leveldb_environment_ = leveldb_chrome::NewMemEnv("FileSystem");
@@ -247,20 +236,18 @@ class ObfuscatedFileUtilTest : public testing::Test,
     return context;
   }
 
-  const storage::ChangeObserverList& change_observers() const {
+  const ChangeObserverList& change_observers() const {
     return change_observers_;
   }
 
-  storage::MockFileChangeObserver* change_observer() {
-    return &change_observer_;
-  }
+  MockFileChangeObserver* change_observer() { return &change_observer_; }
 
   // This can only be used after SetUp has run and created file_system_context_
   // and obfuscated_file_util_.
   // Use this for tests which need to run in multiple origins; we need a test
   // helper per origin.
   SandboxFileSystemTestHelper* NewFileSystem(const Origin& origin,
-                                             storage::FileSystemType type) {
+                                             FileSystemType type) {
     SandboxFileSystemTestHelper* file_system =
         new SandboxFileSystemTestHelper(origin, type);
 
@@ -269,7 +256,7 @@ class ObfuscatedFileUtilTest : public testing::Test,
   }
 
   std::unique_ptr<ObfuscatedFileUtil> CreateObfuscatedFileUtil(
-      storage::SpecialStoragePolicy* storage_policy) {
+      SpecialStoragePolicy* storage_policy) {
     return std::unique_ptr<ObfuscatedFileUtil>(
         ObfuscatedFileUtil::CreateForTesting(
             storage_policy, data_dir_path(),
@@ -285,7 +272,7 @@ class ObfuscatedFileUtilTest : public testing::Test,
 
   const Origin& origin() const { return origin_; }
 
-  storage::FileSystemType type() const { return type_; }
+  FileSystemType type() const { return type_; }
 
   std::string type_string() const { return GetTypeString(type_); }
 
@@ -344,7 +331,7 @@ class ObfuscatedFileUtilTest : public testing::Test,
   }
 
   int64_t usage() const { return usage_; }
-  storage::FileSystemUsageCache* usage_cache() {
+  FileSystemUsageCache* usage_cache() {
     return sandbox_file_system_.usage_cache();
   }
 
@@ -382,8 +369,7 @@ class ObfuscatedFileUtilTest : public testing::Test,
     if (is_incognito()) {
       ASSERT_FALSE(file.IsValid());
       auto* memory_delegate =
-          static_cast<storage::ObfuscatedFileUtilMemoryDelegate*>(
-              ofu()->delegate());
+          static_cast<ObfuscatedFileUtilMemoryDelegate*>(ofu()->delegate());
       ASSERT_EQ(
           length,
           memory_delegate->WriteFile(
@@ -805,15 +791,15 @@ class ObfuscatedFileUtilTest : public testing::Test,
   base::test::TaskEnvironment task_environment_;
   base::ScopedTempDir data_dir_;
   scoped_refptr<MockSpecialStoragePolicy> storage_policy_;
-  scoped_refptr<storage::QuotaManager> quota_manager_;
+  scoped_refptr<QuotaManager> quota_manager_;
   scoped_refptr<FileSystemContext> file_system_context_;
   Origin origin_;
-  storage::FileSystemType type_;
+  FileSystemType type_;
   SandboxFileSystemTestHelper sandbox_file_system_;
   blink::mojom::QuotaStatusCode quota_status_;
   int64_t usage_;
-  storage::MockFileChangeObserver change_observer_;
-  storage::ChangeObserverList change_observers_;
+  MockFileChangeObserver change_observer_;
+  ChangeObserverList change_observers_;
   base::WeakPtrFactory<ObfuscatedFileUtilTest> weak_factory_{this};
 
  private:
@@ -1903,8 +1889,8 @@ TEST_P(ObfuscatedFileUtilTest, TestDirectoryTimestampForCreation) {
   base::FilePath foreign_src_file_path =
       foreign_source_dir.GetPath().AppendASCII("file_name");
 
-  EXPECT_EQ(base::File::FILE_OK, storage::NativeFileUtil::EnsureFileExists(
-                                     foreign_src_file_path, &created));
+  EXPECT_EQ(base::File::FILE_OK,
+            NativeFileUtil::EnsureFileExists(foreign_src_file_path, &created));
   EXPECT_TRUE(created);
 
   ClearTimestamp(dir_url);
@@ -2013,8 +1999,8 @@ TEST_P(ObfuscatedFileUtilTest, TestFileEnumeratorTimestamp) {
                          base::Time()));
 
   context.reset(NewContext(nullptr));
-  std::unique_ptr<storage::FileSystemFileUtil::AbstractFileEnumerator>
-      file_enum(ofu()->CreateFileEnumerator(context.get(), dir, false));
+  std::unique_ptr<FileSystemFileUtil::AbstractFileEnumerator> file_enum =
+      ofu()->CreateFileEnumerator(context.get(), dir, false);
 
   int count = 0;
   base::FilePath file_path_each;
@@ -2534,4 +2520,4 @@ TEST_P(ObfuscatedFileUtilTest, DeleteDirectoryForOriginAndType_DeleteAll) {
   ASSERT_EQ(base::File::FILE_OK, error);
 }
 
-}  // namespace content
+}  // namespace storage

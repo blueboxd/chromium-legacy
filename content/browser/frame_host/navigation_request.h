@@ -366,6 +366,12 @@ class CONTENT_EXPORT NavigationRequest
   // due to another navigation committing in the meantime.
   void ResetForCrossDocumentRestart();
 
+  // If the navigation redirects cross-process or otherwise is forced to use a
+  // different SiteInstance than anticipated (e.g., for switching between error
+  // states), then reset any sensitive state that shouldn't carry over to the
+  // new process.
+  void ResetStateForSiteInstanceChange();
+
   // Lazily initializes and returns the mojo::NavigationClient interface used
   // for commit. Only used with PerNavigationMojoInterface enabled.
   mojom::NavigationClient* GetCommitNavigationClient();

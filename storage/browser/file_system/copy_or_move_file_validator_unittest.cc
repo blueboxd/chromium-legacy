@@ -4,6 +4,8 @@
 
 #include <stddef.h>
 #include <stdint.h>
+
+#include <memory>
 #include <string>
 #include <utility>
 
@@ -31,18 +33,12 @@
 #include "testing/gtest/include/gtest/gtest.h"
 #include "url/origin.h"
 
-using content::AsyncFileTestHelper;
-using storage::CopyOrMoveFileValidator;
-using storage::CopyOrMoveFileValidatorFactory;
-using storage::FileSystemURL;
-
-namespace content {
+namespace storage {
 
 namespace {
 
-const storage::FileSystemType kNoValidatorType =
-    storage::kFileSystemTypeTemporary;
-const storage::FileSystemType kWithValidatorType = storage::kFileSystemTypeTest;
+const FileSystemType kNoValidatorType = kFileSystemTypeTemporary;
+const FileSystemType kWithValidatorType = kFileSystemTypeTest;
 
 void ExpectOk(const GURL& origin_url,
               const std::string& name,
@@ -53,8 +49,8 @@ void ExpectOk(const GURL& origin_url,
 class CopyOrMoveFileValidatorTestHelper {
  public:
   CopyOrMoveFileValidatorTestHelper(const std::string& origin,
-                                    storage::FileSystemType src_type,
-                                    storage::FileSystemType dest_type)
+                                    FileSystemType src_type,
+                                    FileSystemType dest_type)
       : origin_(url::Origin::Create(GURL(origin))),
         src_type_(src_type),
         dest_type_(dest_type) {}
@@ -71,18 +67,17 @@ class CopyOrMoveFileValidatorTestHelper {
     file_system_context_ = CreateFileSystemContextForTesting(nullptr, base_dir);
 
     // Set up TestFileSystemBackend to require CopyOrMoveFileValidator.
-    storage::FileSystemBackend* test_file_system_backend =
+    FileSystemBackend* test_file_system_backend =
         file_system_context_->GetFileSystemBackend(kWithValidatorType);
     static_cast<TestFileSystemBackend*>(test_file_system_backend)
         ->set_require_copy_or_move_validator(true);
 
     // Sets up source.
-    storage::FileSystemBackend* src_file_system_backend =
+    FileSystemBackend* src_file_system_backend =
         file_system_context_->GetFileSystemBackend(src_type_);
     src_file_system_backend->ResolveURL(
         FileSystemURL::CreateForTest(origin_, src_type_, base::FilePath()),
-        storage::OPEN_FILE_SYSTEM_CREATE_IF_NONEXISTENT,
-        base::BindOnce(&ExpectOk));
+        OPEN_FILE_SYSTEM_CREATE_IF_NONEXISTENT, base::BindOnce(&ExpectOk));
     base::RunLoop().RunUntilIdle();
     ASSERT_EQ(base::File::FILE_OK, CreateDirectory(SourceURL("")));
 
@@ -105,7 +100,7 @@ class CopyOrMoveFileValidatorTestHelper {
   }
 
   void SetMediaCopyOrMoveFileValidatorFactory(
-      std::unique_ptr<storage::CopyOrMoveFileValidatorFactory> factory) {
+      std::unique_ptr<CopyOrMoveFileValidatorFactory> factory) {
     TestFileSystemBackend* backend = static_cast<TestFileSystemBackend*>(
         file_system_context_->GetFileSystemBackend(kWithValidatorType));
     backend->InitializeCopyOrMoveFileValidatorFactory(std::move(factory));
@@ -177,13 +172,13 @@ class CopyOrMoveFileValidatorTestHelper {
 
   const url::Origin origin_;
 
-  const storage::FileSystemType src_type_;
-  const storage::FileSystemType dest_type_;
+  const FileSystemType src_type_;
+  const FileSystemType dest_type_;
   std::string src_fsid_;
   std::string dest_fsid_;
 
   base::test::TaskEnvironment task_environment_;
-  scoped_refptr<storage::FileSystemContext> file_system_context_;
+  scoped_refptr<FileSystemContext> file_system_context_;
 
   FileSystemURL copy_src_;
   FileSystemURL copy_dest_;
@@ -197,7 +192,7 @@ class CopyOrMoveFileValidatorTestHelper {
 enum Validity { VALID, PRE_WRITE_INVALID, POST_WRITE_INVALID };
 
 class TestCopyOrMoveFileValidatorFactory
-    : public storage::CopyOrMoveFileValidatorFactory {
+    : public CopyOrMoveFileValidatorFactory {
  public:
   // A factory that creates validators that accept everything or nothing.
   // TODO(gbillock): switch args to enum or something
@@ -205,7 +200,7 @@ class TestCopyOrMoveFileValidatorFactory
       : validity_(validity) {}
   ~TestCopyOrMoveFileValidatorFactory() override = default;
 
-  storage::CopyOrMoveFileValidator* CreateCopyOrMoveFileValidator(
+  CopyOrMoveFileValidator* CreateCopyOrMoveFileValidator(
       const FileSystemURL& /*src_url*/,
       const base::FilePath& /*platform_path*/) override {
     return new TestCopyOrMoveFileValidator(validity_);
@@ -323,4 +318,4 @@ TEST(CopyOrMoveFileValidatorTest, RejectPostWrite) {
   helper.MoveTest(base::File::FILE_ERROR_SECURITY);
 }
 
-}  // namespace content
+}  // namespace storage

@@ -378,17 +378,16 @@
 // instance will be used only for DCHECK builds and the second will
 // execute only during the first access to the given index, after which
 // the pointer is cached and the name never needed again.
-#define STATIC_HISTOGRAM_POINTER_GROUP(constant_histogram_name, index,        \
-                                       constant_maximum,                      \
-                                       histogram_add_method_invocation,       \
-                                       histogram_factory_get_invocation)      \
-  do {                                                                        \
-    static base::subtle::AtomicWord atomic_histograms[constant_maximum];      \
-    DCHECK_LE(0, index);                                                      \
-    DCHECK_LT(index, constant_maximum);                                       \
-    HISTOGRAM_POINTER_USE(&atomic_histograms[index], constant_histogram_name, \
-                          histogram_add_method_invocation,                    \
-                          histogram_factory_get_invocation);                  \
+#define STATIC_HISTOGRAM_POINTER_GROUP(                                     \
+    constant_histogram_name, index, constant_maximum,                       \
+    histogram_add_method_invocation, histogram_factory_get_invocation)      \
+  do {                                                                      \
+    static std::atomic_uintptr_t atomic_histograms[constant_maximum];       \
+    DCHECK_LE(0, index);                                                    \
+    DCHECK_LT(index, constant_maximum);                                     \
+    HISTOGRAM_POINTER_USE(                                                  \
+        std::addressof(atomic_histograms[index]), constant_histogram_name,  \
+        histogram_add_method_invocation, histogram_factory_get_invocation); \
   } while (0)
 
 //------------------------------------------------------------------------------

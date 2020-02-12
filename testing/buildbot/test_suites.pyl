@@ -1344,6 +1344,7 @@
           '--test-launcher-batch-limit=400',
           '--deqp-egl-display-type=angle-gl',
         ],
+        'linux_args': ['--no-xvfb'],
         'should_retry_with_patch': False,
         'swarming': {
           'shards': 4,
@@ -1364,6 +1365,7 @@
         'desktop_args': [
           '--test-launcher-batch-limit=400',
         ],
+        'linux_args': ['--no-xvfb'],
         'should_retry_with_patch': False,
         'swarming': {
           'shards': 4,
@@ -1384,6 +1386,7 @@
         'desktop_args': [
           '--test-launcher-batch-limit=400',
         ],
+        'linux_args': ['--no-xvfb'],
         'should_retry_with_patch': False,
         'swarming': {
           'shards': 4,
@@ -1412,6 +1415,7 @@
           '--test-launcher-batch-limit=400',
           '--deqp-egl-display-type=angle-gl',
         ],
+        'linux_args': ['--no-xvfb'],
         'should_retry_with_patch': False,
         'swarming': {
           'shards': 4,
@@ -1432,6 +1436,7 @@
         'desktop_args': [
           '--test-launcher-batch-limit=400',
         ],
+        'linux_args': ['--no-xvfb'],
         'should_retry_with_patch': False,
         'swarming': {
           'shards': 4,
@@ -1460,6 +1465,7 @@
           '--test-launcher-batch-limit=400',
           '--deqp-egl-display-type=angle-gl'
         ],
+        'linux_args': ['--no-xvfb'],
         'should_retry_with_patch': False,
         'swarming': {
           'shards': 10,
@@ -1480,6 +1486,7 @@
         'desktop_args': [
           '--test-launcher-batch-limit=400',
         ],
+        'linux_args': ['--no-xvfb'],
         'should_retry_with_patch': False,
         'swarming': {
           'shards': 10,
@@ -1511,6 +1518,7 @@
           '--test-launcher-batch-limit=400',
           '--deqp-egl-display-type=angle-gl',
         ],
+        'linux_args': ['--no-xvfb'],
         'should_retry_with_patch': False,
         'swarming': {
           'shards': 12,
@@ -1531,6 +1539,7 @@
         'desktop_args': [
           '--test-launcher-batch-limit=400',
         ],
+        'linux_args': ['--no-xvfb'],
         'should_retry_with_patch': False,
         'swarming': {
           'shards': 12,
@@ -1551,6 +1560,7 @@
         'desktop_args': [
           '--test-launcher-batch-limit=400',
         ],
+        'linux_args': ['--no-xvfb'],
         'should_retry_with_patch': False,
         'swarming': {
           'shards': 4,
@@ -1565,13 +1575,10 @@
         'args': [
           '--deqp-egl-display-type=angle-gles'
         ],
-        # Only pass the display type to desktop. The Android runner doesn't support
-        # passing args to the executable but only one display type is supported on
-        # Android anyways.
         'desktop_args': [
           '--test-launcher-batch-limit=400',
-          '--deqp-egl-display-type=angle-gles'
         ],
+        'linux_args': ['--no-xvfb'],
         'should_retry_with_patch': False,
         'swarming': {
           'shards': 12,
@@ -1592,6 +1599,7 @@
         'desktop_args': [
           '--test-launcher-batch-limit=0',
         ],
+        'linux_args': ['--no-xvfb'],
         'should_retry_with_patch': False,
         'test': 'angle_deqp_khr_gles2_tests',
       },
@@ -1609,6 +1617,7 @@
         'desktop_args': [
           '--test-launcher-batch-limit=0',
         ],
+        'linux_args': ['--no-xvfb'],
         'should_retry_with_patch': False,
         'swarming': {
           'shards': 2,
@@ -1629,6 +1638,7 @@
         'desktop_args': [
           '--test-launcher-batch-limit=0',
         ],
+        'linux_args': ['--no-xvfb'],
         'should_retry_with_patch': False,
         'swarming': {
           'shards': 2,
@@ -1645,6 +1655,7 @@
           # http://crbug.com/669196
           '--test-launcher-retry-limit=0'
         ],
+        'linux_args': ['--no-xvfb'],
         'should_retry_with_patch': False,
         'swarming': {
           'shards': 4,
@@ -1712,8 +1723,9 @@
         'desktop_args': [
           # ANGLE test retries deliberately disabled to prevent flakiness.
           # http://crbug.com/669196
-        '--test-launcher-retry-limit=0'
+          '--test-launcher-retry-limit=0'
         ],
+        'linux_args': ['--no-xvfb'],
         'should_retry_with_patch': False,
       },
     },
@@ -1993,7 +2005,8 @@
 
     'gpu_fyi_and_optional_win_specific_gtests': {
       'angle_gles1_conformance_tests': {
-        'args': ['--use-gpu-in-tests']
+        'args': ['--use-gpu-in-tests'],
+        'linux_args': ['--no-xvfb'],
       },
       'gles2_conform_d3d9_test': {
         'args': [

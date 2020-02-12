@@ -18,6 +18,7 @@
 #include "base/guid.h"
 #include "base/macros.h"
 #include "base/memory/ptr_util.h"
+#include "base/memory/scoped_refptr.h"
 #include "base/run_loop.h"
 #include "base/stl_util.h"
 #include "base/strings/string_number_conversions.h"
@@ -169,13 +170,14 @@ class CallbackScheduler : public CacheStorageScheduler {
   base::OnceClosure callback_;
 };
 
-class MockCacheStorageQuotaManagerProxy : public MockQuotaManagerProxy {
+class MockCacheStorageQuotaManagerProxy
+    : public storage::MockQuotaManagerProxy {
  public:
-  MockCacheStorageQuotaManagerProxy(MockQuotaManager* quota_manager,
+  MockCacheStorageQuotaManagerProxy(storage::MockQuotaManager* quota_manager,
                                     base::SingleThreadTaskRunner* task_runner)
       : MockQuotaManagerProxy(quota_manager, task_runner) {}
 
-  void RegisterClient(scoped_refptr<QuotaClient> client) override {
+  void RegisterClient(scoped_refptr<storage::QuotaClient> client) override {
     registered_clients_.push_back(std::move(client));
   }
 
@@ -191,7 +193,7 @@ class MockCacheStorageQuotaManagerProxy : public MockQuotaManagerProxy {
     DCHECK(registered_clients_.empty());
   }
 
-  std::vector<scoped_refptr<QuotaClient>> registered_clients_;
+  std::vector<scoped_refptr<storage::QuotaClient>> registered_clients_;
 };
 
 bool IsIndexFileCurrent(const base::FilePath& cache_dir) {
@@ -371,8 +373,8 @@ class CacheStorageManagerTest : public testing::Test {
     if (!MemoryOnly())
       temp_dir_path = temp_dir_.GetPath();
 
-    quota_policy_ = new MockSpecialStoragePolicy;
-    mock_quota_manager_ = new MockQuotaManager(
+    quota_policy_ = base::MakeRefCounted<storage::MockSpecialStoragePolicy>();
+    mock_quota_manager_ = base::MakeRefCounted<storage::MockQuotaManager>(
         MemoryOnly(), temp_dir_path, base::ThreadTaskRunnerHandle::Get().get(),
         quota_policy_.get());
     mock_quota_manager_->SetQuota(origin1_, StorageType::kTemporary,
@@ -380,8 +382,10 @@ class CacheStorageManagerTest : public testing::Test {
     mock_quota_manager_->SetQuota(origin2_, StorageType::kTemporary,
                                   1024 * 1024 * 100);
 
-    quota_manager_proxy_ = new MockCacheStorageQuotaManagerProxy(
-        mock_quota_manager_.get(), base::ThreadTaskRunnerHandle::Get().get());
+    quota_manager_proxy_ =
+        base::MakeRefCounted<MockCacheStorageQuotaManagerProxy>(
+            mock_quota_manager_.get(),
+            base::ThreadTaskRunnerHandle::Get().get());
 
     auto legacy_manager = LegacyCacheStorageManager::Create(
         temp_dir_path, base::ThreadTaskRunnerHandle::Get(),
@@ -808,8 +812,8 @@ class CacheStorageManagerTest : public testing::Test {
   TestBrowserContext browser_context_;
   scoped_refptr<BlobStorageContextWrapper> blob_storage_context_;
 
-  scoped_refptr<MockSpecialStoragePolicy> quota_policy_;
-  scoped_refptr<MockQuotaManager> mock_quota_manager_;
+  scoped_refptr<storage::MockSpecialStoragePolicy> quota_policy_;
+  scoped_refptr<storage::MockQuotaManager> mock_quota_manager_;
   scoped_refptr<MockCacheStorageQuotaManagerProxy> quota_manager_proxy_;
   scoped_refptr<CacheStorageContextImpl::ObserverList> observers_;
   scoped_refptr<CacheStorageManager> cache_manager_;

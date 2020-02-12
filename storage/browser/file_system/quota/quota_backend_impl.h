@@ -20,10 +20,6 @@ namespace base {
 class SequencedTaskRunner;
 }
 
-namespace content {
-class QuotaBackendImplTest;
-}
-
 namespace storage {
 
 class FileSystemUsageCache;
@@ -39,7 +35,7 @@ class COMPONENT_EXPORT(STORAGE_BROWSER) QuotaBackendImpl
   QuotaBackendImpl(base::SequencedTaskRunner* file_task_runner,
                    ObfuscatedFileUtil* obfuscated_file_util,
                    FileSystemUsageCache* file_system_usage_cache,
-                   storage::QuotaManagerProxy* quota_manager_proxy);
+                   QuotaManagerProxy* quota_manager_proxy);
   ~QuotaBackendImpl() override;
 
   // QuotaReservationManager::QuotaBackend overrides.
@@ -59,7 +55,7 @@ class COMPONENT_EXPORT(STORAGE_BROWSER) QuotaBackendImpl
                            FileSystemType type) override;
 
  private:
-  friend class content::QuotaBackendImplTest;
+  friend class QuotaBackendImplTest;
 
   struct QuotaReservationInfo {
     QuotaReservationInfo(const url::Origin& origin,
@@ -89,7 +85,7 @@ class COMPONENT_EXPORT(STORAGE_BROWSER) QuotaBackendImpl
   ObfuscatedFileUtil* obfuscated_file_util_;
   FileSystemUsageCache* file_system_usage_cache_;
 
-  scoped_refptr<storage::QuotaManagerProxy> quota_manager_proxy_;
+  scoped_refptr<QuotaManagerProxy> quota_manager_proxy_;
 
   base::WeakPtrFactory<QuotaBackendImpl> weak_ptr_factory_{this};
 

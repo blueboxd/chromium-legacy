@@ -110,6 +110,12 @@ void PluginVmInstaller::OnUpdateVmState(bool default_vm_exists) {
 
 void PluginVmInstaller::StartDlcDownload() {
   state_ = State::DOWNLOADING_DLC;
+
+  if (!GetPluginVmImageDownloadUrl().is_valid()) {
+    OnDownloadFailed(FailureReason::INVALID_IMAGE_URL);
+    return;
+  }
+
   dlc_download_start_tick_ = base::TimeTicks::Now();
 
   chromeos::DlcserviceClient::Get()->Install(
@@ -129,7 +135,8 @@ void PluginVmInstaller::StartDownload() {
   state_ = State::DOWNLOADING;
 
   GURL url = GetPluginVmImageDownloadUrl();
-  if (url.is_empty()) {
+  // This may have changed since running StartDlcDownload.
+  if (!url.is_valid()) {
     OnDownloadFailed(FailureReason::INVALID_IMAGE_URL);
     return;
   }

@@ -96,7 +96,7 @@ base::File::Error OpenFileSystemOnFileTaskRunner(
 PluginPrivateFileSystemBackend::PluginPrivateFileSystemBackend(
     base::SequencedTaskRunner* file_task_runner,
     const base::FilePath& profile_path,
-    storage::SpecialStoragePolicy* special_storage_policy,
+    SpecialStoragePolicy* special_storage_policy,
     const FileSystemOptions& file_system_options,
     leveldb::Env* env_override)
     : file_task_runner_(file_task_runner),
@@ -230,7 +230,7 @@ FileSystemQuotaUtil* PluginPrivateFileSystemBackend::GetQuotaUtil() {
 base::File::Error
 PluginPrivateFileSystemBackend::DeleteOriginDataOnFileTaskRunner(
     FileSystemContext* context,
-    storage::QuotaManagerProxy* proxy,
+    QuotaManagerProxy* proxy,
     const GURL& origin_url,
     FileSystemType type) {
   if (!CanHandleType(type))
@@ -244,7 +244,7 @@ PluginPrivateFileSystemBackend::DeleteOriginDataOnFileTaskRunner(
 
 void PluginPrivateFileSystemBackend::PerformStorageCleanupOnFileTaskRunner(
     FileSystemContext* context,
-    storage::QuotaManagerProxy* proxy,
+    QuotaManagerProxy* proxy,
     FileSystemType type) {
   if (!CanHandleType(type))
     return;
@@ -304,13 +304,12 @@ void PluginPrivateFileSystemBackend::GetOriginDetailsOnFileTaskRunner(
   *total_size = 0;
   *last_modified_time = base::Time::UnixEpoch();
   std::string fsid =
-      storage::IsolatedContext::GetInstance()->RegisterFileSystemForVirtualPath(
-          storage::kFileSystemTypePluginPrivate, "pluginprivate",
-          base::FilePath());
-  DCHECK(storage::ValidateIsolatedFileSystemId(fsid));
+      IsolatedContext::GetInstance()->RegisterFileSystemForVirtualPath(
+          kFileSystemTypePluginPrivate, "pluginprivate", base::FilePath());
+  DCHECK(ValidateIsolatedFileSystemId(fsid));
 
-  std::string root = storage::GetIsolatedFileSystemRootURIString(
-      origin.GetURL(), fsid, "pluginprivate");
+  std::string root = GetIsolatedFileSystemRootURIString(origin.GetURL(), fsid,
+                                                        "pluginprivate");
 
   std::unique_ptr<FileSystemOperationContext> operation_context(
       new FileSystemOperationContext(context));
@@ -336,8 +335,7 @@ void PluginPrivateFileSystemBackend::GetOriginDetailsOnFileTaskRunner(
     std::string plugin_name = plugin_path.BaseName().MaybeAsASCII();
     if (OpenFileSystemOnFileTaskRunner(
             obfuscated_file_util(), plugin_map_, origin, fsid, plugin_name,
-            storage::OPEN_FILE_SYSTEM_FAIL_IF_NONEXISTENT) !=
-        base::File::FILE_OK) {
+            OPEN_FILE_SYSTEM_FAIL_IF_NONEXISTENT) != base::File::FILE_OK) {
       continue;
     }
 

@@ -8,6 +8,7 @@
 #include "base/files/file_path.h"
 #include "base/files/scoped_temp_dir.h"
 #include "base/macros.h"
+#include "base/memory/scoped_refptr.h"
 #include "base/run_loop.h"
 #include "base/task/post_task.h"
 #include "base/task/task_traits.h"
@@ -66,7 +67,8 @@ class FileSystemOperationRunnerTest : public testing::Test {
   void SetUp() override {
     ASSERT_TRUE(base_.CreateUniqueTempDir());
     base::FilePath base_dir = base_.GetPath();
-    file_system_context_ = CreateFileSystemContextForTesting(nullptr, base_dir);
+    file_system_context_ =
+        storage::CreateFileSystemContextForTesting(nullptr, base_dir);
   }
 
   void TearDown() override {
@@ -188,15 +190,15 @@ class MultiThreadFileSystemOperationRunnerTest : public testing::Test {
     ASSERT_TRUE(base_.CreateUniqueTempDir());
 
     base::FilePath base_dir = base_.GetPath();
-    file_system_context_ = new FileSystemContext(
+    file_system_context_ = base::MakeRefCounted<FileSystemContext>(
         base::ThreadTaskRunnerHandle::Get().get(),
         base::CreateSequencedTaskRunner({base::ThreadPool(), base::MayBlock()})
             .get(),
         storage::ExternalMountPoints::CreateRefCounted().get(),
-        base::MakeRefCounted<MockSpecialStoragePolicy>().get(), nullptr,
-        std::vector<std::unique_ptr<storage::FileSystemBackend>>(),
+        base::MakeRefCounted<storage::MockSpecialStoragePolicy>().get(),
+        nullptr, std::vector<std::unique_ptr<storage::FileSystemBackend>>(),
         std::vector<storage::URLRequestAutoMountHandler>(), base_dir,
-        CreateAllowFileAccessOptions());
+        storage::CreateAllowFileAccessOptions());
 
     // Disallow IO on the main loop.
     base::ThreadRestrictions::SetIOAllowed(false);

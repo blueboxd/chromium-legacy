@@ -50,13 +50,11 @@ class CreditCardAccessManager : public CreditCardCVCAuthenticator::Requester,
         const base::string16& cvc = base::string16()) = 0;
   };
 
-  explicit CreditCardAccessManager(AutofillDriver* driver,
-                                   AutofillManager* autofill_manager);
   CreditCardAccessManager(
       AutofillDriver* driver,
       AutofillClient* client,
       PersonalDataManager* personal_data_manager,
-      CreditCardFormEventLogger* credit_card_form_event_logger = nullptr);
+      CreditCardFormEventLogger* credit_card_form_event_logger);
   ~CreditCardAccessManager() override;
 
   // Logs information about current credit card data.
@@ -134,6 +132,10 @@ class CreditCardAccessManager : public CreditCardCVCAuthenticator::Requester,
       AutofillClient::PaymentsRpcResult result,
       payments::PaymentsClient::UnmaskDetails& unmask_details);
 
+  // Determines what form of authentication is required.
+  CreditCardFormEventLogger::UnmaskAuthFlowType GetAuthenticationType(
+      bool get_unmask_details_returned);
+
   // If OnDidGetUnmaskDetails() was invoked by PaymentsClient, then
   // |get_unmask_details_returned| should be set to true. Based on the
   // contents of |unmask_details_|, either FIDO authentication or CVC
@@ -190,14 +192,13 @@ class CreditCardAccessManager : public CreditCardCVCAuthenticator::Requester,
   // after a timeout.
   void SignalCanFetchUnmaskDetails();
 
+  // The current form of authentication in progress.
+  CreditCardFormEventLogger::UnmaskAuthFlowType unmask_auth_flow_type_ =
+      CreditCardFormEventLogger::UnmaskAuthFlowType::kNone;
+
   // Is set to true only when waiting for the callback to
   // OnCVCAuthenticationComplete() to be executed.
   bool is_authentication_in_progress_ = false;
-
-  // Set to true if the card selected needs to be authenticated through CVC
-  // first, and then FIDO. This happens when a user is opted-in but has not
-  // previously authenticated this card with CVC on this device.
-  bool should_follow_up_cvc_with_fido_auth_ = false;
 
   // The associated autofill driver. Weak reference.
   AutofillDriver* const driver_;
@@ -214,7 +215,7 @@ class CreditCardAccessManager : public CreditCardCVCAuthenticator::Requester,
   // May be NULL. NULL indicates OTR.
   PersonalDataManager* personal_data_manager_;
 
-  // For logging metrics. May be NULL for tests.
+  // For logging metrics.
   CreditCardFormEventLogger* form_event_logger_;
 
   // Timestamp used for preflight call metrics.

@@ -1313,7 +1313,7 @@ PhysicalRect LayoutInline::LinesVisualOverflowBoundingBox() const {
     NGInlineCursor cursor;
     cursor.MoveTo(*this);
     for (; cursor; cursor.MoveToNextForSameLayoutObject()) {
-      PhysicalRect child_rect = cursor.CurrentInkOverflow();
+      PhysicalRect child_rect = cursor.Current().InkOverflow();
       child_rect.offset += cursor.Current().OffsetInContainerBlock();
       result.Unite(child_rect);
     }
@@ -1784,7 +1784,7 @@ void LayoutInline::InvalidateDisplayItemClients(
       return;
     NGInlineCursor cursor;
     for (cursor.MoveTo(*this); cursor; cursor.MoveToNextForSameLayoutObject()) {
-      DCHECK_EQ(cursor.CurrentLayoutObject(), this);
+      DCHECK_EQ(cursor.Current().GetLayoutObject(), this);
       paint_invalidator.InvalidateDisplayItemClient(
           *cursor.Current().GetDisplayItemClient(), invalidation_reason);
     }

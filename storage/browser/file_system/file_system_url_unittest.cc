@@ -24,14 +24,7 @@
 #define DRIVE FPL("/a/")
 #endif
 
-using storage::FileSystemURL;
-using storage::kFileSystemTypeExternal;
-using storage::kFileSystemTypeIsolated;
-using storage::kFileSystemTypePersistent;
-using storage::kFileSystemTypeTemporary;
-using storage::VirtualPath;
-
-namespace content {
+namespace storage {
 
 namespace {
 
@@ -248,4 +241,4 @@ TEST(FileSystemURLTest, ValidAfterMoves) {
   }
 }
 
-}  // namespace content
+}  // namespace storage

@@ -19,8 +19,6 @@
 #include "storage/browser/file_system/obfuscated_file_util_memory_delegate.h"
 #include "storage/browser/file_system/plugin_private_file_system_backend.h"
 
-using storage::FileStreamReader;
-
 // TODO(kinuko): Remove this temporary namespace hack after we move both
 // blob and fileapi into content namespace.
 namespace storage {
@@ -83,7 +81,7 @@ void FileSystemFileStreamReader::DidCreateSnapshot(
     base::File::Error file_error,
     const base::File::Info& file_info,
     const base::FilePath& platform_path,
-    scoped_refptr<storage::ShareableFileReference> file_ref) {
+    scoped_refptr<ShareableFileReference> file_ref) {
   DCHECK(has_pending_create_snapshot_);
   DCHECK(!file_reader_.get());
   has_pending_create_snapshot_ = false;

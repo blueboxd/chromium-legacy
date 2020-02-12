@@ -412,12 +412,14 @@ class BrowsingDataRemoverImplTest : public testing::Test {
     return storage_partition_removal_data_;
   }
 
-  MockSpecialStoragePolicy* CreateMockPolicy() {
-    mock_policy_ = new MockSpecialStoragePolicy();
+  storage::MockSpecialStoragePolicy* CreateMockPolicy() {
+    mock_policy_ = base::MakeRefCounted<storage::MockSpecialStoragePolicy>();
     return mock_policy_.get();
   }
 
-  MockSpecialStoragePolicy* mock_policy() { return mock_policy_.get(); }
+  storage::MockSpecialStoragePolicy* mock_policy() {
+    return mock_policy_.get();
+  }
 
   bool Match(const GURL& origin,
              int mask,
@@ -435,7 +437,7 @@ class BrowsingDataRemoverImplTest : public testing::Test {
 
   StoragePartitionRemovalData storage_partition_removal_data_;
 
-  scoped_refptr<MockSpecialStoragePolicy> mock_policy_;
+  scoped_refptr<storage::MockSpecialStoragePolicy> mock_policy_;
 
   DISALLOW_COPY_AND_ASSIGN(BrowsingDataRemoverImplTest);
 };
@@ -519,7 +521,7 @@ TEST_F(BrowsingDataRemoverImplTest, RemoveCookiesDomainBlacklist) {
 }
 
 TEST_F(BrowsingDataRemoverImplTest, RemoveUnprotectedLocalStorageForever) {
-  MockSpecialStoragePolicy* policy = CreateMockPolicy();
+  storage::MockSpecialStoragePolicy* policy = CreateMockPolicy();
   // Protect Origin1().
   policy->AddProtected(Origin1().GetURL());
 
@@ -548,7 +550,7 @@ TEST_F(BrowsingDataRemoverImplTest, RemoveUnprotectedLocalStorageForever) {
 
 TEST_F(BrowsingDataRemoverImplTest, RemoveProtectedLocalStorageForever) {
   // Protect Origin1().
-  MockSpecialStoragePolicy* policy = CreateMockPolicy();
+  storage::MockSpecialStoragePolicy* policy = CreateMockPolicy();
   policy->AddProtected(Origin1().GetURL());
 
   BlockUntilBrowsingDataRemoved(base::Time(), base::Time::Max(),
@@ -921,7 +923,7 @@ TEST_F(BrowsingDataRemoverImplTest, RemoveQuotaManagedDataForLastWeek) {
 }
 
 TEST_F(BrowsingDataRemoverImplTest, RemoveQuotaManagedUnprotectedOrigins) {
-  MockSpecialStoragePolicy* policy = CreateMockPolicy();
+  storage::MockSpecialStoragePolicy* policy = CreateMockPolicy();
   // Protect Origin1().
   policy->AddProtected(Origin1().GetURL());
 
@@ -965,7 +967,7 @@ TEST_F(BrowsingDataRemoverImplTest, RemoveQuotaManagedUnprotectedOrigins) {
 }
 
 TEST_F(BrowsingDataRemoverImplTest, RemoveQuotaManagedProtectedSpecificOrigin) {
-  MockSpecialStoragePolicy* policy = CreateMockPolicy();
+  storage::MockSpecialStoragePolicy* policy = CreateMockPolicy();
   // Protect Origin1().
   policy->AddProtected(Origin1().GetURL());
 
@@ -1016,7 +1018,7 @@ TEST_F(BrowsingDataRemoverImplTest, RemoveQuotaManagedProtectedSpecificOrigin) {
 }
 
 TEST_F(BrowsingDataRemoverImplTest, RemoveQuotaManagedProtectedOrigins) {
-  MockSpecialStoragePolicy* policy = CreateMockPolicy();
+  storage::MockSpecialStoragePolicy* policy = CreateMockPolicy();
   // Protect Origin1().
   policy->AddProtected(Origin1().GetURL());
 
@@ -1267,7 +1269,6 @@ class MultipleTasksObserver {
   Target* target_b() { return &target_b_; }
 
  private:
-
   Target target_a_;
   Target target_b_;
   std::vector<BrowsingDataRemover::Observer*> last_called_targets_;

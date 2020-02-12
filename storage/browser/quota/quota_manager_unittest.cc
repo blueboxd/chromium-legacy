@@ -38,12 +38,8 @@
 
 using blink::mojom::QuotaStatusCode;
 using blink::mojom::StorageType;
-using storage::QuotaClient;
-using storage::QuotaManager;
-using storage::UsageInfo;
-using storage::UsageInfoEntries;
 
-namespace content {
+namespace storage {
 
 namespace {
 
@@ -104,14 +100,14 @@ class QuotaManagerTest : public testing::Test {
     quota_manager_ = new QuotaManager(is_incognito, data_dir_.GetPath(),
                                       base::ThreadTaskRunnerHandle::Get().get(),
                                       mock_special_storage_policy_.get(),
-                                      storage::GetQuotaSettingsFunc());
+                                      GetQuotaSettingsFunc());
     SetQuotaSettings(kDefaultPoolSize, kDefaultPerHostQuota,
                      is_incognito ? INT64_C(0) : kMustRemainAvailableForSystem);
 
     // Don't (automatically) start the eviction for testing.
     quota_manager_->eviction_disabled_ = true;
     // Don't query the hard disk for remaining capacity.
-    quota_manager_->get_volume_info_fn_= &GetVolumeInfoForTests;
+    quota_manager_->get_volume_info_fn_ = &GetVolumeInfoForTests;
     additional_callback_count_ = 0;
   }
 
@@ -169,7 +165,7 @@ class QuotaManagerTest : public testing::Test {
   void SetQuotaSettings(int64_t pool_size,
                         int64_t per_host_quota,
                         int64_t must_remain_available) {
-    storage::QuotaSettings settings;
+    QuotaSettings settings;
     settings.pool_size = pool_size;
     settings.per_host_quota = per_host_quota;
     settings.session_only_per_host_quota =
@@ -275,7 +271,7 @@ class QuotaManagerTest : public testing::Test {
 
   void GetEvictionRoundInfo() {
     quota_status_ = QuotaStatusCode::kUnknown;
-    settings_ = storage::QuotaSettings();
+    settings_ = QuotaSettings();
     available_space_ = -1;
     total_space_ = -1;
     usage_ = -1;
@@ -394,7 +390,7 @@ class QuotaManagerTest : public testing::Test {
   }
 
   void DidGetEvictionRoundInfo(QuotaStatusCode status,
-                               const storage::QuotaSettings& settings,
+                               const QuotaSettings& settings,
                                int64_t available_space,
                                int64_t total_space,
                                int64_t global_usage,
@@ -465,7 +461,7 @@ class QuotaManagerTest : public testing::Test {
   const OriginInfoTableEntries& origin_info_entries() const {
     return origin_info_entries_;
   }
-  const storage::QuotaSettings& settings() const { return settings_; }
+  const QuotaSettings& settings() const { return settings_; }
   base::FilePath profile_path() const { return data_dir_.GetPath(); }
   int status_callback_count() const { return status_callback_count_; }
   void reset_status_callback_count() { status_callback_count_ = 0; }
@@ -498,7 +494,7 @@ class QuotaManagerTest : public testing::Test {
   StorageType modified_origins_type_;
   QuotaTableEntries quota_entries_;
   OriginInfoTableEntries origin_info_entries_;
-  storage::QuotaSettings settings_;
+  QuotaSettings settings_;
   int status_callback_count_;
 
   int additional_callback_count_;
@@ -1249,8 +1245,7 @@ TEST_F(QuotaManagerTest, GetStaticQuotaLowAvailableDiskSpace) {
   // quota as what is set in QuotaSettings, despite being in a state of low
   // available space. Notice the different expectation in the last line of
   // each test.
-  scoped_feature_list_.InitAndEnableFeature(
-      storage::features::kStaticHostQuota);
+  scoped_feature_list_.InitAndEnableFeature(features::kStaticHostQuota);
   static const MockOriginData kData[] = {
       {"http://foo.com/", kTemp, 100000},
       {"http://unlimited/", kTemp, 4000000},
@@ -2493,4 +2488,4 @@ TEST_F(QuotaManagerTest, GetUsageAndQuota_SessionOnly) {
   EXPECT_EQ(0, quota());
 }
 
-}  // namespace content
+}  // namespace storage

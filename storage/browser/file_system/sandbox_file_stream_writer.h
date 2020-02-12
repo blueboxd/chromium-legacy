@@ -51,12 +51,11 @@ class COMPONENT_EXPORT(STORAGE_BROWSER) SandboxFileStreamWriter
 
   // Callbacks that are chained for the first write.  This eventually calls
   // WriteInternal.
-  void DidCreateSnapshotFile(
-      net::CompletionOnceCallback callback,
-      base::File::Error file_error,
-      const base::File::Info& file_info,
-      const base::FilePath& platform_path,
-      scoped_refptr<storage::ShareableFileReference> file_ref);
+  void DidCreateSnapshotFile(net::CompletionOnceCallback callback,
+                             base::File::Error file_error,
+                             const base::File::Info& file_info,
+                             const base::FilePath& platform_path,
+                             scoped_refptr<ShareableFileReference> file_ref);
   void DidGetUsageAndQuota(net::CompletionOnceCallback callback,
                            blink::mojom::QuotaStatusCode status,
                            int64_t usage,

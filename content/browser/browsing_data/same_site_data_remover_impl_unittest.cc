@@ -275,8 +275,8 @@ TEST_F(SameSiteDataRemoverImplTest, TestStoragePartitionDataRemoval) {
   EXPECT_EQ(removal_data.quota_storage_removal_mask,
             expected_quota_storage_mask);
 
-  scoped_refptr<MockSpecialStoragePolicy> special_storage_policy =
-      new MockSpecialStoragePolicy;
+  auto special_storage_policy =
+      base::MakeRefCounted<storage::MockSpecialStoragePolicy>();
   EXPECT_TRUE(removal_data.origin_matcher.Run(
       url::Origin::Create(GURL("http://www.google.com/test")),
       special_storage_policy.get()));

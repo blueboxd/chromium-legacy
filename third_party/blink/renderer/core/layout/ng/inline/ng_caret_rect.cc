@@ -30,7 +30,7 @@ PhysicalRect ComputeLocalCaretRectByBoxSide(const NGInlineCursor& cursor,
       is_horizontal ? -offset_to_line_box.top : -offset_to_line_box.left;
 
   const LocalFrameView* frame_view =
-      cursor.CurrentLayoutObject()->GetDocument().View();
+      cursor.Current().GetLayoutObject()->GetDocument().View();
   LayoutUnit caret_width = frame_view->CaretWidth();
 
   const bool is_ltr = IsLtr(cursor.CurrentResolvedDirection());
@@ -59,7 +59,7 @@ PhysicalRect ComputeLocalCaretRectAtTextOffset(const NGInlineCursor& cursor,
   DCHECK_LE(offset, cursor.CurrentTextEndOffset());
 
   const LocalFrameView* frame_view =
-      cursor.CurrentLayoutObject()->GetDocument().View();
+      cursor.Current().GetLayoutObject()->GetDocument().View();
   LayoutUnit caret_width = frame_view->CaretWidth();
 
   const bool is_horizontal = cursor.Current().Style().IsHorizontalWritingMode();
@@ -83,7 +83,7 @@ PhysicalRect ComputeLocalCaretRectAtTextOffset(const NGInlineCursor& cursor,
   const PhysicalSize caret_size(caret_width, caret_height);
 
   const NGPhysicalBoxFragment& fragmentainer =
-      *cursor.CurrentLayoutObject()->ContainingBlockFlowFragment();
+      *cursor.Current().GetLayoutObject()->ContainingBlockFlowFragment();
   NGInlineCursor line_box(cursor);
   line_box.MoveToContainingLine();
   const PhysicalOffset line_box_offset =
@@ -118,7 +118,7 @@ LocalCaretRect ComputeLocalCaretRect(const NGCaretPosition& caret_position) {
     return LocalCaretRect();
 
   const LayoutObject* layout_object =
-      caret_position.cursor.CurrentLayoutObject();
+      caret_position.cursor.Current().GetLayoutObject();
   switch (caret_position.position_type) {
     case NGCaretPositionType::kBeforeBox:
     case NGCaretPositionType::kAfterBox: {

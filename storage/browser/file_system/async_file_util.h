@@ -68,11 +68,11 @@ class AsyncFileUtil {
   using ReadDirectoryCallback = base::RepeatingCallback<
       void(base::File::Error result, EntryList file_list, bool has_more)>;
 
-  using CreateSnapshotFileCallback = base::OnceCallback<void(
-      base::File::Error result,
-      const base::File::Info& file_info,
-      const base::FilePath& platform_path,
-      scoped_refptr<storage::ShareableFileReference> file_ref)>;
+  using CreateSnapshotFileCallback =
+      base::OnceCallback<void(base::File::Error result,
+                              const base::File::Info& file_info,
+                              const base::FilePath& platform_path,
+                              scoped_refptr<ShareableFileReference> file_ref)>;
 
   using CopyFileProgressCallback = base::RepeatingCallback<void(int64_t size)>;
 

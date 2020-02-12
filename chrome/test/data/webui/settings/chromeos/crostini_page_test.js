@@ -157,6 +157,45 @@ suite('CrostiniPageTests', function() {
               'requestCrostiniContainerUpgradeView'));
     });
 
+    test('ContainerUpgradeButtonDisabledOnUpgradeDialog', function() {
+      const button = subpage.$$('#container-upgrade cr-button');
+      assertTrue(!!button);
+      return flushAsync()
+          .then(() => {
+            assertFalse(button.disabled);
+            cr.webUIListenerCallback('crostini-upgrader-status-changed', true);
+            return flushAsync();
+          })
+          .then(() => {
+            assertTrue(button.disabled);
+            cr.webUIListenerCallback('crostini-upgrader-status-changed', false);
+            return flushAsync();
+          })
+          .then(() => {
+            assertFalse(button.disabled);
+          });
+    });
+
+    test('ContainerUpgradeButtonDisabledOnInstall', function() {
+      const button = subpage.$$('#container-upgrade cr-button');
+      assertTrue(!!button);
+      return flushAsync()
+          .then(() => {
+            assertFalse(button.disabled);
+            cr.webUIListenerCallback('crostini-installer-status-changed', true);
+            return flushAsync();
+          })
+          .then(() => {
+            assertTrue(button.disabled);
+            cr.webUIListenerCallback(
+                'crostini-installer-status-changed', false);
+            return flushAsync();
+          })
+          .then(() => {
+            assertFalse(button.disabled);
+          });
+    });
+
     test('Export', function() {
       assertTrue(!!subpage.$$('#crostini-export-import'));
       subpage.$$('#crostini-export-import').click();

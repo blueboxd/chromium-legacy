@@ -8,6 +8,7 @@ option optimize_for = LITE_RUNTIME;
 package optimization_guide.proto;
 
 import "common_types.proto";
+import "loading_predictor_metadata.proto";
 import "performance_hints_metadata.proto";
 import "previews_metadata.proto";
 import "public_image_metadata.proto";
@@ -128,6 +129,9 @@ enum OptimizationType {
   LITE_PAGE = 7;
   // This optimization compresses public images.
   COMPRESS_PUBLIC_IMAGES = 8;
+  // This optimization provides the Loading Predictor with resources predicted
+  // to be on the page.
+  LOADING_PREDICTOR = 9;
 }
 
 // Presents semantics for how page load URLs should be matched.
@@ -177,6 +181,7 @@ message Optimization {
     PreviewsMetadata previews_metadata = 10;
     PerformanceHintsMetadata performance_hints_metadata = 11;
     PublicImageMetadata public_image_metadata = 12;
+    LoadingPredictorMetadata loading_predictor_metadata = 13;
   }
 }
 

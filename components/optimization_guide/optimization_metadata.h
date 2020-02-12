@@ -42,6 +42,15 @@ class OptimizationMetadata {
     public_image_metadata_ = public_image_metadata;
   }
 
+  base::Optional<proto::LoadingPredictorMetadata> loading_predictor_metadata()
+      const {
+    return loading_predictor_metadata_;
+  }
+  void set_loading_predictor_metadata(
+      const proto::LoadingPredictorMetadata& loading_predictor_metadata) {
+    loading_predictor_metadata_ = loading_predictor_metadata;
+  }
+
  private:
   // Only applicable for NOSCRIPT and RESOURCE_LOADING optimization types.
   base::Optional<proto::PreviewsMetadata> previews_metadata_;
@@ -51,6 +60,9 @@ class OptimizationMetadata {
 
   // Only applicable for the COMPRESS_PUBLIC_IMAGES optimization type.
   base::Optional<proto::PublicImageMetadata> public_image_metadata_;
+
+  // Only applicable for the LOADING_PREDICTOR optimization type.
+  base::Optional<proto::LoadingPredictorMetadata> loading_predictor_metadata_;
 };
 
 }  // namespace optimization_guide

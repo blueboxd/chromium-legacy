@@ -2,6 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include <set>
 #include <utility>
 
 #include "base/bind.h"
@@ -24,8 +25,6 @@
 #include "net/url_request/url_request_context_getter.h"
 #include "storage/browser/test/mock_special_storage_policy.h"
 #include "testing/gtest/include/gtest/gtest.h"
-
-#include <set>
 
 namespace content {
 namespace {
@@ -70,7 +69,7 @@ ChromeAppCacheServiceTest::CreateAppCacheServiceImpl(
     bool init_storage) {
   auto appcache_service =
       base::MakeRefCounted<ChromeAppCacheService>(nullptr, nullptr);
-  auto mock_policy = base::MakeRefCounted<MockSpecialStoragePolicy>();
+  auto mock_policy = base::MakeRefCounted<storage::MockSpecialStoragePolicy>();
   mock_policy->AddProtected(kProtectedManifestURL.GetOrigin());
   mock_policy->AddSessionOnly(kSessionOnlyManifestURL.GetOrigin());
   appcache_service->Initialize(appcache_path, &browser_context_,

@@ -153,7 +153,7 @@ class RenderFrameHostDestructionObserver : public WebContentsObserver {
 
 // A NavigationThrottle implementation that blocks all outgoing navigation
 // requests for a specific WebContents. It is used to block navigations to
-// WebUI URLs in the following test.
+// WebUI URLs in tests.
 class RequestBlockingNavigationThrottle : public NavigationThrottle {
  public:
   explicit RequestBlockingNavigationThrottle(NavigationHandle* handle)
@@ -5231,9 +5231,7 @@ IN_PROC_BROWSER_TEST_P(RenderFrameHostManagerTest,
   if (!SiteIsolationPolicy::IsErrorPageIsolationEnabled(true))
     return;
 
-  StartEmbeddedServer();
-  GURL webui_url = GURL(std::string(kChromeUIScheme) + "://" +
-                        std::string(kChromeUIGpuHost));
+  GURL webui_url = GetWebUIURL(kChromeUIGpuHost);
   GURL error_url(webui_url.Resolve("/foo"));
 
   // Navigate to the main WebUI URL and ensure it is successful.
@@ -5245,8 +5243,8 @@ IN_PROC_BROWSER_TEST_P(RenderFrameHostManagerTest,
       shell()->web_contents(),
       base::BindRepeating(&RequestBlockingNavigationThrottle::Create));
 
-  // Navigate to an error URL and verify the error page process does not get
-  // WebUI bindings.
+  // Navigate to a WebUI URL and verify the resulting error page process does
+  // not get WebUI bindings.
   NavigationHandleObserver observer(shell()->web_contents(), error_url);
   EXPECT_FALSE(NavigateToURL(shell(), error_url));
   scoped_refptr<SiteInstance> error_site_instance =
@@ -5259,6 +5257,59 @@ IN_PROC_BROWSER_TEST_P(RenderFrameHostManagerTest,
   EXPECT_FALSE(ChildProcessSecurityPolicy::GetInstance()->HasWebUIBindings(
       error_site_instance->GetProcess()->GetID()));
   EXPECT_TRUE(IsMainFrameOriginOpaqueAndCompatibleWithURL(shell(), error_url));
+}
+
+// If a WebUI page leads to an error page and is then reloaded successfully from
+// its NavigationEntry, ensure that WebUI bindings are granted and that we don't
+// crash. See https://crbug.com/1046159.
+IN_PROC_BROWSER_TEST_P(RenderFrameHostManagerTest,
+                       ReloadWebUIErrorPageToValidWebUI) {
+  // This test is only valid if error page isolation is enabled.
+  if (!SiteIsolationPolicy::IsErrorPageIsolationEnabled(true))
+    return;
+
+  GURL webui_url = GetWebUIURL(kChromeUIGpuHost);
+
+  // Temporarily insert throttles that will block all navigations, leading to
+  // error pages instead.
+  {
+    TestNavigationThrottleInserter throttle_inserter(
+        shell()->web_contents(),
+        base::BindRepeating(&RequestBlockingNavigationThrottle::Create));
+
+    // Navigate to a WebUI URL and verify the resulting error page process does
+    // not get WebUI bindings.
+    NavigationHandleObserver observer(shell()->web_contents(), webui_url);
+    EXPECT_FALSE(NavigateToURL(shell(), webui_url));
+    EXPECT_TRUE(observer.is_error());
+    scoped_refptr<SiteInstance> error_site_instance =
+        shell()->web_contents()->GetMainFrame()->GetSiteInstance();
+    EXPECT_EQ(GURL(kUnreachableWebDataURL), error_site_instance->GetSiteURL());
+    EXPECT_FALSE(ChildProcessSecurityPolicy::GetInstance()->HasWebUIBindings(
+        error_site_instance->GetProcess()->GetID()));
+  }
+
+  // Once the throttles are no longer inserted into each navigation, reloading
+  // the NavigationEntry should succeed and grant WebUI bindings.
+  {
+    TestNavigationObserver reload_observer(shell()->web_contents());
+    shell()->web_contents()->GetController().Reload(ReloadType::NORMAL, false);
+    reload_observer.Wait();
+    EXPECT_TRUE(reload_observer.last_navigation_succeeded());
+  }
+  scoped_refptr<SiteInstance> webui_site_instance =
+      shell()->web_contents()->GetMainFrame()->GetSiteInstance();
+  EXPECT_EQ(webui_url, webui_site_instance->GetSiteURL());
+  EXPECT_TRUE(ChildProcessSecurityPolicy::GetInstance()->HasWebUIBindings(
+      webui_site_instance->GetProcess()->GetID()));
+
+  // A second reload should work without crashing the browser process.
+  {
+    TestNavigationObserver reload_observer(shell()->web_contents());
+    shell()->web_contents()->GetController().Reload(ReloadType::NORMAL, false);
+    reload_observer.Wait();
+    EXPECT_TRUE(reload_observer.last_navigation_succeeded());
+  }
 }
 
 // A test ContentBrowserClient implementation which enforces

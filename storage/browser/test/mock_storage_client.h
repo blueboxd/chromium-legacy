@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CONTENT_PUBLIC_TEST_MOCK_STORAGE_CLIENT_H_
-#define CONTENT_PUBLIC_TEST_MOCK_STORAGE_CLIENT_H_
+#ifndef STORAGE_BROWSER_TEST_MOCK_STORAGE_CLIENT_H_
+#define STORAGE_BROWSER_TEST_MOCK_STORAGE_CLIENT_H_
 
 #include <stddef.h>
 #include <stdint.h>
@@ -22,18 +22,12 @@
 #include "url/origin.h"
 
 namespace storage {
+
 class QuotaManagerProxy;
-}
-
-using storage::QuotaClient;
-using storage::QuotaManagerProxy;
-using blink::mojom::StorageType;
-
-namespace content {
 
 struct MockOriginData {
   const char* origin;
-  StorageType type;
+  blink::mojom::StorageType type;
   int64_t usage;
 };
 
@@ -47,14 +41,15 @@ class MockStorageClient : public QuotaClient {
 
   // To add or modify mock data in this client.
   void AddOriginAndNotify(const url::Origin& origin,
-                          StorageType type,
+                          blink::mojom::StorageType type,
                           int64_t size);
   void ModifyOriginAndNotify(const url::Origin& origin,
-                             StorageType type,
+                             blink::mojom::StorageType type,
                              int64_t delta);
   void TouchAllOriginsAndNotify();
 
-  void AddOriginToErrorSet(const url::Origin& origin, StorageType type);
+  void AddOriginToErrorSet(const url::Origin& origin,
+                           blink::mojom::StorageType type);
 
   base::Time IncrementMockTime();
 
@@ -62,32 +57,33 @@ class MockStorageClient : public QuotaClient {
   QuotaClient::ID id() const override;
   void OnQuotaManagerDestroyed() override;
   void GetOriginUsage(const url::Origin& origin,
-                      StorageType type,
+                      blink::mojom::StorageType type,
                       GetUsageCallback callback) override;
-  void GetOriginsForType(StorageType type,
+  void GetOriginsForType(blink::mojom::StorageType type,
                          GetOriginsCallback callback) override;
-  void GetOriginsForHost(StorageType type,
+  void GetOriginsForHost(blink::mojom::StorageType type,
                          const std::string& host,
                          GetOriginsCallback callback) override;
   void DeleteOriginData(const url::Origin& origin,
-                        StorageType type,
+                        blink::mojom::StorageType type,
                         DeletionCallback callback) override;
   void PerformStorageCleanup(blink::mojom::StorageType type,
                              base::OnceClosure callback) override;
-  bool DoesSupport(StorageType type) const override;
+  bool DoesSupport(blink::mojom::StorageType type) const override;
 
  private:
   ~MockStorageClient() override;
 
   void RunGetOriginUsage(const url::Origin& origin,
-                         StorageType type,
+                         blink::mojom::StorageType type,
                          GetUsageCallback callback);
-  void RunGetOriginsForType(StorageType type, GetOriginsCallback callback);
-  void RunGetOriginsForHost(StorageType type,
+  void RunGetOriginsForType(blink::mojom::StorageType type,
+                            GetOriginsCallback callback);
+  void RunGetOriginsForHost(blink::mojom::StorageType type,
                             const std::string& host,
                             GetOriginsCallback callback);
   void RunDeleteOriginData(const url::Origin& origin,
-                           StorageType type,
+                           blink::mojom::StorageType type,
                            DeletionCallback callback);
 
   void Populate(const MockOriginData* mock_data, size_t mock_data_size);
@@ -95,8 +91,9 @@ class MockStorageClient : public QuotaClient {
   const scoped_refptr<QuotaManagerProxy> quota_manager_proxy_;
   const ID id_;
 
-  std::map<std::pair<url::Origin, StorageType>, int64_t> origin_data_;
-  std::set<std::pair<url::Origin, StorageType>> error_origins_;
+  std::map<std::pair<url::Origin, blink::mojom::StorageType>, int64_t>
+      origin_data_;
+  std::set<std::pair<url::Origin, blink::mojom::StorageType>> error_origins_;
 
   int mock_time_counter_;
 
@@ -105,6 +102,6 @@ class MockStorageClient : public QuotaClient {
   DISALLOW_COPY_AND_ASSIGN(MockStorageClient);
 };
 
-}  // namespace content
+}  // namespace storage
 
-#endif  // CONTENT_PUBLIC_TEST_MOCK_STORAGE_CLIENT_H_
+#endif  // STORAGE_BROWSER_TEST_MOCK_STORAGE_CLIENT_H_

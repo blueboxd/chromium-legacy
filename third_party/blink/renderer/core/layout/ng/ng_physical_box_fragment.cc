@@ -98,6 +98,7 @@ NGPhysicalBoxFragment::NGPhysicalBoxFragment(
   if (has_padding_)
     *const_cast<NGPhysicalBoxStrut*>(ComputePaddingAddress()) = padding;
   is_first_for_node_ = builder->IsFirstForNode();
+  is_block_level_ = builder->IsBlockLevel();
   is_fieldset_container_ = builder->is_fieldset_container_;
   is_legacy_layout_root_ = builder->is_legacy_layout_root_;
   is_painted_atomically_ =

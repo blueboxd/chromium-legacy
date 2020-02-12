@@ -76,7 +76,7 @@ class MediaFileValidatorTest : public InProcessBrowserTest {
  public:
   MediaFileValidatorTest() : test_file_size_(0) {}
 
-  ~MediaFileValidatorTest() override {}
+  ~MediaFileValidatorTest() override = default;
 
   // Write |content| into |filename| in a test file system and try to move
   // it into a media file system.  The result is compared to |expected_result|.
@@ -128,15 +128,15 @@ class MediaFileValidatorTest : public InProcessBrowserTest {
     file_system_runner_ =
         base::CreateSequencedTaskRunner({base::ThreadPool(), base::MayBlock()});
     additional_providers.push_back(
-        std::make_unique<content::TestFileSystemBackend>(
+        std::make_unique<storage::TestFileSystemBackend>(
             file_system_runner_.get(), src_path));
     additional_providers.push_back(
         std::make_unique<MediaFileSystemBackend>(base));
     file_system_context_ =
-        content::CreateFileSystemContextWithAdditionalProvidersForTesting(
+        storage::CreateFileSystemContextWithAdditionalProvidersForTesting(
             base::CreateSingleThreadTaskRunner({content::BrowserThread::IO})
                 .get(),
-            file_system_runner_.get(), NULL, std::move(additional_providers),
+            file_system_runner_.get(), nullptr, std::move(additional_providers),
             base);
 
     move_src_ = file_system_context_->CreateCrackedFileSystemURL(
@@ -154,7 +154,7 @@ class MediaFileValidatorTest : public InProcessBrowserTest {
     dest_fs_ =
         storage::IsolatedContext::GetInstance()->RegisterFileSystemForPath(
             storage::kFileSystemTypeNativeMedia, std::string(), dest_path,
-            NULL);
+            nullptr);
 
     size_t extension_index = filename.find_last_of(".");
     ASSERT_NE(std::string::npos, extension_index);

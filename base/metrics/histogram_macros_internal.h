@@ -7,10 +7,11 @@
 
 #include <stdint.h>
 
+#include <atomic>
 #include <limits>
+#include <memory>
 #include <type_traits>
 
-#include "base/atomicops.h"
 #include "base/logging.h"
 #include "base/metrics/histogram.h"
 #include "base/metrics/sparse_histogram.h"
@@ -65,60 +66,51 @@ struct EnumSizeTraits<
 // define HISTOGRAM_POINTER_USE, which uses an |atomic_histogram_pointer|, and
 // STATIC_HISTOGRAM_POINTER_BLOCK, which defines an |atomic_histogram_pointer|
 // and forwards to HISTOGRAM_POINTER_USE.
-#define HISTOGRAM_POINTER_USE(atomic_histogram_pointer,                        \
-                              constant_histogram_name,                         \
-                              histogram_add_method_invocation,                 \
-                              histogram_factory_get_invocation)                \
-  do {                                                                         \
-    /*                                                                         \
-     * Acquire_Load() ensures that we acquire visibility to the                \
-     * pointed-to data in the histogram.                                       \
-     */                                                                        \
-    base::HistogramBase* histogram_pointer(                                    \
-        reinterpret_cast<base::HistogramBase*>(                                \
-            base::subtle::Acquire_Load(atomic_histogram_pointer)));            \
-    if (!histogram_pointer) {                                                  \
-      /*                                                                       \
-       * This is the slow path, which will construct OR find the               \
-       * matching histogram.  histogram_factory_get_invocation includes        \
-       * locks on a global histogram name map and is completely thread         \
-       * safe.                                                                 \
-       */                                                                      \
-      histogram_pointer = histogram_factory_get_invocation;                    \
-                                                                               \
-      /*                                                                       \
-       * Use Release_Store to ensure that the histogram data is made           \
-       * available globally before we make the pointer visible. Several        \
-       * threads may perform this store, but the same value will be            \
-       * stored in all cases (for a given named/spec'ed histogram).            \
-       * We could do this without any barrier, since FactoryGet entered        \
-       * and exited a lock after construction, but this barrier makes          \
-       * things clear.                                                         \
-       */                                                                      \
-      base::subtle::Release_Store(                                             \
-          atomic_histogram_pointer,                                            \
-          reinterpret_cast<base::subtle::AtomicWord>(histogram_pointer));      \
-    }                                                                          \
-    if (DCHECK_IS_ON())                                                        \
-      histogram_pointer->CheckName(constant_histogram_name);                   \
-    histogram_pointer->histogram_add_method_invocation;                        \
+#define HISTOGRAM_POINTER_USE(                                           \
+    atomic_histogram_pointer, constant_histogram_name,                   \
+    histogram_add_method_invocation, histogram_factory_get_invocation)   \
+  do {                                                                   \
+    base::HistogramBase* histogram_pointer(                              \
+        reinterpret_cast<base::HistogramBase*>(                          \
+            atomic_histogram_pointer->load(std::memory_order_acquire))); \
+    if (!histogram_pointer) {                                            \
+      /*                                                                 \
+       * This is the slow path, which will construct OR find the         \
+       * matching histogram. |histogram_factory_get_invocation| includes \
+       * locks on a global histogram name map and is completely thread   \
+       * safe.                                                           \
+       */                                                                \
+      histogram_pointer = histogram_factory_get_invocation;              \
+                                                                         \
+      /*                                                                 \
+       * We could do this without any barrier, since FactoryGet()        \
+       * entered and exited a lock after construction, but this barrier  \
+       * makes things clear.                                             \
+       */                                                                \
+      atomic_histogram_pointer->store(                                   \
+          reinterpret_cast<uintptr_t>(histogram_pointer),                \
+          std::memory_order_release);                                    \
+    }                                                                    \
+    if (DCHECK_IS_ON())                                                  \
+      histogram_pointer->CheckName(constant_histogram_name);             \
+    histogram_pointer->histogram_add_method_invocation;                  \
   } while (0)
 
 // This is a helper macro used by other macros and shouldn't be used directly.
 // Defines the static |atomic_histogram_pointer| and forwards to
 // HISTOGRAM_POINTER_USE.
-#define STATIC_HISTOGRAM_POINTER_BLOCK(constant_histogram_name,                \
-                                       histogram_add_method_invocation,        \
-                                       histogram_factory_get_invocation)       \
-  do {                                                                         \
-    /*                                                                         \
-     * The pointer's presence indicates that the initialization is complete.   \
-     * Initialization is idempotent, so it can safely be atomically repeated.  \
-     */                                                                        \
-    static base::subtle::AtomicWord atomic_histogram_pointer = 0;              \
-    HISTOGRAM_POINTER_USE(&atomic_histogram_pointer, constant_histogram_name,  \
-                          histogram_add_method_invocation,                     \
-                          histogram_factory_get_invocation);                   \
+#define STATIC_HISTOGRAM_POINTER_BLOCK(constant_histogram_name,               \
+                                       histogram_add_method_invocation,       \
+                                       histogram_factory_get_invocation)      \
+  do {                                                                        \
+    /*                                                                        \
+     * The pointer's presence indicates that the initialization is complete.  \
+     * Initialization is idempotent, so it can safely be atomically repeated. \
+     */                                                                       \
+    static std::atomic_uintptr_t atomic_histogram_pointer;                    \
+    HISTOGRAM_POINTER_USE(                                                    \
+        std::addressof(atomic_histogram_pointer), constant_histogram_name,    \
+        histogram_add_method_invocation, histogram_factory_get_invocation);   \
   } while (0)
 
 // This is a helper macro used by other macros and shouldn't be used directly.

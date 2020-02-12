@@ -4,6 +4,8 @@
 
 #include "content/browser/background_fetch/background_fetch_test_data_manager.h"
 
+#include <utility>
+
 #include "base/run_loop.h"
 #include "content/browser/blob_storage/chrome_blob_storage_context.h"
 #include "content/browser/cache_storage/cache_storage_manager.h"
@@ -20,14 +22,15 @@ namespace content {
 
 namespace {
 
-class MockBGFQuotaManagerProxy : public MockQuotaManagerProxy {
+class MockBGFQuotaManagerProxy : public storage::MockQuotaManagerProxy {
  public:
-  MockBGFQuotaManagerProxy(MockQuotaManager* quota_manager)
-      : MockQuotaManagerProxy(quota_manager,
-                              base::ThreadTaskRunnerHandle::Get().get()) {}
+  explicit MockBGFQuotaManagerProxy(storage::MockQuotaManager* quota_manager)
+      : storage::MockQuotaManagerProxy(
+            quota_manager,
+            base::ThreadTaskRunnerHandle::Get().get()) {}
 
   // Ignore quota client, it is irrelevant for these tests.
-  void RegisterClient(scoped_refptr<QuotaClient> client) override {}
+  void RegisterClient(scoped_refptr<storage::QuotaClient> client) override {}
 
   void GetUsageAndQuota(base::SequencedTaskRunner* original_task_runner,
                         const url::Origin& origin,
@@ -60,10 +63,10 @@ void BackgroundFetchTestDataManager::InitializeOnCoreThread() {
   // Wait for ChromeBlobStorageContext to finish initializing.
   base::RunLoop().RunUntilIdle();
 
-  mock_quota_manager_ = base::MakeRefCounted<MockQuotaManager>(
+  mock_quota_manager_ = base::MakeRefCounted<storage::MockQuotaManager>(
       storage_partition_->GetPath().empty(), storage_partition_->GetPath(),
       base::ThreadTaskRunnerHandle::Get().get(),
-      base::MakeRefCounted<MockSpecialStoragePolicy>());
+      base::MakeRefCounted<storage::MockSpecialStoragePolicy>());
 
   quota_manager_proxy_ =
       base::MakeRefCounted<MockBGFQuotaManagerProxy>(mock_quota_manager_.get());

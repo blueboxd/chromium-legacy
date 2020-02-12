@@ -19,10 +19,6 @@
 #include "base/timer/timer.h"
 #include "third_party/blink/public/mojom/quota/quota_types.mojom.h"
 
-namespace content {
-class QuotaTemporaryStorageEvictorTest;
-}
-
 namespace url {
 class Origin;
 }
@@ -78,7 +74,7 @@ class COMPONENT_EXPORT(STORAGE_BROWSER) QuotaTemporaryStorageEvictor {
   void Start();
 
  private:
-  friend class content::QuotaTemporaryStorageEvictorTest;
+  friend class QuotaTemporaryStorageEvictorTest;
 
   void StartEvictionTimerWithDelay(int64_t delay_ms);
   void ConsiderEviction();

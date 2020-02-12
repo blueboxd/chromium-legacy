@@ -74,12 +74,11 @@ class COMPONENT_EXPORT(STORAGE_BROWSER) LocalFileUtil
                                const FileSystemURL& url) override;
   base::File::Error DeleteDirectory(FileSystemOperationContext* context,
                                     const FileSystemURL& url) override;
-  storage::ScopedFile CreateSnapshotFile(
-      FileSystemOperationContext* context,
-      const FileSystemURL& url,
-      base::File::Error* error,
-      base::File::Info* file_info,
-      base::FilePath* platform_path) override;
+  ScopedFile CreateSnapshotFile(FileSystemOperationContext* context,
+                                const FileSystemURL& url,
+                                base::File::Error* error,
+                                base::File::Info* file_info,
+                                base::FilePath* platform_path) override;
 
  protected:
   // Whether this item should not be accessed. For security reasons by default

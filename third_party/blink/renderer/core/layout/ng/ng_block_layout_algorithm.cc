@@ -364,7 +364,7 @@ scoped_refptr<const NGLayoutResult> NGBlockLayoutAlgorithm::Layout() {
   // Inline children require an inline child layout context to be
   // passed between siblings. We want to stack-allocate that one, but
   // only on demand, as it's quite big.
-  if (Node().ChildrenInline())
+  if (Node().ChildrenInline() && Node().FirstChild().IsInline())
     result = LayoutWithInlineChildLayoutContext();
   else
     result = Layout(nullptr);

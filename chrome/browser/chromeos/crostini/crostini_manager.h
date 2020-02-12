@@ -104,10 +104,12 @@ class UpgradeContainerProgressObserver {
       const std::vector<std::string>& messages) = 0;
 };
 
-class InstallerViewStatusObserver : public base::CheckedObserver {
+class CrostiniDialogStatusObserver : public base::CheckedObserver {
  public:
-  // Called when the CrostiniInstallerView is opened or closed.
-  virtual void OnCrostiniInstallerViewStatusChanged(bool open) = 0;
+  // Called when a Crostini dialog (installer, upgrader, etc.) opens or
+  // closes.
+  virtual void OnCrostiniDialogStatusChanged(DialogType dialog_type,
+                                             bool open) = 0;
 };
 
 class VmShutdownObserver : public base::CheckedObserver {
@@ -579,9 +581,12 @@ class CrostiniManager : public KeyedService,
 
   void SetInstallerViewStatus(bool open);
   bool GetInstallerViewStatus() const;
-  void AddInstallerViewStatusObserver(InstallerViewStatusObserver* observer);
-  void RemoveInstallerViewStatusObserver(InstallerViewStatusObserver* observer);
-  bool HasInstallerViewStatusObserver(InstallerViewStatusObserver* observer);
+
+  void SetCrostiniDialogStatus(DialogType dialog_type, bool open);
+  bool GetCrostiniDialogStatus(DialogType dialog_type) const;
+  void AddCrostiniDialogStatusObserver(CrostiniDialogStatusObserver* observer);
+  void RemoveCrostiniDialogStatusObserver(
+      CrostiniDialogStatusObserver* observer);
 
   void OnDBusShuttingDownForTesting();
 
@@ -860,12 +865,12 @@ class CrostiniManager : public KeyedService,
   std::map<CrostiniManager::RestartId, std::unique_ptr<CrostiniRestarter>>
       restarters_by_id_;
 
-  // True when the installer dialog is showing. At that point, it is invalid
-  // to allow Crostini uninstallation.
-  bool installer_dialog_showing_ = false;
-
-  base::ObserverList<InstallerViewStatusObserver>
-      installer_view_status_observers_;
+  base::ObserverList<CrostiniDialogStatusObserver>
+      crostini_dialog_status_observers_;
+  // Contains the types of crostini dialogs currently open. It is generally
+  // invalid to show more than one. e.g. uninstalling and installing are
+  // mutually exclusive.
+  std::set<DialogType> open_crostini_dialogs_;
 
   bool dbus_observers_removed_ = false;
 

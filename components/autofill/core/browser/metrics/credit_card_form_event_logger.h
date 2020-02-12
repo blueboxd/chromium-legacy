@@ -22,6 +22,28 @@ namespace autofill {
 
 class CreditCardFormEventLogger : public FormEventLoggerBase {
  public:
+  // Metric for tracking which card unmask authentication method was used.
+  enum class UnmaskAuthFlowType {
+    kNone = 0,
+    // Only CVC prompt was shown.
+    kCvc = 1,
+    // Only WebAuthn prompt was shown.
+    kFido = 2,
+    // CVC authentication was required in addition to WebAuthn.
+    kCvcThenFido = 3,
+    // WebAuthn prompt failed and fell back to CVC prompt.
+    kCvcFallbackFromFido = 4,
+  };
+  enum class UnmaskAuthFlowEvent {
+    // Authentication prompt is shown.
+    kPromptShown = 0,
+    // Authentication prompt successfully completed.
+    kPromptCompleted = 1,
+    // Form was submitted.
+    kFormSubmitted = 2,
+    kMaxValue = kFormSubmitted,
+  };
+
   CreditCardFormEventLogger(
       bool is_in_main_frame,
       AutofillMetrics::FormInteractionsUkmLogger* form_interactions_ukm_logger,
@@ -45,6 +67,12 @@ class CreditCardFormEventLogger : public FormEventLoggerBase {
                            const AutofillField& field,
                            AutofillSyncSigninState sync_state);
 
+  // Logging what type of authentication flow was prompted.
+  void LogCardUnmaskAuthenticationPromptShown(UnmaskAuthFlowType flow);
+
+  // Logging when an authentication prompt is completed.
+  void LogCardUnmaskAuthenticationPromptCompleted(UnmaskAuthFlowType flow);
+
  protected:
   // FormEventLoggerBase pure-virtual overrides.
   void RecordPollSuggestions() override;
@@ -66,8 +94,11 @@ class CreditCardFormEventLogger : public FormEventLoggerBase {
 
  private:
   FormEvent GetCardNumberStatusFormEvent(const CreditCard& credit_card);
+  void RecordCardUnmaskFlowEvent(UnmaskAuthFlowType flow,
+                                 UnmaskAuthFlowEvent event);
 
   bool is_context_secure_ = false;
+  UnmaskAuthFlowType current_authentication_flow_;
   bool has_logged_masked_server_card_suggestion_selected_ = false;
   bool logged_suggestion_filled_was_masked_server_card_ = false;
 

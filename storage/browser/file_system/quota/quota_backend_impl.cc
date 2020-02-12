@@ -6,7 +6,9 @@
 
 #include <stdint.h>
 
+#include <algorithm>
 #include <string>
+#include <utility>
 
 #include "base/bind.h"
 #include "base/callback.h"
@@ -25,7 +27,7 @@ QuotaBackendImpl::QuotaBackendImpl(
     base::SequencedTaskRunner* file_task_runner,
     ObfuscatedFileUtil* obfuscated_file_util,
     FileSystemUsageCache* file_system_usage_cache,
-    storage::QuotaManagerProxy* quota_manager_proxy)
+    QuotaManagerProxy* quota_manager_proxy)
     : file_task_runner_(file_task_runner),
       obfuscated_file_util_(obfuscated_file_util),
       file_system_usage_cache_(file_system_usage_cache),
@@ -138,7 +140,7 @@ void QuotaBackendImpl::ReserveQuotaInternal(const QuotaReservationInfo& info) {
   DCHECK(!info.origin.opaque());
   DCHECK(quota_manager_proxy_.get());
   quota_manager_proxy_->NotifyStorageModified(
-      storage::QuotaClient::kFileSystem, info.origin,
+      QuotaClient::kFileSystem, info.origin,
       FileSystemTypeToQuotaStorageType(info.type), info.delta);
 }
 

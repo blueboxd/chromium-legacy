@@ -46,7 +46,7 @@ bool NGOutlineUtils::ShouldPaintOutline(
   NGInlineCursor cursor;
   cursor.MoveTo(*layout_object);
   DCHECK(cursor);
-  return cursor.CurrentBoxFragment() == &physical_fragment;
+  return cursor.Current().BoxFragment() == &physical_fragment;
 }
 
 }  // namespace blink

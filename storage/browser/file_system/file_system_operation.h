@@ -110,11 +110,11 @@ class FileSystemOperation {
   // longer necessary in the javascript world.
   // Please see the comment for ShareableFileReference for details.
   //
-  using SnapshotFileCallback = base::OnceCallback<void(
-      base::File::Error result,
-      const base::File::Info& file_info,
-      const base::FilePath& platform_path,
-      scoped_refptr<storage::ShareableFileReference> file_ref)>;
+  using SnapshotFileCallback =
+      base::OnceCallback<void(base::File::Error result,
+                              const base::File::Info& file_info,
+                              const base::FilePath& platform_path,
+                              scoped_refptr<ShareableFileReference> file_ref)>;
 
   // Used to specify how recursive operation delegate behaves for errors.
   // With ERROR_BEHAVIOR_ABORT, it stops following operation when it fails an

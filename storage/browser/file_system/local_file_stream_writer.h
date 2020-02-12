@@ -19,10 +19,6 @@
 #include "base/task_runner.h"
 #include "storage/browser/file_system/file_stream_writer.h"
 
-namespace content {
-class LocalFileStreamWriterTest;
-}
-
 namespace net {
 class FileStream;
 }
@@ -43,8 +39,9 @@ class COMPONENT_EXPORT(STORAGE_BROWSER) LocalFileStreamWriter
   int Flush(net::CompletionOnceCallback callback) override;
 
  private:
-  friend class content::LocalFileStreamWriterTest;
   friend class FileStreamWriter;
+  friend class LocalFileStreamWriterTest;
+
   LocalFileStreamWriter(base::TaskRunner* task_runner,
                         const base::FilePath& file_path,
                         int64_t initial_offset,

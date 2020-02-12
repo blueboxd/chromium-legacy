@@ -83,11 +83,10 @@ base::Time OriginInfo::GetDatabaseLastModified(
 OriginInfo::OriginInfo(const std::string& origin_identifier, int64_t total_size)
     : origin_identifier_(origin_identifier), total_size_(total_size) {}
 
-DatabaseTracker::DatabaseTracker(
-    const base::FilePath& profile_path,
-    bool is_incognito,
-    storage::SpecialStoragePolicy* special_storage_policy,
-    storage::QuotaManagerProxy* quota_manager_proxy)
+DatabaseTracker::DatabaseTracker(const base::FilePath& profile_path,
+                                 bool is_incognito,
+                                 SpecialStoragePolicy* special_storage_policy,
+                                 QuotaManagerProxy* quota_manager_proxy)
     : is_incognito_(is_incognito),
       profile_path_(profile_path),
       db_dir_(is_incognito_
@@ -124,7 +123,7 @@ void DatabaseTracker::DatabaseOpened(const std::string& origin_identifier,
 
   if (quota_manager_proxy_.get())
     quota_manager_proxy_->NotifyStorageAccessed(
-        storage::GetOriginFromIdentifier(origin_identifier),
+        GetOriginFromIdentifier(origin_identifier),
         blink::mojom::StorageType::kTemporary);
 
   InsertOrUpdateDatabaseDetails(origin_identifier, database_name,
@@ -160,7 +159,7 @@ void DatabaseTracker::DatabaseClosed(const std::string& origin_identifier,
   // closed because we don't call it for read while open.
   if (quota_manager_proxy_.get())
     quota_manager_proxy_->NotifyStorageAccessed(
-        storage::GetOriginFromIdentifier(origin_identifier),
+        GetOriginFromIdentifier(origin_identifier),
         blink::mojom::StorageType::kTemporary);
 
   UpdateOpenDatabaseSizeAndNotify(origin_identifier, database_name);
@@ -371,8 +370,7 @@ bool DatabaseTracker::DeleteClosedDatabase(
 
   if (quota_manager_proxy_.get() && db_file_size)
     quota_manager_proxy_->NotifyStorageModified(
-        storage::QuotaClient::kDatabase,
-        storage::GetOriginFromIdentifier(origin_identifier),
+        QuotaClient::kDatabase, GetOriginFromIdentifier(origin_identifier),
         blink::mojom::StorageType::kTemporary, -db_file_size);
 
   // Clean up the main database and invalidate the cached record.
@@ -449,8 +447,7 @@ bool DatabaseTracker::DeleteOrigin(const std::string& origin_identifier,
 
   if (quota_manager_proxy_.get() && deleted_size) {
     quota_manager_proxy_->NotifyStorageModified(
-        storage::QuotaClient::kDatabase,
-        storage::GetOriginFromIdentifier(origin_identifier),
+        QuotaClient::kDatabase, GetOriginFromIdentifier(origin_identifier),
         blink::mojom::StorageType::kTemporary, -deleted_size);
   }
 
@@ -657,8 +654,7 @@ int64_t DatabaseTracker::UpdateOpenDatabaseInfoAndNotify(
       info->SetDatabaseSize(name, new_size);
     if (quota_manager_proxy_.get())
       quota_manager_proxy_->NotifyStorageModified(
-          storage::QuotaClient::kDatabase,
-          storage::GetOriginFromIdentifier(origin_id),
+          QuotaClient::kDatabase, GetOriginFromIdentifier(origin_id),
           blink::mojom::StorageType::kTemporary, new_size - old_size);
     for (auto& observer : observers_)
       observer.OnDatabaseSizeChanged(origin_id, name, new_size);
@@ -728,7 +724,7 @@ int DatabaseTracker::DeleteDataModifiedSince(
   for (const auto& origin : origins_identifiers) {
     if (special_storage_policy_.get() &&
         special_storage_policy_->IsStorageProtected(
-            storage::GetOriginURLFromIdentifier(origin))) {
+            GetOriginURLFromIdentifier(origin))) {
       continue;
     }
 
@@ -867,12 +863,12 @@ void DatabaseTracker::ClearSessionOnlyOrigins() {
   GetAllOriginIdentifiers(&origin_identifiers);
 
   for (const auto& origin : origin_identifiers) {
-    GURL origin_url = storage::GetOriginURLFromIdentifier(origin);
+    GURL origin_url = GetOriginURLFromIdentifier(origin);
     if (!special_storage_policy_->IsStorageSessionOnly(origin_url))
       continue;
     if (special_storage_policy_->IsStorageProtected(origin_url))
       continue;
-    storage::OriginInfo origin_info;
+    OriginInfo origin_info;
     std::vector<base::string16> databases;
     GetOriginInfo(origin, &origin_info);
     origin_info.GetAllDatabaseNames(&databases);

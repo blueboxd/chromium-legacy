@@ -4,6 +4,7 @@
 
 #include <stdint.h>
 
+#include <utility>
 #include <vector>
 
 #include "base/bind.h"
@@ -20,11 +21,8 @@
 
 using blink::mojom::QuotaStatusCode;
 using blink::mojom::StorageType;
-using storage::QuotaClient;
-using storage::SpecialStoragePolicy;
-using storage::UsageTracker;
 
-namespace content {
+namespace storage {
 
 namespace {
 
@@ -391,5 +389,4 @@ TEST_F(UsageTrackerTest, LimitedGlobalUsageTest) {
   EXPECT_EQ(2 + 32, unlimited_usage);
 }
 
-
-}  // namespace content
+}  // namespace storage

@@ -18,16 +18,15 @@ class FileSystemOperationContext;
 class COMPONENT_EXPORT(STORAGE_BROWSER) TransientFileUtil
     : public LocalFileUtil {
  public:
-  TransientFileUtil() {}
-  ~TransientFileUtil() override {}
+  TransientFileUtil() = default;
+  ~TransientFileUtil() override = default;
 
   // LocalFileUtil overrides.
-  storage::ScopedFile CreateSnapshotFile(
-      FileSystemOperationContext* context,
-      const FileSystemURL& url,
-      base::File::Error* error,
-      base::File::Info* file_info,
-      base::FilePath* platform_path) override;
+  ScopedFile CreateSnapshotFile(FileSystemOperationContext* context,
+                                const FileSystemURL& url,
+                                base::File::Error* error,
+                                base::File::Info* file_info,
+                                base::FilePath* platform_path) override;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(TransientFileUtil);

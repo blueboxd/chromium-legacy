@@ -295,8 +295,13 @@ void PluginVmInstallerView::OnDownloadFailed(
   reason_ = reason;
   OnStateUpdated();
 
-  plugin_vm::RecordPluginVmSetupResultHistogram(
-      plugin_vm::PluginVmSetupResult::kErrorDownloadingPluginVmImage);
+  if (reason == plugin_vm::PluginVmInstaller::FailureReason::NOT_ALLOWED) {
+    plugin_vm::RecordPluginVmSetupResultHistogram(
+        plugin_vm::PluginVmSetupResult::kPluginVmIsNotAllowed);
+  } else {
+    plugin_vm::RecordPluginVmSetupResultHistogram(
+        plugin_vm::PluginVmSetupResult::kErrorDownloadingPluginVmImage);
+  }
 }
 
 void PluginVmInstallerView::OnImportProgressUpdated(
@@ -477,16 +482,6 @@ base::string16 PluginVmInstallerView::GetCurrentDialogButtonLabel(
 }
 
 void PluginVmInstallerView::AddedToWidget() {
-  // Defensive check that ensures an error message is shown if this
-  // dialogue is reached somehow although PluginVm has been disabled.
-  if (!plugin_vm::IsPluginVmAllowedForProfile(profile_)) {
-    LOG(ERROR) << "PluginVm is disallowed by policy. Showing error screen.";
-    state_ = State::ERROR;
-    reason_ = plugin_vm::PluginVmInstaller::FailureReason::NOT_ALLOWED;
-    plugin_vm::RecordPluginVmSetupResultHistogram(
-        plugin_vm::PluginVmSetupResult::kPluginVmIsNotAllowed);
-  }
-
   if (state_ == State::STARTING)
     StartInstallation();
   else

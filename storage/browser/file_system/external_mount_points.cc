@@ -5,11 +5,14 @@
 #include "storage/browser/file_system/external_mount_points.h"
 
 #include <memory>
+#include <utility>
 
 #include "base/files/file_path.h"
 #include "base/lazy_instance.h"
 #include "base/macros.h"
 #include "storage/browser/file_system/file_system_url.h"
+
+namespace storage {
 
 namespace {
 
@@ -31,9 +34,9 @@ base::FilePath NormalizeFilePath(const base::FilePath& path) {
   return base::FilePath(path_str).NormalizePathSeparators();
 }
 
-bool IsOverlappingMountPathForbidden(storage::FileSystemType type) {
-  return type != storage::kFileSystemTypeNativeMedia &&
-         type != storage::kFileSystemTypeDeviceMedia;
+bool IsOverlappingMountPathForbidden(FileSystemType type) {
+  return type != kFileSystemTypeNativeMedia &&
+         type != kFileSystemTypeDeviceMedia;
 }
 
 // Wrapper around ref-counted ExternalMountPoints that will be used to lazily
@@ -41,23 +44,20 @@ bool IsOverlappingMountPathForbidden(storage::FileSystemType type) {
 class SystemMountPointsLazyWrapper {
  public:
   SystemMountPointsLazyWrapper()
-      : system_mount_points_(storage::ExternalMountPoints::CreateRefCounted()) {
-  }
+      : system_mount_points_(ExternalMountPoints::CreateRefCounted()) {}
 
   ~SystemMountPointsLazyWrapper() = default;
 
-  storage::ExternalMountPoints* get() { return system_mount_points_.get(); }
+  ExternalMountPoints* get() { return system_mount_points_.get(); }
 
  private:
-  scoped_refptr<storage::ExternalMountPoints> system_mount_points_;
+  scoped_refptr<ExternalMountPoints> system_mount_points_;
 };
 
 base::LazyInstance<SystemMountPointsLazyWrapper>::Leaky
     g_external_mount_points = LAZY_INSTANCE_INITIALIZER;
 
 }  // namespace
-
-namespace storage {
 
 class ExternalMountPoints::Instance {
  public:
@@ -236,7 +236,7 @@ FileSystemURL ExternalMountPoints::CreateExternalFileSystemURL(
     const std::string& mount_name,
     const base::FilePath& path) const {
   return CreateCrackedFileSystemURL(
-      origin, storage::kFileSystemTypeExternal,
+      origin, kFileSystemTypeExternal,
       // Avoid using FilePath::Append as path may be an absolute path.
       base::FilePath(CreateVirtualRootPath(mount_name).value() +
                      base::FilePath::kSeparators[0] + path.value()));

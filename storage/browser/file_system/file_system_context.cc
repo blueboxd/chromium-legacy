@@ -41,8 +41,6 @@
 #include "storage/common/file_system/file_system_util.h"
 #include "third_party/leveldatabase/leveldb_chrome.h"
 
-using storage::QuotaClient;
-
 namespace storage {
 
 namespace {
@@ -136,8 +134,8 @@ FileSystemContext::FileSystemContext(
     base::SingleThreadTaskRunner* io_task_runner,
     base::SequencedTaskRunner* file_task_runner,
     ExternalMountPoints* external_mount_points,
-    storage::SpecialStoragePolicy* special_storage_policy,
-    storage::QuotaManagerProxy* quota_manager_proxy,
+    SpecialStoragePolicy* special_storage_policy,
+    QuotaManagerProxy* quota_manager_proxy,
     std::vector<std::unique_ptr<FileSystemBackend>> additional_backends,
     const std::vector<URLRequestAutoMountHandler>& auto_mount_handlers,
     const base::FilePath& partition_path,
@@ -428,8 +426,7 @@ void FileSystemContext::DeleteFileSystem(const url::Origin& origin,
       std::move(callback));
 }
 
-std::unique_ptr<storage::FileStreamReader>
-FileSystemContext::CreateFileStreamReader(
+std::unique_ptr<FileStreamReader> FileSystemContext::CreateFileStreamReader(
     const FileSystemURL& url,
     int64_t offset,
     int64_t max_bytes_to_read,
@@ -604,8 +601,7 @@ void FileSystemContext::DidOpenFileSystemForResolveURL(
     return;
   }
 
-  storage::FileSystemInfo info(filesystem_name, filesystem_root,
-                               url.mount_type());
+  FileSystemInfo info(filesystem_name, filesystem_root, url.mount_type());
 
   // Extract the virtual path not containing a filesystem type part from |url|.
   base::FilePath parent = CrackURL(filesystem_root).virtual_path();

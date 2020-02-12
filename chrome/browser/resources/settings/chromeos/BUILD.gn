@@ -79,6 +79,7 @@ group("closure_compile") {
     "google_assistant_page:closure_compile",
     "internet_page:closure_compile",
     "localized_link:closure_compile",
+    "metrics_recorder:closure_compile",
     "multidevice_page:closure_compile",
     "os_a11y_page:closure_compile",
     "os_apps_page:closure_compile",

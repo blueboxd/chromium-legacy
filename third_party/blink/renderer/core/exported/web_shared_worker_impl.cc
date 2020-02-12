@@ -216,13 +216,18 @@ void WebSharedWorkerImpl::StartWorkerContext(
       false /* strictly_block_blockable_mixed_content */,
       GenericFontFamilySettings());
 
-  // Some params (e.g., referrer policy, address space, CSP) passed to
-  // GlobalScopeCreationParams are dummy values. They will be updated after
-  // worker script fetch on the worker thread.
+  // CSP headers for parent Window's CSP.
+  Vector<CSPHeaderAndType> outside_csp_headers;
+  outside_csp_headers.ReserveInitialCapacity(1);
+  outside_csp_headers.UncheckedAppend(
+      CSPHeaderAndType(content_security_policy, policy_type));
+  // Some params (e.g. address space) passed to GlobalScopeCreationParams are
+  // dummy values. They will be updated after worker script fetch on the worker
+  // thread.
   auto creation_params = std::make_unique<GlobalScopeCreationParams>(
       script_request_url, script_type,
       OffMainThreadWorkerScriptFetchOption::kEnabled, name, user_agent,
-      std::move(web_worker_fetch_context), Vector<CSPHeaderAndType>(),
+      std::move(web_worker_fetch_context), outside_csp_headers,
       outside_settings_object->GetReferrerPolicy(),
       outside_settings_object->GetSecurityOrigin(), starter_secure_context,
       outside_settings_object->GetHttpsState(),

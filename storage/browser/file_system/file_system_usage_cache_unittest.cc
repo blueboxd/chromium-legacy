@@ -14,9 +14,7 @@
 #include "base/test/task_environment.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
-using storage::FileSystemUsageCache;
-
-namespace content {
+namespace storage {
 
 class FileSystemUsageCacheTest : public testing::Test,
                                  public ::testing::WithParamInterface<bool> {
@@ -161,4 +159,4 @@ TEST_P(FileSystemUsageCacheTest, DecrementDirtyWithoutCacheFileTest) {
   EXPECT_FALSE(usage_cache()->IncrementDirty(usage_file_path));
 }
 
-}  // namespace content
+}  // namespace storage

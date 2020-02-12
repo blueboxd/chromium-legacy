@@ -44,8 +44,8 @@ static std::string& GetFakeLicenseKey() {
 //     * Device should be in a dev mode.
 // If device is enterprise enrolled:
 //     * User should be affiliated.
-//     * All necessary policies should be set (PluginVmAllowed, PluginVmImage
-//       and PluginVmLicenseKey).
+//     * All necessary policies should be set (PluginVmAllowed and
+//       PluginVmLicenseKey).
 //
 // TODO(okalitova, aoldemeier): PluginVm should be disabled in case of
 // non-managed devices once it is launched. Currently this conditions are used
@@ -103,22 +103,15 @@ bool IsPluginVmAllowedForProfile(const Profile* profile) {
   if (plugin_vm_license_key == std::string())
     return false;
 
-  // Check that a VM image is set.
-  if (!profile->GetPrefs()->HasPrefPath(plugin_vm::prefs::kPluginVmImage))
-    return false;
-
   return true;
 }
 
-bool IsPluginVmConfigured(Profile* profile) {
-  if (!profile->GetPrefs()->GetBoolean(
-          plugin_vm::prefs::kPluginVmImageExists)) {
-    return false;
-  }
-  return true;
+bool IsPluginVmConfigured(const Profile* profile) {
+  return profile->GetPrefs()->GetBoolean(
+      plugin_vm::prefs::kPluginVmImageExists);
 }
 
-bool IsPluginVmEnabled(Profile* profile) {
+bool IsPluginVmEnabled(const Profile* profile) {
   return IsPluginVmAllowedForProfile(profile) && IsPluginVmConfigured(profile);
 }
 

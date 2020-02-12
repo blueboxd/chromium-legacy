@@ -395,13 +395,37 @@ Polymer({
       return;
     }
 
+    const PolicySource = chromeos.networkConfig.mojom.PolicySource;
+
     let enforcement;
     let controlledBy;
-    if (autoConnect.enforced ||
-        (!!this.globalPolicy &&
-         !!this.globalPolicy.allowOnlyPolicyNetworksToAutoconnect)) {
+
+    if (this.globalPolicy &&
+        this.globalPolicy.allowOnlyPolicyNetworksToAutoconnect) {
       enforcement = chrome.settingsPrivate.Enforcement.ENFORCED;
       controlledBy = chrome.settingsPrivate.ControlledBy.DEVICE_POLICY;
+    } else {
+      switch (autoConnect.policySource) {
+        case PolicySource.kUserPolicyEnforced:
+        case PolicySource.kDevicePolicyEnforced:
+          enforcement = chrome.settingsPrivate.Enforcement.ENFORCED;
+          break;
+        case PolicySource.kUserPolicyRecommended:
+        case PolicySource.kDevicePolicyRecommended:
+          enforcement = chrome.settingsPrivate.Enforcement.RECOMMENDED;
+          break;
+      }
+
+      switch (autoConnect.policySource) {
+        case PolicySource.kDevicePolicyEnforced:
+        case PolicySource.kDevicePolicyRecommended:
+          controlledBy = chrome.settingsPrivate.ControlledBy.DEVICE_POLICY;
+          break;
+        case PolicySource.kUserPolicyEnforced:
+        case PolicySource.kUserPolicyRecommended:
+          controlledBy = chrome.settingsPrivate.ControlledBy.USER_POLICY;
+          break;
+      }
     }
 
     if (this.autoConnectPref_ &&
@@ -909,8 +933,7 @@ Polymer({
     if (!managedProperties) {
       return false;
     }
-    for (const key of Object.keys(managedProperties)) {
-      const value = managedProperties[key];
+    for (const value of Object.values(managedProperties)) {
       if (typeof value != 'object' || value === null) {
         continue;
       }

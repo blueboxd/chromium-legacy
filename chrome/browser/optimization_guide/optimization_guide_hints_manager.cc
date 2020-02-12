@@ -176,6 +176,10 @@ bool IsOptimizationTypeSupportedByPageHint(
           optimization_metadata->set_public_image_metadata(
               optimization.public_image_metadata());
           break;
+        case optimization_guide::proto::Optimization::kLoadingPredictorMetadata:
+          optimization_metadata->set_loading_predictor_metadata(
+              optimization.loading_predictor_metadata());
+          break;
         case optimization_guide::proto::Optimization::METADATA_NOT_SET:
           // Some optimization types do not have metadata, make sure we do not
           // DCHECK.

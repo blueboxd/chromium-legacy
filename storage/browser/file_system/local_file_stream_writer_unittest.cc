@@ -23,10 +23,7 @@
 #include "storage/browser/file_system/file_stream_test_utils.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
-using storage::FileStreamWriter;
-using storage::LocalFileStreamWriter;
-
-namespace content {
+namespace storage {
 
 class LocalFileStreamWriterTest : public testing::Test {
  public:
@@ -164,4 +161,4 @@ TEST_F(LocalFileStreamWriterTest, CancelWrite) {
   EXPECT_EQ(net::OK, cancel_result);
 }
 
-}  // namespace content
+}  // namespace storage

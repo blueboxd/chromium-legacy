@@ -669,7 +669,7 @@ Polymer({
    * @private
    */
   matchesType_(typeString, device) {
-    return device &&
+    return !!device &&
         device.type == OncMojo.getNetworkTypeFromString(typeString);
   },
 

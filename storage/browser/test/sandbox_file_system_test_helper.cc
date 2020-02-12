@@ -22,21 +22,16 @@
 #include "storage/common/file_system/file_system_util.h"
 #include "url/gurl.h"
 
-using storage::FileSystemContext;
-using storage::FileSystemOperationContext;
-using storage::FileSystemOperationRunner;
-using storage::FileSystemURL;
-
-namespace content {
+namespace storage {
 
 SandboxFileSystemTestHelper::SandboxFileSystemTestHelper(
     const url::Origin& origin,
-    storage::FileSystemType type)
+    FileSystemType type)
     : origin_(origin), type_(type), file_util_(nullptr) {}
 
 SandboxFileSystemTestHelper::SandboxFileSystemTestHelper()
     : origin_(url::Origin::Create(GURL("http://foo.com"))),
-      type_(storage::kFileSystemTypeTemporary),
+      type_(kFileSystemTypeTemporary),
       file_util_(nullptr) {}
 
 SandboxFileSystemTestHelper::~SandboxFileSystemTestHelper() = default;
@@ -54,7 +49,7 @@ void SandboxFileSystemTestHelper::SetUp(
 
 void SandboxFileSystemTestHelper::SetUp(
     const base::FilePath& base_dir,
-    storage::QuotaManagerProxy* quota_manager_proxy) {
+    QuotaManagerProxy* quota_manager_proxy) {
   file_system_context_ =
       CreateFileSystemContextForTesting(quota_manager_proxy, base_dir);
 
@@ -108,7 +103,7 @@ int64_t SandboxFileSystemTestHelper::ComputeCurrentOriginUsage() {
   int64_t size =
       file_util_delegate()->ComputeDirectorySize(GetOriginRootPath());
   if (file_util_delegate()->PathExists(GetUsageCachePath()))
-    size -= storage::FileSystemUsageCache::kUsageFileSize;
+    size -= FileSystemUsageCache::kUsageFileSize;
 
   return size;
 }
@@ -132,23 +127,22 @@ FileSystemOperationContext* SandboxFileSystemTestHelper::NewOperationContext() {
 }
 
 void SandboxFileSystemTestHelper::AddFileChangeObserver(
-    storage::FileChangeObserver* observer) {
+    FileChangeObserver* observer) {
   file_system_context_->sandbox_delegate()->AddFileChangeObserver(
       type_, observer, nullptr);
 }
 
 void SandboxFileSystemTestHelper::AddFileUpdateObserver(
-    storage::FileUpdateObserver* observer) {
+    FileUpdateObserver* observer) {
   file_system_context_->sandbox_delegate()->AddFileUpdateObserver(
       type_, observer, nullptr);
 }
 
-storage::FileSystemUsageCache* SandboxFileSystemTestHelper::usage_cache() {
+FileSystemUsageCache* SandboxFileSystemTestHelper::usage_cache() {
   return file_system_context()->sandbox_delegate()->usage_cache();
 }
 
-storage::ObfuscatedFileUtilDelegate*
-SandboxFileSystemTestHelper::file_util_delegate() {
+ObfuscatedFileUtilDelegate* SandboxFileSystemTestHelper::file_util_delegate() {
   return file_system_context_->sandbox_delegate()
       ->obfuscated_file_util()
       ->delegate();
@@ -170,4 +164,4 @@ void SandboxFileSystemTestHelper::SetUpFileSystem() {
     usage_cache()->UpdateUsage(usage_cache_path, 0);
 }
 
-}  // namespace content
+}  // namespace storage

@@ -9,13 +9,16 @@
 #include "testing/gtest/include/gtest/gtest.h"
 
 using base::ASCIIToUTF16;
-using storage::DatabaseUtil;
 
-static void TestVfsFilePath(bool expected_result,
-                            const char* vfs_file_name,
-                            const char* expected_origin_identifier = "",
-                            const char* expected_database_name = "",
-                            const char* expected_sqlite_suffix = "") {
+namespace storage {
+
+namespace {
+
+void TestVfsFilePath(bool expected_result,
+                     const char* vfs_file_name,
+                     const char* expected_origin_identifier = "",
+                     const char* expected_database_name = "",
+                     const char* expected_sqlite_suffix = "") {
   std::string origin_identifier;
   base::string16 database_name;
   base::string16 sqlite_suffix;
@@ -28,7 +31,7 @@ static void TestVfsFilePath(bool expected_result,
   EXPECT_EQ(ASCIIToUTF16(expected_sqlite_suffix), sqlite_suffix);
 }
 
-namespace content {
+}  // namespace
 
 // Test DatabaseUtil::CrackVfsFilePath on various inputs.
 TEST(DatabaseUtilTest, CrackVfsFilePathTest) {
@@ -46,4 +49,4 @@ TEST(DatabaseUtilTest, CrackVfsFilePathTest) {
   TestVfsFilePath(false, "/db_name#suffix");
 }
 
-}  // namespace content
+}  // namespace storage

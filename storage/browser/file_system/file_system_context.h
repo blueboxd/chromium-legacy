@@ -119,8 +119,8 @@ class COMPONENT_EXPORT(STORAGE_BROWSER) FileSystemContext
       base::SingleThreadTaskRunner* io_task_runner,
       base::SequencedTaskRunner* file_task_runner,
       ExternalMountPoints* external_mount_points,
-      storage::SpecialStoragePolicy* special_storage_policy,
-      storage::QuotaManagerProxy* quota_manager_proxy,
+      SpecialStoragePolicy* special_storage_policy,
+      QuotaManagerProxy* quota_manager_proxy,
       std::vector<std::unique_ptr<FileSystemBackend>> additional_backends,
       const std::vector<URLRequestAutoMountHandler>& auto_mount_handlers,
       const base::FilePath& partition_path,
@@ -136,7 +136,7 @@ class COMPONENT_EXPORT(STORAGE_BROWSER) FileSystemContext
       const url::Origin& origin,
       FileSystemType type);
 
-  storage::QuotaManagerProxy* quota_manager_proxy() const {
+  QuotaManagerProxy* quota_manager_proxy() const {
     return quota_manager_proxy_.get();
   }
 
@@ -248,7 +248,7 @@ class COMPONENT_EXPORT(STORAGE_BROWSER) FileSystemContext
   // The resolved FileSystemBackend could perform further specialization
   // depending on the filesystem type pointed by the |url|.
   // At most |max_bytes_to_read| can be fetched from the file stream reader.
-  std::unique_ptr<storage::FileStreamReader> CreateFileStreamReader(
+  std::unique_ptr<FileStreamReader> CreateFileStreamReader(
       const FileSystemURL& url,
       int64_t offset,
       int64_t max_bytes_to_read,
@@ -311,10 +311,10 @@ class COMPONENT_EXPORT(STORAGE_BROWSER) FileSystemContext
   friend class FileSystemOperationRunner;
 
   // For sandbox_backend().
-  friend class content::SandboxFileSystemTestHelper;
+  friend class SandboxFileSystemTestHelper;
 
   // For plugin_private_backend().
-  friend class content::PluginPrivateFileSystemBackendTest;
+  friend class PluginPrivateFileSystemBackendTest;
 
   // Deleters.
   friend struct DefaultContextDeleter;
@@ -367,7 +367,7 @@ class COMPONENT_EXPORT(STORAGE_BROWSER) FileSystemContext
   scoped_refptr<base::SingleThreadTaskRunner> io_task_runner_;
   scoped_refptr<base::SequencedTaskRunner> default_file_task_runner_;
 
-  scoped_refptr<storage::QuotaManagerProxy> quota_manager_proxy_;
+  scoped_refptr<QuotaManagerProxy> quota_manager_proxy_;
 
   std::unique_ptr<SandboxFileSystemBackendDelegate> sandbox_delegate_;
 

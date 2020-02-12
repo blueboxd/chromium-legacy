@@ -142,8 +142,8 @@ TEST_F(AppCacheStorageTest, UsageMap) {
   const url::Origin kOrigin2(url::Origin::Create(GURL("http://origin2/")));
 
   MockAppCacheService service;
-  scoped_refptr<MockQuotaManagerProxy> mock_proxy =
-      base::MakeRefCounted<MockQuotaManagerProxy>(nullptr, nullptr);
+  scoped_refptr<storage::MockQuotaManagerProxy> mock_proxy =
+      base::MakeRefCounted<storage::MockQuotaManagerProxy>(nullptr, nullptr);
   service.set_quota_manager_proxy(mock_proxy.get());
 
   service.storage()->UpdateUsageMapAndNotify(kOrigin, 0);

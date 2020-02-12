@@ -467,12 +467,39 @@ body[type='open-multi-file'].check-select .dialog-header {
   z-index: 1;
 }
 
+.dialog-header.files-ng cr-button {
+  border: 1px solid transparent;
+  border-radius: 18px;
+  color: var(--google-grey-700);
+  height: 36px;
+  margin: 0 6px;
+  min-width: 36px;
+  --text-color: currentColor;
+}
+
+.dialog-header.files-ng cr-button::after {
+  content: '';
+  height: 48px;
+  position: absolute;
+  width: 48px;
+}
+
+.dialog-header.files-ng cr-button:focus {
+  border: 1px solid var(--google-blue-600);
+}
+
+.dialog-header.files-ng files-ripple,
+.dialog-header.files-ng files-toggle-ripple {
+  display: none;
+}
+
 .dialog-header:not(.files-ng) button,
 .dialog-header:not(.files-ng) button:hover {
   color: white;
 }
 
 .dialog-header.files-ng cr-button {
+  --hover-bg-color: rgba(0, 0, 0, 0.04);
   --text-color: currentColor;
 }
 
@@ -566,6 +593,12 @@ html[dir='rtl'] .dialog-header button.icon-button > files-toggle-ripple {
   background-image: -webkit-image-set(
       url(../images/files/ui/search_white.png) 1x,
       url(../images/files/ui/2x/search_white.png) 2x);
+}
+
+.dialog-header.files-ng cr-button > .icon {
+  height: 20px;
+  padding: calc(8px - 1px);
+  width: 20px;
 }
 
 .dialog-header.files-ng #search-button > .icon {

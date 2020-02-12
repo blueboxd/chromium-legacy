@@ -331,8 +331,12 @@ void AppActivityRegistry::UpdateAppLimits(
     if (base::Contains(app_limits, app_id))
       new_limit = app_limits.at(app_id);
 
-    // TODO(yilkal): Remove the following if statement after bug bash.
-    if (app_id == GetChromeAppId() && !base::Contains(app_limits, app_id) &&
+    bool is_web = ContributesToWebTimeLimit(app_id, GetAppState(app_id));
+    if (is_web && base::Contains(app_limits, GetChromeAppId()))
+      new_limit = app_limits.at(GetChromeAppId());
+
+    // TODO(yilkal): Clean up the following if statement after bug bash.
+    if (is_web && !base::Contains(app_limits, GetChromeAppId()) &&
         base::Contains(app_limits, GetAndroidChromeAppId())) {
       new_limit = app_limits.at(GetAndroidChromeAppId());
     }

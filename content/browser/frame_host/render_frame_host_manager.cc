@@ -2335,6 +2335,14 @@ RenderFrameHostManager::GetSiteInstanceForNavigationRequest(
       request->GetRestoreType() != RestoreType::NONE, request->is_view_source(),
       request->WasServerRedirect(), cross_origin_policy_swap);
 
+  // If the NavigationRequest's dest_site_instance was present but incorrect,
+  // then ensure no sensitive state is kept on the request. This can happen for
+  // cross-process redirects, error pages, etc.
+  if (request->dest_site_instance() &&
+      request->dest_site_instance() != dest_site_instance) {
+    request->ResetStateForSiteInstanceChange();
+  }
+
   return dest_site_instance;
 }
 

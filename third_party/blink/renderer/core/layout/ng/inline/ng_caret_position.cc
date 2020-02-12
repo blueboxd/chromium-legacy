@@ -94,7 +94,7 @@ CaretPositionResolution TryResolveCaretPositionInTextFragment(
     return CaretPositionResolution();
 
   const NGOffsetMapping& mapping =
-      *NGOffsetMapping::GetFor(cursor.CurrentLayoutObject());
+      *NGOffsetMapping::GetFor(cursor.Current().GetLayoutObject());
 
   // A text fragment natually allows caret placement in offset range
   // [StartOffset(), EndOffset()], i.e., from before the first character to
@@ -157,7 +157,7 @@ CaretPositionResolution TryResolveCaretPositionByBoxFragmentSide(
     const NGInlineCursor& cursor,
     unsigned offset,
     TextAffinity affinity) {
-  const Node* const node = cursor.CurrentNode();
+  const Node* const node = cursor.Current().GetNode();
   // There is no caret position at a pseudo or generated box side.
   if (!node || node->IsPseudoElement()) {
     // TODO(xiaochengh): This leads to false negatives for, e.g., RUBY, where an
@@ -320,20 +320,22 @@ PositionWithAffinity NGCaretPosition::ToPositionInDOMTreeWithAffinity() const {
     return PositionWithAffinity();
   switch (position_type) {
     case NGCaretPositionType::kBeforeBox:
-      if (cursor.CurrentNode())
+      if (cursor.Current().GetNode())
         return PositionWithAffinity();
-      return PositionWithAffinity(Position::BeforeNode(*cursor.CurrentNode()),
-                                  TextAffinity::kDownstream);
+      return PositionWithAffinity(
+          Position::BeforeNode(*cursor.Current().GetNode()),
+          TextAffinity::kDownstream);
     case NGCaretPositionType::kAfterBox:
-      if (cursor.CurrentNode())
+      if (cursor.Current().GetNode())
         return PositionWithAffinity();
-      return PositionWithAffinity(Position::AfterNode(*cursor.CurrentNode()),
-                                  TextAffinity::kUpstreamIfPossible);
+      return PositionWithAffinity(
+          Position::AfterNode(*cursor.Current().GetNode()),
+          TextAffinity::kUpstreamIfPossible);
     case NGCaretPositionType::kAtTextOffset:
-      // In case of ::first-letter, |cursor.CurrentNode()| is null.
+      // In case of ::first-letter, |cursor.Current().GetNode()| is null.
       DCHECK(text_offset.has_value());
       const NGOffsetMapping* mapping =
-          NGOffsetMapping::GetFor(cursor.CurrentLayoutObject());
+          NGOffsetMapping::GetFor(cursor.Current().GetLayoutObject());
       const TextAffinity affinity =
           *text_offset == cursor.CurrentTextEndOffset()
               ? TextAffinity::kUpstreamIfPossible

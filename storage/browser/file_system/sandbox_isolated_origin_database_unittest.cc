@@ -8,9 +8,7 @@
 #include "storage/browser/file_system/sandbox_origin_database.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
-using storage::SandboxIsolatedOriginDatabase;
-
-namespace content {
+namespace storage {
 
 namespace {
 const base::FilePath::CharType kOriginDirectory[] = FILE_PATH_LITERAL("iso");
@@ -39,4 +37,4 @@ TEST(SandboxIsolatedOriginDatabaseTest, BasicTest) {
   EXPECT_EQ(path1, path2);
 }
 
-}  // namespace content
+}  // namespace storage

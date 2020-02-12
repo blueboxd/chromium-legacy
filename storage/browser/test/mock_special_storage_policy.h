@@ -12,11 +12,9 @@
 #include "storage/browser/quota/special_storage_policy.h"
 #include "url/gurl.h"
 
-using storage::SpecialStoragePolicy;
+namespace storage {
 
-namespace content {
-
-class MockSpecialStoragePolicy : public storage::SpecialStoragePolicy {
+class MockSpecialStoragePolicy : public SpecialStoragePolicy {
  public:
   MockSpecialStoragePolicy();
 
@@ -79,6 +77,7 @@ class MockSpecialStoragePolicy : public storage::SpecialStoragePolicy {
 
   bool all_unlimited_;
 };
-}  // namespace content
+
+}  // namespace storage
 
 #endif  // STORAGE_BROWSER_TEST_MOCK_SPECIAL_STORAGE_POLICY_H_

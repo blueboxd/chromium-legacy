@@ -19,10 +19,6 @@
 #include "base/memory/weak_ptr.h"
 #include "storage/common/file_system/file_system_types.h"
 
-namespace content {
-class QuotaReservationManagerTest;
-}
-
 namespace url {
 class Origin;
 }
@@ -90,7 +86,7 @@ class COMPONENT_EXPORT(STORAGE_BROWSER) QuotaReservationManager {
 
   friend class QuotaReservation;
   friend class QuotaReservationBuffer;
-  friend class content::QuotaReservationManagerTest;
+  friend class QuotaReservationManagerTest;
 
   void ReserveQuota(const url::Origin& origin,
                     FileSystemType type,

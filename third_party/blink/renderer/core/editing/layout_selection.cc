@@ -584,9 +584,10 @@ static SelectionState GetSelectionStateFor(const LayoutText& layout_text) {
 }
 
 static SelectionState GetSelectionStateFor(const NGInlineCursor& cursor) {
-  DCHECK(cursor.CurrentLayoutObject() &&
-         cursor.CurrentLayoutObject()->IsText());
-  return GetSelectionStateFor(ToLayoutText(*cursor.CurrentLayoutObject()));
+  DCHECK(cursor.Current().GetLayoutObject() &&
+         cursor.Current().GetLayoutObject()->IsText());
+  return GetSelectionStateFor(
+      ToLayoutText(*cursor.Current().GetLayoutObject()));
 }
 
 bool LayoutSelection::IsSelected(const LayoutObject& layout_object) {

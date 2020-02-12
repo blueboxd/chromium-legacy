@@ -354,9 +354,8 @@ TEST_F(AppActivityRegistryTest, SharedTimeLimitForChromeAndWebApps) {
   const AppId kChromeAppId = GetChromeAppId();
 
   const AppLimit limit1(AppRestriction::kTimeLimit, kOneHour, start);
-  const AppLimit limit2(AppRestriction::kTimeLimit, kOneHour, start);
-  const std::map<AppId, AppLimit> limits{{kChromeAppId, limit1},
-                                         {kApp2, limit2}};
+  const std::map<AppId, AppLimit> limits{{kChromeAppId, limit1}};
+
   registry().UpdateAppLimits(limits);
 
   auto* app2_window = CreateWindowForApp(kApp2);

@@ -104,6 +104,8 @@ TEST(ExtensionActionTest, DisplayBadgeText) {
   action->SetBadgeText(ExtensionAction::kDefaultTabId, "foo");
   ASSERT_EQ("10", action->GetDisplayBadgeText(kFirstTabId));
   ASSERT_EQ("foo", action->GetDisplayBadgeText(kSecondTabId));
+  action->SetDNRActionCount(kFirstTabId, 0 /* action_count */);
+  ASSERT_EQ("foo", action->GetDisplayBadgeText(kFirstTabId));
   action->SetBadgeText(kFirstTabId, "bar");
   ASSERT_EQ("bar", action->GetDisplayBadgeText(kFirstTabId));
   action->SetDNRActionCount(kFirstTabId, 100 /* action_count */);

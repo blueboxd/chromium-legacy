@@ -25,7 +25,6 @@
 #include "third_party/blink/public/mojom/quota/quota_types.mojom.h"
 
 using blink::mojom::StorageType;
-using storage::QuotaClient;
 
 namespace storage {
 
@@ -34,8 +33,7 @@ namespace {
 int64_t GetOriginUsageOnDBThread(DatabaseTracker* db_tracker,
                                  const url::Origin& origin) {
   OriginInfo info;
-  if (db_tracker->GetOriginInfo(storage::GetIdentifierFromOrigin(origin),
-                                &info))
+  if (db_tracker->GetOriginInfo(GetIdentifierFromOrigin(origin), &info))
     return info.TotalSize();
   return 0;
 }
@@ -45,7 +43,7 @@ void GetOriginsOnDBThread(DatabaseTracker* db_tracker,
   std::vector<std::string> origin_identifiers;
   if (db_tracker->GetAllOriginIdentifiers(&origin_identifiers)) {
     for (const auto& identifier : origin_identifiers) {
-      origins_ptr->insert(storage::GetOriginFromIdentifier(identifier));
+      origins_ptr->insert(GetOriginFromIdentifier(identifier));
     }
   }
 }
@@ -56,7 +54,7 @@ void GetOriginsForHostOnDBThread(DatabaseTracker* db_tracker,
   std::vector<std::string> origin_identifiers;
   if (db_tracker->GetAllOriginIdentifiers(&origin_identifiers)) {
     for (const auto& identifier : origin_identifiers) {
-      url::Origin origin = storage::GetOriginFromIdentifier(identifier);
+      url::Origin origin = GetOriginFromIdentifier(identifier);
       if (host == net::GetHostOrSpecFromURL(origin.GetURL()))
         origins_ptr->insert(origin);
     }

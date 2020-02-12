@@ -78,7 +78,10 @@ class TestAccessManager : public CreditCardAccessManager {
   TestAccessManager(AutofillDriver* driver,
                     AutofillClient* client,
                     PersonalDataManager* personal_data)
-      : CreditCardAccessManager(driver, client, personal_data) {
+      : CreditCardAccessManager(driver,
+                                client,
+                                personal_data,
+                                /*credit_card_form_event_logger=*/nullptr) {
     card_ = test::GetMaskedServerCard();
     card_.set_record_type(CreditCard::FULL_SERVER_CARD);
     card_.SetNumber(kFirstTwelveDigits + card_.number());

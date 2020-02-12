@@ -4,6 +4,8 @@
 
 #include <stddef.h>
 
+#include <string>
+
 #include "base/bind.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
@@ -15,10 +17,8 @@
 #include "third_party/sqlite/sqlite3.h"
 
 using base::ASCIIToUTF16;
-using storage::DatabaseDetails;
-using storage::DatabasesTable;
 
-namespace content {
+namespace storage {
 
 static void CheckDetailsAreEqual(const DatabaseDetails& d1,
                                  const DatabaseDetails& d2) {
@@ -145,4 +145,4 @@ TEST(DatabasesTableTest, TestIt) {
   ASSERT_TRUE(expecter.SawExpectedErrors());
 }
 
-}  // namespace content
+}  // namespace storage

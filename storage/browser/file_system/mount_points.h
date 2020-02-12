@@ -21,9 +21,6 @@ class Origin;
 namespace storage {
 class FileSystemMountOption;
 class FileSystemURL;
-}  // namespace storage
-
-namespace storage {
 
 // Represents a set of mount points for File API.
 class COMPONENT_EXPORT(STORAGE_BROWSER) MountPoints {
@@ -68,7 +65,7 @@ class COMPONENT_EXPORT(STORAGE_BROWSER) MountPoints {
   // registered in this context, returns empty, invalid FileSystemURL.
   virtual FileSystemURL CreateCrackedFileSystemURL(
       const url::Origin& origin,
-      storage::FileSystemType type,
+      FileSystemType type,
       const base::FilePath& path) const = 0;
 
   // Returns the mount point root path registered for a given |mount_name|.

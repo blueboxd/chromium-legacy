@@ -5,6 +5,12 @@
 #include <stddef.h>
 #include <stdint.h>
 
+#include <map>
+#include <set>
+#include <string>
+#include <utility>
+#include <vector>
+
 #include "base/bind.h"
 #include "base/files/file_util.h"
 #include "base/location.h"
@@ -117,7 +123,7 @@ GURL FilterResourceURLForCodeCache() {
 class AwaitCompletionHelper {
  public:
   AwaitCompletionHelper() : start_(false), already_quit_(false) {}
-  virtual ~AwaitCompletionHelper() {}
+  virtual ~AwaitCompletionHelper() = default;
 
   void BlockUntilNotified() {
     if (!already_quit_) {
@@ -746,9 +752,9 @@ class StoragePartitionImplTest : public testing::Test {
       : task_environment_(content::BrowserTaskEnvironment::IO_MAINLOOP),
         browser_context_(new TestBrowserContext()) {}
 
-  MockQuotaManager* GetMockManager() {
+  storage::MockQuotaManager* GetMockManager() {
     if (!quota_manager_.get()) {
-      quota_manager_ = new MockQuotaManager(
+      quota_manager_ = base::MakeRefCounted<storage::MockQuotaManager>(
           browser_context_->IsOffTheRecord(), browser_context_->GetPath(),
           base::CreateSingleThreadTaskRunner({BrowserThread::IO}).get(),
           browser_context_->GetSpecialStoragePolicy());
@@ -765,7 +771,7 @@ class StoragePartitionImplTest : public testing::Test {
  private:
   content::BrowserTaskEnvironment task_environment_;
   std::unique_ptr<TestBrowserContext> browser_context_;
-  scoped_refptr<MockQuotaManager> quota_manager_;
+  scoped_refptr<storage::MockQuotaManager> quota_manager_;
 
   DISALLOW_COPY_AND_ASSIGN(StoragePartitionImplTest);
 };
@@ -849,7 +855,8 @@ TEST_F(StoragePartitionImplTest, QuotaClientMaskGeneration) {
             StoragePartitionImpl::GenerateQuotaClientMask(kAllQuotaRemoveMask));
 }
 
-void PopulateTestQuotaManagedPersistentData(MockQuotaManager* manager) {
+void PopulateTestQuotaManagedPersistentData(
+    storage::MockQuotaManager* manager) {
   manager->AddOrigin(Origin2(), kPersistent, kClientFile, base::Time());
   manager->AddOrigin(Origin3(), kPersistent, kClientFile,
                      base::Time::Now() - base::TimeDelta::FromDays(1));
@@ -859,7 +866,7 @@ void PopulateTestQuotaManagedPersistentData(MockQuotaManager* manager) {
   EXPECT_TRUE(manager->OriginHasData(Origin3(), kPersistent, kClientFile));
 }
 
-void PopulateTestQuotaManagedTemporaryData(MockQuotaManager* manager) {
+void PopulateTestQuotaManagedTemporaryData(storage::MockQuotaManager* manager) {
   manager->AddOrigin(Origin1(), kTemporary, kClientFile, base::Time::Now());
   manager->AddOrigin(Origin3(), kTemporary, kClientFile,
                      base::Time::Now() - base::TimeDelta::FromDays(1));
@@ -869,7 +876,7 @@ void PopulateTestQuotaManagedTemporaryData(MockQuotaManager* manager) {
   EXPECT_TRUE(manager->OriginHasData(Origin3(), kTemporary, kClientFile));
 }
 
-void PopulateTestQuotaManagedData(MockQuotaManager* manager) {
+void PopulateTestQuotaManagedData(storage::MockQuotaManager* manager) {
   // Set up Origin1() with a temporary quota, Origin2() with a persistent
   // quota, and Origin3() with both. Origin1() is modified now, Origin2()
   // is modified at the beginning of time, and Origin3() is modified one day
@@ -878,7 +885,8 @@ void PopulateTestQuotaManagedData(MockQuotaManager* manager) {
   PopulateTestQuotaManagedTemporaryData(manager);
 }
 
-void PopulateTestQuotaManagedNonBrowsingData(MockQuotaManager* manager) {
+void PopulateTestQuotaManagedNonBrowsingData(
+    storage::MockQuotaManager* manager) {
   manager->AddOrigin(OriginDevTools(), kTemporary, kClientFile, base::Time());
   manager->AddOrigin(OriginDevTools(), kPersistent, kClientFile, base::Time());
 }
@@ -1071,8 +1079,7 @@ TEST_F(StoragePartitionImplTest, RemoveQuotaManagedDataForLastWeek) {
 
 TEST_F(StoragePartitionImplTest, RemoveQuotaManagedUnprotectedOrigins) {
   // Protect Origin1().
-  scoped_refptr<MockSpecialStoragePolicy> mock_policy =
-      new MockSpecialStoragePolicy;
+  auto mock_policy = base::MakeRefCounted<storage::MockSpecialStoragePolicy>();
   mock_policy->AddProtected(Origin1().GetURL());
 
   PopulateTestQuotaManagedData(GetMockManager());
@@ -1106,8 +1113,7 @@ TEST_F(StoragePartitionImplTest, RemoveQuotaManagedUnprotectedOrigins) {
 
 TEST_F(StoragePartitionImplTest, RemoveQuotaManagedProtectedOrigins) {
   // Protect Origin1().
-  scoped_refptr<MockSpecialStoragePolicy> mock_policy =
-      new MockSpecialStoragePolicy;
+  auto mock_policy = base::MakeRefCounted<storage::MockSpecialStoragePolicy>();
   mock_policy->AddProtected(Origin1().GetURL());
 
   PopulateTestQuotaManagedData(GetMockManager());
@@ -1215,8 +1221,7 @@ TEST_F(StoragePartitionImplTest, RemoveCookieWithDeleteInfo) {
 
 TEST_F(StoragePartitionImplTest, RemoveUnprotectedLocalStorageForever) {
   // Protect Origin1().
-  scoped_refptr<MockSpecialStoragePolicy> mock_policy =
-      new MockSpecialStoragePolicy;
+  auto mock_policy = base::MakeRefCounted<storage::MockSpecialStoragePolicy>();
   mock_policy->AddProtected(Origin1().GetURL());
 
   RemoveLocalStorageTester tester(task_environment(), browser_context());
@@ -1250,8 +1255,7 @@ TEST_F(StoragePartitionImplTest, RemoveUnprotectedLocalStorageForever) {
 
 TEST_F(StoragePartitionImplTest, RemoveProtectedLocalStorageForever) {
   // Protect Origin1().
-  scoped_refptr<MockSpecialStoragePolicy> mock_policy =
-      new MockSpecialStoragePolicy;
+  auto mock_policy = base::MakeRefCounted<storage::MockSpecialStoragePolicy>();
   mock_policy->AddProtected(Origin1().GetURL());
 
   RemoveLocalStorageTester tester(task_environment(), browser_context());

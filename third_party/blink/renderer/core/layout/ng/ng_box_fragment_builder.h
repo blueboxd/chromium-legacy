@@ -292,6 +292,8 @@ class CORE_EXPORT NGBoxFragmentBuilder final
 #endif
 
  private:
+  bool IsBlockLevel() const;
+
   // Update whether we have fragmented in this flow.
   void PropagateBreak(const NGLayoutResult&);
 

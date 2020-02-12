@@ -24,9 +24,7 @@
 #include "third_party/leveldatabase/src/db/filename.h"
 #include "third_party/leveldatabase/src/include/leveldb/db.h"
 
-using storage::SandboxOriginDatabase;
-
-namespace content {
+namespace storage {
 
 namespace {
 const base::FilePath::CharType kFileSystemDirName[] =
@@ -299,4 +297,4 @@ TEST(SandboxOriginDatabaseTest, DatabaseRecoveryForMissingDBFileTest) {
   }
 }
 
-}  // namespace content
+}  // namespace storage

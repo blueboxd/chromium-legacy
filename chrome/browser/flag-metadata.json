@@ -2124,21 +2124,6 @@
     "expiry_milestone": 85
   },
   {
-    "name": "enable-webrtc-hw-h264-encoding",
-    "owners": [ "hiroh", "chromeos-video-eng@google.com" ],
-    "expiry_milestone": 83
-  },
-  {
-    "name": "enable-webrtc-hw-vp8-encoding",
-    "owners": [ "hiroh", "chromeos-video-eng@google.com" ],
-    "expiry_milestone": 83
-  },
-  {
-    "name": "enable-webrtc-hw-vp9-encoding",
-    "owners": [ "hiroh", "chromeos-video-eng@google.com" ],
-    "expiry_milestone": 83
-  },
-  {
     "name": "enable-webrtc-hybrid-agc",
     "owners": [ "aleloi" ],
     "expiry_milestone": 83

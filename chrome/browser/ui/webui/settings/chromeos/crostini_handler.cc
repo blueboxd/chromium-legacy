@@ -113,11 +113,16 @@ void CrostiniHandler::RegisterMessages() {
       "requestCrostiniContainerUpgradeView",
       base::BindRepeating(&CrostiniHandler::HandleRequestContainerUpgradeView,
                           weak_ptr_factory_.GetWeakPtr()));
+  web_ui()->RegisterMessageCallback(
+      "requestCrostiniUpgraderDialogStatus",
+      base::BindRepeating(
+          &CrostiniHandler::HandleCrostiniUpgraderDialogStatusRequest,
+          weak_ptr_factory_.GetWeakPtr()));
 }
 
 void CrostiniHandler::OnJavascriptAllowed() {
   crostini::CrostiniManager::GetForProfile(profile_)
-      ->AddInstallerViewStatusObserver(this);
+      ->AddCrostiniDialogStatusObserver(this);
   if (chromeos::CrosUsbDetector::Get()) {
     chromeos::CrosUsbDetector::Get()->AddUsbDeviceObserver(this);
   }
@@ -125,11 +130,8 @@ void CrostiniHandler::OnJavascriptAllowed() {
 }
 
 void CrostiniHandler::OnJavascriptDisallowed() {
-  if (crostini::CrostiniManager::GetForProfile(profile_)
-          ->HasInstallerViewStatusObserver(this)) {
-    crostini::CrostiniManager::GetForProfile(profile_)
-        ->RemoveInstallerViewStatusObserver(this);
-  }
+  crostini::CrostiniManager::GetForProfile(profile_)
+      ->RemoveCrostiniDialogStatusObserver(this);
   if (chromeos::CrosUsbDetector::Get()) {
     chromeos::CrosUsbDetector::Get()->RemoveUsbDeviceObserver(this);
   }
@@ -277,8 +279,8 @@ void CrostiniHandler::HandleCrostiniInstallerStatusRequest(
   AllowJavascript();
   CHECK_EQ(0U, args->GetSize());
   bool status = crostini::CrostiniManager::GetForProfile(profile_)
-                    ->GetInstallerViewStatus();
-  OnCrostiniInstallerViewStatusChanged(status);
+                    ->GetCrostiniDialogStatus(crostini::DialogType::INSTALLER);
+  OnCrostiniDialogStatusChanged(crostini::DialogType::INSTALLER, status);
 }
 
 void CrostiniHandler::HandleCrostiniExportImportOperationStatusRequest(
@@ -290,12 +292,30 @@ void CrostiniHandler::HandleCrostiniExportImportOperationStatusRequest(
   OnCrostiniExportImportOperationStatusChanged(in_progress);
 }
 
-void CrostiniHandler::OnCrostiniInstallerViewStatusChanged(bool status) {
+void CrostiniHandler::OnCrostiniDialogStatusChanged(
+    crostini::DialogType dialog_type,
+    bool status) {
   // It's technically possible for this to be called before Javascript is
   // enabled, in which case we must not call FireWebUIListener
   if (IsJavascriptAllowed()) {
     // Other side listens with cr.addWebUIListener
-    FireWebUIListener("crostini-installer-status-changed", base::Value(status));
+    switch (dialog_type) {
+      case crostini::DialogType::INSTALLER:
+        FireWebUIListener("crostini-installer-status-changed",
+                          base::Value(status));
+        break;
+      case crostini::DialogType::UPGRADER:
+        FireWebUIListener("crostini-upgrader-status-changed",
+                          base::Value(status));
+        break;
+      case crostini::DialogType::REMOVER:
+        FireWebUIListener("crostini-remover-status-changed",
+                          base::Value(status));
+        break;
+      default:
+        NOTREACHED();
+        break;
+    }
   }
 }
 
@@ -396,6 +416,15 @@ void CrostiniHandler::HandleQueryArcAdbRequest(const base::ListValue* args) {
       chromeos::SessionManagerClient::Get();
   client->QueryAdbSideload(base::Bind(&CrostiniHandler::OnQueryAdbSideload,
                                       weak_ptr_factory_.GetWeakPtr()));
+}
+
+void CrostiniHandler::HandleCrostiniUpgraderDialogStatusRequest(
+    const base::ListValue* args) {
+  AllowJavascript();
+  CHECK_EQ(0U, args->GetSize());
+  bool is_open = crostini::CrostiniManager::GetForProfile(profile_)
+                     ->GetCrostiniDialogStatus(crostini::DialogType::UPGRADER);
+  OnCrostiniDialogStatusChanged(crostini::DialogType::UPGRADER, is_open);
 }
 
 }  // namespace settings

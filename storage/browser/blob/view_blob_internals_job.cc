@@ -30,8 +30,9 @@
 #include "storage/browser/blob/blob_storage_registry.h"
 #include "storage/browser/blob/shareable_blob_data_item.h"
 
+namespace storage {
+
 namespace {
-using storage::BlobStatus;
 
 const char kEmptyBlobStorageMessage[] = "No available blob data.";
 const char kContentType[] = "Content Type: ";
@@ -137,8 +138,6 @@ void AddHorizontalRule(std::string* out) {
 }
 
 }  // namespace
-
-namespace storage {
 
 std::string ViewBlobInternalsJob::GenerateHTML(
     BlobStorageContext* blob_storage_context) {

@@ -6,8 +6,11 @@
 #include <stdint.h>
 #include <string.h>
 
+#include <algorithm>
 #include <memory>
+#include <string>
 #include <utility>
+#include <vector>
 
 #include "base/bind.h"
 #include "base/bind_helpers.h"
@@ -42,13 +45,13 @@
 #include "url/gurl.h"
 
 using base::FilePath;
-using content::AsyncFileTestHelper;
 using net::DrainableIOBuffer;
 using net::IOBuffer;
-using FileCreationInfo = storage::BlobMemoryController::FileCreationInfo;
 
 namespace storage {
 namespace {
+
+using FileCreationInfo = BlobMemoryController::FileCreationInfo;
 
 void SaveBlobStatusAndFiles(BlobStatus* status_ptr,
                             std::vector<FileCreationInfo>* files_ptr,
@@ -378,8 +381,7 @@ TEST_F(BlobReaderTest, BasicFileSystem) {
 TEST_F(BlobReaderTest, BasicReadableDataHandle) {
   auto b = std::make_unique<BlobDataBuilder>("uuid");
   const std::string kData = "Test Blob Data";
-  auto data_handle =
-      base::MakeRefCounted<storage::FakeBlobDataHandle>(kData, "");
+  auto data_handle = base::MakeRefCounted<FakeBlobDataHandle>(kData, "");
   b->AppendReadableDataHandle(std::move(data_handle));
   this->InitializeReader(std::move(b));
 
@@ -409,8 +411,7 @@ TEST_F(BlobReaderTest, ReadableDataHandleWithSideData) {
   auto b = std::make_unique<BlobDataBuilder>("uuid");
   const std::string kData = "Test Blob Data";
   const std::string kSideData = "Test side data";
-  auto data_handle =
-      base::MakeRefCounted<storage::FakeBlobDataHandle>(kData, kSideData);
+  auto data_handle = base::MakeRefCounted<FakeBlobDataHandle>(kData, kSideData);
   b->AppendReadableDataHandle(std::move(data_handle));
   this->InitializeReader(std::move(b));
 
@@ -647,8 +648,7 @@ TEST_F(BlobReaderTest, FileSystemAsync) {
 TEST_F(BlobReaderTest, ReadableDataHandleSingle) {
   auto b = std::make_unique<BlobDataBuilder>("uuid");
   const std::string kOrigData = "12345 Test Blob Data 12345";
-  auto data_handle =
-      base::MakeRefCounted<storage::FakeBlobDataHandle>(kOrigData, "");
+  auto data_handle = base::MakeRefCounted<FakeBlobDataHandle>(kOrigData, "");
   b->AppendReadableDataHandle(data_handle, 6, 14);
   this->InitializeReader(std::move(b));
   const std::string kData = kOrigData.substr(6, 14);
@@ -691,8 +691,7 @@ TEST_F(BlobReaderTest, ReadableDataHandleSingle) {
 TEST_F(BlobReaderTest, ReadableDataHandleSingleRange) {
   auto b = std::make_unique<BlobDataBuilder>("uuid");
   const std::string kOrigData = "12345 Test Blob Data 12345";
-  auto data_handle =
-      base::MakeRefCounted<storage::FakeBlobDataHandle>(kOrigData, "");
+  auto data_handle = base::MakeRefCounted<FakeBlobDataHandle>(kOrigData, "");
   b->AppendReadableDataHandle(data_handle, 6, 14);
   this->InitializeReader(std::move(b));
   const std::string kData = kOrigData.substr(6, 14);
@@ -745,9 +744,9 @@ TEST_F(BlobReaderTest, ReadableDataHandleMultipleSlices) {
   // non-first element that we read handle slices, as these touch different
   // pieces of code.
   b->AppendReadableDataHandle(
-      base::MakeRefCounted<storage::FakeBlobDataHandle>(kData1, ""), 5, 4);
+      base::MakeRefCounted<FakeBlobDataHandle>(kData1, ""), 5, 4);
   b->AppendReadableDataHandle(
-      base::MakeRefCounted<storage::FakeBlobDataHandle>(kData2, ""), 6, 9);
+      base::MakeRefCounted<FakeBlobDataHandle>(kData2, ""), 6, 9);
   this->InitializeReader(std::move(b));
 
   std::string kData = kData1.substr(5, 4) + kData2.substr(6, 9);
@@ -825,8 +824,7 @@ TEST_F(BlobReaderTest, ReadableDataHandleRange) {
   const std::string kData = "Test Blob Data";
   const uint64_t kOffset = 2;
   const uint64_t kReadLength = 3;
-  auto data_handle =
-      base::MakeRefCounted<storage::FakeBlobDataHandle>(kData, "");
+  auto data_handle = base::MakeRefCounted<FakeBlobDataHandle>(kData, "");
   b->AppendReadableDataHandle(std::move(data_handle));
   this->InitializeReader(std::move(b));
 
@@ -937,8 +935,7 @@ TEST_F(BlobReaderTest, MixedContent) {
   const base::Time kTime = base::Time::Now();
   const FilePath kData1Path = FilePath::FromUTF8Unsafe("/fake/file.txt");
 
-  auto data_handle =
-      base::MakeRefCounted<storage::FakeBlobDataHandle>(kData3, "");
+  auto data_handle = base::MakeRefCounted<FakeBlobDataHandle>(kData3, "");
 
   b->AppendFile(kData1Path, 0, kData1.size(), kTime);
   b->AppendData(kData2);

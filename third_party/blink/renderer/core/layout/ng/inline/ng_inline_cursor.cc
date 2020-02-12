@@ -168,8 +168,9 @@ void NGInlineCursor::ExpandRootToContainingBlock() {
 
 bool NGInlineCursor::HasSoftWrapToNextLine() const {
   DCHECK(Current().IsLineBox());
-  const NGInlineBreakToken& break_token = CurrentInlineBreakToken();
-  return !break_token.IsFinished() && !break_token.IsForcedBreak();
+  const NGInlineBreakToken* break_token = Current().InlineBreakToken();
+  DCHECK(break_token);
+  return !break_token->IsFinished() && !break_token->IsForcedBreak();
 }
 
 bool NGInlineCursorPosition::IsInlineBox() const {
@@ -248,14 +249,14 @@ bool NGInlineCursor::IsInlineLeaf() const {
 
 bool NGInlineCursor::IsPartOfCulledInlineBox(
     const LayoutInline& layout_inline) const {
-  const LayoutObject* const layout_object = CurrentLayoutObject();
+  const LayoutObject* const layout_object = Current().GetLayoutObject();
   // We use |IsInline()| to exclude floating and out-of-flow objects.
   if (!layout_object || !layout_object->IsInline() ||
       layout_object->IsAtomicInlineLevel())
     return false;
   DCHECK(!layout_object->IsFloatingOrOutOfFlowPositioned());
-  DCHECK(!CurrentBoxFragment() ||
-         !CurrentBoxFragment()->IsBlockFormattingContextRoot());
+  DCHECK(!Current().BoxFragment() ||
+         !Current().BoxFragment()->IsBlockFormattingContextRoot());
   return layout_object->IsDescendantOf(&layout_inline);
 }
 
@@ -386,7 +387,7 @@ UBiDiLevel NGInlineCursor::CurrentBidiLevel() const {
       NOTREACHED() << this;
       return 0;
     }
-    const LayoutText& layout_text = *ToLayoutText(CurrentLayoutObject());
+    const LayoutText& layout_text = *ToLayoutText(Current().GetLayoutObject());
     DCHECK(!layout_text.NeedsLayout()) << this;
     const auto* const items = layout_text.GetNGInlineItems();
     if (!items || items->size() == 0) {
@@ -404,7 +405,7 @@ UBiDiLevel NGInlineCursor::CurrentBidiLevel() const {
 
   if (Current().IsAtomicInline()) {
     const NGPhysicalBoxFragment* fragmentainer =
-        CurrentLayoutObject()->ContainingBlockFlowFragment();
+        Current().GetLayoutObject()->ContainingBlockFlowFragment();
     DCHECK(fragmentainer);
     const LayoutBlockFlow& block_flow =
         *To<LayoutBlockFlow>(fragmentainer->GetLayoutObject());
@@ -412,7 +413,7 @@ UBiDiLevel NGInlineCursor::CurrentBidiLevel() const {
         block_flow.GetNGInlineNodeData()
             ->ItemsData(Current().UsesFirstLineStyle())
             .items;
-    const LayoutObject* const layout_object = CurrentLayoutObject();
+    const LayoutObject* const layout_object = Current().GetLayoutObject();
     const auto* const item = std::find_if(
         items.begin(), items.end(), [layout_object](const NGInlineItem& item) {
           return item.GetLayoutObject() == layout_object;
@@ -425,13 +426,13 @@ UBiDiLevel NGInlineCursor::CurrentBidiLevel() const {
   return 0;
 }
 
-const NGPhysicalBoxFragment* NGInlineCursor::CurrentBoxFragment() const {
-  if (current_.paint_fragment_) {
+const NGPhysicalBoxFragment* NGInlineCursorPosition::BoxFragment() const {
+  if (paint_fragment_) {
     return DynamicTo<NGPhysicalBoxFragment>(
-        &current_.paint_fragment_->PhysicalFragment());
+        &paint_fragment_->PhysicalFragment());
   }
-  if (current_.item_)
-    return current_.item_->BoxFragment();
+  if (item_)
+    return item_->BoxFragment();
   NOTREACHED();
   return nullptr;
 }
@@ -445,47 +446,46 @@ const DisplayItemClient* NGInlineCursorPosition::GetDisplayItemClient() const {
   return nullptr;
 }
 
-const NGInlineBreakToken& NGInlineCursor::CurrentInlineBreakToken() const {
-  DCHECK(Current().IsLineBox());
-  if (current_.paint_fragment_) {
+const NGInlineBreakToken* NGInlineCursorPosition::InlineBreakToken() const {
+  DCHECK(IsLineBox());
+  if (paint_fragment_) {
     return To<NGInlineBreakToken>(
-        *To<NGPhysicalLineBoxFragment>(
-             current_.paint_fragment_->PhysicalFragment())
-             .BreakToken());
+        To<NGPhysicalLineBoxFragment>(paint_fragment_->PhysicalFragment())
+            .BreakToken());
   }
-  DCHECK(current_.item_);
-  return *current_.item_->InlineBreakToken();
+  DCHECK(item_);
+  return item_->InlineBreakToken();
 }
 
-const LayoutObject* NGInlineCursor::CurrentLayoutObject() const {
-  if (current_.paint_fragment_)
-    return current_.paint_fragment_->GetLayoutObject();
-  if (current_.item_)
-    return current_.item_->GetLayoutObject();
+const LayoutObject* NGInlineCursorPosition::GetLayoutObject() const {
+  if (paint_fragment_)
+    return paint_fragment_->GetLayoutObject();
+  if (item_)
+    return item_->GetLayoutObject();
   NOTREACHED();
   return nullptr;
 }
 
-LayoutObject* NGInlineCursor::CurrentMutableLayoutObject() const {
-  if (current_.paint_fragment_)
-    return current_.paint_fragment_->GetMutableLayoutObject();
-  if (current_.item_)
-    return current_.item_->GetMutableLayoutObject();
+LayoutObject* NGInlineCursorPosition::GetMutableLayoutObject() const {
+  if (paint_fragment_)
+    return paint_fragment_->GetMutableLayoutObject();
+  if (item_)
+    return item_->GetMutableLayoutObject();
   NOTREACHED();
   return nullptr;
 }
 
-Node* NGInlineCursor::CurrentNode() const {
-  if (const LayoutObject* layout_object = CurrentLayoutObject())
+const Node* NGInlineCursorPosition::GetNode() const {
+  if (const LayoutObject* layout_object = GetLayoutObject())
     return layout_object->GetNode();
   return nullptr;
 }
 
-const PhysicalRect NGInlineCursor::CurrentInkOverflow() const {
-  if (current_.paint_fragment_)
-    return current_.paint_fragment_->InkOverflow();
-  if (current_.item_)
-    return current_.item_->InkOverflow();
+const PhysicalRect NGInlineCursorPosition::InkOverflow() const {
+  if (paint_fragment_)
+    return paint_fragment_->InkOverflow();
+  if (item_)
+    return item_->InkOverflow();
   NOTREACHED();
   return PhysicalRect();
 }
@@ -1390,7 +1390,7 @@ NGInlineBackwardCursor::NGInlineBackwardCursor(const NGInlineCursor& cursor)
     }
     return;
   }
-  NOTREACHED();
+  DCHECK(!cursor);
 }
 
 NGInlineCursor NGInlineBackwardCursor::CursorForDescendants() const {

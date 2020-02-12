@@ -26,7 +26,6 @@
 
 using base::Owned;
 using base::Unretained;
-using storage::ShareableFileReference;
 
 namespace storage {
 
@@ -96,7 +95,7 @@ class GetFileInfoHelper {
   base::File::Error error_;
   base::File::Info file_info_;
   base::FilePath platform_path_;
-  storage::ScopedFile scoped_file_;
+  ScopedFile scoped_file_;
   DISALLOW_COPY_AND_ASSIGN(GetFileInfoHelper);
 };
 

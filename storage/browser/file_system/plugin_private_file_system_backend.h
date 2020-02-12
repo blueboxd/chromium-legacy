@@ -24,10 +24,6 @@ namespace base {
 class SequencedTaskRunner;
 }
 
-namespace content {
-class PluginPrivateFileSystemBackendTest;
-}
-
 namespace leveldb {
 class Env;
 }
@@ -50,12 +46,11 @@ class COMPONENT_EXPORT(STORAGE_BROWSER) PluginPrivateFileSystemBackend
   class FileSystemIDToPluginMap;
   using StatusCallback = base::OnceCallback<void(base::File::Error result)>;
 
-  PluginPrivateFileSystemBackend(
-      base::SequencedTaskRunner* file_task_runner,
-      const base::FilePath& profile_path,
-      storage::SpecialStoragePolicy* special_storage_policy,
-      const FileSystemOptions& file_system_options,
-      leveldb::Env* env_override);
+  PluginPrivateFileSystemBackend(base::SequencedTaskRunner* file_task_runner,
+                                 const base::FilePath& profile_path,
+                                 SpecialStoragePolicy* special_storage_policy,
+                                 const FileSystemOptions& file_system_options,
+                                 leveldb::Env* env_override);
   ~PluginPrivateFileSystemBackend() override;
 
   // This must be used to open 'private' filesystem instead of regular
@@ -87,9 +82,8 @@ class COMPONENT_EXPORT(STORAGE_BROWSER) PluginPrivateFileSystemBackend
       FileSystemContext* context,
       base::File::Error* error_code) const override;
   bool SupportsStreaming(const FileSystemURL& url) const override;
-  bool HasInplaceCopyImplementation(
-      storage::FileSystemType type) const override;
-  std::unique_ptr<storage::FileStreamReader> CreateFileStreamReader(
+  bool HasInplaceCopyImplementation(FileSystemType type) const override;
+  std::unique_ptr<FileStreamReader> CreateFileStreamReader(
       const FileSystemURL& url,
       int64_t offset,
       int64_t max_bytes_to_read,
@@ -110,11 +104,11 @@ class COMPONENT_EXPORT(STORAGE_BROWSER) PluginPrivateFileSystemBackend
   // FileSystemQuotaUtil overrides.
   base::File::Error DeleteOriginDataOnFileTaskRunner(
       FileSystemContext* context,
-      storage::QuotaManagerProxy* proxy,
+      QuotaManagerProxy* proxy,
       const GURL& origin_url,
       FileSystemType type) override;
   void PerformStorageCleanupOnFileTaskRunner(FileSystemContext* context,
-                                             storage::QuotaManagerProxy* proxy,
+                                             QuotaManagerProxy* proxy,
                                              FileSystemType type) override;
   void GetOriginsForTypeOnFileTaskRunner(FileSystemType type,
                                          std::set<GURL>* origins) override;
@@ -140,7 +134,7 @@ class COMPONENT_EXPORT(STORAGE_BROWSER) PluginPrivateFileSystemBackend
   ObfuscatedFileUtilMemoryDelegate* obfuscated_file_util_memory_delegate();
 
  private:
-  friend class content::PluginPrivateFileSystemBackendTest;
+  friend class PluginPrivateFileSystemBackendTest;
 
   ObfuscatedFileUtil* obfuscated_file_util();
   const base::FilePath& base_path() const { return base_path_; }

@@ -925,7 +925,7 @@ PhysicalRect ComputeLocalSelectionRectForText(
   if (selection_status.start != selection_status.end &&
       cursor.Current().IsLineBreak() &&
       // This is for old compatible that old doesn't paint last br in a page.
-      !IsLastBRInPage(*cursor.CurrentLayoutObject())) {
+      !IsLastBRInPage(*cursor.Current().GetLayoutObject())) {
     DCHECK(!logical_rect.size.inline_size);
     logical_rect.size.inline_size =
         LayoutUnit(cursor.Current().Style().GetFont().SpaceWidth());
@@ -946,7 +946,7 @@ PhysicalRect ComputeLocalSelectionRectForText(
 // "ng_selection_painter.cc".
 PhysicalRect ComputeLocalSelectionRectForReplaced(
     const NGInlineCursor& cursor) {
-  DCHECK(cursor.CurrentLayoutObject()->IsLayoutReplaced());
+  DCHECK(cursor.Current().GetLayoutObject()->IsLayoutReplaced());
   const PhysicalRect selection_rect = PhysicalRect({}, cursor.Current().Size());
   LogicalRect logical_rect = ComputeLogicalRectFor(selection_rect, cursor);
   const LogicalRect line_height_expanded_rect =

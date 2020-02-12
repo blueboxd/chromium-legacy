@@ -3,14 +3,13 @@
 // found in the LICENSE file.
 
 #include "storage/browser/test/test_file_system_options.h"
-#include "build/build_config.h"
 
 #include <string>
 #include <vector>
 
-using storage::FileSystemOptions;
+#include "build/build_config.h"
 
-namespace content {
+namespace storage {
 
 FileSystemOptions CreateIncognitoFileSystemOptions() {
   std::vector<std::string> additional_allowed_schemes;
@@ -43,4 +42,4 @@ FileSystemOptions CreateDisallowFileAccessOptions() {
                            additional_allowed_schemes);
 }
 
-}  // namespace content
+}  // namespace storage

@@ -24,7 +24,7 @@ class DatabaseTracker;
 //
 // This interface is used on the IO thread by the quota manager.
 class COMPONENT_EXPORT(STORAGE_BROWSER) DatabaseQuotaClient
-    : public storage::QuotaClient {
+    : public QuotaClient {
  public:
   explicit DatabaseQuotaClient(scoped_refptr<DatabaseTracker> tracker);
 

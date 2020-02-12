@@ -29,9 +29,6 @@ namespace storage {
 class FileSystemContext;
 class FileSystemURL;
 class ObfuscatedFileUtilMemoryDelegate;
-}  // namespace storage
-
-namespace storage {
 
 // A generic interface for reading a file-like object.
 class FileStreamReader {
@@ -75,8 +72,8 @@ class FileStreamReader {
   // succeeding read operations should fail with ERR_UPLOAD_FILE_CHANGED error.
   COMPONENT_EXPORT(STORAGE_BROWSER)
   static std::unique_ptr<FileStreamReader> CreateForFileSystemFile(
-      storage::FileSystemContext* context,
-      const storage::FileSystemURL& url,
+      FileSystemContext* context,
+      const FileSystemURL& url,
       int64_t initial_offset,
       const base::Time& expected_modification_time);
 
@@ -87,7 +84,7 @@ class FileStreamReader {
 
   // It is valid to delete the reader at any time.  If the stream is deleted
   // while it has a pending read, its callback will not be called.
-  virtual ~FileStreamReader() {}
+  virtual ~FileStreamReader() = default;
 
   // Reads from the current cursor position asynchronously.
   //

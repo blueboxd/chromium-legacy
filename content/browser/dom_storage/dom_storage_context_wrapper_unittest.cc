@@ -4,6 +4,8 @@
 
 #include "content/browser/dom_storage/dom_storage_context_wrapper.h"
 
+#include <utility>
+
 #include "base/bind.h"
 #include "base/macros.h"
 #include "base/memory/ptr_util.h"
@@ -27,7 +29,7 @@ class DOMStorageContextWrapperTest : public testing::Test {
   DOMStorageContextWrapperTest() = default;
 
   void SetUp() override {
-    storage_policy_ = new MockSpecialStoragePolicy();
+    storage_policy_ = base::MakeRefCounted<storage::MockSpecialStoragePolicy>();
     fake_mojo_task_runner_ = base::MakeRefCounted<base::TestSimpleTaskRunner>();
     auto* session_storage_context = new SessionStorageContextMojo(
         /*partition_path=*/base::FilePath(),
@@ -53,7 +55,7 @@ class DOMStorageContextWrapperTest : public testing::Test {
  protected:
   base::test::TaskEnvironment task_environment_;
   scoped_refptr<base::TestSimpleTaskRunner> fake_mojo_task_runner_;
-  scoped_refptr<MockSpecialStoragePolicy> storage_policy_;
+  scoped_refptr<storage::MockSpecialStoragePolicy> storage_policy_;
   scoped_refptr<DOMStorageContextWrapper> context_;
 
   DISALLOW_COPY_AND_ASSIGN(DOMStorageContextWrapperTest);

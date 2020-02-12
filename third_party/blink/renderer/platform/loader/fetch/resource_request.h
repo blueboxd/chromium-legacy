@@ -54,40 +54,25 @@ namespace blink {
 
 class EncodedFormData;
 
-// A ResourceRequest is a "request" object for ResourceLoader. Conceptually
-// it is https://fetch.spec.whatwg.org/#concept-request, but it contains
-// a lot of blink specific fields. WebURLRequest is the "public version"
-// of this class and WebURLLoader needs it. See WebURLRequest and
-// WrappedResourceRequest.
-//
-// This class is thread-bound. Do not copy/pass an instance across threads.
-class PLATFORM_EXPORT ResourceRequest final {
-  USING_FAST_MALLOC(ResourceRequest);
+// ResourceRequestHead represents request without request body.
+// See ResourceRequest below to see what request is.
+// ResourceRequestHead is implicitly copyable while ResourceRequest is not.
+// TODO(yoichio) : Migrate existing ResourceRequest occurrence not using request
+// body to ResourceRequestHead.
+class PLATFORM_EXPORT ResourceRequestHead {
+  DISALLOW_NEW();
 
  public:
   enum class RedirectStatus : uint8_t { kFollowedRedirect, kNoRedirect };
-  ResourceRequest();
-  explicit ResourceRequest(const String& url_string);
-  explicit ResourceRequest(const KURL&);
+  ResourceRequestHead();
+  explicit ResourceRequestHead(const KURL&);
 
-  ResourceRequest(const ResourceRequest&) = delete;
-  ResourceRequest(ResourceRequest&&);
-  ResourceRequest& operator=(ResourceRequest&&);
+  explicit ResourceRequestHead(const ResourceRequestHead&);
+  ResourceRequestHead& operator=(const ResourceRequestHead&);
+  explicit ResourceRequestHead(ResourceRequestHead&&);
+  ResourceRequestHead& operator=(ResourceRequestHead&&);
 
-  ~ResourceRequest();
-
-  // TODO(yoichio): Use move semantics as much as possible.
-  // See crbug.com/787704.
-  void CopyFrom(const ResourceRequest&);
-
-  // Constructs a new ResourceRequest for a redirect from this instance.
-  std::unique_ptr<ResourceRequest> CreateRedirectRequest(
-      const KURL& new_url,
-      const AtomicString& new_method,
-      const net::SiteForCookies& new_site_for_cookies,
-      const String& new_referrer,
-      network::mojom::ReferrerPolicy new_referrer_policy,
-      bool skip_service_worker) const;
+  ~ResourceRequestHead();
 
   bool IsNull() const;
 
@@ -186,9 +171,6 @@ class PLATFORM_EXPORT ResourceRequest final {
   void SetHTTPAccept(const AtomicString& http_accept) {
     SetHttpHeaderField(http_names::kAccept, http_accept);
   }
-
-  EncodedFormData* HttpBody() const;
-  void SetHttpBody(scoped_refptr<EncodedFormData>);
 
   bool AllowStoredCredentials() const;
   void SetAllowStoredCredentials(bool allow_credentials);
@@ -452,8 +434,6 @@ class PLATFORM_EXPORT ResourceRequest final {
   bool CanDisplay(const KURL&) const;
 
  private:
-  ResourceRequest& operator=(const ResourceRequest&);
-
   const CacheControlHeader& GetCacheControlHeader() const;
 
   bool NeedsHTTPOrigin() const;
@@ -473,7 +453,6 @@ class PLATFORM_EXPORT ResourceRequest final {
 
   AtomicString http_method_;
   HTTPHeaderMap http_header_fields_;
-  scoped_refptr<EncodedFormData> http_body_;
   bool allow_stored_credentials_ : 1;
   bool report_upload_progress_ : 1;
   bool report_raw_headers_ : 1;
@@ -544,6 +523,56 @@ class PLATFORM_EXPORT ResourceRequest final {
   // prefetch responses. The browser process uses this token to ensure the
   // request is cached correctly.
   base::Optional<base::UnguessableToken> recursive_prefetch_token_;
+};
+
+// A ResourceRequest is a "request" object for ResourceLoader. Conceptually
+// it is https://fetch.spec.whatwg.org/#concept-request, but it contains
+// a lot of blink specific fields. WebURLRequest is the "public version"
+// of this class and WebURLLoader needs it. See WebURLRequest and
+// WrappedResourceRequest.
+//
+// This class is thread-bound. Do not copy/pass an instance across threads.
+//
+// Although request consists head and body, ResourceRequest is implemented by
+// inheriting ResourceRequestHead due in order to make it possible to use
+// property accessors through both ResourceRequestHead and ResourceRequest while
+// avoiding duplicate accessor definitions.
+// For those who want to add a new property in request, please implement its
+// member and accessors in ResourceRequestHead instead of ResourceRequest.
+class PLATFORM_EXPORT ResourceRequest final : public ResourceRequestHead {
+  USING_FAST_MALLOC(ResourceRequest);
+
+ public:
+  ResourceRequest();
+  explicit ResourceRequest(const String& url_string);
+  explicit ResourceRequest(const KURL&);
+
+  ResourceRequest(const ResourceRequest&) = delete;
+  ResourceRequest(ResourceRequest&&);
+  ResourceRequest& operator=(ResourceRequest&&);
+
+  ~ResourceRequest();
+
+  // TODO(yoichio): Use move semantics as much as possible.
+  // See crbug.com/787704.
+  void CopyFrom(const ResourceRequest&);
+
+  // Constructs a new ResourceRequest for a redirect from this instance.
+  std::unique_ptr<ResourceRequest> CreateRedirectRequest(
+      const KURL& new_url,
+      const AtomicString& new_method,
+      const net::SiteForCookies& new_site_for_cookies,
+      const String& new_referrer,
+      network::mojom::ReferrerPolicy new_referrer_policy,
+      bool skip_service_worker) const;
+
+  EncodedFormData* HttpBody() const;
+  void SetHttpBody(scoped_refptr<EncodedFormData>);
+
+ private:
+  ResourceRequest& operator=(const ResourceRequest&);
+
+  scoped_refptr<EncodedFormData> http_body_;
 };
 
 }  // namespace blink

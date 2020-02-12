@@ -45,15 +45,8 @@ namespace quota_internals {
 class QuotaInternalsProxy;
 }  // namespace quota_internals
 
-namespace content {
-class MockQuotaManager;
-class MockStorageClient;
-class QuotaManagerTest;
-}  // namespace content
-
 namespace storage {
 
-class QuotaDatabase;
 class QuotaManagerProxy;
 class QuotaTemporaryStorageEvictor;
 class UsageTracker;
@@ -281,11 +274,11 @@ class COMPONENT_EXPORT(STORAGE_BROWSER) QuotaManager
  private:
   friend class base::DeleteHelper<QuotaManager>;
   friend class base::RefCountedDeleteOnSequence<QuotaManager>;
-  friend class content::QuotaManagerTest;
-  friend class content::MockQuotaManager;
-  friend class content::MockStorageClient;
   friend class quota_internals::QuotaInternalsProxy;
+  friend class MockQuotaManager;
+  friend class MockStorageClient;
   friend class QuotaManagerProxy;
+  friend class QuotaManagerTest;
   friend class QuotaTemporaryStorageEvictor;
 
   class EvictionRoundInfoHelper;

@@ -68,11 +68,11 @@ void DesktopCaptureChooseDesktopMediaFunctionBase::Cancel() {
   // If this picker dialog is open, this will close it.
   picker_controller_.reset();
 
-  SetResultList(Create(std::string(), Options()));
-  SendResponse(true);
+  Respond(ArgumentList(Create(std::string(), Options())));
 }
 
-bool DesktopCaptureChooseDesktopMediaFunctionBase::Execute(
+ExtensionFunction::ResponseAction
+DesktopCaptureChooseDesktopMediaFunctionBase::Execute(
     const std::vector<api::desktop_capture::DesktopCaptureSourceType>& sources,
     content::WebContents* web_contents,
     const GURL& origin,
@@ -96,8 +96,7 @@ bool DesktopCaptureChooseDesktopMediaFunctionBase::Execute(
   for (auto source_type : sources) {
     switch (source_type) {
       case api::desktop_capture::DESKTOP_CAPTURE_SOURCE_TYPE_NONE: {
-        error_ = kInvalidSourceNameError;
-        return false;
+        return RespondNow(Error(kInvalidSourceNameError));
       }
       case api::desktop_capture::DESKTOP_CAPTURE_SOURCE_TYPE_SCREEN: {
         media_types.push_back(content::DesktopMediaID::TYPE_SCREEN);
@@ -135,7 +134,7 @@ bool DesktopCaptureChooseDesktopMediaFunctionBase::Execute(
       std::make_unique<DesktopMediaPickerController>(g_picker_factory);
   picker_controller_->Show(picker_params, std::move(media_types),
                            std::move(callback));
-  return true;
+  return RespondLater();
 }
 
 std::string DesktopCaptureChooseDesktopMediaFunctionBase::GetCallerDisplayName()
@@ -156,15 +155,13 @@ void DesktopCaptureChooseDesktopMediaFunctionBase::OnPickerDialogResults(
   picker_controller_.reset();
 
   if (!err.empty()) {
-    SetError(err);
-    SendResponse(false);
+    Respond(Error(err));
     return;
   }
 
   if (source.is_null()) {
     DLOG(ERROR) << "Sending empty results.";
-    SetResultList(Create(std::string(), Options()));
-    SendResponse(true);
+    Respond(ArgumentList(Create(std::string(), Options())));
     return;
   }
 
@@ -184,8 +181,7 @@ void DesktopCaptureChooseDesktopMediaFunctionBase::OnPickerDialogResults(
 
   Options options;
   options.can_request_audio_track = source.audio_share;
-  SetResultList(Create(result, options));
-  SendResponse(true);
+  Respond(ArgumentList(Create(result, options)));
 }
 
 DesktopCaptureRequestsRegistry::RequestId::RequestId(int process_id,

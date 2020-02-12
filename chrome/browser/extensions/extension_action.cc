@@ -260,8 +260,9 @@ std::string ExtensionAction::GetDisplayBadgeText(int tab_id) const {
 
 bool ExtensionAction::UseDNRActionCountAsBadgeText(int tab_id) const {
   // Tab specific badge text set by an extension overrides the automatically set
-  // action count.
-  return !HasBadgeText(tab_id) && HasDNRActionCount(tab_id);
+  // action count. Action count should only be shown if at least one action is
+  // matched.
+  return !HasBadgeText(tab_id) && GetDNRActionCount(tab_id) > 0;
 }
 
 bool ExtensionAction::HasPopupUrl(int tab_id) const {

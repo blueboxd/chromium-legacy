@@ -26,11 +26,8 @@
 #include "url/gurl.h"
 
 using blink::mojom::StorageType;
-using content::AsyncFileTestHelper;
-using storage::FileSystemQuotaClient;
-using storage::FileSystemURL;
 
-namespace content {
+namespace storage {
 namespace {
 
 const char kDummyURL1[] = "http://www.dummy.org";
@@ -122,8 +119,7 @@ class FileSystemQuotaClientTest : public testing::Test {
   bool CreateFileSystemDirectory(const base::FilePath& file_path,
                                  const std::string& origin_url,
                                  StorageType storage_type) {
-    storage::FileSystemType type =
-        storage::QuotaStorageTypeToFileSystemType(storage_type);
+    FileSystemType type = QuotaStorageTypeToFileSystemType(storage_type);
     FileSystemURL url = file_system_context_->CreateCrackedFileSystemURL(
         GURL(origin_url), type, file_path);
 
@@ -139,8 +135,7 @@ class FileSystemQuotaClientTest : public testing::Test {
     if (file_path.empty())
       return false;
 
-    storage::FileSystemType type =
-        storage::QuotaStorageTypeToFileSystemType(storage_type);
+    FileSystemType type = QuotaStorageTypeToFileSystemType(storage_type);
     FileSystemURL url = file_system_context_->CreateCrackedFileSystemURL(
         GURL(origin_url), type, file_path);
 
@@ -192,8 +187,7 @@ class FileSystemQuotaClientTest : public testing::Test {
           GURL(files[i].origin_url) == GURL(origin_url)) {
         base::FilePath path = base::FilePath().AppendASCII(files[i].name);
         if (!path.empty()) {
-          file_paths_cost +=
-              storage::ObfuscatedFileUtil::ComputeFilePathCost(path);
+          file_paths_cost += ObfuscatedFileUtil::ComputeFilePathCost(path);
         }
       }
     }
@@ -234,7 +228,7 @@ class FileSystemQuotaClientTest : public testing::Test {
 
   base::ScopedTempDir data_dir_;
   base::test::TaskEnvironment task_environment_;
-  scoped_refptr<storage::FileSystemContext> file_system_context_;
+  scoped_refptr<FileSystemContext> file_system_context_;
   int64_t usage_;
   int additional_callback_count_;
   std::set<url::Origin> origins_;
@@ -550,4 +544,4 @@ TEST_F(FileSystemQuotaClientTest, DeleteOriginTest) {
             GetOriginUsage(quota_client.get(), "https://bar.com/", kTemporary));
 }
 
-}  // namespace content
+}  // namespace storage

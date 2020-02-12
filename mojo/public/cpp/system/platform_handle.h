@@ -122,17 +122,6 @@ UnwrapUnsafeSharedMemoryRegion(ScopedSharedBufferHandle handle);
 MOJO_CPP_SYSTEM_EXPORT base::WritableSharedMemoryRegion
 UnwrapWritableSharedMemoryRegion(ScopedSharedBufferHandle handle);
 
-#if defined(OS_MACOSX) && !defined(OS_IOS)
-// Wraps a mach_port_t as a Mojo handle. This takes a reference to the
-// Mach port.
-MOJO_CPP_SYSTEM_EXPORT ScopedHandle WrapMachPort(mach_port_t port);
-
-// Unwraps a mach_port_t from a Mojo handle. The caller gets ownership of the
-// Mach port.
-MOJO_CPP_SYSTEM_EXPORT MojoResult UnwrapMachPort(ScopedHandle handle,
-                                                 mach_port_t* port);
-#endif  // defined(OS_MACOSX) && !defined(OS_IOS)
-
 }  // namespace mojo
 
 #endif  // MOJO_PUBLIC_CPP_SYSTEM_PLATFORM_HANDLE_H_

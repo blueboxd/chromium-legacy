@@ -33,7 +33,8 @@ WebrtcDesktopCapturePrivateChooseDesktopMediaFunction::
     ~WebrtcDesktopCapturePrivateChooseDesktopMediaFunction() {
 }
 
-bool WebrtcDesktopCapturePrivateChooseDesktopMediaFunction::RunAsync() {
+ExtensionFunction::ResponseAction
+WebrtcDesktopCapturePrivateChooseDesktopMediaFunction::Run() {
   using Params =
       extensions::api::webrtc_desktop_capture_private::ChooseDesktopMedia
           ::Params;
@@ -53,16 +54,14 @@ bool WebrtcDesktopCapturePrivateChooseDesktopMediaFunction::RunAsync() {
       params->request.guest_render_frame_id);
 
   if (!rfh) {
-    error_ = kTargetNotFoundError;
-    return false;
+    return RespondNow(Error(kTargetNotFoundError));
   }
 
   GURL origin = rfh->GetLastCommittedURL().GetOrigin();
   if (!base::CommandLine::ForCurrentProcess()->HasSwitch(
           ::switches::kAllowHttpScreenCapture) &&
       !content::IsOriginSecure(origin)) {
-    error_ = kUrlNotSecure;
-    return false;
+    return RespondNow(Error(kUrlNotSecure));
   }
   base::string16 target_name = base::UTF8ToUTF16(
       content::IsOriginSecure(origin) ? net::GetHostAndOptionalPort(origin)
@@ -71,8 +70,7 @@ bool WebrtcDesktopCapturePrivateChooseDesktopMediaFunction::RunAsync() {
   content::WebContents* web_contents =
       content::WebContents::FromRenderFrameHost(rfh);
   if (!web_contents) {
-    error_ = kTargetNotFoundError;
-    return false;
+    return RespondNow(Error(kTargetNotFoundError));
   }
 
   using Sources = std::vector<api::desktop_capture::DesktopCaptureSourceType>;

@@ -119,7 +119,7 @@ class COMPONENT_EXPORT(STORAGE_BROWSER) FileSystemOperationRunner {
 
   // Writes contents of |blob| to |url| at |offset|.
   OperationID Write(const FileSystemURL& url,
-                    std::unique_ptr<storage::BlobDataHandle> blob,
+                    std::unique_ptr<BlobDataHandle> blob,
                     int64_t offset,
                     const WriteCallback& callback);
 
@@ -275,13 +275,12 @@ class COMPONENT_EXPORT(STORAGE_BROWSER) FileSystemOperationRunner {
                    OpenFileCallback callback,
                    base::File file,
                    base::OnceClosure on_close_callback);
-  void DidCreateSnapshot(
-      const OperationID id,
-      SnapshotFileCallback callback,
-      base::File::Error rv,
-      const base::File::Info& file_info,
-      const base::FilePath& platform_path,
-      scoped_refptr<storage::ShareableFileReference> file_ref);
+  void DidCreateSnapshot(const OperationID id,
+                         SnapshotFileCallback callback,
+                         base::File::Error rv,
+                         const base::File::Info& file_info,
+                         const base::FilePath& platform_path,
+                         scoped_refptr<ShareableFileReference> file_ref);
 
   void OnCopyProgress(const OperationID id,
                       const CopyProgressCallback& callback,

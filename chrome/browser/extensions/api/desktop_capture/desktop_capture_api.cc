@@ -6,6 +6,7 @@
 
 #include "base/command_line.h"
 #include "base/strings/utf_string_conversions.h"
+#include "chrome/browser/extensions/chrome_extension_function_details.h"
 #include "chrome/browser/extensions/extension_tab_util.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/common/chrome_switches.h"
@@ -37,7 +38,8 @@ DesktopCaptureChooseDesktopMediaFunction::
     ~DesktopCaptureChooseDesktopMediaFunction() {
 }
 
-bool DesktopCaptureChooseDesktopMediaFunction::RunAsync() {
+ExtensionFunction::ResponseAction
+DesktopCaptureChooseDesktopMediaFunction::Run() {
   EXTENSION_FUNCTION_VALIDATE(args_->GetSize() > 0);
 
   EXTENSION_FUNCTION_VALIDATE(args_->GetInteger(0, &request_id_));
@@ -57,35 +59,32 @@ bool DesktopCaptureChooseDesktopMediaFunction::RunAsync() {
   GURL origin;
   if (params->target_tab) {
     if (!params->target_tab->url) {
-      error_ = kDesktopCaptureApiNoUrlError;
-      return false;
+      return RespondNow(Error(kDesktopCaptureApiNoUrlError));
     }
     origin = GURL(*(params->target_tab->url)).GetOrigin();
 
     if (!origin.is_valid()) {
-      error_ = kDesktopCaptureApiInvalidOriginError;
-      return false;
+      return RespondNow(Error(kDesktopCaptureApiInvalidOriginError));
     }
 
     if (!base::CommandLine::ForCurrentProcess()->HasSwitch(
             ::switches::kAllowHttpScreenCapture) &&
         !content::IsOriginSecure(origin)) {
-      error_ = kDesktopCaptureApiTabUrlNotSecure;
-      return false;
+      return RespondNow(Error(kDesktopCaptureApiTabUrlNotSecure));
     }
     target_name = base::UTF8ToUTF16(content::IsOriginSecure(origin) ?
         net::GetHostAndOptionalPort(origin) : origin.spec());
 
     if (!params->target_tab->id ||
         *params->target_tab->id == api::tabs::TAB_ID_NONE) {
-      error_ = kDesktopCaptureApiNoTabIdError;
-      return false;
+      return RespondNow(Error(kDesktopCaptureApiNoTabIdError));
     }
 
-    if (!ExtensionTabUtil::GetTabById(*(params->target_tab->id), GetProfile(),
-                                      true, &web_contents)) {
-      error_ = kDesktopCaptureApiInvalidTabIdError;
-      return false;
+    ChromeExtensionFunctionDetails details(this);
+    if (!ExtensionTabUtil::GetTabById(*(params->target_tab->id),
+                                      details.GetProfile(), true,
+                                      &web_contents)) {
+      return RespondNow(Error(kDesktopCaptureApiInvalidTabIdError));
     }
     DCHECK(web_contents);
   } else {

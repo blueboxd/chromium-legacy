@@ -22,13 +22,10 @@ class IOBufferWithSize;
 }  // namespace net
 
 namespace storage {
+
 class FileStreamReader;
-enum class FlushPolicy;
-}  // namespace storage
-
-namespace storage {
-
 class FileStreamWriter;
+enum class FlushPolicy;
 
 // A delegate class for recursive copy or move operations.
 class CopyOrMoveOperationDelegate : public RecursiveOperationDelegate {
@@ -45,7 +42,7 @@ class CopyOrMoveOperationDelegate : public RecursiveOperationDelegate {
   class COMPONENT_EXPORT(STORAGE_BROWSER) StreamCopyHelper {
    public:
     StreamCopyHelper(
-        std::unique_ptr<storage::FileStreamReader> reader,
+        std::unique_ptr<FileStreamReader> reader,
         std::unique_ptr<FileStreamWriter> writer,
         FlushPolicy flush_policy,
         int buffer_size,
@@ -72,7 +69,7 @@ class CopyOrMoveOperationDelegate : public RecursiveOperationDelegate {
     void Flush(bool is_eof);
     void DidFlush(bool is_eof, int result);
 
-    std::unique_ptr<storage::FileStreamReader> reader_;
+    std::unique_ptr<FileStreamReader> reader_;
     std::unique_ptr<FileStreamWriter> writer_;
     const FlushPolicy flush_policy_;
     FileSystemOperation::CopyFileProgressCallback file_progress_callback_;

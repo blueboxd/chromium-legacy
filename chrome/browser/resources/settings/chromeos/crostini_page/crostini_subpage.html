@@ -27,7 +27,8 @@
           </div>
         </div>
         <cr-button on-click="onContainerUpgradeClick_"
-            aria-labelledby="upgradeCrostiniLabel">
+            aria-labelledby="upgradeCrostiniLabel" 
+            disabled="[[disableUpgradeButton_]]">
           $i18n{crostiniContainerUpgradeButton}
         </cr-button>
       </div>

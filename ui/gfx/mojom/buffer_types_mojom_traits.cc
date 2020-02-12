@@ -97,7 +97,8 @@ gfx::mojom::GpuMemoryBufferPlatformHandlePtr StructTraits<
     case gfx::IO_SURFACE_BUFFER:
 #if defined(OS_MACOSX) && !defined(OS_IOS)
       return gfx::mojom::GpuMemoryBufferPlatformHandle::NewMachPort(
-          mojo::WrapMachPort(handle.mach_port.get()));
+          mojo::PlatformHandle(
+              base::mac::RetainMachSendRight(handle.mach_port.get())));
 #else
       break;
 #endif
@@ -174,12 +175,10 @@ bool StructTraits<gfx::mojom::GpuMemoryBufferHandleDataView,
 #elif defined(OS_MACOSX) && !defined(OS_IOS)
     case gfx::mojom::GpuMemoryBufferPlatformHandleDataView::Tag::MACH_PORT: {
       out->type = gfx::IO_SURFACE_BUFFER;
-      mach_port_t mach_port;
-      MojoResult unwrap_result = mojo::UnwrapMachPort(
-          std::move(platform_handle->get_mach_port()), &mach_port);
-      if (unwrap_result != MOJO_RESULT_OK)
+      if (!platform_handle->get_mach_port().is_mach_send())
         return false;
-      out->mach_port.reset(mach_port);
+      out->mach_port.reset(
+          platform_handle->get_mach_port().ReleaseMachSendRight());
       return true;
     }
 #elif defined(OS_WIN)

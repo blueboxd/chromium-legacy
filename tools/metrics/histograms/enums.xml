@@ -4093,6 +4093,12 @@ Unknown properties are collapsed to zero. -->
   <int value="11" label="Success, card upload enabled"/>
 </enum>
 
+<enum name="AutofillCreditCardAuthenticationEvents">
+  <int value="0" label="Prompt shown"/>
+  <int value="1" label="Prompt completed"/>
+  <int value="2" label="Form submitted"/>
+</enum>
+
 <enum name="AutofillCreditCardInfoBar">
   <int value="0" label="Shown"/>
   <int value="1" label="Accepted"/>

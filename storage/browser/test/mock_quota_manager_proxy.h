@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CONTENT_BROWSER_QUOTA_MOCK_QUOTA_MANAGER_PROXY_H_
-#define CONTENT_BROWSER_QUOTA_MOCK_QUOTA_MANAGER_PROXY_H_
+#ifndef STORAGE_BROWSER_TEST_MOCK_QUOTA_MANAGER_PROXY_H_
+#define STORAGE_BROWSER_TEST_MOCK_QUOTA_MANAGER_PROXY_H_
 
 #include <stdint.h>
 
@@ -14,9 +14,7 @@
 #include "third_party/blink/public/mojom/quota/quota_types.mojom.h"
 #include "url/gurl.h"
 
-using storage::QuotaManagerProxy;
-
-namespace content {
+namespace storage {
 
 class MockQuotaManager;
 
@@ -85,6 +83,6 @@ class MockQuotaManagerProxy : public QuotaManagerProxy {
   DISALLOW_COPY_AND_ASSIGN(MockQuotaManagerProxy);
 };
 
-}  // namespace content
+}  // namespace storage
 
-#endif  // CONTENT_BROWSER_QUOTA_MOCK_QUOTA_MANAGER_PROXY_H_
+#endif  // STORAGE_BROWSER_TEST_MOCK_QUOTA_MANAGER_PROXY_H_

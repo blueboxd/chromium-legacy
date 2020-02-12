@@ -86,6 +86,20 @@ void CreditCardFormEventLogger::OnDidFillSuggestion(
       base::UserMetricsAction("Autofill_FilledCreditCardSuggestion"));
 }
 
+void CreditCardFormEventLogger::LogCardUnmaskAuthenticationPromptShown(
+    UnmaskAuthFlowType flow) {
+  RecordCardUnmaskFlowEvent(flow, UnmaskAuthFlowEvent::kPromptShown);
+}
+
+void CreditCardFormEventLogger::LogCardUnmaskAuthenticationPromptCompleted(
+    UnmaskAuthFlowType flow) {
+  RecordCardUnmaskFlowEvent(flow, UnmaskAuthFlowEvent::kPromptCompleted);
+
+  // Keeping track of authentication type in order to split form-submission
+  // metrics.
+  current_authentication_flow_ = flow;
+}
+
 void CreditCardFormEventLogger::RecordPollSuggestions() {
   base::RecordAction(
       base::UserMetricsAction("Autofill_PolledCreditCardSuggestions"));
@@ -117,6 +131,10 @@ void CreditCardFormEventLogger::LogFormSubmitted(const FormStructure& form) {
     Log(FORM_EVENT_NO_SUGGESTION_SUBMITTED_ONCE, form);
   } else if (logged_suggestion_filled_was_masked_server_card_) {
     Log(FORM_EVENT_MASKED_SERVER_CARD_SUGGESTION_SUBMITTED_ONCE, form);
+
+    // Log BetterAuth.FlowEvents.
+    RecordCardUnmaskFlowEvent(current_authentication_flow_,
+                              UnmaskAuthFlowEvent::kFormSubmitted);
   } else if (logged_suggestion_filled_was_server_data_) {
     Log(FORM_EVENT_SERVER_SUGGESTION_SUBMITTED_ONCE, form);
   } else {
@@ -173,6 +191,33 @@ FormEvent CreditCardFormEventLogger::GetCardNumberStatusFormEvent(
   }
 
   return form_event;
+}
+
+void CreditCardFormEventLogger::RecordCardUnmaskFlowEvent(
+    UnmaskAuthFlowType flow,
+    UnmaskAuthFlowEvent event) {
+  std::string suffix;
+  switch (flow) {
+    case UnmaskAuthFlowType::kCvc:
+      suffix = ".Cvc";
+      break;
+    case UnmaskAuthFlowType::kFido:
+      suffix = ".Fido";
+      break;
+    case UnmaskAuthFlowType::kCvcThenFido:
+      suffix = ".CvcThenFido";
+      break;
+    case UnmaskAuthFlowType::kCvcFallbackFromFido:
+      suffix = ".CvcFallbackFromFido";
+      break;
+    case UnmaskAuthFlowType::kNone:
+      NOTREACHED();
+      suffix = "";
+      break;
+  }
+
+  base::UmaHistogramEnumeration("Autofill.BetterAuth.FlowEvents" + suffix,
+                                event);
 }
 
 }  // namespace autofill

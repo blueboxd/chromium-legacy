@@ -103,13 +103,24 @@ class CORE_EXPORT NGInlineCursorPosition {
   bool UsesFirstLineStyle() const;
   const ComputedStyle& Style() const;
 
+  // Functions to get corresponding objects for this position.
+  const NGPhysicalBoxFragment* BoxFragment() const;
+  const LayoutObject* GetLayoutObject() const;
+  LayoutObject* GetMutableLayoutObject() const;
+  const Node* GetNode() const;
   const DisplayItemClient* GetDisplayItemClient() const;
+
+  // Returns break token for line box. It is error to call other than line box.
+  const NGInlineBreakToken* InlineBreakToken() const;
 
   // The offset relative to the root of the inline formatting context.
   const PhysicalRect RectInContainerBlock() const;
   const PhysicalOffset OffsetInContainerBlock() const;
   const PhysicalSize Size() const;
 
+  // InkOverflow of itself, including contents if they contribute to the ink
+  // overflow of this object (e.g. when not clipped,) in the local coordinate.
+  const PhysicalRect InkOverflow() const;
   const PhysicalRect SelfInkOverflow() const;
 
  private:
@@ -213,29 +224,21 @@ class CORE_EXPORT NGInlineCursor {
   const NGPaintFragment* CurrentPaintFragment() const {
     return Current().PaintFragment();
   }
+  LayoutObject* CurrentMutableLayoutObject() const {
+    return Current().GetMutableLayoutObject();
+  }
   // Returns text direction of current line. It is error to call at other than
   // line.
   TextDirection CurrentBaseDirection() const;
-  const NGPhysicalBoxFragment* CurrentBoxFragment() const;
-  const LayoutObject* CurrentLayoutObject() const;
-  LayoutObject* CurrentMutableLayoutObject() const;
-  Node* CurrentNode() const;
 
   // Returns bidi level of current position. It is error to call other than
   // text and atomic inline. It is also error to call |IsGeneratedTextType()|.
   UBiDiLevel CurrentBidiLevel() const;
 
-  // Returns break token for line box. It is error to call other than line box.
-  const NGInlineBreakToken& CurrentInlineBreakToken() const;
-
   // Returns text direction of current text or atomic inline. It is error to
   // call at other than text or atomic inline. Note: <span> doesn't have
   // reserved direction.
   TextDirection CurrentResolvedDirection() const;
-
-  // InkOverflow of itself, including contents if they contribute to the ink
-  // overflow of this object (e.g. when not clipped,) in the local coordinate.
-  const PhysicalRect CurrentInkOverflow() const;
 
   // Returns start/end of offset in text content of current text fragment.
   // It is error when this cursor doesn't point to text fragment.

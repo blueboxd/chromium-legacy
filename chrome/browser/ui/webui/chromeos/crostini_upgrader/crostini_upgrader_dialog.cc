@@ -63,16 +63,24 @@ bool CrostiniUpgraderDialog::CanCloseDialog() const {
 void CrostiniUpgraderDialog::OnDialogShown(content::WebUI* webui) {
   upgrader_ui_ = static_cast<CrostiniUpgraderUI*>(webui->GetController());
   upgrader_ui_->set_launch_closure(std::move(launch_closure_));
-  crostini::CrostiniManager::GetForProfile(Profile::FromWebUI(webui))
-      ->UpgradePromptShown(
-          crostini::ContainerId(crostini::kCrostiniDefaultVmName,
-                                crostini::kCrostiniDefaultContainerName));
+
+  auto* crostini_manager =
+      crostini::CrostiniManager::GetForProfile(Profile::FromWebUI(webui));
+  crostini_manager->SetCrostiniDialogStatus(crostini::DialogType::UPGRADER,
+                                            true);
+  crostini_manager->UpgradePromptShown(
+      crostini::ContainerId(crostini::kCrostiniDefaultVmName,
+                            crostini::kCrostiniDefaultContainerName));
   return SystemWebDialogDelegate::OnDialogShown(webui);
 }
 
 void CrostiniUpgraderDialog::OnCloseContents(content::WebContents* source,
                                              bool* out_close_dialog) {
   upgrader_ui_ = nullptr;
+  auto* crostini_manager = crostini::CrostiniManager::GetForProfile(
+      Profile::FromBrowserContext(source->GetBrowserContext()));
+  crostini_manager->SetCrostiniDialogStatus(crostini::DialogType::UPGRADER,
+                                            false);
   return SystemWebDialogDelegate::OnCloseContents(source, out_close_dialog);
 }
 

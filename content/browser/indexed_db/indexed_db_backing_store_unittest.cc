@@ -6,6 +6,8 @@
 
 #include <stddef.h>
 #include <stdint.h>
+
+#include <string>
 #include <utility>
 
 #include "base/barrier_closure.h"
@@ -218,9 +220,10 @@ class IndexedDBBackingStoreTest : public testing::Test {
  public:
   IndexedDBBackingStoreTest()
       : special_storage_policy_(
-            base::MakeRefCounted<MockSpecialStoragePolicy>()),
+            base::MakeRefCounted<storage::MockSpecialStoragePolicy>()),
         quota_manager_proxy_(
-            base::MakeRefCounted<MockQuotaManagerProxy>(nullptr, nullptr)) {}
+            base::MakeRefCounted<storage::MockQuotaManagerProxy>(nullptr,
+                                                                 nullptr)) {}
 
   void SetUp() override {
     special_storage_policy_->SetAllUnlimited(true);
@@ -351,8 +354,8 @@ class IndexedDBBackingStoreTest : public testing::Test {
 
   base::ScopedTempDir temp_dir_;
   std::unique_ptr<MockBlobStorageContext> blob_context_;
-  scoped_refptr<MockSpecialStoragePolicy> special_storage_policy_;
-  scoped_refptr<MockQuotaManagerProxy> quota_manager_proxy_;
+  scoped_refptr<storage::MockSpecialStoragePolicy> special_storage_policy_;
+  scoped_refptr<storage::MockQuotaManagerProxy> quota_manager_proxy_;
   scoped_refptr<IndexedDBContextImpl> idb_context_;
   std::unique_ptr<TestIDBFactory> idb_factory_;
   DisjointRangeLockManager* lock_manager_;
@@ -370,9 +373,6 @@ class IndexedDBBackingStoreTest : public testing::Test {
  private:
   DISALLOW_COPY_AND_ASSIGN(IndexedDBBackingStoreTest);
 };
-
-const static std::string kBlobFileData1 = "asdfgasdf";
-const static std::string kBlobFileData2 = "aaaaaa";
 
 class IndexedDBBackingStoreTestWithBlobs : public IndexedDBBackingStoreTest {
  public:
@@ -543,6 +543,10 @@ class IndexedDBBackingStoreTestWithBlobs : public IndexedDBBackingStoreTest {
   // passed |this| can access them.
   IndexedDBKey key3_;
   IndexedDBValue value3_;
+
+ protected:
+  const std::string kBlobFileData1 = "asdfgasdf";
+  const std::string kBlobFileData2 = "aaaaaa";
 
  private:
   // Blob details referenced by |value3_|. The various CheckBlob*() methods

@@ -10,6 +10,8 @@
 #include <utility>
 
 #include "base/callback.h"
+#include "base/memory/ref_counted.h"
+#include "base/memory/scoped_refptr.h"
 #include "testing/gmock/include/gmock/gmock.h"
 
 namespace base {
@@ -70,14 +72,28 @@ MATCHER(IsNotNullCallback, "a non-null callback") {
 }
 
 // The Run[Once]Closure() action invokes the Run() method on the closure
-// provided when the action is constructed.
+// provided when the action is constructed. Function arguments passed when the
+// action is run will be ignored.
 ACTION_P(RunClosure, closure) {
   closure.Run();
 }
 
-// TODO(kylechar): This action can't take a OnceClosure by value, fix that.
-ACTION_P(RunOnceClosure, closure) {
-  std::move(closure).Run();
+// This action can be invoked at most once. Any further invocation will trigger
+// a CHECK failure.
+inline auto RunOnceClosure(base::OnceClosure cb) {
+  // Mock actions need to be copyable, but OnceClosure is not. Wrap the closure
+  // in a base::RefCountedData<> to allow it to be copied. An alternative would
+  // be to use AdaptCallbackForRepeating(), but that allows the closure to be
+  // run more than once and silently ignores any invocation after the first.
+  // Since this is for use by tests, it's better to crash or CHECK-fail and
+  // surface the incorrect usage, rather than have a silent unexpected success.
+  using RefCountedOnceClosure = base::RefCountedData<base::OnceClosure>;
+  scoped_refptr<RefCountedOnceClosure> copyable_cb =
+      base::MakeRefCounted<RefCountedOnceClosure>(std::move(cb));
+  return [copyable_cb](auto&&...) {
+    CHECK(copyable_cb->data);
+    std::move(copyable_cb->data).Run();
+  };
 }
 
 // The Run[Once]Closure<N>() action invokes the Run() method on the N-th

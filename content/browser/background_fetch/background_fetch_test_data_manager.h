@@ -12,12 +12,15 @@
 #include "content/browser/background_fetch/background_fetch_request_info.h"
 #include "url/origin.h"
 
+namespace storage {
+class MockQuotaManager;
+}  // namespace storage
+
 namespace content {
 
 class BrowserContext;
 class CacheStorageManager;
 class ChromeBlobStorageContext;
-class MockQuotaManager;
 class ServiceWorkerContextWrapper;
 class StoragePartition;
 
@@ -41,7 +44,7 @@ class BackgroundFetchTestDataManager : public BackgroundFetchDataManager {
  private:
   friend class BackgroundFetchDataManagerTest;
 
-  scoped_refptr<MockQuotaManager> mock_quota_manager_;
+  scoped_refptr<storage::MockQuotaManager> mock_quota_manager_;
   BrowserContext* browser_context_;
   StoragePartition* storage_partition_;
   scoped_refptr<ChromeBlobStorageContext> blob_storage_context_;

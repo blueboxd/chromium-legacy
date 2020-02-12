@@ -21,14 +21,7 @@
 #define DRIVE
 #endif
 
-using storage::FileSystemMountOption;
-using storage::FileSystemURL;
-using storage::IsolatedContext;
-using storage::kFileSystemTypeDragged;
-using storage::kFileSystemTypeIsolated;
-using storage::kFileSystemTypeNativeLocal;
-
-namespace content {
+namespace storage {
 
 using FileInfo = IsolatedContext::MountPointInfo;
 
@@ -105,7 +98,7 @@ TEST_F(IsolatedContextTest, RegisterAndRevokeTest) {
     std::string cracked_id;
     base::FilePath cracked_path;
     std::string cracked_inner_id;
-    storage::FileSystemType cracked_type;
+    FileSystemType cracked_type;
     FileSystemMountOption cracked_option;
     ASSERT_TRUE(isolated_context()->CrackVirtualPath(
         virtual_path, &cracked_id, &cracked_type, &cracked_inner_id,
@@ -209,7 +202,7 @@ TEST_F(IsolatedContextTest, CrackWithRelativePaths) {
                                         .Append(relatives[j].path);
       std::string cracked_id;
       base::FilePath cracked_path;
-      storage::FileSystemType cracked_type;
+      FileSystemType cracked_type;
       std::string cracked_inner_id;
       FileSystemMountOption cracked_option;
       if (!relatives[j].valid) {
@@ -312,37 +305,36 @@ TEST_F(IsolatedContextTest, CanHandleURL) {
   const base::FilePath test_path(FPL("/mount"));
 
   // Should handle isolated file system.
-  EXPECT_TRUE(isolated_context()->HandlesFileSystemMountType(
-      storage::kFileSystemTypeIsolated));
+  EXPECT_TRUE(
+      isolated_context()->HandlesFileSystemMountType(kFileSystemTypeIsolated));
 
   // Shouldn't handle the rest.
+  EXPECT_FALSE(
+      isolated_context()->HandlesFileSystemMountType(kFileSystemTypeExternal));
+  EXPECT_FALSE(
+      isolated_context()->HandlesFileSystemMountType(kFileSystemTypeTemporary));
   EXPECT_FALSE(isolated_context()->HandlesFileSystemMountType(
-      storage::kFileSystemTypeExternal));
-  EXPECT_FALSE(isolated_context()->HandlesFileSystemMountType(
-      storage::kFileSystemTypeTemporary));
-  EXPECT_FALSE(isolated_context()->HandlesFileSystemMountType(
-      storage::kFileSystemTypePersistent));
-  EXPECT_FALSE(isolated_context()->HandlesFileSystemMountType(
-      storage::kFileSystemTypeTest));
+      kFileSystemTypePersistent));
+  EXPECT_FALSE(
+      isolated_context()->HandlesFileSystemMountType(kFileSystemTypeTest));
   // Not even if it's isolated subtype.
   EXPECT_FALSE(isolated_context()->HandlesFileSystemMountType(
-      storage::kFileSystemTypeNativeLocal));
+      kFileSystemTypeNativeLocal));
+  EXPECT_FALSE(
+      isolated_context()->HandlesFileSystemMountType(kFileSystemTypeDragged));
   EXPECT_FALSE(isolated_context()->HandlesFileSystemMountType(
-      storage::kFileSystemTypeDragged));
+      kFileSystemTypeNativeMedia));
   EXPECT_FALSE(isolated_context()->HandlesFileSystemMountType(
-      storage::kFileSystemTypeNativeMedia));
-  EXPECT_FALSE(isolated_context()->HandlesFileSystemMountType(
-      storage::kFileSystemTypeDeviceMedia));
+      kFileSystemTypeDeviceMedia));
 }
 
 TEST_F(IsolatedContextTest, VirtualFileSystemTests) {
   // Should be able to register empty and non-absolute paths
   std::string empty_fsid = isolated_context()->RegisterFileSystemForVirtualPath(
-      storage::kFileSystemTypeIsolated, "_", base::FilePath());
+      kFileSystemTypeIsolated, "_", base::FilePath());
   std::string relative_fsid =
       isolated_context()->RegisterFileSystemForVirtualPath(
-          storage::kFileSystemTypeIsolated, "_",
-          base::FilePath(FPL("relpath")));
+          kFileSystemTypeIsolated, "_", base::FilePath(FPL("relpath")));
   ASSERT_FALSE(empty_fsid.empty());
   ASSERT_FALSE(relative_fsid.empty());
 
@@ -350,7 +342,7 @@ TEST_F(IsolatedContextTest, VirtualFileSystemTests) {
   base::FilePath database_root = base::FilePath(DRIVE FPL("/database_path"));
   std::string database_fsid =
       isolated_context()->RegisterFileSystemForVirtualPath(
-          storage::kFileSystemTypeIsolated, "_", database_root);
+          kFileSystemTypeIsolated, "_", database_root);
 
   base::FilePath test_virtual_path =
       base::FilePath().AppendASCII("virtualdir").AppendASCII("virtualfile.txt");
@@ -372,4 +364,4 @@ TEST_F(IsolatedContextTest, VirtualFileSystemTests) {
   EXPECT_TRUE(cracked_inner_id.empty());
 }
 
-}  // namespace content
+}  // namespace storage

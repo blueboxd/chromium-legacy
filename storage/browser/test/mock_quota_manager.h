@@ -21,13 +21,8 @@
 #include "url/origin.h"
 
 using blink::mojom::StorageType;
-using storage::GetOriginsCallback;
-using storage::QuotaClient;
-using storage::QuotaManager;
-using storage::SpecialStoragePolicy;
-using storage::StatusCallback;
 
-namespace content {
+namespace storage {
 
 // Mocks the pieces of QuotaManager's interface.
 //
@@ -52,13 +47,13 @@ class MockQuotaManager : public QuotaManager {
   // called.  The internal quota value can be updated by calling
   // a helper method MockQuotaManagerProxy::SetQuota().
   void GetUsageAndQuota(const url::Origin& origin,
-                        StorageType type,
+                        blink::mojom::StorageType type,
                         UsageAndQuotaCallback callback) override;
 
   // Overrides QuotaManager's implementation with a canned implementation that
   // allows clients to set up the origin database that should be queried. This
   // method will only search through the origins added explicitly via AddOrigin.
-  void GetOriginsModifiedSince(StorageType type,
+  void GetOriginsModifiedSince(blink::mojom::StorageType type,
                                base::Time modified_since,
                                GetOriginsCallback callback) override;
 
@@ -69,7 +64,7 @@ class MockQuotaManager : public QuotaManager {
   // QuotaClient::kAllClientsMask will remove all clients from the origin,
   // regardless of type.
   void DeleteOriginData(const url::Origin& origin,
-                        StorageType type,
+                        blink::mojom::StorageType type,
                         int quota_client_mask,
                         StatusCallback callback) override;
 
@@ -157,6 +152,6 @@ class MockQuotaManager : public QuotaManager {
   DISALLOW_COPY_AND_ASSIGN(MockQuotaManager);
 };
 
-}  // namespace content
+}  // namespace storage
 
 #endif  // STORAGE_BROWSER_TEST_MOCK_QUOTA_MANAGER_H_

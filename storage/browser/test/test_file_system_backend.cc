@@ -29,17 +29,12 @@
 #include "storage/browser/quota/quota_manager.h"
 #include "storage/common/file_system/file_system_util.h"
 
-using storage::FileSystemContext;
-using storage::FileSystemOperation;
-using storage::FileSystemOperationContext;
-using storage::FileSystemURL;
-
-namespace content {
+namespace storage {
 
 namespace {
 
-// Stub implementation of storage::LocalFileUtil.
-class TestFileUtil : public storage::LocalFileUtil {
+// Stub implementation of LocalFileUtil.
+class TestFileUtil : public LocalFileUtil {
  public:
   explicit TestFileUtil(const base::FilePath& base_path)
       : base_path_(base_path) {}
@@ -60,8 +55,8 @@ class TestFileUtil : public storage::LocalFileUtil {
 }  // namespace
 
 // This only supports single origin.
-class TestFileSystemBackend::QuotaUtil : public storage::FileSystemQuotaUtil,
-                                         public storage::FileUpdateObserver {
+class TestFileSystemBackend::QuotaUtil : public FileSystemQuotaUtil,
+                                         public FileUpdateObserver {
  public:
   QuotaUtil() : usage_(0) {}
   ~QuotaUtil() override = default;
@@ -69,41 +64,38 @@ class TestFileSystemBackend::QuotaUtil : public storage::FileSystemQuotaUtil,
   // FileSystemQuotaUtil overrides.
   base::File::Error DeleteOriginDataOnFileTaskRunner(
       FileSystemContext* context,
-      storage::QuotaManagerProxy* proxy,
+      QuotaManagerProxy* proxy,
       const GURL& origin_url,
-      storage::FileSystemType type) override {
+      FileSystemType type) override {
     NOTREACHED();
     return base::File::FILE_OK;
   }
 
-  void PerformStorageCleanupOnFileTaskRunner(
-      FileSystemContext* context,
-      storage::QuotaManagerProxy* proxy,
-      storage::FileSystemType type) override {}
+  void PerformStorageCleanupOnFileTaskRunner(FileSystemContext* context,
+                                             QuotaManagerProxy* proxy,
+                                             FileSystemType type) override {}
 
-  scoped_refptr<storage::QuotaReservation>
-  CreateQuotaReservationOnFileTaskRunner(
+  scoped_refptr<QuotaReservation> CreateQuotaReservationOnFileTaskRunner(
       const url::Origin& origin,
-      storage::FileSystemType type) override {
+      FileSystemType type) override {
     NOTREACHED();
-    return scoped_refptr<storage::QuotaReservation>();
+    return scoped_refptr<QuotaReservation>();
   }
 
-  void GetOriginsForTypeOnFileTaskRunner(storage::FileSystemType type,
+  void GetOriginsForTypeOnFileTaskRunner(FileSystemType type,
                                          std::set<GURL>* origins) override {
     NOTREACHED();
   }
 
-  void GetOriginsForHostOnFileTaskRunner(storage::FileSystemType type,
+  void GetOriginsForHostOnFileTaskRunner(FileSystemType type,
                                          const std::string& host,
                                          std::set<GURL>* origins) override {
     NOTREACHED();
   }
 
-  int64_t GetOriginUsageOnFileTaskRunner(
-      FileSystemContext* context,
-      const url::Origin& origin,
-      storage::FileSystemType type) override {
+  int64_t GetOriginUsageOnFileTaskRunner(FileSystemContext* context,
+                                         const url::Origin& origin,
+                                         FileSystemType type) override {
     return usage_;
   }
 
@@ -125,8 +117,8 @@ TestFileSystemBackend::TestFileSystemBackend(
     : base_path_(base_path),
       task_runner_(task_runner),
       file_util_(
-          new storage::AsyncFileUtilAdapter(new TestFileUtil(base_path))),
-      quota_util_(new QuotaUtil),
+          std::make_unique<AsyncFileUtilAdapter>(new TestFileUtil(base_path))),
+      quota_util_(std::make_unique<QuotaUtil>()),
       require_copy_or_move_validator_(false) {
   update_observers_ =
       update_observers_.AddObserver(quota_util_.get(), task_runner_.get());
@@ -134,14 +126,14 @@ TestFileSystemBackend::TestFileSystemBackend(
 
 TestFileSystemBackend::~TestFileSystemBackend() = default;
 
-bool TestFileSystemBackend::CanHandleType(storage::FileSystemType type) const {
-  return (type == storage::kFileSystemTypeTest);
+bool TestFileSystemBackend::CanHandleType(FileSystemType type) const {
+  return (type == kFileSystemTypeTest);
 }
 
 void TestFileSystemBackend::Initialize(FileSystemContext* context) {}
 
 void TestFileSystemBackend::ResolveURL(const FileSystemURL& url,
-                                       storage::OpenFileSystemMode mode,
+                                       OpenFileSystemMode mode,
                                        OpenFileSystemCallback callback) {
   std::move(callback).Run(
       GetFileSystemRootURI(url.origin().GetURL(), url.type()),
@@ -149,19 +141,17 @@ void TestFileSystemBackend::ResolveURL(const FileSystemURL& url,
       base::File::FILE_OK);
 }
 
-storage::AsyncFileUtil* TestFileSystemBackend::GetAsyncFileUtil(
-    storage::FileSystemType type) {
+AsyncFileUtil* TestFileSystemBackend::GetAsyncFileUtil(FileSystemType type) {
   return file_util_.get();
 }
 
-storage::WatcherManager* TestFileSystemBackend::GetWatcherManager(
-    storage::FileSystemType type) {
+WatcherManager* TestFileSystemBackend::GetWatcherManager(FileSystemType type) {
   return nullptr;
 }
 
-storage::CopyOrMoveFileValidatorFactory*
+CopyOrMoveFileValidatorFactory*
 TestFileSystemBackend::GetCopyOrMoveFileValidatorFactory(
-    storage::FileSystemType type,
+    FileSystemType type,
     base::File::Error* error_code) {
   DCHECK(error_code);
   *error_code = base::File::FILE_OK;
@@ -174,7 +164,7 @@ TestFileSystemBackend::GetCopyOrMoveFileValidatorFactory(
 }
 
 void TestFileSystemBackend::InitializeCopyOrMoveFileValidatorFactory(
-    std::unique_ptr<storage::CopyOrMoveFileValidatorFactory> factory) {
+    std::unique_ptr<CopyOrMoveFileValidatorFactory> factory) {
   if (!copy_or_move_file_validator_factory_)
     copy_or_move_file_validator_factory_ = std::move(factory);
 }
@@ -191,60 +181,56 @@ FileSystemOperation* TestFileSystemBackend::CreateFileSystemOperation(
                                      std::move(operation_context));
 }
 
-bool TestFileSystemBackend::SupportsStreaming(
-    const storage::FileSystemURL& url) const {
+bool TestFileSystemBackend::SupportsStreaming(const FileSystemURL& url) const {
   return false;
 }
 
 bool TestFileSystemBackend::HasInplaceCopyImplementation(
-    storage::FileSystemType type) const {
+    FileSystemType type) const {
   return true;
 }
 
-std::unique_ptr<storage::FileStreamReader>
-TestFileSystemBackend::CreateFileStreamReader(
+std::unique_ptr<FileStreamReader> TestFileSystemBackend::CreateFileStreamReader(
     const FileSystemURL& url,
     int64_t offset,
     int64_t max_bytes_to_read,
     const base::Time& expected_modification_time,
     FileSystemContext* context) const {
-  return storage::FileStreamReader::CreateForFileSystemFile(
-      context, url, offset, expected_modification_time);
+  return FileStreamReader::CreateForFileSystemFile(context, url, offset,
+                                                   expected_modification_time);
 }
 
-std::unique_ptr<storage::FileStreamWriter>
-TestFileSystemBackend::CreateFileStreamWriter(
+std::unique_ptr<FileStreamWriter> TestFileSystemBackend::CreateFileStreamWriter(
     const FileSystemURL& url,
     int64_t offset,
     FileSystemContext* context) const {
-  return std::unique_ptr<storage::FileStreamWriter>(
-      new storage::SandboxFileStreamWriter(context, url, offset,
-                                           *GetUpdateObservers(url.type())));
+  return std::make_unique<SandboxFileStreamWriter>(
+      context, url, offset, *GetUpdateObservers(url.type()));
 }
 
-storage::FileSystemQuotaUtil* TestFileSystemBackend::GetQuotaUtil() {
+FileSystemQuotaUtil* TestFileSystemBackend::GetQuotaUtil() {
   return quota_util_.get();
 }
 
-const storage::UpdateObserverList* TestFileSystemBackend::GetUpdateObservers(
-    storage::FileSystemType type) const {
+const UpdateObserverList* TestFileSystemBackend::GetUpdateObservers(
+    FileSystemType type) const {
   return &update_observers_;
 }
 
-const storage::ChangeObserverList* TestFileSystemBackend::GetChangeObservers(
-    storage::FileSystemType type) const {
+const ChangeObserverList* TestFileSystemBackend::GetChangeObservers(
+    FileSystemType type) const {
   return &change_observers_;
 }
 
-const storage::AccessObserverList* TestFileSystemBackend::GetAccessObservers(
-    storage::FileSystemType type) const {
+const AccessObserverList* TestFileSystemBackend::GetAccessObservers(
+    FileSystemType type) const {
   return nullptr;
 }
 
 void TestFileSystemBackend::AddFileChangeObserver(
-    storage::FileChangeObserver* observer) {
+    FileChangeObserver* observer) {
   change_observers_ =
       change_observers_.AddObserver(observer, task_runner_.get());
 }
 
-}  // namespace content
+}  // namespace storage

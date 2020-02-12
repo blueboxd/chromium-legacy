@@ -52,13 +52,13 @@ storage::FileSystemURL CreateNativeLocalFileSystemURL(
 
 class FileHandlersMimeUtilTest : public ExtensionsTest {
  protected:
-  FileHandlersMimeUtilTest() {}
-  ~FileHandlersMimeUtilTest() override {}
+  FileHandlersMimeUtilTest() = default;
+  ~FileHandlersMimeUtilTest() override = default;
 
   void SetUp() override {
     ExtensionsTest::SetUp();
-    file_system_context_ = content::CreateFileSystemContextForTesting(
-        NULL, browser_context()->GetPath());
+    file_system_context_ = storage::CreateFileSystemContextForTesting(
+        nullptr, browser_context()->GetPath());
 
     const std::string kSampleContent = "<html><body></body></html>";
     base::FilePath temp_filename = CreateTemporaryFile(kSampleContent);

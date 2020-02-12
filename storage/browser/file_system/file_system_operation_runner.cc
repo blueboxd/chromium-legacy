@@ -245,7 +245,7 @@ OperationID FileSystemOperationRunner::Remove(const FileSystemURL& url,
 
 OperationID FileSystemOperationRunner::Write(
     const FileSystemURL& url,
-    std::unique_ptr<storage::BlobDataHandle> blob,
+    std::unique_ptr<BlobDataHandle> blob,
     int64_t offset,
     const WriteCallback& callback) {
   base::File::Error error = base::File::FILE_OK;
@@ -670,7 +670,7 @@ void FileSystemOperationRunner::DidCreateSnapshot(
     base::File::Error rv,
     const base::File::Info& file_info,
     const base::FilePath& platform_path,
-    scoped_refptr<storage::ShareableFileReference> file_ref) {
+    scoped_refptr<ShareableFileReference> file_ref) {
   // Calling the callback or deleting the |operations_| entry in
   // |FinishOperation| may release the FileSystemContext which owns this runner,
   // so take a reference to keep both alive until the end of this call.

@@ -771,9 +771,9 @@ void BlobStorageContext::WriteBlobToFile(
                   mojom::WriteBlobToFileResult::kInvalidBlob);
               return;
             }
-            ::storage::WriteBlobToFile(std::move(handle), file_path,
-                                       flush_on_write, last_modified,
-                                       std::move(callback));
+            storage::WriteBlobToFile(std::move(handle), file_path,
+                                     flush_on_write, last_modified,
+                                     std::move(callback));
           },
           AsWeakPtr(), file_path, flush_on_write, last_modified,
           std::move(callback)));

@@ -295,7 +295,8 @@ class ChildThreadImpl::IOThreadState
 
 #if defined(OS_MACOSX)
   void GetTaskPort(GetTaskPortCallback callback) override {
-    mojo::ScopedHandle task_port = mojo::WrapMachPort(mach_task_self());
+    mojo::PlatformHandle task_port(
+        (base::mac::ScopedMachSendRight(task_self_trap())));
     std::move(callback).Run(std::move(task_port));
   }
 #endif

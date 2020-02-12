@@ -178,10 +178,10 @@ std::string SandboxFileSystemBackendDelegate::GetTypeString(
 }
 
 SandboxFileSystemBackendDelegate::SandboxFileSystemBackendDelegate(
-    storage::QuotaManagerProxy* quota_manager_proxy,
+    QuotaManagerProxy* quota_manager_proxy,
     base::SequencedTaskRunner* file_task_runner,
     const base::FilePath& profile_path,
-    storage::SpecialStoragePolicy* special_storage_policy,
+    SpecialStoragePolicy* special_storage_policy,
     const FileSystemOptions& file_system_options,
     leveldb::Env* env_override)
     : file_task_runner_(file_task_runner),
@@ -341,7 +341,7 @@ SandboxFileSystemBackendDelegate::CreateFileStreamWriter(
 base::File::Error
 SandboxFileSystemBackendDelegate::DeleteOriginDataOnFileTaskRunner(
     FileSystemContext* file_system_context,
-    storage::QuotaManagerProxy* proxy,
+    QuotaManagerProxy* proxy,
     const GURL& origin_url,
     FileSystemType type) {
   DCHECK(file_task_runner_->RunsTasksInCurrentSequence());
@@ -352,7 +352,7 @@ SandboxFileSystemBackendDelegate::DeleteOriginDataOnFileTaskRunner(
       url::Origin::Create(origin_url), GetTypeString(type));
   if (result && proxy && usage) {
     proxy->NotifyStorageModified(
-        storage::QuotaClient::kFileSystem, url::Origin::Create(origin_url),
+        QuotaClient::kFileSystem, url::Origin::Create(origin_url),
         FileSystemTypeToQuotaStorageType(type), -usage);
   }
 
@@ -363,7 +363,7 @@ SandboxFileSystemBackendDelegate::DeleteOriginDataOnFileTaskRunner(
 
 void SandboxFileSystemBackendDelegate::PerformStorageCleanupOnFileTaskRunner(
     FileSystemContext* context,
-    storage::QuotaManagerProxy* proxy,
+    QuotaManagerProxy* proxy,
     FileSystemType type) {
   DCHECK(file_task_runner_->RunsTasksInCurrentSequence());
   obfuscated_file_util()->RewriteDatabases();
@@ -721,7 +721,7 @@ SandboxFileSystemBackendDelegate::memory_file_util_delegate() {
 // Declared in obfuscated_file_util.h.
 // static
 ObfuscatedFileUtil* ObfuscatedFileUtil::CreateForTesting(
-    storage::SpecialStoragePolicy* special_storage_policy,
+    SpecialStoragePolicy* special_storage_policy,
     const base::FilePath& file_system_directory,
     leveldb::Env* env_override,
     bool is_incognito) {

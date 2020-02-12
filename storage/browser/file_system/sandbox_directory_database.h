@@ -17,10 +17,6 @@
 #include "base/macros.h"
 #include "base/time/time.h"
 
-namespace content {
-class SandboxDirectoryDatabaseTest;
-}
-
 namespace base {
 class Location;
 }
@@ -108,8 +104,8 @@ class COMPONENT_EXPORT(STORAGE_BROWSER) SandboxDirectoryDatabase {
     FAIL_ON_CORRUPTION,
   };
 
-  friend class content::SandboxDirectoryDatabaseTest;
   friend class ObfuscatedFileUtil;
+  friend class SandboxDirectoryDatabaseTest;
 
   bool Init(RecoveryOption recovery_option);
   bool RepairDatabase(const std::string& db_path);

@@ -20,7 +20,7 @@
 
 using blink::mojom::StorageType;
 
-namespace content {
+namespace storage {
 
 const StorageType kTemporary = StorageType::kTemporary;
 const StorageType kPersistent = StorageType::kPersistent;
@@ -221,4 +221,4 @@ TEST_F(MockQuotaManagerTest, ModifiedOrigins) {
   EXPECT_EQ(0UL, origins().count(kOrigin1));
   EXPECT_EQ(1UL, origins().count(kOrigin2));
 }
-}  // namespace content
+}  // namespace storage

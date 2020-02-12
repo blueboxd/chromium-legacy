@@ -16,11 +16,7 @@
 #include "storage/browser/file_system/native_file_util.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
-using storage::FileSystemFileUtil;
-using storage::FileSystemOperation;
-using storage::NativeFileUtil;
-
-namespace content {
+namespace storage {
 
 class NativeFileUtilTest : public testing::Test {
  public:
@@ -468,4 +464,4 @@ TEST_F(NativeFileUtilTest, PreserveLastModified) {
   EXPECT_EQ(file_info1.last_modified, file_info2.last_modified);
 }
 
-}  // namespace content
+}  // namespace storage

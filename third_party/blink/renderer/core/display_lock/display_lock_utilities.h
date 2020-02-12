@@ -70,8 +70,22 @@ class CORE_EXPORT DisplayLockUtilities {
   static Element* NearestLockedInclusiveAncestor(const LayoutObject& object);
   static Element* NearestLockedExclusiveAncestor(const LayoutObject& object);
 
-  // Whether this node has non-activatable locked exclusive ancestors or not.
-  static bool IsInNonActivatableLockedSubtree(const Node& node);
+  // Returns true if |node| is not in a locked subtree, or if it's possible to
+  // activate all of the locked ancestors for |activation_reason|.
+  static bool IsInUnlockedOrActivatableSubtree(
+      const Node& node,
+      DisplayLockActivationReason activation_reason =
+          DisplayLockActivationReason::kAny);
+
+  // Returns true if |node| is in a locked subtree, and at least one of its
+  // locked ancestors can't be activated with |activation_reason|. In other
+  // words, this node should be treated as if it's not in the tree for
+  // |activation_reason|.
+  static bool ShouldIgnoreNodeDueToDisplayLock(
+      const Node& node,
+      DisplayLockActivationReason activation_reason) {
+    return !IsInUnlockedOrActivatableSubtree(node, activation_reason);
+  }
 
   // Returns true if the element is in a locked subtree (or is self-locked with
   // no self-updates). This crosses frames while navigating the ancestor chain.

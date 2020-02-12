@@ -68,13 +68,15 @@ class IndexedDBFactoryTest : public testing::Test {
   IndexedDBFactoryTest()
       : task_environment_(std::make_unique<BrowserTaskEnvironment>()),
         quota_manager_proxy_(
-            base::MakeRefCounted<MockQuotaManagerProxy>(nullptr, nullptr)) {}
+            base::MakeRefCounted<storage::MockQuotaManagerProxy>(nullptr,
+                                                                 nullptr)) {}
 
   explicit IndexedDBFactoryTest(
       std::unique_ptr<BrowserTaskEnvironment> task_environment)
       : task_environment_(std::move(task_environment)),
         quota_manager_proxy_(
-            base::MakeRefCounted<MockQuotaManagerProxy>(nullptr, nullptr)) {}
+            base::MakeRefCounted<storage::MockQuotaManagerProxy>(nullptr,
+                                                                 nullptr)) {}
 
   void TearDown() override {
     quota_manager_proxy_->SimulateQuotaManagerDestroyed();
@@ -223,7 +225,7 @@ class IndexedDBFactoryTest : public testing::Test {
   std::unique_ptr<BrowserTaskEnvironment> task_environment_;
 
   base::ScopedTempDir temp_dir_;
-  scoped_refptr<MockQuotaManagerProxy> quota_manager_proxy_;
+  scoped_refptr<storage::MockQuotaManagerProxy> quota_manager_proxy_;
   scoped_refptr<IndexedDBContextImpl> context_;
 
   DISALLOW_COPY_AND_ASSIGN(IndexedDBFactoryTest);

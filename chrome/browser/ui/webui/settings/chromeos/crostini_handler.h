@@ -24,7 +24,7 @@ namespace chromeos {
 namespace settings {
 
 class CrostiniHandler : public ::settings::SettingsPageUIHandler,
-                        public crostini::InstallerViewStatusObserver,
+                        public crostini::CrostiniDialogStatusObserver,
                         public crostini::CrostiniExportImport::Observer,
                         public chromeos::CrosUsbDeviceObserver {
  public:
@@ -61,8 +61,9 @@ class CrostiniHandler : public ::settings::SettingsPageUIHandler,
   void HandleImportCrostiniContainer(const base::ListValue* args);
   // Handle a request for the CrostiniInstallerView status.
   void HandleCrostiniInstallerStatusRequest(const base::ListValue* args);
-  // Handle the CrostiniInstallerView opening/closing.
-  void OnCrostiniInstallerViewStatusChanged(bool open) override;
+  // crostini::CrostiniDialogStatusObserver
+  void OnCrostiniDialogStatusChanged(crostini::DialogType dialog_type,
+                                     bool open) override;
   // Handle a request for the CrostiniExportImport operation status.
   void HandleCrostiniExportImportOperationStatusRequest(
       const base::ListValue* args);
@@ -85,6 +86,8 @@ class CrostiniHandler : public ::settings::SettingsPageUIHandler,
   // Returns whether the current user can change adb sideloading configuration
   // on current device.
   bool CheckEligibilityToChangeArcAdbSideloading() const;
+  // Handle a request for the CrostiniUpgraderDialog status.
+  void HandleCrostiniUpgraderDialogStatusRequest(const base::ListValue* args);
 
   Profile* profile_;
   // weak_ptr_factory_ should always be last member.

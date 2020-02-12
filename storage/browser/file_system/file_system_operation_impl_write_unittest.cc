@@ -31,17 +31,12 @@
 #include "testing/gtest/include/gtest/gtest.h"
 #include "url/gurl.h"
 
-using storage::FileSystemOperation;
-using storage::FileSystemOperationRunner;
-using storage::FileSystemURL;
-using storage::ScopedTextBlob;
-
-namespace content {
+namespace storage {
 
 namespace {
 
 const char kOrigin[] = "http://example.com";
-const storage::FileSystemType kFileSystemType = storage::kFileSystemTypeTest;
+const FileSystemType kFileSystemType = kFileSystemTypeTest;
 
 void AssertStatusEq(base::File::Error expected, base::File::Error actual) {
   ASSERT_EQ(expected, actual);
@@ -57,8 +52,7 @@ class FileSystemOperationImplWriteTest : public testing::Test {
         cancel_status_(base::File::FILE_ERROR_FAILED),
         bytes_written_(0),
         complete_(false) {
-    change_observers_ =
-        storage::MockFileChangeObserver::CreateList(&change_observer_);
+    change_observers_ = MockFileChangeObserver::CreateList(&change_observer_);
   }
 
   void SetUp() override {
@@ -72,7 +66,7 @@ class FileSystemOperationImplWriteTest : public testing::Test {
 
     file_system_context_ = CreateFileSystemContextForTesting(
         quota_manager_->proxy(), dir_.GetPath());
-    blob_storage_context_.reset(new storage::BlobStorageContext);
+    blob_storage_context_.reset(new BlobStorageContext);
 
     file_system_context_->operation_runner()->CreateFile(
         URLForPath(virtual_path_), true /* exclusive */,
@@ -100,13 +94,11 @@ class FileSystemOperationImplWriteTest : public testing::Test {
   bool complete() const { return complete_; }
 
  protected:
-  const storage::ChangeObserverList& change_observers() const {
+  const ChangeObserverList& change_observers() const {
     return change_observers_;
   }
 
-  storage::MockFileChangeObserver* change_observer() {
-    return &change_observer_;
-  }
+  MockFileChangeObserver* change_observer() { return &change_observer_; }
 
   FileSystemURL URLForPath(const base::FilePath& path) const {
     return file_system_context_->CreateCrackedFileSystemURL(
@@ -141,13 +133,13 @@ class FileSystemOperationImplWriteTest : public testing::Test {
 
   void DidCancel(base::File::Error status) { cancel_status_ = status; }
 
-  storage::BlobStorageContext* blob_storage_context() const {
+  BlobStorageContext* blob_storage_context() const {
     return blob_storage_context_.get();
   }
 
   base::test::TaskEnvironment task_environment_;
 
-  scoped_refptr<storage::FileSystemContext> file_system_context_;
+  scoped_refptr<FileSystemContext> file_system_context_;
   scoped_refptr<MockQuotaManager> quota_manager_;
 
   base::ScopedTempDir dir_;
@@ -159,10 +151,10 @@ class FileSystemOperationImplWriteTest : public testing::Test {
   int64_t bytes_written_;
   bool complete_;
 
-  std::unique_ptr<storage::BlobStorageContext> blob_storage_context_;
+  std::unique_ptr<BlobStorageContext> blob_storage_context_;
 
-  storage::MockFileChangeObserver change_observer_;
-  storage::ChangeObserverList change_observers_;
+  MockFileChangeObserver change_observer_;
+  ChangeObserverList change_observers_;
 
   base::WeakPtrFactory<FileSystemOperationImplWriteTest> weak_factory_{this};
 
@@ -199,7 +191,7 @@ TEST_F(FileSystemOperationImplWriteTest, TestWriteZero) {
 }
 
 TEST_F(FileSystemOperationImplWriteTest, TestWriteInvalidBlob) {
-  std::unique_ptr<storage::BlobDataHandle> null_handle;
+  std::unique_ptr<BlobDataHandle> null_handle;
   file_system_context_->operation_runner()->Write(URLForPath(virtual_path_),
                                                   std::move(null_handle), 0,
                                                   RecordWriteCallback());
@@ -317,4 +309,4 @@ TEST_F(FileSystemOperationImplWriteTest, TestImmediateCancelFailingWrite) {
 
 // TODO(ericu,dmikurube,kinuko): Add more tests for cancel cases.
 
-}  // namespace content
+}  // namespace storage

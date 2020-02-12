@@ -54,14 +54,6 @@ bool WaitForEvent(base::WaitableEvent* event) {
 
 CreditCardAccessManager::CreditCardAccessManager(
     AutofillDriver* driver,
-    AutofillManager* autofill_manager)
-    : CreditCardAccessManager(
-          driver,
-          autofill_manager->client(),
-          autofill_manager->client()->GetPersonalDataManager()) {}
-
-CreditCardAccessManager::CreditCardAccessManager(
-    AutofillDriver* driver,
     AutofillClient* client,
     PersonalDataManager* personal_data_manager,
     CreditCardFormEventLogger* form_event_logger)
@@ -87,19 +79,17 @@ CreditCardAccessManager::~CreditCardAccessManager() {}
 void CreditCardAccessManager::UpdateCreditCardFormEventLogger() {
   std::vector<CreditCard*> credit_cards = GetCreditCards();
 
-  if (form_event_logger_) {
-    size_t server_record_type_count = 0;
-    size_t local_record_type_count = 0;
-    for (CreditCard* credit_card : credit_cards) {
-      if (credit_card->record_type() == CreditCard::LOCAL_CARD)
-        local_record_type_count++;
-      else
-        server_record_type_count++;
-    }
-    form_event_logger_->set_server_record_type_count(server_record_type_count);
-    form_event_logger_->set_local_record_type_count(local_record_type_count);
-    form_event_logger_->set_is_context_secure(client_->IsContextSecure());
+  size_t server_record_type_count = 0;
+  size_t local_record_type_count = 0;
+  for (CreditCard* credit_card : credit_cards) {
+    if (credit_card->record_type() == CreditCard::LOCAL_CARD)
+      local_record_type_count++;
+    else
+      server_record_type_count++;
   }
+  form_event_logger_->set_server_record_type_count(server_record_type_count);
+  form_event_logger_->set_local_record_type_count(local_record_type_count);
+  form_event_logger_->set_is_context_secure(client_->IsContextSecure());
 }
 
 std::vector<CreditCard*> CreditCardAccessManager::GetCreditCards() {
@@ -362,6 +352,33 @@ void CreditCardAccessManager::OnSettingsPageFIDOAuthToggled(bool opt_in) {
 #endif
 }
 
+CreditCardFormEventLogger::UnmaskAuthFlowType
+CreditCardAccessManager::GetAuthenticationType(
+    bool get_unmask_details_returned) {
+  bool fido_auth_suggested =
+      get_unmask_details_returned && unmask_details_.unmask_auth_method ==
+                                         AutofillClient::UnmaskAuthMethod::FIDO;
+
+  bool card_is_authorized_for_fido =
+      fido_auth_suggested && IsSelectedCardFidoAuthorized();
+
+  // If FIDO authentication was suggested, but card is not in authorized list,
+  // must authenticate with CVC followed by FIDO in order to authorize this card
+  // for future FIDO use.
+  bool should_follow_up_cvc_with_fido_auth =
+      fido_auth_suggested && !card_is_authorized_for_fido;
+
+  // Only use FIDO if card is authorized and not expired.
+  bool card_is_eligible_for_fido =
+      card_is_authorized_for_fido && !card_->IsExpired(AutofillClock::Now());
+
+  if (card_is_eligible_for_fido)
+    return CreditCardFormEventLogger::UnmaskAuthFlowType::kFido;
+  if (should_follow_up_cvc_with_fido_auth)
+    return CreditCardFormEventLogger::UnmaskAuthFlowType::kCvcThenFido;
+  return CreditCardFormEventLogger::UnmaskAuthFlowType::kCvc;
+}
+
 void CreditCardAccessManager::Authenticate(bool get_unmask_details_returned) {
   // Reset now that we have started authentication.
   ready_to_start_authentication_.Reset();
@@ -377,33 +394,25 @@ void CreditCardAccessManager::Authenticate(bool get_unmask_details_returned) {
     card_selected_without_unmask_details_timestamp_ = base::nullopt;
   }
 
-  bool fido_auth_suggested =
-      get_unmask_details_returned && unmask_details_.unmask_auth_method ==
-                                         AutofillClient::UnmaskAuthMethod::FIDO;
-
-  bool card_is_authorized_for_fido =
-      fido_auth_suggested && IsSelectedCardFidoAuthorized();
-
-  // If FIDO authentication was suggested, but card is not in authorized list,
-  // must authenticate with CVC followed by FIDO in order to authorize this card
-  // for future FIDO use.
-  should_follow_up_cvc_with_fido_auth_ =
-      fido_auth_suggested && !card_is_authorized_for_fido;
-
-  // Only use FIDO if card is authorized and not expired.
-  bool card_is_eligible_for_fido =
-      card_is_authorized_for_fido && !card_->IsExpired(AutofillClock::Now());
+  unmask_auth_flow_type_ = GetAuthenticationType(get_unmask_details_returned);
+  form_event_logger_->LogCardUnmaskAuthenticationPromptShown(
+      unmask_auth_flow_type_);
 
   // If FIDO auth was suggested, logging which authentication method was
   // actually used.
-  if (fido_auth_suggested && !card_->IsExpired(AutofillClock::Now())) {
+  if (unmask_auth_flow_type_ ==
+      CreditCardFormEventLogger::UnmaskAuthFlowType::kFido) {
     AutofillMetrics::LogCardUnmaskTypeDecision(
-        card_is_eligible_for_fido
-            ? AutofillMetrics::CardUnmaskTypeDecisionMetric::kFidoOnly
-            : AutofillMetrics::CardUnmaskTypeDecisionMetric::kCvcThenFido);
+        AutofillMetrics::CardUnmaskTypeDecisionMetric::kFidoOnly);
+  }
+  if (unmask_auth_flow_type_ ==
+      CreditCardFormEventLogger::UnmaskAuthFlowType::kCvcThenFido) {
+    AutofillMetrics::LogCardUnmaskTypeDecision(
+        AutofillMetrics::CardUnmaskTypeDecisionMetric::kCvcThenFido);
   }
 
-  if (card_is_eligible_for_fido) {
+  if (unmask_auth_flow_type_ ==
+      CreditCardFormEventLogger::UnmaskAuthFlowType::kFido) {
 #if defined(OS_IOS)
     NOTREACHED();
 #else
@@ -453,13 +462,26 @@ void CreditCardAccessManager::OnCVCAuthenticationComplete(
   is_authentication_in_progress_ = false;
   can_fetch_unmask_details_.Signal();
 
+  // Log completed CVC authentication if auth was successful. Do not log for
+  // kCvcThenFido flow since that is yet to be completed.
+  if (response.did_succeed &&
+      unmask_auth_flow_type_ !=
+          CreditCardFormEventLogger::UnmaskAuthFlowType::kCvcThenFido) {
+    form_event_logger_->LogCardUnmaskAuthenticationPromptCompleted(
+        unmask_auth_flow_type_);
+  }
+
   // If user is not opted-in for FIDO authentication, fill the form immediately
   // -- a CVC check is adequate for an opted-out user. An opted-in user,
   // however, will require an additional WebAuthn check before the form can be
   // filled. If CVC authentication failed, report error immediately.
-  if (!should_follow_up_cvc_with_fido_auth_ || !response.did_succeed) {
+  if (unmask_auth_flow_type_ !=
+          CreditCardFormEventLogger::UnmaskAuthFlowType::kCvcThenFido ||
+      !response.did_succeed) {
     accessor_->OnCreditCardFetched(response.did_succeed, response.card,
                                    response.cvc);
+    unmask_auth_flow_type_ =
+        CreditCardFormEventLogger::UnmaskAuthFlowType::kNone;
   }
 
   if (!response.did_succeed || response.card_authorization_token.empty())
@@ -484,9 +506,9 @@ void CreditCardAccessManager::OnCVCAuthenticationComplete(
   }
 #elif !defined(OS_IOS)
   // If on Desktop and eligible, show the dialog that offers opting-in to FIDO
-  // authentication in the future. If |should_follow_up_cvc_with_fido_auth_| was
-  // set to true, then the user is already opted-in and the card must
-  // additionally be authorized through WebAuthn.
+  // authentication in the future.
+  // If |unmask_auth_flow_type_| is kCvcThenFido, then the user is already
+  // opted-in and the card must additionally be authorized through WebAuthn.
   bool should_offer_fido_auth =
       unmask_details_.offer_fido_opt_in &&
       !GetOrCreateFIDOAuthenticator()
@@ -494,7 +516,8 @@ void CreditCardAccessManager::OnCVCAuthenticationComplete(
            ->IsMaxStrikesLimitReached();
   if (should_offer_fido_auth) {
     ShowWebauthnOfferDialog(response.card_authorization_token);
-  } else if (should_follow_up_cvc_with_fido_auth_) {
+  } else if (unmask_auth_flow_type_ ==
+             CreditCardFormEventLogger::UnmaskAuthFlowType::kCvcThenFido) {
     DCHECK(unmask_details_.fido_request_options.has_value());
 
     // Save credit card for after authorization.
@@ -523,9 +546,16 @@ void CreditCardAccessManager::OnFIDOAuthenticationComplete(
     is_authentication_in_progress_ = false;
     accessor_->OnCreditCardFetched(did_succeed, card, cvc);
     can_fetch_unmask_details_.Signal();
+
+    form_event_logger_->LogCardUnmaskAuthenticationPromptCompleted(
+        unmask_auth_flow_type_);
+    unmask_auth_flow_type_ =
+        CreditCardFormEventLogger::UnmaskAuthFlowType::kNone;
   } else {
-    // Fall back to CVC if WebAuthn failed.
-    // TODO(crbug/949269): Add metrics to log fallback CVC auths.
+    unmask_auth_flow_type_ =
+        CreditCardFormEventLogger::UnmaskAuthFlowType::kCvcFallbackFromFido;
+    form_event_logger_->LogCardUnmaskAuthenticationPromptShown(
+        unmask_auth_flow_type_);
     GetOrCreateCVCAuthenticator()->Authenticate(
         card_.get(), weak_ptr_factory_.GetWeakPtr(), personal_data_manager_,
         form_parsed_timestamp_);
@@ -533,8 +563,12 @@ void CreditCardAccessManager::OnFIDOAuthenticationComplete(
 }
 
 void CreditCardAccessManager::OnFidoAuthorizationComplete(bool did_succeed) {
-  if (did_succeed)
+  if (did_succeed) {
     accessor_->OnCreditCardFetched(/*did_succeed=*/true, card_.get(), cvc_);
+    form_event_logger_->LogCardUnmaskAuthenticationPromptCompleted(
+        unmask_auth_flow_type_);
+  }
+  unmask_auth_flow_type_ = CreditCardFormEventLogger::UnmaskAuthFlowType::kNone;
   cvc_ = base::string16();
 }
 #endif

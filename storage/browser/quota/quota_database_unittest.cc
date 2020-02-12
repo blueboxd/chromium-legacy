@@ -26,13 +26,10 @@
 #include "third_party/blink/public/mojom/quota/quota_types.mojom-shared.h"
 #include "url/gurl.h"
 
-using storage::QuotaDatabase;
+namespace storage {
 
-namespace content {
 namespace {
-
 const char kDBFileName[] = "quota_manager.db";
-
 }  // namespace
 
 // Declared to shorten the line lengths.
@@ -689,4 +686,4 @@ TEST_F(QuotaDatabaseTest, OpenCorruptedDatabase) {
   }
 }
 
-}  // namespace content
+}  // namespace storage

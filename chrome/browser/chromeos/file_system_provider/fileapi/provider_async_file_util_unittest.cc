@@ -8,6 +8,7 @@
 
 #include <memory>
 #include <string>
+#include <utility>
 #include <vector>
 
 #include "base/bind.h"
@@ -130,8 +131,8 @@ class FileSystemProviderProviderAsyncFileUtilTest : public testing::Test {
     profile_ = profile_manager_->CreateTestingProfile("testing-profile");
     async_file_util_.reset(new internal::ProviderAsyncFileUtil);
 
-    file_system_context_ =
-        content::CreateFileSystemContextForTesting(NULL, data_dir_.GetPath());
+    file_system_context_ = storage::CreateFileSystemContextForTesting(
+        nullptr, data_dir_.GetPath());
 
     Service* service = Service::Get(profile_);  // Owned by its factory.
     service->RegisterProvider(FakeExtensionProvider::Create(kExtensionId));

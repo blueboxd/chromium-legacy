@@ -26,16 +26,13 @@
 #include "third_party/sqlite/sqlite3.h"
 
 using base::ASCIIToUTF16;
-using storage::DatabaseConnections;
-using storage::DatabaseTracker;
-using storage::OriginInfo;
 
-namespace {
+namespace storage {
 
 const char kOrigin1Url[] = "http://origin1";
 const char kOrigin2Url[] = "http://protected_origin2";
 
-class TestObserver : public storage::DatabaseTracker::Observer {
+class TestObserver : public DatabaseTracker::Observer {
  public:
   TestObserver()
       : new_notification_received_(false),
@@ -95,12 +92,12 @@ void CheckNotificationReceived(TestObserver* observer,
   EXPECT_EQ(expected_database_size, observer->GetNotificationDatabaseSize());
 }
 
-class TestQuotaManagerProxy : public storage::QuotaManagerProxy {
+class TestQuotaManagerProxy : public QuotaManagerProxy {
  public:
   TestQuotaManagerProxy()
       : QuotaManagerProxy(nullptr, nullptr), registered_client_(nullptr) {}
 
-  void RegisterClient(scoped_refptr<storage::QuotaClient> client) override {
+  void RegisterClient(scoped_refptr<QuotaClient> client) override {
     EXPECT_FALSE(registered_client_);
     registered_client_ = client;
   }
@@ -111,11 +108,11 @@ class TestQuotaManagerProxy : public storage::QuotaManagerProxy {
     accesses_[origin] += 1;
   }
 
-  void NotifyStorageModified(storage::QuotaClient::ID client_id,
+  void NotifyStorageModified(QuotaClient::ID client_id,
                              const url::Origin& origin,
                              blink::mojom::StorageType type,
                              int64_t delta) override {
-    EXPECT_EQ(storage::QuotaClient::kDatabase, client_id);
+    EXPECT_EQ(QuotaClient::kDatabase, client_id);
     EXPECT_EQ(blink::mojom::StorageType::kTemporary, type);
     modifications_[origin].first += 1;
     modifications_[origin].second += delta;
@@ -124,7 +121,7 @@ class TestQuotaManagerProxy : public storage::QuotaManagerProxy {
   // Not needed for our tests.
   void NotifyOriginInUse(const url::Origin& origin) override {}
   void NotifyOriginNoLongerInUse(const url::Origin& origin) override {}
-  void SetUsageCacheEnabled(storage::QuotaClient::ID client_id,
+  void SetUsageCacheEnabled(QuotaClient::ID client_id,
                             const url::Origin& origin,
                             blink::mojom::StorageType type,
                             bool enabled) override {}
@@ -154,7 +151,7 @@ class TestQuotaManagerProxy : public storage::QuotaManagerProxy {
     modifications_.clear();
   }
 
-  scoped_refptr<storage::QuotaClient> registered_client_;
+  scoped_refptr<QuotaClient> registered_client_;
 
   // Map from origin to count of access notifications.
   std::map<url::Origin, int> accesses_;
@@ -173,10 +170,6 @@ bool EnsureFileOfSize(const base::FilePath& file_path, int64_t length) {
     return false;
   return file.SetLength(length);
 }
-
-}  // namespace
-
-namespace content {
 
 // We declare a helper class, and make it a friend of DatabaseTracker using
 // the FORWARD_DECLARE_TEST macro, and we implement all tests we want to run as
@@ -202,10 +195,8 @@ class DatabaseTracker_TestHelper_Test {
 
     // Create and open three databases.
     int64_t database_size = 0;
-    const std::string kOrigin1 =
-        storage::GetIdentifierFromOrigin(GURL(kOrigin1Url));
-    const std::string kOrigin2 =
-        storage::GetIdentifierFromOrigin(GURL(kOrigin2Url));
+    const std::string kOrigin1 = GetIdentifierFromOrigin(GURL(kOrigin1Url));
+    const std::string kOrigin2 = GetIdentifierFromOrigin(GURL(kOrigin2Url));
     const base::string16 kDB1 = ASCIIToUTF16("db1");
     const base::string16 kDB2 = ASCIIToUTF16("db2");
     const base::string16 kDB3 = ASCIIToUTF16("db3");
@@ -304,10 +295,8 @@ class DatabaseTracker_TestHelper_Test {
 
     // Open three new databases.
     int64_t database_size = 0;
-    const std::string kOrigin1 =
-        storage::GetIdentifierFromOrigin(GURL(kOrigin1Url));
-    const std::string kOrigin2 =
-        storage::GetIdentifierFromOrigin(GURL(kOrigin2Url));
+    const std::string kOrigin1 = GetIdentifierFromOrigin(GURL(kOrigin1Url));
+    const std::string kOrigin2 = GetIdentifierFromOrigin(GURL(kOrigin2Url));
     const base::string16 kDB1 = ASCIIToUTF16("db1");
     const base::string16 kDB2 = ASCIIToUTF16("db2");
     const base::string16 kDB3 = ASCIIToUTF16("db3");
@@ -420,7 +409,7 @@ class DatabaseTracker_TestHelper_Test {
 
   static void DatabaseTrackerQuotaIntegration(bool incognito_mode) {
     const url::Origin kOrigin(url::Origin::Create(GURL(kOrigin1Url)));
-    const std::string kOriginId = storage::GetIdentifierFromOrigin(kOrigin);
+    const std::string kOriginId = GetIdentifierFromOrigin(kOrigin);
     const base::string16 kName = ASCIIToUTF16("name");
     const base::string16 kDescription = ASCIIToUTF16("description");
 
@@ -526,10 +515,8 @@ class DatabaseTracker_TestHelper_Test {
 
   static void DatabaseTrackerClearSessionOnlyDatabasesOnExit() {
     int64_t database_size = 0;
-    const std::string kOrigin1 =
-        storage::GetIdentifierFromOrigin(GURL(kOrigin1Url));
-    const std::string kOrigin2 =
-        storage::GetIdentifierFromOrigin(GURL(kOrigin2Url));
+    const std::string kOrigin1 = GetIdentifierFromOrigin(GURL(kOrigin1Url));
+    const std::string kOrigin2 = GetIdentifierFromOrigin(GURL(kOrigin2Url));
     const base::string16 kDB1 = ASCIIToUTF16("db1");
     const base::string16 kDB2 = ASCIIToUTF16("db2");
     const base::string16 kDescription = ASCIIToUTF16("database_description");
@@ -606,10 +593,8 @@ class DatabaseTracker_TestHelper_Test {
 
   static void DatabaseTrackerSetForceKeepSessionState() {
     int64_t database_size = 0;
-    const std::string kOrigin1 =
-        storage::GetIdentifierFromOrigin(GURL(kOrigin1Url));
-    const std::string kOrigin2 =
-        storage::GetIdentifierFromOrigin(GURL(kOrigin2Url));
+    const std::string kOrigin1 = GetIdentifierFromOrigin(GURL(kOrigin1Url));
+    const std::string kOrigin2 = GetIdentifierFromOrigin(GURL(kOrigin2Url));
     const base::string16 kDB1 = ASCIIToUTF16("db1");
     const base::string16 kDB2 = ASCIIToUTF16("db2");
     const base::string16 kDescription = ASCIIToUTF16("database_description");
@@ -683,7 +668,7 @@ class DatabaseTracker_TestHelper_Test {
 
   static void EmptyDatabaseNameIsValid() {
     const GURL kOrigin(kOrigin1Url);
-    const std::string kOriginId = storage::GetIdentifierFromOrigin(kOrigin);
+    const std::string kOriginId = GetIdentifierFromOrigin(kOrigin);
     const base::string16 kEmptyName;
     const base::string16 kDescription(ASCIIToUTF16("description"));
     const base::string16 kChangedDescription(
@@ -734,7 +719,7 @@ class DatabaseTracker_TestHelper_Test {
 
   static void HandleSqliteError() {
     const GURL kOrigin(kOrigin1Url);
-    const std::string kOriginId = storage::GetIdentifierFromOrigin(kOrigin);
+    const std::string kOriginId = GetIdentifierFromOrigin(kOrigin);
     const base::string16 kName(ASCIIToUTF16("name"));
     const base::string16 kDescription(ASCIIToUTF16("description"));
 
@@ -852,4 +837,4 @@ TEST(DatabaseTrackerTest, HandleSqliteError) {
   DatabaseTracker_TestHelper_Test::HandleSqliteError();
 }
 
-}  // namespace content
+}  // namespace storage

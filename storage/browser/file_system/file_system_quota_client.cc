@@ -59,7 +59,7 @@ void GetOriginsForHostOnFileTaskRunner(FileSystemContext* context,
 }
 
 void DidGetFileSystemQuotaClientOrigins(
-    storage::QuotaClient::GetOriginsCallback callback,
+    QuotaClient::GetOriginsCallback callback,
     std::set<url::Origin>* origins_ptr) {
   std::move(callback).Run(*origins_ptr);
 }
@@ -96,8 +96,8 @@ FileSystemQuotaClient::FileSystemQuotaClient(
 
 FileSystemQuotaClient::~FileSystemQuotaClient() = default;
 
-storage::QuotaClient::ID FileSystemQuotaClient::id() const {
-  return storage::QuotaClient::kFileSystem;
+QuotaClient::ID FileSystemQuotaClient::id() const {
+  return QuotaClient::kFileSystem;
 }
 
 void FileSystemQuotaClient::GetOriginUsage(const url::Origin& origin,

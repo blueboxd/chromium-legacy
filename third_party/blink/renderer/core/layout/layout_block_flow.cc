@@ -4404,10 +4404,9 @@ void LayoutBlockFlow::RecalcInlineChildrenVisualOverflow() {
       if (const NGFragmentItems* items = fragment->Items()) {
         NGInlineCursor cursor(*items);
         NGFragmentItem::RecalcInkOverflowForCursor(&cursor);
-      }
-
-      if (fragment->HasFloatingDescendantsForPaint())
+      } else if (fragment->HasFloatingDescendantsForPaint()) {
         RecalcFloatingDescendantsVisualOverflow(*fragment);
+      }
       return;
     }
   }

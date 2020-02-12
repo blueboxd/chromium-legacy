@@ -1278,7 +1278,7 @@ enum class TabSwitcherDismissalMode { NONE, NORMAL, INCOGNITO };
              ->HasOffTheRecordChromeBrowserState());
   [self clearIOSSpecificIncognitoData];
 
-  // OffTheRecordProfileIOData cannot be deleted before all the requests are
+  // Incognito browser state cannot be deleted before all the requests are
   // deleted. Queue browser state recreation on IO thread.
   base::PostTaskAndReply(FROM_HERE, {web::WebThread::IO}, base::DoNothing(),
                          base::BindRepeating(^{

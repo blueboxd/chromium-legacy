@@ -48,24 +48,26 @@ const net::NetworkTrafficAnnotationTag kPluginVmNetworkTrafficAnnotation =
       }
     )");
 
-// Checks if PluginVm is allowed for the current profile.
+// Checks if Plugin VM is allowed for the current profile.
 bool IsPluginVmAllowedForProfile(const Profile* profile);
 
-// Checks if PluginVm is configured for the current profile.
-bool IsPluginVmConfigured(Profile* profile);
+// Returns whether Plugin VM has been installed.
+// TODO(timloh): We should detect installations via VMC, currently the user
+// needs to manually launch the installer once for the pref to get set.
+bool IsPluginVmConfigured(const Profile* profile);
 
-// Returns true if PluginVm is allowed and configured for the current profile.
-bool IsPluginVmEnabled(Profile* profile);
+// Returns true if Plugin VM is allowed and configured for the current profile.
+bool IsPluginVmEnabled(const Profile* profile);
 
 // Determines if the default Plugin VM is running and visible.
 bool IsPluginVmRunning(Profile* profile);
 
 void ShowPluginVmInstallerView(Profile* profile);
 
-// Checks if an window is for plugin vm.
+// Checks if an window is for Plugin VM.
 bool IsPluginVmWindow(const aura::Window* window);
 
-// Retrieves the license key to be used for PluginVm. If
+// Retrieves the license key to be used for Plugin VM. If
 // none is set this will return an empty string.
 std::string GetPluginVmLicenseKey();
 
@@ -79,7 +81,7 @@ void SetFakePluginVmPolicy(Profile* profile,
                            const std::string& license_key);
 bool FakeLicenseKeyIsSet();
 
-// Used to clean up the PluginVM Drive download directory if it did not get
+// Used to clean up the Plugin VM Drive download directory if it did not get
 // removed when it should have, perhaps due to a crash.
 void RemoveDriveDownloadDirectoryIfExists();
 bool IsDriveUrl(const GURL& url);

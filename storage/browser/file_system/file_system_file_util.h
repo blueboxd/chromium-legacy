@@ -169,12 +169,11 @@ class COMPONENT_EXPORT(STORAGE_BROWSER) FileSystemFileUtil {
   //
   // See header comments for AsyncFileUtil::CreateSnapshotFile() for
   // more details.
-  virtual storage::ScopedFile CreateSnapshotFile(
-      FileSystemOperationContext* context,
-      const FileSystemURL& url,
-      base::File::Error* error,
-      base::File::Info* file_info,
-      base::FilePath* platform_path) = 0;
+  virtual ScopedFile CreateSnapshotFile(FileSystemOperationContext* context,
+                                        const FileSystemURL& url,
+                                        base::File::Error* error,
+                                        base::File::Info* file_info,
+                                        base::FilePath* platform_path) = 0;
 
  protected:
   FileSystemFileUtil() {}

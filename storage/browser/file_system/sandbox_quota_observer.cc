@@ -17,7 +17,7 @@
 namespace storage {
 
 SandboxQuotaObserver::SandboxQuotaObserver(
-    storage::QuotaManagerProxy* quota_manager_proxy,
+    QuotaManagerProxy* quota_manager_proxy,
     base::SequencedTaskRunner* update_notify_runner,
     ObfuscatedFileUtil* sandbox_file_util,
     FileSystemUsageCache* file_system_usage_cache)
@@ -41,7 +41,7 @@ void SandboxQuotaObserver::OnUpdate(const FileSystemURL& url, int64_t delta) {
 
   if (quota_manager_proxy_.get()) {
     quota_manager_proxy_->NotifyStorageModified(
-        storage::QuotaClient::kFileSystem, url.origin(),
+        QuotaClient::kFileSystem, url.origin(),
         FileSystemTypeToQuotaStorageType(url.type()), delta);
   }
 
@@ -87,7 +87,7 @@ void SandboxQuotaObserver::SetUsageCacheEnabled(const url::Origin& origin,
                                                 bool enabled) {
   if (quota_manager_proxy_.get()) {
     quota_manager_proxy_->SetUsageCacheEnabled(
-        storage::QuotaClient::kFileSystem, origin,
+        QuotaClient::kFileSystem, origin,
         FileSystemTypeToQuotaStorageType(type), enabled);
   }
 }

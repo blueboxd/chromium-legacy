@@ -9,6 +9,7 @@
 #include <limits>
 #include <memory>
 #include <string>
+#include <utility>
 
 #include "base/bind.h"
 #include "base/files/file.h"
@@ -33,13 +34,13 @@
 #include "storage/browser/test/fake_blob_data_handle.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
-using FileCreationInfo = storage::BlobMemoryController::FileCreationInfo;
 
 namespace storage {
 namespace {
+
+using FileCreationInfo = BlobMemoryController::FileCreationInfo;
 using base::TestSimpleTaskRunner;
 
-const std::string kBlobStorageDirectory = "blob_storage";
 const size_t kTestBlobStorageIPCThresholdBytes = 20;
 const size_t kTestBlobStorageMaxSharedMemoryBytes = 50;
 
@@ -479,7 +480,7 @@ TEST_F(BlobStorageContextTest, AddFinishedBlob_LargeOffset) {
 TEST_F(BlobStorageContextTest, BuildReadableDataHandleBlob) {
   const std::string kTestBlobData = "Test Blob Data";
   auto data_handle =
-      base::MakeRefCounted<storage::FakeBlobDataHandle>(kTestBlobData, "");
+      base::MakeRefCounted<FakeBlobDataHandle>(kTestBlobData, "");
 
   {
     BlobStorageContext context;
@@ -595,8 +596,7 @@ TEST_F(BlobStorageContextTest, CompoundBlobs) {
 
   auto blob_data3_builder = std::make_unique<BlobDataBuilder>(kId3);
   blob_data3_builder->AppendData("Data4");
-  auto data_handle =
-      base::MakeRefCounted<storage::FakeBlobDataHandle>("Data5", "");
+  auto data_handle = base::MakeRefCounted<FakeBlobDataHandle>("Data5", "");
   blob_data3_builder->AppendReadableDataHandle(std::move(data_handle));
   std::unique_ptr<BlobDataSnapshot> blob_data3 =
       blob_data3_builder->CreateSnapshot();
@@ -719,7 +719,7 @@ size_t AppendDataInBuilder(
     std::vector<BlobDataBuilder::FutureData>* future_datas,
     std::vector<BlobDataBuilder::FutureFile>* future_files,
     size_t index,
-    scoped_refptr<storage::BlobDataItem::DataHandle> data_handle) {
+    scoped_refptr<BlobDataItem::DataHandle> data_handle) {
   size_t size = 0;
   // We can't have both future data and future files, so split those up.
   if (index % 2 != 0) {
@@ -782,8 +782,8 @@ TEST_F(BlobStorageContextTest, BuildBlobCombinations) {
       temp_dir_.GetPath(), temp_dir_.GetPath(), file_runner_);
 
   SetTestMemoryLimits();
-  auto data_handle = base::MakeRefCounted<storage::FakeBlobDataHandle>(
-      kTestDataHandleData, "");
+  auto data_handle =
+      base::MakeRefCounted<FakeBlobDataHandle>(kTestDataHandleData, "");
 
   // This tests mixed blob content with both synchronous and asynchronous
   // construction. Blobs should also be paged to disk during execution.

@@ -196,6 +196,13 @@ enum class CorruptionStates {
   kMaxValue = OTHER_CORRUPTION,
 };
 
+// Dialog types used by CrostiniDialogStatusObserver.
+enum class DialogType {
+  INSTALLER,
+  UPGRADER,
+  REMOVER,
+};
+
 }  // namespace crostini
 
 enum class ContainerOsVersion {

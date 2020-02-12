@@ -15,10 +15,10 @@
 #include "base/threading/thread_task_runner_handle.h"
 #include "url/gurl.h"
 
-namespace content {
+namespace storage {
 
 MockQuotaManager::OriginInfo::OriginInfo(const url::Origin& origin,
-                                         StorageType type,
+                                         blink::mojom::StorageType type,
                                          int quota_client_mask,
                                          base::Time modified)
     : origin(origin),
@@ -41,10 +41,10 @@ MockQuotaManager::MockQuotaManager(
                    profile_path,
                    std::move(io_thread),
                    std::move(special_storage_policy),
-                   storage::GetQuotaSettingsFunc()) {}
+                   GetQuotaSettingsFunc()) {}
 
 void MockQuotaManager::GetUsageAndQuota(const url::Origin& origin,
-                                        StorageType type,
+                                        blink::mojom::StorageType type,
                                         UsageAndQuotaCallback callback) {
   StorageInfo& info = usage_and_quota_map_[std::make_pair(origin, type)];
   std::move(callback).Run(blink::mojom::QuotaStatusCode::kOk, info.usage,
@@ -58,7 +58,7 @@ void MockQuotaManager::SetQuota(const url::Origin& origin,
 }
 
 bool MockQuotaManager::AddOrigin(const url::Origin& origin,
-                                 StorageType type,
+                                 blink::mojom::StorageType type,
                                  int quota_client_mask,
                                  base::Time modified) {
   origins_.push_back(OriginInfo(origin, type, quota_client_mask, modified));
@@ -66,7 +66,7 @@ bool MockQuotaManager::AddOrigin(const url::Origin& origin,
 }
 
 bool MockQuotaManager::OriginHasData(const url::Origin& origin,
-                                     StorageType type,
+                                     blink::mojom::StorageType type,
                                      QuotaClient::ID quota_client) const {
   for (const auto& info : origins_) {
     if (info.origin == origin && info.type == type &&
@@ -76,7 +76,7 @@ bool MockQuotaManager::OriginHasData(const url::Origin& origin,
   return false;
 }
 
-void MockQuotaManager::GetOriginsModifiedSince(StorageType type,
+void MockQuotaManager::GetOriginsModifiedSince(blink::mojom::StorageType type,
                                                base::Time modified_since,
                                                GetOriginsCallback callback) {
   auto origins_to_return = std::make_unique<std::set<url::Origin>>();
@@ -92,7 +92,7 @@ void MockQuotaManager::GetOriginsModifiedSince(StorageType type,
 }
 
 void MockQuotaManager::DeleteOriginData(const url::Origin& origin,
-                                        StorageType type,
+                                        blink::mojom::StorageType type,
                                         int quota_client_mask,
                                         StatusCallback callback) {
   for (auto current = origins_.begin(); current != origins_.end(); ++current) {
@@ -120,7 +120,7 @@ void MockQuotaManager::NotifyWriteFailed(const url::Origin& origin) {
 MockQuotaManager::~MockQuotaManager() = default;
 
 void MockQuotaManager::UpdateUsage(const url::Origin& origin,
-                                   StorageType type,
+                                   blink::mojom::StorageType type,
                                    int64_t delta) {
   usage_and_quota_map_[std::make_pair(origin, type)].usage += delta;
 }
@@ -128,7 +128,7 @@ void MockQuotaManager::UpdateUsage(const url::Origin& origin,
 void MockQuotaManager::DidGetModifiedSince(
     GetOriginsCallback callback,
     std::unique_ptr<std::set<url::Origin>> origins,
-    StorageType storage_type) {
+    blink::mojom::StorageType storage_type) {
   std::move(callback).Run(*origins, storage_type);
 }
 
@@ -138,4 +138,4 @@ void MockQuotaManager::DidDeleteOriginData(
   std::move(callback).Run(status);
 }
 
-}  // namespace content
+}  // namespace storage

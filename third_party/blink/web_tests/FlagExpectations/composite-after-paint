@@ -60,6 +60,7 @@ compositing/layer-creation/overlap-animation-clipping.html [ Failure ]
 compositing/layer-creation/overlap-animation-container.html [ Failure ]
 compositing/layer-creation/overlap-animation.html [ Failure ]
 
+compositing/geometry/composited-in-columns.html [ Crash ]
 compositing/masks/mask-with-removed-filters.html [ Failure ]
 crbug.com/667946 compositing/overflow/scrolls-with-respect-to-nested.html [ Failure ]
 crbug.com/667946 compositing/overflow/scrolls-with-respect-to-transform.html [ Failure ]

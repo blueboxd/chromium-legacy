@@ -29,9 +29,9 @@
 #include "third_party/leveldatabase/src/include/leveldb/db.h"
 #include "third_party/leveldatabase/src/include/leveldb/write_batch.h"
 
-namespace {
+namespace storage {
 
-void PickleFromFileInfo(const storage::SandboxDirectoryDatabase::FileInfo& info,
+void PickleFromFileInfo(const SandboxDirectoryDatabase::FileInfo& info,
                         base::Pickle* pickle) {
   DCHECK(pickle);
   std::string data_path;
@@ -40,8 +40,8 @@ void PickleFromFileInfo(const storage::SandboxDirectoryDatabase::FileInfo& info,
       base::Time::FromDoubleT(floor(info.modification_time.ToDoubleT()));
   std::string name;
 
-  data_path = storage::FilePathToString(info.data_path);
-  name = storage::FilePathToString(base::FilePath(info.name));
+  data_path = FilePathToString(info.data_path);
+  name = FilePathToString(base::FilePath(info.name));
 
   pickle->WriteInt64(info.parent_id);
   pickle->WriteString(data_path);
@@ -50,7 +50,7 @@ void PickleFromFileInfo(const storage::SandboxDirectoryDatabase::FileInfo& info,
 }
 
 bool FileInfoFromPickle(const base::Pickle& pickle,
-                        storage::SandboxDirectoryDatabase::FileInfo* info) {
+                        SandboxDirectoryDatabase::FileInfo* info) {
   base::PickleIterator iter(pickle);
   std::string data_path;
   std::string name;
@@ -58,8 +58,8 @@ bool FileInfoFromPickle(const base::Pickle& pickle,
 
   if (iter.ReadInt64(&info->parent_id) && iter.ReadString(&data_path) &&
       iter.ReadString(&name) && iter.ReadInt64(&internal_time)) {
-    info->data_path = storage::StringToFilePath(data_path);
-    info->name = storage::StringToFilePath(name).value();
+    info->data_path = StringToFilePath(data_path);
+    info->name = StringToFilePath(name).value();
     info->modification_time = base::Time::FromInternalValue(internal_time);
     return true;
   }
@@ -97,17 +97,16 @@ enum class SandboxDirectoryRepairResult {
   DB_REPAIR_MAX
 };
 
-std::string GetChildLookupKey(
-    storage::SandboxDirectoryDatabase::FileId parent_id,
-    const base::FilePath::StringType& child_name) {
+std::string GetChildLookupKey(SandboxDirectoryDatabase::FileId parent_id,
+                              const base::FilePath::StringType& child_name) {
   std::string name;
-  name = storage::FilePathToString(base::FilePath(child_name));
+  name = FilePathToString(base::FilePath(child_name));
   return std::string(kChildLookupPrefix) + base::NumberToString(parent_id) +
          std::string(kChildLookupSeparator) + name;
 }
 
 std::string GetChildListingKeyPrefix(
-    storage::SandboxDirectoryDatabase::FileId parent_id) {
+    SandboxDirectoryDatabase::FileId parent_id) {
   return std::string(kChildLookupPrefix) + base::NumberToString(parent_id) +
          std::string(kChildLookupSeparator);
 }
@@ -120,8 +119,7 @@ const char* LastIntegerKey() {
   return kSandboxDirectoryLastIntegerKey;
 }
 
-std::string GetFileLookupKey(
-    storage::SandboxDirectoryDatabase::FileId file_id) {
+std::string GetFileLookupKey(SandboxDirectoryDatabase::FileId file_id) {
   return base::NumberToString(file_id);
 }
 
@@ -139,10 +137,10 @@ std::string GetFileLookupKey(
 //  - Directory structure is tree, i.e. connected and acyclic.
 class DatabaseCheckHelper {
  public:
-  using FileId = storage::SandboxDirectoryDatabase::FileId;
-  using FileInfo = storage::SandboxDirectoryDatabase::FileInfo;
+  using FileId = SandboxDirectoryDatabase::FileId;
+  using FileInfo = SandboxDirectoryDatabase::FileInfo;
 
-  DatabaseCheckHelper(storage::SandboxDirectoryDatabase* dir_db,
+  DatabaseCheckHelper(SandboxDirectoryDatabase* dir_db,
                       leveldb::DB* db,
                       const base::FilePath& path);
 
@@ -160,7 +158,7 @@ class DatabaseCheckHelper {
   bool ScanDirectory();
   bool ScanHierarchy();
 
-  storage::SandboxDirectoryDatabase* dir_db_;
+  SandboxDirectoryDatabase* dir_db_;
   leveldb::DB* db_;
   base::FilePath path_;
 
@@ -174,10 +172,9 @@ class DatabaseCheckHelper {
   FileId last_integer_;
 };
 
-DatabaseCheckHelper::DatabaseCheckHelper(
-    storage::SandboxDirectoryDatabase* dir_db,
-    leveldb::DB* db,
-    const base::FilePath& path)
+DatabaseCheckHelper::DatabaseCheckHelper(SandboxDirectoryDatabase* dir_db,
+                                         leveldb::DB* db,
+                                         const base::FilePath& path)
     : dir_db_(dir_db),
       db_(db),
       path_(path),
@@ -284,7 +281,7 @@ bool DatabaseCheckHelper::ScanDirectory() {
   // has a database entry.
   const base::FilePath kExcludes[] = {
       base::FilePath(kDirectoryDatabaseName),
-      base::FilePath(storage::FileSystemUsageCache::kUsageFileName),
+      base::FilePath(FileSystemUsageCache::kUsageFileName),
   };
 
   // Any path in |pending_directories| is relative to |path_|.
@@ -398,7 +395,7 @@ bool VerifyDataPath(const base::FilePath& data_path) {
   // See if it's not pointing to the special system paths.
   const base::FilePath kExcludes[] = {
       base::FilePath(kDirectoryDatabaseName),
-      base::FilePath(storage::FileSystemUsageCache::kUsageFileName),
+      base::FilePath(FileSystemUsageCache::kUsageFileName),
   };
   for (const auto& exclude : kExcludes) {
     if (data_path == exclude || exclude.IsParent(data_path))
@@ -406,10 +403,6 @@ bool VerifyDataPath(const base::FilePath& data_path) {
   }
   return true;
 }
-
-}  // namespace
-
-namespace storage {
 
 SandboxDirectoryDatabase::FileInfo::FileInfo() : parent_id(0) {}
 

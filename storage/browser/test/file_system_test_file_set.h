@@ -14,7 +14,7 @@
 
 // Common test data structures and test cases.
 
-namespace content {
+namespace storage {
 
 struct FileSystemTestCaseRecord {
   bool is_directory;
@@ -34,6 +34,6 @@ void SetUpOneFileSystemTestCase(const base::FilePath& root_path,
 // Creates the files and directories specified in kRegularTestCases.
 void SetUpRegularFileSystemTestCases(const base::FilePath& root_path);
 
-}  // namespace content
+}  // namespace storage
 
 #endif  // STORAGE_BROWSER_TEST_FILE_SYSTEM_TEST_FILE_SET_H_

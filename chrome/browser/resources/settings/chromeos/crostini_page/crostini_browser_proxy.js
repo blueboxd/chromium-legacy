@@ -85,6 +85,12 @@ cr.define('settings', function() {
 
     /** Show the container upgrade UI. */
     requestCrostiniContainerUpgradeView() {}
+
+    /**
+     * Request chrome send a crostini-upgrader-status-changed event with the
+     * current upgrader dialog status
+     */
+    requestCrostiniUpgraderDialogStatus() {}
   }
 
   /** @implements {settings.CrostiniBrowserProxy} */
@@ -157,6 +163,11 @@ cr.define('settings', function() {
     /** @override */
     requestCrostiniContainerUpgradeView() {
       chrome.send('requestCrostiniContainerUpgradeView');
+    }
+
+    /** @override */
+    requestCrostiniUpgraderDialogStatus() {
+      chrome.send('requestCrostiniUpgraderDialogStatus');
     }
   }
 

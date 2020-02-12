@@ -72,7 +72,7 @@ class QuotaReservationBuffer : public base::RefCounted<QuotaReservationBuffer> {
   base::WeakPtr<QuotaReservationManager> reservation_manager_;
 
   url::Origin origin_;
-  storage::FileSystemType type_;
+  FileSystemType type_;
 
   int64_t reserved_quota_;
 

@@ -4,6 +4,9 @@
 
 #include "chrome/browser/engagement/important_sites_usage_counter.h"
 
+#include <memory>
+#include <utility>
+
 #include "base/bind.h"
 #include "base/files/file_path.h"
 #include "base/files/file_util.h"
@@ -50,8 +53,8 @@ class ImportantSitesUsageCounterTest : public testing::Test {
     return quota_manager_.get();
   }
 
-  void RegisterClient(const std::vector<content::MockOriginData>& data) {
-    auto* client = new content::MockStorageClient(
+  void RegisterClient(const std::vector<storage::MockOriginData>& data) {
+    auto* client = new storage::MockStorageClient(
         quota_manager_->proxy(), data.data(), storage::QuotaClient::kFileSystem,
         data.size());
     quota_manager_->proxy()->RegisterClient(client);
@@ -105,7 +108,7 @@ TEST_F(ImportantSitesUsageCounterTest, PopulateUsage) {
   important_sites.push_back(std::move(i1));
   important_sites.push_back(std::move(i2));
 
-  const std::vector<content::MockOriginData> origins = {
+  const std::vector<storage::MockOriginData> origins = {
       {"http://example.com/", blink::mojom::StorageType::kTemporary, 1},
       {"https://example.com/", blink::mojom::StorageType::kTemporary, 2},
       {"https://maps.example.com/", blink::mojom::StorageType::kTemporary, 4},

@@ -9,7 +9,7 @@
 #include "base/stl_util.h"
 #include "net/cookies/cookie_util.h"
 
-namespace content {
+namespace storage {
 
 MockSpecialStoragePolicy::MockSpecialStoragePolicy() : all_unlimited_(false) {}
 
@@ -55,4 +55,4 @@ bool MockSpecialStoragePolicy::IsStorageDurable(const GURL& origin) {
 
 MockSpecialStoragePolicy::~MockSpecialStoragePolicy() = default;
 
-}  // namespace content
+}  // namespace storage

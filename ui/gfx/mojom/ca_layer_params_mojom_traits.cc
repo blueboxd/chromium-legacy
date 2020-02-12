@@ -17,7 +17,8 @@ StructTraits<gfx::mojom::CALayerParamsDataView, gfx::CALayerParams>::content(
   if (ca_layer_params.io_surface_mach_port) {
     DCHECK(!ca_layer_params.ca_context_id);
     return gfx::mojom::CALayerContent::NewIoSurfaceMachPort(
-        mojo::WrapMachPort(ca_layer_params.io_surface_mach_port.get()));
+        mojo::PlatformHandle(base::mac::RetainMachSendRight(
+            ca_layer_params.io_surface_mach_port.get())));
   }
 #endif
   return gfx::mojom::CALayerContent::NewCaContextId(
@@ -37,12 +38,11 @@ bool StructTraits<gfx::mojom::CALayerParamsDataView, gfx::CALayerParams>::Read(
       break;
     case gfx::mojom::CALayerContentDataView::Tag::IO_SURFACE_MACH_PORT:
 #if defined(OS_MACOSX) && !defined(OS_IOS)
-      mach_port_t io_surface_mach_port;
-      MojoResult unwrap_result = mojo::UnwrapMachPort(
-          content_data.TakeIoSurfaceMachPort(), &io_surface_mach_port);
-      if (unwrap_result != MOJO_RESULT_OK)
+      mojo::PlatformHandle platform_handle =
+          content_data.TakeIoSurfaceMachPort();
+      if (!platform_handle.is_mach_send())
         return false;
-      out->io_surface_mach_port.reset(io_surface_mach_port);
+      out->io_surface_mach_port.reset(platform_handle.ReleaseMachSendRight());
 #else
       return false;
 #endif

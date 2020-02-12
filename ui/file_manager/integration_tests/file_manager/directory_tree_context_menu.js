@@ -656,6 +656,51 @@
   };
 
   /**
+   * Tests that opening context menu in the rename input won't commit the
+   * renaming.
+   */
+  testcase.dirContextMenuForRenameInput = async () => {
+    // Open Files app on local downloads.
+    const appId =
+        await setupAndWaitUntilReady(RootPath.DOWNLOADS, [ENTRIES.photos], []);
+
+    // Navigate to the photos folder.
+    navigateWithDirectoryTree(appId, '/My files/Downloads/photos');
+
+    // Start renaming the photos folder.
+    clickDirectoryTreeContextMenuItem(appId, '/Downloads/photos', 'rename');
+
+    // Check: the renaming text input element should appear.
+    const textInput = '#directory-tree .tree-row[selected] input';
+    await remoteCall.waitForElement(appId, textInput);
+
+    // Type new file name.
+    await remoteCall.callRemoteTestUtil(
+        'inputText', appId, [textInput, 'NEW NAME']);
+
+    // Right click to show the context menu.
+    await remoteCall.waitAndRightClick(appId, textInput);
+
+    // Context menu must be visible.
+    const contextMenu = '#text-context-menu:not([hidden])';
+    await remoteCall.waitForElement(appId, contextMenu);
+
+    // Dismiss the context menu.
+    const escKey = [contextMenu, 'Escape', false, false, false];
+    await remoteCall.callRemoteTestUtil('fakeKeyDown', appId, escKey);
+
+    // Check: The rename input should be still be visible and with the same
+    // content.
+    const inputElement = await remoteCall.waitForElement(appId, textInput);
+    chrome.test.assertEq('NEW NAME', inputElement.value);
+
+    // Check: The rename input should be the focused element.
+    const focusedElement =
+        await remoteCall.callRemoteTestUtil('getActiveElement', appId, []);
+    chrome.test.assertEq(inputElement, focusedElement);
+  };
+
+  /**
    * Tests creating a folder with the context menu.
    */
   testcase.dirCreateWithContextMenu = () => {

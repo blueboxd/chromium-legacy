@@ -1275,6 +1275,7 @@ void HTMLSelectElement::RestoreFormControlState(const FormControlState& state) {
   }
 
   SetNeedsValidityCheck();
+  UpdateMenuListLabel(UpdateFromElement());
 }
 
 void HTMLSelectElement::ParseMultipleAttribute(const AtomicString& value) {

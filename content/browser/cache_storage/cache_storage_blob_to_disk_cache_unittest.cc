@@ -44,7 +44,7 @@ const int kCacheEntryIndex = 1;
 class TestCacheStorageBlobToDiskCache : public CacheStorageBlobToDiskCache {
  public:
   explicit TestCacheStorageBlobToDiskCache(
-      scoped_refptr<QuotaManagerProxy> quota_manager_proxy)
+      scoped_refptr<storage::QuotaManagerProxy> quota_manager_proxy)
       : CacheStorageBlobToDiskCache(quota_manager_proxy, url::Origin()) {}
 
   ~TestCacheStorageBlobToDiskCache() override = default;
@@ -132,11 +132,11 @@ class CacheStorageBlobToDiskCacheTest : public testing::Test {
   void InitQuotaManager() {
     EXPECT_TRUE(base_.CreateUniqueTempDir());
     base::FilePath base_dir = base_.GetPath().AppendASCII("filesystem");
-    quota_manager_ = base::MakeRefCounted<MockQuotaManager>(
+    quota_manager_ = base::MakeRefCounted<storage::MockQuotaManager>(
         false /* is_incognito */, base_dir,
         base::ThreadTaskRunnerHandle::Get().get(),
         nullptr /* special storage policy */);
-    quota_manager_proxy_ = base::MakeRefCounted<MockQuotaManagerProxy>(
+    quota_manager_proxy_ = base::MakeRefCounted<storage::MockQuotaManagerProxy>(
         quota_manager(), base::ThreadTaskRunnerHandle::Get().get());
   }
 
@@ -175,12 +175,13 @@ class CacheStorageBlobToDiskCacheTest : public testing::Test {
     callback_called_ = true;
   }
 
-  MockQuotaManager* quota_manager() {
-    return static_cast<MockQuotaManager*>(quota_manager_.get());
+  storage::MockQuotaManager* quota_manager() {
+    return static_cast<storage::MockQuotaManager*>(quota_manager_.get());
   }
 
-  MockQuotaManagerProxy* quota_manager_proxy() {
-    return static_cast<MockQuotaManagerProxy*>(quota_manager_proxy_.get());
+  storage::MockQuotaManagerProxy* quota_manager_proxy() {
+    return static_cast<storage::MockQuotaManagerProxy*>(
+        quota_manager_proxy_.get());
   }
 
   BrowserTaskEnvironment task_environment_;

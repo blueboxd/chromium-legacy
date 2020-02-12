@@ -23,7 +23,8 @@ class WaylandSurfaceGpu {
   virtual ~WaylandSurfaceGpu() {}
 
   // Tells the surface the result of the last swap of buffer with the
-  // |buffer_id|.
+  // |buffer_id|. After this callback, the previously (before |buffer_id|)
+  // submitted buffer may be reused.
   virtual void OnSubmission(uint32_t buffer_id,
                             const gfx::SwapResult& swap_result) = 0;
 

@@ -24,10 +24,7 @@
 
 #define FPL(x) FILE_PATH_LITERAL(x)
 
-using storage::FilePathToString;
-using storage::SandboxDirectoryDatabase;
-
-namespace content {
+namespace storage {
 
 namespace {
 const base::FilePath::CharType kDirectoryDatabaseName[] = FPL("Paths");
@@ -668,4 +665,4 @@ TEST_F(SandboxDirectoryDatabaseTest, TestRepairDatabase_MissingManifest) {
   EXPECT_TRUE(db()->IsFileSystemConsistent());
 }
 
-}  // namespace content
+}  // namespace storage

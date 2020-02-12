@@ -48,7 +48,7 @@ interface ChildProcess {
 
   // Requests the child process send its Mach task port to the caller.
   [EnableIf=is_mac]
-  GetTaskPort() => (handle task_port);
+  GetTaskPort() => (handle<platform> task_port);
 
   // Tells the child process to begin or end IPC message logging.
   [EnableIf=ipc_logging]

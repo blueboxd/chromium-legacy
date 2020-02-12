@@ -16,7 +16,7 @@
 #include "base/synchronization/lock.h"
 #include "content/common/child_process.mojom-forward.h"
 #include "content/common/content_export.h"
-#include "mojo/public/cpp/system/handle.h"
+#include "mojo/public/cpp/platform/platform_handle.h"
 
 namespace content {
 
@@ -51,7 +51,7 @@ class CONTENT_EXPORT ChildProcessTaskPortProvider : public base::PortProvider {
 
   // Callback for mojom::ChildProcess::GetTaskPort reply.
   void OnTaskPortReceived(base::ProcessHandle pid,
-                          mojo::ScopedHandle task_port);
+                          mojo::PlatformHandle task_port);
 
   // Event handler for |notification_source_|, invoked for
   // MACH_NOTIFY_DEAD_NAME.

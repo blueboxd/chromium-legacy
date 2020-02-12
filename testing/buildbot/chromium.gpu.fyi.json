@@ -158,7 +158,8 @@
       {
         "args": [
           "--use-gpu-in-tests",
-          "--test-launcher-retry-limit=0"
+          "--test-launcher-retry-limit=0",
+          "--no-xvfb"
         ],
         "merge": {
           "args": [],
@@ -207,7 +208,8 @@
       },
       {
         "args": [
-          "--test-launcher-retry-limit=0"
+          "--test-launcher-retry-limit=0",
+          "--no-xvfb"
         ],
         "merge": {
           "args": [],
@@ -518,7 +520,8 @@
       {
         "args": [
           "--use-gpu-in-tests",
-          "--test-launcher-retry-limit=0"
+          "--test-launcher-retry-limit=0",
+          "--no-xvfb"
         ],
         "merge": {
           "args": [],
@@ -567,7 +570,8 @@
       },
       {
         "args": [
-          "--test-launcher-retry-limit=0"
+          "--test-launcher-retry-limit=0",
+          "--no-xvfb"
         ],
         "merge": {
           "args": [],
@@ -7081,7 +7085,8 @@
       },
       {
         "args": [
-          "--test-launcher-retry-limit=0"
+          "--test-launcher-retry-limit=0",
+          "--no-xvfb"
         ],
         "merge": {
           "args": [],
@@ -7736,7 +7741,8 @@
       {
         "args": [
           "--use-gpu-in-tests",
-          "--test-launcher-retry-limit=0"
+          "--test-launcher-retry-limit=0",
+          "--no-xvfb"
         ],
         "merge": {
           "args": [],
@@ -7815,7 +7821,8 @@
       },
       {
         "args": [
-          "--test-launcher-retry-limit=0"
+          "--test-launcher-retry-limit=0",
+          "--no-xvfb"
         ],
         "merge": {
           "args": [],
@@ -8339,7 +8346,8 @@
       {
         "args": [
           "--use-gpu-in-tests",
-          "--test-launcher-retry-limit=0"
+          "--test-launcher-retry-limit=0",
+          "--no-xvfb"
         ],
         "merge": {
           "args": [],
@@ -8388,7 +8396,8 @@
       },
       {
         "args": [
-          "--test-launcher-retry-limit=0"
+          "--test-launcher-retry-limit=0",
+          "--no-xvfb"
         ],
         "merge": {
           "args": [],
@@ -8923,7 +8932,8 @@
       {
         "args": [
           "--use-gpu-in-tests",
-          "--test-launcher-retry-limit=0"
+          "--test-launcher-retry-limit=0",
+          "--no-xvfb"
         ],
         "merge": {
           "args": [],
@@ -8974,7 +8984,8 @@
       },
       {
         "args": [
-          "--test-launcher-retry-limit=0"
+          "--test-launcher-retry-limit=0",
+          "--no-xvfb"
         ],
         "merge": {
           "args": [],
@@ -9527,7 +9538,8 @@
       {
         "args": [
           "--use-gpu-in-tests",
-          "--test-launcher-retry-limit=0"
+          "--test-launcher-retry-limit=0",
+          "--no-xvfb"
         ],
         "merge": {
           "args": [],
@@ -9576,7 +9588,8 @@
       },
       {
         "args": [
-          "--test-launcher-retry-limit=0"
+          "--test-launcher-retry-limit=0",
+          "--no-xvfb"
         ],
         "merge": {
           "args": [],
@@ -10969,7 +10982,8 @@
       {
         "args": [
           "--test-launcher-batch-limit=400",
-          "--deqp-egl-display-type=angle-gl"
+          "--deqp-egl-display-type=angle-gl",
+          "--no-xvfb"
         ],
         "merge": {
           "args": [],
@@ -10999,7 +11013,8 @@
       {
         "args": [
           "--test-launcher-batch-limit=400",
-          "--deqp-egl-display-type=angle-gl"
+          "--deqp-egl-display-type=angle-gl",
+          "--no-xvfb"
         ],
         "merge": {
           "args": [],
@@ -11025,7 +11040,8 @@
       {
         "args": [
           "--deqp-egl-display-type=angle-vulkan",
-          "--test-launcher-batch-limit=400"
+          "--test-launcher-batch-limit=400",
+          "--no-xvfb"
         ],
         "merge": {
           "args": [],
@@ -11051,7 +11067,8 @@
       {
         "args": [
           "--test-launcher-batch-limit=400",
-          "--deqp-egl-display-type=angle-gl"
+          "--deqp-egl-display-type=angle-gl",
+          "--no-xvfb"
         ],
         "merge": {
           "args": [],
@@ -11077,7 +11094,8 @@
       {
         "args": [
           "--deqp-egl-display-type=angle-vulkan",
-          "--test-launcher-batch-limit=400"
+          "--test-launcher-batch-limit=400",
+          "--no-xvfb"
         ],
         "merge": {
           "args": [],
@@ -11103,7 +11121,8 @@
       {
         "args": [
           "--test-launcher-batch-limit=400",
-          "--deqp-egl-display-type=angle-gl"
+          "--deqp-egl-display-type=angle-gl",
+          "--no-xvfb"
         ],
         "merge": {
           "args": [],
@@ -11129,7 +11148,8 @@
       {
         "args": [
           "--deqp-egl-display-type=angle-vulkan",
-          "--test-launcher-batch-limit=400"
+          "--test-launcher-batch-limit=400",
+          "--no-xvfb"
         ],
         "merge": {
           "args": [],
@@ -11155,7 +11175,8 @@
       {
         "args": [
           "--test-launcher-batch-limit=400",
-          "--deqp-egl-display-type=angle-gl"
+          "--deqp-egl-display-type=angle-gl",
+          "--no-xvfb"
         ],
         "merge": {
           "args": [],
@@ -11181,7 +11202,8 @@
       {
         "args": [
           "--deqp-egl-display-type=angle-vulkan",
-          "--test-launcher-batch-limit=400"
+          "--test-launcher-batch-limit=400",
+          "--no-xvfb"
         ],
         "merge": {
           "args": [],
@@ -11207,7 +11229,8 @@
       {
         "args": [
           "--deqp-egl-display-type=angle-vulkan",
-          "--test-launcher-batch-limit=0"
+          "--test-launcher-batch-limit=0",
+          "--no-xvfb"
         ],
         "merge": {
           "args": [],
@@ -11232,7 +11255,8 @@
       {
         "args": [
           "--deqp-egl-display-type=angle-vulkan",
-          "--test-launcher-batch-limit=0"
+          "--test-launcher-batch-limit=0",
+          "--no-xvfb"
         ],
         "merge": {
           "args": [],
@@ -11258,7 +11282,8 @@
       {
         "args": [
           "--deqp-egl-display-type=angle-vulkan",
-          "--test-launcher-batch-limit=0"
+          "--test-launcher-batch-limit=0",
+          "--no-xvfb"
         ],
         "merge": {
           "args": [],
@@ -16255,7 +16280,8 @@
       {
         "args": [
           "--use-gpu-in-tests",
-          "--test-launcher-retry-limit=0"
+          "--test-launcher-retry-limit=0",
+          "--no-xvfb"
         ],
         "merge": {
           "args": [],
@@ -16279,7 +16305,8 @@
       },
       {
         "args": [
-          "--test-launcher-retry-limit=0"
+          "--test-launcher-retry-limit=0",
+          "--no-xvfb"
         ],
         "merge": {
           "args": [],
@@ -16474,7 +16501,8 @@
       {
         "args": [
           "--use-gpu-in-tests",
-          "--test-launcher-retry-limit=0"
+          "--test-launcher-retry-limit=0",
+          "--no-xvfb"
         ],
         "merge": {
           "args": [],
@@ -16498,7 +16526,8 @@
       },
       {
         "args": [
-          "--test-launcher-retry-limit=0"
+          "--test-launcher-retry-limit=0",
+          "--no-xvfb"
         ],
         "merge": {
           "args": [],

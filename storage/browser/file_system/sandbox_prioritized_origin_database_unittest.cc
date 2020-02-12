@@ -8,11 +8,7 @@
 #include "storage/browser/file_system/sandbox_origin_database.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
-using storage::SandboxOriginDatabase;
-using storage::SandboxOriginDatabaseInterface;
-using storage::SandboxPrioritizedOriginDatabase;
-
-namespace content {
+namespace storage {
 
 TEST(SandboxPrioritizedOriginDatabaseTest, BasicTest) {
   base::ScopedTempDir dir;
@@ -211,4 +207,4 @@ TEST(SandboxPrioritizedOriginDatabaseTest, MigrationTest) {
   EXPECT_TRUE(base::PathExists(old_dir_db_path2));
 }
 
-}  // namespace content
+}  // namespace storage

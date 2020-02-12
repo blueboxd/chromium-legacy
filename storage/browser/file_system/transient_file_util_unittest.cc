@@ -3,6 +3,7 @@
 // found in the LICENSE file.
 
 #include <memory>
+#include <string>
 
 #include "base/files/file_path.h"
 #include "base/files/file_util.h"
@@ -18,9 +19,7 @@
 #include "storage/browser/test/test_file_system_context.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
-using storage::FileSystemURL;
-
-namespace content {
+namespace storage {
 
 class TransientFileUtilTest : public testing::Test {
  public:
@@ -30,7 +29,7 @@ class TransientFileUtilTest : public testing::Test {
   void SetUp() override {
     file_system_context_ = CreateFileSystemContextForTesting(
         nullptr, base::FilePath(FILE_PATH_LITERAL("dummy")));
-    transient_file_util_.reset(new storage::TransientFileUtil);
+    transient_file_util_ = std::make_unique<TransientFileUtil>();
 
     ASSERT_TRUE(data_dir_.CreateUniqueTempDir());
   }
@@ -43,36 +42,32 @@ class TransientFileUtilTest : public testing::Test {
   void CreateAndRegisterTemporaryFile(
       FileSystemURL* file_url,
       base::FilePath* file_path,
-      storage::IsolatedContext::ScopedFSHandle* filesystem) {
+      IsolatedContext::ScopedFSHandle* filesystem) {
     EXPECT_TRUE(base::CreateTemporaryFileInDir(data_dir_.GetPath(), file_path));
-    storage::IsolatedContext* isolated_context =
-        storage::IsolatedContext::GetInstance();
+    IsolatedContext* isolated_context = IsolatedContext::GetInstance();
     std::string name = "tmp";
     *filesystem = isolated_context->RegisterFileSystemForPath(
-        storage::kFileSystemTypeForTransientFile, std::string(), *file_path,
-        &name);
+        kFileSystemTypeForTransientFile, std::string(), *file_path, &name);
     ASSERT_TRUE(filesystem->is_valid());
     base::FilePath virtual_path =
         isolated_context->CreateVirtualRootPath(filesystem->id())
             .AppendASCII(name);
     *file_url = file_system_context_->CreateCrackedFileSystemURL(
-        GURL("http://foo"), storage::kFileSystemTypeIsolated, virtual_path);
+        GURL("http://foo"), kFileSystemTypeIsolated, virtual_path);
   }
 
-  std::unique_ptr<storage::FileSystemOperationContext> NewOperationContext() {
-    return std::make_unique<storage::FileSystemOperationContext>(
+  std::unique_ptr<FileSystemOperationContext> NewOperationContext() {
+    return std::make_unique<FileSystemOperationContext>(
         file_system_context_.get());
   }
 
-  storage::FileSystemFileUtil* file_util() {
-    return transient_file_util_.get();
-  }
+  FileSystemFileUtil* file_util() { return transient_file_util_.get(); }
 
  private:
   base::test::TaskEnvironment task_environment_;
   base::ScopedTempDir data_dir_;
-  scoped_refptr<storage::FileSystemContext> file_system_context_;
-  std::unique_ptr<storage::TransientFileUtil> transient_file_util_;
+  scoped_refptr<FileSystemContext> file_system_context_;
+  std::unique_ptr<TransientFileUtil> transient_file_util_;
 
   DISALLOW_COPY_AND_ASSIGN(TransientFileUtilTest);
 };
@@ -80,7 +75,7 @@ class TransientFileUtilTest : public testing::Test {
 TEST_F(TransientFileUtilTest, TransientFile) {
   FileSystemURL temp_url;
   base::FilePath temp_path;
-  storage::IsolatedContext::ScopedFSHandle filesystem;
+  IsolatedContext::ScopedFSHandle filesystem;
 
   CreateAndRegisterTemporaryFile(&temp_url, &temp_path, &filesystem);
 
@@ -95,7 +90,7 @@ TEST_F(TransientFileUtilTest, TransientFile) {
 
   // Create a snapshot file.
   {
-    storage::ScopedFile scoped_file = file_util()->CreateSnapshotFile(
+    ScopedFile scoped_file = file_util()->CreateSnapshotFile(
         NewOperationContext().get(), temp_url, &error, &file_info, &path);
     ASSERT_EQ(base::File::FILE_OK, error);
     ASSERT_EQ(temp_path, path);
@@ -120,4 +115,4 @@ TEST_F(TransientFileUtilTest, TransientFile) {
                                      &file_info, &path));
 }
 
-}  // namespace content
+}  // namespace storage

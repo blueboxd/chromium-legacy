@@ -582,14 +582,14 @@ class CacheStorageCacheTest : public testing::Test {
       temp_dir_path_ = temp_dir_.GetPath();
     }
 
-    quota_policy_ = new MockSpecialStoragePolicy;
-    mock_quota_manager_ = new MockQuotaManager(
+    quota_policy_ = base::MakeRefCounted<storage::MockSpecialStoragePolicy>();
+    mock_quota_manager_ = base::MakeRefCounted<storage::MockQuotaManager>(
         is_incognito, temp_dir_path_, base::ThreadTaskRunnerHandle::Get().get(),
         quota_policy_.get());
     mock_quota_manager_->SetQuota(
         Origin(), blink::mojom::StorageType::kTemporary, 1024 * 1024 * 100);
 
-    quota_manager_proxy_ = new MockQuotaManagerProxy(
+    quota_manager_proxy_ = base::MakeRefCounted<storage::MockQuotaManagerProxy>(
         mock_quota_manager_.get(), base::ThreadTaskRunnerHandle::Get().get());
 
     CreateRequests(blob_storage_context);
@@ -983,9 +983,9 @@ class CacheStorageCacheTest : public testing::Test {
   base::ScopedTempDir temp_dir_;
   BrowserTaskEnvironment task_environment_;
   TestBrowserContext browser_context_;
-  scoped_refptr<MockSpecialStoragePolicy> quota_policy_;
-  scoped_refptr<MockQuotaManager> mock_quota_manager_;
-  scoped_refptr<MockQuotaManagerProxy> quota_manager_proxy_;
+  scoped_refptr<storage::MockSpecialStoragePolicy> quota_policy_;
+  scoped_refptr<storage::MockQuotaManager> mock_quota_manager_;
+  scoped_refptr<storage::MockQuotaManagerProxy> quota_manager_proxy_;
   scoped_refptr<BlobStorageContextWrapper> blob_storage_context_;
   std::unique_ptr<MockLegacyCacheStorage> mock_cache_storage_;
 

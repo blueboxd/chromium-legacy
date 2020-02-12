@@ -17,7 +17,7 @@
 #include "base/stl_util.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
-namespace content {
+namespace storage {
 
 const FileSystemTestCaseRecord kRegularFileSystemTestCases[] = {
     {true, FILE_PATH_LITERAL("dir a"), 0},
@@ -68,4 +68,4 @@ void SetUpRegularFileSystemTestCases(const base::FilePath& root_path) {
   }
 }
 
-}  // namespace content
+}  // namespace storage

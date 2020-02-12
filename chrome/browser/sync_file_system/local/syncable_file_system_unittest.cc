@@ -23,12 +23,12 @@
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/leveldatabase/leveldb_chrome.h"
 
-using content::SandboxFileSystemTestHelper;
 using storage::FileSystemContext;
 using storage::FileSystemOperationContext;
 using storage::FileSystemURL;
 using storage::FileSystemURLSet;
 using storage::QuotaManager;
+using storage::SandboxFileSystemTestHelper;
 
 namespace sync_file_system {
 

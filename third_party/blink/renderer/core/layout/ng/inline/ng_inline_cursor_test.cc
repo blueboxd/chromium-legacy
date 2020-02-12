@@ -85,7 +85,8 @@ class NGInlineCursorTest : public NGLayoutTest,
     if (cursor.Current().IsText())
       return cursor.CurrentText().ToString().StripWhiteSpace();
 
-    if (const LayoutObject* layout_object = cursor.CurrentLayoutObject()) {
+    if (const LayoutObject* layout_object =
+            cursor.Current().GetLayoutObject()) {
       if (const Element* element =
               DynamicTo<Element>(layout_object->GetNode())) {
         if (const AtomicString& id = element->GetIdAttribute())

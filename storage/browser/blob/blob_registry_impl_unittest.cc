@@ -6,6 +6,9 @@
 
 #include <limits>
 #include <memory>
+#include <string>
+#include <utility>
+#include <vector>
 
 #include "base/bind.h"
 #include "base/bind_helpers.h"
@@ -64,9 +67,8 @@ class BlobRegistryImplTest : public testing::Test {
     context_ = std::make_unique<BlobStorageContext>(
         data_dir_.GetPath(), data_dir_.GetPath(),
         base::CreateTaskRunner({base::ThreadPool(), base::MayBlock()}));
-    auto storage_policy =
-        base::MakeRefCounted<content::MockSpecialStoragePolicy>();
-    file_system_context_ = base::MakeRefCounted<storage::FileSystemContext>(
+    auto storage_policy = base::MakeRefCounted<MockSpecialStoragePolicy>();
+    file_system_context_ = base::MakeRefCounted<FileSystemContext>(
         base::ThreadTaskRunnerHandle::Get().get(),
         base::ThreadTaskRunnerHandle::Get().get(),
         nullptr /* external_mount_points */, storage_policy.get(),
@@ -86,7 +88,7 @@ class BlobRegistryImplTest : public testing::Test {
     mojo::core::SetDefaultProcessErrorCallback(base::BindRepeating(
         &BlobRegistryImplTest::OnBadMessage, base::Unretained(this)));
 
-    storage::BlobStorageLimits limits;
+    BlobStorageLimits limits;
     limits.max_ipc_memory_size = kTestBlobStorageIPCThresholdBytes;
     limits.max_shared_memory_size = kTestBlobStorageMaxSharedMemoryBytes;
     limits.max_bytes_data_item_size = kTestBlobStorageMaxBytesDataItemSize;
@@ -187,7 +189,7 @@ class BlobRegistryImplTest : public testing::Test {
   base::ScopedTempDir data_dir_;
   base::test::TaskEnvironment task_environment_;
   std::unique_ptr<BlobStorageContext> context_;
-  scoped_refptr<storage::FileSystemContext> file_system_context_;
+  scoped_refptr<FileSystemContext> file_system_context_;
   std::unique_ptr<BlobRegistryImpl> registry_impl_;
   mojo::Remote<blink::mojom::BlobRegistry> registry_;
   MockBlobRegistryDelegate* delegate_ptr_;

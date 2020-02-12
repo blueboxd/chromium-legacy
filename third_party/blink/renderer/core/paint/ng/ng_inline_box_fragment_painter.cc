@@ -207,7 +207,7 @@ void NGInlineBoxFragmentPainterBase::ComputeFragmentOffsetOnLine(
         continue;
       }
     }
-    const NGPhysicalBoxFragment* box_fragment = cursor.CurrentBoxFragment();
+    const NGPhysicalBoxFragment* box_fragment = cursor.Current().BoxFragment();
     DCHECK(box_fragment);
     if (before_self)
       before += NGFragment(writing_mode, *box_fragment).InlineSize();

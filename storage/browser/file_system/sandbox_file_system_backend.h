@@ -50,9 +50,8 @@ class COMPONENT_EXPORT(STORAGE_BROWSER) SandboxFileSystemBackend
       FileSystemContext* context,
       base::File::Error* error_code) const override;
   bool SupportsStreaming(const FileSystemURL& url) const override;
-  bool HasInplaceCopyImplementation(
-      storage::FileSystemType type) const override;
-  std::unique_ptr<storage::FileStreamReader> CreateFileStreamReader(
+  bool HasInplaceCopyImplementation(FileSystemType type) const override;
+  std::unique_ptr<FileStreamReader> CreateFileStreamReader(
       const FileSystemURL& url,
       int64_t offset,
       int64_t max_bytes_to_read,

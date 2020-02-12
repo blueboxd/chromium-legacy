@@ -120,7 +120,7 @@ void SandboxFileStreamWriter::DidCreateSnapshotFile(
     base::File::Error file_error,
     const base::File::Info& file_info,
     const base::FilePath& platform_path,
-    scoped_refptr<storage::ShareableFileReference> file_ref) {
+    scoped_refptr<ShareableFileReference> file_ref) {
   DCHECK(!file_ref.get());
 
   if (CancelIfRequested())
@@ -162,7 +162,7 @@ void SandboxFileStreamWriter::DidCreateSnapshotFile(
         file_system_context_->default_file_task_runner(), platform_path,
         initial_offset_, FileStreamWriter::OPEN_EXISTING_FILE);
   }
-  storage::QuotaManagerProxy* quota_manager_proxy =
+  QuotaManagerProxy* quota_manager_proxy =
       file_system_context_->quota_manager_proxy();
   if (!quota_manager_proxy) {
     // If we don't have the quota manager or the requested filesystem type

@@ -292,6 +292,7 @@ are declared in tools/grit/grit_rule.gni.
       <!-- Settings specific strings -->
       <if expr="not is_android">
         <part file="settings_strings.grdp" />
+        <part file="shared_settings_strings.grdp"/>
       </if>
 
       <!-- MD Extensions specific strings -->

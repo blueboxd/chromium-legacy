@@ -78,4 +78,9 @@ class TestCrostiniBrowserProxy extends TestBrowserProxy {
   requestCrostiniContainerUpgradeView() {
     this.methodCalled('requestCrostiniContainerUpgradeView');
   }
+
+  /** @override */
+  requestCrostiniUpgraderDialogStatus() {
+    cr.webUIListenerCallback('crostini-upgrader-status-changed', false);
+  }
 }

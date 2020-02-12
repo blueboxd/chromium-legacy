@@ -29,13 +29,7 @@
 #include "testing/gtest/include/gtest/gtest.h"
 #include "url/origin.h"
 
-using content::AsyncFileTestHelper;
-using storage::FileSystemContext;
-using storage::FileSystemFileStreamReader;
-using storage::FileSystemType;
-using storage::FileSystemURL;
-
-namespace content {
+namespace storage {
 
 namespace {
 
@@ -60,11 +54,10 @@ class FileSystemFileStreamReaderTest : public testing::Test {
     file_system_context_ =
         CreateFileSystemContextForTesting(nullptr, temp_dir_.GetPath());
 
-    file_system_context_->OpenFileSystem(
-        url::Origin::Create(GURL(kURLOrigin)),
-        storage::kFileSystemTypeTemporary,
-        storage::OPEN_FILE_SYSTEM_CREATE_IF_NONEXISTENT,
-        base::BindOnce(&OnOpenFileSystem));
+    file_system_context_->OpenFileSystem(url::Origin::Create(GURL(kURLOrigin)),
+                                         kFileSystemTypeTemporary,
+                                         OPEN_FILE_SYSTEM_CREATE_IF_NONEXISTENT,
+                                         base::BindOnce(&OnOpenFileSystem));
     base::RunLoop().RunUntilIdle();
 
     WriteFile(kTestFileName, kTestData, kTestDataSize,
@@ -74,7 +67,7 @@ class FileSystemFileStreamReaderTest : public testing::Test {
   void TearDown() override { base::RunLoop().RunUntilIdle(); }
 
  protected:
-  storage::FileSystemFileStreamReader* CreateFileReader(
+  FileSystemFileStreamReader* CreateFileReader(
       const std::string& file_name,
       int64_t initial_offset,
       const base::Time& expected_modification_time) {
@@ -94,7 +87,7 @@ class FileSystemFileStreamReaderTest : public testing::Test {
     FileSystemURL url = GetFileSystemURL(file_name);
 
     ASSERT_EQ(base::File::FILE_OK,
-              content::AsyncFileTestHelper::CreateFileWithData(
+              AsyncFileTestHelper::CreateFileWithData(
                   file_system_context_.get(), url, buf, buf_size));
 
     base::File::Info file_info;
@@ -114,7 +107,7 @@ class FileSystemFileStreamReaderTest : public testing::Test {
 
   FileSystemURL GetFileSystemURL(const std::string& file_name) {
     return file_system_context_->CreateCrackedFileSystemURL(
-        GURL(kURLOrigin), storage::kFileSystemTypeTemporary,
+        GURL(kURLOrigin), kFileSystemTypeTemporary,
         base::FilePath().AppendASCII(file_name));
   }
 
@@ -254,4 +247,4 @@ TEST_F(FileSystemFileStreamReaderTest, DeleteWithUnfinishedRead) {
   reader.reset();
 }
 
-}  // namespace content
+}  // namespace storage

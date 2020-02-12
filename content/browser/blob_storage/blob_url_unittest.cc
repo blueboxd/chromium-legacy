@@ -111,8 +111,8 @@ class BlobURLTest : public testing::Test {
 
   void SetUpFileSystem() {
     // Prepare file system.
-    file_system_context_ =
-        CreateFileSystemContextForTesting(nullptr, temp_dir_.GetPath());
+    file_system_context_ = storage::CreateFileSystemContextForTesting(
+        nullptr, temp_dir_.GetPath());
 
     file_system_context_->OpenFileSystem(
         url::Origin::Create(GURL(kFileSystemURLOrigin)), kFileSystemType,
@@ -149,12 +149,12 @@ class BlobURLTest : public testing::Test {
             base::FilePath().AppendASCII(filename));
 
     ASSERT_EQ(base::File::FILE_OK,
-              content::AsyncFileTestHelper::CreateFileWithData(
+              storage::AsyncFileTestHelper::CreateFileWithData(
                   file_system_context_.get(), url, buf, buf_size));
 
     base::File::Info file_info;
     ASSERT_EQ(base::File::FILE_OK,
-              content::AsyncFileTestHelper::GetMetadata(
+              storage::AsyncFileTestHelper::GetMetadata(
                   file_system_context_.get(), url, &file_info));
     if (modification_time)
       *modification_time = file_info.last_modified;

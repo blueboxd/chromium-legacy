@@ -41,7 +41,7 @@ class RecentDiskSourceTest : public testing::Test {
 
     ASSERT_TRUE(temp_dir_.CreateUniqueTempDir());
 
-    file_system_context_ = content::CreateFileSystemContextForTesting(
+    file_system_context_ = storage::CreateFileSystemContextForTesting(
         nullptr, temp_dir_.GetPath());
 
     mount_point_name_ =

@@ -88,7 +88,8 @@ class DeviceTarget(target.Target):
     self._host = host
     self._fuchsia_out_dir = os.path.expanduser(fuchsia_out_dir)
     self._node_name = node_name
-    self._os_check = os_check,
+    self._os_check = os_check
+    self._amber_repo = None
 
     if self._host and self._node_name:
       raise Exception('Only one of "--host" or "--name" can be specified.')
@@ -217,13 +218,18 @@ class DeviceTarget(target.Target):
 
 
   def _GetAmberRepo(self):
-    if self._fuchsia_out_dir:
-      # Deploy to an already-booted device running a local Fuchsia build.
-      return amber_repo.ExternalAmberRepo(
-          os.path.join(self._fuchsia_out_dir, 'amber-files'))
-    else:
-      # Pave a Zedbootable device.
-      return amber_repo.ManagedAmberRepo(self)
+    if not self._amber_repo:
+      if self._fuchsia_out_dir:
+        # Deploy to an already-booted device running a local Fuchsia build.
+        self._amber_repo = amber_repo.ExternalAmberRepo(
+            os.path.join(self._fuchsia_out_dir, 'amber-files'))
+      else:
+        # Create an ephemeral Amber repo, then start both "pm serve" as well as
+        # the bootserver.
+        self._amber_repo = amber_repo.ManagedAmberRepo(self)
+
+    return self._amber_repo
+
 
   def __ProvisionDevice(self):
     """Netboots a device with Fuchsia. If |_node_name| is set, then only a

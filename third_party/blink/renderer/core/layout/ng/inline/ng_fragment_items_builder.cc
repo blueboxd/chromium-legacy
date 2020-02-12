@@ -81,8 +81,6 @@ void NGFragmentItemsBuilder::AddItems(Child* child_begin, Child* child_end) {
       if (child.layout_result) {
         const NGPhysicalBoxFragment& box =
             To<NGPhysicalBoxFragment>(child.layout_result->PhysicalFragment());
-        // Floats are in the fragment tree, not in the fragment item list.
-        DCHECK(!box.IsFloating());
         item = std::make_unique<NGFragmentItem>(box, child.ResolvedDirection());
       } else {
         DCHECK(child.inline_item);
@@ -99,6 +97,7 @@ void NGFragmentItemsBuilder::AddItems(Child* child_begin, Child* child_end) {
         ++child_iter;
         continue;
       }
+      DCHECK(!item->IsFloating());
 
       // Children of inline boxes are flattened and added to |items_|, with the
       // count of descendant items to preserve the tree structure.

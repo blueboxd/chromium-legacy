@@ -4,9 +4,11 @@
 
 #include "storage/browser/test/mock_quota_manager_proxy.h"
 
+#include <utility>
+
 #include "base/single_thread_task_runner.h"
 
-namespace content {
+namespace storage {
 
 MockQuotaManagerProxy::MockQuotaManagerProxy(
     MockQuotaManager* quota_manager,
@@ -67,4 +69,4 @@ MockQuotaManagerProxy::~MockQuotaManagerProxy() {
   DCHECK(!registered_client_);
 }
 
-}  // namespace content
+}  // namespace storage

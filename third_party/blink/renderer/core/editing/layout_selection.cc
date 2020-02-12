@@ -664,8 +664,9 @@ LayoutSelectionStatus LayoutSelection::ComputeSelectionStatus(
   // We don't paint selection on ellipsis.
   if (cursor.Current().IsEllipsis())
     return {0, 0, SelectSoftLineBreak::kNotSelected};
-  const unsigned start_offset = cursor.CurrentTextStartOffset();
-  const unsigned end_offset = cursor.CurrentTextEndOffset();
+  const NGTextOffset offset = cursor.Current().TextOffset();
+  const unsigned start_offset = offset.start;
+  const unsigned end_offset = offset.end;
   switch (GetSelectionStateFor(cursor)) {
     case SelectionState::kStart: {
       const unsigned start_in_block = paint_range_->start_offset.value();

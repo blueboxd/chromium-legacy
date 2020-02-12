@@ -18,6 +18,7 @@
 #include "storage/browser/test/async_file_test_helper.h"
 #include "storage/browser/test/test_file_system_context.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "url/gurl.h"
 #include "url/origin.h"
 
 namespace arc {
@@ -56,7 +57,8 @@ class FileStreamForwarderTest : public testing::Test {
 
     // Prepare a 64KB file in the file system.
     url_ = context_->CreateCrackedFileSystemURL(
-        GURL(kURLOrigin), storage::kFileSystemTypeTemporary,
+        url::Origin::Create(GURL(kURLOrigin)),
+        storage::kFileSystemTypeTemporary,
         base::FilePath().AppendASCII("test.dat"));
 
     constexpr int kTestDataSize = 1024 * 64;
@@ -179,7 +181,8 @@ TEST_F(FileStreamForwarderTest, ForwardTooMuch2) {
 
 TEST_F(FileStreamForwarderTest, InvalidURL) {
   storage::FileSystemURL invalid_url = context_->CreateCrackedFileSystemURL(
-      GURL("http://invalid-origin/"), storage::kFileSystemTypeTemporary,
+      url::Origin::Create(GURL("http://invalid-origin/")),
+      storage::kFileSystemTypeTemporary,
       base::FilePath().AppendASCII("invalid.dat"));
   constexpr int kOffset = 0;
   const int kSize = test_data_.size();

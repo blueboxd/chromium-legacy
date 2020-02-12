@@ -130,10 +130,13 @@ void DarkModeFilter::UpdateSettings(const DarkModeSettings& new_settings) {
 
 Color DarkModeFilter::InvertColorIfNeeded(const Color& color,
                                           ElementRole role) {
+  if (!IsDarkModeActive())
+    return color;
+
   if (role_override_.has_value())
     role = role_override_.value();
 
-  if (IsDarkModeActive() && ShouldApplyToColor(color, role))
+  if (ShouldApplyToColor(color, role))
     return color_filter_->InvertColor(color);
   return color;
 }
@@ -151,11 +154,11 @@ void DarkModeFilter::ApplyToImageFlagsIfNeeded(const FloatRect& src_rect,
 base::Optional<cc::PaintFlags> DarkModeFilter::ApplyToFlagsIfNeeded(
     const cc::PaintFlags& flags,
     ElementRole role) {
-  if (role_override_.has_value())
-    role = role_override_.value();
-
   if (!IsDarkModeActive())
     return base::nullopt;
+
+  if (role_override_.has_value())
+    role = role_override_.value();
 
   cc::PaintFlags dark_mode_flags = flags;
   if (flags.HasShader()) {

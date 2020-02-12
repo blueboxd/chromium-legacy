@@ -319,26 +319,20 @@ inline NGBoxFragmentPainter::NGBoxFragmentPainter(
       DCHECK_EQ(&paint_fragment->PhysicalFragment(), &box);
     if (box_item)
       DCHECK_EQ(box_item->BoxFragment(), &box);
-  } else if (box.IsBlockLevel()) {
+  } else if (!box.IsInlineFormattingContext()) {
     // We may not have |paint_fragment_| nor |box_item_|.
-  } else if (box.ChildrenInline()) {
+  } else {
     // If no children, there maybe or may not be NGPaintFragment.
     // TODO(kojii): To be investigated if this correct or should be fixed.
     if (!box.Children().empty()) {
-      if (!box.GetLayoutObject()->PaintBlockedByDisplayLock(
+      if (!box.GetLayoutObject() ||
+          !box.GetLayoutObject()->PaintBlockedByDisplayLock(
               DisplayLockLifecycleTarget::kChildren)) {
         DCHECK(paint_fragment || box.HasItems());
       }
       if (paint_fragment)
         DCHECK_EQ(&paint_fragment->PhysicalFragment(), &box);
     }
-  } else if (box.IsColumnBox() ||
-             (box.GetLayoutObject()->SlowFirstChild() &&
-              box.GetLayoutObject()->SlowFirstChild()->IsLayoutFlowThread())) {
-    // TODO(kojii): NGPaintFragment for multicol has non-inline children
-    // (kColumnBox). Could this be regular box fragments?
-  } else {
-    DCHECK(!paint_fragment);
   }
 #endif
 }

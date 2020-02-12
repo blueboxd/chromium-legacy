@@ -385,6 +385,13 @@ interface RemoteFrameHost {
   // requests in-flight.
   CapturePaintPreviewOfCrossProcessSubframe(
     gfx.mojom.Rect clip_rect, mojo_base.mojom.UnguessableToken guid);
+
+  // Sent by a parent frame to notify its child that the renderer has determined
+  // the DOM subtree it represents is inert and should no longer process input
+  // events.
+  //
+  // https://html.spec.whatwg.org/multipage/interaction.html#inert
+  SetIsInert(bool inert);
 };
 
 // Implemented in Blink, this interface defines frame-specific methods that will

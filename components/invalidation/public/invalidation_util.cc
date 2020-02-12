@@ -13,15 +13,7 @@
 #include "base/values.h"
 #include "components/invalidation/public/invalidation.h"
 #include "components/invalidation/public/invalidation_handler.h"
-#include "components/invalidation/public/invalidation_object_id.h"
 #include "google/cacheinvalidation/include/types.h"
-
-namespace {
-
-const char kSourceKey[] = "source";
-const char kNameKey[] = "name";
-
-}  // namespace
 
 namespace syncer {
 
@@ -78,67 +70,6 @@ bool ObjectIdFromValue(const base::DictionaryValue& value,
 std::string ObjectIdToString(const invalidation::ObjectId& object_id) {
   std::string str;
   base::JSONWriter::Write(*ObjectIdToValue(object_id), &str);
-  return str;
-}
-
-bool InvalidationObjectIdLessThan::operator()(
-    const invalidation::InvalidationObjectId& lhs,
-    const invalidation::InvalidationObjectId& rhs) const {
-  return (lhs.source() < rhs.source()) ||
-         (lhs.source() == rhs.source() && lhs.name() < rhs.name());
-}
-
-std::unique_ptr<base::DictionaryValue> InvalidationObjectIdToValue(
-    const invalidation::InvalidationObjectId& object_id) {
-  std::unique_ptr<base::DictionaryValue> value(new base::DictionaryValue());
-  value->SetString(kNameKey, object_id.name());
-  value->SetInteger(kSourceKey, object_id.source());
-  return value;
-}
-
-std::string SerializeInvalidationObjectId(
-    const invalidation::InvalidationObjectId& object_id) {
-  std::unique_ptr<base::DictionaryValue> value =
-      InvalidationObjectIdToValue(object_id);
-  std::string serialized_id;
-  JSONStringValueSerializer serializer(&serialized_id);
-  serializer.Serialize(*value);
-  return serialized_id;
-}
-
-bool DeserializeInvalidationObjectId(const std::string& serialized_id,
-                                     invalidation::InvalidationObjectId* id) {
-  JSONStringValueDeserializer deserializer(serialized_id);
-  int error_code;
-  std::string error_msg;
-  std::unique_ptr<base::Value> value =
-      deserializer.Deserialize(&error_code, &error_msg);
-  base::DictionaryValue* dict = nullptr;
-
-  if (!value->GetAsDictionary(&dict)) {
-    DLOG(WARNING) << "Unable to get dictionary";
-    return false;
-  }
-
-  int source = 0;
-  if (!dict->GetInteger(kSourceKey, &source)) {
-    DLOG(WARNING) << "Unable to deserialize source";
-    return false;
-  }
-
-  std::string name;
-  if (!dict->GetString(kNameKey, &name)) {
-    DLOG(WARNING) << "Unable to deserialize name";
-    return false;
-  }
-  id->Init(source, name);
-  return true;
-}
-
-std::string InvalidationObjectIdToString(
-    const invalidation::InvalidationObjectId& object_id) {
-  std::string str;
-  base::JSONWriter::Write(*InvalidationObjectIdToValue(object_id), &str);
   return str;
 }
 

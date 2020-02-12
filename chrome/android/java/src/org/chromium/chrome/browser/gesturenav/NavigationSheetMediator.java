@@ -109,8 +109,11 @@ class NavigationSheetMediator {
                 FaviconHelper.FaviconImageCallback imageCallback =
                         (bitmap, iconUrl) -> onFaviconAvailable(pageUrl, bitmap);
                 if (!pageUrl.equals(UrlConstants.HISTORY_URL)) {
-                    mFaviconHelper.getLocalFaviconImageForURL(
-                            Profile.getLastUsedProfile(), pageUrl, mFaviconSize, imageCallback);
+                    // TODO (https://crbug.com/1048632): Use the current profile (i.e., regular
+                    // profile or incognito profile) instead of always using regular profile. It
+                    // works correctly now, but it is not safe.
+                    mFaviconHelper.getLocalFaviconImageForURL(Profile.getLastUsedRegularProfile(),
+                            pageUrl, mFaviconSize, imageCallback);
                     requestedUrls.add(pageUrl);
                 } else {
                     mModelList.get(i).model.set(ItemProperties.ICON, mHistoryIcon);

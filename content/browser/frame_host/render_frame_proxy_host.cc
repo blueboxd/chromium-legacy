@@ -638,6 +638,14 @@ void RenderFrameProxyHost::CapturePaintPreviewOfCrossProcessSubframe(
                                                              rfh);
 }
 
+void RenderFrameProxyHost::SetIsInert(bool inert) {
+  cross_process_frame_connector_->SetIsInert(inert);
+}
+
+bool RenderFrameProxyHost::IsInertForTesting() {
+  return cross_process_frame_connector_->IsInert();
+}
+
 void RenderFrameProxyHost::OnPrintCrossProcessSubframe(const gfx::Rect& rect,
                                                        int document_cookie) {
   RenderFrameHostImpl* rfh = frame_tree_node_->current_frame_host();

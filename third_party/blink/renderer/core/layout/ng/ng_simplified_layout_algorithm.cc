@@ -36,6 +36,8 @@ NGSimplifiedLayoutAlgorithm::NGSimplifiedLayoutAlgorithm(
   const NGPhysicalBoxFragment& physical_fragment =
       To<NGPhysicalBoxFragment>(result.PhysicalFragment());
 
+  container_builder_.SetIsInlineFormattingContext(
+      Node().IsInlineFormattingContextRoot());
   container_builder_.SetStyleVariant(physical_fragment.StyleVariant());
   container_builder_.SetIsNewFormattingContext(
       physical_fragment.IsBlockFormattingContextRoot());

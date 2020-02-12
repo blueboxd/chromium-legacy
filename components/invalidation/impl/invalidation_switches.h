@@ -11,7 +11,6 @@
 namespace invalidation {
 namespace switches {
 
-extern const base::Feature kFCMInvalidationsConservativeEnabling;
 extern const base::Feature kFCMInvalidationsStartOnceActiveAccountAvailable;
 extern const base::Feature kFCMInvalidationsForSyncDontCheckVersion;
 extern const base::Feature kTiclInvalidationsStartInvalidatorOnActiveHandler;

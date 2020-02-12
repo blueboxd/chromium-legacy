@@ -754,10 +754,6 @@ void RenderFrameProxy::UpdateRemoteViewportIntersection(
   Send(new FrameHostMsg_UpdateViewportIntersection(routing_id_, new_state));
 }
 
-void RenderFrameProxy::SetIsInert(bool inert) {
-  Send(new FrameHostMsg_SetIsInert(routing_id_, inert));
-}
-
 void RenderFrameProxy::UpdateRenderThrottlingStatus(bool is_throttled,
                                                     bool subtree_throttled) {
   Send(new FrameHostMsg_UpdateRenderThrottlingStatus(routing_id_, is_throttled,

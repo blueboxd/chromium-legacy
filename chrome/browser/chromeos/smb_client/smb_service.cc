@@ -26,6 +26,7 @@
 #include "chrome/browser/chromeos/smb_client/smb_kerberos_credentials_updater.h"
 #include "chrome/browser/chromeos/smb_client/smb_provider.h"
 #include "chrome/browser/chromeos/smb_client/smb_service_helper.h"
+#include "chrome/browser/chromeos/smb_client/smb_share_info.h"
 #include "chrome/browser/chromeos/smb_client/smb_url.h"
 #include "chrome/browser/platform_util.h"
 #include "chrome/browser/ui/webui/chromeos/smb_shares/smb_credentials_dialog.h"
@@ -335,8 +336,9 @@ void SmbService::Mount(const file_system_provider::MountOptions& options,
     provider_options.file_system_id =
         CreateFileSystemIdForUser(share_path, full_username);
   }
-  MountInternal(provider_options, parsed_url, options.display_name, username,
-                workgroup, password, use_kerberos, save_credentials,
+  SmbShareInfo info(parsed_url, options.display_name, username, workgroup,
+                    use_kerberos);
+  MountInternal(provider_options, info, password, save_credentials,
                 false /* skip_connect */,
                 base::BindOnce(&SmbService::MountInternalDone,
                                base::Unretained(this), std::move(callback),
@@ -366,12 +368,8 @@ void SmbService::MountInternalDone(MountResponse callback,
 
 void SmbService::MountInternal(
     const file_system_provider::MountOptions& options,
-    const SmbUrl& share_url,
-    const std::string& display_name,
-    const std::string& username,
-    const std::string& workgroup,
+    const SmbShareInfo& info,
     const std::string& password,
-    bool use_kerberos,
     bool save_credentials,
     bool skip_connect,
     MountInternalCallback callback) {
@@ -382,11 +380,11 @@ void SmbService::MountInternal(
   if (IsSmbFsEnabled()) {
     // TODO(amistry): Pass resolved host address to smbfs.
     SmbFsShare::MountOptions smbfs_options;
-    smbfs_options.username = username;
-    smbfs_options.workgroup = workgroup;
+    smbfs_options.username = info.username();
+    smbfs_options.workgroup = info.workgroup();
     smbfs_options.password = password;
     smbfs_options.allow_ntlm = IsNTLMAuthenticationEnabled();
-    if (use_kerberos) {
+    if (info.use_kerberos()) {
       if (user->IsActiveDirectoryUser()) {
         smbfs_options.kerberos_options =
             base::make_optional<SmbFsShare::KerberosOptions>(
@@ -404,8 +402,9 @@ void SmbService::MountInternal(
       }
     }
 
-    std::unique_ptr<SmbFsShare> mount = std::make_unique<SmbFsShare>(
-        profile_, share_url.ToString(), display_name, smbfs_options);
+    std::unique_ptr<SmbFsShare> mount =
+        std::make_unique<SmbFsShare>(profile_, info.share_url().ToString(),
+                                     info.display_name(), smbfs_options);
     SmbFsShare* raw_mount = mount.get();
     const std::string mount_id = mount->mount_id();
     smbfs_shares_[mount_id] = std::move(mount);
@@ -414,15 +413,16 @@ void SmbService::MountInternal(
   } else {
     // If using kerberos, the hostname should not be resolved since kerberos
     // service tickets are keyed on hosname.
-    const SmbUrl url =
-        use_kerberos ? share_url : share_finder_->GetResolvedUrl(share_url);
+    const SmbUrl url = info.use_kerberos()
+                           ? info.share_url()
+                           : share_finder_->GetResolvedUrl(info.share_url());
 
     SmbProviderClient::MountOptions smb_mount_options;
-    smb_mount_options.original_path = share_url.ToString();
-    smb_mount_options.username = username;
-    smb_mount_options.workgroup = workgroup;
+    smb_mount_options.original_path = info.share_url().ToString();
+    smb_mount_options.username = info.username();
+    smb_mount_options.workgroup = info.workgroup();
     smb_mount_options.ntlm_enabled = IsNTLMAuthenticationEnabled();
-    smb_mount_options.save_password = save_credentials && !use_kerberos;
+    smb_mount_options.save_password = save_credentials && !info.use_kerberos();
     smb_mount_options.account_hash = user->username_hash();
     smb_mount_options.skip_connect = skip_connect;
     GetSmbProviderClient()->Mount(
@@ -652,10 +652,11 @@ void SmbService::MountPreconfiguredShare(const SmbUrl& share_url) {
   mount_options.persistent = false;
 
   // Note: Preconfigured shares are mounted without credentials.
+  SmbShareInfo info(share_url, mount_options.display_name, "" /* username */,
+                    "" /* workgroup */, false /* use_kerberos */);
   MountInternal(
-      mount_options, share_url, mount_options.display_name, "" /* username */,
-      "" /* workgroup */, "" /* password */, false /* use_kerberos */,
-      false /* save_credentials */, true /* skip_connect */,
+      mount_options, info, "" /* password */, false /* save_credentials */,
+      true /* skip_connect */,
       base::BindOnce(&SmbService::OnMountPreconfiguredShareDone, AsWeakPtr()));
 }
 

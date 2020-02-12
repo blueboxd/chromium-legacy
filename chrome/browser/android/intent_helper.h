@@ -19,9 +19,6 @@ void SendEmail(const base::string16& data_email,
                const base::string16& data_chooser_title,
                const base::string16& data_file_to_attach);
 
-// Triggers an intent to open the date and time settings.
-void OpenDateAndTimeSettings();
-
 }  // namespace android
 }  // namespace chrome
 

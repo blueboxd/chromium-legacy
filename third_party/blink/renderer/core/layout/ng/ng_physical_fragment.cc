@@ -100,7 +100,7 @@ String StringForBoxType(const NGPhysicalFragment& fragment) {
     result.Append("fieldset-container");
   }
   if (fragment.IsBox() &&
-      static_cast<const NGPhysicalBoxFragment&>(fragment).ChildrenInline()) {
+      To<NGPhysicalBoxFragment>(fragment).IsInlineFormattingContext()) {
     if (result.length())
       result.Append(" ");
     result.Append("children-inline");
@@ -446,6 +446,7 @@ const Vector<NGInlineItem>& NGPhysicalFragment::InlineItemsOfContainingBlock()
   // modification. Unify them.
   DCHECK(block_flow);
   NGBlockNode block_node = NGBlockNode(block_flow);
+  DCHECK(block_node.IsInlineFormattingContextRoot());
   DCHECK(block_node.CanUseNewLayout());
   NGLayoutInputNode node = block_node.FirstChild();
 

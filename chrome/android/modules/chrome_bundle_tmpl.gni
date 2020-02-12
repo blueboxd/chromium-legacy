@@ -82,6 +82,9 @@ template("chrome_bundle") {
                            ])
     command_line_flags_file = "chrome-command-line"
     proguard_enabled = !is_java_debug
+    if (proguard_enabled) {
+      version_code = invoker.version_code
+    }
     enable_language_splits = true
     extra_modules = _extra_modules
     system_image_locale_whitelist = android_apk_locales

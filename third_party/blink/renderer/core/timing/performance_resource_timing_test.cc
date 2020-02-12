@@ -12,8 +12,12 @@ class PerformanceResourceTimingTest : public testing::Test {
  protected:
   AtomicString GetNextHopProtocol(const AtomicString& alpn_negotiated_protocol,
                                   const AtomicString& connection_info) {
-    return PerformanceResourceTiming::GetNextHopProtocol(
-        alpn_negotiated_protocol, connection_info);
+    mojom::blink::ResourceTimingInfo info;
+    info.allow_timing_details = true;
+    PerformanceResourceTiming timing(
+        info, base::TimeTicks(), /*initiator_type=*/"",
+        mojo::PendingReceiver<mojom::blink::WorkerTimingContainer>());
+    return timing.GetNextHopProtocol(alpn_negotiated_protocol, connection_info);
   }
 };
 

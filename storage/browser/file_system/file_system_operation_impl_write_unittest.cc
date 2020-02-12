@@ -30,6 +30,7 @@
 #include "storage/common/file_system/file_system_util.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "url/gurl.h"
+#include "url/origin.h"
 
 namespace storage {
 
@@ -102,7 +103,7 @@ class FileSystemOperationImplWriteTest : public testing::Test {
 
   FileSystemURL URLForPath(const base::FilePath& path) const {
     return file_system_context_->CreateCrackedFileSystemURL(
-        GURL(kOrigin), kFileSystemType, path);
+        url::Origin::Create(GURL(kOrigin)), kFileSystemType, path);
   }
 
   // Callback function for recording test results.

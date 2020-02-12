@@ -15,9 +15,6 @@ const int kDefaultInstanceIDTokenTTLSeconds = 28 * 24 * 60 * 60;
 
 }  // namespace
 
-const base::Feature kFCMInvalidationsConservativeEnabling = {
-    "FCMInvalidationsConservativeEnabling", base::FEATURE_ENABLED_BY_DEFAULT};
-
 // This feature affects only Android.
 const base::Feature kFCMInvalidationsStartOnceActiveAccountAvailable = {
     "FCMInvalidationsStartOnceActiveAccountAvailable",

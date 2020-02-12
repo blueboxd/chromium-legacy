@@ -174,11 +174,13 @@ void GenerateTestFiles(storage::BlobStorageContext* blob_storage_context,
   OpenFileSystem(fs_context, extension_url, storage::kFileSystemTypePersistent);
 
   storage::FileSystemURL fs_temp_url = fs_context->CreateCrackedFileSystemURL(
-      extension_url, storage::kFileSystemTypeTemporary, path);
+      url::Origin::Create(extension_url), storage::kFileSystemTypeTemporary,
+      path);
 
   storage::FileSystemURL fs_persistent_url =
-      fs_context->CreateCrackedFileSystemURL(
-          extension_url, storage::kFileSystemTypePersistent, path);
+      fs_context->CreateCrackedFileSystemURL(url::Origin::Create(extension_url),
+                                             storage::kFileSystemTypePersistent,
+                                             path);
 
   storage::ScopedTextBlob blob1(blob_storage_context, "blob-id:success1",
                                 "Hello, world!\n");
@@ -228,10 +230,12 @@ void VerifyTestFilesMigrated(content::StoragePartition* new_partition,
 
   storage::FileSystemURL fs_temp_url =
       new_fs_context->CreateCrackedFileSystemURL(
-          extension_url, storage::kFileSystemTypeTemporary, path);
+          url::Origin::Create(extension_url), storage::kFileSystemTypeTemporary,
+          path);
   storage::FileSystemURL fs_persistent_url =
       new_fs_context->CreateCrackedFileSystemURL(
-          extension_url, storage::kFileSystemTypePersistent, path);
+          url::Origin::Create(extension_url),
+          storage::kFileSystemTypePersistent, path);
 
   VerifyFileContents(new_fs_context, fs_temp_url);
   VerifyFileContents(new_fs_context, fs_persistent_url);

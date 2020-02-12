@@ -87,8 +87,7 @@ base::FilePath SandboxFileSystemTestHelper::GetUsageCachePath() const {
 
 FileSystemURL SandboxFileSystemTestHelper::CreateURL(
     const base::FilePath& path) const {
-  return file_system_context_->CreateCrackedFileSystemURL(origin_.GetURL(),
-                                                          type_, path);
+  return file_system_context_->CreateCrackedFileSystemURL(origin_, type_, path);
 }
 
 int64_t SandboxFileSystemTestHelper::GetCachedOriginUsage() const {

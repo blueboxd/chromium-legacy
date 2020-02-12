@@ -364,7 +364,7 @@ scoped_refptr<const NGLayoutResult> NGBlockLayoutAlgorithm::Layout() {
   // Inline children require an inline child layout context to be
   // passed between siblings. We want to stack-allocate that one, but
   // only on demand, as it's quite big.
-  if (Node().ChildrenInline() && Node().FirstChild().IsInline())
+  if (Node().IsInlineFormattingContextRoot())
     result = LayoutWithInlineChildLayoutContext();
   else
     result = Layout(nullptr);
@@ -435,6 +435,10 @@ inline scoped_refptr<const NGLayoutResult> NGBlockLayoutAlgorithm::Layout(
     border_scrollbar_padding_ += ComputeIntrinsicPadding(
         ConstraintSpace(), Style(), container_builder_.Scrollbar());
   }
+
+  DCHECK_EQ(!!inline_child_layout_context,
+            Node().IsInlineFormattingContextRoot());
+  container_builder_.SetIsInlineFormattingContext(inline_child_layout_context);
 
   if (ConstraintSpace().HasBlockFragmentation()) {
     container_builder_.SetHasBlockFragmentation();
@@ -2010,7 +2014,7 @@ void NGBlockLayoutAlgorithm::SetFragmentainerOutOfSpace(
 }
 
 bool NGBlockLayoutAlgorithm::FinalizeForFragmentation() {
-  if (Node().ChildrenInline() && !early_break_) {
+  if (Node().IsInlineFormattingContextRoot() && !early_break_) {
     if (container_builder_.DidBreak() || first_overflowing_line_) {
       if (first_overflowing_line_ &&
           first_overflowing_line_ < container_builder_.LineCount()) {

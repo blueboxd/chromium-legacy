@@ -154,6 +154,7 @@ class CONTENT_EXPORT RenderFrameProxyHost
   void CapturePaintPreviewOfCrossProcessSubframe(
       const gfx::Rect& clip_rect,
       const base::UnguessableToken& guid) override;
+  void SetIsInert(bool inert) override;
 
   // Returns associated remote for the content::mojom::RenderFrameProxy Mojo
   // interface.
@@ -167,6 +168,7 @@ class CONTENT_EXPORT RenderFrameProxyHost
   void DisableAutoResize();
 
   blink::AssociatedInterfaceProvider* GetRemoteAssociatedInterfacesTesting();
+  bool IsInertForTesting();
 
  private:
   // IPC Message handlers.

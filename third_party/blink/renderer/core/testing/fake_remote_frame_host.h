@@ -28,6 +28,7 @@ class FakeRemoteFrameHost : public mojom::blink::RemoteFrameHost {
   void CapturePaintPreviewOfCrossProcessSubframe(
       const blink::WebRect& clip_rect,
       const base::UnguessableToken& guid) override;
+  void SetIsInert(bool inert) override;
 
  private:
   void BindFrameHostReceiver(mojo::ScopedInterfaceEndpointHandle handle);

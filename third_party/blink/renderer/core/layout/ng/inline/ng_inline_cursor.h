@@ -26,6 +26,7 @@ class LayoutUnit;
 class NGFragmentItem;
 class NGFragmentItems;
 class NGInlineBreakToken;
+class NGInlineCursor;
 class NGPaintFragment;
 class NGPhysicalBoxFragment;
 class Node;
@@ -122,6 +123,31 @@ class CORE_EXPORT NGInlineCursorPosition {
   // overflow of this object (e.g. when not clipped,) in the local coordinate.
   const PhysicalRect InkOverflow() const;
   const PhysicalRect SelfInkOverflow() const;
+
+  // Returns start/end of offset in text content of current text fragment.
+  // It is error when this cursor doesn't point to text fragment.
+  NGTextOffset TextOffset() const;
+  unsigned TextStartOffset() const { return TextOffset().start; }
+  unsigned TextEndOffset() const { return TextOffset().end; }
+
+  // Returns text of the current position. It is error to call other than
+  // text.
+  StringView Text(const NGInlineCursor& cursor) const;
+
+  // Returns |ShapeResultView| of the current position. It is error to call
+  // other than text.
+  const ShapeResultView* TextShapeResult() const;
+
+  // Returns bidi level of current position. It is error to call other than
+  // text and atomic inline. It is also error to call |IsGeneratedTextType()|.
+  UBiDiLevel BidiLevel() const;
+  // Returns text direction of current text or atomic inline. It is error to
+  // call at other than text or atomic inline. Note: <span> doesn't have
+  // reserved direction.
+  TextDirection ResolvedDirection() const;
+  // Returns text direction of current line. It is error to call at other than
+  // line.
+  TextDirection BaseDirection() const;
 
  private:
   const NGPaintFragment* paint_fragment_ = nullptr;
@@ -227,32 +253,10 @@ class CORE_EXPORT NGInlineCursor {
   LayoutObject* CurrentMutableLayoutObject() const {
     return Current().GetMutableLayoutObject();
   }
-  // Returns text direction of current line. It is error to call at other than
-  // line.
-  TextDirection CurrentBaseDirection() const;
-
-  // Returns bidi level of current position. It is error to call other than
-  // text and atomic inline. It is also error to call |IsGeneratedTextType()|.
-  UBiDiLevel CurrentBidiLevel() const;
-
-  // Returns text direction of current text or atomic inline. It is error to
-  // call at other than text or atomic inline. Note: <span> doesn't have
-  // reserved direction.
-  TextDirection CurrentResolvedDirection() const;
-
-  // Returns start/end of offset in text content of current text fragment.
-  // It is error when this cursor doesn't point to text fragment.
-  NGTextOffset CurrentTextOffset() const;
-  unsigned CurrentTextStartOffset() const { return CurrentTextOffset().start; }
-  unsigned CurrentTextEndOffset() const { return CurrentTextOffset().end; }
 
   // Returns text of the current position. It is error to call other than
   // text.
-  StringView CurrentText() const;
-
-  // Returns |ShapeResultView| of the current position. It is error to call
-  // other than text.
-  const ShapeResultView* CurrentTextShapeResult() const;
+  StringView CurrentText() const { return Current().Text(*this); }
 
   // The layout box of text in (start, end) range in local coordinate.
   // Start and end offsets must be between |CurrentTextStartOffset()| and
@@ -376,6 +380,12 @@ class CORE_EXPORT NGInlineCursor {
 
   // TODO(kojii): Add more variations as needed, NextSibling,
   // NextSkippingChildren, Previous, etc.
+
+#if DCHECK_IS_ON()
+  void CheckValid(const NGInlineCursorPosition& position) const;
+#else
+  void CheckValid(const NGInlineCursorPosition&) const {}
+#endif
 
  private:
   // True if current position is part of culled inline box |layout_inline|.

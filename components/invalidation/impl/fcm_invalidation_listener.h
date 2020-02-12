@@ -15,7 +15,6 @@
 #include "components/invalidation/impl/per_user_topic_subscription_manager.h"
 #include "components/invalidation/impl/unacked_invalidation_set.h"
 #include "components/invalidation/public/ack_handler.h"
-#include "components/invalidation/public/invalidation_object_id.h"
 #include "components/invalidation/public/invalidation_util.h"
 #include "components/invalidation/public/invalidator_state.h"
 #include "services/network/public/mojom/url_loader_factory.mojom.h"

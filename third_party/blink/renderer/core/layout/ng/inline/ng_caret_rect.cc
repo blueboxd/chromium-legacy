@@ -33,7 +33,7 @@ PhysicalRect ComputeLocalCaretRectByBoxSide(const NGInlineCursor& cursor,
       cursor.Current().GetLayoutObject()->GetDocument().View();
   LayoutUnit caret_width = frame_view->CaretWidth();
 
-  const bool is_ltr = IsLtr(cursor.CurrentResolvedDirection());
+  const bool is_ltr = IsLtr(cursor.Current().ResolvedDirection());
   LayoutUnit caret_left;
   if (is_ltr != (position_type == NGCaretPositionType::kBeforeBox)) {
     if (is_horizontal)
@@ -55,8 +55,8 @@ PhysicalRect ComputeLocalCaretRectByBoxSide(const NGInlineCursor& cursor,
 PhysicalRect ComputeLocalCaretRectAtTextOffset(const NGInlineCursor& cursor,
                                                unsigned offset) {
   DCHECK(cursor.Current().IsText());
-  DCHECK_GE(offset, cursor.CurrentTextStartOffset());
-  DCHECK_LE(offset, cursor.CurrentTextEndOffset());
+  DCHECK_GE(offset, cursor.Current().TextStartOffset());
+  DCHECK_LE(offset, cursor.Current().TextEndOffset());
 
   const LocalFrameView* frame_view =
       cursor.Current().GetLayoutObject()->GetDocument().View();

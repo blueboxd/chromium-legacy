@@ -71,8 +71,37 @@ class CORE_EXPORT NGPhysicalBoxFragment final
   }
 
   bool HasSelfPaintingLayer() const;
-  bool ChildrenInline() const { return children_inline_; }
-  bool IsBlockLevel() const { return is_block_level_; }
+
+  // Return true if this is either a container that establishes an inline
+  // formatting context, or if it's non-atomic inline content participating in
+  // one. Empty blocks don't establish an inline formatting context.
+  //
+  // The return value from this method is undefined and irrelevant if the object
+  // establishes a different type of formatting context than block/inline, such
+  // as table or flexbox.
+  //
+  // Example:
+  // <div>                                       <!-- false -->
+  //   <div>                                     <!-- true -->
+  //     <div style="float:left;"></div>         <!-- false -->
+  //     <div style="float:left;">               <!-- true -->
+  //       xxx                                   <!-- true -->
+  //     </div>
+  //     <div style="float:left;">               <!-- false -->
+  //       <div style="float:left;"></div>       <!-- false -->
+  //     </div>
+  //     <span>                                  <!-- true -->
+  //       xxx                                   <!-- true -->
+  //       <span style="display:inline-block;">  <!-- false -->
+  //         <div></div>                         <!-- false -->
+  //       </span>
+  //       <span style="display:inline-block;">  <!-- true -->
+  //         xxx                                 <!-- true -->
+  //       </span>
+  //       <span style="display:inline-flex;">   <!-- N/A -->
+  bool IsInlineFormattingContext() const {
+    return is_inline_formatting_context_;
+  }
 
   PhysicalRect ScrollableOverflow() const;
   PhysicalRect ScrollableOverflowFromChildren() const;

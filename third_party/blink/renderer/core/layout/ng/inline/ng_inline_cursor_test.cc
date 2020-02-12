@@ -116,7 +116,7 @@ class NGInlineCursorTest : public NGLayoutTest,
     StringBuilder result;
     result.Append(ToDebugString(cursor));
     result.Append(':');
-    result.AppendNumber(cursor.CurrentBidiLevel());
+    result.AppendNumber(cursor.Current().BidiLevel());
     return result.ToString();
   }
 };

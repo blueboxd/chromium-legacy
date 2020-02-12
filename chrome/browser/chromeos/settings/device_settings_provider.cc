@@ -16,7 +16,7 @@
 #include "base/json/json_reader.h"
 #include "base/logging.h"
 #include "base/macros.h"
-#include "base/metrics/histogram_macros.h"
+#include "base/metrics/histogram_functions.h"
 #include "base/stl_util.h"
 #include "base/syslog_logging.h"
 #include "base/threading/thread_restrictions.h"
@@ -1157,6 +1157,8 @@ bool DeviceSettingsProvider::MitigateMissingPolicy() {
   LOG(ERROR) << "Corruption of the policy data has been detected."
              << "Switching to \"safe-mode\" policies until the owner logs in "
              << "to regenerate the policy data.";
+  base::UmaHistogramBoolean("Enterprise.DeviceSettings.MissingPolicyMitigated",
+                            true);
 
   device_settings_.Clear();
   device_settings_.mutable_allow_new_users()->set_allow_new_users(true);
@@ -1206,6 +1208,8 @@ void DeviceSettingsProvider::UpdateAndProceedStoring() {
 
 bool DeviceSettingsProvider::UpdateFromService() {
   bool settings_loaded = false;
+  base::UmaHistogramEnumeration("Enterprise.DeviceSettings.UpdatedStatus",
+                                device_settings_service_->status());
   switch (device_settings_service_->status()) {
     case DeviceSettingsService::STORE_SUCCESS: {
       const em::PolicyData* policy_data =

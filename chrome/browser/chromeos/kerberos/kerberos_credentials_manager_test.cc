@@ -67,6 +67,9 @@ const int kOneAccount = 1;
 const int kTwoAccounts = 2;
 const int kThreeAccounts = 3;
 
+// Account key for the kerberos.accounts pref.
+constexpr char kKeyPrincipal[] = "principal";
+
 // Fake observer used to test notifications sent by KerberosCredentialsManager
 // on accounts changes.
 class FakeKerberosCredentialsManagerObserver
@@ -150,8 +153,7 @@ class KerberosCredentialsManagerTest : public testing::Test {
 
   void SetPref(const char* name, base::Value value) {
     local_state_.Get()->SetManagedPref(
-        prefs::kKerberosEnabled,
-        std::make_unique<base::Value>(std::move(value)));
+        name, std::make_unique<base::Value>(std::move(value)));
   }
 
  protected:
@@ -663,6 +665,57 @@ TEST_F(KerberosCredentialsManagerTest, RemoveAccountFailsUnknownAccount) {
   EXPECT_EQ(kNormalizedPrincipal, mgr_->GetActiveAccount());
 }
 
+// All accounts are wiped when prefs::KerberosEnabled is turned off.
+TEST_F(KerberosCredentialsManagerTest, UpdateEnabledFromPrefKerberosDisabled) {
+  // Starting with Kerberos enabled.
+  SetPref(prefs::kKerberosEnabled, base::Value(true));
+  EXPECT_TRUE(mgr_->IsKerberosEnabled());
+
+  mgr_->AddAccountAndAuthenticate(kPrincipal, kUnmanaged, kPassword,
+                                  kDontRememberPassword, kConfig,
+                                  kAllowExisting, GetResultCallback());
+  mgr_->AddAccountAndAuthenticate(kOtherPrincipal, kManaged, kPassword,
+                                  kDontRememberPassword, kConfig,
+                                  kAllowExisting, GetResultCallback());
+
+  WaitAndVerifyResult({kerberos::ERROR_NONE, kerberos::ERROR_NONE},
+                      kOneNotification, kTwoAccounts);
+
+  EXPECT_EQ(2u, ListAccounts().size());
+  EXPECT_EQ(kNormalizedPrincipal, mgr_->GetActiveAccount());
+
+  SetPref(prefs::kKerberosEnabled, base::Value(false));
+
+  EXPECT_FALSE(mgr_->IsKerberosEnabled());
+  EXPECT_EQ(0u, ListAccounts().size());
+  EXPECT_TRUE(mgr_->GetActiveAccount().empty());
+}
+
+// Managed accounts are restored when prefs::KerberosEnabled is turned on.
+TEST_F(KerberosCredentialsManagerTest, UpdateEnabledFromPrefKerberosEnabled) {
+  base::Value managed_account_1(base::Value::Type::DICTIONARY);
+  base::Value managed_account_2(base::Value::Type::DICTIONARY);
+
+  managed_account_1.SetStringKey(kKeyPrincipal, kPrincipal);
+  managed_account_2.SetStringKey(kKeyPrincipal, kOtherPrincipal);
+
+  base::Value managed_accounts(base::Value::Type::LIST);
+  managed_accounts.Append(std::move(managed_account_1));
+  managed_accounts.Append(std::move(managed_account_2));
+
+  SetPref(prefs::kKerberosAccounts, std::move(managed_accounts));
+
+  EXPECT_FALSE(mgr_->IsKerberosEnabled());
+  EXPECT_EQ(0u, ListAccounts().size());
+  EXPECT_TRUE(mgr_->GetActiveAccount().empty());
+
+  SetPref(prefs::kKerberosEnabled, base::Value(true));
+
+  EXPECT_TRUE(mgr_->IsKerberosEnabled());
+  EXPECT_EQ(2u, ListAccounts().size());
+  EXPECT_EQ(kNormalizedPrincipal, mgr_->GetActiveAccount());
+}
+
 // TODO(https://crbug.com/952251): Add more tests
 // - ClearAccounts
 //     + Normalization like in AddAccountAndAuthenticate
@@ -701,11 +754,6 @@ TEST_F(KerberosCredentialsManagerTest, RemoveAccountFailsUnknownAccount) {
 //     signal
 //     + Calls kerberos_ticket_expiry_notification::Show() if the active
 //       principal matches.
-// - UpdateEnabledFromPref()
-//     + Gets called then prefs::KerberosEnabled changes.
-//     + If it's switched off, all accounts are wiped.
-//     + If it's switched on, managed accounts are restored
-//       (see UpdateAccountsFromPref())
 // - UpdateRememberPasswordEnabledFromPref()
 //     + Gets called then prefs::kKerberosRememberPasswordEnabled changes.
 //     + If it's switched off, all remembered unmanaged passwords are removed.

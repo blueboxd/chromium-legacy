@@ -68,7 +68,7 @@ class NGPhysicalFragmentCollectorBase {
     DCHECK(fragment.IsContainer());
     DCHECK(fragment.IsInline() || fragment.IsLineBox() ||
            (fragment.IsBlockFlow() &&
-            To<NGPhysicalBoxFragment>(fragment).ChildrenInline()));
+            To<NGPhysicalBoxFragment>(fragment).IsInlineFormattingContext()));
 
     for (const auto& child :
          To<NGPhysicalContainerFragment>(fragment).Children()) {

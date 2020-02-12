@@ -434,8 +434,8 @@ void NGPaintFragment::PopulateDescendants(CreateContext* parent_context) {
   scoped_refptr<NGPaintFragment>* last_child_ptr = &first_child_;
 
   auto* box_physical_fragment = DynamicTo<NGPhysicalBoxFragment>(fragment);
-  bool children_are_inline =
-      !box_physical_fragment || box_physical_fragment->ChildrenInline();
+  bool is_inline_fc = !box_physical_fragment ||
+                      box_physical_fragment->IsInlineFormattingContext();
 
   for (const NGLink& child_fragment : container.Children()) {
     child_fragment->CheckType();
@@ -450,7 +450,7 @@ void NGPaintFragment::PopulateDescendants(CreateContext* parent_context) {
     scoped_refptr<NGPaintFragment> child = CreateOrReuse(
         child_fragment.get(), child_fragment.Offset(), &child_context);
 
-    if (children_are_inline) {
+    if (is_inline_fc) {
       DCHECK(!child_fragment->IsOutOfFlowPositioned());
       if (child_fragment->IsText() || child_fragment->IsInlineBox() ||
           child_fragment->IsAtomicInline()) {
@@ -1047,7 +1047,9 @@ PositionWithAffinity NGPaintFragment::PositionForPointInInlineFormattingContext(
     const PhysicalOffset& point) const {
   DCHECK(PhysicalFragment().IsBlockFlow());
   DCHECK(PhysicalFragment().IsBox());
-  DCHECK(To<NGPhysicalBoxFragment>(PhysicalFragment()).ChildrenInline());
+  DCHECK(To<NGPhysicalBoxFragment>(PhysicalFragment())
+             .GetLayoutObject()
+             ->ChildrenInline());
 
   const LogicalOffset logical_point = point.ConvertToLogical(
       Style().GetWritingMode(), Style().Direction(), Size(),
@@ -1126,7 +1128,6 @@ PositionWithAffinity NGPaintFragment::PositionForPoint(
     // We current fall back to legacy for block formatting contexts, so we
     // should reach here only for inline formatting contexts.
     // TODO(xiaochengh): Do not fall back.
-    DCHECK(To<NGPhysicalBoxFragment>(PhysicalFragment()).ChildrenInline());
     return PositionForPointInInlineFormattingContext(point);
   }
 

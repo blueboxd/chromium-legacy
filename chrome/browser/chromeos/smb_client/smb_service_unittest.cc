@@ -57,6 +57,7 @@ constexpr char kTestPassword[] = "my_secret_password";
 constexpr char kTestDomain[] = "EXAMPLE.COM";
 constexpr char kSharePath[] = "\\\\server\\foobar";
 constexpr char kMountPath[] = "smb://server/foobar";
+constexpr char kDisplayName[] = "My Share";
 
 void SaveMountResult(SmbMountResult* out, SmbMountResult result) {
   *out = result;
@@ -131,6 +132,8 @@ class SmbServiceTest : public testing::Test {
     testing::Mock::AllowLeak(mock_client_);
     chromeos::DBusThreadManager::GetSetterForTesting()->SetSmbProviderClient(
         base::WrapUnique(mock_client_));
+
+    mount_options_.display_name = kDisplayName;
   }
 
   ~SmbServiceTest() override {}
@@ -208,6 +211,8 @@ class SmbServiceTest : public testing::Test {
   file_system_provider::FakeRegistry* registry_;  // Owned by |fsp_service_|.
   // Extension Registry and Registry needed for fsp_service.
   std::unique_ptr<extensions::ExtensionRegistry> extension_registry_;
+
+  chromeos::file_system_provider::MountOptions mount_options_;
 };
 
 TEST_F(SmbServiceTest, InvalidUrls) {
@@ -260,7 +265,7 @@ TEST_F(SmbServiceTest, Mount) {
           })));
 
   smb_service_->Mount(
-      {}, base::FilePath(kSharePath), kTestUser, kTestPassword,
+      mount_options_, base::FilePath(kSharePath), kTestUser, kTestPassword,
       false /* use_chromad_kerberos */,
       false /* should_open_file_manager_after_mount */,
       false /* save_credentials */,
@@ -307,7 +312,7 @@ TEST_F(SmbServiceTest, MountSaveCredentials) {
           })));
 
   smb_service_->Mount(
-      {}, base::FilePath(kSharePath), kTestUser, kTestPassword,
+      mount_options_, base::FilePath(kSharePath), kTestUser, kTestPassword,
       false /* use_chromad_kerberos */,
       false /* should_open_file_manager_after_mount */,
       true /* save_credentials */,

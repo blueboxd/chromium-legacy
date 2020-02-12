@@ -26,6 +26,8 @@
 #include "storage/browser/test/test_file_system_context.h"
 #include "storage/browser/test/test_file_system_options.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "url/gurl.h"
+#include "url/origin.h"
 
 using storage::FileSystemContext;
 using storage::FileSystemOperationRunner;
@@ -78,7 +80,8 @@ class FileSystemOperationRunnerTest : public testing::Test {
 
   FileSystemURL URL(const std::string& path) {
     return file_system_context_->CreateCrackedFileSystemURL(
-        GURL("http://example.com"), storage::kFileSystemTypeTemporary,
+        url::Origin::Create(GURL("http://example.com")),
+        storage::kFileSystemTypeTemporary,
         base::FilePath::FromUTF8Unsafe(path));
   }
 
@@ -211,7 +214,8 @@ class MultiThreadFileSystemOperationRunnerTest : public testing::Test {
 
   FileSystemURL URL(const std::string& path) {
     return file_system_context_->CreateCrackedFileSystemURL(
-        GURL("http://example.com"), storage::kFileSystemTypeTemporary,
+        url::Origin::Create(GURL("http://example.com")),
+        storage::kFileSystemTypeTemporary,
         base::FilePath::FromUTF8Unsafe(path));
   }
 

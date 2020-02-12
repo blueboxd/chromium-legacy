@@ -73,7 +73,6 @@ bool CrossProcessFrameConnector::OnMessageReceived(const IPC::Message& msg) {
                         OnSynchronizeVisualProperties)
     IPC_MESSAGE_HANDLER(FrameHostMsg_UpdateViewportIntersection,
                         OnUpdateViewportIntersection)
-    IPC_MESSAGE_HANDLER(FrameHostMsg_SetIsInert, OnSetIsInert)
     IPC_MESSAGE_HANDLER(FrameHostMsg_UpdateRenderThrottlingStatus,
                         OnUpdateRenderThrottlingStatus)
     IPC_MESSAGE_UNHANDLED(handled = false)
@@ -364,7 +363,7 @@ void CrossProcessFrameConnector::OnVisibilityChanged(
   }
 }
 
-void CrossProcessFrameConnector::OnSetIsInert(bool inert) {
+void CrossProcessFrameConnector::SetIsInert(bool inert) {
   is_inert_ = inert;
   if (view_)
     view_->SetIsInert();

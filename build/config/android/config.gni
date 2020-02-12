@@ -200,6 +200,10 @@ if (is_android || is_chromeos) {
 
     # Enable the chrome build for devices without touchscreens.
     notouch_build = false
+
+    # Controls whether proguard obfuscation is enabled for targets
+    # configured to use it.
+    enable_proguard_obfuscation = true
   }
 
   assert(!(check_android_configuration && is_java_debug),

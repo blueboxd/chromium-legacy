@@ -365,18 +365,18 @@ Vector<LayoutText::TextBoxInfo> LayoutText::GetTextBoxInfo() const {
       // produces one fragment but legacy produces multiple text boxes broken at
       // collapsed whitespaces. We break the fragment at collapsed whitespaces
       // to match the legacy output.
+      const NGTextOffset offset = cursor.Current().TextOffset();
       for (const NGOffsetMappingUnit& unit :
-           mapping->GetMappingUnitsForTextContentOffsetRange(
-               cursor.CurrentTextStartOffset(),
-               cursor.CurrentTextEndOffset())) {
+           mapping->GetMappingUnitsForTextContentOffsetRange(offset.start,
+                                                             offset.end)) {
         DCHECK_EQ(unit.GetLayoutObject(), this);
         if (unit.GetType() == NGOffsetMappingUnitType::kCollapsed)
           continue;
         // [clamped_start, clamped_end] of |fragment| matches a legacy text box.
         const unsigned clamped_start =
-            std::max(unit.TextContentStart(), cursor.CurrentTextStartOffset());
+            std::max(unit.TextContentStart(), offset.start);
         const unsigned clamped_end =
-            std::min(unit.TextContentEnd(), cursor.CurrentTextEndOffset());
+            std::min(unit.TextContentEnd(), offset.end);
         DCHECK_LT(clamped_start, clamped_end);
         const unsigned box_length = clamped_end - clamped_start;
 
@@ -621,7 +621,7 @@ void LayoutText::AbsoluteQuadsForRange(Vector<FloatQuad>& quads,
       block_for_flipping = ContainingBlock();
     NGInlineCursor cursor;
     for (cursor.MoveTo(*this); cursor; cursor.MoveToNextForSameLayoutObject()) {
-      const NGTextOffset offset = cursor.CurrentTextOffset();
+      const NGTextOffset offset = cursor.Current().TextOffset();
       if (start > offset.end || end < offset.start)
         continue;
       const unsigned clamped_start = std::max(start, offset.start);
@@ -1600,7 +1600,7 @@ UChar32 LayoutText::FirstCharacterAfterWhitespaceCollapsing() const {
     NGInlineCursor cursor;
     cursor.MoveTo(*this);
     if (cursor) {
-      const StringView text = cursor.CurrentText();
+      const StringView text = cursor.Current().Text(cursor);
       return text.length() ? text.CodepointAt(0) : 0;
     }
   }
@@ -1616,7 +1616,7 @@ UChar32 LayoutText::LastCharacterAfterWhitespaceCollapsing() const {
     NGInlineCursor cursor;
     cursor.MoveTo(*this);
     if (cursor) {
-      const StringView text = cursor.CurrentText();
+      const StringView text = cursor.Current().Text(cursor);
       return text.length() ? text.CodepointAt(text.length() - 1) : 0;
     }
   }

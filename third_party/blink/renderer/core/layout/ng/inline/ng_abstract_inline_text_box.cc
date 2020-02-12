@@ -156,7 +156,7 @@ NGInlineCursor NGAbstractInlineTextBox::GetCursorOnLine() const {
 String NGAbstractInlineTextBox::GetTextContent() const {
   const NGInlineCursor& cursor = GetCursor();
   if (cursor.Current().IsGeneratedTextType())
-    return cursor.CurrentText().ToString();
+    return cursor.Current().Text(cursor).ToString();
   if (const NGPaintFragment* paint_fragment = cursor.CurrentPaintFragment()) {
     return To<NGPhysicalTextFragment>(paint_fragment->PhysicalFragment())
         .TextContent();
@@ -173,7 +173,7 @@ bool NGAbstractInlineTextBox::NeedsTrailingSpace() const {
   if (!line_box.HasSoftWrapToNextLine())
     return false;
   const String text_content = GetTextContent();
-  const unsigned end_offset = cursor.CurrentTextEndOffset();
+  const unsigned end_offset = cursor.Current().TextEndOffset();
   if (end_offset >= text_content.length())
     return false;
   if (text_content[end_offset] != ' ')
@@ -227,22 +227,22 @@ unsigned NGAbstractInlineTextBox::Len() const {
   if (!cursor)
     return 0;
   if (NeedsTrailingSpace())
-    return cursor.CurrentText().length() + 1;
-  return cursor.CurrentText().length();
+    return cursor.Current().Text(cursor).length() + 1;
+  return cursor.Current().Text(cursor).length();
 }
 
 unsigned NGAbstractInlineTextBox::TextOffsetInContainer(unsigned offset) const {
   const NGInlineCursor& cursor = GetCursor();
   if (!cursor)
     return 0;
-  return cursor.CurrentTextStartOffset() + offset;
+  return cursor.Current().TextStartOffset() + offset;
 }
 
 AbstractInlineTextBox::Direction NGAbstractInlineTextBox::GetDirection() const {
   const NGInlineCursor& cursor = GetCursor();
   if (!cursor)
     return kLeftToRight;
-  const TextDirection text_direction = cursor.CurrentResolvedDirection();
+  const TextDirection text_direction = cursor.Current().ResolvedDirection();
   if (GetLineLayoutItem().Style()->IsHorizontalWritingMode())
     return IsLtr(text_direction) ? kLeftToRight : kRightToLeft;
   return IsLtr(text_direction) ? kTopToBottom : kBottomToTop;
@@ -252,7 +252,8 @@ void NGAbstractInlineTextBox::CharacterWidths(Vector<float>& widths) const {
   const NGInlineCursor& cursor = GetCursor();
   if (!cursor)
     return;
-  if (!cursor.CurrentTextShapeResult()) {
+  const ShapeResultView* shape_result_view = cursor.Current().TextShapeResult();
+  if (!shape_result_view) {
     // When |fragment_| for BR, we don't have shape result.
     // "aom-computed-boolean-properties.html" reaches here.
     widths.resize(Len());
@@ -260,7 +261,8 @@ void NGAbstractInlineTextBox::CharacterWidths(Vector<float>& widths) const {
   }
   // TODO(layout-dev): Add support for IndividualCharacterRanges to
   // ShapeResultView to avoid the copy below.
-  auto shape_result = cursor.CurrentTextShapeResult()->CreateShapeResult();
+  scoped_refptr<ShapeResult> shape_result =
+      shape_result_view->CreateShapeResult();
   Vector<CharacterRange> ranges;
   shape_result->IndividualCharacterRanges(&ranges);
   widths.ReserveCapacity(ranges.size());
@@ -278,7 +280,7 @@ String NGAbstractInlineTextBox::GetText() const {
   if (!cursor)
     return g_empty_string;
 
-  String result = cursor.CurrentText().ToString();
+  String result = cursor.Current().Text(cursor).ToString();
 
   // For compatibility with |InlineTextBox|, we should have a space character
   // for soft line break.

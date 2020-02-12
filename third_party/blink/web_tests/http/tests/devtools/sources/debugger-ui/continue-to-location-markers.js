@@ -111,7 +111,7 @@
     var debuggerPlugin = SourcesTestRunner.debuggerPlugin(currentFrame);
     var decorations = debuggerPlugin._continueToLocationDecorations;
     var lines = [];
-    for (var decoration of decorations.keysArray()) {
+    for (var decoration of decorations.keys()) {
       var find = decoration.find();
       var line = find.from.line;
       var text = currentFrame.textEditor.line(line).substring(find.from.ch, find.to.ch);

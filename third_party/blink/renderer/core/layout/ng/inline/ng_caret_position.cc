@@ -106,12 +106,13 @@ CaretPositionResolution TryResolveCaretPositionInTextFragment(
   // Note that we don't ignore other characters that are not in fragments. For
   // example, a trailing space of a line is not in any fragment, but its two
   // sides are still different caret positions, so we don't ignore it.
-  const unsigned start_offset = cursor.CurrentTextStartOffset();
-  const unsigned end_offset = cursor.CurrentTextEndOffset();
+  const NGTextOffset current_offset = cursor.Current().TextOffset();
+  const unsigned start_offset = current_offset.start;
+  const unsigned end_offset = current_offset.end;
   if (offset < start_offset &&
       !mapping.HasBidiControlCharactersOnly(offset, start_offset))
     return CaretPositionResolution();
-  if (offset > cursor.CurrentTextEndOffset() &&
+  if (offset > current_offset.end &&
       !mapping.HasBidiControlCharactersOnly(end_offset, offset))
     return CaretPositionResolution();
 
@@ -207,8 +208,9 @@ bool NeedsBidiAdjustment(const NGCaretPosition& caret_position) {
   if (caret_position.position_type != NGCaretPositionType::kAtTextOffset)
     return true;
   DCHECK(caret_position.text_offset.has_value());
-  const unsigned start_offset = caret_position.cursor.CurrentTextStartOffset();
-  const unsigned end_offset = caret_position.cursor.CurrentTextEndOffset();
+  const NGTextOffset offset = caret_position.cursor.Current().TextOffset();
+  const unsigned start_offset = offset.start;
+  const unsigned end_offset = offset.end;
   DCHECK_GE(*caret_position.text_offset, start_offset);
   DCHECK_LE(*caret_position.text_offset, end_offset);
   // Bidi adjustment is needed only for caret positions at bidi boundaries.
@@ -235,7 +237,7 @@ bool IsUpstreamAfterLineBreak(const NGCaretPosition& caret_position) {
   if (!caret_position.cursor.Current().IsLineBreak())
     return false;
   return *caret_position.text_offset ==
-         caret_position.cursor.CurrentTextEndOffset();
+         caret_position.cursor.Current().TextEndOffset();
 }
 
 NGCaretPosition BetterCandidateBetween(const NGCaretPosition& current,
@@ -337,7 +339,7 @@ PositionWithAffinity NGCaretPosition::ToPositionInDOMTreeWithAffinity() const {
       const NGOffsetMapping* mapping =
           NGOffsetMapping::GetFor(cursor.Current().GetLayoutObject());
       const TextAffinity affinity =
-          *text_offset == cursor.CurrentTextEndOffset()
+          *text_offset == cursor.Current().TextEndOffset()
               ? TextAffinity::kUpstreamIfPossible
               : TextAffinity::kDownstream;
       const Position position = affinity == TextAffinity::kDownstream

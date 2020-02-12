@@ -1104,9 +1104,9 @@ void NGBlockNode::CopyFragmentDataToLayoutBoxForInlineChildren(
   }
 }
 
-bool NGBlockNode::ChildrenInline() const {
+bool NGBlockNode::IsInlineFormattingContextRoot() const {
   if (const auto* block = DynamicTo<LayoutBlockFlow>(box_))
-    return AreNGBlockFlowChildrenInline(block);
+    return AreNGBlockFlowChildrenInline(block) && FirstChild().IsInline();
   return false;
 }
 

@@ -14,7 +14,6 @@
 #include <utility>
 
 #include "base/bind.h"
-#include "base/feature_list.h"
 #include "base/metrics/histogram_functions.h"
 #include "base/rand_util.h"
 #include "base/stl_util.h"
@@ -22,7 +21,6 @@
 #include "base/strings/stringprintf.h"
 #include "base/values.h"
 #include "components/gcm_driver/instance_id/instance_id_driver.h"
-#include "components/invalidation/impl/invalidation_switches.h"
 #include "components/invalidation/public/identity_provider.h"
 #include "components/invalidation/public/invalidation_util.h"
 #include "components/prefs/pref_registry_simple.h"
@@ -331,14 +329,19 @@ void PerUserTopicSubscriptionManager::UpdateSubscribedTopics(
       ++it;
     }
   }
-  // TODO(crbug.com/1020117): remove pending subscriptions for topics we're not
-  // longer interested. Replacement by unsubscription request might be
-  // required, because request can already reach the server.
+  // There might be pending subscriptions for topics which are no longer
+  // needed, but they could be in half-completed state (i.e. request already
+  // sent to the server). To reduce subscription leaks they are allowed to
+  // proceed and unsubscription requests will be scheduled by the next
+  // UpdateSubscribedTopics() call after they successfully completed.
 
   if (!pending_subscriptions_.empty()) {
     // Kick off the process of actually processing the (un)subscriptions we just
     // scheduled.
     RequestAccessToken();
+  } else {
+    // No work to be done, emit ENABLED.
+    NotifySubscriptionChannelStateChange(SubscriptionChannelState::ENABLED);
   }
 }
 
@@ -417,10 +420,8 @@ void PerUserTopicSubscriptionManager::ActOnSuccessfulSubscription(
       all_subscriptions_completed = false;
     }
   }
-  // Emit ENABLED once we recovered from failed request.
-  if (all_subscriptions_completed &&
-      base::FeatureList::IsEnabled(
-          invalidation::switches::kFCMInvalidationsConservativeEnabling)) {
+  // Emit ENABLED once all requests have finished.
+  if (all_subscriptions_completed) {
     NotifySubscriptionChannelStateChange(SubscriptionChannelState::ENABLED);
   }
 }
@@ -473,9 +474,12 @@ void PerUserTopicSubscriptionManager::SubscriptionFinishedForTopic(
 
   // If one of the subscription requests failed (and we need to either observe
   // backoff before retrying, or won't retry at all), emit SUBSCRIPTION_FAILURE.
-  if (type == PerUserTopicSubscriptionRequest::SUBSCRIBE &&
-      base::FeatureList::IsEnabled(
-          invalidation::switches::kFCMInvalidationsConservativeEnabling)) {
+  if (type == PerUserTopicSubscriptionRequest::SUBSCRIBE) {
+    // TODO(crbug.com/1020117): case !code.ShouldRetry() now leads to
+    // inconsistent behavior depending on requests completion order: if any
+    // request was successful after it, we may have no |pending_subscriptions_|
+    // and emit ENABLED; otherwise, if failed request is the last one, state
+    // would be SUBSCRIPTION_FAILURE.
     NotifySubscriptionChannelStateChange(
         SubscriptionChannelState::SUBSCRIPTION_FAILURE);
   }
@@ -539,14 +543,8 @@ void PerUserTopicSubscriptionManager::OnAccessTokenRequestCompleted(
 void PerUserTopicSubscriptionManager::OnAccessTokenRequestSucceeded(
     const std::string& access_token) {
   // Reset backoff time after successful response.
-  // TODO(crbug.com/1020117): This should probably be .InformOfRequest(true)
-  // rather than .Reset().
-  request_access_token_backoff_.Reset();
+  request_access_token_backoff_.InformOfRequest(/*succeeded=*/true);
   access_token_ = access_token;
-  // Emit ENABLED when successfully got the token.
-  // TODO(crbug.com/1020117): This seems wrong; we generally emit ENABLED only
-  // when all subscriptions have successfully completed.
-  NotifySubscriptionChannelStateChange(SubscriptionChannelState::ENABLED);
   StartPendingSubscriptions();
 }
 

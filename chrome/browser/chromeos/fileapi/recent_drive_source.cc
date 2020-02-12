@@ -22,6 +22,7 @@
 #include "storage/browser/file_system/file_system_operation_runner.h"
 #include "storage/browser/file_system/file_system_url.h"
 #include "storage/common/file_system/file_system_types.h"
+#include "url/origin.h"
 
 using content::BrowserThread;
 
@@ -131,7 +132,8 @@ void RecentDriveSource::GotSearchResults(
     }
     files_.emplace_back(
         params_.value().file_system_context()->CreateCrackedFileSystemURL(
-            params_->origin(), storage::kFileSystemTypeExternal, path),
+            url::Origin::Create(params_->origin()),
+            storage::kFileSystemTypeExternal, path),
         result->metadata->last_viewed_by_me_time);
   }
   OnComplete();

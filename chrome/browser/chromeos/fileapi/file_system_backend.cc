@@ -33,6 +33,7 @@
 #include "storage/common/file_system/file_system_mount_option.h"
 #include "storage/common/file_system/file_system_types.h"
 #include "storage/common/file_system/file_system_util.h"
+#include "url/origin.h"
 
 namespace chromeos {
 namespace {
@@ -514,7 +515,7 @@ storage::FileSystemURL FileSystemBackend::CreateInternalURL(
     return storage::FileSystemURL();
 
   return context->CreateCrackedFileSystemURL(
-      GURL() /* origin */, storage::kFileSystemTypeExternal, virtual_path);
+      url::Origin(), storage::kFileSystemTypeExternal, virtual_path);
 }
 
 }  // namespace chromeos

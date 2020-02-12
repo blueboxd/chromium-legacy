@@ -1190,7 +1190,8 @@ void InspectorCSSAgent::CollectPlatformFontsForLayoutObject(
       NGInlineCursor cursor;
       cursor.MoveTo(*layout_object);
       for (; cursor; cursor.MoveToNextForSameLayoutObject()) {
-        const ShapeResultView* shape_result = cursor.CurrentTextShapeResult();
+        const ShapeResultView* shape_result =
+            cursor.Current().TextShapeResult();
         if (!shape_result)
           continue;
         Vector<ShapeResult::RunFontData> run_font_data_list;

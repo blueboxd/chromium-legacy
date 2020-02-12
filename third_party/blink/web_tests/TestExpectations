@@ -283,6 +283,7 @@ crbug.com/658305 [ Mac ] virtual/scalefactor200/css3/filters/effect-reference-co
 crbug.com/658305 [ Linux ] virtual/scalefactor200/css3/filters/effect-reference-colorspace-hw.html [ Pass Timeout ]
 crbug.com/658305 virtual/scalefactor200/css3/filters/effect-reference-external-stylesheet.html [ Failure Pass ]
 crbug.com/658305 [ Mac ] virtual/scalefactor200/css3/filters/effect-reference-hidpi-hw.html [ Pass Timeout ]
+crbug.com/658305 virtual/scalefactor200/css3/filters/effect-reference-hw.html [ Failure Pass ]
 crbug.com/658305 virtual/scalefactor200/css3/filters/effect-reference-image-hw.html [ Failure Pass ]
 crbug.com/658305 [ Mac ] virtual/scalefactor200/css3/filters/effect-reference-ordering-hw.html [ Pass Timeout ]
 crbug.com/658305 virtual/scalefactor200/css3/filters/effect-reference-subregion-hw.html [ Failure Pass Timeout ]
@@ -293,9 +294,6 @@ crbug.com/903383 virtual/scalefactor200/external/wpt/css/filter-effects/css-filt
 crbug.com/903383 virtual/scalefactor200/external/wpt/css/filter-effects/css-filters-animation-blur.html [ Failure ]
 crbug.com/626703 virtual/scalefactor200/external/wpt/css/filter-effects/filter-subregion-01.html [ Failure ]
 crbug.com/591099 virtual/scalefactor200/external/wpt/css/filter-effects/filtered-inline-applies-to-float.html [ Failure ]
-
-# Needs new baseline
-crbug.com/658305 virtual/scalefactor200/css3/filters/effect-reference-hw.html [ Failure Pass Timeout ]
 
 # ==== Regressions introduced by BlinkGenPropertyTrees =====
 # Reflection / mask ordering issue

@@ -241,6 +241,15 @@ bool DigitalAssetLinksHandler::CheckDigitalAssetLinkRelationshipForAndroidApp(
       std::move(callback));
 }
 
+bool DigitalAssetLinksHandler::CheckDigitalAssetLinkRelationshipForWebApk(
+    const std::string& web_domain,
+    const std::string& manifest_url,
+    RelationshipCheckResultCallback callback) {
+  return CheckDigitalAssetLinkRelationship(
+      web_domain, "delegate_permission/common.query_webapk", base::nullopt,
+      {{"namespace", "web"}, {"site", manifest_url}}, std::move(callback));
+}
+
 bool DigitalAssetLinksHandler::CheckDigitalAssetLinkRelationship(
     const std::string& web_domain,
     const std::string& relationship,

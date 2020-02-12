@@ -19,6 +19,8 @@
 #include "extensions/browser/extensions_test.h"
 #include "storage/browser/test/test_file_system_context.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "url/gurl.h"
+#include "url/origin.h"
 
 namespace extensions {
 namespace app_file_handler_util {
@@ -45,7 +47,8 @@ storage::FileSystemURL CreateNativeLocalFileSystemURL(
     storage::FileSystemContext* context,
     const base::FilePath local_path) {
   return context->CreateCrackedFileSystemURL(
-      GURL(kOrigin), storage::kFileSystemTypeNativeLocal, local_path);
+      url::Origin::Create(GURL(kOrigin)), storage::kFileSystemTypeNativeLocal,
+      local_path);
 }
 
 }  // namespace

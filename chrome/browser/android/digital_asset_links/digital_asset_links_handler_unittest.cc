@@ -41,6 +41,12 @@ const char kStatementList[] = R"(
       "64:2F:D4:BE:1C:4D:F8:36:2E:D3:50:C4:69:53:96:A1:3D:14:0A:23:AD:2F:BF:EB:6E:C6:E4:64:54:3B:34:C1"
     ]
   }
+}, {
+  "relation": ["delegate_permission/common.query_webapk"],
+  "target": {
+    "namespace": "web",
+    "site": "https://example2.com/manifest.json"
+  }
 }]
 )";
 
@@ -270,6 +276,30 @@ TEST_F(DigitalAssetLinksHandlerTest, NetworkDisconnected) {
 
   EXPECT_EQ(1, num_invocations_);
   EXPECT_EQ(result_, RelationshipCheckResult::kNoConnection);
+}
+
+TEST_F(DigitalAssetLinksHandlerTest, WebApkPositiveResponse) {
+  DigitalAssetLinksHandler handler(GetSharedURLLoaderFactory());
+  handler.CheckDigitalAssetLinkRelationshipForWebApk(
+      kDomain, "https://example2.com/manifest.json",
+      base::BindOnce(&DigitalAssetLinksHandlerTest::OnRelationshipCheckComplete,
+                     base::Unretained(this)));
+  AddResponse(kStatementList);
+
+  EXPECT_EQ(1, num_invocations_);
+  EXPECT_EQ(result_, RelationshipCheckResult::kSuccess);
+}
+
+TEST_F(DigitalAssetLinksHandlerTest, WebApkNegativeResponse) {
+  DigitalAssetLinksHandler handler(GetSharedURLLoaderFactory());
+  handler.CheckDigitalAssetLinkRelationshipForWebApk(
+      kDomain, "https://notverified.com/manifest.json",
+      base::BindOnce(&DigitalAssetLinksHandlerTest::OnRelationshipCheckComplete,
+                     base::Unretained(this)));
+  AddResponse(kStatementList);
+
+  EXPECT_EQ(1, num_invocations_);
+  EXPECT_EQ(result_, RelationshipCheckResult::kFailure);
 }
 
 }  // namespace digital_asset_links

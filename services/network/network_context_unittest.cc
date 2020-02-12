@@ -3216,7 +3216,7 @@ class TestResolverFactory : public net::HostResolver::Factory {
       bool enable_caching) override {
     DCHECK(host_mapping_rules.empty());
     auto resolve_context = std::make_unique<net::ResolveContext>(
-        nullptr /* url_request_context */, nullptr /* host_cache */);
+        /*url_request_context=*/nullptr, /*enable_caching=*/false);
     auto resolver = std::make_unique<net::ContextHostResolver>(
         manager, std::move(resolve_context));
     resolvers_.push_back(resolver.get());

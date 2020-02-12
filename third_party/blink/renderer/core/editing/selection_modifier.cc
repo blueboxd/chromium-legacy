@@ -161,7 +161,7 @@ base::Optional<TextDirection> DirectionAt(const VisiblePosition& position) {
   if (NGInlineFormattingContextOf(adjusted.GetPosition())) {
     const NGInlineCursor& cursor = ComputeNGCaretPosition(adjusted).cursor;
     if (cursor)
-      return cursor.CurrentResolvedDirection();
+      return cursor.Current().ResolvedDirection();
     return base::nullopt;
   }
 
@@ -185,7 +185,7 @@ base::Optional<TextDirection> LineDirectionAt(const VisiblePosition& position) {
     if (!line)
       return base::nullopt;
     line.MoveToContainingLine();
-    return line.CurrentBaseDirection();
+    return line.Current().BaseDirection();
   }
 
   if (const InlineBox* box =

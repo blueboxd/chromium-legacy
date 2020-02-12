@@ -45,7 +45,7 @@ class PluginPrivateFileSystemBackendTest : public testing::Test {
   FileSystemURL CreateURL(const GURL& root_url, const std::string& relative) {
     FileSystemURL root = context_->CrackURL(root_url);
     return context_->CreateCrackedFileSystemURL(
-        root.origin().GetURL(), root.mount_type(),
+        root.origin(), root.mount_type(),
         root.virtual_path().AppendASCII(relative));
   }
 

@@ -65,6 +65,9 @@ class DeviceSettingsService : public SessionManagerClient::Observer {
   typedef base::Callback<void(OwnershipStatus)> OwnershipStatusCallback;
 
   // Status codes for Load() and Store().
+  // These values are logged to UMA. Entries should not be renumbered and
+  // numeric values should never be reused. Please keep in sync with
+  // "DeviceSettingsStatus" in src/tools/metrics/histograms/enums.xml.
   enum Status {
     STORE_SUCCESS,
     STORE_KEY_UNAVAILABLE,   // Owner key not yet configured.
@@ -72,6 +75,7 @@ class DeviceSettingsService : public SessionManagerClient::Observer {
     STORE_NO_POLICY,         // No settings blob present.
     STORE_INVALID_POLICY,    // Invalid settings blob (proto parse failed).
     STORE_VALIDATION_ERROR,  // Policy validation failure.
+    kMaxValue = STORE_VALIDATION_ERROR,
   };
 
   // Observer interface.

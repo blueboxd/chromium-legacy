@@ -31,6 +31,8 @@
 #include "storage/browser/test/test_file_system_context.h"
 #include "storage/common/file_system/file_system_types.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "url/gurl.h"
+#include "url/origin.h"
 
 namespace {
 
@@ -140,8 +142,7 @@ class MediaFileValidatorTest : public InProcessBrowserTest {
             base);
 
     move_src_ = file_system_context_->CreateCrackedFileSystemURL(
-        GURL(kOrigin),
-        storage::kFileSystemTypeTest,
+        url::Origin::Create(GURL(kOrigin)), storage::kFileSystemTypeTest,
         base::FilePath::FromUTF8Unsafe(filename));
 
     test_file_size_ = content.size();

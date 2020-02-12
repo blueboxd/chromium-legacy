@@ -42,6 +42,7 @@ namespace smb_client {
 using file_system_provider::ProvidedFileSystemInfo;
 
 class SmbKerberosCredentialsUpdater;
+class SmbShareInfo;
 
 // Creates and manages an smb file system.
 class SmbService : public KeyedService,
@@ -133,12 +134,8 @@ class SmbService : public KeyedService,
   // based on feature flags.
   // Calls SmbProviderClient::Mount() or start the smbfs mount process.
   void MountInternal(const file_system_provider::MountOptions& options,
-                     const SmbUrl& share_url,
-                     const std::string& display_name,
-                     const std::string& username,
-                     const std::string& workgroup,
+                     const SmbShareInfo& info,
                      const std::string& password,
-                     bool use_kerberos,
                      bool save_credentials,
                      bool skip_connect,
                      MountInternalCallback callback);

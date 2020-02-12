@@ -36,10 +36,5 @@ void SendEmail(const base::string16& d_email,
                               j_file_to_attach);
 }
 
-void OpenDateAndTimeSettings() {
-  JNIEnv* env = AttachCurrentThread();
-  Java_IntentHelper_openDateAndTimeSettings(env);
-}
-
 }  // namespace android
 }  // namespace chrome

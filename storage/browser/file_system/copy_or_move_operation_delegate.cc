@@ -1025,7 +1025,7 @@ FileSystemURL CopyOrMoveOperationDelegate::CreateDestURL(
   src_root_.virtual_path().AppendRelativePath(src_url.virtual_path(),
                                               &relative);
   return file_system_context()->CreateCrackedFileSystemURL(
-      dest_root_.origin().GetURL(), dest_root_.mount_type(), relative);
+      dest_root_.origin(), dest_root_.mount_type(), relative);
 }
 
 }  // namespace storage

@@ -21915,7 +21915,7 @@
               "os": "Ubuntu-16.04"
             }
           ],
-          "shards": 10
+          "shards": 15
         },
         "test_target": "//:wpt_tests_isolate"
       }

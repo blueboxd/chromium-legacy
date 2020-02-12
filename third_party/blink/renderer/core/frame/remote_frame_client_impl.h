@@ -48,7 +48,6 @@ class RemoteFrameClientImpl final : public RemoteFrameClient {
   void UpdateRemoteViewportIntersection(
       const ViewportIntersectionState& intersection_state) override;
   void AdvanceFocus(mojom::blink::FocusType, LocalFrame*) override;
-  void SetIsInert(bool) override;
   void UpdateRenderThrottlingStatus(bool is_throttled,
                                     bool subtree_throttled) override;
   uint32_t Print(const IntRect&, cc::PaintCanvas*) const override;

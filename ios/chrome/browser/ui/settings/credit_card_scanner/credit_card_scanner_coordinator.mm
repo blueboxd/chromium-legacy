@@ -5,6 +5,7 @@
 #import "ios/chrome/browser/ui/settings/credit_card_scanner/credit_card_scanner_coordinator.h"
 
 #include "base/logging.h"
+#import "ios/chrome/browser/main/browser.h"
 #import "ios/chrome/browser/ui/scanner/scanner_presenting.h"
 #import "ios/chrome/browser/ui/settings/credit_card_scanner/credit_card_consumer.h"
 #import "ios/chrome/browser/ui/settings/credit_card_scanner/credit_card_scanner_mediator.h"
@@ -36,9 +37,10 @@
 #pragma mark - Lifecycle
 
 - (instancetype)initWithBaseViewController:(UIViewController*)baseViewController
+                                   browser:(Browser*)browser
                         creditCardConsumer:
                             (id<CreditCardConsumer>)creditCardConsumer {
-  self = [super initWithBaseViewController:baseViewController browserState:nil];
+  self = [super initWithBaseViewController:baseViewController browser:browser];
   if (self) {
     DCHECK(self);
     _creditCardConsumer = creditCardConsumer;

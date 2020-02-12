@@ -160,6 +160,7 @@ def _ParseOptions():
       '--disable-checkdiscard',
       action='store_true',
       help='Disable -checkdiscard directives')
+  parser.add_argument('--sourcefile', help='Value for source file attribute')
 
   options = parser.parse_args(args)
 
@@ -379,6 +380,10 @@ def _CreateDynamicConfig(options):
 -assumevalues class android.os.Build$VERSION {
   public static final int SDK_INT return %s..9999;
 }""" % options.min_api)
+
+  if options.sourcefile:
+    ret.append("-renamesourcefileattribute '%s' # OMIT FROM EXPECTATIONS" %
+               options.sourcefile)
 
   if options.apply_mapping:
     ret.append("-applymapping '%s'" % os.path.abspath(options.apply_mapping))

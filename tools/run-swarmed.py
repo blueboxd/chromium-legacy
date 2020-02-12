@@ -169,9 +169,6 @@ def main():
   parser.add_argument('out_dir', type=str, help='Build directory.')
   parser.add_argument('target_name', type=str, help='Name of target to run.')
 
-  # TODO(thakis): Should this default to false?
-  parser.set_defaults(build=True)
-
   args = parser.parse_args()
 
   if args.target_os == 'detect':

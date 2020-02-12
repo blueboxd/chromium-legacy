@@ -244,12 +244,12 @@ class CopyOrMoveOperationTestHelper {
 
   FileSystemURL SourceURL(const std::string& path) {
     return file_system_context_->CreateCrackedFileSystemURL(
-        origin_.GetURL(), src_type_, base::FilePath::FromUTF8Unsafe(path));
+        origin_, src_type_, base::FilePath::FromUTF8Unsafe(path));
   }
 
   FileSystemURL DestURL(const std::string& path) {
     return file_system_context_->CreateCrackedFileSystemURL(
-        origin_.GetURL(), dest_type_, base::FilePath::FromUTF8Unsafe(path));
+        origin_, dest_type_, base::FilePath::FromUTF8Unsafe(path));
   }
 
   base::File::Error Copy(const FileSystemURL& src, const FileSystemURL& dest) {
@@ -276,7 +276,7 @@ class CopyOrMoveOperationTestHelper {
     for (size_t i = 0; i < test_case_size; ++i) {
       const FileSystemTestCaseRecord& test_case = test_cases[i];
       FileSystemURL url = file_system_context_->CreateCrackedFileSystemURL(
-          root.origin().GetURL(), root.mount_type(),
+          root.origin(), root.mount_type(),
           root.virtual_path().Append(test_case.path));
       if (test_case.is_directory)
         result = CreateDirectory(url);
@@ -307,7 +307,7 @@ class CopyOrMoveOperationTestHelper {
       ASSERT_EQ(base::File::FILE_OK, ReadDirectory(dir, &entries));
       for (size_t i = 0; i < entries.size(); ++i) {
         FileSystemURL url = file_system_context_->CreateCrackedFileSystemURL(
-            dir.origin().GetURL(), dir.mount_type(),
+            dir.origin(), dir.mount_type(),
             dir.virtual_path().Append(entries[i].name));
         base::FilePath relative;
         root.virtual_path().AppendRelativePath(url.virtual_path(), &relative);

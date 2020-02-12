@@ -37,6 +37,7 @@ class CORE_EXPORT NGBoxFragmentBuilder final
                                    writing_mode,
                                    direction),
         box_type_(NGPhysicalFragment::NGBoxType::kNormalBox),
+        is_inline_formatting_context_(node.IsInline()),
         did_break_(false) {}
 
   // Build a fragment for LayoutObject without NGLayoutInputNode. LayoutInline
@@ -51,6 +52,7 @@ class CORE_EXPORT NGBoxFragmentBuilder final
                                    writing_mode,
                                    direction),
         box_type_(NGPhysicalFragment::NGBoxType::kNormalBox),
+        is_inline_formatting_context_(true),
         did_break_(false) {
     layout_object_ = layout_object;
   }
@@ -245,6 +247,10 @@ class CORE_EXPORT NGBoxFragmentBuilder final
   void SetIsFieldsetContainer() { is_fieldset_container_ = true; }
   void SetIsLegacyLayoutRoot() { is_legacy_layout_root_ = true; }
 
+  void SetIsInlineFormattingContext(bool is_inline_formatting_context) {
+    is_inline_formatting_context_ = is_inline_formatting_context;
+  }
+
   bool DidBreak() const { return did_break_; }
 
   void SetBorderEdges(NGBorderEdges border_edges) {
@@ -292,8 +298,6 @@ class CORE_EXPORT NGBoxFragmentBuilder final
 #endif
 
  private:
-  bool IsBlockLevel() const;
-
   // Update whether we have fragmented in this flow.
   void PropagateBreak(const NGLayoutResult&);
 
@@ -315,6 +319,7 @@ class CORE_EXPORT NGBoxFragmentBuilder final
   NGPhysicalFragment::NGBoxType box_type_;
   bool is_fieldset_container_ = false;
   bool is_initial_block_size_indefinite_ = false;
+  bool is_inline_formatting_context_;
   bool did_break_;
   bool has_forced_break_ = false;
   bool is_new_fc_ = false;

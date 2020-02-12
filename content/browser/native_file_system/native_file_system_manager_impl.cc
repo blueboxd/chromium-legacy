@@ -370,7 +370,7 @@ void NativeFileSystemManagerImpl::DeserializeHandle(
       base::FilePath virtual_path =
           DeserializePath(data.sandboxed().virtual_path());
       storage::FileSystemURL url = context()->CreateCrackedFileSystemURL(
-          origin.GetURL(), storage::kFileSystemTypeTemporary, virtual_path);
+          origin, storage::kFileSystemTypeTemporary, virtual_path);
 
       auto permission_grant =
           base::MakeRefCounted<FixedNativeFileSystemPermissionGrant>(
@@ -388,7 +388,7 @@ void NativeFileSystemManagerImpl::DeserializeHandle(
 
       auto root = CreateFileSystemURLFromPath(origin, root_path);
       storage::FileSystemURL child = context()->CreateCrackedFileSystemURL(
-          origin.GetURL(), root.url.mount_type(),
+          origin, root.url.mount_type(),
           root.url.virtual_path().Append(relative_path));
 
       const bool is_directory =
@@ -866,7 +866,7 @@ NativeFileSystemManagerImpl::CreateFileSystemURLFromPath(
   base::FilePath isolated_path = root_path.AppendASCII(result.base_name);
 
   result.url = context()->CreateCrackedFileSystemURL(
-      origin.GetURL(), storage::kFileSystemTypeIsolated, isolated_path);
+      origin, storage::kFileSystemTypeIsolated, isolated_path);
   return result;
 }
 

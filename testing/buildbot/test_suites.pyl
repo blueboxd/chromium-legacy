@@ -3545,7 +3545,7 @@
         },
         'isolate_name': 'wpt_tests_isolate',
         'swarming': {
-          'shards': 10,
+          'shards': 15,
         },
       },
     },

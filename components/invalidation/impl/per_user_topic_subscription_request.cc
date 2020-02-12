@@ -14,6 +14,7 @@
 #include "components/sync/base/model_type.h"
 #include "net/http/http_status_code.h"
 #include "net/url_request/url_fetcher.h"
+#include "services/network/public/mojom/fetch_api.mojom-shared.h"
 
 using net::HttpRequestHeaders;
 
@@ -369,8 +370,8 @@ PerUserTopicSubscriptionRequest::Builder::BuildURLFetcher(
   }
   request->url = url;
   request->headers = headers;
-  // TODO(crbug.com/1020117): Should we set request->credentials_mode to kOmit,
-  // to match "cookies_allowed: NO" above?
+  // Disable cookies for this request.
+  request->credentials_mode = network::mojom::CredentialsMode::kOmit;
 
   std::unique_ptr<network::SimpleURLLoader> url_loader =
       network::SimpleURLLoader::Create(std::move(request), traffic_annotation);

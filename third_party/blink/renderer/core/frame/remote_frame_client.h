@@ -53,8 +53,6 @@ class RemoteFrameClient : public FrameClient {
 
   virtual void AdvanceFocus(mojom::blink::FocusType, LocalFrame* source) = 0;
 
-  virtual void SetIsInert(bool) = 0;
-
   virtual void UpdateRenderThrottlingStatus(bool isThrottled,
                                             bool subtreeThrottled) = 0;
 

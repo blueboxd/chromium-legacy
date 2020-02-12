@@ -12,10 +12,8 @@
 #include "base/stl_util.h"
 #include "base/strings/stringprintf.h"
 #include "base/test/metrics/histogram_tester.h"
-#include "base/test/scoped_feature_list.h"
 #include "base/test/task_environment.h"
 #include "base/values.h"
-#include "components/invalidation/impl/invalidation_switches.h"
 #include "components/invalidation/impl/profile_identity_provider.h"
 #include "components/invalidation/public/invalidation_util.h"
 #include "components/prefs/testing_pref_service.h"
@@ -727,52 +725,15 @@ TEST_F(PerUserTopicSubscriptionManagerTest,
   }
 }
 
-TEST_F(
-    PerUserTopicSubscriptionManagerTest,
-    ShouldNotChangeStatusToDisabledWhenTopicsRegistrationFailedFeatureDisabled) {
-  base::test::ScopedFeatureList feature_list;
-  feature_list.InitAndDisableFeature(
-      invalidation::switches::kFCMInvalidationsConservativeEnabling);
-
-  auto ids = GetSequenceOfTopics(kInvalidationObjectIdsCount);
-
-  AddCorrectSubscriptionResponce();
-
-  auto per_user_topic_subscription_manager = BuildRegistrationManager();
-  ASSERT_TRUE(per_user_topic_subscription_manager->GetSubscribedTopicsForTest()
-                  .empty());
-
-  per_user_topic_subscription_manager->UpdateSubscribedTopics(
-      ids, kFakeInstanceIdToken);
-  base::RunLoop().RunUntilIdle();
-  EXPECT_EQ(TopicSetFromTopics(ids),
-            per_user_topic_subscription_manager->GetSubscribedTopicsForTest());
-  EXPECT_EQ(observed_state(), SubscriptionChannelState::ENABLED);
-
-  // Disable some ids.
-  auto disabled_ids = GetSequenceOfTopics(3);
-  auto enabled_ids =
-      GetSequenceOfTopicsStartingAt(3, kInvalidationObjectIdsCount - 3);
-  per_user_topic_subscription_manager->UpdateSubscribedTopics(
-      enabled_ids, kFakeInstanceIdToken);
-  base::RunLoop().RunUntilIdle();
-
-  // Clear previously configured correct response. So next requests will fail.
-  url_loader_factory()->ClearResponses();
-  per_user_topic_subscription_manager->UpdateSubscribedTopics(
-      ids, kFakeInstanceIdToken);
-  url_loader_factory()->AddResponse(
-      FullSubscriptionUrl(kFakeInstanceIdToken).spec(),
-      std::string() /* content */, net::HTTP_NOT_FOUND);
-
+TEST_F(PerUserTopicSubscriptionManagerTest,
+       ShouldChangeStatusToEnabledWhenHasNoPendingSubscription) {
+  BuildRegistrationManager()->UpdateSubscribedTopics(/*topics=*/{},
+                                                     kFakeInstanceIdToken);
   EXPECT_EQ(observed_state(), SubscriptionChannelState::ENABLED);
 }
 
 TEST_F(PerUserTopicSubscriptionManagerTest,
        ShouldChangeStatusToDisabledWhenTopicsRegistrationFailed) {
-  base::test::ScopedFeatureList feature_list;
-  feature_list.InitAndEnableFeature(
-      invalidation::switches::kFCMInvalidationsConservativeEnabling);
   auto ids = GetSequenceOfTopics(kInvalidationObjectIdsCount);
 
   AddCorrectSubscriptionResponce();

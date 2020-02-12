@@ -39,6 +39,7 @@
 #include "storage/common/file_system/file_system_mount_option.h"
 #include "testing/platform_test.h"
 #include "url/gurl.h"
+#include "url/origin.h"
 
 namespace storage {
 
@@ -118,7 +119,7 @@ class FileWriterDelegateTest : public PlatformTest {
 
   FileSystemURL GetFileSystemURL(const char* file_name) const {
     return file_system_context_->CreateCrackedFileSystemURL(
-        GURL(kOrigin), kFileSystemType,
+        url::Origin::Create(GURL(kOrigin)), kFileSystemType,
         base::FilePath().FromUTF8Unsafe(file_name));
   }
 

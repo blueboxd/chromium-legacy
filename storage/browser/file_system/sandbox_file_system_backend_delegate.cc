@@ -626,8 +626,8 @@ int64_t SandboxFileSystemBackendDelegate::RecalculateUsage(
     const url::Origin& origin,
     FileSystemType type) {
   FileSystemOperationContext operation_context(context);
-  FileSystemURL url = context->CreateCrackedFileSystemURL(origin.GetURL(), type,
-                                                          base::FilePath());
+  FileSystemURL url =
+      context->CreateCrackedFileSystemURL(origin, type, base::FilePath());
   std::unique_ptr<FileSystemFileUtil::AbstractFileEnumerator> enumerator(
       obfuscated_file_util()->CreateFileEnumerator(&operation_context, url,
                                                    true));

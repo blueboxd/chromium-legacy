@@ -55,6 +55,7 @@
 #include "storage/common/file_system/file_system_util.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/shell_dialogs/select_file_dialog.h"
+#include "url/origin.h"
 
 #if defined(OS_MACOSX)
 #include <CoreFoundation/CoreFoundation.h>
@@ -818,7 +819,7 @@ ExtensionFunction::ResponseAction FileSystemRetainEntryFunction::Run() {
     const GURL origin =
         util::GetSiteForExtensionId(extension_id(), browser_context());
     const storage::FileSystemURL url = context->CreateCrackedFileSystemURL(
-        origin, storage::kFileSystemTypeIsolated,
+        url::Origin::Create(origin), storage::kFileSystemTypeIsolated,
         storage::IsolatedContext::GetInstance()
             ->CreateVirtualRootPath(filesystem_id)
             .Append(base::FilePath::FromUTF8Unsafe(filesystem_path)));

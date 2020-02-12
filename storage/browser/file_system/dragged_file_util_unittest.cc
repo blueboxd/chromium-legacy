@@ -32,6 +32,8 @@
 #include "storage/browser/test/test_file_system_context.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "url/gurl.h"
+#include "url/origin.h"
 
 namespace storage {
 
@@ -66,7 +68,7 @@ FileSystemURL GetEntryURL(FileSystemContext* file_system_context,
                           const FileSystemURL& dir,
                           const base::FilePath::StringType& name) {
   return file_system_context->CreateCrackedFileSystemURL(
-      dir.origin().GetURL(), dir.mount_type(), dir.virtual_path().Append(name));
+      dir.origin(), dir.mount_type(), dir.virtual_path().Append(name));
 }
 
 base::FilePath GetRelativeVirtualPath(const FileSystemURL& root,
@@ -85,7 +87,7 @@ FileSystemURL GetOtherURL(FileSystemContext* file_system_context,
                           const FileSystemURL& other_root,
                           const FileSystemURL& url) {
   return file_system_context->CreateCrackedFileSystemURL(
-      other_root.origin().GetURL(), other_root.mount_type(),
+      other_root.origin(), other_root.mount_type(),
       other_root.virtual_path().Append(GetRelativeVirtualPath(root, url)));
 }
 
@@ -143,12 +145,14 @@ class DraggedFileUtilTest : public testing::Test {
     base::FilePath virtual_path =
         isolated_context()->CreateVirtualRootPath(filesystem_id()).Append(path);
     return file_system_context_->CreateCrackedFileSystemURL(
-        GURL("http://example.com"), kFileSystemTypeIsolated, virtual_path);
+        url::Origin::Create(GURL("http://example.com")),
+        kFileSystemTypeIsolated, virtual_path);
   }
 
   FileSystemURL GetOtherFileSystemURL(const base::FilePath& path) const {
     return file_system_context()->CreateCrackedFileSystemURL(
-        GURL("http://example.com"), kFileSystemTypeTemporary,
+        url::Origin::Create(GURL("http://example.com")),
+        kFileSystemTypeTemporary,
         base::FilePath().AppendASCII("dest").Append(path));
   }
 

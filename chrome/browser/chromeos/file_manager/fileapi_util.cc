@@ -32,6 +32,7 @@
 #include "third_party/blink/public/mojom/choosers/file_chooser.mojom.h"
 #include "ui/shell_dialogs/selected_file_info.h"
 #include "url/gurl.h"
+#include "url/origin.h"
 
 using content::BrowserThread;
 
@@ -147,9 +148,9 @@ void FileDefinitionListConverter::ConvertNextIterator(
   }
 
   storage::FileSystemURL url = file_system_context_->CreateCrackedFileSystemURL(
-      extensions::Extension::GetBaseURLFromExtensionId(extension_id_),
-      storage::kFileSystemTypeExternal,
-      iterator->virtual_path);
+      url::Origin::Create(
+          extensions::Extension::GetBaseURLFromExtensionId(extension_id_)),
+      storage::kFileSystemTypeExternal, iterator->virtual_path);
 
   if (!url.is_valid()) {
     OnIteratorConverted(
@@ -241,7 +242,7 @@ bool IsUnderNonNativeLocalPath(const storage::FileSystemContext& context,
     return false;
 
   const storage::FileSystemURL url = context.CreateCrackedFileSystemURL(
-      GURL(), storage::kFileSystemTypeExternal, virtual_path);
+      url::Origin(), storage::kFileSystemTypeExternal, virtual_path);
   if (!url.is_valid())
     return false;
 
@@ -600,8 +601,9 @@ FileSystemURLAndHandle CreateIsolatedURLFromVirtualPath(
     const GURL& origin,
     const base::FilePath& virtual_path) {
   const storage::FileSystemURL original_url =
-      context.CreateCrackedFileSystemURL(
-          origin, storage::kFileSystemTypeExternal, virtual_path);
+      context.CreateCrackedFileSystemURL(url::Origin::Create(origin),
+                                         storage::kFileSystemTypeExternal,
+                                         virtual_path);
 
   std::string register_name;
   storage::IsolatedContext::ScopedFSHandle file_system =
@@ -609,7 +611,7 @@ FileSystemURLAndHandle CreateIsolatedURLFromVirtualPath(
           original_url.type(), original_url.filesystem_id(),
           original_url.path(), &register_name);
   storage::FileSystemURL isolated_url = context.CreateCrackedFileSystemURL(
-      origin, storage::kFileSystemTypeIsolated,
+      url::Origin::Create(origin), storage::kFileSystemTypeIsolated,
       base::FilePath(file_system.id()).Append(register_name));
   return {isolated_url, file_system};
 }

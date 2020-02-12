@@ -74,13 +74,13 @@ class AbstractInlineBox {
   UBiDiLevel BidiLevel() const {
     DCHECK(IsNotNull());
     return IsOldLayout() ? GetInlineBox().BidiLevel()
-                         : line_cursor_.CurrentBidiLevel();
+                         : line_cursor_.Current().BidiLevel();
   }
 
   TextDirection Direction() const {
     DCHECK(IsNotNull());
     return IsOldLayout() ? GetInlineBox().Direction()
-                         : line_cursor_.CurrentResolvedDirection();
+                         : line_cursor_.Current().ResolvedDirection();
   }
 
   AbstractInlineBox PrevLeafChild() const {
@@ -131,7 +131,7 @@ class AbstractInlineBox {
     DCHECK(IsNotNull());
     if (IsOldLayout())
       return ParagraphDirectionOf(GetInlineBox());
-    return GetLineBox(line_cursor_).CurrentBaseDirection();
+    return GetLineBox(line_cursor_).Current().BaseDirection();
   }
 
  private:
@@ -189,7 +189,7 @@ bool IsAtFragmentStart(const NGCaretPosition& caret_position) {
     case NGCaretPositionType::kAtTextOffset:
       DCHECK(caret_position.text_offset.has_value());
       return *caret_position.text_offset ==
-             caret_position.cursor.CurrentTextStartOffset();
+             caret_position.cursor.Current().TextStartOffset();
   }
   NOTREACHED();
   return false;
@@ -205,7 +205,7 @@ bool IsAtFragmentEnd(const NGCaretPosition& caret_position) {
     case NGCaretPositionType::kAtTextOffset:
       DCHECK(caret_position.text_offset.has_value());
       return *caret_position.text_offset ==
-             caret_position.cursor.CurrentTextEndOffset();
+             caret_position.cursor.Current().TextEndOffset();
   }
   NOTREACHED();
   return false;
@@ -217,7 +217,7 @@ SideAffinity GetSideAffinity(const NGCaretPosition& caret_position) {
   DCHECK(IsAtFragmentStart(caret_position) || IsAtFragmentEnd(caret_position));
   const bool is_at_start = IsAtFragmentStart(caret_position);
   const bool is_at_left_side =
-      is_at_start == IsLtr(caret_position.cursor.CurrentResolvedDirection());
+      is_at_start == IsLtr(caret_position.cursor.Current().ResolvedDirection());
   return is_at_left_side ? SideAffinity::kLeft : SideAffinity::kRight;
 }
 
@@ -268,8 +268,8 @@ class AbstractInlineBoxAndSideAffinity {
     }
 
     return {cursor, NGCaretPositionType::kAtTextOffset,
-            is_at_start ? cursor.CurrentTextStartOffset()
-                        : cursor.CurrentTextEndOffset()};
+            is_at_start ? cursor.Current().TextStartOffset()
+                        : cursor.Current().TextEndOffset()};
   }
 
   PositionInFlatTree GetPosition() const {

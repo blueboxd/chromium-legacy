@@ -175,7 +175,7 @@ vars = {
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling V8
   # and whatever else without interference from each other.
-  'v8_revision': '56ab990e69987df228757938e23a9bafccab2fe5',
+  'v8_revision': '889e8e5795dcb4932768f1c7632b67e38f0b8918',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling swarming_client
   # and whatever else without interference from each other.
@@ -183,7 +183,7 @@ vars = {
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling ANGLE
   # and whatever else without interference from each other.
-  'angle_revision': 'e1ccac7ff9f088c841a4393b633be402012cfb92',
+  'angle_revision': '58e7790cc093a25b5fb6363bac3672ed00009743',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling SwiftShader
   # and whatever else without interference from each other.
@@ -242,7 +242,7 @@ vars = {
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling devtools-frontend
   # and whatever else without interference from each other.
-  'devtools_frontend_revision': 'f27be3d65c22b90cf65980bb1f09e1fde90d51de',
+  'devtools_frontend_revision': '7ff2e8eda31b86a8e249983f182e20e65c303556',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling libprotobuf-mutator
   # and whatever else without interference from each other.
@@ -1249,7 +1249,7 @@ deps = {
   },
 
   'src/third_party/perfetto':
-    Var('android_git') + '/platform/external/perfetto.git' + '@' + '6a53dfe7459d63939e946cab3d441f9aedd594a5',
+    Var('android_git') + '/platform/external/perfetto.git' + '@' + '46fd1e88913965b3cf8a9d97b36d0d862cde892e',
 
   'src/third_party/perl': {
       'url': Var('chromium_git') + '/chromium/deps/perl.git' + '@' + '6f3e5028eb65d0b4c5fdd792106ac4c84eee1eb3',
@@ -1520,7 +1520,7 @@ deps = {
     Var('chromium_git') + '/v8/v8.git' + '@' +  Var('v8_revision'),
 
   'src-internal': {
-    'url': 'https://chrome-internal.googlesource.com/chrome/src-internal.git@ead1d6709ef64f273c80353188e83e10cec8d72d',
+    'url': 'https://chrome-internal.googlesource.com/chrome/src-internal.git@3413c61fc57195b57eabb9123b2b9ceefd784b3d',
     'condition': 'checkout_src_internal',
   },
 

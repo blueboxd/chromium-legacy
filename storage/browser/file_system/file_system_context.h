@@ -283,7 +283,7 @@ class COMPONENT_EXPORT(STORAGE_BROWSER) FileSystemContext
   FileSystemURL CrackURL(const GURL& url) const;
   // Same as |CrackFileSystemURL|, but cracks FileSystemURL created from method
   // arguments.
-  FileSystemURL CreateCrackedFileSystemURL(const GURL& origin,
+  FileSystemURL CreateCrackedFileSystemURL(const url::Origin& origin,
                                            FileSystemType type,
                                            const base::FilePath& path) const;
 

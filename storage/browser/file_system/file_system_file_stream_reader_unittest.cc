@@ -27,6 +27,7 @@
 #include "storage/browser/test/async_file_test_helper.h"
 #include "storage/browser/test/test_file_system_context.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "url/gurl.h"
 #include "url/origin.h"
 
 namespace storage {
@@ -107,7 +108,7 @@ class FileSystemFileStreamReaderTest : public testing::Test {
 
   FileSystemURL GetFileSystemURL(const std::string& file_name) {
     return file_system_context_->CreateCrackedFileSystemURL(
-        GURL(kURLOrigin), kFileSystemTypeTemporary,
+        url::Origin::Create(GURL(kURLOrigin)), kFileSystemTypeTemporary,
         base::FilePath().AppendASCII(file_name));
   }
 

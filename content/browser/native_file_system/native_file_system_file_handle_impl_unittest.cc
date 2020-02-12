@@ -52,7 +52,7 @@ class NativeFileSystemFileHandleImplTest : public testing::Test {
         /*quota_manager_proxy=*/nullptr, dir_.GetPath());
 
     test_file_url_ = file_system_context_->CreateCrackedFileSystemURL(
-        test_src_origin_.GetURL(), storage::kFileSystemTypeTest,
+        test_src_origin_, storage::kFileSystemTypeTest,
         base::FilePath::FromUTF8Unsafe("test"));
 
     ASSERT_EQ(base::File::FILE_OK,
@@ -126,7 +126,7 @@ TEST_F(NativeFileSystemFileHandleImplTest, CreateFileWriterOverLimitNotOK) {
 
   const FileSystemURL base_swap_url =
       file_system_context_->CreateCrackedFileSystemURL(
-          test_src_origin_.GetURL(), storage::kFileSystemTypeTest,
+          test_src_origin_, storage::kFileSystemTypeTest,
           base::FilePath::FromUTF8Unsafe("test.crswap"));
 
   std::vector<mojo::PendingRemote<blink::mojom::NativeFileSystemFileWriter>>
@@ -137,7 +137,7 @@ TEST_F(NativeFileSystemFileHandleImplTest, CreateFileWriterOverLimitNotOK) {
       swap_url = base_swap_url;
     } else {
       swap_url = file_system_context_->CreateCrackedFileSystemURL(
-          test_src_origin_.GetURL(), storage::kFileSystemTypeTest,
+          test_src_origin_, storage::kFileSystemTypeTest,
           base::FilePath::FromUTF8Unsafe(
               base::StringPrintf("test.%d.crswap", i)));
     }

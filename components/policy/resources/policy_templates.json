@@ -19694,7 +19694,7 @@
       'id': 650,
       'caption': '''Enable Ambient Authentication for profile types.''',
       'tags': [],
-      'desc': '''Configuring this policy will allow/disallow ambient authenticaiton for Incognito and Guest profiles in <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph>.
+      'desc': '''Configuring this policy will allow/disallow ambient authentication for Incognito and Guest profiles in <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph>.
 
       Ambient Authentication is http authentication with default credentials if explicit credentials are not provided via NTLM/Kerberos/Negotiate challenge/response schemes.
 

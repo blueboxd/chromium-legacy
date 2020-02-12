@@ -472,9 +472,7 @@ void NGBoxFragmentPainter::PaintObject(
           PaintInlineItems(paint_info.ForDescendants(), paint_offset,
                            PhysicalOffset(), &cursor);
         }
-      } else if (physical_box_fragment.IsBlockLevel()) {
-        PaintBlockChildren(paint_info);
-      } else if (physical_box_fragment.ChildrenInline()) {
+      } else if (physical_box_fragment.IsInlineFormattingContext()) {
         DCHECK(!RuntimeEnabledFeatures::LayoutNGFragmentItemEnabled());
         DCHECK(paint_fragment_);
         if (physical_box_fragment.IsBlockFlow()) {
@@ -489,6 +487,8 @@ void NGBoxFragmentPainter::PaintObject(
           PaintInlineChildren(paint_fragment_->Children(), paint_info,
                               paint_offset);
         }
+      } else {
+        PaintBlockChildren(paint_info);
       }
     }
 
@@ -530,7 +530,7 @@ void NGBoxFragmentPainter::PaintBlockFlowContents(
     const PhysicalOffset& paint_offset) {
   const NGPhysicalBoxFragment& fragment = PhysicalFragment();
   const LayoutObject* layout_object = fragment.GetLayoutObject();
-  DCHECK(fragment.ChildrenInline());
+  DCHECK(fragment.IsInlineFormattingContext());
 
   // When the layout-tree gets into a bad state, we can end up trying to paint
   // a fragment with inline children, without a paint fragment. See:
@@ -572,7 +572,7 @@ void NGBoxFragmentPainter::PaintBlockFlowContents(
 }
 
 void NGBoxFragmentPainter::PaintBlockChildren(const PaintInfo& paint_info) {
-  DCHECK(box_fragment_.IsBlockLevel());
+  DCHECK(!box_fragment_.IsInlineFormattingContext());
   PaintInfo paint_info_for_descendants = paint_info.ForDescendants();
   for (const NGLink& child : box_fragment_.Children()) {
     const NGPhysicalFragment& child_fragment = *child;
@@ -685,7 +685,7 @@ void NGBoxFragmentPainter::PaintFloatingChildren(
 
 void NGBoxFragmentPainter::PaintFloats(const PaintInfo& paint_info) {
   DCHECK(PhysicalFragment().HasFloatingDescendantsForPaint() ||
-         !PhysicalFragment().ChildrenInline());
+         !PhysicalFragment().IsInlineFormattingContext());
 
   PaintInfo float_paint_info(paint_info);
   if (paint_info.phase == PaintPhase::kFloat)

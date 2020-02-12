@@ -350,7 +350,7 @@ void FileSystemContext::OpenFileSystem(const url::Origin& origin,
   }
 
   backend->ResolveURL(
-      CreateCrackedFileSystemURL(origin.GetURL(), type, base::FilePath()), mode,
+      CreateCrackedFileSystemURL(origin, type, base::FilePath()), mode,
       std::move(callback));
 }
 
@@ -469,11 +469,10 @@ FileSystemURL FileSystemContext::CrackURL(const GURL& url) const {
 }
 
 FileSystemURL FileSystemContext::CreateCrackedFileSystemURL(
-    const GURL& origin,
+    const url::Origin& origin,
     FileSystemType type,
     const base::FilePath& path) const {
-  return CrackFileSystemURL(
-      FileSystemURL(url::Origin::Create(origin), type, path));
+  return CrackFileSystemURL(FileSystemURL(origin, type, path));
 }
 
 bool FileSystemContext::CanServeURLRequest(const FileSystemURL& url) const {

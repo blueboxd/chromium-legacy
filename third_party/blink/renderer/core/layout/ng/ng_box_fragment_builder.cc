@@ -79,14 +79,6 @@ void GatherInlineContainerFragmentsFromLinebox(
 
 }  // namespace
 
-bool NGBoxFragmentBuilder::IsBlockLevel() const {
-  if (node_ && node_.GetLayoutBox()->IsLayoutNGMixin()) {
-    if (NGLayoutInputNode first_child = To<NGBlockNode>(node_).FirstChild())
-      return !first_child.IsInline();
-  }
-  return false;
-}
-
 void NGBoxFragmentBuilder::AddBreakBeforeChild(
     NGLayoutInputNode child,
     base::Optional<NGBreakAppeal> appeal,

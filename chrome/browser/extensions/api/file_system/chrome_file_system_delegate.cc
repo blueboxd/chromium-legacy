@@ -53,6 +53,8 @@
 #include "extensions/browser/event_router.h"
 #include "extensions/browser/extension_registry.h"
 #include "extensions/common/constants.h"
+#include "url/gurl.h"
+#include "url/origin.h"
 #include "url/url_constants.h"
 #endif
 
@@ -159,8 +161,9 @@ void OnConsentReceived(
 
   const storage::FileSystemURL original_url =
       file_system_context->CreateCrackedFileSystemURL(
-          GURL(std::string(kExtensionScheme) + url::kStandardSchemeSeparator +
-               extension_id),
+          url::Origin::Create(GURL(std::string(kExtensionScheme) +
+                                   url::kStandardSchemeSeparator +
+                                   extension_id)),
           storage::kFileSystemTypeExternal, virtual_path);
 
   // Set a fixed register name, as the automatic one would leak the mount point

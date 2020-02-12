@@ -46,6 +46,7 @@
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/icu/source/i18n/unicode/datefmt.h"
 #include "third_party/icu/source/i18n/unicode/regex.h"
+#include "url/gurl.h"
 #include "url/origin.h"
 
 using base::BindLambdaForTesting;
@@ -247,7 +248,8 @@ class FileSystemURLLoaderFactoryTest
 
   FileSystemURL CreateURL(const base::FilePath& file_path) {
     return file_system_context_->CreateCrackedFileSystemURL(
-        GURL("http://remote"), storage::kFileSystemTypeTemporary, file_path);
+        url::Origin::Create(GURL("http://remote")),
+        storage::kFileSystemTypeTemporary, file_path);
   }
 
   void CreateDirectory(const base::StringPiece& dir_name) {
@@ -270,7 +272,8 @@ class FileSystemURLLoaderFactoryTest
                  int buf_size) {
     FileSystemURL url;
     url = file_system_context_->CreateCrackedFileSystemURL(
-        GURL("http://remote"), storage::kFileSystemTypeTemporary,
+        url::Origin::Create(GURL("http://remote")),
+        storage::kFileSystemTypeTemporary,
         base::FilePath().AppendASCII(file_name));
 
     base::File::Error result = base::File::FILE_OK;

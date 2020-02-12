@@ -43,7 +43,7 @@ class LayoutSelectionTestBase : public EditingTestBase {
       cursor.MoveTo(layout_text);
       if (!cursor)
         return;
-      const unsigned text_start = cursor.CurrentTextStartOffset();
+      const unsigned text_start = cursor.Current().TextStartOffset();
       for (; cursor; cursor.MoveToNextForSameLayoutObject()) {
         const LayoutSelectionStatus status =
             selection.ComputeLayoutSelectionStatus(cursor);

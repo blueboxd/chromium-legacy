@@ -139,13 +139,13 @@ class CopyOrMoveFileValidatorTestHelper {
  private:
   FileSystemURL SourceURL(const std::string& path) {
     return file_system_context_->CreateCrackedFileSystemURL(
-        origin_.GetURL(), src_type_,
+        origin_, src_type_,
         base::FilePath().AppendASCII("src").AppendASCII(path));
   }
 
   FileSystemURL DestURL(const std::string& path) {
     return file_system_context_->CreateCrackedFileSystemURL(
-        origin_.GetURL(), dest_type_,
+        origin_, dest_type_,
         base::FilePath().AppendASCII("dest").AppendASCII(path));
   }
 

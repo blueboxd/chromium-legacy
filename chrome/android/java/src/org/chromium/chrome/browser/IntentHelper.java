@@ -76,20 +76,4 @@ public abstract class IntentHelper {
             // If no app handles it, do nothing.
         }
     }
-
-    /**
-     * Opens date and time in Android settings.
-     *
-     */
-    @CalledByNative
-    static void openDateAndTimeSettings() {
-        Intent intent = new Intent(android.provider.Settings.ACTION_DATE_SETTINGS);
-
-        try {
-            intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
-            ContextUtils.getApplicationContext().startActivity(intent);
-        } catch (android.content.ActivityNotFoundException ex) {
-            // If it doesn't work, avoid crashing.
-        }
-    }
 }

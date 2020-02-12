@@ -66,7 +66,7 @@
 
   function countLiveLocations() {
     var locationsCount = 0;
-    var modelInfos = Bindings.cssWorkspaceBinding._modelToInfo.valuesArray();
+    var modelInfos = Bindings.cssWorkspaceBinding._modelToInfo.values();
     for (var modelInfo of modelInfos)
       locationsCount += modelInfo._locations.valuesArray().length;
     return locationsCount;

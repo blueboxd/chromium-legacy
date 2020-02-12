@@ -109,6 +109,7 @@
     API_AVAILABLE(ios(13.0)) {
   self.creditCardScannerCoordinator = [[CreditCardScannerCoordinator alloc]
       initWithBaseViewController:self.addCreditCardViewController
+                         browser:self.browser
               creditCardConsumer:self.addCreditCardViewController];
 
   [self.creditCardScannerCoordinator start];

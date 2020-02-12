@@ -100,6 +100,7 @@
 #include "storage/browser/file_system/isolated_context.h"
 #include "third_party/re2/src/re2/re2.h"
 #include "ui/base/l10n/l10n_util.h"
+#include "url/origin.h"
 
 namespace extensions {
 
@@ -1422,9 +1423,9 @@ bool DeveloperPrivateLoadDirectoryFunction::RunAsync() {
             ->CreateVirtualRootPath(filesystem_id)
             .Append(base::FilePath::FromUTF8Unsafe(filesystem_path));
     storage::FileSystemURL directory_url = context_->CreateCrackedFileSystemURL(
-        extensions::Extension::GetBaseURLFromExtensionId(extension_id()),
-        storage::kFileSystemTypeIsolated,
-        virtual_path);
+        url::Origin::Create(
+            extensions::Extension::GetBaseURLFromExtensionId(extension_id())),
+        storage::kFileSystemTypeIsolated, virtual_path);
 
     if (directory_url.is_valid() &&
         directory_url.type() != storage::kFileSystemTypeNativeLocal &&

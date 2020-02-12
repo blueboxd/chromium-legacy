@@ -32,7 +32,7 @@
       function didEvaluate() {
         dumpConsoleMessageURLs();
         TestRunner.addResult('Pre-format row message list:');
-        TestRunner.addResult(JSON.stringify(sourceFrame._rowMessageBuckets.keysArray()));
+        TestRunner.addResult(JSON.stringify([...sourceFrame._rowMessageBuckets.keys()]));
         var name = panel.visibleView.uiSourceCode().name();
         scriptFormatter._toggleFormatScriptSource();
         SourcesTestRunner.showScriptSource(name + ':formatted', uiSourceCodeScriptFormatted);
@@ -42,7 +42,7 @@
         dumpConsoleMessageURLs();
         TestRunner.addResult('Post-format row message list:');
         var formattedSourceFrame = panel.visibleView;
-        TestRunner.addResult(JSON.stringify(formattedSourceFrame._rowMessageBuckets.keysArray()));
+        TestRunner.addResult(JSON.stringify([...formattedSourceFrame._rowMessageBuckets.keys()]));
         next();
       }
     }

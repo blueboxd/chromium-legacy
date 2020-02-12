@@ -24,6 +24,7 @@
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/blink/public/mojom/quota/quota_types.mojom.h"
 #include "url/gurl.h"
+#include "url/origin.h"
 
 using blink::mojom::StorageType;
 
@@ -121,7 +122,7 @@ class FileSystemQuotaClientTest : public testing::Test {
                                  StorageType storage_type) {
     FileSystemType type = QuotaStorageTypeToFileSystemType(storage_type);
     FileSystemURL url = file_system_context_->CreateCrackedFileSystemURL(
-        GURL(origin_url), type, file_path);
+        url::Origin::Create(GURL(origin_url)), type, file_path);
 
     base::File::Error result =
         AsyncFileTestHelper::CreateDirectory(file_system_context_.get(), url);
@@ -137,7 +138,7 @@ class FileSystemQuotaClientTest : public testing::Test {
 
     FileSystemType type = QuotaStorageTypeToFileSystemType(storage_type);
     FileSystemURL url = file_system_context_->CreateCrackedFileSystemURL(
-        GURL(origin_url), type, file_path);
+        url::Origin::Create(GURL(origin_url)), type, file_path);
 
     base::File::Error result =
         AsyncFileTestHelper::CreateFile(file_system_context_.get(), url);

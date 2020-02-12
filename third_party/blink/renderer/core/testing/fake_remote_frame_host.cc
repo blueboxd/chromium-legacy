@@ -23,14 +23,16 @@ void FakeRemoteFrameHost::DidFocusFrame() {}
 
 void FakeRemoteFrameHost::CheckCompleted() {}
 
+void FakeRemoteFrameHost::CapturePaintPreviewOfCrossProcessSubframe(
+    const blink::WebRect& clip_rect,
+    const base::UnguessableToken& guid) {}
+
+void FakeRemoteFrameHost::SetIsInert(bool inert) {}
+
 void FakeRemoteFrameHost::BindFrameHostReceiver(
     mojo::ScopedInterfaceEndpointHandle handle) {
   receiver_.Bind(mojo::PendingAssociatedReceiver<mojom::blink::RemoteFrameHost>(
       std::move(handle)));
 }
-
-void FakeRemoteFrameHost::CapturePaintPreviewOfCrossProcessSubframe(
-    const blink::WebRect& clip_rect,
-    const base::UnguessableToken& guid) {}
 
 }  // namespace blink

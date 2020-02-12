@@ -6466,7 +6466,7 @@ TextDirection LayoutBox::ResolvedDirection() const {
       NGInlineCursor cursor;
       cursor.MoveTo(*this);
       if (cursor)
-        return cursor.CurrentResolvedDirection();
+        return cursor.Current().ResolvedDirection();
     }
     if (InlineBoxWrapper())
       return InlineBoxWrapper()->Direction();

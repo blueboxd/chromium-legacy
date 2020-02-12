@@ -238,7 +238,7 @@ void NativeFileSystemFileHandleImpl::CreateSwapFile(
   // file.
   storage::FileSystemURL swap_url =
       manager()->context()->CreateCrackedFileSystemURL(
-          url().origin().GetURL(), url().mount_type(), swap_path);
+          url().origin(), url().mount_type(), swap_path);
 
   // If that failed, it means this file was part of an isolated file system,
   // and specifically, a single file isolated file system. In that case we'll

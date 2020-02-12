@@ -146,16 +146,31 @@ AtomicString PerformanceResourceTiming::ConnectionInfo() const {
   return connection_info_;
 }
 
+namespace {
+bool IsDocumentDestination(mojom::blink::RequestContextType context_type) {
+  return context_type == mojom::blink::RequestContextType::IFRAME ||
+         context_type == mojom::blink::RequestContextType::FRAME ||
+         context_type == mojom::blink::RequestContextType::FORM ||
+         context_type == mojom::blink::RequestContextType::HYPERLINK;
+}
+
+}  // namespace
+
 AtomicString PerformanceResourceTiming::GetNextHopProtocol(
     const AtomicString& alpn_negotiated_protocol,
-    const AtomicString& connection_info) {
+    const AtomicString& connection_info) const {
   // Fallback to connection_info when alpn_negotiated_protocol is unknown.
   AtomicString returnedProtocol = (alpn_negotiated_protocol == "unknown")
                                       ? connection_info
                                       : alpn_negotiated_protocol;
-  // If connection_info is also unknown, return empty string.
-  // (https://github.com/w3c/navigation-timing/issues/71)
-  returnedProtocol = (returnedProtocol == "unknown") ? "" : returnedProtocol;
+  // If connection_info is unknown, or if this is a `document` destination and
+  // TAO didn't pass, return the empty string.
+  // https://github.com/w3c/navigation-timing/issues/71
+  // https://github.com/w3c/resource-timing/pull/224
+  if (returnedProtocol == "unknown" ||
+      (!AllowTimingDetails() && IsDocumentDestination(context_type_))) {
+    returnedProtocol = "";
+  }
 
   return returnedProtocol;
 }
@@ -164,16 +179,6 @@ AtomicString PerformanceResourceTiming::nextHopProtocol() const {
   return PerformanceResourceTiming::GetNextHopProtocol(AlpnNegotiatedProtocol(),
                                                        ConnectionInfo());
 }
-
-namespace {
-bool IsDocumentDestination(mojom::RequestContextType context_type) {
-  return context_type == mojom::RequestContextType::IFRAME ||
-         context_type == mojom::RequestContextType::FRAME ||
-         context_type == mojom::RequestContextType::FORM ||
-         context_type == mojom::RequestContextType::HYPERLINK;
-}
-
-}  // namespace
 
 DOMHighResTimeStamp PerformanceResourceTiming::workerStart() const {
   ResourceLoadTiming* timing = GetResourceLoadTiming();

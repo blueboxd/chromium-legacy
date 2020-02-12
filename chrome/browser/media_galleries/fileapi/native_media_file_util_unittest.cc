@@ -36,6 +36,7 @@
 #include "storage/browser/test/mock_special_storage_policy.h"
 #include "storage/browser/test/test_file_system_options.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "url/origin.h"
 
 #define FPL(x) FILE_PATH_LITERAL(x)
 
@@ -157,7 +158,7 @@ class NativeMediaFileUtilTest : public testing::Test {
 
   FileSystemURL CreateURL(const base::FilePath::CharType* test_case_path) {
     return file_system_context_->CreateCrackedFileSystemURL(
-        origin(), storage::kFileSystemTypeIsolated,
+        url::Origin::Create(origin()), storage::kFileSystemTypeIsolated,
         GetVirtualPath(test_case_path));
   }
 

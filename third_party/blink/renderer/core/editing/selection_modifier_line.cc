@@ -186,7 +186,7 @@ class AbstractLineBox {
       bool only_editable_leaves) {
     const PhysicalSize unit_square(LayoutUnit(1), LayoutUnit(1));
     const LogicalOffset logical_point = point.ConvertToLogical(
-        line.Current().Style().GetWritingMode(), line.CurrentBaseDirection(),
+        line.Current().Style().GetWritingMode(), line.Current().BaseDirection(),
         line.Current().Size(), unit_square);
     const LayoutUnit inline_offset = logical_point.inline_offset;
     const LayoutObject* closest_leaf_child = nullptr;
@@ -203,7 +203,7 @@ class AbstractLineBox {
       const LogicalRect fragment_logical_rect =
           cursor.Current().RectInContainerBlock().ConvertToLogical(
               line.Current().Style().GetWritingMode(),
-              line.CurrentBaseDirection(), line.Current().Size(),
+              line.Current().BaseDirection(), line.Current().Size(),
               cursor.Current().Size());
       const LayoutUnit inline_min = fragment_logical_rect.offset.inline_offset;
       const LayoutUnit inline_max = fragment_logical_rect.offset.inline_offset +

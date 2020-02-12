@@ -261,11 +261,11 @@ TEST_F(NativeFileSystemManagerImplTest,
 TEST_F(NativeFileSystemManagerImplTest,
        FileWriterSwapDeletedOnConnectionClose) {
   auto test_file_url = file_system_context_->CreateCrackedFileSystemURL(
-      kTestOrigin.GetURL(), storage::kFileSystemTypeTest,
+      kTestOrigin, storage::kFileSystemTypeTest,
       base::FilePath::FromUTF8Unsafe("test"));
 
   auto test_swap_url = file_system_context_->CreateCrackedFileSystemURL(
-      kTestOrigin.GetURL(), storage::kFileSystemTypeTest,
+      kTestOrigin, storage::kFileSystemTypeTest,
       base::FilePath::FromUTF8Unsafe("test.crswap"));
 
   ASSERT_EQ(base::File::FILE_OK,
@@ -298,11 +298,11 @@ TEST_F(NativeFileSystemManagerImplTest,
 TEST_F(NativeFileSystemManagerImplTest,
        FileWriterCloseAllowedToCompleteOnDestruct) {
   auto test_file_url = file_system_context_->CreateCrackedFileSystemURL(
-      kTestOrigin.GetURL(), storage::kFileSystemTypeTest,
+      kTestOrigin, storage::kFileSystemTypeTest,
       base::FilePath::FromUTF8Unsafe("test"));
 
   auto test_swap_url = file_system_context_->CreateCrackedFileSystemURL(
-      kTestOrigin.GetURL(), storage::kFileSystemTypeTest,
+      kTestOrigin, storage::kFileSystemTypeTest,
       base::FilePath::FromUTF8Unsafe("test.crswap"));
 
   ASSERT_EQ(base::File::FILE_OK,
@@ -333,7 +333,7 @@ TEST_F(NativeFileSystemManagerImplTest,
 
 TEST_F(NativeFileSystemManagerImplTest, SerializeHandle_SandboxedFile) {
   auto test_file_url = file_system_context_->CreateCrackedFileSystemURL(
-      kTestOrigin.GetURL(), storage::kFileSystemTypeTemporary,
+      kTestOrigin, storage::kFileSystemTypeTemporary,
       base::FilePath::FromUTF8Unsafe("test/foo/bar"));
   NativeFileSystemFileHandleImpl file(manager_.get(), kBindingContext,
                                       test_file_url,
@@ -359,7 +359,7 @@ TEST_F(NativeFileSystemManagerImplTest, SerializeHandle_SandboxedFile) {
 
 TEST_F(NativeFileSystemManagerImplTest, SerializeHandle_SandboxedDirectory) {
   auto test_file_url = file_system_context_->CreateCrackedFileSystemURL(
-      kTestOrigin.GetURL(), storage::kFileSystemTypeTemporary,
+      kTestOrigin, storage::kFileSystemTypeTemporary,
       base::FilePath::FromUTF8Unsafe("hello/world/"));
   NativeFileSystemDirectoryHandleImpl directory(manager_.get(), kBindingContext,
                                                 test_file_url,

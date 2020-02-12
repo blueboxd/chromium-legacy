@@ -77,11 +77,11 @@ class NativeFileSystemFileWriterImplTest : public testing::Test {
         isolated_context->CreateVirtualRootPath(fs.id()).AppendASCII(base_name);
 
     test_file_url_ = file_system_context_->CreateCrackedFileSystemURL(
-        kTestOrigin.GetURL(), storage::kFileSystemTypeIsolated,
+        kTestOrigin, storage::kFileSystemTypeIsolated,
         root_path.AppendASCII("test"));
 
     test_swap_url_ = file_system_context_->CreateCrackedFileSystemURL(
-        kTestOrigin.GetURL(), storage::kFileSystemTypeIsolated,
+        kTestOrigin, storage::kFileSystemTypeIsolated,
         root_path.AppendASCII("test.crswap"));
 
     ASSERT_EQ(base::File::FILE_OK,

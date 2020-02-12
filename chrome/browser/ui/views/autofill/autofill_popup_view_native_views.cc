@@ -507,9 +507,9 @@ void AutofillPopupItemView::RefreshStyle() {
 }
 
 std::unique_ptr<views::Background> AutofillPopupItemView::CreateBackground() {
-  return is_selected() ? views::CreateSolidBackground(
-                             popup_view()->GetSelectedBackgroundColor())
-                       : nullptr;
+  return views::CreateSolidBackground(
+      is_selected() ? popup_view()->GetSelectedBackgroundColor()
+                    : popup_view()->GetBackgroundColor());
 }
 
 AutofillPopupItemView::ViewWithLabel AutofillPopupItemView::CreateValueLabel() {

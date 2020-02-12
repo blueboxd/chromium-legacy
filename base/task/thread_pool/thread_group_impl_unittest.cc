@@ -617,7 +617,8 @@ class ThreadGroupImplHistogramTest : public ThreadGroupImplImplTest {
 
 }  // namespace
 
-TEST_F(ThreadGroupImplHistogramTest, NumTasksBeforeCleanup) {
+// TODO(https://crbug.com/1047733): Flaky, especially on Windows and Android.
+TEST_F(ThreadGroupImplHistogramTest, DISABLED_NumTasksBeforeCleanup) {
   CreateThreadGroup();
   auto histogrammed_thread_task_runner = test::CreatePooledSequencedTaskRunner(
       {WithBaseSyncPrimitives()}, &mock_pooled_task_runner_delegate_);

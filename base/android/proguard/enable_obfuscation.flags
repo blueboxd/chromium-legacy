@@ -4,5 +4,4 @@
 
 # As of August 11, 2016, obfuscation was found to save 660kb on our .dex size
 # and 53kb memory/process (through shrinking method/string counts).
--renamesourcefileattribute PG
 -repackageclasses ''

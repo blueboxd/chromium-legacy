@@ -107,9 +107,8 @@ class CORE_EXPORT PerformanceResourceTiming
   base::TimeTicks TimeOrigin() const { return time_origin_; }
 
  private:
-  static AtomicString GetNextHopProtocol(
-      const AtomicString& alpn_negotiated_protocol,
-      const AtomicString& connection_info);
+  AtomicString GetNextHopProtocol(const AtomicString& alpn_negotiated_protocol,
+                                  const AtomicString& connection_info) const;
 
   double WorkerReady() const;
 

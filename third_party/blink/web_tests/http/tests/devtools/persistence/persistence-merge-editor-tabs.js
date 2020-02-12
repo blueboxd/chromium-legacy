@@ -78,7 +78,7 @@
 
   function dumpEditorTabs() {
     var editorContainer = UI.panels.sources._sourcesView._editorContainer;
-    var openedUISourceCodes = editorContainer._tabIds.keysArray();
+    var openedUISourceCodes = [...editorContainer._tabIds.keys()];
     openedUISourceCodes.sort((a, b) => a.url().compareTo(b.url()));
     TestRunner.addResult('Opened tabs: ');
     for (const code of openedUISourceCodes)

@@ -115,6 +115,8 @@ class CONTENT_EXPORT CrossProcessFrameConnector
 
   void SetScreenSpaceRect(const gfx::Rect& screen_space_rect) override;
 
+  void SetIsInert(bool inert);
+
   // Handlers for messages received from the parent frame called
   // from RenderFrameProxyHost to be sent to |view_|.
   void OnSetInheritedEffectiveTouchAction(cc::TouchAction);
@@ -178,7 +180,6 @@ class CONTENT_EXPORT CrossProcessFrameConnector
       const FrameVisualProperties& visual_properties);
   void OnUpdateViewportIntersection(
       const blink::ViewportIntersectionState& viewport_intersection);
-  void OnSetIsInert(bool);
   void OnUpdateRenderThrottlingStatus(bool is_throttled,
                                       bool subtree_throttled);
 

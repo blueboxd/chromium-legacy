@@ -2592,7 +2592,7 @@
     This user account is not eligible for the service.
   </message>
   <message name="IDS_ENTERPRISE_ENROLLMENT_MISSING_LICENSES_ERROR" desc="Error message to show when the domain the device is trying to enroll into has expired or exhausted licenses.">
-    You do not have enough software licenses to enroll this device. Please contact sales to purchase more. If you believe you're seeing this message in error, please contact support.
+    You do not have enough upgrades to enroll this device. Please contact sales to purchase more. If you believe you're seeing this message in error, please contact support.
   </message>
   <message name="IDS_ENTERPRISE_ENROLLMENT_DEPROVISIONED_ERROR" desc="Error message to show when enrollment fails because the administrator has deprovisioned the device on the server side.">
     This device has been placed into a deprovisioned state by the administrator. To enable it for enrollment, please have your administrator place the device into a pending state.
@@ -2601,7 +2601,7 @@
     This device cannot be enrolled to the domain your account belongs to because the device is marked for management by a different domain.
   </message>
   <message name="IDS_ENTERPRISE_ENROLLMENT_CONSUMER_ACCOUNT_WITH_PACKAGED_LICENSE" desc="Error message to show when the user tries to enroll a device with a packaged license using a consumer account.">
-    Your device includes a Chrome license, but your username is not associated with an Admin console. Please create an Admin console account to proceed with enrollment. Note: If you choose to use your own domain to create a new Admin console account, you must also complete domain verification after signup. https://g.co/ChromeEnterpriseAccount
+    Your device includes a Chrome Enterprise Upgrade, but your username is not associated with an enterprise account. Please create an enterprise account by visiting g.co/ChromeEnterpriseAccount on a secondary device.
   </message>
   <message name="IDS_ENTERPRISE_ENROLLMENT_ATTRIBUTE_ERROR" desc="Error message shown when successfully enrolled, but the device attribute update has failed.">
     Your <ph name="DEVICE_TYPE">$1<ex>Chromebook</ex></ph> has successfully been enrolled for enterprise management, but failed to send its asset and location information. Please manually enter this information from your Admin console for this device.

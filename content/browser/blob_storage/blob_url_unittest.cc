@@ -44,6 +44,7 @@
 #include "storage/browser/test/mock_blob_registry_delegate.h"
 #include "storage/browser/test/test_file_system_context.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "url/gurl.h"
 #include "url/origin.h"
 
 using storage::BlobDataBuilder;
@@ -145,7 +146,7 @@ class BlobURLTest : public testing::Test {
                            base::Time* modification_time) {
     storage::FileSystemURL url =
         file_system_context_->CreateCrackedFileSystemURL(
-            GURL(kFileSystemURLOrigin), kFileSystemType,
+            url::Origin::Create(GURL(kFileSystemURLOrigin)), kFileSystemType,
             base::FilePath().AppendASCII(filename));
 
     ASSERT_EQ(base::File::FILE_OK,

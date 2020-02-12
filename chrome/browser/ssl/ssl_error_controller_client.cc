@@ -23,12 +23,9 @@
 #include "chrome/common/url_constants.h"
 #include "components/safe_browsing/core/common/safe_browsing_prefs.h"
 #include "components/security_interstitials/content/content_metrics_helper.h"
+#include "components/security_interstitials/content/utils.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/web_contents.h"
-
-#if defined(OS_ANDROID)
-#include "chrome/browser/android/intent_helper.h"
-#endif
 
 #if defined(OS_CHROMEOS)
 #include "chrome/browser/profiles/profile_manager.h"
@@ -71,81 +68,6 @@ bool HasSeenRecurrentErrorInternal(content::WebContents* web_contents,
           Profile::FromBrowserContext(web_contents->GetBrowserContext()));
   return state->HasSeenRecurrentErrors(cert_error);
 }
-
-#if !defined(OS_CHROMEOS)
-void LaunchDateAndTimeSettingsImpl() {
-// The code for each OS is completely separate, in order to avoid bugs like
-// https://crbug.com/430877 . ChromeOS is handled on the UI thread.
-#if defined(OS_ANDROID)
-  chrome::android::OpenDateAndTimeSettings();
-
-#elif defined(OS_LINUX)
-  struct ClockCommand {
-    const char* const pathname;
-    const char* const argument;
-  };
-  static const ClockCommand kClockCommands[] = {
-      // Unity
-      {"/usr/bin/unity-control-center", "datetime"},
-      // GNOME
-      //
-      // NOTE: On old Ubuntu, naming control panels doesn't work, so it
-      // opens the overview. This will have to be good enough.
-      {"/usr/bin/gnome-control-center", "datetime"},
-      {"/usr/local/bin/gnome-control-center", "datetime"},
-      {"/opt/bin/gnome-control-center", "datetime"},
-      // KDE
-      {"/usr/bin/kcmshell4", "clock"},
-      {"/usr/local/bin/kcmshell4", "clock"},
-      {"/opt/bin/kcmshell4", "clock"},
-  };
-
-  base::CommandLine command(base::FilePath(""));
-  for (const ClockCommand& cmd : kClockCommands) {
-    base::FilePath pathname(cmd.pathname);
-    if (base::PathExists(pathname)) {
-      command.SetProgram(pathname);
-      command.AppendArg(cmd.argument);
-      break;
-    }
-  }
-  if (command.GetProgram().empty()) {
-    // Alas, there is nothing we can do.
-    return;
-  }
-
-  base::LaunchOptions options;
-  options.wait = false;
-  options.allow_new_privs = true;
-  base::LaunchProcess(command, options);
-
-#elif defined(OS_MACOSX)
-  base::CommandLine command(base::FilePath("/usr/bin/open"));
-  command.AppendArg("/System/Library/PreferencePanes/DateAndTime.prefPane");
-
-  base::LaunchOptions options;
-  options.wait = false;
-  base::LaunchProcess(command, options);
-
-#elif defined(OS_WIN)
-  base::FilePath path;
-  base::PathService::Get(base::DIR_SYSTEM, &path);
-  static const base::char16 kControlPanelExe[] = L"control.exe";
-  path = path.Append(base::string16(kControlPanelExe));
-  base::CommandLine command(path);
-  command.AppendArg(std::string("/name"));
-  command.AppendArg(std::string("Microsoft.DateAndTime"));
-
-  base::LaunchOptions options;
-  options.wait = false;
-  base::LaunchProcess(command, options);
-
-#else
-#error Unsupported target architecture.
-#endif
-  // Don't add code here! (See the comment at the beginning of the function.)
-}
-#endif
 
 }  // namespace
 
@@ -223,7 +145,7 @@ void SSLErrorControllerClient::LaunchDateAndTimeSettings() {
   base::PostTask(
       FROM_HERE,
       {base::ThreadPool(), base::TaskPriority::USER_VISIBLE, base::MayBlock()},
-      base::BindOnce(&LaunchDateAndTimeSettingsImpl));
+      base::BindOnce(&security_interstitials::LaunchDateAndTimeSettings));
 #endif
 }
 

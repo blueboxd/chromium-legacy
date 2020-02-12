@@ -23,7 +23,6 @@ class DictionaryValue;
 
 namespace invalidation {
 class ObjectId;
-class InvalidationObjectId;
 }  // namespace invalidation
 
 namespace syncer {
@@ -91,13 +90,6 @@ bool ObjectIdFromValue(const base::DictionaryValue& value,
 
 INVALIDATION_EXPORT std::string ObjectIdToString(
     const invalidation::ObjectId& object_id);
-
-// Same set of utils as above but for the InvalidationObjectId.
-
-struct INVALIDATION_EXPORT InvalidationObjectIdLessThan {
-  bool operator()(const invalidation::InvalidationObjectId& lhs,
-                  const invalidation::InvalidationObjectId& rhs) const;
-};
 
 ObjectIdSet ConvertTopicsToIds(TopicSet topics);
 ObjectIdSet ConvertTopicsToIds(Topics topics);

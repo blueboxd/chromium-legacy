@@ -926,13 +926,6 @@ IPC_MESSAGE_ROUTED0(FrameHostMsg_NotifyFrameIsLargeSticky)
 IPC_MESSAGE_ROUTED1(FrameHostMsg_UpdateViewportIntersection,
                     blink::ViewportIntersectionState /* intersection_state */)
 
-// Sent by a RenderFrameProxy to the browser signaling that the renderer
-// has determined the DOM subtree it represents is inert and should no
-// longer process input events. Also see WidgetMsg_SetIsInert.
-//
-// https://html.spec.whatwg.org/multipage/interaction.html#inert
-IPC_MESSAGE_ROUTED1(FrameHostMsg_SetIsInert, bool /* inert */)
-
 // Toggles render throttling on a remote frame. |is_throttled| indicates
 // whether the current frame should be throttled based on its viewport
 // visibility, and |subtree_throttled| indicates that an ancestor frame has

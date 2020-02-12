@@ -98,13 +98,12 @@ NGPhysicalBoxFragment::NGPhysicalBoxFragment(
   if (has_padding_)
     *const_cast<NGPhysicalBoxStrut*>(ComputePaddingAddress()) = padding;
   is_first_for_node_ = builder->IsFirstForNode();
-  is_block_level_ = builder->IsBlockLevel();
   is_fieldset_container_ = builder->is_fieldset_container_;
   is_legacy_layout_root_ = builder->is_legacy_layout_root_;
   is_painted_atomically_ =
       builder->space_ && builder->space_->IsPaintedAtomically();
   border_edge_ = builder->border_edges_.ToPhysical(builder->GetWritingMode());
-  children_inline_ = layout_object_->ChildrenInline();
+  is_inline_formatting_context_ = builder->is_inline_formatting_context_;
   if (builder->baseline_.has_value() &&
       !layout_object_->ShouldApplyLayoutContainment()) {
     has_baseline_ = true;
@@ -306,8 +305,7 @@ PhysicalRect NGPhysicalBoxFragment::ScrollableOverflowFromChildren() const {
   }
 
   // Traverse child fragments.
-  const bool children_inline = ChildrenInline();
-  DCHECK_EQ(children_inline, GetLayoutObject()->ChildrenInline());
+  const bool children_inline = IsInlineFormattingContext();
   // Only add overflow for fragments NG has not reflected into Legacy.
   // These fragments are:
   // - inline fragments,
@@ -476,7 +474,7 @@ void NGPhysicalBoxFragment::CheckSameForSimplifiedLayout(
   DCHECK_EQ(depends_on_percentage_block_size_,
             other.depends_on_percentage_block_size_);
 
-  DCHECK_EQ(children_inline_, other.children_inline_);
+  DCHECK_EQ(is_inline_formatting_context_, other.is_inline_formatting_context_);
   DCHECK_EQ(is_fieldset_container_, other.is_fieldset_container_);
   DCHECK_EQ(is_legacy_layout_root_, other.is_legacy_layout_root_);
   DCHECK_EQ(is_painted_atomically_, other.is_painted_atomically_);

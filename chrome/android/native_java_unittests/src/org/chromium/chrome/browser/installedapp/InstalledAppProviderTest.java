@@ -13,11 +13,16 @@ import android.os.Bundle;
 import android.util.Pair;
 
 import org.junit.Assert;
+import org.junit.Rule;
 
+import org.chromium.base.Callback;
 import org.chromium.base.annotations.CalledByNative;
 import org.chromium.base.annotations.CalledByNativeJavaTest;
+import org.chromium.base.test.util.JniMocker;
 import org.chromium.chrome.browser.UnitTestUtils;
 import org.chromium.chrome.browser.instantapps.InstantAppsHandler;
+import org.chromium.chrome.browser.profiles.Profile;
+import org.chromium.content_public.browser.test.util.TestThreadUtils;
 import org.chromium.installedapp.mojom.InstalledAppProvider;
 import org.chromium.installedapp.mojom.RelatedApplication;
 import org.chromium.url.URI;
@@ -57,6 +62,7 @@ public class InstalledAppProviderTest {
     private static final String URL_ON_ORIGIN =
             "https://example.com:8000/path/to/page.html?key=value#fragment";
     private static final String MANIFEST_URL = "https://example.com:8000/manifest.json";
+    private static final String OTHER_MANIFEST_URL = "https://example2.com:8000/manifest.json";
     private static final String ORIGIN_SYNTAX_ERROR = "https:{";
     private static final String ORIGIN_MISSING_SCHEME = "path/only";
     private static final String ORIGIN_MISSING_HOST = "file:///path/piece";
@@ -69,6 +75,9 @@ public class InstalledAppProviderTest {
     private FakeFrameUrlDelegate mFrameUrlDelegate;
     private InstalledAppProviderTestImpl mInstalledAppProvider;
     private FakeInstantAppsHandler mFakeInstantAppsHandler;
+
+    @Rule
+    public JniMocker mocker = new JniMocker();
 
     private static class FakePackageManager extends PackageManagerDelegate {
         private Map<String, PackageInfo> mPackageInfo = new HashMap<>();
@@ -136,6 +145,27 @@ public class InstalledAppProviderTest {
         @Override
         public boolean isWebApkInstalled(String manifestUrl) {
             return mFakePackageManager.isWebApkInstalled(manifestUrl);
+        }
+
+        @Override
+        protected Profile getProfile() {
+            return null;
+        }
+    }
+
+    private static class TestInstalledAppProviderImplJni
+            implements InstalledAppProviderImpl.Natives {
+        private static final Map<String, String> RELATION_MAP = new HashMap<>();
+
+        public static void addVerfication(String webDomain, String manifestUrl) {
+            RELATION_MAP.put(webDomain, manifestUrl);
+        }
+
+        @Override
+        public void checkDigitalAssetLinksRelationshipForWebApk(
+                Profile profile, String webDomain, String manifestUrl, Callback<Boolean> callback) {
+            callback.onResult(RELATION_MAP.containsKey(webDomain)
+                    && RELATION_MAP.get(webDomain).equals(manifestUrl));
         }
     }
 
@@ -354,7 +384,11 @@ public class InstalledAppProviderTest {
     private InstalledAppProviderTest() {}
 
     @CalledByNative
-    public void setUp() throws URISyntaxException {
+    public void setUp() throws Exception {
+        TestThreadUtils.setThreadAssertsDisabled(true);
+
+        mocker.mock(InstalledAppProviderImplJni.TEST_HOOKS, new TestInstalledAppProviderImplJni());
+
         mFakePackageManager = new FakePackageManager();
         mFrameUrlDelegate = new FakeFrameUrlDelegate(URL_ON_ORIGIN);
         mFakeInstantAppsHandler = new FakeInstantAppsHandler();
@@ -854,7 +888,7 @@ public class InstalledAppProviderTest {
         // low 10 bits of the first two bytes of the result / 100.
         Assert.assertEquals(5, mInstalledAppProvider.getLastDelayMillis());
 
-        // WebAPK.
+        // Own WebAPK.
         manifestRelatedApps = new RelatedApplication[] {
                 createRelatedApplication(PLATFORM_WEBAPP, null, MANIFEST_URL)};
         expectedInstalledRelatedApps = new RelatedApplication[] {};
@@ -862,6 +896,15 @@ public class InstalledAppProviderTest {
         // This expectation is based on HMAC_SHA256(salt, manifestUrl encoded in UTF-8), taking the
         // low 10 bits of the first two bytes of the result / 100.
         Assert.assertEquals(3, mInstalledAppProvider.getLastDelayMillis());
+
+        // Another WebAPK.
+        manifestRelatedApps = new RelatedApplication[] {
+                createRelatedApplication(PLATFORM_WEBAPP, null, OTHER_MANIFEST_URL)};
+        expectedInstalledRelatedApps = new RelatedApplication[] {};
+        verifyInstalledApps(manifestRelatedApps, expectedInstalledRelatedApps);
+        // This expectation is based on HMAC_SHA256(salt, manifestUrl encoded in UTF-8), taking the
+        // low 10 bits of the first two bytes of the result / 100.
+        Assert.assertEquals(8, mInstalledAppProvider.getLastDelayMillis());
     }
 
     @CalledByNativeJavaTest
@@ -915,5 +958,34 @@ public class InstalledAppProviderTest {
 
         RelatedApplication[] expectedInstalledRelatedApps = new RelatedApplication[] {webApk};
         verifyInstalledApps(manifestRelatedApps, expectedInstalledRelatedApps);
+    }
+
+    /**
+     * Check that a website can find another WebAPK when installed & verfied.
+     */
+    @CalledByNativeJavaTest
+    public void testInstalledWebApkForOtherWebsite() throws Exception {
+        RelatedApplication webApk =
+                createRelatedApplication(PLATFORM_WEBAPP, null, OTHER_MANIFEST_URL);
+        RelatedApplication manifestRelatedApps[] = new RelatedApplication[] {webApk};
+        mFakePackageManager.addWebApk(OTHER_MANIFEST_URL);
+
+        verifyInstalledApps(manifestRelatedApps, new RelatedApplication[] {});
+
+        TestInstalledAppProviderImplJni.addVerfication(OTHER_MANIFEST_URL, MANIFEST_URL);
+        verifyInstalledApps(manifestRelatedApps, new RelatedApplication[] {webApk});
+    }
+
+    /**
+     * Check that a website can query another WebAPK when not installed but verfied.
+     */
+    @CalledByNativeJavaTest
+    public void testInstalledWebApkForOtherWebsiteNotInstalled() throws Exception {
+        RelatedApplication webApk =
+                createRelatedApplication(PLATFORM_WEBAPP, null, OTHER_MANIFEST_URL);
+        RelatedApplication manifestRelatedApps[] = new RelatedApplication[] {webApk};
+
+        TestInstalledAppProviderImplJni.addVerfication(MANIFEST_URL, OTHER_MANIFEST_URL);
+        verifyInstalledApps(manifestRelatedApps, new RelatedApplication[] {});
     }
 }

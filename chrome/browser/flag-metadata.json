@@ -2145,8 +2145,8 @@
   },
   {
     "name": "enable-webrtc-srtp-aes-gcm",
-    "owners": [ "emadomara" ],
-    "expiry_milestone": 80
+    "owners": [ "hta" ],
+    "expiry_milestone": 84
   },
   {
     "name": "enable-webrtc-stun-origin",

@@ -18,6 +18,7 @@ const sessionNotActiveErrorMessage = 'Session is not active';
 const noPermissionToUnlockErrorMessage =
     'The extension does not have permission to unlock this session';
 const authenticationFailedErrorMessage = 'Authentication failed';
+const i18nMessageName = 'message';
 
 const tests = {
   /* LoginScreenUi ************************************************************/
@@ -171,6 +172,14 @@ const tests = {
   'LoginUnlockManagedGuestSessionWrongExtensionId': () => {
     chrome.login.unlockManagedGuestSession('dummy_password', () => {
       chrome.test.assertLastError(noPermissionToUnlockErrorMessage);
+      chrome.test.succeed();
+    });
+  },
+  /* I18n *********************************************************************/
+  'I18nGetMessage': () => {
+    chrome.test.getConfig(config => {
+      const message = chrome.i18n.getMessage(i18nMessageName);
+      chrome.test.assertEq(config.customArg, message);
       chrome.test.succeed();
     });
   },

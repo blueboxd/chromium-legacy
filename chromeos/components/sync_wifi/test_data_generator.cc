@@ -16,29 +16,29 @@ NetworkIdentifier GeneratePskNetworkId(const std::string& ssid) {
                            shill::kSecurityPsk);
 }
 
-sync_pb::WifiConfigurationSpecificsData GenerateTestWifiSpecifics(
+sync_pb::WifiConfigurationSpecifics GenerateTestWifiSpecifics(
     const NetworkIdentifier& id) {
-  sync_pb::WifiConfigurationSpecificsData specifics;
+  sync_pb::WifiConfigurationSpecifics specifics;
   specifics.set_hex_ssid(id.hex_ssid());
 
   if (id.security_type() == shill::kSecurityPsk) {
     specifics.set_security_type(
-        sync_pb::WifiConfigurationSpecificsData::SECURITY_TYPE_PSK);
+        sync_pb::WifiConfigurationSpecifics::SECURITY_TYPE_PSK);
   } else if (id.security_type() == shill::kSecurityWep) {
     specifics.set_security_type(
-        sync_pb::WifiConfigurationSpecificsData::SECURITY_TYPE_WEP);
+        sync_pb::WifiConfigurationSpecifics::SECURITY_TYPE_WEP);
   } else {
     NOTREACHED();
   }
   specifics.set_passphrase("password");
   specifics.set_automatically_connect(
-      sync_pb::WifiConfigurationSpecificsData::AUTOMATICALLY_CONNECT_ENABLED);
+      sync_pb::WifiConfigurationSpecifics::AUTOMATICALLY_CONNECT_ENABLED);
   specifics.set_is_preferred(
-      sync_pb::WifiConfigurationSpecificsData::IS_PREFERRED_ENABLED);
+      sync_pb::WifiConfigurationSpecifics::IS_PREFERRED_ENABLED);
   specifics.set_metered(
-      sync_pb::WifiConfigurationSpecificsData::METERED_OPTION_AUTO);
+      sync_pb::WifiConfigurationSpecifics::METERED_OPTION_AUTO);
   specifics.mutable_proxy_configuration()->set_proxy_option(
-      sync_pb::WifiConfigurationSpecificsData::ProxyConfiguration::
+      sync_pb::WifiConfigurationSpecifics::ProxyConfiguration::
           PROXY_OPTION_DISABLED);
   return specifics;
 }

@@ -239,6 +239,8 @@ static_library("test_support") {
   sources = [
     "platform/test_ax_node_wrapper.cc",
     "platform/test_ax_node_wrapper.h",
+    "test_ax_tree_manager.cc",
+    "test_ax_tree_manager.h",
     "tree_generator.cc",
     "tree_generator.h",
   ]
@@ -351,6 +353,7 @@ test("accessibility_perftests") {
   sources = [ "ax_node_position_perftest.cc" ]
 
   deps = [
+    ":test_support",
     "//base",
     "//base/test:test_support",
     "//mojo/core/test:run_all_unittests",

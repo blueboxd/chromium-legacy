@@ -42,6 +42,7 @@
 #include "chrome/browser/ui/web_applications/web_app_launch_utils.h"
 #include "chrome/browser/ui/web_applications/web_app_menu_model.h"
 #include "chrome/browser/web_applications/components/app_registry_controller.h"
+#include "chrome/browser/web_applications/components/app_shortcut_manager.h"
 #include "chrome/browser/web_applications/components/external_install_options.h"
 #include "chrome/browser/web_applications/components/web_app_id.h"
 #include "chrome/browser/web_applications/components/web_app_provider_base.h"
@@ -342,6 +343,10 @@ class HostedAppTest : public extensions::ExtensionBrowserTest,
     host_resolver()->AddRule("*", "127.0.0.1");
     // By default, all SSL cert checks are valid. Can be overridden in tests.
     cert_verifier_.mock_cert_verifier()->set_default_result(net::OK);
+
+    web_app::WebAppProviderBase::GetProviderBase(profile())
+        ->shortcut_manager()
+        .SuppressShortcutsForTesting();
   }
 
   // Tests that performing |action| results in a new foreground tab

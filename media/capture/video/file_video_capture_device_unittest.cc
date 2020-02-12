@@ -117,7 +117,8 @@ TEST_F(FileVideoCaptureDeviceTest, TakePhoto) {
                      base::Unretained(&image_capture_client_));
 
   base::RunLoop run_loop;
-  base::Closure quit_closure = BindToCurrentLoop(run_loop.QuitClosure());
+  base::RepeatingClosure quit_closure =
+      BindToCurrentLoop(run_loop.QuitClosure());
   EXPECT_CALL(image_capture_client_, OnCorrectPhotoTaken())
       .Times(1)
       .WillOnce(InvokeWithoutArgs([quit_closure]() { quit_closure.Run(); }));

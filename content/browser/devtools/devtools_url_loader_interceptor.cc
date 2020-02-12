@@ -967,6 +967,7 @@ void InterceptionJob::ApplyModificationsToRequest(
 
 void InterceptionJob::ProcessAuthResponse(
     const DevToolsURLLoaderInterceptor::AuthChallengeResponse& response) {
+  DCHECK_EQ(kAuthRequired, state_);
   switch (response.response_type) {
     case DevToolsURLLoaderInterceptor::AuthChallengeResponse::kDefault:
       std::move(pending_auth_callback_).Run(true, base::nullopt);
@@ -979,6 +980,7 @@ void InterceptionJob::ProcessAuthResponse(
       std::move(pending_auth_callback_).Run(false, response.credentials);
       break;
   }
+  state_ = kRequestSent;
 }
 
 Response InterceptionJob::ProcessResponseOverride(

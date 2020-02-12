@@ -17,8 +17,11 @@
 #include "ui/accessibility/ax_node.h"
 #include "ui/accessibility/ax_node_position.h"
 #include "ui/accessibility/ax_serializable_tree.h"
+#include "ui/accessibility/ax_tree_data.h"
+#include "ui/accessibility/ax_tree_id.h"
 #include "ui/accessibility/ax_tree_observer.h"
 #include "ui/accessibility/ax_tree_serializer.h"
+#include "ui/accessibility/test_ax_tree_manager.h"
 #include "ui/gfx/transform.h"
 
 // Helper macro for testing selection values and maintain
@@ -30,8 +33,8 @@
     tree_update.tree_data.sel_anchor_offset = input.anchor_offset; \
     tree_update.tree_data.sel_focus_object_id = input.focus_id;    \
     tree_update.tree_data.sel_focus_offset = input.focus_offset;   \
-    EXPECT_TRUE(tree.Unserialize(tree_update));                    \
-    ui::AXTree::Selection actual = tree.GetUnignoredSelection();   \
+    EXPECT_TRUE(tree->Unserialize(tree_update));                   \
+    AXTree::Selection actual = tree->GetUnignoredSelection();      \
     EXPECT_EQ(expected.anchor_id, actual.anchor_object_id);        \
     EXPECT_EQ(expected.anchor_offset, actual.anchor_offset);       \
     EXPECT_EQ(expected.focus_id, actual.focus_object_id);          \
@@ -2479,9 +2482,9 @@ TEST(AXTreeTest, UnignoredSelection) {
   tree_update.nodes[15].role = ax::mojom::Role::kStaticText;
   tree_update.nodes[15].SetName("text");
 
-  AXTree tree(tree_update);
-  AXNodePosition::SetTree(&tree);
-  AXTree::Selection unignored_selection = tree.GetUnignoredSelection();
+  TestAXTreeManager test_ax_tree_manager(std::make_unique<AXTree>(tree_update));
+  AXTree::Selection unignored_selection =
+      test_ax_tree_manager.GetTree()->GetUnignoredSelection();
 
   EXPECT_EQ(AXNode::kInvalidAXID, unignored_selection.anchor_object_id);
   EXPECT_EQ(-1, unignored_selection.anchor_offset);
@@ -2496,73 +2499,71 @@ TEST(AXTreeTest, UnignoredSelection) {
 
   SelectionData input = {1, 0, 1, 0};
   SelectionData expected = {9, 0, 9, 0};
-  TEST_SELECTION(tree_update, tree, input, expected);
+  TEST_SELECTION(tree_update, test_ax_tree_manager.GetTree(), input, expected);
 
   input = {1, 0, 2, 2};
   expected = {9, 0, 14, 0};
-  TEST_SELECTION(tree_update, tree, input, expected);
+  TEST_SELECTION(tree_update, test_ax_tree_manager.GetTree(), input, expected);
 
   input = {2, 1, 5, 0};
   expected = {16, 0, 5, 0};
-  TEST_SELECTION(tree_update, tree, input, expected);
+  TEST_SELECTION(tree_update, test_ax_tree_manager.GetTree(), input, expected);
 
   input = {5, 0, 9, 0};
   expected = {5, 0, 9, 0};
-  TEST_SELECTION(tree_update, tree, input, expected);
+  TEST_SELECTION(tree_update, test_ax_tree_manager.GetTree(), input, expected);
 
   input = {9, 0, 6, 0};
   expected = {9, 0, 16, 0};
-  TEST_SELECTION(tree_update, tree, input, expected);
+  TEST_SELECTION(tree_update, test_ax_tree_manager.GetTree(), input, expected);
 
   input = {6, 0, 10, 0};
   expected = {16, 0, 16, 0};
-  TEST_SELECTION(tree_update, tree, input, expected);
+  TEST_SELECTION(tree_update, test_ax_tree_manager.GetTree(), input, expected);
 
   input = {10, 0, 13, 0};
   expected = {16, 0, 16, 0};
-  TEST_SELECTION(tree_update, tree, input, expected);
+  TEST_SELECTION(tree_update, test_ax_tree_manager.GetTree(), input, expected);
 
   input = {13, 0, 16, 0};
   expected = {16, 0, 16, 0};
-  TEST_SELECTION(tree_update, tree, input, expected);
+  TEST_SELECTION(tree_update, test_ax_tree_manager.GetTree(), input, expected);
 
   input = {16, 0, 7, 0};
   expected = {16, 0, 14, 0};
-  TEST_SELECTION(tree_update, tree, input, expected);
+  TEST_SELECTION(tree_update, test_ax_tree_manager.GetTree(), input, expected);
 
   input = {7, 0, 11, 0};
   expected = {14, 0, 14, 0};
-  TEST_SELECTION(tree_update, tree, input, expected);
+  TEST_SELECTION(tree_update, test_ax_tree_manager.GetTree(), input, expected);
 
   input = {11, 1, 14, 2};
   expected = {15, 0, 14, 2};
-  TEST_SELECTION(tree_update, tree, input, expected);
+  TEST_SELECTION(tree_update, test_ax_tree_manager.GetTree(), input, expected);
 
   input = {14, 2, 15, 3};
   expected = {14, 2, 15, 3};
-  TEST_SELECTION(tree_update, tree, input, expected);
+  TEST_SELECTION(tree_update, test_ax_tree_manager.GetTree(), input, expected);
 
   input = {15, 0, 12, 0};
   expected = {15, 0, 12, 0};
-  TEST_SELECTION(tree_update, tree, input, expected);
+  TEST_SELECTION(tree_update, test_ax_tree_manager.GetTree(), input, expected);
 
   input = {12, 0, 8, 0};
   expected = {12, 0, 3, 0};
-  TEST_SELECTION(tree_update, tree, input, expected);
+  TEST_SELECTION(tree_update, test_ax_tree_manager.GetTree(), input, expected);
 
   input = {8, 0, 3, 0};
   expected = {12, 4, 3, 0};
-  TEST_SELECTION(tree_update, tree, input, expected);
+  TEST_SELECTION(tree_update, test_ax_tree_manager.GetTree(), input, expected);
 
   input = {3, 0, 4, 0};
   expected = {3, 0, 4, 0};
-  TEST_SELECTION(tree_update, tree, input, expected);
+  TEST_SELECTION(tree_update, test_ax_tree_manager.GetTree(), input, expected);
 
   input = {4, 0, 4, 0};
   expected = {4, 0, 4, 0};
-  TEST_SELECTION(tree_update, tree, input, expected);
-
-  AXNodePosition::SetTree(nullptr);
+  TEST_SELECTION(tree_update, test_ax_tree_manager.GetTree(), input, expected);
 }
 
 TEST(AXTreeTest, ChildTreeIds) {

@@ -4,7 +4,6 @@
 
 assert(is_fuchsia)
 
-import("//build/config/fuchsia/fidl_library.gni")
 import("//build/config/fuchsia/generate_runner_scripts.gni")
 import("//build/config/fuchsia/symbol_archive.gni")
 import("//build/util/process_version.gni")

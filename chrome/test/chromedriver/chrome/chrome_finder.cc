@@ -132,19 +132,19 @@ void GetApplicationDirs(std::vector<base::FilePath>* locations);
 #endif
 
 bool FindChrome(base::FilePath* browser_exe) {
-#if defined(OS_WIN) || defined(OS_MACOSX) || defined(OS_LINUX)
   base::FilePath browser_exes_array[] = {
+#if defined(OS_WIN) || defined(OS_MACOSX)
+    base::FilePath(chrome::kBrowserProcessExecutablePath),
+    base::FilePath(chrome::kBrowserProcessExecutablePathChromium)
+#elif defined(OS_LINUX)
+    base::FilePath("google-chrome"),
     base::FilePath(chrome::kBrowserProcessExecutablePath),
     base::FilePath(chrome::kBrowserProcessExecutablePathChromium),
-#if defined(OS_LINUX)
-    base::FilePath("google-chrome"),
-    base::FilePath("chrome"),
     base::FilePath("chromium"),
     base::FilePath("chromium-browser")
-#endif
 #else
-      // it will compile but won't work on other OSes
-      base::FilePath()
+    // it will compile but won't work on other OSes
+    base::FilePath()
 #endif
   };
 

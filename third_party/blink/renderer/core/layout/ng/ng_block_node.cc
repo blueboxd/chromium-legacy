@@ -1127,10 +1127,19 @@ bool NGBlockNode::IsAtomicInlineLevel() const {
   return GetLayoutBox()->IsAtomicInlineLevel() && GetLayoutBox()->IsInline();
 }
 
-bool NGBlockNode::MayHaveAspectRatio() const {
+bool NGBlockNode::HasAspectRatio() const {
   LayoutBox* layout_object = GetLayoutBox();
-  return layout_object->IsImage() || layout_object->IsVideo() ||
-         layout_object->IsCanvas();
+  if (!layout_object->IsImage() && !layout_object->IsVideo() &&
+      !layout_object->IsCanvas())
+    return false;
+  base::Optional<LayoutUnit> computed_inline_size;
+  base::Optional<LayoutUnit> computed_block_size;
+  LogicalSize aspect_ratio;
+
+  // Retrieving this and throwing it away is wasteful. We could make this method
+  // return Optional<LogicalSize> that returns the aspect_ratio if there is one.
+  IntrinsicSize(&computed_inline_size, &computed_block_size, &aspect_ratio);
+  return !aspect_ratio.IsEmpty();
 }
 
 bool NGBlockNode::UseLogicalBottomMarginEdgeForInlineBlockBaseline() const {
@@ -1230,9 +1239,13 @@ scoped_refptr<const NGLayoutResult> NGBlockNode::RunLegacyLayout(
         constraint_space.IsNewFormattingContext());
     builder.SetInitialFragmentGeometry(fragment_geometry);
     builder.SetIsLegacyLayoutRoot();
-    builder.SetIntrinsicBlockSize(box_->IntrinsicContentLogicalHeight() +
-                                  box_->BorderAndPaddingLogicalHeight() +
-                                  box_->ScrollbarLogicalHeight());
+    if (box_->ShouldComputeSizeAsReplaced()) {
+      builder.SetIntrinsicBlockSize(box_->LogicalHeight());
+    } else {
+      builder.SetIntrinsicBlockSize(box_->IntrinsicContentLogicalHeight() +
+                                    box_->BorderAndPaddingLogicalHeight() +
+                                    box_->ScrollbarLogicalHeight());
+    }
 
     // If we're block-fragmented, we can only handle monolithic content, since
     // the two block fragmentation machineries (NG and legacy) cannot cooperate.

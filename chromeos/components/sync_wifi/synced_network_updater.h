@@ -10,7 +10,7 @@
 #include "base/macros.h"
 
 namespace sync_pb {
-class WifiConfigurationSpecificsData;
+class WifiConfigurationSpecifics;
 }
 
 namespace chromeos {
@@ -25,7 +25,7 @@ class SyncedNetworkUpdater {
   virtual ~SyncedNetworkUpdater() = default;
 
   virtual void AddOrUpdateNetwork(
-      const sync_pb::WifiConfigurationSpecificsData& specifics) = 0;
+      const sync_pb::WifiConfigurationSpecifics& specifics) = 0;
   virtual void RemoveNetwork(const NetworkIdentifier& id) = 0;
 
  protected:

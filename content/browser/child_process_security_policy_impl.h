@@ -419,16 +419,6 @@ class CONTENT_EXPORT ChildProcessSecurityPolicyImpl
   //       renderer-initiated navigations.
   bool CanRedirectToURL(const GURL& url);
 
-  // Returns true if the policy object has security state information for
-  // |child_id|. This is essentially a way to determine if the policy object
-  // is actively tracking permissions for |child_id|. This method can be called
-  // from the UI & IO threads.
-  //
-  // DO NOT ADD NEW CALLERS OF THIS METHOD.
-  // TODO(933089): Remove this method once a better long term solution is
-  // implemented for the one caller doing Blob URL revocation.
-  bool HasSecurityState(int child_id);
-
   // Sets "killed_process_origin_lock" crash key with lock info for the
   // process associated with |child_id|.
   void LogKilledProcessOriginLock(int child_id);

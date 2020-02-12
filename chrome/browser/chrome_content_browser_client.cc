@@ -160,7 +160,7 @@
 #include "chrome/browser/usb/usb_tab_helper.h"
 #include "chrome/browser/vr/vr_tab_helper.h"
 #include "chrome/browser/web_applications/components/app_registrar.h"
-#include "chrome/browser/web_applications/web_app_provider.h"
+#include "chrome/browser/web_applications/components/web_app_provider_base.h"
 #include "chrome/common/buildflags.h"
 #include "chrome/common/channel_info.h"
 #include "chrome/common/chrome_constants.h"
@@ -3159,20 +3159,12 @@ void ChromeContentBrowserClient::OverrideWebkitPrefs(
       // WebContents.
       Browser* browser = chrome::FindBrowserWithWebContents(contents);
       if (browser && browser->app_controller() &&
-          browser->app_controller()->CreatedForInstalledPwa()) {
-        // PWAs should be hosted apps.
-        DCHECK(browser->app_controller()->IsHostedApp());
-        // HostedApps that are PWAs are always created through WebAppProvider
-        // for profiles that support them, so we should always be able to
-        // retrieve a WebAppProvider from the Profile.
-        //
-        // Similarly, if a Hosted Apps is a PWA, it will always have a scope
-        // so there is no need to test for has_value().
-        web_prefs->web_app_scope =
-            web_app::WebAppProvider::Get(profile)
-                ->registrar()
-                .GetAppScopeInternal(browser->app_controller()->GetAppId())
-                .value();
+          browser->app_controller()->HasAppId()) {
+        const web_app::AppId& app_id = browser->app_controller()->GetAppId();
+        const web_app::AppRegistrar& registrar =
+            web_app::WebAppProviderBase::GetProviderBase(profile)->registrar();
+        if (registrar.IsLocallyInstalled(app_id))
+          web_prefs->web_app_scope = registrar.GetAppScope(app_id);
       }
     }
 #endif

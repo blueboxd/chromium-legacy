@@ -193,10 +193,12 @@ gfx::Rect StatusAreaWidget::GetTargetBounds() const {
 }
 
 void StatusAreaWidget::UpdateLayout(bool animate) {
-  const ShelfLayoutManager* layout_manager = shelf_->shelf_layout_manager();
+  const LayoutInputs new_layout_inputs = GetLayoutInputs();
+  // TODO(manucornet): Return early once we're sure we've captured all
+  // layout inputs and nothing has changed.
   ui::Layer* layer = GetNativeView()->layer();
   ui::ScopedLayerAnimationSettings animation_setter(layer->GetAnimator());
-  layer->SetOpacity(layout_manager->GetOpacity());
+  layer->SetOpacity(new_layout_inputs.opacity);
 
   animation_setter.SetTransitionDuration(
       animate ? ShelfConfig::Get()->shelf_animation_duration()
@@ -204,7 +206,8 @@ void StatusAreaWidget::UpdateLayout(bool animate) {
   animation_setter.SetTweenType(gfx::Tween::EASE_OUT);
   animation_setter.SetPreemptionStrategy(
       ui::LayerAnimator::IMMEDIATELY_ANIMATE_TO_NEW_TARGET);
-  SetBounds(target_bounds_);
+  SetBounds(new_layout_inputs.bounds);
+  layout_inputs_ = new_layout_inputs;
 }
 
 void StatusAreaWidget::UpdateTargetBoundsForGesture() {
@@ -431,6 +434,15 @@ void StatusAreaWidget::UpdateAfterColorModeChange() {
 void StatusAreaWidget::AddTrayButton(TrayBackgroundView* tray_button) {
   status_area_widget_delegate_->AddChildView(tray_button);
   tray_buttons_.push_back(tray_button);
+}
+
+StatusAreaWidget::LayoutInputs StatusAreaWidget::GetLayoutInputs() const {
+  unsigned int number_of_visible_children = 0;
+  for (auto* child : tray_buttons_)
+    number_of_visible_children += child->GetVisible() ? 1 : 0;
+  return {target_bounds_, CalculateCollapseState(),
+          shelf_->shelf_layout_manager()->GetOpacity(),
+          number_of_visible_children};
 }
 
 }  // namespace ash

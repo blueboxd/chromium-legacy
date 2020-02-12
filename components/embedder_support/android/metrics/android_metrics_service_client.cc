@@ -6,11 +6,15 @@
 
 #include <cstdint>
 
+#include "base/base_paths_android.h"
 #include "base/i18n/rtl.h"
 #include "build/build_config.h"
 #include "components/embedder_support/android/metrics/android_metrics_log_uploader.h"
+#include "components/metrics/android_metrics_provider.h"
 #include "components/metrics/call_stack_profile_metrics_provider.h"
 #include "components/metrics/cpu_metrics_provider.h"
+#include "components/metrics/drive_metrics_provider.h"
+#include "components/metrics/gpu/gpu_metrics_provider.h"
 #include "components/metrics/metrics_pref_names.h"
 #include "components/metrics/metrics_service.h"
 #include "components/metrics/metrics_state_manager.h"
@@ -18,6 +22,7 @@
 #include "components/metrics/net/network_metrics_provider.h"
 #include "components/metrics/stability_metrics_helper.h"
 #include "components/metrics/ui/screen_info_metrics_provider.h"
+#include "components/metrics/version_utils.h"
 #include "components/prefs/pref_service.h"
 #include "content/public/browser/network_service_instance.h"
 #include "content/public/browser/notification_service.h"
@@ -114,17 +119,20 @@ AndroidMetricsServiceClient::CreateMetricsService(
     AndroidMetricsServiceClient* client,
     PrefService* prefs) {
   auto service = std::make_unique<MetricsService>(state_manager, client, prefs);
-  // Although targeted at mobile, the unit tests runs on all platforms and the
-  // chrome os version CHECK fails if we include NetworkMetricsProvider.
-#if !defined(OS_CHROMEOS)
   service->RegisterMetricsProvider(std::make_unique<NetworkMetricsProvider>(
       content::CreateNetworkConnectionTrackerAsyncGetter()));
-#endif  // defined(OS_CHROMEOS)
   service->RegisterMetricsProvider(std::make_unique<CPUMetricsProvider>());
   service->RegisterMetricsProvider(
       std::make_unique<ScreenInfoMetricsProvider>());
   service->RegisterMetricsProvider(
       std::make_unique<CallStackProfileMetricsProvider>());
+  service->RegisterMetricsProvider(
+      std::make_unique<metrics::AndroidMetricsProvider>());
+  service->RegisterMetricsProvider(
+      std::make_unique<metrics::DriveMetricsProvider>(
+          base::DIR_ANDROID_APP_DATA));
+  service->RegisterMetricsProvider(
+      std::make_unique<metrics::GPUMetricsProvider>());
   RegisterAdditionalMetricsProviders(service.get());
   service->InitializeMetricsRecordingState();
   return service;
@@ -202,6 +210,14 @@ std::string AndroidMetricsServiceClient::GetApplicationLocale() {
 bool AndroidMetricsServiceClient::GetBrand(std::string* brand_code) {
   // AndroidMetricsServiceClients don't use brand codes.
   return false;
+}
+
+SystemProfileProto::Channel AndroidMetricsServiceClient::GetChannel() {
+  return AsProtobufChannel(version_info::android::GetChannel());
+}
+
+std::string AndroidMetricsServiceClient::GetVersionString() {
+  return version_info::GetVersionNumber();
 }
 
 void AndroidMetricsServiceClient::CollectFinalMetricsForLog(
@@ -287,6 +303,9 @@ bool AndroidMetricsServiceClient::IsInPackageNameSample() {
 bool AndroidMetricsServiceClient::IsInPackageNameSample(uint32_t value) {
   return UintFallsInBottomPercentOfValues(value, GetPackageNameLimitRate());
 }
+
+void AndroidMetricsServiceClient::RegisterAdditionalMetricsProviders(
+    MetricsService* service) {}
 
 std::string AndroidMetricsServiceClient::GetAppPackageName() {
   if (IsInPackageNameSample() && CanRecordPackageNameForAppType())

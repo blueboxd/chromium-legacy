@@ -54,9 +54,7 @@ namespace {
 
 // Verifies that a pseudo-element selector lexes and canonicalizes legacy forms
 bool ValidateAndCanonicalizePseudo(String& selector) {
-  if (selector.IsEmpty()) {
-    if (!selector.IsNull())
-      selector = String();  // null
+  if (selector.IsNull()) {
     return true;
   } else if (selector.StartsWith("::")) {
     return true;
@@ -104,7 +102,7 @@ KeyframeEffect* KeyframeEffect::Create(
         // https://github.com/w3c/csswg-drafts/issues/4586 resolves
         exception_state.ThrowDOMException(
             DOMExceptionCode::kSyntaxError,
-            "A valid pseudo-selector must start with ::.");
+            "A valid pseudo-selector must be null or start with ::.");
       }
     }
   }
@@ -178,7 +176,7 @@ void KeyframeEffect::setTarget(Element* new_target) {
   RefreshTarget();
 }
 
-const String& KeyframeEffect::pseudoElement() {
+const String& KeyframeEffect::pseudoElement() const {
   return target_pseudo_;
 }
 
@@ -189,7 +187,7 @@ void KeyframeEffect::setPseudoElement(String pseudo,
   } else {
     exception_state.ThrowDOMException(
         DOMExceptionCode::kSyntaxError,
-        "A valid pseudo-selector must start with ::.");
+        "A valid pseudo-selector must be null or start with ::.");
   }
 
   RefreshTarget();

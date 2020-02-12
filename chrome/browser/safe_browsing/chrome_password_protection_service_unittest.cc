@@ -615,12 +615,6 @@ TEST_F(ChromePasswordProtectionServiceTest, VerifyCanSendSamplePing) {
   service_->set_bypass_probability_for_tests(true);
   EXPECT_TRUE(service_->CanSendSamplePing());
 
-  {
-    base::test::ScopedFeatureList feature_list;
-    feature_list.InitAndEnableFeature(
-        safe_browsing::kSendSampledPingsForAllowlistDomains);
-    EXPECT_TRUE(service_->CanSendSamplePing());
-
     // If not SBER, do not send sample ping.
     service_->ConfigService(/*is_incognito=*/false,
                             /*is_extended_reporting=*/false);
@@ -634,7 +628,6 @@ TEST_F(ChromePasswordProtectionServiceTest, VerifyCanSendSamplePing) {
     service_->ConfigService(/*is_incognito=*/true,
                             /*is_extended_reporting=*/false);
     EXPECT_FALSE(service_->CanSendSamplePing());
-  }
 }
 
 TEST_F(ChromePasswordProtectionServiceTest, VerifyGetOrganizationTypeGmail) {

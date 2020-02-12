@@ -9,8 +9,7 @@ import("//build/config/fuchsia/fidl_library.gni")
 import("//fuchsia/release_channel.gni")
 
 fidl_library("cast_fidl") {
-  library_name = "cast"
-  namespace = "chromium"
+  library_name = "chromium.cast"
 
   sources = [
     "fidl/cast/api_bindings.fidl",

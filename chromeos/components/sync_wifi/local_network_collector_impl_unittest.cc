@@ -66,7 +66,7 @@ class LocalNetworkCollectorImplTest : public testing::Test {
 
   void OnGetAllSyncableNetworks(
       std::vector<std::string> expected,
-      std::vector<sync_pb::WifiConfigurationSpecificsData> result) {
+      std::vector<sync_pb::WifiConfigurationSpecifics> result) {
     EXPECT_EQ(expected.size(), result.size());
     for (int i = 0; i < (int)result.size(); i++) {
       EXPECT_EQ(expected[i], DecodeHexString(result[i].hex_ssid()));
@@ -75,7 +75,7 @@ class LocalNetworkCollectorImplTest : public testing::Test {
 
   void OnGetSyncableNetwork(
       std::string expected,
-      base::Optional<sync_pb::WifiConfigurationSpecificsData> result) {
+      base::Optional<sync_pb::WifiConfigurationSpecifics> result) {
     if (expected.empty()) {
       ASSERT_EQ(base::nullopt, result);
       return;

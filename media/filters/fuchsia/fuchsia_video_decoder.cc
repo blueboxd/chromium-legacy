@@ -356,29 +356,10 @@ void FuchsiaVideoDecoder::Initialize(const VideoDecoderConfig& config,
   waiting_cb_ = waiting_cb;
   container_pixel_aspect_ratio_ = config.GetPixelAspectRatio();
 
-  // If we already have |decoder_| that was initialized for the same codec then
-  // keep using it.
-  if (decoder_ && current_codec_ == config.codec()) {
-    bool have_decryptor = decryptor_ != nullptr;
-    if (have_decryptor != config.is_encrypted()) {
-      // If decryption mode has changed then we need to re-initialize input
-      // buffers.
-      ReleaseInputBuffers();
-      decryptor_.reset();
-
-      // Initialize decryptor for encrypted streams.
-      if (config.is_encrypted() && !InitializeDecryptor(cdm_context)) {
-        std::move(done_callback).Run(false);
-        return;
-      }
-
-      // If we haven't received input constraints yet then input buffers will be
-      // initialized later when OnInputConstraints() is received.
-      if (decoder_input_constraints_.has_value()) {
-        OnInputConstraints(std::move(decoder_input_constraints_).value());
-      }
-    }
-
+  // Keep decoder and decryptor if the configuration hasn't changed.
+  bool have_decryptor = decryptor_ != nullptr;
+  if (decoder_ && current_codec_ == config.codec() &&
+      have_decryptor == config.is_encrypted()) {
     std::move(done_callback).Run(true);
     return;
   }

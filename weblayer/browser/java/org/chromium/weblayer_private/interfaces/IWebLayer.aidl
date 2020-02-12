@@ -71,4 +71,7 @@ interface IWebLayer {
 
   // Forwards download intent notifications to the implementation.
   void onReceivedDownloadNotification(in IObjectWrapper appContext, in Intent intent) = 11;
+
+  // Added in Version 82.
+  void enumerateAllProfileNames(in IObjectWrapper valueCallback) = 12;
 }

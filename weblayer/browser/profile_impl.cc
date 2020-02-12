@@ -4,10 +4,13 @@
 
 #include "weblayer/browser/profile_impl.h"
 
+#include <string>
 #include <utility>
+#include <vector>
 
 #include "base/bind.h"
 #include "base/callback_forward.h"
+#include "base/files/file_enumerator.h"
 #include "base/files/file_util.h"
 #include "base/path_service.h"
 #include "base/strings/string_util.h"
@@ -57,6 +60,13 @@ bool IsNameValid(const std::string& name) {
   return true;
 }
 
+// Return the data path directory to profiles.
+base::FilePath GetProfileRootDataDir() {
+  base::FilePath path;
+  CHECK(base::PathService::Get(DIR_USER_DATA, &path));
+  return path.AppendASCII("profiles");
+}
+
 #if defined(OS_POSIX)
 base::FilePath ComputeCachePath(const std::string& profile_name) {
   base::FilePath path;
@@ -90,6 +100,37 @@ void NukeProfileFromDisk(const std::string& profile_name,
   base::DeleteFileRecursively(ComputeCachePath(profile_name));
 #endif
 }
+
+#if defined(OS_ANDROID)
+// Returned path only contains the directory name.
+// Invalid profile names are ignored.
+std::vector<base::FilePath> ListProfileNames() {
+  base::FilePath root_dir = GetProfileRootDataDir();
+  std::vector<base::FilePath> profile_names;
+  base::FileEnumerator enumerator(root_dir, /*recursive=*/false,
+                                  base::FileEnumerator::DIRECTORIES);
+  for (base::FilePath path = enumerator.Next(); !path.empty();
+       path = enumerator.Next()) {
+    base::FilePath name = enumerator.GetInfo().GetName();
+    if (IsNameValid(name.MaybeAsASCII())) {
+      profile_names.push_back(name);
+    }
+  }
+  return profile_names;
+}
+
+void PassFilePathsToJavaCallback(
+    const base::android::ScopedJavaGlobalRef<jobject>& callback,
+    const std::vector<base::FilePath>& file_paths) {
+  std::vector<std::string> strings;
+  for (const auto& path : file_paths) {
+    strings.push_back(path.value());
+  }
+  base::android::RunObjectCallbackAndroid(
+      callback, base::android::ToJavaArrayOfStrings(
+                    base::android::AttachCurrentThread(), strings));
+}
+#endif  // OS_ANDROID
 
 }  // namespace
 
@@ -147,8 +188,7 @@ ProfileImpl::ProfileImpl(const std::string& name)
     CHECK(IsNameValid(name));
     {
       base::ScopedAllowBlocking allow_blocking;
-      CHECK(base::PathService::Get(DIR_USER_DATA, &data_path_));
-      data_path_ = data_path_.AppendASCII("profiles").AppendASCII(name.c_str());
+      data_path_ = GetProfileRootDataDir().AppendASCII(name.c_str());
 
       if (!base::PathExists(data_path_))
         base::CreateDirectory(data_path_);
@@ -266,6 +306,18 @@ static jlong JNI_ProfileImpl_CreateProfile(
 
 static void JNI_ProfileImpl_DeleteProfile(JNIEnv* env, jlong profile) {
   delete reinterpret_cast<ProfileImpl*>(profile);
+}
+
+static void JNI_ProfileImpl_EnumerateAllProfileNames(
+    JNIEnv* env,
+    const base::android::JavaParamRef<jobject>& callback) {
+  base::PostTaskAndReplyWithResult(
+      FROM_HERE,
+      {base::ThreadPool(), base::MayBlock(), base::TaskPriority::BEST_EFFORT,
+       base::TaskShutdownBehavior::SKIP_ON_SHUTDOWN},
+      base::BindOnce(&ListProfileNames),
+      base::BindOnce(&PassFilePathsToJavaCallback,
+                     base::android::ScopedJavaGlobalRef<jobject>(callback)));
 }
 
 jboolean ProfileImpl::DeleteDataFromDisk(

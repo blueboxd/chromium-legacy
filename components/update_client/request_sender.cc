@@ -84,7 +84,7 @@ void RequestSender::SendInternal() {
     url = BuildUpdateUrl(url, request_query_string);
   }
 
-  DVLOG(2) << "Sending Omaha request: " << request_body_;
+  VLOG(2) << "Sending Omaha request: " << request_body_;
 
   network_fetcher_ = config_->GetNetworkFetcherFactory()->Create();
   if (!network_fetcher_) {
@@ -107,6 +107,8 @@ void RequestSender::SendInternalComplete(int error,
                                          const std::string& response_body,
                                          const std::string& response_etag,
                                          int retry_after_sec) {
+  VLOG(2) << "Omaha response received: " << response_body;
+
   if (!error) {
     if (!use_signing_) {
       base::ThreadTaskRunnerHandle::Get()->PostTask(
@@ -154,7 +156,7 @@ void RequestSender::OnNetworkFetcherComplete(
     int64_t xheader_retry_after_sec) {
   DCHECK(thread_checker_.CalledOnValidThread());
 
-  VLOG(1) << "request completed from url: " << original_url.spec();
+  VLOG(1) << "Request completed from url: " << original_url.spec();
 
   int error = -1;
   if (!net_error && response_code_ == 200)

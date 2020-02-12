@@ -9,21 +9,14 @@
 
 namespace browser_watcher {
 
-class ActivityTrackerAnnotationTest : public testing::Test {
- public:
-  void SetUp() override { crash_reporter::InitializeCrashKeysForTesting(); }
-  void TearDown() override { crash_reporter::ResetCrashKeysForTesting(); }
-};
-
-TEST_F(ActivityTrackerAnnotationTest, RegistersAtCreation) {
+TEST(ActivityTrackerAnnotationTest, RegistersAtCreation) {
   crash_reporter::InitializeCrashKeysForTesting();
-  static const char* kBuffer[128];
-  ActivityTrackerAnnotation annotation;
-  // Validate that the annotation doesn't register on construction.
   EXPECT_EQ("", crash_reporter::GetCrashKeyValue(
                     ActivityTrackerAnnotation::kAnnotationName));
 
-  annotation.SetValue(&kBuffer, sizeof(kBuffer));
+  static const char* kBuffer[128];
+  ActivityTrackerAnnotation annotation(&kBuffer, sizeof(kBuffer));
+
   std::string string_value = crash_reporter::GetCrashKeyValue(
       ActivityTrackerAnnotation::kAnnotationName);
   ASSERT_EQ(sizeof(ActivityTrackerAnnotation::ValueType), string_value.size());

@@ -158,8 +158,8 @@ VideoCaptureDeviceClient::VideoCaptureDeviceClient(
       buffer_pool_(std::move(buffer_pool)),
       last_captured_pixel_format_(PIXEL_FORMAT_UNKNOWN) {
   on_started_using_gpu_cb_ =
-      base::Bind(&VideoFrameReceiver::OnStartedUsingGpuDecode,
-                 base::Unretained(receiver_.get()));
+      base::BindOnce(&VideoFrameReceiver::OnStartedUsingGpuDecode,
+                     base::Unretained(receiver_.get()));
 }
 #else
 VideoCaptureDeviceClient::VideoCaptureDeviceClient(

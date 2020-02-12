@@ -30,7 +30,7 @@ class PendingNetworkConfigurationTrackerImpl
   // sync_wifi::PendingNetworkConfigurationTracker::
   std::string TrackPendingUpdate(
       const NetworkIdentifier& id,
-      const base::Optional<sync_pb::WifiConfigurationSpecificsData>& specifics)
+      const base::Optional<sync_pb::WifiConfigurationSpecifics>& specifics)
       override;
   void MarkComplete(const std::string& change_guid,
                     const NetworkIdentifier& id) override;

@@ -18,7 +18,7 @@
 #include "mojo/public/cpp/bindings/receiver.h"
 
 namespace sync_pb {
-class WifiConfigurationSpecificsData;
+class WifiConfigurationSpecifics;
 }
 
 namespace chromeos {
@@ -68,7 +68,7 @@ class LocalNetworkCollectorImpl
       const network_config::mojom::NetworkStateProperties* network,
       const std::string& request_guid);
   void OnGetManagedPropertiesResult(
-      sync_pb::WifiConfigurationSpecificsData proto,
+      sync_pb::WifiConfigurationSpecifics proto,
       const std::string& request_guid,
       network_config::mojom::ManagedPropertiesPtr properties);
 
@@ -76,7 +76,7 @@ class LocalNetworkCollectorImpl
   // partially filled in proto representation of the network, |is_one_off|
   // should be true when GetSyncableNetwork is used rather than
   // GetAllSyncableNetworks and |passphrase| will come from shill.
-  void OnGetWiFiPassphraseResult(sync_pb::WifiConfigurationSpecificsData proto,
+  void OnGetWiFiPassphraseResult(sync_pb::WifiConfigurationSpecifics proto,
                                  const std::string& request_guid,
                                  const std::string& passphrase);
 
@@ -98,8 +98,7 @@ class LocalNetworkCollectorImpl
       cros_network_config_observer_receiver_{this};
   std::vector<network_config::mojom::NetworkStatePropertiesPtr> mojo_networks_;
 
-  base::flat_map<std::string,
-                 std::vector<sync_pb::WifiConfigurationSpecificsData>>
+  base::flat_map<std::string, std::vector<sync_pb::WifiConfigurationSpecifics>>
       request_guid_to_complete_protos_;
   base::flat_map<std::string, base::flat_set<NetworkIdentifier>>
       request_guid_to_in_flight_networks_;

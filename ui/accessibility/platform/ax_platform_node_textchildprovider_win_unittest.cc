@@ -14,7 +14,7 @@ using Microsoft::WRL::ComPtr;
 
 namespace ui {
 
-class AXPlatformNodeTextChildProviderTest : public ui::AXPlatformNodeWinTest {
+class AXPlatformNodeTextChildProviderTest : public AXPlatformNodeWinTest {
  protected:
   // Construct an accessibility tree for testing ITextChildProvider resolution
   // from various positions in the tree. The following tree configuration
@@ -79,10 +79,7 @@ class AXPlatformNodeTextChildProviderTest : public ui::AXPlatformNodeWinTest {
 
     Init(update);
 
-    AXNode* root_node = GetRootNode();
-    AXNodePosition::SetTree(tree_.get());
-    AXTreeManagerMap::GetInstance().AddTreeManager(update.tree_data.tree_id,
-                                                   this);
+    AXNode* root_node = GetRootAsAXNode();
     AXNode* nontext_child_of_root_node = root_node->children()[0];
     AXNode* text_child_of_root_node = root_node->children()[1];
     AXNode* nontext_child_of_nontext_node =
@@ -109,8 +106,6 @@ class AXPlatformNodeTextChildProviderTest : public ui::AXPlatformNodeWinTest {
                            text_child_of_text_text_provider_raw_,
                            text_child_of_text_text_child_provider_);
   }
-
-  void TearDown() override { AXNodePosition::SetTree(nullptr); }
 
   void InitITextChildProvider(
       AXNode* node,
@@ -368,7 +363,7 @@ TEST_F(AXPlatformNodeTextChildProviderTest,
 // ITextChildProvider::GetTextContainer fail under an inactive AX tree.
 TEST_F(AXPlatformNodeTextChildProviderTest,
        ITextChildProviderInactiveAccessibilityTree) {
-  tree_.reset();
+  DestroyTree();
 
   // Test that GetTextContainer fails under an inactive tree.
   ComPtr<IRawElementProviderSimple> text_container;

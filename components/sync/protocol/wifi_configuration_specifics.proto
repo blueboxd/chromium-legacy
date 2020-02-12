@@ -18,7 +18,7 @@ package sync_pb;
 
 import "components/sync/protocol/encryption.proto";
 
-message WifiConfigurationSpecificsData {
+message WifiConfigurationSpecifics {
   // SSID encoded to hex, letters should be upper case and 0x prefix should be
   // omitted. For example, ssid "network" would be provided as "6E6574776F726B".
   optional bytes hex_ssid = 1;
@@ -76,14 +76,4 @@ message WifiConfigurationSpecificsData {
   repeated string custom_dns = 8;
   // This is represented by the UNIX timestamp, ms since epoch.
   optional int64 last_update_timestamp = 9;
-}
-
-message WifiConfigurationSpecifics {
-  // The actual wifi configuration data. Contains an encrypted
-  // WifiConfigurationSpecificsData message.
-  optional EncryptedData encrypted = 1;
-  // An unsynced field for use internally on the client. This field should
-  // never be set in any network-based communications because it contains
-  // unencrypted material.
-  optional WifiConfigurationSpecificsData client_only_encrypted_data = 2;
 }

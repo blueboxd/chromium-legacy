@@ -10,6 +10,8 @@ static_library("structured") {
   sources = [
     "event_base.cc",
     "event_base.h",
+    "histogram_util.cc",
+    "histogram_util.h",
     "key_data.cc",
     "key_data.h",
     "recorder.cc",

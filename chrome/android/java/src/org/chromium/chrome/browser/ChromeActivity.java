@@ -28,9 +28,6 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.view.ViewStub;
 import android.view.WindowManager;
-import android.view.accessibility.AccessibilityManager;
-import android.view.accessibility.AccessibilityManager.AccessibilityStateChangeListener;
-import android.view.accessibility.AccessibilityManager.TouchExplorationStateChangeListener;
 
 import androidx.annotation.CallSuper;
 import androidx.annotation.NonNull;
@@ -62,7 +59,6 @@ import org.chromium.chrome.browser.bookmarks.BookmarkModel;
 import org.chromium.chrome.browser.bookmarks.BookmarkUtils;
 import org.chromium.chrome.browser.compositor.CompositorViewHolder;
 import org.chromium.chrome.browser.compositor.bottombar.ephemeraltab.EphemeralTabCoordinator;
-import org.chromium.chrome.browser.compositor.bottombar.ephemeraltab.EphemeralTabPanel;
 import org.chromium.chrome.browser.compositor.layouts.Layout;
 import org.chromium.chrome.browser.compositor.layouts.LayoutManager;
 import org.chromium.chrome.browser.compositor.layouts.OverviewModeBehavior;
@@ -93,7 +89,6 @@ import org.chromium.chrome.browser.gsa.GSAAccountChangeListener;
 import org.chromium.chrome.browser.gsa.GSAState;
 import org.chromium.chrome.browser.help.HelpAndFeedback;
 import org.chromium.chrome.browser.history.HistoryManagerUtils;
-import org.chromium.chrome.browser.infobar.InfoBarContainer;
 import org.chromium.chrome.browser.init.AsyncInitializationActivity;
 import org.chromium.chrome.browser.init.ProcessInitializationHandler;
 import org.chromium.chrome.browser.init.StartupTabPreloader;
@@ -126,6 +121,7 @@ import org.chromium.chrome.browser.share.ShareDelegate;
 import org.chromium.chrome.browser.share.ShareDelegateImpl;
 import org.chromium.chrome.browser.sync.ProfileSyncService;
 import org.chromium.chrome.browser.sync.SyncController;
+import org.chromium.chrome.browser.tab.AccessibilityVisibilityHandler;
 import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.browser.tab.TabDelegateFactory;
 import org.chromium.chrome.browser.tab.TabHidingType;
@@ -153,7 +149,6 @@ import org.chromium.chrome.browser.ui.appmenu.AppMenuPropertiesDelegate;
 import org.chromium.chrome.browser.ui.messages.snackbar.SnackbarManager;
 import org.chromium.chrome.browser.ui.messages.snackbar.SnackbarManager.SnackbarManageable;
 import org.chromium.chrome.browser.ui.system.StatusBarColorController;
-import org.chromium.chrome.browser.util.AccessibilityUtil;
 import org.chromium.chrome.browser.vr.ArDelegate;
 import org.chromium.chrome.browser.vr.ArDelegateProvider;
 import org.chromium.chrome.browser.vr.VrModuleProvider;
@@ -202,8 +197,8 @@ import java.util.function.Consumer;
  */
 public abstract class ChromeActivity<C extends ChromeActivityComponent>
         extends AsyncInitializationActivity
-        implements TabCreatorManager, AccessibilityStateChangeListener, PolicyChangeListener,
-                   ContextualSearchTabPromotionDelegate, SnackbarManageable, SceneChangeObserver,
+        implements TabCreatorManager, PolicyChangeListener, ContextualSearchTabPromotionDelegate,
+                   SnackbarManageable, SceneChangeObserver,
                    StatusBarColorController.StatusBarColorProvider, AppMenuDelegate, AppMenuBlocker,
                    MenuOrKeyboardActionController {
     /**
@@ -246,12 +241,7 @@ public abstract class ChromeActivity<C extends ChromeActivityComponent>
     private boolean mTabModelsInitialized;
     private boolean mNativeInitialized;
     private boolean mRemoveWindowBackgroundDone;
-
-    // The class cannot implement TouchExplorationStateChangeListener,
-    // because it is only available for Build.VERSION_CODES.KITKAT and later.
-    // We have to instantiate the TouchExplorationStateChangeListner object in the code.
-    @SuppressLint("NewApi")
-    private TouchExplorationStateChangeListener mTouchExplorationStateChangeListener;
+    protected AccessibilityVisibilityHandler mAccessibilityVisibilityHandler;
 
     // Observes when sync becomes ready to create the mContextReporter.
     private ProfileSyncService.SyncStateChangedListener mSyncStateChangedListener;
@@ -422,15 +412,6 @@ public abstract class ChromeActivity<C extends ChromeActivityComponent>
                 }
                 mAssistStatusHandler.updateAssistState();
             }
-
-            AccessibilityManager manager = (AccessibilityManager) getBaseContext().getSystemService(
-                    Context.ACCESSIBILITY_SERVICE);
-            manager.addAccessibilityStateChangeListener(this);
-            mTouchExplorationStateChangeListener = enabled -> {
-                AccessibilityUtil.resetAccessibilityEnabled();
-                checkAccessibility();
-            };
-            manager.addTouchExplorationStateChangeListener(mTouchExplorationStateChangeListener);
 
             // Make the activity listen to policy change events
             CombinedPolicyProvider.get().addPolicyChangeListener(this);
@@ -1129,11 +1110,6 @@ public abstract class ChromeActivity<C extends ChromeActivityComponent>
         }
         if (mCompositorViewHolder != null) mCompositorViewHolder.onStart();
 
-        // Explicitly call checkAccessibility() so things are initialized correctly when Chrome has
-        // been re-started after closing due to the last tab being closed when homepage is enabled.
-        // See crbug.com/541546.
-        checkAccessibility();
-
         Configuration config = getResources().getConfiguration();
         mUiMode = config.uiMode;
         mDensityDpi = config.densityDpi;
@@ -1268,11 +1244,6 @@ public abstract class ChromeActivity<C extends ChromeActivityComponent>
 
         UpdateMenuItemHelper.getInstance().unregisterObserver(mUpdateStateChangedListener);
 
-        AccessibilityManager manager = (AccessibilityManager)
-                getBaseContext().getSystemService(Context.ACCESSIBILITY_SERVICE);
-        manager.removeAccessibilityStateChangeListener(this);
-        manager.removeTouchExplorationStateChangeListener(mTouchExplorationStateChangeListener);
-
         mActivityTabProvider.destroy();
 
         mComponent = null;
@@ -1369,7 +1340,7 @@ public abstract class ChromeActivity<C extends ChromeActivityComponent>
         getCompositorViewHolder().addCompositorViewResizer(
                 mManualFillingComponent.getKeyboardExtensionViewResizer());
 
-        if (ChromeFeatureList.isEnabled(ChromeFeatureList.EPHEMERAL_TAB_USING_BOTTOM_SHEET)) {
+        if (EphemeralTabCoordinator.isSupported()) {
             mEphemeralTabCoordinator =
                     new EphemeralTabCoordinator(this, getBottomSheetController());
         }
@@ -1406,23 +1377,6 @@ public abstract class ChromeActivity<C extends ChromeActivityComponent>
      */
     public boolean didFinishNativeInitialization() {
         return mNativeInitialized;
-    }
-
-    /**
-     * Called when the accessibility status of this device changes.  This might be triggered by
-     * touch exploration or general accessibility status updates.  It is an aggregate of two other
-     * accessibility update methods.
-     *
-     * @see #onAccessibilityStateChanged
-     * @see #mTouchExplorationStateChangeListener
-     * @param enabled Whether or not accessibility and touch exploration are currently enabled.
-     */
-    protected void onAccessibilityModeChanged(boolean enabled) {
-        InfoBarContainer.setIsAllowedToAutoHide(!enabled);
-        if (getToolbarManager() != null) getToolbarManager().onAccessibilityStatusChanged(enabled);
-        if (mContextualSearchManager != null) {
-            mContextualSearchManager.onAccessibilityModeChanged(enabled);
-        }
     }
 
     @Override
@@ -1479,16 +1433,6 @@ public abstract class ChromeActivity<C extends ChromeActivityComponent>
                     @TabOpenType int tabOpenType, String externalAppId, int tabIdToBringToFront,
                     boolean hasUserGesture, Intent intent) {}
         };
-    }
-
-    @Override
-    public final void onAccessibilityStateChanged(boolean enabled) {
-        AccessibilityUtil.resetAccessibilityEnabled();
-        checkAccessibility();
-    }
-
-    private void checkAccessibility() {
-        onAccessibilityModeChanged(AccessibilityUtil.isAccessibilityEnabled());
     }
 
     /**
@@ -1720,14 +1664,6 @@ public abstract class ChromeActivity<C extends ChromeActivityComponent>
     }
 
     /**
-     * @return The {@code EphemeralTabPanel} or {@code null} if none.
-     */
-    public EphemeralTabPanel getEphemeralTabPanel() {
-        LayoutManager layoutManager = getCompositorViewHolder().getLayoutManager();
-        return layoutManager != null ? layoutManager.getEphemeralTabPanel() : null;
-    }
-
-    /**
      * Create a full-screen manager to be used by this activity.
      * Note: This may be called before native code is initialized.
      * @return A {@link ChromeFullscreenManager} instance that's been created.
@@ -1788,8 +1724,6 @@ public abstract class ChromeActivity<C extends ChromeActivityComponent>
         }
 
         mActivityTabProvider.setLayoutManager(layoutManager);
-        EphemeralTabPanel panel = layoutManager.getEphemeralTabPanel();
-        if (panel != null) panel.setChromeActivity(this);
     }
 
     /**

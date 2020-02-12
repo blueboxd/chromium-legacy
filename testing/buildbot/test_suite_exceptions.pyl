@@ -438,9 +438,6 @@
         # crbug.com/868082
         'args': [
           '--disable-features=WebRTC-H264WithOpenH264FFmpeg',
-          # TODO(https://crbug.com/1007013): Remove this flag when it's no
-          # longer necessary to figure out why the renderer process is crashing.
-          '--no-sandbox',
         ],
       },
       'Win10 Tests x64 Code Coverage': {
@@ -540,6 +537,13 @@
           '--is-asan',
         ]
       },
+      'Win10 x64 Debug (NVIDIA)': {
+        'args': [
+          # TODO(https://crbug.com/1007013): Remove this flag when it's no
+          # longer necessary to figure out why the renderer process is hanging.
+          '--extra-browser-args=--no-sandbox',
+        ],
+      },
     },
   },
   'crashpad_tests': {
@@ -579,6 +583,15 @@
     'remove_from': [
       'Android FYI Release (Pixel 2)',
     ],
+    'modifications': {
+      'Win10 x64 Debug (NVIDIA)': {
+        'args': [
+          # TODO(https://crbug.com/1007013): Remove this flag when it's no
+          # longer necessary to figure out why the renderer process is hanging.
+          '--extra-browser-args=--no-sandbox',
+        ],
+      },
+    },
   },
   'extensions_browsertests': {
     'remove_from': [
@@ -729,6 +742,15 @@
     'remove_from': [
       'Android FYI Release (Pixel 2)',
     ],
+    'modifications': {
+      'Win10 x64 Debug (NVIDIA)': {
+        'args': [
+          # TODO(https://crbug.com/1007013): Remove this flag when it's no
+          # longer necessary to figure out why the renderer process is hanging.
+          '--extra-browser-args=--no-sandbox',
+        ],
+      },
+    },
   },
   'hardware_accelerated_feature_tests': {
     # TODO(https://crbug.com/850107): Remove the Android FYI Release (Pixel 2)
@@ -753,6 +775,15 @@
       'Mac V8 FYI Release (Intel)',
       'Win V8 FYI Release (NVIDIA)',
     ],
+    'modifications': {
+      'Win10 x64 Debug (NVIDIA)': {
+        'args': [
+          # TODO(https://crbug.com/1007013): Remove this flag when it's no
+          # longer necessary to figure out why the renderer process is hanging.
+          '--extra-browser-args=--no-sandbox',
+        ],
+      },
+    },
   },
   'interactive_ui_tests': {
     'remove_from': [

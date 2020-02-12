@@ -10,15 +10,9 @@
 
 #include "base/android/jni_android.h"
 #include "base/android/jni_string.h"
-#include "base/base_paths_android.h"
 #include "base/no_destructor.h"
-#include "components/metrics/android_metrics_provider.h"
-#include "components/metrics/drive_metrics_provider.h"
-#include "components/metrics/gpu/gpu_metrics_provider.h"
 #include "components/metrics/metrics_service.h"
-#include "components/metrics/version_utils.h"
 #include "components/version_info/android/channel_getter.h"
-#include "components/version_info/version_info.h"
 #include "weblayer/browser/java/jni/MetricsServiceClient_jni.h"
 
 namespace weblayer {
@@ -60,15 +54,6 @@ int32_t WebLayerMetricsServiceClient::GetProduct() {
   return metrics::ChromeUserMetricsExtension::ANDROID_WEBLAYER;
 }
 
-metrics::SystemProfileProto::Channel
-WebLayerMetricsServiceClient::GetChannel() {
-  return metrics::AsProtobufChannel(version_info::android::GetChannel());
-}
-
-std::string WebLayerMetricsServiceClient::GetVersionString() {
-  return version_info::GetVersionNumber();
-}
-
 std::string WebLayerMetricsServiceClient::GetAppPackageNameInternal() {
   JNIEnv* env = base::android::AttachCurrentThread();
   base::android::ScopedJavaLocalRef<jstring> j_app_name =
@@ -97,17 +82,6 @@ double WebLayerMetricsServiceClient::GetPackageNameLimitRate() {
 
 bool WebLayerMetricsServiceClient::ShouldWakeMetricsService() {
   return true;
-}
-
-void WebLayerMetricsServiceClient::RegisterAdditionalMetricsProviders(
-    metrics::MetricsService* service) {
-  service->RegisterMetricsProvider(
-      std::make_unique<metrics::AndroidMetricsProvider>());
-  service->RegisterMetricsProvider(
-      std::make_unique<metrics::DriveMetricsProvider>(
-          base::DIR_ANDROID_APP_DATA));
-  service->RegisterMetricsProvider(
-      std::make_unique<metrics::GPUMetricsProvider>());
 }
 
 bool WebLayerMetricsServiceClient::CanRecordPackageNameForAppType() {

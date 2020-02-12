@@ -66,6 +66,7 @@ void ServicesDelegateAndroid::SetDatabaseManagerForTest(
 
 void ServicesDelegateAndroid::ShutdownServices() {
   telemetry_service_.reset();
+  ServicesDelegate::ShutdownServices();
 }
 
 void ServicesDelegateAndroid::RefreshState(bool enable) {}

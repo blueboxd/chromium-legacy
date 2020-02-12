@@ -1300,16 +1300,15 @@ void BrowserAccessibilityManager::OnAtomicUpdateFinished(
 
 ui::AXNode* BrowserAccessibilityManager::GetNodeFromTree(
     const ui::AXTreeID tree_id,
-    const int32_t node_id) const {
+    const ui::AXNode::AXID node_id) const {
   auto* manager = BrowserAccessibilityManager::FromID(tree_id);
-  if (!manager)
-    return nullptr;
+  return manager ? manager->GetNodeFromTree(node_id) : nullptr;
+}
 
-  BrowserAccessibility* wrapper = manager->GetFromID(node_id);
-  if (wrapper)
-    return wrapper->node();
-
-  return nullptr;
+ui::AXNode* BrowserAccessibilityManager::GetNodeFromTree(
+    const ui::AXNode::AXID node_id) const {
+  BrowserAccessibility* wrapper = GetFromID(node_id);
+  return wrapper ? wrapper->node() : nullptr;
 }
 
 AXTreeID BrowserAccessibilityManager::GetTreeID() const {

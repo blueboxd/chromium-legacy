@@ -114,7 +114,7 @@ class BiquadFilterNode final : public AudioNode {
 
  private:
   BiquadProcessor* GetBiquadProcessor() const;
-  bool setType(unsigned);  // Returns true on success.
+  bool SetType(BiquadProcessor::FilterType);  // Returns true on success.
 
   Member<AudioParam> frequency_;
   Member<AudioParam> q_;

@@ -71,7 +71,7 @@ class WifiConfigurationBridge : public syncer::ModelTypeSyncBridge {
   // This gets updated when changes are received from the server and after local
   // changes have been committed.  On initialization of this class, it is
   // populated with the contents of |store_|.
-  base::flat_map<std::string, sync_pb::WifiConfigurationSpecificsData> entries_;
+  base::flat_map<std::string, sync_pb::WifiConfigurationSpecifics> entries_;
 
   // The on disk store of WifiConfigurationSpecifics protos that mirrors what
   // is on the sync server.  This gets updated when changes are received from

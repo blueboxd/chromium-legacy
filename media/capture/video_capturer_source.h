@@ -48,7 +48,7 @@ class CAPTURE_EXPORT VideoCapturerSource {
   using VideoCaptureDeviceFormatsCB =
       base::OnceCallback<void(const media::VideoCaptureFormats&)>;
 
-  using RunningCallback = base::Callback<void(bool)>;
+  using RunningCallback = base::RepeatingCallback<void(bool)>;
 
   // Returns formats that are preferred and can currently be used. May be empty
   // if no formats are available or known.

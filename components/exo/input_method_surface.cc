@@ -70,10 +70,10 @@ void InputMethodSurface::OnSurfaceCommit() {
     manager_->AddSurface(this);
   }
 
-  gfx::Rect new_bounds = root_surface()->hit_test_region().bounds();
+  const gfx::Rect new_bounds = gfx::ConvertRectToDIP(
+      default_device_scale_factor_, root_surface()->hit_test_region().bounds());
   if (input_method_bounds_ != new_bounds) {
-    input_method_bounds_ =
-        gfx::ConvertRectToDIP(default_device_scale_factor_, new_bounds);
+    input_method_bounds_ = new_bounds;
     manager_->OnTouchableBoundsChanged(this);
 
     GetViewAccessibility().OverrideBounds(gfx::RectF(input_method_bounds_));

@@ -135,7 +135,7 @@ class PannerHandler final : public AudioHandler {
   // BaseAudioContext's listener
   AudioListener* Listener();
 
-  bool SetPanningModel(unsigned);   // Returns true on success.
+  bool SetPanningModel(Panner::PanningModel);  // Returns true on success.
   bool SetDistanceModel(unsigned);  // Returns true on success.
 
   void CalculateAzimuthElevation(double* out_azimuth,
@@ -160,7 +160,7 @@ class PannerHandler final : public AudioHandler {
   // AudioListener is held alive by PannerNode.
   CrossThreadWeakPersistent<AudioListener> listener_;
   std::unique_ptr<Panner> panner_;
-  unsigned panning_model_;
+  Panner::PanningModel panning_model_;
   unsigned distance_model_;
 
   bool is_azimuth_elevation_dirty_;

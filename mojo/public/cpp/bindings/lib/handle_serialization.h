@@ -45,7 +45,7 @@ struct Serializer<PlatformHandle, PlatformHandle> {
                           PlatformHandle* output,
                           SerializationContext* context) {
     *output = UnwrapPlatformHandle(context->TakeHandleAs<Handle>(*input));
-    return output->is_valid();
+    return true;
   }
 };
 

@@ -416,6 +416,8 @@ TEST_F(DialogTest, UnfocusableInitialFocus) {
   // This achieves the same effect as disabling full keyboard access.
   dialog->GetOkButton()->SetFocusBehavior(View::FocusBehavior::NEVER);
   dialog->GetCancelButton()->SetFocusBehavior(View::FocusBehavior::NEVER);
+  dialog->GetBubbleFrameView()->GetCloseButtonForTesting()->SetFocusBehavior(
+      View::FocusBehavior::NEVER);
 #endif
 
   // On showing the dialog, the initially focused View will be the OK button.

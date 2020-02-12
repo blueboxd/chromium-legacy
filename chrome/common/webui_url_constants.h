@@ -358,6 +358,7 @@ extern const char kConnectedDevicesSubPage[];
 extern const char kCrostiniSharedPathsSubPage[];
 extern const char kCrostiniSharedUsbDevicesSubPage[];
 extern const char kCrostiniExportImportSubPage[];
+extern const char kCrostiniDiskResizeSubPage[];
 extern const char kDateTimeSubPage[];
 extern const char kDisplaySubPage[];
 extern const char kExternalStorageSubPage[];

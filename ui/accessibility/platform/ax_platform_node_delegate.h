@@ -26,6 +26,7 @@
 #include "ui/accessibility/ax_position.h"
 #include "ui/accessibility/ax_text_boundary.h"
 #include "ui/accessibility/ax_text_utils.h"
+#include "ui/accessibility/ax_tree.h"
 #include "ui/accessibility/ax_tree_id.h"
 #include "ui/accessibility/platform/ax_unique_id.h"
 #include "ui/gfx/geometry/vector2d.h"
@@ -42,7 +43,6 @@ namespace ui {
 struct AXActionData;
 struct AXNodeData;
 struct AXTreeData;
-class AXTree;
 class AXPlatformNode;
 
 using TextAttribute = std::pair<std::string, std::string>;

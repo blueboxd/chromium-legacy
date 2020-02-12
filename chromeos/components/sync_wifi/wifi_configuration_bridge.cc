@@ -29,12 +29,10 @@ namespace sync_wifi {
 namespace {
 
 std::unique_ptr<syncer::EntityData> GenerateWifiEntityData(
-    const sync_pb::WifiConfigurationSpecificsData& data) {
+    const sync_pb::WifiConfigurationSpecifics& proto) {
   auto entity_data = std::make_unique<syncer::EntityData>();
-  entity_data->specifics.mutable_wifi_configuration()
-      ->mutable_client_only_encrypted_data()
-      ->CopyFrom(data);
-  entity_data->name = NetworkIdentifier::FromProto(data).SerializeToString();
+  entity_data->specifics.mutable_wifi_configuration()->CopyFrom(proto);
+  entity_data->name = NetworkIdentifier::FromProto(proto).SerializeToString();
   return entity_data;
 }
 }  // namespace
@@ -84,9 +82,7 @@ base::Optional<syncer::ModelError> WifiConfigurationBridge::ApplySyncChanges(
       continue;
     }
 
-    auto& specifics = change->data()
-                          .specifics.wifi_configuration()
-                          .client_only_encrypted_data();
+    auto& specifics = change->data().specifics.wifi_configuration();
     synced_network_updater_->AddOrUpdateNetwork(specifics);
 
     batch->WriteData(change->storage_key(), specifics.SerializeAsString());
@@ -128,8 +124,8 @@ std::string WifiConfigurationBridge::GetClientTag(
 
 std::string WifiConfigurationBridge::GetStorageKey(
     const syncer::EntityData& entity_data) {
-  return NetworkIdentifier::FromProto(entity_data.specifics.wifi_configuration()
-                                          .client_only_encrypted_data())
+  return NetworkIdentifier::FromProto(
+             entity_data.specifics.wifi_configuration())
       .SerializeToString();
 }
 
@@ -155,7 +151,7 @@ void WifiConfigurationBridge::OnReadAllData(
   }
 
   for (syncer::ModelTypeStore::Record& record : *records) {
-    sync_pb::WifiConfigurationSpecificsData data;
+    sync_pb::WifiConfigurationSpecifics data;
     if (record.id.empty() || !data.ParseFromString(record.value)) {
       DVLOG(1) << "Unable to parse proto for entry with key: " << record.id;
       continue;

@@ -12,6 +12,7 @@
 #include "base/containers/flat_set.h"
 #include "base/observer_list.h"
 #include "base/optional.h"
+#include "base/process/process.h"
 #include "base/strings/string16.h"
 #include "base/strings/string_piece_forward.h"
 #include "chromecast/common/mojom/feature_manager.mojom.h"
@@ -163,6 +164,10 @@ class CastWebContents {
 
     // Notifies that a resource for the main frame failed to load.
     virtual void ResourceLoadFailed(CastWebContents* cast_web_contents) {}
+
+    // Propagates the process information via observer, in particular to
+    // the underlying OnRendererProcessStarted() method.
+    virtual void OnRenderProcessReady(const base::Process& process) {}
 
     // Adds |this| to the ObserverList in the implementation of
     // |cast_web_contents|.

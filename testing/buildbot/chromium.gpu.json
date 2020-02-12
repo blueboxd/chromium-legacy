@@ -3990,7 +3990,7 @@
           "--browser=debug_x64",
           "--passthrough",
           "-v",
-          "--extra-browser-args=--enable-logging=stderr --js-flags=--expose-gc"
+          "--extra-browser-args=--enable-logging=stderr --js-flags=--expose-gc --no-sandbox"
         ],
         "isolate_name": "telemetry_gpu_integration_test",
         "merge": {
@@ -4019,7 +4019,7 @@
           "--browser=debug_x64",
           "--passthrough",
           "-v",
-          "--extra-browser-args=--enable-logging=stderr --js-flags=--expose-gc"
+          "--extra-browser-args=--enable-logging=stderr --js-flags=--expose-gc --no-sandbox"
         ],
         "isolate_name": "telemetry_gpu_integration_test",
         "merge": {
@@ -4048,7 +4048,7 @@
           "--browser=debug_x64",
           "--passthrough",
           "-v",
-          "--extra-browser-args=--enable-logging=stderr --js-flags=--expose-gc"
+          "--extra-browser-args=--enable-logging=stderr --js-flags=--expose-gc --no-sandbox"
         ],
         "isolate_name": "telemetry_gpu_integration_test",
         "merge": {
@@ -4106,7 +4106,7 @@
           "--browser=debug_x64",
           "--passthrough",
           "-v",
-          "--extra-browser-args=--enable-logging=stderr --js-flags=--expose-gc --force_high_performance_gpu",
+          "--extra-browser-args=--enable-logging=stderr --js-flags=--expose-gc --force_high_performance_gpu --no-sandbox",
           "--expected-vendor-id",
           "10de",
           "--expected-device-id",

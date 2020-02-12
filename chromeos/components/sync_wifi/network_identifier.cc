@@ -24,7 +24,7 @@ const char kDelimeter[] = "<||>";
 
 // static
 NetworkIdentifier NetworkIdentifier::FromProto(
-    const sync_pb::WifiConfigurationSpecificsData& specifics) {
+    const sync_pb::WifiConfigurationSpecifics& specifics) {
   return NetworkIdentifier(
       specifics.hex_ssid(),
       SecurityTypeStringFromProto(specifics.security_type()));

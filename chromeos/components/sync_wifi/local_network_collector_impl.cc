@@ -97,7 +97,7 @@ void LocalNetworkCollectorImpl::GetSyncableNetwork(const NetworkIdentifier& id,
 std::string LocalNetworkCollectorImpl::InitializeRequest() {
   std::string request_guid = base::GenerateGUID();
   request_guid_to_complete_protos_[request_guid] =
-      std::vector<sync_pb::WifiConfigurationSpecificsData>();
+      std::vector<sync_pb::WifiConfigurationSpecifics>();
   request_guid_to_in_flight_networks_[request_guid] =
       base::flat_set<NetworkIdentifier>();
   return request_guid;
@@ -136,7 +136,7 @@ bool LocalNetworkCollectorImpl::IsEligible(
 void LocalNetworkCollectorImpl::StartGetNetworkDetails(
     const network_config::mojom::NetworkStateProperties* network,
     const std::string& request_guid) {
-  sync_pb::WifiConfigurationSpecificsData proto;
+  sync_pb::WifiConfigurationSpecifics proto;
   proto.set_hex_ssid(network->type_state->get_wifi()->hex_ssid);
   proto.set_security_type(
       SecurityTypeProtoFromMojo(network->type_state->get_wifi()->security));
@@ -147,7 +147,7 @@ void LocalNetworkCollectorImpl::StartGetNetworkDetails(
 }
 
 void LocalNetworkCollectorImpl::OnGetManagedPropertiesResult(
-    sync_pb::WifiConfigurationSpecificsData proto,
+    sync_pb::WifiConfigurationSpecifics proto,
     const std::string& request_guid,
     network_config::mojom::ManagedPropertiesPtr properties) {
   if (!properties) {
@@ -179,7 +179,7 @@ void LocalNetworkCollectorImpl::OnGetManagedPropertiesResult(
 }
 
 void LocalNetworkCollectorImpl::OnGetWiFiPassphraseResult(
-    sync_pb::WifiConfigurationSpecificsData proto,
+    sync_pb::WifiConfigurationSpecifics proto,
     const std::string& request_guid,
     const std::string& passphrase) {
   proto.set_passphrase(passphrase);
@@ -214,10 +214,10 @@ void LocalNetworkCollectorImpl::OnRequestFinished(
   DCHECK(request_guid_to_in_flight_networks_[request_guid].empty());
 
   if (request_guid_to_single_callback_[request_guid]) {
-    std::vector<sync_pb::WifiConfigurationSpecificsData>& list =
+    std::vector<sync_pb::WifiConfigurationSpecifics>& list =
         request_guid_to_complete_protos_[request_guid];
     DCHECK(list.size() <= 1);
-    base::Optional<sync_pb::WifiConfigurationSpecificsData> result;
+    base::Optional<sync_pb::WifiConfigurationSpecifics> result;
     if (list.size() == 1) {
       result = list[0];
     }

@@ -447,6 +447,8 @@ crbug.com/1048765 [ Mac10.10 ] external/wpt/svg/animations/animate-marker-orient
 crbug.com/1048765 [ Mac10.10 ] external/wpt/svg/animations/animate-dynamic-update-attributeName.html [ Skip ]
 crbug.com/1048765 [ Mac10.10 ] external/wpt/svg/animations/short-simple-duration-and-fractional-repeatcount.html [ Skip ]
 
+# Slightly flaky timeouts (about 1 in 30)
+crbug.com/1050993 [ Linux ] virtual/gpu-rasterization/images/drag-image-descendant-painting-sibling.html [ Pass Timeout ]
 
 # ====== Paint team owned tests to here ======
 
@@ -1473,16 +1475,11 @@ virtual/layout_ng_fragment_traversal/external/wpt/css/CSS2/text/* [ Skip ]
 # Flexbox in NG
 #
 # Fail in NG flex, pass in legacy flex.
-crbug.com/845235 virtual/layout_ng_flex_box/css3/flexbox/minimum-size-image.html [ Failure ]
 crbug.com/845235 virtual/layout_ng_flex_box/css3/flexbox/overflow-auto-resizes-correctly.html [ Failure ]
 crbug.com/845235 virtual/layout_ng_flex_box/css3/flexbox/relpos-with-percentage-top.html [ Failure ]
-crbug.com/845235 virtual/layout_ng_flex_box/external/wpt/css/css-flexbox/flex-aspect-ratio-img-column-004.html [ Failure ]
 crbug.com/845235 virtual/layout_ng_flex_box/external/wpt/css/css-flexbox/hittest-overlapping-margin.html [ Failure ]
 crbug.com/845235 virtual/layout_ng_flex_box/external/wpt/css/css-flexbox/hittest-overlapping-order.html [ Failure ]
 crbug.com/845235 virtual/layout_ng_flex_box/external/wpt/css/css-flexbox/quirks-auto-block-size-with-percentage-item.html [ Pass Failure ]
-crbug.com/845235 virtual/layout_ng_flex_box/external/wpt/css/vendor-imports/mozilla/mozilla-central-reftests/flexbox/flexbox-intrinsic-ratio-003.html [ Failure ]
-crbug.com/845235 virtual/layout_ng_flex_box/external/wpt/css/vendor-imports/mozilla/mozilla-central-reftests/flexbox/flexbox-intrinsic-ratio-004.html [ Failure ]
-crbug.com/845235 virtual/layout_ng_flex_box/external/wpt/css/vendor-imports/mozilla/mozilla-central-reftests/flexbox/flexbox-intrinsic-ratio-004v.html [ Failure ]
 crbug.com/846557 [ Mac ] virtual/layout_ng_flex_box/css3/flexbox/button.html [ Failure ]
 
 # Fail in both legacy flex and NG flex
@@ -1848,39 +1845,11 @@ crbug.com/987224 [ IOS ] virtual/cascade/external/wpt/css/css-paint-api/idlharne
 
 # ====== Cascade failures until here ======
 
-# ====== Form Controls Refresh (chrome://flags/#form-controls-refresh) failures from here ======
-
-
-# ======
-# From this point until the end of the Form Controls Refresh section, these are
-# in-progress rebaselines, tracked at crbug.com/1035582.
-#
-# PLEASE DO NOT PUT ANYTHING INSIDE THIS SECTION!!
-# ======
-
-# These need another look (timeout):
-crbug.com/1035582 external/wpt/css/selectors/focus-visible-003-manual.html [ Skip ]
-crbug.com/1035582 external/wpt/css/selectors/focus-visible-004-manual.html [ Skip ]
-
-# Still broken, all platforms:
-crbug.com/1035582 fast/forms/button/button-with-float.html [ Skip ]
-crbug.com/1035582 fast/forms/select/listbox-overlay-scrollbar.html [ Skip ]
-crbug.com/1035582 external/wpt/css/css-transforms/transform-input-015.html [ Skip ]
-
-# ======
-# ====== End of rebaselines for crbug.com/1035582 ======
-# ======
-#
-# PLEASE put new form controls refresh failures BELOW THIS LINE, and CREATE A NEW BUG NUMBER.
-#
 crbug.com/1035582 [ Mac10.10 ] virtual/controls-refresh-hc/virtual/controls-refresh/color-scheme/select/select-multiple-hover-focused-unselected.html [ Skip ]
 crbug.com/1035582 [ Mac10.10 ] virtual/controls-refresh-hc/virtual/controls-refresh/color-scheme/select/select-multiple-appearance-basic.html [ Skip ]
 
 # Bug in FormControlsRefresh <select multiple> tap behavior:
 crbug.com/1045672 fast/forms/select/listbox-tap.html [ Failure ]
-
-
-# ====== Form Controls Refresh failures until here ======
 
 ### sheriff 2019-07-16
 crbug.com/983799 [ Win ] http/tests/navigation/redirect-on-back-updates-history-item.html [ Timeout Pass ]
@@ -1970,6 +1939,14 @@ crbug.com/410974 virtual/threaded-prefer-compositing/fast/scroll-behavior/scroll
 crbug.com/410974 virtual/threaded-prefer-compositing/fast/scroll-behavior/scroll-customization/touch-scroll-customization.html [ Pass Failure ]
 
 crbug.com/518987 http/tests/xmlhttprequest/navigation-abort-detaches-frame.html [ Pass Timeout ]
+
+# Tests that fail when FormControlsRefresh is enabled:
+crbug.com/1051136 fast/forms/select/listbox-overlay-scrollbar.html [ Failure ]
+crbug.com/1051141 external/wpt/css/selectors/focus-visible-003-manual.html [ Timeout ]
+crbug.com/1051141 external/wpt/css/selectors/focus-visible-004-manual.html [ Timeout ]
+
+# This test needs the fuzzy-diff feature - it has small anti-aliasing failures:
+crbug.com/1051143 external/wpt/css/css-transforms/transform-input-015.html [ Pass Failure ]
 
 # These performance-sensitive user-timing tests are flaky in debug on all platforms, and flaky on all configurations of windows.
 # See: crbug.com/567965, crbug.com/518992, and crbug.com/518993
@@ -2087,7 +2064,6 @@ crbug.com/832274 [ Win ] virtual/form-controls-refresh-disabled/fast/forms/searc
 crbug.com/543369 virtual/form-controls-refresh-disabled/fast/forms/select-popup/popup-menu-appearance-tall.html [ Failure Pass ]
 crbug.com/681468 virtual/form-controls-refresh-disabled/fast/forms/suggestion-picker/date-suggestion-picker-appearance-zoom125.html [ Failure Pass ]
 crbug.com/681468 virtual/form-controls-refresh-disabled/fast/forms/suggestion-picker/date-suggestion-picker-appearance-zoom200.html [ Failure Pass ]
-crbug.com/660185 [ Mac ] virtual/form-controls-refresh-disabled/fast/forms/datalist/input-appearance-range-with-transform.html [ Pass Failure ]
 crbug.com/953591 [ Win ] virtual/form-controls-refresh-disabled/fast/forms/datalist/input-appearance-range-with-transform.html [ Pass Failure ]
 crbug.com/591099 [ Mac ] virtual/form-controls-refresh-disabled/fast/forms/text/text-lineheight-centering.html [ Failure ]
 crbug.com/770971 [ Win7 ] virtual/form-controls-refresh-disabled/fast/forms/suggested-value.html [ Pass Failure ]
@@ -2434,7 +2410,6 @@ crbug.com/467127 external/wpt/css/vendor-imports/mozilla/mozilla-central-reftest
 
 crbug.com/654999 [ Win ] fast/forms/color/color-suggestion-picker-appearance-zoom200.html [ Pass Failure ]
 crbug.com/654999 [ Linux ] fast/forms/color/color-suggestion-picker-appearance-zoom200.html [ Pass Failure ]
-crbug.com/660185 [ Mac ] fast/forms/datalist/input-appearance-range-with-transform.html [ Pass Failure ]
 
 crbug.com/658304 [ Win ] fast/forms/select/input-select-after-resize.html [ Crash Timeout Pass Failure ]
 

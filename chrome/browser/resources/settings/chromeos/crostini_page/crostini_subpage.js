@@ -77,6 +77,17 @@ Polymer({
         return loadTimeData.getBoolean('showCrostiniContainerUpgrade');
       },
     },
+
+    /**
+     * Whether the button to show the disk resizing view should be shown.
+     * @private {boolean}
+     */
+    showCrostiniDiskResize_: {
+      type: Boolean,
+      value() {
+        return loadTimeData.getBoolean('showCrostiniDiskResize');
+      },
+    },
   },
 
   /** settings.RouteOriginBehavior override */
@@ -105,6 +116,7 @@ Polymer({
     this.addFocusConfig_(r.CROSTINI_ANDROID_ADB, '#crostini-enable-arc-adb');
     this.addFocusConfig_(
         r.CROSTINI_PORT_FORWARDING, '#crostini-port-forwarding');
+    this.addFocusConfig_(r.CROSTINI_DISK_RESIZE, '#crostini-disk-resize');
   },
 
   /** @private */
@@ -131,6 +143,12 @@ Polymer({
   onEnableArcAdbClick_() {
     settings.Router.getInstance().navigateTo(
         settings.routes.CROSTINI_ANDROID_ADB);
+  },
+
+  /** @private */
+  onShowDiskResizeClick_() {
+    settings.Router.getInstance().navigateTo(
+        settings.routes.CROSTINI_DISK_RESIZE);
   },
 
   /**

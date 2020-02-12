@@ -14,7 +14,6 @@ import org.chromium.base.ObserverList;
 import org.chromium.base.metrics.RecordUserAction;
 import org.chromium.chrome.browser.accessibility_tab_switcher.OverviewListLayout;
 import org.chromium.chrome.browser.compositor.TitleCache;
-import org.chromium.chrome.browser.compositor.bottombar.OverlayPanel.StateChangeReason;
 import org.chromium.chrome.browser.compositor.layouts.components.LayoutTab;
 import org.chromium.chrome.browser.compositor.layouts.components.VirtualView;
 import org.chromium.chrome.browser.compositor.layouts.content.TabContentManager;
@@ -46,7 +45,8 @@ import java.util.List;
  * A {@link Layout} controller for the more complicated Chrome browser.  This is currently a
  * superset of {@link LayoutManager}.
  */
-public class LayoutManagerChrome extends LayoutManager implements OverviewModeController {
+public class LayoutManagerChrome
+        extends LayoutManager implements OverviewModeController, AccessibilityUtil.Observer {
     // Layouts
     /** An {@link Layout} that should be used as the accessibility tab switcher. */
     protected OverviewListLayout mOverviewListLayout;
@@ -227,9 +227,6 @@ public class LayoutManagerChrome extends LayoutManager implements OverviewModeCo
         if (isOverviewLayout(layoutBeingShown) || layoutBeingShown == mToolbarSwipeLayout) {
             if (mContextualSearchDelegate != null) {
                 mContextualSearchDelegate.dismissContextualSearchBar();
-            }
-            if (getEphemeralTabPanel() != null) {
-                getEphemeralTabPanel().closePanel(StateChangeReason.UNKNOWN, false);
             }
         }
 
@@ -416,6 +413,13 @@ public class LayoutManagerChrome extends LayoutManager implements OverviewModeCo
     @Override
     public void removeOverviewModeObserver(OverviewModeObserver listener) {
         mOverviewModeObservers.removeObserver(listener);
+    }
+
+    // AccessibilityUtil.Observer
+
+    @Override
+    public void onAccessibilityModeChanged(boolean enabled) {
+        setEnableAnimations(DeviceClassManager.enableAnimations());
     }
 
     /**

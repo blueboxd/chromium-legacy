@@ -53,6 +53,7 @@ import org.chromium.chrome.browser.tab.TabSelectionType;
 import org.chromium.chrome.browser.tabmodel.TabModelSelector;
 import org.chromium.chrome.browser.tabmodel.TabModelSelectorTabModelObserver;
 import org.chromium.chrome.browser.tabmodel.TabModelSelectorTabObserver;
+import org.chromium.chrome.browser.util.AccessibilityUtil;
 import org.chromium.components.feature_engagement.EventConstants;
 import org.chromium.components.feature_engagement.FeatureConstants;
 import org.chromium.components.feature_engagement.Tracker;
@@ -77,9 +78,9 @@ import java.util.regex.Pattern;
  * Manager for the Contextual Search feature. This class keeps track of the status of Contextual
  * Search and coordinates the control with the layout.
  */
-public class ContextualSearchManager implements ContextualSearchManagementDelegate,
-                                                ContextualSearchNetworkCommunicator,
-                                                ContextualSearchSelectionHandler {
+public class ContextualSearchManager
+        implements ContextualSearchManagementDelegate, ContextualSearchNetworkCommunicator,
+                   ContextualSearchSelectionHandler, AccessibilityUtil.Observer {
     /** A delegate for reporting selected context to GSA for search quality. */
     public interface ContextReporterDelegate {
         /**
@@ -287,6 +288,7 @@ public class ContextualSearchManager implements ContextualSearchManagementDelega
         mInternalStateController.reset(StateChangeReason.UNKNOWN);
 
         listenForTabModelSelectorNotifications();
+        AccessibilityUtil.addObserver(this);
     }
 
     /**
@@ -303,6 +305,7 @@ public class ContextualSearchManager implements ContextualSearchManagementDelega
         stopListeningForHideNotifications();
         mTabRedirectHandler.clear();
         mInternalStateController.enter(InternalState.UNDEFINED);
+        AccessibilityUtil.removeObserver(this);
     }
 
     @Override
@@ -879,11 +882,7 @@ public class ContextualSearchManager implements ContextualSearchManagementDelega
         }
     }
 
-    /**
-     * Notifies that the Accessibility Mode state has changed.
-     *
-     * @param enabled Whether the Accessibility Mode is enabled.
-     */
+    @Override
     public void onAccessibilityModeChanged(boolean enabled) {
         mIsAccessibilityModeEnabled = enabled;
         if (enabled) hideContextualSearch(StateChangeReason.UNKNOWN);

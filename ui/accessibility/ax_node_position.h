@@ -7,14 +7,15 @@
 
 #include <stdint.h>
 
-#include <string>
 #include <vector>
 
+#include "base/containers/stack.h"
 #include "base/strings/string16.h"
-#include "ui/accessibility/ax_enum_util.h"
+#include "ui/accessibility/ax_enums.mojom-forward.h"
 #include "ui/accessibility/ax_export.h"
+#include "ui/accessibility/ax_node.h"
 #include "ui/accessibility/ax_position.h"
-#include "ui/accessibility/ax_tree.h"
+#include "ui/accessibility/ax_tree_id.h"
 
 namespace ui {
 
@@ -28,8 +29,6 @@ class AX_EXPORT AXNodePosition : public AXPosition<AXNodePosition, AXNode> {
       const AXNode& node,
       int child_index_or_text_offset,
       ax::mojom::TextAffinity affinity = ax::mojom::TextAffinity::kDownstream);
-
-  static void SetTree(AXTree* tree) { tree_ = tree; }
 
   AXNodePosition();
   ~AXNodePosition() override;
@@ -52,7 +51,7 @@ class AX_EXPORT AXNodePosition : public AXPosition<AXNodePosition, AXNode> {
   base::stack<AXNode*> GetAncestorAnchors() const override;
   void AnchorParent(AXTreeID* tree_id, AXNode::AXID* parent_id) const override;
   AXNode* GetNodeInTree(AXTreeID tree_id, AXNode::AXID node_id) const override;
-  int32_t GetAnchorID(AXNode* node) const override;
+  AXNode::AXID GetAnchorID(AXNode* node) const override;
   AXTreeID GetTreeID(AXNode* node) const override;
 
   bool IsInLineBreakingObject() const override;
@@ -71,8 +70,6 @@ class AX_EXPORT AXNodePosition : public AXPosition<AXNodePosition, AXNode> {
                            AXTreeID child_tree_id,
                            AXTreeID* parent_tree_id,
                            AXNode::AXID* parent_id);
-
-  static AXTree* tree_;
 };
 
 }  // namespace ui

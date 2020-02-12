@@ -22,6 +22,8 @@
 #include "chrome/browser/policy/profile_policy_connector_builder.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser.h"
+#include "chrome/browser/web_applications/components/app_shortcut_manager.h"
+#include "chrome/browser/web_applications/components/web_app_provider_base.h"
 #include "chrome/common/extensions/extension_test_util.h"
 #include "chrome/common/extensions/manifest_handlers/app_launch_info.h"
 #include "chrome/common/web_application_info.h"
@@ -135,6 +137,10 @@ class ExtensionPolicyTest : public PolicyTest {
       extension_service()->updater()->SetExtensionCacheForTesting(
           test_extension_cache_.get());
     }
+
+    web_app::WebAppProviderBase::GetProviderBase(browser()->profile())
+        ->shortcut_manager()
+        .SuppressShortcutsForTesting();
   }
 
   extensions::ExtensionService* extension_service() {

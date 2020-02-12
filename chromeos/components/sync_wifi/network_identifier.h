@@ -10,7 +10,7 @@
 #include "chromeos/services/network_config/public/mojom/cros_network_config.mojom-forward.h"
 
 namespace sync_pb {
-class WifiConfigurationSpecificsData;
+class WifiConfigurationSpecifics;
 }
 
 namespace chromeos {
@@ -22,7 +22,7 @@ namespace sync_wifi {
 class NetworkIdentifier {
  public:
   static NetworkIdentifier FromProto(
-      const sync_pb::WifiConfigurationSpecificsData& specifics);
+      const sync_pb::WifiConfigurationSpecifics& specifics);
   static NetworkIdentifier FromMojoNetwork(
       const network_config::mojom::NetworkStatePropertiesPtr& network);
   // |serialized_string| is in the format of hex_ssid and security_type

@@ -13,11 +13,14 @@
 #include "base/files/scoped_temp_dir.h"
 #include "base/strings/strcat.h"
 #include "base/strings/string_number_conversions.h"
+#include "base/test/metrics/histogram_tester.h"
 #include "base/test/scoped_mock_clock_override.h"
 #include "base/test/task_environment.h"
 #include "base/values.h"
 #include "components/metrics/structured/event_base.h"
+#include "components/metrics/structured/histogram_util.h"
 #include "components/metrics/structured/recorder.h"
+#include "components/metrics/structured/structured_events.h"
 #include "components/prefs/json_pref_store.h"
 #include "components/prefs/persistent_pref_store.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -75,6 +78,13 @@ std::string LastRotationPath(const uint64_t event) {
 std::string RotationPeriodPath(const uint64_t event) {
   return base::StrCat(
       {"keys.", base::NumberToString(event), ".rotation_period"});
+}
+
+// Returns the total number of events registered in structured.xml. This is used
+// to determine how many keys we expect to load or rotate on initialization.
+int NumberOfEvents() {
+  return sizeof(metrics::structured::events::kEventNameHashes) /
+         sizeof(uint64_t);
 }
 
 }  // namespace
@@ -150,11 +160,17 @@ class KeyDataTest : public testing::Test {
 
   void Wait() { task_environment_.RunUntilIdle(); }
 
+  void ExpectNoErrors() {
+    histogram_tester_.ExpectTotalCount("UMA.StructuredMetrics.InternalError",
+                                       0);
+  }
+
   base::test::TaskEnvironment task_environment_{
       base::test::TaskEnvironment::MainThreadType::UI,
       base::test::TaskEnvironment::ThreadPoolExecutionMode::QUEUED};
   base::ScopedTempDir temp_dir_;
   base::ScopedMockClockOverride time_;
+  base::HistogramTester histogram_tester_;
   scoped_refptr<JsonPrefStore> key_store_;
 
   std::unique_ptr<KeyData> key_data_;
@@ -165,6 +181,10 @@ class KeyDataTest : public testing::Test {
 // other.
 TEST_F(KeyDataTest, GeneratesKeysForEvents) {
   StandardSetup();
+  histogram_tester_.ExpectUniqueSample(
+      "UMA.StructuredMetrics.KeyValidationState", KeyValidationState::kCreated,
+      NumberOfEvents());
+
   const std::string key_one = GetString(KeyPath(kEventOneHash));
   const std::string key_two = GetString(KeyPath(kEventTwoHash));
 
@@ -182,6 +202,9 @@ TEST_F(KeyDataTest, GeneratesDistinctKeys) {
     ResetState();
     StandardSetup();
     keys.insert(GetString(KeyPath(kEventOneHash)));
+    histogram_tester_.ExpectUniqueSample(
+        "UMA.StructuredMetrics.KeyValidationState",
+        KeyValidationState::kCreated, NumberOfEvents() * (i + 1));
   }
 
   EXPECT_EQ(keys.size(), 10ul);
@@ -190,12 +213,18 @@ TEST_F(KeyDataTest, GeneratesDistinctKeys) {
 // If there is an existing key store file, check that its keys are not replaced.
 TEST_F(KeyDataTest, ReuseExistingKeys) {
   StandardSetup();
+  histogram_tester_.ExpectBucketCount(
+      "UMA.StructuredMetrics.KeyValidationState", KeyValidationState::kCreated,
+      NumberOfEvents());
   const std::string key_one = GetString(KeyPath(kEventOneHash));
   CommitKeyStore();
 
   key_data_.reset();
   key_store_.reset();
   StandardSetup();
+  histogram_tester_.ExpectBucketCount(
+      "UMA.StructuredMetrics.KeyValidationState", KeyValidationState::kValid,
+      NumberOfEvents());
   const std::string key_two = GetString(KeyPath(kEventOneHash));
 
   EXPECT_EQ(key_one, key_two);
@@ -209,6 +238,7 @@ TEST_F(KeyDataTest, DifferentEventsDifferentHashes) {
   EXPECT_NE(
       key_data_->HashForEventMetric(kEventOneHash, kMetricOneHash, "value"),
       key_data_->HashForEventMetric(kEventTwoHash, kMetricOneHash, "value"));
+  ExpectNoErrors();
 }
 
 // Check that an event has different hashes for different values of the same
@@ -218,6 +248,7 @@ TEST_F(KeyDataTest, DifferentMetricsDifferentHashes) {
   EXPECT_NE(
       key_data_->HashForEventMetric(kEventOneHash, kMetricOneHash, "first"),
       key_data_->HashForEventMetric(kEventOneHash, kMetricOneHash, "second"));
+  ExpectNoErrors();
 }
 
 // Check that an event has different hashes for different metrics with the same
@@ -227,6 +258,7 @@ TEST_F(KeyDataTest, DifferentValuesDifferentHashes) {
   EXPECT_NE(
       key_data_->HashForEventMetric(kEventOneHash, kMetricOneHash, "value"),
       key_data_->HashForEventMetric(kEventOneHash, kMetricTwoHash, "value"));
+  ExpectNoErrors();
 }
 
 // Ensure that KeyData::UserId is the expected value of SHA256(key).
@@ -238,6 +270,7 @@ TEST_F(KeyDataTest, CheckUserIDs) {
   MakeKeyData();
   EXPECT_EQ(HashToHex(key_data_->UserEventId(kEventOneHash)), kUserId);
   EXPECT_NE(HashToHex(key_data_->UserEventId(kEventTwoHash)), kUserId);
+  ExpectNoErrors();
 }
 
 // Ensure that KeyData::Hash returns expected values for a known key and value.
@@ -254,11 +287,17 @@ TEST_F(KeyDataTest, CheckHashes) {
   EXPECT_EQ(HashToHex(key_data_->HashForEventMetric(kEventOneHash,
                                                     kMetricTwoHash, kValueTwo)),
             kValueTwoHash);
+  ExpectNoErrors();
 }
 
 // Check that keys for a event are correctly rotated after the default 90 day
 // rotation period.
 TEST_F(KeyDataTest, KeysRotated) {
+  // This test intentionally doesn't test the key validation metric. Events can
+  // have custom rotation periods, so this test could rotate some arbitrary set
+  // of keys that we don't know ahead of time, which would require too much test
+  // logic.
+
   StandardSetup();
   const uint64_t first_id = key_data_->UserEventId(kEventOneHash);
   const int start_day = (base::Time::Now() - base::Time::UnixEpoch()).InDays();

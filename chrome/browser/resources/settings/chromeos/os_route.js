@@ -79,6 +79,11 @@ cr.define('settings', function() {
           r.CROSTINI_DETAILS.createChild('/crostini/sharedPaths');
       r.CROSTINI_SHARED_USB_DEVICES =
           r.CROSTINI_DETAILS.createChild('/crostini/sharedUsbDevices');
+      if (loadTimeData.valueExists('showCrostiniDiskResize') &&
+          loadTimeData.getBoolean('showCrostiniDiskResize')) {
+        r.CROSTINI_DISK_RESIZE =
+            r.CROSTINI_DETAILS.createChild('/crostini/diskResize');
+      }
     }
 
     if (loadTimeData.valueExists('showPluginVm') &&

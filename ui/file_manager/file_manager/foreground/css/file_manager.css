@@ -428,6 +428,13 @@ div.splitter {
   transition: background 220ms ease;
 }
 
+.dialog-header.files-ng {
+  background: none;
+  border-bottom: 1px solid var(--cr-separator-color, rgb(224, 224, 224));
+  color: var(--google-grey-700);
+  height: 56px;
+}
+
 body.check-select .dialog-header {
   background: white;
   border-bottom: 1px solid rgb(219, 219, 219);
@@ -460,9 +467,13 @@ body[type='open-multi-file'].check-select .dialog-header {
   z-index: 1;
 }
 
-.dialog-header button,
-.dialog-header button:hover {
+.dialog-header:not(.files-ng) button,
+.dialog-header:not(.files-ng) button:hover {
   color: white;
+}
+
+.dialog-header.files-ng cr-button {
+  --text-color: currentColor;
 }
 
 body.check-select button,
@@ -541,10 +552,24 @@ html[dir='rtl'] .dialog-header button.icon-button > files-toggle-ripple {
   width: 32px;
 }
 
-#search-button > .icon {
+.dialog-header.files-ng cr-button > .icon,
+.dialog-header.files-ng #search-box .clear,
+.dialog-header.files-ng #read-only-icon,
+.dialog-header.files-ng .breadcrumbs .separator {
+  -webkit-mask-position: center;
+  -webkit-mask-repeat: no-repeat;
+  background-color: currentColor;
+  background-image: none;
+}
+
+.dialog-header:not(.files-ng) #search-button > .icon {
   background-image: -webkit-image-set(
       url(../images/files/ui/search_white.png) 1x,
       url(../images/files/ui/2x/search_white.png) 2x);
+}
+
+.dialog-header.files-ng #search-button > .icon {
+  -webkit-mask-image: url(../images/files/ui/search.svg);
 }
 
 body.check-select #search-button > .icon {
@@ -553,72 +578,104 @@ body.check-select #search-button > .icon {
       url(../images/files/ui/2x/search.png) 2x);
 }
 
-#share-menu-button > .icon {
+.dialog-header:not(.files-ng) #share-menu-button > .icon {
   background-image: -webkit-image-set(
       url(../images/files/ui/share_white.png) 1x,
       url(../images/files/ui/2x/share_white.png) 2x);
+}
+
+.dialog-header.files-ng #share-menu-button > .icon {
+  -webkit-mask-image: url(../images/files/ui/share_ng.svg);
 }
 
 body.check-select #share-menu-button > .icon {
   background-image: url(../images/files/ui/share.svg);
 }
 
-#delete-button > .icon {
+.dialog-header:not(.files-ng) #delete-button > .icon {
   background-image: -webkit-image-set(
       url(../images/files/ui/delete_white.png) 1x,
       url(../images/files/ui/2x/delete_white.png) 2x);
+}
+
+.dialog-header.files-ng #delete-button > .icon {
+  -webkit-mask-image: url(../images/files/ui/delete_ng.svg);
 }
 
 body.check-select #delete-button > .icon {
   background-image: url(../images/files/ui/delete.svg);
 }
 
-#view-button > .icon {
+.dialog-header:not(.files-ng) #refresh-button > .icon {
+  background-image: -webkit-image-set(
+      url(../images/files/ui/refresh_white.png) 1x,
+      url(../images/files/ui/2x/refresh_white.png) 2x);
+}
+
+.dialog-header.files-ng #refresh-button > .icon {
+  -webkit-mask-image: url(../images/files/ui/refresh.svg);
+}
+
+.dialog-header:not(.files-ng) #view-button > .icon {
   background-image: -webkit-image-set(
       url(../images/files/ui/view_list_white.png) 1x,
       url(../images/files/ui/2x/view_list_white.png) 2x);
 }
 
-#refresh-button > .icon {
-  background-image: -webkit-image-set(
-      url(../images/files/ui/refresh_white.png) 1x,
-      url(../images/files/ui/2x/refresh_white.png) 2x);
+.dialog-header.files-ng #view-button > .icon {
+  -webkit-mask-image: url(../images/files/ui/view_list.svg);
 }
 
 body.check-select #view-button {
   display: none;
 }
 
-#view-button.thumbnail > .icon {
+.dialog-header:not(.files-ng) #view-button.thumbnail > .icon {
   background-image: -webkit-image-set(
       url(../images/files/ui/view_thumbnail_white.png) 1x,
       url(../images/files/ui/2x/view_thumbnail_white.png) 2x);
+}
+
+.dialog-header.files-ng #view-button.thumbnail > .icon {
+  -webkit-mask-image: url(../images/files/ui/view_thumbnail.svg);
 }
 
 body.check-select #view-button.thumbnail {
   display: none;
 }
 
-#sort-button > .icon {
+.dialog-header:not(.files-ng) #sort-button > .icon {
   background-image: url(../images/files/ui/sorting_white.svg);
+}
+
+.dialog-header.files-ng #sort-button > .icon {
+  -webkit-mask-image: url(../images/files/ui/sorting_ng.svg);
 }
 
 body.check-select #sort-button {
   display: none;
 }
 
-#gear-button > .icon {
+.dialog-header:not(.files-ng) #gear-button > .icon {
   background-image: -webkit-image-set(
       url(../images/files/ui/menu_white.png) 1x,
       url(../images/files/ui/2x/menu_white.png) 2x);
+}
+
+.dialog-header.files-ng #gear-button > .icon {
+  -webkit-mask-image: url(../images/files/ui/menu_ng.svg);
 }
 
 body.check-select #gear-button {
   display: none;
 }
 
-#selection-menu-button > .icon {
+.dialog-header:not(.files-ng) #selection-menu-button > .icon {
   background-image: url(../images/files/ui/menu.svg);
+}
+
+.dialog-header.files-ng #selection-menu-button > .icon {
+  -webkit-mask-image: url(../images/files/ui/menu_ng.svg);
 }
 
 body:not(.check-select) #selection-menu-button {
@@ -781,6 +838,7 @@ body.check-select #files-selected-label {
   box-shadow: none;
   color: currentColor;
   display: flex;
+  text-transform: none;
 }
 
 #cancel-selection-button:focus:not([tabindex='-1']):not(:active) {
@@ -839,6 +897,16 @@ body.check-select #search-button {
   font-size: 14px;
 }
 
+.dialog-header:not(.files-ng) #search-box cr-input {
+  --cr-input-color: white;
+  --cr-input-focus-color: white;
+}
+
+.dialog-header.files-ng #search-box cr-input {
+  --cr-input-color: var(--google-grey-800);
+  --cr-input-focus-color: var(--google-grey-700);
+}
+
 body.check-select #search-box {
   display: none;
 }
@@ -856,23 +924,32 @@ body.check-select #search-box {
 }
 
 #search-box .clear {
-  background: -webkit-image-set(
-      url(../images/files/ui/search_clear.png) 1x,
-      url(../images/files/ui/2x/search_clear.png) 2x)
-      no-repeat center;
   border: 0;
   cursor: pointer;
   display: none;
-  height: 16px;
   margin: 0;
   min-width: 0;
   position: absolute;
   right: 0;
   visibility: hidden;
+}
+
+.dialog-header:not(.files-ng) #search-box .clear {
+  background: -webkit-image-set(
+      url(../images/files/ui/search_clear.png) 1x,
+      url(../images/files/ui/2x/search_clear.png) 2x)
+      no-repeat center;
+  height: 16px;
   width: 16px;
 }
 
-#search-box .clear:focus {
+.dialog-header.files-ng #search-box .clear {
+  -webkit-mask-image: url(../images/files/ui/search_clear_filled.svg);
+  height: 20px;
+  width: 20px;
+}
+
+.dialog-header:not(.files-ng) #search-box .clear:focus {
   background-color: rgba(255, 255, 255, 0.3);
 }
 
@@ -1123,6 +1200,15 @@ html[dir='rtl'] .breadcrumbs .breadcrumb-path:first-child {
   cursor: default;
 }
 
+.dialog-header.files-ng .breadcrumbs .breadcrumb-path {
+  --text-color: currentColor;
+}
+
+.dialog-header.files-ng .breadcrumbs .breadcrumb-path.breadcrumb-last {
+  color: var(--google-grey-900);
+  --text-color: currentColor;
+}
+
 /* The > arrow between breadcrumbs. */
 .breadcrumbs .separator {
   background: -webkit-image-set(
@@ -1131,6 +1217,16 @@ html[dir='rtl'] .breadcrumbs .breadcrumb-path:first-child {
   flex: none;
   height: 16px;
   width: 8px;
+}
+
+.dialog-header:not(.files-ng) .breadcrumbs .separator {
+  background: -webkit-image-set(
+      url(../images/files/ui/arrow_right_white.png) 1x,
+      url(../images/files/ui/2x/arrow_right_white.png) 2x) center no-repeat;
+}
+
+.dialog-header.files-ng .breadcrumbs .separator {
+  -webkit-mask-image: url(../images/files/ui/arrow_right.svg);
 }
 
 html[dir='rtl'] .breadcrumbs .separator {
@@ -1156,9 +1252,19 @@ body.check-select #read-only-indicator {
 #read-only-icon {
   background-image: url(../images/files/ui/visibility_white.svg);
   flex: none;
-  height: 16px;
   margin-inline-end: 8px;
+}
+
+.dialog-header:not(.files-ng) #read-only-icon {
+  background-image: url(../images/files/ui/visibility_white.svg);
+  height: 16px;
   width: 16px;
+}
+
+.dialog-header.files-ng #read-only-icon {
+  -webkit-mask-image: url(../images/files/ui/visibility_ng.svg);
+  height: 20px;
+  width: 20px;
 }
 
 #read-only-label {
@@ -1950,6 +2056,11 @@ cr-menu-item[command='#install-new-extension'] .icon.start {
 #action-bar {
   display: flex;
   flex: none;
+}
+
+.dialog-header.files-ng #action-bar {
+  align-items: center;
+  height: 48px;
 }
 
 .detail-name > * {

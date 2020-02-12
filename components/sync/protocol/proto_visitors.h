@@ -1122,20 +1122,15 @@ VISIT_PROTO_FIELDS(const sync_pb::WebAppSpecifics& proto) {
   VISIT(theme_color);
 }
 
-VISIT_PROTO_FIELDS(const sync_pb::WifiConfigurationSpecifics& proto) {
-  VISIT(encrypted);
-  VISIT(client_only_encrypted_data);
-}
-
 VISIT_PROTO_FIELDS(
-    const sync_pb::WifiConfigurationSpecificsData::ProxyConfiguration& proto) {
+    const sync_pb::WifiConfigurationSpecifics::ProxyConfiguration& proto) {
   VISIT_ENUM(proxy_option);
   VISIT(proxy_url);
   VISIT(proxy_port);
   VISIT_REP(whitelisted_domains);
 }
 
-VISIT_PROTO_FIELDS(const sync_pb::WifiConfigurationSpecificsData& proto) {
+VISIT_PROTO_FIELDS(const sync_pb::WifiConfigurationSpecifics& proto) {
   VISIT_BYTES(hex_ssid);
   VISIT_ENUM(security_type);
   VISIT_BYTES(passphrase);

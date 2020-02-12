@@ -14,6 +14,8 @@
 #include "components/metrics/enabled_state_provider.h"
 #include "components/metrics/metrics_log_uploader.h"
 #include "components/metrics/metrics_service_client.h"
+#include "components/version_info/android/channel_getter.h"
+#include "components/version_info/version_info.h"
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"
 
@@ -106,6 +108,8 @@ class AndroidMetricsServiceClient : public MetricsServiceClient,
   void SetMetricsClientId(const std::string& client_id) override;
   std::string GetApplicationLocale() override;
   bool GetBrand(std::string* brand_code) override;
+  SystemProfileProto::Channel GetChannel() override;
+  std::string GetVersionString() override;
   void CollectFinalMetricsForLog(
       const base::OnceClosure done_callback) override;
   std::unique_ptr<MetricsLogUploader> CreateUploader(
@@ -174,8 +178,8 @@ class AndroidMetricsServiceClient : public MetricsServiceClient,
   virtual bool ShouldWakeMetricsService() = 0;
 
   // Called by CreateMetricsService, allows the embedder to register additional
-  // MetricsProviders.
-  virtual void RegisterAdditionalMetricsProviders(MetricsService* service) = 0;
+  // MetricsProviders. Does nothing by default.
+  virtual void RegisterAdditionalMetricsProviders(MetricsService* service);
 
   // Returns the embedding application's package name.
   virtual std::string GetAppPackageNameInternal() = 0;

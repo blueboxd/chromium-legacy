@@ -18,24 +18,23 @@ std::string SecurityTypeStringFromMojo(
     const network_config::mojom::SecurityType& security_type);
 
 std::string SecurityTypeStringFromProto(
-    const sync_pb::WifiConfigurationSpecificsData_SecurityType& security_type);
+    const sync_pb::WifiConfigurationSpecifics_SecurityType& security_type);
 
-sync_pb::WifiConfigurationSpecificsData_SecurityType SecurityTypeProtoFromMojo(
+sync_pb::WifiConfigurationSpecifics_SecurityType SecurityTypeProtoFromMojo(
     const network_config::mojom::SecurityType& security_type);
 
-sync_pb::WifiConfigurationSpecificsData_AutomaticallyConnectOption
+sync_pb::WifiConfigurationSpecifics_AutomaticallyConnectOption
 AutomaticallyConnectProtoFromMojo(
     const network_config::mojom::ManagedBooleanPtr& auto_connect);
 
-sync_pb::WifiConfigurationSpecificsData_IsPreferredOption
-IsPreferredProtoFromMojo(
+sync_pb::WifiConfigurationSpecifics_IsPreferredOption IsPreferredProtoFromMojo(
     const network_config::mojom::ManagedInt32Ptr& is_preferred);
 
-sync_pb::WifiConfigurationSpecificsData_ProxyConfiguration_ProxyOption
+sync_pb::WifiConfigurationSpecifics_ProxyConfiguration_ProxyOption
 ProxyOptionProtoFromMojo(
     const network_config::mojom::ManagedProxySettingsPtr& proxy_settings);
 
-sync_pb::WifiConfigurationSpecificsData_ProxyConfiguration
+sync_pb::WifiConfigurationSpecifics_ProxyConfiguration
 ProxyConfigurationProtoFromMojo(
     const network_config::mojom::ManagedProxySettingsPtr& proxy_settings);
 
@@ -43,10 +42,10 @@ network_config::mojom::SecurityType MojoSecurityTypeFromString(
     const std::string& security_type);
 
 network_config::mojom::SecurityType MojoSecurityTypeFromProto(
-    const sync_pb::WifiConfigurationSpecificsData_SecurityType& security_type);
+    const sync_pb::WifiConfigurationSpecifics_SecurityType& security_type);
 
 network_config::mojom::ConfigPropertiesPtr MojoNetworkConfigFromProto(
-    const sync_pb::WifiConfigurationSpecificsData& specifics);
+    const sync_pb::WifiConfigurationSpecifics& specifics);
 
 }  // namespace sync_wifi
 

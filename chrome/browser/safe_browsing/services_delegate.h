@@ -99,7 +99,7 @@ class ServicesDelegate {
       SafeBrowsingDatabaseManager* database_manager) = 0;
 
   // Shuts down the download service.
-  virtual void ShutdownServices() = 0;
+  virtual void ShutdownServices();
 
   // Handles SafeBrowsingService::RefreshState() for the provided services.
   virtual void RefreshState(bool enable) = 0;

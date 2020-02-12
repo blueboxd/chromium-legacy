@@ -7,7 +7,6 @@
 #include "extensions/common/extension_messages.h"
 #include "extensions/renderer/api/automation/automation_internal_custom_bindings.h"
 #include "ui/accessibility/ax_language_detection.h"
-#include "ui/accessibility/ax_node.h"
 #include "ui/accessibility/ax_node_position.h"
 #include "ui/accessibility/ax_tree_manager_map.h"
 
@@ -431,11 +430,7 @@ bool AutomationAXTreeWrapper::IsInFocusChain(int32_t node_id) {
 }
 
 ui::AXTree::Selection AutomationAXTreeWrapper::GetUnignoredSelection() {
-  // As there is no Tree Manager, this is necessary for AXPositions to work.
-  ui::AXNodePosition::SetTree(tree());
-  ui::AXTree::Selection unignored_selection = tree()->GetUnignoredSelection();
-  ui::AXNodePosition::SetTree(nullptr);
-  return unignored_selection;
+  return tree()->GetUnignoredSelection();
 }
 
 ui::AXNode* AutomationAXTreeWrapper::GetUnignoredNodeFromId(int32_t id) {
@@ -613,13 +608,15 @@ bool AutomationAXTreeWrapper::IsEventTypeHandledByAXEventGenerator(
 
 ui::AXNode* AutomationAXTreeWrapper::GetNodeFromTree(
     const ui::AXTreeID tree_id,
-    const int32_t node_id) const {
+    const ui::AXNode::AXID node_id) const {
   AutomationAXTreeWrapper* tree_wrapper =
       owner_->GetAutomationAXTreeWrapperFromTreeID(tree_id);
-  if (!tree_wrapper)
-    return nullptr;
+  return tree_wrapper ? tree_wrapper->GetNodeFromTree(node_id) : nullptr;
+}
 
-  return tree_wrapper->tree()->GetFromId(node_id);
+ui::AXNode* AutomationAXTreeWrapper::GetNodeFromTree(
+    const ui::AXNode::AXID node_id) const {
+  return tree_.GetFromId(node_id);
 }
 
 ui::AXTreeID AutomationAXTreeWrapper::GetTreeID() const {
@@ -628,10 +625,7 @@ ui::AXTreeID AutomationAXTreeWrapper::GetTreeID() const {
 
 ui::AXTreeID AutomationAXTreeWrapper::GetParentTreeID() const {
   AutomationAXTreeWrapper* parent_tree = GetParentOfTreeId(tree_id_);
-  if (!parent_tree)
-    return ui::AXTreeID();  // Unknown AXTreeID.
-
-  return parent_tree->GetTreeID();
+  return parent_tree ? parent_tree->GetTreeID() : ui::AXTreeIDUnknown();
 }
 
 ui::AXNode* AutomationAXTreeWrapper::GetRootAsAXNode() const {

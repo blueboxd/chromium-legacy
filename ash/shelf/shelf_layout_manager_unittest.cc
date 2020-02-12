@@ -52,6 +52,7 @@
 #include "ash/shelf/test/hotseat_state_watcher.h"
 #include "ash/shelf/test/overview_animation_waiter.h"
 #include "ash/shelf/test/shelf_layout_manager_test_base.h"
+#include "ash/shelf/test/widget_animation_waiter.h"
 #include "ash/shell.h"
 #include "ash/system/status_area_widget.h"
 #include "ash/system/status_area_widget_test_helper.h"
@@ -84,7 +85,6 @@
 #include "ui/aura/window_event_dispatcher.h"
 #include "ui/base/ui_base_switches.h"
 #include "ui/compositor/layer.h"
-#include "ui/compositor/layer_animation_observer.h"
 #include "ui/compositor/layer_animator.h"
 #include "ui/compositor/scoped_animation_duration_scale_mode.h"
 #include "ui/display/display.h"
@@ -131,54 +131,6 @@ gfx::Rect GetScreenAvailableBounds() {
   available_bounds.Inset(work_area->GetAccessibilityInsets());
   return available_bounds;
 }
-
-// TODO(mmourgos): Move ShelfAnimationWaiter into a separate file in
-// ash/shelf/test.
-// Class which waits until the ShelfWidget finishes animating and verifies that
-// the layer transform animation was valid.
-class ShelfAnimationWaiter : ui::LayerAnimationObserver {
- public:
-  explicit ShelfAnimationWaiter(gfx::Rect target_bounds)
-      : target_bounds_(target_bounds),
-        animator_(GetShelfWidget()->GetLayer()->GetAnimator()) {
-    animator_->AddObserver(this);
-  }
-  ~ShelfAnimationWaiter() override { animator_->RemoveObserver(this); }
-
-  // ui::LayerAnimationObserver:
-  void OnLayerAnimationEnded(ui::LayerAnimationSequence* sequence) override {
-    if (!animator_->is_animating() && animation_scheduled_) {
-      EXPECT_EQ(GetShelfWidget()->GetWindowBoundsInScreen(), target_bounds_);
-      EXPECT_EQ(GetShelfWidget()->GetLayer()->transform(), gfx::Transform());
-
-      is_valid_animation_ = true;
-      animator_->RemoveObserver(this);
-      run_loop_.Quit();
-    }
-  }
-  void OnLayerAnimationAborted(ui::LayerAnimationSequence* sequence) override {}
-  void OnLayerAnimationScheduled(
-      ui::LayerAnimationSequence* sequence) override {
-    animation_scheduled_ = true;
-    EXPECT_NE(GetShelfWidget()->GetLayer()->transform(), gfx::Transform());
-  }
-
-  void WaitForAnimation() { run_loop_.Run(); }
-
-  // Returns true if the animation has completed.
-  bool WasValidAnimation() {
-    return animation_scheduled_ && is_valid_animation_;
-  }
-
- private:
-  gfx::Rect target_bounds_;
-  ui::LayerAnimator* animator_;
-  base::RunLoop run_loop_;
-  bool is_valid_animation_ = false;
-  bool animation_scheduled_ = false;
-
-  DISALLOW_COPY_AND_ASSIGN(ShelfAnimationWaiter);
-};
 
 class TestDisplayObserver : public display::DisplayObserver {
  public:
@@ -367,11 +319,8 @@ TEST_P(ShelfLayoutManagerTest, ShelfUpdatedWhenStatusAreaChangesSize) {
           .width();
   const int nav_width =
       shelf_widget->navigation_widget()->GetWindowBoundsInScreen().width();
-  const int hotseat_width = GetPrimaryShelf()
-                                ->shelf_widget()
-                                ->hotseat_widget()
-                                ->GetWindowBoundsInScreen()
-                                .width();
+  const int hotseat_width =
+      GetPrimaryShelf()->hotseat_widget()->GetWindowBoundsInScreen().width();
   const int margins = ShelfConfig::Get()->control_button_edge_spacing(
                           true /* is_primary_axis_edge */) +
                       ShelfConfig::Get()->app_icon_group_margin();
@@ -1513,7 +1462,7 @@ TEST_P(ShelfLayoutManagerTest,
         GetShelfWidget()->GetWindowBoundsInScreen();
     gfx::Point start(shelf_bounds_in_screen.CenterPoint());
     gfx::Point end(start.x(), shelf_bounds_in_screen.bottom());
-    ShelfAnimationWaiter waiter(visible_bounds);
+    WidgetAnimationWaiter waiter(GetShelfWidget(), visible_bounds);
     generator->GestureScrollSequence(start, end,
                                      base::TimeDelta::FromMilliseconds(10), 5);
     EXPECT_EQ(SHELF_AUTO_HIDE, shelf->GetVisibilityState());
@@ -1552,7 +1501,7 @@ TEST_P(ShelfLayoutManagerTest, ShelfAnimatesToVisibleWhenGestureInComplete) {
     gfx::Point end(start.x(), start.y() - 100);
     ui::test::EventGenerator* generator = GetEventGenerator();
 
-    ShelfAnimationWaiter waiter(visible_bounds);
+    WidgetAnimationWaiter waiter(GetShelfWidget(), visible_bounds);
     generator->GestureScrollSequence(start, end,
                                      base::TimeDelta::FromMilliseconds(10), 1);
     EXPECT_EQ(SHELF_AUTO_HIDE, shelf->GetVisibilityState());
@@ -1588,7 +1537,7 @@ TEST_P(ShelfLayoutManagerTest,
     // Show the shelf first.
     display::Display display =
         display::Screen::GetScreen()->GetPrimaryDisplay();
-    ShelfAnimationWaiter waiter1(visible_bounds);
+    WidgetAnimationWaiter waiter1(GetShelfWidget(), visible_bounds);
     generator->MoveMouseTo(display.bounds().bottom_center());
     waiter1.WaitForAnimation();
     EXPECT_TRUE(waiter1.WasValidAnimation());
@@ -1598,7 +1547,7 @@ TEST_P(ShelfLayoutManagerTest,
     gfx::Point start =
         GetShelfWidget()->GetWindowBoundsInScreen().CenterPoint();
     gfx::Point end = gfx::Point(start.x(), start.y() + 100);
-    ShelfAnimationWaiter waiter2(auto_hidden_bounds);
+    WidgetAnimationWaiter waiter2(GetShelfWidget(), auto_hidden_bounds);
     generator->GestureScrollSequence(start, end,
                                      base::TimeDelta::FromMilliseconds(10), 1);
     EXPECT_EQ(SHELF_AUTO_HIDE, shelf->GetVisibilityState());

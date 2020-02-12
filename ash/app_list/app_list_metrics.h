@@ -73,6 +73,11 @@ constexpr char kAppListResultLaunchIndexAndQueryLength[] =
 constexpr char kAppListTileLaunchIndexAndQueryLength[] =
     "Apps.AppListTileLaunchIndexAndQueryLength";
 
+// The UMA histogram that logs if the query that introduces a launch of an item
+// in the results list is empty or not.
+constexpr char kAppListResultLaunchIsEmptyQuery[] =
+    "Apps.AppListResultLaunchIsEmptyQuery";
+
 // The UMA histogram that logs the presence or absence of Drive QuickAccess
 // search results in the zero-state results list. Differentiates between results
 // existing in the model's results list, but not being displayed in the view.

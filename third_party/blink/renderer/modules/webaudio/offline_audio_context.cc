@@ -25,6 +25,7 @@
 
 #include "third_party/blink/renderer/modules/webaudio/offline_audio_context.h"
 
+#include "base/metrics/histogram_functions.h"
 #include "third_party/blink/public/platform/platform.h"
 #include "third_party/blink/renderer/bindings/modules/v8/v8_offline_audio_context_options.h"
 #include "third_party/blink/renderer/core/dom/document.h"
@@ -39,7 +40,6 @@
 #include "third_party/blink/renderer/platform/bindings/exception_state.h"
 #include "third_party/blink/renderer/platform/bindings/script_state.h"
 #include "third_party/blink/renderer/platform/heap/heap.h"
-#include "third_party/blink/renderer/platform/instrumentation/histogram.h"
 #include "third_party/blink/renderer/platform/wtf/cross_thread_functional.h"
 
 namespace blink {
@@ -107,24 +107,20 @@ OfflineAudioContext* OfflineAudioContext::Create(
   fprintf(stderr, "[%16p]: OfflineAudioContext::OfflineAudioContext()\n",
           audio_context);
 #endif
-  DEFINE_STATIC_LOCAL(SparseHistogram, offline_context_channel_count_histogram,
-                      ("WebAudio.OfflineAudioContext.ChannelCount"));
+  base::UmaHistogramSparse("WebAudio.OfflineAudioContext.ChannelCount",
+                           number_of_channels);
   // Arbitrarly limit the maximum length to 1 million frames (about 20 sec
   // at 48kHz).  The number of buckets is fairly arbitrary.
-  DEFINE_STATIC_LOCAL(CustomCountHistogram, offline_context_length_histogram,
-                      ("WebAudio.OfflineAudioContext.Length", 1, 1000000, 50));
+  base::UmaHistogramCounts1M("WebAudio.OfflineAudioContext.Length",
+                             number_of_frames);
   // The limits are the min and max AudioBuffer sample rates currently
   // supported.  We use explicit values here instead of
   // audio_utilities::minAudioBufferSampleRate() and
   // audio_utilities::maxAudioBufferSampleRate().  The number of buckets is
   // fairly arbitrary.
-  DEFINE_STATIC_LOCAL(
-      CustomCountHistogram, offline_context_sample_rate_histogram,
-      ("WebAudio.OfflineAudioContext.SampleRate384kHz", 3000, 384000, 50));
-
-  offline_context_channel_count_histogram.Sample(number_of_channels);
-  offline_context_length_histogram.Count(number_of_frames);
-  offline_context_sample_rate_histogram.Count(sample_rate);
+  base::UmaHistogramCustomCounts(
+      "WebAudio.OfflineAudioContext.SampleRate384kHz", sample_rate, 3000,
+      384000, 50);
 
   return audio_context;
 }

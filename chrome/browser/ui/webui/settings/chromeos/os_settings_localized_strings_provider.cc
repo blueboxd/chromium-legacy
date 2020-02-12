@@ -619,6 +619,9 @@ void AddCrostiniStrings(content::WebUIDataSource* html_source,
        IDS_SETTINGS_CROSTINI_PORT_FORWARDING_ADD_PORT_BUTTON},
       {"crostiniPortForwardingAddPortButtonDescription",
        IDS_SETTINGS_CROSTINI_PORT_FORWARDING_ADD_PORT_BUTTON_DESCRIPTION},
+      {"crostiniDiskResizeTitle", IDS_SETTINGS_CROSTINI_DISK_RESIZE_TITLE},
+      {"crostiniDiskResizeShowButton",
+       IDS_SETTINGS_CROSTINI_DISK_RESIZE_SHOW_BUTTON},
   };
   AddLocalizedStringsBulk(html_source, kLocalizedStrings);
   html_source->AddString(
@@ -666,6 +669,9 @@ void AddCrostiniStrings(content::WebUIDataSource* html_source,
                           IsDeviceManaged() || IsProfileManaged(profile));
   html_source->AddBoolean("showCrostiniContainerUpgrade",
                           crostini::ShouldAllowContainerUpgrade(profile));
+  html_source->AddBoolean(
+      "showCrostiniDiskResize",
+      base::FeatureList::IsEnabled(chromeos::features::kCrostiniDiskResizing));
 }
 
 void AddPluginVmStrings(content::WebUIDataSource* html_source,

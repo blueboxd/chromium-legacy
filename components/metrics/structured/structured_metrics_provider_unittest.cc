@@ -9,12 +9,14 @@
 #include "base/files/scoped_temp_dir.h"
 #include "base/run_loop.h"
 #include "base/strings/string_number_conversions.h"
+#include "base/test/metrics/histogram_tester.h"
 #include "base/test/task_environment.h"
 #include "base/values.h"
 #include "components/metrics/structured/event_base.h"
 #include "components/metrics/structured/recorder.h"
 #include "components/metrics/structured/structured_events.h"
 #include "components/prefs/json_pref_store.h"
+#include "components/prefs/persistent_pref_store.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/metrics_proto/chrome_user_metrics_extension.pb.h"
 
@@ -134,8 +136,20 @@ class StructuredMetricsProviderTest : public testing::Test {
     return uma_proto;
   }
 
+  // Most tests start without an existing structured_metrics.json storage file
+  // on-disk, and so will trigger a single PREF_READ_ERROR_NO_FILE metric.
+  // Expect that, and no other errors.
+  void ExpectOnlyFileReadError() {
+    histogram_tester_.ExpectTotalCount("UMA.StructuredMetrics.InternalError",
+                                       0);
+    histogram_tester_.ExpectUniqueSample(
+        "UMA.StructuredMetrics.PrefReadError",
+        PersistentPrefStore::PREF_READ_ERROR_NO_FILE, 1);
+  }
+
  protected:
   std::unique_ptr<StructuredMetricsProvider> provider_;
+  base::HistogramTester histogram_tester_;
 
  private:
   base::test::TaskEnvironment task_environment_{
@@ -151,6 +165,7 @@ TEST_F(StructuredMetricsProviderTest, ProviderInitializesFromBlankSlate) {
   Init();
   EXPECT_TRUE(is_initialized());
   EXPECT_TRUE(is_recording_enabled());
+  ExpectOnlyFileReadError();
 }
 
 // Ensure a call to OnRecordingDisabled prevents reporting.
@@ -159,6 +174,7 @@ TEST_F(StructuredMetricsProviderTest, EventsNotReportedWhenRecordingDisabled) {
   OnRecordingDisabled();
   events::TestEventOne().SetTestMetricTwo(1).Record();
   EXPECT_EQ(GetProvidedEvents().structured_event_size(), 0);
+  ExpectOnlyFileReadError();
 }
 
 // Ensure that, if recording is disabled part-way through initialization, the
@@ -175,6 +191,8 @@ TEST_F(StructuredMetricsProviderTest, RecordingDisabledDuringInitialization) {
   Wait();
   EXPECT_TRUE(is_initialized());
   EXPECT_FALSE(is_recording_enabled());
+
+  ExpectOnlyFileReadError();
 }
 
 // Ensure that recording is disabled until explicitly enabled with a call to
@@ -189,6 +207,8 @@ TEST_F(StructuredMetricsProviderTest, RecordingDisabledByDefault) {
 
   OnRecordingEnabled();
   EXPECT_TRUE(is_recording_enabled());
+
+  ExpectOnlyFileReadError();
 }
 
 TEST_F(StructuredMetricsProviderTest, RecordedEventAppearsInReport) {
@@ -208,6 +228,7 @@ TEST_F(StructuredMetricsProviderTest, RecordedEventAppearsInReport) {
       .Record();
 
   EXPECT_EQ(GetProvidedEvents().structured_event_size(), 3);
+  ExpectOnlyFileReadError();
 }
 
 TEST_F(StructuredMetricsProviderTest, EventsReportedCorrectly) {
@@ -260,6 +281,9 @@ TEST_F(StructuredMetricsProviderTest, EventsReportedCorrectly) {
                 "86F0169868588DC7");
     }
   }
+
+  histogram_tester_.ExpectTotalCount("UMA.StructuredMetrics.InternalError", 0);
+  histogram_tester_.ExpectTotalCount("UMA.StructuredMetrics.PrefReadError", 0);
 }
 
 // Test that a call to ProvideCurrentSessionData clears the provided events from
@@ -278,6 +302,8 @@ TEST_F(StructuredMetricsProviderTest, EventsClearedAfterReport) {
   events::TestEventOne().SetTestMetricTwo(3).Record();
   // The third request should only contain the third event.
   EXPECT_EQ(GetProvidedEvents().structured_event_size(), 1);
+
+  ExpectOnlyFileReadError();
 }
 
 // Test that events recorded in one session are correctly persisted and are
@@ -297,6 +323,8 @@ TEST_F(StructuredMetricsProviderTest, EventsFromPreviousSessionAreReported) {
   ASSERT_EQ(uma.structured_event_size(), 1);
   ASSERT_EQ(uma.structured_event(0).metrics_size(), 1);
   EXPECT_EQ(uma.structured_event(0).metrics(0).value_int64(), 1234);
+
+  ExpectOnlyFileReadError();
 }
 
 // Test that events reported at various stages before and during initialization
@@ -315,6 +343,8 @@ TEST_F(StructuredMetricsProviderTest, EventsNotRecordedBeforeInitialization) {
   events::TestEventOne().SetTestMetricTwo(1).Record();
   Wait();
   EXPECT_EQ(GetProvidedEvents().structured_event_size(), 0);
+
+  ExpectOnlyFileReadError();
 }
 
 // Ensure a call to OnRecordingDisabled not only prevents the reporting of new
@@ -328,6 +358,8 @@ TEST_F(StructuredMetricsProviderTest,
   OnRecordingDisabled();
   events::TestEventOne().SetTestMetricTwo(1).Record();
   EXPECT_EQ(GetProvidedEvents().structured_event_size(), 0);
+
+  ExpectOnlyFileReadError();
 }
 
 // Ensure that recording and reporting is re-enabled after recording is disabled
@@ -343,6 +375,8 @@ TEST_F(StructuredMetricsProviderTest, ReportingResumesWhenEnabled) {
   events::TestEventOne().SetTestMetricTwo(1).Record();
   events::TestEventOne().SetTestMetricTwo(1).Record();
   EXPECT_EQ(GetProvidedEvents().structured_event_size(), 2);
+
+  ExpectOnlyFileReadError();
 }
 
 // Ensure that a call to ProvideCurrentSessionData before initialization

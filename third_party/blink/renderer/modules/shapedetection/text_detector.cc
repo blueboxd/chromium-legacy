@@ -56,7 +56,7 @@ void TextDetector::OnDetectText(
   DCHECK(text_service_requests_.Contains(resolver));
   text_service_requests_.erase(resolver);
 
-  HeapVector<Member<DetectedText>> results;
+  HeapVector<Member<DetectedText>> detected_text;
   for (const auto& text : text_detection_results) {
     HeapVector<Member<Point2D>> corner_points;
     for (const auto& corner_point : text->corner_points) {
@@ -65,17 +65,15 @@ void TextDetector::OnDetectText(
       point->setY(corner_point.y());
       corner_points.push_back(point);
     }
-
-    DetectedText* detected_text = DetectedText::Create();
-    detected_text->setRawValue(text->raw_value);
-    detected_text->setBoundingBox(DOMRectReadOnly::Create(
-        text->bounding_box.x, text->bounding_box.y, text->bounding_box.width,
-        text->bounding_box.height));
-    detected_text->setCornerPoints(corner_points);
-    results.push_back(detected_text);
+    detected_text.push_back(MakeGarbageCollected<DetectedText>(
+        text->raw_value,
+        DOMRectReadOnly::Create(text->bounding_box.x, text->bounding_box.y,
+                                text->bounding_box.width,
+                                text->bounding_box.height),
+        corner_points));
   }
 
-  resolver->Resolve(results);
+  resolver->Resolve(detected_text);
 }
 
 void TextDetector::OnTextServiceConnectionError() {

@@ -834,7 +834,7 @@ class DnsTransactionTestBase : public testing::Test {
 
     request_context_ = std::make_unique<TestURLRequestContext>();
     resolve_context_ = std::make_unique<ResolveContext>(
-        request_context_.get(), nullptr /* host_cache */);
+        request_context_.get(), false /* enable_caching */);
 
     ConfigureFactory();
   }

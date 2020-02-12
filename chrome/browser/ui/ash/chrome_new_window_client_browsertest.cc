@@ -262,6 +262,8 @@ void TestAllOSSettingPages(const GURL& base_url) {
                      base_url.Resolve(chrome::kBluetoothSubPage));
   TestOpenChromePage(ChromePage::CHANGEPICTURE,
                      base_url.Resolve(chrome::kChangePictureSubPage));
+  TestOpenChromePage(ChromePage::CROSTINIDISKRESIZE,
+                     base_url.Resolve(chrome::kCrostiniDiskResizeSubPage));
   TestOpenChromePage(ChromePage::CUPSPRINTERS,
                      base_url.Resolve(chrome::kNativePrintingSettingsSubPage));
   TestOpenChromePage(ChromePage::KEYBOARDOVERLAY,

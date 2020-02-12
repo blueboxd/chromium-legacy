@@ -6,13 +6,13 @@
 
 #include <memory>
 
+#include "base/metrics/histogram_functions.h"
 #include "third_party/blink/renderer/bindings/modules/v8/v8_iir_filter_options.h"
 #include "third_party/blink/renderer/core/inspector/console_message.h"
 #include "third_party/blink/renderer/modules/webaudio/audio_node_output.h"
 #include "third_party/blink/renderer/modules/webaudio/base_audio_context.h"
 #include "third_party/blink/renderer/platform/bindings/exception_messages.h"
 #include "third_party/blink/renderer/platform/bindings/exception_state.h"
-#include "third_party/blink/renderer/platform/instrumentation/histogram.h"
 #include "third_party/blink/renderer/platform/scheduler/public/post_cross_thread_task.h"
 #include "third_party/blink/renderer/platform/wtf/cross_thread_functional.h"
 
@@ -134,10 +134,8 @@ IIRFilterNode::IIRFilterNode(BaseAudioContext& context,
   // Histogram of the IIRFilter order.  createIIRFilter ensures that the length
   // of |feedbackCoef| is in the range [1, IIRFilter::kMaxOrder + 1].  The order
   // is one less than the length of this vector.
-  DEFINE_STATIC_LOCAL(SparseHistogram, filter_order_histogram,
-                      ("WebAudio.IIRFilterNode.Order"));
-
-  filter_order_histogram.Sample(feedback_coef.size() - 1);
+  base::UmaHistogramSparse("WebAudio.IIRFilterNode.Order",
+                           feedback_coef.size() - 1);
 }
 
 IIRFilterNode* IIRFilterNode::Create(BaseAudioContext& context,

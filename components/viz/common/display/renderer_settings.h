@@ -46,6 +46,9 @@ class VIZ_COMMON_EXPORT RendererSettings {
   // The required minimum size for DrawQuad to apply Draw Occlusion on.
   gfx::Size kMinimumDrawOcclusionSize = gfx::Size(60, 60);
 
+  // The maximum number of occluding Rects to track during occlusion culling.
+  int kMaximumOccluderComplexity = 10;
+
 #if defined(OS_ANDROID)
   // The screen size at renderer creation time.
   gfx::Size initial_screen_size = gfx::Size(0, 0);

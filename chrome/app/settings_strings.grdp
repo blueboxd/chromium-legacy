@@ -734,6 +734,12 @@
     <message name="IDS_SETTINGS_CROSTINI_PORT_FORWARDING_ADD_PORT_BUTTON_DESCRIPTION" desc="Accessibility label for the button to open a dialog to add a new port.">
       Add Port
     </message>
+    <message name="IDS_SETTINGS_CROSTINI_DISK_RESIZE_TITLE" desc="The title of the settings section on which the user performs Crostini disk management operations such as resizing their disk." meaning="The title of the page where a user performs disk management operations.">
+      Disk resizing &amp; management
+    </message>
+    <message name="IDS_SETTINGS_CROSTINI_DISK_RESIZE_SHOW_BUTTON" desc="The label of the button/link which opens up Crostini's disk resizing and management section of settings." meaning="The label of the button/link the user clicks to open the disk management operations page.">
+      Disk resizing &amp; management
+    </message>
 
     <!-- Plugin VM Page -->
     <message name="IDS_SETTINGS_PLUGIN_VM_PAGE_TITLE" desc="The title of Plugin VM section.">

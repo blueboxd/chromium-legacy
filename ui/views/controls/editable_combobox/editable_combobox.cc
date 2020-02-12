@@ -420,6 +420,10 @@ void EditableCombobox::GetAccessibleNodeData(ui::AXNodeData* node_data) {
   node_data->SetValue(GetText());
 }
 
+void EditableCombobox::RequestFocus() {
+  textfield_->RequestFocus();
+}
+
 ////////////////////////////////////////////////////////////////////////////////
 // EditableCombobox, TextfieldController overrides:
 

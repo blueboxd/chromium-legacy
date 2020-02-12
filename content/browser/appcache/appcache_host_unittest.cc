@@ -748,7 +748,6 @@ TEST_F(AppCacheHostTest, SelectCacheAfterProcessCleanup) {
 
   EXPECT_TRUE(
       security_policy->CanAccessDataForOrigin(kProcessIdForTest, kDocumentURL));
-  EXPECT_TRUE(security_policy->HasSecurityState(kProcessIdForTest));
 
   // Destroy the WebContents so the process gets cleaned up.
   web_contents_.reset();
@@ -801,7 +800,6 @@ TEST_F(AppCacheHostTest, ForeignEntryAfterProcessCleanup) {
 
   EXPECT_TRUE(
       security_policy->CanAccessDataForOrigin(kProcessIdForTest, kDocumentURL));
-  EXPECT_TRUE(security_policy->HasSecurityState(kProcessIdForTest));
 
   // Destroy the WebContents so the process gets cleaned up.
   web_contents_.reset();

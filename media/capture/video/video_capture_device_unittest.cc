@@ -761,7 +761,8 @@ void VideoCaptureDeviceTest::RunTakePhotoTestCase() {
       &MockImageCaptureClient::DoOnPhotoTaken, image_capture_client_);
 
   base::RunLoop run_loop(base::RunLoop::Type::kNestableTasksAllowed);
-  base::Closure quit_closure = BindToCurrentLoop(run_loop.QuitClosure());
+  base::RepeatingClosure quit_closure =
+      BindToCurrentLoop(run_loop.QuitClosure());
   EXPECT_CALL(*image_capture_client_.get(), OnCorrectPhotoTaken())
       .Times(1)
       .WillOnce(RunClosure(quit_closure));
@@ -814,7 +815,8 @@ void VideoCaptureDeviceTest::RunGetPhotoStateTestCase() {
   // first frame.
   WaitForCapturedFrame();
   base::RunLoop run_loop(base::RunLoop::Type::kNestableTasksAllowed);
-  base::Closure quit_closure = BindToCurrentLoop(run_loop.QuitClosure());
+  base::RepeatingClosure quit_closure =
+      BindToCurrentLoop(run_loop.QuitClosure());
   EXPECT_CALL(*image_capture_client_.get(), OnCorrectGetPhotoState())
       .Times(1)
       .WillOnce(RunClosure(quit_closure));

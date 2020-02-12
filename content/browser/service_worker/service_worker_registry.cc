@@ -72,7 +72,7 @@ ServiceWorkerRegistry::~ServiceWorkerRegistry() = default;
 void ServiceWorkerRegistry::CreateNewRegistration(
     blink::mojom::ServiceWorkerRegistrationOptions options,
     NewRegistrationCallback callback) {
-  storage()->NewRegistrationId(base::BindOnce(
+  storage()->GetNewRegistrationId(base::BindOnce(
       &ServiceWorkerRegistry::DidGetNewRegistrationId,
       weak_factory_.GetWeakPtr(), std::move(options), std::move(callback)));
 }
@@ -82,7 +82,7 @@ scoped_refptr<ServiceWorkerVersion> ServiceWorkerRegistry::CreateNewVersion(
     const GURL& script_url,
     blink::mojom::ScriptType script_type) {
   DCHECK(registration);
-  int64_t version_id = storage()->NewVersionId();
+  int64_t version_id = storage()->GetNewVersionId();
   if (version_id == blink::mojom::kInvalidServiceWorkerVersionId)
     return nullptr;
   return base::MakeRefCounted<ServiceWorkerVersion>(

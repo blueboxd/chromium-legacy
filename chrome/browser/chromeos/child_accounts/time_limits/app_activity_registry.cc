@@ -62,6 +62,11 @@ enterprise_management::AppActivity::AppState AppStateForReporting(
   }
 }
 
+chromeos::app_time::AppId GetAndroidChromeAppId() {
+  return chromeos::app_time::AppId(apps::mojom::AppType::kArc,
+                                   "com.android.chrome");
+}
+
 }  // namespace
 
 AppActivityRegistry::TestApi::TestApi(AppActivityRegistry* registry)
@@ -325,6 +330,13 @@ void AppActivityRegistry::UpdateAppLimits(
     base::Optional<AppLimit> new_limit;
     if (base::Contains(app_limits, app_id))
       new_limit = app_limits.at(app_id);
+
+    // TODO(yilkal): Remove the following if statement after bug bash.
+    if (app_id == GetChromeAppId() && !base::Contains(app_limits, app_id) &&
+        base::Contains(app_limits, GetAndroidChromeAppId())) {
+      new_limit = app_limits.at(GetAndroidChromeAppId());
+    }
+
     SetAppLimit(app_id, new_limit);
   }
 }

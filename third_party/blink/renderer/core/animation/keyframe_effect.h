@@ -82,7 +82,7 @@ class CORE_EXPORT KeyframeEffect final : public AnimationEffect {
   // this returns the originating element.
   Element* target() const { return target_element_; }
   void setTarget(Element*);
-  const String& pseudoElement();
+  const String& pseudoElement() const;
   void setPseudoElement(String, ExceptionState&);
   String composite() const;
   void setComposite(String);

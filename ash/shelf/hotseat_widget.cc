@@ -486,10 +486,7 @@ void HotseatWidget::SetState(HotseatState state) {
 }
 
 HotseatWidget::LayoutInputs HotseatWidget::GetLayoutInputs() const {
-  return {GetShelfView()
-              ->shelf()
-              ->shelf_layout_manager()
-              ->GetHotseatBoundsInScreen(),
+  return {shelf_->shelf_layout_manager()->GetHotseatBoundsInScreen(),
           CalculateOpacity()};
 }
 

@@ -33,6 +33,7 @@
 #include <memory>
 
 #include "base/memory/ptr_util.h"
+#include "base/metrics/histogram_functions.h"
 #include "media/base/logging_override_if_enabled.h"
 #include "third_party/blink/public/platform/web_media_source.h"
 #include "third_party/blink/public/platform/web_source_buffer.h"
@@ -47,7 +48,6 @@
 #include "third_party/blink/renderer/platform/bindings/exception_messages.h"
 #include "third_party/blink/renderer/platform/bindings/exception_state.h"
 #include "third_party/blink/renderer/platform/heap/heap.h"
-#include "third_party/blink/renderer/platform/instrumentation/histogram.h"
 #include "third_party/blink/renderer/platform/instrumentation/tracing/trace_event.h"
 #include "third_party/blink/renderer/platform/instrumentation/use_counter.h"
 #include "third_party/blink/renderer/platform/network/mime/content_type.h"
@@ -66,7 +66,7 @@ enum class MseExecutionContext {
   kWindow = 0,
   kDedicatedWorker = 1,
   kSharedWorker = 2,
-  kMax = kSharedWorker
+  kMaxValue = kSharedWorker
 };
 }  // namespace
 
@@ -148,11 +148,7 @@ MediaSource::MediaSource(ExecutionContext* context)
     else
       CHECK(false) << "Invalid execution context for MSE usage";
   }
-  DEFINE_THREAD_SAFE_STATIC_LOCAL(
-      EnumerationHistogram, mse_execution_context_histogram,
-      ("Media.MSE.ExecutionContext",
-       static_cast<int>(MseExecutionContext::kMax) + 1));
-  mse_execution_context_histogram.Count(static_cast<int>(type));
+  base::UmaHistogramEnumeration("Media.MSE.ExecutionContext", type);
 
   // TODO(wolenetz): Actually enable experimental usage of MediaSource from
   // dedicated and shared worker contexts. See https://crbug.com/878133.

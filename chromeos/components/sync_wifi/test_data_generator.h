@@ -18,7 +18,7 @@ NetworkIdentifier GeneratePskNetworkId(const std::string& ssid);
 
 // Creates a proto with default values and sets the hex_ssid and security_type
 // based on the input |id|.
-sync_pb::WifiConfigurationSpecificsData GenerateTestWifiSpecifics(
+sync_pb::WifiConfigurationSpecifics GenerateTestWifiSpecifics(
     const NetworkIdentifier& id);
 
 }  // namespace sync_wifi

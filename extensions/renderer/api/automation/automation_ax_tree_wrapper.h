@@ -7,6 +7,7 @@
 
 #include "extensions/common/api/automation.h"
 #include "ui/accessibility/ax_event_generator.h"
+#include "ui/accessibility/ax_node.h"
 #include "ui/accessibility/ax_tree.h"
 #include "ui/accessibility/ax_tree_manager.h"
 
@@ -64,7 +65,8 @@ class AutomationAXTreeWrapper : public ui::AXTreeObserver,
 
   // AXTreeManager overrides.
   ui::AXNode* GetNodeFromTree(const ui::AXTreeID tree_id,
-                              const int32_t node_id) const override;
+                              const ui::AXNode::AXID node_id) const override;
+  ui::AXNode* GetNodeFromTree(const ui::AXNode::AXID node_id) const override;
   ui::AXTreeID GetTreeID() const override;
   ui::AXTreeID GetParentTreeID() const override;
   ui::AXNode* GetRootAsAXNode() const override;

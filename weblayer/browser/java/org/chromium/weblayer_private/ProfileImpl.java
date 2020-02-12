@@ -4,8 +4,11 @@
 
 package org.chromium.weblayer_private;
 
+import android.webkit.ValueCallback;
+
 import androidx.annotation.NonNull;
 
+import org.chromium.base.Callback;
 import org.chromium.base.CollectionUtil;
 import org.chromium.base.annotations.JNINamespace;
 import org.chromium.base.annotations.NativeMethods;
@@ -27,6 +30,11 @@ public final class ProfileImpl extends IProfile.Stub {
     private long mNativeProfile;
     private Runnable mOnDestroyCallback;
     private boolean mBeingDeleted;
+
+    public static void enumerateAllProfileNames(ValueCallback<String[]> callback) {
+        final Callback<String[]> baseCallback = (String[] names) -> callback.onReceiveValue(names);
+        ProfileImplJni.get().enumerateAllProfileNames(baseCallback);
+    }
 
     ProfileImpl(String name, Runnable onDestroyCallback) {
         if (!name.matches("^\\w*$")) {
@@ -131,6 +139,7 @@ public final class ProfileImpl extends IProfile.Stub {
 
     @NativeMethods
     interface Natives {
+        void enumerateAllProfileNames(Callback<String[]> callback);
         long createProfile(String name);
         void deleteProfile(long profile);
         boolean deleteDataFromDisk(long nativeProfileImpl, Runnable completionCallback);

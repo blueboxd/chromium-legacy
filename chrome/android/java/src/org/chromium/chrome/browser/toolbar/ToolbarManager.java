@@ -109,6 +109,7 @@ import org.chromium.chrome.browser.ui.appmenu.AppMenuObserver;
 import org.chromium.chrome.browser.ui.appmenu.AppMenuPropertiesDelegate;
 import org.chromium.chrome.browser.ui.appmenu.MenuButtonDelegate;
 import org.chromium.chrome.browser.ui.native_page.NativePage;
+import org.chromium.chrome.browser.util.AccessibilityUtil;
 import org.chromium.chrome.browser.util.UrlConstants;
 import org.chromium.chrome.browser.widget.ScrimView;
 import org.chromium.chrome.browser.widget.ScrimView.ScrimObserver;
@@ -137,7 +138,8 @@ import java.util.List;
  * with the rest of the application to ensure the toolbar is always visually up to date.
  */
 public class ToolbarManager implements ScrimObserver, ToolbarTabController, UrlFocusChangeListener,
-                                       ThemeColorObserver, MenuButtonDelegate {
+                                       ThemeColorObserver, MenuButtonDelegate,
+                                       AccessibilityUtil.Observer {
     /**
      * Handle UI updates of menu icons. Only applicable for phones.
      */
@@ -753,6 +755,8 @@ public class ToolbarManager implements ScrimObserver, ToolbarTabController, UrlF
         mToolbar.setIncognitoStateProvider(mIncognitoStateProvider);
         mToolbar.setThemeColorProvider(
                 mActivity.isTablet() ? mAppThemeColorProvider : mTabThemeColorProvider);
+
+        AccessibilityUtil.addObserver(this);
     }
 
     /**
@@ -1214,6 +1218,7 @@ public class ToolbarManager implements ScrimObserver, ToolbarTabController, UrlF
         if (mAppThemeColorProvider != null) mAppThemeColorProvider.destroy();
         mActivity.unregisterComponentCallbacks(mComponentCallbacks);
         mComponentCallbacks = null;
+        AccessibilityUtil.removeObserver(this);
     }
 
     /**
@@ -1245,11 +1250,8 @@ public class ToolbarManager implements ScrimObserver, ToolbarTabController, UrlF
         }
     }
 
-    /**
-     * Called when the accessibility enabled state changes.
-     * @param enabled Whether accessibility is enabled.
-     */
-    public void onAccessibilityStatusChanged(boolean enabled) {
+    @Override
+    public void onAccessibilityModeChanged(boolean enabled) {
         mToolbar.onAccessibilityStatusChanged(enabled);
     }
 

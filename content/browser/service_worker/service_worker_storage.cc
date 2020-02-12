@@ -485,7 +485,7 @@ ServiceWorkerStorage::CreateResponseMetadataWriter(int64_t resource_id) {
 
 void ServiceWorkerStorage::CreateNewResponseWriter(
     ResponseWriterCreationCallback callback) {
-  int64_t resource_id = NewResourceIdInternal();
+  int64_t resource_id = NewResourceId();
   if (resource_id == ServiceWorkerConsts::kInvalidServiceWorkerResourceId) {
     std::move(callback).Run(resource_id, nullptr);
   } else {
@@ -850,21 +850,21 @@ void ServiceWorkerStorage::DiskCacheImplDoneWithDisk() {
   }
 }
 
-void ServiceWorkerStorage::NewRegistrationId(
+void ServiceWorkerStorage::GetNewRegistrationId(
     base::OnceCallback<void(int64_t registration_id)> callback) {
-  std::move(callback).Run(NewRegistrationIdInternal());
+  std::move(callback).Run(NewRegistrationId());
 }
 
-int64_t ServiceWorkerStorage::NewVersionId() {
+int64_t ServiceWorkerStorage::GetNewVersionId() {
   if (state_ == STORAGE_STATE_DISABLED)
     return blink::mojom::kInvalidServiceWorkerVersionId;
   DCHECK_EQ(STORAGE_STATE_INITIALIZED, state_);
   return next_version_id_++;
 }
 
-void ServiceWorkerStorage::NewResourceId(
+void ServiceWorkerStorage::GetNewResourceId(
     base::OnceCallback<void(int64_t resource_id)> callback) {
-  std::move(callback).Run(NewResourceIdInternal());
+  std::move(callback).Run(NewResourceId());
 }
 
 void ServiceWorkerStorage::Disable() {
@@ -1229,7 +1229,7 @@ void ServiceWorkerStorage::ClearSessionOnlyOrigins() {
                                 session_only_origins));
 }
 
-int64_t ServiceWorkerStorage::NewRegistrationIdInternal() {
+int64_t ServiceWorkerStorage::NewRegistrationId() {
   if (state_ == STORAGE_STATE_DISABLED) {
     return blink::mojom::kInvalidServiceWorkerRegistrationId;
   }
@@ -1237,7 +1237,7 @@ int64_t ServiceWorkerStorage::NewRegistrationIdInternal() {
   return next_registration_id_++;
 }
 
-int64_t ServiceWorkerStorage::NewResourceIdInternal() {
+int64_t ServiceWorkerStorage::NewResourceId() {
   if (state_ == STORAGE_STATE_DISABLED)
     return ServiceWorkerConsts::kInvalidServiceWorkerResourceId;
   DCHECK_EQ(STORAGE_STATE_INITIALIZED, state_);

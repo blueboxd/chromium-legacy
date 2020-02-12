@@ -25,6 +25,7 @@
 
 #include "third_party/blink/renderer/modules/webaudio/base_audio_context.h"
 
+#include "base/metrics/histogram_functions.h"
 #include "build/build_config.h"
 #include "third_party/blink/public/mojom/devtools/console_message.mojom-blink.h"
 #include "third_party/blink/public/platform/platform.h"
@@ -73,7 +74,6 @@
 #include "third_party/blink/renderer/platform/bindings/exception_state.h"
 #include "third_party/blink/renderer/platform/bindings/script_state.h"
 #include "third_party/blink/renderer/platform/heap/heap.h"
-#include "third_party/blink/renderer/platform/instrumentation/histogram.h"
 #include "third_party/blink/renderer/platform/wtf/cross_thread_functional.h"
 #include "third_party/blink/renderer/platform/wtf/text/wtf_string.h"
 #include "third_party/blink/renderer/platform/wtf/uuid.h"
@@ -247,27 +247,22 @@ AudioBuffer* BaseAudioContext::createBuffer(uint32_t number_of_channels,
   AudioBuffer* buffer = AudioBuffer::Create(
       number_of_channels, number_of_frames, sample_rate, exception_state);
 
+  // Only record the data if the creation succeeded.
   if (buffer) {
-    // Only record the data if the creation succeeded.
-    DEFINE_STATIC_LOCAL(SparseHistogram, audio_buffer_channels_histogram,
-                        ("WebAudio.AudioBuffer.NumberOfChannels"));
+    base::UmaHistogramSparse("WebAudio.AudioBuffer.NumberOfChannels",
+                             number_of_channels);
 
     // Arbitrarly limit the maximum length to 1 million frames (about 20 sec
     // at 48kHz).  The number of buckets is fairly arbitrary.
-    DEFINE_STATIC_LOCAL(CustomCountHistogram, audio_buffer_length_histogram,
-                        ("WebAudio.AudioBuffer.Length", 1, 1000000, 50));
+    base::UmaHistogramCounts1M("WebAudio.AudioBuffer.Length", number_of_frames);
+
     // The limits are the min and max AudioBuffer sample rates currently
     // supported.  We use explicit values here instead of
     // audio_utilities::minAudioBufferSampleRate() and
     // audio_utilities::maxAudioBufferSampleRate().  The number of buckets is
     // fairly arbitrary.
-    DEFINE_STATIC_LOCAL(
-        CustomCountHistogram, audio_buffer_sample_rate_histogram,
-        ("WebAudio.AudioBuffer.SampleRate384kHz", 3000, 384000, 60));
-
-    audio_buffer_channels_histogram.Sample(number_of_channels);
-    audio_buffer_length_histogram.Count(number_of_frames);
-    audio_buffer_sample_rate_histogram.Count(sample_rate);
+    base::UmaHistogramCustomCounts("WebAudio.AudioBuffer.SampleRate384kHz",
+                                   sample_rate, 3000, 384000, 60);
 
     // Compute the ratio of the buffer rate and the context rate so we know
     // how often the buffer needs to be resampled to match the context.  For
@@ -279,12 +274,10 @@ AudioBuffer* BaseAudioContext::createBuffer(uint32_t number_of_channels,
       // 100*(384000/3000) = 12800, where 3000 and 384000 are the current
       // min and max sample rates possible for an AudioBuffer.  The number
       // of buckets is fairly arbitrary.
-      DEFINE_STATIC_LOCAL(
-          CustomCountHistogram, audio_buffer_sample_rate_ratio_histogram,
-          ("WebAudio.AudioBuffer.SampleRateRatio384kHz", 1, 12800, 50));
       float ratio = 100 * sample_rate / this->sampleRate();
-      audio_buffer_sample_rate_ratio_histogram.Count(
-          static_cast<int>(0.5 + ratio));
+      base::UmaHistogramCustomCounts(
+          "WebAudio.AudioBuffer.SampleRateRatio384kHz",
+          static_cast<int>(0.5 + ratio), 1, 12800, 50);
     }
   }
 

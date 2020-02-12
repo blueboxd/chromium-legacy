@@ -154,38 +154,6 @@ void WriteNode::SetPasswordSpecifics(
   SetEntitySpecifics(entity_specifics);
 }
 
-void WriteNode::SetWifiConfigurationSpecifics(
-    const sync_pb::WifiConfigurationSpecificsData& data) {
-  DCHECK_EQ(GetModelType(), WIFI_CONFIGURATIONS);
-
-  const Cryptographer* cryptographer = GetTransaction()->GetCryptographer();
-
-  // We have to do the idempotency check here (vs in UpdateEntryWithEncryption)
-  // because Passwords have their encrypted data within the PasswordSpecifics,
-  // vs within the EntitySpecifics like all the other types.
-  const sync_pb::EntitySpecifics& old_specifics = GetEntitySpecifics();
-  sync_pb::EntitySpecifics entity_specifics;
-  // Copy over the old specifics if they exist.
-  if (GetModelTypeFromSpecifics(old_specifics) == WIFI_CONFIGURATIONS) {
-    entity_specifics.CopyFrom(old_specifics);
-  } else {
-    AddDefaultFieldValue(WIFI_CONFIGURATIONS, &entity_specifics);
-  }
-  sync_pb::WifiConfigurationSpecifics* wifi_configuration_specifics =
-      entity_specifics.mutable_wifi_configuration();
-
-  // This will only update wifi_configuration_specifics if the underlying
-  // unencrypted blob was different from |data| or was not encrypted with the
-  // proper passphrase.
-  if (!cryptographer->Encrypt(
-          data, wifi_configuration_specifics->mutable_encrypted())) {
-    LOG(ERROR) << "Failed to encrypt wifi configuration, possibly due to sync "
-               << "node corruption";
-    return;
-  }
-  SetEntitySpecifics(entity_specifics);
-}
-
 void WriteNode::SetEntitySpecifics(const sync_pb::EntitySpecifics& new_value) {
   ModelType new_specifics_type = GetModelTypeFromSpecifics(new_value);
 

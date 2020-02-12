@@ -147,8 +147,9 @@ enum ChromePage {
   ABOUTBLANK,
   ABOUTDOWNLOADS,
   ABOUTHISTORY,
+  CROSTINIDISKRESIZE,
 
-  LAST = ABOUTHISTORY,
+  LAST = CROSTINIDISKRESIZE,
 };
 
 // Describes an unique chrome app.

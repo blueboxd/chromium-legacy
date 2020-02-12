@@ -44,11 +44,11 @@ std::string SecurityTypeStringFromMojo(
 }
 
 std::string SecurityTypeStringFromProto(
-    const sync_pb::WifiConfigurationSpecificsData_SecurityType& security_type) {
+    const sync_pb::WifiConfigurationSpecifics_SecurityType& security_type) {
   switch (security_type) {
-    case sync_pb::WifiConfigurationSpecificsData::SECURITY_TYPE_PSK:
+    case sync_pb::WifiConfigurationSpecifics::SECURITY_TYPE_PSK:
       return shill::kSecurityPsk;
-    case sync_pb::WifiConfigurationSpecificsData::SECURITY_TYPE_WEP:
+    case sync_pb::WifiConfigurationSpecifics::SECURITY_TYPE_WEP:
       return shill::kSecurityWep;
     default:
       // Only PSK and WEP secured networks are supported by sync.
@@ -57,106 +57,104 @@ std::string SecurityTypeStringFromProto(
   }
 }
 
-sync_pb::WifiConfigurationSpecificsData_SecurityType SecurityTypeProtoFromMojo(
+sync_pb::WifiConfigurationSpecifics_SecurityType SecurityTypeProtoFromMojo(
     const network_config::mojom::SecurityType& security_type) {
   switch (security_type) {
     case network_config::mojom::SecurityType::kWpaPsk:
-      return sync_pb::WifiConfigurationSpecificsData::SECURITY_TYPE_PSK;
+      return sync_pb::WifiConfigurationSpecifics::SECURITY_TYPE_PSK;
     case network_config::mojom::SecurityType::kWepPsk:
-      return sync_pb::WifiConfigurationSpecificsData::SECURITY_TYPE_WEP;
+      return sync_pb::WifiConfigurationSpecifics::SECURITY_TYPE_WEP;
     default:
       // Only PSK and WEP secured networks are supported by sync.
       NOTREACHED();
-      return sync_pb::WifiConfigurationSpecificsData::SECURITY_TYPE_NONE;
+      return sync_pb::WifiConfigurationSpecifics::SECURITY_TYPE_NONE;
   }
 }
 
-sync_pb::WifiConfigurationSpecificsData_AutomaticallyConnectOption
+sync_pb::WifiConfigurationSpecifics_AutomaticallyConnectOption
 AutomaticallyConnectProtoFromMojo(
     const network_config::mojom::ManagedBooleanPtr& auto_connect) {
   if (!auto_connect) {
-    return sync_pb::WifiConfigurationSpecificsData::
+    return sync_pb::WifiConfigurationSpecifics::
         AUTOMATICALLY_CONNECT_UNSPECIFIED;
   }
 
   if (auto_connect->active_value) {
-    return sync_pb::WifiConfigurationSpecificsData::
-        AUTOMATICALLY_CONNECT_ENABLED;
+    return sync_pb::WifiConfigurationSpecifics::AUTOMATICALLY_CONNECT_ENABLED;
   }
 
-  return sync_pb::WifiConfigurationSpecificsData::AUTOMATICALLY_CONNECT_ENABLED;
+  return sync_pb::WifiConfigurationSpecifics::AUTOMATICALLY_CONNECT_ENABLED;
 }
 
-sync_pb::WifiConfigurationSpecificsData_IsPreferredOption
-IsPreferredProtoFromMojo(
+sync_pb::WifiConfigurationSpecifics_IsPreferredOption IsPreferredProtoFromMojo(
     const network_config::mojom::ManagedInt32Ptr& is_preferred) {
   if (!is_preferred) {
-    return sync_pb::WifiConfigurationSpecificsData::IS_PREFERRED_UNSPECIFIED;
+    return sync_pb::WifiConfigurationSpecifics::IS_PREFERRED_UNSPECIFIED;
   }
 
   if (is_preferred->active_value == 1) {
-    return sync_pb::WifiConfigurationSpecificsData::IS_PREFERRED_ENABLED;
+    return sync_pb::WifiConfigurationSpecifics::IS_PREFERRED_ENABLED;
   }
 
-  return sync_pb::WifiConfigurationSpecificsData::IS_PREFERRED_DISABLED;
+  return sync_pb::WifiConfigurationSpecifics::IS_PREFERRED_DISABLED;
 }
 
-sync_pb::WifiConfigurationSpecificsData_ProxyConfiguration_ProxyOption
+sync_pb::WifiConfigurationSpecifics_ProxyConfiguration_ProxyOption
 ProxyOptionProtoFromMojo(
     const network_config::mojom::ManagedProxySettingsPtr& proxy_settings) {
   if (!proxy_settings) {
-    return sync_pb::WifiConfigurationSpecificsData_ProxyConfiguration::
+    return sync_pb::WifiConfigurationSpecifics_ProxyConfiguration::
         PROXY_OPTION_UNSPECIFIED;
   }
 
   if (proxy_settings->type->active_value == ::onc::proxy::kPAC) {
-    return sync_pb::WifiConfigurationSpecificsData_ProxyConfiguration::
+    return sync_pb::WifiConfigurationSpecifics_ProxyConfiguration::
         PROXY_OPTION_AUTOMATIC;
   }
 
   if (proxy_settings->type->active_value == ::onc::proxy::kWPAD) {
-    return sync_pb::WifiConfigurationSpecificsData_ProxyConfiguration::
+    return sync_pb::WifiConfigurationSpecifics_ProxyConfiguration::
         PROXY_OPTION_AUTODISCOVERY;
   }
 
   if (proxy_settings->type->active_value == ::onc::proxy::kManual) {
-    return sync_pb::WifiConfigurationSpecificsData_ProxyConfiguration::
+    return sync_pb::WifiConfigurationSpecifics_ProxyConfiguration::
         PROXY_OPTION_MANUAL;
   }
 
-  return sync_pb::WifiConfigurationSpecificsData_ProxyConfiguration::
+  return sync_pb::WifiConfigurationSpecifics_ProxyConfiguration::
       PROXY_OPTION_DISABLED;
 }
 
-sync_pb::WifiConfigurationSpecificsData_ProxyConfiguration
+sync_pb::WifiConfigurationSpecifics_ProxyConfiguration
 ProxyConfigurationProtoFromMojo(
     const network_config::mojom::ManagedProxySettingsPtr& proxy_settings) {
-  sync_pb::WifiConfigurationSpecificsData_ProxyConfiguration proto;
+  sync_pb::WifiConfigurationSpecifics_ProxyConfiguration proto;
   proto.set_proxy_option(ProxyOptionProtoFromMojo(proxy_settings));
 
   if (proto.proxy_option() ==
-      sync_pb::WifiConfigurationSpecificsData_ProxyConfiguration::
+      sync_pb::WifiConfigurationSpecifics_ProxyConfiguration::
           PROXY_OPTION_AUTOMATIC) {
     if (proxy_settings->pac) {
       proto.set_proxy_url(proxy_settings->pac->active_value);
     }
   } else if (proto.proxy_option() ==
-             sync_pb::WifiConfigurationSpecificsData_ProxyConfiguration::
+             sync_pb::WifiConfigurationSpecifics_ProxyConfiguration::
                  PROXY_OPTION_MANUAL) {
     // TODO: Implement support for manual proxies.
     // Return an empty proxy configuration for now.
-    return sync_pb::WifiConfigurationSpecificsData_ProxyConfiguration();
+    return sync_pb::WifiConfigurationSpecifics_ProxyConfiguration();
   }
 
   return proto;
 }
 
 network_config::mojom::SecurityType MojoSecurityTypeFromProto(
-    const sync_pb::WifiConfigurationSpecificsData_SecurityType& security_type) {
+    const sync_pb::WifiConfigurationSpecifics_SecurityType& security_type) {
   switch (security_type) {
-    case sync_pb::WifiConfigurationSpecificsData::SECURITY_TYPE_PSK:
+    case sync_pb::WifiConfigurationSpecifics::SECURITY_TYPE_PSK:
       return network_config::mojom::SecurityType::kWpaPsk;
-    case sync_pb::WifiConfigurationSpecificsData::SECURITY_TYPE_WEP:
+    case sync_pb::WifiConfigurationSpecifics::SECURITY_TYPE_WEP:
       return network_config::mojom::SecurityType::kWepPsk;
     default:
       // Only PSK and WEP secured networks are supported by sync.
@@ -166,7 +164,7 @@ network_config::mojom::SecurityType MojoSecurityTypeFromProto(
 }
 
 network_config::mojom::ConfigPropertiesPtr MojoNetworkConfigFromProto(
-    const sync_pb::WifiConfigurationSpecificsData& specifics) {
+    const sync_pb::WifiConfigurationSpecifics& specifics) {
   auto config = network_config::mojom::ConfigProperties::New();
   auto wifi = network_config::mojom::WiFiConfigProperties::New();
 
@@ -180,11 +178,11 @@ network_config::mojom::ConfigPropertiesPtr MojoNetworkConfigFromProto(
 
   config->auto_connect = network_config::mojom::AutoConnectConfig::New(
       specifics.automatically_connect() ==
-      sync_pb::WifiConfigurationSpecificsData::AUTOMATICALLY_CONNECT_ENABLED);
+      sync_pb::WifiConfigurationSpecifics::AUTOMATICALLY_CONNECT_ENABLED);
 
   config->priority = network_config::mojom::PriorityConfig::New(
       specifics.is_preferred() ==
-              sync_pb::WifiConfigurationSpecificsData::IS_PREFERRED_ENABLED
+              sync_pb::WifiConfigurationSpecifics::IS_PREFERRED_ENABLED
           ? 1
           : 0);
 

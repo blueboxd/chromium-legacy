@@ -11727,26 +11727,32 @@ Called by update_net_error_codes.py.-->
   <int value="1094926918" label="ACBF (Bruce)"/>
   <int value="1094993739" label="ADGK (Laser14)"/>
   <int value="1095520840" label="ALRH (Sion)"/>
+  <int value="1095715654" label="AOKF (Lenovo Akemi)"/>
   <int value="1095716933" label="AOPE (Jax)"/>
   <int value="1095784537" label="APXY (Wukong)"/>
   <int value="1095909961" label="ARBI (Soraka)"/>
   <int value="1095980364" label="ASUL (Cave)"/>
   <int value="1095980366" label="ASUN (Basking)"/>
   <int value="1095980367" label="ASUO (Bob)"/>
+  <int value="1111577921" label="BAUA (Lenovo Treeya)"/>
   <int value="1111707468" label="BCOL (Ampton)"/>
   <int value="1111771479" label="BDIW (Sparky360)"/>
   <int value="1128420697" label="CBUY (Pantheon)"/>
   <int value="1129075526" label="CLSF (Alan)"/>
   <int value="1129336916" label="CPPT (Nasher)"/>
+  <int value="1129532502" label="CSLV (Lenovo Laser14-R)"/>
   <int value="1129597253" label="CTIE (Astronaut)"/>
   <int value="1129927505" label="CYSQ (Phaser360)"/>
   <int value="1145193796" label="DBED (Wukong)"/>
   <int value="1145389384" label="DEAH (Asuka)"/>
   <int value="1146640980" label="DXZT (Scarlet)"/>
+  <int value="1162629441" label="ELQA (HP Vorticon)"/>
   <int value="1162826827" label="EOTK (Wukong)"/>
   <int value="1178752080" label="FBTP (Blacktip360)"/>
+  <int value="1178818131" label="FCVS (Lenovo kodama)"/>
   <int value="1179734090" label="FQPJ (Karma)"/>
   <int value="1179736649" label="FQZI (Bigdaddy)"/>
+  <int value="1179862610" label="FSFR (RK3399 Test)"/>
   <int value="1179862873" label="FSGY (Meep)"/>
   <int value="1180128843" label="FWVK (Bobba360)"/>
   <int value="1196055126" label="GJZV (Syndra)"/>
@@ -11761,7 +11767,11 @@ Called by update_net_error_codes.py.-->
   <int value="1229478471" label="IHZG (Mimrock)"/>
   <int value="1229870420" label="INUT (Nasher360)"/>
   <int value="1230326865" label="IULQ (Whitetip)"/>
+  <int value="1245859905" label="JBPA (HP Bloog)"/>
   <int value="1246124610" label="JFZB (Liara)"/>
+  <int value="1246315352" label="JICX (Lenovo Lick)"/>
+  <int value="1246515784" label="JLRH (Create Kadabra)"/>
+  <int value="1246779985" label="JPZQ (Samsung Kohaku)"/>
   <int value="1247369291" label="JYXK (Bluebird)"/>
   <int value="1262568010" label="KABJ (Robo360)"/>
   <int value="1263291223" label="KLKW (Fleex)"/>
@@ -11771,6 +11781,8 @@ Called by update_net_error_codes.py.-->
   <int value="1280264001" label="LOGA (Gru)"/>
   <int value="1280264007" label="LOGG (Poppy)"/>
   <int value="1280264008" label="LOGH (Whitetip)"/>
+  <int value="1280920654" label="LYLN (HP Vortininja)"/>
+  <int value="1296124233" label="MAII (Asus Leona)"/>
   <int value="1296254030" label="MCDN (Dumo)"/>
   <int value="1296256847" label="MCOO (Sarien)"/>
   <int value="1297634649" label="MXUY (Aleena)"/>
@@ -11779,11 +11791,15 @@ Called by update_net_error_codes.py.-->
   <int value="1313883459" label="NPEC (Vayne)"/>
   <int value="1314212940" label="NULL (not yet assigned)"/>
   <int value="1330008133" label="OFPE (Kasumi360)"/>
+  <int value="1330337603" label="OKWC (Acer Droid1)"/>
   <int value="1346851142" label="PGQF (Grabbiter)"/>
   <int value="1346918722" label="PHYB (Teemo)"/>
   <int value="1347961935" label="PXDO (Barla)"/>
+  <int value="1363891265" label="QKTA (HP Dratini)"/>
+  <int value="1364805461" label="QYGU (Acer Kled)"/>
   <int value="1364874584" label="QZUX (Robo)"/>
   <int value="1380535111" label="RIKG (Blacktip)"/>
+  <int value="1380667970" label="RKRB (Acer Kindred)"/>
   <int value="1381388877" label="RVRM (Abra)"/>
   <int value="1397244238" label="SHAN (Lava)"/>
   <int value="1397571914" label="SMAJ (Kevin)"/>
@@ -11791,22 +11807,31 @@ Called by update_net_error_codes.py.-->
   <int value="1397703489" label="SOCA (Akali360)"/>
   <int value="1413829460" label="TEST (testing label)"/>
   <int value="1414219090" label="TKER (Orbatrix)"/>
+  <int value="1414224468" label="TKZT (Lenovo Laser-R)"/>
   <int value="1414353733" label="TMSE (Wukong)"/>
+  <int value="1414354008" label="TMTX (HP Dragonair)"/>
   <int value="1414547534" label="TPHN (Whitetip)"/>
   <int value="1414943322" label="TVRZ (Blacktip360)"/>
   <int value="1430733145" label="UGAY (Kasumi)"/>
+  <int value="1431126357" label="UMAU (NEC Dopefish)"/>
   <int value="1431460420" label="URZD (Whitetip)"/>
   <int value="1447581000" label="VHUH (Bobba)"/>
   <int value="1448498499" label="VVUC (blue)"/>
+  <int value="1464487770" label="WJOZ (HP Blooguard)"/>
   <int value="1464686165" label="WMVU (Epaulette)"/>
   <int value="1465408071" label="WXZG (Blacktip)"/>
+  <int value="1481004376" label="XFUX (Lenovo Treeya360)"/>
+  <int value="1482052683" label="XVTK (Acer Gik360)"/>
   <int value="1482053969" label="XVYQ (Apel)"/>
   <int value="1482115653" label="XWJE (atlas)"/>
   <int value="1497913685" label="YHYU (Arcada)"/>
+  <int value="1498237516" label="YMJL (HP Dorp)"/>
   <int value="1498238293" label="YMMU (DruWL)"/>
   <int value="1498432325" label="YPCE (Rabbid)"/>
+  <int value="1498829393" label="YVRQ (Asus Helios)"/>
   <int value="1498956363" label="YXBK (Kench)"/>
   <int value="1498957124" label="YXED (Babytiger)"/>
+  <int value="1514883656" label="ZKJH (HP Mordin)"/>
   <int value="1515408205" label="ZSKM (Nautilus)"/>
   <int value="1515864390" label="ZZAF (Eve)"/>
   <int value="1515864914" label="ZZCR (Early prod samples)"/>
@@ -61894,6 +61919,27 @@ https://www.dmtf.org/sites/default/files/standards/documents/DSP0134_2.7.1.pdf
   <int value="2" label="Commit enforced site"/>
   <int value="3" label="Popup considered"/>
   <int value="4" label="Popup blocked"/>
+</enum>
+
+<enum name="StructuredMetricsEventRecordingState">
+  <int value="0" label="Recorded"/>
+  <int value="1" label="Provider uninitialized"/>
+  <int value="2" label="Recording disabled"/>
+  <int value="3" label="Provider missing"/>
+</enum>
+
+<enum name="StructuredMetricsInternalError">
+  <int value="0" label="Missing key"/>
+  <int value="1" label="Wrong key length"/>
+  <int value="2" label="Missing last rotation"/>
+  <int value="3" label="Missing rotation period"/>
+  <int value="4" label="Failed uint conversion"/>
+</enum>
+
+<enum name="StructuredMetricsKeyValidationState">
+  <int value="0" label="Valid"/>
+  <int value="1" label="Created"/>
+  <int value="2" label="Rotated"/>
 </enum>
 
 <enum name="StyleSheetCacheStatus">

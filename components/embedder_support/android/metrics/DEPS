@@ -1,6 +1,7 @@
 include_rules = [
   "+components/metrics",
   "+components/prefs",
+  "+components/version_info",
   "+content/public/browser",
   "+services/resource_coordinator/public/cpp/memory_instrumentation",
 ]

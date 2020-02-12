@@ -93,6 +93,8 @@ BubbleFrameView::BubbleFrameView(const gfx::Insets& title_margins,
   // Windows will automatically create a tooltip for the close button based on
   // the HTCLOSE result from NonClientHitTest().
   close->SetTooltipText(base::string16());
+  // Specify accessible name instead for screen readers.
+  close->SetAccessibleName(l10n_util::GetStringUTF16(IDS_APP_CLOSE));
 #endif
   close_ = AddChildView(std::move(close));
 
@@ -126,14 +128,10 @@ std::unique_ptr<Button> BubbleFrameView::CreateCloseButton(
                              : gfx::kGoogleGrey700);
   close_button->SetTooltipText(l10n_util::GetStringUTF16(IDS_APP_CLOSE));
   close_button->SizeToPreferredSize();
+  close_button->SetFocusForPlatform();
 
   InstallCircleHighlightPathGenerator(close_button.get());
 
-  // Remove the close button from tab traversal on all platforms. Note this does
-  // not affect screen readers' ability to focus the close button. Keyboard
-  // access to the close button when not using a screen reader is done via the
-  // ESC key handler in DialogClientView.
-  close_button->SetFocusBehavior(View::FocusBehavior::NEVER);
   return close_button;
 }
 

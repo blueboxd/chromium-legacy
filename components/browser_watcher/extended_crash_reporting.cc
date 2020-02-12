@@ -9,27 +9,19 @@
 #include <memory>
 
 #include "base/debug/activity_tracker.h"
-#include "base/memory/ptr_util.h"
-#include "base/metrics/persistent_memory_allocator.h"
-#include "base/win/pe_image.h"
 #include "build/build_config.h"
-#include "components/browser_watcher/activity_data_names.h"
-#include "components/browser_watcher/activity_report.pb.h"
-#include "components/browser_watcher/activity_tracker_annotation.h"
-#include "components/browser_watcher/extended_crash_reporting.h"
-#include "components/browser_watcher/extended_crash_reporting_metrics.h"
-#include "components/browser_watcher/features.h"
-
-#if defined(OS_WIN)
-// https://devblogs.microsoft.com/oldnewthing/20041025-00/?p=37483.
-extern "C" IMAGE_DOS_HEADER __ImageBase;
-#endif
 
 namespace browser_watcher {
 
 namespace {
 
-ExtendedCrashReporting* g_instance = nullptr;
+struct VehUnregisterer {
+  void operator()(void* handle) const {
+    ::RemoveVectoredExceptionHandler(handle);
+  }
+};
+
+using VehHandle = std::unique_ptr<void, VehUnregisterer>;
 
 uintptr_t GetProgramCounter(const CONTEXT& context) {
 #if defined(ARCH_CPU_X86)
@@ -54,98 +46,24 @@ LONG CALLBACK VectoredExceptionHandler(EXCEPTION_POINTERS* exception_pointers) {
   return EXCEPTION_CONTINUE_SEARCH;  // Continue to the next handler.
 }
 
-// Record information about the chrome module.
-void RecordChromeModuleInfo(
-    base::debug::GlobalActivityTracker* global_tracker) {
-  DCHECK(global_tracker);
-
-  base::debug::GlobalActivityTracker::ModuleInfo module;
-  module.is_loaded = true;
-  module.address = reinterpret_cast<uintptr_t>(&__ImageBase);
-
-  base::win::PEImage pe(&__ImageBase);
-  PIMAGE_NT_HEADERS headers = pe.GetNTHeaders();
-  CHECK(headers);
-  module.size = headers->OptionalHeader.SizeOfImage;
-  module.timestamp = headers->FileHeader.TimeDateStamp;
-
-  GUID guid;
-  DWORD age;
-  LPCSTR pdb_filename = nullptr;
-  size_t pdb_filename_length = 0;
-  if (pe.GetDebugId(&guid, &age, &pdb_filename, &pdb_filename_length)) {
-    module.age = age;
-    static_assert(sizeof(module.identifier) >= sizeof(guid),
-                  "Identifier field must be able to contain a GUID.");
-    memcpy(module.identifier, &guid, sizeof(guid));
-  } else {
-    memset(module.identifier, 0, sizeof(module.identifier));
-  }
-
-  module.file = "chrome.dll";
-  module.debug_file =
-      base::StringPiece(pdb_filename, pdb_filename_length).as_string();
-
-  global_tracker->RecordModuleInfo(module);
-}
-
-ActivityTrackerAnnotation* GetAnnotation() {
-  static ActivityTrackerAnnotation activity_tracker_annotation;
-  return &activity_tracker_annotation;
-}
-
 }  // namespace
 
-ExtendedCrashReporting::ExtendedCrashReporting(
-    base::debug::GlobalActivityTracker* tracker)
-    : tracker_(tracker) {}
-
-ExtendedCrashReporting::~ExtendedCrashReporting() {
-  if (veh_handle_)
-    ::RemoveVectoredExceptionHandler(veh_handle_);
-}
-
-ExtendedCrashReporting* ExtendedCrashReporting::SetUpIfEnabled() {
-  DCHECK_EQ(nullptr, g_instance);
-  if (!base::FeatureList::IsEnabled(kExtendedCrashReportingFeature)) {
-    return nullptr;
-  }
-
-  return SetUpImpl();
-}
-
-ExtendedCrashReporting* ExtendedCrashReporting::GetInstance() {
-  return g_instance;
-}
-
-void ExtendedCrashReporting::SetProductStrings(
-    const base::string16& product_name,
-    const base::string16& product_version,
-    const base::string16& channel_name,
-    const base::string16& special_build) {
-  base::debug::ActivityUserData& proc_data = tracker_->process_data();
-  proc_data.SetString(kActivityProduct, product_name);
-  proc_data.SetString(kActivityVersion, product_version);
-  proc_data.SetString(kActivityChannel, channel_name);
-  proc_data.SetString(kActivitySpecialBuild, special_build);
-}
-
-void ExtendedCrashReporting::SetBool(base::StringPiece name, bool value) {
-  tracker_->process_data().SetBool(name, value);
-}
-
-void ExtendedCrashReporting::SetInt(base::StringPiece name, int64_t value) {
-  tracker_->process_data().SetInt(name, value);
-}
-
 void ExtendedCrashReporting::SetDataBool(base::StringPiece name, bool value) {
-  if (g_instance)
-    g_instance->SetBool(name, value);
+  base::debug::GlobalActivityTracker* global_tracker =
+      base::debug::GlobalActivityTracker::Get();
+  if (!global_tracker)
+    return;  // Activity tracking isn't enabled.
+
+  global_tracker->process_data().SetBool(name, value);
 }
 
 void ExtendedCrashReporting::SetDataInt(base::StringPiece name, int64_t value) {
-  if (g_instance)
-    g_instance->SetInt(name, value);
+  base::debug::GlobalActivityTracker* global_tracker =
+      base::debug::GlobalActivityTracker::Get();
+  if (!global_tracker)
+    return;  // Activity tracking isn't enabled.
+
+  global_tracker->process_data().SetInt(name, value);
 }
 
 void ExtendedCrashReporting::RegisterVEH() {
@@ -157,89 +75,16 @@ void ExtendedCrashReporting::RegisterVEH() {
   // recursion (i.e. infinite memory access violation).
   (void)&VectoredExceptionHandler;
 #else
-  DCHECK_EQ(nullptr, veh_handle_);
   // Register a vectored exception handler and request it be first. Note that
   // subsequent registrations may also request to be first, in which case this
   // one will be bumped.
   // TODO(manzagop): Depending on observations, it may be necessary to
   // consider refreshing the registration, either periodically or at opportune
   // (e.g. risky) times.
-  veh_handle_ = ::AddVectoredExceptionHandler(1, &VectoredExceptionHandler);
-  DCHECK(veh_handle_);
+  static VehHandle veh_handler(
+      ::AddVectoredExceptionHandler(1, &VectoredExceptionHandler));
+  DCHECK(veh_handler);
 #endif  // ADDRESS_SANITIZER
-}
-
-void ExtendedCrashReporting::SetUpForTesting() {
-  ExtendedCrashReporting::SetUpImpl();
-}
-
-void ExtendedCrashReporting::TearDownForTesting() {
-  if (g_instance) {
-    ExtendedCrashReporting* instance_to_delete = g_instance;
-    g_instance = nullptr;
-    delete instance_to_delete;
-  }
-
-  // Clear the crash annotation.
-  GetAnnotation()->Clear();
-}
-
-ExtendedCrashReporting* ExtendedCrashReporting::SetUpImpl() {
-  DCHECK_EQ(nullptr, g_instance);
-
-  // TODO(https://crbug.com/1044707): Adjust these numbers once there is real
-  // data to show just how much of an arena is necessary.
-  const size_t kMemorySize = 1 << 20;  // 1 MiB
-  const int kStackDepth = 4;
-  const uint64_t kAllocatorId = 0;
-
-  base::debug::GlobalActivityTracker::CreateWithAllocator(
-      std::make_unique<base::LocalPersistentMemoryAllocator>(
-          kMemorySize, kAllocatorId, kExtendedCrashReportingFeature.name),
-      kStackDepth, 0);
-
-  // Track code activities (such as posting task, blocking on locks, and
-  // joining threads) that can cause hanging threads and general instability
-  base::debug::GlobalActivityTracker* global_tracker =
-      base::debug::GlobalActivityTracker::Get();
-  DCHECK(global_tracker);
-
-  // Construct the instance with the new global tracker, this object is
-  // intentionally leaked.
-  std::unique_ptr<ExtendedCrashReporting> new_instance =
-      base::WrapUnique(new ExtendedCrashReporting(global_tracker));
-  new_instance->Initialize();
-  g_instance = new_instance.release();
-  return g_instance;
-}
-
-void ExtendedCrashReporting::Initialize() {
-  // Record the location and size of the tracker memory range in a Crashpad
-  // annotation to allow the handler to retrieve it on crash.
-  // Record the buffer size and location for the annotation beacon.
-  auto* allocator = tracker_->allocator();
-  GetAnnotation()->SetValue(allocator->data(), allocator->size());
-
-  // Record the main DLL module info for easier symbolization.
-  RecordChromeModuleInfo(tracker_);
-
-  LogActivityRecordEvent(ActivityRecordEvent::kGotTracker);
-
-  base::debug::ActivityUserData& proc_data = tracker_->process_data();
-#if defined(ARCH_CPU_X86)
-  proc_data.SetString(kActivityPlatform, "Win32");
-#elif defined(ARCH_CPU_X86_64)
-  proc_data.SetString(kActivityPlatform, "Win64");
-#endif
-  proc_data.SetInt(
-      kActivityStartTimestamp,
-      base::Time::Now().ToDeltaSinceWindowsEpoch().InMicroseconds());
-
-  // TODO(https://crbug.com/1044707): This needs to be parametrized to support
-  //     all process types.
-  proc_data.SetInt(kActivityProcessType, ProcessState::BROWSER_PROCESS);
-
-  RegisterVEH();
 }
 
 }  // namespace browser_watcher

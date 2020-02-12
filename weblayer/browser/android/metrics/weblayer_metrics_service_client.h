@@ -14,7 +14,6 @@
 #include "base/sequence_checker.h"
 #include "base/time/time.h"
 #include "components/embedder_support/android/metrics/android_metrics_service_client.h"
-#include "components/metrics/enabled_state_provider.h"
 #include "components/metrics/metrics_log_uploader.h"
 #include "components/metrics/metrics_service_client.h"
 #include "content/public/browser/notification_observer.h"
@@ -34,17 +33,13 @@ class WebLayerMetricsServiceClient
 
   // metrics::WebLayerMetricsServiceClient
   int32_t GetProduct() override;
-  metrics::SystemProfileProto::Channel GetChannel() override;
   double GetSampleRate() override;
-  std::string GetVersionString() override;
 
   // metrics::MobileWebLayerMetricsServiceClient:
   void InitInternal() override;
   void OnMetricsStart() override;
   double GetPackageNameLimitRate() override;
   bool ShouldWakeMetricsService() override;
-  void RegisterAdditionalMetricsProviders(
-      metrics::MetricsService* service) override;
   bool CanRecordPackageNameForAppType() override;
   std::string GetAppPackageNameInternal() override;
 

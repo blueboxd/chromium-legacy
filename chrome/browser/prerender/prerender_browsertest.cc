@@ -1528,8 +1528,10 @@ IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest, PrerenderSafeBrowsingSubresource) {
   PrerenderTestURL(replacement_path, FINAL_STATUS_SAFE_BROWSING, 0);
 }
 
+// Flaky on multiple platforms, http://crbug.com/1050143
 // Ensures that we do not prerender pages which have a malware iframe.
-IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest, PrerenderSafeBrowsingIframe) {
+IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest,
+                       DISABLED_PrerenderSafeBrowsingIframe) {
   GURL iframe_url = embedded_test_server()->GetURL(
       "/prerender/prerender_embedded_content.html");
   GetFakeSafeBrowsingDatabaseManager()->SetThreatTypeForUrl(

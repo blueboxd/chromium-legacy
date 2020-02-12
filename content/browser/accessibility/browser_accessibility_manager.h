@@ -25,6 +25,7 @@
 #include "third_party/blink/public/web/web_ax_enums.h"
 #include "ui/accessibility/ax_action_data.h"
 #include "ui/accessibility/ax_event_generator.h"
+#include "ui/accessibility/ax_node.h"
 #include "ui/accessibility/ax_node_data.h"
 #include "ui/accessibility/ax_range.h"
 #include "ui/accessibility/ax_serializable_tree.h"
@@ -415,9 +416,10 @@ class CONTENT_EXPORT BrowserAccessibilityManager : public ui::AXTreeObserver,
       bool root_changed,
       const std::vector<ui::AXTreeObserver::Change>& changes) override;
 
-  // AXTreeManager implementation.
+  // AXTreeManager overrides.
   ui::AXNode* GetNodeFromTree(ui::AXTreeID tree_id,
-                              int32_t node_id) const override;
+                              ui::AXNode::AXID node_id) const override;
+  ui::AXNode* GetNodeFromTree(ui::AXNode::AXID node_id) const override;
   AXTreeID GetTreeID() const override;
   AXTreeID GetParentTreeID() const override;
   ui::AXNode* GetRootAsAXNode() const override;

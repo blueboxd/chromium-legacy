@@ -146,6 +146,7 @@ public class NavigationHandlerTest {
 
     @Test
     @SmallTest
+    @FlakyTest(message = "crbug.com/1051221")
     public void testRightSwipeNavigateForwardOnRenderedPage() {
         mTestServer = EmbeddedTestServer.createAndStartServer(InstrumentationRegistry.getContext());
         ChromeTabUtils.fullyLoadUrlInNewTab(InstrumentationRegistry.getInstrumentation(),

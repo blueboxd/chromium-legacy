@@ -83,12 +83,6 @@ class TestClient : public AndroidMetricsServiceClient {
   bool IsInPackageNameSample() override { return in_package_name_sample_; }
 
   // AndroidMetricsServiceClient:
-  SystemProfileProto::Channel GetChannel() override {
-    return SystemProfileProto::CHANNEL_BETA;
-  }
-
-  std::string GetVersionString() override { return "1.1.1.1"; }
-
   int32_t GetProduct() override {
     return metrics::ChromeUserMetricsExtension::CHROME;
   }

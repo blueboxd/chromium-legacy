@@ -22,6 +22,7 @@ import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.browser.tab.TabImpl;
 import org.chromium.chrome.browser.tab.TabObserver;
 import org.chromium.chrome.browser.ui.messages.snackbar.SnackbarManager;
+import org.chromium.chrome.browser.util.AccessibilityUtil;
 import org.chromium.chrome.browser.widget.bottomsheet.BottomSheetController;
 import org.chromium.chrome.browser.widget.bottomsheet.BottomSheetObserver;
 import org.chromium.chrome.browser.widget.bottomsheet.EmptyBottomSheetObserver;
@@ -41,6 +42,13 @@ public class InfoBarContainer implements UserData, KeyboardVisibilityListener {
     private static final String TAG = "InfoBarContainer";
 
     private static final Class<InfoBarContainer> USER_DATA_KEY = InfoBarContainer.class;
+
+    private static final AccessibilityUtil.Observer sAccessibilityObserver;
+
+    static {
+        sAccessibilityObserver = (enabled) -> setIsAllowedToAutoHide(!enabled);
+        AccessibilityUtil.addObserver(sAccessibilityObserver);
+    }
 
     /**
      * A listener for the InfoBar animations.
@@ -426,7 +434,7 @@ public class InfoBarContainer implements UserData, KeyboardVisibilityListener {
      * Expected to be called when Touch Exploration is enabled.
      * @param isAllowed Whether auto-hiding is allowed.
      */
-    public static void setIsAllowedToAutoHide(boolean isAllowed) {
+    private static void setIsAllowedToAutoHide(boolean isAllowed) {
         InfoBarContainerView.setIsAllowedToAutoHide(isAllowed);
     }
 

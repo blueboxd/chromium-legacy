@@ -69,7 +69,9 @@ class BookmarkAppRegistrar : public web_app::AppRegistrar,
   const Extension* FindExtension(const web_app::AppId& app_id) const;
 
  private:
-  const Extension* GetBookmarkApp(const web_app::AppId& app_id) const;
+  // DCHECKs that app_id isn't for a Chrome app to catch places where Chrome app
+  // UI accidentally starts using web_app::AppRegistrar when it shouldn't.
+  const Extension* GetBookmarkAppDchecked(const web_app::AppId& app_id) const;
   const Extension* GetEnabledExtension(const web_app::AppId& app_id) const;
 
   ScopedObserver<ExtensionRegistry, ExtensionRegistryObserver>

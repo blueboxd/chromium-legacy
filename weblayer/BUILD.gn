@@ -352,10 +352,6 @@ jumbo_static_library("weblayer_lib") {
   if (is_android) {
     deps += [
       "//components/embedder_support/android:web_contents_delegate",
-      "//components/metrics:gpu",
-      "//components/metrics:net",
-      "//components/metrics:ui",
-      "//components/version_info",
       "//services/resource_coordinator/public/cpp/memory_instrumentation:browser",
       "//ui/android",
       "//weblayer/browser/java:jni",

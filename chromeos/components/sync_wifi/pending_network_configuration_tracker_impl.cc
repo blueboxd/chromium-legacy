@@ -33,10 +33,10 @@ PendingNetworkConfigurationUpdate ConvertToPendingUpdate(
     base::Value* dict,
     const NetworkIdentifier& id) {
   std::string* change_guid = dict->FindStringKey(kChangeGuidKey);
-  base::Optional<sync_pb::WifiConfigurationSpecificsData> specifics;
+  base::Optional<sync_pb::WifiConfigurationSpecifics> specifics;
   std::string* specifics_string = dict->FindStringKey(kSpecificsKey);
   if (!specifics_string->empty()) {
-    sync_pb::WifiConfigurationSpecificsData data;
+    sync_pb::WifiConfigurationSpecifics data;
     data.ParseFromString(*specifics_string);
     specifics = data;
   }
@@ -69,7 +69,7 @@ PendingNetworkConfigurationTrackerImpl::
 
 std::string PendingNetworkConfigurationTrackerImpl::TrackPendingUpdate(
     const NetworkIdentifier& id,
-    const base::Optional<sync_pb::WifiConfigurationSpecificsData>& specifics) {
+    const base::Optional<sync_pb::WifiConfigurationSpecifics>& specifics) {
   std::string serialized_specifics;
   if (!specifics)
     serialized_specifics = std::string();

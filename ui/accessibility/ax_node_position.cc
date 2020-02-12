@@ -8,6 +8,7 @@
 #include "build/build_config.h"
 #include "ui/accessibility/ax_enums.mojom.h"
 #include "ui/accessibility/ax_node_data.h"
+#include "ui/accessibility/ax_tree_manager.h"
 #include "ui/accessibility/ax_tree_manager_map.h"
 
 namespace ui {
@@ -18,8 +19,6 @@ AXEmbeddedObjectBehavior g_ax_embedded_object_behavior =
 #else
     AXEmbeddedObjectBehavior::kSuppressCharacter;
 #endif
-
-AXTree* AXNodePosition::tree_ = nullptr;
 
 // static
 AXNodePosition::AXPositionInstance AXNodePosition::CreatePosition(
@@ -61,7 +60,6 @@ void AXNodePosition::AnchorChild(int child_index,
   }
 
   AXNode* child = nullptr;
-
   const AXTreeManager* child_tree_manager =
       AXTreeManagerMap::GetInstance().GetManagerForChildTree(*GetAnchor());
   if (child_tree_manager) {
@@ -83,9 +81,8 @@ int AXNodePosition::AnchorChildCount() const {
 
   const AXTreeManager* child_tree_manager =
       AXTreeManagerMap::GetInstance().GetManagerForChildTree(*GetAnchor());
-  if (child_tree_manager) {
+  if (child_tree_manager)
     return 1;
-  }
 
   return int{GetAnchor()->children().size()};
 }
@@ -99,7 +96,7 @@ base::stack<AXNode*> AXNodePosition::GetAncestorAnchors() const {
   AXNode* current_anchor = GetAnchor();
 
   AXNode::AXID current_anchor_id = GetAnchor()->id();
-  AXTreeID current_tree_id = this->tree_id();
+  AXTreeID current_tree_id = tree_id();
 
   AXNode::AXID parent_anchor_id = AXNode::kInvalidAXID;
   AXTreeID parent_tree_id = AXTreeIDUnknown();
@@ -142,10 +139,6 @@ AXNode* AXNodePosition::GetNodeInTree(AXTreeID tree_id,
   if (node_id == AXNode::kInvalidAXID)
     return nullptr;
 
-  // Used for testing via AXNodePosition::SetTree
-  if (AXNodePosition::tree_)
-    return AXNodePosition::tree_->GetFromId(node_id);
-
   AXTreeManager* manager = AXTreeManagerMap::GetInstance().GetManager(tree_id);
   if (manager)
     return manager->GetNodeFromTree(tree_id, node_id);
@@ -153,7 +146,7 @@ AXNode* AXNodePosition::GetNodeInTree(AXTreeID tree_id,
   return nullptr;
 }
 
-int32_t AXNodePosition::GetAnchorID(AXNode* node) const {
+AXNode::AXID AXNodePosition::GetAnchorID(AXNode* node) const {
   return node->id();
 }
 

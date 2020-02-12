@@ -14,7 +14,6 @@
 namespace sync_pb {
 class EntitySpecifics;
 class PasswordSpecificsData;
-class WifiConfigurationSpecificsData;
 }
 
 namespace syncer {
@@ -24,10 +23,6 @@ class Cryptographer;
 std::unique_ptr<sync_pb::PasswordSpecificsData> DecryptPasswordSpecifics(
     const sync_pb::EntitySpecifics& specifics,
     const Cryptographer* crypto);
-
-std::unique_ptr<sync_pb::WifiConfigurationSpecificsData>
-DecryptWifiConfigurationSpecifics(const sync_pb::EntitySpecifics& specifics,
-                                  const Cryptographer* crypto);
 
 void SyncAPINameToServerName(const std::string& syncer_name, std::string* out);
 void ServerNameToSyncAPIName(const std::string& server_name, std::string* out);

@@ -111,21 +111,20 @@ const char* ProtoEnumToString(
     sync_pb::WebAppSpecifics::UserDisplayMode user_display_mode);
 
 const char* ProtoEnumToString(
-    sync_pb::WifiConfigurationSpecificsData::SecurityType security_type);
+    sync_pb::WifiConfigurationSpecifics::SecurityType security_type);
 
 const char* ProtoEnumToString(
-    sync_pb::WifiConfigurationSpecificsData::AutomaticallyConnectOption
+    sync_pb::WifiConfigurationSpecifics::AutomaticallyConnectOption
         automatically_connect_option);
 
 const char* ProtoEnumToString(
-    sync_pb::WifiConfigurationSpecificsData::IsPreferredOption
-        is_preferred_option);
+    sync_pb::WifiConfigurationSpecifics::IsPreferredOption is_preferred_option);
 
 const char* ProtoEnumToString(
-    sync_pb::WifiConfigurationSpecificsData::MeteredOption metered_option);
+    sync_pb::WifiConfigurationSpecifics::MeteredOption metered_option);
 
 const char* ProtoEnumToString(
-    sync_pb::WifiConfigurationSpecificsData::ProxyConfiguration::ProxyOption
+    sync_pb::WifiConfigurationSpecifics::ProxyConfiguration::ProxyOption
         proxy_option);
 
 }  // namespace syncer

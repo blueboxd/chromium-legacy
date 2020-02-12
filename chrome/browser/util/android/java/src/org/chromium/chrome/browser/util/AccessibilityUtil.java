@@ -10,6 +10,8 @@ import android.content.Context;
 import android.content.res.Configuration;
 import android.os.Build;
 import android.view.accessibility.AccessibilityManager;
+import android.view.accessibility.AccessibilityManager.AccessibilityStateChangeListener;
+import android.view.accessibility.AccessibilityManager.TouchExplorationStateChangeListener;
 
 import androidx.annotation.Nullable;
 import androidx.annotation.VisibleForTesting;
@@ -18,6 +20,7 @@ import org.chromium.base.ActivityState;
 import org.chromium.base.ApplicationStatus;
 import org.chromium.base.ApplicationStatus.ActivityStateListener;
 import org.chromium.base.ContextUtils;
+import org.chromium.base.ObserverList;
 import org.chromium.base.TraceEvent;
 
 import java.util.List;
@@ -26,8 +29,41 @@ import java.util.List;
  * Exposes information about the current accessibility state
  */
 public class AccessibilityUtil {
+    /**
+     * An observer to be notified of accessibility status changes.
+     */
+    public interface Observer {
+        /**
+         * @param enabled Whether a touch exploration or an accessibility service that performs can
+         *        perform gestures is enabled. Indicates that the UI must be fully navigable using
+         *        the accessibility view tree.
+         */
+        void onAccessibilityModeChanged(boolean enabled);
+    }
+
     private static Boolean sIsAccessibilityEnabled;
     private static ActivityStateListener sActivityStateListener;
+    private static ObserverList<Observer> sObservers;
+    private static class ModeChangeHandler
+            implements AccessibilityStateChangeListener, TouchExplorationStateChangeListener {
+        // AccessibilityStateChangeListener
+
+        @Override
+        public final void onAccessibilityStateChanged(boolean enabled) {
+            resetAccessibilityEnabled();
+            notifyModeChange();
+        }
+
+        // TouchExplorationStateChangeListener
+
+        @Override
+        public void onTouchExplorationStateChanged(boolean enabled) {
+            resetAccessibilityEnabled();
+            notifyModeChange();
+        }
+    }
+
+    private static ModeChangeHandler sModeChangeHandler;
 
     private AccessibilityUtil() {}
 
@@ -36,13 +72,12 @@ public class AccessibilityUtil {
      * @return        Whether or not accessibility and touch exploration are enabled.
      */
     public static boolean isAccessibilityEnabled() {
+        if (sModeChangeHandler == null) registerModeChangeListeners();
         if (sIsAccessibilityEnabled != null) return sIsAccessibilityEnabled;
 
         TraceEvent.begin("AccessibilityManager::isAccessibilityEnabled");
 
-        AccessibilityManager manager =
-                (AccessibilityManager) ContextUtils.getApplicationContext().getSystemService(
-                        Context.ACCESSIBILITY_SERVICE);
+        AccessibilityManager manager = getAccessibilityManager();
         boolean accessibilityEnabled =
                 manager != null && manager.isEnabled() && manager.isTouchExplorationEnabled();
 
@@ -72,6 +107,7 @@ public class AccessibilityUtil {
                         || ApplicationStatus.isEveryActivityDestroyed()) {
                     resetAccessibilityEnabled();
                 }
+                if (ApplicationStatus.isEveryActivityDestroyed()) cleanUp();
             }
         };
         ApplicationStatus.registerStateListenerForAllActivities(sActivityStateListener);
@@ -81,15 +117,25 @@ public class AccessibilityUtil {
     }
 
     /**
-     * Reset the static used to determine whether accessibility is enabled.
-     * TODO(twellington): Make this private and have classes that care about accessibility state
-     *                    observe this class rather than observing the AccessibilityManager
-     *                    directly.
+     * Add {@link Observer} object. The observer will be notified of the current accessibility
+     * mode immediately.
+     * @param observer Observer object monitoring a11y mode change.
      */
-    public static void resetAccessibilityEnabled() {
-        ApplicationStatus.unregisterActivityStateListener(sActivityStateListener);
-        sActivityStateListener = null;
-        sIsAccessibilityEnabled = null;
+    public static void addObserver(Observer observer) {
+        getObservers().addObserver(observer);
+
+        // Notify mode change to a new observer so things are initialized correctly when Chrome
+        // has been re-started after closing due to the last tab being closed when homepage is
+        // enabled. See crbug.com/541546.
+        observer.onAccessibilityModeChanged(isAccessibilityEnabled());
+    }
+
+    /**
+     * Remove {@link Observer} object.
+     * @param observer Observer object monitoring a11y mode change.
+     */
+    public static void removeObserver(Observer observer) {
+        getObservers().removeObserver(observer);
     }
 
     /**
@@ -97,6 +143,51 @@ public class AccessibilityUtil {
      */
     public static boolean isHardwareKeyboardAttached(Configuration c) {
         return c.keyboard != Configuration.KEYBOARD_NOKEYS;
+    }
+
+    private static AccessibilityManager getAccessibilityManager() {
+        return (AccessibilityManager) ContextUtils.getApplicationContext().getSystemService(
+                Context.ACCESSIBILITY_SERVICE);
+    }
+
+    private static void registerModeChangeListeners() {
+        assert sModeChangeHandler == null;
+        sModeChangeHandler = new ModeChangeHandler();
+        AccessibilityManager manager = getAccessibilityManager();
+        manager.addAccessibilityStateChangeListener(sModeChangeHandler);
+        manager.addTouchExplorationStateChangeListener(sModeChangeHandler);
+    }
+
+    private static void cleanUp() {
+        if (sObservers != null) sObservers.clear();
+        if (sModeChangeHandler == null) return;
+        AccessibilityManager manager = getAccessibilityManager();
+        manager.removeAccessibilityStateChangeListener(sModeChangeHandler);
+        manager.removeTouchExplorationStateChangeListener(sModeChangeHandler);
+    }
+
+    /**
+     * Reset the static used to determine whether accessibility is enabled.
+     */
+    private static void resetAccessibilityEnabled() {
+        ApplicationStatus.unregisterActivityStateListener(sActivityStateListener);
+        sActivityStateListener = null;
+        sIsAccessibilityEnabled = null;
+    }
+
+    private static ObserverList<Observer> getObservers() {
+        if (sObservers == null) sObservers = new ObserverList<>();
+        return sObservers;
+    }
+
+    /**
+     * Notify all the observers of the mode change.
+     */
+    private static void notifyModeChange() {
+        boolean enabled = isAccessibilityEnabled();
+        for (Observer observer : getObservers()) {
+            observer.onAccessibilityModeChanged(enabled);
+        }
     }
 
     /**

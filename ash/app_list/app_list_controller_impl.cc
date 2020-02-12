@@ -1690,7 +1690,10 @@ bool AppListControllerImpl::ShouldLauncherShowBehindApps() const {
 }
 
 int AppListControllerImpl::GetLastQueryLength() {
-  return search_model_.search_box()->text().length();
+  base::string16 query;
+  base::TrimWhitespace(search_model_.search_box()->text(), base::TRIM_ALL,
+                       &query);
+  return query.length();
 }
 
 void AppListControllerImpl::Shutdown() {

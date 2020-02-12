@@ -358,6 +358,25 @@ public class WebLayer {
     }
 
     /**
+     * Return a list of Profile names currently on disk. This will not include the incognito
+     * profile. This will not include profiles that are being deleted from disk.
+     * WebLayer must be initialized before calling this.
+     * @since 82
+     */
+    public void enumerateAllProfileNames(@NonNull Callback<String[]> callback) {
+        ThreadCheck.ensureOnUiThread();
+        if (getSupportedMajorVersionInternal() < 82) {
+            throw new UnsupportedOperationException();
+        }
+        try {
+            ValueCallback<String[]> valueCallback = (String[] value) -> callback.onResult(value);
+            mImpl.enumerateAllProfileNames(ObjectWrapper.wrap(valueCallback));
+        } catch (RemoteException e) {
+            throw new APICallException(e);
+        }
+    }
+
+    /**
      * To enable or disable DevTools remote debugging.
      */
     public void setRemoteDebuggingEnabled(boolean enabled) {

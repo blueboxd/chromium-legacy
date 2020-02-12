@@ -10,6 +10,7 @@
 #include "base/strings/string_number_conversions.h"
 #include "base/values.h"
 #include "components/metrics/structured/event_base.h"
+#include "components/metrics/structured/histogram_util.h"
 #include "components/prefs/json_pref_store.h"
 #include "components/prefs/writeable_pref_store.h"
 #include "third_party/metrics_proto/chrome_user_metrics_extension.pb.h"
@@ -26,8 +27,6 @@ using PrefReadError = ::PersistentPrefStore::PrefReadError;
 int StructuredMetricsProvider::kMaxEventsPerUpload = 100;
 
 char StructuredMetricsProvider::kStorageFileName[] = "structured_metrics.json";
-
-// TODO(crbug.com/1016655): Add error and usage UMA metrics.
 
 StructuredMetricsProvider::StructuredMetricsProvider() = default;
 
@@ -47,13 +46,24 @@ StructuredMetricsProvider::PrefStoreErrorDelegate::~PrefStoreErrorDelegate() =
 
 void StructuredMetricsProvider::PrefStoreErrorDelegate::OnError(
     PrefReadError error) {
-  // TODO(crbug.com/1016655): Add error metrics.
+  LogPrefReadError(error);
 }
 
 void StructuredMetricsProvider::OnRecord(const EventBase& event) {
   // Records the information in |event|, to be logged to UMA on the next call to
   // ProvideCurrentSessionData. Should only be called from the browser UI
   // sequence.
+
+  // One more state for the EventRecordingState exists: kMetricsProviderMissing.
+  // This is recorded in Recorder::Record.
+  if (!recording_enabled_) {
+    LogEventRecordingState(EventRecordingState::kRecordingDisabled);
+  } else if (!initialized_) {
+    LogEventRecordingState(EventRecordingState::kProviderUninitialized);
+  } else {
+    LogEventRecordingState(EventRecordingState::kRecorded);
+  }
+
   if (!recording_enabled_ || !initialized_)
     return;
 
@@ -87,6 +97,7 @@ void StructuredMetricsProvider::OnRecord(const EventBase& event) {
   if (!storage_->GetMutableValue("events", &events)) {
     LOG(DFATAL) << "Events key does not exist in pref store.";
   }
+
   events->Append(std::move(event_value));
 }
 
@@ -163,9 +174,7 @@ void StructuredMetricsProvider::ProvideCurrentSessionData(
     uint64_t event_name_hash;
     if (!base::StringToUint64(event.FindKey("name")->GetString(),
                               &event_name_hash)) {
-      // TODO(crbug.com/1016655): We shouldn't get imperfect string conversions,
-      // but it's not impossible if there's a problematic update to
-      // structured.xml. Log an error to UMA in this case.
+      LogInternalError(StructuredMetricsError::kFailedUintConversion);
       continue;
     }
     event_proto->set_event_name_hash(event_name_hash);
@@ -176,8 +185,7 @@ void StructuredMetricsProvider::ProvideCurrentSessionData(
       uint64_t name_hash;
       if (!base::StringToUint64(metric.FindKey("name")->GetString(),
                                 &name_hash)) {
-        // TODO(crbug.com/1016655): Log an error to UMA. Same case as previous
-        // todo.
+        LogInternalError(StructuredMetricsError::kFailedUintConversion);
         continue;
       }
       metric_proto->set_name_hash(name_hash);
@@ -186,8 +194,7 @@ void StructuredMetricsProvider::ProvideCurrentSessionData(
       if (value->is_string()) {
         uint64_t hmac;
         if (!base::StringToUint64(value->GetString(), &hmac)) {
-          // TODO(crbug.com/1016655): Log an error to UMA. Same case as previous
-          // todo.
+          LogInternalError(StructuredMetricsError::kFailedUintConversion);
           continue;
         }
         metric_proto->set_value_hmac(hmac);
@@ -197,7 +204,7 @@ void StructuredMetricsProvider::ProvideCurrentSessionData(
     }
   }
 
-  // Clear the reported events.
+  LogNumEventsInUpload(events->GetList().size());
   events->ClearList();
 }
 

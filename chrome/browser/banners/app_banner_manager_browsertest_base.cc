@@ -5,6 +5,8 @@
 #include "chrome/browser/banners/app_banner_manager_browsertest_base.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
+#include "chrome/browser/web_applications/components/app_shortcut_manager.h"
+#include "chrome/browser/web_applications/components/web_app_provider_base.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/test/browser_test_utils.h"
 #include "net/base/url_util.h"
@@ -18,6 +20,10 @@ void AppBannerManagerBrowserTestBase::SetUpOnMainThread() {
   ASSERT_TRUE(embedded_test_server()->Start());
 
   InProcessBrowserTest::SetUpOnMainThread();
+
+  web_app::WebAppProviderBase::GetProviderBase(browser()->profile())
+      ->shortcut_manager()
+      .SuppressShortcutsForTesting();
 }
 
 GURL AppBannerManagerBrowserTestBase::GetBannerURL() {

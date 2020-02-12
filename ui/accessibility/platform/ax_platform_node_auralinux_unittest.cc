@@ -16,22 +16,23 @@ namespace ui {
 
 class AXPlatformNodeAuraLinuxTest : public AXPlatformNodeTest {
  public:
-  AXPlatformNodeAuraLinuxTest() {}
-  ~AXPlatformNodeAuraLinuxTest() override {}
-
-  void SetUp() override {}
+  AXPlatformNodeAuraLinuxTest() = default;
+  ~AXPlatformNodeAuraLinuxTest() override = default;
+  AXPlatformNodeAuraLinuxTest(const AXPlatformNodeAuraLinuxTest&) = delete;
+  AXPlatformNodeAuraLinuxTest& operator=(const AXPlatformNodeAuraLinuxTest&) =
+      delete;
 
  protected:
   AXPlatformNodeAuraLinux* GetPlatformNode(AXNode* node) {
     TestAXNodeWrapper* wrapper =
-        TestAXNodeWrapper::GetOrCreate(tree_.get(), node);
+        TestAXNodeWrapper::GetOrCreate(GetTree(), node);
     if (!wrapper)
       return nullptr;
     return static_cast<AXPlatformNodeAuraLinux*>(wrapper->ax_platform_node());
   }
 
   AXPlatformNodeAuraLinux* GetRootPlatformNode() {
-    return GetPlatformNode(GetRootNode());
+    return GetPlatformNode(GetRootAsAXNode());
   }
 
   AtkObject* AtkObjectFromNode(AXNode* node) {
@@ -43,10 +44,10 @@ class AXPlatformNodeAuraLinuxTest : public AXPlatformNodeTest {
   }
 
   TestAXNodeWrapper* GetRootWrapper() {
-    return TestAXNodeWrapper::GetOrCreate(tree_.get(), GetRootNode());
+    return TestAXNodeWrapper::GetOrCreate(GetTree(), GetRootAsAXNode());
   }
 
-  AtkObject* GetRootAtkObject() { return AtkObjectFromNode(GetRootNode()); }
+  AtkObject* GetRootAtkObject() { return AtkObjectFromNode(GetRootAsAXNode()); }
 };
 
 static void EnsureAtkObjectHasAttributeWithValue(
@@ -211,7 +212,8 @@ TEST_F(AXPlatformNodeAuraLinuxTest, TestAtkObjectDetachedObject) {
   EXPECT_FALSE(atk_state_set_contains_state(state_set, ATK_STATE_DEFUNCT));
   g_object_unref(state_set);
 
-  tree_ = std::make_unique<AXTree>();
+  // Create an empty tree.
+  SetTree(std::make_unique<AXTree>());
   EXPECT_EQ(nullptr, atk_object_get_name(root_obj));
 
   state_set = atk_object_ref_state_set(root_obj);
@@ -265,9 +267,9 @@ TEST_F(AXPlatformNodeAuraLinuxTest, TestAtkObjectRole) {
   child.id = 2;
 
   Init(root, child);
-  AXNode* child_node = GetRootNode()->children()[0];
+  AXNode* child_node = GetRootAsAXNode()->children()[0];
 
-  AtkObject* root_obj(AtkObjectFromNode(GetRootNode()));
+  AtkObject* root_obj(AtkObjectFromNode(GetRootAsAXNode()));
   ASSERT_TRUE(ATK_IS_OBJECT(root_obj));
   g_object_ref(root_obj);
   EXPECT_EQ(ATK_ROLE_APPLICATION, atk_object_get_role(root_obj));
@@ -373,7 +375,7 @@ TEST_F(AXPlatformNodeAuraLinuxTest, TestAtkObjectState) {
   root.AddBoolAttribute(ax::mojom::BoolAttribute::kBusy, true);
   root.SetInvalidState(ax::mojom::InvalidState::kTrue);
   root.AddStringAttribute(ax::mojom::StringAttribute::kAutoComplete, "foo");
-  GetRootNode()->SetData(root);
+  GetRootAsAXNode()->SetData(root);
 
   state_set = atk_object_ref_state_set(root_obj);
   ASSERT_TRUE(ATK_IS_STATE_SET(state_set));
@@ -400,7 +402,7 @@ TEST_F(AXPlatformNodeAuraLinuxTest, TestAtkObjectState) {
   root.AddState(ax::mojom::State::kVisited);
   root.AddBoolAttribute(ax::mojom::BoolAttribute::kSelected, true);
   root.SetHasPopup(ax::mojom::HasPopup::kTrue);
-  GetRootNode()->SetData(root);
+  GetRootAsAXNode()->SetData(root);
 
   state_set = atk_object_ref_state_set(root_obj);
   ASSERT_TRUE(ATK_IS_STATE_SET(state_set));
@@ -419,7 +421,7 @@ TEST_F(AXPlatformNodeAuraLinuxTest, TestAtkObjectState) {
   root = AXNodeData();
   root.AddState(ax::mojom::State::kInvisible);
   root.AddBoolAttribute(ax::mojom::BoolAttribute::kModal, true);
-  GetRootNode()->SetData(root);
+  GetRootAsAXNode()->SetData(root);
 
   state_set = atk_object_ref_state_set(root_obj);
   ASSERT_TRUE(ATK_IS_STATE_SET(state_set));
@@ -446,8 +448,8 @@ TEST_F(AXPlatformNodeAuraLinuxTest, TestAtkObjectChildAndParent) {
   checkbox.id = 3;
 
   Init(root, button, checkbox);
-  AXNode* button_node = GetRootNode()->children()[0];
-  AXNode* checkbox_node = GetRootNode()->children()[1];
+  AXNode* button_node = GetRootAsAXNode()->children()[0];
+  AXNode* checkbox_node = GetRootAsAXNode()->children()[1];
   AtkObject* root_obj = GetRootAtkObject();
   AtkObject* button_obj = AtkObjectFromNode(button_node);
   AtkObject* checkbox_obj = AtkObjectFromNode(checkbox_node);
@@ -534,7 +536,7 @@ TEST_F(AXPlatformNodeAuraLinuxTest, TestAtkObjectStringAttributes) {
 
   Init(root_data);
 
-  AXNode* root_node = GetRootNode();
+  AXNode* root_node = GetRootAsAXNode();
   AtkObject* root_atk_object(AtkObjectFromNode(root_node));
   ASSERT_TRUE(ATK_IS_OBJECT(root_atk_object));
   g_object_ref(root_atk_object);
@@ -569,7 +571,7 @@ TEST_F(AXPlatformNodeAuraLinuxTest, TestAtkObjectBoolAttributes) {
 
   Init(root_data);
 
-  AXNode* root_node = GetRootNode();
+  AXNode* root_node = GetRootAsAXNode();
   AtkObject* root_atk_object(AtkObjectFromNode(root_node));
   ASSERT_TRUE(ATK_IS_OBJECT(root_atk_object));
   g_object_ref(root_atk_object);
@@ -596,7 +598,7 @@ TEST_F(AXPlatformNodeAuraLinuxTest, DISABLED_TestAtkObjectIntAttributes) {
   root_data.id = 1;
   Init(root_data);
 
-  AXNode* root_node = GetRootNode();
+  AXNode* root_node = GetRootAsAXNode();
   AtkObject* root_atk_object(AtkObjectFromNode(root_node));
   ASSERT_TRUE(ATK_IS_OBJECT(root_atk_object));
   g_object_ref(root_atk_object);
@@ -737,7 +739,7 @@ TEST_F(AXPlatformNodeAuraLinuxTest, TestAtkComponentsGetExtentsPositionSize) {
   EXPECT_EQ(800, width);
   EXPECT_EQ(600, height);
 
-  AXNode* child_node = GetRootNode()->children()[0];
+  AXNode* child_node = GetRootAsAXNode()->children()[0];
   AtkObject* child_obj = AtkObjectFromNode(child_node);
   ASSERT_TRUE(ATK_IS_OBJECT(child_obj));
   ASSERT_TRUE(ATK_IS_COMPONENT(child_obj));
@@ -819,7 +821,7 @@ TEST_F(AXPlatformNodeAuraLinuxTest, AtkComponentScrollToPoint) {
 
   Init(root, child1);
 
-  AXNode* child_node = GetRootNode()->children()[0];
+  AXNode* child_node = GetRootAsAXNode()->children()[0];
   AtkObject* child_obj = AtkObjectFromNode(child_node);
   ASSERT_TRUE(ATK_IS_OBJECT(child_obj));
   ASSERT_TRUE(ATK_IS_COMPONENT(child_obj));
@@ -882,7 +884,7 @@ TEST_F(AXPlatformNodeAuraLinuxTest, AtkComponentScrollTo) {
 
   Init(root, child1);
 
-  AXNode* child_node = GetRootNode()->children()[0];
+  AXNode* child_node = GetRootAsAXNode()->children()[0];
   AtkObject* child_obj = AtkObjectFromNode(child_node);
   ASSERT_TRUE(ATK_IS_OBJECT(child_obj));
   ASSERT_TRUE(ATK_IS_COMPONENT(child_obj));
@@ -1587,7 +1589,7 @@ TEST_F(AXPlatformNodeAuraLinuxTest, TestAtkWindowActive) {
 
   EXPECT_TRUE(ATK_IS_WINDOW(root_atk_object));
 
-  AXNode* checkbox_node = GetRootNode()->children()[0];
+  AXNode* checkbox_node = GetRootAsAXNode()->children()[0];
   AtkObject* checkbox_atk_obj = AtkObjectFromNode(checkbox_node);
 
   // Focus the checkbox to ensure that it also gets new focus events when
@@ -1695,7 +1697,7 @@ TEST_F(AXPlatformNodeAuraLinuxTest, TestFocusTriggersAtkWindowActive) {
 
   g_object_ref(root_atk_object);
 
-  AXNode* child_node = GetRootNode()->children()[0];
+  AXNode* child_node = GetRootAsAXNode()->children()[0];
 
   // A focus event on a child node should not cause the window to
   // activate.
@@ -1761,7 +1763,7 @@ TEST_F(AXPlatformNodeAuraLinuxTest, TestAtkPopupWindowActive) {
   EXPECT_TRUE(ATK_IS_OBJECT(root_atk_object));
   g_object_ref(root_atk_object);
 
-  AXNode* window_node = GetRootNode()->children()[0];
+  AXNode* window_node = GetRootAsAXNode()->children()[0];
   AtkObject* window_atk_node(AtkObjectFromNode(window_node));
 
   AXNode* document_node = window_node->children()[0];
@@ -1786,7 +1788,7 @@ TEST_F(AXPlatformNodeAuraLinuxTest, TestAtkPopupWindowActive) {
 
   toplevel_tester.Reset();
 
-  AXNode* menu_node = GetRootNode()->children()[1];
+  AXNode* menu_node = GetRootAsAXNode()->children()[1];
   AtkObject* menu_atk_node(AtkObjectFromNode(menu_node));
   {
     ActivationTester tester(menu_atk_node);
@@ -1980,15 +1982,15 @@ TEST_F(AXPlatformNodeAuraLinuxTest, TestAtkObjectSetSizePosInSet) {
   update.nodes[3].AddIntAttribute(ax::mojom::IntAttribute::kPosInSet, 5);
   Init(update);
 
-  AXNode* radiobutton1 = GetRootNode()->children()[0];
+  AXNode* radiobutton1 = GetRootAsAXNode()->children()[0];
   AtkObject* radiobutton1_atk_object(AtkObjectFromNode(radiobutton1));
   EXPECT_TRUE(ATK_IS_OBJECT(radiobutton1_atk_object));
 
-  AXNode* radiobutton2 = GetRootNode()->children()[1];
+  AXNode* radiobutton2 = GetRootAsAXNode()->children()[1];
   AtkObject* radiobutton2_atk_object(AtkObjectFromNode(radiobutton2));
   EXPECT_TRUE(ATK_IS_OBJECT(radiobutton2_atk_object));
 
-  AXNode* radiobutton3 = GetRootNode()->children()[2];
+  AXNode* radiobutton3 = GetRootAsAXNode()->children()[2];
   AtkObject* radiobutton3_atk_object(AtkObjectFromNode(radiobutton3));
   EXPECT_TRUE(ATK_IS_OBJECT(radiobutton3_atk_object));
 
@@ -2057,9 +2059,9 @@ TEST_F(AXPlatformNodeAuraLinuxTest, TestAtkRelations) {
   EXPECT_TRUE(ATK_IS_OBJECT(root_atk_object));
   g_object_ref(root_atk_object);
 
-  AtkObject* atk_child1(AtkObjectFromNode(GetRootNode()->children()[0]));
-  AtkObject* atk_child2(AtkObjectFromNode(GetRootNode()->children()[1]));
-  AtkObject* atk_child3(AtkObjectFromNode(GetRootNode()->children()[2]));
+  AtkObject* atk_child1(AtkObjectFromNode(GetRootAsAXNode()->children()[0]));
+  AtkObject* atk_child2(AtkObjectFromNode(GetRootAsAXNode()->children()[1]));
+  AtkObject* atk_child3(AtkObjectFromNode(GetRootAsAXNode()->children()[2]));
 
   assert_contains_relation(root_atk_object, atk_child1, ATK_RELATION_DETAILS);
   assert_contains_relation(atk_child1, root_atk_object,
@@ -2104,7 +2106,7 @@ TEST_F(AXPlatformNodeAuraLinuxTest, TestAllReverseAtkRelations) {
     Init(root_data, child_data);
 
     AtkObject* source(GetRootAtkObject());
-    AtkObject* target(AtkObjectFromNode(GetRootNode()->children()[0]));
+    AtkObject* target(AtkObjectFromNode(GetRootAsAXNode()->children()[0]));
 
     AtkRelationSet* relations = atk_object_ref_relation_set(source);
     ASSERT_TRUE(atk_relation_set_contains(relations, expected_relation));
@@ -2216,12 +2218,12 @@ TEST_F(AXPlatformNodeAuraLinuxTest, TestAtkRelationsTargetIndex) {
   EXPECT_TRUE(ATK_IS_OBJECT(root_atk_object));
   g_object_ref(root_atk_object);
 
-  AtkObject* atk_label1(AtkObjectFromNode(GetRootNode()->children()[0]));
-  AtkObject* atk_label2(AtkObjectFromNode(GetRootNode()->children()[1]));
-  AtkObject* atk_label3(AtkObjectFromNode(GetRootNode()->children()[2]));
-  AtkObject* atk_button1(AtkObjectFromNode(GetRootNode()->children()[3]));
-  AtkObject* atk_button2(AtkObjectFromNode(GetRootNode()->children()[4]));
-  AtkObject* atk_button3(AtkObjectFromNode(GetRootNode()->children()[5]));
+  AtkObject* atk_label1(AtkObjectFromNode(GetRootAsAXNode()->children()[0]));
+  AtkObject* atk_label2(AtkObjectFromNode(GetRootAsAXNode()->children()[1]));
+  AtkObject* atk_label3(AtkObjectFromNode(GetRootAsAXNode()->children()[2]));
+  AtkObject* atk_button1(AtkObjectFromNode(GetRootAsAXNode()->children()[3]));
+  AtkObject* atk_button2(AtkObjectFromNode(GetRootAsAXNode()->children()[4]));
+  AtkObject* atk_button3(AtkObjectFromNode(GetRootAsAXNode()->children()[5]));
 
   test_index(atk_button1, atk_label1, ATK_RELATION_LABELLED_BY, 0);
   test_index(atk_button1, atk_label2, ATK_RELATION_LABELLED_BY, 1);
@@ -2427,7 +2429,7 @@ TEST_F(AXPlatformNodeAuraLinuxTest, TestAtkObjectExpandRebuildsPlatformNode) {
   root_data = AXNodeData();
   root_data.id = 1;
   root_data.role = ax::mojom::Role::kListBox;
-  GetRootNode()->SetData(root_data);
+  GetRootAsAXNode()->SetData(root_data);
 
   ASSERT_EQ(original_atk_object, GetRootAtkObject());
 
@@ -2453,7 +2455,7 @@ TEST_F(AXPlatformNodeAuraLinuxTest, TestAtkObjectParentChanged) {
 
   Init(root_data, item_1_data);
 
-  AXNode* item_1 = GetRootNode()->children()[0];
+  AXNode* item_1 = GetRootAsAXNode()->children()[0];
   AtkObject* atk_object = AtkObjectFromNode(item_1);
   AXPlatformNodeAuraLinux* node = GetPlatformNode(item_1);
 
@@ -2482,7 +2484,7 @@ TEST_F(AXPlatformNodeAuraLinuxTest, TestScrolledToAnchorEvent) {
 
   Init(root_data, item_1_data);
 
-  AXNode* item_1 = GetRootNode()->children()[0];
+  AXNode* item_1 = GetRootAsAXNode()->children()[0];
   AtkObject* atk_object = AtkObjectFromNode(item_1);
 
   bool saw_caret_moved = false;
@@ -2523,7 +2525,7 @@ TEST_F(AXPlatformNodeAuraLinuxTest, TestDialogActiveWhenChildFocused) {
   AtkObject* root_atk_object(GetRootAtkObject());
   EXPECT_TRUE(ATK_IS_OBJECT(root_atk_object));
 
-  AXNode* dialog_node = GetRootNode()->children()[0];
+  AXNode* dialog_node = GetRootAsAXNode()->children()[0];
   AtkObject* dialog_obj = AtkObjectFromNode(dialog_node);
   bool saw_active_state_change = false;
   g_signal_connect(dialog_obj, "state-change",
@@ -2542,7 +2544,7 @@ TEST_F(AXPlatformNodeAuraLinuxTest, TestDialogActiveWhenChildFocused) {
 
   saw_active_state_change = false;
 
-  AXNode* outside_node = GetRootNode()->children()[1];
+  AXNode* outside_node = GetRootAsAXNode()->children()[1];
   GetPlatformNode(outside_node)
       ->NotifyAccessibilityEvent(ax::mojom::Event::kFocus);
   EXPECT_TRUE(saw_active_state_change);

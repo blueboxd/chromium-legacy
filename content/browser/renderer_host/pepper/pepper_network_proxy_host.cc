@@ -46,9 +46,9 @@ bool LookUpProxyForURLCallback(
   StoragePartition* storage_partition = BrowserContext::GetStoragePartition(
       site_instance->GetBrowserContext(), site_instance);
 
-  // TODO(https://crbug.com/1021661): Pass in a non-empty NetworkIsolationKey.
   storage_partition->GetNetworkContext()->LookUpProxyForURL(
-      url, net::NetworkIsolationKey::Todo(), std::move(proxy_lookup_client));
+      url, render_frame_host->GetNetworkIsolationKey(),
+      std::move(proxy_lookup_client));
   return true;
 }
 

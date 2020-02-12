@@ -968,7 +968,7 @@ void SyncEncryptionHandlerImpl::ReEncryptEverything(WriteTransaction* trans) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   DCHECK(UnlockVault(trans->GetWrappedTrans()).cryptographer.CanEncrypt());
   for (ModelType type : UnlockVault(trans->GetWrappedTrans()).encrypted_types) {
-    if (type == PASSWORDS || type == WIFI_CONFIGURATIONS || IsControlType(type))
+    if (type == PASSWORDS || IsControlType(type))
       continue;  // These types handle encryption differently.
 
     ReadNode type_root(trans);
@@ -1010,22 +1010,6 @@ void SyncEncryptionHandlerImpl::ReEncryptEverything(WriteTransaction* trans) {
       if (child.InitByIdLookup(child_id) != BaseNode::INIT_OK)
         break;  // Possible if we failed to decrypt the data for some reason.
       child.SetPasswordSpecifics(child.GetPasswordSpecifics());
-      child_id = child.GetSuccessorId();
-    }
-  }
-
-  // Wifi configs are encrypted with their own legacy scheme and are always
-  // encrypted so we don't need to check GetEncryptedTypes().
-  ReadNode wifi_configurations_root(trans);
-  if (wifi_configurations_root.InitTypeRoot(WIFI_CONFIGURATIONS) ==
-      BaseNode::INIT_OK) {
-    int64_t child_id = wifi_configurations_root.GetFirstChildId();
-    while (child_id != kInvalidId) {
-      WriteNode child(trans);
-      if (child.InitByIdLookup(child_id) != BaseNode::INIT_OK)
-        break;  // Possible if we failed to decrypt the data for some reason.
-      child.SetWifiConfigurationSpecifics(
-          child.GetWifiConfigurationSpecifics());
       child_id = child.GetSuccessorId();
     }
   }

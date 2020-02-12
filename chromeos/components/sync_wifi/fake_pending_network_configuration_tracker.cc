@@ -20,7 +20,7 @@ FakePendingNetworkConfigurationTracker::
 
 std::string FakePendingNetworkConfigurationTracker::TrackPendingUpdate(
     const NetworkIdentifier& id,
-    const base::Optional<sync_pb::WifiConfigurationSpecificsData>& specifics) {
+    const base::Optional<sync_pb::WifiConfigurationSpecifics>& specifics) {
   std::string change_id = base::GenerateGUID();
   id_to_pending_update_map_.emplace(
       id, PendingNetworkConfigurationUpdate(id, change_id, specifics,

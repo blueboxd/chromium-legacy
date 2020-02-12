@@ -84,12 +84,7 @@ def ConvertFidlLibrary(json):
   converted = ConvertCommonFields(json)
   converted['type'] = 'fuchsia_sdk_fidl_pkg'
   converted['sources'] = json['sources']
-
-  # Override the package name & namespace, otherwise the rule will generate
-  # a top-level package with |target_name| as its directory name.
-  name_parts = json['name'].split('.')
-  converted['package_name'] = name_parts[-1]
-  converted['namespace'] = '.'.join(name_parts[:-1])
+  converted['library_name'] = json['name']
 
   return converted
 

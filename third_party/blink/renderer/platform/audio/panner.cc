@@ -38,16 +38,14 @@ std::unique_ptr<Panner> Panner::Create(PanningModel model,
                                        float sample_rate,
                                        HRTFDatabaseLoader* database_loader) {
   switch (model) {
-    case kPanningModelEqualPower:
+    case PanningModel::kEqualPower:
       return std::make_unique<EqualPowerPanner>(sample_rate);
 
-    case kPanningModelHRTF:
+    case PanningModel::kHRTF:
       return std::make_unique<HRTFPanner>(sample_rate, database_loader);
-
-    default:
-      NOTREACHED();
-      return nullptr;
   }
+  NOTREACHED();
+  return nullptr;
 }
 
 }  // namespace blink

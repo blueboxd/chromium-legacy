@@ -23,6 +23,7 @@
  *   CROSTINI: (undefined|!settings.Route),
  *   CROSTINI_ANDROID_ADB: (undefined|!settings.Route),
  *   CROSTINI_DETAILS: (undefined|!settings.Route),
+ *   CROSTINI_DISK_RESIZE: (undefined|!settings.Route),
  *   CROSTINI_EXPORT_IMPORT: (undefined|!settings.Route),
  *   CROSTINI_SHARED_PATHS: (undefined|!settings.Route),
  *   CROSTINI_SHARED_USB_DEVICES: (undefined|!settings.Route),

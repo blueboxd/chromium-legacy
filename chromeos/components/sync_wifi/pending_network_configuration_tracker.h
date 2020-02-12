@@ -31,8 +31,7 @@ class PendingNetworkConfigurationTracker {
   // is being deleted.  Returns the change_guid.
   virtual std::string TrackPendingUpdate(
       const NetworkIdentifier& id,
-      const base::Optional<sync_pb::WifiConfigurationSpecificsData>&
-          specifics) = 0;
+      const base::Optional<sync_pb::WifiConfigurationSpecifics>& specifics) = 0;
 
   // Removes the given change from the list.
   virtual void MarkComplete(const std::string& change_guid,

@@ -46,7 +46,6 @@ namespace internal {
 //                         .last_rotation
 //                         .key
 //
-// TODO(crbug.com/1016655): log UMA error metrics
 // TODO(crbug.com/1016655): add ability to override default rotation period
 class KeyData {
  public:

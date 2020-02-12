@@ -14,7 +14,7 @@
 #include "mojo/public/cpp/bindings/receiver.h"
 
 namespace sync_pb {
-class WifiConfigurationSpecificsData;
+class WifiConfigurationSpecifics;
 }
 
 namespace chromeos {
@@ -28,11 +28,11 @@ class NetworkIdentifier;
 class LocalNetworkCollector {
  public:
   typedef base::OnceCallback<void(
-      base::Optional<sync_pb::WifiConfigurationSpecificsData>)>
+      base::Optional<sync_pb::WifiConfigurationSpecifics>)>
       ProtoCallback;
 
   typedef base::OnceCallback<void(
-      std::vector<sync_pb::WifiConfigurationSpecificsData>)>
+      std::vector<sync_pb::WifiConfigurationSpecifics>)>
       ProtoListCallback;
 
   LocalNetworkCollector() = default;

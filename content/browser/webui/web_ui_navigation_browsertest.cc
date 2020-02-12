@@ -569,6 +569,42 @@ IN_PROC_BROWSER_TEST_F(
   EXPECT_EQ(kBlockedURL, child->GetLastCommittedURL());
 }
 
+// Verify that a browser check stops websites from navigating to
+// chrome:// documents in the main frame. This tests the Frame::BeginNavigation
+// path.
+IN_PROC_BROWSER_TEST_F(
+    WebUINavigationDisabledWebSecurityBrowserTest,
+    DisallowNavigatingToChromeSchemeFromWebFrameBrowserCheck) {
+  GURL main_frame_url(embedded_test_server()->GetURL("/title1.html"));
+  EXPECT_TRUE(NavigateToURL(shell(), main_frame_url));
+
+  GURL webui_url(GetWebUIURL("web-ui/title1.html"));
+  TestNavigationObserver observer(shell()->web_contents());
+  EXPECT_TRUE(ExecJs(shell(), JsReplace("location.href = $1", webui_url)));
+  observer.Wait();
+  EXPECT_EQ(kBlockedURL, shell()->web_contents()->GetLastCommittedURL());
+}
+
+// Verify that a browser check stops websites from navigating to
+// chrome-untrusted:// documents in the main frame. This tests the
+// Frame::BeginNavigation path.
+IN_PROC_BROWSER_TEST_F(
+    WebUINavigationDisabledWebSecurityBrowserTest,
+    DisallowNavigatingToChromeUntrustedSchemeFromWebFrameBrowserCheck) {
+  GURL main_frame_url(embedded_test_server()->GetURL("/title1.html"));
+  EXPECT_TRUE(NavigateToURL(shell(), main_frame_url));
+
+  AddUntrustedDataSource(shell()->web_contents()->GetBrowserContext(),
+                         "test-iframe-host", /*child_src=*/base::nullopt,
+                         /*disable_xfo=*/false);
+  GURL untrusted_url(GetChromeUntrustedUIURL("test-iframe-host/title1.html"));
+
+  TestNavigationObserver observer(shell()->web_contents());
+  EXPECT_TRUE(ExecJs(shell(), JsReplace("location.href = $1", untrusted_url)));
+  observer.Wait();
+  EXPECT_EQ(kBlockedURL, shell()->web_contents()->GetLastCommittedURL());
+}
+
 // Verify that website cannot use window.open() to navigate succsesfully a new
 // window to a chrome:// URL.
 IN_PROC_BROWSER_TEST_F(WebUINavigationDisabledWebSecurityBrowserTest,

@@ -1995,8 +1995,6 @@ jumbo_static_library("ui") {
       "webui/settings/chromeos/plugin_vm_handler.h",
       "webui/settings/chromeos/pref_names.cc",
       "webui/settings/chromeos/pref_names.h",
-      "webui/settings/chromeos/search/settings_user_action.cc",
-      "webui/settings/chromeos/search/settings_user_action.h",
       "webui/settings/chromeos/search/settings_user_action_tracker.cc",
       "webui/settings/chromeos/search/settings_user_action_tracker.h",
       "webui/settings/chromeos/wallpaper_handler.cc",

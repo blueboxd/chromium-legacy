@@ -246,7 +246,7 @@ void ServiceWorkerUpdateChecker::CheckOneScript(const GURL& url,
   DCHECK_NE(ServiceWorkerConsts::kInvalidServiceWorkerResourceId, resource_id)
       << "All the target scripts should be stored in the storage.";
 
-  version_to_update_->context()->storage()->NewResourceId(base::BindOnce(
+  version_to_update_->context()->storage()->GetNewResourceId(base::BindOnce(
       &ServiceWorkerUpdateChecker::OnResourceIdAssignedForOneScriptCheck,
       weak_factory_.GetWeakPtr(), url, resource_id));
 }

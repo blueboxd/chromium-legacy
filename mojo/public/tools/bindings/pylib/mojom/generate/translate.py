@@ -666,9 +666,9 @@ def _Module(tree, path, imports):
   module.interfaces = list(
       map(lambda interface: _Interface(module, interface),
           _ElemsOfType(tree.definition_list, ast.Interface, filename)))
-  module.constants = map(
-      lambda constant: _Constant(module, constant, None),
-      _ElemsOfType(tree.definition_list, ast.Const, filename))
+  module.constants = list(
+      map(lambda constant: _Constant(module, constant, None),
+          _ElemsOfType(tree.definition_list, ast.Const, filename)))
 
   # Second pass expands fields and methods. This allows fields and parameters
   # to refer to kinds defined anywhere in the mojom.

@@ -48,7 +48,7 @@ SyncedNetworkUpdaterImpl::SyncedNetworkUpdaterImpl(
 SyncedNetworkUpdaterImpl::~SyncedNetworkUpdaterImpl() = default;
 
 void SyncedNetworkUpdaterImpl::AddOrUpdateNetwork(
-    const sync_pb::WifiConfigurationSpecificsData& specifics) {
+    const sync_pb::WifiConfigurationSpecifics& specifics) {
   auto id = NetworkIdentifier::FromProto(specifics);
   std::string change_guid = tracker_->TrackPendingUpdate(id, specifics);
   StartAddOrUpdateOperation(change_guid, id, specifics);
@@ -57,7 +57,7 @@ void SyncedNetworkUpdaterImpl::AddOrUpdateNetwork(
 void SyncedNetworkUpdaterImpl::StartAddOrUpdateOperation(
     const std::string& change_guid,
     const NetworkIdentifier& id,
-    const sync_pb::WifiConfigurationSpecificsData& specifics) {
+    const sync_pb::WifiConfigurationSpecifics& specifics) {
   network_config::mojom::NetworkStatePropertiesPtr existing_network =
       FindMojoNetwork(id);
   network_config::mojom::ConfigPropertiesPtr config =

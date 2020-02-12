@@ -408,6 +408,7 @@ const char kConnectedDevicesSubPage[] = "multidevice/features";
 const char kCrostiniSharedPathsSubPage[] = "crostini/sharedPaths";
 const char kCrostiniSharedUsbDevicesSubPage[] = "crostini/sharedUsbDevices";
 const char kCrostiniExportImportSubPage[] = "crostini/exportImport";
+const char kCrostiniDiskResizeSubPage[] = "crostini/diskResize";
 const char kDateTimeSubPage[] = "dateTime";
 const char kDisplaySubPage[] = "display";
 const char kExternalStorageSubPage[] = "storage/externalStoragePreferences";
@@ -453,6 +454,7 @@ bool IsOSSettingsSubPage(const std::string& sub_page) {
       kConnectedDevicesSubPage,
       kCrostiniSharedPathsSubPage,
       kCrostiniSharedUsbDevicesSubPage,
+      kCrostiniDiskResizeSubPage,
       kDateTimeSubPage,
       kDisplaySubPage,
       kExternalStorageSubPage,

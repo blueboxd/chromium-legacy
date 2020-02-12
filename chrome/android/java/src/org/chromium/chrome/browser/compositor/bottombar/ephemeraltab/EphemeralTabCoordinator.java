@@ -12,6 +12,7 @@ import android.text.TextUtils;
 import android.view.View;
 
 import org.chromium.base.Callback;
+import org.chromium.base.SysUtils;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.ChromeActivity;
 import org.chromium.chrome.browser.compositor.bottombar.OverlayContentDelegate;
@@ -21,6 +22,7 @@ import org.chromium.chrome.browser.favicon.FaviconHelper;
 import org.chromium.chrome.browser.favicon.FaviconUtils;
 import org.chromium.chrome.browser.favicon.RoundedIconGenerator;
 import org.chromium.chrome.browser.feature_engagement.TrackerFactory;
+import org.chromium.chrome.browser.flags.ChromeFeatureList;
 import org.chromium.chrome.browser.ntp.NewTabPage;
 import org.chromium.chrome.browser.profiles.Profile;
 import org.chromium.chrome.browser.ssl.SecurityStateModel;
@@ -57,6 +59,7 @@ public class EphemeralTabCoordinator implements View.OnLayoutChangeListener {
     private WebContentsObserver mWebContentsObserver;
     private EphemeralTabSheetContent mSheetContent;
     private boolean mIsIncognito;
+    private boolean mOpened;
     private String mUrl;
     private int mCurrentMaxSheetHeight;
 
@@ -83,6 +86,7 @@ public class EphemeralTabCoordinator implements View.OnLayoutChangeListener {
                 if (mSheetContent == null) return;
                 switch (newState) {
                     case SheetState.PEEK:
+                        mOpened = true;
                         mMetrics.recordMetricsForPeeked();
                         break;
                     case SheetState.FULL:
@@ -96,6 +100,7 @@ public class EphemeralTabCoordinator implements View.OnLayoutChangeListener {
                 // "Closed" actually means "Peek" for bottom sheet. Save the reason to log
                 // when the sheet goes to hidden state.
                 mCloseReason = reason;
+                mOpened = false;
             }
 
             @Override
@@ -105,6 +110,22 @@ public class EphemeralTabCoordinator implements View.OnLayoutChangeListener {
                 mSheetContent.showOpenInNewTabButton(heightFraction);
             }
         });
+    }
+
+    /**
+     * Checks if this feature (a.k.a. "Preview page/image") is supported.
+     * @return {@code true} if the feature is enabled.
+     */
+    public static boolean isSupported() {
+        return ChromeFeatureList.isEnabled(ChromeFeatureList.EPHEMERAL_TAB_USING_BOTTOM_SHEET)
+                && !SysUtils.isLowEndDevice();
+    }
+
+    /**
+     * Checks if the preview tab is in open state.
+     */
+    public boolean isOpened() {
+        return mOpened;
     }
 
     /**
@@ -145,6 +166,7 @@ public class EphemeralTabCoordinator implements View.OnLayoutChangeListener {
 
     private void destroyContent() {
         mSheetContent = null; // Will be destroyed by BottomSheet controller.
+        mOpened = false;
 
         if (mPanelContent != null) {
             mPanelContent.destroy();

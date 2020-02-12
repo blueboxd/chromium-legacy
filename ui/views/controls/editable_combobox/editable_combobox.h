@@ -123,6 +123,7 @@ class VIEWS_EXPORT EditableCombobox : public View,
   void Layout() override;
   void OnThemeChanged() override;
   void GetAccessibleNodeData(ui::AXNodeData* node_data) override;
+  void RequestFocus() override;
 
   // Overridden from TextfieldController:
   void ContentsChanged(Textfield* sender,

@@ -73,6 +73,15 @@
           role-description="$i18n{subpageArrowRoleDescription}">
       </cr-link-row>
     </template>
+    <template is="dom-if" if="[[showCrostiniDiskResize_]]">
+      <cr-link-row
+          class="hr"
+          label="$i18n{crostiniDiskResizeShowButton}"
+          id="crostini-show-disk-resize"
+          on-click="onShowDiskResizeClick_"
+          role-description="$i18n{subpageArrowRoleDescription}">
+      </cr-link-row>
+    </template>
     <template is="dom-if" if="[[!hideCrostiniUninstall_]]">
       <div id="remove" class="settings-box">
         <div id="removeCrostiniLabel" class="start">$i18n{crostiniRemove}</div>

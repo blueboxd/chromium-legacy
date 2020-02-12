@@ -36,7 +36,7 @@ class SyncedNetworkUpdaterImpl
   ~SyncedNetworkUpdaterImpl() override;
 
   void AddOrUpdateNetwork(
-      const sync_pb::WifiConfigurationSpecificsData& specifics) override;
+      const sync_pb::WifiConfigurationSpecifics& specifics) override;
 
   void RemoveNetwork(const NetworkIdentifier& id) override;
 
@@ -57,7 +57,7 @@ class SyncedNetworkUpdaterImpl
   void StartAddOrUpdateOperation(
       const std::string& change_guid,
       const NetworkIdentifier& id,
-      const sync_pb::WifiConfigurationSpecificsData& specifics);
+      const sync_pb::WifiConfigurationSpecifics& specifics);
   void StartDeleteOperation(const std::string& change_guid,
                             const NetworkIdentifier& id,
                             std::string guid);
@@ -72,7 +72,7 @@ class SyncedNetworkUpdaterImpl
       const NetworkIdentifier& id);
 
   base::Optional<base::DictionaryValue> ConvertToDictionary(
-      const sync_pb::WifiConfigurationSpecificsData& specifics,
+      const sync_pb::WifiConfigurationSpecifics& specifics,
       const std::string& guid);
   void OnGetNetworkList(
       std::vector<network_config::mojom::NetworkStatePropertiesPtr> networks);

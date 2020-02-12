@@ -82,6 +82,7 @@ constexpr std::pair<arc::mojom::ChromePage, const char*> kOSSettingsMapping[] =
      {ChromePage::ACCOUNTS, chrome::kAccountSubPage},
      {ChromePage::BLUETOOTHDEVICES, chrome::kBluetoothSubPage},
      {ChromePage::CHANGEPICTURE, chrome::kChangePictureSubPage},
+     {ChromePage::CROSTINIDISKRESIZE, chrome::kCrostiniDiskResizeSubPage},
      {ChromePage::CUPSPRINTERS, chrome::kNativePrintingSettingsSubPage},
      {ChromePage::KEYBOARDOVERLAY, chrome::kKeyboardOverlaySubPage},
      {ChromePage::LANGUAGES, chrome::kLanguageSubPage},

@@ -12,6 +12,7 @@
 #include "base/time/time.h"
 #include "base/unguessable_token.h"
 #include "base/values.h"
+#include "components/metrics/structured/histogram_util.h"
 #include "components/metrics/structured/structured_events.h"
 #include "components/prefs/json_pref_store.h"
 #include "crypto/hmac.h"
@@ -65,6 +66,7 @@ KeyData::~KeyData() = default;
 base::Optional<std::string> KeyData::ValidateAndGetKey(const uint64_t event) {
   DCHECK(key_store_);
   const int now = (base::Time::Now() - base::Time::UnixEpoch()).InDays();
+  bool key_is_valid = true;
 
   // If the key for |key_path| doesn't exist, initialize new key data. Set the
   // last rotation to a uniformly selected day between today and
@@ -75,6 +77,9 @@ base::Optional<std::string> KeyData::ValidateAndGetKey(const uint64_t event) {
     SetRotationPeriod(event, kDefaultRotationPeriod);
     SetLastRotation(event, now - rotation_seed);
     SetKey(event, GenerateKey());
+
+    LogKeyValidation(KeyValidationState::kCreated);
+    key_is_valid = false;
   }
 
   // If the key for |event| is outdated, generate a new key and write it to
@@ -86,18 +91,25 @@ base::Optional<std::string> KeyData::ValidateAndGetKey(const uint64_t event) {
     const int new_last_rotation = now - (now - last_rotation) % rotation_period;
     SetLastRotation(event, new_last_rotation);
     SetKey(event, GenerateKey());
+
+    LogKeyValidation(KeyValidationState::kRotated);
+    key_is_valid = false;
+  }
+
+  if (key_is_valid) {
+    LogKeyValidation(KeyValidationState::kValid);
   }
 
   const base::Value* key_json;
   if (!(key_store_->GetValue(KeyPath(event), &key_json) &&
         key_json->is_string())) {
-    // TODO(crbug.com/1016655): log an error to UMA.
+    LogInternalError(StructuredMetricsError::kMissingKey);
     return base::nullopt;
   }
 
   const std::string key = key_json->GetString();
   if (key.size() != kKeySize) {
-    // TODO(crbug.com/1016655): log an error to UMA.
+    LogInternalError(StructuredMetricsError::kWrongKeyLength);
     return base::nullopt;
   }
 
@@ -133,8 +145,8 @@ int KeyData::GetLastRotation(const uint64_t event) {
   const base::Value* value;
   if (!(key_store_->GetValue(LastRotationPath(event), &value) &&
         value->is_int())) {
-    // TODO(crbug.com/1016655): log an error to UMA.
-    DCHECK(false);
+    LogInternalError(StructuredMetricsError::kMissingLastRotation);
+    NOTREACHED();
     return 0u;
   }
   return value->GetInt();
@@ -144,8 +156,8 @@ int KeyData::GetRotationPeriod(const uint64_t event) {
   const base::Value* value;
   if (!(key_store_->GetValue(RotationPeriodPath(event), &value) &&
         value->is_int())) {
-    // TODO(crbug.com/1016655): log an error to UMA.
-    DCHECK(false);
+    LogInternalError(StructuredMetricsError::kMissingRotationPeriod);
+    NOTREACHED();
     return 0u;
   }
   return value->GetInt();
@@ -155,7 +167,7 @@ uint64_t KeyData::UserEventId(const uint64_t event) {
   // Retrieve the key for |event|.
   const base::Optional<std::string> key = ValidateAndGetKey(event);
   if (!key) {
-    // TODO(crbug.com/1016655): log an error to UMA.
+    NOTREACHED();
     return 0u;
   }
 
@@ -171,8 +183,7 @@ uint64_t KeyData::HashForEventMetric(const uint64_t event,
   // Retrieve the key for |event|.
   const base::Optional<std::string> key = ValidateAndGetKey(event);
   if (!key) {
-    // TODO(crbug.com/1016655): log an error to UMA.
-    DCHECK(false);
+    NOTREACHED();
     return 0u;
   }
 

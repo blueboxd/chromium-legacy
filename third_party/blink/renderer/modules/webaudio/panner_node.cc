@@ -25,6 +25,7 @@
 
 #include "third_party/blink/renderer/modules/webaudio/panner_node.h"
 
+#include "base/metrics/histogram_functions.h"
 #include "third_party/blink/renderer/bindings/modules/v8/v8_panner_options.h"
 #include "third_party/blink/renderer/core/execution_context/execution_context.h"
 #include "third_party/blink/renderer/modules/webaudio/audio_buffer_source_node.h"
@@ -34,7 +35,6 @@
 #include "third_party/blink/renderer/platform/audio/hrtf_panner.h"
 #include "third_party/blink/renderer/platform/bindings/exception_messages.h"
 #include "third_party/blink/renderer/platform/bindings/exception_state.h"
-#include "third_party/blink/renderer/platform/instrumentation/histogram.h"
 #include "third_party/blink/renderer/platform/wtf/math_extras.h"
 
 namespace blink {
@@ -181,7 +181,7 @@ void PannerHandler::Process(uint32_t frames_to_process) {
 
   if (try_listener_locker.Locked()) {
     if (!Context()->HasRealtimeConstraint() &&
-        panning_model_ == Panner::kPanningModelHRTF) {
+        panning_model_ == Panner::PanningModel::kHRTF) {
       // For an OfflineAudioContext, we need to make sure the HRTFDatabase
       // is loaded before proceeding.  For realtime contexts, we don't
       // have to wait.  The HRTF panner handles that case itself.
@@ -354,34 +354,31 @@ AudioListener* PannerHandler::Listener() {
 
 String PannerHandler::PanningModel() const {
   switch (panning_model_) {
-    case Panner::kPanningModelEqualPower:
+    case Panner::PanningModel::kEqualPower:
       return "equalpower";
-    case Panner::kPanningModelHRTF:
+    case Panner::PanningModel::kHRTF:
       return "HRTF";
-    default:
-      NOTREACHED();
-      return "equalpower";
   }
+  NOTREACHED();
+  return "equalpower";
 }
 
 void PannerHandler::SetPanningModel(const String& model) {
   // WebIDL should guarantee that we are never called with an invalid string
   // for the model.
   if (model == "equalpower")
-    SetPanningModel(Panner::kPanningModelEqualPower);
+    SetPanningModel(Panner::PanningModel::kEqualPower);
   else if (model == "HRTF")
-    SetPanningModel(Panner::kPanningModelHRTF);
+    SetPanningModel(Panner::PanningModel::kHRTF);
   else
     NOTREACHED();
 }
 
 // This method should only be called from setPanningModel(const String&)!
-bool PannerHandler::SetPanningModel(unsigned model) {
-  DEFINE_STATIC_LOCAL(EnumerationHistogram, panning_model_histogram,
-                      ("WebAudio.PannerNode.PanningModel", 2));
-  panning_model_histogram.Count(model);
+bool PannerHandler::SetPanningModel(Panner::PanningModel model) {
+  base::UmaHistogramEnumeration("WebAudio.PannerNode.PanningModel", model);
 
-  if (model == Panner::kPanningModelHRTF) {
+  if (model == Panner::PanningModel::kHRTF) {
     // Load the HRTF database asynchronously so we don't block the
     // Javascript thread while creating the HRTF database. It's ok to call
     // this multiple times; we won't be constantly loading the database over

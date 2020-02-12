@@ -18,6 +18,9 @@
 }
 
 body.files-ng [file-type-icon] {
+  -webkit-mask-position: center;
+  -webkit-mask-repeat: no-repeat;
+  background-color: currentColor;
   background-image: url(../images/filetype/filetype_generic.svg);
   background-size: 20px 20px;
 }
@@ -60,9 +63,6 @@ body.files-ng [file-type-icon='excel'] {
 
 body.files-ng [file-type-icon='folder'] {
   -webkit-mask-image: url(../images/filetype/filetype_folder.svg);
-  -webkit-mask-position: center;
-  -webkit-mask-repeat: no-repeat;
-  background-color: currentColor;
   background-image: none;
 }
 
@@ -393,6 +393,11 @@ body.files-ng [file-type-icon='word'] {
   -webkit-mask-image: url(../images/volumes/downloads.svg);
 }
 
+body.files-ng [file-type-icon='downloads'] {
+  -webkit-mask-image: url(../images/volumes/downloads.svg);
+  background-image: none;
+}
+
 [volume-type-icon='drive'] {
   background-image: -webkit-image-set(
       url(../images/volumes/drive.png) 1x,
@@ -697,6 +702,11 @@ body.files-ng [file-type-icon='word'] {
       url(../images/volumes/2x/hard_drive.png) 2x);
 }
 
+body.files-ng [file-type-icon='removable'] {
+  -webkit-mask-image: url(../images/volumes/hard_drive.svg);
+  background-image: none;
+}
+
 .tree-row[selected] > [volume-type-icon='removable'][volume-subtype='unknown'],
 .tree-item .tree-item > .tree-row[selected] > [volume-type-icon='removable'] {
   background-image: -webkit-image-set(
@@ -745,6 +755,11 @@ body.files-ng [file-type-icon='word'] {
       url(../images/volumes/2x/linux_files.png) 2x);
 }
 
+body.files-ng [file-type-icon='crostini'] {
+  -webkit-mask-image: url(../images/volumes/linux_files.svg);
+  background-image: none;
+}
+
 .tree-row[selected] > [root-type-icon='crostini'],
 .tree-row[selected] > [volume-type-icon='crostini'] {
   background-image: -webkit-image-set(
@@ -764,6 +779,11 @@ body.files-ng [file-type-icon='word'] {
       url(../images/volumes/2x/android.png) 2x);
 }
 
+body.files-ng [file-type-icon='android_files'] {
+  -webkit-mask-image: url(../images/volumes/android.svg);
+  background-image: none;
+}
+
 .tree-row[selected] > [volume-type-icon='android_files'] {
   background-image: -webkit-image-set(
       url(../images/volumes/android_active.png) 1x,
@@ -776,6 +796,11 @@ body.files-ng [file-type-icon='word'] {
 
 [file-type-icon='plugin_vm'] {
   background-image: url(../images/volumes/plugin_vm.svg);
+}
+
+body.files-ng [file-type-icon='plugin_vm'] {
+  -webkit-mask-image: url(../images/volumes/plugin_vm.svg);
+  background-image: none;
 }
 
 .tree-row[selected] > [file-type-icon='plugin_vm'] {

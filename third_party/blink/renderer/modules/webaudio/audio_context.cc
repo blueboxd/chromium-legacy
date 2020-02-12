@@ -4,6 +4,7 @@
 
 #include "third_party/blink/renderer/modules/webaudio/audio_context.h"
 
+#include "base/metrics/histogram_functions.h"
 #include "build/build_config.h"
 #include "services/metrics/public/cpp/ukm_builders.h"
 #include "services/metrics/public/cpp/ukm_recorder.h"
@@ -31,7 +32,6 @@
 #include "third_party/blink/renderer/platform/bindings/exception_messages.h"
 #include "third_party/blink/renderer/platform/bindings/exception_state.h"
 #include "third_party/blink/renderer/platform/heap/heap.h"
-#include "third_party/blink/renderer/platform/instrumentation/histogram.h"
 #include "third_party/blink/renderer/platform/instrumentation/use_counter.h"
 #include "third_party/blink/renderer/platform/scheduler/public/post_cross_thread_task.h"
 #include "third_party/blink/renderer/platform/wtf/cross_thread_functional.h"
@@ -118,10 +118,8 @@ AudioContext* AudioContext::Create(Document& document,
           audio_context, audio_context->context_id_, g_hardware_context_count);
 #endif
 
-  DEFINE_STATIC_LOCAL(SparseHistogram, max_channel_count_histogram,
-                      ("WebAudio.AudioContext.MaxChannelsAvailable"));
-  max_channel_count_histogram.Sample(
-      audio_context->destination()->maxChannelCount());
+  base::UmaHistogramSparse("WebAudio.AudioContext.MaxChannelsAvailable",
+                           audio_context->destination()->maxChannelCount());
 
   probe::DidCreateAudioContext(&document);
 
@@ -144,12 +142,12 @@ AudioContext::AudioContext(Document& document,
       // Audio.
       if (document.GetFrame() &&
           document.GetFrame()->IsCrossOriginToMainFrame()) {
-        autoplay_status_ = AutoplayStatus::kAutoplayStatusFailed;
+        autoplay_status_ = AutoplayStatus::kFailed;
         user_gesture_required_ = true;
       }
       break;
     case AutoplayPolicy::Type::kDocumentUserActivationRequired:
-      autoplay_status_ = AutoplayStatus::kAutoplayStatusFailed;
+      autoplay_status_ = AutoplayStatus::kFailed;
       user_gesture_required_ = true;
       break;
   }
@@ -473,10 +471,10 @@ void AudioContext::MaybeAllowAutoplayWithUnlockType(AutoplayUnlockType type) {
     return;
 
   DCHECK(!autoplay_status_.has_value() ||
-         autoplay_status_ != AutoplayStatus::kAutoplayStatusSucceeded);
+         autoplay_status_ != AutoplayStatus::kSucceeded);
 
   user_gesture_required_ = false;
-  autoplay_status_ = AutoplayStatus::kAutoplayStatusSucceeded;
+  autoplay_status_ = AutoplayStatus::kSucceeded;
 
   DCHECK(!autoplay_unlock_type_.has_value());
   autoplay_unlock_type_ = type;
@@ -521,7 +519,7 @@ void AudioContext::RecordAutoplayMetrics() {
   ukm::UkmRecorder* ukm_recorder = GetDocument()->UkmRecorder();
   DCHECK(ukm_recorder);
   ukm::builders::Media_Autoplay_AudioContext(GetDocument()->UkmSourceID())
-      .SetStatus(autoplay_status_.value())
+      .SetStatus(static_cast<int>(autoplay_status_.value()))
       .SetUnlockType(autoplay_unlock_type_
                          ? static_cast<int>(autoplay_unlock_type_.value())
                          : -1)
@@ -529,30 +527,20 @@ void AudioContext::RecordAutoplayMetrics() {
       .Record(ukm_recorder);
 
   // Record autoplay_status_ value.
-  DEFINE_STATIC_LOCAL(
-      EnumerationHistogram, autoplay_histogram,
-      ("WebAudio.Autoplay", AutoplayStatus::kAutoplayStatusCount));
-  DEFINE_STATIC_LOCAL(
-      EnumerationHistogram, cross_origin_autoplay_histogram,
-      ("WebAudio.Autoplay.CrossOrigin", AutoplayStatus::kAutoplayStatusCount));
-
-  autoplay_histogram.Count(autoplay_status_.value());
+  base::UmaHistogramEnumeration("WebAudio.Autoplay", autoplay_status_.value());
 
   if (GetDocument()->GetFrame() &&
       GetDocument()->GetFrame()->IsCrossOriginToMainFrame()) {
-    cross_origin_autoplay_histogram.Count(autoplay_status_.value());
+    base::UmaHistogramEnumeration("WebAudio.Autoplay.CrossOrigin",
+                                  autoplay_status_.value());
   }
 
   autoplay_status_.reset();
 
   // Record autoplay_unlock_type_ value.
   if (autoplay_unlock_type_.has_value()) {
-    DEFINE_STATIC_LOCAL(EnumerationHistogram, autoplay_unlock_type_histogram,
-                        ("WebAudio.Autoplay.UnlockType",
-                         static_cast<int>(AutoplayUnlockType::kCount)));
-
-    autoplay_unlock_type_histogram.Count(
-        static_cast<int>(autoplay_unlock_type_.value()));
+    base::UmaHistogramEnumeration("WebAudio.Autoplay.UnlockType",
+                                  autoplay_unlock_type_.value());
 
     autoplay_unlock_type_.reset();
   }

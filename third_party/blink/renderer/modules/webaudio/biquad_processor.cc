@@ -37,7 +37,7 @@ BiquadProcessor::BiquadProcessor(float sample_rate,
                                  AudioParamHandler& gain,
                                  AudioParamHandler& detune)
     : AudioDSPKernelProcessor(sample_rate, number_of_channels),
-      type_(kLowPass),
+      type_(FilterType::kLowPass),
       parameter1_(&frequency),
       parameter2_(&q),
       parameter3_(&gain),

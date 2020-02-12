@@ -1681,8 +1681,6 @@ void ChromePasswordProtectionService::SanitizeReferrerChain(
 bool ChromePasswordProtectionService::CanSendSamplePing() {
   // Send a sample ping only 1% of the time.
   return IsExtendedReporting() && !IsIncognito() &&
-         base::FeatureList::IsEnabled(
-             safe_browsing::kSendSampledPingsForAllowlistDomains) &&
          (bypass_probability_for_tests_ ||
           base::RandDouble() <= kProbabilityForSendingReportsFromSafeURLs);
 }

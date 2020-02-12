@@ -197,13 +197,27 @@ bool NGFlexLayoutAlgorithm::DoesItemStretch(const NGBlockNode& child) const {
          ItemPosition::kStretch;
 }
 
+bool NGFlexLayoutAlgorithm::IsItemFlexBasisDefinite(
+    const NGBlockNode& child) const {
+  const Length& flex_basis = child.Style().FlexBasis();
+  DCHECK(!flex_basis.IsAuto())
+      << "This is never called with flex_basis.IsAuto, but it'd be trivial to "
+         "support.";
+  if (!is_column_)
+    return true;
+  return !BlockLengthUnresolvable(BuildSpaceForFlexBasis(child), flex_basis,
+                                  LengthResolvePhase::kLayout);
+}
+
 // This behavior is under discussion: the item's pre-flexing main size
 // definiteness may no longer imply post-flexing definiteness.
 // TODO(dgrogan): Have https://crbug.com/1003506 and
 // https://github.com/w3c/csswg-drafts/issues/4305 been resolved yet?
 bool NGFlexLayoutAlgorithm::IsItemMainSizeDefinite(
     const NGBlockNode& child) const {
-  DCHECK(is_column_);
+  DCHECK(is_column_)
+      << "This method doesn't work with row flexboxes because we assume "
+         "main size is block size when we call BlockLengthUnresolvable.";
   // Inline sizes are always definite.
   // TODO(dgrogan): The relevant tests, the last two cases in
   // css/css-flexbox/percentage-heights-003.html passed even without this, so it
@@ -286,6 +300,30 @@ bool NGFlexLayoutAlgorithm::WillChildCrossSizeBeContainerCrossSize(
          DoesItemStretch(child);
 }
 
+double NGFlexLayoutAlgorithm::GetMainOverCrossAspectRatio(
+    const NGBlockNode& child) const {
+  DCHECK(child.HasAspectRatio());
+  base::Optional<LayoutUnit> computed_inline_size;
+  base::Optional<LayoutUnit> computed_block_size;
+  LogicalSize aspect_ratio;
+
+  child.IntrinsicSize(&computed_inline_size, &computed_block_size,
+                      &aspect_ratio);
+
+  DCHECK_GT(aspect_ratio.inline_size, 0);
+  DCHECK_GT(aspect_ratio.block_size, 0);
+
+  double ratio =
+      aspect_ratio.inline_size.ToDouble() / aspect_ratio.block_size.ToDouble();
+  // Multiplying by ratio will take something in the item's block axis and
+  // convert it to the inline axis. We want to convert from cross size to main
+  // size. If block axis and cross axis are the same, then we already have what
+  // we need. Otherwise we need to use the reciprocal.
+  if (!MainAxisIsInlineAxis(child))
+    ratio = 1 / ratio;
+  return ratio;
+}
+
 NGConstraintSpace NGFlexLayoutAlgorithm::BuildSpaceForIntrinsicBlockSize(
     const NGBlockNode& flex_item) const {
   const ComputedStyle& child_style = flex_item.Style();
@@ -298,6 +336,8 @@ NGConstraintSpace NGFlexLayoutAlgorithm::BuildSpaceForIntrinsicBlockSize(
 
   if (ShouldItemShrinkToFit(flex_item))
     space_builder.SetIsShrinkToFit(true);
+  // TODO(dgrogan): Do you need to account for item's min and max cross sizes
+  // before SetIsFixed{Inline,Block}Size(true) ?
   if (WillChildCrossSizeBeContainerCrossSize(flex_item)) {
     if (is_column_) {
       space_builder.SetIsFixedInlineSize(true);
@@ -393,48 +433,6 @@ void NGFlexLayoutAlgorithm::ConstructAndAppendFlexItems() {
       return *min_max_size;
     };
 
-    LayoutUnit flex_base_border_box;
-    const Length& specified_length_in_main_axis =
-        is_horizontal_flow_ ? child_style.Width() : child_style.Height();
-    const Length& flex_basis = child_style.FlexBasis();
-    // TODO(dgrogan): Generalize IsAuto: See the <'width'> section of
-    // https://drafts.csswg.org/css-flexbox/#valdef-flex-flex-basis
-    // and https://drafts.csswg.org/css-flexbox/#flex-basis-property, which says
-    // that if a flex-basis value would resolve to auto (but not literally auto)
-    // we should interpret it as flex-basis:content.
-    if (flex_basis.IsAuto() && specified_length_in_main_axis.IsAuto()) {
-      if (MainAxisIsInlineAxis(child))
-        flex_base_border_box = MinMaxSizeFunc().max_size;
-      else
-        flex_base_border_box = IntrinsicBlockSizeFunc();
-    } else {
-      // TODO(dgrogan): Check for definiteness.
-      // This block covers case A in
-      // https://drafts.csswg.org/css-flexbox/#algo-main-item.
-      const Length& length_to_resolve =
-          flex_basis.IsAuto() ? specified_length_in_main_axis : flex_basis;
-      DCHECK(!length_to_resolve.IsAuto());
-
-      if (MainAxisIsInlineAxis(child)) {
-        flex_base_border_box = ResolveMainInlineLength(
-            flex_basis_space, child_style, border_padding_in_child_writing_mode,
-            MinMaxSizeFunc, length_to_resolve);
-      } else {
-        // Flex container's main axis is in child's block direction. Child's
-        // flex basis is in child's block direction.
-        flex_base_border_box = ResolveMainBlockLength(
-            flex_basis_space, child_style, border_padding_in_child_writing_mode,
-            length_to_resolve, IntrinsicBlockSizeFunc,
-            LengthResolvePhase::kLayout);
-      }
-    }
-
-    // Spec calls this "flex base size"
-    // https://www.w3.org/TR/css-flexbox-1/#algo-main-item
-    // Blink's FlexibleBoxAlgorithm expects it to be content + scrollbar widths,
-    // but no padding or border.
-    LayoutUnit flex_base_content_size =
-        flex_base_border_box - main_axis_border_padding;
 
     MinMaxSize min_max_sizes_in_main_axis_direction{LayoutUnit(),
                                                     LayoutUnit::Max()};
@@ -477,6 +475,112 @@ void NGFlexLayoutAlgorithm::ConstructAndAppendFlexItems() {
           LengthResolvePhase::kLayout);
     }
 
+    // The logic that calculates flex_base_border_box assumes that the used
+    // value of the flex-basis property is either definite or 'content'.
+    LayoutUnit flex_base_border_box;
+    const Length& specified_length_in_main_axis =
+        is_horizontal_flow_ ? child_style.Width() : child_style.Height();
+    const Length& flex_basis = child_style.FlexBasis();
+    Length length_to_resolve = Length::Auto();
+    if (flex_basis.IsAuto()) {
+      if (!is_column_ || IsItemMainSizeDefinite(child))
+        length_to_resolve = specified_length_in_main_axis;
+    } else if (IsItemFlexBasisDefinite(child)) {
+      length_to_resolve = flex_basis;
+    }
+
+    if (length_to_resolve.IsAuto()) {
+      // This block means that the used flex-basis is 'content'. In here we
+      // implement parts B,C,D,E of 9.2.3
+      // https://drafts.csswg.org/css-flexbox/#algo-main-item
+      const Length& cross_axis_length =
+          is_horizontal_flow_ ? child.Style().Height() : child.Style().Width();
+      if (child.HasAspectRatio() &&
+          (IsItemCrossAxisLengthDefinite(child, cross_axis_length))) {
+        // This is Part B of 9.2.3
+        // https://drafts.csswg.org/css-flexbox/#algo-main-item It requires that
+        // the item has a definite cross size.
+        //
+        // But for determining the flex-basis of aspect ratio items, both legacy
+        // and FF both ignore part of the flex spec that has a more lenient
+        // definition of definite.
+        // https://drafts.csswg.org/css-flexbox/#definite says "If a single-line
+        // flex container has a definite cross size, the outer cross size of any
+        // stretched flex items is the flex container's inner cross size
+        // (clamped to the flex item's min and max cross size) and is considered
+        // definite". But when this happens, neither legacy nor firefox use the
+        // container's cross size to calculate the item's main size, they just
+        // fall to block E. E.g. Legacy and FF show a 16x100 green square
+        // instead of a 100x100 green square for
+        // https://jsfiddle.net/dgrogan/djh5wu0x/1/. I think it should be
+        // 100x100.
+        LayoutUnit cross_size;
+        if (MainAxisIsInlineAxis(child)) {
+          cross_size = ResolveMainBlockLength(
+              flex_basis_space, child_style,
+              border_padding_in_child_writing_mode, cross_axis_length,
+              kIndefiniteSize, LengthResolvePhase::kLayout);
+        } else {
+          cross_size =
+              ResolveMainInlineLength(flex_basis_space, child_style,
+                                      border_padding_in_child_writing_mode,
+                                      MinMaxSizeFunc, cross_axis_length);
+        }
+        cross_size = min_max_sizes_in_cross_axis_direction.ClampSizeToMinAndMax(
+            cross_size);
+        flex_base_border_box =
+            LayoutUnit(cross_size * GetMainOverCrossAspectRatio(child));
+      } else if (MainAxisIsInlineAxis(child)) {
+        // We're now in parts C, D, and E for what are usually (horizontal-tb
+        // containers AND children) row flex containers. I _think_ the C and D
+        // cases are correctly handled by this code, which was originally
+        // written for case E.
+        if (child.HasAspectRatio()) {
+          // Legacy uses child.MaxPreferredLogicalWidth() for this case, which
+          // is not exactly correct.
+          // TODO(dgrogan): Replace with a variant of ComputeReplacedSize that
+          // ignores min-width, width, max-width.
+          flex_base_border_box =
+              child.GetLayoutBox()->MaxPreferredLogicalWidth();
+        } else {
+          flex_base_border_box = MinMaxSizeFunc().max_size;
+        }
+      } else {
+        // Parts C, D, and E for what are usually column flex containers.
+        //
+        // This is the post-layout height for aspect-ratio items, which matches
+        // legacy but isn't always correct.
+        // TODO(dgrogan): Replace with a variant of ComputeReplacedSize that
+        // ignores min-height, height, max-height.
+        flex_base_border_box = IntrinsicBlockSizeFunc();
+      }
+    } else {
+      // Part A of 9.2.3 https://drafts.csswg.org/css-flexbox/#algo-main-item
+      if (MainAxisIsInlineAxis(child)) {
+        flex_base_border_box = ResolveMainInlineLength(
+            flex_basis_space, child_style, border_padding_in_child_writing_mode,
+            MinMaxSizeFunc, length_to_resolve);
+      } else {
+        // Flex container's main axis is in child's block direction. Child's
+        // flex basis is in child's block direction.
+        flex_base_border_box = ResolveMainBlockLength(
+            flex_basis_space, child_style, border_padding_in_child_writing_mode,
+            length_to_resolve, IntrinsicBlockSizeFunc,
+            LengthResolvePhase::kLayout);
+      }
+    }
+
+    // Spec calls this "flex base size"
+    // https://www.w3.org/TR/css-flexbox-1/#algo-main-item
+    // Blink's FlexibleBoxAlgorithm expects it to be content + scrollbar widths,
+    // but no padding or border.
+    // The ClampNegativeToZero is needed for the last canvas element in
+    // flexbox-flex-basis-content-001a.html. It's possibly only needed because
+    // we don't properly account for borders+padding when multiplying by the
+    // aspect ratio.
+    LayoutUnit flex_base_content_size =
+        (flex_base_border_box - main_axis_border_padding).ClampNegativeToZero();
+
     const Length& min = is_horizontal_flow_ ? child.Style().MinWidth()
                                             : child.Style().MinHeight();
     if (min.IsAuto()) {
@@ -494,14 +598,34 @@ void NGFlexLayoutAlgorithm::ConstructAndAppendFlexItems() {
           // TODO(dgrogan): Do the aspect ratio parts of
           // https://www.w3.org/TR/css-flexbox-1/#min-size-auto
 
-          LayoutUnit content_size_suggestion = MainAxisIsInlineAxis(child)
-                                                   ? MinMaxSizeFunc().min_size
-                                                   : IntrinsicBlockSizeFunc();
+          LayoutUnit content_size_suggestion;
+          if (MainAxisIsInlineAxis(child)) {
+            content_size_suggestion = MinMaxSizeFunc().min_size;
+          } else {
+            LayoutUnit intrinsic_block_size;
+            if (child.HasAspectRatio()) {
+              base::Optional<LayoutUnit> computed_inline_size;
+              base::Optional<LayoutUnit> computed_block_size;
+              LogicalSize aspect_ratio;
+              child.IntrinsicSize(&computed_inline_size, &computed_block_size,
+                                  &aspect_ratio);
+              DCHECK_GT(aspect_ratio.inline_size, 0);
+              DCHECK_GT(aspect_ratio.block_size, 0);
+              // The 150 is for elements that have an aspect ratio but no size,
+              // which SVG can have (maybe others?).
+              intrinsic_block_size =
+                  computed_block_size.value_or(LayoutUnit(150));
+            } else {
+              intrinsic_block_size = IntrinsicBlockSizeFunc();
+            }
+            content_size_suggestion = intrinsic_block_size;
+          }
+
           content_size_suggestion =
               std::min(content_size_suggestion,
                        min_max_sizes_in_main_axis_direction.max_size);
 
-          if (child.MayHaveAspectRatio()) {
+          if (child.HasAspectRatio()) {
             // TODO(dgrogan): We're including borders/padding in both
             // content_size_suggestion and
             // min_max_sizes_in_cross_axis_direction. Maybe we need to multiply
@@ -579,33 +703,16 @@ NGFlexLayoutAlgorithm::AdjustChildSizeForAspectRatioCrossAxisMinAndMax(
     LayoutUnit content_suggestion,
     LayoutUnit cross_min,
     LayoutUnit cross_max) {
-  DCHECK(child.MayHaveAspectRatio());
+  DCHECK(child.HasAspectRatio());
+
+  double ratio = GetMainOverCrossAspectRatio(child);
   // Clamp content_suggestion by any definite min and max cross size properties
   // converted through the aspect ratio.
-
-  base::Optional<LayoutUnit> computed_inline_size;
-  base::Optional<LayoutUnit> computed_block_size;
-  LogicalSize aspect_ratio;
-
-  child.IntrinsicSize(&computed_inline_size, &computed_block_size,
-                      &aspect_ratio);
-
-  // TODO(dgrogan): Should we quit here if only the denominator is 0?
-  if (aspect_ratio.inline_size == 0 || aspect_ratio.block_size == 0)
-    return content_suggestion;
-
-  double ratio = aspect_ratio.inline_size / aspect_ratio.block_size;
-
-  // Multiplying by ratio will take something in the item's block axis and
-  // convert it to the inline axis. We want to convert from cross size to main
-  // size. If block axis and cross axis are the same, then we already have what
-  // we need. Otherwise we need to use the reciprocal.
-  if (!MainAxisIsInlineAxis(child))
-    ratio = 1 / ratio;
-
   const Length& cross_max_length = is_horizontal_flow_
                                        ? child.Style().MaxHeight()
                                        : child.Style().MaxWidth();
+  // TODO(dgrogan): No tests fail if we unconditionally apply max_main_length.
+  // Either add a test that needs it or remove it.
   if (IsItemCrossAxisLengthDefinite(child, cross_max_length)) {
     LayoutUnit max_main_length = LayoutUnit(cross_max * ratio);
     content_suggestion = std::min(max_main_length, content_suggestion);
@@ -614,6 +721,8 @@ NGFlexLayoutAlgorithm::AdjustChildSizeForAspectRatioCrossAxisMinAndMax(
   const Length& cross_min_length = is_horizontal_flow_
                                        ? child.Style().MinHeight()
                                        : child.Style().MinWidth();
+  // TODO(dgrogan): Same as above with min_main_length here -- it may be
+  // unneeded or untested.
   if (IsItemCrossAxisLengthDefinite(child, cross_min_length)) {
     LayoutUnit min_main_length = LayoutUnit(cross_min * ratio);
     content_suggestion = std::max(min_main_length, content_suggestion);
@@ -912,12 +1021,6 @@ base::Optional<MinMaxSize> NGFlexLayoutAlgorithm::ComputeMinMaxSize(
           ConstraintSpace(), Node(), border_padding_,
           input.percentage_resolution_block_size);
 
-  // Use default MinMaxSizeInput:
-  //   - Children of flexbox ignore any specified float properties, so children
-  //     never have to take floated siblings into account, and external floats
-  //     don't make it through the new formatting context that flexbox
-  //     establishes.
-  //   - We want the child's border box MinMaxSize, which is the default.
   MinMaxSizeInput child_input(child_percentage_resolution_block_size);
 
   NGFlexChildIterator iterator(Node());

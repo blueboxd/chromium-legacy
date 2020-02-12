@@ -12,31 +12,19 @@ import("//build/toolchain/toolchain.gni")
 # Declares a package specifying FIDL files and its dependencies.
 #
 # Parameters:
-#   package_name - Name of the library. target_name is used if name
-#                  is not specified explicitly.
-#   namespace    - FIDL namespace.
+#   library_name - FIDL library name.
 #   sources      - List of sources relative to sdk/fidl/${name}.
 #   deps         - List of dependencies.
 template("fuchsia_sdk_fidl_pkg") {
-  _package_name = target_name
-  if (defined(invoker.package_name)) {
-    _package_name = invoker.package_name
-  }
-
   fidl_library(target_name) {
     forward_variables_from(invoker,
                            [
                              "deps",
+                             "library_name",
                              "public_deps",
                              "testonly",
                              "visibility",
                            ])
-
-    library_name = _package_name
-
-    if (defined(invoker.namespace)) {
-      namespace = invoker.namespace
-    }
 
     sources = invoker.sources
   }

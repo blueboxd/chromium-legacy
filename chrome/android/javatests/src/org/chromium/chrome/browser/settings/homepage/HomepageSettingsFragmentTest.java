@@ -174,6 +174,7 @@ public class HomepageSettingsFragmentTest {
     @SmallTest
     @Feature({"Homepage"})
     @Restriction(UiRestriction.RESTRICTION_TYPE_PHONE)
+    @DisabledTest(message = "crbug.com/1051213")
     public void testStartUp_ChromeNTP_BottomToolbar() {
         mHomepageTestRule.useCustomizedHomepageForTest(TEST_URL_BAR);
         mHomepageTestRule.useChromeNTPForTest();

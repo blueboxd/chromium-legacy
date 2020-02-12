@@ -170,7 +170,7 @@ import java.util.Locale;
  * This is the main activity for ChromeMobile when not running in document mode.  All the tabs
  * are accessible via a chrome specific tab switching UI.
  */
-public class ChromeTabbedActivity extends ChromeActivity {
+public class ChromeTabbedActivity extends ChromeActivity implements AccessibilityUtil.Observer {
     private static final String TAG = "ChromeTabbedActivity";
 
     private static final String HELP_URL_PREFIX = "https://support.google.com/chrome/";
@@ -826,6 +826,7 @@ public class ChromeTabbedActivity extends ChromeActivity {
                     this::maybeGetFeedAppLifecycleAndMaybeCreatePageViewObserver);
             PostTask.postTask(UiThreadTaskTraits.DEFAULT, this::addOverviewModeObserver);
             PostTask.postTask(UiThreadTaskTraits.DEFAULT, this::finishNativeInitialization);
+            AccessibilityUtil.addObserver(this);
         }
     }
 
@@ -838,6 +839,9 @@ public class ChromeTabbedActivity extends ChromeActivity {
         mOverviewListLayout = (OverviewListLayout) mLayoutManager.getOverviewListLayout();
         getTabObscuringHandler().addObserver(mCompositorViewHolder);
         getTabObscuringHandler().addObserver(mOverviewListLayout);
+
+        AccessibilityUtil.addObserver(mLayoutManager);
+        if (isTablet()) AccessibilityUtil.addObserver(mCompositorViewHolder);
     }
 
     @Override
@@ -1169,17 +1173,6 @@ public class ChromeTabbedActivity extends ChromeActivity {
 
     @Override
     public void onAccessibilityModeChanged(boolean enabled) {
-        super.onAccessibilityModeChanged(enabled);
-
-        if (mLayoutManager != null) {
-            mLayoutManager.setEnableAnimations(DeviceClassManager.enableAnimations());
-        }
-        if (isTablet()) {
-            if (getCompositorViewHolder() != null) {
-                getCompositorViewHolder().onAccessibilityStatusChanged(enabled);
-            }
-        }
-
         onAccessibilityTabSwitcherModeChanged();
     }
 
@@ -2023,6 +2016,10 @@ public class ChromeTabbedActivity extends ChromeActivity {
             getTabObscuringHandler().removeObserver(mCompositorViewHolder);
             getTabObscuringHandler().removeObserver(mOverviewListLayout);
         }
+
+        if (isTablet()) AccessibilityUtil.removeObserver(mCompositorViewHolder);
+        AccessibilityUtil.removeObserver(this);
+        AccessibilityUtil.removeObserver(mLayoutManager);
 
         super.onDestroyInternal();
     }

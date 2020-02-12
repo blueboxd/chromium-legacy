@@ -12,21 +12,13 @@
 #include "android_webview/common/aw_features.h"
 #include "base/android/jni_android.h"
 #include "base/android/jni_string.h"
-#include "base/base_paths_android.h"
 #include "base/feature_list.h"
 #include "base/metrics/histogram_functions.h"
 #include "base/no_destructor.h"
-#include "components/metrics/android_metrics_provider.h"
-#include "components/metrics/call_stack_profile_metrics_provider.h"
-#include "components/metrics/drive_metrics_provider.h"
-#include "components/metrics/entropy_state_provider.h"
-#include "components/metrics/gpu/gpu_metrics_provider.h"
 #include "components/metrics/metrics_pref_names.h"
 #include "components/metrics/metrics_service.h"
-#include "components/metrics/version_utils.h"
 #include "components/prefs/pref_service.h"
 #include "components/version_info/android/channel_getter.h"
-#include "components/version_info/version_info.h"
 
 namespace android_webview {
 
@@ -123,14 +115,6 @@ int32_t AwMetricsServiceClient::GetProduct() {
   return metrics::ChromeUserMetricsExtension::ANDROID_WEBVIEW;
 }
 
-metrics::SystemProfileProto::Channel AwMetricsServiceClient::GetChannel() {
-  return metrics::AsProtobufChannel(version_info::android::GetChannel());
-}
-
-std::string AwMetricsServiceClient::GetVersionString() {
-  return version_info::GetVersionNumber();
-}
-
 double AwMetricsServiceClient::GetSampleRate() {
   // Down-sample unknown channel as a precaution in case it ends up being
   // shipped to Stable users.
@@ -163,13 +147,6 @@ void AwMetricsServiceClient::RegisterAdditionalMetricsProviders(
   service->RegisterMetricsProvider(
       std::make_unique<android_webview::AwStabilityMetricsProvider>(
           pref_service()));
-  service->RegisterMetricsProvider(
-      std::make_unique<metrics::AndroidMetricsProvider>());
-  service->RegisterMetricsProvider(
-      std::make_unique<metrics::DriveMetricsProvider>(
-          base::DIR_ANDROID_APP_DATA));
-  service->RegisterMetricsProvider(
-      std::make_unique<metrics::GPUMetricsProvider>());
 }
 
 std::string AwMetricsServiceClient::GetAppPackageNameInternal() {

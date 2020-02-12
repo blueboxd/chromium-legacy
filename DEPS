@@ -183,15 +183,15 @@ vars = {
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling ANGLE
   # and whatever else without interference from each other.
-  'angle_revision': 'b40d48a67c932625f349c6e58036c2d96b62489b',
+  'angle_revision': '72e9f4d73f656b6955202d31c9f235f8a7fc7ebe',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling SwiftShader
   # and whatever else without interference from each other.
-  'swiftshader_revision': 'a0453d55f721e528656a41742f28e0882863e1bb',
+  'swiftshader_revision': '6cbb02e0dc934ac1e21b182f0f632b4e806449a6',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling PDFium
   # and whatever else without interference from each other.
-  'pdfium_revision': '4a0f1a01ac8a9214c791e99baaf2ddbe914629da',
+  'pdfium_revision': 'd9bd62fafb662f5dce8bf36bb61d4d0e5b263496',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling BoringSSL
   # and whatever else without interference from each other.
@@ -234,7 +234,7 @@ vars = {
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling catapult
   # and whatever else without interference from each other.
-  'catapult_revision': '5b39823026a7a7a20705c987a6ab9391a975178c',
+  'catapult_revision': '601fc962a276f2e61ad92db3af1dfb282b8945c2',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling libFuzzer
   # and whatever else without interference from each other.
@@ -275,10 +275,6 @@ vars = {
   # the commit queue can handle CLs rolling android_sdk_sources_version
   # and whatever else without interference from each other.
   'android_sdk_sources_version': '4gxhM8E62bvZpQs7Q3d0DinQaW0RLCIefhXrQBFkNy8C',
-  # Three lines of non-changing comments so that
-  # the commit queue can handle CLs rolling android_sdk_tools_version
-  # and whatever else without interference from each other.
-  'android_sdk_tools_version': 'wYcRQC2WHsw2dKWs4EA7fw9Qsyzu1ds1_fRjKmGxe5QC',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling android_sdk_tools-lint_version
   # and whatever else without interference from each other.
@@ -743,10 +739,6 @@ deps = {
           {
               'package': 'chromium/third_party/android_sdk/public/sources/android-29',
               'version': Var('android_sdk_sources_version'),
-          },
-          {
-              'package': 'chromium/third_party/android_sdk/public/tools',
-              'version': Var('android_sdk_tools_version'),
           },
           {
               'package': 'chromium/third_party/android_sdk/public/tools-lint',
@@ -1257,7 +1249,7 @@ deps = {
   },
 
   'src/third_party/perfetto':
-    Var('android_git') + '/platform/external/perfetto.git' + '@' + '6a8f7c51bda270ad29772d0b58a108c8242bb34f',
+    Var('android_git') + '/platform/external/perfetto.git' + '@' + '6a53dfe7459d63939e946cab3d441f9aedd594a5',
 
   'src/third_party/perl': {
       'url': Var('chromium_git') + '/chromium/deps/perl.git' + '@' + '6f3e5028eb65d0b4c5fdd792106ac4c84eee1eb3',
@@ -1528,7 +1520,7 @@ deps = {
     Var('chromium_git') + '/v8/v8.git' + '@' +  Var('v8_revision'),
 
   'src-internal': {
-    'url': 'https://chrome-internal.googlesource.com/chrome/src-internal.git@3bc454cda8bce2790fe261683e055db536d3cde2',
+    'url': 'https://chrome-internal.googlesource.com/chrome/src-internal.git@5934f107c17a50c07138a99aabb6f06f69ecd4ee',
     'condition': 'checkout_src_internal',
   },
 

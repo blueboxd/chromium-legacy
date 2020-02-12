@@ -68,7 +68,7 @@ namespace blink {
 
 namespace {
 
-enum PseudoPriority { kMarker, kBefore, kOther, kAfter };
+enum PseudoPriority { kNone, kMarker, kBefore, kOther, kAfter };
 
 unsigned NextSequenceNumber() {
   static unsigned next = 0;
@@ -96,6 +96,8 @@ double Min(base::Optional<double> a, double b) {
 }
 
 PseudoPriority ConvertStringtoPriority(const String& pseudo) {
+  if (pseudo.IsNull())
+    return PseudoPriority::kNone;
   if (pseudo == "::marker")
     return PseudoPriority::kMarker;
   if (pseudo == "::before")
@@ -479,46 +481,32 @@ bool Animation::HasLowerCompositeOrdering(const Animation* animation1,
     }
 
     // A pseudo-element has a higher composite ordering than its originating
-    // element, but lower than the originating element's children.  Two
-    // pseudo-elements sharing the same originating element are sorted as
-    // follows:
+    // element, but lower than the originating element's children.
+    // Two pseudo-elements sharing the same originating element are sorted
+    // as follows:
     // ::marker
     // ::before
-    // ::other
+    // other pseudo-elements (ordered by selector)
     // ::after
-    // The "::other" category is a catch-all for any pseudo-element that does
-    // not match another label. This category is not currently covered in the
-    // spec.
-    // TODO: revisit when the spec is clarified
-    // (https://github.com/w3c/csswg-drafts/issues/4502).
-    const String& pseudo1 =
-        const_cast<KeyframeEffect*>(effect1)->pseudoElement();
-    const String& pseudo2 =
-        const_cast<KeyframeEffect*>(effect2)->pseudoElement();
+    const String& pseudo1 = effect1->pseudoElement();
+    const String& pseudo2 = effect2->pseudoElement();
+    PseudoPriority priority1 = ConvertStringtoPriority(pseudo1);
+    PseudoPriority priority2 = ConvertStringtoPriority(pseudo2);
 
-    if (!pseudo1.IsEmpty() && !pseudo2.IsEmpty()) {
-      PseudoPriority priority1 = ConvertStringtoPriority(pseudo1);
-      PseudoPriority priority2 = ConvertStringtoPriority(pseudo2);
-      // In this case, we are comparing the SequenceNumber for now.
-      // TODO(crbug.com/1045835): compare them via Animation Name Property
-      if (priority1 == priority2)
-        return animation1->SequenceNumber() < animation2->SequenceNumber();
+    if (priority1 != priority2)
       return priority1 < priority2;
-    }
+    if (priority1 == kOther && pseudo1 != pseudo2)
+      return CodeUnitCompareLessThan(pseudo1, pseudo2);
 
-    // If one is pseudo element and the other one is not, then we compare the
-    // hosting element and the owning element.
-    if (!pseudo1.IsEmpty())
-      return false;
-
-    if (!pseudo2.IsEmpty())
-      return true;
-    // TODO: Sort animation1 and animation2 based on their position in the
-    // computed value of "animation-name" property
+    // For two animatiions with the same target (including the pseudo-element
+    // selector) compare the SequenceNumber for now.
+    // TODO(crbug.com/1045835): Sort animation1 and animation2 based on their
+    // position in the computed value of "animation-name" property for
+    // CSSAnimations and transition property for CSSTransitions.
+    return animation1->SequenceNumber() < animation2->SequenceNumber();
   }
-  // If the anmiations are not-CSS web animation or both animations have the
-  // same owning element then just compare them via generation time/ sequence
-  // number
+  // If the anmiations are not-CSS WebAnimation just compare them via generation
+  // time/ sequence number.
   return animation1->SequenceNumber() < animation2->SequenceNumber();
 }
 

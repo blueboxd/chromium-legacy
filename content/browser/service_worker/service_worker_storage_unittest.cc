@@ -665,11 +665,11 @@ TEST_F(ServiceWorkerStorageTest, DisabledStorage) {
 
   // Next available ids should be invalid.
   EXPECT_EQ(blink::mojom::kInvalidServiceWorkerRegistrationId,
-            storage()->NewRegistrationIdInternal());
+            storage()->NewRegistrationId());
   EXPECT_EQ(blink::mojom::kInvalidServiceWorkerVersionId,
-            storage()->NewVersionId());
+            storage()->GetNewVersionId());
   EXPECT_EQ(ServiceWorkerConsts::kInvalidServiceWorkerResourceId,
-            storage()->NewRegistrationIdInternal());
+            storage()->NewRegistrationId());
 }
 
 TEST_F(ServiceWorkerStorageTest, StoreFindUpdateDeleteRegistration) {
@@ -1606,7 +1606,7 @@ TEST_F(ServiceWorkerResourceStorageTest, UpdateRegistration) {
   // Make an updated registration.
   scoped_refptr<ServiceWorkerVersion> live_version = new ServiceWorkerVersion(
       registration_.get(), script_, blink::mojom::ScriptType::kClassic,
-      storage()->NewVersionId(), context()->AsWeakPtr());
+      storage()->GetNewVersionId(), context()->AsWeakPtr());
   live_version->SetStatus(ServiceWorkerVersion::NEW);
   registration_->SetWaitingVersion(live_version);
   std::vector<ResourceRecord> records;
@@ -1653,7 +1653,7 @@ TEST_F(ServiceWorkerResourceStorageTest, UpdateRegistration_NoLiveVersion) {
   // Make an updated registration.
   scoped_refptr<ServiceWorkerVersion> live_version = new ServiceWorkerVersion(
       registration_.get(), script_, blink::mojom::ScriptType::kClassic,
-      storage()->NewVersionId(), context()->AsWeakPtr());
+      storage()->GetNewVersionId(), context()->AsWeakPtr());
   live_version->SetStatus(ServiceWorkerVersion::NEW);
   registration_->SetWaitingVersion(live_version);
   std::vector<ResourceRecord> records;

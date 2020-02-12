@@ -34,8 +34,9 @@ function prepareWebKitXMLViewer()
     header.classList.add('header');
     var headerSpan = createHTMLElement('span');
     header.appendChild(headerSpan);
-    headerSpan.textContent = "This XML file does not appear to have any style information " +
-      "associated with it. The document tree is shown below.";
+    headerSpan.textContent =
+        'This XML file does not appear to have any style information ' +
+        'associated with it. The document tree is shown below.';
     header.appendChild(createHTMLElement('br'));
 
     tree = createHTMLElement('div');
@@ -65,18 +66,25 @@ function sourceXMLLoaded()
 
 function processNode(parentElement, node)
 {
-    var map = processNode.processorsMap;
-    if (!map) {
-        map = {};
-        processNode.processorsMap = map;
-        map[Node.PROCESSING_INSTRUCTION_NODE] = processProcessingInstruction;
-        map[Node.ELEMENT_NODE] = processElement;
-        map[Node.COMMENT_NODE] = processComment;
-        map[Node.TEXT_NODE] = processText;
-        map[Node.CDATA_SECTION_NODE] = processCDATA;
-    }
-    if (processNode.processorsMap[node.nodeType])
-        processNode.processorsMap[node.nodeType].call(this, parentElement, node);
+  switch (node.nodeType) {
+    case Node.PROCESSING_INSTRUCTION_NODE:
+      processProcessingInstruction(parentElement, node);
+      break;
+    case Node.ELEMENT_NODE:
+      processElement(parentElement, node);
+      break;
+    case Node.COMMENT_NODE:
+      processComment(parentElement, node);
+      break;
+    case Node.TEXT_NODE:
+      processText(parentElement, node);
+      break;
+    case Node.CDATA_SECTION_NODE:
+      processCDATA(parentElement, node);
+      break;
+    default:
+      // No-op for unsupported node types e.g. Node.DOCUMENT_FRAGMENT_NODE.
+  }
 }
 
 function processElement(parentElement, node)

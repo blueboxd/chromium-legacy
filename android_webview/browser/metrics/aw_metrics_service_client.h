@@ -99,8 +99,6 @@ class AwMetricsServiceClient : public ::metrics::AndroidMetricsServiceClient {
 
   // metrics::MetricsServiceClient
   int32_t GetProduct() override;
-  metrics::SystemProfileProto::Channel GetChannel() override;
-  std::string GetVersionString() override;
 
   // metrics::AndroidMetricsServiceClient:
   void InitInternal() override;

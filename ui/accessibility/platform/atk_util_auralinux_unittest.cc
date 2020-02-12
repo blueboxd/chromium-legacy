@@ -25,7 +25,7 @@ class AtkUtilAuraLinuxTest : public AXPlatformNodeTest {
     Init(root);
 
     TestAXNodeWrapper* wrapper =
-        TestAXNodeWrapper::GetOrCreate(tree_.get(), GetRootNode());
+        TestAXNodeWrapper::GetOrCreate(GetTree(), GetRootAsAXNode());
     if (!wrapper)
       NOTREACHED();
     AXPlatformNodeAuraLinux::SetApplication(wrapper->ax_platform_node());
@@ -35,11 +35,14 @@ class AtkUtilAuraLinuxTest : public AXPlatformNodeTest {
 
   ~AtkUtilAuraLinuxTest() override {
     TestAXNodeWrapper* wrapper =
-        TestAXNodeWrapper::GetOrCreate(tree_.get(), GetRootNode());
+        TestAXNodeWrapper::GetOrCreate(GetTree(), GetRootAsAXNode());
     if (!wrapper)
       NOTREACHED();
     g_object_unref(wrapper->ax_platform_node()->GetNativeViewAccessible());
   }
+
+  AtkUtilAuraLinuxTest(const AtkUtilAuraLinuxTest&) = delete;
+  AtkUtilAuraLinuxTest& operator=(const AtkUtilAuraLinuxTest&) = delete;
 };
 
 TEST_F(AtkUtilAuraLinuxTest, KeySnooping) {

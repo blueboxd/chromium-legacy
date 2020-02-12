@@ -27,13 +27,13 @@
 
 #include <memory>
 
+#include "base/metrics/histogram_functions.h"
 #include "third_party/blink/renderer/bindings/modules/v8/v8_biquad_filter_options.h"
 #include "third_party/blink/renderer/core/inspector/console_message.h"
 #include "third_party/blink/renderer/modules/webaudio/audio_basic_processor_handler.h"
 #include "third_party/blink/renderer/modules/webaudio/audio_node_output.h"
 #include "third_party/blink/renderer/platform/bindings/exception_messages.h"
 #include "third_party/blink/renderer/platform/bindings/exception_state.h"
-#include "third_party/blink/renderer/platform/instrumentation/histogram.h"
 #include "third_party/blink/renderer/platform/scheduler/public/post_cross_thread_task.h"
 #include "third_party/blink/renderer/platform/wtf/cross_thread_functional.h"
 
@@ -188,58 +188,54 @@ BiquadProcessor* BiquadFilterNode::GetBiquadProcessor() const {
 String BiquadFilterNode::type() const {
   switch (
       const_cast<BiquadFilterNode*>(this)->GetBiquadProcessor()->GetType()) {
-    case BiquadProcessor::kLowPass:
+    case BiquadProcessor::FilterType::kLowPass:
       return "lowpass";
-    case BiquadProcessor::kHighPass:
+    case BiquadProcessor::FilterType::kHighPass:
       return "highpass";
-    case BiquadProcessor::kBandPass:
+    case BiquadProcessor::FilterType::kBandPass:
       return "bandpass";
-    case BiquadProcessor::kLowShelf:
+    case BiquadProcessor::FilterType::kLowShelf:
       return "lowshelf";
-    case BiquadProcessor::kHighShelf:
+    case BiquadProcessor::FilterType::kHighShelf:
       return "highshelf";
-    case BiquadProcessor::kPeaking:
+    case BiquadProcessor::FilterType::kPeaking:
       return "peaking";
-    case BiquadProcessor::kNotch:
+    case BiquadProcessor::FilterType::kNotch:
       return "notch";
-    case BiquadProcessor::kAllpass:
+    case BiquadProcessor::FilterType::kAllpass:
       return "allpass";
-    default:
-      NOTREACHED();
-      return "lowpass";
   }
+  NOTREACHED();
+  return "lowpass";
 }
 
 void BiquadFilterNode::setType(const String& type) {
   if (type == "lowpass") {
-    setType(BiquadProcessor::kLowPass);
+    SetType(BiquadProcessor::FilterType::kLowPass);
   } else if (type == "highpass") {
-    setType(BiquadProcessor::kHighPass);
+    SetType(BiquadProcessor::FilterType::kHighPass);
   } else if (type == "bandpass") {
-    setType(BiquadProcessor::kBandPass);
+    SetType(BiquadProcessor::FilterType::kBandPass);
   } else if (type == "lowshelf") {
-    setType(BiquadProcessor::kLowShelf);
+    SetType(BiquadProcessor::FilterType::kLowShelf);
   } else if (type == "highshelf") {
-    setType(BiquadProcessor::kHighShelf);
+    SetType(BiquadProcessor::FilterType::kHighShelf);
   } else if (type == "peaking") {
-    setType(BiquadProcessor::kPeaking);
+    SetType(BiquadProcessor::FilterType::kPeaking);
   } else if (type == "notch") {
-    setType(BiquadProcessor::kNotch);
+    SetType(BiquadProcessor::FilterType::kNotch);
   } else if (type == "allpass") {
-    setType(BiquadProcessor::kAllpass);
+    SetType(BiquadProcessor::FilterType::kAllpass);
   }
 }
 
-bool BiquadFilterNode::setType(unsigned type) {
-  if (type > BiquadProcessor::kAllpass)
+bool BiquadFilterNode::SetType(BiquadProcessor::FilterType type) {
+  if (type > BiquadProcessor::FilterType::kAllpass)
     return false;
 
-  DEFINE_STATIC_LOCAL(
-      EnumerationHistogram, filter_type_histogram,
-      ("WebAudio.BiquadFilter.Type", BiquadProcessor::kAllpass + 1));
-  filter_type_histogram.Count(type);
+  base::UmaHistogramEnumeration("WebAudio.BiquadFilter.Type", type);
 
-  GetBiquadProcessor()->SetType(static_cast<BiquadProcessor::FilterType>(type));
+  GetBiquadProcessor()->SetType(type);
   return true;
 }
 

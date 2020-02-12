@@ -181,7 +181,7 @@ class SyncedNetworkUpdaterImplTest : public testing::Test {
 };
 
 TEST_F(SyncedNetworkUpdaterImplTest, TestAdd_OneNetwork) {
-  sync_pb::WifiConfigurationSpecificsData specifics =
+  sync_pb::WifiConfigurationSpecifics specifics =
       GenerateTestWifiSpecifics(fred_network_id());
   NetworkIdentifier id = NetworkIdentifier::FromProto(specifics);
   updater()->AddOrUpdateNetwork(specifics);

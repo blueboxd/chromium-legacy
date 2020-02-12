@@ -34,7 +34,7 @@
 namespace blink {
 
 EqualPowerPanner::EqualPowerPanner(float sample_rate)
-    : Panner(kPanningModelEqualPower) {}
+    : Panner(PanningModel::kEqualPower) {}
 
 void EqualPowerPanner::Pan(double azimuth,
                            double /*elevation*/,

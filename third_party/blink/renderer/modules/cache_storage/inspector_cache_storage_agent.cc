@@ -150,32 +150,32 @@ ProtocolResponse AssertCacheStorageAndNameForId(
   return AssertCacheStorage(security_origin, frames, caches, result);
 }
 
-std::string CacheStorageErrorString(mojom::blink::CacheStorageError error) {
+const char* CacheStorageErrorString(mojom::blink::CacheStorageError error) {
   switch (error) {
     case mojom::blink::CacheStorageError::kErrorNotImplemented:
-      return std::string("not implemented.");
+      return "not implemented.";
     case mojom::blink::CacheStorageError::kErrorNotFound:
-      return std::string("not found.");
+      return "not found.";
     case mojom::blink::CacheStorageError::kErrorExists:
-      return std::string("cache already exists.");
+      return "cache already exists.";
     case mojom::blink::CacheStorageError::kErrorQuotaExceeded:
-      return std::string("quota exceeded.");
+      return "quota exceeded.";
     case mojom::blink::CacheStorageError::kErrorCacheNameNotFound:
-      return std::string("cache not found.");
+      return "cache not found.";
     case mojom::blink::CacheStorageError::kErrorQueryTooLarge:
-      return std::string("operation too large.");
+      return "operation too large.";
     case mojom::blink::CacheStorageError::kErrorStorage:
-      return std::string("storage failure.");
+      return "storage failure.";
     case mojom::blink::CacheStorageError::kErrorDuplicateOperation:
-      return std::string("duplicate operation.");
+      return "duplicate operation.";
     case mojom::blink::CacheStorageError::kErrorCrossOriginResourcePolicy:
-      return std::string("failed Cross-Origin-Resource-Policy check.");
+      return "failed Cross-Origin-Resource-Policy check.";
     case mojom::blink::CacheStorageError::kSuccess:
       // This function should only be called upon error.
       break;
   }
   NOTREACHED();
-  return std::string();
+  return "";
 }
 
 CachedResponseType ResponseTypeToString(
@@ -351,10 +351,9 @@ class ResponsesAccumulator : public RefCounted<ResponsesAccumulator> {
   }
 
   void SendFailure(const mojom::blink::CacheStorageError& error) {
-    callback_->sendFailure(ProtocolResponse::Error(
-        String::Format("Error requesting responses for cache %s : %s",
-                       params_.cache_name.Utf8().c_str(),
-                       CacheStorageErrorString(error).data())));
+    callback_->sendFailure(ProtocolResponse::Error(String::Format(
+        "Error requesting responses for cache %s : %s",
+        params_.cache_name.Latin1().c_str(), CacheStorageErrorString(error))));
   }
 
   std::unique_ptr<Array<Header>> SerializeHeaders(
@@ -407,8 +406,8 @@ class GetCacheKeysForRequestData {
                 self->callback_->sendFailure(
                     ProtocolResponse::Error(String::Format(
                         "Error requesting requests for cache %s: %s",
-                        params.cache_name.Utf8().c_str(),
-                        CacheStorageErrorString(result->get_status()).data())));
+                        params.cache_name.Latin1().c_str(),
+                        CacheStorageErrorString(result->get_status()))));
               } else {
                 if (result->get_keys().IsEmpty()) {
                   auto array = std::make_unique<protocol::Array<DataEntry>>();
@@ -585,8 +584,8 @@ void InspectorCacheStorageAgent::requestEntries(
             if (result->is_status()) {
               callback->sendFailure(ProtocolResponse::Error(String::Format(
                   "Error requesting cache %s: %s",
-                  params.cache_name.Utf8().c_str(),
-                  CacheStorageErrorString(result->get_status()).data())));
+                  params.cache_name.Latin1().c_str(),
+                  CacheStorageErrorString(result->get_status()))));
             } else {
               auto request = std::make_unique<GetCacheKeysForRequestData>(
                   params, std::move(result->get_cache()), std::move(callback));
@@ -623,7 +622,7 @@ void InspectorCacheStorageAgent::deleteCache(
             } else {
               callback->sendFailure(ProtocolResponse::Error(
                   String::Format("Error requesting cache names: %s",
-                                 CacheStorageErrorString(error).data())));
+                                 CacheStorageErrorString(error))));
             }
           },
           std::move(callback)));
@@ -654,8 +653,8 @@ void InspectorCacheStorageAgent::deleteEntry(
              mojom::blink::OpenResultPtr result) {
             if (result->is_status()) {
               callback->sendFailure(ProtocolResponse::Error(String::Format(
-                  "Error requesting cache %s: %s", cache_name.Utf8().c_str(),
-                  CacheStorageErrorString(result->get_status()).data())));
+                  "Error requesting cache %s: %s", cache_name.Latin1().c_str(),
+                  CacheStorageErrorString(result->get_status()))));
             } else {
               Vector<mojom::blink::BatchOperationPtr> batch_operations;
               batch_operations.push_back(mojom::blink::BatchOperation::New());
@@ -681,8 +680,7 @@ void InspectorCacheStorageAgent::deleteEntry(
                           callback->sendFailure(
                               ProtocolResponse::Error(String::Format(
                                   "Error deleting cache entry: %s",
-                                  CacheStorageErrorString(error->value)
-                                      .data())));
+                                  CacheStorageErrorString(error->value))));
                         } else {
                           callback->sendSuccess();
                         }
@@ -733,7 +731,7 @@ void InspectorCacheStorageAgent::requestCachedResponse(
             if (result->is_status()) {
               callback->sendFailure(ProtocolResponse::Error(String::Format(
                   "Unable to read cached response: %s",
-                  CacheStorageErrorString(result->get_status()).data())));
+                  CacheStorageErrorString(result->get_status()))));
             } else {
               std::unique_ptr<protocol::DictionaryValue> headers =
                   protocol::DictionaryValue::create();

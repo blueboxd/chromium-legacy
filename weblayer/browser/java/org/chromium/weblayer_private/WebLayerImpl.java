@@ -273,6 +273,14 @@ public final class WebLayerImpl extends IWebLayer.Stub {
         DownloadImpl.forwardIntent(context, intent);
     }
 
+    @Override
+    public void enumerateAllProfileNames(IObjectWrapper valueCallback) {
+        StrictModeWorkaround.apply();
+        final ValueCallback<String[]> callback =
+                (ValueCallback<String[]>) ObjectWrapper.unwrap(valueCallback, ValueCallback.class);
+        ProfileImpl.enumerateAllProfileNames(callback);
+    }
+
     /**
      * Creates a remote context. This should only be used for backwards compatibility when the
      * client was not sending the remote context.

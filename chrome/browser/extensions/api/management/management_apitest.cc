@@ -17,6 +17,7 @@
 #include "chrome/browser/ui/browser_list.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/browser/web_applications/components/app_registrar.h"
+#include "chrome/browser/web_applications/components/app_shortcut_manager.h"
 #include "chrome/browser/web_applications/components/web_app_helpers.h"
 #include "chrome/browser/web_applications/components/web_app_provider_base.h"
 #include "chrome/browser/web_applications/test/test_web_app_ui_manager.h"
@@ -167,6 +168,10 @@ class InstallReplacementWebAppApiTest : public ExtensionManagementApiTest {
     ExtensionManagementApiTest::SetUpOnMainThread();
     https_test_server_.ServeFilesFromDirectory(test_data_dir_);
     ASSERT_TRUE(https_test_server_.Start());
+
+    web_app::WebAppProviderBase::GetProviderBase(profile())
+        ->shortcut_manager()
+        .SuppressShortcutsForTesting();
   }
 
   void RunTest(const char* manifest,

@@ -46,10 +46,13 @@ class PLATFORM_EXPORT Panner {
   USING_FAST_MALLOC(Panner);
 
  public:
-  // This values are used in histograms and should not be renumbered or deleted.
-  enum { kPanningModelEqualPower = 0, kPanningModelHRTF = 1 };
-
-  typedef unsigned PanningModel;
+  // These values are persisted to logs. Entries should not be renumbered and
+  // numeric values should never be reused.
+  enum class PanningModel {
+    kEqualPower = 0,
+    kHRTF = 1,
+    kMaxValue = kHRTF,
+  };
 
   static std::unique_ptr<Panner> Create(PanningModel,
                                         float sample_rate,
@@ -77,7 +80,7 @@ class PLATFORM_EXPORT Panner {
   virtual bool RequiresTailProcessing() const = 0;
 
  protected:
-  Panner(PanningModel model) : panning_model_(model) {}
+  explicit Panner(PanningModel model) : panning_model_(model) {}
 
   PanningModel panning_model_;
 

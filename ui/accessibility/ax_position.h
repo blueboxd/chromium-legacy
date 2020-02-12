@@ -3507,7 +3507,7 @@ class AXPosition {
 
   AXPositionKind kind_;
   AXTreeID tree_id_;
-  int32_t anchor_id_;
+  AXNode::AXID anchor_id_;
 
   // For text positions, |child_index_| is initially set to |-1| and only
   // computed on demand. The same with tree positions and |text_offset_|.

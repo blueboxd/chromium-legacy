@@ -89,10 +89,6 @@ const base::Feature kSendPasswordReusePing {
       base::FEATURE_ENABLED_BY_DEFAULT
 };
 
-const base::Feature kSendSampledPingsForAllowlistDomains{
-    "SafeBrowsingSendSampledPingsForAllowlistDomain",
-    base::FEATURE_ENABLED_BY_DEFAULT};
-
 constexpr base::FeatureParam<bool> kShouldFillOldPhishGuardProto{
     &kPasswordProtectionForSignedInUsers, "DeprecateOldProto", false};
 
@@ -137,7 +133,6 @@ constexpr struct {
     {&kRealTimeUrlLookupEnabledWithToken, true},
     {&kSendOnFocusPing, true},
     {&kSendPasswordReusePing, true},
-    {&kSendSampledPingsForAllowlistDomains, false},
     {&kSuspiciousSiteTriggerQuotaFeature, true},
     {&kThreatDomDetailsTagAndAttributeFeature, false},
     {&kTriggerThrottlerDailyQuotaFeature, false},

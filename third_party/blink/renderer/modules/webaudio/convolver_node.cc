@@ -24,7 +24,10 @@
  */
 
 #include "third_party/blink/renderer/modules/webaudio/convolver_node.h"
+
 #include <memory>
+
+#include "base/metrics/histogram_macros.h"
 #include "third_party/blink/renderer/bindings/modules/v8/v8_convolver_options.h"
 #include "third_party/blink/renderer/modules/webaudio/audio_buffer.h"
 #include "third_party/blink/renderer/modules/webaudio/audio_node_input.h"
@@ -32,7 +35,6 @@
 #include "third_party/blink/renderer/platform/audio/reverb.h"
 #include "third_party/blink/renderer/platform/bindings/exception_messages.h"
 #include "third_party/blink/renderer/platform/bindings/exception_state.h"
-#include "third_party/blink/renderer/platform/instrumentation/histogram.h"
 
 // Note about empirical tuning:
 // The maximum FFT size affects reverb performance and accuracy.

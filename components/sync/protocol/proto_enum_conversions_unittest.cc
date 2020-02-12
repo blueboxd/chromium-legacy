@@ -43,35 +43,33 @@ TEST_F(ProtoEnumConversionsTest, GetPageTransitionQualifierString) {
 }
 
 TEST_F(ProtoEnumConversionsTest, GetWifiConfigurationSecurityTypeString) {
-  TestEnumStringFunction(
-      sync_pb::WifiConfigurationSpecificsData::SecurityType_MIN,
-      sync_pb::WifiConfigurationSpecificsData::SecurityType_MAX);
+  TestEnumStringFunction(sync_pb::WifiConfigurationSpecifics::SecurityType_MIN,
+                         sync_pb::WifiConfigurationSpecifics::SecurityType_MAX);
 }
 
 TEST_F(ProtoEnumConversionsTest,
        GetWifiConfigurationAutomaticallyConnectOptionString) {
   TestEnumStringFunction(
-      sync_pb::WifiConfigurationSpecificsData::AutomaticallyConnectOption_MIN,
-      sync_pb::WifiConfigurationSpecificsData::AutomaticallyConnectOption_MAX);
+      sync_pb::WifiConfigurationSpecifics::AutomaticallyConnectOption_MIN,
+      sync_pb::WifiConfigurationSpecifics::AutomaticallyConnectOption_MAX);
 }
 
 TEST_F(ProtoEnumConversionsTest, GetWifiConfigurationIsPreferredOptionString) {
   TestEnumStringFunction(
-      sync_pb::WifiConfigurationSpecificsData::IsPreferredOption_MIN,
-      sync_pb::WifiConfigurationSpecificsData::IsPreferredOption_MAX);
+      sync_pb::WifiConfigurationSpecifics::IsPreferredOption_MIN,
+      sync_pb::WifiConfigurationSpecifics::IsPreferredOption_MAX);
 }
 
 TEST_F(ProtoEnumConversionsTest, GetWifiConfigurationMeteredOptionString) {
   TestEnumStringFunction(
-      sync_pb::WifiConfigurationSpecificsData::MeteredOption_MIN,
-      sync_pb::WifiConfigurationSpecificsData::MeteredOption_MAX);
+      sync_pb::WifiConfigurationSpecifics::MeteredOption_MIN,
+      sync_pb::WifiConfigurationSpecifics::MeteredOption_MAX);
 }
 
 TEST_F(ProtoEnumConversionsTest, GetWifiConfigurationProxyOptionString) {
-  TestEnumStringFunction(sync_pb::WifiConfigurationSpecificsData::
-                             ProxyConfiguration::ProxyOption_MIN,
-                         sync_pb::WifiConfigurationSpecificsData::
-                             ProxyConfiguration::ProxyOption_MAX);
+  TestEnumStringFunction(
+      sync_pb::WifiConfigurationSpecifics::ProxyConfiguration::ProxyOption_MIN,
+      sync_pb::WifiConfigurationSpecifics::ProxyConfiguration::ProxyOption_MAX);
 }
 
 TEST_F(ProtoEnumConversionsTest, GetUpdatesSourceString) {

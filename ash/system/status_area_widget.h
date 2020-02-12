@@ -139,6 +139,30 @@ class ASH_EXPORT StatusAreaWidget : public SessionObserver,
   }
 
  private:
+  struct LayoutInputs {
+    gfx::Rect bounds;
+    CollapseState collapse_state = CollapseState::NOT_COLLAPSIBLE;
+    float opacity = 0.0f;
+    // Children change visibility only one at a time, so keeping track of
+    // how many are visible (as opposed to the visibility state of each) is
+    // sufficient to make sure we don't miss necessary layout changes.
+    unsigned int number_of_visible_children = 0;
+
+    bool operator==(const LayoutInputs& other) const {
+      return bounds == other.bounds && collapse_state == other.collapse_state &&
+             opacity == other.opacity &&
+             number_of_visible_children == other.number_of_visible_children;
+    }
+  };
+
+  // Collects the inputs for layout.
+  LayoutInputs GetLayoutInputs() const;
+
+  // The set of inputs that impact this widget's layout. The assumption is that
+  // this widget needs a relayout if, and only if, one or more of these has
+  // changed.
+  base::Optional<LayoutInputs> layout_inputs_;
+
   // views::Widget:
   void OnMouseEvent(ui::MouseEvent* event) override;
   void OnGestureEvent(ui::GestureEvent* event) override;

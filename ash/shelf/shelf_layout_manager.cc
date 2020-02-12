@@ -1566,13 +1566,6 @@ void ShelfLayoutManager::UpdateBoundsAndOpacity(bool animate) {
     }
   }
 
-  // Set an empty border to avoid the shelf view and status area overlapping.
-  // TODO(msw): Avoid setting bounds of views within the shelf widget here.
-  gfx::Rect shelf_bounds = gfx::Rect(target_bounds_.shelf_bounds.size());
-  shelf_widget_->GetContentsView()->SetBorder(views::CreateEmptyBorder(
-      shelf_bounds.InsetsFrom(target_bounds_.shelf_bounds_in_shelf)));
-  shelf_widget_->GetContentsView()->Layout();
-
   // Never show the navigation widget or the hotseat outside of an active
   // session.
   if (!state_.IsActiveSessionState()) {
@@ -1719,34 +1712,9 @@ void ShelfLayoutManager::CalculateTargetBounds(
 
   // This needs to happen after calling UpdateTargetBoundsForGesture(), because
   // that can change the size of the shelf.
-  const bool showing_login_shelf = !state.IsActiveSessionState();
   gfx::Rect nav_bounds_in_shelf = nav_bounds;
   // Convert back into shelf coordinates.
   nav_bounds_in_shelf.Offset(-shelf_origin.x(), -shelf_origin.y());
-
-  if (chromeos::switches::ShouldShowScrollableShelf() && !showing_login_shelf) {
-    target_bounds_.shelf_bounds_in_shelf = shelf_->SelectValueForShelfAlignment(
-        gfx::Rect(nav_bounds_in_shelf.right(), 0,
-                  shelf_width - status_size.width() -
-                      nav_bounds_in_shelf.width() - horizontal_edge_spacing,
-                  target_bounds_.shelf_bounds.height()),
-        gfx::Rect(0, nav_bounds_in_shelf.height(),
-                  target_bounds_.shelf_bounds.width(),
-                  shelf_height - status_size.height() -
-                      nav_bounds_in_shelf.height() - vertical_edge_spacing),
-        gfx::Rect(0, nav_bounds_in_shelf.height(),
-                  target_bounds_.shelf_bounds.width(),
-                  shelf_height - status_size.height() -
-                      nav_bounds_in_shelf.height() - vertical_edge_spacing));
-  } else {
-    target_bounds_.shelf_bounds_in_shelf = shelf_->SelectValueForShelfAlignment(
-        gfx::Rect(0, 0, shelf_width - status_size.width(),
-                  target_bounds_.shelf_bounds.height()),
-        gfx::Rect(0, 0, target_bounds_.shelf_bounds.width(),
-                  shelf_height - status_size.height()),
-        gfx::Rect(0, 0, target_bounds_.shelf_bounds.width(),
-                  shelf_height - status_size.height()));
-  }
 }
 
 void ShelfLayoutManager::CalculateTargetBoundsAndUpdateWorkArea() {

@@ -189,7 +189,7 @@ class CAPTURE_EXPORT VideoCaptureDeviceAndroid : public VideoCaptureDevice {
   bool got_first_frame_ = false;
   // Photo-related requests waiting for |got_first_frame_| to be served. Android
   // APIs need the device capturing or nearly-capturing to be fully operational.
-  std::list<base::Closure> photo_requests_queue_;
+  std::list<base::OnceClosure> photo_requests_queue_;
 
   base::TimeTicks expected_next_frame_time_;
   base::TimeDelta frame_interval_;

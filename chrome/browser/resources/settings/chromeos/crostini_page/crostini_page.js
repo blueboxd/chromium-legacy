@@ -31,6 +31,11 @@ Polymer({
               settings.routes.CROSTINI_DETAILS.path,
               '#crostini .subpage-arrow');
         }
+        if (settings.routes.CROSTINI_DISK_RESIZE) {
+          map.set(
+              settings.routes.CROSTINI_DISK_RESIZE.path,
+              '#crostini .subpage-arrow');
+        }
         if (settings.routes.CROSTINI_EXPORT_IMPORT) {
           map.set(
               settings.routes.CROSTINI_EXPORT_IMPORT.path,

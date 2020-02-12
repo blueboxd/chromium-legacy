@@ -12,11 +12,15 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 
 import org.chromium.base.test.util.CallbackHelper;
+import org.chromium.content_public.browser.test.util.Criteria;
+import org.chromium.content_public.browser.test.util.CriteriaHelper;
 import org.chromium.content_public.browser.test.util.TestThreadUtils;
+import org.chromium.weblayer.Callback;
 import org.chromium.weblayer.Profile;
 import org.chromium.weblayer.WebLayer;
 import org.chromium.weblayer.shell.InstrumentationActivity;
 
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutionException;
@@ -111,6 +115,49 @@ public class ProfileTest {
             Assert.assertFalse(profiles.contains(profile));
         }
         callbackHelper.waitForFirst();
+    }
+
+    @Test
+    @SmallTest
+    public void testEnumerateAllProfileNames() throws Exception {
+        final String profileName = "TestEnumerateAllProfileNames";
+        final WebLayer weblayer = mActivityTestRule.getWebLayer();
+        final InstrumentationActivity activity = mActivityTestRule.launchWithProfile(profileName);
+        final Profile profile = TestThreadUtils.runOnUiThreadBlockingNoException(
+                () -> activity.getBrowser().getProfile());
+
+        Assert.assertTrue(Arrays.asList(enumerateAllProfileNames(weblayer)).contains(profileName));
+
+        TestThreadUtils.runOnUiThreadBlocking(() -> activity.finish());
+        CriteriaHelper.pollUiThread(new Criteria() {
+            @Override
+            public boolean isSatisfied() {
+                return activity.isDestroyed();
+            }
+        });
+        final CallbackHelper callbackHelper = new CallbackHelper();
+        TestThreadUtils.runOnUiThreadBlocking(
+                () -> profile.destroyAndDeleteDataFromDisk(callbackHelper::notifyCalled));
+        callbackHelper.waitForFirst();
+
+        Assert.assertFalse(Arrays.asList(enumerateAllProfileNames(weblayer)).contains(profileName));
+    }
+
+    private static String[] enumerateAllProfileNames(final WebLayer weblayer) throws Exception {
+        final String[][] holder = new String[1][];
+        final CallbackHelper callbackHelper = new CallbackHelper();
+        TestThreadUtils.runOnUiThreadBlocking(() -> {
+            Callback<String[]> callback = new Callback<String[]>() {
+                @Override
+                public void onResult(String[] names) {
+                    holder[0] = names;
+                    callbackHelper.notifyCalled();
+                }
+            };
+            weblayer.enumerateAllProfileNames(callback);
+        });
+        callbackHelper.waitForFirst();
+        return holder[0];
     }
 
     private static Collection<Profile> getAllProfiles() {

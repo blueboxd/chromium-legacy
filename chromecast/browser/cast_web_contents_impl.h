@@ -22,6 +22,7 @@
 #include "base/time/time.h"
 #include "chromecast/browser/cast_media_blocker.h"
 #include "chromecast/browser/cast_web_contents.h"
+#include "content/public/browser/render_process_host_observer.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/browser/web_contents_observer.h"
 #include "services/service_manager/public/cpp/binder_registry.h"
@@ -36,6 +37,7 @@ class RemoteDebuggingServer;
 }  // namespace shell
 
 class CastWebContentsImpl : public CastWebContents,
+                            public content::RenderProcessHostObserver,
                             public content::WebContentsObserver {
  public:
   CastWebContentsImpl(content::WebContents* web_contents,
@@ -81,6 +83,13 @@ class CastWebContentsImpl : public CastWebContents,
   void RemoveObserver(Observer* observer) override;
   bool is_websql_enabled() override;
   bool is_mixer_audio_enabled() override;
+
+  // content::RenderProcessHostObserver implementation:
+  void RenderProcessReady(content::RenderProcessHost* host) override;
+  void RenderProcessExited(
+      content::RenderProcessHost* host,
+      const content::ChildProcessTerminationInfo& info) override;
+  void RenderProcessHostDestroyed(content::RenderProcessHost* host) override;
 
   // content::WebContentsObserver implementation:
   void RenderFrameCreated(content::RenderFrameHost* render_frame_host) override;
@@ -147,6 +156,7 @@ class CastWebContentsImpl : public CastWebContents,
   void TracePageLoadEnd(const GURL& url);
   void DisableDebugging();
   void OnClosePageTimeout();
+  void RemoveRenderProcessHostObserver();
   std::vector<chromecast::shell::mojom::FeaturePtr> GetRendererFeatures();
 
   content::WebContents* web_contents_;
@@ -159,6 +169,9 @@ class CastWebContentsImpl : public CastWebContents,
   BackgroundColor view_background_color_;
   shell::RemoteDebuggingServer* const remote_debugging_server_;
   std::unique_ptr<CastMediaBlocker> media_blocker_;
+
+  // Retained so that this observer can be removed before being destroyed:
+  content::RenderProcessHost* main_process_host_;
 
   base::flat_set<std::unique_ptr<CastWebContents>> inner_contents_;
   std::vector<RendererFeature> renderer_features_;

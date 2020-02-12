@@ -502,7 +502,7 @@ std::unique_ptr<ServiceWorkerResponseWriter> CreateNewResponseWriterSync(
 int64_t GetNewResourceIdSync(ServiceWorkerStorage* storage) {
   base::RunLoop run_loop;
   int64_t resource_id;
-  storage->NewResourceId(
+  storage->GetNewResourceId(
       base::BindLambdaForTesting([&](int64_t new_resource_id) {
         DCHECK_NE(new_resource_id,
                   ServiceWorkerConsts::kInvalidServiceWorkerResourceId);

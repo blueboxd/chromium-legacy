@@ -11510,7 +11510,7 @@
         'type': 'integer',
         'enum': [0,1,2],
       },
-      'is_device_only': True,
+      'device_only': True,
       'items': [
         {
           'name': 'VariationsEnabled',
@@ -11528,7 +11528,7 @@
           'caption': '''Disable all variations on the login screen''',
         },
       ],
-      'supported_on': ['chrome.*:81-', 'chrome_os:81-'],
+      'supported_on': ['chrome_os:81-'],
       'features': {
         'dynamic_refresh': True,
         'per_profile': False,

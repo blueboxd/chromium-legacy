@@ -70,8 +70,9 @@ void MockCameraModule::NotifyCameraDeviceChange(
     int camera_id,
     cros::mojom::CameraDeviceStatus status) {
   mock_module_thread_.task_runner()->PostTask(
-      FROM_HERE, base::Bind(&MockCameraModule::NotifyCameraDeviceChangeOnThread,
-                            base::Unretained(this), camera_id, status));
+      FROM_HERE,
+      base::BindOnce(&MockCameraModule::NotifyCameraDeviceChangeOnThread,
+                     base::Unretained(this), camera_id, status));
 }
 
 void MockCameraModule::NotifyCameraDeviceChangeOnThread(

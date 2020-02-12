@@ -9,6 +9,7 @@
 #include "chrome/browser/extensions/browsertest_util.h"
 #include "chrome/browser/predictors/loading_predictor_config.h"
 #include "chrome/browser/ui/web_applications/test/web_app_browsertest_util.h"
+#include "chrome/browser/web_applications/components/app_shortcut_manager.h"
 #include "chrome/browser/web_applications/components/web_app_constants.h"
 #include "chrome/browser/web_applications/web_app_provider.h"
 #include "chrome/common/chrome_features.h"
@@ -149,6 +150,10 @@ void WebAppControllerBrowserTest::SetUpOnMainThread() {
 
   // By default, all SSL cert checks are valid. Can be overridden in tests.
   cert_verifier_.mock_cert_verifier()->set_default_result(net::OK);
+
+  web_app::WebAppProviderBase::GetProviderBase(profile())
+      ->shortcut_manager()
+      .SuppressShortcutsForTesting();
 }
 
 }  // namespace web_app

@@ -32,10 +32,21 @@
 #include "media/media_buildflags.h"
 
 #if defined(OS_WIN)
+#include "base/metrics/persistent_memory_allocator.h"
+#include "base/win/pe_image.h"
 #include "chrome/install_static/install_util.h"
+#include "components/browser_watcher/activity_data_names.h"
+#include "components/browser_watcher/activity_report.pb.h"
+#include "components/browser_watcher/activity_tracker_annotation.h"
 #include "components/browser_watcher/extended_crash_reporting.h"
+#include "components/browser_watcher/extended_crash_reporting_metrics.h"
+#include "components/browser_watcher/features.h"
 #endif
 
+#if defined(OS_WIN)
+// http://blogs.msdn.com/oldnewthing/archive/2004/10/25/247180.aspx
+extern "C" IMAGE_DOS_HEADER __ImageBase;
+#endif
 
 namespace chrome {
 
@@ -62,14 +73,77 @@ void SetupStunProbeTrial() {
 
 #if defined(OS_WIN)
 
-void SetupExtendedCrashReporting() {
-  browser_watcher::ExtendedCrashReporting* extended_crash_reporting =
-      browser_watcher::ExtendedCrashReporting::SetUpIfEnabled();
+// Record information about the chrome module.
+void RecordChromeModuleInfo(
+    base::debug::GlobalActivityTracker* global_tracker) {
+  DCHECK(global_tracker);
 
-  if (!extended_crash_reporting)
+  base::debug::GlobalActivityTracker::ModuleInfo module;
+  module.is_loaded = true;
+  module.address = reinterpret_cast<uintptr_t>(&__ImageBase);
+
+  base::win::PEImage pe(&__ImageBase);
+  PIMAGE_NT_HEADERS headers = pe.GetNTHeaders();
+  CHECK(headers);
+  module.size = headers->OptionalHeader.SizeOfImage;
+  module.timestamp = headers->FileHeader.TimeDateStamp;
+
+  GUID guid;
+  DWORD age;
+  if (pe.GetDebugId(&guid, &age, /* pdb_filename= */ nullptr,
+                    /* pdb_filename_length= */ nullptr)) {
+    module.age = age;
+    static_assert(sizeof(module.identifier) >= sizeof(guid),
+                  "Identifier field must be able to contain a GUID.");
+    memcpy(module.identifier, &guid, sizeof(guid));
+  } else {
+    memset(module.identifier, 0, sizeof(module.identifier));
+  }
+
+  module.file = "chrome.dll";
+  module.debug_file = "chrome.dll.pdb";
+
+  global_tracker->RecordModuleInfo(module);
+}
+
+void SetupExtendedCrashReporting() {
+  if (!base::FeatureList::IsEnabled(
+          browser_watcher::kExtendedCrashReportingFeature)) {
+    return;
+  }
+
+  // TODO(bcwhite): Adjust these numbers once there is real data to show
+  // just how much of an arena is necessary.
+  const size_t kMemorySize = 1 << 20;  // 1 MiB
+  const int kStackDepth = 4;
+  const uint64_t kAllocatorId = 0;
+
+  base::debug::GlobalActivityTracker::CreateWithAllocator(
+      std::make_unique<base::LocalPersistentMemoryAllocator>(
+          kMemorySize, kAllocatorId,
+          browser_watcher::kExtendedCrashReportingFeature.name),
+      kStackDepth, 0);
+
+  // Track code activities (such as posting task, blocking on locks, and
+  // joining threads) that can cause hanging threads and general instability
+  base::debug::GlobalActivityTracker* global_tracker =
+      base::debug::GlobalActivityTracker::Get();
+  if (!global_tracker)
     return;
 
-  // Record product, version, channel and special build strings.
+  // Record the location and size of the tracker memory range in a Crashpad
+  // annotation to allow the handler to retrieve it on crash.
+  // Record the buffer size and location for the annotation beacon.
+  auto* allocator = global_tracker->allocator();
+  static browser_watcher::ActivityTrackerAnnotation activity_tracker_annotation(
+      allocator->data(), allocator->size());
+
+  // Record the main DLL module info for easier symbolization.
+  RecordChromeModuleInfo(global_tracker);
+
+  browser_watcher::LogActivityRecordEvent(
+      browser_watcher::ActivityRecordEvent::kGotTracker);
+  // Record product, version, channel, special build and platform.
   wchar_t exe_file[MAX_PATH] = {};
   CHECK(::GetModuleFileName(nullptr, exe_file, base::size(exe_file)));
 
@@ -80,8 +154,23 @@ void SetupExtendedCrashReporting() {
   install_static::GetExecutableVersionDetails(
       exe_file, &product_name, &version_number, &special_build, &channel_name);
 
-  extended_crash_reporting->SetProductStrings(product_name, version_number,
-                                              channel_name, special_build);
+  base::debug::ActivityUserData& proc_data = global_tracker->process_data();
+  proc_data.SetString(browser_watcher::kActivityProduct, product_name);
+  proc_data.SetString(browser_watcher::kActivityVersion, version_number);
+  proc_data.SetString(browser_watcher::kActivityChannel, channel_name);
+  proc_data.SetString(browser_watcher::kActivitySpecialBuild, special_build);
+#if defined(ARCH_CPU_X86)
+  proc_data.SetString(browser_watcher::kActivityPlatform, "Win32");
+#elif defined(ARCH_CPU_X86_64)
+  proc_data.SetString(browser_watcher::kActivityPlatform, "Win64");
+#endif
+  proc_data.SetInt(
+      browser_watcher::kActivityStartTimestamp,
+      base::Time::Now().ToDeltaSinceWindowsEpoch().InMicroseconds());
+  proc_data.SetInt(browser_watcher::kActivityProcessType,
+                   browser_watcher::ProcessState::BROWSER_PROCESS);
+
+  browser_watcher::ExtendedCrashReporting::RegisterVEH();
 }
 #endif  // defined(OS_WIN)
 

@@ -4,13 +4,6 @@
 
 module chromeos.settings.mojom;
 
-// Types of visibility which apply to the Chrome OS settings window.
-enum SettingsPageVisibility {
-  kVisibleAndFocused,
-  kVisibleAndUnfocused,
-  kHidden
-};
-
 // Records user actions within OS settings.
 interface UserActionRecorder {
   // Records that the settings window has been focused.

@@ -90,4 +90,12 @@ VerdictCacheManager* ServicesDelegate::GetVerdictCacheManager(
   return it->second.get();
 }
 
+void ServicesDelegate::ShutdownServices() {
+  // Delete the VerdictCacheManager instances
+  cache_manager_map_.clear();
+
+  // Delete the ChromePasswordProtectionService instances.
+  password_protection_service_map_.clear();
+}
+
 }  // namespace safe_browsing

@@ -103,6 +103,32 @@ CastWebContents* CastWebContents::FromWebContents(
   return *it;
 }
 
+void CastWebContentsImpl::RenderProcessReady(
+    content::RenderProcessHost* host) {
+  DCHECK(host->IsReady());
+  const base::Process& process = host->GetProcess();
+  for (auto& observer : observer_list_) {
+    observer.OnRenderProcessReady(process);
+  }
+}
+
+void CastWebContentsImpl::RenderProcessExited(
+    content::RenderProcessHost* host,
+    const content::ChildProcessTerminationInfo& info) {
+  RemoveRenderProcessHostObserver();
+}
+
+void CastWebContentsImpl::RenderProcessHostDestroyed(
+    content::RenderProcessHost* host) {
+  RemoveRenderProcessHostObserver();
+}
+
+void CastWebContentsImpl::RemoveRenderProcessHostObserver() {
+  if (main_process_host_)
+    main_process_host_->RemoveObserver(this);
+  main_process_host_ = nullptr;
+}
+
 CastWebContentsImpl::CastWebContentsImpl(content::WebContents* web_contents,
                                          const InitParams& init_params)
     : web_contents_(web_contents),
@@ -118,6 +144,7 @@ CastWebContentsImpl::CastWebContentsImpl(content::WebContents* web_contents,
       media_blocker_(init_params.use_media_blocker
                          ? std::make_unique<CastMediaBlocker>(web_contents_)
                          : nullptr),
+      main_process_host_(nullptr),
       tab_id_(init_params.is_root_window ? 0 : next_tab_id++),
       is_websql_enabled_(init_params.enable_websql),
       is_mixer_audio_enabled_(init_params.enable_mixer_audio),
@@ -132,6 +159,12 @@ CastWebContentsImpl::CastWebContentsImpl(content::WebContents* web_contents,
   DCHECK(web_contents_);
   DCHECK(web_contents_->GetController().IsInitialNavigation());
   DCHECK(!web_contents_->IsLoading());
+  DCHECK(web_contents_->GetMainFrame());
+
+  main_process_host_ = web_contents_->GetMainFrame()->GetProcess();
+  DCHECK(main_process_host_);
+  main_process_host_->AddObserver(this);
+
   CastWebContents::GetAll().push_back(this);
   content::WebContentsObserver::Observe(web_contents_);
   if (enabled_for_dev_) {
@@ -156,7 +189,7 @@ CastWebContentsImpl::~CastWebContentsImpl() {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   DCHECK(!notifying_) << "Do not destroy CastWebContents during observer "
                          "notification!";
-
+  RemoveRenderProcessHostObserver();
   DisableDebugging();
   for (auto& observer : observer_list_) {
     observer.ResetCastWebContents();

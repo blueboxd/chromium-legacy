@@ -328,15 +328,15 @@ TEST_F(RemoveOverdrawQuadPerfTest, IterateOverlapShareQuadStates) {
 
 TEST_F(RemoveOverdrawQuadPerfTest, IterateIsolatedSharedQuadStates) {
   IterateIsolatedSharedQuadStates("2_sqs_with_4_quads", 2, 2);
-  IterateIsolatedSharedQuadStates("4_sqs_with_100_quads", 2, 10);
+  IterateIsolatedSharedQuadStates("2_sqs_with_100_quads", 2, 10);
   IterateIsolatedSharedQuadStates("10_sqs_with_4_quads", 10, 2);
   IterateIsolatedSharedQuadStates("10_sqs_with_100_quads", 10, 10);
 }
 
 TEST_F(RemoveOverdrawQuadPerfTest, IteratePartiallyOverlapSharedQuadStates) {
   IteratePartiallyOverlapSharedQuadStates("2_sqs_with_4_quads", 2, 0.5, 2);
-  IteratePartiallyOverlapSharedQuadStates("10_sqs_with_100 quads", 2, 0.5, 10);
-  IteratePartiallyOverlapSharedQuadStates("2_sqs_with_4_quads", 10, 0.5, 2);
+  IteratePartiallyOverlapSharedQuadStates("2_sqs_with_100_quads", 2, 0.5, 10);
+  IteratePartiallyOverlapSharedQuadStates("10_sqs_with_4_quads", 10, 0.5, 2);
   IteratePartiallyOverlapSharedQuadStates("10_sqs_with_100_quads", 10, 0.5, 10);
 }
 

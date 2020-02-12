@@ -269,12 +269,12 @@ class CONTENT_EXPORT ServiceWorkerStorage {
   // NOTE: Currently this method is synchronous but intentionally uses async
   // style because ServiceWorkerStorage will be accessed via mojo calls soon.
   // See crbug.com/1046335 for details.
-  void NewRegistrationId(
+  void GetNewRegistrationId(
       base::OnceCallback<void(int64_t registration_id)> callback);
 
   // Returns a new version id which is guaranteed to be unique in the storage.
   // Returns kInvalidServiceWorkerVersionId if the storage is disabled.
-  int64_t NewVersionId();
+  int64_t GetNewVersionId();
 
   // Returns a new resource id which is guaranteed to be unique in the storage.
   // Returns ServiceWorkerConsts::kInvalidServiceWorkerResourceId if the storage
@@ -283,8 +283,7 @@ class CONTENT_EXPORT ServiceWorkerStorage {
   // and doesn't have to take a callback. Using a callback is a preparation
   // for using ServiceWorkerStorage via a mojo interface.
   // See crbug.com/1046335 for details.
-  // TODO(bashi): Change to GetNewResourceId().
-  void NewResourceId(base::OnceCallback<void(int64_t resource_id)> callback);
+  void GetNewResourceId(base::OnceCallback<void(int64_t resource_id)> callback);
 
   void Disable();
   bool IsDisabled() const;
@@ -428,8 +427,8 @@ class CONTENT_EXPORT ServiceWorkerStorage {
 
   void ClearSessionOnlyOrigins();
 
-  int64_t NewRegistrationIdInternal();
-  int64_t NewResourceIdInternal();
+  int64_t NewRegistrationId();
+  int64_t NewResourceId();
 
   // Static cross-thread helpers.
   static void CollectStaleResourcesFromDB(

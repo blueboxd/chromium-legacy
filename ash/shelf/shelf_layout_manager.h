@@ -299,7 +299,6 @@ class ASH_EXPORT ShelfLayoutManager
     float opacity;
 
     gfx::Rect shelf_bounds;             // Bounds of the shelf within the screen
-    gfx::Rect shelf_bounds_in_shelf;    // Bounds of the shelf minus status area
     gfx::Rect hotseat_bounds_in_screen;  // Bounds of the hotseat within screen
     gfx::Insets shelf_insets;           // Shelf insets within the screen
   };

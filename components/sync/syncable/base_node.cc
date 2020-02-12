@@ -42,9 +42,7 @@ static int64_t IdToMetahandle(syncable::BaseTransaction* trans,
   return entry.GetMetahandle();
 }
 
-BaseNode::BaseNode()
-    : password_data_(new sync_pb::PasswordSpecificsData),
-      wifi_configuration_data_(new sync_pb::WifiConfigurationSpecificsData) {}
+BaseNode::BaseNode() : password_data_(new sync_pb::PasswordSpecificsData) {}
 
 BaseNode::~BaseNode() {}
 
@@ -64,21 +62,6 @@ bool BaseNode::DecryptIfNecessary() {
       return false;
     }
     password_data_.swap(data);
-    return true;
-  }
-
-  if (specifics.has_wifi_configuration()) {
-    // Wifi configs have their own legacy encryption structure.
-    std::unique_ptr<sync_pb::WifiConfigurationSpecificsData> data =
-        DecryptWifiConfigurationSpecifics(specifics,
-                                          GetTransaction()->GetCryptographer());
-    if (!data) {
-      GetTransaction()->GetWrappedTrans()->OnUnrecoverableError(
-          FROM_HERE, std::string("Failed to decrypt encrypted node of type ") +
-                         ModelTypeToString(GetModelType()));
-      return false;
-    }
-    wifi_configuration_data_.swap(data);
     return true;
   }
 
@@ -254,12 +237,6 @@ const sync_pb::NigoriSpecifics& BaseNode::GetNigoriSpecifics() const {
 const sync_pb::PasswordSpecificsData& BaseNode::GetPasswordSpecifics() const {
   DCHECK_EQ(GetModelType(), PASSWORDS);
   return *password_data_;
-}
-
-const sync_pb::WifiConfigurationSpecificsData&
-BaseNode::GetWifiConfigurationSpecifics() const {
-  DCHECK_EQ(GetModelType(), WIFI_CONFIGURATIONS);
-  return *wifi_configuration_data_;
 }
 
 const sync_pb::EntitySpecifics& BaseNode::GetEntitySpecifics() const {

@@ -624,6 +624,10 @@
 <translation id="1988371335297483117"><ph name="PRODUCT_OS_NAME" />上的自动更新有效负荷可通过HTTP而非HTTPS下载。这样，系统将可以对HTTP下载内容进行透明HTTP缓存。
 
       如果此政策设为true，<ph name="PRODUCT_OS_NAME" />将尝试通过HTTP下载自动更新有效负荷。如果此政策设为false或未设置，系统将使用HTTPS下载自动更新有效负荷。</translation>
+<translation id="199011295049694531">报告与设备所设时区有关的信息。
+
+      如果此政策设为 false 或未设置，系统将不会报告这些信息。
+      如果此政策设为 true，系统将会报告设备当前所设的时区。</translation>
 <translation id="199764499252435679">允许更新 <ph name="PRODUCT_NAME" /> 中的组件</translation>
 <translation id="1997994951395619441">如果您启用了此设置，<ph name="PRODUCT_NAME" /> 会显示书签栏。如果您停用了此设置，用户将无法看到书签栏。如果您启用或停用了此设置，则用户无法在 <ph name="PRODUCT_NAME" /> 中更改或替换此设置。如果未进行此设置，用户就可以决定是否使用此功能。</translation>
 <translation id="1999000620918508488">强制在登录屏幕上显示或隐藏系统信息。</translation>
@@ -1055,6 +1059,11 @@
       如果您启用或停用了该设置，用户将无法更改或覆盖该设置。
 
       如果该政策未设置，用户可选择是否使用数据压缩代理功能。</translation>
+<translation id="2575738503503093841">指定收到政策失效通知与从设备管理服务提取新政策之间的最大延迟（以毫秒为单位）。
+
+      设置此政策会覆盖默认值（即 10000 毫秒）。此政策的有效值范围为 1000 毫秒（1 秒）至 300000 毫秒（5 分钟），任何不在此范围内的值都会被强制改为距其较近的那个限值（上限值或下限值）。
+
+      如果此政策未设置，<ph name="PRODUCT_NAME" /> 将会使用默认值（即 10000 毫秒）。</translation>
 <translation id="257788512393330403">必须每 6 小时输入一次密码</translation>
 <translation id="2580104054820772954">延迟交付文件，直到获悉扫描结果</translation>
 <translation id="2582582399758251985">如果启用了此政策，<ph name="PRODUCT_NAME" /> 将会使用内置的证书验证程序来验证服务器证书。
@@ -1083,6 +1092,7 @@
           如果未设置此政策，则默认值为 true，且系统会启用 NTLMv2。</translation>
 <translation id="26023406105317310">配置 Kerberos 帐号</translation>
 <translation id="2604182581880595781">配置网络文件共享功能相关政策。</translation>
+<translation id="2615240493030733717">报告时区信息</translation>
 <translation id="2623014935069176671">等待首个用户活动</translation>
 <translation id="262740370354162807">允许将文档提交到 <ph name="CLOUD_PRINT_NAME" /></translation>
 <translation id="2627554163382448569">为企业打印机提供配置。
@@ -1491,6 +1501,8 @@
           如果未设置此政策，系统将会对所有网站使用“DefaultCookiesSetting”政策中的全局默认值（倘若已设置“DefaultCookiesSetting”政策），或使用用户个人配置中的全局默认值（倘若未设置“DefaultCookiesSetting”政策）。
 
           另请参阅“CookiesBlockedForUrls”和“CookiesSessionOnlyForUrls”政策。请注意，这三项政策中的网址格式不得存在冲突，因为无从指定应以哪项政策为准。</translation>
+<translation id="3339271789059866414">配置系统代理服务的可用情况以及系统服务的代理凭据。
+      如果此政策未设置，系统代理服务将不可用。</translation>
 <translation id="3373364525435227558">为受管理自助服务终端设置一个或多个建议的语言区域，以便用户从这些语言区域中轻松选择。
 
       用户可以先选择语言区域和键盘布局，然后再启动受管理自助服务终端。默认情况下，系统会按字母顺序列出 <ph name="PRODUCT_OS_NAME" />支持的所有语言区域。您可以使用此政策将一些建议的语言区域移至列表顶部。
@@ -2437,6 +2449,7 @@
           如果您设置了此政策，那么用户将无法对其进行更改或覆盖。
 
           如果未设置此政策，则大号光标最初处于停用状态，但用户可以随时启用该功能。</translation>
+<translation id="4802744647065138872">限制为供执行紧急回滚时使用而保留的用户数据快照的数量。</translation>
 <translation id="4802905909524200151">配置 <ph name="TPM_FIRMWARE_UPDATE_TPM" /> 固件更新行为</translation>
 <translation id="4804828344300125154">在用户退出后一律重新启动。</translation>
 <translation id="4807950475297505572">删除最近使用最少的用户，直到有足够的可用空间</translation>
@@ -4351,6 +4364,7 @@
 
       如果未设置此政策，系统将会启用此政策，但用户可以自行更改。</translation>
 <translation id="7953256619080733119">托管用户手动管理的例外主机</translation>
+<translation id="7956210013490975468">为 <ph name="PRODUCT_OS_NAME" />配置系统代理服务。</translation>
 <translation id="7958537754689366707">必须每 12 小时输入一次密码</translation>
 <translation id="7961779417826583251">对于指定的一系列旧版证书授权机构，不强制执行证书透明化要求</translation>
 <translation id="7974114691960514888">此政策已不再受支持。在连接到远程客户端时，允许使用 STUN 和中继服务器。如果启用此设置，那么即使远程客户端受到防火墙隔离，也仍然可以检测到并连接到此计算机。如果停用此设置，并且防火墙过滤了外发 UDP 连接，那么此计算机将只能与本地网络内的客户端计算机建立连接。</translation>
@@ -4600,6 +4614,11 @@
 <translation id="8426231401662877819">将屏幕顺时针旋转 90 度</translation>
 <translation id="8433186206711564395">网络设置</translation>
 <translation id="8433423491036718210">配置企业登录网址列表，以便密码保护服务从这些网址中捕获密码指纹。</translation>
+<translation id="8445576299806775661">每次实施完重大版本更新后，Chrome 都会为用户浏览数据的某些部分创建快照，以供日后执行紧急版本回滚时使用。如果对某个版本执行了紧急回滚，且用户拥有与此版本对应的快照，系统便会恢复相应快照中的数据。这就使得用户能够继续拥有自己的书签和自动填充数据等设置。
+
+      如果此政策未设置，系统将会使用默认值（即 3）
+
+      如果设置了此政策，系统便会酌情删除旧快照以遵守此限制。如果此政策设为 0，系统将不会创建任何快照</translation>
 <translation id="8451988835943702790">使用“新标签页”作为主页</translation>
 <translation id="8459216513698220096">指定是否处理计算机 GPO 中的用户政策以及如何处理。
 
@@ -4685,6 +4704,7 @@
 
       如果此政策设为 false 或未配置，用户无需登录 <ph name="PRODUCT_NAME" /> 即可使用该浏览器。</translation>
 <translation id="858309738002328421">禁止上传大型文件</translation>
+<translation id="8584279193368801689">限制 PIN 码打印模式。如果此政策未设置，则会被视为无限制。如果所设的模式不适用，系统会忽略此政策。请注意，PIN 码打印功能仅针对使用 IPPS、HTTPS、USB 或 IPP-over-USB 协议之一的打印机启用。</translation>
 <translation id="8585558195682146109">发送用户下载内容进行扫描</translation>
 <translation id="8586528890725660268">指定用户无法使用的打印机。
 
@@ -4750,6 +4770,13 @@
 <translation id="8687958770985542440">重新启用 Web Components v0 API 直至 M84。</translation>
 <translation id="8693243869659262736">使用内置 DNS 客户端</translation>
 <translation id="8698286761337647563">用于指定提前多少天通知密码快要到期的 SAML 用户</translation>
+<translation id="8701288965900240388">让您能够设置是否允许网站自动运行 <ph name="FLASH_PLUGIN_NAME" /> 插件。您既可允许所有网站自动运行 <ph name="FLASH_PLUGIN_NAME" /> 插件，也可禁止所有网站自动运行该插件。
+
+          选中“点击运行”选项会允许 <ph name="FLASH_PLUGIN_NAME" /> 插件运行，但用户必须点击该插件才能启动它。
+
+          “自动播放”仅适用于 <ph name="PLUGINS_ALLOWED_FOR_URLS_POLICY_NAME" /> 政策中明确列出的网域。如果要为所有网站启用“自动播放”，不妨将 http://* 和 https://* 添加到这个列表中。
+
+          如果此政策未设置，系统将会使用“BlockPlugins”，且用户将能手动更改此设置。</translation>
 <translation id="8703488928438047864">报告主板状态</translation>
 <translation id="8704831857353097849">已停用插件的列表</translation>
 <translation id="8711086062295757690">指定关键字，该关键字在多功能框中作为快捷方式来触发针对此提供商的搜索。此政策是可选的，如果未设置，就没有任何关键字可激活搜索服务提供商。要实施此政策，必须先启用“DefaultSearchProviderEnabled”政策。</translation>

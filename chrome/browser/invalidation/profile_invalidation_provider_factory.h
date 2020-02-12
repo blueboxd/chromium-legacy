@@ -50,6 +50,8 @@ class ProfileInvalidationProviderFactory
   // BrowserContextKeyedServiceFactory:
   KeyedService* BuildServiceInstanceFor(
       content::BrowserContext* context) const override;
+  void RegisterProfilePrefs(
+      user_prefs::PrefRegistrySyncable* registry) override;
 
   TestingFactory testing_factory_;
 

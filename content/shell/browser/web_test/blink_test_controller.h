@@ -199,6 +199,7 @@ class BlinkTestController : public WebContentsObserver,
   void OnLoadURLForFrame(const GURL& url, const std::string& frame_name);
   void OnNavigateSecondaryWindow(const GURL& url);
   void OnBlockThirdPartyCookies(bool block);
+  void OnSetScreenOrientationChanged();
 
  private:
   enum TestPhase { BETWEEN_TESTS, DURING_TEST, CLEAN_UP };

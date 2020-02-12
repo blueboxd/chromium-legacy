@@ -29,7 +29,7 @@ class TEST_RUNNER_EXPORT MockScreenOrientationClient
   ~MockScreenOrientationClient() override;
 
   void ResetData();
-  void UpdateDeviceOrientation(blink::WebLocalFrame* main_frame,
+  bool UpdateDeviceOrientation(blink::WebLocalFrame* main_frame,
                                blink::WebScreenOrientationType orientation);
 
   blink::WebScreenOrientationType CurrentOrientationType() const;
@@ -50,7 +50,7 @@ class TEST_RUNNER_EXPORT MockScreenOrientationClient
                       LockOrientationCallback callback);
   void ResetLockSync();
 
-  void UpdateScreenOrientation(blink::WebScreenOrientationType);
+  bool UpdateScreenOrientation(blink::WebScreenOrientationType);
   bool IsOrientationAllowedByCurrentLock(blink::WebScreenOrientationType);
   blink::WebScreenOrientationType SuitableOrientationForCurrentLock();
   static unsigned OrientationTypeToAngle(blink::WebScreenOrientationType);

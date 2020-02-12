@@ -189,12 +189,14 @@ Service::~Service() {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   // Add null check for |AmbientModeState| in case that |Service| is released
   // after ash has gone.
-  if (chromeos::features::IsAmbientModeEnabled() &&
-      ash::AmbientModeState::Get())
-    ash::AmbientModeState::Get()->RemoveObserver(this);
+  auto* const ambient_mode_state = ash::AmbientModeState::Get();
+  if (chromeos::features::IsAmbientModeEnabled() && ambient_mode_state)
+    ambient_mode_state->RemoveObserver(this);
+
   assistant_state_.RemoveObserver(this);
+
   auto* const session_controller = ash::SessionController::Get();
-  if (observing_ash_session_ && session_controller) {
+  if (session_controller && account_id_.is_valid()) {
     session_controller->RemoveSessionActivationObserverForAccountId(account_id_,
                                                                     this);
   }
@@ -435,12 +437,22 @@ void Service::UpdateAssistantManagerState() {
   }
 }
 
+CoreAccountInfo Service::RetrievePrimaryAccountInfo() {
+  CoreAccountInfo account_info = identity_manager_->GetPrimaryAccountInfo(
+      signin::ConsentLevel::kNotRequired);
+  CHECK(!account_info.account_id.empty());
+  CHECK(!account_info.gaia.empty());
+  return account_info;
+}
+
 void Service::RequestAccessToken() {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
   // Bypass access token fetching when service is running in signed-out mode.
-  if (IsSignedOutMode())
+  if (IsSignedOutMode()) {
+    VLOG(1) << "Signed out mode detected, bypass access token fetching.";
     return;
+  }
 
   if (access_token_fetcher_) {
     LOG(WARNING) << "Access token already requested.";
@@ -448,18 +460,13 @@ void Service::RequestAccessToken() {
   }
 
   VLOG(1) << "Start requesting access token.";
-  CoreAccountInfo account_info = identity_manager_->GetPrimaryAccountInfo(
-      signin::ConsentLevel::kNotRequired);
-  CHECK(!account_info.account_id.empty());
-  CHECK(!account_info.gaia.empty());
-
+  CoreAccountInfo account_info = RetrievePrimaryAccountInfo();
   if (!identity_manager_->HasAccountWithRefreshToken(account_info.account_id)) {
-    LOG(ERROR) << "Failed to retrieve primary account info.";
+    LOG(ERROR) << "Failed to retrieve primary account info. Retrying.";
     RetryRefreshToken();
     return;
   }
-  account_id_ = user_manager::known_user::GetAccountId(
-      account_info.email, account_info.gaia, AccountType::GOOGLE);
+
   identity::ScopeSet scopes;
   scopes.insert(kScopeAssistant);
   scopes.insert(kScopeAuthGcm);
@@ -547,29 +554,31 @@ void Service::FinalizeAssistantManagerService() {
          assistant_manager_service_->GetState() ==
              AssistantManagerService::RUNNING);
 
-  // Using session_observer_binding_ as a flag to control onetime initialization
-  if (!observing_ash_session_) {
-    // Bind to the AssistantController in ash.
-    client_->RequestAssistantController(
-        assistant_controller_.BindNewPipeAndPassReceiver());
-    mojo::PendingRemote<mojom::Assistant> remote_for_controller;
-    BindAssistant(remote_for_controller.InitWithNewPipeAndPassReceiver());
-    assistant_controller_->SetAssistant(std::move(remote_for_controller));
+  // Ensure one-time mojom initialization.
+  if (is_assistant_manager_service_finalized_)
+    return;
+  is_assistant_manager_service_finalized_ = true;
 
-    // Bind to the AssistantAlarmTimerController in ash.
-    client_->RequestAssistantAlarmTimerController(
-        assistant_alarm_timer_controller_.BindNewPipeAndPassReceiver());
+  // Bind to the AssistantController in ash.
+  client_->RequestAssistantController(
+      assistant_controller_.BindNewPipeAndPassReceiver());
+  mojo::PendingRemote<mojom::Assistant> remote_for_controller;
+  BindAssistant(remote_for_controller.InitWithNewPipeAndPassReceiver());
+  assistant_controller_->SetAssistant(std::move(remote_for_controller));
 
-    // Bind to the AssistantNotificationController in ash.
-    client_->RequestAssistantNotificationController(
-        assistant_notification_controller_.BindNewPipeAndPassReceiver());
+  // Bind to the AssistantAlarmTimerController in ash.
+  client_->RequestAssistantAlarmTimerController(
+      assistant_alarm_timer_controller_.BindNewPipeAndPassReceiver());
 
-    // Bind to the AssistantScreenContextController in ash.
-    client_->RequestAssistantScreenContextController(
-        assistant_screen_context_controller_.BindNewPipeAndPassReceiver());
+  // Bind to the AssistantNotificationController in ash.
+  client_->RequestAssistantNotificationController(
+      assistant_notification_controller_.BindNewPipeAndPassReceiver());
 
-    AddAshSessionObserver();
-  }
+  // Bind to the AssistantScreenContextController in ash.
+  client_->RequestAssistantScreenContextController(
+      assistant_screen_context_controller_.BindNewPipeAndPassReceiver());
+
+  AddAshSessionObserver();
 }
 
 void Service::StopAssistantManagerService() {
@@ -583,9 +592,14 @@ void Service::StopAssistantManagerService() {
 void Service::AddAshSessionObserver() {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
-  observing_ash_session_ = true;
   // No session controller in unittest.
   if (ash::SessionController::Get()) {
+    // Note that this account can either be a regular account using real gaia,
+    // or a fake gaia account.
+    CoreAccountInfo account_info = RetrievePrimaryAccountInfo();
+    account_id_ = user_manager::known_user::GetAccountId(
+        account_info.email, account_info.gaia, AccountType::GOOGLE);
+    DCHECK(account_id_.is_valid());
     ash::SessionController::Get()->AddSessionActivationObserverForAccountId(
         account_id_, this);
   }

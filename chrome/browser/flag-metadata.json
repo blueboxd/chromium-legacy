@@ -587,6 +587,11 @@
     "expiry_milestone": 83
   },
   {
+    "name": "corner-shortcuts",
+    "owners": [ "baileyberro", "cros-peripherals" ],
+    "expiry_milestone": 85
+  },
+  {
     "name": "cros-regions-mode",
     "owners": [ "alemate" ],
     "expiry_milestone": 80

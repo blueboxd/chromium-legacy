@@ -80,7 +80,7 @@ base::string16 IOSPaymentInstrument::GetMissingInfoLabel() const {
   return base::string16();
 }
 
-bool IOSPaymentInstrument::IsValidForCanMakePayment() const {
+bool IOSPaymentInstrument::HasEnrolledInstrument() const {
   // Same as IsCompleteForPayment, as long as the native app is installed
   // and found on the user's device then it is valid for payment.
   return true;

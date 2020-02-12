@@ -2,11 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-package org.chromium.chrome.browser.profile_card.internal;
+package org.chromium.chrome.browser.profile_card;
 
-import static org.chromium.chrome.features.profile_card.ProfileCardProperties.DESCRIPTION;
-import static org.chromium.chrome.features.profile_card.ProfileCardProperties.IS_DIALOG_VISIBLE;
-import static org.chromium.chrome.features.profile_card.ProfileCardProperties.TITLE;
+import static org.chromium.chrome.browser.profile_card.ProfileCardProperties.DESCRIPTION;
+import static org.chromium.chrome.browser.profile_card.ProfileCardProperties.IS_DIALOG_VISIBLE;
+import static org.chromium.chrome.browser.profile_card.ProfileCardProperties.TITLE;
 
 import org.chromium.ui.modelutil.PropertyKey;
 import org.chromium.ui.modelutil.PropertyModel;

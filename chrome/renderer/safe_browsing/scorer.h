@@ -66,6 +66,9 @@ class Scorer {
   // Return the number of words in a shingle.
   size_t shingle_size() const;
 
+  // Returns the threshold probability above which we send a CSD ping.
+  float threshold_probability() const;
+
  protected:
   // Most clients should use the factory method.  This constructor is public
   // to allow for mock implementations.

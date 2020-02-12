@@ -22,12 +22,12 @@ WebTimeRanges EmptyWebMediaPlayer::Seekable() const {
   return WebTimeRanges();
 }
 
-WebSize EmptyWebMediaPlayer::NaturalSize() const {
-  return WebSize(0, 0);
+gfx::Size EmptyWebMediaPlayer::NaturalSize() const {
+  return gfx::Size();
 }
 
-WebSize EmptyWebMediaPlayer::VisibleRect() const {
-  return WebSize();
+gfx::Size EmptyWebMediaPlayer::VisibleSize() const {
+  return gfx::Size();
 }
 
 WebString EmptyWebMediaPlayer::GetErrorMessage() const {

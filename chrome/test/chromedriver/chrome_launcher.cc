@@ -29,7 +29,6 @@
 #include "base/strings/string_split.h"
 #include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
-#include "base/strings/sys_string_conversions.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/threading/platform_thread.h"
 #include "base/time/time.h"
@@ -101,7 +100,9 @@ const char* const kAndroidSwitches[] = {
     "disable-fre", "enable-remote-debugging",
 };
 
+#if defined(OS_LINUX)
 const char kEnableCrashReport[] = "enable-crash-reporter-for-testing";
+#endif
 const base::FilePath::CharType kDevToolsActivePort[] =
     FILE_PATH_LITERAL("DevToolsActivePort");
 
@@ -425,31 +426,22 @@ Status LaunchDesktopChrome(network::mojom::URLLoaderFactory* factory,
 
   base::LaunchOptions options;
 
-#if defined(OS_WIN) || defined(OS_POSIX) || defined(OS_FUCHSIA)
+#if defined(OS_LINUX)
   // If minidump path is set in the capability, enable minidump for crashes.
   if (!capabilities.minidump_path.empty()) {
     VLOG(0) << "Minidump generation specified. Will save dumps to: "
             << capabilities.minidump_path;
 
-#if defined(OS_WIN)
-    // EnvironmentMap uses wide string
-    options.environment[L"CHROME_HEADLESS"] = 1;
-    options.environment[L"BREAKPAD_DUMP_LOCATION"] =
-        base::SysUTF8ToWide(capabilities.minidump_path);
-#else
     options.environment["CHROME_HEADLESS"] = 1;
     options.environment["BREAKPAD_DUMP_LOCATION"] = capabilities.minidump_path;
-#endif
 
     if (!command.HasSwitch(kEnableCrashReport))
       command.AppendSwitch(kEnableCrashReport);
   }
 
-#if defined(OS_LINUX)
   // We need to allow new privileges so that chrome's setuid sandbox can run.
   options.allow_new_privs = true;
 #endif
-#endif  // OS_WIN || OS_POSIX || OS_FUCHSIA
 
 #if !defined(OS_WIN)
   if (!capabilities.log_path.empty())

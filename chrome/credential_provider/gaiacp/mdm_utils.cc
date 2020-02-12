@@ -373,7 +373,6 @@ bool UploadDeviceDetailsNeeded(const base::string16& sid) {
 
   DWORD status = 0;
   GetUserProperty(sid, kRegDeviceDetailsUploadStatus, &status);
-  base::string16 mdm_url = GetMdmUrl();
 
   return status != 1;
 }

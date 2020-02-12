@@ -40,6 +40,7 @@
 #include "third_party/blink/public/platform/web_url_response.h"
 #include "third_party/blink/renderer/core/loader/empty_clients.h"
 #include "third_party/blink/renderer/core/loader/resource/mock_image_resource_observer.h"
+#include "third_party/blink/renderer/core/svg/graphics/svg_image.h"
 #include "third_party/blink/renderer/core/testing/dummy_page_holder.h"
 #include "third_party/blink/renderer/platform/exported/wrapped_resource_response.h"
 #include "third_party/blink/renderer/platform/graphics/bitmap_image.h"
@@ -310,7 +311,7 @@ void TestThatIsPlaceholderRequestAndServeResponse(
   // A placeholder image.
   EXPECT_TRUE(image_resource->ShouldShowPlaceholder());
   EXPECT_FALSE(image_resource->GetContent()->GetImage()->IsBitmapImage());
-  EXPECT_FALSE(image_resource->GetContent()->GetImage()->IsSVGImage());
+  EXPECT_FALSE(IsA<SVGImage>(image_resource->GetContent()->GetImage()));
 }
 
 void TestThatIsNotPlaceholderRequestAndServeResponse(
@@ -352,7 +353,7 @@ void TestThatIsNotPlaceholderRequestAndServeResponse(
   // A non-placeholder bitmap image.
   EXPECT_FALSE(image_resource->ShouldShowPlaceholder());
   EXPECT_TRUE(image_resource->GetContent()->GetImage()->IsBitmapImage());
-  EXPECT_FALSE(image_resource->GetContent()->GetImage()->IsSVGImage());
+  EXPECT_FALSE(IsA<SVGImage>(image_resource->GetContent()->GetImage()));
 }
 
 ResourceFetcher* CreateFetcher() {
@@ -438,7 +439,7 @@ TEST(ImageResourceTest, MultipartImage) {
   EXPECT_EQ(kJpegImageWidth, image_resource->GetContent()->GetImage()->width());
   EXPECT_EQ(kJpegImageHeight,
             image_resource->GetContent()->GetImage()->height());
-  EXPECT_TRUE(image_resource->GetContent()->GetImage()->IsSVGImage());
+  EXPECT_TRUE(IsA<SVGImage>(image_resource->GetContent()->GetImage()));
   EXPECT_TRUE(image_resource->GetContent()
                   ->GetImage()
                   ->PaintImageForCurrentFrame()

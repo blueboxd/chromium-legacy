@@ -109,7 +109,17 @@ VRServiceImpl::SessionRequestData::SessionRequestData(
       enabled_features(std::move(enabled_features)),
       runtime_id(runtime_id) {}
 
-VRServiceImpl::SessionRequestData::~SessionRequestData() = default;
+VRServiceImpl::SessionRequestData::~SessionRequestData() {
+  // In some cases, we may get dropped before the VRService pipe is closed. In
+  // these cases we need to try to ensure that the callback is run or else we
+  // hit DCHECKs for dropping the callback without closing the pipe.
+  // This most often occurs when the Permissions prompt is dismissed.
+  if (callback) {
+    std::move(callback).Run(
+        device::mojom::RequestSessionResult::NewFailureReason(
+            device::mojom::RequestSessionError::UNKNOWN_FAILURE));
+  }
+}
 
 VRServiceImpl::SessionRequestData::SessionRequestData(SessionRequestData&&) =
     default;
@@ -219,6 +229,7 @@ void VRServiceImpl::OnWebContentsLostFocus(content::RenderWidgetHost* host) {
 }
 
 void VRServiceImpl::RenderFrameDeleted(content::RenderFrameHost* host) {
+  DVLOG(2) << __func__;
   if (host != render_frame_host_)
     return;
 

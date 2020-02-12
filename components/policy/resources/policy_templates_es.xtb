@@ -659,6 +659,10 @@ Si esta política está establecida en "false" o no está establecida, se inhabi
 <translation id="1988371335297483117">Las cargas útiles de actualizaciones automáticas en <ph name="PRODUCT_OS_NAME" /> se pueden descargar a través de HTTP en lugar de HTTPS, lo que permite el almacenamiento en caché HTTP transparente de descargas HTTP.
 
 Si esta política se establece en True, <ph name="PRODUCT_OS_NAME" /> intentará descargar cargas útiles de actualizaciones automáticas a través de HTTP. Si la política se establece en False o no se configura, se utilizará HTTPS para descargar cargas útiles de actualizaciones automáticas.</translation>
+<translation id="199011295049694531">Informa sobre la zona horaria de un dispositivo.
+
+      Si se asigna el valor "false" a esta política o no se establece, no se enviará ninguna información.
+      Si se le asigna el valor "true", se informará sobre la zona horaria establecida en el dispositivo.</translation>
 <translation id="199764499252435679">Habilitar las actualizaciones de componentes en <ph name="PRODUCT_NAME" /></translation>
 <translation id="1997994951395619441">Si habilitas esta opción, <ph name="PRODUCT_NAME" /> mostrará una barra de marcadores.
 
@@ -1118,6 +1122,11 @@ Si no se establece esta política, el teclado en pantalla estará inhabilitado i
       Si habilitas o inhabilitas esta opción, los usuarios no podrán cambiar o anular esta opción.
 
       Si no se establece esta política, la función del proxy de compresión de datos estará disponible para que el usuario decida si quiere o no utilizarla.</translation>
+<translation id="2575738503503093841">Especifica el retraso máximo en milisegundos entre la recepción de la invalidación de una política y la recuperación de la nueva política desde el servicio de gestión del dispositivo.
+
+      Al establecer esta política, se anula el valor predeterminado de 10.000 milisegundos. Los valores válidos de esta política se sitúan entre 1.000 milisegundos (1 segundo) y 300.000 milisegundos (5 minutos). Cualquier valor fuera de este intervalo estará sujeto al límite correspondiente.
+
+      Si no se establece esta política, <ph name="PRODUCT_NAME" /> se utilizará el valor predeterminado de 10.000 milisegundos.</translation>
 <translation id="257788512393330403">Es obligatorio introducir la contraseña cada seis horas</translation>
 <translation id="2580104054820772954">Retrasar la entrega de archivos hasta conocer el resultado del análisis</translation>
 <translation id="2582582399758251985">Si se habilita esta opción, <ph name="PRODUCT_NAME" /> verificará los certificados de los servidores utilizando el verificador de certificados integrado.
@@ -1146,6 +1155,7 @@ Si no se establece esta política, el teclado en pantalla estará inhabilitado i
           Si no se le asigna ningún valor a esta política, se asignará el valor predeterminado "true" y la autenticación NTLMv2 se habilitará.</translation>
 <translation id="26023406105317310">Configurar las cuentas de Kerberos</translation>
 <translation id="2604182581880595781">Configura las políticas relacionadas con el uso compartido de archivos del sistema.</translation>
+<translation id="2615240493030733717">Informa sobre la zona horaria</translation>
 <translation id="2623014935069176671">Esperar actividad inicial del usuario</translation>
 <translation id="262740370354162807">Habilitar el envío de documentos a <ph name="CLOUD_PRINT_NAME" /></translation>
 <translation id="2627554163382448569">Proporciona opciones de configuración de impresoras de empresa vinculadas con los dispositivos.
@@ -1571,6 +1581,8 @@ Si no se establece esta política, el teclado en pantalla estará inhabilitado i
           Si no se le asigna ningún valor a esta política, se usará para todos los sitios web el valor general predeterminado de la política "DefaultCookiesSetting" (si se ha establecido) o el valor personalizado que haya definido el usuario (en caso contrario).
 
           Consulta también las políticas "CookiesBlockedForUrls" y "CookiesSessionOnlyForUrls". Ten en cuenta que no puede haber patrones de URL en conflicto entre estas políticas, ya que no se especifica qué política prevalece.</translation>
+<translation id="3339271789059866414">Configura la disponibilidad del servicio de proxy del sistema y las credenciales de proxy en los servicios del sistema.
+      Si no se establece esta política, el servicio de proxy del sistema no estará disponible.</translation>
 <translation id="3373364525435227558">Establece una o varias configuraciones regionales recomendadas para sesiones administradas, lo que permite a los usuarios seleccionar fácilmente una de estas configuraciones.
 
       El usuario puede elegir una configuración regional y un diseño de teclado antes de iniciar una sesión administrada. Todas las configuraciones regionales admitidas por <ph name="PRODUCT_OS_NAME" /> se muestran en orden alfabético de forma predeterminada. Puedes utilizar esta política para mover un conjunto de configuraciones regionales recomendadas al principio de la lista.
@@ -2548,6 +2560,7 @@ Si esta política está configurada, el usuario no puede cambiarla y el acceso d
           Si estableces esta política, los usuarios no podrán modificarla o anularla.
 
           Si no se establece esta política, el cursor grande se inhabilitará de forma inicial, pero el usuario podrá habilitarlo en cualquier momento.</translation>
+<translation id="4802744647065138872">Limita el número de capturas de datos de usuario retenidas para usarlas en caso de restauración de emergencia.</translation>
 <translation id="4802905909524200151">Configurar comportamiento de actualización del firmware de <ph name="TPM_FIRMWARE_UPDATE_TPM" /></translation>
 <translation id="4804828344300125154">Reiniciar siempre cuando el usuario cierre sesión.</translation>
 <translation id="4807950475297505572">Eliminar usuarios utilizados hace más tiempo hasta que haya suficiente espacio libre</translation>
@@ -4549,6 +4562,7 @@ NOTA: Hasta la versión 45, esta política solo se admitía en modo kiosco.</tr
 
       Si no se asigna ningún valor a esta política, se habilitará pero el usuario no podrá cambiarla.</translation>
 <translation id="7953256619080733119">Hosts de excepción manual de usuario administrado</translation>
+<translation id="7956210013490975468">Configura el servicio de proxy del sistema en <ph name="PRODUCT_OS_NAME" />.</translation>
 <translation id="7958537754689366707">Es obligatorio introducir la contraseña cada doce horas</translation>
 <translation id="7961779417826583251">Inhabilitar los requisitos de la transparencia en los certificados en una lista de autoridades de certificación antiguas</translation>
 <translation id="7974114691960514888">Ya no se admite esta política.
@@ -4803,6 +4817,11 @@ Te recomendamos que utilices GPO para configurar la política en Windows, aunque
 <translation id="8426231401662877819">Rotar la pantalla 90 grados hacia la derecha</translation>
 <translation id="8433186206711564395">Configuración de red</translation>
 <translation id="8433423491036718210">Configura la lista de las URL de acceso empresarial en las que el servicio de protección de contraseña debe capturar la huella digital de la contraseña.</translation>
+<translation id="8445576299806775661">Después de cada actualización importante de versión, Chrome creará una captura de algunos datos de navegación del usuario para usarla en caso de que se realice una restauración de versión de emergencia posteriormente. Si se realiza una restauración de emergencia y se instala una versión de la que el usuario tiene la captura correspondiente, los datos de la captura se restaurarán. Esto permite a los usuarios conservar ajustes como los marcadores y los datos de Autocompletar.
+
+      Si no se establece esta política, se usará el valor predeterminado, que es "3".
+
+      Si se establece, las capturas antiguas se eliminarán según sea necesario para respetar el límite. Si se asigna el valor "0" a esta política, no se realizarán capturas.</translation>
 <translation id="8451988835943702790">Utilizar página Nueva pestaña como página principal</translation>
 <translation id="8459216513698220096">Especifica si la política del usuario del GPO del ordenador se procesa o no y cómo lo hace.
 
@@ -4892,6 +4911,7 @@ Te recomendamos que utilices GPO para configurar la política en Windows, aunque
 
       Si se asigna el valor "False" a esta política o no se configura, el usuario podrá utilizar el navegador sin iniciar sesión en <ph name="PRODUCT_NAME" />.</translation>
 <translation id="858309738002328421">Bloquear las subidas de archivos grandes</translation>
+<translation id="8584279193368801689">Restringe el modo de impresión con PIN. Si no se establece esta política, no se aplicará ninguna restricción. Si el modo no está disponible, se ignorará esta política. Ten en cuenta que la función de impresión con PIN solo está habilitada en impresoras que utilizan uno de los protocolos IPPS, HTTPS, USB o IPP por USB.</translation>
 <translation id="8585558195682146109">Enviar descargas de usuario para analizarlas</translation>
 <translation id="8586528890725660268">Especifica las impresoras que un usuario no puede utilizar.
 
@@ -4957,6 +4977,13 @@ Los usuarios no pueden cambiar ni anular esta opción.</translation>
 <translation id="8687958770985542440">Volver a habilitar la API v0 de componentes web hasta M84.</translation>
 <translation id="8693243869659262736">Utilizar cliente DNS integrado</translation>
 <translation id="8698286761337647563">Número de días de antelación para notificar a los usuarios de SAML que su contraseña está a punto de caducar</translation>
+<translation id="8701288965900240388">Permite establecer si los sitios web pueden ejecutar o no el complemento <ph name="FLASH_PLUGIN_NAME" />. La ejecución automática del complemento <ph name="FLASH_PLUGIN_NAME" /> puede concederse o denegarse en todos los sitios web.
+
+          La opción de hacer clic para reproducir permite que el complemento <ph name="FLASH_PLUGIN_NAME" /> se ejecute, pero el usuario debe hacer clic en el marcador de posición para iniciar la ejecución.
+
+          La reproducción automática solo se permite en dominios indicados explícitamente en la política <ph name="PLUGINS_ALLOWED_FOR_URLS_POLICY_NAME" />. Si quieres habilitar la reproducción automática en todos los sitios web, puedes añadir http://* y https://* a esta lista.
+
+          Si no se establece esta política, se usará "BlockPlugins", y el usuario podrá cambiar este ajuste manualmente.</translation>
 <translation id="8703488928438047864">Informar sobre el estado de la placa</translation>
 <translation id="8704831857353097849">Lista de complementos inhabilitados</translation>
 <translation id="8711086062295757690">Permite especificar la palabra clave, que se usa como acceso directo en el omnibox para generar resultados de búsqueda de este proveedor.

@@ -116,8 +116,8 @@ FloatSize SVGImagePainter::ComputeImageViewportSize() const {
   if (cached_image->ErrorOccurred())
     return FloatSize();
   Image* image = cached_image->GetImage();
-  if (image->IsSVGImage()) {
-    return ToSVGImage(image)->ConcreteObjectSize(
+  if (auto* svg_image = DynamicTo<SVGImage>(image)) {
+    return svg_image->ConcreteObjectSize(
         layout_svg_image_.ObjectBoundingBox().Size());
   }
   return image->SizeAsFloat();

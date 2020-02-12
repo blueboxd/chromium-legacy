@@ -38,11 +38,11 @@ const Element& ImageElementBase::GetElement() const {
 }
 
 bool ImageElementBase::IsSVGSource() const {
-  return CachedImage() && CachedImage()->GetImage()->IsSVGImage();
+  return CachedImage() && IsA<SVGImage>(CachedImage()->GetImage());
 }
 
 bool ImageElementBase::IsImageElement() const {
-  return CachedImage() && !CachedImage()->GetImage()->IsSVGImage();
+  return CachedImage() && !IsA<SVGImage>(CachedImage()->GetImage());
 }
 
 scoped_refptr<Image> ImageElementBase::GetSourceImageForCanvas(
@@ -61,9 +61,8 @@ scoped_refptr<Image> ImageElementBase::GetSourceImageForCanvas(
   }
 
   scoped_refptr<Image> source_image = image_content->GetImage();
-  if (source_image->IsSVGImage()) {
+  if (auto* svg_image = DynamicTo<SVGImage>(source_image.get())) {
     UseCounter::Count(GetElement().GetDocument(), WebFeature::kSVGInCanvas2D);
-    SVGImage* svg_image = ToSVGImage(source_image.get());
     FloatSize image_size = svg_image->ConcreteObjectSize(default_object_size);
     source_image = SVGImageForContainer::Create(
         svg_image, image_size, 1,
@@ -84,8 +83,8 @@ FloatSize ImageElementBase::ElementSize(
   if (!image_content || !image_content->HasImage())
     return FloatSize();
   Image* image = image_content->GetImage();
-  if (image->IsSVGImage())
-    return ToSVGImage(image)->ConcreteObjectSize(default_object_size);
+  if (auto* svg_image = DynamicTo<SVGImage>(image))
+    return svg_image->ConcreteObjectSize(default_object_size);
   return FloatSize(image->Size(LayoutObject::ShouldRespectImageOrientation(
       GetElement().GetLayoutObject())));
 }
@@ -135,8 +134,8 @@ ScriptPromise ImageElementBase::CreateImageBitmap(
     return ScriptPromise();
   }
   Image* image = image_content->GetImage();
-  if (image->IsSVGImage()) {
-    if (!ToSVGImage(image)->HasIntrinsicDimensions() &&
+  if (auto* svg_image = DynamicTo<SVGImage>(image)) {
+    if (!svg_image->HasIntrinsicDimensions() &&
         (!crop_rect &&
          (!options->hasResizeWidth() || !options->hasResizeHeight()))) {
       exception_state.ThrowDOMException(

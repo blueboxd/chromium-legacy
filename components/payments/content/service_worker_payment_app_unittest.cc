@@ -223,7 +223,7 @@ TEST_F(ServiceWorkerPaymentAppTest, ValidateCanMakePayment) {
   CreateServiceWorkerPaymentApp(/*with_url_method=*/true);
   GetApp()->ValidateCanMakePayment(base::BindOnce(
       [](ServiceWorkerPaymentApp*, bool result) { EXPECT_TRUE(result); }));
-  EXPECT_FALSE(GetApp()->IsValidForCanMakePayment());
+  EXPECT_FALSE(GetApp()->HasEnrolledInstrument());
 }
 
 // Test modifiers can be matched based on capabilities.

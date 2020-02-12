@@ -5,7 +5,6 @@
 ./tools/__init__.py
 ./tools/ci/commands.json
 ./tools/conftest.py
-./tools/docker/commands.json
 ./tools/gitignore/__init__.py
 ./tools/gitignore/gitignore.py
 ./tools/lint/__init__.py

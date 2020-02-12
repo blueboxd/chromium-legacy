@@ -15,6 +15,7 @@
   [RuntimeEnabled=WebXRIncubations] readonly attribute XRWorldInformation worldInformation;
 
   [RuntimeEnabled=WebXRIncubations] readonly attribute XRAnchorSet trackedAnchors;
+  [RuntimeEnabled=WebXRIncubations, CallWith=ScriptState, RaisesException] Promise<XRAnchor> createAnchor(XRRigidTransform initial_pose, XRSpace space);
 
   [RaisesException] XRViewerPose? getViewerPose(XRReferenceSpace referenceSpace);
   [RaisesException] XRPose? getPose(XRSpace space, XRSpace relativeTo);

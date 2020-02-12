@@ -644,6 +644,10 @@ Secara default, tidak ada mode buka kunci cepat yang tersedia untuk perangkat ya
 <translation id="1988371335297483117">Payload pembaruan otomatis di <ph name="PRODUCT_OS_NAME" /> dapat didownload via HTTP, bukan HTTPS. Cara ini memungkinkan penyimpanan cache HTTP yang transparan dari download HTTP.
 
       Jika kebijakan ini disetel ke true, <ph name="PRODUCT_OS_NAME" /> akan berupaya mendownload payload pembaruan otomatis via HTTP. Jika kebijakan ini disetel ke false atau tidak disetel, HTTPS akan digunakan untuk mendownload payload pembaruan otomatis.</translation>
+<translation id="199011295049694531">Melaporkan informasi untuk zona waktu perangkat.
+
+      Jika kebijakan ditetapkan ke false, atau tidak ditetapkan, informasi tidak akan dilaporkan.
+      Jika ditetapkan ke true, zona waktu yang ditetapkan di perangkat saat ini akan dilaporkan.</translation>
 <translation id="199764499252435679">Aktifkan update komponen di <ph name="PRODUCT_NAME" /></translation>
 <translation id="1997994951395619441">Jika setelan ini diaktifkan, <ph name="PRODUCT_NAME" /> akan menampilkan kolom bookmark.
 
@@ -1090,6 +1094,11 @@ Secara default, tidak ada mode buka kunci cepat yang tersedia untuk perangkat ya
       Jika Anda mengaktifkan atau menonaktifkan setelan ini, pengguna tidak dapat mengubah atau mengganti setelan ini.
 
       Jika kebijakan ini dibiarkan tidak disetel, pengguna dapat memilih untuk menggunakan atau tidak menggunakan fitur proxy kompresi data.</translation>
+<translation id="2575738503503093841">Menentukan penundaan maksimum dalam milidetik antara penerimaan invalidasi kebijakan dan pengambilan kebijakan baru dari layanan pengelolaan perangkat.
+
+      Setelan kebijakan ini akan mengganti nilai default 10000 milidetik. Nilai yang valid untuk kebijakan ini berkisar antara 1000 (1 detik) hingga 300000 (5 menit). Setiap nilai yang tidak berada dalam rentang akan dikunci ke masing-masing batas.
+
+      Jika kebijakan ini tidak ditetapkan, <ph name="PRODUCT_NAME" /> akan menggunakan nilai default 10000 milidetik.</translation>
 <translation id="257788512393330403">Sandi harus dimasukkan setiap enam jam</translation>
 <translation id="2580104054820772954">Menunda pengiriman file hingga mengetahui keputusan pemindaian</translation>
 <translation id="2582582399758251985">Jika setelan ini diaktifkan, <ph name="PRODUCT_NAME" /> akan menjalankan verifikasi sertifikat server menggunakan pemverifikasi sertifikat bawaan.
@@ -1120,6 +1129,7 @@ Secara default, tidak ada mode buka kunci cepat yang tersedia untuk perangkat ya
           Jika kebijakan ini tidak disetel, default adalah true dan NTLMv2 diaktifkan.</translation>
 <translation id="26023406105317310">Konfigurasikan akun Kerberos</translation>
 <translation id="2604182581880595781">Mengonfigurasi kebijakan terkait fitur Berbagi File Jaringan.</translation>
+<translation id="2615240493030733717">Melaporkan Info Zona waktu</translation>
 <translation id="2623014935069176671">Tunggu aktivitas pengguna awal</translation>
 <translation id="262740370354162807">Aktifkan penyerahan dokumen ke <ph name="CLOUD_PRINT_NAME" /></translation>
 <translation id="2627554163382448569">Memberikan konfigurasi untuk printer perusahaan.
@@ -1528,6 +1538,8 @@ Secara default, tidak ada mode buka kunci cepat yang tersedia untuk perangkat ya
           Jika kebijakan ini tidak disetel, nilai default global akan digunakan untuk semua situs yaitu dari kebijakan 'DefaultCookiesSetting' jika disetel, atau dari konfigurasi pribadi pengguna.
 
           Lihat juga kebijakan 'CookiesBlockedForUrls' dan 'CookiesSessionOnlyForUrls'. Perlu diperhatikan bahwa pola URL di antara ketiga kebijakan ini tidak boleh bertentangan - tidak ditentukan kebijakan mana yang diprioritaskan.</translation>
+<translation id="3339271789059866414">Mengonfigurasi ketersediaan layanan Sistem-proxy dan kredensial proxy untuk layanan sistem.
+      Jika kebijakan tidak ditetapkan, layanan Sistem-proxy tidak akan tersedia.</translation>
 <translation id="3373364525435227558">Menetapkan satu atau beberapa lokal yang direkomendasikan untuk sesi terkelola, sehingga pengguna dapat memilih salah satu lokal tersebut dengan mudah.
 
       Pengguna dapat memilih lokal dan tata letak keyboard sebelum memulai sesi terkelola. Secara default, semua lokal yang didukung oleh <ph name="PRODUCT_OS_NAME" /> dicantumkan sesuai urutan abjad. Anda dapat menggunakan kebijakan ini untuk memindahkan sekumpulan lokal yang direkomendasikan ke bagian atas daftar.
@@ -2489,6 +2501,7 @@ Jika kebijakan ini dinonaktifkan atau tidak disetel, situs tidak akan dapat mena
           Jika Anda menyetel kebijakan ini, pengguna tidak dapat mengubah atau menimpanya.
 
           Jika kebijakan ini tidak disetel, kursor besar pertama-tama akan dinonaktifkan, namun dapat diaktifkan oleh pengguna kapan saja.</translation>
+<translation id="4802744647065138872">Membatasi jumlah rekaman data pengguna yang disimpan untuk digunakan ketika terjadi rollback darurat.</translation>
 <translation id="4802905909524200151">Mengonfigurasi perilaku update firmware <ph name="TPM_FIRMWARE_UPDATE_TPM" /></translation>
 <translation id="4804828344300125154">Selalu reboot saat pengguna logout.</translation>
 <translation id="4807950475297505572">Pengguna yang paling jarang digunakan dihapus sampai terdapat cukup ruang kosong</translation>
@@ -4418,6 +4431,7 @@ Cara yang diharapkan terkait penggunaan kebijakan ini adalah merotasi konfiguras
 
       Jika tidak ditetapkan, kebijakan ini akan diaktifkan tetapi pengguna dapat mengubahnya.</translation>
 <translation id="7953256619080733119">Hosting pengecualian manual pengguna yang dikelola</translation>
+<translation id="7956210013490975468">Mengonfigurasi layanan Sistem-proxy untuk <ph name="PRODUCT_OS_NAME" />.</translation>
 <translation id="7958537754689366707">Sandi harus dimasukkan setiap dua belas jam</translation>
 <translation id="7961779417826583251">Nonaktifkan penerapan Transparansi Sertifikat untuk daftar Otoritas Sertifikat Lama</translation>
 <translation id="7974114691960514888">Kebijakan ini tidak lagi didukung. Mengaktifkan penggunaan STUN dan server relay saat menyambungkan ke klien jarak jauh. Jika setelan ini diaktifkan, maka komputer ini dapat menemukan dan tersambung ke komputer host jarak jauh bahkan jika dipisahkan oleh firewall. Jika setelan ini dinonaktifkan dan sambungan UDP keluar difilter oleh firewall, maka komputer ini hanya dapat tersambung ke komputer host dalam jaringan lokal.</translation>
@@ -4661,6 +4675,11 @@ Cara yang disarankan untuk mengonfigurasi kebijakan di Windows adalah melalui GP
 <translation id="8426231401662877819">Putar layar searah jarum jam sebesar 90 derajat</translation>
 <translation id="8433186206711564395">Setelan jaringan</translation>
 <translation id="8433423491036718210">Konfigurasikan daftar URL login perusahaan ketika layanan perlindungan sandi harus menangkap sidik jari sandi.</translation>
+<translation id="8445576299806775661">Setelah masing-masing update versi utama, Chrome akan membuat rekaman bagian tertentu dari data penjelajahan pengguna untuk digunakan ketika terjadi rollback versi darurat nantinya. Jika rollback darurat dilakukan untuk versi dengan pengguna yang memiliki rekaman terkait, data di rekaman tersebut akan dipulihkan. Ini memungkinkan pengguna mempertahankan setelan seperti bookmark dan data isi otomatis.
+
+      Jika kebijakan ini tidak ditetapkan, nilai default 3 akan digunakan
+
+      Jika kebijakan ditetapkan, rekaman data lama akan dihapus seperlunya untuk mematuhi batas. Jika kebijakan ditetapkan ke 0, tidak ada rekaman data yang akan diambil</translation>
 <translation id="8451988835943702790">Gunakan Halaman Tab Baru sebagai beranda</translation>
 <translation id="8459216513698220096">Menentukan apakah kebijakan pengguna dari GPO computer diproses serta caranya.
 
@@ -4746,6 +4765,7 @@ Kebijakan akan dihapus pada M75.</translation>
 
       Jika kebijakan ini ditetapkan ke false atau tidak dikonfigurasi, pengguna dapat menggunakan browser tanpa harus login ke <ph name="PRODUCT_NAME" />.</translation>
 <translation id="858309738002328421">Blokir upload file berukuran besar</translation>
+<translation id="8584279193368801689">Membatasi mode pencetakan PIN. Kebijakan yang tidak ditetapkan dianggap sebagai tidak ada batasan. Jika mode ini tidak tersedia, kebijakan ini akan diabaikan. Perhatikan bahwa fitur pencetakan PIN hanya diaktifkan untuk printer yang menggunakan salah satu dari protokol IPPS, HTTPS, USB, atau IPP-over-USB.</translation>
 <translation id="8585558195682146109">Kirimkan download pengguna untuk pemindaian</translation>
 <translation id="8586528890725660268">Menentukan printer yang tidak dapat digunakan pengguna.
 
@@ -4819,6 +4839,13 @@ Pengguna tidak dapat mengubah atau mengganti setelan ini.</translation>
 <translation id="8687958770985542440">Mengaktifkan ulang Web Components v0 API hingga M84.</translation>
 <translation id="8693243869659262736">Gunakan klien DNS di dalamnya</translation>
 <translation id="8698286761337647563">Berapa hari sebelum habis masa berlaku sandi pengguna SAML akan menerima peringatan</translation>
+<translation id="8701288965900240388">Memungkinkan Anda menentukan apakah situs diizinkan menjalankan plugin <ph name="FLASH_PLUGIN_NAME" /> secara otomatis. Menjalankan plugin <ph name="FLASH_PLUGIN_NAME" /> secara otomatis dapat diizinkan untuk semua situs atau ditolak untuk semua situs.
+
+          Fitur klik untuk putar akan mengizinkan plugin <ph name="FLASH_PLUGIN_NAME" /> berjalan, tetapi pengguna harus mengklik placeholder untuk memulai eksekusi.
+
+          Pemutaran otomatis hanya diizinkan untuk domain yang secara eksplisit tercantum dalam kebijakan <ph name="PLUGINS_ALLOWED_FOR_URLS_POLICY_NAME" />. Jika Anda ingin mengaktifkan pemutaran otomatis untuk semua situs, sebaiknya tambahkan http://* dan https://* ke daftar ini.
+
+          Jika kebijakan tidak ditetapkan, 'BlockPlugins' akan digunakan dan pengguna akan dapat mengubah setelan ini secara manual.</translation>
 <translation id="8703488928438047864">Laporkan status board</translation>
 <translation id="8704831857353097849">Daftar plugin yang dinonaktifkan</translation>
 <translation id="8711086062295757690">Menentukan kata kunci yang merupakan pintasan yang digunakan dalam omnibox guna memicu penelusuran untuk operator ini. Kebijakan ini bersifat opsional. Jika tidak disetel, kata kunci tidak akan mengaktifkan penyedia penelusuran. Kebijakan ini hanya dipertimbangkan jika kebijakan 'DefaultSearchProviderEnabled' diaktifkan.</translation>

@@ -618,20 +618,20 @@ void ConversionContext::EndEffect() {
   DCHECK(effect_bounds_stack_.size());
   const auto& bounds_info = effect_bounds_stack_.back();
   FloatRect bounds = bounds_info.bounds;
-  if (!bounds.IsEmpty()) {
-    if (current_effect_->Filter().IsEmpty()) {
+  if (current_effect_->Filter().IsEmpty()) {
+    if (!bounds.IsEmpty())
       cc_list_.UpdateSaveLayerBounds(bounds_info.save_layer_id, bounds);
-    } else {
-      // The bounds for the SaveLayer[Alpha]Op should be the source bounds
-      // before the filter is applied, in the space of the TranslateOp which was
-      // emitted before the SaveLayer[Alpha]Op.
-      auto save_layer_bounds = bounds;
+  } else {
+    // The bounds for the SaveLayer[Alpha]Op should be the source bounds
+    // before the filter is applied, in the space of the TranslateOp which was
+    // emitted before the SaveLayer[Alpha]Op.
+    auto save_layer_bounds = bounds;
+    if (!save_layer_bounds.IsEmpty())
       save_layer_bounds.MoveBy(-current_effect_->FiltersOrigin());
-      cc_list_.UpdateSaveLayerBounds(bounds_info.save_layer_id,
-                                     save_layer_bounds);
-      // We need to propagate the filtered bounds to the parent.
-      bounds = current_effect_->MapRect(bounds);
-    }
+    cc_list_.UpdateSaveLayerBounds(bounds_info.save_layer_id,
+                                   save_layer_bounds);
+    // We need to propagate the filtered bounds to the parent.
+    bounds = current_effect_->MapRect(bounds);
   }
 
   effect_bounds_stack_.pop_back();

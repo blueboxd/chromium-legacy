@@ -58,6 +58,10 @@ class COMPONENT_EXPORT(DBUS_AUDIO) CrasAudioClient {
     // Called when the number of active output streams has changed.
     virtual void NumberOfActiveStreamsChanged();
 
+    // Called when the battery level for a Bluetooth headset changed.
+    virtual void BluetoothBatteryChanged(const std::string& address,
+                                         uint32_t level);
+
    protected:
     virtual ~Observer();
   };

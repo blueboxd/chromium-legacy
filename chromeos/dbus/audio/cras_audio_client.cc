@@ -105,6 +105,15 @@ class CrasAudioClientImpl : public CrasAudioClient {
             weak_ptr_factory_.GetWeakPtr()),
         base::BindOnce(&CrasAudioClientImpl::SignalConnected,
                        weak_ptr_factory_.GetWeakPtr()));
+
+    // Monitor the D-Bus signal for changes in Bluetooth headset battery level.
+    cras_proxy_->ConnectToSignal(
+        cras::kCrasControlInterface, cras::kBluetoothBatteryChanged,
+        base::BindRepeating(
+            &CrasAudioClientImpl::BluetoothBatteryChangedReceived,
+            weak_ptr_factory_.GetWeakPtr()),
+        base::BindOnce(&CrasAudioClientImpl::SignalConnected,
+                       weak_ptr_factory_.GetWeakPtr()));
   }
 
   ~CrasAudioClientImpl() override = default;
@@ -424,6 +433,24 @@ class CrasAudioClientImpl : public CrasAudioClient {
       observer.NumberOfActiveStreamsChanged();
   }
 
+  void BluetoothBatteryChangedReceived(dbus::Signal* signal) {
+    dbus::MessageReader reader(signal);
+    std::string address;
+    uint32_t level;
+
+    if (!reader.PopString(&address)) {
+      LOG(ERROR) << "Error reading signal from cras:" << signal->ToString();
+      return;
+    }
+
+    if (!reader.PopUint32(&level)) {
+      LOG(ERROR) << "Error reading signal from cras:" << signal->ToString();
+      return;
+    }
+    for (auto& observer : observers_)
+      observer.BluetoothBatteryChanged(address, level);
+  }
+
   void OnGetVolumeState(DBusMethodCallback<VolumeState> callback,
                         dbus::Response* response) {
     if (!response) {
@@ -666,6 +693,10 @@ void CrasAudioClient::Observer::HotwordTriggered(uint64_t tv_sec,
                                                  uint64_t tv_nsec) {}
 
 void CrasAudioClient::Observer::NumberOfActiveStreamsChanged() {}
+
+void CrasAudioClient::Observer::BluetoothBatteryChanged(
+    const std::string& address,
+    uint32_t level) {}
 
 CrasAudioClient::CrasAudioClient() {
   DCHECK(!g_instance);

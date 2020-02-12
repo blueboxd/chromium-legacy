@@ -544,12 +544,8 @@ void WebMediaPlayerMS::ReloadVideo() {
   }
 
   DCHECK_NE(renderer_action, RendererReloadAction::KEEP_RENDERER);
-  if (!paused_) {
-    // TODO(crbug.com/964494): Remove this explicit conversion.
-    WebSize natural_size = NaturalSize();
-    gfx::Size gfx_size(natural_size.height, natural_size.width);
-    delegate_->DidPlayerSizeChange(delegate_id_, gfx_size);
-  }
+  if (!paused_)
+    delegate_->DidPlayerSizeChange(delegate_id_, NaturalSize());
 }
 
 void WebMediaPlayerMS::ReloadAudio() {
@@ -616,12 +612,8 @@ void WebMediaPlayerMS::Play() {
   if (audio_renderer_)
     audio_renderer_->Play();
 
-  if (HasVideo()) {
-    // TODO(crbug.com/964494): Remove this explicit conversion.
-    WebSize natural_size = NaturalSize();
-    gfx::Size gfx_size(natural_size.height, natural_size.width);
-    delegate_->DidPlayerSizeChange(delegate_id_, gfx_size);
-  }
+  if (HasVideo())
+    delegate_->DidPlayerSizeChange(delegate_id_, NaturalSize());
 
   // |delegate_| expects the notification only if there is at least one track
   // actually playing. A media stream might have none since tracks can be
@@ -726,31 +718,31 @@ bool WebMediaPlayerMS::HasAudio() const {
   return !!audio_renderer_;
 }
 
-WebSize WebMediaPlayerMS::NaturalSize() const {
+gfx::Size WebMediaPlayerMS::NaturalSize() const {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
   if (!video_frame_provider_)
-    return WebSize();
+    return gfx::Size();
 
+  const gfx::Size& current_size = compositor_->GetCurrentSize();
   if (video_transformation_.rotation == media::VIDEO_ROTATION_90 ||
       video_transformation_.rotation == media::VIDEO_ROTATION_270) {
-    const gfx::Size& current_size = compositor_->GetCurrentSize();
-    return WebSize(current_size.height(), current_size.width());
+    return gfx::Size(current_size.height(), current_size.width());
   }
-  return WebSize(compositor_->GetCurrentSize());
+  return current_size;
 }
 
-WebSize WebMediaPlayerMS::VisibleRect() const {
+gfx::Size WebMediaPlayerMS::VisibleSize() const {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
   scoped_refptr<media::VideoFrame> video_frame = GetCurrentFrame();
   if (!video_frame)
-    return WebSize();
+    return gfx::Size();
 
   const gfx::Rect& visible_rect = video_frame->visible_rect();
   if (video_transformation_.rotation == media::VIDEO_ROTATION_90 ||
       video_transformation_.rotation == media::VIDEO_ROTATION_270) {
-    return WebSize(visible_rect.height(), visible_rect.width());
+    return gfx::Size(visible_rect.height(), visible_rect.width());
   }
-  return WebSize(visible_rect.width(), visible_rect.height());
+  return visible_rect.size();
 }
 
 bool WebMediaPlayerMS::Paused() const {
@@ -1219,10 +1211,7 @@ void WebMediaPlayerMS::TriggerResize() {
   if (HasVideo())
     get_client()->SizeChanged();
 
-  // TODO(crbug.com/964494): Remove this explicit conversion.
-  WebSize natural_size = NaturalSize();
-  gfx::Size gfx_size(natural_size.height, natural_size.width);
-  delegate_->DidPlayerSizeChange(delegate_id_, gfx_size);
+  delegate_->DidPlayerSizeChange(delegate_id_, NaturalSize());
 }
 
 void WebMediaPlayerMS::SetGpuMemoryBufferVideoForTesting(

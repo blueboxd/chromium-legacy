@@ -636,8 +636,6 @@ jumbo_static_library("browser") {
     "interstitials/enterprise_util.h",
     "intranet_redirect_detector.cc",
     "intranet_redirect_detector.h",
-    "invalidation/deprecated_profile_invalidation_provider_factory.cc",
-    "invalidation/deprecated_profile_invalidation_provider_factory.h",
     "invalidation/profile_invalidation_provider_factory.cc",
     "invalidation/profile_invalidation_provider_factory.h",
     "language/language_model_manager_factory.cc",

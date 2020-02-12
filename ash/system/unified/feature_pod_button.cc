@@ -257,10 +257,18 @@ void FeaturePodLabelButton::SetLabel(const base::string16& label) {
   InvalidateLayout();
 }
 
+const base::string16& FeaturePodLabelButton::GetLabelText() const {
+  return label_->GetText();
+}
+
 void FeaturePodLabelButton::SetSubLabel(const base::string16& sub_label) {
   sub_label_->SetText(sub_label);
   sub_label_->SetVisible(true);
   InvalidateLayout();
+}
+
+const base::string16& FeaturePodLabelButton::GetSubLabelText() const {
+  return sub_label_->GetText();
 }
 
 void FeaturePodLabelButton::ShowDetailedViewArrow() {
@@ -330,10 +338,22 @@ void FeaturePodButton::SetVectorIcon(const gfx::VectorIcon& icon) {
   const SkColor toggled_color = AshColorProvider::Get()->GetContentLayerColor(
       ContentLayerType::kIconSystemMenuToggled, AshColorMode::kDark);
 
-  icon_button_->SetImage(
-      views::Button::STATE_NORMAL,
-      gfx::CreateVectorIcon(icon, kUnifiedFeaturePodVectorIconSize,
-                            icon_color));
+  // Skip repainting if the incoming icon is the same as the current icon. If
+  // the icon has been painted before, |gfx::CreateVectorIcon()| will simply
+  // grab the ImageSkia from a cache, so it will be cheap. Note that this
+  // assumes that toggled/disabled images changes at the same time as the normal
+  // image, which it currently does.
+  const gfx::ImageSkia new_normal_image =
+      gfx::CreateVectorIcon(icon, kUnifiedFeaturePodVectorIconSize, icon_color);
+  const gfx::ImageSkia& old_normal_image =
+      icon_button_->GetImage(views::Button::STATE_NORMAL);
+  if (!new_normal_image.isNull() && !old_normal_image.isNull() &&
+      new_normal_image.BackedBySameObjectAs(old_normal_image)) {
+    return;
+  }
+
+  icon_button_->SetImage(views::Button::STATE_NORMAL, new_normal_image);
+
   icon_button_->SetToggledImage(
       views::Button::STATE_NORMAL,
       new gfx::ImageSkia(gfx::CreateVectorIcon(
@@ -346,12 +366,18 @@ void FeaturePodButton::SetVectorIcon(const gfx::VectorIcon& icon) {
 }
 
 void FeaturePodButton::SetLabel(const base::string16& label) {
+  if (label_button_->GetLabelText() == label)
+    return;
+
   label_button_->SetLabel(label);
   Layout();
   label_button_->SchedulePaint();
 }
 
 void FeaturePodButton::SetSubLabel(const base::string16& sub_label) {
+  if (label_button_->GetSubLabelText() == sub_label)
+    return;
+
   label_button_->SetSubLabel(sub_label);
   Layout();
   label_button_->SchedulePaint();

@@ -23,10 +23,14 @@ class ActivityTrackerAnnotation : public crashpad::Annotation {
   static constexpr Type kAnnotationType = Annotation::UserDefinedType(0xBAB);
   static const char kAnnotationName[];
 
-  ActivityTrackerAnnotation();
   void SetValue(const void* address, size_t size);
 
+  // Returns the sole instance of this class.
+  static ActivityTrackerAnnotation* GetInstance();
+
  private:
+  ActivityTrackerAnnotation();
+
   ValueType value_;
 };
 

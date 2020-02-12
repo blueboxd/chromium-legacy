@@ -64,6 +64,12 @@ class MediaHistoryStore {
       base::OnceCallback<void(std::vector<mojom::MediaHistoryOriginRowPtr>)>
           callback);
 
+  // Returns all the rows in the playback table. This is only used for
+  // debugging because it loads all rows in the table.
+  void GetMediaHistoryPlaybackRowsForDebug(
+      base::OnceCallback<void(std::vector<mojom::MediaHistoryPlaybackRowPtr>)>
+          callback);
+
   // Gets the playback sessions from the media history store. The results will
   // be ordered by most recent first and be limited to the first |num_sessions|.
   // For each session it calls |filter| and if that returns |true| then that

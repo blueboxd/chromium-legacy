@@ -86,13 +86,43 @@ TEST_F('MediaHistoryOriginsWebUIBrowserTest', 'MAYBE_All', function() {
 
   test('check data table is loaded', () => {
     let dataHeaderRows =
-        Array.from(document.getElementById('data-table-header').children);
+        Array.from(document.querySelector('#origins-table thead tr').children);
 
     assertDeepEquals(
         [
           'Origin', 'Last Updated', 'Audio + Video Watchtime (secs, cached)',
           'Audio + Video Watchtime (secs, actual)'
         ],
+        dataHeaderRows.map(x => x.textContent.trim()));
+  });
+
+  mocha.run();
+});
+
+/**
+ * Tests for the playbacks tab.
+ * @extends {MediaHistoryWebUIBrowserTest}
+ */
+function MediaHistoryPlaybacksWebUIBrowserTest() {}
+
+MediaHistoryPlaybacksWebUIBrowserTest.prototype = {
+  __proto__: MediaHistoryWebUIBrowserTest.prototype,
+
+  /** @override */
+  browsePreload: 'chrome://media-history#tab-playbacks',
+};
+
+TEST_F('MediaHistoryPlaybacksWebUIBrowserTest', 'MAYBE_All', function() {
+  suiteSetup(function() {
+    return whenPageIsPopulatedForTest();
+  });
+
+  test('check data table is loaded', () => {
+    let dataHeaderRows = Array.from(
+        document.querySelector('#playbacks-table thead tr').children);
+
+    assertDeepEquals(
+        ['URL', 'Last Updated', 'Has Audio', 'Has Video', 'Watchtime (secs)'],
         dataHeaderRows.map(x => x.textContent.trim()));
   });
 

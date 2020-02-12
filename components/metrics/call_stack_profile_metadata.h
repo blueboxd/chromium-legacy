@@ -38,6 +38,19 @@ class CallStackProfileMetadata {
   CreateSampleMetadata(
       google::protobuf::RepeatedField<uint64_t>* metadata_name_hashes);
 
+  // Applies the |item| to the samples between |begin| and |end| in
+  // |stack_samples|. Overwrites any existing metadata item with the same key
+  // and value that are already applied to the samples.
+  void ApplyMetadata(
+      const base::ProfileBuilder::MetadataItem& item,
+      google::protobuf::RepeatedPtrField<
+          CallStackProfile::StackSample>::iterator begin,
+      google::protobuf::RepeatedPtrField<
+          CallStackProfile::StackSample>::iterator end,
+      google::protobuf::RepeatedPtrField<CallStackProfile::StackSample>*
+          stack_samples,
+      google::protobuf::RepeatedField<uint64_t>* metadata_name_hashes);
+
  private:
   // Comparison function for the metadata map.
   struct MetadataKey;

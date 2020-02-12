@@ -57,14 +57,22 @@ class TestingCallStackProfileBuilder : public CallStackProfileBuilder {
 
   ~TestingCallStackProfileBuilder() override;
 
-  const SampledProfile& test_sampled_profile() { return test_sampled_profile_; }
+  base::TimeTicks test_profile_start_time() const {
+    return test_profile_start_time_;
+  }
+
+  const SampledProfile& test_sampled_profile() const {
+    return test_sampled_profile_;
+  }
 
  protected:
   // Overridden for testing.
-  void PassProfilesToMetricsProvider(SampledProfile sampled_profile) override;
+  void PassProfilesToMetricsProvider(base::TimeTicks profile_start_time,
+                                     SampledProfile sampled_profile) override;
 
  private:
-  // The completed profile.
+  // The start time and completed profile.
+  base::TimeTicks test_profile_start_time_;
   SampledProfile test_sampled_profile_;
 };
 
@@ -79,7 +87,9 @@ TestingCallStackProfileBuilder::TestingCallStackProfileBuilder(
 TestingCallStackProfileBuilder::~TestingCallStackProfileBuilder() = default;
 
 void TestingCallStackProfileBuilder::PassProfilesToMetricsProvider(
+    base::TimeTicks profile_start_time,
     SampledProfile sampled_profile) {
+  test_profile_start_time_ = profile_start_time;
   test_sampled_profile_ = std::move(sampled_profile);
 }
 
@@ -442,6 +452,23 @@ TEST(CallStackProfileBuilderTest, WorkIds) {
   EXPECT_TRUE(profile.stack_sample(2).continued_work());
   EXPECT_FALSE(profile.stack_sample(3).has_continued_work());
   EXPECT_TRUE(profile.stack_sample(4).continued_work());
+}
+
+TEST(CallStackProfileBuilderTest, ProfileStartTime) {
+  auto profile_builder =
+      std::make_unique<TestingCallStackProfileBuilder>(kProfileParams);
+
+  TestModule module;
+  const base::Frame frame = {0x10, &module};
+  const base::TimeTicks first_sample_time = base::TimeTicks::UnixEpoch();
+
+  profile_builder->OnSampleCompleted({frame}, first_sample_time);
+  profile_builder->OnSampleCompleted(
+      {frame}, first_sample_time + base::TimeDelta::FromSeconds(1));
+  profile_builder->OnProfileCompleted(base::TimeDelta::FromSeconds(1),
+                                      base::TimeDelta::FromSeconds(1));
+
+  EXPECT_EQ(first_sample_time, profile_builder->test_profile_start_time());
 }
 
 // A basic test of the metadata functionality at the level of the

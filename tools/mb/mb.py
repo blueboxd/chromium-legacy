@@ -1020,6 +1020,22 @@ class MetaBuildWrapper(object):
       self.WriteFile(gn_runtime_deps_path, '\n'.join(labels) + '\n')
       cmd.append('--runtime-deps-list-file=%s' % gn_runtime_deps_path)
 
+    # Detect if we are running in a vpython interpreter, and if so force GN to
+    # use the real python interpreter. crbug.com/1049421
+    # This ensures that ninja will only use the real python interpreter and not
+    # vpython, so that any python scripts in the build will only use python
+    # modules vendored into //third_party.
+    # This can be deleted when python 3 becomes the only supported interpreter,
+    # because in python 3 vpython will no longer have its current 'viral'
+    # qualities and will require explicit usage to opt in to.
+    prefix = getattr(sys, "real_prefix", sys.prefix)
+    python_exe = ('%s\\bin\\python.exe' if self.platform.startswith('win') else
+                  '%s/bin/python') % prefix
+    if os.path.isfile(python_exe):
+      cmd.append('--script-executable=%s' % python_exe)
+    else:
+      self.Print('python interpreter not under %s/bin' % prefix)
+
     ret, output, _ = self.Run(cmd)
     if ret:
       if self.args.json_output:

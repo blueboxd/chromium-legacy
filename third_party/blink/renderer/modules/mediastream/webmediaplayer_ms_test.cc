@@ -758,8 +758,8 @@ void WebMediaPlayerMSTest::ReadyStateChanged() {
   if (state == WebMediaPlayer::ReadyState::kReadyStateHaveMetadata &&
       !player_->HasAudio()) {
     const auto& size = player_->NaturalSize();
-    EXPECT_GT(size.width, 0);
-    EXPECT_GT(size.height, 0);
+    EXPECT_GT(size.width(), 0);
+    EXPECT_GT(size.height(), 0);
   }
   if (state == WebMediaPlayer::ReadyState::kReadyStateHaveEnoughData)
     player_->Play();
@@ -921,9 +921,9 @@ TEST_P(WebMediaPlayerMSTest, Playing_Normal) {
               CheckSizeChanged(gfx::Size(kStandardWidth, kStandardHeight)));
   message_loop_controller_.RunAndWaitForStatus(
       media::PipelineStatus::PIPELINE_OK);
-  const WebSize& natural_size = player_->NaturalSize();
-  EXPECT_EQ(kStandardWidth, natural_size.width);
-  EXPECT_EQ(kStandardHeight, natural_size.height);
+  const gfx::Size& natural_size = player_->NaturalSize();
+  EXPECT_EQ(kStandardWidth, natural_size.width());
+  EXPECT_EQ(kStandardHeight, natural_size.height());
   testing::Mock::VerifyAndClearExpectations(this);
 
   EXPECT_CALL(*this, DoSetCcLayer(false));
@@ -1083,10 +1083,10 @@ TEST_P(WebMediaPlayerMSTest, RotationChange) {
   // Make sure we run all non-delayed tasks (E.G. CheckForFrameChanges) before
   // testing state.
   base::RunLoop().RunUntilIdle();
-  WebSize natural_size = player_->NaturalSize();
+  gfx::Size natural_size = player_->NaturalSize();
   // Check that height and width are flipped.
-  EXPECT_EQ(kStandardHeight, natural_size.width);
-  EXPECT_EQ(kStandardWidth, natural_size.height);
+  EXPECT_EQ(kStandardHeight, natural_size.width());
+  EXPECT_EQ(kStandardWidth, natural_size.height());
 
   // Change rotation.
   tokens[0] = 33;
@@ -1103,8 +1103,8 @@ TEST_P(WebMediaPlayerMSTest, RotationChange) {
       media::PipelineStatus::PIPELINE_OK);
   base::RunLoop().RunUntilIdle();
   natural_size = player_->NaturalSize();
-  EXPECT_EQ(kStandardHeight, natural_size.height);
-  EXPECT_EQ(kStandardWidth, natural_size.width);
+  EXPECT_EQ(kStandardHeight, natural_size.height());
+  EXPECT_EQ(kStandardWidth, natural_size.width());
 
   // Change rotation again.
   tokens[0] = 66;
@@ -1121,8 +1121,8 @@ TEST_P(WebMediaPlayerMSTest, RotationChange) {
       media::PipelineStatus::PIPELINE_OK);
   base::RunLoop().RunUntilIdle();
   natural_size = player_->NaturalSize();
-  EXPECT_EQ(kStandardHeight, natural_size.width);
-  EXPECT_EQ(kStandardWidth, natural_size.height);
+  EXPECT_EQ(kStandardHeight, natural_size.width());
+  EXPECT_EQ(kStandardWidth, natural_size.height());
 
   testing::Mock::VerifyAndClearExpectations(this);
   EXPECT_CALL(*this, DoSetCcLayer(false));

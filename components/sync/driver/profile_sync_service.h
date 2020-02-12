@@ -89,6 +89,8 @@ class ProfileSyncService : public SyncService,
 
     std::unique_ptr<SyncClient> sync_client;
     signin::IdentityManager* identity_manager = nullptr;
+    // TODO(crbug.com/1029481): This vector only ever has one entry; replace by
+    // just a pointer.
     std::vector<invalidation::IdentityProvider*>
         invalidations_identity_providers;
     StartBehavior start_behavior = MANUAL_START;

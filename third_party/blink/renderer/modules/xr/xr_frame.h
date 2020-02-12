@@ -23,6 +23,7 @@ class XRHitTestSource;
 class XRInputSource;
 class XRPose;
 class XRReferenceSpace;
+class XRRigidTransform;
 class XRSession;
 class XRSpace;
 class XRTransientInputHitTestResult;
@@ -59,6 +60,11 @@ class XRFrame final : public ScriptWrappable {
   getHitTestResultsForTransientInput(
       XRTransientInputHitTestSource* hit_test_source,
       ExceptionState& exception_state);
+
+  ScriptPromise createAnchor(ScriptState* script_state,
+                             XRRigidTransform* initial_pose,
+                             XRSpace* space,
+                             ExceptionState& exception_state);
 
  private:
   std::unique_ptr<TransformationMatrix> GetAdjustedPoseMatrix(XRSpace*) const;

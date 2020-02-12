@@ -21,8 +21,6 @@
 #include "components/invalidation/impl/fcm_invalidation_service.h"
 #include "components/invalidation/impl/fcm_network_handler.h"
 #include "components/invalidation/impl/invalidation_prefs.h"
-#include "components/invalidation/impl/invalidation_state_tracker.h"
-#include "components/invalidation/impl/invalidator_storage.h"
 #include "components/invalidation/impl/per_user_topic_subscription_manager.h"
 #include "components/invalidation/impl/profile_identity_provider.h"
 #include "components/invalidation/impl/profile_invalidation_provider.h"
@@ -146,6 +144,11 @@ KeyedService* ProfileInvalidationProviderFactory::BuildServiceInstanceFor(
   return new ProfileInvalidationProvider(std::move(service),
                                          std::move(identity_provider),
                                          std::move(custom_sender_id_factory));
+}
+
+void ProfileInvalidationProviderFactory::RegisterProfilePrefs(
+    user_prefs::PrefRegistrySyncable* registry) {
+  ProfileInvalidationProvider::RegisterProfilePrefs(registry);
 }
 
 }  // namespace invalidation

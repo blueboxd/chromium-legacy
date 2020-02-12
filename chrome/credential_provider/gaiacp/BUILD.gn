@@ -114,6 +114,7 @@ source_set("gaiacp_lib") {
     ":static_resources",
     "../eventlog:gcp_eventlog_messages",
     "//build:branding_buildflags",
+    "//chrome/common:non_code_constants",
     "//chrome/common:version_header",
     "//chrome/installer/launcher_support",
     "//components/crash/content/app:app",

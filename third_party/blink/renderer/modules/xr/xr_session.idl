@@ -55,9 +55,6 @@ enum XRVisibilityState {
   [RuntimeEnabled=WebXRIncubations] readonly attribute XRWorldTrackingState worldTrackingState;
   [RuntimeEnabled=WebXRIncubations, RaisesException] void updateWorldTrackingState(optional XRWorldTrackingStateInit state = {});
 
-  [RuntimeEnabled=WebXRIncubations] readonly attribute XRAnchorSet trackedAnchors;
-  [RuntimeEnabled=WebXRIncubations, CallWith=ScriptState, RaisesException] Promise<XRAnchor> createAnchor(XRRigidTransform initial_pose, XRSpace space);
-
   [CallWith=ScriptState, Measure, RaisesException] Promise<void> end();
 
   // https://github.com/immersive-web/hit-test/blob/master/hit-testing-explainer.md

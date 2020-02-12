@@ -417,7 +417,7 @@ const PaymentsProfileComparator* PaymentRequest::profile_comparator() const {
 
 bool PaymentRequest::CanMakePayment() const {
   for (PaymentApp* payment_method : payment_methods_) {
-    if (payment_method->IsValidForCanMakePayment()) {
+    if (payment_method->HasEnrolledInstrument()) {
       return true;
     }
   }

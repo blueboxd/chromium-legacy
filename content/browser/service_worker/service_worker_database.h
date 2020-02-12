@@ -78,7 +78,7 @@ class CONTENT_EXPORT ServiceWorkerDatabase {
     base::Time script_response_time;
     base::Optional<FeatureToTokensMap> origin_trial_tokens;
     blink::mojom::NavigationPreloadState navigation_preload_state;
-    std::set<blink::mojom::WebFeature> used_features;
+    std::vector<blink::mojom::WebFeature> used_features;
 
     // Not populated until ServiceWorkerStorage::StoreRegistration is called.
     int64_t resources_total_size_bytes;

@@ -1524,24 +1524,6 @@ interface DelayNode : AudioNode
     attribute @@toStringTag
     getter delayTime
     method constructor
-interface DetectedBarcode
-    attribute @@toStringTag
-    getter boundingBox
-    getter cornerPoints
-    getter format
-    getter rawValue
-    method constructor
-interface DetectedFace
-    attribute @@toStringTag
-    getter boundingBox
-    getter landmarks
-    method constructor
-interface DetectedText
-    attribute @@toStringTag
-    getter boundingBox
-    getter cornerPoints
-    getter rawValue
-    method constructor
 interface DeviceMotionEvent : Event
     attribute @@toStringTag
     getter acceleration
@@ -11211,6 +11193,7 @@ interface XRFrame
     getter trackedAnchors
     getter worldInformation
     method constructor
+    method createAnchor
     method getHitTestResults
     method getHitTestResultsForTransientInput
     method getPose
@@ -11345,12 +11328,10 @@ interface XRSession : EventTarget
     getter onselectstart
     getter onvisibilitychange
     getter renderState
-    getter trackedAnchors
     getter visibilityState
     getter worldTrackingState
     method cancelAnimationFrame
     method constructor
-    method createAnchor
     method end
     method requestAnimationFrame
     method requestHitTest

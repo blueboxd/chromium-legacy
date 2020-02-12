@@ -1811,7 +1811,7 @@ TEST_F(WebMediaPlayerImplTest, NaturalSizeChange) {
   metadata.natural_size = gfx::Size(320, 240);
 
   OnMetadata(metadata);
-  ASSERT_EQ(blink::WebSize(320, 240), wmpi_->NaturalSize());
+  ASSERT_EQ(gfx::Size(320, 240), wmpi_->NaturalSize());
 
   // Arrival of metadata should trigger creation of reporter with original size.
   VideoDecodeStatsReporter* orig_stats_reporter = GetVideoStatsReporter();
@@ -1821,7 +1821,7 @@ TEST_F(WebMediaPlayerImplTest, NaturalSizeChange) {
 
   EXPECT_CALL(client_, SizeChanged());
   OnVideoNaturalSizeChange(gfx::Size(1920, 1080));
-  ASSERT_EQ(blink::WebSize(1920, 1080), wmpi_->NaturalSize());
+  ASSERT_EQ(gfx::Size(1920, 1080), wmpi_->NaturalSize());
 
   // New natural size triggers new reporter to be created.
   ASSERT_NE(orig_stats_reporter, GetVideoStatsReporter());
@@ -1840,7 +1840,7 @@ TEST_F(WebMediaPlayerImplTest, NaturalSizeChange_Rotated) {
   metadata.natural_size = gfx::Size(320, 240);
 
   OnMetadata(metadata);
-  ASSERT_EQ(blink::WebSize(320, 240), wmpi_->NaturalSize());
+  ASSERT_EQ(gfx::Size(320, 240), wmpi_->NaturalSize());
 
   // Arrival of metadata should trigger creation of reporter with original size.
   VideoDecodeStatsReporter* orig_stats_reporter = GetVideoStatsReporter();
@@ -1851,7 +1851,7 @@ TEST_F(WebMediaPlayerImplTest, NaturalSizeChange_Rotated) {
   EXPECT_CALL(client_, SizeChanged());
   // For 90/270deg rotations, the natural size should be transposed.
   OnVideoNaturalSizeChange(gfx::Size(1920, 1080));
-  ASSERT_EQ(blink::WebSize(1080, 1920), wmpi_->NaturalSize());
+  ASSERT_EQ(gfx::Size(1080, 1920), wmpi_->NaturalSize());
 
   // New natural size triggers new reporter to be created.
   ASSERT_NE(orig_stats_reporter, GetVideoStatsReporter());

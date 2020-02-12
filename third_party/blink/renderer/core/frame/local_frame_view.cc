@@ -333,11 +333,31 @@ void LocalFrameView::ForAllChildLocalFrameViews(const Function& function) {
   }
 }
 
-// Call function for each non-throttled frame view in pre tree order.
+// Call function for each non-throttled frame view in pre-order. If this logic
+// is updated, consider updating |ForAllThrottledLocalFrameViews| too.
 template <typename Function>
 void LocalFrameView::ForAllNonThrottledLocalFrameViews(
     const Function& function) {
   if (ShouldThrottleRendering())
+    return;
+
+  function(*this);
+
+  for (Frame* child = frame_->Tree().FirstChild(); child;
+       child = child->Tree().NextSibling()) {
+    auto* child_local_frame = DynamicTo<LocalFrame>(child);
+    if (!child_local_frame)
+      continue;
+    if (LocalFrameView* child_view = child_local_frame->View())
+      child_view->ForAllNonThrottledLocalFrameViews(function);
+  }
+}
+
+// Call function for each throttled frame view in pre-order. If this logic is
+// updated, consider updating |ForAllNonThrottledLocalFrameViews| too.
+template <typename Function>
+void LocalFrameView::ForAllThrottledLocalFrameViews(const Function& function) {
+  if (!ShouldThrottleRendering())
     return;
 
   function(*this);
@@ -2018,8 +2038,29 @@ void LocalFrameView::UpdateGeometriesIfNeeded() {
 }
 
 bool LocalFrameView::UpdateAllLifecyclePhases(DocumentUpdateReason reason) {
-  return GetFrame().LocalFrameRoot().View()->UpdateLifecyclePhases(
+  bool updated = GetFrame().LocalFrameRoot().View()->UpdateLifecyclePhases(
       DocumentLifecycle::kPaintClean, reason);
+
+#if DCHECK_IS_ON()
+  if (updated) {
+    // This function should return true iff all non-throttled frames are in the
+    // kPaintClean lifecycle state.
+    ForAllNonThrottledLocalFrameViews([](LocalFrameView& frame_view) {
+      DCHECK_EQ(frame_view.Lifecycle().GetState(),
+                DocumentLifecycle::kPaintClean);
+    });
+
+    // A required intersection observation should run throttled frames to
+    // kLayoutClean.
+    ForAllThrottledLocalFrameViews([](LocalFrameView& frame_view) {
+      DCHECK(frame_view.intersection_observation_state_ != kRequired ||
+             frame_view.Lifecycle().GetState() >=
+                 DocumentLifecycle::kLayoutClean);
+    });
+  }
+#endif
+
+  return updated;
 }
 
 // TODO(schenney): add a scrolling update lifecycle phase.
@@ -2190,6 +2231,7 @@ bool LocalFrameView::UpdateLifecyclePhases(
   // separate bool.
   base::AutoReset<bool> past_layout_lifecycle_resetter(
       &past_layout_lifecycle_update_, false);
+  base::AutoReset<bool> in_lifecycle_scope(&in_lifecycle_update_, true);
 
   // If we're throttling, then we don't need to update lifecycle phases. The
   // throttling status will get updated in RunPostLifecycleSteps().
@@ -2197,7 +2239,6 @@ bool LocalFrameView::UpdateLifecyclePhases(
     return Lifecycle().GetState() == target_state;
   }
 
-  base::AutoReset<bool> in_lifecycle_scope(&in_lifecycle_update_, true);
   lifecycle_data_.start_time = base::TimeTicks::Now();
   ++lifecycle_data_.count;
 
@@ -3664,9 +3705,6 @@ void LocalFrameView::PaintOutsideOfLifecycle(
     const CullRect& cull_rect) {
   DCHECK(PaintOutsideOfLifecycleIsAllowed(context, *this));
 
-  base::AutoReset<bool> past_layout_lifecycle_resetter(
-      &past_layout_lifecycle_update_, true);
-
   ForAllNonThrottledLocalFrameViews([](LocalFrameView& frame_view) {
     frame_view.Lifecycle().AdvanceTo(DocumentLifecycle::kInPaint);
   });
@@ -3683,9 +3721,6 @@ void LocalFrameView::PaintContentsOutsideOfLifecycle(
     const GlobalPaintFlags global_paint_flags,
     const CullRect& cull_rect) {
   DCHECK(PaintOutsideOfLifecycleIsAllowed(context, *this));
-
-  base::AutoReset<bool> past_layout_lifecycle_resetter(
-      &past_layout_lifecycle_update_, true);
 
   ForAllNonThrottledLocalFrameViews([](LocalFrameView& frame_view) {
     frame_view.Lifecycle().AdvanceTo(DocumentLifecycle::kInPaint);
@@ -4088,10 +4123,17 @@ bool LocalFrameView::ShouldThrottleRendering() const {
     return false;
   }
 
-  // Only lifecycle phases up to layout are needed to generate an
-  // intersection observation.
-  return intersection_observation_state_ != kRequired ||
-         GetFrame().LocalFrameRoot().View()->past_layout_lifecycle_update_;
+  if (intersection_observation_state_ == kRequired) {
+    auto* local_frame_root_view = GetFrame().LocalFrameRoot().View();
+    // When doing a lifecycle update required by intersection observer, we can
+    // throttle lifecycle states after layout. Outside of lifecycle updates,
+    // the frame should be considered throttled because it is not fully updating
+    // the lifecycle.
+    return !local_frame_root_view->in_lifecycle_update_ ||
+           local_frame_root_view->past_layout_lifecycle_update_;
+  }
+
+  return true;
 }
 
 bool LocalFrameView::CanThrottleRendering() const {

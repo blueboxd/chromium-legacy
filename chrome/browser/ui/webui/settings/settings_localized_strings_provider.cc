@@ -874,6 +874,72 @@ void AddAutofillStrings(content::WebUIDataSource* html_source,
   AddLocalizedStringsBulk(html_source, kLocalizedStrings);
 }
 
+void AddSignOutDialogStrings(content::WebUIDataSource* html_source,
+                             Profile* profile) {
+#if defined(OS_CHROMEOS)
+  bool is_dice_enabled = false;
+  bool is_split_settings_sync_enabled =
+      chromeos::features::IsSplitSettingsSyncEnabled();
+#else
+  bool is_dice_enabled =
+      AccountConsistencyModeManager::IsDiceEnabledForProfile(profile);
+  bool is_split_settings_sync_enabled = false;
+#endif
+
+  if (is_split_settings_sync_enabled || is_dice_enabled) {
+    static constexpr webui::LocalizedString kTurnOffStrings[] = {
+        {"syncDisconnect", IDS_SETTINGS_PEOPLE_SYNC_TURN_OFF},
+        {"syncDisconnectTitle",
+         IDS_SETTINGS_TURN_OFF_SYNC_AND_SIGN_OUT_DIALOG_TITLE},
+    };
+    AddLocalizedStringsBulk(html_source, kTurnOffStrings);
+  } else {
+    static constexpr webui::LocalizedString kSignOutStrings[] = {
+        {"syncDisconnect", IDS_SETTINGS_PEOPLE_SIGN_OUT},
+        {"syncDisconnectTitle", IDS_SETTINGS_SYNC_DISCONNECT_TITLE},
+    };
+    AddLocalizedStringsBulk(html_source, kSignOutStrings);
+  }
+
+  std::string sync_dashboard_url =
+      google_util::AppendGoogleLocaleParam(
+          GURL(chrome::kSyncGoogleDashboardURL),
+          g_browser_process->GetApplicationLocale())
+          .spec();
+
+  if (is_dice_enabled) {
+    static constexpr webui::LocalizedString kSyncDisconnectStrings[] = {
+        {"syncDisconnectDeleteProfile",
+         IDS_SETTINGS_TURN_OFF_SYNC_DIALOG_CHECKBOX},
+        {"syncDisconnectConfirm",
+         IDS_SETTINGS_TURN_OFF_SYNC_DIALOG_MANAGED_CONFIRM},
+        {"syncDisconnectExplanation",
+         IDS_SETTINGS_SYNC_DISCONNECT_AND_SIGN_OUT_EXPLANATION},
+    };
+    AddLocalizedStringsBulk(html_source, kSyncDisconnectStrings);
+  } else {
+    static constexpr webui::LocalizedString kSyncDisconnectStrings[] = {
+        {"syncDisconnectDeleteProfile",
+         IDS_SETTINGS_SYNC_DISCONNECT_DELETE_PROFILE},
+        {"syncDisconnectConfirm", IDS_SETTINGS_SYNC_DISCONNECT_CONFIRM},
+    };
+    AddLocalizedStringsBulk(html_source, kSyncDisconnectStrings);
+
+    html_source->AddString(
+        "syncDisconnectExplanation",
+        l10n_util::GetStringFUTF8(IDS_SETTINGS_SYNC_DISCONNECT_EXPLANATION,
+                                  base::ASCIIToUTF16(sync_dashboard_url)));
+  }
+
+#if !defined(OS_CHROMEOS)
+  html_source->AddString(
+      "syncDisconnectManagedProfileExplanation",
+      l10n_util::GetStringFUTF8(
+          IDS_SETTINGS_SYNC_DISCONNECT_MANAGED_PROFILE_EXPLANATION,
+          base::ASCIIToUTF16("$1"), base::ASCIIToUTF16(sync_dashboard_url)));
+#endif
+}
+
 void AddPeopleStrings(content::WebUIDataSource* html_source, Profile* profile) {
   static constexpr webui::LocalizedString kLocalizedStrings[] = {
     // Top level people strings:
@@ -898,8 +964,6 @@ void AddPeopleStrings(content::WebUIDataSource* html_source, Profile* profile) {
 #if !defined(OS_CHROMEOS)
     {"showShortcutLabel", IDS_SETTINGS_PROFILE_SHORTCUT_TOGGLE_LABEL},
 #endif
-    {"syncDisconnectDeleteProfile",
-     IDS_SETTINGS_SYNC_DISCONNECT_DELETE_PROFILE},
     {"deleteProfileWarningExpandA11yLabel",
      IDS_SETTINGS_SYNC_DISCONNECT_EXPAND_ACCESSIBILITY_LABEL},
     {"deleteProfileWarningWithCountsSingular",
@@ -926,40 +990,7 @@ void AddPeopleStrings(content::WebUIDataSource* html_source, Profile* profile) {
                           chromeos::IsAccountManagerAvailable(profile));
 #endif
 
-  // Signout Dialog strings:
-#if !defined(OS_CHROMEOS)
-  std::string sync_dashboard_url =
-      google_util::AppendGoogleLocaleParam(
-          GURL(chrome::kSyncGoogleDashboardURL),
-          g_browser_process->GetApplicationLocale())
-          .spec();
-
-  html_source->AddString(
-      "syncDisconnectManagedProfileExplanation",
-      l10n_util::GetStringFUTF8(
-          IDS_SETTINGS_SYNC_DISCONNECT_MANAGED_PROFILE_EXPLANATION,
-          base::ASCIIToUTF16("$1"), base::ASCIIToUTF16(sync_dashboard_url)));
-
-  // The syncDisconnect text differs depending on Dice-enabledness.
-  if (AccountConsistencyModeManager::IsDiceEnabledForProfile(profile)) {
-    static constexpr webui::LocalizedString kSyncDisconnectStrings[] = {
-        {"syncDisconnect", IDS_SETTINGS_PEOPLE_SYNC_TURN_OFF},
-        {"syncDisconnectTitle",
-         IDS_SETTINGS_TURN_OFF_SYNC_AND_SIGN_OUT_DIALOG_TITLE},
-        {"syncDisconnectDeleteProfile",
-         IDS_SETTINGS_TURN_OFF_SYNC_DIALOG_CHECKBOX},
-        {"syncDisconnectConfirm",
-         IDS_SETTINGS_TURN_OFF_SYNC_DIALOG_MANAGED_CONFIRM},
-    };
-    AddLocalizedStringsBulk(html_source, kSyncDisconnectStrings);
-
-    html_source->AddLocalizedString(
-        "syncDisconnectExplanation",
-        IDS_SETTINGS_SYNC_DISCONNECT_AND_SIGN_OUT_EXPLANATION);
-  }
-#endif
-
-  AddSignOutDialogStrings(html_source);
+  AddSignOutDialogStrings(html_source, profile);
   AddSyncControlsStrings(html_source);
   AddSyncAccountControlStrings(html_source);
 #if defined(OS_CHROMEOS)

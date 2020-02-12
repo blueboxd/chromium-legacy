@@ -6,6 +6,7 @@
 
 #include "ash/login/ui/lock_contents_view.h"
 #include "ash/login/ui/media_controls_header_view.h"
+#include "ash/login/ui/views_utils.h"
 #include "ash/media/media_controller_impl.h"
 #include "ash/resources/vector_icons/vector_icons.h"
 #include "ash/session/session_controller_impl.h"
@@ -30,9 +31,10 @@
 #include "ui/gfx/paint_vector_icon.h"
 #include "ui/message_center/message_center.h"
 #include "ui/message_center/vector_icons.h"
-#include "ui/views/animation/ink_drop_mask.h"
+#include "ui/views/animation/ink_drop_highlight.h"
 #include "ui/views/background.h"
 #include "ui/views/controls/button/image_button_factory.h"
+#include "ui/views/controls/highlight_path_generator.h"
 #include "ui/views/controls/image_view.h"
 #include "ui/views/controls/label.h"
 #include "ui/views/layout/box_layout.h"
@@ -143,8 +145,6 @@ class MediaActionButton : public views::ImageButton {
                     MediaSessionAction action,
                     const base::string16& accessible_name)
       : views::ImageButton(listener),
-        is_play_pause_(action == MediaSessionAction::kPause ||
-                       action == MediaSessionAction::kPlay),
         icon_size_(icon_size) {
     SetInkDropMode(views::Button::InkDropMode::ON);
     set_has_ink_drop_action_on_click(true);
@@ -153,10 +153,17 @@ class MediaActionButton : public views::ImageButton {
     SetBorder(
         views::CreateEmptyBorder(views::LayoutProvider::Get()->GetInsetsMetric(
             views::INSETS_VECTOR_IMAGE_BUTTON)));
-    SetPreferredSize(is_play_pause_ ? kPlayPauseButtonSize
-                                    : kMediaControlsButtonSize);
+
+    const bool is_play_pause = action == MediaSessionAction::kPause ||
+                               action == MediaSessionAction::kPlay;
+    SetPreferredSize(is_play_pause ? kPlayPauseButtonSize
+                                   : kMediaControlsButtonSize);
     SetFocusBehavior(views::View::FocusBehavior::ALWAYS);
     SetAction(action, accessible_name);
+
+    SetInstallFocusRingOnFocus(true);
+    login_views_utils::ConfigureRectFocusRingCircleInkDrop(this, focus_ring(),
+                                                           base::nullopt);
   }
 
   ~MediaActionButton() override = default;
@@ -172,15 +179,13 @@ class MediaActionButton : public views::ImageButton {
             AshColorProvider::AshColorMode::kDark));
   }
 
-  std::unique_ptr<views::InkDropMask> CreateInkDropMask() const override {
-    return std::make_unique<views::CircleInkDropMask>(
-        size(), GetLocalBounds().CenterPoint(),
-        is_play_pause_ ? kPlayPauseButtonSize.width() / 2
-                       : kMediaControlsButtonSize.width() / 2);
+  std::unique_ptr<views::InkDropHighlight> CreateInkDropHighlight()
+      const override {
+    return std::make_unique<views::InkDropHighlight>(gfx::SizeF(size()),
+                                                     GetInkDropBaseColor());
   }
 
  private:
-  const bool is_play_pause_;
   int const icon_size_;
 
   DISALLOW_COPY_AND_ASSIGN(MediaActionButton);

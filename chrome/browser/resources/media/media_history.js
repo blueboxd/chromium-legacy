@@ -13,12 +13,10 @@ function whenPageIsPopulatedForTest() {
 
 (function() {
 
-let data = null;
-let dataTableBody = null;
-let sortReverse = true;
-let sortKey = 'cachedAudioVideoWatchtime';
 let store = null;
 let statsTableBody = null;
+let originsTable = null;
+let playbacksTable = null;
 
 /**
  * Creates a single row in the stats table.
@@ -32,13 +30,6 @@ function createStatsRow(name, count) {
   td[0].textContent = name;
   td[1].textContent = count;
   return document.importNode(template.content, true);
-}
-
-/**
- * Remove all rows from the data table.
- */
-function clearDataTable() {
-  dataTableBody.innerHTML = '';
 }
 
 /**
@@ -60,9 +51,14 @@ function compareTableItem(sortKey, a, b) {
     return val1.host > val2.host ? 1 : -1;
   }
 
+  // Compare the url property.
+  if (sortKey == 'url') {
+    return val1.url > val2.url ? 1 : -1;
+  }
+
   // Compare mojo_base.mojom.TimeDelta microseconds value.
   if (sortKey == 'cachedAudioVideoWatchtime' ||
-      sortKey == 'actualAudioVideoWatchtime') {
+      sortKey == 'actualAudioVideoWatchtime' || sortKey == 'watchtime') {
     return val1.microseconds - val2.microseconds;
   }
 
@@ -75,53 +71,120 @@ function compareTableItem(sortKey, a, b) {
 }
 
 /**
- * Sort the data based on |sortKey| and |sortReverse|.
+ * Formats a field to be displayed in the data table.
+ * @param {?object} data
+ * @param {string} key
+ * @returns {?string}
  */
-function sortData() {
-  data.sort((a, b) => {
-    return (sortReverse ? -1 : 1) * compareTableItem(sortKey, a, b);
-  });
-}
-
-/**
- * Regenerates the data table from |data|.
- */
-function renderDataTable() {
-  clearDataTable();
-  sortData();
-  data.forEach(rowInfo => dataTableBody.appendChild(createDataRow(rowInfo)));
-}
-
-/**
- * @param {mojo_base.mojom.TimeDelta} The time delta to format.
- * @return {string} The time in seconds with commas added.
- */
-function formatWatchtime(time) {
-  const secs = (time.microseconds / 1000000);
-  return secs.toString().replace(/(\d)(?=(\d{3})+(?!\d))/g, '$1,');
-}
-
-/**
- * Creates a single row in the data table.
- * @param {!MediaHistoryOriginRow} data The data to create the row.
- * @return {!HTMLElement}
- */
-function createDataRow(data) {
-  const template = $('data-row');
-  const td = template.content.querySelectorAll('td');
-
-  td[0].textContent = data.origin.scheme + '://' + data.origin.host;
-  if (data.origin.scheme == 'http' && data.origin.port != '80') {
-    td[0].textContent += ':' + data.origin.port;
-  } else if (data.origin.scheme == 'https' && data.origin.port != '443') {
-    td[0].textContent += ':' + data.origin.port;
+function formatField(data, key) {
+  if (data === undefined || data === null) {
+    return;
   }
 
-  td[1].textContent =
-      data.lastUpdatedTime ? new Date(data.lastUpdatedTime).toISOString() : '';
-  td[2].textContent = formatWatchtime(data.cachedAudioVideoWatchtime);
-  td[3].textContent = formatWatchtime(data.actualAudioVideoWatchtime);
-  return document.importNode(template.content, true);
+  if (key == 'origin') {
+    let origin = data.scheme + '://' + data.host;
+    if (data.scheme == 'http' && data.port != '80') {
+      origin += ':' + data.port;
+    } else if (data.scheme == 'https' && data.port != '443') {
+      origin += ':' + data.port;
+    }
+
+    return origin;
+  } else if (key == 'lastUpdatedTime') {
+    return data ? new Date(data).toISOString() : '';
+  } else if (
+      key == 'cachedAudioVideoWatchtime' ||
+      key == 'actualAudioVideoWatchtime' || key == 'watchtime') {
+    const secs = (data.microseconds / 1000000);
+    return secs.toString().replace(/(\d)(?=(\d{3})+(?!\d))/g, '$1,');
+  } else if (key == 'url') {
+    return data.url;
+  } else if (key == 'hasAudio' || key == 'hasVideo') {
+    return data ? 'Yes' : 'No';
+  }
+
+  return data;
+}
+
+class DataTable {
+  /**
+   * @param {!HTMLTableElement} table
+   */
+  constructor(table) {
+    /** @private {!HTMLTableElement} */
+    this.table_ = table;
+
+    /** @private {Object[]} */
+    this.data_ = [];
+
+    // Set table header sort handlers.
+    const headers = this.table_.querySelectorAll('th[sort-key]');
+    headers.forEach((header) => {
+      header.addEventListener('click', this.handleSortClick.bind(this));
+    }, this);
+  }
+
+  handleSortClick(e) {
+    const isCurrentSortColumn = e.target.classList.contains('sort-column');
+
+    // If we are not the sort column then we should become the sort column.
+    if (!isCurrentSortColumn) {
+      const oldSortColumn = document.querySelector('.sort-column');
+      oldSortColumn.classList.remove('sort-column');
+      e.target.classList.add('sort-column');
+    }
+
+    // If we are the current sort column then we should toggle the reverse
+    // attribute to sort in reverse.
+    if (isCurrentSortColumn && e.target.hasAttribute('sort-reverse')) {
+      e.target.removeAttribute('sort-reverse');
+    } else {
+      e.target.setAttribute('sort-reverse', '');
+    }
+
+    this.render();
+  }
+
+  render() {
+    // Find the body of the table and clear it.
+    const body = this.table_.querySelectorAll('tbody')[0];
+    body.innerHTML = '';
+
+    // Get the sort key from the columns to determine which data should be in
+    // which column.
+    const headerCells = Array.from(this.table_.querySelectorAll('thead th'));
+    const sortKeys = headerCells.map((e) => e.getAttribute('sort-key'));
+
+    const currentSortCol = this.table_.querySelectorAll('.sort-column')[0];
+    const currentSortKey = currentSortCol.getAttribute('sort-key');
+    const currentSortReverse = currentSortCol.hasAttribute('sort-reverse');
+
+    // Sort the data based on the current sort key.
+    this.data_.sort((a, b) => {
+      return (currentSortReverse ? -1 : 1) *
+          compareTableItem(currentSortKey, a, b);
+    });
+
+    // Generate the table rows.
+    this.data_.forEach((dataRow) => {
+      const tr = document.createElement('tr');
+      body.appendChild(tr);
+
+      sortKeys.forEach((key) => {
+        const td = document.createElement('td');
+        td.textContent = formatField(dataRow[key], key);
+        tr.appendChild(td);
+      });
+    });
+  }
+
+  /**
+   * @param {object[]} data The data to update
+   */
+  setData(data) {
+    this.data_ = data;
+    this.render();
+  }
 }
 
 /**
@@ -148,8 +211,11 @@ function showTab(name) {
       });
     case 'origins':
       return store.getMediaHistoryOriginRows().then(response => {
-        data = response.rows;
-        renderDataTable();
+        originsTable.setData(response.rows);
+      });
+    case 'playbacks':
+      return store.getMediaHistoryPlaybackRows().then(response => {
+        playbacksTable.setData(response.rows);
       });
   }
 
@@ -160,8 +226,10 @@ function showTab(name) {
 document.addEventListener('DOMContentLoaded', function() {
   store = mediaHistory.mojom.MediaHistoryStore.getRemote();
 
-  dataTableBody = $('data-table-body');
   statsTableBody = $('stats-table-body');
+
+  originsTable = new DataTable($('origins-table'));
+  playbacksTable = new DataTable($('playbacks-table'));
 
   cr.ui.decorate('tabbox', cr.ui.TabBox);
 
@@ -186,30 +254,6 @@ document.addEventListener('DOMContentLoaded', function() {
     const selectedTab = tabs[tabbox.selectedIndex];
     window.location.hash = 'tab-' + selectedTab.id;
   }, true);
-
-  // Set table header sort handlers.
-  const dataTableHeader = $('data-table-header');
-  const headers = dataTableHeader.children;
-  for (let i = 0; i < headers.length; i++) {
-    headers[i].addEventListener('click', (e) => {
-      const newSortKey = e.target.getAttribute('sort-key');
-      if (sortKey == newSortKey) {
-        sortReverse = !sortReverse;
-      } else {
-        sortKey = newSortKey;
-        sortReverse = false;
-      }
-      const oldSortColumn = document.querySelector('.sort-column');
-      oldSortColumn.classList.remove('sort-column');
-      e.target.classList.add('sort-column');
-      if (sortReverse) {
-        e.target.setAttribute('sort-reverse', '');
-      } else {
-        e.target.removeAttribute('sort-reverse');
-      }
-      renderDataTable();
-    });
-  }
 
   // Add handler to 'copy all to clipboard' button.
   const copyAllToClipboardButtons =

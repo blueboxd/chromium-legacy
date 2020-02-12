@@ -37,6 +37,7 @@ class BlinkTestClientImpl : public mojom::BlinkTestClient {
   void SetPopupBlockingEnabled(bool block_popups) override;
   void LoadURLForFrame(const GURL& url, const std::string& frame_name) override;
   void NavigateSecondaryWindow(const GURL& url) override;
+  void SetScreenOrientationChanged() override;
 
   DISALLOW_COPY_AND_ASSIGN(BlinkTestClientImpl);
 };

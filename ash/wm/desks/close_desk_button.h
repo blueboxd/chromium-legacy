@@ -29,11 +29,9 @@ class ASH_EXPORT CloseDeskButton : public views::ImageButton,
   // views::ImageButton:
   const char* GetClassName() const override;
   std::unique_ptr<views::InkDrop> CreateInkDrop() override;
-  std::unique_ptr<views::InkDropRipple> CreateInkDropRipple() const override;
   std::unique_ptr<views::InkDropHighlight> CreateInkDropHighlight()
       const override;
   SkColor GetInkDropBaseColor() const override;
-  std::unique_ptr<views::InkDropMask> CreateInkDropMask() const override;
 
   // views::ViewTargeterDelegate:
   bool DoesIntersectRect(const views::View* target,

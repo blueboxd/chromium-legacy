@@ -1,5 +1,5 @@
 This is a testharness.js-based test.
-Found 54 tests; 53 PASS, 1 FAIL, 0 TIMEOUT, 0 NOTRUN.
+Found 54 tests; 26 PASS, 28 FAIL, 0 TIMEOUT, 0 NOTRUN.
 PASS idl_test setup
 PASS idl_test validation
 PASS FaceDetector interface: existence and properties of interface object
@@ -13,18 +13,18 @@ PASS FaceDetector must be primary interface of faceDetector
 PASS Stringification of faceDetector
 PASS FaceDetector interface: faceDetector must inherit property "detect(ImageBitmapSource)" with the proper type
 PASS FaceDetector interface: calling detect(ImageBitmapSource) on faceDetector with too few arguments must throw TypeError
-PASS DetectedFace interface: existence and properties of interface object
-PASS DetectedFace interface object length
-PASS DetectedFace interface object name
-PASS DetectedFace interface: existence and properties of interface prototype object
-PASS DetectedFace interface: existence and properties of interface prototype object's "constructor" property
-PASS DetectedFace interface: existence and properties of interface prototype object's @@unscopables property
-PASS DetectedFace interface: attribute boundingBox
-PASS DetectedFace interface: attribute landmarks
-PASS DetectedFace must be primary interface of detectedFace
-PASS Stringification of detectedFace
-PASS DetectedFace interface: detectedFace must inherit property "boundingBox" with the proper type
-PASS DetectedFace interface: detectedFace must inherit property "landmarks" with the proper type
+FAIL DetectedFace interface: existence and properties of interface object assert_own_property: self does not have own property "DetectedFace" expected property "DetectedFace" missing
+FAIL DetectedFace interface object length assert_own_property: self does not have own property "DetectedFace" expected property "DetectedFace" missing
+FAIL DetectedFace interface object name assert_own_property: self does not have own property "DetectedFace" expected property "DetectedFace" missing
+FAIL DetectedFace interface: existence and properties of interface prototype object assert_own_property: self does not have own property "DetectedFace" expected property "DetectedFace" missing
+FAIL DetectedFace interface: existence and properties of interface prototype object's "constructor" property assert_own_property: self does not have own property "DetectedFace" expected property "DetectedFace" missing
+FAIL DetectedFace interface: existence and properties of interface prototype object's @@unscopables property assert_own_property: self does not have own property "DetectedFace" expected property "DetectedFace" missing
+FAIL DetectedFace interface: attribute boundingBox assert_own_property: self does not have own property "DetectedFace" expected property "DetectedFace" missing
+FAIL DetectedFace interface: attribute landmarks assert_own_property: self does not have own property "DetectedFace" expected property "DetectedFace" missing
+FAIL DetectedFace must be primary interface of detectedFace assert_own_property: self does not have own property "DetectedFace" expected property "DetectedFace" missing
+FAIL Stringification of detectedFace assert_class_string: class string of detectedFace expected "[object DetectedFace]" but got "[object Object]"
+FAIL DetectedFace interface: detectedFace must inherit property "boundingBox" with the proper type assert_inherits: property "boundingBox" found on object expected in prototype chain
+FAIL DetectedFace interface: detectedFace must inherit property "landmarks" with the proper type assert_inherits: property "landmarks" found on object expected in prototype chain
 PASS BarcodeDetector interface: existence and properties of interface object
 PASS BarcodeDetector interface object length
 PASS BarcodeDetector interface object name
@@ -38,21 +38,21 @@ PASS Stringification of barcodeDetector
 PASS BarcodeDetector interface: barcodeDetector must inherit property "getSupportedFormats()" with the proper type
 PASS BarcodeDetector interface: barcodeDetector must inherit property "detect(ImageBitmapSource)" with the proper type
 PASS BarcodeDetector interface: calling detect(ImageBitmapSource) on barcodeDetector with too few arguments must throw TypeError
-PASS DetectedBarcode interface: existence and properties of interface object
-PASS DetectedBarcode interface object length
-PASS DetectedBarcode interface object name
-PASS DetectedBarcode interface: existence and properties of interface prototype object
-PASS DetectedBarcode interface: existence and properties of interface prototype object's "constructor" property
-PASS DetectedBarcode interface: existence and properties of interface prototype object's @@unscopables property
-PASS DetectedBarcode interface: attribute boundingBox
-PASS DetectedBarcode interface: attribute rawValue
-PASS DetectedBarcode interface: attribute format
-PASS DetectedBarcode interface: attribute cornerPoints
-PASS DetectedBarcode must be primary interface of detectedBarcode
-PASS Stringification of detectedBarcode
-PASS DetectedBarcode interface: detectedBarcode must inherit property "boundingBox" with the proper type
-PASS DetectedBarcode interface: detectedBarcode must inherit property "rawValue" with the proper type
-PASS DetectedBarcode interface: detectedBarcode must inherit property "format" with the proper type
-FAIL DetectedBarcode interface: detectedBarcode must inherit property "cornerPoints" with the proper type Unrecognized type Point2D
+FAIL DetectedBarcode interface: existence and properties of interface object assert_own_property: self does not have own property "DetectedBarcode" expected property "DetectedBarcode" missing
+FAIL DetectedBarcode interface object length assert_own_property: self does not have own property "DetectedBarcode" expected property "DetectedBarcode" missing
+FAIL DetectedBarcode interface object name assert_own_property: self does not have own property "DetectedBarcode" expected property "DetectedBarcode" missing
+FAIL DetectedBarcode interface: existence and properties of interface prototype object assert_own_property: self does not have own property "DetectedBarcode" expected property "DetectedBarcode" missing
+FAIL DetectedBarcode interface: existence and properties of interface prototype object's "constructor" property assert_own_property: self does not have own property "DetectedBarcode" expected property "DetectedBarcode" missing
+FAIL DetectedBarcode interface: existence and properties of interface prototype object's @@unscopables property assert_own_property: self does not have own property "DetectedBarcode" expected property "DetectedBarcode" missing
+FAIL DetectedBarcode interface: attribute boundingBox assert_own_property: self does not have own property "DetectedBarcode" expected property "DetectedBarcode" missing
+FAIL DetectedBarcode interface: attribute rawValue assert_own_property: self does not have own property "DetectedBarcode" expected property "DetectedBarcode" missing
+FAIL DetectedBarcode interface: attribute format assert_own_property: self does not have own property "DetectedBarcode" expected property "DetectedBarcode" missing
+FAIL DetectedBarcode interface: attribute cornerPoints assert_own_property: self does not have own property "DetectedBarcode" expected property "DetectedBarcode" missing
+FAIL DetectedBarcode must be primary interface of detectedBarcode assert_own_property: self does not have own property "DetectedBarcode" expected property "DetectedBarcode" missing
+FAIL Stringification of detectedBarcode assert_class_string: class string of detectedBarcode expected "[object DetectedBarcode]" but got "[object Object]"
+FAIL DetectedBarcode interface: detectedBarcode must inherit property "boundingBox" with the proper type assert_inherits: property "boundingBox" found on object expected in prototype chain
+FAIL DetectedBarcode interface: detectedBarcode must inherit property "rawValue" with the proper type assert_inherits: property "rawValue" found on object expected in prototype chain
+FAIL DetectedBarcode interface: detectedBarcode must inherit property "format" with the proper type assert_inherits: property "format" found on object expected in prototype chain
+FAIL DetectedBarcode interface: detectedBarcode must inherit property "cornerPoints" with the proper type assert_inherits: property "cornerPoints" found on object expected in prototype chain
 Harness: the test ran to completion.
 

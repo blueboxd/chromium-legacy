@@ -267,7 +267,7 @@ IN_PROC_BROWSER_TEST_F(ScrollLatencyBrowserTest,
 
 class ScrollLatencyScrollbarBrowserTest : public ScrollLatencyBrowserTest {
  public:
-  ScrollLatencyScrollbarBrowserTest() {}
+  ScrollLatencyScrollbarBrowserTest() = default;
 
   void SetUpCommandLine(base::CommandLine* command_line) override {
     ScrollLatencyBrowserTest::SetUpCommandLine(command_line);
@@ -285,7 +285,7 @@ class ScrollLatencyScrollbarBrowserTest : public ScrollLatencyBrowserTest {
              features::kCompositorThreadedScrollbarScrolling});
   }
 
-  ~ScrollLatencyScrollbarBrowserTest() override {}
+  ~ScrollLatencyScrollbarBrowserTest() override = default;
 
  private:
 #if defined(OS_MACOSX)

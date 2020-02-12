@@ -18,4 +18,11 @@ void ActivityTrackerAnnotation::SetValue(const void* address, size_t size) {
   SetSize(sizeof(value_));
 }
 
+// static
+ActivityTrackerAnnotation* ActivityTrackerAnnotation::GetInstance() {
+  // This object is intentionally leaked.
+  static ActivityTrackerAnnotation* instance = new ActivityTrackerAnnotation();
+  return instance;
+}
+
 }  // namespace browser_watcher

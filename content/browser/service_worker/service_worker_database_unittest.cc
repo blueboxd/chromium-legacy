@@ -2243,7 +2243,7 @@ TEST(ServiceWorkerDatabaseTest, InvalidWebFeature) {
   RegistrationData registration;
   ASSERT_EQ(ServiceWorkerDatabase::Status::kOk,
             database->ParseRegistrationData(value, &registration));
-  std::set<blink::mojom::WebFeature> expect = {
+  std::vector<blink::mojom::WebFeature> expect = {
       blink::mojom::WebFeature::kFetch,
       blink::mojom::WebFeature::kBackgroundSync,
       blink::mojom::WebFeature::kNetInfoType};

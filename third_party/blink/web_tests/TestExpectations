@@ -91,6 +91,9 @@ external/wpt/css/compositing/root-element-background-transparency.html [ Failure
 crbug.com/665058 http/tests/local/drag-over-remote-content.html [ Crash Timeout ]
 crbug.com/771003 http/tests/security/mixedContent/insecure-iframe-in-main-frame.html [ Failure ]
 
+crbug.com/1050826 external/wpt/mixed-content/gen/top.http-rp/opt-in/object-tag/cross-https.swap-scheme.https.html [ Timeout ]
+crbug.com/1050826 external/wpt/mixed-content/gen/top.http-rp/opt-in/object-tag/same-https.swap-scheme.https.html [ Timeout ]
+
 # Tests temporarily disabled with Site Isolation - uninvestigated bugs:
 # TODO(lukasza, alexmos): Burn down this list.
 crbug.com/608015 http/tests/inspector-protocol/access-inspected-object.js [ Failure Timeout ]
@@ -3165,7 +3168,6 @@ crbug.com/626703 external/wpt/css/css-text/overflow-wrap/overflow-wrap-normal-ke
 crbug.com/626703 [ Mac10.12 ] external/wpt/media-source/mediasource-config-change-webm-a-bitrate.html [ Timeout ]
 crbug.com/626703 external/wpt/html/semantics/embedded-content/media-elements/src_object_blob.html [ Timeout ]
 crbug.com/626703 external/wpt/css/css-lists/list-item-definition.html [ Failure ]
-crbug.com/626703 external/wpt/html/semantics/forms/the-textarea-element/multiline-placeholder-cr.html [ Failure ]
 crbug.com/626703 [ Win7 ] external/wpt/webrtc/RTCPeerConnection-ondatachannel.html [ Failure Timeout ]
 crbug.com/626703 [ Win10 ] external/wpt/content-security-policy/frame-ancestors/frame-ancestors-nested-cross-in-same-url-allow.html [ Timeout ]
 crbug.com/626703 external/wpt/media-source/mediasource-correct-frames-after-reappend.html [ Pass Failure Timeout ]
@@ -4561,10 +4563,6 @@ crbug.com/831509 external/wpt/service-workers/service-worker/skip-waiting-instal
 crbug.com/852645 external/wpt/fullscreen/api/element-request-fullscreen-twice-manual.html [ Failure ]
 crbug.com/852645 external/wpt/fullscreen/api/element-request-fullscreen-two-elements-manual.html [ Failure ]
 crbug.com/852645 external/wpt/fullscreen/api/element-request-fullscreen-two-iframes-manual.html [ Failure Timeout ]
-
-# These tests are disabled temporarily until we plumb the orientation change information to the browser process in the SetMockScreenOrientation function.
-crbug.com/1046933 fullscreen/full-screen-orientation-change.html [ Failure Timeout ]
-crbug.com/1046933 virtual/android/fullscreen/full-screen-orientation-change.html [ Failure Timeout ]
 
 # snav tests fail because of a DCHECK
 crbug.com/985520 virtual/focusless-spat-nav/fast/spatial-navigation/focusless/snav-focusless-enter-from-interest-a11y.html [ Crash ]
@@ -6509,7 +6507,7 @@ crbug.com/1050039 [ Mac ] virtual/omt-worker-fetch/fast/workers/worker-onerror-0
 crbug.com/1050039 [ Mac ] virtual/omt-worker-fetch/fast/workers/worker-onerror-08.html [ Pass Failure ]
 crbug.com/1050039 [ Mac ] virtual/omt-worker-fetch/fast/workers/worker-onerror-09.html [ Pass Failure ]
 
-crbug.com/1050212 [ Win ] external/wpt/infrastructure/server/wpt-server-http.sub.html [ Skip ]
+crbug.com/1050212 external/wpt/infrastructure/server/wpt-server-http.sub.html [ Skip ]
 
 # Sheriff 2020-02-10
 
@@ -6527,3 +6525,8 @@ crbug.com/1050559 [ Linux ] external/wpt/WebCryptoAPI/derive_bits_keys/hkdf.http
 # the try bot, so we have to skip these tests on Win10 for now to ensure
 # test coverage of other tests.
 crbug.com/1050834 crbug.com/1050838 [ Win10 ] virtual/off-main-thread-css-paint/* [ Skip ]
+
+# Temporarily disable to unblock WebRTC CL roll making it PASS a test.
+crbug.com/webrtc/7061 external/wpt/webrtc/RTCPeerConnection-mandatory-getStats.https.html [ Pass Failure ]
+crbug.com/webrtc/7061 virtual/webrtc-wpt-plan-b/external/wpt/webrtc/RTCPeerConnection-mandatory-getStats.https.html [ Pass Failure ]
+

@@ -148,15 +148,6 @@ void FrameSinkManagerImpl::InvalidateFrameSinkId(
     observer.OnInvalidatedFrameSinkId(frame_sink_id);
 }
 
-void FrameSinkManagerImpl::EnableSynchronizationReporting(
-    const FrameSinkId& frame_sink_id,
-    const std::string& reporting_label) {
-  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
-  auto it = frame_sink_data_.find(frame_sink_id);
-  if (it != frame_sink_data_.end())
-    it->second.synchronization_label = reporting_label;
-}
-
 void FrameSinkManagerImpl::SetFrameSinkDebugLabel(
     const FrameSinkId& frame_sink_id,
     const std::string& debug_label) {
@@ -329,43 +320,6 @@ void FrameSinkManagerImpl::OnFirstSurfaceActivation(
 
   if (client_ && frame_sink_data.report_activation)
     client_->OnFirstSurfaceActivation(surface_info);
-}
-
-void FrameSinkManagerImpl::OnSurfaceActivated(
-    const SurfaceId& surface_id,
-    base::Optional<base::TimeDelta> duration) {
-  if (!duration || !client_)
-    return;
-
-  // If |duration| is populated then there was a synchronization event prior
-  // to this activation.
-  auto it = frame_sink_data_.find(surface_id.frame_sink_id());
-  if (it == frame_sink_data_.end())
-    return;
-
-  std::string& synchronization_label = it->second.synchronization_label;
-  if (!synchronization_label.empty()) {
-    TRACE_EVENT_INSTANT2("viz", "SurfaceSynchronizationEvent",
-                         TRACE_EVENT_SCOPE_THREAD, "duration_ms",
-                         duration->InMilliseconds(), "client_label",
-                         synchronization_label);
-    base::UmaHistogramCustomCounts(synchronization_label,
-                                   duration->InMilliseconds(), 1, 10000, 50);
-  }
-}
-
-bool FrameSinkManagerImpl::OnSurfaceDamaged(const SurfaceId& surface_id,
-                                            const BeginFrameAck& ack) {
-  return false;
-}
-
-void FrameSinkManagerImpl::OnSurfaceDestroyed(const SurfaceId& surface_id) {}
-
-void FrameSinkManagerImpl::OnSurfaceMarkedForDestruction(
-    const SurfaceId& surface_id) {}
-
-void FrameSinkManagerImpl::OnSurfaceDamageExpected(const SurfaceId& surface_id,
-                                                   const BeginFrameArgs& args) {
 }
 
 void FrameSinkManagerImpl::OnAggregatedHitTestRegionListUpdated(

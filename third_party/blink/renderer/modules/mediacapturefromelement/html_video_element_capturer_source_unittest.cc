@@ -60,8 +60,8 @@ class MockWebMediaPlayer : public WebMediaPlayer {
                  WebSetSinkIdCompleteCallback) override {}
   bool HasVideo() const override { return true; }
   bool HasAudio() const override { return false; }
-  WebSize NaturalSize() const override { return size_; }
-  WebSize VisibleRect() const override { return size_; }
+  gfx::Size NaturalSize() const override { return size_; }
+  gfx::Size VisibleSize() const override { return size_; }
   bool Paused() const override { return false; }
   bool Seeking() const override { return false; }
   double Duration() const override { return 0.0; }
@@ -101,7 +101,7 @@ class MockWebMediaPlayer : public WebMediaPlayer {
   }
 
   bool is_video_opaque_ = true;
-  WebSize size_ = WebSize(16, 10);
+  gfx::Size size_ = gfx::Size(16, 10);
 
   base::WeakPtrFactory<MockWebMediaPlayer> weak_factory_{this};
 };
@@ -132,7 +132,9 @@ class HTMLVideoElementCapturerSourceTest : public testing::TestWithParam<bool> {
     web_media_player_->is_video_opaque_ = opacity;
   }
 
-  void SetVideoPlayerSize(WebSize size) { web_media_player_->size_ = size; }
+  void SetVideoPlayerSize(const gfx::Size& size) {
+    web_media_player_->size_ = size;
+  }
 
  protected:
   std::unique_ptr<MockWebMediaPlayer> web_media_player_;
@@ -151,10 +153,7 @@ TEST_P(HTMLVideoElementCapturerSourceTest, GetFormatsAndStartAndStop) {
   media::VideoCaptureFormats formats =
       html_video_capturer_->GetPreferredFormats();
   ASSERT_EQ(1u, formats.size());
-  EXPECT_EQ(web_media_player_->NaturalSize().width,
-            formats[0].frame_size.width());
-  EXPECT_EQ(web_media_player_->NaturalSize().height,
-            formats[0].frame_size.height());
+  EXPECT_EQ(web_media_player_->NaturalSize(), formats[0].frame_size);
 
   media::VideoCaptureParams params;
   params.requested_format = formats[0];
@@ -207,10 +206,7 @@ TEST_F(HTMLVideoElementCapturerSourceTest,
   media::VideoCaptureFormats formats =
       html_video_capturer_->GetPreferredFormats();
   ASSERT_EQ(1u, formats.size());
-  EXPECT_EQ(web_media_player_->NaturalSize().width,
-            formats[0].frame_size.width());
-  EXPECT_EQ(web_media_player_->NaturalSize().height,
-            formats[0].frame_size.height());
+  EXPECT_EQ(web_media_player_->NaturalSize(), formats[0].frame_size);
 
   media::VideoCaptureParams params;
   params.requested_format = formats[0];
@@ -301,7 +297,7 @@ TEST_F(HTMLVideoElementCapturerSourceTest, SizeChange) {
   params.requested_format = formats[0];
 
   {
-    SetVideoPlayerSize(WebSize(16, 10));
+    SetVideoPlayerSize(gfx::Size(16, 10));
 
     base::RunLoop run_loop;
     base::RepeatingClosure quit_closure = run_loop.QuitClosure();
@@ -319,7 +315,7 @@ TEST_F(HTMLVideoElementCapturerSourceTest, SizeChange) {
     run_loop.Run();
   }
   {
-    SetVideoPlayerSize(WebSize(32, 20));
+    SetVideoPlayerSize(gfx::Size(32, 20));
 
     base::RunLoop run_loop;
     base::RepeatingClosure quit_closure = run_loop.QuitClosure();

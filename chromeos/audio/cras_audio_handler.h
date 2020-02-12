@@ -86,6 +86,15 @@ class COMPONENT_EXPORT(CHROMEOS_AUDIO) CrasAudioHandler
     // Called when hotword is detected.
     virtual void OnHotwordTriggered(uint64_t tv_sec, uint64_t tv_nsec);
 
+    // Called when the battery level change is reported over the Hands-Free
+    // Profile for a Bluetooth headset.
+    // The address is a Bluetooth address as 6 bytes written in hexadecimal and
+    // separated by colons. Example: 00:11:22:33:44:FF
+    // The level ranges from 0 to 100. Erroneous value reported by the headset
+    // will be ignored and won't trigger this callback.
+    virtual void OnBluetoothBatteryChanged(const std::string& address,
+                                           uint32_t level);
+
     // Called when an initial output stream is opened.
     virtual void OnOutputStarted();
 
@@ -316,6 +325,8 @@ class COMPONENT_EXPORT(CHROMEOS_AUDIO) CrasAudioHandler
   void ActiveInputNodeChanged(uint64_t node_id) override;
   void OutputNodeVolumeChanged(uint64_t node_id, int volume) override;
   void HotwordTriggered(uint64_t tv_sec, uint64_t tv_nsec) override;
+  void BluetoothBatteryChanged(const std::string& address,
+                               uint32_t level) override;
   void NumberOfActiveStreamsChanged() override;
 
   // AudioPrefObserver overrides.

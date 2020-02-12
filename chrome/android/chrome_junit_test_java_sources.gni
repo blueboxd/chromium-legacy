@@ -114,6 +114,7 @@ chrome_junit_test_java_sources = [
   "junit/src/org/chromium/chrome/browser/night_mode/GlobalNightModeStateControllerTest.java",
   "junit/src/org/chromium/chrome/browser/night_mode/GlobalNightModeStateProviderHolderTest.java",
   "junit/src/org/chromium/chrome/browser/night_mode/NightModeReparentingControllerTest.java",
+  "junit/src/org/chromium/chrome/browser/notifications/NotificationIntentInterceptorTest.java",
   "junit/src/org/chromium/chrome/browser/notifications/NotificationSystemStatusUtilUnitTest.java",
   "junit/src/org/chromium/chrome/browser/notifications/NotificationTriggerBackgroundTaskTest.java",
   "junit/src/org/chromium/chrome/browser/notifications/NotificationTriggerSchedulerTest.java",

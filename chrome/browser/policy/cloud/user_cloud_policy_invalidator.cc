@@ -11,7 +11,6 @@
 #include "base/time/default_clock.h"
 #include "build/build_config.h"
 #include "chrome/browser/chrome_notification_types.h"
-#include "chrome/browser/invalidation/deprecated_profile_invalidation_provider_factory.h"
 #include "chrome/browser/invalidation/profile_invalidation_provider_factory.h"
 #include "components/invalidation/impl/profile_invalidation_provider.h"
 #include "components/policy/core/common/cloud/cloud_policy_constants.h"

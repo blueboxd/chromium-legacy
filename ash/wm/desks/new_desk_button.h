@@ -49,7 +49,6 @@ class ASH_EXPORT NewDeskButton
   std::unique_ptr<views::InkDropHighlight> CreateInkDropHighlight()
       const override;
   SkColor GetInkDropBaseColor() const override;
-  std::unique_ptr<views::InkDropMask> CreateInkDropMask() const override;
   std::unique_ptr<views::LabelButtonBorder> CreateDefaultBorder()
       const override;
 

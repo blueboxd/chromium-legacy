@@ -107,28 +107,6 @@ void AddPersonalizationOptionsStrings(content::WebUIDataSource* html_source) {
   AddLocalizedStringsBulk(html_source, kLocalizedStrings);
 }
 
-void AddSignOutDialogStrings(content::WebUIDataSource* html_source) {
-  html_source->AddLocalizedString("syncDisconnectConfirm",
-                                  IDS_SETTINGS_SYNC_DISCONNECT_CONFIRM);
-#if defined(OS_CHROMEOS)
-  if (chromeos::features::IsSplitSettingsSyncEnabled()) {
-    static constexpr webui::LocalizedString kTurnOffStrings[] = {
-        {"syncDisconnect", IDS_SETTINGS_PEOPLE_SYNC_TURN_OFF},
-        {"syncDisconnectTitle",
-         IDS_SETTINGS_TURN_OFF_SYNC_AND_SIGN_OUT_DIALOG_TITLE},
-    };
-    AddLocalizedStringsBulk(html_source, kTurnOffStrings);
-    return;
-  }
-  // Fall through.
-#endif
-  static constexpr webui::LocalizedString kLocalizedStrings[] = {
-      {"syncDisconnect", IDS_SETTINGS_PEOPLE_SIGN_OUT},
-      {"syncDisconnectTitle", IDS_SETTINGS_SYNC_DISCONNECT_TITLE},
-  };
-  AddLocalizedStringsBulk(html_source, kLocalizedStrings);
-}
-
 void AddSyncControlsStrings(content::WebUIDataSource* html_source) {
   static constexpr webui::LocalizedString kLocalizedStrings[] = {
       {"autofillCheckboxLabel", IDS_SETTINGS_AUTOFILL_CHECKBOX_LABEL},
@@ -161,10 +139,10 @@ void AddSyncAccountControlStrings(content::WebUIDataSource* html_source) {
       {"syncDisabled", IDS_PROFILES_DICE_SYNC_DISABLED_TITLE},
       {"syncPasswordsNotWorking",
        IDS_SETTINGS_PEOPLE_SYNC_PASSWORDS_NOT_WORKING},
-      {"syncAdvancedPageTitle", IDS_SETTINGS_SYNC_ADVANCED_PAGE_TITLE},
       {"peopleSignOut", IDS_SETTINGS_PEOPLE_SIGN_OUT},
       {"useAnotherAccount", IDS_SETTINGS_PEOPLE_SYNC_ANOTHER_ACCOUNT},
-      {"syncAdvancedPageTitle", IDS_SETTINGS_SYNC_ADVANCED_PAGE_TITLE}};
+      {"syncAdvancedPageTitle", IDS_SETTINGS_SYNC_ADVANCED_PAGE_TITLE},
+  };
   AddLocalizedStringsBulk(html_source, kLocalizedStrings);
 }
 
@@ -223,10 +201,6 @@ void AddSyncPageStrings(content::WebUIDataSource* html_source) {
           g_browser_process->GetApplicationLocale())
           .spec();
 
-  html_source->AddString(
-      "syncDisconnectExplanation",
-      l10n_util::GetStringFUTF8(IDS_SETTINGS_SYNC_DISCONNECT_EXPLANATION,
-                                base::ASCIIToUTF16(sync_dashboard_url)));
   html_source->AddString(
       "passphraseResetHintEncryption",
       l10n_util::GetStringFUTF8(IDS_SETTINGS_PASSPHRASE_RESET_HINT_ENCRYPTION,

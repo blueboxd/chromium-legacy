@@ -67,21 +67,28 @@ void InstallRectHighlightPathGenerator(View* view) {
       view, std::make_unique<RectHighlightPathGenerator>());
 }
 
+CircleHighlightPathGenerator::CircleHighlightPathGenerator(
+    const gfx::Insets& insets)
+    : HighlightPathGenerator(insets) {}
+
 base::Optional<HighlightPathGenerator::RoundRect>
 CircleHighlightPathGenerator::GetRoundRect(const gfx::RectF& rect) {
   gfx::RectF bounds = rect;
   const float corner_radius = std::min(bounds.width(), bounds.height()) / 2.f;
   bounds.ClampToCenteredSize(
       gfx::SizeF(corner_radius * 2.f, corner_radius * 2.f));
-  HighlightPathGenerator::RoundRect round_rect;
-  round_rect.bounds = bounds;
-  round_rect.corner_radius = corner_radius;
-  return base::make_optional(round_rect);
+  return base::make_optional(
+      HighlightPathGenerator::RoundRect{bounds, corner_radius});
 }
 
 void InstallCircleHighlightPathGenerator(View* view) {
+  InstallCircleHighlightPathGenerator(view, gfx::Insets());
+}
+
+void InstallCircleHighlightPathGenerator(View* view,
+                                         const gfx::Insets& insets) {
   HighlightPathGenerator::Install(
-      view, std::make_unique<CircleHighlightPathGenerator>());
+      view, std::make_unique<CircleHighlightPathGenerator>(insets));
 }
 
 SkPath PillHighlightPathGenerator::GetHighlightPath(const View* view) {
@@ -106,10 +113,8 @@ base::Optional<HighlightPathGenerator::RoundRect>
 FixedSizeCircleHighlightPathGenerator::GetRoundRect(const gfx::RectF& rect) {
   gfx::RectF bounds = rect;
   bounds.ClampToCenteredSize(gfx::SizeF(radius_ * 2, radius_ * 2));
-  HighlightPathGenerator::RoundRect round_rect;
-  round_rect.bounds = bounds;
-  round_rect.corner_radius = radius_;
-  return base::make_optional(round_rect);
+  return base::make_optional(
+      HighlightPathGenerator::RoundRect{bounds, radius_});
 }
 
 void InstallFixedSizeCircleHighlightPathGenerator(View* view, int radius) {
@@ -124,10 +129,8 @@ RoundRectHighlightPathGenerator::RoundRectHighlightPathGenerator(
 
 base::Optional<HighlightPathGenerator::RoundRect>
 RoundRectHighlightPathGenerator::GetRoundRect(const gfx::RectF& rect) {
-  HighlightPathGenerator::RoundRect round_rect;
-  round_rect.bounds = rect;
-  round_rect.corner_radius = corner_radius_;
-  return base::make_optional(round_rect);
+  return base::make_optional(
+      HighlightPathGenerator::RoundRect{rect, corner_radius_});
 }
 
 void InstallRoundRectHighlightPathGenerator(View* view,

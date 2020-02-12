@@ -52,6 +52,12 @@ void MediaHistoryUI::GetMediaHistoryOriginRows(
   return GetMediaHistoryStore()->GetOriginRowsForDebug(std::move(callback));
 }
 
+void MediaHistoryUI::GetMediaHistoryPlaybackRows(
+    GetMediaHistoryPlaybackRowsCallback callback) {
+  return GetMediaHistoryStore()->GetMediaHistoryPlaybackRowsForDebug(
+      std::move(callback));
+}
+
 media_history::MediaHistoryStore* MediaHistoryUI::GetMediaHistoryStore() {
   Profile* profile = Profile::FromWebUI(web_ui());
   DCHECK(profile);

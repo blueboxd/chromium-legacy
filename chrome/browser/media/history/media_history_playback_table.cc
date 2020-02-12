@@ -86,4 +86,38 @@ bool MediaHistoryPlaybackTable::SavePlayback(
   return true;
 }
 
+std::vector<mojom::MediaHistoryPlaybackRowPtr>
+MediaHistoryPlaybackTable::GetPlaybackRows() {
+  std::vector<mojom::MediaHistoryPlaybackRowPtr> playbacks;
+  if (!CanAccessDatabase())
+    return playbacks;
+
+  sql::Statement statement(DB()->GetUniqueStatement(
+      base::StringPrintf(
+          "SELECT url, watch_time_s, has_audio, has_video, last_updated_time_s "
+          "FROM %s",
+          kTableName)
+          .c_str()));
+
+  while (statement.Step()) {
+    mojom::MediaHistoryPlaybackRowPtr playback(
+        mojom::MediaHistoryPlaybackRow::New());
+
+    playback->url = GURL(statement.ColumnString(0));
+    playback->watchtime =
+        base::TimeDelta::FromSeconds(statement.ColumnInt64(1));
+    playback->has_audio = statement.ColumnBool(2);
+    playback->has_video = statement.ColumnBool(3);
+    playback->last_updated_time =
+        base::Time::FromDeltaSinceWindowsEpoch(
+            base::TimeDelta::FromSeconds(statement.ColumnInt64(4)))
+            .ToJsTime();
+
+    playbacks.push_back(std::move(playback));
+  }
+
+  DCHECK(statement.Succeeded());
+  return playbacks;
+}
+
 }  // namespace media_history

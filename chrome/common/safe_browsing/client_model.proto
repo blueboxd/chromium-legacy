@@ -94,4 +94,7 @@ message ClientSideModel {
 
   // The number of words in a shingle.
   optional int32 shingle_size = 10 [default = 4];
+
+  // The threshold probability that causes this model to send a ping.
+  optional float threshold_probability = 11 [default = 0.5];
 }

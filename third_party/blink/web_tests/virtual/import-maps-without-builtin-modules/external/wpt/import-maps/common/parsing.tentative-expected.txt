@@ -1,5 +1,4 @@
 This is a testharness.js-based test.
-Found 67 tests; 62 PASS, 5 FAIL, 0 TIMEOUT, 0 NOTRUN.
 PASS Test helper: fetching and sanity checking test JSON: resources/parsing-addresses-absolute.json
 PASS Test helper: fetching and sanity checking test JSON: resources/parsing-addresses-invalid.json
 PASS Test helper: fetching and sanity checking test JSON: resources/parsing-addresses.json
@@ -12,12 +11,12 @@ PASS Test helper: fetching and sanity checking test JSON: resources/parsing-scop
 PASS Test helper: fetching and sanity checking test JSON: resources/parsing-specifier-keys.json
 PASS Test helper: fetching and sanity checking test JSON: resources/parsing-trailing-slashes.json
 PASS Absolute URL addresses: should only accept absolute URL addresses with fetch schemes
-FAIL Absolute URL addresses: should parse absolute URLs, ignoring unparseable ones assert_equals: expected "{\"imports\":{\"invalidButParseable1\":\"https://example.org/\",\"invalidButParseable2\":\"https://example.com///\",\"percentDecoding\":\"https://example.com/\",\"prettyNormal\":\"https://example.net/\"},\"scopes\":{}}" but got "{\"imports\":{\"invalidButParseable1\":\"https://example.org/\",\"invalidButParseable2\":\"https://example.com///\",\"percentDecoding\":\"https://example.com/\",\"prettyNormal\":\"https://example.net/\",\"unparseable2\":[],\"unparseable3\":[]},\"scopes\":{}}"
-FAIL Other invalid addresses: should ignore unprefixed strings that are not absolute URLs assert_equals: expected "{\"imports\":{},\"scopes\":{}}" but got "{\"imports\":{\"foo1\":[],\"foo2\":[],\"foo3\":[],\"foo4\":[],\"foo5\":[]},\"scopes\":{}}"
+PASS Absolute URL addresses: should parse absolute URLs, ignoring unparseable ones
+PASS Other invalid addresses: should ignore unprefixed strings that are not absolute URLs
 PASS Relative URL-like addresses: should accept strings prefixed with ./, ../, or /
-FAIL Relative URL-like addresses: should not accept strings prefixed with ./, ../, or / for data: base URLs assert_equals: expected "{\"imports\":{},\"scopes\":{}}" but got "{\"imports\":{\"dotDotSlash\":[],\"dotSlash\":[],\"slash\":[]},\"scopes\":{}}"
+PASS Relative URL-like addresses: should not accept strings prefixed with ./, ../, or / for data: base URLs
 PASS Relative URL-like addresses: should accept the literal strings ./, ../, or / with no suffix
-FAIL Relative URL-like addresses: should ignore percent-encoded variants of ./, ../, or / assert_equals: expected "{\"imports\":{},\"scopes\":{}}" but got "{\"imports\":{\"dotDotSlash1\":[],\"dotDotSlash2\":[],\"dotDotSlash3\":[],\"dotSlash1\":[],\"dotSlash2\":[],\"dotSlash3\":[],\"slash2\":[]},\"scopes\":{}}"
+PASS Relative URL-like addresses: should ignore percent-encoded variants of ./, ../, or /
 PASS Invalid JSON
 PASS Normalization: should normalize empty import maps to have imports and scopes keys
 PASS Normalization: should normalize an import map without imports to have imports
@@ -66,6 +65,6 @@ PASS Absolute URL specifier keys should accept all absolute URL specifier keys, 
 PASS Absolute URL specifier keys should parse absolute URLs, treating unparseable ones as bare specifiers
 PASS Specifier keys should be sort correctly (issue #181) - Test #1
 PASS Specifier keys should be sort correctly (issue #181) - Test #2
-FAIL Failing addresses: mismatched trailing slashes assert_equals: expected "{\"imports\":{},\"scopes\":{}}" but got "{\"imports\":{\"trailer/\":[]},\"scopes\":{}}"
+PASS Failing addresses: mismatched trailing slashes
 Harness: the test ran to completion.
 

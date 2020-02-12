@@ -7,9 +7,9 @@
 #include <memory>
 
 #include "ash/login/ui/login_button.h"
+#include "ash/login/ui/views_utils.h"
 #include "ash/public/cpp/ash_constants.h"
 #include "ash/public/cpp/login_constants.h"
-#include "ash/public/cpp/shelf_config.h"
 #include "ash/resources/vector_icons/vector_icons.h"
 #include "ash/strings/grit/ash_strings.h"
 #include "base/bind.h"
@@ -29,7 +29,6 @@
 #include "ui/views/animation/ink_drop_impl.h"
 #include "ui/views/animation/ink_drop_state.h"
 #include "ui/views/controls/button/label_button.h"
-#include "ui/views/controls/highlight_path_generator.h"
 #include "ui/views/layout/box_layout.h"
 #include "ui/views/layout/fill_layout.h"
 #include "ui/views/painter.h"
@@ -40,7 +39,7 @@ namespace {
 // Values for the ink drop.
 constexpr SkColor kInkDropHighlightColor = SkColorSetA(SK_ColorWHITE, 0x0A);
 constexpr SkColor kInkDropRippleColor = SkColorSetA(SK_ColorWHITE, 0x0F);
-constexpr int kInkDropRadiusDp = 24;
+constexpr int kInkDropCornerRadiusDp = 24;
 
 constexpr const char* kPinLabels[] = {
     "+",      // 0
@@ -107,11 +106,8 @@ class BasePinButton : public views::InkDropHostView {
     SetInkDropMode(InkDropMode::ON_NO_GESTURE_HANDLER);
 
     focus_ring_ = views::FocusRing::Install(this);
-    focus_ring_->SetColor(ShelfConfig::Get()->shelf_focus_border_color());
-    focus_ring_->SetPathGenerator(
-        std::make_unique<views::RectHighlightPathGenerator>());
-
-    views::InstallFixedSizeCircleHighlightPathGenerator(this, kInkDropRadiusDp);
+    login_views_utils::ConfigureRectFocusRingCircleInkDrop(
+        this, focus_ring_.get(), kInkDropCornerRadiusDp);
   }
 
   ~BasePinButton() override = default;
@@ -148,9 +144,9 @@ class BasePinButton : public views::InkDropHostView {
   }
   std::unique_ptr<views::InkDropRipple> CreateInkDropRipple() const override {
     gfx::Point center = GetLocalBounds().CenterPoint();
-    gfx::Rect bounds(center.x() - kInkDropRadiusDp,
-                     center.y() - kInkDropRadiusDp, kInkDropRadiusDp * 2,
-                     kInkDropRadiusDp * 2);
+    gfx::Rect bounds(center.x() - kInkDropCornerRadiusDp,
+                     center.y() - kInkDropCornerRadiusDp,
+                     kInkDropCornerRadiusDp * 2, kInkDropCornerRadiusDp * 2);
 
     return std::make_unique<views::FloodFillInkDropRipple>(
         size(), GetLocalBounds().InsetsFrom(bounds),

@@ -50,7 +50,7 @@
 <translation id="2190355936436201913">(бош)</translation>
 <translation id="2192232475740621500">Терезелерди аз көрсөтүү</translation>
 <translation id="219905428774326614">Жүргүзгүч, бардык колдонмолор</translation>
-<translation id="2267918077332197517">Бул сайттан бардык эскертмелер бөгөттөлсүн</translation>
+<translation id="2267918077332197517">Бул сайттан бардык билдирмелер бөгөттөлсүн</translation>
 <translation id="2289052229480071835">Экраныңыздагы интерактивдүү элементтерди басыңыз.</translation>
 <translation id="2295140143284145483">Сурамжылоо</translation>
 <translation id="2297836609126180313"><ph name="QUANTITY" /> Тб/с</translation>
@@ -117,7 +117,7 @@
 <translation id="4631891353005174729"><ph name="APP_NAME_TYPE" />, Рейтинги: <ph name="RATING_SCORE" /></translation>
 <translation id="4648249871170053485"><ph name="APP_NAME" />, Сунушталган колдонмо</translation>
 <translation id="4690510401873698237">Текче экрандын ылдый жагында</translation>
-<translation id="4724120544754982507">Эскертмелер борбору, <ph name="UNREAD_NOTIFICATION_COUNT" /> окулбаган эскертме бар</translation>
+<translation id="4724120544754982507">Билдирмелер борбору, <ph name="UNREAD_NOTIFICATION_COUNT" /> окулбаган эскертме бар</translation>
 <translation id="4730374152663651037">КӨП КОЛДОНУЛГАН КОЛДОНМОЛОР</translation>
 <translation id="4788285488841504513">{MONTHS,plural, =1{1 ай калды}other{# ай калды}}</translation>
 <translation id="4888938634149558681">Чалуу</translation>
@@ -164,10 +164,10 @@
 <translation id="6397363302884558537">Сүйлөөнү токтот</translation>
 <translation id="6404817160109697034">{SECONDS,plural, =1{1 сек. мурун}other{# сек. мурун}}</translation>
 <translation id="6417265370957905582">Google Жардамчы</translation>
-<translation id="6430678249303439055">Бул колдонмодон бардык эскертмелер бөгөттөлсүн</translation>
+<translation id="6430678249303439055">Бул колдонмодон бардык билдирмелер бөгөттөлсүн</translation>
 <translation id="6483402905448010557">{SECONDS,plural, =1{1 секунд мурун}other{# секунд мурун}}</translation>
 <translation id="6539092367496845964">Бир жерден ката кетти. Кийинчерээк кайталаңыз.</translation>
-<translation id="654149438358937226">Бардык эскертмелерди бөгөттөө</translation>
+<translation id="654149438358937226">Бардык билдирмелерди бөгөттөө</translation>
 <translation id="6567071839949112727">чыкылдатуу</translation>
 <translation id="6578407462441924264">Аталышы жок</translation>
 <translation id="6612467943526193239">Калибрлөө режиминен чыгуу үчүн "Esc" басыңыз.</translation>

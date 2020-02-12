@@ -252,7 +252,7 @@ void ServiceWorkerRegistry::StoreRegistration(
   data.navigation_preload_state = registration->navigation_preload_state();
   data.script_response_time = version->GetInfo().script_response_time;
   for (const blink::mojom::WebFeature feature : version->used_features())
-    data.used_features.insert(feature);
+    data.used_features.push_back(feature);
   data.cross_origin_embedder_policy = version->cross_origin_embedder_policy();
 
   ResourceList resources;
@@ -633,7 +633,9 @@ ServiceWorkerRegistry::GetOrCreateRegistration(
     if (data.origin_trial_tokens)
       version->SetValidOriginTrialTokens(*data.origin_trial_tokens);
 
-    version->set_used_features(data.used_features);
+    std::set<blink::mojom::WebFeature> used_features(data.used_features.begin(),
+                                                     data.used_features.end());
+    version->set_used_features(std::move(used_features));
     version->set_cross_origin_embedder_policy(
         data.cross_origin_embedder_policy);
   }

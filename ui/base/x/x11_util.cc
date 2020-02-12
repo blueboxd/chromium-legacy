@@ -1313,6 +1313,7 @@ SkColorType ColorTypeForVisual(void* visual) {
       {kRGBA_8888_SkColorType, 0xff, 0xff00, 0xff0000},
       {kBGRA_8888_SkColorType, 0xff0000, 0xff00, 0xff},
       {kRGBA_1010102_SkColorType, 0x3ff, 0xffc00, 0x3ff00000},
+      {kBGRA_1010102_SkColorType, 0x3ff00000, 0xffc00, 0x3ff},
   };
   Visual* vis = reinterpret_cast<Visual*>(visual);
   for (const auto& color_info : color_infos) {

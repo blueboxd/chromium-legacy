@@ -6,7 +6,9 @@
 
 #include "cstdint"
 
-#if __has_feature(address_sanitizer)
+#include "base/compiler_specific.h"
+
+#if HAS_FEATURE(address_sanitizer)
 #error "Must be built without asan."
 #endif
 

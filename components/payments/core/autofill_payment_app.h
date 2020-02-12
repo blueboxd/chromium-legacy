@@ -43,7 +43,7 @@ class AutofillPaymentApp
   uint32_t GetCompletenessScore() const override;
   bool CanPreselect() const override;
   base::string16 GetMissingInfoLabel() const override;
-  bool IsValidForCanMakePayment() const override;
+  bool HasEnrolledInstrument() const override;
   void RecordUse() override;
   bool NeedsInstallation() const override;
   base::string16 GetLabel() const override;

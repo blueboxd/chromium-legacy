@@ -9,15 +9,12 @@
 #include "ash/resources/vector_icons/vector_icons.h"
 #include "ash/shelf/shelf_button_delegate.h"
 #include "ash/shell.h"
-#include "ash/system/tray/tray_popup_utils.h"
 #include "ash/wm/tablet_mode/tablet_mode_controller.h"
 #include "chromeos/constants/chromeos_switches.h"
 #include "ui/accessibility/ax_node_data.h"
 #include "ui/gfx/canvas.h"
 #include "ui/gfx/paint_vector_icon.h"
 #include "ui/views/animation/flood_fill_ink_drop_ripple.h"
-#include "ui/views/animation/ink_drop_impl.h"
-#include "ui/views/animation/ink_drop_mask.h"
 #include "ui/views/controls/highlight_path_generator.h"
 #include "ui/views/widget/widget.h"
 
@@ -30,29 +27,29 @@ class ShelfControlButtonHighlightPathGenerator
  public:
   ShelfControlButtonHighlightPathGenerator() = default;
 
+  ShelfControlButtonHighlightPathGenerator(
+      const ShelfControlButtonHighlightPathGenerator&) = delete;
+  ShelfControlButtonHighlightPathGenerator& operator=(
+      const ShelfControlButtonHighlightPathGenerator&) = delete;
+
   // views::HighlightPathGenerator:
-  SkPath GetHighlightPath(const views::View* view) override {
-    const int border_radius = ShelfConfig::Get()->control_border_radius();
+  base::Optional<RoundRect> GetRoundRect(const gfx::RectF& rect) override {
+    auto* shelf_config = ShelfConfig::Get();
     // Some control buttons have a slightly larger size to fill the shelf and
     // maximize the click target, but we still want their "visual" size to be
-    // the same, so we find the center point and draw a square around that.
-    const gfx::Point center = view->GetLocalBounds().CenterPoint();
-    const int half_size = ShelfConfig::Get()->control_size() / 2;
-    gfx::Rect visual_size(center.x() - half_size, center.y() - half_size,
-                          ShelfConfig::Get()->control_size(),
-                          ShelfConfig::Get()->control_size());
+    // the same.
+    gfx::RectF visual_bounds = rect;
+    visual_bounds.ClampToCenteredSize(
+        gfx::SizeF(shelf_config->control_size(), shelf_config->control_size()));
     if (chromeos::switches::ShouldShowShelfHotseat() &&
         Shell::Get()->tablet_mode_controller()->InTabletMode() &&
-        ShelfConfig::Get()->is_in_app()) {
-      visual_size.Inset(
-          0, ShelfConfig::Get()->in_app_control_button_height_inset());
+        shelf_config->is_in_app()) {
+      visual_bounds.Inset(0,
+                          shelf_config->in_app_control_button_height_inset());
     }
-    return SkPath().addRoundRect(gfx::RectToSkRect(visual_size), border_radius,
-                                 border_radius);
+    return base::make_optional(
+        RoundRect{visual_bounds, shelf_config->control_border_radius()});
   }
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(ShelfControlButtonHighlightPathGenerator);
 };
 
 }  // namespace
@@ -75,43 +72,6 @@ ShelfControlButton::~ShelfControlButton() = default;
 
 gfx::Point ShelfControlButton::GetCenterPoint() const {
   return GetLocalBounds().CenterPoint();
-}
-
-void ShelfControlButton::AddInkDropLayer(ui::Layer* ink_drop_layer) {
-  int radius = ShelfConfig::Get()->control_border_radius();
-
-  ink_drop_layer->SetRoundedCornerRadius(gfx::RoundedCornersF(radius));
-  ink_drop_layer->SetIsFastRoundedCorner(true);
-
-  if (chromeos::switches::ShouldShowShelfHotseat() &&
-      Shell::Get()->tablet_mode_controller()->InTabletMode() &&
-      ShelfConfig::Get()->is_in_app()) {
-    // Control button highlights are oval in in-app, so adjust the insets.
-    gfx::Rect clip(size());
-    clip.Inset(0, ShelfConfig::Get()->in_app_control_button_height_inset());
-    ink_drop_layer->SetClipRect(clip);
-  } else {
-    gfx::Point center = GetCenterPoint();
-    gfx::Rect clip(center.x(), center.y(), 0, 0);
-    clip.Inset(-radius, -radius);
-    ink_drop_layer->SetClipRect(clip);
-  }
-
-  ShelfButton::AddInkDropLayer(ink_drop_layer);
-}
-
-std::unique_ptr<views::InkDropRipple> ShelfControlButton::CreateInkDropRipple()
-    const {
-  return std::make_unique<views::FloodFillInkDropRipple>(
-      size(), GetInkDropCenterBasedOnLastEvent(), GetInkDropBaseColor(),
-      ink_drop_visible_opacity());
-}
-
-std::unique_ptr<views::InkDropMask> ShelfControlButton::CreateInkDropMask()
-    const {
-  // The mask is either cicle or rounded rects. Just use layer's RoundedCorner
-  // api which is faster.
-  return nullptr;
 }
 
 const char* ShelfControlButton::GetClassName() const {

@@ -71,6 +71,11 @@ static inline unsigned ComputeLengthForAPIValue(const String& text) {
   return text.length() - crlf_count;
 }
 
+static inline void ReplaceCRWithNewLine(String& text) {
+  text.Replace("\r\n", "\n");
+  text.Replace('\r', '\n');
+}
+
 HTMLTextAreaElement::HTMLTextAreaElement(Document& document)
     : TextControlElement(html_names::kTextareaTag, document),
       rows_(kDefaultRows),
@@ -399,8 +404,7 @@ void HTMLTextAreaElement::SetValueCommon(
   // Code elsewhere normalizes line endings added by the user via the keyboard
   // or pasting.  We normalize line endings coming from JavaScript here.
   String normalized_value = new_value;
-  normalized_value.Replace("\r\n", "\n");
-  normalized_value.Replace('\r', '\n');
+  ReplaceCRWithNewLine(normalized_value);
 
   // Clear the suggested value. Use the base class version to not trigger a view
   // update.
@@ -610,7 +614,10 @@ void HTMLTextAreaElement::UpdatePlaceholderText() {
         IsPlaceholderVisible() ? CSSValueID::kBlock : CSSValueID::kNone, true);
     UserAgentShadowRoot()->InsertBefore(placeholder, InnerEditorElement());
   }
-  placeholder->setTextContent(placeholder_text);
+  String normalized_value = placeholder_text;
+  // https://html.spec.whatwg.org/multipage/form-elements.html#attr-textarea-placeholder
+  ReplaceCRWithNewLine(normalized_value);
+  placeholder->setTextContent(normalized_value);
 }
 
 String HTMLTextAreaElement::GetPlaceholderValue() const {

@@ -792,15 +792,14 @@ void ImageLoader::ImageNotifyFinished(ImageResourceContent* resource) {
   if (image_content_ && image_content_->HasImage()) {
     Image& image = *image_content_->GetImage();
 
-    if (image.IsSVGImage()) {
-      SVGImage& svg_image = ToSVGImage(image);
+    if (auto* svg_image = DynamicTo<SVGImage>(image)) {
       // SVG's document should be completely loaded before access control
       // checks, which can occur anytime after ImageNotifyFinished()
       // (See SVGImage::CurrentFrameHasSingleSecurityOrigin()).
       // We check the document is loaded here to catch violation of the
       // assumption reliably.
-      svg_image.CheckLoaded();
-      svg_image.UpdateUseCounters(GetElement()->GetDocument());
+      svg_image->CheckLoaded();
+      svg_image->UpdateUseCounters(GetElement()->GetDocument());
     }
   }
 

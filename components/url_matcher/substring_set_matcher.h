@@ -56,6 +56,17 @@ class URL_MATCHER_EXPORT SubstringSetMatcher {
   size_t EstimateMemoryUsage() const;
 
  private:
+  // Represents the index of the node within |tree_|. It is specifically
+  // uint32_t so that we can be sure it takes up 4 bytes. If the computed size
+  // of |tree_| is larger than what can be stored within an uint32_t, there will
+  // be a CHECK failure.
+  using NodeID = uint32_t;
+
+  // This is the maximum possible size of |tree_| and hence can't be a valid ID.
+  static constexpr NodeID kInvalidNodeID = std::numeric_limits<NodeID>::max();
+
+  static constexpr NodeID kRootID = 0;
+
   // A node of an Aho Corasick Tree. See
   // http://web.stanford.edu/class/archive/cs/cs166/cs166.1166/lectures/02/Small02.pdf
   // to understand the algorithm.
@@ -89,21 +100,22 @@ class URL_MATCHER_EXPORT SubstringSetMatcher {
   // It will make sense. Eventually.
   class AhoCorasickNode {
    public:
-    using Edges = base::flat_map<char, AhoCorasickNode*>;
+    // Map from edge label to NodeID.
+    using Edges = base::flat_map<char, NodeID>;
 
     AhoCorasickNode();
     ~AhoCorasickNode();
     AhoCorasickNode(AhoCorasickNode&& other);
     AhoCorasickNode& operator=(AhoCorasickNode&& other);
 
-    AhoCorasickNode* GetEdge(char c) const;
-    void SetEdge(char c, AhoCorasickNode* node);
+    NodeID GetEdge(char c) const;
+    void SetEdge(char c, NodeID node);
     const Edges& edges() const { return edges_; }
 
     void ShrinkEdges() { edges_.shrink_to_fit(); }
 
-    const AhoCorasickNode* failure() const { return failure_; }
-    void SetFailure(const AhoCorasickNode* failure);
+    NodeID failure() const { return failure_; }
+    void SetFailure(NodeID failure);
 
     void SetMatchID(StringPattern::ID id) {
       DCHECK(!IsEndOfPattern());
@@ -121,12 +133,8 @@ class URL_MATCHER_EXPORT SubstringSetMatcher {
       return match_id_;
     }
 
-    void SetOutputLink(const AhoCorasickNode* node);
-    const AhoCorasickNode* output_link() const { return output_link_; }
-
-    // Adds all pattern IDs to |matches| which are a suffix of the string
-    // represented by this node.
-    void AccumulateMatches(std::set<StringPattern::ID>* matches) const;
+    void SetOutputLink(NodeID node) { output_link_ = node; }
+    NodeID output_link() const { return output_link_; }
 
     size_t EstimateMemoryUsage() const;
 
@@ -134,22 +142,27 @@ class URL_MATCHER_EXPORT SubstringSetMatcher {
     // Outgoing edges of current node.
     Edges edges_;
 
-    // Node that failure edge leads to. The failure node corresponds to the node
-    // which represents the longest proper suffix (include empty string) of the
-    // string represented by this node. Must be valid, null when uninitialized.
-    const AhoCorasickNode* failure_ = nullptr;
+    // Node index that failure edge leads to. The failure node corresponds to
+    // the node which represents the longest proper suffix (include empty
+    // string) of the string represented by this node. Must be valid, equal to
+    // kInvalidNodeID when uninitialized.
+    NodeID failure_ = kInvalidNodeID;
 
     // If valid, this node represents the end of a pattern. It stores the ID of
     // the corresponding pattern.
     StringPattern::ID match_id_ = StringPattern::kInvalidId;
 
-    // Node that corresponds to the longest proper suffix (including empty
+    // Node index that corresponds to the longest proper suffix (including empty
     // suffix) of this node and which also represents the end of a pattern. Can
-    // be null.
-    const AhoCorasickNode* output_link_ = nullptr;
+    // be invalid.
+    NodeID output_link_ = kInvalidNodeID;
   };
 
   using SubstringPatternVector = std::vector<const StringPattern*>;
+
+  // Given the set of patterns, compute how many nodes will the corresponding
+  // Aho-Corasick tree have. Note that |patterns| need to be sorted.
+  NodeID GetTreeSize(const std::vector<const StringPattern*>& patterns) const;
 
   void BuildAhoCorasickTree(const SubstringPatternVector& patterns);
 
@@ -158,6 +171,11 @@ class URL_MATCHER_EXPORT SubstringSetMatcher {
   void InsertPatternIntoAhoCorasickTree(const StringPattern* pattern);
 
   void CreateFailureAndOutputEdges();
+
+  // Adds all pattern IDs to |matches| which are a suffix of the string
+  // represented by |node|.
+  void AccumulateMatchesForNode(const AhoCorasickNode* node,
+                                std::set<StringPattern::ID>* matches) const;
 
   // The nodes of a Aho-Corasick tree.
   std::vector<AhoCorasickNode> tree_;

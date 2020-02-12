@@ -472,9 +472,7 @@ void SurfaceManager::FirstSurfaceActivation(const SurfaceInfo& surface_info) {
     observer.OnFirstSurfaceActivation(surface_info);
 }
 
-void SurfaceManager::SurfaceActivated(
-    Surface* surface,
-    base::Optional<base::TimeDelta> duration) {
+void SurfaceManager::SurfaceActivated(Surface* surface) {
   // Trigger a display frame if necessary.
   const CompositorFrame& frame = surface->GetActiveFrame();
   if (!SurfaceModified(surface->surface_id(), frame.metadata.begin_frame_ack)) {
@@ -484,7 +482,7 @@ void SurfaceManager::SurfaceActivated(
   }
 
   for (auto& observer : observer_list_)
-    observer.OnSurfaceActivated(surface->surface_id(), duration);
+    observer.OnSurfaceActivated(surface->surface_id());
 }
 
 void SurfaceManager::SurfaceDestroyed(Surface* surface) {

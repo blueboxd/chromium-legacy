@@ -176,14 +176,12 @@ FloatSize CSSCrossfadeValue::FixedSize(
   FloatSize from_image_size(from_image->Size());
   FloatSize to_image_size(to_image->Size());
 
-  if (from_image->IsSVGImage()) {
-    from_image_size =
-        ToSVGImage(from_image)->ConcreteObjectSize(default_object_size);
+  if (auto* from_svg_image = DynamicTo<SVGImage>(from_image)) {
+    from_image_size = from_svg_image->ConcreteObjectSize(default_object_size);
   }
 
-  if (to_image->IsSVGImage()) {
-    to_image_size =
-        ToSVGImage(to_image)->ConcreteObjectSize(default_object_size);
+  if (auto* to_svg_image = DynamicTo<SVGImage>(to_image)) {
+    to_image_size = to_svg_image->ConcreteObjectSize(default_object_size);
   }
 
   // Rounding issues can cause transitions between images of equal size to
@@ -252,13 +250,13 @@ scoped_refptr<Image> CSSCrossfadeValue::GetImage(
   scoped_refptr<Image> from_image_ref(from_image);
   scoped_refptr<Image> to_image_ref(to_image);
 
-  if (from_image->IsSVGImage()) {
-    from_image_ref = SVGImageForContainer::Create(
-        ToSVGImage(from_image), size, 1, UrlForCSSValue(*from_value_));
+  if (auto* from_svg_image = DynamicTo<SVGImage>(from_image)) {
+    from_image_ref = SVGImageForContainer::Create(from_svg_image, size, 1,
+                                                  UrlForCSSValue(*from_value_));
   }
 
-  if (to_image->IsSVGImage()) {
-    to_image_ref = SVGImageForContainer::Create(ToSVGImage(to_image), size, 1,
+  if (auto* to_svg_image = DynamicTo<SVGImage>(to_image)) {
+    to_image_ref = SVGImageForContainer::Create(to_svg_image, size, 1,
                                                 UrlForCSSValue(*to_value_));
   }
 

@@ -1014,7 +1014,7 @@ AXObject* AXNodeObject::MenuButtonForMenuIfExists() const {
 }
 
 static Element* SiblingWithAriaRole(String role, Node* node) {
-  Node* parent = node->parentNode();
+  Node* parent = LayoutTreeBuilderTraversal::Parent(*node);
   if (!parent)
     return nullptr;
 

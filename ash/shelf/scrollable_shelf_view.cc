@@ -643,7 +643,7 @@ gfx::Rect ScrollableShelfView::GetTargetScreenBoundsOfItemIcon(
   // Notes that the target bounds stored in shelf layout manager are adapted to
   // RTL already while |icon_bounds| are not adjusted to RTL yet.
   gfx::Rect hotseat_bounds_in_screen =
-      GetShelf()->shelf_layout_manager()->GetHotseatBoundsInScreen();
+      GetShelf()->hotseat_widget()->GetTargetBounds();
   if (ShouldAdaptToRTL()) {
     // One simple way for transformation under RTL is: (1) Transforms hotseat
     // target bounds from RTL to LTR. (2) Calculates the icon's bounds in screen
@@ -1390,11 +1390,9 @@ int ScrollableShelfView::GetStatusWidgetSizeOnPrimaryAxis(
 
 gfx::Rect ScrollableShelfView::GetAvailableLocalBounds(
     bool use_target_bounds) const {
-  return use_target_bounds ? gfx::Rect(GetShelf()
-                                           ->shelf_layout_manager()
-                                           ->GetHotseatBoundsInScreen()
-                                           .size())
-                           : GetLocalBounds();
+  return use_target_bounds
+             ? gfx::Rect(GetShelf()->hotseat_widget()->GetTargetBounds().size())
+             : GetLocalBounds();
 }
 
 gfx::Insets ScrollableShelfView::CalculatePaddingForDisplayCentering(
@@ -1410,9 +1408,8 @@ gfx::Insets ScrollableShelfView::CalculatePaddingForDisplayCentering(
 
   // Calculates paddings in view coordinates.
   const gfx::Rect screen_bounds =
-      use_target_bounds
-          ? GetShelf()->shelf_layout_manager()->GetHotseatBoundsInScreen()
-          : GetBoundsInScreen();
+      use_target_bounds ? GetShelf()->hotseat_widget()->GetTargetBounds()
+                        : GetBoundsInScreen();
   const int before_padding = gap - GetShelf()->PrimaryAxisValue(
                                        screen_bounds.x() - display_bounds.x(),
                                        screen_bounds.y() - display_bounds.y());

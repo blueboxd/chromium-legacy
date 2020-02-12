@@ -9,6 +9,7 @@
 #include "ui/views/controls/label.h"
 
 namespace views {
+class FocusRing;
 class View;
 class Widget;
 }  // namespace views
@@ -52,6 +53,14 @@ ASH_EXPORT gfx::Point CalculateBubblePositionRightLeftStrategy(
     gfx::Rect anchor,
     gfx::Size bubble,
     gfx::Rect bounds);
+
+// Applies a rectangular focus ring to |focus_ring| and round ink drop to
+// |view|. |focus_ring| may not be the ring associated with |view|. If |radius|
+// is passed the ink drop will be a circle with radius |radius| otherwise its
+// radius will be determined by the view's bounds.
+void ConfigureRectFocusRingCircleInkDrop(views::View* view,
+                                         views::FocusRing* focus_ring,
+                                         base::Optional<int> radius);
 
 }  // namespace login_views_utils
 

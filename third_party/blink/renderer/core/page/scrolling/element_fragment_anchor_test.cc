@@ -318,7 +318,7 @@ TEST_F(ElementFragmentAnchorTest, SVGDocumentDoesntCreateFragment) {
     )SVG");
 
   auto* img = To<HTMLImageElement>(GetDocument().getElementById("image"));
-  SVGImage* svg = ToSVGImage(img->CachedImage()->GetImage());
+  auto* svg = To<SVGImage>(img->CachedImage()->GetImage());
   auto* view =
       DynamicTo<LocalFrameView>(svg->GetPageForTesting()->MainFrame()->View());
 

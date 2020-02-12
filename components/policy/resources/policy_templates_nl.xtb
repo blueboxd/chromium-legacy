@@ -658,6 +658,10 @@
 <translation id="1988371335297483117">Nettoladingen (payloads) voor automatische updates voor <ph name="PRODUCT_OS_NAME" /> kunnen worden gedownload via HTTP in plaats van HTTPS. Hierdoor kunnen HTTP-downloads transparant in het HTTP-cachegeheugen worden opgeslagen.
 
       Als dit beleid is ingesteld op 'True' probeert <ph name="PRODUCT_OS_NAME" /> nettoladingen voor automatische updates te downloaden via HTTP. Als het beleid is ingesteld op 'False' of niet is geconfigureerd, wordt HTTPS gebruikt voor het downloaden van nettoladingen voor automatische updates.</translation>
+<translation id="199011295049694531">Informatie rapporteren over de tijdzone van een apparaat.
+
+      Als het beleid is ingesteld op False of niet is ingesteld, wordt de informatie niet gerapporteerd.
+      Als het beleid is ingesteld op True, wordt de momenteel ingestelde tijdzone van het apparaat gerapporteerd.</translation>
 <translation id="199764499252435679">Componentupdates in <ph name="PRODUCT_NAME" /> inschakelen</translation>
 <translation id="1997994951395619441">Als je deze instelling inschakelt, geeft <ph name="PRODUCT_NAME" /> een bladwijzerbalk weer.
 
@@ -1113,6 +1117,11 @@
       Als je deze instelling in- of uitschakelt, kunnen gebruikers deze instelling niet wijzigen of overschrijven.
 
       Als dit beleid niet wordt ingesteld, is de proxyfunctie voor het comprimeren van gegevens beschikbaar en kunnen gebruikers kiezen of ze deze willen gebruiken.</translation>
+<translation id="2575738503503093841">Specificeert de maximum vertraging in milliseconden tussen het ontvangen van een ongeldigverklaring van een beleid en het ophalen van het nieuwe beleid uit de apparaatbeheerservice.
+
+      Als je dit beleid instelt, wordt de standaardwaarde van 10.000 milliseconden overschreven. Geldige waarden voor dit beleid vallen binnen het bereik van 1000 (1 seconde) tot 300.000 (5 minuten). Waarden buiten dit bereik worden vast ingesteld op de respectieve grenswaarde.
+
+      Als je dit beleid niet instelt, gebruikt <ph name="PRODUCT_NAME" /> de standaardwaarde van 10.000 milliseconden.</translation>
 <translation id="257788512393330403">Het wachtwoord moet elke zes uur worden opgegeven</translation>
 <translation id="2580104054820772954">Levering van bestanden uitstellen totdat de resultaten bekend zijn</translation>
 <translation id="2582582399758251985">Als deze instelling is ingeschakeld, verifieert <ph name="PRODUCT_NAME" /> servercertificaten met de ingebouwde certificaatverificatie.
@@ -1141,6 +1150,7 @@
           Als dit beleid niet is gedefinieerd, is de standaardwaarde 'waar' en is NTLMv2 ingeschakeld.</translation>
 <translation id="26023406105317310">Kerberos-accounts configureren</translation>
 <translation id="2604182581880595781">Beleid met betrekking tot Network File Shares configureren.</translation>
+<translation id="2615240493030733717">Informatie over tijdzone rapporteren</translation>
 <translation id="2623014935069176671">Wachten op initiële gebruikersactiviteit</translation>
 <translation id="262740370354162807">Verzenden van documenten naar <ph name="CLOUD_PRINT_NAME" /> inschakelen</translation>
 <translation id="2627554163382448569">Hiermee worden configuraties geleverd voor zakelijke printers.
@@ -1560,6 +1570,8 @@
           Als dit beleid niet wordt ingesteld, wordt de algemene standaardwaarde gebruikt voor alle sites op basis van het beleid DefaultCookiesSetting (als dit is ingesteld) of anders op basis van de configuratie van de gebruiker.
 
           Zie ook de beleidsregels CookiesBlockedForUrls en CookiesSessionOnlyForUrls. Houd er rekening mee dat er geen conflicterende URL-patronen tussen deze drie beleidsregels mogen bestaan, omdat er niet wordt aangegeven welk beleid voorrang krijgt.</translation>
+<translation id="3339271789059866414">Configureert de beschikbaarheid van de systeemproxyservice en de proxygegevens voor systeemservices.
+      Als het beleid niet is ingesteld, is de systeemproxyservice niet beschikbaar.</translation>
 <translation id="3373364525435227558">Hiermee worden een of meer aanbevolen landinstellingen ingesteld voor een beheerde sessie, zodat gebruikers gemakkelijk een van deze landinstellingen kunnen kiezen.
 
       De gebruiker kan een landinstelling en toetsenbordindeling kiezen voordat de beheerde sessie wordt gestart. Alle landinstellingen die worden ondersteund door <ph name="PRODUCT_OS_NAME" /> worden standaard op alfabetische volgorde weergegeven. Je kunt dit beleid gebruiken om een set aanbevolen landinstellingen naar bovenaan de lijst te verplaatsen.
@@ -2525,6 +2537,7 @@
           Als je dit beleid instelt, kunnen gebruikers dit niet wijzigen of negeren.
 
           Als je dit beleid niet instelt, is de grote muisaanwijzer eerst uitgeschakeld, maar kan de gebruiker deze op elk moment inschakelen.</translation>
+<translation id="4802744647065138872">Beperkt het aantal momentopnamen van gebruikersgegevens dat wordt bewaard voor gebruik bij een noodrollback.</translation>
 <translation id="4802905909524200151">Updategedrag voor <ph name="TPM_FIRMWARE_UPDATE_TPM" />-firmware configureren</translation>
 <translation id="4804828344300125154">Altijd opnieuw opstarten na uitloggen gebruiker.</translation>
 <translation id="4807950475297505572">De gebruikers die het langst geleden gebruikt zijn, worden verwijderd totdat er voldoende vrije ruimte is</translation>
@@ -4504,6 +4517,7 @@ Geheugengegevens worden in alle gevallen aan de pagina gerapporteerd, afgezien v
 
       Als dit beleid niet wordt ingesteld, wordt het ingeschakeld, maar kan de gebruiker het wijzigen.</translation>
 <translation id="7953256619080733119">Hosts van handmatige uitzonderingen voor beheerde gebruikers</translation>
+<translation id="7956210013490975468">Configureert de systeemproxyservice voor <ph name="PRODUCT_OS_NAME" />.</translation>
 <translation id="7958537754689366707">Het wachtwoord moet elke twaalf uur worden opgegeven</translation>
 <translation id="7961779417826583251">Handhaving van Certificaattransparantie voor een lijst met certificeringsinstanties uitschakelen</translation>
 <translation id="7974114691960514888">Dit beleid wordt niet meer ondersteund.
@@ -4758,6 +4772,11 @@ De aanbevolen manier om beleidsregels te configureren op Windows, is via GPO, ma
 <translation id="8426231401662877819">Scherm 90 graden met de klok mee draaien</translation>
 <translation id="8433186206711564395">Netwerkinstellingen</translation>
 <translation id="8433423491036718210">Configureer de lijst met zakelijke login-URL's waar de wachtwoordbeveiligingsservice de vingerafdruk van het wachtwoord moet vastleggen.</translation>
+<translation id="8445576299806775661">Na elke grote versie-update maakt Chrome een momentopname van bepaalde gedeelten van de browsergegevens van de gebruiker. Deze momentopname kan worden gebruikt voor een latere noodrollback van de versie. Als er een noodrollback wordt uitgevoerd naar een versie waarvoor een gebruiker een bijbehorende momentopname heeft, worden de gegevens in de momentopname hersteld. Zo kunnen gebruikers instellingen als bookmarks en gegevens voor automatisch aanvullen behouden.
+
+      Als dit beleid niet is ingesteld, wordt de standaardwaarde 3 gebruikt.
+
+      Als het beleid is ingesteld, worden oude momentopnamen verwijderd als dat nodig is om aan de limiet te voldoen. Als het beleid is ingesteld op 0, worden er geen momentopnamen gemaakt.</translation>
 <translation id="8451988835943702790">De pagina 'Nieuw tabblad' als homepage gebruiken</translation>
 <translation id="8459216513698220096">Hiermee wordt aangegeven of en hoe gebruikersbeleid van de computer-GPO wordt verwerkt.
 
@@ -4843,6 +4862,7 @@ Dit beleid wordt verwijderd in M75.</translation>
 
       Als dit beleid is ingesteld op 'False' of niet is geconfigureerd, kan de gebruiker de browser gebruiken zonder in te loggen bij <ph name="PRODUCT_NAME" />.</translation>
 <translation id="858309738002328421">Grote bestandsuploads blokkeren</translation>
+<translation id="8584279193368801689">Beperkt de modus voor afdrukken met pincode. Als het beleid niet is ingesteld, gelden er geen beperkingen. Als de modus niet beschikbaar is, wordt dit beleid genegeerd. Houd er rekening mee dat de functie voor afdrukken met pincode alleen is ingeschakeld voor printers die het IPPS-, HTTPS-, USB- of IPP-over-USB-protocol gebruiken.</translation>
 <translation id="8585558195682146109">Gebruikersdownloads sturen om te laten scannen</translation>
 <translation id="8586528890725660268">Hiermee worden de printers gespecificeerd die een gebruiker niet kan gebruiken.
 
@@ -4908,6 +4928,13 @@ Dit beleid wordt verwijderd in M75.</translation>
 <translation id="8687958770985542440">Web Components v0 API opnieuw inschakelen tot M84.</translation>
 <translation id="8693243869659262736">Ingebouwde DNS-client gebruiken</translation>
 <translation id="8698286761337647563">Hoeveel dagen van tevoren SAML-gebruikers bericht ontvangen dat hun wachtwoord bijna verloopt</translation>
+<translation id="8701288965900240388">Hiermee kun je instellen of websites de <ph name="FLASH_PLUGIN_NAME" />-plug-in automatisch mogen uitvoeren. Je kunt het automatisch uitvoeren van de <ph name="FLASH_PLUGIN_NAME" />-plug-in toestaan of weigeren voor alle websites.
+
+          Via click-to-play kan de <ph name="FLASH_PLUGIN_NAME" />-plug-in worden uitgevoerd, maar moet de gebruiker op de tijdelijke aanduiding klikken om deze te starten.
+
+          Automatisch afspelen is alleen toegestaan voor domeinen die expliciet worden vermeld in het beleid <ph name="PLUGINS_ALLOWED_FOR_URLS_POLICY_NAME" />. Als je automatisch afspelen wilt inschakelen voor alle sites, kun je http://* en https://* toevoegen aan deze lijst.
+
+          Als dit beleid niet is ingesteld, wordt BlockPlugins gebruikt en kan de gebruiker deze instelling handmatig wijzigen.</translation>
 <translation id="8703488928438047864">Boardstatus rapporteren</translation>
 <translation id="8704831857353097849">Lijst met uitgeschakelde plug-ins</translation>
 <translation id="8711086062295757690">Hiermee wordt het zoekwoord gespecificeerd dat in de omnibox wordt gebruikt om de zoekfunctie voor deze provider te activeren.

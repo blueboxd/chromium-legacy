@@ -5,6 +5,9 @@
 #ifndef CHROME_BROWSER_MEDIA_HISTORY_MEDIA_HISTORY_PLAYBACK_TABLE_H_
 #define CHROME_BROWSER_MEDIA_HISTORY_MEDIA_HISTORY_PLAYBACK_TABLE_H_
 
+#include <vector>
+
+#include "chrome/browser/media/history/media_history_store.mojom.h"
 #include "chrome/browser/media/history/media_history_table_base.h"
 #include "sql/init_status.h"
 #include "url/gurl.h"
@@ -45,6 +48,9 @@ class MediaHistoryPlaybackTable : public MediaHistoryTableBase {
 
   // Returns a flag indicating whether the playback was created successfully.
   bool SavePlayback(const content::MediaPlayerWatchTime& watch_time);
+
+  // Returns the playback rows in the database.
+  std::vector<mojom::MediaHistoryPlaybackRowPtr> GetPlaybackRows();
 
   DISALLOW_COPY_AND_ASSIGN(MediaHistoryPlaybackTable);
 };

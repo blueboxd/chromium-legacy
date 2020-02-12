@@ -237,7 +237,7 @@ Surface::QueueFrameResult Surface::QueueFrame(
 
   if (activation_dependencies_.empty()) {
     // If there are no blockers, then immediately activate the frame.
-    ActivateFrame(FrameData(std::move(frame), frame_index), base::nullopt);
+    ActivateFrame(FrameData(std::move(frame), frame_index));
   } else {
     pending_frame_data_ = FrameData(std::move(frame), frame_index);
 
@@ -317,8 +317,14 @@ void Surface::ActivatePendingFrame() {
   pending_frame_data_.reset();
 
   base::Optional<base::TimeDelta> duration = deadline_->Cancel();
+  if (duration.has_value()) {
+    TRACE_EVENT_INSTANT2("viz", "SurfaceSynchronizationEvent",
+                         TRACE_EVENT_SCOPE_THREAD, "surface_id",
+                         surface_info_.id().ToString(), "duration_ms",
+                         duration.value().InMilliseconds());
+  }
 
-  ActivateFrame(std::move(frame_data), std::move(duration));
+  ActivateFrame(std::move(frame_data));
 }
 
 void Surface::UpdateReferencedAllocationGroups(
@@ -385,13 +391,9 @@ void Surface::RecomputeActiveReferencedSurfaces() {
   UpdateSurfaceReferences();
 }
 
-// A frame is activated if all its Surface ID dependences are active or a
-// deadline has hit and the frame was forcibly activated. |duration| is a
-// measure of the time the frame has spent waiting on dependencies to arrive.
-// If |duration| is base::nullopt, then that indicates that this frame was not
-// blocked on dependencies.
-void Surface::ActivateFrame(FrameData frame_data,
-                            base::Optional<base::TimeDelta> duration) {
+// A frame is activated if all its Surface ID dependencies are active or a
+// deadline has hit and the frame was forcibly activated.
+void Surface::ActivateFrame(FrameData frame_data) {
   TRACE_EVENT1("viz", "Surface::ActivateFrame", "FrameSinkId",
                surface_id().frame_sink_id().ToString());
 
@@ -443,7 +445,7 @@ void Surface::ActivateFrame(FrameData frame_data,
     surface_manager_->FirstSurfaceActivation(surface_info_);
   }
 
-  surface_manager_->SurfaceActivated(this, duration);
+  surface_manager_->SurfaceActivated(this);
 
   // Defer notifying the embedder of an updated token until the frame has been
   // completely processed.

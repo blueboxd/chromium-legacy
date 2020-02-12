@@ -168,7 +168,8 @@ scoped_refptr<Image> LayoutImageResource::GetImage(
         layout_object_->StyleRef().EffectiveZoom());
   }
 
-  if (!image->IsSVGImage())
+  auto* svg_image = DynamicTo<SVGImage>(image);
+  if (!svg_image)
     return image;
 
   KURL url;
@@ -177,8 +178,8 @@ scoped_refptr<Image> LayoutImageResource::GetImage(
     url = element->GetDocument().CompleteURL(url_string);
   }
   return SVGImageForContainer::Create(
-      ToSVGImage(image), container_size,
-      layout_object_->StyleRef().EffectiveZoom(), url);
+      svg_image, container_size, layout_object_->StyleRef().EffectiveZoom(),
+      url);
 }
 
 bool LayoutImageResource::MaybeAnimated() const {

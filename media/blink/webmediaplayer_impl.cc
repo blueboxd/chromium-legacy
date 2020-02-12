@@ -82,7 +82,6 @@
 
 using blink::WebMediaPlayer;
 using blink::WebRect;
-using blink::WebSize;
 using blink::WebString;
 using gpu::gles2::GLES2Interface;
 
@@ -1006,20 +1005,19 @@ void WebMediaPlayerImpl::SelectedVideoTrackChanged(
   pipeline_controller_->OnSelectedVideoTrackChanged(selected_video_track_id);
 }
 
-blink::WebSize WebMediaPlayerImpl::NaturalSize() const {
+gfx::Size WebMediaPlayerImpl::NaturalSize() const {
   DCHECK(main_task_runner_->BelongsToCurrentThread());
 
-  return blink::WebSize(pipeline_metadata_.natural_size);
+  return pipeline_metadata_.natural_size;
 }
 
-blink::WebSize WebMediaPlayerImpl::VisibleRect() const {
+gfx::Size WebMediaPlayerImpl::VisibleSize() const {
   DCHECK(main_task_runner_->BelongsToCurrentThread());
   scoped_refptr<VideoFrame> video_frame = GetCurrentFrameFromCompositor();
   if (!video_frame)
-    return blink::WebSize();
+    return gfx::Size();
 
-  const gfx::Rect& visible_rect = video_frame->visible_rect();
-  return blink::WebSize(visible_rect.width(), visible_rect.height());
+  return video_frame->visible_rect().size();
 }
 
 bool WebMediaPlayerImpl::Paused() const {

@@ -413,7 +413,7 @@ SVGImage* LayoutImage::EmbeddedSVGImage() const {
   // https://crbug.com/761026
   if (!cached_image || cached_image->IsCacheValidator())
     return nullptr;
-  return ToSVGImageOrNull(cached_image->GetImage());
+  return DynamicTo<SVGImage>(cached_image->GetImage());
 }
 
 void LayoutImage::UpdateAfterLayout() {

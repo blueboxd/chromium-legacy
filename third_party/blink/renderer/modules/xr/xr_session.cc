@@ -379,7 +379,7 @@ const String XRSession::visibilityState() const {
   }
 }
 
-XRAnchorSet* XRSession::trackedAnchors() const {
+XRAnchorSet* XRSession::TrackedAnchors() const {
   DVLOG(3) << __func__;
 
   HeapHashSet<Member<XRAnchor>> result;
@@ -653,15 +653,6 @@ ScriptPromise XRSession::CreateAnchor(
   create_anchor_promises_.insert(resolver);
 
   return promise;
-}
-
-ScriptPromise XRSession::createAnchor(
-    ScriptState* script_state,
-    XRRigidTransform* offset_space_from_anchor_transform,
-    XRSpace* offset_space,
-    ExceptionState& exception_state) {
-  return CreateAnchor(script_state, offset_space_from_anchor_transform,
-                      offset_space, nullptr, exception_state);
 }
 
 int XRSession::requestAnimationFrame(V8XRFrameRequestCallback* callback) {

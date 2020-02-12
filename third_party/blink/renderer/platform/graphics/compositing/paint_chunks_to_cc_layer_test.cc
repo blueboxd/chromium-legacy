@@ -1313,5 +1313,23 @@ TEST_P(PaintChunksToCcLayerTest, AllowChunkEscapeLayerNoopEffects) {
                        }));
 }
 
+TEST_P(PaintChunksToCcLayerTest, EmptyChunkRect) {
+  CompositorFilterOperations filter;
+  filter.AppendBlurFilter(5);
+  auto e1 = CreateFilterEffect(e0(), t0(), &c0(), filter, FloatPoint(0, 0));
+  TestChunks chunks;
+  chunks.AddChunk(nullptr, t0(), c0(), *e1, {0, 0, 0, 0});
+
+  auto output =
+      PaintChunksToCcLayer::Convert(
+          chunks.chunks, PropertyTreeState::Root(), gfx::Vector2dF(),
+          chunks.items, cc::DisplayItemList::kToBeReleasedAsPaintOpBuffer)
+          ->ReleaseAsRecord();
+  EXPECT_THAT(*output,
+              PaintRecordMatcher::Make({cc::PaintOpType::SaveLayer,   // <e1>
+                                        cc::PaintOpType::Restore}));  // </e1>
+  EXPECT_EFFECT_BOUNDS(0, 0, 0, 0, *output, 0);
+}
+
 }  // namespace
 }  // namespace blink

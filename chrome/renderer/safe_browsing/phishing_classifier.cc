@@ -179,7 +179,7 @@ void PhishingClassifier::TermExtractionFinished(bool success) {
     }
     float score = static_cast<float>(scorer_->ComputeScore(hashed_features));
     verdict.set_client_score(score);
-    verdict.set_is_phishing(score >= kPhishyThreshold);
+    verdict.set_is_phishing(score >= scorer_->threshold_probability());
     RunCallback(verdict);
   } else {
     RunFailureCallback();

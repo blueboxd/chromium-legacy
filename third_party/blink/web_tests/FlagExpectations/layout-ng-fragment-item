@@ -1465,7 +1465,6 @@ crbug.com/982194 virtual/layout_ng_flex_box/external/wpt/css/vendor-imports/mozi
 crbug.com/982194 virtual/layout_ng_flex_box/external/wpt/css/vendor-imports/mozilla/mozilla-central-reftests/flexbox/flexbox-min-width-auto-002a.html [ Failure ]
 crbug.com/982194 virtual/layout_ng_flex_box/external/wpt/css/vendor-imports/mozilla/mozilla-central-reftests/flexbox/flexbox-min-width-auto-002c.html [ Failure ]
 crbug.com/982194 virtual/layout_ng_flex_box/external/wpt/css/vendor-imports/mozilla/mozilla-central-reftests/flexbox/flexbox-paint-ordering-002.xhtml [ Failure ]
-crbug.com/982194 virtual/layout_ng_fragment_traversal/external/wpt/css/CSS2/floats/hit-test-floats-001.html [ Pass ]
 crbug.com/982194 virtual/lazyload-image/http/tests/lazyload/style-dimension.html [ Pass ]
 crbug.com/982194 virtual/mouseevent_fractional/fast/events/clientXY-in-zoom-and-scroll.html [ Pass ]
 crbug.com/982194 virtual/not-site-per-process/http/tests/devtools/debugger/fetch-breakpoints.js [ Pass Timeout ]
@@ -1508,3 +1507,5 @@ crbug.com/982194 virtual/web-components-v0-disabled/fast/dom/nodesFromRect/nodes
 crbug.com/982194 virtual/web-components-v0-disabled/fast/dom/shadow/gesture-tapHighlight-shadow-tree.html [ Pass ]
 crbug.com/982194 virtual/web-components-v0-disabled/fast/html/draggable-controls.html [ Failure ]
 crbug.com/982194 wpt_internal/css/css-intrinsic-size/intrinsic-size-015.html [ Crash ]
+
+virtual/layout_ng_fragment_traversal/* [ Skip ]

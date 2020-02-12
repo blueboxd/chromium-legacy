@@ -105,12 +105,8 @@ class VIZ_SERVICE_EXPORT SurfaceManager {
   // Called when a surface has an active frame for the first time.
   void FirstSurfaceActivation(const SurfaceInfo& surface_info);
 
-  // Called when a CompositorFrame within |surface| has activated. |duration| is
-  // a measure of the time the frame has spent waiting on dependencies to
-  // arrive. If |duration| is base::nullopt, then that indicates that this frame
-  // was not blocked on dependencies.
-  void SurfaceActivated(Surface* surface,
-                        base::Optional<base::TimeDelta> duration);
+  // Called when a CompositorFrame within |surface| has activated.
+  void SurfaceActivated(Surface* surface);
 
   // Called when |surface| is being destroyed.
   void SurfaceDestroyed(Surface* surface);

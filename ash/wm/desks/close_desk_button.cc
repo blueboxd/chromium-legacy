@@ -14,8 +14,8 @@
 #include "ui/strings/grit/ui_strings.h"
 #include "ui/views/animation/flood_fill_ink_drop_ripple.h"
 #include "ui/views/animation/ink_drop_impl.h"
-#include "ui/views/animation/ink_drop_mask.h"
 #include "ui/views/background.h"
+#include "ui/views/controls/highlight_path_generator.h"
 #include "ui/views/rect_based_targeting_utils.h"
 #include "ui/views/style/platform_style.h"
 
@@ -59,6 +59,8 @@ CloseDeskButton::CloseDeskButton(views::ButtonListener* listener)
   SetFocusPainter(nullptr);
 
   SetEventTargeter(std::make_unique<views::ViewTargeter>(this));
+
+  views::InstallCircleHighlightPathGenerator(this);
 }
 
 CloseDeskButton::~CloseDeskButton() = default;
@@ -69,32 +71,20 @@ const char* CloseDeskButton::GetClassName() const {
 
 std::unique_ptr<views::InkDrop> CloseDeskButton::CreateInkDrop() {
   auto ink_drop = CreateDefaultFloodFillInkDropImpl();
-  ink_drop->SetShowHighlightOnHover(true);
   ink_drop->SetShowHighlightOnFocus(!views::PlatformStyle::kPreferFocusRings);
   return std::move(ink_drop);
 }
 
-std::unique_ptr<views::InkDropRipple> CloseDeskButton::CreateInkDropRipple()
-    const {
-  return std::make_unique<views::FloodFillInkDropRipple>(
-      size(), GetInkDropCenterBasedOnLastEvent(), GetInkDropBaseColor(),
-      ink_drop_visible_opacity());
-}
-
 std::unique_ptr<views::InkDropHighlight>
 CloseDeskButton::CreateInkDropHighlight() const {
-  auto highlight = ImageButton::CreateInkDropHighlight();
+  auto highlight = std::make_unique<views::InkDropHighlight>(
+      gfx::SizeF(size()), GetInkDropBaseColor());
   highlight->set_visible_opacity(highlight_opacity_);
   return highlight;
 }
 
 SkColor CloseDeskButton::GetInkDropBaseColor() const {
   return inkdrop_base_color_;
-}
-
-std::unique_ptr<views::InkDropMask> CloseDeskButton::CreateInkDropMask() const {
-  return std::make_unique<views::RoundRectInkDropMask>(size(), gfx::Insets(),
-                                                       kCornerRadius);
 }
 
 bool CloseDeskButton::DoesIntersectRect(const views::View* target,

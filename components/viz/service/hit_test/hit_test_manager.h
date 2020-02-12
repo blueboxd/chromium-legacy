@@ -28,8 +28,7 @@ class VIZ_SERVICE_EXPORT HitTestManager : public SurfaceObserver {
 
   // SurfaceObserver:
   void OnFirstSurfaceActivation(const SurfaceInfo& surface_info) override {}
-  void OnSurfaceActivated(const SurfaceId& surface_id,
-                          base::Optional<base::TimeDelta> duration) override;
+  void OnSurfaceActivated(const SurfaceId& surface_id) override;
   void OnSurfaceMarkedForDestruction(const SurfaceId& surface_id) override {}
   bool OnSurfaceDamaged(const SurfaceId& surface_id,
                         const BeginFrameAck& ack) override;

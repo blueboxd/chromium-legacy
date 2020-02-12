@@ -91,6 +91,21 @@ class MediaHistoryStoreUnitTest : public testing::Test {
     return out;
   }
 
+  std::vector<mojom::MediaHistoryPlaybackRowPtr> GetPlaybackRowsSync() {
+    base::RunLoop run_loop;
+    std::vector<mojom::MediaHistoryPlaybackRowPtr> out;
+
+    GetMediaHistoryStore()->GetMediaHistoryPlaybackRowsForDebug(
+        base::BindLambdaForTesting(
+            [&](std::vector<mojom::MediaHistoryPlaybackRowPtr> rows) {
+              out = std::move(rows);
+              run_loop.Quit();
+            }));
+
+    run_loop.Run();
+    return out;
+  }
+
   MediaHistoryStore* GetMediaHistoryStore() {
     return media_history_store_.get();
   }
@@ -114,14 +129,16 @@ TEST_F(MediaHistoryStoreUnitTest, CreateDatabaseTables) {
 }
 
 TEST_F(MediaHistoryStoreUnitTest, SavePlayback) {
+  const auto now_before =
+      (base::Time::Now() - base::TimeDelta::FromMinutes(1)).ToJsTime();
+
   // Create a media player watch time and save it to the playbacks table.
   GURL url("http://google.com/test");
   content::MediaPlayerWatchTime watch_time(url, url.GetOrigin(),
                                            base::TimeDelta::FromSeconds(60),
                                            base::TimeDelta(), true, false);
   GetMediaHistoryStore()->SavePlayback(watch_time);
-  int64_t now_in_seconds_before =
-      base::Time::Now().ToDeltaSinceWindowsEpoch().InSeconds();
+  const auto now_after_a = base::Time::Now().ToJsTime();
 
   // Save the watch time a second time.
   GetMediaHistoryStore()->SavePlayback(watch_time);
@@ -129,49 +146,33 @@ TEST_F(MediaHistoryStoreUnitTest, SavePlayback) {
   // Wait until the playbacks have finished saving.
   content::RunAllTasksUntilIdle();
 
-  int64_t now_in_seconds_after =
-      base::Time::Now().ToDeltaSinceWindowsEpoch().InSeconds();
+  const auto now_after_b = base::Time::Now().ToJsTime();
 
-  // Verify that the playback table contains the expected number of items
-  sql::Statement select_from_playback_statement(GetDB().GetUniqueStatement(
-      "SELECT id, url, origin_id, watch_time_s, has_video, has_audio, "
-      "last_updated_time_s FROM playback"));
-  ASSERT_TRUE(select_from_playback_statement.is_valid());
-  int playback_row_count = 0;
-  while (select_from_playback_statement.Step()) {
-    ++playback_row_count;
-    EXPECT_EQ(playback_row_count, select_from_playback_statement.ColumnInt(0));
-    EXPECT_EQ("http://google.com/test",
-              select_from_playback_statement.ColumnString(1));
-    EXPECT_EQ(1, select_from_playback_statement.ColumnInt(2));
-    EXPECT_EQ(60, select_from_playback_statement.ColumnInt(3));
-    EXPECT_EQ(1, select_from_playback_statement.ColumnInt(4));
-    EXPECT_EQ(0, select_from_playback_statement.ColumnInt(5));
-    EXPECT_LE(now_in_seconds_before,
-              select_from_playback_statement.ColumnInt64(6));
-    EXPECT_GE(now_in_seconds_after,
-              select_from_playback_statement.ColumnInt64(6));
-  }
+  // Verify that the playback table contains the expected number of items.
+  std::vector<mojom::MediaHistoryPlaybackRowPtr> playbacks =
+      GetPlaybackRowsSync();
+  EXPECT_EQ(2u, playbacks.size());
 
-  EXPECT_EQ(2, playback_row_count);
+  EXPECT_EQ("http://google.com/test", playbacks[0]->url.spec());
+  EXPECT_FALSE(playbacks[0]->has_audio);
+  EXPECT_TRUE(playbacks[0]->has_video);
+  EXPECT_EQ(base::TimeDelta::FromSeconds(60), playbacks[0]->watchtime);
+  EXPECT_LE(now_before, playbacks[0]->last_updated_time);
+  EXPECT_GE(now_after_a, playbacks[0]->last_updated_time);
 
-  // Verify that the origin table contains the expected number of items
-  sql::Statement select_from_origin_statement(GetDB().GetUniqueStatement(
-      "SELECT id, origin, last_updated_time_s FROM origin"));
-  ASSERT_TRUE(select_from_origin_statement.is_valid());
-  int origin_row_count = 0;
-  while (select_from_origin_statement.Step()) {
-    ++origin_row_count;
-    EXPECT_EQ(1, select_from_origin_statement.ColumnInt(0));
-    EXPECT_EQ("http://google.com/",
-              select_from_origin_statement.ColumnString(1));
-    EXPECT_LE(now_in_seconds_before,
-              select_from_origin_statement.ColumnInt64(2));
-    EXPECT_GE(now_in_seconds_after,
-              select_from_origin_statement.ColumnInt64(2));
-  }
+  EXPECT_EQ("http://google.com/test", playbacks[1]->url.spec());
+  EXPECT_FALSE(playbacks[1]->has_audio);
+  EXPECT_TRUE(playbacks[1]->has_video);
+  EXPECT_EQ(base::TimeDelta::FromSeconds(60), playbacks[1]->watchtime);
+  EXPECT_LE(now_before, playbacks[1]->last_updated_time);
+  EXPECT_GE(now_after_b, playbacks[1]->last_updated_time);
 
-  EXPECT_EQ(1, origin_row_count);
+  // Verify that the origin table contains the expected number of items.
+  std::vector<mojom::MediaHistoryOriginRowPtr> origins = GetOriginRowsSync();
+  EXPECT_EQ(1u, origins.size());
+  EXPECT_EQ("http://google.com", origins[0]->origin.Serialize());
+  EXPECT_LE(now_before, origins[0]->last_updated_time);
+  EXPECT_GE(now_after_b, origins[0]->last_updated_time);
 }
 
 TEST_F(MediaHistoryStoreUnitTest, GetStats) {

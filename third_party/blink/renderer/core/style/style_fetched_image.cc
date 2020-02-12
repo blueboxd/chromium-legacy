@@ -114,9 +114,8 @@ FloatSize StyleFetchedImage::ImageSize(
   if (image_->HasDevicePixelRatioHeaderValue()) {
     multiplier /= image_->DevicePixelRatioHeaderValue();
   }
-  if (image->IsSVGImage()) {
-    return ImageSizeForSVGImage(ToSVGImage(image), multiplier,
-                                default_object_size);
+  if (auto* svg_image = DynamicTo<SVGImage>(image)) {
+    return ImageSizeForSVGImage(svg_image, multiplier, default_object_size);
   }
 
   FloatSize size(image->Size(respect_orientation));
@@ -139,8 +138,9 @@ void StyleFetchedImage::ImageNotifyFinished(ImageResourceContent*) {
   if (image_ && image_->HasImage()) {
     Image& image = *image_->GetImage();
 
-    if (document_ && image.IsSVGImage())
-      ToSVGImage(image).UpdateUseCounters(*document_);
+    auto* svg_image = DynamicTo<SVGImage>(image);
+    if (document_ && svg_image)
+      svg_image->UpdateUseCounters(*document_);
   }
 
   if (document_) {
@@ -163,9 +163,10 @@ scoped_refptr<Image> StyleFetchedImage::GetImage(
         style.EffectiveZoom());
   }
 
-  if (!image->IsSVGImage())
+  auto* svg_image = DynamicTo<SVGImage>(image);
+  if (!svg_image)
     return image;
-  return SVGImageForContainer::Create(ToSVGImage(image), target_size,
+  return SVGImageForContainer::Create(svg_image, target_size,
                                       style.EffectiveZoom(), url_);
 }
 

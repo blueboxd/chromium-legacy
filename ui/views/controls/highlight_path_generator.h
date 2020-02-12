@@ -74,7 +74,7 @@ void VIEWS_EXPORT InstallRectHighlightPathGenerator(View* view);
 class VIEWS_EXPORT CircleHighlightPathGenerator
     : public HighlightPathGenerator {
  public:
-  CircleHighlightPathGenerator() = default;
+  explicit CircleHighlightPathGenerator(const gfx::Insets& insets);
 
   CircleHighlightPathGenerator(const CircleHighlightPathGenerator&) = delete;
   CircleHighlightPathGenerator& operator=(const CircleHighlightPathGenerator&) =
@@ -85,6 +85,8 @@ class VIEWS_EXPORT CircleHighlightPathGenerator
 };
 
 void VIEWS_EXPORT InstallCircleHighlightPathGenerator(View* view);
+void VIEWS_EXPORT
+InstallCircleHighlightPathGenerator(View* view, const gfx::Insets& insets);
 
 // Sets a pill-shaped highlight path.
 class VIEWS_EXPORT PillHighlightPathGenerator : public HighlightPathGenerator {

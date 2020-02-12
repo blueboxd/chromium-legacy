@@ -742,9 +742,11 @@ Status ExecuteGetElementRect(Session* session,
     return status;
 
   std::unique_ptr<base::Value> size;
-  web_view->CallFunction(session->GetCurrentFrameId(),
-                         webdriver::atoms::asString(webdriver::atoms::GET_SIZE),
-                         args, &size);
+  status = web_view->CallFunction(
+      session->GetCurrentFrameId(),
+      webdriver::atoms::asString(webdriver::atoms::GET_SIZE), args, &size);
+  if (status.IsError())
+    return status;
 
   // do type conversions
   base::DictionaryValue* size_dict;

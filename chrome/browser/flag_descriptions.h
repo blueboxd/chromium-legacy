@@ -1801,6 +1801,9 @@ extern const char kChromeosVideoDecoderDescription[];
 extern const char kContextualNudgesName[];
 extern const char kContextualNudgesDescription[];
 
+extern const char kCornerShortcutsName[];
+extern const char kCornerShortcutsDescription[];
+
 extern const char kCrosRegionsModeName[];
 extern const char kCrosRegionsModeDescription[];
 extern const char kCrosRegionsModeDefault[];

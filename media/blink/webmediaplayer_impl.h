@@ -157,9 +157,9 @@ class MEDIA_BLINK_EXPORT WebMediaPlayerImpl
       blink::WebMediaPlayer::TrackId* selectedTrackId) override;
 
   // Dimensions of the video.
-  blink::WebSize NaturalSize() const override;
+  gfx::Size NaturalSize() const override;
 
-  blink::WebSize VisibleRect() const override;
+  gfx::Size VisibleSize() const override;
 
   // Getters of playback state.
   bool Paused() const override;

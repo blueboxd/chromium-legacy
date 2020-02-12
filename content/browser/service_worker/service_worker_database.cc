@@ -1522,7 +1522,7 @@ ServiceWorkerDatabase::Status ServiceWorkerDatabase::ParseRegistrationData(
     // later version of Chrome.
     auto web_feature = static_cast<blink::mojom::WebFeature>(feature);
     if (IsKnownEnumValue(web_feature))
-      out->used_features.insert(web_feature);
+      out->used_features.push_back(web_feature);
   }
 
   if (data.has_script_type()) {

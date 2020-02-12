@@ -354,9 +354,9 @@ TEST_F(SVGImageSimTest, PageVisibilityHiddenToVisible) {
   ASSERT_TRUE(image_content->IsLoaded());
   ASSERT_TRUE(image_content->HasImage());
   Image* image = image_content->GetImage();
-  ASSERT_TRUE(image->IsSVGImage());
+  ASSERT_TRUE(IsA<SVGImage>(image));
   SVGImageChromeClient& svg_image_chrome_client =
-      ToSVGImage(*image).ChromeClientForTesting();
+      To<SVGImage>(*image).ChromeClientForTesting();
   TimerBase* timer = svg_image_chrome_client.GetTimerForTesting();
 
   // Wait for the next animation frame to be triggered, and then trigger a new

@@ -12,6 +12,7 @@
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/ui/startup/credential_provider_signin_dialog_win_test_data.h"
+#include "chrome/common/chrome_switches.h"
 #include "chrome/credential_provider/common/gcp_strings.h"
 #include "chrome/credential_provider/gaiacp/gaia_credential.h"
 #include "chrome/credential_provider/gaiacp/gaia_credential_provider_i.h"
@@ -180,13 +181,18 @@ TEST_P(GcpGaiaCredentialGlsTest, GetUserGlsCommandLine) {
   ASSERT_EQ(S_OK, GenerateDeviceId(&device_id));
 
   const bool is_ep_url_set = std::get<1>(GetParam());
-  if (is_ep_url_set) {
+  if (is_ep_url_set)
     SetGlobalFlagForTesting(L"ep_setup_url", L"http://login.com");
-  }
 
-  base::CommandLine command_line = test_cred->GetTestUserGlsCommandline();
+  GoogleChromePathForTesting google_chrome_path_for_testing(
+      base::FilePath(L"chrome.exe"));
+  EXPECT_EQ(S_OK, test_cred->UseRealGlsBaseCommandLine(true));
+  base::CommandLine command_line = test_cred->GetTestGlsCommandline();
   std::string gcpw_path =
       command_line.GetSwitchValueASCII(kGcpwEndpointPathSwitch);
+
+  EXPECT_TRUE(command_line.HasSwitch(kGcpwSigninSwitch));
+  EXPECT_TRUE(command_line.HasSwitch(switches::kDisableExtensions));
 
   if (is_ep_url_set) {
     ASSERT_EQ("http://login.com/",

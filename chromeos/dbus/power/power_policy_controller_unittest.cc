@@ -96,7 +96,7 @@ TEST_F(PowerPolicyControllerTest, Prefs) {
   expected_policy.set_boot_on_ac(true);
   expected_policy.set_usb_power_share(false);
   expected_policy.mutable_battery_charge_mode()->set_mode(
-      power_manager::PowerManagementPolicy::BatteryChargeMode::STANDARD);
+      power_manager::PowerManagementPolicy::BatteryChargeMode::ADAPTIVE);
 
   expected_policy.set_reason(PowerPolicyController::kPrefsReason);
   EXPECT_EQ(

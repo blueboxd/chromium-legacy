@@ -74,7 +74,6 @@ class UnifiedSliderButton : public views::ToggleImageButton {
   const char* GetClassName() const override;
 
   // views::ToggleImageButton:
-  std::unique_ptr<views::InkDropMask> CreateInkDropMask() const override;
   std::unique_ptr<views::InkDrop> CreateInkDrop() override;
   std::unique_ptr<views::InkDropRipple> CreateInkDropRipple() const override;
   std::unique_ptr<views::InkDropHighlight> CreateInkDropHighlight()

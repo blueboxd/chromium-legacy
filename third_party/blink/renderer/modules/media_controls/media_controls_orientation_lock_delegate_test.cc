@@ -57,7 +57,7 @@ class MockWebMediaPlayerForOrientationLockDelegate final
  public:
   bool HasVideo() const override { return true; }
 
-  MOCK_CONST_METHOD0(NaturalSize, WebSize());
+  MOCK_CONST_METHOD0(NaturalSize, gfx::Size());
 };
 
 class MockScreenOrientation final
@@ -396,7 +396,7 @@ class MediaControlsOrientationLockAndRotateToFullscreenDelegateTest
 
     // Set video size.
     EXPECT_CALL(MockWebMediaPlayer(), NaturalSize())
-        .WillRepeatedly(Return(WebSize(video_width, video_height)));
+        .WillRepeatedly(Return(gfx::Size(video_width, video_height)));
 
     // Dispatch an arbitrary Device Orientation event to satisfy
     // MediaControlsRotateToFullscreenDelegate's requirement that the device
@@ -571,11 +571,11 @@ TEST_F(MediaControlsOrientationLockDelegateTest, ComputeOrientationLock) {
 
   EXPECT_CALL(MockWebMediaPlayer(), NaturalSize())
       .Times(14)  // Each `computeOrientationLock` calls the method twice.
-      .WillOnce(Return(WebSize(100, 50)))
-      .WillOnce(Return(WebSize(100, 50)))
-      .WillOnce(Return(WebSize(50, 100)))
-      .WillOnce(Return(WebSize(50, 100)))
-      .WillRepeatedly(Return(WebSize(100, 100)));
+      .WillOnce(Return(gfx::Size(100, 50)))
+      .WillOnce(Return(gfx::Size(100, 50)))
+      .WillOnce(Return(gfx::Size(50, 100)))
+      .WillOnce(Return(gfx::Size(50, 100)))
+      .WillRepeatedly(Return(gfx::Size(100, 100)));
 
   // 100x50
   EXPECT_EQ(kWebScreenOrientationLockLandscape, ComputeOrientationLock());

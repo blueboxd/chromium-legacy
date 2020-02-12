@@ -34,9 +34,7 @@ cr.define('settings', function() {
 
     /** @override */
     syncVoiceModelStatus() {
-      if (loadTimeData.getBoolean('voiceMatchEnabled')) {
-        chrome.send('syncVoiceModelStatus');
-      }
+      chrome.send('syncVoiceModelStatus');
     }
   }
 

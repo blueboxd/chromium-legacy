@@ -35,8 +35,7 @@ class DOMAgentViz : public viz::SurfaceObserver,
 
   // viz::SurfaceObserver:
   void OnFirstSurfaceActivation(const viz::SurfaceInfo& surface_info) override;
-  void OnSurfaceActivated(const viz::SurfaceId& surface_id,
-                          base::Optional<base::TimeDelta> duration) override {}
+  void OnSurfaceActivated(const viz::SurfaceId& surface_id) override {}
   void OnSurfaceMarkedForDestruction(
       const viz::SurfaceId& surface_id) override {}
   bool OnSurfaceDamaged(const viz::SurfaceId& surface_id,

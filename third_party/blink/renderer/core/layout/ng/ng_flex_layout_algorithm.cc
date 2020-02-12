@@ -1038,7 +1038,7 @@ base::Optional<MinMaxSize> NGFlexLayoutAlgorithm::ComputeMinMaxSize(
       sizes->max_size = std::max(sizes->max_size, child_min_max_sizes.max_size);
     } else {
       sizes->max_size += child_min_max_sizes.max_size;
-      if (IsMultiline()) {
+      if (algorithm_->IsMultiline()) {
         sizes->min_size =
             std::max(sizes->min_size, child_min_max_sizes.min_size);
       } else {
@@ -1053,10 +1053,6 @@ base::Optional<MinMaxSize> NGFlexLayoutAlgorithm::ComputeMinMaxSize(
   sizes->Encompass(LayoutUnit());
   *sizes += border_scrollbar_padding_.InlineSum();
   return sizes;
-}
-
-bool NGFlexLayoutAlgorithm::IsMultiline() const {
-  return Style().FlexWrap() != EFlexWrap::kNowrap;
 }
 
 }  // namespace blink

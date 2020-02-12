@@ -185,10 +185,15 @@ TEST_P(FrameThrottlingTest, IntersectionObservationOverridesThrottling) {
   EXPECT_FALSE(frame_document->View()->CanThrottleRendering());
   EXPECT_TRUE(inner_frame_document->View()->ShouldThrottleRendering());
 
-  // An intersection observation overrides...
+  // An intersection observation overrides throttling during a lifecycle update.
   inner_frame_document->View()->SetIntersectionObservationState(
       LocalFrameView::kRequired);
-  EXPECT_FALSE(inner_frame_document->View()->ShouldThrottleRendering());
+  {
+    GetDocument().GetFrame()->View()->SetInLifecycleUpdateForTest(true);
+    EXPECT_FALSE(inner_frame_document->View()->ShouldThrottleRendering());
+    GetDocument().GetFrame()->View()->SetInLifecycleUpdateForTest(false);
+  }
+
   inner_frame_document->View()->ScheduleAnimation();
 
   LayoutView* inner_view = inner_frame_document->View()->GetLayoutView();
@@ -213,7 +218,7 @@ TEST_P(FrameThrottlingTest, IntersectionObservationOverridesThrottling) {
   EXPECT_TRUE(inner_view->Layer()->SelfNeedsRepaint());
 
   CompositeFrame();
-  // ...but only for one frame.
+  // The lifecycle update should only be overridden for one frame.
   EXPECT_TRUE(inner_frame_document->View()->ShouldThrottleRendering());
 
   EXPECT_FALSE(inner_view->NeedsLayout());
@@ -225,6 +230,51 @@ TEST_P(FrameThrottlingTest, IntersectionObservationOverridesThrottling) {
               inner_view->Compositor()->pending_update_type_);
   }
   EXPECT_TRUE(inner_view->Layer()->SelfNeedsRepaint());
+}
+
+TEST_P(FrameThrottlingTest,
+       ThrottlingOverrideOnlyAppliesDuringLifecycleUpdate) {
+  // Create a document with a hidden cross-origin subframe.
+  SimRequest main_resource("https://example.com/", "text/html");
+  SimRequest frame_resource("https://example.com/iframe.html", "text/html");
+  LoadURL("https://example.com/");
+  main_resource.Complete(R"HTML(
+    <iframe id="frame" sandbox src="iframe.html"
+        style="transform: translateY(480px)">
+  )HTML");
+  frame_resource.Complete("<!doctype html>");
+
+  DocumentLifecycle::AllowThrottlingScope throttling_scope(
+      GetDocument().Lifecycle());
+  CompositeFrame();
+
+  auto* frame_element =
+      To<HTMLIFrameElement>(GetDocument().getElementById("frame"));
+  auto* frame_document = frame_element->contentDocument();
+  // Hidden cross origin frames are throttled.
+  EXPECT_TRUE(frame_document->View()->ShouldThrottleRendering());
+
+  // An intersection observation overrides throttling, but this is only during
+  // the lifecycle.
+  frame_document->View()->SetIntersectionObservationState(
+      LocalFrameView::kRequired);
+  EXPECT_TRUE(frame_document->View()->ShouldThrottleRendering());
+  {
+    GetDocument().GetFrame()->View()->SetInLifecycleUpdateForTest(true);
+    EXPECT_FALSE(frame_document->View()->ShouldThrottleRendering());
+    GetDocument().GetFrame()->View()->SetInLifecycleUpdateForTest(false);
+  }
+
+  // A lifecycle update can update the throttled frame to just LayoutClean but
+  // the frame should still be considered throttled outside the lifecycle
+  // because it is not fully running the lifecycle.
+  frame_document->View()->GetLayoutView()->SetNeedsLayout("test");
+  frame_document->View()->ScheduleAnimation();
+  frame_document->View()->GetLayoutView()->Layer()->SetNeedsRepaint();
+  CompositeFrame();
+  EXPECT_EQ(DocumentLifecycle::kLayoutClean,
+            frame_document->Lifecycle().GetState());
+  EXPECT_TRUE(frame_document->View()->ShouldThrottleRendering());
 }
 
 TEST_P(FrameThrottlingTest, HiddenCrossOriginZeroByZeroFramesAreNotThrottled) {

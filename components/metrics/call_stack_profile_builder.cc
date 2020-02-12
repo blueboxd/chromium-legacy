@@ -53,8 +53,7 @@ CallStackProfileBuilder::CallStackProfileBuilder(
     const CallStackProfileParams& profile_params,
     const WorkIdRecorder* work_id_recorder,
     base::OnceClosure completed_callback)
-    : work_id_recorder_(work_id_recorder),
-      profile_start_time_(base::TimeTicks::Now()) {
+    : work_id_recorder_(work_id_recorder) {
   completed_callback_ = std::move(completed_callback);
   sampled_profile_.set_process(
       ToExecutionContextProcess(profile_params.process));
@@ -153,6 +152,9 @@ void CallStackProfileBuilder::OnSampleCompleted(
 
   *stack_sample_proto->mutable_metadata() = metadata_.CreateSampleMetadata(
       call_stack_profile->mutable_metadata_name_hash());
+
+  if (profile_start_time_.is_null())
+    profile_start_time_ = sample_timestamp;
 }
 
 void CallStackProfileBuilder::OnProfileCompleted(
@@ -174,7 +176,8 @@ void CallStackProfileBuilder::OnProfileCompleted(
         HashModuleFilename(module->GetDebugBasename()));
   }
 
-  PassProfilesToMetricsProvider(std::move(sampled_profile_));
+  PassProfilesToMetricsProvider(profile_start_time_,
+                                std::move(sampled_profile_));
 
   // Run the completed callback if there is one.
   if (!completed_callback_.is_null())
@@ -202,13 +205,14 @@ void CallStackProfileBuilder::SetParentProfileCollectorForChildProcess(
 }
 
 void CallStackProfileBuilder::PassProfilesToMetricsProvider(
+    base::TimeTicks profile_start_time,
     SampledProfile sampled_profile) {
   if (sampled_profile.process() == BROWSER_PROCESS) {
-    GetBrowserProcessReceiverCallbackInstance().Run(profile_start_time_,
+    GetBrowserProcessReceiverCallbackInstance().Run(profile_start_time,
                                                     std::move(sampled_profile));
   } else {
     g_child_call_stack_profile_collector.Get()
-        .ChildCallStackProfileCollector::Collect(profile_start_time_,
+        .ChildCallStackProfileCollector::Collect(profile_start_time,
                                                  std::move(sampled_profile));
   }
 }

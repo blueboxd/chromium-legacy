@@ -170,7 +170,7 @@ void PictureInPictureControllerImpl::EnterPictureInPicture(
   picture_in_picture_service_->StartSession(
       video_element->GetWebMediaPlayer()->GetDelegateId(),
       video_element->GetWebMediaPlayer()->GetSurfaceId(),
-      video_element->GetWebMediaPlayer()->NaturalSize(),
+      WebSize(video_element->GetWebMediaPlayer()->NaturalSize()),
       ShouldShowPlayPauseButton(*video_element), std::move(session_observer),
       WTF::Bind(&PictureInPictureControllerImpl::OnEnteredPictureInPicture,
                 WrapPersistent(this), WrapPersistent(video_element),
@@ -379,7 +379,7 @@ void PictureInPictureControllerImpl::OnPictureInPictureStateChange() {
   picture_in_picture_session_->Update(
       picture_in_picture_element_->GetWebMediaPlayer()->GetDelegateId(),
       picture_in_picture_element_->GetWebMediaPlayer()->GetSurfaceId(),
-      picture_in_picture_element_->GetWebMediaPlayer()->NaturalSize(),
+      WebSize(picture_in_picture_element_->GetWebMediaPlayer()->NaturalSize()),
       ShouldShowPlayPauseButton(*picture_in_picture_element_));
 }
 

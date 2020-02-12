@@ -35,6 +35,7 @@ constexpr uint32_t kCrtcIdBase = 500;
 constexpr uint32_t kConnectorIdBase = 700;
 
 constexpr uint32_t kActivePropId = 1000;
+constexpr uint32_t kModePropId = 1001;
 constexpr uint32_t kBackgroundColorPropId = 1002;
 constexpr uint32_t kCtmPropId = 1003;
 constexpr uint32_t kGammaLutPropId = 1004;
@@ -43,6 +44,7 @@ constexpr uint32_t kDegammaLutPropId = 1006;
 constexpr uint32_t kDegammaLutSizePropId = 1007;
 constexpr uint32_t kOutFencePtrPropId = 1008;
 
+constexpr uint32_t kCrtcIdPropId = 2000;
 constexpr uint32_t kTypePropId = 3010;
 constexpr uint32_t kInFormatsPropId = 3011;
 constexpr uint32_t kPlaneCtmId = 3012;
@@ -118,12 +120,12 @@ void HardwareDisplayPlaneManagerTest::InitializeDrmState(
     size_t planes_per_crtc) {
   std::map<uint32_t, std::string> crtc_property_names = {
       {kActivePropId, "ACTIVE"},
-      {1001, "MODE_ID"},
+      {kModePropId, "MODE_ID"},
   };
 
   std::vector<ui::MockDrmDevice::ConnectorProperties> connector_properties(1);
   std::map<uint32_t, std::string> connector_property_names = {
-      {2000, "CRTC_ID"},
+      {kCrtcIdPropId, "CRTC_ID"},
   };
   for (size_t i = 0; i < connector_properties.size(); ++i) {
     connector_properties[i].id = kConnectorIdBase + i;
@@ -223,8 +225,8 @@ void HardwareDisplayPlaneManagerTest::PerformPageFlip(
       state, assigns, crtc_properties_[crtc_idx].id));
   scoped_refptr<ui::PageFlipRequest> page_flip_request =
       base::MakeRefCounted<ui::PageFlipRequest>(base::TimeDelta());
-  ASSERT_TRUE(
-      fake_drm_->plane_manager()->Commit(state, page_flip_request, nullptr));
+  ASSERT_TRUE(fake_drm_->plane_manager()->Commit(
+      state, /*should_modeset*/ false, page_flip_request, nullptr));
 }
 
 uint64_t HardwareDisplayPlaneManagerTest::GetObjectPropertyValue(
@@ -406,7 +408,7 @@ TEST_P(HardwareDisplayPlaneManagerAtomicTest, Modeset) {
       crtc_properties_[0].id, kFrameBuffer, connector_properties_[0].id,
       kDefaultMode, state));
 
-  EXPECT_EQ(0, fake_drm_->get_commit_count());
+  EXPECT_EQ(1, fake_drm_->get_commit_count());
 }
 
 TEST_P(HardwareDisplayPlaneManagerAtomicTest, DisableModeset) {
@@ -418,6 +420,40 @@ TEST_P(HardwareDisplayPlaneManagerAtomicTest, DisableModeset) {
   EXPECT_TRUE(fake_drm_->plane_manager()->DisableModeset(
       crtc_properties_[0].id, connector_properties_[0].id));
   EXPECT_EQ(1, fake_drm_->get_commit_count());
+}
+
+TEST_P(HardwareDisplayPlaneManagerAtomicTest, CheckPropsAfterModeset) {
+  InitializeDrmState(/*crtc_count=*/1, /*planes_per_crtc=*/1);
+  fake_drm_->InitializeState(crtc_properties_, connector_properties_,
+                             plane_properties_, property_names_,
+                             /*use_atomic=*/true);
+
+  constexpr uint32_t kFrameBuffer = 2;
+  ui::HardwareDisplayPlaneList state;
+  EXPECT_TRUE(fake_drm_->plane_manager()->Modeset(
+      crtc_properties_[0].id, kFrameBuffer, connector_properties_[0].id,
+      kDefaultMode, state));
+
+  // Test props values after modesetting.
+  ui::DrmDevice::Property connector_prop_crtc_id;
+  ui::ScopedDrmObjectPropertyPtr connector_props =
+      fake_drm_->GetObjectProperties(kConnectorIdBase,
+                                     DRM_MODE_OBJECT_CONNECTOR);
+  ui::GetDrmPropertyForName(fake_drm_.get(), connector_props.get(), "CRTC_ID",
+                            &connector_prop_crtc_id);
+  EXPECT_EQ(kCrtcIdPropId, connector_prop_crtc_id.id);
+
+  ui::DrmDevice::Property crtc_prop_for_name;
+  ui::ScopedDrmObjectPropertyPtr crtc_props =
+      fake_drm_->GetObjectProperties(kCrtcIdBase, DRM_MODE_OBJECT_CRTC);
+  ui::GetDrmPropertyForName(fake_drm_.get(), crtc_props.get(), "ACTIVE",
+                            &crtc_prop_for_name);
+  EXPECT_EQ(kActivePropId, crtc_prop_for_name.id);
+  EXPECT_EQ(1U, crtc_prop_for_name.value);
+
+  ui::GetDrmPropertyForName(fake_drm_.get(), crtc_props.get(), "MODE_ID",
+                            &crtc_prop_for_name);
+  EXPECT_EQ(kModePropId, crtc_prop_for_name.id);
 }
 
 TEST_P(HardwareDisplayPlaneManagerAtomicTest, CheckPropsAfterDisable) {
@@ -521,8 +557,8 @@ TEST_P(HardwareDisplayPlaneManagerAtomicTest, UnusedPlanesAreReleased) {
   fake_drm_->plane_manager()->BeginFrame(&hdpl);
   EXPECT_TRUE(fake_drm_->plane_manager()->AssignOverlayPlanes(
       &hdpl, assigns, crtc_properties_[0].id));
-  EXPECT_TRUE(
-      fake_drm_->plane_manager()->Commit(&hdpl, page_flip_request, nullptr));
+  EXPECT_TRUE(fake_drm_->plane_manager()->Commit(
+      &hdpl, /*should_modeset*/ false, page_flip_request, nullptr));
   assigns.clear();
   assigns.push_back(ui::DrmOverlayPlane(primary_buffer, nullptr));
   fake_drm_->plane_manager()->BeginFrame(&hdpl);
@@ -531,8 +567,11 @@ TEST_P(HardwareDisplayPlaneManagerAtomicTest, UnusedPlanesAreReleased) {
   EXPECT_NE(0u, GetPlanePropertyValue(kPlaneOffset, "FB_ID"));
   EXPECT_NE(0u, GetPlanePropertyValue(kPlaneOffset + 1, "FB_ID"));
 
-  EXPECT_TRUE(
-      fake_drm_->plane_manager()->Commit(&hdpl, page_flip_request, nullptr));
+  for (auto* plane : hdpl.old_plane_list)
+    plane->set_in_use(true);
+
+  EXPECT_TRUE(fake_drm_->plane_manager()->Commit(
+      &hdpl, /*should_modeset*/ false, page_flip_request, nullptr));
   EXPECT_NE(0u, GetPlanePropertyValue(kPlaneOffset, "FB_ID"));
   EXPECT_EQ(0u, GetPlanePropertyValue(kPlaneOffset + 1, "FB_ID"));
 }
@@ -865,8 +904,8 @@ TEST_P(HardwareDisplayPlaneManagerAtomicTest,
       base::MakeRefCounted<ui::PageFlipRequest>(base::TimeDelta());
 
   std::unique_ptr<gfx::GpuFence> out_fence;
-  EXPECT_TRUE(fake_drm_->plane_manager()->Commit(&state_, page_flip_request,
-                                                 &out_fence));
+  EXPECT_TRUE(fake_drm_->plane_manager()->Commit(
+      &state_, /*should_modeset*/ false, page_flip_request, &out_fence));
   EXPECT_EQ(nullptr, out_fence);
 }
 

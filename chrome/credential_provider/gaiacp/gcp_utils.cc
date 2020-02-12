@@ -50,6 +50,7 @@
 #include "chrome/credential_provider/gaiacp/gaia_resources.h"
 #include "chrome/credential_provider/gaiacp/logging.h"
 #include "chrome/credential_provider/gaiacp/reg_utils.h"
+#include "chrome/installer/launcher_support/chrome_launcher_support.h"
 #include "google_apis/gaia/gaia_auth_util.h"
 #include "google_apis/gaia/gaia_switches.h"
 #include "google_apis/gaia/gaia_urls.h"
@@ -61,6 +62,10 @@ const wchar_t kDefaultProfilePictureFileExtension[] = L".jpg";
 // Overridden in tests to fake serial number extraction.
 bool g_use_test_serial_number = false;
 base::string16 g_test_serial_number = L"";
+
+// Overridden in tests to fake installed chrome path.
+bool g_use_test_chrome_path = false;
+base::FilePath g_test_chrome_path(L"");
 
 namespace {
 
@@ -167,6 +172,21 @@ GoogleRegistrationDataForTesting::~GoogleRegistrationDataForTesting() {
 }
 
 // GoogleRegistrationDataForTesting //////////////////////////////////////////
+
+// GoogleChromePathForTesting ////////////////////////////////////////////////
+
+GoogleChromePathForTesting::GoogleChromePathForTesting(
+    base::FilePath file_path) {
+  g_use_test_chrome_path = true;
+  g_test_chrome_path = file_path;
+}
+
+GoogleChromePathForTesting::~GoogleChromePathForTesting() {
+  g_use_test_chrome_path = false;
+  g_test_chrome_path = base::FilePath(L"");
+}
+
+// GoogleChromePathForTesting /////////////////////////////////////////////////
 
 base::FilePath GetInstallDirectory() {
   base::FilePath dest_path;
@@ -894,16 +914,14 @@ HRESULT GenerateDeviceId(std::string* device_id) {
 
   // Add the serial number to the dictionary.
   base::string16 serial_number = GetSerialNumber();
-  if (!serial_number.empty()) {
+  if (!serial_number.empty())
     device_ids_dict.SetStringKey("serial_number", serial_number);
-  }
 
   // Add machine_guid to the dictionary.
   base::string16 machine_guid;
   HRESULT hr = GetMachineGuid(&machine_guid);
-  if (SUCCEEDED(hr) && !machine_guid.empty()) {
+  if (SUCCEEDED(hr) && !machine_guid.empty())
     device_ids_dict.SetStringKey("machine_guid", machine_guid);
-  }
 
   std::string device_id_str;
   bool json_write_result =
@@ -947,6 +965,14 @@ HRESULT SetGaiaEndpointCommandLineIfNeeded(const wchar_t* override_registry_key,
     }
   }
   return S_OK;
+}
+
+base::FilePath GetChromePath() {
+  if (g_use_test_chrome_path)
+    return g_test_chrome_path;
+
+  return chrome_launcher_support::GetChromePathForInstallationLevel(
+      chrome_launcher_support::SYSTEM_LEVEL_INSTALLATION, false);
 }
 
 FakesForTesting::FakesForTesting() {}

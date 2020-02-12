@@ -246,7 +246,6 @@ chrome_test_java_sources = [
   "javatests/src/org/chromium/chrome/browser/notifications/ChromeNotificationBuilderTest.java",
   "javatests/src/org/chromium/chrome/browser/notifications/CustomNotificationBuilderTest.java",
   "javatests/src/org/chromium/chrome/browser/notifications/NotificationBuilderBaseTest.java",
-  "javatests/src/org/chromium/chrome/browser/notifications/NotificationIntentInterceptorTest.java",
   "javatests/src/org/chromium/chrome/browser/notifications/NotificationPlatformBridgeIntentTest.java",
   "javatests/src/org/chromium/chrome/browser/notifications/NotificationPlatformBridgeTest.java",
   "javatests/src/org/chromium/chrome/browser/notifications/NotificationTestRule.java",

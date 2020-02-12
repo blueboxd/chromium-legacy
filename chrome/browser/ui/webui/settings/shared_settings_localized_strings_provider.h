@@ -17,9 +17,6 @@ void AddCaptionSubpageStrings(content::WebUIDataSource* html_source);
 // Adds strings used by the <settings-personalization-options> element.
 void AddPersonalizationOptionsStrings(content::WebUIDataSource* html_source);
 
-// Adds strings used by the <settings-signout-dialog> element.
-void AddSignOutDialogStrings(content::WebUIDataSource* html_source);
-
 // Adds strings used by the <settings-sync-controls> element.
 void AddSyncControlsStrings(content::WebUIDataSource* html_source);
 

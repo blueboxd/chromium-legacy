@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-package org.chromium.chrome.browser.profile_card.internal;
+package org.chromium.chrome.browser.profile_card;
 
 import android.view.View;
 
@@ -21,18 +21,17 @@ import org.chromium.ui.widget.ViewRectProvider;
 public class ProfileCardCoordinatorImpl implements ProfileCardCoordinator {
     private static final String TAG = "ShowError";
 
-    private final PropertyModel mModel;
-    private final ProfileCardView mView;
-    private final ProfileCardMediator mMediator;
-    private final PropertyModelChangeProcessor mModelChangeProcessor;
-    private final JSONObject mProfileCardData;
+    private PropertyModel mModel;
+    private ProfileCardView mView;
+    private ProfileCardMediator mMediator;
+    private PropertyModelChangeProcessor mModelChangeProcessor;
+    private JSONObject mProfileCardData;
 
     @Override
     public void update(View anchorView, JSONObject profileCardData) {
         if (mProfileCardData == profileCardData) return;
         ViewRectProvider rectProvider = new ViewRectProvider(anchorView);
-        mView = new ProfileCardView(anchorView.getContext(), anchorView, /*stringId=*/"",
-                /*accessibilityStringId=*/"", rectProvider);
+        mView = new ProfileCardView(anchorView.getContext());
         mProfileCardData = profileCardData;
         mModel = new PropertyModel(ProfileCardProperties.ALL_KEYS);
         mModelChangeProcessor =

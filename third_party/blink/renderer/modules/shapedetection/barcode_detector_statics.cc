@@ -8,7 +8,7 @@
 #include "third_party/blink/public/platform/task_type.h"
 #include "third_party/blink/renderer/bindings/core/v8/script_promise_resolver.h"
 #include "third_party/blink/renderer/core/execution_context/execution_context.h"
-#include "third_party/blink/renderer/modules/shapedetection/detected_barcode.h"
+#include "third_party/blink/renderer/modules/shapedetection/barcode_detector.h"
 
 namespace blink {
 
@@ -81,7 +81,7 @@ void BarcodeDetectorStatics::OnEnumerateSupportedFormats(
   Vector<WTF::String> results;
   results.ReserveInitialCapacity(results.size());
   for (const auto& format : formats)
-    results.push_back(DetectedBarcode::BarcodeFormatToString(format));
+    results.push_back(BarcodeDetector::BarcodeFormatToString(format));
   resolver->Resolve(results);
 }
 

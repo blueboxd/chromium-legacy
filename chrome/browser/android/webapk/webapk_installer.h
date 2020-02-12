@@ -18,6 +18,7 @@
 #include "base/strings/string16.h"
 #include "base/timer/timer.h"
 #include "chrome/browser/android/shortcut_info.h"
+#include "chrome/browser/android/webapk/webapk_icon_hasher.h"
 #include "chrome/browser/android/webapk/webapk_install_service.h"
 #include "chrome/browser/android/webapk/webapk_types.h"
 #include "third_party/skia/include/core/SkBitmap.h"
@@ -110,11 +111,10 @@ class WebApkInstaller {
       const ShortcutInfo& shortcut_info,
       const SkBitmap& primary_icon,
       bool is_primary_icon_maskable,
-
       const SkBitmap& badge_icon,
       const std::string& package_name,
       const std::string& version,
-      const std::map<std::string, std::string>& icon_url_to_murmur2_hash,
+      std::map<std::string, WebApkIconHasher::Icon> icon_url_to_murmur2_hash,
       bool is_manifest_stale,
       base::OnceCallback<void(std::unique_ptr<std::string>)> callback);
 
@@ -129,7 +129,7 @@ class WebApkInstaller {
       const SkBitmap& badge_icon,
       const std::string& package_name,
       const std::string& version,
-      const std::map<std::string, std::string>& icon_url_to_murmur2_hash,
+      std::map<std::string, WebApkIconHasher::Icon> icon_url_to_murmur2_hash,
       bool is_manifest_stale,
       WebApkUpdateReason update_reason,
       base::OnceCallback<void(bool)> callback);
@@ -187,7 +187,7 @@ class WebApkInstaller {
 
   // Called with the computed Murmur2 hash for the icons.
   void OnGotIconMurmur2Hashes(
-      base::Optional<std::map<std::string, std::string>> hashes);
+      base::Optional<std::map<std::string, WebApkIconHasher::Icon>> hashes);
 
   // Sends a request to WebAPK server to create/update WebAPK. During a
   // successful request the WebAPK server responds with a token to send to

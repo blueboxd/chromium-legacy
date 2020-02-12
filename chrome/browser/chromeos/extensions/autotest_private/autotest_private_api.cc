@@ -2370,11 +2370,14 @@ class AssistantInteractionHelper
     query_status_->SetKey("queryText", base::Value(final_result));
   }
 
+  void OnOpenAppResponse(chromeos::assistant::mojom::AndroidAppInfoPtr app_info,
+                         OnOpenAppResponseCallback callback) override {
+    result_.SetKey("openAppResponse", base::Value(app_info->package_name));
+  }
+
   void OnSuggestionsResponse(
       std::vector<AssistantSuggestionPtr> response) override {}
   void OnOpenUrlResponse(const GURL& url, bool in_background) override {}
-  void OnOpenAppResponse(chromeos::assistant::mojom::AndroidAppInfoPtr app_info,
-                         OnOpenAppResponseCallback callback) override {}
   void OnSpeechRecognitionStarted() override {}
   void OnSpeechRecognitionIntermediateResult(
       const std::string& high_confidence_text,

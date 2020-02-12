@@ -394,7 +394,7 @@ base::string16 ServiceWorkerPaymentApp::GetMissingInfoLabel() const {
   return base::string16();
 }
 
-bool ServiceWorkerPaymentApp::IsValidForCanMakePayment() const {
+bool ServiceWorkerPaymentApp::HasEnrolledInstrument() const {
   // This app should not be used when can_make_payment_result_ is false, so this
   // interface should not be invoked.
   DCHECK(can_make_payment_result_);

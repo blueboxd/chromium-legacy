@@ -1339,6 +1339,7 @@ chrome_java_sources = [
   "java/src/org/chromium/chrome/browser/previews/PreviewsUma.java",
   "java/src/org/chromium/chrome/browser/printing/PrintShareActivity.java",
   "java/src/org/chromium/chrome/browser/printing/TabPrinter.java",
+  "java/src/org/chromium/chrome/browser/profile_card/NavigationDelegateImpl.java",
   "java/src/org/chromium/chrome/browser/provider/BaseColumns.java",
   "java/src/org/chromium/chrome/browser/provider/BookmarkColumns.java",
   "java/src/org/chromium/chrome/browser/provider/ChromeBrowserProvider.java",

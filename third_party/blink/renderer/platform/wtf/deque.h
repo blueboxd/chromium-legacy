@@ -236,6 +236,7 @@ class DequeIterator : public DequeIteratorBase<T, inlineCapacity, Allocator> {
   typedef T& reference;
   typedef std::bidirectional_iterator_tag iterator_category;
 
+  DequeIterator() = default;
   DequeIterator(Deque<T, inlineCapacity, Allocator>* deque, wtf_size_t index)
       : Base(deque, index) {}
 

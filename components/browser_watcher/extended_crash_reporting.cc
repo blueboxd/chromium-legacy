@@ -89,11 +89,6 @@ void RecordChromeModuleInfo(
   global_tracker->RecordModuleInfo(module);
 }
 
-ActivityTrackerAnnotation* GetAnnotation() {
-  static ActivityTrackerAnnotation activity_tracker_annotation;
-  return &activity_tracker_annotation;
-}
-
 }  // namespace
 
 ExtendedCrashReporting::ExtendedCrashReporting(
@@ -181,7 +176,7 @@ void ExtendedCrashReporting::TearDownForTesting() {
   }
 
   // Clear the crash annotation.
-  GetAnnotation()->Clear();
+  ActivityTrackerAnnotation::GetInstance()->Clear();
 }
 
 ExtendedCrashReporting* ExtendedCrashReporting::SetUpImpl() {
@@ -218,7 +213,8 @@ void ExtendedCrashReporting::Initialize() {
   // annotation to allow the handler to retrieve it on crash.
   // Record the buffer size and location for the annotation beacon.
   auto* allocator = tracker_->allocator();
-  GetAnnotation()->SetValue(allocator->data(), allocator->size());
+  ActivityTrackerAnnotation::GetInstance()->SetValue(allocator->data(),
+                                                     allocator->size());
 
   // Record the main DLL module info for easier symbolization.
   RecordChromeModuleInfo(tracker_);

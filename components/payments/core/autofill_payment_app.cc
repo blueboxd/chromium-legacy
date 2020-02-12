@@ -101,7 +101,7 @@ base::string16 AutofillPaymentApp::GetMissingInfoLabel() const {
       GetCompletionStatusForCard(credit_card_, app_locale_, billing_profiles_));
 }
 
-bool AutofillPaymentApp::IsValidForCanMakePayment() const {
+bool AutofillPaymentApp::HasEnrolledInstrument() const {
   CreditCardCompletionStatus status =
       GetCompletionStatusForCard(credit_card_, app_locale_, billing_profiles_);
   if (PaymentsExperimentalFeatures::IsEnabled(

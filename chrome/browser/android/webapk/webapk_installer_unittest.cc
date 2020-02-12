@@ -65,6 +65,8 @@ const char* kToken = "token";
 // The package name of the downloaded WebAPK.
 const char* kDownloadedWebApkPackageName = "party.unicode";
 
+const char* kUnusedIconPath = "https://example.com/unused_icon.png";
+
 // WebApkInstaller subclass where
 // WebApkInstaller::StartInstallingDownloadedWebApk() and
 // WebApkInstaller::StartUpdateUsingDownloadedWebApk() and
@@ -165,8 +167,8 @@ class UpdateRequestStorer {
     quit_closure_ = run_loop.QuitClosure();
     WebApkInstaller::StoreUpdateRequestToFile(
         update_request_path, ShortcutInfo((GURL())), SkBitmap(), false,
-        SkBitmap(), "", "", std::map<std::string, std::string>(), false,
-        WebApkUpdateReason::PRIMARY_ICON_HASH_DIFFERS,
+        SkBitmap(), "", "", std::map<std::string, WebApkIconHasher::Icon>(),
+        false, WebApkUpdateReason::PRIMARY_ICON_HASH_DIFFERS,
         base::BindOnce(&UpdateRequestStorer::OnComplete,
                        base::Unretained(this)));
     run_loop.Run();
@@ -207,12 +209,14 @@ class BuildProtoRunner {
   void BuildSync(
       const GURL& best_primary_icon_url,
       const GURL& best_badge_icon_url,
-      const std::map<std::string, std::string>& icon_url_to_murmur2_hash,
+      std::map<std::string, WebApkIconHasher::Icon> icon_url_to_murmur2_hash,
       bool is_manifest_stale,
       const std::vector<GURL>& best_shortcut_icon_urls) {
     ShortcutInfo info(GURL::EmptyGURL());
     info.best_primary_icon_url = best_primary_icon_url;
     info.best_badge_icon_url = best_badge_icon_url;
+    info.icon_urls = {best_primary_icon_url.spec(), best_badge_icon_url.spec(),
+                      kUnusedIconPath};
 
     for (const GURL& shortcut_url : best_shortcut_icon_urls) {
       info.best_shortcut_icon_urls.push_back(shortcut_url);
@@ -225,8 +229,8 @@ class BuildProtoRunner {
     SkBitmap badge_icon(gfx::test::CreateBitmap(72, 72));
     WebApkInstaller::BuildProto(
         info, primary_icon, false /* is_primary_icon_maskable */, badge_icon,
-        "" /* package_name */, "" /* version */, icon_url_to_murmur2_hash,
-        is_manifest_stale,
+        "" /* package_name */, "" /* version */,
+        std::move(icon_url_to_murmur2_hash), is_manifest_stale,
         base::BindOnce(&BuildProtoRunner::OnBuiltWebApkProto,
                        base::Unretained(this)));
 
@@ -527,18 +531,18 @@ TEST_F(WebApkInstallerTest, StoreUpdateRequestToFileCreatesDirectories) {
 TEST_F(WebApkInstallerTest, BuildWebApkProtoWhenManifestIsObsolete) {
   std::string icon_url_1 = test_server()->GetURL("/icon1.png").spec();
   std::string icon_url_2 = test_server()->GetURL("/icon2.png").spec();
-  std::map<std::string, std::string> icon_url_to_murmur2_hash;
-  icon_url_to_murmur2_hash[icon_url_1] = "1";
-  icon_url_to_murmur2_hash[icon_url_2] = "2";
+  std::map<std::string, WebApkIconHasher::Icon> icon_url_to_murmur2_hash;
+  icon_url_to_murmur2_hash[icon_url_1] = {"data1", "1"};
+  icon_url_to_murmur2_hash[icon_url_2] = {"data2", "2"};
 
   std::unique_ptr<BuildProtoRunner> runner = CreateBuildProtoRunner();
-  runner->BuildSync(GURL(), GURL(), icon_url_to_murmur2_hash,
+  runner->BuildSync(GURL(), GURL(), std::move(icon_url_to_murmur2_hash),
                     true /* is_manifest_stale*/, {});
   webapk::WebApk* webapk_request = runner->GetWebApkRequest();
   ASSERT_NE(nullptr, webapk_request);
 
   webapk::WebAppManifest manifest = webapk_request->manifest();
-  ASSERT_EQ(2, manifest.icons_size());
+  ASSERT_EQ(5, manifest.icons_size());
 
   EXPECT_EQ("", manifest.icons(0).src());
   EXPECT_FALSE(manifest.icons(0).has_hash());
@@ -547,6 +551,18 @@ TEST_F(WebApkInstallerTest, BuildWebApkProtoWhenManifestIsObsolete) {
   EXPECT_EQ("", manifest.icons(1).src());
   EXPECT_FALSE(manifest.icons(1).has_hash());
   EXPECT_TRUE(manifest.icons(1).has_image_data());
+
+  EXPECT_EQ("", manifest.icons(2).src());
+  EXPECT_EQ("", manifest.icons(2).hash());
+  EXPECT_TRUE(manifest.icons(2).has_image_data());
+
+  EXPECT_EQ("", manifest.icons(3).src());
+  EXPECT_EQ("", manifest.icons(3).hash());
+  EXPECT_TRUE(manifest.icons(3).has_image_data());
+
+  EXPECT_EQ(kUnusedIconPath, manifest.icons(4).src());
+  EXPECT_FALSE(manifest.icons(4).has_hash());
+  EXPECT_FALSE(manifest.icons(4).has_image_data());
 }
 
 // Tests a WebApk install or update request is built properly when the Chrome
@@ -559,11 +575,11 @@ TEST_F(WebApkInstallerTest, BuildWebApkProtoWhenManifestIsAvailable) {
       test_server()->GetURL(kBestBadgeIconUrl).spec();
   std::string best_shortcut_icon_url =
       test_server()->GetURL(kBestShortcutIconUrl).spec();
-  std::map<std::string, std::string> icon_url_to_murmur2_hash;
-  icon_url_to_murmur2_hash[icon_url_1] = "0";
-  icon_url_to_murmur2_hash[best_primary_icon_url] = "1";
-  icon_url_to_murmur2_hash[best_badge_icon_url] = "2";
-  icon_url_to_murmur2_hash[best_shortcut_icon_url] = "3";
+  std::map<std::string, WebApkIconHasher::Icon> icon_url_to_murmur2_hash;
+  icon_url_to_murmur2_hash[icon_url_1] = {"data0", "0"};
+  icon_url_to_murmur2_hash[best_primary_icon_url] = {"data1", "1"};
+  icon_url_to_murmur2_hash[best_badge_icon_url] = {"data2", "2"};
+  icon_url_to_murmur2_hash[best_shortcut_icon_url] = {"data3", "3"};
 
   std::unique_ptr<BuildProtoRunner> runner = CreateBuildProtoRunner();
   runner->BuildSync(GURL(best_primary_icon_url), GURL(best_badge_icon_url),
@@ -573,31 +589,37 @@ TEST_F(WebApkInstallerTest, BuildWebApkProtoWhenManifestIsAvailable) {
   ASSERT_NE(nullptr, webapk_request);
 
   webapk::WebAppManifest manifest = webapk_request->manifest();
-  ASSERT_EQ(2, manifest.icons_size());
-
-  // Check protobuf fields for kBestBadgeIconUrl.
-  EXPECT_EQ(best_badge_icon_url, manifest.icons(0).src());
-  EXPECT_EQ(icon_url_to_murmur2_hash[best_badge_icon_url],
-            manifest.icons(0).hash());
-  EXPECT_THAT(manifest.icons(0).usages(),
-              testing::ElementsAre(webapk::Image::BADGE_ICON));
-  EXPECT_TRUE(manifest.icons(0).has_image_data());
+  ASSERT_EQ(3, manifest.icons_size());
 
   // Check protobuf fields for kBestPrimaryIconUrl.
-  EXPECT_EQ(best_primary_icon_url, manifest.icons(1).src());
-  EXPECT_EQ(icon_url_to_murmur2_hash[best_primary_icon_url],
+  EXPECT_EQ(best_primary_icon_url, manifest.icons(0).src());
+  EXPECT_EQ(icon_url_to_murmur2_hash[best_primary_icon_url].hash,
+            manifest.icons(0).hash());
+  EXPECT_THAT(manifest.icons(0).usages(),
+              testing::ElementsAre(webapk::Image::PRIMARY_ICON));
+  EXPECT_TRUE(manifest.icons(0).has_image_data());
+
+  // Check protobuf fields for kBestBadgeIconUrl.
+  EXPECT_EQ(best_badge_icon_url, manifest.icons(1).src());
+  EXPECT_EQ(icon_url_to_murmur2_hash[best_badge_icon_url].hash,
             manifest.icons(1).hash());
   EXPECT_THAT(manifest.icons(1).usages(),
-              testing::ElementsAre(webapk::Image::PRIMARY_ICON));
+              testing::ElementsAre(webapk::Image::BADGE_ICON));
   EXPECT_TRUE(manifest.icons(1).has_image_data());
+
+  // Check protobuf fields for unused icon.
+  EXPECT_EQ(kUnusedIconPath, manifest.icons(2).src());
+  EXPECT_FALSE(manifest.icons(2).has_hash());
+  EXPECT_FALSE(manifest.icons(2).has_image_data());
 
   // Check shortcut fields.
   ASSERT_EQ(manifest.shortcuts_size(), 1);
   ASSERT_EQ(manifest.shortcuts(0).icons_size(), 1);
   EXPECT_EQ(manifest.shortcuts(0).icons(0).src(), best_shortcut_icon_url);
   EXPECT_EQ(manifest.shortcuts(0).icons(0).hash(),
-            icon_url_to_murmur2_hash[best_shortcut_icon_url]);
-  EXPECT_FALSE(manifest.shortcuts(0).icons(0).has_image_data());
+            icon_url_to_murmur2_hash[best_shortcut_icon_url].hash);
+  EXPECT_EQ(manifest.shortcuts(0).icons(0).image_data(),
+            icon_url_to_murmur2_hash[best_shortcut_icon_url].data);
 }
 
 // Tests a WebApk install or update request is built properly when the Chrome
@@ -606,9 +628,9 @@ TEST_F(WebApkInstallerTest, BuildWebApkProtoWhenManifestIsAvailable) {
 TEST_F(WebApkInstallerTest, BuildWebApkProtoPrimaryIconAndBadgeIconSameUrl) {
   std::string icon_url_1 = test_server()->GetURL("/icon.png").spec();
   std::string best_icon_url = test_server()->GetURL(kBestPrimaryIconUrl).spec();
-  std::map<std::string, std::string> icon_url_to_murmur2_hash;
-  icon_url_to_murmur2_hash[icon_url_1] = "1";
-  icon_url_to_murmur2_hash[best_icon_url] = "0";
+  std::map<std::string, WebApkIconHasher::Icon> icon_url_to_murmur2_hash;
+  icon_url_to_murmur2_hash[icon_url_1] = {"data1", "1"};
+  icon_url_to_murmur2_hash[best_icon_url] = {"data0", "0"};
 
   std::unique_ptr<BuildProtoRunner> runner = CreateBuildProtoRunner();
   runner->BuildSync(GURL(best_icon_url), GURL(best_icon_url),
@@ -618,23 +640,38 @@ TEST_F(WebApkInstallerTest, BuildWebApkProtoPrimaryIconAndBadgeIconSameUrl) {
   ASSERT_NE(nullptr, webapk_request);
 
   webapk::WebAppManifest manifest = webapk_request->manifest();
-  ASSERT_EQ(1, manifest.icons_size());
+  ASSERT_EQ(3, manifest.icons_size());
 
-  // Check protobuf fields for kBestPrimaryIconUrl.
+  // Check protobuf fields for icons.
   EXPECT_EQ(best_icon_url, manifest.icons(0).src());
-  EXPECT_EQ(icon_url_to_murmur2_hash[best_icon_url], manifest.icons(0).hash());
+  EXPECT_EQ(icon_url_to_murmur2_hash[best_icon_url].hash,
+            manifest.icons(0).hash());
   EXPECT_THAT(manifest.icons(0).usages(),
               testing::ElementsAre(webapk::Image::PRIMARY_ICON,
                                    webapk::Image::BADGE_ICON));
   EXPECT_TRUE(manifest.icons(0).has_image_data());
+
+  EXPECT_EQ(best_icon_url, manifest.icons(1).src());
+  EXPECT_EQ(icon_url_to_murmur2_hash[best_icon_url].hash,
+            manifest.icons(1).hash());
+  EXPECT_THAT(manifest.icons(1).usages(),
+              testing::ElementsAre(webapk::Image::PRIMARY_ICON,
+                                   webapk::Image::BADGE_ICON));
+  EXPECT_TRUE(manifest.icons(1).has_image_data());
+
+  // Check protobuf fields for unused icon.
+  EXPECT_EQ(kUnusedIconPath, manifest.icons(2).src());
+  EXPECT_FALSE(manifest.icons(2).has_hash());
+  EXPECT_FALSE(manifest.icons(2).has_image_data());
 
   // Check shortcut fields.
   ASSERT_EQ(manifest.shortcuts_size(), 1);
   ASSERT_EQ(manifest.shortcuts(0).icons_size(), 1);
   EXPECT_EQ(manifest.shortcuts(0).icons(0).src(), best_icon_url);
   EXPECT_EQ(manifest.shortcuts(0).icons(0).hash(),
-            icon_url_to_murmur2_hash[best_icon_url]);
-  EXPECT_FALSE(manifest.shortcuts(0).icons(0).has_image_data());
+            icon_url_to_murmur2_hash[best_icon_url].hash);
+  EXPECT_EQ(manifest.shortcuts(0).icons(0).image_data(),
+            icon_url_to_murmur2_hash[best_icon_url].data);
 }
 
 TEST_F(WebApkInstallerTest, BuildWebApkProtoWhenWithMultipleShortcuts) {
@@ -642,9 +679,9 @@ TEST_F(WebApkInstallerTest, BuildWebApkProtoWhenWithMultipleShortcuts) {
       test_server()->GetURL(kBestShortcutIconUrl).spec();
   std::string best_shortcut_icon_url2 =
       test_server()->GetURL(kBestPrimaryIconUrl).spec();
-  std::map<std::string, std::string> icon_url_to_murmur2_hash;
-  icon_url_to_murmur2_hash[best_shortcut_icon_url1] = "1";
-  icon_url_to_murmur2_hash[best_shortcut_icon_url2] = "2";
+  std::map<std::string, WebApkIconHasher::Icon> icon_url_to_murmur2_hash;
+  icon_url_to_murmur2_hash[best_shortcut_icon_url1] = {"data1", "1"};
+  icon_url_to_murmur2_hash[best_shortcut_icon_url2] = {"data2", "2"};
 
   std::unique_ptr<BuildProtoRunner> runner = CreateBuildProtoRunner();
   runner->BuildSync(
@@ -660,22 +697,24 @@ TEST_F(WebApkInstallerTest, BuildWebApkProtoWhenWithMultipleShortcuts) {
   ASSERT_EQ(manifest.shortcuts(0).icons_size(), 1);
   EXPECT_EQ(manifest.shortcuts(0).icons(0).src(), best_shortcut_icon_url1);
   EXPECT_EQ(manifest.shortcuts(0).icons(0).hash(),
-            icon_url_to_murmur2_hash[best_shortcut_icon_url1]);
-  EXPECT_FALSE(manifest.shortcuts(0).icons(0).has_image_data());
+            icon_url_to_murmur2_hash[best_shortcut_icon_url1].hash);
+  EXPECT_EQ(manifest.shortcuts(0).icons(0).image_data(),
+            icon_url_to_murmur2_hash[best_shortcut_icon_url1].data);
 
   ASSERT_EQ(manifest.shortcuts(1).icons_size(), 1);
   EXPECT_EQ(manifest.shortcuts(1).icons(0).src(), best_shortcut_icon_url2);
   EXPECT_EQ(manifest.shortcuts(1).icons(0).hash(),
-            icon_url_to_murmur2_hash[best_shortcut_icon_url2]);
-  EXPECT_FALSE(manifest.shortcuts(1).icons(0).has_image_data());
+            icon_url_to_murmur2_hash[best_shortcut_icon_url2].hash);
+  EXPECT_EQ(manifest.shortcuts(1).icons(0).image_data(),
+            icon_url_to_murmur2_hash[best_shortcut_icon_url2].data);
 }
 
 TEST_F(WebApkInstallerTest,
        BuildWebApkProtoWhenWithMultipleShortcutsAndSameIcons) {
   std::string best_shortcut_icon_url =
       test_server()->GetURL(kBestShortcutIconUrl).spec();
-  std::map<std::string, std::string> icon_url_to_murmur2_hash;
-  icon_url_to_murmur2_hash[best_shortcut_icon_url] = "1";
+  std::map<std::string, WebApkIconHasher::Icon> icon_url_to_murmur2_hash;
+  icon_url_to_murmur2_hash[best_shortcut_icon_url] = {"data1", "1"};
 
   std::unique_ptr<BuildProtoRunner> runner = CreateBuildProtoRunner();
   runner->BuildSync(
@@ -691,12 +730,14 @@ TEST_F(WebApkInstallerTest,
   ASSERT_EQ(manifest.shortcuts(0).icons_size(), 1);
   EXPECT_EQ(manifest.shortcuts(0).icons(0).src(), best_shortcut_icon_url);
   EXPECT_EQ(manifest.shortcuts(0).icons(0).hash(),
-            icon_url_to_murmur2_hash[best_shortcut_icon_url]);
-  EXPECT_FALSE(manifest.shortcuts(0).icons(0).has_image_data());
+            icon_url_to_murmur2_hash[best_shortcut_icon_url].hash);
+  EXPECT_EQ(manifest.shortcuts(0).icons(0).image_data(),
+            icon_url_to_murmur2_hash[best_shortcut_icon_url].data);
 
   ASSERT_EQ(manifest.shortcuts(1).icons_size(), 1);
   EXPECT_EQ(manifest.shortcuts(1).icons(0).src(), best_shortcut_icon_url);
   EXPECT_EQ(manifest.shortcuts(1).icons(0).hash(),
-            icon_url_to_murmur2_hash[best_shortcut_icon_url]);
-  EXPECT_FALSE(manifest.shortcuts(1).icons(0).has_image_data());
+            icon_url_to_murmur2_hash[best_shortcut_icon_url].hash);
+  // This is a duplicate icon, so the data won't be included again.
+  EXPECT_EQ(manifest.shortcuts(1).icons(0).image_data(), "");
 }

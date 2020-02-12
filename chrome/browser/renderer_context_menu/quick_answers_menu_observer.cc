@@ -7,6 +7,7 @@
 #include <utility>
 
 #include "ash/public/cpp/assistant/assistant_interface_binder.h"
+#include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/time/time.h"
 #include "build/branding_buildflags.h"
@@ -19,6 +20,8 @@
 #include "components/renderer_context_menu/render_view_context_menu_proxy.h"
 #include "content/public/browser/storage_partition.h"
 #include "content/public/common/context_menu_params.h"
+#include "ui/gfx/text_constants.h"
+#include "ui/gfx/text_elider.h"
 
 namespace {
 
@@ -31,6 +34,26 @@ using chromeos::quick_answers::ResultType;
 constexpr char kLoadingPlaceholder[] = "Loading...";
 constexpr char kNoResult[] = "See result in Assistant";
 constexpr char kNetworkError[] = "Cannot connect to internet.";
+
+constexpr size_t kMaxDisplayTextLength = 70;
+
+base::string16 TruncateString(const std::string& text) {
+  return gfx::TruncateString(base::UTF8ToUTF16(text), kMaxDisplayTextLength,
+                             gfx::WORD_BREAK);
+}
+
+base::string16 SanitizeText(const base::string16& text) {
+  base::string16 updated_text;
+  // Escape Ampersands.
+  base::ReplaceChars(text, base::ASCIIToUTF16("&"), base::ASCIIToUTF16("&&"),
+                     &updated_text);
+
+  // Remove invalid chars.
+  base::ReplaceChars(updated_text, base::kWhitespaceUTF16,
+                     base::ASCIIToUTF16(" "), &updated_text);
+
+  return updated_text;
+}
 
 }  // namespace
 
@@ -62,18 +85,19 @@ void QuickAnswersMenuObserver::InitMenu(
       blink::ContextMenuDataInputFieldType::kPassword)
     return;
 
-  auto selected_text = base::UTF16ToUTF8(params.selection_text);
+  auto selected_text = base::UTF16ToUTF8(SanitizeText(params.selection_text));
   if (selected_text.empty())
     return;
 
-    // Add Quick Answer Menu item.
-    // TODO(llin): Update the menu item after finalizing on the design.
+  // Add Quick Answer Menu item.
+  // TODO(llin): Update the menu item after finalizing on the design.
+  auto truncated_text = TruncateString(selected_text);
 #if BUILDFLAG(GOOGLE_CHROME_BRANDING)
   proxy_->AddMenuItemWithIcon(IDC_CONTENT_CONTEXT_QUICK_ANSWERS_INLINE_QUERY,
-                              params.selection_text, kAssistantIcon);
+                              truncated_text, kAssistantIcon);
 #else
   proxy_->AddMenuItem(IDC_CONTENT_CONTEXT_QUICK_ANSWERS_INLINE_QUERY,
-                      params.selection_text);
+                      truncated_text);
 #endif
   proxy_->AddMenuItem(IDC_CONTENT_CONTEXT_QUICK_ANSWERS_INLINE_ANSWER,
                       base::UTF8ToUTF16(kLoadingPlaceholder));
@@ -125,27 +149,26 @@ void QuickAnswersMenuObserver::ExecuteCommand(int command_id) {
 void QuickAnswersMenuObserver::OnQuickAnswerReceived(
     std::unique_ptr<QuickAnswer> quick_answer) {
   if (quick_answer) {
-    proxy_->UpdateMenuItem(
-        IDC_CONTENT_CONTEXT_QUICK_ANSWERS_INLINE_ANSWER,
-        /*enabled=*/false,
-        /*hidden=*/false,
-        /*title=*/
-        base::UTF8ToUTF16(quick_answer->primary_answer.empty()
-                              ? kNoResult
-                              : quick_answer->primary_answer));
+    proxy_->UpdateMenuItem(IDC_CONTENT_CONTEXT_QUICK_ANSWERS_INLINE_ANSWER,
+                           /*enabled=*/false,
+                           /*hidden=*/false,
+                           /*title=*/
+                           TruncateString(quick_answer->primary_answer.empty()
+                                              ? kNoResult
+                                              : quick_answer->primary_answer));
 
     if (!quick_answer->secondary_answer.empty()) {
       proxy_->UpdateMenuItem(
           IDC_CONTENT_CONTEXT_QUICK_ANSWERS_INLINE_QUERY,
           /*enabled=*/true,
           /*hidden=*/false,
-          /*title=*/base::UTF8ToUTF16(quick_answer->secondary_answer));
+          /*title=*/TruncateString(quick_answer->secondary_answer));
     }
   } else {
     proxy_->UpdateMenuItem(IDC_CONTENT_CONTEXT_QUICK_ANSWERS_INLINE_ANSWER,
                            /*enabled=*/false,
                            /*hidden=*/false,
-                           /*title=*/base::UTF8ToUTF16(kNoResult));
+                           /*title=*/TruncateString(kNoResult));
   }
 
   quick_answer_received_time_ = base::TimeTicks::Now();
@@ -156,7 +179,7 @@ void QuickAnswersMenuObserver::OnNetworkError() {
   proxy_->UpdateMenuItem(IDC_CONTENT_CONTEXT_QUICK_ANSWERS_INLINE_ANSWER,
                          /*enabled=*/false,
                          /*hidden=*/false,
-                         /*title=*/base::UTF8ToUTF16(kNetworkError));
+                         /*title=*/TruncateString(kNetworkError));
   quick_answer_received_time_ = base::TimeTicks::Now();
 }
 

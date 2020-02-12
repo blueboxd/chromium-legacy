@@ -43,11 +43,6 @@ public class NotificationTestUtil {
         return ((BitmapDrawable) icon.loadDrawable(context)).getBitmap();
     }
 
-    public static NotificationMetadata getTestNotificationMetadata() {
-        return new NotificationMetadata(
-                NotificationUmaTracker.SystemNotificationType.UNKNOWN, null, 0);
-    }
-
     @SuppressLint("NewApi") // Notification.actions is hidden in Jellybean
     static Notification.Action[] getActions(Notification notification) {
         return notification.actions;

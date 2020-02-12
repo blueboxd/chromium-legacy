@@ -32,6 +32,8 @@ class MediaHistoryUI : public ui::MojoWebUIController,
   void GetMediaHistoryStats(GetMediaHistoryStatsCallback callback) override;
   void GetMediaHistoryOriginRows(
       GetMediaHistoryOriginRowsCallback callback) override;
+  void GetMediaHistoryPlaybackRows(
+      GetMediaHistoryPlaybackRowsCallback callback) override;
 
  private:
   media_history::MediaHistoryStore* GetMediaHistoryStore();

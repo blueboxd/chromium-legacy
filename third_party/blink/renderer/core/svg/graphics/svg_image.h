@@ -35,6 +35,7 @@
 #include "third_party/blink/renderer/platform/heap/handle.h"
 #include "third_party/blink/renderer/platform/weborigin/kurl.h"
 #include "third_party/blink/renderer/platform/wtf/allocator/allocator.h"
+#include "third_party/blink/renderer/platform/wtf/casting.h"
 #include "third_party/skia/include/core/SkRefCnt.h"
 
 namespace blink {
@@ -250,7 +251,10 @@ class CORE_EXPORT SVGImage final : public Image {
   FRIEND_TEST_ALL_PREFIXES(SVGImageTest, DisablesSMILEvents);
 };
 
-DEFINE_IMAGE_TYPE_CASTS(SVGImage);
+template <>
+struct DowncastTraits<SVGImage> {
+  static bool AllowFrom(const Image& image) { return image.IsSVGImage(); }
+};
 
 class ImageObserverDisabler {
   STACK_ALLOCATED();

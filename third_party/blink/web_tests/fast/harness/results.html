@@ -450,11 +450,20 @@ const PathParserGlobals = {
 class PathParser {
   constructor(path) {
     this.path = path;
-    let href;
-    [href, this.dir, this.file] = path.match("/(.*/)?(.*)");
-    this.dir = this.dir || "";
+    let pathWithoutQuery = path;
+    const questionMarkIndex = path.indexOf('?');
+    if (questionMarkIndex !== -1) {
+      pathWithoutQuery = path.substring(0, questionMarkIndex);
+      this.query = path.substring(questionMarkIndex);
+    } else {
+      this.query = "";
+    }
+    const lastDirSeparatorIndex = pathWithoutQuery.lastIndexOf('/');
+    console.assert(lastDirSeparatorIndex !== -1);  // first char should always be '/'
+    this.dir = pathWithoutQuery.substring(1, lastDirSeparatorIndex + 1);
+    this.file = pathWithoutQuery.substring(lastDirSeparatorIndex + 1);
+
     try {
-      [, this.file, this.query ] = this.file.match("([^\?]*)(.*)");
       [, this.basename, this.extension ] = this.file.match(/(.+)\.(.+)/);
       this.resultPrefix = (this.basename + this.query).replace(/[~#%&*{}\:<>?\/|"]/g, "_");
     } catch {
@@ -462,8 +471,7 @@ class PathParser {
       this.resultPrefix = "ERROR";
     }
 
-    href = href.replace(/^\/virtual\/[^\/]*/, "");  // virtual suites
-    href = href.replace(/\?.*$/, "");               // query strings (variants)
+    const href = pathWithoutQuery.replace(/^\/virtual\/[^\/]*/, "");  // virtual suites
     this.testHref = this.testBaseHref() + href;
   }
 

@@ -85,7 +85,7 @@ XRViewerPose* XRFrame::getViewerPose(XRReferenceSpace* reference_space,
 }
 
 XRAnchorSet* XRFrame::trackedAnchors() const {
-  return session_->trackedAnchors();
+  return session_->TrackedAnchors();
 }
 
 // Return an XRPose that has a transform of basespace_from_space, while
@@ -158,6 +158,22 @@ XRFrame::getHitTestResultsForTransientInput(
   }
 
   return hit_test_source->Results();
+}
+
+ScriptPromise XRFrame::createAnchor(ScriptState* script_state,
+                                    XRRigidTransform* initial_pose,
+                                    XRSpace* space,
+                                    ExceptionState& exception_state) {
+  DVLOG(2) << __func__;
+
+  if (!is_active_) {
+    exception_state.ThrowDOMException(DOMExceptionCode::kInvalidStateError,
+                                      kInactiveFrame);
+    return {};
+  }
+
+  return session_->CreateAnchor(script_state, initial_pose, space, nullptr,
+                                exception_state);
 }
 
 void XRFrame::Trace(blink::Visitor* visitor) {

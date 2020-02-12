@@ -196,7 +196,7 @@ TEST_F(PictureInPictureControllerTest, EnterPictureInPictureFiresEvent) {
   WebMediaPlayer* player = Video()->GetWebMediaPlayer();
   EXPECT_CALL(Service(),
               StartSession(player->GetDelegateId(), player->GetSurfaceId(),
-                           player->NaturalSize(), true, _, _));
+                           WebSize(player->NaturalSize()), true, _, _));
 
   PictureInPictureControllerImpl::From(GetDocument())
       .EnterPictureInPicture(Video(), nullptr /* options */,
@@ -216,7 +216,7 @@ TEST_F(PictureInPictureControllerTest, ExitPictureInPictureFiresEvent) {
   WebMediaPlayer* player = Video()->GetWebMediaPlayer();
   EXPECT_CALL(Service(),
               StartSession(player->GetDelegateId(), player->GetSurfaceId(),
-                           player->NaturalSize(), true, _, _));
+                           WebSize(player->NaturalSize()), true, _, _));
 
   PictureInPictureControllerImpl::From(GetDocument())
       .EnterPictureInPicture(Video(), nullptr /* options */,
@@ -244,7 +244,7 @@ TEST_F(PictureInPictureControllerTest, StartObserving) {
   WebMediaPlayer* player = Video()->GetWebMediaPlayer();
   EXPECT_CALL(Service(),
               StartSession(player->GetDelegateId(), player->GetSurfaceId(),
-                           player->NaturalSize(), true, _, _));
+                           WebSize(player->NaturalSize()), true, _, _));
 
   PictureInPictureControllerImpl::From(GetDocument())
       .EnterPictureInPicture(Video(), nullptr /* options */,
@@ -264,7 +264,7 @@ TEST_F(PictureInPictureControllerTest, StopObserving) {
   WebMediaPlayer* player = Video()->GetWebMediaPlayer();
   EXPECT_CALL(Service(),
               StartSession(player->GetDelegateId(), player->GetSurfaceId(),
-                           player->NaturalSize(), true, _, _));
+                           WebSize(player->NaturalSize()), true, _, _));
 
   PictureInPictureControllerImpl::From(GetDocument())
       .EnterPictureInPicture(Video(), nullptr /* options */,
@@ -293,7 +293,7 @@ TEST_F(PictureInPictureControllerTest, PlayPauseButton_InfiniteDuration) {
   WebMediaPlayer* player = Video()->GetWebMediaPlayer();
   EXPECT_CALL(Service(),
               StartSession(player->GetDelegateId(), player->GetSurfaceId(),
-                           player->NaturalSize(), false, _, _));
+                           WebSize(player->NaturalSize()), false, _, _));
 
   PictureInPictureControllerImpl::From(GetDocument())
       .EnterPictureInPicture(Video(), nullptr /* options */,
@@ -313,7 +313,7 @@ TEST_F(PictureInPictureControllerTest, PlayPauseButton_MediaSource) {
   WebMediaPlayer* player = Video()->GetWebMediaPlayer();
   EXPECT_CALL(Service(),
               StartSession(player->GetDelegateId(), player->GetSurfaceId(),
-                           player->NaturalSize(), false, _, _));
+                           WebSize(player->NaturalSize()), false, _, _));
 
   PictureInPictureControllerImpl::From(GetDocument())
       .EnterPictureInPicture(Video(), nullptr /* options */,

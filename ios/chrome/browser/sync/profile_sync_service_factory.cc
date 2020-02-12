@@ -30,7 +30,6 @@
 #include "ios/chrome/browser/favicon/favicon_service_factory.h"
 #include "ios/chrome/browser/gcm/ios_chrome_gcm_profile_service_factory.h"
 #include "ios/chrome/browser/history/history_service_factory.h"
-#include "ios/chrome/browser/invalidation/ios_chrome_deprecated_profile_invalidation_provider_factory.h"
 #include "ios/chrome/browser/invalidation/ios_chrome_profile_invalidation_provider_factory.h"
 #include "ios/chrome/browser/passwords/ios_chrome_password_store_factory.h"
 #include "ios/chrome/browser/reading_list/reading_list_model_factory.h"
@@ -136,8 +135,6 @@ ProfileSyncServiceFactory::ProfileSyncServiceFactory()
   DependsOn(IOSChromeGCMProfileServiceFactory::GetInstance());
   DependsOn(IOSChromePasswordStoreFactory::GetInstance());
   DependsOn(IOSChromeProfileInvalidationProviderFactory::GetInstance());
-  DependsOn(
-      IOSChromeDeprecatedProfileInvalidationProviderFactory::GetInstance());
   DependsOn(IOSUserEventServiceFactory::GetInstance());
   DependsOn(ModelTypeStoreServiceFactory::GetInstance());
   DependsOn(ReadingListModelFactory::GetInstance());
@@ -183,18 +180,6 @@ ProfileSyncServiceFactory::BuildServiceInstanceFor(
   if (fcm_invalidation_provider) {
     init_params.invalidations_identity_providers.push_back(
         fcm_invalidation_provider->GetIdentityProvider());
-  }
-
-  // This code should stay here until all invalidation client are
-  // migrated from deprecated invalidation  infructructure.
-  // Since invalidations will work only if ProfileSyncService calls
-  // SetActiveAccountId for all identity providers.
-  auto* deprecated_invalidation_provider =
-      IOSChromeDeprecatedProfileInvalidationProviderFactory::GetForBrowserState(
-          browser_state);
-  if (deprecated_invalidation_provider) {
-    init_params.invalidations_identity_providers.push_back(
-        deprecated_invalidation_provider->GetIdentityProvider());
   }
 
   auto pss =

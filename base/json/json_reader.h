@@ -131,8 +131,9 @@ class BASE_EXPORT JSONReader {
   // Reads and parses |json| like Read(). Returns a ValueWithError, which on
   // error, will be populated with a formatted error message, an error code, and
   // the error location if appropriate.
-  static ValueWithError ReadAndReturnValueWithError(StringPiece json,
-                                                    int options);
+  static ValueWithError ReadAndReturnValueWithError(
+      StringPiece json,
+      int options = JSON_PARSE_RFC);
 
   // Deprecated. Use the ReadAndReturnValueWithError() method above.
   // Reads and parses |json| like Read(). |error_code_out| and |error_msg_out|

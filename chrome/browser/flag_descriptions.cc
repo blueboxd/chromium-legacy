@@ -3119,6 +3119,10 @@ const char kContextualNudgesDescription[] =
     "Enables contextual nudges, periodically showing the user a label "
     "explaining how to interact with a particular UI element using gestures.";
 
+const char kCornerShortcutsName[] = "Enable corner shortcuts";
+const char kCornerShortcutsDescription[] =
+    "If enabled, the user can configure actions for corners of the display.";
+
 const char kCrosRegionsModeName[] = "Cros-regions load mode";
 const char kCrosRegionsModeDescription[] =
     "This flag controls cros-regions load mode";

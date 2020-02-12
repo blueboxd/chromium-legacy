@@ -40,8 +40,8 @@ class EmptyWebMediaPlayer : public WebMediaPlayer {
                  WebSetSinkIdCompleteCallback) override {}
   bool HasVideo() const override { return false; }
   bool HasAudio() const override { return false; }
-  WebSize NaturalSize() const override;
-  WebSize VisibleRect() const override;
+  gfx::Size NaturalSize() const override;
+  gfx::Size VisibleSize() const override;
   bool Paused() const override { return false; }
   bool Seeking() const override { return false; }
   double Duration() const override { return 0.0; }

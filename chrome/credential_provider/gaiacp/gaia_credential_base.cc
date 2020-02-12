@@ -33,6 +33,7 @@
 #include "base/win/scoped_com_initializer.h"
 #include "base/win/scoped_handle.h"
 #include "build/branding_buildflags.h"
+#include "chrome/common/chrome_switches.h"
 #include "chrome/credential_provider/common/gcp_strings.h"
 #include "chrome/credential_provider/gaiacp/associated_user_validator.h"
 #include "chrome/credential_provider/gaiacp/auth_utils.h"
@@ -1056,9 +1057,7 @@ HRESULT CGaiaCredentialBase::GetBaseGlsCommandline(
     base::CommandLine* command_line) {
   DCHECK(command_line);
 
-  base::FilePath gls_path =
-      chrome_launcher_support::GetChromePathForInstallationLevel(
-          chrome_launcher_support::SYSTEM_LEVEL_INSTALLATION, false);
+  base::FilePath gls_path = GetChromePath();
 
   constexpr wchar_t kGlsPath[] = L"gls_path";
 
@@ -1085,6 +1084,12 @@ HRESULT CGaiaCredentialBase::GetBaseGlsCommandline(
   LOGFN(INFO) << "App exe: " << command_line->GetProgram().value();
 
   command_line->AppendSwitch(kGcpwSigninSwitch);
+
+  // Chrome allows specifying a group policy to run extensions on Windows
+  // startup for all users. When GLS runs, the autostart extension is also
+  // launched in the login screen. With --disable-extensions flag, this can be
+  // prevented.
+  command_line->AppendSwitch(switches::kDisableExtensions);
 
   // Get the language selected by the LanguageSelector and pass it onto Chrome.
   // The language will depend on if it is currently a SYSTEM logon (initial

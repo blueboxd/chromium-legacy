@@ -469,7 +469,7 @@ ImageResourceContent::UpdateImageResult ImageResourceContent::UpdateImage(
       // consider such an image as DecodeError.
       // https://www.w3.org/TR/SVG/struct.html#SVGElementWidthAttribute
       if (!image_ ||
-          (image_->IsNull() && (!image_->IsSVGImage() ||
+          (image_->IsNull() && (!IsA<SVGImage>(image_.get()) ||
                                 size_available_ == Image::kSizeUnavailable))) {
         ClearImage();
         return UpdateImageResult::kShouldDecodeError;

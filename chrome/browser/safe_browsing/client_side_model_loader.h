@@ -113,6 +113,12 @@ class ModelLoader {
   // valid hashes in the model.
   static bool ModelHasValidHashIds(const ClientSideModel& model);
 
+  // Overrides the model with a local file.
+  void OverrideModelWithLocalFile();
+
+  // Callback when the overridden model data is ready.
+  void OnGetOverridenModelData(std::string data);
+
   // The name of the model is the last component of the URL path.
   const std::string name_;
   // Full URL of the model.

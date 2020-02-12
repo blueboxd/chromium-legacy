@@ -73,7 +73,10 @@ void SendTabToSelfIconView::UpdateImpl() {
     // Shows the "Send" animation once per profile.
     if (controller && !controller->InitialSendAnimationShown() &&
         initial_animation_state_ == AnimationState::kNotShown) {
-      AnimateIn(IDS_OMNIBOX_ICON_SEND_TAB_TO_SELF);
+      // Set label ahead of time to avoid announcing a useless alert (i.e.
+      // "alert Send") to screenreaders.
+      SetLabel(l10n_util::GetStringUTF16(IDS_OMNIBOX_ICON_SEND_TAB_TO_SELF));
+      AnimateIn(base::nullopt);
       initial_animation_state_ = AnimationState::kShowing;
       controller->SetInitialSendAnimationShown(true);
     }

@@ -104,7 +104,7 @@ class COMPONENT_EXPORT(DBUS_POWER) PowerPolicyController
     bool usb_power_share = true;
     power_manager::PowerManagementPolicy::BatteryChargeMode::Mode
         battery_charge_mode =
-            power_manager::PowerManagementPolicy::BatteryChargeMode::STANDARD;
+            power_manager::PowerManagementPolicy::BatteryChargeMode::ADAPTIVE;
     int custom_charge_start = -1;
     int custom_charge_stop = -1;
   };

@@ -48,9 +48,9 @@ constexpr net::NetworkTrafficAnnotationTag
         "Users can control this feature via the 'Automatically report details "
         "of possible security incidents to Google' setting under Privacy."
       chrome_policy {
-        SafeBrowsingExtendedReportingOptInAllowed {
+        SafeBrowsingExtendedReportingEnabled {
           policy_options {mode: MANDATORY}
-          SafeBrowsingExtendedReportingOptInAllowed: false
+          SafeBrowsingExtendedReportingEnabled: false
         }
       }
     })");

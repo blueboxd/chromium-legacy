@@ -108,7 +108,7 @@ class XRSession final
   XRRenderState* renderState() const { return render_state_; }
   XRWorldTrackingState* worldTrackingState() { return world_tracking_state_; }
   XRSpace* viewerSpace() const;
-  XRAnchorSet* trackedAnchors() const;
+  XRAnchorSet* TrackedAnchors() const;
 
   bool immersive() const;
 
@@ -127,12 +127,6 @@ class XRSession final
   ScriptPromise requestReferenceSpace(ScriptState* script_state,
                                       const String& type,
                                       ExceptionState&);
-
-  // IDL-exposed
-  ScriptPromise createAnchor(ScriptState* script_state,
-                             XRRigidTransform* initial_pose,
-                             XRSpace* space,
-                             ExceptionState& exception_state);
 
   // helper, not IDL-exposed
   ScriptPromise CreateAnchor(ScriptState* script_state,

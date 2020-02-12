@@ -266,7 +266,7 @@ void FuchsiaAudioRenderer::StopTicking() {
   audio_consumer_->Stop();
 
   base::AutoLock lock(timeline_lock_);
-  SetPlaybackState(PlaybackState::kStarting);
+  SetPlaybackState(PlaybackState::kStopped);
   media_pos_ = CurrentMediaTimeLocked();
 }
 

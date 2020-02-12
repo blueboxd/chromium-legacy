@@ -271,36 +271,36 @@ TEST_F(AutofillPaymentAppTest, IsCompleteForPayment_ExpiredMaskedCard) {
 }
 
 // An expired card is a valid app for canMakePayment.
-TEST_F(AutofillPaymentAppTest, IsValidForCanMakePayment_Minimal) {
+TEST_F(AutofillPaymentAppTest, HasEnrolledInstrument_Minimal) {
   autofill::CreditCard& card = local_credit_card();
   card.SetExpirationYear(2016);  // Expired.
   AutofillPaymentApp app("visa", card, billing_profiles(), "en-US", nullptr);
-  EXPECT_TRUE(app.IsValidForCanMakePayment());
+  EXPECT_TRUE(app.HasEnrolledInstrument());
 }
 
 // An expired Masked (server) card is a valid app for canMakePayment.
-TEST_F(AutofillPaymentAppTest, IsValidForCanMakePayment_MaskedCard) {
+TEST_F(AutofillPaymentAppTest, HasEnrolledInstrument_MaskedCard) {
   autofill::CreditCard card = autofill::test::GetMaskedServerCard();
   card.SetExpirationYear(2016);  // Expired.
   AutofillPaymentApp app("visa", card, billing_profiles(), "en-US", nullptr);
-  EXPECT_TRUE(app.IsValidForCanMakePayment());
+  EXPECT_TRUE(app.HasEnrolledInstrument());
 }
 
 // A card with no name is not a valid app for canMakePayment.
-TEST_F(AutofillPaymentAppTest, IsValidForCanMakePayment_NoName) {
+TEST_F(AutofillPaymentAppTest, HasEnrolledInstrument_NoName) {
   autofill::CreditCard& card = local_credit_card();
   card.SetInfo(autofill::AutofillType(autofill::CREDIT_CARD_NAME_FULL),
                base::ASCIIToUTF16(""), "en-US");
   AutofillPaymentApp app("visa", card, billing_profiles(), "en-US", nullptr);
-  EXPECT_FALSE(app.IsValidForCanMakePayment());
+  EXPECT_FALSE(app.HasEnrolledInstrument());
 }
 
 // A card with no number is not a valid app for canMakePayment.
-TEST_F(AutofillPaymentAppTest, IsValidForCanMakePayment_NoNumber) {
+TEST_F(AutofillPaymentAppTest, HasEnrolledInstrument_NoNumber) {
   autofill::CreditCard& card = local_credit_card();
   card.SetNumber(base::ASCIIToUTF16(""));
   AutofillPaymentApp app("visa", card, billing_profiles(), "en-US", nullptr);
-  EXPECT_FALSE(app.IsValidForCanMakePayment());
+  EXPECT_FALSE(app.HasEnrolledInstrument());
 }
 
 // Tests that the autofill app only calls OnappDetailsReady when

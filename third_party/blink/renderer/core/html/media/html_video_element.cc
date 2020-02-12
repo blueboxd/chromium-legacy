@@ -237,7 +237,7 @@ unsigned HTMLVideoElement::videoWidth() const {
     return LayoutReplaced::kDefaultWidth;
   if (!GetWebMediaPlayer())
     return 0;
-  return GetWebMediaPlayer()->NaturalSize().width;
+  return GetWebMediaPlayer()->NaturalSize().width();
 }
 
 unsigned HTMLVideoElement::videoHeight() const {
@@ -245,11 +245,11 @@ unsigned HTMLVideoElement::videoHeight() const {
     return LayoutReplaced::kDefaultHeight;
   if (!GetWebMediaPlayer())
     return 0;
-  return GetWebMediaPlayer()->NaturalSize().height;
+  return GetWebMediaPlayer()->NaturalSize().height();
 }
 
 IntSize HTMLVideoElement::videoVisibleSize() const {
-  return GetWebMediaPlayer() ? IntSize(GetWebMediaPlayer()->VisibleRect())
+  return GetWebMediaPlayer() ? IntSize(GetWebMediaPlayer()->VisibleSize())
                              : IntSize();
 }
 

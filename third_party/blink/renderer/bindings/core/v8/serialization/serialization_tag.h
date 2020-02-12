@@ -102,15 +102,14 @@ enum SerializationTag {
   //                     namedCurve:uint32_t
   kRTCCertificateTag = 'k',  // length:uint32_t, pemPrivateKey:WebCoreString,
                              // pemCertificate:WebCoreString
-  kDetectedBarcodeTag =
-      'B',  // raw_value:WebCoreString, bounding_box:DOMRectReadOnly,
-            // format:String, corner_points:Point2D[length] ->
-            // DetectedBarcode (ref)
-  kDetectedFaceTag =
-      'F',  // raw_value:WebCoreString, bounding_box:DOMRectReadOnly,
-            // corner_points:Point2D[length] -> DetectedText (ref)
-  kDetectedTextTag = 't',  // bounding_box:DOMRectReadOnly,
-                           // landmarks:Landmark[length] -> DetectedFace (ref)
+
+  // The following tags were used by the Shape Detection API implementation
+  // between M71 and M81. During these milestones, the API was always behind
+  // a flag. Usage was removed in https://crrev.com/c/2040378.
+  kDeprecatedDetectedBarcodeTag = 'B',
+  kDeprecatedDetectedFaceTag = 'F',
+  kDeprecatedDetectedTextTag = 't',
+
   kDOMExceptionTag = 'x',  // name:String,message:String,stack:String
   kVersionTag = 0xFF       // version:uint32_t -> Uses this as the file version.
 };

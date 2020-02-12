@@ -24,6 +24,9 @@ ASH_PUBLIC_EXPORT extern const base::Feature kAutoNightLight;
 // Enables contextual nudges for gesture education.
 ASH_PUBLIC_EXPORT extern const base::Feature kContextualNudges;
 
+// Enables shortcuts on corners of the display.
+ASH_PUBLIC_EXPORT extern const base::Feature kCornerShortcuts;
+
 // Enables a modal dialog when resolution or refresh rate change.
 ASH_PUBLIC_EXPORT extern const base::Feature kDisplayChangeModal;
 
@@ -35,6 +38,11 @@ ASH_PUBLIC_EXPORT extern const base::Feature kDockedMagnifier;
 // Enables dragging and snapping an overview window in clamshell mode.
 // TODO(crbug.com/890029): Remove this when the feature is fully launched.
 ASH_PUBLIC_EXPORT extern const base::Feature kDragToSnapInClamshellMode;
+
+// Enables rounded corners in overview mode for testing.
+// TODO(crbug.com/903486): Remove this when new rounded corners implementation
+// has landed.
+ASH_PUBLIC_EXPORT extern const base::Feature kEnableOverviewRoundedCorners;
 
 // Enables notifications on the lock screen.
 ASH_PUBLIC_EXPORT extern const base::Feature kLockScreenNotifications;
@@ -181,6 +189,8 @@ ASH_PUBLIC_EXPORT bool IsHideShelfControlsInTabletModeEnabled();
 ASH_PUBLIC_EXPORT bool IsDisplayChangeModalEnabled();
 
 ASH_PUBLIC_EXPORT bool AreContextualNudgesEnabled();
+
+ASH_PUBLIC_EXPORT bool IsCornerShortcutsEnabled();
 
 // These two functions are supposed to be temporary functions to set or get
 // whether "WebUITabStrip" feature is enabled from Chrome.

@@ -72,11 +72,6 @@ class CORE_EXPORT NGFlexLayoutAlgorithm
       LayoutUnit block_offset,
       base::Optional<LayoutUnit>* fallback_baseline);
 
-  // TODO(dgrogan): This is redundant with FlexLayoutAlgorithm.IsMultiline() but
-  // it's needed before the algorithm is instantiated. Figure out how to
-  // not reimplement.
-  bool IsMultiline() const;
-
   const NGBoxStrut border_padding_;
   const NGBoxStrut border_scrollbar_padding_;
   const bool is_column_;

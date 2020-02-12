@@ -643,6 +643,10 @@
 <translation id="1988371335297483117">系統可透過 HTTP (而非 HTTPS) 下載 <ph name="PRODUCT_OS_NAME" /> 的自動更新裝載。這可讓 HTTP 廣域快取 HTTP 下載內容。
 
       如果將這項政策設為 True，<ph name="PRODUCT_OS_NAME" /> 將嘗試透過 HTTP 下載自動更新裝載。如果設為 False 或未設定，系統則會透過 HTTPS 下載自動更新裝載。</translation>
+<translation id="199011295049694531">回報裝置時區的資訊。
+
+      如果將這項政策設為 False 或不予設定，系統將不會回報這項資訊。
+      如果設為 True，系統會回報裝置目前設定的時區。</translation>
 <translation id="199764499252435679">允許更新 <ph name="PRODUCT_NAME" /> 的元件</translation>
 <translation id="1997994951395619441">如果啟用這項設定，<ph name="PRODUCT_NAME" /> 會顯示書籤列。
 
@@ -1089,6 +1093,11 @@
       只要你啟用或停用這項設定，使用者即無法變更或覆寫這項設定。
 
       如果你未設定這項政策，使用者將可以自行決定是否要使用資料壓縮 Proxy 功能。</translation>
+<translation id="2575738503503093841">指定從收到政策失效通知到從裝置管理服務擷取新政策的最長延遲時間 (以毫秒為單位)。
+
+      設定這項政策會覆寫 10000 毫秒的預設值。這項政策的有效值範圍介於 1000 毫秒 (1 秒) 到 300000 毫秒 (5 分鐘)。系統會自動將超出範圍的值調整成相應的上限值或下限值。
+
+      如果不設定這項政策，<ph name="PRODUCT_NAME" /> 將使用 10000 毫秒的預設值。</translation>
 <translation id="257788512393330403">每 6 小時需輸入密碼</translation>
 <translation id="2580104054820772954">延遲提供檔案，直到系統取得掃描結果</translation>
 <translation id="2582582399758251985">如果啟用這項設定，<ph name="PRODUCT_NAME" /> 將使用內建的憑證驗證器執行伺服器憑證驗證作業。
@@ -1117,6 +1126,7 @@
           如果未設定這項政策，則預設值為 true 且系統將啟用 NTLMv2。</translation>
 <translation id="26023406105317310">設定 Kerberos 帳戶</translation>
 <translation id="2604182581880595781">設定網路檔案共用功能相關政策。</translation>
+<translation id="2615240493030733717">回報時區資訊</translation>
 <translation id="2623014935069176671">等待初始使用者活動</translation>
 <translation id="262740370354162807">啟用「<ph name="CLOUD_PRINT_NAME" />」文件提交功能</translation>
 <translation id="2627554163382448569">為企業印表機進行設定。
@@ -1519,6 +1529,8 @@
           如果未設定這項政策，系統會根據「DefaultCookiesSetting」政策 (如有設定) 或使用者的個人設定，將通用預設值套用至所有網站。
 
           另請查看「CookiesBlockedForUrls」和「CookiesSessionOnlyForUrls」政策。請注意，這三項政策的網址模式不得有衝突，否則系統將無法判定應優先遵循哪一項政策。</translation>
+<translation id="3339271789059866414">設定系統 Proxy 服務的可用性和系統服務的 Proxy 憑證。
+      如果不設定這項政策，將無法使用系統 Proxy 服務。</translation>
 <translation id="3373364525435227558">針對受管理工作階段設定一或多個建議語言代碼，方便使用者從中擇一使用。
 
       使用者可以在啟動受管理工作階段前先選擇所需語言代碼和鍵盤配置。根據預設，系統會按字母順序列出 <ph name="PRODUCT_OS_NAME" /> 支援的所有語言代碼。這項政策可讓你將一些建議語言代碼移至清單頂端。
@@ -2460,6 +2472,7 @@
           只要你設定這項政策，使用者即無法予以變更或覆寫。
 
           如果你未設定這項政策，系統預設會停用大型游標，但使用者隨時均可予以啟用。</translation>
+<translation id="4802744647065138872">限制系統為因應緊急復原作業所保留的使用者資料快照數量。</translation>
 <translation id="4802905909524200151">設定 <ph name="TPM_FIRMWARE_UPDATE_TPM" /> 韌體更新行為</translation>
 <translation id="4804828344300125154">�在使用者登出時一律重新啟動。</translation>
 <translation id="4807950475297505572">移除近期登入次數最少的使用者，直到有足夠的可用空間</translation>
@@ -4380,6 +4393,7 @@
 
       如果不設定這項政策，系統會啟用網路預測功能，但使用者可以自行變更。</translation>
 <translation id="7953256619080733119">管理化環境下使用者手動建立的例外主機</translation>
+<translation id="7956210013490975468">設定 <ph name="PRODUCT_OS_NAME" />的系統 Proxy 服務。</translation>
 <translation id="7958537754689366707">每 12 小時需輸入密碼</translation>
 <translation id="7961779417826583251">不針對列出的舊版憑證授權單位強制執行憑證透明化政策</translation>
 <translation id="7974114691960514888">系統不再支援這項政策。連線至遠端用戶時，啟用 STUN 使用量和轉送伺服器。如果啟用這項設定，那麼即使遠端主機電腦被防火牆隔開，這台電腦也能發現遠端主機電腦並建立連結。如果停用這項設定，並且外傳 UDP 連結遭到防火牆篩選，則這台電腦只會與當地網路內的主機電腦建立連線。</translation>
@@ -4628,6 +4642,11 @@
 <translation id="8426231401662877819">將畫面以順時針方向旋轉 90 度</translation>
 <translation id="8433186206711564395">網路設定</translation>
 <translation id="8433423491036718210">設定企業登入網址清單，以便密碼保護服務從這些網址擷取密碼指紋。</translation>
+<translation id="8445576299806775661">Chrome 會在每次更新主要版本時，為一部分的使用者瀏覽資料建立快照，以便日後需要執行緊急版本復原作業時使用。如果使用者要緊急復原的目標版本有相應快照，系統會復原快照中的資料。這種做法可讓使用者保留書籤和自動填入資料等設定。
+
+      如果不設定這項政策，系統會使用預設值 3
+
+      如果設定這項政策，系統會視需要刪除較舊的快照，以避免超出限制。如果將這項政策設為 0，系統不會建立任何快照</translation>
 <translation id="8451988835943702790">將新分頁設為首頁</translation>
 <translation id="8459216513698220096">指定是否要處理電腦 GPO 中的使用者政策和處理方式。
 
@@ -4713,6 +4732,7 @@
 
       如果將這項政策設為 False 或不予設定，使用者不必登入 <ph name="PRODUCT_NAME" /> 即可使用瀏覽器。</translation>
 <translation id="858309738002328421">禁止上傳大型檔案</translation>
+<translation id="8584279193368801689">限制 PIN 碼列印模式。如果不設定這項政策，系統會視為未設限制。如果設定的模式不適用，系統會忽略這項政策。請注意，印表機使用的通訊協定必須是 IPPS、HTTPS、USB 或 IPP 型 USB 的其中一種，才能啟用 PIN 碼列印功能。</translation>
 <translation id="8585558195682146109">傳送使用者下載內容以供掃描</translation>
 <translation id="8586528890725660268">指定哪些印表機是禁止使用的。
 
@@ -4786,6 +4806,13 @@
 <translation id="8687958770985542440">重新啟用 Web Components v0 API，直到 M84 版為止。</translation>
 <translation id="8693243869659262736">使用內建的 DNS 用戶端</translation>
 <translation id="8698286761337647563">當 SAML 使用者的密碼即將到期，系統要提前幾天通知</translation>
+<translation id="8701288965900240388">你可以設定網站是否能自動執行 <ph name="FLASH_PLUGIN_NAME" /> 外掛程式。你可以允許或禁止所有網站自動執行 <ph name="FLASH_PLUGIN_NAME" /> 外掛程式。
+
+          啟用「隨點即播」功能時，使用者必須手動點選預留位置，<ph name="FLASH_PLUGIN_NAME" /> 外掛程式才會開始執行。
+
+          「自動播放」功能只適用於 <ph name="PLUGINS_ALLOWED_FOR_URLS_POLICY_NAME" /> 政策中明確列出的網域。如要為所有網站啟用自動播放功能，你可以將 http://* 和 https://* 加入這份清單。
+
+          如果不設定這項政策，系統會使用「BlockPlugins」，且使用者可以手動變更這項設定。</translation>
 <translation id="8703488928438047864">回報主機板狀態</translation>
 <translation id="8704831857353097849">停用的外掛程式清單</translation>
 <translation id="8711086062295757690">指定關鍵字，這是網址列用來為這個引擎觸發搜尋的捷徑。這項政策是選擇性的，如果未設定，就沒有關鍵字會啟動搜尋引擎。只有在啟用「DefaultSearchProviderEnabled」政策時，系統才會遵循這項政策。</translation>

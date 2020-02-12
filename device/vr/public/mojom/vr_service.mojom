@@ -580,6 +580,7 @@ enum RequestSessionError {
   NO_RUNTIME_FOUND = 5,
   UNKNOWN_RUNTIME_ERROR = 6,
   RUNTIME_INSTALL_FAILURE = 7,
+  UNKNOWN_FAILURE = 8,
 };
 
 struct RequestSessionSuccess {

@@ -4,6 +4,7 @@
 
 #include <jni.h>
 #include <memory>
+#include <utility>
 #include <vector>
 
 #include "base/android/callback_android.h"
@@ -13,6 +14,7 @@
 #include "base/bind.h"
 #include "base/files/file_path.h"
 #include "base/strings/string16.h"
+#include "base/strings/string_number_conversions.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "chrome/android/chrome_jni_headers/WebApkUpdateManager_jni.h"
@@ -143,9 +145,11 @@ static void JNI_WebApkUpdateManager_StoreWebApkUpdateRequestToFile(
   base::android::AppendJavaStringArrayToStringVector(env, java_icon_hashes,
                                                      &icon_hashes);
 
-  std::map<std::string, std::string> icon_url_to_murmur2_hash;
-  for (size_t i = 0; i < info.icon_urls.size(); ++i)
-    icon_url_to_murmur2_hash[info.icon_urls[i]] = icon_hashes[i];
+  std::map<std::string, WebApkIconHasher::Icon> icon_url_to_murmur2_hash;
+  for (size_t i = 0; i < info.icon_urls.size(); ++i) {
+    icon_url_to_murmur2_hash[info.icon_urls[i]] =
+        WebApkIconHasher::Icon{/* data= */ "", icon_hashes[i]};
+  }
 
   gfx::JavaBitmap java_primary_icon_bitmap_lock(java_primary_icon_bitmap);
   SkBitmap primary_icon =
@@ -178,8 +182,8 @@ static void JNI_WebApkUpdateManager_StoreWebApkUpdateRequestToFile(
     icon.purpose.push_back(blink::Manifest::ImageResource::Purpose::ANY);
 
     if (icon.src.is_valid()) {
-      icon_url_to_murmur2_hash[icon.src.spec()] =
-          base::UTF16ToUTF8(shortcut_data[4]);
+      icon_url_to_murmur2_hash[icon.src.spec()] = WebApkIconHasher::Icon{
+          /* data= */ "", /* hash= */ base::UTF16ToUTF8(shortcut_data[4])};
     }
     info.best_shortcut_icon_urls.push_back(icon.src);
     info.shortcut_items.push_back(std::move(shortcut_item));
@@ -191,8 +195,9 @@ static void JNI_WebApkUpdateManager_StoreWebApkUpdateRequestToFile(
   WebApkInstaller::StoreUpdateRequestToFile(
       base::FilePath(update_request_path), info, primary_icon,
       java_is_primary_icon_maskable, badge_icon, webapk_package,
-      std::to_string(java_webapk_version), icon_url_to_murmur2_hash,
-      java_is_manifest_stale, update_reason,
+      base::NumberToString(java_webapk_version),
+      std::move(icon_url_to_murmur2_hash), java_is_manifest_stale,
+      update_reason,
       base::BindOnce(&base::android::RunBooleanCallbackAndroid,
                      ScopedJavaGlobalRef<jobject>(java_callback)));
 }

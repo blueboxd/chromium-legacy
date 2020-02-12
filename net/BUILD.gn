@@ -5009,6 +5009,17 @@ fuzzer_test("net_get_domain_and_registry_fuzzer") {
   dict = "data/fuzzer_dictionaries/net_get_domain_and_registry_fuzzer.dict"
 }
 
+fuzzer_test("net_lookup_string_in_fixed_set_fuzzer") {
+  sources = [ "base/lookup_string_in_fixed_set_fuzzer.cc" ]
+  deps = [
+    ":net_fuzzer_test_support",
+    "//base",
+    "//net",
+    "//net/base/registry_controlled_domains:lookup_strings_test_sets",
+  ]
+  dict = "data/fuzzer_dictionaries/net_get_domain_and_registry_fuzzer.dict"
+}
+
 fuzzer_test("net_cert_ct_decode_signed_certificate_timestamp_fuzzer") {
   sources = [ "cert/decode_signed_certificate_timestamp_fuzzer.cc" ]
   deps = [

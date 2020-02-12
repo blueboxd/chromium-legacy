@@ -48,6 +48,7 @@
 #include "chromeos/services/assistant/public/features.h"
 #include "chromeos/services/multidevice_setup/public/cpp/url_provider.h"
 #include "chromeos/strings/grit/chromeos_strings.h"
+#include "components/google/core/common/google_util.h"
 #include "components/prefs/pref_service.h"
 #include "components/strings/grit/components_strings.h"
 #include "components/version_ui/version_ui_constants.h"
@@ -1962,7 +1963,6 @@ void AddPeoplePageStrings(content::WebUIDataSource* html_source,
       {"accountManagerSubMenuLabel",
        IDS_SETTINGS_ACCOUNT_MANAGER_SUBMENU_LABEL},
       {"accountManagerPageTitle", IDS_SETTINGS_ACCOUNT_MANAGER_PAGE_TITLE},
-      {"syncAdvancedPageTitle", IDS_SETTINGS_SYNC_ADVANCED_PAGE_TITLE},
       {"kerberosAccountsSubMenuLabel",
        IDS_SETTINGS_KERBEROS_ACCOUNTS_SUBMENU_LABEL},
       {"accountManagerPageTitle", IDS_SETTINGS_ACCOUNT_MANAGER_PAGE_TITLE},
@@ -1973,12 +1973,39 @@ void AddPeoplePageStrings(content::WebUIDataSource* html_source,
       {"osSyncPageTitle", IDS_OS_SETTINGS_SYNC_PAGE_TITLE},
       {"syncAndNonPersonalizedServices",
        IDS_SETTINGS_SYNC_SYNC_AND_NON_PERSONALIZED_SERVICES},
+      {"syncDisconnectConfirm", IDS_SETTINGS_SYNC_DISCONNECT_CONFIRM},
   };
   AddLocalizedStringsBulk(html_source, kLocalizedStrings);
 
   // Toggles the Chrome OS Account Manager submenu in the People section.
   html_source->AddBoolean("isAccountManagerEnabled",
                           chromeos::IsAccountManagerAvailable(profile));
+
+  if (chromeos::features::IsSplitSettingsSyncEnabled()) {
+    static constexpr webui::LocalizedString kTurnOffStrings[] = {
+        {"syncDisconnect", IDS_SETTINGS_PEOPLE_SYNC_TURN_OFF},
+        {"syncDisconnectTitle",
+         IDS_SETTINGS_TURN_OFF_SYNC_AND_SIGN_OUT_DIALOG_TITLE},
+    };
+    AddLocalizedStringsBulk(html_source, kTurnOffStrings);
+  } else {
+    static constexpr webui::LocalizedString kSignOutStrings[] = {
+        {"syncDisconnect", IDS_SETTINGS_PEOPLE_SIGN_OUT},
+        {"syncDisconnectTitle", IDS_SETTINGS_SYNC_DISCONNECT_TITLE},
+    };
+    AddLocalizedStringsBulk(html_source, kSignOutStrings);
+  }
+
+  std::string sync_dashboard_url =
+      google_util::AppendGoogleLocaleParam(
+          GURL(chrome::kSyncGoogleDashboardURL),
+          g_browser_process->GetApplicationLocale())
+          .spec();
+
+  html_source->AddString(
+      "syncDisconnectExplanation",
+      l10n_util::GetStringFUTF8(IDS_SETTINGS_SYNC_DISCONNECT_EXPLANATION,
+                                base::ASCIIToUTF16(sync_dashboard_url)));
 
   AddAccountManagerPageStrings(html_source);
   AddKerberosAccountsPageStrings(html_source);
@@ -1990,7 +2017,6 @@ void AddPeoplePageStrings(content::WebUIDataSource* html_source,
   AddSetupPinDialogStrings(html_source);
   AddSyncControlsStrings(html_source);
 
-  ::settings::AddSignOutDialogStrings(html_source);
   ::settings::AddSyncControlsStrings(html_source);
   ::settings::AddSyncAccountControlStrings(html_source);
   ::settings::AddPasswordPromptDialogStrings(html_source);

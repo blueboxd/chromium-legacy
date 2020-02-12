@@ -3,7 +3,9 @@
      Use of this source code is governed by a BSD-style license that can be
      found in the LICENSE file. -->
 
-<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<org.chromium.chrome.browser.profile_card.ProfileCardView
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    android:id="@+id/profile_card"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
     android:orientation="vertical"
@@ -12,13 +14,11 @@
     <TextView
         android:id="@+id/title"
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:textAppearance="@style/TextAppearance.TextMediumThick.Primary.Inverse" />
+        android:layout_height="wrap_content"/>
 
     <TextView
         android:id="@+id/description"
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:textAppearance="@style/TextAppearance.TextMediumThick.Primary.Inverse" />
+        android:layout_height="wrap_content"/>
 
-</LinearLayout>
+</org.chromium.chrome.browser.profile_card.ProfileCardView>

@@ -175,8 +175,8 @@ Polymer({
   },
 
   /**
-   * @param {!chromeos.networkConfig.mojom.ManagedProxyLocation|undefined} a
-   * @param {!chromeos.networkConfig.mojom.ManagedProxyLocation|undefined} b
+   * @param {?chromeos.networkConfig.mojom.ManagedProxyLocation|undefined} a
+   * @param {?chromeos.networkConfig.mojom.ManagedProxyLocation|undefined} b
    * @return {boolean}
    * @private
    */
@@ -303,7 +303,7 @@ Polymer({
   },
 
   /**
-   * @param {!chromeos.networkConfig.mojom.ManagedProxyLocation|undefined}
+   * @param {?chromeos.networkConfig.mojom.ManagedProxyLocation|undefined}
    *     location
    * @return {!chromeos.networkConfig.mojom.ProxyLocation|undefined}
    * @private

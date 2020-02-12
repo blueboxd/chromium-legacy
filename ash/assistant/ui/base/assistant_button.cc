@@ -12,7 +12,7 @@
 #include "ui/gfx/paint_vector_icon.h"
 #include "ui/views/animation/flood_fill_ink_drop_ripple.h"
 #include "ui/views/animation/ink_drop_impl.h"
-#include "ui/views/animation/ink_drop_mask.h"
+#include "ui/views/controls/highlight_path_generator.h"
 
 namespace ash {
 
@@ -46,6 +46,7 @@ AssistantButton::AssistantButton(AssistantButtonListener* listener,
   set_has_ink_drop_action_on_click(true);
   set_ink_drop_base_color(kInkDropBaseColor);
   set_ink_drop_visible_opacity(kInkDropVisibleOpacity);
+  views::InstallCircleHighlightPathGenerator(this, gfx::Insets(kInkDropInset));
 }
 
 AssistantButton::~AssistantButton() = default;
@@ -89,22 +90,15 @@ std::unique_ptr<views::InkDrop> AssistantButton::CreateInkDrop() {
       std::make_unique<views::InkDropImpl>(this, size());
   ink_drop->SetAutoHighlightMode(
       views::InkDropImpl::AutoHighlightMode::SHOW_ON_RIPPLE);
-  ink_drop->SetShowHighlightOnHover(true);
   return ink_drop;
 }
 
 std::unique_ptr<views::InkDropHighlight>
 AssistantButton::CreateInkDropHighlight() const {
-  return std::make_unique<views::InkDropHighlight>(
-      gfx::PointF(GetLocalBounds().CenterPoint()),
-      std::make_unique<views::CircleLayerDelegate>(
-          SkColorSetA(GetInkDropBaseColor(), 0xff * kInkDropHighlightOpacity),
-          size().width() / 2 - kInkDropInset));
-}
-
-std::unique_ptr<views::InkDropMask> AssistantButton::CreateInkDropMask() const {
-  return std::make_unique<views::RoundRectInkDropMask>(
-      size(), gfx::Insets(kInkDropInset), size().width() / 2);
+  auto highlight = std::make_unique<views::InkDropHighlight>(
+      gfx::SizeF(size()), GetInkDropBaseColor());
+  highlight->set_visible_opacity(kInkDropHighlightOpacity);
+  return highlight;
 }
 
 std::unique_ptr<views::InkDropRipple> AssistantButton::CreateInkDropRipple()

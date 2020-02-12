@@ -8,12 +8,17 @@
 #include "ash/ash_export.h"
 #include "ash/public/cpp/shelf_config.h"
 #include "ash/public/cpp/shelf_types.h"
+#include "ash/shelf/hotseat_transition_animator.h"
 #include "ash/shelf/shelf_component.h"
 #include "base/optional.h"
 #include "ui/views/widget/widget.h"
 
 namespace aura {
 class ScopedWindowTargeter;
+}
+
+namespace ui {
+class AnimationMetricsReporter;
 }
 
 namespace ash {
@@ -78,6 +83,12 @@ class ASH_EXPORT HotseatWidget : public ShelfComponent,
   gfx::Rect GetTargetBounds() const override;
   void UpdateLayout(bool animate) override;
 
+  // TODO(manucornet): Remove this method once all the hotseat layout
+  // code has moved to this class.
+  void set_target_bounds(gfx::Rect target_bounds) {
+    target_bounds_ = target_bounds;
+  }
+
   gfx::Size GetTranslucentBackgroundSize() const;
 
   // Sets the focus cycler and adds the hotseat to the cycle.
@@ -130,6 +141,7 @@ class ASH_EXPORT HotseatWidget : public ShelfComponent,
   // changed.
   base::Optional<LayoutInputs> layout_inputs_;
 
+  gfx::Rect target_bounds_;
   HotseatState state_ = HotseatState::kShown;
 
   Shelf* shelf_ = nullptr;
@@ -142,6 +154,11 @@ class ASH_EXPORT HotseatWidget : public ShelfComponent,
   // The contents view of this widget. Contains |shelf_view_| and the background
   // of the hotseat.
   DelegateView* delegate_view_ = nullptr;
+
+  // Records animation smoothness metrics for movement animations of
+  // HotseatWidget.
+  std::unique_ptr<ui::AnimationMetricsReporter>
+      hotseat_animation_metrics_reporter_;
 
   // Whether the widget is currently extended because the user has manually
   // dragged it. This will be reset with any visible shelf configuration change.

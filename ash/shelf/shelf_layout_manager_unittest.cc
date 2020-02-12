@@ -2525,7 +2525,7 @@ TEST_F(ShelfLayoutManagerWindowDraggingTest, DraggedMRUWindow) {
   } test_cases[] = {
       {GetShelfWidget(), false /*left_in_split_view*/,
        false /*right_in_split_view*/, "Shelf widget"},
-      {GetShelfWidget()->navigation_widget(), true /*left_in_split_view*/,
+      {GetPrimaryShelf()->navigation_widget(), true /*left_in_split_view*/,
        false /*right_in_split_view*/, "Navigation widget"},
       {GetShelfWidget()->status_area_widget(), false /*left_in_split_view*/,
        true /*right_in_split_view*/, "Status area widget"}};
@@ -2920,14 +2920,14 @@ TEST_F(ShelfLayoutManagerWindowDraggingTest,
   const int hotseat_padding_size = ShelfConfig::Get()->hotseat_bottom_padding();
   UpdateScroll(-shelf_size - hotseat_size - hotseat_padding_size);
   const int hotseat_y =
-      GetShelfWidget()->hotseat_widget()->GetWindowBoundsInScreen().y();
+      GetPrimaryShelf()->hotseat_widget()->GetWindowBoundsInScreen().y();
 
   // Drag down, the hotseat should not move because it was extended when the
   // window drag began.
   UpdateScroll(10);
 
   EXPECT_EQ(hotseat_y,
-            GetShelfWidget()->hotseat_widget()->GetWindowBoundsInScreen().y());
+            GetPrimaryShelf()->hotseat_widget()->GetWindowBoundsInScreen().y());
   EndScroll(/*is_fling=*/false, 0.f);
 }
 
@@ -2949,14 +2949,14 @@ TEST_F(ShelfLayoutManagerWindowDraggingTest,
   const int hotseat_padding_size = ShelfConfig::Get()->hotseat_bottom_padding();
   UpdateScroll(-shelf_size - hotseat_size - hotseat_padding_size);
   const int hotseat_y =
-      GetShelfWidget()->hotseat_widget()->GetWindowBoundsInScreen().y();
+      GetPrimaryShelf()->hotseat_widget()->GetWindowBoundsInScreen().y();
 
   // Drag down, the hotseat should not move because it was extended when the
   // window drag began.
   UpdateScroll(10);
 
   EXPECT_EQ(hotseat_y,
-            GetShelfWidget()->hotseat_widget()->GetWindowBoundsInScreen().y());
+            GetPrimaryShelf()->hotseat_widget()->GetWindowBoundsInScreen().y());
   EndScroll(/*is_fling=*/false, 0.f);
 }
 
@@ -2972,7 +2972,7 @@ TEST_F(ShelfLayoutManagerWindowDraggingTest, NoOpIfDragStartsAboveShelf) {
   EXPECT_EQ(HotseatState::kExtended, GetShelfLayoutManager()->hotseat_state());
 
   gfx::Rect hotseat_bounds =
-      GetShelfWidget()->hotseat_widget()->GetWindowBoundsInScreen();
+      GetPrimaryShelf()->hotseat_widget()->GetWindowBoundsInScreen();
   StartScroll(hotseat_bounds.CenterPoint());
   EXPECT_FALSE(IsWindowDragInProgress());
   EXPECT_TRUE(window->transform().IsIdentity());
@@ -2997,7 +2997,7 @@ TEST_F(ShelfLayoutManagerWindowDraggingTest,
   EXPECT_EQ(HotseatState::kExtended, GetShelfLayoutManager()->hotseat_state());
 
   gfx::Rect hotseat_bounds =
-      GetShelfWidget()->hotseat_widget()->GetWindowBoundsInScreen();
+      GetPrimaryShelf()->hotseat_widget()->GetWindowBoundsInScreen();
   StartScroll(hotseat_bounds.CenterPoint());
   EXPECT_FALSE(IsWindowDragInProgress());
   EXPECT_TRUE(window->transform().IsIdentity());
@@ -3069,7 +3069,7 @@ TEST_F(ShelfLayoutManagerWindowDraggingTest, NoDragForDownwardEvent) {
   // Start drag on the extended hotseat.
   const int hotseat_padding_size = ShelfConfig::Get()->hotseat_bottom_padding();
   gfx::Rect hotseat_bounds =
-      GetShelfWidget()->hotseat_widget()->GetWindowBoundsInScreen();
+      GetPrimaryShelf()->hotseat_widget()->GetWindowBoundsInScreen();
   StartScroll(hotseat_bounds.CenterPoint());
   EXPECT_FALSE(IsWindowDragInProgress());
   EXPECT_TRUE(window->transform().IsIdentity());
@@ -3391,14 +3391,14 @@ TEST_P(ShelfLayoutManagerTest, ScrollUpFromShelfToShowPeekingAppList) {
   } test_table[]{
       {GetPrimaryShelf()->GetShelfViewForTesting(), false, false},
       {GetShelfWidget()->status_area_widget()->GetContentsView(), false, false},
-      {GetShelfWidget()->navigation_widget()->GetContentsView(), false, false},
+      {GetPrimaryShelf()->navigation_widget()->GetContentsView(), false, false},
       {GetShelfWidget()->status_area_widget()->GetContentsView(), true, false},
-      {GetShelfWidget()->navigation_widget()->GetContentsView(), true, false},
+      {GetPrimaryShelf()->navigation_widget()->GetContentsView(), true, false},
       {GetPrimaryShelf()->GetShelfViewForTesting(), false, true},
       {GetShelfWidget()->status_area_widget()->GetContentsView(), false, true},
-      {GetShelfWidget()->navigation_widget()->GetContentsView(), false, true},
+      {GetPrimaryShelf()->navigation_widget()->GetContentsView(), false, true},
       {GetShelfWidget()->status_area_widget()->GetContentsView(), true, true},
-      {GetShelfWidget()->navigation_widget()->GetContentsView(), true, true},
+      {GetPrimaryShelf()->navigation_widget()->GetContentsView(), true, true},
   };
   base::HistogramTester histogram_tester;
   const int scroll_offset_threshold =

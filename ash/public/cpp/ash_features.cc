@@ -18,6 +18,9 @@ const base::Feature kAllowAmbientEQ{"AllowAmbientEQ",
 const base::Feature kAutoNightLight{"AutoNightLight",
                                     base::FEATURE_DISABLED_BY_DEFAULT};
 
+const base::Feature kCornerShortcuts{"CornerShortcuts",
+                                     base::FEATURE_DISABLED_BY_DEFAULT};
+
 const base::Feature kContextualNudges{"ContextualNudges",
                                       base::FEATURE_DISABLED_BY_DEFAULT};
 
@@ -29,6 +32,9 @@ const base::Feature kDockedMagnifier{"DockedMagnifier",
 
 const base::Feature kDragToSnapInClamshellMode{
     "DragToSnapInClamshellMode", base::FEATURE_DISABLED_BY_DEFAULT};
+
+const base::Feature kEnableOverviewRoundedCorners{
+    "EnableOverviewRoundedCorners", base::FEATURE_ENABLED_BY_DEFAULT};
 
 const base::Feature kLockScreenNotifications{"LockScreenNotifications",
                                              base::FEATURE_DISABLED_BY_DEFAULT};
@@ -223,6 +229,10 @@ bool IsDisplayChangeModalEnabled() {
 
 bool AreContextualNudgesEnabled() {
   return base::FeatureList::IsEnabled(kContextualNudges);
+}
+
+bool IsCornerShortcutsEnabled() {
+  return base::FeatureList::IsEnabled(kCornerShortcuts);
 }
 
 namespace {

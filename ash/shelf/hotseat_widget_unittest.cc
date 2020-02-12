@@ -370,7 +370,7 @@ TEST_P(HotseatWidgetTest, SwipeUpInAppShelfShowsHotseat) {
 
   // Swipe down from the hotseat to hide it.
   gfx::Rect hotseat_bounds =
-      GetShelfWidget()->hotseat_widget()->GetWindowBoundsInScreen();
+      GetPrimaryShelf()->hotseat_widget()->GetWindowBoundsInScreen();
   gfx::Point start = hotseat_bounds.top_center();
   gfx::Point end = start + gfx::Vector2d(0, 80);
   const base::TimeDelta kTimeDelta = base::TimeDelta::FromMilliseconds(100);
@@ -1216,7 +1216,7 @@ TEST_P(HotseatWidgetTest, SwipeDownOnFocusedHotseat) {
   // hidden.
   GetPrimaryShelf()->shelf_focus_cycler()->FocusShelf(false /* last_element */);
   gfx::Rect hotseat_bounds =
-      GetShelfWidget()->hotseat_widget()->GetWindowBoundsInScreen();
+      GetPrimaryShelf()->hotseat_widget()->GetWindowBoundsInScreen();
   gfx::Point start = hotseat_bounds.top_center();
   gfx::Point end = start + gfx::Vector2d(0, 80);
   GetEventGenerator()->GestureScrollSequence(
@@ -1242,7 +1242,7 @@ TEST_P(HotseatWidgetTest, ExitOverviewWithClickOnHotseat) {
   // Enter overview, hotseat is visible. Choose the point to the farthest left.
   // This point will not be visible.
   auto* overview_controller = Shell::Get()->overview_controller();
-  auto* hotseat_widget = GetShelfWidget()->hotseat_widget();
+  auto* hotseat_widget = GetPrimaryShelf()->hotseat_widget();
   overview_controller->StartOverview();
   ASSERT_TRUE(overview_controller->InOverviewSession());
   ASSERT_EQ(HotseatState::kExtended, GetShelfLayoutManager()->hotseat_state());
@@ -1667,7 +1667,7 @@ TEST_P(HotseatWidgetTest, HotseatHidesWhenSwipedToBezel) {
 
   gfx::Rect shelf_widget_bounds = GetShelfWidget()->GetWindowBoundsInScreen();
   gfx::Rect hotseat_bounds =
-      GetShelfWidget()->hotseat_widget()->GetWindowBoundsInScreen();
+      GetPrimaryShelf()->hotseat_widget()->GetWindowBoundsInScreen();
   gfx::Point start = hotseat_bounds.CenterPoint();
   const gfx::Point end =
       gfx::Point(shelf_widget_bounds.x() + shelf_widget_bounds.width() / 2,
@@ -1831,7 +1831,7 @@ TEST_P(HotseatWidgetTest, HotseatRemainsHiddenIfPopupLaunched) {
 
   // Hide hotseat by clicking outside its bounds.
   gfx::Rect hotseat_bounds =
-      GetShelfWidget()->hotseat_widget()->GetWindowBoundsInScreen();
+      GetPrimaryShelf()->hotseat_widget()->GetWindowBoundsInScreen();
   gfx::Point start = hotseat_bounds.top_center();
   GetEventGenerator()->GestureTapAt(gfx::Point(start.x() + 1, start.y() - 1));
   EXPECT_EQ(HotseatState::kHidden, GetShelfLayoutManager()->hotseat_state());

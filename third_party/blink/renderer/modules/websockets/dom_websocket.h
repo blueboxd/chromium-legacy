@@ -194,19 +194,19 @@ class MODULES_EXPORT DOMWebSocket : public EventTargetWithInlineData,
     HeapDeque<Member<Event>> events_;
   };
 
-  enum WebSocketSendType {
-    kWebSocketSendTypeString,
-    kWebSocketSendTypeArrayBuffer,
-    kWebSocketSendTypeArrayBufferView,
-    kWebSocketSendTypeBlob,
-    kWebSocketSendTypeMax,
+  enum class WebSocketSendType {
+    kString,
+    kArrayBuffer,
+    kArrayBufferView,
+    kBlob,
+    kMaxValue = kBlob,
   };
 
-  enum WebSocketReceiveType {
-    kWebSocketReceiveTypeString,
-    kWebSocketReceiveTypeArrayBuffer,
-    kWebSocketReceiveTypeBlob,
-    kWebSocketReceiveTypeMax,
+  enum class WebSocketReceiveType {
+    kString,
+    kArrayBuffer,
+    kBlob,
+    kMaxValue = kBlob,
   };
 
   enum BinaryType { kBinaryTypeBlob, kBinaryTypeArrayBuffer };

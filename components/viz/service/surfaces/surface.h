@@ -283,8 +283,7 @@ class VIZ_SERVICE_EXPORT Surface final {
   void ActivatePendingFrame();
 
   // Called when all of the surface's dependencies have been resolved.
-  void ActivateFrame(FrameData frame_data,
-                     base::Optional<base::TimeDelta> duration);
+  void ActivateFrame(FrameData frame_data);
 
   // Resolve the activation deadline specified by |current_frame| into a wall
   // time to be used by SurfaceDependencyDeadline.

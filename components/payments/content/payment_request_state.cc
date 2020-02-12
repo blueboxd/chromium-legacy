@@ -38,14 +38,6 @@
 namespace payments {
 namespace {
 
-// Checks whether any of the |apps| return true in IsValidForCanMakePayment().
-bool GetHasEnrolledInstrument(
-    const std::vector<std::unique_ptr<PaymentApp>>& apps) {
-  return std::any_of(apps.begin(), apps.end(), [](const auto& app) {
-    return app->IsValidForCanMakePayment();
-  });
-}
-
 // Invokes the |callback| with |status|.
 void CallStatusCallback(PaymentRequestState::StatusCallback callback,
                         bool status) {
@@ -174,7 +166,9 @@ void PaymentRequestState::OnDoneCreatingPaymentApps() {
   SetDefaultProfileSelections();
 
   get_all_apps_finished_ = true;
-  has_enrolled_instrument_ = GetHasEnrolledInstrument(available_apps_);
+  has_enrolled_instrument_ =
+      std::any_of(available_apps_.begin(), available_apps_.end(),
+                  [](const auto& app) { return app->HasEnrolledInstrument(); });
   are_requested_methods_supported_ |= !available_apps_.empty();
   NotifyOnGetAllPaymentAppsFinished();
   NotifyInitialized();

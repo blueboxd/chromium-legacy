@@ -24,6 +24,15 @@ using chromeos::quick_answers::QuickAnswersRequest;
 
 using testing::_;
 
+constexpr char kLongText[] =
+    "123456789101112131415161718192021222324252627282930313233343536373839404"
+    "\r\n\t1424344454647484950";
+constexpr char kLongAnswer[] =
+    "123456789101112131415161718192021222324252627282930313233343536373839404"
+    "1424344454647484950";
+constexpr char kTruncatedLongText[] =
+    "123456789101112131415161718192021222324252627282930313233343536373839…";
+
 class MockQuickAnswersClient : public QuickAnswersClient {
  public:
   MockQuickAnswersClient(network::mojom::URLLoaderFactory* url_loader_factory,
@@ -92,10 +101,10 @@ class QuickAnswersMenuObserverTest : public InProcessBrowserTest {
     EXPECT_FALSE(item.hidden);
   }
 
-  void MockQuickAnswerClient() {
+  void MockQuickAnswerClient(const std::string expected_query) {
     std::unique_ptr<QuickAnswersRequest> expected_quick_answers_request =
         std::make_unique<QuickAnswersRequest>();
-    expected_quick_answers_request->selected_text = "sel";
+    expected_quick_answers_request->selected_text = expected_query;
     EXPECT_CALL(
         *mock_quick_answers_cient_,
         SendRequest(QuickAnswersRequestEqual(*expected_quick_answers_request)))
@@ -113,7 +122,7 @@ class QuickAnswersMenuObserverTest : public InProcessBrowserTest {
 }  // namespace
 
 IN_PROC_BROWSER_TEST_F(QuickAnswersMenuObserverTest, PlaceHolderMenuItems) {
-  MockQuickAnswerClient();
+  MockQuickAnswerClient("sel");
   InitMenu();
 
   // Shows quick answers loading state.
@@ -133,8 +142,37 @@ IN_PROC_BROWSER_TEST_F(QuickAnswersMenuObserverTest, PlaceHolderMenuItems) {
       /*enabled=*/false);
 }
 
+IN_PROC_BROWSER_TEST_F(QuickAnswersMenuObserverTest,
+                       SanitizeAndTruncateSelectedText) {
+  MockQuickAnswerClient(
+      "123456789101112131415161718192021222324252627282930313233343536373839404"
+      "   1424344454647484950");
+
+  // Init Menu.
+  content::ContextMenuParams params;
+  static const base::string16 selected_text = base::ASCIIToUTF16(kLongText);
+  params.selection_text = selected_text;
+  observer_->InitMenu(params);
+
+  // Shows quick answers loading state.
+  ASSERT_EQ(3u, menu()->GetMenuSize());
+
+  // Verify the query menu item.
+  VerifyMenuItems(
+      /*index=*/0,
+      /*command_id=*/IDC_CONTENT_CONTEXT_QUICK_ANSWERS_INLINE_QUERY,
+      /*expected_title=*/kTruncatedLongText,
+      /*enabled=*/true);
+  // Verify the answer menu item.
+  VerifyMenuItems(
+      /*index=*/1,
+      /*command_id=*/IDC_CONTENT_CONTEXT_QUICK_ANSWERS_INLINE_ANSWER,
+      /*expected_title=*/"Loading...",
+      /*enabled=*/false);
+}
+
 IN_PROC_BROWSER_TEST_F(QuickAnswersMenuObserverTest, PrimaryAnswerOnly) {
-  MockQuickAnswerClient();
+  MockQuickAnswerClient("sel");
   InitMenu();
 
   std::unique_ptr<QuickAnswer> quick_answer = std::make_unique<QuickAnswer>();
@@ -160,7 +198,7 @@ IN_PROC_BROWSER_TEST_F(QuickAnswersMenuObserverTest, PrimaryAnswerOnly) {
 }
 
 IN_PROC_BROWSER_TEST_F(QuickAnswersMenuObserverTest, SecondaryAnswerOnly) {
-  MockQuickAnswerClient();
+  MockQuickAnswerClient("sel");
   InitMenu();
 
   std::unique_ptr<QuickAnswer> quick_answer = std::make_unique<QuickAnswer>();
@@ -187,7 +225,7 @@ IN_PROC_BROWSER_TEST_F(QuickAnswersMenuObserverTest, SecondaryAnswerOnly) {
 
 IN_PROC_BROWSER_TEST_F(QuickAnswersMenuObserverTest,
                        PrimaryAndSecondaryAnswer) {
-  MockQuickAnswerClient();
+  MockQuickAnswerClient("sel");
   InitMenu();
 
   std::unique_ptr<QuickAnswer> quick_answer = std::make_unique<QuickAnswer>();
@@ -213,8 +251,35 @@ IN_PROC_BROWSER_TEST_F(QuickAnswersMenuObserverTest,
       /*enabled=*/false);
 }
 
+IN_PROC_BROWSER_TEST_F(QuickAnswersMenuObserverTest, TruncateLongAnswer) {
+  MockQuickAnswerClient("sel");
+  InitMenu();
+
+  std::unique_ptr<QuickAnswer> quick_answer = std::make_unique<QuickAnswer>();
+  quick_answer->primary_answer = kLongAnswer;
+  quick_answer->secondary_answer = kLongAnswer;
+  observer_->OnQuickAnswerReceived(std::move(quick_answer));
+
+  // Verify that quick answer menu items is showing.
+  ASSERT_EQ(3u, menu()->GetMenuSize());
+
+  // Verify the query menu item.
+  VerifyMenuItems(
+      /*index=*/0,
+      /*command_id=*/IDC_CONTENT_CONTEXT_QUICK_ANSWERS_INLINE_QUERY,
+      /*expected_title=*/kTruncatedLongText,
+      /*enabled=*/true);
+
+  // Verify the answer menu item.
+  VerifyMenuItems(
+      /*index=*/1,
+      /*command_id=*/IDC_CONTENT_CONTEXT_QUICK_ANSWERS_INLINE_ANSWER,
+      /*expected_title=*/kTruncatedLongText,
+      /*enabled=*/false);
+}
+
 IN_PROC_BROWSER_TEST_F(QuickAnswersMenuObserverTest, NoAnswer) {
-  MockQuickAnswerClient();
+  MockQuickAnswerClient("sel");
   InitMenu();
 
   observer_->OnQuickAnswerReceived(nullptr);
@@ -252,7 +317,7 @@ IN_PROC_BROWSER_TEST_F(QuickAnswersMenuObserverTest, FeatureIneligible) {
 }
 
 IN_PROC_BROWSER_TEST_F(QuickAnswersMenuObserverTest, NetworkError) {
-  MockQuickAnswerClient();
+  MockQuickAnswerClient("sel");
   InitMenu();
 
   observer_->OnNetworkError();

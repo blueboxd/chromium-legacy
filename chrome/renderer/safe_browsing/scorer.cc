@@ -114,6 +114,10 @@ size_t Scorer::shingle_size() const {
   return model_.shingle_size();
 }
 
+float Scorer::threshold_probability() const {
+  return model_.threshold_probability();
+}
+
 double Scorer::ComputeRuleScore(const ClientSideModel::Rule& rule,
                                 const FeatureMap& features) const {
   const std::unordered_map<std::string, double>& feature_map =

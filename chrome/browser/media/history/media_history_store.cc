@@ -65,6 +65,9 @@ class MediaHistoryStoreInternal
 
   std::vector<mojom::MediaHistoryOriginRowPtr> GetOriginRowsForDebug();
 
+  std::vector<mojom::MediaHistoryPlaybackRowPtr>
+  GetMediaHistoryPlaybackRowsForDebug();
+
   void SavePlaybackSession(
       const GURL& url,
       const media_session::MediaMetadata& metadata,
@@ -262,6 +265,15 @@ MediaHistoryStoreInternal::GetOriginRowsForDebug() {
   return origins;
 }
 
+std::vector<mojom::MediaHistoryPlaybackRowPtr>
+MediaHistoryStoreInternal::GetMediaHistoryPlaybackRowsForDebug() {
+  DCHECK(db_task_runner_->RunsTasksInCurrentSequence());
+  if (!initialization_successful_)
+    return std::vector<mojom::MediaHistoryPlaybackRowPtr>();
+
+  return playback_table_->GetPlaybackRows();
+}
+
 int MediaHistoryStoreInternal::GetTableRowCount(const std::string& table_name) {
   DCHECK(db_task_runner_->RunsTasksInCurrentSequence());
   if (!initialization_successful_)
@@ -381,6 +393,16 @@ void MediaHistoryStore::GetOriginRowsForDebug(
   base::PostTaskAndReplyWithResult(
       db_->db_task_runner_.get(), FROM_HERE,
       base::BindOnce(&MediaHistoryStoreInternal::GetOriginRowsForDebug, db_),
+      std::move(callback));
+}
+
+void MediaHistoryStore::GetMediaHistoryPlaybackRowsForDebug(
+    base::OnceCallback<void(std::vector<mojom::MediaHistoryPlaybackRowPtr>)>
+        callback) {
+  base::PostTaskAndReplyWithResult(
+      db_->db_task_runner_.get(), FROM_HERE,
+      base::BindOnce(
+          &MediaHistoryStoreInternal::GetMediaHistoryPlaybackRowsForDebug, db_),
       std::move(callback));
 }
 

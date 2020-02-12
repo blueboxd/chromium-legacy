@@ -4278,6 +4278,10 @@ const FeatureEntry kFeatureEntries[] = {
     {"display-change-modal", flag_descriptions::kDisplayChangeModalName,
      flag_descriptions::kDisplayChangeModalDescription, kOsCrOS,
      FEATURE_VALUE_TYPE(ash::features::kDisplayChangeModal)},
+
+    {"corner-shortcuts", flag_descriptions::kCornerShortcutsName,
+     flag_descriptions::kCornerShortcutsDescription, kOsCrOS,
+     FEATURE_VALUE_TYPE(ash::features::kCornerShortcuts)},
 #endif  // OS_CHROMEOS
 
     {"autofill-off-no-server-data",

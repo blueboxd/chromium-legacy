@@ -84,7 +84,7 @@
 <translation id="1969011864782743497"><ph name="DEVICE_NAME" /> (USB)</translation>
 <translation id="1972950159383891558">مرحبًا، <ph name="USERNAME" /></translation>
 <translation id="1978498689038657292">إدخال نصي</translation>
-<translation id="1993072747612765854">مزيد من المعلومات حول آخر تحديث لتطبيق <ph name="SYSTEM_APP_NAME" /></translation>
+<translation id="1993072747612765854">مزيد من المعلومات حول آخر إعادة تحميل لتطبيق <ph name="SYSTEM_APP_NAME" /></translation>
 <translation id="1995660704900986789">إيقاف التشغيل</translation>
 <translation id="2012624427112548395">Ctrl+Search+H</translation>
 <translation id="2016340657076538683">كتابة رسالة</translation>
@@ -114,7 +114,7 @@
 <translation id="2359808026110333948">متابعة</translation>
 <translation id="2365393535144473978">سيؤدي تفعيل ميزة بيانات الجوّال إلى تفعيل البلوتوث.</translation>
 <translation id="2391579633712104609">180 درجة</translation>
-<translation id="2412593942846481727">هناك تحديث جديد</translation>
+<translation id="2412593942846481727">هناك إعادة تحميل جديد</translation>
 <translation id="2413728805700750528"><ph name="DISPLAY_NAME" /> هي جلسة مُدارة بواسطة <ph name="DOMAIN" /></translation>
 <translation id="2427507373259914951">النقر بالزر الأيسر</translation>
 <translation id="2429753432712299108">يريد جهاز بلوتوث "<ph name="DEVICE_NAME" />" الحصول على إذن للإقران. قبل القبول، يُرجى التأكد أن مفتاح المرور هذا يظهر في هذا الجهاز: <ph name="PASSKEY" /></translation>
@@ -425,7 +425,7 @@
 <translation id="6669268301501499730">مفعّل</translation>
 <translation id="6670153871843998651">مكتب 3</translation>
 <translation id="6691659475504239918">Search+Shift+H</translation>
-<translation id="6696025732084565524">تحتاج لوحة المفاتيح القابلة للفصل إلى تحديث مهم</translation>
+<translation id="6696025732084565524">تحتاج لوحة المفاتيح القابلة للفصل إلى إعادة تحميل مهم</translation>
 <translation id="6700713906295497288">‏زر قائمة أداة تحرير أسلوب الإدخال (IME)</translation>
 <translation id="6713285437468012787">تم إقران جهاز بلوتوث "<ph name="DEVICE_NAME" />" وهو الآن متاح لجميع المستخدمين. يمكنك إزالة هذا الإقران باستخدام الإعدادات.</translation>
 <translation id="6715542151869432661">لم يتم العثور على أي أجهزة جوّال.</translation>
@@ -439,7 +439,7 @@
 <translation id="6820676911989879663">حان وقت الاستراحة</translation>
 <translation id="6857811139397017780">تفعيل <ph name="NETWORKSERVICE" /></translation>
 <translation id="6878400149835617132">تم إيقاف الاختصار</translation>
-<translation id="6910714959251846841">‏يتطلَّب هذا التحديث إجراء عملية Powerwash لجهازك. مزيد من المعلومات حول آخر تحديث لتطبيق <ph name="SYSTEM_APP_NAME" />.</translation>
+<translation id="6910714959251846841">‏يتطلَّب هذا الإعادة تحميل إجراء عملية Powerwash لجهازك. مزيد من المعلومات حول آخر إعادة تحميل لتطبيق <ph name="SYSTEM_APP_NAME" />.</translation>
 <translation id="6919251195245069855">لم يتم التعرُّف على البطاقة الذكية. يُرجى إعادة المحاولة.</translation>
 <translation id="6972754398087986839">البدء</translation>
 <translation id="6981982820502123353">إمكانية الوصول</translation>
@@ -593,7 +593,7 @@
 <translation id="8990809378771970590">استخدام <ph name="IME_NAME" /></translation>
 <translation id="899350903320462459">فتح قفل الجهاز بواسطة <ph name="LOGIN_ID" /> لتنفيذ إجراء الإشعارات</translation>
 <translation id="9017320285115481645">‏يُرجى إدخال رمز الدخول المخصّص للوالدين في Family Link.</translation>
-<translation id="9029474291399787231">‏هناك تحديث جديد لتطبيق Adobe Flash Player</translation>
+<translation id="9029474291399787231">‏هناك إعادة تحميل جديد لتطبيق Adobe Flash Player</translation>
 <translation id="9047624247355796468">فتح الإعدادات للشبكة <ph name="NETWORK_NAME" /></translation>
 <translation id="9056839673611986238">‏سيتم إعادة النسخة السابقة من نظام التشغيل Chrome إلى جهازك.</translation>
 <translation id="9070640332319875144">إعدادات المساعد</translation>

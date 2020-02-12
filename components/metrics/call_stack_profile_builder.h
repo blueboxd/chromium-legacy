@@ -94,7 +94,8 @@ class CallStackProfileBuilder : public base::ProfileBuilder {
 
  protected:
   // Test seam.
-  virtual void PassProfilesToMetricsProvider(SampledProfile sampled_profile);
+  virtual void PassProfilesToMetricsProvider(base::TimeTicks profile_start_time,
+                                             SampledProfile sampled_profile);
 
  private:
   // The functor for Stack comparison.
@@ -128,7 +129,7 @@ class CallStackProfileBuilder : public base::ProfileBuilder {
   base::OnceClosure completed_callback_;
 
   // The start time of a profile collection.
-  const base::TimeTicks profile_start_time_;
+  base::TimeTicks profile_start_time_;
 
   // Maintains the current metadata to apply to samples.
   CallStackProfileMetadata metadata_;

@@ -658,8 +658,8 @@ FloatSize HTMLImageElement::DefaultDestinationSize(
     return FloatSize();
 
   Image* image = image_content->GetImage();
-  if (image->IsSVGImage())
-    return ToSVGImage(image)->ConcreteObjectSize(default_object_size);
+  if (auto* svg_image = DynamicTo<SVGImage>(image))
+    return svg_image->ConcreteObjectSize(default_object_size);
 
   LayoutSize size(image->Size(
       LayoutObject::ShouldRespectImageOrientation(GetLayoutObject())));

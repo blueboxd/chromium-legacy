@@ -16,15 +16,14 @@ android_library("java") {
   deps = [
     ":java_resources",
     "//base:base_java",
+    "//chrome/android:chrome_java",
+    "//chrome/browser/profile_card/android:java",
+    "//components/browser_ui/widget/android:java",
+    "//ui/android:ui_full_java",
   ]
 }
 
 android_resources("java_resources") {
   custom_package = "org.chromium.chrome.browser.profile_card.internal"
   resource_dirs = [ "java/res" ]
-  visibility = [ ":*" ]
-
-  # Include resource dependencies needed by :java so that resources may
-  # all be accessed through the same custom_package.
-  deps = [ "//chrome/browser/profile_card:java_resources" ]
 }

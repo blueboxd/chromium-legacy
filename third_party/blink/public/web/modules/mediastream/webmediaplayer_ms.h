@@ -136,9 +136,9 @@ class BLINK_MODULES_EXPORT WebMediaPlayerMS
   bool HasAudio() const override;
 
   // Dimensions of the video.
-  WebSize NaturalSize() const override;
+  gfx::Size NaturalSize() const override;
 
-  WebSize VisibleRect() const override;
+  gfx::Size VisibleSize() const override;
 
   // Getters of playback state.
   bool Paused() const override;

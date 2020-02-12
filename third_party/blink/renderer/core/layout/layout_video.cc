@@ -92,7 +92,7 @@ LayoutSize LayoutVideo::CalculateIntrinsicSize() {
   WebMediaPlayer* web_media_player = MediaElement()->GetWebMediaPlayer();
   if (web_media_player &&
       video->getReadyState() >= HTMLVideoElement::kHaveMetadata) {
-    IntSize size = web_media_player->NaturalSize();
+    IntSize size(web_media_player->NaturalSize());
     if (!size.IsEmpty())
       return LayoutSize(size);
   }

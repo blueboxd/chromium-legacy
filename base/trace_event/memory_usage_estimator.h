@@ -35,7 +35,7 @@
 // Composable memory usage estimators.
 //
 // This file defines set of EstimateMemoryUsage(object) functions that return
-// approximate memory usage of their argument.
+// approximate dynamically allocated memory usage of their argument.
 //
 // The ultimate goal is to make memory usage estimation for a class simply a
 // matter of aggregating EstimateMemoryUsage() results over all fields.
@@ -55,10 +55,22 @@
 //
 // Here is an example implementation:
 //
-// size_t foo::bar::MyClass::EstimateMemoryUsage() const {
-//   return base::trace_event::EstimateMemoryUsage(name_) +
-//          base::trace_event::EstimateMemoryUsage(id_) +
-//          base::trace_event::EstimateMemoryUsage(items_);
+// class MyClass {
+//   ...
+//   ...
+//   size_t EstimateMemoryUsage() const {
+//     return base::trace_event::EstimateMemoryUsage(set_) +
+//            base::trace_event::EstimateMemoryUsage(name_) +
+//            base::trace_event::EstimateMemoryUsage(foo_);
+//   }
+//   ...
+//  private:
+//   ...
+//   std::set<int> set_;
+//   std::string name_;
+//   Foo foo_;
+//   int id_;
+//   bool success_;
 // }
 //
 // The approach is simple: first call EstimateMemoryUsage() on all members,

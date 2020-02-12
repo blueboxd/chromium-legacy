@@ -117,7 +117,7 @@ std::string GetExpectedPowerPolicyForPrefs(PrefService* prefs,
 
   // Device-level prefs do not exist in the user-level |prefs|.
   expected_policy.mutable_battery_charge_mode()->set_mode(
-      power_manager::PowerManagementPolicy::BatteryChargeMode::STANDARD);
+      power_manager::PowerManagementPolicy::BatteryChargeMode::ADAPTIVE);
   expected_policy.set_boot_on_ac(false);
   expected_policy.set_usb_power_share(true);
 

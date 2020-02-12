@@ -37,6 +37,8 @@ public class NotificationIntentInterceptor {
             "notifications.NotificationIntentInterceptor.EXTRA_ACTION_TYPE";
     private static final String EXTRA_CREATE_TIME =
             "notifications.NotificationIntentInterceptor.EXTRA_CREATE_TIME";
+    public static final String INTENT_ACTION =
+            "notifications.NotificationIntentInterceptor.INTENT_ACTION";
     public static final long INVALID_CREATE_TIME = -1;
 
     /**
@@ -115,6 +117,7 @@ public class NotificationIntentInterceptor {
         }
         Context applicationContext = ContextUtils.getApplicationContext();
         Intent intent = new Intent(applicationContext, Receiver.class);
+        intent.setAction(INTENT_ACTION);
         intent.putExtra(EXTRA_PENDING_INTENT, pendingIntent);
         intent.putExtra(EXTRA_INTENT_TYPE, intentType);
         intent.putExtra(EXTRA_NOTIFICATION_TYPE, metadata.type);

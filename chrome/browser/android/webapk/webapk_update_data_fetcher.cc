@@ -17,7 +17,6 @@
 #include "chrome/android/chrome_jni_headers/WebApkUpdateDataFetcher_jni.h"
 #include "chrome/browser/android/color_helpers.h"
 #include "chrome/browser/android/shortcut_helper.h"
-#include "chrome/browser/android/webapk/webapk_icon_hasher.h"
 #include "chrome/browser/android/webapk/webapk_web_manifest_checker.h"
 #include "chrome/browser/installable/installable_manager.h"
 #include "chrome/browser/profiles/profile.h"
@@ -181,7 +180,7 @@ void WebApkUpdateDataFetcher::OnDidGetInstallableData(
 }
 
 void WebApkUpdateDataFetcher::OnGotIconMurmur2Hashes(
-    base::Optional<std::map<std::string, std::string>> hashes) {
+    base::Optional<std::map<std::string, WebApkIconHasher::Icon>> hashes) {
   if (!hashes)
     return;
 
@@ -200,7 +199,7 @@ void WebApkUpdateDataFetcher::OnGotIconMurmur2Hashes(
           env, info_.best_primary_icon_url.spec());
   ScopedJavaLocalRef<jstring> java_primary_icon_murmur2_hash =
       base::android::ConvertUTF8ToJavaString(
-          env, (*hashes)[info_.best_primary_icon_url.spec()]);
+          env, (*hashes)[info_.best_primary_icon_url.spec()].hash);
   ScopedJavaLocalRef<jobject> java_primary_icon =
       gfx::ConvertToJavaBitmap(&primary_icon_);
   jboolean java_is_primary_icon_maskable = is_primary_icon_maskable_;
@@ -209,7 +208,7 @@ void WebApkUpdateDataFetcher::OnGotIconMurmur2Hashes(
                                              info_.best_badge_icon_url.spec());
   ScopedJavaLocalRef<jstring> java_badge_icon_murmur2_hash =
       base::android::ConvertUTF8ToJavaString(
-          env, (*hashes)[info_.best_badge_icon_url.spec()]);
+          env, (*hashes)[info_.best_badge_icon_url.spec()].hash);
   ScopedJavaLocalRef<jobject> java_badge_icon;
   if (!badge_icon_.drawsNothing())
     java_badge_icon = gfx::ConvertToJavaBitmap(&badge_icon_);
@@ -264,7 +263,7 @@ void WebApkUpdateDataFetcher::OnGotIconMurmur2Hashes(
     auto it = hashes->find(chosen_icon_url.spec());
     std::string chosen_icon_hash;
     if (it != hashes->end())
-      chosen_icon_hash = it->second;
+      chosen_icon_hash = it->second.hash;
 
     shortcuts.push_back({shortcut.name, shortcut.short_name.string(),
                          base::UTF8ToUTF16(shortcut.url.spec()),

@@ -101,6 +101,7 @@
     <tabs>
       <tab id="stats">Stats</tab>
       <tab id="origins">Origins</tab>
+      <tab id="playbacks">Playbacks</tab>
     </tabs>
     <tabpanels>
       <tabpanel>
@@ -124,24 +125,51 @@
       <tabpanel>
         <h1>Origins</h1>
         <button class="copy-all-to-clipboard">Copy all to clipboard</button>
-        <table>
+        <table id="origins-table">
           <thead>
-            <tr id="data-table-header">
+            <tr>
               <th sort-key="origin">
                 Origin
               </th>
-              <th sort-key="lastUpdatedTime" sort-reverse>
+              <th sort-key="lastUpdatedTime">
                 Last Updated
               </th>
               <th sort-key="cachedAudioVideoWatchtime" class="sort-column" sort-reverse>
                 Audio + Video Watchtime (secs, cached)
               </th>
-              <th sort-key="actualAudioVideoWatchtime" sort-reverse>
+              <th sort-key="actualAudioVideoWatchtime">
                 Audio + Video Watchtime (secs, actual)
               </th>
             </tr>
           </thead>
-          <tbody id="data-table-body">
+          <tbody>
+          </tbody>
+        </table>
+      </tabpanel>
+      <tabpanel>
+        <h1>Playbacks</h1>
+        <button class="copy-all-to-clipboard">Copy all to clipboard</button>
+        <table id="playbacks-table">
+          <thead>
+            <tr>
+              <th sort-key="url">
+                URL
+              </th>
+              <th sort-key="lastUpdatedTime" class="sort-column" sort-reverse>
+                Last Updated
+              </th>
+              <th sort-key="hasAudio">
+                Has Audio
+              </th>
+              <th sort-key="hasVideo">
+                Has Video
+              </th>
+              <th sort-key="watchtime">
+                Watchtime (secs)
+              </th>
+            </tr>
+          </thead>
+          <tbody>
           </tbody>
         </table>
       </tabpanel>

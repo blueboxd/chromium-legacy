@@ -144,6 +144,30 @@ static_library("test_support") {
     "values_test_util.h",
   ]
 
+  configs += [ "//build/config:precompiled_headers" ]
+
+  data = [
+    # The isolate needs this script for setting up the test. It's not actually
+    # needed to run this target locally.
+    "//testing/test_env.py",
+  ]
+
+  public_deps = [
+    ":test_config",
+    "//base",
+    "//base:base_static",
+    "//base:i18n",
+  ]
+
+  deps = [
+    "//base/third_party/dynamic_annotations",
+    "//testing/gmock",
+    "//testing/gtest",
+    "//third_party/icu:icuuc",
+    "//third_party/libxml:libxml_utils",
+    "//third_party/libxml:xml_reader",
+  ]
+
   if (is_win) {
     sources += [
       "scoped_os_info_override_win.cc",
@@ -158,9 +182,15 @@ static_library("test_support") {
 
   if (is_linux) {
     sources += [ "test_file_util_linux.cc" ]
+    public_deps += [ ":fontconfig_util_linux" ]
+    data_deps = [ "//third_party/test_fonts" ]
+    if (current_toolchain == host_toolchain) {
+      data_deps += [ ":do_generate_fontconfig_caches" ]
+    }
   }
 
   if (is_mac) {
+    libs = [ "AppKit.framework" ]
     sources += [
       "mock_chrome_application_mac.h",
       "mock_chrome_application_mac.mm",
@@ -177,10 +207,16 @@ static_library("test_support") {
       "multiprocess_test_android.cc",
       "reached_code_profiler_android.cc",
       "test_file_util_android.cc",
+      "test_file_util_linux.cc",
       "test_support_android.cc",
       "test_support_android.h",
       "thread_pool_test_helpers_android.cc",
     ]
+    deps += [
+      ":base_unittests_jni_headers",
+      ":test_support_jni_headers",
+    ]
+    public_deps += [ ":test_support_java" ]
   }
 
   if (is_ios) {
@@ -190,47 +226,14 @@ static_library("test_support") {
       "ios/wait_util.h",
       "ios/wait_util.mm",
       "launcher/unit_test_launcher_ios.cc",
+      "test_file_util_mac.cc",
       "test_listener_ios.h",
       "test_listener_ios.mm",
       "test_support_ios.h",
       "test_support_ios.mm",
     ]
-  } else if (!is_nacl_nonsfi) {
-    sources += [
-      "launcher/test_launcher.cc",
-      "launcher/test_launcher.h",
-      "launcher/test_launcher_test_utils.cc",
-      "launcher/test_launcher_test_utils.h",
-      "launcher/test_launcher_tracer.cc",
-      "launcher/test_launcher_tracer.h",
-      "launcher/test_results_tracker.cc",
-      "launcher/unit_test_launcher.cc",
-      "multiprocess_test.cc",
-    ]
+    deps += [ ":google_test_runner_shared_headers" ]
   }
-
-  configs += [ "//build/config:precompiled_headers" ]
-
-  data = [
-    # The isolate needs this script for setting up the test. It's not actually
-    # needed to run this target locally.
-    "//testing/test_env.py",
-  ]
-
-  public_deps = [
-    ":test_config",
-    "//base",
-    "//base:base_static",
-    "//base:i18n",
-  ]
-  deps = [
-    "//base/third_party/dynamic_annotations",
-    "//testing/gmock",
-    "//testing/gtest",
-    "//third_party/icu:icuuc",
-    "//third_party/libxml:libxml_utils",
-    "//third_party/libxml:xml_reader",
-  ]
 
   if (is_posix || is_fuchsia) {
     sources += [
@@ -242,32 +245,6 @@ static_library("test_support") {
 
   if (is_fuchsia) {
     deps += [ "//third_party/fuchsia-sdk/sdk:zx" ]
-  }
-
-  if (is_linux) {
-    public_deps += [ ":fontconfig_util_linux" ]
-    data_deps = [ "//third_party/test_fonts" ]
-    if (current_toolchain == host_toolchain) {
-      data_deps += [ ":do_generate_fontconfig_caches" ]
-    }
-  }
-
-  if (is_ios) {
-    sources += [ "test_file_util_mac.cc" ]
-    deps += [ ":google_test_runner_shared_headers" ]
-  }
-
-  if (is_mac) {
-    libs = [ "AppKit.framework" ]
-  }
-
-  if (is_android) {
-    sources += [ "test_file_util_linux.cc" ]
-    deps += [
-      ":base_unittests_jni_headers",
-      ":test_support_jni_headers",
-    ]
-    public_deps += [ ":test_support_java" ]
   }
 
   if (is_nacl_nonsfi) {
@@ -303,6 +280,18 @@ static_library("test_support") {
       "//third_party/icu:icuuc",
       "//third_party/libxml:libxml_utils",
       "//third_party/libxml:xml_reader",
+    ]
+  } else if (!is_ios) {
+    sources += [
+      "launcher/test_launcher.cc",
+      "launcher/test_launcher.h",
+      "launcher/test_launcher_test_utils.cc",
+      "launcher/test_launcher_test_utils.h",
+      "launcher/test_launcher_tracer.cc",
+      "launcher/test_launcher_tracer.h",
+      "launcher/test_results_tracker.cc",
+      "launcher/unit_test_launcher.cc",
+      "multiprocess_test.cc",
     ]
   }
 }

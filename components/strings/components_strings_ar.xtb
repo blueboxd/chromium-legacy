@@ -203,7 +203,7 @@
 <translation id="1763864636252898013">هذا الخادم لم يتمكن من إثبات أن ذلك <ph name="DOMAIN" />؛ بل إنه شهادة أمان غير موثوقة من خلال نظام تشغيل جهازك. وربما يكون السبب في ذلك خطأ في التكوين أو مهاجمًا يعترض الاتصال.</translation>
 <translation id="1768211456781949159">‏<ph name="BEGIN_LINK" />تجربة تشغيل بيانات التشخيص لشبكة Windows<ph name="END_LINK" />.</translation>
 <translation id="1778646502362731194">JIS B0</translation>
-<translation id="1783075131180517613">يُرجى تحديث عبارة مرور المزامنة.</translation>
+<translation id="1783075131180517613">يُرجى إعادة تحميل عبارة مرور المزامنة.</translation>
 <translation id="1787142507584202372">تظهر علامات التبويب المفتوحة هنا</translation>
 <translation id="1791429645902722292">Google Smart Lock</translation>
 <translation id="1800473098294731951">B9</translation>
@@ -299,7 +299,7 @@
 <translation id="2258928405015593961">يُرجى إدخال تاريخ انتهاء صلاحية في المستقبل وإعادة المحاولة.</translation>
 <translation id="225943865679747347">رمز الخطأ: <ph name="ERROR_CODE" /></translation>
 <translation id="2262243747453050782">‏خطأ HTTP</translation>
-<translation id="2263079731045660823">‏تحديث معلومات الملء التلقائي لبطاقة الائتمان في إعدادات Chrome</translation>
+<translation id="2263079731045660823">‏إعادة تحميل معلومات الملء التلقائي لبطاقة الائتمان في إعدادات Chrome</translation>
 <translation id="2267047181501709434">جارٍ إثبات هويتك...</translation>
 <translation id="2270484714375784793">رقم الهاتف</translation>
 <translation id="2276057643614339130">قاعدة الطباعة</translation>
@@ -607,7 +607,7 @@
 <translation id="3650584904733503804">تم التحقق بنجاح</translation>
 <translation id="3655670868607891010">إذا تكرّر هذا الأمر، ننصحك بالاطّلاع على هذه <ph name="HELP_LINK" />.</translation>
 <translation id="3658742229777143148">التعديل</translation>
-<translation id="366077651725703012">تحديث بطاقة الائتمان</translation>
+<translation id="366077651725703012">إعادة تحميل بطاقة الائتمان</translation>
 <translation id="3676592649209844519">معرِّف الجهاز:</translation>
 <translation id="3677008721441257057">‏هل كنت تقصد &lt;a href="#" id="dont-proceed-link"&gt;<ph name="DOMAIN" />&lt;/a&gt;؟</translation>
 <translation id="3678029195006412963">تعذر توقيع الطلب</translation>
@@ -661,7 +661,7 @@
 <translation id="3831915413245941253">ثبّت <ph name="ENROLLMENT_DOMAIN" /> الإضافات للوظائف الإضافية. يمكن للإضافات الوصول إلى بعض بياناتك.</translation>
 <translation id="3832522519263485449">عمل عدة ثقوب يسارًا</translation>
 <translation id="385051799172605136">الرجوع إلى الوراء</translation>
-<translation id="3858027520442213535">تحديث التاريخ والوقت</translation>
+<translation id="3858027520442213535">إعادة تحميل التاريخ والوقت</translation>
 <translation id="3884278016824448484">معرف جهاز متضارب</translation>
 <translation id="3885155851504623709">الأبرشية</translation>
 <translation id="388632593194507180">تم رصد المراقبة</translation>
@@ -743,8 +743,8 @@
     &lt;h4&gt;الخطوة 2: فتح الصفحة في "وضع التصفح المتخفي" (على أجهزة الكمبيوتر فقط)&lt;/h4&gt;
     &lt;p&gt;افتح الصفحة التي كنت تعرضها في نافذة تصفح متخفي.&lt;/p&gt;
     &lt;p&gt;وإذا فُتحت الصفحة، فذلك يعني أن إحدى إضافات Chrome لا تعمل بشكلٍ صحيح. ولإصلاح الخطأ، يمكنك إيقاف الإضافة.&lt;/p&gt;
-    &lt;h4&gt;الخطوة 3: تحديث نظام التشغيل&lt;/h4&gt;
-    &lt;p&gt;تأكّد من تحديث جهازك.&lt;/p&gt;
+    &lt;h4&gt;الخطوة 3: إعادة تحميل نظام التشغيل&lt;/h4&gt;
+    &lt;p&gt;تأكّد من إعادة تحميل جهازك.&lt;/p&gt;
     &lt;h4&gt;الخطوة 4: إيقاف برامج مكافحة الفيروسات مؤقّتًا&lt;/h4&gt;
     &lt;p&gt;سيظهر هذا الخطأ إذا كان برنامج مكافحة الفيروسات يوفر "حماية HTTPS" أو "فحص HTTPS"، ما يمنع متصفح Chrome من توفير الأمان.&lt;/p&gt;
     &lt;p&gt;لإصلاح المشكلة، أوقِف برنامج مكافحة الفيروسات على الجهاز. وإذا فُتِحت الصفحة بعد إيقاف البرنامج، يمكنك إيقافه عند استخدام مواقع آمنة.&lt;/p&gt;
@@ -854,7 +854,7 @@
 <translation id="4728558894243024398">النظام الأساسي</translation>
 <translation id="4731967714531604179">‏Prc2 (مغلف)</translation>
 <translation id="4736825316280949806">‏إعادة تشغيل Chromium</translation>
-<translation id="473775607612524610">تحديث</translation>
+<translation id="473775607612524610">إعادة تحميل</translation>
 <translation id="4738601419177586157"><ph name="TEXT" /> اقتراحات البحث</translation>
 <translation id="4742407542027196863">إدارة كلمات المرور…</translation>
 <translation id="4744603770635761495">المسار التنفيذي</translation>
@@ -1007,7 +1007,7 @@
 <translation id="5344579389779391559">قد تُحاول هذه الصفحة تحصيل رسوم منك</translation>
 <translation id="5355557959165512791">لا يمكنك زيارة <ph name="SITE" /> الآن لأنه تم إبطال شهادته. أخطاء الشبكة والهجمات عليها عادةً ما تكون مؤقتة، لذا ستعمل هذه الصفحة في وقت على الأرجح.</translation>
 <translation id="536296301121032821">تعذّر تخزين إعدادات السياسة</translation>
-<translation id="5371425731340848620">تحديث البطاقة</translation>
+<translation id="5371425731340848620">إعادة تحميل البطاقة</translation>
 <translation id="5377026284221673050">‏""توقيت ساعتك متأخِّر" أو "توقيت ساعتك متقدِّم" أو "&lt;span class="error-code"&gt;NET::ERR_CERT_DATE_INVALID&lt;/span&gt;"</translation>
 <translation id="5386426401304769735">‏تتضمن سلسلة الشهادات لهذا الموقع شهادة موقعة باستخدام SHA-1.</translation>
 <translation id="538659543871111977">A4-Tab</translation>

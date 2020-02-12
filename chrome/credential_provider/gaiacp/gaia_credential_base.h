@@ -168,11 +168,11 @@ class ATL_NO_VTABLE CGaiaCredentialBase
                                     const base::CommandLine& command_line,
                                     UIProcessInfo* uiprocinfo);
 
- private:
   // Gets the full command line to run the Gaia Logon stub (GLS). This
   // function calls GetBaseGlsCommandline.
   HRESULT GetGlsCommandline(base::CommandLine* command_line);
 
+ private:
   // Called from GetSerialization() to handle auto-logon.  If the credential
   // has enough information in internal state to auto-logon, the two arguments
   // are filled in as needed and S_OK is returned.  S_FALSE is returned to

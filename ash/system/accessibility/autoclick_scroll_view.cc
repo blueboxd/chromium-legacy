@@ -20,7 +20,6 @@
 #include "ui/compositor/scoped_layer_animation_settings.h"
 #include "ui/gfx/paint_vector_icon.h"
 #include "ui/gfx/vector_icon_types.h"
-#include "ui/views/animation/ink_drop_mask.h"
 #include "ui/views/masked_targeter_delegate.h"
 #include "ui/views/view.h"
 
@@ -83,13 +82,6 @@ class AutoclickScrollCloseButton : public TopShortcutButton,
   void OnMouseExited(const ui::MouseEvent& event) override {
     hovered_ = false;
     SchedulePaint();
-  }
-
-  // views::ImageButton:
-  std::unique_ptr<views::InkDropMask> CreateInkDropMask() const override {
-    gfx::Rect bounds = GetContentsBounds();
-    return std::make_unique<views::CircleInkDropMask>(
-        size(), bounds.CenterPoint(), bounds.width() / 2);
   }
 
   // TopShortcutButton:

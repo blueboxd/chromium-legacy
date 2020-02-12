@@ -90,6 +90,10 @@ void CrasAudioHandler::AudioObserver::OnHotwordTriggered(
     uint64_t /* tv_sec */,
     uint64_t /* tv_nsec */) {}
 
+void CrasAudioHandler::AudioObserver::OnBluetoothBatteryChanged(
+    const std::string& /* address */,
+    uint32_t /* level */) {}
+
 void CrasAudioHandler::AudioObserver::OnOutputStarted() {}
 
 void CrasAudioHandler::AudioObserver::OnOutputStopped() {}
@@ -762,6 +766,12 @@ void CrasAudioHandler::HotwordTriggered(uint64_t tv_sec, uint64_t tv_nsec) {
 
 void CrasAudioHandler::NumberOfActiveStreamsChanged() {
   GetNumberOfOutputStreams();
+}
+
+void CrasAudioHandler::BluetoothBatteryChanged(const std::string& address,
+                                               uint32_t level) {
+  for (auto& observer : observers_)
+    observer.OnBluetoothBatteryChanged(address, level);
 }
 
 void CrasAudioHandler::OnAudioPolicyPrefChanged() {

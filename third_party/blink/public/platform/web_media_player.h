@@ -40,6 +40,7 @@
 #include "third_party/blink/public/platform/web_string.h"
 #include "third_party/blink/public/platform/webaudiosourceprovider_impl.h"
 #include "ui/gfx/geometry/rect.h"
+#include "ui/gfx/geometry/size.h"
 
 namespace cc {
 class PaintCanvas;
@@ -60,7 +61,6 @@ class WebString;
 class WebURL;
 enum class WebFullscreenVideoStatus;
 struct WebRect;
-struct WebSize;
 
 class WebMediaPlayer {
  public:
@@ -181,9 +181,9 @@ class WebMediaPlayer {
   virtual bool IsRemote() const { return false; }
 
   // Dimension of the video.
-  virtual WebSize NaturalSize() const = 0;
+  virtual gfx::Size NaturalSize() const = 0;
 
-  virtual WebSize VisibleRect() const = 0;
+  virtual gfx::Size VisibleSize() const = 0;
 
   // Getters of playback state.
   virtual bool Paused() const = 0;

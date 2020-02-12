@@ -661,6 +661,10 @@
 <translation id="1988371335297483117">Có thể tải xuống các phần tải dữ liệu tự động cập nhật trên <ph name="PRODUCT_OS_NAME" /> qua HTTP thay vì HTTPS. Điều này cho phép lưu vào cache qua HTTP thông suốt các tài nguyên đã tải xuống qua HTTP.
 
       Nếu chính sách này được đặt thành true, <ph name="PRODUCT_OS_NAME" /> sẽ cố gắng tải xuống các phần tải dữ liệu tự động cập nhật qua HTTP. Nếu chính sách được đặt thành false hoặc không được đặt, HTTPS sẽ không được sử dụng để tải xuống các phần tải dữ liệu tự động cập nhật.</translation>
+<translation id="199011295049694531">Báo cáo thông tin về múi giờ của một thiết bị.
+
+      Nếu bạn không đặt chính sách này hoặc đặt chính sách thành false, thì thông tin này sẽ không được báo cáo.
+      Nếu bạn đặt thành true, thì thông tin về múi giờ hiện đã đặt của thiết bị sẽ được báo cáo.</translation>
 <translation id="199764499252435679">Cho phép cập nhật thành phần trong <ph name="PRODUCT_NAME" /></translation>
 <translation id="1997994951395619441">Nếu bạn bật tùy chọn cài đặt này, <ph name="PRODUCT_NAME" /> sẽ hiển thị thanh dấu trang.
 
@@ -1119,6 +1123,11 @@
       Nếu bạn bật hoặc tắt cài đặt này, người dùng không thể thay đổi hoặc ghi đè cài đặt này.
 
       Nếu chính sách này không được đặt, sẽ có tính năng proxy nén dữ liệu để người dùng chọn có sử dụng hay không.</translation>
+<translation id="2575738503503093841">Chỉ định độ trễ tối đa bằng mili giây giữa quá trình nhận thông báo hủy hiệu lực chính sách và tìm nạp chính sách mới từ dịch vụ quản lý thiết bị.
+
+      Việc đặt chính sách này sẽ thay thế giá trị mặc định là 10000 mili giây. Giá trị hợp lệ cho chính sách này nằm trong khoảng từ 1000 (1 giây) đến 300000 (5 phút). Mọi giá trị không nằm trong khoảng này sẽ bị xếp vào ranh giới tương ứng.
+
+      Nếu bạn không đặt chính sách này, <ph name="PRODUCT_NAME" /> sẽ sử dụng giá trị mặc định là 10000 mili giây.</translation>
 <translation id="257788512393330403">Yêu cầu cứ 6 giờ nhập mật khẩu một lần</translation>
 <translation id="2580104054820772954">Trì hoãn phân phối tệp cho đến khi biết kết quả quét</translation>
 <translation id="2582582399758251985">Khi bạn bật tùy chọn cài đặt này, <ph name="PRODUCT_NAME" /> sẽ sử dụng trình xác minh chứng chỉ tích hợp sẵn để xác minh chứng chỉ máy chủ.
@@ -1147,6 +1156,7 @@
           Nếu bạn chưa đặt chính sách này thì mặc định sẽ là true và NTLMv2 được bật.</translation>
 <translation id="26023406105317310">Định cấu hình các tài khoản Kerberos</translation>
 <translation id="2604182581880595781">Định cấu hình các chính sách liên quan đến tính năng Chia sẻ tệp trong mạng.</translation>
+<translation id="2615240493030733717">Báo cáo thông tin về múi giờ</translation>
 <translation id="2623014935069176671">Đợi hoạt động người dùng đầu tiên</translation>
 <translation id="262740370354162807">Cho phép gửi tài liệu tới <ph name="CLOUD_PRINT_NAME" /></translation>
 <translation id="2627554163382448569">Cung cấp cấu hình máy in dành cho doanh nghiệp.
@@ -1567,6 +1577,8 @@ Khi chính sách này được đặt thành false hoặc không được địn
           Nếu không đặt chính sách này, thì giá trị mặc định chung sẽ được sử dụng cho tất cả các trang web từ chính sách 'DefaultCookiesSetting', nếu chính sách đó được đặt, hoặc từ cấu hình cá nhân của người dùng.
 
           Ngoài ra, hãy xem các chính sách 'CookiesBlockedForUrls' và 'CookiesSessionOnlyForUrls'. Lưu ý rằng không được có các mẫu URL xung đột giữa 3 chính sách này - chưa có chính sách nào được chỉ định là chính sách ưu tiên.</translation>
+<translation id="3339271789059866414">Định cấu hình tình trạng có sẵn của dịch vụ Proxy hệ thống và thông tin xác thực proxy đối với các dịch vụ hệ thống.
+      Nếu bạn không đặt chính sách này, thì dịch vụ Proxy hệ thống sẽ không dùng được.</translation>
 <translation id="3373364525435227558">Đặt một hoặc nhiều ngôn ngữ đề xuất cho phiên được quản lý, cho phép người dùng dễ dàng chọn một trong số các ngôn ngữ này.
 
       Người dùng có thể chọn ngôn ngữ và bố cục bàn phím trước khi bắt đầu một phiên được quản lý. Theo mặc định, tất cả các ngôn ngữ mà <ph name="PRODUCT_OS_NAME" /> hỗ trợ sẽ được liệt kê theo thứ tự trong bảng chữ cái. Bạn có thể sử dụng chính sách này để di chuyển một nhóm ngôn ngữ đề xuất lên đầu danh sách.
@@ -2541,6 +2553,7 @@ Khi chính sách này được đặt thành false hoặc không được địn
 
           Nếu bạn đặt chính sách này, người dùng không thể thay đổi hoặc ghi đè chính sách
           Nếu không đặt chính sách này, con trỏ lớn bị tắt ngay từ đầu nhưng người dùng có thể bật tính năng này bất cứ lúc nào.</translation>
+<translation id="4802744647065138872">Giới hạn số lượng ảnh chụp nhanh dữ liệu người dùng được giữ lại để sử dụng trong trường hợp khôi phục khẩn cấp.</translation>
 <translation id="4802905909524200151">Định cấu hình hành vi của bản cập nhật chương trình cơ sở <ph name="TPM_FIRMWARE_UPDATE_TPM" /></translation>
 <translation id="4804828344300125154">Luôn khởi động lại khi đăng xuất người dùng.</translation>
 <translation id="4807950475297505572">Người dùng gần đây ít sử dụng nhất sẽ bị xóa cho tới khi có đủ dung lượng trống</translation>
@@ -4539,6 +4552,7 @@ Nếu bạn không đặt chính sách này thì người dùng sẽ có thể t
 
       Nếu bạn không đặt chính sách này, tùy chọn cài đặt nói trên sẽ được bật nhưng người dùng có thể thay đổi tùy chọn đó.</translation>
 <translation id="7953256619080733119">Lưu trữ ngoại lệ hướng dẫn người dùng được quản lý</translation>
+<translation id="7956210013490975468">Định cấu hình dịch vụ Proxy hệ thống cho <ph name="PRODUCT_OS_NAME" />.</translation>
 <translation id="7958537754689366707">Yêu cầu cứ 12 giờ nhập mật khẩu một lần</translation>
 <translation id="7961779417826583251">Tắt mục cài đặt buộc thực thi Tính minh bạch của chứng chỉ cho một danh sách Tổ chức phát hành chứng chỉ kế thừa</translation>
 <translation id="7974114691960514888">Chính sách này không còn được hỗ trợ.
@@ -4791,6 +4805,11 @@ Bạn nên định cấu hình chính sách trên Windows qua GPO, mặc dù vi�
 <translation id="8426231401662877819">Xoay màn hình 90 độ theo chiều kim đồng hồ</translation>
 <translation id="8433186206711564395">Cài đặt mạng</translation>
 <translation id="8433423491036718210">Định cấu hình danh sách các URL đăng nhập của doanh nghiệp mà dịch vụ bảo vệ mật khẩu sẽ quét dấu vân tay của mật khẩu.</translation>
+<translation id="8445576299806775661">Sau mỗi lần cập nhật phiên bản trên quy mô lớn, Chrome sẽ chụp nhanh một số phần dữ liệu duyệt web của người dùng để sử dụng trong trường hợp khôi phục phiên bản khẩn cấp diễn ra sau đó. Nếu tiến hành khôi phục khẩn cấp đối với một phiên bản mà người dùng có ảnh chụp nhanh tương ứng, thì dữ liệu trong ảnh chụp nhanh đó sẽ được khôi phục. Điều này cho phép người dùng giữ lại những tùy chọn cài đặt như dấu trang và dữ liệu tự động điền.
+
+      Nếu bạn không đặt chính sách này, thì giá trị mặc định là 3 sẽ được sử dụng
+
+      Nếu bạn đặt chính sách này, thì các ảnh chụp nhanh cũ sẽ bị xóa khi cần để đảm bảo tuân thủ giới hạn. Nếu bạn đặt chính sách này thành 0, thì Chrome sẽ không tạo ảnh chụp nhanh</translation>
 <translation id="8451988835943702790">Sử dụng trang Tab mới làm trang chủ</translation>
 <translation id="8459216513698220096">Chỉ định có xử lý hay không và cách xử lý chính sách người dùng từ GPO (Đối tượng chính sách nhóm) máy tính.
 
@@ -4884,6 +4903,7 @@ Bạn nên định cấu hình chính sách trên Windows qua GPO, mặc dù vi�
 
       Nếu bạn đặt chính sách này thành false hoặc chưa định cấu hình, thì người dùng có thể sử dụng trình duyệt mà không cần đăng nhập vào <ph name="PRODUCT_NAME" />.</translation>
 <translation id="858309738002328421">Chặn tải tệp có kích thước lớn lên</translation>
+<translation id="8584279193368801689">Hạn chế chế độ in mã PIN. Khi bạn không đặt chính sách này, thì tức là không có hạn chế. Nếu không có chế độ này thì chính sách này sẽ bị bỏ qua. Xin lưu ý rằng tính năng in mã PIN chỉ được bật cho những máy in sử dụng một trong các giao thức IPPS, HTTPS, USB hoặc IPP qua USB.</translation>
 <translation id="8585558195682146109">Gửi các tệp người dùng đã tải xuống để quét</translation>
 <translation id="8586528890725660268">Chỉ định các máy in mà người dùng không thể sử dụng.
 
@@ -4957,6 +4977,13 @@ Bạn nên định cấu hình chính sách trên Windows qua GPO, mặc dù vi�
 <translation id="8687958770985542440">Bật lại API Thành phần web phiên bản 0 cho đến M84.</translation>
 <translation id="8693243869659262736">Sử dụng máy khách DNS tích hợp</translation>
 <translation id="8698286761337647563">Số ngày thông báo trước cho người dùng SAML khi mật khẩu của họ sắp hết hạn</translation>
+<translation id="8701288965900240388">Giúp bạn thiết lập để cho phép hoặc không cho phép trang web tự động chạy plugin <ph name="FLASH_PLUGIN_NAME" />. Bạn có thể cho phép hoặc không cho phép tất cả các trang web tự động chạy plugin <ph name="FLASH_PLUGIN_NAME" />.
+
+          Tùy chọn Nhấp để phát sẽ cho phép chạy plugin <ph name="FLASH_PLUGIN_NAME" />. Tuy nhiên, người dùng phải nhấp vào trình giữ chỗ để bắt đầu thực thi.
+
+          Chỉ các miền nêu rõ ràng trong chính sách <ph name="PLUGINS_ALLOWED_FOR_URLS_POLICY_NAME" /> mới được phép tự động phát lại. Nếu bạn muốn bật chế độ tự động phát lại cho tất cả các trang web, hãy cân nhắc việc thêm http://* và https://* vào danh sách này.
+
+          Nếu bạn không đặt chính sách này, 'BlockPlugins' sẽ được sử dụng và người dùng có thể thay đổi tùy chọn cài đặt này theo cách thủ công.</translation>
 <translation id="8703488928438047864">Báo cáo trạng thái bảng</translation>
 <translation id="8704831857353097849">Danh sách plugin bị tắt</translation>
 <translation id="8711086062295757690">Chỉ định từ khóa, là phím tắt được sử dụng trong thanh địa chỉ để kích hoạt tìm kiếm nhà cung cấp này.

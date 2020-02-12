@@ -27,10 +27,15 @@ class URLLoaderFactory;
 // Downloads an icon and takes a Murmur2 hash of the downloaded image.
 class WebApkIconHasher {
  public:
-  using Murmur2HashCallback =
-      base::OnceCallback<void(const std::string& icon_murmur2_hash)>;
-  using Murmur2HashMultipleCallback = base::OnceCallback<void(
-      base::Optional<std::map<std::string, std::string>>)>;
+  // Result struct for holding the downloaded icon data and its hash.
+  struct Icon {
+    std::string data;
+    std::string hash;
+  };
+
+  using Murmur2HashCallback = base::OnceCallback<void(Icon)>;
+  using Murmur2HashMultipleCallback =
+      base::OnceCallback<void(base::Optional<std::map<std::string, Icon>>)>;
 
   // Creates a self-owned WebApkIconHasher instance. The instance downloads all
   // the |icon_urls| and calls |callback| with the Murmur2 hash of the
@@ -64,7 +69,7 @@ class WebApkIconHasher {
   void OnDownloadTimedOut();
 
   // Calls |callback_| with |icon_murmur2_hash|. Also deletes the instance.
-  void RunCallback(const std::string& icon_murmur2_hash);
+  void RunCallback(Icon icon_murmur2_hash);
 
   // Called with the image hash.
   Murmur2HashCallback callback_;

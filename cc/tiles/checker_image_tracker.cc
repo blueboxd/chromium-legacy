@@ -302,8 +302,6 @@ bool CheckerImageTracker::ShouldCheckerImage(const DrawImage& draw_image,
       std::pair<PaintImage::Id, DecodeState>(image_id, DecodeState()));
   auto it = insert_result.first;
   if (insert_result.second) {
-    CheckerImagingDecision decision = CheckerImagingDecision::kCanChecker;
-
     // The following conditions must be true for an image to be checkerable:
     //
     // 1) Complete: The data for the image should have been completely loaded.
@@ -320,11 +318,9 @@ bool CheckerImageTracker::ShouldCheckerImage(const DrawImage& draw_image,
     //
     // Note that we only need to do this check if we didn't veto above in this
     // block.
-    if (decision == CheckerImagingDecision::kCanChecker) {
-      decision = GetCheckerImagingDecision(
-          image, draw_image.src_rect(), min_image_bytes_to_checker_,
-          image_controller_->image_cache_max_limit_bytes());
-    }
+    CheckerImagingDecision decision = GetCheckerImagingDecision(
+        image, draw_image.src_rect(), min_image_bytes_to_checker_,
+        image_controller_->image_cache_max_limit_bytes());
 
     if (decision == CheckerImagingDecision::kCanChecker && force_disabled_) {
       // Get the decision for all the veto reasons first, so we can UMA the

@@ -407,6 +407,7 @@ test("chromedriver_unittests") {
     "chrome_launcher_unittest.cc",
     "command_listener_proxy_unittest.cc",
     "commands_unittest.cc",
+    "element_commands_unittest.cc",
     "key_converter_unittest.cc",
     "keycode_text_conversion_unittest.cc",
     "log_replay/devtools_log_reader_unittest.cc",

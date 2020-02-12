@@ -21,6 +21,7 @@
 #include "ash/system/status_area_widget.h"
 #include "ash/wallpaper/wallpaper_controller_impl.h"
 #include "ash/wm/tablet_mode/tablet_mode_controller.h"
+#include "base/metrics/histogram_macros.h"
 #include "chromeos/constants/chromeos_switches.h"
 #include "ui/aura/scoped_window_targeter.h"
 #include "ui/aura/window_targeter.h"
@@ -34,6 +35,59 @@
 
 namespace ash {
 namespace {
+
+// Records smoothness of bounds animations for the HotseatWidget.
+class HotseatWidgetAnimationMetricsReporter
+    : public HotseatTransitionAnimator::Observer,
+      public ui::AnimationMetricsReporter {
+ public:
+  explicit HotseatWidgetAnimationMetricsReporter(HotseatState state,
+                                                 Shelf* shelf)
+      : target_state_(state), shelf_(shelf) {
+    shelf_->shelf_widget()->hotseat_transition_animator()->AddObserver(this);
+  }
+
+  ~HotseatWidgetAnimationMetricsReporter() override {
+    shelf_->shelf_widget()->hotseat_transition_animator()->RemoveObserver(this);
+  }
+
+  void OnHotseatTransitionAnimationStarted(HotseatState from_state,
+                                           HotseatState to_state) override {
+    target_state_ = to_state;
+  }
+
+  // ui::AnimationMetricsReporter:
+  void Report(int value) override {
+    switch (target_state_) {
+      case HotseatState::kShown:
+        UMA_HISTOGRAM_PERCENTAGE(
+            "Ash.HotseatWidgetAnimation.AnimationSmoothness."
+            "TransitionToShownHotseat",
+            value);
+        break;
+      case HotseatState::kExtended:
+        UMA_HISTOGRAM_PERCENTAGE(
+            "Ash.HotseatWidgetAnimation.AnimationSmoothness."
+            "TransitionToExtendedHotseat",
+            value);
+        break;
+      case HotseatState::kHidden:
+        UMA_HISTOGRAM_PERCENTAGE(
+            "Ash.HotseatWidgetAnimation.AnimationSmoothness."
+            "TransitionToHiddenHotseat",
+            value);
+        break;
+      default:
+        NOTREACHED();
+    }
+  }
+
+ private:
+  // The state to which the animation is transitioning.
+  HotseatState target_state_;
+  // Not owned.
+  Shelf* shelf_;
+};
 
 bool IsScrollableShelfEnabled() {
   return chromeos::switches::ShouldShowScrollableShelf();
@@ -322,6 +376,8 @@ void HotseatWidget::OnHotseatTransitionAnimatorCreated(
     HotseatTransitionAnimator* animator) {
   shelf_->shelf_widget()->hotseat_transition_animator()->AddObserver(
       delegate_view_);
+  hotseat_animation_metrics_reporter_ =
+      std::make_unique<HotseatWidgetAnimationMetricsReporter>(state(), shelf_);
 }
 
 void HotseatWidget::OnMouseEvent(ui::MouseEvent* event) {
@@ -404,14 +460,56 @@ void HotseatWidget::SetTranslucentBackground(
 }
 
 void HotseatWidget::CalculateTargetBounds() {
-  // TODO(manucornet): Move target bounds calculations from the shelf layout
-  // manager.
+  ShelfLayoutManager* layout_manager = shelf_->shelf_layout_manager();
+  const HotseatState hotseat_target_state =
+      layout_manager->CalculateHotseatState(layout_manager->visibility_state(),
+                                            layout_manager->auto_hide_state());
+  const gfx::Size status_size =
+      shelf_->status_area_widget()->GetTargetBounds().size();
+  const gfx::Rect shelf_bounds = shelf_->shelf_widget()->GetTargetBounds();
+  const int horizontal_edge_spacing =
+      ShelfConfig::Get()->control_button_edge_spacing(
+          shelf_->IsHorizontalAlignment());
+  const int vertical_edge_spacing =
+      ShelfConfig::Get()->control_button_edge_spacing(
+          !shelf_->IsHorizontalAlignment());
+  gfx::Rect nav_bounds = shelf_->navigation_widget()->GetTargetBounds();
+  gfx::Point hotseat_origin;
+  int hotseat_width;
+  int hotseat_height;
+  if (shelf_->IsHorizontalAlignment()) {
+    hotseat_width = shelf_bounds.width() - nav_bounds.size().width() -
+                    horizontal_edge_spacing -
+                    ShelfConfig::Get()->app_icon_group_margin() -
+                    status_size.width();
+    int hotseat_x =
+        base::i18n::IsRTL()
+            ? nav_bounds.x() - horizontal_edge_spacing - hotseat_width
+            : nav_bounds.right() + horizontal_edge_spacing;
+    if (hotseat_target_state != HotseatState::kShown) {
+      // Give the hotseat more space if it is shown outside of the shelf.
+      hotseat_width = shelf_bounds.width();
+      hotseat_x = shelf_bounds.x();
+    }
+    hotseat_origin = gfx::Point(
+        hotseat_x,
+        layout_manager->CalculateHotseatYInScreen(hotseat_target_state));
+    hotseat_height = ShelfConfig::Get()->hotseat_size();
+  } else {
+    hotseat_origin = gfx::Point(shelf_bounds.x(),
+                                nav_bounds.bottom() + vertical_edge_spacing);
+    hotseat_width = shelf_bounds.width();
+    hotseat_height = shelf_bounds.height() - nav_bounds.size().height() -
+                     vertical_edge_spacing -
+                     ShelfConfig::Get()->app_icon_group_margin() -
+                     status_size.height();
+  }
+  target_bounds_ =
+      gfx::Rect(hotseat_origin, gfx::Size(hotseat_width, hotseat_height));
 }
 
 gfx::Rect HotseatWidget::GetTargetBounds() const {
-  // TODO(manucornet): Store these locally and do not depend on the layout
-  // manager.
-  return shelf_->shelf_layout_manager()->GetHotseatBoundsInScreen();
+  return target_bounds_;
 }
 
 void HotseatWidget::UpdateLayout(bool animate) {
@@ -426,6 +524,8 @@ void HotseatWidget::UpdateLayout(bool animate) {
   animation_setter.SetTweenType(gfx::Tween::EASE_OUT);
   animation_setter.SetPreemptionStrategy(
       ui::LayerAnimator::IMMEDIATELY_ANIMATE_TO_NEW_TARGET);
+  animation_setter.SetAnimationMetricsReporter(
+      hotseat_animation_metrics_reporter_.get());
 
   layer->SetOpacity(new_layout_inputs.opacity);
   SetBounds(new_layout_inputs.bounds);
@@ -486,8 +586,7 @@ void HotseatWidget::SetState(HotseatState state) {
 }
 
 HotseatWidget::LayoutInputs HotseatWidget::GetLayoutInputs() const {
-  return {shelf_->shelf_layout_manager()->GetHotseatBoundsInScreen(),
-          CalculateOpacity()};
+  return {target_bounds_, CalculateOpacity()};
 }
 
 }  // namespace ash

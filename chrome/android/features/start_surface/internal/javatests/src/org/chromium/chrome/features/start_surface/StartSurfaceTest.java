@@ -38,6 +38,7 @@ import org.junit.rules.TestRule;
 import org.junit.runner.RunWith;
 
 import org.chromium.base.test.util.CommandLineFlags;
+import org.chromium.base.test.util.DisabledTest;
 import org.chromium.base.test.util.Feature;
 import org.chromium.base.test.util.Restriction;
 import org.chromium.chrome.browser.ChromeSwitches;
@@ -225,6 +226,7 @@ public class StartSurfaceTest {
     @MediumTest
     @Feature({"StartSurface"})
     @CommandLineFlags.Add({BASE_PARAMS + "/single"})
+    @DisabledTest(message = "crbug.com/1051643")
     public void testSearchInSingleSurface() {
         // TODO(crbug.com/1025296): Set cached flag before starting the activity and mimic clicking
         // the 'home' button to show the single start surface home page.

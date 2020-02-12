@@ -166,9 +166,9 @@ void DownloadFeedbackImpl::Start(const base::Closure& finish_callback) {
             "Chrome's settings under Advanced Settings, Privacy. The feature "
             "is disabled by default."
           chrome_policy {
-            SafeBrowsingExtendedReportingOptInAllowed {
+            SafeBrowsingExtendedReportingEnabled {
               policy_options {mode: MANDATORY}
-              SafeBrowsingExtendedReportingOptInAllowed: false
+              SafeBrowsingExtendedReportingEnabled: false
             }
           }
         })");

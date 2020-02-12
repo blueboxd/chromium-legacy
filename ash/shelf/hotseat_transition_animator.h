@@ -30,7 +30,7 @@ class ASH_EXPORT HotseatTransitionAnimator
 
   class Observer : public base::CheckedObserver {
    public:
-    // Called when hotseat transition animations begin.
+    // Called before the hotseat transition animations begin.
     virtual void OnHotseatTransitionAnimationStarted(HotseatState from_state,
                                                      HotseatState to_start) {}
     // Called when hotseat transition animations end.

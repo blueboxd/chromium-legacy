@@ -59,10 +59,12 @@ class FeaturePodLabelButton : public views::Button {
 
   // Set the text of label shown below the icon. See FeaturePodButton::SetLabel.
   void SetLabel(const base::string16& label);
+  const base::string16& GetLabelText() const;
 
   // Set the text of sub-label shown below the label.
   // See FeaturePodButton::SetSubLabel.
   void SetSubLabel(const base::string16& sub_label);
+  const base::string16& GetSubLabelText() const;
 
   // Show arrow to indicate that the feature has a detailed view.
   // See FeaturePodButton::ShowDetailedViewArrow.

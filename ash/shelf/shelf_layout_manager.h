@@ -266,7 +266,6 @@ class ASH_EXPORT ShelfLayoutManager
   void OnTabletModeEnded() override;
 
   gfx::Rect GetShelfBoundsInScreen() const;
-  gfx::Rect GetHotseatBoundsInScreen() const;
   float GetOpacity() const;
 
   bool updating_bounds() const { return updating_bounds_; }
@@ -282,6 +281,12 @@ class ASH_EXPORT ShelfLayoutManager
   bool IsDraggingApplist() const {
     return drag_status_ == kDragAppListInProgress;
   }
+
+  // Gets the target HotseatState based on the current state of HomeLauncher,
+  // Overview, Shelf, and any active gestures.
+  // TODO(manucornet): Move this to the hotseat class.
+  HotseatState CalculateHotseatState(ShelfVisibilityState visibility_state,
+                                     ShelfAutoHideState auto_hide_state);
 
  private:
   class UpdateShelfObserver;
@@ -299,7 +304,6 @@ class ASH_EXPORT ShelfLayoutManager
     float opacity;
 
     gfx::Rect shelf_bounds;             // Bounds of the shelf within the screen
-    gfx::Rect hotseat_bounds_in_screen;  // Bounds of the hotseat within screen
     gfx::Insets shelf_insets;           // Shelf insets within the screen
   };
 
@@ -346,11 +350,6 @@ class ASH_EXPORT ShelfLayoutManager
 
   // Sets the visibility of the shelf to |state|.
   void SetState(ShelfVisibilityState visibility_state);
-
-  // Gets the target HotseatState based on the current state of HomeLauncher,
-  // Overview, Shelf, and any active gestures.
-  HotseatState CalculateHotseatState(ShelfVisibilityState visibility_state,
-                                     ShelfAutoHideState auto_hide_state);
 
   // Returns shelf visibility state based on current value of auto hide
   // behavior setting.

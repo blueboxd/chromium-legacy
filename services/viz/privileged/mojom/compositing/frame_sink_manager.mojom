@@ -70,14 +70,6 @@ interface FrameSinkManager {
   // message pipe to the client will be closed.
   InvalidateFrameSinkId(FrameSinkId frame_sink_id);
 
-  // Tells FrameSinkManger to report when a synchronization event completes via
-  // tracing and UMA and the duration of that event. A synchronization event
-  // occurs when a CompositorFrame submitted to the CompositorFrameSink
-  // specified by |frame_sink_id| activates after having been blocked by
-  // unresolved dependencies.
-  EnableSynchronizationReporting(FrameSinkId frame_sink_id,
-                                 string reporting_label);
-
   // |debug_label| is used when printing out the surface hierarchy so we know
   // which clients are contributing which surfaces.
   SetFrameSinkDebugLabel(FrameSinkId frame_sink_id, string debug_label);

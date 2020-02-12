@@ -24,10 +24,10 @@
 #include "ui/gfx/color_palette.h"
 #include "ui/gfx/paint_vector_icon.h"
 #include "ui/views/animation/ink_drop_impl.h"
-#include "ui/views/animation/ink_drop_mask.h"
 #include "ui/views/background.h"
 #include "ui/views/border.h"
 #include "ui/views/controls/button/label_button_border.h"
+#include "ui/views/controls/highlight_path_generator.h"
 #include "ui/views/style/platform_style.h"
 
 namespace ash {
@@ -72,6 +72,8 @@ NewDeskButton::NewDeskButton(views::ButtonListener* listener)
   auto border = std::make_unique<WmHighlightItemBorder>(kCornerRadius);
   border_ptr_ = border.get();
   SetBorder(std::move(border));
+  views::InstallRoundRectHighlightPathGenerator(this, GetInsets(),
+                                                kCornerRadius);
 
   UpdateButtonState();
   UpdateBorderState();
@@ -162,18 +164,14 @@ std::unique_ptr<views::InkDrop> NewDeskButton::CreateInkDrop() {
 
 std::unique_ptr<views::InkDropHighlight> NewDeskButton::CreateInkDropHighlight()
     const {
-  auto highlight = LabelButton::CreateInkDropHighlight();
+  auto highlight = std::make_unique<views::InkDropHighlight>(
+      gfx::SizeF(size()), GetInkDropBaseColor());
   highlight->set_visible_opacity(kInkDropHighlightVisibleOpacity);
   return highlight;
 }
 
 SkColor NewDeskButton::GetInkDropBaseColor() const {
   return SK_ColorWHITE;
-}
-
-std::unique_ptr<views::InkDropMask> NewDeskButton::CreateInkDropMask() const {
-  return std::make_unique<views::RoundRectInkDropMask>(size(), GetInsets(),
-                                                       kCornerRadius);
 }
 
 std::unique_ptr<views::LabelButtonBorder> NewDeskButton::CreateDefaultBorder()

@@ -488,9 +488,7 @@ class LoginAuthUserView::ChallengeResponseView : public views::View,
     auto arrow_button_view = std::make_unique<ArrowButtonView>(
         /*listener=*/this, kChallengeResponseArrowSizeDp);
     arrow_button_view->SetInstallFocusRingOnFocus(true);
-    views::HighlightPathGenerator::Install(
-        arrow_button_view.get(),
-        std::make_unique<views::CircleHighlightPathGenerator>());
+    views::InstallCircleHighlightPathGenerator(arrow_button_view.get());
     arrow_button_ = AddChildView(std::move(arrow_button_view));
     arrow_button_->SetBackgroundColor(kChallengeResponseArrowBackgroundColor);
     arrow_button_->SetAccessibleName(l10n_util::GetStringUTF16(

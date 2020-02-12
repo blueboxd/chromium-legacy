@@ -29,6 +29,9 @@ class MODULES_EXPORT BarcodeDetector final : public ShapeDetector {
   // Barcode Detection API functions.
   static ScriptPromise getSupportedFormats(ScriptState*);
 
+  static String BarcodeFormatToString(
+      const shape_detection::mojom::BarcodeFormat format);
+
   explicit BarcodeDetector(ExecutionContext*,
                            const BarcodeDetectorOptions*,
                            ExceptionState& exception_state);

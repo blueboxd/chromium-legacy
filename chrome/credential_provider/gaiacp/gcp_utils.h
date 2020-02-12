@@ -92,6 +92,13 @@ class GoogleRegistrationDataForTesting {
   ~GoogleRegistrationDataForTesting();
 };
 
+// Class used in tests to set chrome path for testing.
+class GoogleChromePathForTesting {
+ public:
+  explicit GoogleChromePathForTesting(base::FilePath chrome_path);
+  ~GoogleChromePathForTesting();
+};
+
 // Process startup options that allows customization of stdin/stdout/stderr
 // handles.
 class ScopedStartupInfo {
@@ -334,6 +341,9 @@ HRESULT SetGaiaEndpointCommandLineIfNeeded(const wchar_t* override_registry_key,
                                            const std::string& default_endpoint,
                                            bool provide_deviceid,
                                            base::CommandLine* command_line);
+
+// Returns the file path to installed chrome.exe.
+base::FilePath GetChromePath();
 }  // namespace credential_provider
 
 #endif  // CHROME_CREDENTIAL_PROVIDER_GAIACP_GCP_UTILS_H_

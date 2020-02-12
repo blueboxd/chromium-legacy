@@ -43,11 +43,17 @@ PageTestBase::MockClipboardHostProvider::MockClipboardHostProvider(
 
 PageTestBase::MockClipboardHostProvider::MockClipboardHostProvider() = default;
 
-PageTestBase::MockClipboardHostProvider::~MockClipboardHostProvider() = default;
+PageTestBase::MockClipboardHostProvider::~MockClipboardHostProvider() {
+  if (interface_broker_) {
+    interface_broker_->SetBinderForTesting(
+        blink::mojom::blink::ClipboardHost::Name_, {});
+  }
+}
 
 void PageTestBase::MockClipboardHostProvider::Install(
     blink::BrowserInterfaceBrokerProxy& interface_broker) {
-  interface_broker.SetBinderForTesting(
+  interface_broker_ = &interface_broker;
+  interface_broker_->SetBinderForTesting(
       blink::mojom::blink::ClipboardHost::Name_,
       base::BindRepeating(
           &PageTestBase::MockClipboardHostProvider::BindClipboardHost,

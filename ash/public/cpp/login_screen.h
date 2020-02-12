@@ -63,7 +63,7 @@ class ASH_PUBLIC_EXPORT LoginScreen {
   virtual void ShowParentAccessButton(bool show) = 0;
 
   // Shows a standalone Parent Access dialog. If |child_account_id| is valid, it
-  // validates the parent access code for that child only, when it is  empty it
+  // validates the parent access code for that child only, when it is empty it
   // validates the code for any child signed in the device. |callback| is
   // invoked when the back button is clicked or the correct code was entered.
   // |reason| contains information about why the parent access view is
@@ -78,7 +78,7 @@ class ASH_PUBLIC_EXPORT LoginScreen {
   // necessarily fail.
   virtual void ShowParentAccessWidget(
       const AccountId& child_account_id,
-      base::RepeatingCallback<void(bool success)> callback,
+      base::OnceCallback<void(bool success)> callback,
       ParentAccessRequestReason reason,
       bool extra_dimmer,
       base::Time validation_time) = 0;

@@ -144,8 +144,8 @@ class SetTimeMessageHandler : public content::WebUIMessageHandler,
     }
     ash::LoginScreen::Get()->ShowParentAccessWidget(
         account_id,
-        base::BindRepeating(&SetTimeMessageHandler::OnParentAccessValidation,
-                            weak_factory_.GetWeakPtr()),
+        base::BindOnce(&SetTimeMessageHandler::OnParentAccessValidation,
+                       weak_factory_.GetWeakPtr()),
         ash::ParentAccessRequestReason::kChangeTime,
         !is_user_logged_in /* extra_dimmer */,
         base::Time::FromDoubleT(seconds));

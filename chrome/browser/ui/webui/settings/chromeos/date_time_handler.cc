@@ -168,8 +168,8 @@ void DateTimeHandler::HandleShowParentAccessForTimeZone(
 
   ash::LoginScreen::Get()->ShowParentAccessWidget(
       user_manager::UserManager::Get()->GetActiveUser()->GetAccountId(),
-      base::BindRepeating(&DateTimeHandler::OnParentAccessValidation,
-                          weak_ptr_factory_.GetWeakPtr()),
+      base::BindOnce(&DateTimeHandler::OnParentAccessValidation,
+                     weak_ptr_factory_.GetWeakPtr()),
       ash::ParentAccessRequestReason::kChangeTimezone, false /* extra_dimmer */,
       base::Time());
 }

@@ -26,19 +26,9 @@ void InitiatorCSPContext::SetReportingRenderFrameHost(
 }
 
 void InitiatorCSPContext::ReportContentSecurityPolicyViolation(
-    const CSPViolationParams& violation_params) {
-  if (initiator) {
-    initiator->SendViolationReport(blink::mojom::CSPViolationParams::New(
-        violation_params.directive, violation_params.effective_directive,
-        violation_params.console_message, violation_params.blocked_url.spec(),
-        violation_params.report_endpoints, violation_params.use_reporting_api,
-        violation_params.header, violation_params.disposition,
-        violation_params.after_redirect,
-        blink::mojom::SourceLocation::New(
-            violation_params.source_location.url,
-            violation_params.source_location.column_number,
-            violation_params.source_location.line_number)));
-  }
+    network::mojom::CSPViolationPtr violation) {
+  if (initiator)
+    initiator->SendViolationReport(std::move(violation));
 }
 
 bool InitiatorCSPContext::SchemeShouldBypassCSP(
@@ -56,7 +46,7 @@ void InitiatorCSPContext::SanitizeDataForUseInCspViolation(
     bool is_redirect,
     network::mojom::CSPDirectiveName directive,
     GURL* blocked_url,
-    SourceLocation* source_location) const {
+    network::mojom::SourceLocation* source_location) const {
   if (reporting_render_frame_host_impl_) {
     reporting_render_frame_host_impl_->SanitizeDataForUseInCspViolation(
         is_redirect, directive, blocked_url, source_location);

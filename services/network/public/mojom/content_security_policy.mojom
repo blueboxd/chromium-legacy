@@ -4,6 +4,9 @@
 
 module network.mojom;
 
+import "url/mojom/url.mojom";
+import "services/network/public/mojom/source_location.mojom";
+
 // The HTTP Content-Security-Policy-Report-Only response header allows web
 // developers to experiment with policies by monitoring (but not enforcing)
 // their effects. These violation reports consist of JSON documents sent via an
@@ -96,4 +99,42 @@ struct ContentSecurityPolicy {
 
   // Set of reporting endpoints to which violation reports are sent.
   array<string> report_endpoints;
+};
+
+// Data to report Content-Security-Policy violations.
+struct CSPViolation {
+  // The name of the directive that violates the policy. |directive| might be a
+  // directive that serves as a fallback to the |effective_directive|.
+  string directive;
+
+  // The name the effective directive that was checked against.
+  string effective_directive;
+
+  // The console message to be displayed to the user.
+  string console_message;
+
+  // The URL that was blocked by the policy.
+  url.mojom.Url blocked_url;
+
+  // The set of endpoints where a report of the violation should be sent.
+  // Based on 'use_reporting_api' it can be either a set of group_names (when
+  // 'use_reporting_api' = true) or a set of URLs. This means that it's not
+  // possible to use both methods of reporting. This is by design.
+  array<string> report_endpoints;
+
+  // Whether to use the reporting api or not.
+  bool use_reporting_api;
+
+  // The raw content security policy header that was violated.
+  string header;
+
+  // Each policy has an associated disposition, which is either "enforce" or
+  // "report".
+  ContentSecurityPolicyType type;
+
+  // Whether or not the violation happens after a redirect.
+  bool after_redirect;
+
+  // The source code location that triggered the blocked navigation.
+  SourceLocation source_location;
 };

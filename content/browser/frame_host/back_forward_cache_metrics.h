@@ -206,6 +206,8 @@ class BackForwardCacheMetrics
 
   bool ShouldRecordBrowsingInstanceNotSwappedReason() const;
 
+  void RecordHistoryNavigationUkm(NavigationRequest* navigation);
+
   // Main frame document sequence number that identifies all NavigationEntries
   // this metrics object is associated with.
   const int64_t document_sequence_number_;

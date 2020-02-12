@@ -684,9 +684,8 @@ WebSize WebLocalFrameImpl::GetScrollOffset() const {
 
 void WebLocalFrameImpl::SetScrollOffset(const WebSize& offset) {
   if (ScrollableArea* scrollable_area = LayoutViewport()) {
-    scrollable_area->SetScrollOffset(
-        ScrollOffset(offset.width, offset.height),
-        mojom::blink::ScrollIntoViewParams::Type::kProgrammatic);
+    scrollable_area->SetScrollOffset(ScrollOffset(offset.width, offset.height),
+                                     mojom::blink::ScrollType::kProgrammatic);
   }
 }
 
@@ -2138,42 +2137,6 @@ WebLocalFrameImpl::MaybeRenderFallbackContent(const WebURLError& error) const {
 
   return GetFrame()->Loader().MaybeRenderFallbackContent() ? FallbackRendered
                                                            : NoLoadInProgress;
-}
-
-// Called when a navigation is blocked because a Content Security Policy (CSP)
-// is infringed.
-void WebLocalFrameImpl::ReportContentSecurityPolicyViolation(
-    const blink::WebContentSecurityPolicyViolation& violation) {
-  AddMessageToConsole(blink::WebConsoleMessage(
-      mojom::ConsoleMessageLevel::kError, violation.console_message,
-      violation.source_location.url, violation.source_location.line_number,
-      violation.source_location.column_number));
-
-  std::unique_ptr<SourceLocation> source_location =
-      std::make_unique<SourceLocation>(
-          violation.source_location.url, violation.source_location.line_number,
-          violation.source_location.column_number, nullptr);
-
-  DCHECK(GetFrame() && GetFrame()->GetDocument());
-  Document* document = GetFrame()->GetDocument();
-  Vector<String> report_endpoints;
-  for (const WebString& end_point : violation.report_endpoints)
-    report_endpoints.push_back(end_point);
-  auto directive_type =
-      ContentSecurityPolicy::GetDirectiveType(violation.effective_directive);
-  LocalFrame* context_frame =
-      directive_type == ContentSecurityPolicy::DirectiveType::kFrameAncestors
-          ? GetFrame()
-          : nullptr;
-  document->GetContentSecurityPolicy()->ReportViolation(
-      violation.directive, directive_type, violation.console_message,
-      violation.blocked_url, report_endpoints, violation.use_reporting_api,
-      violation.header, violation.disposition,
-      ContentSecurityPolicy::ViolationType::kURLViolation,
-      std::move(source_location), context_frame,
-      violation.after_redirect ? RedirectStatus::kFollowedRedirect
-                               : RedirectStatus::kNoRedirect,
-      nullptr /* Element */);
 }
 
 bool WebLocalFrameImpl::IsLoading() const {

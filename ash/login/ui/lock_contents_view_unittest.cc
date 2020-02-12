@@ -12,6 +12,7 @@
 #include "ash/detachable_base/detachable_base_pairing_status.h"
 #include "ash/login/login_screen_controller.h"
 #include "ash/login/mock_login_screen_client.h"
+#include "ash/login/parent_access_controller.h"
 #include "ash/login/ui/arrow_button_view.h"
 #include "ash/login/ui/fake_login_detachable_base_model.h"
 #include "ash/login/ui/lock_screen.h"
@@ -26,8 +27,6 @@
 #include "ash/login/ui/login_test_base.h"
 #include "ash/login/ui/login_test_utils.h"
 #include "ash/login/ui/login_user_view.h"
-#include "ash/login/ui/parent_access_view.h"
-#include "ash/login/ui/parent_access_widget.h"
 #include "ash/login/ui/scrollable_users_list_view.h"
 #include "ash/login/ui/views_utils.h"
 #include "ash/public/cpp/ash_features.h"
@@ -2158,21 +2157,13 @@ TEST_F(LockContentsViewUnitTest, ParentAccessDialog) {
   contents->ShowParentAccessDialog();
 
   EXPECT_TRUE(primary_view->auth_user());
-  ASSERT_TRUE(ParentAccessWidget::Get());
-  ParentAccessWidget::TestApi widget =
-      ParentAccessWidget::TestApi(ParentAccessWidget::Get());
   EXPECT_FALSE(LoginPasswordView::TestApi(auth_user.password_view())
                    .textfield()
                    ->HasFocus());
-  EXPECT_TRUE(HasFocusInAnyChildView(
-      ParentAccessView::TestApi(widget.parent_access_view())
-          .access_code_view()));
 
-  ParentAccessWidget::TestApi(ParentAccessWidget::Get())
-      .SimulateValidationFinished(false);
+  ParentAccessWidget::Get()->Close(false /* validation success */);
 
   EXPECT_TRUE(primary_view->auth_user());
-  EXPECT_FALSE(ParentAccessWidget::Get());
   EXPECT_TRUE(LoginPasswordView::TestApi(auth_user.password_view())
                   .textfield()
                   ->HasFocus());
@@ -2199,15 +2190,13 @@ TEST_F(LockContentsViewUnitTest, ParentAccessButton) {
   // Validation failed - show the button.
   contents->ShowParentAccessDialog();
   EXPECT_FALSE(LoginScreenTestApi::IsParentAccessButtonShown());
-  ParentAccessWidget::TestApi(ParentAccessWidget::Get())
-      .SimulateValidationFinished(false);
+  ParentAccessWidget::Get()->Close(false /* validation success */);
   EXPECT_TRUE(LoginScreenTestApi::IsParentAccessButtonShown());
 
   // Validation succeeded - hide the button.
   contents->ShowParentAccessDialog();
   EXPECT_FALSE(LoginScreenTestApi::IsParentAccessButtonShown());
-  ParentAccessWidget::TestApi(ParentAccessWidget::Get())
-      .SimulateValidationFinished(true);
+  ParentAccessWidget::Get()->Close(true /* validation success */);
   EXPECT_FALSE(LoginScreenTestApi::IsParentAccessButtonShown());
 
   // Validation failed but user auth got enabled - hide button.
@@ -2215,8 +2204,7 @@ TEST_F(LockContentsViewUnitTest, ParentAccessButton) {
   contents->ShowParentAccessDialog();
   EXPECT_FALSE(LoginScreenTestApi::IsParentAccessButtonShown());
   DataDispatcher()->EnableAuthForUser(child_id);
-  ParentAccessWidget::TestApi(ParentAccessWidget::Get())
-      .SimulateValidationFinished(false);
+  ParentAccessWidget::Get()->Close(false /* validation success */);
   EXPECT_FALSE(LoginScreenTestApi::IsParentAccessButtonShown());
 }
 

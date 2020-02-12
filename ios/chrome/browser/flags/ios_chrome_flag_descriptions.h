@@ -284,10 +284,6 @@ extern const char kReloadSadTabDescription[];
 extern const char kSaveCardInfobarMessagesUIName[];
 extern const char kSaveCardInfobarMessagesUIDescription[];
 
-// Title and description for the flag to toggle the flag of the search button.
-extern const char kSearchIconToggleName[];
-extern const char kSearchIconToggleDescription[];
-
 // Title and description for the flag to enable the send tab to self receiving
 // feature.
 extern const char kSendTabToSelfName[];

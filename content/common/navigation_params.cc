@@ -3,19 +3,9 @@
 // found in the LICENSE file.
 
 #include "content/common/navigation_params.h"
-
 #include "content/common/navigation_params.mojom.h"
 
 namespace content {
-
-SourceLocation::SourceLocation() = default;
-
-SourceLocation::SourceLocation(const std::string& url,
-                               unsigned int line_number,
-                               unsigned int column_number)
-    : url(url), line_number(line_number), column_number(column_number) {}
-
-SourceLocation::~SourceLocation() = default;
 
 mojom::InitiatorCSPInfoPtr CreateInitiatorCSPInfo() {
   return mojom::InitiatorCSPInfo::New(
@@ -30,6 +20,7 @@ mojom::CommonNavigationParamsPtr CreateCommonNavigationParams() {
   common_params->referrer = blink::mojom::Referrer::New();
   common_params->navigation_start = base::TimeTicks::Now();
   common_params->initiator_csp_info = CreateInitiatorCSPInfo();
+  common_params->source_location = network::mojom::SourceLocation::New();
 
   return common_params;
 }

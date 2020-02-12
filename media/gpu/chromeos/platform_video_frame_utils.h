@@ -21,8 +21,21 @@ class GpuMemoryBufferFactory;
 
 namespace media {
 
-// Create platform dependent media::VideoFrame. |buffer_usage| is passed to
-// CreateNativePixmap(). See //media/base/video_frame.h for other parameters.
+// Create GpuMemoryBuffer-based media::VideoFrame with |buffer_usage|.
+// See //media/base/video_frame.h for other parameters.
+// |gpu_memory_buffer_factory| must outlive the returned VideoFrame.
+MEDIA_GPU_EXPORT scoped_refptr<VideoFrame> CreateGpuMemoryBufferVideoFrame(
+    gpu::GpuMemoryBufferFactory* gpu_memory_buffer_factory,
+    VideoPixelFormat pixel_format,
+    const gfx::Size& coded_size,
+    const gfx::Rect& visible_rect,
+    const gfx::Size& natural_size,
+    base::TimeDelta timestamp,
+    gfx::BufferUsage buffer_usage);
+
+// Create platform dependent media::VideoFrame with |buffer_usage|.
+// See //media/base/video_frame.h for other parameters.
+// |gpu_memory_buffer_factory| must outlive the returned VideoFrame.
 MEDIA_GPU_EXPORT scoped_refptr<VideoFrame> CreatePlatformVideoFrame(
     gpu::GpuMemoryBufferFactory* gpu_memory_buffer_factory,
     VideoPixelFormat pixel_format,

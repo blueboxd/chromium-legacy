@@ -248,8 +248,7 @@ void TextFieldInputType::ForwardEvent(Event& event) {
           if (PaintLayerScrollableArea* inner_scrollable_area =
                   inner_layer->GetScrollableArea()) {
             inner_scrollable_area->SetScrollOffset(
-                ScrollOffset(0, 0),
-                mojom::blink::ScrollIntoViewParams::Type::kProgrammatic);
+                ScrollOffset(0, 0), mojom::blink::ScrollType::kProgrammatic);
           }
         }
       }

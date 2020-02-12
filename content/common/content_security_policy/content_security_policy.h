@@ -18,7 +18,6 @@ namespace content {
 // /services/network/public/content_security_policy, this file is going to be
 // moved there as well.
 class CSPContext;
-struct SourceLocation;
 
 // Return true when the |policy| allows a request to the |url| in relation to
 // the |directive| for a given |context|.
@@ -30,7 +29,7 @@ bool CONTENT_EXPORT CheckContentSecurityPolicy(
     bool has_followed_redirect,
     bool is_response_check,
     CSPContext* context,
-    const SourceLocation& source_location,
+    const network::mojom::SourceLocationPtr& source_location,
     bool is_form_submission);
 
 std::string CONTENT_EXPORT ToString(const network::mojom::CSPDirectivePtr&);

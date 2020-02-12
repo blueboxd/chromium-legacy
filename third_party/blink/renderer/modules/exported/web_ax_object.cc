@@ -1621,9 +1621,9 @@ bool WebAXObject::ScrollToMakeVisibleWithSubFocus(
           ? vertical_behavior
           : mojom::blink::ScrollAlignment::Behavior::kNoScroll;
 
-  blink::ScrollAlignment blink_horizontal_scroll_alignment = {
+  blink::mojom::blink::ScrollAlignment blink_horizontal_scroll_alignment = {
       visible_horizontal_behavior, horizontal_behavior, horizontal_behavior};
-  blink::ScrollAlignment blink_vertical_scroll_alignment = {
+  blink::mojom::blink::ScrollAlignment blink_vertical_scroll_alignment = {
       visible_vertical_behavior, vertical_behavior, vertical_behavior};
   return private_->RequestScrollToMakeVisibleWithSubFocusAction(
       subfocus, blink_horizontal_scroll_alignment,

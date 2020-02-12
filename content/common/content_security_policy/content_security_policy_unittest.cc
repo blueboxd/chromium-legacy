@@ -16,9 +16,11 @@ using CSPDirectiveName = network::mojom::CSPDirectiveName;
 namespace {
 class CSPContextTest : public CSPContext {
  public:
-  CSPContextTest() : CSPContext() {}
+  CSPContextTest() = default;
 
-  const std::vector<CSPViolationParams>& violations() { return violations_; }
+  const std::vector<network::mojom::CSPViolationPtr>& violations() {
+    return violations_;
+  }
 
   void AddSchemeToBypassCSP(const std::string& scheme) {
     scheme_to_bypass_.push_back(scheme);
@@ -30,10 +32,10 @@ class CSPContextTest : public CSPContext {
 
  private:
   void ReportContentSecurityPolicyViolation(
-      const CSPViolationParams& violation_params) override {
-    violations_.push_back(violation_params);
+      network::mojom::CSPViolationPtr violation) override {
+    violations_.push_back(std::move(violation));
   }
-  std::vector<CSPViolationParams> violations_;
+  std::vector<network::mojom::CSPViolationPtr> violations_;
   std::vector<std::string> scheme_to_bypass_;
 
   DISALLOW_COPY_AND_ASSIGN(CSPContextTest);
@@ -71,6 +73,10 @@ network::mojom::ContentSecurityPolicyPtr DefaultSrc(const char* scheme,
                      BuildCSPSource(scheme, host));
 }
 
+network::mojom::SourceLocationPtr SourceLocation() {
+  return network::mojom::SourceLocation::New();
+}
+
 }  // namespace
 
 TEST(ContentSecurityPolicy, NoDirective) {
@@ -96,7 +102,7 @@ TEST(ContentSecurityPolicy, ReportViolation) {
       "Refused to send form data to 'http://www.not-example.com/' because it "
       "violates the following Content Security Policy directive: \"form-action "
       "www.example.com\".\n";
-  EXPECT_EQ(console_message, context.violations()[0].console_message);
+  EXPECT_EQ(console_message, context.violations()[0]->console_message);
 }
 
 TEST(ContentSecurityPolicy, DirectiveFallback) {
@@ -121,7 +127,7 @@ TEST(ContentSecurityPolicy, DirectiveFallback) {
         "the following Content Security Policy directive: \"default-src "
         "http://a.com\". Note that 'frame-src' was not explicitly "
         "set, so 'default-src' is used as a fallback.\n";
-    EXPECT_EQ(console_message, context.violations()[0].console_message);
+    EXPECT_EQ(console_message, context.violations()[0]->console_message);
     EXPECT_TRUE(CheckContentSecurityPolicy(policy, CSPDirectiveName::FrameSrc,
                                            GURL("http://a.com"), false, false,
                                            &context, SourceLocation(), false));
@@ -140,7 +146,7 @@ TEST(ContentSecurityPolicy, DirectiveFallback) {
         "the following Content Security Policy directive: \"child-src "
         "http://a.com\". Note that 'frame-src' was not explicitly "
         "set, so 'child-src' is used as a fallback.\n";
-    EXPECT_EQ(console_message, context.violations()[0].console_message);
+    EXPECT_EQ(console_message, context.violations()[0]->console_message);
     EXPECT_TRUE(CheckContentSecurityPolicy(policy, CSPDirectiveName::FrameSrc,
                                            GURL("http://a.com"), false, false,
                                            &context, SourceLocation(), false));
@@ -163,7 +169,7 @@ TEST(ContentSecurityPolicy, DirectiveFallback) {
         "Refused to frame 'http://b.com/' because it violates "
         "the following Content Security Policy directive: \"frame-src "
         "http://a.com\".\n";
-    EXPECT_EQ(console_message, context.violations()[0].console_message);
+    EXPECT_EQ(console_message, context.violations()[0]->console_message);
   }
 }
 

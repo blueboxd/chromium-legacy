@@ -196,7 +196,7 @@ void RotationViewportAnchor::RestoreToAnchor() {
 
   LayoutViewport().SetScrollOffset(
       ToScrollOffset(FloatPoint(main_frame_origin)),
-      mojom::blink::ScrollIntoViewParams::Type::kProgrammatic);
+      mojom::blink::ScrollType::kProgrammatic);
 
   // Set scale before location, since location can be clamped on setting scale.
   visual_viewport_->SetScale(new_page_scale_factor);

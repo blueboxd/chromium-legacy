@@ -58,12 +58,10 @@ TEST_F(ScrollbarThemeOverlayTest, PaintInvalidation) {
   // Changing the scroll offset shouldn't invalid the thumb nor track, but it
   // should cause a "general" invalidation for non-composited scrollbars.
   // Ensure the horizontal scrollbar is unaffected.
-  mock_scrollable_area->UpdateScrollOffset(
-      ScrollOffset(0, 5), mojom::blink::ScrollIntoViewParams::Type::kUser);
-  vertical_scrollbar->OffsetDidChange(
-      mojom::blink::ScrollIntoViewParams::Type::kUser);
-  horizontal_scrollbar->OffsetDidChange(
-      mojom::blink::ScrollIntoViewParams::Type::kUser);
+  mock_scrollable_area->UpdateScrollOffset(ScrollOffset(0, 5),
+                                           mojom::blink::ScrollType::kUser);
+  vertical_scrollbar->OffsetDidChange(mojom::blink::ScrollType::kUser);
+  horizontal_scrollbar->OffsetDidChange(mojom::blink::ScrollType::kUser);
   EXPECT_FALSE(vertical_scrollbar->ThumbNeedsRepaint());
   EXPECT_FALSE(vertical_scrollbar->TrackNeedsRepaint());
   EXPECT_TRUE(mock_scrollable_area->VerticalScrollbarNeedsPaintInvalidation());
@@ -74,12 +72,10 @@ TEST_F(ScrollbarThemeOverlayTest, PaintInvalidation) {
 
   // Try the horizontal scrollbar.
   mock_scrollable_area->ClearNeedsPaintInvalidationForScrollControls();
-  mock_scrollable_area->UpdateScrollOffset(
-      ScrollOffset(5, 5), mojom::blink::ScrollIntoViewParams::Type::kUser);
-  horizontal_scrollbar->OffsetDidChange(
-      mojom::blink::ScrollIntoViewParams::Type::kUser);
-  vertical_scrollbar->OffsetDidChange(
-      mojom::blink::ScrollIntoViewParams::Type::kUser);
+  mock_scrollable_area->UpdateScrollOffset(ScrollOffset(5, 5),
+                                           mojom::blink::ScrollType::kUser);
+  horizontal_scrollbar->OffsetDidChange(mojom::blink::ScrollType::kUser);
+  vertical_scrollbar->OffsetDidChange(mojom::blink::ScrollType::kUser);
   EXPECT_FALSE(vertical_scrollbar->ThumbNeedsRepaint());
   EXPECT_FALSE(vertical_scrollbar->TrackNeedsRepaint());
   EXPECT_FALSE(mock_scrollable_area->VerticalScrollbarNeedsPaintInvalidation());

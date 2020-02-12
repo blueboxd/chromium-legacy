@@ -410,8 +410,7 @@ TEST_P(FrameThrottlingTest, UnthrottlingTriggersRepaint) {
   // Scroll down to unthrottle the frame. The first frame we composite after
   // scrolling won't contain the frame yet, but will schedule another repaint.
   WebView().MainFrameImpl()->GetFrameView()->LayoutViewport()->SetScrollOffset(
-      ScrollOffset(0, 480),
-      mojom::blink::ScrollIntoViewParams::Type::kProgrammatic);
+      ScrollOffset(0, 480), mojom::blink::ScrollType::kProgrammatic);
   auto commands = CompositeFrame();
   EXPECT_FALSE(commands.Contains(SimCanvas::kRect, "green"));
 
@@ -450,8 +449,7 @@ TEST_P(FrameThrottlingTest, UnthrottlingTriggersRepaintInCompositedChild) {
   // Scroll down to unthrottle the frame. The first frame we composite after
   // scrolling won't contain the frame yet, but will schedule another repaint.
   WebView().MainFrameImpl()->GetFrameView()->LayoutViewport()->SetScrollOffset(
-      ScrollOffset(0, 480),
-      mojom::blink::ScrollIntoViewParams::Type::kProgrammatic);
+      ScrollOffset(0, 480), mojom::blink::ScrollType::kProgrammatic);
   auto commands = CompositeFrame();
   EXPECT_FALSE(commands.Contains(SimCanvas::kRect, "green"));
 
@@ -484,8 +482,7 @@ TEST_P(FrameThrottlingTest, ChangeStyleInThrottledFrame) {
 
   // Scroll down to unthrottle the frame.
   WebView().MainFrameImpl()->GetFrameView()->LayoutViewport()->SetScrollOffset(
-      ScrollOffset(0, 480),
-      mojom::blink::ScrollIntoViewParams::Type::kProgrammatic);
+      ScrollOffset(0, 480), mojom::blink::ScrollType::kProgrammatic);
   auto commands = CompositeFrame();
   EXPECT_FALSE(commands.Contains(SimCanvas::kRect, "red"));
   EXPECT_FALSE(commands.Contains(SimCanvas::kRect, "green"));

@@ -575,7 +575,8 @@ void OptimizationGuideHintsManager::OnTopHostsHintsFetched(
   if (get_hints_response) {
     hint_cache_->UpdateFetchedHints(
         std::move(*get_hints_response),
-        clock_->Now() + kUpdateFetchedHintsDelay, base::nullopt,
+        clock_->Now() + kUpdateFetchedHintsDelay,
+        /*urls_fetched=*/{},
         base::BindOnce(
             &OptimizationGuideHintsManager::OnFetchedTopHostsHintsStored,
             ui_weak_ptr_factory_.GetWeakPtr()));
@@ -592,6 +593,7 @@ void OptimizationGuideHintsManager::OnTopHostsHintsFetched(
 
 void OptimizationGuideHintsManager::OnPageNavigationHintsFetched(
     const base::Optional<GURL>& navigation_url,
+    const base::flat_set<GURL>& page_navigation_urls_requested,
     const base::flat_set<std::string>& page_navigation_hosts_requested,
     base::Optional<std::unique_ptr<optimization_guide::proto::GetHintsResponse>>
         get_hints_response) {
@@ -605,7 +607,7 @@ void OptimizationGuideHintsManager::OnPageNavigationHintsFetched(
 
   hint_cache_->UpdateFetchedHints(
       std::move(*get_hints_response), clock_->Now() + kUpdateFetchedHintsDelay,
-      navigation_url,
+      page_navigation_urls_requested,
       base::BindOnce(
           &OptimizationGuideHintsManager::OnFetchedPageNavigationHintsStored,
           ui_weak_ptr_factory_.GetWeakPtr(), navigation_url,
@@ -723,6 +725,7 @@ void OptimizationGuideHintsManager::OnPredictionUpdated(
   // TODO(sophiechang): See if we can make this logic simpler.
   base::flat_set<std::string> target_hosts;
   std::vector<std::string> target_hosts_serialized;
+  base::flat_set<GURL> target_urls;
   for (const auto& url : prediction->sorted_predicted_urls()) {
     if (!IsAllowedToFetchNavigationHints(url))
       continue;
@@ -737,12 +740,16 @@ void OptimizationGuideHintsManager::OnPredictionUpdated(
 
     // Ensure that the 2 data structures remain synchronized.
     DCHECK_EQ(target_hosts.size(), target_hosts_serialized.size());
+
+    if (!hint_cache_->HasURLKeyedEntryForURL(url))
+      target_urls.insert(url);
   }
 
-  if (target_hosts.empty())
+  if (target_hosts.empty() && target_urls.empty())
     return;
 
   if (!batch_update_hints_fetcher_) {
+    DCHECK(hints_fetcher_factory_);
     batch_update_hints_fetcher_ = hints_fetcher_factory_->BuildInstance();
   }
 
@@ -750,16 +757,15 @@ void OptimizationGuideHintsManager::OnPredictionUpdated(
   // not fetching for the current navigation, even though we are fetching using
   // the page navigation context. However, since we do want to load the hints
   // returned, we pass this through to the page navigation callback.
-  //
-  // TODO(crbug/1041693): Add support for URL-keyed hints fetch from the
-  // search results page.
   batch_update_hints_fetcher_->FetchOptimizationGuideServiceHints(
-      target_hosts_serialized, std::vector<GURL>{},
+      target_hosts_serialized,
+      std::vector<GURL>(target_urls.begin(), target_urls.end()),
       registered_optimization_types_,
       optimization_guide::proto::CONTEXT_PAGE_NAVIGATION,
       base::BindOnce(
           &OptimizationGuideHintsManager::OnPageNavigationHintsFetched,
-          ui_weak_ptr_factory_.GetWeakPtr(), base::nullopt, target_hosts));
+          ui_weak_ptr_factory_.GetWeakPtr(), base::nullopt, target_urls,
+          target_hosts));
 
   for (const auto& host : target_hosts)
     LoadHintForHost(host, base::DoNothing());
@@ -1163,7 +1169,7 @@ void OptimizationGuideHintsManager::MaybeFetchHintsForNavigation(
       optimization_guide::proto::CONTEXT_PAGE_NAVIGATION,
       base::BindOnce(
           &OptimizationGuideHintsManager::OnPageNavigationHintsFetched,
-          ui_weak_ptr_factory_.GetWeakPtr(), url,
+          ui_weak_ptr_factory_.GetWeakPtr(), url, base::flat_set<GURL>({url}),
           base::flat_set<std::string>({url.host()})));
 
   if (!hosts.empty() && !urls.empty()) {

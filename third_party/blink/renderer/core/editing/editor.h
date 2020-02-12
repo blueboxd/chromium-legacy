@@ -224,7 +224,7 @@ class CORE_EXPORT Editor final : public GarbageCollected<Editor> {
   void Trace(Visitor*);
 
   void RevealSelectionAfterEditingOperation(
-      const ScrollAlignment& = ScrollAlignment::kAlignToEdgeIfNeeded);
+      const mojom::blink::ScrollAlignment& = ScrollAlignment::ToEdgeIfNeeded());
 
  private:
   Member<LocalFrame> frame_;

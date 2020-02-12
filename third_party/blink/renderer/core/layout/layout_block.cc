@@ -1176,7 +1176,7 @@ bool LayoutBlock::IsPointInOverflowControl(
 bool LayoutBlock::HitTestOverflowControl(
     HitTestResult& result,
     const HitTestLocation& hit_test_location,
-    const PhysicalOffset& adjusted_location) {
+    const PhysicalOffset& adjusted_location) const {
   if (VisibleToHitTestRequest(result.GetHitTestRequest()) &&
       IsPointInOverflowControl(result, hit_test_location.Point(),
                                adjusted_location)) {

@@ -151,12 +151,14 @@ class WaylandBufferManagerHost::Surface {
       pending_buffer_ = nullptr;
 
     // Remove the buffer from pending presentation feedbacks.
+    // It's possible for there to be multiple presentation feedbacks for the
+    // same buffer if the buffer was submitted multiple times before the
+    // presentation feedback came. So, make sure to delete all matching
+    // feedbacks.
     for (auto it = presentation_feedbacks_.begin();
          it != presentation_feedbacks_.end(); ++it) {
-      if (it->first == buffer_id) {
-        presentation_feedbacks_.erase(it);
-        break;
-      }
+      if (it->first == buffer_id)
+        it = --presentation_feedbacks_.erase(it);
     }
 
     auto result = buffers_.erase(buffer_id);

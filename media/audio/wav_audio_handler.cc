@@ -61,6 +61,7 @@ bool ParamsAreValid(const WavAudioParameters& params) {
   return (params.audio_format == kAudioFormatPCM && params.num_channels != 0u &&
           params.num_channels <= static_cast<uint16_t>(limits::kMaxChannels) &&
           params.sample_rate != 0u && params.bits_per_sample != 0u &&
+          params.bits_per_sample % 8u == 0u &&
           (!params.is_extensible ||
            params.valid_bits_per_sample == params.bits_per_sample));
 }

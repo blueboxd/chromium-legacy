@@ -47,7 +47,7 @@ RevealSelectionScope::~RevealSelectionScope() {
     return;
   if (!frame_->Selection().IsAvailable())
     return;
-  frame_->Selection().RevealSelection(ScrollAlignment::kAlignToEdgeIfNeeded,
+  frame_->Selection().RevealSelection(ScrollAlignment::ToEdgeIfNeeded(),
                                       kRevealExtent);
 }
 

@@ -80,7 +80,6 @@
 #include "third_party/blink/renderer/core/page/page.h"
 #include "third_party/blink/renderer/core/page/spatial_navigation.h"
 #include "third_party/blink/renderer/core/paint/paint_layer.h"
-#include "third_party/blink/renderer/core/scroll/scroll_into_view_params_type_converters.h"
 #include "third_party/blink/renderer/platform/bindings/exception_state.h"
 #include "third_party/blink/renderer/platform/geometry/float_quad.h"
 #include "third_party/blink/renderer/platform/graphics/graphics_context.h"
@@ -288,18 +287,19 @@ void FrameSelection::DidSetSelectionDeprecated(
   NotifyTextControlOfSelectionChange(set_selection_by);
   if (set_selection_by == SetSelectionBy::kUser) {
     const CursorAlignOnScroll align = options.GetCursorAlignOnScroll();
-    ScrollAlignment alignment;
+    mojom::blink::ScrollAlignment alignment;
 
     if (frame_->GetEditor()
             .Behavior()
-            .ShouldCenterAlignWhenSelectionIsRevealed())
+            .ShouldCenterAlignWhenSelectionIsRevealed()) {
       alignment = (align == CursorAlignOnScroll::kAlways)
-                      ? ScrollAlignment::kAlignCenterAlways
-                      : ScrollAlignment::kAlignCenterIfNeeded;
-    else
+                      ? ScrollAlignment::CenterAlways()
+                      : ScrollAlignment::CenterIfNeeded();
+    } else {
       alignment = (align == CursorAlignOnScroll::kAlways)
-                      ? ScrollAlignment::kAlignTopAlways
-                      : ScrollAlignment::kAlignToEdgeIfNeeded;
+                      ? ScrollAlignment::TopAlways()
+                      : ScrollAlignment::ToEdgeIfNeeded();
+    }
 
     RevealSelection(alignment, kRevealExtent);
   }
@@ -989,8 +989,9 @@ IntRect FrameSelection::ComputeRectToScroll(
 }
 
 // TODO(editing-dev): This should be done in FlatTree world.
-void FrameSelection::RevealSelection(const ScrollAlignment& alignment,
-                                     RevealExtentOption reveal_extent_option) {
+void FrameSelection::RevealSelection(
+    const mojom::blink::ScrollAlignment& alignment,
+    RevealExtentOption reveal_extent_option) {
   DCHECK(IsAvailable());
 
   // TODO(editing-dev): The use of UpdateStyleAndLayout
@@ -1019,7 +1020,8 @@ void FrameSelection::RevealSelection(const ScrollAlignment& alignment,
     return;
 
   start.AnchorNode()->GetLayoutObject()->ScrollRectToVisible(
-      selection_rect, CreateScrollIntoViewParams(alignment, alignment));
+      selection_rect,
+      ScrollAlignment::CreateScrollIntoViewParams(alignment, alignment));
   UpdateAppearance();
 }
 

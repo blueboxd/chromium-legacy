@@ -130,6 +130,7 @@ mojom("mojom") {
     "referrer_policy.mojom",
     "restricted_cookie_manager.mojom",
     "site_for_cookies.mojom",
+    "source_location.mojom",
     "ssl_config.mojom",
     "tcp_socket.mojom",
     "tls_socket.mojom",

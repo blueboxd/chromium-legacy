@@ -206,7 +206,7 @@ TEST_F(AnchorElementMetricsTest, AnchorFeatureExtract) {
   // Scroll down to the anchor element.
   GetDocument().View()->LayoutViewport()->SetScrollOffset(
       ScrollOffset(0, kViewportHeight * 1.5),
-      mojom::blink::ScrollIntoViewParams::Type::kProgrammatic);
+      mojom::blink::ScrollType::kProgrammatic);
 
   auto feature2 =
       AnchorElementMetrics::MaybeReportClickedMetricsOnClick(anchor_element)
@@ -269,7 +269,7 @@ TEST_F(AnchorElementMetricsTest, AnchorFeatureInIframe) {
   // Scroll down the main frame.
   GetDocument().View()->LayoutViewport()->SetScrollOffset(
       ScrollOffset(0, kViewportHeight * 1.8),
-      mojom::blink::ScrollIntoViewParams::Type::kProgrammatic);
+      mojom::blink::ScrollType::kProgrammatic);
 
   auto feature2 =
       AnchorElementMetrics::MaybeReportClickedMetricsOnClick(anchor_element)
@@ -282,7 +282,7 @@ TEST_F(AnchorElementMetricsTest, AnchorFeatureInIframe) {
   // Scroll down inside iframe. Now the anchor element is visible.
   subframe->View()->LayoutViewport()->SetScrollOffset(
       ScrollOffset(0, kViewportHeight * 0.2),
-      mojom::blink::ScrollIntoViewParams::Type::kProgrammatic);
+      mojom::blink::ScrollType::kProgrammatic);
 
   auto feature3 =
       AnchorElementMetrics::MaybeReportClickedMetricsOnClick(anchor_element)

@@ -36,6 +36,7 @@
 
 #include "base/metrics/histogram_functions.h"
 #include "services/network/public/cpp/features.h"
+#include "services/network/public/mojom/content_security_policy.mojom-blink.h"
 #include "skia/public/mojom/skcolor.mojom-blink.h"
 #include "third_party/blink/public/common/associated_interfaces/associated_interface_provider.h"
 #include "third_party/blink/public/common/browser_interface_broker_proxy.h"
@@ -2144,6 +2145,35 @@ void LocalFrame::AdvanceFocusInForm(mojom::blink::FocusType focus_type) {
 
   next_element->scrollIntoViewIfNeeded(true /*centerIfNeeded*/);
   next_element->focus();
+}
+
+void LocalFrame::ReportContentSecurityPolicyViolation(
+    network::mojom::blink::CSPViolationPtr violation) {
+  auto source_location = std::make_unique<SourceLocation>(
+      violation->source_location->url, violation->source_location->line,
+      violation->source_location->column, nullptr);
+
+  console_->AddMessage(ConsoleMessage::Create(
+      mojom::ConsoleMessageSource::kSecurity,
+      mojom::ConsoleMessageLevel::kError, violation->console_message,
+      source_location->Clone()));
+
+  auto directive_type =
+      ContentSecurityPolicy::GetDirectiveType(violation->effective_directive);
+  LocalFrame* context_frame =
+      directive_type == ContentSecurityPolicy::DirectiveType::kFrameAncestors
+          ? this
+          : nullptr;
+
+  GetDocument()->GetContentSecurityPolicy()->ReportViolation(
+      violation->directive, directive_type, violation->console_message,
+      violation->blocked_url, violation->report_endpoints,
+      violation->use_reporting_api, violation->header, violation->type,
+      ContentSecurityPolicy::ViolationType::kURLViolation,
+      std::move(source_location), context_frame,
+      violation->after_redirect ? RedirectStatus::kFollowedRedirect
+                                : RedirectStatus::kNoRedirect,
+      nullptr /* Element */);
 }
 
 void LocalFrame::BindToReceiver(

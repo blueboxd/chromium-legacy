@@ -54,32 +54,4 @@ network::mojom::ContentSecurityPolicyPtr BuildContentSecurityPolicy(
       policy.use_reporting_api, std::move(report_endpoints));
 }
 
-blink::WebContentSecurityPolicyViolation BuildWebContentSecurityPolicyViolation(
-    const content::CSPViolationParams& violation_params) {
-  blink::WebContentSecurityPolicyViolation violation;
-  violation.directive = blink::WebString::FromASCII(violation_params.directive);
-  violation.effective_directive =
-      blink::WebString::FromASCII(violation_params.effective_directive);
-  violation.console_message =
-      blink::WebString::FromASCII(violation_params.console_message);
-  violation.blocked_url = violation_params.blocked_url;
-  violation.report_endpoints = blink::WebVector<blink::WebString>(
-      violation_params.report_endpoints.size());
-  for (size_t i = 0; i < violation_params.report_endpoints.size(); ++i) {
-    violation.report_endpoints[i] =
-        blink::WebString::FromASCII(violation_params.report_endpoints[i]);
-  }
-  violation.use_reporting_api = violation_params.use_reporting_api;
-  violation.header = blink::WebString::FromASCII(violation_params.header);
-  violation.disposition = violation_params.disposition;
-  violation.after_redirect = violation_params.after_redirect;
-  violation.source_location.url =
-      blink::WebString::FromLatin1(violation_params.source_location.url);
-  violation.source_location.line_number =
-      violation_params.source_location.line_number;
-  violation.source_location.column_number =
-      violation_params.source_location.column_number;
-  return violation;
-}
-
 }  // namespace content

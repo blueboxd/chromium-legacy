@@ -33,12 +33,15 @@ std::string TestNetworkProxy::TestGetProxyForURL() {
   // Assume no one configures a proxy for localhost.
   ASSERT_EQ("DIRECT", callback.output().AsString());
 
-  callback.WaitForResult(pp::NetworkProxy::GetProxyForURL(
-      instance_, pp::Var("https://use.proxy.test/"), callback.GetCallback()));
+  callback.WaitForResult(
+      pp::NetworkProxy::GetProxyForURL(instance_,
+                                       pp::Var("http://www.google.com"),
+                                       callback.GetCallback()));
   CHECK_CALLBACK_BEHAVIOR(callback);
   ASSERT_EQ(PP_OK, callback.result());
   output = callback.output();
-  ASSERT_EQ("PROXY proxy.test:80", callback.output().AsString());
+  // Don't know what the proxy might be, but it should be a valid result.
+  ASSERT_TRUE(output.is_string());
 
   callback.WaitForResult(
       pp::NetworkProxy::GetProxyForURL(instance_,

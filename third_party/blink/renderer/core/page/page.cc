@@ -839,10 +839,10 @@ void Page::DidCommitLoad(LocalFrame* frame) {
     // would update the previous history item, Page::didCommitLoad is called
     // after a new history item is created in FrameLoader.
     // See crbug.com/642279
-    GetVisualViewport().SetScrollOffset(
-        ScrollOffset(), mojom::blink::ScrollIntoViewParams::Type::kProgrammatic,
-        mojom::blink::ScrollIntoViewParams::Behavior::kInstant,
-        ScrollableArea::ScrollCallback());
+    GetVisualViewport().SetScrollOffset(ScrollOffset(),
+                                        mojom::blink::ScrollType::kProgrammatic,
+                                        mojom::blink::ScrollBehavior::kInstant,
+                                        ScrollableArea::ScrollCallback());
     hosts_using_features_.UpdateMeasurementsAndClear();
     // Update |has_related_pages_| as features are reset after navigation.
     UpdateHasRelatedPages();

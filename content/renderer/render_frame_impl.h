@@ -165,7 +165,6 @@ class RenderFrameObserver;
 class RenderViewImpl;
 class RenderWidget;
 class RenderWidgetFullscreenPepper;
-struct CSPViolationParams;
 struct CustomContextMenuContext;
 struct FrameOwnerProperties;
 struct FrameReplicationState;
@@ -618,8 +617,6 @@ class CONTENT_EXPORT RenderFrameImpl
       mojo::PendingAssociatedReceiver<blink::mojom::PortalClient> portal_client,
       blink::TransferableMessage data,
       OnPortalActivatedCallback callback) override;
-  void ReportContentSecurityPolicyViolation(
-      const content::CSPViolationParams& violation_params) override;
 
   // mojom::FullscreenVideoElementHandler implementation:
   void RequestFullscreenVideoElement() override;

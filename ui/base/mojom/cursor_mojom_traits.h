@@ -17,12 +17,6 @@ struct EnumTraits<ui::mojom::CursorType, ui::CursorType> {
 };
 
 template <>
-struct EnumTraits<ui::mojom::CursorSize, ui::CursorSize> {
-  static ui::mojom::CursorSize ToMojom(ui::CursorSize input);
-  static bool FromMojom(ui::mojom::CursorSize input, ui::CursorSize* out);
-};
-
-template <>
 struct StructTraits<ui::mojom::CursorDataView, ui::Cursor> {
   static ui::CursorType native_type(const ui::Cursor& c) {
     return c.native_type();

@@ -83,7 +83,6 @@ class WebSpellCheckPanelHostClient;
 class WebView;
 class WebViewImpl;
 enum class WebFrameLoadType;
-struct WebContentSecurityPolicyViolation;
 struct WebPrintParams;
 class WindowAgentFactory;
 
@@ -129,8 +128,6 @@ class CORE_EXPORT WebLocalFrameImpl final
   void EnableViewSourceMode(bool enable) override;
   bool IsViewSourceModeEnabled() const override;
   WebDocumentLoader* GetDocumentLoader() const override;
-  void ReportContentSecurityPolicyViolation(
-      const blink::WebContentSecurityPolicyViolation&) override;
   void SetReferrerForRequest(WebURLRequest&, const WebURL& referrer) override;
   bool IsNavigationScheduledWithin(base::TimeDelta interval) const override;
   void BlinkFeatureUsageReport(blink::mojom::WebFeature feature) override;

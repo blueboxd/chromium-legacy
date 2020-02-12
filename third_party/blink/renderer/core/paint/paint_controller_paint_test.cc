@@ -161,8 +161,7 @@ TEST_P(PaintControllerPaintTestForCAP, FrameScrollingContents) {
           IsSameId(&div1, kBackgroundType), IsSameId(&div2, kBackgroundType)));
 
   GetDocument().View()->LayoutViewport()->SetScrollOffset(
-      ScrollOffset(5000, 5000),
-      mojom::blink::ScrollIntoViewParams::Type::kProgrammatic);
+      ScrollOffset(5000, 5000), mojom::blink::ScrollType::kProgrammatic);
   UpdateAllLifecyclePhasesForTest();
 
   EXPECT_THAT(
@@ -206,8 +205,7 @@ TEST_P(PaintControllerPaintTestForCAP, BlockScrollingNonLayeredContents) {
           IsSameId(&div1, kBackgroundType), IsSameId(&div2, kBackgroundType)));
 
   container.GetScrollableArea()->SetScrollOffset(
-      ScrollOffset(5000, 5000),
-      mojom::blink::ScrollIntoViewParams::Type::kProgrammatic);
+      ScrollOffset(5000, 5000), mojom::blink::ScrollType::kProgrammatic);
   UpdateAllLifecyclePhasesForTest();
 
   // Cull rect after scroll: (1000,1000 8100x8100)

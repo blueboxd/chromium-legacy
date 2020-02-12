@@ -217,8 +217,7 @@ WebViewImpl* TouchActionTest::SetupTest(
   Document* document =
       static_cast<Document*>(web_view->MainFrameImpl()->GetDocument());
   document->GetFrame()->View()->LayoutViewport()->SetScrollOffset(
-      ScrollOffset(0, kScrollOffset),
-      mojom::blink::ScrollIntoViewParams::Type::kProgrammatic);
+      ScrollOffset(0, kScrollOffset), mojom::blink::ScrollType::kProgrammatic);
 
   return web_view;
 }

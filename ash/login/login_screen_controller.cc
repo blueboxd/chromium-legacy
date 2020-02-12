@@ -7,6 +7,7 @@
 #include <utility>
 
 #include "ash/focus_cycler.h"
+#include "ash/login/parent_access_controller.h"
 #include "ash/login/ui/lock_screen.h"
 #include "ash/login/ui/login_data_dispatcher.h"
 #include "ash/public/cpp/ash_pref_names.h"
@@ -199,8 +200,10 @@ void LoginScreenController::AuthenticateUserWithChallengeResponse(
 
 bool LoginScreenController::ValidateParentAccessCode(
     const AccountId& account_id,
-    const std::string& code,
-    base::Time validation_time) {
+    base::Time validation_time,
+    const std::string& code) {
+  DCHECK(!validation_time.is_null());
+
   if (!client_)
     return false;
 
@@ -378,17 +381,6 @@ void LoginScreenController::ShowParentAccessButton(bool show) {
       ->ShowParentAccessButton(show);
 }
 
-void LoginScreenController::ShowParentAccessWidget(
-    const AccountId& child_account_id,
-    ParentAccessWidget::OnExitCallback callback,
-    ParentAccessRequestReason reason,
-    bool extra_dimmer,
-    base::Time validation_time) {
-  DCHECK(!ParentAccessWidget::Get());
-  ParentAccessWidget::Show(child_account_id, std::move(callback), reason,
-                           extra_dimmer, validation_time);
-}
-
 void LoginScreenController::SetAllowLoginAsGuest(bool allow_guest) {
   Shelf::ForWindow(Shell::Get()->GetPrimaryRootWindow())
       ->shelf_widget()
@@ -402,6 +394,18 @@ LoginScreenController::GetScopedGuestButtonBlocker() {
       ->shelf_widget()
       ->login_shelf_view()
       ->GetScopedGuestButtonBlocker();
+}
+
+void LoginScreenController::ShowParentAccessWidget(
+    const AccountId& child_account_id,
+    ParentAccessRequest::OnParentAccessDone callback,
+    ParentAccessRequestReason reason,
+    bool extra_dimmer,
+    base::Time validation_time) {
+  DCHECK(!ParentAccessWidget::Get());
+  Shell::Get()->parent_access_controller()->ShowWidget(
+      child_account_id, std::move(callback), reason, extra_dimmer,
+      validation_time);
 }
 
 void LoginScreenController::RequestSecurityTokenPin(

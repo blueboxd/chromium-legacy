@@ -37,7 +37,7 @@ class TracedValue : public base::trace_event::ConvertableToTraceFormat {
       base::JSONWriter::Write(value_, &tmp);
       *out += tmp;
     } else {
-      *out += "\"\"";
+      *out += "{}";
     }
   }
 

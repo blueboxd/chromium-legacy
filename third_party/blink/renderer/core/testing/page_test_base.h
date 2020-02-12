@@ -38,12 +38,13 @@ class PageTestBase : public testing::Test, public ScopedMockOverlayScrollbars {
 
     // Installs a mock clipboard in the given interface provider.
     // This is called automatically from the ctor that takes an
-    // |interface_provider| argument.
+    // |interface_broker| argument.
     void Install(blink::BrowserInterfaceBrokerProxy& interface_broker);
 
    private:
     void BindClipboardHost(mojo::ScopedMessagePipeHandle handle);
 
+    blink::BrowserInterfaceBrokerProxy* interface_broker_ = nullptr;
     MockClipboardHost host_;
   };
 

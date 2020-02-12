@@ -1380,7 +1380,6 @@ crbug.com/982194 virtual/layout_ng_fragment_traversal/external/wpt/css/CSS2/floa
 crbug.com/982194 virtual/layout_ng_fragment_traversal/external/wpt/css/CSS2/floats/floats-rule7-outside-left-001.xht [ Failure ]
 crbug.com/982194 virtual/layout_ng_fragment_traversal/external/wpt/css/CSS2/floats/floats-rule7-outside-right-001.xht [ Failure ]
 crbug.com/711704 virtual/layout_ng_fragment_traversal/external/wpt/css/CSS2/floats/floats-wrap-bfc-006.xht [ Failure ]
-crbug.com/982194 virtual/layout_ng_fragment_traversal/external/wpt/css/CSS2/floats/hit-test-floats-001.html [ Failure ]
 crbug.com/711709 virtual/layout_ng_fragment_traversal/external/wpt/css/CSS2/floats-clear/floating-replaced-height-008.xht [ Skip ]
 crbug.com/711709 virtual/layout_ng_fragment_traversal/external/wpt/css/CSS2/floats-clear/floats-108.xht [ Skip ]
 crbug.com/711709 virtual/layout_ng_fragment_traversal/external/wpt/css/CSS2/floats-clear/floats-109.xht [ Skip ]

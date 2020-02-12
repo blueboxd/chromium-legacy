@@ -17,8 +17,6 @@
 
 namespace content {
 
-struct CSPViolationParams;
-
 // A CSPContext represents the system on which the Content-Security-Policy are
 // enforced. One must define via its virtual methods how to report violations
 // and what is the set of scheme that bypass the CSP. Its main implementation
@@ -50,7 +48,7 @@ class CONTENT_EXPORT CSPContext {
                       const GURL& url,
                       bool has_followed_redirect,
                       bool is_response_check,
-                      const SourceLocation& source_location,
+                      const network::mojom::SourceLocationPtr& source_location,
                       CheckCSPDisposition check_csp_disposition,
                       bool is_form_submission);
 
@@ -66,7 +64,7 @@ class CONTENT_EXPORT CSPContext {
   const network::mojom::CSPSourcePtr& self_source() { return self_source_; }
 
   virtual void ReportContentSecurityPolicyViolation(
-      const CSPViolationParams& violation_params);
+      network::mojom::CSPViolationPtr violation);
 
   void ResetContentSecurityPolicies() { policies_.clear(); }
   void AddContentSecurityPolicy(
@@ -92,7 +90,7 @@ class CONTENT_EXPORT CSPContext {
       bool has_followed_redirect,
       network::mojom::CSPDirectiveName directive,
       GURL* blocked_url,
-      SourceLocation* source_location) const;
+      network::mojom::SourceLocation* source_location) const;
 
  private:
   // TODO(arthursonzogni): This is an interface, stop storing data.
@@ -100,58 +98,6 @@ class CONTENT_EXPORT CSPContext {
   std::vector<network::mojom::ContentSecurityPolicyPtr> policies_;
 
   DISALLOW_COPY_AND_ASSIGN(CSPContext);
-};
-
-// Used in CSPContext::ReportViolation()
-struct CONTENT_EXPORT CSPViolationParams {
-  CSPViolationParams();
-  CSPViolationParams(const std::string& directive,
-                     const std::string& effective_directive,
-                     const std::string& console_message,
-                     const GURL& blocked_url,
-                     const std::vector<std::string>& report_endpoints,
-                     bool use_reporting_api,
-                     const std::string& header,
-                     network::mojom::ContentSecurityPolicyType disposition,
-                     bool after_redirect,
-                     const SourceLocation& source_location);
-  CSPViolationParams(const CSPViolationParams& other);
-  ~CSPViolationParams();
-
-  // The name of the directive that violates the policy. |directive| might be a
-  // directive that serves as a fallback to the |effective_directive|.
-  std::string directive;
-
-  // The name the effective directive that was checked against.
-  std::string effective_directive;
-
-  // The console message to be displayed to the user.
-  std::string console_message;
-
-  // The URL that was blocked by the policy.
-  GURL blocked_url;
-
-  // The set of endpoints where a report of the violation should be sent.
-  // Based on 'use_reporting_api' it can be either a set of group_names (when
-  // 'use_reporting_api' = true) or a set of URLs. This means that it's not
-  // possible to use both methods of reporting. This is by design.
-  std::vector<std::string> report_endpoints;
-
-  // Whether to use the reporting api or not.
-  bool use_reporting_api;
-
-  // The raw content security policy header that was violated.
-  std::string header;
-
-  // Each policy has an associated disposition, which is either "enforce" or
-  // "report".
-  network::mojom::ContentSecurityPolicyType disposition;
-
-  // Whether or not the violation happens after a redirect.
-  bool after_redirect;
-
-  // The source code location that triggered the blocked navigation.
-  SourceLocation source_location;
 };
 
 }  // namespace content

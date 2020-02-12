@@ -221,24 +221,6 @@ const FeatureEntry::FeatureVariation
         {"12 matches", kOmniboxUIMaxAutocompleteMatches12,
          base::size(kOmniboxUIMaxAutocompleteMatches12), nullptr}};
 
-const FeatureEntry::FeatureParam kIconForSearchButtonGrey[] = {
-    {kIconForSearchButtonFeatureParameterName,
-     kIconForSearchButtonParameterGrey}};
-const FeatureEntry::FeatureParam kIconForSearchButtonColorful[] = {
-    {kIconForSearchButtonFeatureParameterName,
-     kIconForSearchButtonParameterColorful}};
-const FeatureEntry::FeatureParam kIconForSearchButtonMagnifying[] = {
-    {kIconForSearchButtonFeatureParameterName,
-     kIconForSearchButtonParameterMagnifying}};
-
-const FeatureEntry::FeatureVariation kIconForSearchButtonVariations[] = {
-    {"Grey search engine logo", kIconForSearchButtonGrey,
-     base::size(kIconForSearchButtonGrey), nullptr},
-    {"Colorful search engine logo", kIconForSearchButtonColorful,
-     base::size(kIconForSearchButtonColorful), nullptr},
-    {"Magnifying glass", kIconForSearchButtonMagnifying,
-     base::size(kIconForSearchButtonMagnifying), nullptr}};
-
 const FeatureEntry::FeatureParam kDetectMainThreadFreezeTimeout3s[] = {
     {crash_report::kDetectMainThreadFreezeParameterName,
      crash_report::kDetectMainThreadFreezeParameter3s}};
@@ -432,11 +414,6 @@ const flags_ui::FeatureEntry kFeatureEntries[] = {
          omnibox::kUIExperimentMaxAutocompleteMatches,
          kOmniboxUIMaxAutocompleteMatchesVariations,
          "OmniboxUIMaxAutocompleteVariations")},
-    {"search-icon-toggle", flag_descriptions::kSearchIconToggleName,
-     flag_descriptions::kSearchIconToggleDescription, flags_ui::kOsIos,
-     FEATURE_WITH_PARAMS_VALUE_TYPE(kIconForSearchButtonFeature,
-                                    kIconForSearchButtonVariations,
-                                    "ToggleSearchButtonIcon")},
     {"enable-breakpad-upload-no-delay",
      flag_descriptions::kBreakpadNoDelayInitialUploadName,
      flag_descriptions::kBreakpadNoDelayInitialUploadDescription,

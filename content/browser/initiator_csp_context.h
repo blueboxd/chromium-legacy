@@ -30,14 +30,14 @@ class InitiatorCSPContext : public CSPContext {
   ~InitiatorCSPContext() override;
 
   void ReportContentSecurityPolicyViolation(
-      const CSPViolationParams& violation_params) override;
+      network::mojom::CSPViolationPtr violation_params) override;
   bool SchemeShouldBypassCSP(const base::StringPiece& scheme) override;
   void SetReportingRenderFrameHost(RenderFrameHostImpl* rfh);
   void SanitizeDataForUseInCspViolation(
       bool is_redirect,
       network::mojom::CSPDirectiveName directive,
       GURL* blocked_url,
-      SourceLocation* source_location) const override;
+      network::mojom::SourceLocation* source_location) const override;
 
  private:
   RenderFrameHostImpl* reporting_render_frame_host_impl_;

@@ -141,6 +141,7 @@ class MultiDeviceNotificationPresenter;
 class NightLightControllerImpl;
 class OverlayEventFilter;
 class OverviewController;
+class ParentAccessController;
 class PartialMagnificationController;
 class PeripheralBatteryNotifier;
 class PeripheralBatteryTracker;
@@ -410,6 +411,9 @@ class ASH_EXPORT Shell : public SessionObserver,
     return privacy_screen_controller_.get();
   }
   OverlayEventFilter* overlay_filter() { return overlay_filter_.get(); }
+  ParentAccessController* parent_access_controller() {
+    return parent_access_controller_.get();
+  }
   PartialMagnificationController* partial_magnification_controller() {
     return partial_magnification_controller_.get();
   }
@@ -654,6 +658,7 @@ class ASH_EXPORT Shell : public SessionObserver,
   std::unique_ptr<MruWindowTracker> mru_window_tracker_;
   std::unique_ptr<MultiDeviceNotificationPresenter>
       multidevice_notification_presenter_;
+  std::unique_ptr<ParentAccessController> parent_access_controller_;
   std::unique_ptr<ResizeShadowController> resize_shadow_controller_;
   std::unique_ptr<AshColorProvider> ash_color_provider_;
   std::unique_ptr<SessionControllerImpl> session_controller_;

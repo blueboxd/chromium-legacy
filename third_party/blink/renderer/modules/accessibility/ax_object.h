@@ -971,8 +971,8 @@ class MODULES_EXPORT AXObject : public GarbageCollected<AXObject> {
   bool RequestScrollToMakeVisibleAction();
   bool RequestScrollToMakeVisibleWithSubFocusAction(
       const IntRect&,
-      blink::ScrollAlignment horizontal_scroll_alignment,
-      blink::ScrollAlignment vertical_scroll_alignment);
+      blink::mojom::blink::ScrollAlignment horizontal_scroll_alignment,
+      blink::mojom::blink::ScrollAlignment vertical_scroll_alignment);
   bool RequestSetSelectedAction(bool);
   bool RequestSetSequentialFocusNavigationStartingPointAction();
   bool RequestSetValueAction(const String&);
@@ -995,8 +995,8 @@ class MODULES_EXPORT AXObject : public GarbageCollected<AXObject> {
   bool OnNativeScrollToMakeVisibleAction() const;
   bool OnNativeScrollToMakeVisibleWithSubFocusAction(
       const IntRect&,
-      blink::ScrollAlignment horizontal_scroll_alignment,
-      blink::ScrollAlignment vertical_scroll_alignment) const;
+      blink::mojom::blink::ScrollAlignment horizontal_scroll_alignment,
+      blink::mojom::blink::ScrollAlignment vertical_scroll_alignment) const;
   virtual bool OnNativeSetSelectedAction(bool);
   virtual bool OnNativeSetSequentialFocusNavigationStartingPointAction();
   virtual bool OnNativeSetValueAction(const String&);

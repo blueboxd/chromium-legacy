@@ -62,13 +62,6 @@ enum CursorType {
   kCustom
 };
 
-// Whether we use normal or large cursors. These are the same as Chrome's
-// ui::CursorSize.
-enum CursorSize {
-  kNormal,
-  kLarge
-};
-
 // A description of a cursor.
 struct Cursor {
   // The type of cursor. If kCustom, the rest of the fields are relevant.

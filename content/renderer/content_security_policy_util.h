@@ -25,12 +25,6 @@ network::mojom::ContentSecurityPolicyPtr BuildContentSecurityPolicy(
 network::mojom::CSPSourcePtr BuildCSPSource(
     const blink::WebContentSecurityPolicySourceExpression&);
 
-// Convert a CSPViolationParams into a WebContentSecurityPolicyViolation. These
-// two classes represent the exact same thing, but one is in content, the other
-// is in blink.
-blink::WebContentSecurityPolicyViolation BuildWebContentSecurityPolicyViolation(
-    const content::CSPViolationParams& violation_params);
-
 }  // namespace content
 
 #endif /* CONTENT_RENDERER_CONTENT_SECURITY_POLICY_UTIL_H_ */

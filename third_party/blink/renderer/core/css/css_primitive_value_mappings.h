@@ -1757,16 +1757,16 @@ inline OverflowAlignment CSSIdentifierValue::ConvertTo() const {
 
 template <>
 inline CSSIdentifierValue::CSSIdentifierValue(
-    mojom::blink::ScrollIntoViewParams::Behavior behavior)
+    mojom::blink::ScrollBehavior behavior)
     : CSSValue(kIdentifierClass) {
   switch (behavior) {
-    case mojom::blink::ScrollIntoViewParams::Behavior::kAuto:
+    case mojom::blink::ScrollBehavior::kAuto:
       value_id_ = CSSValueID::kAuto;
       break;
-    case mojom::blink::ScrollIntoViewParams::Behavior::kSmooth:
+    case mojom::blink::ScrollBehavior::kSmooth:
       value_id_ = CSSValueID::kSmooth;
       break;
-    case mojom::blink::ScrollIntoViewParams::Behavior::kInstant:
+    case mojom::blink::ScrollBehavior::kInstant:
       // Behavior 'instant' is only allowed in ScrollOptions arguments passed to
       // CSSOM scroll APIs.
       NOTREACHED();
@@ -1774,18 +1774,17 @@ inline CSSIdentifierValue::CSSIdentifierValue(
 }
 
 template <>
-inline mojom::blink::ScrollIntoViewParams::Behavior
-CSSIdentifierValue::ConvertTo() const {
+inline mojom::blink::ScrollBehavior CSSIdentifierValue::ConvertTo() const {
   switch (GetValueID()) {
     case CSSValueID::kAuto:
-      return mojom::blink::ScrollIntoViewParams::Behavior::kAuto;
+      return mojom::blink::ScrollBehavior::kAuto;
     case CSSValueID::kSmooth:
-      return mojom::blink::ScrollIntoViewParams::Behavior::kSmooth;
+      return mojom::blink::ScrollBehavior::kSmooth;
     default:
       break;
   }
   NOTREACHED();
-  return mojom::blink::ScrollIntoViewParams::Behavior::kAuto;
+  return mojom::blink::ScrollBehavior::kAuto;
 }
 
 template <>

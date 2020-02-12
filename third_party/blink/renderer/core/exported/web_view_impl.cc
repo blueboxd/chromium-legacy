@@ -141,7 +141,6 @@
 #include "third_party/blink/renderer/core/paint/paint_layer_scrollable_area.h"
 #include "third_party/blink/renderer/core/paint/paint_timing_detector.h"
 #include "third_party/blink/renderer/core/probe/core_probes.h"
-#include "third_party/blink/renderer/core/scroll/scroll_into_view_params_type_converters.h"
 #include "third_party/blink/renderer/core/scroll/scrollbar_theme.h"
 #include "third_party/blink/renderer/core/timing/dom_window_performance.h"
 #include "third_party/blink/renderer/core/timing/window_performance.h"
@@ -641,7 +640,7 @@ bool WebViewImpl::StartPageScaleAnimation(const IntPoint& target_position,
       if (view && view->GetScrollableArea()) {
         view->GetScrollableArea()->SetScrollOffset(
             ScrollOffset(clamped_point.x(), clamped_point.y()),
-            mojom::blink::ScrollIntoViewParams::Type::kProgrammatic);
+            mojom::blink::ScrollType::kProgrammatic);
       }
 
       return false;
@@ -2117,11 +2116,10 @@ bool WebViewImpl::ScrollFocusedEditableElementIntoView() {
   // only the visual and layout viewports. We'll call ScrollRectToVisible with
   // the stop_at_main_frame_layout_viewport param to ensure the element is
   // actually visible in the page.
-  auto params = CreateScrollIntoViewParams(
-      ScrollAlignment::kAlignCenterIfNeeded,
-      ScrollAlignment::kAlignCenterIfNeeded,
-      mojom::blink::ScrollIntoViewParams::Type::kProgrammatic, false,
-      mojom::blink::ScrollIntoViewParams::Behavior::kInstant);
+  auto params = ScrollAlignment::CreateScrollIntoViewParams(
+      ScrollAlignment::CenterIfNeeded(), ScrollAlignment::CenterIfNeeded(),
+      mojom::blink::ScrollType::kProgrammatic, false,
+      mojom::blink::ScrollBehavior::kInstant);
   params->stop_at_main_frame_layout_viewport = true;
   layout_object->ScrollRectToVisible(
       PhysicalRect(layout_object->AbsoluteBoundingBoxRect()),
@@ -2693,9 +2691,8 @@ void WebViewImpl::ResetScrollAndScaleState() {
     ScrollableArea* scrollable_area = frame_view->LayoutViewport();
 
     if (!scrollable_area->GetScrollOffset().IsZero()) {
-      scrollable_area->SetScrollOffset(
-          ScrollOffset(),
-          mojom::blink::ScrollIntoViewParams::Type::kProgrammatic);
+      scrollable_area->SetScrollOffset(ScrollOffset(),
+                                       mojom::blink::ScrollType::kProgrammatic);
     }
   }
 

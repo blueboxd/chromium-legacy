@@ -497,6 +497,8 @@ class CORE_EXPORT LocalFrame final : public Frame,
       const gfx::Point& window_point,
       blink::mojom::blink::MediaPlayerActionPtr action) final;
   void AdvanceFocusInForm(mojom::blink::FocusType focus_type) final;
+  void ReportContentSecurityPolicyViolation(
+      network::mojom::blink::CSPViolationPtr csp_violation) final;
 
   // blink::mojom::LocalMainFrame overrides:
   void SetScaleFactor(float scale) override;

@@ -1064,8 +1064,7 @@ TEST_F(FrameSelectionTest, SelectionBounds) {
   const int scroll_offset = 500;
   LocalFrameView* frame_view = GetDocument().View();
   frame_view->LayoutViewport()->SetScrollOffset(
-      ScrollOffset(0, scroll_offset),
-      mojom::blink::ScrollIntoViewParams::Type::kProgrammatic);
+      ScrollOffset(0, scroll_offset), mojom::blink::ScrollType::kProgrammatic);
   EXPECT_EQ(PhysicalRect(0, node_margin_top, node_width, node_height),
             frame_view->FrameToDocument(Selection().AbsoluteUnclippedBounds()));
 

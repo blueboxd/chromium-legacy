@@ -321,6 +321,11 @@ class COMPONENT_EXPORT(CRYPTOHOME_CLIENT) FakeCryptohomeClient
     tpm_attestation_does_key_exist_should_succeed_ = should_succeed;
   }
 
+  void set_tpm_attestation_public_key(
+      base::Optional<TpmAttestationDataResult> value) {
+    tpm_attestation_public_key_ = value;
+  }
+
   void set_supports_low_entropy_credentials(bool supports) {
     supports_low_entropy_credentials_ = supports;
   }
@@ -486,6 +491,7 @@ class COMPONENT_EXPORT(CRYPTOHOME_CLIENT) FakeCryptohomeClient
   bool enable_auth_check_ = false;
   bool tpm_is_ready_ = true;
   bool tpm_is_enabled_ = true;
+  base::Optional<TpmAttestationDataResult> tpm_attestation_public_key_;
 
   // Reply to GetRsuDeviceId().
   std::string rsu_device_id_;

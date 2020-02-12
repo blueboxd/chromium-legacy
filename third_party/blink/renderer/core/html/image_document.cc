@@ -383,7 +383,7 @@ void ImageDocument::ImageClicked(int x, int y) {
 
     GetFrame()->View()->LayoutViewport()->SetScrollOffset(
         ScrollOffset(scroll_x, scroll_y),
-        mojom::blink::ScrollIntoViewParams::Type::kProgrammatic);
+        mojom::blink::ScrollType::kProgrammatic);
   }
 }
 

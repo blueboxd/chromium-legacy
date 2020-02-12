@@ -29,16 +29,17 @@ bool ShouldCheckPolicy(const network::mojom::ContentSecurityPolicyPtr& policy,
 
 }  // namespace
 
-CSPContext::CSPContext() {}
-CSPContext::~CSPContext() {}
+CSPContext::CSPContext() = default;
+CSPContext::~CSPContext() = default;
 
-bool CSPContext::IsAllowedByCsp(network::mojom::CSPDirectiveName directive_name,
-                                const GURL& url,
-                                bool has_followed_redirect,
-                                bool is_response_check,
-                                const SourceLocation& source_location,
-                                CheckCSPDisposition check_csp_disposition,
-                                bool is_form_submission) {
+bool CSPContext::IsAllowedByCsp(
+    network::mojom::CSPDirectiveName directive_name,
+    const GURL& url,
+    bool has_followed_redirect,
+    bool is_response_check,
+    const network::mojom::SourceLocationPtr& source_location,
+    CheckCSPDisposition check_csp_disposition,
+    bool is_form_submission) {
   if (SchemeShouldBypassCSP(url.scheme_piece()))
     return true;
 
@@ -90,41 +91,9 @@ void CSPContext::SanitizeDataForUseInCspViolation(
     bool has_followed_redirect,
     network::mojom::CSPDirectiveName directive,
     GURL* blocked_url,
-    SourceLocation* source_location) const {
-  return;
-}
+    network::mojom::SourceLocation* source_location) const {}
 
 void CSPContext::ReportContentSecurityPolicyViolation(
-    const CSPViolationParams& violation_params) {
-  return;
-}
-
-CSPViolationParams::CSPViolationParams() = default;
-
-CSPViolationParams::CSPViolationParams(
-    const std::string& directive,
-    const std::string& effective_directive,
-    const std::string& console_message,
-    const GURL& blocked_url,
-    const std::vector<std::string>& report_endpoints,
-    bool use_reporting_api,
-    const std::string& header,
-    network::mojom::ContentSecurityPolicyType disposition,
-    bool after_redirect,
-    const SourceLocation& source_location)
-    : directive(directive),
-      effective_directive(effective_directive),
-      console_message(console_message),
-      blocked_url(blocked_url),
-      report_endpoints(report_endpoints),
-      use_reporting_api(use_reporting_api),
-      header(header),
-      disposition(disposition),
-      after_redirect(after_redirect),
-      source_location(source_location) {}
-
-CSPViolationParams::CSPViolationParams(const CSPViolationParams& other) =
-    default;
-CSPViolationParams::~CSPViolationParams() {}
+    network::mojom::CSPViolationPtr violation) {}
 
 }  // namespace content

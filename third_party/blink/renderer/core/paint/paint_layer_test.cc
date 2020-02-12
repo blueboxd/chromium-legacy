@@ -207,8 +207,7 @@ TEST_P(PaintLayerTest, CompositedScrollingNoNeedsRepaint) {
   EXPECT_EQ(PhysicalOffset(), content_layer->LocationWithoutPositionOffset());
 
   scroll_layer->GetScrollableArea()->SetScrollOffset(
-      ScrollOffset(1000, 1000),
-      mojom::blink::ScrollIntoViewParams::Type::kProgrammatic);
+      ScrollOffset(1000, 1000), mojom::blink::ScrollType::kProgrammatic);
   GetDocument().View()->UpdateAllLifecyclePhasesExceptPaint(
       DocumentUpdateReason::kTest);
   EXPECT_EQ(PhysicalOffset(0, 0),
@@ -243,8 +242,7 @@ TEST_P(PaintLayerTest, NonCompositedScrollingNeedsRepaint) {
   EXPECT_EQ(PhysicalOffset(), content_layer->LocationWithoutPositionOffset());
 
   scroll_layer->GetScrollableArea()->SetScrollOffset(
-      ScrollOffset(1000, 1000),
-      mojom::blink::ScrollIntoViewParams::Type::kProgrammatic);
+      ScrollOffset(1000, 1000), mojom::blink::ScrollType::kProgrammatic);
   GetDocument().View()->UpdateAllLifecyclePhasesExceptPaint(
       DocumentUpdateReason::kTest);
   EXPECT_EQ(PhysicalOffset(0, 0),
@@ -1247,8 +1245,7 @@ TEST_P(PaintLayerTest, PaintInvalidationOnNonCompositedScroll) {
   EXPECT_EQ(IntRect(0, 30, 50, 5), content->FirstFragment().VisualRect());
 
   scroller->GetScrollableArea()->SetScrollOffset(
-      ScrollOffset(0, 20),
-      mojom::blink::ScrollIntoViewParams::Type::kProgrammatic);
+      ScrollOffset(0, 20), mojom::blink::ScrollType::kProgrammatic);
   UpdateAllLifecyclePhasesForTest();
   EXPECT_EQ(IntRect(0, 30, 50, 10),
             content_layer->FirstFragment().VisualRect());
@@ -1277,8 +1274,7 @@ TEST_P(PaintLayerTest, PaintInvalidationOnCompositedScroll) {
   EXPECT_EQ(IntRect(0, 30, 50, 5), content->FirstFragment().VisualRect());
 
   scroller->GetScrollableArea()->SetScrollOffset(
-      ScrollOffset(0, 20),
-      mojom::blink::ScrollIntoViewParams::Type::kProgrammatic);
+      ScrollOffset(0, 20), mojom::blink::ScrollType::kProgrammatic);
   UpdateAllLifecyclePhasesForTest();
   EXPECT_EQ(IntRect(0, 30, 50, 10),
             content_layer->FirstFragment().VisualRect());
@@ -1609,8 +1605,7 @@ TEST_P(PaintLayerTest, FloatLayerUnderInlineLayerScrolled) {
   PaintLayer* span = GetPaintLayerByElementId("span");
   PaintLayer* container = GetPaintLayerByElementId("container");
   container->GetScrollableArea()->SetScrollOffset(
-      ScrollOffset(0, 400),
-      mojom::blink::ScrollIntoViewParams::Type::kProgrammatic);
+      ScrollOffset(0, 400), mojom::blink::ScrollType::kProgrammatic);
 
   EXPECT_EQ(span, floating->Parent());
   if (RuntimeEnabledFeatures::LayoutNGEnabled()) {
@@ -1891,8 +1886,7 @@ TEST_P(PaintLayerTest, ColumnSpanLayerUnderExtraLayerScrolled) {
   PaintLayer* extra_layer = GetPaintLayerByElementId("extraLayer");
   PaintLayer* columns = GetPaintLayerByElementId("columns");
   columns->GetScrollableArea()->SetScrollOffset(
-      ScrollOffset(200, 0),
-      mojom::blink::ScrollIntoViewParams::Type::kProgrammatic);
+      ScrollOffset(200, 0), mojom::blink::ScrollType::kProgrammatic);
 
   EXPECT_EQ(extra_layer, spanner->Parent());
   EXPECT_EQ(columns, spanner->ContainingLayer());
@@ -2098,7 +2092,7 @@ TEST_P(PaintLayerTest, SquashingOffsets) {
                                   squashed->TransformAncestorOrRoot()));
 
   GetDocument().View()->LayoutViewport()->ScrollBy(
-      ScrollOffset(0, 25), mojom::blink::ScrollIntoViewParams::Type::kUser);
+      ScrollOffset(0, 25), mojom::blink::ScrollType::kUser);
   UpdateAllLifecyclePhasesForTest();
 
   PaintLayer::MapPointInPaintInvalidationContainerToBacking(

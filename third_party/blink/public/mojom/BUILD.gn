@@ -117,6 +117,7 @@ mojom("mojom_platform") {
     "reporting/reporting.mojom",
     "screen_enumeration/screen_enumeration.mojom",
     "script/script_type.mojom",
+    "scroll/scroll_enums.mojom",
     "scroll/scroll_into_view_params.mojom",
     "scroll/scrollbar_mode.mojom",
     "selection_menu/selection_menu_behavior.mojom",

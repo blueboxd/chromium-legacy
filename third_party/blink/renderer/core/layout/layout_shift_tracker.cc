@@ -386,15 +386,14 @@ void LayoutShiftTracker::UpdateInputTimestamp(base::TimeTicks timestamp) {
   }
 }
 
-void LayoutShiftTracker::NotifyScroll(
-    mojom::blink::ScrollIntoViewParams::Type scroll_type,
-    ScrollOffset delta) {
+void LayoutShiftTracker::NotifyScroll(mojom::blink::ScrollType scroll_type,
+                                      ScrollOffset delta) {
   frame_scroll_delta_ += delta;
 
   // Only set observed_input_or_scroll_ for user-initiated scrolls, and not
   // other scrolls such as hash fragment navigations.
-  if (scroll_type == mojom::blink::ScrollIntoViewParams::Type::kUser ||
-      scroll_type == mojom::blink::ScrollIntoViewParams::Type::kCompositor)
+  if (scroll_type == mojom::blink::ScrollType::kUser ||
+      scroll_type == mojom::blink::ScrollType::kCompositor)
     observed_input_or_scroll_ = true;
 }
 

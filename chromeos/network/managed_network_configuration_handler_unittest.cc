@@ -520,7 +520,7 @@ TEST_F(ManagedNetworkConfigurationHandlerTest, SetPolicyUpdateManagedVPN) {
 }
 
 TEST_F(ManagedNetworkConfigurationHandlerTest,
-       SetPolicyUpdateManagedVPNPlusUi) {
+       SetPolicyUpdateManagedVPNOpenVPNPlusUi) {
   InitializeStandardProfiles();
   SetUpEntry("policy/shill_managed_vpn.json", kUser1ProfilePath, "entry_path");
 
@@ -551,6 +551,42 @@ TEST_F(ManagedNetworkConfigurationHandlerTest,
   std::unique_ptr<base::DictionaryValue> expected_shill_properties =
       test_utils::ReadTestDictionary(
           "policy/shill_policy_on_managed_vpn_plus_ui.json");
+  EXPECT_EQ(*expected_shill_properties, *properties);
+}
+
+TEST_F(ManagedNetworkConfigurationHandlerTest,
+       SetPolicyUpdateManagedVPNL2TPIPsecPlusUi) {
+  InitializeStandardProfiles();
+  SetUpEntry("policy/shill_managed_vpn_ipsec.json", kUser1ProfilePath,
+             "entry_path");
+
+  // Apply the VPN L2TP-IPsec policy that will be updated.
+  SetPolicy(::onc::ONC_SOURCE_USER_POLICY, kUser1,
+            "policy/policy_vpn_ipsec.onc");
+  base::RunLoop().RunUntilIdle();
+
+  // Update the VPN L2TP-IPsec policy.
+  const NetworkState* network_state =
+      network_state_handler_->GetNetworkStateFromGuid(kTestGuidVpn);
+  ASSERT_TRUE(network_state);
+  std::unique_ptr<base::DictionaryValue> ui_config =
+      test_utils::ReadTestDictionary("policy/policy_vpn_ipsec_ui.json");
+  managed_network_configuration_handler_->SetProperties(
+      network_state->path(), *ui_config, base::DoNothing(),
+      base::Bind(&ErrorCallback));
+  base::RunLoop().RunUntilIdle();
+
+  // Get shill service properties after the update.
+  std::string service_path =
+      GetShillServiceClient()->FindServiceMatchingGUID(kTestGuidVpn);
+  ASSERT_FALSE(service_path.empty());
+  const base::DictionaryValue* properties =
+      GetShillServiceClient()->GetServiceProperties(service_path);
+  ASSERT_TRUE(properties);
+
+  std::unique_ptr<base::DictionaryValue> expected_shill_properties =
+      test_utils::ReadTestDictionary(
+          "policy/shill_policy_on_managed_vpn_ipsec_plus_ui.json");
   EXPECT_EQ(*expected_shill_properties, *properties);
 }
 

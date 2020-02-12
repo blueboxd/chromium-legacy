@@ -297,7 +297,10 @@ document.addEventListener('DOMContentLoaded', async () => {
   perfLogger.addListener((event, duration, extras) => {
     if (state.get(state.State.PRINT_PERFORMANCE_LOGS)) {
       // eslint-disable-next-line no-console
-      console.log(`Event: ${event}, Duration: ${duration} ms`, extras);
+      console.log(
+          '%c%s %s ms %s', 'color: #4E4F97; font-weight: bold;',
+          event.padEnd(40), duration.toFixed(0).padStart(4),
+          JSON.stringify(extras));
     }
   });
 

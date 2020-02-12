@@ -45,7 +45,6 @@
 #include "third_party/blink/renderer/core/paint/compositing/paint_layer_compositor.h"
 #include "third_party/blink/renderer/core/paint/paint_layer.h"
 #include "third_party/blink/renderer/core/paint/paint_layer_scrollable_area.h"
-#include "third_party/blink/renderer/core/scroll/scroll_into_view_params_type_converters.h"
 #include "third_party/blink/renderer/core/scroll/scrollbar_theme_overlay_mobile.h"
 #include "third_party/blink/renderer/core/scroll/smooth_scroll_sequencer.h"
 #include "third_party/blink/renderer/core/testing/color_scheme_helper.h"
@@ -319,8 +318,7 @@ TEST_P(VisualViewportTest, TestResizeAtFullyScrolledPreservesViewportLocation) {
 
   // Fully scroll both viewports.
   frame_view.LayoutViewport()->SetScrollOffset(
-      ScrollOffset(10000, 10000),
-      mojom::blink::ScrollIntoViewParams::Type::kProgrammatic);
+      ScrollOffset(10000, 10000), mojom::blink::ScrollType::kProgrammatic);
   visual_viewport.Move(FloatSize(10000, 10000));
 
   // Sanity check.
@@ -582,11 +580,9 @@ TEST_P(VisualViewportTest, TestFractionalScrollOffsetIsNotOverwritten) {
 
   LocalFrameView& frame_view = *WebView()->MainFrameImpl()->GetFrameView();
   frame_view.LayoutViewport()->SetScrollOffset(
-      ScrollOffset(0, 10.5),
-      mojom::blink::ScrollIntoViewParams::Type::kProgrammatic);
+      ScrollOffset(0, 10.5), mojom::blink::ScrollType::kProgrammatic);
   frame_view.LayoutViewport()->ScrollableArea::SetScrollOffset(
-      ScrollOffset(10, 30.5),
-      mojom::blink::ScrollIntoViewParams::Type::kCompositor);
+      ScrollOffset(10, 30.5), mojom::blink::ScrollType::kCompositor);
 
   EXPECT_EQ(30.5, frame_view.LayoutViewport()->GetScrollOffset().Height());
 }
@@ -1019,8 +1015,7 @@ TEST_P(VisualViewportTest,
 
   LocalFrameView* frame_view = WebView()->MainFrameImpl()->GetFrameView();
   frame_view->LayoutViewport()->SetScrollOffset(
-      ScrollOffset(0, 1000),
-      mojom::blink::ScrollIntoViewParams::Type::kProgrammatic);
+      ScrollOffset(0, 1000), mojom::blink::ScrollType::kProgrammatic);
 
   EXPECT_EQ(IntSize(1000, 1000), frame_view->FrameRect().Size());
 
@@ -1235,8 +1230,7 @@ TEST_P(VisualViewportTest, ScrollIntoViewFractionalOffset) {
   // the viewport at all.
   WebView()->SetVisualViewportOffset(gfx::PointF(250.25f, 100.25f));
   layout_viewport_scrollable_area->SetScrollOffset(
-      ScrollOffset(0, 900.75),
-      mojom::blink::ScrollIntoViewParams::Type::kProgrammatic);
+      ScrollOffset(0, 900.75), mojom::blink::ScrollType::kProgrammatic);
   inputBox->scrollIntoViewIfNeeded(false);
 
   if (RuntimeEnabledFeatures::FractionalScrollOffsetsEnabled()) {
@@ -1250,8 +1244,7 @@ TEST_P(VisualViewportTest, ScrollIntoViewFractionalOffset) {
 
   // Change the fractional part of the frameview to one that would round down.
   layout_viewport_scrollable_area->SetScrollOffset(
-      ScrollOffset(0, 900.125),
-      mojom::blink::ScrollIntoViewParams::Type::kProgrammatic);
+      ScrollOffset(0, 900.125), mojom::blink::ScrollType::kProgrammatic);
   inputBox->scrollIntoViewIfNeeded(false);
 
   if (RuntimeEnabledFeatures::FractionalScrollOffsetsEnabled()) {
@@ -1266,8 +1259,7 @@ TEST_P(VisualViewportTest, ScrollIntoViewFractionalOffset) {
   // Repeat both tests above with the visual viewport at a high fractional.
   WebView()->SetVisualViewportOffset(gfx::PointF(250.875f, 100.875f));
   layout_viewport_scrollable_area->SetScrollOffset(
-      ScrollOffset(0, 900.75),
-      mojom::blink::ScrollIntoViewParams::Type::kProgrammatic);
+      ScrollOffset(0, 900.75), mojom::blink::ScrollType::kProgrammatic);
   inputBox->scrollIntoViewIfNeeded(false);
 
   if (RuntimeEnabledFeatures::FractionalScrollOffsetsEnabled()) {
@@ -1281,8 +1273,7 @@ TEST_P(VisualViewportTest, ScrollIntoViewFractionalOffset) {
 
   // Change the fractional part of the frameview to one that would round down.
   layout_viewport_scrollable_area->SetScrollOffset(
-      ScrollOffset(0, 900.125),
-      mojom::blink::ScrollIntoViewParams::Type::kProgrammatic);
+      ScrollOffset(0, 900.125), mojom::blink::ScrollType::kProgrammatic);
   inputBox->scrollIntoViewIfNeeded(false);
 
   if (RuntimeEnabledFeatures::FractionalScrollOffsetsEnabled()) {
@@ -1297,8 +1288,7 @@ TEST_P(VisualViewportTest, ScrollIntoViewFractionalOffset) {
   // Both viewports with a 0.5 fraction.
   WebView()->SetVisualViewportOffset(gfx::PointF(250.5f, 100.5f));
   layout_viewport_scrollable_area->SetScrollOffset(
-      ScrollOffset(0, 900.5),
-      mojom::blink::ScrollIntoViewParams::Type::kProgrammatic);
+      ScrollOffset(0, 900.5), mojom::blink::ScrollType::kProgrammatic);
   inputBox->scrollIntoViewIfNeeded(false);
 
   if (RuntimeEnabledFeatures::FractionalScrollOffsetsEnabled()) {
@@ -1351,9 +1341,8 @@ TEST_P(VisualViewportTest, TestBrowserControlsAdjustment) {
   EXPECT_EQ(FloatSize(500, 860 - 430), visual_viewport.GetScrollOffset());
 
   // The outer viewport (LocalFrameView) should be affected as well.
-  frame_view.LayoutViewport()->ScrollBy(
-      ScrollOffset(10000, 10000),
-      mojom::blink::ScrollIntoViewParams::Type::kUser);
+  frame_view.LayoutViewport()->ScrollBy(ScrollOffset(10000, 10000),
+                                        mojom::blink::ScrollType::kUser);
   EXPECT_EQ(expectedMaxLayoutViewportScrollOffset(visual_viewport, frame_view),
             frame_view.LayoutViewport()->GetScrollOffset());
 
@@ -1370,9 +1359,8 @@ TEST_P(VisualViewportTest, TestBrowserControlsAdjustment) {
                        visual_viewport.GetScrollOffset());
 
   // The outer viewport (LocalFrameView) should be affected as well.
-  frame_view.LayoutViewport()->ScrollBy(
-      ScrollOffset(10000, 10000),
-      mojom::blink::ScrollIntoViewParams::Type::kUser);
+  frame_view.LayoutViewport()->ScrollBy(ScrollOffset(10000, 10000),
+                                        mojom::blink::ScrollType::kUser);
   EXPECT_EQ(expectedMaxLayoutViewportScrollOffset(visual_viewport, frame_view),
             frame_view.LayoutViewport()->GetScrollOffset());
 }
@@ -1405,9 +1393,8 @@ TEST_P(VisualViewportTest, TestBrowserControlsAdjustmentWithScale) {
   EXPECT_EQ(FloatSize(750, 860 - 215), visual_viewport.GetScrollOffset());
 
   // The outer viewport (LocalFrameView) should be affected as well.
-  frame_view.LayoutViewport()->ScrollBy(
-      ScrollOffset(10000, 10000),
-      mojom::blink::ScrollIntoViewParams::Type::kUser);
+  frame_view.LayoutViewport()->ScrollBy(ScrollOffset(10000, 10000),
+                                        mojom::blink::ScrollType::kUser);
   ScrollOffset expected =
       expectedMaxLayoutViewportScrollOffset(visual_viewport, frame_view);
   EXPECT_EQ(expected, frame_view.LayoutViewport()->GetScrollOffset());
@@ -1419,9 +1406,8 @@ TEST_P(VisualViewportTest, TestBrowserControlsAdjustmentWithScale) {
        cc::BrowserControlsState::kBoth});
   EXPECT_EQ(1, visual_viewport.Scale());
   EXPECT_EQ(expected, frame_view.LayoutViewport()->GetScrollOffset());
-  frame_view.LayoutViewport()->ScrollBy(
-      ScrollOffset(10000, 10000),
-      mojom::blink::ScrollIntoViewParams::Type::kUser);
+  frame_view.LayoutViewport()->ScrollBy(ScrollOffset(10000, 10000),
+                                        mojom::blink::ScrollType::kUser);
   EXPECT_EQ(expected, frame_view.LayoutViewport()->GetScrollOffset());
 
   EXPECT_EQ(FloatSize(500, 860 - 430), visual_viewport.GetScrollOffset());
@@ -1445,9 +1431,8 @@ TEST_P(VisualViewportTest, TestBrowserControlsAdjustmentWithScale) {
   EXPECT_FLOAT_SIZE_EQ(FloatSize(375, 877.5 - 548.75),
                        visual_viewport.GetScrollOffset());
 
-  frame_view.LayoutViewport()->ScrollBy(
-      ScrollOffset(10000, 10000),
-      mojom::blink::ScrollIntoViewParams::Type::kUser);
+  frame_view.LayoutViewport()->ScrollBy(ScrollOffset(10000, 10000),
+                                        mojom::blink::ScrollType::kUser);
   EXPECT_EQ(expectedMaxLayoutViewportScrollOffset(visual_viewport, frame_view),
             frame_view.LayoutViewport()->GetScrollOffset());
 }
@@ -1490,9 +1475,8 @@ TEST_P(VisualViewportTest, TestBrowserControlsAdjustmentAndResize) {
   // Scroll all the way to the bottom, hiding the browser controls in the
   // process.
   visual_viewport.Move(ScrollOffset(10000, 10000));
-  frame_view.LayoutViewport()->ScrollBy(
-      ScrollOffset(10000, 10000),
-      mojom::blink::ScrollIntoViewParams::Type::kUser);
+  frame_view.LayoutViewport()->ScrollBy(ScrollOffset(10000, 10000),
+                                        mojom::blink::ScrollType::kUser);
   WebView()->GetBrowserControls().SetShownRatio(0, 0);
 
   EXPECT_EQ(FloatSize(250, visual_viewport_height / page_scale),
@@ -1561,9 +1545,8 @@ TEST_P(VisualViewportTest, TestBrowserControlsShrinkAdjustmentAndResize) {
   // example).
   WebView()->GetBrowserControls().SetShownRatio(1, 0);
   visual_viewport.Move(ScrollOffset(10000, 10000));
-  frame_view.LayoutViewport()->ScrollBy(
-      ScrollOffset(10000, 10000),
-      mojom::blink::ScrollIntoViewParams::Type::kUser);
+  frame_view.LayoutViewport()->ScrollBy(ScrollOffset(10000, 10000),
+                                        mojom::blink::ScrollType::kUser);
 
   EXPECT_EQ(FloatSize(250, (visual_viewport_height - browser_controls_height) /
                                page_scale),
@@ -1624,8 +1607,7 @@ TEST_P(VisualViewportTest, TestTopControlHidingResizeDoesntClampMainFrame) {
        cc::BrowserControlsState::kBoth});
   LocalFrameView& frame_view = *WebView()->MainFrameImpl()->GetFrameView();
   frame_view.LayoutViewport()->SetScrollOffset(
-      ScrollOffset(0, 10000),
-      mojom::blink::ScrollIntoViewParams::Type::kProgrammatic);
+      ScrollOffset(0, 10000), mojom::blink::ScrollType::kProgrammatic);
   EXPECT_EQ(500, frame_view.LayoutViewport()->GetScrollOffset().Height());
 
   // Now send the resize, make sure the scroll offset doesn't change.
@@ -1801,10 +1783,8 @@ TEST_P(VisualViewportTest, visualViewportIsInert) {
   EXPECT_EQ(300, html->clientHeight());
 
   visual_viewport.SetScrollOffset(
-      ScrollOffset(10, 15),
-      mojom::blink::ScrollIntoViewParams::Type::kProgrammatic,
-      mojom::blink::ScrollIntoViewParams::Behavior::kInstant,
-      ScrollableArea::ScrollCallback());
+      ScrollOffset(10, 15), mojom::blink::ScrollType::kProgrammatic,
+      mojom::blink::ScrollBehavior::kInstant, ScrollableArea::ScrollCallback());
 
   ASSERT_EQ(10, visual_viewport.GetScrollOffset().Width());
   ASSERT_EQ(15, visual_viewport.GetScrollOffset().Height());
@@ -1938,8 +1918,7 @@ TEST_P(VisualViewportTest, AccessibilityHitTestWhileZoomedIn) {
   WebView()->SetPageScaleFactor(2);
   WebView()->SetVisualViewportOffset(gfx::PointF(200, 230));
   frame_view.LayoutViewport()->SetScrollOffset(
-      ScrollOffset(400, 1100),
-      mojom::blink::ScrollIntoViewParams::Type::kProgrammatic);
+      ScrollOffset(400, 1100), mojom::blink::ScrollType::kProgrammatic);
 
   // FIXME(504057): PaintLayerScrollableArea dirties the compositing state.
   ForceFullCompositingUpdate();
@@ -1999,8 +1978,7 @@ TEST_P(VisualViewportTest, TestCoordinateTransforms) {
 
   // Scrolling the main frame should have no effect.
   frame_view.LayoutViewport()->SetScrollOffset(
-      ScrollOffset(100, 120),
-      mojom::blink::ScrollIntoViewParams::Type::kProgrammatic);
+      ScrollOffset(100, 120), mojom::blink::ScrollType::kProgrammatic);
   EXPECT_FLOAT_POINT_EQ(FloatPoint(50, 62), visual_viewport.ViewportToRootFrame(
                                                 FloatPoint(80, 100)));
   EXPECT_FLOAT_POINT_EQ(
@@ -2047,8 +2025,7 @@ TEST_P(VisualViewportTest, ResizeWithScrollAnchoring) {
 
   LocalFrameView& frame_view = *WebView()->MainFrameImpl()->GetFrameView();
   frame_view.LayoutViewport()->SetScrollOffset(
-      ScrollOffset(700, 500),
-      mojom::blink::ScrollIntoViewParams::Type::kProgrammatic);
+      ScrollOffset(700, 500), mojom::blink::ScrollType::kProgrammatic);
   UpdateAllLifecyclePhases();
 
   WebView()->MainFrameWidget()->Resize(IntSize(800, 300));
@@ -2075,15 +2052,12 @@ TEST_P(VisualViewportTest, ResizeAnchoringWithRootScroller) {
 
   WebView()->SetPageScaleFactor(3.f);
   frame_view.GetScrollableArea()->SetScrollOffset(
-      ScrollOffset(0, 400),
-      mojom::blink::ScrollIntoViewParams::Type::kProgrammatic);
+      ScrollOffset(0, 400), mojom::blink::ScrollType::kProgrammatic);
 
   VisualViewport& visual_viewport = WebView()->GetPage()->GetVisualViewport();
   visual_viewport.SetScrollOffset(
-      ScrollOffset(0, 400),
-      mojom::blink::ScrollIntoViewParams::Type::kProgrammatic,
-      mojom::blink::ScrollIntoViewParams::Behavior::kInstant,
-      ScrollableArea::ScrollCallback());
+      ScrollOffset(0, 400), mojom::blink::ScrollType::kProgrammatic,
+      mojom::blink::ScrollBehavior::kInstant, ScrollableArea::ScrollCallback());
 
   WebView()->MainFrameWidget()->Resize(IntSize(800, 500));
 
@@ -2548,13 +2522,11 @@ class VisualViewportScrollIntoViewTest : public VisualViewportSimTest {
                       bool is_for_scroll_sequence) {
     WebDocument web_doc = WebView().MainFrameImpl()->GetDocument();
     Element* bottom_element = web_doc.GetElementById(element_name);
-    auto scroll_params = CreateScrollIntoViewParams(
-        ScrollAlignment::kAlignToEdgeIfNeeded,
-        ScrollAlignment::kAlignToEdgeIfNeeded,
-        mojom::blink::ScrollIntoViewParams::Type::kProgrammatic,
+    auto scroll_params = ScrollAlignment::CreateScrollIntoViewParams(
+        ScrollAlignment::ToEdgeIfNeeded(), ScrollAlignment::ToEdgeIfNeeded(),
+        mojom::blink::ScrollType::kProgrammatic,
         /*make_visible_in_visual_viewport=*/true,
-        mojom::blink::ScrollIntoViewParams::Behavior::kInstant,
-        is_for_scroll_sequence);
+        mojom::blink::ScrollBehavior::kInstant, is_for_scroll_sequence);
     WebView().GetPage()->GetVisualViewport().ScrollIntoView(
         bottom_element->BoundingBox(), scroll_params);
   }

@@ -55,7 +55,6 @@
 #include "third_party/blink/renderer/core/layout/layout_theme.h"
 #include "third_party/blink/renderer/core/origin_trials/origin_trials.h"
 #include "third_party/blink/renderer/core/scroll/scroll_alignment.h"
-#include "third_party/blink/renderer/core/scroll/scroll_into_view_params_type_converters.h"
 #include "third_party/blink/renderer/core/typed_arrays/array_buffer/array_buffer_contents.h"
 #include "third_party/blink/renderer/modules/canvas/canvas2d/canvas_style.h"
 #include "third_party/blink/renderer/modules/canvas/canvas2d/hit_region.h"
@@ -378,9 +377,10 @@ void CanvasRenderingContext2D::ScrollPathIntoViewInternal(const Path& path) {
   path_rect.Intersect(canvas_rect);
 
   // Horizontal text is aligned at the top of the screen
-  ScrollAlignment horizontal_scroll_mode =
-      ScrollAlignment::kAlignToEdgeIfNeeded;
-  ScrollAlignment vertical_scroll_mode = ScrollAlignment::kAlignTopAlways;
+  mojom::blink::ScrollAlignment horizontal_scroll_mode =
+      ScrollAlignment::ToEdgeIfNeeded();
+  mojom::blink::ScrollAlignment vertical_scroll_mode =
+      ScrollAlignment::TopAlways();
 
   // Vertical text needs be aligned horizontally on the screen
   bool is_horizontal_writing_mode =
@@ -388,17 +388,15 @@ void CanvasRenderingContext2D::ScrollPathIntoViewInternal(const Path& path) {
   if (!is_horizontal_writing_mode) {
     bool is_right_to_left =
         canvas()->EnsureComputedStyle()->IsFlippedBlocksWritingMode();
-    horizontal_scroll_mode =
-        (is_right_to_left ? ScrollAlignment::kAlignRightAlways
-                          : ScrollAlignment::kAlignLeftAlways);
-    vertical_scroll_mode = ScrollAlignment::kAlignToEdgeIfNeeded;
+    horizontal_scroll_mode = (is_right_to_left ? ScrollAlignment::RightAlways()
+                                               : ScrollAlignment::LeftAlways());
+    vertical_scroll_mode = ScrollAlignment::ToEdgeIfNeeded();
   }
   renderer->ScrollRectToVisible(
-      path_rect,
-      CreateScrollIntoViewParams(
-          horizontal_scroll_mode, vertical_scroll_mode,
-          mojom::blink::ScrollIntoViewParams::Type::kProgrammatic, false,
-          mojom::blink::ScrollIntoViewParams::Behavior::kAuto));
+      path_rect, ScrollAlignment::CreateScrollIntoViewParams(
+                     horizontal_scroll_mode, vertical_scroll_mode,
+                     mojom::blink::ScrollType::kProgrammatic, false,
+                     mojom::blink::ScrollBehavior::kAuto));
 }
 
 void CanvasRenderingContext2D::clearRect(double x,

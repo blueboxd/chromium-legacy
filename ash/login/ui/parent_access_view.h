@@ -8,6 +8,7 @@
 #include <string>
 
 #include "ash/ash_export.h"
+#include "ash/public/cpp/login_types.h"
 #include "ash/public/cpp/tablet_mode_observer.h"
 #include "ash/wm/tablet_mode/tablet_mode_controller.h"
 #include "base/callback.h"
@@ -33,7 +34,48 @@ class LoginButton;
 class LoginPinView;
 class NonAccessibleView;
 
-enum class ParentAccessRequestReason;
+// State of the ParentAccessView.
+enum class ParentAccessRequestViewState {
+  kNormal,
+  kError,
+};
+
+struct ASH_EXPORT ParentAccessRequest {
+  ParentAccessRequest();
+  ParentAccessRequest(ParentAccessRequest&&);
+  ParentAccessRequest& operator=(ParentAccessRequest&&);
+  ~ParentAccessRequest();
+
+  // Callback for PIN validations. It is called when the validation has finished
+  // and the view is closing.
+  // |success| indicates whether the validation was successful.
+  using OnParentAccessDone = base::OnceCallback<void(bool success)>;
+  OnParentAccessDone on_parent_access_done = base::NullCallback();
+
+  // Whether the help button is displayed.
+  bool help_button_enabled = false;
+
+  base::Optional<int> pin_length;
+
+  // When |pin_keyboard_always_enabled| is set, the PIN keyboard is displayed at
+  // all times. Otherwise, it is only displayed when the device is in tablet
+  // mode.
+  bool pin_keyboard_always_enabled = false;
+
+  // The parent access widget is a modal and already contains a dimmer, however
+  // when another modal is the parent of the widget, the dimmer will be placed
+  // behind the two windows. |extra_dimmer| will create an extra dimmer between
+  // the two.
+  bool extra_dimmer = false;
+
+  // Whether the entered PIN should be displayed clearly or only as bullets.
+  bool obscure_pin = true;
+
+  // Strings for UI.
+  base::string16 title;
+  base::string16 description;
+  base::string16 accessible_title;
+};
 
 // The view that allows for input of parent access code to authorize certain
 // actions on child's device.
@@ -41,10 +83,23 @@ class ASH_EXPORT ParentAccessView : public views::DialogDelegateView,
                                     public views::ButtonListener,
                                     public TabletModeObserver {
  public:
-  // ParentAccessView state.
-  enum class State {
-    kNormal,  // View with default texts and colors.
-    kError    // View with texts and color signalizing input error.
+  enum class SubmissionResult {
+    // Closes the UI and calls |on_parent_access_done_|.
+    kPinAccepted,
+    // PIN rejected - keeps the UI in its current state.
+    kPinError,
+    // Async waiting for result - keeps the UI in its current state.
+    kSubmitPending,
+  };
+
+  class Delegate {
+   public:
+    virtual SubmissionResult OnPinSubmitted(const std::string& pin) = 0;
+    virtual void OnBack() = 0;
+    virtual void OnHelp(gfx::NativeWindow parent_window) = 0;
+
+   protected:
+    virtual ~Delegate() = default;
   };
 
   class ASH_EXPORT TestApi {
@@ -62,75 +117,20 @@ class ASH_EXPORT ParentAccessView : public views::DialogDelegateView,
 
     views::Textfield* GetInputTextField(int index);
 
-    State state() const;
+    ParentAccessRequestViewState state() const;
 
    private:
     ParentAccessView* const view_;
   };
-
-  using OnFinished = base::RepeatingCallback<void(bool access_granted)>;
-
-  // Parent access view callbacks.
-  struct Callbacks {
-    Callbacks();
-    Callbacks(const Callbacks& other);
-    ~Callbacks();
-
-    // Called when ParentAccessView finshed processing and should be dismissed.
-    // If access code was successfully validated, |access_granted| will
-    // contain true. If access code was not entered or not successfully
-    // validated and user pressed back button, |access_granted| will contain
-    // false.
-    OnFinished on_finished;
-  };
-
-  // Actions that originated in parent access dialog. These values are persisted
-  // to metrics. Entries should not be renumbered and numeric values should
-  // never be reused.
-  enum class UMAAction {
-    kValidationSuccess = 0,
-    kValidationError = 1,
-    kCanceledByUser = 2,
-    kGetHelp = 3,
-    kMaxValue = kGetHelp,
-  };
-
-  // Context in which parent access code was used. These values are persisted to
-  // metrics. Entries should not be reordered and numeric values should never be
-  // reused.
-  enum class UMAUsage {
-    kTimeLimits = 0,
-    kTimeChangeLoginScreen = 1,
-    kTimeChangeInSession = 2,
-    kTimezoneChange = 3,
-    kMaxValue = kTimezoneChange,
-  };
-
-  // Histogram to log actions that originated in parent access dialog.
-  static constexpr char kUMAParentAccessCodeAction[] =
-      "Supervision.ParentAccessCode.Action";
-
-  // Histogram to log context in which parent access code was used.
-  static constexpr char kUMAParentAccessCodeUsage[] =
-      "Supervision.ParentAccessCode.Usage";
 
   // Returns color used for dialog and UI elements specific for child user.
   // |using_blur| should be true if the UI element is using background blur
   // (color transparency depends on it).
   static SkColor GetChildUserDialogColor(bool using_blur);
 
-  // Creates parent access view that will validate the parent access code for a
-  // specific child, when |account_id| is set, or to any child signed in the
-  // device, when it is empty. |callbacks| will be called when user performs
-  // certain actions. |reason| contains information about why the parent access
-  // view is necessary, it is used to modify the view appearance by changing the
-  // title and description strings and background color. |validation_time| is
-  // the time that will be used to validate the code, if null the system's
-  // current time will be used.
-  ParentAccessView(const AccountId& account_id,
-                   const Callbacks& callbacks,
-                   ParentAccessRequestReason reason,
-                   base::Time validation_time);
+  // Creates parent access view that will enable the user to enter a pin.
+  // |request| is used to configure callbacks and UI details.
+  ParentAccessView(ParentAccessRequest request, Delegate* delegate);
   ~ParentAccessView() override;
 
   // views::View:
@@ -155,6 +155,11 @@ class ASH_EXPORT ParentAccessView : public views::DialogDelegateView,
   // Sets whether the user can enter a PIN.
   void SetInputEnabled(bool input_enabled);
 
+  // Updates state of the view.
+  void UpdateState(ParentAccessRequestViewState state,
+                   const base::string16& title,
+                   const base::string16& description);
+
  private:
   class FocusableLabelButton;
   class AccessCodeInput;
@@ -163,9 +168,6 @@ class ASH_EXPORT ParentAccessView : public views::DialogDelegateView,
 
   // Submits access code for validation.
   void SubmitCode();
-
-  // Updates state of the view.
-  void UpdateState(State state);
 
   // Closes the view.
   void OnBack();
@@ -181,25 +183,31 @@ class ASH_EXPORT ParentAccessView : public views::DialogDelegateView,
   // information whether last input field is currently active.
   void OnInputChange(bool last_field_active, bool complete);
 
-  // Callbacks to be called when user performs certain actions.
-  const Callbacks callbacks_;
+  // Returns if the pin keyboard should be visible.
+  bool PinKeyboardVisible() const;
 
-  // Account id of the user that parent access code is processed for. When
-  // empty, the code is processed for all the children signed in the device.
-  const AccountId account_id_;
+  // Sizes that depend on the pin keyboards visibility.
+  gfx::Size GetPinKeyboardToFooterSpacerSize() const;
+  gfx::Size GetParentAccessViewSize() const;
 
-  // Indicates what action will be authorized with parent access code.
-  // The appearance of the view depends on |request_reason_|.
-  const ParentAccessRequestReason request_reason_;
+  ParentAccessRequestViewState state_ = ParentAccessRequestViewState::kNormal;
 
-  // Time used to validate the code. When this is null, the current system time
-  // is used.
-  const base::Time validation_time_;
+  // Unowned pointer to the delegate. The delegate should outlive this instance.
+  Delegate* delegate_;
 
-  State state_ = State::kNormal;
+  // Callback to close the UI.
+  ParentAccessRequest::OnParentAccessDone on_parent_access_done_;
 
   // Auto submit code when the last input has been inserted.
   bool auto_submit_enabled_ = true;
+
+  // If false, |pin_keyboard_view| is only displayed in tablet mode.
+  bool pin_keyboard_always_enabled_ = true;
+
+  // Strings as on view construction to enable restoring the original state.
+  base::string16 default_title_;
+  base::string16 default_description_;
+  base::string16 default_accessible_title_;
 
   views::Label* title_label_ = nullptr;
   views::Label* description_label_ = nullptr;

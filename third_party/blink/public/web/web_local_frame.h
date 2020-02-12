@@ -68,7 +68,6 @@ enum class WebTreeScopeType;
 struct TransferableMessage;
 struct WebAssociatedURLLoaderOptions;
 struct WebConsoleMessage;
-struct WebContentSecurityPolicyViolation;
 struct WebIsolatedWorldInfo;
 struct WebPrintParams;
 struct WebPrintPresetOptions;
@@ -221,11 +220,6 @@ class WebLocalFrame : public WebFrame {
 
   // Returns the document loader that is currently loaded.
   virtual WebDocumentLoader* GetDocumentLoader() const = 0;
-
-  // Called when a navigation is blocked because a Content Security Policy (CSP)
-  // is infringed.
-  virtual void ReportContentSecurityPolicyViolation(
-      const blink::WebContentSecurityPolicyViolation&) = 0;
 
   // Sets the referrer for the given request to be the specified URL or
   // if that is null, then it sets the referrer to the referrer that the

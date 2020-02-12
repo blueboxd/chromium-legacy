@@ -2063,9 +2063,6 @@ TEST_F(OptimizationGuideHintsManagerFetchingTest,
   // Set ECT estimate so fetch is activated.
   hints_manager()->OnEffectiveConnectionTypeChanged(
       net::EffectiveConnectionType::EFFECTIVE_CONNECTION_TYPE_SLOW_2G);
-  std::unique_ptr<content::MockNavigationHandle> navigation_handle =
-      CreateMockNavigationHandleWithOptimizationGuideWebContentsObserver(
-          url_without_hints());
   base::HistogramTester histogram_tester;
   std::vector<GURL> sorted_predicted_urls;
   sorted_predicted_urls.push_back(GURL("https://foo.com/"));
@@ -2075,6 +2072,8 @@ TEST_F(OptimizationGuideHintsManagerFetchingTest,
   hints_manager()->OnPredictionUpdated(prediction);
   histogram_tester.ExpectUniqueSample(
       "OptimizationGuide.HintsFetcher.GetHintsRequest.HostCount", 1, 1);
+  histogram_tester.ExpectUniqueSample(
+      "OptimizationGuide.HintsFetcher.GetHintsRequest.UrlCount", 1, 1);
 }
 
 TEST_F(OptimizationGuideHintsManagerFetchingTest,
@@ -2086,9 +2085,6 @@ TEST_F(OptimizationGuideHintsManagerFetchingTest,
   // Set ECT estimate so hint is activated.
   hints_manager()->OnEffectiveConnectionTypeChanged(
       net::EffectiveConnectionType::EFFECTIVE_CONNECTION_TYPE_SLOW_2G);
-  std::unique_ptr<content::MockNavigationHandle> navigation_handle =
-      CreateMockNavigationHandleWithOptimizationGuideWebContentsObserver(
-          url_without_hints());
   base::HistogramTester histogram_tester;
   std::vector<GURL> sorted_predicted_urls;
   sorted_predicted_urls.push_back(GURL("https://foo.com/"));
@@ -2098,6 +2094,8 @@ TEST_F(OptimizationGuideHintsManagerFetchingTest,
   hints_manager()->OnPredictionUpdated(prediction);
   histogram_tester.ExpectTotalCount(
       "OptimizationGuide.HintsFetcher.GetHintsRequest.HostCount", 0);
+  histogram_tester.ExpectTotalCount(
+      "OptimizationGuide.HintsFetcher.GetHintsRequest.UrlCount", 0);
 }
 
 TEST_F(OptimizationGuideHintsManagerFetchingTest,
@@ -2111,10 +2109,7 @@ TEST_F(OptimizationGuideHintsManagerFetchingTest,
   // Set ECT estimate so fetch is activated.
   hints_manager()->OnEffectiveConnectionTypeChanged(
       net::EffectiveConnectionType::EFFECTIVE_CONNECTION_TYPE_SLOW_2G);
-  std::unique_ptr<content::MockNavigationHandle> navigation_handle =
-      CreateMockNavigationHandleWithOptimizationGuideWebContentsObserver(
-          url_without_hints());
-  base::HistogramTester histogram_tester;
+
   std::vector<GURL> sorted_predicted_urls;
   sorted_predicted_urls.push_back(GURL("https://foo.com/page1.html"));
   sorted_predicted_urls.push_back(GURL("https://foo.com/page2.html"));
@@ -2124,11 +2119,27 @@ TEST_F(OptimizationGuideHintsManagerFetchingTest,
   NavigationPredictorKeyedService::Prediction prediction(
       nullptr, GURL("https://www.google.com/"), sorted_predicted_urls);
 
-  hints_manager()->OnPredictionUpdated(prediction);
-  // Ensure that we only include 2 hosts in the request. These would be foo.com
-  // and bar.com.
-  histogram_tester.ExpectUniqueSample(
-      "OptimizationGuide.HintsFetcher.GetHintsRequest.HostCount", 2, 1);
+  {
+    base::HistogramTester histogram_tester;
+
+    hints_manager()->OnPredictionUpdated(prediction);
+    // Ensure that we only include 2 hosts in the request. These would be
+    // foo.com and bar.com.
+    histogram_tester.ExpectUniqueSample(
+        "OptimizationGuide.HintsFetcher.GetHintsRequest.HostCount", 2, 1);
+    // Ensure that we include all URLs in the request.
+    histogram_tester.ExpectUniqueSample(
+        "OptimizationGuide.HintsFetcher.GetHintsRequest.UrlCount", 4, 1);
+    RunUntilIdle();
+  }
+
+  {
+    base::HistogramTester histogram_tester;
+    hints_manager()->OnPredictionUpdated(prediction);
+    // Ensure that URLs are not re-fetched.
+    histogram_tester.ExpectTotalCount(
+        "OptimizationGuide.HintsFetcher.GetHintsRequest.UrlCount", 0);
+  }
 }
 
 TEST_F(OptimizationGuideHintsManagerFetchingTest,
@@ -2142,9 +2153,6 @@ TEST_F(OptimizationGuideHintsManagerFetchingTest,
   // Set ECT estimate so fetch is activated.
   hints_manager()->OnEffectiveConnectionTypeChanged(
       net::EffectiveConnectionType::EFFECTIVE_CONNECTION_TYPE_SLOW_2G);
-  std::unique_ptr<content::MockNavigationHandle> navigation_handle =
-      CreateMockNavigationHandleWithOptimizationGuideWebContentsObserver(
-          url_without_hints());
   base::HistogramTester histogram_tester;
   std::vector<GURL> sorted_predicted_urls;
   sorted_predicted_urls.push_back(GURL("https://foo.com/page1.html"));
@@ -2155,10 +2163,13 @@ TEST_F(OptimizationGuideHintsManagerFetchingTest,
       nullptr, GURL("https://www.google.com/"), sorted_predicted_urls);
 
   hints_manager()->OnPredictionUpdated(prediction);
-  // Ensure that we only include 1 secure host in the request. These would be
-  // foo.com.
+  // Ensure that we include both web hosts in the request. These would be
+  // foo.com and httppage.com.
   histogram_tester.ExpectUniqueSample(
       "OptimizationGuide.HintsFetcher.GetHintsRequest.HostCount", 2, 1);
+  // Ensure that we only include 2 URLs in the request.
+  histogram_tester.ExpectUniqueSample(
+      "OptimizationGuide.HintsFetcher.GetHintsRequest.UrlCount", 2, 1);
 }
 
 TEST_F(OptimizationGuideHintsManagerFetchingTest, HintsFetched_AtSRP_ECT_4G) {
@@ -2171,9 +2182,6 @@ TEST_F(OptimizationGuideHintsManagerFetchingTest, HintsFetched_AtSRP_ECT_4G) {
   // Set ECT estimate so fetch is activated.
   hints_manager()->OnEffectiveConnectionTypeChanged(
       net::EffectiveConnectionType::EFFECTIVE_CONNECTION_TYPE_4G);
-  std::unique_ptr<content::MockNavigationHandle> navigation_handle =
-      CreateMockNavigationHandleWithOptimizationGuideWebContentsObserver(
-          url_without_hints());
   base::HistogramTester histogram_tester;
   std::vector<GURL> sorted_predicted_urls;
   sorted_predicted_urls.push_back(GURL("https://foo.com/"));
@@ -2183,6 +2191,8 @@ TEST_F(OptimizationGuideHintsManagerFetchingTest, HintsFetched_AtSRP_ECT_4G) {
   hints_manager()->OnPredictionUpdated(prediction);
   histogram_tester.ExpectTotalCount(
       "OptimizationGuide.HintsFetcher.GetHintsRequest.HostCount", 0);
+  histogram_tester.ExpectTotalCount(
+      "OptimizationGuide.HintsFetcher.GetHintsRequest.UrlCount", 0);
 }
 
 TEST_F(OptimizationGuideHintsManagerFetchingTest,
@@ -2196,9 +2206,6 @@ TEST_F(OptimizationGuideHintsManagerFetchingTest,
   // Set ECT estimate so fetch is activated.
   hints_manager()->OnEffectiveConnectionTypeChanged(
       net::EffectiveConnectionType::EFFECTIVE_CONNECTION_TYPE_SLOW_2G);
-  std::unique_ptr<content::MockNavigationHandle> navigation_handle =
-      CreateMockNavigationHandleWithOptimizationGuideWebContentsObserver(
-          url_without_hints());
   base::HistogramTester histogram_tester;
   std::vector<GURL> sorted_predicted_urls;
   sorted_predicted_urls.push_back(GURL("https://foo.com/"));
@@ -2208,6 +2215,8 @@ TEST_F(OptimizationGuideHintsManagerFetchingTest,
   hints_manager()->OnPredictionUpdated(prediction);
   histogram_tester.ExpectTotalCount(
       "OptimizationGuide.HintsFetcher.GetHintsRequest.HostCount", 0);
+  histogram_tester.ExpectTotalCount(
+      "OptimizationGuide.HintsFetcher.GetHintsRequest.UrlCount", 0);
 }
 
 TEST_F(OptimizationGuideHintsManagerFetchingTest,
@@ -2231,6 +2240,8 @@ TEST_F(OptimizationGuideHintsManagerFetchingTest,
   run_loop.Run();
   histogram_tester.ExpectUniqueSample(
       "OptimizationGuide.HintsFetcher.GetHintsRequest.HostCount", 1, 1);
+  histogram_tester.ExpectUniqueSample(
+      "OptimizationGuide.HintsFetcher.GetHintsRequest.UrlCount", 1, 1);
 
   // Make sure navigation data is populated correctly.
   OptimizationGuideNavigationData* navigation_data =
@@ -2263,11 +2274,10 @@ TEST_F(OptimizationGuideHintsManagerFetchingTest,
   std::unique_ptr<content::MockNavigationHandle> navigation_handle =
       CreateMockNavigationHandleWithOptimizationGuideWebContentsObserver(
           url_with_hints());
-  base::RunLoop run_loop;
   base::HistogramTester histogram_tester;
   hints_manager()->OnNavigationStartOrRedirect(navigation_handle.get(),
-                                               run_loop.QuitClosure());
-  run_loop.Run();
+                                               base::DoNothing());
+  RunUntilIdle();
   histogram_tester.ExpectTotalCount(
       "OptimizationGuide.HintsFetcher.GetHintsRequest.HostCount", 0);
 
@@ -2301,16 +2311,16 @@ TEST_F(OptimizationGuideHintsManagerFetchingTest,
   hints_manager()->OnEffectiveConnectionTypeChanged(
       net::EffectiveConnectionType::EFFECTIVE_CONNECTION_TYPE_SLOW_2G);
 
-  base::HistogramTester histogram_tester;
   {
+    base::HistogramTester histogram_tester;
     std::unique_ptr<content::MockNavigationHandle> navigation_handle =
         CreateMockNavigationHandleWithOptimizationGuideWebContentsObserver(
             url_with_hints());
 
-    base::RunLoop run_loop;
     hints_manager()->OnNavigationStartOrRedirect(navigation_handle.get(),
-                                                 run_loop.QuitClosure());
-    run_loop.Run();
+                                                 base::DoNothing());
+    RunUntilIdle();
+
     histogram_tester.ExpectTotalCount(
         "OptimizationGuide.HintsFetcher.GetHintsRequest.HostCount", 0);
 
@@ -2331,16 +2341,13 @@ TEST_F(OptimizationGuideHintsManagerFetchingTest,
   }
 
   {
+    base::HistogramTester histogram_tester;
     std::unique_ptr<content::MockNavigationHandle> navigation_handle =
         CreateMockNavigationHandleWithOptimizationGuideWebContentsObserver(
             url_with_hints());
-    base::RunLoop run_loop;
-    navigation_handle =
-        CreateMockNavigationHandleWithOptimizationGuideWebContentsObserver(
-            url_with_hints());
     hints_manager()->OnNavigationStartOrRedirect(navigation_handle.get(),
-                                                 run_loop.QuitClosure());
-    run_loop.Run();
+                                                 base::DoNothing());
+    RunUntilIdle();
 
     histogram_tester.ExpectBucketCount(
         "OptimizationGuide.HintsManager.RaceNavigationFetchAttemptStatus",

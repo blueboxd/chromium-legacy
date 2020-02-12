@@ -47,6 +47,7 @@
 #include "ipc/ipc_platform_file.h"
 #include "mojo/public/cpp/system/message_pipe.h"
 #include "ppapi/buildflags/buildflags.h"
+#include "services/network/public/mojom/content_security_policy.mojom.h"
 #include "third_party/blink/public/common/feature_policy/feature_policy.h"
 #include "third_party/blink/public/common/frame/frame_owner_element_type.h"
 #include "third_party/blink/public/common/frame/frame_policy.h"
@@ -378,10 +379,10 @@ IPC_STRUCT_BEGIN(FrameMsg_PostMessage_Params)
       scoped_refptr<base::RefCountedData<blink::TransferableMessage>>, message)
 IPC_STRUCT_END()
 
-IPC_STRUCT_TRAITS_BEGIN(content::SourceLocation)
+IPC_STRUCT_TRAITS_BEGIN(network::mojom::SourceLocation)
   IPC_STRUCT_TRAITS_MEMBER(url)
-  IPC_STRUCT_TRAITS_MEMBER(line_number)
-  IPC_STRUCT_TRAITS_MEMBER(column_number)
+  IPC_STRUCT_TRAITS_MEMBER(line)
+  IPC_STRUCT_TRAITS_MEMBER(column)
 IPC_STRUCT_TRAITS_END()
 
 IPC_STRUCT_TRAITS_BEGIN(blink::ParsedFeaturePolicyDeclaration)
@@ -493,26 +494,13 @@ IPC_STRUCT_TRAITS_BEGIN(network::mojom::ContentSecurityPolicyHeader)
   IPC_STRUCT_TRAITS_MEMBER(source)
 IPC_STRUCT_TRAITS_END()
 
-IPC_STRUCT_TRAITS_BEGIN(content::CSPViolationParams)
-  IPC_STRUCT_TRAITS_MEMBER(directive)
-  IPC_STRUCT_TRAITS_MEMBER(effective_directive)
-  IPC_STRUCT_TRAITS_MEMBER(console_message)
-  IPC_STRUCT_TRAITS_MEMBER(blocked_url)
-  IPC_STRUCT_TRAITS_MEMBER(report_endpoints)
-  IPC_STRUCT_TRAITS_MEMBER(use_reporting_api)
-  IPC_STRUCT_TRAITS_MEMBER(header)
-  IPC_STRUCT_TRAITS_MEMBER(disposition)
-  IPC_STRUCT_TRAITS_MEMBER(after_redirect)
-  IPC_STRUCT_TRAITS_MEMBER(source_location)
-IPC_STRUCT_TRAITS_END()
-
 IPC_STRUCT_BEGIN(FrameMsg_MixedContentFound_Params)
   IPC_STRUCT_MEMBER(GURL, main_resource_url)
   IPC_STRUCT_MEMBER(GURL, mixed_content_url)
   IPC_STRUCT_MEMBER(blink::mojom::RequestContextType, request_context_type)
   IPC_STRUCT_MEMBER(bool, was_allowed)
   IPC_STRUCT_MEMBER(bool, had_redirect)
-  IPC_STRUCT_MEMBER(content::SourceLocation, source_location)
+  IPC_STRUCT_MEMBER(network::mojom::SourceLocation, source_location)
 IPC_STRUCT_END()
 
 #if BUILDFLAG(USE_EXTERNAL_POPUP_MENU)

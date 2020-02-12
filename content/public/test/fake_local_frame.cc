@@ -3,6 +3,7 @@
 // found in the LICENSE file.
 
 #include "content/public/test/fake_local_frame.h"
+#include "services/network/public/mojom/content_security_policy.mojom.h"
 #include "third_party/blink/public/mojom/frame/media_player_action.mojom.h"
 
 namespace content {
@@ -66,6 +67,9 @@ void FakeLocalFrame::MediaPlayerActionAt(
     blink::mojom::MediaPlayerActionPtr action) {}
 
 void FakeLocalFrame::AdvanceFocusInForm(blink::mojom::FocusType focus_type) {}
+
+void FakeLocalFrame::ReportContentSecurityPolicyViolation(
+    network::mojom::CSPViolationPtr violation) {}
 
 void FakeLocalFrame::BindFrameHostReceiver(
     mojo::ScopedInterfaceEndpointHandle handle) {

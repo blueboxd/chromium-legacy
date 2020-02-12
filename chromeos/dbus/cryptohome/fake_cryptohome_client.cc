@@ -60,6 +60,9 @@ FakeCryptohomeClient::FakeCryptohomeClient() {
             base::PathExists(cache_path);
   if (locked_)
     LoadInstallAttributes();
+
+  set_tpm_attestation_public_key(
+      TpmAttestationDataResult{true, "fake_public_key_for_test"});
 }
 
 FakeCryptohomeClient::~FakeCryptohomeClient() {
@@ -453,7 +456,7 @@ void FakeCryptohomeClient::TpmAttestationGetPublicKey(
     DBusMethodCallback<TpmAttestationDataResult> callback) {
   base::ThreadTaskRunnerHandle::Get()->PostTask(
       FROM_HERE,
-      base::BindOnce(std::move(callback), TpmAttestationDataResult{}));
+      base::BindOnce(std::move(callback), tpm_attestation_public_key_));
 }
 
 void FakeCryptohomeClient::TpmAttestationRegisterKey(
@@ -461,7 +464,7 @@ void FakeCryptohomeClient::TpmAttestationRegisterKey(
     const cryptohome::AccountIdentifier& cryptohome_id,
     const std::string& key_name,
     AsyncMethodCallback callback) {
-  ReturnAsyncMethodData(std::move(callback), std::string());
+  ReturnAsyncMethodResult(std::move(callback));
 }
 
 void FakeCryptohomeClient::TpmAttestationSignEnterpriseChallenge(

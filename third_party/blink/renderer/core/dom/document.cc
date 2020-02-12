@@ -2380,8 +2380,8 @@ void Document::PropagateStyleToViewport() {
   {
     PROPAGATE_FROM(document_element_style, GetEffectiveTouchAction,
                    SetEffectiveTouchAction, TouchAction::kAuto);
-    PROPAGATE_FROM(document_element_style, ScrollBehavior, SetScrollBehavior,
-                   mojom::blink::ScrollIntoViewParams::Behavior::kAuto);
+    PROPAGATE_FROM(document_element_style, GetScrollBehavior, SetScrollBehavior,
+                   mojom::blink::ScrollBehavior::kAuto);
     PROPAGATE_FROM(document_element_style, DarkColorScheme, SetDarkColorScheme,
                    false);
   }

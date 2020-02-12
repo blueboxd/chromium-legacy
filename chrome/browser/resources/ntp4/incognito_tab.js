@@ -20,6 +20,12 @@ window.addEventListener('load', function() {
   $('cookie-controls-toggle').addEventListener('change', event => {
     chrome.send('cookieControlsToggleChanged', [event.detail]);
   });
+  // Make cookie-controls-tooltip-icon respond to the enter key.
+  $('cookie-controls-tooltip-icon').addEventListener('keyup', event => {
+    if (event.key === 'Enter') {
+      $('cookie-controls-tooltip-icon').click();
+    }
+  });
   $('cookie-controls-tooltip-icon').onclick = () => {
     window.location.href = 'chrome://settings/content/cookies';
   };

@@ -168,26 +168,23 @@ TEST_F(ScrollbarThemeAuraTest, ScrollbarPartsInvalidationTest) {
   // disabled. When we change the offset, it must be repainted to show available
   // scroll extent.
   EXPECT_FALSE(scrollbar->TrackNeedsRepaint());
-  mock_scrollable_area->SetScrollOffset(
-      ScrollOffset(0, 10),
-      mojom::blink::ScrollIntoViewParams::Type::kCompositor);
+  mock_scrollable_area->SetScrollOffset(ScrollOffset(0, 10),
+                                        mojom::blink::ScrollType::kCompositor);
   EXPECT_TRUE(scrollbar->TrackNeedsRepaint());
 
   // Tests that when the scroll offset changes from a value greater than 0 to a
   // value less than the max scroll offset, a track invalidation is *not*
   // triggered.
   scrollbar->ClearTrackNeedsRepaint();
-  mock_scrollable_area->SetScrollOffset(
-      ScrollOffset(0, 20),
-      mojom::blink::ScrollIntoViewParams::Type::kCompositor);
+  mock_scrollable_area->SetScrollOffset(ScrollOffset(0, 20),
+                                        mojom::blink::ScrollType::kCompositor);
   EXPECT_FALSE(scrollbar->TrackNeedsRepaint());
 
   // Tests that when the scroll offset changes to 0, a track invalidation is
   // gets triggered (for the arrow).
   scrollbar->ClearTrackNeedsRepaint();
-  mock_scrollable_area->SetScrollOffset(
-      ScrollOffset(0, 0),
-      mojom::blink::ScrollIntoViewParams::Type::kCompositor);
+  mock_scrollable_area->SetScrollOffset(ScrollOffset(0, 0),
+                                        mojom::blink::ScrollType::kCompositor);
   EXPECT_TRUE(scrollbar->TrackNeedsRepaint());
 
   // Tests that mousedown on the arrow causes an invalidation.

@@ -16,7 +16,7 @@ void SequencedScroll::Trace(blink::Visitor* visitor) {
 void SmoothScrollSequencer::QueueAnimation(
     ScrollableArea* scrollable,
     ScrollOffset offset,
-    mojom::blink::ScrollIntoViewParams::Behavior behavior) {
+    mojom::blink::ScrollBehavior behavior) {
   if (scrollable->ClampScrollOffset(offset) != scrollable->GetScrollOffset()) {
     queue_.push_back(
         MakeGarbageCollected<SequencedScroll>(scrollable, offset, behavior));
@@ -26,16 +26,15 @@ void SmoothScrollSequencer::QueueAnimation(
 void SmoothScrollSequencer::RunQueuedAnimations() {
   if (queue_.IsEmpty()) {
     current_scrollable_ = nullptr;
-    scroll_type_ = mojom::blink::ScrollIntoViewParams::Type::kProgrammatic;
+    scroll_type_ = mojom::blink::ScrollType::kProgrammatic;
     return;
   }
   SequencedScroll* sequenced_scroll = queue_.back();
   queue_.pop_back();
   current_scrollable_ = sequenced_scroll->scrollable_area;
-  current_scrollable_->SetScrollOffset(
-      sequenced_scroll->scroll_offset,
-      mojom::blink::ScrollIntoViewParams::Type::kSequenced,
-      sequenced_scroll->scroll_behavior);
+  current_scrollable_->SetScrollOffset(sequenced_scroll->scroll_offset,
+                                       mojom::blink::ScrollType::kSequenced,
+                                       sequenced_scroll->scroll_behavior);
 }
 
 void SmoothScrollSequencer::AbortAnimations() {
@@ -44,22 +43,22 @@ void SmoothScrollSequencer::AbortAnimations() {
     current_scrollable_ = nullptr;
   }
   queue_.clear();
-  scroll_type_ = mojom::blink::ScrollIntoViewParams::Type::kProgrammatic;
+  scroll_type_ = mojom::blink::ScrollType::kProgrammatic;
 }
 
 bool SmoothScrollSequencer::FilterNewScrollOrAbortCurrent(
-    mojom::blink::ScrollIntoViewParams::Type incoming_type) {
+    mojom::blink::ScrollType incoming_type) {
   // Allow the incoming scroll to co-exist if its scroll type is
   // kSequenced, kClamping, or kAnchoring
-  if (incoming_type == mojom::blink::ScrollIntoViewParams::Type::kSequenced ||
-      incoming_type == mojom::blink::ScrollIntoViewParams::Type::kClamping ||
-      incoming_type == mojom::blink::ScrollIntoViewParams::Type::kAnchoring)
+  if (incoming_type == mojom::blink::ScrollType::kSequenced ||
+      incoming_type == mojom::blink::ScrollType::kClamping ||
+      incoming_type == mojom::blink::ScrollType::kAnchoring)
     return false;
 
   // If the current sequenced scroll is UserScroll, but the incoming scroll is
   // not, filter the incoming scroll. See crbug.com/913009 for more details.
-  if (scroll_type_ == mojom::blink::ScrollIntoViewParams::Type::kUser &&
-      incoming_type != mojom::blink::ScrollIntoViewParams::Type::kUser)
+  if (scroll_type_ == mojom::blink::ScrollType::kUser &&
+      incoming_type != mojom::blink::ScrollType::kUser)
     return true;
 
   // Otherwise, abort the current sequenced scroll.

@@ -361,8 +361,7 @@ bool AXNodeObject::ComputeAccessibilityIsIgnored(
   }
 
   if (DisplayLockUtilities::NearestLockedExclusiveAncestor(*GetNode())) {
-    if (DisplayLockUtilities::ShouldIgnoreNodeDueToDisplayLock(
-            *GetNode(), DisplayLockActivationReason::kAccessibility)) {
+    if (DisplayLockUtilities::IsInNonActivatableLockedSubtree(*GetNode())) {
       if (ignored_reasons)
         ignored_reasons->push_back(IgnoredReason(kAXNotRendered));
       return true;

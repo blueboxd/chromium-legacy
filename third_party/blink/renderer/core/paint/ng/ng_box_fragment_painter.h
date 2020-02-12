@@ -272,6 +272,9 @@ class NGBoxFragmentPainter : public BoxPainterBase {
       const HitTestLocation&,
       const PhysicalOffset& border_box_location) const;
 
+  bool HitTestOverflowControl(const HitTestContext&,
+                              PhysicalOffset accumulated_offset);
+
   const NGPhysicalBoxFragment& PhysicalFragment() const {
     return box_fragment_;
   }

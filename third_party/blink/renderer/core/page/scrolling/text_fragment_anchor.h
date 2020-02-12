@@ -49,7 +49,7 @@ class CORE_EXPORT TextFragmentAnchor final : public FragmentAnchor,
 
   void Installed() override;
 
-  void DidScroll(mojom::blink::ScrollIntoViewParams::Type type) override;
+  void DidScroll(mojom::blink::ScrollType type) override;
 
   void PerformPreRafActions() override;
 

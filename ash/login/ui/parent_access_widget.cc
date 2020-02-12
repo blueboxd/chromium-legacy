@@ -7,7 +7,6 @@
 #include <utility>
 
 #include "ash/keyboard/keyboard_controller_impl.h"
-#include "ash/login/ui/parent_access_view.h"
 #include "ash/public/cpp/shell_window_ids.h"
 #include "ash/session/session_controller_impl.h"
 #include "ash/shell.h"
@@ -33,32 +32,11 @@ ParentAccessView* ParentAccessWidget::TestApi::parent_access_view() {
       parent_access_widget_->widget_->widget_delegate());
 }
 
-void ParentAccessWidget::TestApi::SimulateValidationFinished(
-    bool access_granted) {
-  parent_access_widget_->OnExit(access_granted);
-}
-
 // static
-void ParentAccessWidget::Show(const AccountId& child_account_id,
-                              OnExitCallback callback,
-                              ParentAccessRequestReason reason,
-                              bool extra_dimmer,
-                              base::Time validation_time) {
-  if (instance_) {
-    VLOG(1) << "Showing existing instance of ParentAccessWidget.";
-    instance_->Show();
-    return;
-  }
-
-  instance_ = new ParentAccessWidget(child_account_id, std::move(callback),
-                                     reason, extra_dimmer, validation_time);
-}
-
-// static
-void ParentAccessWidget::Show(const AccountId& account_id,
-                              OnExitCallback callback,
-                              ParentAccessRequestReason reason) {
-  Show(account_id, std::move(callback), reason, false, base::Time());
+void ParentAccessWidget::Show(ParentAccessRequest request,
+                              ParentAccessView::Delegate* delegate) {
+  DCHECK(!instance_);
+  instance_ = new ParentAccessWidget(std::move(request), delegate);
 }
 
 // static
@@ -66,20 +44,26 @@ ParentAccessWidget* ParentAccessWidget::Get() {
   return instance_;
 }
 
-void ParentAccessWidget::Destroy() {
+void ParentAccessWidget::UpdateState(ParentAccessRequestViewState state,
+                                     const base::string16& title,
+                                     const base::string16& description) {
   DCHECK_EQ(instance_, this);
-  widget_->Close();
-
-  delete instance_;
-  instance_ = nullptr;
+  static_cast<ParentAccessView*>(widget_->widget_delegate())
+      ->UpdateState(state, title, description);
 }
 
-ParentAccessWidget::ParentAccessWidget(const AccountId& account_id,
-                                       OnExitCallback callback,
-                                       ParentAccessRequestReason reason,
-                                       bool extra_dimmer,
-                                       base::Time validation_time)
-    : callback_(std::move(callback)) {
+void ParentAccessWidget::Close(bool success) {
+  DCHECK_EQ(instance_, this);
+  ParentAccessWidget* instance = instance_;
+  instance_ = nullptr;
+  std::move(on_parent_access_done_).Run(success);
+  widget_->Close();
+  delete instance;
+}
+
+ParentAccessWidget::ParentAccessWidget(ParentAccessRequest request,
+                                       ParentAccessView::Delegate* delegate)
+    : on_parent_access_done_(std::move(request.on_parent_access_done)) {
   views::Widget::InitParams widget_params;
   // Using window frameless to be able to get focus on the view input fields,
   // which does not work with popup type.
@@ -97,15 +81,11 @@ ParentAccessWidget::ParentAccessWidget(const AccountId& account_id,
           : kShellWindowId_LockSystemModalContainer;
   widget_params.parent =
       Shell::GetPrimaryRootWindow()->GetChildById(parent_window_id);
-
-  ParentAccessView::Callbacks callbacks;
-  callbacks.on_finished = base::BindRepeating(&ParentAccessWidget::OnExit,
-                                              weak_factory_.GetWeakPtr());
-  widget_params.delegate =
-      new ParentAccessView(account_id, callbacks, reason, validation_time);
-
-  if (extra_dimmer)
+  if (request.extra_dimmer)
     dimmer_ = std::make_unique<WindowDimmer>(widget_params.parent);
+  request.on_parent_access_done =
+      base::BindOnce(&ParentAccessWidget::Close, weak_factory_.GetWeakPtr());
+  widget_params.delegate = new ParentAccessView(std::move(request), delegate);
 
   widget_ = std::make_unique<views::Widget>();
   widget_->Init(std::move(widget_params));
@@ -125,11 +105,6 @@ void ParentAccessWidget::Show() {
   auto* keyboard_controller = Shell::Get()->keyboard_controller();
   if (keyboard_controller && keyboard_controller->IsKeyboardEnabled())
     keyboard_controller->HideKeyboard(HideReason::kSystem);
-}
-
-void ParentAccessWidget::OnExit(bool success) {
-  callback_.Run(success);
-  Destroy();
 }
 
 }  // namespace ash

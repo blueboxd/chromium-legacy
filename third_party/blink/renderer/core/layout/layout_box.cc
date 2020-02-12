@@ -85,7 +85,6 @@
 #include "third_party/blink/renderer/core/paint/ng/ng_paint_fragment.h"
 #include "third_party/blink/renderer/core/paint/paint_layer.h"
 #include "third_party/blink/renderer/core/paint/paint_layer_scrollable_area.h"
-#include "third_party/blink/renderer/core/scroll/scroll_into_view_params_type_converters.h"
 #include "third_party/blink/renderer/core/style/shadow_list.h"
 #include "third_party/blink/renderer/platform/geometry/double_rect.h"
 #include "third_party/blink/renderer/platform/geometry/float_quad.h"
@@ -660,9 +659,8 @@ int LayoutBox::PixelSnappedScrollHeight() const {
 PhysicalRect LayoutBox::ScrollRectToVisibleRecursive(
     const PhysicalRect& absolute_rect,
     mojom::blink::ScrollIntoViewParamsPtr params) {
-  DCHECK(params->type ==
-             mojom::blink::ScrollIntoViewParams::Type::kProgrammatic ||
-         params->type == mojom::blink::ScrollIntoViewParams::Type::kUser);
+  DCHECK(params->type == mojom::blink::ScrollType::kProgrammatic ||
+         params->type == mojom::blink::ScrollType::kUser);
 
   if (!GetFrameView())
     return absolute_rect;
@@ -1078,10 +1076,9 @@ void LayoutBox::Autoscroll(const PhysicalOffset& position_in_root_frame) {
   ScrollRectToVisibleRecursive(
       PhysicalRect(absolute_position,
                    PhysicalSize(LayoutUnit(1), LayoutUnit(1))),
-      CreateScrollIntoViewParams(
-          ScrollAlignment::kAlignToEdgeIfNeeded,
-          ScrollAlignment::kAlignToEdgeIfNeeded,
-          mojom::blink::ScrollIntoViewParams::Type::kUser));
+      ScrollAlignment::CreateScrollIntoViewParams(
+          ScrollAlignment::ToEdgeIfNeeded(), ScrollAlignment::ToEdgeIfNeeded(),
+          mojom::blink::ScrollType::kUser));
 }
 
 bool LayoutBox::CanAutoscroll() const {
@@ -1159,9 +1156,8 @@ void LayoutBox::ScrollByRecursively(const ScrollOffset& delta) {
   DCHECK(scrollable_area);
 
   ScrollOffset new_scroll_offset = scrollable_area->GetScrollOffset() + delta;
-  scrollable_area->SetScrollOffset(
-      new_scroll_offset,
-      mojom::blink::ScrollIntoViewParams::Type::kProgrammatic);
+  scrollable_area->SetScrollOffset(new_scroll_offset,
+                                   mojom::blink::ScrollType::kProgrammatic);
 
   // If this layer can't do the scroll we ask the next layer up that can
   // scroll to try.
@@ -6390,7 +6386,7 @@ bool LayoutBox::AllowedToPropagateRecursiveScrollToParentFrame(
   if (!GetFrameView()->SafeToPropagateScrollToParent())
     return false;
 
-  if (params->type != mojom::blink::ScrollIntoViewParams::Type::kProgrammatic)
+  if (params->type != mojom::blink::ScrollType::kProgrammatic)
     return true;
 
   return !GetDocument().IsVerticalScrollEnforced();

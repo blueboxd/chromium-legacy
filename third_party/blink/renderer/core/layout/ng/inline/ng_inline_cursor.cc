@@ -1260,7 +1260,7 @@ bool NGInlineCursor::TryToMoveToLastChild() {
   MoveToNextItem();
   DCHECK(!IsNull());
   for (auto it = current_.item_iter_ + 1; it != end; ++it) {
-    if (CurrentItem()->HasSameParent(**it))
+    if (CurrentItem()->IsSiblingOf(**it))
       MoveToItem(it);
   }
   return true;
@@ -1292,7 +1292,7 @@ void NGInlineCursor::MoveToNextSiblingItem() {
     return;
   const NGFragmentItem& item = *CurrentItem();
   MoveToNextItemSkippingChildren();
-  if (IsNull() || item.HasSameParent(*CurrentItem()))
+  if (IsNull() || item.IsSiblingOf(*CurrentItem()))
     return;
   MakeNull();
 }

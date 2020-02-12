@@ -71,22 +71,18 @@ int ScrollableArea::MaxOverlapBetweenPages() const {
 }
 
 // static
-mojom::blink::ScrollIntoViewParams::Behavior
-ScrollableArea::DetermineScrollBehavior(
-    mojom::blink::ScrollIntoViewParams::Behavior behavior_from_param,
-    mojom::blink::ScrollIntoViewParams::Behavior behavior_from_style) {
-  if (behavior_from_param ==
-      mojom::blink::ScrollIntoViewParams::Behavior::kSmooth)
-    return mojom::blink::ScrollIntoViewParams::Behavior::kSmooth;
+mojom::blink::ScrollBehavior ScrollableArea::DetermineScrollBehavior(
+    mojom::blink::ScrollBehavior behavior_from_param,
+    mojom::blink::ScrollBehavior behavior_from_style) {
+  if (behavior_from_param == mojom::blink::ScrollBehavior::kSmooth)
+    return mojom::blink::ScrollBehavior::kSmooth;
 
-  if (behavior_from_param ==
-          mojom::blink::ScrollIntoViewParams::Behavior::kAuto &&
-      behavior_from_style ==
-          mojom::blink::ScrollIntoViewParams::Behavior::kSmooth) {
-    return mojom::blink::ScrollIntoViewParams::Behavior::kSmooth;
+  if (behavior_from_param == mojom::blink::ScrollBehavior::kAuto &&
+      behavior_from_style == mojom::blink::ScrollBehavior::kSmooth) {
+    return mojom::blink::ScrollBehavior::kSmooth;
   }
 
-  return mojom::blink::ScrollIntoViewParams::Behavior::kInstant;
+  return mojom::blink::ScrollBehavior::kInstant;
 }
 
 ScrollableArea::ScrollableArea()
@@ -211,11 +207,10 @@ ScrollResult ScrollableArea::UserScroll(ScrollGranularity granularity,
   return result;
 }
 
-void ScrollableArea::SetScrollOffset(
-    const ScrollOffset& offset,
-    mojom::blink::ScrollIntoViewParams::Type scroll_type,
-    mojom::blink::ScrollIntoViewParams::Behavior behavior,
-    ScrollCallback on_finish) {
+void ScrollableArea::SetScrollOffset(const ScrollOffset& offset,
+                                     mojom::blink::ScrollType scroll_type,
+                                     mojom::blink::ScrollBehavior behavior,
+                                     ScrollCallback on_finish) {
   if (on_finish)
     RegisterScrollCompleteCallback(std::move(on_finish));
 
@@ -240,30 +235,30 @@ void ScrollableArea::SetScrollOffset(
   TRACE_EVENT_INSTANT1("blink", "Behavior", TRACE_EVENT_SCOPE_THREAD,
                        "behavior", behavior);
 
-  if (behavior == mojom::blink::ScrollIntoViewParams::Behavior::kAuto)
+  if (behavior == mojom::blink::ScrollBehavior::kAuto)
     behavior = ScrollBehaviorStyle();
 
   switch (scroll_type) {
-    case mojom::blink::ScrollIntoViewParams::Type::kCompositor:
+    case mojom::blink::ScrollType::kCompositor:
       ScrollOffsetChanged(clamped_offset, scroll_type);
       break;
-    case mojom::blink::ScrollIntoViewParams::Type::kClamping:
+    case mojom::blink::ScrollType::kClamping:
       GetScrollAnimator().AdjustAnimationAndSetScrollOffset(clamped_offset,
                                                             scroll_type);
       break;
-    case mojom::blink::ScrollIntoViewParams::Type::kAnchoring:
+    case mojom::blink::ScrollType::kAnchoring:
       GetScrollAnimator().AdjustAnimationAndSetScrollOffset(clamped_offset,
                                                             scroll_type);
       break;
-    case mojom::blink::ScrollIntoViewParams::Type::kProgrammatic:
+    case mojom::blink::ScrollType::kProgrammatic:
       ProgrammaticScrollHelper(clamped_offset, behavior, false,
                                run_on_return.Release());
       break;
-    case mojom::blink::ScrollIntoViewParams::Type::kSequenced:
+    case mojom::blink::ScrollType::kSequenced:
       ProgrammaticScrollHelper(clamped_offset, behavior, true,
                                run_on_return.Release());
       break;
-    case mojom::blink::ScrollIntoViewParams::Type::kUser:
+    case mojom::blink::ScrollType::kUser:
       UserScrollHelper(clamped_offset, behavior);
       break;
     default:
@@ -271,23 +266,21 @@ void ScrollableArea::SetScrollOffset(
   }
 }
 
-void ScrollableArea::SetScrollOffset(
-    const ScrollOffset& offset,
-    mojom::blink::ScrollIntoViewParams::Type type,
-    mojom::blink::ScrollIntoViewParams::Behavior behavior) {
+void ScrollableArea::SetScrollOffset(const ScrollOffset& offset,
+                                     mojom::blink::ScrollType type,
+                                     mojom::blink::ScrollBehavior behavior) {
   SetScrollOffset(offset, type, behavior, ScrollCallback());
 }
 
-void ScrollableArea::ScrollBy(
-    const ScrollOffset& delta,
-    mojom::blink::ScrollIntoViewParams::Type type,
-    mojom::blink::ScrollIntoViewParams::Behavior behavior) {
+void ScrollableArea::ScrollBy(const ScrollOffset& delta,
+                              mojom::blink::ScrollType type,
+                              mojom::blink::ScrollBehavior behavior) {
   SetScrollOffset(GetScrollOffset() + delta, type, behavior);
 }
 
 void ScrollableArea::ProgrammaticScrollHelper(
     const ScrollOffset& offset,
-    mojom::blink::ScrollIntoViewParams::Behavior scroll_behavior,
+    mojom::blink::ScrollBehavior scroll_behavior,
     bool is_sequenced_scroll,
     ScrollCallback on_finish) {
   CancelScrollAnimation();
@@ -303,8 +296,7 @@ void ScrollableArea::ProgrammaticScrollHelper(
       },
       std::move(callback), WrapWeakPersistent(this)));
 
-  if (scroll_behavior ==
-          mojom::blink::ScrollIntoViewParams::Behavior::kSmooth &&
+  if (scroll_behavior == mojom::blink::ScrollBehavior::kSmooth &&
       ScrollAnimatorEnabled()) {
     GetProgrammaticScrollAnimator().AnimateToOffset(offset, is_sequenced_scroll,
                                                     std::move(callback));
@@ -318,7 +310,7 @@ void ScrollableArea::ProgrammaticScrollHelper(
 
 void ScrollableArea::UserScrollHelper(
     const ScrollOffset& offset,
-    mojom::blink::ScrollIntoViewParams::Behavior scroll_behavior) {
+    mojom::blink::ScrollBehavior scroll_behavior) {
   CancelProgrammaticScrollAnimation();
   if (SmoothScrollSequencer* sequencer = GetSmoothScrollSequencer())
     sequencer->AbortAnimations();
@@ -335,8 +327,7 @@ void ScrollableArea::UserScrollHelper(
   // TODO(bokan): The userScroll method should probably be modified to call this
   //              method and ScrollAnimatorBase to have a simpler
   //              animateToOffset method like the ProgrammaticScrollAnimator.
-  DCHECK_EQ(scroll_behavior,
-            mojom::blink::ScrollIntoViewParams::Behavior::kInstant);
+  DCHECK_EQ(scroll_behavior, mojom::blink::ScrollBehavior::kInstant);
   GetScrollAnimator().ScrollToOffsetWithoutAnimation(ScrollOffset(x, y));
 }
 
@@ -349,9 +340,8 @@ PhysicalRect ScrollableArea::ScrollIntoView(
   return PhysicalRect();
 }
 
-void ScrollableArea::ScrollOffsetChanged(
-    const ScrollOffset& offset,
-    mojom::blink::ScrollIntoViewParams::Type scroll_type) {
+void ScrollableArea::ScrollOffsetChanged(const ScrollOffset& offset,
+                                         mojom::blink::ScrollType scroll_type) {
   TRACE_EVENT0("blink", "ScrollableArea::scrollOffsetChanged");
 
   ScrollOffset old_offset = GetScrollOffset();
@@ -406,13 +396,13 @@ void ScrollableArea::ScrollOffsetChanged(
 
 bool ScrollableArea::ScrollBehaviorFromString(
     const String& behavior_string,
-    mojom::blink::ScrollIntoViewParams::Behavior& behavior) {
+    mojom::blink::ScrollBehavior& behavior) {
   if (behavior_string == "auto")
-    behavior = mojom::blink::ScrollIntoViewParams::Behavior::kAuto;
+    behavior = mojom::blink::ScrollBehavior::kAuto;
   else if (behavior_string == "instant")
-    behavior = mojom::blink::ScrollIntoViewParams::Behavior::kInstant;
+    behavior = mojom::blink::ScrollBehavior::kInstant;
   else if (behavior_string == "smooth")
-    behavior = mojom::blink::ScrollIntoViewParams::Behavior::kSmooth;
+    behavior = mojom::blink::ScrollBehavior::kSmooth;
   else
     return false;
 
@@ -422,7 +412,7 @@ bool ScrollableArea::ScrollBehaviorFromString(
 // NOTE: Only called from Internals for testing.
 void ScrollableArea::UpdateScrollOffsetFromInternals(const IntSize& offset) {
   ScrollOffsetChanged(ScrollOffset(offset),
-                      mojom::blink::ScrollIntoViewParams::Type::kProgrammatic);
+                      mojom::blink::ScrollType::kProgrammatic);
 }
 
 void ScrollableArea::RegisterScrollCompleteCallback(ScrollCallback callback) {
@@ -790,8 +780,7 @@ IntSize ScrollableArea::ExcludeScrollbars(const IntSize& size) const {
 
 void ScrollableArea::DidScroll(const FloatPoint& position) {
   ScrollOffset new_offset(ScrollPositionToOffset(position));
-  SetScrollOffset(new_offset,
-                  mojom::blink::ScrollIntoViewParams::Type::kCompositor);
+  SetScrollOffset(new_offset, mojom::blink::ScrollType::kCompositor);
 }
 
 CompositorElementId ScrollableArea::GetScrollbarElementId(
@@ -844,8 +833,7 @@ bool ScrollableArea::SnapForEndPosition(const FloatPoint& end_position,
   std::unique_ptr<cc::SnapSelectionStrategy> strategy =
       cc::SnapSelectionStrategy::CreateForEndPosition(
           gfx::ScrollOffset(end_position), scrolled_x, scrolled_y);
-  return PerformSnapping(*strategy,
-                         mojom::blink::ScrollIntoViewParams::Behavior::kSmooth,
+  return PerformSnapping(*strategy, mojom::blink::ScrollBehavior::kSmooth,
                          std::move(on_finish));
 }
 
@@ -858,8 +846,7 @@ bool ScrollableArea::SnapForDirection(const ScrollOffset& delta,
           gfx::ScrollOffset(current_position),
           gfx::ScrollOffset(delta.Width(), delta.Height()),
           RuntimeEnabledFeatures::FractionalScrollOffsetsEnabled());
-  return PerformSnapping(*strategy,
-                         mojom::blink::ScrollIntoViewParams::Behavior::kSmooth,
+  return PerformSnapping(*strategy, mojom::blink::ScrollBehavior::kSmooth,
                          std::move(on_finish));
 }
 
@@ -884,13 +871,12 @@ void ScrollableArea::SnapAfterLayout() {
       cc::SnapSelectionStrategy::CreateForTargetElement(
           gfx::ScrollOffset(current_position));
 
-  PerformSnapping(*strategy,
-                  mojom::blink::ScrollIntoViewParams::Behavior::kInstant);
+  PerformSnapping(*strategy, mojom::blink::ScrollBehavior::kInstant);
 }
 
 bool ScrollableArea::PerformSnapping(
     const cc::SnapSelectionStrategy& strategy,
-    mojom::blink::ScrollIntoViewParams::Behavior scroll_behavior,
+    mojom::blink::ScrollBehavior scroll_behavior,
     base::ScopedClosureRunner on_finish) {
   base::Optional<FloatPoint> snap_point = GetSnapPositionAndSetTarget(strategy);
   if (!snap_point)
@@ -898,8 +884,8 @@ bool ScrollableArea::PerformSnapping(
   CancelScrollAnimation();
   CancelProgrammaticScrollAnimation();
   SetScrollOffset(ScrollPositionToOffset(snap_point.value()),
-                  mojom::blink::ScrollIntoViewParams::Type::kProgrammatic,
-                  scroll_behavior, on_finish.Release());
+                  mojom::blink::ScrollType::kProgrammatic, scroll_behavior,
+                  on_finish.Release());
   return true;
 }
 

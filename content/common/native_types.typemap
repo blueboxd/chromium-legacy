@@ -67,10 +67,6 @@ public_deps = [
 ]
 type_mappings = [
   "content.mojom.Button=::blink::WebPointerProperties::Button",
-  "content.mojom.CSPDirective=::content::CSPDirective",
-  "content.mojom.CSPSource=::content::CSPSource",
-  "content.mojom.CSPSourceList=::content::CSPSourceList",
-  "content.mojom.CSPViolationParams=::content::CSPViolationParams",
   "content.mojom.Cancelability=::blink::WebInputEvent::DispatchType",
   "content.mojom.ContentSecurityPolicy=::content::ContentSecurityPolicy",
   "content.mojom.DidOverscrollParams=::ui::DidOverscrollParams",

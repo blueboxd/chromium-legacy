@@ -234,7 +234,7 @@ vars = {
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling catapult
   # and whatever else without interference from each other.
-  'catapult_revision': '6dff36314cb474e7fe7e905dc66661869d92ff37',
+  'catapult_revision': 'a7875dfced8a82e40b39990eb7cb2ea47a19878f',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling libFuzzer
   # and whatever else without interference from each other.
@@ -282,7 +282,7 @@ vars = {
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling feed
   # and whatever else without interference from each other.
-  'spv_tools_revision': '77fb303e58e9d3ed08a0e72739373a58d6f07be3',
+  'spv_tools_revision': '6c218ec60b5f6b525f1badb60c820cae20bd4df3',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling feed
   # and whatever else without interference from each other.
@@ -886,7 +886,7 @@ deps = {
   },
 
   'src/third_party/depot_tools':
-    Var('chromium_git') + '/chromium/tools/depot_tools.git' + '@' + 'da4dea33d7095af23a376e5f58418fd713b669b4',
+    Var('chromium_git') + '/chromium/tools/depot_tools.git' + '@' + '1de518cc2487085aabf86eb83246e92383fb8542',
 
   'src/third_party/devtools-frontend/src':
     Var('chromium_git') + '/devtools/devtools-frontend' + '@' + Var('devtools_frontend_revision'),
@@ -1520,7 +1520,7 @@ deps = {
     Var('chromium_git') + '/v8/v8.git' + '@' +  Var('v8_revision'),
 
   'src-internal': {
-    'url': 'https://chrome-internal.googlesource.com/chrome/src-internal.git@7b39d7cb5d64b2481a90c99947a477ba6263325f',
+    'url': 'https://chrome-internal.googlesource.com/chrome/src-internal.git@ead1d6709ef64f273c80353188e83e10cec8d72d',
     'condition': 'checkout_src_internal',
   },
 

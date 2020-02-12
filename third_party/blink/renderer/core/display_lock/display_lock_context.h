@@ -45,8 +45,7 @@ enum class DisplayLockActivationReason {
   // Shorthands
   kViewport = static_cast<uint16_t>(kSelection) |
               static_cast<uint16_t>(kUserFocus) |
-              static_cast<uint16_t>(kViewportIntersection) |
-              static_cast<uint16_t>(kAccessibility),
+              static_cast<uint16_t>(kViewportIntersection),
   kAny = static_cast<uint16_t>(kAccessibility) |
          static_cast<uint16_t>(kFindInPage) |
          static_cast<uint16_t>(kFragmentNavigation) |

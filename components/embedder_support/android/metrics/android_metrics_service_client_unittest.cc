@@ -87,12 +87,7 @@ class TestClient : public AndroidMetricsServiceClient {
     return metrics::ChromeUserMetricsExtension::CHROME;
   }
 
-  double GetPackageNameLimitRate() override {
-    // This is slightly under 0.1 to ensure
-    // TestPackageNameLogic_SampleRateAboveTen passes.  There's something odd
-    // with the rounding which causes that test to fail if this is 0.1
-    return 0.0999;
-  }
+  double GetPackageNameLimitRate() override { return 0.1; }
 
   bool ShouldWakeMetricsService() override {
     NOTREACHED();

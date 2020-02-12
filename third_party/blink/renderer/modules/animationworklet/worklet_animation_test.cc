@@ -182,9 +182,8 @@ TEST_F(WorkletAnimationTest,
   ASSERT_TRUE(scroller->HasOverflowClip());
   PaintLayerScrollableArea* scrollable_area = scroller->GetScrollableArea();
   ASSERT_TRUE(scrollable_area);
-  scrollable_area->SetScrollOffset(
-      ScrollOffset(0, 20),
-      mojom::blink::ScrollIntoViewParams::Type::kProgrammatic);
+  scrollable_area->SetScrollOffset(ScrollOffset(0, 20),
+                                   mojom::blink::ScrollType::kProgrammatic);
   ScrollTimelineOptions* options = ScrollTimelineOptions::Create();
   DoubleOrScrollTimelineAutoKeyword time_range =
       DoubleOrScrollTimelineAutoKeyword::FromDouble(100);
@@ -198,16 +197,14 @@ TEST_F(WorkletAnimationTest,
   worklet_animation->play(ASSERT_NO_EXCEPTION);
   worklet_animation->UpdateCompositingState();
 
-  scrollable_area->SetScrollOffset(
-      ScrollOffset(0, 40),
-      mojom::blink::ScrollIntoViewParams::Type::kProgrammatic);
+  scrollable_area->SetScrollOffset(ScrollOffset(0, 40),
+                                   mojom::blink::ScrollType::kProgrammatic);
 
   bool is_null;
   EXPECT_TIME_NEAR(40, worklet_animation->currentTime(is_null));
 
-  scrollable_area->SetScrollOffset(
-      ScrollOffset(0, 70),
-      mojom::blink::ScrollIntoViewParams::Type::kProgrammatic);
+  scrollable_area->SetScrollOffset(ScrollOffset(0, 70),
+                                   mojom::blink::ScrollType::kProgrammatic);
   EXPECT_TIME_NEAR(70, worklet_animation->currentTime(is_null));
 }
 
@@ -297,9 +294,8 @@ TEST_F(WorkletAnimationTest, ScrollTimelineSetPlaybackRate) {
   ASSERT_TRUE(scroller->HasOverflowClip());
   PaintLayerScrollableArea* scrollable_area = scroller->GetScrollableArea();
   ASSERT_TRUE(scrollable_area);
-  scrollable_area->SetScrollOffset(
-      ScrollOffset(0, 20),
-      mojom::blink::ScrollIntoViewParams::Type::kProgrammatic);
+  scrollable_area->SetScrollOffset(ScrollOffset(0, 20),
+                                   mojom::blink::ScrollType::kProgrammatic);
   ScrollTimelineOptions* options = ScrollTimelineOptions::Create();
   DoubleOrScrollTimelineAutoKeyword time_range =
       DoubleOrScrollTimelineAutoKeyword::FromDouble(100);
@@ -323,9 +319,8 @@ TEST_F(WorkletAnimationTest, ScrollTimelineSetPlaybackRate) {
   EXPECT_TIME_NEAR(40, worklet_animation->currentTime(is_null));
 
   // Update scroll offset.
-  scrollable_area->SetScrollOffset(
-      ScrollOffset(0, 40),
-      mojom::blink::ScrollIntoViewParams::Type::kProgrammatic);
+  scrollable_area->SetScrollOffset(ScrollOffset(0, 40),
+                                   mojom::blink::ScrollType::kProgrammatic);
 
   // Verify that the current time is updated playback_rate faster than the
   // timeline time.
@@ -370,15 +365,13 @@ TEST_F(WorkletAnimationTest, ScrollTimelineSetPlaybackRateWhilePlaying) {
   worklet_animation->UpdateCompositingState();
 
   // Update scroll offset and playback rate.
-  scrollable_area->SetScrollOffset(
-      ScrollOffset(0, 40),
-      mojom::blink::ScrollIntoViewParams::Type::kProgrammatic);
+  scrollable_area->SetScrollOffset(ScrollOffset(0, 40),
+                                   mojom::blink::ScrollType::kProgrammatic);
   worklet_animation->setPlaybackRate(GetScriptState(), playback_rate);
 
   // Verify the current time after another scroll offset update.
-  scrollable_area->SetScrollOffset(
-      ScrollOffset(0, 80),
-      mojom::blink::ScrollIntoViewParams::Type::kProgrammatic);
+  scrollable_area->SetScrollOffset(ScrollOffset(0, 80),
+                                   mojom::blink::ScrollType::kProgrammatic);
   bool is_null;
   EXPECT_TIME_NEAR(40 + 40 * playback_rate,
                    worklet_animation->currentTime(is_null));
@@ -471,9 +464,8 @@ TEST_F(WorkletAnimationTest, ScrollTimelineNewlyInactive) {
   ASSERT_TRUE(scroller->HasOverflowClip());
   PaintLayerScrollableArea* scrollable_area = scroller->GetScrollableArea();
   ASSERT_TRUE(scrollable_area);
-  scrollable_area->SetScrollOffset(
-      ScrollOffset(0, 40),
-      mojom::blink::ScrollIntoViewParams::Type::kProgrammatic);
+  scrollable_area->SetScrollOffset(ScrollOffset(0, 40),
+                                   mojom::blink::ScrollType::kProgrammatic);
 
   WorkletAnimation* worklet_animation = CreateWorkletAnimation(
       GetScriptState(), element_, animator_name_, scroll_timeline);

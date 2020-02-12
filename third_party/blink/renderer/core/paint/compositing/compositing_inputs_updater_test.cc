@@ -101,7 +101,7 @@ TEST_F(CompositingInputsUpdaterTest, UnclippedAndClippedRectsUnderScroll) {
       ToLayoutBoxModelObject(GetLayoutObjectByElementId("target"));
 
   GetDocument().View()->LayoutViewport()->ScrollBy(
-      ScrollOffset(0, 25), mojom::blink::ScrollIntoViewParams::Type::kUser);
+      ScrollOffset(0, 25), mojom::blink::ScrollType::kUser);
   GetDocument()
       .View()
       ->GetLayoutView()
@@ -127,7 +127,7 @@ TEST_F(CompositingInputsUpdaterTest,
       ToLayoutBoxModelObject(GetLayoutObjectByElementId("target"));
 
   GetDocument().View()->LayoutViewport()->ScrollBy(
-      ScrollOffset(0, 25), mojom::blink::ScrollIntoViewParams::Type::kUser);
+      ScrollOffset(0, 25), mojom::blink::ScrollType::kUser);
   GetDocument()
       .View()
       ->GetLayoutView()

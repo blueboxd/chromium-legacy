@@ -820,7 +820,8 @@ std::unique_ptr<NavigationRequest> NavigationRequest::CreateForCommit(
                            : mojom::NavigationType::DIFFERENT_DOCUMENT,
           NavigationDownloadPolicy(), params.should_replace_current_entry,
           params.base_url, params.base_url, PREVIEWS_UNSPECIFIED,
-          base::TimeTicks::Now(), params.method, nullptr, SourceLocation(),
+          base::TimeTicks::Now(), params.method, nullptr,
+          network::mojom::SourceLocation::New(),
           false /* started_from_context_menu */,
           params.gesture == NavigationGestureUser, CreateInitiatorCSPInfo(),
           std::vector<int>() /* initiator_origin_trial_features */,
@@ -1829,7 +1830,7 @@ void NavigationRequest::OnResponseStarted(
     // Reset the source location information if the navigation will not commit
     // in the current renderer process. This information originated in another
     // process (the current one), it should not be transferred to the new one.
-    common_params_->source_location = SourceLocation();
+    common_params_->source_location = network::mojom::SourceLocation::New();
 
     // Allow the embedder to cancel the cross-process commit if needed.
     // TODO(clamy): Rename ShouldTransferNavigation.

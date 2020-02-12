@@ -61,13 +61,11 @@ enum ScrollDirectionPhysical {
 
 // An explicit scroll is one that was requested by the user or the webpage.
 // An implicit scroll is a side effect of a layout change.
-inline bool IsExplicitScrollType(
-    mojom::blink::ScrollIntoViewParams::Type scroll_type) {
-  return scroll_type == mojom::blink::ScrollIntoViewParams::Type::kUser ||
-         scroll_type ==
-             mojom::blink::ScrollIntoViewParams::Type::kProgrammatic ||
-         scroll_type == mojom::blink::ScrollIntoViewParams::Type::kCompositor ||
-         scroll_type == mojom::blink::ScrollIntoViewParams::Type::kSequenced;
+inline bool IsExplicitScrollType(mojom::blink::ScrollType scroll_type) {
+  return scroll_type == mojom::blink::ScrollType::kUser ||
+         scroll_type == mojom::blink::ScrollType::kProgrammatic ||
+         scroll_type == mojom::blink::ScrollType::kCompositor ||
+         scroll_type == mojom::blink::ScrollType::kSequenced;
 }
 
 // Convert logical scroll direction to physical. Physical scroll directions are

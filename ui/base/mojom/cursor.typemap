@@ -4,7 +4,6 @@
 
 mojom = "//ui/base/mojom/cursor.mojom"
 public_headers = [
-  "//ui/base/cursor/cursor_size.h",
   "//ui/base/cursor/cursor.h",
   "//ui/base/cursor/types/cursor_types.h",
 ]
@@ -22,6 +21,5 @@ deps = [
 
 type_mappings = [
   "ui.mojom.Cursor=::ui::Cursor[copyable_pass_by_value]",
-  "ui.mojom.CursorSize=::ui::CursorSize",
   "ui.mojom.CursorType=::ui::CursorType",
 ]

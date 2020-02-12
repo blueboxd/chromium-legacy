@@ -19,7 +19,7 @@
 #include "third_party/blink/renderer/core/layout/layout_object.h"
 #include "third_party/blink/renderer/core/page/scrolling/top_document_root_scroller_controller.h"
 #include "third_party/blink/renderer/core/paint/paint_layer_scrollable_area.h"
-#include "third_party/blink/renderer/core/scroll/scroll_into_view_params_type_converters.h"
+#include "third_party/blink/renderer/core/scroll/scroll_alignment.h"
 #include "third_party/blink/renderer/core/testing/sim/sim_compositor.h"
 #include "third_party/blink/renderer/core/testing/sim/sim_request.h"
 #include "third_party/blink/renderer/core/testing/sim/sim_test.h"
@@ -589,10 +589,10 @@ TEST_F(ScrollIntoViewTest, StopAtLayoutViewportOption) {
   // stop_at_main_frame_layout_viewport.
   LayoutObject* target =
       GetDocument().getElementById("target")->GetLayoutObject();
-  auto params = CreateScrollIntoViewParams(
-      ScrollAlignment::kAlignLeftAlways, ScrollAlignment::kAlignTopAlways,
-      mojom::blink::ScrollIntoViewParams::Type::kProgrammatic, false,
-      mojom::blink::ScrollIntoViewParams::Behavior::kInstant);
+  auto params = ScrollAlignment::CreateScrollIntoViewParams(
+      ScrollAlignment::LeftAlways(), ScrollAlignment::TopAlways(),
+      mojom::blink::ScrollType::kProgrammatic, false,
+      mojom::blink::ScrollBehavior::kInstant);
   params->stop_at_main_frame_layout_viewport = true;
   target->ScrollRectToVisible(PhysicalRect(target->AbsoluteBoundingBoxRect()),
                               std::move(params));
@@ -685,11 +685,10 @@ TEST_F(ScrollIntoViewTest, SmoothUserScrollNotAbortedByProgrammaticScrolls) {
   Element* content = GetDocument().getElementById("content");
   content->GetLayoutObject()->ScrollRectToVisible(
       content->BoundingBoxForScrollIntoView(),
-      CreateScrollIntoViewParams(
-          ScrollAlignment::kAlignToEdgeIfNeeded,
-          ScrollAlignment::kAlignTopAlways,
-          mojom::blink::ScrollIntoViewParams::Type::kUser, false,
-          mojom::blink::ScrollIntoViewParams::Behavior::kSmooth, true));
+      ScrollAlignment::CreateScrollIntoViewParams(
+          ScrollAlignment::ToEdgeIfNeeded(), ScrollAlignment::TopAlways(),
+          mojom::blink::ScrollType::kUser, false,
+          mojom::blink::ScrollBehavior::kSmooth, true));
 
   // Animating the container
   Compositor().BeginFrame();  // update run_state_.

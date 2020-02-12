@@ -880,7 +880,10 @@ RenderFrameHostImpl::RenderFrameHostImpl(
       process_(site_instance->GetProcess()),
       frame_tree_(frame_tree),
       frame_tree_node_(frame_tree_node),
-      parent_(nullptr),
+      // If it has a parent, that parent must have a RFH.
+      parent_(frame_tree_node_->parent()
+                  ? frame_tree_node_->parent()->current_frame_host()
+                  : nullptr),
       routing_id_(routing_id),
       is_waiting_for_unload_ack_(false),
       render_frame_created_(false),
@@ -924,11 +927,6 @@ RenderFrameHostImpl::RenderFrameHostImpl(
   GetSiteInstance()->IncrementActiveFrameCount();
 
   if (frame_tree_node_->parent()) {
-    // Keep track of the parent RenderFrameHost, which shouldn't change even if
-    // this RenderFrameHost is on the pending deletion list and the parent
-    // FrameTreeNode has changed its current RenderFrameHost.
-    parent_ = frame_tree_node_->parent()->current_frame_host();
-
     cross_origin_embedder_policy_ = parent_->cross_origin_embedder_policy();
 
     // New child frames should inherit the nav_entry_id of their parent.
@@ -1966,16 +1964,16 @@ void RenderFrameHostImpl::RenderProcessGone(
 }
 
 void RenderFrameHostImpl::ReportContentSecurityPolicyViolation(
-    const CSPViolationParams& violation_params) {
-  GetNavigationControl()->ReportContentSecurityPolicyViolation(
-      violation_params);
+    network::mojom::CSPViolationPtr violation_params) {
+  GetAssociatedLocalFrame()->ReportContentSecurityPolicyViolation(
+      std::move(violation_params));
 }
 
 void RenderFrameHostImpl::SanitizeDataForUseInCspViolation(
     bool is_redirect,
     network::mojom::CSPDirectiveName directive,
     GURL* blocked_url,
-    SourceLocation* source_location) const {
+    network::mojom::SourceLocation* source_location) const {
   DCHECK(blocked_url);
   DCHECK(source_location);
   GURL source_location_url(source_location->url);
@@ -2003,8 +2001,9 @@ void RenderFrameHostImpl::SanitizeDataForUseInCspViolation(
   if (sanitize_blocked_url)
     *blocked_url = blocked_url->GetOrigin();
   if (sanitize_source_location) {
-    *source_location =
-        SourceLocation(source_location_url.GetOrigin().spec(), 0u, 0u);
+    source_location->url = source_location_url.GetOrigin().spec();
+    source_location->line = 0u;
+    source_location->column = 0u;
   }
 }
 
@@ -4964,7 +4963,8 @@ void RenderFrameHostImpl::NavigateToInterstitialURL(const GURL& data_url) {
       data_url, base::nullopt, blink::mojom::Referrer::New(),
       ui::PAGE_TRANSITION_LINK, mojom::NavigationType::DIFFERENT_DOCUMENT,
       download_policy, false, GURL(), GURL(), PREVIEWS_OFF,
-      base::TimeTicks::Now(), "GET", nullptr, SourceLocation(),
+      base::TimeTicks::Now(), "GET", nullptr,
+      network::mojom::SourceLocation::New(),
       false /* started_from_context_menu */, false /* has_user_gesture */,
       CreateInitiatorCSPInfo(), std::vector<int>(), std::string(),
       false /* is_history_navigation_in_new_child_frame */, base::TimeTicks());

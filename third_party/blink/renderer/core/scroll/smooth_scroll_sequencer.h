@@ -19,7 +19,7 @@ struct SequencedScroll final : public GarbageCollected<SequencedScroll> {
 
   SequencedScroll(ScrollableArea* area,
                   ScrollOffset offset,
-                  mojom::blink::ScrollIntoViewParams::Behavior behavior)
+                  mojom::blink::ScrollBehavior behavior)
       : scrollable_area(area),
         scroll_offset(offset),
         scroll_behavior(behavior) {}
@@ -31,7 +31,7 @@ struct SequencedScroll final : public GarbageCollected<SequencedScroll> {
 
   Member<ScrollableArea> scrollable_area;
   ScrollOffset scroll_offset;
-  mojom::blink::ScrollIntoViewParams::Behavior scroll_behavior;
+  mojom::blink::ScrollBehavior scroll_behavior;
 
   void Trace(blink::Visitor*);
 };
@@ -43,15 +43,13 @@ class CORE_EXPORT SmoothScrollSequencer final
     : public GarbageCollected<SmoothScrollSequencer> {
  public:
   SmoothScrollSequencer()
-      : scroll_type_(mojom::blink::ScrollIntoViewParams::Type::kProgrammatic) {}
-  void SetScrollType(mojom::blink::ScrollIntoViewParams::Type type) {
-    scroll_type_ = type;
-  }
+      : scroll_type_(mojom::blink::ScrollType::kProgrammatic) {}
+  void SetScrollType(mojom::blink::ScrollType type) { scroll_type_ = type; }
 
   // Add a scroll offset animation to the back of a queue.
   void QueueAnimation(ScrollableArea*,
                       ScrollOffset,
-                      mojom::blink::ScrollIntoViewParams::Behavior);
+                      mojom::blink::ScrollBehavior);
 
   // Run the animation at the back of the queue.
   void RunQueuedAnimations();
@@ -61,8 +59,7 @@ class CORE_EXPORT SmoothScrollSequencer final
 
   // Given the incoming scroll's scroll type, returns whether to filter the
   // incoming scroll. It may also abort the current sequenced scroll.
-  bool FilterNewScrollOrAbortCurrent(
-      mojom::blink::ScrollIntoViewParams::Type incoming_type);
+  bool FilterNewScrollOrAbortCurrent(mojom::blink::ScrollType incoming_type);
 
   void DidDisposeScrollableArea(const ScrollableArea&);
 
@@ -71,7 +68,7 @@ class CORE_EXPORT SmoothScrollSequencer final
  private:
   HeapVector<Member<SequencedScroll>> queue_;
   Member<ScrollableArea> current_scrollable_;
-  mojom::blink::ScrollIntoViewParams::Type scroll_type_;
+  mojom::blink::ScrollType scroll_type_;
 };
 
 }  // namespace blink

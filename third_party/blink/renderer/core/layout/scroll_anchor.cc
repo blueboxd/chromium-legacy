@@ -464,7 +464,7 @@ void ScrollAnchor::Adjust() {
 
   scroller_->SetScrollOffset(
       scroller_->GetScrollOffset() + FloatSize(adjustment),
-      mojom::blink::ScrollIntoViewParams::Type::kAnchoring);
+      mojom::blink::ScrollType::kAnchoring);
 
   // Update UMA metric.
   DEFINE_STATIC_LOCAL(EnumerationHistogram, adjusted_offset_histogram,
@@ -539,15 +539,15 @@ bool ScrollAnchor::RestoreAnchor(const SerializedAnchor& serialized_anchor) {
     ScrollOffset delta =
         ScrollOffset(RoundedIntSize(serialized_anchor.relative_offset));
     desired_offset -= delta;
-    scroller_->SetScrollOffset(
-        desired_offset, mojom::blink::ScrollIntoViewParams::Type::kAnchoring);
+    scroller_->SetScrollOffset(desired_offset,
+                               mojom::blink::ScrollType::kAnchoring);
     FindAnchor();
 
     // If the above FindAnchor call failed, reset the scroll position and try
     // again with the next found element.
     if (!anchor_object_) {
-      scroller_->SetScrollOffset(
-          current_offset, mojom::blink::ScrollIntoViewParams::Type::kAnchoring);
+      scroller_->SetScrollOffset(current_offset,
+                                 mojom::blink::ScrollType::kAnchoring);
       continue;
     }
 

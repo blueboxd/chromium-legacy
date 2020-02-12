@@ -1651,11 +1651,9 @@ bool NGBoxFragmentPainter::NodeAtPoint(const HitTestContext& hit_test,
 
   bool hit_test_self = IsInSelfHitTestingPhase(hit_test.action);
 
-  // TODO(layout-dev): Add support for hit testing overflow controls once we
-  // overflow has been implemented.
-  // if (hit_test_self && HasOverflowClip() &&
-  //   HitTestOverflowControl(result, hit_test_location, physical_offset))
-  // return true;
+  if (hit_test_self && box_fragment_.HasOverflowClip() &&
+      HitTestOverflowControl(hit_test, physical_offset))
+    return true;
 
   bool skip_children = hit_test.result->GetHitTestRequest().GetStopNode() ==
                        PhysicalFragment().GetLayoutObject();
@@ -2243,6 +2241,15 @@ bool NGBoxFragmentPainter::HitTestClippedOutByBorder(
   const NGBorderEdges& border_edges = BorderEdges();
   return !hit_test_location.Intersects(style.GetRoundedBorderFor(
       rect.ToLayoutRect(), border_edges.line_left, border_edges.line_right));
+}
+
+bool NGBoxFragmentPainter::HitTestOverflowControl(
+    const HitTestContext& hit_test,
+    PhysicalOffset accumulated_offset) {
+  const auto* layout_box = ToLayoutBoxOrNull(box_fragment_.GetLayoutObject());
+  return layout_box &&
+         layout_box->HitTestOverflowControl(*hit_test.result, hit_test.location,
+                                            accumulated_offset);
 }
 
 }  // namespace blink

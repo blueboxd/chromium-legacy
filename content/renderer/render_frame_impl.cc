@@ -536,9 +536,9 @@ mojom::CommonNavigationParamsPtr MakeCommonNavigationParams(
       navigation_type = mojom::NavigationType::RELOAD;
   }
 
-  SourceLocation source_location(info->source_location.url.Latin1(),
-                                 info->source_location.line_number,
-                                 info->source_location.column_number);
+  auto source_location = network::mojom::SourceLocation::New(
+      info->source_location.url.Latin1(), info->source_location.line_number,
+      info->source_location.column_number);
 
   const RequestExtraData* extra_data =
       static_cast<RequestExtraData*>(info->url_request.GetExtraData().get());
@@ -572,11 +572,11 @@ mojom::CommonNavigationParamsPtr MakeCommonNavigationParams(
       info->frame_load_type == WebFrameLoadType::kReplaceCurrentItem, GURL(),
       GURL(), static_cast<PreviewsState>(info->url_request.GetPreviewsState()),
       base::TimeTicks::Now(), info->url_request.HttpMethod().Latin1(),
-      GetRequestBodyForWebURLRequest(info->url_request), source_location,
-      false /* started_from_context_menu */, info->url_request.HasUserGesture(),
-      std::move(initiator_csp_info), initiator_origin_trial_features,
-      info->href_translate.Latin1(), is_history_navigation_in_new_child_frame,
-      info->input_start);
+      GetRequestBodyForWebURLRequest(info->url_request),
+      std::move(source_location), false /* started_from_context_menu */,
+      info->url_request.HasUserGesture(), std::move(initiator_csp_info),
+      initiator_origin_trial_features, info->href_translate.Latin1(),
+      is_history_navigation_in_new_child_frame, info->input_start);
 }
 
 WebFrameLoadType NavigationTypeToLoadType(mojom::NavigationType navigation_type,
@@ -2652,12 +2652,6 @@ void RenderFrameImpl::OnPortalActivated(
   frame_->OnPortalActivated(portal_token, portal.PassHandle(),
                             portal_client.PassHandle(), std::move(data),
                             std::move(callback));
-}
-
-void RenderFrameImpl::ReportContentSecurityPolicyViolation(
-    const content::CSPViolationParams& violation_params) {
-  frame_->ReportContentSecurityPolicyViolation(
-      BuildWebContentSecurityPolicyViolation(violation_params));
 }
 
 void RenderFrameImpl::ForwardMessageFromHost(
@@ -6016,8 +6010,8 @@ void RenderFrameImpl::OnMixedContentFound(
     const FrameMsg_MixedContentFound_Params& params) {
   blink::WebSourceLocation source_location;
   source_location.url = WebString::FromLatin1(params.source_location.url);
-  source_location.line_number = params.source_location.line_number;
-  source_location.column_number = params.source_location.column_number;
+  source_location.line_number = params.source_location.line;
+  source_location.column_number = params.source_location.column;
   auto request_context = static_cast<blink::mojom::RequestContextType>(
       params.request_context_type);
   frame_->MixedContentFound(params.main_resource_url, params.mixed_content_url,

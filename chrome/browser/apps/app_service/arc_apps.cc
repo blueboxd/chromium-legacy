@@ -471,7 +471,7 @@ void ArcApps::Uninstall(const std::string& app_id,
 }
 
 void ArcApps::PauseApp(const std::string& app_id) {
-  if (paused_apps_.find(app_id) != paused_apps_.end()) {
+  if (base::Contains(paused_apps_, app_id)) {
     return;
   }
 
@@ -482,7 +482,7 @@ void ArcApps::PauseApp(const std::string& app_id) {
 }
 
 void ArcApps::UnpauseApps(const std::string& app_id) {
-  if (paused_apps_.find(app_id) == paused_apps_.end()) {
+  if (!base::Contains(paused_apps_, app_id)) {
     return;
   }
 
@@ -897,11 +897,19 @@ apps::mojom::AppPtr ArcApps::Convert(ArcAppListPrefs* prefs,
   app->short_name = app->name;
   app->publisher_id = app_info.package_name;
 
+  auto paused = base::Contains(paused_apps_, app_id)
+                    ? apps::mojom::OptionalBool::kTrue
+                    : apps::mojom::OptionalBool::kFalse;
+
   if (update_icon) {
     IconEffects icon_effects = IconEffects::kNone;
     if (app_info.suspended) {
       icon_effects =
           static_cast<IconEffects>(icon_effects | IconEffects::kBlocked);
+    }
+    if (paused == apps::mojom::OptionalBool::kTrue) {
+      icon_effects =
+          static_cast<IconEffects>(icon_effects | IconEffects::kPaused);
     }
     app->icon_key = icon_key_factory_.MakeIconKey(icon_effects);
   }
@@ -921,7 +929,7 @@ apps::mojom::AppPtr ArcApps::Convert(ArcAppListPrefs* prefs,
   app->show_in_search = show;
   app->show_in_management = show;
 
-  app->paused = apps::mojom::OptionalBool::kFalse;
+  app->paused = paused;
 
   std::unique_ptr<ArcAppListPrefs::PackageInfo> package =
       prefs->GetPackage(app_info.package_name);

@@ -96,7 +96,6 @@
 #include "third_party/blink/renderer/core/paint/paint_layer_fragment.h"
 #include "third_party/blink/renderer/core/scroll/scroll_alignment.h"
 #include "third_party/blink/renderer/core/scroll/scroll_animator_base.h"
-#include "third_party/blink/renderer/core/scroll/scroll_into_view_params_type_converters.h"
 #include "third_party/blink/renderer/core/scroll/scrollbar_theme.h"
 #include "third_party/blink/renderer/core/scroll/smooth_scroll_sequencer.h"
 #include "third_party/blink/renderer/platform/graphics/graphics_layer.h"
@@ -246,7 +245,7 @@ void PaintLayerScrollableArea::ApplyPendingHistoryRestoreScrollOffset() {
        pending_view_state_->scroll_anchor_data_.simhash_});
   if (!did_restore) {
     SetScrollOffset(pending_view_state_->scroll_offset_,
-                    mojom::blink::ScrollIntoViewParams::Type::kProgrammatic);
+                    mojom::blink::ScrollType::kProgrammatic);
   }
 
   pending_view_state_.reset();
@@ -490,7 +489,7 @@ int PaintLayerScrollableArea::ScrollSize(
 
 void PaintLayerScrollableArea::UpdateScrollOffset(
     const ScrollOffset& new_offset,
-    mojom::blink::ScrollIntoViewParams::Type scroll_type) {
+    mojom::blink::ScrollType scroll_type) {
   if (HasBeenDisposed() || GetScrollOffset() == new_offset)
     return;
 
@@ -545,8 +544,8 @@ void PaintLayerScrollableArea::UpdateScrollOffset(
   // (see: PaintPropertyTreeBuilder::UpdateScrollAndScrollTranslation).
   GetLayoutBox()->SetNeedsPaintPropertyUpdatePreservingCachedRects();
 
-  if (scroll_type == mojom::blink::ScrollIntoViewParams::Type::kUser ||
-      scroll_type == mojom::blink::ScrollIntoViewParams::Type::kCompositor) {
+  if (scroll_type == mojom::blink::ScrollType::kUser ||
+      scroll_type == mojom::blink::ScrollType::kCompositor) {
     Page* page = frame->GetPage();
     if (page)
       page->GetChromeClient().ClearToolTip(*frame);
@@ -563,8 +562,8 @@ void PaintLayerScrollableArea::UpdateScrollOffset(
   // events is at the next lifecycle update (*).
   //
   // (*) https://html.spec.whatwg.org/#update-the-rendering steps
-  if (scroll_type == mojom::blink::ScrollIntoViewParams::Type::kClamping ||
-      scroll_type == mojom::blink::ScrollIntoViewParams::Type::kAnchoring) {
+  if (scroll_type == mojom::blink::ScrollType::kClamping ||
+      scroll_type == mojom::blink::ScrollType::kAnchoring) {
     if (GetLayoutBox()->GetNode())
       frame_view->SetNeedsEnqueueScrollEvent(this);
   } else {
@@ -578,8 +577,8 @@ void PaintLayerScrollableArea::UpdateScrollOffset(
   if (is_root_layer) {
     frame_view->GetFrame().Loader().SaveScrollState();
     frame_view->DidChangeScrollOffset();
-    if (scroll_type == mojom::blink::ScrollIntoViewParams::Type::kCompositor ||
-        scroll_type == mojom::blink::ScrollIntoViewParams::Type::kUser) {
+    if (scroll_type == mojom::blink::ScrollType::kCompositor ||
+        scroll_type == mojom::blink::ScrollType::kUser) {
       if (DocumentLoader* document_loader = frame->Loader().GetDocumentLoader())
         document_loader->GetInitialScrollState().was_scrolled_by_user = true;
     }
@@ -589,7 +588,7 @@ void PaintLayerScrollableArea::UpdateScrollOffset(
     anchor->DidScroll(scroll_type);
 
   if (IsExplicitScrollType(scroll_type)) {
-    if (scroll_type != mojom::blink::ScrollIntoViewParams::Type::kCompositor)
+    if (scroll_type != mojom::blink::ScrollType::kCompositor)
       ShowOverlayScrollbars();
     GetScrollAnchor()->Clear();
   }
@@ -987,7 +986,7 @@ void PaintLayerScrollableArea::UpdateScrollbarProportions() {
 
 void PaintLayerScrollableArea::SetScrollOffsetUnconditionally(
     const ScrollOffset& offset,
-    mojom::blink::ScrollIntoViewParams::Type scroll_type) {
+    mojom::blink::ScrollType scroll_type) {
   CancelScrollAnimation();
   ScrollOffsetChanged(offset, scroll_type);
 }
@@ -1159,8 +1158,8 @@ void PaintLayerScrollableArea::ClampScrollOffsetAfterOverflowChange() {
   if (ScrollOriginChanged()) {
     SetScrollOffsetUnconditionally(ClampScrollOffset(GetScrollOffset()));
   } else {
-    ScrollableArea::SetScrollOffset(
-        GetScrollOffset(), mojom::blink::ScrollIntoViewParams::Type::kClamping);
+    ScrollableArea::SetScrollOffset(GetScrollOffset(),
+                                    mojom::blink::ScrollType::kClamping);
   }
 
   SetNeedsScrollOffsetClamp(false);
@@ -1225,9 +1224,9 @@ PaintLayerScrollableArea::GetTimerTaskRunner() const {
   return GetLayoutBox()->GetFrame()->GetTaskRunner(TaskType::kInternalDefault);
 }
 
-mojom::blink::ScrollIntoViewParams::Behavior
-PaintLayerScrollableArea::ScrollBehaviorStyle() const {
-  return GetLayoutBox()->StyleRef().ScrollBehavior();
+mojom::blink::ScrollBehavior PaintLayerScrollableArea::ScrollBehaviorStyle()
+    const {
+  return GetLayoutBox()->StyleRef().GetScrollBehavior();
 }
 
 WebColorScheme PaintLayerScrollableArea::UsedColorScheme() const {
@@ -2227,14 +2226,13 @@ PhysicalRect PaintLayerScrollableArea::ScrollIntoView(
   PhysicalRect scroll_snapport_rect = VisibleScrollSnapportRect();
 
   ScrollOffset target_offset = ScrollAlignment::GetScrollOffsetToExpose(
-      scroll_snapport_rect, local_expose_rect,
-      params->align_x.To<ScrollAlignment>(),
-      params->align_y.To<ScrollAlignment>(), GetScrollOffset());
+      scroll_snapport_rect, local_expose_rect, *params->align_x.get(),
+      *params->align_y.get(), GetScrollOffset());
   ScrollOffset new_scroll_offset(
       ClampScrollOffset(RoundedIntSize(target_offset)));
 
   ScrollOffset old_scroll_offset = GetScrollOffset();
-  if (params->type == mojom::blink::ScrollIntoViewParams::Type::kUser) {
+  if (params->type == mojom::blink::ScrollType::kUser) {
     if (!UserInputScrollable(kHorizontalScrollbar))
       new_scroll_offset.SetWidth(old_scroll_offset.Width());
     if (!UserInputScrollable(kVerticalScrollbar))
@@ -2249,17 +2247,15 @@ PhysicalRect PaintLayerScrollableArea::ScrollIntoView(
   new_scroll_offset = ScrollPositionToOffset(end_point);
 
   if (params->is_for_scroll_sequence) {
-    DCHECK(params->type ==
-               mojom::blink::ScrollIntoViewParams::Type::kProgrammatic ||
-           params->type == mojom::blink::ScrollIntoViewParams::Type::kUser);
-    mojom::blink::ScrollIntoViewParams::Behavior behavior =
-        DetermineScrollBehavior(params->behavior,
-                                GetLayoutBox()->StyleRef().ScrollBehavior());
+    DCHECK(params->type == mojom::blink::ScrollType::kProgrammatic ||
+           params->type == mojom::blink::ScrollType::kUser);
+    mojom::blink::ScrollBehavior behavior = DetermineScrollBehavior(
+        params->behavior, GetLayoutBox()->StyleRef().GetScrollBehavior());
     GetSmoothScrollSequencer()->QueueAnimation(this, new_scroll_offset,
                                                behavior);
   } else {
     SetScrollOffset(new_scroll_offset, params->type,
-                    mojom::blink::ScrollIntoViewParams::Behavior::kInstant);
+                    mojom::blink::ScrollBehavior::kInstant);
   }
 
   ScrollOffset scroll_offset_difference = new_scroll_offset - old_scroll_offset;

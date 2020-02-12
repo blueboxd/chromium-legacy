@@ -273,6 +273,42 @@ IN_PROC_BROWSER_TEST_F(BackForwardCacheMetricsBrowserTest, CloneAndGoBack) {
                                    UkmEntry{id6, {{last_navigation_id, id4}}}));
 }
 
+// Confirms that UKMs are not recorded on reloading.
+IN_PROC_BROWSER_TEST_F(BackForwardCacheMetricsBrowserTest, Reload) {
+  ukm::TestAutoSetUkmRecorder recorder;
+
+  const GURL url1(embedded_test_server()->GetURL("a.com", "/title1.html"));
+  const GURL url2(embedded_test_server()->GetURL("b.com", "/title1.html"));
+
+  EXPECT_TRUE(NavigateToURL(shell(), url1));
+  EXPECT_TRUE(NavigateToURL(shell(), url2));
+
+  web_contents()->GetController().GoBack();
+  EXPECT_TRUE(WaitForLoadStop(shell()->web_contents()));
+
+  web_contents()->GetController().Reload(ReloadType::NORMAL, false);
+  EXPECT_TRUE(WaitForLoadStop(shell()->web_contents()));
+
+  EXPECT_TRUE(NavigateToURL(shell(), url2));
+  web_contents()->GetController().GoBack();
+  EXPECT_TRUE(WaitForLoadStop(shell()->web_contents()));
+
+  ASSERT_EQ(navigation_ids_.size(), static_cast<size_t>(6));
+  ukm::SourceId id1 = ToSourceId(navigation_ids_[0]);
+  // ukm::SourceId id2 = ToSourceId(navigation_ids_[1]);
+  ukm::SourceId id3 = ToSourceId(navigation_ids_[2]);
+  ukm::SourceId id4 = ToSourceId(navigation_ids_[3]);
+  // ukm::SourceId id5 = ToSourceId(navigation_ids_[4]);
+  ukm::SourceId id6 = ToSourceId(navigation_ids_[5]);
+
+  // The last navigation is for reloading, and the UKM is not recorded for this
+  // navigation. This also checks relaoding makes a different navigation ID.
+  std::string last_navigation_id = "LastCommittedSourceIdForTheSameDocument";
+  EXPECT_THAT(recorder.GetEntries("HistoryNavigation", {last_navigation_id}),
+              testing::ElementsAre(UkmEntry{id3, {{last_navigation_id, id1}}},
+                                   UkmEntry{id6, {{last_navigation_id, id4}}}));
+}
+
 namespace {
 
 struct FeatureUsage {

@@ -5227,7 +5227,7 @@ const CSSValue* ScrollBehavior::CSSValueFromComputedStyleInternal(
     const SVGComputedStyle&,
     const LayoutObject*,
     bool allow_visited_style) const {
-  return CSSIdentifierValue::Create(style.ScrollBehavior());
+  return CSSIdentifierValue::Create(style.GetScrollBehavior());
 }
 
 namespace {

@@ -145,7 +145,6 @@
 #include "third_party/blink/renderer/core/paint/paint_layer_scrollable_area.h"
 #include "third_party/blink/renderer/core/probe/core_probes.h"
 #include "third_party/blink/renderer/core/resize_observer/resize_observation.h"
-#include "third_party/blink/renderer/core/scroll/scroll_into_view_params_type_converters.h"
 #include "third_party/blink/renderer/core/scroll/scrollable_area.h"
 #include "third_party/blink/renderer/core/scroll/scrollbar_theme.h"
 #include "third_party/blink/renderer/core/scroll/smooth_scroll_sequencer.h"
@@ -1024,10 +1023,11 @@ void Element::scrollIntoView(bool align_to_top) {
   scrollIntoView(arg);
 }
 
-static ScrollAlignment ToPhysicalAlignment(const ScrollIntoViewOptions* options,
-                                           ScrollOrientation axis,
-                                           WritingMode writing_mode,
-                                           bool is_ltr) {
+static mojom::blink::ScrollAlignment ToPhysicalAlignment(
+    const ScrollIntoViewOptions* options,
+    ScrollOrientation axis,
+    WritingMode writing_mode,
+    bool is_ltr) {
   bool is_horizontal_writing_mode = IsHorizontalWritingMode(writing_mode);
   String alignment =
       ((axis == kHorizontalScroll && is_horizontal_writing_mode) ||
@@ -1036,40 +1036,40 @@ static ScrollAlignment ToPhysicalAlignment(const ScrollIntoViewOptions* options,
           : options->block();
 
   if (alignment == "center")
-    return ScrollAlignment::kAlignCenterAlways;
+    return ScrollAlignment::CenterAlways();
   if (alignment == "nearest")
-    return ScrollAlignment::kAlignToEdgeIfNeeded;
+    return ScrollAlignment::ToEdgeIfNeeded();
   if (alignment == "start") {
     if (axis == kHorizontalScroll) {
       switch (writing_mode) {
         case WritingMode::kHorizontalTb:
-          return is_ltr ? ScrollAlignment::kAlignLeftAlways
-                        : ScrollAlignment::kAlignRightAlways;
+          return is_ltr ? ScrollAlignment::LeftAlways()
+                        : ScrollAlignment::RightAlways();
         case WritingMode::kVerticalRl:
         case WritingMode::kSidewaysRl:
-          return ScrollAlignment::kAlignRightAlways;
+          return ScrollAlignment::RightAlways();
         case WritingMode::kVerticalLr:
         case WritingMode::kSidewaysLr:
-          return ScrollAlignment::kAlignLeftAlways;
+          return ScrollAlignment::LeftAlways();
         default:
           NOTREACHED();
-          return ScrollAlignment::kAlignLeftAlways;
+          return ScrollAlignment::LeftAlways();
       }
     } else {
       switch (writing_mode) {
         case WritingMode::kHorizontalTb:
-          return ScrollAlignment::kAlignTopAlways;
+          return ScrollAlignment::TopAlways();
         case WritingMode::kVerticalRl:
         case WritingMode::kSidewaysRl:
         case WritingMode::kVerticalLr:
-          return is_ltr ? ScrollAlignment::kAlignTopAlways
-                        : ScrollAlignment::kAlignBottomAlways;
+          return is_ltr ? ScrollAlignment::TopAlways()
+                        : ScrollAlignment::BottomAlways();
         case WritingMode::kSidewaysLr:
-          return is_ltr ? ScrollAlignment::kAlignBottomAlways
-                        : ScrollAlignment::kAlignTopAlways;
+          return is_ltr ? ScrollAlignment::BottomAlways()
+                        : ScrollAlignment::TopAlways();
         default:
           NOTREACHED();
-          return ScrollAlignment::kAlignTopAlways;
+          return ScrollAlignment::TopAlways();
       }
     }
   }
@@ -1077,44 +1077,44 @@ static ScrollAlignment ToPhysicalAlignment(const ScrollIntoViewOptions* options,
     if (axis == kHorizontalScroll) {
       switch (writing_mode) {
         case WritingMode::kHorizontalTb:
-          return is_ltr ? ScrollAlignment::kAlignRightAlways
-                        : ScrollAlignment::kAlignLeftAlways;
+          return is_ltr ? ScrollAlignment::RightAlways()
+                        : ScrollAlignment::LeftAlways();
         case WritingMode::kVerticalRl:
         case WritingMode::kSidewaysRl:
-          return ScrollAlignment::kAlignLeftAlways;
+          return ScrollAlignment::LeftAlways();
         case WritingMode::kVerticalLr:
         case WritingMode::kSidewaysLr:
-          return ScrollAlignment::kAlignRightAlways;
+          return ScrollAlignment::RightAlways();
         default:
           NOTREACHED();
-          return ScrollAlignment::kAlignRightAlways;
+          return ScrollAlignment::RightAlways();
       }
     } else {
       switch (writing_mode) {
         case WritingMode::kHorizontalTb:
-          return ScrollAlignment::kAlignBottomAlways;
+          return ScrollAlignment::BottomAlways();
         case WritingMode::kVerticalRl:
         case WritingMode::kSidewaysRl:
         case WritingMode::kVerticalLr:
-          return is_ltr ? ScrollAlignment::kAlignBottomAlways
-                        : ScrollAlignment::kAlignTopAlways;
+          return is_ltr ? ScrollAlignment::BottomAlways()
+                        : ScrollAlignment::TopAlways();
         case WritingMode::kSidewaysLr:
-          return is_ltr ? ScrollAlignment::kAlignTopAlways
-                        : ScrollAlignment::kAlignBottomAlways;
+          return is_ltr ? ScrollAlignment::TopAlways()
+                        : ScrollAlignment::BottomAlways();
         default:
           NOTREACHED();
-          return ScrollAlignment::kAlignBottomAlways;
+          return ScrollAlignment::BottomAlways();
       }
     }
   }
 
   // Default values
   if (is_horizontal_writing_mode) {
-    return (axis == kHorizontalScroll) ? ScrollAlignment::kAlignToEdgeIfNeeded
-                                       : ScrollAlignment::kAlignTopAlways;
+    return (axis == kHorizontalScroll) ? ScrollAlignment::ToEdgeIfNeeded()
+                                       : ScrollAlignment::TopAlways();
   }
-  return (axis == kHorizontalScroll) ? ScrollAlignment::kAlignLeftAlways
-                                     : ScrollAlignment::kAlignToEdgeIfNeeded;
+  return (axis == kHorizontalScroll) ? ScrollAlignment::LeftAlways()
+                                     : ScrollAlignment::ToEdgeIfNeeded();
 }
 
 void Element::scrollIntoViewWithOptions(const ScrollIntoViewOptions* options) {
@@ -1133,23 +1133,21 @@ void Element::ScrollIntoViewNoVisualUpdate(
           DisplayLockActivationReason::kScrollIntoView))
     return;
 
-  mojom::blink::ScrollIntoViewParams::Behavior behavior =
-      (options->behavior() == "smooth")
-          ? mojom::blink::ScrollIntoViewParams::Behavior::kSmooth
-          : mojom::blink::ScrollIntoViewParams::Behavior::kAuto;
+  mojom::blink::ScrollBehavior behavior =
+      (options->behavior() == "smooth") ? mojom::blink::ScrollBehavior::kSmooth
+                                        : mojom::blink::ScrollBehavior::kAuto;
 
   WritingMode writing_mode = GetComputedStyle()->GetWritingMode();
   bool is_ltr = GetComputedStyle()->IsLeftToRightDirection();
-  ScrollAlignment align_x =
+  auto align_x =
       ToPhysicalAlignment(options, kHorizontalScroll, writing_mode, is_ltr);
-  ScrollAlignment align_y =
+  auto align_y =
       ToPhysicalAlignment(options, kVerticalScroll, writing_mode, is_ltr);
 
   PhysicalRect bounds = BoundingBoxForScrollIntoView();
   GetLayoutObject()->ScrollRectToVisible(
-      bounds, CreateScrollIntoViewParams(
-                  align_x, align_y,
-                  mojom::blink::ScrollIntoViewParams::Type::kProgrammatic,
+      bounds, ScrollAlignment::CreateScrollIntoViewParams(
+                  align_x, align_y, mojom::blink::ScrollType::kProgrammatic,
                   /*make_visible_in_visual_viewport=*/true, behavior));
 
   GetDocument().SetSequentialFocusNavigationStartingPoint(this);
@@ -1165,14 +1163,14 @@ void Element::scrollIntoViewIfNeeded(bool center_if_needed) {
   PhysicalRect bounds = BoundingBoxForScrollIntoView();
   if (center_if_needed) {
     GetLayoutObject()->ScrollRectToVisible(
-        bounds,
-        CreateScrollIntoViewParams(ScrollAlignment::kAlignCenterIfNeeded,
-                                   ScrollAlignment::kAlignCenterIfNeeded));
+        bounds, ScrollAlignment::CreateScrollIntoViewParams(
+                    ScrollAlignment::CenterIfNeeded(),
+                    ScrollAlignment::CenterIfNeeded()));
   } else {
     GetLayoutObject()->ScrollRectToVisible(
-        bounds,
-        CreateScrollIntoViewParams(ScrollAlignment::kAlignToEdgeIfNeeded,
-                                   ScrollAlignment::kAlignToEdgeIfNeeded));
+        bounds, ScrollAlignment::CreateScrollIntoViewParams(
+                    ScrollAlignment::ToEdgeIfNeeded(),
+                    ScrollAlignment::ToEdgeIfNeeded()));
   }
 }
 
@@ -1465,9 +1463,9 @@ void Element::setScrollLeft(double new_left) {
         end_offset =
             scrollable_area->ScrollPositionToOffset(snap_point.value());
       }
-      scrollable_area->SetScrollOffset(
-          end_offset, mojom::blink::ScrollIntoViewParams::Type::kProgrammatic,
-          mojom::blink::ScrollIntoViewParams::Behavior::kAuto);
+      scrollable_area->SetScrollOffset(end_offset,
+                                       mojom::blink::ScrollType::kProgrammatic,
+                                       mojom::blink::ScrollBehavior::kAuto);
     } else {
       FloatPoint end_point(new_left * box->Style()->EffectiveZoom(),
                            scrollable_area->ScrollPosition().Y());
@@ -1481,7 +1479,7 @@ void Element::setScrollLeft(double new_left) {
       FloatPoint new_position(end_point.X(),
                               scrollable_area->ScrollPosition().Y());
       scrollable_area->ScrollToAbsolutePosition(
-          new_position, mojom::blink::ScrollIntoViewParams::Behavior::kAuto);
+          new_position, mojom::blink::ScrollBehavior::kAuto);
     }
   }
 }
@@ -1533,9 +1531,9 @@ void Element::setScrollTop(double new_top) {
             scrollable_area->ScrollPositionToOffset(snap_point.value());
       }
 
-      scrollable_area->SetScrollOffset(
-          end_offset, mojom::blink::ScrollIntoViewParams::Type::kProgrammatic,
-          mojom::blink::ScrollIntoViewParams::Behavior::kAuto);
+      scrollable_area->SetScrollOffset(end_offset,
+                                       mojom::blink::ScrollType::kProgrammatic,
+                                       mojom::blink::ScrollBehavior::kAuto);
     } else {
       FloatPoint end_point(scrollable_area->ScrollPosition().X(),
                            new_top * box->Style()->EffectiveZoom());
@@ -1548,7 +1546,7 @@ void Element::setScrollTop(double new_top) {
       FloatPoint new_position(scrollable_area->ScrollPosition().X(),
                               end_point.Y());
       scrollable_area->ScrollToAbsolutePosition(
-          new_position, mojom::blink::ScrollIntoViewParams::Behavior::kAuto);
+          new_position, mojom::blink::ScrollBehavior::kAuto);
     }
   }
 }
@@ -1656,8 +1654,8 @@ void Element::ScrollLayoutBoxBy(const ScrollToOptions* scroll_to_options) {
         ScrollableArea::NormalizeNonFiniteScroll(scroll_to_options->top()));
   }
 
-  mojom::blink::ScrollIntoViewParams::Behavior scroll_behavior =
-      mojom::blink::ScrollIntoViewParams::Behavior::kAuto;
+  mojom::blink::ScrollBehavior scroll_behavior =
+      mojom::blink::ScrollBehavior::kAuto;
   ScrollableArea::ScrollBehaviorFromString(scroll_to_options->behavior(),
                                            scroll_behavior);
   if (PaintLayerScrollableArea* scrollable_area = GetScrollableArea()) {
@@ -1681,8 +1679,8 @@ void Element::ScrollLayoutBoxBy(const ScrollToOptions* scroll_to_options) {
 }
 
 void Element::ScrollLayoutBoxTo(const ScrollToOptions* scroll_to_options) {
-  mojom::blink::ScrollIntoViewParams::Behavior scroll_behavior =
-      mojom::blink::ScrollIntoViewParams::Behavior::kAuto;
+  mojom::blink::ScrollBehavior scroll_behavior =
+      mojom::blink::ScrollBehavior::kAuto;
   ScrollableArea::ScrollBehaviorFromString(scroll_to_options->behavior(),
                                            scroll_behavior);
 
@@ -1744,8 +1742,7 @@ void Element::ScrollLayoutBoxTo(const ScrollToOptions* scroll_to_options) {
       }
 
       scrollable_area->SetScrollOffset(
-          new_offset, mojom::blink::ScrollIntoViewParams::Type::kProgrammatic,
-          scroll_behavior);
+          new_offset, mojom::blink::ScrollType::kProgrammatic, scroll_behavior);
     } else {
       FloatPoint new_position(scrollable_area->ScrollPosition().X(),
                               scrollable_area->ScrollPosition().Y());
@@ -1783,8 +1780,8 @@ void Element::ScrollFrameBy(const ScrollToOptions* scroll_to_options) {
         ScrollableArea::NormalizeNonFiniteScroll(scroll_to_options->top()));
   }
 
-  mojom::blink::ScrollIntoViewParams::Behavior scroll_behavior =
-      mojom::blink::ScrollIntoViewParams::Behavior::kAuto;
+  mojom::blink::ScrollBehavior scroll_behavior =
+      mojom::blink::ScrollBehavior::kAuto;
   ScrollableArea::ScrollBehaviorFromString(scroll_to_options->behavior(),
                                            scroll_behavior);
   LocalFrame* frame = GetDocument().GetFrame();
@@ -1806,14 +1803,14 @@ void Element::ScrollFrameBy(const ScrollToOptions* scroll_to_options) {
           RuntimeEnabledFeatures::FractionalScrollOffsetsEnabled());
   new_position =
       viewport->GetSnapPositionAndSetTarget(*strategy).value_or(new_position);
-  viewport->SetScrollOffset(
-      viewport->ScrollPositionToOffset(new_position),
-      mojom::blink::ScrollIntoViewParams::Type::kProgrammatic, scroll_behavior);
+  viewport->SetScrollOffset(viewport->ScrollPositionToOffset(new_position),
+                            mojom::blink::ScrollType::kProgrammatic,
+                            scroll_behavior);
 }
 
 void Element::ScrollFrameTo(const ScrollToOptions* scroll_to_options) {
-  mojom::blink::ScrollIntoViewParams::Behavior scroll_behavior =
-      mojom::blink::ScrollIntoViewParams::Behavior::kAuto;
+  mojom::blink::ScrollBehavior scroll_behavior =
+      mojom::blink::ScrollBehavior::kAuto;
   ScrollableArea::ScrollBehaviorFromString(scroll_to_options->behavior(),
                                            scroll_behavior);
   LocalFrame* frame = GetDocument().GetFrame();
@@ -1844,9 +1841,8 @@ void Element::ScrollFrameTo(const ScrollToOptions* scroll_to_options) {
   new_position =
       viewport->GetSnapPositionAndSetTarget(*strategy).value_or(new_position);
   new_offset = viewport->ScrollPositionToOffset(new_position);
-  viewport->SetScrollOffset(
-      new_offset, mojom::blink::ScrollIntoViewParams::Type::kProgrammatic,
-      scroll_behavior);
+  viewport->SetScrollOffset(new_offset, mojom::blink::ScrollType::kProgrammatic,
+                            scroll_behavior);
 }
 
 IntRect Element::BoundsInViewport() const {
@@ -4290,8 +4286,9 @@ void Element::UpdateFocusAppearanceWithOptions(
   } else if (GetLayoutObject() &&
              !GetLayoutObject()->IsLayoutEmbeddedContent()) {
     if (!options->preventScroll()) {
-      GetLayoutObject()->ScrollRectToVisible(BoundingBoxForScrollIntoView(),
-                                             CreateScrollIntoViewParams());
+      GetLayoutObject()->ScrollRectToVisible(
+          BoundingBoxForScrollIntoView(),
+          ScrollAlignment::CreateScrollIntoViewParams());
     }
   }
 }

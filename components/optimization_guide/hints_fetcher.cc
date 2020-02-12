@@ -232,6 +232,9 @@ bool HintsFetcher::FetchOptimizationGuideServiceHints(
   UMA_HISTOGRAM_COUNTS_100(
       "OptimizationGuide.HintsFetcher.GetHintsRequest.HostCount",
       filtered_hosts.size());
+  UMA_HISTOGRAM_COUNTS_100(
+      "OptimizationGuide.HintsFetcher.GetHintsRequest.UrlCount",
+      valid_urls.size());
 
   // |active_url_loader_| should not retry on 5xx errors since the server may
   // already be overloaded. |active_url_loader_| should retry on network changes

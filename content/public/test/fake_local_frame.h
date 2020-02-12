@@ -53,6 +53,8 @@ class FakeLocalFrame : public blink::mojom::LocalFrame {
   void MediaPlayerActionAt(const gfx::Point& location,
                            blink::mojom::MediaPlayerActionPtr action) override;
   void AdvanceFocusInForm(blink::mojom::FocusType focus_type) override;
+  void ReportContentSecurityPolicyViolation(
+      network::mojom::CSPViolationPtr violation) override;
 
  private:
   void BindFrameHostReceiver(mojo::ScopedInterfaceEndpointHandle handle);

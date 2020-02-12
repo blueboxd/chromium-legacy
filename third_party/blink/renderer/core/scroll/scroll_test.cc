@@ -67,9 +67,8 @@ TEST_F(FractionalScrollSimTest, GetBoundingClientRectAtFractional) {
 
   // Scroll on the layout viewport.
   GetDocument().View()->GetScrollableArea()->SetScrollOffset(
-      FloatSize(700.5f, 500.6f),
-      mojom::blink::ScrollIntoViewParams::Type::kProgrammatic,
-      mojom::blink::ScrollIntoViewParams::Behavior::kInstant);
+      FloatSize(700.5f, 500.6f), mojom::blink::ScrollType::kProgrammatic,
+      mojom::blink::ScrollBehavior::kInstant);
 
   Compositor().BeginFrame();
 
@@ -131,9 +130,8 @@ TEST_F(FractionalScrollSimTest, NoRepaintOnScrollFromSubpixel) {
 
   // Scroll on the layout viewport.
   GetDocument().View()->GetScrollableArea()->SetScrollOffset(
-      FloatSize(0.f, 100.5f),
-      mojom::blink::ScrollIntoViewParams::Type::kProgrammatic,
-      mojom::blink::ScrollIntoViewParams::Behavior::kInstant);
+      FloatSize(0.f, 100.5f), mojom::blink::ScrollType::kProgrammatic,
+      mojom::blink::ScrollBehavior::kInstant);
 
   Compositor().BeginFrame();
   EXPECT_FALSE(
@@ -386,10 +384,8 @@ TEST_F(ScrollAnimatorSimTest, TestRootFrameUserScrollCallBackCancelAnimation) {
   // Programmatic scroll will cancel the current user scroll animation and the
   // callback will be executed.
   GetDocument().View()->GetScrollableArea()->SetScrollOffset(
-      ScrollOffset(0, 300),
-      mojom::blink::ScrollIntoViewParams::Type::kProgrammatic,
-      mojom::blink::ScrollIntoViewParams::Behavior::kSmooth,
-      ScrollableArea::ScrollCallback());
+      ScrollOffset(0, 300), mojom::blink::ScrollType::kProgrammatic,
+      mojom::blink::ScrollBehavior::kSmooth, ScrollableArea::ScrollCallback());
   Compositor().BeginFrame();
   ASSERT_TRUE(finished);
 }

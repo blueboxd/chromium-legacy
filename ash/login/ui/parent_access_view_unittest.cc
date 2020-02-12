@@ -16,6 +16,7 @@
 #include "ash/login/ui/login_test_base.h"
 #include "ash/login/ui/login_test_utils.h"
 #include "ash/login/ui/parent_access_widget.h"
+#include "ash/public/cpp/login_types.h"
 #include "ash/session/test_session_controller_client.h"
 #include "ash/shell.h"
 #include "ash/strings/grit/ash_strings.h"
@@ -36,41 +37,17 @@
 #include "ui/events/event.h"
 #include "ui/events/test/event_generator.h"
 #include "ui/gfx/geometry/point.h"
+#include "ui/gfx/native_widget_types.h"
 #include "ui/views/controls/button/label_button.h"
 #include "ui/views/controls/textfield/textfield.h"
 #include "ui/views/widget/widget.h"
 
 namespace ash {
 
-namespace {
-
-// Struct containing the correct title and description that are displayed when
-// the dialog is instantiated with a given ParentAccessRequestReason.
-struct ViewModifiersTestData {
-  ParentAccessRequestReason reason;
-  // The title string id.
-  int title;
-  // The description string id.
-  int description;
-};
-
-const ViewModifiersTestData kViewModifiersTestData[] = {
-    {ParentAccessRequestReason::kUnlockTimeLimits,
-     IDS_ASH_LOGIN_PARENT_ACCESS_TITLE,
-     IDS_ASH_LOGIN_PARENT_ACCESS_DESCRIPTION},
-    {ParentAccessRequestReason::kChangeTime,
-     IDS_ASH_LOGIN_PARENT_ACCESS_TITLE_CHANGE_TIME,
-     IDS_ASH_LOGIN_PARENT_ACCESS_GENERIC_DESCRIPTION},
-    {ParentAccessRequestReason::kChangeTimezone,
-     IDS_ASH_LOGIN_PARENT_ACCESS_TITLE_CHANGE_TIMEZONE,
-     IDS_ASH_LOGIN_PARENT_ACCESS_GENERIC_DESCRIPTION}};
-
-// TODO(crbug.com/996828): Make (at least some of) the tests use
-// ParentAccessWidget.
-class ParentAccessViewTest : public LoginTestBase {
+class ParentAccessViewTest : public LoginTestBase,
+                             public ParentAccessView::Delegate {
  protected:
-  ParentAccessViewTest()
-      : account_id_(AccountId::FromUserEmail("child@gmail.com")) {}
+  ParentAccessViewTest() {}
   ~ParentAccessViewTest() override = default;
 
   // LoginScreenTest:
@@ -83,8 +60,9 @@ class ParentAccessViewTest : public LoginTestBase {
     LoginTestBase::TearDown();
 
     // If the test did not explicitly dismissed the widget, destroy it now.
-    if (ParentAccessWidget::Get())
-      ParentAccessWidget::Get()->Destroy();
+    ParentAccessWidget* parent_access_widget = ParentAccessWidget::Get();
+    if (parent_access_widget)
+      parent_access_widget->Close(false /* validation success */);
   }
 
   // Simulates mouse press event on a |button|.
@@ -101,32 +79,41 @@ class ParentAccessViewTest : public LoginTestBase {
     button->OnEvent(&event);
   }
 
-  // Called when ParentAccessView finished processing.
-  void OnFinished(bool access_granted) {
-    access_granted ? ++successful_validation_ : ++back_action_;
+  ParentAccessView::SubmissionResult OnPinSubmitted(
+      const std::string& code) override {
+    ++pin_submitted_;
+    last_code_submitted_ = code;
+    if (!will_authenticate_) {
+      view_->UpdateState(ParentAccessRequestViewState::kError, base::string16(),
+                         base::string16());
+      return ParentAccessView::SubmissionResult::kPinError;
+    }
+    return ParentAccessView::SubmissionResult::kPinAccepted;
   }
 
-  void StartView(ParentAccessRequestReason reason =
-                     ParentAccessRequestReason::kUnlockTimeLimits) {
-    ParentAccessView::Callbacks callbacks;
-    callbacks.on_finished = base::BindRepeating(
-        &ParentAccessViewTest::OnFinished, base::Unretained(this));
+  void OnBack() override { ++back_action_; }
 
-    validation_time_ = base::Time::Now();
-    view_ =
-        new ParentAccessView(account_id_, callbacks, reason, validation_time_);
+  void OnHelp(gfx::NativeWindow parent_window) override {
+    ++help_dialog_opened_;
+  }
+
+  void StartView(base::Optional<int> pin_length = 6) {
+    ParentAccessRequest request;
+    request.help_button_enabled = true;
+    request.pin_length = pin_length;
+    request.on_parent_access_done = base::DoNothing::Once<bool>();
+    view_ = new ParentAccessView(std::move(request), this);
+
     SetWidget(CreateWidgetWithContent(view_));
   }
 
   // Shows parent access widget with the specified |reason|.
-  void ShowWidget(ParentAccessRequestReason reason =
-                      ParentAccessRequestReason::kUnlockTimeLimits) {
-    validation_time_ = base::Time::Now();
-    ParentAccessWidget::Show(
-        account_id_,
-        base::BindRepeating(&ParentAccessViewTest::OnFinished,
-                            base::Unretained(this)),
-        reason, false /*extra_dimmer*/, validation_time_);
+  void ShowWidget(base::Optional<int> pin_length = 6) {
+    ParentAccessRequest request;
+    request.help_button_enabled = true;
+    request.pin_length = pin_length;
+    request.on_parent_access_done = base::DoNothing::Once<bool>();
+    ParentAccessWidget::Show(std::move(request), this);
     ParentAccessWidget* widget = ParentAccessWidget::Get();
     ASSERT_TRUE(widget);
   }
@@ -145,43 +132,35 @@ class ParentAccessViewTest : public LoginTestBase {
     view->ButtonPressed(test_api.back_button(), event);
   }
 
-  // Verifies expectation that UMA |action| was logged.
-  void ExpectUMAActionReported(ParentAccessView::UMAAction action,
-                               int bucket_count,
-                               int total_count) {
-    histogram_tester_.ExpectBucketCount(
-        ParentAccessView::kUMAParentAccessCodeAction, action, bucket_count);
-    histogram_tester_.ExpectTotalCount(
-        ParentAccessView::kUMAParentAccessCodeAction, total_count);
-  }
-
   void SimulateFailedValidation() {
-    login_client_->set_validate_parent_access_code_result(false);
-    EXPECT_CALL(*login_client_, ValidateParentAccessCode_(account_id_, "012345",
-                                                          validation_time_))
-        .Times(1);
-
+    will_authenticate_ = false;
     ui::test::EventGenerator* generator = GetEventGenerator();
     for (int i = 0; i < 6; ++i) {
       generator->PressKey(ui::KeyboardCode(ui::KeyboardCode::VKEY_0 + i),
                           ui::EF_NONE);
       base::RunLoop().RunUntilIdle();
     }
+    EXPECT_EQ(1, pin_submitted_);
+    EXPECT_EQ("012345", last_code_submitted_);
+    pin_submitted_ = 0;
   }
 
-  const AccountId account_id_;
   std::unique_ptr<MockLoginScreenClient> login_client_;
+
+  // Number of times the Pin was submitted.
+  int pin_submitted_ = 0;
+
+  // The code that was submitted the last time.
+  std::string last_code_submitted_ = "";
 
   // Number of times the view was dismissed with back button.
   int back_action_ = 0;
 
-  // Number of times the view was dismissed after successful validation.
-  int successful_validation_ = 0;
+  // Number of times the help dialog was opened.
+  int help_dialog_opened_ = 0;
 
-  // Time that will be used on the code validation.
-  base::Time validation_time_;
-
-  base::HistogramTester histogram_tester_;
+  // Whether the next pin submission will trigger setting an error state.
+  bool will_authenticate_ = true;
 
   ParentAccessView* view_ = nullptr;  // Owned by test widget view hierarchy.
 
@@ -189,30 +168,11 @@ class ParentAccessViewTest : public LoginTestBase {
   DISALLOW_COPY_AND_ASSIGN(ParentAccessViewTest);
 };
 
-class ParentAccessViewModifiersTest
-    : public ParentAccessViewTest,
-      public ::testing::WithParamInterface<ViewModifiersTestData> {};
-
-}  // namespace
-
-// Tests that title and description are correctly set.
-TEST_P(ParentAccessViewModifiersTest, CheckStrings) {
-  const ViewModifiersTestData& test_data = GetParam();
-  StartView(test_data.reason);
-  ParentAccessView::TestApi test_api(view_);
-  EXPECT_EQ(l10n_util::GetStringUTF16(test_data.title),
-            test_api.title_label()->GetText());
-  EXPECT_EQ(l10n_util::GetStringUTF16(test_data.description),
-            test_api.description_label()->GetText());
-}
-
-INSTANTIATE_TEST_SUITE_P(All,
-                         ParentAccessViewModifiersTest,
-                         testing::ValuesIn(kViewModifiersTestData));
-
 // Tests that back button works.
 TEST_F(ParentAccessViewTest, BackButton) {
-  StartView();
+  ShowWidget();
+  ParentAccessWidget* widget = ParentAccessWidget::Get();
+  view_ = ParentAccessWidget::TestApi(widget).parent_access_view();
   ParentAccessView::TestApi test_api(view_);
   EXPECT_TRUE(test_api.back_button()->GetEnabled());
   EXPECT_EQ(0, back_action_);
@@ -220,8 +180,7 @@ TEST_F(ParentAccessViewTest, BackButton) {
   SimulateButtonPress(test_api.back_button());
 
   EXPECT_EQ(1, back_action_);
-  EXPECT_EQ(0, successful_validation_);
-  ExpectUMAActionReported(ParentAccessView::UMAAction::kCanceledByUser, 1, 1);
+  EXPECT_EQ(nullptr, ParentAccessWidget::Get());
 }
 
 // Tests that the code is autosubmitted when input is complete.
@@ -230,11 +189,6 @@ TEST_F(ParentAccessViewTest, Autosubmit) {
   ParentAccessView::TestApi test_api(view_);
   EXPECT_FALSE(test_api.submit_button()->GetEnabled());
 
-  login_client_->set_validate_parent_access_code_result(true);
-  EXPECT_CALL(*login_client_, ValidateParentAccessCode_(account_id_, "012345",
-                                                        validation_time_))
-      .Times(1);
-
   ui::test::EventGenerator* generator = GetEventGenerator();
   for (int i = 0; i < 6; ++i) {
     generator->PressKey(ui::KeyboardCode(ui::KeyboardCode::VKEY_0 + i),
@@ -242,9 +196,8 @@ TEST_F(ParentAccessViewTest, Autosubmit) {
     base::RunLoop().RunUntilIdle();
   }
 
-  EXPECT_EQ(1, successful_validation_);
-  ExpectUMAActionReported(ParentAccessView::UMAAction::kValidationSuccess, 1,
-                          1);
+  EXPECT_EQ(1, pin_submitted_);
+  EXPECT_EQ("012345", last_code_submitted_);
 }
 
 // Tests that submit button submits code from code input.
@@ -257,35 +210,25 @@ TEST_F(ParentAccessViewTest, SubmitButton) {
   auto* generator = GetEventGenerator();
   // Updating input code (here last digit) should clear error state.
   generator->PressKey(ui::KeyboardCode::VKEY_6, ui::EF_NONE);
-  EXPECT_EQ(ParentAccessView::State::kNormal, test_api.state());
+  EXPECT_EQ(ParentAccessRequestViewState::kNormal, test_api.state());
   EXPECT_TRUE(test_api.submit_button()->GetEnabled());
-
-  login_client_->set_validate_parent_access_code_result(true);
-  EXPECT_CALL(*login_client_, ValidateParentAccessCode_(account_id_, "012346",
-                                                        validation_time_))
-      .Times(1);
 
   SimulateButtonPress(test_api.submit_button());
   base::RunLoop().RunUntilIdle();
-  EXPECT_EQ(1, successful_validation_);
-  ExpectUMAActionReported(ParentAccessView::UMAAction::kValidationSuccess, 1,
-                          2);
+  EXPECT_EQ(1, pin_submitted_);
+  EXPECT_EQ("012346", last_code_submitted_);
 }
 
 // Tests that help button opens help app.
 TEST_F(ParentAccessViewTest, HelpButton) {
-  auto client = std::make_unique<MockLoginScreenClient>();
   StartView();
 
   ParentAccessView::TestApi test_api(view_);
   EXPECT_TRUE(test_api.help_button()->GetEnabled());
 
-  EXPECT_CALL(*client, ShowParentAccessHelpApp(widget()->GetNativeWindow()))
-      .Times(1);
   SimulateButtonPress(test_api.help_button());
   base::RunLoop().RunUntilIdle();
-
-  ExpectUMAActionReported(ParentAccessView::UMAAction::kGetHelp, 1, 1);
+  EXPECT_EQ(1, help_dialog_opened_);
 }
 
 // Tests that access code can be entered with numpad.
@@ -293,19 +236,14 @@ TEST_F(ParentAccessViewTest, Numpad) {
   StartView();
   ParentAccessView::TestApi test_api(view_);
 
-  login_client_->set_validate_parent_access_code_result(true);
-  EXPECT_CALL(*login_client_, ValidateParentAccessCode_(account_id_, "012345",
-                                                        validation_time_))
-      .Times(1);
   ui::test::EventGenerator* generator = GetEventGenerator();
   for (int i = 0; i < 6; ++i) {
     generator->PressKey(ui::KeyboardCode(ui::VKEY_NUMPAD0 + i), ui::EF_NONE);
     base::RunLoop().RunUntilIdle();
   }
   EXPECT_TRUE(test_api.submit_button()->GetEnabled());
-  EXPECT_EQ(1, successful_validation_);
-  ExpectUMAActionReported(ParentAccessView::UMAAction::kValidationSuccess, 1,
-                          1);
+  EXPECT_EQ(1, pin_submitted_);
+  EXPECT_EQ("012345", last_code_submitted_);
 }
 
 // Tests that access code can be submitted with press of 'enter' key.
@@ -319,18 +257,12 @@ TEST_F(ParentAccessViewTest, SubmitWithEnter) {
   // Updating input code (here last digit) should clear error state.
   auto* generator = GetEventGenerator();
   generator->PressKey(ui::KeyboardCode::VKEY_6, ui::EF_NONE);
-  EXPECT_EQ(ParentAccessView::State::kNormal, test_api.state());
-
-  login_client_->set_validate_parent_access_code_result(true);
-  EXPECT_CALL(*login_client_, ValidateParentAccessCode_(account_id_, "012346",
-                                                        validation_time_))
-      .Times(1);
+  EXPECT_EQ(ParentAccessRequestViewState::kNormal, test_api.state());
 
   generator->PressKey(ui::KeyboardCode::VKEY_RETURN, ui::EF_NONE);
   base::RunLoop().RunUntilIdle();
-  EXPECT_EQ(1, successful_validation_);
-  ExpectUMAActionReported(ParentAccessView::UMAAction::kValidationSuccess, 1,
-                          2);
+  EXPECT_EQ(1, pin_submitted_);
+  EXPECT_EQ("012346", last_code_submitted_);
 }
 
 // Tests that 'enter' key does not submit incomplete code.
@@ -348,38 +280,27 @@ TEST_F(ParentAccessViewTest, PressEnterOnIncompleteCode) {
   }
   EXPECT_FALSE(test_api.submit_button()->GetEnabled());
 
-  login_client_->set_validate_parent_access_code_result(true);
-  EXPECT_CALL(*login_client_, ValidateParentAccessCode_).Times(0);
-
   // Pressing enter should not submit incomplete code.
   generator->PressKey(ui::KeyboardCode::VKEY_RETURN, ui::EF_NONE);
   base::RunLoop().RunUntilIdle();
-  EXPECT_EQ(0, successful_validation_);
+  EXPECT_EQ(0, pin_submitted_);
 
-  login_client_->set_validate_parent_access_code_result(false);
-  EXPECT_CALL(*login_client_, ValidateParentAccessCode_(account_id_, "012349",
-                                                        validation_time_))
-      .Times(1);
-
-  // Fill in last digit of the code.
+  // Fill in last digit of the code, set error on submission.
+  will_authenticate_ = false;
   generator->PressKey(ui::KeyboardCode(ui::KeyboardCode::VKEY_9), ui::EF_NONE);
   base::RunLoop().RunUntilIdle();
+  EXPECT_EQ(1, pin_submitted_);
+  EXPECT_EQ("012349", last_code_submitted_);
 
   // Updating input code (here last digit) should clear error state.
   generator->PressKey(ui::KeyboardCode::VKEY_6, ui::EF_NONE);
-  EXPECT_EQ(ParentAccessView::State::kNormal, test_api.state());
-
-  login_client_->set_validate_parent_access_code_result(true);
-  EXPECT_CALL(*login_client_, ValidateParentAccessCode_(account_id_, "012346",
-                                                        validation_time_))
-      .Times(1);
+  EXPECT_EQ(ParentAccessRequestViewState::kNormal, test_api.state());
 
   // Now the code should be submitted with enter key.
   generator->PressKey(ui::KeyboardCode::VKEY_RETURN, ui::EF_NONE);
   base::RunLoop().RunUntilIdle();
-  EXPECT_EQ(1, successful_validation_);
-  ExpectUMAActionReported(ParentAccessView::UMAAction::kValidationSuccess, 1,
-                          2);
+  EXPECT_EQ(2, pin_submitted_);
+  EXPECT_EQ("012346", last_code_submitted_);
 }
 
 // Tests that backspace button works.
@@ -389,7 +310,7 @@ TEST_F(ParentAccessViewTest, Backspace) {
   EXPECT_FALSE(test_api.submit_button()->GetEnabled());
 
   SimulateFailedValidation();
-  EXPECT_EQ(ParentAccessView::State::kError, test_api.state());
+  EXPECT_EQ(ParentAccessRequestViewState::kError, test_api.state());
 
   ui::test::EventGenerator* generator = GetEventGenerator();
 
@@ -412,16 +333,35 @@ TEST_F(ParentAccessViewTest, Backspace) {
   base::RunLoop().RunUntilIdle();
   EXPECT_TRUE(test_api.submit_button()->GetEnabled());
 
-  login_client_->set_validate_parent_access_code_result(true);
-  EXPECT_CALL(*login_client_, ValidateParentAccessCode_(account_id_, "012323",
-                                                        validation_time_))
-      .Times(1);
-
   SimulateButtonPress(test_api.submit_button());
   base::RunLoop().RunUntilIdle();
-  EXPECT_EQ(1, successful_validation_);
-  ExpectUMAActionReported(ParentAccessView::UMAAction::kValidationSuccess, 1,
-                          2);
+  EXPECT_EQ(1, pin_submitted_);
+  EXPECT_EQ("012323", last_code_submitted_);
+}
+
+// Tests input with unknown pin length.
+TEST_F(ParentAccessViewTest, FlexCodeInput) {
+  StartView(base::nullopt);
+  ParentAccessView::TestApi test_api(view_);
+  ui::test::EventGenerator* generator = GetEventGenerator();
+  will_authenticate_ = false;
+
+  EXPECT_FALSE(test_api.submit_button()->GetEnabled());
+  for (int i = 0; i < 8; ++i) {
+    generator->PressKey(ui::KeyboardCode(ui::KeyboardCode::VKEY_0 + i),
+                        ui::EF_NONE);
+    base::RunLoop().RunUntilIdle();
+  }
+  EXPECT_TRUE(test_api.submit_button()->GetEnabled());
+  SimulateButtonPress(test_api.submit_button());
+  EXPECT_EQ(1, pin_submitted_);
+  EXPECT_EQ("01234567", last_code_submitted_);
+
+  // Test Backspace.
+  generator->PressKey(ui::KeyboardCode::VKEY_BACK, ui::EF_NONE);
+  SimulateButtonPress(test_api.submit_button());
+  EXPECT_EQ(2, pin_submitted_);
+  EXPECT_EQ("0123456", last_code_submitted_);
 }
 
 // Tests input with virtual pin keyboard.
@@ -435,18 +375,12 @@ TEST_F(ParentAccessViewTest, PinKeyboard) {
   LoginPinView::TestApi test_pin_keyboard(test_api.pin_keyboard_view());
   EXPECT_FALSE(test_api.submit_button()->GetEnabled());
 
-  login_client_->set_validate_parent_access_code_result(true);
-  EXPECT_CALL(*login_client_, ValidateParentAccessCode_(account_id_, "012345",
-                                                        validation_time_))
-      .Times(1);
-
   for (int i = 0; i < 6; ++i) {
     SimulatePinKeyboardPress(test_pin_keyboard.GetButton(i));
     base::RunLoop().RunUntilIdle();
   }
-  EXPECT_EQ(1, successful_validation_);
-  ExpectUMAActionReported(ParentAccessView::UMAAction::kValidationSuccess, 1,
-                          1);
+  EXPECT_EQ(1, pin_submitted_);
+  EXPECT_EQ("012345", last_code_submitted_);
 }
 
 // Tests that pin keyboard visibility changes upon tablet mode changes.
@@ -467,30 +401,21 @@ TEST_F(ParentAccessViewTest, PinKeyboardVisibilityChange) {
 TEST_F(ParentAccessViewTest, ErrorState) {
   StartView();
   ParentAccessView::TestApi test_api(view_);
-  EXPECT_EQ(ParentAccessView::State::kNormal, test_api.state());
+  EXPECT_EQ(ParentAccessRequestViewState::kNormal, test_api.state());
 
   // Error should be shown after unsuccessful validation.
   SimulateFailedValidation();
-  EXPECT_EQ(ParentAccessView::State::kError, test_api.state());
-
-  EXPECT_EQ(0, successful_validation_);
-  ExpectUMAActionReported(ParentAccessView::UMAAction::kValidationError, 1, 1);
+  EXPECT_EQ(ParentAccessRequestViewState::kError, test_api.state());
 
   // Updating input code (here last digit) should clear error state.
   auto* generator = GetEventGenerator();
   generator->PressKey(ui::KeyboardCode::VKEY_6, ui::EF_NONE);
-  EXPECT_EQ(ParentAccessView::State::kNormal, test_api.state());
-
-  login_client_->set_validate_parent_access_code_result(true);
-  EXPECT_CALL(*login_client_, ValidateParentAccessCode_(account_id_, "012346",
-                                                        validation_time_))
-      .Times(1);
+  EXPECT_EQ(ParentAccessRequestViewState::kNormal, test_api.state());
 
   SimulateButtonPress(test_api.submit_button());
   base::RunLoop().RunUntilIdle();
-  EXPECT_EQ(1, successful_validation_);
-
-  ExpectUMAActionReported(ParentAccessView::UMAAction::kValidationError, 1, 2);
+  EXPECT_EQ(1, pin_submitted_);
+  EXPECT_EQ("012346", last_code_submitted_);
 }
 
 // Tests children views traversal with tab key.
@@ -505,7 +430,7 @@ TEST_F(ParentAccessViewTest, TabKeyTraversal) {
   auto* generator = GetEventGenerator();
   generator->PressKey(ui::KeyboardCode::VKEY_6, ui::EF_NONE);
   base::RunLoop().RunUntilIdle();
-  EXPECT_EQ(ParentAccessView::State::kNormal, test_api.state());
+  EXPECT_EQ(ParentAccessRequestViewState::kNormal, test_api.state());
   EXPECT_TRUE(test_api.submit_button()->HasFocus());
 
   generator->PressKey(ui::KeyboardCode::VKEY_TAB, ui::EF_NONE);
@@ -528,7 +453,7 @@ TEST_F(ParentAccessViewTest, BackwardTabKeyTraversal) {
   auto* generator = GetEventGenerator();
   generator->PressKey(ui::KeyboardCode::VKEY_6, ui::EF_NONE);
   base::RunLoop().RunUntilIdle();
-  EXPECT_EQ(ParentAccessView::State::kNormal, test_api.state());
+  EXPECT_EQ(ParentAccessRequestViewState::kNormal, test_api.state());
   EXPECT_TRUE(test_api.submit_button()->HasFocus());
 
   generator->PressKey(ui::KeyboardCode::VKEY_TAB, ui::EF_SHIFT_DOWN);
@@ -552,54 +477,11 @@ TEST_F(ParentAccessViewTest, BackwardTabKeyTraversal) {
 
 using ParentAccessWidgetTest = ParentAccessViewTest;
 
-// Tests that correct usage metric is reported.
-TEST_F(ParentAccessWidgetTest, UMAUsageMetric) {
-  ShowWidget(ParentAccessRequestReason::kUnlockTimeLimits);
-  DismissWidget();
-  histogram_tester_.ExpectBucketCount(
-      ParentAccessView::kUMAParentAccessCodeUsage,
-      ParentAccessView::UMAUsage::kTimeLimits, 1);
-
-  ShowWidget(ParentAccessRequestReason::kChangeTimezone);
-  DismissWidget();
-  histogram_tester_.ExpectBucketCount(
-      ParentAccessView::kUMAParentAccessCodeUsage,
-      ParentAccessView::UMAUsage::kTimezoneChange, 1);
-
-  // The below usage depends on the session state.
-  GetSessionControllerClient()->SetSessionState(
-      session_manager::SessionState::ACTIVE);
-  ShowWidget(ParentAccessRequestReason::kChangeTime);
-  DismissWidget();
-  histogram_tester_.ExpectBucketCount(
-      ParentAccessView::kUMAParentAccessCodeUsage,
-      ParentAccessView::UMAUsage::kTimeChangeInSession, 1);
-
-  GetSessionControllerClient()->SetSessionState(
-      session_manager::SessionState::LOGIN_PRIMARY);
-  ShowWidget(ParentAccessRequestReason::kChangeTime);
-  DismissWidget();
-  histogram_tester_.ExpectBucketCount(
-      ParentAccessView::kUMAParentAccessCodeUsage,
-      ParentAccessView::UMAUsage::kTimeChangeLoginScreen, 1);
-
-  GetSessionControllerClient()->SetSessionState(
-      session_manager::SessionState::ACTIVE);
-  ShowWidget(ParentAccessRequestReason::kChangeTime);
-  DismissWidget();
-  histogram_tester_.ExpectBucketCount(
-      ParentAccessView::kUMAParentAccessCodeUsage,
-      ParentAccessView::UMAUsage::kTimeChangeInSession, 2);
-
-  histogram_tester_.ExpectTotalCount(
-      ParentAccessView::kUMAParentAccessCodeUsage, 5);
-}
-
 // Tests that the widget is properly resized when tablet mode changes.
 TEST_F(ParentAccessWidgetTest, WidgetResizingInTabletMode) {
   // Set display large enough to fit preferred view sizes.
   UpdateDisplay("1200x800");
-  ShowWidget(ParentAccessRequestReason::kUnlockTimeLimits);
+  ShowWidget();
 
   ParentAccessWidget* widget = ParentAccessWidget::Get();
   ASSERT_TRUE(widget);
@@ -636,7 +518,7 @@ TEST_F(ParentAccessWidgetTest, WidgetResizingInTabletMode) {
   EXPECT_EQ(kClamshellModeSize, view->size());
   EXPECT_EQ(kClamshellModeSize, widget_size());
   EXPECT_EQ(user_work_area_center(), widget_center());
-  widget->Destroy();
+  widget->Close(false /* validation success */);
 }
 
 TEST_F(ParentAccessViewTest, VirtualKeyboardHidden) {
@@ -647,7 +529,7 @@ TEST_F(ParentAccessViewTest, VirtualKeyboardHidden) {
       keyboard::KeyboardEnableFlag::kCommandLineEnabled);
 
   // Show widget.
-  ShowWidget(ParentAccessRequestReason::kUnlockTimeLimits);
+  ShowWidget();
   auto* view = ParentAccessWidget::TestApi(ParentAccessWidget::Get())
                    .parent_access_view();
   ParentAccessView::TestApi test_api(view);
@@ -669,7 +551,7 @@ TEST_F(ParentAccessViewTest, VirtualKeyboardHidden) {
 
 // Tests that spoken feedback keycombo starts screen reader.
 TEST_F(ParentAccessWidgetTest, SpokenFeedbackKeyCombo) {
-  ShowWidget(ParentAccessRequestReason::kUnlockTimeLimits);
+  ShowWidget();
 
   AccessibilityControllerImpl* controller =
       Shell::Get()->accessibility_controller();

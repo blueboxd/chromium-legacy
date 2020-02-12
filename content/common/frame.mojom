@@ -235,12 +235,6 @@ interface FrameNavigationControl {
       pending_associated_receiver<blink.mojom.PortalClient> portal_client,
       blink.mojom.TransferableMessage data)
       => (blink.mojom.PortalActivateResult result);
-
-  // Notifies the document navigation was blocked because a content security
-  // policy was violated.
-  // This message is targeting a specific document in the RenderFrame, so the
-  // order with the CommitNavigation must be preserved.
-  ReportContentSecurityPolicyViolation(CSPViolationParams violation_params);
 };
 
 // Implemented by the frame (e.g. renderer processes).

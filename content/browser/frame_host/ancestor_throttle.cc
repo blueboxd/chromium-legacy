@@ -111,9 +111,9 @@ class FrameAncestorCSPContext : public CSPContext {
 
  private:
   void ReportContentSecurityPolicyViolation(
-      const CSPViolationParams& violation_params) override {
+      network::mojom::CSPViolationPtr violation_params) override {
     return navigated_frame_->ReportContentSecurityPolicyViolation(
-        violation_params);
+        std::move(violation_params));
   }
 
   bool SchemeShouldBypassCSP(const base::StringPiece& scheme) override {
@@ -124,7 +124,7 @@ class FrameAncestorCSPContext : public CSPContext {
       bool is_redirect,
       network::mojom::CSPDirectiveName directive,
       GURL* blocked_url,
-      SourceLocation* source_location) const override {
+      network::mojom::SourceLocation* source_location) const override {
     return navigated_frame_->SanitizeDataForUseInCspViolation(
         is_redirect, directive, blocked_url, source_location);
   }
@@ -264,7 +264,7 @@ NavigationThrottle::ThrottleCheckResult AncestorThrottle::ProcessResponseImpl(
     // TODO(lfg): If the initiating document is known and correspond to the
     // navigating frame's current document, consider using:
     // navigation_request().common_params().source_location here instead.
-    SourceLocation empty_source_location;
+    auto empty_source_location = network::mojom::SourceLocation::New();
 
     // CSP frame-ancestors are checked against the URL of every parent and
     // are reported to the navigating frame.

@@ -90,17 +90,17 @@ GURL WebAppBrowserController::GetAppLaunchURL() const {
 }
 
 bool WebAppBrowserController::IsUrlInAppScope(const GURL& url) const {
-  base::Optional<GURL> app_scope = registrar().GetAppScopeInternal(GetAppId());
-  if (!app_scope)
+  GURL app_scope = registrar().GetAppScope(GetAppId());
+  if (!app_scope.is_valid())
     return false;
 
   // https://w3c.github.io/manifest/#navigation-scope
   // If url is same origin as scope and url path starts with scope path, return
   // true. Otherwise, return false.
-  if (app_scope->GetOrigin() != url.GetOrigin())
+  if (app_scope.GetOrigin() != url.GetOrigin())
     return false;
 
-  std::string scope_path = app_scope->path();
+  std::string scope_path = app_scope.path();
   std::string url_path = url.path();
   return base::StartsWith(url_path, scope_path, base::CompareCase::SENSITIVE);
 }

@@ -344,8 +344,7 @@ class CORE_EXPORT PaintLayerScrollableArea final
   bool UserInputScrollable(ScrollbarOrientation) const override;
   bool ShouldPlaceVerticalScrollbarOnLeft() const override;
   int PageStep(ScrollbarOrientation) const override;
-  mojom::blink::ScrollIntoViewParams::Behavior ScrollBehaviorStyle()
-      const override;
+  mojom::blink::ScrollBehavior ScrollBehaviorStyle() const override;
   WebColorScheme UsedColorScheme() const override;
   cc::AnimationHost* GetCompositorAnimationHost() const override;
   CompositorAnimationTimeline* GetCompositorAnimationTimeline() const override;
@@ -358,12 +357,11 @@ class CORE_EXPORT PaintLayerScrollableArea final
   IntPoint ScrollOrigin() const { return scroll_origin_; }
   bool ScrollOriginChanged() const { return scroll_origin_changed_; }
 
-  void ScrollToAbsolutePosition(
-      const FloatPoint& position,
-      mojom::blink::ScrollIntoViewParams::Behavior scroll_behavior =
-          mojom::blink::ScrollIntoViewParams::Behavior::kInstant,
-      mojom::blink::ScrollIntoViewParams::Type scroll_type =
-          mojom::blink::ScrollIntoViewParams::Type::kProgrammatic) {
+  void ScrollToAbsolutePosition(const FloatPoint& position,
+                                mojom::blink::ScrollBehavior scroll_behavior =
+                                    mojom::blink::ScrollBehavior::kInstant,
+                                mojom::blink::ScrollType scroll_type =
+                                    mojom::blink::ScrollType::kProgrammatic) {
     SetScrollOffset(position - ScrollOrigin(), scroll_type, scroll_behavior);
   }
 
@@ -371,15 +369,13 @@ class CORE_EXPORT PaintLayerScrollableArea final
   // post-update work even if the scroll position didn't change.
   void SetScrollOffsetUnconditionally(
       const ScrollOffset&,
-      mojom::blink::ScrollIntoViewParams::Type =
-          mojom::blink::ScrollIntoViewParams::Type::kProgrammatic);
+      mojom::blink::ScrollType = mojom::blink::ScrollType::kProgrammatic);
 
   // This will set the scroll position without clamping, and it will do all
   // post-update work even if the scroll position didn't change.
   void SetScrollPositionUnconditionally(
       const DoublePoint&,
-      mojom::blink::ScrollIntoViewParams::Type =
-          mojom::blink::ScrollIntoViewParams::Type::kProgrammatic);
+      mojom::blink::ScrollType = mojom::blink::ScrollType::kProgrammatic);
 
   // TODO(szager): Actually run these after all of layout is finished.
   // Currently, they run at the end of box()'es layout (or after all flexbox
@@ -617,7 +613,7 @@ class CORE_EXPORT PaintLayerScrollableArea final
   void UpdateScrollbarProportions();
 
   void UpdateScrollOffset(const ScrollOffset&,
-                          mojom::blink::ScrollIntoViewParams::Type) override;
+                          mojom::blink::ScrollType) override;
   void InvalidatePaintForScrollOffsetChange();
 
   int VerticalScrollbarStart(int min_x, int max_x) const;

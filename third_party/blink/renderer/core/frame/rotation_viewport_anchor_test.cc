@@ -55,9 +55,8 @@ TEST_F(RotationViewportAnchorTest, SimpleAbsolutePosition) {
 
   // Place the target at the top-center of the viewport. This is where the
   // rotation anchor finds the node to anchor to.
-  layout_viewport->SetScrollOffset(
-      ScrollOffset(3050 - 200, 4050),
-      mojom::blink::ScrollIntoViewParams::Type::kProgrammatic);
+  layout_viewport->SetScrollOffset(ScrollOffset(3050 - 200, 4050),
+                                   mojom::blink::ScrollType::kProgrammatic);
 
   WebView().MainFrameWidget()->Resize(WebSize(600, 400));
   Compositor().BeginFrame();
@@ -103,7 +102,7 @@ TEST_F(RotationViewportAnchorTest, PositionRelativeToViewportSize) {
       ScrollOffset(target_position.X() -
                        WebView().MainFrameWidget()->Size().width / 2 + 25,
                    target_position.Y()),
-      mojom::blink::ScrollIntoViewParams::Type::kProgrammatic);
+      mojom::blink::ScrollType::kProgrammatic);
 
   WebView().MainFrameWidget()->Resize(WebSize(600, 100));
   Compositor().BeginFrame();

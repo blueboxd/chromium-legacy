@@ -328,10 +328,6 @@ const char kSaveCardInfobarMessagesUIName[] = "Save Card Infobar Messages UI";
 const char kSaveCardInfobarMessagesUIDescription[] =
     "When enabled, Save Card Infobar uses the new Messages UI.";
 
-const char kSearchIconToggleName[] = "Change the icon for the search button";
-const char kSearchIconToggleDescription[] =
-    "Different icons for the search button.";
-
 const char kSendTabToSelfName[] = "Send tab to self";
 const char kSendTabToSelfDescription[] =
     "Allows users to receive tabs that were pushed from another of their "

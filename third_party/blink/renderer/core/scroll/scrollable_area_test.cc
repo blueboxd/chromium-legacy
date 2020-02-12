@@ -61,9 +61,8 @@ TEST_F(ScrollableAreaTest, ScrollAnimatorCurrentPositionShouldBeSync) {
 
   MockScrollableArea* scrollable_area =
       MockScrollableArea::Create(ScrollOffset(0, 100));
-  scrollable_area->SetScrollOffset(
-      ScrollOffset(0, 10000),
-      mojom::blink::ScrollIntoViewParams::Type::kCompositor);
+  scrollable_area->SetScrollOffset(ScrollOffset(0, 10000),
+                                   mojom::blink::ScrollType::kCompositor);
   EXPECT_EQ(100.0,
             scrollable_area->GetScrollAnimator().CurrentOffset().Height());
 }
@@ -166,15 +165,13 @@ TEST_F(ScrollableAreaTest, InvalidatesNonCompositedScrollbarsWhenThumbMoves) {
       .WillRepeatedly(Return(kNoPart));
 
   // A scroll in each direction should only invalidate one scrollbar.
-  scrollable_area->SetScrollOffset(
-      ScrollOffset(0, 50),
-      mojom::blink::ScrollIntoViewParams::Type::kProgrammatic);
+  scrollable_area->SetScrollOffset(ScrollOffset(0, 50),
+                                   mojom::blink::ScrollType::kProgrammatic);
   EXPECT_FALSE(scrollable_area->HorizontalScrollbarNeedsPaintInvalidation());
   EXPECT_TRUE(scrollable_area->VerticalScrollbarNeedsPaintInvalidation());
   scrollable_area->ClearNeedsPaintInvalidationForScrollControls();
-  scrollable_area->SetScrollOffset(
-      ScrollOffset(50, 50),
-      mojom::blink::ScrollIntoViewParams::Type::kProgrammatic);
+  scrollable_area->SetScrollOffset(ScrollOffset(50, 50),
+                                   mojom::blink::ScrollType::kProgrammatic);
   EXPECT_TRUE(scrollable_area->HorizontalScrollbarNeedsPaintInvalidation());
   EXPECT_FALSE(scrollable_area->VerticalScrollbarNeedsPaintInvalidation());
   scrollable_area->ClearNeedsPaintInvalidationForScrollControls();
@@ -227,9 +224,8 @@ TEST_F(ScrollableAreaTest, InvalidatesCompositedScrollbarsIfPartsNeedRepaint) {
   // the back button (i.e. the track).
   EXPECT_CALL(theme, PartsToInvalidateOnThumbPositionChange(_, _, _))
       .WillOnce(Return(kBackButtonStartPart));
-  scrollable_area->SetScrollOffset(
-      ScrollOffset(50, 0),
-      mojom::blink::ScrollIntoViewParams::Type::kProgrammatic);
+  scrollable_area->SetScrollOffset(ScrollOffset(50, 0),
+                                   mojom::blink::ScrollType::kProgrammatic);
   EXPECT_FALSE(layer_for_horizontal_scrollbar->update_rect().IsEmpty());
   EXPECT_TRUE(layer_for_vertical_scrollbar->update_rect().IsEmpty());
   EXPECT_TRUE(horizontal_scrollbar->TrackNeedsRepaint());
@@ -240,9 +236,8 @@ TEST_F(ScrollableAreaTest, InvalidatesCompositedScrollbarsIfPartsNeedRepaint) {
   // Next, we'll scroll vertically, but invalidate the thumb.
   EXPECT_CALL(theme, PartsToInvalidateOnThumbPositionChange(_, _, _))
       .WillOnce(Return(kThumbPart));
-  scrollable_area->SetScrollOffset(
-      ScrollOffset(50, 50),
-      mojom::blink::ScrollIntoViewParams::Type::kProgrammatic);
+  scrollable_area->SetScrollOffset(ScrollOffset(50, 50),
+                                   mojom::blink::ScrollType::kProgrammatic);
   EXPECT_TRUE(layer_for_horizontal_scrollbar->update_rect().IsEmpty());
   EXPECT_FALSE(layer_for_vertical_scrollbar->update_rect().IsEmpty());
   EXPECT_FALSE(vertical_scrollbar->TrackNeedsRepaint());
@@ -257,9 +252,8 @@ TEST_F(ScrollableAreaTest, InvalidatesCompositedScrollbarsIfPartsNeedRepaint) {
   EXPECT_CALL(theme, PartsToInvalidateOnThumbPositionChange(_, _, _))
       .Times(2)
       .WillRepeatedly(Return(kNoPart));
-  scrollable_area->SetScrollOffset(
-      ScrollOffset(70, 70),
-      mojom::blink::ScrollIntoViewParams::Type::kProgrammatic);
+  scrollable_area->SetScrollOffset(ScrollOffset(70, 70),
+                                   mojom::blink::ScrollType::kProgrammatic);
   EXPECT_FALSE(layer_for_horizontal_scrollbar->update_rect().IsEmpty());
   EXPECT_FALSE(layer_for_vertical_scrollbar->update_rect().IsEmpty());
   EXPECT_FALSE(horizontal_scrollbar->TrackNeedsRepaint());
@@ -311,10 +305,9 @@ TEST_F(ScrollableAreaTest, ProgrammaticScrollRespectAnimatorEnabled) {
     EXPECT_CALL(*scrollable_area, ScrollAnimatorEnabled())
         .WillRepeatedly(Return(false));
     EXPECT_CALL(*scrollable_area, ScheduleAnimation()).Times(0);
-    scrollable_area->SetScrollOffset(
-        ScrollOffset(0, 100),
-        mojom::blink::ScrollIntoViewParams::Type::kProgrammatic,
-        mojom::blink::ScrollIntoViewParams::Behavior::kSmooth);
+    scrollable_area->SetScrollOffset(ScrollOffset(0, 100),
+                                     mojom::blink::ScrollType::kProgrammatic,
+                                     mojom::blink::ScrollBehavior::kSmooth);
     EXPECT_EQ(100, scrollable_area->GetScrollOffset().Height());
   }
   Mock::VerifyAndClearExpectations(scrollable_area);
@@ -324,10 +317,9 @@ TEST_F(ScrollableAreaTest, ProgrammaticScrollRespectAnimatorEnabled) {
     EXPECT_CALL(*scrollable_area, ScrollAnimatorEnabled())
         .WillRepeatedly(Return(true));
     EXPECT_CALL(*scrollable_area, ScheduleAnimation()).WillOnce(Return(true));
-    scrollable_area->SetScrollOffset(
-        ScrollOffset(0, 50),
-        mojom::blink::ScrollIntoViewParams::Type::kProgrammatic,
-        mojom::blink::ScrollIntoViewParams::Behavior::kSmooth);
+    scrollable_area->SetScrollOffset(ScrollOffset(0, 50),
+                                     mojom::blink::ScrollType::kProgrammatic,
+                                     mojom::blink::ScrollBehavior::kSmooth);
     // Offset is unchanged.
     EXPECT_EQ(100, scrollable_area->GetScrollOffset().Height());
   }
@@ -374,9 +366,8 @@ TEST_F(ScrollableAreaTest, ScrollAnimatorCallbackFiresOnAnimationCancel) {
       .WillRepeatedly(Return(true));
   bool finished = false;
   scrollable_area->SetScrollOffset(
-      ScrollOffset(0, 10000),
-      mojom::blink::ScrollIntoViewParams::Type::kProgrammatic,
-      mojom::blink::ScrollIntoViewParams::Behavior::kSmooth,
+      ScrollOffset(0, 10000), mojom::blink::ScrollType::kProgrammatic,
+      mojom::blink::ScrollBehavior::kSmooth,
       ScrollableArea::ScrollCallback(
           base::BindOnce([](bool* finished) { *finished = true; }, &finished)));
   EXPECT_EQ(0.0, scrollable_area->GetScrollAnimator().CurrentOffset().Height());
@@ -396,9 +387,8 @@ TEST_F(ScrollableAreaTest, ScrollAnimatorCallbackFiresOnInstantScroll) {
       .WillRepeatedly(Return(true));
   bool finished = false;
   scrollable_area->SetScrollOffset(
-      ScrollOffset(0, 10000),
-      mojom::blink::ScrollIntoViewParams::Type::kProgrammatic,
-      mojom::blink::ScrollIntoViewParams::Behavior::kInstant,
+      ScrollOffset(0, 10000), mojom::blink::ScrollType::kProgrammatic,
+      mojom::blink::ScrollBehavior::kInstant,
       ScrollableArea::ScrollCallback(
           base::BindOnce([](bool* finished) { *finished = true; }, &finished)));
   EXPECT_EQ(100, scrollable_area->GetScrollAnimator().CurrentOffset().Height());
@@ -415,9 +405,8 @@ TEST_F(ScrollableAreaTest, ScrollAnimatorCallbackFiresOnAnimationFinish) {
       .WillRepeatedly(Return(true));
   bool finished = false;
   scrollable_area->SetScrollOffset(
-      ScrollOffset(0, 9),
-      mojom::blink::ScrollIntoViewParams::Type::kProgrammatic,
-      mojom::blink::ScrollIntoViewParams::Behavior::kSmooth,
+      ScrollOffset(0, 9), mojom::blink::ScrollType::kProgrammatic,
+      mojom::blink::ScrollBehavior::kSmooth,
       ScrollableArea::ScrollCallback(
           base::BindOnce([](bool* finished) { *finished = true; }, &finished)));
   EXPECT_EQ(0.0, scrollable_area->GetScrollAnimator().CurrentOffset().Height());

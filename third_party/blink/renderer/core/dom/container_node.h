@@ -29,6 +29,7 @@
 #include "third_party/blink/renderer/core/core_export.h"
 #include "third_party/blink/renderer/core/css/style_recalc.h"
 #include "third_party/blink/renderer/core/dom/node.h"
+#include "third_party/blink/renderer/core/dom/static_node_list.h"
 #include "third_party/blink/renderer/core/html/collection_type.h"
 #include "third_party/blink/renderer/platform/wtf/casting.h"
 #include "third_party/blink/renderer/platform/wtf/vector.h"
@@ -36,15 +37,14 @@
 namespace blink {
 
 class ClassCollection;
-class ExceptionState;
 class Element;
+class ExceptionState;
 class HTMLCollection;
 class NameNodeList;
-template <typename NodeType>
-class StaticNodeTypeList;
-using StaticElementList = StaticNodeTypeList<Element>;
 class RadioNodeList;
 class WhitespaceAttacher;
+
+using StaticElementList = StaticNodeTypeList<Element>;
 
 enum class DynamicRestyleFlags {
   kChildrenOrSiblingsAffectedByFocus = 1 << 0,

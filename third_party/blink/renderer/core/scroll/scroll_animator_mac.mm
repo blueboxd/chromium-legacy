@@ -807,8 +807,7 @@ void ScrollAnimatorMac::ImmediateScrollTo(const ScrollOffset& new_offset) {
   ScrollOffset delta = adjusted_offset - current_offset_;
 
   current_offset_ = adjusted_offset;
-  NotifyContentAreaScrolled(delta,
-                            mojom::blink::ScrollIntoViewParams::Type::kUser);
+  NotifyContentAreaScrolled(delta, mojom::blink::ScrollType::kUser);
   NotifyOffsetChanged();
 }
 
@@ -938,7 +937,7 @@ void ScrollAnimatorMac::WillRemoveHorizontalScrollbar(Scrollbar& scrollbar) {
 
 void ScrollAnimatorMac::NotifyContentAreaScrolled(
     const ScrollOffset& delta,
-    mojom::blink::ScrollIntoViewParams::Type scrollType) {
+    mojom::blink::ScrollType scrollType) {
   // This function is called when a page is going into the page cache, but the
   // page
   // isn't really scrolling in that case. We should only pass the message on to

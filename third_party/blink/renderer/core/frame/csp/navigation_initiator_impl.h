@@ -6,6 +6,7 @@
 #define THIRD_PARTY_BLINK_RENDERER_CORE_FRAME_CSP_NAVIGATION_INITIATOR_IMPL_H_
 
 #include "mojo/public/cpp/bindings/receiver_set.h"
+#include "services/network/public/mojom/content_security_policy.mojom-forward.h"
 #include "third_party/blink/public/mojom/frame/navigation_initiator.mojom-blink.h"
 #include "third_party/blink/renderer/platform/heap/handle.h"
 
@@ -24,7 +25,7 @@ class NavigationInitiatorImpl
 
   // mojom::blink::NavigationInitiator override:
   void SendViolationReport(
-      mojom::blink::CSPViolationParamsPtr violation_params) override;
+      network::mojom::blink::CSPViolationPtr violation_params) override;
 
   void BindReceiver(
       mojo::PendingReceiver<mojom::blink::NavigationInitiator> receiver) {

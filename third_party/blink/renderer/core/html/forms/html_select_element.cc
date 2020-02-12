@@ -78,7 +78,6 @@
 #include "third_party/blink/renderer/core/page/spatial_navigation.h"
 #include "third_party/blink/renderer/core/paint/paint_layer.h"
 #include "third_party/blink/renderer/core/paint/paint_layer_scrollable_area.h"
-#include "third_party/blink/renderer/core/scroll/scroll_into_view_params_type_converters.h"
 #include "third_party/blink/renderer/platform/bindings/exception_state.h"
 #include "third_party/blink/renderer/platform/heap/heap.h"
 #include "third_party/blink/renderer/platform/instrumentation/tracing/trace_event.h"
@@ -971,11 +970,10 @@ void HTMLSelectElement::ScrollToOptionTask() {
   DCHECK(box->Layer()->GetScrollableArea());
   box->Layer()->GetScrollableArea()->ScrollIntoView(
       bounds,
-      CreateScrollIntoViewParams(
-          ScrollAlignment::kAlignToEdgeIfNeeded,
-          ScrollAlignment::kAlignToEdgeIfNeeded,
-          mojom::blink::ScrollIntoViewParams::Type::kProgrammatic, false,
-          mojom::blink::ScrollIntoViewParams::Behavior::kInstant));
+      ScrollAlignment::CreateScrollIntoViewParams(
+          ScrollAlignment::ToEdgeIfNeeded(), ScrollAlignment::ToEdgeIfNeeded(),
+          mojom::blink::ScrollType::kProgrammatic, false,
+          mojom::blink::ScrollBehavior::kInstant));
 }
 
 void HTMLSelectElement::OptionSelectionStateChanged(HTMLOptionElement* option,

@@ -123,6 +123,17 @@ KURL GetBestFitImageURL(const Document& document,
                            : KURL(base_url, candidate.ToString());
 }
 
+// Check whether the `as` attribute is valid according to the spec, even if we
+// don't currently support it yet.
+bool IsValidButUnsupportedAsAttribute(const String& as) {
+  DCHECK(as != "fetch" && as != "image" && as != "font" && as != "script" &&
+         as != "style" && as != "track");
+  return as == "audio" || as == "audioworklet" || as == "document" ||
+         as == "embed" || as == "manifest" || as == "object" ||
+         as == "paintworklet" || as == "report" || as == "sharedworker" ||
+         as == "video" || as == "worker" || as == "xslt";
+}
+
 }  // namespace
 
 void PreloadHelper::DnsPrefetchIfNeeded(
@@ -267,13 +278,17 @@ Resource* PreloadHelper::PreloadIfNeeded(
   if (caller == kLinkCalledFromHeader)
     UseCounter::Count(document, WebFeature::kLinkHeaderPreload);
   if (resource_type == base::nullopt) {
+    String message;
+    if (IsValidButUnsupportedAsAttribute(params.as)) {
+      message = String("<link rel=preload> uses an unsupported `as` value");
+    } else {
+      message = String("<link rel=preload> must have a valid `as` value");
+    }
     document.AddConsoleMessage(ConsoleMessage::Create(
-        mojom::ConsoleMessageSource::kOther,
-        mojom::ConsoleMessageLevel::kWarning,
-        String("<link rel=preload> must have a valid `as` value")));
+        mojom::blink::ConsoleMessageSource::kOther,
+        mojom::blink::ConsoleMessageLevel::kWarning, message));
     return nullptr;
   }
-
   if (!IsSupportedType(resource_type.value(), params.type)) {
     document.AddConsoleMessage(ConsoleMessage::Create(
         mojom::ConsoleMessageSource::kOther,

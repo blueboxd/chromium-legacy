@@ -80,13 +80,15 @@ void HintCache::UpdateComponentHints(
 void HintCache::UpdateFetchedHints(
     std::unique_ptr<proto::GetHintsResponse> get_hints_response,
     base::Time update_time,
-    base::Optional<GURL> navigation_url,
+    const base::flat_set<GURL>& urls_fetched,
     base::OnceClosure callback) {
   std::unique_ptr<StoreUpdateData> fetched_hints_update_data =
       CreateUpdateDataForFetchedHints(update_time);
 
-  if (navigation_url && IsValidURLForURLKeyedHint(*navigation_url))
-    url_keyed_hint_cache_.Put(navigation_url->spec(), nullptr);
+  for (const GURL& url : urls_fetched) {
+    if (IsValidURLForURLKeyedHint(url))
+      url_keyed_hint_cache_.Put(url.spec(), nullptr);
+  }
 
   ProcessAndCacheHints(get_hints_response.get()->mutable_hints(),
                        fetched_hints_update_data.get());

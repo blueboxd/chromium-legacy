@@ -139,8 +139,7 @@ class LazyLoadImagesSimTest : public ::testing::WithParamInterface<bool>,
     if (is_lazyload_image_enabled) {
       // Scroll down until the background image is visible.
       GetDocument().View()->LayoutViewport()->SetScrollOffset(
-          ScrollOffset(0, 10000),
-          mojom::blink::ScrollIntoViewParams::Type::kProgrammatic);
+          ScrollOffset(0, 10000), mojom::blink::ScrollType::kProgrammatic);
       Compositor().BeginFrame();
       test::RunPendingTasks();
       image_resource.Complete(ReadTestImage());
@@ -184,8 +183,7 @@ class LazyLoadImagesSimTest : public ::testing::WithParamInterface<bool>,
     if (is_lazyload_image_enabled) {
       // Scroll down until the image element is visible.
       GetDocument().View()->LayoutViewport()->SetScrollOffset(
-          ScrollOffset(0, 10000),
-          mojom::blink::ScrollIntoViewParams::Type::kProgrammatic);
+          ScrollOffset(0, 10000), mojom::blink::ScrollType::kProgrammatic);
       Compositor().BeginFrame();
       test::RunPendingTasks();
       image_resource.Complete(ReadTestImage());
@@ -240,8 +238,7 @@ TEST_P(LazyLoadImagesSimTest, CSSBackgroundImage) {
   if (is_lazyload_image_enabled) {
     // Scroll down until the background image is visible.
     GetDocument().View()->LayoutViewport()->SetScrollOffset(
-        ScrollOffset(0, 10000),
-        mojom::blink::ScrollIntoViewParams::Type::kProgrammatic);
+        ScrollOffset(0, 10000), mojom::blink::ScrollType::kProgrammatic);
     Compositor().BeginFrame();
     test::RunPendingTasks();
     image_resource.Complete(ReadTestImage());
@@ -762,8 +759,7 @@ TEST_P(LazyLoadImagesParamsTest, FarFromViewport) {
   if (RuntimeEnabledFeatures::LazyImageLoadingEnabled()) {
     // Scroll down so that the images are near the viewport.
     GetDocument().View()->LayoutViewport()->SetScrollOffset(
-        ScrollOffset(0, 150),
-        mojom::blink::ScrollIntoViewParams::Type::kProgrammatic);
+        ScrollOffset(0, 150), mojom::blink::ScrollType::kProgrammatic);
 
     Compositor().BeginFrame();
     test::RunPendingTasks();
@@ -925,7 +921,7 @@ class LazyLoadAutomaticImagesTest : public SimTest {
     // Scrolling down should trigger the fetch of the image.
     GetDocument().View()->LayoutViewport()->SetScrollOffset(
         ScrollOffset(0, kLoadingDistanceThreshold + kViewportHeight),
-        mojom::blink::ScrollIntoViewParams::Type::kProgrammatic);
+        mojom::blink::ScrollType::kProgrammatic);
     Compositor().BeginFrame();
     test::RunPendingTasks();
     full_resource.Complete(ReadTestImage());
@@ -1156,7 +1152,7 @@ TEST_F(LazyLoadAutomaticImagesTest, FirstKImagesLoaded) {
   // Scrolling down should trigger the fetch of the second image.
   GetDocument().View()->LayoutViewport()->SetScrollOffset(
       ScrollOffset(0, kLoadingDistanceThreshold + kViewportHeight),
-      mojom::blink::ScrollIntoViewParams::Type::kProgrammatic);
+      mojom::blink::ScrollType::kProgrammatic);
 
   SimSubresourceRequest img2("https://example.com/image.png?id=2", "image/png");
   Compositor().BeginFrame();
@@ -1275,8 +1271,7 @@ TEST_F(LazyLoadAutomaticImagesTest, ImageInsideLazyLoadedFrame) {
   // Scroll down so that the iframe is near the viewport, but the images within
   // it aren't near the viewport yet.
   GetDocument().View()->LayoutViewport()->SetScrollOffset(
-      ScrollOffset(0, 150),
-      mojom::blink::ScrollIntoViewParams::Type::kProgrammatic);
+      ScrollOffset(0, 150), mojom::blink::ScrollType::kProgrammatic);
 
   Compositor().BeginFrame();
   test::RunPendingTasks();
@@ -1364,8 +1359,7 @@ TEST_F(LazyLoadAutomaticImagesTest, ImageInsideLazyLoadedFrame) {
 
   // Scroll down so that all the images in the iframe are near the viewport.
   GetDocument().View()->LayoutViewport()->SetScrollOffset(
-      ScrollOffset(0, 250),
-      mojom::blink::ScrollIntoViewParams::Type::kProgrammatic);
+      ScrollOffset(0, 250), mojom::blink::ScrollType::kProgrammatic);
 
   Compositor().BeginFrame();
   test::RunPendingTasks();
@@ -1421,7 +1415,7 @@ TEST_F(LazyLoadAutomaticImagesTest, LazyLoadDisabledOnReload) {
     GetDocument().View()->LayoutViewport()->SetScrollOffset(
         ScrollOffset(0, LazyLoadAutomaticImagesTest::kLoadingDistanceThreshold +
                             LazyLoadAutomaticImagesTest::kViewportHeight),
-        mojom::blink::ScrollIntoViewParams::Type::kProgrammatic);
+        mojom::blink::ScrollType::kProgrammatic);
     Compositor().BeginFrame();
     test::RunPendingTasks();
     auto_image.Complete(ReadTestImage());
@@ -1447,7 +1441,7 @@ TEST_F(LazyLoadAutomaticImagesTest, LazyLoadDisabledOnReload) {
     GetDocument().View()->LayoutViewport()->SetScrollOffset(
         ScrollOffset(0, LazyLoadAutomaticImagesTest::kLoadingDistanceThreshold +
                             LazyLoadAutomaticImagesTest::kViewportHeight),
-        mojom::blink::ScrollIntoViewParams::Type::kProgrammatic);
+        mojom::blink::ScrollType::kProgrammatic);
     SimSubresourceRequest lazy_image("https://example.com/image_lazy.png",
                                      "image/png");
     Compositor().BeginFrame();
@@ -1567,8 +1561,7 @@ TEST_F(LazyLoadAutomaticImagesTest, BelowTheFoldImageLoadedBeforeVisible) {
   // Scroll down such that the image is within kLoadingDistanceThreshold of the
   // viewport, but isn't visible yet.
   GetDocument().View()->LayoutViewport()->SetScrollOffset(
-      ScrollOffset(0, 200),
-      mojom::blink::ScrollIntoViewParams::Type::kProgrammatic);
+      ScrollOffset(0, 200), mojom::blink::ScrollType::kProgrammatic);
 
   Compositor().BeginFrame();
   test::RunPendingTasks();
@@ -1586,7 +1579,7 @@ TEST_F(LazyLoadAutomaticImagesTest, BelowTheFoldImageLoadedBeforeVisible) {
   // Scroll down such that the image is visible.
   GetDocument().View()->LayoutViewport()->SetScrollOffset(
       ScrollOffset(0, kViewportHeight + kLoadingDistanceThreshold),
-      mojom::blink::ScrollIntoViewParams::Type::kProgrammatic);
+      mojom::blink::ScrollType::kProgrammatic);
 
   Compositor().BeginFrame();
   test::RunPendingTasks();
@@ -1625,7 +1618,7 @@ TEST_F(LazyLoadAutomaticImagesTest, BelowTheFoldImageVisibleBeforeLoaded) {
   // Scroll down such that the image is visible.
   GetDocument().View()->LayoutViewport()->SetScrollOffset(
       ScrollOffset(0, kViewportHeight + kLoadingDistanceThreshold),
-      mojom::blink::ScrollIntoViewParams::Type::kProgrammatic);
+      mojom::blink::ScrollType::kProgrammatic);
 
   Compositor().BeginFrame();
   test::RunPendingTasks();

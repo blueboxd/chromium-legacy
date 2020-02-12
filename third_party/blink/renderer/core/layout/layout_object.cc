@@ -103,7 +103,6 @@
 #include "third_party/blink/renderer/core/paint/paint_layer.h"
 #include "third_party/blink/renderer/core/paint/paint_layer_scrollable_area.h"
 #include "third_party/blink/renderer/core/paint/paint_timing_detector.h"
-#include "third_party/blink/renderer/core/scroll/scroll_into_view_params_type_converters.h"
 #include "third_party/blink/renderer/core/scroll/smooth_scroll_sequencer.h"
 #include "third_party/blink/renderer/core/style/content_data.h"
 #include "third_party/blink/renderer/core/style/cursor_data.h"
@@ -763,7 +762,7 @@ PhysicalRect LayoutObject::ScrollRectToVisible(
   GetDocument().GetFrame()->GetSmoothScrollSequencer().SetScrollType(
       params->type);
   params->is_for_scroll_sequence |=
-      params->type == mojom::blink::ScrollIntoViewParams::Type::kProgrammatic;
+      params->type == mojom::blink::ScrollType::kProgrammatic;
   PhysicalRect new_location =
       enclosing_box->ScrollRectToVisibleRecursive(rect, std::move(params));
   GetDocument().GetFrame()->GetSmoothScrollSequencer().RunQueuedAnimations();

@@ -3,9 +3,6 @@ Tests accessibility values of display locked nodes
 WebArea
   generic
     generic
-      text "spacer"
-        InlineTextBox
-    generic
       text "locked"
       generic
         text "child"
@@ -19,7 +16,6 @@ WebArea
       generic
         text "nested"
       text "text"
-    generic
     generic
     generic
       text "normal text"

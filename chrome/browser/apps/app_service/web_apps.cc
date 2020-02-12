@@ -14,6 +14,7 @@
 #include "base/callback.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/optional.h"
+#include "base/stl_util.h"
 #include "base/strings/string16.h"
 #include "base/strings/stringprintf.h"
 #include "chrome/browser/apps/app_service/app_icon_factory.h"
@@ -341,7 +342,7 @@ void WebApps::Uninstall(const std::string& app_id,
 }
 
 void WebApps::PauseApp(const std::string& app_id) {
-  if (paused_apps_.find(app_id) != paused_apps_.end()) {
+  if (base::Contains(paused_apps_, app_id)) {
     return;
   }
 
@@ -359,7 +360,7 @@ void WebApps::PauseApp(const std::string& app_id) {
 }
 
 void WebApps::UnpauseApps(const std::string& app_id) {
-  if (paused_apps_.find(app_id) == paused_apps_.end()) {
+  if (!base::Contains(paused_apps_, app_id)) {
     return;
   }
 
@@ -601,7 +602,9 @@ apps::mojom::AppPtr WebApps::Convert(const web_app::WebApp* web_app,
   app->is_platform_app = apps::mojom::OptionalBool::kFalse;
   app->recommendable = apps::mojom::OptionalBool::kTrue;
   app->searchable = apps::mojom::OptionalBool::kTrue;
-  app->paused = apps::mojom::OptionalBool::kFalse;
+  app->paused = base::Contains(paused_apps_, web_app->app_id())
+                    ? apps::mojom::OptionalBool::kTrue
+                    : apps::mojom::OptionalBool::kFalse;
   SetShowInFields(app, web_app);
 
   // Get the intent filters for PWAs.
@@ -648,7 +651,7 @@ IconEffects WebApps::GetIconEffects(const web_app::WebApp* web_app) {
   }
   icon_effects =
       static_cast<IconEffects>(icon_effects | IconEffects::kRoundCorners);
-  if (paused_apps_.find(web_app->app_id()) != paused_apps_.end()) {
+  if (base::Contains(paused_apps_, web_app->app_id())) {
     icon_effects =
         static_cast<IconEffects>(icon_effects | IconEffects::kPaused);
   }

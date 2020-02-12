@@ -91,7 +91,7 @@ void ReportViolation(CSPContext* context,
                      const CSPDirectiveName directive_name,
                      const GURL& url,
                      bool has_followed_redirect,
-                     const SourceLocation& source_location) {
+                     const network::mojom::SourceLocationPtr& source_location) {
   // For security reasons, some urls must not be disclosed. This includes the
   // blocked url and the source location of the error. Care must be taken to
   // ensure that these are not transmitted between different cross-origin
@@ -99,10 +99,12 @@ void ReportViolation(CSPContext* context,
   GURL blocked_url = (directive_name == CSPDirectiveName::FrameAncestors)
                          ? GURL(ToString(context->self_source()))
                          : url;
-  SourceLocation safe_source_location = source_location;
+  auto safe_source_location = source_location
+                                  ? source_location->Clone()
+                                  : network::mojom::SourceLocation::New();
   context->SanitizeDataForUseInCspViolation(has_followed_redirect,
                                             directive_name, &blocked_url,
-                                            &safe_source_location);
+                                            safe_source_location.get());
 
   std::stringstream message;
 
@@ -122,11 +124,13 @@ void ReportViolation(CSPContext* context,
 
   message << "\n";
 
-  context->ReportContentSecurityPolicyViolation(CSPViolationParams(
-      network::ToString(directive->name), network::ToString(directive_name),
-      message.str(), blocked_url, policy->report_endpoints,
-      policy->use_reporting_api, policy->header->header_value,
-      policy->header->type, has_followed_redirect, safe_source_location));
+  context->ReportContentSecurityPolicyViolation(
+      network::mojom::CSPViolation::New(
+          network::ToString(directive->name), network::ToString(directive_name),
+          message.str(), blocked_url, policy->report_endpoints,
+          policy->use_reporting_api, policy->header->header_value,
+          policy->header->type, has_followed_redirect,
+          std::move(safe_source_location)));
 }
 
 bool AllowDirective(CSPContext* context,
@@ -136,7 +140,7 @@ bool AllowDirective(CSPContext* context,
                     const GURL& url,
                     bool has_followed_redirect,
                     bool is_response_check,
-                    const SourceLocation& source_location) {
+                    const network::mojom::SourceLocationPtr& source_location) {
   if (CheckCSPSourceList(directive->source_list, url, context,
                          has_followed_redirect, is_response_check)) {
     return true;
@@ -172,7 +176,7 @@ bool CheckContentSecurityPolicy(
     bool has_followed_redirect,
     bool is_response_check,
     CSPContext* context,
-    const SourceLocation& source_location,
+    const network::mojom::SourceLocationPtr& source_location,
     bool is_form_submission) {
   if (ShouldBypassContentSecurityPolicy(context, url))
     return true;

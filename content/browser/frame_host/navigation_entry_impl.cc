@@ -748,7 +748,7 @@ NavigationEntryImpl::ConstructCommonNavigationParams(
       GetTransitionType(), navigation_type, download_policy,
       should_replace_entry(), GetBaseURLForDataURL(), GetHistoryURLForDataURL(),
       previews_state, navigation_start, frame_entry.method(),
-      post_body ? post_body : post_data_, SourceLocation(),
+      post_body ? post_body : post_data_, network::mojom::SourceLocation::New(),
       has_started_from_context_menu(), has_user_gesture(),
       CreateInitiatorCSPInfo(), std::vector<int>(), std::string(),
       false /* is_history_navigation_in_new_child_frame */, input_start);

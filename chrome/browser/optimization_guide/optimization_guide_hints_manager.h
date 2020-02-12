@@ -236,10 +236,12 @@ class OptimizationGuideHintsManager
   // Optimization Guide Service and are ready for parsing. This is used when
   // fetching hints in real-time. |navigation_url| is the URL associated with
   // the navigation handle that initiated the fetch.
-  // |page_navigation_hosts_requested| contains the hosts that were requested to
-  // be fetched.
+  // |page_navigation_urls_requested| contains the URLs that were requested  by
+  // |this| to be fetched. |page_navigation_hosts_requested| contains the hosts
+  // that were requested by |this| to be fetched.
   void OnPageNavigationHintsFetched(
       const base::Optional<GURL>& navigation_url,
+      const base::flat_set<GURL>& page_navigation_urls_requested,
       const base::flat_set<std::string>& page_navigation_hosts_requested,
       base::Optional<
           std::unique_ptr<optimization_guide::proto::GetHintsResponse>>

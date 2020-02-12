@@ -215,8 +215,11 @@ public class TabListCoordinator implements Destroyable {
             mRecyclerView.createDynamicView(dynamicResourceLoader);
         }
 
+        // TODO (https://crbug.com/1048632): Use the current profile (i.e., regular profile or
+        // incognito profile) instead of always using regular profile. It works correctly now, but
+        // it is not safe.
         TabListFaviconProvider tabListFaviconProvider =
-                new TabListFaviconProvider(context, Profile.getLastUsedProfile());
+                new TabListFaviconProvider(context, Profile.getLastUsedRegularProfile());
 
         mMediator = new TabListMediator(context, modelList, tabModelSelector, thumbnailProvider,
                 titleProvider, tabListFaviconProvider, actionOnRelatedTabs,

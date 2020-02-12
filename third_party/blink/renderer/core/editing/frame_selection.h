@@ -260,7 +260,7 @@ class CORE_EXPORT FrameSelection final
   // TODO(tkent): This function has a bug that scrolling doesn't work well in
   // a case of RangeSelection. crbug.com/443061
   void RevealSelection(
-      const ScrollAlignment& = ScrollAlignment::kAlignCenterIfNeeded,
+      const mojom::blink::ScrollAlignment& = ScrollAlignment::CenterIfNeeded(),
       RevealExtentOption = kDoNotRevealExtent);
   void SetSelectionFromNone();
 

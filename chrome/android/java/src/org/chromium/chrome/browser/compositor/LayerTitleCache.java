@@ -166,8 +166,11 @@ public class LayerTitleCache implements TitleCache {
 
         // Since tab#getProfile() is not available by this time, we will use whatever last used
         // profile.
-        mFaviconHelper.getLocalFaviconImageForURL(Profile.getLastUsedProfile(), tab.getUrlString(),
-                mFaviconSize, new FaviconImageCallback() {
+        // TODO (https://crbug.com/1048632): Use the current profile (i.e., regular profile or
+        // incognito profile) instead of always using regular profile. It works correctly now, but
+        // it is not safe.
+        mFaviconHelper.getLocalFaviconImageForURL(Profile.getLastUsedRegularProfile(),
+                tab.getUrlString(), mFaviconSize, new FaviconImageCallback() {
                     @Override
                     public void onFaviconAvailable(Bitmap favicon, String iconUrl) {
                         updateFaviconFromHistory(tab, favicon);

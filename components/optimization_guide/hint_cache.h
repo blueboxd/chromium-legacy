@@ -74,11 +74,14 @@ class HintCache {
   // Process |get_hints_response| to be stored in the hint cache store.
   // |callback| is asynchronously run when the hints are successfully stored or
   // if the store is not available. |update_time| specifies when the hints
-  // within |get_hints_response| will need to be updated next.
+  // within |get_hints_response| will need to be updated next. |urls_fetched|
+  // specifies the URLs for which specific hints were requested to be fetched.
+  // It is expected for |this| to keep track of the result, even if a hint was
+  // not returned for the URL.
   void UpdateFetchedHints(
       std::unique_ptr<proto::GetHintsResponse> get_hints_response,
       base::Time update_time,
-      base::Optional<GURL> navigation_url,
+      const base::flat_set<GURL>& urls_fetched,
       base::OnceClosure callback);
 
   // Purges fetched hints from the owned |optimization_guide_store| that have

@@ -1510,10 +1510,9 @@ TEST_F(ScrollbarsTestWithVirtualTimer, TestNonCompositedOverlayScrollbarsFade) {
   RunTasksForPeriod(kMockOverlayFadeOutDelay);
   EXPECT_TRUE(scrollable_area->ScrollbarsHiddenIfOverlay());
 
-  scrollable_area->SetScrollOffset(
-      ScrollOffset(10, 10),
-      mojom::blink::ScrollIntoViewParams::Type::kProgrammatic,
-      mojom::blink::ScrollIntoViewParams::Behavior::kInstant);
+  scrollable_area->SetScrollOffset(ScrollOffset(10, 10),
+                                   mojom::blink::ScrollType::kProgrammatic,
+                                   mojom::blink::ScrollBehavior::kInstant);
 
   EXPECT_FALSE(scrollable_area->ScrollbarsHiddenIfOverlay());
   RunTasksForPeriod(kMockOverlayFadeOutDelay);
@@ -1535,10 +1534,9 @@ TEST_F(ScrollbarsTestWithVirtualTimer, TestNonCompositedOverlayScrollbarsFade) {
 
   // Non-composited scrollbars don't fade out while mouse is over.
   EXPECT_TRUE(scrollable_area->VerticalScrollbar());
-  scrollable_area->SetScrollOffset(
-      ScrollOffset(20, 20),
-      mojom::blink::ScrollIntoViewParams::Type::kProgrammatic,
-      mojom::blink::ScrollIntoViewParams::Behavior::kInstant);
+  scrollable_area->SetScrollOffset(ScrollOffset(20, 20),
+                                   mojom::blink::ScrollType::kProgrammatic,
+                                   mojom::blink::ScrollBehavior::kInstant);
   EXPECT_FALSE(scrollable_area->ScrollbarsHiddenIfOverlay());
   scrollable_area->MouseEnteredScrollbar(*scrollable_area->VerticalScrollbar());
   RunTasksForPeriod(kMockOverlayFadeOutDelay);
@@ -1696,9 +1694,8 @@ TEST_P(ScrollbarAppearanceTest, HugeScrollingThumbPosition) {
 
   Compositor().BeginFrame();
 
-  scrollable_area->SetScrollOffset(
-      ScrollOffset(0, 10000000),
-      mojom::blink::ScrollIntoViewParams::Type::kProgrammatic);
+  scrollable_area->SetScrollOffset(ScrollOffset(0, 10000000),
+                                   mojom::blink::ScrollType::kProgrammatic);
 
   Compositor().BeginFrame();
 
@@ -2680,10 +2677,9 @@ TEST_F(ScrollbarsTestWithVirtualTimer,
   Scrollbar* scrollbar = scrollable_area->VerticalScrollbar();
 
   // Scroll to bottom.
-  scrollable_area->SetScrollOffset(
-      ScrollOffset(0, 400),
-      mojom::blink::ScrollIntoViewParams::Type::kProgrammatic,
-      mojom::blink::ScrollIntoViewParams::Behavior::kInstant);
+  scrollable_area->SetScrollOffset(ScrollOffset(0, 400),
+                                   mojom::blink::ScrollType::kProgrammatic,
+                                   mojom::blink::ScrollBehavior::kInstant);
   EXPECT_EQ(scrollable_area->ScrollOffsetInt(), IntSize(0, 200));
 
   HandleMouseMoveEvent(195, 195);

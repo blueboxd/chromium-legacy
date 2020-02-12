@@ -88,6 +88,13 @@ void VideoFrameFileWriter::ProcessVideoFrame(
   if (num_frames_writes_requested_ >= output_limit_)
     return;
 
+  if (video_frame->visible_rect().IsEmpty()) {
+    // This occurs in bitstream buffer in webrtc scenario.
+    DLOG(WARNING) << "Skipping writing, frame_index=" << frame_index
+                  << " because visible_rect is empty";
+    return;
+  }
+
   num_frames_writes_requested_++;
 
   base::AutoLock auto_lock(frame_writer_lock_);

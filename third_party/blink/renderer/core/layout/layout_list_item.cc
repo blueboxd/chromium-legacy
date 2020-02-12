@@ -117,8 +117,7 @@ bool LayoutListItem::IsEmpty() const {
 
 namespace {
 
-LayoutObject* GetParentOfFirstLineBox(LayoutBlockFlow* curr,
-                                      LayoutObject* marker) {
+LayoutObject* GetParentOfFirstLineBox(LayoutBlockFlow* curr) {
   LayoutObject* first_child = curr->FirstChild();
   if (!first_child)
     return nullptr;
@@ -126,7 +125,7 @@ LayoutObject* GetParentOfFirstLineBox(LayoutBlockFlow* curr,
   bool in_quirks_mode = curr->GetDocument().InQuirksMode();
   for (LayoutObject* curr_child = first_child; curr_child;
        curr_child = curr_child->NextSibling()) {
-    if (curr_child == marker)
+    if (curr_child->IsOutsideListMarker())
       continue;
 
     if (curr_child->IsInline() &&
@@ -150,7 +149,7 @@ LayoutObject* GetParentOfFirstLineBox(LayoutBlockFlow* curr,
          IsA<HTMLOListElement>(*curr_child->GetNode())))
       break;
 
-    LayoutObject* line_box = GetParentOfFirstLineBox(child_block_flow, marker);
+    LayoutObject* line_box = GetParentOfFirstLineBox(child_block_flow);
     if (line_box)
       return line_box;
   }
@@ -251,7 +250,7 @@ bool LayoutListItem::UpdateMarkerLocation() {
   LayoutObject* line_box_parent = nullptr;
 
   if (!marker_->IsInside())
-    line_box_parent = GetParentOfFirstLineBox(this, marker_);
+    line_box_parent = GetParentOfFirstLineBox(this);
   if (line_box_parent && (line_box_parent->HasOverflowClip() ||
                           !line_box_parent->IsLayoutBlockFlow() ||
                           (line_box_parent->IsBox() &&
@@ -332,7 +331,7 @@ void LayoutListItem::AlignMarkerInBlockDirection() {
   // layout pass. So if there's no line box in line_box_parent make sure it
   // back to its original position.
   bool back_to_original_baseline = false;
-  LayoutObject* line_box_parent = GetParentOfFirstLineBox(this, marker_);
+  LayoutObject* line_box_parent = GetParentOfFirstLineBox(this);
   LayoutBox* line_box_parent_block = nullptr;
   if (!line_box_parent || !line_box_parent->IsBox()) {
     back_to_original_baseline = true;

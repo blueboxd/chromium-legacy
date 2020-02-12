@@ -418,12 +418,12 @@ TEST_F(TraceNetLogObserverTest, EventsWithAndWithoutParameters) {
             actual_item2.source_type);
 
   std::string item1_params;
-  std::string item2_params;
+  const base::DictionaryValue* item2_params;
   EXPECT_TRUE(item1->GetString("args.params.foo", &item1_params));
   EXPECT_EQ("bar", item1_params);
 
-  EXPECT_TRUE(item2->GetString("args.params", &item2_params));
-  EXPECT_TRUE(item2_params.empty());
+  EXPECT_TRUE(item2->GetDictionary("args.params", &item2_params));
+  EXPECT_TRUE(item2_params->empty());
 }
 
 TEST(TraceNetLogObserverCategoryTest, DisabledCategory) {

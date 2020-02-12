@@ -7,6 +7,7 @@
 
 #include "third_party/blink/renderer/bindings/core/v8/file_or_usv_string_or_form_data.h"
 #include "third_party/blink/renderer/core/dom/qualified_name.h"
+#include "third_party/blink/renderer/core/html/forms/labels_node_list.h"
 #include "third_party/blink/renderer/core/html/forms/listed_element.h"
 #include "third_party/blink/renderer/platform/bindings/script_wrappable.h"
 #include "third_party/blink/renderer/platform/wtf/casting.h"
@@ -15,7 +16,6 @@ namespace blink {
 
 class DOMTokenList;
 class HTMLElement;
-class LabelsNodeList;
 class ValidityStateFlags;
 
 class CORE_EXPORT ElementInternals : public ScriptWrappable,

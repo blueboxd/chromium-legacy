@@ -4,6 +4,7 @@
 
 module blink.mojom;
 
+import "third_party/blink/public/mojom/scroll/scroll_enums.mojom";
 import "ui/gfx/geometry/mojom/geometry.mojom";
 
 // This struct contains the required information for propagating some stages
@@ -12,8 +13,7 @@ import "ui/gfx/geometry/mojom/geometry.mojom";
 // scrolling across multiple processes is accommodated through passing the state
 // using this struct to the browser and then to the target (parent) process.
 
-// A public wrapper around ScrollAlignment. The default value matches
-// kAlignCenterIfNeeded.
+// The default value matches ScrollAlignment::CenterIfNeeded().
 struct ScrollAlignment {
   enum Behavior {
     kNoScroll = 0,
@@ -31,31 +31,11 @@ struct ScrollAlignment {
 };
 
 struct ScrollIntoViewParams {
-  // Scroll type set through 'scroll-type' CSS property.
-  enum Type {
-    kUser = 0,
-    kProgrammatic,
-    kClamping,
-    kCompositor,
-    kAnchoring,
-    // These are programmatic sequenced scrolls from SmoothScrollSequencer.
-    // SetScrollOffset called with kSequencedScroll should not abort the smooth
-    // scroll sequence.
-    kSequenced,
-  };
-
-  // The scroll behavior set through 'scroll-behavior' CSS property.
-  enum Behavior {
-    kAuto = 0,
-    kInstant,
-    kSmooth,
-  };
-
   ScrollAlignment align_x;
   ScrollAlignment align_y;
-  Type type = kProgrammatic;
+  ScrollType type = ScrollType.kProgrammatic;
   bool make_visible_in_visual_viewport = true;
-  Behavior behavior = kAuto;
+  ScrollBehavior behavior = ScrollBehavior.kAuto;
   bool is_for_scroll_sequence = false;
 
   // If true, once the root frame scrolls into view it will zoom into the scroll

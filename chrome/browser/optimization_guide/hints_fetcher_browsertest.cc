@@ -446,8 +446,11 @@ class HintsFetcherDisabledBrowserTest : public InProcessBrowserTest {
     base::flat_set<std::string> hosts_and_urls_requested;
     for (const auto& host : hints_request.hosts())
       hosts_and_urls_requested.insert(host.host());
-    for (const auto& url : hints_request.urls())
-      hosts_and_urls_requested.insert(url.url());
+    for (const auto& url : hints_request.urls()) {
+      // TODO(crbug/1051365):  Remove normalization step once nav predictor
+      // provides predictable URLs.
+      hosts_and_urls_requested.insert(GURL(url.url()).GetAsReferrer().spec());
+    }
 
     EXPECT_EQ(expect_hints_request_for_hosts_and_urls_.value().size(),
               hosts_and_urls_requested.size());
@@ -1413,11 +1416,21 @@ IN_PROC_BROWSER_TEST_F(
   // search_results_page_url(). example2.com is contained in the HTML
   // response, but hints for example2.com must not be fetched since they
   // were pushed via kFetchHintsOverride switch above.
-  base::flat_set<std::string> expected_hosts;
-  expected_hosts.insert(GURL("https://foo.com").host());
-  expected_hosts.insert(GURL("https://example.com").host());
-  expected_hosts.insert(GURL("https://example3.com").host());
-  SetExpectedHintsRequestForHostsAndUrls(expected_hosts);
+  base::flat_set<std::string> expected_hosts_and_urls;
+  // Unique hosts.
+  expected_hosts_and_urls.insert(GURL("https://foo.com").host());
+  expected_hosts_and_urls.insert(GURL("https://example.com").host());
+  expected_hosts_and_urls.insert(GURL("https://example3.com").host());
+  // Unique URLs.
+  expected_hosts_and_urls.insert("https://foo.com/");
+  expected_hosts_and_urls.insert(
+      "https://foo.com/simple_page_with_anchors.html");
+  expected_hosts_and_urls.insert("https://example.com/foo.html");
+  expected_hosts_and_urls.insert("https://example.com/bar.html");
+  expected_hosts_and_urls.insert("https://example.com/baz.html");
+  expected_hosts_and_urls.insert("https://example2.com/foo.html");
+  expected_hosts_and_urls.insert("https://example3.com/foo.html");
+  SetExpectedHintsRequestForHostsAndUrls(expected_hosts_and_urls);
 
   histogram_tester->ExpectTotalCount(
       optimization_guide::kLoadedHintLocalHistogramString, 0);
@@ -1434,6 +1447,10 @@ IN_PROC_BROWSER_TEST_F(
 
   WaitUntilHintsFetcherRequestReceived();
   EXPECT_EQ(1u, count_hints_requests_received());
+  histogram_tester->ExpectBucketCount(
+      "OptimizationGuide.HintsFetcher.GetHintsRequest.HostCount", 3, 1);
+  histogram_tester->ExpectBucketCount(
+      "OptimizationGuide.HintsFetcher.GetHintsRequest.UrlCount", 7, 1);
 
   RetryForHistogramUntilCountReached(
       histogram_tester, optimization_guide::kLoadedHintLocalHistogramString, 2);

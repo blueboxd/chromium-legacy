@@ -58,8 +58,8 @@ class CORE_EXPORT RootFrameViewport final
   // ScrollableArea Implementation
   bool IsRootFrameViewport() const override { return true; }
   void SetScrollOffset(const ScrollOffset&,
-                       mojom::blink::ScrollIntoViewParams::Type,
-                       mojom::blink::ScrollIntoViewParams::Behavior,
+                       mojom::blink::ScrollType,
+                       mojom::blink::ScrollBehavior,
                        ScrollCallback on_finish) override;
   PhysicalRect ScrollIntoView(
       const PhysicalRect&,
@@ -79,7 +79,7 @@ class CORE_EXPORT RootFrameViewport final
   bool IsScrollCornerVisible() const override;
   IntRect ScrollCornerRect() const override;
   void UpdateScrollOffset(const ScrollOffset&,
-                          mojom::blink::ScrollIntoViewParams::Type) override;
+                          mojom::blink::ScrollType) override;
   IntSize ScrollOffsetInt() const override;
   ScrollOffset GetScrollOffset() const override;
   IntSize MinimumScrollOffsetInt() const override;
@@ -115,8 +115,7 @@ class CORE_EXPORT RootFrameViewport final
   void ServiceScrollAnimations(double) override;
   void UpdateCompositorScrollAnimations() override;
   void CancelProgrammaticScrollAnimation() override;
-  mojom::blink::ScrollIntoViewParams::Behavior ScrollBehaviorStyle()
-      const override;
+  mojom::blink::ScrollBehavior ScrollBehaviorStyle() const override;
   WebColorScheme UsedColorScheme() const override;
   void ClearScrollableArea() override;
   LayoutBox* GetLayoutBox() const override;
@@ -160,8 +159,8 @@ class CORE_EXPORT RootFrameViewport final
 
   void DistributeScrollBetweenViewports(
       const ScrollOffset&,
-      mojom::blink::ScrollIntoViewParams::Type,
-      mojom::blink::ScrollIntoViewParams::Behavior,
+      mojom::blink::ScrollType,
+      mojom::blink::ScrollBehavior,
       ViewportToScrollFirst,
       ScrollCallback on_finish = ScrollCallback());
 

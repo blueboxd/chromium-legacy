@@ -103,7 +103,7 @@ class CORE_EXPORT NGFragmentItem : public DisplayItemClient {
   }
   Node* GetNode() const { return layout_object_->GetNode(); }
   Node* NodeForHitTest() const { return layout_object_->NodeForHitTest(); }
-  bool HasSameParent(const NGFragmentItem& other) const;
+  bool IsSiblingOf(const NGFragmentItem& other) const;
 
   wtf_size_t DeltaToNextForSameLayoutObject() const {
     return delta_to_next_for_same_layout_object_;

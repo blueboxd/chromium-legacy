@@ -32,9 +32,7 @@
 #define THIRD_PARTY_BLINK_PUBLIC_PLATFORM_WEB_CONTENT_SECURITY_POLICY_STRUCT_H_
 
 #include "services/network/public/mojom/content_security_policy.mojom-shared.h"
-#include "third_party/blink/public/platform/web_source_location.h"
 #include "third_party/blink/public/platform/web_string.h"
-#include "third_party/blink/public/platform/web_url.h"
 #include "third_party/blink/public/platform/web_vector.h"
 
 namespace blink {
@@ -82,43 +80,6 @@ struct WebContentSecurityPolicy {
   WebVector<WebString> report_endpoints;
   WebString header;
   bool use_reporting_api;
-};
-
-struct WebContentSecurityPolicyViolation {
-  // The name of the directive that violates the policy. |directive| might be a
-  // directive that serves as a fallback to the |effective_directive|.
-  WebString directive;
-
-  // The name the effective directive that was checked against.
-  WebString effective_directive;
-
-  // The console message to be displayed to the user.
-  WebString console_message;
-
-  // The URL that was blocked by the policy.
-  WebURL blocked_url;
-
-  // The set of endpoints where a report of the violation should be sent.
-  // Based on 'use_reporting_api' it can be either a set of group_names (when
-  // 'use_reporting_api' = true) or a set of URLs. This means that it's not
-  // possible to use both methods of reporting. This is by design.
-  WebVector<WebString> report_endpoints;
-
-  // Whether to use the reporting api or not.
-  bool use_reporting_api;
-
-  // The raw content security policy header that was infringed.
-  WebString header;
-
-  // Each policy has an associated disposition, which is either "enforce" or
-  // "report".
-  network::mojom::ContentSecurityPolicyType disposition;
-
-  // Whether or not the violation happens after a redirect.
-  bool after_redirect;
-
-  // The source code location that triggered the blocked navigation.
-  WebSourceLocation source_location;
 };
 
 }  // namespace blink

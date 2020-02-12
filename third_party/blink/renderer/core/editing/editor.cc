@@ -501,7 +501,7 @@ bool Editor::InsertTextWithoutSendingTextEvent(
       LocalFrame* focused_or_main_frame =
           To<LocalFrame>(page->GetFocusController().FocusedOrMainFrame());
       focused_or_main_frame->Selection().RevealSelection(
-          ScrollAlignment::kAlignToEdgeIfNeeded);
+          ScrollAlignment::ToEdgeIfNeeded());
     }
   }
 
@@ -517,7 +517,7 @@ bool Editor::InsertLineBreak() {
   DCHECK(GetFrame().GetDocument());
   if (!TypingCommand::InsertLineBreak(*GetFrame().GetDocument()))
     return false;
-  RevealSelectionAfterEditingOperation(ScrollAlignment::kAlignToEdgeIfNeeded);
+  RevealSelectionAfterEditingOperation(ScrollAlignment::ToEdgeIfNeeded());
 
   return true;
 }
@@ -535,7 +535,7 @@ bool Editor::InsertParagraphSeparator() {
   EditingState editing_state;
   if (!TypingCommand::InsertParagraphSeparator(*GetFrame().GetDocument()))
     return false;
-  RevealSelectionAfterEditingOperation(ScrollAlignment::kAlignToEdgeIfNeeded);
+  RevealSelectionAfterEditingOperation(ScrollAlignment::ToEdgeIfNeeded());
 
   return true;
 }
@@ -657,7 +657,7 @@ void Editor::SetBaseWritingDirection(WritingDirection direction) {
 }
 
 void Editor::RevealSelectionAfterEditingOperation(
-    const ScrollAlignment& alignment) {
+    const mojom::blink::ScrollAlignment& alignment) {
   if (prevent_reveal_selection_)
     return;
   if (!GetFrameSelection().IsAvailable())

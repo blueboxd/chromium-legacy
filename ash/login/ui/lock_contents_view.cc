@@ -13,6 +13,7 @@
 #include "ash/focus_cycler.h"
 #include "ash/ime/ime_controller_impl.h"
 #include "ash/login/login_screen_controller.h"
+#include "ash/login/parent_access_controller.h"
 #include "ash/login/ui/bottom_status_indicator.h"
 #include "ash/login/ui/lock_screen.h"
 #include "ash/login/ui/lock_screen_media_controls_view.h"
@@ -24,7 +25,6 @@
 #include "ash/login/ui/login_user_view.h"
 #include "ash/login/ui/non_accessible_view.h"
 #include "ash/login/ui/note_action_launch_button.h"
-#include "ash/login/ui/parent_access_widget.h"
 #include "ash/login/ui/scrollable_users_list_view.h"
 #include "ash/login/ui/system_label_button.h"
 #include "ash/login/ui/views_utils.h"
@@ -625,12 +625,11 @@ void LockContentsView::ShowParentAccessDialog() {
   const AccountId account_id =
       CurrentBigUserView()->GetCurrentUser().basic_user_info.account_id;
 
-  DCHECK(!ParentAccessWidget::Get());
-  ParentAccessWidget::Show(
+  Shell::Get()->parent_access_controller()->ShowWidget(
       account_id,
       base::BindRepeating(&LockContentsView::OnParentAccessValidationFinished,
                           weak_ptr_factory_.GetWeakPtr(), account_id),
-      ParentAccessRequestReason::kUnlockTimeLimits);
+      ParentAccessRequestReason::kUnlockTimeLimits, false, base::Time::Now());
   Shell::Get()->login_screen_controller()->ShowParentAccessButton(false);
 }
 

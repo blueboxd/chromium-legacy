@@ -48,7 +48,7 @@ void TestLoginScreen::ShowParentAccessButton(bool show) {}
 
 void TestLoginScreen::ShowParentAccessWidget(
     const AccountId& child_account_id,
-    base::RepeatingCallback<void(bool success)> callback,
+    base::OnceCallback<void(bool success)> callback,
     ash::ParentAccessRequestReason reason,
     bool extra_dimmer,
     base::Time validation_time) {}

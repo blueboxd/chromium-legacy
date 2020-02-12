@@ -9,7 +9,6 @@
 
 #include "ash/ash_export.h"
 #include "ash/login/ui/login_data_dispatcher.h"
-#include "ash/login/ui/parent_access_widget.h"
 #include "ash/public/cpp/kiosk_app_menu.h"
 #include "ash/public/cpp/login_screen.h"
 #include "ash/public/cpp/system_tray_focus_observer.h"
@@ -22,7 +21,6 @@ class PrefRegistrySimple;
 
 namespace ash {
 
-class ParentAccessWidget;
 class SystemTrayNotifier;
 
 // LoginScreenController implements LoginScreen and wraps the LoginScreenClient
@@ -71,8 +69,8 @@ class ASH_EXPORT LoginScreenController : public LoginScreen,
   void AuthenticateUserWithChallengeResponse(const AccountId& account_id,
                                              OnAuthenticateCallback callback);
   bool ValidateParentAccessCode(const AccountId& account_id,
-                                const std::string& code,
-                                base::Time validation_time);
+                                base::Time validation_time,
+                                const std::string& code);
   void OnSecurityTokenPinRequestCancelledByUser();
   bool GetSecurityTokenPinRequestCancelled() const;
   void HardlockPod(const AccountId& account_id);
@@ -118,14 +116,18 @@ class ASH_EXPORT LoginScreenController : public LoginScreen,
   void EnableShutdownButton(bool enable) override;
   void ShowGuestButtonInOobe(bool show) override;
   void ShowParentAccessButton(bool show) override;
-  void ShowParentAccessWidget(const AccountId& child_account_id,
-                              ParentAccessWidget::OnExitCallback callback,
-                              ParentAccessRequestReason reason,
-                              bool extra_dimmer,
-                              base::Time validation_time) override;
   void SetAllowLoginAsGuest(bool allow_guest) override;
   std::unique_ptr<ScopedGuestButtonBlocker> GetScopedGuestButtonBlocker()
       override;
+
+  // TODO(agawronska): Change all callers of this to use
+  // Shell::Get()->parent_access_controller()->ShowWidget() directly and delete
+  // this method.
+  void ShowParentAccessWidget(const AccountId& child_account_id,
+                              base::OnceCallback<void(bool success)> callback,
+                              ParentAccessRequestReason reason,
+                              bool extra_dimmer,
+                              base::Time validation_time) override;
   void RequestSecurityTokenPin(SecurityTokenPinRequest request) override;
   void ClearSecurityTokenPinRequest() override;
 

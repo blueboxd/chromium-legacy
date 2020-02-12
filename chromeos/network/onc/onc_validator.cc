@@ -334,12 +334,18 @@ bool Validator::ValidateClientCertFields(bool allow_cert_type_none,
                                                ::onc::client_cert::kPKCS11Id};
   if (allow_cert_type_none)
     valid_cert_types.push_back(::onc::client_cert::kClientCertTypeNone);
-  if (FieldExistsAndHasNoValidValue(
-          *result, ::onc::client_cert::kClientCertType, valid_cert_types))
-    return false;
 
   std::string cert_type =
       GetStringFromDict(*result, ::onc::client_cert::kClientCertType);
+
+  // TODO(https://crbug.com/1049955): Remove the client certificate type empty
+  // check. Ignored fields should be removed by normalizer before validating.
+  if (cert_type.empty())
+    return true;
+
+  if (!IsValidValue(cert_type, valid_cert_types))
+    return false;
+
   bool all_required_exist = true;
 
   if (cert_type == ::onc::client_cert::kPattern)
@@ -849,10 +855,8 @@ bool Validator::ValidateIPsec(base::DictionaryValue* result) {
                        ::onc::ipsec::kServerCARef))
     return false;
 
-  if (!ValidateClientCertFields(false,  // don't allow ClientCertType None
-                                result)) {
+  if (!ValidateClientCertFields(/*allow_cert_type_none=*/false, result))
     return false;
-  }
 
   bool all_required_exist =
       RequireField(*result, ::onc::ipsec::kAuthenticationType) &&

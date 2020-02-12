@@ -29,13 +29,12 @@
 #include "media/video/video_encode_accelerator.h"
 #include "ui/gfx/geometry/size.h"
 
-namespace media {
+namespace gpu {
+class GpuMemoryBufferFactory;
+}  // namespace gpu
 
+namespace media {
 class BitstreamBuffer;
-
-}  // namespace media
-
-namespace media {
 
 // This class handles video encode acceleration by interfacing with a V4L2
 // device exposed by the codec hardware driver. The threading model of this
@@ -202,8 +201,8 @@ class MEDIA_GPU_EXPORT V4L2VideoEncodeAccelerator
   bool SetFormats(VideoPixelFormat input_format,
                   VideoCodecProfile output_profile);
 
-  // Reconfigure format of input buffers and image processor if frame size
-  // given by client is different from one set in input buffers.
+  // Reconfigure format of input buffers and image processor if the buffer
+  // represented by |frame| is different from one set in input buffers.
   bool ReconfigureFormatIfNeeded(const VideoFrame& frame);
 
   // Try to set up the device to the input format we were Initialized() with,
@@ -313,6 +312,9 @@ class MEDIA_GPU_EXPORT V4L2VideoEncodeAccelerator
 
   // Image processor, if one is in use.
   std::unique_ptr<ImageProcessor> image_processor_;
+  // GpuMemoryBufferFactory to create GMB-based VideoFrame. This is needed only
+  // if image processor is used and its output buffer is GMB-based VideoFrame.
+  std::unique_ptr<gpu::GpuMemoryBufferFactory> image_processor_gmb_factory_;
   // Video frames for image processor output / VideoEncodeAccelerator input.
   // Only accessed on child thread.
   std::vector<scoped_refptr<VideoFrame>> image_processor_output_buffers_;

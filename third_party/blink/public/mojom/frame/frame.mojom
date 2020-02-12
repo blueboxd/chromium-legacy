@@ -344,6 +344,10 @@ interface LocalFrame {
   // moving in specified direction if the currently focused node is a Text node
   // (textfield, text area or content editable nodes).
   AdvanceFocusInForm(blink.mojom.FocusType focus_type);
+
+  // Notifies the document navigation was blocked because a content security
+  // policy was violated.
+  ReportContentSecurityPolicyViolation(network.mojom.CSPViolation violation);
 };
 
 // Implemented in Browser, this interface defines frame-specific methods that

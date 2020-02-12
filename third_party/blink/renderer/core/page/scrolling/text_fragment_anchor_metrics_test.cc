@@ -226,7 +226,7 @@ TEST_F(TextFragmentAnchorMetricsTest, ScrollCancelled) {
 
   Compositor().PaintFrame();
   GetDocument().View()->LayoutViewport()->ScrollBy(
-      ScrollOffset(0, 100), mojom::blink::ScrollIntoViewParams::Type::kUser);
+      ScrollOffset(0, 100), mojom::blink::ScrollType::kUser);
 
   // Set the target text to visible and change its position to cause a layout
   // and invoke the fragment anchor.

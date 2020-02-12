@@ -276,38 +276,6 @@ bool EnumTraits<ui::mojom::CursorType, ui::CursorType>::FromMojom(
 }
 
 // static
-ui::mojom::CursorSize
-EnumTraits<ui::mojom::CursorSize, ui::CursorSize>::ToMojom(
-    ui::CursorSize input) {
-  switch (input) {
-    case ui::CursorSize::kNormal:
-      return ui::mojom::CursorSize::kNormal;
-    case ui::CursorSize::kLarge:
-      return ui::mojom::CursorSize::kLarge;
-  }
-
-  NOTREACHED();
-  return ui::mojom::CursorSize::kNormal;
-}
-
-// static
-bool EnumTraits<ui::mojom::CursorSize, ui::CursorSize>::FromMojom(
-    ui::mojom::CursorSize input,
-    ui::CursorSize* out) {
-  switch (input) {
-    case ui::mojom::CursorSize::kNormal:
-      *out = ui::CursorSize::kNormal;
-      return true;
-    case ui::mojom::CursorSize::kLarge:
-      *out = ui::CursorSize::kLarge;
-      return true;
-  }
-
-  NOTREACHED();
-  return false;
-}
-
-// static
 gfx::Point StructTraits<ui::mojom::CursorDataView, ui::Cursor>::hotspot(
     const ui::Cursor& c) {
   return c.GetHotspot();

@@ -426,9 +426,10 @@ class CORE_EXPORT LayoutBlock : public LayoutBox {
     return false;
   }
 
-  bool HitTestOverflowControl(HitTestResult&,
-                              const HitTestLocation&,
-                              const PhysicalOffset& adjusted_location) override;
+  bool HitTestOverflowControl(
+      HitTestResult&,
+      const HitTestLocation&,
+      const PhysicalOffset& adjusted_location) const override;
   bool HitTestChildren(HitTestResult&,
                        const HitTestLocation&,
                        const PhysicalOffset& accumulated_offset,

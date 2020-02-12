@@ -139,13 +139,22 @@ Address ThreadHeap::CheckAndMarkPointer(MarkingVisitor* visitor,
   return nullptr;
 }
 
-void ThreadHeap::MarkRememberedSets(MarkingVisitor* visitor) {
+void ThreadHeap::VisitRememberedSets(MarkingVisitor* visitor) {
   static_assert(BlinkGC::kLargeObjectArenaIndex + 1 == BlinkGC::kNumberOfArenas,
                 "LargeObject arena must be the last one.");
   const auto visit_header = [visitor](HeapObjectHeader* header) {
     // Process only old objects.
     if (header->IsMarked<HeapObjectHeader::AccessMode::kNonAtomic>()) {
-      visitor->VisitMarkedHeader(header);
+      // The design of young generation requires collections to be executed at
+      // the top level (with the guarantee that no objects are currently being
+      // in construction). This can be ensured by running young GCs from safe
+      // points or by reintroducing nested allocation scopes that avoid
+      // finalization.
+      DCHECK(header->IsMarked());
+      DCHECK(!MarkingVisitor::IsInConstruction(header));
+      const GCInfo* gc_info =
+          GCInfoTable::Get().GCInfoFromIndex(header->GcInfoIndex());
+      gc_info->trace(visitor, header->Payload());
     }
   };
   for (size_t i = 0; i < BlinkGC::kLargeObjectArenaIndex; ++i) {

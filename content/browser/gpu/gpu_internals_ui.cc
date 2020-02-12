@@ -397,11 +397,23 @@ std::unique_ptr<base::ListValue> getDisplayInfo() {
       display::Screen::GetScreen()->GetAllDisplays();
   for (const auto& display : displays) {
     display_info->Append(NewDescriptionValuePair("Info ", display.ToString()));
-    display_info->Append(NewDescriptionValuePair(
-        "Color space information", display.color_space().ToString()));
+    {
+      std::vector<std::string> names;
+      std::vector<gfx::ColorSpace> color_spaces;
+      std::vector<gfx::BufferFormat> buffer_formats;
+      display.color_spaces().ToStrings(&names, &color_spaces, &buffer_formats);
+      for (size_t i = 0; i < names.size(); ++i) {
+        display_info->Append(NewDescriptionValuePair(
+            base::StringPrintf("Color space (%s)", names[i].c_str()),
+            color_spaces[i].ToString()));
+        display_info->Append(NewDescriptionValuePair(
+            base::StringPrintf("Buffer format (%s)", names[i].c_str()),
+            gfx::BufferFormatToString(buffer_formats[i])));
+      }
+    }
     display_info->Append(NewDescriptionValuePair(
         "SDR white level in nits",
-        base::NumberToString(display.sdr_white_level())));
+        base::NumberToString(display.color_spaces().GetSDRWhiteLevel())));
     display_info->Append(NewDescriptionValuePair(
         "Bits per color component",
         base::NumberToString(display.depth_per_component())));

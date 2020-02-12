@@ -6,9 +6,10 @@
 
 #include <stddef.h>
 
+#include "base/containers/span.h"
+#include "base/hash/legacy_hash.h"
 #include "base/logging.h"
 #include "base/numerics/safe_conversions.h"
-#include "third_party/smhasher/src/City.h"
 
 namespace rappor {
 
@@ -17,7 +18,8 @@ namespace {
 uint32_t ComputeHash(const std::string& str, uint32_t seed) {
     // Using CityHash here because we have support for it in Dremel.  Many hash
     // functions, such as MD5, SHA1, or Murmur, would probably also work.
-    return CityHash64WithSeed(str.data(), str.size(), seed);
+    return base::legacy::CityHash64WithSeed(
+        base::as_bytes(base::make_span(str)), seed);
 }
 
 }  // namespace

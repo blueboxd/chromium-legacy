@@ -11,7 +11,6 @@
 #include "base/single_thread_task_runner.h"
 #include "base/threading/thread_local.h"
 #include "base/threading/thread_task_runner_handle.h"
-#include "base/timer/timer.h"
 #include "build/build_config.h"
 
 namespace base {
@@ -271,28 +270,6 @@ RunLoop::ScopedDisallowRunningForTesting::ScopedDisallowRunningForTesting() =
 RunLoop::ScopedDisallowRunningForTesting::~ScopedDisallowRunningForTesting() =
     default;
 #endif  // DCHECK_IS_ON()
-
-void RunLoop::RunUntilConditionForTest(RepeatingCallback<bool()> condition) {
-  CHECK(GetTimeoutForCurrentThread());
-  const RunLoopTimeout* old_timeout = GetTimeoutForCurrentThread();
-  RunLoopTimeout run_timeout;
-  run_timeout.timeout = old_timeout->timeout;
-  run_timeout.on_timeout = DoNothing();
-  RunLoopTimeoutTLS().Set(&run_timeout);
-  auto check_condition = BindRepeating(
-      [](const RepeatingCallback<bool()>& condition, RunLoop* loop) {
-        if (condition.Run())
-          loop->Quit();
-      },
-      condition, this);
-  RepeatingTimer poll_condition;
-  poll_condition.Start(FROM_HERE, TimeDelta::FromMilliseconds(100),
-                       check_condition);
-  Run();
-  if (!condition.Run())
-    old_timeout->on_timeout.Run();
-  RunLoopTimeoutTLS().Set(old_timeout);
-}
 
 RunLoop::RunLoopTimeout::RunLoopTimeout() = default;
 

@@ -5,7 +5,9 @@ include_rules = [
   "+components/strings/grit/components_strings.h",
   "+components/url_formatter",
   "+components/url_matcher",
+  "+extensions/buildflags",
   "+third_party/icu",
   "+ui/base/l10n",
   "+ui/base/resource",
+  "+ui/base/webui/web_ui_util.h",
 ]

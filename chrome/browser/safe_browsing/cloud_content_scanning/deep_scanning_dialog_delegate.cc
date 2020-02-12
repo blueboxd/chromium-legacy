@@ -170,6 +170,12 @@ std::string GetFileMimeType(base::FilePath path) {
   return mime_type;
 }
 
+bool AllowEncryptedFiles() {
+  int state = g_browser_process->local_state()->GetInteger(
+      prefs::kAllowPasswordProtectedFiles);
+  return state == ALLOW_UPLOADS || state == ALLOW_UPLOADS_AND_DOWNLOADS;
+}
+
 }  // namespace
 
 // A BinaryUploadService::Request implementation that gets the data to scan
@@ -269,8 +275,9 @@ bool DeepScanningDialogDelegate::ResultShouldAllowDataUse(
       return true;
 
     case BinaryUploadService::Result::FILE_TOO_LARGE:
-    case BinaryUploadService::Result::FILE_ENCRYPTED:
       return false;
+    case BinaryUploadService::Result::FILE_ENCRYPTED:
+      return AllowEncryptedFiles();
   }
 }
 
@@ -555,13 +562,8 @@ void DeepScanningDialogDelegate::AnalyzerCallback(
   // If the file contains encrypted parts and the user is not allowed to use
   // them, fail the request.
   if (contains_encrypted_parts) {
-    int state = g_browser_process->local_state()->GetInteger(
-        prefs::kAllowPasswordProtectedFiles);
-    BinaryUploadService::Result result =
-        state == ALLOW_UPLOADS || state == ALLOW_UPLOADS_AND_DOWNLOADS
-            ? BinaryUploadService::Result::SUCCESS
-            : BinaryUploadService::Result::FILE_ENCRYPTED;
-    FileRequestCallback(data_.paths[index], result,
+    FileRequestCallback(data_.paths[index],
+                        BinaryUploadService::Result::FILE_ENCRYPTED,
                         DeepScanningClientResponse());
     return;
   }

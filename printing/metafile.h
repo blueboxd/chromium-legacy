@@ -20,9 +20,6 @@
 #include <ApplicationServices/ApplicationServices.h>
 #include <CoreFoundation/CoreFoundation.h>
 #include "base/mac/scoped_cftyperef.h"
-#elif defined(OS_ANDROID)
-#include "base/file_descriptor_posix.h"
-#include "base/files/file_util.h"
 #endif
 
 namespace base {
@@ -96,14 +93,6 @@ class PRINTING_EXPORT MetafilePlayer {
   // called after the metafile is closed. Returns true if writing succeeded.
   virtual bool SaveTo(base::File* file) const = 0;
 
-#if defined(OS_ANDROID)
-  // Similar to bool SaveTo(base::File* file) const, but write the data to the
-  // file descriptor directly. This is because Android doesn't allow file
-  // ownership exchange. This function should ONLY be called after the metafile
-  // is closed. Returns true if writing succeeded.
-  virtual bool SaveToFileDescriptor(int fd) const = 0;
-#endif  // defined(OS_ANDROID)
-
  private:
   DISALLOW_COPY_AND_ASSIGN(MetafilePlayer);
 };
@@ -171,9 +160,6 @@ class PRINTING_EXPORT Metafile : public MetafilePlayer {
   // MetfilePlayer
   bool GetDataAsVector(std::vector<char>* buffer) const override;
   bool SaveTo(base::File* file) const override;
-#if defined(OS_ANDROID)
-  bool SaveToFileDescriptor(int fd) const override;
-#endif  // defined(OS_ANDROID)
 
  private:
   DISALLOW_COPY_AND_ASSIGN(Metafile);

@@ -10,7 +10,6 @@
 
 #include "base/base_export.h"
 #include "base/callback.h"
-#include "base/compiler_specific.h"
 #include "base/containers/stack.h"
 #include "base/gtest_prod_util.h"
 #include "base/macros.h"
@@ -274,14 +273,6 @@ class BASE_EXPORT RunLoop {
 
     DISALLOW_COPY_AND_ASSIGN(ScopedDisallowRunningForTesting);
   };
-
-  // Runs the loop until |condition| returns true, or the Run() timeout expires.
-  // Callers should assume that the |condition| will be polled multiple times
-  // per second. The call executes the configured on-timeout handler only if
-  // |condition| is false when the loop terminates. This API should be used only
-  // where providing an explicit signal when the desired condition becomes true,
-  // is not feasible. Use Run() and QuitClosure() where possible.
-  void RunUntilConditionForTest(RepeatingCallback<bool()> condition);
 
   // Support for //base/test/scoped_run_loop_timeout.h.
   // This must be public for access by the implementation code in run_loop.cc.

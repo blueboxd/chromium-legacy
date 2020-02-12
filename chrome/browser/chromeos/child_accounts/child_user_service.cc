@@ -7,6 +7,7 @@
 #include "base/time/time.h"
 #include "chrome/browser/chromeos/child_accounts/time_limits/app_activity_registry.h"
 #include "chrome/browser/chromeos/child_accounts/time_limits/app_time_controller.h"
+#include "chrome/browser/chromeos/child_accounts/time_limits/app_types.h"
 #include "chrome/browser/chromeos/child_accounts/time_limits/web_time_limit_enforcer.h"
 #include "chrome/browser/profiles/profile.h"
 #include "content/public/browser/browser_context.h"
@@ -87,6 +88,13 @@ bool ChildUserService::WebTimeLimitWhitelistedURL(const GURL& url) const {
     return false;
   DCHECK(app_time_controller_->web_time_enforcer());
   return app_time_controller_->web_time_enforcer()->IsURLWhitelisted(url);
+}
+
+bool ChildUserService::AppTimeLimitWhitelistedApp(
+    const app_time::AppId& app_id) const {
+  if (!app_time_controller_)
+    return false;
+  return app_time_controller_->app_registry()->IsWhitelistedApp(app_id);
 }
 
 base::TimeDelta ChildUserService::GetWebTimeLimit() const {

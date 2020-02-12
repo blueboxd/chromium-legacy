@@ -18,7 +18,6 @@
 #include "ios/chrome/browser/sessions/session_restoration_browser_agent.h"
 #import "ios/chrome/browser/sessions/session_service_ios.h"
 #import "ios/chrome/browser/sessions/session_window_ios.h"
-#import "ios/chrome/browser/tabs/tab_model.h"
 #import "ios/chrome/browser/ui/browser_container/browser_container_view_controller.h"
 #import "ios/chrome/browser/ui/browser_view/browser_view_controller+private.h"
 #import "ios/chrome/browser/ui/browser_view/browser_view_controller.h"
@@ -96,7 +95,7 @@ void PerfTestWithBVC::SetUp() {
   ios::AutocompleteClassifierFactory::GetForBrowserState(
       chrome_browser_state_.get());
 
-  // Use the session to create a window which will contain the tab models.
+  // Use the session to create a window which will contain the tabs.
   NSString* state_path = base::SysUTF8ToNSString(
       chrome_browser_state_->GetStatePath().AsUTF8Unsafe());
   SessionIOS* session =
@@ -112,21 +111,16 @@ void PerfTestWithBVC::SetUp() {
       browser_.get(), [SessionServiceIOS sharedService]);
   SessionRestorationBrowserAgent::CreateForBrowser(
       otr_browser_.get(), [SessionServiceIOS sharedService]);
-
-  // Tab models. The off-the-record (OTR) tab model is required for the stack
-  // view controller, which is created in OpenStackView().
-  tab_model_ = [[TabModel alloc] initWithBrowser:browser_.get()];
-  [tab_model_ restoreSessionWindow:session.sessionWindows[0]
-                 forInitialRestore:YES];
-  otr_tab_model_ = [[TabModel alloc] initWithBrowser:otr_browser_.get()];
-  [otr_tab_model_ restoreSessionWindow:session.sessionWindows[0]
-                     forInitialRestore:YES];
+  SessionRestorationBrowserAgent::FromBrowser(browser_.get())
+      ->RestoreSessionWindow(session.sessionWindows[0]);
+  SessionRestorationBrowserAgent::FromBrowser(otr_browser_.get())
+      ->RestoreSessionWindow(session.sessionWindows[0]);
 
   command_dispatcher_ = [[CommandDispatcher alloc] init];
   // Create the browser view controller with its testing factory.
   bvc_factory_ = [[BrowserViewControllerDependencyFactory alloc]
       initWithBrowserState:chrome_browser_state_.get()
-              webStateList:[tab_model_ webStateList]];
+              webStateList:browser_->GetWebStateList()];
   bvc_ = [[BrowserViewController alloc]
                      initWithBrowser:browser_.get()
                    dependencyFactory:bvc_factory_
@@ -145,7 +139,8 @@ void PerfTestWithBVC::SetUp() {
 }
 
 void PerfTestWithBVC::TearDown() {
-  [[bvc_ tabModel] closeAllTabs];
+  browser_.get()->GetWebStateList()->CloseAllWebStates(
+      WebStateList::CLOSE_NO_FLAGS);
   [[bvc_ view] removeFromSuperview];
 
   // Documented example of how to clear out the browser view controller
@@ -154,9 +149,6 @@ void PerfTestWithBVC::TearDown() {
   [bvc_ shutdown];
   bvc_ = nil;
   bvc_factory_ = nil;
-  tab_model_ = nil;
-  [otr_tab_model_ disconnect];
-  otr_tab_model_ = nil;
 
   // The base class |TearDown| method calls the run loop so the
   // NSAutoreleasePool can drain. This needs to be done before

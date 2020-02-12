@@ -1358,25 +1358,6 @@
             ]
         }
     ],
-    "CacheStorageHighPriorityMatch": [
-        {
-            "platforms": [
-                "windows",
-                "mac",
-                "chromeos",
-                "linux",
-                "android"
-            ],
-            "experiments": [
-                {
-                    "name": "Enabled4",
-                    "enable_features": [
-                        "CacheStorageHighPriorityMatch"
-                    ]
-                }
-            ]
-        }
-    ],
     "CacheStorageSequence": [
         {
             "platforms": [

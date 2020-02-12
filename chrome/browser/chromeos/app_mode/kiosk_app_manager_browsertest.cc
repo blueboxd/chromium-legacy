@@ -640,7 +640,8 @@ IN_PROC_BROWSER_TEST_F(KioskAppManagerTest, DISABLED_BadApp) {
   EXPECT_EQ("", GetAppIds());
 }
 
-IN_PROC_BROWSER_TEST_F(KioskAppManagerTest, GoodApp) {
+// TODO(crbug.com/1051497): Fix flaky test.
+IN_PROC_BROWSER_TEST_F(KioskAppManagerTest, DISABLED_GoodApp) {
   // Webstore data json is in
   //   chrome/test/data/chromeos/app_mode/webstore/inlineinstall/detail/app_1
   const char kAppId[] = "app_1";
@@ -653,7 +654,9 @@ IN_PROC_BROWSER_TEST_F(KioskAppManagerTest, GoodApp) {
   CheckAppDataAndCache(kAppId, "Name of App 1", "");
 }
 
-IN_PROC_BROWSER_TEST_F(KioskAppManagerTest, AppWithRequiredPlatformVersion) {
+// TODO(crbug.com/1051497): Fix flaky test.
+IN_PROC_BROWSER_TEST_F(KioskAppManagerTest,
+                       DISABLED_AppWithRequiredPlatformVersion) {
   // Webstore data json is in
   //   chrome/test/data/chromeos/app_mode/webstore/inlineinstall/detail/
   //     app_with_required_platform_version
@@ -682,11 +685,13 @@ IN_PROC_BROWSER_TEST_F(KioskAppManagerTest, AppWithBadRequiredPlatformVersion) {
   EXPECT_EQ("", GetAppIds());
 }
 
-IN_PROC_BROWSER_TEST_F(KioskAppManagerTest, DownloadNewApp) {
+// TODO(crbug.com/1051497): Fix flaky test.
+IN_PROC_BROWSER_TEST_F(KioskAppManagerTest, DISABLED_DownloadNewApp) {
   RunAddNewAppTest(kTestLocalFsKioskApp, "1.0.0", kTestLocalFsKioskAppName, "");
 }
 
-IN_PROC_BROWSER_TEST_F(KioskAppManagerTest, RemoveApp) {
+// TODO(crbug.com/1051497): Fix flaky test.
+IN_PROC_BROWSER_TEST_F(KioskAppManagerTest, DISABLED_RemoveApp) {
   // Add a new app.
   RunAddNewAppTest(kTestLocalFsKioskApp, "1.0.0", kTestLocalFsKioskAppName, "");
   KioskAppManager::AppList apps;
@@ -713,7 +718,8 @@ IN_PROC_BROWSER_TEST_F(KioskAppManagerTest, RemoveApp) {
   EXPECT_FALSE(GetCachedCrx(kTestLocalFsKioskApp, &crx_path, &version));
 }
 
-IN_PROC_BROWSER_TEST_F(KioskAppManagerTest, UpdateApp) {
+// TODO(crbug.com/1051497): Fix flaky test.
+IN_PROC_BROWSER_TEST_F(KioskAppManagerTest, DISABLED_UpdateApp) {
   // Add a version 1 app first.
   RunAddNewAppTest(kTestLocalFsKioskApp, "1.0.0", kTestLocalFsKioskAppName, "");
   KioskAppManager::AppList apps;

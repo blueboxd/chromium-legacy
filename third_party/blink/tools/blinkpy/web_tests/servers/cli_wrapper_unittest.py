@@ -32,6 +32,9 @@ class CliWrapperTest(unittest.TestCase):
             self.server = MockServer(args, kwargs)
             return self.server
 
-        cli_wrapper.main(mock_server_constructor, input_fn=lambda msg: True, argv=[])
+        def raise_exit():
+            raise SystemExit
+
+        cli_wrapper.main(mock_server_constructor, sleep_fn=raise_exit, argv=[])
         self.assertTrue(self.server.start_called)
         self.assertTrue(self.server.stop_called)

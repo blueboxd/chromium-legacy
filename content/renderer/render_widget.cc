@@ -2213,6 +2213,8 @@ void RenderWidget::UpdateSurfaceAndScreenInfo(
     const viz::LocalSurfaceIdAllocation& new_local_surface_id_allocation,
     const gfx::Rect& compositor_viewport_pixel_rect,
     const ScreenInfo& new_screen_info) {
+  // Same logic is used in RenderWidgetHostImpl::SynchronizeVisualProperties to
+  // detect if there is a screen orientation change.
   bool orientation_changed =
       screen_info_.orientation_angle != new_screen_info.orientation_angle ||
       screen_info_.orientation_type != new_screen_info.orientation_type;

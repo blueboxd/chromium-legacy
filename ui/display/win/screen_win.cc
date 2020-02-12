@@ -211,32 +211,46 @@ Display CreateDisplayFromDisplayInfo(const DisplayInfo& display_info,
   display.set_display_frequency(display_info.display_frequency());
   if (!Display::HasForceDisplayColorProfile()) {
     if (hdr_enabled) {
-      gfx::DisplayColorSpaces color_spaces;
+      gfx::DisplayColorSpaces color_spaces(gfx::ColorSpace::CreateSRGB(),
+                                           gfx::BufferFormat::BGRA_8888);
+
       // This will map to DXGI_COLOR_SPACE_RGB_FULL_G10_NONE_P709. In that
       // space, the brightness of (1,1,1) is 80 nits. That's where the magic
       // constant of 80 comes in.
       const auto scrgb_linear = gfx::ColorSpace::CreateSCRGBLinear(
           80.f / display_info.sdr_white_level());
+
       // This will map to DXGI_COLOR_SPACE_RGB_FULL_G2084_NONE_P2020, with
       // sRGB's (1,1,1) mapping to the specified number of nits.
       const auto hdr10 =
           gfx::ColorSpace::CreateHDR10(display_info.sdr_white_level());
-      // Using RGBA F16 backbuffers required by SCRGB linear causes
-      // stuttering on Windows RS3, but RGB10A2 with HDR10 color space works
-      // fine (see https://crbug.com/937108#c92).
-      if (base::win::GetVersion() > base::win::Version::WIN10_RS3) {
+
+      // For the moment, always use HDR color space. Once we raster sRGB content
+      // as sRGB, we can dynamically switch in and out of HDR mode.
+      const gfx::ContentColorUsage content_color_usages[] = {
+          gfx::ContentColorUsage::kSRGB,
+          gfx::ContentColorUsage::kWideColorGamut,
+          gfx::ContentColorUsage::kHDR,
+      };
+      for (const auto& usage : content_color_usages) {
+        // Using RGBA F16 backbuffers required by SCRGB linear causes
+        // stuttering on Windows RS3, but RGB10A2 with HDR10 color space works
+        // fine (see https://crbug.com/937108#c92).
+        if (base::win::GetVersion() > base::win::Version::WIN10_RS3) {
+          color_spaces.SetOutputColorSpaceAndBufferFormat(
+              usage, /*needs_alpha=*/false, scrgb_linear,
+              gfx::BufferFormat::RGBA_F16);
+        } else {
+          color_spaces.SetOutputColorSpaceAndBufferFormat(
+              usage, /*needs_alpha=*/false, hdr10,
+              gfx::BufferFormat::BGRX_1010102);
+        }
+        // Use RGBA F16 backbuffers for HDR if alpha channel is required.
         color_spaces.SetOutputColorSpaceAndBufferFormat(
-            gfx::ContentColorUsage::kHDR, /*needs_alpha=*/false, scrgb_linear,
+            usage, /*needs_alpha=*/true, scrgb_linear,
             gfx::BufferFormat::RGBA_F16);
-      } else {
-        color_spaces.SetOutputColorSpaceAndBufferFormat(
-            gfx::ContentColorUsage::kHDR, /*needs_alpha=*/false, hdr10,
-            gfx::BufferFormat::BGRX_1010102);
       }
-      // Use RGBA F16 backbuffers for HDR if alpha channel is required.
-      color_spaces.SetOutputColorSpaceAndBufferFormat(
-          gfx::ContentColorUsage::kHDR, /*needs_alpha=*/true, scrgb_linear,
-          gfx::BufferFormat::RGBA_F16);
+
       color_spaces.SetSDRWhiteLevel(display_info.sdr_white_level());
       display.set_color_spaces(color_spaces);
       // We set these to 10 bpp because these are (ab)used by pages via media
@@ -244,8 +258,10 @@ Display CreateDisplayFromDisplayInfo(const DisplayInfo& display_info,
       display.set_color_depth(Display::kHDR10BitsPerPixel);
       display.set_depth_per_component(Display::kHDR10BitsPerComponent);
     } else {
-      display.SetColorSpaceAndDepth(
-          color_profile_reader->GetDisplayColorSpace(display_info.id()));
+      gfx::DisplayColorSpaces display_color_spaces(
+          color_profile_reader->GetDisplayColorSpace(display_info.id()),
+          gfx::BufferFormat::BGRA_8888);
+      display.set_color_spaces(display_color_spaces);
     }
   }
   return display;
@@ -829,7 +845,7 @@ void ScreenWin::OnColorProfilesChanged() {
   // cases.
   bool changed = false;
   for (const auto& display : displays_) {
-    if (display.color_space() !=
+    if (display.color_spaces().GetRasterColorSpace() !=
         color_profile_reader_->GetDisplayColorSpace(display.id())) {
       changed = true;
       break;

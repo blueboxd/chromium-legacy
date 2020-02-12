@@ -73,7 +73,10 @@ class WebContentController
 
  private:
   void ProcessInputEvent(const webview::InputEvent& ev);
-  void ObserveRenderWidget(content::RenderWidgetHost* render_widget_host);
+  void RegisterRenderWidgetInputObserver(
+      content::RenderWidgetHost* render_widget_host);
+  void UnregisterRenderWidgetInputObserver(
+      content::RenderWidgetHost* render_widget_host);
   void AckTouchEvent(content::RenderWidgetHostView* rhwv,
                      uint32_t unique_event_id,
                      ui::EventResult result);

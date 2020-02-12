@@ -15,7 +15,7 @@ class PinEnumerator final : public IEnumPins,
   explicit PinEnumerator(FilterBase* filter) : filter_(filter), index_(0) {}
 
   // IUnknown implementation.
-  STDMETHOD(QueryInterface)(REFIID iid, void** object_ptr) override {
+  STDMETHODIMP QueryInterface(REFIID iid, void** object_ptr) override {
     if (iid == IID_IEnumPins || iid == IID_IUnknown) {
       AddRef();
       *object_ptr = static_cast<IEnumPins*>(this);
@@ -24,18 +24,18 @@ class PinEnumerator final : public IEnumPins,
     return E_NOINTERFACE;
   }
 
-  STDMETHOD_(ULONG, AddRef)() override {
+  STDMETHODIMP_(ULONG) AddRef() override {
     base::RefCounted<PinEnumerator>::AddRef();
     return 1;
   }
 
-  STDMETHOD_(ULONG, Release)() override {
+  STDMETHODIMP_(ULONG) Release() override {
     base::RefCounted<PinEnumerator>::Release();
     return 1;
   }
 
   // Implement IEnumPins.
-  STDMETHOD(Next)(ULONG count, IPin** pins, ULONG* fetched) override {
+  STDMETHODIMP Next(ULONG count, IPin** pins, ULONG* fetched) override {
     ULONG pins_fetched = 0;
     while (pins_fetched < count && filter_->NoOfPins() > index_) {
       IPin* pin = filter_->GetPin(index_++);
@@ -49,7 +49,7 @@ class PinEnumerator final : public IEnumPins,
     return pins_fetched == count ? S_OK : S_FALSE;
   }
 
-  STDMETHOD(Skip)(ULONG count) override {
+  STDMETHODIMP Skip(ULONG count) override {
     if (filter_->NoOfPins() - index_ > count) {
       index_ += count;
       return S_OK;
@@ -58,12 +58,12 @@ class PinEnumerator final : public IEnumPins,
     return S_FALSE;
   }
 
-  STDMETHOD(Reset)() override {
+  STDMETHODIMP Reset() override {
     index_ = 0;
     return S_OK;
   }
 
-  STDMETHOD(Clone)(IEnumPins** clone) override {
+  STDMETHODIMP Clone(IEnumPins** clone) override {
     PinEnumerator* pin_enum = new PinEnumerator(filter_.get());
     pin_enum->AddRef();
     pin_enum->index_ = index_;

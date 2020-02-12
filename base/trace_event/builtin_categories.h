@@ -129,6 +129,7 @@
   X("shutdown")                                                          \
   X("SiteEngagement")                                                    \
   X("skia")                                                              \
+  X("sql")                                                               \
   X("startup")                                                           \
   X("sync")                                                              \
   X("sync_lock_contention")                                              \

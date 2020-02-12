@@ -5,6 +5,11 @@ by Chromium. It is located in `src/third_party/blink`.
 
 See also the [Blink](https://www.chromium.org/blink) page on chromium.org.
 
+## Code Policy
+
+Blink follows [`content` guidelines](../../content/README.md): only code that
+implements web platform features should live in Blink.
+
 ## Directory structure
 
 - [`common/`](common/README.md): code that can run in the browser process

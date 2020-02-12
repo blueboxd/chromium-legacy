@@ -92,7 +92,6 @@ cr.define('settings', function() {
   const PageStatus = {
     SPINNER: 'spinner',      // Before the page has loaded.
     CONFIGURE: 'configure',  // Preferences ready to be configured.
-    TIMEOUT: 'timeout',      // Preferences loading has timed out.
     DONE: 'done',            // Sync subpage can be closed now.
     PASSPHRASE_FAILED: 'passphraseFailed',  // Error in the passphrase.
   };

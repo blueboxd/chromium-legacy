@@ -415,22 +415,12 @@ void RecordMainFrameNavigationMetric(web::WebState* web_state) {
   _webStateObserver.reset();
 }
 
-#pragma mark - SessionWindowRestoring(public)
 
 - (BOOL)isWebUsageEnabled {
   DCHECK(_browserState);
   return WebStateListWebUsageEnablerFactory::GetInstance()
       ->GetForBrowserState(_browserState)
       ->IsWebUsageEnabled();
-}
-
-- (BOOL)restoreSessionWindow:(SessionWindowIOS*)window
-           forInitialRestore:(BOOL)initialRestore {
-  DCHECK(_browserState);
-
-  // It is only ok to pass a nil |window| during the initial restore.
-  DCHECK(window || initialRestore);
-  return _sessionRestorationBrowserAgent->RestoreSessionWindow(window);
 }
 
 #pragma mark - Notification Handlers

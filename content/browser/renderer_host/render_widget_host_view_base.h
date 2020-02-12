@@ -584,7 +584,7 @@ class CONTENT_EXPORT RenderWidgetHostViewBase
   float current_device_scale_factor_ = 0;
 
   // The color space of the display the renderer is currently on.
-  gfx::ColorSpace current_display_color_space_;
+  gfx::DisplayColorSpaces current_display_color_spaces_;
 
   // The orientation of the display the renderer is currently on.
   display::Display::Rotation current_display_rotation_ =

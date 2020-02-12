@@ -311,6 +311,13 @@ AudioWorkletNode* AudioWorkletNode::Create(
     return nullptr;
   }
 
+  if (context->IsContextClosed()) {
+    exception_state.ThrowDOMException(
+        DOMExceptionCode::kInvalidStateError,
+        "AudioWorkletNode cannot be created: No execution context available.");
+    return nullptr;
+  }
+
   auto* channel =
       MakeGarbageCollected<MessageChannel>(context->GetExecutionContext());
   MessagePortChannel processor_port_channel = channel->port2()->Disentangle();

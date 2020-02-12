@@ -62,7 +62,7 @@ const CSSValue* ConsumeSingleType(const CSSSyntaxComponent& syntax,
     }
     case CSSSyntaxType::kNumber:
       return css_property_parser_helpers::ConsumeNumber(
-          range, ValueRange::kValueRangeAll);
+          range, *context, ValueRange::kValueRangeAll);
     case CSSSyntaxType::kPercentage:
       return css_property_parser_helpers::ConsumePercent(
           range, *context, ValueRange::kValueRangeAll);
@@ -82,13 +82,14 @@ const CSSValue* ConsumeSingleType(const CSSSyntaxComponent& syntax,
     case CSSSyntaxType::kUrl:
       return css_property_parser_helpers::ConsumeUrl(range, context);
     case CSSSyntaxType::kInteger:
-      return css_property_parser_helpers::ConsumeIntegerOrNumberCalc(range);
+      return css_property_parser_helpers::ConsumeIntegerOrNumberCalc(range,
+                                                                     *context);
     case CSSSyntaxType::kAngle:
       return css_property_parser_helpers::ConsumeAngle(
           range, context, base::Optional<WebFeature>());
     case CSSSyntaxType::kTime:
       return css_property_parser_helpers::ConsumeTime(
-          range, ValueRange::kValueRangeAll);
+          range, *context, ValueRange::kValueRangeAll);
     case CSSSyntaxType::kResolution:
       return css_property_parser_helpers::ConsumeResolution(range);
     case CSSSyntaxType::kTransformFunction:

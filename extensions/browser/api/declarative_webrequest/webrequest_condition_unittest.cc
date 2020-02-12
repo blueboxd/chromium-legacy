@@ -95,7 +95,9 @@ TEST(WebRequestConditionTest, CreateCondition) {
   EXPECT_FALSE(result->IsFulfilled(request_data));
 }
 
-TEST(WebRequestConditionTest, CreateConditionFirstPartyForCookies) {
+TEST(WebRequestConditionTest, IgnoreConditionFirstPartyForCookies) {
+  // firstPartyForCookiesUrl is deprecated, but must still be accepted in
+  // parsing.
   URLMatcher matcher;
 
   std::string error;
@@ -111,25 +113,6 @@ TEST(WebRequestConditionTest, CreateConditionFirstPartyForCookies) {
       &error);
   EXPECT_EQ("", error);
   ASSERT_TRUE(result.get());
-
-  URLMatcherConditionSet::Vector url_matcher_condition_set;
-  result->GetURLMatcherConditionSets(&url_matcher_condition_set);
-  matcher.AddConditionSets(url_matcher_condition_set);
-
-  const GURL http_url("http://www.example.com");
-  const GURL first_party_url("http://fpfc.example.com");
-  WebRequestInfoInitParams match_params;
-  match_params.url = http_url;
-  match_params.type = blink::mojom::ResourceType::kMainFrame;
-  match_params.web_request_type = WebRequestResourceType::MAIN_FRAME;
-  WebRequestInfo match_request_info(std::move(match_params));
-  WebRequestData data(&match_request_info, ON_BEFORE_REQUEST);
-  WebRequestDataWithMatchIds request_data(&data);
-  request_data.url_match_ids = matcher.MatchURL(http_url);
-  EXPECT_EQ(0u, request_data.url_match_ids.size());
-  request_data.first_party_url_match_ids = matcher.MatchURL(first_party_url);
-  EXPECT_EQ(1u, request_data.first_party_url_match_ids.size());
-  EXPECT_TRUE(result->IsFulfilled(request_data));
 }
 
 // Conditions without UrlFilter attributes need to be independent of URL

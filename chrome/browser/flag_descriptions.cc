@@ -324,13 +324,6 @@ const char kEnablePasswordsAccountStorageDescription[] =
     "Enables storing passwords in a second, Gaia-account-scoped storage for "
     "signed-in but not syncing users";
 
-const char kEnablePasswordsAccountStorageSavingUiName[] =
-    "Enable the UI to save passwords to the account storage";
-const char kEnablePasswordsAccountStorageSavingUiDescription[] =
-    "Enables the UI that allows storing passwords to the Gaia-account-scoped "
-    "storage for signed-in but not syncing users. Requires enabling the "
-    "account storage #passwords-account-storage.";
-
 const char kFocusMode[] = "Focus Mode";
 const char kFocusModeDescription[] =
     "If enabled, allows the user to switch to Focus Mode";

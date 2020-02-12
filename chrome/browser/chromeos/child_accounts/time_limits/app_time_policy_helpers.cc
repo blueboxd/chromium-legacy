@@ -89,19 +89,13 @@ base::Optional<AppId> AppIdFromDict(const base::Value& dict) {
   if (!dict.is_dict())
     return base::nullopt;
 
-  const base::Value* app_info = dict.FindKey(kAppInfoDict);
-  if (!app_info || !app_info->is_dict()) {
-    DLOG(ERROR) << "Invalid app info dictionary.";
-    return base::nullopt;
-  }
-
-  const std::string* id = app_info->FindStringKey(kAppId);
+  const std::string* id = dict.FindStringKey(kAppId);
   if (!id || id->empty()) {
     DLOG(ERROR) << "Invalid id.";
     return base::nullopt;
   }
 
-  const std::string* type_string = app_info->FindStringKey(kAppType);
+  const std::string* type_string = dict.FindStringKey(kAppType);
   if (!type_string || type_string->empty()) {
     DLOG(ERROR) << "Invalid type.";
     return base::nullopt;
@@ -116,6 +110,18 @@ base::Value AppIdToDict(const AppId& app_id) {
   value.SetKey(kAppType, base::Value(AppTypeToPolicyString(app_id.app_type())));
 
   return value;
+}
+
+base::Optional<AppId> AppIdFromAppInfoDict(const base::Value& dict) {
+  if (!dict.is_dict())
+    return base::nullopt;
+
+  const base::Value* app_info = dict.FindKey(kAppInfoDict);
+  if (!app_info || !app_info->is_dict()) {
+    DLOG(ERROR) << "Invalid app info dictionary.";
+    return base::nullopt;
+  }
+  return AppIdFromDict(*app_info);
 }
 
 base::Optional<AppLimit> AppLimitFromDict(const base::Value& dict) {
@@ -227,7 +233,7 @@ std::map<AppId, AppLimit> AppLimitsFromDict(const base::Value& dict) {
       continue;
     }
 
-    base::Optional<AppId> app_id = AppIdFromDict(dict);
+    base::Optional<AppId> app_id = AppIdFromAppInfoDict(dict);
     if (!app_id) {
       DLOG(ERROR) << "Invalid app id.";
       continue;

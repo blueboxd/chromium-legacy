@@ -29,36 +29,36 @@ class FilterBase : public IBaseFilter, public base::RefCounted<FilterBase> {
   virtual IPin* GetPin(int index) = 0;
 
   // Inherited from IUnknown.
-  STDMETHOD(QueryInterface)(REFIID id, void** object_ptr) override;
-  STDMETHOD_(ULONG, AddRef)() override;
-  STDMETHOD_(ULONG, Release)() override;
+  STDMETHODIMP QueryInterface(REFIID id, void** object_ptr) override;
+  STDMETHODIMP_(ULONG) AddRef() override;
+  STDMETHODIMP_(ULONG) Release() override;
 
   // Inherited from IBaseFilter.
-  STDMETHOD(EnumPins)(IEnumPins** enum_pins) override;
+  STDMETHODIMP EnumPins(IEnumPins** enum_pins) override;
 
-  STDMETHOD(FindPin)(LPCWSTR id, IPin** pin) override;
+  STDMETHODIMP FindPin(LPCWSTR id, IPin** pin) override;
 
-  STDMETHOD(QueryFilterInfo)(FILTER_INFO* info) override;
+  STDMETHODIMP QueryFilterInfo(FILTER_INFO* info) override;
 
-  STDMETHOD(JoinFilterGraph)(IFilterGraph* graph, LPCWSTR name) override;
+  STDMETHODIMP JoinFilterGraph(IFilterGraph* graph, LPCWSTR name) override;
 
-  STDMETHOD(QueryVendorInfo)(LPWSTR* vendor_info) override;
+  STDMETHODIMP QueryVendorInfo(LPWSTR* vendor_info) override;
 
   // Inherited from IMediaFilter.
-  STDMETHOD(Stop)() override;
+  STDMETHODIMP Stop() override;
 
-  STDMETHOD(Pause)() override;
+  STDMETHODIMP Pause() override;
 
-  STDMETHOD(Run)(REFERENCE_TIME start) override;
+  STDMETHODIMP Run(REFERENCE_TIME start) override;
 
-  STDMETHOD(GetState)(DWORD msec_timeout, FILTER_STATE* state) override;
+  STDMETHODIMP GetState(DWORD msec_timeout, FILTER_STATE* state) override;
 
-  STDMETHOD(SetSyncSource)(IReferenceClock* clock) override;
+  STDMETHODIMP SetSyncSource(IReferenceClock* clock) override;
 
-  STDMETHOD(GetSyncSource)(IReferenceClock** clock) override;
+  STDMETHODIMP GetSyncSource(IReferenceClock** clock) override;
 
   // Inherited from IPersistent.
-  STDMETHOD(GetClassID)(CLSID* class_id) override = 0;
+  STDMETHODIMP GetClassID(CLSID* class_id) override = 0;
 
  protected:
   friend class base::RefCounted<FilterBase>;

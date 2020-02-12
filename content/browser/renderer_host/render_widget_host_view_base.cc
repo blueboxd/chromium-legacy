@@ -504,14 +504,14 @@ bool RenderWidgetHostViewBase::HasDisplayPropertyChanged(gfx::NativeView view) {
   if (current_display_area_ == display.work_area() &&
       current_device_scale_factor_ == display.device_scale_factor() &&
       current_display_rotation_ == display.rotation() &&
-      current_display_color_space_ == display.color_space()) {
+      current_display_color_spaces_ == display.color_spaces()) {
     return false;
   }
 
   current_display_area_ = display.work_area();
   current_device_scale_factor_ = display.device_scale_factor();
   current_display_rotation_ = display.rotation();
-  current_display_color_space_ = display.color_space();
+  current_display_color_spaces_ = display.color_spaces();
   return true;
 }
 

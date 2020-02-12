@@ -33,14 +33,14 @@ class WPTServe(server_base.ServerBase):
         # TODO(burnik): We can probably avoid PID files for WPT in the future.
         fs = self._filesystem
         self._pid_file = fs.join(self._runtime_path, '%s.pid' % self._name)
+        self._config_file = fs.join(self._runtime_path, 'wpt.config.json')
 
         finder = PathFinder(fs)
         path_to_pywebsocket = finder.path_from_chromium_base('third_party', 'pywebsocket', 'src')
-        path_to_wpt_support = finder.path_from_blink_tools('blinkpy', 'third_party', 'wpt')
-        path_to_wpt_root = fs.join(path_to_wpt_support, 'wpt')
+        self.path_to_wpt_support = finder.path_from_blink_tools('blinkpy', 'third_party', 'wpt')
+        path_to_wpt_root = fs.join(self.path_to_wpt_support, 'wpt')
         path_to_wpt_tests = fs.abspath(fs.join(self._port_obj.web_tests_dir(), 'external', 'wpt'))
         path_to_ws_handlers = fs.join(path_to_wpt_tests, 'websockets', 'handlers')
-        self._config_file = self._prepare_wptserve_config(path_to_wpt_support)
         wpt_script = fs.join(path_to_wpt_root, 'wpt')
         start_cmd = [self._port_obj.host.executable,
                      '-u', wpt_script, 'serve',
@@ -64,29 +64,26 @@ class WPTServe(server_base.ServerBase):
         if datetime.date.today() > expiration_date - datetime.timedelta(30):
             _log.error(
                 'Pre-generated keys and certificates are going to be expired at %s.'
-                ' Please re-generate them by following steps in %s/README.chromium.',
-                expiration_date.strftime('%b %d %Y'), path_to_wpt_support)
+                ' Please re-generate them by following steps in %s/README.chromium.', expiration_date.strftime('%b %d %Y'),
+                self.path_to_wpt_support)
 
-    def _prepare_wptserve_config(self, path_to_wpt_support):
+    def _prepare_config(self):
         fs = self._filesystem
-        template_path = fs.join(path_to_wpt_support, 'wpt.config.json')
+        template_path = fs.join(self.path_to_wpt_support, 'wpt.config.json')
         config = json.loads(fs.read_text_file(template_path))
         config['aliases'].append({
             'url-path': '/gen/',
             'local-dir': self._port_obj.generated_sources_directory()
         })
 
-        f, temp_file = fs.open_text_tempfile('.json')
-        json.dump(config, f)
-        f.close()
-        return temp_file
+        with fs.open_text_file_for_writing(self._config_file) as f:
+            json.dump(config, f)
 
-    def _prepare_config(self):
         # wptserve is spammy on stderr even at the INFO log level and will block
         # the pipe, so we need to redirect it.
         # The file is opened here instead in __init__ because _remove_stale_logs
         # will try to delete the log file, which causes deadlocks on Windows.
-        self._stderr = self._filesystem.open_text_file_for_writing(self._error_log_path)
+        self._stderr = fs.open_text_file_for_writing(self._error_log_path)
 
     def _stop_running_server(self):
         if not self._wait_for_action(self._check_and_kill):
@@ -105,13 +102,14 @@ class WPTServe(server_base.ServerBase):
         Returns True if it appears to be not running. Or, if it appears to be
         running, tries to kill the process and returns False.
         """
-        if not (self._pid and self._process):
-            _log.warning('No process object or PID. wptserve has not started.')
+        if not self._pid:
+            _log.warning('No PID; wptserve has not started.')
             return True
 
         # Polls the process in case it has died; otherwise, the process might be
         # defunct and check_running_pid can still succeed.
-        if self._process.poll() or not self._executive.check_running_pid(self._pid):
+        if (self._process and self._process.poll()) or \
+                (not self._executive.check_running_pid(self._pid)):
             _log.debug('pid %d is not running', self._pid)
             return True
 

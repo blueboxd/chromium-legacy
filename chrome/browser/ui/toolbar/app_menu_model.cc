@@ -55,7 +55,9 @@
 #include "chrome/grit/generated_resources.h"
 #include "chrome/grit/theme_resources.h"
 #include "components/bookmarks/common/bookmark_pref_names.h"
+#include "components/dom_distiller/content/browser/distillable_page_utils.h"
 #include "components/dom_distiller/core/dom_distiller_features.h"
+#include "components/dom_distiller/core/url_utils.h"
 #include "components/prefs/pref_service.h"
 #include "components/signin/public/base/signin_metrics.h"
 #include "components/strings/grit/components_strings.h"
@@ -790,8 +792,25 @@ void AppMenuModel::Build() {
             l10n_util::GetStringFUTF16(IDS_OPEN_IN_APP_WINDOW, truncated_name));
   }
 
-  if (dom_distiller::IsDomDistillerEnabled())
-    AddItemWithStringId(IDC_DISTILL_PAGE, IDS_DISTILL_PAGE);
+  if (dom_distiller::IsDomDistillerEnabled() &&
+      browser()->tab_strip_model()->GetActiveWebContents()) {
+    // Only show the reader mode toggle when it will do something.
+    if (dom_distiller::url_utils::IsDistilledPage(
+            browser()
+                ->tab_strip_model()
+                ->GetActiveWebContents()
+                ->GetLastCommittedURL())) {
+      // Show the menu option if we are on a distilled page.
+      AddItemWithStringId(IDC_DISTILL_PAGE, IDS_DISTILL_PAGE);
+    } else {
+      // Show the menu option if the page is distillable.
+      base::Optional<dom_distiller::DistillabilityResult> distillability =
+          dom_distiller::GetLatestResult(
+              browser()->tab_strip_model()->GetActiveWebContents());
+      if (distillability && distillability.value().is_distillable)
+        AddItemWithStringId(IDC_DISTILL_PAGE, IDS_DISTILL_PAGE);
+    }
+  }
 
 #if defined(OS_CHROMEOS)
   // Always show this option if we're in tablet mode on Chrome OS.

@@ -48,7 +48,6 @@ cr.define('settings_people_page_sync_page', function() {
       cr.webUIListenerCallback(
           'page-status-changed', settings.PageStatus.CONFIGURE);
       assertFalse(syncPage.$$('#' + settings.PageStatus.CONFIGURE).hidden);
-      assertTrue(syncPage.$$('#' + settings.PageStatus.TIMEOUT).hidden);
       assertTrue(syncPage.$$('#' + settings.PageStatus.SPINNER).hidden);
 
       // Start with Sync All with no encryption selected. Also, ensure
@@ -183,31 +182,23 @@ cr.define('settings_people_page_sync_page', function() {
     test('LoadingAndTimeout', function() {
       const configurePage = syncPage.$$('#' + settings.PageStatus.CONFIGURE);
       const spinnerPage = syncPage.$$('#' + settings.PageStatus.SPINNER);
-      const timeoutPage = syncPage.$$('#' + settings.PageStatus.TIMEOUT);
 
+      // NOTE: This isn't called in production, but the test suite starts the
+      // tests with PageStatus.CONFIGURE.
       cr.webUIListenerCallback(
           'page-status-changed', settings.PageStatus.SPINNER);
       assertTrue(configurePage.hidden);
-      assertTrue(timeoutPage.hidden);
       assertFalse(spinnerPage.hidden);
-
-      cr.webUIListenerCallback(
-          'page-status-changed', settings.PageStatus.TIMEOUT);
-      assertTrue(configurePage.hidden);
-      assertFalse(timeoutPage.hidden);
-      assertTrue(spinnerPage.hidden);
 
       cr.webUIListenerCallback(
           'page-status-changed', settings.PageStatus.CONFIGURE);
       assertFalse(configurePage.hidden);
-      assertTrue(timeoutPage.hidden);
       assertTrue(spinnerPage.hidden);
 
       // Should remain on the CONFIGURE page even if the passphrase failed.
       cr.webUIListenerCallback(
           'page-status-changed', settings.PageStatus.PASSPHRASE_FAILED);
       assertFalse(configurePage.hidden);
-      assertTrue(timeoutPage.hidden);
       assertTrue(spinnerPage.hidden);
     });
 

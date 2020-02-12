@@ -3,6 +3,7 @@
 # found in the LICENSE file.
 
 import("//build/config/chromeos/args.gni")
+import("//build/config/linux/pkg_config.gni")
 import("//build/config/ui.gni")
 
 assert(use_ozone && is_linux)
@@ -19,6 +20,14 @@ config("evdev_config") {
 }
 
 if (use_evdev_gestures) {
+  pkg_config("libevdev-cros") {
+    packages = [ "libevdev-cros" ]
+  }
+
+  pkg_config("libgestures") {
+    packages = [ "libgestures" ]
+  }
+
   config("evdev_gestures_config") {
     defines = [ "USE_EVDEV_GESTURES" ]
   }
@@ -130,10 +139,11 @@ component("evdev") {
       "libgestures_glue/gesture_timer_provider.h",
     ]
 
-    deps += [
-      "//third_party/gestures",
-      "//third_party/libevdev",
-      "//ui/ozone/public/mojom:gesture_properties_service",
+    deps += [ "//ui/ozone/public/mojom:gesture_properties_service" ]
+
+    configs += [
+      ":libevdev-cros",
+      ":libgestures",
     ]
 
     public_configs += [ ":evdev_gestures_config" ]

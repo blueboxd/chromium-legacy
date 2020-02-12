@@ -332,21 +332,9 @@ bool AXLayoutObject::IsEditable() const {
   if (!node)
     return false;
 
-  // TODO(accessibility) pursue standards track so that aria-goog-editable
-  // becomes aria-editable. At that time, create ariaEditableAttr in
-  // html_element.cc. The current version of the editable attribute does not
-  // inherit, in order to match the automatic Gecko implementation, but
-  // hopefully the standardized version will, in which case a more performant
-  // implementation will be required, e.g. cache it or only expose on ancestor,
-  // having browser-side propagate it.
   const auto* elem = DynamicTo<Element>(node);
   if (!elem)
     elem = FlatTreeTraversal::ParentElement(*node);
-  if (elem && elem->hasAttribute("aria-goog-editable")) {
-    auto editable = elem->getAttribute("aria-goog-editable");
-    return !EqualIgnoringASCIICase("false", editable);
-  }
-
   if (GetLayoutObject()->IsTextControl())
     return true;
 
@@ -380,20 +368,9 @@ bool AXLayoutObject::IsRichlyEditable() const {
   if (!node)
     return false;
 
-  // TODO(accessibility) pursue standards track so that aria-goog-editable
-  // becomes aria-editable. At that time, create ariaEditableAttr in
-  // html_element.cc. The current version of the editable attribute does not
-  // inherit, in order to match the automatic Gecko implementation, but
-  // hopefully the standardized version will, in which case a more performant
-  // implementation will be required, e.g. cache it or only expose on ancestor,
-  // having browser-side propagate it.
   const Element* elem = DynamicTo<Element>(node);
   if (!elem)
     elem = FlatTreeTraversal::ParentElement(*node);
-  if (elem && elem->hasAttribute("aria-goog-editable")) {
-    auto editable = elem->getAttribute("aria-goog-editable");
-    return !EqualIgnoringASCIICase("false", editable);
-  }
 
   // Contrary to Firefox, we mark richly editable all auto-generated content,
   // such as list bullets and soft line breaks, that are contained within a
@@ -1751,6 +1728,13 @@ AXObject* AXLayoutObject::AccessibilityHitTest(const IntPoint& point) const {
   }
 
   LayoutObject* obj = node->GetLayoutObject();
+
+  // Retarget to respect https://dom.spec.whatwg.org/#retarget.
+  if (auto* elem = DynamicTo<Element>(node)) {
+    Element* element = &(GetDocument()->Retarget(*elem));
+    obj = element->GetLayoutObject();
+  }
+
   if (!obj)
     return nullptr;
 

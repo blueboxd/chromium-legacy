@@ -2042,7 +2042,7 @@ Display DisplayManager::CreateDisplayFromDisplayInfoById(int64_t id) {
   new_display.set_panel_rotation(display_info.GetLogicalActiveRotation());
   new_display.set_touch_support(display_info.touch_support());
   new_display.set_maximum_cursor_size(display_info.maximum_cursor_size());
-  new_display.SetColorSpaceAndDepth(display_info.color_space());
+  new_display.set_color_spaces(display_info.display_color_spaces());
   constexpr uint32_t kNormalBitDepthNumBitsPerChannel = 8u;
   if (display_info.bits_per_channel() > kNormalBitDepthNumBitsPerChannel) {
     new_display.set_depth_per_component(display_info.bits_per_channel());

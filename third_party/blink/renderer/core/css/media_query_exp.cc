@@ -265,20 +265,20 @@ MediaQueryExp MediaQueryExp::Create(const String& media_feature,
   String lower_media_feature =
       AttemptStaticStringCreation(media_feature.LowerASCII());
 
+  // TODO(crbug.com/1047784): This is a fake CSSParserContext that only passes
+  // down the CSSParserMode. Plumb the real CSSParserContext through, so that
+  // web features can be counted correctly.
+  const CSSParserContext* fake_context = MakeGarbageCollected<CSSParserContext>(
+      kHTMLStandardMode, SecureContextMode::kInsecureContext);
+
   CSSPrimitiveValue* value =
-      css_property_parser_helpers::ConsumeInteger(range, 0);
+      css_property_parser_helpers::ConsumeInteger(range, *fake_context, 0);
   if (!value && !FeatureExpectingPositiveInteger(lower_media_feature) &&
       !FeatureWithAspectRatio(lower_media_feature)) {
-    value = css_property_parser_helpers::ConsumeNumber(range,
+    value = css_property_parser_helpers::ConsumeNumber(range, *fake_context,
                                                        kValueRangeNonNegative);
   }
   if (!value) {
-    // TODO(crbug.com/1047784): This is a fake CSSParserContext that only passes
-    // down the CSSParserMode. Plumb the real CSSParserContext through, so that
-    // web features can be counted correctly.
-    const CSSParserContext* fake_context =
-        MakeGarbageCollected<CSSParserContext>(
-            kHTMLStandardMode, SecureContextMode::kInsecureContext);
     value = css_property_parser_helpers::ConsumeLength(range, *fake_context,
                                                        kValueRangeNonNegative);
   }
@@ -310,7 +310,8 @@ MediaQueryExp MediaQueryExp::Create(const String& media_feature,
     if (!css_property_parser_helpers::ConsumeSlashIncludingWhitespace(range))
       return Invalid();
     CSSPrimitiveValue* denominator =
-        css_property_parser_helpers::ConsumePositiveInteger(range);
+        css_property_parser_helpers::ConsumePositiveInteger(range,
+                                                            *fake_context);
     if (!denominator)
       return Invalid();
 

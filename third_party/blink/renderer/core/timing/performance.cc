@@ -40,7 +40,6 @@
 #include "third_party/blink/renderer/bindings/core/v8/script_promise.h"
 #include "third_party/blink/renderer/bindings/core/v8/script_promise_resolver.h"
 #include "third_party/blink/renderer/bindings/core/v8/string_or_performance_measure_options.h"
-#include "third_party/blink/renderer/bindings/core/v8/v8_measure_memory_options.h"
 #include "third_party/blink/renderer/bindings/core/v8/v8_object_builder.h"
 #include "third_party/blink/renderer/bindings/core/v8/v8_performance_mark_options.h"
 #include "third_party/blink/renderer/bindings/core/v8/v8_performance_measure_options.h"
@@ -149,7 +148,6 @@ MemoryInfo* Performance::memory() const {
 
 ScriptPromise Performance::measureMemory(
     ScriptState* script_state,
-    MeasureMemoryOptions* options,
     ExceptionState& exception_state) const {
   if (!Platform::Current()->IsLockedToSite()) {
     // TODO(ulan): We should check for COOP and COEP here when they ship.
@@ -167,11 +165,6 @@ ScriptPromise Performance::measureMemory(
     exception_state.RethrowV8Exception(try_catch.Exception());
     return ScriptPromise();
   }
-  v8::MeasureMemoryMode mode =
-      options && options->hasDetailed() && options->detailed()
-          ? v8::MeasureMemoryMode::kDetailed
-          : v8::MeasureMemoryMode::kSummary;
-
   v8::MeasureMemoryExecution execution =
       RuntimeEnabledFeatures::ForceEagerMeasureMemoryEnabled(
           ExecutionContext::From(script_state))
@@ -179,7 +172,7 @@ ScriptPromise Performance::measureMemory(
           : v8::MeasureMemoryExecution::kDefault;
 
   isolate->MeasureMemory(std::make_unique<MeasureMemoryDelegate>(
-                             isolate, context, promise_resolver, mode),
+                             isolate, context, promise_resolver),
                          execution);
   return ScriptPromise(script_state, promise_resolver->GetPromise());
 }

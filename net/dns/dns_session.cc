@@ -26,7 +26,6 @@
 #include "net/dns/dns_config.h"
 #include "net/dns/dns_socket_pool.h"
 #include "net/dns/dns_util.h"
-#include "net/dns/resolve_context.h"
 #include "net/log/net_log_event_type.h"
 #include "net/log/net_log_source.h"
 #include "net/log/net_log_with_source.h"
@@ -142,8 +141,9 @@ void DnsSession::InitializeServerStats() {
 
   doh_server_stats_.clear();
   for (size_t i = 0; i < config_.dns_over_https_servers.size(); ++i) {
-    doh_server_stats_.push_back(std::make_unique<ServerStats>(
-        initial_timeout_, rtt_buckets_.Pointer()));
+    doh_server_stats_.push_back(std::make_pair(
+        std::make_unique<ServerStats>(initial_timeout_, rtt_buckets_.Pointer()),
+        false));
   }
 }
 
@@ -185,6 +185,62 @@ unsigned DnsSession::NextGoodServerIndex(unsigned server_index) {
   return oldest_server_failure_index;
 }
 
+int DnsSession::NextGoodDohServerIndex(
+    unsigned doh_server_index,
+    DnsConfig::SecureDnsMode secure_dns_mode) {
+  DCHECK_GE(doh_server_index, 0u);
+  DCHECK_LT(doh_server_index, config_.dns_over_https_servers.size());
+  unsigned index = doh_server_index;
+  base::Time oldest_server_failure(base::Time::Now());
+  int oldest_available_server_failure_index = -1;
+
+  do {
+    // For a server to be considered "available", the server must have a
+    // successful probe status if we are in AUTOMATIC mode.
+    if (secure_dns_mode == DnsConfig::SecureDnsMode::SECURE ||
+        doh_server_stats_[index].second) {
+      // If number of failures on this server doesn't exceed |config_.attempts|,
+      // return its index. |config_.attempts| will generally be more restrictive
+      // than |kAutomaticModeFailureLimit|, although this is not guaranteed.
+      const ServerStats* stats =
+          GetServerStats(index, true /* is_doh_server */);
+      if (stats->last_failure_count < config_.attempts) {
+        return index;
+      }
+      // Track oldest failed available server.
+      base::Time cur_server_failure = stats->last_failure;
+      if (cur_server_failure < oldest_server_failure) {
+        oldest_server_failure = cur_server_failure;
+        oldest_available_server_failure_index = index;
+      }
+    }
+    index = (index + 1) % config_.dns_over_https_servers.size();
+  } while (index != doh_server_index);
+
+  // If we are here it means that there are either no available DoH servers or
+  // that all available DoH servers have at least |config_.attempts| consecutive
+  // failures. In the latter case, we'll return the available DoH server that
+  // failed least recently. In the former case we return -1.
+  return oldest_available_server_failure_index;
+}
+
+bool DnsSession::HasAvailableDohServer() {
+  for (const auto& doh_stats_ : doh_server_stats_) {
+    if (doh_stats_.second)
+      return true;
+  }
+  return false;
+}
+
+unsigned DnsSession::NumAvailableDohServers() {
+  unsigned count = 0;
+  for (const auto& doh_stats_ : doh_server_stats_) {
+    if (doh_stats_.second)
+      count++;
+  }
+  return count;
+}
+
 base::Time DnsSession::GetLastDohFailure(size_t server_index) {
   return GetServerStats(server_index, true /* is_doh_server */)->last_failure;
 }
@@ -202,20 +258,19 @@ DnsSession::ServerStats* DnsSession::GetServerStats(unsigned server_index,
     return server_stats_[server_index].get();
   } else {
     DCHECK_LT(server_index, config_.dns_over_https_servers.size());
-    return doh_server_stats_[server_index].get();
+    return doh_server_stats_[server_index].first.get();
   }
 }
 
 void DnsSession::RecordServerFailure(unsigned server_index,
-                                     bool is_doh_server,
-                                     ResolveContext* resolve_context) {
+                                     bool is_doh_server) {
   ServerStats* stats = GetServerStats(server_index, is_doh_server);
   ++(stats->last_failure_count);
   stats->last_failure = base::Time::Now();
 
   if (is_doh_server &&
       stats->last_failure_count >= kAutomaticModeFailureLimit) {
-    resolve_context->SetProbeSuccess(server_index, false /* success */, this);
+    SetProbeSuccess(server_index, false /* success */);
   }
 }
 
@@ -232,13 +287,22 @@ void DnsSession::RecordServerSuccess(unsigned server_index,
   stats->last_success = base::Time::Now();
 }
 
+void DnsSession::SetProbeSuccess(unsigned doh_server_index, bool success) {
+  DCHECK_GE(doh_server_index, 0u);
+  DCHECK_LT(doh_server_index, config_.dns_over_https_servers.size());
+
+  bool doh_available_before = HasAvailableDohServer();
+  doh_server_stats_[doh_server_index].second = success;
+
+  if (doh_available_before != HasAvailableDohServer())
+    NetworkChangeNotifier::TriggerNonSystemDnsChange();
+}
+
 void DnsSession::RecordRTT(unsigned server_index,
                            bool is_doh_server,
-                           bool is_validated_doh_server,
                            base::TimeDelta rtt,
                            int rv) {
-  RecordRTTForHistogram(server_index, is_doh_server, is_validated_doh_server,
-                        rtt, rv);
+  RecordRTTForHistogram(server_index, is_doh_server, rtt, rv);
 
   ServerStats* stats = GetServerStats(server_index, is_doh_server);
 
@@ -338,21 +402,19 @@ void DnsSession::FreeSocket(unsigned server_index,
 
 void DnsSession::RecordRTTForHistogram(unsigned server_index,
                                        bool is_doh_server,
-                                       bool is_validated_doh_server,
                                        base::TimeDelta rtt,
                                        int rv) {
   std::string query_type;
   std::string provider_id;
   if (is_doh_server) {
     // Secure queries are validated if the DoH server state is available.
-    if (is_validated_doh_server)
+    if (doh_server_stats_[server_index].second)
       query_type = "SecureValidated";
     else
       query_type = "SecureNotValidated";
     provider_id = GetDohProviderIdForHistogramFromDohConfig(
         config_.dns_over_https_servers[server_index]);
   } else {
-    DCHECK(!is_validated_doh_server);
     query_type = "Insecure";
     provider_id = GetDohProviderIdForHistogramFromNameserver(
         config_.nameservers[server_index]);

@@ -83,16 +83,20 @@ void DisplayAndroidManager::DoUpdateDisplay(display::Display* display,
   if (!Display::HasForceDeviceScaleFactor())
     display->set_device_scale_factor(dipScale);
 
-  if (isWideColorGamut) {
-    display->set_color_space(gfx::ColorSpace::CreateDisplayP3D65());
-  } else {
-    display->set_color_space(gfx::ColorSpace::CreateSRGB());
-  }
+  // TODO: Devices that should dynamically switch between sRGB and P3 should
+  // specify P3 for WideColorGamut and HDR. Low-end devices should specify
+  // RGB_565 as the buffer format for opaque content.
+  gfx::ColorSpace color_space = isWideColorGamut
+                                    ? gfx::ColorSpace::CreateDisplayP3D65()
+                                    : gfx::ColorSpace::CreateSRGB();
+  gfx::DisplayColorSpaces display_color_spaces(color_space,
+                                               gfx::BufferFormat::RGBA_8888);
 
   display->set_size_in_pixels(size_in_pixels);
   display->SetRotationAsDegree(rotationDegrees);
   DCHECK_EQ(rotationDegrees, display->RotationAsDegree());
   DCHECK_EQ(rotationDegrees, display->PanelRotationAsDegree());
+  display->set_color_spaces(display_color_spaces);
   display->set_color_depth(bitsPerPixel);
   display->set_depth_per_component(bitsPerComponent);
   display->set_is_monochrome(bitsPerComponent == 0);

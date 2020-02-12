@@ -49,11 +49,18 @@ enum class UnitlessQuirk { kAllow, kForbid };
 
 CSSPrimitiveValue* ConsumeInteger(
     CSSParserTokenRange&,
+    const CSSParserContext&,
     double minimum_value = -std::numeric_limits<double>::max());
-CSSPrimitiveValue* ConsumeIntegerOrNumberCalc(CSSParserTokenRange&);
-CSSPrimitiveValue* ConsumePositiveInteger(CSSParserTokenRange&);
-bool ConsumeNumberRaw(CSSParserTokenRange&, double& result);
-CSSPrimitiveValue* ConsumeNumber(CSSParserTokenRange&, ValueRange);
+CSSPrimitiveValue* ConsumeIntegerOrNumberCalc(CSSParserTokenRange&,
+                                              const CSSParserContext&);
+CSSPrimitiveValue* ConsumePositiveInteger(CSSParserTokenRange&,
+                                          const CSSParserContext&);
+bool ConsumeNumberRaw(CSSParserTokenRange&,
+                      const CSSParserContext& context,
+                      double& result);
+CSSPrimitiveValue* ConsumeNumber(CSSParserTokenRange&,
+                                 const CSSParserContext&,
+                                 ValueRange);
 CSSPrimitiveValue* ConsumeLength(CSSParserTokenRange&,
                                  const CSSParserContext&,
                                  ValueRange,
@@ -82,7 +89,9 @@ CSSPrimitiveValue* ConsumeAngle(
     base::Optional<WebFeature> unitless_zero_feature,
     double minimum_value,
     double maximum_value);
-CSSPrimitiveValue* ConsumeTime(CSSParserTokenRange&, ValueRange);
+CSSPrimitiveValue* ConsumeTime(CSSParserTokenRange&,
+                               const CSSParserContext&,
+                               ValueRange);
 CSSPrimitiveValue* ConsumeResolution(CSSParserTokenRange&);
 
 CSSIdentifierValue* ConsumeIdent(CSSParserTokenRange&);
@@ -139,7 +148,7 @@ CSSValue* ConsumeImage(
     ConsumeGeneratedImagePolicy = ConsumeGeneratedImagePolicy::kAllow);
 CSSValue* ConsumeImageOrNone(CSSParserTokenRange&, const CSSParserContext*);
 
-CSSValue* ConsumeAxis(CSSParserTokenRange&);
+CSSValue* ConsumeAxis(CSSParserTokenRange&, const CSSParserContext& context);
 
 bool IsCSSWideKeyword(StringView);
 bool IsRevertKeyword(StringView);

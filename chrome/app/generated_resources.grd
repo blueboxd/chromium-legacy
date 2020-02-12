@@ -1089,8 +1089,8 @@ are declared in tools/grit/grit_rule.gni.
           <message name="IDS_SAVE_PAGE" desc="In Title Case: The text label of the Save Page As menu item">
             Save Page &amp;As...
           </message>
-          <message name="IDS_DISTILL_PAGE" desc="The text label of the 'Reader mode' menu item">
-            Reader mode
+          <message name="IDS_DISTILL_PAGE" desc="The text label of the 'Toggle Reader Mode' menu item">
+            Toggle Reader Mode
           </message>
           <message name="IDS_MORE_TOOLS_MENU" desc="In Title Case: The text label of the Tools submenu for touch">
             More Too&amp;ls

@@ -113,10 +113,14 @@ class NightLightControllerDelegateImpl
   base::Time GetNow() const override { return base::Time::Now(); }
   base::Time GetSunsetTime() const override { return GetSunRiseSet(false); }
   base::Time GetSunriseTime() const override { return GetSunRiseSet(true); }
-  void SetGeoposition(
+  bool SetGeoposition(
       const NightLightController::SimpleGeoposition& position) override {
+    if (geoposition_ && *geoposition_ == position)
+      return false;
+
     geoposition_ =
         std::make_unique<NightLightController::SimpleGeoposition>(position);
+    return true;
   }
   bool HasGeoposition() const override { return !!geoposition_; }
 
@@ -331,6 +335,8 @@ class ColorTemperatureAnimation : public gfx::LinearAnimation,
                              kNightLightAnimationFrameRate,
                              this) {}
   ~ColorTemperatureAnimation() override = default;
+
+  float target_temperature() const { return target_temperature_; }
 
   // Starts a new temperature animation from the |current_temperature_| to the
   // given |new_target_temperature| in the given |duration|.
@@ -623,9 +629,7 @@ void NightLightControllerImpl::Toggle() {
 }
 
 void NightLightControllerImpl::OnDisplayConfigurationChanged() {
-  // When display configurations changes, we should re-apply the current
-  // temperature immediately without animation.
-  RefreshDisplaysColorTemperatures();
+  ReapplyColorTemperatures();
 }
 
 void NightLightControllerImpl::OnHostInitialized(aura::WindowTreeHost* host) {
@@ -666,7 +670,10 @@ void NightLightControllerImpl::SetCurrentGeoposition(
 
   is_current_geoposition_from_cache_ = false;
   StoreCachedGeoposition(position);
-  delegate_->SetGeoposition(position);
+  if (!delegate_->SetGeoposition(position)) {
+    VLOG(1) << "Not refreshing since geoposition hasn't changed";
+    return;
+  }
 
   // If the schedule type is sunset to sunrise or custom, a potential change in
   // the geoposition might mean timezone change as well as a change in the start
@@ -734,7 +741,7 @@ void NightLightControllerImpl::AmbientColorChanged(
 
   if (GetAmbientColorEnabled()) {
     UpdateAmbientRgbScalingFactors();
-    RefreshDisplaysColorTemperatures();
+    ReapplyColorTemperatures();
   }
 }
 
@@ -857,8 +864,17 @@ void NightLightControllerImpl::RefreshDisplaysTemperature(
   Shell::Get()->UpdateCursorCompositingEnabled();
 }
 
-void NightLightControllerImpl::RefreshDisplaysColorTemperatures() {
-  ApplyTemperatureToAllDisplays(GetEnabled() ? GetColorTemperature() : 0.0f);
+void NightLightControllerImpl::ReapplyColorTemperatures() {
+  const float target_temperature = GetEnabled() ? GetColorTemperature() : 0.0f;
+  if (temperature_animation_ && temperature_animation_->is_animating()) {
+    // Do not interrupt an on-going animation towards the same target value.
+    if (temperature_animation_->target_temperature() == target_temperature)
+      return;
+
+    temperature_animation_->Stop();
+  }
+
+  ApplyTemperatureToAllDisplays(target_temperature);
 }
 
 void NightLightControllerImpl::StartWatchingPrefsChanges() {
@@ -946,7 +962,7 @@ void NightLightControllerImpl::OnAmbientColorEnabledPrefChanged() {
     UpdateAmbientRgbScalingFactors();
     VerifyAmbientColorCtmSupport();
   }
-  RefreshDisplaysColorTemperatures();
+  ReapplyColorTemperatures();
 }
 
 void NightLightControllerImpl::OnColorTemperaturePrefChanged() {

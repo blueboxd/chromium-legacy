@@ -45,16 +45,18 @@ class MEDIA_EXPORT AudioDeviceListenerWin : public IMMNotificationClient {
       base::TimeDelta::FromMilliseconds(250);
 
   // IMMNotificationClient implementation.
-  STDMETHOD_(ULONG, AddRef)() override;
-  STDMETHOD_(ULONG, Release)() override;
-  STDMETHOD(QueryInterface)(REFIID iid, void** object) override;
-  STDMETHOD(OnPropertyValueChanged)
-  (LPCWSTR device_id, const PROPERTYKEY key) override;
-  STDMETHOD(OnDeviceAdded)(LPCWSTR device_id) override;
-  STDMETHOD(OnDeviceRemoved)(LPCWSTR device_id) override;
-  STDMETHOD(OnDeviceStateChanged)(LPCWSTR device_id, DWORD new_state) override;
-  STDMETHOD(OnDefaultDeviceChanged)
-  (EDataFlow flow, ERole role, LPCWSTR new_default_device_id) override;
+  STDMETHODIMP_(ULONG) AddRef() override;
+  STDMETHODIMP_(ULONG) Release() override;
+  STDMETHODIMP QueryInterface(REFIID iid, void** object) override;
+  STDMETHODIMP OnPropertyValueChanged(LPCWSTR device_id,
+                                      const PROPERTYKEY key) override;
+  STDMETHODIMP OnDeviceAdded(LPCWSTR device_id) override;
+  STDMETHODIMP OnDeviceRemoved(LPCWSTR device_id) override;
+  STDMETHODIMP OnDeviceStateChanged(LPCWSTR device_id,
+                                    DWORD new_state) override;
+  STDMETHODIMP OnDefaultDeviceChanged(EDataFlow flow,
+                                      ERole role,
+                                      LPCWSTR new_default_device_id) override;
 
   const base::RepeatingClosure listener_cb_;
   Microsoft::WRL::ComPtr<IMMDeviceEnumerator> device_enumerator_;

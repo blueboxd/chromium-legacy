@@ -9,7 +9,7 @@
 #include "build/build_config.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/policy/chrome_browser_policy_connector.h"
-#include "chrome/browser/policy/policy_conversions.h"
+#include "components/policy/core/browser/policy_conversions.h"
 #include "components/policy/core/common/cloud/cloud_policy_client.h"
 #include "components/policy/core/common/cloud/cloud_policy_constants.h"
 #include "components/policy/core/common/cloud/machine_level_user_cloud_policy_manager.h"

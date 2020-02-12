@@ -1060,14 +1060,9 @@ class PLATFORM_EXPORT NormalPageArena final : public BaseArena {
   }
   void SetAllocationPoint(Address, size_t);
 
-  // Only use when adjusting the area from allocation and free and not when
-  // returning it to free list.
-  void SetRemainingAllocationSize(size_t);
-
   FreeList free_list_;
   Address current_allocation_point_;
   size_t remaining_allocation_size_;
-  size_t last_remaining_allocation_size_;
 
   // The size of promptly freed objects in the heap. This counter is set to
   // zero before sweeping when clearing the free list and after coalescing.

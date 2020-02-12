@@ -231,8 +231,9 @@ AutofillPopupControllerImpl::GetUnelidedSuggestions() const {
 
 void AutofillPopupControllerImpl::Hide(PopupHidingReason reason) {
   // If the reason for hiding is only stale data or a user interacting with
-  // native Chrome UI (kEndEditing), the popup might be kept open.
-  if (pinned_until_update_ && reason == PopupHidingReason::kStaleData) {
+  // native Chrome UI (kFocusChanged), the popup might be kept open.
+  if (pinned_until_update_ && (reason == PopupHidingReason::kStaleData ||
+                               reason == PopupHidingReason::kFocusChanged)) {
     return;  // Don't close the popup while waiting for an update.
   }
   if (delegate_) {

@@ -389,6 +389,11 @@ const base::Feature kLowerJavaScriptPriorityWhenForceDeferred{
     "LowerJavaScriptPriorityWhenForceDeferred",
     base::FEATURE_DISABLED_BY_DEFAULT};
 
+// When enabled, scripts in iframes are not force deferred by the DeferAllScript
+// intervention.
+const base::Feature kDisableForceDeferInChildFrames{
+    "DisableForceDeferInChildFrames", base::FEATURE_DISABLED_BY_DEFAULT};
+
 const base::Feature kHtmlImportsRequestInitiatorLock{
     "HtmlImportsRequestInitiatorLock", base::FEATURE_ENABLED_BY_DEFAULT};
 

@@ -18,7 +18,6 @@ import org.chromium.chrome.browser.device.DeviceClassManager;
 import org.chromium.chrome.browser.preferences.ChromePreferenceKeys;
 import org.chromium.chrome.browser.preferences.SharedPreferencesManager;
 import org.chromium.chrome.browser.tasks.tab_management.TabManagementModuleProvider;
-import org.chromium.chrome.browser.toolbar.bottom.BottomToolbarVariationManager;
 import org.chromium.ui.base.DeviceFormFactor;
 
 import java.util.HashMap;
@@ -105,7 +104,8 @@ public class CachedFeatureFlags {
         }
     };
 
-    private static Map<String, Boolean> sFlags = new HashMap<>();
+    private static Map<String, Boolean> sBoolValuesReturned = new HashMap<>();
+    private static Map<String, String> sStringValuesReturned = new HashMap<>();
     private static String sReachedCodeProfilerTrialGroup;
     private static Boolean sEnabledTabThumbnailApsectRatioForTesting;
 
@@ -136,7 +136,7 @@ public class CachedFeatureFlags {
 
         String preferenceName = getPrefForFeatureFlag(featureName);
 
-        Boolean flag = sFlags.get(preferenceName);
+        Boolean flag = sBoolValuesReturned.get(preferenceName);
         if (flag != null) {
             return flag;
         }
@@ -147,7 +147,7 @@ public class CachedFeatureFlags {
         } else {
             flag = sDefaults.get(featureName);
         }
-        sFlags.put(preferenceName, flag);
+        sBoolValuesReturned.put(preferenceName, flag);
         return flag;
     }
 
@@ -171,7 +171,7 @@ public class CachedFeatureFlags {
      */
     public static void setForTesting(String featureName, @Nullable Boolean value) {
         String preferenceName = getPrefForFeatureFlag(featureName);
-        sFlags.put(preferenceName, value);
+        sBoolValuesReturned.put(preferenceName, value);
     }
 
     /**
@@ -199,7 +199,6 @@ public class CachedFeatureFlags {
         cacheNetworkServiceWarmUpEnabled();
         cacheNativeTabSwitcherUiFlags();
         cacheReachedCodeProfilerTrialGroup();
-        cacheBottomToolbarVariation();
         cacheStartSurfaceVariation();
 
         // Propagate REACHED_CODE_PROFILER feature value to LibraryLoader. This can't be done in
@@ -223,19 +222,20 @@ public class CachedFeatureFlags {
      *
      * @return the value of the field trial parameter that should be used in this run.
      */
-    public static boolean getValue(
-            BooleanCachedFieldTrialParameter booleanCachedFieldTrialParameter) {
-        return isFlagEnabled(booleanCachedFieldTrialParameter.getSharedPreferenceKey(),
-                booleanCachedFieldTrialParameter.getDefaultValue());
+    public static boolean getValue(BooleanCachedFieldTrialParameter parameter) {
+        return getConsistentBooleanValue(
+                parameter.getSharedPreferenceKey(), parameter.getDefaultValue());
     }
 
     /**
-     * Cache the enabled bottom toolbar variation.
+     * TODO(crbug.com/1012975): Move this to StringCachedFieldTrialParameter when
+     * CachedFeatureFlags is in chrome/browser/flags.
+     *
+     * @return the value of the field trial parameter that should be used in this run.
      */
-    public static void cacheBottomToolbarVariation() {
-        cacheVariation(ChromePreferenceKeys.VARIATION_CACHED_BOTTOM_TOOLBAR,
-                ChromeFeatureList.CHROME_DUET,
-                BottomToolbarVariationManager.getVariationParamName());
+    public static String getValue(StringCachedFieldTrialParameter parameter) {
+        return getConsistentStringValue(
+                parameter.getSharedPreferenceKey(), parameter.getDefaultValue());
     }
 
     /**
@@ -247,15 +247,6 @@ public class CachedFeatureFlags {
                 && !DeviceFormFactor.isNonMultiDisplayContextOnTablet(
                         ContextUtils.getApplicationContext())
                 && (isDuetTabStripIntegrationAndroidEnabled() || !isTabGroupsAndroidEnabled());
-    }
-
-    /**
-     * @return The currently enabled bottom toolbar variation.
-     */
-    public static String getBottomToolbarVariation() {
-        return SharedPreferencesManager.getInstance().readString(
-                ChromePreferenceKeys.VARIATION_CACHED_BOTTOM_TOOLBAR,
-                BottomToolbarVariationManager.Variations.NONE);
     }
 
     /**
@@ -297,7 +288,8 @@ public class CachedFeatureFlags {
      *         enabled).
      */
     public static boolean isNightModeAvailable() {
-        return isFlagEnabled(ChromePreferenceKeys.FLAGS_CACHED_NIGHT_MODE_AVAILABLE, true);
+        return getConsistentBooleanValue(
+                ChromePreferenceKeys.FLAGS_CACHED_NIGHT_MODE_AVAILABLE, true);
     }
 
     /**
@@ -306,7 +298,7 @@ public class CachedFeatureFlags {
      */
     @VisibleForTesting
     public static void setNightModeAvailableForTesting(@Nullable Boolean available) {
-        sFlags.put(ChromePreferenceKeys.FLAGS_CACHED_NIGHT_MODE_AVAILABLE, available);
+        sBoolValuesReturned.put(ChromePreferenceKeys.FLAGS_CACHED_NIGHT_MODE_AVAILABLE, available);
     }
 
     /**
@@ -335,7 +327,8 @@ public class CachedFeatureFlags {
         if (BuildInfo.isAtLeastQ()) {
             return false;
         }
-        return isFlagEnabled(ChromePreferenceKeys.FLAGS_CACHED_NIGHT_MODE_DEFAULT_TO_LIGHT, true);
+        return getConsistentBooleanValue(
+                ChromePreferenceKeys.FLAGS_CACHED_NIGHT_MODE_DEFAULT_TO_LIGHT, true);
     }
 
     /**
@@ -344,7 +337,8 @@ public class CachedFeatureFlags {
      */
     @VisibleForTesting
     public static void setNightModeDefaultToLightForTesting(@Nullable Boolean available) {
-        sFlags.put(ChromePreferenceKeys.FLAGS_CACHED_NIGHT_MODE_DEFAULT_TO_LIGHT, available);
+        sBoolValuesReturned.put(
+                ChromePreferenceKeys.FLAGS_CACHED_NIGHT_MODE_DEFAULT_TO_LIGHT, available);
     }
 
     /**
@@ -410,7 +404,8 @@ public class CachedFeatureFlags {
      */
     public static boolean isStartSurfaceSinglePaneEnabled() {
         return isStartSurfaceEnabled()
-                && isFlagEnabled(ChromePreferenceKeys.START_SURFACE_SINGLE_PANE_ENABLED_KEY, false);
+                && getConsistentBooleanValue(
+                        ChromePreferenceKeys.START_SURFACE_SINGLE_PANE_ENABLED_KEY, false);
     }
 
     @VisibleForTesting
@@ -437,7 +432,8 @@ public class CachedFeatureFlags {
         // changing that setting while Chrome is alive.
         // Having Tab Groups or Start implies Grid Tab Switcher.
         return !(isTabGroupsAndroidContinuationChromeFlagEnabled() && SysUtils.isLowEndDevice())
-                && isFlagEnabled(ChromePreferenceKeys.FLAGS_CACHED_GRID_TAB_SWITCHER_ENABLED, false)
+                && getConsistentBooleanValue(
+                        ChromePreferenceKeys.FLAGS_CACHED_GRID_TAB_SWITCHER_ENABLED, false)
                 || isTabGroupsAndroidEnabled() || isStartSurfaceEnabled();
     }
 
@@ -447,7 +443,8 @@ public class CachedFeatureFlags {
      */
     @VisibleForTesting
     public static void setGridTabSwitcherEnabledForTesting(@Nullable Boolean enabled) {
-        sFlags.put(ChromePreferenceKeys.FLAGS_CACHED_GRID_TAB_SWITCHER_ENABLED, enabled);
+        sBoolValuesReturned.put(
+                ChromePreferenceKeys.FLAGS_CACHED_GRID_TAB_SWITCHER_ENABLED, enabled);
     }
 
     @VisibleForTesting
@@ -486,7 +483,8 @@ public class CachedFeatureFlags {
      * @return Whether the tab group feature is enabled and available for use.
      */
     public static boolean isTabGroupsAndroidEnabled() {
-        return isFlagEnabled(ChromePreferenceKeys.FLAGS_CACHED_TAB_GROUPS_ANDROID_ENABLED, false);
+        return getConsistentBooleanValue(
+                ChromePreferenceKeys.FLAGS_CACHED_TAB_GROUPS_ANDROID_ENABLED, false);
     }
 
     /**
@@ -495,7 +493,8 @@ public class CachedFeatureFlags {
      */
     @VisibleForTesting
     public static void setTabGroupsAndroidEnabledForTesting(@Nullable Boolean available) {
-        sFlags.put(ChromePreferenceKeys.FLAGS_CACHED_TAB_GROUPS_ANDROID_ENABLED, available);
+        sBoolValuesReturned.put(
+                ChromePreferenceKeys.FLAGS_CACHED_TAB_GROUPS_ANDROID_ENABLED, available);
     }
 
     /**
@@ -515,7 +514,8 @@ public class CachedFeatureFlags {
     @VisibleForTesting
     public static void setDuetTabStripIntegrationAndroidEnabledForTesting(
             @Nullable Boolean isEnabled) {
-        sFlags.put(ChromePreferenceKeys.FLAGS_CACHED_DUET_TABSTRIP_INTEGRATION_ANDROID_ENABLED,
+        sBoolValuesReturned.put(
+                ChromePreferenceKeys.FLAGS_CACHED_DUET_TABSTRIP_INTEGRATION_ANDROID_ENABLED,
                 isEnabled);
     }
 
@@ -553,7 +553,7 @@ public class CachedFeatureFlags {
      */
     public static boolean isDuetTabStripIntegrationAndroidEnabled() {
         return isTabGroupsAndroidEnabled()
-                && isFlagEnabled(
+                && getConsistentBooleanValue(
                         ChromePreferenceKeys.FLAGS_CACHED_DUET_TABSTRIP_INTEGRATION_ANDROID_ENABLED,
                         false);
     }
@@ -589,7 +589,7 @@ public class CachedFeatureFlags {
      * @return whether warming up network service is enabled.
      */
     public static boolean isNetworkServiceWarmUpEnabled() {
-        return isFlagEnabled(
+        return getConsistentBooleanValue(
                 ChromePreferenceKeys.FLAGS_CACHED_NETWORK_SERVICE_WARM_UP_ENABLED, false);
     }
 
@@ -654,23 +654,22 @@ public class CachedFeatureFlags {
         sEnabledTabThumbnailApsectRatioForTesting = enabled;
     }
 
-    private static void cacheVariation(
-            String preferenceName, String featureName, String variationName) {
-        SharedPreferencesManager.getInstance().writeString(preferenceName,
-                ChromeFeatureList.getFieldTrialParamByFeature(featureName, variationName));
-    }
-
-    /**
-     * @deprecated Call {@link #isEnabled(String)} instead.
-     */
-    @Deprecated
-    static boolean isFlagEnabled(String preferenceName, boolean defaultValue) {
-        Boolean flag = sFlags.get(preferenceName);
+    static boolean getConsistentBooleanValue(String preferenceName, boolean defaultValue) {
+        Boolean flag = sBoolValuesReturned.get(preferenceName);
         if (flag == null) {
             flag = SharedPreferencesManager.getInstance().readBoolean(preferenceName, defaultValue);
-            sFlags.put(preferenceName, flag);
+            sBoolValuesReturned.put(preferenceName, flag);
         }
         return flag;
+    }
+
+    static String getConsistentStringValue(String preferenceName, String defaultValue) {
+        String value = sStringValuesReturned.get(preferenceName);
+        if (value == null) {
+            value = SharedPreferencesManager.getInstance().readString(preferenceName, defaultValue);
+            sStringValuesReturned.put(preferenceName, value);
+        }
+        return value;
     }
 
     private static String getPrefForFeatureFlag(String featureName) {
@@ -684,7 +683,8 @@ public class CachedFeatureFlags {
 
     @VisibleForTesting
     public static void resetFlagsForTesting() {
-        sFlags.clear();
+        sBoolValuesReturned.clear();
+        sStringValuesReturned.clear();
     }
 
     @VisibleForTesting

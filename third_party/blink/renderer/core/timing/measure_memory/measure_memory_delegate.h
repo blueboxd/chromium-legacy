@@ -17,8 +17,7 @@ class MeasureMemoryDelegate : public v8::MeasureMemoryDelegate {
  public:
   MeasureMemoryDelegate(v8::Isolate* isolate,
                         v8::Local<v8::Context> context,
-                        v8::Local<v8::Promise::Resolver> promise_resolver,
-                        v8::MeasureMemoryMode mode);
+                        v8::Local<v8::Promise::Resolver> promise_resolver);
 
   // v8::MeasureMemoryDelegate overrides.
   bool ShouldMeasure(v8::Local<v8::Context> context) override;
@@ -31,7 +30,6 @@ class MeasureMemoryDelegate : public v8::MeasureMemoryDelegate {
   v8::Isolate* isolate_;
   ScopedPersistent<v8::Context> context_;
   ScopedPersistent<v8::Promise::Resolver> promise_resolver_;
-  v8::MeasureMemoryMode mode_;
 };
 
 }  // namespace blink

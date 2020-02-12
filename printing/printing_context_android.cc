@@ -13,6 +13,7 @@
 #include "base/android/jni_android.h"
 #include "base/android/jni_array.h"
 #include "base/android/jni_string.h"
+#include "base/files/file.h"
 #include "base/logging.h"
 #include "base/memory/ptr_util.h"
 #include "base/strings/string_number_conversions.h"
@@ -158,7 +159,9 @@ void PrintingContextAndroid::ShowSystemDialogDone(
 void PrintingContextAndroid::PrintDocument(const MetafilePlayer& metafile) {
   DCHECK(is_file_descriptor_valid());
 
-  metafile.SaveToFileDescriptor(fd_);
+  base::File file(fd_);
+  metafile.SaveTo(&file);
+  file.TakePlatformFile();
 }
 
 PrintingContext::Result PrintingContextAndroid::UseDefaultSettings() {

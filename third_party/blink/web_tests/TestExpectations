@@ -264,8 +264,7 @@ crbug.com/1004547 external/wpt/intersection-observer/cross-origin-iframe.sub.htm
 crbug.com/849459 fragmentation/repeating-thead-under-repeating-thead.html [ Failure ]
 
 # These fail when device_scale_factor is changed, but only for anti-aliasing:
-crbug.com/968791 [ Mac ] virtual/scalefactor200/css3/filters/effect-blur-hw.html [ Pass Failure Timeout ]
-crbug.com/968791 [ Linux Debug ] virtual/scalefactor200/css3/filters/effect-blur-hw.html [ Pass Timeout ]
+crbug.com/968791 [ Mac ] virtual/scalefactor200/css3/filters/effect-blur-hw.html [ Pass Failure ]
 crbug.com/968791 virtual/scalefactor200/css3/filters/filterRegions.html [ Failure ]
 
 # These appear to be actually incorrect at device_scale_factor 2.0:
@@ -274,22 +273,14 @@ crbug.com/968791 virtual/scalefactor200/css3/filters/effect-reference-image.html
 crbug.com/968791 virtual/scalefactor200/external/wpt/css/filter-effects/filters-test-brightness-003.html [ Failure ]
 
 # Copying these from elsewhere in TestExpectations (for non-scalefactor200 virtual suite)
-crbug.com/658305 [ Mac ] virtual/scalefactor200/css3/filters/effect-all-on-background-hw.html [ Failure Pass Timeout ]
-crbug.com/658305 [ Linux Debug ] virtual/scalefactor200/css3/filters/effect-all-on-background-hw.html [ Pass Timeout ]
-crbug.com/658305 [ Mac ] virtual/scalefactor200/css3/filters/effect-brightness-clamping-hw.html [ Pass Timeout ]
-crbug.com/658305 [ Linux Debug ] virtual/scalefactor200/css3/filters/effect-brightness-clamping-hw.html [ Pass Timeout ]
+crbug.com/658305 [ Mac ] virtual/scalefactor200/css3/filters/effect-all-on-background-hw.html [ Failure Pass ]
 crbug.com/968791 [ Win10 ] virtual/scalefactor200/css3/filters/effect-contrast-hw.html [ Failure ]
-crbug.com/658305 [ Mac ] virtual/scalefactor200/css3/filters/effect-reference-colorspace-hw.html [ Failure Pass Timeout ]
-crbug.com/658305 [ Linux ] virtual/scalefactor200/css3/filters/effect-reference-colorspace-hw.html [ Pass Timeout ]
+crbug.com/658305 [ Mac ] virtual/scalefactor200/css3/filters/effect-reference-colorspace-hw.html [ Failure Pass ]
 crbug.com/658305 virtual/scalefactor200/css3/filters/effect-reference-external-stylesheet.html [ Failure Pass ]
-crbug.com/658305 [ Mac ] virtual/scalefactor200/css3/filters/effect-reference-hidpi-hw.html [ Pass Timeout ]
 crbug.com/658305 virtual/scalefactor200/css3/filters/effect-reference-hw.html [ Failure Pass ]
 crbug.com/658305 virtual/scalefactor200/css3/filters/effect-reference-image-hw.html [ Failure Pass ]
-crbug.com/658305 [ Mac ] virtual/scalefactor200/css3/filters/effect-reference-ordering-hw.html [ Pass Timeout ]
-crbug.com/658305 virtual/scalefactor200/css3/filters/effect-reference-subregion-hw.html [ Failure Pass Timeout ]
+crbug.com/658305 virtual/scalefactor200/css3/filters/effect-reference-subregion-hw.html [ Failure Pass ]
 crbug.com/658305 virtual/scalefactor200/css3/filters/effect-reference-zoom-hw.html [ Failure Pass Timeout ]
-crbug.com/658305 [ Mac ] virtual/scalefactor200/css3/filters/filter-repaint-composited-fallback.html [ Pass Timeout ]
-crbug.com/658305 [ Linux Debug ] virtual/scalefactor200/css3/filters/filter-repaint-composited-fallback.html [ Pass Timeout ]
 crbug.com/903383 virtual/scalefactor200/external/wpt/css/filter-effects/css-filters-animation-combined-001.html [ Failure ]
 crbug.com/903383 virtual/scalefactor200/external/wpt/css/filter-effects/css-filters-animation-blur.html [ Failure ]
 crbug.com/626703 virtual/scalefactor200/external/wpt/css/filter-effects/filter-subregion-01.html [ Failure ]
@@ -2668,7 +2659,6 @@ crbug.com/832071 external/wpt/service-workers/service-worker/worker-client-id.ht
 crbug.com/832071 virtual/cache-storage-sequence/external/wpt/service-workers/service-worker/worker-client-id.https.html [ Failure ]
 crbug.com/832071 virtual/omt-service-worker-startup/external/wpt/service-workers/service-worker/worker-client-id.https.html [ Failure ]
 crbug.com/832071 virtual/cache-storage-eager-reading/external/wpt/service-workers/service-worker/worker-client-id.https.html [ Failure ]
-crbug.com/832071 virtual/cache-storage-high-priority-match/external/wpt/service-workers/service-worker/worker-client-id.https.html [ Failure ]
 
 # failures in external/wpt/css/css-animations/ and web-animations/ from Mozilla tests
 crbug.com/849859 external/wpt/css/css-animations/CSSAnimation-pausing.tentative.html [ Failure ]
@@ -2686,9 +2676,6 @@ crbug.com/953847 [ Mac ] virtual/threaded-prefer-compositing/fast/scrolling/scro
 crbug.com/953847 [ Mac ] virtual/scroll_customization/fast/scrolling/scrollbars/mouse-autoscrolling-on-scrollbar.html [ Failure Timeout ]
 # This one too but is covered below in the CRASH expectation.
 #crbug.com/953847 [ Mac ] virtual/compositor_threaded_scrollbar_scrolling/fast/scrolling/scrollbars/mouse-autoscrolling-on-scrollbar.html [ Failure Timeout ]
-
-# 1px scroll offset difference for compositor threaded scrollbar scrolling on Linux.
-crbug.com/1009892 [ Mac ] virtual/compositor_threaded_scrollbar_scrolling_hidpi/fast/scrolling/scrollbars/dsf-ready/mouse-interactions-dsf-2.html [ Failure Timeout ]
 
 # These cause a violation of a DCHECK in CC by sending a GestureScrollBegin
 # without closing an existing one.
@@ -2885,9 +2872,6 @@ crbug.com/626703 [ Win ] virtual/omt-worker-fetch/external/wpt/service-workers/s
 crbug.com/626703 [ Linux ] virtual/cache-storage-sequence/external/wpt/service-workers/service-worker/ready.https.window.html [ Timeout ]
 crbug.com/626703 [ Mac ] virtual/cache-storage-sequence/external/wpt/service-workers/service-worker/ready.https.window.html [ Timeout ]
 crbug.com/626703 [ Win ] virtual/cache-storage-sequence/external/wpt/service-workers/service-worker/ready.https.window.html [ Timeout ]
-crbug.com/626703 [ Linux ] virtual/cache-storage-high-priority-match/external/wpt/service-workers/service-worker/ready.https.window.html [ Timeout ]
-crbug.com/626703 [ Mac ] virtual/cache-storage-high-priority-match/external/wpt/service-workers/service-worker/ready.https.window.html [ Timeout ]
-crbug.com/626703 [ Win ] virtual/cache-storage-high-priority-match/external/wpt/service-workers/service-worker/ready.https.window.html [ Timeout ]
 crbug.com/626703 [ Linux ] virtual/cache-storage-eager-reading/external/wpt/service-workers/service-worker/ready.https.window.html [ Timeout ]
 crbug.com/626703 [ Mac ] virtual/cache-storage-eager-reading/external/wpt/service-workers/service-worker/ready.https.window.html [ Timeout ]
 crbug.com/626703 [ Win ] virtual/cache-storage-eager-reading/external/wpt/service-workers/service-worker/ready.https.window.html [ Timeout ]
@@ -3057,7 +3041,6 @@ crbug.com/626703 virtual/omt-service-worker-startup/external/wpt/service-workers
 crbug.com/626703 virtual/omt-worker-fetch/external/wpt/service-workers/service-worker/ready.https.html [ Timeout ]
 crbug.com/626703 virtual/cache-storage-sequence/external/wpt/service-workers/service-worker/ready.https.html [ Timeout ]
 crbug.com/626703 virtual/cache-storage-eager-reading/external/wpt/service-workers/service-worker/ready.https.html [ Timeout ]
-crbug.com/626703 virtual/cache-storage-high-priority-match/external/wpt/service-workers/service-worker/ready.https.html [ Timeout ]
 crbug.com/626703 [ Linux ] external/wpt/css/css-sizing/slice-intrinsic-size.html [ Failure ]
 crbug.com/626703 [ Mac ] external/wpt/css/css-sizing/slice-intrinsic-size.html [ Failure ]
 crbug.com/626703 [ Win ] external/wpt/css/css-sizing/slice-intrinsic-size.html [ Failure ]
@@ -4110,7 +4093,6 @@ crbug.com/1002377 external/wpt/service-workers/service-worker/update-bytecheck.h
 crbug.com/1002377 virtual/omt-worker-fetch/external/wpt/service-workers/service-worker/update-bytecheck.https.html [ Pass Timeout ]
 crbug.com/1002377 virtual/omt-service-worker-startup/external/wpt/service-workers/service-worker/update-bytecheck.https.html [ Pass Timeout ]
 crbug.com/1002377 virtual/cache-storage-sequence/external/wpt/service-workers/service-worker/update-bytecheck.https.html [ Pass Timeout ]
-crbug.com/1002377 virtual/cache-storage-high-priority-match/external/wpt/service-workers/service-worker/update-bytecheck.https.html [ Pass Timeout ]
 crbug.com/1002377 virtual/cache-storage-eager-reading/external/wpt/service-workers/service-worker/update-bytecheck.https.html [ Pass Timeout ]
 
 crbug.com/435547 http/tests/cachestorage/serviceworker/ignore-search-with-credentials.html [ Skip ]
@@ -4205,7 +4187,6 @@ crbug.com/691944 virtual/omt-service-worker-startup/external/wpt/service-workers
 crbug.com/691944 virtual/omt-worker-fetch/external/wpt/service-workers/service-worker/update-after-oneday.https.html [ Skip ]
 crbug.com/691944 virtual/cache-storage-sequence/external/wpt/service-workers/service-worker/update-after-oneday.https.html [ Skip ]
 crbug.com/691944 virtual/cache-storage-eager-reading/external/wpt/service-workers/service-worker/update-after-oneday.https.html [ Skip ]
-crbug.com/691944 virtual/cache-storage-high-priority-match/external/wpt/service-workers/service-worker/update-after-oneday.https.html [ Skip ]
 
 # These tests (erroneously) see a platform-specific User-Agent header
 crbug.com/595993 external/wpt/service-workers/service-worker/fetch-header-visibility.https.html [ Failure ]
@@ -4213,7 +4194,6 @@ crbug.com/595993 virtual/omt-service-worker-startup/external/wpt/service-workers
 crbug.com/595993 virtual/omt-worker-fetch/external/wpt/service-workers/service-worker/fetch-header-visibility.https.html [ Failure ]
 crbug.com/595993 virtual/cache-storage-sequence/external/wpt/service-workers/service-worker/fetch-header-visibility.https.html [ Failure ]
 crbug.com/595993 virtual/cache-storage-eager-reading/external/wpt/service-workers/service-worker/fetch-header-visibility.https.html [ Failure ]
-crbug.com/595993 virtual/cache-storage-high-priority-match/external/wpt/service-workers/service-worker/fetch-header-visibility.https.html [ Failure ]
 
 crbug.com/619427 [ Mac ] fast/overflow/overflow-height-float-not-removed-crash3.html [ Pass Failure ]
 
@@ -4582,6 +4562,10 @@ crbug.com/852645 external/wpt/fullscreen/api/element-request-fullscreen-twice-ma
 crbug.com/852645 external/wpt/fullscreen/api/element-request-fullscreen-two-elements-manual.html [ Failure ]
 crbug.com/852645 external/wpt/fullscreen/api/element-request-fullscreen-two-iframes-manual.html [ Failure Timeout ]
 
+# These tests are disabled temporarily until we plumb the orientation change information to the browser process in the SetMockScreenOrientation function.
+crbug.com/1046933 fullscreen/full-screen-orientation-change.html [ Failure Timeout ]
+crbug.com/1046933 virtual/android/fullscreen/full-screen-orientation-change.html [ Failure Timeout ]
+
 # snav tests fail because of a DCHECK
 crbug.com/985520 virtual/focusless-spat-nav/fast/spatial-navigation/focusless/snav-focusless-enter-from-interest-a11y.html [ Crash ]
 crbug.com/985520 virtual/focusless-spat-nav/fast/spatial-navigation/focusless/snav-focusless-enter-from-interest.html [ Crash ]
@@ -4682,7 +4666,6 @@ crbug.com/889798 virtual/cache-storage-sequence/external/wpt/service-workers/ser
 crbug.com/889798 virtual/omt-service-worker-startup/external/wpt/service-workers/service-worker/import-scripts-redirect.https.html [ Skip ]
 crbug.com/889798 virtual/omt-worker-fetch/external/wpt/service-workers/service-worker/import-scripts-redirect.https.html [ Skip ]
 crbug.com/889798 virtual/cache-storage-eager-reading/external/wpt/service-workers/service-worker/import-scripts-redirect.https.html [ Skip ]
-crbug.com/889798 virtual/cache-storage-high-priority-match/external/wpt/service-workers/service-worker/import-scripts-redirect.https.html [ Skip ]
 
 # Sheriff failures 2017-07-03
 crbug.com/708994 http/tests/security/cross-frame-mouse-source-capabilities.html [ Timeout Pass ]
@@ -5190,8 +5173,6 @@ crbug.com/873873 virtual/cache-storage-sequence/external/wpt/service-workers/ser
 crbug.com/873873 virtual/cache-storage-sequence/external/wpt/service-workers/service-worker/fetch-canvas-tainting-video-cache.https.html [ Timeout Pass ]
 crbug.com/873873 virtual/cache-storage-eager-reading/external/wpt/service-workers/service-worker/fetch-canvas-tainting-video.https.html [ Timeout Pass ]
 crbug.com/873873 virtual/cache-storage-eager-reading/external/wpt/service-workers/service-worker/fetch-canvas-tainting-video-cache.https.html [ Timeout Pass ]
-crbug.com/873873 virtual/cache-storage-high-priority-match/external/wpt/service-workers/service-worker/fetch-canvas-tainting-video.https.html [ Timeout Pass ]
-crbug.com/873873 virtual/cache-storage-high-priority-match/external/wpt/service-workers/service-worker/fetch-canvas-tainting-video-cache.https.html [ Timeout Pass ]
 
 crbug.com/875884 [ Linux ] lifecycle/background-change-lifecycle-count.html [ Pass Failure ]
 crbug.com/875884 [ Win ] lifecycle/background-change-lifecycle-count.html [ Pass Failure ]
@@ -5445,7 +5426,6 @@ crbug.com/933880 virtual/omt-service-worker-startup/external/wpt/service-workers
 crbug.com/933880 virtual/omt-worker-fetch/external/wpt/service-workers/service-worker/request-end-to-end.https.html [ Failure ]
 crbug.com/933880 virtual/cache-storage-sequence/external/wpt/service-workers/service-worker/request-end-to-end.https.html [ Failure ]
 crbug.com/933880 virtual/cache-storage-eager-reading/external/wpt/service-workers/service-worker/request-end-to-end.https.html [ Failure ]
-crbug.com/933880 virtual/cache-storage-high-priority-match/external/wpt/service-workers/service-worker/request-end-to-end.https.html [ Failure ]
 crbug.com/933880 http/tests/inspector-protocol/network/interception-take-stream.js [ Failure ]
 crbug.com/933880 http/tests/inspector-protocol/network/xhr-interception-auth-fail.js [ Failure ]
 # This passes in content_shell but not in chrome with network service disabled,
@@ -6182,11 +6162,12 @@ http/tests/devtools/wasm-isolated-code-cache/wasm-cache-test.js [ Skip ]
 # Memory measurement tests are run as virtual tests.
 external/wpt/measure-memory/measure-memory.tentative.any.html [ Skip ]
 external/wpt/measure-memory/measure-memory.tentative.any.worker.html [ Skip ]
+external/wpt/measure-memory/measure-memory-cross-origin-iframe.tentative.window.html [ Skip ]
+external/wpt/measure-memory/measure-memory-same-origin-iframe.tentative.window.html [ Skip ]
 
 # Assertion errors need to be fixed
 crbug.com/1034492 http/tests/devtools/unit/filtered-item-selection-dialog-filtering.js [ Pass Failure ]
 crbug.com/1034492 http/tests/devtools/unit/filtered-list-widget-providers.js [ Pass Failure ]
-crbug.com/1034492 http/tests/devtools/unit/soft-drop-down.js [ Pass Failure ]
 
 # Sheriff 2019-12-17
 crbug.com/1034789 [ Mac ] http/tests/security/frameNavigation/xss-ALLOWED-parent-navigation-change-async.html [ Pass Timeout ]

@@ -5,7 +5,7 @@
 #ifndef CHROME_BROWSER_POLICY_CHROME_POLICY_CONVERSIONS_CLIENT_H_
 #define CHROME_BROWSER_POLICY_CHROME_POLICY_CONVERSIONS_CLIENT_H_
 
-#include "chrome/browser/policy/policy_conversions_client.h"
+#include "components/policy/core/browser/policy_conversions_client.h"
 
 namespace content {
 class BrowserContext;

@@ -8,8 +8,8 @@
 
 namespace prerender {
 
-PrerenderExtraData::PrerenderExtraData(int render_view_id)
-    : render_view_id_(render_view_id) {}
+PrerenderExtraData::PrerenderExtraData(int render_frame_id)
+    : render_frame_id_(render_frame_id) {}
 
 PrerenderExtraData::~PrerenderExtraData() = default;
 

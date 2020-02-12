@@ -18,7 +18,7 @@ public interface CardRendererAdapter {
     void bind(byte[] protoPayload);
 
     /**
-     * @return The single associated view.
+     * Returns the single associated view.
      */
     View getView();
 }

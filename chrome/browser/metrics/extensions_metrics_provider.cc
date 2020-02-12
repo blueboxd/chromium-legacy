@@ -11,6 +11,7 @@
 #include <set>
 #include <vector>
 
+#include "base/hash/legacy_hash.h"
 #include "base/logging.h"
 #include "base/strings/stringprintf.h"
 #include "base/time/time.h"
@@ -31,7 +32,6 @@
 #include "extensions/common/manifest_handlers/background_info.h"
 #include "extensions/common/manifest_url_handlers.h"
 #include "third_party/metrics_proto/system_profile.pb.h"
-#include "third_party/smhasher/src/City.h"
 
 using extensions::Extension;
 using extensions::Manifest;
@@ -361,7 +361,8 @@ int ExtensionsMetricsProvider::HashExtension(const std::string& extension_id,
   DCHECK_LE(client_key, kExtensionListClientKeys);
   std::string message =
       base::StringPrintf("%u:%s", client_key, extension_id.c_str());
-  uint64_t output = CityHash64(message.data(), message.size());
+  uint64_t output =
+      base::legacy::CityHash64(base::as_bytes(base::make_span(message)));
   return output % kExtensionListBuckets;
 }
 

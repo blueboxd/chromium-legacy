@@ -99,7 +99,7 @@ extern NSString* const kAutoupdateStatusErrorMessages;
 }
 
 // Return the default Keystone Glue object.
-+ (id)defaultKeystoneGlue;
++ (KeystoneGlue*)defaultKeystoneGlue;
 
 // Load KeystoneRegistration.framework if present, call into it to register
 // with Keystone, and set up periodic activity pings.

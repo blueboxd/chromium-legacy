@@ -127,6 +127,8 @@ class BaseTest : public testing::Test {
   TestingProfile* profile_;
 };
 
+}  // namespace
+
 using DeepScanningDialogDelegateIsEnabledTest = BaseTest;
 
 TEST_F(DeepScanningDialogDelegateIsEnabledTest, NoFeatureNoDMTokenNoPref) {
@@ -1433,6 +1435,28 @@ INSTANTIATE_TEST_SUITE_P(
                     BinaryUploadService::Result::UNAUTHORIZED,
                     BinaryUploadService::Result::FILE_ENCRYPTED));
 
-}  // namespace
+using DeepScanningDialogDelegatePolicyResultsTest = BaseTest;
+
+TEST_F(DeepScanningDialogDelegatePolicyResultsTest,
+       AllowPasswordProtectedFiles) {
+  // The value returned by ResultShouldAllowDataUse for FILE_ENCRYPTED should
+  // match the AllowPasswordProtectedFiles policy.
+  SetAllowPasswordPolicy(
+      AllowPasswordProtectedFilesValues::ALLOW_UPLOADS_AND_DOWNLOADS);
+  EXPECT_TRUE(DeepScanningDialogDelegate::ResultShouldAllowDataUse(
+      BinaryUploadService::Result::FILE_ENCRYPTED));
+
+  SetAllowPasswordPolicy(AllowPasswordProtectedFilesValues::ALLOW_DOWNLOADS);
+  EXPECT_FALSE(DeepScanningDialogDelegate::ResultShouldAllowDataUse(
+      BinaryUploadService::Result::FILE_ENCRYPTED));
+
+  SetAllowPasswordPolicy(AllowPasswordProtectedFilesValues::ALLOW_UPLOADS);
+  EXPECT_TRUE(DeepScanningDialogDelegate::ResultShouldAllowDataUse(
+      BinaryUploadService::Result::FILE_ENCRYPTED));
+
+  SetAllowPasswordPolicy(AllowPasswordProtectedFilesValues::ALLOW_NONE);
+  EXPECT_FALSE(DeepScanningDialogDelegate::ResultShouldAllowDataUse(
+      BinaryUploadService::Result::FILE_ENCRYPTED));
+}
 
 }  // namespace safe_browsing

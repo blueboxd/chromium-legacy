@@ -182,41 +182,6 @@ TEST_F(ContextHostResolverTest, DohProbeRequest) {
   EXPECT_FALSE(dns_client_->factory()->doh_probes_running());
 }
 
-TEST_F(ContextHostResolverTest, DohProbesFromSeparateContexts) {
-  // Set empty MockDnsClient rules to ensure DnsClient is mocked out.
-  MockDnsClientRuleList rules;
-  SetMockDnsRules(std::move(rules));
-
-  auto resolve_context1 = std::make_unique<ResolveContext>(
-      nullptr /* url_request_context */, false /* enable_caching */);
-  auto resolver1 = std::make_unique<ContextHostResolver>(
-      manager_.get(), std::move(resolve_context1));
-  std::unique_ptr<HostResolver::ProbeRequest> request1 =
-      resolver1->CreateDohProbeRequest();
-
-  auto resolve_context2 = std::make_unique<ResolveContext>(
-      nullptr /* url_request_context */, false /* enable_caching */);
-  auto resolver2 = std::make_unique<ContextHostResolver>(
-      manager_.get(), std::move(resolve_context2));
-  std::unique_ptr<HostResolver::ProbeRequest> request2 =
-      resolver2->CreateDohProbeRequest();
-
-  EXPECT_FALSE(dns_client_->factory()->doh_probes_running());
-
-  EXPECT_THAT(request1->Start(), test::IsError(ERR_IO_PENDING));
-  EXPECT_THAT(request2->Start(), test::IsError(ERR_IO_PENDING));
-
-  EXPECT_TRUE(dns_client_->factory()->doh_probes_running());
-
-  request1.reset();
-
-  EXPECT_TRUE(dns_client_->factory()->doh_probes_running());
-
-  request2.reset();
-
-  EXPECT_FALSE(dns_client_->factory()->doh_probes_running());
-}
-
 // Test that cancelling a resolver cancels its (and only its) requests.
 TEST_F(ContextHostResolverTest, DestroyResolver) {
   // Set up delayed results for "example.com" and "google.com".

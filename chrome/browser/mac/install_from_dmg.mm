@@ -312,9 +312,7 @@ bool InstallFromDiskImage(AuthorizationRef authorization_arg,
       return false;
     }
   } else {
-    NSArray* arguments = [NSArray arrayWithObjects:source_path,
-                                                   target_path,
-                                                   nil];
+    NSArray* arguments = @[ source_path, target_path ];
 
     NSTask* task;
     @try {
@@ -422,7 +420,7 @@ bool MaybeInstallFromDiskImage() {
                  << "no local application directories";
       return false;
     }
-    NSString* application_directory = [application_directories objectAtIndex:0];
+    NSString* application_directory = application_directories[0];
 
     NSFileManager* file_manager = [NSFileManager defaultManager];
 

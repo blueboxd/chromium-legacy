@@ -15,6 +15,7 @@
 #include "third_party/blink/public/platform/web_size.h"
 #include "third_party/blink/public/platform/web_string.h"
 #include "third_party/blink/public/platform/web_url.h"
+#include "third_party/blink/public/web/web_local_frame.h"
 #include "third_party/blink/public/web/web_view.h"
 
 namespace prerender {
@@ -29,9 +30,9 @@ WebPrerenderingSupportImpl::~WebPrerenderingSupportImpl() {
 
 void WebPrerenderingSupportImpl::Add(const blink::WebPrerender& prerender) {
   PrerenderExtraData* extra_data = PrerenderExtraData::FromPrerender(prerender);
-  content::RenderView* render_view =
-      content::RenderView::FromRoutingID(extra_data->render_view_id());
-  if (!render_view)
+  content::RenderFrame* render_frame =
+      content::RenderFrame::FromRoutingID(extra_data->render_frame_id());
+  if (!render_frame)
     return;
 
   chrome::mojom::PrerenderAttributesPtr attributes =
@@ -43,10 +44,10 @@ void WebPrerenderingSupportImpl::Add(const blink::WebPrerender& prerender) {
                            blink::WebStringToGURL(prerender.GetReferrer()),
                            prerender.GetReferrerPolicy()));
   attributes->initiator_origin = prerender.SecurityOrigin();
-  attributes->view_size = render_view->GetWebView()->GetSize();
+  attributes->view_size = render_frame->GetWebFrame()->View()->GetSize();
 
   mojo::Remote<chrome::mojom::PrerenderProcessor> prerender_processor;
-  render_view->GetMainRenderFrame()->GetBrowserInterfaceBroker()->GetInterface(
+  render_frame->GetBrowserInterfaceBroker()->GetInterface(
       prerender_processor.BindNewPipeAndPassReceiver());
 
   // We let the remote end own the lifetime of the client.

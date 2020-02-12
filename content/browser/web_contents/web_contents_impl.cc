@@ -1076,6 +1076,7 @@ WebContentsView* WebContentsImpl::GetView() const {
 
 void WebContentsImpl::OnScreenOrientationChange() {
   DCHECK(screen_orientation_provider_);
+  DidChangeScreenOrientation();
   screen_orientation_provider_->OnOrientationChange();
 }
 
@@ -4522,6 +4523,9 @@ void WebContentsImpl::DidFinishNavigation(NavigationHandle* navigation_handle) {
             last_committed_source_id_including_same_document_;
       }
     }
+
+    if (!navigation_handle->IsSameDocument())
+      last_screen_orientation_change_time_ = base::TimeTicks();
   }
 
   // If we didn't end up on about:blank after setting this in DidStartNavigation
@@ -7309,6 +7313,20 @@ void WebContentsImpl::IsClipboardPasteAllowed(
     IsClipboardPasteAllowedCallback callback) {
   GetContentClient()->browser()->IsClipboardPasteAllowed(
       this, url, data_type, data, std::move(callback));
+}
+
+bool WebContentsImpl::HasSeenRecentScreenOrientationChange() {
+  static constexpr base::TimeDelta kMaxInterval =
+      base::TimeDelta::FromSeconds(1);
+  base::TimeDelta delta =
+      ui::EventTimeForNow() - last_screen_orientation_change_time_;
+  // Return whether there is a screen orientation change happened in the recent
+  // 1 second.
+  return delta <= kMaxInterval;
+}
+
+void WebContentsImpl::DidChangeScreenOrientation() {
+  last_screen_orientation_change_time_ = ui::EventTimeForNow();
 }
 
 void WebContentsImpl::UpdateWebContentsVisibility(Visibility visibility) {

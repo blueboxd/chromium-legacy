@@ -4,9 +4,9 @@
 
 #include "third_party/blink/renderer/core/timing/measure_memory/measure_memory_delegate.h"
 
+#include "third_party/blink/public/platform/platform.h"
 #include "third_party/blink/renderer/bindings/core/v8/v8_measure_memory.h"
-#include "third_party/blink/renderer/bindings/core/v8/v8_measure_memory_entry.h"
-#include "third_party/blink/renderer/bindings/core/v8/v8_measure_memory_options.h"
+#include "third_party/blink/renderer/bindings/core/v8/v8_measure_memory_breakdown.h"
 #include "third_party/blink/renderer/core/execution_context/execution_context.h"
 #include "third_party/blink/renderer/platform/bindings/script_state.h"
 #include "third_party/blink/renderer/platform/weborigin/kurl.h"
@@ -17,12 +17,10 @@ namespace blink {
 MeasureMemoryDelegate::MeasureMemoryDelegate(
     v8::Isolate* isolate,
     v8::Local<v8::Context> context,
-    v8::Local<v8::Promise::Resolver> promise_resolver,
-    v8::MeasureMemoryMode mode)
+    v8::Local<v8::Promise::Resolver> promise_resolver)
     : isolate_(isolate),
       context_(isolate, context),
-      promise_resolver_(isolate, promise_resolver),
-      mode_(mode) {
+      promise_resolver_(isolate, promise_resolver) {
   context_.SetPhantom();
   // TODO(ulan): Currently we keep a strong reference to the promise resolver.
   // This may prolong the lifetime of the context by one more GC in the worst
@@ -52,6 +50,10 @@ bool MeasureMemoryDelegate::ShouldMeasure(v8::Local<v8::Context> context) {
     // Context do not belong to the same JavaScript agent.
     return false;
   }
+  if (ScriptState::From(context)->World().IsIsolatedWorld()) {
+    // Context belongs to an extension. Skip it.
+    return false;
+  }
   const SecurityOrigin* original_security_origin =
       original_execution_context->GetSecurityContext().GetSecurityOrigin();
   const SecurityOrigin* security_origin =
@@ -59,7 +61,9 @@ bool MeasureMemoryDelegate::ShouldMeasure(v8::Local<v8::Context> context) {
   if (!original_security_origin->IsSameOriginWith(security_origin)) {
     // TODO(ulan): Check for COOP/COEP and allow cross-origin contexts that
     // opted in for memory measurement.
-    return false;
+    // Until then we allow cross-origin measurement only for site-isolated
+    // web pages.
+    return Platform::Current()->IsLockedToSite();
   }
   return true;
 }
@@ -67,34 +71,52 @@ bool MeasureMemoryDelegate::ShouldMeasure(v8::Local<v8::Context> context) {
 namespace {
 // Helper functions for constructing a memory measurement result.
 
-String GetUrl(v8::Local<v8::Context> context) {
+String GetOrigin(v8::Local<v8::Context> context) {
   ExecutionContext* execution_context = ExecutionContext::From(context);
   if (!execution_context) {
     // TODO(ulan): Store URL in v8::Context, so that it is available
     // event for detached contexts.
     return String("detached");
   }
-  return execution_context->Url().GetString();
+  const SecurityOrigin* security_origin =
+      execution_context->GetSecurityContext().GetSecurityOrigin();
+  return security_origin->ToString();
 }
 
-MeasureMemoryEntry* CreateMeasureMemoryEntry(size_t estimate,
-                                             size_t unattributed) {
-  MeasureMemoryEntry* result = MeasureMemoryEntry::Create();
-  result->setJsMemoryEstimate(estimate);
-  Vector<uint64_t> range;
-  range.push_back(estimate);
-  range.push_back(estimate + unattributed);
-  result->setJsMemoryRange(range);
+MeasureMemoryBreakdown* CreateMeasureMemoryBreakdown(size_t bytes,
+                                                     size_t globals,
+                                                     const String& type,
+                                                     const String& origin) {
+  MeasureMemoryBreakdown* result = MeasureMemoryBreakdown::Create();
+  result->setBytes(bytes);
+  result->setGlobals(globals);
+  result->setType(type);
+  result->setOrigins(Vector<String>{origin});
   return result;
 }
 
-MeasureMemoryEntry* CreateMeasureMemoryEntry(size_t estimate,
-                                             size_t unattributed,
-                                             const String& url) {
-  MeasureMemoryEntry* result = CreateMeasureMemoryEntry(estimate, unattributed);
-  result->setUrl(url);
-  return result;
+struct BytesAndGlobals {
+  size_t bytes;
+  size_t globals;
+};
+
+HashMap<String, BytesAndGlobals> GroupByOrigin(
+    const std::vector<std::pair<v8::Local<v8::Context>, size_t>>&
+        context_sizes) {
+  HashMap<String, BytesAndGlobals> per_origin;
+  for (const auto& context_size : context_sizes) {
+    const String origin = GetOrigin(context_size.first);
+    auto it = per_origin.find(origin);
+    if (it == per_origin.end()) {
+      per_origin.insert(origin, BytesAndGlobals{context_size.second, 1});
+    } else {
+      it->value.bytes += context_size.second;
+      ++it->value.globals;
+    }
+  }
+  return per_origin;
 }
+
 }  // anonymous namespace
 
 // Constructs a memory measurement result based on the given list of (context,
@@ -114,29 +136,20 @@ void MeasureMemoryDelegate::MeasurementComplete(
   }
   v8::Context::Scope context_scope(context);
   size_t total_size = 0;
-  size_t current_size = 0;
   for (const auto& context_size : context_sizes) {
     total_size += context_size.second;
-    if (context == context_size.first) {
-      current_size = context_size.second;
-    }
   }
   MeasureMemory* result = MeasureMemory::Create();
-  result->setTotal(CreateMeasureMemoryEntry(total_size, unattributed_size));
-  if (mode_ == v8::MeasureMemoryMode::kDetailed) {
-    result->setCurrent(CreateMeasureMemoryEntry(current_size, unattributed_size,
-                                                GetUrl(context)));
-    HeapVector<Member<MeasureMemoryEntry>> other;
-    for (const auto& context_size : context_sizes) {
-      if (context_size.first == context) {
-        // The current context was already reported. Skip it.
-        continue;
-      }
-      other.push_back(CreateMeasureMemoryEntry(
-          context_size.second, unattributed_size, GetUrl(context_size.first)));
-    }
-    result->setOther(other);
+  result->setBytes(total_size + unattributed_size);
+  HeapVector<Member<MeasureMemoryBreakdown>> breakdown;
+  HashMap<String, BytesAndGlobals> per_origin(GroupByOrigin(context_sizes));
+  for (const auto& it : per_origin) {
+    breakdown.push_back(CreateMeasureMemoryBreakdown(
+        it.value.bytes, it.value.globals, "js", it.key));
   }
+  breakdown.push_back(CreateMeasureMemoryBreakdown(
+      unattributed_size, context_sizes.size(), "js", "shared"));
+  result->setBreakdown(breakdown);
   v8::Local<v8::Promise::Resolver> promise_resolver =
       promise_resolver_.NewLocal(isolate_);
   promise_resolver

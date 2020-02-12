@@ -5587,7 +5587,7 @@ TEST_F(HostResolverManagerDnsTest, SecureDnsMode_Automatic_Unavailable) {
   DnsConfigOverrides overrides;
   overrides.secure_dns_mode = DnsConfig::SecureDnsMode::AUTOMATIC;
   resolver_->SetDnsConfigOverrides(overrides);
-  dns_client_->SetForceDohServerAvailable(false);
+  dns_client_->set_doh_server_available(false);
 
   // DoH requests should be skipped when there are no available DoH servers
   // in automatic mode. The cached result should be in the insecure cache.
@@ -5623,7 +5623,7 @@ TEST_F(HostResolverManagerDnsTest, SecureDnsMode_Automatic_Unavailable_Fail) {
   DnsConfigOverrides overrides;
   overrides.secure_dns_mode = DnsConfig::SecureDnsMode::AUTOMATIC;
   resolver_->SetDnsConfigOverrides(overrides);
-  dns_client_->SetForceDohServerAvailable(false);
+  dns_client_->set_doh_server_available(false);
 
   // Insecure requests that fail should not be cached.
   ResolveHostResponseHelper response_secure(resolver_->CreateRequest(
@@ -5646,54 +5646,6 @@ TEST_F(HostResolverManagerDnsTest, SecureDnsMode_Automatic_Unavailable_Fail) {
       HostResolverSource::ANY, NetworkIsolationKey());
   cache_result = GetCacheHit(insecure_key);
   EXPECT_FALSE(!!cache_result);
-}
-
-// Test that DoH server availability is respected per-context.
-TEST_F(HostResolverManagerDnsTest,
-       SecureDnsMode_Automatic_UnavailableByContext) {
-  // Create and register two separate contexts.
-  TestURLRequestContext request_context1;
-  TestURLRequestContext request_context2;
-  ResolveContext resolve_context1(&request_context1,
-                                  false /* enable_caching */);
-  ResolveContext resolve_context2(&request_context2,
-                                  false /* enable_caching */);
-  resolver_->RegisterResolveContext(&resolve_context1);
-  resolver_->RegisterResolveContext(&resolve_context2);
-
-  // Configure the resolver and underlying mock to attempt a secure query iff
-  // the context has marked a DoH server available and otherwise attempt a
-  // non-secure query.
-  set_allow_fallback_to_proctask(false);
-  ChangeDnsConfig(CreateValidDnsConfig());
-  DnsConfigOverrides overrides;
-  overrides.secure_dns_mode = DnsConfig::SecureDnsMode::AUTOMATIC;
-  resolver_->SetDnsConfigOverrides(overrides);
-  dns_client_->SetForceDohServerAvailable(false);
-
-  // Mark a DoH server successful only for |resolve_context2|. Note that this
-  // must come after the resolver's configuration is set because this relies on
-  // the specific configuration containing a DoH server.
-  resolve_context2.SetProbeSuccess(0u, true /* success */,
-                                   dns_client_->GetCurrentSession());
-
-  // No available DoH servers for |resolve_context1|, so expect a non-secure
-  // request. Non-secure requests for "secure" will fail with
-  // ERR_NAME_NOT_RESOLVED.
-  ResolveHostResponseHelper response_secure(resolver_->CreateRequest(
-      HostPortPair("secure", 80), NetworkIsolationKey(), NetLogWithSource(),
-      base::nullopt, &resolve_context1, resolve_context_->host_cache()));
-  ASSERT_THAT(response_secure.result_error(), IsError(ERR_NAME_NOT_RESOLVED));
-
-  // One available DoH server for |resolve_context2|, so expect a secure
-  // request. Secure requests for "secure" will succeed.
-  ResolveHostResponseHelper response_secure2(resolver_->CreateRequest(
-      HostPortPair("secure", 80), NetworkIsolationKey(), NetLogWithSource(),
-      base::nullopt, &resolve_context2, nullptr /* host_cache */));
-  ASSERT_THAT(response_secure2.result_error(), IsOk());
-
-  resolver_->DeregisterResolveContext(&resolve_context1);
-  resolver_->DeregisterResolveContext(&resolve_context2);
 }
 
 TEST_F(HostResolverManagerDnsTest, SecureDnsMode_Automatic_Stale) {

@@ -208,7 +208,6 @@ void AddSyncPageStrings(content::WebUIDataSource* html_source) {
       {"syncLoading", IDS_SETTINGS_SYNC_LOADING},
       {"themesAndWallpapersCheckboxLabel",
        IDS_SETTINGS_THEMES_AND_WALLPAPERS_CHECKBOX_LABEL},
-      {"syncTimeout", IDS_SETTINGS_SYNC_TIMEOUT},
       {"syncDataEncryptedText", IDS_SETTINGS_SYNC_DATA_ENCRYPTED_TEXT},
       {"sync", IDS_SETTINGS_SYNC},
       {"cancelSync", IDS_SETTINGS_SYNC_SETTINGS_CANCEL_SYNC},

@@ -19,7 +19,6 @@
 #include "net/base/net_errors.h"
 #include "net/dns/dns_socket_pool.h"
 #include "net/dns/public/dns_protocol.h"
-#include "net/dns/resolve_context.h"
 #include "net/log/net_log_source.h"
 #include "net/socket/socket_performance_watcher.h"
 #include "net/socket/socket_test_util.h"
@@ -281,14 +280,23 @@ TEST_F(DnsSessionTest, HistogramTimeoutLong) {
 TEST_F(DnsSessionTest, NegativeRtt) {
   Initialize(2 /* num_servers */, 2 /* num_doh_servers */);
   session_->RecordRTT(0, false /* is_doh_server */,
-                      false /* is_validated_doh_server */,
                       base::TimeDelta::FromMilliseconds(-1), OK /* rv */);
   session_->RecordRTT(0, true /* is_doh_server */,
-                      false /* is_validated_doh_server */,
                       base::TimeDelta::FromMilliseconds(-1), OK /* rv */);
-  session_->RecordRTT(0, true /* is_doh_server */,
-                      true /* is_validated_doh_server */,
-                      base::TimeDelta::FromMilliseconds(-1), OK /* rv */);
+}
+
+TEST_F(DnsSessionTest, DohServerAvailability) {
+  Initialize(2 /* num_servers */, 2 /* num_doh_servers */);
+  EXPECT_FALSE(session_->HasAvailableDohServer());
+  EXPECT_EQ(session_->NumAvailableDohServers(), 0u);
+  session_->SetProbeSuccess(1, true /* success */);
+  EXPECT_TRUE(session_->HasAvailableDohServer());
+  EXPECT_EQ(session_->NumAvailableDohServers(), 1u);
+
+  // Record a probe failure.
+  session_->SetProbeSuccess(1, false /* success */);
+  EXPECT_FALSE(session_->HasAvailableDohServer());
+  EXPECT_EQ(session_->NumAvailableDohServers(), 0u);
 }
 
 class TestDnsObserver : public NetworkChangeNotifier::DNSObserver {
@@ -301,40 +309,60 @@ class TestDnsObserver : public NetworkChangeNotifier::DNSObserver {
   int dns_changed_calls_ = 0;
 };
 
-TEST_F(DnsSessionTest, DohProbeConsecutiveFailures) {
+TEST_F(DnsSessionTest, DohServerAvailabilityNotification) {
+  test::ScopedMockNetworkChangeNotifier mock_network_change_notifier;
+  TestDnsObserver config_observer;
+  NetworkChangeNotifier::AddDNSObserver(&config_observer);
   Initialize(2 /* num_servers */, 2 /* num_doh_servers */);
 
-  ResolveContext context(nullptr /* url_request_context */,
-                         false /* enable_caching*/);
-  context.InvalidateCaches(session_.get());
-  context.SetProbeSuccess(1, true /* success */, session_.get());
+  base::RunLoop().RunUntilIdle();  // Notifications are async.
+  EXPECT_EQ(0, config_observer.dns_changed_calls());
+
+  // Expect notification on first available DoH server.
+  session_->SetProbeSuccess(0, true /* success */);
+  base::RunLoop().RunUntilIdle();  // Notifications are async.
+  EXPECT_EQ(1, config_observer.dns_changed_calls());
+
+  // No notifications as additional servers are available or unavailable.
+  session_->SetProbeSuccess(1, true /* success */);
+  session_->SetProbeSuccess(0, false /* success */);
+  base::RunLoop().RunUntilIdle();  // Notifications are async.
+  EXPECT_EQ(1, config_observer.dns_changed_calls());
+
+  // Expect notification on last server unavailable.
+  session_->SetProbeSuccess(1, false /* success */);
+  base::RunLoop().RunUntilIdle();  // Notifications are async.
+  EXPECT_EQ(2, config_observer.dns_changed_calls());
+
+  NetworkChangeNotifier::RemoveDNSObserver(&config_observer);
+}
+
+TEST_F(DnsSessionTest, DohProbeConsecutiveFailures) {
+  Initialize(2 /* num_servers */, 2 /* num_doh_servers */);
+  session_->SetProbeSuccess(1, true /* success */);
 
   for (size_t i = 0; i < kAutomaticModeFailureLimit; i++) {
-    EXPECT_EQ(1u, context.NumAvailableDohServers(session_.get()));
-    session_->RecordServerFailure(1, true /* is_doh_server */, &context);
+    EXPECT_TRUE(session_->HasAvailableDohServer());
+    session_->RecordServerFailure(1, true /* is_doh_server */);
   }
-  EXPECT_EQ(0u, context.NumAvailableDohServers(session_.get()));
+  EXPECT_FALSE(session_->HasAvailableDohServer());
 }
 
 TEST_F(DnsSessionTest, DohProbeNonConsecutiveFailures) {
   Initialize(2 /* num_servers */, 2 /* num_doh_servers */);
-
-  ResolveContext context(nullptr /* url_request_context */,
-                         false /* enable_caching*/);
-  context.InvalidateCaches(session_.get());
-  context.SetProbeSuccess(1, true /* success */, session_.get());
+  session_->SetProbeSuccess(1, true /* success */);
 
   for (size_t i = 0; i < kAutomaticModeFailureLimit - 1; i++) {
-    EXPECT_EQ(1u, context.NumAvailableDohServers(session_.get()));
-    session_->RecordServerFailure(1, true /* is_doh_server */, &context);
+    EXPECT_TRUE(session_->HasAvailableDohServer());
+    session_->RecordServerFailure(1, true /* is_doh_server */);
   }
-  EXPECT_EQ(1u, context.NumAvailableDohServers(session_.get()));
+  EXPECT_TRUE(session_->HasAvailableDohServer());
 
   session_->RecordServerSuccess(1, true /* is_doh_server */);
-  EXPECT_EQ(1u, context.NumAvailableDohServers(session_.get()));
+  EXPECT_TRUE(session_->HasAvailableDohServer());
 
-  session_->RecordServerFailure(1, true /* is_doh_server */, &context);
-  EXPECT_EQ(0u, context.NumAvailableDohServers(session_.get()));
+  session_->RecordServerFailure(1, true /* is_doh_server */);
+  EXPECT_FALSE(session_->HasAvailableDohServer());
 }
 
 }  // namespace

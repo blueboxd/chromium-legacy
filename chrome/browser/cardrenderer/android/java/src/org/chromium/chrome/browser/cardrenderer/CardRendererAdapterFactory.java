@@ -11,6 +11,7 @@ import android.content.Context;
  */
 public interface CardRendererAdapterFactory {
     /**
+     * Creates a new adapter backed by a shared set of dependencies with other adapters.
      * @param context The context that any new Android UI objects should be created within.
      * @return A new wrapper capable of making view objects.
      */

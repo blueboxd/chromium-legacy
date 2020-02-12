@@ -4695,13 +4695,6 @@ const FeatureEntry kFeatureEntries[] = {
      FEATURE_VALUE_TYPE(
          password_manager::features::kEnablePasswordsAccountStorage)},
 
-    {"passwords-account-storage-saving-ui",
-     flag_descriptions::kEnablePasswordsAccountStorageSavingUiName,
-     flag_descriptions::kEnablePasswordsAccountStorageSavingUiDescription,
-     kOsWin | kOsMac | kOsLinux,
-     FEATURE_VALUE_TYPE(
-         password_manager::features::kEnablePasswordsAccountStorageSavingUi)},
-
     {"improved-cookie-controls", flag_descriptions::kImprovedCookieControlsName,
      flag_descriptions::kImprovedCookieControlsDescription, kOsAll,
      FEATURE_VALUE_TYPE(content_settings::kImprovedCookieControls)},

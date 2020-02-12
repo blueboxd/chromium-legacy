@@ -321,9 +321,9 @@ TEST_F(MediaStreamRemoteVideoSourceTest,
   float kProcessingTime = 0.014;
 
   const webrtc::Timestamp kProcessingFinish =
-      webrtc::Timestamp::ms(rtc::TimeMillis());
+      webrtc::Timestamp::Millis(rtc::TimeMillis());
   const webrtc::Timestamp kProcessingStart =
-      kProcessingFinish - webrtc::TimeDelta::ms(1.0e3 * kProcessingTime);
+      kProcessingFinish - webrtc::TimeDelta::Millis(1.0e3 * kProcessingTime);
 
   webrtc::RtpPacketInfos::vector_type packet_infos;
   for (int i = 0; i < 4; ++i) {
@@ -466,7 +466,7 @@ TEST_F(MediaStreamRemoteVideoSourceTest, ForwardsEncodedVideoFrames) {
   EXPECT_CALL(sink, OnEncodedVideoFrame)
       .WillOnce(RunClosure(std::move(quit_closure)));
   source()->EncodedSinkInterfaceForTesting()->OnFrame(
-      TestEncodedVideoFrame(webrtc::Timestamp::ms(0)));
+      TestEncodedVideoFrame(webrtc::Timestamp::Millis(0)));
   run_loop.Run();
   track->RemoveEncodedSink(&sink);
 }
@@ -540,13 +540,13 @@ TEST_F(MediaStreamRemoteVideoSourceTest,
       .InSequence(s)
       .WillOnce(RunClosure(std::move(quit_closure)));
   source()->EncodedSinkInterfaceForTesting()->OnFrame(
-      TestEncodedVideoFrame(webrtc::Timestamp::ms(0)));
+      TestEncodedVideoFrame(webrtc::Timestamp::Millis(0)));
   // Spin until the time counter changes.
   base::TimeTicks now = base::TimeTicks::Now();
   while (base::TimeTicks::Now() == now) {
   }
   source()->EncodedSinkInterfaceForTesting()->OnFrame(
-      TestEncodedVideoFrame(webrtc::Timestamp::ms(0)));
+      TestEncodedVideoFrame(webrtc::Timestamp::Millis(0)));
   run_loop.Run();
   track->RemoveEncodedSink(&sink);
 }
@@ -568,9 +568,9 @@ TEST_F(MediaStreamRemoteVideoSourceTest,
       .InSequence(s)
       .WillOnce(RunClosure(std::move(quit_closure)));
   source()->EncodedSinkInterfaceForTesting()->OnFrame(
-      TestEncodedVideoFrame(webrtc::Timestamp::ms(42)));
+      TestEncodedVideoFrame(webrtc::Timestamp::Millis(42)));
   source()->EncodedSinkInterfaceForTesting()->OnFrame(
-      TestEncodedVideoFrame(webrtc::Timestamp::ms(43)));
+      TestEncodedVideoFrame(webrtc::Timestamp::Millis(43)));
   run_loop.Run();
   track->RemoveEncodedSink(&sink);
 }

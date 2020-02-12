@@ -45,17 +45,4 @@ bool Metafile::SaveTo(base::File* file) const {
   return true;
 }
 
-#if defined(OS_ANDROID)
-bool Metafile::SaveToFileDescriptor(int fd) const {
-  if (fd == base::kInvalidFd)
-    return false;
-
-  std::vector<char> buffer;
-  if (!GetDataAsVector(&buffer))
-    return false;
-
-  return base::WriteFileDescriptor(fd, buffer.data(), buffer.size());
-}
-#endif  // defined(OS_ANDROID)
-
 }  // namespace printing

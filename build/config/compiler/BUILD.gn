@@ -658,17 +658,6 @@ config("compiler") {
       }
     }
 
-    # This is done in Android case to keep binary size under linker limit for
-    # 32bit, especially since when ThinLTO is enabled Chrome Android build
-    # cannot yet support DWARF Fission. This workaround was copied from
-    # crosbug/1032159
-    if (is_android) {
-      ldflags += [
-        "-Wl,-mllvm",
-        "-Wl,-generate-type-units",
-      ]
-    }
-
     # Work-around for http://openradar.appspot.com/20356002
     if (is_mac) {
       ldflags += [ "-Wl,-all_load" ]

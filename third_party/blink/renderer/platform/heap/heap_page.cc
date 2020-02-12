@@ -413,7 +413,6 @@ NormalPageArena::NormalPageArena(ThreadState* state, int index)
     : BaseArena(state, index),
       current_allocation_point_(nullptr),
       remaining_allocation_size_(0),
-      last_remaining_allocation_size_(0),
       promptly_freed_size_(0) {}
 
 void NormalPageArena::AddToFreeList(Address address, size_t size) {
@@ -728,7 +727,7 @@ void NormalPageArena::PromptlyFreeObject(HeapObjectHeader* header) {
     if (IsObjectAllocatedAtAllocationPoint(header)) {
       current_allocation_point_ -= size;
       DCHECK_EQ(address, current_allocation_point_);
-      SetRemainingAllocationSize(remaining_allocation_size_ + size);
+      remaining_allocation_size_ += size;
       SET_MEMORY_INACCESSIBLE(address, size);
       // Memory that is part of the allocation point is not allowed to be part
       // of the object start bit map.
@@ -775,7 +774,7 @@ bool NormalPageArena::ExpandObject(HeapObjectHeader* header, size_t new_size) {
       expand_size <= remaining_allocation_size_) {
     current_allocation_point_ += expand_size;
     DCHECK_GE(remaining_allocation_size_, expand_size);
-    SetRemainingAllocationSize(remaining_allocation_size_ - expand_size);
+    remaining_allocation_size_ -= expand_size;
     // Unpoison the memory used for the object (payload).
     SET_MEMORY_ACCESSIBLE(header->PayloadEnd(), expand_size);
     header->SetSize(allocation_size);
@@ -794,7 +793,7 @@ bool NormalPageArena::ShrinkObject(HeapObjectHeader* header, size_t new_size) {
   size_t shrink_size = header->size() - allocation_size;
   if (IsObjectAllocatedAtAllocationPoint(header)) {
     current_allocation_point_ -= shrink_size;
-    SetRemainingAllocationSize(remaining_allocation_size_ + shrink_size);
+    remaining_allocation_size_ += shrink_size;
     SET_MEMORY_INACCESSIBLE(current_allocation_point_, shrink_size);
     header->SetSize(allocation_size);
     return true;
@@ -855,24 +854,6 @@ Address NormalPageArena::LazySweepPages(size_t allocation_size,
   return result;
 }
 
-void NormalPageArena::SetRemainingAllocationSize(
-    size_t new_remaining_allocation_size) {
-  remaining_allocation_size_ = new_remaining_allocation_size;
-
-  // Sync recorded allocated-object size using the recorded checkpoint in
-  // |remaining_allocation_size_|:
-  // - If checkpoint is larger, the allocated size has increased.
-  // - The allocated size has decreased, otherwise.
-  if (last_remaining_allocation_size_ > remaining_allocation_size_) {
-    GetThreadState()->Heap().stats_collector()->IncreaseAllocatedObjectSize(
-        last_remaining_allocation_size_ - remaining_allocation_size_);
-  } else if (last_remaining_allocation_size_ != remaining_allocation_size_) {
-    GetThreadState()->Heap().stats_collector()->DecreaseAllocatedObjectSize(
-        remaining_allocation_size_ - last_remaining_allocation_size_);
-  }
-  last_remaining_allocation_size_ = remaining_allocation_size_;
-}
-
 void NormalPageArena::SetAllocationPoint(Address point, size_t size) {
 #if DCHECK_IS_ON()
   if (point) {
@@ -890,7 +871,7 @@ void NormalPageArena::SetAllocationPoint(Address point, size_t size) {
   }
   // Set up a new linear allocation area.
   current_allocation_point_ = point;
-  last_remaining_allocation_size_ = remaining_allocation_size_ = size;
+  remaining_allocation_size_ = size;
   // Update last allocated region in ThreadHeap. This must also be done if the
   // allocation point is set to 0 (before doing GC), so that the last allocated
   // region is automatically reset after GC.

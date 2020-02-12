@@ -385,6 +385,13 @@ Polymer({
   },
 
   /**
+   * Copy selected password to clipboard.
+   */
+  onMenuCopyPasswordButtonTap_() {
+    // TODO(crbug.com/917337): Implement copy-to-clipbard functionality.
+    (this.$.menu).close();
+  },
+  /**
    * Handle the undo shortcut.
    * @param {!Event} event
    * @private

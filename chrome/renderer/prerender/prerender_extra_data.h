@@ -16,7 +16,7 @@ namespace prerender {
 
 class PrerenderExtraData : public blink::WebPrerender::ExtraData {
  public:
-  explicit PrerenderExtraData(int render_view_id);
+  explicit PrerenderExtraData(int render_frame_id);
   ~PrerenderExtraData() override;
 
   void set_prerender_handle(
@@ -27,14 +27,14 @@ class PrerenderExtraData : public blink::WebPrerender::ExtraData {
     return prerender_handle_.get();
   }
 
-  int render_view_id() const { return render_view_id_; }
+  int render_frame_id() const { return render_frame_id_; }
 
   static PrerenderExtraData* FromPrerender(
       const blink::WebPrerender& prerender);
 
  private:
   mojo::Remote<chrome::mojom::PrerenderHandle> prerender_handle_;
-  const int render_view_id_;
+  const int render_frame_id_;
 
   DISALLOW_COPY_AND_ASSIGN(PrerenderExtraData);
 };

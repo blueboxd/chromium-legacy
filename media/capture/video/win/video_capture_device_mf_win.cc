@@ -42,7 +42,7 @@ class MFPhotoCallback final
                   VideoCaptureFormat format)
       : callback_(std::move(callback)), format_(format) {}
 
-  STDMETHOD(QueryInterface)(REFIID riid, void** object) override {
+  STDMETHODIMP QueryInterface(REFIID riid, void** object) override {
     if (riid == IID_IUnknown || riid == IID_IMFCaptureEngineOnSampleCallback) {
       AddRef();
       *object = static_cast<IMFCaptureEngineOnSampleCallback*>(this);
@@ -51,17 +51,17 @@ class MFPhotoCallback final
     return E_NOINTERFACE;
   }
 
-  STDMETHOD_(ULONG, AddRef)() override {
+  STDMETHODIMP_(ULONG) AddRef() override {
     base::RefCountedThreadSafe<MFPhotoCallback>::AddRef();
     return 1U;
   }
 
-  STDMETHOD_(ULONG, Release)() override {
+  STDMETHODIMP_(ULONG) Release() override {
     base::RefCountedThreadSafe<MFPhotoCallback>::Release();
     return 1U;
   }
 
-  STDMETHOD(OnSample)(IMFSample* sample) override {
+  STDMETHODIMP OnSample(IMFSample* sample) override {
     if (!sample)
       return S_OK;
 
@@ -354,7 +354,7 @@ class MFVideoCallback final
  public:
   MFVideoCallback(VideoCaptureDeviceMFWin* observer) : observer_(observer) {}
 
-  STDMETHOD(QueryInterface)(REFIID riid, void** object) override {
+  STDMETHODIMP QueryInterface(REFIID riid, void** object) override {
     HRESULT hr = E_NOINTERFACE;
     if (riid == IID_IUnknown) {
       *object = this;
@@ -372,22 +372,22 @@ class MFVideoCallback final
     return hr;
   }
 
-  STDMETHOD_(ULONG, AddRef)() override {
+  STDMETHODIMP_(ULONG) AddRef() override {
     base::RefCountedThreadSafe<MFVideoCallback>::AddRef();
     return 1U;
   }
 
-  STDMETHOD_(ULONG, Release)() override {
+  STDMETHODIMP_(ULONG) Release() override {
     base::RefCountedThreadSafe<MFVideoCallback>::Release();
     return 1U;
   }
 
-  STDMETHOD(OnEvent)(IMFMediaEvent* media_event) override {
+  STDMETHODIMP OnEvent(IMFMediaEvent* media_event) override {
     observer_->OnEvent(media_event);
     return S_OK;
   }
 
-  STDMETHOD(OnSample)(IMFSample* sample) override {
+  STDMETHODIMP OnSample(IMFSample* sample) override {
     if (!sample) {
       observer_->OnFrameDropped(
           VideoCaptureFrameDropReason::kWinMediaFoundationReceivedSampleIsNull);

@@ -591,9 +591,6 @@ IN_PROC_BROWSER_TEST_P(DumpAccessibilityTreeTest, AccessibilityAriaDropEffect) {
 IN_PROC_BROWSER_TEST_P(DumpAccessibilityTreeTest, AccessibilityAriaEmphasis) {
   RunAriaTest(FILE_PATH_LITERAL("aria-emphasis.html"));
 }
-IN_PROC_BROWSER_TEST_P(DumpAccessibilityTreeTest, AccessibilityAriaEditable) {
-  RunAriaTest(FILE_PATH_LITERAL("aria-editable.html"));
-}
 
 IN_PROC_BROWSER_TEST_P(DumpAccessibilityTreeTest,
                        AccessibilityAriaErrorMessage) {
@@ -615,6 +612,11 @@ IN_PROC_BROWSER_TEST_P(DumpAccessibilityTreeTest, AccessibilityAriaFeed) {
 
 IN_PROC_BROWSER_TEST_P(DumpAccessibilityTreeTest, AccessibilityAriaFigure) {
   RunAriaTest(FILE_PATH_LITERAL("aria-figure.html"));
+}
+
+IN_PROC_BROWSER_TEST_P(DumpAccessibilityTreeTest,
+                       AccessibilityAriaFocusableSubwidgetNotEditable) {
+  RunAriaTest(FILE_PATH_LITERAL("aria-focusable-subwidget-not-editable.html"));
 }
 
 IN_PROC_BROWSER_TEST_P(DumpAccessibilityTreeTest, AccessibilityAriaHasPopup) {

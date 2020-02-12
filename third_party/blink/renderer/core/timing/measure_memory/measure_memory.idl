@@ -2,11 +2,10 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-// https://github.com/ulan/javascript-agent-memory/blob/master/explainer.md
+// https://github.com/ulan/performance-measure-memory
 
 // The result of performance.measureMemory().
 dictionary MeasureMemory {
-  required MeasureMemoryEntry total;
-  MeasureMemoryEntry current;
-  sequence<MeasureMemoryEntry> other;
+  required unsigned long long bytes;
+  required sequence<MeasureMemoryBreakdown> breakdown;
 };

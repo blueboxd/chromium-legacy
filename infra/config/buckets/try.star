@@ -677,8 +677,7 @@ try_.chromium_linux_builder(
             '.+/[+]/third_party/blink/renderer/core/paint/.+',
             '.+/[+]/third_party/blink/renderer/core/svg/.+',
             '.+/[+]/third_party/blink/renderer/platform/graphics/.+',
-            '.+/[+]/third_party/blink/web_tests/FlagExpectations/composite-after-paint',
-            '.+/[+]/third_party/blink/web_tests/flag-specific/composite-after-paint/.+',
+            '.+/[+]/third_party/blink/web_tests/.+',
         ],
     ),
 )

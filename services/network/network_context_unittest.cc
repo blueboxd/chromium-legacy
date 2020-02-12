@@ -3487,13 +3487,9 @@ TEST_F(NetworkContextTest, ActivateDohProbes_NotPrimaryContext) {
   ASSERT_FALSE(resolver->IsDohProbeRunning());
 
   network_context->ActivateDohProbes();
-  EXPECT_TRUE(resolver->IsDohProbeRunning());
+  EXPECT_FALSE(resolver->IsDohProbeRunning());
 
   base::RunLoop().RunUntilIdle();
-  EXPECT_TRUE(resolver->IsDohProbeRunning());
-
-  network_context.reset();
-
   EXPECT_FALSE(resolver->IsDohProbeRunning());
 }
 

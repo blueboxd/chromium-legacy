@@ -5289,7 +5289,25 @@ int32_t AXPlatformNodeWin::ComputeIA2State() {
   if (GetBoolAttribute(ax::mojom::BoolAttribute::kModal))
     ia2_state |= IA2_STATE_MODAL;
 
+  // Clear editable state on some widgets.
   switch (data.role) {
+    case ax::mojom::Role::kTreeItem:
+    case ax::mojom::Role::kListBoxOption:
+      // Clear editable state if text selection changes should not be spoken.
+      // Subwidgets in a contenteditable such as tree items will clear
+      // IA2_STATE_EDITABLE when used with aria-activedescendant.
+      // HACK: look to remove in 2022 or later, once Google Slides no longer
+      // needs this to avoid NVDA double speaking in slides thumb view.
+      // Normally, NVDA will speak both a text selection and activedescendant
+      // changes in an editor, but clearing IA2_STATE_EDITABLE prevents that.
+      // This helps with user interfaces like Google slides that have a tree or
+      // listbox widget inside an editor, which they currently do in order to
+      // enable paste operations. Eventually this need should go away once IE11
+      // support is no longer needed and Slides instead relies on paste events.
+      if (!data.HasState(ax::mojom::State::kFocusable) ||
+          GetBoolAttribute(ax::mojom::BoolAttribute::kEditableRoot))
+        break;  // Not used with activedescendant, so preserve editable state.
+      FALLTHROUGH;  // Will clear editable state.
     case ax::mojom::Role::kMenuListPopup:
     case ax::mojom::Role::kMenuListOption:
       ia2_state &= ~(IA2_STATE_EDITABLE);
@@ -5297,6 +5315,7 @@ int32_t AXPlatformNodeWin::ComputeIA2State() {
     default:
       break;
   }
+
   return ia2_state;
 }
 

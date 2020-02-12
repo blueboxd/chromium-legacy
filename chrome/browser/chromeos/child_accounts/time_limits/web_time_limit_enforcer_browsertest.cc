@@ -7,6 +7,7 @@
 
 #include "base/feature_list.h"
 #include "base/json/json_writer.h"
+#include "base/strings/utf_string_conversions.h"
 #include "base/test/scoped_feature_list.h"
 #include "chrome/browser/chromeos/child_accounts/child_user_service.h"
 #include "chrome/browser/chromeos/child_accounts/child_user_service_factory.h"
@@ -18,10 +19,12 @@
 #include "chrome/browser/chromeos/login/test/user_policy_mixin.h"
 #include "chrome/browser/chromeos/policy/user_policy_test_helper.h"
 #include "chrome/browser/chromeos/profiles/profile_helper.h"
+#include "chrome/browser/extensions/browsertest_util.h"
 #include "chrome/browser/supervised_user/logged_in_user_mixin.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_navigator_params.h"
 #include "chrome/common/chrome_features.h"
+#include "chrome/common/web_application_info.h"
 #include "chrome/test/base/in_process_browser_test.h"
 #include "chrome/test/base/mixin_based_in_process_browser_test.h"
 #include "chrome/test/base/ui_test_utils.h"
@@ -30,6 +33,7 @@
 #include "content/public/browser/navigation_handle.h"
 #include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/web_contents.h"
+#include "extensions/common/extension.h"
 #include "net/dns/mock_host_resolver.h"
 #include "ui/base/window_open_disposition.h"
 #include "url/gurl.h"
@@ -37,6 +41,8 @@
 namespace {
 
 constexpr char kExampleHost[] = "www.example.com";
+constexpr char kExampleHost2[] = "www.example2.com";
+constexpr char kExampleHost3[] = "www.example3.com";
 
 class LoadFinishedWaiter : public content::WebContentsObserver {
  public:
@@ -86,6 +92,8 @@ class WebTimeLimitEnforcerThrottleTest : public MixinBasedInProcessBrowserTest {
   void WhitelistApp(const chromeos::app_time::AppId& app_id);
   void BlockWeb();
   chromeos::app_time::WebTimeLimitEnforcer* GetWebTimeLimitEnforcer();
+  content::WebContents* InstallAndLaunchWebApp(const GURL& url,
+                                               bool whitelisted_app);
 
  private:
   void UpdatePolicy();
@@ -167,6 +175,35 @@ WebTimeLimitEnforcerThrottleTest::GetWebTimeLimitEnforcer() {
           chromeos::ChildUserServiceFactory::GetForBrowserContext(
               browser_context));
   return child_user_service.web_time_enforcer();
+}
+
+content::WebContents* WebTimeLimitEnforcerThrottleTest::InstallAndLaunchWebApp(
+    const GURL& url,
+    bool whitelisted_app) {
+  WebApplicationInfo info;
+  info.title = base::UTF8ToUTF16(url.host());
+  info.description = base::UTF8ToUTF16("Web app");
+  info.app_url = url;
+  info.scope = url;
+  info.open_as_window = true;
+
+  const extensions::Extension* extension =
+      extensions::browsertest_util::InstallBookmarkApp(browser()->profile(),
+                                                       info);
+  EXPECT_TRUE(extension != nullptr);
+
+  base::RunLoop().RunUntilIdle();
+
+  if (whitelisted_app) {
+    WhitelistApp(
+        chromeos::app_time::AppId(apps::mojom::AppType::kWeb, extension->id()));
+  }
+
+  base::RunLoop().RunUntilIdle();
+
+  auto* web_content = extensions::browsertest_util::AddTab(browser(), url);
+
+  return web_content;
 }
 
 void WebTimeLimitEnforcerThrottleTest::UpdatePolicy() {
@@ -342,6 +379,41 @@ IN_PROC_BROWSER_TEST_F(WebTimeLimitEnforcerThrottleTest,
   WhitelistUrlRegx("chrome://*");
   waiter.Wait();
   EXPECT_FALSE(IsErrorPageBeingShownInWebContents(web_contents));
+}
+
+IN_PROC_BROWSER_TEST_F(WebTimeLimitEnforcerThrottleTest,
+                       WhitelistedWebAppInTabNotBlocked) {
+  GURL web_app_url1 = embedded_test_server()->GetURL(
+      kExampleHost, "/supervised_user/simple.html");
+  GURL web_app_url2 = embedded_test_server()->GetURL(
+      kExampleHost2, "/supervised_user/simple.html");
+  GURL normal_url = embedded_test_server()->GetURL(
+      kExampleHost3, "/supervised_user/simple.html");
+
+  content::WebContents* web_contents1 =
+      InstallAndLaunchWebApp(web_app_url1, /* whitelist */ true);
+  content::WebContents* web_contents2 =
+      InstallAndLaunchWebApp(web_app_url2, /* whitelist */ false);
+
+  NavigateParams params(browser(), normal_url,
+                        ui::PageTransition::PAGE_TRANSITION_LINK);
+  params.disposition = WindowOpenDisposition::NEW_FOREGROUND_TAB;
+
+  // Navigates and waits for loading to finish.
+  ui_test_utils::NavigateToURL(&params);
+  content::WebContents* web_contents3 = params.navigated_or_inserted_contents;
+
+  LoadFinishedWaiter waiter1(web_contents1, web_app_url1);
+  LoadFinishedWaiter waiter2(web_contents2, web_app_url2);
+  LoadFinishedWaiter waiter3(web_contents3, normal_url);
+  GetWebTimeLimitEnforcer()->OnWebTimeLimitReached();
+  waiter1.Wait();
+  waiter2.Wait();
+  waiter3.Wait();
+
+  EXPECT_FALSE(IsErrorPageBeingShownInWebContents(web_contents1));
+  EXPECT_TRUE(IsErrorPageBeingShownInWebContents(web_contents2));
+  EXPECT_TRUE(IsErrorPageBeingShownInWebContents(web_contents3));
 }
 
 // TODO(yilkal): Add WhitelistedSchemeNotBlocked test for  chrome://settings

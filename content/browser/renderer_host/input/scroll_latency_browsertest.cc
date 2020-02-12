@@ -272,9 +272,17 @@ class ScrollLatencyScrollbarBrowserTest : public ScrollLatencyBrowserTest {
   void SetUpCommandLine(base::CommandLine* command_line) override {
     ScrollLatencyBrowserTest::SetUpCommandLine(command_line);
     command_line->AppendSwitch(::switches::kDisableSmoothScrolling);
-    // Disable kOverlayScrollbar since overlay scrollbars are not
-    // hit-testable (thus input is not routed to scrollbars).
-    scoped_feature_list_.InitAndDisableFeature({features::kOverlayScrollbar});
+
+    // The following features need to be disabled:
+    // - kOverlayScrollbar since overlay scrollbars are not hit-testable (thus
+    // input is not routed to scrollbars).
+    // - kCompositorThreadedScrollbarScrolling since this feature is already
+    // tested by ScrollLatencyCompositedScrollbarBrowserTest. Hence, this
+    // current test can be used exclusively to test the main thread scrollbar
+    // path.
+    scoped_feature_list_.InitWithFeaturesAndParameters(
+        {}, {features::kOverlayScrollbar,
+             features::kCompositorThreadedScrollbarScrolling});
   }
 
   ~ScrollLatencyScrollbarBrowserTest() override {}

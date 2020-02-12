@@ -12,6 +12,8 @@
 #include "base/time/time.h"
 #include "chrome/browser/chromeos/child_accounts/time_limits/app_service_wrapper.h"
 #include "chrome/browser/chromeos/child_accounts/time_limits/app_time_limit_utils.h"
+#include "chrome/browser/chromeos/child_accounts/time_limits/app_time_limits_whitelist_policy_test_utils.h"
+#include "chrome/browser/chromeos/child_accounts/time_limits/app_time_limits_whitelist_policy_wrapper.h"
 #include "chrome/browser/chromeos/child_accounts/time_limits/app_time_notification_delegate.h"
 #include "chrome/browser/chromeos/child_accounts/time_limits/app_types.h"
 #include "chrome/services/app_service/public/mojom/types.mojom.h"
@@ -529,6 +531,49 @@ TEST_F(AppActivityRegistryTest, LimitChangesForInactiveApp) {
             *registry_test().GetAppLimit(kApp1)->daily_limit());
   EXPECT_EQ(base::TimeDelta::FromMinutes(0),
             *registry_test().GetTimeLeft(kApp1));
+}
+
+TEST_F(AppActivityRegistryTest, RemoveLimitsFromWhitelistedApps) {
+  // Set initial limit.
+  const AppLimit limit(AppRestriction::kTimeLimit,
+                       base::TimeDelta::FromMinutes(5), base::Time::Now());
+  SetAppLimit(kApp1, limit);
+  SetAppLimit(kApp2, limit);
+
+  AppTimeLimitsWhitelistPolicyBuilder builder;
+  builder.SetUp();
+  builder.AppendToWhitelistAppList(kApp1);
+
+  AppTimeLimitsWhitelistPolicyWrapper wrapper(&builder.value());
+  registry().OnTimeLimitWhitelistChanged(wrapper);
+
+  EXPECT_FALSE(registry_test().GetAppLimit(kApp1));
+
+  EXPECT_EQ(registry_test().GetAppLimit(kApp2)->daily_limit(),
+            limit.daily_limit());
+
+  EXPECT_EQ(registry().GetAppState(kApp1), AppState::kAlwaysAvailable);
+}
+
+TEST_F(AppActivityRegistryTest, WhitelistedAppsNoLimits) {
+  AppTimeLimitsWhitelistPolicyBuilder builder;
+  builder.SetUp();
+  builder.AppendToWhitelistAppList(kApp1);
+  AppTimeLimitsWhitelistPolicyWrapper wrapper(&builder.value());
+  registry().OnTimeLimitWhitelistChanged(wrapper);
+
+  // Set initial limit.
+  const AppLimit limit(AppRestriction::kTimeLimit,
+                       base::TimeDelta::FromMinutes(5), base::Time::Now());
+  SetAppLimit(kApp1, limit);
+  SetAppLimit(kApp2, limit);
+
+  EXPECT_FALSE(registry_test().GetAppLimit(kApp1));
+
+  EXPECT_EQ(registry_test().GetAppLimit(kApp2)->daily_limit(),
+            limit.daily_limit());
+
+  EXPECT_EQ(registry().GetAppState(kApp1), AppState::kAlwaysAvailable);
 }
 
 }  // namespace app_time

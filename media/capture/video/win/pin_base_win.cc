@@ -15,7 +15,7 @@ class TypeEnumerator final : public IEnumMediaTypes,
   explicit TypeEnumerator(PinBase* pin) : pin_(pin), index_(0) {}
 
   // Implement from IUnknown.
-  STDMETHOD(QueryInterface)(REFIID iid, void** object_ptr) override {
+  STDMETHODIMP QueryInterface(REFIID iid, void** object_ptr) override {
     if (iid == IID_IEnumMediaTypes || iid == IID_IUnknown) {
       AddRef();
       *object_ptr = static_cast<IEnumMediaTypes*>(this);
@@ -24,18 +24,20 @@ class TypeEnumerator final : public IEnumMediaTypes,
     return E_NOINTERFACE;
   }
 
-  STDMETHOD_(ULONG, AddRef)() override {
+  STDMETHODIMP_(ULONG) AddRef() override {
     base::RefCounted<TypeEnumerator>::AddRef();
     return 1;
   }
 
-  STDMETHOD_(ULONG, Release)() override {
+  STDMETHODIMP_(ULONG) Release() override {
     base::RefCounted<TypeEnumerator>::Release();
     return 1;
   }
 
   // Implement IEnumMediaTypes.
-  STDMETHOD(Next)(ULONG count, AM_MEDIA_TYPE** types, ULONG* fetched) override {
+  STDMETHODIMP Next(ULONG count,
+                    AM_MEDIA_TYPE** types,
+                    ULONG* fetched) override {
     ULONG types_fetched = 0;
 
     while (types_fetched < count) {
@@ -74,17 +76,17 @@ class TypeEnumerator final : public IEnumMediaTypes,
     return types_fetched == count ? S_OK : S_FALSE;
   }
 
-  STDMETHOD(Skip)(ULONG count) override {
+  STDMETHODIMP Skip(ULONG count) override {
     index_ += count;
     return S_OK;
   }
 
-  STDMETHOD(Reset)() override {
+  STDMETHODIMP Reset() override {
     index_ = 0;
     return S_OK;
   }
 
-  STDMETHOD(Clone)(IEnumMediaTypes** clone) override {
+  STDMETHODIMP Clone(IEnumMediaTypes** clone) override {
     TypeEnumerator* type_enum = new TypeEnumerator(pin_.get());
     type_enum->AddRef();
     type_enum->index_ = index_;

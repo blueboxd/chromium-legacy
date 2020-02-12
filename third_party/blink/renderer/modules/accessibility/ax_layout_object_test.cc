@@ -32,4 +32,26 @@ TEST_F(AXLayoutObjectTest, StringValueTextSecurity) {
             ax_select->StringValue().Utf8());
 }
 
+// Test if AX takes 'Retarget' described from
+// https://dom.spec.whatwg.org/#retarget after hit-testing.
+TEST_F(AXLayoutObjectTest, AccessibilityHitTest) {
+  SetBodyInnerHTML(
+      "<style>\
+        .A{display:flex;flex:100%;margin-top:-37px;height:34px}\
+        .B{display:flex;flex:1;flex-wrap:wrap}\
+        .C{flex:100%;height:34px}\
+      </style>\
+      <div class='B'>\
+      <div class='C'></div>\
+      <input class='A' aria-label='Search' role='combobox'>\
+      </div>");
+  const AXObject* ax_root = GetAXRootObject();
+  ASSERT_NE(nullptr, ax_root);
+  const IntPoint position(8, 5);
+  AXObject* hit_test_result = ax_root->AccessibilityHitTest(position);
+  EXPECT_NE(nullptr, hit_test_result);
+  EXPECT_EQ(hit_test_result->RoleValue(),
+            ax::mojom::Role::kTextFieldWithComboBox);
+}
+
 }  // namespace blink

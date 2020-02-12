@@ -59,6 +59,7 @@ SPECIAL_TOKENS = [
     '2D',
     'AX',
     'FE',
+    'JS',
     'V0',
     'V8',
     'v8',

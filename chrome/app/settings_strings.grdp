@@ -1014,6 +1014,9 @@
   <message name="IDS_SETTINGS_PASSWORD_DETAILS" desc="Label for a context menu item that shows a dialog with details for the selected password.">
     Details
   </message>
+  <message name="IDS_SETTINGS_PASSWORD_COPY" desc="Label for a context menu item that allows to copy the selected password.">
+    Copy password
+  </message>
   <message name="IDS_SETTINGS_PASSWORDS_WEBSITE" desc="Label for the website a password is for when editing a password.">
     Website
   </message>
@@ -4379,9 +4382,6 @@
   <message name="IDS_SETTINGS_SYNC_SETUP_CANCEL_DIALOG_BODY" desc="The body text of the dialog to confirm the sync cancellation.">
     You can turn on sync anytime in settings
   </message>
-  <message name="IDS_SETTINGS_SYNC_TIMEOUT" desc="Text explaining what to do if sync times out.">
-    Check your internet connection. If the problem continues, try signing out and signing in again.
-  </message>
   <message name="IDS_SETTINGS_SYNC_EVERYTHING_CHECKBOX_LABEL" desc="Label for the checkbox which causes all properties to be synced.">
     Sync everything
   </message>
@@ -5040,7 +5040,7 @@
       Browsing data
     </message>
     <message name="IDS_SETTINGS_STORAGE_ITEM_APPS" desc="In Device Settings > Storage, label for the total size of Android apps and web store apps and extensions.">
-      Apps and Extensions 
+      Apps and Extensions
     </message>
     <message name="IDS_SETTINGS_STORAGE_ITEM_CROSTINI" desc="In Device Settings > Storage, label for the total size of Crostini VMs, apps and cache.">
       Linux (Beta) storage

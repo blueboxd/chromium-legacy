@@ -257,9 +257,12 @@ class DISPLAY_MANAGER_EXPORT ManagedDisplayInfo {
   // empty size.
   gfx::Size GetNativeModeSize() const;
 
-  const gfx::ColorSpace& color_space() const { return color_space_; }
-  void set_color_space(const gfx::ColorSpace& color_space) {
-    color_space_ = color_space;
+  const gfx::DisplayColorSpaces& display_color_spaces() const {
+    return display_color_spaces_;
+  }
+  void set_display_color_spaces(
+      const gfx::DisplayColorSpaces& display_color_spaces) {
+    display_color_spaces_ = display_color_spaces;
   }
 
   uint32_t bits_per_channel() const { return bits_per_channel_; }
@@ -366,9 +369,9 @@ class DISPLAY_MANAGER_EXPORT ManagedDisplayInfo {
   // Maximum cursor size.
   gfx::Size maximum_cursor_size_;
 
-  // Colorimetry information of the Display (if IsValid()), including e.g.
-  // transfer and primaries information, retrieved from its EDID.
-  gfx::ColorSpace color_space_;
+  // Colorimetry information of the Display.
+  gfx::DisplayColorSpaces display_color_spaces_;
+
   // Bit depth of every channel, extracted from its EDID, usually 8, but can be
   // 0 if EDID says so or if the EDID (retrieval) was faulty.
   uint32_t bits_per_channel_;

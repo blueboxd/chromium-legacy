@@ -95,6 +95,7 @@ class AppActivityRegistry : public AppServiceWrapper::EventListener {
   bool IsAppBlocked(const AppId& app_id) const;
   bool IsAppTimeLimitReached(const AppId& app_id) const;
   bool IsAppActive(const AppId& app_id) const;
+  bool IsWhitelistedApp(const AppId& app_id) const;
 
   // Manages AppStateObservers.
   void AddAppStateObserver(AppStateObserver* observer);

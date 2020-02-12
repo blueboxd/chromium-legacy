@@ -73,8 +73,7 @@ PasswordBubbleViewBase* PasswordBubbleViewBase::CreateBubble(
                  password_manager::ui::PENDING_PASSWORD_UPDATE_STATE ||
              model_state == password_manager::ui::PENDING_PASSWORD_STATE) {
     if (base::FeatureList::IsEnabled(
-            password_manager::features::
-                kEnablePasswordsAccountStorageSavingUi)) {
+            password_manager::features::kEnablePasswordsAccountStorage)) {
       view = new PasswordSaveUpdateWithAccountStoreView(web_contents,
                                                         anchor_view, reason);
     } else {

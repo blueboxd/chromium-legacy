@@ -183,6 +183,7 @@ class TestExpectations(object):
         results = set()
         reasons = set()
         is_slow_test = False
+        trailing_comments = ''
         for test_exp in expectations:
             expected_results = test_exp.expectations_for(test)
             # The return Expectation instance from expectations_for has the default
@@ -195,11 +196,14 @@ class TestExpectations(object):
                 results.update(expected_results.results)
             is_slow_test |= expected_results.is_slow_test
             reasons.update(expected_results.reason.split())
+            # Typ will leave a newline at the end of trailing_comments, so we
+            # can just concatenate here and still have comments from different
+            # files be separated by newlines.
+            trailing_comments += expected_results.trailing_comments
         # If the results set is empty then the Expectation constructor
         # will set the expected result to Pass.
         return typ_types.Expectation(
-            test=test, results=results, is_slow_test=is_slow_test,
-            reason=' '.join(reasons))
+            test=test, results=results, is_slow_test=is_slow_test, reason=' '.join(reasons), trailing_comments=trailing_comments)
 
     def get_expectations(self, test):
         return self._get_expectations(self._expectations, test)
@@ -357,4 +361,3 @@ class SystemConfigurationRemover(object):
         new_content = '\n'.join(new_lines)
         self._test_expectations.port.host.filesystem.write_text_file(path, new_content)
         return new_content
-

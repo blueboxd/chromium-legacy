@@ -27,6 +27,7 @@
 #include "base/synchronization/lock.h"
 #include "base/threading/scoped_blocking_call.h"
 #include "base/trace_event/memory_dump_manager.h"
+#include "base/trace_event/trace_event.h"
 #include "build/build_config.h"
 #include "sql/database_memory_dump_provider.h"
 #include "sql/initialization.h"
@@ -267,19 +268,23 @@ void Database::RecordEvent(Events event, size_t count) {
 }
 
 bool Database::Open(const base::FilePath& path) {
+  TRACE_EVENT1("sql", "Database::Open", "path", path.MaybeAsASCII());
   return OpenInternal(AsUTF8ForSQL(path), RETRY_ON_POISON);
 }
 
 bool Database::OpenInMemory() {
+  TRACE_EVENT0("sql", "Database::OpenInMemory");
   in_memory_ = true;
   return OpenInternal(":memory:", NO_RETRY);
 }
 
 bool Database::OpenTemporary() {
+  TRACE_EVENT0("sql", "Database::OpenTemporary");
   return OpenInternal("", NO_RETRY);
 }
 
 void Database::CloseInternal(bool forced) {
+  TRACE_EVENT0("sql", "Database::CloseInternal");
   // TODO(shess): Calling "PRAGMA journal_mode = DELETE" at this point
   // will delete the -journal file.  For ChromiumOS or other more
   // embedded systems, this is probably not appropriate, whereas on
@@ -332,6 +337,7 @@ void Database::CloseInternal(bool forced) {
 }
 
 void Database::Close() {
+  TRACE_EVENT0("sql", "Database::Close");
   // If the database was already closed by RazeAndClose(), then no
   // need to close again.  Clear the |poisoned_| bit so that incorrect
   // API calls are caught.
@@ -344,6 +350,7 @@ void Database::Close() {
 }
 
 void Database::Preload() {
+  TRACE_EVENT0("sql", "Database::Preload");
   if (base::FeatureList::IsEnabled(features::kSqlSkipPreload))
     return;
 
@@ -410,6 +417,7 @@ void Database::Preload() {
 // false.  The downside then is that it allows open-ended use of memory for
 // large transactions.
 void Database::ReleaseCacheMemoryIfNeeded(bool implicit_change_performed) {
+  TRACE_EVENT0("sql", "Database::ReleaseCacheMemoryIfNeeded");
   // The database could have been closed during a transaction as part of error
   // recovery.
   if (!db_) {
@@ -458,6 +466,7 @@ base::FilePath Database::DbPath() const {
 }
 
 std::string Database::CollectErrorInfo(int error, Statement* stmt) const {
+  TRACE_EVENT0("sql", "Database::CollectErrorInfo");
   // Buffer for accumulating debugging info about the error.  Place
   // more-relevant information earlier, in case things overflow the
   // fixed-size reporting buffer.
@@ -552,6 +561,7 @@ std::string Database::CollectErrorInfo(int error, Statement* stmt) const {
 // TODO(shess): Since this is only called in an error situation, it might be
 // prudent to rewrite in terms of SQLite API calls, and mark the function const.
 std::string Database::CollectCorruptionInfo() {
+  TRACE_EVENT0("sql", "Database::CollectCorruptionInfo");
   // If the file cannot be accessed it is unlikely that an integrity check will
   // turn up actionable information.
   const base::FilePath db_path = DbPath();
@@ -593,6 +603,8 @@ std::string Database::CollectCorruptionInfo() {
 }
 
 bool Database::GetMmapAltStatus(int64_t* status) {
+  TRACE_EVENT0("sql", "Database::GetMmapAltStatus");
+
   // The [meta] version uses a missing table as a signal for a fresh database.
   // That will not work for the view, which would not exist in either a new or
   // an existing database.  A new database _should_ be only one page long, so
@@ -635,6 +647,8 @@ bool Database::SetMmapAltStatus(int64_t status) {
 }
 
 size_t Database::GetAppropriateMmapSize() {
+  TRACE_EVENT0("sql", "Database::GetAppropriateMmapSize");
+
   base::Optional<base::ScopedBlockingCall> scoped_blocking_call;
   InitScopedBlockingCall(FROM_HERE, &scoped_blocking_call);
 
@@ -759,6 +773,8 @@ size_t Database::GetAppropriateMmapSize() {
 }
 
 void Database::TrimMemory() {
+  TRACE_EVENT0("sql", "Database::TrimMemory");
+
   if (!db_)
     return;
 
@@ -776,6 +792,8 @@ void Database::TrimMemory() {
 // Create an in-memory database with the existing database's page
 // size, then backup that database over the existing database.
 bool Database::Raze() {
+  TRACE_EVENT0("sql", "Database::Raze");
+
   base::Optional<base::ScopedBlockingCall> scoped_blocking_call;
   InitScopedBlockingCall(FROM_HERE, &scoped_blocking_call);
 
@@ -884,6 +902,8 @@ bool Database::Raze() {
 }
 
 bool Database::RazeAndClose() {
+  TRACE_EVENT0("sql", "Database::RazeAndClose");
+
   if (!db_) {
     DCHECK(poisoned_) << "Cannot raze null db";
     return false;
@@ -905,6 +925,8 @@ bool Database::RazeAndClose() {
 }
 
 void Database::Poison() {
+  TRACE_EVENT0("sql", "Database::Poison");
+
   if (!db_) {
     DCHECK(poisoned_) << "Cannot poison null db";
     return;
@@ -931,6 +953,8 @@ void Database::Poison() {
 //
 // static
 bool Database::Delete(const base::FilePath& path) {
+  TRACE_EVENT1("sql", "Database::Delete", "path", path.MaybeAsASCII());
+
   base::ScopedBlockingCall scoped_blocking_call(FROM_HERE,
                                                 base::BlockingType::MAY_BLOCK);
 
@@ -971,6 +995,8 @@ bool Database::Delete(const base::FilePath& path) {
 }
 
 bool Database::BeginTransaction() {
+  TRACE_EVENT0("sql", "Database::BeginTransaction");
+
   if (needs_rollback_) {
     DCHECK_GT(transaction_nesting_, 0);
 
@@ -992,6 +1018,8 @@ bool Database::BeginTransaction() {
 }
 
 void Database::RollbackTransaction() {
+  TRACE_EVENT0("sql", "Database::RollbackTransaction");
+
   if (!transaction_nesting_) {
     DCHECK(poisoned_) << "Rolling back a nonexistent transaction";
     return;
@@ -1009,6 +1037,8 @@ void Database::RollbackTransaction() {
 }
 
 bool Database::CommitTransaction() {
+  TRACE_EVENT0("sql", "Database::CommitTransaction");
+
   if (!transaction_nesting_) {
     DCHECK(poisoned_) << "Committing a nonexistent transaction";
     return false;
@@ -1036,6 +1066,8 @@ bool Database::CommitTransaction() {
 }
 
 void Database::RollbackAllTransactions() {
+  TRACE_EVENT0("sql", "Database::RollbackAllTransactions");
+
   if (transaction_nesting_ > 0) {
     transaction_nesting_ = 0;
     DoRollback();
@@ -1045,6 +1077,8 @@ void Database::RollbackAllTransactions() {
 bool Database::AttachDatabase(const base::FilePath& other_db_path,
                               const char* attachment_point,
                               InternalApiToken) {
+  TRACE_EVENT0("sql", "Database::AttachDatabase");
+
   DCHECK(ValidAttachmentPoint(attachment_point));
 
   Statement s(GetUniqueStatement("ATTACH DATABASE ? AS ?"));
@@ -1060,6 +1094,8 @@ bool Database::AttachDatabase(const base::FilePath& other_db_path,
 }
 
 bool Database::DetachDatabase(const char* attachment_point, InternalApiToken) {
+  TRACE_EVENT0("sql", "Database::DetachDatabase");
+
   DCHECK(ValidAttachmentPoint(attachment_point));
 
   Statement s(GetUniqueStatement("DETACH DATABASE ?"));
@@ -1071,6 +1107,8 @@ bool Database::DetachDatabase(const char* attachment_point, InternalApiToken) {
 // caller wishes to execute multiple statements, that should be explicit, and
 // perhaps tucked into an explicit transaction with rollback in case of error.
 int Database::ExecuteAndReturnErrorCode(const char* sql) {
+  TRACE_EVENT0("sql", "Database::ExecuteAndReturnErrorCode");
+
   DCHECK(sql);
 
   if (!db_) {
@@ -1127,6 +1165,8 @@ int Database::ExecuteAndReturnErrorCode(const char* sql) {
 }
 
 bool Database::Execute(const char* sql) {
+  TRACE_EVENT1("sql", "Database::Execute", "query", TRACE_STR_COPY(sql));
+
   if (!db_) {
     DCHECK(poisoned_) << "Illegal use of Database without a db";
     return false;
@@ -1146,6 +1186,8 @@ bool Database::Execute(const char* sql) {
 }
 
 bool Database::ExecuteWithTimeout(const char* sql, base::TimeDelta timeout) {
+  TRACE_EVENT0("sql", "Database::ExecuteWithTimeout");
+
   if (!db_) {
     DCHECK(poisoned_) << "Illegal use of Database without a db";
     return false;
@@ -1346,6 +1388,8 @@ const char* Database::GetErrorMessage() const {
 
 bool Database::OpenInternal(const std::string& file_name,
                             Database::Retry retry_flag) {
+  TRACE_EVENT1("sql", "Database::OpenInternal", "path", file_name);
+
   if (db_) {
     DLOG(DCHECK) << "sql::Database is already open.";
     return false;
@@ -1521,6 +1565,8 @@ bool Database::OpenInternal(const std::string& file_name,
 }
 
 void Database::DoRollback() {
+  TRACE_EVENT0("sql", "Database::DoRollback");
+
   Statement rollback(GetCachedStatement(SQL_FROM_HERE, "ROLLBACK"));
 
   rollback.Run();
@@ -1569,6 +1615,8 @@ void Database::AddTaggedHistogram(const std::string& name, int sample) const {
 int Database::OnSqliteError(int err,
                             sql::Statement* stmt,
                             const char* sql) const {
+  TRACE_EVENT0("sql", "Database::OnSqliteError");
+
   base::UmaHistogramSparse("Sqlite.Error", err);
   AddTaggedHistogram("Sqlite.Error", err);
 

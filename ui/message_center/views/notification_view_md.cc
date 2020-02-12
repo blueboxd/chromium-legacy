@@ -90,9 +90,9 @@ const float kActionButtonInkDropHighlightVisibleOpacity = 0.08f;
 constexpr SkColor kActionButtonTextColor = gfx::kGoogleBlue600;
 // Background color of the large image.
 constexpr SkColor kLargeImageBackgroundColor = SkColorSetRGB(0xf5, 0xf5, 0xf5);
-
-constexpr SkColor kRegularTextColorMD = SkColorSetRGB(0x21, 0x21, 0x21);
-constexpr SkColor kDimTextColorMD = SkColorSetRGB(0x75, 0x75, 0x75);
+// Background color of the inline settings.
+constexpr SkColor kInlineSettingsBackgroundColor =
+    SkColorSetRGB(0xEE, 0xEE, 0xEE);
 
 // Text color and icon color of inline reply area when the textfield is empty.
 constexpr SkColor kTextfieldPlaceholderTextColorMD =
@@ -185,6 +185,7 @@ std::unique_ptr<views::View> CreateItemView(const NotificationItem& item) {
   title->SetCollapseWhenHidden(true);
   title->SetHorizontalAlignment(gfx::ALIGN_LEFT);
   title->SetEnabledColor(kRegularTextColorMD);
+  title->SetBackgroundColor(kNotificationBackgroundColor);
   title->SetAutoColorReadabilityEnabled(false);
   view->AddChildView(title);
 
@@ -194,6 +195,7 @@ std::unique_ptr<views::View> CreateItemView(const NotificationItem& item) {
   message->SetCollapseWhenHidden(true);
   message->SetHorizontalAlignment(gfx::ALIGN_LEFT);
   message->SetEnabledColor(kDimTextColorMD);
+  message->SetBackgroundColor(kNotificationBackgroundColor);
   message->SetAutoColorReadabilityEnabled(false);
   view->AddChildView(message);
   return view;
@@ -216,12 +218,14 @@ CompactTitleMessageView::CompactTitleMessageView() {
   title_->SetFontList(font_list);
   title_->SetHorizontalAlignment(gfx::ALIGN_LEFT);
   title_->SetEnabledColor(kRegularTextColorMD);
+  title_->SetBackgroundColor(kNotificationBackgroundColor);
   AddChildView(title_);
 
   message_ = new views::Label();
   message_->SetFontList(font_list);
   message_->SetHorizontalAlignment(gfx::ALIGN_RIGHT);
   message_->SetEnabledColor(kDimTextColorMD);
+  message_->SetBackgroundColor(kNotificationBackgroundColor);
   AddChildView(message_);
 }
 
@@ -467,11 +471,19 @@ void NotificationInputContainerMD::ButtonPressed(views::Button* sender,
 
 class InlineSettingsRadioButton : public views::RadioButton {
  public:
-  InlineSettingsRadioButton(const base::string16& label_text)
+  explicit InlineSettingsRadioButton(const base::string16& label_text)
       : views::RadioButton(label_text, 1 /* group */) {
+    SetEnabledTextColors(kRegularTextColorMD);
     label()->SetFontList(GetTextFontList());
-    label()->SetEnabledColor(kRegularTextColorMD);
+    label()->SetBackgroundColor(kInlineSettingsBackgroundColor);
     label()->SetSubpixelRenderingEnabled(false);
+  }
+
+ private:
+  // views::RadioButton:
+  SkColor GetIconImageColor(int icon_state) const override {
+    return (icon_state & IconState::CHECKED) ? kActionButtonTextColor
+                                             : kRegularTextColorMD;
   }
 };
 
@@ -781,6 +793,7 @@ void NotificationViewMD::CreateOrUpdateContextTitleView(
   header_row_->SetAccentColor(notification.accent_color() == SK_ColorTRANSPARENT
                                   ? kNotificationDefaultAccentColor
                                   : notification.accent_color());
+  header_row_->SetBackgroundColor(kNotificationBackgroundColor);
   header_row_->SetTimestamp(notification.timestamp());
   header_row_->SetAppNameElideBehavior(gfx::ELIDE_TAIL);
 
@@ -824,6 +837,7 @@ void NotificationViewMD::CreateOrUpdateTitleView(
     title_view_->SetFontList(font_list);
     title_view_->SetHorizontalAlignment(gfx::ALIGN_TO_HEAD);
     title_view_->SetEnabledColor(kRegularTextColorMD);
+    title_view_->SetBackgroundColor(kNotificationBackgroundColor);
     title_view_->SetLineHeight(kLineHeightMD);
     // TODO(knollr): multiline should not be required, but we need to set the
     // width of |title_view_| (because of crbug.com/682266), which only works in
@@ -859,6 +873,7 @@ void NotificationViewMD::CreateOrUpdateMessageView(
     message_view_->SetFontList(font_list);
     message_view_->SetHorizontalAlignment(gfx::ALIGN_TO_HEAD);
     message_view_->SetEnabledColor(kDimTextColorMD);
+    message_view_->SetBackgroundColor(kNotificationBackgroundColor);
     message_view_->SetLineHeight(kLineHeightMD);
     message_view_->SetMultiLine(true);
     message_view_->SetMaxLines(kMaxLinesForMessageView);
@@ -942,6 +957,7 @@ void NotificationViewMD::CreateOrUpdateProgressStatusView(
     status_view_->SetFontList(font_list);
     status_view_->SetHorizontalAlignment(gfx::ALIGN_LEFT);
     status_view_->SetEnabledColor(kDimTextColorMD);
+    status_view_->SetBackgroundColor(kNotificationBackgroundColor);
     status_view_->SetBorder(views::CreateEmptyBorder(kStatusTextPadding));
     left_content_->AddChildViewAt(status_view_, left_content_count_);
   }
@@ -1259,6 +1275,9 @@ void NotificationViewMD::ToggleInlineSettings(const ui::Event& event) {
   settings_row_->SetVisible(inline_settings_visible);
   content_row_->SetVisible(!inline_settings_visible);
   header_row_->SetDetailViewsVisible(!inline_settings_visible);
+  header_row_->SetBackgroundColor(inline_settings_visible
+                                      ? kInlineSettingsBackgroundColor
+                                      : kNotificationBackgroundColor);
 
   // Always check "Don't block" when inline settings is shown.
   // If it's already blocked, users should not see inline settings.
@@ -1429,8 +1448,7 @@ std::unique_ptr<views::InkDropMask> NotificationViewMD::CreateInkDropMask()
 }
 
 SkColor NotificationViewMD::GetInkDropBaseColor() const {
-  // Background of inline settings area.
-  return SkColorSetRGB(0xEE, 0xEE, 0xEE);
+  return kInlineSettingsBackgroundColor;
 }
 
 void NotificationViewMD::InkDropAnimationStarted() {

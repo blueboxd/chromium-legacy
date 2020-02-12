@@ -164,15 +164,17 @@ class MockMFPhotoCallback final : public IMFCaptureEngineOnSampleCallback {
   MOCK_METHOD0(DoRelease, ULONG(void));
   MOCK_METHOD1(DoOnSample, HRESULT(IMFSample*));
 
-  STDMETHOD(QueryInterface)(REFIID riid, void** object) override {
+  STDMETHODIMP QueryInterface(REFIID riid, void** object) override {
     return DoQueryInterface(riid, object);
   }
 
-  STDMETHOD_(ULONG, AddRef)() override { return DoAddRef(); }
+  STDMETHODIMP_(ULONG) AddRef() override { return DoAddRef(); }
 
-  STDMETHOD_(ULONG, Release)() override { return DoRelease(); }
+  STDMETHODIMP_(ULONG) Release() override { return DoRelease(); }
 
-  STDMETHOD(OnSample)(IMFSample* sample) override { return DoOnSample(sample); }
+  STDMETHODIMP OnSample(IMFSample* sample) override {
+    return DoOnSample(sample);
+  }
 };
 #endif
 

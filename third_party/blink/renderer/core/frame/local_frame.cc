@@ -1284,6 +1284,12 @@ LocalFrame::LazyLoadImageSetting LocalFrame::GetLazyLoadImageSetting() const {
 }
 
 bool LocalFrame::ShouldForceDeferScript() const {
+  // Check if we should not defer script in subframe.
+  if (base::FeatureList::IsEnabled(features::kDisableForceDeferInChildFrames) &&
+      !IsLocalRoot()) {
+    return false;
+  }
+
   // Check if enabled by runtime feature (for testing/evaluation) or if enabled
   // by PreviewsState (for live intervention).
   return RuntimeEnabledFeatures::ForceDeferScriptInterventionEnabled() ||

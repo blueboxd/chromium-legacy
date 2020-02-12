@@ -189,6 +189,7 @@
           "firstPartyForCookiesUrl": {
             "$ref": "events.UrlFilter",
             "description": "Matches if the conditions of the UrlFilter are fulfilled for the 'first party' URL of the request. The 'first party' URL of a request, when present, can be different from the request's target URL, and describes what is considered 'first party' for the sake of third-party checks for cookies.",
+            "deprecated": "Ignored since release 82.",
             "optional": true
           },
           "resourceType": {

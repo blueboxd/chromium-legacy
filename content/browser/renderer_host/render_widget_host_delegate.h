@@ -335,6 +335,9 @@ class CONTENT_EXPORT RenderWidgetHostDelegate {
   // Returns true if the delegate is a portal.
   virtual bool IsPortal() const;
 
+  // Notify the delegate that the screen orientation has been changed.
+  virtual void DidChangeScreenOrientation() {}
+
  protected:
   virtual ~RenderWidgetHostDelegate() {}
 };

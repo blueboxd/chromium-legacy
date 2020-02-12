@@ -97,7 +97,8 @@ ALWAYS_INLINE void MarkingVisitorCommon::AccountMarkedBytes(
     HeapObjectHeader* header) {
   marked_bytes_ +=
       header->IsLargeObject()
-          ? reinterpret_cast<LargeObjectPage*>(PageFromObject(header))->size()
+          ? reinterpret_cast<LargeObjectPage*>(PageFromObject(header))
+                ->ObjectSize()
           : header->size();
 }
 
@@ -198,10 +199,6 @@ class PLATFORM_EXPORT MarkingVisitor
   // to be in construction.
   void DynamicallyMarkAddress(Address);
 
-  // Adds tracing callback for an already marked object. The object is not
-  // allowed to be in construction.
-  void VisitMarkedHeader(HeapObjectHeader* header);
-
   void FlushMarkingWorklists();
 
  private:
@@ -297,7 +294,7 @@ ALWAYS_INLINE void ConcurrentMarkingVisitor::AccountMarkedBytesSafe(
     HeapObjectHeader* header) {
   marked_bytes_ +=
       header->IsLargeObject<HeapObjectHeader::AccessMode::kAtomic>()
-          ? static_cast<LargeObjectPage*>(PageFromObject(header))->size()
+          ? static_cast<LargeObjectPage*>(PageFromObject(header))->ObjectSize()
           : header->size<HeapObjectHeader::AccessMode::kAtomic>();
 }
 

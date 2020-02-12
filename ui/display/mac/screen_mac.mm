@@ -105,16 +105,17 @@ Display BuildDisplayForScreen(NSScreen* screen) {
     }
     icc_profile.HistogramDisplay(display.id());
   }
+  gfx::DisplayColorSpaces display_color_spaces(icc_profile.GetColorSpace(),
+                                               gfx::BufferFormat::RGBA_8888);
   if (Display::HasForceDisplayColorProfile()) {
     if (Display::HasEnsureForcedColorProfile()) {
-      CHECK_EQ(icc_profile.GetColorSpace(), display.color_space())
-          << "The display's color space does not match the color space that "
-             "was forced by the command line. This will cause pixel tests to "
-             "fail.";
+      if (display_color_spaces != display.color_spaces()) {
+        LOG(FATAL) << "The display's color space does not match the color "
+                      "space that was forced by the command line. This will "
+                      "cause pixel tests to fail.";
+      }
     }
   } else {
-    gfx::DisplayColorSpaces display_color_spaces(icc_profile.GetColorSpace(),
-                                                 gfx::BufferFormat::RGBA_8888);
     if (enable_hdr) {
       bool needs_alpha_values[] = {true, false};
       for (const auto& needs_alpha : needs_alpha_values) {

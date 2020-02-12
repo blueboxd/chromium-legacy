@@ -306,7 +306,7 @@ static CSSValue* ConsumeSingleViewportDescriptor(
       if (id == CSSValueID::kAuto)
         return ConsumeIdent(range);
       CSSValue* parsed_value = css_property_parser_helpers::ConsumeNumber(
-          range, kValueRangeNonNegative);
+          range, context, kValueRangeNonNegative);
       if (parsed_value)
         return parsed_value;
       return css_property_parser_helpers::ConsumePercent(

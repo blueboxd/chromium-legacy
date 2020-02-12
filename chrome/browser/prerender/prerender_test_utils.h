@@ -370,7 +370,15 @@ class PrerenderInProcessBrowserTest : virtual public InProcessBrowserTest {
   GURL ServeLoaderURL(const std::string& loader_path,
                       const std::string& replacement_variable,
                       const GURL& url_to_prerender,
-                      const std::string& loader_query);
+                      const std::string& loader_query,
+                      const std::string& hostname_alternative = std::string());
+
+  // A variation of the above that allows for overriding the hostname.
+  GURL ServeLoaderURLWithHostname(const std::string& loader_path,
+                                  const std::string& replacement_variable,
+                                  const GURL& url_to_prerender,
+                                  const std::string& loader_query,
+                                  const std::string& hostname);
 
   uint32_t GetRequestCount(const GURL& url);
   void WaitForRequestCount(const GURL& url, uint32_t expected_count);

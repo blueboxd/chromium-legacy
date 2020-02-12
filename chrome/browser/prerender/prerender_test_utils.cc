@@ -605,13 +605,28 @@ GURL PrerenderInProcessBrowserTest::ServeLoaderURL(
     const std::string& loader_path,
     const std::string& replacement_variable,
     const GURL& url_to_prerender,
-    const std::string& loader_query) {
+    const std::string& loader_query,
+    const std::string& hostname_alternative) {
   base::StringPairs replacement_text;
   replacement_text.push_back(
       make_pair(replacement_variable, url_to_prerender.spec()));
   std::string replacement_path = net::test_server::GetFilePathWithReplacements(
       loader_path, replacement_text);
   return src_server()->GetURL(replacement_path + loader_query);
+}
+
+GURL PrerenderInProcessBrowserTest::ServeLoaderURLWithHostname(
+    const std::string& loader_path,
+    const std::string& replacement_variable,
+    const GURL& url_to_prerender,
+    const std::string& loader_query,
+    const std::string& hostname) {
+  base::StringPairs replacement_text;
+  replacement_text.push_back(
+      make_pair(replacement_variable, url_to_prerender.spec()));
+  std::string replacement_path = net::test_server::GetFilePathWithReplacements(
+      loader_path, replacement_text);
+  return src_server()->GetURL(hostname, replacement_path + loader_query);
 }
 
 void PrerenderInProcessBrowserTest::MonitorResourceRequest(

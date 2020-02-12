@@ -50,7 +50,7 @@ WebContentController::~WebContentController() {
     // RenderWidgetHost that we started observing; we need to remove only
     // from currently live RenderWidgetHosts.
     std::unique_ptr<content::RenderWidgetHostIterator> widgets(
-      content::RenderWidgetHost::GetRenderWidgetHosts());
+        content::RenderWidgetHost::GetRenderWidgetHosts());
     while (content::RenderWidgetHost* widget = widgets->GetNextHost()) {
       auto it = current_render_widget_set_.find(widget);
       if (it != current_render_widget_set_.end()) {
@@ -235,7 +235,7 @@ void WebContentController::ProcessInputEvent(const webview::InputEvent& ev) {
           // sequence, even if we didn't get a WebContentsObserver notification
           // for its creation. (This is not the normal case, but can happen
           // e.g. when loading a page with the Fling interface.)
-          ObserveRenderWidget(rwhv->GetRenderWidgetHost());
+          RegisterRenderWidgetInputObserver(rwhv->GetRenderWidgetHost());
         }
 
         // Record touch event information to match against acks.
@@ -278,12 +278,18 @@ void WebContentController::ProcessInputEvent(const webview::InputEvent& ev) {
   }
 }
 
-void WebContentController::ObserveRenderWidget(
+void WebContentController::RegisterRenderWidgetInputObserver(
     content::RenderWidgetHost* render_widget_host) {
   auto insertion = current_render_widget_set_.insert(render_widget_host);
   if (insertion.second) {
     render_widget_host->AddInputEventObserver(this);
   }
+}
+
+void WebContentController::UnregisterRenderWidgetInputObserver(
+    content::RenderWidgetHost* render_widget_host) {
+  current_render_widget_set_.erase(render_widget_host);
+  render_widget_host->RemoveInputEventObserver(this);
 }
 
 void WebContentController::JavascriptCallback(int64_t id, base::Value result) {
@@ -473,13 +479,14 @@ void WebContentController::RenderFrameCreated(
   // it later on.
   if (instance)
     SendInitialChannelSet(instance);
-  ObserveRenderWidget(render_frame_host->GetView()->GetRenderWidgetHost());
+  RegisterRenderWidgetInputObserver(
+      render_frame_host->GetView()->GetRenderWidgetHost());
 }
 
 void WebContentController::RenderFrameDeleted(
     content::RenderFrameHost* render_frame_host) {
   current_render_frame_set_.erase(render_frame_host);
-  current_render_widget_set_.erase(
+  UnregisterRenderWidgetInputObserver(
       render_frame_host->GetView()->GetRenderWidgetHost());
 }
 
@@ -495,14 +502,13 @@ void WebContentController::RenderFrameHostChanged(
 
 void WebContentController::RenderViewCreated(
     content::RenderViewHost* render_view_host) {
-  ObserveRenderWidget(render_view_host->GetWidget());
+  RegisterRenderWidgetInputObserver(render_view_host->GetWidget());
 }
 
 void WebContentController::RenderViewDeleted(
     content::RenderViewHost* render_view_host) {
   content::RenderWidgetHost* rwh = render_view_host->GetWidget();
-  current_render_widget_set_.erase(rwh);
-  rwh->RemoveInputEventObserver(this);
+  UnregisterRenderWidgetInputObserver(rwh);
   content::RenderWidgetHostView* rwhv = rwh->GetView();
   base::EraseIf(touch_queue_,
                 [rwhv](TouchData data) { return data.rwhv == rwhv; });

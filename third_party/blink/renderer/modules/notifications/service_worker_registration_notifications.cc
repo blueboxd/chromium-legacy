@@ -5,7 +5,9 @@
 #include "third_party/blink/renderer/modules/notifications/service_worker_registration_notifications.h"
 
 #include <utility>
+
 #include "base/memory/scoped_refptr.h"
+#include "base/metrics/histogram_functions.h"
 #include "third_party/blink/public/platform/platform.h"
 #include "third_party/blink/public/platform/web_security_origin.h"
 #include "third_party/blink/renderer/bindings/modules/v8/v8_get_notification_options.h"
@@ -17,7 +19,6 @@
 #include "third_party/blink/renderer/modules/service_worker/service_worker_registration.h"
 #include "third_party/blink/renderer/platform/bindings/exception_state.h"
 #include "third_party/blink/renderer/platform/heap/handle.h"
-#include "third_party/blink/renderer/platform/instrumentation/histogram.h"
 #include "third_party/blink/renderer/platform/runtime_enabled_features.h"
 #include "third_party/blink/renderer/platform/wtf/assertions.h"
 
@@ -64,10 +65,9 @@ ScriptPromise ServiceWorkerRegistrationNotifications::showNotification(
   //     0    -> underflow bucket,
   //     1-16 -> distinct buckets,
   //     17+  -> overflow bucket.
-  DEFINE_THREAD_SAFE_STATIC_LOCAL(
-      EnumerationHistogram, notification_count_histogram,
-      ("Notifications.PersistentNotificationActionCount", 17));
-  notification_count_histogram.Count(options->actions().size());
+  base::UmaHistogramExactLinear(
+      "Notifications.PersistentNotificationActionCount",
+      options->actions().size(), 17);
 
   auto* resolver = MakeGarbageCollected<ScriptPromiseResolver>(script_state);
   ScriptPromise promise = resolver->Promise();

@@ -898,6 +898,20 @@ bool RenderWidgetHostImpl::SynchronizeVisualProperties(
   bool width_changed =
       !old_visual_properties_ || old_visual_properties_->new_size.width() !=
                                      visual_properties->new_size.width();
+
+  // This is copied from RenderWidget::UpdateSurfaceAndScreenInfo and used to
+  // detect if there is a screen orientation change.
+  // TODO(lanwei): clean the duplicate code.
+  if (visual_properties && old_visual_properties_) {
+    bool orientation_changed =
+        old_visual_properties_->screen_info.orientation_angle !=
+            visual_properties->screen_info.orientation_angle ||
+        old_visual_properties_->screen_info.orientation_type !=
+            visual_properties->screen_info.orientation_type;
+    if (orientation_changed)
+      delegate_->DidChangeScreenOrientation();
+  }
+
   TRACE_EVENT_WITH_FLOW2(
       TRACE_DISABLED_BY_DEFAULT("viz.surface_id_flow"),
       "RenderWidgetHostImpl::SynchronizeVisualProperties send message",

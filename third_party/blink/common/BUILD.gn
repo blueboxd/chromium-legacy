@@ -63,7 +63,6 @@ jumbo_source_set("common") {
     "frame/frame_policy.cc",
     "frame/from_ad_state.cc",
     "frame/user_activation_state.cc",
-    "http/structured_header.cc",
     "indexeddb/indexed_db_default_mojom_traits.cc",
     "indexeddb/indexeddb_key.cc",
     "indexeddb/indexeddb_key_path.cc",
@@ -158,15 +157,6 @@ jumbo_source_set("common") {
   }
 }
 
-fuzzer_test("http_structured_header_fuzzer") {
-  sources = [ "http/structured_header_fuzzer.cc" ]
-  deps = [
-    ":common",
-    "//third_party/blink/renderer/platform:blink_fuzzer_test_support",
-  ]
-  seed_corpus = "http/structured_header_corpus"
-}
-
 test("blink_common_unittests") {
   visibility = [ "*" ]
   deps = [
@@ -192,7 +182,6 @@ jumbo_source_set("common_unittests_sources") {
     "feature_policy/feature_policy_unittest.cc",
     "feature_policy/policy_value_unittest.cc",
     "frame/user_activation_state_unittest.cc",
-    "http/structured_header_unittest.cc",
     "indexeddb/indexeddb_key_unittest.cc",
     "loader/mime_sniffing_throttle_unittest.cc",
     "loader/throttling_url_loader_unittest.cc",

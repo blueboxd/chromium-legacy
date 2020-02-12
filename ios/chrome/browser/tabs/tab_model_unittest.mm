@@ -88,7 +88,6 @@ class TabModelTest : public PlatformTest {
     // Create session restoration agent with just a dummy session
     // service so the async state saving doesn't trigger unless actually
     // wanted.
-
     SessionRestorationBrowserAgent::CreateForBrowser(browser_.get(),
                                                      session_service_);
     SetTabModel(CreateTabModel(nil));
@@ -116,7 +115,6 @@ class TabModelTest : public PlatformTest {
 
   TabModel* CreateTabModel(SessionWindowIOS* session_window) {
     TabModel* tab_model([[TabModel alloc] initWithBrowser:browser_.get()]);
-    [tab_model restoreSessionWindow:session_window forInitialRestore:YES];
     [tab_model setPrimary:YES];
     return tab_model;
   }
@@ -135,24 +133,10 @@ class TabModelTest : public PlatformTest {
   }
 
  protected:
-  // Creates a session window with entries named "restored window 1",
-  // "restored window 2" and "restored window 3" and the second entry
-  // marked as selected.
-  SessionWindowIOS* CreateSessionWindow() {
-    NSMutableArray<CRWSessionStorage*>* sessions = [NSMutableArray array];
-    for (int i = 0; i < 3; i++) {
-      CRWSessionStorage* session_storage = [[CRWSessionStorage alloc] init];
-      session_storage.lastCommittedItemIndex = -1;
-      [sessions addObject:session_storage];
-    }
-    return [[SessionWindowIOS alloc] initWithSessions:sessions selectedIndex:1];
-  }
-
   web::WebTaskEnvironment task_environment_;
   IOSChromeScopedTestingChromeBrowserStateManager scoped_browser_state_manager_;
   web::ScopedTestingWebClient web_client_;
   std::unique_ptr<WebStateListDelegate> web_state_list_delegate_;
-
   std::unique_ptr<WebStateList> web_state_list_;
   std::unique_ptr<Browser> browser_;
   SessionWindowIOS* session_window_;
@@ -261,92 +245,6 @@ TEST_F(TabModelTest, CloseTabAtIndexOnlyOne) {
 
   [tab_model_ closeTabAtIndex:0];
   EXPECT_EQ(0, web_state_list_->count());
-}
-
-// TODO(crbug.com/888674): migrate this to EG test so it can be tested with
-// WKBasedNavigationManager.
-TEST_F(TabModelTest, DISABLED_RestoreSessionOnNTPTest) {
-  web::WebState* web_state = agent_->InsertWebState(Params(GURL(kURL1)),
-                                                    /*parent=*/nil,
-                                                    /*opened_by_dom=*/false,
-                                                    /*index=*/0,
-                                                    /*in_background=*/false);
-  web::WebStateImpl* web_state_impl =
-      static_cast<web::WebStateImpl*>(web_state);
-
-  // Create NTPTabHelper to ensure VisibleURL is set to kChromeUINewTabURL.
-  id delegate = OCMProtocolMock(@protocol(NewTabPageTabHelperDelegate));
-  NewTabPageTabHelper::CreateForWebState(web_state, delegate);
-  web_state_impl->GetNavigationManagerImpl().CommitPendingItem();
-
-  SessionWindowIOS* window(CreateSessionWindow());
-  [tab_model_ restoreSessionWindow:window forInitialRestore:NO];
-
-  ASSERT_EQ(3, web_state_list_->count());
-  EXPECT_EQ(web_state_list_->GetWebStateAt(1),
-            web_state_list_->GetActiveWebState());
-  EXPECT_NE(web_state, web_state_list_->GetWebStateAt(0));
-  EXPECT_NE(web_state, web_state_list_->GetWebStateAt(1));
-  EXPECT_NE(web_state, web_state_list_->GetWebStateAt(2));
-}
-
-// TODO(crbug.com/888674): migrate this to EG test so it can be tested with
-// WKBasedNavigationManager.
-TEST_F(TabModelTest, DISABLED_RestoreSessionOn2NtpTest) {
-  web::WebState* web_state0 = agent_->InsertWebState(Params(GURL(kURL1)),
-                                                     /*parent=*/nil,
-                                                     /*opened_by_dom=*/false,
-                                                     /*index=*/0,
-                                                     /*in_background=*/false);
-  web::WebStateImpl* web_state_impl =
-      static_cast<web::WebStateImpl*>(web_state0);
-  web_state_impl->GetNavigationManagerImpl().CommitPendingItem();
-  web::WebState* web_state1 = agent_->InsertWebState(Params(GURL(kURL1)),
-                                                     /*parent=*/nil,
-                                                     /*opened_by_dom=*/false,
-                                                     /*index=*/0,
-                                                     /*in_background=*/false);
-  web_state_impl = static_cast<web::WebStateImpl*>(web_state1);
-  web_state_impl->GetNavigationManagerImpl().CommitPendingItem();
-
-  SessionWindowIOS* window(CreateSessionWindow());
-  [tab_model_ restoreSessionWindow:window forInitialRestore:NO];
-
-  ASSERT_EQ(5, web_state_list_->count());
-  EXPECT_EQ(web_state_list_->GetWebStateAt(3),
-            web_state_list_->GetActiveWebState());
-  EXPECT_EQ(web_state0, web_state_list_->GetWebStateAt(0));
-  EXPECT_EQ(web_state1, web_state_list_->GetWebStateAt(1));
-  EXPECT_NE(web_state0, web_state_list_->GetWebStateAt(2));
-  EXPECT_NE(web_state0, web_state_list_->GetWebStateAt(3));
-  EXPECT_NE(web_state0, web_state_list_->GetWebStateAt(4));
-  EXPECT_NE(web_state1, web_state_list_->GetWebStateAt(2));
-  EXPECT_NE(web_state1, web_state_list_->GetWebStateAt(3));
-  EXPECT_NE(web_state1, web_state_list_->GetWebStateAt(4));
-}
-
-// TODO(crbug.com/888674): migrate this to EG test so it can be tested with
-// WKBasedNavigationManager.
-TEST_F(TabModelTest, DISABLED_RestoreSessionOnAnyTest) {
-  web::WebState* web_state = agent_->InsertWebState(Params(GURL(kURL1)),
-                                                    /*parent=*/nil,
-                                                    /*opened_by_dom=*/false,
-                                                    /*index=*/0,
-                                                    /*in_background=*/false);
-  web::WebStateImpl* web_state_impl =
-      static_cast<web::WebStateImpl*>(web_state);
-  web_state_impl->GetNavigationManagerImpl().CommitPendingItem();
-
-  SessionWindowIOS* window(CreateSessionWindow());
-  [tab_model_ restoreSessionWindow:window forInitialRestore:NO];
-
-  ASSERT_EQ(4, web_state_list_->count());
-  EXPECT_EQ(web_state_list_->GetWebStateAt(2),
-            web_state_list_->GetActiveWebState());
-  EXPECT_EQ(web_state, web_state_list_->GetWebStateAt(0));
-  EXPECT_NE(web_state, web_state_list_->GetWebStateAt(1));
-  EXPECT_NE(web_state, web_state_list_->GetWebStateAt(2));
-  EXPECT_NE(web_state, web_state_list_->GetWebStateAt(3));
 }
 
 TEST_F(TabModelTest, CloseAllTabs) {

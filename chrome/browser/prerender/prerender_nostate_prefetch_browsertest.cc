@@ -76,6 +76,7 @@ const char k302RedirectPage[] = "/prerender/302_redirect.html";
 const char kPrefetchAppcache[] = "/prerender/prefetch_appcache.html";
 const char kPrefetchAppcacheManifest[] = "/prerender/appcache.manifest";
 const char kPrefetchCookiePage[] = "/prerender/cookie.html";
+const char kPrefetchFromSubframe[] = "/prerender/prefetch_from_subframe.html";
 const char kPrefetchImagePage[] = "/prerender/prefetch_image.html";
 const char kPrefetchJpeg[] = "/prerender/image.jpeg";
 const char kPrefetchLoaderPath[] = "/prerender/prefetch_loader.html";
@@ -799,6 +800,31 @@ IN_PROC_BROWSER_TEST_F(NoStatePrefetchBrowserTest, PrefetchCrossDomain) {
       "http://%s:%d%s", secondary_domain.c_str(),
       embedded_test_server()->host_port_pair().port(), kPrefetchPage));
   PrefetchFromURL(cross_domain_url, FINAL_STATUS_NOSTATE_PREFETCH_FINISHED);
+  WaitForRequestCount(src_server()->GetURL(kPrefetchPage), 1);
+}
+
+// Checks that prefetching from a cross-domain subframe works correctly.
+IN_PROC_BROWSER_TEST_F(NoStatePrefetchBrowserTest,
+                       PrefetchFromCrossDomainSubframe) {
+  const std::string secondary_domain = "www.foo.com";
+
+  GURL target_url(base::StringPrintf(
+      "http://%s:%d%s", secondary_domain.c_str(),
+      embedded_test_server()->host_port_pair().port(), kPrefetchPage));
+
+  GURL inner_frame_url = ServeLoaderURLWithHostname(
+      kPrefetchLoaderPath, "REPLACE_WITH_PREFETCH_URL", target_url, "",
+      secondary_domain);
+
+  GURL outer_frame_url = ServeLoaderURL(
+      kPrefetchFromSubframe, "REPLACE_WITH_SUBFRAME_URL", inner_frame_url, "");
+
+  std::vector<FinalStatus> expected_final_status_queue(
+      1, FINAL_STATUS_NOSTATE_PREFETCH_FINISHED);
+  std::vector<std::unique_ptr<TestPrerender>> prerenders =
+      NavigateWithPrerenders(outer_frame_url, expected_final_status_queue);
+  prerenders[0]->WaitForStop();
+
   WaitForRequestCount(src_server()->GetURL(kPrefetchPage), 1);
 }
 

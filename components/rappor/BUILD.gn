@@ -44,7 +44,6 @@ jumbo_static_library("rappor") {
     "//crypto",
     "//net",
     "//services/network/public/cpp:cpp",
-    "//third_party/smhasher:cityhash",
   ]
 }
 

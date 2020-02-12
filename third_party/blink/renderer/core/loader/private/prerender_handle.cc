@@ -60,7 +60,7 @@ PrerenderHandle* PrerenderHandle::Create(Document& document,
   PrerendererClient* prerenderer_client =
       PrerendererClient::From(document.GetPage());
   if (prerenderer_client)
-    prerenderer_client->WillAddPrerender(prerender);
+    prerenderer_client->WillAddPrerender(document.GetFrame(), prerender);
   prerender->Add();
 
   return MakeGarbageCollected<PrerenderHandle>(document, prerender);

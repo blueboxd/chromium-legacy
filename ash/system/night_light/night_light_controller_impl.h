@@ -65,7 +65,7 @@ class ASH_EXPORT NightLightControllerImpl
   class Delegate {
    public:
     // NightLightController owns the delegate.
-    virtual ~Delegate() {}
+    virtual ~Delegate() = default;
 
     // Gets the current time.
     virtual base::Time GetNow() const = 0;
@@ -76,7 +76,9 @@ class ASH_EXPORT NightLightControllerImpl
 
     // Provides the delegate with the geoposition so that it can be used to
     // calculate sunset and sunrise times.
-    virtual void SetGeoposition(const SimpleGeoposition& position) = 0;
+    // Returns true if |position| is different than the current known value,
+    // potentially requiring a refresh of the schedule. False otherwise.
+    virtual bool SetGeoposition(const SimpleGeoposition& position) = 0;
 
     // Returns true if a geoposition value is available.
     virtual bool HasGeoposition() const = 0;
@@ -220,9 +222,10 @@ class ASH_EXPORT NightLightControllerImpl
   // is turned off.
   void RefreshDisplaysTemperature(float color_temperature);
 
-  // Refreshes the displays color transforms based on the given status of the
-  // controller.
-  void RefreshDisplaysColorTemperatures();
+  // Reapplys the current color temperature on the displays without starting a
+  // new animation or overriding an on-going one towards the same target
+  // temperature.
+  void ReapplyColorTemperatures();
 
   void StartWatchingPrefsChanges();
 

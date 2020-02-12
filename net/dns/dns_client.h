@@ -85,6 +85,8 @@ class NET_EXPORT DnsClient {
   virtual base::Optional<DnsConfig> GetSystemConfigForTesting() const = 0;
   virtual DnsConfigOverrides GetConfigOverridesForTesting() const = 0;
 
+  virtual void SetProbeSuccessForTest(unsigned index, bool success) = 0;
+
   virtual void SetTransactionFactoryForTesting(
       std::unique_ptr<DnsTransactionFactory> factory) = 0;
 

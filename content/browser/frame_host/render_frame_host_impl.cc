@@ -4081,6 +4081,23 @@ void RenderFrameHostImpl::OnAccessibilitySnapshotResponse(
 // process, use it to double-check that fullscreen can be entered here.
 void RenderFrameHostImpl::EnterFullscreen(
     blink::mojom::FullscreenOptionsPtr options) {
+  // Consume the user activation when entering fullscreen mode in the browser
+  // side when the renderer is compromised and the fullscreen is not triggered
+  // by a user generated orientation change, because the fullscreen can be
+  // triggered by either a user activation or a user generated orientation
+  // change.
+  // TODO(lanwei): Investigate whether we can terminate the renderer when the
+  // user activation has already been consumed.
+  if (!delegate_->HasSeenRecentScreenOrientationChange()) {
+    bool is_consumed = frame_tree_node_->UpdateUserActivationState(
+        blink::mojom::UserActivationUpdateType::kConsumeTransientActivation);
+    if (!is_consumed) {
+      DLOG(ERROR) << "Cannot enter fullscreen because there is no transient "
+                  << "user activation and no orientation change.";
+      return;
+    }
+  }
+
   // Entering fullscreen from a cross-process subframe also affects all
   // renderers for ancestor frames, which will need to apply fullscreen CSS to
   // appropriate ancestor <iframe> elements, fire fullscreenchange events, etc.

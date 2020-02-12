@@ -15,7 +15,6 @@
 #include "base/synchronization/waitable_event.h"
 #include "base/system/sys_info.h"
 #include "base/task/post_task.h"
-#include "base/test/bind_test_util.h"
 #include "base/test/task_environment.h"
 #include "base/test/test_timeouts.h"
 #include "base/threading/platform_thread.h"
@@ -61,6 +60,14 @@ void OnMemoryPressure(
   history->push_back(level);
 }
 
+void RunLoopRunWithTimeout(base::TimeDelta timeout) {
+  base::RunLoop run_loop;
+  base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(FROM_HERE,
+
+                                                       run_loop.QuitClosure(),
+                                                       timeout);
+  run_loop.Run();
+}
 }  // namespace
 
 class TestSystemMemoryPressureEvaluator : public SystemMemoryPressureEvaluator {
@@ -192,49 +199,39 @@ TEST(ChromeOSSystemMemoryPressureEvaluatorTest, CheckMemoryPressure) {
   // Moderate Pressure.
   ASSERT_TRUE(SetFileContents(available_file, "900"));
   TriggerKernelNotification(write_end.get());
-  // TODO(bgeffon): Use RunLoop::QuitClosure() instead of relying on "run until
-  // condition is true".
-  base::RunLoop().RunUntilConditionForTest(
-      base::BindLambdaForTesting([&evaluator]() {
-        return base::MemoryPressureListener::MEMORY_PRESSURE_LEVEL_MODERATE ==
-               evaluator->current_vote();
-      }));
+  // TODO(bgeffon): Use RunLoop::QuitClosure() instead of relying on "spin for
+  // 1 second".
+  RunLoopRunWithTimeout(base::TimeDelta::FromSeconds(1));
+  ASSERT_EQ(base::MemoryPressureListener::MEMORY_PRESSURE_LEVEL_MODERATE,
+            evaluator->current_vote());
 
   // Critical Pressure.
   ASSERT_TRUE(SetFileContents(available_file, "450"));
   TriggerKernelNotification(write_end.get());
-  base::RunLoop().RunUntilConditionForTest(
-      base::BindLambdaForTesting([&evaluator]() {
-        return base::MemoryPressureListener::MEMORY_PRESSURE_LEVEL_CRITICAL ==
-               evaluator->current_vote();
-      }));
+  RunLoopRunWithTimeout(base::TimeDelta::FromSeconds(1));
+  ASSERT_EQ(base::MemoryPressureListener::MEMORY_PRESSURE_LEVEL_CRITICAL,
+            evaluator->current_vote());
 
   // Moderate Pressure.
   ASSERT_TRUE(SetFileContents(available_file, "550"));
   TriggerKernelNotification(write_end.get());
-  base::RunLoop().RunUntilConditionForTest(
-      base::BindLambdaForTesting([&evaluator]() {
-        return base::MemoryPressureListener::MEMORY_PRESSURE_LEVEL_MODERATE ==
-               evaluator->current_vote();
-      }));
+  RunLoopRunWithTimeout(base::TimeDelta::FromSeconds(1));
+  ASSERT_EQ(base::MemoryPressureListener::MEMORY_PRESSURE_LEVEL_MODERATE,
+            evaluator->current_vote());
 
   // No pressure, note: this will not cause any event.
   ASSERT_TRUE(SetFileContents(available_file, "1150"));
   TriggerKernelNotification(write_end.get());
-  base::RunLoop().RunUntilConditionForTest(
-      base::BindLambdaForTesting([&evaluator]() {
-        return base::MemoryPressureListener::MEMORY_PRESSURE_LEVEL_NONE ==
-               evaluator->current_vote();
-      }));
+  RunLoopRunWithTimeout(base::TimeDelta::FromSeconds(1));
+  ASSERT_EQ(base::MemoryPressureListener::MEMORY_PRESSURE_LEVEL_NONE,
+            evaluator->current_vote());
 
   // Back into moderate.
   ASSERT_TRUE(SetFileContents(available_file, "950"));
   TriggerKernelNotification(write_end.get());
-  base::RunLoop().RunUntilConditionForTest(
-      base::BindLambdaForTesting([&evaluator]() {
-        return base::MemoryPressureListener::MEMORY_PRESSURE_LEVEL_MODERATE ==
-               evaluator->current_vote();
-      }));
+  RunLoopRunWithTimeout(base::TimeDelta::FromSeconds(1));
+  ASSERT_EQ(base::MemoryPressureListener::MEMORY_PRESSURE_LEVEL_MODERATE,
+            evaluator->current_vote());
 
   // Now our events should be MODERATE, CRITICAL, MODERATE.
   ASSERT_EQ(4u, pressure_events.size());

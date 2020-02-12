@@ -9,6 +9,7 @@ import org.chromium.chrome.browser.firstrun.FirstRunUtils;
 import org.chromium.chrome.browser.flags.CachedFeatureFlags;
 import org.chromium.chrome.browser.flags.CachedFieldTrialParameter;
 import org.chromium.chrome.browser.flags.ChromeFeatureList;
+import org.chromium.chrome.browser.toolbar.bottom.BottomToolbarVariationManager;
 
 import java.util.Arrays;
 import java.util.List;
@@ -51,7 +52,8 @@ public class ChromeCachedFlags {
         CachedFeatureFlags.cacheAdditionalNativeFlags();
 
         List<CachedFieldTrialParameter> fieldTrialsToCache =
-                Arrays.asList(TabContentManager.ALLOW_TO_REFETCH_TAB_THUMBNAIL_VARIATION);
+                Arrays.asList(BottomToolbarVariationManager.BOTTOM_TOOLBAR_VARIATION,
+                        TabContentManager.ALLOW_TO_REFETCH_TAB_THUMBNAIL_VARIATION);
         CachedFeatureFlags.cacheFieldTrialParameters(fieldTrialsToCache);
 
         mIsFinishedCachingNativeFlags = true;

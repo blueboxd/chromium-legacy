@@ -20,12 +20,12 @@
 #include "chrome/browser/download/download_prefs.h"
 #include "chrome/browser/net/net_export_helper.h"
 #include "chrome/browser/policy/chrome_policy_conversions_client.h"
-#include "chrome/browser/policy/policy_conversions.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/common/url_constants.h"
 #include "chrome/common/webui_url_constants.h"
 #include "chrome/grit/net_internals_resources.h"
 #include "components/onc/onc_constants.h"
+#include "components/policy/core/browser/policy_conversions.h"
 #include "components/prefs/pref_member.h"
 #include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browser_thread.h"
@@ -44,13 +44,13 @@
 #include "chrome/browser/chromeos/profiles/profile_helper.h"
 #include "chrome/browser/chromeos/system_logs/debug_log_writer.h"
 #include "chrome/browser/net/nss_context.h"
-#include "chrome/browser/policy/policy_conversions.h"
 #include "chrome/common/logging_chrome.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
 #include "chromeos/dbus/debug_daemon/debug_daemon_client.h"
 #include "chromeos/network/onc/onc_certificate_importer_impl.h"
 #include "chromeos/network/onc/onc_parsed_certificates.h"
 #include "chromeos/network/onc/onc_utils.h"
+#include "components/policy/core/browser/policy_conversions.h"
 #endif
 
 using content::BrowserThread;

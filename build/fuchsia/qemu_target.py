@@ -11,12 +11,15 @@ import logging
 import md5
 import os
 import platform
+import qemu_image
 import shutil
 import subprocess
 import sys
 import tempfile
 
-from common import GetEmuRootForPlatform, EnsurePathExists
+from common import GetHostArchFromPlatform, GetEmuRootForPlatform
+from common import EnsurePathExists
+from qemu_image import ExecQemuImgWithRetry
 
 
 # Virtual networking configuration data for QEMU.
@@ -193,8 +196,13 @@ def _EnsureBlobstoreQcowAndReturnPath(output_dir, target_arch):
 
   # Construct a QCOW image from the extended, temporary FVM volume.
   # The result will be retained in the build output directory for re-use.
-  subprocess.check_call([qimg_tool, 'convert', '-f', 'raw', '-O', 'qcow2',
-                         '-c', extended_blobstore.name, qcow_path])
+  qemu_img_cmd = [qimg_tool, 'convert', '-f', 'raw', '-O', 'qcow2',
+                  '-c', extended_blobstore.name, qcow_path]
+  # TODO(crbug.com/1046861): Remove arm64 call with retries when bug is fixed.
+  if common.GetHostArchFromPlatform() == 'arm64':
+    qemu_image.ExecQemuImgWithRetry(qemu_img_cmd)
+  else:
+    subprocess.check_call(qemu_img_cmd)
 
   # Write out a hash of the original blobstore file, so that subsequent runs
   # can trivially check if a cached extended FVM volume is available for reuse.

@@ -48,13 +48,9 @@ class PeopleHandler : public SettingsPageUIHandler,
  public:
   // TODO(tommycli): Remove these strings and instead use WebUIListener events.
   // These string constants are used from JavaScript (sync_browser_proxy.js).
-  static const char kSpinnerPageStatus[];
   static const char kConfigurePageStatus[];
-  static const char kTimeoutPageStatus[];
   static const char kDonePageStatus[];
   static const char kPassphraseFailedPageStatus[];
-  // TODO(crbug.com/): Remove kSpinnerPageStatus and kTimeoutPageStatus (plus
-  // their JS-side handling); they're unused.
 
   explicit PeopleHandler(Profile* profile);
   ~PeopleHandler() override;

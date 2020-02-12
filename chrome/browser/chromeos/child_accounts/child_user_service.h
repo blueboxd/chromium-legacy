@@ -28,6 +28,7 @@ class GURL;
 
 namespace chromeos {
 namespace app_time {
+class AppId;
 class AppTimeController;
 class WebTimeLimitEnforcer;
 }  // namespace app_time
@@ -75,6 +76,10 @@ class ChildUserService : public KeyedService,
   // Viewing of whitelisted |url| does not count towards usage web time.
   // Always returns false if per-app times limits feature is disabled.
   bool WebTimeLimitWhitelistedURL(const GURL& url) const;
+
+  // Returns whether the application with id |app_id| can be used without any
+  // time restrictions.
+  bool AppTimeLimitWhitelistedApp(const app_time::AppId& app_id) const;
 
   // Returns time limit set for using the web on a given day.
   // Should only be called if |features::kPerAppTimeLimits| and

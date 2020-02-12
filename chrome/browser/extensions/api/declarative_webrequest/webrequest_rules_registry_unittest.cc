@@ -611,16 +611,14 @@ TEST_F(WebRequestRulesRegistryTest, GetMatchesCheckFulfilled) {
   EXPECT_EQ(expected_pair, (*matches.begin())->id());
 }
 
-// Test that the url and firstPartyForCookiesUrl attributes are evaluated
-// against corresponding URLs. Tested on requests where these URLs actually
-// differ.
+// Test different URL patterns.
 TEST_F(WebRequestRulesRegistryTest, GetMatchesDifferentUrls) {
   scoped_refptr<TestWebRequestRulesRegistry> registry(
       new TestWebRequestRulesRegistry(&profile_));
   const std::string kUrlAttribute(
       "\"url\": { \"hostContains\": \"url\" }, \n");
-  const std::string kFirstPartyUrlAttribute(
-      "\"firstPartyForCookiesUrl\": { \"hostContains\": \"fpfc\" }, \n");
+  const std::string kUrlAttribute2(
+      "\"url\": { \"hostContains\": \"www\" }, \n");
 
   {
     std::string error;
@@ -631,9 +629,9 @@ TEST_F(WebRequestRulesRegistryTest, GetMatchesDifferentUrls) {
     attributes.push_back(&kUrlAttribute);
     rules.push_back(CreateCancellingRule(kRuleId1, attributes));
 
-    // Rule 2 has one condition, with a firstPartyForCookiesUrl attribute
+    // Rule 2 has one condition, also with a url attribute
     attributes.clear();
-    attributes.push_back(&kFirstPartyUrlAttribute);
+    attributes.push_back(&kUrlAttribute2);
     rules.push_back(CreateCancellingRule(kRuleId2, attributes));
 
     error = registry->AddRules(kExtensionId, std::move(rules));
@@ -647,15 +645,8 @@ TEST_F(WebRequestRulesRegistryTest, GetMatchesDifferentUrls) {
     GURL("http://url.example.com"),  // matching
     GURL("http://www.example.com")   // non-matching
   };
-  const GURL firstPartyUrls[] = {
-    GURL("http://www.example.com"),  // non-matching
-    GURL("http://fpfc.example.com")  // matching
-  };
   // Which rules should match in subsequent test iterations.
   const char* const matchingRuleIds[] = { kRuleId1, kRuleId2 };
-  static_assert(base::size(urls) == base::size(firstPartyUrls),
-                "urls and firstPartyUrls must have the same number "
-                "of elements");
   static_assert(base::size(urls) == base::size(matchingRuleIds),
                 "urls and matchingRuleIds must have the same number "
                 "of elements");
@@ -663,7 +654,6 @@ TEST_F(WebRequestRulesRegistryTest, GetMatchesDifferentUrls) {
   for (size_t i = 0; i < base::size(matchingRuleIds); ++i) {
     // Construct the inputs.
     WebRequestInfoInitParams params = CreateRequestParams(urls[i]);
-    params.site_for_cookies = firstPartyUrls[i];
     WebRequestInfo http_request_info(std::move(params));
     WebRequestData request_data(&http_request_info, ON_BEFORE_REQUEST);
     // Now run both rules on the input.

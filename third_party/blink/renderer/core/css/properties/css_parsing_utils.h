@@ -59,11 +59,13 @@ CSSValue* ConsumeContentDistributionOverflowPosition(CSSParserTokenRange&,
 CSSValue* ConsumeSimplifiedContentPosition(CSSParserTokenRange&,
                                            IsPositionKeyword);
 
-CSSValue* ConsumeAnimationIterationCount(CSSParserTokenRange&);
+CSSValue* ConsumeAnimationIterationCount(CSSParserTokenRange&,
+                                         const CSSParserContext&);
 CSSValue* ConsumeAnimationName(CSSParserTokenRange&,
                                const CSSParserContext&,
                                bool allow_quoted_name);
-CSSValue* ConsumeAnimationTimingFunction(CSSParserTokenRange&);
+CSSValue* ConsumeAnimationTimingFunction(CSSParserTokenRange&,
+                                         const CSSParserContext&);
 bool ConsumeAnimationShorthand(
     const StylePropertyShorthand&,
     HeapVector<Member<CSSValueList>, kMaxNumAnimationLonghands>&,
@@ -138,7 +140,7 @@ CSSShadowValue* ParseSingleShadow(CSSParserTokenRange&,
                                   const CSSParserContext&,
                                   AllowInsetAndSpread);
 
-CSSValue* ConsumeColumnCount(CSSParserTokenRange&);
+CSSValue* ConsumeColumnCount(CSSParserTokenRange&, const CSSParserContext&);
 CSSValue* ConsumeColumnWidth(CSSParserTokenRange&, const CSSParserContext&);
 bool ConsumeColumnWidthOrCount(CSSParserTokenRange&,
                                const CSSParserContext&,
@@ -163,9 +165,11 @@ String ConcatenateFamilyName(CSSParserTokenRange&);
 CSSIdentifierValue* ConsumeFontStretchKeywordOnly(CSSParserTokenRange&);
 CSSValue* ConsumeFontStretch(CSSParserTokenRange&, const CSSParserContext&);
 CSSValue* ConsumeFontStyle(CSSParserTokenRange&, const CSSParserMode&);
-CSSValue* ConsumeFontWeight(CSSParserTokenRange&, const CSSParserMode&);
-CSSValue* ConsumeFontFeatureSettings(CSSParserTokenRange&);
-cssvalue::CSSFontFeatureValue* ConsumeFontFeatureTag(CSSParserTokenRange&);
+CSSValue* ConsumeFontWeight(CSSParserTokenRange&, const CSSParserContext&);
+CSSValue* ConsumeFontFeatureSettings(CSSParserTokenRange&,
+                                     const CSSParserContext&);
+cssvalue::CSSFontFeatureValue* ConsumeFontFeatureTag(CSSParserTokenRange&,
+                                                     const CSSParserContext&);
 CSSIdentifierValue* ConsumeFontVariantCSS21(CSSParserTokenRange&);
 
 CSSValue* ConsumeGridLine(CSSParserTokenRange&, const CSSParserContext&);

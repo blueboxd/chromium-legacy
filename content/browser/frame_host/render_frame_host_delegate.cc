@@ -188,4 +188,8 @@ void RenderFrameHostDelegate::IsClipboardPasteAllowed(
   std::move(callback).Run(ClipboardPasteAllowed(true));
 }
 
+bool RenderFrameHostDelegate::HasSeenRecentScreenOrientationChange() {
+  return false;
+}
+
 }  // namespace content

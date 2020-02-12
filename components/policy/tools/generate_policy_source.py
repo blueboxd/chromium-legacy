@@ -86,7 +86,7 @@ class PolicyDetails:
     ]:
       if self.is_device_only and platform != 'chrome_os':
         raise RuntimeError(
-            'is_device_only is only allowed for Chrome OS: "%s"' % p)
+            'device_only is only allowed for Chrome OS: "%s"' % p)
       if platform not in [
           'chrome_frame',
           'chrome_os',

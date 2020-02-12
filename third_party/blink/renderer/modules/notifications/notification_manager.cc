@@ -6,6 +6,7 @@
 
 #include <utility>
 
+#include "base/metrics/histogram_functions.h"
 #include "base/numerics/safe_conversions.h"
 #include "third_party/blink/public/common/browser_interface_broker_proxy.h"
 #include "third_party/blink/public/mojom/notifications/notification.mojom-blink.h"
@@ -22,7 +23,6 @@
 #include "third_party/blink/renderer/platform/heap/heap_allocator.h"
 #include "third_party/blink/renderer/platform/heap/member.h"
 #include "third_party/blink/renderer/platform/heap/persistent.h"
-#include "third_party/blink/renderer/platform/instrumentation/histogram.h"
 #include "third_party/blink/renderer/platform/weborigin/security_origin.h"
 #include "third_party/blink/renderer/platform/wtf/functional.h"
 
@@ -157,10 +157,8 @@ void NotificationManager::DisplayPersistentNotification(
   size_t author_data_size =
       notification_data->data.has_value() ? notification_data->data->size() : 0;
 
-  DEFINE_THREAD_SAFE_STATIC_LOCAL(
-      CustomCountHistogram, notification_data_size_histogram,
-      ("Notifications.AuthorDataSize", 1, 1000, 50));
-  notification_data_size_histogram.Count(
+  base::UmaHistogramCounts1000(
+      "Notifications.AuthorDataSize",
       base::saturated_cast<base::HistogramBase::Sample>(author_data_size));
 
   if (author_data_size >

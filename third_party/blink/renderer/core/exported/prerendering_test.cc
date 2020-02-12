@@ -84,7 +84,8 @@ class TestWebPrerendererClient : public WebPrerendererClient {
 
  private:
   // From WebPrerendererClient:
-  void WillAddPrerender(WebPrerender* prerender) override {
+  void WillAddPrerender(WebLocalFrame* local_frame,
+                        WebPrerender* prerender) override {
     prerender->SetExtraData(extra_data_.release());
 
     DCHECK(!prerender->IsNull());

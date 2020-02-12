@@ -28,6 +28,7 @@
 #include "base/containers/span.h"
 #include "base/debug/alias.h"
 #include "base/debug/dump_without_crashing.h"
+#include "base/hash/legacy_hash.h"
 #include "base/logging.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/numerics/ranges.h"
@@ -86,7 +87,6 @@
 #include "gpu/command_buffer/service/vertex_array_manager.h"
 #include "gpu/command_buffer/service/vertex_attrib_manager.h"
 #include "gpu/config/gpu_preferences.h"
-#include "third_party/smhasher/src/City.h"
 #include "ui/gfx/buffer_types.h"
 #include "ui/gfx/color_space.h"
 #include "ui/gfx/geometry/point.h"
@@ -4513,10 +4513,17 @@ bool GLES2DecoderImpl::InitializeShaderTranslator() {
 
   if (((shader_spec == SH_WEBGL_SPEC || shader_spec == SH_WEBGL2_SPEC) &&
        features().enable_shader_name_hashing) ||
-      force_shader_name_hashing_for_test)
-    resources.HashFunction = &CityHash64;
-  else
+      force_shader_name_hashing_for_test) {
+    // TODO(https://crbug.com/902789): In theory, it should be OK to change this
+    // hash. However, in practice, this seems to cause some tests to fail. See
+    // https://crbug.com/963889.
+    resources.HashFunction = +[](const char* data, size_t size) {
+      return base::legacy::CityHash64(
+          base::as_bytes(base::make_span(data, size)));
+    };
+  } else {
     resources.HashFunction = nullptr;
+  }
 
   ShCompileOptions driver_bug_workarounds = 0;
   if (workarounds().init_gl_position_in_vertex_shader)

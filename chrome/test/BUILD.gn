@@ -1350,6 +1350,7 @@ if (!is_android) {
       "../browser/ui/views/device_chooser_browsertest.cc",
       "../browser/ui/views/hats/hats_browsertest.cc",
       "../browser/ui/views/intent_picker_bubble_view_browsertest.cc",
+      "../browser/ui/views/reader_mode/reader_mode_icon_view_browsertest.cc",
       "../browser/ui/views/try_chrome_dialog_win/try_chrome_dialog_browsertest.cc",
       "../browser/ui/views/web_apps/web_app_frame_toolbar_browsertest.cc",
       "../browser/ui/views/web_apps/web_app_minimal_ui_test.cc",

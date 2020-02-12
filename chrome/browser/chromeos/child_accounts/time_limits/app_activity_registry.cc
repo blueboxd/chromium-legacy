@@ -244,6 +244,11 @@ bool AppActivityRegistry::IsAppActive(const AppId& app_id) const {
   return activity_registry_.at(app_id).activity.is_active();
 }
 
+bool AppActivityRegistry::IsWhitelistedApp(const AppId& app_id) const {
+  DCHECK(base::Contains(activity_registry_, app_id));
+  return GetAppState(app_id) == AppState::kAlwaysAvailable;
+}
+
 void AppActivityRegistry::AddAppStateObserver(
     AppActivityRegistry::AppStateObserver* observer) {
   app_state_observers_.AddObserver(observer);
@@ -359,6 +364,16 @@ void AppActivityRegistry::SetAppLimit(
   // Limit 'data' is the same - no action needed.
   if (!did_change)
     return;
+
+  if (IsWhitelistedApp(app_id)) {
+    if (app_limit.has_value()) {
+      VLOG(1) << "Tried to set time limit for " << app_id
+              << " which is whitelisted.";
+    }
+
+    details.limit = base::nullopt;
+    return;
+  }
 
   // TODO(agawronska): Handle web limit changes here.
 

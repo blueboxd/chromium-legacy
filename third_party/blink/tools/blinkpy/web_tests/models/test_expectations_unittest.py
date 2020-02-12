@@ -61,7 +61,7 @@ class Base(unittest.TestCase):
         return """
 # results: [ Failure Crash ]
 failures/expected/text.html [ Failure ]
-failures/expected/crash.html [ Crash ]
+failures/expected/crash.html [ Crash ] # foo and bar
 failures/expected/image_checksum.html [ Crash ]
 failures/expected/image.html [ Crash ]
 """
@@ -85,6 +85,9 @@ failures/expected/image.html [ Crash ]
         with self.assertRaises(ParseError):
             self.parse_exp(expectations, is_lint_mode=True, overrides=overrides)
 
+    def assert_trailing_comments(self, test, comments):
+        self.assertEqual(self._exp.get_expectations(test).trailing_comments, comments)
+
 
 class BasicTests(Base):
 
@@ -94,6 +97,7 @@ class BasicTests(Base):
         self.assert_exp_list('failures/expected/image_checksum.html', [ResultType.Crash])
         self.assert_exp('passes/text.html', ResultType.Pass)
         self.assert_exp('failures/expected/image.html', ResultType.Crash)
+        self.assert_trailing_comments('failures/expected/crash.html', ' # foo and bar\n')
 
 
 class FlagExpectationsTests(Base):
@@ -417,4 +421,3 @@ failures/expected/text.html [ Failure ]
         self.parse_exp(exp_str)
         self.assert_exp('failures/expected/text.html', ResultType.Failure)
         self.assert_exp_list('failures/expected/crash.html', [ResultType.Crash])
-

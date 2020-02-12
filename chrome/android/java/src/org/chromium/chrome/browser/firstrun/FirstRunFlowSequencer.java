@@ -27,6 +27,7 @@ import org.chromium.chrome.browser.services.AndroidEduAndChildAccountHelper;
 import org.chromium.chrome.browser.settings.privacy.PrivacyPreferencesManager;
 import org.chromium.chrome.browser.signin.IdentityServicesProvider;
 import org.chromium.chrome.browser.signin.SigninManager;
+import org.chromium.chrome.browser.toolbar.bottom.BottomToolbarVariationManager;
 import org.chromium.chrome.browser.util.IntentUtils;
 import org.chromium.chrome.browser.util.UrlConstants;
 import org.chromium.chrome.browser.vr.VrModuleProvider;
@@ -217,7 +218,8 @@ public abstract class FirstRunFlowSequencer  {
         // toolbar will appear to the bottom on the second run.
         CachedFeatureFlags.cacheNativeFlags(
                 Collections.singletonList(ChromeFeatureList.CHROME_DUET));
-        CachedFeatureFlags.cacheBottomToolbarVariation();
+        CachedFeatureFlags.cacheFieldTrialParameters(
+                Collections.singletonList(BottomToolbarVariationManager.BOTTOM_TOOLBAR_VARIATION));
     }
 
     /**

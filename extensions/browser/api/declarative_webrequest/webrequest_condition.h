@@ -42,7 +42,6 @@ struct WebRequestDataWithMatchIds {
 
   const WebRequestData* data;
   std::set<url_matcher::URLMatcherConditionSet::ID> url_match_ids;
-  std::set<url_matcher::URLMatcherConditionSet::ID> first_party_url_match_ids;
 };
 
 // Representation of a condition in the Declarative WebRequest API. A condition
@@ -68,8 +67,6 @@ class WebRequestCondition {
 
   WebRequestCondition(
       scoped_refptr<url_matcher::URLMatcherConditionSet> url_matcher_conditions,
-      scoped_refptr<url_matcher::URLMatcherConditionSet>
-          first_party_url_matcher_conditions,
       const WebRequestConditionAttributes& condition_attributes);
   ~WebRequestCondition();
 
@@ -96,8 +93,6 @@ class WebRequestCondition {
  private:
   // URL attributes of this condition.
   scoped_refptr<url_matcher::URLMatcherConditionSet> url_matcher_conditions_;
-  scoped_refptr<url_matcher::URLMatcherConditionSet>
-      first_party_url_matcher_conditions_;
 
   // All non-UrlFilter attributes of this condition.
   WebRequestConditionAttributes condition_attributes_;

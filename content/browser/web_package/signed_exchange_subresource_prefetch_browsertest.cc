@@ -21,6 +21,7 @@
 #include "base/threading/thread_restrictions.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/time/time_override.h"
+#include "build/build_config.h"
 #include "content/browser/blob_storage/chrome_blob_storage_context.h"
 #include "content/browser/frame_host/render_frame_host_impl.h"
 #include "content/browser/loader/prefetch_browsertest_base.h"
@@ -691,8 +692,16 @@ IN_PROC_BROWSER_TEST_P(SignedExchangePrefetchBrowserTest,
   EXPECT_EQ(2, sxg_request_counter->GetRequestCount());
 }
 
+// Flaky on Linux TSan, http://crbug.com/1050879
+#if defined(OS_LINUX) && defined(THREAD_SANITIZER)
+#define MAYBE_PrefetchMainResourceSXG_SignatureExpire \
+  DISABLED_PrefetchMainResourceSXG_SignatureExpire
+#else
+#define MAYBE_PrefetchMainResourceSXG_SignatureExpire \
+  PrefetchMainResourceSXG_SignatureExpire
+#endif
 IN_PROC_BROWSER_TEST_P(SignedExchangePrefetchBrowserTest,
-                       PrefetchMainResourceSXG_SignatureExpire) {
+                       MAYBE_PrefetchMainResourceSXG_SignatureExpire) {
   const char* hostname = "example.com";
   const char* sxg_path = "/target.sxg";
   const char* inner_url_path = "/target.html";

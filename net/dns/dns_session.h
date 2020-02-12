@@ -31,7 +31,6 @@ namespace net {
 class DatagramClientSocket;
 class NetLog;
 struct NetLogSource;
-class ResolveContext;
 class StreamSocket;
 
 // Number of failures allowed before a DoH server is designated 'unavailable'.
@@ -92,6 +91,17 @@ class NET_EXPORT_PRIVATE DnsSession : public base::RefCounted<DnsSession> {
   // no other servers below the failure limit or with an older last failure.
   unsigned NextGoodServerIndex(unsigned server_index);
 
+  // Similar to |NextGoodServerIndex| except for DoH servers. If no DoH server
+  // is under the failure limit in AUTOMATIC mode, returns -1.
+  int NextGoodDohServerIndex(unsigned doh_server_index,
+                             DnsConfig::SecureDnsMode secure_dns_mode);
+
+  // Returns whether there is a DoH server that has a successful probe state.
+  bool HasAvailableDohServer();
+
+  // Returns the number of DoH servers with successful probe states.
+  unsigned NumAvailableDohServers();
+
   // TODO(b/1022059): Remove once all server stats are moved to ResolveContext.
   base::Time GetLastDohFailure(size_t server_index);
   int GetLastDohFailureCount(size_t server_index);
@@ -99,17 +109,17 @@ class NET_EXPORT_PRIVATE DnsSession : public base::RefCounted<DnsSession> {
   // Record that server failed to respond (due to SRV_FAIL or timeout). If
   // |is_doh_server| and the number of failures has surpassed a threshold,
   // sets the DoH probe state to unavailable.
-  void RecordServerFailure(unsigned server_index,
-                           bool is_doh_server,
-                           ResolveContext* resolve_context);
+  void RecordServerFailure(unsigned server_index, bool is_doh_server);
 
   // Record that server responded successfully.
   void RecordServerSuccess(unsigned server_index, bool is_doh_server);
 
+  // Record the latest DoH probe state.
+  void SetProbeSuccess(unsigned doh_server_index, bool success);
+
   // Record how long it took to receive a response from the server.
   void RecordRTT(unsigned server_index,
                  bool is_doh_server,
-                 bool is_validated_doh_server,
                  base::TimeDelta rtt,
                  int rv);
 
@@ -153,7 +163,6 @@ class NET_EXPORT_PRIVATE DnsSession : public base::RefCounted<DnsSession> {
   // Record the time to perform a query.
   void RecordRTTForHistogram(unsigned server_index,
                              bool is_doh_server,
-                             bool is_validated_doh_server,
                              base::TimeDelta rtt,
                              int rv);
 
@@ -174,8 +183,8 @@ class NET_EXPORT_PRIVATE DnsSession : public base::RefCounted<DnsSession> {
   // Track runtime statistics of each insecure DNS server.
   std::vector<std::unique_ptr<ServerStats>> server_stats_;
 
-  // Track runtime statistics of each DoH server.
-  std::vector<std::unique_ptr<ServerStats>> doh_server_stats_;
+  // Track runtime statistics and availability of each DoH server.
+  std::vector<std::pair<std::unique_ptr<ServerStats>, bool>> doh_server_stats_;
 
   // Buckets shared for all |ServerStats::rtt_histogram|.
   struct RttBuckets : public base::BucketRanges {

@@ -622,7 +622,6 @@ Polymer({
     const router = settings.Router.getInstance();
     switch (pageStatus) {
       case settings.PageStatus.SPINNER:
-      case settings.PageStatus.TIMEOUT:
       case settings.PageStatus.CONFIGURE:
         this.pageStatus_ = pageStatus;
         return;

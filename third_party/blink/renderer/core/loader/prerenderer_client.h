@@ -53,7 +53,7 @@ class CORE_EXPORT PrerendererClient
 
   PrerendererClient(Page&, WebPrerendererClient*);
 
-  virtual void WillAddPrerender(Prerender*);
+  virtual void WillAddPrerender(LocalFrame*, Prerender*);
   virtual bool IsPrefetchOnly();
 
   static PrerendererClient* From(Page*);

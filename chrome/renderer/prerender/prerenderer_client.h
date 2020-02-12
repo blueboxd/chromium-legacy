@@ -23,7 +23,8 @@ class PrerendererClient : public content::RenderViewObserver,
   void OnDestruct() override;
 
   // Implements blink::WebPrerendererClient
-  void WillAddPrerender(blink::WebPrerender* prerender) override;
+  void WillAddPrerender(blink::WebLocalFrame* local_frame,
+                        blink::WebPrerender* prerender) override;
   bool IsPrefetchOnly() override;
 };
 

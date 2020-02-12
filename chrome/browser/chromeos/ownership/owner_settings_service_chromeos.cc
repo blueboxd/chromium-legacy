@@ -418,7 +418,7 @@ std::unique_ptr<em::PolicyData> OwnerSettingsServiceChromeOS::AssemblePolicy(
   policy->set_timestamp(
       (base::Time::Now() - base::Time::UnixEpoch()).InMilliseconds());
   policy->set_username(user_id);
-  if (policy_data->management_mode() == em::PolicyData::LOCAL_OWNER)
+  if (policy->management_mode() == em::PolicyData::LOCAL_OWNER)
     FixupLocalOwnerPolicy(user_id, settings);
   if (!settings->SerializeToString(policy->mutable_policy_value()))
     return std::unique_ptr<em::PolicyData>();

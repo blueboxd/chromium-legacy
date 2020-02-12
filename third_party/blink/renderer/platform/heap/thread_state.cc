@@ -431,7 +431,7 @@ void ThreadState::VisitPersistents(Visitor* visitor) {
 void ThreadState::VisitRememberedSets(MarkingVisitor* visitor) {
   ThreadHeapStatsCollector::EnabledScope stats_scope(
       Heap().stats_collector(), ThreadHeapStatsCollector::kVisitRememberedSets);
-  Heap().MarkRememberedSets(visitor);
+  Heap().VisitRememberedSets(visitor);
 }
 
 void ThreadState::VisitWeakPersistents(Visitor* visitor) {

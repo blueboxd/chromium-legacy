@@ -1905,6 +1905,11 @@ TEST_F(WorkspaceWindowResizerTest, TouchResizeToEdge_BOTTOM) {
             touch_resize_window_->bounds().ToString());
 }
 
+#if defined(OS_CHROMEOS) && defined(MEMORY_SANITIZER)
+#define MAYBE_ResizeHistogram DISABLED_ResizeHistogram
+#else
+#define MAYBE_ResizeHistogram ResizeHistogram
+#endif
 TEST_F(WorkspaceWindowResizerTest, ResizeHistogram) {
   base::HistogramTester histograms;
   window_->SetBounds(gfx::Rect(20, 30, 400, 60));

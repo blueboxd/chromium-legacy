@@ -58,8 +58,6 @@ std::set<const WebRequestRule*> WebRequestRulesRegistry::GetMatches(
   WebRequestDataWithMatchIds request_data(&request_data_without_ids);
   request_data.url_match_ids =
       url_matcher_.MatchURL(request_data.data->request->url);
-  request_data.first_party_url_match_ids =
-      url_matcher_.MatchURL(request_data.data->request->site_for_cookies);
 
   // 1st phase -- add all rules with some conditions without UrlFilter
   // attributes.
@@ -70,9 +68,6 @@ std::set<const WebRequestRule*> WebRequestRulesRegistry::GetMatches(
 
   // 2nd phase -- add all rules with some conditions triggered by URL matches.
   AddTriggeredRules(request_data.url_match_ids, request_data, &result);
-  AddTriggeredRules(request_data.first_party_url_match_ids,
-                    request_data, &result);
-
   return result;
 }
 

@@ -684,6 +684,8 @@ class CONTENT_EXPORT WebContentsImpl : public WebContents,
       const ui::ClipboardFormatType& data_type,
       const std::string& data,
       IsClipboardPasteAllowedCallback callback) override;
+  bool HasSeenRecentScreenOrientationChange() override;
+  void DidChangeScreenOrientation() override;
 
   // RenderViewHostDelegate ----------------------------------------------------
   RenderViewHostDelegateView* GetDelegateView() override;
@@ -1983,6 +1985,10 @@ class CONTENT_EXPORT WebContentsImpl : public WebContents,
   // Represents the favicon urls candidates from the page.
   // Empty std::vector until the first update from the renderer.
   std::vector<FaviconURL> favicon_urls_;
+
+  // This time is used to record the last time we saw a screen orientation
+  // change.
+  base::TimeTicks last_screen_orientation_change_time_;
 
   base::WeakPtrFactory<WebContentsImpl> loading_weak_factory_{this};
   base::WeakPtrFactory<WebContentsImpl> weak_factory_{this};

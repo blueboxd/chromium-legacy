@@ -352,7 +352,7 @@ void ManagedDisplayInfo::Copy(const ManagedDisplayInfo& native_info) {
   is_aspect_preserving_scaling_ = native_info.is_aspect_preserving_scaling_;
   display_modes_ = native_info.display_modes_;
   maximum_cursor_size_ = native_info.maximum_cursor_size_;
-  color_space_ = native_info.color_space_;
+  display_color_spaces_ = native_info.display_color_spaces_;
   bits_per_channel_ = native_info.bits_per_channel_;
   refresh_rate_ = native_info.refresh_rate_;
   is_interlaced_ = native_info.is_interlaced_;

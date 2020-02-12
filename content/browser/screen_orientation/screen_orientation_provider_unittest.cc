@@ -182,6 +182,7 @@ TEST_F(ScreenOrientationProviderTest, DelegateRequireFullScreenLockOnce) {
   EXPECT_EQ(0, delegate.lock_count());
 
   // Simulates entering full screen.
+  contents()->DidChangeScreenOrientation();
   main_test_rfh()->EnterFullscreen(blink::mojom::FullscreenOptions::New());
   ASSERT_TRUE(contents()->IsFullscreenForCurrentTab());
 
@@ -284,6 +285,7 @@ TEST_F(ScreenOrientationProviderTest, UnlockWhenExitingFullScreen) {
                        std::string());
 
   // Simulates entering full screen.
+  contents()->DidChangeScreenOrientation();
   main_test_rfh()->EnterFullscreen(blink::mojom::FullscreenOptions::New());
   ASSERT_TRUE(contents()->IsFullscreenForCurrentTab());
 

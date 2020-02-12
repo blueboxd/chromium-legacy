@@ -11,6 +11,7 @@
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/chromeos/child_accounts/child_user_service.h"
 #include "chrome/browser/chromeos/child_accounts/child_user_service_factory.h"
+#include "chrome/browser/chromeos/child_accounts/time_limits/app_types.h"
 #include "chrome/browser/chromeos/child_accounts/time_limits/web_time_limit_enforcer.h"
 #include "chrome/browser/chromeos/child_accounts/time_limits/web_time_limit_error_page/web_time_limit_error_page.h"
 #include "chrome/browser/profiles/profile.h"
@@ -45,6 +46,16 @@ bool IsURLWhitelisted(const GURL& url, content::BrowserContext* context) {
     return false;
 
   return child_user_service->WebTimeLimitWhitelistedURL(url);
+}
+
+bool IsWebAppWhitelisted(const std::string& app_id_string,
+                         content::BrowserContext* context) {
+  const chromeos::app_time::AppId app_id(apps::mojom::AppType::kWeb,
+                                         app_id_string);
+  auto* child_user_service =
+      ChildUserServiceFactory::GetForBrowserContext(context);
+  DCHECK(child_user_service);
+  return child_user_service->AppTimeLimitWhitelistedApp(app_id);
 }
 
 base::TimeDelta GetWebTimeLimit(content::BrowserContext* context) {
@@ -132,8 +143,6 @@ ThrottleCheckResult WebTimeLimitNavigationThrottle::WillStartOrRedirectRequest(
   if (!browser && proceed_if_no_browser)
     return PROCEED;
 
-  const std::string& app_locale = g_browser_process->GetApplicationLocale();
-
   Browser::Type type = browser->type();
   web_app::WebAppTabHelperBase* web_app_helper =
       web_app::WebAppTabHelperBase::FromWebContents(web_contents);
@@ -143,28 +152,33 @@ ThrottleCheckResult WebTimeLimitNavigationThrottle::WillStartOrRedirectRequest(
                      (type == Browser::Type::TYPE_POPUP);
   bool is_app = web_app_helper && !web_app_helper->GetAppId().empty();
 
-  // Don't throttle windowed applications. We show a notification and close
-  // them.
-  if (is_windowed && is_app)
-    return PROCEED;
-
   base::TimeDelta time_limit = GetWebTimeLimit(browser_context);
-  std::string interstitial_html;
-  if (is_app) {
-    Profile* profile = Profile::FromBrowserContext(browser_context);
-    web_app::WebAppProvider* web_app_provider =
-        web_app::WebAppProvider::Get(profile);
-    const web_app::AppRegistrar& registrar = web_app_provider->registrar();
-    const std::string& app_name =
-        registrar.GetAppShortName(web_app_helper->GetAppId());
-    interstitial_html =
-        GetWebTimeLimitAppErrorPage(time_limit, app_locale, app_name);
-  } else {
-    interstitial_html = GetWebTimeLimitChromeErrorPage(time_limit, app_locale);
+  const std::string& app_locale = g_browser_process->GetApplicationLocale();
+
+  if (!is_app) {
+    return NavigationThrottle::ThrottleCheckResult(
+        CANCEL, net::ERR_BLOCKED_BY_CLIENT,
+        GetWebTimeLimitChromeErrorPage(time_limit, app_locale));
   }
 
+  // Don't throttle windowed applications. We show a notification and close
+  // them.
+  if (is_windowed)
+    return PROCEED;
+
+  //  Don't throttle whitelisted applications.
+  if (IsWebAppWhitelisted(web_app_helper->GetAppId(), browser_context))
+    return PROCEED;
+
+  Profile* profile = Profile::FromBrowserContext(browser_context);
+  web_app::WebAppProvider* web_app_provider =
+      web_app::WebAppProvider::Get(profile);
+  const web_app::AppRegistrar& registrar = web_app_provider->registrar();
+  const std::string& app_name =
+      registrar.GetAppShortName(web_app_helper->GetAppId());
   return NavigationThrottle::ThrottleCheckResult(
-      CANCEL, net::ERR_BLOCKED_BY_CLIENT, interstitial_html);
+      CANCEL, net::ERR_BLOCKED_BY_CLIENT,
+      GetWebTimeLimitAppErrorPage(time_limit, app_locale, app_name));
 }
 
 }  // namespace chromeos

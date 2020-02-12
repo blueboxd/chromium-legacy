@@ -109,6 +109,10 @@ cr.define('settings_passwords_section', function() {
     /** @type {PasswordSectionElementFactory} */
     let elementFactory = null;
 
+    suiteSetup(function() {
+        loadTimeData.overrideValues({enablePasswordCheck: true});
+    });
+
     setup(function() {
       PolymerTest.clearBody();
       // Override the PasswordManagerImpl for testing.
@@ -278,6 +282,36 @@ cr.define('settings_passwords_section', function() {
       // Click the remove button on the first password.
       firstNode.$$('#passwordMenu').click();
       passwordsSection.$.menuRemovePassword.click();
+    });
+
+    // Test verifies that 'Copy password' button is hidden for Federated
+    // (passwordless) credentials. Does not test Copy button.
+    test('verifyCopyAbsentForFederatedPasswordInMenu', function() {
+      const passwordList = [
+        FakeDataMaker.passwordEntry('one.com', 'hey', 0),
+      ];
+      passwordList[0].federationText = 'with chromium.org';
+
+      const passwordsSection = elementFactory.createPasswordsSection(
+          passwordManager, passwordList, []);
+      Polymer.dom.flush();
+
+      getFirstPasswordListItem(passwordsSection).$$('#passwordMenu').click();
+      assertTrue(passwordsSection.$$('#menuCopyPassword').hidden);
+    });
+
+    // Test verifies that 'Copy password' button is not hidden for common
+    // credentials. Does not test Copy button.
+    test('verifyCopyPresentInMenu', function() {
+      const passwordList = [
+        FakeDataMaker.passwordEntry('one.com', 'hey', 5),
+      ];
+      const passwordsSection = elementFactory.createPasswordsSection(
+          passwordManager, passwordList, []);
+      Polymer.dom.flush();
+
+      getFirstPasswordListItem(passwordsSection).$$('#passwordMenu').click();
+      assertFalse(passwordsSection.$$('#menuCopyPassword').hidden);
     });
 
     test('verifyFilterPasswords', function() {

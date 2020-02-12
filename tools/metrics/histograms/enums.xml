@@ -50499,6 +50499,12 @@ Called by update_net_trust_anchors.py.-->
   <int value="2" label="Generate password"/>
 </enum>
 
+<enum name="PasswordSyncMetadataReadError">
+  <int value="0" label="None"/>
+  <int value="1" label="DB Not Available"/>
+  <int value="2" label="Reading failure"/>
+</enum>
+
 <enum name="PasswordSyncState">
   <int value="0" label="Syncing OK"/>
   <int value="1" label="Read failed"/>

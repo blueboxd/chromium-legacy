@@ -225,10 +225,8 @@ bool AllowedToRequestFullscreen(Document& document) {
   // An algorithm is allowed to request fullscreen if one of the following is
   // true:
 
-  //  The algorithm is triggered by a user activation.
-  // We are doing experiment to see if there is any webpage breaking after we
-  // only allow one fullscreen when the user activation state is active.
-  if (LocalFrame::ConsumeTransientUserActivation(document.GetFrame()))
+  // The algorithm is triggered by a user activation.
+  if (LocalFrame::HasTransientUserActivation(document.GetFrame()))
     return true;
 
   //  The algorithm is triggered by a user generated orientation change.
@@ -639,6 +637,11 @@ ScriptPromise Fullscreen::RequestFullscreen(Element& pending,
     LocalFrame& frame = *document.GetFrame();
     frame.GetChromeClient().EnterFullscreen(frame, options,
                                             for_cross_process_descendant);
+
+    // After the first fullscreen request, the user activation should be
+    // consumed, and the following fullscreen requests should receive an error.
+    if (!for_cross_process_descendant)
+      LocalFrame::ConsumeTransientUserActivation(&frame);
   } else {
     // Note: Although we are past the "in parallel" point, it's OK to continue
     // synchronously because when |error| is true, |ContinueRequestFullscreen()|

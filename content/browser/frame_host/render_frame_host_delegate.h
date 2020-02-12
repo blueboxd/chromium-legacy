@@ -547,6 +547,10 @@ class CONTENT_EXPORT RenderFrameHostDelegate {
       const std::string& data,
       IsClipboardPasteAllowedCallback callback);
 
+  // Return true if we have seen a recent orientation change, which is used to
+  // decide if we should consume user activation when entering fullscreen.
+  virtual bool HasSeenRecentScreenOrientationChange();
+
  protected:
   virtual ~RenderFrameHostDelegate() {}
 };

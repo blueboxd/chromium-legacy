@@ -85,7 +85,6 @@
 /fuchsia-sdk/images
 /fuchsia-sdk/sdk
 /fuchsia-sdk-arm64
-/gestures/gestures
 /gles2_conform
 /glfw/src
 /glslang/src
@@ -128,7 +127,6 @@
 /libc++-static/libc++.a
 /libaddressinput/src
 /libdrm/src
-/libevdev/src
 /libexif/sources
 /libFuzzer/src
 /libgav1/src

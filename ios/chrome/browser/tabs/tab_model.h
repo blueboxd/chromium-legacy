@@ -8,10 +8,7 @@
 #import <Foundation/Foundation.h>
 #import <UIKit/UIKit.h>
 
-#import "ios/chrome/browser/sessions/session_window_restoring.h"
-
 class ChromeBrowserState;
-@class SessionServiceIOS;
 class TabModelSyncedWindowDelegate;
 class TabUsageRecorder;
 class WebStateList;
@@ -22,7 +19,7 @@ class Browser;
 // The model knows about the currently selected tab in order to maintain
 // consistency between multiple views that need the current tab to be
 // synchronized.
-@interface TabModel : NSObject <SessionWindowRestoring>
+@interface TabModel : NSObject
 
 // The delegate for sync.
 @property(nonatomic, readonly)

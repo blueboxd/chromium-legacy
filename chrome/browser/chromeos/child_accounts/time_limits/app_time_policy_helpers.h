@@ -55,6 +55,11 @@ base::Optional<AppId> AppIdFromDict(const base::Value& dict);
 // Serializes AppId to the dictionary.
 base::Value AppIdToDict(const AppId& app_id);
 
+// Deserializes AppId from |dict|.
+// Returns value if |dict| contains valid app information in its entry keyed by
+// kAppInfoDict.
+base::Optional<AppId> AppIdFromAppInfoDict(const base::Value& dict);
+
 // Deserializes AppLimit from |dict|.
 // Returns value if |dict| contains valid app limit information.
 base::Optional<AppLimit> AppLimitFromDict(const base::Value& dict);

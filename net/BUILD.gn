@@ -304,6 +304,8 @@ component("net") {
     "http/http_util.h",
     "http/http_vary_data.cc",
     "http/http_vary_data.h",
+    "http/structured_headers.cc",
+    "http/structured_headers.h",
     "http/transport_security_state.h",
     "http/transport_security_state_source.cc",
     "http/transport_security_state_source.h",
@@ -4280,6 +4282,7 @@ test("net_unittests") {
     "http/http_vary_data_unittest.cc",
     "http/mock_allow_http_auth_preferences.cc",
     "http/mock_allow_http_auth_preferences.h",
+    "http/structured_headers_unittest.cc",
     "http/transport_security_persister_unittest.cc",
     "http/transport_security_state_unittest.cc",
     "http/url_security_manager_unittest.cc",
@@ -5336,6 +5339,17 @@ fuzzer_test("net_http_proxy_client_socket_fuzzer") {
     "//net",
   ]
   dict = "data/fuzzer_dictionaries/net_http_proxy_client_socket_fuzzer.dict"
+}
+
+fuzzer_test("net_structured_headers_fuzzer") {
+  sources = [ "http/structured_headers_fuzzer.cc" ]
+  deps = [
+    ":net_fuzzer_test_support",
+    ":test_support",
+    "//base",
+    "//net",
+  ]
+  seed_corpus = "data/fuzzer_data/structured_headers_corpus"
 }
 
 fuzzer_test("net_parse_url_hostname_to_address_fuzzer") {

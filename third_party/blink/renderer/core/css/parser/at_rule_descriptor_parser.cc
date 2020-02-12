@@ -178,12 +178,15 @@ CSSValue* AtRuleDescriptorParser::ParseFontFaceDescriptor(
     case AtRuleDescriptorID::FontVariant:
       parsed_value = ConsumeFontVariantList(range);
       break;
-    case AtRuleDescriptorID::FontWeight:
-      parsed_value =
-          css_parsing_utils::ConsumeFontWeight(range, kCSSFontFaceRuleMode);
+    case AtRuleDescriptorID::FontWeight: {
+      CSSParserContext::ParserModeOverridingScope scope(context,
+                                                        kCSSFontFaceRuleMode);
+      parsed_value = css_parsing_utils::ConsumeFontWeight(range, context);
       break;
+    }
     case AtRuleDescriptorID::FontFeatureSettings:
-      parsed_value = css_parsing_utils::ConsumeFontFeatureSettings(range);
+      parsed_value =
+          css_parsing_utils::ConsumeFontFeatureSettings(range, context);
       break;
     default:
       break;

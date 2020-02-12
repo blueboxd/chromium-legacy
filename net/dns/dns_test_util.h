@@ -322,10 +322,6 @@ class MockDnsTransactionFactory : public DnsTransactionFactory {
 
   bool doh_probes_running() { return !running_doh_probe_runners_.empty(); }
 
-  void set_force_doh_server_available(bool available) {
-    force_doh_server_available_ = available;
-  }
-
  private:
   class MockTransaction;
   class MockDohProbeRunner;
@@ -334,7 +330,6 @@ class MockDnsTransactionFactory : public DnsTransactionFactory {
   MockDnsClientRuleList rules_;
   DelayedTransactionList delayed_transactions_;
 
-  bool force_doh_server_available_ = true;
   std::set<MockDohProbeRunner*> running_doh_probe_runners_;
 
   base::WeakPtrFactory<MockDnsTransactionFactory> weak_ptr_factory_{this};
@@ -364,6 +359,7 @@ class MockDnsClient : public DnsClient {
   void ClearInsecureFallbackFailures() override;
   base::Optional<DnsConfig> GetSystemConfigForTesting() const override;
   DnsConfigOverrides GetConfigOverridesForTesting() const override;
+  void SetProbeSuccessForTest(unsigned index, bool success) override;
   void SetTransactionFactoryForTesting(
       std::unique_ptr<DnsTransactionFactory> factory) override;
 
@@ -382,7 +378,9 @@ class MockDnsClient : public DnsClient {
     ignore_system_config_changes_ = ignore_system_config_changes;
   }
 
-  void SetForceDohServerAvailable(bool available);
+  void set_doh_server_available(bool available) {
+    doh_server_available_ = available;
+  }
 
   MockDnsTransactionFactory* factory() { return factory_.get(); }
 
@@ -394,12 +392,7 @@ class MockDnsClient : public DnsClient {
   int fallback_failures_ = 0;
   int max_fallback_failures_ = DnsClient::kMaxInsecureFallbackFailures;
   bool ignore_system_config_changes_ = false;
-
-  // If |true|, MockDnsClient will always pretend DoH servers are available and
-  // allow secure transactions no matter what the state is in the transaction
-  // ResolveContext. If |false|, the ResolveContext must contain at least one
-  // available DoH server to allow secure transactions.
-  bool force_doh_server_available_ = true;
+  bool doh_server_available_ = true;
 
   MockClientSocketFactory socket_factory_;
   base::Optional<DnsConfig> config_;

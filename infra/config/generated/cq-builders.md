@@ -252,8 +252,7 @@ builder.
   * [`//third_party/blink/renderer/core/paint/.+`](https://cs.chromium.org/chromium/src/third_party/blink/renderer/core/paint/)
   * [`//third_party/blink/renderer/core/svg/.+`](https://cs.chromium.org/chromium/src/third_party/blink/renderer/core/svg/)
   * [`//third_party/blink/renderer/platform/graphics/.+`](https://cs.chromium.org/chromium/src/third_party/blink/renderer/platform/graphics/)
-  * [`//third_party/blink/web_tests/FlagExpectations/composite-after-paint`](https://cs.chromium.org/chromium/src/third_party/blink/web_tests/FlagExpectations/composite-after-paint)
-  * [`//third_party/blink/web_tests/flag-specific/composite-after-paint/.+`](https://cs.chromium.org/chromium/src/third_party/blink/web_tests/flag-specific/composite-after-paint/)
+  * [`//third_party/blink/web_tests/.+`](https://cs.chromium.org/chromium/src/third_party/blink/web_tests/)
 
 * [linux_layout_tests_layout_ng_disabled](https://ci.chromium.org/p/chromium/builders/try/linux_layout_tests_layout_ng_disabled) ([definition](https://cs.chromium.org/search?q=package:%5Echromium$+file:/cq.star$+-file:/beta/+-file:/stable/+linux_layout_tests_layout_ng_disabled)) ([matching builders](https://cs.chromium.org/search?q=+file:trybots.py+linux_layout_tests_layout_ng_disabled))
 

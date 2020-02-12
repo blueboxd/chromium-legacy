@@ -8,7 +8,10 @@ import androidx.annotation.StringDef;
 import androidx.annotation.VisibleForTesting;
 
 import org.chromium.chrome.browser.flags.CachedFeatureFlags;
+import org.chromium.chrome.browser.flags.ChromeFeatureList;
+import org.chromium.chrome.browser.flags.StringCachedFieldTrialParameter;
 import org.chromium.chrome.browser.incognito.IncognitoUtils;
+import org.chromium.chrome.browser.preferences.ChromePreferenceKeys;
 
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
@@ -29,6 +32,11 @@ public class BottomToolbarVariationManager {
         String NEW_TAB_SEARCH_SHARE = "NewTabSearchShare";
     }
 
+    public static final StringCachedFieldTrialParameter BOTTOM_TOOLBAR_VARIATION =
+            new StringCachedFieldTrialParameter(ChromeFeatureList.CHROME_DUET,
+                    "chrome_duet_variation", Variations.NONE,
+                    ChromePreferenceKeys.VARIATION_CACHED_BOTTOM_TOOLBAR);
+
     private static String sVariation;
 
     /**
@@ -40,7 +48,7 @@ public class BottomToolbarVariationManager {
         if (!CachedFeatureFlags.isBottomToolbarEnabled()) {
             return Variations.HOME_SEARCH_TAB_SWITCHER;
         }
-        sVariation = CachedFeatureFlags.getBottomToolbarVariation();
+        sVariation = CachedFeatureFlags.getValue(BOTTOM_TOOLBAR_VARIATION);
         if (sVariation.equals(Variations.NONE)) {
             return Variations.HOME_SEARCH_TAB_SWITCHER;
         }

@@ -29,6 +29,21 @@ namespace password_manager {
 
 namespace {
 
+// Error values for reading sync metadata.
+// Used in metrics: "PasswordManager.SyncMetadataReadError". These values
+// are persisted to logs. Entries should not be renumbered and numeric values
+// should never be reused.
+enum class SyncMetadataReadError {
+  // Success.
+  kNone = 0,
+  // Database not available.
+  kDbNotAvailable = 1,
+  // Reading failure.
+  kReadFailed = 2,
+
+  kMaxValue = kReadFailed,
+};
+
 std::string ComputeClientTag(
     const sync_pb::PasswordSpecificsData& password_data) {
   return net::EscapePath(GURL(password_data.origin()).spec()) + "|" +
@@ -228,19 +243,27 @@ PasswordSyncBridge::PasswordSyncBridge(
   DCHECK(sync_enabled_or_disabled_cb_);
   // The metadata store could be null if the login database initialization
   // fails.
+  SyncMetadataReadError sync_metadata_read_error = SyncMetadataReadError::kNone;
+  std::unique_ptr<syncer::MetadataBatch> batch;
   if (!password_store_sync_->GetMetadataStore()) {
     this->change_processor()->ReportError(
         {FROM_HERE, "Password metadata store isn't available."});
-    return;
+    sync_metadata_read_error = SyncMetadataReadError::kDbNotAvailable;
+  } else {
+    batch = password_store_sync_->GetMetadataStore()->GetAllSyncMetadata();
+    if (!batch) {
+      this->change_processor()->ReportError(
+          {FROM_HERE,
+           "Failed reading passwords metadata from password store."});
+      sync_metadata_read_error = SyncMetadataReadError::kReadFailed;
+    }
   }
-  std::unique_ptr<syncer::MetadataBatch> batch =
-      password_store_sync_->GetMetadataStore()->GetAllSyncMetadata();
-  if (!batch) {
-    this->change_processor()->ReportError(
-        {FROM_HERE, "Failed reading passwords metadata from password store."});
-    return;
+  base::UmaHistogramEnumeration("PasswordManager.SyncMetadataReadError",
+                                sync_metadata_read_error);
+
+  if (sync_metadata_read_error == SyncMetadataReadError::kNone) {
+    this->change_processor()->ModelReadyToSync(std::move(batch));
   }
-  this->change_processor()->ModelReadyToSync(std::move(batch));
 }
 
 PasswordSyncBridge::~PasswordSyncBridge() = default;

@@ -12,6 +12,8 @@
 #import "ios/chrome/browser/main/browser.h"
 #import "ios/chrome/browser/main/browser_web_state_list_delegate.h"
 #import "ios/chrome/browser/main/test_browser.h"
+#import "ios/chrome/browser/ntp/new_tab_page_tab_helper.h"
+#import "ios/chrome/browser/ntp/new_tab_page_tab_helper_delegate.h"
 #include "ios/chrome/browser/sessions/ios_chrome_session_tab_helper.h"
 #import "ios/chrome/browser/sessions/session_ios.h"
 #import "ios/chrome/browser/sessions/session_restoration_browser_agent.h"
@@ -32,6 +34,8 @@
 #include "testing/gtest/include/gtest/gtest.h"
 #include "testing/gtest_mac.h"
 #include "testing/platform_test.h"
+#import "third_party/ocmock/OCMock/OCMock.h"
+#include "third_party/ocmock/gtest_support.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
 #error "This file requires ARC support."
@@ -174,6 +178,30 @@ TEST_F(SessionRestorationBrowserAgentTest,
   EXPECT_NE(web_state, web_state_list_->GetWebStateAt(1));
   EXPECT_NE(web_state, web_state_list_->GetWebStateAt(2));
   EXPECT_NE(web_state, web_state_list_->GetWebStateAt(3));
+}
+
+// TODO(crbug.com/888674): This test requires commiting item to
+// WKBasedNavigationManager which is not possible, migrate this to EG test so
+// it can be tested.
+TEST_F(SessionRestorationBrowserAgentTest, DISABLED_RestoreSessionOnNTPTest) {
+  web::WebState* web_state =
+      InsertNewWebState(GURL(kChromeUINewTabURL), /*parent=*/nullptr,
+                        /*index=*/0, /*background=*/false);
+
+  // Create NTPTabHelper to ensure VisibleURL is set to kChromeUINewTabURL.
+  id delegate = OCMProtocolMock(@protocol(NewTabPageTabHelperDelegate));
+  NewTabPageTabHelper::CreateForWebState(web_state, delegate);
+
+  SessionWindowIOS* window(
+      CreateSessionWindow(/*sessions_count=*/3, /*selected_index=*/2));
+  session_restoration_agent_->RestoreSessionWindow(window);
+
+  ASSERT_EQ(3, web_state_list_->count());
+  EXPECT_EQ(web_state_list_->GetWebStateAt(2),
+            web_state_list_->GetActiveWebState());
+  EXPECT_NE(web_state, web_state_list_->GetWebStateAt(0));
+  EXPECT_NE(web_state, web_state_list_->GetWebStateAt(1));
+  EXPECT_NE(web_state, web_state_list_->GetWebStateAt(2));
 }
 
 // Tests that saving a non-empty session, then saving an empty session, then

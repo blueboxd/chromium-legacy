@@ -139,7 +139,7 @@ class TestDelegate : public NightLightControllerImpl::Delegate {
   base::Time GetNow() const override { return fake_now_; }
   base::Time GetSunsetTime() const override { return fake_sunset_; }
   base::Time GetSunriseTime() const override { return fake_sunrise_; }
-  void SetGeoposition(
+  bool SetGeoposition(
       const NightLightController::SimpleGeoposition& position) override {
     has_geoposition_ = true;
     if (position == NightLightController::SimpleGeoposition{
@@ -154,6 +154,7 @@ class TestDelegate : public NightLightControllerImpl::Delegate {
       SetFakeSunset(TimeOfDay(kFakePosition2_SunsetOffset));
       SetFakeSunrise(TimeOfDay(kFakePosition2_SunriseOffset));
     }
+    return true;
   }
   bool HasGeoposition() const override { return has_geoposition_; }
 

@@ -228,24 +228,11 @@ class DISPLAY_EXPORT Display final {
     maximum_cursor_size_ = size;
   }
 
-  // The color space of the display.
-  // TODO: This is to be removed and replaced by gfx::DisplayColorSpaces.
-  gfx::ColorSpace color_space() const;
-  void set_color_space(const gfx::ColorSpace& color_space);
+  // The color spaces used by the display.
   const gfx::DisplayColorSpaces& color_spaces() const { return color_spaces_; }
   void set_color_spaces(const gfx::DisplayColorSpaces& color_spaces) {
     color_spaces_ = color_spaces;
   }
-
-  // SDR white level used to scale HDR color spaces.
-  // TODO: This is to be removed in favor of GetColorSpaces.
-  float sdr_white_level() const;
-
-  // Set the color space and SDR white level of the display, and reset the color
-  // depth and depth per component based on whether the color space is HDR.
-  void SetColorSpaceAndDepth(
-      const gfx::ColorSpace& color_space,
-      float sdr_white_level = gfx::ColorSpace::kDefaultSDRWhiteLevel);
 
   // Default values for color_depth and depth_per_component.
   static constexpr int kDefaultBitsPerPixel = 24;

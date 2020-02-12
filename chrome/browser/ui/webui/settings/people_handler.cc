@@ -262,9 +262,7 @@ base::string16 GetFullEncryptionBody(syncer::PassphraseType passphrase_type,
 namespace settings {
 
 // static
-const char PeopleHandler::kSpinnerPageStatus[] = "spinner";
 const char PeopleHandler::kConfigurePageStatus[] = "configure";
-const char PeopleHandler::kTimeoutPageStatus[] = "timeout";
 const char PeopleHandler::kDonePageStatus[] = "done";
 const char PeopleHandler::kPassphraseFailedPageStatus[] = "passphraseFailed";
 

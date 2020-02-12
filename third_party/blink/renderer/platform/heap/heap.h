@@ -318,7 +318,7 @@ class PLATFORM_EXPORT ThreadHeap {
   Address CheckAndMarkPointer(MarkingVisitor*, Address);
 
   // Visits remembered sets.
-  void MarkRememberedSets(MarkingVisitor*);
+  void VisitRememberedSets(MarkingVisitor*);
 
   size_t ObjectPayloadSizeForTesting();
   void ResetAllocationPointForTesting();

@@ -103,8 +103,6 @@ jumbo_component("message_center") {
         "views/message_view_factory.h",
         "views/notification_background_painter.cc",
         "views/notification_background_painter.h",
-        "views/notification_button.cc",
-        "views/notification_button.h",
         "views/notification_control_buttons_view.cc",
         "views/notification_control_buttons_view.h",
         "views/notification_header_view.cc",

@@ -5,6 +5,8 @@
 #ifndef UI_GFX_DISPLAY_COLOR_SPACES_H_
 #define UI_GFX_DISPLAY_COLOR_SPACES_H_
 
+#include <string>
+
 #include "ui/gfx/buffer_types.h"
 #include "ui/gfx/color_space.h"
 #include "ui/gfx/color_space_export.h"
@@ -36,10 +38,13 @@ class COLOR_SPACE_EXPORT DisplayColorSpaces {
   // Initialize as sRGB-only.
   DisplayColorSpaces();
 
-  // Initialize as |color_space| for all settings.
+  // Initialize as |color_space| for all settings. If |color_space| is the
+  // default (invalid) color space, then initialize to sRGB.
   explicit DisplayColorSpaces(const ColorSpace& color_space);
 
-  // Initialize as |color_space| and |buffer_format| for all settings.
+  // Initialize as |color_space| and |buffer_format| for all settings. If
+  // |color_space| is the default (invalid) color space, then initialize to
+  // sRGB.
   DisplayColorSpaces(const ColorSpace& color_space, BufferFormat buffer_format);
 
   // Set the color space and buffer format for the final output surface when the
@@ -72,6 +77,13 @@ class COLOR_SPACE_EXPORT DisplayColorSpaces {
 
   // Return true if the HDR color spaces are, indeed, HDR.
   bool SupportsHDR() const;
+
+  // Output as a vector of strings. This is a helper function for printing in
+  // about:gpu. All output vectors will be the same length. Each entry will be
+  // the configuration name, its buffer format, and its color space.
+  void ToStrings(std::vector<std::string>* out_names,
+                 std::vector<gfx::ColorSpace>* out_color_spaces,
+                 std::vector<gfx::BufferFormat>* out_buffer_formats) const;
 
   bool operator==(const DisplayColorSpaces& other) const;
   bool operator!=(const DisplayColorSpaces& other) const;

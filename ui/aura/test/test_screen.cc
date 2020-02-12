@@ -81,7 +81,10 @@ void TestScreen::SetDeviceScaleFactor(float device_scale_factor) {
 void TestScreen::SetColorSpace(const gfx::ColorSpace& color_space,
                                float sdr_white_level) {
   display::Display display(GetPrimaryDisplay());
-  display.SetColorSpaceAndDepth(color_space, sdr_white_level);
+  gfx::DisplayColorSpaces display_color_spaces(color_space,
+                                               gfx::BufferFormat::RGBA_8888);
+  display_color_spaces.SetSDRWhiteLevel(sdr_white_level);
+  display.set_color_spaces(display_color_spaces);
   display_list().UpdateDisplay(display);
 }
 

@@ -141,14 +141,11 @@ TEST_F(DnsClientTest, InsecureNotEnabled) {
 
 TEST_F(DnsClientTest, CanUseSecureDnsTransactions_ProbeSuccess) {
   client_->SetSystemConfig(ValidConfigWithDoh());
-  resolve_context_.InvalidateCaches(client_->GetCurrentSession());
-
   EXPECT_TRUE(client_->CanUseSecureDnsTransactions());
   EXPECT_TRUE(
       client_->FallbackFromSecureTransactionPreferred(&resolve_context_));
 
-  resolve_context_.SetProbeSuccess(0u, true /* success */,
-                                   client_->GetCurrentSession());
+  client_->SetProbeSuccessForTest(0, true /* success */);
   EXPECT_TRUE(client_->CanUseSecureDnsTransactions());
   EXPECT_FALSE(
       client_->FallbackFromSecureTransactionPreferred(&resolve_context_));
@@ -175,9 +172,7 @@ TEST_F(DnsClientTest, DnsOverTlsActive) {
 TEST_F(DnsClientTest, AllAllowed) {
   client_->SetInsecureEnabled(true);
   client_->SetSystemConfig(ValidConfigWithDoh());
-  resolve_context_.InvalidateCaches(client_->GetCurrentSession());
-  resolve_context_.SetProbeSuccess(0u, true /* success */,
-                                   client_->GetCurrentSession());
+  client_->SetProbeSuccessForTest(0, true /* success */);
 
   EXPECT_TRUE(client_->CanUseSecureDnsTransactions());
   EXPECT_FALSE(

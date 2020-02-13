@@ -2124,8 +2124,8 @@ AXTree::Selection AXTree::GetUnignoredSelection() const {
   // Null positions are never ignored.
   if (anchor_position->IsIgnored()) {
     anchor_position = anchor_position->AsUnignoredPosition(
-        data().sel_is_backward ? AXPositionAdjustmentBehavior::kMoveForwards
-                               : AXPositionAdjustmentBehavior::kMoveBackwards);
+        data().sel_is_backward ? AXPositionAdjustmentBehavior::kMoveForward
+                               : AXPositionAdjustmentBehavior::kMoveBackward);
 
     // Any selection endpoint that is inside a leaf node is expressed as a text
     // position in AXTreeData.
@@ -2177,8 +2177,8 @@ AXTree::Selection AXTree::GetUnignoredSelection() const {
   // Null positions are never ignored.
   if (focus_position->IsIgnored()) {
     focus_position = focus_position->AsUnignoredPosition(
-        !data().sel_is_backward ? AXPositionAdjustmentBehavior::kMoveForwards
-                                : AXPositionAdjustmentBehavior::kMoveBackwards);
+        !data().sel_is_backward ? AXPositionAdjustmentBehavior::kMoveForward
+                                : AXPositionAdjustmentBehavior::kMoveBackward);
 
     // Any selection endpoint that is inside a leaf node is expressed as a text
     // position in AXTreeData.

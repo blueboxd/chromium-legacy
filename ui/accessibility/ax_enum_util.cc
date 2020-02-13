@@ -1300,9 +1300,6 @@ const char* ToString(ax::mojom::ScrollAlignment scroll_alignment) {
     case ax::mojom::ScrollAlignment::kScrollAlignmentClosestEdge:
       return "scrollAlignmentClosestEdge";
   }
-
-  NOTREACHED() << scroll_alignment;
-  return "";
 }
 
 ax::mojom::ScrollAlignment ParseScrollAlignment(const char* scroll_alignment) {
@@ -2068,6 +2065,187 @@ ax::mojom::MarkerType ParseMarkerType(const char* marker_type) {
   return ax::mojom::MarkerType::kNone;
 }
 
+const char* ToString(ax::mojom::MoveDirection move_direction) {
+  switch (move_direction) {
+    case ax::mojom::MoveDirection::kForward:
+      return "forward";
+    case ax::mojom::MoveDirection::kBackward:
+      return "backward";
+  }
+
+  return "";
+}
+
+ax::mojom::MoveDirection ParseMoveDirection(const char* move_direction) {
+  if (0 == strcmp(move_direction, "forward"))
+    return ax::mojom::MoveDirection::kForward;
+  if (0 == strcmp(move_direction, "backward"))
+    return ax::mojom::MoveDirection::kBackward;
+  return ax::mojom::MoveDirection::kForward;
+}
+
+const char* ToString(ax::mojom::EditCommand edit_command) {
+  switch (edit_command) {
+    case ax::mojom::EditCommand::kType:
+      return "type";
+    case ax::mojom::EditCommand::kCut:
+      return "cut";
+    case ax::mojom::EditCommand::kDelete:
+      return "delete";
+    case ax::mojom::EditCommand::kDictate:
+      return "dictate";
+    case ax::mojom::EditCommand::kFormat:
+      return "format";
+    case ax::mojom::EditCommand::kInsert:
+      return "insert";
+    case ax::mojom::EditCommand::kMarker:
+      return "marker";
+    case ax::mojom::EditCommand::kPaste:
+      return "paste";
+    case ax::mojom::EditCommand::kReplace:
+      return "replace";
+  }
+
+  return "";
+}
+
+ax::mojom::EditCommand ParseEditCommand(const char* edit_command) {
+  if (0 == strcmp(edit_command, "type"))
+    return ax::mojom::EditCommand::kType;
+  if (0 == strcmp(edit_command, "cut"))
+    return ax::mojom::EditCommand::kCut;
+  if (0 == strcmp(edit_command, "delete"))
+    return ax::mojom::EditCommand::kDelete;
+  if (0 == strcmp(edit_command, "dictate"))
+    return ax::mojom::EditCommand::kDictate;
+  if (0 == strcmp(edit_command, "format"))
+    return ax::mojom::EditCommand::kFormat;
+  if (0 == strcmp(edit_command, "insert"))
+    return ax::mojom::EditCommand::kInsert;
+  if (0 == strcmp(edit_command, "marker"))
+    return ax::mojom::EditCommand::kMarker;
+  if (0 == strcmp(edit_command, "paste"))
+    return ax::mojom::EditCommand::kPaste;
+  if (0 == strcmp(edit_command, "replace"))
+    return ax::mojom::EditCommand::kReplace;
+  return ax::mojom::EditCommand::kType;
+}
+
+const char* ToString(ax::mojom::SelectionCommand selection_command) {
+  switch (selection_command) {
+    case ax::mojom::SelectionCommand::kSet:
+      return "set";
+    case ax::mojom::SelectionCommand::kClear:
+      return "clear";
+    case ax::mojom::SelectionCommand::kShrink:
+      return "shrink";
+    case ax::mojom::SelectionCommand::kExtend:
+      return "extend";
+  }
+
+  return "";
+}
+
+ax::mojom::SelectionCommand ParseSelectionCommand(
+    const char* selection_command) {
+  if (0 == strcmp(selection_command, "set"))
+    return ax::mojom::SelectionCommand::kSet;
+  if (0 == strcmp(selection_command, "clear"))
+    return ax::mojom::SelectionCommand::kClear;
+  if (0 == strcmp(selection_command, "shrink"))
+    return ax::mojom::SelectionCommand::kShrink;
+  if (0 == strcmp(selection_command, "extend"))
+    return ax::mojom::SelectionCommand::kExtend;
+  return ax::mojom::SelectionCommand::kSet;
+}
+
+const char* ToString(ax::mojom::TextBoundary text_boundary) {
+  switch (text_boundary) {
+    case ax::mojom::TextBoundary::kCharacter:
+      return "character";
+    case ax::mojom::TextBoundary::kFormat:
+      return "format";
+    case ax::mojom::TextBoundary::kLineEnd:
+      return "lineEnd";
+    case ax::mojom::TextBoundary::kLineStart:
+      return "lineStart";
+    case ax::mojom::TextBoundary::kLineStartOrEnd:
+      return "lineStartOrEnd";
+    case ax::mojom::TextBoundary::kObject:
+      return "object";
+    case ax::mojom::TextBoundary::kPageEnd:
+      return "pageEnd";
+    case ax::mojom::TextBoundary::kPageStart:
+      return "pageStart";
+    case ax::mojom::TextBoundary::kPageStartOrEnd:
+      return "pageStartOrEnd";
+    case ax::mojom::TextBoundary::kParagraphEnd:
+      return "paragraphEnd";
+    case ax::mojom::TextBoundary::kParagraphStart:
+      return "paragraphStart";
+    case ax::mojom::TextBoundary::kParagraphStartOrEnd:
+      return "paragraphStartOrEnd";
+    case ax::mojom::TextBoundary::kSentenceEnd:
+      return "sentenceEnd";
+    case ax::mojom::TextBoundary::kSentenceStart:
+      return "sentenceStart";
+    case ax::mojom::TextBoundary::kSentenceStartOrEnd:
+      return "sentenceStartOrEnd";
+    case ax::mojom::TextBoundary::kWebPage:
+      return "webPage";
+    case ax::mojom::TextBoundary::kWordEnd:
+      return "wordEnd";
+    case ax::mojom::TextBoundary::kWordStart:
+      return "wordStart";
+    case ax::mojom::TextBoundary::kWordStartOrEnd:
+      return "wordStartOrEnd";
+  }
+
+  return "";
+}
+
+ax::mojom::TextBoundary ParseTextBoundary(const char* text_boundary) {
+  if (0 == strcmp(text_boundary, "object"))
+    return ax::mojom::TextBoundary::kObject;
+  if (0 == strcmp(text_boundary, "character"))
+    return ax::mojom::TextBoundary::kCharacter;
+  if (0 == strcmp(text_boundary, "format"))
+    return ax::mojom::TextBoundary::kFormat;
+  if (0 == strcmp(text_boundary, "lineEnd"))
+    return ax::mojom::TextBoundary::kLineEnd;
+  if (0 == strcmp(text_boundary, "lineStart"))
+    return ax::mojom::TextBoundary::kLineStart;
+  if (0 == strcmp(text_boundary, "lineStartOrEnd"))
+    return ax::mojom::TextBoundary::kLineStartOrEnd;
+  if (0 == strcmp(text_boundary, "pageEnd"))
+    return ax::mojom::TextBoundary::kPageEnd;
+  if (0 == strcmp(text_boundary, "pageStart"))
+    return ax::mojom::TextBoundary::kPageStart;
+  if (0 == strcmp(text_boundary, "pageStartOrEnd"))
+    return ax::mojom::TextBoundary::kPageStartOrEnd;
+  if (0 == strcmp(text_boundary, "paragraphEnd"))
+    return ax::mojom::TextBoundary::kParagraphEnd;
+  if (0 == strcmp(text_boundary, "paragraphStart"))
+    return ax::mojom::TextBoundary::kParagraphStart;
+  if (0 == strcmp(text_boundary, "paragraphStartOrEnd"))
+    return ax::mojom::TextBoundary::kParagraphStartOrEnd;
+  if (0 == strcmp(text_boundary, "sentenceEnd"))
+    return ax::mojom::TextBoundary::kSentenceEnd;
+  if (0 == strcmp(text_boundary, "sentenceStart"))
+    return ax::mojom::TextBoundary::kSentenceStart;
+  if (0 == strcmp(text_boundary, "sentenceStartOrEnd"))
+    return ax::mojom::TextBoundary::kSentenceStartOrEnd;
+  if (0 == strcmp(text_boundary, "webPage"))
+    return ax::mojom::TextBoundary::kWebPage;
+  if (0 == strcmp(text_boundary, "wordEnd"))
+    return ax::mojom::TextBoundary::kWordEnd;
+  if (0 == strcmp(text_boundary, "wordStart"))
+    return ax::mojom::TextBoundary::kWordStart;
+  if (0 == strcmp(text_boundary, "wordStartOrEnd"))
+    return ax::mojom::TextBoundary::kWordStartOrEnd;
+  return ax::mojom::TextBoundary::kObject;
+}
+
 const char* ToString(ax::mojom::TextDecorationStyle text_decoration_style) {
   switch (text_decoration_style) {
     case ax::mojom::TextDecorationStyle::kNone:
@@ -2160,6 +2338,8 @@ ax::mojom::TextPosition ParseTextPosition(const char* text_position) {
 
 const char* ToString(ax::mojom::TextStyle text_style) {
   switch (text_style) {
+    case ax::mojom::TextStyle::kNone:
+      return "none";
     case ax::mojom::TextStyle::kBold:
       return "bold";
     case ax::mojom::TextStyle::kItalic:
@@ -2170,14 +2350,14 @@ const char* ToString(ax::mojom::TextStyle text_style) {
       return "lineThrough";
     case ax::mojom::TextStyle::kOverline:
       return "overline";
-    case ax::mojom::TextStyle::kNone:
-      return "none";
   }
 
   return "";
 }
 
 ax::mojom::TextStyle ParseTextStyle(const char* text_style) {
+  if (0 == strcmp(text_style, "none"))
+    return ax::mojom::TextStyle::kNone;
   if (0 == strcmp(text_style, "bold"))
     return ax::mojom::TextStyle::kBold;
   if (0 == strcmp(text_style, "italic"))

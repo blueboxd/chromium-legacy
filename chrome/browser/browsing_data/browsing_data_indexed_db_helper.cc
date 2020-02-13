@@ -39,10 +39,12 @@ void BrowsingDataIndexedDBHelper::StartFetching(FetchCallback callback) {
                      base::WrapRefCounted(this), std::move(callback)));
 }
 
-void BrowsingDataIndexedDBHelper::DeleteIndexedDB(const url::Origin& origin) {
+void BrowsingDataIndexedDBHelper::DeleteIndexedDB(
+    const url::Origin& origin,
+    base::OnceCallback<void(bool)> callback) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
-  storage_partition_->GetIndexedDBControl().DeleteForOrigin(origin,
-                                                            base::DoNothing());
+  storage_partition_->GetIndexedDBControl().DeleteForOrigin(
+      origin, std::move(callback));
 }
 
 void BrowsingDataIndexedDBHelper::IndexedDBUsageInfoReceived(
@@ -103,7 +105,8 @@ void CannedBrowsingDataIndexedDBHelper::StartFetching(FetchCallback callback) {
 }
 
 void CannedBrowsingDataIndexedDBHelper::DeleteIndexedDB(
-    const url::Origin& origin) {
+    const url::Origin& origin,
+    base::OnceCallback<void(bool)> callback) {
   pending_origins_.erase(origin);
-  BrowsingDataIndexedDBHelper::DeleteIndexedDB(origin);
+  BrowsingDataIndexedDBHelper::DeleteIndexedDB(origin, std::move(callback));
 }

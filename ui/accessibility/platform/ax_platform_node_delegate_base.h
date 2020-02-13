@@ -199,9 +199,9 @@ class AX_EXPORT AXPlatformNodeDelegateBase : public AXPlatformNodeDelegate {
   const AXUniqueId& GetUniqueId() const override;
 
   base::Optional<int> FindTextBoundary(
-      AXTextBoundary boundary,
+      ax::mojom::TextBoundary boundary,
       int offset,
-      AXTextBoundaryDirection direction,
+      ax::mojom::MoveDirection direction,
       ax::mojom::TextAffinity affinity) const override;
 
   const std::vector<gfx::NativeViewAccessible> GetDescendants() const override;

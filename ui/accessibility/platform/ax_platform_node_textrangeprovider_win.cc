@@ -229,12 +229,12 @@ STDMETHODIMP AXPlatformNodeTextRangeProviderWin::ExpandToEnclosingUnit(
     case TextUnit_Line:
       start_ = start_->CreateBoundaryStartPosition(
           AXBoundaryBehavior::StopIfAlreadyAtBoundary,
-          AXTextBoundaryDirection::kBackwards,
+          ax::mojom::MoveDirection::kBackward,
           base::BindRepeating(&AtStartOfLinePredicate),
           base::BindRepeating(&AtEndOfLinePredicate));
       end_ = start_->CreateBoundaryEndPosition(
           AXBoundaryBehavior::StopIfAlreadyAtBoundary,
-          AXTextBoundaryDirection::kForwards,
+          ax::mojom::MoveDirection::kForward,
           base::BindRepeating(&AtStartOfLinePredicate),
           base::BindRepeating(&AtEndOfLinePredicate));
       break;
@@ -942,17 +942,17 @@ bool AXPlatformNodeTextRangeProviderWin::AtEndOfLinePredicate(
 AXPlatformNodeTextRangeProviderWin::AXPositionInstance
 AXPlatformNodeTextRangeProviderWin::GetNextTextBoundaryPosition(
     const AXPositionInstance& position,
-    AXTextBoundary boundary_type,
+    ax::mojom::TextBoundary boundary_type,
     AXBoundaryBehavior boundary_behavior,
-    AXTextBoundaryDirection boundary_direction) {
+    ax::mojom::MoveDirection boundary_direction) {
   // Override At[Start|End]OfLinePredicate for behavior specific to UIA.
   switch (boundary_type) {
-    case AXTextBoundary::kLineStart:
+    case ax::mojom::TextBoundary::kLineStart:
       return position->CreateBoundaryStartPosition(
           boundary_behavior, boundary_direction,
           base::BindRepeating(&AtStartOfLinePredicate),
           base::BindRepeating(&AtEndOfLinePredicate));
-    case AXTextBoundary::kLineEnd:
+    case ax::mojom::TextBoundary::kLineEnd:
       return position->CreateBoundaryEndPosition(
           boundary_behavior, boundary_direction,
           base::BindRepeating(&AtStartOfLinePredicate),
@@ -996,8 +996,9 @@ AXPlatformNodeTextRangeProviderWin::MoveEndpointByCharacter(
     const AXPositionInstance& endpoint,
     const int count,
     int* units_moved) {
-  return MoveEndpointByUnitHelper(
-      std::move(endpoint), AXTextBoundary::kCharacter, count, units_moved);
+  return MoveEndpointByUnitHelper(std::move(endpoint),
+                                  ax::mojom::TextBoundary::kCharacter, count,
+                                  units_moved);
 }
 
 AXPlatformNodeTextRangeProviderWin::AXPositionInstance
@@ -1005,8 +1006,9 @@ AXPlatformNodeTextRangeProviderWin::MoveEndpointByWord(
     const AXPositionInstance& endpoint,
     const int count,
     int* units_moved) {
-  return MoveEndpointByUnitHelper(
-      std::move(endpoint), AXTextBoundary::kWordStart, count, units_moved);
+  return MoveEndpointByUnitHelper(std::move(endpoint),
+                                  ax::mojom::TextBoundary::kWordStart, count,
+                                  units_moved);
 }
 
 AXPlatformNodeTextRangeProviderWin::AXPositionInstance
@@ -1015,10 +1017,11 @@ AXPlatformNodeTextRangeProviderWin::MoveEndpointByLine(
     bool is_start_endpoint,
     const int count,
     int* units_moved) {
-  return MoveEndpointByUnitHelper(
-      std::move(endpoint),
-      is_start_endpoint ? AXTextBoundary::kLineStart : AXTextBoundary::kLineEnd,
-      count, units_moved);
+  return MoveEndpointByUnitHelper(std::move(endpoint),
+                                  is_start_endpoint
+                                      ? ax::mojom::TextBoundary::kLineStart
+                                      : ax::mojom::TextBoundary::kLineEnd,
+                                  count, units_moved);
 }
 
 AXPlatformNodeTextRangeProviderWin::AXPositionInstance
@@ -1026,8 +1029,9 @@ AXPlatformNodeTextRangeProviderWin::MoveEndpointByFormat(
     const AXPositionInstance& endpoint,
     const int count,
     int* units_moved) {
-  return MoveEndpointByUnitHelper(
-      std::move(endpoint), AXTextBoundary::kFormatChange, count, units_moved);
+  return MoveEndpointByUnitHelper(std::move(endpoint),
+                                  ax::mojom::TextBoundary::kFormat, count,
+                                  units_moved);
 }
 
 AXPlatformNodeTextRangeProviderWin::AXPositionInstance
@@ -1038,8 +1042,8 @@ AXPlatformNodeTextRangeProviderWin::MoveEndpointByParagraph(
     int* units_moved) {
   return MoveEndpointByUnitHelper(std::move(endpoint),
                                   is_start_endpoint
-                                      ? AXTextBoundary::kParagraphStart
-                                      : AXTextBoundary::kParagraphEnd,
+                                      ? ax::mojom::TextBoundary::kParagraphStart
+                                      : ax::mojom::TextBoundary::kParagraphEnd,
                                   count, units_moved);
 }
 
@@ -1055,10 +1059,11 @@ AXPlatformNodeTextRangeProviderWin::MoveEndpointByPage(
   if (!common_ancestor->GetAnchor()->tree()->HasPaginationSupport())
     return MoveEndpointByDocument(std::move(endpoint), count, units_moved);
 
-  return MoveEndpointByUnitHelper(
-      std::move(endpoint),
-      is_start_endpoint ? AXTextBoundary::kPageStart : AXTextBoundary::kPageEnd,
-      count, units_moved);
+  return MoveEndpointByUnitHelper(std::move(endpoint),
+                                  is_start_endpoint
+                                      ? ax::mojom::TextBoundary::kPageStart
+                                      : ax::mojom::TextBoundary::kPageEnd,
+                                  count, units_moved);
 }
 
 AXPlatformNodeTextRangeProviderWin::AXPositionInstance
@@ -1079,13 +1084,13 @@ AXPlatformNodeTextRangeProviderWin::MoveEndpointByDocument(
 AXPlatformNodeTextRangeProviderWin::AXPositionInstance
 AXPlatformNodeTextRangeProviderWin::MoveEndpointByUnitHelper(
     const AXPositionInstance& endpoint,
-    const AXTextBoundary boundary_type,
+    const ax::mojom::TextBoundary boundary_type,
     const int count,
     int* units_moved) {
   DCHECK_NE(count, 0);
-  const AXTextBoundaryDirection boundary_direction =
-      (count > 0) ? AXTextBoundaryDirection::kForwards
-                  : AXTextBoundaryDirection::kBackwards;
+  const ax::mojom::MoveDirection boundary_direction =
+      (count > 0) ? ax::mojom::MoveDirection::kForward
+                  : ax::mojom::MoveDirection::kBackward;
 
   // Most of the methods used to create the next/previous position go back and
   // forth creating a leaf text position and rooting the result to the original
@@ -1151,11 +1156,11 @@ void AXPlatformNodeTextRangeProviderWin::NormalizeAsUnignoredTextRange() {
     return;
 
   if (start_->IsIgnored()) {
-    AXPositionInstance normalized_start = start_->AsUnignoredPosition(
-        AXPositionAdjustmentBehavior::kMoveForwards);
+    AXPositionInstance normalized_start =
+        start_->AsUnignoredPosition(AXPositionAdjustmentBehavior::kMoveForward);
     if (normalized_start->IsNullPosition()) {
       normalized_start = start_->AsUnignoredPosition(
-          AXPositionAdjustmentBehavior::kMoveBackwards);
+          AXPositionAdjustmentBehavior::kMoveBackward);
     }
     if (!normalized_start->IsNullPosition())
       start_ = std::move(normalized_start);
@@ -1163,10 +1168,10 @@ void AXPlatformNodeTextRangeProviderWin::NormalizeAsUnignoredTextRange() {
 
   if (end_->IsIgnored()) {
     AXPositionInstance normalized_end =
-        end_->AsUnignoredPosition(AXPositionAdjustmentBehavior::kMoveForwards);
+        end_->AsUnignoredPosition(AXPositionAdjustmentBehavior::kMoveForward);
     if (normalized_end->IsNullPosition()) {
       normalized_end = end_->AsUnignoredPosition(
-          AXPositionAdjustmentBehavior::kMoveBackwards);
+          AXPositionAdjustmentBehavior::kMoveBackward);
     }
     if (!normalized_end->IsNullPosition())
       end_ = std::move(normalized_end);

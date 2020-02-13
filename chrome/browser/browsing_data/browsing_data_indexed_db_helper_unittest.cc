@@ -6,10 +6,10 @@
 
 #include "base/run_loop.h"
 #include "base/strings/utf_string_conversions.h"
+#include "base/test/bind_test_util.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "chrome/test/base/testing_profile.h"
 #include "content/public/browser/browser_context.h"
-#include "content/public/browser/indexed_db_context.h"
 #include "content/public/browser/storage_partition.h"
 #include "content/public/test/browser_task_environment.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -51,14 +51,14 @@ TEST_F(CannedBrowsingDataIndexedDBHelperTest, Delete) {
   helper->Add(origin1);
   helper->Add(origin2);
   EXPECT_EQ(2u, helper->GetCount());
-  helper->DeleteIndexedDB(origin2);
-  EXPECT_EQ(1u, helper->GetCount());
-
-  // TODO(dmurph): Remove this once Delete is mojo-ified as well.
   base::RunLoop loop;
-  StoragePartition()->GetIndexedDBContext()->IDBTaskRunner()->PostTask(
-      FROM_HERE, loop.QuitClosure());
+  helper->DeleteIndexedDB(origin2,
+                          base::BindLambdaForTesting([&](bool success) {
+                            EXPECT_TRUE(success);
+                            loop.Quit();
+                          }));
   loop.Run();
+  EXPECT_EQ(1u, helper->GetCount());
 }
 
 TEST_F(CannedBrowsingDataIndexedDBHelperTest, IgnoreExtensionsAndDevTools) {

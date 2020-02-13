@@ -4,8 +4,10 @@
 
 package org.chromium.chrome.browser.profile_card;
 
+import static org.chromium.chrome.browser.profile_card.ProfileCardProperties.AVATAR_BITMAP;
 import static org.chromium.chrome.browser.profile_card.ProfileCardProperties.DESCRIPTION;
 import static org.chromium.chrome.browser.profile_card.ProfileCardProperties.IS_DIALOG_VISIBLE;
+import static org.chromium.chrome.browser.profile_card.ProfileCardProperties.POST_FREQUENCY;
 import static org.chromium.chrome.browser.profile_card.ProfileCardProperties.TITLE;
 
 import org.chromium.ui.modelutil.PropertyKey;
@@ -19,10 +21,14 @@ class ProfileCardViewBinder {
      * @param propertyKey The key for the property to update for.
      */
     public static void bind(PropertyModel model, ProfileCardView view, PropertyKey propertyKey) {
-        if (TITLE == propertyKey) {
+        if (AVATAR_BITMAP == propertyKey) {
+            view.setAvatarBitmap(model.get(AVATAR_BITMAP));
+        } else if (TITLE == propertyKey) {
             view.setTitle(model.get(TITLE));
         } else if (DESCRIPTION == propertyKey) {
             view.setDescription(model.get(DESCRIPTION));
+        } else if (POST_FREQUENCY == propertyKey) {
+            view.setPostFrequency(model.get(POST_FREQUENCY));
         } else if (IS_DIALOG_VISIBLE == propertyKey) {
             view.setVisibility(model.get(IS_DIALOG_VISIBLE));
         }

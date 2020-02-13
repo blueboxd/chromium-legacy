@@ -23,6 +23,7 @@
 #include "base/observer_list.h"
 #include "base/win/atl.h"
 #include "third_party/iaccessible2/ia2_api_all.h"
+#include "ui/accessibility/ax_enums.mojom-forward.h"
 #include "ui/accessibility/ax_export.h"
 #include "ui/accessibility/ax_text_utils.h"
 #include "ui/accessibility/platform/ax_platform_node_base.h"
@@ -1260,7 +1261,7 @@ class AX_EXPORT __declspec(uuid("26f5641a-246d-457b-a96d-07f3fae6acf2"))
   // text boundary is found, and return the offset of that boundary.
   LONG FindBoundary(IA2TextBoundaryType ia2_boundary,
                     LONG start_offset,
-                    AXTextBoundaryDirection direction);
+                    ax::mojom::MoveDirection direction);
 
   // Many MSAA methods take a var_id parameter indicating that the operation
   // should be performed on a particular child ID, rather than this object.

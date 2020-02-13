@@ -24,6 +24,7 @@
 #include "third_party/isimpledom/ISimpleDOMDocument.h"
 #include "third_party/isimpledom/ISimpleDOMNode.h"
 #include "third_party/isimpledom/ISimpleDOMText.h"
+#include "ui/accessibility/ax_enums.mojom-forward.h"
 #include "ui/accessibility/platform/ax_platform_node_delegate.h"
 #include "ui/accessibility/platform/ax_platform_node_win.h"
 
@@ -39,12 +40,6 @@ const GUID GUID_IAccessibleContentDocument = {
     0x3571,
     0x4d8f,
     {0x95, 0x21, 0x07, 0xed, 0x28, 0xfb, 0x07, 0x2e}};
-
-namespace ui {
-
-enum class AXTextBoundaryDirection;
-
-}  // namespace ui
 
 namespace content {
 class BrowserAccessibilityWin;
@@ -412,8 +407,7 @@ class __declspec(uuid("562072fe-3390-43b1-9e2c-dd4118f5ac79"))
   // Searches forward from the given offset until the start of the next style
   // is found, or searches backward from the given offset until the start of the
   // current style is found.
-  LONG FindStartOfStyle(LONG start_offset,
-                        ui::AXTextBoundaryDirection direction);
+  LONG FindStartOfStyle(LONG start_offset, ax::mojom::MoveDirection direction);
 
   // ID refers to the node ID in the current tree, not the globally unique ID.
   // TODO(nektar): Could we use globally unique IDs everywhere?

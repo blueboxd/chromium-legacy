@@ -105,8 +105,9 @@ class AppRegistrar {
   virtual WebAppRegistrar* AsWebAppRegistrar() = 0;
   virtual extensions::BookmarkAppRegistrar* AsBookmarkAppRegistrar();
 
-  // Returns the scope returned by GetAppScopeInternal() or the parent URL of
-  // GetAppLaunchURL() if there's no scope.
+  // Returns the "scope" field from the app manifest, or infers a scope from the
+  // "start_url" field if unavailable. Returns an invalid GURL iff the |app_id|
+  // does not refer to an installed web app.
   GURL GetAppScope(const AppId& app_id) const;
 
   // Searches for the first app id in the registry for which the |url| is in

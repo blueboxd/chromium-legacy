@@ -88,10 +88,10 @@ TEST_F(DOMStorageContextWrapperTest, ProcessLockedToOtherOrigin) {
   // and verifies the bad message callback.
 
   mojo::Remote<blink::mojom::StorageArea> area;
-  context_->BindSessionStorageArea(
-      CreateSecurityPolicyHandle(kTestProcessIdOrigin1), test_origin2_,
-      test_namespace_id_, MakeBadMessageCallback(),
-      area.BindNewPipeAndPassReceiver());
+  context_->BindStorageArea(CreateSecurityPolicyHandle(kTestProcessIdOrigin1),
+                            test_origin2_, test_namespace_id_,
+                            MakeBadMessageCallback(),
+                            area.BindNewPipeAndPassReceiver());
   EXPECT_TRUE(bad_message_called_);
 }
 

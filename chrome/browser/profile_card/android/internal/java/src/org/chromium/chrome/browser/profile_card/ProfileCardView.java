@@ -5,9 +5,11 @@
 package org.chromium.chrome.browser.profile_card;
 
 import android.content.Context;
+import android.graphics.Bitmap;
 import android.text.method.ScrollingMovementMethod;
 import android.view.LayoutInflater;
 import android.view.View;
+import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.TextView;
 
@@ -20,6 +22,8 @@ public class ProfileCardView extends LinearLayout {
     private View mMainContentView;
     private TextView mTitleTextView;
     private TextView mDescriptionTextView;
+    private ImageView mAvatarView;
+    private TextView mPostFrequencyTextView;
 
     public ProfileCardView(Context context) {
         super(context);
@@ -33,6 +37,11 @@ public class ProfileCardView extends LinearLayout {
         mTitleTextView = mMainContentView.findViewById(R.id.title);
         mDescriptionTextView = mMainContentView.findViewById(R.id.description);
         mDescriptionTextView.setMovementMethod(new ScrollingMovementMethod());
+        mPostFrequencyTextView = mMainContentView.findViewById(R.id.post_freq);
+    }
+
+    void setAvatarBitmap(Bitmap avatarBitmap) {
+        mAvatarView.setImageBitmap(avatarBitmap);
     }
 
     void setTitle(String title) {
@@ -47,6 +56,14 @@ public class ProfileCardView extends LinearLayout {
             throw new IllegalStateException("Current dialog doesn't have a description text view");
         }
         mDescriptionTextView.setText(description);
+    }
+
+    void setPostFrequency(String postFrequency) {
+        if (mPostFrequencyTextView == null) {
+            throw new IllegalStateException(
+                    "Current dialog doesn't have a post frequency text view");
+        }
+        mPostFrequencyTextView.setText(postFrequency);
     }
 
     void setVisibility(boolean visible) {

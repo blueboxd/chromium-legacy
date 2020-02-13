@@ -52,15 +52,12 @@ MockPlatformNotificationService* GetMockPlatformNotificationService() {
 WebTestMessageFilter::WebTestMessageFilter(
     int render_process_id,
     storage::DatabaseTracker* database_tracker,
-    storage::QuotaManager* quota_manager,
-    network::mojom::NetworkContext* network_context)
+    storage::QuotaManager* quota_manager)
     : BrowserMessageFilter(WebTestMsgStart),
       render_process_id_(render_process_id),
       database_tracker_(database_tracker),
       quota_manager_(quota_manager) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
-  network_context->GetCookieManager(
-      cookie_manager_.BindNewPipeAndPassReceiver());
 }
 
 WebTestMessageFilter::~WebTestMessageFilter() {}
@@ -76,9 +73,7 @@ WebTestMessageFilter::OverrideTaskRunnerForMessage(
     case WebTestHostMsg_ClearAllDatabases::ID:
       return database_tracker_->task_runner();
     case WebTestHostMsg_SimulateWebNotificationClick::ID:
-    case WebTestHostMsg_WebTestRuntimeFlagsChanged::ID:
     case WebTestHostMsg_InitiateCaptureDump::ID:
-    case WebTestHostMsg_DeleteAllCookies::ID:
     case WebTestHostMsg_GetWritableDirectory::ID:
     case WebTestHostMsg_SetFilePathForMockFileDialog::ID:
       return base::CreateSingleThreadTaskRunner({BrowserThread::UI});
@@ -96,9 +91,6 @@ bool WebTestMessageFilter::OnMessageReceived(const IPC::Message& message) {
     IPC_MESSAGE_HANDLER(WebTestHostMsg_SetDatabaseQuota, OnSetDatabaseQuota)
     IPC_MESSAGE_HANDLER(WebTestHostMsg_SimulateWebNotificationClick,
                         OnSimulateWebNotificationClick)
-    IPC_MESSAGE_HANDLER(WebTestHostMsg_DeleteAllCookies, OnDeleteAllCookies)
-    IPC_MESSAGE_HANDLER(WebTestHostMsg_WebTestRuntimeFlagsChanged,
-                        OnWebTestRuntimeFlagsChanged)
     IPC_MESSAGE_HANDLER(WebTestHostMsg_InitiateCaptureDump,
                         OnInitiateCaptureDump)
     IPC_MESSAGE_HANDLER(WebTestHostMsg_GetWritableDirectory,
@@ -159,21 +151,6 @@ void WebTestMessageFilter::OnSimulateWebNotificationClick(
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   GetMockPlatformNotificationService()->SimulateClick(title, action_index,
                                                       reply);
-}
-
-void WebTestMessageFilter::OnDeleteAllCookies() {
-  DCHECK_CURRENTLY_ON(BrowserThread::UI);
-  cookie_manager_->DeleteCookies(network::mojom::CookieDeletionFilter::New(),
-                                 base::BindOnce([](uint32_t) {}));
-}
-
-void WebTestMessageFilter::OnWebTestRuntimeFlagsChanged(
-    const base::DictionaryValue& changed_web_test_runtime_flags) {
-  DCHECK_CURRENTLY_ON(BrowserThread::UI);
-  if (BlinkTestController::Get()) {
-    BlinkTestController::Get()->OnWebTestRuntimeFlagsChanged(
-        render_process_id_, changed_web_test_runtime_flags);
-  }
 }
 
 void WebTestMessageFilter::OnInitiateCaptureDump(

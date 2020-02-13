@@ -6,6 +6,7 @@ module content.mojom;
 
 import "third_party/blink/public/mojom/permissions/permission_status.mojom";
 import "url/mojom/url.mojom";
+import "mojo/public/mojom/base/values.mojom";
 
 // Web test messages sent from the renderer process to the browser.
 interface WebTestClient {
@@ -38,4 +39,12 @@ interface WebTestClient {
                blink.mojom.PermissionStatus status,
                url.mojom.Url origin,
                url.mojom.Url embedding_origin);
+
+  // Notifies the browser that one of renderers has changed web test runtime
+  // flags (i.e. has set dump_as_text).
+  WebTestRuntimeFlagsChanged(
+      mojo_base.mojom.DictionaryValue changed_web_test_runtime_flags);
+
+  // Delete all cookies created in this associated storage context.
+  DeleteAllCookies();
 };

@@ -29,9 +29,13 @@ void MockBrowsingDataIndexedDBHelper::StartFetching(FetchCallback callback) {
 }
 
 void MockBrowsingDataIndexedDBHelper::DeleteIndexedDB(
-    const url::Origin& origin) {
+    const url::Origin& origin,
+    base::OnceCallback<void(bool)> callback) {
   ASSERT_TRUE(base::Contains(origins_, origin));
   origins_[origin] = false;
+
+  bool success = true;
+  std::move(callback).Run(success);
 }
 
 void MockBrowsingDataIndexedDBHelper::AddIndexedDBSamples() {

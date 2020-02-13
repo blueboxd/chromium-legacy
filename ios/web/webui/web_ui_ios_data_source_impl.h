@@ -29,6 +29,8 @@ class WebUIIOSDataSourceImpl : public URLDataSourceIOSImpl,
   void AddLocalizedString(const std::string& name, int ids) override;
   void AddLocalizedStrings(
       const base::DictionaryValue& localized_strings) override;
+  void AddLocalizedStrings(
+      base::span<const webui::LocalizedString> strings) override;
   void AddBoolean(const std::string& name, bool value) override;
   void UseStringsJs() override;
   void AddResourcePath(const std::string& path, int resource_id) override;

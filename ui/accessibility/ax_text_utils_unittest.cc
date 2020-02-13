@@ -11,7 +11,6 @@
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/accessibility/ax_enums.mojom.h"
-#include "ui/accessibility/ax_text_boundary.h"
 
 namespace ui {
 
@@ -24,53 +23,53 @@ TEST(AXTextUtils, FindAccessibleTextBoundaryWord) {
   size_t result;
 
   result = FindAccessibleTextBoundary(
-      text, line_start_offsets, AXTextBoundary::kWordStart, 0,
-      AXTextBoundaryDirection::kForwards, ax::mojom::TextAffinity::kDownstream);
+      text, line_start_offsets, ax::mojom::TextBoundary::kWordStart, 0,
+      ax::mojom::MoveDirection::kForward, ax::mojom::TextAffinity::kDownstream);
   EXPECT_EQ(6UL, result);
   result = FindAccessibleTextBoundary(text, line_start_offsets,
-                                      AXTextBoundary::kWordStart, 5,
-                                      AXTextBoundaryDirection::kBackwards,
+                                      ax::mojom::TextBoundary::kWordStart, 5,
+                                      ax::mojom::MoveDirection::kBackward,
                                       ax::mojom::TextAffinity::kDownstream);
   EXPECT_EQ(0UL, result);
   result = FindAccessibleTextBoundary(
-      text, line_start_offsets, AXTextBoundary::kWordStart, 6,
-      AXTextBoundaryDirection::kForwards, ax::mojom::TextAffinity::kDownstream);
+      text, line_start_offsets, ax::mojom::TextBoundary::kWordStart, 6,
+      ax::mojom::MoveDirection::kForward, ax::mojom::TextAffinity::kDownstream);
   EXPECT_EQ(12UL, result);
   result = FindAccessibleTextBoundary(text, line_start_offsets,
-                                      AXTextBoundary::kWordStart, 11,
-                                      AXTextBoundaryDirection::kBackwards,
+                                      ax::mojom::TextBoundary::kWordStart, 11,
+                                      ax::mojom::MoveDirection::kBackward,
                                       ax::mojom::TextAffinity::kDownstream);
   EXPECT_EQ(6UL, result);
   result = FindAccessibleTextBoundary(text, line_start_offsets,
-                                      AXTextBoundary::kWordStart, 12,
-                                      AXTextBoundaryDirection::kBackwards,
+                                      ax::mojom::TextBoundary::kWordStart, 12,
+                                      ax::mojom::MoveDirection::kBackward,
                                       ax::mojom::TextAffinity::kDownstream);
   EXPECT_EQ(12UL, result);
   result = FindAccessibleTextBoundary(
-      text, line_start_offsets, AXTextBoundary::kWordStart, 15,
-      AXTextBoundaryDirection::kForwards, ax::mojom::TextAffinity::kDownstream);
+      text, line_start_offsets, ax::mojom::TextBoundary::kWordStart, 15,
+      ax::mojom::MoveDirection::kForward, ax::mojom::TextAffinity::kDownstream);
   EXPECT_EQ(17UL, result);
   result = FindAccessibleTextBoundary(text, line_start_offsets,
-                                      AXTextBoundary::kWordStart, 15,
-                                      AXTextBoundaryDirection::kBackwards,
+                                      ax::mojom::TextBoundary::kWordStart, 15,
+                                      ax::mojom::MoveDirection::kBackward,
                                       ax::mojom::TextAffinity::kDownstream);
   EXPECT_EQ(12UL, result);
   result = FindAccessibleTextBoundary(
-      text, line_start_offsets, AXTextBoundary::kWordStart, 16,
-      AXTextBoundaryDirection::kForwards, ax::mojom::TextAffinity::kDownstream);
+      text, line_start_offsets, ax::mojom::TextBoundary::kWordStart, 16,
+      ax::mojom::MoveDirection::kForward, ax::mojom::TextAffinity::kDownstream);
   EXPECT_EQ(17UL, result);
   result = FindAccessibleTextBoundary(
-      text, line_start_offsets, AXTextBoundary::kWordStart, 17,
-      AXTextBoundaryDirection::kForwards, ax::mojom::TextAffinity::kDownstream);
+      text, line_start_offsets, ax::mojom::TextBoundary::kWordStart, 17,
+      ax::mojom::MoveDirection::kForward, ax::mojom::TextAffinity::kDownstream);
   EXPECT_EQ(20UL, result);
   result = FindAccessibleTextBoundary(
-      text, line_start_offsets, AXTextBoundary::kWordStart, 20,
-      AXTextBoundaryDirection::kForwards, ax::mojom::TextAffinity::kDownstream);
+      text, line_start_offsets, ax::mojom::TextBoundary::kWordStart, 20,
+      ax::mojom::MoveDirection::kForward, ax::mojom::TextAffinity::kDownstream);
   EXPECT_EQ(text_length, result);
-  result = FindAccessibleTextBoundary(text, line_start_offsets,
-                                      AXTextBoundary::kWordStart, text_length,
-                                      AXTextBoundaryDirection::kBackwards,
-                                      ax::mojom::TextAffinity::kDownstream);
+  result = FindAccessibleTextBoundary(
+      text, line_start_offsets, ax::mojom::TextBoundary::kWordStart,
+      text_length, ax::mojom::MoveDirection::kBackward,
+      ax::mojom::TextAffinity::kDownstream);
   EXPECT_EQ(20UL, result);
 }
 
@@ -84,62 +83,62 @@ TEST(AXTextUtils, FindAccessibleTextBoundaryLine) {
 
   // Basic cases.
   result = FindAccessibleTextBoundary(
-      text, line_start_offsets, AXTextBoundary::kLineStart, 5,
-      AXTextBoundaryDirection::kForwards, ax::mojom::TextAffinity::kDownstream);
+      text, line_start_offsets, ax::mojom::TextBoundary::kLineStart, 5,
+      ax::mojom::MoveDirection::kForward, ax::mojom::TextAffinity::kDownstream);
   EXPECT_EQ(8UL, result);
   result = FindAccessibleTextBoundary(text, line_start_offsets,
-                                      AXTextBoundary::kLineStart, 9,
-                                      AXTextBoundaryDirection::kBackwards,
+                                      ax::mojom::TextBoundary::kLineStart, 9,
+                                      ax::mojom::MoveDirection::kBackward,
                                       ax::mojom::TextAffinity::kDownstream);
   EXPECT_EQ(8UL, result);
   result = FindAccessibleTextBoundary(
-      text, line_start_offsets, AXTextBoundary::kLineStart, 10,
-      AXTextBoundaryDirection::kForwards, ax::mojom::TextAffinity::kDownstream);
+      text, line_start_offsets, ax::mojom::TextBoundary::kLineStart, 10,
+      ax::mojom::MoveDirection::kForward, ax::mojom::TextAffinity::kDownstream);
   EXPECT_EQ(15UL, result);
 
   // Edge cases.
-  result = FindAccessibleTextBoundary(text, line_start_offsets,
-                                      AXTextBoundary::kLineStart, text_length,
-                                      AXTextBoundaryDirection::kBackwards,
-                                      ax::mojom::TextAffinity::kDownstream);
+  result = FindAccessibleTextBoundary(
+      text, line_start_offsets, ax::mojom::TextBoundary::kLineStart,
+      text_length, ax::mojom::MoveDirection::kBackward,
+      ax::mojom::TextAffinity::kDownstream);
   EXPECT_EQ(15UL, result);
 
   // When the start_offset is at the start of the next line and we are searching
   // backwards, it should not move.
   result = FindAccessibleTextBoundary(text, line_start_offsets,
-                                      AXTextBoundary::kLineStart, 15,
-                                      AXTextBoundaryDirection::kBackwards,
+                                      ax::mojom::TextBoundary::kLineStart, 15,
+                                      ax::mojom::MoveDirection::kBackward,
                                       ax::mojom::TextAffinity::kDownstream);
   EXPECT_EQ(15UL, result);
 
   // When the start_offset is at a hard line break and we are searching
   // backwards, it should return the start of the previous line.
   result = FindAccessibleTextBoundary(text, line_start_offsets,
-                                      AXTextBoundary::kLineStart, 14,
-                                      AXTextBoundaryDirection::kBackwards,
+                                      ax::mojom::TextBoundary::kLineStart, 14,
+                                      ax::mojom::MoveDirection::kBackward,
                                       ax::mojom::TextAffinity::kDownstream);
   EXPECT_EQ(8UL, result);
 
   // When the start_offset is at the start of a line and we are searching
   // forwards, it should return the start of the next line.
   result = FindAccessibleTextBoundary(
-      text, line_start_offsets, AXTextBoundary::kLineStart, 8,
-      AXTextBoundaryDirection::kForwards, ax::mojom::TextAffinity::kDownstream);
+      text, line_start_offsets, ax::mojom::TextBoundary::kLineStart, 8,
+      ax::mojom::MoveDirection::kForward, ax::mojom::TextAffinity::kDownstream);
   EXPECT_EQ(15UL, result);
 
   // When there is no previous line break and we are searching backwards,
   // it should return 0.
   result = FindAccessibleTextBoundary(text, line_start_offsets,
-                                      AXTextBoundary::kLineStart, 4,
-                                      AXTextBoundaryDirection::kBackwards,
+                                      ax::mojom::TextBoundary::kLineStart, 4,
+                                      ax::mojom::MoveDirection::kBackward,
                                       ax::mojom::TextAffinity::kDownstream);
   EXPECT_EQ(0UL, result);
 
   // When we are at the start of the last line and we are searching forwards.
   // it should return the text length.
   result = FindAccessibleTextBoundary(
-      text, line_start_offsets, AXTextBoundary::kLineStart, 15,
-      AXTextBoundaryDirection::kForwards, ax::mojom::TextAffinity::kDownstream);
+      text, line_start_offsets, ax::mojom::TextBoundary::kLineStart, 15,
+      ax::mojom::MoveDirection::kForward, ax::mojom::TextAffinity::kDownstream);
   EXPECT_EQ(text_length, result);
 }
 
@@ -148,12 +147,12 @@ TEST(AXTextUtils, FindAccessibleTextBoundarySentence) {
                                                int offset) {
     std::vector<int> line_start_offsets;
     size_t backwards = FindAccessibleTextBoundary(
-        text, line_start_offsets, AXTextBoundary::kSentenceStart, offset,
-        AXTextBoundaryDirection::kBackwards,
+        text, line_start_offsets, ax::mojom::TextBoundary::kSentenceStart,
+        offset, ax::mojom::MoveDirection::kBackward,
         ax::mojom::TextAffinity::kDownstream);
     size_t forwards = FindAccessibleTextBoundary(
-        text, line_start_offsets, AXTextBoundary::kSentenceStart, offset,
-        AXTextBoundaryDirection::kForwards,
+        text, line_start_offsets, ax::mojom::TextBoundary::kSentenceStart,
+        offset, ax::mojom::MoveDirection::kForward,
         ax::mojom::TextAffinity::kDownstream);
     return std::make_pair(backwards, forwards);
   };
@@ -233,14 +232,14 @@ TEST(AXTextUtils, FindAccessibleTextBoundaryCharacter) {
 
     std::vector<int> line_start_offsets;
     size_t backwards = FindAccessibleTextBoundary(
-        text, line_start_offsets, AXTextBoundary::kCharacter, offset,
-        AXTextBoundaryDirection::kBackwards,
+        text, line_start_offsets, ax::mojom::TextBoundary::kCharacter, offset,
+        ax::mojom::MoveDirection::kBackward,
         ax::mojom::TextAffinity::kDownstream);
     EXPECT_EQ(backwards, start);
 
     size_t forwards = FindAccessibleTextBoundary(
-        text, line_start_offsets, AXTextBoundary::kCharacter, offset,
-        AXTextBoundaryDirection::kForwards,
+        text, line_start_offsets, ax::mojom::TextBoundary::kCharacter, offset,
+        ax::mojom::MoveDirection::kForward,
         ax::mojom::TextAffinity::kDownstream);
     EXPECT_EQ(forwards, end);
   };

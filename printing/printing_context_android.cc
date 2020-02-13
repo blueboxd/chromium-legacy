@@ -159,9 +159,7 @@ void PrintingContextAndroid::ShowSystemDialogDone(
 void PrintingContextAndroid::PrintDocument(const MetafilePlayer& metafile) {
   DCHECK(is_file_descriptor_valid());
 
-  base::File file(fd_);
-  metafile.SaveTo(&file);
-  file.TakePlatformFile();
+  metafile.SaveToFileDescriptor(fd_);
 }
 
 PrintingContext::Result PrintingContextAndroid::UseDefaultSettings() {

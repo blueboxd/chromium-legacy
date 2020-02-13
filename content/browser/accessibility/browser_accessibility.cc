@@ -79,7 +79,7 @@ const BrowserAccessibility* GetTextContainerForPlainTextField(
 }
 
 int GetBoundaryTextOffsetInsideBaseAnchor(
-    ui::AXTextBoundaryDirection direction,
+    ax::mojom::MoveDirection direction,
     const BrowserAccessibilityPosition::AXPositionInstance& base,
     const BrowserAccessibilityPosition::AXPositionInstance& position) {
   if (base->GetAnchor() == position->GetAnchor())
@@ -88,9 +88,9 @@ int GetBoundaryTextOffsetInsideBaseAnchor(
   // If the position is outside the anchor of the base position, then return
   // the first or last position in the same direction.
   switch (direction) {
-    case ui::AXTextBoundaryDirection::kBackwards:
+    case ax::mojom::MoveDirection::kBackward:
       return base->CreatePositionAtStartOfAnchor()->text_offset();
-    case ui::AXTextBoundaryDirection::kForwards:
+    case ax::mojom::MoveDirection::kForward:
       return base->CreatePositionAtEndOfAnchor()->text_offset();
   }
 }
@@ -1383,9 +1383,9 @@ std::string BrowserAccessibility::SubtreeToStringHelper(size_t level) {
 }
 
 base::Optional<int> BrowserAccessibility::FindTextBoundary(
-    ui::AXTextBoundary boundary,
+    ax::mojom::TextBoundary boundary,
     int offset,
-    ui::AXTextBoundaryDirection direction,
+    ax::mojom::MoveDirection direction,
     ax::mojom::TextAffinity affinity) const {
   BrowserAccessibilityPositionInstance position =
       CreatePositionAt(offset, affinity);
@@ -1396,7 +1396,7 @@ base::Optional<int> BrowserAccessibility::FindTextBoundary(
   // On Windows and Linux ATK, it is standard text navigation behavior to stop
   // if we are searching in the backwards direction and the current position is
   // already at the required text boundary.
-  if (direction == ui::AXTextBoundaryDirection::kBackwards)
+  if (direction == ax::mojom::MoveDirection::kBackward)
     boundary_behavior = ui::AXBoundaryBehavior::StopIfAlreadyAtBoundary;
 
   return GetBoundaryTextOffsetInsideBaseAnchor(

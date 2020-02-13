@@ -1733,11 +1733,11 @@ void AXPlatformNodeBase::ComputeHypertextRemovedAndInserted(
 }
 
 int AXPlatformNodeBase::FindTextBoundary(
-    AXTextBoundary boundary,
+    ax::mojom::TextBoundary boundary,
     int offset,
-    AXTextBoundaryDirection direction,
+    ax::mojom::MoveDirection direction,
     ax::mojom::TextAffinity affinity) const {
-  if (boundary != AXTextBoundary::kSentenceStart) {
+  if (boundary != ax::mojom::TextBoundary::kSentenceStart) {
     base::Optional<int> boundary_offset =
         GetDelegate()->FindTextBoundary(boundary, offset, direction, affinity);
     if (boundary_offset.has_value())

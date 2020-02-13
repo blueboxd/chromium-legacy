@@ -20,7 +20,7 @@
 #include "base/threading/thread_task_runner_handle.h"
 #include "build/build_config.h"
 #include "components/services/storage/dom_storage/local_storage_impl.h"
-#include "components/services/storage/dom_storage/session_storage_context_mojo.h"
+#include "components/services/storage/dom_storage/session_storage_impl.h"
 #include "components/services/storage/public/cpp/constants.h"
 #include "content/browser/dom_storage/session_storage_namespace_impl.h"
 #include "content/public/browser/browser_task_traits.h"
@@ -142,7 +142,7 @@ scoped_refptr<DOMStorageContextWrapper> DOMStorageContextWrapper::Create(
              mojo::PendingReceiver<storage::mojom::LocalStorageControl>
                  local_storage_receiver) {
             // Deletes itself on shutdown completion.
-            new storage::SessionStorageContextMojo(
+            new storage::SessionStorageImpl(
                 storage_root,
                 base::CreateSequencedTaskRunner(
                     {base::ThreadPool(), base::MayBlock(),
@@ -153,13 +153,12 @@ scoped_refptr<DOMStorageContextWrapper> DOMStorageContextWrapper::Create(
                 // and since the restoring code is responsible for database
                 // cleanup, we must manually delete the old database here before
                 // we open it.
-                storage::SessionStorageContextMojo::BackingMode::
-                    kClearDiskStateOnOpen,
+                storage::SessionStorageImpl::BackingMode::kClearDiskStateOnOpen,
 #else
                 is_profile_persistent
-                    ? storage::SessionStorageContextMojo::BackingMode ::
+                    ? storage::SessionStorageImpl::BackingMode ::
                           kRestoreDiskState
-                    : storage::SessionStorageContextMojo::BackingMode::kNoDisk,
+                    : storage::SessionStorageImpl::BackingMode::kNoDisk,
 #endif
                 std::string(kSessionStorageDirectory),
                 std::move(session_storage_receiver));
@@ -245,7 +244,7 @@ void DOMStorageContextWrapper::GetSessionStorageUsage(
     return;
   }
 
-  session_storage_control_->GetStorageUsage(
+  session_storage_control_->GetUsage(
       base::BindOnce(&AdaptSessionStorageUsageInfo, std::move(callback)));
 }
 
@@ -295,7 +294,7 @@ void DOMStorageContextWrapper::PerformSessionStorageCleanup(
     return;
   }
 
-  session_storage_control_->PerformStorageCleanup(std::move(callback));
+  session_storage_control_->CleanUpStorage(std::move(callback));
 }
 
 scoped_refptr<SessionStorageNamespace>
@@ -353,18 +352,18 @@ void DOMStorageContextWrapper::OpenLocalStorage(
   }
 }
 
-void DOMStorageContextWrapper::BindSessionStorageNamespace(
+void DOMStorageContextWrapper::BindNamespace(
     const std::string& namespace_id,
     mojo::ReportBadMessageCallback bad_message_callback,
     mojo::PendingReceiver<blink::mojom::SessionStorageNamespace> receiver) {
   DCHECK(session_storage_control_);
-  session_storage_control_->BindSessionStorageNamespace(
+  session_storage_control_->BindNamespace(
       namespace_id, std::move(receiver),
       base::BindOnce(&HandleSessionStorageBindingResult, namespace_id,
                      std::move(bad_message_callback)));
 }
 
-void DOMStorageContextWrapper::BindSessionStorageArea(
+void DOMStorageContextWrapper::BindStorageArea(
     ChildProcessSecurityPolicyImpl::Handle security_policy_handle,
     const url::Origin& origin,
     const std::string& namespace_id,
@@ -377,7 +376,7 @@ void DOMStorageContextWrapper::BindSessionStorageArea(
   }
 
   DCHECK(session_storage_control_);
-  session_storage_control_->BindSessionStorageArea(
+  session_storage_control_->BindStorageArea(
       origin, namespace_id, std::move(receiver),
       base::BindOnce(&HandleSessionStorageBindingResult, namespace_id,
                      std::move(bad_message_callback)));

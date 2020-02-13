@@ -14,7 +14,6 @@
 #include "ui/accessibility/ax_node_position.h"
 #include "ui/accessibility/ax_position.h"
 #include "ui/accessibility/ax_range.h"
-#include "ui/accessibility/ax_text_boundary.h"
 #include "ui/accessibility/platform/ax_platform_node_win.h"
 
 namespace ui {
@@ -96,9 +95,9 @@ class AX_EXPORT __declspec(uuid("3071e40d-a10d-45ff-a59f-6e8e1138e2c1"))
 
   static AXPositionInstance GetNextTextBoundaryPosition(
       const AXPositionInstance& position,
-      AXTextBoundary boundary_type,
+      ax::mojom::TextBoundary boundary_type,
       AXBoundaryBehavior boundary_behavior,
-      AXTextBoundaryDirection boundary_direction);
+      ax::mojom::MoveDirection boundary_direction);
 
   base::string16 GetString(int max_count,
                            size_t* appended_newlines_count = nullptr);
@@ -142,7 +141,7 @@ class AX_EXPORT __declspec(uuid("3071e40d-a10d-45ff-a59f-6e8e1138e2c1"))
 
   AXPositionInstance MoveEndpointByUnitHelper(
       const AXPositionInstance& endpoint,
-      const AXTextBoundary boundary_type,
+      const ax::mojom::TextBoundary boundary_type,
       const int count,
       int* units_moved);
 

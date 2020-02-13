@@ -1369,12 +1369,12 @@
         <message name="IDS_ACCESSIBILITY_PERMISSION_DIALOG_TITLE" desc="The title of the prompt that asks the user to grant 'Accessibility' permission to the Chrome Remote Desktop service. This permission is part of the 'Privacy and Security' preferences pane. Mac-only.">
           Grant 'Accessibility' permission to <ph name="PRODUCT_NAME">$1<ex>Chrome Remote Desktop</ex></ph>
         </message>
-        <message name="IDS_ACCESSIBILITY_PERMISSION_DIALOG_BODY_TEXT" desc="The body text of the prompt that asks the user to turn on the Chrome Remote Desktop service. This setting lives in the 'Accessibility' section of the 'Privacy and Security' preferences pane. Mac-only.">
+        <message name="IDS_ACCESSIBILITY_PERMISSION_DIALOG_BODY_TEXT" desc="The body text of the prompt that asks the user to grant Accessibility permission to the local Chrome Remote Desktop service. This setting lives in the 'Accessibility' section of the 'Privacy and Security' preferences pane. This permission is needed so that input that we receive from the remote machine can be injected. Mac-only.">
 To use <ph name="PRODUCT_NAME">$1<ex>Chrome Remote Desktop</ex></ph>, you need to grant the 'Accessibility' permission so that input from the remote machine can be injected on this Mac.
 
-To grant this permission, click '<ph name="BUTTON_NAME">$2<ex>Open Accessibility Preferences</ex></ph>' below to open the 'Accessibility' preferences pane and then check the box next to '<ph name="SERVICE_SCRIPT_NAME">$3<ex>org.chromium.chromoting.me2me.sh</ex></ph>'.
+To grant this permission, click '<ph name="BUTTON_NAME">$2<ex>Open Accessibility Preferences</ex></ph>' below. In the 'Accessibility' preferences pane that opens, check the box next to '<ph name="SERVICE_SCRIPT_NAME">$3<ex>ChromeRemoteDesktopHost</ex></ph>'.
 
-If '<ph name="SERVICE_SCRIPT_NAME">$3<ex>org.chromium.chromoting.me2me.sh</ex></ph>' is already checked, uncheck it and then check it again.
+If '<ph name="SERVICE_SCRIPT_NAME">$3<ex>ChromeRemoteDesktopHost</ex></ph>' is already checked, uncheck it and then check it again.
         </message>
         <message name="IDS_ACCESSIBILITY_PERMISSION_DIALOG_OPEN_BUTTON" desc="The button text of the prompt that asks the user to turn on the Chrome Remote Desktop service. This setting lives in the 'Accessibility' section of the 'Privacy and Security' preferences pane. Selecting this button will open the 'Privacy and Security' preferences pane. Mac-only.">
           Open Accessibility Preferences

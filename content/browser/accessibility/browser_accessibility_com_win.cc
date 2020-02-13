@@ -443,10 +443,8 @@ IFACEMETHODIMP BrowserAccessibilityComWin::get_attributes(
     return E_INVALIDARG;
 
   ComputeStylesIfNeeded();
-  *start_offset =
-      FindStartOfStyle(offset, ui::AXTextBoundaryDirection::kBackwards);
-  *end_offset =
-      FindStartOfStyle(offset, ui::AXTextBoundaryDirection::kForwards);
+  *start_offset = FindStartOfStyle(offset, ax::mojom::MoveDirection::kBackward);
+  *end_offset = FindStartOfStyle(offset, ax::mojom::MoveDirection::kForward);
 
   const ui::TextAttributeList& attributes =
       offset_to_text_attributes().find(*start_offset)->second;
@@ -1687,13 +1685,13 @@ void BrowserAccessibilityComWin::SetIA2HypertextSelection(LONG start_offset,
 
 LONG BrowserAccessibilityComWin::FindStartOfStyle(
     LONG start_offset,
-    ui::AXTextBoundaryDirection direction) {
+    ax::mojom::MoveDirection direction) {
   LONG text_length = static_cast<LONG>(GetHypertext().length());
   DCHECK_GE(start_offset, 0);
   DCHECK_LE(start_offset, text_length);
 
   switch (direction) {
-    case ui::AXTextBoundaryDirection::kBackwards: {
+    case ax::mojom::MoveDirection::kBackward: {
       if (offset_to_text_attributes().empty())
         return 0;
 
@@ -1701,7 +1699,7 @@ LONG BrowserAccessibilityComWin::FindStartOfStyle(
       --iterator;
       return static_cast<LONG>(iterator->first);
     }
-    case ui::AXTextBoundaryDirection::kForwards: {
+    case ax::mojom::MoveDirection::kForward: {
       const auto iterator =
           offset_to_text_attributes().upper_bound(start_offset);
       if (iterator == offset_to_text_attributes().end())

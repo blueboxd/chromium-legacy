@@ -4,8 +4,10 @@
 
 package org.chromium.chrome.browser.profile_card;
 
+import static org.chromium.chrome.browser.profile_card.ProfileCardProperties.AVATAR_BITMAP;
 import static org.chromium.chrome.browser.profile_card.ProfileCardProperties.DESCRIPTION;
 import static org.chromium.chrome.browser.profile_card.ProfileCardProperties.IS_DIALOG_VISIBLE;
+import static org.chromium.chrome.browser.profile_card.ProfileCardProperties.POST_FREQUENCY;
 import static org.chromium.chrome.browser.profile_card.ProfileCardProperties.TITLE;
 
 import org.chromium.ui.modelutil.PropertyModel;
@@ -23,8 +25,10 @@ class ProfileCardMediator {
     ProfileCardMediator(PropertyModel model, ProfileCardData profileCardData) {
         mModel = model;
         mProfileCardData = profileCardData;
+        mModel.set(AVATAR_BITMAP, mProfileCardData.getAvatarBitmap());
         mModel.set(TITLE, mProfileCardData.getTitle());
         mModel.set(DESCRIPTION, mProfileCardData.getDescription());
+        mModel.set(POST_FREQUENCY, mProfileCardData.getPostFrequency());
     }
 
     public void show() {

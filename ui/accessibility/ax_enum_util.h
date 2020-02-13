@@ -78,6 +78,24 @@ AX_EXPORT ax::mojom::ListStyle ParseListStyle(const char* list_style);
 AX_EXPORT const char* ToString(ax::mojom::MarkerType marker_type);
 AX_EXPORT ax::mojom::MarkerType ParseMarkerType(const char* marker_type);
 
+// ax::mojom::MoveDirection
+AX_EXPORT const char* ToString(ax::mojom::MoveDirection move_direction);
+AX_EXPORT ax::mojom::MoveDirection ParseMoveDirection(
+    const char* move_direction);
+
+// ax::mojom::EditCommand
+AX_EXPORT const char* ToString(ax::mojom::EditCommand edit_command);
+AX_EXPORT ax::mojom::EditCommand ParseEditCommand(const char* edit_command);
+
+// ax::mojom::SelectionCommand
+AX_EXPORT const char* ToString(ax::mojom::SelectionCommand selection_command);
+AX_EXPORT ax::mojom::SelectionCommand ParseSelectionCommand(
+    const char* selection_command);
+
+// ax::mojom::TextBoundary
+AX_EXPORT const char* ToString(ax::mojom::TextBoundary text_boundary);
+AX_EXPORT ax::mojom::TextBoundary ParseTextBoundary(const char* text_boundary);
+
 // ax:mojom::TextDecorationStyle
 AX_EXPORT const char* ToString(
     ax::mojom::TextDecorationStyle text_decoration_style);

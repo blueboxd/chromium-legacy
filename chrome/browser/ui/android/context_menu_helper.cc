@@ -92,27 +92,6 @@ void OnRetrieveImageForContextMenu(
   ContextMenuHelperImageRequest::Start(jcallback, thumbnail_data);
 }
 
-PerformanceClass RetrievePerformanceClassInternal(
-    content::WebContents* web_contents,
-    const GURL& url) {
-  if (!url.is_valid() || web_contents == nullptr) {
-    return PerformanceClass::PERFORMANCE_UNKNOWN;
-  }
-
-  PerformanceHintsObserver* performance_hints_observer =
-      PerformanceHintsObserver::FromWebContents(web_contents);
-  if (performance_hints_observer == nullptr) {
-    return PerformanceClass::PERFORMANCE_UNKNOWN;
-  }
-
-  base::Optional<optimization_guide::proto::PerformanceHint> hint =
-      performance_hints_observer->HintForURL(url);
-  if (!hint) {
-    return PerformanceClass::PERFORMANCE_UNKNOWN;
-  }
-  return hint->performance_class();
-}
-
 }  // namespace
 
 ContextMenuHelper::ContextMenuHelper(content::WebContents* web_contents)
@@ -144,8 +123,12 @@ void ContextMenuHelper::ShowContextMenu(
   render_frame_id_ = render_frame_host->GetRoutingID();
   render_process_id_ = render_frame_host->GetProcess()->GetID();
   gfx::NativeView view = web_contents_->GetNativeView();
-  PerformanceClass performance_class =
-      RetrievePerformanceClassInternal(web_contents_, params.link_url);
+  PerformanceClass performance_class = PerformanceClass::PERFORMANCE_UNKNOWN;
+  // Only fetch performance information for link context menus.
+  if (!params.link_url.is_empty()) {
+    performance_class = PerformanceHintsObserver::PerformanceClassForURL(
+        web_contents_, params.link_url);
+  }
   Java_ContextMenuHelper_showContextMenu(
       env, java_obj_,
       ContextMenuHelper::CreateJavaContextMenuParams(params, performance_class),

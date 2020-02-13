@@ -38,7 +38,8 @@ class MockBrowsingDataIndexedDBHelper
 
   // BrowsingDataIndexedDBHelper.
   void StartFetching(FetchCallback callback) override;
-  void DeleteIndexedDB(const url::Origin& origin) override;
+  void DeleteIndexedDB(const url::Origin& origin,
+                       base::OnceCallback<void(bool)> callback) override;
 
  private:
   ~MockBrowsingDataIndexedDBHelper() override;

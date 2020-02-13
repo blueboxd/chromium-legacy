@@ -161,7 +161,8 @@ void AXTreeSourceArc::NotifyAccessibilityEvent(AXEventData* event_data) {
     if (event_data->eventText)
       UpdateAXNameCache(focused_node, *event_data->eventText);
   }
-  if (!android_focused_id_.has_value()) {
+
+  if (!android_focused_id_ || !GetFromId(*android_focused_id_)) {
     AccessibilityInfoDataWrapper* root = GetRoot();
     // TODO (sarakato): Add proper fix once cause of invalid node is known.
     if (!IsValid(root)) {
@@ -171,12 +172,12 @@ void AXTreeSourceArc::NotifyAccessibilityEvent(AXEventData* event_data) {
     } else {
       std::vector<AccessibilityInfoDataWrapper*> children;
       root->GetChildren(&children);
-      if (!children.empty()) {
-        for (size_t i = 0; i < children.size(); ++i) {
-          if (children[i]->IsNode()) {
-            android_focused_id_ = children[i]->GetId();
-            break;
-          }
+      for (const AccessibilityInfoDataWrapper* child : children) {
+        if (child->IsNode()) {
+          int32_t child_id = child->GetId();
+          DCHECK(IsRootOfNodeTree(child_id));
+          android_focused_id_ = child_id;
+          break;
         }
       }
     }

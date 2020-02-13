@@ -125,6 +125,7 @@
         },
         'test_suites': {
           'gtest_tests': 'linux_chromeos_gtests',
+          'isolated_scripts': 'chrome_sizes',
         },
       },
       'mac-chrome': {

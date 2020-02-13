@@ -9,14 +9,16 @@
 #include "chrome/browser/optimization_guide/optimization_guide_keyed_service_factory.h"
 #include "chrome/browser/profiles/profile.h"
 #include "components/optimization_guide/optimization_guide_decider.h"
-#include "components/optimization_guide/proto/performance_hints_metadata.pb.h"
 #include "components/optimization_guide/url_pattern_with_wildcards.h"
 #include "content/public/browser/navigation_handle.h"
 #include "url/gurl.h"
 
 using optimization_guide::OptimizationGuideDecision;
 using optimization_guide::URLPatternWithWildcards;
+using optimization_guide::proto::PerformanceClass;
 using optimization_guide::proto::PerformanceHint;
+
+namespace {
 
 // These values are logged to UMA. Entries should not be renumbered and numeric
 // values should never be reused. Please keep in sync with
@@ -30,8 +32,38 @@ enum class HintForURLResult {
   kMaxValue = kHintFound,
 };
 
+// These values are logged to UMA. Entries should not be renumbered and numeric
+// values should never be reused. Please keep in sync with:
+//  - "PerformanceHintsPerformanceClass" in
+//    src/tools/metrics/histograms/enums.xml
+//  - "PerformanceClass" in
+//    src/components/optimization_guide/proto/performance_hints_metadata.proto
+enum class UmaPerformanceClass {
+  kUnknown = 0,
+  kSlow = 1,
+  kFast = 2,
+  kMaxValue = kFast,
+};
+
+UmaPerformanceClass ToUmaPerformanceClass(PerformanceClass performance_class) {
+  if (static_cast<int>(performance_class) < 0) {
+    NOTREACHED();
+    return UmaPerformanceClass::kUnknown;
+  } else if (static_cast<int>(performance_class) >
+             static_cast<int>(UmaPerformanceClass::kMaxValue)) {
+    NOTREACHED();
+    return UmaPerformanceClass::kUnknown;
+  } else {
+    return static_cast<UmaPerformanceClass>(performance_class);
+  }
+}
+
+}  // namespace
+
 const base::Feature kPerformanceHintsObserver{
     "PerformanceHintsObserver", base::FEATURE_DISABLED_BY_DEFAULT};
+const base::Feature kPerformanceHintsTreatUnknownAsFast{
+    "PerformanceHintsTreatUnknownAsFast", base::FEATURE_DISABLED_BY_DEFAULT};
 
 PerformanceHintsObserver::PerformanceHintsObserver(
     content::WebContents* web_contents)
@@ -47,6 +79,40 @@ PerformanceHintsObserver::PerformanceHintsObserver(
 
 PerformanceHintsObserver::~PerformanceHintsObserver() {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+}
+
+PerformanceClass PerformanceHintsObserver::PerformanceClassForURL(
+    content::WebContents* web_contents,
+    const GURL& url) {
+  PerformanceClass performance_class = [&]() {
+    if (!url.is_valid() || web_contents == nullptr) {
+      return PerformanceClass::PERFORMANCE_UNKNOWN;
+    }
+
+    PerformanceHintsObserver* performance_hints_observer =
+        PerformanceHintsObserver::FromWebContents(web_contents);
+    if (performance_hints_observer == nullptr) {
+      return PerformanceClass::PERFORMANCE_UNKNOWN;
+    }
+
+    base::Optional<optimization_guide::proto::PerformanceHint> hint =
+        performance_hints_observer->HintForURL(url);
+    return hint ? hint->performance_class()
+                : PerformanceClass::PERFORMANCE_UNKNOWN;
+  }();
+
+  // Log to UMA before the override logic so we can determine how often the
+  // override is happening.
+  base::UmaHistogramEnumeration(
+      "PerformanceHints.Observer.PerformanceClassForURL",
+      ToUmaPerformanceClass(performance_class));
+
+  if (base::FeatureList::IsEnabled(kPerformanceHintsTreatUnknownAsFast) &&
+      performance_class == PerformanceClass::PERFORMANCE_UNKNOWN) {
+    return PerformanceClass::PERFORMANCE_FAST;
+  }
+
+  return performance_class;
 }
 
 base::Optional<PerformanceHint> PerformanceHintsObserver::HintForURL(

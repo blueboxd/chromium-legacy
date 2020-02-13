@@ -259,9 +259,9 @@ class AX_EXPORT AXPlatformNodeBase : public AXPlatformNode {
   // This method finds text boundaries in the text used for platform text APIs.
   // Implementations may use side-channel data such as line or word indices to
   // produce appropriate results.
-  virtual int FindTextBoundary(AXTextBoundary boundary,
+  virtual int FindTextBoundary(ax::mojom::TextBoundary boundary,
                                int offset,
-                               AXTextBoundaryDirection direction,
+                               ax::mojom::MoveDirection direction,
                                ax::mojom::TextAffinity affinity) const;
 
   enum ScrollType {

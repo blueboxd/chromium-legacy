@@ -15,6 +15,7 @@
 #include "base/sequence_checker.h"
 #include "components/optimization_guide/optimization_guide_decider.h"
 #include "components/optimization_guide/proto/hints.pb.h"
+#include "components/optimization_guide/proto/performance_hints_metadata.pb.h"
 #include "content/public/browser/web_contents_observer.h"
 #include "content/public/browser/web_contents_user_data.h"
 
@@ -35,6 +36,9 @@ class GURL;
 // If enabled, PerformanceHintsObserver will be added as a tab helper and will
 // fetch performance hints.
 extern const base::Feature kPerformanceHintsObserver;
+// If enabled, hints of PERFORMANCE_UNKNOWN will be overridden to
+// PERFORMANCE_FAST. This does not affect the value that is recorded via UMA.
+extern const base::Feature kPerformanceHintsTreatUnknownAsFast;
 
 // Provides an interface to access PerformanceHints for the associated
 // WebContents and links within it.
@@ -46,6 +50,21 @@ class PerformanceHintsObserver
   PerformanceHintsObserver(const PerformanceHintsObserver&) = delete;
   PerformanceHintsObserver& operator=(const PerformanceHintsObserver&) = delete;
 
+  // Returns the PerformanceClass for |url|, or PERFORMANCE_UNKNOWN if could not
+  // be determined.
+  static optimization_guide::proto::PerformanceClass PerformanceClassForURL(
+      content::WebContents* web_contents,
+      const GURL& url);
+
+ private:
+  explicit PerformanceHintsObserver(content::WebContents* web_contents);
+  friend class content::WebContentsUserData<PerformanceHintsObserver>;
+  friend class PerformanceHintsObserverTest;
+
+  // content::WebContentsObserver.
+  void DidFinishNavigation(
+      content::NavigationHandle* navigation_handle) override;
+
   // This callback populates |hints_| with performance information for links on
   // the current page and is called by |optimization_guide_decider_| when a
   // definite decision has been reached.
@@ -56,15 +75,6 @@ class PerformanceHintsObserver
   // Returns a PerformanceHint for a link to |url|, if one exists.
   base::Optional<optimization_guide::proto::PerformanceHint> HintForURL(
       const GURL& url) const;
-
- private:
-  explicit PerformanceHintsObserver(content::WebContents* web_contents);
-  friend class content::WebContentsUserData<PerformanceHintsObserver>;
-  friend class PerformanceHintsObserverTest;
-
-  // content::WebContentsObserver.
-  void DidFinishNavigation(
-      content::NavigationHandle* navigation_handle) override;
 
   // Initialized in constructor. It may be null if !IsOptimizationHintsEnabled.
   optimization_guide::OptimizationGuideDecider* optimization_guide_decider_ =

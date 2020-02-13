@@ -16,8 +16,10 @@
 #include "base/bind.h"
 #include "base/bind_helpers.h"
 #include "base/memory/ptr_util.h"
+#include "base/run_loop.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
+#include "base/test/bind_test_util.h"
 #include "build/build_config.h"
 #include "chrome/app/vector_icons/vector_icons.h"
 #include "chrome/browser/browsing_data/browsing_data_appcache_helper.h"
@@ -547,7 +549,8 @@ class CookieTreeIndexedDBNode : public CookieTreeNode {
     LocalDataContainer* container = GetLocalDataContainerForNode(this);
 
     if (container) {
-      container->indexed_db_helper_->DeleteIndexedDB(usage_info_->origin);
+      container->indexed_db_helper_->DeleteIndexedDB(usage_info_->origin,
+                                                     base::DoNothing());
       container->indexed_db_info_list_.erase(usage_info_);
     }
   }

@@ -983,7 +983,7 @@ char* GetCharacter(AtkText* atk_text,
 
 char* GetTextWithBoundaryType(AtkText* atk_text,
                               int offset,
-                              AXTextBoundary boundary,
+                              ax::mojom::TextBoundary boundary,
                               int* start_offset_ptr,
                               int* end_offset_ptr) {
   AtkObject* atk_object = ATK_OBJECT(atk_text);
@@ -1000,10 +1000,10 @@ char* GetTextWithBoundaryType(AtkText* atk_text,
   offset = obj->UnicodeToUTF16OffsetInText(offset);
 
   int start_offset = obj->FindTextBoundary(
-      boundary, offset, AXTextBoundaryDirection::kBackwards,
+      boundary, offset, ax::mojom::MoveDirection::kBackward,
       ax::mojom::TextAffinity::kDownstream);
   int end_offset = obj->FindTextBoundary(boundary, offset,
-                                         AXTextBoundaryDirection::kForwards,
+                                         ax::mojom::MoveDirection::kForward,
                                          ax::mojom::TextAffinity::kDownstream);
   if (start_offset < 0 || end_offset < 0)
     return nullptr;
@@ -1028,7 +1028,7 @@ char* GetTextAtOffset(AtkText* atk_text,
                       AtkTextBoundary atk_boundary,
                       int* start_offset,
                       int* end_offset) {
-  AXTextBoundary boundary = FromAtkTextBoundary(atk_boundary);
+  ax::mojom::TextBoundary boundary = FromAtkTextBoundary(atk_boundary);
   return GetTextWithBoundaryType(atk_text, offset, boundary, start_offset,
                                  end_offset);
 }
@@ -1172,7 +1172,7 @@ char* GetStringAtOffset(AtkText* atk_text,
   *start_offset = -1;
   *end_offset = -1;
 
-  AXTextBoundary boundary = FromAtkTextGranularity(atk_granularity);
+  ax::mojom::TextBoundary boundary = FromAtkTextGranularity(atk_granularity);
   return GetTextWithBoundaryType(atk_text, offset, boundary, start_offset,
                                  end_offset);
 }
@@ -4413,19 +4413,19 @@ void AXPlatformNodeAuraLinux::ComputeStylesIfNeeded() {
 
 int AXPlatformNodeAuraLinux::FindStartOfStyle(
     int start_offset,
-    AXTextBoundaryDirection direction) {
+    ax::mojom::MoveDirection direction) {
   int text_length = GetHypertext().length();
   DCHECK_GE(start_offset, 0);
   DCHECK_LE(start_offset, text_length);
   DCHECK(!offset_to_text_attributes_.empty());
 
   switch (direction) {
-    case AXTextBoundaryDirection::kBackwards: {
+    case ax::mojom::MoveDirection::kBackward: {
       auto iterator = offset_to_text_attributes_.upper_bound(start_offset);
       --iterator;
       return iterator->first;
     }
-    case AXTextBoundaryDirection::kForwards: {
+    case ax::mojom::MoveDirection::kForward: {
       const auto iterator =
           offset_to_text_attributes_.upper_bound(start_offset);
       if (iterator == offset_to_text_attributes_.end())
@@ -4447,9 +4447,9 @@ const TextAttributeList& AXPlatformNodeAuraLinux::GetTextAttributes(
 
   int utf16_offset = UnicodeToUTF16OffsetInText(offset);
   int style_start =
-      FindStartOfStyle(utf16_offset, AXTextBoundaryDirection::kBackwards);
+      FindStartOfStyle(utf16_offset, ax::mojom::MoveDirection::kBackward);
   int style_end =
-      FindStartOfStyle(utf16_offset, AXTextBoundaryDirection::kForwards);
+      FindStartOfStyle(utf16_offset, ax::mojom::MoveDirection::kForward);
 
   auto iterator = offset_to_text_attributes_.find(style_start);
   DCHECK(iterator != offset_to_text_attributes_.end());

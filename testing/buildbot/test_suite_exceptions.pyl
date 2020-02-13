@@ -312,7 +312,12 @@
         'args': [
           '--test-launcher-filter-file=../../testing/buildbot/filters/android.pie_arm64_rel.chrome_public_test_apk.filter', # https://crbug.com/1010211
         ],
-
+      },
+      'android-pie-x86-fyi-rel': {
+        # https://crbug.com/1046059
+        'args': [
+          '--test-launcher-filter-file=../../testing/buildbot/filters/android.emulator.chrome_public_test_apk.filter',
+        ],
       },
     },
   },

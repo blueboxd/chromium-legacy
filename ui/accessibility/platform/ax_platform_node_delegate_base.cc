@@ -543,9 +543,9 @@ const AXUniqueId& AXPlatformNodeDelegateBase::GetUniqueId() const {
 }
 
 base::Optional<int> AXPlatformNodeDelegateBase::FindTextBoundary(
-    AXTextBoundary boundary,
+    ax::mojom::TextBoundary boundary,
     int offset,
-    AXTextBoundaryDirection direction,
+    ax::mojom::MoveDirection direction,
     ax::mojom::TextAffinity affinity) const {
   return base::nullopt;
 }

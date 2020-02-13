@@ -12,7 +12,6 @@
 #include "base/strings/string16.h"
 #include "ui/accessibility/ax_enums.mojom-forward.h"
 #include "ui/accessibility/ax_export.h"
-#include "ui/accessibility/ax_text_boundary.h"
 
 namespace ui {
 
@@ -23,9 +22,9 @@ namespace ui {
 // using the vector of line break character offsets in |line_breaks|.
 AX_EXPORT size_t FindAccessibleTextBoundary(const base::string16& text,
                                             const std::vector<int>& line_breaks,
-                                            AXTextBoundary boundary,
+                                            ax::mojom::TextBoundary boundary,
                                             size_t start_offset,
-                                            AXTextBoundaryDirection direction,
+                                            ax::mojom::MoveDirection direction,
                                             ax::mojom::TextAffinity affinity);
 
 // Returns a string ID that corresponds to the name of the given action.

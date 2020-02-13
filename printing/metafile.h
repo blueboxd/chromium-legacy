@@ -89,9 +89,17 @@ class PRINTING_EXPORT MetafilePlayer {
   // called after the metafile is closed. Returns true if writing succeeded.
   virtual bool GetDataAsVector(std::vector<char>* buffer) const = 0;
 
+#if defined(OS_ANDROID)
+  // Similar to bool SaveTo(base::File* file) const, but write the data to the
+  // file descriptor directly. This is because Android doesn't allow file
+  // ownership exchange. This function should ONLY be called after the metafile
+  // is closed. Returns true if writing succeeded.
+  virtual bool SaveToFileDescriptor(int fd) const = 0;
+#else
   // Saves the underlying data to the given file. This function should ONLY be
   // called after the metafile is closed. Returns true if writing succeeded.
   virtual bool SaveTo(base::File* file) const = 0;
+#endif  // defined(OS_ANDROID)
 
  private:
   DISALLOW_COPY_AND_ASSIGN(MetafilePlayer);
@@ -159,7 +167,9 @@ class PRINTING_EXPORT Metafile : public MetafilePlayer {
 
   // MetfilePlayer
   bool GetDataAsVector(std::vector<char>* buffer) const override;
+#if !defined(OS_ANDROID)
   bool SaveTo(base::File* file) const override;
+#endif  // !defined(OS_ANDROID)
 
  private:
   DISALLOW_COPY_AND_ASSIGN(Metafile);

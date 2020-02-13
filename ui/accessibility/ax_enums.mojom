@@ -800,6 +800,16 @@ enum StringListAttribute {
   kCustomActionDescriptions,
 };
 
+enum ListStyle {
+  kNone,
+  kCircle,
+  kDisc,
+  kImage,
+  kNumeric,
+  kSquare,
+  kOther, // Language specific ordering (alpha, roman, cjk-ideographic, etc...)
+};
+
 enum MarkerType {
   kNone = 0,
   kSpelling = 1,
@@ -811,14 +821,71 @@ enum MarkerType {
   kSuggestion = 32,
 };
 
-enum ListStyle {
-  kNone,
-  kCircle,
-  kDisc,
-  kImage,
-  kNumeric,
-  kSquare,
-  kOther, // Language specific ordering (alpha, roman, cjk-ideographic, etc...)
+// Describes a move direction in the accessibility tree that is independent of
+// the left-to-right or right-to-left direction of the text. For example, a
+// forward movement will always move to the next node in depth-first pre-order
+// traversal.
+enum MoveDirection {
+  kForward,
+  kBackward,
+  kNone = kForward
+};
+
+// Describes the edit command that resulted in a text changed event.
+enum EditCommand {
+  kCut,
+  kDelete,
+  kDictate,
+  kFormat,  // Only the text attributes, such as font size, have changed.
+  kInsert,
+  kMarker,  // Only a document marker has been added or removed.
+  kPaste,
+  kReplace,
+  kType,
+  kNone = kType
+};
+
+// Describes the selection command that resulted in a selection changed event.
+enum SelectionCommand {
+  kClear,
+  kShrink,
+  kExtend,
+  kSet,  // Sets a completely new selection.
+  kNone = kSet
+};
+
+// Defines a set of text boundaries in the accessibility tree.
+//
+// Most boundaries come in three flavors: A "WordStartOrEnd" boundary for
+// example differs from a "WordStart" or a "WordEnd" boundary in that the first
+// would consider both the start and the end of the word to be boundaries, while
+// the other two would consider only the start or the end respectively.
+//
+// An "Object" boundary is found at the start or end of a node's entire text,
+// e.g. at the start or end of a text field.
+//
+// TODO(nektar): Split TextBoundary into TextUnit and TextBoundary.
+enum TextBoundary {
+  kCharacter,
+  kFormat,
+  kLineEnd,
+  kLineStart,
+  kLineStartOrEnd,
+  kObject,
+  kPageEnd,
+  kPageStart,
+  kPageStartOrEnd,
+  kParagraphEnd,
+  kParagraphStart,
+  kParagraphStartOrEnd,
+  kSentenceEnd,
+  kSentenceStart,
+  kSentenceStartOrEnd,
+  kWebPage,
+  kWordEnd,
+  kWordStart,
+  kWordStartOrEnd,
+  kNone = kObject
 };
 
 enum TextDirection {
@@ -843,7 +910,7 @@ enum TextStyle {
   kUnderline,
   kLineThrough,
   kOverline,
-  kNone,
+  kNone
 };
 
 enum TextDecorationStyle {

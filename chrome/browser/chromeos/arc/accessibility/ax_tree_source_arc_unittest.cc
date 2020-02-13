@@ -369,8 +369,8 @@ TEST_F(AXTreeSourceArcTest, ReorderChildrenByLayout) {
   // Sanity check tree output.
   ExpectTree(
       "id=100 window (0, 0)-(0, 0) child_ids=10\n"
-      "  id=10 genericContainer INVISIBLE (0, 0)-(0, 0) restriction=disabled "
-      "modal=true child_ids=1,2\n"
+      "  id=10 genericContainer FOCUSABLE INVISIBLE (0, 0)-(0, 0) "
+      "restriction=disabled modal=true child_ids=1,2\n"
       "    id=1 button FOCUSABLE (100, 100)-(100, 100) restriction=disabled "
       "class_name=android.widget.Button name=button1\n"
       "    id=2 button FOCUSABLE (100, 100)-(10, 100) restriction=disabled "
@@ -1091,7 +1091,7 @@ TEST_F(AXTreeSourceArcTest, SerializeAndUnserialize) {
   EXPECT_EQ(1, GetDispatchedEventCount(ax::mojom::Event::kFocus));
   ExpectTree(
       "id=100 window (0, 0)-(0, 0) child_ids=10\n"
-      "  id=10 genericContainer IGNORED INVISIBLE (0, 0)-(0, 0) "
+      "  id=10 genericContainer FOCUSABLE IGNORED INVISIBLE (0, 0)-(0, 0) "
       "restriction=disabled modal=true child_ids=1\n"
       "    id=1 genericContainer IGNORED INVISIBLE (0, 0)-(0, 0) "
       "restriction=disabled child_ids=2\n"
@@ -1113,8 +1113,8 @@ TEST_F(AXTreeSourceArcTest, SerializeAndUnserialize) {
   CallNotifyAccessibilityEvent(event.get());
   ExpectTree(
       "id=100 window (0, 0)-(0, 0) child_ids=10\n"
-      "  id=10 genericContainer INVISIBLE (0, 0)-(0, 0) restriction=disabled "
-      "modal=true child_ids=1\n"
+      "  id=10 genericContainer FOCUSABLE INVISIBLE (0, 0)-(0, 0) "
+      "restriction=disabled modal=true child_ids=1\n"
       "    id=1 genericContainer IGNORED INVISIBLE (0, 0)-(0, 0) "
       "restriction=disabled child_ids=2\n"
       "      id=2 genericContainer IGNORED INVISIBLE (0, 0)-(0, 0) "
@@ -1219,6 +1219,17 @@ TEST_F(AXTreeSourceArcTest, SyncFocus) {
   CallNotifyAccessibilityEvent(event.get());
 
   EXPECT_EQ(1, GetDispatchedEventCount(ax::mojom::Event::kLocationChanged));
+
+  // When the focused node disappeared from the tree, move the focus to the
+  // root of the node tree.
+  root->int_list_properties->clear();
+  event->node_data.resize(1);
+
+  event->event_type = AXEventType::WINDOW_CONTENT_CHANGED;
+  CallNotifyAccessibilityEvent(event.get());
+
+  EXPECT_TRUE(CallGetTreeData(&data));
+  EXPECT_EQ(root->id, data.focus_id);
 }
 
 }  // namespace arc

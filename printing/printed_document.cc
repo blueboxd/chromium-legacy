@@ -71,7 +71,11 @@ void DebugDumpTask(const base::string16& doc_name,
   base::FilePath path = PrintedDocument::CreateDebugDumpPath(name, kExtension);
   base::File file(path,
                   base::File::FLAG_CREATE_ALWAYS | base::File::FLAG_WRITE);
+#if defined(OS_ANDROID)
+  metafile->SaveToFileDescriptor(file.GetPlatformFile());
+#else
   metafile->SaveTo(&file);
+#endif  // defined(OS_ANDROID)
 }
 
 void DebugDumpDataTask(const base::string16& doc_name,

@@ -15,17 +15,6 @@
 #include "content/public/browser/browser_message_filter.h"
 #include "content/public/browser/browser_thread.h"
 #include "mojo/public/cpp/bindings/remote.h"
-#include "services/network/public/mojom/cookie_manager.mojom.h"
-
-namespace base {
-class DictionaryValue;
-}  // namespace base
-
-namespace network {
-namespace mojom {
-class NetworkContext;
-}  // namespace mojom
-}  // namespace network
 
 namespace storage {
 class DatabaseTracker;
@@ -38,8 +27,7 @@ class WebTestMessageFilter : public BrowserMessageFilter {
  public:
   WebTestMessageFilter(int render_process_id,
                        storage::DatabaseTracker* database_tracker,
-                       storage::QuotaManager* quota_manager,
-                       network::mojom::NetworkContext* network_context);
+                       storage::QuotaManager* quota_manager);
 
  private:
   friend struct content::BrowserThread::DeleteOnThread<
@@ -65,9 +53,6 @@ class WebTestMessageFilter : public BrowserMessageFilter {
       const std::string& title,
       const base::Optional<int>& action_index,
       const base::Optional<base::string16>& reply);
-  void OnDeleteAllCookies();
-  void OnWebTestRuntimeFlagsChanged(
-      const base::DictionaryValue& changed_web_test_runtime_flags);
   void OnInitiateCaptureDump(bool capture_navigation_history,
                              bool capture_pixels);
   void OnGetWritableDirectory(base::FilePath* path);
@@ -77,7 +62,6 @@ class WebTestMessageFilter : public BrowserMessageFilter {
 
   scoped_refptr<storage::DatabaseTracker> database_tracker_;
   scoped_refptr<storage::QuotaManager> quota_manager_;
-  mojo::Remote<network::mojom::CookieManager> cookie_manager_;
 
   DISALLOW_COPY_AND_ASSIGN(WebTestMessageFilter);
 };

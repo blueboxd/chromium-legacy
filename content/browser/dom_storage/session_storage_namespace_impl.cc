@@ -37,7 +37,7 @@ scoped_refptr<SessionStorageNamespaceImpl> SessionStorageNamespaceImpl::Create(
     return existing;
   auto result = base::WrapRefCounted(
       new SessionStorageNamespaceImpl(context, std::move(namespace_id)));
-  result->context_wrapper_->GetSessionStorageControl()->CreateSessionNamespace(
+  result->context_wrapper_->GetSessionStorageControl()->CreateNamespace(
       result->namespace_id_);
   return result;
 }
@@ -51,7 +51,7 @@ SessionStorageNamespaceImpl::CloneFrom(
     bool immediately) {
   auto result = base::WrapRefCounted(
       new SessionStorageNamespaceImpl(context, std::move(namespace_id)));
-  result->context_wrapper_->GetSessionStorageControl()->CloneSessionNamespace(
+  result->context_wrapper_->GetSessionStorageControl()->CloneNamespace(
       namespace_id_to_clone, result->namespace_id_,
       immediately
           ? storage::mojom::SessionStorageCloneType::kImmediate
@@ -116,7 +116,7 @@ void SessionStorageNamespaceImpl::DeleteSessionNamespaceFromUIThread(
   storage::mojom::SessionStorageControl* session_storage =
       context_wrapper->GetSessionStorageControl();
   if (session_storage)
-    session_storage->DeleteSessionNamespace(namespace_id, should_persist);
+    session_storage->DeleteNamespace(namespace_id, should_persist);
 }
 
 }  // namespace content

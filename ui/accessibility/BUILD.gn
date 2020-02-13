@@ -82,8 +82,6 @@ jumbo_component("accessibility") {
     "ax_serializable_tree.h",
     "ax_table_info.cc",
     "ax_table_info.h",
-    "ax_text_boundary.cc",
-    "ax_text_boundary.h",
     "ax_text_utils.cc",
     "ax_text_utils.h",
     "ax_tree.cc",

@@ -29,6 +29,7 @@ bool Metafile::GetDataAsVector(std::vector<char>* buffer) const {
                  base::checked_cast<uint32_t>(buffer->size()));
 }
 
+#if !defined(OS_ANDROID)
 bool Metafile::SaveTo(base::File* file) const {
   if (!file->IsValid())
     return false;
@@ -44,5 +45,6 @@ bool Metafile::SaveTo(base::File* file) const {
   }
   return true;
 }
+#endif  // !defined(OS_ANDROID)
 
 }  // namespace printing

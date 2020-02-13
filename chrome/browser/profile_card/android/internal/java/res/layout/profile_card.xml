@@ -11,6 +11,12 @@
     android:orientation="vertical"
     android:padding="16dp">
 
+    <ImageView
+        android:id="@+id/avatar"
+        android:contentDescription="@strings/creator_avatar"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"/>
+
     <TextView
         android:id="@+id/title"
         android:layout_width="match_parent"
@@ -21,4 +27,8 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"/>
 
+    <TextView
+        android:id="@+id/post_freq"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"/>
 </org.chromium.chrome.browser.profile_card.ProfileCardView>

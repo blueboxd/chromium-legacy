@@ -237,6 +237,8 @@ component("fido") {
     sources += [
       "cros/authenticator.cc",
       "cros/authenticator.h",
+      "cros/discovery.cc",
+      "cros/discovery.h",
     ]
 
     deps += [

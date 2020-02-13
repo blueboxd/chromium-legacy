@@ -6521,14 +6521,6 @@ crbug.com/1050559 [ Linux ] external/wpt/shape-detection/idlharness.https.any.ht
 crbug.com/1050559 [ Linux ] external/wpt/video-raf/idlharness.window.html [ Pass Failure ]
 crbug.com/1050559 [ Linux ] external/wpt/WebCryptoAPI/derive_bits_keys/hkdf.https.any.worker.html?1-1000 [ Pass Failure ]
 
-# TODO(robertma): Add real failure expectations instead of Skip.
-# Tests under virtual/off-main-thread-css-paint flakily crash/fail on Win10.
-# Because of crbug.com/1050838, run_web_tests.py crashes when any of the
-# tests fails, and because of crbug.com/1050834, the crash is not caught by
-# the try bot, so we have to skip these tests on Win10 for now to ensure
-# test coverage of other tests.
-crbug.com/1050834 crbug.com/1050838 [ Win10 ] virtual/off-main-thread-css-paint/* [ Skip ]
-
 # Temporarily disable to unblock WebRTC CL roll making it PASS a test.
 crbug.com/webrtc/7061 external/wpt/webrtc/RTCPeerConnection-mandatory-getStats.https.html [ Pass Failure ]
 crbug.com/webrtc/7061 virtual/webrtc-wpt-plan-b/external/wpt/webrtc/RTCPeerConnection-mandatory-getStats.https.html [ Pass Failure ]

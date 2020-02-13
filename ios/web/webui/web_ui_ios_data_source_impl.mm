@@ -96,6 +96,13 @@ void WebUIIOSDataSourceImpl::AddLocalizedStrings(
                                               &replacements_);
 }
 
+void WebUIIOSDataSourceImpl::AddLocalizedStrings(
+    base::span<const webui::LocalizedString> strings) {
+  for (const auto& str : strings) {
+    AddLocalizedString(str.name, str.id);
+  }
+}
+
 void WebUIIOSDataSourceImpl::AddBoolean(const std::string& name, bool value) {
   localized_strings_.SetBoolean(name, value);
 }

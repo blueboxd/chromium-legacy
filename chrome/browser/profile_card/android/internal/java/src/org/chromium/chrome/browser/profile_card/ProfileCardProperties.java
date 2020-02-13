@@ -4,16 +4,22 @@
 
 package org.chromium.chrome.browser.profile_card;
 
+import android.graphics.Bitmap;
+
 import org.chromium.ui.modelutil.PropertyKey;
 import org.chromium.ui.modelutil.PropertyModel;
 
 class ProfileCardProperties extends PropertyModel {
+    public static final PropertyModel.WritableObjectPropertyKey<Bitmap> AVATAR_BITMAP =
+            new PropertyModel.WritableObjectPropertyKey<Bitmap>();
     public static final PropertyModel.WritableObjectPropertyKey<String> TITLE =
             new PropertyModel.WritableObjectPropertyKey<String>();
     public static final PropertyModel.WritableObjectPropertyKey<String> DESCRIPTION =
             new PropertyModel.WritableObjectPropertyKey<String>();
+    public static final PropertyModel.WritableObjectPropertyKey<String> POST_FREQUENCY =
+            new PropertyModel.WritableObjectPropertyKey<String>();
     public static final PropertyModel.WritableBooleanPropertyKey IS_DIALOG_VISIBLE =
             new PropertyModel.WritableBooleanPropertyKey();
-    public static final PropertyKey[] ALL_KEYS =
-            new PropertyKey[] {TITLE, DESCRIPTION, IS_DIALOG_VISIBLE};
+    public static final PropertyKey[] ALL_KEYS = new PropertyKey[] {
+            AVATAR_BITMAP, TITLE, DESCRIPTION, POST_FREQUENCY, IS_DIALOG_VISIBLE};
 }

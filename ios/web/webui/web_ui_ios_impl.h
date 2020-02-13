@@ -47,6 +47,8 @@ class WebUIIOSImpl : public web::WebUIIOS,
                                  const base::Value& response) override;
   void RejectJavascriptCallback(const base::Value& callback_id,
                                 const base::Value& response) override;
+  void FireWebUIListener(const std::string& event_name,
+                         const std::vector<const base::Value*>& args) override;
 
  private:
   void OnJsMessage(const base::DictionaryValue& message,

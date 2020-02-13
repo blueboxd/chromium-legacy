@@ -1739,7 +1739,7 @@ void StoragePartitionImpl::BindSessionStorageNamespace(
     const std::string& namespace_id,
     mojo::PendingReceiver<blink::mojom::SessionStorageNamespace> receiver) {
   DCHECK(initialized_);
-  dom_storage_context_->BindSessionStorageNamespace(
+  dom_storage_context_->BindNamespace(
       namespace_id, receivers_.GetBadMessageCallback(), std::move(receiver));
 }
 
@@ -1750,7 +1750,7 @@ void StoragePartitionImpl::BindSessionStorageArea(
   DCHECK(initialized_);
   ChildProcessSecurityPolicyImpl::Handle security_policy_handle =
       receivers_.current_context()->Duplicate();
-  dom_storage_context_->BindSessionStorageArea(
+  dom_storage_context_->BindStorageArea(
       std::move(security_policy_handle), origin, namespace_id,
       receivers_.GetBadMessageCallback(), std::move(receiver));
 }

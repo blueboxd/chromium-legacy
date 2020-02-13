@@ -65,7 +65,11 @@ class PRINTING_EXPORT MetafileSkia : public Metafile {
                   const MacRenderPageParams& params) const override;
 #endif
 
+#if defined(OS_ANDROID)
+  bool SaveToFileDescriptor(int fd) const override;
+#else
   bool SaveTo(base::File* file) const override;
+#endif  // defined(OS_ANDROID)
 
   // Unlike FinishPage() or FinishDocument(), this is for out-of-process
   // subframe printing. It will just serialize the content into SkPicture

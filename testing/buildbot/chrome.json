@@ -2562,6 +2562,26 @@
         "test": "wtf_unittests",
         "test_target": "//third_party/blink/renderer/platform/wtf:wtf_unittests"
       }
+    ],
+    "isolated_scripts": [
+      {
+        "isolate_name": "chrome_sizes",
+        "merge": {
+          "script": "//tools/perf/process_perf_results.py"
+        },
+        "name": "chrome_sizes",
+        "swarming": {
+          "can_use_on_swarming_builders": true,
+          "dimension_sets": [
+            {
+              "os": "Ubuntu-16.04",
+              "pool": "chrome.tests",
+              "ssd": "0"
+            }
+          ]
+        },
+        "test_target": "//chrome/test:chrome_sizes"
+      }
     ]
   },
   "mac-chrome": {

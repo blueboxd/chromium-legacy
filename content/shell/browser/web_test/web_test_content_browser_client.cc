@@ -143,9 +143,9 @@ void WebTestContentBrowserClient::RenderProcessWillLaunch(
 
   StoragePartition* partition =
       BrowserContext::GetDefaultStoragePartition(browser_context());
-  host->AddFilter(new WebTestMessageFilter(
-      host->GetID(), partition->GetDatabaseTracker(),
-      partition->GetQuotaManager(), partition->GetNetworkContext()));
+  host->AddFilter(new WebTestMessageFilter(host->GetID(),
+                                           partition->GetDatabaseTracker(),
+                                           partition->GetQuotaManager()));
 }
 
 void WebTestContentBrowserClient::ExposeInterfacesToRenderer(
@@ -161,7 +161,11 @@ void WebTestContentBrowserClient::ExposeInterfacesToRenderer(
   registry->AddInterface(base::BindRepeating(&BlinkTestClientImpl::Create),
                          ui_task_runner);
 
-  registry->AddInterface(base::BindRepeating(&WebTestClientImpl::Create),
+  StoragePartition* partition =
+      BrowserContext::GetDefaultStoragePartition(browser_context());
+  registry->AddInterface(base::BindRepeating(&WebTestClientImpl::Create,
+                                             render_process_host->GetID(),
+                                             partition->GetNetworkContext()),
                          ui_task_runner);
 
   registry->AddInterface(base::BindRepeating(&bluetooth::FakeBluetooth::Create),

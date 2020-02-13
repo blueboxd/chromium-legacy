@@ -3466,40 +3466,40 @@ HRESULT AXPlatformNodeWin::IAccessibleTextGetTextForOffsetType(
   switch (text_offset_type) {
     case TextOffsetType::kAtOffset: {
       end = FindBoundary(boundary_type, offset,
-                         ui::AXTextBoundaryDirection::kForwards);
+                         ax::mojom::MoveDirection::kForward);
       // Early return if the range will be degenerate containing no text.
       if (end <= 0)
         return S_FALSE;
       start = FindBoundary(boundary_type, offset,
-                           ui::AXTextBoundaryDirection::kBackwards);
+                           ax::mojom::MoveDirection::kBackward);
       break;
     }
     case TextOffsetType::kBeforeOffset: {
       // Find the start of the boundary at |offset| and assign to |end|,
       // then find the start of the preceding boundary and assign to |start|.
       end = FindBoundary(boundary_type, offset,
-                         ui::AXTextBoundaryDirection::kBackwards);
+                         ax::mojom::MoveDirection::kBackward);
       // Early return if the range will be degenerate containing no text,
       // or the range is after |offset|. Because the character at |offset| must
       // be excluded, |end| and |offset| may be equal.
       if (end <= 0 || end > offset)
         return S_FALSE;
       start = FindBoundary(boundary_type, end - 1,
-                           ui::AXTextBoundaryDirection::kBackwards);
+                           ax::mojom::MoveDirection::kBackward);
       break;
     }
     case TextOffsetType::kAfterOffset: {
       // Find the end of the boundary at |offset| and assign to |start|,
       // then find the end of the following boundary and assign to |end|.
       start = FindBoundary(boundary_type, offset,
-                           ui::AXTextBoundaryDirection::kForwards);
+                           ax::mojom::MoveDirection::kForward);
       // Early return if the range will be degenerate containing no text,
       // or the range is before or includes|offset|. Because the character at
       // |offset| must be excluded, |start| and |offset| cannot be equal.
       if (start >= text_len || start <= offset)
         return S_FALSE;
       end = FindBoundary(boundary_type, start,
-                         ui::AXTextBoundaryDirection::kForwards);
+                         ax::mojom::MoveDirection::kForward);
       break;
     }
   }
@@ -7337,7 +7337,7 @@ void AXPlatformNodeWin::HandleSpecialTextOffset(LONG* offset) {
 
 LONG AXPlatformNodeWin::FindBoundary(IA2TextBoundaryType ia2_boundary,
                                      LONG start_offset,
-                                     AXTextBoundaryDirection direction) {
+                                     ax::mojom::MoveDirection direction) {
   HandleSpecialTextOffset(&start_offset);
 
   // If the |start_offset| is equal to the location of the caret, then use the
@@ -7348,7 +7348,7 @@ LONG AXPlatformNodeWin::FindBoundary(IA2TextBoundaryType ia2_boundary,
   if (selection_end >= 0 && start_offset == selection_end)
     affinity = GetDelegate()->GetTreeData().sel_focus_affinity;
 
-  AXTextBoundary boundary = FromIA2TextBoundary(ia2_boundary);
+  ax::mojom::TextBoundary boundary = FromIA2TextBoundary(ia2_boundary);
   return static_cast<LONG>(
       FindTextBoundary(boundary, start_offset, direction, affinity));
 }

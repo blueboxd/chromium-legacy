@@ -274,6 +274,9 @@ void AccessibilityNodeInfoDataWrapper::PopulateAXState(
 
   if (!is_important_)
     out_data->AddState(ax::mojom::State::kIgnored);
+
+  if (tree_source_->IsRootOfNodeTree(GetId()))
+    out_data->AddState(ax::mojom::State::kFocusable);
 }
 
 void AccessibilityNodeInfoDataWrapper::Serialize(

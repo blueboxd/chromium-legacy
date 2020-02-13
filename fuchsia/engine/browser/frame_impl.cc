@@ -134,9 +134,11 @@ class WindowParentingClientImpl : public aura::client::WindowParentingClient {
 // WindowTreeHost that hosts web frames.
 class FrameWindowTreeHost : public aura::WindowTreeHostPlatform {
  public:
-  explicit FrameWindowTreeHost(ui::PlatformWindowInitProperties properties)
+  explicit FrameWindowTreeHost(ui::PlatformWindowInitProperties properties,
+                               content::WebContents* web_contents)
       : aura::WindowTreeHostPlatform(std::move(properties)),
-        window_parenting_client_(window()) {}
+        window_parenting_client_(window()),
+        web_contents_(web_contents) {}
 
   ~FrameWindowTreeHost() override = default;
 
@@ -152,8 +154,17 @@ class FrameWindowTreeHost : public aura::WindowTreeHostPlatform {
     }
   }
 
+  void OnWindowStateChanged(ui::PlatformWindowState new_state) override {
+    if (new_state == ui::PlatformWindowState::kMinimized) {
+      web_contents_->WasOccluded();
+    } else {
+      web_contents_->WasShown();
+    }
+  }
+
  private:
   WindowParentingClientImpl window_parenting_client_;
+  content::WebContents* web_contents_;
 
   DISALLOW_COPY_AND_ASSIGN(FrameWindowTreeHost);
 };
@@ -495,8 +506,8 @@ void FrameImpl::CreateView(fuchsia::ui::views::ViewToken view_token) {
       std::move(semantics_manager), std::move(accessibility_view_ref),
       web_contents_.get());
 
-  SetWindowTreeHost(
-      std::make_unique<FrameWindowTreeHost>(std::move(properties)));
+  SetWindowTreeHost(std::make_unique<FrameWindowTreeHost>(std::move(properties),
+                                                          web_contents_.get()));
 }
 
 void FrameImpl::GetNavigationController(
@@ -693,7 +704,7 @@ void FrameImpl::EnableHeadlessRendering() {
   }
 
   SetWindowTreeHost(std::make_unique<FrameWindowTreeHost>(
-      ui::PlatformWindowInitProperties()));
+      ui::PlatformWindowInitProperties(), web_contents_.get()));
 
   gfx::Rect bounds(kHeadlessWindowSize);
   if (semantics_manager_for_test_) {

@@ -28,9 +28,9 @@ namespace content {
 
 namespace {
 
-// Implementation of SharedCorsOriginAccessListForTesting that is used by some
-// of the unit tests below for verifying that FileURLLoaderFactory correctly
-// grants or denies CORS exemptions to specific initiator origins.
+// Implementation of SharedCorsOriginAccessList that is used by some of the unit
+// tests below for verifying that FileURLLoaderFactory correctly grants or
+// denies CORS exemptions to specific initiator origins.
 //
 // The implementation below gives https://www.google.com origin access to all
 // file:// URLs.

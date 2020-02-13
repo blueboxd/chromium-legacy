@@ -47,10 +47,6 @@ namespace {
 namespace dnr_api = extensions::api::declarative_net_request;
 using Status = ReadJSONRulesResult::Status;
 
-// Dynamic rulesets get more priority over static rulesets.
-const size_t kStaticRulesetPriority = 1;
-const size_t kDynamicRulesetPriority = 2;
-
 constexpr const char kFileDoesNotExistError[] = "File does not exist.";
 constexpr const char kFileReadError[] = "File read error.";
 
@@ -237,8 +233,8 @@ RulesetSource RulesetSource::CreateStatic(const Extension& extension) {
   return RulesetSource(
       declarative_net_request::DNRManifestData::GetRulesetPath(extension),
       file_util::GetIndexedRulesetPath(extension.path()), kStaticRulesetID,
-      kStaticRulesetPriority, dnr_api::SOURCE_TYPE_MANIFEST,
-      dnr_api::MAX_NUMBER_OF_RULES, extension.id());
+      dnr_api::SOURCE_TYPE_MANIFEST, dnr_api::MAX_NUMBER_OF_RULES,
+      extension.id());
 }
 
 // static
@@ -251,14 +247,13 @@ RulesetSource RulesetSource::CreateDynamic(content::BrowserContext* context,
   return RulesetSource(
       dynamic_ruleset_directory.AppendASCII(kDynamicRulesJSONFilename),
       dynamic_ruleset_directory.AppendASCII(kDynamicIndexedRulesFilename),
-      kDynamicRulesetID, kDynamicRulesetPriority, dnr_api::SOURCE_TYPE_DYNAMIC,
+      kDynamicRulesetID, dnr_api::SOURCE_TYPE_DYNAMIC,
       dnr_api::MAX_NUMBER_OF_DYNAMIC_RULES, extension.id());
 }
 
 // static
 std::unique_ptr<RulesetSource> RulesetSource::CreateTemporarySource(
     size_t id,
-    size_t priority,
     dnr_api::SourceType type,
     size_t rule_count_limit,
     ExtensionId extension_id) {
@@ -271,20 +266,18 @@ std::unique_ptr<RulesetSource> RulesetSource::CreateTemporarySource(
 
   return std::make_unique<RulesetSource>(
       std::move(temporary_file_json), std::move(temporary_file_indexed), id,
-      priority, type, rule_count_limit, std::move(extension_id));
+      type, rule_count_limit, std::move(extension_id));
 }
 
 RulesetSource::RulesetSource(base::FilePath json_path,
                              base::FilePath indexed_path,
                              size_t id,
-                             size_t priority,
                              dnr_api::SourceType type,
                              size_t rule_count_limit,
                              ExtensionId extension_id)
     : json_path_(std::move(json_path)),
       indexed_path_(std::move(indexed_path)),
       id_(id),
-      priority_(priority),
       type_(type),
       rule_count_limit_(rule_count_limit),
       extension_id_(std::move(extension_id)) {}
@@ -294,8 +287,8 @@ RulesetSource::RulesetSource(RulesetSource&&) = default;
 RulesetSource& RulesetSource::operator=(RulesetSource&&) = default;
 
 RulesetSource RulesetSource::Clone() const {
-  return RulesetSource(json_path_, indexed_path_, id_, priority_, type_,
-                       rule_count_limit_, extension_id_);
+  return RulesetSource(json_path_, indexed_path_, id_, type_, rule_count_limit_,
+                       extension_id_);
 }
 
 IndexAndPersistJSONRulesetResult

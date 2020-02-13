@@ -6,7 +6,7 @@
 
 #include <memory>
 
-#include "ash/components/fast_ink/fast_ink_points.h"
+#include "ash/fast_ink/fast_ink_points.h"
 #include "ash/highlighter/highlighter_controller_test_api.h"
 #include "ash/shell.h"
 #include "ash/system/palette/mock_palette_tool_delegate.h"

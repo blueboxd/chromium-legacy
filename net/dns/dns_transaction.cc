@@ -909,7 +909,7 @@ class DnsOverHttpsProbeRunner : public DnsProbeRunner {
          i++) {
       // Clear the existing probe stats.
       probe_stats_list_[i] = std::make_unique<ProbeStats>();
-      session_->SetProbeSuccess(i, false /* success */);
+      context_->SetProbeSuccess(i, false /* success */, session_.get());
       ContinueProbe(i, probe_stats_list_[i]->weak_factory.GetWeakPtr(),
                     network_change,
                     base::TimeTicks::Now() /* sequence_start_time */);
@@ -985,8 +985,10 @@ class DnsOverHttpsProbeRunner : public DnsProbeRunner {
         session_->RecordServerSuccess(doh_server_index,
                                       true /* is_doh_server */);
         session_->RecordRTT(doh_server_index, true /* is_doh_server */,
+                            false /* is_validated_doh_server */,
                             base::TimeTicks::Now() - query_start_time, rv);
-        session_->SetProbeSuccess(doh_server_index, true /* success */);
+        context_->SetProbeSuccess(doh_server_index, true /* success */,
+                                  session_.get());
         probe_stats_list_[doh_server_index] = nullptr;
         success = true;
       }
@@ -1241,25 +1243,28 @@ class DnsTransactionImpl : public DnsTransaction,
     // doh_attempts_ counts the number of attempts made via HTTPS. To
     // get a server index cap that by the number of DoH servers we
     // have configured and search for the next good server.
-    int doh_server_index = session_->NextGoodDohServerIndex(
-        doh_attempts_ % session_->config().dns_over_https_servers.size(),
-        secure_dns_mode_);
+    base::Optional<size_t> doh_server_index =
+        resolve_context_->DohServerIndexToUse(
+            doh_attempts_ % session_->config().dns_over_https_servers.size(),
+            secure_dns_mode_, session_.get());
     // Do not construct an attempt if there is no DoH server that we should send
     // a request to.
-    if (doh_server_index < 0)
+    if (!doh_server_index)
       return AttemptResult(ERR_BLOCKED_BY_CLIENT, nullptr);
 
     unsigned attempt_number = attempts_.size();
-    ConstructDnsHTTPAttempt(
-        session_.get(), doh_server_index, qnames_.front(), qtype_, opt_rdata_,
-        &attempts_, resolve_context_->url_request_context(), request_priority_);
+    ConstructDnsHTTPAttempt(session_.get(), doh_server_index.value(),
+                            qnames_.front(), qtype_, opt_rdata_, &attempts_,
+                            resolve_context_->url_request_context(),
+                            request_priority_);
     ++doh_attempts_;
     ++attempts_count_;
     int rv = attempts_.back()->Start(base::BindOnce(
         &DnsTransactionImpl::OnAttemptComplete, base::Unretained(this),
         attempt_number, true /* record_rtt */, base::TimeTicks::Now()));
     if (rv == ERR_IO_PENDING) {
-      base::TimeDelta timeout = session_->NextDohTimeout(doh_server_index);
+      base::TimeDelta timeout =
+          session_->NextDohTimeout(doh_server_index.value());
       timer_.Start(FROM_HERE, timeout, this, &DnsTransactionImpl::OnTimeout);
     }
     return AttemptResult(rv, attempts_.back().get());
@@ -1329,7 +1334,11 @@ class DnsTransactionImpl : public DnsTransaction,
     DCHECK_LT(attempt_number, attempts_.size());
     const DnsAttempt* attempt = attempts_[attempt_number].get();
     if (record_rtt && attempt->GetResponse()) {
+      bool is_validated_doh_server =
+          secure_ && resolve_context_->GetDohServerAvailability(
+                         attempt->server_index(), session_.get());
       session_->RecordRTT(attempt->server_index(), secure_ /* is_doh_server */,
+                          is_validated_doh_server,
                           base::TimeTicks::Now() - start, rv);
     }
     if (callback_.is_null())
@@ -1352,10 +1361,12 @@ class DnsTransactionImpl : public DnsTransaction,
 
     const DnsConfig& config = session_->config();
     if (secure_) {
-      if (secure_dns_mode_ == DnsConfig::SecureDnsMode::AUTOMATIC)
-        return attempts_.size() < session_->NumAvailableDohServers();
-      else
+      if (secure_dns_mode_ == DnsConfig::SecureDnsMode::AUTOMATIC) {
+        return attempts_.size() <
+               resolve_context_->NumAvailableDohServers(session_.get());
+      } else {
         return attempts_.size() < config.dns_over_https_servers.size();
+      }
     }
 
     return attempts_.size() < config.attempts * config.nameservers.size();
@@ -1395,9 +1406,11 @@ class DnsTransactionImpl : public DnsTransaction,
           break;
         case ERR_CONNECTION_REFUSED:
         case ERR_DNS_TIMED_OUT:
-          if (result.attempt)
+          if (result.attempt) {
             session_->RecordServerFailure(result.attempt->server_index(),
-                                          secure_ /* is_doh_server */);
+                                          secure_ /* is_doh_server */,
+                                          resolve_context_);
+          }
           if (MoreAttemptsAllowed()) {
             result = MakeAttempt();
           } else {
@@ -1418,7 +1431,8 @@ class DnsTransactionImpl : public DnsTransaction,
             // This attempt already timed out. Ignore it.
             DCHECK_GE(result.attempt->server_index(), 0);
             session_->RecordServerFailure(result.attempt->server_index(),
-                                          secure_ /* is_doh_server */);
+                                          secure_ /* is_doh_server */,
+                                          resolve_context_);
             return AttemptResult(ERR_IO_PENDING, nullptr);
           }
           if (!MoreAttemptsAllowed()) {

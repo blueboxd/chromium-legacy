@@ -6,6 +6,7 @@
 #define MOJO_PUBLIC_CPP_PLATFORM_PLATFORM_HANDLE_H_
 
 #include "base/component_export.h"
+#include "base/files/platform_file.h"
 #include "base/logging.h"
 #include "base/macros.h"
 #include "build/build_config.h"
@@ -183,6 +184,34 @@ class COMPONENT_EXPORT(MOJO_CPP_PLATFORM) PlatformHandle {
     return fd_.release();
   }
 #endif
+
+  bool is_valid_platform_file() const {
+#if defined(OS_POSIX) || defined(OS_FUCHSIA)
+    return is_valid_fd();
+#elif defined(OS_WIN)
+    return is_valid_handle();
+#else
+#error "Unsupported platform"
+#endif
+  }
+  base::ScopedPlatformFile TakePlatformFile() {
+#if defined(OS_POSIX) || defined(OS_FUCHSIA)
+    return TakeFD();
+#elif defined(OS_WIN)
+    return TakeHandle();
+#else
+#error "Unsupported platform"
+#endif
+  }
+  base::PlatformFile ReleasePlatformFile() WARN_UNUSED_RESULT {
+#if defined(OS_POSIX) || defined(OS_FUCHSIA)
+    return ReleaseFD();
+#elif defined(OS_WIN)
+    return ReleaseHandle();
+#else
+#error "Unsupported platform"
+#endif
+  }
 
  private:
   Type type_ = Type::kNone;

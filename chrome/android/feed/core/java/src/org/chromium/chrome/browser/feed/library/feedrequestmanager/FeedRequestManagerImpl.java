@@ -204,16 +204,23 @@ public final class FeedRequestManagerImpl implements FeedRequestManager {
         }
     }
 
+    private static boolean isRequestInteractive(FeedQuery.RequestReason reason) {
+        return !(reason == FeedQuery.RequestReason.SCHEDULED_REFRESH
+                || reason == FeedQuery.RequestReason.WITH_CONTENT);
+    }
+
     private void sendRequest(RequestBuilder requestBuilder, Consumer<Result<Model>> consumer) {
         mThreadUtils.checkNotMainThread();
         String endpoint = mConfiguration.getValueOrDefault(ConfigKey.FEED_SERVER_ENDPOINT, "");
         @HttpMethod
         String httpMethod =
                 mConfiguration.getValueOrDefault(ConfigKey.FEED_SERVER_METHOD, HttpMethod.GET);
-
         HttpRequest httpRequest =
                 RequestHelper.buildHttpRequest(httpMethod, requestBuilder.build().toByteArray(),
-                        endpoint, LocaleUtils.getLanguageTag(mContext));
+                        endpoint, LocaleUtils.getLanguageTag(mContext),
+                        isRequestInteractive(requestBuilder.mRequestReason)
+                                ? RequestHelper.PRIORITY_VALUE_INTERACTIVE
+                                : RequestHelper.PRIORITY_VALUE_BACKGROUND);
 
         Logger.i(TAG, "Making Request: %s", httpRequest.getUri().getPath());
         mNetworkClient.send(httpRequest, input -> {
@@ -267,7 +274,7 @@ public final class FeedRequestManagerImpl implements FeedRequestManager {
         private final Context mContext;
         private final ApplicationInfo mApplicationInfo;
         private final Configuration mConfiguration;
-        private final FeedQuery.RequestReason mRequestReason;
+        public final FeedQuery.RequestReason mRequestReason;
         @RequestReason
         private final int mClientLoggingRequestReason;
         private boolean mCardMenuTooltipWouldTrigger;

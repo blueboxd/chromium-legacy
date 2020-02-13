@@ -498,6 +498,10 @@ void AddNavigationRequestClientHintsHeaders(
                 version.empty() ? ua.brand
                                 : base::StringPrintf("%s %s", ua.brand.c_str(),
                                                      version.c_str()));
+    // The `Sec-CH-UA-Mobile client hint was also deemed "low entropy" and can
+    // safely be sent with every request.
+    AddUAHeader(headers, blink::mojom::WebClientHintsType::kUAMobile,
+                ua.mobile ? "?1" : "?0");
 
     if (ShouldAddClientHint(
             web_client_hints, feature_policy, resource_origin,
@@ -521,14 +525,6 @@ void AddNavigationRequestClientHintsHeaders(
             blink::mojom::FeaturePolicyFeature::kClientHintUAModel)) {
       AddUAHeader(headers, blink::mojom::WebClientHintsType::kUAModel,
                   ua.model);
-    }
-
-    if (ShouldAddClientHint(
-            web_client_hints, feature_policy, resource_origin,
-            blink::mojom::WebClientHintsType::kUAMobile,
-            blink::mojom::FeaturePolicyFeature::kClientHintUAMobile)) {
-      AddUAHeader(headers, blink::mojom::WebClientHintsType::kUAMobile,
-                  ua.mobile ? "?1" : "?0");
     }
   }
 

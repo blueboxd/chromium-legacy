@@ -281,6 +281,7 @@
 <translation id="3137521801621304719">Salir del modo de incógnito</translation>
 <translation id="3140134512074889489">Habilita la cámara para escanear un código QR</translation>
 <translation id="3143515551205905069">Cancelar sincronización</translation>
+<translation id="314939179385989105">Página principal de Chrome</translation>
 <translation id="3157842584138209013">Consulta la cantidad de datos que has ahorrado con el botón Más opciones</translation>
 <translation id="3166827708714933426">Combinaciones de teclas de pestañas y ventanas</translation>
 <translation id="3181954750937456830">Navegación Segura (te protege a ti y a tu dispositivo frente a sitios web peligrosos)</translation>
@@ -727,6 +728,7 @@ Mantén pulsada cualquier palabra para buscarla. Para acotar la búsqueda, ajust
 <translation id="6437478888915024427">Información de la página</translation>
 <translation id="6441734959916820584">El nombre es demasiado largo</translation>
 <translation id="6444421004082850253">{FILE_COUNT,plural, =1{# imagen}other{# imágenes}}</translation>
+<translation id="6447558397796644647">No se ha podido encontrar el marcador. Comprueba que esté bien escrito o añade un nuevo marcador.</translation>
 <translation id="6447842834002726250">Cookies</translation>
 <translation id="6461962085415701688">No se puede abrir el archivo</translation>
 <translation id="6464977750820128603">Puedes ver los sitios web que visitas en Chrome y ponerles temporizadores.\n\nGoogle obtiene información sobre estos sitios web y sobre la duración de la visita. La información se usa para mejorar Bienestar digital.</translation>
@@ -802,6 +804,7 @@ Mantén pulsada cualquier palabra para buscarla. Para acotar la búsqueda, ajust
 <translation id="6990079615885386641">Descarga la aplicación en Google Play Store: <ph name="APP_ACTION" /></translation>
 <translation id="6992289844737586249">Preguntar antes de permitir que los sitios web utilicen el micrófono (recomendado)</translation>
 <translation id="6995899638241819463">Avisar si tus contraseñas se ven expuestas en una quiebra de seguridad de datos</translation>
+<translation id="7000754031042624318">Desactivado en los ajustes de Android</translation>
 <translation id="7015203776128479407">La configuración de sincronización inicial no ha terminado. La sincronización está desactivada.</translation>
 <translation id="7016516562562142042">Permitido en el motor de búsqueda actual</translation>
 <translation id="7022756207310403729">Abrir en el navegador</translation>

@@ -229,11 +229,6 @@ Ako je skripta "<ph name="SERVICE_SCRIPT_NAME" />" već označena, uklonite ozna
 <translation id="6304318647555713317">Klijent</translation>
 <translation id="6381670701864002291">Nešto drugo.</translation>
 <translation id="6398765197997659313">Napusti prikaz preko cijelog ekrana</translation>
-<translation id="6411861157501911556">Da koristite <ph name="PRODUCT_NAME" />, morate dati odobrenje za "Pristupačnost" kako bi se unos s udaljenog računara mogao ubaciti na ovaj Mac računar.
-
-Za davanje odobrenja, kliknite "<ph name="BUTTON_NAME" />" ispod da otvorite okno s postavkama za "Pristupačnost" i zatim označite polje pored skripte "<ph name="SERVICE_SCRIPT_NAME" />".
-
-Ako je skripta "<ph name="SERVICE_SCRIPT_NAME" />" već označena, uklonite oznaku i ponovo je označite.</translation>
 <translation id="6441316101718669559">Integracija radne površine nije podržana na ovoj platformi. I dalje možete koristiti aplikaciju, ali iskustvo korištenja će biti lošije.</translation>
 <translation id="652218476070540101">Trenutno se ažurira PIN za ovaj računar…</translation>
 <translation id="6527303717912515753">Dijeli</translation>

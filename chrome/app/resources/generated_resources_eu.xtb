@@ -690,6 +690,7 @@
 <translation id="1926339101652878330">Enpresa-gidalerroek arautzen dituzte ezarpen hauek. Informazio gehiago lortzeko, jarri administratzailearekin harremanetan.</translation>
 <translation id="1927632033341042996"><ph name="NEW_FINGER_NUMBER" />. hatza</translation>
 <translation id="1928202201223835302">Idatzi PIN kode zaharra</translation>
+<translation id="1928696683969751773">Eguneratzeak</translation>
 <translation id="1929546189971853037">Irakurri saioa hasita daukaten gailu guztietako arakatze-historia</translation>
 <translation id="1931152874660185993">Ez da osagairik instalatu</translation>
 <translation id="1932098463447129402">Data hau ondoren</translation>
@@ -1889,7 +1890,6 @@ Kontu honen ezarpenak kudeatzeko, instalatu Family Link aplikazioa zure gailuan.
 <translation id="3603177256297531067">Ezin izan da itzuli orria</translation>
 <translation id="3603622770190368340">Eskuratu sareko ziurtagiria</translation>
 <translation id="3605780360466892872">Enpresaria</translation>
-<translation id="3608436266458100337">Irakurgailu modua</translation>
 <translation id="3608576286259426129">Erabili irudiaren aurrebista</translation>
 <translation id="3610369246614755442">Oinarriaren haizagailua konpondu egin behar da</translation>
 <translation id="361106536627977100">Flash datuak</translation>
@@ -2392,7 +2392,6 @@ Kontu honen ezarpenak kudeatzeko, instalatu Family Link aplikazioa zure gailuan.
 <translation id="4285418559658561636">Eguneratu pasahitza</translation>
 <translation id="4285498937028063278">Desainguratu</translation>
 <translation id="428565720843367874">Birusen aurkako softwareak ustekabean huts egin du fitxategian bilatzean.</translation>
-<translation id="4287502004382794929">Ez dituzu behar adina software-lizentzia gailua erregistratzeko. Gehiago erosteko, jarri salmenta-sailarekin harremanetan. Mezu hau ikusi beharko ez zenukeela uste baduzu, jarri laguntza-zerbitzuarekin harremanetan.</translation>
 <translation id="4289540628985791613">Ikuspegi orokorra</translation>
 <translation id="4295072614469448764">Terminalean duzu erabilgarri aplikazioa. Baliteke haren ikonoa abiarazlean agertzea.</translation>
 <translation id="4295979599050707005">Hasi saioa berriro <ph name="USER_EMAIL" /> kontua Chrome eta Google Play-rako webgune, aplikazio eta luzapenetan erabil daitekeela berresteko. Kontua kentzeko aukera ere baduzu. <ph name="LINK_BEGIN" />Lortu informazio gehiago<ph name="LINK_END" /></translation>
@@ -2872,6 +2871,7 @@ Kontu honen ezarpenak kudeatzeko, instalatu Family Link aplikazioa zure gailuan.
 <translation id="4998430619171209993">Aktibatuta</translation>
 <translation id="4998873842614926205">Berretsi aldaketak</translation>
 <translation id="5000922062037820727">Blokeatuta (gomendatua)</translation>
+<translation id="5005498671520578047">Kopiatu pasahitza</translation>
 <translation id="5007392906805964215">Berrikusi</translation>
 <translation id="5008936837313706385">Jardueraren izena</translation>
 <translation id="5010043101506446253">Autoritate ziurtagiri-emailea</translation>
@@ -4654,7 +4654,6 @@ Kontu honen ezarpenak kudeatzeko, instalatu Family Link aplikazioa zure gailuan.
 <translation id="7521387064766892559">JavaScript</translation>
 <translation id="7522255036471229694">Esan "Ok Google"</translation>
 <translation id="7525067979554623046">Sortu</translation>
-<translation id="7529411698175791732">Egiaztatu Internetera konektatuta zaudela. Arazoak badirau, probatu saioa amaitu eta berriro hasita.</translation>
 <translation id="7530016656428373557">Deskarga-abiadura wattetan</translation>
 <translation id="7531779363494549572">Joan Ezarpenak &gt; Aplikazioak eta jakinarazpenak &gt; Jakinarazpenak atalera.</translation>
 <translation id="7532009420053991888"><ph name="LINUX_APP_NAME" /> aplikazioak ez du erantzuten. Ixteko, hautatu "Behartu ixtera".</translation>
@@ -5795,7 +5794,6 @@ Horrek ez die eragiten beste gailu batzuetako aplikazioei edo edukiei.</translat
 <translation id="9050666287014529139">Pasaesaldia</translation>
 <translation id="9052208328806230490">Inprimagailuak <ph name="CLOUD_PRINT_NAME" /> zerbitzuan erregistratu dituzu <ph name="EMAIL" /> kontuarekin</translation>
 <translation id="9052404922357793350">Jarraitu blokeatzen</translation>
-<translation id="9053091947372579468">Zure gailuak Chrome lizentzia bat du, baina erabiltzaile-izena ez dago administrazio-kontsola batekin lotuta. Erregistratzeko, sortu administrazio-kontsolako kontu bat. Oharra: zure domeinua aukeratzen baduzu administrazio-kontsolako kontu berria sortzeko, beharrezkoa da erregistratu ondoren domeinua egiaztatzea. https://g.co/ChromeEnterpriseAccount</translation>
 <translation id="9053563360605707198">Inprimatu bi aldeetatik</translation>
 <translation id="9053893665344928494">Gogoratu nire aukera</translation>
 <translation id="9055636786322918818">Aplikatu RC4 enkriptatzea. Aukera honek arriskua areagotzen du, RC4 enkriptatze-kateak ez baitira seguruak.</translation>

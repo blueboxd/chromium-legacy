@@ -281,6 +281,7 @@
 <translation id="3137521801621304719">צא ממצב גלישה בסתר</translation>
 <translation id="3140134512074889489">‏יש להפעיל את המצלמה כדי לסרוק קוד QR</translation>
 <translation id="3143515551205905069">ביטול סנכרון</translation>
+<translation id="314939179385989105">‏דף הבית של Chrome</translation>
 <translation id="3157842584138209013">בעזרת הלחצן 'אפשרויות נוספות' אפשר לבדוק את החיסכון בצריכת נתונים</translation>
 <translation id="3166827708714933426">מקשי קיצור לכרטיסיות ולחלונות</translation>
 <translation id="3181954750937456830">גלישה בטוחה (מגנה עליך ועל המכשיר מפני אתרים מסוכנים)</translation>
@@ -727,6 +728,7 @@
 <translation id="6437478888915024427">פרטי דף</translation>
 <translation id="6441734959916820584">השם ארוך מדי</translation>
 <translation id="6444421004082850253">{FILE_COUNT,plural, =1{תמונה אחת (#)}two{# תמונות}many{# תמונות}other{# תמונות}}</translation>
+<translation id="6447558397796644647">לא ניתן למצוא את הסימניה הזו. יש לוודא שהאיות נכון או להוסיף סימניה חדשה.</translation>
 <translation id="6447842834002726250">‏קובצי Cookie</translation>
 <translation id="6461962085415701688">לא ניתן לפתוח את הקובץ</translation>
 <translation id="6464977750820128603">‏אפשר לראות אתרים שמבקרים בהם ב-Chrome ולהגדיר טיימרים בשבילם.\n\n‏Google מקבלת מידע על האתרים שמוגדרים בשבילם טיימרים ומשך השהייה שלך באתרים האלה. המידע עוזר לשפר את 'שימוש חכם בדיגיטל'.</translation>
@@ -802,6 +804,7 @@
 <translation id="6990079615885386641">‏קבל את האפליקציה מחנות Google Play‏: <ph name="APP_ACTION" /></translation>
 <translation id="6992289844737586249">יש לשאול לפני שמאפשרים לאתרים להשתמש במיקרופון (מומלץ)</translation>
 <translation id="6995899638241819463">הצגת אזהרה אם סיסמאות נחשפות עקב פרצה באבטחת מידע</translation>
+<translation id="7000754031042624318">‏ההרשאה מושבתת בהגדרות Android</translation>
 <translation id="7015203776128479407">הגדרת הסנכרון הראשונית לא הושלמה. הסנכרון מושבת.</translation>
 <translation id="7016516562562142042">מופעל למנוע החיפוש הנוכחי</translation>
 <translation id="7022756207310403729">פתיחה בדפדפן</translation>

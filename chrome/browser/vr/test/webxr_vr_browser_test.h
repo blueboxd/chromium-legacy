@@ -6,6 +6,7 @@
 #define CHROME_BROWSER_VR_TEST_WEBXR_VR_BROWSER_TEST_H_
 
 #include "build/build_config.h"
+#include "chrome/browser/permissions/permission_request_manager.h"
 #include "chrome/browser/vr/test/conditional_skipping.h"
 #include "chrome/browser/vr/test/mock_xr_device_hook_base.h"
 #include "chrome/browser/vr/test/webxr_browser_test.h"
@@ -39,6 +40,10 @@ class WebXrVrBrowserTestBase : public WebXrBrowserTestBase {
   void EndSession(content::WebContents* web_contents) override;
   void EndSessionOrFail(content::WebContents* web_contents) override;
 
+  PermissionRequestManager* GetPermissionRequestManager();
+  PermissionRequestManager* GetPermissionRequestManager(
+      content::WebContents* web_contents);
+
   virtual gfx::Vector3dF GetControllerOffset() const;
 
   // Necessary to use the WebContents-less versions of functions.
@@ -48,6 +53,9 @@ class WebXrVrBrowserTestBase : public WebXrBrowserTestBase {
   using WebXrBrowserTestBase::EnterSessionWithUserGestureOrFail;
   using WebXrBrowserTestBase::EndSession;
   using WebXrBrowserTestBase::EndSessionOrFail;
+
+  PermissionRequestManager::AutoResponseType permission_auto_response_ =
+      PermissionRequestManager::ACCEPT_ALL;
 
   // Methods/objects for managing consent. If SetupFakeConsentManager is never
   // called, the test will default to mocking out the consent prompt and always

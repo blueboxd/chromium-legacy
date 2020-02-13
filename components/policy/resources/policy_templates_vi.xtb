@@ -376,11 +376,6 @@
           Nếu bạn tắt hoặc không đặt chính sách này, thì các tùy chọn cài đặt của Tài khoản Kerberos sẽ tắt. Người dùng không thể thêm các tài khoản Kerberos và sử dụng tính năng xác thực Kerberos. Tất cả các tài khoản Kerberos hiện có và mọi mật khẩu đã lưu trữ sẽ bị xóa.</translation>
 <translation id="1561424797596341174">Chính sách ghi đè dành cho bản dựng Gỡ lỗi của máy chủ truy cập từ xa</translation>
 <translation id="1561967320164410511">Tiện ích U2F+ để chứng thực cá nhân</translation>
-<translation id="1574554504290354326">Cài đặt này không còn được dùng nữa, hãy sử dụng cài đặt SafeBrowsingExtendedReportingEnabled thay vào đó. Việc bật hoặc tắt cài đặt SafeBrowsingExtendedReportingEnabled cũng giống với thao tác đặt SafeBrowsingExtendedReportingOptInAllowed thành False.
-
-      Đặt chính sách này thành false sẽ ngăn người dùng chọn gửi một số thông tin hệ thống và nội dung trang đến máy chủ Google. Nếu cài đặt này là true hoặc chưa được định cấu hình, thì người dùng sẽ được phép gửi một số thông tin hệ thống và nội dung trang đến dịch vụ Duyệt web an toàn nhằm giúp phát hiện các trang web cũng như ứng dụng nguy hiểm.
-
-      Truy cập vào https://developers.google.com/safe-browsing để biết thêm thông tin về Duyệt web an toàn.</translation>
 <translation id="1583248206450240930">Sử dụng <ph name="PRODUCT_FRAME_NAME" /> theo mặc định</translation>
 <translation id="1599424828227887013">Bật tính năng Cách ly trang web cho nguồn gốc đã chỉ định trên thiết bị Android</translation>
 <translation id="1608755754295374538">Các URL sẽ được cấp quyền truy cập thiết bị ghi âm mà không cần phải hiển thị lời nhắc</translation>
@@ -4388,21 +4383,6 @@ Nếu bạn không đặt chính sách này thì người dùng sẽ có thể t
       Chính sách này chỉ có hiệu lực đối với người dùng chưa liên kết.
       </translation>
 <translation id="7683777542468165012">Làm mới chính sách động</translation>
-<translation id="7684516445147212248">Việc định cấu hình chính sách này sẽ cho phép/không cho phép xác thực môi trường xung quanh đối với các hồ sơ Khách và hồ sơ Ẩn danh trong <ph name="PRODUCT_NAME" />.
-
-      Xác thực môi trường xung quanh là quy trình xác thực http bằng bằng chứng xác thực mặc định nếu bằng chứng xác thực rõ ràng không được cung cấp qua lược đồ thách thức/phản hồi NTLM/Kerberos/Negotiate.
-
-      Việc đặt <ph name="REGULAR_ONLY_OPTION_NAME" /> (giá trị 0) chỉ cho phép xác thực môi trường xung quanh đối với các phiên Thông thường. Các phiên Khách và phiên Ẩn danh sẽ không được phép xác thực môi trường xung quanh.
-
-      Việc đặt <ph name="INCOGNITO_AND_REGULAR_OPTION_NAME" /> (giá trị 1) cho phép xác thực môi trường xung quanh đối với các phiên Thông thường và phiên Ẩn danh. Các phiên Khách sẽ không được phép xác thực môi trường xung quanh.
-
-      Việc đặt <ph name="GUEST_AND_REGULAR_OPTION_NAME" /> (giá trị 2) cho phép xác thực môi trường xung quanh đối với các phiên Khách và phiên Thông thường. Các phiên Ẩn danh sẽ không được phép xác thực môi trường xung quanh.
-
-      Việc đặt <ph name="ALL_OPTION_NAME" /> (giá trị 3) cho phép xác thực môi trường xung quanh đối với tất cả các phiên.
-
-      Lưu ý rằng quy trình xác thực môi trường xung quanh luôn được phép trên các hồ sơ thông thường.
-
-      Nếu bạn không đặt chính sách này, thì các phiên Khách và phiên Ẩn danh sẽ không thể xác thực môi trường xung quanh trong các bản phát hành tương lai của <ph name="PRODUCT_NAME" />, vì các phiên này sẽ không được phép.</translation>
 <translation id="7687943045976362719">Nếu bạn đặt chính sách này, <ph name="PRODUCT_FRAME_NAME" /> sẽ xử lý các loại nội dung được chỉ định.
 
           Nếu bạn không đặt chính sách này, trình kết xuất mặc định sẽ được sử dụng cho tất cả các trang web. (Chính sách <ph name="CHROME_FRAME_RENDERER_SETTINGS_POLICY_NAME" /> có thể dùng để định cấu hình trình kết xuất mặc định).</translation>

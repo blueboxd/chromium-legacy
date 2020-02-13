@@ -45,243 +45,62 @@ class CompositeMatcherTest : public ::testing::Test {
   DISALLOW_COPY_AND_ASSIGN(CompositeMatcherTest);
 };
 
-// Ensure CompositeMatcher respects priority of individual rulesets.
-TEST_F(CompositeMatcherTest, RulesetPriority) {
-  TestRule block_rule = CreateGenericRule();
-  block_rule.condition->url_filter = std::string("google.com");
-  block_rule.id = kMinValidID;
-
-  TestRule redirect_rule_1 = CreateGenericRule();
-  redirect_rule_1.condition->url_filter = std::string("example.com");
-  redirect_rule_1.priority = kMinValidPriority;
-  redirect_rule_1.action->type = std::string("redirect");
-  redirect_rule_1.action->redirect.emplace();
-  redirect_rule_1.action->redirect->url = std::string("http://ruleset1.com");
-  redirect_rule_1.id = kMinValidID + 1;
-
-  // Create the first ruleset matcher. It blocks google.com and redirects
-  // example.com to ruleset1.com.
-  const size_t kSource1ID = 1;
-  const size_t kSource1Priority = 1;
-  std::unique_ptr<RulesetMatcher> matcher_1;
-  ASSERT_TRUE(CreateVerifiedMatcher(
-      {block_rule, redirect_rule_1},
-      CreateTemporarySource(kSource1ID, kSource1Priority), &matcher_1));
-
-  // Now create a second ruleset matcher. It allows google.com and redirects
-  // example.com to ruleset2.com.
-  const size_t kSource2ID = 2;
-  const size_t kSource2Priority = 2;
-  TestRule allow_rule = block_rule;
+// Ensure that the rules in a CompositeMatcher are in the same priority space.
+TEST_F(CompositeMatcherTest, SamePrioritySpace) {
+  // Create the first ruleset matcher. It allows requests to google.com.
+  TestRule allow_rule = CreateGenericRule();
+  allow_rule.id = kMinValidID;
+  allow_rule.condition->url_filter = std::string("google.com");
   allow_rule.action->type = std::string("allow");
-  TestRule redirect_rule_2 = redirect_rule_1;
-  redirect_rule_2.action->redirect.emplace();
-  redirect_rule_2.action->redirect->url = std::string("http://ruleset2.com");
-  std::unique_ptr<RulesetMatcher> matcher_2;
+  allow_rule.priority = 1;
+  std::unique_ptr<RulesetMatcher> allow_matcher;
   ASSERT_TRUE(CreateVerifiedMatcher(
-      {allow_rule, redirect_rule_2},
-      CreateTemporarySource(kSource2ID, kSource2Priority), &matcher_2));
+      {allow_rule}, CreateTemporarySource(/*id*/ 1), &allow_matcher));
 
-  // Create a composite matcher with the two rulesets.
+  // Now create the second matcher. It blocks requests to google.com, with
+  // higher priority than the allow rule.
+  TestRule block_rule = allow_rule;
+  block_rule.action->type = std::string("block");
+  block_rule.priority = 2;
+  std::unique_ptr<RulesetMatcher> block_matcher;
+  ASSERT_TRUE(CreateVerifiedMatcher(
+      {block_rule}, CreateTemporarySource(/*id*/ 2), &block_matcher));
+
+  // Create a composite matcher with both rulesets.
   std::vector<std::unique_ptr<RulesetMatcher>> matchers;
-  matchers.push_back(std::move(matcher_1));
-  matchers.push_back(std::move(matcher_2));
+  matchers.push_back(std::move(allow_matcher));
+  matchers.push_back(std::move(block_matcher));
   auto composite_matcher =
       std::make_unique<CompositeMatcher>(std::move(matchers));
 
-  GURL google_url = GURL("http://google.com");
-  RequestParams google_params;
-  google_params.url = &google_url;
-  google_params.element_type = url_pattern_index::flat::ElementType_SUBDOCUMENT;
-  google_params.is_third_party = false;
+  GURL google_url("http://google.com");
+  RequestParams params;
+  params.url = &google_url;
 
-  // The second ruleset should get more priority.
-  ActionInfo action_info = composite_matcher->GetBeforeRequestAction(
-      google_params, PageAccess::kAllowed);
+  // The block rule should be higher priority.
+  ActionInfo action_info =
+      composite_matcher->GetBeforeRequestAction(params, PageAccess::kAllowed);
   ASSERT_TRUE(action_info.action);
-  EXPECT_EQ(action_info.action->type, RequestAction::Type::ALLOW);
+  EXPECT_EQ(action_info.action->type, RequestAction::Type::BLOCK);
 
-  GURL example_url = GURL("http://example.com");
-  RequestParams example_params;
-  example_params.url = &example_url;
-  example_params.element_type =
-      url_pattern_index::flat::ElementType_SUBDOCUMENT;
-  example_params.is_third_party = false;
-
-  action_info = composite_matcher->GetBeforeRequestAction(example_params,
-                                                          PageAccess::kAllowed);
-  ASSERT_TRUE(action_info.action);
-  EXPECT_EQ(action_info.action->type, RequestAction::Type::REDIRECT);
-  EXPECT_EQ(GURL("http://ruleset2.com"), action_info.action->redirect_url);
-  EXPECT_FALSE(action_info.notify_request_withheld);
-
-  // Now switch the priority of the two rulesets. This requires re-constructing
-  // the two ruleset matchers.
-  matcher_1.reset();
-  matcher_2.reset();
+  // Now swap the priority of the rules, which requires re-creating the ruleset
+  // matchers and composite matcher.
+  allow_rule.priority = 2;
+  block_rule.priority = 1;
+  ASSERT_TRUE(CreateVerifiedMatcher(
+      {allow_rule}, CreateTemporarySource(/*id*/ 1), &allow_matcher));
+  ASSERT_TRUE(CreateVerifiedMatcher(
+      {block_rule}, CreateTemporarySource(/*id*/ 2), &block_matcher));
   matchers.clear();
-  ASSERT_TRUE(CreateVerifiedMatcher(
-      {block_rule, redirect_rule_1},
-      CreateTemporarySource(kSource1ID, kSource2Priority), &matcher_1));
-  ASSERT_TRUE(CreateVerifiedMatcher(
-      {allow_rule, redirect_rule_2},
-      CreateTemporarySource(kSource2ID, kSource1Priority), &matcher_2));
-  matchers.push_back(std::move(matcher_1));
-  matchers.push_back(std::move(matcher_2));
+  matchers.push_back(std::move(allow_matcher));
+  matchers.push_back(std::move(block_matcher));
   composite_matcher = std::make_unique<CompositeMatcher>(std::move(matchers));
 
-  // Reusing request params means that their allow_rule_caches must be cleared.
-  google_params.allow_rule_cache.clear();
-  example_params.allow_rule_cache.clear();
-
-  // The first ruleset should get more priority.
-  action_info = composite_matcher->GetBeforeRequestAction(google_params,
-                                                          PageAccess::kAllowed);
-  ASSERT_TRUE(action_info.action);
-  EXPECT_TRUE(action_info.action->IsBlockOrCollapse());
-
-  action_info = composite_matcher->GetBeforeRequestAction(example_params,
-                                                          PageAccess::kAllowed);
-  ASSERT_TRUE(action_info.action);
-  EXPECT_EQ(action_info.action->type, RequestAction::Type::REDIRECT);
-  EXPECT_EQ(GURL("http://ruleset1.com"), action_info.action->redirect_url);
-  EXPECT_FALSE(action_info.notify_request_withheld);
-}
-
-// Ensure allow rules in a higher priority matcher override redirect
-// and removeHeader rules from lower priority matchers.
-TEST_F(CompositeMatcherTest, AllowRuleOverrides) {
-  TestRule allow_rule_1 = CreateGenericRule();
-  allow_rule_1.id = kMinValidID;
-  allow_rule_1.condition->url_filter = std::string("google.com");
-  allow_rule_1.action->type = std::string("allow");
-
-  TestRule remove_headers_rule_1 = CreateGenericRule();
-  remove_headers_rule_1.id = kMinValidID + 1;
-  remove_headers_rule_1.condition->url_filter = std::string("example.com");
-  remove_headers_rule_1.action->type = std::string("removeHeaders");
-  remove_headers_rule_1.action->remove_headers_list =
-      std::vector<std::string>({"referer", "setCookie"});
-
-  // Create the first ruleset matcher, which allows requests to google.com and
-  // removes headers from requests to example.com.
-  const size_t kSource1ID = 1;
-  const size_t kSource1Priority = 1;
-  std::unique_ptr<RulesetMatcher> matcher_1;
-  ASSERT_TRUE(CreateVerifiedMatcher(
-      {allow_rule_1, remove_headers_rule_1},
-      CreateTemporarySource(kSource1ID, kSource1Priority,
-                            dnr_api::SOURCE_TYPE_MANIFEST),
-      &matcher_1));
-
-  // Now set up rules and the second matcher.
-  TestRule allow_rule_2 = allow_rule_1;
-  allow_rule_2.condition->url_filter = std::string("example.com");
-
-  TestRule redirect_rule_2 = CreateGenericRule();
-  redirect_rule_2.condition->url_filter = std::string("google.com");
-  redirect_rule_2.priority = kMinValidPriority;
-  redirect_rule_2.action->type = std::string("redirect");
-  redirect_rule_2.action->redirect.emplace();
-  redirect_rule_2.action->redirect->url = std::string("http://ruleset2.com");
-  redirect_rule_2.id = kMinValidID + 1;
-
-  // Create a second ruleset matcher, which allows requests to example.com and
-  // redirects requests to google.com.
-  const size_t kSource2ID = 2;
-  const size_t kSource2Priority = 2;
-  std::unique_ptr<RulesetMatcher> matcher_2;
-  ASSERT_TRUE(
-      CreateVerifiedMatcher({allow_rule_2, redirect_rule_2},
-                            CreateTemporarySource(kSource2ID, kSource2Priority,
-                                                  dnr_api::SOURCE_TYPE_DYNAMIC),
-                            &matcher_2));
-
-  // Create a composite matcher with the two rulesets.
-  std::vector<std::unique_ptr<RulesetMatcher>> matchers;
-  matchers.push_back(std::move(matcher_1));
-  matchers.push_back(std::move(matcher_2));
-  auto composite_matcher =
-      std::make_unique<CompositeMatcher>(std::move(matchers));
-
-  // Send a request to google.com which should be redirected.
-  GURL google_url = GURL("http://google.com");
-  RequestParams google_params;
-  google_params.url = &google_url;
-  google_params.element_type = url_pattern_index::flat::ElementType_SUBDOCUMENT;
-  google_params.is_third_party = false;
-
-  // The second ruleset should get more priority.
-  ActionInfo action_info = composite_matcher->GetBeforeRequestAction(
-      google_params, PageAccess::kAllowed);
-  ASSERT_TRUE(action_info.action);
-  EXPECT_EQ(action_info.action->type, RequestAction::Type::REDIRECT);
-  EXPECT_EQ(GURL("http://ruleset2.com"), action_info.action->redirect_url);
-  EXPECT_FALSE(action_info.notify_request_withheld);
-
-  // Send a request to example.com with headers, expect the allow rule to be
-  // matched and the headers to remain.
-  GURL example_url = GURL("http://example.com");
-  RequestParams example_params;
-  example_params.url = &example_url;
-  example_params.element_type =
-      url_pattern_index::flat::ElementType_SUBDOCUMENT;
-  example_params.is_third_party = false;
-
-  // Expect no headers to be removed.
-  std::vector<RequestAction> remove_header_actions;
-  EXPECT_EQ(0u, composite_matcher->GetRemoveHeadersMask(
-                    example_params, 0u, &remove_header_actions));
-  EXPECT_TRUE(remove_header_actions.empty());
-
-  remove_header_actions.clear();
-
-  // Now switch the priority of the two rulesets. This requires re-constructing
-  // the two ruleset matchers.
-  matcher_1.reset();
-  matcher_2.reset();
-  matchers.clear();
-  ASSERT_TRUE(
-      CreateVerifiedMatcher({allow_rule_1, remove_headers_rule_1},
-                            CreateTemporarySource(kSource1ID, kSource2Priority,
-                                                  dnr_api::SOURCE_TYPE_DYNAMIC),
-                            &matcher_1));
-  ASSERT_TRUE(CreateVerifiedMatcher(
-      {allow_rule_2, redirect_rule_2},
-      CreateTemporarySource(kSource2ID, kSource1Priority,
-                            dnr_api::SOURCE_TYPE_MANIFEST),
-      &matcher_2));
-  matchers.push_back(std::move(matcher_1));
-  matchers.push_back(std::move(matcher_2));
-  composite_matcher = std::make_unique<CompositeMatcher>(std::move(matchers));
-
-  // Reusing request params means that their allow_rule_caches must be cleared.
-  google_params.allow_rule_cache.clear();
-  example_params.allow_rule_cache.clear();
-
-  // The first ruleset should get more priority and so the request to google.com
-  // should not be redirected.
-  action_info = composite_matcher->GetBeforeRequestAction(google_params,
-                                                          PageAccess::kAllowed);
+  // The allow rule should now have higher priority.
+  action_info =
+      composite_matcher->GetBeforeRequestAction(params, PageAccess::kAllowed);
   ASSERT_TRUE(action_info.action);
   EXPECT_EQ(action_info.action->type, RequestAction::Type::ALLOW);
-  EXPECT_FALSE(action_info.notify_request_withheld);
-
-  // The request to example.com should now have its headers removed.
-  example_params.allow_rule_cache.clear();
-  uint8_t expected_mask =
-      flat::RemoveHeaderType_referer | flat::RemoveHeaderType_set_cookie;
-  EXPECT_EQ(expected_mask, composite_matcher->GetRemoveHeadersMask(
-                               example_params, 0u, &remove_header_actions));
-  ASSERT_EQ(1u, remove_header_actions.size());
-
-  RequestAction expected_action = CreateRequestActionForTesting(
-      RequestAction::Type::REMOVE_HEADERS, *remove_headers_rule_1.id,
-      kDefaultPriority, dnr_api::SOURCE_TYPE_DYNAMIC);
-  expected_action.request_headers_to_remove.push_back(
-      net::HttpRequestHeaders::kReferer);
-  expected_action.response_headers_to_remove.push_back("set-cookie");
-  EXPECT_EQ(expected_action, remove_header_actions[0]);
 }
 
 // Tests that header masks are correctly attributed to rules for multiple
@@ -300,38 +119,31 @@ TEST_F(CompositeMatcherTest, HeadersMaskForRules) {
       };
 
   TestRule static_rule_1 = create_remove_headers_rule(
-      kMinValidID, "g*", std::vector<std::string>({"referer", "cookie"}));
-
-  TestRule static_rule_2 = create_remove_headers_rule(
-      kMinValidID + 1, "g*", std::vector<std::string>({"setCookie"}));
+      kMinValidID, "google.com", std::vector<std::string>({"cookie"}));
 
   TestRule dynamic_rule_1 = create_remove_headers_rule(
-      kMinValidID, "google.com", std::vector<std::string>({"referer"}));
+      kMinValidID, "/path", std::vector<std::string>({"referer"}));
 
   TestRule dynamic_rule_2 = create_remove_headers_rule(
-      kMinValidID + 2, "google.com", std::vector<std::string>({"setCookie"}));
+      kMinValidID + 1, "/path", std::vector<std::string>({"setCookie"}));
 
   // Create the first ruleset matcher, which matches all requests with "g" in
   // their URL.
   const size_t kSource1ID = 1;
-  const size_t kSource1Priority = 1;
   std::unique_ptr<RulesetMatcher> matcher_1;
   ASSERT_TRUE(CreateVerifiedMatcher(
-      {static_rule_1, static_rule_2},
-      CreateTemporarySource(kSource1ID, kSource1Priority,
-                            dnr_api::SOURCE_TYPE_MANIFEST),
+      {static_rule_1},
+      CreateTemporarySource(kSource1ID, dnr_api::SOURCE_TYPE_MANIFEST),
       &matcher_1));
 
   // Create a second ruleset matcher, which matches all requests from
   // |google.com|.
   const size_t kSource2ID = 2;
-  const size_t kSource2Priority = 2;
   std::unique_ptr<RulesetMatcher> matcher_2;
-  ASSERT_TRUE(
-      CreateVerifiedMatcher({dynamic_rule_1, dynamic_rule_2},
-                            CreateTemporarySource(kSource2ID, kSource2Priority,
-                                                  dnr_api::SOURCE_TYPE_DYNAMIC),
-                            &matcher_2));
+  ASSERT_TRUE(CreateVerifiedMatcher(
+      {dynamic_rule_1, dynamic_rule_2},
+      CreateTemporarySource(kSource2ID, dnr_api::SOURCE_TYPE_DYNAMIC),
+      &matcher_2));
 
   // Create a composite matcher with the two rulesets.
   std::vector<std::unique_ptr<RulesetMatcher>> matchers;
@@ -340,7 +152,7 @@ TEST_F(CompositeMatcherTest, HeadersMaskForRules) {
   auto composite_matcher =
       std::make_unique<CompositeMatcher>(std::move(matchers));
 
-  GURL google_url = GURL("http://google.com");
+  GURL google_url = GURL("http://google.com/path");
   RequestParams google_params;
   google_params.url = &google_url;
   google_params.element_type = url_pattern_index::flat::ElementType_SUBDOCUMENT;
@@ -378,33 +190,6 @@ TEST_F(CompositeMatcherTest, HeadersMaskForRules) {
                            ::testing::Eq(::testing::ByRef(static_action_1)),
                            ::testing::Eq(::testing::ByRef(dynamic_action_1)),
                            ::testing::Eq(::testing::ByRef(dynamic_action_2))));
-
-  GURL gmail_url = GURL("http://gmail.com");
-  RequestParams gmail_params;
-  gmail_params.url = &gmail_url;
-  gmail_params.element_type = url_pattern_index::flat::ElementType_SUBDOCUMENT;
-  gmail_params.is_third_party = false;
-
-  actions.clear();
-  EXPECT_EQ(expected_mask, composite_matcher->GetRemoveHeadersMask(
-                               gmail_params, 0u, &actions));
-
-  static_action_1 = CreateRequestActionForTesting(
-      RequestAction::Type::REMOVE_HEADERS, *static_rule_1.id,
-      dnr_api::SOURCE_TYPE_MANIFEST);
-  static_action_1.request_headers_to_remove.push_back(
-      net::HttpRequestHeaders::kCookie);
-  static_action_1.request_headers_to_remove.push_back(
-      net::HttpRequestHeaders::kReferer);
-
-  RequestAction static_action_2 = CreateRequestActionForTesting(
-      RequestAction::Type::REMOVE_HEADERS, *static_rule_2.id, kDefaultPriority,
-      dnr_api::SOURCE_TYPE_MANIFEST);
-  static_action_2.response_headers_to_remove.push_back("set-cookie");
-
-  EXPECT_THAT(actions, ::testing::UnorderedElementsAre(
-                           ::testing::Eq(::testing::ByRef(static_action_1)),
-                           ::testing::Eq(::testing::ByRef(static_action_2))));
 }
 
 // Ensure CompositeMatcher detects requests to be notified based on the rule
@@ -424,12 +209,9 @@ TEST_F(CompositeMatcherTest, NotifyWithholdFromPageAccess) {
   upgrade_rule.action->type = std::string("upgradeScheme");
   upgrade_rule.id = kMinValidID + 1;
 
-  const size_t kSource1ID = 1;
-  const size_t kSource1Priority = 1;
   std::unique_ptr<RulesetMatcher> matcher_1;
-  ASSERT_TRUE(CreateVerifiedMatcher(
-      {redirect_rule, upgrade_rule},
-      CreateTemporarySource(kSource1ID, kSource1Priority), &matcher_1));
+  ASSERT_TRUE(CreateVerifiedMatcher({redirect_rule, upgrade_rule},
+                                    CreateTemporarySource(), &matcher_1));
 
   // Create a composite matcher.
   std::vector<std::unique_ptr<RulesetMatcher>> matchers;
@@ -520,12 +302,9 @@ TEST_F(CompositeMatcherTest, GetRedirectUrlFromPriority) {
 
   // In terms of priority: ghi > def > abc.
 
-  const size_t kSource1ID = 1;
-  const size_t kSource1Priority = 1;
   std::unique_ptr<RulesetMatcher> matcher_1;
-  ASSERT_TRUE(CreateVerifiedMatcher(
-      {abc_redirect, def_upgrade, ghi_redirect},
-      CreateTemporarySource(kSource1ID, kSource1Priority), &matcher_1));
+  ASSERT_TRUE(CreateVerifiedMatcher({abc_redirect, def_upgrade, ghi_redirect},
+                                    CreateTemporarySource(), &matcher_1));
 
   // Create a composite matcher.
   std::vector<std::unique_ptr<RulesetMatcher>> matchers;

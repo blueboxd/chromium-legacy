@@ -85,6 +85,16 @@ class OutputStream final : public media::mojom::AudioOutputStream,
   void PollAudioLevel();
   bool IsAudible();
 
+  // Internal helper method for sending logs related  to this class to clients
+  // registered to receive these logs. Prepends each log with "audio::OS" to
+  // point out its origin. Compare with OutputController::EventHandler::OnLog()
+  // which only will be called by the |controller_| object. These logs are
+  // prepended with "AOC::" where AOC corresponds to AudioOutputController.
+  void SendLogMessage(const char* format, ...) PRINTF_FORMAT(2, 3);
+  base::UnguessableToken processing_id() const {
+    return controller_.processing_id();
+  }
+
   SEQUENCE_CHECKER(owning_sequence_);
 
   base::CancelableSyncSocket foreign_socket_;

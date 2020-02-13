@@ -1150,7 +1150,7 @@ TEST_P(DiscardableImageMapColorSpaceTest, ColorSpace) {
   display_list->GenerateDiscardableImagesMetadata();
   const DiscardableImageMap& image_map = display_list->discardable_image_map();
 
-  EXPECT_FALSE(image_map.contains_non_srgb_images());
+  EXPECT_TRUE(image_map.contains_only_srgb_images());
 
   content_layer_client.add_draw_image(discardable_image, gfx::Point(0, 0),
                                       PaintFlags());
@@ -1160,11 +1160,11 @@ TEST_P(DiscardableImageMapColorSpaceTest, ColorSpace) {
   const DiscardableImageMap& image_map2 = display_list->discardable_image_map();
 
   if (!image_color_space.IsValid())
-    EXPECT_FALSE(image_map2.contains_non_srgb_images());
+    EXPECT_TRUE(image_map2.contains_only_srgb_images());
   else if (image_color_space == gfx::ColorSpace::CreateSRGB())
-    EXPECT_FALSE(image_map2.contains_non_srgb_images());
+    EXPECT_TRUE(image_map2.contains_only_srgb_images());
   else
-    EXPECT_TRUE(image_map2.contains_non_srgb_images());
+    EXPECT_FALSE(image_map2.contains_only_srgb_images());
 }
 
 gfx::ColorSpace test_color_spaces[] = {

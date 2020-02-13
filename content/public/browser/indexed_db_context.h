@@ -41,12 +41,6 @@ class IndexedDBContext
   virtual void CopyOriginData(const url::Origin& origin,
                               IndexedDBContext* dest_context) = 0;
 
-  // Get the file name of the local storage file for the given origin.
-  virtual base::FilePath GetFilePathForTesting(const url::Origin& origin) = 0;
-
-  // Forget the origins/sizes read from disk.
-  virtual void ResetCachesForTesting() = 0;
-
  protected:
   friend class base::RefCountedDeleteOnSequence<IndexedDBContext>;
   friend class base::DeleteHelper<IndexedDBContext>;

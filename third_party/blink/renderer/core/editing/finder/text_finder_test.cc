@@ -45,10 +45,10 @@ class TextFinderTest : public testing::Test {
   Document& GetDocument() const;
   TextFinder& GetTextFinder() const;
 
-  static WebFloatRect FindInPageRect(Node* start_container,
-                                     int start_offset,
-                                     Node* end_container,
-                                     int end_offset);
+  static gfx::RectF FindInPageRect(Node* start_container,
+                                   int start_offset,
+                                   Node* end_container,
+                                   int end_offset);
 
  private:
   frame_test_helpers::WebViewHelper web_view_helper_;
@@ -64,14 +64,14 @@ TextFinder& TextFinderTest::GetTextFinder() const {
   return *text_finder_;
 }
 
-WebFloatRect TextFinderTest::FindInPageRect(Node* start_container,
-                                            int start_offset,
-                                            Node* end_container,
-                                            int end_offset) {
+gfx::RectF TextFinderTest::FindInPageRect(Node* start_container,
+                                          int start_offset,
+                                          Node* end_container,
+                                          int end_offset) {
   const Position start_position(start_container, start_offset);
   const Position end_position(end_container, end_offset);
   const EphemeralRange range(start_position, end_position);
-  return WebFloatRect(FindInPageRectFromRange(range));
+  return gfx::RectF(FindInPageRectFromRange(range));
 }
 
 TEST_F(TextFinderTest, FindTextSimple) {
@@ -324,7 +324,7 @@ TEST_F(TextFinderTest, ScopeTextMatchesSimple) {
                                             *find_options);
 
   EXPECT_EQ(2, GetTextFinder().TotalMatchCount());
-  WebVector<WebFloatRect> match_rects = GetTextFinder().FindMatchRects();
+  WebVector<gfx::RectF> match_rects = GetTextFinder().FindMatchRects();
   ASSERT_EQ(2u, match_rects.size());
   EXPECT_EQ(FindInPageRect(text_node, 4, text_node, 10), match_rects[0]);
   EXPECT_EQ(FindInPageRect(text_node, 14, text_node, 20), match_rects[1]);
@@ -361,7 +361,7 @@ TEST_F(TextFinderTest, ScopeTextMatchesRepeated) {
 
   // Only searchText2 should be highlighted.
   EXPECT_EQ(2, GetTextFinder().TotalMatchCount());
-  WebVector<WebFloatRect> match_rects = GetTextFinder().FindMatchRects();
+  WebVector<gfx::RectF> match_rects = GetTextFinder().FindMatchRects();
   ASSERT_EQ(2u, match_rects.size());
   EXPECT_EQ(FindInPageRect(text_node, 4, text_node, 10), match_rects[0]);
   EXPECT_EQ(FindInPageRect(text_node, 14, text_node, 20), match_rects[1]);
@@ -392,7 +392,7 @@ TEST_F(TextFinderTest, ScopeTextMatchesWithShadowDOM) {
   // so in this case the matches will be returned in the order of
   // <i> -> <u> -> <b>.
   EXPECT_EQ(3, GetTextFinder().TotalMatchCount());
-  WebVector<WebFloatRect> match_rects = GetTextFinder().FindMatchRects();
+  WebVector<gfx::RectF> match_rects = GetTextFinder().FindMatchRects();
   ASSERT_EQ(3u, match_rects.size());
   EXPECT_EQ(FindInPageRect(text_in_i_element, 0, text_in_i_element, 3),
             match_rects[0]);
@@ -419,7 +419,7 @@ TEST_F(TextFinderTest, ScopeRepeatPatternTextMatches) {
                                             *find_options);
 
   EXPECT_EQ(2, GetTextFinder().TotalMatchCount());
-  WebVector<WebFloatRect> match_rects = GetTextFinder().FindMatchRects();
+  WebVector<gfx::RectF> match_rects = GetTextFinder().FindMatchRects();
   ASSERT_EQ(2u, match_rects.size());
   EXPECT_EQ(FindInPageRect(text_node, 0, text_node, 5), match_rects[0]);
   EXPECT_EQ(FindInPageRect(text_node, 6, text_node, 11), match_rects[1]);
@@ -443,7 +443,7 @@ TEST_F(TextFinderTest, OverlappingMatches) {
 
   // We shouldn't find overlapped matches.
   EXPECT_EQ(1, GetTextFinder().TotalMatchCount());
-  WebVector<WebFloatRect> match_rects = GetTextFinder().FindMatchRects();
+  WebVector<gfx::RectF> match_rects = GetTextFinder().FindMatchRects();
   ASSERT_EQ(1u, match_rects.size());
   EXPECT_EQ(FindInPageRect(text_node, 1, text_node, 4), match_rects[0]);
 }
@@ -465,7 +465,7 @@ TEST_F(TextFinderTest, SequentialMatches) {
                                             *find_options);
 
   EXPECT_EQ(3, GetTextFinder().TotalMatchCount());
-  WebVector<WebFloatRect> match_rects = GetTextFinder().FindMatchRects();
+  WebVector<gfx::RectF> match_rects = GetTextFinder().FindMatchRects();
   ASSERT_EQ(3u, match_rects.size());
   EXPECT_EQ(FindInPageRect(text_node, 0, text_node, 2), match_rects[0]);
   EXPECT_EQ(FindInPageRect(text_node, 2, text_node, 4), match_rects[1]);
@@ -519,7 +519,7 @@ TEST_F(TextFinderTest, FindTextJavaScriptUpdatesDOM) {
 
   EXPECT_EQ(2, GetTextFinder().TotalMatchCount());
 
-  WebVector<WebFloatRect> match_rects = GetTextFinder().FindMatchRects();
+  WebVector<gfx::RectF> match_rects = GetTextFinder().FindMatchRects();
   ASSERT_EQ(2u, match_rects.size());
   Node* text_in_b_element = GetDocument().body()->firstChild()->firstChild();
   Node* text_in_i_element = GetDocument().body()->lastChild()->firstChild();
@@ -573,7 +573,7 @@ TEST_F(TextFinderTest, FindTextJavaScriptUpdatesDOMAfterNoMatches) {
 
   EXPECT_EQ(1, GetTextFinder().TotalMatchCount());
 
-  WebVector<WebFloatRect> match_rects = GetTextFinder().FindMatchRects();
+  WebVector<gfx::RectF> match_rects = GetTextFinder().FindMatchRects();
   ASSERT_EQ(1u, match_rects.size());
   Node* text_in_i_element = GetDocument().body()->lastChild()->firstChild();
   EXPECT_EQ(FindInPageRect(text_in_i_element, 2, text_in_i_element, 8),

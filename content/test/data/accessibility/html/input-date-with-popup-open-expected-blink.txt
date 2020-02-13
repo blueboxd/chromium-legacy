@@ -18,7 +18,7 @@ rootWebArea
 ++++++++++++++inlineTextBox name='2008'
 ++++++popUpButton name='Show date picker'
 ++++++rootWebArea
-++++++++genericContainer ignored
+++++++++genericContainer
 ++++++++++genericContainer
 ++++++++++++genericContainer
 ++++++++++++++genericContainer ignored

@@ -49,7 +49,6 @@ namespace device {
 
 class ArCore;
 class ArCoreFactory;
-struct ArCoreHitTestRequest;
 class ArImageTransport;
 
 using ArCoreGlCreateSessionCallback = base::OnceCallback<void(
@@ -110,10 +109,6 @@ class ArCoreGl : public mojom::XRFrameDataProvider,
                          const gfx::Size& source_size) override;
 
   // XREnvironmentIntegrationProvider
-  void RequestHitTest(
-      mojom::XRRayPtr,
-      mojom::XREnvironmentIntegrationProvider::RequestHitTestCallback) override;
-
   void SubscribeToHitTest(
       mojom::XRNativeOriginInformationPtr native_origin_information,
       const std::vector<mojom::EntityTypeForHitTest>& entity_types,
@@ -230,8 +225,6 @@ class ArCoreGl : public mojom::XRFrameDataProvider,
   bool restrict_frame_data_ = false;
 
   FPSMeter fps_meter_;
-
-  std::vector<std::unique_ptr<ArCoreHitTestRequest>> hit_test_requests_;
 
   mojo::Receiver<mojom::XRFrameDataProvider> frame_data_receiver_{this};
   mojo::Receiver<mojom::XRSessionController> session_controller_receiver_{this};

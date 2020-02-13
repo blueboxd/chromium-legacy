@@ -689,6 +689,7 @@
 <translation id="1926339101652878330">Estas opcións de configuración están controladas pola política empresarial. Ponte en contacto co administrador para obter máis información.</translation>
 <translation id="1927632033341042996">Dedo <ph name="NEW_FINGER_NUMBER" /></translation>
 <translation id="1928202201223835302">Introducir PIN antigo</translation>
+<translation id="1928696683969751773">Actualizacións</translation>
 <translation id="1929546189971853037">Ler o historial de navegación en todos os dispositivos en que inicies sesión</translation>
 <translation id="1931152874660185993">Non se instalou ningún compoñente.</translation>
 <translation id="1932098463447129402">Posterior a</translation>
@@ -1888,7 +1889,6 @@ Instala a aplicación Family Link no teu dispositivo e poderás xestionar a conf
 <translation id="3603177256297531067">Non se puido traducir esta páxina</translation>
 <translation id="3603622770190368340">Obter certificado de rede</translation>
 <translation id="3605780360466892872">Home de negocios</translation>
-<translation id="3608436266458100337">Modo de lector</translation>
 <translation id="3608576286259426129">Vista previa da imaxe do usuario</translation>
 <translation id="3610369246614755442">O ventilador da base necesita unha reparación</translation>
 <translation id="361106536627977100">Datos de Flash</translation>
@@ -2391,7 +2391,6 @@ Instala a aplicación Family Link no teu dispositivo e poderás xestionar a conf
 <translation id="4285418559658561636">Actualizar contrasinal</translation>
 <translation id="4285498937028063278">Deixar de fixar</translation>
 <translation id="428565720843367874">O software antivirus fallou inesperadamente durante a exploración deste ficheiro.</translation>
-<translation id="4287502004382794929">Non tes licenzas de software suficientes para inscribir este dispositivo. Ponte en contacto co departamento de vendas para comprar máis. Se cres que esta mensaxe apareceu por erro, ponte en contacto co servizo de asistencia.</translation>
 <translation id="4289540628985791613">Descrición xeral</translation>
 <translation id="4295072614469448764">A aplicación está dispoñible no terminal. Tamén pode haber unha icona no menú de aplicacións.</translation>
 <translation id="4295979599050707005">Volve iniciar sesión para confirmar que se pode utilizar a túa conta <ph name="USER_EMAIL" /> cos sitios web, aplicacións e extensións en Chrome e Google Play. Tamén podes quitar esta conta. <ph name="LINK_BEGIN" />Máis información<ph name="LINK_END" /></translation>
@@ -2871,6 +2870,7 @@ Instala a aplicación Family Link no teu dispositivo e poderás xestionar a conf
 <translation id="4998430619171209993">Si</translation>
 <translation id="4998873842614926205">Confirmar cambios</translation>
 <translation id="5000922062037820727">Bloqueado (recomendado)</translation>
+<translation id="5005498671520578047">Copiar contrasinal</translation>
 <translation id="5007392906805964215">Revisar</translation>
 <translation id="5008936837313706385">Nome da actividade</translation>
 <translation id="5010043101506446253">Autoridade de certificación</translation>
@@ -4653,7 +4653,6 @@ Instala a aplicación Family Link no teu dispositivo e poderás xestionar a conf
 <translation id="7521387064766892559">JavaScript</translation>
 <translation id="7522255036471229694">Di "Ok Google"</translation>
 <translation id="7525067979554623046">Crear</translation>
-<translation id="7529411698175791732">Comproba a túa conexión a Internet. Se o problema continúa, tenta pechar sesión e volver iniciala.</translation>
 <translation id="7530016656428373557">Índice de descarga en watts</translation>
 <translation id="7531779363494549572">Accede a Configuración &gt; Aplicacións e notificacións &gt; Notificacións.</translation>
 <translation id="7532009420053991888">A aplicación <ph name="LINUX_APP_NAME" /> non responde. Para pechala, selecciona Forzar peche.</translation>
@@ -5794,7 +5793,6 @@ Mantén o ficheiro de clave nun lugar seguro, xa que o precisarás para crear no
 <translation id="9050666287014529139">Frase de acceso</translation>
 <translation id="9052208328806230490">Rexistraches as túas impresoras con <ph name="CLOUD_PRINT_NAME" /> utilizando a conta <ph name="EMAIL" /></translation>
 <translation id="9052404922357793350">Continuar bloqueando</translation>
-<translation id="9053091947372579468">O dispositivo inclúe unha licenza de Chrome, pero o teu nome de usuario non está asociado cunha consola de administración. Crea unha conta nesta última para continuar coa inscrición. Nota: Se decides utilizar o teu propio dominio para crear unha nova conta da consola de administración, tamén debes verificar o dominio despois do rexistro. https://g.co/ChromeEnterpriseAccount (dispoñible en castelán)</translation>
 <translation id="9053563360605707198">Imprimir nas dúas caras</translation>
 <translation id="9053893665344928494">Lembrar a miña elección</translation>
 <translation id="9055636786322918818">Forza a encriptación RC4. Esta opción aumenta o risco, porque as cifraxes de RC4 non son seguras.</translation>

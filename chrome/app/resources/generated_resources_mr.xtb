@@ -689,6 +689,7 @@
 <translation id="1926339101652878330">या सेटिंग्ज संस्थेच्या धोरणानुसार नियंत्रित केल्या जातात. कृपया अधिक माहितीसाठी तुमच्या ॲडमिनिस्ट्रेटरशी संपर्क साधा.</translation>
 <translation id="1927632033341042996">फिंगर <ph name="NEW_FINGER_NUMBER" /></translation>
 <translation id="1928202201223835302">जुना पिन प्रविष्‍ट करा</translation>
+<translation id="1928696683969751773">अपडेट</translation>
 <translation id="1929546189971853037">आपल्या सर्व साइन इन केलेल्या डिव्हाइसेसवर तुमचा ब्राउझिंग इतिहास वाचा</translation>
 <translation id="1931152874660185993">कोणतेही घटक इंस्टॉल केले नाहीत.</translation>
 <translation id="1932098463447129402">पूर्वी नाही</translation>
@@ -952,7 +953,7 @@
 <translation id="2299734369537008228">स्लायडर: <ph name="MIN_LABEL" /> ते <ph name="MAX_LABEL" /></translation>
 <translation id="2300383962156589922"><ph name="APP_NAME" /> ला कस्टमाइझ आणि नियंत्रित करा</translation>
 <translation id="2301382460326681002">एक्स्टेंशन मूळ डिरेक्टरी अवैध आहे.</translation>
-<translation id="2302444155926798584">Plugin VM अनइंस्टॉल केल्या गेल्या आहेत</translation>
+<translation id="2302444155926798584">Plugin VM अनइंस्टॉल केली गेली आहे</translation>
 <translation id="23030561267973084">"<ph name="EXTENSION_NAME" />" नी अतिरिक्त परवानग्यांची विनंती केली आहे.</translation>
 <translation id="23055578400314116">एखादे वापरकर्तानाव निवडा</translation>
 <translation id="2307462900900812319">नेटवर्क कॉन्फिगर करा</translation>
@@ -1889,7 +1890,6 @@
 <translation id="3603177256297531067">या पेजचे भाषांतर करता आले नाही</translation>
 <translation id="3603622770190368340">नेटवर्क सर्टिफिकेट प्राप्त करा</translation>
 <translation id="3605780360466892872">बटनडाउन</translation>
-<translation id="3608436266458100337">वाचक मोड</translation>
 <translation id="3608576286259426129">वापरकर्ता इमेज पूर्वावलोकन</translation>
 <translation id="3610369246614755442">डॉक फॅनला सेवा हव्या आहेत</translation>
 <translation id="361106536627977100">फ्लॅश डेटा</translation>
@@ -2390,7 +2390,6 @@
 <translation id="4285418559658561636">पासवर्ड अपडेट करा</translation>
 <translation id="4285498937028063278">अनपिन</translation>
 <translation id="428565720843367874">या फाईलचे स्कॅनिंग करताना अँटी-व्हायरस सॉफ्टवेअर अनपेक्षितपणे अयशस्वी झाले.</translation>
-<translation id="4287502004382794929">तुमच्याकडे या डिव्हाइसची नोंदणी करण्यासाठी पुरेसा सॉफ्टवेअर परवाना नाही. कृपया आणखी खरेदी करण्यासाठी विक्रीशी संपर्क साधावा. हा संदेश एररमुळे दिसत असल्याचा तुम्हाला विश्वास असल्यास, कृपया सपोर्टाशी संपर्क साधा.</translation>
 <translation id="4289540628985791613">विहंगावलोकन</translation>
 <translation id="4295072614469448764">तुमच्या टर्मिनलमध्ये अ‍ॅप उपलब्ध आहे. तुमच्या लाँचरमध्ये आयकन देखील असू शकतो.</translation>
 <translation id="4295979599050707005">तुमचे <ph name="USER_EMAIL" /> खाते Chrome आणि Google Play मध्ये वेबसाइट, अ‍ॅप्स व एक्स्टेंशनसह वापरले जाऊ शकते याची खात्री करण्यासाठी कृपया पुन्हा साइन इन करा. तुम्ही कदाचित हे खाते काढून देखील टाकू शकता. <ph name="LINK_BEGIN" />अधिक जाणून घ्या<ph name="LINK_END" /></translation>
@@ -2870,6 +2869,7 @@
 <translation id="4998430619171209993">सुरू</translation>
 <translation id="4998873842614926205">बदलांची पुष्‍टी करा</translation>
 <translation id="5000922062037820727">अवरोधित केली (शिफारस केलेले)</translation>
+<translation id="5005498671520578047">पासवर्ड कॉपी करा</translation>
 <translation id="5007392906805964215">पुनरावलोकन करा</translation>
 <translation id="5008936837313706385">ॲक्टिव्हिटीचे नाव</translation>
 <translation id="5010043101506446253">सर्टिफिकेट अधिकारी</translation>
@@ -4653,7 +4653,6 @@
 <translation id="7521387064766892559">JavaScript</translation>
 <translation id="7522255036471229694">"Ok Google" म्हणा</translation>
 <translation id="7525067979554623046">तयार करा</translation>
-<translation id="7529411698175791732">तुमचे इंटरनेट कनेक्शन तपासा. समस्या कायम राहिल्यास, साइन आउट करून आणि पुन्हा साइन इन करून पहा.</translation>
 <translation id="7530016656428373557">डिस्चार्ज रेट वॉट्स मध्ये</translation>
 <translation id="7531779363494549572">सेटिंग्‍ज &gt; ॲप्‍स आणि सूचना &gt; सूचना वर जा.</translation>
 <translation id="7532009420053991888"><ph name="LINUX_APP_NAME" /> प्रतिसाद देत नाही. ॲप बंद करण्यासाठी "सक्तीने बंद करा" निवडा.</translation>
@@ -5794,7 +5793,6 @@ https://www.chromium.org/chromium-os/how-tos-and-troubleshooting/debugging-featu
 <translation id="9050666287014529139">सांकेतिक पासफ्रेझ</translation>
 <translation id="9052208328806230490">तुम्ही तुमचे मुद्रक <ph name="EMAIL" /> खाते वापरून <ph name="CLOUD_PRINT_NAME" /> सह नोंदणीकृत केले आहेत</translation>
 <translation id="9052404922357793350">ब्लॉक करणे सुरू ठेवा</translation>
-<translation id="9053091947372579468">तुमच्या डिव्हाइसमध्ये Chrome परवाना समाविष्ट आहे, परंतु तुमचे वापरकर्तानाव ॲडमिन कन्सोलशी संलग्न नाही. नोंदवणे सुरू ठेवण्यासाठी कृपया ॲडमिन कन्सोल खाते तयार करा. टीप: नवीन ॲडमिन कन्सोल खाते तयार करण्यासाठी तुम्ही तुमचे स्वतःचे डोमेन निवडल्यास, साइन अपनंतर तुम्ही संपूर्ण डोमेन पडताळणी करणेदेखील आवश्यक आहे. https://g.co/ChromeEnterpriseAccount</translation>
 <translation id="9053563360605707198">दोन्ही बाजूंवर प्रिंट करा</translation>
 <translation id="9053893665344928494">माझी निवड लक्षात ठेवा</translation>
 <translation id="9055636786322918818">RC4 एंक्रिप्शन लागू करा. हा पर्याय वापरल्याने तुमचा धोका वाढतो, कारण RC4 सायफर असुरक्षित आहेत.</translation>

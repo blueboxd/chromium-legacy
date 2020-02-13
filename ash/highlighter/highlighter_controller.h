@@ -8,7 +8,7 @@
 #include <memory>
 
 #include "ash/ash_export.h"
-#include "ash/components/fast_ink/fast_ink_pointer_controller.h"
+#include "ash/fast_ink/fast_ink_pointer_controller.h"
 #include "base/callback.h"
 #include "base/memory/weak_ptr.h"
 #include "base/observer_list.h"

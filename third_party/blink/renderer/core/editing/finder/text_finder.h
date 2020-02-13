@@ -46,7 +46,6 @@ class LocalFrame;
 class Range;
 class WebLocalFrameImpl;
 class WebString;
-struct WebFloatRect;
 
 class CORE_EXPORT TextFinder final : public GarbageCollected<TextFinder> {
  public:
@@ -60,8 +59,8 @@ class CORE_EXPORT TextFinder final : public GarbageCollected<TextFinder> {
   void StopFindingAndClearSelection();
   void IncreaseMatchCount(int identifier, int count);
   int FindMatchMarkersVersion() const { return find_match_markers_version_; }
-  WebFloatRect ActiveFindMatchRect();
-  Vector<WebFloatRect> FindMatchRects();
+  gfx::RectF ActiveFindMatchRect();
+  Vector<gfx::RectF> FindMatchRects();
   int SelectNearestFindMatch(const gfx::PointF&, gfx::Rect* selection_rect);
 
   // Starts brand new scoping request: resets the scoping state and

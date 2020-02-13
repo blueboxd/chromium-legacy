@@ -687,6 +687,7 @@
 <translation id="1926339101652878330">Këto cilësime kontrollohen nga politika e ndërmarrjes. Kontakto me administratorin për më shumë informacione.</translation>
 <translation id="1927632033341042996">Gishti <ph name="NEW_FINGER_NUMBER" /></translation>
 <translation id="1928202201223835302">Fut kodin e vjetër PIN</translation>
+<translation id="1928696683969751773">Përditësimet</translation>
 <translation id="1929546189971853037">Lexo historikun e shfletuesit në të gjitha pajisjet ku je identifikuar</translation>
 <translation id="1931152874660185993">Nuk ka asnjë përbërës të instaluar.</translation>
 <translation id="1932098463447129402">Jo më parë</translation>
@@ -1886,7 +1887,6 @@ Cilësimet e kësaj llogarie mund t'i menaxhosh duke instaluar aplikacionin Fami
 <translation id="3603177256297531067">Kjo faqe nuk mund të përkthehej</translation>
 <translation id="3603622770190368340">Merr certifikatën e rrjetit</translation>
 <translation id="3605780360466892872">I kollarisur</translation>
-<translation id="3608436266458100337">Modaliteti "lexues"</translation>
 <translation id="3608576286259426129">Shikim paraprak i imazhit të përdoruesit</translation>
 <translation id="3610369246614755442">Ventilatori i stacionit ka nevojë për shërbim</translation>
 <translation id="361106536627977100">Të dhënat Flash</translation>
@@ -2389,7 +2389,6 @@ Cilësimet e kësaj llogarie mund t'i menaxhosh duke instaluar aplikacionin Fami
 <translation id="4285418559658561636">Përditëso fjalëkalimin</translation>
 <translation id="4285498937028063278">Zhgozhdo</translation>
 <translation id="428565720843367874">Softueri i antivirusit dështoi papritur gjatë skanimit të këtij skedari.</translation>
-<translation id="4287502004382794929">Nuk ke licenca të mjaftueshme të softuerit për të regjistruar këtë pajisje. Kontakto me ekipin e shitjeve për të blerë më shumë. Nëse beson se po e shikon gabimisht këtë mesazh, kontakto me ekipin e mbështetjes.</translation>
 <translation id="4289540628985791613">Përmbledhje</translation>
 <translation id="4295072614469448764">Aplikacioni ofrohet në terminalin tënd. Mund dhe të ketë një ikonë te "Nisësi" yt.</translation>
 <translation id="4295979599050707005">Identifikohu përsëri për të konfirmuar se llogaria jote <ph name="USER_EMAIL" /> mund të përdoret me sajtet e uebit, aplikacionet dhe shtesat në Chrome dhe në Google Play. Gjithashtu edhe mund ta heqësh këtë llogari. <ph name="LINK_BEGIN" />Mëso më shumë<ph name="LINK_END" /></translation>
@@ -2869,6 +2868,7 @@ Cilësimet e kësaj llogarie mund t'i menaxhosh duke instaluar aplikacionin Fami
 <translation id="4998430619171209993">Aktiv</translation>
 <translation id="4998873842614926205">Konfirmo ndryshimet</translation>
 <translation id="5000922062037820727">Bllokuar (rekomandohet)</translation>
+<translation id="5005498671520578047">Kopjo fjalëkalimin</translation>
 <translation id="5007392906805964215">Rishiko</translation>
 <translation id="5008936837313706385">Emri i aktivitetit</translation>
 <translation id="5010043101506446253">Autoriteti i certifikatës</translation>
@@ -4651,7 +4651,6 @@ Cilësimet e kësaj llogarie mund t'i menaxhosh duke instaluar aplikacionin Fami
 <translation id="7521387064766892559">JavaScript</translation>
 <translation id="7522255036471229694">Thuaj "Ok Google"</translation>
 <translation id="7525067979554623046">Krijo</translation>
-<translation id="7529411698175791732">Kontrollo lidhjen e internetit. Nëse problemi vazhdon, provo të dalësh dhe të identifikohesh përsëri.</translation>
 <translation id="7530016656428373557">Norma e shkarkimit në vat</translation>
 <translation id="7531779363494549572">Shko te Cilësimet &gt; Aplikacionet dhe njoftimet &gt; Njoftimet.</translation>
 <translation id="7532009420053991888"><ph name="LINUX_APP_NAME" /> nuk po përgjigjet. Zgjidh "Ndalo me forcë" për ta mbyllur aplikacionin.</translation>
@@ -5791,7 +5790,6 @@ Mbaje skedarin e çelësit tënd në një vend të sigurt. Do të të duhet për
 <translation id="9050666287014529139">Shprehje kalimi</translation>
 <translation id="9052208328806230490">Ke regjistruar printerët e tu me <ph name="CLOUD_PRINT_NAME" /> duke përdorur llogarinë <ph name="EMAIL" /></translation>
 <translation id="9052404922357793350">Vazhdo bllokimin</translation>
-<translation id="9053091947372579468">Pajisja jote përfshin një licencë të Chrome, por emri yt i përdoruesit nuk është i lidhur me një konsolë administratori. Krijo një llogari të konsolës së administratorit për të vazhduar me regjistrimin. Shënim. Nëse zgjedh të përdorësh domenin tënd për të krijuar një llogari të re të konsolës së administratorit, duhet të përfundosh po ashtu verifikimin e domenit pas regjistrimit. https://g.co/ChromeEnterpriseAccount</translation>
 <translation id="9053563360605707198">Printo në të dyja anët</translation>
 <translation id="9053893665344928494">Kujtoje zgjedhjen time</translation>
 <translation id="9055636786322918818">Zbato enkriptimin RC4. Përdorimi i këtij opsioni rrit rrezikun për ty, pasi shifrat RC4 nuk janë të sigurta.</translation>

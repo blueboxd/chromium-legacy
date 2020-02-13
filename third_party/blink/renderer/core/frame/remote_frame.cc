@@ -47,8 +47,8 @@
 namespace blink {
 
 namespace {
-FloatRect DeNormalizeRect(const WebFloatRect& normalized, const IntRect& base) {
-  FloatRect result = normalized;
+FloatRect DeNormalizeRect(const gfx::RectF& normalized, const IntRect& base) {
+  FloatRect result(normalized);
   result.Scale(base.Width(), base.Height());
   result.MoveBy(FloatPoint(base.Location()));
   return result;
@@ -531,9 +531,8 @@ void RemoteFrame::IntrinsicSizingInfoOfChildChanged(
   // C++ Blink type and use the Mojo type everywhere or typemap the
   // Mojo type to the pre-existing native C++ Blink type.
   IntrinsicSizingInfo sizing_info;
-  sizing_info.size = FloatSize(info->size->width, info->size->height);
-  sizing_info.aspect_ratio =
-      FloatSize(info->aspect_ratio->width, info->aspect_ratio->height);
+  sizing_info.size = FloatSize(info->size);
+  sizing_info.aspect_ratio = FloatSize(info->aspect_ratio);
   sizing_info.has_width = info->has_width;
   sizing_info.has_height = info->has_height;
   View()->SetIntrinsicSizeInfo(sizing_info);

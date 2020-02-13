@@ -554,6 +554,15 @@ void FrameFetchContext::AddClientHintsIfNecessary(
         blink::kClientHintsHeaderMapping[static_cast<size_t>(
             mojom::WebClientHintsType::kUA)],
         AddQuotes(result.ToString().Ascii()));
+
+    // We also send Sec-CH-UA-Mobile to all hints. It is a one-bit header
+    // identifying if the browser has opted for a "mobile" experience
+    // Formatted using the "sh-boolean" format from:
+    // https://httpwg.org/http-extensions/draft-ietf-httpbis-header-structure.html#boolean
+    request.SetHttpHeaderField(
+        blink::kClientHintsHeaderMapping[static_cast<size_t>(
+            mojom::WebClientHintsType::kUAMobile)],
+        ua.mobile ? "?1" : "?0");
   }
 
   // If the frame is detached, then don't send any hints other than UA.
@@ -754,19 +763,6 @@ void FrameFetchContext::AddClientHintsIfNecessary(
         blink::kClientHintsHeaderMapping[static_cast<size_t>(
             mojom::WebClientHintsType::kUAModel)],
         AddQuotes(ua.model));
-  }
-
-  if ((can_always_send_hints ||
-       (RuntimeEnabledFeatures::FeaturePolicyForClientHintsEnabled() &&
-        policy->IsFeatureEnabledForOrigin(
-            mojom::blink::FeaturePolicyFeature::kClientHintUAMobile,
-            resource_origin))) &&
-      ShouldSendClientHint(mojom::WebClientHintsType::kUAMobile,
-                           hints_preferences, enabled_hints)) {
-    request.SetHttpHeaderField(
-        blink::kClientHintsHeaderMapping[static_cast<size_t>(
-            mojom::WebClientHintsType::kUAMobile)],
-        ua.mobile ? "?1" : "?0");
   }
 }
 

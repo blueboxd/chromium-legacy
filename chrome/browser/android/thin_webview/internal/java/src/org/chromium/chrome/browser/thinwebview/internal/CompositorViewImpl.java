@@ -7,7 +7,6 @@ package org.chromium.chrome.browser.thinwebview.internal;
 import android.content.Context;
 import android.graphics.PixelFormat;
 import android.graphics.SurfaceTexture;
-import android.os.Build;
 import android.view.Surface;
 import android.view.SurfaceHolder;
 import android.view.SurfaceView;
@@ -162,7 +161,9 @@ public class CompositorViewImpl implements CompositorView {
 
     private boolean useSurfaceView() {
         if (mViewConstraints.supportsOpacity) return false;
-        return Build.VERSION.SDK_INT >= Build.VERSION_CODES.N;
+        // TODO(shaktisahu): Use TextureView for M81. Revert back in M82 when surface control is
+        // fully enabled in Q (crbug/1031636).
+        return false;
     }
 
     @NativeMethods

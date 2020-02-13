@@ -13,6 +13,7 @@
 
 #include "base/atomic_ref_count.h"
 #include "base/callback.h"
+#include "base/compiler_specific.h"
 #include "base/containers/flat_set.h"
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
@@ -103,6 +104,16 @@ class OutputController : public media::AudioOutputStream::AudioSourceCallback,
     virtual void Close() = 0;
   };
 
+  // Internal state of the source.
+  enum State {
+    kEmpty,
+    kCreated,
+    kPlaying,
+    kPaused,
+    kClosed,
+    kError,
+  };
+
   // |audio_manager| and |handler| must outlive OutputController.  The
   // |output_device_id| can be either empty (default device) or specify a
   // specific hardware device for audio output.
@@ -177,17 +188,9 @@ class OutputController : public media::AudioOutputStream::AudioSourceCallback,
   // audio_power_monitor.h for usage.  This may be called on any thread.
   std::pair<float, bool> ReadCurrentPowerAndClip();
 
- protected:
-  // Internal state of the source.
-  enum State {
-    kEmpty,
-    kCreated,
-    kPlaying,
-    kPaused,
-    kClosed,
-    kError,
-  };
+  base::UnguessableToken processing_id() const { return processing_id_; }
 
+ protected:
   // Time constant for AudioPowerMonitor.  See AudioPowerMonitor ctor comments
   // for semantics.  This value was arbitrarily chosen, but seems to work well.
   enum { kPowerMeasurementTimeConstantMillis = 10 };
@@ -206,7 +209,9 @@ class OutputController : public media::AudioOutputStream::AudioSourceCallback,
   // cycle.
   class ErrorStatisticsTracker {
    public:
-    ErrorStatisticsTracker();
+    // |handler| must outlive the ErrorStatisticsTracker. See comments for
+    // |OutputController::handler_| why it is safe to use a raw pointer here.
+    ErrorStatisticsTracker(EventHandler* handler);
 
     // Note: the destructor takes care of logging all of the stats.
     ~ErrorStatisticsTracker();
@@ -219,6 +224,10 @@ class OutputController : public media::AudioOutputStream::AudioSourceCallback,
 
    private:
     void WedgeCheck();
+
+    // Using a raw pointer is safe since the EventHandler object will outlive
+    // the ErrorStatisticsTracker object.
+    EventHandler* const handler_;
 
     const base::TimeTicks start_time_;
 
@@ -247,6 +256,9 @@ class OutputController : public media::AudioOutputStream::AudioSourceCallback,
   // Helper method that stops, closes, and NULLs |*stream_|.
   void StopCloseAndClearStream();
 
+  // Helper method which delivers a log string to the event handler.
+  void SendLogMessage(const char* fmt, ...) PRINTF_FORMAT(2, 3);
+
   // Log the current average power level measured by power_monitor_.
   void LogAudioPowerLevel(const char* call_name);
 
@@ -256,6 +268,11 @@ class OutputController : public media::AudioOutputStream::AudioSourceCallback,
 
   media::AudioManager* const audio_manager_;
   const media::AudioParameters params_;
+
+  // This object (OC) is owned by an OutputStream (OS) object which is an
+  // EventHandler. |handler_| is set at construction by the OS (using this).
+  // It is safe to use a raw pointer here since the OS will always outlive
+  // the OC object.
   EventHandler* const handler_;
 
   // The task runner for the audio manager. All control methods should be called

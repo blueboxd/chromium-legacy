@@ -229,11 +229,6 @@ Hvis "<ph name="SERVICE_SCRIPT_NAME" />" allerede er markeret, skal du fjerne ma
 <translation id="6304318647555713317">Klient</translation>
 <translation id="6381670701864002291">Noget andet.</translation>
 <translation id="6398765197997659313">Afslut fuld skærm</translation>
-<translation id="6411861157501911556">Hvis du vil bruge <ph name="PRODUCT_NAME" />, skal du give tilladelsen "Tilgængelighed", så input fra fjerncomputeren kan sendes til denne Mac.
-
-Hvis du vil give denne tilladelse, skal du klikke på "<ph name="BUTTON_NAME" />" nedenfor for at åbne ruden med indstillinger for "Tilgængelighed" og derefter markere afkrydsningsfeltet ud for "<ph name="SERVICE_SCRIPT_NAME" />".
-
-Hvis "<ph name="SERVICE_SCRIPT_NAME" />" allerede er markeret, skal du fjerne markeringen og så markere afkrydsningsfeltet igen.</translation>
 <translation id="6441316101718669559">Skrivebordsintegration understøttes ikke på denne platform. Du kan fortsat bruge denne applikation, men brugeroplevelsen vil være forringet.</translation>
 <translation id="652218476070540101">Pinkoden for denne computer opdateres…</translation>
 <translation id="6527303717912515753">Del</translation>

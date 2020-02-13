@@ -447,9 +447,11 @@ void OverviewController::ToggleOverview(
 }
 
 bool OverviewController::CanEnterOverview() {
-  // Prevent toggling overview during the split view divider snap animation.
-  if (SplitViewController::Get(Shell::GetPrimaryRootWindow())
-          ->IsDividerAnimating()) {
+  // Prevent entering overview while the divider is dragged or animated.
+  SplitViewController* split_view_controller =
+      SplitViewController::Get(Shell::GetPrimaryRootWindow());
+  if (split_view_controller->is_resizing() ||
+      split_view_controller->IsDividerAnimating()) {
     return false;
   }
 

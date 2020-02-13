@@ -79,15 +79,15 @@ def create_sample_perf_results(passed_stories, failed_stories, benchmark):
 class TestRepresentativePerfScript(unittest.TestCase):
   def test_parse_csv_results(self):
     csv_obj = create_sample_input([
-        ['story_1', 'frame_times', 16, 10, 1.5],
-        ['story_2', 'latency', 10, 8, 4],  # Record for a different metric.
-        ['story_3', 'frame_times', 8, 20, 2],
-        ['story_4', 'frame_times', '', 10, 1],  # Record with no avg.
-        ['story_5', 'frame_times', 12, 0, 3],  # Record with count of 0.
-        ['story_6', 'frame_times', 12, 40, 40],  # High noise record.
-        ['story_7', 'frame_times', 12, 40, 4],
-        ['story_3', 'frame_times', 7, 20, 15],
-        ['story_3', 'frame_times', 12, 20, 16]
+        ['story_1', 'frame_times', 16, 10, 30],
+        ['story_2', 'latency', 10, 8, 80],  # Record for a different metric.
+        ['story_3', 'frame_times', 8, 20, 40],
+        ['story_4', 'frame_times', '', 10, 20],  # Record with no avg.
+        ['story_5', 'frame_times', 12, 0, 60],  # Record with count of 0.
+        ['story_6', 'frame_times', 12, 40, 800],  # High noise record.
+        ['story_7', 'frame_times', 12, 40, 90],
+        ['story_3', 'frame_times', 7, 20, 300],
+        ['story_3', 'frame_times', 12, 20, 320]
     ])
     values_per_story = perf_tests.parse_csv_results(csv_obj,
                                                     UPPER_LIMIT_DATA_SAMPLE)
@@ -95,11 +95,11 @@ class TestRepresentativePerfScript(unittest.TestCase):
     # All stories but story_2 & story_7.
     self.assertEquals(len(values_per_story), 5)
     self.assertEquals(values_per_story['story_1']['averages'], [16.0])
-    self.assertEquals(values_per_story['story_1']['ci_095'], [1.5])
+    self.assertEquals(values_per_story['story_1']['ci_095'], [30])
 
     # Record with avg 12 has high noise.
     self.assertEquals(values_per_story['story_3']['averages'], [8.0, 7.0])
-    self.assertEquals(values_per_story['story_3']['ci_095'], [2.0, 15.0, 16.0])
+    self.assertEquals(values_per_story['story_3']['ci_095'], [40, 300, 320])
 
     self.assertEquals(len(values_per_story['story_4']['averages']), 0)
     self.assertEquals(len(values_per_story['story_4']['ci_095']), 0)
@@ -108,17 +108,17 @@ class TestRepresentativePerfScript(unittest.TestCase):
 
     # High noise record will be filtered.
     self.assertEquals(len(values_per_story['story_6']['averages']), 0)
-    self.assertEquals(values_per_story['story_6']['ci_095'], [40.0])
+    self.assertEquals(values_per_story['story_6']['ci_095'], [800.0])
 
   def test_compare_values_1(self):
     values_per_story = {
         'story_1': {
             'averages': [16.0, 17.0, 21.0],
-            'ci_095': [2.0, 15.0, 16.0],
+            'ci_095': [40, 300, 320],
         },
         'story_2': {
             'averages': [16.0, 17.0, 22.0],
-            'ci_095': [1.0, 1.4, 1.2],
+            'ci_095': [20, 28, 24],
         }
     }
     benchmark = 'rendering.desktop'
@@ -143,15 +143,15 @@ class TestRepresentativePerfScript(unittest.TestCase):
     values_per_story = {
       'story_1': {
         'averages': [16.0, 17.0, 21.0],
-        'ci_095': [2.0, 15.0, 16.0],
+        'ci_095': [40, 300, 320],
       },
       'story_3': { # Two of the runs have acceptable CI but high averages.
         'averages': [10, 13],
-        'ci_095': [14, 16, 12]
+        'ci_095': [280, 320, 240]
       },
       'story_4': {  # All runs have high noise.
         'averages': [],
-        'ci_095': [16, 17, 18],
+        'ci_095': [320, 340, 360],
       },
       'story_5': {  # No recorded values.
         'averages': [],

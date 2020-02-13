@@ -106,9 +106,12 @@ public class CastContentWindowAndroid implements CastWebContentsComponent.OnComp
 
     @SuppressWarnings("unused")
     @CalledByNative
-    private void setInteractionId(int interactionId) {
-        if (DEBUG) Log.d(TAG, "setInteractionid interactionId=" + interactionId);
-        mComponent.setInteractionId(interactionId);
+    private void setHostContext(int interactionId, String conversationId) {
+        if (DEBUG) {
+            Log.d(TAG, "setInteractionid interactionId=%s; conversationID=%s", interactionId,
+                    conversationId);
+        }
+        mComponent.setHostContext(interactionId, conversationId);
     }
 
     @Override

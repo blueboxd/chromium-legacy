@@ -229,11 +229,6 @@ Nëse "<ph name="SERVICE_SCRIPT_NAME" />" është e zgjedhur tashmë, anulo zgje
 <translation id="6304318647555713317">Klienti</translation>
 <translation id="6381670701864002291">Diçka tjetër.</translation>
 <translation id="6398765197997659313">Dil nga ekrani i plotë</translation>
-<translation id="6411861157501911556">Për të përdorur <ph name="PRODUCT_NAME" />, duhet t'i japësh autorizim "Qasshmërisë" në mënyrë që të dhënat nga makineria në distancë të mund të injektohen në këtë Mac.
-
-Për të dhënë këtë autorizim, kliko "<ph name="BUTTON_NAME" />" më poshtë për të hapur panelin e preferencave të "Qasshmërisë" dhe më pas zgjidh kutinë pranë "<ph name="SERVICE_SCRIPT_NAME" />".
-
-Nëse "<ph name="SERVICE_SCRIPT_NAME" />" është e zgjedhur tashmë, anulo zgjedhjen e saj dhe më pas zgjidhe përsëri.</translation>
 <translation id="6441316101718669559">Integrimi në desktop nuk mbështetet në këtë platformë. Mund të vazhdosh të përdorësh aplikacionin, por përvoja e përdoruesit do të jetë e përkeqësuar.</translation>
 <translation id="652218476070540101">Kodi PIN për këtë kompjuter po përditësohet…</translation>
 <translation id="6527303717912515753">Ndaj</translation>

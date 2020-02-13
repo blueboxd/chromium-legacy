@@ -281,6 +281,7 @@
 <translation id="3137521801621304719">Slökkva á huliðsstillingu</translation>
 <translation id="3140134512074889489">Kveiktu á myndavélinni þinni til að skanna QR-kóða</translation>
 <translation id="3143515551205905069">Hætta við samstillingu</translation>
+<translation id="314939179385989105">Heimasíða Chrome</translation>
 <translation id="3157842584138209013">Skoða hversu mikið af gagnamagni þú hefur sparað undir hnappinum „Fleiri valkostir“</translation>
 <translation id="3166827708714933426">Flýtilyklar flipa og glugga</translation>
 <translation id="3181954750937456830">Örugg vefnotkun (verndar þig og tækið þitt fyrir hættulegum vefsvæðum)</translation>
@@ -727,6 +728,7 @@ Haltu fingri á hvaða orði sem er til að leita að því. Stilltu valið til 
 <translation id="6437478888915024427">Upplýsingar um síðu</translation>
 <translation id="6441734959916820584">Heitið er of langt</translation>
 <translation id="6444421004082850253">{FILE_COUNT,plural, =1{# mynd}one{# mynd}other{# myndir}}</translation>
+<translation id="6447558397796644647">Bókamerki finnst ekki. Athugaðu stafsetninguna eða bættu við nýju bókamerki.</translation>
 <translation id="6447842834002726250">Fótspor</translation>
 <translation id="6461962085415701688">Ekki hægt að opna skrá</translation>
 <translation id="6464977750820128603">Þú sérð vefsvæðin sem þú opnar í Chrome og velur teljara fyrir þau.\n\nGoogle fær upplýsingar um þau vefsvæði sem þú velur teljara fyrir og hversu lengi þú ert á þeim. Þessar upplýsingar eru notaðar til að bæta virkni stafrænnar vellíðunar.</translation>
@@ -802,6 +804,7 @@ Haltu fingri á hvaða orði sem er til að leita að því. Stilltu valið til 
 <translation id="6990079615885386641">Sækja forritið í Google Play Store: <ph name="APP_ACTION" /></translation>
 <translation id="6992289844737586249">Spyrja áður en vefsvæðum er veitt heimild til að nota hljóðnemann þinn (ráðlagt)</translation>
 <translation id="6995899638241819463">Láta vita ef aðgangsorðin þín eru afhjúpuð vegna öryggisbrots</translation>
+<translation id="7000754031042624318">Slökkt í stillingum Android</translation>
 <translation id="7015203776128479407">Fyrstu uppsetningu samstillingar var ekki lokið. Slökkt er á samstillingu.</translation>
 <translation id="7016516562562142042">Leyft á núverandi leitarvél</translation>
 <translation id="7022756207310403729">Opna í vafra</translation>

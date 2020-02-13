@@ -733,7 +733,7 @@ void WebMediaPlayerImpl::DoLoad(LoadType load_type,
     mb_data_source_->SetPreload(preload_);
     mb_data_source_->SetIsClientAudioElement(client_->IsAudioElement());
     mb_data_source_->Initialize(
-        base::Bind(&WebMediaPlayerImpl::DataSourceInitialized, weak_this_));
+        base::BindOnce(&WebMediaPlayerImpl::DataSourceInitialized, weak_this_));
   }
 }
 

@@ -214,10 +214,10 @@ int FindInPage::FindMatchMarkersVersion() const {
   return 0;
 }
 
-WebFloatRect FindInPage::ActiveFindMatchRect() {
+gfx::RectF FindInPage::ActiveFindMatchRect() {
   if (GetTextFinder())
     return GetTextFinder()->ActiveFindMatchRect();
-  return WebFloatRect();
+  return gfx::RectF();
 }
 
 void FindInPage::ActivateNearestFindResult(int request_id,
@@ -254,7 +254,7 @@ void FindInPage::GetNearestFindResult(const gfx::PointF& point,
 void FindInPage::FindMatchRects(int current_version,
                                 FindMatchRectsCallback callback) {
   int rects_version = FindMatchMarkersVersion();
-  Vector<WebFloatRect> rects;
+  Vector<gfx::RectF> rects;
   if (current_version != rects_version)
     rects = EnsureTextFinder().FindMatchRects();
   std::move(callback).Run(rects_version, rects, ActiveFindMatchRect());

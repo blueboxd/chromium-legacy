@@ -690,6 +690,7 @@
 <translation id="1926339101652878330">Ces paramètres sont soumis à une règle d'entreprise. Contactez votre administrateur pour plus d'informations.</translation>
 <translation id="1927632033341042996">Doigt <ph name="NEW_FINGER_NUMBER" /></translation>
 <translation id="1928202201223835302">Saisir l'ancien code</translation>
+<translation id="1928696683969751773">Mises à jour</translation>
 <translation id="1929546189971853037">Consulter votre historique de navigation sur tous les appareils sur lesquels vous êtes connecté à votre compte</translation>
 <translation id="1931152874660185993">Aucun composant installé</translation>
 <translation id="1932098463447129402">Pas avant le</translation>
@@ -1890,7 +1891,6 @@ Vous pouvez gérer les paramètres de ce compte en installant l'application Fami
 <translation id="3603177256297531067">Impossible de traduire cette page</translation>
 <translation id="3603622770190368340">Obtenir un certificat réseau</translation>
 <translation id="3605780360466892872">Businessman</translation>
-<translation id="3608436266458100337">Mode Lecteur</translation>
 <translation id="3608576286259426129">Aperçu de l'image de l'utilisateur</translation>
 <translation id="3610369246614755442">Le ventilateur de la station doit être réparé</translation>
 <translation id="361106536627977100">Données Flash</translation>
@@ -2393,7 +2393,6 @@ Souhaitez-vous lancer <ph name="CONTROL_PANEL_APPLET_NAME" /> ?</translation>
 <translation id="4285418559658561636">Mettre à jour le mot de passe</translation>
 <translation id="4285498937028063278">Retirer</translation>
 <translation id="428565720843367874">Le logiciel antivirus a rencontré une erreur inattendue pendant l'analyse de ce fichier.</translation>
-<translation id="4287502004382794929">Vous n'avez pas suffisamment de licences logicielles pour enregistrer cet appareil. Veuillez contacter le service commercial pour en acheter d'autres. Si vous pensez que ce message s'affiche par erreur, veuillez contacter l'assistance technique.</translation>
 <translation id="4289540628985791613">Présentation</translation>
 <translation id="4295072614469448764">L'application est disponible via votre terminal. Il peut également y avoir une icône dans votre lanceur d'applications.</translation>
 <translation id="4295979599050707005">Veuillez vous reconnecter pour confirmer que votre compte <ph name="USER_EMAIL" /> peut être utilisé avec des sites Web, des applications et des extensions dans Chrome et Google Play. Vous pouvez également supprimer ce compte. <ph name="LINK_BEGIN" />En savoir plus<ph name="LINK_END" /></translation>
@@ -2873,6 +2872,7 @@ Souhaitez-vous lancer <ph name="CONTROL_PANEL_APPLET_NAME" /> ?</translation>
 <translation id="4998430619171209993">Activé</translation>
 <translation id="4998873842614926205">Confirmer les modifications</translation>
 <translation id="5000922062037820727">Bloqué (recommandé)</translation>
+<translation id="5005498671520578047">Copier mot de passe</translation>
 <translation id="5007392906805964215">Afficher</translation>
 <translation id="5008936837313706385">Nom de l'activité</translation>
 <translation id="5010043101506446253">Autorité de certification</translation>
@@ -4656,7 +4656,6 @@ Assurez-vous de ne pas dévoiler d'informations sensibles.</translation>
 <translation id="7521387064766892559">JavaScript</translation>
 <translation id="7522255036471229694">Dites "Ok Google"</translation>
 <translation id="7525067979554623046">Créer</translation>
-<translation id="7529411698175791732">Vérifiez votre connexion Internet. Si le problème persiste, essayez de vous déconnecter, puis de vous reconnecter.</translation>
 <translation id="7530016656428373557">Taux de décharge en watts</translation>
 <translation id="7531779363494549572">Accédez à Paramètres &gt; Applications et notifications &gt; Notifications.</translation>
 <translation id="7532009420053991888">L'application <ph name="LINUX_APP_NAME" /> ne répond pas. Sélectionnez "Forcer la fermeture" pour la fermer.</translation>
@@ -5798,7 +5797,6 @@ Conservez votre fichier de clé en lieu sûr. Vous en aurez besoin lors de la cr
 <translation id="9050666287014529139">Phrase secrète</translation>
 <translation id="9052208328806230490">Vous avez enregistré vos imprimantes sur <ph name="CLOUD_PRINT_NAME" /> via le compte <ph name="EMAIL" />.</translation>
 <translation id="9052404922357793350">Continuer de bloquer</translation>
-<translation id="9053091947372579468">Une licence Chrome est bien installée sur votre appareil, mais votre nom d'utilisateur n'est associé à aucune console d'administration. Pour enregistrer votre appareil, veuillez créer un compte de console d'administration à l'adresse https://g.co/ChromeEnterpriseAccount. Remarque : si vous utilisez votre domaine pour créer le compte de console, vous devrez le valider à l'issue de cette procédure.</translation>
 <translation id="9053563360605707198">Impression recto verso</translation>
 <translation id="9053893665344928494">Mémoriser mon choix</translation>
 <translation id="9055636786322918818">Appliquez le chiffrement RC4. L'activation de cette option est risquée, car les algorithmes de chiffrement RC4 ne sont pas sécurisés.</translation>

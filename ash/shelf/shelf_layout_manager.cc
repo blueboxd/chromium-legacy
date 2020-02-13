@@ -1507,6 +1507,7 @@ void ShelfLayoutManager::UpdateBoundsAndOpacity(bool animate) {
                   gfx::Tween::EASE_OUT);
     shelf_widget_->GetLayer()->SetTransform(gfx::Transform());
 
+    shelf_->shelf_widget()->UpdateLayout(animate);
     hotseat_widget->UpdateLayout(animate);
 
     // Having a window which is visible but does not have an opacity is an

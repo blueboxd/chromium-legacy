@@ -5,12 +5,15 @@
 package org.chromium.chrome.browser.share.qrcode.scan_tab;
 
 import android.content.Context;
+import android.hardware.Camera;
+import android.hardware.Camera.ErrorCallback;
 import android.hardware.Camera.PreviewCallback;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.View.OnClickListener;
 import android.view.ViewGroup.LayoutParams;
 import android.widget.FrameLayout;
+import android.widget.TextView;
 
 import org.chromium.ui.widget.ButtonCompat;
 
@@ -22,13 +25,14 @@ class QrCodeScanView {
 
     private final Context mContext;
     private final FrameLayout mView;
-    private final PreviewCallback mCameraCallback;
+    private final PreviewCallback mCameraPreviewCallback;
 
     private boolean mHasCameraPermission;
     private boolean mCanPromptForPermission;
     private boolean mIsOnForeground;
     private CameraPreview mCameraPreview;
     private View mPermissionsView;
+    private View mCameraErrorView;
 
     /**
      * The QrCodeScanView constructor.
@@ -39,11 +43,12 @@ class QrCodeScanView {
     public QrCodeScanView(Context context, PreviewCallback cameraCallback,
             PermissionPrompter permissionPrompter) {
         mContext = context;
-        mCameraCallback = cameraCallback;
+        mCameraPreviewCallback = cameraCallback;
         mView = new FrameLayout(context);
         mView.setLayoutParams(
                 new FrameLayout.LayoutParams(LayoutParams.MATCH_PARENT, LayoutParams.MATCH_PARENT));
         mPermissionsView = createPermissionView(context, permissionPrompter);
+        mCameraErrorView = createCameraErrorView(context);
     }
 
     public View getView() {
@@ -65,6 +70,26 @@ class QrCodeScanView {
         });
         return permissionView;
     }
+
+    private View createCameraErrorView(Context context) {
+        return (View) LayoutInflater.from(context).inflate(
+                org.chromium.chrome.browser.share.qrcode.R.layout.qrcode_camera_error_layout, null,
+                false);
+    }
+
+    private final ErrorCallback mCameraErrorCallback = new ErrorCallback() {
+        @Override
+        public void onError(int error, Camera camera) {
+            if (mCameraPreview != null) {
+                mCameraPreview.stopCamera();
+                mCameraPreview = null;
+            }
+            // TODO(ehsankia): Adjust error message given error code.
+            String errorString = mContext.getResources().getString(
+                    org.chromium.chrome.R.string.qr_code_in_use_camera_error);
+            displayCameraErrorDialog(errorString);
+        }
+    };
 
     /**
      * Sets camera if possible.
@@ -121,7 +146,8 @@ class QrCodeScanView {
         }
 
         if (mHasCameraPermission) {
-            mCameraPreview = new CameraPreview(mContext, mCameraCallback);
+            mCameraPreview =
+                    new CameraPreview(mContext, mCameraPreviewCallback, mCameraErrorCallback);
             mView.addView(mCameraPreview);
             mView.addView(new CameraPreviewOverlay(mContext));
 
@@ -149,5 +175,15 @@ class QrCodeScanView {
     private void displayPermissionDialog() {
         mView.removeAllViews();
         mView.addView(mPermissionsView);
+    }
+
+    /** Displays the camera error dialog. */
+    private void displayCameraErrorDialog(String errorString) {
+        TextView cameraErrorTextView = (TextView) mCameraErrorView.findViewById(
+                org.chromium.chrome.browser.share.qrcode.R.id.qrcode_camera_error_text);
+        cameraErrorTextView.setText(errorString);
+
+        mView.removeAllViews();
+        mView.addView(mCameraErrorView);
     }
 }

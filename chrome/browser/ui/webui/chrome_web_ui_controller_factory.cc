@@ -99,6 +99,12 @@
 #include "ui/web_dialogs/web_dialog_ui.h"
 #include "url/gurl.h"
 
+#if BUILDFLAG(ENABLE_KALEIDOSCOPE)
+#include "chrome/browser/media/kaleidoscope/internal/kaleidoscope_content_ui.h"
+#include "chrome/browser/media/kaleidoscope/internal/kaleidoscope_ui.h"
+#include "media/base/media_switches.h"
+#endif  // BUILDFLAG(ENABLE_KALEIDOSCOPE)
+
 #if BUILDFLAG(ENABLE_NACL)
 #include "chrome/browser/ui/webui/nacl_ui.h"
 #endif
@@ -669,6 +675,14 @@ WebUIFactoryFunction GetWebUIFactoryFunction(WebUI* web_ui,
     return &NewWebUI<WelcomeUI>;
 #endif
 
+#if BUILDFLAG(ENABLE_KALEIDOSCOPE)
+  if (base::FeatureList::IsEnabled(media::kKaleidoscope)) {
+    if (url.host_piece() == chrome::kChromeUIKaleidoscopeHost)
+      return &NewWebUI<KaleidoscopeUI>;
+    if (url.host_piece() == chrome::kChromeUIKaleidoscopeContentHost)
+      return &NewWebUI<KaleidoscopeContentUI>;
+  }
+#endif  // BUILDFLAG(ENABLE_KALEIDOSCOPE)
 #if BUILDFLAG(ENABLE_NACL)
   if (url.host_piece() == chrome::kChromeUINaClHost)
     return &NewWebUI<NaClUI>;

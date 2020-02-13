@@ -154,15 +154,28 @@ class IndexedDBQuotaClientTest : public testing::Test {
   }
 
   void AddFakeIndexedDB(const url::Origin& origin, int size) {
-    base::FilePath file_path_origin =
-        idb_context()->GetFilePathForTesting(origin);
+    base::FilePath file_path_origin;
+    {
+      base::RunLoop run_loop;
+      idb_context()->GetFilePathForTesting(
+          origin, base::BindLambdaForTesting([&](const base::FilePath& path) {
+            file_path_origin = path;
+            run_loop.Quit();
+          }));
+      run_loop.Run();
+    }
     if (!base::CreateDirectory(file_path_origin)) {
       LOG(ERROR) << "failed to base::CreateDirectory "
                  << file_path_origin.value();
     }
     file_path_origin = file_path_origin.Append(FILE_PATH_LITERAL("fake_file"));
     SetFileSizeTo(file_path_origin, size);
-    idb_context()->ResetCachesForTesting();
+
+    {
+      base::RunLoop run_loop;
+      idb_context()->ResetCachesForTesting(run_loop.QuitClosure());
+      run_loop.Run();
+    }
   }
 
  private:

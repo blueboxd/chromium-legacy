@@ -549,22 +549,22 @@ void XRFrameProvider::UpdateWebGLLayerViewports(XRWebGLLayer* layer) {
 
   // We may only have one eye view, i.e. in smartphone immersive AR mode.
   // Use all-zero bounds for unused views.
-  WebFloatRect left_coords =
-      left ? WebFloatRect(
+  gfx::RectF left_coords =
+      left ? gfx::RectF(
                  static_cast<float>(left->x()) / width,
                  static_cast<float>(height - (left->y() + left->height())) /
                      height,
                  static_cast<float>(left->width()) / width,
                  static_cast<float>(left->height()) / height)
-           : WebFloatRect();
-  WebFloatRect right_coords =
-      right ? WebFloatRect(
+           : gfx::RectF();
+  gfx::RectF right_coords =
+      right ? gfx::RectF(
                   static_cast<float>(right->x()) / width,
                   static_cast<float>(height - (right->y() + right->height())) /
                       height,
                   static_cast<float>(right->width()) / width,
                   static_cast<float>(right->height()) / height)
-            : WebFloatRect();
+            : gfx::RectF();
 
   immersive_presentation_provider_->UpdateLayerBounds(
       frame_id_, left_coords, right_coords, gfx::Size(width, height));

@@ -229,11 +229,6 @@ Kung mayroon nang check ang '<ph name="SERVICE_SCRIPT_NAME" />,' i-uncheck ito a
 <translation id="6304318647555713317">Client</translation>
 <translation id="6381670701864002291">Iba pang bagay.</translation>
 <translation id="6398765197997659313">Lumabas sa buong screen</translation>
-<translation id="6411861157501911556">Para magamit ang <ph name="PRODUCT_NAME" />, kailangan mong ibigay ang pahintulot sa 'Accessibility' para mailagay sa Mac na ito ang input mula sa malayuang machine.
-
-Para ibigay ang pahintulot na ito, i-click ang '<ph name="BUTTON_NAME" />' sa ibaba para buksan ang pane ng mga kagustuhan sa 'Accessibility' at pagkatapos ay lagyan ng check ang kahon sa tabi ng '<ph name="SERVICE_SCRIPT_NAME" />.'
-
-Kung mayroon nang check ang '<ph name="SERVICE_SCRIPT_NAME" />,' i-uncheck ito at pagkatapos ay lagyan ulit ito ng check.</translation>
 <translation id="6441316101718669559">Hindi sinusuportahan sa platform na ito ang pagsasama sa desktop. Maaari mo pa ring gamitin ang application, ngunit hindi magiging maganda ang karanasan ng user.</translation>
 <translation id="652218476070540101">Ina-update ang PIN para sa computer na ito…</translation>
 <translation id="6527303717912515753">Ibahagi</translation>

@@ -55,6 +55,7 @@ class CRLSetDistributor;
 class DnsConfigChangeManager;
 class HttpAuthCacheCopier;
 class LegacyTLSConfigDistributor;
+class NetLogProxySink;
 class NetworkContext;
 class NetworkUsageAccumulator;
 
@@ -114,6 +115,9 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) NetworkService
   void StartNetLog(base::File file,
                    net::NetLogCaptureMode capture_mode,
                    base::Value constants) override;
+  void AttachNetLogProxy(
+      mojo::PendingRemote<mojom::NetLogProxySource> proxy_source,
+      mojo::PendingReceiver<mojom::NetLogProxySink>) override;
   void SetSSLKeyLogFile(base::File file) override;
   void CreateNetworkContext(
       mojo::PendingReceiver<mojom::NetworkContext> receiver,
@@ -257,6 +261,8 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) NetworkService
   bool initialized_ = false;
 
   net::NetLog* net_log_;
+
+  std::unique_ptr<NetLogProxySink> net_log_proxy_sink_;
 
   std::unique_ptr<net::FileNetLogObserver> file_net_log_observer_;
   net::TraceNetLogObserver trace_net_log_observer_;

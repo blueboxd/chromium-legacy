@@ -119,6 +119,34 @@ TEST_F(ResolveContextTest, DifferentSession) {
   EXPECT_TRUE(context.GetDohServerAvailability(1u, session2.get()));
 }
 
+// Simulate a new session with the same pointer as an old deleted session by
+// invalidating WeakPtrs.
+TEST_F(ResolveContextTest, ReusedSessionPointer) {
+  DnsConfig config =
+      CreateDnsConfig(1 /* num_servers */, 3 /* num_doh_servers */);
+  scoped_refptr<DnsSession> session = CreateDnsSession(config);
+
+  URLRequestContext request_context;
+  ResolveContext context(&request_context, true /* enable_caching */);
+  context.InvalidateCaches(session.get());
+
+  // Mark probe success for the "original" (pre-invalidation) session.
+  context.SetProbeSuccess(1u, true, session.get());
+  ASSERT_TRUE(context.GetDohServerAvailability(1u, session.get()));
+
+  // Simulate session destruction and recreation on the same pointer.
+  session->InvalidateWeakPtrsForTesting();
+
+  // Expect |session| should now be treated as a new session, not matching
+  // |context|'s "current" session. Expect availability from the "old" session
+  // should not be read and SetProbeSuccess() should have no effect because the
+  // "new" session has not yet been marked as "current" through
+  // InvalidateCaches().
+  EXPECT_FALSE(context.GetDohServerAvailability(1u, session.get()));
+  context.SetProbeSuccess(1u, true, session.get());
+  EXPECT_FALSE(context.GetDohServerAvailability(1u, session.get()));
+}
+
 TEST_F(ResolveContextTest, DohServerAvailability_InitialAvailability) {
   DnsConfig config =
       CreateDnsConfig(2 /* num_servers */, 2 /* num_doh_servers */);

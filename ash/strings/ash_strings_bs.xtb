@@ -59,6 +59,7 @@
 <translation id="1658406695958299976">Nažalost, vaša lozinka još uvijek nije potvrđena. Napomena: Ako ste nedavno promijenili lozinku, vaša nova lozinka će se primijeniti nakon što se odjavite. Ovdje koristite staru lozinku.</translation>
 <translation id="1677472565718498478">Još <ph name="TIME" /></translation>
 <translation id="1698760176351776263">IPv6 adresa: <ph name="ADDRESS" /></translation>
+<translation id="1709762881904163296">Postavke mreže</translation>
 <translation id="1743570585616704562">Nije prepoznato</translation>
 <translation id="1746730358044914197">Načine unosa konfigurira vaš administrator.</translation>
 <translation id="1747827819627189109">Tastatura na ekranu je omogućena</translation>
@@ -113,11 +114,13 @@
 <translation id="2354174487190027830">Aktiviranje mreže <ph name="NAME" /></translation>
 <translation id="2359808026110333948">Nastavi</translation>
 <translation id="2365393535144473978">Omogućavanjem prijenosa podataka na mobilnoj mreži omogućit će se Bluetooth.</translation>
+<translation id="2390318262976603432">Postavke jezika/zemlje</translation>
 <translation id="2391579633712104609">180°</translation>
 <translation id="2412593942846481727">Ažuriranje je dostupno</translation>
 <translation id="2413728805700750528"><ph name="DISPLAY_NAME" /> je upravljana sesija kojom upravlja <ph name="DOMAIN" /></translation>
 <translation id="2427507373259914951">Lijevi klik</translation>
 <translation id="2429753432712299108">Bluetooth uređaj "<ph name="DEVICE_NAME" />" traži dopuštenje za uparivanje. Prije prihvaćanja provjerite prikazuje li se na njemu ovaj pristupni ključ: <ph name="PASSKEY" /></translation>
+<translation id="2435457462613246316">Prikaži lozinku</translation>
 <translation id="2473177541599297363">Potvrdite rezoluciju</translation>
 <translation id="2482878487686419369">Obavještenja</translation>
 <translation id="2484513351006226581">Pritisnite <ph name="KEYBOARD_SHORTCUT" /> da promijenite raspored tastature.</translation>
@@ -177,6 +180,7 @@
 <translation id="3154351730702813399">Administrator uređaja može nadzirati vašu aktivnost pregledanja.</translation>
 <translation id="3181441307743005334">Ponovno pokretanje može potrajati</translation>
 <translation id="3202010236269062730">{NUM_DEVICES,plural, =1{Povezano s uređajem}one{Povezano s # uređajem}few{Povezano s # uređaja}other{Povezano s # uređaja}}</translation>
+<translation id="3207953481422525583">Korisničke postavke</translation>
 <translation id="3217205077783620295">Zvuk je uključen. Deaktiviranjem će se isključiti zvuk.</translation>
 <translation id="3226991577105957773">i još <ph name="COUNT" /></translation>
 <translation id="3236488194889173876">Nije dostupna mobilna mreža</translation>
@@ -240,6 +244,7 @@
 <translation id="3995138139523574647">USB-C uređaj (stražnji desni priključak)</translation>
 <translation id="4017989525502048489">Laserski pokazivač</translation>
 <translation id="4021716437419160885">Klizni prema dolje</translation>
+<translation id="4028481283645788203">Potrebna je lozinka za dodatnu sigurnost</translation>
 <translation id="4042660782729322247">Trenutno dijelite ekran</translation>
 <translation id="4065525899979931964">{NUM_APPS,plural, =1{Isključeno za aplikaciju}one{Isključeno za # aplikaciju}few{Isključeno za # aplikacije}other{Isključeno za # aplikacija}}</translation>
 <translation id="4072264167173457037">Signal srednje jačine</translation>
@@ -249,6 +254,7 @@
 <translation id="4149156641122542261">Uređajem <ph name="DEVICE_TYPE" /> upravlja <ph name="DOMAIN" /></translation>
 <translation id="4181841719683918333">Jezici</translation>
 <translation id="4195877955194704651">Automatski klikovi na dugme</translation>
+<translation id="4215497585250573029">Postavke za VPN</translation>
 <translation id="4217571870635786043">Diktiranje</translation>
 <translation id="421885205185866088">PIN pametne kartice za <ph name="USER_EMAIL_ADDRESS" /></translation>
 <translation id="4239069858505860023">GPRS</translation>
@@ -263,6 +269,7 @@
 <translation id="4338109981321384717">Lupa</translation>
 <translation id="4351433414020964307">Asistent se učitava…</translation>
 <translation id="4356930093361201197">način rada visokog kontrasta</translation>
+<translation id="4371348193907997655">Postavke emitiranja</translation>
 <translation id="4378551569595875038">Povezivanje...</translation>
 <translation id="4379531060876907730">Ovo su vaši alati za korištenje olovke</translation>
 <translation id="4383956581743965695">-<ph name="TIME_SINCE_EXPIRATION" /></translation>
@@ -279,12 +286,14 @@
 <translation id="4527045527269911712">Bluetooth uređaj "<ph name="DEVICE_NAME" />" traži odobrenje za uparivanje.</translation>
 <translation id="453661520163887813">Do potpune napunjenosti je preostalo <ph name="TIME" /></translation>
 <translation id="4561267230861221837">3G</translation>
+<translation id="4565377596337484307">Sakrij lozinku</translation>
 <translation id="4570957409596482333">Dugme Odaberite za govor</translation>
 <translation id="4585337515783392668">Zaustavi emitiranje na nepoznati prijemnik</translation>
 <translation id="4628757576491864469">Uređaji</translation>
 <translation id="4659419629803378708">ChromeVox je omogućen</translation>
 <translation id="4665114317261903604">Uključi/isključi način rada Ne ometaj. <ph name="STATE_TEXT" /></translation>
 <translation id="4696813013609194136">Otključajte uređaj pomoću koda roditelja</translation>
+<translation id="4710243778082831592">Postavke za IME</translation>
 <translation id="4731797938093519117">Pristup roditelja</translation>
 <translation id="4734965478015604180">Horizontalno</translation>
 <translation id="4774338217796918551">Vratite se sutra u <ph name="COME_BACK_TIME" />.</translation>
@@ -514,7 +523,9 @@
 <translation id="7984197416080286869">Previše pokušaja otključavanja otiskom prsta</translation>
 <translation id="7994370417837006925">Višestruka prijava</translation>
 <translation id="8000066093800657092">Nema mreže</translation>
+<translation id="8029629653277878342">Potreban je PIN ili lozika za dodatnu sigurnost</translation>
 <translation id="8030169304546394654">Nije povezano</translation>
+<translation id="8048123526339889627">Postavke Bluetootha</translation>
 <translation id="8054466585765276473">Izračunava se vrijeme baterije.</translation>
 <translation id="8061464966246066292">Visoki kontrast</translation>
 <translation id="8098591350844501178">Prestanak emitiranja ekrana na prijemniku <ph name="RECEIVER_NAME" /></translation>
@@ -558,6 +569,7 @@
 <translation id="8517041960877371778">Moguće je da se vaš uređaj <ph name="DEVICE_TYPE" /> neće puniti dok je uključen.</translation>
 <translation id="8563862697512465947">Postavke obavijesti</translation>
 <translation id="8627191004499078455">Povezano na <ph name="DEVICE_NAME" /></translation>
+<translation id="8631727435199967028">Postavke pristupačnosti</translation>
 <translation id="8637598503828012618"><ph name="CONNECTION_STATUS" />, jačina signala <ph name="SIGNAL_STRENGTH" />, upravlja vaš administrator</translation>
 <translation id="8639760480004882931">Preostalo <ph name="PERCENTAGE" /></translation>
 <translation id="8649101189709089199">Odaberite za govor</translation>
@@ -574,6 +586,7 @@
 <translation id="875593634123171288">Prikaži postavke VPN mreže</translation>
 <translation id="8785070478575117577">Povezivanje na mrežu <ph name="NETWORK_NAME" /></translation>
 <translation id="8814190375133053267">WiFi</translation>
+<translation id="8825863694328519386">Prevucite s lijeve strane da se vratite</translation>
 <translation id="8828714802988429505">90°</translation>
 <translation id="8843682306134542540">Uključi/isključi zaključavanje rotacije. <ph name="STATE_TEXT" /></translation>
 <translation id="8850991929411075241">Search+Esc</translation>

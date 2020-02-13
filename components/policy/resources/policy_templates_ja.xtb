@@ -373,11 +373,6 @@
           このポリシーが無効に設定されているか未設定の場合、Kerberos アカウント設定は無効になります。このとき、Kerberos アカウントは追加できず、Kerberos 認証は使用できません。既存の Kerberos アカウントと保存したパスワードもすべて削除されます。</translation>
 <translation id="1561424797596341174">リモート アクセス ホストの Debug ビルドでのポリシー オーバーライド</translation>
 <translation id="1561967320164410511">U2F と個人認証用拡張機能</translation>
-<translation id="1574554504290354326">この設定はサポートが終了しています。代わりに SafeBrowsingExtendedReportingEnabled を使用してください。SafeBrowsingExtendedReportingEnabled を有効または無効にすると、SafeBrowsingExtendedReportingOptInAllowed を false に設定したときと同じ動作になります。
-
-      このポリシーを false に設定した場合、ユーザーは Google サーバーにシステム情報の一部やページのコンテンツを送信するよう指定できなくなります。このポリシーを true に設定するか未設定のままにした場合、ユーザーは危険なアプリやサイトの検出に役立てる目的でシステム情報の一部やページのコンテンツをセーフ ブラウジングに送信できます。
-
-      セーフ ブラウジングについて詳しくは、https://developers.google.com/safe-browsing をご覧ください。</translation>
 <translation id="1583248206450240930">デフォルトで <ph name="PRODUCT_FRAME_NAME" /> を使用する</translation>
 <translation id="1599424828227887013">Android デバイスで指定の発行元に対してサイト分離を有効にする</translation>
 <translation id="1608755754295374538">ユーザー確認なしで音声キャプチャ デバイスへのアクセスが許可される URL</translation>
@@ -4257,21 +4252,6 @@
       このポリシーは外部のユーザーにのみ適用されます。
       </translation>
 <translation id="7683777542468165012">動的なポリシーの更新</translation>
-<translation id="7684516445147212248">このポリシーを設定すると、<ph name="PRODUCT_NAME" /> のシークレット モードとゲストのプロフィールでアンビエント認証を許可または不許可にできます。
-
-      アンビエント認証は、NTLM/Kerberos/Negotiate challenge/response スキームで明示的な認証情報が指定されていない場合に使用される、デフォルトの認証情報による HTTP 認証です。
-
-      <ph name="REGULAR_ONLY_OPTION_NAME" />（値 0）に設定すると、標準のセッションでのみアンビエント認証が許可されます。シークレット モードとゲスト セッションではアンビエント認証は許可されません。
-
-      <ph name="INCOGNITO_AND_REGULAR_OPTION_NAME" />（値 1）に設定すると、シークレット モードと標準のセッションでアンビエント認証が許可されます。ゲスト セッションではアンビエント認証は許可されません。
-
-      <ph name="GUEST_AND_REGULAR_OPTION_NAME" />（値 2）に設定すると、ゲストと標準のセッションでアンビエント認証が許可されます。シークレット モードのセッションではアンビエント認証は許可されません。
-
-      <ph name="ALL_OPTION_NAME" />（値 3）に設定すると、すべてのセッションでアンビエント認証が許可されます。
-
-      なお、標準のプロフィールでは常にアンビエント認証が許可されます。
-
-      このポリシーを未設定のままにした場合、<ph name="PRODUCT_NAME" /> の今後のリリースでは、シークレット モードとゲスト セッションでのアンビエント認証は許可されず、使用できなくなります。</translation>
 <translation id="7687943045976362719">このポリシーが設定されている場合、指定されたコンテンツ タイプは <ph name="PRODUCT_FRAME_NAME" /> で処理されます。
 
           このポリシーが未設定の場合、デフォルトのレンダラがすべてのサイトで使用されます（<ph name="CHROME_FRAME_RENDERER_SETTINGS_POLICY_NAME" /> ポリシーを使用してデフォルトのレンダラを設定することもできます）。</translation>

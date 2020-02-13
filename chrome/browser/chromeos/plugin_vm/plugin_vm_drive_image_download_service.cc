@@ -23,6 +23,7 @@
 #include "components/download/public/background_service/download_metadata.h"
 #include "components/drive/service/drive_api_service.h"
 #include "components/drive/service/drive_service_interface.h"
+#include "components/signin/public/identity_manager/consent_level.h"
 #include "components/signin/public/identity_manager/identity_manager.h"
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/browser_task_traits.h"
@@ -139,7 +140,8 @@ PluginVmDriveImageDownloadService::PluginVmDriveImageDownloadService(
       identity_manager, url_loader_factory, blocking_task_runner.get(),
       base_url, base_thumbnail_url, std::string{},
       kPluginVmNetworkTrafficAnnotation);
-  drive_service_->Initialize(identity_manager->GetPrimaryAccountId());
+  drive_service_->Initialize(identity_manager->GetPrimaryAccountId(
+      signin::ConsentLevel::kNotRequired));
 }
 
 void PluginVmDriveImageDownloadService::StartDownload(

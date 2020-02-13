@@ -347,11 +347,6 @@
           如果停用了或未设置此政策，则 Kerberos 帐号设置处于停用状态。此时无法添加任何 Kerberos 帐号，也无法使用 Kerberos 身份验证功能。系统会删除所有现有 Kerberos 帐号，以及所有已存储的密码。</translation>
 <translation id="1561424797596341174">覆盖与远程访问主机的调试版本号相关的政策</translation>
 <translation id="1561967320164410511">用于个人认证的 U2F 和扩展程序</translation>
-<translation id="1574554504290354326">此设置已被弃用，请改用 SafeBrowsingExtendedReportingEnabled。启用或停用 SafeBrowsingExtendedReportingEnabled 均相当于将 SafeBrowsingExtendedReportingOptInAllowed 设为 false。
-
-      如果此政策设为 false，用户将无法选择向 Google 服务器发送一些系统信息和网页内容。如果此设置设为 true 或未配置，用户将能够向安全浏览功能发送一些系统信息和网页内容，以协助检测危险应用和网站。
-
-      要详细了解安全浏览功能，请访问 https://developers.google.com/safe-browsing。</translation>
 <translation id="1583248206450240930">默认情况下使用“<ph name="PRODUCT_FRAME_NAME" />”</translation>
 <translation id="1599424828227887013">在 Android 设备上为指定的来源启用网站隔离功能</translation>
 <translation id="1608755754295374538">无需提示用户即可使用音频捕获设备的网址</translation>
@@ -717,13 +712,13 @@
 <translation id="2170233653554726857">启用WPAD优化</translation>
 <translation id="2171245625445050634">在 M82 中，我们移除了此政策，请改用 MinimumChromeVersionEnforced。
 
-      配置允许使用的最低 <ph name="PRODUCT_NAME" /> 版本要求。低于要求的版本将被视为已过时版本，因此只有在用户更新操作系统后，才可以登录设备。
+      设定 <ph name="PRODUCT_NAME" /> 的最低版本要求。低于要求的版本将被视为已过时版本，因此只有在用户更新操作系统后，才可以登录设备。
 
       如果当前版本在用户使用期间变为过时版本，系统会强制用户退出登录。
 
       如果此政策未设置，系统将不会应用任何限制，并且无论使用的是哪个 <ph name="PRODUCT_NAME" /> 版本，用户都能登录。
 
-      此处的“版本”既可以是确切版本（如“61.0.3163.120”），也可以是版本前缀（如“61.0”）。  </translation>
+      此处的“版本”既可以是确切版本（如“61.0.3163.120”），也可以是版本前缀（如“61.0”）。</translation>
 <translation id="2176565653304920879">设置此政策后，系统会根据所设的值采用下列某种方式执行自动检测时区流程：
 
       如果所设的值是 TimezoneAutomaticDetectionUsersDecide，用户将能够使用 chrome://settings 中的常规控件来控制自动检测时区操作。
@@ -2273,11 +2268,11 @@
 
       如果此政策未设置，网络代码默认会在浏览器进程之外运行。
 
-      在 <ph name="PRODUCT_NAME" /> 版本 84 中，此政策将被移除。</translation>
+      在 <ph name="PRODUCT_NAME" /> 84 版中，此政策将被移除。</translation>
 <translation id="4492287494009043413">停用截取屏幕截图功能</translation>
 <translation id="4494132853995232608">Wilco DTC</translation>
 <translation id="449423975179525290">配置与 <ph name="PLUGIN_VM_NAME" /> 相关的政策。</translation>
-<translation id="4498493270899294764">不针对其检查下载内容是否包含恶意软件的网址格式</translation>
+<translation id="4498493270899294764">不检查下载内容是否包含恶意软件的网址格式</translation>
 <translation id="450537894712826981">配置<ph name="PRODUCT_NAME" />将用于在磁盘上存储缓存媒体文件的缓存大小。
 
       如果您设置了此政策，那么无论用户是否已指定“--media-cache-size”标记，<ph name="PRODUCT_NAME" />都会使用此政策中设定的缓存大小。此政策中所指定的值并非硬性限值，而是针对缓存系统提出的建议值。任何低于几兆字节的值都会因为太小而被向上舍入到一个合理的最小值。
@@ -2518,7 +2513,7 @@
 <translation id="4986560318567565414">控制用于从替代浏览器切换至 Chrome 的路径。</translation>
 <translation id="4988291787868618635">闲置延迟时间已过时执行的操作</translation>
 <translation id="500149597848135831">启用所有变体</translation>
-<translation id="5023555740504506178">如果此政策已启用或未配置（默认），网页可以使用屏幕共享 API（例如 getDisplayMedia() 或屏幕内容截取扩展程序的 API）提示用户选择要截取的标签页、窗口或桌面。
+<translation id="5023555740504506178">如果此政策已启用或未配置（默认），网页可以使用屏幕共享 API（例如 getDisplayMedia() 或 Desktop Capture Extension API）提示用户选择要截取的标签页、窗口或桌面。
 
       如果此政策已停用，对屏幕共享 API 的所有调用都会失败并会返回错误。</translation>
 <translation id="5032164758660626397">阻止用户传输大型文件</translation>
@@ -2759,7 +2754,7 @@
        如果此政策设为 true 或未设置，系统不仅会自动将音频和视频混合内容升级至 HTTPS（即：如果相应资源不是通过 HTTPS 提供的，系统便会将相关网址重写为 HTTPS，且不提供回退机制），还会在图片混合内容的网址栏中显示“不安全”警告。
        如果此政策设为 false，系统将不会自动升级音频和视频内容，也不会为图片内容显示任何警告。
        此政策不会影响除音频、视频和图片之外的其他类型混合内容。
-       从 <ph name="PRODUCT_NAME" /> 84 版本开始，此政策将不再产生任何效力。</translation>
+       从 <ph name="PRODUCT_NAME" /> 84 版开始，此政策将不再产生任何效力。</translation>
 <translation id="5278367296164377827">这项企业政策只是短期的适应性措施，将在 M82 中移除。
 
       为配合 M80 稳定版的逐步推出，Chrome 的默认引荐来源网址政策正从其当前值 no-referrer-when-downgrade 强化为更安全的 strict-origin-when-cross-origin。
@@ -4199,21 +4194,6 @@
       此政策仅对独立用户有效。
       </translation>
 <translation id="7683777542468165012">动态政策刷新</translation>
-<translation id="7684516445147212248">通过配置此政策，您可以允许/禁止对 <ph name="PRODUCT_NAME" /> 中的无痕个人资料和访客个人资料进行静默身份验证。
-
-      如果未通过 NTLM/Kerberos/Negotiate 质询-响应方案提供明确的凭据，静默身份验证便是指采用默认凭证的 HTTP 身份验证。
-
-      设置 <ph name="REGULAR_ONLY_OPTION_NAME" />（值为 0）会仅允许为常规会话执行静默身份验证，不允许无痕会话和访客会话静默地验证用户身份。
-
-      设置 <ph name="INCOGNITO_AND_REGULAR_OPTION_NAME" />（值为 1）会允许为无痕会话和常规会话执行静默身份验证，不允许访客会话静默地验证用户身份。
-
-      设置 <ph name="GUEST_AND_REGULAR_OPTION_NAME" />（值为 2）会允许为访客会话和常规会话执行静默身份验证，不允许无痕会话静默地验证用户身份。
-
-      设置 <ph name="ALL_OPTION_NAME" />（值为 3）会允许为所有会话执行静默身份验证。
-
-      请注意：系统始终允许对常规个人资料执行静默身份验证。
-
-      如果未设置此政策，那么在未来发布的 <ph name="PRODUCT_NAME" /> 版本中，无痕会话和访客会话都将无法静默地验证用户身份，因为它们将被禁止。</translation>
 <translation id="7687943045976362719">如果设置了此政策，则指定的内容类型由 <ph name="PRODUCT_FRAME_NAME" />处理。
 
           如果未设置此政策，系统将对所有网站使用默认渲染程序。（<ph name="CHROME_FRAME_RENDERER_SETTINGS_POLICY_NAME" /> 政策可用于配置默认渲染程序。）</translation>

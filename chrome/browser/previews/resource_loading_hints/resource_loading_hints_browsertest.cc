@@ -405,15 +405,20 @@ class ResourceLoadingHintsBrowserTest
   void SetUp() override {
     // Enabling NoScript should have no effect since resource loading takes
     // priority over NoScript.
-      scoped_feature_list_.InitWithFeatures(
-          {previews::features::kPreviews, previews::features::kNoScriptPreviews,
-           optimization_guide::features::kOptimizationHints,
-           previews::features::kResourceLoadingHints,
-           data_reduction_proxy::features::
-               kDataReductionProxyEnabledWithNetworkService},
-          {});
+    scoped_feature_list_.InitWithFeatures(
+        {previews::features::kPreviews, previews::features::kNoScriptPreviews,
+         optimization_guide::features::kOptimizationHints,
+         previews::features::kResourceLoadingHints,
+         data_reduction_proxy::features::
+             kDataReductionProxyEnabledWithNetworkService},
+        {});
+    // Any additional ScopedFeatureLists added by subclasses must be
+    // instantiated here to get destructed in the correct order.
+    InitExtraFeatures();
     ResourceLoadingNoFeaturesBrowserTest::SetUp();
   }
+
+  virtual void InitExtraFeatures() {}
 
   PageToUse test_page_to_use() const { return test_page_to_use_; }
 
@@ -655,7 +660,7 @@ IN_PROC_BROWSER_TEST_P(
 class ResourceLoadingHintsBrowserTestWithExperimentEnabled
     : public ResourceLoadingHintsBrowserTest {
  public:
-  ResourceLoadingHintsBrowserTestWithExperimentEnabled() {
+  void InitExtraFeatures() override {
     feature_list_.InitAndEnableFeatureWithParameters(
         optimization_guide::features::kOptimizationHintsExperiments,
         {{optimization_guide::features::kOptimizationHintsExperimentNameParam,
@@ -665,6 +670,11 @@ class ResourceLoadingHintsBrowserTestWithExperimentEnabled
  private:
   base::test::ScopedFeatureList feature_list_;
 };
+
+// First parameter determines the test webpage that should be used.
+INSTANTIATE_TEST_SUITE_P(All,
+                         ResourceLoadingHintsBrowserTestWithExperimentEnabled,
+                         ::testing::Values(REGULAR_PAGE, PRELOAD_PAGE));
 
 // Sets only the experimental hints, and enables the matching experiment.
 // Verifies that the hints are used, and the resource loading is blocked.
@@ -834,7 +844,7 @@ IN_PROC_BROWSER_TEST_P(
 class ResourceLoadingHintsBrowserTestWithExperimentDisabled
     : public ResourceLoadingHintsBrowserTest {
  public:
-  ResourceLoadingHintsBrowserTestWithExperimentDisabled() {
+  void InitExtraFeatures() override {
     feature_list_.InitAndEnableFeatureWithParameters(
         optimization_guide::features::kOptimizationHintsExperiments,
         {{optimization_guide::features::kOptimizationHintsExperimentNameParam,
@@ -844,6 +854,11 @@ class ResourceLoadingHintsBrowserTestWithExperimentDisabled
  private:
   base::test::ScopedFeatureList feature_list_;
 };
+
+// First parameter determines the test webpage that should be used.
+INSTANTIATE_TEST_SUITE_P(All,
+                         ResourceLoadingHintsBrowserTestWithExperimentDisabled,
+                         ::testing::Values(REGULAR_PAGE, PRELOAD_PAGE));
 
 // Sets both the experimental and default hints, but does not enable the
 // matching experiment. Verifies that the hints from the experiment are not
@@ -985,7 +1000,7 @@ IN_PROC_BROWSER_TEST_P(ResourceLoadingHintsBrowserTest,
 class ResourceLoadingHintsBrowserTestWithCoinFlipAlwaysHoldback
     : public ResourceLoadingHintsBrowserTest {
  public:
-  ResourceLoadingHintsBrowserTestWithCoinFlipAlwaysHoldback() {
+  void InitExtraFeatures() override {
     // Holdback the page load from previews and also disable offline previews to
     // ensure that only post-commit previews are enabled.
     feature_list_.InitWithFeaturesAndParameters(
@@ -997,6 +1012,12 @@ class ResourceLoadingHintsBrowserTestWithCoinFlipAlwaysHoldback
  private:
   base::test::ScopedFeatureList feature_list_;
 };
+
+// First parameter determines the test webpage that should be used.
+INSTANTIATE_TEST_SUITE_P(
+    All,
+    ResourceLoadingHintsBrowserTestWithCoinFlipAlwaysHoldback,
+    ::testing::Values(REGULAR_PAGE, PRELOAD_PAGE));
 
 IN_PROC_BROWSER_TEST_P(
     ResourceLoadingHintsBrowserTestWithCoinFlipAlwaysHoldback,

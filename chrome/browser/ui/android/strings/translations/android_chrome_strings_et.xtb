@@ -281,6 +281,7 @@
 <translation id="3137521801621304719">Inkognito režiimist väljumine</translation>
 <translation id="3140134512074889489">QR-koodi skannimiseks lubage oma kaamera</translation>
 <translation id="3143515551205905069">Tühista sünkroonimine</translation>
+<translation id="314939179385989105">Chrome'i avaleht</translation>
 <translation id="3157842584138209013">Nupu Rohkem valikuid abil saate vaadata, kui palju andmemahtu olete säästnud</translation>
 <translation id="3166827708714933426">Vahelehe ja akna otseteed</translation>
 <translation id="3181954750937456830">Ohutu sirvimine (kaitseb teid ja teie seadet ohtlike saitide eest)</translation>
@@ -727,6 +728,7 @@ Puudutage pikalt mis tahes sõnal, et seda otsida. Otsingu täpsustamiseks kohan
 <translation id="6437478888915024427">Lehe teave</translation>
 <translation id="6441734959916820584">Nimi on liiga pikk</translation>
 <translation id="6444421004082850253">{FILE_COUNT,plural, =1{# pilt}other{# pilti}}</translation>
+<translation id="6447558397796644647">Seda järjehoidjat ei leita. Kontrollige õigekirja või lisage uus järjehoidja.</translation>
 <translation id="6447842834002726250">Küpsised</translation>
 <translation id="6461962085415701688">Faili ei saa avada</translation>
 <translation id="6464977750820128603">Näete saite, mida Chrome'is külastate, ja saate nendele taimereid määrata.\n\nGoogle saab teavet saitide kohta, millele taimereid määrate, ja näeb, kui kaua neid külastate. Selle teabe abil muudetakse teenus Digitaalne heaolu paremaks.</translation>
@@ -802,6 +804,7 @@ Puudutage pikalt mis tahes sõnal, et seda otsida. Otsingu täpsustamiseks kohan
 <translation id="6990079615885386641">Hankige rakendus Google Play poest: <ph name="APP_ACTION" /></translation>
 <translation id="6992289844737586249">Küsi enne saitidele minu mikrofoni kasutamiseks juurdepääsu lubamist (soovitatav)</translation>
 <translation id="6995899638241819463">Hoiata mind, kui paroolid andmetega seotud rikkumise käigus avalikustatakse</translation>
+<translation id="7000754031042624318">Androidi seadetes välja lülitatud</translation>
 <translation id="7015203776128479407">Sünkroonimise algseadistust ei viidud lõpule. Sünkroonimine on välja lülitatud.</translation>
 <translation id="7016516562562142042">Praeguse otsingumootori puhul lubatud</translation>
 <translation id="7022756207310403729">Avamine brauseris</translation>

@@ -150,8 +150,9 @@ public final class FeedActionUploadRequestManager implements ActionUploadRequest
         @HttpMethod
         String httpMethod = mConfiguration.getValueOrDefault(
                 ConfigKey.FEED_ACTION_SERVER_METHOD, HttpMethod.POST);
-        HttpRequest httpRequest = RequestHelper.buildHttpRequest(
-                httpMethod, requestBuilder.build().toByteArray(), endpoint, /* locale= */ "");
+        HttpRequest httpRequest =
+                RequestHelper.buildHttpRequest(httpMethod, requestBuilder.build().toByteArray(),
+                        endpoint, /* locale= */ "", /* priorityParamValue= */ "");
 
         Logger.i(TAG, "Making Request: %s", httpRequest.getUri().getPath());
         mNetworkClient.send(httpRequest, input -> {

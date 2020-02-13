@@ -235,7 +235,7 @@ class MultibufferDataSourceTest : public testing::Test {
 
     response_generator_.reset(new TestResponseGenerator(gurl, file_size));
     EXPECT_CALL(*this, OnInitialize(expected));
-    data_source_->Initialize(base::Bind(
+    data_source_->Initialize(base::BindOnce(
         &MultibufferDataSourceTest::OnInitialize, base::Unretained(this)));
     base::RunLoop().RunUntilIdle();
 
@@ -1000,8 +1000,8 @@ TEST_F(MultibufferDataSourceTest, Http_ShareData) {
   // This call would not be expected if we were not sharing data.
   EXPECT_CALL(host2, SetTotalBytes(response_generator_->content_length()));
   EXPECT_CALL(host2, AddBufferedByteRange(0, kDataSize * 2));
-  source2.Initialize(base::Bind(&MultibufferDataSourceTest::OnInitialize,
-                                base::Unretained(this)));
+  source2.Initialize(base::BindOnce(&MultibufferDataSourceTest::OnInitialize,
+                                    base::Unretained(this)));
   base::RunLoop().RunUntilIdle();
 
   // Always loading after initialize.
@@ -1362,8 +1362,8 @@ TEST_F(MultibufferDataSourceTest, SeekPastEOF) {
 
   response_generator_.reset(new TestResponseGenerator(gurl, kDataSize + 1));
   EXPECT_CALL(*this, OnInitialize(true));
-  data_source_->Initialize(base::Bind(&MultibufferDataSourceTest::OnInitialize,
-                                      base::Unretained(this)));
+  data_source_->Initialize(base::BindOnce(
+      &MultibufferDataSourceTest::OnInitialize, base::Unretained(this)));
   base::RunLoop().RunUntilIdle();
 
   // Not really loading until after OnInitialize is called.
@@ -1738,8 +1738,8 @@ TEST_F(MultibufferDataSourceTest, Http_CheckLoadingTransition) {
 
   response_generator_.reset(new TestResponseGenerator(gurl, kDataSize * 1));
   EXPECT_CALL(*this, OnInitialize(true));
-  data_source_->Initialize(base::Bind(&MultibufferDataSourceTest::OnInitialize,
-                                      base::Unretained(this)));
+  data_source_->Initialize(base::BindOnce(
+      &MultibufferDataSourceTest::OnInitialize, base::Unretained(this)));
   base::RunLoop().RunUntilIdle();
 
   // Not really loading until after OnInitialize is called.

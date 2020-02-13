@@ -51,6 +51,7 @@
 #include "services/network/http_auth_cache_copier.h"
 #include "services/network/legacy_tls_config_distributor.h"
 #include "services/network/net_log_exporter.h"
+#include "services/network/net_log_proxy_sink.h"
 #include "services/network/network_context.h"
 #include "services/network/network_usage_accumulator.h"
 #include "services/network/public/cpp/features.h"
@@ -455,6 +456,15 @@ void NetworkService::StartNetLog(base::File file,
   file_net_log_observer_ = net::FileNetLogObserver::CreateUnboundedPreExisting(
       std::move(file), std::move(constants));
   file_net_log_observer_->StartObserving(net_log_, capture_mode);
+}
+
+void NetworkService::AttachNetLogProxy(
+    mojo::PendingRemote<mojom::NetLogProxySource> proxy_source,
+    mojo::PendingReceiver<mojom::NetLogProxySink> proxy_sink) {
+  if (!net_log_proxy_sink_)
+    net_log_proxy_sink_ = std::make_unique<NetLogProxySink>();
+  net_log_proxy_sink_->AttachSource(std::move(proxy_source),
+                                    std::move(proxy_sink));
 }
 
 void NetworkService::SetSSLKeyLogFile(base::File file) {

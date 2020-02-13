@@ -5,6 +5,7 @@
 #ifndef THIRD_PARTY_BLINK_RENDERER_MODULES_DOCUMENT_METADATA_DOCUMENT_METADATA_EXTRACTOR_H_
 #define THIRD_PARTY_BLINK_RENDERER_MODULES_DOCUMENT_METADATA_DOCUMENT_METADATA_EXTRACTOR_H_
 
+#include "components/schema_org/common/metadata.mojom-blink-forward.h"
 #include "third_party/blink/public/mojom/document_metadata/document_metadata.mojom-blink-forward.h"
 #include "third_party/blink/renderer/modules/modules_export.h"
 #include "third_party/blink/renderer/platform/wtf/allocator/allocator.h"

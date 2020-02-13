@@ -216,9 +216,18 @@ Polymer({
     settings.Router.getInstance().resetRouteForTesting();
   },
 
-  /** @param {!settings.Route} route */
-  currentRouteChanged(route) {
-    if (route.depth <= 1) {
+  /**
+   * @param {!settings.Route} newRoute
+   * @param {!settings.Route} oldRoute
+   */
+  currentRouteChanged(newRoute, oldRoute) {
+    if (oldRoute && newRoute != oldRoute) {
+      // Search triggers route changes and currentRouteChanged() is called
+      // in attached() state which is extraneous for this metric.
+      settings.recordNavigation();
+    }
+
+    if (newRoute.depth <= 1) {
       // Main page uses scroll visibility to determine shadow.
       this.enableShadowBehavior(true);
     } else {

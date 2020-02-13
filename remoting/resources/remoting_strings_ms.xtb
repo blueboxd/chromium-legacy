@@ -229,11 +229,6 @@ Jika '<ph name="SERVICE_SCRIPT_NAME" />' telah pun ditandai, nyahtandai dan tand
 <translation id="6304318647555713317">Klien</translation>
 <translation id="6381670701864002291">Sesuatu yang lain.</translation>
 <translation id="6398765197997659313">Keluar daripada skrin penuh</translation>
-<translation id="6411861157501911556">Untuk menggunakan <ph name="PRODUCT_NAME" />, anda perlu memberi 'Kebolehaksesan' kebenaran supaya input daripada mesin jauh boleh disuntik pada Mac ini.
-
-Untuk memberikan kebenaran ini, klik '<ph name="BUTTON_NAME" />' di bawah untuk membuka anak tetingkap pilihan 'Kebolehaksesan', kemudian tandai kotak di sebelah '<ph name="SERVICE_SCRIPT_NAME" />'.
-
-Jika '<ph name="SERVICE_SCRIPT_NAME" />' telah pun ditandai, nyahtandai dan tandai sekali lagi.</translation>
 <translation id="6441316101718669559">Integrasi desktop tidak disokong pada platform ini. Anda masih boleh menggunakan aplikasi, tetapi pengalaman pengguna akan diturun taraf.</translation>
 <translation id="652218476070540101">PIN untuk komputer ini sedang dikemas kini…</translation>
 <translation id="6527303717912515753">Kongsi</translation>

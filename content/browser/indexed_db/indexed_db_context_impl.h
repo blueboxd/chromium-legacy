@@ -19,6 +19,7 @@
 #include "base/macros.h"
 #include "base/strings/string16.h"
 #include "components/services/storage/public/mojom/indexed_db_control.mojom.h"
+#include "components/services/storage/public/mojom/indexed_db_control_test.mojom.h"
 #include "components/services/storage/public/mojom/native_file_system_context.mojom.h"
 #include "content/browser/browser_main_loop.h"
 #include "content/browser/indexed_db/indexed_db_backing_store.h"
@@ -26,6 +27,7 @@
 #include "mojo/public/cpp/bindings/pending_remote.h"
 #include "mojo/public/cpp/bindings/receiver_set.h"
 #include "mojo/public/cpp/bindings/remote.h"
+#include "mojo/public/cpp/bindings/remote_set.h"
 #include "storage/browser/blob/mojom/blob_storage_context.mojom.h"
 #include "storage/browser/quota/quota_manager_proxy.h"
 #include "storage/browser/quota/special_storage_policy.h"
@@ -48,20 +50,9 @@ class IndexedDBFactoryImpl;
 
 class CONTENT_EXPORT IndexedDBContextImpl
     : public IndexedDBContext,
-      public storage::mojom::IndexedDBControl {
+      public storage::mojom::IndexedDBControl,
+      public storage::mojom::IndexedDBControlTest {
  public:
-  class Observer {
-   public:
-    virtual void OnIndexedDBListChanged(const url::Origin& origin) = 0;
-    virtual void OnIndexedDBContentChanged(
-        const url::Origin& origin,
-        const base::string16& database_name,
-        const base::string16& object_store_name) = 0;
-
-   protected:
-    virtual ~Observer() {}
-  };
-
   // The indexed db directory.
   static const base::FilePath::CharType kIndexedDBDirectory[];
 
@@ -95,6 +86,16 @@ class CONTENT_EXPORT IndexedDBContextImpl
                           DownloadOriginDataCallback callback) override;
   void GetAllOriginsDetails(GetAllOriginsDetailsCallback callback) override;
   void SetForceKeepSessionState() override;
+  void BindTestInterface(
+      mojo::PendingReceiver<storage::mojom::IndexedDBControlTest> receiver)
+      override;
+
+  // mojom::IndexedDBControlTest implementation:
+  void GetFilePathForTesting(const url::Origin& origin,
+                             GetFilePathForTestingCallback callback) override;
+  void ResetCachesForTesting(base::OnceClosure callback) override;
+  void AddObserver(
+      mojo::PendingRemote<storage::mojom::IndexedDBObserver> observer) override;
 
   // TODO(enne): fix internal indexeddb callers to use ForceClose async instead.
   void ForceCloseSync(const url::Origin& origin,
@@ -113,8 +114,6 @@ class CONTENT_EXPORT IndexedDBContextImpl
   base::SequencedTaskRunner* IDBTaskRunner() override;
   void CopyOriginData(const url::Origin& origin,
                       IndexedDBContext* dest_context) override;
-  base::FilePath GetFilePathForTesting(const url::Origin& origin) override;
-  void ResetCachesForTesting() override;
 
   // Methods called by IndexedDBFactoryImpl or IndexedDBDispatcherHost for
   // quota support.
@@ -164,10 +163,6 @@ class CONTENT_EXPORT IndexedDBContextImpl
     return native_file_system_context_ ? native_file_system_context_.get()
                                        : nullptr;
   }
-
-  // Only callable on the IDB task runner.
-  void AddObserver(Observer* observer);
-  void RemoveObserver(Observer* observer);
 
   void NotifyIndexedDBListChanged(const url::Origin& origin);
   void NotifyIndexedDBContentChanged(const url::Origin& origin,
@@ -220,10 +215,11 @@ class CONTENT_EXPORT IndexedDBContextImpl
   scoped_refptr<base::SequencedTaskRunner> io_task_runner_;
   std::unique_ptr<std::set<url::Origin>> origin_set_;
   std::map<url::Origin, int64_t> origin_size_map_;
-  base::ObserverList<Observer>::Unchecked observers_;
   base::Clock* clock_;
 
   mojo::ReceiverSet<storage::mojom::IndexedDBControl> receivers_;
+  mojo::ReceiverSet<storage::mojom::IndexedDBControlTest> test_receivers_;
+  mojo::RemoteSet<storage::mojom::IndexedDBObserver> observers_;
 
   DISALLOW_COPY_AND_ASSIGN(IndexedDBContextImpl);
 };

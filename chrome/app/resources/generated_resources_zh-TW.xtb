@@ -690,6 +690,7 @@
 <translation id="1926339101652878330">這些設定受到公司政策管控。如需瞭解詳情，請與您的管理員聯絡。</translation>
 <translation id="1927632033341042996">指紋 <ph name="NEW_FINGER_NUMBER" /></translation>
 <translation id="1928202201223835302">輸入舊的 PIN 碼</translation>
+<translation id="1928696683969751773">更新</translation>
 <translation id="1929546189971853037">讀取你已登入的所有裝置上的瀏覽記錄</translation>
 <translation id="1931152874660185993">未安裝任何元件。</translation>
 <translation id="1932098463447129402">此日期之後：</translation>
@@ -1889,7 +1890,6 @@
 <translation id="3603177256297531067">系統無法翻譯這個網頁的內容</translation>
 <translation id="3603622770190368340">取得網路憑證</translation>
 <translation id="3605780360466892872">小員工</translation>
-<translation id="3608436266458100337">閱讀器模式</translation>
 <translation id="3608576286259426129">使用者圖片預覽</translation>
 <translation id="3610369246614755442">座架風扇需要維修</translation>
 <translation id="361106536627977100">Flash 資料</translation>
@@ -2391,7 +2391,6 @@
 <translation id="4285418559658561636">更新密碼</translation>
 <translation id="4285498937028063278">取消固定</translation>
 <translation id="428565720843367874">掃描這個檔案時，防毒軟體發生意外錯誤。</translation>
-<translation id="4287502004382794929">你的軟體授權量不足，無法註冊這個裝置。如要購買更多授權，請與銷售人員聯絡。如果你認為這則訊息有誤，請與支援小組聯絡。</translation>
 <translation id="4289540628985791613">總覽</translation>
 <translation id="4295072614469448764">應用程式已出現在你的終端機上，且可能在啟動器中顯示圖示。</translation>
 <translation id="4295979599050707005">請再次登入，並確認你的帳戶 (<ph name="USER_EMAIL" />) 可用於 Chrome 和 Google Play 的網站、應用程式與擴充功能。你也可以移除這個帳戶。<ph name="LINK_BEGIN" />瞭解詳情<ph name="LINK_END" /></translation>
@@ -2871,6 +2870,7 @@
 <translation id="4998430619171209993">開啟</translation>
 <translation id="4998873842614926205">確認變更</translation>
 <translation id="5000922062037820727">已封鎖 (建議)</translation>
+<translation id="5005498671520578047">複製密碼</translation>
 <translation id="5007392906805964215">查看</translation>
 <translation id="5008936837313706385">活動名稱</translation>
 <translation id="5010043101506446253">憑證授權單位</translation>
@@ -4653,7 +4653,6 @@
 <translation id="7521387064766892559">JavaScript</translation>
 <translation id="7522255036471229694">說出「Ok Google」</translation>
 <translation id="7525067979554623046">建立</translation>
-<translation id="7529411698175791732">檢查你的網際網路連線。如果問題持續發生，請嘗試登出，然後再次登入。</translation>
 <translation id="7530016656428373557">放電速率 (瓦特)</translation>
 <translation id="7531779363494549572">依序輕觸 [設定] &gt; [應用程式和通知] &gt; [通知]。</translation>
 <translation id="7532009420053991888">「<ph name="LINUX_APP_NAME" />」沒有回應。選取「強制關閉」即可關閉應用程式。</translation>
@@ -5794,7 +5793,6 @@
 <translation id="9050666287014529139">通關密語</translation>
 <translation id="9052208328806230490">你已透過 <ph name="EMAIL" /> 帳戶並使用 <ph name="CLOUD_PRINT_NAME" /> 為你的印表機註冊</translation>
 <translation id="9052404922357793350">繼續封鎖</translation>
-<translation id="9053091947372579468">你的裝置擁有 Chrome 授權，但你的使用者名稱尚未與管理控制台建立連結。如要註冊，請建立管理控制台帳戶。注意：如果你選擇使用自己的網域建立新的管理控制台帳戶，則必須在建立帳戶後完成網域驗證程序。https://g.co/ChromeEnterpriseAccount</translation>
 <translation id="9053563360605707198">雙面列印</translation>
 <translation id="9053893665344928494">記住我的選擇</translation>
 <translation id="9055636786322918818">強制執行 RC4 加密。由於 RC4 加密不安全，使用這個加密選項會提高風險。</translation>

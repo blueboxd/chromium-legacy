@@ -155,3 +155,29 @@ SYNC_TEST_F('ChromeVoxTtsBackgroundTest', 'AnnounceCapitalLetters', function() {
   assertEquals('BB', preprocess('BB'));
   assertEquals('A.', preprocess('A.'));
 });
+
+SYNC_TEST_F('ChromeVoxTtsBackgroundTest', 'NumberReadingStyle', function() {
+  const tts = new TtsBackground();
+  let lastSpokenTextString = '';
+  tts.speakUsingQueue_ = function(utterance, _) {
+    lastSpokenTextString = utterance.textString;
+  };
+
+  // Check the default preference.
+  assertEquals('asWords', localStorage['numberReadingStyle']);
+
+  tts.speak('100');
+  assertEquals('100', lastSpokenTextString);
+
+  tts.speak('An unanswered call lasts for 30 seconds.');
+  assertEquals(
+      'An unanswered call lasts for 30 seconds.', lastSpokenTextString);
+
+  localStorage['numberReadingStyle'] = 'asDigits';
+  tts.speak('100');
+  assertEquals('1 0 0', lastSpokenTextString);
+
+  tts.speak('An unanswered call lasts for 30 seconds.');
+  assertEquals(
+      'An unanswered call lasts for 3 0 seconds.', lastSpokenTextString);
+});

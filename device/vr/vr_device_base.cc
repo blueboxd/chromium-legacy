@@ -84,13 +84,6 @@ void VRDeviceBase::SetInlinePosesEnabled(bool enable) {
   inline_poses_enabled_ = enable;
 }
 
-void VRDeviceBase::RequestHitTest(
-    mojom::XRRayPtr ray,
-    mojom::XREnvironmentIntegrationProvider::RequestHitTestCallback callback) {
-  NOTREACHED() << "Unexpected call to a device without hit-test support";
-  std::move(callback).Run(base::nullopt);
-}
-
 void LogViewerType(VrViewerType type) {
   base::UmaHistogramSparse("VRViewerType", static_cast<int>(type));
 }

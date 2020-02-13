@@ -81,11 +81,11 @@ public class CastWebContentsIntentUtils {
             "com.google.android.apps.castshell.intent.action.ENABLE_TOUCH_INPUT";
 
     /**
-     * Action type of intent from CastWebContentsComponent to set interaction ID to cast window
-     * host.
+     * Action type of intent from CastWebContentsComponent to set interaction ID and conversation ID
+     * to cast window host.
      */
-    public static final String ACTION_SET_INTERACTION_ID =
-            "com.google.android.apps.castshell.intent.action.SET_INTERACTION_ID";
+    public static final String ACTION_SET_HOST_CONTEXT =
+            "com.google.android.apps.castshell.intent.action.SET_HOST_CONTEXT";
 
     /** Key of extra value in an intent, the value is a URI of cast://webcontents/<instanceId> */
     static final String INTENT_EXTRA_URI = "content_uri";
@@ -151,11 +151,18 @@ public class CastWebContentsIntentUtils {
             "com.google.android.apps.castshell.intent.extra.GESTURE_CONSUMED";
 
     /**
-     * Key of extra value of the intent ACTION_SET_INTERACTION_ID, value is an int of
+     * Key of extra value of the intent ACTION_SET_HOST_CONTEXT, value is an int of
      * interaction ID.
      */
     private static final String INTENT_EXTRA_INTERACTION_ID =
             "com.google.android.apps.castshell.intent.extra.INTERACTION_ID";
+
+    /**
+     * Key of extra value of the intent ACTION_SET_HOST_CONTEXT, value is a string of
+     * conversation ID.
+     */
+    private static final String INTENT_EXTRA_CONVERSATION_ID =
+            "com.google.android.apps.castshell.intent.extra.CONVERSATION_ID";
 
     @VisibilityType
     static final int VISIBITY_TYPE_UNKNOWN = VisibilityType.UNKNOWN;
@@ -280,9 +287,14 @@ public class CastWebContentsIntentUtils {
         return bundle.getBoolean(INTENT_EXTRA_GESTURE_CONSUMED);
     }
 
-    // Used by intent of ACTION_SET_INTERACTION_ID
+    // Used by intent of ACTION_SET_HOST_CONTEXT
     public static int getInteractionId(Intent in) {
         return in.getIntExtra(INTENT_EXTRA_INTERACTION_ID, 0);
+    }
+
+    // Used by intent of ACTION_SET_HOST_CONTEXT
+    public static String getConversationId(Intent in) {
+        return in.getStringExtra(INTENT_EXTRA_CONVERSATION_ID);
     }
 
     public static boolean isIntentOfActivityStopped(Intent in) {
@@ -441,11 +453,16 @@ public class CastWebContentsIntentUtils {
     }
 
     // CastWebContentsComponent -> CastWindowManager
-    public static Intent setInteractionId(String instanceId, int interactionId) {
-        if (DEBUG) Log.d(TAG, "setInteractionid interactionId=" + interactionId);
-        Intent intent = new Intent(ACTION_SET_INTERACTION_ID);
+    public static Intent setHostContext(
+            String instanceId, int interactionId, String conversationId) {
+        if (DEBUG) {
+            Log.d(TAG, "setInteractionid interactionId=%s; conversationID=%s", interactionId,
+                    conversationId);
+        }
+        Intent intent = new Intent(ACTION_SET_HOST_CONTEXT);
         intent.putExtra(INTENT_EXTRA_URI, getInstanceUri(instanceId).toString());
         intent.putExtra(INTENT_EXTRA_INTERACTION_ID, interactionId);
+        intent.putExtra(INTENT_EXTRA_CONVERSATION_ID, conversationId);
         return intent;
     }
 

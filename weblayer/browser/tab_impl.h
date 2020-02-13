@@ -75,6 +75,8 @@ class TabImpl : public Tab,
 
   bool has_new_tab_delegate() const { return new_tab_delegate_ != nullptr; }
 
+  bool IsActive();
+
 #if defined(OS_ANDROID)
   base::android::ScopedJavaGlobalRef<jobject> GetJavaTab() {
     return java_impl_;
@@ -145,6 +147,8 @@ class TabImpl : public Tab,
       content::WebContents* source,
       const content::OpenURLParams& params) override;
   void DidNavigateMainFramePostCommit(
+      content::WebContents* web_contents) override;
+  content::JavaScriptDialogManager* GetJavaScriptDialogManager(
       content::WebContents* web_contents) override;
   content::ColorChooser* OpenColorChooser(
       content::WebContents* web_contents,

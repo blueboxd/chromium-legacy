@@ -8,6 +8,7 @@
 #include <memory>
 #include <vector>
 
+#include "base/memory/weak_ptr.h"
 #include "base/observer_list_types.h"
 #include "base/optional.h"
 #include "net/base/net_export.h"
@@ -77,7 +78,7 @@ class NET_EXPORT_PRIVATE ResolveContext : public base::CheckedObserver {
   void InvalidateCaches(DnsSession* new_session);
 
   const DnsSession* current_session_for_testing() const {
-    return current_session_;
+    return current_session_.get();
   }
 
  private:
@@ -91,9 +92,12 @@ class NET_EXPORT_PRIVATE ResolveContext : public base::CheckedObserver {
   // accessing, should check that |current_session_| is valid and matches a
   // passed in DnsSession.
   //
+  // Using a WeakPtr, so even if a new session has the same pointer as an old
+  // invalidated session, it can be recognized as a different session.
+  //
   // TODO(crbug.com/1022059): Make const DnsSession once server stats have been
   // moved and no longer need to be read from DnsSession for availability logic.
-  DnsSession* current_session_ = nullptr;
+  base::WeakPtr<DnsSession> current_session_;
   std::vector<bool> doh_server_availability_;
 };
 

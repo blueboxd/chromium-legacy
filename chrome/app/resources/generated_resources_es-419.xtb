@@ -687,6 +687,7 @@
 <translation id="1926339101652878330">Esta configuración se controla por medio de una política de la empresa. Ponte en contacto con tu administrador para obtener más información.</translation>
 <translation id="1927632033341042996">Dedo <ph name="NEW_FINGER_NUMBER" /></translation>
 <translation id="1928202201223835302">Ingresar PIN anterior</translation>
+<translation id="1928696683969751773">Actualizaciones</translation>
 <translation id="1929546189971853037">Leer el historial de navegación en todos los dispositivos registrados</translation>
 <translation id="1931152874660185993">No hay componentes instalados.</translation>
 <translation id="1932098463447129402">No antes</translation>
@@ -1887,7 +1888,6 @@ Para administrar la configuración de esta cuenta, instala la app de Family Lin
 <translation id="3603177256297531067">No se pudo traducir esta página</translation>
 <translation id="3603622770190368340">Obtener certificado de red</translation>
 <translation id="3605780360466892872">Amancio</translation>
-<translation id="3608436266458100337">Modo de lectura</translation>
 <translation id="3608576286259426129">Vista previa de la imagen del usuario</translation>
 <translation id="3610369246614755442">El ventilador del conector necesita asistencia técnica</translation>
 <translation id="361106536627977100">Datos de Flash</translation>
@@ -2390,7 +2390,6 @@ Para administrar la configuración de esta cuenta, instala la app de Family Lin
 <translation id="4285418559658561636">Actualizar contraseña</translation>
 <translation id="4285498937028063278">No fijar</translation>
 <translation id="428565720843367874">Se produjo un error inesperado con el software antivirus al examinar este archivo.</translation>
-<translation id="4287502004382794929">No tienes suficientes licencias de software para inscribir este dispositivo. Comunícate con el departamento de ventas para adquirir más licencias. Si crees que este mensaje apareció por error, comunícate con un el servicio de ayuda.</translation>
 <translation id="4289540628985791613">Descripción general</translation>
 <translation id="4295072614469448764">La app está disponible en tu terminal. Es posible que haya un ícono en el Selector.</translation>
 <translation id="4295979599050707005">Vuelve a acceder para confirmar que tu cuenta <ph name="USER_EMAIL" /> se puede usar con sitios web, apps y extensiones en Chrome y Google Play. También puedes quitarla. <ph name="LINK_BEGIN" />Más información<ph name="LINK_END" /></translation>
@@ -2870,6 +2869,7 @@ Para administrar la configuración de esta cuenta, instala la app de Family Lin
 <translation id="4998430619171209993">Sí</translation>
 <translation id="4998873842614926205">Confirmar cambios</translation>
 <translation id="5000922062037820727">Bloqueado (recomendado)</translation>
+<translation id="5005498671520578047">Copiar contraseña</translation>
 <translation id="5007392906805964215">Revisar</translation>
 <translation id="5008936837313706385">Nombre de la actividad</translation>
 <translation id="5010043101506446253">Autoridad de certificación</translation>
@@ -4652,7 +4652,6 @@ Para administrar la configuración de esta cuenta, instala la app de Family Lin
 <translation id="7521387064766892559">JavaScript</translation>
 <translation id="7522255036471229694">Di "OK Google".</translation>
 <translation id="7525067979554623046">Crear</translation>
-<translation id="7529411698175791732">Comprueba tu conexión a Internet. Si el problema persiste, intenta salir de tu cuenta y acceder de nuevo.</translation>
 <translation id="7530016656428373557">Tasa de descarga en vatios</translation>
 <translation id="7531779363494549572">Ve a Configuración &gt; Apps y notificaciones &gt; Notificaciones.</translation>
 <translation id="7532009420053991888"><ph name="LINUX_APP_NAME" /> no responde. Selecciona "Forzar cierre" para cerrar la app.</translation>
@@ -5794,7 +5793,6 @@ Mantén el archivo de clave en un lugar seguro. Debes crear las nuevas versiones
 <translation id="9050666287014529139">Frase de contraseña</translation>
 <translation id="9052208328806230490">Registraste tus impresoras con <ph name="CLOUD_PRINT_NAME" /> utilizando la cuenta <ph name="EMAIL" /></translation>
 <translation id="9052404922357793350">Seguir bloqueando</translation>
-<translation id="9053091947372579468">Tu dispositivo incluye una licencia de Chrome, pero tu nombre de usuario no está asociado a una consola del administrador. Para continuar con la inscripción, crea una cuenta de consola del administrador. Nota: Si eliges usar tu propio dominio para crear una nueva cuenta de consola del administrador, también deberás completar la verificación del dominio después del registro. https://g.co/ChromeEnterpriseAccount</translation>
 <translation id="9053563360605707198">Imprimir de ambos lados</translation>
 <translation id="9053893665344928494">Recordar mi selección</translation>
 <translation id="9055636786322918818">Aplica la encriptación RC4. Esta opción es riesgosa, ya que los cifrados RC4 son inseguros.</translation>

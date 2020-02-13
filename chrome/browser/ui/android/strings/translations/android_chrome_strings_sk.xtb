@@ -281,6 +281,7 @@
 <translation id="3137521801621304719">Ukončiť režim inkognito</translation>
 <translation id="3140134512074889489">Ak chcete skenovať QR kód, povoľte svoj fotoaparát</translation>
 <translation id="3143515551205905069">Zrušiť synchronizáciu</translation>
+<translation id="314939179385989105">Domovská stránky Chromu</translation>
 <translation id="3157842584138209013">Ak chcete zistiť, koľko dát ste ušetrili, klepnite na tlačidlo Ďalšie možnosti</translation>
 <translation id="3166827708714933426">Skratky pre karty a okná</translation>
 <translation id="3181954750937456830">Bezpečné prehliadanie (chráni vás aj zariadenie pred nebezpečnými webmi)</translation>
@@ -727,6 +728,7 @@ Ak chcete vyhľadať nejaké slovo, dlho ho stlačte. Ak chcete vyhľadávanie s
 <translation id="6437478888915024427">Informácie o stránke</translation>
 <translation id="6441734959916820584">Názov je príliš dlhý</translation>
 <translation id="6444421004082850253">{FILE_COUNT,plural, =1{# obrázok}few{# obrázky}many{# Images}other{# obrázkov}}</translation>
+<translation id="6447558397796644647">Príslušnú záložku sa nepodarilo nájsť. Skontrolujte pravopis alebo pridajte novú.</translation>
 <translation id="6447842834002726250">Súbory cookie</translation>
 <translation id="6461962085415701688">Súbor sa nedá otvoriť</translation>
 <translation id="6464977750820128603">Môžete si zobraziť weby, ktoré navštevujete v Chrome, a nastaviť pre ne časovače.\n\nGoogle získa informácie o weboch, pre ktoré nastavíte časovače, a údaje o tom, koľko času na nich strávite. Tieto informácie sa použijú na zlepšenie digitálnej rovnováhy.</translation>
@@ -802,6 +804,7 @@ Ak chcete vyhľadať nejaké slovo, dlho ho stlačte. Ak chcete vyhľadávanie s
 <translation id="6990079615885386641">Získať aplikáciu z Obchodu Google Play: <ph name="APP_ACTION" /></translation>
 <translation id="6992289844737586249">Opýtať sa pred povolením webu používať váš mikrofón (odporúčané)</translation>
 <translation id="6995899638241819463">Upozorňovať pri prezradení hesiel v rámci porušenia ochrany údajov</translation>
+<translation id="7000754031042624318">Vypnuté v nastaveniach Androidu</translation>
 <translation id="7015203776128479407">Počiatočné nastavenie synchronizácie nebolo dokončené. Synchronizácia je vypnutá.</translation>
 <translation id="7016516562562142042">Povolené v aktuálnom vyhľadávači</translation>
 <translation id="7022756207310403729">Otvoriť v prehliadači</translation>

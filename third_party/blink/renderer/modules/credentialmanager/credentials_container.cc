@@ -8,8 +8,10 @@
 #include <utility>
 
 #include "build/build_config.h"
+#include "third_party/blink/public/common/sms/sms_receiver_outcome.h"
 #include "third_party/blink/public/mojom/credentialmanager/credential_manager.mojom-blink.h"
 #include "third_party/blink/public/mojom/feature_policy/feature_policy.mojom-blink.h"
+#include "third_party/blink/public/mojom/sms/sms_receiver.mojom-blink.h"
 #include "third_party/blink/renderer/bindings/core/v8/script_promise.h"
 #include "third_party/blink/renderer/bindings/core/v8/script_promise_resolver.h"
 #include "third_party/blink/renderer/bindings/modules/v8/v8_authentication_extensions_client_inputs.h"
@@ -17,6 +19,7 @@
 #include "third_party/blink/renderer/bindings/modules/v8/v8_credential_creation_options.h"
 #include "third_party/blink/renderer/bindings/modules/v8/v8_credential_request_options.h"
 #include "third_party/blink/renderer/bindings/modules/v8/v8_federated_credential_request_options.h"
+#include "third_party/blink/renderer/bindings/modules/v8/v8_otp_credential_request_options.h"
 #include "third_party/blink/renderer/bindings/modules/v8/v8_public_key_credential_creation_options.h"
 #include "third_party/blink/renderer/bindings/modules/v8/v8_public_key_credential_request_options.h"
 #include "third_party/blink/renderer/core/dom/abort_signal.h"
@@ -35,7 +38,9 @@
 #include "third_party/blink/renderer/modules/credentialmanager/credential.h"
 #include "third_party/blink/renderer/modules/credentialmanager/credential_manager_proxy.h"
 #include "third_party/blink/renderer/modules/credentialmanager/credential_manager_type_converters.h"
+#include "third_party/blink/renderer/modules/credentialmanager/credential_metrics.h"
 #include "third_party/blink/renderer/modules/credentialmanager/federated_credential.h"
+#include "third_party/blink/renderer/modules/credentialmanager/otp_credential.h"
 #include "third_party/blink/renderer/modules/credentialmanager/password_credential.h"
 #include "third_party/blink/renderer/modules/credentialmanager/public_key_credential.h"
 #include "third_party/blink/renderer/modules/credentialmanager/scoped_promise_resolver.h"
@@ -304,13 +309,23 @@ DOMException* CredentialManagerErrorToDOMException(
 }
 
 // Abort an ongoing PublicKeyCredential create() or get() operation.
-void Abort(ScriptState* script_state) {
+void AbortPublicKeyRequest(ScriptState* script_state) {
   if (!script_state->ContextIsValid())
     return;
 
   auto* authenticator =
       CredentialManagerProxy::From(script_state)->Authenticator();
   authenticator->Cancel();
+}
+
+// Abort an ongoing OtpCredential get() operation.
+void AbortOtpRequest(ScriptState* script_state) {
+  if (!script_state->ContextIsValid())
+    return;
+
+  auto* sms_receiver =
+      CredentialManagerProxy::From(script_state)->SmsReceiver();
+  sms_receiver->Abort();
 }
 
 void OnStoreComplete(std::unique_ptr<ScopedPromiseResolver> scoped_resolver) {
@@ -461,6 +476,38 @@ void OnGetAssertionComplete(
   }
 }
 
+void OnSmsReceive(ScriptPromiseResolver* resolver,
+                  mojom::blink::SmsStatus status,
+                  const WTF::String& otp,
+                  const WTF::String& sms) {
+  AssertSecurityRequirementsBeforeResponse(
+      resolver, RequiredOriginType::kSecureAndSameWithAncestors);
+  auto& document =
+      Document::From(*ExecutionContext::From(resolver->GetScriptState()));
+  ukm::SourceId source_id = document.UkmSourceID();
+  ukm::UkmRecorder* recorder = document.UkmRecorder();
+
+  // TODO(crbug.com/1045231): Add performance metrics.
+  if (status == mojom::blink::SmsStatus::kTimeout) {
+    RecordSmsOutcome(SMSReceiverOutcome::kTimeout, source_id, recorder);
+    resolver->Reject(MakeGarbageCollected<DOMException>(
+        DOMExceptionCode::kTimeoutError, "OTP retrieval timed out."));
+    return;
+  } else if (status == mojom::blink::SmsStatus::kAborted) {
+    RecordSmsOutcome(SMSReceiverOutcome::kAborted, source_id, recorder);
+    resolver->Reject(MakeGarbageCollected<DOMException>(
+        DOMExceptionCode::kAbortError, "OTP retrieval was aborted."));
+    return;
+  } else if (status == mojom::blink::SmsStatus::kCancelled) {
+    RecordSmsOutcome(SMSReceiverOutcome::kCancelled, source_id, recorder);
+    resolver->Reject(MakeGarbageCollected<DOMException>(
+        DOMExceptionCode::kAbortError, "OTP retrieval was cancelled."));
+    return;
+  }
+  RecordSmsOutcome(SMSReceiverOutcome::kSuccess, source_id, recorder);
+  resolver->Resolve(MakeGarbageCollected<OtpCredential>(otp));
+}
+
 }  // namespace
 
 CredentialsContainer::CredentialsContainer() = default;
@@ -542,7 +589,7 @@ ScriptPromise CredentialsContainer::get(
         return promise;
       }
       options->signal()->AddAlgorithm(
-          WTF::Bind(&Abort, WTF::Passed(WrapPersistent(script_state))));
+          WTF::Bind(&AbortPublicKeyRequest, WrapPersistent(script_state)));
     }
 
     auto mojo_options =
@@ -566,6 +613,35 @@ ScriptPromise CredentialsContainer::get(
           DOMExceptionCode::kNotSupportedError,
           "Required parameters missing in 'options.publicKey'."));
     }
+    return promise;
+  }
+
+  if (options->hasOtp() && options->otp()->hasTransport()) {
+    if (!options->otp()->transport().Contains("sms")) {
+      resolver->Reject(MakeGarbageCollected<DOMException>(
+          DOMExceptionCode::kNotSupportedError,
+          "Unsupported transport type for OTP Credentials"));
+      return promise;
+    }
+
+    if (options->hasSignal()) {
+      if (options->signal()->aborted()) {
+        resolver->Reject(MakeGarbageCollected<DOMException>(
+            DOMExceptionCode::kAbortError, "Request has been aborted."));
+        return promise;
+      }
+      options->signal()->AddAlgorithm(
+          WTF::Bind(&AbortOtpRequest, WrapPersistent(script_state)));
+    }
+
+    if (!CheckSecurityRequirementsBeforeRequest(
+            resolver, RequiredOriginType::kSecureAndSameWithAncestors)) {
+      return promise;
+    }
+
+    auto* sms_receiver =
+        CredentialManagerProxy::From(script_state)->SmsReceiver();
+    sms_receiver->Receive(WTF::Bind(&OnSmsReceive, WrapPersistent(resolver)));
     return promise;
   }
 
@@ -735,7 +811,7 @@ ScriptPromise CredentialsContainer::create(
         return promise;
       }
       options->signal()->AddAlgorithm(
-          WTF::Bind(&Abort, WTF::Passed(WrapPersistent(script_state))));
+          WTF::Bind(&AbortPublicKeyRequest, WrapPersistent(script_state)));
     }
 
     if (options->publicKey()->hasAuthenticatorSelection() &&

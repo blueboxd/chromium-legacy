@@ -685,7 +685,8 @@ void WindowOcclusionTracker::TrackedWindowAddedToRoot(Window* window) {
     auto* host = root_window->GetHost();
     if (host) {
       host->AddObserver(this);
-      host->EnableNativeWindowOcclusionTracking();
+      native_window_occlusion_tracker_.EnableNativeWindowOcclusionTracking(
+          host);
     }
   }
   MaybeComputeOcclusion();
@@ -701,7 +702,8 @@ void WindowOcclusionTracker::TrackedWindowRemovedFromRoot(Window* window) {
     RemoveObserverFromWindowAndDescendants(root_window);
     root_windows_.erase(root_window_state_it);
     root_window->GetHost()->RemoveObserver(this);
-    root_window->GetHost()->DisableNativeWindowOcclusionTracking();
+    native_window_occlusion_tracker_.DisableNativeWindowOcclusionTracking(
+        root_window->GetHost());
   }
 }
 

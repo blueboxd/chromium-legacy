@@ -218,11 +218,6 @@
 <translation id="6304318647555713317">Odjemalec</translation>
 <translation id="6381670701864002291">Nekaj drugega.</translation>
 <translation id="6398765197997659313">Izhod iz celozaslonskega načina</translation>
-<translation id="6411861157501911556">Če želite uporabljati izdelek <ph name="PRODUCT_NAME" />, morate odobriti dovoljenje »Dostopnost«, da bo mogoče v tem Macu vstavljati vnose iz oddaljenega računalnika.
-
-Če želite odobriti to dovoljenje, spodaj kliknite »<ph name="BUTTON_NAME" />«, da odprete podokno z nastavitvami možnosti »Dostopnost«, nato označite polje zraven »<ph name="SERVICE_SCRIPT_NAME" />«.
-
-Če je »<ph name="SERVICE_SCRIPT_NAME" />« že označeno, ga odznačite in znova označite.</translation>
 <translation id="6441316101718669559">Integracija namizja v tem okolju ni podprta. Aplikacijo lahko še vedno uporabljate, vendar bo uporabniška izkušnja okrnjena.</translation>
 <translation id="652218476070540101">PIN za ta računalnik se posodablja ...</translation>
 <translation id="6527303717912515753">Skupna raba</translation>

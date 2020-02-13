@@ -229,11 +229,6 @@ Se a opção "<ph name="SERVICE_SCRIPT_NAME" />" já estiver marcada, desmarque-
 <translation id="6304318647555713317">Cliente</translation>
 <translation id="6381670701864002291">Outro.</translation>
 <translation id="6398765197997659313">Sair do modo tela cheia</translation>
-<translation id="6411861157501911556">Para usar o <ph name="PRODUCT_NAME" />, você precisa conceder a permissão "Acessibilidade" para que a entrada da máquina remota possa ser injetada neste Mac.
-
-Para conceder essa permissão, clique em "<ph name="BUTTON_NAME" />" abaixo para abrir o painel de preferências "Acessibilidade" e marque a caixa ao lado da opção "<ph name="SERVICE_SCRIPT_NAME" />".
-
-Se "<ph name="SERVICE_SCRIPT_NAME" />" já estiver marcada, desmarque-a e marque-a novamente.</translation>
 <translation id="6441316101718669559">A integração da área de trabalho não é compatível com esta plataforma. Você ainda pode usar o aplicativo, mas sua experiência de usuário será reduzida.</translation>
 <translation id="652218476070540101">O PIN para este computador está sendo atualizado...</translation>
 <translation id="6527303717912515753">Compartilhar</translation>

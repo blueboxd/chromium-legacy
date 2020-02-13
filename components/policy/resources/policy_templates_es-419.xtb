@@ -372,11 +372,6 @@
           Si se inhabilita o no se establece, no se permitirá la configuración de las cuentas de Kerberos. No se podrán agregar cuentas de Kerberos ni usar la autenticación Kerberos. Se borrarán todas las cuentas de Kerberos existentes y todas las contraseñas almacenadas.</translation>
 <translation id="1561424797596341174">Anulaciones de políticas en compilaciones de depuración del host de acceso remoto</translation>
 <translation id="1561967320164410511">U2F más extensiones para atestación individual</translation>
-<translation id="1574554504290354326">Esta configuración es obsoleta. En su lugar, usa SafeBrowsingExtendedReportingEnabled. Habilitar o inhabilitar SafeBrowsingExtendedReportingEnabled es equivalente a establecer SafeBrowsingExtendedReportingOptInAllowed como falsa.
-
-      Si se establece esta política como falsa, los usuarios ya no podrán enviar cierta información del sistema ni contenido de páginas a los servidores de Google. Si se establece como verdadera o no se configura, los usuarios podrán enviar cierta información del sistema y contenido de páginas a la Navegación segura para detectar apps y sitios peligrosos.
-
-      Para obtener más información sobre la Navegación segura, consulta https://developers.google.com/safe-browsing.</translation>
 <translation id="1583248206450240930">Utilizar <ph name="PRODUCT_FRAME_NAME" /> de manera predeterminada</translation>
 <translation id="1599424828227887013">Habilitar el aislamiento de sitios para orígenes específicos en dispositivos Android</translation>
 <translation id="1608755754295374538">Las URL que recibirán acceso a dispositivos de captura de audio sin solicitarlo</translation>
@@ -4278,21 +4273,6 @@ Si se selecciona "U2F_EXTENDED", el segundo factor integrado proporcionará func
       Esta política solo afecta a los usuarios no afiliados.
       </translation>
 <translation id="7683777542468165012">Actualizar política dinámica</translation>
-<translation id="7684516445147212248">La configuración de esta política habilitará o inhabilitará la autenticación ambiental para los perfiles de incógnito y de invitado en <ph name="PRODUCT_NAME" />.
-
-      La autenticación ambiental es la autenticación por http con credenciales predeterminadas, si no se proporcionan credenciales específicas mediante esquemas de respuesta o desafío de NTLM, Kerberos y Negotiate.
-
-      Si estableces la opción <ph name="REGULAR_ONLY_OPTION_NAME" /> (valor 0), solo se habilitará la autenticación ambiental para las sesiones comunes. No se permitirá esta autenticación en las sesiones de incógnito y de invitado.
-
-      Si estableces la opción <ph name="INCOGNITO_AND_REGULAR_OPTION_NAME" /> (valor 1), se habilitará la autenticación para las sesiones comunes y de incógnito. No se permitirá esta autenticación en las sesiones de invitado.
-
-      Si estableces la opción <ph name="GUEST_AND_REGULAR_OPTION_NAME" /> (valor 2), se habilitará la autenticación para las sesiones comunes y de invitado. No se permitirá esta autenticación en las sesiones de incógnito.
-
-      Si estableces la opción <ph name="ALL_OPTION_NAME" /> (valor 3), se habilitará la autenticación para todas las sesiones.
-
-      Ten en cuenta que siempre se permite la autenticación ambiental en los perfiles comunes.
-
-      Si no configuras esta política, no se podrá implementar la autenticación ambiental para las sesiones de incógnito y de invitado en las próximas versiones de <ph name="PRODUCT_NAME" />, ya que no se permitirán.</translation>
 <translation id="7687943045976362719">Si se configura esta política, <ph name="PRODUCT_FRAME_NAME" /> determinará los tipos de contenido especificados.
 
           Si no se configura esta política, se usará el procesador determinado en todos los sitios. (Se puede usar la política <ph name="CHROME_FRAME_RENDERER_SETTINGS_POLICY_NAME" /> para configurar este procesador).</translation>

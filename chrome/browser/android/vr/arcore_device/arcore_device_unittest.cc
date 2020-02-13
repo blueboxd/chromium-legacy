@@ -222,22 +222,4 @@ TEST_F(ArCoreDeviceTest, GetFrameData) {
   GetFrameData();
 }
 
-TEST_F(ArCoreDeviceTest, RequestHitTest) {
-  CreateSession();
-
-  mojom::XRRayPtr ray = mojom::XRRay::New();
-  std::vector<mojom::XRHitResultPtr> hit_results;
-  auto callback =
-      [](std::vector<mojom::XRHitResultPtr>* hit_results,
-         base::Optional<std::vector<mojom::XRHitResultPtr>> results) {
-        *hit_results = std::move(results.value());
-      };
-
-  environment_provider->RequestHitTest(std::move(ray),
-                                       base::BindOnce(callback, &hit_results));
-  // Have to get frame data to trigger the hit-test calculation.
-  GetFrameData();
-  EXPECT_FALSE(hit_results.empty());
-}
-
 }  // namespace device

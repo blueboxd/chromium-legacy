@@ -133,7 +133,6 @@ class RulesetSource {
   // Returns null on failure.
   static std::unique_ptr<RulesetSource> CreateTemporarySource(
       size_t id,
-      size_t priority,
       api::declarative_net_request::SourceType type,
       size_t rule_count_limit,
       ExtensionId extension_id);
@@ -141,7 +140,6 @@ class RulesetSource {
   RulesetSource(base::FilePath json_path,
                 base::FilePath indexed_path,
                 size_t id,
-                size_t priority,
                 api::declarative_net_request::SourceType type,
                 size_t rule_count_limit,
                 ExtensionId extension_id);
@@ -157,9 +155,8 @@ class RulesetSource {
   // Path to the indexed flatbuffer rules.
   const base::FilePath& indexed_path() const { return indexed_path_; }
 
-  // Each ruleset source within an extension has a distinct ID and priority.
+  // Each ruleset source within an extension has a distinct ID.
   size_t id() const { return id_; }
-  size_t priority() const { return priority_; }
 
   // The origin type for this ruleset. Can be from the manifest or dynamic.
   api::declarative_net_request::SourceType type() const { return type_; }
@@ -205,7 +202,6 @@ class RulesetSource {
   base::FilePath json_path_;
   base::FilePath indexed_path_;
   size_t id_;
-  size_t priority_;
   api::declarative_net_request::SourceType type_;
   size_t rule_count_limit_;
   ExtensionId extension_id_;

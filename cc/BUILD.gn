@@ -385,7 +385,6 @@ cc_component("cc") {
   deps = [
     "//base",
     "//base/third_party/dynamic_annotations",
-    "//components/ukm",
     "//components/viz/client",
     "//gpu",
     "//gpu/command_buffer/client:gles2_interface",
@@ -395,6 +394,7 @@ cc_component("cc") {
     "//media",  # For VideoLayerImpl.
     "//mojo/public/cpp/bindings:struct_traits",
     "//services/metrics/public/cpp:ukm_builders",
+    "//services/metrics/public/mojom",
     "//ui/events:events_base",
     "//ui/gfx",
     "//ui/gfx/geometry",

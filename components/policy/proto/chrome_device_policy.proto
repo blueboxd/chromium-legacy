@@ -1024,6 +1024,12 @@ message DisplayRotationDefaultProto {
   optional Rotation display_rotation_default = 1;
 }
 
+// This setting is controlled by the device policy
+// DeviceLoginScreenPrivacyScreenEnabled.
+message DeviceLoginScreenPrivacyScreenEnabledProto {
+  optional bool enabled = 1 [default = false];
+}
+
 // This setting is configured by the device policy DeviceDisplayResolution.
 // If |device_display_resolution| contains a value, then it's treated as a JSON
 // object that uses the schema defined for DeviceDisplayResolution policy.
@@ -1682,4 +1688,6 @@ message ChromeDeviceSettingsProto {
   optional StringPolicyProto minimum_chrome_version_enforced = 97;
   optional SystemProxySettingsProto system_proxy_settings = 98;
   optional IntegerPolicyProto device_login_screen_chrome_variations_type = 99;
+  optional DeviceLoginScreenPrivacyScreenEnabledProto
+      device_login_screen_privacy_screen_enabled = 100;
 }

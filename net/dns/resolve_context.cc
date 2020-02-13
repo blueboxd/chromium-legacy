@@ -28,13 +28,13 @@ base::Optional<size_t> ResolveContext::DohServerIndexToUse(
   if (!IsCurrentSession(session))
     return base::nullopt;
 
-  DCHECK_LT(starting_doh_server_index,
-            session->config().dns_over_https_servers.size());
+  CHECK_LT(starting_doh_server_index, doh_server_availability_.size());
   size_t index = starting_doh_server_index;
   base::Time oldest_server_failure;
   base::Optional<size_t> oldest_available_server_failure_index;
 
   do {
+    CHECK_LT(index, doh_server_availability_.size());
     // For a server to be considered "available", the server must have a
     // successful probe status if we are in AUTOMATIC mode.
     if (secure_dns_mode == DnsConfig::SecureDnsMode::SECURE ||
@@ -82,8 +82,7 @@ bool ResolveContext::GetDohServerAvailability(size_t doh_server_index,
   if (!IsCurrentSession(session))
     return false;
 
-  DCHECK_LT(doh_server_index, doh_server_availability_.size());
-
+  CHECK_LT(doh_server_index, doh_server_availability_.size());
   return doh_server_availability_[doh_server_index];
 }
 
@@ -93,9 +92,8 @@ void ResolveContext::SetProbeSuccess(size_t doh_server_index,
   if (!IsCurrentSession(session))
     return;
 
-  DCHECK_LT(doh_server_index, session->config().dns_over_https_servers.size());
-
   bool doh_available_before = NumAvailableDohServers(session) > 0;
+  CHECK_LT(doh_server_index, doh_server_availability_.size());
   doh_server_availability_[doh_server_index] = success;
 
   // TODO(crbug.com/1022059): Consider figuring out some way to only for the
@@ -111,22 +109,31 @@ void ResolveContext::InvalidateCaches(DnsSession* new_session) {
   // DNS config is constant for any given session, so if the current session is
   // unchanged, any per-session data is safe to keep, even if it's dependent on
   // a specific config.
-  if (new_session && new_session == current_session_)
+  if (new_session && new_session == current_session_.get())
     return;
-
-  current_session_ = new_session;
 
   doh_server_availability_.clear();
   if (new_session) {
+    current_session_ = new_session->GetWeakPtr();
     doh_server_availability_.insert(
         doh_server_availability_.begin(),
         new_session->config().dns_over_https_servers.size(), false);
+    CHECK_EQ(new_session->config().dns_over_https_servers.size(),
+             doh_server_availability_.size());
+  } else {
+    current_session_.reset();
   }
 }
 
 bool ResolveContext::IsCurrentSession(const DnsSession* session) const {
-  DCHECK(session);
-  return session == current_session_;
+  CHECK(session);
+  if (session == current_session_.get()) {
+    CHECK_EQ(doh_server_availability_.size(),
+             current_session_->config().dns_over_https_servers.size());
+    return true;
+  }
+
+  return false;
 }
 
 }  // namespace net

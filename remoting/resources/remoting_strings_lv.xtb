@@ -229,11 +229,6 @@ Ja kastīte “<ph name="SERVICE_SCRIPT_NAME" />” jau ir atzīmēta, noņemiet
 <translation id="6304318647555713317">Klients</translation>
 <translation id="6381670701864002291">Cita problēma.</translation>
 <translation id="6398765197997659313">Iziet no pilnekrāna režīma</translation>
-<translation id="6411861157501911556">Lai izmantotu <ph name="PRODUCT_NAME" />, jums ir nepieciešams piešķirt “Pieejamības” atļauju, lai šajā Mac datorā varētu ievadīt attālā datora ievadi.
-
-Lai piešķirtu šo atļauju, tālāk noklikšķiniet uz pogas “<ph name="BUTTON_NAME" />” un atveriet preferenču rūti “Pieejamība”, pēc tam atzīmējiet kastīti, kas atrodas blakus “<ph name="SERVICE_SCRIPT_NAME" />”.
-
-Ja kastīte “<ph name="SERVICE_SCRIPT_NAME" />” jau ir atzīmēta, noņemiet atzīmi un atzīmējiet vēlreiz.</translation>
 <translation id="6441316101718669559">Šajā platformā netiek atbalstīta darbvirsmas integrācija. Jūs joprojām varat izmantot lietojumprogrammu, taču lietotāja pieredze nebūs pietiekami laba.</translation>
 <translation id="652218476070540101">Notiek šī datora PIN atjaunināšana…</translation>
 <translation id="6527303717912515753">Kopīgot</translation>

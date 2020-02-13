@@ -375,11 +375,6 @@ Google에 전송됩니다.  사용 중지되면 이 정보가 Google에 전송�
           이 정책이 사용 중지되거나 설정되지 않으면 Kerberos 계정 설정이 사용 중지됩니다. Kerberos 계정을 추가할 수 없으며 Kerberos 인증도 사용할 수 없습니다. 기존의 모든 Kerberos 계정은 삭제되며 저장된 모든 비밀번호도 삭제됩니다.</translation>
 <translation id="1561424797596341174">정책은 원격 액세스 호스트의 디버그 빌드를 무시합니다.</translation>
 <translation id="1561967320164410511">개별 인증을 위한 U2F 및 확장 프로그램</translation>
-<translation id="1574554504290354326">이 설정은 지원이 중단되었습니다. 대신 SafeBrowsingExtendedReportingEnabled를 사용하세요. SafeBrowsingExtendedReportingEnabled를 사용 또는 사용 중지하려면 SafeBrowsingExtendedReportingOptInAllowed를 False로 설정합니다.
-
-      이 정책을 False로 설정하면 사용자가 일부 시스템 정보 및 페이지 콘텐츠를 Google 서버로 전송할 수 없게 됩니다. 이 설정을 True로 설정하거나 구성하지 않으면 사용자가 위험한 앱 및 사이트를 감지하기 위해 일부 시스템 정보와 페이지 콘텐츠를 세이프 브라우징으로 전송할 수 있습니다.
-
-      세이프 브라우징에 관해 자세히 알아보려면 https://developers.google.com/safe-browsing 페이지를 참조하세요.</translation>
 <translation id="1583248206450240930">기본으로 <ph name="PRODUCT_FRAME_NAME" /> 사용</translation>
 <translation id="1599424828227887013">Android 기기에서 지정된 출처의 사이트 격리 사용 설정</translation>
 <translation id="1608755754295374538">별도 메시지를 표시하지 않고 오디오 캡처 기기에 대한 액세스 권한이 부여되는 URL입니다.</translation>
@@ -1123,9 +1118,9 @@ Google에 전송됩니다.  사용 중지되면 이 정보가 Google에 전송�
       이 정책을 설정하지 않으면 사용자가 데이터 압축 프록시 기능 사용 여부를 선택할 수 있습니다.</translation>
 <translation id="2575738503503093841">정책 무효화를 받은 뒤 기기 관리 서비스로부터 새 정책을 가져오는 시간 사이의 최대 지연 시간을 밀리초로 지정합니다.
 
-      이 정책이 설정되면 기본값인 10000밀리초를 덮어씁니다. 이 정책에 유효한 값의 범위는 1000(1초)에서 300000(5분)입니다. 이 범위 이외의 값을 지정하면 해당 범위 내의 값으로 잘립니다.
+      이 정책이 설정되면 기본값인 10,000밀리초를 덮어씁니다. 이 정책에 유효한 값의 범위는 1,000(1초)에서 300,000(5분)입니다. 이 범위 이외의 값을 지정하면 해당 범위 내의 값으로 잘립니다.
 
-      이 정책이 설정되지 않은 경우 <ph name="PRODUCT_NAME" />에서 기본값인 10000밀리초를 사용합니다.</translation>
+      이 정책이 설정되지 않은 경우 <ph name="PRODUCT_NAME" />에서 기본값인 10,000밀리초를 사용합니다.</translation>
 <translation id="257788512393330403">6시간마다 비밀번호를 입력해야 합니다.</translation>
 <translation id="2580104054820772954">스캔 평가가 확인될 때까지 파일 전송 지연</translation>
 <translation id="2582582399758251985">이 설정을 사용하면 <ph name="PRODUCT_NAME" />에서 내장 인증서 확인 기능을 사용하여 서버 인증서를 확인합니다.
@@ -4395,21 +4390,6 @@ Google에 전송됩니다.  사용 중지되면 이 정보가 Google에 전송�
       이 정책은 연결되지 않은 사용자에게만 영향을 미칩니다.
       </translation>
 <translation id="7683777542468165012">동적 정책 새로고침</translation>
-<translation id="7684516445147212248">이 정책을 설정하면 <ph name="PRODUCT_NAME" />의 시크릿 모드와 게스트 프로필에서 수동 인증을 허용/금지할 수 있습니다.
-
-      수동 인증은 명시적인 사용자 인증 정보가 자격 확인/응답 유형의 NTLM/Kerberos/Negotiate 방식을 통해 제공되지 않는 경우 기본 사용자 인증 정보를 사용하는 HTTP 인증입니다.
-
-      <ph name="REGULAR_ONLY_OPTION_NAME" />(값 0)를 설정하면 일반 세션에만 수동 인증을 사용할 수 있습니다. 시크릿 모드와 게스트 세션에서는 수동 인증을 사용할 수 없습니다.
-
-      <ph name="INCOGNITO_AND_REGULAR_OPTION_NAME" />(값 1)를 설정하면 시크릿 모드와 일반 세션에서 수동 인증을 사용할 수 있습니다 게스트 세션에서는 수동 인증을 사용할 수 없습니다.
-
-      <ph name="GUEST_AND_REGULAR_OPTION_NAME" />(값 2)를 설정하면 게스트 세션과 일반 세션에서 수동 인증을 사용할 수 있습니다. 시크릿 모드 세션에서는 수동 인증을 사용할 수 없습니다.
-
-      <ph name="ALL_OPTION_NAME" />(값 3)을 설정하면 모든 세션에서 수동 인증을 사용할 수 있습니다.
-
-      일반 프로필에서는 수동 인증을 항상 사용할 수 있습니다.
-
-      정책을 설정하지 않으면 향후 <ph name="PRODUCT_NAME" /> 버전에서 허용되지 않으므로 시크릿 모드와 게스트 세션에서 수동 인증을 사용할 수 없게 됩니다.</translation>
 <translation id="7687943045976362719">이 정책이 설정되면 특정 콘텐츠 유형은 <ph name="PRODUCT_FRAME_NAME" />에서 처리됩니다.
 
           이 정책이 설정되지 않으면 모든 사이트에서 기본 렌더기가 사용됩니다. 기본 렌더기 설정 시 <ph name="CHROME_FRAME_RENDERER_SETTINGS_POLICY_NAME" /> 정책이 사용됩니다.</translation>
@@ -4818,7 +4798,7 @@ Windows에서는 GPO를 통해 정책을 설정하는 것이 좋습니다. 하�
 <translation id="8426231401662877819">화면을 시계 방향으로 90도 회전</translation>
 <translation id="8433186206711564395">네트워크 설정</translation>
 <translation id="8433423491036718210">비밀번호 보호 서비스로 비밀번호 지문을 캡처할 엔터프라이즈 로그인 URL 목록을 설정합니다.</translation>
-<translation id="8445576299806775661">각 주요 버전 업데이트 이후 Chrome에서는 향후 응급 상황 롤백 시 사용하기 위해 사용자의 인터넷 사용 기록 일부에 대한 스냅샷을 생성합니다. 스냅샷이 생성된 버전에 대해 응급 상황 롤백이 실행될 경우, 스냅샷 내 데이터가 복원됩니다. 그럼 사용자는 북마크 및 자동 완성 데이터와 같은 설정을 유지할 수 있습니다.
+<translation id="8445576299806775661">각 주요 버전 업데이트 이후 Chrome에서는 향후 응급 버전 롤백 시 사용하기 위해 사용자의 인터넷 사용 기록 일부에 대한 스냅샷을 생성합니다. 스냅샷이 생성된 버전에 대해 응급 상황 롤백이 실행될 경우, 스냅샷 내 데이터가 복원됩니다. 그럼 사용자는 북마크 및 자동 완성 데이터와 같은 설정을 유지할 수 있습니다.
 
       정책이 설정되지 않은 경우 기본값 3이 사용됩니다.
 

@@ -24,7 +24,6 @@ namespace blink {
 
 class WebLocalFrameImpl;
 class WebString;
-struct WebFloatRect;
 
 class CORE_EXPORT FindInPage final : public GarbageCollected<FindInPage>,
                                      public mojom::blink::FindInPage {
@@ -44,7 +43,7 @@ class CORE_EXPORT FindInPage final : public GarbageCollected<FindInPage>,
   // Returns the bounding box of the active find-in-page match marker or an
   // empty rect if no such marker exists. The rect is returned in find-in-page
   // coordinates.
-  WebFloatRect ActiveFindMatchRect();
+  gfx::RectF ActiveFindMatchRect();
 
   void ReportFindInPageMatchCount(int request_id, int count, bool final_update);
 

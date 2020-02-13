@@ -68,11 +68,20 @@ class CORE_EXPORT ProbeBase {
   mutable base::TimeTicks end_time_;
 };
 
+// Tracks execution of a (previously scheduled) asynchronous task. An instance
+// should exist for the full duration of the task's execution.
 class CORE_EXPORT AsyncTask {
   STACK_ALLOCATED();
 
  public:
-  AsyncTask(ExecutionContext*,
+  // Args:
+  //   context: The ExecutionContext in which the task is executed.
+  //   task: An identifier for the AsyncTask.
+  //   step: A nullptr indicates a task that is not recurring. A non-null value
+  //     indicates a recurring task with the value used for tracing events.
+  //   enabled: Whether the task is asynchronous. If false, the task is not
+  //     reported to the debugger and AdTracker.
+  AsyncTask(ExecutionContext* context,
             AsyncTaskId* task,
             const char* step = nullptr,
             bool enabled = true);

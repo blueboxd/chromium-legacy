@@ -229,11 +229,6 @@ Si ya está marcada la casilla "<ph name="SERVICE_SCRIPT_NAME" />", desmárcala 
 <translation id="6304318647555713317">Cliente</translation>
 <translation id="6381670701864002291">Tengo otro problema.</translation>
 <translation id="6398765197997659313">Salir de pantalla completa</translation>
-<translation id="6411861157501911556">Para usar <ph name="PRODUCT_NAME" />, debes otorgar el permiso de "Accesibilidad", lo que te permitirá aplicar la entrada de la máquina remota en esta Mac.
-
-Para otorgarlo, haz clic en "<ph name="BUTTON_NAME" />" a continuación a fin de abrir el panel de preferencias de "Accesibilidad" y, luego, marca la casilla junto a "<ph name="SERVICE_SCRIPT_NAME" />".
-
-Si ya está marcada la casilla "<ph name="SERVICE_SCRIPT_NAME" />", desmárcala y vuelve a marcarla.</translation>
 <translation id="6441316101718669559">Esta plataforma no admite la integración de escritorio. Puedes usar la aplicación, pero se verá afectada la experiencia del usuario.</translation>
 <translation id="652218476070540101">Se está actualizando el PIN para esta computadora…</translation>
 <translation id="6527303717912515753">Compartir</translation>

@@ -229,11 +229,6 @@ Se la casella "<ph name="SERVICE_SCRIPT_NAME" />" è già selezionata, deselezio
 <translation id="6304318647555713317">Client</translation>
 <translation id="6381670701864002291">Qualcos'altro.</translation>
 <translation id="6398765197997659313">Esci da schermo intero</translation>
-<translation id="6411861157501911556">Per poter usare <ph name="PRODUCT_NAME" />, devi concedere l'autorizzazione "Accessibilità" in modo questo Mac possa eseguire i comandi inseriti sul computer remoto.
-
-Per concedere questa autorizzazione, fai clic su "<ph name="BUTTON_NAME" />" sotto per aprire il riquadro delle preferenze "Accessibilità", quindi seleziona la casella "<ph name="SERVICE_SCRIPT_NAME" />".
-
-Se la casella "<ph name="SERVICE_SCRIPT_NAME" />" è già selezionata, deselezionala e selezionala di nuovo.</translation>
 <translation id="6441316101718669559">L'integrazione desktop non è supportata su questa piattaforma. Puoi comunque utilizzare l'applicazione, ma l'esperienza utente sarà peggiore.</translation>
 <translation id="652218476070540101">Aggiornamento PIN del computer in corso…</translation>
 <translation id="6527303717912515753">Condividi</translation>

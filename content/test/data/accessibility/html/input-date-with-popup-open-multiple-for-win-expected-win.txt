@@ -40,29 +40,30 @@ ROLE_SYSTEM_DOCUMENT READONLY FOCUSABLE
 ++++++++IA2_ROLE_SECTION
 ++++++++++IA2_ROLE_SECTION
 ++++++++++++IA2_ROLE_SECTION
-++++++++++++++ROLE_SYSTEM_PUSHBUTTON name='Show month selection panel' FOCUSABLE
-++++++++++++++++ROLE_SYSTEM_STATICTEXT
+++++++++++++++IA2_ROLE_SECTION
+++++++++++++++++ROLE_SYSTEM_PUSHBUTTON name='Show month selection panel' FOCUSABLE
+++++++++++++++++++ROLE_SYSTEM_STATICTEXT
+++++++++++++++++++ROLE_SYSTEM_GRAPHIC
+++++++++++++++ROLE_SYSTEM_PUSHBUTTON name='Show previous month' FOCUSABLE
 ++++++++++++++++ROLE_SYSTEM_GRAPHIC
-++++++++++++ROLE_SYSTEM_PUSHBUTTON name='Show previous month' FOCUSABLE
-++++++++++++++ROLE_SYSTEM_GRAPHIC
-++++++++++++ROLE_SYSTEM_PUSHBUTTON name='Show next month' FOCUSABLE
-++++++++++++++ROLE_SYSTEM_GRAPHIC
-++++++++++++ROLE_SYSTEM_TABLE FOCUSABLE
-++++++++++++++IA2_ROLE_SECTION
+++++++++++++++ROLE_SYSTEM_PUSHBUTTON name='Show next month' FOCUSABLE
+++++++++++++++++ROLE_SYSTEM_GRAPHIC
+++++++++++++++ROLE_SYSTEM_TABLE FOCUSABLE
 ++++++++++++++++IA2_ROLE_SECTION
-++++++++++++++++++ROLE_SYSTEM_STATICTEXT name='Su'
+++++++++++++++++++IA2_ROLE_SECTION
+++++++++++++++++++++ROLE_SYSTEM_STATICTEXT name='Su'
+++++++++++++++++++IA2_ROLE_SECTION
+++++++++++++++++++++ROLE_SYSTEM_STATICTEXT name='Mo'
+++++++++++++++++++IA2_ROLE_SECTION
+++++++++++++++++++++ROLE_SYSTEM_STATICTEXT name='Tu'
+++++++++++++++++++IA2_ROLE_SECTION
+++++++++++++++++++++ROLE_SYSTEM_STATICTEXT name='We'
+++++++++++++++++++IA2_ROLE_SECTION
+++++++++++++++++++++ROLE_SYSTEM_STATICTEXT name='Th'
+++++++++++++++++++IA2_ROLE_SECTION
+++++++++++++++++++++ROLE_SYSTEM_STATICTEXT name='Fr'
+++++++++++++++++++IA2_ROLE_SECTION
+++++++++++++++++++++ROLE_SYSTEM_STATICTEXT name='Sa'
 ++++++++++++++++IA2_ROLE_SECTION
-++++++++++++++++++ROLE_SYSTEM_STATICTEXT name='Mo'
-++++++++++++++++IA2_ROLE_SECTION
-++++++++++++++++++ROLE_SYSTEM_STATICTEXT name='Tu'
-++++++++++++++++IA2_ROLE_SECTION
-++++++++++++++++++ROLE_SYSTEM_STATICTEXT name='We'
-++++++++++++++++IA2_ROLE_SECTION
-++++++++++++++++++ROLE_SYSTEM_STATICTEXT name='Th'
-++++++++++++++++IA2_ROLE_SECTION
-++++++++++++++++++ROLE_SYSTEM_STATICTEXT name='Fr'
-++++++++++++++++IA2_ROLE_SECTION
-++++++++++++++++++ROLE_SYSTEM_STATICTEXT name='Sa'
-++++++++++++++IA2_ROLE_SECTION
-++++++++++++++++IA2_ROLE_SECTION
-++++++++++++++ROLE_SYSTEM_PUSHBUTTON name='Today' FOCUSABLE
+++++++++++++++++++IA2_ROLE_SECTION
+++++++++++++++++ROLE_SYSTEM_PUSHBUTTON name='Today' FOCUSABLE

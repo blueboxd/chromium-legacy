@@ -44,7 +44,6 @@ class XRDOMOverlayState;
 class XRHitTestOptionsInit;
 class XRHitTestSource;
 class XRPlane;
-class XRRay;
 class XRReferenceSpace;
 class XRRenderState;
 class XRRenderStateInit;
@@ -147,11 +146,6 @@ class XRSession final
       ScriptState* script_state,
       XRTransientInputHitTestOptionsInit* options_init,
       ExceptionState& exception_state);
-
-  ScriptPromise requestHitTest(ScriptState* script_state,
-                               XRRay* ray,
-                               XRSpace* space,
-                               ExceptionState&);
 
   // Called by JavaScript to manually end the session.
   ScriptPromise end(ScriptState* script_state, ExceptionState&);
@@ -327,10 +321,6 @@ class XRSession final
 
   void UpdateVisibilityState();
 
-  void OnHitTestResults(
-      ScriptPromiseResolver* resolver,
-      base::Optional<Vector<device::mojom::blink::XRHitResultPtr>> results);
-
   void OnSubscribeToHitTestResult(
       ScriptPromiseResolver* resolver,
       device::mojom::SubscribeToHitTestResult result,
@@ -408,7 +398,6 @@ class XRSession final
   Member<Element> overlay_element_;
   Member<XRDOMOverlayState> dom_overlay_state_;
   bool environment_error_handler_subscribed_ = false;
-  HeapHashSet<Member<ScriptPromiseResolver>> hit_test_promises_;
   // Set of promises returned from CreateAnchor that are still in-flight.
   HeapHashSet<Member<ScriptPromiseResolver>> create_anchor_promises_;
   // Set of promises returned from requestHitTestSource and

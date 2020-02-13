@@ -178,6 +178,8 @@
 #include "components/rlz/rlz_tracker.h"
 #endif
 
+using signin::ConsentLevel;
+
 namespace chromeos {
 
 namespace {
@@ -654,7 +656,7 @@ void UserSessionManager::RestoreAuthenticationSession(Profile* user_profile) {
   auto* identity_manager = IdentityManagerFactory::GetForProfile(user_profile);
   const bool account_id_valid =
       identity_manager &&
-      !identity_manager->GetPrimaryAccountId(signin::ConsentLevel::kNotRequired)
+      !identity_manager->GetPrimaryAccountId(ConsentLevel::kNotRequired)
            .empty();
   if (!account_id_valid)
     LOG(ERROR) << "No account is associated with sign-in manager on restore.";
@@ -966,7 +968,7 @@ void UserSessionManager::OnSessionRestoreStateChanged(
         DCHECK(
             !identity_manager->HasAccountWithRefreshTokenInPersistentErrorState(
                 identity_manager
-                    ->GetPrimaryAccountInfo(signin::ConsentLevel::kNotRequired)
+                    ->GetPrimaryAccountInfo(ConsentLevel::kNotRequired)
                     .account_id));
       }
       user_status = user_manager::User::OAUTH2_TOKEN_STATUS_VALID;
@@ -1424,24 +1426,24 @@ void UserSessionManager::InitProfilePreferences(
       DCHECK(account_info.has_value());
       if (features::IsSplitSettingsSyncEnabled()) {
         if (is_new_profile) {
-          if (!identity_manager->HasPrimaryAccount()) {
+          if (!identity_manager->HasPrimaryAccount(ConsentLevel::kSync)) {
             // Set the account without recording browser sync consent.
             identity_manager->GetPrimaryAccountMutator()
                 ->SetUnconsentedPrimaryAccount(account_info->account_id);
           }
         }
         CHECK(identity_manager->HasUnconsentedPrimaryAccount());
-        CHECK_EQ(identity_manager
-                     ->GetPrimaryAccountInfo(signin::ConsentLevel::kNotRequired)
-                     .gaia,
-                 gaia_id);
+        CHECK_EQ(
+            identity_manager->GetPrimaryAccountInfo(ConsentLevel::kNotRequired)
+                .gaia,
+            gaia_id);
       } else {
         // Set a primary account here because the profile might have been
         // created with the feature SplitSettingsSync enabled. Then the
         // profile might only have an unconsented primary account.
         identity_manager->GetPrimaryAccountMutator()->SetPrimaryAccount(
             account_info->account_id);
-        CHECK(identity_manager->HasPrimaryAccount());
+        CHECK(identity_manager->HasPrimaryAccount(ConsentLevel::kSync));
         CHECK_EQ(identity_manager->GetPrimaryAccountInfo().gaia, gaia_id);
       }
     } else {
@@ -1455,8 +1457,8 @@ void UserSessionManager::InitProfilePreferences(
               gaia_id, user_context.GetAccountId().GetUserEmail());
     }
 
-    CoreAccountId account_id = identity_manager->GetPrimaryAccountId(
-        signin::ConsentLevel::kNotRequired);
+    CoreAccountId account_id =
+        identity_manager->GetPrimaryAccountId(ConsentLevel::kNotRequired);
     VLOG(1) << "Seed IdentityManager with the authenticated account info, "
             << "success=" << !account_id.empty();
 

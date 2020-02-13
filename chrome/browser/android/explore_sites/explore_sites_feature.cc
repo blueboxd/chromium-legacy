@@ -16,7 +16,6 @@ const char kExploreSitesVariationParameterName[] = "variation";
 const char kExploreSitesVariationExperimental[] = "experiment";
 
 const char kExploreSitesHeadersExperimentParameterName[] = "exp";
-const char kExploreSitesGamesTopExperiment[] = "games-top";
 
 const char kExploreSitesDenseVariationParameterName[] = "denseVariation";
 const char kExploreSitesDenseVariationOriginal[] = "original";

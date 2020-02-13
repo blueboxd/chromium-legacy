@@ -376,11 +376,6 @@ Si cette règle n'est pas configurée, la valeur par défaut globale sera utilis
           Si cette règle est désactivée ou si elle n'est pas définie, les paramètres de comptes Kerberos sont désactivés. Aucun compte Kerberos ne peut être ajouté et l'authentification Kerberos ne peut pas être utilisée. Les comptes Kerberos déjà créés et les mots de passe enregistrés sont tous supprimés.</translation>
 <translation id="1561424797596341174">Remplacements de règle pour les versions de débogage de l'hôte distant</translation>
 <translation id="1561967320164410511">U2F plus extensions pour chaque attestation</translation>
-<translation id="1574554504290354326">Cette règle est obsolète. (Utilisez à la place celle intitulée "SafeBrowsingExtendedReportingEnabled". L'activation ou la désactivation de cette dernière équivaut à définir "SafeBrowsingExtendedReportingOptInAllowed" sur "False".)
-
-      Si cette règle est définie sur "False", les utilisateurs ne peuvent pas envoyer d'informations système ni de contenu de pages aux serveurs Google. En revanche, si cette règle est définie sur "True" ou si elle n'est pas configurée, les utilisateurs sont autorisés à envoyer des informations système et le contenu de pages au service de navigation sécurisée afin de contribuer à la détection des applications et des sites dangereux.
-
-      Pour en savoir plus sur la navigation sécurisée, consultez la page https://developers.google.com/safe-browsing.</translation>
 <translation id="1583248206450240930">Utiliser <ph name="PRODUCT_FRAME_NAME" /> par défaut</translation>
 <translation id="1599424828227887013">Activer l'isolation des sites pour des origines définies sur les appareils Android</translation>
 <translation id="1608755754295374538">URL autorisées à accéder aux appareils de capture audio sans avis préalable</translation>
@@ -668,6 +663,10 @@ Si ce paramètre n'est pas défini, les utilisateurs peuvent ouvrir normalement 
 <translation id="1988371335297483117">Il est possible de télécharger les charges utiles de mise à jour automatique pour <ph name="PRODUCT_OS_NAME" /> via HTTP plutôt que HTTPS. Cela permet une mise en cache transparente lors des téléchargements via HTTP.
 
       Si cette règle est définie sur "True", le téléchargement des charges utiles de mise à jour automatique est effectué par <ph name="PRODUCT_OS_NAME" /> via HTTP. Si cette règle est définie sur "False", ou si elle n'est pas configurée, HTTPS est utilisé pour le téléchargement des charges utiles de mise à jour automatique.</translation>
+<translation id="199011295049694531">Transmet le fuseau horaire d'un appareil.
+
+      Si la règle est définie sur "False" ou n'est pas définie, cette information n'est pas transmise.
+      Si elle est définie sur "True", le fuseau horaire actuel de l'appareil est transmis.</translation>
 <translation id="199764499252435679">Activer la mise à jour des composants de <ph name="PRODUCT_NAME" /></translation>
 <translation id="1997994951395619441">Si vous activez ce paramètre, <ph name="PRODUCT_NAME" /> affiche une barre de favoris.
 
@@ -1130,6 +1129,11 @@ Cette règle n'est disponible que sur les instances Windows qui sont associées 
       Si vous activez ou désactivez ce paramètre, les utilisateurs ne peuvent pas le modifier ni le remplacer.
 
       Si cette règle n'est pas définie, l'utilisateur peut décider s'il veut ou non utiliser la fonctionnalité de proxy pour la compression de données.</translation>
+<translation id="2575738503503093841">Spécifie le délai maximal en millisecondes entre la réception du rejet d'une règle et la récupération de la nouvelle règle auprès du service de gestion de l'appareil.
+
+      La définition de cette règle remplace la valeur par défaut de 10 000 millisecondes. Les valeurs valides pour cette règle sont comprises entre 1 000 millisecondes (1 seconde) et 300 000 millisecondes (5 minutes). Toute valeur se situant hors de cette plage sera rapportée à la valeur limite la plus proche.
+
+      En l'absence de définition de cette règle, la valeur par défaut de 10 000 millisecondes est utilisée dans <ph name="PRODUCT_NAME" />.</translation>
 <translation id="257788512393330403">La saisie du mot de passe est requise toutes les six heures</translation>
 <translation id="2580104054820772954">Retarder la disponibilité des fichiers jusqu'à ce que les résultats de l'analyse soient connus</translation>
 <translation id="2582582399758251985">Lorsque ce paramètre est activé, <ph name="PRODUCT_NAME" /> effectue une vérification des certificats des serveurs à l'aide de l'outil de vérification des certificats intégré.
@@ -1158,6 +1162,7 @@ Cette règle n'est disponible que sur les instances Windows qui sont associées 
           Lorsque cette règle n'est pas définie, la valeur par défaut "true" indique que l'authentification NTLMv2 est activée.</translation>
 <translation id="26023406105317310">Configurer les comptes Kerberos</translation>
 <translation id="2604182581880595781">Configurer les règles associées à la fonctionnalité Partages de fichiers en réseau.</translation>
+<translation id="2615240493030733717">Transmettre le fuseau horaire</translation>
 <translation id="2623014935069176671">Attendre l'activité utilisateur initiale</translation>
 <translation id="262740370354162807">Activer l'envoi de documents à <ph name="CLOUD_PRINT_NAME" /></translation>
 <translation id="2627554163382448569">Fournit les configurations des imprimantes d'entreprise associées à des appareils.
@@ -1578,6 +1583,8 @@ Si elle n'est pas configurée, l'utilisateur peut être invité à effectuer l'i
           Si cette règle n'est pas configurée, la valeur par défaut globale est utilisée pour tous les sites à partir de la règle "DefaultCookiesSetting" si celle-ci est définie ou, à défaut, à partir de la configuration personnelle de l'utilisateur.
 
           Reportez-vous également aux règles "CookiesBlockedForUrls" et "CookiesSessionOnlyForUrls". Remarque : les formats d'URL ne doivent pas être en conflit entre ces trois règles. En outre, il n'est pas spécifié quelle règle prévaut.</translation>
+<translation id="3339271789059866414">Configure la disponibilité du service proxy du système et les identifiants proxy pour les services système.
+      Si la règle n'est pas définie, le service proxy du système n'est pas disponible.</translation>
 <translation id="3373364525435227558">Définit une ou plusieurs langues recommandées pour une session gérée, permettant ainsi aux utilisateurs de choisir facilement l'une de ces langues.
 
       Les utilisateurs peuvent choisir une langue et une disposition de clavier avant de démarrer une session gérée. Par défaut, toutes les langues compatibles avec <ph name="PRODUCT_OS_NAME" /> sont répertoriées dans l'ordre alphabétique. Vous pouvez utiliser cette règle pour placer un ensemble de langues recommandées en haut de la liste.
@@ -2550,6 +2557,7 @@ Si cette règle n'est pas configurée, l'utilisateur peut décider d'afficher ou
           Si vous définissez cette règle, les utilisateurs ne peuvent pas la modifier ni l'ignorer.
 
           Si vous ne définissez pas cette règle, le grand curseur est désactivé au départ, mais peut ensuite être activé à tout moment par les utilisateurs.</translation>
+<translation id="4802744647065138872">Limite le nombre d'instantanés de données utilisateur retenus en prévision d'un éventuel rollback d'urgence.</translation>
 <translation id="4802905909524200151">Configurer le comportement de la fonctionnalité de mise à jour du micrologiciel <ph name="TPM_FIRMWARE_UPDATE_TPM" /></translation>
 <translation id="4804828344300125154">Redémarrer à chaque déconnexion de l'utilisateur.</translation>
 <translation id="4807950475297505572">Les comptes utilisateurs utilisés le moins récemment sont supprimés jusqu'à ce que l'espace libre soit suffisant.</translation>
@@ -4373,21 +4381,6 @@ Si ce paramètre est désactivé ou s'il n'est pas configuré, <ph name="PRODUCT
       Cette règle n'a d'incidence que sur les utilisateurs non affiliés.
       </translation>
 <translation id="7683777542468165012">Actualisation dynamique des stratégies</translation>
-<translation id="7684516445147212248">La configuration de cette règle permettra/empêchera l'authentification ambiante pour les profils Invité et de navigation privée dans <ph name="PRODUCT_NAME" />.
-
-      L'authentification ambiante est une authentification HTTP qui utilise des identifiants par défaut si aucun identifiant explicite n'est fourni via les systèmes de défi-réponse NTLM/Kerberos/Negotiate.
-
-      Le paramètre <ph name="REGULAR_ONLY_OPTION_NAME" /> (valeur 0) permet d'activer l'authentification ambiante uniquement pour les sessions standards. Elle reste désactivée pour les sessions Invité et de navigation privée.
-
-      Le paramètre <ph name="INCOGNITO_AND_REGULAR_OPTION_NAME" /> (valeur 1) permet d'activer l'authentification ambiante pour les sessions standards et de navigation privée. Elle reste désactivée pour les sessions Invité.
-
-      Le paramètre <ph name="GUEST_AND_REGULAR_OPTION_NAME" /> (valeur 2) permet d'activer l'authentification ambiante pour les sessions standards et Invité. Elle reste désactivée pour les sessions de navigation privée.
-
-      Le paramètre <ph name="ALL_OPTION_NAME" /> (valeur 3) permet d'activer l'authentification ambiante pour toutes les sessions.
-
-      Notez que l'authentification ambiante est toujours activée pour les profils standards.
-
-      Si cette règle n'est pas configurée, l'authentification ambiante sera désactivée pour les sessions Invité et de navigation privée dans les futures versions de <ph name="PRODUCT_NAME" />, car les sessions de ce type ne seront plus autorisées.</translation>
 <translation id="7687943045976362719">Si cette règle est configurée, les types de contenus spécifiés sont traités par <ph name="PRODUCT_FRAME_NAME" />.
 
 
@@ -4542,6 +4535,7 @@ au maximum si un utilisateur se sert de l'appareil.
 
       Si vous ne configurez pas cette règle, la prédiction réseau est activée, mais les utilisateurs peuvent la modifier.</translation>
 <translation id="7953256619080733119">Hôtes d'exception manuelle des utilisateurs gérés</translation>
+<translation id="7956210013490975468">Configure le service proxy du système pour <ph name="PRODUCT_OS_NAME" />.</translation>
 <translation id="7958537754689366707">La saisie du mot de passe est requise toutes les 12 heures</translation>
 <translation id="7961779417826583251">Désactiver l'application des règles de transparence des certificats pour une liste d'autorités de certification héritées</translation>
 <translation id="7974114691960514888">Cette règle n'est plus disponible. 
@@ -4797,6 +4791,11 @@ Il est conseillé de configurer les règles sur Windows via GPO, même si la ges
 <translation id="8426231401662877819">Faire pivoter l'écran vers la droite de 90 degrés</translation>
 <translation id="8433186206711564395">Paramètres réseau</translation>
 <translation id="8433423491036718210">Configurez la liste des URL de connexion d'entreprise pour lesquelles le service de protection par mot de passe doit capturer l'empreinte numérique du mot de passe.</translation>
+<translation id="8445576299806775661">Après chaque mise à jour de version majeure, Chrome crée un instantané de certaines portions des données de navigation de l'utilisateur en prévision d'un éventuel rollback de version d'urgence. Si un rollback d'urgence a lieu et que Chrome dispose de l'instantané correspondant, les données de cet instantané sont restaurées. L'utilisateur récupérera ainsi ses favoris et ses données de saisie automatique, entre autres.
+
+      Si la règle n'est pas définie, la valeur par défaut 3 est utilisée.
+
+      Si la règle est définie, les anciens instantanés sont supprimés au fur et à mesure pour respecter la limite. Si la règle est définie sur 0, aucun instantané n'est enregistré.</translation>
 <translation id="8451988835943702790">Utiliser la page "Nouvel onglet" comme page d'accueil</translation>
 <translation id="8459216513698220096">Détermine si la règle utilisateur du GPO de l'ordinateur est traitée et la méthode employée.
 
@@ -4882,6 +4881,7 @@ Il est conseillé de configurer les règles sur Windows via GPO, même si la ges
 
       Si cette règle est définie sur "False" ou si elle n'est pas configurée, l'utilisateur peut se servir du navigateur sans se connecter à <ph name="PRODUCT_NAME" />.</translation>
 <translation id="858309738002328421">Bloquer l'importation de fichiers volumineux</translation>
+<translation id="8584279193368801689">Limite le mode d'impression par code. Si cette règle n'est pas définie, aucune limite ne s'applique. Si le mode est indisponible, cette règle est ignorée. Notez que la fonctionnalité d'impression par code n'est activée que pour les imprimantes utilisant l'un des protocoles IPPS, HTTPS, USB ou IPP sur USB.</translation>
 <translation id="8585558195682146109">Envoyer les téléchargements des utilisateurs pour analyse</translation>
 <translation id="8586528890725660268">Indique les imprimantes auxquelles un utilisateur n'a pas accès.
 
@@ -4951,6 +4951,13 @@ Il est conseillé de configurer les règles sur Windows via GPO, même si la ges
 <translation id="8687958770985542440">Réactiver les API Web Components v0 jusqu'à la version M84.</translation>
 <translation id="8693243869659262736">Utiliser le client DNS intégré</translation>
 <translation id="8698286761337647563">Délai, en nombre de jours, pour informer à l'avance les utilisateurs SAML de l'expiration de leur mot de passe</translation>
+<translation id="8701288965900240388">Permet de choisir si les sites Web sont autorisés à exécuter automatiquement le plug-in <ph name="FLASH_PLUGIN_NAME" />. Vous pouvez autoriser ou interdire l'exécution automatique du plug-in <ph name="FLASH_PLUGIN_NAME" /> pour tous les sites Web.
+
+          Vous pouvez autoriser l'exécution du plug-in <ph name="FLASH_PLUGIN_NAME" /> à condition que l'utilisateur effectue un clic préalable.
+
+          L'exécution automatique n'est autorisée que pour les domaines explicitement répertoriés dans la règle <ph name="PLUGINS_ALLOWED_FOR_URLS_POLICY_NAME" />. Si vous souhaitez autoriser l'exécution automatique du plug-in pour tous les sites, ajoutez http://* et https://* à cette liste.
+
+          Si la règle n'est pas définie, l'option "BlockPlugins" sera utilisée, et l'utilisateur pourra modifier ce paramètre manuellement.</translation>
 <translation id="8703488928438047864">Envoyer des rapports sur l'état du matériel</translation>
 <translation id="8704831857353097849">Liste des plug-ins désactivés</translation>
 <translation id="8711086062295757690">Indique le mot clé qui est le raccourci utilisé dans l'Omnibox pour déclencher la recherche de ce moteur.

@@ -7,8 +7,8 @@
 
 #include <vector>
 
-#include "ash/components/fast_ink/fast_ink_points.h"
-#include "ash/components/fast_ink/fast_ink_view.h"
+#include "ash/fast_ink/fast_ink_points.h"
+#include "ash/fast_ink/fast_ink_view.h"
 #include "base/time/time.h"
 
 namespace aura {

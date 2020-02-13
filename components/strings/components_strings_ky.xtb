@@ -646,6 +646,7 @@
 <translation id="3780694243617746492">Чыгаруу түпкүчү</translation>
 <translation id="3781428340399460090">Ачык кызгылтым</translation>
 <translation id="3783418713923659662">Mastercard</translation>
+<translation id="3784372983762739446">Bluetooth түзмөктөрү</translation>
 <translation id="3787705759683870569"><ph name="EXPIRATION_MONTH" />/<ph name="EXPIRATION_YEAR" /> мөөнөтү аяктайт</translation>
 <translation id="3789155188480882154">Өлчөмү: 16</translation>
 <translation id="3797522431967816232">Prc3 (Конверт)</translation>
@@ -695,7 +696,7 @@
 <translation id="4058922952496707368">Ачкыч "<ph name="SUBKEY" />": <ph name="ERROR" /></translation>
 <translation id="4067263367174615723">C1 (Конверт)</translation>
 <translation id="4067947977115446013">Дарегин туура көрсөтүңүз</translation>
-<translation id="4072486802667267160">Буйрутмаңызды иштетүү учурунда ката кетти. Кайра аракет кылыңыз.</translation>
+<translation id="4072486802667267160">Буйрутмаңызды иштетүү учурунда ката кетти. Кайталап көрүңүз.</translation>
 <translation id="4075732493274867456">Кардар менен серверде ар кандай SSL протоколунун версиялары же шифрлер топтому колдоого алынат.</translation>
 <translation id="4075941231477579656">Touch ID</translation>
 <translation id="4079302484614802869">Прокси конфигурациясы боюнча бекитилген прокси серверлери эмес, .pac скрипт URL'и колдонулат.</translation>
@@ -1697,6 +1698,7 @@
 <translation id="8503813439785031346">Колдонуучунун ысымы</translation>
 <translation id="8508648098325802031">Издөө сүрөтчөсү</translation>
 <translation id="8522552481199248698">Chrome Google аккаунтуңуздун коопсуздугун коргоп, сырсөзүңүздү өзгөртүүгө жардам берет.</translation>
+<translation id="8541158209346794904">Bluetooth түзмөгү</translation>
 <translation id="8542014550340843547">Төмөнкү жагын үч жолу тешүү</translation>
 <translation id="8543181531796978784"><ph name="BEGIN_ERROR_LINK" />Аныкталган көйгөйдү кабарласаңыз<ph name="END_ERROR_LINK" /> болот, же жеке дайын-даректериңиз зыянга учурап калат деп коркпосоңуз, <ph name="BEGIN_LINK" />бул кооптуу сайтка кире<ph name="END_LINK" /> бериңиз.</translation>
 <translation id="8553075262323480129">Баракчанын тили аныкталбагандыктан, которулбай калды.</translation>
@@ -1838,7 +1840,7 @@
 <translation id="936474030629450166">Super-B</translation>
 <translation id="936602727769022409">Кимдир бирөө Google аккаунтуңузга кирип алган окшойт. Chromium сырсөзүңүздү азыр өзгөртүүнү сунуштайт. Аккаунтуңузга кайра киришиңиз керек болот.</translation>
 <translation id="939736085109172342">Жаңы папка</translation>
-<translation id="945855313015696284">Төмөндөгү маалыматты текшерип, жараксыз карталарды өчүрүңүз</translation>
+<translation id="945855313015696284">Төмөнкү маалыматты текшерип, жараксыз карталарды өчүрүңүз</translation>
 <translation id="950736567201356821">Жогорку жагын үч жолу тешүү</translation>
 <translation id="961663415146723894">Төмөн жагын байлоо</translation>
 <translation id="962484866189421427">Бул мазмун башка колдонмолорго окшош жасалма колдонмолорду орнотуп коюшу же сизге көз салуу үчүн дайындарды чогултуп алышы мүмкүн. <ph name="BEGIN_LINK" />Баары бир көрсөтүлсүн<ph name="END_LINK" /></translation>

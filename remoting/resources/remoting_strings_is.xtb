@@ -229,11 +229,6 @@ Ef þegar er hakað við „<ph name="SERVICE_SCRIPT_NAME" />“ skaltu fjarlæg
 <translation id="6304318647555713317">Biðlari</translation>
 <translation id="6381670701864002291">Eitthvað annað.</translation>
 <translation id="6398765197997659313">Hætta að nota allan skjáinn</translation>
-<translation id="6411861157501911556">Til að nota <ph name="PRODUCT_NAME" /> þarftu að veita heimildina „Aðgengi“ til að hægt sé að senda inntak úr fjartengdu tölvunni inn í þessa Mac-tölvu.
-
-Til að veita þessa heimild skaltu smella á „<ph name="BUTTON_NAME" />“ hér fyrir neðan til að opna stillingasvæðið „Aðgengi“ og haka svo við reitinn við hliðina á „<ph name="SERVICE_SCRIPT_NAME" />“.
-
-Ef þegar er hakað í „<ph name="SERVICE_SCRIPT_NAME" />“ skaltu fjarlægja hakið og haka svo aftur í reitinn.</translation>
 <translation id="6441316101718669559">Skjáborðssamþætting er ekki studd á þessu kerfi. Þú getur áfram notað forritið en notandaupplifunin verður skert.</translation>
 <translation id="652218476070540101">Verið er að uppfæra PIN-númer þessarar tölvu…</translation>
 <translation id="6527303717912515753">Deila</translation>

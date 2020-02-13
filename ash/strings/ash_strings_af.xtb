@@ -59,6 +59,7 @@
 <translation id="1658406695958299976">Jammer, jou wagwoord kon steeds nie geverifieer word nie. Let wel: as jy jou wagwoord onlangs verander het, sal jou nuwe wagwoord toegepas word sodra jy afmeld. Gebruik die ou wagwoord hier.</translation>
 <translation id="1677472565718498478"><ph name="TIME" /> oor</translation>
 <translation id="1698760176351776263">IPv6-adres: <ph name="ADDRESS" /></translation>
+<translation id="1709762881904163296">Netwerkinstellings</translation>
 <translation id="1743570585616704562">Nie herken nie</translation>
 <translation id="1746730358044914197">Invoermetodes word deur jou administrateur opgestel.</translation>
 <translation id="1747827819627189109">Opskerm-sleutelbord geaktiveer</translation>
@@ -113,11 +114,13 @@
 <translation id="2354174487190027830">Aktiveer tans <ph name="NAME" /></translation>
 <translation id="2359808026110333948">Gaan voort</translation>
 <translation id="2365393535144473978">As mobiele data geaktiveer word, sal dit Bluetooth aktiveer.</translation>
+<translation id="2390318262976603432">Locale-instellings</translation>
 <translation id="2391579633712104609">180°</translation>
 <translation id="2412593942846481727">Opdatering is beskikbaar</translation>
 <translation id="2413728805700750528"><ph name="DISPLAY_NAME" /> is 'n bestuurde sessie wat deur <ph name="DOMAIN" /> bestuur word</translation>
 <translation id="2427507373259914951">Linksklik</translation>
 <translation id="2429753432712299108">Bluetooth-toestel "<ph name="DEVICE_NAME" />" soek toestemming om saam te bind. Voor jy aanvaar, bevestig asseblief dat hierdie wagwoordsleutel op daardie toestel gewys word: <ph name="PASSKEY" /></translation>
+<translation id="2435457462613246316">Wys wagwoord</translation>
 <translation id="2473177541599297363">Bevestig resolusie</translation>
 <translation id="2482878487686419369">Kennisgewings</translation>
 <translation id="2484513351006226581">Druk <ph name="KEYBOARD_SHORTCUT" /> om sleutelborduitleg te wissel.</translation>
@@ -177,6 +180,7 @@
 <translation id="3154351730702813399">Die toesteladministrateur kan dalk jou blaai-aktiwiteit monitor.</translation>
 <translation id="3181441307743005334">Dit kan 'n rukkie neem om te herbegin</translation>
 <translation id="3202010236269062730">{NUM_DEVICES,plural, =1{Gekoppel aan 'n toestel}other{Gekoppel aan # toestelle}}</translation>
+<translation id="3207953481422525583">Gebruikerinstellings</translation>
 <translation id="3217205077783620295">Volume is aan. Wissel om oudio te demp.</translation>
 <translation id="3226991577105957773">+nog <ph name="COUNT" /></translation>
 <translation id="3236488194889173876">Geen selnetwerk beskikbaar nie</translation>
@@ -241,6 +245,7 @@ Alle gebruikers moet afmeld om voort te gaan.</translation>
 <translation id="3995138139523574647">USB C-toestel (agterste poort aan regterkant)</translation>
 <translation id="4017989525502048489">Laserwyser</translation>
 <translation id="4021716437419160885">Rollees af</translation>
+<translation id="4028481283645788203">Wagwoord word vereis vir meer sekuriteit</translation>
 <translation id="4042660782729322247">Jy deel tans jou skerm</translation>
 <translation id="4065525899979931964">{NUM_APPS,plural, =1{Af vir 'n program}other{Af vir # programme}}</translation>
 <translation id="4072264167173457037">Medium sein</translation>
@@ -250,6 +255,7 @@ Alle gebruikers moet afmeld om voort te gaan.</translation>
 <translation id="4149156641122542261"><ph name="DEVICE_TYPE" /> bestuur deur <ph name="DOMAIN" /></translation>
 <translation id="4181841719683918333">Tale</translation>
 <translation id="4195877955194704651">Outomatiese Klikke-knoppie</translation>
+<translation id="4215497585250573029">VPN-instellings</translation>
 <translation id="4217571870635786043">Diktee</translation>
 <translation id="421885205185866088">Slimkaart-PIN vir <ph name="USER_EMAIL_ADDRESS" /></translation>
 <translation id="4239069858505860023">GPRS</translation>
@@ -264,6 +270,7 @@ Alle gebruikers moet afmeld om voort te gaan.</translation>
 <translation id="4338109981321384717">Vergrootglas</translation>
 <translation id="4351433414020964307">Assistent laai tans …</translation>
 <translation id="4356930093361201197">hoëkontrasmodus</translation>
+<translation id="4371348193907997655">Uitsaai-instellings</translation>
 <translation id="4378551569595875038">Koppel tans …</translation>
 <translation id="4379531060876907730">Dit is jou stilusnutsgoed</translation>
 <translation id="4383956581743965695">-<ph name="TIME_SINCE_EXPIRATION" /></translation>
@@ -280,12 +287,14 @@ Alle gebruikers moet afmeld om voort te gaan.</translation>
 <translation id="4527045527269911712">Bluetooth-toestel "<ph name="DEVICE_NAME" />" wil graag toestemming hê om saam te bind.</translation>
 <translation id="453661520163887813"><ph name="TIME" /> tot vol</translation>
 <translation id="4561267230861221837">3G</translation>
+<translation id="4565377596337484307">Versteek wagwoord</translation>
 <translation id="4570957409596482333">Hardoplees-knoppie</translation>
 <translation id="4585337515783392668">Hou op om op 'n onbekende ontvanger uit te saai</translation>
 <translation id="4628757576491864469">Toestelle</translation>
 <translation id="4659419629803378708">ChromeVox is geaktiveer</translation>
 <translation id="4665114317261903604">Wissel Moenie Steur Nie. <ph name="STATE_TEXT" /></translation>
 <translation id="4696813013609194136">Ontsluit toestel met ouerkode</translation>
+<translation id="4710243778082831592">IME-instellings</translation>
 <translation id="4731797938093519117">Ouertoegang</translation>
 <translation id="4734965478015604180">Horisontaal</translation>
 <translation id="4774338217796918551">Kom môre om <ph name="COME_BACK_TIME" /> terug.</translation>
@@ -515,7 +524,9 @@ Alle gebruikers moet afmeld om voort te gaan.</translation>
 <translation id="7984197416080286869">Te veel vingerafdrukpogings</translation>
 <translation id="7994370417837006925">Veelvuldige aanmelding</translation>
 <translation id="8000066093800657092">Geen netwerk nie</translation>
+<translation id="8029629653277878342">PIN of wagwoord word vereis vir meer sekuriteit</translation>
 <translation id="8030169304546394654">Ontkoppel</translation>
+<translation id="8048123526339889627">Bluetooth-instellings</translation>
 <translation id="8054466585765276473">Bereken tans batterytyd.</translation>
 <translation id="8061464966246066292">Hoë kontras</translation>
 <translation id="8098591350844501178">Hou op om skerm na <ph name="RECEIVER_NAME" /> toe uit te saai</translation>
@@ -557,7 +568,9 @@ Alle gebruikers moet afmeld om voort te gaan.</translation>
 <translation id="8492573885090281069"><ph name="DISPLAY_NAME" /> werk nie met <ph name="SPECIFIED_RESOLUTION" /> nie. Die resolusie is verander na <ph name="FALLBACK_RESOLUTION" />. Klik Bevestig om veranderinge te hou. Die vorige instellings sal oor <ph name="TIMEOUT_SECONDS" /> teruggestel word.</translation>
 <translation id="8513108775083588393">Outodraai</translation>
 <translation id="8517041960877371778">Jou <ph name="DEVICE_TYPE" /> mag nie laai terwyl dit aangeskakel is nie.</translation>
+<translation id="8563862697512465947">Kennisgewinginstellings</translation>
 <translation id="8627191004499078455">Gekoppel aan <ph name="DEVICE_NAME" /></translation>
+<translation id="8631727435199967028">Toeganklikheidinstellings</translation>
 <translation id="8637598503828012618"><ph name="CONNECTION_STATUS" />, seinsterkte <ph name="SIGNAL_STRENGTH" />, deur jou administrateur bestuur</translation>
 <translation id="8639760480004882931"><ph name="PERCENTAGE" /> oor</translation>
 <translation id="8649101189709089199">Hardoplees</translation>
@@ -574,6 +587,7 @@ Alle gebruikers moet afmeld om voort te gaan.</translation>
 <translation id="875593634123171288">Wys VPN-instellings</translation>
 <translation id="8785070478575117577">Koppel aan <ph name="NETWORK_NAME" /></translation>
 <translation id="8814190375133053267">Wi-Fi</translation>
+<translation id="8825863694328519386">Swiep van links af om terug te gaan</translation>
 <translation id="8828714802988429505">90°</translation>
 <translation id="8843682306134542540">Wissel rotasieslot. <ph name="STATE_TEXT" /></translation>
 <translation id="8850991929411075241">Search+Esc</translation>

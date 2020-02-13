@@ -17,6 +17,7 @@
 #include "base/observer_list.h"
 #include "base/optional.h"
 #include "base/time/time.h"
+#include "build/build_config.h"
 #include "components/viz/common/surfaces/frame_sink_id.h"
 #include "ui/aura/aura_export.h"
 #include "ui/aura/scoped_enable_unadjusted_mouse_events.h"
@@ -233,13 +234,8 @@ class AURA_EXPORT WindowTreeHost : public ui::internal::InputMethodDelegate,
   // WindowEventDispatcher during event dispatch.
   virtual bool ShouldSendKeyEventToIme();
 
-  // Enables native window occlusion tracking for the native window this host
-  // represents.
-  virtual void EnableNativeWindowOcclusionTracking();
-
-  // Disables native window occlusion tracking for the native window this host
-  // represents.
-  virtual void DisableNativeWindowOcclusionTracking();
+  // Determines if native window occlusion should be enabled or not.
+  bool IsNativeWindowOcclusionEnabled();
 
   // Remembers the current occlusion state, and if it has changed, notifies
   // observers of the change.
@@ -331,6 +327,9 @@ class AURA_EXPORT WindowTreeHost : public ui::internal::InputMethodDelegate,
     return observers_;
   }
 
+  // Called to enabled/disable native window occlusion calculation.
+  void SetNativeWindowOcclusionEnabled(bool enable);
+
  private:
   friend class test::WindowTreeHostTestApi;
 
@@ -389,6 +388,9 @@ class AURA_EXPORT WindowTreeHost : public ui::internal::InputMethodDelegate,
 
   // Set to true if this WindowTreeHost is currently holding pointer moves.
   bool holding_pointer_moves_ = false;
+
+  // Set to true if native window occlusion should be calculated.
+  bool native_window_occlusion_enabled_ = false;
 
   base::WeakPtrFactory<WindowTreeHost> weak_factory_{this};
 

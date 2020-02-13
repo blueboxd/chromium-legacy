@@ -34,6 +34,7 @@
 #include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
+#include "base/test/bind_test_util.h"
 #include "base/time/time.h"
 #include "base/values.h"
 #include "base/version.h"
@@ -89,12 +90,12 @@
 #include "components/pref_registry/pref_registry_syncable.h"
 #include "components/prefs/scoped_user_pref_update.h"
 #include "components/safe_browsing/buildflags.h"
+#include "components/services/storage/public/mojom/indexed_db_control.mojom.h"
 #include "components/sync/model/string_ordinal.h"
 #include "components/sync_preferences/pref_service_syncable.h"
 #include "components/sync_preferences/testing_pref_service_syncable.h"
 #include "content/public/browser/dom_storage_context.h"
 #include "content/public/browser/gpu_data_manager.h"
-#include "content/public/browser/indexed_db_context.h"
 #include "content/public/browser/notification_service.h"
 #include "content/public/browser/plugin_service.h"
 #include "content/public/browser/render_process_host.h"
@@ -5007,13 +5008,25 @@ TEST_F(ExtensionServiceTest, ClearExtensionData) {
   // Create indexed db. Similarly, it is enough to only simulate this by
   // creating the directory on the disk, and resetting the caches of
   // "known" origins.
-  IndexedDBContext* idb_context = BrowserContext::GetDefaultStoragePartition(
-                                      profile())->GetIndexedDBContext();
-  base::FilePath idb_path =
-      idb_context->GetFilePathForTesting(url::Origin::Create(ext_url));
-  EXPECT_TRUE(base::CreateDirectory(idb_path));
-  EXPECT_TRUE(base::DirectoryExists(idb_path));
-  idb_context->ResetCachesForTesting();
+  auto& idb_control = BrowserContext::GetDefaultStoragePartition(profile())
+                          ->GetIndexedDBControl();
+  mojo::Remote<storage::mojom::IndexedDBControlTest> idb_control_test;
+  idb_control.BindTestInterface(idb_control_test.BindNewPipeAndPassReceiver());
+
+  base::FilePath idb_path;
+  {
+    base::RunLoop run_loop;
+    idb_control_test->GetFilePathForTesting(
+        url::Origin::Create(ext_url),
+        base::BindLambdaForTesting([&](const base::FilePath& path) {
+          idb_path = path;
+          EXPECT_TRUE(base::CreateDirectory(idb_path));
+          EXPECT_TRUE(base::DirectoryExists(idb_path));
+          idb_control_test->ResetCachesForTesting(
+              base::BindLambdaForTesting([&]() { run_loop.Quit(); }));
+        }));
+    run_loop.Run();
+  }
 
   // Uninstall the extension.
   ASSERT_TRUE(service()->UninstallExtension(
@@ -5155,13 +5168,25 @@ TEST_F(ExtensionServiceTest, ClearAppData) {
   // Create indexed db. Similarly, it is enough to only simulate this by
   // creating the directory on the disk, and resetting the caches of
   // "known" origins.
-  IndexedDBContext* idb_context = BrowserContext::GetDefaultStoragePartition(
-                                      profile())->GetIndexedDBContext();
-  base::FilePath idb_path =
-      idb_context->GetFilePathForTesting(url::Origin::Create(origin1));
-  EXPECT_TRUE(base::CreateDirectory(idb_path));
-  EXPECT_TRUE(base::DirectoryExists(idb_path));
-  idb_context->ResetCachesForTesting();
+  auto& idb_control = BrowserContext::GetDefaultStoragePartition(profile())
+                          ->GetIndexedDBControl();
+  mojo::Remote<storage::mojom::IndexedDBControlTest> idb_control_test;
+  idb_control.BindTestInterface(idb_control_test.BindNewPipeAndPassReceiver());
+
+  base::FilePath idb_path;
+  {
+    base::RunLoop run_loop;
+    idb_control_test->GetFilePathForTesting(
+        url::Origin::Create(origin1),
+        base::BindLambdaForTesting([&](const base::FilePath& path) {
+          idb_path = path;
+          EXPECT_TRUE(base::CreateDirectory(idb_path));
+          EXPECT_TRUE(base::DirectoryExists(idb_path));
+          idb_control_test->ResetCachesForTesting(
+              base::BindLambdaForTesting([&]() { run_loop.Quit(); }));
+        }));
+    run_loop.Run();
+  }
 
   // Uninstall one of them, unlimited storage should still be granted
   // to the origin.

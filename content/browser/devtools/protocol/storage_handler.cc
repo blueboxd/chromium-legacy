@@ -172,70 +172,64 @@ class StorageHandler::CacheStorageObserver : CacheStorageContextImpl::Observer {
 // thread.
 // Registered on creation as an observer in IndexedDBContextImpl, unregistered
 // on destruction.
-class StorageHandler::IndexedDBObserver : IndexedDBContextImpl::Observer {
+class StorageHandler::IndexedDBObserver
+    : public storage::mojom::IndexedDBObserver {
  public:
-  IndexedDBObserver(base::WeakPtr<StorageHandler> owner_storage_handler,
-                    IndexedDBContextImpl* indexed_db_context)
-      : owner_(owner_storage_handler), context_(indexed_db_context) {
-    TaskRunner()->PostTask(
-        FROM_HERE, base::BindOnce(&IndexedDBObserver::AddObserverOnIDBThread,
-                                  base::Unretained(this)));
+  explicit IndexedDBObserver(
+      base::WeakPtr<StorageHandler> owner_storage_handler)
+      : owner_(owner_storage_handler), receiver_(this) {
+    DCHECK_CURRENTLY_ON(BrowserThread::UI);
+    if (!owner_storage_handler)
+      return;
+    auto& control =
+        owner_storage_handler->storage_partition_->GetIndexedDBControl();
+    mojo::PendingRemote<storage::mojom::IndexedDBObserver> remote;
+    receiver_.Bind(remote.InitWithNewPipeAndPassReceiver());
+    control.AddObserver(std::move(remote));
   }
 
-  ~IndexedDBObserver() override {
-    DCHECK(TaskRunner()->RunsTasksInCurrentSequence());
-    context_->RemoveObserver(this);
-  }
+  ~IndexedDBObserver() override { DCHECK_CURRENTLY_ON(BrowserThread::UI); }
 
-  void TrackOriginOnIDBThread(const url::Origin& origin) {
-    DCHECK(TaskRunner()->RunsTasksInCurrentSequence());
+  void TrackOrigin(const url::Origin& origin) {
+    DCHECK_CURRENTLY_ON(BrowserThread::UI);
     if (origins_.find(origin) != origins_.end())
       return;
     origins_.insert(origin);
   }
 
-  void UntrackOriginOnIDBThread(const url::Origin& origin) {
-    DCHECK(TaskRunner()->RunsTasksInCurrentSequence());
+  void UntrackOrigin(const url::Origin& origin) {
+    DCHECK_CURRENTLY_ON(BrowserThread::UI);
     origins_.erase(origin);
   }
 
   void OnIndexedDBListChanged(const url::Origin& origin) override {
+    DCHECK_CURRENTLY_ON(BrowserThread::UI);
+    if (!owner_)
+      return;
     auto found = origins_.find(origin);
     if (found == origins_.end())
       return;
-    base::PostTask(FROM_HERE, {BrowserThread::UI},
-                   base::BindOnce(&StorageHandler::NotifyIndexedDBListChanged,
-                                  owner_, origin.Serialize()));
+    owner_->NotifyIndexedDBListChanged(origin.Serialize());
   }
 
   void OnIndexedDBContentChanged(
       const url::Origin& origin,
       const base::string16& database_name,
       const base::string16& object_store_name) override {
+    DCHECK_CURRENTLY_ON(BrowserThread::UI);
+    if (!owner_)
+      return;
     auto found = origins_.find(origin);
     if (found == origins_.end())
       return;
-    base::PostTask(
-        FROM_HERE, {BrowserThread::UI},
-        base::BindOnce(&StorageHandler::NotifyIndexedDBContentChanged, owner_,
-                       origin.Serialize(), database_name, object_store_name));
-  }
-
-  base::SequencedTaskRunner* TaskRunner() const {
-    return context_->IDBTaskRunner();
+    owner_->NotifyIndexedDBContentChanged(origin.Serialize(), database_name,
+                                          object_store_name);
   }
 
  private:
-  void AddObserverOnIDBThread() {
-    DCHECK(TaskRunner()->RunsTasksInCurrentSequence());
-    context_->AddObserver(this);
-  }
-
-  // Maintained on the IDB thread to avoid thread contention.
   base::flat_set<url::Origin> origins_;
-
   base::WeakPtr<StorageHandler> owner_;
-  scoped_refptr<IndexedDBContextImpl> context_;
+  mojo::Receiver<storage::mojom::IndexedDBObserver> receiver_;
 
   DISALLOW_COPY_AND_ASSIGN(IndexedDBObserver);
 };
@@ -262,13 +256,7 @@ void StorageHandler::SetRenderer(int process_host_id,
 
 Response StorageHandler::Disable() {
   cache_storage_observer_.reset();
-  if (indexed_db_observer_) {
-    scoped_refptr<base::SequencedTaskRunner> observer_task_runner =
-        indexed_db_observer_->TaskRunner();
-    observer_task_runner->DeleteSoon(FROM_HERE,
-                                     std::move(indexed_db_observer_));
-  }
-
+  indexed_db_observer_.reset();
   return Response::OK();
 }
 
@@ -431,10 +419,7 @@ Response StorageHandler::TrackIndexedDBForOrigin(const std::string& origin) {
   if (!origin_url.is_valid())
     return Response::InvalidParams(origin + " is not a valid URL");
 
-  GetIndexedDBObserver()->TaskRunner()->PostTask(
-      FROM_HERE, base::BindOnce(&IndexedDBObserver::TrackOriginOnIDBThread,
-                                base::Unretained(GetIndexedDBObserver()),
-                                url::Origin::Create(origin_url)));
+  GetIndexedDBObserver()->TrackOrigin(url::Origin::Create(origin_url));
   return Response::OK();
 }
 
@@ -446,10 +431,7 @@ Response StorageHandler::UntrackIndexedDBForOrigin(const std::string& origin) {
   if (!origin_url.is_valid())
     return Response::InvalidParams(origin + " is not a valid URL");
 
-  GetIndexedDBObserver()->TaskRunner()->PostTask(
-      FROM_HERE, base::BindOnce(&IndexedDBObserver::UntrackOriginOnIDBThread,
-                                base::Unretained(GetIndexedDBObserver()),
-                                url::Origin::Create(origin_url)));
+  GetIndexedDBObserver()->UntrackOrigin(url::Origin::Create(origin_url));
   return Response::OK();
 }
 
@@ -468,10 +450,8 @@ StorageHandler::GetCacheStorageObserver() {
 StorageHandler::IndexedDBObserver* StorageHandler::GetIndexedDBObserver() {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   if (!indexed_db_observer_) {
-    indexed_db_observer_ = std::make_unique<IndexedDBObserver>(
-        weak_ptr_factory_.GetWeakPtr(),
-        static_cast<IndexedDBContextImpl*>(
-            storage_partition_->GetIndexedDBContext()));
+    indexed_db_observer_ =
+        std::make_unique<IndexedDBObserver>(weak_ptr_factory_.GetWeakPtr());
   }
   return indexed_db_observer_.get();
 }

@@ -281,6 +281,7 @@
 <translation id="3137521801621304719">Verlaat incognitomodus</translation>
 <translation id="3140134512074889489">Aktiveer asseblief jou kamera om 'n QR-kode te skandeer</translation>
 <translation id="3143515551205905069">Kanselleer sinkronisering</translation>
+<translation id="314939179385989105">Chrome se tuisblad</translation>
 <translation id="3157842584138209013">Sien deur die Meer Opsies-knoppie hoeveel data jy bespaar het</translation>
 <translation id="3166827708714933426">Oortjie- en vensterkortpaaie</translation>
 <translation id="3181954750937456830">Veiligblaai (beskerm jou en jou toestel teen gevaarlike werwe)</translation>
@@ -727,6 +728,7 @@ Langdruk enige woord om 'n soektog daarvoor te skep. Pas die seleksie aan om jou
 <translation id="6437478888915024427">Bladsy-inligting</translation>
 <translation id="6441734959916820584">Naam is te lank</translation>
 <translation id="6444421004082850253">{FILE_COUNT,plural, =1{# prent}other{# prente}}</translation>
+<translation id="6447558397796644647">Kan nie daardie boekmerk opspoor nie. Gaan jou spelling na of voeg 'n nuwe boekmerk by.</translation>
 <translation id="6447842834002726250">Webkoekies</translation>
 <translation id="6461962085415701688">Kan nie lêer oopmaak nie</translation>
 <translation id="6464977750820128603">Jy kan werwe sien wat jy in Chrome besoek en tydtellers vir hulle stel.\n\nGoogle kry inligting oor die werwe waarvoor jy tydtellers stel en hoe lank jy hulle besoek. Hierdie inligting word gebruik om Digitale Welstand te verbeter.</translation>
@@ -802,6 +804,7 @@ Langdruk enige woord om 'n soektog daarvoor te skep. Pas die seleksie aan om jou
 <translation id="6990079615885386641">Kry die program van die Google Play Winkel af: <ph name="APP_ACTION" /></translation>
 <translation id="6992289844737586249">Vra eers voordat werwe toegelaat word om jou mikrofoon te gebruik (aanbeveel)</translation>
 <translation id="6995899638241819463">Waarsku jou as wagwoorde in 'n dataskending blootgestel is</translation>
+<translation id="7000754031042624318">Afgeskakel in Android-instellings</translation>
 <translation id="7015203776128479407">Aanvanklike sinkroniseringopstelling is nie voltooi nie. Sinkronisering is af.</translation>
 <translation id="7016516562562142042">Toegelaat vir huidige soekenjin</translation>
 <translation id="7022756207310403729">Maak in blaaier oop</translation>

@@ -59,6 +59,7 @@
 <translation id="1658406695958299976">Maaf, kata laluan anda masih tidak dapat disahkan. Perhatian: jika anda menukar kata laluan anda baru-baru ini, kata laluan baharu anda akan digunakan apabila anda log keluar, sila gunakan kata laluan yang lama di sini.</translation>
 <translation id="1677472565718498478">Berbaki <ph name="TIME" /></translation>
 <translation id="1698760176351776263">Alamat IPv6: <ph name="ADDRESS" /></translation>
+<translation id="1709762881904163296">Tetapan Rangkaian</translation>
 <translation id="1743570585616704562">Tidak dikenali</translation>
 <translation id="1746730358044914197">Kaedah masukan dikonfigurasi oleh pentadbir anda.</translation>
 <translation id="1747827819627189109">Papan kekunci pada skrin didayakan</translation>
@@ -113,11 +114,13 @@
 <translation id="2354174487190027830">Mengaktifkan <ph name="NAME" /></translation>
 <translation id="2359808026110333948">Teruskan</translation>
 <translation id="2365393535144473978">Tindakan mendayakan data mudah alih akan turut mendayakan Bluetooth.</translation>
+<translation id="2390318262976603432">Tetapan Tempat Peristiwa</translation>
 <translation id="2391579633712104609">180°</translation>
 <translation id="2412593942846481727">Kemas kini tersedia</translation>
 <translation id="2413728805700750528"><ph name="DISPLAY_NAME" /> ialah sesi terurus yang diurus oleh <ph name="DOMAIN" /></translation>
 <translation id="2427507373259914951">Klik kiri</translation>
 <translation id="2429753432712299108">Peranti Bluetooth "<ph name="DEVICE_NAME" />" ingin kebenaran untuk berpasangan. Sebelum menerimanya, sila sahkan bahawa kekunci laluan ini dipaparkan pada peranti tersebut: <ph name="PASSKEY" /></translation>
+<translation id="2435457462613246316">Paparkan kata laluan</translation>
 <translation id="2473177541599297363">Sahkan Peleraian</translation>
 <translation id="2482878487686419369">Pemberitahuan</translation>
 <translation id="2484513351006226581">Tekan <ph name="KEYBOARD_SHORTCUT" /> untuk menukar atur letak papan kekunci.</translation>
@@ -177,6 +180,7 @@
 <translation id="3154351730702813399">Pentadbir peranti boleh memantau aktiviti penyemakan imbas anda.</translation>
 <translation id="3181441307743005334">Proses mula semula mungkin mengambil sedikit masa</translation>
 <translation id="3202010236269062730">{NUM_DEVICES,plural, =1{Disambungkan ke peranti}other{Disambungkan ke # peranti}}</translation>
+<translation id="3207953481422525583">Tetapan Pengguna</translation>
 <translation id="3217205077783620295">Kelantangan dihidupkan. Tindakan menogol akan meredamkan audio.</translation>
 <translation id="3226991577105957773">+<ph name="COUNT" /> lagi</translation>
 <translation id="3236488194889173876">Tiada rangkaian mudah alih tersedia</translation>
@@ -241,6 +245,7 @@ Semua pengguna mesti log keluar untuk meneruskan.</translation>
 <translation id="3995138139523574647">Peranti USB-C (port belakang sebelah kanan)</translation>
 <translation id="4017989525502048489">Penuding laser</translation>
 <translation id="4021716437419160885">Tatal ke bawah</translation>
+<translation id="4028481283645788203">Kata laluan diperlukan untuk meningkatkan keselamatan</translation>
 <translation id="4042660782729322247">Anda berkongsi skrin anda</translation>
 <translation id="4065525899979931964">{NUM_APPS,plural, =1{Matikan untuk satu apl}other{Matikan untuk # apl}}</translation>
 <translation id="4072264167173457037">Isyarat sederhana</translation>
@@ -250,6 +255,7 @@ Semua pengguna mesti log keluar untuk meneruskan.</translation>
 <translation id="4149156641122542261"><ph name="DEVICE_TYPE" /> diurus oleh <ph name="DOMAIN" /></translation>
 <translation id="4181841719683918333">Bahasa</translation>
 <translation id="4195877955194704651">Mengklik butang secara automatik</translation>
+<translation id="4215497585250573029">Tetapan VPN</translation>
 <translation id="4217571870635786043">Pengimlakan</translation>
 <translation id="421885205185866088">PIN kad pintar untuk <ph name="USER_EMAIL_ADDRESS" /></translation>
 <translation id="4239069858505860023">GPRS</translation>
@@ -264,6 +270,7 @@ Semua pengguna mesti log keluar untuk meneruskan.</translation>
 <translation id="4338109981321384717">Kanta pembesar</translation>
 <translation id="4351433414020964307">Pembantu sedang dimuatkan...</translation>
 <translation id="4356930093361201197">mod kontras tinggi</translation>
+<translation id="4371348193907997655">Tetapan Cast</translation>
 <translation id="4378551569595875038">Menyambung...</translation>
 <translation id="4379531060876907730">Berikut ialah alatan stilus anda</translation>
 <translation id="4383956581743965695">-<ph name="TIME_SINCE_EXPIRATION" /></translation>
@@ -280,12 +287,14 @@ Semua pengguna mesti log keluar untuk meneruskan.</translation>
 <translation id="4527045527269911712">Peranti Bluetooth "<ph name="DEVICE_NAME" />" ingin kebenaran untuk berpasangan.</translation>
 <translation id="453661520163887813"><ph name="TIME" /> sehingga penuh</translation>
 <translation id="4561267230861221837">3G</translation>
+<translation id="4565377596337484307">Sembunyikan kata laluan</translation>
 <translation id="4570957409596482333">Butang Pilih untuk Bercakap</translation>
 <translation id="4585337515783392668">Berhenti menghantar pada penerima yang tidak diketahui</translation>
 <translation id="4628757576491864469">Peranti</translation>
 <translation id="4659419629803378708">ChromeVox didayakan</translation>
 <translation id="4665114317261903604">Togol Jangan ganggu. <ph name="STATE_TEXT" /></translation>
 <translation id="4696813013609194136">Buka kunci peranti menggunakan kod ibu bapa</translation>
+<translation id="4710243778082831592">Tetapan IME</translation>
 <translation id="4731797938093519117">Akses ibu bapa</translation>
 <translation id="4734965478015604180">Mendatar</translation>
 <translation id="4774338217796918551">Datang semula esok pada <ph name="COME_BACK_TIME" />.</translation>
@@ -515,7 +524,9 @@ Semua pengguna mesti log keluar untuk meneruskan.</translation>
 <translation id="7984197416080286869">Terlalu banyak percubaan cap jari</translation>
 <translation id="7994370417837006925">Log masuk berbilang</translation>
 <translation id="8000066093800657092">Tiada rangkaian</translation>
+<translation id="8029629653277878342">PIN atau kata laluan diperlukan untuk meningkatkan keselamatan</translation>
 <translation id="8030169304546394654">Diputuskan sambungan</translation>
+<translation id="8048123526339889627">Tetapan Bluetooth</translation>
 <translation id="8054466585765276473">Mengira tempoh bateri.</translation>
 <translation id="8061464966246066292">Kontras tinggi</translation>
 <translation id="8098591350844501178">Berhenti menghantar skrin ke <ph name="RECEIVER_NAME" /></translation>
@@ -557,7 +568,9 @@ Semua pengguna mesti log keluar untuk meneruskan.</translation>
 <translation id="8492573885090281069"><ph name="DISPLAY_NAME" /> tidak menyokong <ph name="SPECIFIED_RESOLUTION" />. Peleraian telah ditukar kepada <ph name="FALLBACK_RESOLUTION" />. Klik sahkan untuk menyimpan perubahan. Tetapan terdahulu akan dipulihkan dalam masa <ph name="TIMEOUT_SECONDS" />.</translation>
 <translation id="8513108775083588393">Autoputar</translation>
 <translation id="8517041960877371778"><ph name="DEVICE_TYPE" /> anda mungkin tidak akan dicas semasa dihidupkan.</translation>
+<translation id="8563862697512465947">Tetapan Pemberitahuan</translation>
 <translation id="8627191004499078455">Disambungkan ke <ph name="DEVICE_NAME" /></translation>
+<translation id="8631727435199967028">Tetapan Kebolehaksesan</translation>
 <translation id="8637598503828012618"><ph name="CONNECTION_STATUS" />, Kekuatan Isyarat <ph name="SIGNAL_STRENGTH" />, Diurus oleh Pentadbir anda</translation>
 <translation id="8639760480004882931">Berbaki <ph name="PERCENTAGE" /></translation>
 <translation id="8649101189709089199">Pilih untuk Bercakap</translation>
@@ -574,6 +587,7 @@ Semua pengguna mesti log keluar untuk meneruskan.</translation>
 <translation id="875593634123171288">Tunjukkan tetapan VPN</translation>
 <translation id="8785070478575117577">Sambung kepada <ph name="NETWORK_NAME" /></translation>
 <translation id="8814190375133053267">Wi-Fi</translation>
+<translation id="8825863694328519386">Leret dari kiri untuk kembali</translation>
 <translation id="8828714802988429505">90°</translation>
 <translation id="8843682306134542540">Togol kunci putaran. <ph name="STATE_TEXT" /></translation>
 <translation id="8850991929411075241">Carian+Esc</translation>

@@ -1016,9 +1016,9 @@ IN_PROC_BROWSER_TEST_P(DeclarativeNetRequestBrowserTest, AllowRedirect) {
     base::Optional<std::string> redirect_url;
   } rules_data[] = {
       {"google.com", 1, 1, "redirect", static_redirect_url.spec()},
-      {"num=1|", 2, 2, "allow", base::nullopt},
-      {"1|", 3, 1, "redirect", dynamic_redirect_url.spec()},
-      {"num=21|", 4, 2, "allow", base::nullopt},
+      {"num=1|", 2, 3, "allow", base::nullopt},
+      {"1|", 3, 4, "redirect", dynamic_redirect_url.spec()},
+      {"num=3|", 4, 2, "allow", base::nullopt},
   };
 
   std::vector<TestRule> rules;
@@ -1057,6 +1057,7 @@ IN_PROC_BROWSER_TEST_P(DeclarativeNetRequestBrowserTest, AllowRedirect) {
   } static_test_cases[] = {
       {get_url(0), static_redirect_url},
       {get_url(1), get_url(1)},
+      {get_url(3), static_redirect_url},
   };
 
   for (const auto& test_case : static_test_cases) {
@@ -1070,18 +1071,18 @@ IN_PROC_BROWSER_TEST_P(DeclarativeNetRequestBrowserTest, AllowRedirect) {
     EXPECT_EQ(test_case.expected_final_url, final_url);
   }
 
-  // Now add dynamic rules. These should override static rules in priority.
+  // Now add dynamic rules. These should share the priority space with static
+  // rules.
   const ExtensionId& extension_id = last_loaded_extension_id();
   ASSERT_NO_FATAL_FAILURE(AddDynamicRules(extension_id, dynamic_rules));
 
-  // Test that rules follow the priority of: dynamic allow > dynamic redirect >
-  // static allow > static redirect.
+  // Test that dynamic and static rules are in the same priority space.
   struct {
     GURL initial_url;
     GURL expected_final_url;
   } dynamic_test_cases[] = {
       {get_url(1), dynamic_redirect_url},
-      {get_url(21), get_url(21)},
+      {get_url(3), get_url(3)},
   };
 
   for (const auto& test_case : dynamic_test_cases) {

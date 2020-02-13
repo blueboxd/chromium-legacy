@@ -321,11 +321,10 @@ TEST_F(RulesetMatcherTest, RedirectToExtensionPath) {
 
   std::unique_ptr<RulesetMatcher> matcher;
   const size_t kId = 1;
-  const size_t kPriority = 1;
   const size_t kRuleCountLimit = 10;
   ASSERT_TRUE(CreateVerifiedMatcher(
       {rule},
-      CreateTemporarySource(kId, kPriority,
+      CreateTemporarySource(kId,
                             api::declarative_net_request::SOURCE_TYPE_MANIFEST,
                             kRuleCountLimit),
       &matcher));

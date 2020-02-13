@@ -41,4 +41,10 @@ of [`src/testing/scripts/representative_perf_test_data/representatives_frame_tim
 
 To skip any of the tests, update
 [`src/tools/perf/expectations.config`](../../tools/perf/expectations.config) and
-add the story under rendering benchmark.
+add the story under rendering benchmark (Examples [1](https://chromium-review.googlesource.com/c/chromium/src/+/2055681), [2](https://chromium-review.googlesource.com/c/chromium/src/+/1901357)).
+This expectations file disables the story on the rendering benchmark, which rendering_representative_perf_tests are part of.
+So please add the a bug for each skipped test and link to `Internals>GPU>Metrics`.
+
+If the test is part of representative perf tests on Windows or MacOS, this
+should be done under rendering.desktop benchmark and if it's a test on Android
+under rendering.mobile.

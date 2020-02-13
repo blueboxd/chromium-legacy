@@ -5716,6 +5716,9 @@ interface OscillatorNode : AudioScheduledSourceNode
     method constructor
     method setPeriodicWave
     setter type
+interface OtpCredential : Credential
+    attribute @@toStringTag
+    method constructor
 interface OverconstrainedError
     attribute @@toStringTag
     getter constraint
@@ -11198,10 +11201,6 @@ interface XRFrame
     method getHitTestResultsForTransientInput
     method getPose
     method getViewerPose
-interface XRHitResult
-    attribute @@toStringTag
-    getter hitMatrix
-    method constructor
 interface XRHitTestResult
     attribute @@toStringTag
     method constructor
@@ -11334,7 +11333,6 @@ interface XRSession : EventTarget
     method constructor
     method end
     method requestAnimationFrame
-    method requestHitTest
     method requestHitTestSource
     method requestHitTestSourceForTransientInput
     method requestReferenceSpace

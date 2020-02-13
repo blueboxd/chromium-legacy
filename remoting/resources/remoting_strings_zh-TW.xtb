@@ -229,11 +229,6 @@
 <translation id="6304318647555713317">用戶端</translation>
 <translation id="6381670701864002291">其他。</translation>
 <translation id="6398765197997659313">退出全螢幕模式</translation>
-<translation id="6411861157501911556">如要使用 <ph name="PRODUCT_NAME" />，你必須授予「無障礙功能」權限，才能將遠端電腦上的輸入內容插入這部 Mac。
-
-如要授予這項權限，請點擊下方的 [<ph name="BUTTON_NAME" />] 以開啟「無障礙功能」偏好設定窗格，然後勾選 [<ph name="SERVICE_SCRIPT_NAME" />] 旁邊的方塊。
-
-如果 [<ph name="SERVICE_SCRIPT_NAME" />] 已勾選，請先取消勾選，然後再次勾選。</translation>
 <translation id="6441316101718669559">這個平台不支援桌面整合。您仍然可以使用該應用程式，但使用者體驗可能不如預期。</translation>
 <translation id="652218476070540101">正在更新這台電腦的 PIN...</translation>
 <translation id="6527303717912515753">分享</translation>

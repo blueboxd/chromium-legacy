@@ -281,6 +281,7 @@
 <translation id="3137521801621304719">Esci dalla modalità di navigazione in incognito</translation>
 <translation id="3140134512074889489">Consenti l'uso della fotocamera per scansionare un codice QR</translation>
 <translation id="3143515551205905069">Annulla sincronizzazione</translation>
+<translation id="314939179385989105">Pagina iniziale di Chrome</translation>
 <translation id="3157842584138209013">Scopri la quantità di dati risparmiata usando il pulsante Altre opzioni</translation>
 <translation id="3166827708714933426">Scorciatoie di finestre e schede</translation>
 <translation id="3181954750937456830">Navigazione sicura (protegge te e il tuo dispositivo da siti pericolosi)</translation>
@@ -727,6 +728,7 @@ Premi a lungo qualsiasi parola per creare una ricerca associata. Per perfezionar
 <translation id="6437478888915024427">Informazioni sulla pagina</translation>
 <translation id="6441734959916820584">Il nome è troppo lungo</translation>
 <translation id="6444421004082850253">{FILE_COUNT,plural, =1{# immagine}other{# immagini}}</translation>
+<translation id="6447558397796644647">Impossibile trovare un preferito corrispondente. Controlla l'ortografia o aggiungi un nuovo preferito.</translation>
 <translation id="6447842834002726250">Cookie</translation>
 <translation id="6461962085415701688">Impossibile aprire il file.</translation>
 <translation id="6464977750820128603">Puoi vedere i siti che visiti in Chrome e impostare dei timer per ciascuno di essi.\n\nGoogle riceve informazioni sui siti per i quali imposti dei timer e sul tempo che trascorri a visitarli. Queste informazioni sono utilizzate al fine di migliorare Benessere digitale.</translation>
@@ -802,6 +804,7 @@ Premi a lungo qualsiasi parola per creare una ricerca associata. Per perfezionar
 <translation id="6990079615885386641">Scarica l'app dal Google Play Store: <ph name="APP_ACTION" /></translation>
 <translation id="6992289844737586249">Chiedi conferma prima di consentire ai siti di utilizzare il microfono (opzione consigliata)</translation>
 <translation id="6995899638241819463">Ricevi un avviso se le password vengono esposte a causa di una violazione dei dati</translation>
+<translation id="7000754031042624318">Disattivata nelle impostazioni Android</translation>
 <translation id="7015203776128479407">La configurazione della sincronizzazione iniziale non è stata terminata. La sincronizzazione è disattivata.</translation>
 <translation id="7016516562562142042">Consentita per il motore di ricerca corrente</translation>
 <translation id="7022756207310403729">Apri nel browser</translation>

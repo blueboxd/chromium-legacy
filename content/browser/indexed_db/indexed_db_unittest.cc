@@ -154,6 +154,19 @@ class IndexedDBTest : public testing::Test {
       ASSERT_TRUE(temp_dir_.Delete());
   }
 
+  base::FilePath GetFilePathForTesting(const url::Origin& origin) {
+    base::FilePath path;
+    base::RunLoop run_loop;
+    context()->GetFilePathForTesting(
+        origin,
+        base::BindLambdaForTesting([&](const base::FilePath& async_path) {
+          path = async_path;
+          run_loop.Quit();
+        }));
+    run_loop.Run();
+    return path;
+  }
+
  protected:
   IndexedDBContextImpl* context() const { return context_.get(); }
   scoped_refptr<storage::MockSpecialStoragePolicy> special_storage_policy_;
@@ -172,8 +185,8 @@ TEST_F(IndexedDBTest, ClearSessionOnlyDatabases) {
   base::FilePath normal_path;
   base::FilePath session_only_path;
 
-  normal_path = context()->GetFilePathForTesting(kNormalOrigin);
-  session_only_path = context()->GetFilePathForTesting(kSessionOnlyOrigin);
+  normal_path = GetFilePathForTesting(kNormalOrigin);
+  session_only_path = GetFilePathForTesting(kSessionOnlyOrigin);
   ASSERT_TRUE(base::CreateDirectory(normal_path));
   ASSERT_TRUE(base::CreateDirectory(session_only_path));
   RunAllTasksUntilIdle();
@@ -196,8 +209,8 @@ TEST_F(IndexedDBTest, SetForceKeepSessionState) {
   // Save session state. This should bypass the destruction-time deletion.
   context()->SetForceKeepSessionState();
 
-  normal_path = context()->GetFilePathForTesting(kNormalOrigin);
-  session_only_path = context()->GetFilePathForTesting(kSessionOnlyOrigin);
+  normal_path = GetFilePathForTesting(kNormalOrigin);
+  session_only_path = GetFilePathForTesting(kSessionOnlyOrigin);
   ASSERT_TRUE(base::CreateDirectory(normal_path));
   ASSERT_TRUE(base::CreateDirectory(session_only_path));
   base::RunLoop().RunUntilIdle();
@@ -253,7 +266,7 @@ TEST_F(IndexedDBTest, ForceCloseOpenDatabasesOnDelete) {
       base::MakeRefCounted<ForceCloseDBCallbacks>(context(), kTestOrigin);
   auto closed_callbacks =
       base::MakeRefCounted<ForceCloseDBCallbacks>(context(), kTestOrigin);
-  base::FilePath test_path = context()->GetFilePathForTesting(kTestOrigin);
+  base::FilePath test_path = GetFilePathForTesting(kTestOrigin);
 
   const int64_t host_transaction_id = 0;
   const int64_t version = 0;
@@ -302,7 +315,7 @@ TEST_F(IndexedDBTest, ForceCloseOpenDatabasesOnDelete) {
 TEST_F(IndexedDBTest, DeleteFailsIfDirectoryLocked) {
   const Origin kTestOrigin = Origin::Create(GURL("http://test/"));
 
-  base::FilePath test_path = context()->GetFilePathForTesting(kTestOrigin);
+  base::FilePath test_path = GetFilePathForTesting(kTestOrigin);
   ASSERT_TRUE(base::CreateDirectory(test_path));
 
   auto lock = LockForTesting(test_path);

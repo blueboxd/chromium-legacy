@@ -3825,6 +3825,15 @@ If you're done with the tutorial, use ChromeVox to navigate to the Close button 
       <message desc="A label for the button in the ChromeVox panel used to save annotations." name="IDS_CHROMEVOX_SAVE_ANNOTATION">
         Save label
       </message>
+      <message desc="Labels the select for choosing how ChromeVox reads numbers." name="IDS_CHROMEVOX_OPTIONS_NUMBER_READING_STYLE_SELECT_LABEL">
+        Read numbers as:
+      </message>
+      <message desc="Describes an option for ChromeVox to read numbers as words." name="IDS_CHROMEVOX_OPTIONS_NUMBER_READING_STYLE_WORDS">
+        Words
+      </message>
+      <message desc="Describes an option for ChromeVox to read numbers as digits." name="IDS_CHROMEVOX_OPTIONS_NUMBER_READING_STYLE_DIGITS">
+        Digits
+      </message>
     </messages>
   </release>
 </grit>

@@ -229,11 +229,6 @@ Pokud je položka <ph name="SERVICE_SCRIPT_NAME" /> již zaškrtnutá, zrušte j
 <translation id="6304318647555713317">Klient</translation>
 <translation id="6381670701864002291">Něco jiného</translation>
 <translation id="6398765197997659313">Ukončit režim celé obrazovky</translation>
-<translation id="6411861157501911556">Chcete-li používat službu <ph name="PRODUCT_NAME" />, musíte jí udělit oprávnění Přístupnost, aby do tohoto počítače Mac bylo možné vkládat obsah ze vzdáleného počítače.
-
-Toto oprávnění udělíte tak, že kliknutím na tlačítko <ph name="BUTTON_NAME" /> níže otevřete panel nastavení Přístupnost a poté zaškrtnete políčko vedle položky <ph name="SERVICE_SCRIPT_NAME" />.
-
-Pokud je položka <ph name="SERVICE_SCRIPT_NAME" /> již zaškrtnutá, zrušte její zaškrtnutí a poté ji zaškrtněte znovu.</translation>
 <translation id="6441316101718669559">Integrace počítače na této platformě není podporována. Aplikaci můžete nadále používat, ale uživatelský dojem bude horší.</translation>
 <translation id="652218476070540101">Aktualizace kódu PIN pro tento počítač…</translation>
 <translation id="6527303717912515753">Sdílet</translation>

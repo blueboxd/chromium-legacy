@@ -3014,7 +3014,7 @@
         ],
         'experiment_percentage': 100,
         'swarming': {
-          'service_account': 'chrome-gpu-gold@chops-service-accounts.iam.gserviceaccount.com'
+          'service_account': 'chrome-gold@chops-service-accounts.iam.gserviceaccount.com'
         },
       },
     },

@@ -229,11 +229,6 @@ Jei parinktis „<ph name="SERVICE_SCRIPT_NAME" />“ jau pažymėta, atžymėki
 <translation id="6304318647555713317">Klientas</translation>
 <translation id="6381670701864002291">Kažkas kita.</translation>
 <translation id="6398765197997659313">Išeiti iš viso ekrano režimo</translation>
-<translation id="6411861157501911556">Kad galėtumėte naudoti „<ph name="PRODUCT_NAME" />“, turite suteikti pritaikomumo leidimą, kad įvestis iš nuotolinio įrenginio galėtų būti įvesta šiame „Mac“.
-
-Jei norite suteikti šį leidimą, toliau spustelėję „<ph name="BUTTON_NAME" />“ atidarykite pritaikomumo nuostatų sritį ir pažymėkite laukelį šalia parinkties „<ph name="SERVICE_SCRIPT_NAME" />“.
-
-Jei parinktis „<ph name="SERVICE_SCRIPT_NAME" />“ jau pažymėta, atžymėkite ją ir pažymėkite iš naujo.</translation>
 <translation id="6441316101718669559">Kompiuterio integravimas nepalaikomas šioje platformoje. Vis tiek galite naudoti programą, bet bus teikiamos ne visos funkcijos.</translation>
 <translation id="652218476070540101">Šio kompiuterio PIN kodas atnaujinamas…</translation>
 <translation id="6527303717912515753">Bendrinti</translation>

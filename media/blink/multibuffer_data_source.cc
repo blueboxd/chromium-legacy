@@ -190,12 +190,12 @@ void MultibufferDataSource::CreateResourceLoader_Locked(
   UpdateBufferSizes();
 }
 
-void MultibufferDataSource::Initialize(const InitializeCB& init_cb) {
+void MultibufferDataSource::Initialize(InitializeCB init_cb) {
   DCHECK(render_task_runner_->BelongsToCurrentThread());
   DCHECK(init_cb);
   DCHECK(!reader_.get());
 
-  init_cb_ = init_cb;
+  init_cb_ = std::move(init_cb);
 
   CreateResourceLoader(0, kPositionNotSpecified);
 

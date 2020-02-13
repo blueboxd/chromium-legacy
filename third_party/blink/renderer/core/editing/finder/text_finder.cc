@@ -546,17 +546,17 @@ void TextFinder::UpdateFindMatchRects() {
   find_match_rects_are_valid_ = true;
 }
 
-WebFloatRect TextFinder::ActiveFindMatchRect() {
+gfx::RectF TextFinder::ActiveFindMatchRect() {
   if (!current_active_match_frame_ || !active_match_)
-    return WebFloatRect();
+    return gfx::RectF();
 
-  return WebFloatRect(FindInPageRectFromRange(EphemeralRange(ActiveMatch())));
+  return gfx::RectF(FindInPageRectFromRange(EphemeralRange(ActiveMatch())));
 }
 
-Vector<WebFloatRect> TextFinder::FindMatchRects() {
+Vector<gfx::RectF> TextFinder::FindMatchRects() {
   UpdateFindMatchRects();
 
-  Vector<WebFloatRect> match_rects;
+  Vector<gfx::RectF> match_rects;
   match_rects.ReserveCapacity(match_rects.size() + find_matches_cache_.size());
   for (const FindMatch& match : find_matches_cache_) {
     DCHECK(!match.rect_.IsEmpty());

@@ -690,6 +690,7 @@
 <translation id="1926339101652878330">ਇਹ ਸੈਟਿੰਗਾਂ ਐਂਟਰਪ੍ਰਾਈਜ ਨੀਤੀ ਵੱਲੋਂ ਕੰਟਰੋਲ ਕੀਤੀਆਂ ਜਾਂਦੀਆਂ ਹਨ। ਕਿਰਪਾ ਕਰਕੇ ਵਧੇਰੇ ਜਾਣਕਾਰੀ ਲਈ ਆਪਣੇ ਪ੍ਰਬੰਧਕ ਨੂੰ ਸੰਪਰਕ ਕਰੋ।</translation>
 <translation id="1927632033341042996">ਫਿੰਗਰ <ph name="NEW_FINGER_NUMBER" /></translation>
 <translation id="1928202201223835302">ਪੁਰਾਣਾ PIN ਦਾਖਲ ਕਰੋ</translation>
+<translation id="1928696683969751773">ਅਪਡੇਟਾਂ</translation>
 <translation id="1929546189971853037">ਆਪਣੀਆਂ ਸਾਰੀਆਂ ਸਾਈਨ-ਇਨ ਕੀਤੀਆਂ ਡਿਵਾਈਸਾਂ ਤੇ ਆਪਣਾ ਬ੍ਰਾਊਜ਼ਿੰਗ ਇਤਿਹਾਸ ਪੜ੍ਹੋ</translation>
 <translation id="1931152874660185993">ਕੋਈ ਕੰਪੋਨੈਂਟ ਇੰਸਟੌਲ ਨਹੀਂ ਕੀਤੇ ਗਏ।</translation>
 <translation id="1932098463447129402">ਪਹਿਲਾਂ ਨਹੀਂ</translation>
@@ -1887,7 +1888,6 @@
 <translation id="3603177256297531067">ਇਸ ਪੰਨੇ ਦਾ ਅਨੁਵਾਦ ਨਹੀਂ ਕੀਤਾ ਜਾ ਸਕਿਆ</translation>
 <translation id="3603622770190368340">ਨੈੱਟਵਰਕ ਪ੍ਰਮਾਣ-ਪੱਤਰ ਪ੍ਰਾਪਤ ਕਰੋ</translation>
 <translation id="3605780360466892872">Buttondown</translation>
-<translation id="3608436266458100337">ਪਾਠਕ ਮੋਡ</translation>
 <translation id="3608576286259426129">ਵਰਤੋਂਕਾਰ ਚਿੱਤਰ ਪੂਰਵ-ਝਲਕ</translation>
 <translation id="3610369246614755442">ਡੌਕ ਦੇ ਪੱਖੇ ਦੀ ਮੁਰੰਮਤ ਕਰਵਾਉਣ ਦੀ ਲੋੜ ਹੈ</translation>
 <translation id="361106536627977100">Flash ਡਾਟਾ</translation>
@@ -2390,7 +2390,6 @@
 <translation id="4285418559658561636">ਪਾਸਵਰਡ ਅੱਪਡੇਟ ਕਰੋ</translation>
 <translation id="4285498937028063278">ਅਨਪਿਨ ਕਰੋ</translation>
 <translation id="428565720843367874">ਇਹ ਫਾਈਲ ਸਕੈਨ ਕਰਦੇ ਸਮੇਂ ਐਂਟੀ-ਵਾਇਰਸ ਸਾਫਟਵੇਅਰ ਅਚਾਨਕ ਅਸਫਲ ਹੋਇਆ।</translation>
-<translation id="4287502004382794929">ਤੁਹਾਡੇ ਕੋਲ ਇਸ ਡਿਵਾਈਸ ਨੂੰ ਦਰਜ ਕਰਨ ਲਈ ਪੂਰੇ ਸਾਫ਼ਟਵੇਅਰ ਲਾਇਸੰਸ ਨਹੀਂ ਹਨ। ਕਿਰਪਾ ਕਰਕੇ ਹੋਰ ਖਰੀਦ ਲਈ ਵਿਕਰੀ ਵਿਭਾਗ ਨੂੰ ਸੰਪਰਕ ਕਰੋ। ਜੇਕਰ ਤੁਸੀਂ ਮੰਨਦੇ ਹੋ ਕਿ ਤੁਹਾਨੂੰ ਇਸ ਸੁਨੇਹੇ ਵਿੱਚ ਗੜਬੜ ਦਿਖਾਈ ਦੇ ਰਹੀ ਹੈ, ਤਾਂ ਕਿਰਪਾ ਕਰਕੇ ਸਹਾਇਤਾ ਟੀਮ ਨੂੰ ਸੰਪਰਕ ਕਰੋ।</translation>
 <translation id="4289540628985791613">ਓਵਰਵਿਊ</translation>
 <translation id="4295072614469448764">ਐਪ ਤੁਹਾਡੇ ਟਰਮੀਨਲ ਵਿੱਚ ਉਪਲਬਧ ਹੈ। ਤੁਹਾਡੇ ਲਾਂਚਰ ਵਿੱਚ ਇੱਕ ਪ੍ਰਤੀਕ ਵੀ ਹੋ ਸਕਦਾ ਹੈ।</translation>
 <translation id="4295979599050707005">ਕਿਰਪਾ ਕਰਕੇ ਇਹ ਪੁਸ਼ਟੀ ਕਰਨ ਲਈ ਦੁਬਾਰਾ ਸਾਈਨ-ਇਨ ਕਰੋ ਕਿ ਤੁਹਾਡਾ ਖਾਤਾ <ph name="USER_EMAIL" /> Chrome ਅਤੇ Google Play ਵਿੱਚ ਵੈੱਬਸਾਈਟਾਂ, ਐਪਾਂ ਅਤੇ ਐਕਸਟੈਂਸ਼ਨਾਂ ਨਾਲ ਵਰਤਿਆ ਜਾ ਸਕਦਾ ਹੈ। ਤੁਸੀਂ ਇਹ ਖਾਤਾ ਹਟਾ ਵੀ ਸਕਦੇ ਹੋ। <ph name="LINK_BEGIN" />ਹੋਰ ਜਾਣੋ<ph name="LINK_END" /></translation>
@@ -2870,6 +2869,7 @@
 <translation id="4998430619171209993">ਚਾਲੂ</translation>
 <translation id="4998873842614926205">ਬਦਲਾਵਾਂ ਦੀ ਪੁਸ਼ਟੀ ਕਰੋ</translation>
 <translation id="5000922062037820727">ਬਲੌਕ ਕੀਤੇ ( ਸਿਫ਼ਾਰਸ਼  ਕੀਤੇ)</translation>
+<translation id="5005498671520578047">ਪਾਸਵਰਡ ਕਾਪੀ ਕਰੋ</translation>
 <translation id="5007392906805964215">ਸਮੀਖਿਆ ਕਰੋ</translation>
 <translation id="5008936837313706385">ਸਰਗਰਮੀ ਦਾ ਨਾਮ</translation>
 <translation id="5010043101506446253">ਪ੍ਰਮਾਣ-ਪੱਤਰ ਅਧਿਕਾਰਿਤ ਕਰੋ</translation>
@@ -4652,7 +4652,6 @@
 <translation id="7521387064766892559">JavaScript</translation>
 <translation id="7522255036471229694">"Ok Google" ਕਹੋ</translation>
 <translation id="7525067979554623046">ਬਣਾਓ</translation>
-<translation id="7529411698175791732">ਆਪਣੇ ਕਨੈਕਸ਼ਨ ਦੀ ਜਾਂਚ ਕਰੋ। ਜੇਕਰ ਸਮੱਸਿਆ ਬਣੀ ਰਹਿੰਦੀ ਹੈ, ਤਾਂ ਸਾਈਨ ਆਊਟ ਕਰਕੇ ਦੇਖੋ ਅਤੇ ਦੁਬਾਰਾ ਸਾਈਨ-ਇਨ ਕਰੋ।</translation>
 <translation id="7530016656428373557">ਵਾਟ ਵਿੱਚ ਡਿਸਚਾਰਜ ਦਰ</translation>
 <translation id="7531779363494549572">ਸੈਟਿੰਗਾਂ &gt; ਐਪਾਂ ਅਤੇ ਸੂਚਨਾਵਾਂ &gt; ਸੂਚਨਾਵਾਂ 'ਤੇ ਜਾਓ।</translation>
 <translation id="7532009420053991888"><ph name="LINUX_APP_NAME" /> ਐਪ ਪ੍ਰਤੀਕਿਰਿਆ ਨਹੀਂ ਦੇ ਰਹੀ ਹੈ। ਐਪ ਬੰਦ ਕਰਨ ਲਈ "ਜ਼ਬਰਦਸਤੀ ਬੰਦ ਕਰੋ" ਨੂੰ ਚੁਣੋ।</translation>
@@ -5791,7 +5790,6 @@
 <translation id="9050666287014529139">ਪਾਸਫਰੇਜ਼</translation>
 <translation id="9052208328806230490">ਤੁਸੀਂ ਆਪਣੇ ਪ੍ਰਿੰਟਰਾਂ ਨੂੰ <ph name="EMAIL" /> ਖਾਤੇ ਦੀ ਵਰਤੋਂ ਕਰਕੇ <ph name="CLOUD_PRINT_NAME" /> ਨਾਲ ਰਜਿਸਟਰ ਕੀਤਾ ਹੈ।</translation>
 <translation id="9052404922357793350">ਬਲਾਕ ਕਰਨਾ ਜਾਰੀ ਰੱਖੋ</translation>
-<translation id="9053091947372579468">ਤੁਹਾਡੇ ਡੀਵਾਈਸ ਵਿੱਚ ਇੱਕ Chrome ਲਾਇਸੰਸ ਸ਼ਾਮਲ ਹੈ, ਪਰ ਤੁਹਾਡਾ ਵਰਤੋਂਕਾਰ ਨਾਮ ਕਿਸੇ ਪ੍ਰਸ਼ਾਸਕ ਕੰਸੋਲ ਨਾਲ ਸੰਬੰਧਿਤ ਨਹੀਂ ਹੈ। ਕਿਰਪਾ ਕਰਕੇ ਦਰਜਾਬੰਦੀ ਕਰਨ ਲਈ ਇੱਕ ਪ੍ਰਸ਼ਾਸਕ ਕੰਸੋਲ ਖਾਤਾ ਬਣਾਓ। ਨੋਟ: ਜੇ ਤੁਸੀਂ ਨਵਾਂ ਪ੍ਰਸ਼ਾਸਕ ਕੰਸੋਲ ਖਾਤਾ ਬਣਾਉਣ ਲਈ ਆਪਣੇ ਖੁਦ ਦੇ ਡੋਮੇਨ ਦੀ ਵਰਤੋਂ ਕਰਨਾ ਚੁਣਦੇ ਹੋ, ਤਾਂ ਤੁਹਾਨੂੰ ਸਾਈਨ-ਅੱਪ ਕਰਨ ਤੋਂ ਬਾਅਦ ਡੋਮੇਨ ਪੁਸ਼ਟੀਕਰਨ ਦੀ ਪ੍ਰਕਿਰਿਆ ਵੀ ਪੂਰੀ ਕਰਨੀ ਪਵੇਗੀ। https://g.co/ChromeEnterpriseAccount</translation>
 <translation id="9053563360605707198">ਦੋਵੇਂ ਪਾਸੇ ਪ੍ਰਿੰਟ ਕਰੋ</translation>
 <translation id="9053893665344928494">ਮੇਰੀ ਪਸੰਦ ਯਾਦ ਰੱਖੋ</translation>
 <translation id="9055636786322918818">RC4 ਇਨਕ੍ਰਿਪਸ਼ਨ ਲਾਜ਼ਮੀ ਬਣਾਓ। ਇਸ ਵਿਕਲਪ ਦੀ ਵਰਤੋਂ ਕਰਨਾ, RC4 ciphers ਦੇ ਅਸੁਰੱਖਿਅਤ ਹੋਣ ਕਰਕੇ ਤੁਹਾਡੇ ਜੋਖਮ ਨੂੰ ਵਧਾਉਂਦਾ ਹੈ।</translation>

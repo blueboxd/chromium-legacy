@@ -901,9 +901,6 @@ IPC_MESSAGE_ROUTED2(FrameHostMsg_SynchronizeVisualProperties,
                     viz::FrameSinkId /* frame_sink_id */,
                     content::FrameVisualProperties)
 
-// Notifies the browser that a frame is determined to be large and sticky.
-IPC_MESSAGE_ROUTED0(FrameHostMsg_NotifyFrameIsLargeSticky)
-
 // Sent by a parent frame to notify its child about the state of the child's
 // intersection with the parent's viewport, primarily for use by the
 // IntersectionObserver API.

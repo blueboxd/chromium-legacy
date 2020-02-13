@@ -170,6 +170,8 @@ public class FeedRequestManagerImplTest {
 
         HttpRequest httpRequest = mFakeNetworkClient.getLatestRequest();
         assertHttpRequestFormattedCorrectly(httpRequest, mContext);
+        assertThat(httpRequest.getUri().getQueryParameter(RequestHelper.PRIORITY_PARAM))
+                .isEqualTo(RequestHelper.PRIORITY_VALUE_BACKGROUND);
 
         Request request = getRequestFromHttpRequest(httpRequest);
         Request expectedRequest =
@@ -673,42 +675,50 @@ public class FeedRequestManagerImplTest {
 
     @Test
     public void testGetWireRequestResponse_unknown() throws Exception {
-        testReason(RequestReason.UNKNOWN, FeedQuery.RequestReason.UNKNOWN_REQUEST_REASON);
+        testReason(RequestReason.UNKNOWN, FeedQuery.RequestReason.UNKNOWN_REQUEST_REASON,
+                RequestHelper.PRIORITY_VALUE_INTERACTIVE);
     }
 
     @Test
     public void testGetWireRequestResponse_zeroState() throws Exception {
-        testReason(RequestReason.ZERO_STATE, FeedQuery.RequestReason.ZERO_STATE_REFRESH);
+        testReason(RequestReason.ZERO_STATE, FeedQuery.RequestReason.ZERO_STATE_REFRESH,
+                RequestHelper.PRIORITY_VALUE_INTERACTIVE);
     }
 
     @Test
     public void testGetWireRequestResponse_hostRequested() throws Exception {
-        testReason(RequestReason.HOST_REQUESTED, FeedQuery.RequestReason.SCHEDULED_REFRESH);
+        testReason(RequestReason.HOST_REQUESTED, FeedQuery.RequestReason.SCHEDULED_REFRESH,
+                RequestHelper.PRIORITY_VALUE_BACKGROUND);
     }
 
     @Test
     public void testGetWireRequestResponse_openWithContent() throws Exception {
-        testReason(RequestReason.OPEN_WITH_CONTENT, FeedQuery.RequestReason.WITH_CONTENT);
+        testReason(RequestReason.OPEN_WITH_CONTENT, FeedQuery.RequestReason.WITH_CONTENT,
+                RequestHelper.PRIORITY_VALUE_BACKGROUND);
     }
 
     @Test
     public void testGetWireRequestResponse_manualContinuation() throws Exception {
-        testReason(RequestReason.MANUAL_CONTINUATION, FeedQuery.RequestReason.NEXT_PAGE_SCROLL);
+        testReason(RequestReason.MANUAL_CONTINUATION, FeedQuery.RequestReason.NEXT_PAGE_SCROLL,
+                RequestHelper.PRIORITY_VALUE_INTERACTIVE);
     }
 
     @Test
     public void testGetWireRequestResponse_automaticContinuation() throws Exception {
-        testReason(RequestReason.AUTOMATIC_CONTINUATION, FeedQuery.RequestReason.NEXT_PAGE_SCROLL);
+        testReason(RequestReason.AUTOMATIC_CONTINUATION, FeedQuery.RequestReason.NEXT_PAGE_SCROLL,
+                RequestHelper.PRIORITY_VALUE_INTERACTIVE);
     }
 
     @Test
     public void testGetWireRequestResponse_openWithoutContent() throws Exception {
-        testReason(RequestReason.OPEN_WITHOUT_CONTENT, FeedQuery.RequestReason.INITIAL_LOAD);
+        testReason(RequestReason.OPEN_WITHOUT_CONTENT, FeedQuery.RequestReason.INITIAL_LOAD,
+                RequestHelper.PRIORITY_VALUE_INTERACTIVE);
     }
 
     @Test
     public void testGetWireRequestResponse_clearAll() throws Exception {
-        testReason(RequestReason.CLEAR_ALL, FeedQuery.RequestReason.CLEAR_ALL);
+        testReason(RequestReason.CLEAR_ALL, FeedQuery.RequestReason.CLEAR_ALL,
+                RequestHelper.PRIORITY_VALUE_INTERACTIVE);
     }
 
     @Test
@@ -780,8 +790,8 @@ public class FeedRequestManagerImplTest {
         assertThat(request).isEqualTo(expectedRequest);
     }
 
-    private void testReason(@RequestReason int reason, FeedQuery.RequestReason expectedReason)
-            throws Exception {
+    private void testReason(@RequestReason int reason, FeedQuery.RequestReason expectedReason,
+            String expectedPriority) throws Exception {
         mFakeNetworkClient.addResponse(mFailingResponse);
         mRequestManager.triggerRefresh(reason, input -> {});
 
@@ -790,6 +800,8 @@ public class FeedRequestManagerImplTest {
         assertThat(request.getExtension(FeedRequest.feedRequest).getFeedQuery().getReason())
                 .isEqualTo(expectedReason);
         assertThat(mFakeBasicLoggingApi.serverRequestReason).isEqualTo(reason);
+        assertThat(httpRequest.getUri().getQueryParameter(RequestHelper.PRIORITY_PARAM))
+                .isEqualTo(expectedPriority);
     }
 
     private static void assertHttpRequestFormattedCorrectly(

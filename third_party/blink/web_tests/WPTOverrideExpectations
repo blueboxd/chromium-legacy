@@ -389,6 +389,7 @@ external/wpt/service-workers/service-worker/fetch-event-referrer-policy.https.ht
 external/wpt/service-workers/service-worker/registration-updateviacache.https.html [ Timeout ]
 external/wpt/service-workers/service-worker/update-no-cache-request-headers.https.html [ Failure ]
 external/wpt/shape-detection/detected-boundingBox-read-only.https.html [ Timeout ]
+external/wpt/shape-detection/detected-postMessage.https.html [ Pass Failure ] # subtest_failure
 external/wpt/shape-detection/detection-HTMLCanvasElement.https.html [ Timeout ]
 external/wpt/shape-detection/detection-HTMLImageElement.https.html [ Timeout ]
 external/wpt/shape-detection/detection-HTMLVideoElement.https.html [ Timeout ]
@@ -885,7 +886,7 @@ crbug.com/1029945 external/wpt/forced-colors-mode/forced-colors-mode-07.html [ F
 crbug.com/1029945 external/wpt/forced-colors-mode/forced-colors-mode-08.html [ Failure ]
 crbug.com/1029945 external/wpt/forced-colors-mode/forced-colors-mode-14.html [ Failure ]
 crbug.com/1029945 external/wpt/forced-colors-mode/forced-colors-mode-17.html [ Failure ]
-crbug.com/1029945 external/wpt/forced-colors-mode/forced-colors-mode-18.html [ Failure ]
+crbug.com/1029945 external/wpt/forced-colors-mode/forced-colors-mode-18.tentative.html [ Failure ]
 crbug.com/1029945 external/wpt/forced-colors-mode/forced-colors-mode-19.html [ Failure ]
 crbug.com/1029945 external/wpt/forced-colors-mode/forced-colors-mode-23.html [ Failure ]
 

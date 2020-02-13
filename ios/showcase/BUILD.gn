@@ -86,6 +86,7 @@ ios_eg2_test("ios_showcase_eg2tests_module") {
     "//ios/showcase/text_badge_view:eg2_tests",
   ]
   bundle_deps = [ "//ios/showcase/core/resources" ]
+  data_deps = [ ":ios_showcase_eg2tests" ]
 }
 
 ios_eg_test("ios_showcase_egtests") {

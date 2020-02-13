@@ -3,12 +3,14 @@
 # found in the LICENSE file.
 
 mojom = "//services/network/public/mojom/net_log.mojom"
-public_headers = [ "//net/log/net_log_capture_mode.h" ]
+public_headers = [
+  "//net/log/net_log_capture_mode.h",
+  "//net/log/net_log_event_type.h",
+]
 traits_headers = [ "/services/network/public/cpp/net_log_mojom_traits.h" ]
-sources = [
-  "//services/network/public/cpp/net_log_mojom_traits.cc",
+sources = [ "//services/network/public/cpp/net_log_mojom_traits.cc" ]
+type_mappings = [
+  "network.mojom.NetLogCaptureMode=::net::NetLogCaptureMode",
+  "network.mojom.NetLogEventPhase=::net::NetLogEventPhase",
 ]
-type_mappings = [ "network.mojom.NetLogCaptureMode=::net::NetLogCaptureMode" ]
-public_deps = [
-  "//net",
-]
+public_deps = [ "//net" ]

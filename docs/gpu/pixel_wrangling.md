@@ -238,9 +238,8 @@ shift, and a calendar appointment.
         by Telemetry, rather than a Gtest harness. The tests and their
         expectations are contained in [src/content/test/gpu/gpu_tests/test_expectations] . See
         for example <code>[webgl_conformance_expectations.txt]</code>,
-        <code>[gpu_process_expectations.txt]</code>,
-        <code>[pixel_expectations.txt]</code> and
-        [rendering_representative_perf_tests].
+        <code>[gpu_process_expectations.txt]</code> and
+        <code>[pixel_expectations.txt]</code>.
     1.  See the header of the file a list of modifiers to specify a bot
         configuration. It is possible to specify OS (down to a specific
         version, say, Windows 7 or Mountain Lion), GPU vendor
@@ -255,6 +254,8 @@ shift, and a calendar appointment.
         close the Chromium tree.
     1.  Please read the section on [stamping out flakiness] for motivation on
         how important it is to eliminate flakiness rather than hiding it.
+    1. For failures of rendering_representative_perf_tests please refer to its
+    [instructions on updating expectations][rendering_representative_perf_tests].
 1.  For the remaining Gtest-style tests, use the [`DISABLED_`
     modifier][gtest-DISABLED] to suppress any failures if necessary.
 

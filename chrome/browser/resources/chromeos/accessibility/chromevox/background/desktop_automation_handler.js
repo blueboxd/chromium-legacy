@@ -70,8 +70,6 @@ DesktopAutomationHandler = class extends BaseAutomationHandler {
 
     this.addListener_(EventType.LOAD_COMPLETE, this.onLoadComplete);
     this.addListener_(EventType.MENU_END, this.onMenuEnd);
-    this.addListener_(
-        EventType.MENU_LIST_ITEM_SELECTED, this.onEventIfSelected);
     this.addListener_(EventType.MENU_START, this.onMenuStart);
     this.addListener_(
         EventType.SCROLL_POSITION_CHANGED, this.onScrollPositionChanged);
@@ -103,56 +101,10 @@ DesktopAutomationHandler = class extends BaseAutomationHandler {
   }
 
   /**
-   * Provides all feedback once ChromeVox's focus changes.
-   * @param {!ChromeVoxEvent} evt
-   */
-  onEventDefault(evt) {
-    const node = evt.target;
-    if (!node) {
-      return;
-    }
-
-    // Decide whether to announce and sync this event.
-    const isFocusOnRoot = evt.type == 'focus' && evt.target == evt.target.root;
-    if (!DesktopAutomationHandler.announceActions &&
-        evt.eventFrom == 'action' &&
-        (EventSourceState.get() != EventSourceType.TOUCH_GESTURE ||
-         isFocusOnRoot)) {
-      return;
-    }
-
-    const prevRange = ChromeVoxState.instance.getCurrentRangeWithoutRecovery();
-
-    ChromeVoxState.instance.setCurrentRange(cursors.Range.fromNode(node));
-
-    // Don't output if focused node hasn't changed. Allow focus announcements
-    // when interacting via touch. Touch never sets focus without a double tap.
-    if (prevRange && evt.type == 'focus' &&
-        ChromeVoxState.instance.currentRange.equalsWithoutRecovery(prevRange) &&
-        EventSourceState.get() != EventSourceType.TOUCH_GESTURE) {
-      return;
-    }
-
-    const output = new Output();
-    output.withRichSpeechAndBraille(
-        ChromeVoxState.instance.currentRange, prevRange, evt.type);
-    output.go();
-  }
-
-  /**
    * @param {!ChromeVoxEvent} evt
    */
   onEventFromViews(evt) {
     if (evt.target.root.role == RoleType.DESKTOP) {
-      this.onEventDefault(evt);
-    }
-  }
-
-  /**
-   * @param {!ChromeVoxEvent} evt
-   */
-  onEventIfSelected(evt) {
-    if (evt.target.selected) {
       this.onEventDefault(evt);
     }
   }

@@ -229,11 +229,6 @@ Ak je políčko <ph name="SERVICE_SCRIPT_NAME" /> už začiarknuté, začiarknut
 <translation id="6304318647555713317">Klient</translation>
 <translation id="6381670701864002291">Niečo iné.</translation>
 <translation id="6398765197997659313">Ukončiť zobrazenie na celú obrazovku</translation>
-<translation id="6411861157501911556">Ak chcete používať <ph name="PRODUCT_NAME" />, musíte povoliť prístup, aby bolo možné vstup zo vzdialeného zariadenia vkladať v tomto Macu.
-
-Toto povolenie udelíte tak, že kliknutím na <ph name="BUTTON_NAME" /> nižšie otvoríte panel predvolieb prístupu a začiarknete políčko <ph name="SERVICE_SCRIPT_NAME" />.
-
-Ak je políčko <ph name="SERVICE_SCRIPT_NAME" /> už začiarknuté, začiarknutie zrušte a potom ho znova začiarknite.</translation>
 <translation id="6441316101718669559">Táto platforma nepodporuje integráciu stolných počítačov. Aplikáciu môžete stále používať, avšak používateľské prostredie bude znehodnotené.</translation>
 <translation id="652218476070540101">Prebieha aktualizácia kódu PIN pre tento počítač...</translation>
 <translation id="6527303717912515753">Zdieľať</translation>

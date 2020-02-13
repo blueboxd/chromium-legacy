@@ -8,6 +8,7 @@
 
 #include "base/bind.h"
 #include "base/bind_helpers.h"
+#include "base/strings/stringprintf.h"
 #include "base/threading/sequenced_task_runner_handle.h"
 #include "base/trace_event/trace_event.h"
 
@@ -18,6 +19,16 @@ const float kSilenceThresholdDBFS = -72.24719896f;
 // Desired polling frequency.  Note: If this is set too low, short-duration
 // "blip" sounds won't be detected.  http://crbug.com/339133#c4
 const int kPowerMeasurementsPerSecond = 15;
+
+std::string GetCtorLogString(const base::UnguessableToken& id,
+                             media::AudioManager* audio_manager,
+                             const std::string& device_id,
+                             const media::AudioParameters& params) {
+  return base::StringPrintf(
+      "Ctor({id=%s}, {audio_manager_name=%s}, {device_id=%s}, {params=[%s]})",
+      id.ToString().c_str(), audio_manager->GetName(), device_id.c_str(),
+      params.AsHumanReadableString().c_str());
+}
 
 OutputStream::OutputStream(
     CreatedCallback created_callback,
@@ -61,6 +72,9 @@ OutputStream::OutputStream(
   TRACE_EVENT_NESTABLE_ASYNC_BEGIN2("audio", "OutputStream", this, "device id",
                                     output_device_id, "params",
                                     params.AsHumanReadableString());
+  SendLogMessage("%s", GetCtorLogString(processing_id, audio_manager,
+                                        output_device_id, params)
+                           .c_str());
 
   // |this| owns these objects, so unretained is safe.
   base::RepeatingClosure error_handler =
@@ -154,6 +168,8 @@ void OutputStream::CreateAudioPipe(CreatedCallback created_callback) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(owning_sequence_);
   DCHECK(reader_.IsValid());
   TRACE_EVENT_NESTABLE_ASYNC_INSTANT0("audio", "CreateAudioPipe", this);
+  SendLogMessage("CreateAudioPipe({id=%s})",
+                 processing_id().ToString().c_str());
 
   base::UnsafeSharedMemoryRegion shared_memory_region =
       reader_.TakeSharedMemoryRegion();
@@ -216,6 +232,8 @@ void OutputStream::OnControllerPaused() {
 void OutputStream::OnControllerError() {
   DCHECK_CALLED_ON_VALID_SEQUENCE(owning_sequence_);
   TRACE_EVENT_NESTABLE_ASYNC_INSTANT0("audio", "OnControllerError", this);
+  SendLogMessage("OnControllerError({id=%s})",
+                 processing_id().ToString().c_str());
 
   // Stop checking the audio level to avoid using this object while it's being
   // torn down.
@@ -236,8 +254,11 @@ void OutputStream::OnControllerError() {
 
 void OutputStream::OnLog(base::StringPiece message) {
   // No sequence check: |log_| is thread-safe.
-  if (log_)
-    log_->OnLogMessage(message.as_string());
+  if (log_) {
+    log_->OnLogMessage(base::StringPrintf("%s [id=%s]",
+                                          message.as_string().c_str(),
+                                          processing_id().ToString().c_str()));
+  }
 }
 
 void OutputStream::OnError() {
@@ -259,6 +280,8 @@ void OutputStream::CallDeleter() {
   std::move(delete_callback_).Run(this);
 }
 
+// TODO(crbug.com/1017219): it might be useful to track these transitions with
+// logs as well but note that the method is called at a rather high rate.
 void OutputStream::PollAudioLevel() {
   DCHECK_CALLED_ON_VALID_SEQUENCE(owning_sequence_);
 
@@ -281,6 +304,15 @@ bool OutputStream::IsAudible() {
 
   float power_dbfs = controller_.ReadCurrentPowerAndClip().first;
   return power_dbfs >= kSilenceThresholdDBFS;
+}
+
+void OutputStream::SendLogMessage(const char* format, ...) {
+  if (!log_)
+    return;
+  va_list args;
+  va_start(args, format);
+  log_->OnLogMessage("audio::OS::" + base::StringPrintV(format, args));
+  va_end(args);
 }
 
 }  // namespace audio

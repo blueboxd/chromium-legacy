@@ -20,6 +20,7 @@
 <translation id="1017280919048282932">&amp;Lägg till i ordlistan</translation>
 <translation id="1018656279737460067">Avbröts</translation>
 <translation id="1023873740278604399">Flytta fingret något så att hela fingeravtrycket läggs till.</translation>
+<translation id="1026655690966755180">Lägg till en port</translation>
 <translation id="1026822031284433028">Läs in bild</translation>
 <translation id="1029317248976101138">Zooma in</translation>
 <translation id="1030706264415084469"><ph name="URL" /> vill lagra stora mängder data permanent på din enhet</translation>
@@ -419,6 +420,7 @@
 <translation id="1572876035008611720">Ange din e-postadress</translation>
 <translation id="1576594961618857597">Vit standardavatar</translation>
 <translation id="1578558981922970608">Tvångsavsluta</translation>
+<translation id="1580179297662343964">Tillägget blockeras på grund av innehåll för vuxna</translation>
 <translation id="1581962803218266616">Visa i Finder</translation>
 <translation id="1582955169539260415">radera [<ph name="FINGERPRINT_NAME" />]</translation>
 <translation id="1584990664401018068">Wi-Fi-nätverket du använder (<ph name="NETWORK_ID" />) kanske kräver autentisering.</translation>
@@ -690,6 +692,7 @@
 <translation id="1926339101652878330">Inställningarna styrs av en företagspolicy. Kontakta administratören om du vill veta mer.</translation>
 <translation id="1927632033341042996">Finger <ph name="NEW_FINGER_NUMBER" /></translation>
 <translation id="1928202201223835302">Ange den tidigare pinkoden</translation>
+<translation id="1928696683969751773">Uppdateringar</translation>
 <translation id="1929546189971853037">Läsa webbhistoriken på alla enheter där du är inloggad</translation>
 <translation id="1931152874660185993">Det finns inga installerade komponenter.</translation>
 <translation id="1932098463447129402">Inte före</translation>
@@ -1386,6 +1389,7 @@ Du kan hantera inställningarna för det här kontot genom att installera Family
 <translation id="2870560284913253234">Webbplats</translation>
 <translation id="2870909136778269686">Uppdaterar ...</translation>
 <translation id="2871813825302180988">Kontot används redan på den här enheten.</translation>
+<translation id="287205682142673348">Portvidarebefordran</translation>
 <translation id="287286579981869940">Lägg till <ph name="PROVIDER_NAME" />...</translation>
 <translation id="2872961005593481000">Stäng av</translation>
 <translation id="2874939134665556319">Föregående spår</translation>
@@ -1890,7 +1894,6 @@ Du kan hantera inställningarna för det här kontot genom att installera Family
 <translation id="3603177256297531067">Det gick inte att översätta sidan</translation>
 <translation id="3603622770190368340">Skaffa nätverkscertifikat</translation>
 <translation id="3605780360466892872">Proper</translation>
-<translation id="3608436266458100337">Läsläge</translation>
 <translation id="3608576286259426129">Förhandsgranskning av användarens bild</translation>
 <translation id="3610369246614755442">Dockningsstationens fläkt behöver repareras</translation>
 <translation id="361106536627977100">Flash-data</translation>
@@ -2366,6 +2369,7 @@ Du kan hantera inställningarna för det här kontot genom att installera Family
 <translation id="4244238649050961491">Hitta fler appar för e-penna</translation>
 <translation id="424726838611654458">Öppna alltid i Adobe Reader</translation>
 <translation id="4247901771970415646">Det gick inte att synkronisera med <ph name="USERNAME" /></translation>
+<translation id="4248098802131000011">Skydda dina lösenord från dataintrång och andra säkerhetsproblem</translation>
 <translation id="4249248555939881673">Väntar på nätverksanslutning ...</translation>
 <translation id="4249373718504745892">Den här sidan har blockerats och kan inte komma åt kameran och mikrofonen.</translation>
 <translation id="424963718355121712">Appar måste visas från värden de är kopplade till</translation>
@@ -2393,7 +2397,6 @@ Du kan hantera inställningarna för det här kontot genom att installera Family
 <translation id="4285418559658561636">Uppdatera lösenordet</translation>
 <translation id="4285498937028063278">Lossa</translation>
 <translation id="428565720843367874">Ett oväntat fel uppstod i antivirusprogrammet när filen skulle genomsökas.</translation>
-<translation id="4287502004382794929">Du har inte tillräckligt med licenser för att registrera enheten. Kontakta säljavdelningen om du vill köpa fler. Om du anser att detta meddelande visas på felaktig grund kontaktar du supporten.</translation>
 <translation id="4289540628985791613">Översikt</translation>
 <translation id="4295072614469448764">Appen är tillgänglig via terminalen. Det kan också finnas en ikon för den i startprogrammet.</translation>
 <translation id="4295979599050707005">Bekräfta genom att logga in på nytt att ditt konto, <ph name="USER_EMAIL" />, kan användas med webbplatser, appar och tillägg i Chrome och på Google Play. Du kan även ta bort det här kontot. <ph name="LINK_BEGIN" />Läs mer<ph name="LINK_END" /></translation>
@@ -2504,6 +2507,7 @@ Du kan hantera inställningarna för det här kontot genom att installera Family
 <translation id="4459169140545916303">Aktiv för <ph name="DEVICE_LAST_ACTIVATED_TIME" /> dagar sedan</translation>
 <translation id="4460014764210899310">Ta bort gruppering</translation>
 <translation id="4462159676511157176">Anpassade namnservrar</translation>
+<translation id="4465236939126352372">En tidsgräns på <ph name="TIME" /> har ställts in för <ph name="APP_NAME" /></translation>
 <translation id="4465725236958772856">Nätverk <ph name="NETWORK_INDEX" /> av <ph name="NETWORK_COUNT" />, <ph name="NETWORK_NAME" />, hanteras av administratören, anslut</translation>
 <translation id="4469477701382819144">Blockeras på webbplatser där påträngande eller vilseledande annonser visas</translation>
 <translation id="4469762931504673593"><ph name="ORIGIN" /> har redigeringsbehörighet för <ph name="FOLDERNAME" /></translation>
@@ -2626,6 +2630,7 @@ Du kan hantera inställningarna för det här kontot genom att installera Family
 <translation id="4641539339823703554">Systemtiden kunde inte anges i Chrome. Kontrollera tiden nedan och korrigera den om det behövs.</translation>
 <translation id="4643612240819915418">&amp;Öppna video i ny flik</translation>
 <translation id="4645676300727003670">&amp;Behåll</translation>
+<translation id="4646675363240786305">Portar</translation>
 <translation id="4647090755847581616">&amp;Stäng flik</translation>
 <translation id="4647697156028544508">Ange pinkoden för <ph name="DEVICE_NAME" />:</translation>
 <translation id="4648491805942548247">Otillräckliga behörigheter</translation>
@@ -2818,6 +2823,7 @@ Du kan hantera inställningarna för det här kontot genom att installera Family
 <translation id="492299503953721473">Ta bort Android-appar</translation>
 <translation id="4923279099980110923">Ja, jag vill hjälpa till</translation>
 <translation id="4924352752174756392">12x</translation>
+<translation id="4925320384394644410">Portarna visas här</translation>
 <translation id="4925542575807923399">Administratören för kontot kräver att kontot är det första i en session med multiinloggning.</translation>
 <translation id="4927753642311223124">Här finns inget att se, fortsätt.</translation>
 <translation id="4929386379796360314">Utskriftsmål</translation>
@@ -2873,6 +2879,7 @@ Du kan hantera inställningarna för det här kontot genom att installera Family
 <translation id="4998430619171209993">På</translation>
 <translation id="4998873842614926205">Bekräfta ändringar</translation>
 <translation id="5000922062037820727">Blockeras (rekommenderas)</translation>
+<translation id="5005498671520578047">Kopiera lösenord</translation>
 <translation id="5007392906805964215">Granska</translation>
 <translation id="5008936837313706385">Aktivitetsnamn</translation>
 <translation id="5010043101506446253">Certifikatutfärdare</translation>
@@ -3479,6 +3486,7 @@ Du kan hantera inställningarna för det här kontot genom att installera Family
 <translation id="5863445608433396414">Aktivera felsökningsfunktioner</translation>
 <translation id="5864195618110239517">Använd anslutning med datapriser</translation>
 <translation id="5864471791310927901">DHCP-förfrågan misslyckades</translation>
+<translation id="5865508026715185451"><ph name="APP_NAME" /> pausas snart</translation>
 <translation id="586567932979200359">Du kör <ph name="PRODUCT_NAME" /> från diskavbildningen. Om du installerar programmet på din dator kan du köra det utan diskavbildningen och du kan vara säker på att det alltid är uppdaterat.</translation>
 <translation id="5865733239029070421">Skickar användningsstatistik och felrapporter till Google automatiskt</translation>
 <translation id="5866557323934807206">Rensa inställningarna för framtida besök</translation>
@@ -3523,6 +3531,7 @@ Du kan hantera inställningarna för det här kontot genom att installera Family
           <ph name="LINE_BREAK" />
           Bilden visas på inloggnings- och låsskärmen på Chromebook.</translation>
 <translation id="5925147183566400388">Pekare för certifieringspraxis</translation>
+<translation id="592815705005983377">Hantera och ändra storlek på disk</translation>
 <translation id="592880897588170157">Ladda ned PDF-filer i stället för att låta dem öppnas automatiskt i Chrome</translation>
 <translation id="5931146425219109062">Läsa och ändra all din data på de webbplatser du besöker</translation>
 <translation id="5932124097031739492">Linux har uppgraderats.</translation>
@@ -3643,6 +3652,7 @@ Du kan hantera inställningarna för det här kontot genom att installera Family
 <translation id="6080689532560039067">Kontrollera systemtiden</translation>
 <translation id="6082651258230788217">Visa i verktygsfältet</translation>
 <translation id="608531959444400877"><ph name="WINDOW_TITLE" /> – ingår i namnlös grupp</translation>
+<translation id="6085886413119427067">Styr hur du ansluter till webbplatser via en säker anslutning</translation>
 <translation id="6086846494333236931">Har installerats av administratören</translation>
 <translation id="6087960857463881712">Entusiastiskt ansikte</translation>
 <translation id="6091761513005122595">Den delade resursen har monterats.</translation>
@@ -3988,6 +3998,7 @@ Du kan hantera inställningarna för det här kontot genom att installera Family
 <translation id="6584878029876017575">Microsofts Livstids signering</translation>
 <translation id="6586451623538375658">Byt primär musknapp</translation>
 <translation id="6586604979641883411">Det krävs minst <ph name="REQUIRED_SPACE" /> ledigt hårddiskutrymme för att uppgradera Linux. Frigör utrymme på enheten och försök igen.</translation>
+<translation id="6588043302623806746">Använd säker DNS</translation>
 <translation id="6590458744723262880">Byt namn på mapp</translation>
 <translation id="6592267180249644460">WebRTC-logg registrerades <ph name="WEBRTC_LOG_CAPTURE_TIME" /></translation>
 <translation id="6592808042417736307">Ditt fingeravtryck har registrerats</translation>
@@ -4030,6 +4041,7 @@ Du kan hantera inställningarna för det här kontot genom att installera Family
 <translation id="665061930738760572">Öppna i &amp;nytt fönster</translation>
 <translation id="6651237644330755633">Lita på detta certifikat för identifiering av webbplatser</translation>
 <translation id="6651823585377804376">Nedladdningen innehåller skadlig programvara.</translation>
+<translation id="6653184508164114047">Hantera och ändra storlek på disk</translation>
 <translation id="665355505818177700">Integrering med <ph name="MS_AD_NAME" /> i Chrome stöds bara på x86_64-plattformar. Chromebook-enheter som bygger på ARM- eller x86-plattformen saknar stöd för denna funktion.</translation>
 <translation id="6655190889273724601">Programmerarläge</translation>
 <translation id="6655458902729017087">Dölj konton</translation>
@@ -4655,7 +4667,6 @@ Du kan hantera inställningarna för det här kontot genom att installera Family
 <translation id="7521387064766892559">JavaScript</translation>
 <translation id="7522255036471229694">Säg ”Ok Google”</translation>
 <translation id="7525067979554623046">Skapa</translation>
-<translation id="7529411698175791732">Kontrollera internetanslutningen. Om problemet kvarstår testar du att logga ut och logga in igen.</translation>
 <translation id="7530016656428373557">Urladdningstakt i watt</translation>
 <translation id="7531779363494549572">Öppna Inställningar &gt; Appar och aviseringar &gt; Aviseringar.</translation>
 <translation id="7532009420053991888"><ph name="LINUX_APP_NAME" /> svarar inte. Stäng appen med Tvångsavsluta.</translation>
@@ -4949,6 +4960,7 @@ Du kan hantera inställningarna för det här kontot genom att installera Family
 <translation id="7903742244674067440">Du har sparade certifikat som identifierar dessa certifikatutfärdare</translation>
 <translation id="7903925330883316394">Verktyg: <ph name="UTILITY_TYPE" /></translation>
 <translation id="7904094684485781019">Administratören för kontot tillåter inte multiinloggning.</translation>
+<translation id="7904526211178107182">Gör Linux-portar tillgängliga för andra enheter på nätverket.</translation>
 <translation id="7908378463497120834">Minst en partition på den externa lagringsenheten kunde inte monteras.</translation>
 <translation id="7909969815743704077">Laddades ned i inkognitoläge</translation>
 <translation id="7910768399700579500">&amp;Ny mapp</translation>
@@ -5540,6 +5552,7 @@ Spara nyckelfilen på ett säkert ställe. Den behövs om du ska skapa nya versi
 <translation id="8719653885894320876">Det gick inte att ladda ned <ph name="PLUGIN_NAME" /></translation>
 <translation id="8720200012906404956">Söker efter ett mobilnätverk. <ph name="BEGIN_LINK" />Läs mer<ph name="END_LINK" /></translation>
 <translation id="8720816553731218127">Tidsgränsen överskreds för initieringen av attribut för installationstid.</translation>
+<translation id="8721586345635311197">Med din nuvarande tjänsteleverantör när det är möjligt</translation>
 <translation id="8722912030556880711">Skicka diagnostik- och användningsdata. Den här enheten skickar för närvarande diagnostikdata, enhetsdata och data om appanvändning till Google automatiskt. Denna data används till att förbättra systemets och apparnas stabilitet med mera. Viss samlad data används även till att förbättra appar från Google och partner, till exempel Android-utvecklare. Om ytterligare webb- och appaktivitet har aktiverats kan denna data sparas i Google-kontot. <ph name="BEGIN_LINK2" />Läs mer<ph name="END_LINK2" /></translation>
 <translation id="8724405322205516354">När du ser den här ikonen kan du identifiera dig eller godkänna köp med hjälp av ditt fingeravtryck.</translation>
 <translation id="8724409975248965964">Fingeravtrycket är tillagt</translation>
@@ -5549,6 +5562,7 @@ Spara nyckelfilen på ett säkert ställe. Den behövs om du ska skapa nya versi
 <translation id="8726206820263995930">Det uppstod ett fel när policyinställningarna hämtades från servern: <ph name="CLIENT_ERROR" />.</translation>
 <translation id="8727154974495727220">När konfigureringen av <ph name="DEVICE_TYPE" /> är klar kan du få hjälp när som helst genom att trycka på assistentknappen eller säga ”Ok Google”. Öppna inställningarna för Assistenten och gör ändringar.</translation>
 <translation id="8730621377337864115">Klart</translation>
+<translation id="8731787661154643562">Portnummer</translation>
 <translation id="8732030010853991079">Använd tillägget genom att klicka på den här ikonen.</translation>
 <translation id="8732212173949624846">Läsa och ändra webbhistoriken på alla enheter där du är inloggad</translation>
 <translation id="8732844209475700754">Fler inställningar som rör sekretess, säkerhet och datainsamling</translation>
@@ -5797,7 +5811,6 @@ Spara nyckelfilen på ett säkert ställe. Den behövs om du ska skapa nya versi
 <translation id="9050666287014529139">Lösenfras</translation>
 <translation id="9052208328806230490">Du har registrerat dina skrivare med <ph name="CLOUD_PRINT_NAME" /> och du använde kontot <ph name="EMAIL" /></translation>
 <translation id="9052404922357793350">Fortsätt blockera</translation>
-<translation id="9053091947372579468">Det finns en Chrome-licens på enheten men användarnamnet är inte kopplat till en administratörskonsol. Fortsätt med registreringen genom att skapa ett konto för administratörskonsolen. Obs! Om du väljer att använda din egen domän när du skapar ett nytt konto för administratörskonsolen måste du slutföra verifieringen av domänen efter registreringen. https://g.co/ChromeEnterpriseAccount</translation>
 <translation id="9053563360605707198">Dubbelsidig utskrift</translation>
 <translation id="9053893665344928494">Kom ihåg mitt val</translation>
 <translation id="9055636786322918818">Tillämpa RC4-kryptering. Det här alternativet är mer riskabelt eftersom RC4-chiffer är osäkra.</translation>

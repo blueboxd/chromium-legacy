@@ -20,7 +20,8 @@ public class CameraPreview extends SurfaceView implements SurfaceHolder.Callback
     private static final String THREAD_NAME = "CameraHandlerThread";
 
     private final Context mContext;
-    private final Camera.PreviewCallback mCameraCallback;
+    private final Camera.PreviewCallback mPreviewCallback;
+    private final Camera.ErrorCallback mErrorCallback;
 
     private int mCameraId;
     private Camera mCamera;
@@ -29,12 +30,15 @@ public class CameraPreview extends SurfaceView implements SurfaceHolder.Callback
     /**
      * The CameraPreview constructor.
      * @param context The context to use for user permissions.
-     * @param cameraCallback The callback to processing camera preview.
+     * @param previewCallback The callback to processing camera preview.
+     * @param errorCallback The callback when an error happens using the camera.
      */
-    public CameraPreview(Context context, Camera.PreviewCallback cameraCallback) {
+    public CameraPreview(Context context, Camera.PreviewCallback previewCallback,
+            Camera.ErrorCallback errorCallback) {
         super(context);
         mContext = context;
-        mCameraCallback = cameraCallback;
+        mPreviewCallback = previewCallback;
+        mErrorCallback = errorCallback;
     }
 
     /** Obtains a camera and starts the preview. */
@@ -89,7 +93,8 @@ public class CameraPreview extends SurfaceView implements SurfaceHolder.Callback
         try {
             mCamera.setPreviewDisplay(getHolder());
             mCamera.setDisplayOrientation(getCameraOrientation());
-            mCamera.setOneShotPreviewCallback(mCameraCallback);
+            mCamera.setOneShotPreviewCallback(mPreviewCallback);
+            mCamera.setErrorCallback(mErrorCallback);
 
             Camera.Parameters parameters = mCamera.getParameters();
             parameters.setFocusMode(Camera.Parameters.FOCUS_MODE_CONTINUOUS_PICTURE);
@@ -97,7 +102,7 @@ public class CameraPreview extends SurfaceView implements SurfaceHolder.Callback
 
             mCamera.startPreview();
         } catch (Exception e) {
-            // TODO(gayane): Should show error message to users, when error strings are approved.
+            mErrorCallback.onError(Camera.CAMERA_ERROR_UNKNOWN, mCamera);
         }
     }
 
@@ -110,6 +115,7 @@ public class CameraPreview extends SurfaceView implements SurfaceHolder.Callback
         }
 
         mCamera.setOneShotPreviewCallback(null);
+        mCamera.setErrorCallback(null);
         try {
             mCamera.stopPreview();
         } catch (RuntimeException e) {
@@ -117,7 +123,7 @@ public class CameraPreview extends SurfaceView implements SurfaceHolder.Callback
         }
     }
 
-    /** Calculates camera's orientation based on displaye's orientation and camera. */
+    /** Calculates camera's orientation based on display's orientation and camera. */
     private int getCameraOrientation() {
         Camera.CameraInfo info = new Camera.CameraInfo();
         Camera.getCameraInfo(mCameraId, info);
@@ -168,12 +174,12 @@ public class CameraPreview extends SurfaceView implements SurfaceHolder.Callback
      * Returns an instance of the Camera for the give id. Returns null if camera is used or doesn't
      * exist.
      */
-    private static Camera getCameraInstance(int cameraId) {
+    private Camera getCameraInstance(int cameraId) {
         Camera camera = null;
         try {
             camera = Camera.open(cameraId);
         } catch (RuntimeException e) {
-            // TODO(gayane): Should show error message to users, when error strings are approved.
+            mErrorCallback.onError(Camera.CAMERA_ERROR_UNKNOWN, null);
         }
         return camera;
     }

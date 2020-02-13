@@ -4107,6 +4107,7 @@ crbug.com/759665 external/wpt/css/css-grid/animation/grid-template-columns-001.h
 crbug.com/759665 external/wpt/css/css-grid/animation/grid-template-rows-001.html [ Failure ]
 crbug.com/1018439 external/wpt/css/css-grid/grid-child-percent-basis-resize-1.html [ Failure ]
 crbug.com/868380 external/wpt/css/css-grid/grid-model/grid-container-ignores-first-letter-002.html [ Failure ]
+crbug.com/935102 external/wpt/css/css-grid/layout-algorithm/grid-flex-track-intrinsic-sizes-002.html [ Failure ]
 crbug.com/707359 [ Mac ] fast/css-grid-layout/grid-align-baseline-vertical.html [ Failure ]
 crbug.com/707359 [ Mac ] fast/css-grid-layout/grid-self-baseline-03.html [ Failure ]
 crbug.com/707359 [ Mac ] fast/css-grid-layout/grid-self-baseline-04.html [ Failure ]

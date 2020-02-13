@@ -229,11 +229,6 @@ Si la casella <ph name="SERVICE_SCRIPT_NAME" /> ja està marcada, desmarca-la i 
 <translation id="6304318647555713317">Client</translation>
 <translation id="6381670701864002291">Altres motius.</translation>
 <translation id="6398765197997659313">Surt del mode de pantalla completa</translation>
-<translation id="6411861157501911556">Per poder utilitzar <ph name="PRODUCT_NAME" />, has de concedir el permís Accessibilitat, que permet inserir dades de l'ordinador remot en aquest Mac.
-
-Per concedir el permís, fes clic a <ph name="BUTTON_NAME" /> més avall per obrir el tauler de preferències Accessibilitat. Tot seguit, marca la casella corresponent a <ph name="SERVICE_SCRIPT_NAME" />.
-
-Si la casella <ph name="SERVICE_SCRIPT_NAME" /> ja està marcada, desmarca-la i torna-la a marcar.</translation>
 <translation id="6441316101718669559">Aquesta plataforma no admet la integració de l'escriptori. Podeu continuar utilitzant l'aplicació, però l'experiència de l'usuari no serà tan bona.</translation>
 <translation id="652218476070540101">S'està actualitzant el PIN d'aquest ordinador...</translation>
 <translation id="6527303717912515753">Comparteix</translation>

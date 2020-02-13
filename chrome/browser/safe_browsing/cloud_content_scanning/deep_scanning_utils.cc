@@ -9,6 +9,7 @@
 #include "chrome/browser/extensions/api/safe_browsing_private/safe_browsing_private_event_router.h"
 #include "chrome/browser/extensions/api/safe_browsing_private/safe_browsing_private_event_router_factory.h"
 #include "chrome/browser/safe_browsing/cloud_content_scanning/binary_upload_service.h"
+#include "components/safe_browsing/core/proto/webprotect.pb.h"
 
 namespace safe_browsing {
 
@@ -65,10 +66,42 @@ void MaybeReportDeepScanningVerdict(Profile* profile,
         ->OnUnscannedFileEvent(url, file_name, download_digest_sha256,
                                mime_type, trigger, "filePasswordProtected",
                                content_size);
+  } else if (result == BinaryUploadService::Result::UNKNOWN) {
+    extensions::SafeBrowsingPrivateEventRouterFactory::GetForProfile(profile)
+        ->OnUnscannedFileEvent(url, file_name, download_digest_sha256,
+                               mime_type, trigger, "unknownError",
+                               content_size);
+  } else if (result == BinaryUploadService::Result::UPLOAD_FAILURE) {
+    extensions::SafeBrowsingPrivateEventRouterFactory::GetForProfile(profile)
+        ->OnUnscannedFileEvent(url, file_name, download_digest_sha256,
+                               mime_type, trigger, "uploadFailure",
+                               content_size);
+  } else if (result == BinaryUploadService::Result::FAILED_TO_GET_TOKEN) {
+    extensions::SafeBrowsingPrivateEventRouterFactory::GetForProfile(profile)
+        ->OnUnscannedFileEvent(url, file_name, download_digest_sha256,
+                               mime_type, trigger, "failedToGetToken",
+                               content_size);
   }
 
   if (result != BinaryUploadService::Result::SUCCESS)
     return;
+
+  if (response.has_malware_scan_verdict() &&
+      response.malware_scan_verdict().status() !=
+          MalwareDeepScanningVerdict::SUCCESS) {
+    extensions::SafeBrowsingPrivateEventRouterFactory::GetForProfile(profile)
+        ->OnUnscannedFileEvent(url, file_name, download_digest_sha256,
+                               mime_type, trigger, "malwareScanFailed",
+                               content_size);
+  }
+
+  if (response.has_dlp_scan_verdict() &&
+      response.dlp_scan_verdict().status() != DlpDeepScanningVerdict::SUCCESS) {
+    extensions::SafeBrowsingPrivateEventRouterFactory::GetForProfile(profile)
+        ->OnUnscannedFileEvent(url, file_name, download_digest_sha256,
+                               mime_type, trigger, "dlpScanFailed",
+                               content_size);
+  }
 
   if (response.malware_scan_verdict().verdict() ==
           MalwareDeepScanningVerdict::UWS ||

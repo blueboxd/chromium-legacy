@@ -359,11 +359,6 @@ Secara default, tidak ada mode buka kunci cepat yang tersedia untuk perangkat ya
           Jika kebijakan ini dinonaktifkan atau tidak disetel, Setelan akun Kerberos akan dinonaktifkan. Tidak ada akun Kerberos yang dapat ditambahkan dan autentikasi Kerberos tidak dapat digunakan. Semua akun Kerberos yang ada dan sandi yang disimpan telah dihapus.</translation>
 <translation id="1561424797596341174">Penggantian kebijakan untuk versi Debug host akses jarak jauh</translation>
 <translation id="1561967320164410511">U2F ditambah beberapa ekstensi untuk masing-masing pengesahan</translation>
-<translation id="1574554504290354326">Setelan ini tidak digunakan lagi, gunakan SafeBrowsingExtendedReportingEnabled. Mengaktifkan atau menonaktifkan SafeBrowsingExtendedReportingEnabled sama dengan menyetel SafeBrowsingExtendedReportingOptInAllowed ke False.
-
-      Menyetel kebijakan ini ke false akan mencegah pengguna agar tidak memilih untuk mengirimkan beberapa informasi sistem dan konten halaman ke server Google. Jika setelan ini adalah true atau tidak dikonfigurasi, pengguna akan diizinkan untuk mengirimkan beberapa informasi sistem dan konten halaman ke Safe Browsing guna membantu mendeteksi aplikasi dan situs yang berbahaya.
-
-      Lihat https://developers.google.com/safe-browsing untuk mengetahui info selengkapnya tentang Safe Browsing.</translation>
 <translation id="1583248206450240930">Gunakan <ph name="PRODUCT_FRAME_NAME" /> jika tidak diubah</translation>
 <translation id="1599424828227887013">Mengaktifkan Isolasi Situs untuk asal yang ditentukan di perangkat Android</translation>
 <translation id="1608755754295374538">URL yang akan diberi akses ke perangkat perekam audio tanpa peringatan</translation>
@@ -4264,21 +4259,6 @@ Cara yang diharapkan terkait penggunaan kebijakan ini adalah merotasi konfiguras
       Kebijakan ini hanya memengaruhi pengguna yang tidak berafiliasi.
       </translation>
 <translation id="7683777542468165012">Penyegaran Kebijakan Dinamis</translation>
-<translation id="7684516445147212248">Mengonfigurasi kebijakan ini akan mengizinkan atau melarang autentikasi standby untuk profil Samaran dan Tamu di <ph name="PRODUCT_NAME" />.
-
-      Autentikasi Standby adalah autentikasi http dengan kredensial default jika kredensial eksplisit tidak diberikan melalui skema verifikasi/respons NTLM/Kerberos/Negotiate.
-
-      Menetapkan <ph name="REGULAR_ONLY_OPTION_NAME" /> (nilai 0), hanya mengizinkan autentikasi standby untuk sesi Reguler. Sesi Samaran dan Tamu tidak akan diizinkan untuk melakukan autentikasi secara standby.
-
-      Menetapkan <ph name="INCOGNITO_AND_REGULAR_OPTION_NAME" /> (nilai 1), mengizinkan autentikasi standby untuk sesi Samaran dan Reguler. Sesi Tamu tidak akan diizinkan untuk melakukan autentikasi secara standby.
-
-      Menetapkan <ph name="GUEST_AND_REGULAR_OPTION_NAME" /> (nilai 2), mengizinkan autentikasi standby untuk sesi Tamu dan Reguler. Sesi Samaran tidak akan diizinkan untuk melakukan autentikasi secara standby.
-
-      Menetapkan <ph name="ALL_OPTION_NAME" /> (nilai 3), mengizinkan autentikasi standby untuk semua sesi.
-
-      Perhatikan bahwa autentikasi standby selalu diizinkan pada profil reguler.
-
-      Jika kebijakan tidak ditetapkan, sesi Samaran dan Tamu tidak akan dapat melakukan autentikasi secara standby di rilis <ph name="PRODUCT_NAME" /> mendatang, karena tidak diizinkan.</translation>
 <translation id="7687943045976362719">Jika kebijakan ini ditetapkan, jenis konten yang ditentukan akan ditangani oleh <ph name="PRODUCT_FRAME_NAME" />.
 
           Jika kebijakan ini tidak ditetapkan, perender default akan digunakan untuk semua situs. (Kebijakan <ph name="CHROME_FRAME_RENDERER_SETTINGS_POLICY_NAME" /> dapat digunakan untuk mengonfigurasi perender default.)</translation>

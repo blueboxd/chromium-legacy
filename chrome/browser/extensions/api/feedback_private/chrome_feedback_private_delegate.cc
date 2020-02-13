@@ -18,6 +18,7 @@
 #include "chrome/browser/ui/simple_message_box.h"
 #include "chrome/grit/generated_resources.h"
 #include "components/feedback/system_logs/system_logs_fetcher.h"
+#include "components/signin/public/identity_manager/consent_level.h"
 #include "components/signin/public/identity_manager/identity_manager.h"
 #include "components/strings/grit/components_strings.h"
 #include "content/public/browser/browser_context.h"
@@ -239,8 +240,12 @@ std::string ChromeFeedbackPrivateDelegate::GetSignedInUserEmail(
     content::BrowserContext* context) const {
   auto* identity_manager = IdentityManagerFactory::GetForProfile(
       Profile::FromBrowserContext(context));
-  return identity_manager ? identity_manager->GetPrimaryAccountInfo().email
-                          : std::string();
+  if (!identity_manager)
+    return std::string();
+  // Browser sync consent is not required to use feedback.
+  return identity_manager
+      ->GetPrimaryAccountInfo(signin::ConsentLevel::kNotRequired)
+      .email;
 }
 
 void ChromeFeedbackPrivateDelegate::NotifyFeedbackDelayed() const {

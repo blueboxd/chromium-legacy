@@ -12,8 +12,9 @@
 
 namespace blink {
 
-CredentialManagerProxy::CredentialManagerProxy(Document& document) {
-  LocalFrame* frame = document.GetFrame();
+CredentialManagerProxy::CredentialManagerProxy(Document& document)
+    : document_(document) {
+  LocalFrame* frame = document_->GetFrame();
   DCHECK(frame);
   frame->GetBrowserInterfaceBroker().GetInterface(
       credential_manager_.BindNewPipeAndPassReceiver(
@@ -23,7 +24,18 @@ CredentialManagerProxy::CredentialManagerProxy(Document& document) {
           frame->GetTaskRunner(TaskType::kUserInteraction)));
 }
 
-CredentialManagerProxy::~CredentialManagerProxy() {}
+CredentialManagerProxy::~CredentialManagerProxy() = default;
+
+mojom::blink::SmsReceiver* CredentialManagerProxy::SmsReceiver() {
+  if (!sms_receiver_) {
+    LocalFrame* frame = document_->GetFrame();
+    DCHECK(frame);
+    frame->GetBrowserInterfaceBroker().GetInterface(
+        sms_receiver_.BindNewPipeAndPassReceiver(
+            frame->GetTaskRunner(TaskType::kMiscPlatformAPI)));
+  }
+  return sms_receiver_.get();
+}
 
 // static
 CredentialManagerProxy* CredentialManagerProxy::From(Document& document) {
@@ -41,6 +53,11 @@ CredentialManagerProxy* CredentialManagerProxy::From(
     ScriptState* script_state) {
   DCHECK(script_state->ContextIsValid());
   return From(Document::From(*ExecutionContext::From(script_state)));
+}
+
+void CredentialManagerProxy::Trace(Visitor* visitor) {
+  visitor->Trace(document_);
+  Supplement<Document>::Trace(visitor);
 }
 
 // static

@@ -9,8 +9,10 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.IntentSender;
 
+import org.chromium.components.browser_ui.modaldialog.AppModalPresenter;
 import org.chromium.ui.base.ActivityKeyboardVisibilityDelegate;
 import org.chromium.ui.base.IntentWindowAndroid;
+import org.chromium.ui.modaldialog.ModalDialogManager;
 
 import java.lang.ref.WeakReference;
 
@@ -20,6 +22,7 @@ import java.lang.ref.WeakReference;
  */
 public class FragmentWindowAndroid extends IntentWindowAndroid {
     private BrowserFragmentImpl mFragment;
+    private ModalDialogManager mModalDialogManager;
 
     FragmentWindowAndroid(Context context, BrowserFragmentImpl fragment) {
         super(context);
@@ -43,5 +46,23 @@ public class FragmentWindowAndroid extends IntentWindowAndroid {
     @Override
     public final WeakReference<Activity> getActivity() {
         return new WeakReference<>(mFragment.getActivity());
+    }
+
+    @Override
+    public final ModalDialogManager getModalDialogManager() {
+        if (mModalDialogManager == null) {
+            mModalDialogManager = new ModalDialogManager(new AppModalPresenter(getContext().get()),
+                    ModalDialogManager.ModalDialogType.APP);
+        }
+        return mModalDialogManager;
+    }
+
+    @Override
+    public void destroy() {
+        if (mModalDialogManager != null) {
+            mModalDialogManager.destroy();
+            mModalDialogManager = null;
+        }
+        super.destroy();
     }
 }

@@ -19633,6 +19633,9 @@ to ensure that the crash string is shown properly on the user-facing crash UI.
   <int value="672" label="SystemProxySettings"/>
   <int value="673" label="UserDataSnapshotRentionLimit"/>
   <int value="674" label="DeviceLoginScreenChromeVariations"/>
+  <int value="675" label="NativeWindowOcclusionEnabled"/>
+  <int value="676" label="DeviceLoginScreenPrivacyScreenEnabled"/>
+  <int value="677" label="PrivacyScreenEnabled"/>
 </enum>
 
 <enum name="EnterprisePolicyDeviceIdValidity">

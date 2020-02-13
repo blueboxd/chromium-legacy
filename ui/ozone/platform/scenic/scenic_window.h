@@ -86,6 +86,7 @@ class COMPONENT_EXPORT(OZONE) ScenicWindow
   // Called from OnScenicEvents() to handle view properties and metrics changes.
   void OnViewProperties(const fuchsia::ui::gfx::ViewProperties& properties);
   void OnViewMetrics(const fuchsia::ui::gfx::Metrics& metrics);
+  void OnViewAttachedChanged(bool is_view_attached);
 
   // Called from OnScenicEvents() to handle input events.
   void OnInputEvent(const fuchsia::ui::input::InputEvent& event);

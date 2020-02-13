@@ -9,6 +9,7 @@
 
 #include "base/base_switches.h"
 #include "base/command_line.h"
+#include "base/debug/stack_trace.h"
 #include "base/feature_list.h"
 #include "base/logging.h"
 #include "build/build_config.h"
@@ -39,6 +40,9 @@ void CommonProcessInitialization(int argc, char** argv) {
   base::FeatureList::InitializeInstance(
       command_line->GetSwitchValueASCII(switches::kEnableFeatures),
       command_line->GetSwitchValueASCII(switches::kDisableFeatures));
+#if !defined(OFFICIAL_BUILD)
+  base::debug::EnableInProcessStackDumping();
+#endif  // !defined(OFFICIAL_BUILD)
 
 #if !defined(OS_ANDROID) && !defined(OS_FUCHSIA)
   CrashReporterClient::InitCrashReporter();

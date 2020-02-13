@@ -369,11 +369,6 @@ Si esta política está establecida en "false" o no está establecida, se inhabi
           Si no se asigna ningún valor a esta política o está inhabilitada, la configuración de las cuentas de Kerberos está inhabilitada. No se podrán añadir cuentas de Kerberos y no se podrá utilizar la autenticación Kerberos. Se eliminarán todas las cuentas de Kerberos y todas las contraseñas almacenadas.</translation>
 <translation id="1561424797596341174">La política anula las compilaciones de depuración del host de acceso remoto.</translation>
 <translation id="1561967320164410511">U2F y extensiones de confirmación individual</translation>
-<translation id="1574554504290354326">Esta opción está obsoleta; usa SafeBrowsingExtendedReportingEnabled en su lugar. Habilitar o inhabilitar SafeBrowsingExtendedReportingEnabled es igual que asignar el valor "False" a la opción SafeBrowsingExtendedReportingOptInAllowed.
-
-      Si se le asigna el valor "False" a esta política, los usuarios no pueden elegir si quieren enviar determinada información del sistema y contenido de las páginas a los servidores de Google. Si se le asigna el valor "True" o no se configura, los usuarios podrán enviar algunos datos y contenido de las páginas a la función Navegación Segura para que pueda detectar aplicaciones y sitios web peligrosos.
-
-      Consulta https://developers.google.com/safe-browsing para obtener más información sobre el servicio Navegación Segura.</translation>
 <translation id="1583248206450240930">Utilizar <ph name="PRODUCT_FRAME_NAME" /> de forma predeterminada</translation>
 <translation id="1599424828227887013">Habilitar el aislamiento de sitios web específicos en dispositivos Android</translation>
 <translation id="1608755754295374538">URLs a las que se concederá acceso a dispositivos de captura de audio sin confirmación</translation>
@@ -1124,7 +1119,7 @@ Si no se establece esta política, el teclado en pantalla estará inhabilitado i
       Si no se establece esta política, la función del proxy de compresión de datos estará disponible para que el usuario decida si quiere o no utilizarla.</translation>
 <translation id="2575738503503093841">Especifica el retraso máximo en milisegundos entre la recepción de la invalidación de una política y la recuperación de la nueva política desde el servicio de gestión del dispositivo.
 
-      Al establecer esta política, se anula el valor predeterminado de 10.000 milisegundos. Los valores válidos de esta política se sitúan entre 1.000 milisegundos (1 segundo) y 300.000 milisegundos (5 minutos). Cualquier valor fuera de este intervalo estará sujeto al límite correspondiente.
+      Al establecer esta política, se anula el valor predeterminado de 10.000 milisegundos. Los valores válidos de esta política se sitúan entre 1000 milisegundos (1 segundo) y 300.000 milisegundos (5 minutos). Cualquier valor fuera de este intervalo estará sujeto al límite correspondiente.
 
       Si no se establece esta política, <ph name="PRODUCT_NAME" /> se utilizará el valor predeterminado de 10.000 milisegundos.</translation>
 <translation id="257788512393330403">Es obligatorio introducir la contraseña cada seis horas</translation>
@@ -1155,7 +1150,7 @@ Si no se establece esta política, el teclado en pantalla estará inhabilitado i
           Si no se le asigna ningún valor a esta política, se asignará el valor predeterminado "true" y la autenticación NTLMv2 se habilitará.</translation>
 <translation id="26023406105317310">Configurar las cuentas de Kerberos</translation>
 <translation id="2604182581880595781">Configura las políticas relacionadas con el uso compartido de archivos del sistema.</translation>
-<translation id="2615240493030733717">Informa sobre la zona horaria</translation>
+<translation id="2615240493030733717">Informar sobre la zona horaria</translation>
 <translation id="2623014935069176671">Esperar actividad inicial del usuario</translation>
 <translation id="262740370354162807">Habilitar el envío de documentos a <ph name="CLOUD_PRINT_NAME" /></translation>
 <translation id="2627554163382448569">Proporciona opciones de configuración de impresoras de empresa vinculadas con los dispositivos.
@@ -1581,7 +1576,7 @@ Si no se establece esta política, el teclado en pantalla estará inhabilitado i
           Si no se le asigna ningún valor a esta política, se usará para todos los sitios web el valor general predeterminado de la política "DefaultCookiesSetting" (si se ha establecido) o el valor personalizado que haya definido el usuario (en caso contrario).
 
           Consulta también las políticas "CookiesBlockedForUrls" y "CookiesSessionOnlyForUrls". Ten en cuenta que no puede haber patrones de URL en conflicto entre estas políticas, ya que no se especifica qué política prevalece.</translation>
-<translation id="3339271789059866414">Configura la disponibilidad del servicio de proxy del sistema y las credenciales de proxy en los servicios del sistema.
+<translation id="3339271789059866414">Configura la disponibilidad del servicio de proxy del sistema y las credenciales de proxy para los servicios del sistema.
       Si no se establece esta política, el servicio de proxy del sistema no estará disponible.</translation>
 <translation id="3373364525435227558">Establece una o varias configuraciones regionales recomendadas para sesiones administradas, lo que permite a los usuarios seleccionar fácilmente una de estas configuraciones.
 
@@ -2560,7 +2555,7 @@ Si esta política está configurada, el usuario no puede cambiarla y el acceso d
           Si estableces esta política, los usuarios no podrán modificarla o anularla.
 
           Si no se establece esta política, el cursor grande se inhabilitará de forma inicial, pero el usuario podrá habilitarlo en cualquier momento.</translation>
-<translation id="4802744647065138872">Limita el número de capturas de datos de usuario retenidas para usarlas en caso de restauración de emergencia.</translation>
+<translation id="4802744647065138872">Limita el número de instantáneas de datos de usuario retenidas para usarlas en caso de restauración de emergencia.</translation>
 <translation id="4802905909524200151">Configurar comportamiento de actualización del firmware de <ph name="TPM_FIRMWARE_UPDATE_TPM" /></translation>
 <translation id="4804828344300125154">Reiniciar siempre cuando el usuario cierre sesión.</translation>
 <translation id="4807950475297505572">Eliminar usuarios utilizados hace más tiempo hasta que haya suficiente espacio libre</translation>
@@ -4397,21 +4392,6 @@ Si esta opción no está establecida o está establecida en True, los dispositiv
       Esta política solo tendrá validez en el caso de los usuarios no afiliados.
       </translation>
 <translation id="7683777542468165012">Actualización dinámica de política</translation>
-<translation id="7684516445147212248">Al configurar esta política, se habilita o inhabilita la autenticación pasiva para los perfiles de incógnito y de invitado en <ph name="PRODUCT_NAME" />.
-
-      La autenticación pasiva permite realizar la autenticación HTTP con credenciales predeterminadas si no se proporcionan credenciales explícitas a través de estructuras de desafío-respuesta de NTLM, Kerberos o Negotiate.
-
-      Si se establece la opción <ph name="REGULAR_ONLY_OPTION_NAME" /> (valor 0), se permite la autenticación pasiva únicamente en las sesiones normales. Las sesiones de incógnito y de invitado no podrán usar la autenticación pasiva.
-
-      Si se establece la opción <ph name="INCOGNITO_AND_REGULAR_OPTION_NAME" /> (valor 1), se permite la autenticación pasiva en las sesiones normales y de incógnito. Las sesiones de invitado no podrán usar la autenticación pasiva.
-
-      Si se establece la opción <ph name="GUEST_AND_REGULAR_OPTION_NAME" /> (valor 2), se permite la autenticación pasiva en las sesiones normales y de invitado. Las sesiones de incógnito no podrán usar la autenticación pasiva.
-
-      Si se establece la opción <ph name="ALL_OPTION_NAME" /> (valor 3), se permite la autenticación pasiva en todas las sesiones.
-
-      Ten en cuenta que la autenticación pasiva siempre está permitida en los perfiles normales.
-
-      Si no se establece esta política, las sesiones de incógnito y de invitado no podrán usar la autenticación pasiva en las versiones futuras de <ph name="PRODUCT_NAME" />, ya que este tipo de autenticación no estará permitida.</translation>
 <translation id="7687943045976362719">Si se asigna un valor a esta política, <ph name="PRODUCT_FRAME_NAME" /> gestiona los tipos de contenido especificados.
 
           Si no se asigna ningún valor a esta política, se usará el procesador predeterminado para todos los sitios web. Se puede usar la política <ph name="CHROME_FRAME_RENDERER_SETTINGS_POLICY_NAME" /> para configurar el procesador predeterminado.</translation>
@@ -4817,11 +4797,11 @@ Te recomendamos que utilices GPO para configurar la política en Windows, aunque
 <translation id="8426231401662877819">Rotar la pantalla 90 grados hacia la derecha</translation>
 <translation id="8433186206711564395">Configuración de red</translation>
 <translation id="8433423491036718210">Configura la lista de las URL de acceso empresarial en las que el servicio de protección de contraseña debe capturar la huella digital de la contraseña.</translation>
-<translation id="8445576299806775661">Después de cada actualización importante de versión, Chrome creará una captura de algunos datos de navegación del usuario para usarla en caso de que se realice una restauración de versión de emergencia posteriormente. Si se realiza una restauración de emergencia y se instala una versión de la que el usuario tiene la captura correspondiente, los datos de la captura se restaurarán. Esto permite a los usuarios conservar ajustes como los marcadores y los datos de Autocompletar.
+<translation id="8445576299806775661">Después de cada actualización importante de versión, Chrome creará una instantánea de algunos datos de navegación del usuario para usarla en caso de que se realice una restauración de versión de emergencia posteriormente. Si se realiza una restauración de emergencia y se instala una versión de la que el usuario tiene la instantánea correspondiente, se restaurarán los datos de dicha instantánea. Esto permite a los usuarios conservar ajustes como los marcadores y los datos de Autocompletar.
 
       Si no se establece esta política, se usará el valor predeterminado, que es "3".
 
-      Si se establece, las capturas antiguas se eliminarán según sea necesario para respetar el límite. Si se asigna el valor "0" a esta política, no se realizarán capturas.</translation>
+      Si se establece, las instantáneas antiguas se eliminarán según sea necesario para respetar el límite. Si se asigna el valor "0" a esta política, no se realizarán instantáneas.</translation>
 <translation id="8451988835943702790">Utilizar página Nueva pestaña como página principal</translation>
 <translation id="8459216513698220096">Especifica si la política del usuario del GPO del ordenador se procesa o no y cómo lo hace.
 
@@ -4977,7 +4957,7 @@ Los usuarios no pueden cambiar ni anular esta opción.</translation>
 <translation id="8687958770985542440">Volver a habilitar la API v0 de componentes web hasta M84.</translation>
 <translation id="8693243869659262736">Utilizar cliente DNS integrado</translation>
 <translation id="8698286761337647563">Número de días de antelación para notificar a los usuarios de SAML que su contraseña está a punto de caducar</translation>
-<translation id="8701288965900240388">Permite establecer si los sitios web pueden ejecutar o no el complemento <ph name="FLASH_PLUGIN_NAME" />. La ejecución automática del complemento <ph name="FLASH_PLUGIN_NAME" /> puede concederse o denegarse en todos los sitios web.
+<translation id="8701288965900240388">Permite establecer si los sitios web pueden ejecutar automáticamente o no el complemento <ph name="FLASH_PLUGIN_NAME" />. La ejecución automática del complemento <ph name="FLASH_PLUGIN_NAME" /> puede concederse o denegarse en todos los sitios web.
 
           La opción de hacer clic para reproducir permite que el complemento <ph name="FLASH_PLUGIN_NAME" /> se ejecute, pero el usuario debe hacer clic en el marcador de posición para iniciar la ejecución.
 

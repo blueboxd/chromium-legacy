@@ -10,7 +10,6 @@ modules_idl_files = [
   "xr_dom_overlay_state.idl",
   "xr_cube_map.idl",
   "xr_frame.idl",
-  "xr_hit_result.idl",
   "xr_input_source.idl",
   "xr_input_source_array.idl",
   "xr_input_source_event.idl",

@@ -1756,8 +1756,10 @@ IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest,
 }
 
 // Checks that non-http/https main page redirects cancel the prerender.
-IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest,
-                       PrerenderCancelMainFrameRedirectUnsupportedScheme) {
+// Disabled for flakes: crbug.com/1050143.
+IN_PROC_BROWSER_TEST_F(
+    PrerenderBrowserTest,
+    DISABLED_PrerenderCancelMainFrameRedirectUnsupportedScheme) {
   // Disable load event checks because they race with cancellation.
   DisableLoadEventCheck();
   GURL url = embedded_test_server()->GetURL(

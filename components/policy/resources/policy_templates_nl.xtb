@@ -369,12 +369,6 @@
           Als dit beleid is uitgeschakeld of niet is ingesteld, worden de instellingen voor Kerberos-accounts uitgeschakeld. Er kunnen geen Kerberos-accounts worden toegevoegd en Kerberos-verificatie kan niet worden gebruikt. Alle bestaande Kerberos-accounts worden verwijderd en alle opgeslagen wachtwoorden worden verwijderd.</translation>
 <translation id="1561424797596341174">Beleid overschrijft Debug-builds van de host voor externe toegang</translation>
 <translation id="1561967320164410511">U2F plus extensies voor individuele bevestiging</translation>
-<translation id="1574554504290354326">Deze instelling is beëindigd. Gebruik in plaats daarvan SafeBrowsingExtendedReportingEnabled. Het inschakelen of uitschakelen van SafeBrowsingExtendedReportingEnabled staat gelijk aan het instellen van SafeBrowsingExtendedReportingOptInAllowed op 'False'.
-
-      Als dit beleid wordt ingesteld op 'False'
-, kunnen gebruikers geen systeeminformatie of paginacontent meer verzenden naar Google-servers. Als deze instelling is ingesteld op 'True' of niet is ingesteld, kunnen gebruikers bepaalde systeeminformatie en paginacontent naar Safe Browsing verzenden om gevaarlijke apps en sites te kunnen detecteren.
-
-      Zie https://developers.google.com/safe-browsing voor meer informatie over Safe Browsing.</translation>
 <translation id="1583248206450240930"><ph name="PRODUCT_FRAME_NAME" /> standaard gebruiken</translation>
 <translation id="1599424828227887013">Site-isolatie inschakelen voor gespecificeerde herkomsten op Android-apparaten</translation>
 <translation id="1608755754295374538">URL's die zonder prompt toegang krijgen tot apparaten voor het vastleggen van audio</translation>
@@ -1195,7 +1189,7 @@
           Dit beleid wordt alleen gerespecteerd als het beleid 'DefaultSearchProviderEnabled' is ingeschakeld.</translation>
 <translation id="268577405881275241">De proxyfunctie voor het comprimeren van gegevens inschakelen</translation>
 <translation id="2693108589792503178">Configureer de URL voor het wijzigen van het wachtwoord.</translation>
-<translation id="2694143893026486692">Gedockt vergrootglas ingeschakeld</translation>
+<translation id="2694143893026486692">Vastgezet vergrootglas ingeschakeld</translation>
 <translation id="2694188263972877487">Hiermee configureer je het type downloads dat volledig door <ph name="PRODUCT_NAME" /> wordt geblokkeerd, zonder dat gebruikers het beveiligingsbesluit kunnen overschrijven.
 
       Als je dit beleid instelt, houdt <ph name="PRODUCT_NAME" /> bepaalde typen downloads tegen en kan de gebruiker de beveiligingswaarschuwingen niet omzeilen.
@@ -4352,21 +4346,6 @@ Geheugengegevens worden in alle gevallen aan de pagina gerapporteerd, afgezien v
       Dit beleid is alleen van invloed op niet-gelieerde gebruikers.
       </translation>
 <translation id="7683777542468165012">Beleid dynamisch vernieuwen</translation>
-<translation id="7684516445147212248">Als je dit beleid configureert, wordt Ambient-verificatie voor incognito- en gastprofielen toegestaan/niet toegestaan in <ph name="PRODUCT_NAME" />.
-
-      Ambient-verificatie is HTTP-verificatie met standaardgegevens als er geen expliciete gegevens worden verstrekt via uitdaging/reactie-schema's van NTLM/Kerberos/Negotiate.
-
-      Als je <ph name="REGULAR_ONLY_OPTION_NAME" /> (waarde 0) instelt, is Ambient-verificatie alleen toegestaan voor normale sessies. Ambient-verificatie is dan niet toegestaan voor incognito- en gastsessies.
-
-      Als je <ph name="INCOGNITO_AND_REGULAR_OPTION_NAME" /> (waarde 1) instelt, is Ambient-verificatie toegestaan voor normale en incognitosessies. Ambient-verificatie is dan niet toegestaan voor gastsessies.
-
-      Als je <ph name="GUEST_AND_REGULAR_OPTION_NAME" /> (waarde 2) instelt, is Ambient-verificatie toegestaan voor normale en gastsessies. Ambient-verificatie is dan niet toegestaan voor incognitosessies.
-
-      Als je <ph name="ALL_OPTION_NAME" /> (waarde 3) instelt, is Ambient-verificatie toegestaan voor alle sessies.
-
-      Ambient-verificatie is altijd toegestaan voor normale profielen.
-
-      Als het beleid niet is ingesteld, kan Ambient-verificatie niet worden gebruikt voor incognito- en gastsessies in toekomstige releases van <ph name="PRODUCT_NAME" />, omdat ze niet zijn toegestaan.</translation>
 <translation id="7687943045976362719">Als dit beleid is ingesteld, worden de opgegeven contenttypen verwerkt door <ph name="PRODUCT_FRAME_NAME" />.
 
           Als dit beleid niet is ingesteld, wordt het standaard weergaveprogramma gebruikt voor alle sites. (Het beleid <ph name="CHROME_FRAME_RENDERER_SETTINGS_POLICY_NAME" /> kan worden gebruikt om het standaard weergaveprogramma te configureren.)</translation>
@@ -4862,7 +4841,7 @@ Dit beleid wordt verwijderd in M75.</translation>
 
       Als dit beleid is ingesteld op 'False' of niet is geconfigureerd, kan de gebruiker de browser gebruiken zonder in te loggen bij <ph name="PRODUCT_NAME" />.</translation>
 <translation id="858309738002328421">Grote bestandsuploads blokkeren</translation>
-<translation id="8584279193368801689">Beperkt de modus voor afdrukken met pincode. Als het beleid niet is ingesteld, gelden er geen beperkingen. Als de modus niet beschikbaar is, wordt dit beleid genegeerd. Houd er rekening mee dat de functie voor afdrukken met pincode alleen is ingeschakeld voor printers die het IPPS-, HTTPS-, USB- of IPP-over-USB-protocol gebruiken.</translation>
+<translation id="8584279193368801689">Beperkt de modus voor afdrukken met pincode. Als het beleid niet is ingesteld, gelden er geen beperkingen. Als de modus niet beschikbaar is, wordt dit beleid genegeerd. Houd er rekening mee dat de functie voor afdrukken met pincode alleen is ingeschakeld voor printers die het protocol IPPS, HTTPS, USB of IPP-over-USB gebruiken.</translation>
 <translation id="8585558195682146109">Gebruikersdownloads sturen om te laten scannen</translation>
 <translation id="8586528890725660268">Hiermee worden de printers gespecificeerd die een gebruiker niet kan gebruiken.
 
@@ -4928,9 +4907,9 @@ Dit beleid wordt verwijderd in M75.</translation>
 <translation id="8687958770985542440">Web Components v0 API opnieuw inschakelen tot M84.</translation>
 <translation id="8693243869659262736">Ingebouwde DNS-client gebruiken</translation>
 <translation id="8698286761337647563">Hoeveel dagen van tevoren SAML-gebruikers bericht ontvangen dat hun wachtwoord bijna verloopt</translation>
-<translation id="8701288965900240388">Hiermee kun je instellen of websites de <ph name="FLASH_PLUGIN_NAME" />-plug-in automatisch mogen uitvoeren. Je kunt het automatisch uitvoeren van de <ph name="FLASH_PLUGIN_NAME" />-plug-in toestaan of weigeren voor alle websites.
+<translation id="8701288965900240388">Hiermee kun je instellen of websites de plug-in <ph name="FLASH_PLUGIN_NAME" /> automatisch mogen uitvoeren. Je kunt het automatisch uitvoeren van de plug-in <ph name="FLASH_PLUGIN_NAME" /> toestaan of weigeren voor alle websites.
 
-          Via click-to-play kan de <ph name="FLASH_PLUGIN_NAME" />-plug-in worden uitgevoerd, maar moet de gebruiker op de tijdelijke aanduiding klikken om deze te starten.
+          De plug-in <ph name="FLASH_PLUGIN_NAME" /> kan via click-to-play worden uitgevoerd, maar de gebruiker moet dan op de tijdelijke aanduiding klikken om deze te starten.
 
           Automatisch afspelen is alleen toegestaan voor domeinen die expliciet worden vermeld in het beleid <ph name="PLUGINS_ALLOWED_FOR_URLS_POLICY_NAME" />. Als je automatisch afspelen wilt inschakelen voor alle sites, kun je http://* en https://* toevoegen aan deze lijst.
 

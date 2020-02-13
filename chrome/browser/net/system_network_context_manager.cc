@@ -36,6 +36,7 @@
 #include "components/certificate_transparency/ct_known_logs.h"
 #include "components/flags_ui/pref_service_flags_storage.h"
 #include "components/net_log/net_export_file_writer.h"
+#include "components/net_log/net_log_proxy_source.h"
 #include "components/network_session_configurator/common/network_features.h"
 #include "components/os_crypt/os_crypt.h"
 #include "components/policy/core/common/policy_namespace.h"
@@ -53,6 +54,7 @@
 #include "content/public/browser/network_service_instance.h"
 #include "content/public/common/content_features.h"
 #include "content/public/common/content_switches.h"
+#include "content/public/common/network_service_util.h"
 #include "content/public/common/service_names.mojom.h"
 #include "content/public/common/user_agent.h"
 #include "crypto/sha2.h"
@@ -84,10 +86,6 @@
 #include "chrome/grit/chromium_strings.h"
 #include "ui/base/l10n/l10n_util.h"
 #endif  // defined(OS_LINUX) && !defined(OS_CHROMEOS)
-
-#if defined(OS_WIN) || defined(OS_MACOSX)
-#include "content/public/common/network_service_util.h"
-#endif
 
 #if BUILDFLAG(ENABLE_EXTENSIONS)
 #include "extensions/common/constants.h"
@@ -577,6 +575,21 @@ void SystemNetworkContextManager::OnNetworkServiceCreated(
   // Disable QUIC globally, if needed.
   if (!is_quic_allowed_)
     network_service->DisableQuic();
+
+  if (content::IsOutOfProcessNetworkService()) {
+    mojo::PendingRemote<network::mojom::NetLogProxySource> proxy_source_remote;
+    mojo::PendingReceiver<network::mojom::NetLogProxySource>
+        proxy_source_receiver =
+            proxy_source_remote.InitWithNewPipeAndPassReceiver();
+    mojo::Remote<network::mojom::NetLogProxySink> proxy_sink_remote;
+    network_service->AttachNetLogProxy(
+        std::move(proxy_source_remote),
+        proxy_sink_remote.BindNewPipeAndPassReceiver());
+    if (net_log_proxy_source_)
+      net_log_proxy_source_->ShutDown();
+    net_log_proxy_source_ = std::make_unique<net_log::NetLogProxySource>(
+        std::move(proxy_source_receiver), std::move(proxy_sink_remote));
+  }
 
   network_service->SetUpHttpAuth(CreateHttpAuthStaticParams(local_state_));
   network_service->ConfigureHttpAuthPrefs(

@@ -38,33 +38,33 @@ document
 ++++++button Name='Show date picker' ExpandCollapse.ExpandCollapseState='Collapsed'
 ++++++Name='Chrome Legacy Window' IsControlElement=false
 ++++++++document
-++++++++++group IsControlElement=false
+++++++++++group
 ++++++++++++group IsControlElement=false
 ++++++++++++++group IsControlElement=false
-++++++++++++++++button Name='Show month selection panel'
-++++++++++++++++++description IsControlElement=false
+++++++++++++++++group IsControlElement=false
+++++++++++++++++++button Name='Show month selection panel'
+++++++++++++++++++++description IsControlElement=false
+++++++++++++++++++++img
+++++++++++++++++button Name='Show previous month'
 ++++++++++++++++++img
-++++++++++++++button Name='Show previous month'
-++++++++++++++++img
-++++++++++++++button Name='Show next month'
-++++++++++++++++img
-++++++++++++++grid Grid.ColumnCount=0 Grid.RowCount=0 Selection.CanSelectMultiple=false Selection.IsSelectionRequired=false
-++++++++++++++++group IsControlElement=false
+++++++++++++++++button Name='Show next month'
+++++++++++++++++++img
+++++++++++++++++grid Grid.ColumnCount=0 Grid.RowCount=0 Selection.CanSelectMultiple=false Selection.IsSelectionRequired=false
 ++++++++++++++++++group IsControlElement=false
-++++++++++++++++++++description Name='Su'
+++++++++++++++++++++group IsControlElement=false
+++++++++++++++++++++++description Name='Su'
+++++++++++++++++++++group IsControlElement=false
+++++++++++++++++++++++description Name='Mo'
+++++++++++++++++++++group IsControlElement=false
+++++++++++++++++++++++description Name='Tu'
+++++++++++++++++++++group IsControlElement=false
+++++++++++++++++++++++description Name='We'
+++++++++++++++++++++group IsControlElement=false
+++++++++++++++++++++++description Name='Th'
+++++++++++++++++++++group IsControlElement=false
+++++++++++++++++++++++description Name='Fr'
+++++++++++++++++++++group IsControlElement=false
+++++++++++++++++++++++description Name='Sa'
 ++++++++++++++++++group IsControlElement=false
-++++++++++++++++++++description Name='Mo'
-++++++++++++++++++group IsControlElement=false
-++++++++++++++++++++description Name='Tu'
-++++++++++++++++++group IsControlElement=false
-++++++++++++++++++++description Name='We'
-++++++++++++++++++group IsControlElement=false
-++++++++++++++++++++description Name='Th'
-++++++++++++++++++group IsControlElement=false
-++++++++++++++++++++description Name='Fr'
-++++++++++++++++++group IsControlElement=false
-++++++++++++++++++++description Name='Sa'
-++++++++++++++++group IsControlElement=false
-++++++++++++++++++group IsControlElement=false
-++++++++++++++++button Name='Today'
-<-- End-of-file -->
+++++++++++++++++++++group IsControlElement=false
+++++++++++++++++++button Name='Today'

@@ -1602,20 +1602,6 @@ jumbo_component("platform") {
   configs += blink_symbols_config
 }
 
-source_set("geometry_mojom_traits") {
-  visibility += [ "//ui/gfx/geometry/mojom:mojom_blink" ]
-
-  sources = [
-    "mojo/geometry_mojom_traits.cc",
-    "mojo/geometry_mojom_traits.h",
-  ]
-
-  public_deps = [
-    "//third_party/blink/public:blink_headers",
-    "//ui/gfx/geometry/mojom:mojom_blink_headers",
-  ]
-}
-
 jumbo_static_library("test_support") {
   visibility += [ "//third_party/blink/*" ]
   testonly = true
@@ -1868,7 +1854,6 @@ jumbo_source_set("blink_platform_unittests_sources") {
     "mediastream/webrtc_uma_histograms_test.cc",
     "mhtml/mhtml_parser_test.cc",
     "mojo/big_string_mojom_traits_test.cc",
-    "mojo/geometry_mojom_traits_test.cc",
     "mojo/kurl_security_origin_test.cc",
     "mojo/string16_mojom_traits_test.cc",
     "p2p/filtering_network_manager_test.cc",

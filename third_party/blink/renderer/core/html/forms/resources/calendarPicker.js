@@ -304,6 +304,40 @@ Day.prototype.next = function(offset) {
 };
 
 /**
+ * Given that 'this' is the Nth day of the month, returns the Nth
+ * day of the month that is specified by the parameter.
+ * Clips the date if necessary, e.g. if 'this' Day is October 31st and
+ * the parameter is a November, returns November 30th.
+ * @param {!Month} month
+ * @return {!Day}
+ */
+Day.prototype.thisRangeInMonth = function(month) {
+  var newDate = month.startDate();
+  var originalMonthInt = newDate.getUTCMonth();
+  newDate.setUTCDate(this.date);
+  if (newDate.getUTCMonth() != originalMonthInt) {
+    newDate.setUTCDate(0);
+  }
+  return Day.createFromDate(newDate);
+};
+
+/**
+ * @param {!Month} month
+ * @return {!boolean}
+ */
+Day.prototype.overlapsMonth = function(month) {
+  return (month.firstDay() <= this && month.lastDay() >= this);
+};
+
+/**
+ * @param {!Month} month
+ * @return {!boolean}
+ */
+Day.prototype.isFullyContainedInMonth = function(month) {
+  return (month.firstDay() <= this && month.lastDay() >= this);
+};
+
+/**
  * @return {!Date}
  */
 Day.prototype.startDate = function() {
@@ -569,6 +603,65 @@ Week.prototype.next = function(offset) {
 };
 
 /**
+ * Given that 'this' is the Nth week of the month, returns
+ * the Week that is the Nth week in the month specified
+ * by the parameter.
+ * Clips the date if necessary, e.g. if 'this' is the 5th week
+ * of a month that has 5 weeks and the parameter month only has
+ * 4 weeks, returns the 4th week of that month.
+ * @param {!Month} month
+ * @return {!Week}
+ */
+Week.prototype.thisRangeInMonth = function(month) {
+  var firstDateInCurrentMonth = this.startDate();
+  firstDateInCurrentMonth.setUTCDate(1);
+
+  var offsetInOriginalMonth =
+      Week._numberOfWeeksSinceDate(firstDateInCurrentMonth, this.startDate());
+
+  // Determine the first Monday in the new month (the week control shows weeks
+  // starting on Monday).
+  var firstWeekStartInNewMonth = month.startDate();
+  firstWeekStartInNewMonth.setUTCDate(
+      1 +
+      ((DaysPerWeek + 1 - firstWeekStartInNewMonth.getUTCDay()) % DaysPerWeek));
+
+
+  // Find the Nth Monday in the month where N == offsetInOriginalMonth.
+  firstWeekStartInNewMonth.setUTCDate(
+      firstWeekStartInNewMonth.getUTCDate() +
+      (DaysPerWeek * offsetInOriginalMonth));
+
+  if (firstWeekStartInNewMonth.getUTCMonth() != month.month) {
+    // If we overshot into the next month (can happen if we were
+    // on the 5th week of the old month), go back to the last week
+    // of the target month.
+    firstWeekStartInNewMonth.setUTCDate(
+        firstWeekStartInNewMonth.getUTCDate() - DaysPerWeek);
+  }
+
+  return Week.createFromDate(firstWeekStartInNewMonth);
+};
+
+/**
+ * @param {!Month} month
+ * @return {!boolean}
+ */
+Week.prototype.overlapsMonth = function(month) {
+  return (
+      month.firstDay() <= this.lastDay() && month.lastDay() >= this.firstDay());
+};
+
+/**
+ * @param {!Month} month
+ * @return {!boolean}
+ */
+Week.prototype.isFullyContainedInMonth = function(month) {
+  return (
+      month.firstDay() <= this.firstDay() && month.lastDay() >= this.lastDay());
+};
+
+/**
  * @return {!Date}
  */
 Week.prototype.startDate = function() {
@@ -703,13 +796,6 @@ Month.createFromDay = function(day) {
 Month.createFromToday = function() {
   var now = new Date();
   return new Month(now.getFullYear(), now.getMonth());
-};
-
-/**
- * @return {!boolean}
- */
-Month.prototype.containsDay = function(day) {
-  return this.year === day.year && this.month === day.month;
 };
 
 /**
@@ -2174,7 +2260,7 @@ var DateRangeManager = {
         this._dateTypeConstructor.Maximum;
     this.config.minimumValue = this.config.minimum.valueOf();
     this.config.maximumValue = this.config.maximum.valueOf();
-    this.config.step = (typeof config.step !== undefined) ?
+    this.config.step = (typeof config.step !== 'undefined') ?
         Number(config.step) :
         this._dateTypeConstructor.DefaultStep;
     this.config.stepBase = (typeof config.stepBase !== 'undefined') ?
@@ -2924,21 +3010,22 @@ YearListView.prototype.highlightMonth = function(month) {
 };
 
 YearListView.prototype.setSelectedMonth = function(month) {
-  this._selectedMonth = month;
-};
 
-YearListView.prototype.setSelectedMonthAndUpdateView = function(month) {
   var oldMonthButton = this.buttonForMonth(this._selectedMonth);
   if (oldMonthButton) {
     oldMonthButton.classList.remove(YearListCell.ClassNameSelected);
   }
 
-  this.setSelectedMonth(month);
+  this._selectedMonth = month;
 
   var newMonthButton = this.buttonForMonth(this._selectedMonth);
   if (newMonthButton) {
     newMonthButton.classList.add(YearListCell.ClassNameSelected);
   }
+};
+
+YearListView.prototype.setSelectedMonthAndUpdateView = function(month) {
+  this.setSelectedMonth(month);
 
   this.select(this._selectedMonth.year - 1);
 
@@ -3072,8 +3159,8 @@ YearListView.prototype.onKeyDown = function(event) {
           this.highlightedMonth);
       if (!global.params.isFormControlsRefreshEnabled) {
         this.hide();
+        eventHandled = true;
       }
-      eventHandled = true;
     } else if (key == 'Escape' && global.params.isFormControlsRefreshEnabled) {
       this.hide();
       eventHandled = true;
@@ -3128,7 +3215,15 @@ MonthPopupView.ClassNameMonthPopupView = 'month-popup-view';
 
 MonthPopupView.prototype.show = function(initialMonth, calendarTableRect) {
   this.isVisible = true;
-  document.body.appendChild(this.element);
+  if (global.params.isFormControlsRefreshEnabled &&
+      global.params.mode == 'datetime-local') {
+    // Place the month popup under the datetimelocal-picker element so that the
+    // datetimelocal-picker element receives its keyboard and click events.
+    // For other calendar control types, these events are handled via the body element.
+    document.querySelector('datetimelocal-picker').appendChild(this.element);
+  } else {
+    document.body.appendChild(this.element);
+  }
   this.yearListView.setWidth(calendarTableRect.width - 2);
   this.yearListView.setHeight(YearListView.GetHeight());
   if (global.params.isLocaleRTL)
@@ -3438,12 +3533,17 @@ CalendarHeaderView.prototype = Object.create(View.prototype);
 
 CalendarHeaderView.Height = 24;
 CalendarHeaderView.BottomMargin = 10;
+CalendarHeaderView.ClassNameCalendarNavigationButtonIconRefresh =
+    'today-button-icon-refresh';
 CalendarHeaderView._ForwardTriangle =
     '<svg width=\'4\' height=\'7\'><polygon points=\'0,7 0,0, 4,3.5\' style=\'fill:#6e6e6e;\' /></svg>';
-CalendarHeaderView._ForwardTriangleRefresh =
-    '<svg width=\"16\" height=\"16\" viewBox=\"0 0 16 16\" fill=\"none\" xmlns=\"http://www.w3.org/2000/svg\">\
-    <path d=\"M15.3516 8.60156L8 15.9531L0.648438 8.60156L1.35156 7.89844L7.5 14.0469V0H8.5V14.0469L14.6484 7.89844L15.3516 8.60156Z\" fill=\"#101010\"/>\
-    </svg>'
+CalendarHeaderView._ForwardTriangleRefresh = `<svg class="${
+    CalendarHeaderView
+        .ClassNameCalendarNavigationButtonIconRefresh}" width="16" height="16" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg">
+    <path class="${
+    CalendarHeaderView
+        .ClassNameCalendarNavigationButtonIconRefresh}" d="M15.3516 8.60156L8 15.9531L0.648438 8.60156L1.35156 7.89844L7.5 14.0469V0H8.5V14.0469L14.6484 7.89844L15.3516 8.60156Z" fill="#101010"/>
+    </svg>`;
 CalendarHeaderView.GetForwardTriangle = function() {
   if (global.params.isFormControlsRefreshEnabled) {
     return CalendarHeaderView._ForwardTriangleRefresh;
@@ -3452,10 +3552,13 @@ CalendarHeaderView.GetForwardTriangle = function() {
 };
 CalendarHeaderView._BackwardTriangle =
     '<svg width=\'4\' height=\'7\'><polygon points=\'0,3.5 4,7 4,0\' style=\'fill:#6e6e6e;\' /></svg>';
-CalendarHeaderView._BackwardTriangleRefresh =
-    '<svg width=\"16\" height=\"16\" viewBox=\"0 0 16 16\" fill=\"none\" xmlns=\"http://www.w3.org/2000/svg\">\
-    <path d=\"M14.6484 8.10156L8.5 1.95312V16H7.5V1.95312L1.35156 8.10156L0.648438 7.39844L8 0.046875L15.3516 7.39844L14.6484 8.10156Z\" fill=\"#101010\"/>\
-    </svg>'
+CalendarHeaderView._BackwardTriangleRefresh = `<svg class="${
+    CalendarHeaderView
+        .ClassNameCalendarNavigationButtonIconRefresh}" width="16" height="16" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg">
+    <path class="${
+    CalendarHeaderView
+        .ClassNameCalendarNavigationButtonIconRefresh}" d="M14.6484 8.10156L8.5 1.95312V16H7.5V1.95312L1.35156 8.10156L0.648438 7.39844L8 0.046875L15.3516 7.39844L14.6484 8.10156Z" fill="#101010"/>
+    </svg>`;
 CalendarHeaderView.GetBackwardTriangle = function() {
   if (global.params.isFormControlsRefreshEnabled) {
     return CalendarHeaderView._BackwardTriangleRefresh;
@@ -3484,15 +3587,17 @@ CalendarHeaderView.prototype.onCurrentMonthChanged = function() {
 };
 
 CalendarHeaderView.prototype.onNavigationButtonClick = function(sender) {
-  if (sender === this._previousMonthButton)
+  if (sender === this._previousMonthButton) {
     this.calendarPicker.setCurrentMonth(
         this.calendarPicker.currentMonth().previous(),
         CalendarPicker.NavigationBehavior.WithAnimation);
-  else if (sender === this._nextMonthButton)
+    this.calendarPicker.ensureSelectionIsWithinCurrentMonth();
+  } else if (sender === this._nextMonthButton) {
     this.calendarPicker.setCurrentMonth(
         this.calendarPicker.currentMonth().next(),
         CalendarPicker.NavigationBehavior.WithAnimation);
-  else
+    this.calendarPicker.ensureSelectionIsWithinCurrentMonth();
+  } else
     this.calendarPicker.selectRangeContainingDay(Day.createFromToday());
 };
 
@@ -4299,7 +4404,10 @@ function CalendarPicker(type, config) {
           this.onCalendarTableKeyDownRefresh :
           this.onCalendarTableKeyDown,
       false);
+
+  document.body.addEventListener('click', this.onBodyClick, false);
   document.body.addEventListener('keydown', this.onBodyKeyDown, false);
+
 
   window.addEventListener('resize', this.onWindowResize, false);
 
@@ -4388,7 +4496,9 @@ CalendarPicker.prototype.onYearListViewDidHide = function(sender) {
 CalendarPicker.prototype.onYearListViewDidSelectMonth = function(
     sender, month) {
   this.setCurrentMonth(month, CalendarPicker.NavigationBehavior.None);
+
   if (global.params.isFormControlsRefreshEnabled) {
+    this.ensureSelectionIsWithinCurrentMonth();
     this.onYearListViewDidHide();
   }
 };
@@ -4656,6 +4766,79 @@ CalendarPicker.prototype.isValidDay = function(day) {
 };
 
 /**
+ * If the selection is not inside the month currently shown in the control,
+ * adjust the selection so that it is within the current month.
+ * The new selection value is determined in the following manner:
+ * 1) If the old selection is on the Nth day of the month, try to place it
+ * on the Nth day of the new month.
+ * 2) If the Nth day of the new month is not valid, choose the closest
+ * valid date that is within the new month.
+ * 3) If the next and previous valid date are equidistant and both within
+ * the new month, arbitrarily choose the older date.
+ */
+CalendarPicker.prototype.ensureSelectionIsWithinCurrentMonth = function() {
+  if (!this._selection)
+    return;
+  if (this._selection.isFullyContainedInMonth(this.currentMonth()))
+    return;
+
+  var newSelection = null;
+  var currentRangeInNewMonth =
+      this._selection.thisRangeInMonth(this.currentMonth());
+
+  if (this.isValid(currentRangeInNewMonth)) {
+    newSelection = currentRangeInNewMonth;
+  } else {
+    var validRangeLookingBackward =
+        this.getNearestValidRangeLookingBackward(currentRangeInNewMonth);
+    var validRangeLookingForward =
+        this.getNearestValidRangeLookingForward(currentRangeInNewMonth);
+    if (validRangeLookingBackward && validRangeLookingForward) {
+      var newMonthIsForwardOfSelection =
+          (currentRangeInNewMonth.firstDay() > this._selection.firstDay());
+      var [validRangeInDirectionOfAdvancement, validRangeAgainstDirectionOfAdvancement] =
+          newMonthIsForwardOfSelection ?
+          [validRangeLookingForward, validRangeLookingBackward] :
+          [validRangeLookingBackward, validRangeLookingForward];
+
+      if (!validRangeAgainstDirectionOfAdvancement.overlapsMonth(
+              this.currentMonth())) {
+        // If the range going against our direction of movement is not
+        // entirely within the new month, go with the range in the
+        // other direction to ensure we that we don't backtrack.
+        newSelection = validRangeInDirectionOfAdvancement;
+      } else if (!validRangeInDirectionOfAdvancement.overlapsMonth(
+                     this.currentMonth())) {
+        newSelection = validRangeAgainstDirectionOfAdvancement;
+      } else {
+        // If both of the ranges are in the new month, select the closest one
+        // to the target date in the new month.
+        var diffFromForwardRange = Math.abs(
+            currentRangeInNewMonth.valueOf() -
+            validRangeLookingForward.valueOf());
+        var diffFromBackwardRange = Math.abs(
+            currentRangeInNewMonth.valueOf() -
+            validRangeLookingBackward.valueOf());
+        if (diffFromForwardRange < diffFromBackwardRange) {
+          newSelection = validRangeLookingForward;
+        } else {  // In a tie, arbitrarily choose older date
+          newSelection = validRangeLookingBackward;
+        }
+      }
+    } else if (!validRangeLookingForward) {
+      newSelection = validRangeLookingBackward;
+    } else {  // !validRangeLookingBackward
+      newSelection = validRangeLookingForward;
+    }  // No additional clause because they can't both be null; we have a
+       // selection so there's at least one valid date.
+  }
+
+  if (newSelection) {
+    this.setSelection(newSelection);
+  }
+};
+
+/**
  * @param {!DateType} dateRange
  * @return {!boolean} Returns true if the highlight was changed.
  */
@@ -4678,60 +4861,89 @@ CalendarPicker.prototype._moveHighlight = function(dateRange) {
  */
 CalendarPicker.prototype.onCalendarTableKeyDownRefresh = function(event) {
   var key = event.key;
+  var offset = 0;
 
-  if (!event.target.matches('.today-button-refresh')) {
-    if (key == 't') {
-      this.setSelection(this.getValidRangeNearestToDay(
-          Day.createFromToday(), /*lookForwardFirst*/ true));
-    } else if (key == 'PageUp') {
-      var previousMonth = this.currentMonth().previous();
-      if (previousMonth && previousMonth >= this.config.minimumValue) {
+  if (!event.target.matches('.today-button-refresh') && this._selection) {
+    switch (key) {
+      case 't':
+        this.setSelection(this.getValidRangeNearestToDay(
+            Day.createFromToday(), /*lookForwardFirst*/ true));
+        break;
+      case 'PageUp':
+        var previousMonth = this.currentMonth().previous();
+        if (previousMonth && previousMonth >= this.config.minimumValue) {
+          this.setCurrentMonth(
+              previousMonth, CalendarPicker.NavigationBehavior.WithAnimation);
+          this.ensureSelectionIsWithinCurrentMonth();
+        }
+        break;
+      case 'PageDown':
+        var nextMonth = this.currentMonth().next();
+        if (nextMonth && nextMonth >= this.config.minimumValue) {
+          this.setCurrentMonth(
+              nextMonth, CalendarPicker.NavigationBehavior.WithAnimation);
+          this.ensureSelectionIsWithinCurrentMonth();
+        }
+        break;
+      case 'm':
+      case 'M':
+        offset = offset || 1;
+        // Fall-through.
+      case 'y':
+      case 'Y':
+        offset = offset || MonthsPerYear;
+        // Fall-through.
+      case 'd':
+      case 'D':
+        offset = offset || MonthsPerYear * 10;
         this.setCurrentMonth(
-            previousMonth, CalendarPicker.NavigationBehavior.WithAnimation);
-      }
-    } else if (key == 'PageDown') {
-      var nextMonth = this.currentMonth().next();
-      if (nextMonth && nextMonth >= this.config.minimumValue) {
-        this.setCurrentMonth(
-            nextMonth, CalendarPicker.NavigationBehavior.WithAnimation);
-      }
-    } else if (this._selection) {
-      var upOrDownArrowStepSize =
-          this.type === 'date' || this.type === 'datetime-local' ? DaysPerWeek :
-                                                                   1;
-      if (global.params.isLocaleRTL ? key == 'ArrowRight' :
-                                      key == 'ArrowLeft') {
-        var newSelection = this.getNearestValidRangeLookingBackward(
-            this._selection.previous());
-        if (newSelection) {
-          this.setSelection(newSelection);
+            event.shiftKey ? this.currentMonth().previous(offset) :
+                             this.currentMonth().next(offset),
+            CalendarPicker.NavigationBehavior.WithAnimation);
+        this.ensureSelectionIsWithinCurrentMonth();
+        break;
+      case 'ArrowUp':
+      case 'ArrowDown':
+      case 'ArrowLeft':
+      case 'ArrowRight':
+        var upOrDownArrowStepSize =
+            this.type === 'date' || this.type === 'datetime-local' ?
+            DaysPerWeek :
+            1;
+        if (global.params.isLocaleRTL ? key == 'ArrowRight' :
+                                        key == 'ArrowLeft') {
+          var newSelection = this.getNearestValidRangeLookingBackward(
+              this._selection.previous());
+          if (newSelection) {
+            this.setSelection(newSelection);
+          }
+        } else if (key == 'ArrowUp') {
+          var newSelection = this.getNearestValidRangeLookingBackward(
+              this._selection.previous(upOrDownArrowStepSize));
+          if (newSelection) {
+            this.setSelection(newSelection);
+          }
+        } else if (
+            global.params.isLocaleRTL ? key == 'ArrowLeft' :
+                                        key == 'ArrowRight') {
+          var newSelection =
+              this.getNearestValidRangeLookingForward(this._selection.next());
+          if (newSelection) {
+            this.setSelection(newSelection);
+          }
+        } else if (key == 'ArrowDown') {
+          var newSelection = this.getNearestValidRangeLookingForward(
+              this._selection.next(upOrDownArrowStepSize));
+          if (newSelection) {
+            this.setSelection(newSelection);
+          }
         }
-      } else if (key == 'ArrowUp') {
-        var newSelection = this.getNearestValidRangeLookingBackward(
-            this._selection.previous(upOrDownArrowStepSize));
-        if (newSelection) {
-          this.setSelection(newSelection);
-        }
-      } else if (
-          global.params.isLocaleRTL ? key == 'ArrowLeft' :
-                                      key == 'ArrowRight') {
-        var newSelection =
-            this.getNearestValidRangeLookingForward(this._selection.next());
-        if (newSelection) {
-          this.setSelection(newSelection);
-        }
-      } else if (key == 'ArrowDown') {
-        var newSelection = this.getNearestValidRangeLookingForward(
-            this._selection.next(upOrDownArrowStepSize));
-        if (newSelection) {
-          this.setSelection(newSelection);
-        }
-      }
-    }
+        break;
+    };
+  }
     // else if there is no selection it must be the case that there are no
     // valid values (because min >= max).  Otherwise we would have set the selection
     // during initialization.  In this case there's nothing to do.
-  }
 };
 
 /**
@@ -4824,6 +5036,19 @@ CalendarPicker.prototype.setHeight = function(height) {
 /**
  * @param {?Event} event
  */
+CalendarPicker.prototype.onBodyClick = function(event) {
+  if (global.params.isFormControlsRefreshEnabled &&
+      this.type !== 'datetime-local') {
+    if (event.target.matches(
+            '.calendar-navigation-button, .today-button-icon-refresh, .month-button')) {
+      window.pagePopupController.setValue(this.getSelectedValue());
+    }
+  }
+};
+
+/**
+ * @param {?Event} event
+ */
 CalendarPicker.prototype.onBodyKeyDown = function(event) {
   var key = event.key;
   var eventHandled = false;
@@ -4855,6 +5080,8 @@ CalendarPicker.prototype.onBodyKeyDown = function(event) {
     case 'ArrowDown':
     case 'ArrowLeft':
     case 'ArrowRight':
+    case 'PageUp':
+    case 'PageDown':
       if (global.params.isFormControlsRefreshEnabled &&
           this.type !== 'datetime-local' &&
           event.target.matches('.calendar-table-view') && this._selection) {
@@ -4874,47 +5101,62 @@ CalendarPicker.prototype.onBodyKeyDown = function(event) {
       // hitting Enter to activate the month switcher button, Today button,
       // or previous/next month arrows.
       if (global.params.isFormControlsRefreshEnabled &&
-          this.type !== 'datetime-local' &&
-          !event.target.matches(
-              '.calendar-navigation-button, .month-popup-button')) {
-        if (this._selection) {
-          window.pagePopupController.setValueAndClosePopup(
-              0, this.getSelectedValue());
-        } else {
-          // If there is no selection it must be the case that there are no
-          // valid values (because min >= max).  There's nothing useful to do
-          // with the popup in this case so just close on Enter.
-          window.pagePopupController.closePopup();
+          this.type !== 'datetime-local') {
+        if (!event.target.matches(
+                '.calendar-navigation-button, .month-popup-button, .year-list-view')) {
+          if (this._selection) {
+            window.pagePopupController.setValueAndClosePopup(
+                0, this.getSelectedValue());
+          } else {
+            // If there is no selection it must be the case that there are no
+            // valid values (because min >= max).  There's nothing useful to do
+            // with the popup in this case so just close on Enter.
+            window.pagePopupController.closePopup();
+          }
+        } else if (event.target.matches(
+                       '.calendar-navigation-button, .year-list-view')) {
+          // Navigating with the previous/next arrows may change selection,
+          // so push this change to the in-page control but don't
+          // close the popup.
+          window.pagePopupController.setValue(this.getSelectedValue());
         }
       }
       break;
     case 'm':
     case 'M':
-      offset = offset || 1;  // Fall-through.
+      offset = offset || 1;
+      // Fall-through.
     case 'y':
     case 'Y':
-      offset = offset || MonthsPerYear;  // Fall-through.
+      offset = offset || MonthsPerYear;
+      // Fall-through.
     case 'd':
     case 'D':
-      offset = offset || MonthsPerYear * 10;
-      var oldFirstVisibleRow =
-          this.calendarTableView
-              .columnAndRowForDay(this.currentMonth().firstDay())
-              .row;
-      this.setCurrentMonth(
-          event.shiftKey ? this.currentMonth().previous(offset) :
-                           this.currentMonth().next(offset),
-          CalendarPicker.NavigationBehavior.WithAnimation);
-      var newFirstVisibleRow =
-          this.calendarTableView
-              .columnAndRowForDay(this.currentMonth().firstDay())
-              .row;
-      if (this._highlight) {
-        var highlightMiddleDay = this._highlight.middleDay();
-        this.highlightRangeContainingDay(highlightMiddleDay.next(
-            (newFirstVisibleRow - oldFirstVisibleRow) * DaysPerWeek));
+      if (global.params.isFormControlsRefreshEnabled) {
+        if (this.type !== 'datetime-local') {
+          window.pagePopupController.setValue(this.getSelectedValue());
+        }
+      } else {
+        offset = offset || MonthsPerYear * 10;
+        var oldFirstVisibleRow =
+            this.calendarTableView
+                .columnAndRowForDay(this.currentMonth().firstDay())
+                .row;
+        this.setCurrentMonth(
+            event.shiftKey ? this.currentMonth().previous(offset) :
+                             this.currentMonth().next(offset),
+            CalendarPicker.NavigationBehavior.WithAnimation);
+        var newFirstVisibleRow =
+            this.calendarTableView
+                .columnAndRowForDay(this.currentMonth().firstDay())
+                .row;
+        if (this._highlight) {
+          var highlightMiddleDay = this._highlight.middleDay();
+          this.highlightRangeContainingDay(highlightMiddleDay.next(
+              (newFirstVisibleRow - oldFirstVisibleRow) * DaysPerWeek));
+        }
+        eventHandled = true;
       }
-      eventHandled = true;
       break;
   }
   if (eventHandled) {

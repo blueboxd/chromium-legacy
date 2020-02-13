@@ -202,9 +202,6 @@ ChromeVoxPrefs.DEFAULT_PREFS = {
   'brailleTableType': 'brailleTable8',
   'brailleTable6': 'en-UEB-g2',
   'brailleTable8': 'en-US-comp8',
-  // TODO(dtseng): Leaking state about multiple key maps here until we have a
-  // class to manage multiple key maps. Also, this doesn't belong as a pref;
-  // should just store in local storage.
   'capitalStrategy': 'increasePitch',
   'currentKeyMap': KeyMap.DEFAULT_KEYMAP,
   'cvoxKey': '',
@@ -216,6 +213,7 @@ ChromeVoxPrefs.DEFAULT_PREFS = {
   'focusFollowsMouse': false,
   'granularity': undefined,
   'languageSwitching': false,
+  'numberReadingStyle': 'asWords',
   'position': '{}',
   'siteSpecificEnhancements': true,
   'siteSpecificScriptBase':

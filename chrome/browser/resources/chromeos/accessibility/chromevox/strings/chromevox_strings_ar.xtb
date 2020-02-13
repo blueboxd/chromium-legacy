@@ -151,7 +151,7 @@
 <translation id="2127747486437921899">مائل</translation>
 <translation id="2163782704988363449">قائمة بالأخطاء</translation>
 <translation id="2169714232367507776">النقر على العنصر الحالي</translation>
-<translation id="2179452035581866348">‏يستخدم ChromeVox الأصوات لمنحك المعلومات الأساسية والإضافية. ويمكنك استخدام هذه الأصوات للانتقال بسرعة أكبر من خلال معرفة ما يعنيه كل صوت. عندما تشعر براحة أكبر، يمكنك إيقاف تشغيل الأوصاف المطوَّلة في الكلام والاعتماد عليها للحصول على المعلومات الأساسية حول الصفحة. وإليك قائمة كاملة بالأصوات وما تعنيه هذه الأصوات.</translation>
+<translation id="2179452035581866348">‏يستخدم ChromeVox الأصوات لمنحك المعلومات الأساسية والإضافية. ويمكنك استخدام هذه الأصوات للانتقال بسرعة أكبر من خلال معرفة ما يعنيه كل صوت. عندما تشعر براحة أكبر، يمكنك إيقاف تفعيل الأوصاف المطوَّلة في الكلام والاعتماد عليها للحصول على المعلومات الأساسية حول الصفحة. وإليك قائمة كاملة بالأصوات وما تعنيه هذه الأصوات.</translation>
 <translation id="2188751878842439466">{COUNT,plural, =1{قوس مغلق واحد}zero{# close parens}two{قوسان مغلقان (#)}few{# أقواس مغلقة}many{# قوسًا مغلقًا}other{# من الأقواس المغلقة}}</translation>
 <translation id="2197863150503783129">بني جلدي</translation>
 <translation id="2199994615414171367">التعبير الرياضي السابق</translation>
@@ -171,7 +171,7 @@
 <translation id="2329324941084714723">لوحة علامة التبويب</translation>
 <translation id="2344193891939537199">التحكم في الوقت والتاريخ</translation>
 <translation id="2347456970887948350">رابط</translation>
-<translation id="2381733276052567791">تشغيل ميزة تحويل النص إلى كلام أو إيقافها</translation>
+<translation id="2381733276052567791">تفعيل ميزة تحويل النص إلى كلام أو إيقافها</translation>
 <translation id="2390264819538553347">‏للتقدم، اضغط على Enter، وللرجوع للخلف، اضغط على Backspace.</translation>
 <translation id="240709722712693803">بنفسجي مزرق</translation>
 <translation id="241124561063364910">يليه</translation>
@@ -285,7 +285,7 @@
 <translation id="3138767756593758860">عرض قائمة المعالم</translation>
 <translation id="3143851963874289911">cll</translation>
 <translation id="3149472044574196936">السطر التالي</translation>
-<translation id="3153024374267644603">تشغيل ميزة تحويل النص إلى كلام</translation>
+<translation id="3153024374267644603">تفعيل ميزة تحويل النص إلى كلام</translation>
 <translation id="3153928844647607688">جدول <ph name="TABLENAME" />، <ph name="TABLEROWS" /> بالضرب في <ph name="TABLECOLS" /></translation>
 <translation id="3159493096109238499">بيج</translation>
 <translation id="3163593631834463955">عنوان عمود فارغ</translation>
@@ -751,7 +751,7 @@
 <translation id="6897341342232909480">الانتقال يسارًا</translation>
 <translation id="6901540140423170855">التاريخ</translation>
 <translation id="6910211073230771657">تم الحذف</translation>
-<translation id="6910969481785184048">تشغيل، إيقاف تشغيل، إيقاف</translation>
+<translation id="6910969481785184048">تشغيل، إيقاف تفعيل، إيقاف</translation>
 <translation id="6919104639734799681">عرض قائمة الجداول</translation>
 <translation id="6949846980769640811">أزرق مخضر متوسط</translation>
 <translation id="6955705049214951590">وردي ضبابي</translation>

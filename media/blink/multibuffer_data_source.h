@@ -66,8 +66,8 @@ class MEDIA_BLINK_EXPORT MultibufferDataSource : public DataSource {
   // Executes |init_cb| with the result of initialization when it has completed.
   //
   // Method called on the render thread.
-  typedef base::Callback<void(bool)> InitializeCB;
-  void Initialize(const InitializeCB& init_cb);
+  using InitializeCB = base::OnceCallback<void(bool)>;
+  void Initialize(InitializeCB init_cb);
 
   // Adjusts the buffering algorithm based on the given preload value.
   void SetPreload(Preload preload);

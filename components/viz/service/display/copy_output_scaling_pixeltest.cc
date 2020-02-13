@@ -115,6 +115,8 @@ class CopyOutputScalingPixelTest
       cc::AddRenderPassQuad(root_pass, smaller_passes[i]);
     cc::AddQuad(root_pass, gfx::Rect(viewport_size), root_pass_color);
 
+    renderer()->DecideRenderPassAllocationsForFrame(list);
+
     // Make a copy request and execute it by drawing a frame. A subset of the
     // viewport is requested, to test that scaled offsets are being computed
     // correctly as well.
@@ -165,7 +167,6 @@ class CopyOutputScalingPixelTest
       request->SetScaleRatio(scale_from_, scale_to_);
       list.back()->copy_requests.push_back(std::move(request));
 
-      renderer()->DecideRenderPassAllocationsForFrame(list);
       renderer()->DrawFrame(&list, 1.0f, viewport_size,
                             gfx::DisplayColorSpaces());
       loop.Run();
@@ -299,8 +300,9 @@ TEST_P(GLCopyOutputScalingPixelTest, ScaledCopyOfDrawnFrame) {
 }
 INSTANTIATE_TEST_SUITE_P(All, GLCopyOutputScalingPixelTest, kParameters);
 
+// TODO(crbug.com/939442): Enable this test for SkiaRenderer.
 using SkiaCopyOutputScalingPixelTest = CopyOutputScalingPixelTest<SkiaRenderer>;
-TEST_P(SkiaCopyOutputScalingPixelTest, ScaledCopyOfDrawnFrame) {
+TEST_P(SkiaCopyOutputScalingPixelTest, DISABLED_ScaledCopyOfDrawnFrame) {
   RunTest();
 }
 INSTANTIATE_TEST_SUITE_P(All, SkiaCopyOutputScalingPixelTest, kParameters);

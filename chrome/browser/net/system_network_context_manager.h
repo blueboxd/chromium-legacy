@@ -36,6 +36,7 @@ class SharedURLLoaderFactory;
 
 namespace net_log {
 class NetExportFileWriter;
+class NetLogProxySource;
 }
 
 // Responsible for creating and managing access to the system NetworkContext.
@@ -185,6 +186,11 @@ class SystemNetworkContextManager {
   PrefChangeRegistrar pref_change_registrar_;
 
   BooleanPrefMember enable_referrers_;
+
+  // Copies NetLog events from the browser process to the Network Service, if
+  // the network service is running in a separate process. It will be destroyed
+  // and re-created on Network Service crash.
+  std::unique_ptr<net_log::NetLogProxySource> net_log_proxy_source_;
 
   // Initialized on first access.
   std::unique_ptr<net_log::NetExportFileWriter> net_export_file_writer_;

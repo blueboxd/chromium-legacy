@@ -35,17 +35,6 @@ bool AreIDsUnique(const CompositeMatcher::MatcherList& matchers) {
   return true;
 }
 
-bool AreSortedPrioritiesUnique(const CompositeMatcher::MatcherList& matchers) {
-  base::Optional<size_t> previous_priority;
-  for (const auto& matcher : matchers) {
-    if (matcher->priority() == previous_priority)
-      return false;
-    previous_priority = matcher->priority();
-  }
-
-  return true;
-}
-
 // Helper to log the time taken in CompositeMatcher::GetBeforeRequestAction.
 class ScopedGetBeforeRequestActionTimer {
  public:
@@ -76,7 +65,6 @@ ActionInfo& ActionInfo::operator=(ActionInfo&& other) = default;
 
 CompositeMatcher::CompositeMatcher(MatcherList matchers)
     : matchers_(std::move(matchers)) {
-  SortMatchersByPriority();
   DCHECK(AreIDsUnique(matchers_));
 }
 
@@ -94,10 +82,8 @@ void CompositeMatcher::AddOrUpdateRuleset(
 
   if (it == matchers_.end()) {
     matchers_.push_back(std::move(new_matcher));
-    SortMatchersByPriority();
   } else {
-    // Update the matcher. The priority for a given ID should remain the same.
-    DCHECK_EQ(new_matcher->priority(), (*it)->priority());
+    // Update the matcher.
     *it = std::move(new_matcher);
   }
 
@@ -113,6 +99,7 @@ ActionInfo CompositeMatcher::GetBeforeRequestAction(
   ScopedGetBeforeRequestActionTimer timer;
 
   bool notify_request_withheld = false;
+  base::Optional<RequestAction> final_action;
   for (const auto& matcher : matchers_) {
     base::Optional<RequestAction> action =
         matcher->GetBeforeRequestAction(params);
@@ -131,10 +118,12 @@ ActionInfo CompositeMatcher::GetBeforeRequestAction(
       }
     }
 
-    if (action)
-      return ActionInfo(std::move(action), false);
+    final_action =
+        GetMaxPriorityAction(std::move(final_action), std::move(action));
   }
 
+  if (final_action)
+    return ActionInfo(std::move(final_action), false);
   return ActionInfo(base::nullopt, notify_request_withheld);
 }
 
@@ -187,15 +176,6 @@ bool CompositeMatcher::ComputeHasAnyExtraHeadersMatcher() const {
       return true;
   }
   return false;
-}
-
-void CompositeMatcher::SortMatchersByPriority() {
-  std::sort(matchers_.begin(), matchers_.end(),
-            [](const std::unique_ptr<RulesetMatcher>& a,
-               const std::unique_ptr<RulesetMatcher>& b) {
-              return a->priority() > b->priority();
-            });
-  DCHECK(AreSortedPrioritiesUnique(matchers_));
 }
 
 }  // namespace declarative_net_request

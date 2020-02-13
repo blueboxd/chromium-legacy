@@ -281,12 +281,11 @@ bool CreateVerifiedMatcher(const std::vector<TestRule>& rules,
 }
 
 RulesetSource CreateTemporarySource(size_t id,
-                                    size_t priority,
                                     dnr_api::SourceType source_type,
                                     size_t rule_count_limit,
                                     ExtensionId extension_id) {
   std::unique_ptr<RulesetSource> source = RulesetSource::CreateTemporarySource(
-      id, priority, source_type, rule_count_limit, std::move(extension_id));
+      id, source_type, rule_count_limit, std::move(extension_id));
   CHECK(source);
   return source->Clone();
 }

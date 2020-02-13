@@ -91,16 +91,6 @@ const display::Display::Rotation kDefaultRotation = display::Display::ROTATE_0;
 
 namespace device {
 
-struct ArCoreHitTestRequest {
-  ArCoreHitTestRequest() = default;
-  ~ArCoreHitTestRequest() = default;
-  mojom::XRRayPtr ray;
-  mojom::XREnvironmentIntegrationProvider::RequestHitTestCallback callback;
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(ArCoreHitTestRequest);
-};
-
 ArCoreGl::ArCoreGl(std::unique_ptr<ArImageTransport> ar_image_transport)
     : gl_thread_task_runner_(base::ThreadTaskRunnerHandle::Get()),
       ar_image_transport_(std::move(ar_image_transport)),
@@ -420,11 +410,8 @@ void ArCoreGl::GetFrameData(
   fps_meter_.AddFrame(base::TimeTicks::Now());
   TRACE_COUNTER1("gpu", "WebXR FPS", fps_meter_.GetFPS());
 
-  // Post a task to finish processing the frame so any calls to
-  // RequestHitTest() that were made during this function, which can block
-  // on the arcore_->Update() call above, can be processed in this frame.
-  // Additionally, this gives a chance for OnScreenTouch() tasks to run
-  // and added anchors to be registered.
+  // Post a task to finish processing the frame to give a chance for
+  // OnScreenTouch() tasks to run and added anchors to be registered.
   gl_thread_task_runner_->PostTask(
       FROM_HERE,
       base::BindOnce(&ArCoreGl::ProcessFrame, weak_ptr_factory_.GetWeakPtr(),
@@ -641,27 +628,6 @@ void ArCoreGl::SetInputSourceButtonListener(
   mojo::ReportBadMessage("Input eventing is not supported.");
 }
 
-void ArCoreGl::RequestHitTest(
-    mojom::XRRayPtr ray,
-    mojom::XREnvironmentIntegrationProvider::RequestHitTestCallback callback) {
-  DVLOG(2) << __func__ << ": ray origin=" << ray->origin.ToString()
-           << ", direction=" << ray->direction.ToString();
-
-  DCHECK(IsOnGlThread());
-  DCHECK(is_initialized_);
-
-  if (restrict_frame_data_) {
-    std::move(callback).Run(base::nullopt);
-    return;
-  }
-
-  std::unique_ptr<ArCoreHitTestRequest> request =
-      std::make_unique<ArCoreHitTestRequest>();
-  request->ray = std::move(ray);
-  request->callback = std::move(callback);
-  hit_test_requests_.push_back(std::move(request));
-}
-
 void ArCoreGl::SubscribeToHitTest(
     mojom::XRNativeOriginInformationPtr native_origin_information,
     const std::vector<mojom::EntityTypeForHitTest>& entity_types,
@@ -806,30 +772,6 @@ void ArCoreGl::ProcessFrame(
   if (options && options->include_lighting_estimation_data) {
     frame_data->light_estimation_data = arcore_->GetLightEstimationData();
   }
-
-  // The timing requirements for hit-test are documented here:
-  // https://github.com/immersive-web/hit-test/blob/master/explainer.md#timing
-  // The current implementation of frame generation on the renderer side is
-  // 1:1 with calls to this method, so it is safe to fire off the hit-test
-  // results here, one at a time, in the order they were enqueued prior to
-  // running the GetFrameDataCallback.
-  // Since mojo callbacks are processed in order, this will result in the
-  // correct sequence of hit-test callbacks / promise resolutions. If
-  // the implementation of the renderer processing were to change, this
-  // code is fragile and could break depending on the new implementation.
-  // TODO(https://crbug.com/844174): In order to be more correct by design,
-  // hit results should be bundled with the frame data - that way it would be
-  // obvious how the timing between the results and the frame should go.
-  for (auto& request : hit_test_requests_) {
-    std::vector<mojom::XRHitResultPtr> results;
-    if (arcore_->RequestHitTest(request->ray, &results)) {
-      std::move(request->callback).Run(std::move(results));
-    } else {
-      // Hit test failed, i.e. unprojected location was offscreen.
-      std::move(request->callback).Run(base::nullopt);
-    }
-  }
-  hit_test_requests_.clear();
 
   // Running this callback after resolving all the hit-test requests ensures
   // that we satisfy the guarantee of the WebXR hit-test spec - that the

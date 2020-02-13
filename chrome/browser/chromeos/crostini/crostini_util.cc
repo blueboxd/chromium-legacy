@@ -53,6 +53,7 @@
 namespace {
 
 constexpr char kCrostiniAppLaunchHistogram[] = "Crostini.AppLaunch";
+constexpr char kCrostiniAppLaunchResultHistogram[] = "Crostini.AppLaunchResult";
 constexpr char kCrostiniAppNamePrefix[] = "_crostini_";
 constexpr int64_t kDelayBeforeSpinnerMs = 400;
 
@@ -76,13 +77,19 @@ void RecordAppLaunchHistogram(CrostiniAppLaunchAppType app_type) {
                                 CrostiniAppLaunchAppType::kCount);
 }
 
-void OnLaunchFailed(const std::string& app_id) {
+void RecordAppLaunchResultHistogram(crostini::CrostiniResult reason) {
+  base::UmaHistogramEnumeration(kCrostiniAppLaunchResultHistogram, reason);
+}
+
+void OnLaunchFailed(const std::string& app_id,
+                    crostini::CrostiniResult reason) {
   // Remove the spinner so it doesn't stay around forever.
   // TODO(timloh): Consider also displaying a notification of some sort.
   ChromeLauncherController* chrome_controller =
       ChromeLauncherController::instance();
   DCHECK(chrome_controller);
   chrome_controller->GetShelfSpinnerController()->CloseSpinner(app_id);
+  RecordAppLaunchResultHistogram(reason);
 }
 
 void OnCrostiniRestarted(Profile* profile,
@@ -97,7 +104,7 @@ void OnCrostiniRestarted(Profile* profile,
     return;
   }
   if (result != crostini::CrostiniResult::SUCCESS) {
-    OnLaunchFailed(app_id);
+    OnLaunchFailed(app_id, result);
     if (browser && browser->window())
       browser->window()->Close();
     if (result == crostini::CrostiniResult::OFFLINE_WHEN_UPGRADE_REQUIRED ||
@@ -113,8 +120,11 @@ void OnCrostiniRestarted(Profile* profile,
 void OnApplicationLaunched(crostini::LaunchCrostiniAppCallback callback,
                            const std::string& app_id,
                            bool success) {
-  if (!success)
-    OnLaunchFailed(app_id);
+  if (!success) {
+    OnLaunchFailed(app_id, crostini::CrostiniResult::UNKNOWN_ERROR);
+  } else {
+    RecordAppLaunchResultHistogram(crostini::CrostiniResult::SUCCESS);
+  }
   std::move(callback).Run(success, success ? "" : "Failed to launch " + app_id);
 }
 
@@ -128,7 +138,7 @@ void OnSharePathForLaunchApplication(
     bool success,
     const std::string& failure_reason) {
   if (!success) {
-    OnLaunchFailed(app_id);
+    OnLaunchFailed(app_id, crostini::CrostiniResult::UNKNOWN_ERROR);
     return std::move(callback).Run(
         success, success ? ""
                          : "Failed to share paths to launch " + app_id + ":" +
@@ -147,6 +157,7 @@ void LaunchTerminal(Profile* profile,
                     crostini::LaunchCrostiniAppCallback callback) {
   crostini::ShowContainerTerminal(profile, launch_params, vsh_in_crosh_url,
                                   browser);
+  RecordAppLaunchResultHistogram(crostini::CrostiniResult::SUCCESS);
   std::move(callback).Run(true, "");
 }
 
@@ -411,8 +422,13 @@ void LaunchCrostiniApp(Profile* profile,
         profile, vm_name, container_name, std::vector<std::string>());
 
     if (base::FeatureList::IsEnabled(features::kTerminalSystemApp)) {
-      web_app::LaunchSystemWebApp(profile, web_app::SystemAppType::TERMINAL,
-                                  vsh_in_crosh_url);
+      auto* browser = web_app::LaunchSystemWebApp(
+          profile, web_app::SystemAppType::TERMINAL, vsh_in_crosh_url);
+      if (browser == nullptr) {
+        RecordAppLaunchResultHistogram(crostini::CrostiniResult::UNKNOWN_ERROR);
+      } else {
+        RecordAppLaunchResultHistogram(crostini::CrostiniResult::SUCCESS);
+      }
       return;
     }
 

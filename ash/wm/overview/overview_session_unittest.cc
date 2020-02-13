@@ -3561,6 +3561,212 @@ TEST_P(TabletModeOverviewSessionTest, DragOverviewWindowToSnap) {
   EXPECT_EQ(split_view_controller()->right_window(), window2.get());
 }
 
+// Verify that if the window item has been dragged enough vertically, the window
+// will be closed.
+TEST_P(TabletModeOverviewSessionTest, DragToClose) {
+  // This test requires a widget.
+  std::unique_ptr<views::Widget> widget(CreateTestWidget());
+
+  ToggleOverview();
+  ASSERT_TRUE(overview_controller()->InOverviewSession());
+
+  OverviewItem* item = GetOverviewItemForWindow(widget->GetNativeWindow());
+  const gfx::PointF start = item->target_bounds().CenterPoint();
+  ASSERT_TRUE(item);
+
+  // This drag has not covered enough distance, so the widget is not closed and
+  // we remain in overview mode.
+  overview_session()->InitiateDrag(item, start, /*is_touch_dragging=*/true);
+  overview_session()->Drag(item, start + gfx::Vector2dF(0, 80));
+  overview_session()->CompleteDrag(item, start + gfx::Vector2dF(0, 80));
+  ASSERT_TRUE(overview_session());
+
+  // Verify that the second drag has enough vertical distance, so the widget
+  // will be closed and overview mode will be exited.
+  overview_session()->InitiateDrag(item, start, /*is_touch_dragging=*/true);
+  overview_session()->Drag(item, start + gfx::Vector2dF(0, 180));
+  overview_session()->CompleteDrag(item, start + gfx::Vector2dF(0, 180));
+  base::RunLoop().RunUntilIdle();
+  EXPECT_FALSE(overview_session());
+  EXPECT_TRUE(widget->IsClosed());
+}
+
+// Verify that if the window item has been flung enough vertically, the window
+// will be closed.
+TEST_P(TabletModeOverviewSessionTest, FlingToClose) {
+  // This test requires a widget.
+  std::unique_ptr<views::Widget> widget(CreateTestWidget());
+
+  ToggleOverview();
+  ASSERT_TRUE(overview_controller()->InOverviewSession());
+  EXPECT_EQ(1u, overview_session()->grid_list()[0]->size());
+
+  OverviewItem* item = GetOverviewItemForWindow(widget->GetNativeWindow());
+  const gfx::PointF start = item->target_bounds().CenterPoint();
+  ASSERT_TRUE(item);
+
+  // Verify that items flung horizontally do not close the item.
+  overview_session()->InitiateDrag(item, start, /*is_touch_dragging=*/true);
+  overview_session()->Drag(item, start + gfx::Vector2dF(0, 50));
+  overview_session()->Fling(item, start, 2500, 0);
+  ASSERT_TRUE(overview_session());
+
+  // Verify that items flung vertically but without enough velocity do not
+  // close the item.
+  overview_session()->InitiateDrag(item, start, /*is_touch_dragging=*/true);
+  overview_session()->Drag(item, start + gfx::Vector2dF(0, 50));
+  overview_session()->Fling(item, start, 0, 1500);
+  ASSERT_TRUE(overview_session());
+
+  // Verify that flinging the item closes it, and since it is the last item in
+  // overview mode, overview mode is exited.
+  overview_session()->InitiateDrag(item, start, /*is_touch_dragging=*/true);
+  overview_session()->Drag(item, start + gfx::Vector2dF(0, 50));
+  overview_session()->Fling(item, start, 0, 2500);
+  base::RunLoop().RunUntilIdle();
+  EXPECT_FALSE(overview_session());
+  EXPECT_TRUE(widget->IsClosed());
+}
+
+// Tests that nudging occurs in the most basic case, which is we have one row
+// and one item which is about to be deleted by dragging. If the item is deleted
+// we still only have one row, so the other items should nudge while the item is
+// being dragged.
+TEST_P(TabletModeOverviewSessionTest, BasicNudging) {
+  // Set up three equal windows, which take up one row on the overview grid.
+  // When one of them is deleted we are still left with all the windows on one
+  // row.
+  std::unique_ptr<aura::Window> window1 = CreateTestWindow();
+  std::unique_ptr<aura::Window> window2 = CreateTestWindow();
+  std::unique_ptr<aura::Window> window3 = CreateTestWindow();
+
+  ToggleOverview();
+  ASSERT_TRUE(overview_controller()->InOverviewSession());
+
+  OverviewItem* item1 = GetOverviewItemForWindow(window1.get());
+  OverviewItem* item2 = GetOverviewItemForWindow(window2.get());
+  OverviewItem* item3 = GetOverviewItemForWindow(window3.get());
+
+  const gfx::RectF item1_bounds = item1->target_bounds();
+  const gfx::RectF item2_bounds = item2->target_bounds();
+  const gfx::RectF item3_bounds = item3->target_bounds();
+
+  // Drag |item1| vertically. |item2| and |item3| bounds should change as they
+  // should be nudging towards their final bounds.
+  overview_session()->InitiateDrag(item1, item1_bounds.CenterPoint(),
+                                   /*is_touch_dragging=*/true);
+  overview_session()->Drag(item1,
+                           item1_bounds.CenterPoint() + gfx::Vector2dF(0, 160));
+  EXPECT_NE(item2_bounds, item2->target_bounds());
+  EXPECT_NE(item3_bounds, item3->target_bounds());
+
+  // Drag |item1| back to its start drag location and release, so that it does
+  // not get deleted.
+  overview_session()->Drag(item1, item1_bounds.CenterPoint());
+  overview_session()->CompleteDrag(item1, item1_bounds.CenterPoint());
+
+  // Drag |item3| vertically. |item1| and |item2| bounds should change as they
+  // should be nudging towards their final bounds.
+  overview_session()->InitiateDrag(item3, item3_bounds.CenterPoint(),
+                                   /*is_touch_dragging=*/true);
+  overview_session()->Drag(item3,
+                           item3_bounds.CenterPoint() + gfx::Vector2dF(0, 160));
+  EXPECT_NE(item1_bounds, item1->target_bounds());
+  EXPECT_NE(item2_bounds, item2->target_bounds());
+}
+
+// Tests that no nudging occurs when the number of rows in overview mode change
+// if the item to be deleted results in the overview grid to change number of
+// rows.
+TEST_P(TabletModeOverviewSessionTest, NoNudgingWhenNumRowsChange) {
+  // Set up four equal windows, which would split into two rows in overview
+  // mode. Removing one window would leave us with three windows, which only
+  // takes a single row in overview.
+  std::unique_ptr<aura::Window> window1 = CreateTestWindow();
+  std::unique_ptr<aura::Window> window2 = CreateTestWindow();
+  std::unique_ptr<aura::Window> window3 = CreateTestWindow();
+  std::unique_ptr<aura::Window> window4 = CreateTestWindow();
+
+  ToggleOverview();
+  ASSERT_TRUE(overview_controller()->InOverviewSession());
+
+  OverviewItem* item1 = GetOverviewItemForWindow(window1.get());
+  OverviewItem* item2 = GetOverviewItemForWindow(window2.get());
+  OverviewItem* item3 = GetOverviewItemForWindow(window3.get());
+  OverviewItem* item4 = GetOverviewItemForWindow(window4.get());
+
+  const gfx::RectF item1_bounds = item1->target_bounds();
+  const gfx::RectF item2_bounds = item2->target_bounds();
+  const gfx::RectF item3_bounds = item3->target_bounds();
+  const gfx::RectF item4_bounds = item4->target_bounds();
+
+  // Drag |item1| past the drag to swipe threshold. None of the other window
+  // bounds should change, as none of them should be nudged.
+  overview_session()->InitiateDrag(item1, item1_bounds.CenterPoint(),
+                                   /*is_touch_dragging=*/true);
+  overview_session()->Drag(item1,
+                           item1_bounds.CenterPoint() + gfx::Vector2dF(0, 160));
+  EXPECT_EQ(item2_bounds, item2->target_bounds());
+  EXPECT_EQ(item3_bounds, item3->target_bounds());
+  EXPECT_EQ(item4_bounds, item4->target_bounds());
+}
+
+// Tests that no nudging occurs when the item to be deleted results in an item
+// from the previous row to drop down to the current row, thus causing the items
+// to the right of the item to be shifted right, which is visually unacceptable.
+TEST_P(TabletModeOverviewSessionTest, NoNudgingWhenLastItemOnPreviousRowDrops) {
+  // Set up five equal windows, which would split into two rows in overview
+  // mode. Removing one window would cause the rows to rearrange, with the third
+  // item dropping down from the first row to the second row. Create the windows
+  // backward so the the window indexs match the order seen in overview, as
+  // overview windows are ordered by MRU.
+  const int kWindows = 5;
+  std::unique_ptr<aura::Window> windows[kWindows];
+  for (int i = kWindows - 1; i >= 0; --i)
+    windows[i] = CreateTestWindow();
+
+  ToggleOverview();
+  ASSERT_TRUE(overview_controller()->InOverviewSession());
+
+  OverviewItem* items[kWindows];
+  gfx::RectF item_bounds[kWindows];
+  for (int i = 0; i < kWindows; ++i) {
+    items[i] = GetOverviewItemForWindow(windows[i].get());
+    item_bounds[i] = items[i]->target_bounds();
+  }
+
+  // Drag the forth item past the drag to swipe threshold. None of the other
+  // window bounds should change, as none of them should be nudged, because
+  // deleting the fourth item will cause the third item to drop down from the
+  // first row to the second.
+  overview_session()->InitiateDrag(items[3], item_bounds[3].CenterPoint(),
+                                   /*is_touch_dragging=*/true);
+  overview_session()->Drag(
+      items[3], item_bounds[3].CenterPoint() + gfx::Vector2dF(0, 160));
+  EXPECT_EQ(item_bounds[0], items[0]->target_bounds());
+  EXPECT_EQ(item_bounds[1], items[1]->target_bounds());
+  EXPECT_EQ(item_bounds[2], items[2]->target_bounds());
+  EXPECT_EQ(item_bounds[4], items[4]->target_bounds());
+
+  // Drag the fourth item back to its start drag location and release, so that
+  // it does not get deleted.
+  overview_session()->Drag(items[3], item_bounds[3].CenterPoint());
+  overview_session()->CompleteDrag(items[3], item_bounds[3].CenterPoint());
+
+  // Drag the first item past the drag to swipe threshold. The second and third
+  // items should nudge as expected as there is no item dropping down to their
+  // row. The fourth and fifth items should not nudge as they are in a different
+  // row than the first item.
+  overview_session()->InitiateDrag(items[0], item_bounds[0].CenterPoint(),
+                                   /*is_touch_dragging=*/true);
+  overview_session()->Drag(
+      items[0], item_bounds[0].CenterPoint() + gfx::Vector2dF(0, 160));
+  EXPECT_NE(item_bounds[1], items[1]->target_bounds());
+  EXPECT_NE(item_bounds[2], items[2]->target_bounds());
+  EXPECT_EQ(item_bounds[3], items[3]->target_bounds());
+  EXPECT_EQ(item_bounds[4], items[4]->target_bounds());
+}
+
 // Test the split view and overview functionalities in tablet mode.
 class SplitViewOverviewSessionTest : public OverviewSessionTest {
  public:
@@ -3797,212 +4003,6 @@ TEST_P(SplitViewOverviewSessionTest, OverviewDragControllerBehavior) {
   drag_controller = overview_session()->window_drag_controller();
   EXPECT_EQ(DragBehavior::kDragToClose,
             drag_controller->current_drag_behavior());
-}
-
-// Verify that if the window item has been dragged enough vertically, the window
-// will be closed.
-TEST_P(SplitViewOverviewSessionTest, DragToClose) {
-  // This test requires a widget.
-  std::unique_ptr<views::Widget> widget(CreateTestWidget());
-
-  ToggleOverview();
-  ASSERT_TRUE(overview_controller()->InOverviewSession());
-
-  OverviewItem* item = GetOverviewItemForWindow(widget->GetNativeWindow());
-  const gfx::PointF start = item->target_bounds().CenterPoint();
-  ASSERT_TRUE(item);
-
-  // This drag has not covered enough distance, so the widget is not closed and
-  // we remain in overview mode.
-  overview_session()->InitiateDrag(item, start, /*is_touch_dragging=*/true);
-  overview_session()->Drag(item, start + gfx::Vector2dF(0, 80));
-  overview_session()->CompleteDrag(item, start + gfx::Vector2dF(0, 80));
-  ASSERT_TRUE(overview_session());
-
-  // Verify that the second drag has enough vertical distance, so the widget
-  // will be closed and overview mode will be exited.
-  overview_session()->InitiateDrag(item, start, /*is_touch_dragging=*/true);
-  overview_session()->Drag(item, start + gfx::Vector2dF(0, 180));
-  overview_session()->CompleteDrag(item, start + gfx::Vector2dF(0, 180));
-  base::RunLoop().RunUntilIdle();
-  EXPECT_FALSE(overview_session());
-  EXPECT_TRUE(widget->IsClosed());
-}
-
-// Verify that if the window item has been flung enough vertically, the window
-// will be closed.
-TEST_P(SplitViewOverviewSessionTest, FlingToClose) {
-  // This test requires a widget.
-  std::unique_ptr<views::Widget> widget(CreateTestWidget());
-
-  ToggleOverview();
-  ASSERT_TRUE(overview_controller()->InOverviewSession());
-  EXPECT_EQ(1u, overview_session()->grid_list()[0]->size());
-
-  OverviewItem* item = GetOverviewItemForWindow(widget->GetNativeWindow());
-  const gfx::PointF start = item->target_bounds().CenterPoint();
-  ASSERT_TRUE(item);
-
-  // Verify that items flung horizontally do not close the item.
-  overview_session()->InitiateDrag(item, start, /*is_touch_dragging=*/true);
-  overview_session()->Drag(item, start + gfx::Vector2dF(0, 50));
-  overview_session()->Fling(item, start, 2500, 0);
-  ASSERT_TRUE(overview_session());
-
-  // Verify that items flung vertically but without enough velocity do not
-  // close the item.
-  overview_session()->InitiateDrag(item, start, /*is_touch_dragging=*/true);
-  overview_session()->Drag(item, start + gfx::Vector2dF(0, 50));
-  overview_session()->Fling(item, start, 0, 1500);
-  ASSERT_TRUE(overview_session());
-
-  // Verify that flinging the item closes it, and since it is the last item in
-  // overview mode, overview mode is exited.
-  overview_session()->InitiateDrag(item, start, /*is_touch_dragging=*/true);
-  overview_session()->Drag(item, start + gfx::Vector2dF(0, 50));
-  overview_session()->Fling(item, start, 0, 2500);
-  base::RunLoop().RunUntilIdle();
-  EXPECT_FALSE(overview_session());
-  EXPECT_TRUE(widget->IsClosed());
-}
-
-// Tests that nudging occurs in the most basic case, which is we have one row
-// and one item which is about to be deleted by dragging. If the item is deleted
-// we still only have one row, so the other items should nudge while the item is
-// being dragged.
-TEST_P(SplitViewOverviewSessionTest, BasicNudging) {
-  // Set up three equal windows, which take up one row on the overview grid.
-  // When one of them is deleted we are still left with all the windows on one
-  // row.
-  std::unique_ptr<aura::Window> window1 = CreateTestWindow();
-  std::unique_ptr<aura::Window> window2 = CreateTestWindow();
-  std::unique_ptr<aura::Window> window3 = CreateTestWindow();
-
-  ToggleOverview();
-  ASSERT_TRUE(overview_controller()->InOverviewSession());
-
-  OverviewItem* item1 = GetOverviewItemForWindow(window1.get());
-  OverviewItem* item2 = GetOverviewItemForWindow(window2.get());
-  OverviewItem* item3 = GetOverviewItemForWindow(window3.get());
-
-  const gfx::RectF item1_bounds = item1->target_bounds();
-  const gfx::RectF item2_bounds = item2->target_bounds();
-  const gfx::RectF item3_bounds = item3->target_bounds();
-
-  // Drag |item1| vertically. |item2| and |item3| bounds should change as they
-  // should be nudging towards their final bounds.
-  overview_session()->InitiateDrag(item1, item1_bounds.CenterPoint(),
-                                   /*is_touch_dragging=*/true);
-  overview_session()->Drag(item1,
-                           item1_bounds.CenterPoint() + gfx::Vector2dF(0, 160));
-  EXPECT_NE(item2_bounds, item2->target_bounds());
-  EXPECT_NE(item3_bounds, item3->target_bounds());
-
-  // Drag |item1| back to its start drag location and release, so that it does
-  // not get deleted.
-  overview_session()->Drag(item1, item1_bounds.CenterPoint());
-  overview_session()->CompleteDrag(item1, item1_bounds.CenterPoint());
-
-  // Drag |item3| vertically. |item1| and |item2| bounds should change as they
-  // should be nudging towards their final bounds.
-  overview_session()->InitiateDrag(item3, item3_bounds.CenterPoint(),
-                                   /*is_touch_dragging=*/true);
-  overview_session()->Drag(item3,
-                           item3_bounds.CenterPoint() + gfx::Vector2dF(0, 160));
-  EXPECT_NE(item1_bounds, item1->target_bounds());
-  EXPECT_NE(item2_bounds, item2->target_bounds());
-}
-
-// Tests that no nudging occurs when the number of rows in overview mode change
-// if the item to be deleted results in the overview grid to change number of
-// rows.
-TEST_P(SplitViewOverviewSessionTest, NoNudgingWhenNumRowsChange) {
-  // Set up four equal windows, which would split into two rows in overview
-  // mode. Removing one window would leave us with three windows, which only
-  // takes a single row in overview.
-  std::unique_ptr<aura::Window> window1 = CreateTestWindow();
-  std::unique_ptr<aura::Window> window2 = CreateTestWindow();
-  std::unique_ptr<aura::Window> window3 = CreateTestWindow();
-  std::unique_ptr<aura::Window> window4 = CreateTestWindow();
-
-  ToggleOverview();
-  ASSERT_TRUE(overview_controller()->InOverviewSession());
-
-  OverviewItem* item1 = GetOverviewItemForWindow(window1.get());
-  OverviewItem* item2 = GetOverviewItemForWindow(window2.get());
-  OverviewItem* item3 = GetOverviewItemForWindow(window3.get());
-  OverviewItem* item4 = GetOverviewItemForWindow(window4.get());
-
-  const gfx::RectF item1_bounds = item1->target_bounds();
-  const gfx::RectF item2_bounds = item2->target_bounds();
-  const gfx::RectF item3_bounds = item3->target_bounds();
-  const gfx::RectF item4_bounds = item4->target_bounds();
-
-  // Drag |item1| past the drag to swipe threshold. None of the other window
-  // bounds should change, as none of them should be nudged.
-  overview_session()->InitiateDrag(item1, item1_bounds.CenterPoint(),
-                                   /*is_touch_dragging=*/true);
-  overview_session()->Drag(item1,
-                           item1_bounds.CenterPoint() + gfx::Vector2dF(0, 160));
-  EXPECT_EQ(item2_bounds, item2->target_bounds());
-  EXPECT_EQ(item3_bounds, item3->target_bounds());
-  EXPECT_EQ(item4_bounds, item4->target_bounds());
-}
-
-// Tests that no nudging occurs when the item to be deleted results in an item
-// from the previous row to drop down to the current row, thus causing the items
-// to the right of the item to be shifted right, which is visually unacceptable.
-TEST_P(SplitViewOverviewSessionTest, NoNudgingWhenLastItemOnPreviousRowDrops) {
-  // Set up five equal windows, which would split into two rows in overview
-  // mode. Removing one window would cause the rows to rearrange, with the third
-  // item dropping down from the first row to the second row. Create the windows
-  // backward so the the window indexs match the order seen in overview, as
-  // overview windows are ordered by MRU.
-  const int kWindows = 5;
-  std::unique_ptr<aura::Window> windows[kWindows];
-  for (int i = kWindows - 1; i >= 0; --i)
-    windows[i] = CreateTestWindow();
-
-  ToggleOverview();
-  ASSERT_TRUE(overview_controller()->InOverviewSession());
-
-  OverviewItem* items[kWindows];
-  gfx::RectF item_bounds[kWindows];
-  for (int i = 0; i < kWindows; ++i) {
-    items[i] = GetOverviewItemForWindow(windows[i].get());
-    item_bounds[i] = items[i]->target_bounds();
-  }
-
-  // Drag the forth item past the drag to swipe threshold. None of the other
-  // window bounds should change, as none of them should be nudged, because
-  // deleting the fourth item will cause the third item to drop down from the
-  // first row to the second.
-  overview_session()->InitiateDrag(items[3], item_bounds[3].CenterPoint(),
-                                   /*is_touch_dragging=*/true);
-  overview_session()->Drag(
-      items[3], item_bounds[3].CenterPoint() + gfx::Vector2dF(0, 160));
-  EXPECT_EQ(item_bounds[0], items[0]->target_bounds());
-  EXPECT_EQ(item_bounds[1], items[1]->target_bounds());
-  EXPECT_EQ(item_bounds[2], items[2]->target_bounds());
-  EXPECT_EQ(item_bounds[4], items[4]->target_bounds());
-
-  // Drag the fourth item back to its start drag location and release, so that
-  // it does not get deleted.
-  overview_session()->Drag(items[3], item_bounds[3].CenterPoint());
-  overview_session()->CompleteDrag(items[3], item_bounds[3].CenterPoint());
-
-  // Drag the first item past the drag to swipe threshold. The second and third
-  // items should nudge as expected as there is no item dropping down to their
-  // row. The fourth and fifth items should not nudge as they are in a different
-  // row than the first item.
-  overview_session()->InitiateDrag(items[0], item_bounds[0].CenterPoint(),
-                                   /*is_touch_dragging=*/true);
-  overview_session()->Drag(
-      items[0], item_bounds[0].CenterPoint() + gfx::Vector2dF(0, 160));
-  EXPECT_NE(item_bounds[1], items[1]->target_bounds());
-  EXPECT_NE(item_bounds[2], items[2]->target_bounds());
-  EXPECT_EQ(item_bounds[3], items[3]->target_bounds());
-  EXPECT_EQ(item_bounds[4], items[4]->target_bounds());
 }
 
 // Verify the window grid size changes as expected when dragging items around in

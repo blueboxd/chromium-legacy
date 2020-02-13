@@ -229,11 +229,6 @@
 <translation id="6304318647555713317">クライアント</translation>
 <translation id="6381670701864002291">その他の問題。</translation>
 <translation id="6398765197997659313">全画面表示を終了</translation>
-<translation id="6411861157501911556"><ph name="PRODUCT_NAME" />を使用するには、「アクセシビリティ」権限を付与して、リモートマシンからの入力をこの Mac に反映できるようにする必要があります。
-
-この権限を付与するには、下の [<ph name="BUTTON_NAME" />] をクリックして [アクセシビリティ] 設定パネルを開き、[<ph name="SERVICE_SCRIPT_NAME" />] の横にあるチェックボックスをオンにします。
-
-[<ph name="SERVICE_SCRIPT_NAME" />] のチェックボックスがすでにオンになっている場合は、いったんオフにしてからもう一度オンにしてください。</translation>
 <translation id="6441316101718669559">このプラットフォームでデスクトップの統合はサポートされていません。アプリケーションは引き続き使用できますが、ユーザー エクスペリエンスは低下します。</translation>
 <translation id="652218476070540101">このパソコン用の PIN を更新しています...</translation>
 <translation id="6527303717912515753">共有</translation>

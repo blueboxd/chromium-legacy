@@ -127,11 +127,13 @@
 #include "content/public/browser/storage_partition.h"
 #include "content/public/common/content_features.h"
 #include "content/public/common/content_switches.h"
+#include "content/public/common/network_service_util.h"
 #include "content/public/common/service_manager_connection.h"
 #include "extensions/buildflags/buildflags.h"
 #include "extensions/common/constants.h"
 #include "media/media_buildflags.h"
 #include "mojo/public/cpp/bindings/pending_receiver.h"
+#include "net/log/net_log.h"
 #include "ppapi/buildflags/buildflags.h"
 #include "printing/buildflags/buildflags.h"
 #include "services/network/public/cpp/features.h"
@@ -236,6 +238,13 @@ BrowserProcessImpl::BrowserProcessImpl(StartupData* startup_data) {
 }
 
 void BrowserProcessImpl::Init() {
+  if (content::IsOutOfProcessNetworkService()) {
+    // Initialize NetLog source IDs to use an alternate starting value for
+    // the browser process. This needs to be done early in process startup
+    // before any NetLogSource objects might get created.
+    net::NetLog::Get()->InitializeSourceIdPartition();
+  }
+
 #if defined(OS_CHROMEOS)
   // Forces creation of |metrics_services_manager_client_| if necessary
   // (typically this call is a no-op as MetricsServicesManager has already been

@@ -168,8 +168,9 @@ Animation* Animation::Create(AnimationEffect* effect,
   }
   DCHECK(IsA<DocumentTimeline>(timeline) || timeline->IsScrollTimeline());
 
+  auto* context_document = timeline->GetDocument()->ContextDocument();
   return MakeGarbageCollected<Animation>(
-      timeline->GetDocument()->ContextDocument()->ToExecutionContext(),
+      context_document ? context_document->ToExecutionContext() : nullptr,
       timeline, effect);
 }
 

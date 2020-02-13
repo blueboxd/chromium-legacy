@@ -48,6 +48,9 @@
 #include "base/trace_event/trace_event.h"
 #include "components/autofill/android/autofill_provider_android.h"
 #include "components/embedder_support/android/delegate/color_chooser_android.h"
+#include "components/javascript_dialogs/android/app_modal_dialog_view_android.h"  // nogncheck
+#include "components/javascript_dialogs/app_modal_dialog_manager.h"  // nogncheck
+#include "ui/android/view_android.h"
 #include "weblayer/browser/controls_visibility_reason.h"
 #include "weblayer/browser/java/jni/TabImpl_jni.h"
 #include "weblayer/browser/top_controls_container_view.h"
@@ -293,6 +296,10 @@ void TabImpl::AttachToView(views::WebView* web_view) {
 }
 #endif
 
+bool TabImpl::IsActive() {
+  return browser_->GetActiveTab() == this;
+}
+
 #if defined(OS_ANDROID)
 // static
 void TabImpl::DisableAutofillSystemIntegrationForTesting() {
@@ -412,6 +419,32 @@ void TabImpl::DidNavigateMainFramePostCommit(
     content::WebContents* web_contents) {
   for (auto& observer : observers_)
     observer.DisplayedUrlChanged(web_contents->GetVisibleURL());
+}
+
+content::JavaScriptDialogManager* TabImpl::GetJavaScriptDialogManager(
+    content::WebContents* web_contents) {
+#if defined(OS_ANDROID)
+  // Simply ignore javascript dialog requests from non-foremost tabs.
+  // TODO(crbug.com/1025256): revisit this behavior.
+  if (!IsActive())
+    return nullptr;
+
+  auto* dialog_manager =
+      javascript_dialogs::AppModalDialogManager::GetInstance();
+  if (dialog_manager->view_factory()->is_null()) {
+    dialog_manager->SetNativeDialogFactory(base::BindRepeating(
+        [](javascript_dialogs::AppModalDialogController* controller)
+            -> javascript_dialogs::AppModalDialogView* {
+          return new javascript_dialogs::AppModalDialogViewAndroid(
+              base::android::AttachCurrentThread(), controller,
+              controller->web_contents()->GetTopLevelNativeWindow());
+        }));
+  }
+
+  return dialog_manager;
+#else
+  return nullptr;
+#endif
 }
 
 content::ColorChooser* TabImpl::OpenColorChooser(

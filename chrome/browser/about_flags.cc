@@ -1103,14 +1103,8 @@ const FeatureEntry::FeatureParam kExploreSitesDenseTitleRight[] = {
      chrome::android::explore_sites::
          kExploreSitesDenseVariationDenseTitleRight},
 };
-const FeatureEntry::FeatureParam kExploreSitesWithGamesTop[] = {
-    {chrome::android::explore_sites::
-         kExploreSitesHeadersExperimentParameterName,
-     chrome::android::explore_sites::kExploreSitesGamesTopExperiment}};
 const FeatureEntry::FeatureVariation kExploreSitesVariations[] = {
     {"Experimental", &kExploreSitesExperimental, 1, nullptr},
-    {"Games Top", kExploreSitesWithGamesTop,
-     base::size(kExploreSitesWithGamesTop), nullptr},
     {"Dense Title Bottom", kExploreSitesDenseTitleBottom,
      base::size(kExploreSitesDenseTitleBottom), nullptr},
     {"Dense Title Right", kExploreSitesDenseTitleRight,

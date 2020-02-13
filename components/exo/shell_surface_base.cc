@@ -513,6 +513,7 @@ ShellSurfaceBase::AsTracedValue() const {
 // SurfaceDelegate overrides:
 
 void ShellSurfaceBase::OnSurfaceCommit() {
+  LOG(ERROR) << "OnSurfaceCommit";
   // Pause occlusion tracking since we will update a bunch of window properties.
   aura::WindowOcclusionTracker::ScopedPause pause_occlusion;
 
@@ -544,6 +545,7 @@ void ShellSurfaceBase::OnSetFrame(SurfaceFrameType frame_type) {
     DLOG(WARNING) << "popup does not support frame decoration";
     return;
   }
+  LOG(ERROR) << "OnSetFrame:" << (int)frame_type;
 
   bool frame_was_disabled = !frame_enabled();
   // TODO(b/141151475): Make frame_type a committable property.
@@ -711,6 +713,7 @@ views::View* ShellSurfaceBase::GetContentsView() {
 
 views::NonClientFrameView* ShellSurfaceBase::CreateNonClientFrameView(
     views::Widget* widget) {
+  LOG(ERROR) << "CreateNonClientFrameView";
   return CreateNonClientFrameViewInternal(widget, /*client_controlled=*/false);
 }
 
@@ -873,7 +876,7 @@ void ShellSurfaceBase::CreateShellSurfaceWidget(
     activatable_ = false;
     DisableMovement();
   }
-
+  LOG(ERROR) << "CreateShellSurfaceWidget";
   views::Widget::InitParams params;
   params.type = emulate_x11_override_redirect
                     ? views::Widget::InitParams::TYPE_MENU

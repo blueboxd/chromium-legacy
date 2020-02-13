@@ -45,7 +45,7 @@ SmsService::SmsService(
 
 SmsService::~SmsService() {
   if (callback_)
-    Process(SmsStatus::kTimeout, base::nullopt);
+    Process(SmsStatus::kTimeout, base::nullopt, base::nullopt);
 }
 
 // static
@@ -64,7 +64,8 @@ void SmsService::Create(
 void SmsService::Receive(ReceiveCallback callback) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   if (callback_) {
-    std::move(callback_).Run(SmsStatus::kCancelled, base::nullopt);
+    std::move(callback_).Run(SmsStatus::kCancelled, base::nullopt,
+                             base::nullopt);
     fetcher_->Unsubscribe(origin_, this);
   }
 
@@ -72,8 +73,8 @@ void SmsService::Receive(ReceiveCallback callback) {
 
   callback_ = std::move(callback);
 
-  // |sms_| and prompt are still present from the previous request so a new
-  // subscription is unnecessary.
+  // |one_time_code_|, |sms_| and prompt are still present from the previous
+  // request so a new subscription is unnecessary.
   if (prompt_open_) {
     // TODO(crbug.com/1024598): Add UMA histogram.
     return;
@@ -86,11 +87,13 @@ void SmsService::OnReceive(const std::string& one_time_code,
                            const std::string& sms) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
+  DCHECK(!one_time_code_);
   DCHECK(!sms_);
   DCHECK(!start_time_.is_null());
 
   RecordSmsReceiveTime(base::TimeTicks::Now() - start_time_);
 
+  one_time_code_ = one_time_code;
   sms_ = sms;
   receive_time_ = base::TimeTicks::Now();
 
@@ -100,7 +103,7 @@ void SmsService::OnReceive(const std::string& one_time_code,
 void SmsService::Abort() {
   DCHECK(callback_);
 
-  Process(SmsStatus::kAborted, base::nullopt);
+  Process(SmsStatus::kAborted, base::nullopt, base::nullopt);
 }
 
 void SmsService::NavigationEntryCommitted(
@@ -133,19 +136,18 @@ void SmsService::OpenInfoBar(const std::string& one_time_code) {
 }
 
 void SmsService::Process(blink::mojom::SmsStatus status,
+                         base::Optional<std::string> one_time_code,
                          base::Optional<std::string> sms) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-
   DCHECK(callback_);
-
-  std::move(callback_).Run(status, sms);
-
+  std::move(callback_).Run(status, one_time_code, sms);
   CleanUp();
 }
 
 void SmsService::OnConfirm() {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
+  DCHECK(one_time_code_);
   DCHECK(sms_);
   DCHECK(!receive_time_.is_null());
   RecordContinueOnSuccessTime(base::TimeTicks::Now() - receive_time_);
@@ -153,7 +155,7 @@ void SmsService::OnConfirm() {
   prompt_open_ = false;
 
   if (callback_)
-    Process(SmsStatus::kSuccess, sms_);
+    Process(SmsStatus::kSuccess, one_time_code_, sms_);
 }
 
 void SmsService::OnCancel() {
@@ -166,14 +168,15 @@ void SmsService::OnCancel() {
   prompt_open_ = false;
 
   if (callback_)
-    Process(SmsStatus::kCancelled, base::nullopt);
+    Process(SmsStatus::kCancelled, base::nullopt, base::nullopt);
 }
 
 void SmsService::CleanUp() {
-  // Skip resetting |sms_| and |receive_time_| while prompt is still open
-  // in case it needs to be returned to the next incoming request upon prompt
-  // confirmation.
+  // Skip resetting |one_time_code_|, |sms| and |receive_time_| while prompt is
+  // still open in case it needs to be returned to the next incoming request
+  // upon prompt confirmation.
   if (!prompt_open_) {
+    one_time_code_.reset();
     sms_.reset();
     receive_time_ = base::TimeTicks();
   }

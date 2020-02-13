@@ -281,6 +281,7 @@
 <translation id="3137521801621304719">Leave incognito mode</translation>
 <translation id="3140134512074889489">Please enable your camera to scan a QR code</translation>
 <translation id="3143515551205905069">Cancel sync</translation>
+<translation id="314939179385989105">Chrome’s homepage</translation>
 <translation id="3157842584138209013">See how much data you've saved from the More Options button</translation>
 <translation id="3166827708714933426">Tab and window shortcuts</translation>
 <translation id="3181954750937456830">Safe Browsing (protects you and your device from dangerous sites)</translation>
@@ -727,6 +728,7 @@ Long-press any word to create a search for it. To refine your search adjust the 
 <translation id="6437478888915024427">Page info</translation>
 <translation id="6441734959916820584">Name is too long</translation>
 <translation id="6444421004082850253">{FILE_COUNT,plural, =1{# Image}other{# Images}}</translation>
+<translation id="6447558397796644647">Can’t find that bookmark. Check your spelling or add a new bookmark.</translation>
 <translation id="6447842834002726250">Cookies</translation>
 <translation id="6461962085415701688">Can’t open file</translation>
 <translation id="6464977750820128603">You can see sites that you visit in Chrome and set timers for them.\n\nGoogle gets info about the sites for which you set timers and how long you visit them. This info is used to make Digital Wellbeing better.</translation>
@@ -802,6 +804,7 @@ Long-press any word to create a search for it. To refine your search adjust the 
 <translation id="6990079615885386641">Get the app from the Google Play Store: <ph name="APP_ACTION" /></translation>
 <translation id="6992289844737586249">Ask first before allowing sites to use your microphone (recommended)</translation>
 <translation id="6995899638241819463">Warn you if passwords are exposed in a data breach</translation>
+<translation id="7000754031042624318">Turned off in Android settings</translation>
 <translation id="7015203776128479407">Initial sync setup was not finished. Sync is off.</translation>
 <translation id="7016516562562142042">Allowed for current search engine</translation>
 <translation id="7022756207310403729">Open in browser</translation>

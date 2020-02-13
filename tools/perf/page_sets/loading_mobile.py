@@ -2,11 +2,29 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
+import collections
+
 from page_sets import page_cycler_story
 from telemetry.page import cache_temperature as cache_temperature_module
 from telemetry.page import shared_page_state
 from telemetry.page import traffic_setting as traffic_setting_module
 from telemetry import story
+
+Tag = collections.namedtuple('Tag', ['name', 'description'])
+
+# pylint: disable=line-too-long
+# Used https://cs.chromium.org/chromium/src/tools/perf/experimental/story_clustering/README.md
+# to find representative stories.
+
+ABRIDGED = Tag('abridged', 'Story should be included in abridged runs')
+ABRIDGED_STORY_NAMES = [
+    "Facebook",
+    "GoogleIndia",
+    "LocalMoxie",
+    "Dramaq",
+    "Hongkiat",
+    "FranceTVInfo",
+]
 
 
 class LoadingMobileStorySet(story.StorySet):
@@ -125,6 +143,9 @@ class LoadingMobileStorySet(story.StorySet):
       ('http://www.francetvinfo.fr', 'FranceTVInfo'),
     ], cache_temperatures, traffic_settings)
 
+  def GetAbridgedStorySetTagFilter(self):
+    return ABRIDGED.name
+
   def AddStories(self, tags, urls, cache_temperatures, traffic_settings):
     for url, name in urls:
       for temp in cache_temperatures:
@@ -147,7 +168,18 @@ class LoadingMobileStorySet(story.StorySet):
           if traffic == traffic_setting_module.REGULAR_3G:
             page_name += '_3g'
 
-          self.AddStory(page_cycler_story.PageCyclerStory(
-              url, self, name=page_name,
-              shared_page_state_class=shared_page_state.SharedMobilePageState,
-              cache_temperature=temp, traffic_setting=traffic, tags=tags))
+          page_tags = tags[:]
+
+          if page_name in ABRIDGED_STORY_NAMES:
+            page_tags.append(ABRIDGED.name)
+
+          self.AddStory(
+              page_cycler_story.PageCyclerStory(
+                  url,
+                  self,
+                  name=page_name,
+                  shared_page_state_class=shared_page_state.
+                  SharedMobilePageState,
+                  cache_temperature=temp,
+                  traffic_setting=traffic,
+                  tags=page_tags))

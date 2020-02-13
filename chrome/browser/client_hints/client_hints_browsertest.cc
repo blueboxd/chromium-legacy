@@ -145,6 +145,7 @@ class ClientHintsBrowserTest : public InProcessBrowserTest,
         expect_client_hints_on_main_frame_(false),
         expect_client_hints_on_subresources_(false),
         count_user_agent_hint_headers_seen_(0),
+        count_ua_mobile_client_hints_headers_seen_(0),
         count_client_hints_headers_seen_(0),
         request_interceptor_(nullptr) {
     http_server_.ServeFilesFromSourceDirectory("chrome/test/data/client_hints");
@@ -408,6 +409,11 @@ class ClientHintsBrowserTest : public InProcessBrowserTest,
     return count_user_agent_hint_headers_seen_;
   }
 
+  size_t count_ua_mobile_client_hints_headers_seen() const {
+    base::AutoLock lock(count_headers_lock_);
+    return count_ua_mobile_client_hints_headers_seen_;
+  }
+
   size_t count_client_hints_headers_seen() const {
     base::AutoLock lock(count_headers_lock_);
     return count_client_hints_headers_seen_;
@@ -589,6 +595,9 @@ class ClientHintsBrowserTest : public InProcessBrowserTest,
         // The user agent hint is special:
         if (std::string(blink::kClientHintsHeaderMapping[i]) == "sec-ch-ua") {
           count_user_agent_hint_headers_seen_++;
+        } else if (std::string(blink::kClientHintsHeaderMapping[i]) ==
+                   "sec-ch-ua-mobile") {
+          count_ua_mobile_client_hints_headers_seen_++;
         } else {
           count_client_hints_headers_seen_++;
         }
@@ -606,8 +615,10 @@ class ClientHintsBrowserTest : public InProcessBrowserTest,
         continue;
       }
 
-      // `Sec-CH-UA` is attached on all requests.
-      if (std::string(blink::kClientHintsHeaderMapping[i]) == "sec-ch-ua") {
+      // `Sec-CH-UA` and `Sec-CH-UA-Mobile` is attached on all requests.
+      if (std::string(blink::kClientHintsHeaderMapping[i]) == "sec-ch-ua" ||
+          std::string(blink::kClientHintsHeaderMapping[i]) ==
+              "sec-ch-ua-mobile") {
         continue;
       }
 
@@ -714,6 +725,7 @@ class ClientHintsBrowserTest : public InProcessBrowserTest,
   bool expect_client_hints_on_subresources_;
 
   size_t count_user_agent_hint_headers_seen_;
+  size_t count_ua_mobile_client_hints_headers_seen_;
   size_t count_client_hints_headers_seen_;
 
   std::unique_ptr<ThirdPartyURLLoaderInterceptor> request_interceptor_;
@@ -831,12 +843,13 @@ IN_PROC_BROWSER_TEST_P(ClientHintsBrowserTest,
   content::FetchHistogramsFromChildProcesses();
   SubprocessMetricsProvider::MergeHistogramDeltasForTesting();
 
-  // The user agent hint is attached to all three requests:
+  // The user agent hint is attached to all three requests, as is UA-mobile:
   EXPECT_EQ(3u, count_user_agent_hint_headers_seen());
+  EXPECT_EQ(3u, count_ua_mobile_client_hints_headers_seen());
 
-  // Eleven client hints are attached to the image request, and eleven to the
+  // Ten other client hints are attached to the image request, and ten to the
   // main frame request.
-  EXPECT_EQ(22u, count_client_hints_headers_seen());
+  EXPECT_EQ(20u, count_client_hints_headers_seen());
 
   // Navigating to without_accept_ch_without_lifetime_img_foo_com() should not
   // attach client hints to the image subresouce contained in that page since
@@ -849,15 +862,15 @@ IN_PROC_BROWSER_TEST_P(ClientHintsBrowserTest,
 
   // The device-memory and dprheader is attached to the main frame request.
 #if defined(OS_ANDROID)
-  EXPECT_EQ(11u, count_client_hints_headers_seen());
+  EXPECT_EQ(10u, count_client_hints_headers_seen());
 #else
-  EXPECT_EQ(33u, count_client_hints_headers_seen());
+  EXPECT_EQ(30u, count_client_hints_headers_seen());
 #endif
 
   // Requests to third party servers should have only one client hint attached
   // (`Sec-CH-UA`).
   EXPECT_EQ(1u, third_party_request_count_seen());
-  EXPECT_EQ(1u, third_party_client_hints_count_seen());
+  EXPECT_EQ(2u, third_party_client_hints_count_seen());
 }
 
 // Verify that we send only major version information in the `Sec-CH-UA` header
@@ -901,14 +914,14 @@ IN_PROC_BROWSER_TEST_P(ClientHintsAllowThirdPartyBrowserTest,
   ui_test_utils::NavigateToURL(browser(), gurl);
   histogram_tester.ExpectTotalCount("ClientHints.UpdateEventCount", 0);
 
-  EXPECT_EQ(11u, count_client_hints_headers_seen());
+  EXPECT_EQ(10u, count_client_hints_headers_seen());
 
   // Requests to third party servers should not have client hints attached.
   EXPECT_EQ(1u, third_party_request_count_seen());
 
   // Device memory, viewport width, DRP, and UA client hints should be sent to
   // the third-party when feature "AllowClientHintsToThirdParty" is enabled.
-  EXPECT_EQ(4u, third_party_client_hints_count_seen());
+  EXPECT_EQ(5u, third_party_client_hints_count_seen());
 }
 
 // Test that client hints are not attached to third party subresources if
@@ -929,7 +942,8 @@ IN_PROC_BROWSER_TEST_P(ClientHintsBrowserTest,
   histogram_tester.ExpectTotalCount("ClientHints.UpdateEventCount", 0);
 
   EXPECT_EQ(2u, count_user_agent_hint_headers_seen());
-  EXPECT_EQ(11u, count_client_hints_headers_seen());
+  EXPECT_EQ(2u, count_ua_mobile_client_hints_headers_seen());
+  EXPECT_EQ(10u, count_client_hints_headers_seen());
 
   // Requests to third party servers should not have client hints attached.
   EXPECT_EQ(1u, third_party_request_count_seen());
@@ -937,7 +951,7 @@ IN_PROC_BROWSER_TEST_P(ClientHintsBrowserTest,
   // Client hints should not be sent to the third-party when feature
   // "AllowClientHintsToThirdParty" is not enabled, with the exception of the
   // `Sec-CH-UA` hint, which is sent with every request.
-  EXPECT_EQ(1u, third_party_client_hints_count_seen());
+  EXPECT_EQ(2u, third_party_client_hints_count_seen());
 }
 
 // Loads a HTTPS webpage that does not request persisting of client hints.
@@ -1119,10 +1133,11 @@ IN_PROC_BROWSER_TEST_P(ClientHintsBrowserTest,
 
   // The user agent hint is attached to all three requests:
   EXPECT_EQ(3u, count_user_agent_hint_headers_seen());
+  EXPECT_EQ(3u, count_ua_mobile_client_hints_headers_seen());
 
-  // Eleven client hints are attached to the image request, and eleven to the
+  // Ten other client hints are attached to the image request, and ten to the
   // main frame request.
-  EXPECT_EQ(22u, count_client_hints_headers_seen());
+  EXPECT_EQ(20u, count_client_hints_headers_seen());
 }
 
 // Loads a webpage that does not request persisting of client hints.
@@ -1182,10 +1197,11 @@ IN_PROC_BROWSER_TEST_P(ClientHintsBrowserTest,
 
   // The user agent hint is attached to all three requests:
   EXPECT_EQ(3u, count_user_agent_hint_headers_seen());
+  EXPECT_EQ(3u, count_ua_mobile_client_hints_headers_seen());
 
-  // Eleven client hints are attached to the image request, and eleven to the
+  // Ten other client hints are attached to the image request, and ten to the
   // main frame request.
-  EXPECT_EQ(22u, count_client_hints_headers_seen());
+  EXPECT_EQ(20u, count_client_hints_headers_seen());
 }
 
 // Verify that expired persistent client hint preferences are not used.
@@ -1235,6 +1251,7 @@ IN_PROC_BROWSER_TEST_F(ClientHintsBrowserTest,
 
   // The user agent hint is attached to all three requests:
   EXPECT_EQ(3u, count_user_agent_hint_headers_seen());
+  EXPECT_EQ(3u, count_ua_mobile_client_hints_headers_seen());
 
   // No client hints are attached to the requests since the persisted hints must
   // be expired.
@@ -1287,10 +1304,11 @@ IN_PROC_BROWSER_TEST_P(ClientHintsBrowserTest,
 
   // The user agent hint is attached to all three requests:
   EXPECT_EQ(3u, count_user_agent_hint_headers_seen());
+  EXPECT_EQ(3u, count_ua_mobile_client_hints_headers_seen());
 
-  // Eleven client hints are attached to the image request, and eleven to the
+  // Ten other client hints are attached to the image request, and ten to the
   // main frame request.
-  EXPECT_EQ(22u, count_client_hints_headers_seen());
+  EXPECT_EQ(20u, count_client_hints_headers_seen());
 }
 
 // Ensure that even when cookies are blocked, client hint preferences are
@@ -1367,10 +1385,11 @@ IN_PROC_BROWSER_TEST_P(ClientHintsBrowserTest,
 
   // The user agent hint is attached to all three requests:
   EXPECT_EQ(3u, count_user_agent_hint_headers_seen());
+  EXPECT_EQ(3u, count_ua_mobile_client_hints_headers_seen());
 
-  // Eleven client hints are attached to the image request, and eleven to the
+  // Ten other client hints are attached to the image request, and ten to the
   // main frame request.
-  EXPECT_EQ(22u, count_client_hints_headers_seen());
+  EXPECT_EQ(20u, count_client_hints_headers_seen());
 
   // Clear settings.
   HostContentSettingsMapFactory::GetForProfile(browser()->profile())
@@ -1442,6 +1461,7 @@ IN_PROC_BROWSER_TEST_P(ClientHintsBrowserTest,
   content::FetchHistogramsFromChildProcesses();
   SubprocessMetricsProvider::MergeHistogramDeltasForTesting();
   EXPECT_EQ(1u, count_user_agent_hint_headers_seen());
+  EXPECT_EQ(1u, count_ua_mobile_client_hints_headers_seen());
 
   histogram_tester.ExpectUniqueSample("ClientHints.UpdateSize", 12u, 1);
   // accept_ch_with_lifetime_url() tries to set client hints persist duration to
@@ -1467,6 +1487,7 @@ IN_PROC_BROWSER_TEST_P(ClientHintsBrowserTest,
   EXPECT_EQ(0u, count_client_hints_headers_seen());
   VerifyContentSettingsNotNotified();
   EXPECT_EQ(1u, count_user_agent_hint_headers_seen());
+  EXPECT_EQ(1u, count_ua_mobile_client_hints_headers_seen());
 
   SetJsEnabledForActiveView(true);
 
@@ -1480,6 +1501,7 @@ IN_PROC_BROWSER_TEST_P(ClientHintsBrowserTest,
   EXPECT_EQ(0u, count_client_hints_headers_seen());
   VerifyContentSettingsNotNotified();
   EXPECT_EQ(1u, count_user_agent_hint_headers_seen());
+  EXPECT_EQ(1u, count_ua_mobile_client_hints_headers_seen());
 
   // Allow JavaScript: Client hints should now be attached.
   HostContentSettingsMapFactory::GetForProfile(browser()->profile())
@@ -1494,10 +1516,11 @@ IN_PROC_BROWSER_TEST_P(ClientHintsBrowserTest,
 
   // The user agent hint is attached to all three requests:
   EXPECT_EQ(3u, count_user_agent_hint_headers_seen());
+  EXPECT_EQ(3u, count_ua_mobile_client_hints_headers_seen());
 
-  // Eleven client hints are attached to the image request, and eleven to the
+  // Ten other client hints are attached to the image request, and ten to the
   // main frame request.
-  EXPECT_EQ(22u, count_client_hints_headers_seen());
+  EXPECT_EQ(20u, count_client_hints_headers_seen());
 
   // Clear settings.
   HostContentSettingsMapFactory::GetForProfile(browser()->profile())
@@ -1563,6 +1586,7 @@ IN_PROC_BROWSER_TEST_P(ClientHintsBrowserTest,
   ui_test_utils::NavigateToURL(browser(),
                                accept_ch_without_lifetime_img_localhost());
   EXPECT_EQ(0u, count_user_agent_hint_headers_seen());
+  EXPECT_EQ(0u, count_ua_mobile_client_hints_headers_seen());
   EXPECT_EQ(0u, count_client_hints_headers_seen());
   EXPECT_EQ(1u, third_party_request_count_seen());
   EXPECT_EQ(0u, third_party_client_hints_count_seen());
@@ -1579,9 +1603,10 @@ IN_PROC_BROWSER_TEST_P(ClientHintsBrowserTest,
                                accept_ch_without_lifetime_img_localhost());
 
   EXPECT_EQ(2u, count_user_agent_hint_headers_seen());
-  EXPECT_EQ(11u, count_client_hints_headers_seen());
+  EXPECT_EQ(2u, count_ua_mobile_client_hints_headers_seen());
+  EXPECT_EQ(10u, count_client_hints_headers_seen());
   EXPECT_EQ(2u, third_party_request_count_seen());
-  EXPECT_EQ(1u, third_party_client_hints_count_seen());
+  EXPECT_EQ(2u, third_party_client_hints_count_seen());
   VerifyContentSettingsNotNotified();
 
   // Clear settings.
@@ -1598,9 +1623,10 @@ IN_PROC_BROWSER_TEST_P(ClientHintsBrowserTest,
   ui_test_utils::NavigateToURL(browser(),
                                accept_ch_without_lifetime_img_localhost());
   EXPECT_EQ(2u, count_user_agent_hint_headers_seen());
-  EXPECT_EQ(11u, count_client_hints_headers_seen());
+  EXPECT_EQ(2u, count_ua_mobile_client_hints_headers_seen());
+  EXPECT_EQ(10u, count_client_hints_headers_seen());
   EXPECT_EQ(3u, third_party_request_count_seen());
-  EXPECT_EQ(1u, third_party_client_hints_count_seen());
+  EXPECT_EQ(2u, third_party_client_hints_count_seen());
 
   // Clear settings.
   HostContentSettingsMapFactory::GetForProfile(browser()->profile())
@@ -1635,9 +1661,10 @@ IN_PROC_BROWSER_TEST_P(ClientHintsBrowserTest,
   SetClientHintExpectationsOnSubresources(true);
   ui_test_utils::NavigateToURL(browser(), gurl);
   EXPECT_EQ(2u, count_user_agent_hint_headers_seen());
-  EXPECT_EQ(11u, count_client_hints_headers_seen());
+  EXPECT_EQ(2u, count_ua_mobile_client_hints_headers_seen());
+  EXPECT_EQ(10u, count_client_hints_headers_seen());
   EXPECT_EQ(1u, third_party_request_count_seen());
-  EXPECT_EQ(1u, third_party_client_hints_count_seen());
+  EXPECT_EQ(2u, third_party_client_hints_count_seen());
 
   // Clear settings.
   HostContentSettingsMapFactory::GetForProfile(browser()->profile())
@@ -1688,10 +1715,11 @@ IN_PROC_BROWSER_TEST_P(ClientHintsBrowserTest,
 
   // The user agent hint is attached to all three requests:
   EXPECT_EQ(3u, count_user_agent_hint_headers_seen());
+  EXPECT_EQ(3u, count_ua_mobile_client_hints_headers_seen());
 
-  // Eleven client hints are attached to the image request, and eleven to the
+  // Ten other client hints are attached to the image request, and ten to the
   // main frame request.
-  EXPECT_EQ(22u, count_client_hints_headers_seen());
+  EXPECT_EQ(20u, count_client_hints_headers_seen());
 
   // Navigate using regular profile. Client hints should not be send.
   SetClientHintExpectationsOnMainFrame(false);
@@ -1701,9 +1729,10 @@ IN_PROC_BROWSER_TEST_P(ClientHintsBrowserTest,
 
   // The user agent hint is attached to the two new requests.
   EXPECT_EQ(5u, count_user_agent_hint_headers_seen());
+  EXPECT_EQ(5u, count_ua_mobile_client_hints_headers_seen());
 
   // No additional hints are sent.
-  EXPECT_EQ(22u, count_client_hints_headers_seen());
+  EXPECT_EQ(20u, count_client_hints_headers_seen());
 }
 
 class ClientHintsWebHoldbackBrowserTest : public ClientHintsBrowserTest {
@@ -1775,7 +1804,8 @@ IN_PROC_BROWSER_TEST_F(ClientHintsWebHoldbackBrowserTest,
   SubprocessMetricsProvider::MergeHistogramDeltasForTesting();
 
   EXPECT_EQ(3u, count_user_agent_hint_headers_seen());
-  EXPECT_EQ(22u, count_client_hints_headers_seen());
+  EXPECT_EQ(3u, count_ua_mobile_client_hints_headers_seen());
+  EXPECT_EQ(20u, count_client_hints_headers_seen());
   EXPECT_EQ(0u, third_party_request_count_seen());
   EXPECT_EQ(0u, third_party_client_hints_count_seen());
 }

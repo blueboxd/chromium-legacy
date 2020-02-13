@@ -343,8 +343,12 @@ TEST_F(DeepScanningRequestTest, ProcessesResponseCorrectly) {
         &download_protection_service_);
 
     DeepScanningClientResponse response;
+    response.mutable_malware_scan_verdict()->set_status(
+        MalwareDeepScanningVerdict::SUCCESS);
     response.mutable_malware_scan_verdict()->set_verdict(
         MalwareDeepScanningVerdict::MALWARE);
+    response.mutable_dlp_scan_verdict()->set_status(
+        DlpDeepScanningVerdict::SUCCESS);
     response.mutable_dlp_scan_verdict()->add_triggered_rules()->set_action(
         DlpDeepScanningVerdict::TriggeredRule::BLOCK);
     download_protection_service_.GetFakeBinaryUploadService()->SetResponse(
@@ -363,8 +367,12 @@ TEST_F(DeepScanningRequestTest, ProcessesResponseCorrectly) {
         &download_protection_service_);
 
     DeepScanningClientResponse response;
+    response.mutable_malware_scan_verdict()->set_status(
+        MalwareDeepScanningVerdict::SUCCESS);
     response.mutable_malware_scan_verdict()->set_verdict(
         MalwareDeepScanningVerdict::UWS);
+    response.mutable_dlp_scan_verdict()->set_status(
+        DlpDeepScanningVerdict::SUCCESS);
     response.mutable_dlp_scan_verdict()->add_triggered_rules()->set_action(
         DlpDeepScanningVerdict::TriggeredRule::BLOCK);
     download_protection_service_.GetFakeBinaryUploadService()->SetResponse(
@@ -383,6 +391,8 @@ TEST_F(DeepScanningRequestTest, ProcessesResponseCorrectly) {
         &download_protection_service_);
 
     DeepScanningClientResponse response;
+    response.mutable_dlp_scan_verdict()->set_status(
+        DlpDeepScanningVerdict::SUCCESS);
     response.mutable_dlp_scan_verdict()->add_triggered_rules()->set_action(
         DlpDeepScanningVerdict::TriggeredRule::BLOCK);
     download_protection_service_.GetFakeBinaryUploadService()->SetResponse(
@@ -401,6 +411,8 @@ TEST_F(DeepScanningRequestTest, ProcessesResponseCorrectly) {
         &download_protection_service_);
 
     DeepScanningClientResponse response;
+    response.mutable_dlp_scan_verdict()->set_status(
+        DlpDeepScanningVerdict::SUCCESS);
     response.mutable_dlp_scan_verdict()->add_triggered_rules()->set_action(
         DlpDeepScanningVerdict::TriggeredRule::WARN);
     download_protection_service_.GetFakeBinaryUploadService()->SetResponse(
@@ -419,6 +431,8 @@ TEST_F(DeepScanningRequestTest, ProcessesResponseCorrectly) {
         &download_protection_service_);
 
     DeepScanningClientResponse response;
+    response.mutable_dlp_scan_verdict()->set_status(
+        DlpDeepScanningVerdict::SUCCESS);
     response.mutable_dlp_scan_verdict()->add_triggered_rules()->set_action(
         DlpDeepScanningVerdict::TriggeredRule::WARN);
     response.mutable_dlp_scan_verdict()->add_triggered_rules()->set_action(
@@ -429,6 +443,42 @@ TEST_F(DeepScanningRequestTest, ProcessesResponseCorrectly) {
     request.Start();
 
     EXPECT_EQ(DownloadCheckResult::SENSITIVE_CONTENT_BLOCK, last_result_);
+  }
+
+  {
+    DeepScanningRequest request(
+        &item_, DeepScanningRequest::DeepScanTrigger::TRIGGER_POLICY,
+        base::BindRepeating(&DeepScanningRequestTest::SetLastResult,
+                            base::Unretained(this)),
+        &download_protection_service_);
+
+    DeepScanningClientResponse response;
+    response.mutable_dlp_scan_verdict()->set_status(
+        DlpDeepScanningVerdict::FAILURE);
+    download_protection_service_.GetFakeBinaryUploadService()->SetResponse(
+        BinaryUploadService::Result::SUCCESS, response);
+
+    request.Start();
+
+    EXPECT_EQ(DownloadCheckResult::DEEP_SCANNED_SAFE, last_result_);
+  }
+
+  {
+    DeepScanningRequest request(
+        &item_, DeepScanningRequest::DeepScanTrigger::TRIGGER_POLICY,
+        base::BindRepeating(&DeepScanningRequestTest::SetLastResult,
+                            base::Unretained(this)),
+        &download_protection_service_);
+
+    DeepScanningClientResponse response;
+    response.mutable_malware_scan_verdict()->set_status(
+        MalwareDeepScanningVerdict::FAILURE);
+    download_protection_service_.GetFakeBinaryUploadService()->SetResponse(
+        BinaryUploadService::Result::SUCCESS, response);
+
+    request.Start();
+
+    EXPECT_EQ(DownloadCheckResult::DEEP_SCANNED_SAFE, last_result_);
   }
 }
 

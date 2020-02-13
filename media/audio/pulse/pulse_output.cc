@@ -7,7 +7,9 @@
 #include <pulse/pulseaudio.h>
 #include <stdint.h>
 
+#include "base/compiler_specific.h"
 #include "base/single_thread_task_runner.h"
+#include "base/strings/stringprintf.h"
 #include "base/time/time.h"
 #include "media/audio/audio_device_description.h"
 #include "media/audio/audio_manager_base.h"
@@ -15,6 +17,22 @@
 #include "media/base/audio_sample_types.h"
 
 namespace media {
+
+namespace {
+
+PRINTF_FORMAT(2, 3)
+void SendLogMessage(const AudioManagerBase::LogCallback& callback,
+                    const char* format,
+                    ...) {
+  if (callback.is_null())
+    return;
+  va_list args;
+  va_start(args, format);
+  callback.Run("PAOS::" + base::StringPrintV(format, args));
+  va_end(args);
+}
+
+}  // namespace
 
 using pulse::AutoPulseLock;
 using pulse::WaitForOperationCompletion;
@@ -41,22 +59,29 @@ void PulseAudioOutputStream::StreamRequestCallback(pa_stream* s, size_t len,
   static_cast<PulseAudioOutputStream*>(p_this)->FulfillWriteRequest(len);
 }
 
-PulseAudioOutputStream::PulseAudioOutputStream(const AudioParameters& params,
-                                               const std::string& device_id,
-                                               AudioManagerBase* manager)
+PulseAudioOutputStream::PulseAudioOutputStream(
+    const AudioParameters& params,
+    const std::string& device_id,
+    AudioManagerBase* manager,
+    const AudioManager::LogCallback log_callback)
     : params_(AudioParameters(params.format(),
                               params.channel_layout(),
                               params.sample_rate(),
                               params.frames_per_buffer())),
       device_id_(device_id),
       manager_(manager),
-      pa_context_(NULL),
-      pa_mainloop_(NULL),
-      pa_stream_(NULL),
+      log_callback_(std::move(log_callback)),
+      pa_context_(nullptr),
+      pa_mainloop_(nullptr),
+      pa_stream_(nullptr),
       volume_(1.0f),
-      source_callback_(NULL),
+      source_callback_(nullptr),
       buffer_size_(params_.GetBytesPerBuffer(kSampleFormatF32)) {
   CHECK(params_.IsValid());
+  SendLogMessage(
+      log_callback_,
+      "PulseAudioOutputStream({device_id=%s}, {params=[%s]} [this=%p])",
+      device_id.c_str(), params.AsHumanReadableString().c_str(), this);
   audio_bus_ = AudioBus::Create(params_);
 }
 
@@ -70,10 +95,15 @@ PulseAudioOutputStream::~PulseAudioOutputStream() {
 
 bool PulseAudioOutputStream::Open() {
   DCHECK(thread_checker_.CalledOnValidThread());
-  return pulse::CreateOutputStream(
+  SendLogMessage(log_callback_, "Open([this=%p])", this);
+  bool result = pulse::CreateOutputStream(
       &pa_mainloop_, &pa_context_, &pa_stream_, params_, device_id_,
       AudioManager::GetGlobalAppName(), &StreamNotifyCallback,
       &StreamRequestCallback, this);
+  if (!result) {
+    SendLogMessage(log_callback_, "Open => (ERROR: failed to open PA stream)");
+  }
+  return result;
 }
 
 void PulseAudioOutputStream::Reset() {
@@ -96,27 +126,28 @@ void PulseAudioOutputStream::Reset() {
 
       // Release PulseAudio structures.
       pa_stream_disconnect(pa_stream_);
-      pa_stream_set_write_callback(pa_stream_, NULL, NULL);
-      pa_stream_set_state_callback(pa_stream_, NULL, NULL);
+      pa_stream_set_write_callback(pa_stream_, nullptr, nullptr);
+      pa_stream_set_state_callback(pa_stream_, nullptr, nullptr);
       pa_stream_unref(pa_stream_);
-      pa_stream_ = NULL;
+      pa_stream_ = nullptr;
     }
 
     if (pa_context_) {
       pa_context_disconnect(pa_context_);
-      pa_context_set_state_callback(pa_context_, NULL, NULL);
+      pa_context_set_state_callback(pa_context_, nullptr, nullptr);
       pa_context_unref(pa_context_);
-      pa_context_ = NULL;
+      pa_context_ = nullptr;
     }
   }
 
   pa_threaded_mainloop_stop(pa_mainloop_);
   pa_threaded_mainloop_free(pa_mainloop_);
-  pa_mainloop_ = NULL;
+  pa_mainloop_ = nullptr;
 }
 
 void PulseAudioOutputStream::Close() {
   DCHECK(thread_checker_.CalledOnValidThread());
+  SendLogMessage(log_callback_, "Close([this=%p])", this);
 
   Reset();
 
@@ -138,7 +169,7 @@ void PulseAudioOutputStream::FulfillWriteRequest(size_t requested_bytes) {
 
     if (!source_callback_) {
       memset(pa_buffer, 0, pa_buffer_size);
-      pa_stream_write(pa_stream_, pa_buffer, pa_buffer_size, NULL, 0LL,
+      pa_stream_write(pa_stream_, pa_buffer, pa_buffer_size, nullptr, 0LL,
                       PA_SEEK_RELATIVE);
       bytes_remaining -= pa_buffer_size;
       continue;
@@ -172,7 +203,7 @@ void PulseAudioOutputStream::FulfillWriteRequest(size_t requested_bytes) {
       frame_offset_in_bus += frames_to_copy;
       unwritten_frames_in_bus -= frames_to_copy;
 
-      if (pa_stream_write(pa_stream_, pa_buffer, pa_buffer_size, NULL, 0LL,
+      if (pa_stream_write(pa_stream_, pa_buffer, pa_buffer_size, nullptr, 0LL,
                           PA_SEEK_RELATIVE) < 0) {
         source_callback_->OnError(AudioSourceCallback::ErrorType::kUnknown);
         return;
@@ -200,6 +231,7 @@ void PulseAudioOutputStream::Start(AudioSourceCallback* callback) {
   DCHECK(thread_checker_.CalledOnValidThread());
   CHECK(callback);
   CHECK(pa_stream_);
+  SendLogMessage(log_callback_, "Start([this=%p])", this);
 
   AutoPulseLock auto_lock(pa_mainloop_);
 
@@ -223,13 +255,14 @@ void PulseAudioOutputStream::Start(AudioSourceCallback* callback) {
 
 void PulseAudioOutputStream::Stop() {
   DCHECK(thread_checker_.CalledOnValidThread());
+  SendLogMessage(log_callback_, "Stop([this=%p])", this);
 
   // Cork (pause) the stream.  Waiting for the main loop lock will ensure
   // outstanding callbacks have completed.
   AutoPulseLock auto_lock(pa_mainloop_);
 
-  // Set |source_callback_| to NULL so all FulfillWriteRequest() calls which may
-  // occur while waiting on the flush and cork exit immediately.
+  // Set |source_callback_| to nullptr so all FulfillWriteRequest() calls which
+  // may occur while waiting on the flush and cork exit immediately.
   auto* callback = source_callback_;
   source_callback_ = nullptr;
 

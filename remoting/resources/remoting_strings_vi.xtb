@@ -229,11 +229,6 @@ Nếu đã chọn '<ph name="SERVICE_SCRIPT_NAME" />', hãy bỏ chọn rồi ch
 <translation id="6304318647555713317">Ứng dụng khách</translation>
 <translation id="6381670701864002291">Vấn đề khác.</translation>
 <translation id="6398765197997659313">Thoát khỏi chế độ toàn màn hình</translation>
-<translation id="6411861157501911556">Để sử dụng <ph name="PRODUCT_NAME" />, bạn cần cấp quyền 'Hỗ trợ tiếp cận' để máy Mac này có thể nhận nội dung từ máy từ xa.
-
-Để cấp quyền này, hãy nhấp vào nút '<ph name="BUTTON_NAME" />' bên dưới để mở ngăn tùy chọn 'Hỗ trợ tiếp cận' rồi chọn hộp bên cạnh '<ph name="SERVICE_SCRIPT_NAME" />'.
-
-Nếu đã chọn '<ph name="SERVICE_SCRIPT_NAME" />', hãy bỏ chọn rồi chọn lại hộp này.</translation>
 <translation id="6441316101718669559">Tích hợp máy tính để bàn không được hỗ trợ trên nền tảng này. Bạn sẽ vẫn có thể sử dụng ứng dụng nhưng trải nghiệm người dùng sẽ bị giảm.</translation>
 <translation id="652218476070540101">Mã PIN cho máy tính này đang được cập nhật…</translation>
 <translation id="6527303717912515753">Chia sẻ</translation>

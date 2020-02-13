@@ -93,6 +93,14 @@ OptionsPage = class {
       }
     }
 
+    if (localStorage['numberReadingStyle']) {
+      for (let i = 0, opt; opt = $('numberReadingStyle').options[i]; ++i) {
+        if (opt.id == localStorage['numberReadingStyle']) {
+          opt.setAttribute('selected', '');
+        }
+      }
+    }
+
     chrome.commandLinePrivate.hasSwitch(
         'enable-experimental-accessibility-chromevox-language-switching',
         function(enabled) {

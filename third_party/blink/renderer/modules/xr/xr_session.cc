@@ -35,7 +35,6 @@
 #include "third_party/blink/renderer/modules/xr/xr_dom_overlay_state.h"
 #include "third_party/blink/renderer/modules/xr/xr_frame.h"
 #include "third_party/blink/renderer/modules/xr/xr_frame_provider.h"
-#include "third_party/blink/renderer/modules/xr/xr_hit_result.h"
 #include "third_party/blink/renderer/modules/xr/xr_hit_test_source.h"
 #include "third_party/blink/renderer/modules/xr/xr_input_source_event.h"
 #include "third_party/blink/renderer/modules/xr/xr_input_sources_change_event.h"
@@ -72,8 +71,6 @@ const char kInlineVerticalFOVNotSupported[] =
 const char kNoSpaceSpecified[] = "No XRSpace specified.";
 
 const char kNoRigidTransformSpecified[] = "No XRRigidTransform specified.";
-
-const char kHitTestNotSupported[] = "Device does not support hit-test!";
 
 const char kAnchorsNotSupported[] = "Device does not support anchors!";
 
@@ -682,50 +679,6 @@ XRInputSourceArray* XRSession::inputSources() const {
   return input_sources_;
 }
 
-ScriptPromise XRSession::requestHitTest(ScriptState* script_state,
-                                        XRRay* ray,
-                                        XRSpace* space,
-                                        ExceptionState& exception_state) {
-  DVLOG(2) << __func__;
-
-  if (ended_) {
-    exception_state.ThrowDOMException(DOMExceptionCode::kInvalidStateError,
-                                      kSessionEnded);
-    return ScriptPromise();
-  }
-
-  if (!space) {
-    exception_state.ThrowTypeError(kNoSpaceSpecified);
-    return ScriptPromise();
-  }
-
-  // Reject the promise if device doesn't support the hit-test API.
-  if (!xr_->xrEnvironmentProviderRemote()) {
-    exception_state.ThrowDOMException(DOMExceptionCode::kNotSupportedError,
-                                      kHitTestNotSupported);
-    return ScriptPromise();
-  }
-
-  device::mojom::blink::XRRayPtr ray_mojo = device::mojom::blink::XRRay::New();
-
-  ray_mojo->origin =
-      FloatPoint3D(ray->origin()->x(), ray->origin()->y(), ray->origin()->z());
-
-  ray_mojo->direction = {ray->direction()->x(), ray->direction()->y(),
-                         ray->direction()->z()};
-
-  auto* resolver = MakeGarbageCollected<ScriptPromiseResolver>(script_state);
-  ScriptPromise promise = resolver->Promise();
-
-  xr_->xrEnvironmentProviderRemote()->RequestHitTest(
-      std::move(ray_mojo),
-      WTF::Bind(&XRSession::OnHitTestResults, WrapPersistent(this),
-                WrapPersistent(resolver)));
-  hit_test_promises_.insert(resolver);
-
-  return promise;
-}
-
 ScriptPromise XRSession::requestHitTestSource(
     ScriptState* script_state,
     XRHitTestOptionsInit* options_init,
@@ -866,26 +819,6 @@ ScriptPromise XRSession::requestHitTestSourceForTransientInput(
   return promise;
 }
 
-void XRSession::OnHitTestResults(
-    ScriptPromiseResolver* resolver,
-    base::Optional<Vector<device::mojom::blink::XRHitResultPtr>> results) {
-  DCHECK(hit_test_promises_.Contains(resolver));
-  hit_test_promises_.erase(resolver);
-
-  if (!results) {
-    resolver->Reject();
-    return;
-  }
-
-  HeapVector<Member<XRHitResult>> hit_results;
-  for (const auto& mojom_result : results.value()) {
-    XRHitResult* hit_result = MakeGarbageCollected<XRHitResult>(
-        TransformationMatrix(mojom_result->hit_matrix.matrix()));
-    hit_results.push_back(hit_result);
-  }
-  resolver->Resolve(hit_results);
-}
-
 void XRSession::OnSubscribeToHitTestResult(
     ScriptPromiseResolver* resolver,
     device::mojom::SubscribeToHitTestResult result,
@@ -966,13 +899,6 @@ void XRSession::EnsureEnvironmentErrorHandler() {
 }
 
 void XRSession::OnEnvironmentProviderError() {
-  HeapHashSet<Member<ScriptPromiseResolver>> hit_test_promises;
-  hit_test_promises_.swap(hit_test_promises);
-  for (ScriptPromiseResolver* resolver : hit_test_promises) {
-    resolver->Reject(MakeGarbageCollected<DOMException>(
-        DOMExceptionCode::kInvalidStateError, kDeviceDisconnected));
-  }
-
   HeapHashSet<Member<ScriptPromiseResolver>> create_anchor_promises;
   create_anchor_promises_.swap(create_anchor_promises);
   for (ScriptPromiseResolver* resolver : create_anchor_promises) {
@@ -1932,7 +1858,6 @@ void XRSession::Trace(blink::Visitor* visitor) {
   visitor->Trace(overlay_element_);
   visitor->Trace(dom_overlay_state_);
   visitor->Trace(callback_collection_);
-  visitor->Trace(hit_test_promises_);
   visitor->Trace(create_anchor_promises_);
   visitor->Trace(request_hit_test_source_promises_);
   visitor->Trace(reference_spaces_);

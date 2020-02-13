@@ -135,6 +135,38 @@ function clickMonthPopupButton() {
     eventSender.mouseUp();
 }
 
+function skipAnimationAndGetPositionOfPrevNextMonthButton(buttonIndex) {
+  skipAnimation();
+  var prevNextMonthButton = popupWindow.global.picker.element ?
+      popupWindow.global.picker.element.querySelectorAll(
+          '.calendar-navigation-button')[buttonIndex] :
+      popupWindow.global.picker.querySelectorAll(
+          '.calendar-navigation-button')[buttonIndex];
+  prevNextMonthButton.foo;
+  var offset = cumulativeOffset(prevNextMonthButton);
+  return {
+    x: offset[0] + prevNextMonthButton.offsetWidth / 2,
+    y: offset[1] + prevNextMonthButton.offsetHeight / 2
+  };
+}
+
+function hoverOverPrevNextMonthButton(buttonIndex) {
+  var position = skipAnimationAndGetPositionOfPrevNextMonthButton(buttonIndex);
+  eventSender.mouseMoveTo(position.x, position.y);
+}
+
+function clickPrevMonthButton() {
+  hoverOverPrevNextMonthButton(/*buttonIndex*/ 0);
+  eventSender.mouseDown();
+  eventSender.mouseUp();
+}
+
+function clickNextMonthButton() {
+  hoverOverPrevNextMonthButton(/*buttonIndex*/ 1);
+  eventSender.mouseDown();
+  eventSender.mouseUp();
+}
+
 function skipAnimationAndGetPositionOfTodayButton() {
   skipAnimation();
   const calendarTableView = popupWindow.global.picker.datePicker ?

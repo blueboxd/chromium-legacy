@@ -118,6 +118,7 @@
 <translation id="2413728805700750528"><ph name="DOMAIN" /> domeinuak kudeatutako saio kudeatua da <ph name="DISPLAY_NAME" /></translation>
 <translation id="2427507373259914951">Egin klik ezkerreko botoiarekin</translation>
 <translation id="2429753432712299108">Bluetooth bidezko "<ph name="DEVICE_NAME" />" gailuak parekatzeko baimena nahi du. Onartu aurretik, berretsi gailu horretan pasakode hau agertzen dela: <ph name="PASSKEY" /></translation>
+<translation id="2435457462613246316">Erakutsi pasahitza</translation>
 <translation id="2473177541599297363">Berretsi bereizmena</translation>
 <translation id="2482878487686419369">Jakinarazpenak</translation>
 <translation id="2484513351006226581">Teklatuaren diseinua aldatzeko, sakatu <ph name="KEYBOARD_SHORTCUT" />.</translation>
@@ -280,6 +281,7 @@ Jarraitu ahal izateko, erabiltzaile guztiek saioa amaitu behar dute.</translatio
 <translation id="4527045527269911712">Bluetooth bidezko "<ph name="DEVICE_NAME" />" gailuak parekatzeko baimena nahi du.</translation>
 <translation id="453661520163887813"><ph name="TIME" /> geratzen dira guztiz kargatu arte</translation>
 <translation id="4561267230861221837">3G</translation>
+<translation id="4565377596337484307">Ezkutatu pasahitza</translation>
 <translation id="4570957409596482333">"Hautatu ozen irakurtzeko" botoia</translation>
 <translation id="4585337515783392668">Utzi hargailu ezezagun batera igortzeari</translation>
 <translation id="4628757576491864469">Gailuak</translation>

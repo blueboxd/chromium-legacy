@@ -35,5 +35,10 @@ const char kCloudManagementEnrollmentMandatory[] =
 // machine policy.
 const char kCloudPolicyOverridesPlatformPolicy[] = "policy.cloud_override";
 
+// A boolean value that can be used to disable native window occlusion
+// calculation, even if the Finch feature is enabled.
+const char kNativeWindowOcclusionEnabled[] =
+    "policy.native_window_occlusion_enabled";
+
 }  // namespace policy_prefs
 }  // namespace policy

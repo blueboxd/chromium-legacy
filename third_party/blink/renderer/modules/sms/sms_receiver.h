@@ -42,6 +42,7 @@ class SMSReceiver final : public ScriptWrappable, public ContextClient {
   void OnReceive(ScriptPromiseResolver* resolver,
                  base::TimeTicks start_time,
                  mojom::blink::SmsStatus status,
+                 const WTF::String& otp,
                  const WTF::String& sms);
 
   void OnSMSReceiverConnectionError();

@@ -281,6 +281,7 @@
 <translation id="3137521801621304719">Sair do modo de navegação anônima</translation>
 <translation id="3140134512074889489">Ative sua câmera para ler um código QR</translation>
 <translation id="3143515551205905069">Cancelar sincronização</translation>
+<translation id="314939179385989105">Página inicial do Chrome</translation>
 <translation id="3157842584138209013">Veja o volume de dados que você economizou no botão Mais opções</translation>
 <translation id="3166827708714933426">Atalhos de guias e janelas</translation>
 <translation id="3181954750937456830">Navegação segura: protege você e seu dispositivo de sites perigosos</translation>
@@ -728,6 +729,7 @@ Toque em qualquer palavra e a mantenha pressionada para criar uma pesquisa. Para
 <translation id="6437478888915024427">Informações sobre a página</translation>
 <translation id="6441734959916820584">O nome é muito longo</translation>
 <translation id="6444421004082850253">{FILE_COUNT,plural, =1{# imagem}one{# imagem}other{# imagens}}</translation>
+<translation id="6447558397796644647">Não foi possível encontrar esse favorito. Verifique se há erros de ortografia ou adicione um novo.</translation>
 <translation id="6447842834002726250">Cookies</translation>
 <translation id="6461962085415701688">Não é possível abrir o arquivo</translation>
 <translation id="6464977750820128603">Você pode ver os sites que visita no Chrome e definir timers para eles.\n\nO Google recebe informações sobre os sites para os quais você definiu timers e sobre o tempo que você passa neles. Essas informações são usadas para melhorar o Bem-estar digital.</translation>
@@ -803,6 +805,7 @@ Toque em qualquer palavra e a mantenha pressionada para criar uma pesquisa. Para
 <translation id="6990079615885386641">Comprar aplicativo na Google Play Store: <ph name="APP_ACTION" /></translation>
 <translation id="6992289844737586249">Perguntar antes de permitir que sites usem o microfone (recomendado)</translation>
 <translation id="6995899638241819463">Avisar se suas senhas forem expostas em uma violação de dados</translation>
+<translation id="7000754031042624318">Desativada nas configurações do Android</translation>
 <translation id="7015203776128479407">A configuração de sincronização inicial não foi concluída. A sincronização está desativada.</translation>
 <translation id="7016516562562142042">Permitido para o mecanismo de pesquisa atual</translation>
 <translation id="7022756207310403729">Abrir no navegador</translation>

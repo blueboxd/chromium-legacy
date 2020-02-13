@@ -25339,36 +25339,6 @@
       }
     ]
   },
-  "win-pixel-tester-rel": {
-    "gtest_tests": [
-      {
-        "args": [
-          "--build-revision=${got_revision}",
-          "--test-launcher-filter-file=../../testing/buildbot/filters/pixel_browser_tests.filter",
-          "--browser-ui-tests-verify-pixels",
-          "--test-launcher-retry-limit=0",
-          "--enable-pixel-output-in-tests"
-        ],
-        "experiment_percentage": 100,
-        "merge": {
-          "args": [],
-          "script": "//testing/merge_scripts/standard_gtest_merge.py"
-        },
-        "name": "pixel_browser_tests",
-        "swarming": {
-          "can_use_on_swarming_builders": true,
-          "dimension_sets": [
-            {
-              "os": "Windows-10-15063"
-            }
-          ],
-          "service_account": "chrome-gpu-gold@chops-service-accounts.iam.gserviceaccount.com"
-        },
-        "test": "browser_tests",
-        "test_target": "//chrome/test:browser_tests"
-      }
-    ]
-  },
   "win10-blink-rel-dummy": {
     "isolated_scripts": [
       {

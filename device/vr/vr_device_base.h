@@ -36,9 +36,6 @@ class DEVICE_VR_EXPORT VRDeviceBase : public mojom::XRRuntime {
   void SetInlinePosesEnabled(bool enable) override;
   void ShutdownSession(mojom::XRRuntime::ShutdownSessionCallback) override;
 
-  virtual void RequestHitTest(
-      mojom::XRRayPtr ray,
-      mojom::XREnvironmentIntegrationProvider::RequestHitTestCallback callback);
   device::mojom::XRDeviceId GetId() const;
 
   bool HasExclusiveSession();
@@ -72,7 +69,6 @@ class DEVICE_VR_EXPORT VRDeviceBase : public mojom::XRRuntime {
   bool inline_poses_enabled_ = true;
 
  private:
-
   mojo::AssociatedRemote<mojom::XRRuntimeEventListener> listener_;
 
   bool presenting_ = false;

@@ -21,6 +21,9 @@ public final class RequestHelper {
     public static final String LOCALE_PARAM = "hl";
     private static final String MOTHERSHIP_PARAM_FORMAT = "fmt";
     private static final String MOTHERSHIP_VALUE_BINARY = "bin";
+    public static final String PRIORITY_PARAM = "bq";
+    public static final String PRIORITY_VALUE_BACKGROUND = "1";
+    public static final String PRIORITY_VALUE_INTERACTIVE = "0";
 
     private RequestHelper() {}
 
@@ -41,8 +44,8 @@ public final class RequestHelper {
         }
     }
 
-    static HttpRequest buildHttpRequest(
-            String httpMethod, byte[] bytes, String endpoint, String locale) {
+    static HttpRequest buildHttpRequest(String httpMethod, byte[] bytes, String endpoint,
+            String locale, String priorityParamValue) {
         boolean isPostMethod = HttpMethod.POST.equals(httpMethod);
         Uri.Builder uriBuilder = Uri.parse(endpoint).buildUpon();
         if (!isPostMethod) {
@@ -53,6 +56,9 @@ public final class RequestHelper {
         uriBuilder.appendQueryParameter(MOTHERSHIP_PARAM_FORMAT, MOTHERSHIP_VALUE_BINARY);
         if (!locale.isEmpty()) {
             uriBuilder.appendQueryParameter(LOCALE_PARAM, locale);
+        }
+        if (!priorityParamValue.isEmpty()) {
+            uriBuilder.appendQueryParameter(PRIORITY_PARAM, priorityParamValue);
         }
 
         return new HttpRequest(uriBuilder.build(), httpMethod, Collections.emptyList(),

@@ -82,7 +82,8 @@ AsyncTask::AsyncTask(ExecutionContext* context,
                                    : nullptr),
       task_(task),
       recurring_(step),
-      ad_tracker_(AdTracker::FromExecutionContext(context)) {
+      ad_tracker_(enabled ? AdTracker::FromExecutionContext(context)
+                          : nullptr) {
   if (recurring_) {
     TRACE_EVENT_FLOW_STEP0("devtools.timeline.async", "AsyncTask",
                            TRACE_ID_LOCAL(reinterpret_cast<uintptr_t>(task)),

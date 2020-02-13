@@ -281,6 +281,7 @@
 <translation id="3137521801621304719">Izlaz iz anonimnog načina</translation>
 <translation id="3140134512074889489">Dopustite kameri da skenira QR kôd</translation>
 <translation id="3143515551205905069">Otkaži sinkronizaciju</translation>
+<translation id="314939179385989105">Početna stranica Chromea</translation>
 <translation id="3157842584138209013">Pogledajte količinu ušteđenih podataka pomoću gumba Više opcija</translation>
 <translation id="3166827708714933426">Prečaci kartica i prozora</translation>
 <translation id="3181954750937456830">Sigurno pregledavanje (štiti vas i vaš uređaj od opasnih web-lokacija)</translation>
@@ -727,6 +728,7 @@ Dugo pritisnite željenu riječ da biste je pretražili. Da biste precizirali pr
 <translation id="6437478888915024427">Informacije o stranici</translation>
 <translation id="6441734959916820584">Naziv je predugačak</translation>
 <translation id="6444421004082850253">{FILE_COUNT,plural, =1{# slika}one{# slika}few{# slike}other{# slika}}</translation>
+<translation id="6447558397796644647">Ne mogu pronaći tu oznaku. Provjerite jeste li točno napisali ili dodajte novu oznaku.</translation>
 <translation id="6447842834002726250">Kolačići</translation>
 <translation id="6461962085415701688">Datoteka se ne može otvoriti</translation>
 <translation id="6464977750820128603">Možete vidjeti web-lokacije koje otvorite u Chromeu i postaviti tajmere za njih.\n\nGoogle prima informacije o web-lokacijama za koje postavite tajmere i koliko dugo ih posjećujete. Te se informacije koriste za poboljšanje Digitalne ravnoteže.</translation>
@@ -802,6 +804,7 @@ Dugo pritisnite željenu riječ da biste je pretražili. Da biste precizirali pr
 <translation id="6990079615885386641">Preuzmite aplikaciju iz Trgovine Google Play: <ph name="APP_ACTION" /></translation>
 <translation id="6992289844737586249">Web-lokacije moraju tražiti dopuštenje za upotrebu mikrofona (preporučeno)</translation>
 <translation id="6995899638241819463">Upozori ako su zaporke ugrožene zbog povrede podataka</translation>
+<translation id="7000754031042624318">Isključeno u postavkama Androida</translation>
 <translation id="7015203776128479407">Početno postavljanje sinkronizacije nije dovršeno. Sinkronizacija je isključena.</translation>
 <translation id="7016516562562142042">Dopušteno za trenutačnu tražilicu</translation>
 <translation id="7022756207310403729">Otvori u pregledniku</translation>

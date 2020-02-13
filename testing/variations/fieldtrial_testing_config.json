@@ -2551,7 +2551,6 @@
                     "name": "WithDenseBottom",
                     "params": {
                         "denseVariation": "titleBottom",
-                        "exp": "games-top",
                         "mostLikelyVariation": "groupedIcon",
                         "variation": "mostLikelyTile"
                     },

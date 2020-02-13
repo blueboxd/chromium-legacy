@@ -229,11 +229,6 @@ Jos <ph name="SERVICE_SCRIPT_NAME" /> on jo valittuna, poista valinta ja valitse
 <translation id="6304318647555713317">Asiakas</translation>
 <translation id="6381670701864002291">Jokin muu syy.</translation>
 <translation id="6398765197997659313">Poistu koko näytön tilasta</translation>
-<translation id="6411861157501911556">Jos haluat, että <ph name="PRODUCT_NAME" /> on käytettävissä, sinun on myönnettävä Esteettömyys-käyttölupa, jotta etäkoneen syöte voidaan siirtää tälle Macille.
-
-Myönnä käyttölupa valitsemalla alta <ph name="BUTTON_NAME" />, mikä avaa esteettömyyden asetuspaneelin. Valitse sitten ruutu kohdasta <ph name="SERVICE_SCRIPT_NAME" />.
-
-Jos <ph name="SERVICE_SCRIPT_NAME" /> on jo valittu, poista valinta ja valitse se uudelleen.</translation>
 <translation id="6441316101718669559">Tämä alusta ei tue työpöydän integraatiota. Voit silti käyttää sovellusta, mutta käyttökokemus on heikompi.</translation>
 <translation id="652218476070540101">Tietokoneen PIN-koodia päivitetään…</translation>
 <translation id="6527303717912515753">Jaa</translation>

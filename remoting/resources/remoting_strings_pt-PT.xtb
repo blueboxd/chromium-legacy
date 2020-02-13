@@ -229,11 +229,6 @@ Se "<ph name="SERVICE_SCRIPT_NAME" />" já estiver selecionado, desselecione-o e
 <translation id="6304318647555713317">Cliente</translation>
 <translation id="6381670701864002291">Outro.</translation>
 <translation id="6398765197997659313">Sair do modo de ecrã inteiro</translation>
-<translation id="6411861157501911556">Para utilizar o <ph name="PRODUCT_NAME" />, tem de conceder a autorização "Acessibilidade" para que a entrada do computador remoto possa ser inserida neste Mac.
-
-Para conceder esta autorização, clique no botão "<ph name="BUTTON_NAME" />" abaixo para abrir o painel de preferências "Acessibilidade" e, em seguida, selecione a caixa junto a "<ph name="SERVICE_SCRIPT_NAME" />".
-
-Se "<ph name="SERVICE_SCRIPT_NAME" />" já estiver selecionado, desselecione-o e volte a selecioná-lo.</translation>
 <translation id="6441316101718669559">A integração do ambiente de trabalho não é suportada nesta plataforma. Pode continuar a utilizar a aplicação, mas a experiência de utilizador não é a ideal.</translation>
 <translation id="652218476070540101">O PIN para este computador está a ser atualizado...</translation>
 <translation id="6527303717912515753">Partilhar</translation>

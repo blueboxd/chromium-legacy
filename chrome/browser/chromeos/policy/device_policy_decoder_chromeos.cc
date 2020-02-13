@@ -1732,6 +1732,17 @@ void DecodeGenericPolicies(const em::ChromeDeviceSettingsProto& policy,
                     nullptr);
     }
   }
+
+  if (policy.has_device_login_screen_privacy_screen_enabled()) {
+    const em::DeviceLoginScreenPrivacyScreenEnabledProto& container(
+        policy.device_login_screen_privacy_screen_enabled());
+    if (container.has_enabled()) {
+      policies->Set(
+          key::kDeviceLoginScreenPrivacyScreenEnabled, POLICY_LEVEL_MANDATORY,
+          POLICY_SCOPE_MACHINE, POLICY_SOURCE_CLOUD,
+          std::make_unique<base::Value>(container.enabled()), nullptr);
+    }
+  }
 }
 
 }  // namespace

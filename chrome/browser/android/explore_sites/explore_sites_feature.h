@@ -13,7 +13,6 @@ extern const char kExploreSitesVariationParameterName[];
 extern const char kExploreSitesVariationExperimental[];
 
 extern const char kExploreSitesHeadersExperimentParameterName[];
-extern const char kExploreSitesGamesTopExperiment[];
 
 extern const char kExploreSitesDenseVariationParameterName[];
 extern const char kExploreSitesDenseVariationOriginal[];

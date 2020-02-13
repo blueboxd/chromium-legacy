@@ -59,6 +59,7 @@
 <translation id="1658406695958299976">සමාවන්න, ඔබේ මුරපදය තවමත් සත්‍යාපනය කළ නොහැකි විය. සටහන: ඔබ ඔබේ මුරපදය මෑතකදී වෙනස් කළේ නම්, ඔබ වරක් වැරූ විට ඔබේ නව මුරපදය යෙදවෙනු ඇත, පැරණි මුරපදය මෙහි භාවිතා කරන්න.</translation>
 <translation id="1677472565718498478"><ph name="TIME" /> ඉතිරිය</translation>
 <translation id="1698760176351776263">IPv6 ලිපිනය: <ph name="ADDRESS" /></translation>
+<translation id="1709762881904163296">ජාල සැකසීම්</translation>
 <translation id="1743570585616704562">හඳුනා නොගන්නා ලදී</translation>
 <translation id="1746730358044914197">ඔබේ පරිපාලක විසින් ආදාන ක්‍රම වින්‍යාස කරනු ලැබේ.</translation>
 <translation id="1747827819627189109">තිරය මත යතුරු පුවරුව සබල කර ඇත</translation>
@@ -113,11 +114,13 @@
 <translation id="2354174487190027830"><ph name="NAME" /> සක්‍රීය කරමින්</translation>
 <translation id="2359808026110333948">කරගෙන යන්න</translation>
 <translation id="2365393535144473978">ජංගම දත්ත සබල කිරීම බ්ලූටූත් සබල කරනු ඇත.</translation>
+<translation id="2390318262976603432">පෙදෙසි සැකසීම්</translation>
 <translation id="2391579633712104609">180°</translation>
 <translation id="2412593942846481727">යාවත්කාලීනයක් ඇත</translation>
 <translation id="2413728805700750528"><ph name="DISPLAY_NAME" /> යනු <ph name="DOMAIN" /> විසින් කළමනා කරනු ලබන කළමනා කෙරන සැසියකි</translation>
 <translation id="2427507373259914951">වම්පස ක්ලික් කිරීම</translation>
 <translation id="2429753432712299108">"<ph name="DEVICE_NAME" />" බ්ලූටූත් උපාංගය යුගල කිරීමට අවසර පතයි. අනුමත කිරීමට පෙර, මෙම මුරවදන එම උපාංගයේ දිස් වූ බව තහවුරු කරගන්න: <ph name="PASSKEY" /></translation>
+<translation id="2435457462613246316">මුරපදය පෙන්වන්න</translation>
 <translation id="2473177541599297363">විභේදනය තහවුරු කරන්න</translation>
 <translation id="2482878487686419369">දැනුම්දීම්</translation>
 <translation id="2484513351006226581">යතුරු පුවරු පිරිසැලසුම මාරු කිරීමට <ph name="KEYBOARD_SHORTCUT" /> ඔබන්න.</translation>
@@ -177,6 +180,7 @@
 <translation id="3154351730702813399">උපාංග පරිපාලක ඔබේ බ්‍රවුස් කිරීමේ ක්‍රියාකාරකම් නිරීක්ෂණය කළ හැකිය:</translation>
 <translation id="3181441307743005334">යළි ඇරඹීමට කෙටි වේලාවක් ගත විය හැක</translation>
 <translation id="3202010236269062730">{NUM_DEVICES,plural, =1{උපාංගයකට සම්බන්ධ වී ඇත}one{උපාංග # කට සම්බන්ධ වී ඇත}other{උපාංග # කට සම්බන්ධ වී ඇත}}</translation>
+<translation id="3207953481422525583">පරිශීලක සැකසුම්</translation>
 <translation id="3217205077783620295">ශබ්දය ක්‍රියාත්මකයි, ටොගල කිරීම ශ්‍රව්‍ය නිහඬ කරනු ඇත.</translation>
 <translation id="3226991577105957773">තවත් +<ph name="COUNT" /></translation>
 <translation id="3236488194889173876">ලබා ගත හැකි ජංගම ජාල නොමැත</translation>
@@ -240,6 +244,7 @@
 <translation id="3995138139523574647">USB-C උපාංගය (දකුණුපස පසු තොට)</translation>
 <translation id="4017989525502048489">ලේසර් මුද්‍රණ යන්ත්‍රය</translation>
 <translation id="4021716437419160885">පහළට අනුචලනය කරන්න</translation>
+<translation id="4028481283645788203">වැඩිපුර ආරක්‍ෂාව සඳහා මුරපදය අවශ්‍යයි</translation>
 <translation id="4042660782729322247">ඔබ ඔබේ තිරය බෙදා ගනියි</translation>
 <translation id="4065525899979931964">{NUM_APPS,plural, =1{යෙදුමක් සඳහා ක්‍රියාවිරහිතයි}one{යෙදුම් #ක් සඳහා ක්‍රියාවිරහිතයි}other{යෙදුම් #ක් සඳහා ක්‍රියාවිරහිතයි}}</translation>
 <translation id="4072264167173457037">මධ්‍යම සංඥාව</translation>
@@ -249,6 +254,7 @@
 <translation id="4149156641122542261"><ph name="DEVICE_TYPE" /> <ph name="DOMAIN" /> විසින් කළමනා කෙරේ</translation>
 <translation id="4181841719683918333">භාෂා</translation>
 <translation id="4195877955194704651">ස්වයංක්‍රීය ක්ලික් බොත්තම</translation>
+<translation id="4215497585250573029">VPN සැකසුම්</translation>
 <translation id="4217571870635786043">අනුලේඛනය</translation>
 <translation id="421885205185866088"><ph name="USER_EMAIL_ADDRESS" /> සඳහා ස්මාර්ට් කාඩ්පත් රහස් අංකය</translation>
 <translation id="4239069858505860023">GPRS</translation>
@@ -263,6 +269,7 @@
 <translation id="4338109981321384717">විශාලක කාචය</translation>
 <translation id="4351433414020964307">සහායක පූරණය වේ...</translation>
 <translation id="4356930093361201197">අධි අසමානතා ප්‍රකාරය</translation>
+<translation id="4371348193907997655">විකාශ සැකසීම්</translation>
 <translation id="4378551569595875038">සම්බන්ධ වෙමින්...</translation>
 <translation id="4379531060876907730">ඔබේ පන්හිඳ මෙවලම් මේවායි</translation>
 <translation id="4383956581743965695">-<ph name="TIME_SINCE_EXPIRATION" /></translation>
@@ -279,12 +286,14 @@
 <translation id="4527045527269911712">"<ph name="DEVICE_NAME" />" Bluetooth උපාංගය යුගල වඊමට අවසර ඉල්ලයි.</translation>
 <translation id="453661520163887813">පිරෙන තෙක් <ph name="TIME" /></translation>
 <translation id="4561267230861221837">3G</translation>
+<translation id="4565377596337484307">මුරපදය සඟවන්න</translation>
 <translation id="4570957409596482333">කථා-කිරීමට-තෝරන්න බොත්තම</translation>
 <translation id="4585337515783392668">නොදන්නා ග්‍රාහකයෙකු මත විකාශය කිරීම නවත්වන්න</translation>
 <translation id="4628757576491864469">උපාංග</translation>
 <translation id="4659419629803378708">ChromeVox සබලයි</translation>
 <translation id="4665114317261903604">බාධා නොකරන්න ටොගල් කරන්න. <ph name="STATE_TEXT" /></translation>
 <translation id="4696813013609194136">මාපිය කේතය සමඟ උපාංගය අඟුලු අරින්න</translation>
+<translation id="4710243778082831592">IME සැකසීම්</translation>
 <translation id="4731797938093519117">මාපිය ප්‍රවේශය</translation>
 <translation id="4734965478015604180">තිරස්</translation>
 <translation id="4774338217796918551">හෙට <ph name="COME_BACK_TIME" />ට ආපසු එන්න.</translation>
@@ -514,7 +523,9 @@
 <translation id="7984197416080286869">ඇඟිලි සලකුණු ප්‍රයත්න ඉතා වැඩියි</translation>
 <translation id="7994370417837006925">බහු පිවිසුම්</translation>
 <translation id="8000066093800657092">ජාලයක් නැත</translation>
+<translation id="8029629653277878342">වැඩිපුර ආරක්‍ෂාව සඳහා රහස් අංකය හෝ මුරපදය අවශ්‍යයි</translation>
 <translation id="8030169304546394654">විසන්ධි විය</translation>
+<translation id="8048123526339889627">බ්ලූටූත් සැකසීම්</translation>
 <translation id="8054466585765276473">බැටරි කාලය ගණනය කර‍මින්.</translation>
 <translation id="8061464966246066292">අධිවිභේදනය</translation>
 <translation id="8098591350844501178"><ph name="RECEIVER_NAME" /> වෙත තිරය විකාශය නවතන්න</translation>
@@ -556,7 +567,9 @@
 <translation id="8492573885090281069"><ph name="DISPLAY_NAME" /> <ph name="SPECIFIED_RESOLUTION" /> හට සහය නොදක්වයි. විභේදනය <ph name="FALLBACK_RESOLUTION" /> ට වෙනස් විය. වෙනස්කම් තබා ගැනීමට තහවුරු කිරීම ක්ලික් කරන්න. පෙර සැකසුම් <ph name="TIMEOUT_SECONDS" /> තුළ ප්‍රතිසාධන කෙරේ.</translation>
 <translation id="8513108775083588393">ස්වයංක්‍රීය කරකැවීම</translation>
 <translation id="8517041960877371778">ඔබගේ <ph name="DEVICE_TYPE" /> සක්‍රියව පවතින විට එය ආරෝපණය නොවනු ඇත.</translation>
+<translation id="8563862697512465947">දැනුම්දීම් සැකසීම්</translation>
 <translation id="8627191004499078455"><ph name="DEVICE_NAME" /> වෙත සම්බන්ධ විය</translation>
+<translation id="8631727435199967028">ප්‍රවේශ්‍යතා සැකසීම්</translation>
 <translation id="8637598503828012618"><ph name="CONNECTION_STATUS" />, සංඥා ප්‍රබලතාව <ph name="SIGNAL_STRENGTH" />, ඔබේ පරිපාලකයා විසින් කළමනාකරණය කරයි</translation>
 <translation id="8639760480004882931"><ph name="PERCENTAGE" /> ඉතිරිව ඇත</translation>
 <translation id="8649101189709089199">කීමට-තේරීම</translation>
@@ -573,6 +586,7 @@
 <translation id="875593634123171288">VPN සැකසීම් පෙන්වන්න</translation>
 <translation id="8785070478575117577"><ph name="NETWORK_NAME" /> වෙත සබඳින්න</translation>
 <translation id="8814190375133053267">Wi-Fi</translation>
+<translation id="8825863694328519386">ආපසු යාමට වමින් ස්වයිප් කරන්න</translation>
 <translation id="8828714802988429505">90°</translation>
 <translation id="8843682306134542540">කරකැවීමේ අගුල මාරු කරන්න. <ph name="STATE_TEXT" /></translation>
 <translation id="8850991929411075241">Search+Esc</translation>

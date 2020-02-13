@@ -229,11 +229,6 @@ Si l'option « <ph name="SERVICE_SCRIPT_NAME" /> » est déjà cochée, décoc
 <translation id="6304318647555713317">Client</translation>
 <translation id="6381670701864002291">Autre.</translation>
 <translation id="6398765197997659313">Quitter le mode plein écran</translation>
-<translation id="6411861157501911556">Pour utiliser <ph name="PRODUCT_NAME" />, vous devez accorder l'autorisation « Accessibilité » afin que l'entrée de la machine distante puisse être utilisée sur ce Mac.
-
-Pour accorder cette autorisation, cliquez sur le bouton « <ph name="BUTTON_NAME" /> » ci-dessous pour ouvrir le volet des préférences « Accessibilité » correspondant, puis cochez la case à côté de « <ph name="SERVICE_SCRIPT_NAME" /> ».
-
-Si l'option « <ph name="SERVICE_SCRIPT_NAME" /> » est déjà cochée, décochez-la, puis cochez-la de nouveau.</translation>
 <translation id="6441316101718669559">L’intégration du bureau n’est pas prise en charge sur cette plateforme. Vous pouvez continuer à utiliser l’application, mais votre expérience utilisateur sera affectée.</translation>
 <translation id="652218476070540101">Mise à jour du NIP de cet ordinateur en cours...</translation>
 <translation id="6527303717912515753">Partager</translation>

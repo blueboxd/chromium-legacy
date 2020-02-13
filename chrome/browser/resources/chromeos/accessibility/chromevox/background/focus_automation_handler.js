@@ -40,6 +40,8 @@ FocusAutomationHandler = class extends BaseAutomationHandler {
     this.node_ = evt.target;
     this.addListener_(
         EventType.ACTIVEDESCENDANTCHANGED, this.onActiveDescendantChanged);
+    this.addListener_(
+        EventType.MENU_LIST_ITEM_SELECTED, this.onEventIfSelected);
   }
 
   /**
@@ -64,6 +66,15 @@ FocusAutomationHandler = class extends BaseAutomationHandler {
             Output.EventType.NAVIGATE)
         .go();
     this.previousActiveDescendant_ = evt.target.activeDescendant;
+  }
+
+  /**
+   * @param {!ChromeVoxEvent} evt
+   */
+  onEventIfSelected(evt) {
+    if (evt.target.selected) {
+      this.onEventDefault(evt);
+    }
   }
 };
 

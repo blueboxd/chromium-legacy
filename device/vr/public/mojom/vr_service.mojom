@@ -662,14 +662,6 @@ enum EntityTypeForHitTest {
 // all outstanding JavaScript promises at that time. The XRsession might end for
 // example due to a call to XRSession::end() method (exposed to JavaScript).
 interface XREnvironmentIntegrationProvider {
-  // Performs a raycast into the scene and returns a list of XRHitResults sorted
-  // from closest to furthest hit from the ray. Each hit result contains a
-  // hit_matrix containing the transform of the hit where the rotation
-  // represents the normal of the surface hit.
-  // An empty result list means there were no hits. If a nullopt is returned,
-  // there was an error.
-  RequestHitTest(XRRay ray) => (array<XRHitResult>? results);
-
   // Establishes a hit test subscription on the device. The subscription results
   // will be computed taking into account latest state of the native origin
   // identified by passed in |native_origin_information|. I.e., in each frame,

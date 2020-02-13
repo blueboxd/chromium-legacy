@@ -229,11 +229,6 @@ host_ip =「<ph name="HOST_IP_ADDRESS_AND_PORT" />」版本=「<ph name="CHANNEL
 <translation id="6304318647555713317">用戶端</translation>
 <translation id="6381670701864002291">其他問題。</translation>
 <translation id="6398765197997659313">退出全螢幕模式</translation>
-<translation id="6411861157501911556">如要使用「<ph name="PRODUCT_NAME" />」，您需要授予「無障礙功能」權限，才能將遠端電腦上的輸入內容加入這部 Mac。
-
-如要授予此權限，請按一下下方的「<ph name="BUTTON_NAME" />」以開啟「無障礙功能」偏好設定窗格，然後勾選「<ph name="SERVICE_SCRIPT_NAME" />」旁的方框。
-
-如果已勾選「<ph name="SERVICE_SCRIPT_NAME" />」，則需要取消勾選，然後再次勾選。</translation>
 <translation id="6441316101718669559">這個平台未支援桌面整合功能。您仍然可以使用應用程式，但將不能獲得最佳的使用者體驗。</translation>
 <translation id="652218476070540101">正在更新這部電腦的 PIN…</translation>
 <translation id="6527303717912515753">分享</translation>

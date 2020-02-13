@@ -62,6 +62,7 @@ const DevicePolicyToUserPolicyMapEntry kDevicePoliciesWithPolicyOptionsMap[] = {
     {key::kDeviceLoginScreenAccessibilityShortcutsEnabled,
      key::kAccessibilityShortcutsEnabled},
     {key::kDeviceLoginScreenChromeVariations, key::kChromeVariations},
+    {key::kDeviceLoginScreenPrivacyScreenEnabled, key::kPrivacyScreenEnabled},
 };
 
 const DevicePolicyToUserPolicyMapEntry kRecommendedDevicePoliciesMap[] = {

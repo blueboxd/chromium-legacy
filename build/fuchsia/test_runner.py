@@ -20,7 +20,7 @@ from common_args import AddCommonArgs, ConfigureLogging, GetDeploymentTargetForA
 from net_test_server import SetupTestServer
 from run_package import RunPackage, RunPackageArgs
 
-DEFAULT_TEST_CONCURRENCY = 4
+DEFAULT_TEST_SERVER_CONCURRENCY = 4
 
 TEST_RESULT_PATH = '/data/test_summary.json'
 TEST_FILTER_PATH = '/data/test_filter.txt'
@@ -82,9 +82,21 @@ def main():
     child_args.append('--test-launcher-batch-limit=%d' %
                        args.test_launcher_batch_limit)
 
-  test_concurrency = args.test_launcher_jobs \
-      if args.test_launcher_jobs else DEFAULT_TEST_CONCURRENCY
-  child_args.append('--test-launcher-jobs=%d' % test_concurrency)
+  # Only set --test-launcher-jobs if the caller specifies it, in general.
+  # If the caller enables the test-server then we need to launch the right
+  # number of instances to match the maximum number of parallel test jobs, so
+  # in that case we set --test-launcher-jobs based on the number of CPU cores
+  # specified for the emulator to use.
+  test_concurrency = None
+  if args.test_launcher_jobs:
+    test_concurrency = args.test_launcher_jobs
+  elif args.enable_test_server:
+    if args.device == 'device':
+      test_concurrency = DEFAULT_TEST_SERVER_CONCURRENCY
+    else:
+      test_concurrency = args.qemu_cpu_cores
+  if test_concurrency:
+    child_args.append('--test-launcher-jobs=%d' % test_concurrency)
 
   if args.gtest_filter:
     child_args.append('--gtest_filter=' + args.gtest_filter)
@@ -117,6 +129,7 @@ def main():
 
     test_server = None
     if args.enable_test_server:
+      assert test_concurrency
       test_server = SetupTestServer(target, test_concurrency,
                                     args.package_name)
 

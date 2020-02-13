@@ -99,6 +99,7 @@ void SMSReceiver::Abort(ScriptPromiseResolver* resolver) {
 void SMSReceiver::OnReceive(ScriptPromiseResolver* resolver,
                             base::TimeTicks start_time,
                             mojom::blink::SmsStatus status,
+                            const WTF::String& otp,
                             const WTF::String& sms) {
   requests_.erase(resolver);
 

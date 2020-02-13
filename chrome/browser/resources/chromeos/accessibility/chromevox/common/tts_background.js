@@ -196,9 +196,10 @@ TtsBackground = class extends ChromeTtsBase {
 
     textString = this.preprocess(textString, properties);
 
-    // TODO(dtseng): Google TTS has bad performance when speaking numbers. This
-    // pattern causes ChromeVox to read numbers as digits rather than words.
-    textString = this.getNumberAsDigits_(textString);
+    // This pref on localStorage gets set by the options page.
+    if (localStorage['numberReadingStyle'] == 'asDigits') {
+      textString = this.getNumberAsDigits_(textString);
+    }
 
     // TODO(dtseng): some TTS engines don't handle strings that don't produce
     // any speech very well. Handle empty and whitespace only strings (including
@@ -613,9 +614,6 @@ TtsBackground = class extends ChromeTtsBase {
    */
   getNumberAsDigits_(text) {
     return text.replace(/\d+/g, function(num) {
-      if (num.length <= 4) {
-        return num;
-      }
       return num.split('').join(' ');
     });
   }

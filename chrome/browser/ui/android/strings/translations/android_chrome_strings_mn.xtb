@@ -281,6 +281,7 @@
 <translation id="3137521801621304719">Нууцлалын горимыг орхих</translation>
 <translation id="3140134512074889489">Хурдан хариу үйлдлийн кодыг скан хийхийн тулд камераа идэвхжүүлнэ үү</translation>
 <translation id="3143515551205905069">Синкийг цуцлах</translation>
+<translation id="314939179385989105">Chrome-н нүүр хуудас</translation>
 <translation id="3157842584138209013">Бусад сонголт товчлуураас ямар хэмжээний дата хэмнэснээ харах</translation>
 <translation id="3166827708714933426">Чихтэй хуудас, цонхны товчлол</translation>
 <translation id="3181954750937456830">Аюулгүй хөтөч (таныг болон таны төхөөрөмжийг аюултай сайтаас хамгаалдаг)</translation>
@@ -726,6 +727,7 @@ Tаны Google бүртгэл <ph name="BEGIN_LINK" />history.google.com<ph name
 <translation id="6437478888915024427">Хуудасны мэдээлэл</translation>
 <translation id="6441734959916820584">Нэр хэт урт байна</translation>
 <translation id="6444421004082850253">{FILE_COUNT,plural, =1{# Зураг}other{# Зураг}}</translation>
+<translation id="6447558397796644647">Энэ номын хавчуургыг олох боломжгүй байна. Зөв бичгийн дүрмээ шалгах эсвэл шинэ номын хавчуурга нэмнэ үү.</translation>
 <translation id="6447842834002726250">Cookies</translation>
 <translation id="6461962085415701688">Файлыг нээх боломжгүй байна</translation>
 <translation id="6464977750820128603">Та Chrome-д зочилдог сайтуудаа харах болон тэдгээрт цаг хэмжигч тохируулах боломжтой.\n\nGoogle таны цаг хэмжигч тохируулсан сайтууд болон тэдгээрт хэр удаан зочилдог талаарх мэдээллийг авдаг. Энэ мэдээллийг Дижитал хэрэглээг сайжруулах зорилгоор ашигладаг.</translation>
@@ -801,6 +803,7 @@ Tаны Google бүртгэл <ph name="BEGIN_LINK" />history.google.com<ph name
 <translation id="6990079615885386641">Google Play Store-с апп авах: <ph name="APP_ACTION" /></translation>
 <translation id="6992289844737586249">Сайтууд микрофон ашиглах зөвшөөрөл авах (санал болгосон)</translation>
 <translation id="6995899638241819463">Өгөгдлийн зөрчлийн улмаас нууц үгийг задруулсан бол танд анхааруулах</translation>
+<translation id="7000754031042624318">Андройдын тохиргоонд унтраасан</translation>
 <translation id="7015203776128479407">Синк хийх анхны тохируулгыг дуусгаагүй байна. Синк хийх унтраалттай байна.</translation>
 <translation id="7016516562562142042">Одоогийн хайлтын хэрэгсэлд зөвшөөрсөн</translation>
 <translation id="7022756207310403729">Хөтчид нээх</translation>

@@ -229,11 +229,6 @@ Om <ph name="SERVICE_SCRIPT_NAME" /> redan har markerats avmarkerar du rutan och
 <translation id="6304318647555713317">Klient</translation>
 <translation id="6381670701864002291">Något annat.</translation>
 <translation id="6398765197997659313">Avsluta helskärmsläge</translation>
-<translation id="6411861157501911556">Om du vill använda <ph name="PRODUCT_NAME" /> måste du ge behörigheten Tillgänglighet så att indata från fjärrdatorn kan injiceras på denna Mac.
-
-Du beviljar behörigheten genom att klicka på <ph name="BUTTON_NAME" /> nedan och öppna inställningsrutan för Tillgänglighet och sedan markera kryssrutan vid <ph name="SERVICE_SCRIPT_NAME" />.
-
-Om <ph name="SERVICE_SCRIPT_NAME" /> redan har markerats avmarkerar du rutan och markerar den på nytt.</translation>
 <translation id="6441316101718669559">Integrering med skrivbordet stöds inte på den här plattformen. Du kan använda appen ändå, men användarupplevelsen försämras.</translation>
 <translation id="652218476070540101">Pinkoden för den här datorn uppdateras …</translation>
 <translation id="6527303717912515753">Dela</translation>

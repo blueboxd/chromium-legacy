@@ -21,7 +21,7 @@ void MemoryManagedPaintCanvas::drawImage(const cc::PaintImage& image,
                                          const cc::PaintFlags* flags) {
   DCHECK(!image.IsPaintWorklet());
   RecordPaintCanvas::drawImage(image, left, top, flags);
-  RequestFlushAfterDrawIfNeeded(image);
+  UpdateMemoryUsage(image);
 }
 
 void MemoryManagedPaintCanvas::drawImageRect(
@@ -31,16 +31,10 @@ void MemoryManagedPaintCanvas::drawImageRect(
     const cc::PaintFlags* flags,
     PaintCanvas::SrcRectConstraint constraint) {
   RecordPaintCanvas::drawImageRect(image, src, dst, flags, constraint);
-  RequestFlushAfterDrawIfNeeded(image);
+  UpdateMemoryUsage(image);
 }
 
-void MemoryManagedPaintCanvas::RequestFlushAfterDrawIfNeeded(
-    const cc::PaintImage& image) {
-  if (image.IsTextureBacked()) {
-    set_needs_flush_callback_.Run();
-    return;
-  }
-
+void MemoryManagedPaintCanvas::UpdateMemoryUsage(const cc::PaintImage& image) {
   if (cached_image_ids_.contains(image.content_id()))
     return;
 

@@ -4,7 +4,9 @@
 
 module storage.mojom;
 
+import "components/services/storage/public/mojom/indexed_db_control_test.mojom";
 import "mojo/public/mojom/base/file_path.mojom";
+import "mojo/public/mojom/base/string16.mojom";
 import "mojo/public/mojom/base/values.mojom";
 import "mojo/public/mojom/base/time.mojom";
 import "url/mojom/origin.mojom";
@@ -30,6 +32,19 @@ struct IndexedDBStorageUsageInfo {
 
   // The last time any IndexedDB data was modified for this origin.
   mojo_base.mojom.Time last_modified_time;
+};
+
+// Communicates with IndexedDB clients about changes in IndexedDB.
+interface IndexedDBObserver {
+  // This function is called when the size of the usage for a particular origin
+  // changes (both in memory and on disk).
+  OnIndexedDBListChanged(url.mojom.Origin origin);
+
+  // This function is called when the content of a particular object store
+  // for a particular origin has been modified.
+  OnIndexedDBContentChanged(url.mojom.Origin origin,
+                            mojo_base.mojom.String16 database_name,
+                            mojo_base.mojom.String16 object_store_name);
 };
 
 // Controls the state of IndexedDB within a partition. This is a privileged
@@ -68,4 +83,11 @@ interface IndexedDBControl {
   // Disables the exit-time deletion of session-only data, so that internal
   // restarts can preserve that data.
   SetForceKeepSessionState();
+
+  // Adds an observer to be notified about modifications to IndexedDB.
+  AddObserver(pending_remote<IndexedDBObserver> observer);
+
+  // Binds the testing interface for extra functionality only available in
+  // tests.
+  BindTestInterface(pending_receiver<IndexedDBControlTest> receiver);
 };

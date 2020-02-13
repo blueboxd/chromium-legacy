@@ -3124,6 +3124,155 @@ TEST_F(AXPositionTest, AsUnignoredPosition) {
   EXPECT_EQ(0, test_position->child_index());
 }
 
+TEST_F(AXPositionTest, CreatePositionAtTextBoundaryDocumentStartEndIsIgnored) {
+  // +-root_data
+  //   +-static_text_data_1
+  //   | +-inline_box_data_1 IGNORED
+  //   +-static_text_data_2
+  //   | +-inline_box_data_2
+  //   +-static_text_data_3
+  //   | +-inline_box_data_3
+  //   +-static_text_data_4
+  //     +-inline_box_data_4 IGNORED
+  constexpr AXNode::AXID ROOT_ID = 1;
+  constexpr AXNode::AXID STATIC_TEXT1_ID = 2;
+  constexpr AXNode::AXID STATIC_TEXT2_ID = 3;
+  constexpr AXNode::AXID STATIC_TEXT3_ID = 4;
+  constexpr AXNode::AXID STATIC_TEXT4_ID = 5;
+  constexpr AXNode::AXID INLINE_BOX1_ID = 6;
+  constexpr AXNode::AXID INLINE_BOX2_ID = 7;
+  constexpr AXNode::AXID INLINE_BOX3_ID = 8;
+  constexpr AXNode::AXID INLINE_BOX4_ID = 9;
+
+  AXNodeData root_data;
+  root_data.id = ROOT_ID;
+  root_data.role = ax::mojom::Role::kRootWebArea;
+
+  AXNodeData static_text_data_1;
+  static_text_data_1.id = STATIC_TEXT1_ID;
+  static_text_data_1.role = ax::mojom::Role::kStaticText;
+  static_text_data_1.SetName("One");
+
+  AXNodeData inline_box_data_1;
+  inline_box_data_1.id = INLINE_BOX1_ID;
+  inline_box_data_1.role = ax::mojom::Role::kInlineTextBox;
+  inline_box_data_1.SetName("One");
+  inline_box_data_1.AddState(ax::mojom::State::kIgnored);
+  inline_box_data_1.AddIntListAttribute(
+      ax::mojom::IntListAttribute::kWordStarts, std::vector<int32_t>{0});
+  inline_box_data_1.AddIntListAttribute(ax::mojom::IntListAttribute::kWordEnds,
+                                        std::vector<int32_t>{3});
+  inline_box_data_1.AddIntAttribute(ax::mojom::IntAttribute::kNextOnLineId,
+                                    INLINE_BOX2_ID);
+
+  AXNodeData static_text_data_2;
+  static_text_data_2.id = STATIC_TEXT2_ID;
+  static_text_data_2.role = ax::mojom::Role::kStaticText;
+  static_text_data_2.SetName("Two");
+
+  AXNodeData inline_box_data_2;
+  inline_box_data_2.id = INLINE_BOX2_ID;
+  inline_box_data_2.role = ax::mojom::Role::kInlineTextBox;
+  inline_box_data_2.SetName("Two");
+  inline_box_data_2.AddIntListAttribute(
+      ax::mojom::IntListAttribute::kWordStarts, std::vector<int32_t>{0});
+  inline_box_data_2.AddIntListAttribute(ax::mojom::IntListAttribute::kWordEnds,
+                                        std::vector<int32_t>{3});
+  inline_box_data_2.AddIntAttribute(ax::mojom::IntAttribute::kPreviousOnLineId,
+                                    INLINE_BOX1_ID);
+  inline_box_data_2.AddIntAttribute(ax::mojom::IntAttribute::kNextOnLineId,
+                                    INLINE_BOX3_ID);
+
+  AXNodeData static_text_data_3;
+  static_text_data_3.id = STATIC_TEXT3_ID;
+  static_text_data_3.role = ax::mojom::Role::kStaticText;
+  static_text_data_3.SetName("Three");
+
+  AXNodeData inline_box_data_3;
+  inline_box_data_3.id = INLINE_BOX3_ID;
+  inline_box_data_3.role = ax::mojom::Role::kInlineTextBox;
+  inline_box_data_3.SetName("Three");
+  inline_box_data_3.AddIntListAttribute(
+      ax::mojom::IntListAttribute::kWordStarts, std::vector<int32_t>{0});
+  inline_box_data_3.AddIntListAttribute(ax::mojom::IntListAttribute::kWordEnds,
+                                        std::vector<int32_t>{5});
+  inline_box_data_3.AddIntAttribute(ax::mojom::IntAttribute::kPreviousOnLineId,
+                                    INLINE_BOX2_ID);
+  inline_box_data_3.AddIntAttribute(ax::mojom::IntAttribute::kNextOnLineId,
+                                    INLINE_BOX4_ID);
+
+  AXNodeData static_text_data_4;
+  static_text_data_4.id = STATIC_TEXT4_ID;
+  static_text_data_4.role = ax::mojom::Role::kStaticText;
+  static_text_data_4.SetName("Four");
+
+  AXNodeData inline_box_data_4;
+  inline_box_data_4.id = INLINE_BOX4_ID;
+  inline_box_data_4.role = ax::mojom::Role::kInlineTextBox;
+  inline_box_data_4.SetName("Four");
+  inline_box_data_4.AddState(ax::mojom::State::kIgnored);
+  inline_box_data_3.AddIntListAttribute(
+      ax::mojom::IntListAttribute::kWordStarts, std::vector<int32_t>{0});
+  inline_box_data_3.AddIntListAttribute(ax::mojom::IntListAttribute::kWordEnds,
+                                        std::vector<int32_t>{4});
+  inline_box_data_3.AddIntAttribute(ax::mojom::IntAttribute::kPreviousOnLineId,
+                                    INLINE_BOX3_ID);
+
+  root_data.child_ids = {static_text_data_1.id, static_text_data_2.id,
+                         static_text_data_3.id, static_text_data_4.id};
+  static_text_data_1.child_ids = {inline_box_data_1.id};
+  static_text_data_2.child_ids = {inline_box_data_2.id};
+  static_text_data_3.child_ids = {inline_box_data_3.id};
+  static_text_data_4.child_ids = {inline_box_data_4.id};
+
+  SetTree(
+      CreateAXTree({root_data, static_text_data_1, static_text_data_2,
+                    static_text_data_3, static_text_data_4, inline_box_data_1,
+                    inline_box_data_2, inline_box_data_3, inline_box_data_4}));
+
+  TestPositionType text_position = AXNodePosition::CreateTextPosition(
+      GetTreeID(), inline_box_data_2.id, 0 /* text_offset */,
+      ax::mojom::TextAffinity::kDownstream);
+  ASSERT_FALSE(text_position->IsIgnored());
+  TestPositionType test_position = text_position->CreatePositionAtTextBoundary(
+      ax::mojom::TextBoundary::kWordStart, ax::mojom::MoveDirection::kForward,
+      AXBoundaryBehavior::StopAtLastAnchorBoundary);
+  ASSERT_NE(nullptr, test_position);
+  EXPECT_TRUE(test_position->IsTextPosition());
+  EXPECT_EQ(inline_box_data_3.id, test_position->anchor_id());
+  EXPECT_EQ(0, test_position->text_offset());
+  EXPECT_EQ(ax::mojom::TextAffinity::kDownstream, test_position->affinity());
+  test_position = text_position->CreatePositionAtTextBoundary(
+      ax::mojom::TextBoundary::kWordStart, ax::mojom::MoveDirection::kBackward,
+      AXBoundaryBehavior::StopAtLastAnchorBoundary);
+  ASSERT_NE(nullptr, test_position);
+  EXPECT_TRUE(test_position->IsTextPosition());
+  EXPECT_EQ(inline_box_data_2.id, test_position->anchor_id());
+  EXPECT_EQ(0, test_position->text_offset());
+  EXPECT_EQ(ax::mojom::TextAffinity::kDownstream, test_position->affinity());
+
+  text_position = AXNodePosition::CreateTextPosition(
+      GetTreeID(), inline_box_data_3.id, 0 /* text_offset */,
+      ax::mojom::TextAffinity::kDownstream);
+  ASSERT_FALSE(text_position->IsIgnored());
+  test_position = text_position->CreatePositionAtTextBoundary(
+      ax::mojom::TextBoundary::kWordStart, ax::mojom::MoveDirection::kForward,
+      AXBoundaryBehavior::StopAtLastAnchorBoundary);
+  ASSERT_NE(nullptr, test_position);
+  EXPECT_TRUE(test_position->IsTextPosition());
+  EXPECT_EQ(inline_box_data_3.id, test_position->anchor_id());
+  EXPECT_EQ(5, test_position->text_offset());
+  EXPECT_EQ(ax::mojom::TextAffinity::kDownstream, test_position->affinity());
+  test_position = text_position->CreatePositionAtTextBoundary(
+      ax::mojom::TextBoundary::kWordStart, ax::mojom::MoveDirection::kBackward,
+      AXBoundaryBehavior::StopAtLastAnchorBoundary);
+  ASSERT_NE(nullptr, test_position);
+  EXPECT_TRUE(test_position->IsTextPosition());
+  EXPECT_EQ(inline_box_data_2.id, test_position->anchor_id());
+  EXPECT_EQ(0, test_position->text_offset());
+  EXPECT_EQ(ax::mojom::TextAffinity::kDownstream, test_position->affinity());
+}
+
 TEST_F(AXPositionTest, CreatePositionAtInvalidGraphemeBoundary) {
   std::vector<int> text_offsets;
   SetTree(CreateMultilingualDocument(&text_offsets));

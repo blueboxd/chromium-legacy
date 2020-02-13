@@ -369,11 +369,6 @@ Wenn die Richtlinie "EnableMediaRouter" auf "false" gesetzt ist, hat der Wert di
           Ist die Richtlinie deaktiviert oder nicht konfiguriert, sind die Einstellungen für Kerberos-Konten deaktiviert. In diesem Fall können keine Kerberos-Konten hinzugefügt werden und die Nutzung der Kerberos-Authentifizierung ist nicht möglich. Alle vorhandenen Kerberos-Konten werden gelöscht, ebenso wie alle gespeicherten Passwörter.</translation>
 <translation id="1561424797596341174">Überschreiben von Richtlinien für Fehlerbehebungs-Builds des Hosts für den Remotezugriff</translation>
 <translation id="1561967320164410511">U2F plus Erweiterungen zur individuellen Bestätigung</translation>
-<translation id="1574554504290354326">Diese Einstellung ist veraltet. Verwenden Sie stattdessen "SafeBrowsingExtendedReportingEnabled". Das Aktivieren oder Deaktivieren von "SafeBrowsingExtendedReportingEnabled" entspricht dem Festlegen von "false" für "SafeBrowsingExtendedReportingOptInAllowed".
-
-      Wenn diese Richtlinie auf "false" gesetzt ist, können Nutzer nicht mehr festlegen, ob bestimmte Systeminformationen und Seiteninhalte an die Google-Server gesendet werden. Ist die Richtlinie auf "true" gesetzt oder nicht konfiguriert, können Nutzer bestimmte Systeminformationen und Seiteninhalte an Safe Browsing senden, um bei der Erkennung schädlicher Apps und Websites zu helfen.
-
-      Weitere Informationen zu Safe Browsing finden Sie unter https://developers.google.com/safe-browsing.</translation>
 <translation id="1583248206450240930">Standardmäßig <ph name="PRODUCT_FRAME_NAME" /> verwenden</translation>
 <translation id="1599424828227887013">Website-Isolierung für angegebene Ursprünge auf Android-Geräten aktivieren</translation>
 <translation id="1608755754295374538">URLs, denen ohne Nachfrage Zugriff auf Audioaufnahmegeräte gestattet wird</translation>
@@ -650,6 +645,10 @@ Wenn die Richtlinie "EnableMediaRouter" auf "false" gesetzt ist, hat der Wert di
 <translation id="1988371335297483117">Die Nutzdaten automatischer Updates von <ph name="PRODUCT_OS_NAME" /> können über HTTP statt über HTTPS heruntergeladen werden. Dadurch wird transparentes HTTP-Caching von HTTP-Downloads zugelassen.
 
       Ist diese Richtlinie auf "true" gesetzt, versucht <ph name="PRODUCT_OS_NAME" />, die Nutzdaten automatischer Updates über HTTP herunterzuladen. Ist die Richtlinie auf "false" gesetzt oder nicht festgelegt, wird für solche Downloads HTTPS verwendet.</translation>
+<translation id="199011295049694531">Mit dieser Richtlinie kann festgelegt werden, dass Informationen über die Zeitzone eines Geräts ausgegeben werden.
+
+      Ist die Richtlinie auf "false" gesetzt oder nicht konfiguriert, werden keine Informationen ausgegeben.
+      Ist die Richtlinie auf "true" gesetzt, wird die aktuelle Zeitzone des Geräts ausgegeben.</translation>
 <translation id="199764499252435679">Komponentenupdates in <ph name="PRODUCT_NAME" /> aktivieren</translation>
 <translation id="1997994951395619441">Wenn Sie diese Einstellung aktivieren, wird in <ph name="PRODUCT_NAME" /> eine Lesezeichenleiste angezeigt.
 
@@ -1101,6 +1100,11 @@ Wenn Sie "Letzte Sitzung wiederherstellen" wählen, werden die URLs, die beim le
       Wenn Sie diese Einstellung aktivieren oder deaktivieren, können die Nutzer sie nicht ändern oder überschreiben.
 
       Ist die Richtlinie nicht festgelegt, kann der Nutzer festlegen, ob die Funktion für den Datenkomprimierungs-Proxy verwendet werden soll oder nicht.</translation>
+<translation id="2575738503503093841">Gibt die maximale Verzögerung in Millisekunden zwischen dem Empfang der Außerkraftsetzung einer Richtlinie und dem Abrufen der neuen Richtlinie vom Geräteverwaltungsdienst an.
+
+      Ist diese Richtlinie konfiguriert, wird der Standardwert von 10.000 Millisekunden außer Kraft gesetzt. Für diese Richtlinie können Werte von 1.000 (1 Sekunde) bis 300.000 (5 Minuten) festgelegt werden. Werte außerhalb dieses Bereichs werden auf den nächstgelegenen Grenzwert gerundet.
+
+      Ist diese Richtlinie nicht konfiguriert, verwendet <ph name="PRODUCT_NAME" /> den Standardwert von 5.000 Millisekunden.</translation>
 <translation id="257788512393330403">Passworteingabe alle sechs Stunden erforderlich</translation>
 <translation id="2580104054820772954">Dateibereitstellung hinauszögern, bis Scanergebnisse vorliegen</translation>
 <translation id="2582582399758251985">Wenn diese Einstellung aktiviert ist, verifiziert <ph name="PRODUCT_NAME" /> Serverzertifikate anhand der integrierten Zertifikatsprüfung.
@@ -1129,6 +1133,7 @@ Wenn Sie "Letzte Sitzung wiederherstellen" wählen, werden die URLs, die beim le
           Wenn diese Richtlinie nicht konfiguriert ist, ist der Standardwert "true" und NTLMv2 ist aktiviert.</translation>
 <translation id="26023406105317310">Kerberos-Konten konfigurieren</translation>
 <translation id="2604182581880595781">Richtlinien für Netzwerkfreigaben konfigurieren.</translation>
+<translation id="2615240493030733717">Informationen zur Zeitzone ausgeben</translation>
 <translation id="2623014935069176671">Auf erste Nutzeraktivität warten</translation>
 <translation id="262740370354162807">Senden von Dokumenten an <ph name="CLOUD_PRINT_NAME" /> aktivieren</translation>
 <translation id="2627554163382448569">Stellt Konfigurationen für Unternehmensdrucker bereit.
@@ -1537,6 +1542,8 @@ Wenn Sie "Letzte Sitzung wiederherstellen" wählen, werden die URLs, die beim le
           Ist diese Richtlinie nicht konfiguriert, kommt für alle Websites entweder der globale Standardwert der Richtlinie "DefaultCookiesSetting", sofern konfiguriert, oder die persönliche Konfiguration des Nutzers zum Einsatz.
 
           Sehen Sie sich auch die Richtlinien "CookiesBlockedForUrls" und "CookiesSessionOnlyForUrls" an. Bitte beachten Sie, dass es keine in Konflikt stehenden URL-Muster zwischen diesen drei Richtlinien geben darf. Es ist nicht festgelegt, welche Richtlinie Vorrang hat.</translation>
+<translation id="3339271789059866414">Konfiguriert die Verfügbarkeit des System-Proxy-Dienstes und die Proxy-Anmeldedaten für Systemdienste.
+      Ist diese Richtlinie nicht konfiguriert, ist der System-Proxy-Dienst nicht verfügbar.</translation>
 <translation id="3373364525435227558">Mit dieser Richtlinie werden ein oder mehrere empfohlene Sprachen für eine verwaltete Sitzung festgelegt. Nutzer können sich dann ganz einfach für eine entscheiden.
 
 Nutzer können eine Sprache und ein Tastaturlayout auswählen, bevor sie eine verwaltete Sitzung starten. Standardmäßig werden alle Sprachen in alphabetischer Reihenfolge aufgeführt, die von <ph name="PRODUCT_OS_NAME" /> unterstützt werden. Sie können diese Richtlinie verwenden, um eine Gruppe empfohlener Sprachen an den Anfang der Liste zu verschieben.
@@ -2486,6 +2493,7 @@ Wenn die Richtlinie auf "FALSE" gesetzt oder nicht festgelegt wird, führt die T
           Wenn Sie diese Richtlinie konfigurieren, können die Nutzer sie nicht ändern oder außer Kraft setzen.
 
           Falls die Richtlinie nicht konfiguriert wird, ist der große Cursor zunächst deaktiviert, kann aber von den Nutzern jederzeit aktiviert werden.</translation>
+<translation id="4802744647065138872">Begrenzt die Anzahl der Snapshots von Nutzerdaten, die für den Fall eines Notfall-Rollbacks aufbewahrt werden.</translation>
 <translation id="4802905909524200151">Updateverhalten von <ph name="TPM_FIRMWARE_UPDATE_TPM" />-Firmware konfigurieren</translation>
 <translation id="4804828344300125154">Nach Nutzerabmeldung immer neu starten.</translation>
 <translation id="4807950475297505572">Die am längsten nicht verwendeten Nutzer werden entfernt, bis genügend freier Speicherplatz vorhanden ist.</translation>
@@ -4256,21 +4264,6 @@ Die Richtlinienwerte sollten in % angegeben werden und zwischen 0 und 100 liegen
       Diese Richtlinie wirkt sich nur auf nicht verknüpfte Nutzer aus.
       </translation>
 <translation id="7683777542468165012">Dynamische Richtlinienaktualisierung</translation>
-<translation id="7684516445147212248">Über diese Richtlinie können Sie festlegen, ob die passive Authentifizierung für Inkognito- und Gastprofile in <ph name="PRODUCT_NAME" /> zulässig ist.
-
-      Eine passive Authentifizierung ist eine HTTP-Authentifizierung mit Standardanmeldedaten. Sie wird durchgeführt, wenn keine spezifischen Anmeldedaten über ein Challenge-Response-Verfahren (NTLM, Kerberos oder Negotiate) angegeben werden.
-
-      Wenn Sie die Option "<ph name="REGULAR_ONLY_OPTION_NAME" />" festlegen (Wert: 0), ist die passive Authentifizierung ausschließlich für reguläre Sitzungen zulässig. Inkognito- und Gastsitzungen dürfen dann nicht passiv authentifiziert werden.
-
-      Wenn Sie die Option "<ph name="INCOGNITO_AND_REGULAR_OPTION_NAME" />" festlegen (Wert: 1), ist die passive Authentifizierung für Inkognito- und reguläre Sitzungen zulässig. Gastsitzungen dürfen dann nicht passiv authentifiziert werden.
-
-      Wenn Sie die Option "<ph name="GUEST_AND_REGULAR_OPTION_NAME" />" festlegen (Wert: 2), ist die passive Authentifizierung für Gast- und reguläre Sitzungen zulässig. Inkognitositzungen dürfen dann nicht passiv authentifiziert werden.
-
-      Wenn Sie die Option "<ph name="ALL_OPTION_NAME" />" festlegen (Wert: 3), ist die passive Authentifizierung für alle Sitzungen zulässig.
-
-      Für reguläre Profile ist die passive Authentifizierung immer zulässig.
-
-      Wenn Sie die Richtlinie nicht konfigurieren, ist für Inkognito- und Gastsitzungen in zukünftigen Versionen von <ph name="PRODUCT_NAME" /> keine passive Authentifizierung möglich, da diese für Inkognito- und Gastsitzungen dann nicht mehr zulässig ist.</translation>
 <translation id="7687943045976362719">Wenn diese Richtlinie konfiguriert ist, wird für alle angegebenen Inhaltstypen <ph name="PRODUCT_FRAME_NAME" /> verwendet.
 
           Ist die Richtlinie nicht konfiguriert, kommt der Standardrenderer für alle Websites zum Einsatz. Anhand der Richtlinie "<ph name="CHROME_FRAME_RENDERER_SETTINGS_POLICY_NAME" />" kann der Standardrenderer konfiguriert werden.</translation>
@@ -4423,6 +4416,7 @@ Die Richtlinienwerte sollten in % angegeben werden und zwischen 0 und 100 liegen
 
       Bleibt diese Richtlinie unkonfiguriert, wird die Einstellung aktiviert, kann jedoch vom Nutzer geändert werden.</translation>
 <translation id="7953256619080733119">Manuell festgelegte Ausnahme-Hosts für verwalteten Nutzer</translation>
+<translation id="7956210013490975468">Konfiguriert den System-Proxy-Dienst für <ph name="PRODUCT_OS_NAME" />.</translation>
 <translation id="7958537754689366707">Passworteingabe alle zwölf Stunden erforderlich</translation>
 <translation id="7961779417826583251">Erzwingung der Zertifikatstransparenz für eine Liste alter Zertifizierungsstellen deaktivieren</translation>
 <translation id="7974114691960514888">Diese Richtlinie wird nicht mehr unterstützt. Sie aktiviert beim Verbinden zu einem Remote-Client den Einsatz von STUN und Relay-Servern. Wenn diese Einstellung aktiviert wird, kann dieser Computer Remote-Hostcomputer finden und eine Verbindung herstellen, selbst wenn sie sich hinter einer Firewall befinden. Sollte die Einstellung deaktiviert sein und ausgehende UDP-Verbindungen von der Firewall gefiltert werden, dann kann dieser Computer nur Verbindungen zu Hostcomputern innerhalb des lokalen Netzwerks aufbauen.</translation>
@@ -4672,6 +4666,11 @@ Unter Windows ist es empfehlenswert, Richtlinien über Gruppenrichtlinienobjekte
 <translation id="8426231401662877819">Bildschirm um 90 Grad im Uhrzeigersinn drehen</translation>
 <translation id="8433186206711564395">Netzwerkeinstellungen</translation>
 <translation id="8433423491036718210">Hiermit wird die Liste der URLs für die Unternehmensanmeldung konfiguriert, für die der Passwortschutzdienst den Fingerabdruck für die Autorisierung registrieren soll.</translation>
+<translation id="8445576299806775661">Nach jedem größeren Versionsupdate erstellt Chrome für den Fall eines Notfall-Rollbacks einen Snapshot bestimmter Browserdaten des Nutzers. Falls ein Notfall-Rollback für eine Version durchgeführt wird, für die der Nutzer einen passenden Snapshot hat, werden die darin gespeicherten Daten wiederhergestellt. Hierdurch verliert der Nutzer seine Einstellungen wie beispielsweise Lesezeichen und AutoFill-Daten nicht.
+
+      Ist diese Richtlinie nicht konfiguriert, wird der Standardwert "3" verwendet.
+
+      Ist sie konfiguriert, werden ältere Snapshots bei Bedarf gelöscht, um das Limit einzuhalten. Ist sie auf "0" gesetzt ist, werden keine Snapshots erstellt.</translation>
 <translation id="8451988835943702790">"Neuer Tab"-Seite als Startseite verwenden</translation>
 <translation id="8459216513698220096">Gibt an, ob und wie Nutzerrichtlinien vom Computer-Gruppenrichtlinienobjekt (Group Policy Object, GPO) verarbeitet werden.
 
@@ -4757,6 +4756,7 @@ Wenn diese Richtlinie auf "true" gesetzt ist, muss sich der Nutzer mit seinem Pr
 
 Ist die Richtlinie auf "false" gesetzt oder nicht konfiguriert, kann der Nutzer den Browser verwenden, ohne sich in <ph name="PRODUCT_NAME" /> anzumelden.</translation>
 <translation id="858309738002328421">Große Dateiuploads blockieren</translation>
+<translation id="8584279193368801689">Schränkt den PIN-Druckmodus ein. Ist die Richtlinie nicht konfiguriert, gelten keine Einschränkungen. Ist der Modus nicht verfügbar, wird diese Richtlinie ignoriert. Der PIN-Druckmodus wird nur für Drucker angewendet, die das IPPS-, HTTPS- oder USB-Protokoll bzw. IPP über USB verwenden.</translation>
 <translation id="8585558195682146109">Nutzerdownloads zum Scannen senden</translation>
 <translation id="8586528890725660268">Gibt die Drucker an, die ein Nutzer nicht verwenden kann.
 
@@ -4822,6 +4822,13 @@ Nutzer können diese Einstellung weder ändern noch überschreiben.</translation
 <translation id="8687958770985542440">Damit wird die Web Components v0 API bis M84 wieder aktiviert.</translation>
 <translation id="8693243869659262736">Integrierten DNS-Client verwenden</translation>
 <translation id="8698286761337647563">Gibt an, wie viele Tage SAML-Nutzer vorab benachrichtigt werden, wenn ihr Passwort bald abläuft</translation>
+<translation id="8701288965900240388">Mit dieser Richtlinie kann festgelegt werden, ob das Plug-in <ph name="FLASH_PLUGIN_NAME" /> auf Websites automatisch ausgeführt werden darf. Das automatische Ausführen des Plug-ins <ph name="FLASH_PLUGIN_NAME" /> kann entweder für alle Websites erlaubt oder verboten werden.
+
+          Mit "Click-to-Play" wird erlaubt, dass das Plug-in <ph name="FLASH_PLUGIN_NAME" /> ausgeführt wird, der Nutzer muss jedoch den Platzhalter anklicken, um die Ausführung zu starten.
+
+          Die automatische Wiedergabe ist nur für Domains erlaubt, die ausdrücklich in der Richtlinie <ph name="PLUGINS_ALLOWED_FOR_URLS_POLICY_NAME" /> aufgeführt werden. Wenn Sie die automatische Wiedergabe für alle Websites aktivieren möchten, können Sie dieser Liste http://* und https://* hinzufügen.
+
+          Ist diese Richtlinie nicht konfiguriert, wird "BlockPlugins" verwendet und der Nutzer kann diese Einstellung manuell ändern.</translation>
 <translation id="8703488928438047864">Boardstatus melden</translation>
 <translation id="8704831857353097849">Liste der deaktivierten Plug-ins</translation>
 <translation id="8711086062295757690">Gibt das Suchkürzel an, das als die Verknüpfung fungiert, die in der Omnibox als Auslöser der Suche für diesen Anbieter verwendet wird. Diese Richtlinie ist optional. Wenn sie nicht konfiguriert ist, so wird der Suchanbieter von keinem Suchkürzel aktiviert. Diese Richtlinie wird nur umgesetzt, wenn die Richtlinie "DefaultSearchProviderEnabled" aktiviert ist.</translation>

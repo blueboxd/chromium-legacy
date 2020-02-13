@@ -229,11 +229,6 @@ Hvis det allerede er merket av for «<ph name="SERVICE_SCRIPT_NAME" />», fjerne
 <translation id="6304318647555713317">Klient</translation>
 <translation id="6381670701864002291">Noe annet.</translation>
 <translation id="6398765197997659313">Avslutt fullskjerm</translation>
-<translation id="6411861157501911556">For å bruke <ph name="PRODUCT_NAME" /> må du innvilge «Tilgjengelighet»-tillatelsen, slik at inndata fra den eksterne maskinen kan sendes til denne Macen.
-
-For å innvilge denne tillatelsen, klikk på «<ph name="BUTTON_NAME" />» under for å åpne innstillingsfeltet for «Tilgjengelighet», og merk deretter av i boksen ved siden av «<ph name="SERVICE_SCRIPT_NAME" />».
-
-Hvis det allerede er merket av for «<ph name="SERVICE_SCRIPT_NAME" />», fjerner du avmerkingen og merker av på nytt.</translation>
 <translation id="6441316101718669559">Denne plattformen har ikke støtte for skrivebordsintegrasjon. Du kan fortsatt bruke programmet, men brukeropplevelsen blir redusert.</translation>
 <translation id="652218476070540101">PIN-koden for denne datamaskinen oppdateres …</translation>
 <translation id="6527303717912515753">Del</translation>

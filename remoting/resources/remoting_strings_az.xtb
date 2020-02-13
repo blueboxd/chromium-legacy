@@ -229,11 +229,6 @@ Bu icazəni vermək üçün aşağıda "<ph name="BUTTON_NAME" />" düyməsinə 
 <translation id="6304318647555713317">Klient</translation>
 <translation id="6381670701864002291">Başqa bir problem.</translation>
 <translation id="6398765197997659313">Tam ekrandan çıxın</translation>
-<translation id="6411861157501911556"><ph name="PRODUCT_NAME" /> istifadə etmək üçün "Giriş" icazəsi verməlisiniz ki, uzaqdakı cihazdan daxiletmə bu Mac'a ötürülə bilsin.
-
-Bu icazəni vermək üçün aşağıda "<ph name="BUTTON_NAME" />" düyməsinə toxunaraq "Giriş" tərcihləri panelini açın və "<ph name="SERVICE_SCRIPT_NAME" />" yanındakı xananı işarələyin.
-
-"<ph name="SERVICE_SCRIPT_NAME" />" artıq işarələnibsə, işarəni götürün və yenidən işarələyin.</translation>
 <translation id="6441316101718669559">Desktop inteqrasiya bu platformada dəstəklənmir. Siz hələ istifadə edə bilərsiniz, lakin istifadəçi təcrübəsi xarab olacaq.</translation>
 <translation id="652218476070540101">Bu kompüter üçün PIN güncəlləşir…</translation>
 <translation id="6527303717912515753">Paylaşın</translation>

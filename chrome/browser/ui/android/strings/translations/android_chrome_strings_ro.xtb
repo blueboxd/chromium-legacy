@@ -281,6 +281,7 @@
 <translation id="3137521801621304719">Ieși din modul incognito</translation>
 <translation id="3140134512074889489">Activează camera pentru a scana un cod QR</translation>
 <translation id="3143515551205905069">Anulează sincronizarea</translation>
+<translation id="314939179385989105">Pagina de pornire Chrome</translation>
 <translation id="3157842584138209013">Vezi ce volum de date ai economisit folosind butonul Mai multe opțiuni</translation>
 <translation id="3166827708714933426">Comenzi rapide pentru file și ferestre</translation>
 <translation id="3181954750937456830">Navigare sigură (protecție împotriva site-urilor periculoase)</translation>
@@ -727,6 +728,7 @@ Apasă lung pe orice cuvânt ca să creezi o căutare pentru acesta. Pentru a ra
 <translation id="6437478888915024427">Informații despre pagină</translation>
 <translation id="6441734959916820584">Numele este prea lung</translation>
 <translation id="6444421004082850253">{FILE_COUNT,plural, =1{O imagine}few{# imagini}other{# de imagini}}</translation>
+<translation id="6447558397796644647">Marcajul nu a fost găsit. Verifică ortografierea sau adaugă alt marcaj.</translation>
 <translation id="6447842834002726250">Cookie-uri</translation>
 <translation id="6461962085415701688">Fișierul nu poate fi deschis</translation>
 <translation id="6464977750820128603">Poți vedea site-urile pe care le vizitezi în Chrome și să setezi temporizatoare pentru ele.\n\nGoogle obține informații cu privire la site-urile pentru care setezi temporizatoare și la durata de accesare. Aceste informații sunt folosite pentru a îmbunătăți Bunăstarea digitală.</translation>
@@ -802,6 +804,7 @@ Apasă lung pe orice cuvânt ca să creezi o căutare pentru acesta. Pentru a ra
 <translation id="6990079615885386641">Descarcă aplicația din Magazinul Google Play: <ph name="APP_ACTION" /></translation>
 <translation id="6992289844737586249">Întreabă înainte de a permite site-urilor să folosească microfonul (recomandat)</translation>
 <translation id="6995899638241819463">Avertizează-mă dacă parolele au fost expuse în urma încălcării securității datelor</translation>
+<translation id="7000754031042624318">Dezactivată din setările Android</translation>
 <translation id="7015203776128479407">Configurarea inițială a sincronizării nu a fost finalizată. Sincronizarea este dezactivată.</translation>
 <translation id="7016516562562142042">Se permite pentru motorul de căutare actual</translation>
 <translation id="7022756207310403729">Deschide în browser</translation>

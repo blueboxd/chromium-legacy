@@ -86,4 +86,5 @@ class PluginVmDriveImageDownloadService {
 };
 
 }  // namespace plugin_vm
+
 #endif  // CHROME_BROWSER_CHROMEOS_PLUGIN_VM_PLUGIN_VM_DRIVE_IMAGE_DOWNLOAD_SERVICE_H_

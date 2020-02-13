@@ -229,11 +229,6 @@ If '<ph name="SERVICE_SCRIPT_NAME" />' is already ticked, untick it and then tic
 <translation id="6304318647555713317">Client</translation>
 <translation id="6381670701864002291">Something else.</translation>
 <translation id="6398765197997659313">Exit full screen</translation>
-<translation id="6411861157501911556">To use <ph name="PRODUCT_NAME" />, you need to grant the 'Accessibility' permission so that input from the remote machine can be injected on this Mac.
-
-To grant this permission, click '<ph name="BUTTON_NAME" />' below to open the 'Accessibility' preferences pane and then tick the box next to '<ph name="SERVICE_SCRIPT_NAME" />'.
-
-If '<ph name="SERVICE_SCRIPT_NAME" />' is already ticked, untick it and then tick it again.</translation>
 <translation id="6441316101718669559">Desktop integration is not supported on this platform. You can still use the application, but the user experience will be degraded.</translation>
 <translation id="652218476070540101">The PIN for this computer is being updated…</translation>
 <translation id="6527303717912515753">Share</translation>

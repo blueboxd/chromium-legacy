@@ -634,6 +634,7 @@
 <translation id="3780694243617746492">Output bin</translation>
 <translation id="3781428340399460090">Hot pink</translation>
 <translation id="3783418713923659662">Mastercard</translation>
+<translation id="3784372983762739446">Bluetooth devices</translation>
 <translation id="3787705759683870569">Expires <ph name="EXPIRATION_MONTH" />/<ph name="EXPIRATION_YEAR" /></translation>
 <translation id="3789155188480882154">Size 16</translation>
 <translation id="3797522431967816232">Prc3 (Envelope)</translation>
@@ -1684,6 +1685,7 @@ Additional details:
 <translation id="8503813439785031346">Username</translation>
 <translation id="8508648098325802031">Search icon</translation>
 <translation id="8522552481199248698">Chrome can help you protect your Google account and change your password.</translation>
+<translation id="8541158209346794904">Bluetooth device</translation>
 <translation id="8542014550340843547">Triple staple bottom</translation>
 <translation id="8543181531796978784">You can <ph name="BEGIN_ERROR_LINK" />report a detection problem<ph name="END_ERROR_LINK" /> or, if you understand the risks to your security, <ph name="BEGIN_LINK" />visit this unsafe site<ph name="END_LINK" />.</translation>
 <translation id="8553075262323480129">The translation failed because the page's language could not be determined.</translation>

@@ -1187,6 +1187,12 @@ class PreviewsLitePageRedirectServerBrowserTestWithAlwaysHoldback
   base::test::ScopedFeatureList feature_list_;
 };
 
+// Param is true if DRP holdback should be enabled.
+INSTANTIATE_TEST_SUITE_P(
+    All,
+    PreviewsLitePageRedirectServerBrowserTestWithAlwaysHoldback,
+    ::testing::Bool());
+
 IN_PROC_BROWSER_TEST_P(
     PreviewsLitePageRedirectServerBrowserTestWithAlwaysHoldback,
     DISABLE_ON_WIN_MAC_CHROMEOS(CoinFlipHoldbackTriggering)) {
@@ -2294,12 +2300,6 @@ class CoinFlipHoldbackExperimentBrowserTestWithCoinFlipHoldbackDisabled
  private:
   base::test::ScopedFeatureList feature_list_;
 };
-
-// Param is true if DRP holdback should be enabled.
-INSTANTIATE_TEST_SUITE_P(
-    All,
-    CoinFlipHoldbackExperimentBrowserTest,
-    ::testing::Bool());
 
 INSTANTIATE_TEST_SUITE_P(
     All,

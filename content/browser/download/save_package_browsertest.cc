@@ -109,7 +109,7 @@ class SavePackageBrowserTest : public ContentBrowserTest {
 
     {
       base::RunLoop run_loop;
-      DownloadicidalObserver download_item_killer(false,
+      DownloadicidalObserver download_item_killer(remove_download,
                                                   run_loop.QuitClosure());
       download_manager->AddObserver(&download_item_killer);
 

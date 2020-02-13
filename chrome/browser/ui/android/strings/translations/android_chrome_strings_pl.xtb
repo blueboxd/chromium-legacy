@@ -281,6 +281,7 @@
 <translation id="3137521801621304719">Wyłącz tryb incognito</translation>
 <translation id="3140134512074889489">Włącz kamerę, by zeskanować kod QR</translation>
 <translation id="3143515551205905069">Anuluj synchronizację</translation>
+<translation id="314939179385989105">Strona główna Chrome</translation>
 <translation id="3157842584138209013">Sprawdź ilość zaoszczędzonych danych, używając przycisku Więcej opcji</translation>
 <translation id="3166827708714933426">Skróty kart i okien</translation>
 <translation id="3181954750937456830">Bezpieczne przeglądanie (chroni Ciebie i Twoje urządzenie przed niebezpiecznymi witrynami)</translation>
@@ -727,6 +728,7 @@ Przytrzymaj dowolne słowo, by rozpocząć wyszukiwanie. Jeśli chcesz je doprec
 <translation id="6437478888915024427">Informacje o stronie</translation>
 <translation id="6441734959916820584">Nazwa jest zbyt długa</translation>
 <translation id="6444421004082850253">{FILE_COUNT,plural, =1{# obraz}few{# obrazy}many{# obrazów}other{# obrazu}}</translation>
+<translation id="6447558397796644647">Nie udało się znaleźć tej zakładki. Sprawdź pisownię lub dodaj nową zakładkę.</translation>
 <translation id="6447842834002726250">Pliki cookie</translation>
 <translation id="6461962085415701688">Nie można otworzyć pliku</translation>
 <translation id="6464977750820128603">Możesz wyświetlić strony otwierane w Chrome i ustawić dla nich liczniki czasu.\n\nGoogle otrzymuje informacje o stronach, dla których masz ustawione liczniki czasu, i o tym, jak długo je przeglądasz. Używamy tych informacji do udoskonalania Cyfrowej równowagi.</translation>
@@ -802,6 +804,7 @@ Przytrzymaj dowolne słowo, by rozpocząć wyszukiwanie. Jeśli chcesz je doprec
 <translation id="6990079615885386641">Pobierz aplikację ze sklepu Google Play: <ph name="APP_ACTION" /></translation>
 <translation id="6992289844737586249">Pytaj, zanim zezwolisz stronom na korzystanie z mikrofonu (zalecane)</translation>
 <translation id="6995899638241819463">Ostrzegaj, jeśli wskutek naruszenia bezpieczeństwa danych doszło do ujawnienia haseł</translation>
+<translation id="7000754031042624318">Wyłączone w ustawieniach Androida</translation>
 <translation id="7015203776128479407">Nie ukończono początkowej konfiguracji synchronizacji. Synchronizacja jest wyłączona.</translation>
 <translation id="7016516562562142042">Zezwolono na dostęp obecnej wyszukiwarce</translation>
 <translation id="7022756207310403729">Otwórz w przeglądarce</translation>

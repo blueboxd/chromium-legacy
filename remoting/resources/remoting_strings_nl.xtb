@@ -229,11 +229,6 @@ Als <ph name="SERVICE_SCRIPT_NAME" /> al is aangevinkt, vink je dit eerst uit en
 <translation id="6304318647555713317">Client</translation>
 <translation id="6381670701864002291">Iets anders.</translation>
 <translation id="6398765197997659313">Volledig scherm sluiten</translation>
-<translation id="6411861157501911556">Als je <ph name="PRODUCT_NAME" /> wilt gebruiken, moet je toegangsrechten verlenen, zodat de invoer van dat externe systeem op deze Mac kan worden ingevoegd.
-
-Als je dit recht wilt verlenen, klik je hieronder op <ph name="BUTTON_NAME" /> om het voorkeurenvenster voor toegankelijkheid te openen. Vink daarna <ph name="SERVICE_SCRIPT_NAME" /> aan.
-
-Als <ph name="SERVICE_SCRIPT_NAME" /> al is aangevinkt, moet je dit uitvinken en vervolgens weer aanvinken.</translation>
 <translation id="6441316101718669559">Bureaubladintegratie wordt niet ondersteund op dit platform. Je kunt de app nog steeds gebruiken, maar de gebruikerservaring is beperkt.</translation>
 <translation id="652218476070540101">De pincode voor deze computer wordt bijgewerkt…</translation>
 <translation id="6527303717912515753">Delen</translation>

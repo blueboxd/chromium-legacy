@@ -25,6 +25,7 @@
 #include "components/prefs/pref_service.h"
 #include "components/safe_browsing/core/common/safe_browsing_prefs.h"
 #include "components/safe_browsing/core/features.h"
+#include "components/safe_browsing/core/proto/webprotect.pb.h"
 #include "components/url_matcher/url_matcher.h"
 #include "content/public/browser/download_item_utils.h"
 
@@ -36,20 +37,23 @@ void DeepScanningClientResponseToDownloadCheckResult(
     const DeepScanningClientResponse& response,
     DownloadCheckResult* download_result) {
   if (response.has_malware_scan_verdict() &&
-      response.malware_scan_verdict().verdict() ==
-          MalwareDeepScanningVerdict::MALWARE) {
-    *download_result = DownloadCheckResult::DANGEROUS;
-    return;
+      response.malware_scan_verdict().status() ==
+          MalwareDeepScanningVerdict::SUCCESS) {
+    if (response.malware_scan_verdict().verdict() ==
+        MalwareDeepScanningVerdict::MALWARE) {
+      *download_result = DownloadCheckResult::DANGEROUS;
+      return;
+    }
+
+    if (response.malware_scan_verdict().verdict() ==
+        MalwareDeepScanningVerdict::UWS) {
+      *download_result = DownloadCheckResult::POTENTIALLY_UNWANTED;
+      return;
+    }
   }
 
-  if (response.has_malware_scan_verdict() &&
-      response.malware_scan_verdict().verdict() ==
-          MalwareDeepScanningVerdict::UWS) {
-    *download_result = DownloadCheckResult::POTENTIALLY_UNWANTED;
-    return;
-  }
-
-  if (response.has_dlp_scan_verdict()) {
+  if (response.has_dlp_scan_verdict() &&
+      response.dlp_scan_verdict().status() == DlpDeepScanningVerdict::SUCCESS) {
     bool should_dlp_block = std::any_of(
         response.dlp_scan_verdict().triggered_rules().begin(),
         response.dlp_scan_verdict().triggered_rules().end(),

@@ -117,11 +117,7 @@ void ProducerClient::NewDataSourceAdded(
   std::set<std::string> category_set;
   tracing::TracedProcessImpl::GetInstance()->GetCategories(&category_set);
   for (const std::string& s : category_set) {
-    auto* cat = proto.add_available_categories();
-    cat->set_name(s);
-    if (s.find(TRACE_DISABLED_BY_DEFAULT("")) == 0) {
-      cat->add_tags("slow");
-    }
+    proto.add_available_categories(s.c_str());
   }
 
   auto raw_proto = buffer.StitchSlices();

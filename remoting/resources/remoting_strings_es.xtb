@@ -229,11 +229,6 @@ Si la casilla <ph name="SERVICE_SCRIPT_NAME" /> ya está marcada, desmárcala y 
 <translation id="6304318647555713317">Cliente</translation>
 <translation id="6381670701864002291">Otro problema.</translation>
 <translation id="6398765197997659313">Salir del modo de pantalla completa</translation>
-<translation id="6411861157501911556">Para usar <ph name="PRODUCT_NAME" />, tienes que conceder el permiso de accesibilidad para que se pueda insertar la información del ordenador remoto en este Mac.
-
-Para conceder este permiso, haz clic en <ph name="BUTTON_NAME" /> más abajo para abrir el panel de preferencias Accesibilidad y marca la casilla situada junto a <ph name="SERVICE_SCRIPT_NAME" />.
-
-Si la casilla <ph name="SERVICE_SCRIPT_NAME" /> ya está marcada, desmárcala y vuelve a marcarla.</translation>
 <translation id="6441316101718669559">La integración del escritorio no se admite en esta plataforma. Puedes seguir utilizando la aplicación, pero la experiencia de usuario se verá afectada.</translation>
 <translation id="652218476070540101">Se está actualizando el PIN de este ordenador...</translation>
 <translation id="6527303717912515753">Compartir</translation>

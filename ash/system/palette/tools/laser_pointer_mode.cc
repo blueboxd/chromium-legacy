@@ -4,7 +4,7 @@
 
 #include "ash/system/palette/tools/laser_pointer_mode.h"
 
-#include "ash/laser/laser_pointer_controller.h"
+#include "ash/fast_ink/laser/laser_pointer_controller.h"
 #include "ash/resources/vector_icons/vector_icons.h"
 #include "ash/shell.h"
 #include "ash/strings/grit/ash_strings.h"

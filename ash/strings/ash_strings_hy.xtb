@@ -118,6 +118,7 @@
 <translation id="2413728805700750528"><ph name="DISPLAY_NAME" /> աշխատաշրջանը կառավարվում է <ph name="DOMAIN" /> տիրույթի կողմից</translation>
 <translation id="2427507373259914951">Ձախ սեղմում</translation>
 <translation id="2429753432712299108">«<ph name="DEVICE_NAME" />» Bluetooth սարքը զուգավորման թույլտվություն է խնդրում: Նախքան ընդունելը հաստատեք, որ սարքի վրա ցուցադրվում է այս կոդը` <ph name="PASSKEY" /></translation>
+<translation id="2435457462613246316">Ցույց տալ գաղտնաբառը</translation>
 <translation id="2473177541599297363">Լուծաչափի հաստատում</translation>
 <translation id="2482878487686419369">Ծանուցումներ</translation>
 <translation id="2484513351006226581">Ստեղնաշարի դասավորությունը փոխելու համար սեղմեք <ph name="KEYBOARD_SHORTCUT" />։</translation>
@@ -279,6 +280,7 @@
 <translation id="4527045527269911712">«<ph name="DEVICE_NAME" />» Bluetooth սարքը զուգավորվելու թույլտվություն է խնդրում:</translation>
 <translation id="453661520163887813">Լրիվ կլիցքավորվի <ph name="TIME" />-ից</translation>
 <translation id="4561267230861221837">3G</translation>
+<translation id="4565377596337484307">Թաքցնել գաղտնաբառը</translation>
 <translation id="4570957409596482333">«Ընտրեք և լսեք» կոճակ</translation>
 <translation id="4585337515783392668">Դադարեցնել հեռարձակումը անհայտ սարքին</translation>
 <translation id="4628757576491864469">Սարքեր</translation>

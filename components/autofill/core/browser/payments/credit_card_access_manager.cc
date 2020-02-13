@@ -352,8 +352,7 @@ void CreditCardAccessManager::OnSettingsPageFIDOAuthToggled(bool opt_in) {
 #endif
 }
 
-CreditCardFormEventLogger::UnmaskAuthFlowType
-CreditCardAccessManager::GetAuthenticationType(
+UnmaskAuthFlowType CreditCardAccessManager::GetAuthenticationType(
     bool get_unmask_details_returned) {
   bool fido_auth_suggested =
       get_unmask_details_returned && unmask_details_.unmask_auth_method ==
@@ -373,10 +372,10 @@ CreditCardAccessManager::GetAuthenticationType(
       card_is_authorized_for_fido && !card_->IsExpired(AutofillClock::Now());
 
   if (card_is_eligible_for_fido)
-    return CreditCardFormEventLogger::UnmaskAuthFlowType::kFido;
+    return UnmaskAuthFlowType::kFido;
   if (should_follow_up_cvc_with_fido_auth)
-    return CreditCardFormEventLogger::UnmaskAuthFlowType::kCvcThenFido;
-  return CreditCardFormEventLogger::UnmaskAuthFlowType::kCvc;
+    return UnmaskAuthFlowType::kCvcThenFido;
+  return UnmaskAuthFlowType::kCvc;
 }
 
 void CreditCardAccessManager::Authenticate(bool get_unmask_details_returned) {
@@ -400,19 +399,16 @@ void CreditCardAccessManager::Authenticate(bool get_unmask_details_returned) {
 
   // If FIDO auth was suggested, logging which authentication method was
   // actually used.
-  if (unmask_auth_flow_type_ ==
-      CreditCardFormEventLogger::UnmaskAuthFlowType::kFido) {
+  if (unmask_auth_flow_type_ == UnmaskAuthFlowType::kFido) {
     AutofillMetrics::LogCardUnmaskTypeDecision(
         AutofillMetrics::CardUnmaskTypeDecisionMetric::kFidoOnly);
   }
-  if (unmask_auth_flow_type_ ==
-      CreditCardFormEventLogger::UnmaskAuthFlowType::kCvcThenFido) {
+  if (unmask_auth_flow_type_ == UnmaskAuthFlowType::kCvcThenFido) {
     AutofillMetrics::LogCardUnmaskTypeDecision(
         AutofillMetrics::CardUnmaskTypeDecisionMetric::kCvcThenFido);
   }
 
-  if (unmask_auth_flow_type_ ==
-      CreditCardFormEventLogger::UnmaskAuthFlowType::kFido) {
+  if (unmask_auth_flow_type_ == UnmaskAuthFlowType::kFido) {
 #if defined(OS_IOS)
     NOTREACHED();
 #else
@@ -465,8 +461,7 @@ void CreditCardAccessManager::OnCVCAuthenticationComplete(
   // Log completed CVC authentication if auth was successful. Do not log for
   // kCvcThenFido flow since that is yet to be completed.
   if (response.did_succeed &&
-      unmask_auth_flow_type_ !=
-          CreditCardFormEventLogger::UnmaskAuthFlowType::kCvcThenFido) {
+      unmask_auth_flow_type_ != UnmaskAuthFlowType::kCvcThenFido) {
     form_event_logger_->LogCardUnmaskAuthenticationPromptCompleted(
         unmask_auth_flow_type_);
   }
@@ -475,13 +470,11 @@ void CreditCardAccessManager::OnCVCAuthenticationComplete(
   // -- a CVC check is adequate for an opted-out user. An opted-in user,
   // however, will require an additional WebAuthn check before the form can be
   // filled. If CVC authentication failed, report error immediately.
-  if (unmask_auth_flow_type_ !=
-          CreditCardFormEventLogger::UnmaskAuthFlowType::kCvcThenFido ||
+  if (unmask_auth_flow_type_ != UnmaskAuthFlowType::kCvcThenFido ||
       !response.did_succeed) {
     accessor_->OnCreditCardFetched(response.did_succeed, response.card,
                                    response.cvc);
-    unmask_auth_flow_type_ =
-        CreditCardFormEventLogger::UnmaskAuthFlowType::kNone;
+    unmask_auth_flow_type_ = UnmaskAuthFlowType::kNone;
   }
 
   if (!response.did_succeed || response.card_authorization_token.empty())
@@ -516,8 +509,7 @@ void CreditCardAccessManager::OnCVCAuthenticationComplete(
            ->IsMaxStrikesLimitReached();
   if (should_offer_fido_auth) {
     ShowWebauthnOfferDialog(response.card_authorization_token);
-  } else if (unmask_auth_flow_type_ ==
-             CreditCardFormEventLogger::UnmaskAuthFlowType::kCvcThenFido) {
+  } else if (unmask_auth_flow_type_ == UnmaskAuthFlowType::kCvcThenFido) {
     DCHECK(unmask_details_.fido_request_options.has_value());
 
     // Save credit card for after authorization.
@@ -549,11 +541,9 @@ void CreditCardAccessManager::OnFIDOAuthenticationComplete(
 
     form_event_logger_->LogCardUnmaskAuthenticationPromptCompleted(
         unmask_auth_flow_type_);
-    unmask_auth_flow_type_ =
-        CreditCardFormEventLogger::UnmaskAuthFlowType::kNone;
+    unmask_auth_flow_type_ = UnmaskAuthFlowType::kNone;
   } else {
-    unmask_auth_flow_type_ =
-        CreditCardFormEventLogger::UnmaskAuthFlowType::kCvcFallbackFromFido;
+    unmask_auth_flow_type_ = UnmaskAuthFlowType::kCvcFallbackFromFido;
     form_event_logger_->LogCardUnmaskAuthenticationPromptShown(
         unmask_auth_flow_type_);
     GetOrCreateCVCAuthenticator()->Authenticate(
@@ -568,7 +558,7 @@ void CreditCardAccessManager::OnFidoAuthorizationComplete(bool did_succeed) {
     form_event_logger_->LogCardUnmaskAuthenticationPromptCompleted(
         unmask_auth_flow_type_);
   }
-  unmask_auth_flow_type_ = CreditCardFormEventLogger::UnmaskAuthFlowType::kNone;
+  unmask_auth_flow_type_ = UnmaskAuthFlowType::kNone;
   cvc_ = base::string16();
 }
 #endif

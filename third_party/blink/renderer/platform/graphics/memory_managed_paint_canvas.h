@@ -36,7 +36,7 @@ class PLATFORM_EXPORT MemoryManagedPaintCanvas final
                      SrcRectConstraint constraint) override;
 
  private:
-  void RequestFlushAfterDrawIfNeeded(const cc::PaintImage& image);
+  void UpdateMemoryUsage(const cc::PaintImage& image);
 
   base::flat_set<int> cached_image_ids_;
   uint64_t total_stored_image_memory_ = 0;

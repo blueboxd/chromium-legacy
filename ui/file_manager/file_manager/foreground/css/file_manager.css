@@ -2339,7 +2339,7 @@ body.files-ng .table-header-label {
   color: inherit;
   font-weight: normal;
   line-height: 20px;
-  margin-inline-end: 5px;
+  margin-inline-end: 0;
   margin-inline-start: 32px;
 }
 
@@ -2366,6 +2366,12 @@ body.files-ng .table-label-container {
   padding-top: 14px;
 }
 
+/* Text in the column header */
+body.files-ng .table-label-container > span {
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
 body.files-ng .table-header-label .sorted .sort-icon:hover {
   background-color: rgba(0, 0, 0, 4%);
 }
@@ -2377,10 +2383,6 @@ body.files-ng .table-header-label .not-sorted .sort-icon {
 /** Size column is aligned to right. */
 body.files-ng .table-header-label.size .table-label-container {
   justify-content: flex-end;
-}
-
-body.files-ng .table-header-label.size .sorted .sort-icon {
-  margin-inline-end: -10px; /* Align the icon with column text */
 }
 
 body.files-ng #list-container li.table-row {
@@ -2409,7 +2411,7 @@ body.files-ng .table-header-splitter  {
   background: none;
   height: 32px;
   margin-top: 14px;
-  width: 32px;
+  width: auto;
 }
 
 body.files-ng .table-header-splitter .splitter-icon {

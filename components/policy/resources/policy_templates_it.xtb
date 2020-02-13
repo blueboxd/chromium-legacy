@@ -355,11 +355,6 @@ Se l'impostazione è disattivata o non è stata configurata, gli utenti aziendal
           Se questo criterio è disattivato o non impostato, le impostazioni Account Kerberos sono disattivate. Nessun account Kerberos può essere aggiunto e l'autenticazione Kerberos non può essere utilizzata. Tutti gli account Kerberos esistenti vengono eliminati, tutte le password memorizzate vengono eliminate.</translation>
 <translation id="1561424797596341174">La norma sostituisce le build di debug dell'host di accesso remoto</translation>
 <translation id="1561967320164410511">U2F più estensioni per singola attestazione</translation>
-<translation id="1574554504290354326">Questa impostazione è obsoleta. Utilizza invece SafeBrowsingExtendedReportingEnabled. L'attivazione o la disattivazione di SafeBrowsingExtendedReportingEnabled equivale a impostare SafeBrowsingExtendedReportingOptInAllowed su False.
-
-      L'impostazione di questa norma su False impedisce agli utenti di decidere di inviare ai server di Google alcune informazioni di sistema e i contenuti della pagina. Se questa impostazione viene configurata su True o non viene configurata, gli utenti potranno inviare alcune informazioni di sistema e i contenuti della pagina a Navigazione sicura per contribuire a rilevare app e siti pericolosi.
-
-      Visita il sito https://developers.google.com/safe-browsing per avere ulteriori informazioni sulla funzione Navigazione sicura.</translation>
 <translation id="1583248206450240930">Utilizza <ph name="PRODUCT_FRAME_NAME" /> per impostazione predefinita</translation>
 <translation id="1599424828227887013">Attiva isolamento dei siti per origini specificate su dispositivi Android</translation>
 <translation id="1608755754295374538">URL a cui verrà concesso l'accesso ai dispositivi di acquisizione audio senza richieste</translation>
@@ -4243,21 +4238,6 @@ Se questa norma non viene impostata, verranno utilizzate le dimensioni predefini
       Questo criterio ha effetto solo per gli utenti non affiliati.
       </translation>
 <translation id="7683777542468165012">Aggiornamento dinamico delle norme</translation>
-<translation id="7684516445147212248">Se configuri questo criterio, l'autenticazione ambientale verrà attivata o disattivata per i profili Ospite e in modalità in incognito in <ph name="PRODUCT_NAME" />.
-
-      L'autenticazione ambientale è l'autenticazione http con credenziali predefinite, se non ne sono esplicitamente fornite altre tramite schemi challenge/response NTLM/Kerberos/Negotiate.
-
-      Se imposti <ph name="REGULAR_ONLY_OPTION_NAME" /> (valore 0), consenti l'autenticazione ambientale solo per le sessioni standard. Non sarà consentito eseguire l'autenticazione ambientale con le sessioni Ospite e in modalità in incognito.
-
-      Se imposti <ph name="INCOGNITO_AND_REGULAR_OPTION_NAME" /> (valore 1), consenti l'autenticazione ambientale per le sessioni standard e in modalità in incognito. Non sarà consentito eseguire l'autenticazione ambientale con le sessioni Ospite.
-
-      Se imposti <ph name="GUEST_AND_REGULAR_OPTION_NAME" /> (valore 2), consenti l'autenticazione ambientale per le sessioni standard e Ospite. Non sarà consentito eseguire l'autenticazione ambientale con le sessioni in modalità in incognito.
-
-      Se imposti <ph name="ALL_OPTION_NAME" /> (valore 3), consenti l'autenticazione ambientale per tutte le sessioni.
-
-      Tieni presente che l'autenticazione ambientale è sempre consentita per i profili standard.
-
-      Se il criterio non viene impostato, nelle release future di <ph name="PRODUCT_NAME" /> non sarà possibile eseguire l'autenticazione ambientale con le sessioni Ospite e in modalità in incognito, dal momento che non sarà più consentita.</translation>
 <translation id="7687943045976362719">Se questa norma viene impostata, i tipi di contenuto specificati vengono gestiti da <ph name="PRODUCT_FRAME_NAME" />.
 
           Se la norma non viene impostata, verrà utilizzato per tutti i siti il renderer predefinito. (È possibile utilizzare la norma <ph name="CHROME_FRAME_RENDERER_SETTINGS_POLICY_NAME" /> per configurare il renderer predefinito).</translation>

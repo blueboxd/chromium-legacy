@@ -690,6 +690,7 @@
 <translation id="1926339101652878330">Disse indstillinger er underlagt en virksomhedspolitik. Kontakt din administrator for at få flere oplysninger.</translation>
 <translation id="1927632033341042996">Finger <ph name="NEW_FINGER_NUMBER" /></translation>
 <translation id="1928202201223835302">Angiv den gamle pinkode</translation>
+<translation id="1928696683969751773">Opdateringer</translation>
 <translation id="1929546189971853037">Læse din browserhistorik på alle enheder, hvor du er logget ind</translation>
 <translation id="1931152874660185993">Der er ikke installeret nogen komponenter.</translation>
 <translation id="1932098463447129402">Ikke før</translation>
@@ -1890,7 +1891,6 @@ Du kan administrere indstillingerne for denne konto ved at installere Family Lin
 <translation id="3603177256297531067">Denne side kunne ikke oversættes</translation>
 <translation id="3603622770190368340">Få fat i et netværkscertifikat</translation>
 <translation id="3605780360466892872">Asger</translation>
-<translation id="3608436266458100337">Læser-tilstand</translation>
 <translation id="3608576286259426129">Forhåndsvisning af billede fra bruger</translation>
 <translation id="3610369246614755442">Dockingstationens blæser trænger til service</translation>
 <translation id="361106536627977100">Flash-data</translation>
@@ -2393,7 +2393,6 @@ Vil du starte <ph name="CONTROL_PANEL_APPLET_NAME" />?</translation>
 <translation id="4285418559658561636">Opdater adgangskode</translation>
 <translation id="4285498937028063278">Frigør</translation>
 <translation id="428565720843367874">Antivirussoftwaren mislykkedes uventet under scanning af denne fil.</translation>
-<translation id="4287502004382794929">Du har ikke nok softwarelicenser til at tilmelde denne enhed. Kontakt salgsafdelingen for at købe flere. Hvis du mener, at du får vist denne meddelelse ved en fejl, bedes du kontakte support.</translation>
 <translation id="4289540628985791613">Oversigt</translation>
 <translation id="4295072614469448764">Appen er tilgængelig i din terminal. Der vises muligvis også et ikon på din appliste.</translation>
 <translation id="4295979599050707005">Log ind igen for at bekræfte, at din konto, <ph name="USER_EMAIL" />, kan bruges sammen med websites, apps og udvidelser i Chrome og Google Play. Du kan også fjerne denne konto. <ph name="LINK_BEGIN" />Få flere oplysninger<ph name="LINK_END" /></translation>
@@ -2873,6 +2872,7 @@ Vil du starte <ph name="CONTROL_PANEL_APPLET_NAME" />?</translation>
 <translation id="4998430619171209993">Til</translation>
 <translation id="4998873842614926205">Bekræft ændringer</translation>
 <translation id="5000922062037820727">Blokeret (anbefales)</translation>
+<translation id="5005498671520578047">Kopiér adgangskode</translation>
 <translation id="5007392906805964215">Gennemgå</translation>
 <translation id="5008936837313706385">Aktivitetsnavn</translation>
 <translation id="5010043101506446253">Certificeringsautoritet</translation>
@@ -4656,7 +4656,6 @@ slettes permanent, når den administrerede bruger fjernes. Besøgte websites og 
 <translation id="7521387064766892559">JavaScript</translation>
 <translation id="7522255036471229694">Sig "Ok Google".</translation>
 <translation id="7525067979554623046">Opret</translation>
-<translation id="7529411698175791732">Tjek din internetforbindelse. Hvis problemet fortsætter, kan du prøve at logge ud og logge ind igen.</translation>
 <translation id="7530016656428373557">Afladningshastighed i Watt</translation>
 <translation id="7531779363494549572">Gå til Indstillinger &gt; Apps og notifikationer &gt; Notifikationer.</translation>
 <translation id="7532009420053991888"><ph name="LINUX_APP_NAME" /> svarer ikke. Vælg "Tving til at lukke" for at lukke appen.</translation>
@@ -5798,7 +5797,6 @@ Opbevar din nøglefil på et sikkert sted. Du skal bruge den til at oprette nye 
 <translation id="9050666287014529139">Adgangssætning</translation>
 <translation id="9052208328806230490">Du har registreret dine printere med <ph name="CLOUD_PRINT_NAME" /> via kontoen <ph name="EMAIL" /></translation>
 <translation id="9052404922357793350">Fortsæt blokering</translation>
-<translation id="9053091947372579468">Din enhed har en Chrome-licens, men dit brugernavn er ikke knyttet til en administrationskonsol. Opret en konto i Administrationskonsol for at fortsætte med tilmeldingen. Bemærk! Hvis du vælger at bruge dit eget domæne til at oprette en ny konto i Administrationskonsol, skal du også gennemføre domænebekræftelse efter tilmeldingen. https://g.co/ChromeEnterpriseAccount</translation>
 <translation id="9053563360605707198">Udskriv på begge sider</translation>
 <translation id="9053893665344928494">Husk mit valg</translation>
 <translation id="9055636786322918818">Gennemtving RC4-kryptering. Du løber en større risiko, hvis du vælger denne mulighed, da RC4-krypteringsalgoritmerne er usikre.</translation>

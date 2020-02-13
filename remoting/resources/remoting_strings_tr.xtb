@@ -229,11 +229,6 @@ Bu izni vermek için aşağıdaki "<ph name="BUTTON_NAME" />" düğmesini tıkla
 <translation id="6304318647555713317">İstemci</translation>
 <translation id="6381670701864002291">Başka bir şey.</translation>
 <translation id="6398765197997659313">Tam ekrandan çık</translation>
-<translation id="6411861157501911556"><ph name="PRODUCT_NAME" /> ürününü kullanmak üzere uzak makinedeki girişin bu Mac'e aktarılabilmesi için "Erişilebilirlik" iznini vermeniz gerekir.
-
-Bu izni vermek için aşağıdaki "<ph name="BUTTON_NAME" />" düğmesine tıklayarak "Erişilebilirlik" tercihleri bölmesini açın ve ardından, "<ph name="SERVICE_SCRIPT_NAME" />" öğesinin yanındaki kutuyu işaretleyin.
-
-"<ph name="SERVICE_SCRIPT_NAME" />" zaten işaretliyse işaretini kaldırıp yeniden işaretleyin.</translation>
 <translation id="6441316101718669559">Masaüstü entegrasyonu bu platformda desteklenmiyor. Uygulamayı kullanmaya devam edebilirsiniz, ancak kullanıcı deneyimi olumsuz etkilenecektir.</translation>
 <translation id="652218476070540101">Bu bilgisayarın PIN'i güncelleniyor…</translation>
 <translation id="6527303717912515753">Paylaş</translation>

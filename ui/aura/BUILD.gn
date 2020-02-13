@@ -77,6 +77,8 @@ jumbo_component("aura") {
     "input_state_lookup.cc",
     "input_state_lookup_win.cc",
     "layout_manager.cc",
+    "native_window_occlusion_tracker.cc",
+    "native_window_occlusion_tracker.h",
     "native_window_occlusion_tracker_win.cc",
     "native_window_occlusion_tracker_win.h",
     "null_window_targeter.cc",

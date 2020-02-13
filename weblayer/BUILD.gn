@@ -318,6 +318,7 @@ jumbo_static_library("weblayer_lib") {
       "//components/autofill/android:provider",
       "//components/crash/android:crashpad_main",
       "//components/embedder_support/android/metrics",
+      "//components/javascript_dialogs",
       "//components/metrics",
       "//components/minidump_uploader",
       "//components/safe_browsing/content/common:interfaces",

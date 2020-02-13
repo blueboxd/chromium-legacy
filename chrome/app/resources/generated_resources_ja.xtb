@@ -690,6 +690,7 @@
 <translation id="1926339101652878330">これらの設定は会社のポリシーによって制御されています。詳しくは管理者にお尋ねください。</translation>
 <translation id="1927632033341042996">指紋 <ph name="NEW_FINGER_NUMBER" /></translation>
 <translation id="1928202201223835302">以前の PIN を入力</translation>
+<translation id="1928696683969751773">更新</translation>
 <translation id="1929546189971853037">ログインしているすべてのデバイスでの閲覧履歴の読み取り</translation>
 <translation id="1931152874660185993">コンポーネントはインストールされていません。</translation>
 <translation id="1932098463447129402">開始時刻</translation>
@@ -1890,7 +1891,6 @@
 <translation id="3603177256297531067">このページを翻訳できませんでした</translation>
 <translation id="3603622770190368340">ネットワーク証明書を取得</translation>
 <translation id="3605780360466892872">ボタンダウン</translation>
-<translation id="3608436266458100337">リーダーモード</translation>
 <translation id="3608576286259426129">ユーザー画像のプレビュー</translation>
 <translation id="3610369246614755442">ドックのファンに問題があります</translation>
 <translation id="361106536627977100">Flash データ</translation>
@@ -2393,7 +2393,6 @@
 <translation id="4285418559658561636">パスワードを更新</translation>
 <translation id="4285498937028063278">固定を解除</translation>
 <translation id="428565720843367874">このファイルのスキャン中にウイルス対策ソフトウェアで予期しないエラーが発生しました。</translation>
-<translation id="4287502004382794929">このデバイスを登録するソフトウェア ライセンスを持っていません。さらに購入するには、販売担当者にお問い合わせください。このメッセージが間違って表示されていると思われる場合は、サポートにお問い合わせください。</translation>
 <translation id="4289540628985791613">概要</translation>
 <translation id="4295072614469448764">アプリはお使いのデバイスでご利用いただけます。ランチャーにアイコンが追加されている可能性もあります。</translation>
 <translation id="4295979599050707005">もう一度ログインして、Chrome と Google Play のウェブサイト、アプリ、拡張機能でアカウント（<ph name="USER_EMAIL" />）を使用できることを確認してください。このアカウントを削除することも可能です。<ph name="LINK_BEGIN" />詳細<ph name="LINK_END" /></translation>
@@ -2873,6 +2872,7 @@
 <translation id="4998430619171209993">オン</translation>
 <translation id="4998873842614926205">変更内容を確認</translation>
 <translation id="5000922062037820727">ブロック（推奨）</translation>
+<translation id="5005498671520578047">パスワードのコピー</translation>
 <translation id="5007392906805964215">内容を確認</translation>
 <translation id="5008936837313706385">アクティビティ名</translation>
 <translation id="5010043101506446253">認証局</translation>
@@ -4655,7 +4655,6 @@
 <translation id="7521387064766892559">JavaScript</translation>
 <translation id="7522255036471229694">「OK Google」と言ってください</translation>
 <translation id="7525067979554623046">作成</translation>
-<translation id="7529411698175791732">インターネット接続を確認してください。問題が解消しない場合は、ログアウトして再度ログインしてみてください。</translation>
 <translation id="7530016656428373557">放電率（ワット）</translation>
 <translation id="7531779363494549572">[設定] &gt; [アプリと通知] &gt; [通知] の順に選択します。</translation>
 <translation id="7532009420053991888"><ph name="LINUX_APP_NAME" /> から応答がありません。終了するには [強制終了] を選択してください。</translation>
@@ -5797,7 +5796,6 @@
 <translation id="9050666287014529139">パスフレーズ</translation>
 <translation id="9052208328806230490"><ph name="CLOUD_PRINT_NAME" /> に、アカウント <ph name="EMAIL" /> を使ってプリンタを登録しました</translation>
 <translation id="9052404922357793350">引き続きブロックする</translation>
-<translation id="9053091947372579468">ご利用のデバイスには Chrome ライセンスが付与されていますが、ご利用のユーザー名が管理コンソールに関連付けられていません。登録を続けるには、管理コンソール アカウントを作成してください。注: 新しい管理コンソール アカウントを作成するにあたって自社ドメインを使用する場合は、登録後にドメインの確認も行う必要があります。https://g.co/ChromeEnterpriseAccount</translation>
 <translation id="9053563360605707198">両面に印刷する</translation>
 <translation id="9053893665344928494">選択内容を保存</translation>
 <translation id="9055636786322918818">RC4 暗号化を適用します。なお RC4 暗号は安全でないため、このオプションを使用するとリスクが高まります。</translation>

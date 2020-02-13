@@ -20,20 +20,10 @@
 
 namespace autofill {
 
+enum class UnmaskAuthFlowType;
+
 class CreditCardFormEventLogger : public FormEventLoggerBase {
  public:
-  // Metric for tracking which card unmask authentication method was used.
-  enum class UnmaskAuthFlowType {
-    kNone = 0,
-    // Only CVC prompt was shown.
-    kCvc = 1,
-    // Only WebAuthn prompt was shown.
-    kFido = 2,
-    // CVC authentication was required in addition to WebAuthn.
-    kCvcThenFido = 3,
-    // WebAuthn prompt failed and fell back to CVC prompt.
-    kCvcFallbackFromFido = 4,
-  };
   enum class UnmaskAuthFlowEvent {
     // Authentication prompt is shown.
     kPromptShown = 0,

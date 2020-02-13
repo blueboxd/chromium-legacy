@@ -688,6 +688,7 @@ xizmatlarini sizga moslashtirish maqsadlarida foydalanishi mumkin. Bu ruxsatni m
 <translation id="1926339101652878330">Bu sozlamalar korporativ tartib-qoidalarga ko‘ra nazorat qilinadi. Qo‘shimcha ma’lumot olish uchun administratorga murojaat qiling.</translation>
 <translation id="1927632033341042996">Barmoq izi <ph name="NEW_FINGER_NUMBER" /></translation>
 <translation id="1928202201223835302">Eski PIN kodni kiriting</translation>
+<translation id="1928696683969751773">Yangilanishlar</translation>
 <translation id="1929546189971853037">Brauzer tarixini joriy hisobingiz yordamida barcha qurilmalaringizda ko‘rishga ruxsat</translation>
 <translation id="1931152874660185993">Hech qanday komponent o‘rnatilmagan.</translation>
 <translation id="1932098463447129402">Erta bo‘lmasin</translation>
@@ -1887,7 +1888,6 @@ Oʻz qurilmangizda Family Link ilovasini oʻrnatib, bu hisob sozlamalarini boshq
 <translation id="3603177256297531067">Bu sahifa tarjima qilinmadi</translation>
 <translation id="3603622770190368340">Tarmoq sertifikatini qabul qilish</translation>
 <translation id="3605780360466892872">Ishbilarmon</translation>
-<translation id="3608436266458100337">O‘qish rejimi</translation>
 <translation id="3608576286259426129">Foydalanuvchi rasmini oldingdan ko‘rish</translation>
 <translation id="3610369246614755442">Dok ventilyatori ishlamayapti</translation>
 <translation id="361106536627977100">Flash ma‘lumotlari</translation>
@@ -2390,7 +2390,6 @@ Oʻz qurilmangizda Family Link ilovasini oʻrnatib, bu hisob sozlamalarini boshq
 <translation id="4285418559658561636">Parolni yangilash</translation>
 <translation id="4285498937028063278">Olib tashlash</translation>
 <translation id="428565720843367874">Antivirus dasturida bu faylni tekshirish vaqtida xatolik yuz berdi.</translation>
-<translation id="4287502004382794929">Bu qurilmani qo‘shish uchun sizda yetarli dasturiy ta’minot litsenziyalari yo‘q. Xarid qilish uchun savdo bo‘limiga murojaat qiling. Bu xabar noto‘g‘ri bo‘lsa, qo‘llab-quvvatlash xizmati bilan bog‘laning.</translation>
 <translation id="4289540628985791613">Umumiy</translation>
 <translation id="4295072614469448764">Ilova terminalingizda mavjud. Launcherda ikonka bo‘lishi kerak.</translation>
 <translation id="4295979599050707005"><ph name="USER_EMAIL" /> hisobingizga qaytadan kirib, Chrome va Google Play hisobingizni saytlar, ilova va kengaytmalarga kirishda ishlatishiga ruxsat berishingizni tasdiqlang. Bu hisobni olib tashlashingiz ham mumkin. <ph name="LINK_BEGIN" />Batafsil<ph name="LINK_END" /></translation>
@@ -2870,6 +2869,7 @@ Oʻz qurilmangizda Family Link ilovasini oʻrnatib, bu hisob sozlamalarini boshq
 <translation id="4998430619171209993">Yoniq</translation>
 <translation id="4998873842614926205">O‘zgarishlarni tasdiqlash</translation>
 <translation id="5000922062037820727">Bloklangan (tavsiya etiladi)</translation>
+<translation id="5005498671520578047">Parolni nusxalash</translation>
 <translation id="5007392906805964215">Tekshirish</translation>
 <translation id="5008936837313706385">Harakat nomi</translation>
 <translation id="5010043101506446253">Sertifikat markazi</translation>
@@ -4652,7 +4652,6 @@ Ochiq eksponenta (<ph name="PUBLIC_EXPONENT_NUM_BITS" /> bit):
 <translation id="7521387064766892559">JavaScript</translation>
 <translation id="7522255036471229694">“Ok Google” deb ayting</translation>
 <translation id="7525067979554623046">Yaratish</translation>
-<translation id="7529411698175791732">Internetga ulanishni tekshiring. Yana muammo bo‘lsa, hisobingizdan chiqing va qayta kiring.</translation>
 <translation id="7530016656428373557">Quvvatsizlantirish tezligi Vattda</translation>
 <translation id="7531779363494549572">Sozlamalar &gt; Ilovalar va bildirishnomalar &gt; Bildirishnomalar sahifasini oching.</translation>
 <translation id="7532009420053991888"><ph name="LINUX_APP_NAME" /> javob bermayapti Ilovani “Majburiy toʻxtatish” orqali yoping.</translation>
@@ -5792,7 +5791,6 @@ Kalit faylini ishonchli joyda saqlang. U kengaytmaning yangi versiyalarini yarat
 <translation id="9050666287014529139">Kodli ibora</translation>
 <translation id="9052208328806230490">Printerlaringizni <ph name="EMAIL" /> hisobi yordamida <ph name="CLOUD_PRINT_NAME" />’da qayddan o‘tkazdingiz</translation>
 <translation id="9052404922357793350">Bloklanaversin</translation>
-<translation id="9053091947372579468">Qurilmangizda Chrome litsenziyasi bor, lekin joriy foydalanuvchi Admin paneliga ulanmagan. Qurilma registratsiyasi uchun unda Admin paneli hisobi yaratishingiz kerak. Eslatma: Agar yangi admin paneli hisobini o‘z domeningizda ochsangiz, yaratishdan keyin domenni ham tasdiqlashingiz kerak bo‘ladi. Batafsil axborot: https://g.co/ChromeEnterpriseAccount</translation>
 <translation id="9053563360605707198">Ikki tarafiga chop etish</translation>
 <translation id="9053893665344928494">Tanlovim eslab qolinsin</translation>
 <translation id="9055636786322918818">RC4 shifrlash usulidan majburiy foydalanish. RC4 shifrlari himoyasizroq, shuning uchun bu usulni tanlash xavfliroq bo‘lishi mumkin.</translation>

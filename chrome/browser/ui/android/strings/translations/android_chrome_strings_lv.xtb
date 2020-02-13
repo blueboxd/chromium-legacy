@@ -281,6 +281,7 @@
 <translation id="3137521801621304719">Iziet no inkognito režīma</translation>
 <translation id="3140134512074889489">Iespējojiet piekļuvi kamerai, lai skenētu QR kodu.</translation>
 <translation id="3143515551205905069">Atcelt sinhronizāciju</translation>
+<translation id="314939179385989105">Chrome sākumlapa</translation>
 <translation id="3157842584138209013">Izmantojiet pogu Vairāk opciju, lai uzzinātu ietaupīto datu apjomu</translation>
 <translation id="3166827708714933426">Ciļņu un logu īsinājumtaustiņi</translation>
 <translation id="3181954750937456830">Droša pārlūkošana (aizsargā jūs un ierīci pret bīstamām vietnēm)</translation>
@@ -727,6 +728,7 @@ Turiet nospiestu jebkuru vārdu, lai izveidotu tā meklēšanas vienumu. Lai pre
 <translation id="6437478888915024427">Lapas informācija</translation>
 <translation id="6441734959916820584">Vārds ir pārāk garš</translation>
 <translation id="6444421004082850253">{FILE_COUNT,plural, =1{# attēls}zero{# attēli}one{# attēls}other{# attēli}}</translation>
+<translation id="6447558397796644647">Nevar atrast grāmatzīmi. Pārbaudiet pareizrakstību vai pievienojiet grāmatzīmi.</translation>
 <translation id="6447842834002726250">Sīkfaili</translation>
 <translation id="6461962085415701688">Nevar atvērt failu.</translation>
 <translation id="6464977750820128603">Varat skatīt pārlūkā Chrome apmeklētās vietnes un iestatīt tām taimerus.\n\nGoogle saņem informāciju par vietnēm, kurām iestatāt taimerus, kā arī šo vietņu apmeklēšanas ilgumu. Šī informācija tiek izmantota, lai uzlabotu Digitālo labjutību.</translation>
@@ -802,6 +804,7 @@ Turiet nospiestu jebkuru vārdu, lai izveidotu tā meklēšanas vienumu. Lai pre
 <translation id="6990079615885386641">Iegūstiet lietotni Google Play veikalā: <ph name="APP_ACTION" /></translation>
 <translation id="6992289844737586249">Jautāt, pirms atļaut vietnēm izmantot jūsu mikrofonu (ieteicams)</translation>
 <translation id="6995899638241819463">Brīdināt, ja paroles tiek atklātas datu noplūdes dēļ</translation>
+<translation id="7000754031042624318">Izslēgta Android iestatījumos</translation>
 <translation id="7015203776128479407">Sākotnējā sinhronizācijas iestatīšana netika pabeigta. Sinhronizācija ir izslēgta.</translation>
 <translation id="7016516562562142042">Atļauta pašreizējai meklētājprogrammai</translation>
 <translation id="7022756207310403729">Atvērt pārlūkā</translation>

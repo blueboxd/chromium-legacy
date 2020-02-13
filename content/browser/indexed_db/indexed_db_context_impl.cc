@@ -402,6 +402,41 @@ void IndexedDBContextImpl::GetAllOriginsDetails(
   std::move(callback).Run(is_incognito(), std::move(list));
 }
 
+void IndexedDBContextImpl::SetForceKeepSessionState() {
+  force_keep_session_state_ = true;
+}
+
+void IndexedDBContextImpl::BindTestInterface(
+    mojo::PendingReceiver<storage::mojom::IndexedDBControlTest> receiver) {
+  DCHECK(IDBTaskRunner()->RunsTasksInCurrentSequence());
+  test_receivers_.Add(this, std::move(receiver));
+}
+
+void IndexedDBContextImpl::GetFilePathForTesting(
+    const Origin& origin,
+    GetFilePathForTestingCallback callback) {
+  std::move(callback).Run(GetLevelDBPath(origin));
+}
+
+void IndexedDBContextImpl::ResetCachesForTesting(base::OnceClosure callback) {
+  origin_set_.reset();
+  origin_size_map_.clear();
+  std::move(callback).Run();
+}
+
+void IndexedDBContextImpl::AddObserver(
+    mojo::PendingRemote<storage::mojom::IndexedDBObserver> observer) {
+  IDBTaskRunner()->PostTask(
+      FROM_HERE,
+      base::BindOnce(
+          [](IndexedDBContextImpl* context,
+             mojo::PendingRemote<storage::mojom::IndexedDBObserver> observer) {
+            context->observers_.Add(std::move(observer));
+          },
+          // As |this| is destroyed on the IDBTaskRunner it is safe to post raw.
+          base::Unretained(this), std::move(observer)));
+}
+
 void IndexedDBContextImpl::ForceCloseSync(
     const Origin& origin,
     storage::mojom::ForceCloseReason reason) {
@@ -553,20 +588,6 @@ std::vector<base::FilePath> IndexedDBContextImpl::GetStoragePaths(
   return paths;
 }
 
-base::FilePath IndexedDBContextImpl::GetFilePathForTesting(
-    const Origin& origin) {
-  return GetLevelDBPath(origin);
-}
-
-void IndexedDBContextImpl::ResetCachesForTesting() {
-  origin_set_.reset();
-  origin_size_map_.clear();
-}
-
-void IndexedDBContextImpl::SetForceKeepSessionState() {
-  force_keep_session_state_ = true;
-}
-
 void IndexedDBContextImpl::FactoryOpened(const Origin& origin) {
   DCHECK(IDBTaskRunner()->RunsTasksInCurrentSequence());
   if (GetOriginSet()->insert(origin).second) {
@@ -615,20 +636,9 @@ void IndexedDBContextImpl::BlobFilesCleaned(const url::Origin& origin) {
   QueryDiskAndUpdateQuotaUsage(origin);
 }
 
-void IndexedDBContextImpl::AddObserver(
-    IndexedDBContextImpl::Observer* observer) {
-  DCHECK(!observers_.HasObserver(observer));
-  observers_.AddObserver(observer);
-}
-
-void IndexedDBContextImpl::RemoveObserver(
-    IndexedDBContextImpl::Observer* observer) {
-  observers_.RemoveObserver(observer);
-}
-
 void IndexedDBContextImpl::NotifyIndexedDBListChanged(const Origin& origin) {
   for (auto& observer : observers_)
-    observer.OnIndexedDBListChanged(origin);
+    observer->OnIndexedDBListChanged(origin);
 }
 
 void IndexedDBContextImpl::NotifyIndexedDBContentChanged(
@@ -636,8 +646,8 @@ void IndexedDBContextImpl::NotifyIndexedDBContentChanged(
     const base::string16& database_name,
     const base::string16& object_store_name) {
   for (auto& observer : observers_) {
-    observer.OnIndexedDBContentChanged(origin, database_name,
-                                       object_store_name);
+    observer->OnIndexedDBContentChanged(origin, database_name,
+                                        object_store_name);
   }
 }
 

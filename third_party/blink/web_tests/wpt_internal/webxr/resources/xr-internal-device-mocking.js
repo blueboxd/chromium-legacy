@@ -3,25 +3,8 @@
 /* This file contains extensions to the base mocking from the WebPlatform tests
  * for interal tests. The main mocked objects are found in
  * ../external/wpt/resources/chromium/webxr-test.js. */
-MockRuntime.prototype.setHitTestResults = function(results) {
-  this.hittest_results_ = results;
-};
-
 
 // XREnvironmentIntegrationProvider implementation
-
-MockRuntime.prototype.requestHitTest = function(ray) {
-  let hit_results = this.hittest_results_;
-  if (!hit_results) {
-    const hit = new device.mojom.XRHitResult();
-
-    // No change to the underlying matrix/leaving it null results in identity.
-    hit.hitMatrix = new gfx.mojom.Transform();
-    hit_results = {results: [hit]};
-  }
-  return Promise.resolve(hit_results);
-};
-
 MockRuntime.prototype.getSubmitFrameCount = function() {
   return this.presentation_provider_.submit_frame_count_;
 };

@@ -50,9 +50,15 @@ class DateTimeLocalPicker extends HTMLElement {
         // hitting Enter to activate the month switcher button, Today button,
         // or previous/next month arrows.
         if (!event.target.matches(
-                '.calendar-navigation-button, .month-popup-button')) {
+                '.calendar-navigation-button, .month-popup-button, .year-list-view')) {
           window.pagePopupController.setValueAndClosePopup(
               0, this.selectedValue);
+        } else if (event.target.matches(
+                       '.calendar-navigation-button, .year-list-view')) {
+          // Navigating with the previous/next arrows may change selection,
+          // so push this change to the in-page control but don't
+          // close the popup.
+          window.pagePopupController.setValue(this.selectedValue);
         }
         break;
       case 'Escape':
@@ -69,7 +75,15 @@ class DateTimeLocalPicker extends HTMLElement {
       case 'ArrowDown':
       case 'ArrowLeft':
       case 'ArrowRight':
+      case 'PageUp':
+      case 'PageDown':
       case 't':
+      case 'm':
+      case 'M':
+      case 'y':
+      case 'Y':
+      case 'd':
+      case 'D':
         if (event.target.matches('.calendar-table-view, .time-column') &&
             this.hasSelectedDate) {
           window.pagePopupController.setValue(this.selectedValue);
@@ -79,7 +93,8 @@ class DateTimeLocalPicker extends HTMLElement {
   };
 
   onClick_ = (event) => {
-    if (event.target.matches('.day-cell, .time-cell, .today-button-refresh') &&
+    if (event.target.matches(
+            '.day-cell, .time-cell, .today-button-refresh, .calendar-navigation-button, .year-list-view, .calendar-navigation-button, .today-button-icon-refresh, .month-button') &&
         this.hasSelectedDate) {
       window.pagePopupController.setValue(this.selectedValue);
     }

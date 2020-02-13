@@ -2,7 +2,9 @@
 
 "[Clusterfuzz](https://google.github.io/clusterfuzz/) is a scalable fuzzing
 infrastructure which finds security and stabilty issues in software". Chromium
-uses Clusterfuzz to find bugs in sqlite, among others.
+uses Clusterfuzz to find bugs in sqlite, among others. One can view sqlite
+Fuzzing coverage [here](https://chromium-coverage.appspot.com/reports/709707_fuzzers_only/linux/chromium/src/third_party/sqlite/amalgamation/report.html),
+with more detailed data [here](https://clusterfuzz.com/fuzzer-stats?fuzzer=libFuzzer_sqlite3_lpm_fuzzer).
 
 Given access to a clusterfuzz test case, this README will describe how one can
 reproduce and help diagnose sqlite bugs found by clusterfuzz.

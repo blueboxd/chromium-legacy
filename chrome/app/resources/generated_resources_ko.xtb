@@ -690,6 +690,7 @@
 <translation id="1926339101652878330">이러한 설정은 엔터프라이즈 정책에 의해 관리됩니다. 자세한 정보는 관리자에게 문의하세요.</translation>
 <translation id="1927632033341042996">지문 <ph name="NEW_FINGER_NUMBER" /></translation>
 <translation id="1928202201223835302">기존 PIN 입력</translation>
+<translation id="1928696683969751773">업데이트</translation>
 <translation id="1929546189971853037">로그인한 모든 기기의 인터넷 사용 기록 조회</translation>
 <translation id="1931152874660185993">설치된 구성요소가 없습니다.</translation>
 <translation id="1932098463447129402">시작:</translation>
@@ -1890,7 +1891,6 @@
 <translation id="3603177256297531067">페이지를 번역할 수 없음</translation>
 <translation id="3603622770190368340">네트워크 인증서 받기</translation>
 <translation id="3605780360466892872">와이셔츠</translation>
-<translation id="3608436266458100337">리더 모드</translation>
 <translation id="3608576286259426129">사용자 이미지 미리보기</translation>
 <translation id="3610369246614755442">도크 팬 서비스 필요</translation>
 <translation id="361106536627977100">Flash 데이터</translation>
@@ -2391,7 +2391,6 @@
 <translation id="4285418559658561636">비밀번호 업데이트</translation>
 <translation id="4285498937028063278">고정 해제</translation>
 <translation id="428565720843367874">파일을 검사하는 동안 바이러스 백신 소프트웨어에 예기치 않은 오류가 발생했습니다.</translation>
-<translation id="4287502004382794929">이 기기를 등록하기 위한 충분한 소프트웨어 라이선스를 갖고 있지 않습니다. 판매처에 문의하여 더 구입하시기 바랍니다. 이 메시지가 오류라고 판단되는 경우 지원팀에 문의하세요.</translation>
 <translation id="4289540628985791613">개요</translation>
 <translation id="4295072614469448764">단말기에서 앱을 사용할 수 있습니다. 런처에 아이콘이 있을 수도 있습니다.</translation>
 <translation id="4295979599050707005">웹사이트, 앱, Chrome 확장 프로그램 및 Google Play에서 계정(<ph name="USER_EMAIL" />)을 사용하도록 확인하려면 다시 로그인하세요. 계정을 삭제할 수도 있습니다. <ph name="LINK_BEGIN" />자세히 알아보기<ph name="LINK_END" /></translation>
@@ -2871,6 +2870,7 @@
 <translation id="4998430619171209993">사용</translation>
 <translation id="4998873842614926205">변경사항 확인</translation>
 <translation id="5000922062037820727">차단(권장)</translation>
+<translation id="5005498671520578047">비밀번호 복사</translation>
 <translation id="5007392906805964215">검토</translation>
 <translation id="5008936837313706385">활동 이름</translation>
 <translation id="5010043101506446253">인증 기관</translation>
@@ -4653,7 +4653,6 @@
 <translation id="7521387064766892559">자바스크립트</translation>
 <translation id="7522255036471229694">"Ok Google"이라고 말하세요.</translation>
 <translation id="7525067979554623046">만들기</translation>
-<translation id="7529411698175791732">인터넷 연결 상태를 확인하세요. 문제가 계속되면 로그아웃한 뒤 다시 로그인해보세요.</translation>
 <translation id="7530016656428373557">방전율(와트)</translation>
 <translation id="7531779363494549572">설정 &gt; 앱 및 알림 &gt; 알림으로 이동합니다.</translation>
 <translation id="7532009420053991888"><ph name="LINUX_APP_NAME" /> 앱이 응답하지 않습니다. '강제 종료'를 선택하여 앱을 닫으세요.</translation>
@@ -5795,7 +5794,6 @@
 <translation id="9050666287014529139">암호</translation>
 <translation id="9052208328806230490"><ph name="EMAIL" /> 계정을 사용하여 프린터를 <ph name="CLOUD_PRINT_NAME" />에 등록했습니다.</translation>
 <translation id="9052404922357793350">차단 계속</translation>
-<translation id="9053091947372579468">기기에 Chrome 라이선스가 포함되어 있지만 사용자 이름이 관리 콘솔과 연결되어 있지 않습니다. 등록을 계속하려면 관리 콘솔 계정을 만드세요. 참고: 내 도메인을 사용해 새로운 관리 콘솔 계정을 만들려면 가입 후 도메인 확인 절차를 완료해야 합니다. https://g.co/ChromeEnterpriseAccount</translation>
 <translation id="9053563360605707198">양면에 인쇄</translation>
 <translation id="9053893665344928494">내 선택 기억하기</translation>
 <translation id="9055636786322918818">RC4 암호화를 적용합니다. RC4 암호화는 안전하지 않으므로 이 옵션을 사용하면 보안 위험도가 높아집니다.</translation>

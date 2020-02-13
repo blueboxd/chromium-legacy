@@ -4396,7 +4396,9 @@ if __name__ == '__main__':
       sys.modules[__name__])
   tests = unittest_util.FilterTestSuite(all_tests_suite, options.filter)
   ChromeDriverBaseTestWithWebServer.GlobalSetUp()
-  result = unittest.TextTestRunner(stream=sys.stdout, verbosity=2).run(tests)
+  runner = unittest.TextTestRunner(
+      stream=sys.stdout, descriptions=False, verbosity=2)
+  result = runner.run(tests)
   ChromeDriverBaseTestWithWebServer.GlobalTearDown()
 
   if options.isolated_script_test_output:

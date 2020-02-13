@@ -68,7 +68,6 @@ bool CreateVerifiedMatcher(const std::vector<TestRule>& rules,
 // Helper to return a RulesetSource bound to temporary files.
 RulesetSource CreateTemporarySource(
     size_t id = 1,
-    size_t priority = 1,
     api::declarative_net_request::SourceType source_type =
         api::declarative_net_request::SOURCE_TYPE_MANIFEST,
     size_t rule_count_limit = 100,

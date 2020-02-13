@@ -204,5 +204,51 @@ class MockAuthenticator {
   }
 }
 
+// Mocks the SmsReceiver interface defined in sms_receiver.mojom.
+class MockSmsReceiver {
+  constructor() {
+    this.reset();
+
+    this.interceptor_ = new MojoInterfaceInterceptor(
+        blink.mojom.SmsReceiver.$interfaceName, 'context', true);
+    this.interceptor_.oninterfacerequest = (e) => {
+      this.bindHandleToReceiver(e.handle);
+    };
+    this.interceptor_.start();
+  }
+
+  bindHandleToReceiver(handle) {
+    this.receiver_ = new blink.mojom.SmsReceiverReceiver(this);
+    this.receiver_.$.bindHandle(handle);
+  }
+
+  // Mock functions:
+  async receive() {
+    return {status: this.status_, otp: this.otp_, message: this.message_};
+  }
+
+  async abort() {}
+
+  // Resets state of mock SmsReceiver.
+  reset() {
+    this.otp_ = '';
+    this.message_ = '';
+    this.status_ = blink.mojom.SmsStatus.kTimeout;
+  }
+
+  setOtp(otp) {
+    this.otp_ = otp;
+  }
+
+  setMessage(message) {
+    this.message_ = message;
+  }
+
+  setStatus(status) {
+    this.status_ = status;
+  }
+}
+
 var mockAuthenticator = new MockAuthenticator();
 var mockCredentialManager = new MockCredentialManager();
+var mockSmsReceiver = new MockSmsReceiver();

@@ -36,6 +36,11 @@ void WebXrVrBrowserTestBase::EnterSessionWithUserGesture(
   }
 #endif  // BUILDFLAG(ENABLE_VR)
 
+  // Before requesting the session, set the requested auto-response so that the
+  // session is appropriately granted or rejected (or the request ignored).
+  GetPermissionRequestManager()->set_auto_response_for_test(
+      permission_auto_response_);
+
   // ExecuteScript runs with a user gesture, so we can just directly call
   // requestSession instead of having to do the hacky workaround the
   // instrumentation tests use of actually sending a click event to the canvas.
@@ -83,6 +88,16 @@ gfx::Vector3dF WebXrVrBrowserTestBase::GetControllerOffset() const {
   return gfx::Vector3dF();
 }
 
+PermissionRequestManager*
+WebXrVrBrowserTestBase::GetPermissionRequestManager() {
+  return GetPermissionRequestManager(GetCurrentWebContents());
+}
+
+PermissionRequestManager* WebXrVrBrowserTestBase::GetPermissionRequestManager(
+    content::WebContents* web_contents) {
+  return PermissionRequestManager::FromWebContents(web_contents);
+}
+
 // Consent dialogs don't appear on platforms with enable_vr = false.
 #if BUILDFLAG(ENABLE_VR)
 void WebXrVrBrowserTestBase::SetupFakeConsentManager(
@@ -91,6 +106,24 @@ void WebXrVrBrowserTestBase::SetupFakeConsentManager(
       XRSessionRequestConsentManager::Instance(), user_response));
   XRSessionRequestConsentManager::SetInstanceForTesting(
       fake_consent_manager_.get());
+
+  // To ensure that consent flow tests can still use the same logic, we also set
+  // the auto-response behavior to the expected value here so that permissions
+  // will behave the same way as the consent flow would have.
+  switch (user_response) {
+    case FakeXRSessionRequestConsentManager::UserResponse::kClickAllowButton:
+      permission_auto_response_ =
+          PermissionRequestManager::AutoResponseType::ACCEPT_ALL;
+      break;
+    case FakeXRSessionRequestConsentManager::UserResponse::kClickCancelButton:
+      permission_auto_response_ =
+          PermissionRequestManager::AutoResponseType::DENY_ALL;
+      break;
+    case FakeXRSessionRequestConsentManager::UserResponse::kCloseDialog:
+      permission_auto_response_ =
+          PermissionRequestManager::AutoResponseType::DISMISS;
+      break;
+  }
 }
 #endif  // BUILDFLAG(ENABLE_VR)
 

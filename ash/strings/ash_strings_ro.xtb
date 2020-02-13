@@ -59,6 +59,7 @@
 <translation id="1658406695958299976">Ne pare rău, parola tot nu a putut fi confirmată. Notă: dacă ți-ai schimbat recent parola, aceasta se va aplica după ce te deconectezi. Te rugăm să folosești aici parola veche.</translation>
 <translation id="1677472565718498478">Timp rămas: <ph name="TIME" /></translation>
 <translation id="1698760176351776263">Adresă IPv6: <ph name="ADDRESS" /></translation>
+<translation id="1709762881904163296">Setări de rețea</translation>
 <translation id="1743570585616704562">Nu este recunoscută</translation>
 <translation id="1746730358044914197">Metodele de introducere a textului sunt configurate de administratorul tău.</translation>
 <translation id="1747827819627189109">Tastatură pe ecran activată</translation>
@@ -113,11 +114,13 @@
 <translation id="2354174487190027830">Se activează <ph name="NAME" /></translation>
 <translation id="2359808026110333948">Continuă</translation>
 <translation id="2365393535144473978">Activând datele mobile, se va activa Bluetooth.</translation>
+<translation id="2390318262976603432">Setări de limbă</translation>
 <translation id="2391579633712104609">180°</translation>
 <translation id="2412593942846481727">Actualizare disponibilă</translation>
 <translation id="2413728805700750528"><ph name="DISPLAY_NAME" /> este o sesiune gestionată de <ph name="DOMAIN" /></translation>
 <translation id="2427507373259914951">Clic stânga</translation>
 <translation id="2429753432712299108">Dispozitivul Bluetooth „<ph name="DEVICE_NAME" />” solicită permisiunea de a se conecta. Înainte de a continua, verificați dacă această parolă apare pe dispozitivul respectiv: <ph name="PASSKEY" /></translation>
+<translation id="2435457462613246316">Afișați parola</translation>
 <translation id="2473177541599297363">Confirmă rezoluția</translation>
 <translation id="2482878487686419369">Notificări</translation>
 <translation id="2484513351006226581">Apasă <ph name="KEYBOARD_SHORTCUT" /> pentru a schimba aspectul tastaturii.</translation>
@@ -177,6 +180,7 @@
 <translation id="3154351730702813399">Este posibil ca administratorul dispozitivului să monitorizeze activitatea de navigare.</translation>
 <translation id="3181441307743005334">Repornirea poate dura un timp</translation>
 <translation id="3202010236269062730">{NUM_DEVICES,plural, =1{Conectat la un dispozitiv}few{Conectat la # dispozitive}other{Conectat la # de dispozitive}}</translation>
+<translation id="3207953481422525583">Setările utilizatorului</translation>
 <translation id="3217205077783620295">Volumul este activat. Comutarea îl va dezactiva.</translation>
 <translation id="3226991577105957773">+ încă <ph name="COUNT" /></translation>
 <translation id="3236488194889173876">Nicio rețea mobilă disponibilă</translation>
@@ -240,6 +244,7 @@
 <translation id="3995138139523574647">Dispozitiv USB-C (portul din dreapta spate)</translation>
 <translation id="4017989525502048489">Indicator laser</translation>
 <translation id="4021716437419160885">Derulează în jos</translation>
+<translation id="4028481283645788203">Este necesară parola pentru mai multă siguranță</translation>
 <translation id="4042660782729322247">Permiți accesul la ecran</translation>
 <translation id="4065525899979931964">{NUM_APPS,plural, =1{Dezactivat pentru o aplicație}few{Dezactivat pentru # aplicații}other{Dezactivat pentru # de aplicații}}</translation>
 <translation id="4072264167173457037">Semnal mediu</translation>
@@ -249,6 +254,7 @@
 <translation id="4149156641122542261"><ph name="DEVICE_TYPE" /> gestionat de <ph name="DOMAIN" /></translation>
 <translation id="4181841719683918333">Limbi</translation>
 <translation id="4195877955194704651">Butonul Clicuri automate</translation>
+<translation id="4215497585250573029">Setări VPN</translation>
 <translation id="4217571870635786043">Dictare</translation>
 <translation id="421885205185866088">Codul PIN al cardului inteligent pentru <ph name="USER_EMAIL_ADDRESS" /></translation>
 <translation id="4239069858505860023">GPRS</translation>
@@ -263,6 +269,7 @@
 <translation id="4338109981321384717">Lupă</translation>
 <translation id="4351433414020964307">Asistentul se încarcă...</translation>
 <translation id="4356930093361201197">mod de contrast ridicat</translation>
+<translation id="4371348193907997655">Setări pentru proiectare</translation>
 <translation id="4378551569595875038">Se stabilește conexiunea...</translation>
 <translation id="4379531060876907730">Acestea sunt instrumentele pentru creion</translation>
 <translation id="4383956581743965695">-<ph name="TIME_SINCE_EXPIRATION" /></translation>
@@ -279,12 +286,14 @@
 <translation id="4527045527269911712">Dispozitivul Bluetooth „<ph name="DEVICE_NAME" />” solicită permisiunea de a se conecta.</translation>
 <translation id="453661520163887813"><ph name="TIME" /> până la încărcare completă</translation>
 <translation id="4561267230861221837">3G</translation>
+<translation id="4565377596337484307">Ascunde parola</translation>
 <translation id="4570957409596482333">Butonul Selectează și ascultă</translation>
 <translation id="4585337515783392668">Nu mai proiecta pe un receiver necunoscut</translation>
 <translation id="4628757576491864469">Dispozitive</translation>
 <translation id="4659419629803378708">ChromeVox este activat</translation>
 <translation id="4665114317261903604">Comută Nu deranja. <ph name="STATE_TEXT" /></translation>
 <translation id="4696813013609194136">Deblochează dispozitivul cu codul părintelui</translation>
+<translation id="4710243778082831592">Setări IME</translation>
 <translation id="4731797938093519117">Acces pentru părinți</translation>
 <translation id="4734965478015604180">Orizontal</translation>
 <translation id="4774338217796918551">Revino mâine la <ph name="COME_BACK_TIME" />.</translation>
@@ -514,7 +523,9 @@
 <translation id="7984197416080286869">Prea multe încercări de deblocare cu amprenta</translation>
 <translation id="7994370417837006925">Conectare multiplă</translation>
 <translation id="8000066093800657092">Nicio rețea</translation>
+<translation id="8029629653277878342">Este necesar codul PIN sau parola pentru mai multă siguranță</translation>
 <translation id="8030169304546394654">Deconectat</translation>
+<translation id="8048123526339889627">Setări Bluetooth</translation>
 <translation id="8054466585765276473">Se calculează durata bateriei.</translation>
 <translation id="8061464966246066292">Contrast ridicat</translation>
 <translation id="8098591350844501178">Nu mai proiecta ecranul pe dispozitivul <ph name="RECEIVER_NAME" /></translation>
@@ -558,6 +569,7 @@
 <translation id="8517041960877371778">Este posibil ca <ph name="DEVICE_TYPE" /> să nu se încarce cât timp este pornit.</translation>
 <translation id="8563862697512465947">Setări de notificare</translation>
 <translation id="8627191004499078455">Conectat la <ph name="DEVICE_NAME" /></translation>
+<translation id="8631727435199967028">Setări de accesibilitate</translation>
 <translation id="8637598503828012618"><ph name="CONNECTION_STATUS" />, puterea semnalului: <ph name="SIGNAL_STRENGTH" />, gestionată de administratorul tău</translation>
 <translation id="8639760480004882931">Nivelul bateriei: <ph name="PERCENTAGE" /></translation>
 <translation id="8649101189709089199">Selectează și ascultă</translation>
@@ -574,6 +586,7 @@
 <translation id="875593634123171288">Afișează setările VPN</translation>
 <translation id="8785070478575117577">Conectează-te la <ph name="NETWORK_NAME" /></translation>
 <translation id="8814190375133053267">Wi-Fi</translation>
+<translation id="8825863694328519386">Glisează dinspre stânga pentru a reveni</translation>
 <translation id="8828714802988429505">90°</translation>
 <translation id="8843682306134542540">Comută blocarea rotației. <ph name="STATE_TEXT" /></translation>
 <translation id="8850991929411075241">Tasta de căutare + Esc</translation>

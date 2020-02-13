@@ -87,5 +87,42 @@ BaseAutomationHandler = class {
    * @protected
    */
   didHandleEvent_(evt) {}
+
+  /**
+   * Provides all feedback once ChromeVox's focus changes.
+   * @param {!ChromeVoxEvent} evt
+   */
+  onEventDefault(evt) {
+    const node = evt.target;
+    if (!node) {
+      return;
+    }
+
+    // Decide whether to announce and sync this event.
+    const isFocusOnRoot = evt.type == 'focus' && evt.target == evt.target.root;
+    if (!DesktopAutomationHandler.announceActions &&
+        evt.eventFrom == 'action' &&
+        (EventSourceState.get() != EventSourceType.TOUCH_GESTURE ||
+         isFocusOnRoot)) {
+      return;
+    }
+
+    const prevRange = ChromeVoxState.instance.getCurrentRangeWithoutRecovery();
+
+    ChromeVoxState.instance.setCurrentRange(cursors.Range.fromNode(node));
+
+    // Don't output if focused node hasn't changed. Allow focus announcements
+    // when interacting via touch. Touch never sets focus without a double tap.
+    if (prevRange && evt.type == 'focus' &&
+        ChromeVoxState.instance.currentRange.equalsWithoutRecovery(prevRange) &&
+        EventSourceState.get() != EventSourceType.TOUCH_GESTURE) {
+      return;
+    }
+
+    const output = new Output();
+    output.withRichSpeechAndBraille(
+        ChromeVoxState.instance.currentRange, prevRange, evt.type);
+    output.go();
+  }
 };
 });  // goog.scope

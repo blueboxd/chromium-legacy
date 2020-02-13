@@ -229,11 +229,6 @@ Ako je okvir "<ph name="SERVICE_SCRIPT_NAME" />" već potvrđen, uklonite kvači
 <translation id="6304318647555713317">Klijent</translation>
 <translation id="6381670701864002291">Nešto drugo.</translation>
 <translation id="6398765197997659313">Izađi iz cijelog zaslona</translation>
-<translation id="6411861157501911556">Za upotrebu usluge <ph name="PRODUCT_NAME" /> trebate dodijeliti dopuštenje za "Pristupačnost" kako bi se unos s daljinskog uređaja mogao dodati na ovaj Mac.
-
-Za dodjelu tog dopuštenja kliknite "<ph name="BUTTON_NAME" />" u nastavku da biste otvorili okno s postavkama "Pristupačnosti", a zatim potvrdite okvir pored naziva "<ph name="SERVICE_SCRIPT_NAME" />".
-
-Ako je okvir "<ph name="SERVICE_SCRIPT_NAME" />" već potvrđen, uklonite kvačicu i ponovno je stavite.</translation>
 <translation id="6441316101718669559">Ova platforma ne podržava integraciju radne površine. Aplikacija se može upotrebljavati, ali uz lošiji korisnički doživljaj.</translation>
 <translation id="652218476070540101">U tijeku je ažuriranje PIN-a za ovo računalo…</translation>
 <translation id="6527303717912515753">Podijeli</translation>

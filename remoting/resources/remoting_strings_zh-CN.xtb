@@ -229,11 +229,6 @@
 <translation id="6304318647555713317">客户端</translation>
 <translation id="6381670701864002291">其他。</translation>
 <translation id="6398765197997659313">退出全屏模式</translation>
-<translation id="6411861157501911556">若想使用 <ph name="PRODUCT_NAME" />，您需要授予“无障碍”权限，以便将远程计算机上输入的内容注入到此 Mac 上。
-
-要授予此权限，请点击下面的“<ph name="BUTTON_NAME" />”以打开“无障碍”偏好设置窗格，然后勾选“<ph name="SERVICE_SCRIPT_NAME" />”旁边的复选框。
-
-如果“<ph name="SERVICE_SCRIPT_NAME" />”已处于选中状态，请先取消选中，然后再次勾选。</translation>
 <translation id="6441316101718669559">该平台不支持桌面集成。您仍可以使用该应用，但用户体验将会受到影响。</translation>
 <translation id="652218476070540101">正在更新此计算机的 PIN…</translation>
 <translation id="6527303717912515753">分享</translation>

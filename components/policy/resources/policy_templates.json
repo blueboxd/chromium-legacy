@@ -1086,6 +1086,16 @@
       ],
     },
     {
+      'name': 'PrivacyScreen',
+      'type': 'group',
+      'caption': '''Privacy screen settings''',
+      'desc': '''Controls user and device policies for the privacy screen feature.''',
+      'policies': [
+        'DeviceLoginScreenPrivacyScreenEnabled',
+        'PrivacyScreenEnabled',
+      ],
+    },
+    {
       'name': 'HomepageLocation',
       'owners': ['file://components/policy/resources/OWNERS'],
       'type': 'string',
@@ -1273,6 +1283,31 @@
       If you enable or disable this setting, users cannot change or override this setting in <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph>.
 
       If this policy is left not set, this will be enabled but the user will be able to change it.''',
+    },
+    {
+      'name': 'NativeWindowOcclusionEnabled',
+      'owners': ['file://components/policy/resources/OWNERS'],
+      'type': 'main',
+      'schema': { 'type': 'boolean' },
+      'supported_on': [
+        'chrome.win:81-',
+      ],
+      'features': {
+        'can_be_recommended': False,
+        'dynamic_refresh': True,
+        'per_profile': False,
+      },
+      'example_value': True,
+      'id': 675,
+      'caption': '''Enable Native Window Occlusion''',
+      'tags': [],
+      'desc': '''Enables native window occlusion in <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph>.
+
+      If you enable this setting, to reduce CPU and power consumption <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> will detect when a window is covered by other windows, and will suspend work painting pixels.
+
+      If you disable this setting <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> will not detect when a window is covered by other windows.
+
+      If this policy is left not set, occlusion detection will be enabled.''',
     },
     {
       'name': 'DnsPrefetchingEnabled',
@@ -19916,6 +19951,59 @@
       'desc': '''Configures the availability of System-proxy service and the proxy credentials for system services.
       If the policy is not set, System-proxy service will not be available.''',
     },
+    {
+      'name': 'DeviceLoginScreenPrivacyScreenEnabled',
+      'owners': ['lamzin@google.com', 'gildekel@chromium.org'],
+      'device_only': True,
+      'type': 'main',
+      'schema': { 'type': 'boolean' },
+      'supported_on': ['chrome_os:82-'],
+      'features': {
+        'can_be_mandatory' : True,
+        'can_be_recommended': False,
+        'dynamic_refresh': True,
+        'per_profile': False,
+      },
+      'example_value': True,
+      'id': 676,
+      'caption': '''Set the state of privacy screen on the login screen''',
+      'tags': [],
+      'desc': '''Set the state of the privacy screen feature on the login screen.
+
+If this policy is set to True, privacy screen will be enabled when the login screen is shown.
+
+If this policy is set to False, privacy screen will be disabled when the login screen is shown.
+
+When this policy is set, the user cannot override the value when the login screen is shown.
+
+If this policy is left unset, the privacy screen is disabled initially, but remains controllable by the user when the login screen is shown.''',
+    },
+    {
+      'name': 'PrivacyScreenEnabled',
+      'owners': ['lamzin@google.com', 'gildekel@chromium.org'],
+      'type': 'main',
+      'schema': { 'type': 'boolean' },
+      'supported_on': ['chrome_os:82-'],
+      'features': {
+        'can_be_mandatory' : True,
+        'can_be_recommended': False,
+        'dynamic_refresh': True,
+        'per_profile': False,
+      },
+      'example_value': True,
+      'id': 677,
+      'caption': '''Enable privacy screen''',
+      'tags': [],
+      'desc': '''Enable/disable the privacy screen feature.
+
+If this policy is set to True, privacy screen will always be enabled.
+
+If this policy is set to False, privacy screen will always be disabled.
+
+When this policy is set, the user cannot override the value.
+
+If this policy is left unset, privacy screen is disabled initially but can be controlled by the user.''',
+    },
   ],
 
   'messages': {
@@ -20299,6 +20387,7 @@ The recommended way to configure policy on Windows is via GPO, although provisio
     'DeviceWebBasedAttestationAllowedUrls': 'device_web_based_attestation_allowed_urls.value',
     'MinimumChromeVersionEnforced' : 'minimum_chrome_version_enforced.value',
     'SystemProxySettings': 'system_proxy_settings.system_proxy_settings',
+    'DeviceLoginScreenPrivacyScreenEnabled': 'device_login_screen_privacy_screen_enabled.enabled',
   },
   'policy_atomic_group_definitions': [
     {
@@ -20753,6 +20842,6 @@ The recommended way to configure policy on Windows is via GPO, although provisio
   ],
   'placeholders': [],
   'deleted_policy_ids': [412, 546, 562, 569, 578],
-  'highest_id_currently_used': 674,
+  'highest_id_currently_used': 677,
   'highest_atomic_group_id_currently_used': 38
 }

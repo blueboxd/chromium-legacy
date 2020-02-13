@@ -118,6 +118,7 @@
 <translation id="2413728805700750528"><ph name="DISPLAY_NAME" /> គឺជា​រយៈពេល​ចូលប្រើ​ដែល​គ្រប់គ្រង​ដោយ <ph name="DOMAIN" /></translation>
 <translation id="2427507373259914951">ចុច​កណ្ដុរ​ខាងឆ្វេង</translation>
 <translation id="2429753432712299108">ឧបករណ៍ប្តូធូស "<ph name="DEVICE_NAME" />" ស្នើការអនុញ្ញាតដើម្បីភ្ជាប់។ មុនពេលទទួល សូមអះអាងថាពាក្យសម្ងាត់នេះត្រូវបានបង្ហាញនៅលើឧបករណ៍នោះ៖ <ph name="PASSKEY" /></translation>
+<translation id="2435457462613246316">បង្ហាញពាក្យសម្ងាត់</translation>
 <translation id="2473177541599297363">បញ្ជាក់​កម្រិតច្បាស់</translation>
 <translation id="2482878487686419369">ការជូនដំណឹង</translation>
 <translation id="2484513351006226581">ចុច <ph name="KEYBOARD_SHORTCUT" /> ដើម្បី​ប្តូរប្លង់​ក្តារ​ចុច។</translation>
@@ -279,6 +280,7 @@
 <translation id="4527045527269911712">ឧបករណ៍ប៊្លូធូស "<ph name="DEVICE_NAME" />" ចង់សុំការអនុញ្ញាតដើម្បីភ្ជាប់។</translation>
 <translation id="453661520163887813"><ph name="TIME" /> ទៀតទើបពេញ</translation>
 <translation id="4561267230861221837">3G</translation>
+<translation id="4565377596337484307">លាក់​ពាក្យ​សម្ងាត់</translation>
 <translation id="4570957409596482333">ប៊ូតុង​ជ្រើសរើស​ដើម្បី​អាន</translation>
 <translation id="4585337515783392668">ឈប់បញ្ជូន​​ទៅឧបករណ៍ទទួលដែល​មិនស្គាល់</translation>
 <translation id="4628757576491864469">ឧបករណ៍</translation>

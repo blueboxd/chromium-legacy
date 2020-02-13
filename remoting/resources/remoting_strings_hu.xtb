@@ -229,11 +229,6 @@ Ha már be van jelölve az „<ph name="SERVICE_SCRIPT_NAME" />” melletti nég
 <translation id="6304318647555713317">Kliens</translation>
 <translation id="6381670701864002291">Valami más.</translation>
 <translation id="6398765197997659313">Kilépés a teljes képernyős módból</translation>
-<translation id="6411861157501911556">A <ph name="PRODUCT_NAME" /> használatához meg kell adnia az „Accessibility” (Kisegítő lehetőségek) engedélyt, hogy a távoli gépről érkező bevitel megjelenhessen ezen a Mac típusú eszközön.
-
-Az engedély megadásához kattintson az alábbi „<ph name="BUTTON_NAME" />” gombra a „Kisegítő lehetőségek” beállításait tartalmazó panel megnyitásához, majd jelölje be az „<ph name="SERVICE_SCRIPT_NAME" />” melletti négyzetet.
-
-Ha már be van jelölve az „<ph name="SERVICE_SCRIPT_NAME" />” melletti négyzet, távolítsa el a jelölését, majd jelölje be újra.</translation>
 <translation id="6441316101718669559">Ez az operációs rendszer nem támogatja az asztali integrációt. Az alkalmazást használhatja, de a felhasználói élmény nem lesz teljes.</translation>
 <translation id="652218476070540101">A számítógéphez tartozó PIN-kód frissítése folyamatban...</translation>
 <translation id="6527303717912515753">Megosztás</translation>

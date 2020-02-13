@@ -1175,48 +1175,58 @@ class AXPosition {
     if (IsNullPosition() || !IsIgnored())
       return Clone();
 
-    if (IsTextPosition()) {
-      // If this is a text position, first try moving up to a parent equivalent
-      // position and check if the resulting position is still ignored. This
-      // won't result in the loss of any information. We can't do that in the
-      // case of tree positions, because we would be better off to move to the
-      // next or previous position within the same anchor, as this would lose
-      // less information than moving to a parent equivalent position.
-      AXPositionInstance unignored_position = Clone();
-      do {
-        unignored_position = unignored_position->CreateParentPosition();
-      } while (!unignored_position->IsNullPosition() &&
-               unignored_position->IsIgnored());
+    AXPositionInstance leaf_tree_position = AsLeafTreePosition();
 
-      if (!unignored_position->IsNullPosition())
-        return unignored_position;
+    // If this is a text position, first try moving up to a parent equivalent
+    // position and check if the resulting position is still ignored. This
+    // won't result in the loss of any information. We can't do that in the
+    // case of tree positions, because we would be better off to move to the
+    // next or previous position within the same anchor, as this would lose
+    // less information than moving to a parent equivalent position.
+    //
+    // Text positions are considered ignored if either the current anchor is
+    // ignored, or if the equivalent leaf tree position is ignored.
+    // If this position is a leaf text position, or the equivalent leaf tree
+    // position is ignored, then it's not possible to create an ancestor text
+    // position that is unignored.
+    if (IsTextPosition() && !IsLeafTextPosition() &&
+        !leaf_tree_position->IsIgnored()) {
+      AXPositionInstance unignored_position = CreateParentPosition();
+      while (!unignored_position->IsNullPosition()) {
+        // Since the equivalent leaf tree position is unignored, search for the
+        // first unignored ancestor anchor and return that text position.
+        if (!unignored_position->GetAnchor()->IsIgnored()) {
+          DCHECK(!unignored_position->IsIgnored());
+          return unignored_position;
+        }
+        unignored_position = unignored_position->CreateParentPosition();
+      }
     }
 
-    AXPositionInstance unignored_position = AsLeafTreePosition();
     // There is a possibility that the position became unignored by moving to a
     // leaf equivalent position. Otherwise, we have no choice but to move to the
     // next or previous position and lose some information in the process.
-    while (unignored_position->IsIgnored()) {
+    while (leaf_tree_position->IsIgnored()) {
       switch (adjustment_behavior) {
         case AXPositionAdjustmentBehavior::kMoveForward:
-          unignored_position = unignored_position->CreateNextLeafTreePosition();
+          leaf_tree_position = leaf_tree_position->CreateNextLeafTreePosition();
           break;
         case AXPositionAdjustmentBehavior::kMoveBackward:
-          unignored_position =
-              unignored_position->CreatePreviousLeafTreePosition();
+          leaf_tree_position =
+              leaf_tree_position->CreatePreviousLeafTreePosition();
           // in case the unignored leaf node contains some text, ensure that the
           // resulting position is an "after text" position, as such a position
           // would be the closest to the ignored one, given the fact that we are
-          // moving backward through the tree.
-          unignored_position =
-              unignored_position->CreatePositionAtEndOfAnchor();
+          // moving backwards through the tree.
+          leaf_tree_position =
+              leaf_tree_position->CreatePositionAtEndOfAnchor();
           break;
       }
     }
 
     if (IsTextPosition())
-      return unignored_position->AsTextPosition();
-    return unignored_position;
+      return leaf_tree_position->AsTextPosition();
+    return leaf_tree_position;
   }
 
   // Searches backward and forward from this position until it finds the given
@@ -2426,8 +2436,21 @@ class AXPosition {
     text_position->affinity_ = ax::mojom::TextAffinity::kDownstream;
     if (IsTreePosition())
       text_position = text_position->AsTreePosition();
-    return text_position->AsUnignoredPosition(
+    AXPositionInstance unignored_position = text_position->AsUnignoredPosition(
         AdjustmentBehaviorFromBoundaryDirection(move_direction));
+    // If there are no unignored positions in |move_direction| then
+    // |text_position| is anchored in ignored content at the start or end
+    // of the document.
+    // For StopAtLastAnchorBoundary, try to adjust in the opposite direction
+    // to return a position within the document just before crossing into
+    // the ignored content. This will be the last unignored anchor boundary.
+    if (unignored_position->IsNullPosition() &&
+        boundary_behavior == AXBoundaryBehavior::StopAtLastAnchorBoundary) {
+      unignored_position =
+          text_position->AsUnignoredPosition(OppositeAdjustmentBehavior(
+              AdjustmentBehaviorFromBoundaryDirection(move_direction)));
+    }
+    return unignored_position;
   }
 
   AXPositionInstance CreateBoundaryEndPosition(
@@ -2550,8 +2573,21 @@ class AXPosition {
 
     if (IsTreePosition())
       text_position = text_position->AsTreePosition();
-    return text_position->AsUnignoredPosition(
+    AXPositionInstance unignored_position = text_position->AsUnignoredPosition(
         AdjustmentBehaviorFromBoundaryDirection(move_direction));
+    // If there are no unignored positions in |move_direction| then
+    // |text_position| is anchored in ignored content at the start or end
+    // of the document.
+    // For StopAtLastAnchorBoundary, try to adjust in the opposite direction
+    // to return a position within the document just before crossing into
+    // the ignored content. This will be the last unignored anchor boundary.
+    if (unignored_position->IsNullPosition() &&
+        boundary_behavior == AXBoundaryBehavior::StopAtLastAnchorBoundary) {
+      unignored_position =
+          text_position->AsUnignoredPosition(OppositeAdjustmentBehavior(
+              AdjustmentBehaviorFromBoundaryDirection(move_direction)));
+    }
+    return unignored_position;
   }
 
   // TODO(nektar): Add sentence navigation methods.
@@ -3385,6 +3421,16 @@ class AXPosition {
         return AXPositionAdjustmentBehavior::kMoveForward;
       case ax::mojom::MoveDirection::kBackward:
         return AXPositionAdjustmentBehavior::kMoveBackward;
+    }
+  }
+
+  static AXPositionAdjustmentBehavior OppositeAdjustmentBehavior(
+      AXPositionAdjustmentBehavior adjustment_behavior) {
+    switch (adjustment_behavior) {
+      case AXPositionAdjustmentBehavior::kMoveForward:
+        return AXPositionAdjustmentBehavior::kMoveBackward;
+      case AXPositionAdjustmentBehavior::kMoveBackward:
+        return AXPositionAdjustmentBehavior::kMoveForward;
     }
   }
 

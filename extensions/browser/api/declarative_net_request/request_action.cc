@@ -36,8 +36,8 @@ base::Optional<RequestAction> GetMaxPriorityAction(
     return rhs;
   if (!rhs)
     return lhs;
-  return lhs->index_priority > rhs->index_priority ? std::move(lhs)
-                                                   : std::move(rhs);
+  return lhs->index_priority >= rhs->index_priority ? std::move(lhs)
+                                                    : std::move(rhs);
 }
 
 }  // namespace declarative_net_request

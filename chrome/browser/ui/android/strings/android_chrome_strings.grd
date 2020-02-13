@@ -4006,6 +4006,22 @@ The site does NOT gain access to the camera. The camera images are only visible 
         Continue
       </message>
 
+      <message name="IDS_QR_CODE_NO_CAMERA_ERROR" desc="Error text shown when no camera is found.">
+        To scan a QR code, use a device with a camera.
+      </message>
+
+      <message name="IDS_QR_CODE_DISABLED_CAMERA_ERROR" desc="Error text shown when the camera is disabled by the device policy manager.">
+        The organization that manages your device has turned off your camera.
+      </message>
+
+      <message name="IDS_QR_CODE_IN_USE_CAMERA_ERROR" desc="Error text shown when the camera is in use by other apps.">
+        Can't open your camera. Restart your device and try again.
+      </message>
+
+      <message name="IDS_QR_CODE_HARDWARE_CAMERA_ERROR" desc="Error text shown when the camera cannot start due to a hardware error.">
+        Can't open your camera. Something went wrong.
+      </message>
+
       <!-- Chime DFM module strings -->
       <message name="IDS_CHIME_MODULE_TITLE" desc="Text shown when the chime module is referenced in install start, success, failure UI (e.g. in IDS_MODULE_INSTALL_START_TEXT, which will expand to 'Installing Google Notifications Platform for Chrome…').">
         Google Notifications Platform

@@ -257,12 +257,13 @@ public class CastWebContentsIntentUtilsTest {
     }
 
     @Test
-    public void testSetInteractionId() {
-        Intent in = CastWebContentsIntentUtils.setInteractionId(SESSION_ID, 123);
+    public void testSetHostContext() {
+        Intent in = CastWebContentsIntentUtils.setHostContext(SESSION_ID, 123, "foo");
         String uri = CastWebContentsIntentUtils.getUriString(in);
         Assert.assertNotNull(uri);
         Assert.assertEquals(EXPECTED_URI, uri);
-        Assert.assertEquals(CastWebContentsIntentUtils.ACTION_SET_INTERACTION_ID, in.getAction());
+        Assert.assertEquals(CastWebContentsIntentUtils.ACTION_SET_HOST_CONTEXT, in.getAction());
         Assert.assertEquals(CastWebContentsIntentUtils.getInteractionId(in), 123);
+        Assert.assertEquals(CastWebContentsIntentUtils.getConversationId(in), "foo");
     }
 }

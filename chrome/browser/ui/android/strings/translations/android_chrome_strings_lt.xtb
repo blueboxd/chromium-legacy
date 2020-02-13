@@ -281,6 +281,7 @@
 <translation id="3137521801621304719">Išjungti inkognito režimą</translation>
 <translation id="3140134512074889489">Įjunkite fotoaparatą, kad galėtumėte nuskaityti QR kodą</translation>
 <translation id="3143515551205905069">Atšaukti sinchronizavimą</translation>
+<translation id="314939179385989105">Pagrindinis „Chrome“ puslapis</translation>
 <translation id="3157842584138209013">Žr., kiek duomenų sutaupėte, spustelėję mygtuką „Daugiau parinkčių“</translation>
 <translation id="3166827708714933426">Skirtukų ir langų spartieji klavišai</translation>
 <translation id="3181954750937456830">Saugus naršymas (apsaugo jus ir jūsų įrenginį nuo pavojingų svetainių)</translation>
@@ -727,6 +728,7 @@ Palaikykite paspaudę bet kurį žodį, kad sukurtumėte jo paiešką. Jei norit
 <translation id="6437478888915024427">Puslapio informacija</translation>
 <translation id="6441734959916820584">Pavadinimas yra per ilgas</translation>
 <translation id="6444421004082850253">{FILE_COUNT,plural, =1{# vaizdas}one{# vaizdas}few{# vaizdai}many{# vaizdo}other{# vaizdų}}</translation>
+<translation id="6447558397796644647">Nepavyko rasti žymės Patikrinkite rašybą arba pridėkite naują žymę.</translation>
 <translation id="6447842834002726250">Slapukai</translation>
 <translation id="6461962085415701688">Nepavyksta atidaryti failo</translation>
 <translation id="6464977750820128603">Galite peržiūrėti svetaines, kuriose lankotės naudodami „Chrome“, ir nustatyti jų laikmačius.\n\n„Google“ gauna informaciją apie svetaines, kurių laikmačius nustatote, ir apie apsilankymų jose trukmę. Ši informacija naudojama norint patobulinti Skaitmeninės gerovės funkcijas.</translation>
@@ -802,6 +804,7 @@ Palaikykite paspaudę bet kurį žodį, kad sukurtumėte jo paiešką. Jei norit
 <translation id="6990079615885386641">Gauti programą iš „Google Play“ parduotuvės: <ph name="APP_ACTION" /></translation>
 <translation id="6992289844737586249">Pirmiausia klausti prieš leidžiant svetainėms naudoti mikrofoną (rekomenduojama)</translation>
 <translation id="6995899638241819463">Įspėti, jei slaptažodžiai buvo atskleisti įvykus duomenų saugos pažeidimui</translation>
+<translation id="7000754031042624318">Išjungta „Android“ nustatymuose</translation>
 <translation id="7015203776128479407">Pradinis sinchronizavimo nustatymas nebaigtas. Sinchronizavimas išjungtas.</translation>
 <translation id="7016516562562142042">Leidžiama dabartiniam paieškos varikliui</translation>
 <translation id="7022756207310403729">Atidaryti naršyklėje</translation>

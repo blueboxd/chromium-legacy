@@ -188,6 +188,13 @@ interface NetworkService {
               NetLogCaptureMode capture_mode,
               mojo_base.mojom.DictionaryValue constants);
 
+  // Attaches an external source of NetLog events. Control events will be sent
+  // to the |proxy_source| pipe indicating when netlogging is active, the
+  // NetLog events should be sent to the |proxy_sink| pipe, and must use a
+  // non-conflicting source id space.
+  AttachNetLogProxy(pending_remote<NetLogProxySource> proxy_source,
+                    pending_receiver<NetLogProxySink> proxy_sink);
+
   // Starts logging SSL key material to the |file|. This must be called before
   // any SSL connections are made. (See |SSLClientSocket::SetSSLKeyLogger()|
   // for more details).

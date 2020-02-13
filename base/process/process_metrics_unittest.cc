@@ -417,13 +417,7 @@ TEST_F(SystemMetricsTest, ParseZramStat) {
 
 #if defined(OS_WIN) || defined(OS_MACOSX) || defined(OS_LINUX) || \
     defined(OS_ANDROID)
-// Failing on ChromeOS, crbug.com/1048073
-#if defined(OS_CHROMEOS)
-#define MAYBE_GetSystemMemoryInfo DISABLED_GetSystemMemoryInfo
-#else
-#define MAYBE_GetSystemMemoryInfo GetSystemMemoryInfo
-#endif
-TEST(SystemMetrics2Test, MAYBE_GetSystemMemoryInfo) {
+TEST(SystemMetrics2Test, GetSystemMemoryInfo) {
   SystemMemoryInfoKB info;
   EXPECT_TRUE(GetSystemMemoryInfo(&info));
 
@@ -437,10 +431,8 @@ TEST(SystemMetrics2Test, MAYBE_GetSystemMemoryInfo) {
 #if defined(OS_LINUX) || defined(OS_ANDROID)
   EXPECT_GT(info.buffers, 0);
   EXPECT_GT(info.cached, 0);
-  EXPECT_GT(info.active_anon, 0);
-  EXPECT_GT(info.inactive_anon, 0);
-  EXPECT_GT(info.active_file, 0);
-  EXPECT_GT(info.inactive_file, 0);
+  EXPECT_GT(info.active_anon + info.inactive_anon, 0);
+  EXPECT_GT(info.active_file + info.inactive_file, 0);
 #endif  // defined(OS_LINUX) || defined(OS_ANDROID)
 
   // All the values should be less than the total amount of memory.

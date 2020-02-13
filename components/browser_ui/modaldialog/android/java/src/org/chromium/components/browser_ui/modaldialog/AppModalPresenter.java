@@ -6,9 +6,10 @@ package org.chromium.components.browser_ui.modaldialog;
 
 import android.app.Activity;
 import android.app.Dialog;
-import android.support.v4.view.ViewCompat;
+import android.content.Context;
 import android.view.LayoutInflater;
 import android.view.Window;
+import android.view.WindowManager;
 
 import androidx.annotation.VisibleForTesting;
 
@@ -21,7 +22,7 @@ import org.chromium.ui.modelutil.PropertyModelChangeProcessor;
 
 /** The presenter that shows a {@link ModalDialogView} in an Android dialog. */
 public class AppModalPresenter extends ModalDialogManager.Presenter {
-    private final Activity mActivity;
+    private final Context mContext;
     private Dialog mDialog;
     private PropertyModelChangeProcessor<PropertyModel, ModalDialogView, PropertyKey>
             mModelChangeProcessor;
@@ -41,25 +42,16 @@ public class AppModalPresenter extends ModalDialogManager.Presenter {
     /**
      * @param activity The {@link Activity} on which dialog views will be created and shown.
      */
-    public AppModalPresenter(Activity activity) {
-        mActivity = activity;
+    public AppModalPresenter(Context context) {
+        mContext = context;
     }
 
     @Override
     protected void addDialogView(PropertyModel model) {
-        // If the activity's decor view is not attached to window, we don't show the dialog because
-        // the window manager might have revoked the window token for this activity. See
-        // https://crbug.com/926688.
-        Window window = mActivity.getWindow();
-        if (window == null || !ViewCompat.isAttachedToWindow(window.getDecorView())) {
-            dismissCurrentDialog(DialogDismissalCause.NOT_ATTACHED_TO_WINDOW);
-            return;
-        }
-
         int style = model.get(ModalDialogProperties.PRIMARY_BUTTON_FILLED)
                 ? R.style.Theme_Chromium_ModalDialog_FilledPrimaryButton
                 : R.style.Theme_Chromium_ModalDialog_TextPrimaryButton;
-        mDialog = new Dialog(mActivity, style);
+        mDialog = new Dialog(mContext, style);
         mDialog.setOnCancelListener(dialogInterface
                 -> dismissCurrentDialog(DialogDismissalCause.NAVIGATE_BACK_OR_TOUCH_OUTSIDE));
         // Cancel on touch outside should be disabled by default. The ModelChangeProcessor wouldn't
@@ -70,7 +62,15 @@ public class AppModalPresenter extends ModalDialogManager.Presenter {
         mModelChangeProcessor =
                 PropertyModelChangeProcessor.create(model, dialogView, new ViewBinder());
         mDialog.setContentView(dialogView);
-        mDialog.show();
+
+        try {
+            mDialog.show();
+        } catch (WindowManager.BadTokenException badToken) {
+            // See https://crbug.com/926688.
+            dismissCurrentDialog(DialogDismissalCause.NOT_ATTACHED_TO_WINDOW);
+            return;
+        }
+
         dialogView.announceForAccessibility(getContentDescription(model));
     }
 

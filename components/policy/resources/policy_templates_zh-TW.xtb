@@ -363,11 +363,6 @@
           如果停用或不設定這項政策，系統會停用 Kerberos 帳戶設定。使用者無法新增 Kerberos 帳戶，也無法使用 Kerberos 驗證。系統會刪除所有現有的 Kerberos 帳戶和所有已儲存的密碼。</translation>
 <translation id="1561424797596341174">針對遠端存取主機的偵錯版本覆寫政策</translation>
 <translation id="1561967320164410511">用於個人認證的 U2F 和擴充功能</translation>
-<translation id="1574554504290354326">這項設定已遭淘汰，請改用 SafeBrowsingExtendedReportingEnabled。啟用或停用 SafeBrowsingExtendedReportingEnabled 等同於將 SafeBrowsingExtendedReportingOptInAllowed 設為 False。
-
-      如果將這項政策設為 False，使用者就無法選擇將部分系統資訊和網頁內容傳送至 Google 伺服器；如果設為 True 或未設定，使用者就可以將部分系統資訊和網頁內容傳送至「安全瀏覽」服務，協助偵測危險的應用程式和網站。
-
-      如要進一步瞭解安全瀏覽功能，請前往 https://developers.google.com/safe-browsing。</translation>
 <translation id="1583248206450240930">根據預設使用 <ph name="PRODUCT_FRAME_NAME" /></translation>
 <translation id="1599424828227887013">在 Android 裝置上為指定來源啟用網站隔離</translation>
 <translation id="1608755754295374538">系統會直接授權存取音訊擷取裝置而不需提示的網址</translation>
@@ -4226,21 +4221,6 @@
       這項政策只會影響無關聯的使用者。
       </translation>
 <translation id="7683777542468165012">動態政策更新</translation>
-<translation id="7684516445147212248">你可以透過這項政策指定是否可以在 <ph name="PRODUCT_NAME" /> 的無痕模式和訪客設定檔中執行背景驗證。
-
-      如果未透過 NTLM/Kerberos/Negotiate 問題詢答的驗證配置提供明確的憑證，則背景驗證為包含預設憑證的 HTTP 驗證。
-
-      如果設為 <ph name="REGULAR_ONLY_OPTION_NAME" /> (值為 0)，則背景驗證作業只能在一般工作階段中執行，不能在無痕模式工作階段和訪客工作階段中執行。
-
-      如果設為 <ph name="INCOGNITO_AND_REGULAR_OPTION_NAME" /> (值為 1)，則背景驗證作業可以在無痕模式工作階段和一般工作階段中執行，不能在訪客工作階段中執行。
-
-      如果設為 <ph name="GUEST_AND_REGULAR_OPTION_NAME" /> (值為 2)，則背景驗證作業可以在訪客工作階段和一般工作階段中執行，不能在無痕模式工作階段中執行。
-
-      如果設為 <ph name="ALL_OPTION_NAME" /> (值為 3)，則可以在所有工作階段中執行背景驗證。
-
-      請注意，系統一律允許在一般設定檔中執行背景驗證。
-
-      如果不設定這項政策，在日後推出的 <ph name="PRODUCT_NAME" /> 版本中，使用者會因為系統不允許的緣故，無法在無痕模式工作階段和訪客工作階段中執行背景驗證。</translation>
 <translation id="7687943045976362719">如果設定這項政策，指定的內容類型會由 <ph name="PRODUCT_FRAME_NAME" />處理。
 
           如果不設定這項政策，所有網站都會使用預設轉譯器。(你可透過 <ph name="CHROME_FRAME_RENDERER_SETTINGS_POLICY_NAME" /> 政策設定預設轉譯器)。</translation>

@@ -281,6 +281,7 @@
 <translation id="3137521801621304719">Inaktivera inkognitoläge</translation>
 <translation id="3140134512074889489">Aktivera kameran så att den kan läsa av en QR-kod</translation>
 <translation id="3143515551205905069">Avbryt synkronisering</translation>
+<translation id="314939179385989105">Chromes startsida</translation>
 <translation id="3157842584138209013">Under Fler alternativ kan du se hur mycket data du har sparat</translation>
 <translation id="3166827708714933426">Kortkommandon för flikar och fönster</translation>
 <translation id="3181954750937456830">Säker webbsökning (skyddar dig och enheten från skadliga webbplatser)</translation>
@@ -727,6 +728,7 @@ Tryck länge på ett ord för att söka efter det. Om du vill finjustera söknin
 <translation id="6437478888915024427">Sidinformation</translation>
 <translation id="6441734959916820584">Namnet är för långt</translation>
 <translation id="6444421004082850253">{FILE_COUNT,plural, =1{# bild}other{# bilder}}</translation>
+<translation id="6447558397796644647">Det går inte att hitta det bokmärket. Kontrollera stavningen eller lägg till ett nytt bokmärke.</translation>
 <translation id="6447842834002726250">Cookies</translation>
 <translation id="6461962085415701688">Det går inte att öppna filen</translation>
 <translation id="6464977750820128603">Du kan se vilka webbplatser du besökt i Chrome och ställa in en timer för dem.\n\nGoogle får information om vilka webbplatser du har ställt in en timer för och hur länge du har stannat på dem. Informationen används för att förbättra Digitalt välmående.</translation>
@@ -802,6 +804,7 @@ Tryck länge på ett ord för att söka efter det. Om du vill finjustera söknin
 <translation id="6990079615885386641">Hämta appen från Google Play Butik: <ph name="APP_ACTION" /></translation>
 <translation id="6992289844737586249">Fråga innan webbplatser tillåts att använda mikrofonen (rekommenderas)</translation>
 <translation id="6995899638241819463">En varning visas om lösenord har läckt ut vid ett dataintrång</translation>
+<translation id="7000754031042624318">Inaktiverad i Android-inställningarna</translation>
 <translation id="7015203776128479407">Den initiala synkroniseringskonfigureringen avslutades inte. Synkroniseringen är inaktiverad.</translation>
 <translation id="7016516562562142042">Tillåt för den nuvarande sökmotorn</translation>
 <translation id="7022756207310403729">Öppna i webbläsaren</translation>

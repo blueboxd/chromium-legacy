@@ -18,6 +18,14 @@ struct EnumTraits<network::mojom::NetLogCaptureMode, net::NetLogCaptureMode> {
                         net::NetLogCaptureMode* out);
 };
 
+template <>
+struct EnumTraits<network::mojom::NetLogEventPhase, net::NetLogEventPhase> {
+  static network::mojom::NetLogEventPhase ToMojom(
+      net::NetLogEventPhase capture_mode);
+  static bool FromMojom(network::mojom::NetLogEventPhase capture_mode,
+                        net::NetLogEventPhase* out);
+};
+
 }  // namespace mojo
 
 #endif  // SERVICES_NETWORK_PUBLIC_CPP_NET_LOG_MOJOM_TRAITS_H_

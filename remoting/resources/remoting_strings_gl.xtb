@@ -229,11 +229,6 @@ Se a caixa que hai a carón de <ph name="SERVICE_SCRIPT_NAME" /> xa está selecc
 <translation id="6304318647555713317">Cliente</translation>
 <translation id="6381670701864002291">Outra categoría.</translation>
 <translation id="6398765197997659313">Saír do modo de pantalla completa</translation>
-<translation id="6411861157501911556">Se queres utilizar <ph name="PRODUCT_NAME" />, tes que conceder o permiso Accesibilidade para que este Mac poida recibir a entrada do equipo remoto.
-
-Para conceder este permiso, fai clic no botón <ph name="BUTTON_NAME" />, situado abaixo, para abrir o panel de preferencias Accesibilidade. Despois, marca a caixa situada xunto a <ph name="SERVICE_SCRIPT_NAME" />.
-
-Se a caixa que hai a carón de <ph name="SERVICE_SCRIPT_NAME" /> xa está seleccionada, desmárcaa e márcaa de novo.</translation>
 <translation id="6441316101718669559">A integración co escritorio non é compatible con esta plataforma. Podes seguir utilizando a aplicación, pero a experiencia do usuario será de calidade inferior.</translation>
 <translation id="652218476070540101">Estase actualizando o PIN deste ordenador...</translation>
 <translation id="6527303717912515753">Compartir</translation>

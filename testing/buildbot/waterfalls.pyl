@@ -2178,18 +2178,6 @@
           'scripts': 'test_traffic_annotation_auditor_script',
         }
       },
-      'win-pixel-tester-rel': {
-        'swarming': {
-          'dimension_sets': [
-            {
-              'os': 'Windows-10-15063',
-            },
-          ],
-        },
-        'test_suites': {
-          'gtest_tests': 'pixel_browser_tests_gtests',
-        }
-      },
       'win10-blink-rel-dummy': {
         'swarming': {
           'dimension_sets': [
@@ -4354,6 +4342,18 @@
           'gtest_tests': 'chromium_win_gtests',
           'isolated_scripts': 'chromium_dbg_isolated_scripts',
         },
+      },
+      'win-pixel-tester-rel': {
+        'swarming': {
+          'dimension_sets': [
+            {
+              'os': 'Windows-10-15063',
+            },
+          ],
+        },
+        'test_suites': {
+          'gtest_tests': 'pixel_browser_tests_gtests',
+        }
       },
     },
   },

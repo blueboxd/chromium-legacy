@@ -367,11 +367,6 @@
           Se esta política for desativada ou não estiver definida, as configurações de contas do Kerberos serão desativadas. Não será possível adicionar nenhuma conta do Kerberos nem utilizar a autenticação dele. Todas as contas existentes do Kerberos e todas as senhas armazenadas serão excluídas.</translation>
 <translation id="1561424797596341174">A política modifica as versões de depuração do host de acesso remoto</translation>
 <translation id="1561967320164410511">U2F e extensões para declaração individual</translation>
-<translation id="1574554504290354326">Esta definição está obsoleta. Use SafeBrowsingExtendedReportingEnabled. A ativação ou desativação de SafeBrowsingExtendedReportingEnabled equivale à definição de SafeBrowsingExtendedReportingOptInAllowed como falsa.
-
-      Definir esta política como falsa impede que os usuários optem por enviar algumas informações do sistema e conteúdo da página aos servidores do Google. Se essa configuração for verdadeira ou se não for definida, os usuários poderão enviar algumas informações do sistema e conteúdo da página ao serviço Navegação segura para ajudar a detectar apps e sites perigosos.
-
-      Consulte https://developers.google.com/safe-browsing para ver mais informações sobre o serviço Navegação segura.</translation>
 <translation id="1583248206450240930">Usar o <ph name="PRODUCT_FRAME_NAME" /> por padrão</translation>
 <translation id="1599424828227887013">Ativa o isolamento de sites para origens específicas em dispositivos Android</translation>
 <translation id="1608755754295374538">URLs que terão acesso a dispositivos de captura de áudio sem solicitação</translation>
@@ -4254,21 +4249,6 @@ Essas políticas são ignoradas se a Área de trabalho remota do Google Chrome n
       Esta política tem efeito apenas para usuários não afiliados.
       </translation>
 <translation id="7683777542468165012">Atualização de política dinâmica</translation>
-<translation id="7684516445147212248">Configurar esta política permitirá/proibirá a autenticação pelo SO para perfis anônimos e de visitante no <ph name="PRODUCT_NAME" />.
-
-      A autenticação pelo SO é uma autenticação HTTP que usa credenciais padrão caso as explícitas não sejam fornecidas por meio de esquemas de resposta/desafio Negotiate/NTLM/Kerberos.
-
-      Definir a opção <ph name="REGULAR_ONLY_OPTION_NAME" /> (valor 0) permite a autenticação pelo SO apenas para sessões normais. As sessões anônimas e de visitante não terão permissão para usar essa autenticação.
-
-      Definir a opção <ph name="INCOGNITO_AND_REGULAR_OPTION_NAME" /> (valor 1) permite a autenticação pelo SO em sessões anônimas e normais. As sessões de visitante não terão permissão para usar essa autenticação.
-
-      Definir a opção <ph name="GUEST_AND_REGULAR_OPTION_NAME" /> (valor 2) permite a autenticação pelo SO para sessões normais e de visitante. As sessões anônimas não terão permissão para usar essa autenticação.
-
-      Definir a opção <ph name="ALL_OPTION_NAME" /> (valor 3) permite a autenticação pelo SO para todas as sessões.
-
-      Essa autenticação sempre é permitida em perfis normais.
-
-      Se a política não for definida, as sessões anônimas e de visitante não poderão usar a autenticação pelo SO nos lançamentos futuros do <ph name="PRODUCT_NAME" />, porque não terão permissão.</translation>
 <translation id="7687943045976362719">Se esta política for definida, os tipos de conteúdo especificados serão processados pelo <ph name="PRODUCT_FRAME_NAME" />.
 
 Se esta política não for definida, o renderizador padrão será usado para todos os sites. A política <ph name="CHROME_FRAME_RENDERER_SETTINGS_POLICY_NAME" /> pode ser usada para configurar o renderizador padrão.</translation>

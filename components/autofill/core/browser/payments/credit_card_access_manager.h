@@ -32,6 +32,19 @@ namespace autofill {
 class AutofillManager;
 enum class WebauthnDialogCallbackType;
 
+// Flow type denotes which card unmask authentication method was used.
+enum class UnmaskAuthFlowType {
+  kNone = 0,
+  // Only CVC prompt was shown.
+  kCvc = 1,
+  // Only WebAuthn prompt was shown.
+  kFido = 2,
+  // CVC authentication was required in addition to WebAuthn.
+  kCvcThenFido = 3,
+  // WebAuthn prompt failed and fell back to CVC prompt.
+  kCvcFallbackFromFido = 4,
+};
+
 // Manages logic for accessing credit cards either stored locally or stored
 // with Google Payments. Owned by AutofillManager.
 #if defined(OS_IOS)
@@ -133,8 +146,7 @@ class CreditCardAccessManager : public CreditCardCVCAuthenticator::Requester,
       payments::PaymentsClient::UnmaskDetails& unmask_details);
 
   // Determines what form of authentication is required.
-  CreditCardFormEventLogger::UnmaskAuthFlowType GetAuthenticationType(
-      bool get_unmask_details_returned);
+  UnmaskAuthFlowType GetAuthenticationType(bool get_unmask_details_returned);
 
   // If OnDidGetUnmaskDetails() was invoked by PaymentsClient, then
   // |get_unmask_details_returned| should be set to true. Based on the
@@ -193,8 +205,7 @@ class CreditCardAccessManager : public CreditCardCVCAuthenticator::Requester,
   void SignalCanFetchUnmaskDetails();
 
   // The current form of authentication in progress.
-  CreditCardFormEventLogger::UnmaskAuthFlowType unmask_auth_flow_type_ =
-      CreditCardFormEventLogger::UnmaskAuthFlowType::kNone;
+  UnmaskAuthFlowType unmask_auth_flow_type_ = UnmaskAuthFlowType::kNone;
 
   // Is set to true only when waiting for the callback to
   // OnCVCAuthenticationComplete() to be executed.

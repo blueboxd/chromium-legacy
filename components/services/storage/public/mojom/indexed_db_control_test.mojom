@@ -1,0 +1,20 @@
+// Copyright 2020 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
+
+module storage.mojom;
+
+import "mojo/public/mojom/base/file_path.mojom";
+import "mojo/public/mojom/base/values.mojom";
+import "mojo/public/mojom/base/time.mojom";
+import "url/mojom/origin.mojom";
+
+// A test-only interface extending storage.mojom.IndexedDBControl.
+interface IndexedDBControlTest {
+  // Gets the file name of the local storage file for the given origin.
+  GetFilePathForTesting(url.mojom.Origin origin) =>
+      (mojo_base.mojom.FilePath path);
+
+  // Forgets the origins/sizes read from disk.
+  ResetCachesForTesting() => ();
+};

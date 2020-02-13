@@ -34,7 +34,8 @@ AVG_ERROR_MARGIN = 1.1
 # CI stands for confidence intervals. "ci_095"s recorded in the data is the
 # recorded range between upper and lower CIs. CI_ERROR_MARGIN is the maximum
 # acceptable ratio of calculated ci_095 to the recorded ones.
-CI_ERROR_MARGIN = 1.5
+# TODO(behdadb) crbug.com/1052054
+CI_ERROR_MARGIN = 30.0
 
 class ResultRecorder(object):
   def __init__(self):

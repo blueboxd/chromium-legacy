@@ -51,6 +51,7 @@ class FakeGbmBuffer : public GbmBuffer {
   gfx::NativePixmapHandle ExportHandle() const override {
     return gfx::NativePixmapHandle();
   }
+  sk_sp<SkSurface> GetPlaneSurface(size_t plane) override { return nullptr; }
   sk_sp<SkSurface> GetSurface() override { return nullptr; }
 
  private:
@@ -80,6 +81,9 @@ class FakeGbmDevice : public GbmDevice {
       const gfx::Size& size,
       gfx::NativePixmapHandle handle) override {
     return nullptr;
+  }
+  bool IsFormatAndUsageSupported(uint32_t format, uint32_t flags) override {
+    return false;
   }
 
  private:

@@ -298,17 +298,28 @@ void TestVDAVideoDecoder::PictureReady(const Picture& picture) {
   // flagged for reuse. WrapVideoFrame() is not supported for texture-based
   // video frames (see http://crbug/362521) so we work around this by creating a
   // new video frame using the same mailbox.
-  if (!video_frame->HasTextures()) {
-    wrapped_video_frame = VideoFrame::WrapVideoFrame(
-        video_frame, video_frame->format(), picture.visible_rect(),
-        picture.visible_rect().size());
+  if (!picture.visible_rect().IsEmpty()) {
+    if (!video_frame->HasTextures()) {
+      wrapped_video_frame = VideoFrame::WrapVideoFrame(
+          video_frame, video_frame->format(), picture.visible_rect(),
+          picture.visible_rect().size());
+    } else {
+      gpu::MailboxHolder mailbox_holders[media::VideoFrame::kMaxPlanes];
+      mailbox_holders[0] = video_frame->mailbox_holder(0);
+      wrapped_video_frame = VideoFrame::WrapNativeTextures(
+          video_frame->format(), mailbox_holders,
+          VideoFrame::ReleaseMailboxCB(), video_frame->coded_size(),
+          picture.visible_rect(), picture.visible_rect().size(),
+          video_frame->timestamp());
+    }
   } else {
-    gpu::MailboxHolder mailbox_holders[media::VideoFrame::kMaxPlanes];
-    mailbox_holders[0] = video_frame->mailbox_holder(0);
-    wrapped_video_frame = VideoFrame::WrapNativeTextures(
-        video_frame->format(), mailbox_holders, VideoFrame::ReleaseMailboxCB(),
-        video_frame->coded_size(), video_frame->visible_rect(),
-        video_frame->natural_size(), video_frame->timestamp());
+    // This occurs in bitstream buffer in webrtc scenario. WrapNativeTexture()
+    // fails if visible_rect() is empty. Although the client of
+    // TestVdaVideoDecoder should ignore this frame, it is necessary to output
+    // the dummy frame to count up the number of output video frames.
+    wrapped_video_frame =
+        VideoFrame::CreateFrame(PIXEL_FORMAT_UNKNOWN, gfx::Size(), gfx::Rect(),
+                                gfx::Size(), video_frame->timestamp());
   }
 
   DCHECK(wrapped_video_frame);

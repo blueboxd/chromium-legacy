@@ -749,14 +749,6 @@ IPC_MESSAGE_ROUTED2(FrameHostMsg_UpdateTitle,
 IPC_MESSAGE_ROUTED1(FrameHostMsg_DomOperationResponse,
                     std::string  /* json_string */)
 
-// Sent by the renderer process to check whether client 3D APIs
-// (Pepper 3D, WebGL) are explicitly blocked.
-IPC_SYNC_MESSAGE_CONTROL3_1(FrameHostMsg_Are3DAPIsBlocked,
-                            int /* render_frame_id */,
-                            GURL /* top_origin_url */,
-                            content::ThreeDAPIType /* requester */,
-                            bool /* blocked */)
-
 // Message sent from renderer to the browser when focus changes inside the
 // frame. The first parameter says whether the newly focused element needs
 // keyboard input (true for textfields, text areas and content editable divs).

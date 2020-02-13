@@ -12,11 +12,11 @@
 
 # Create a URLLoaderInterceptor. It should cause the navigation to fail, but it
 # isn't using an URLLoader anymore.
--RenderFrameHostManagerTest.ErrorPageNavigationHistoryNavigationFailure
+-All/RenderFrameHostManagerTest.ErrorPageNavigationHistoryNavigationFailure/*
 
 # Test expects the RenderFrameHost to be deleted after a navigation. It is now
 # stored into the BackForwardCache instead. It isn't deleted.
--RenderFrameHostManagerTest.CleanupOnCrossProcessNavigation
+-All/RenderFrameHostManagerTest.CleanupOnCrossProcessNavigation/*
 -SitePerProcessBrowserTest.SlowUnloadHandlerInIframe
 -WebContentsReceiverSetBrowserTest.CloseOnFrameDeletion
 
@@ -24,17 +24,17 @@
 # bfcached document.
 -DynamicIsolatedOriginTest.LockedProcessNotReusedForNonisolatedSameSiteNavigation
 -NavigationControllerBrowserTest.UtilizationOfSpareRenderProcessHost
--RenderFrameHostManagerTest.DontSelectInvalidFiles
--RenderFrameHostManagerTest.NavigateWithUnassignedSiteInstance
--RenderFrameHostManagerTest.RestoreFileAccessForHistoryNavigation
--RenderFrameHostManagerTest.RestoreSubframeFileAccessForHistoryNavigation
+-All/RenderFrameHostManagerTest.DontSelectInvalidFiles/*
+-All/RenderFrameHostManagerTest.NavigateWithUnassignedSiteInstance/*
+-All/RenderFrameHostManagerTest.RestoreFileAccessForHistoryNavigation/*
+-All/RenderFrameHostManagerTest.RestoreSubframeFileAccessForHistoryNavigation/*
 -RenderProcessHostTest.KeepAliveRendererProcess
 -SitePerProcessBrowserTest.SubframePendingAndBackToSameSiteInstance
 -SitePerProcessBrowserTest.UnloadACKArrivesPriorToProcessShutdownRequest
 
 # Expect the swapped out RenderFrameHost to have a replacement proxy. This won't
 # happen when the BackForwardCache is used to store the old document.
--RenderFrameHostManagerTest.RenderViewInitAfterNewProxyAndProcessKill
+-All/RenderFrameHostManagerTest.RenderViewInitAfterNewProxyAndProcessKill/*
 
 # https://crbug.com/1021409
 -NavigationControllerBrowserTest.BrowserInitiatedLoadPostCommitErrorPageIgnoredForFramePendingDeletion

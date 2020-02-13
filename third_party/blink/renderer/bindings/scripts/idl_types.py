@@ -256,9 +256,15 @@ class IdlType(IdlTypeBase):
         cls.enums.update(new_enums)
 
     def resolve_typedefs(self, typedefs):
-        # This function either returns |self| or a different object.
-        # FIXME: Rename typedefs_resolved().
-        return typedefs.get(self.base_type, self)
+        base_type = self.base_type
+        if base_type in typedefs:
+            resolved_type = typedefs[base_type]
+            if resolved_type.base_type in typedefs:
+                raise ValueError("We can't typedef a typedef'ed type.")
+            # For the case that the resolved type contains other typedef'ed
+            # type(s).
+            return resolved_type.resolve_typedefs(typedefs)
+        return self
 
 
 ################################################################################

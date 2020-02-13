@@ -90,10 +90,12 @@ class CONTENT_EXPORT ServiceWorkerRegistry {
   // Create a new instance of ServiceWorkerVersion which is associated with the
   // given |registration|. Can be null when storage is disabled. This method
   // must be called after storage is initialized.
-  scoped_refptr<ServiceWorkerVersion> CreateNewVersion(
-      ServiceWorkerRegistration* registration,
-      const GURL& script_url,
-      blink::mojom::ScriptType script_type);
+  using NewVersionCallback =
+      base::OnceCallback<void(scoped_refptr<ServiceWorkerVersion> version)>;
+  void CreateNewVersion(scoped_refptr<ServiceWorkerRegistration> registration,
+                        const GURL& script_url,
+                        blink::mojom::ScriptType script_type,
+                        NewVersionCallback callback);
 
   // Finds registration for |client_url| or |scope| or |registration_id|.
   // The Find methods will find stored and initially installing registrations.
@@ -298,6 +300,11 @@ class CONTENT_EXPORT ServiceWorkerRegistry {
       blink::mojom::ServiceWorkerRegistrationOptions options,
       NewRegistrationCallback callback,
       int64_t registration_id);
+  void DidGetNewVersionId(scoped_refptr<ServiceWorkerRegistration> registration,
+                          const GURL& script_url,
+                          blink::mojom::ScriptType script_type,
+                          NewVersionCallback callback,
+                          int64_t version_id);
 
   void ScheduleDeleteAndStartOver();
 

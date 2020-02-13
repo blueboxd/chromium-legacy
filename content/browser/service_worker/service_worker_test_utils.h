@@ -147,6 +147,13 @@ scoped_refptr<ServiceWorkerRegistration> CreateNewServiceWorkerRegistration(
     ServiceWorkerRegistry* registry,
     const blink::mojom::ServiceWorkerRegistrationOptions& options);
 
+// Calls CreateNewVersion() synchronously.
+scoped_refptr<ServiceWorkerVersion> CreateNewServiceWorkerVersion(
+    ServiceWorkerRegistry* registry,
+    scoped_refptr<ServiceWorkerRegistration> registration,
+    const GURL& script_url,
+    blink::mojom::ScriptType script_type);
+
 // Creates a registration with a waiting version in INSTALLED state.
 // |resource_id| is used as ID to represent script resource (|script|) and
 // should be unique for each test.

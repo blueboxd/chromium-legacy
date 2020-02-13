@@ -983,11 +983,6 @@ void LocalFrameClientImpl::DidChangeFrameOwnerProperties(
           frame_element->RequiredCsp()));
 }
 
-bool LocalFrameClientImpl::ShouldBlockWebGL() {
-  DCHECK(web_frame_->Client());
-  return web_frame_->Client()->ShouldBlockWebGL();
-}
-
 std::unique_ptr<WebServiceWorkerProvider>
 LocalFrameClientImpl::CreateServiceWorkerProvider() {
   if (!web_frame_->Client())

@@ -13,6 +13,7 @@ class Point;
 }
 
 namespace ui {
+enum class CursorSize;
 
 const int kAnimatedCursorFrameDelayMs = 25;
 

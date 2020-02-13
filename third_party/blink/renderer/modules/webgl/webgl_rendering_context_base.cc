@@ -7975,7 +7975,10 @@ void WebGLRenderingContextBase::MaybeRestoreContext(TimerBase*) {
     LocalFrame* frame = canvas()->GetDocument().GetFrame();
     if (!frame)
       return;
-    if (frame->Client()->ShouldBlockWebGL())
+
+    bool blocked;
+    frame->GetLocalFrameHostRemote().Are3DAPIsBlocked(&blocked);
+    if (blocked)
       return;
 
     Settings* settings = frame->GetSettings();

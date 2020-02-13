@@ -667,7 +667,7 @@ TEST_F(ServiceWorkerStorageTest, DisabledStorage) {
   EXPECT_EQ(blink::mojom::kInvalidServiceWorkerRegistrationId,
             storage()->NewRegistrationId());
   EXPECT_EQ(blink::mojom::kInvalidServiceWorkerVersionId,
-            storage()->GetNewVersionId());
+            storage()->NewVersionId());
   EXPECT_EQ(ServiceWorkerConsts::kInvalidServiceWorkerResourceId,
             storage()->NewRegistrationId());
 }
@@ -1254,8 +1254,8 @@ class ServiceWorkerResourceStorageTest : public ServiceWorkerStorageTest {
     blink::mojom::ServiceWorkerRegistrationOptions options;
     options.scope = scope_;
     registration_ = CreateNewServiceWorkerRegistration(registry(), options);
-    scoped_refptr<ServiceWorkerVersion> version = registry()->CreateNewVersion(
-        registration_.get(), script_, options.type);
+    scoped_refptr<ServiceWorkerVersion> version = CreateNewServiceWorkerVersion(
+        registry(), registration_.get(), script_, options.type);
     version->set_fetch_handler_existence(
         ServiceWorkerVersion::FetchHandlerExistence::DOES_NOT_EXIST);
     version->SetStatus(ServiceWorkerVersion::INSTALLED);
@@ -1604,9 +1604,9 @@ TEST_F(ServiceWorkerResourceStorageTest, UpdateRegistration) {
   registration_->active_version()->AddControllee(container_host.get());
 
   // Make an updated registration.
-  scoped_refptr<ServiceWorkerVersion> live_version = new ServiceWorkerVersion(
-      registration_.get(), script_, blink::mojom::ScriptType::kClassic,
-      storage()->GetNewVersionId(), context()->AsWeakPtr());
+  scoped_refptr<ServiceWorkerVersion> live_version =
+      CreateNewServiceWorkerVersion(registry(), registration_.get(), script_,
+                                    blink::mojom::ScriptType::kClassic);
   live_version->SetStatus(ServiceWorkerVersion::NEW);
   registration_->SetWaitingVersion(live_version);
   std::vector<ResourceRecord> records;
@@ -1651,9 +1651,9 @@ TEST_F(ServiceWorkerResourceStorageTest, UpdateRegistration_NoLiveVersion) {
                                   base::DoNothing());
 
   // Make an updated registration.
-  scoped_refptr<ServiceWorkerVersion> live_version = new ServiceWorkerVersion(
-      registration_.get(), script_, blink::mojom::ScriptType::kClassic,
-      storage()->GetNewVersionId(), context()->AsWeakPtr());
+  scoped_refptr<ServiceWorkerVersion> live_version =
+      CreateNewServiceWorkerVersion(registry(), registration_.get(), script_,
+                                    blink::mojom::ScriptType::kClassic);
   live_version->SetStatus(ServiceWorkerVersion::NEW);
   registration_->SetWaitingVersion(live_version);
   std::vector<ResourceRecord> records;

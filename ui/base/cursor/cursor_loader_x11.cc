@@ -10,6 +10,7 @@
 #include "build/build_config.h"
 #include "skia/ext/image_operations.h"
 #include "ui/base/cursor/cursor.h"
+#include "ui/base/cursor/cursor_size.h"
 #include "ui/base/cursor/cursor_util.h"
 #include "ui/base/cursor/cursors_aura.h"
 #include "ui/base/x/x11_util.h"

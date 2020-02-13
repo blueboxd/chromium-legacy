@@ -762,7 +762,6 @@ class CONTENT_EXPORT RenderFrameImpl
   blink::WebString UserAgentOverride() override;
   blink::WebString DoNotTrackValue() override;
   mojom::RendererAudioInputStreamFactory* GetAudioInputStreamFactory();
-  bool ShouldBlockWebGL() override;
   bool AllowContentInitiatedDataUrlNavigations(
       const blink::WebURL& url) override;
   void PostAccessibilityEvent(const blink::WebAXObject& obj,

@@ -17,21 +17,12 @@ luci.console_view(
             short_name = 'loc',
         ),
         luci.console_view_entry(
-            builder = 'goma/Win cl.exe Goma Latest Client LocalOutputCache',
-            category = 'cl.exe|rel',
-            short_name = 'loc',
-        ),
-        luci.console_view_entry(
             builder = 'goma/Win7 Builder Goma Latest Client',
             category = 'win7|rel',
         ),
         luci.console_view_entry(
             builder = 'goma/Win7 Builder (dbg) Goma Latest Client',
             category = 'win7|dbg',
-        ),
-        luci.console_view_entry(
-            builder = 'goma/WinMSVC64 Goma Latest Client',
-            category = 'cl.exe|rel',
         ),
         luci.console_view_entry(
             builder = 'goma/Mac Builder Goma Latest Client',

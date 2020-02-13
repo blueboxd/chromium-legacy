@@ -28,6 +28,11 @@
 #include "third_party/blink/renderer/core/svg/graphics/svg_image.h"
 
 #include "base/memory/scoped_refptr.h"
+#include "base/memory/weak_ptr.h"
+#include "third_party/blink/public/platform/web_url.h"
+#include "third_party/blink/public/platform/web_url_loader.h"
+#include "third_party/blink/public/platform/web_url_loader_client.h"
+#include "third_party/blink/public/platform/web_url_loader_factory.h"
 #include "third_party/blink/renderer/core/animation/document_animations.h"
 #include "third_party/blink/renderer/core/animation/document_timeline.h"
 #include "third_party/blink/renderer/core/dom/document_parser.h"
@@ -69,6 +74,65 @@
 
 namespace blink {
 
+namespace {
+
+using TaskRunnerHandle = scheduler::WebResourceLoadingTaskRunnerHandle;
+
+class FailingLoader final : public WebURLLoader {
+ public:
+  explicit FailingLoader(std::unique_ptr<TaskRunnerHandle> task_runner_handle)
+      : task_runner_handle_(std::move(task_runner_handle)) {}
+  ~FailingLoader() override = default;
+
+  // WebURLLoader implementation:
+  void LoadSynchronously(
+      std::unique_ptr<network::ResourceRequest> request,
+      scoped_refptr<WebURLRequest::ExtraData> request_extra_data,
+      int requestor_id,
+      bool download_to_network_cache_only,
+      bool pass_response_pipe_to_client,
+      bool no_mime_sniffing,
+      base::TimeDelta timeout_interval,
+      WebURLLoaderClient*,
+      WebURLResponse&,
+      base::Optional<WebURLError>& error,
+      WebData&,
+      int64_t& encoded_data_length,
+      int64_t& encoded_body_length,
+      WebBlobInfo& downloaded_blob) override {
+    NOTREACHED();
+  }
+  void LoadAsynchronously(
+      std::unique_ptr<network::ResourceRequest> request,
+      scoped_refptr<WebURLRequest::ExtraData> request_extra_data,
+      int requestor_id,
+      bool download_to_network_cache_only,
+      bool no_mime_sniffing,
+      WebURLLoaderClient* client) override {
+    NOTREACHED();
+  }
+  void SetDefersLoading(bool) override {}
+  void DidChangePriority(WebURLRequest::Priority, int) override {}
+  scoped_refptr<base::SingleThreadTaskRunner> GetTaskRunner() override {
+    return task_runner_handle_->GetTaskRunner();
+  }
+
+ private:
+  const std::unique_ptr<TaskRunnerHandle> task_runner_handle_;
+};
+
+class FailingLoaderFactory final : public WebURLLoaderFactory {
+ public:
+  // WebURLLoaderFactory implementation:
+  std::unique_ptr<WebURLLoader> CreateURLLoader(
+      const WebURLRequest&,
+      std::unique_ptr<TaskRunnerHandle> task_runner_handle) override {
+    return std::make_unique<FailingLoader>(std::move(task_runner_handle));
+  }
+};
+
+}  // namespace
+
 // SVGImageLocalFrameClient is used to wait until SVG document's load event
 // in the case where there are subresources asynchronously loaded.
 //
@@ -82,7 +146,9 @@ class SVGImage::SVGImageLocalFrameClient : public EmptyLocalFrameClient {
 
  private:
   std::unique_ptr<WebURLLoaderFactory> CreateURLLoaderFactory() override {
-    return Platform::Current()->CreateDefaultURLLoaderFactory();
+    // SVG Images have unique security rules that prevent all subresource
+    // requests except for data urls.
+    return std::make_unique<FailingLoaderFactory>();
   }
 
   void DispatchDidHandleOnloadEvents() override {

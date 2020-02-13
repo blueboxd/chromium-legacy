@@ -182,8 +182,8 @@ class ServiceWorkerInstalledScriptsSenderTest : public testing::Test {
     options.scope = scope_;
     registration_ = base::MakeRefCounted<ServiceWorkerRegistration>(
         options, 1L, context()->AsWeakPtr());
-    version_ = context()->registry()->CreateNewVersion(
-        registration_.get(),
+    version_ = CreateNewServiceWorkerVersion(
+        context()->registry(), registration_.get(),
         GURL("http://www.example.com/test/service_worker.js"),
         blink::mojom::ScriptType::kClassic);
     version_->set_fetch_handler_existence(

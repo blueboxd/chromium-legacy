@@ -1071,10 +1071,6 @@
     "label": "//ui/latency:latency_unittests",
     "type": "console_test_launcher",
   },
-  "libANGLE": {
-    "label": "//third_party/angle:libANGLE",
-    "type": "additional_compile_target",
-  },
   "libcups_unittests": {
     "label": "//chrome/services/cups_proxy:libcups_unittests",
     "type": "console_test_launcher",

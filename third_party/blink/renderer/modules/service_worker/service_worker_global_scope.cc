@@ -35,6 +35,7 @@
 
 #include "base/feature_list.h"
 #include "base/memory/ptr_util.h"
+#include "base/metrics/histogram_functions.h"
 #include "base/numerics/safe_conversions.h"
 #include "mojo/public/cpp/bindings/pending_remote.h"
 #include "third_party/blink/public/common/features.h"
@@ -109,7 +110,6 @@
 #include "third_party/blink/renderer/platform/bindings/script_state.h"
 #include "third_party/blink/renderer/platform/bindings/v8_throw_exception.h"
 #include "third_party/blink/renderer/platform/heap/heap.h"
-#include "third_party/blink/renderer/platform/instrumentation/histogram.h"
 #include "third_party/blink/renderer/platform/loader/fetch/fetch_client_settings_object_snapshot.h"
 #include "third_party/blink/renderer/platform/loader/fetch/memory_cache.h"
 #include "third_party/blink/renderer/platform/loader/fetch/resource_loader_options.h"
@@ -335,18 +335,16 @@ ServiceWorkerGlobalScope::GetInstalledScriptsManager() {
 void ServiceWorkerGlobalScope::CountWorkerScript(size_t script_size,
                                                  size_t cached_metadata_size) {
   DCHECK_EQ(GetScriptType(), mojom::ScriptType::kClassic);
-  DEFINE_THREAD_SAFE_STATIC_LOCAL(
-      CustomCountHistogram, script_size_histogram,
-      ("ServiceWorker.ScriptSize", 1000, 5000000, 50));
-  script_size_histogram.Count(
-      base::saturated_cast<base::Histogram::Sample>(script_size));
+  base::UmaHistogramCustomCounts(
+      "ServiceWorker.ScriptSize",
+      base::saturated_cast<base::Histogram::Sample>(script_size), 1000, 5000000,
+      50);
 
   if (cached_metadata_size) {
-    DEFINE_THREAD_SAFE_STATIC_LOCAL(
-        CustomCountHistogram, script_cached_metadata_size_histogram,
-        ("ServiceWorker.ScriptCachedMetadataSize", 1000, 50000000, 50));
-    script_cached_metadata_size_histogram.Count(
-        base::saturated_cast<base::Histogram::Sample>(cached_metadata_size));
+    base::UmaHistogramCustomCounts(
+        "ServiceWorker.ScriptCachedMetadataSize",
+        base::saturated_cast<base::Histogram::Sample>(cached_metadata_size),
+        1000, 50000000, 50);
   }
 
   CountScriptInternal(script_size, cached_metadata_size);
@@ -374,22 +372,19 @@ void ServiceWorkerGlobalScope::DidEvaluateScript() {
 
   // TODO(asamidoi,nhiroki): Record the UMAs for module scripts, or remove them
   // if they're no longer used.
-  DEFINE_THREAD_SAFE_STATIC_LOCAL(CustomCountHistogram, script_count_histogram,
-                                  ("ServiceWorker.ScriptCount", 1, 1000, 50));
-  script_count_histogram.Count(
+  base::UmaHistogramCounts1000(
+      "ServiceWorker.ScriptCount",
       base::saturated_cast<base::Histogram::Sample>(script_count_));
-  DEFINE_THREAD_SAFE_STATIC_LOCAL(
-      CustomCountHistogram, script_total_size_histogram,
-      ("ServiceWorker.ScriptTotalSize", 1000, 5000000, 50));
-  script_total_size_histogram.Count(
-      base::saturated_cast<base::Histogram::Sample>(script_total_size_));
+  base::UmaHistogramCustomCounts(
+      "ServiceWorker.ScriptTotalSize",
+      base::saturated_cast<base::Histogram::Sample>(script_total_size_), 1000,
+      5000000, 50);
   if (script_cached_metadata_total_size_) {
-    DEFINE_THREAD_SAFE_STATIC_LOCAL(
-        CustomCountHistogram, cached_metadata_histogram,
-        ("ServiceWorker.ScriptCachedMetadataTotalSize", 1000, 50000000, 50));
-    cached_metadata_histogram.Count(
+    base::UmaHistogramCustomCounts(
+        "ServiceWorker.ScriptCachedMetadataTotalSize",
         base::saturated_cast<base::Histogram::Sample>(
-            script_cached_metadata_total_size_));
+            script_cached_metadata_total_size_),
+        1000, 50000000, 50);
   }
 }
 
@@ -840,20 +835,16 @@ void ServiceWorkerGlobalScope::CountCacheStorageInstalledScript(
   cache_storage_installed_script_total_size_ += script_size;
   cache_storage_installed_script_metadata_total_size_ += script_metadata_size;
 
-  DEFINE_THREAD_SAFE_STATIC_LOCAL(
-      CustomCountHistogram, script_size_histogram,
-      ("ServiceWorker.CacheStorageInstalledScript.ScriptSize", 1000, 5000000,
-       50));
-  script_size_histogram.Count(
-      base::saturated_cast<base::Histogram::Sample>(script_size));
+  base::UmaHistogramCustomCounts(
+      "ServiceWorker.CacheStorageInstalledScript.ScriptSize",
+      base::saturated_cast<base::Histogram::Sample>(script_size), 1000, 5000000,
+      50);
 
   if (script_metadata_size) {
-    DEFINE_THREAD_SAFE_STATIC_LOCAL(
-        CustomCountHistogram, script_metadata_size_histogram,
-        ("ServiceWorker.CacheStorageInstalledScript.CachedMetadataSize", 1000,
-         50000000, 50));
-    script_metadata_size_histogram.Count(
-        base::saturated_cast<base::Histogram::Sample>(script_metadata_size));
+    base::UmaHistogramCustomCounts(
+        "ServiceWorker.CacheStorageInstalledScript.CachedMetadataSize",
+        base::saturated_cast<base::Histogram::Sample>(script_metadata_size),
+        1000, 50000000, 50);
   }
 }
 
@@ -1262,29 +1253,22 @@ void ServiceWorkerGlobalScope::SetIsInstalling(bool is_installing) {
 
   // Installing phase is finished; record the stats for the scripts that are
   // stored in Cache storage during installation.
-  DEFINE_THREAD_SAFE_STATIC_LOCAL(
-      CustomCountHistogram, cache_storage_installed_script_count_histogram,
-      ("ServiceWorker.CacheStorageInstalledScript.Count", 1, 1000, 50));
-  cache_storage_installed_script_count_histogram.Count(
+  base::UmaHistogramCounts1000(
+      "ServiceWorker.CacheStorageInstalledScript.Count",
       base::saturated_cast<base::Histogram::Sample>(
           cache_storage_installed_script_count_));
-  DEFINE_THREAD_SAFE_STATIC_LOCAL(
-      CustomCountHistogram, cache_storage_installed_script_total_size_histogram,
-      ("ServiceWorker.CacheStorageInstalledScript.ScriptTotalSize", 1000,
-       50000000, 50));
-  cache_storage_installed_script_total_size_histogram.Count(
+  base::UmaHistogramCustomCounts(
+      "ServiceWorker.CacheStorageInstalledScript.ScriptTotalSize",
       base::saturated_cast<base::Histogram::Sample>(
-          cache_storage_installed_script_total_size_));
+          cache_storage_installed_script_total_size_),
+      1000, 50000000, 50);
 
   if (cache_storage_installed_script_metadata_total_size_) {
-    DEFINE_THREAD_SAFE_STATIC_LOCAL(
-        CustomCountHistogram,
-        cache_storage_installed_script_metadata_total_size_histogram,
-        ("ServiceWorker.CacheStorageInstalledScript.CachedMetadataTotalSize",
-         1000, 50000000, 50));
-    cache_storage_installed_script_metadata_total_size_histogram.Count(
+    base::UmaHistogramCustomCounts(
+        "ServiceWorker.CacheStorageInstalledScript.CachedMetadataTotalSize",
         base::saturated_cast<base::Histogram::Sample>(
-            cache_storage_installed_script_metadata_total_size_));
+            cache_storage_installed_script_metadata_total_size_),
+        1000, 50000000, 50);
   }
 }
 

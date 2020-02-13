@@ -1,8 +1,7 @@
 <script>
-    const worker_options = { type: "classic" };
-    if (location.search === "?module") {
-        worker_options.type = "module";
-    }
+    const worker_options = location.search === "?module"
+        ? { name: "module", type: "module" }
+        : { name: "classic", type: "classic" };
 
     const w = new SharedWorker(
         "/security/cors-rfc1918/resources/post-addressspace-to-owner.js",

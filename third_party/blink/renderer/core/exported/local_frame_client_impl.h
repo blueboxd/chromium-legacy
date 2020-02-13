@@ -209,8 +209,6 @@ class LocalFrameClientImpl final : public LocalFrameClient {
       const blink::DocumentPolicy::FeatureState& dp_header) override;
   void DidChangeFrameOwnerProperties(HTMLFrameOwnerElement*) override;
 
-  bool ShouldBlockWebGL() override;
-
   std::unique_ptr<WebServiceWorkerProvider> CreateServiceWorkerProvider()
       override;
   WebContentSettingsClient* GetContentSettingsClient() override;

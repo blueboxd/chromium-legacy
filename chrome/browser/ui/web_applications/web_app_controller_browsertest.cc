@@ -6,6 +6,7 @@
 
 #include "chrome/browser/apps/app_service/app_launch_params.h"
 #include "chrome/browser/apps/launch_service/launch_service.h"
+#include "chrome/browser/banners/test_app_banner_manager_desktop.h"
 #include "chrome/browser/extensions/browsertest_util.h"
 #include "chrome/browser/predictors/loading_predictor_config.h"
 #include "chrome/browser/ui/web_applications/test/web_app_browsertest_util.h"
@@ -76,6 +77,26 @@ Browser* WebAppControllerBrowserTestBase::LaunchWebAppBrowserAndWait(
 Browser* WebAppControllerBrowserTestBase::LaunchBrowserForWebAppInTab(
     const AppId& app_id) {
   return web_app::LaunchBrowserForWebAppInTab(profile(), app_id);
+}
+
+// static
+bool WebAppControllerBrowserTestBase::NavigateAndAwaitInstallabilityCheck(
+    Browser* browser,
+    const GURL& url) {
+  auto* manager = banners::TestAppBannerManagerDesktop::CreateForWebContents(
+      browser->tab_strip_model()->GetActiveWebContents());
+  NavigateToURLAndWait(browser, url);
+  return manager->WaitForInstallableCheck();
+}
+
+Browser*
+WebAppControllerBrowserTestBase::NavigateInNewWindowAndAwaitInstallabilityCheck(
+    const GURL& url) {
+  Browser* new_browser =
+      new Browser(Browser::CreateParams(Browser::TYPE_NORMAL, profile(), true));
+  AddBlankTabAndShow(new_browser);
+  NavigateAndAwaitInstallabilityCheck(new_browser, url);
+  return new_browser;
 }
 
 base::Optional<AppId> WebAppControllerBrowserTestBase::FindAppWithUrlInScope(

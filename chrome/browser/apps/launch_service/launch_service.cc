@@ -43,20 +43,6 @@ LaunchService::LaunchService(Profile* profile) : profile_(profile) {
 
 LaunchService::~LaunchService() {}
 
-LaunchManager& LaunchService::GetLaunchManagerForApp(
-    const std::string& app_id) {
-  // --app old-style app shortcuts
-  if (app_id.empty())
-    return *extension_app_launch_manager_;
-
-  const extensions::Extension* extension =
-      extensions::ExtensionRegistry::Get(profile_)->GetInstalledExtension(
-          app_id);
-  return (!extension || extension->from_bookmark())
-             ? *web_app_launch_manager_
-             : *extension_app_launch_manager_;
-}
-
 content::WebContents* LaunchService::OpenApplication(
     const AppLaunchParams& params) {
   return GetLaunchManagerForApp(params.app_id).OpenApplication(params);
@@ -70,6 +56,20 @@ void LaunchService::LaunchApplication(
                             apps::mojom::LaunchContainer container)> callback) {
   GetLaunchManagerForApp(app_id).LaunchApplication(
       app_id, command_line, current_directory, std::move(callback));
+}
+
+LaunchManager& LaunchService::GetLaunchManagerForApp(
+    const std::string& app_id) {
+  // --app old-style app shortcuts
+  if (app_id.empty())
+    return *extension_app_launch_manager_;
+
+  const extensions::Extension* extension =
+      extensions::ExtensionRegistry::Get(profile_)->GetInstalledExtension(
+          app_id);
+  return (!extension || extension->from_bookmark())
+             ? *web_app_launch_manager_
+             : *extension_app_launch_manager_;
 }
 
 }  // namespace apps

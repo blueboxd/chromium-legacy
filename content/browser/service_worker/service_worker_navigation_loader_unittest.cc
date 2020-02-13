@@ -343,8 +343,9 @@ class ServiceWorkerNavigationLoaderTest : public testing::Test {
     options.scope = GURL("https://example.com/");
     registration_ = CreateNewServiceWorkerRegistration(
         helper_->context()->registry(), options);
-    version_ = helper_->context()->registry()->CreateNewVersion(
-        registration_.get(), GURL("https://example.com/service_worker.js"),
+    version_ = CreateNewServiceWorkerVersion(
+        helper_->context()->registry(), registration_.get(),
+        GURL("https://example.com/service_worker.js"),
         blink::mojom::ScriptType::kClassic);
     std::vector<ServiceWorkerDatabase::ResourceRecord> records;
     records.push_back(WriteToDiskCacheSync(storage(), version_->script_url(),

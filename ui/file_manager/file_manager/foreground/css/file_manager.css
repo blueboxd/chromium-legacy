@@ -56,7 +56,7 @@ input[type='button']:focus,
 input[type='submit']:focus,
 select:focus,
 a:focus {
-  background-color: rgba(255, 255, 255, 0.20);
+  background-color: rgba(255, 255, 255, 20%);
   outline-color: rgb(77, 144, 254);
 }
 
@@ -97,7 +97,7 @@ body.files-ng .dialog-main {
 /* Directory tree at the left. */
 .dialog-navigation-list {
   background-color: rgb(250, 250, 250);
-  border-inline-end: 1px solid rgba(0, 0, 0, 0.15);
+  border-inline-end: 1px solid rgba(0, 0, 0, 15%);
   display: flex;
   flex: none;
   flex-direction: column;
@@ -141,7 +141,7 @@ html[class*='col-resize'] #directory-tree {
 }
 
 #directory-tree:not([files-ng]) .tree-item[section-start] {
-  border-top: 1px solid rgba(0, 0, 0, 0.10);
+  border-top: 1px solid rgba(0, 0, 0, 10%);
 }
 
 #directory-tree[files-ng] .tree-item[section-start]::before {
@@ -368,7 +368,7 @@ html:not([class*='col-resize']) #directory-tree
 
 #directory-tree .tree-row > .file-row > .root-eject {
   --text-color: currentColor;
-  --hover-bg-color: rgba(0, 0, 0, 0.04);
+  --hover-bg-color: rgba(0, 0, 0, 4%);
   min-width: 32px;
   padding: 0;
 }
@@ -395,7 +395,7 @@ html[class*='col-resize'] #directory-tree .tree-row > .file-row > .root-eject:ho
 }
 
 #directory-tree .tree-row > .file-row > .root-eject:active {
-  --ink-color: rgba(0, 0, 0, 0.88);
+  --ink-color: rgba(0, 0, 0, 88%);
   border-width: 0;
 }
 
@@ -484,7 +484,7 @@ body[type='open-multi-file'].check-select .dialog-header {
   width: 48px;
 }
 
-.dialog-header.files-ng cr-button:focus {
+.dialog-header.files-ng cr-button:focus:not(:active) {
   border: 1px solid var(--google-blue-600);
 }
 
@@ -499,7 +499,7 @@ body[type='open-multi-file'].check-select .dialog-header {
 }
 
 .dialog-header.files-ng cr-button {
-  --hover-bg-color: rgba(0, 0, 0, 0.04);
+  --hover-bg-color: rgba(0, 0, 0, 4%);
   --text-color: currentColor;
 }
 
@@ -521,12 +521,12 @@ body.check-select .dialog-header button paper-ripple {
  *  or if focusing during mouse click event ":active" pseudo-selector. */
 .dialog-header
     .menu-button:focus:not([tabindex='-1']):not(:active) {
-  background-color: rgba(255, 255, 255, 0.20);
+  background-color: rgba(255, 255, 255, 20%);
 }
 
 body.check-select .dialog-header
     .menu-button:focus:not([tabindex='-1']):not(:active) {
-  background-color: rgba(153, 153, 153, 0.20);
+  background-color: rgba(153, 153, 153, 20%);
 }
 
 .dialog-header iron-icon,
@@ -747,9 +747,9 @@ body:not(.check-select) #selection-menu-button {
 #cloud-import-details {
   background-color: white;
   border-radius: 2px;
-  box-shadow: 0 4px 5px 0 rgba(0, 0, 0, 0.14),
-              0 1px 10px 0 rgba(0, 0, 0, 0.12),
-              0 2px 4px -1px rgba(0, 0, 0, 0.4);
+  box-shadow: 0 4px 5px 0 rgba(0, 0, 0, 14%),
+              0 1px 10px 0 rgba(0, 0, 0, 12%),
+              0 2px 4px -1px rgba(0, 0, 0, 40%);
   line-height: 1.5em;
   position: absolute;
   top: 42px;  /* Positioned just overlapping the top of the toolbar */
@@ -879,7 +879,7 @@ body.check-select #files-selected-label {
 }
 
 #cancel-selection-button:focus:not([tabindex='-1']):not(:active) {
-  background-color: rgba(153, 153, 153, .2);
+  background-color: rgba(153, 153, 153, 20%);
 }
 
 #cancel-selection-button > span {
@@ -987,7 +987,7 @@ body.check-select #search-box {
 }
 
 .dialog-header:not(.files-ng) #search-box .clear:focus {
-  background-color: rgba(255, 255, 255, 0.3);
+  background-color: rgba(255, 255, 255, 30%);
 }
 
 html[dir='rtl'] #search-box .clear {
@@ -1079,9 +1079,9 @@ html[dir='rtl'] #search-box .clear {
 }
 
 .dialog-footer button:active {
-  box-shadow: 0 4px 5px 0 rgba(0, 0, 0, 0.14),
-              0 1px 10px 0 rgba(0, 0, 0, 0.12),
-              0 2px 4px -1px rgba(0, 0, 0, 0.4);
+  box-shadow: 0 4px 5px 0 rgba(0, 0, 0, 14%),
+              0 1px 10px 0 rgba(0, 0, 0, 12%),
+              0 2px 4px -1px rgba(0, 0, 0, 40%);
 }
 
 .dialog-footer cr-button,
@@ -1142,7 +1142,7 @@ html[dir='rtl'] #search-box .clear {
 .dialog-footer .secondary:focus:not(:active),
 .dialog-footer select:focus:not(:active),
 html.focus-outline-visible #cloud-import-details cr-button:focus {
-  box-shadow: 0 0 0 2px rgba(51, 103, 214, 0.5);
+  box-shadow: 0 0 0 2px rgba(51, 103, 214, 50%);
 }
 
 .progressable:not([progress]) .progress-bar,
@@ -1273,7 +1273,7 @@ html[dir='rtl'] .breadcrumbs .separator {
 /* The toolbar indicator that means the current directory is read only. */
 #read-only-indicator {
   align-items: center;
-  background-color: rgba(0, 0, 0, 0.2);
+  background-color: rgba(0, 0, 0, 20%);
   border-radius: 16px;
   display: flex;
   flex: none;
@@ -1340,9 +1340,9 @@ body.check-select #read-only-indicator {
 
 #file-list .drag-selection-border {
   -webkit-box-sizing: border-box;
-  background-color: rgba(255, 255, 255, 0.3);
-  border: 2px solid rgba(255, 255, 255, 0.6);
-  outline: 1px solid rgba(0, 0, 0, 0.1);
+  background-color: rgba(255, 255, 255, 30%);
+  border: 2px solid rgba(255, 255, 255, 60%);
+  outline: 1px solid rgba(0, 0, 0, 10%);
   position: absolute;
   z-index: 2;
 }
@@ -1562,7 +1562,7 @@ body[type='full-page'] .detail-name .detail-icon {
 }
 
 .thumbnail-grid .thumbnail-item.directory {
-  box-shadow: 0 1px rgba(0, 0, 0, 0.15);
+  box-shadow: 0 1px rgba(0, 0, 0, 15%);
   height: 40px;
 }
 
@@ -1577,11 +1577,11 @@ body[type='full-page'] .detail-name .detail-icon {
 }
 
 .thumbnail-grid .thumbnail-item[selected] .shield {
- background-color: rgba(51, 103, 214, 0.5);
+ background-color: rgba(51, 103, 214, 50%);
 
 }
 .thumbnail-grid .thumbnail-item[lead]:not([selected]) .shield {
-  background-color: rgba(51, 103, 214, 0.2);
+  background-color: rgba(51, 103, 214, 20%);
 }
 
 .thumbnail-grid .checkmark {
@@ -1648,7 +1648,7 @@ body.check-select .thumbnail-grid .thumbnail-item[selected] .checkmark.active {
 }
 
 .thumbnail-grid .shield {
-  background-color: rgba(160, 160, 160, 0.5);
+  background-color: rgba(160, 160, 160, 50%);
   bottom: 0;
   display: none;
   left: 0;
@@ -1658,7 +1658,7 @@ body.check-select .thumbnail-grid .thumbnail-item[selected] .checkmark.active {
 }
 
 .thumbnail-grid:focus .shield {
-  background-color: rgba(51, 103, 214, 0.5);
+  background-color: rgba(51, 103, 214, 50%);
 }
 
 .thumbnail-grid .thumbnail-item[selected] .shield,
@@ -1667,7 +1667,7 @@ body.check-select .thumbnail-grid .thumbnail-item[selected] .checkmark.active {
 }
 
 .thumbnail-grid .thumbnail-bottom {
-  background-color: rgba(255, 255, 255, 0.85);
+  background-color: rgba(255, 255, 255, 85%);
   color: rgb(51, 51, 51);
   height: 40px;
 }
@@ -1787,7 +1787,7 @@ body.files-ng #list-container list:focus > li[lead] {
 
 body.check-select #list-container list > li[lead]:not([selected]),
 #list-container list > li[lead]:not([selected]) {
-  background-color: rgba(232, 234, 237, 0.5);
+  background-color: rgba(232, 234, 237, 50%);
 }
 
 body.check-select #list-container list:focus > li[lead]:not([selected]),
@@ -2139,7 +2139,7 @@ body[block-hosted-docs] .file.dim-hosted {
   background-color: #fafafa;
   border: 1px solid #bbb;
   border-radius: 3px;
-  box-shadow: 0 2px 2px 0 rgba(0, 0, 0, .2);
+  box-shadow: 0 2px 2px 0 rgba(0, 0, 0, 20%);
   display: flex;
   flex-direction: row;
   line-height: 0;
@@ -2190,7 +2190,7 @@ cr-menu.chrome-menu hr {
 
 div.shade {
   /* transition: opacity 1000ms linear; */
-  background-color: rgba(255, 255, 255, 0.8);
+  background-color: rgba(255, 255, 255, 80%);
   bottom: 0;
   left: 0;
   opacity: 0;
@@ -2367,7 +2367,7 @@ body.files-ng .table-label-container {
 }
 
 body.files-ng .table-header-label .sorted .sort-icon:hover {
-  background-color: rgba(0, 0, 0, 0.04);
+  background-color: rgba(0, 0, 0, 4%);
 }
 
 body.files-ng .table-header-label .not-sorted .sort-icon {
@@ -2520,7 +2520,7 @@ body.files-ng #list-container li .detail-thumbnail {
 list.autocomplete-suggestions {
   background-color: white;
   border-radius: 3px;
-  box-shadow: 0 1px 4px 0 rgba(0, 0, 0, .5);
+  box-shadow: 0 1px 4px 0 rgba(0, 0, 0, 50%);
   box-sizing: border-box;  /* To match the width with the search box's. */
   color: rgb(90, 90, 90);
   flex: none;
@@ -2564,7 +2564,7 @@ list.autocomplete-suggestions > li > div[search-icon] {
 
 list.autocomplete-suggestions > [selected],
 list.autocomplete-suggestions > [lead] {
-  background-color: rgba(0, 0, 0, 0.08);
+  background-color: rgba(0, 0, 0, 8%);
 }
 
 #gear-menu,
@@ -2893,10 +2893,10 @@ cr-input:not(:defined) {
 }
 
 #drop-label {
-  background-color: rgba(0, 0, 0, 0.8);
+  background-color: rgba(0, 0, 0, 80%);
   border-radius: 2px;
   color: white;
-  display: none;  /* hidden until activaed */
+  display: none;  /* hidden until activated */
   font-size: 12px;
   height: 24px;
   line-height: 24px;

@@ -16,6 +16,7 @@ class Display;
 
 namespace ui {
 class KeyEvent;
+enum class CursorSize;
 }
 
 namespace aura {

@@ -382,7 +382,12 @@ bool HTMLCanvasElement::IsWebGL2Enabled() const {
 bool HTMLCanvasElement::IsWebGLBlocked() const {
   Document& document = GetDocument();
   LocalFrame* frame = document.GetFrame();
-  return frame && frame->Client()->ShouldBlockWebGL();
+  if (!frame)
+    return false;
+
+  bool blocked;
+  frame->GetLocalFrameHostRemote().Are3DAPIsBlocked(&blocked);
+  return blocked;
 }
 
 void HTMLCanvasElement::DidDraw(const FloatRect& rect) {

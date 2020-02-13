@@ -207,6 +207,12 @@ void FrameRendererThumbnail::RenderFrame(
   if (thumbnails_texture_id_ == 0u)
     InitializeThumbnailImageTask();
 
+  if (video_frame->visible_rect().size().IsEmpty()) {
+    // This occurs in bitstream buffer in webrtc scenario.
+    DLOG(WARNING) << "Skipping rendering, because visible_rect is empty";
+    return;
+  }
+
   // Find the texture associated with the video frame's mailbox.
   const gpu::MailboxHolder& mailbox_holder = video_frame->mailbox_holder(0);
   const gpu::Mailbox& mailbox = mailbox_holder.mailbox;

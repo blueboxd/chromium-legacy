@@ -94,8 +94,8 @@ class ServiceWorkerVersionTest : public testing::Test {
     options.scope = scope_;
     registration_ = CreateNewServiceWorkerRegistration(
         helper_->context()->registry(), options);
-    version_ = helper_->context()->registry()->CreateNewVersion(
-        registration_.get(),
+    version_ = CreateNewServiceWorkerVersion(
+        helper_->context()->registry(), registration_.get(),
         GURL("https://www.example.com/test/service_worker.js"),
         blink::mojom::ScriptType::kClassic);
     EXPECT_EQ(url::Origin::Create(scope_), version_->script_origin());
@@ -1116,8 +1116,8 @@ TEST_F(ServiceWorkerVersionTest, BadOrigin) {
   options.scope = scope;
   auto registration = CreateNewServiceWorkerRegistration(
       helper_->context()->registry(), options);
-  auto version = helper_->context()->registry()->CreateNewVersion(
-      registration_.get(),
+  auto version = CreateNewServiceWorkerVersion(
+      helper_->context()->registry(), registration_.get(),
       GURL("bad-origin://www.example.com/test/service_worker.js"),
       blink::mojom::ScriptType::kClassic);
   ASSERT_EQ(blink::ServiceWorkerStatusCode::kErrorDisallowed,

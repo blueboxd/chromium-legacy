@@ -274,10 +274,9 @@ static bool IsMenuListOption(const Node* node) {
   if (!option_element)
     return false;
   const HTMLSelectElement* select = option_element->OwnerSelectElement();
-  if (!select)
+  if (!select || !select->UsesMenuList())
     return false;
-  const LayoutObject* layout_object = select->GetLayoutObject();
-  return layout_object && layout_object->IsMenuList();
+  return select->GetLayoutObject();
 }
 
 AXObject* AXObjectCacheImpl::Get(const Node* node) {

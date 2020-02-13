@@ -39,7 +39,6 @@
 /arcore-android-sdk/src/
 /arcore-android-sdk/test-apks/arcore/*.apk
 /asan
-/auto/src
 /bazel/desugar/*.jar
 /bison
 /boringssl/src
@@ -72,11 +71,9 @@
 /dom_distiller_js/dist
 /elfutils/src
 /emoji-segmenter/src
-/errorprone/lib
 /espresso/lib/
 /expat/src
 /eyesfree/src
-/feed/src
 /ffmpeg
 /flac
 /flatbuffers/src

@@ -292,8 +292,8 @@ class Controller : public ScriptExecutorDelegate,
                   UserData::FieldChange field_change,
                   std::unique_ptr<autofill::AutofillProfile> profile);
 
-  // Enter step while ignoring the return value.
-  void EnterStateSilent(AutofillAssistantState state);
+  // Show the first "Opening..." message and enter START state.
+  void ShowFirstMessageAndStart();
 
   // Clear out visible state and enter the stopped state.
   void EnterStoppedState();

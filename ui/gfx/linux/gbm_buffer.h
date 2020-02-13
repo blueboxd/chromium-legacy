@@ -36,6 +36,7 @@ class GbmBuffer {
   virtual size_t GetPlaneSize(size_t plane) const = 0;
   virtual uint32_t GetHandle() const = 0;
   virtual gfx::NativePixmapHandle ExportHandle() const = 0;
+  virtual sk_sp<SkSurface> GetPlaneSurface(size_t plane) = 0;
   virtual sk_sp<SkSurface> GetSurface() = 0;
 };
 

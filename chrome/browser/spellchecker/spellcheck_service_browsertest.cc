@@ -382,7 +382,15 @@ IN_PROC_BROWSER_TEST_F(SpellcheckServiceBrowserTest, StartWithoutSpellcheck) {
 
 // A custom dictionary state change should send a 'custom dictionary changed'
 // message to the renderer, regardless of the spellcheck enabled state.
-IN_PROC_BROWSER_TEST_F(SpellcheckServiceBrowserTest, CustomDictionaryChanged) {
+//
+// TODO(crbug.com/1051777): Flaky on ASAN Win bot.
+#if defined(OS_WIN) && defined(ADDRESS_SANITIZER)
+#define MAYBE_CustomDictionaryChanged DISABLED_CustomDictionaryChanged
+#else
+#define MAYBE_CustomDictionaryChanged CustomDictionaryChanged
+#endif
+IN_PROC_BROWSER_TEST_F(SpellcheckServiceBrowserTest,
+                       MAYBE_CustomDictionaryChanged) {
   InitSpellcheck(true, "en-US", "");
   EXPECT_TRUE(GetEnableSpellcheckState());
 

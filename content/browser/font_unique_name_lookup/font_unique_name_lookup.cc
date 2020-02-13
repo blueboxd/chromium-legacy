@@ -29,9 +29,12 @@
 
 namespace {
 
+// Increment this suffix when changes are needed to the cache structure, e.g.
+// counting up after the dash "-1", "-2", etc.
+const char kFingerprintSuffixForceUpdateCache[] = "-1";
 const char kProtobufFilename[] = "font_unique_name_table.pb";
-static const char* const kAndroidFontPaths[] = {"/system/fonts",
-                                                "/vendor/fonts"};
+static const char* const kAndroidFontPaths[] = {
+    "/system/fonts", "/vendor/fonts", "/product/fonts"};
 
 // These values are logged to UMA. Entries should not be renumbered and
 // numeric values should never be reused. Please keep in sync with
@@ -387,7 +390,9 @@ base::FilePath FontUniqueNameLookup::TableCacheFilePath() {
 std::string FontUniqueNameLookup::GetAndroidBuildFingerprint() const {
   return android_build_fingerprint_for_testing_.size()
              ? android_build_fingerprint_for_testing_
-             : base::android::BuildInfo::GetInstance()->android_build_fp();
+             : std::string(base::android::BuildInfo::GetInstance()
+                               ->android_build_fp()) +
+                   std::string(kFingerprintSuffixForceUpdateCache);
 }
 
 std::vector<std::string> FontUniqueNameLookup::GetFontFilePaths() const {

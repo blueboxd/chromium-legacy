@@ -14,6 +14,10 @@ namespace display {
 class Display;
 }
 
+namespace ui {
+enum class CursorSize;
+}
+
 namespace wm {
 
 // Interface where platforms such as Ash or Desktop aura are notified of

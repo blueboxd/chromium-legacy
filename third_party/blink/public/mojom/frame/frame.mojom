@@ -251,6 +251,10 @@ interface LocalFrameHost {
   // |success| contains whether the page should be unloaded or not.
   [Sync]
   RunBeforeUnloadConfirm(bool is_reload) => (bool success);
+
+  // A request to check whether WebGL is explicitly blocked.
+  [Sync]
+  Are3DAPIsBlocked() => (bool blocked);
 };
 
 // Implemented in Blink, this interface defines frame-specific methods that will

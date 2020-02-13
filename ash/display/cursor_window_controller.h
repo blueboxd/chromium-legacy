@@ -12,6 +12,7 @@
 #include "base/macros.h"
 #include "ui/aura/window.h"
 #include "ui/base/cursor/cursor.h"
+#include "ui/base/cursor/cursor_size.h"
 #include "ui/display/display.h"
 
 namespace cursor {

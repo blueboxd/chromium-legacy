@@ -1690,18 +1690,6 @@
           'gtest_tests': 'goma_gtests',
         },
       },
-      'Win cl.exe Goma Canary LocalOutputCache': {
-        # Build only chromium's subproject using cl.exe.
-        'additional_compile_targets': [
-          'libANGLE',
-        ],
-      },
-      'Win cl.exe Goma Latest Client LocalOutputCache': {
-        # Build only chromium's subproject using cl.exe.
-        'additional_compile_targets': [
-          'libANGLE',
-        ],
-      },
       'Win10 Tests x64 1803': {
         'mixins': [
           'x86-64',
@@ -1728,18 +1716,6 @@
         'test_suites': {
           'gtest_tests': 'goma_gtests',
         },
-      },
-      'WinMSVC64 Goma Canary': {
-        # Build only chromium's subproject using cl.exe.
-        'additional_compile_targets': [
-          'libANGLE',
-        ],
-      },
-      'WinMSVC64 Goma Latest Client': {
-        # Build only chromium's subproject using cl.exe.
-        'additional_compile_targets': [
-          'libANGLE',
-        ],
       },
       'android-archive-dbg-goma-canary': {
         'additional_compile_targets': [

@@ -14,7 +14,6 @@
 #include "content/common/frame_replication_state.h"
 #include "content/public/browser/browser_associated_interface.h"
 #include "content/public/browser/browser_message_filter.h"
-#include "content/public/common/three_d_api_types.h"
 #include "ppapi/buildflags/buildflags.h"
 #include "services/network/public/mojom/network_service.mojom.h"
 #include "third_party/blink/public/mojom/blob/blob_url_store.mojom.h"
@@ -78,12 +77,6 @@ class CONTENT_EXPORT RenderFrameMessageFilter : public BrowserMessageFilter {
   void OnCreateChildFrame(
       const FrameHostMsg_CreateChildFrame_Params& params,
       FrameHostMsg_CreateChildFrame_Params_Reply* params_reply);
-
-
-  void OnAre3DAPIsBlocked(int render_frame_id,
-                          const GURL& top_origin_url,
-                          ThreeDAPIType requester,
-                          bool* blocked);
 
   void OnRenderProcessGone();
 

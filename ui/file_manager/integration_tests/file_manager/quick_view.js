@@ -2178,6 +2178,8 @@
    * Tests that deleting all items in a check-selection closes the Quick View.
    */
   testcase.openQuickViewDeleteEntireCheckSelection = async () => {
+    const caller = getCaller();
+
     // Open Files app on Downloads containing BASIC_LOCAL_ENTRY_SET.
     const appId = await setupAndWaitUntilReady(
         RootPath.DOWNLOADS, BASIC_LOCAL_ENTRY_SET, []);
@@ -2221,6 +2223,30 @@
     // Check: |Beautiful Song.ogg| should have been deleted.
     await remoteCall.waitForElementLost(
         appId, '#file-list [file-name="Beautiful Song.ogg"]');
+
+    /**
+     * The <webview> resides in the <files-safe-media type="image"> shadow DOM,
+     * which is a child of the #quick-view shadow DOM.
+     */
+    const webView =
+        ['#quick-view', 'files-safe-media[type="image"]', 'webview'];
+
+
+    // Wait for the Quick View <webview> to load and display its content.
+    function checkWebViewImageLoaded(elements) {
+      let haveElements = Array.isArray(elements) && elements.length === 1;
+      if (haveElements) {
+        haveElements = elements[0].styles.display.includes('block');
+      }
+      if (!haveElements || elements[0].attributes.loaded !== '') {
+        return pending(caller, 'Waiting for <webview> to load.');
+      }
+      return;
+    }
+    await repeatUntil(async () => {
+      return checkWebViewImageLoaded(await remoteCall.callRemoteTestUtil(
+          'deepQueryAllElements', appId, [webView, ['display']]));
+    });
 
     // Open the Quick View delete confirm dialog.
     chrome.test.assertTrue(

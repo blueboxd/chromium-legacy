@@ -150,12 +150,11 @@ class ServiceWorkerRegisterJob : public ServiceWorkerRegisterJobBase {
       blink::ServiceWorkerStatusCode status);
   void UpdateAndContinue();
 
-  // Starts a service worker for [[Update]].
-  // For Non-ServiceWorkerImportedScriptUpdateCheck: it includes byte-for-byte
-  // checking for main script.
-  // For ServiceWorkerImportedScriptUpdateCheck: the script comparison has
-  // finished at this point. It starts install phase.
-  void StartWorkerForUpdate();
+  // Creates a new ServiceWorkerVersion for [[Update]].
+  void CreateNewVersionForUpdate();
+  // Starts a service worker with a new ServiceWorkerVersion for [[Update]].
+  // The script comparison has finished at this point. It starts install phase.
+  void StartWorkerForUpdate(scoped_refptr<ServiceWorkerVersion> new_version);
   void OnStartWorkerFinished(blink::ServiceWorkerStatusCode status);
   void OnStoreRegistrationComplete(blink::ServiceWorkerStatusCode status);
   void InstallAndContinue();

@@ -35,29 +35,26 @@ void MockScreenOrientationClient::ResetData() {
   receivers_.Clear();
 }
 
-bool MockScreenOrientationClient::UpdateDeviceOrientation(
+void MockScreenOrientationClient::UpdateDeviceOrientation(
     blink::WebLocalFrame* main_frame,
     blink::WebScreenOrientationType orientation) {
   main_frame_ = main_frame;
 
   if (device_orientation_ == orientation)
-    return false;
+    return;
   device_orientation_ = orientation;
   if (!IsOrientationAllowedByCurrentLock(orientation))
-    return false;
-  return UpdateScreenOrientation(orientation);
+    return;
+  UpdateScreenOrientation(orientation);
 }
 
-bool MockScreenOrientationClient::UpdateScreenOrientation(
+void MockScreenOrientationClient::UpdateScreenOrientation(
     blink::WebScreenOrientationType orientation) {
   if (current_orientation_ == orientation)
-    return false;
+    return;
   current_orientation_ = orientation;
-  if (main_frame_) {
+  if (main_frame_)
     main_frame_->SendOrientationChangeEvent();
-    return true;
-  }
-  return false;
 }
 
 blink::WebScreenOrientationType

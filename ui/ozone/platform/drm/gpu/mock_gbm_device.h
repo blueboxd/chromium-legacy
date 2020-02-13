@@ -30,6 +30,7 @@ class MockGbmDevice : public GbmDevice {
       uint32_t format,
       const gfx::Size& size,
       gfx::NativePixmapHandle handle) override;
+  bool IsFormatAndUsageSupported(uint32_t format, uint32_t flags) override;
 
  private:
   uint32_t next_handle_ = 0;

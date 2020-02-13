@@ -470,8 +470,8 @@ def _make_blink_api_call(code_node, cg_context, num_of_args=None):
         arguments.append("${exception_state}")
 
     func_name = (code_generator_info.property_implemented_as
-                 or cg_context.member_like.identifier
-                 or cg_context.property_.identifier)
+                 or name_style.api_func(cg_context.member_like.identifier
+                                        or cg_context.property_.identifier))
     if cg_context.attribute_set:
         func_name = name_style.api_func("set", func_name)
     if cg_context.constructor:
@@ -3284,10 +3284,10 @@ def generate_interface(interface):
 
 
 def generate_interfaces(web_idl_database):
-    interface = web_idl_database.find("SVGFEBlendElement")
+    interface = web_idl_database.find("MemoryInfo")
     generate_interface(interface)
     return
 
     # multiprocessing.cpu_count()
-    pool = multiprocessing.Pool(10)
-    pool.map(generate_interface, web_idl_database.interfaces)
+    pool = multiprocessing.Pool(8)
+    pool.map_async(generate_interface, web_idl_database.interfaces).get(3600)

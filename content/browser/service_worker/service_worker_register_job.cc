@@ -416,7 +416,7 @@ void ServiceWorkerRegisterJob::OnUpdateCheckFinished(
 
   ServiceWorkerMetrics::RecordByteForByteUpdateCheckStatus(
       blink::ServiceWorkerStatusCode::kOk, /*has_found_update=*/true);
-  StartWorkerForUpdate();
+  CreateNewVersionForUpdate();
 }
 
 // Creates a new ServiceWorkerRegistration.
@@ -484,12 +484,16 @@ void ServiceWorkerRegisterJob::ContinueWithRegistrationForSameScriptUrl(
   UpdateAndContinue();
 }
 
-void ServiceWorkerRegisterJob::StartWorkerForUpdate() {
+void ServiceWorkerRegisterJob::CreateNewVersionForUpdate() {
   context_->registry()->NotifyInstallingRegistration(registration());
+  context_->registry()->CreateNewVersion(
+      registration(), script_url_, worker_script_type_,
+      base::BindOnce(&ServiceWorkerRegisterJob::StartWorkerForUpdate,
+                     weak_factory_.GetWeakPtr()));
+}
 
-  scoped_refptr<ServiceWorkerVersion> version =
-      context_->registry()->CreateNewVersion(registration(), script_url_,
-                                             worker_script_type_);
+void ServiceWorkerRegisterJob::StartWorkerForUpdate(
+    scoped_refptr<ServiceWorkerVersion> version) {
   if (!version) {
     Complete(blink::ServiceWorkerStatusCode::kErrorAbort);
     return;
@@ -544,7 +548,7 @@ void ServiceWorkerRegisterJob::UpdateAndContinue() {
   switch (GetUpdateCheckType()) {
     case UpdateCheckType::kAllScriptsBeforeStartWorker:
       if (!IsUpdateCheckNeeded()) {
-        StartWorkerForUpdate();
+        CreateNewVersionForUpdate();
         return;
       }
 
@@ -555,7 +559,7 @@ void ServiceWorkerRegisterJob::UpdateAndContinue() {
                          weak_factory_.GetWeakPtr()));
       return;
     case UpdateCheckType::kMainScriptDuringStartWorker:
-      StartWorkerForUpdate();
+      CreateNewVersionForUpdate();
       return;
   }
 }

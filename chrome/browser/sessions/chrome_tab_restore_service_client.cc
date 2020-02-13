@@ -17,8 +17,8 @@
 #endif
 
 #if BUILDFLAG(ENABLE_EXTENSIONS)
+#include "chrome/browser/apps/launch_service/app_utils.h"
 #include "chrome/browser/apps/platform_apps/platform_app_launch.h"
-#include "chrome/browser/extensions/tab_helper.h"
 #endif
 
 #if !defined(OS_ANDROID)
@@ -74,18 +74,14 @@ bool ChromeTabRestoreServiceClient::ShouldTrackURLForRestore(const GURL& url) {
 
 std::string ChromeTabRestoreServiceClient::GetExtensionAppIDForTab(
     sessions::LiveTab* tab) {
-  std::string extension_app_id;
+  std::string app_id;
 
 #if BUILDFLAG(ENABLE_EXTENSIONS)
-  extensions::TabHelper* extensions_tab_helper =
-      extensions::TabHelper::FromWebContents(
-          static_cast<sessions::ContentLiveTab*>(tab)->web_contents());
-  // extensions_tab_helper is nullptr in some browser tests.
-  if (extensions_tab_helper)
-    extension_app_id = extensions_tab_helper->GetAppId();
+  app_id = apps::GetAppIdForWebContents(
+      static_cast<sessions::ContentLiveTab*>(tab)->web_contents());
 #endif
 
-  return extension_app_id;
+  return app_id;
 }
 
 base::FilePath ChromeTabRestoreServiceClient::GetPathToSaveTo() {

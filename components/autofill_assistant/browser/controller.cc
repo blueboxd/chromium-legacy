@@ -544,10 +544,6 @@ void Controller::EnterStoppedState() {
   EnterState(AutofillAssistantState::STOPPED);
 }
 
-void Controller::EnterStateSilent(AutofillAssistantState state) {
-  EnterState(state);
-}
-
 bool Controller::EnterState(AutofillAssistantState state) {
   if (state_ == state)
     return false;
@@ -944,19 +940,21 @@ bool Controller::Start(const GURL& deeplink_url,
   if (state_ == AutofillAssistantState::TRACKING)
     script_tracker_->ClearRunnableScripts();
 
-  SetStatusMessage(l10n_util::GetStringFUTF8(
-      IDS_AUTOFILL_ASSISTANT_LOADING, base::UTF8ToUTF16(deeplink_url_.host())));
-  SetProgress(kAutostartInitialProgress);
-
-  if (base::FeatureList::IsEnabled(features::kAutofillAssistantChromeEntry) &&
-      IsNavigatingToNewDocument()) {
-    start_after_navigation_ = base::BindOnce(&Controller::EnterStateSilent,
-                                             weak_ptr_factory_.GetWeakPtr(),
-                                             AutofillAssistantState::STARTING);
+  if (IsNavigatingToNewDocument()) {
+    start_after_navigation_ = base::BindOnce(
+        &Controller::ShowFirstMessageAndStart, weak_ptr_factory_.GetWeakPtr());
   } else {
-    EnterState(AutofillAssistantState::STARTING);
+    ShowFirstMessageAndStart();
   }
   return true;
+}
+
+void Controller::ShowFirstMessageAndStart() {
+  SetStatusMessage(
+      l10n_util::GetStringFUTF8(IDS_AUTOFILL_ASSISTANT_LOADING,
+                                base::UTF8ToUTF16(GetCurrentURL().host())));
+  SetProgress(kAutostartInitialProgress);
+  EnterState(AutofillAssistantState::STARTING);
 }
 
 AutofillAssistantState Controller::GetState() {

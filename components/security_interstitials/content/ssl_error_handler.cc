@@ -832,11 +832,15 @@ void SSLErrorHandler::ShowMITMSoftwareInterstitial(
 }
 
 void SSLErrorHandler::ShowSSLInterstitial() {
+  GURL support_url = (cert_error_ == net::ERR_CERT_SYMANTEC_LEGACY)
+                         ? GURL(kSymantecSupportUrl)
+                         : GURL();
+
   // Show SSL blocking page. The interstitial owns the blocking page.
   RecordUMA(delegate_->IsErrorOverridable()
                 ? SHOW_SSL_INTERSTITIAL_OVERRIDABLE
                 : SHOW_SSL_INTERSTITIAL_NONOVERRIDABLE);
-  delegate_->ShowSSLInterstitial(GURL());
+  delegate_->ShowSSLInterstitial(support_url);
   // Once an interstitial is displayed, no need to keep the handler around.
   // This is the equivalent of "delete this".
   web_contents_->RemoveUserData(UserDataKey());

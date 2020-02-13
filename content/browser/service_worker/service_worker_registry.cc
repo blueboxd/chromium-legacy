@@ -77,16 +77,15 @@ void ServiceWorkerRegistry::CreateNewRegistration(
       weak_factory_.GetWeakPtr(), std::move(options), std::move(callback)));
 }
 
-scoped_refptr<ServiceWorkerVersion> ServiceWorkerRegistry::CreateNewVersion(
-    ServiceWorkerRegistration* registration,
+void ServiceWorkerRegistry::CreateNewVersion(
+    scoped_refptr<ServiceWorkerRegistration> registration,
     const GURL& script_url,
-    blink::mojom::ScriptType script_type) {
+    blink::mojom::ScriptType script_type,
+    NewVersionCallback callback) {
   DCHECK(registration);
-  int64_t version_id = storage()->GetNewVersionId();
-  if (version_id == blink::mojom::kInvalidServiceWorkerVersionId)
-    return nullptr;
-  return base::MakeRefCounted<ServiceWorkerVersion>(
-      registration, script_url, script_type, version_id, context_->AsWeakPtr());
+  storage()->GetNewVersionId(base::BindOnce(
+      &ServiceWorkerRegistry::DidGetNewVersionId, weak_factory_.GetWeakPtr(),
+      std::move(registration), script_url, script_type, std::move(callback)));
 }
 
 void ServiceWorkerRegistry::FindRegistrationForClientUrl(
@@ -1068,6 +1067,21 @@ void ServiceWorkerRegistry::DidGetNewRegistrationId(
   }
   std::move(callback).Run(base::MakeRefCounted<ServiceWorkerRegistration>(
       std::move(options), registration_id, context_->AsWeakPtr()));
+}
+
+void ServiceWorkerRegistry::DidGetNewVersionId(
+    scoped_refptr<ServiceWorkerRegistration> registration,
+    const GURL& script_url,
+    blink::mojom::ScriptType script_type,
+    NewVersionCallback callback,
+    int64_t version_id) {
+  if (version_id == blink::mojom::kInvalidServiceWorkerVersionId) {
+    std::move(callback).Run(nullptr);
+    return;
+  }
+  std::move(callback).Run(base::MakeRefCounted<ServiceWorkerVersion>(
+      registration.get(), script_url, script_type, version_id,
+      context_->AsWeakPtr()));
 }
 
 void ServiceWorkerRegistry::ScheduleDeleteAndStartOver() {

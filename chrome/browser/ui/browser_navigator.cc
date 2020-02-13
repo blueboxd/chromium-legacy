@@ -65,8 +65,8 @@
 #endif
 
 #if BUILDFLAG(ENABLE_EXTENSIONS)
+#include "chrome/browser/apps/launch_service/app_utils.h"
 #include "chrome/browser/extensions/extension_util.h"
-#include "chrome/browser/extensions/tab_helper.h"
 #include "chrome/browser/web_applications/components/web_app_helpers.h"
 #include "extensions/browser/extension_registry.h"
 #include "extensions/common/extension.h"
@@ -151,10 +151,14 @@ std::pair<Browser*, int> GetBrowserAndTabForDisposition(
 
 #if BUILDFLAG(ENABLE_EXTENSIONS)
   if (params.open_pwa_window_if_possible) {
+    // TODO(crbug.com/966290): Support the new web apps system for PWAs and
+    // shortcut apps that does not use extensions. Use web_app::AppRegistrar
+    // and test with/without kDesktopPWAsWithoutExtensions flag enabled.
     const extensions::Extension* app = extensions::util::GetInstalledPwaForUrl(
         profile, params.url,
         extensions::LaunchContainer::kLaunchContainerWindow);
     if (app) {
+      DCHECK(app->is_app());
       std::string app_name =
           web_app::GenerateApplicationNameFromAppId(app->id());
       return {
@@ -219,12 +223,10 @@ std::pair<Browser*, int> GetBrowserAndTabForDisposition(
       } else if (params.browser && !params.browser->app_name().empty()) {
         app_name = params.browser->app_name();
       } else if (params.source_contents) {
-        extensions::TabHelper* extensions_tab_helper =
-            extensions::TabHelper::FromWebContents(params.source_contents);
-        if (extensions_tab_helper && extensions_tab_helper->is_app()) {
-          app_name = web_app::GenerateApplicationNameFromAppId(
-              extensions_tab_helper->GetAppId());
-        }
+        std::string app_id =
+            apps::GetAppIdForWebContents(params.source_contents);
+        if (!app_id.empty())
+          app_name = web_app::GenerateApplicationNameFromAppId(app_id);
       }
 #endif
       if (app_name.empty()) {
@@ -436,8 +438,8 @@ std::unique_ptr<content::WebContents> CreateTargetContents(
   // immediately.
   BrowserNavigatorWebContentsAdoption::AttachTabHelpers(target_contents.get());
 #if BUILDFLAG(ENABLE_EXTENSIONS)
-  extensions::TabHelper::FromWebContents(target_contents.get())
-      ->SetExtensionAppById(params.extension_app_id);
+  apps::SetAppIdForWebContents(params.browser->profile(), target_contents.get(),
+                               params.extension_app_id);
 #endif
 
 #if BUILDFLAG(ENABLE_CAPTIVE_PORTAL_DETECTION)

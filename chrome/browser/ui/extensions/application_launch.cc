@@ -439,6 +439,7 @@ WebContents* NavigateApplicationWindow(Browser* browser,
   WebContents* const web_contents = nav_params.navigated_or_inserted_contents;
 
   if (extension && !extension->from_bookmark()) {
+    DCHECK(extension->is_app());
     extensions::TabHelper::FromWebContents(web_contents)
         ->SetExtensionApp(extension);
   }

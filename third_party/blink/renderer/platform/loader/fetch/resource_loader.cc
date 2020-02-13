@@ -157,11 +157,6 @@ bool CanHandleDataURLRequestLocally(const ResourceRequest& request) {
   if (request.DownloadToBlob())
     return false;
 
-  // Data url requests from object tags may need to be intercepted as streams
-  // and so need to be sent to the browser.
-  if (request.GetRequestContext() == mojom::RequestContextType::OBJECT)
-    return false;
-
   // Main resources are handled in the browser, so we can handle data url
   // subresources locally.
   return true;

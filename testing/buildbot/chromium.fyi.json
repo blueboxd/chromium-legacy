@@ -3636,16 +3636,6 @@
       }
     ]
   },
-  "Win cl.exe Goma Canary LocalOutputCache": {
-    "additional_compile_targets": [
-      "libANGLE"
-    ]
-  },
-  "Win cl.exe Goma Latest Client LocalOutputCache": {
-    "additional_compile_targets": [
-      "libANGLE"
-    ]
-  },
   "Win10 Tests x64 1803": {
     "gtest_tests": [
       {
@@ -5703,16 +5693,6 @@
         "test": "content_unittests",
         "test_target": "//content/test:content_unittests"
       }
-    ]
-  },
-  "WinMSVC64 Goma Canary": {
-    "additional_compile_targets": [
-      "libANGLE"
-    ]
-  },
-  "WinMSVC64 Goma Latest Client": {
-    "additional_compile_targets": [
-      "libANGLE"
     ]
   },
   "android-archive-dbg-goma-canary": {

@@ -56,6 +56,12 @@ class WebAppControllerBrowserTestBase
   // Launches the app as a tab and returns the browser.
   Browser* LaunchBrowserForWebAppInTab(const AppId&);
 
+  // Returns whether the installable check passed.
+  static bool NavigateAndAwaitInstallabilityCheck(Browser* browser,
+                                                  const GURL& url);
+
+  Browser* NavigateInNewWindowAndAwaitInstallabilityCheck(const GURL&);
+
   base::Optional<AppId> FindAppWithUrlInScope(const GURL& url);
 
  private:

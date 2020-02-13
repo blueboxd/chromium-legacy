@@ -96,7 +96,7 @@ void PasswordReuseDetectionManager::OnPaste(const base::string16 text) {
     return;
   base::string16 input = std::move(text);
   if (input.size() > kMaxNumberOfCharactersToStore)
-    input = text.substr(input.size() - kMaxNumberOfCharactersToStore);
+    input = input.substr(input.size() - kMaxNumberOfCharactersToStore);
   PasswordStore* store = client_->GetProfilePasswordStore();
   if (!store)
     return;

@@ -238,9 +238,6 @@ const char kSafetyTipHelpCenterURL[] =
 const char kSettingsSearchHelpURL[] =
     "https://support.google.com/chrome/?p=settings_search_help";
 
-const char kSymantecSupportUrl[] =
-    "https://support.google.com/chrome?p=symantec#-202";
-
 const char kSyncAndGoogleServicesLearnMoreURL[] =
     "https://support.google.com/chrome?p=syncgoogleservices";
 

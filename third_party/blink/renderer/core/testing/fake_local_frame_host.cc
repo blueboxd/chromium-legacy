@@ -91,10 +91,20 @@ void FakeLocalFrameHost::DidChangeLoadProgress(double load_progress) {}
 
 void FakeLocalFrameHost::DispatchLoad() {}
 
+void FakeLocalFrameHost::GoToEntryAtOffset(int32_t offset,
+                                           bool has_user_gesture) {}
+
 void FakeLocalFrameHost::RenderFallbackContentInParentProcess() {}
 
 void FakeLocalFrameHost::UpdateUserActivationState(
     mojom::blink::UserActivationUpdateType update_type) {}
+
+void FakeLocalFrameHost::HandleAccessibilityFindInPageResult(
+    mojom::blink::FindInPageResultAXParamsPtr params) {}
+
+void FakeLocalFrameHost::HandleAccessibilityFindInPageTermination() {}
+
+void FakeLocalFrameHost::DocumentOnLoadCompleted() {}
 
 void FakeLocalFrameHost::ForwardResourceTimingToParent(
     mojom::blink::ResourceTimingInfoPtr timing) {}
@@ -126,19 +136,14 @@ void FakeLocalFrameHost::RunBeforeUnloadConfirm(
   std::move(callback).Run(true);
 }
 
+void FakeLocalFrameHost::Are3DAPIsBlocked(Are3DAPIsBlockedCallback callback) {
+  std::move(callback).Run(true);
+}
+
 void FakeLocalFrameHost::BindFrameHostReceiver(
     mojo::ScopedInterfaceEndpointHandle handle) {
   receiver_.Bind(mojo::PendingAssociatedReceiver<mojom::blink::LocalFrameHost>(
       std::move(handle)));
 }
-
-void FakeLocalFrameHost::GoToEntryAtOffset(int32_t offset,
-                                           bool has_user_gesture) {}
-void FakeLocalFrameHost::HandleAccessibilityFindInPageResult(
-    mojom::blink::FindInPageResultAXParamsPtr params) {}
-
-void FakeLocalFrameHost::HandleAccessibilityFindInPageTermination() {}
-
-void FakeLocalFrameHost::DocumentOnLoadCompleted() {}
 
 }  // namespace blink

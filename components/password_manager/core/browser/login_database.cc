@@ -1780,7 +1780,8 @@ LoginDatabase::GetAllSyncEntityMetadata() {
                                           "sync_entities_metadata"));
 
   while (s.Step()) {
-    std::string storage_key = s.ColumnString(0);
+    int storage_key_int = s.ColumnInt(0);
+    std::string storage_key = base::NumberToString(storage_key_int);
     std::string encrypted_serialized_metadata = s.ColumnString(1);
     std::string decrypted_serialized_metadata;
     if (!OSCrypt::DecryptString(encrypted_serialized_metadata,

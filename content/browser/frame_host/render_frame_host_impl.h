@@ -1390,6 +1390,7 @@ class CONTENT_EXPORT RenderFrameHostImpl
                             RunModalPromptDialogCallback callback) override;
   void RunBeforeUnloadConfirm(bool is_reload,
                               RunBeforeUnloadConfirmCallback callback) override;
+  void Are3DAPIsBlocked(Are3DAPIsBlockedCallback callback) override;
 
  protected:
   friend class RenderFrameHostFactory;

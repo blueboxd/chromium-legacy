@@ -317,8 +317,6 @@ class CORE_EXPORT LocalFrameClient : public FrameClient {
 
   virtual void DidChangeFrameOwnerProperties(HTMLFrameOwnerElement*) {}
 
-  virtual bool ShouldBlockWebGL() { return false; }
-
   virtual std::unique_ptr<WebServiceWorkerProvider>
   CreateServiceWorkerProvider() = 0;
 

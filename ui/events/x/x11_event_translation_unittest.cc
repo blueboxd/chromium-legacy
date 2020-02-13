@@ -4,7 +4,10 @@
 
 #include "ui/events/x/x11_event_translation.h"
 
+#include "base/test/simple_test_tick_clock.h"
+#include "base/time/time.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "ui/events/base_event_utils.h"
 #include "ui/events/event.h"
 #include "ui/events/event_constants.h"
 #include "ui/events/event_utils.h"
@@ -76,6 +79,53 @@ TEST(XEventTranslationTest, KeyEventXEventPropertiesSet) {
   EXPECT_NE(ibus_flag_it, properties->end());
   EXPECT_EQ(1u, ibus_flag_it->second.size());
   EXPECT_EQ(0x3, ibus_flag_it->second[0]);
+}
+
+// Ensure XEvents with bogus timestamps are properly handled when translated
+// into ui::*Events.
+TEST(XEventTranslationTest, BogusTimestampCorrection) {
+  using base::TimeDelta;
+  using base::TimeTicks;
+
+  ui::ScopedKeyboardLayout keyboard_layout(ui::KEYBOARD_LAYOUT_ENGLISH_US);
+  ScopedXI2Event scoped_xev;
+  scoped_xev.InitKeyEvent(ET_KEY_PRESSED, VKEY_RETURN, EF_NONE);
+  XEvent* xev = scoped_xev;
+
+  base::SimpleTestTickClock test_clock;
+  ui::SetEventTickClockForTesting(&test_clock);
+  test_clock.Advance(TimeDelta::FromSeconds(1));
+
+  // Set initial time as 1000ms
+  TimeTicks now_ticks = EventTimeForNow();
+  int64_t now_ms = (now_ticks - TimeTicks()).InMilliseconds();
+  EXPECT_EQ(1000, now_ms);
+
+  // Emulate XEvent generated 500ms before current time (non-bogus) and verify
+  // the translated Event uses native event's timestamp.
+  xev->xkey.time = 500;
+  auto keyev = ui::BuildKeyEventFromXEvent(*xev);
+  EXPECT_TRUE(keyev);
+  EXPECT_EQ(now_ticks - TimeDelta::FromMilliseconds(500), keyev->time_stamp());
+
+  // Emulate XEvent generated 1000ms ahead in time (bogus timestamp) and verify
+  // the translated Event's timestamp is fixed using (i.e: EventTimeForNow()
+  // instead of the original XEvent's time)
+  xev->xkey.time = 2000;
+  auto keyev2 = ui::BuildKeyEventFromXEvent(*xev);
+  EXPECT_TRUE(keyev2);
+  EXPECT_EQ(EventTimeForNow(), keyev2->time_stamp());
+
+  // Emulate XEvent >= 60sec old (bogus timestamp) and ensure translated
+  // ui::Event's timestamp has been corrected (i.e: use ui::EventTimeForNow()
+  // instead of the original XEvent's time). To emulate such scenario, we
+  // advance the clock by 5 minutes and set the XEvent's time to 1min, so delta
+  // is 4min 1sec.
+  test_clock.Advance(TimeDelta::FromMinutes(5));
+  xev->xkey.time = 1000 * 60;
+  auto keyev3 = ui::BuildKeyEventFromXEvent(*xev);
+  EXPECT_TRUE(keyev3);
+  EXPECT_EQ(EventTimeForNow(), keyev3->time_stamp());
 }
 
 }  // namespace ui

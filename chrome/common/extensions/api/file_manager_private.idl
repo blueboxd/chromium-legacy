@@ -1130,10 +1130,11 @@ interface Functions {
 
   // Gets recently modified files across file systems.
   // |restriction| Flag to restrict sources of recent files.
+  // |fileType| Requested file type to filter recent files.
   // |callback|
   [nocompile]
   static void getRecentFiles(SourceRestriction restriction,
-                             RecentFileType file_type,
+                             RecentFileType fileType,
                              GetRecentFilesCallback callback);
 
   // Starts and mounts crostini container.

@@ -112,6 +112,10 @@ void TabHelper::SetExtensionApp(const Extension* extension) {
   if (extension_app_ == extension)
     return;
 
+  if (extension) {
+    DCHECK(extension->is_app());
+    DCHECK(!extension->from_bookmark());
+  }
   extension_app_ = extension;
 
   if (extension_app_) {
@@ -132,7 +136,7 @@ void TabHelper::SetExtensionApp(const Extension* extension) {
           sessions::SessionTabHelper::FromWebContents(web_contents());
       session_service->SetTabExtensionAppID(session_tab_helper->window_id(),
                                             session_tab_helper->session_id(),
-                                            GetAppId());
+                                            GetExtensionAppId());
     }
   }
 #endif
@@ -144,7 +148,7 @@ void TabHelper::SetExtensionAppById(const ExtensionId& extension_app_id) {
     SetExtensionApp(extension);
 }
 
-ExtensionId TabHelper::GetAppId() const {
+ExtensionId TabHelper::GetExtensionAppId() const {
   return extension_app_ ? extension_app_->id() : ExtensionId();
 }
 
@@ -203,7 +207,9 @@ void TabHelper::DidFinishNavigation(
         web_app::GetAppIdFromApplicationName(browser->app_name()),
         ExtensionRegistry::EVERYTHING);
     if (extension && AppLaunchInfo::GetFullLaunchURL(extension).is_valid()) {
-      SetExtensionApp(extension);
+      DCHECK(extension->is_app());
+      if (!extension->from_bookmark())
+        SetExtensionApp(extension);
     }
   } else {
     UpdateExtensionAppIcon(

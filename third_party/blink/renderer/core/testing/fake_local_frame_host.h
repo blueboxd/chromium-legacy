@@ -83,6 +83,7 @@ class FakeLocalFrameHost : public mojom::blink::LocalFrameHost {
                             RunModalPromptDialogCallback callback) override;
   void RunBeforeUnloadConfirm(bool is_reload,
                               RunBeforeUnloadConfirmCallback callback) override;
+  void Are3DAPIsBlocked(Are3DAPIsBlockedCallback callback) override;
 
  private:
   void BindFrameHostReceiver(mojo::ScopedInterfaceEndpointHandle handle);

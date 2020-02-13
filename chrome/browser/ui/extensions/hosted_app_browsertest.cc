@@ -22,7 +22,6 @@
 #include "base/values.h"
 #include "build/build_config.h"
 #include "chrome/app/chrome_command_ids.h"
-#include "chrome/browser/banners/test_app_banner_manager_desktop.h"
 #include "chrome/browser/extensions/extension_browsertest.h"
 #include "chrome/browser/predictors/loading_predictor_config.h"
 #include "chrome/browser/renderer_context_menu/render_view_context_menu_test_util.h"
@@ -31,7 +30,6 @@
 #include "chrome/browser/ui/browser_commands.h"
 #include "chrome/browser/ui/browser_dialogs.h"
 #include "chrome/browser/ui/browser_finder.h"
-#include "chrome/browser/ui/browser_list.h"
 #include "chrome/browser/ui/browser_window.h"
 #include "chrome/browser/ui/page_info/page_info_dialog.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
@@ -41,7 +39,6 @@
 #include "chrome/browser/ui/web_applications/test/web_app_browsertest_util.h"
 #include "chrome/browser/ui/web_applications/web_app_launch_utils.h"
 #include "chrome/browser/ui/web_applications/web_app_menu_model.h"
-#include "chrome/browser/web_applications/components/app_registry_controller.h"
 #include "chrome/browser/web_applications/components/app_shortcut_manager.h"
 #include "chrome/browser/web_applications/components/external_install_options.h"
 #include "chrome/browser/web_applications/components/web_app_id.h"
@@ -85,6 +82,7 @@ using content::RenderFrameHost;
 using content::WebContents;
 using extensions::Extension;
 using web_app::GetAppMenuCommandState;
+using web_app::IsBrowserOpen;
 using web_app::kDisabled;
 using web_app::kEnabled;
 using web_app::kNotPresent;
@@ -122,13 +120,6 @@ void NavigateAndCheckForToolbar(Browser* browser,
   NavigateToURLAndWait(browser, url, proceed_through_interstitial);
   EXPECT_EQ(expected_visibility,
             browser->app_controller()->ShouldShowCustomTabBar());
-}
-
-void NavigateAndAwaitInstallabilityCheck(Browser* browser, const GURL& url) {
-  auto* manager = banners::TestAppBannerManagerDesktop::CreateForWebContents(
-      browser->tab_strip_model()->GetActiveWebContents());
-  NavigateToURLAndWait(browser, url);
-  manager->WaitForInstallableCheck();
 }
 
 void CheckWebContentsHasAppPrefs(content::WebContents* web_contents) {
@@ -175,14 +166,6 @@ bool TryToLoadImage(const content::ToRenderFrameHost& adapter,
   bool image_loaded;
   CHECK(content::ExecuteScriptAndExtractBool(adapter, script, &image_loaded));
   return image_loaded;
-}
-
-bool IsBrowserOpen(const Browser* test_browser) {
-  for (Browser* browser : *BrowserList::GetInstance()) {
-    if (browser == test_browser)
-      return true;
-  }
-  return false;
 }
 
 }  // namespace
@@ -304,23 +287,6 @@ class HostedAppTest : public extensions::ExtensionBrowserTest,
     CHECK(app_browser_ != browser());
   }
 
-  web_app::AppId InstallPwaForCurrentUrl() {
-    chrome::SetAutoAcceptPWAInstallConfirmationForTesting(true);
-    web_app::WebAppInstallObserver observer(profile());
-    CHECK(chrome::ExecuteCommand(browser(), IDC_INSTALL_PWA));
-    web_app::AppId app_id = observer.AwaitNextInstall();
-    chrome::SetAutoAcceptPWAInstallConfirmationForTesting(false);
-    return app_id;
-  }
-
-  Browser* NavigateInNewWindowAndAwaitInstallabilityCheck(const GURL& url) {
-    Browser* new_browser = new Browser(
-        Browser::CreateParams(Browser::TYPE_NORMAL, profile(), true));
-    AddBlankTabAndShow(new_browser);
-    NavigateAndAwaitInstallabilityCheck(new_browser, url);
-    return new_browser;
-  }
-
   void SetUpInProcessBrowserTestFixture() override {
     extensions::ExtensionBrowserTest::SetUpInProcessBrowserTestFixture();
     cert_verifier_.SetUpInProcessBrowserTestFixture();
@@ -376,12 +342,6 @@ class HostedAppTest : public extensions::ExtensionBrowserTest,
     auto* provider = web_app::WebAppProviderBase::GetProviderBase(profile());
     CHECK(provider);
     return provider->registrar();
-  }
-
-  web_app::AppRegistryController& registry_controller() {
-    auto* provider = web_app::WebAppProviderBase::GetProviderBase(profile());
-    CHECK(provider);
-    return provider->registry_controller();
   }
 
   Browser* app_browser_;
@@ -829,255 +789,6 @@ using SharedPWATest = HostedAppTest;
 using HostedAppPWAOnlyTestWithAutoupgradesDisabled =
     HostedAppTestWithAutoupgradesDisabled;
 
-// Tests that the command for popping a tab out to a PWA window is disabled in
-// incognito.
-IN_PROC_BROWSER_TEST_P(SharedPWATest, PopOutDisabledInIncognito) {
-  ASSERT_TRUE(https_server()->Start());
-  ASSERT_TRUE(embedded_test_server()->Start());
-
-  InstallSecurePWA();
-
-  Browser* incognito_browser =
-      OpenURLOffTheRecord(profile(), GetSecureAppURL());
-  auto app_menu_model =
-      std::make_unique<AppMenuModel>(nullptr, incognito_browser);
-  app_menu_model->Init();
-  ui::MenuModel* model = app_menu_model.get();
-  int index = -1;
-  ASSERT_TRUE(app_menu_model->GetModelAndIndexForCommandId(
-      IDC_OPEN_IN_PWA_WINDOW, &model, &index));
-  EXPECT_FALSE(model->IsEnabledAt(index));
-}
-
-// Tests that app windows are restored in a tab if the app is uninstalled.
-IN_PROC_BROWSER_TEST_P(HostedAppPWAOnlyTest,
-                       RestoreAppWindowForUninstalledApp) {
-  ASSERT_TRUE(https_server()->Start());
-
-  InstallSecurePWA();
-  ASSERT_TRUE(app_browser_->is_type_app());
-  ASSERT_FALSE(app_browser_->is_type_normal());
-  app_browser_->window()->Close();
-
-  extensions::TestExtensionRegistryObserver test_observer(
-      extensions::ExtensionRegistry::Get(browser()->profile()), app_->id());
-  UninstallExtension(app_->id());
-  test_observer.WaitForExtensionUninstalled();
-
-  content::WebContentsAddedObserver new_contents_observer;
-
-  sessions::TabRestoreService* service =
-      TabRestoreServiceFactory::GetForProfile(profile());
-  service->RestoreMostRecentEntry(nullptr);
-
-  content::WebContents* restored_web_contents =
-      new_contents_observer.GetWebContents();
-  Browser* restored_browser =
-      chrome::FindBrowserWithWebContents(restored_web_contents);
-
-  EXPECT_FALSE(restored_browser->is_type_app());
-  EXPECT_TRUE(restored_browser->is_type_normal());
-}
-
-// Tests that PWA menus have an uninstall option.
-IN_PROC_BROWSER_TEST_P(SharedPWATest, UninstallMenuOption) {
-  ASSERT_TRUE(https_server()->Start());
-  ASSERT_TRUE(embedded_test_server()->Start());
-
-  InstallSecurePWA();
-
-  auto app_menu_model =
-      std::make_unique<WebAppMenuModel>(nullptr, app_browser_);
-  app_menu_model->Init();
-  ui::MenuModel* model = app_menu_model.get();
-  int index = -1;
-  bool found = app_menu_model->GetModelAndIndexForCommandId(
-      WebAppMenuModel::kUninstallAppCommandId, &model, &index);
-#if defined(OS_CHROMEOS)
-  EXPECT_FALSE(found);
-#else
-  EXPECT_TRUE(found);
-  EXPECT_TRUE(model->IsEnabledAt(index));
-#endif  // defined(OS_CHROMEOS)
-}
-
-// Tests that both installing a PWA and creating a shortcut app are disabled for
-// incognito windows.
-IN_PROC_BROWSER_TEST_P(SharedPWATest, ShortcutMenuOptionsInIncognito) {
-  Browser* incognito_browser = CreateIncognitoBrowser(profile());
-  auto* manager = banners::TestAppBannerManagerDesktop::CreateForWebContents(
-      incognito_browser->tab_strip_model()->GetActiveWebContents());
-
-  ASSERT_TRUE(https_server()->Start());
-  NavigateToURLAndWait(incognito_browser, GetSecureAppURL());
-  EXPECT_FALSE(manager->WaitForInstallableCheck());
-
-  EXPECT_EQ(GetAppMenuCommandState(IDC_CREATE_SHORTCUT, incognito_browser),
-            kDisabled);
-  EXPECT_EQ(GetAppMenuCommandState(IDC_INSTALL_PWA, incognito_browser),
-            kNotPresent);
-}
-
-// Tests that both installing a PWA and creating a shortcut app are available
-// for an installable PWA.
-IN_PROC_BROWSER_TEST_P(SharedPWATest, ShortcutMenuOptionsForInstallablePWA) {
-  auto* manager = banners::TestAppBannerManagerDesktop::CreateForWebContents(
-      browser()->tab_strip_model()->GetActiveWebContents());
-
-  ASSERT_TRUE(https_server()->Start());
-  NavigateToURLAndWait(browser(), GetInstallableAppURL());
-  EXPECT_TRUE(manager->WaitForInstallableCheck());
-
-  EXPECT_EQ(GetAppMenuCommandState(IDC_CREATE_SHORTCUT, browser()), kEnabled);
-  EXPECT_EQ(GetAppMenuCommandState(IDC_INSTALL_PWA, browser()), kEnabled);
-}
-
-// Tests that an installed PWA is not used when out of scope by one path level.
-IN_PROC_BROWSER_TEST_P(SharedPWATest, MenuOptionsOutsideInstalledPwaScope) {
-  ASSERT_TRUE(https_server()->Start());
-
-  NavigateToURLAndWait(
-      browser(),
-      https_server()->GetURL("/banners/scope_is_start_url/index.html"));
-  InstallPwaForCurrentUrl();
-
-  // Open a page that is one directory up from the installed PWA.
-  Browser* new_browser = NavigateInNewWindowAndAwaitInstallabilityCheck(
-      https_server()->GetURL("/banners/no_manifest_test_page.html"));
-
-  EXPECT_EQ(GetAppMenuCommandState(IDC_CREATE_SHORTCUT, new_browser), kEnabled);
-  EXPECT_EQ(GetAppMenuCommandState(IDC_INSTALL_PWA, new_browser), kNotPresent);
-  EXPECT_EQ(GetAppMenuCommandState(IDC_OPEN_IN_PWA_WINDOW, new_browser),
-            kNotPresent);
-}
-
-IN_PROC_BROWSER_TEST_P(SharedPWATest, InstallInstallableSite) {
-  base::UserActionTester user_action_tester;
-  ASSERT_TRUE(https_server()->Start());
-  NavigateToURLAndWait(browser(), GetInstallableAppURL());
-
-  web_app::AppId app_id = InstallPwaForCurrentUrl();
-  EXPECT_EQ(registrar().GetAppShortName(app_id), GetInstallableAppName());
-
-  // Installed PWAs should launch in their own window.
-  EXPECT_EQ(registrar().GetAppUserDisplayMode(app_id),
-            blink::mojom::DisplayMode::kStandalone);
-
-  EXPECT_EQ(1, user_action_tester.GetActionCount("InstallWebAppFromMenu"));
-  EXPECT_EQ(0, user_action_tester.GetActionCount("CreateShortcut"));
-}
-
-IN_PROC_BROWSER_TEST_P(SharedPWATest, CanInstallOverTabPwa) {
-  ASSERT_TRUE(https_server()->Start());
-
-  NavigateToURLAndWait(browser(), GetInstallableAppURL());
-  web_app::AppId app_id = InstallPwaForCurrentUrl();
-  // Change display mode to open in tab.
-  registry_controller().SetAppUserDisplayMode(
-      app_id, blink::mojom::DisplayMode::kBrowser);
-
-  Browser* new_browser =
-      NavigateInNewWindowAndAwaitInstallabilityCheck(GetInstallableAppURL());
-
-  EXPECT_EQ(GetAppMenuCommandState(IDC_CREATE_SHORTCUT, new_browser), kEnabled);
-  EXPECT_EQ(GetAppMenuCommandState(IDC_INSTALL_PWA, new_browser), kEnabled);
-  EXPECT_EQ(GetAppMenuCommandState(IDC_OPEN_IN_PWA_WINDOW, new_browser),
-            kNotPresent);
-}
-
-IN_PROC_BROWSER_TEST_P(SharedPWATest, CannotInstallOverWindowPwa) {
-  ASSERT_TRUE(https_server()->Start());
-
-  NavigateToURLAndWait(browser(), GetInstallableAppURL());
-  InstallPwaForCurrentUrl();
-
-  // Avoid any interference if active browser was changed by PWA install.
-  Browser* new_browser =
-      NavigateInNewWindowAndAwaitInstallabilityCheck(GetInstallableAppURL());
-
-  EXPECT_EQ(GetAppMenuCommandState(IDC_CREATE_SHORTCUT, new_browser), kEnabled);
-  EXPECT_EQ(GetAppMenuCommandState(IDC_INSTALL_PWA, new_browser), kNotPresent);
-  EXPECT_EQ(GetAppMenuCommandState(IDC_OPEN_IN_PWA_WINDOW, new_browser),
-            kEnabled);
-}
-
-IN_PROC_BROWSER_TEST_P(SharedPWATest, CannotInstallOverPolicyPwa) {
-  ASSERT_TRUE(https_server()->Start());
-
-  web_app::ExternalInstallOptions options =
-      web_app::CreateInstallOptions(GetInstallableAppURL());
-  options.install_source = web_app::ExternalInstallSource::kExternalPolicy;
-  web_app::PendingAppManagerInstall(profile(), options);
-
-  // Avoid any interference if active browser was changed by PWA install.
-  Browser* new_browser =
-      NavigateInNewWindowAndAwaitInstallabilityCheck(GetInstallableAppURL());
-
-  EXPECT_EQ(GetAppMenuCommandState(IDC_CREATE_SHORTCUT, new_browser),
-            kDisabled);
-  EXPECT_EQ(GetAppMenuCommandState(IDC_INSTALL_PWA, new_browser), kNotPresent);
-  EXPECT_EQ(GetAppMenuCommandState(IDC_OPEN_IN_PWA_WINDOW, new_browser),
-            kEnabled);
-}
-
-// Tests that the command for OpenActiveTabInPwaWindow is available for secure
-// pages in an app's scope.
-IN_PROC_BROWSER_TEST_P(SharedPWATest, ReparentWebAppForSecureActiveTab) {
-  ASSERT_TRUE(https_server()->Start());
-  ASSERT_TRUE(embedded_test_server()->Start());
-
-  InstallSecurePWA();
-
-  NavigateToURLAndWait(browser(), GetSecureAppURL());
-  content::WebContents* tab_contents =
-      browser()->tab_strip_model()->GetActiveWebContents();
-  ASSERT_EQ(tab_contents->GetLastCommittedURL(), GetSecureAppURL());
-
-  EXPECT_EQ(GetAppMenuCommandState(IDC_OPEN_IN_PWA_WINDOW, browser()),
-            kEnabled);
-
-  Browser* app_browser = web_app::ReparentWebAppForSecureActiveTab(browser());
-
-  ASSERT_EQ(app_browser->app_controller()->GetAppId(), app_->id());
-}
-
-// Tests that reparenting the last browser tab doesn't close the browser window.
-IN_PROC_BROWSER_TEST_P(SharedPWATest, ReparentLastBrowserTab) {
-  ASSERT_TRUE(https_server()->Start());
-  ASSERT_TRUE(embedded_test_server()->Start());
-
-  InstallSecurePWA();
-  NavigateToURLAndWait(browser(), GetSecureAppURL());
-
-  Browser* app_browser = web_app::ReparentWebAppForSecureActiveTab(browser());
-  ASSERT_EQ(app_browser->app_controller()->GetAppId(), app_->id());
-
-  ASSERT_TRUE(IsBrowserOpen(browser()));
-  EXPECT_EQ(browser()->tab_strip_model()->count(), 1);
-}
-
-// Tests that the manifest name of the current installable site is used in the
-// installation menu text.
-IN_PROC_BROWSER_TEST_P(SharedPWATest, InstallToShelfContainsAppName) {
-  auto* manager = banners::TestAppBannerManagerDesktop::CreateForWebContents(
-      browser()->tab_strip_model()->GetActiveWebContents());
-
-  ASSERT_TRUE(https_server()->Start());
-  NavigateToURLAndWait(browser(), GetInstallableAppURL());
-
-  EXPECT_TRUE(manager->WaitForInstallableCheck());
-
-  auto app_menu_model = std::make_unique<AppMenuModel>(nullptr, browser());
-  app_menu_model->Init();
-  ui::MenuModel* model = app_menu_model.get();
-  int index = -1;
-  EXPECT_TRUE(app_menu_model->GetModelAndIndexForCommandId(IDC_INSTALL_PWA,
-                                                           &model, &index));
-  EXPECT_EQ(app_menu_model.get(), model);
-  EXPECT_EQ(model->GetLabelAt(index),
-            base::UTF8ToUTF16("Install Manifest test app\xE2\x80\xA6"));
-}
-
 // Tests that when calling OpenInChrome, mixed content can be loaded in the new
 // tab.
 IN_PROC_BROWSER_TEST_P(HostedAppPWAOnlyTestWithAutoupgradesDisabled,
@@ -1213,47 +924,6 @@ IN_PROC_BROWSER_TEST_P(HostedAppPWAOnlyTestWithAutoupgradesDisabled,
       iframe, embedded_test_server()->GetURL("foo.com", kImagePath)));
 
   web_app::CheckMixedContentLoaded(browser());
-}
-
-// Check that uninstalling a PWA with a window opened doesn't crash.
-IN_PROC_BROWSER_TEST_P(SharedPWATest, UninstallPwaWithWindowOpened) {
-  ASSERT_TRUE(https_server()->Start());
-  ASSERT_TRUE(embedded_test_server()->Start());
-  InstallSecurePWA();
-
-  EXPECT_TRUE(IsBrowserOpen(app_browser_));
-
-  // TODO (crbug.com/876576): Remove references to extensions in SharedPWATest.
-  UninstallExtension(app_->id());
-  base::RunLoop().RunUntilIdle();
-
-  EXPECT_FALSE(IsBrowserOpen(app_browser_));
-}
-
-// PWAs moved to tabbed browsers should not get closed when uninstalled.
-IN_PROC_BROWSER_TEST_P(HostedAppPWAOnlyTest, UninstallPwaWithWindowMovedToTab) {
-  ASSERT_TRUE(https_server()->Start());
-  ASSERT_TRUE(embedded_test_server()->Start());
-
-  InstallSecurePWA();
-
-  EXPECT_TRUE(IsBrowserOpen(app_browser_));
-
-  Browser* tabbed_browser = chrome::OpenInChrome(app_browser_);
-  base::RunLoop().RunUntilIdle();
-
-  EXPECT_TRUE(IsBrowserOpen(tabbed_browser));
-  EXPECT_EQ(tabbed_browser, browser());
-  EXPECT_FALSE(IsBrowserOpen(app_browser_));
-
-  UninstallExtension(app_->id());
-  base::RunLoop().RunUntilIdle();
-
-  EXPECT_TRUE(IsBrowserOpen(tabbed_browser));
-  EXPECT_EQ(tabbed_browser->tab_strip_model()
-                ->GetActiveWebContents()
-                ->GetLastCommittedURL(),
-            GetSecureAppURL());
 }
 
 IN_PROC_BROWSER_TEST_P(HostedAppTest, CreatedForInstalledPwaForNonPwas) {

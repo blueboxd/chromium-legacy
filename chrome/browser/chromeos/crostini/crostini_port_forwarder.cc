@@ -114,6 +114,18 @@ bool CrostiniPortForwarder::RemovePortPreference(const PortRuleKey& key) {
   return all_ports->EraseListIter(it);
 }
 
+void CrostiniPortForwarder::SetPortPreferenceActiveState(const PortRuleKey& key,
+                                                         bool active) {
+  PrefService* pref_service = profile_->GetPrefs();
+  ListPrefUpdate update(pref_service, crostini::prefs::kCrostiniPortForwarding);
+  base::ListValue* all_ports = update.Get();
+  auto it = std::find_if(
+      all_ports->begin(), all_ports->end(),
+      [&key, this](const auto& dict) { return MatchPortRuleDict(dict, key); });
+  DCHECK(it != all_ports->end());
+  it->SetBoolKey(kPortActiveKey, active);
+}
+
 base::Optional<base::Value> CrostiniPortForwarder::ReadPortPreference(
     const PortRuleKey& key) {
   PrefService* pref_service = profile_->GetPrefs();
@@ -274,7 +286,7 @@ void CrostiniPortForwarder::ActivatePort(const ContainerId& container_id,
     std::move(result_callback).Run(false);
     return;
   }
-  // TODO(matterchen): Change preference to active.
+  SetPortPreferenceActiveState(existing_port_key, true);
   if (forwarded_ports_.find(existing_port_key) != forwarded_ports_.end()) {
     LOG(ERROR) << "Trying to activate already active port.";
     std::move(result_callback).Run(false);
@@ -308,7 +320,7 @@ void CrostiniPortForwarder::DeactivatePort(const ContainerId& container_id,
     std::move(result_callback).Run(false);
     return;
   }
-  // TODO(matterchen): Change preference to inactive.
+  SetPortPreferenceActiveState(existing_port_key, false);
   base::OnceCallback<void(bool)> on_deactivate_port_completed =
       base::BindOnce(&CrostiniPortForwarder::OnRemoveOrDeactivatePortCompleted,
                      weak_ptr_factory_.GetWeakPtr(), std::move(result_callback),

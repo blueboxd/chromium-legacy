@@ -15,7 +15,6 @@
 #include "chrome/browser/ssl/chrome_ssl_host_state_delegate_factory.h"
 #include "chrome/browser/ssl/ssl_error_controller_client.h"
 #include "chrome/common/channel_info.h"
-#include "chrome/common/url_constants.h"
 #include "components/security_interstitials/content/content_metrics_helper.h"
 #include "components/security_interstitials/content/ssl_blocking_page.h"
 #include "components/security_interstitials/core/controller_client.h"
@@ -175,19 +174,10 @@ ChromeSecurityBlockingPageFactory::CreateSSLPage(
 
   std::unique_ptr<SSLBlockingPage> page;
 
-  if (cert_error == net::ERR_CERT_SYMANTEC_LEGACY) {
-    GURL symantec_support_url(chrome::kSymantecSupportUrl);
-    page = std::make_unique<SSLBlockingPage>(
-        web_contents, cert_error, ssl_info, request_url, options_mask,
-        time_triggered, std::move(symantec_support_url),
-        std::move(ssl_cert_reporter), overridable,
-        std::move(controller_client));
-  } else {
-    page = std::make_unique<SSLBlockingPage>(
-        web_contents, cert_error, ssl_info, request_url, options_mask,
-        time_triggered, support_url, std::move(ssl_cert_reporter), overridable,
-        std::move(controller_client));
-  }
+  page = std::make_unique<SSLBlockingPage>(
+      web_contents, cert_error, ssl_info, request_url, options_mask,
+      time_triggered, support_url, std::move(ssl_cert_reporter), overridable,
+      std::move(controller_client));
 
   DoChromeSpecificSetup(page.get());
   return page;

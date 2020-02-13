@@ -8,7 +8,7 @@
 #include <utility>
 
 #include "build/build_config.h"
-#include "chrome/browser/extensions/tab_helper.h"
+#include "chrome/browser/apps/launch_service/app_utils.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/sessions/session_restore.h"
 #include "chrome/browser/sessions/session_service.h"
@@ -76,9 +76,9 @@ std::unique_ptr<WebContents> CreateRestoredTab(
                                             session_storage_namespace_map);
   if (from_session_restore)
     SessionRestore::OnWillRestoreTab(web_contents.get());
-  extensions::TabHelper::CreateForWebContents(web_contents.get());
-  extensions::TabHelper::FromWebContents(web_contents.get())
-      ->SetExtensionAppById(extension_app_id);
+  apps::SetAppIdForWebContents(browser->profile(), web_contents.get(),
+                               extension_app_id);
+
   std::vector<std::unique_ptr<NavigationEntry>> entries =
       ContentSerializedNavigationBuilder::ToNavigationEntries(
           navigations, browser->profile());

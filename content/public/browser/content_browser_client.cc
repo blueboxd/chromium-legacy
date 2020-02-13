@@ -1050,10 +1050,6 @@ void ContentBrowserClient::IsClipboardPasteAllowed(
   std::move(callback).Run(ClipboardPasteAllowed(true));
 }
 
-bool ContentBrowserClient::CanEnterFullscreenWithoutUserActivation() {
-  return false;
-}
-
 #if BUILDFLAG(ENABLE_PLUGINS)
 bool ContentBrowserClient::ShouldAllowPluginCreation(
     const url::Origin& embedder_origin,

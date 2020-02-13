@@ -19,17 +19,6 @@
 #include "chrome/browser/web_applications/test/web_app_install_observer.h"
 #include "url/gurl.h"
 
-namespace {
-
-void NavigateAndAwaitInstallabilityCheck(Browser* browser, const GURL& url) {
-  auto* manager = banners::TestAppBannerManagerDesktop::CreateForWebContents(
-      browser->tab_strip_model()->GetActiveWebContents());
-  web_app::NavigateToURLAndWait(browser, url);
-  manager->WaitForInstallableCheck();
-}
-
-}  // anonymous namespace
-
 namespace web_app {
 
 class CreateShortcutBrowserTest : public WebAppControllerBrowserTest {
@@ -55,13 +44,6 @@ class CreateShortcutBrowserTest : public WebAppControllerBrowserTest {
     return provider->registry_controller();
   }
 
-  Browser* NavigateInNewWindowAndAwaitInstallabilityCheck(const GURL& url) {
-    Browser* new_browser = new Browser(
-        Browser::CreateParams(Browser::TYPE_NORMAL, profile(), true));
-    AddBlankTabAndShow(new_browser);
-    NavigateAndAwaitInstallabilityCheck(new_browser, url);
-    return new_browser;
-  }
 };
 
 IN_PROC_BROWSER_TEST_P(CreateShortcutBrowserTest,

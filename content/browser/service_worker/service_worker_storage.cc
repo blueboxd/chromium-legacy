@@ -845,11 +845,9 @@ void ServiceWorkerStorage::GetNewRegistrationId(
   std::move(callback).Run(NewRegistrationId());
 }
 
-int64_t ServiceWorkerStorage::GetNewVersionId() {
-  if (state_ == STORAGE_STATE_DISABLED)
-    return blink::mojom::kInvalidServiceWorkerVersionId;
-  DCHECK_EQ(STORAGE_STATE_INITIALIZED, state_);
-  return next_version_id_++;
+void ServiceWorkerStorage::GetNewVersionId(
+    base::OnceCallback<void(int64_t version_id)> callback) {
+  std::move(callback).Run(NewVersionId());
 }
 
 void ServiceWorkerStorage::GetNewResourceId(
@@ -1225,6 +1223,13 @@ int64_t ServiceWorkerStorage::NewRegistrationId() {
   }
   DCHECK_EQ(STORAGE_STATE_INITIALIZED, state_);
   return next_registration_id_++;
+}
+
+int64_t ServiceWorkerStorage::NewVersionId() {
+  if (state_ == STORAGE_STATE_DISABLED)
+    return blink::mojom::kInvalidServiceWorkerVersionId;
+  DCHECK_EQ(STORAGE_STATE_INITIALIZED, state_);
+  return next_version_id_++;
 }
 
 int64_t ServiceWorkerStorage::NewResourceId() {

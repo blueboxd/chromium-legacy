@@ -19,10 +19,10 @@
 #include "base/stl_util.h"
 #include "base/threading/thread.h"
 #include "build/build_config.h"
+#include "chrome/browser/apps/launch_service/app_utils.h"
 #include "chrome/browser/background/background_mode_manager.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/defaults.h"
-#include "chrome/browser/extensions/tab_helper.h"
 #include "chrome/browser/prefs/session_startup_pref.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_attributes_entry.h"
@@ -354,12 +354,10 @@ void SessionService::TabInserted(WebContents* contents) {
     return;
   SetTabWindow(session_tab_helper->window_id(),
                session_tab_helper->session_id());
-  extensions::TabHelper* extensions_tab_helper =
-      extensions::TabHelper::FromWebContents(contents);
-  if (extensions_tab_helper && extensions_tab_helper->is_app()) {
+  std::string app_id = apps::GetAppIdForWebContents(contents);
+  if (!app_id.empty()) {
     SetTabExtensionAppID(session_tab_helper->window_id(),
-                         session_tab_helper->session_id(),
-                         extensions_tab_helper->GetAppId());
+                         session_tab_helper->session_id(), app_id);
   }
 
   // Record the association between the SessionStorageNamespace and the
@@ -694,12 +692,10 @@ void SessionService::BuildCommandsForTab(
       sessions::CreateLastActiveTimeCommand(session_id,
                                             tab->GetLastActiveTime()));
 
-  extensions::TabHelper* extensions_tab_helper =
-      extensions::TabHelper::FromWebContents(tab);
-  if (extensions_tab_helper->is_app()) {
+  std::string app_id = apps::GetAppIdForWebContents(tab);
+  if (!app_id.empty()) {
     command_storage_manager_->AppendRebuildCommand(
-        sessions::CreateSetTabExtensionAppIDCommand(
-            session_id, extensions_tab_helper->GetAppId()));
+        sessions::CreateSetTabExtensionAppIDCommand(session_id, app_id));
   }
 
   const std::string& ua_override = tab->GetUserAgentOverride();

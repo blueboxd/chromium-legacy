@@ -439,9 +439,9 @@ class ServiceWorkerVersionBrowserTest : public ContentBrowserTest {
     // tests.
     registration_->set_last_update_check(base::Time::Now());
 
-    version_ = wrapper()->context()->registry()->CreateNewVersion(
-        registration_.get(), embedded_test_server()->GetURL(worker_url),
-        script_type);
+    version_ = CreateNewServiceWorkerVersion(
+        wrapper()->context()->registry(), registration_.get(),
+        embedded_test_server()->GetURL(worker_url), script_type);
     // Make the registration findable via storage functions.
     wrapper()->context()->registry()->NotifyInstallingRegistration(
         registration_.get());
@@ -473,8 +473,9 @@ class ServiceWorkerVersionBrowserTest : public ContentBrowserTest {
     ASSERT_TRUE(
         BrowserThread::CurrentlyOn(ServiceWorkerContext::GetCoreThreadId()));
     scoped_refptr<ServiceWorkerVersion> waiting_version(
-        wrapper()->context()->registry()->CreateNewVersion(
-            registration_.get(), embedded_test_server()->GetURL(worker_url),
+        CreateNewServiceWorkerVersion(
+            wrapper()->context()->registry(), registration_.get(),
+            embedded_test_server()->GetURL(worker_url),
             blink::mojom::ScriptType::kClassic));
     waiting_version->set_fetch_handler_existence(
         ServiceWorkerVersion::FetchHandlerExistence::EXISTS);

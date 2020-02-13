@@ -9,6 +9,7 @@
 
 #include "base/feature_list.h"
 #include "base/token.h"
+#include "chrome/browser/apps/launch_service/app_utils.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_commands.h"
@@ -26,7 +27,6 @@
 #include "components/tab_groups/tab_group_visual_data.h"
 #include "content/public/browser/navigation_controller.h"
 #include "content/public/browser/session_storage_namespace.h"
-#include "extensions/browser/extension_registry.h"
 
 #if BUILDFLAG(ENABLE_SESSION_SERVICE)
 #include "chrome/browser/sessions/tab_loader.h"
@@ -47,16 +47,13 @@ bool ShouldCreateAppWindowForAppName(Profile* profile,
   if (app_name.empty())
     return false;
 
-  // Only need to check that the app is installed if |app_name| is for an
-  // extension. (|app_name| could also be for a devtools windows.)
+  // Only need to check that the app is installed if |app_name| is for a
+  // platform app or web app. (|app_name| could also be for a devtools window.)
   const std::string app_id = web_app::GetAppIdFromApplicationName(app_name);
   if (app_id.empty())
     return true;
 
-  const extensions::Extension* extension =
-      extensions::ExtensionRegistry::Get(profile)->GetInstalledExtension(
-          app_id);
-  return extension;
+  return apps::IsInstalledApp(profile, app_id);
 }
 
 }  // namespace

@@ -20,7 +20,7 @@
 #include "extensions/buildflags/buildflags.h"
 
 #if BUILDFLAG(ENABLE_EXTENSIONS)
-#include "chrome/browser/extensions/tab_helper.h"
+#include "chrome/browser/apps/launch_service/app_utils.h"
 #endif
 
 #if BUILDFLAG(ENABLE_SUPERVISED_USERS)
@@ -54,7 +54,7 @@ bool TabContentsSyncedTabDelegate::IsBeingDestroyed() const {
 
 std::string TabContentsSyncedTabDelegate::GetExtensionAppId() const {
 #if BUILDFLAG(ENABLE_EXTENSIONS)
-  return extensions::TabHelper::FromWebContents(web_contents_)->GetAppId();
+  return apps::GetAppIdForWebContents(web_contents_);
 #else
   return std::string();
 #endif

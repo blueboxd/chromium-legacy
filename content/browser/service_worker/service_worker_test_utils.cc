@@ -414,6 +414,25 @@ scoped_refptr<ServiceWorkerRegistration> CreateNewServiceWorkerRegistration(
   return registration;
 }
 
+scoped_refptr<ServiceWorkerVersion> CreateNewServiceWorkerVersion(
+    ServiceWorkerRegistry* registry,
+    scoped_refptr<ServiceWorkerRegistration> registration,
+    const GURL& script_url,
+    blink::mojom::ScriptType script_type) {
+  scoped_refptr<ServiceWorkerVersion> version;
+  base::RunLoop run_loop;
+  registry->CreateNewVersion(
+      std::move(registration), script_url, script_type,
+      base::BindLambdaForTesting(
+          [&](scoped_refptr<ServiceWorkerVersion> new_version) {
+            version = std::move(new_version);
+            run_loop.Quit();
+          }));
+  run_loop.Run();
+  DCHECK(version);
+  return version;
+}
+
 scoped_refptr<ServiceWorkerRegistration>
 CreateServiceWorkerRegistrationAndVersion(ServiceWorkerContextCore* context,
                                           const GURL& scope,
@@ -424,8 +443,9 @@ CreateServiceWorkerRegistrationAndVersion(ServiceWorkerContextCore* context,
 
   scoped_refptr<ServiceWorkerRegistration> registration =
       CreateNewServiceWorkerRegistration(context->registry(), options);
-  auto version = context->registry()->CreateNewVersion(
-      registration.get(), script, blink::mojom::ScriptType::kClassic);
+  scoped_refptr<ServiceWorkerVersion> version =
+      CreateNewServiceWorkerVersion(context->registry(), registration.get(),
+                                    script, blink::mojom::ScriptType::kClassic);
   ServiceWorkerDatabase::ResourceRecord record(resource_id, script,
                                                /*size_bytes=*/100);
   std::vector<ServiceWorkerDatabase::ResourceRecord> records = {record};

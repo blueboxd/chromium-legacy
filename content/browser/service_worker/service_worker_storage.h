@@ -266,7 +266,11 @@ class CONTENT_EXPORT ServiceWorkerStorage {
 
   // Returns a new version id which is guaranteed to be unique in the storage.
   // Returns kInvalidServiceWorkerVersionId if the storage is disabled.
-  int64_t GetNewVersionId();
+  // NOTE: Currently this method can return a new version id synchronously
+  // and doesn't have to take a callback. Using a callback is a preparation
+  // for using ServiceWorkerStorage via a mojo interface.
+  // See crbug.com/1046335 for details.
+  void GetNewVersionId(base::OnceCallback<void(int64_t version_id)> callback);
 
   // Returns a new resource id which is guaranteed to be unique in the storage.
   // Returns ServiceWorkerConsts::kInvalidServiceWorkerResourceId if the storage
@@ -420,6 +424,7 @@ class CONTENT_EXPORT ServiceWorkerStorage {
   void ClearSessionOnlyOrigins();
 
   int64_t NewRegistrationId();
+  int64_t NewVersionId();
   int64_t NewResourceId();
 
   // Static cross-thread helpers.

@@ -399,6 +399,12 @@ DrmOverlayPlane ScreenManager::GetModesetBuffer(
     return DrmOverlayPlane::Error();
   }
 
+  if (buffer->GetNumPlanes() > 1) {
+    NOTREACHED() << "Expected only one plane but got "
+                 << buffer->GetNumPlanes();
+    return DrmOverlayPlane::Error();
+  }
+
   sk_sp<SkSurface> surface = buffer->GetSurface();
   if (!surface) {
     VLOG(2) << "Can't get a SkSurface from the modeset gbm buffer.";

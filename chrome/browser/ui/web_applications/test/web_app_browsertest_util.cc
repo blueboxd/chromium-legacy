@@ -11,6 +11,7 @@
 #include "chrome/browser/installable/installable_metrics.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_finder.h"
+#include "chrome/browser/ui/browser_list.h"
 #include "chrome/browser/ui/browser_navigator_params.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/browser/ui/toolbar/app_menu_model.h"
@@ -177,6 +178,14 @@ AppMenuCommandState GetAppMenuCommandState(int command_id, Browser* browser) {
     return kNotPresent;
   }
   return model->IsEnabledAt(index) ? kEnabled : kDisabled;
+}
+
+bool IsBrowserOpen(const Browser* test_browser) {
+  for (Browser* browser : *BrowserList::GetInstance()) {
+    if (browser == test_browser)
+      return true;
+  }
+  return false;
 }
 
 }  // namespace web_app

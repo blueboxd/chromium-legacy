@@ -61,8 +61,6 @@ class CORE_EXPORT LayoutMenuList final : public LayoutFlexibleBox {
   int MeasureOptionsWidth() const;
 };
 
-DEFINE_LAYOUT_OBJECT_TYPE_CASTS(LayoutMenuList, IsMenuList());
-
 }  // namespace blink
 
 #endif

@@ -151,10 +151,13 @@ class Buffer final : public ui::GbmBuffer {
         format_modifier_(modifier),
         flags_(flags),
         size_(size),
-        handle_(std::move(handle)) {}
+        handle_(std::move(handle)),
+        mapped_planes_(handle_.planes.size()) {}
 
   ~Buffer() override {
-    DCHECK(!mmap_data_);
+    for (const auto& mapped_plane : mapped_planes_) {
+      DCHECK(!mapped_plane.mapped_data);
+    }
     gbm_bo_destroy(bo_);
   }
 
@@ -203,38 +206,86 @@ class Buffer final : public ui::GbmBuffer {
     return CloneHandleForIPC(handle_);
   }
 
-  sk_sp<SkSurface> GetSurface() override {
+  sk_sp<SkSurface> GetPlaneSurface(size_t plane) override {
     CHECK(HaveGbmMap());
-    DCHECK(!mmap_data_);
-    uint32_t stride;
-    void* addr;
-    addr =
+    DCHECK_LT(plane, handle_.planes.size());
+    DCHECK(!mapped_planes_[plane].mapped_data);
+
+    const int plane_count = GetPlaneCount(bo_);
+    uint32_t stride = 0;
+    mapped_planes_.resize(plane_count);
+
+    void* mmap_data = nullptr;
+    void* addr =
 #if defined(MINIGBM)
         gbm_bo_map(bo_, 0, 0, gbm_bo_get_width(bo_), gbm_bo_get_height(bo_),
-                   GBM_BO_TRANSFER_READ_WRITE, &stride, &mmap_data_, 0);
+                   GBM_BO_TRANSFER_READ_WRITE, &stride, &mmap_data, plane);
 #else
         gbm_bo_map(bo_, 0, 0, gbm_bo_get_width(bo_), gbm_bo_get_height(bo_),
-                   GBM_BO_TRANSFER_READ_WRITE, &stride, &mmap_data_);
+                   GBM_BO_TRANSFER_READ_WRITE, &stride, &mmap_data);
+    addr = static_cast<uint8_t*>(addr) + GetPlaneOffset(plane);
 #endif
 
     if (!addr)
       return nullptr;
-    SkImageInfo info =
-        SkImageInfo::MakeN32Premul(size_.width(), size_.height());
-    return SkSurface::MakeRasterDirectReleaseProc(info, addr, stride,
-                                                  &Buffer::UnmapGbmBo, this);
+    mapped_planes_[plane].addr = addr;
+    mapped_planes_[plane].mapped_data = mmap_data;
+
+    SkImageInfo info;
+    switch (GetBufferFormat()) {
+      case gfx::BufferFormat::RGBX_8888:
+      case gfx::BufferFormat::RGBA_8888:
+      case gfx::BufferFormat::BGRX_8888:
+      case gfx::BufferFormat::BGRA_8888:
+        info = SkImageInfo::MakeN32Premul(size_.width(), size_.height());
+        break;
+
+      case gfx::BufferFormat::YVU_420:
+      case gfx::BufferFormat::YUV_420_BIPLANAR:
+        info = SkImageInfo::Make({size_.width(), size_.height()},
+                                 kGray_8_SkColorType, kOpaque_SkAlphaType);
+        break;
+
+      default:
+        NOTREACHED();
+        break;
+    }
+
+    // TODO(crbug.com/1043007): Let SkSurface own the pixels by using
+    // sk_sp<SkPixelRef> so no need the call back UnmapGbmBo, neither
+    // mapped_planes_.
+    sk_sp<SkSurface> sk_surface = SkSurface::MakeRasterDirectReleaseProc(
+        info, addr, stride, &Buffer::UnmapGbmBo, this);
+    if (!sk_surface) {
+      UnmapGbmBo(addr, this);
+      return nullptr;
+    }
+
+    return sk_surface;
   }
+
+  sk_sp<SkSurface> GetSurface() override { return GetPlaneSurface(0); }
 
  private:
   static void UnmapGbmBo(void* pixels, void* context) {
     CHECK(HaveGbmMap());
     Buffer* buffer = static_cast<Buffer*>(context);
-    gbm_bo_unmap(buffer->bo_, buffer->mmap_data_);
-    buffer->mmap_data_ = nullptr;
+
+    // Find matching plane.
+    void* mmap_data = nullptr;
+    for (auto& mapped_plane : buffer->mapped_planes_) {
+      if (mapped_plane.addr == pixels) {
+        mmap_data = mapped_plane.mapped_data;
+        mapped_plane = {};
+        break;
+      }
+    }
+
+    CHECK(mmap_data);
+    gbm_bo_unmap(buffer->bo_, mmap_data);
   }
 
   gbm_bo* const bo_;
-  void* mmap_data_ = nullptr;
 
   const uint32_t format_;
   const uint64_t format_modifier_;
@@ -243,6 +294,12 @@ class Buffer final : public ui::GbmBuffer {
   const gfx::Size size_;
 
   const gfx::NativePixmapHandle handle_;
+
+  struct MappedPlane {
+    void* addr = nullptr;
+    void* mapped_data = nullptr;
+  };
+  std::vector<MappedPlane> mapped_planes_;
 
   DISALLOW_COPY_AND_ASSIGN(Buffer);
 };
@@ -342,23 +399,24 @@ class Device final : public ui::GbmDevice {
       gbm_flags &= ~GBM_BO_USE_SCANOUT;
 
     struct gbm_bo* bo = nullptr;
-    if (!gbm_device_is_format_supported(device_, format, gbm_flags)) {
+    if (!IsFormatAndUsageSupported(format, gbm_flags)) {
       LOG(ERROR) << "gbm format not supported: " << format;
       return nullptr;
     }
 
     struct gbm_import_fd_modifier_data fd_data;
-    fd_data.width = size.width();
-    fd_data.height = size.height();
+    fd_data.width = base::checked_cast<uint32_t>(size.width());
+    fd_data.height = base::checked_cast<uint32_t>(size.height());
     fd_data.format = format;
-    fd_data.num_fds = handle.planes.size();
+    fd_data.num_fds = base::checked_cast<uint32_t>(handle.planes.size());
     fd_data.modifier = handle.modifier;
 
     DCHECK_LE(handle.planes.size(), 3u);
     for (size_t i = 0; i < handle.planes.size(); ++i) {
-      fd_data.fds[i] = handle.planes[i < handle.planes.size() ? i : 0].fd.get();
-      fd_data.strides[i] = handle.planes[i].stride;
-      fd_data.offsets[i] = handle.planes[i].offset;
+      fd_data.fds[i] = base::checked_cast<int>(
+          handle.planes[i < handle.planes.size() ? i : 0].fd.get());
+      fd_data.strides[i] = base::checked_cast<int>(handle.planes[i].stride);
+      fd_data.offsets[i] = base::checked_cast<int>(handle.planes[i].offset);
     }
 
     // The fd passed to gbm_bo_import is not ref-counted and need to be
@@ -371,6 +429,10 @@ class Device final : public ui::GbmDevice {
 
     return std::make_unique<Buffer>(bo, format, gbm_flags, handle.modifier,
                                     size, std::move(handle));
+  }
+
+  bool IsFormatAndUsageSupported(uint32_t format, uint32_t flags) override {
+    return gbm_device_is_format_supported(device_, format, flags);
   }
 
  private:

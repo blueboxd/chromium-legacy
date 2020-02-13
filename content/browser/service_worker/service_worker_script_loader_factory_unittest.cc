@@ -41,8 +41,9 @@ class ServiceWorkerScriptLoaderFactoryTest : public testing::Test {
     options.scope = scope_;
     registration_ = base::MakeRefCounted<ServiceWorkerRegistration>(
         options, 1L /* registration_id */, context->AsWeakPtr());
-    version_ = context->registry()->CreateNewVersion(
-        registration_.get(), script_url_, blink::mojom::ScriptType::kClassic);
+    version_ = CreateNewServiceWorkerVersion(
+        context->registry(), registration_.get(), script_url_,
+        blink::mojom::ScriptType::kClassic);
 
     provider_host_ = CreateProviderHostForServiceWorkerContext(
         helper_->mock_render_process_id(), true /* is_parent_frame_secure */,

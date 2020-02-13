@@ -95,6 +95,7 @@ class CrostiniPortForwarder : public KeyedService {
                            TryActivatePortPermissionBrokerClientFail);
 
   bool MatchPortRuleDict(const base::Value& dict, const PortRuleKey& key);
+  void SetPortPreferenceActiveState(const PortRuleKey& key, bool active);
   void AddNewPortPreference(const PortRuleKey& key, const std::string& label);
   bool RemovePortPreference(const PortRuleKey& key);
   base::Optional<base::Value> ReadPortPreference(const PortRuleKey& key);

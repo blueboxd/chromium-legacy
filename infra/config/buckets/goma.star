@@ -88,11 +88,6 @@ fyi_goma_canary_builder(
 )
 
 fyi_goma_canary_builder(
-    name = 'Win cl.exe Goma Canary LocalOutputCache',
-    os = os.WINDOWS_DEFAULT,
-)
-
-fyi_goma_canary_builder(
     name = 'Win7 Builder (dbg) Goma Canary',
     os = os.WINDOWS_7,
 )
@@ -100,11 +95,6 @@ fyi_goma_canary_builder(
 fyi_goma_canary_builder(
     name = 'Win7 Builder Goma Canary',
     os = os.WINDOWS_7,
-)
-
-fyi_goma_canary_builder(
-    name = 'WinMSVC64 Goma Canary',
-    os = os.WINDOWS_DEFAULT,
 )
 
 fyi_goma_canary_builder(
@@ -256,11 +246,6 @@ fyi_goma_latest_client_builder(
 )
 
 fyi_goma_latest_client_builder(
-    name = 'Win cl.exe Goma Latest Client LocalOutputCache',
-    os = os.WINDOWS_DEFAULT,
-)
-
-fyi_goma_latest_client_builder(
     name = 'Win7 Builder (dbg) Goma Latest Client',
     os = os.WINDOWS_7,
 )
@@ -268,11 +253,6 @@ fyi_goma_latest_client_builder(
 fyi_goma_latest_client_builder(
     name = 'Win7 Builder Goma Latest Client',
     os = os.WINDOWS_7,
-)
-
-fyi_goma_latest_client_builder(
-    name = 'WinMSVC64 Goma Latest Client',
-    os = os.WINDOWS_DEFAULT,
 )
 
 fyi_goma_latest_client_builder(

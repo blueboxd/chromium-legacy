@@ -277,12 +277,6 @@
       'ios-device-goma-rbe-latest-clobber': 'ios_error',
       'ios-simulator-cr-recipe': 'ios_simulator_debug_static_bot',
 
-      # TODO(yyanagisawa): deprecate cl.exe.
-      'Win cl.exe Goma Canary LocalOutputCache': 'release_bot_x86_minimal_symbols_enable_archive_compression_no_clang',
-      'Win cl.exe Goma Latest Client LocalOutputCache': 'release_bot_x86_minimal_symbols_enable_archive_compression_no_clang',
-      'WinMSVC64 Goma Canary': 'win_msvc_release_bot',
-      'WinMSVC64 Goma Latest Client': 'win_msvc_release_bot',
-
       'mac-hermetic-upgrade-rel': 'release_bot',
 
       'fuchsia-fyi-arm64-rel': 'release_bot_fuchsia_arm64',
@@ -1955,9 +1949,6 @@
       'release_bot', 'x86',
     ],
 
-    # compiler.gni implicitly sets symbol_level=1 on Windows if goma is enabled,
-    # if MSVC is used.  Explicitly set it here so that it's set consistently for
-    # both MSVC and clang.
     'release_bot_minimal_symbols': [
       'release_bot', 'minimal_symbols',
     ],
@@ -1972,11 +1963,6 @@
 
     'release_bot_x86_minimal_symbols_enable_archive_compression': [
       'release_bot', 'x86', 'minimal_symbols', 'enable_archive_compression'
-    ],
-
-    'release_bot_x86_minimal_symbols_enable_archive_compression_no_clang': [
-      'no_clang',
-      'release_bot', 'x86', 'minimal_symbols', 'enable_archive_compression',
     ],
 
     'release_bot_x86_minimal_symbols_no_com_init_hooks_with_codecs': [
@@ -2066,10 +2052,6 @@
 
     'vr_release_trybot': [
       'vr', 'release_trybot', 'ozone',
-    ],
-
-    'win_msvc_release_bot': [
-      'no_clang', 'release_bot',
     ],
 
     'win32_arm64_release_bot': [

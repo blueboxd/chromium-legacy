@@ -65,6 +65,7 @@
 #include "content/browser/frame_host/render_frame_proxy_host.h"
 #include "content/browser/generic_sensor/sensor_provider_proxy_impl.h"
 #include "content/browser/geolocation/geolocation_service_impl.h"
+#include "content/browser/gpu/gpu_data_manager_impl.h"
 #include "content/browser/installedapp/installed_app_provider_impl.h"
 #include "content/browser/interface_provider_filtering.h"
 #include "content/browser/loader/file_url_loader_factory.h"
@@ -165,6 +166,7 @@
 #include "content/public/common/referrer_type_converters.h"
 #include "content/public/common/service_manager_connection.h"
 #include "content/public/common/service_names.mojom.h"
+#include "content/public/common/three_d_api_types.h"
 #include "content/public/common/url_constants.h"
 #include "content/public/common/url_utils.h"
 #include "device/gamepad/gamepad_monitor.h"
@@ -3256,6 +3258,13 @@ void RenderFrameHostImpl::RunBeforeUnloadConfirm(
                                     std::move(dialog_closed_callback));
 }
 
+void RenderFrameHostImpl::Are3DAPIsBlocked(Are3DAPIsBlockedCallback callback) {
+  bool blocked = GpuDataManagerImpl::GetInstance()->Are3DAPIsBlocked(
+      frame_tree_node_->frame_tree()->GetMainFrame()->GetLastCommittedURL(),
+      GetProcess()->GetID(), GetRoutingID(), THREE_D_API_TYPE_WEBGL);
+  std::move(callback).Run(blocked);
+}
+
 void RenderFrameHostImpl::RequestTextSurroundingSelection(
     blink::mojom::LocalFrame::GetTextSurroundingSelectionCallback callback,
     int max_length) {
@@ -4086,17 +4095,9 @@ void RenderFrameHostImpl::EnterFullscreen(
   // by a user generated orientation change, because the fullscreen can be
   // triggered by either a user activation or a user generated orientation
   // change.
-  // CanEnterFullscreenWithoutUserActivation is always false by default, so it
-  // keeps the current logic that we can enter fullscreen mode either by the
-  // orientation change or successfully consuming the user activation. This
-  // function is used for layout tests to allow fullscreen when mocking screen
-  // screen orientation changes.
   // TODO(lanwei): Investigate whether we can terminate the renderer when the
   // user activation has already been consumed.
-  if (!delegate_->HasSeenRecentScreenOrientationChange() &&
-      !GetContentClient()
-           ->browser()
-           ->CanEnterFullscreenWithoutUserActivation()) {
+  if (!delegate_->HasSeenRecentScreenOrientationChange()) {
     bool is_consumed = frame_tree_node_->UpdateUserActivationState(
         blink::mojom::UserActivationUpdateType::kConsumeTransientActivation);
     if (!is_consumed) {

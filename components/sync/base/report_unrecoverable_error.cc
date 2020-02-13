@@ -20,7 +20,10 @@ void ReportUnrecoverableError(version_info::Channel channel) {
   // Note: crash reporting is disabled, and should only be enabled when
   // investigating a specific datatype error. In that event, a specific bug
   // should be referenced here.
-  const double kErrorUploadRatio = 0.00;
+  // Crash reporting is enabled to debug crbug.com/1044365
+  // TODO(crbug.com/1044365): Disable crash reporting once the underlying issue
+  // is identified.
+  const double kErrorUploadRatio = 0.01;
   if (kErrorUploadRatio <= 0.0)
     return;  // We are not allowed to upload errors.
   double random_number = base::RandDouble();

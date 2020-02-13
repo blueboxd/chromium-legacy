@@ -11,6 +11,7 @@
 #include "base/memory/weak_ptr.h"
 #include "base/strings/string16.h"
 #include "ui/base/cursor/cursor.h"
+#include "ui/base/cursor/cursor_size.h"
 #include "ui/base/ui_base_export.h"
 #include "ui/display/display.h"
 #include "ui/gfx/native_widget_types.h"

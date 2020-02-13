@@ -745,9 +745,8 @@ void HTMLSelectElement::SetOptionsChangedOnLayoutObject() {
   if (LayoutObject* layout_object = GetLayoutObject()) {
     if (!UsesMenuList())
       return;
-    ToLayoutMenuList(layout_object)
-        ->SetNeedsLayoutAndPrefWidthsRecalc(
-            layout_invalidation_reason::kMenuOptionsChanged);
+    layout_object->SetNeedsLayoutAndPrefWidthsRecalc(
+        layout_invalidation_reason::kMenuOptionsChanged);
   }
 }
 
@@ -1323,8 +1322,7 @@ void HTMLSelectElement::HandlePopupOpenKeyboardEvent(Event& event) {
   // Calling focus() may cause us to lose our layoutObject. Return true so
   // that our caller doesn't process the event further, but don't set
   // the event as handled.
-  if (!GetLayoutObject() || !GetLayoutObject()->IsMenuList() ||
-      IsDisabledFormControl())
+  if (!GetLayoutObject() || !UsesMenuList() || IsDisabledFormControl())
     return;
   // Save the selection so it can be compared to the new selection when
   // dispatching change events during selectOption, which gets called from
@@ -1475,8 +1473,7 @@ void HTMLSelectElement::MenuListDefaultEventHandler(Event& event) {
             ->FiresTouchEvents(mouse_event->FromTouch());
     focus(FocusParams(SelectionBehaviorOnFocus::kRestore,
                       mojom::blink::FocusType::kNone, source_capabilities));
-    if (GetLayoutObject() && GetLayoutObject()->IsMenuList() &&
-        !IsDisabledFormControl()) {
+    if (GetLayoutObject() && UsesMenuList() && !IsDisabledFormControl()) {
       if (PopupIsVisible()) {
         HidePopup();
       } else {
@@ -1562,7 +1559,7 @@ void HTMLSelectElement::DidUpdateMenuListActiveOption(
   }
 
   GetDocument().ExistingAXObjectCache()->HandleUpdateActiveMenuOption(
-      ToLayoutMenuList(GetLayoutObject()), option_index);
+      GetLayoutObject(), option_index);
 }
 
 HTMLOptionElement* HTMLSelectElement::EventTargetOption(const Event& event) {
@@ -2087,7 +2084,7 @@ void HTMLSelectElement::PopupDidHide() {
   SetPopupIsVisible(false);
   UnobserveTreeMutation();
   if (AXObjectCache* cache = GetDocument().ExistingAXObjectCache()) {
-    if (GetLayoutObject() && GetLayoutObject()->IsMenuList())
+    if (GetLayoutObject() && UsesMenuList())
       cache->DidHideMenuListPopup(GetLayoutObject());
   }
 }
@@ -2146,7 +2143,7 @@ void HTMLSelectElement::ShowPopup() {
     return;
   if (GetDocument().GetPage()->GetChromeClient().HasOpenedPopup())
     return;
-  if (!GetLayoutObject() || !GetLayoutObject()->IsMenuList())
+  if (!GetLayoutObject() || !UsesMenuList())
     return;
   if (VisibleBoundsInVisualViewport().IsEmpty())
     return;

@@ -70,8 +70,14 @@ class MockGbmBuffer final : public ui::GbmBuffer {
     NOTIMPLEMENTED();
     return gfx::NativePixmapHandle();
   }
-
-  sk_sp<SkSurface> GetSurface() override { return nullptr; }
+  sk_sp<SkSurface> GetPlaneSurface(size_t plane) override {
+    NOTIMPLEMENTED();
+    return nullptr;
+  }
+  sk_sp<SkSurface> GetSurface() override {
+    NOTIMPLEMENTED();
+    return nullptr;
+  }
 
  private:
   uint32_t format_ = 0;
@@ -161,6 +167,11 @@ std::unique_ptr<GbmBuffer> MockGbmDevice::CreateBufferFromHandle(
     gfx::NativePixmapHandle handle) {
   NOTREACHED();
   return nullptr;
+}
+
+bool MockGbmDevice::IsFormatAndUsageSupported(uint32_t format, uint32_t flags) {
+  NOTREACHED();
+  return false;
 }
 
 }  // namespace ui

@@ -5,6 +5,7 @@
 #include "ui/aura/test/test_cursor_client.h"
 
 #include "ui/aura/client/cursor_client_observer.h"
+#include "ui/base/cursor/cursor_size.h"
 #include "ui/display/display.h"
 
 namespace aura {

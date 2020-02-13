@@ -24,7 +24,6 @@
 #include "content/browser/child_process_security_policy_impl.h"
 #include "content/browser/frame_host/ipc_utils.h"
 #include "content/browser/frame_host/render_frame_host_impl.h"
-#include "content/browser/gpu/gpu_data_manager_impl.h"
 #include "content/browser/renderer_host/render_widget_helper.h"
 #include "content/browser/resource_context_impl.h"
 #include "content/browser/storage_partition_impl.h"
@@ -229,7 +228,6 @@ bool RenderFrameMessageFilter::OnMessageReceived(const IPC::Message& message) {
   bool handled = true;
   IPC_BEGIN_MESSAGE_MAP(RenderFrameMessageFilter, message)
     IPC_MESSAGE_HANDLER(FrameHostMsg_CreateChildFrame, OnCreateChildFrame)
-    IPC_MESSAGE_HANDLER(FrameHostMsg_Are3DAPIsBlocked, OnAre3DAPIsBlocked)
 #if BUILDFLAG(ENABLE_PLUGINS)
     IPC_MESSAGE_HANDLER(FrameHostMsg_GetPluginInfo, OnGetPluginInfo)
     IPC_MESSAGE_HANDLER_DELAY_REPLY(FrameHostMsg_OpenChannelToPepperPlugin,
@@ -293,14 +291,6 @@ void RenderFrameMessageFilter::OnCreateChildFrame(
           params.frame_owner_element_type, params_reply->child_routing_id,
           interface_provider_receiver.PassPipe(),
           browser_interface_broker_receiver.PassPipe()));
-}
-
-void RenderFrameMessageFilter::OnAre3DAPIsBlocked(int render_frame_id,
-                                                  const GURL& top_origin_url,
-                                                  ThreeDAPIType requester,
-                                                  bool* blocked) {
-  *blocked = GpuDataManagerImpl::GetInstance()->Are3DAPIsBlocked(
-      top_origin_url, render_process_id_, render_frame_id, requester);
 }
 
 #if BUILDFLAG(ENABLE_PLUGINS)

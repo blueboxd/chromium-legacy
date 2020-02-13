@@ -346,16 +346,16 @@ TEST_F(ServiceWorkerRegistrationTest, NavigationPreload) {
   options.scope = kScope;
   scoped_refptr<ServiceWorkerRegistration> registration =
       CreateNewServiceWorkerRegistration(context()->registry(), options);
-  scoped_refptr<ServiceWorkerVersion> version_1 =
-      context()->registry()->CreateNewVersion(
-          registration.get(), kScript, blink::mojom::ScriptType::kClassic);
+  scoped_refptr<ServiceWorkerVersion> version_1 = CreateNewServiceWorkerVersion(
+      context()->registry(), registration.get(), kScript,
+      blink::mojom::ScriptType::kClassic);
   version_1->set_fetch_handler_existence(
       ServiceWorkerVersion::FetchHandlerExistence::EXISTS);
   registration->SetActiveVersion(version_1);
   version_1->SetStatus(ServiceWorkerVersion::ACTIVATED);
-  scoped_refptr<ServiceWorkerVersion> version_2 =
-      context()->registry()->CreateNewVersion(
-          registration.get(), kScript, blink::mojom::ScriptType::kClassic);
+  scoped_refptr<ServiceWorkerVersion> version_2 = CreateNewServiceWorkerVersion(
+      context()->registry(), registration.get(), kScript,
+      blink::mojom::ScriptType::kClassic);
   version_2->set_fetch_handler_existence(
       ServiceWorkerVersion::FetchHandlerExistence::EXISTS);
   registration->SetWaitingVersion(version_2);
@@ -396,8 +396,9 @@ class ServiceWorkerActivationTest : public ServiceWorkerRegistrationTest,
 
     // Create an active version.
     scoped_refptr<ServiceWorkerVersion> version_1 =
-        context()->registry()->CreateNewVersion(
-            registration_.get(), kScript, blink::mojom::ScriptType::kClassic);
+        CreateNewServiceWorkerVersion(context()->registry(),
+                                      registration_.get(), kScript,
+                                      blink::mojom::ScriptType::kClassic);
     version_1->set_fetch_handler_existence(
         ServiceWorkerVersion::FetchHandlerExistence::EXISTS);
     registration_->SetActiveVersion(version_1);
@@ -443,8 +444,9 @@ class ServiceWorkerActivationTest : public ServiceWorkerRegistrationTest,
 
     // Create a waiting version.
     scoped_refptr<ServiceWorkerVersion> version_2 =
-        context()->registry()->CreateNewVersion(
-            registration_.get(), kScript, blink::mojom::ScriptType::kClassic);
+        CreateNewServiceWorkerVersion(context()->registry(),
+                                      registration_.get(), kScript,
+                                      blink::mojom::ScriptType::kClassic);
     std::vector<ServiceWorkerDatabase::ResourceRecord> records_2;
     records_2.push_back(WriteToDiskCacheSync(
         helper_->context()->storage(), version_2->script_url(),
@@ -887,9 +889,9 @@ class ServiceWorkerRegistrationObjectHostTest
   scoped_refptr<ServiceWorkerVersion> CreateVersion(
       ServiceWorkerRegistration* registration,
       const GURL& script_url) {
-    scoped_refptr<ServiceWorkerVersion> version =
-        context()->registry()->CreateNewVersion(
-            registration, script_url, blink::mojom::ScriptType::kClassic);
+    scoped_refptr<ServiceWorkerVersion> version = CreateNewServiceWorkerVersion(
+        context()->registry(), registration, script_url,
+        blink::mojom::ScriptType::kClassic);
     std::vector<ServiceWorkerDatabase::ResourceRecord> records;
     records.push_back(WriteToDiskCacheSync(storage(), version->script_url(),
                                            {} /* headers */, "I'm the body",

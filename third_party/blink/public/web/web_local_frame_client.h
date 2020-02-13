@@ -615,14 +615,6 @@ class BLINK_EXPORT WebLocalFrameClient {
   // header. An empty string indicates that no DNT header will be send.
   virtual WebString DoNotTrackValue() { return WebString(); }
 
-  // WebGL ------------------------------------------------------
-
-  // Asks the embedder whether WebGL is blocked for the WebFrame. This call is
-  // placed here instead of WebContentSettingsClient because this class is
-  // implemented in content/, and putting it here avoids adding more public
-  // content/ APIs.
-  virtual bool ShouldBlockWebGL() { return false; }
-
   // Accessibility -------------------------------------------------------
 
   // Notifies embedder about an accessibility event on a target WebAXObject for

@@ -68,7 +68,7 @@ class TabHelper : public content::WebContentsObserver,
 
   // Return ExtensionId for extension app.
   // If an app extension has not been set, returns empty id.
-  ExtensionId GetAppId() const;
+  ExtensionId GetExtensionAppId() const;
 
   // If an app extension has been explicitly set for this WebContents its icon
   // is returned.
